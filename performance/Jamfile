@@ -1,0 +1,8 @@
+project
+    : requirements 
+      <include>../include
+    : default-build release
+    ;
+
+run versus_sprintf.cpp /boost//timer : : : : versus_sprintf ;
+
