@@ -7,65 +7,79 @@
 
 namespace boost
 {
+
   //--------------------------------------------------
   // std::string 
-
-  template<>
-  template<typename charT,
-           typename traits>
-  class string_il_writer<std::basic_string<charT, traits>, charT, traits>:
-     public string_il_writer_base<charT>
+  struct string_ini_lists_std_string_arg_traits
   {
-  public:
-    const std::basic_string<charT, traits>& str;    
-
-    string_il_writer(const std::basic_string<charT, traits>& _str)
-      :str(_str)
+    template <class charT, class traits>
+    struct writer: public string_il_writer_base<charT>
     {
-    }
+      const std::basic_string<charT, traits>& str;    
 
-    virtual std::size_t minimal_length() const
-    {
-      return str.length();
-    }
+      writer(const std::basic_string<charT, traits>& _str)
+        :str(_str)
+      {
+      }
 
-    virtual charT* write_without_termination_char(charT* output) const
-    {
-      std::size_t length = str.length();
-      traits::copy(output, &*str.begin(), length);
-      return output + length;
-    }
+      virtual std::size_t minimal_length() const
+      {
+        return str.length();
+      }
+
+      virtual charT* write_without_termination_char(charT* output) const
+      {
+        std::size_t length = str.length();
+        traits::copy(output, &*str.begin(), length);
+        return output + length;
+      }
+    };
   };
+  
+  template <class charT, class traits>
+  inline
+  string_ini_lists_std_string_arg_traits 
+  string_ini_list_argument_traits(const std::basic_string<charT, traits>&)
+  {
+    return string_ini_lists_std_string_arg_traits();
+  }
 
   //--------------------------------------------------
   // const charT* 
 
-  template<>
-  template<typename charT,
-           typename traits>
-  class string_il_writer<const charT*, charT, traits>:
-    public string_il_writer_base<charT>
+  struct string_ini_lists_char_ptr_arg_traits
   {
-  public:
-    const charT* str;    
-
-    string_il_writer(const charT* _str)
-      :str(_str)
+    template<typename charT,typename traits>
+    struct writer: string_il_writer_base<charT>
     {
-    }
+      const charT* str;    
 
-    virtual std::size_t minimal_length() const
-    {
-      return traits::length(str);
-    }
+      writer(const charT* _str)
+        :str(_str)
+      {
+      }
 
-    virtual charT* write_without_termination_char(charT* output) const
-    {
-      std::size_t length = traits::length(str);
-      traits::copy(output, str, length);
-      return output + length;
-    }
-  }; 
+      virtual std::size_t minimal_length() const
+      {
+        return traits::length(str);
+      }
+
+      virtual charT* write_without_termination_char(charT* output) const
+      {
+        std::size_t length = traits::length(str);
+        traits::copy(output, str, length);
+        return output + length;
+      }
+    }; 
+  };
+
+  template <class charT>
+  inline
+  string_ini_lists_char_ptr_arg_traits
+  string_ini_list_argument_traits(const charT*)
+  {
+    return string_ini_lists_char_ptr_arg_traits();
+  }
 
 }; // namespace boost
 

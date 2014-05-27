@@ -76,5 +76,10 @@ int main()
 
   test_char_ptr();
 
+  //todo: try to simplify compile error message on invalid types:
+  //std::string output;
+  //output += boost::string_il{L"asdf"};
+
+
   return  boost::report_errors();
 }

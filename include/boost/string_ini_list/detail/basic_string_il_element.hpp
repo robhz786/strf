@@ -60,6 +60,7 @@ namespace detail
     {
       return *reinterpret_cast<const writer_base*>(get_pool());
     }
+/*
     template <class T>
     void init(const T& argument)
     {
@@ -73,38 +74,51 @@ namespace detail
      
       construct_writer<T, writer_t>(argument);
     }
+*/
 
+    template <class DERIVED_WRITER>
+    struct is_aligned_with_base
+    {
+      static constexpr DERIVED_WRITER * some_addr = ((DERIVED_WRITER*)(0) + 1);
+      static constexpr writer_base    * base_addr = some_addr;
+      static constexpr bool value = (reinterpret_cast<void*>(some_addr) == 
+                                     reinterpret_cast<void*>(base_addr)); 
+    };
+
+/*
     template <class T, class writer_t>
     void construct_writer(const T& argument)
     {
+      
       BOOST_STATIC_ASSERT(sizeof(writer_t) <= BOOST_MAX_SIZEOF_STRING_IL_WRITER);
-      //BOOST_STATIC_ASSERT(is_base_of<writer_base, writer_t>::value_type == true);
+      BOOST_STATIC_ASSERT(is_aligned_with_base<writer_t>::value);
 
       new (get_pool()) writer_t(argument);
 
-      BOOST_ASSERT(((const void*) static_cast<const writer_t*>(&get_writer())) ==
-                   ((const void*) &get_writer()));
     }
-
-
-/*
-  // todo: new version
+*/
 
     template <class T>
-    void init_v2(const T& argument)
+    void init(const T& arg)
     {
-      construct_writer(get_string_il_element_traits(argument));
+      construct_writer(arg, string_ini_list_argument_traits(arg));
     }
 
-    template <class T_writer_traits>
-    void construct_writer(T_writer_traits dummy_arg)
+    template <class T, class arg_traits>
+    void construct_writer(const T& arg, arg_traits)
     {
-      typedef typename T_writer_traits::type<charT, traits> writer_t;
-
-      new (get_pool()) writer_t(argument);
+      typedef typename arg_traits::template writer<charT, traits> arg_writer_type;
+      verify_arg_writer_type<arg_writer_type>();
+      new (get_pool()) arg_writer_type(arg);
     }
 
-*/
+    template <class arg_writer_type>
+    void verify_arg_writer_type()
+    {
+      BOOST_STATIC_ASSERT(sizeof(arg_writer_type) <= BOOST_MAX_SIZEOF_STRING_IL_WRITER);
+      BOOST_STATIC_ASSERT(is_aligned_with_base<arg_writer_type>::value);
+    }
+    
   };
 }; //namespace detail
 }; //namespace boost
