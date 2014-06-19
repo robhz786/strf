@@ -111,7 +111,7 @@ int main()
     number_of_repetitions = 100 * common_multiplier;
     MEASURE_TIME5
     {
-      write(buff, boost::string_il{"hello"});
+      write(buff, boost::listf{"hello"});
     }
     std::cout << time1 << "  " 
               << time2 << "  " 
@@ -140,7 +140,7 @@ int main()
     }
     MEASURE_TIME3
     {
-      write(buff, boost::string_il{hello_cstr});
+      write(buff, boost::listf{hello_cstr});
     }
     std::cout << time1 << "  " << time2 << "  " << time3 << std::endl;
   }

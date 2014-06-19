@@ -6,27 +6,18 @@
 
 namespace boost 
 {
-
-  // using template <typename charT, typename traits>
-  // basic_string_il = std::initializer_list<detail::basic_string_il_element<charT, traits> >;
-  // typedef std::initializer_list<detail::basic_string_il_element<char> >      string_il;
-  // typedef std::initializer_list<detail::basic_string_il_element<wchar_t> >   wstring_il;
-  // typedef std::initializer_list<detail::basic_string_il_element<char16_t> >  string16_il;
-  // typedef std::initializer_list<detail::basic_string_il_element<char32_t> >  string32_il;
-
-
   template <typename charT, typename traits=std::char_traits<charT> >
-  class basic_string_il
+  class basic_listf
   {
     typedef 
-      std::initializer_list<detail::basic_string_il_element<charT, traits> >
+      std::initializer_list<detail::basic_listf_element<charT, traits> >
       initializer_list_type;
 
     const initializer_list_type inilist;
 
   public:
 
-    basic_string_il(const initializer_list_type& _inilist):
+    basic_listf(const initializer_list_type& _inilist):
       inilist(_inilist)
     {
     }
@@ -70,17 +61,17 @@ namespace boost
 
   };
 
-  typedef basic_string_il<char>      string_il;
-  typedef basic_string_il<wchar_t>   wstring_il;
-  typedef basic_string_il<char16_t>  string16_il;
-  typedef basic_string_il<char32_t>  string32_il;
+  typedef basic_listf<char>      listf;
+  typedef basic_listf<wchar_t>   wlistf;
+  typedef basic_listf<char16_t>  listf16;
+  typedef basic_listf<char32_t>  listf32;
 
 
   template<typename charT, 
            typename traits=std::char_traits<char> >
   charT*
   write(charT* output, 
-        const basic_string_il<charT, traits>& inilist)
+        const basic_listf<charT, traits>& inilist)
   {
     return inilist.write(output);
   }
@@ -92,7 +83,7 @@ namespace boost
            typename Allocator>
   std::basic_string<charT, traits, Allocator>& 
   operator+=(std::basic_string<charT, traits, Allocator>& str,
-             const basic_string_il<charT, traits>& inilist)
+             const basic_listf<charT, traits>& inilist)
   {
     std::size_t initial_length = str.length();
     str.append(inilist.minimal_length(), charT());

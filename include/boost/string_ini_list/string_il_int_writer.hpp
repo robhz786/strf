@@ -7,12 +7,12 @@
 namespace boost
 {
   template <typename intT>
-  struct string_ini_list_int_arg_traits
+  struct listf_int_arg_traits
   {
     typedef typename std::make_unsigned<intT>::type  unsigned_intT;
 
     template <typename charT, typename traits>
-    struct writer: public string_il_writer_base<charT>
+    struct writer: public listf_writer_base<charT>
     {
       intT value;
       writer(intT _value):
@@ -69,45 +69,45 @@ namespace boost
 
 
   inline
-  string_ini_list_int_arg_traits<int>
-  string_ini_list_argument_traits(int)
+  listf_int_arg_traits<int>
+  listf_argument_traits(int)
   {
-    return string_ini_list_int_arg_traits<int>();
+    return listf_int_arg_traits<int>();
   }
 
   inline
-  string_ini_list_int_arg_traits<unsigned int>
-  string_ini_list_argument_traits(unsigned int)
+  listf_int_arg_traits<unsigned int>
+  listf_argument_traits(unsigned int)
   {
-    return string_ini_list_int_arg_traits<unsigned int>();
+    return listf_int_arg_traits<unsigned int>();
   }
 
   inline
-  string_ini_list_int_arg_traits<long>
-  string_ini_list_argument_traits(long)
+  listf_int_arg_traits<long>
+  listf_argument_traits(long)
   {
-    return string_ini_list_int_arg_traits<long>();
+    return listf_int_arg_traits<long>();
   }
 
   inline
-  string_ini_list_int_arg_traits<unsigned long>
-  string_ini_list_argument_traits(unsigned long)
+  listf_int_arg_traits<unsigned long>
+  listf_argument_traits(unsigned long)
   {
-    return string_ini_list_int_arg_traits<unsigned long>();
+    return listf_int_arg_traits<unsigned long>();
   }
 
   inline
-  string_ini_list_int_arg_traits<long long>
-  string_ini_list_argument_traits(long long)
+  listf_int_arg_traits<long long>
+  listf_argument_traits(long long)
   {
-    return string_ini_list_int_arg_traits<long long>();
+    return listf_int_arg_traits<long long>();
   }
 
   inline
-  string_ini_list_int_arg_traits<unsigned long long>
-  string_ini_list_argument_traits(unsigned long long)
+  listf_int_arg_traits<unsigned long long>
+  listf_argument_traits(unsigned long long)
   {
-    return string_ini_list_int_arg_traits<unsigned long long>();
+    return listf_int_arg_traits<unsigned long long>();
   }
 
 }//namespace boost

@@ -1,5 +1,5 @@
-#ifndef BOOST_DETAIL_BASIC_STRING_IL_ELEMENT_HPP_INCLUDED
-#define BOOST_DETAIL_BASIC_STRING_IL_ELEMENT_HPP_INCLUDED
+#ifndef BOOST_DETAIL_BASIC_LISTF_ELEMENT_HPP_INCLUDED
+#define BOOST_DETAIL_BASIC_LISTF_ELEMENT_HPP_INCLUDED
 
 #include <boost/type_traits/remove_cv.hpp>
 #include <boost/type_traits/remove_reference.hpp>
@@ -8,8 +8,8 @@
 #include <boost/string_ini_list/string_il_int_writer.hpp>
 #include <boost/type_traits/is_base_of.hpp>
 
-#ifndef BOOST_MAX_SIZEOF_STRING_IL_WRITER
-#define BOOST_MAX_SIZEOF_STRING_IL_WRITER (4*sizeof(void*))
+#ifndef BOOST_MAX_SIZEOF_LISTF_WRITER
+#define BOOST_MAX_SIZEOF_LISTF_WRITER (4*sizeof(void*))
 #endif
 
 namespace boost
@@ -18,18 +18,18 @@ namespace detail
 {
 
   template <typename charT, typename traits=std::char_traits<charT> >
-  class basic_string_il_element
+  class basic_listf_element
   {
-    typedef string_il_writer_base<charT> writer_base;
+    typedef listf_writer_base<charT> writer_base;
 
   public:
     template <class T>
-    basic_string_il_element(const T& argument)
+    basic_listf_element(const T& argument)
     {
       init(argument);
     }
     template <class T>
-    basic_string_il_element(T* argument)
+    basic_listf_element(T* argument)
     {
       init(static_cast<const T*>(argument));
     }
@@ -41,14 +41,14 @@ namespace detail
     {
       return get_writer().write_without_termination_char(output);
     }
-    ~basic_string_il_element()
+    ~basic_listf_element()
     {
       get_writer().~writer_base();
     }
 
   private:
     typedef void* data;  // using pointer in order to force proper alignment
-    data pool[BOOST_MAX_SIZEOF_STRING_IL_WRITER / sizeof(data)];
+    data pool[BOOST_MAX_SIZEOF_LISTF_WRITER / sizeof(data)];
     void* get_pool()
     {
       return reinterpret_cast<void*>(&pool[0]);
@@ -70,7 +70,7 @@ namespace detail
         adjusted_T;
 
       typedef
-        string_il_writer<adjusted_T, charT, traits>
+        listf_writer<adjusted_T, charT, traits>
         writer_t;
      
       construct_writer<T, writer_t>(argument);
@@ -91,7 +91,7 @@ namespace detail
     void construct_writer(const T& argument)
     {
       
-      BOOST_STATIC_ASSERT(sizeof(writer_t) <= BOOST_MAX_SIZEOF_STRING_IL_WRITER);
+      BOOST_STATIC_ASSERT(sizeof(writer_t) <= BOOST_MAX_SIZEOF_LISTF_WRITER);
       BOOST_STATIC_ASSERT(is_aligned_with_base<writer_t>::value);
 
       new (get_pool()) writer_t(argument);
@@ -102,7 +102,7 @@ namespace detail
     template <class T>
     void init(const T& arg)
     {
-      construct_writer(arg, string_ini_list_argument_traits(arg));
+      construct_writer(arg, listf_argument_traits(arg));
     }
 
     template <class T, class arg_traits>
@@ -116,7 +116,7 @@ namespace detail
     template <class arg_writer_type>
     void verify_arg_writer_type()
     {
-      BOOST_STATIC_ASSERT(sizeof(arg_writer_type) <= BOOST_MAX_SIZEOF_STRING_IL_WRITER);
+      BOOST_STATIC_ASSERT(sizeof(arg_writer_type) <= BOOST_MAX_SIZEOF_LISTF_WRITER);
       BOOST_STATIC_ASSERT(is_aligned_with_base<arg_writer_type>::value);
     }
     

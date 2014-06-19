@@ -12,7 +12,7 @@ template <typename charT,
 void test(intT value)
 {
   std::basic_string<charT, traits> result;
-  result += boost::basic_string_il<charT, traits>{value};
+  result += boost::basic_listf<charT, traits>{value};
 
   std::basic_ostringstream<charT, traits> oss;
   oss.imbue(std::locale("C"));
@@ -50,22 +50,22 @@ int main()
 
   {
     std::u16string output;
-    output += boost::string16_il{ 123 };
+    output += boost::listf16{ 123 };
     BOOST_TEST(output == u"123");
   }
   {
     std::u16string output;
-    output += boost::string16_il{ -123 };
+    output += boost::listf16{ -123 };
     BOOST_TEST(output == u"-123");
   }
   {
     std::u32string output;
-    output += boost::string32_il{ 123 };
+    output += boost::listf32{ 123 };
     BOOST_TEST(output == U"123");
   }
   {
     std::u32string output;
-    output += boost::string32_il{ -123 };
+    output += boost::listf32{ -123 };
     BOOST_TEST(output == U"-123");
   }
 

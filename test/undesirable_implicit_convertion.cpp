@@ -43,7 +43,7 @@ struct ccc
 struct aaa_traits
 {
   template <typename charT, typename traits>
-  struct writer: public boost::string_il_writer_base<charT>
+  struct writer: public boost::listf_writer_base<charT>
   {
     writer(const aaa&)
     {
@@ -66,7 +66,7 @@ struct aaa_traits
 struct bbb_base_traits
 {
   template <typename charT, typename traits>
-  struct writer: public boost::string_il_writer_base<charT>
+  struct writer: public boost::listf_writer_base<charT>
   {
     writer(const bbb_base&)
     {
@@ -89,7 +89,7 @@ template <class T>
 struct bbb_traits
 {
   template <typename charT, typename traits>
-  struct writer: public boost::string_il_writer_base<charT>
+  struct writer: public boost::listf_writer_base<charT>
   {
     writer(bbb<T>)
     {
@@ -112,7 +112,7 @@ struct bbb_traits
 struct ccc_traits
 {
   template <typename charT, typename traits>
-  struct writer: public boost::string_il_writer_base<charT>
+  struct writer: public boost::listf_writer_base<charT>
   {
     writer(const ccc&)
     {
@@ -131,23 +131,23 @@ struct ccc_traits
   }; 
 };
 
-inline aaa_traits string_ini_list_argument_traits(aaa)
+inline aaa_traits listf_argument_traits(aaa)
 {
   return aaa_traits();
 }
 
-inline bbb_base_traits string_ini_list_argument_traits(const bbb_base&)
+inline bbb_base_traits listf_argument_traits(const bbb_base&)
 {
   return bbb_base_traits();
 }
 
 template <class T>
-inline bbb_traits<T> string_ini_list_argument_traits(bbb<T>)
+inline bbb_traits<T> listf_argument_traits(bbb<T>)
 {
   return bbb_traits<T>();
 }
 
-inline ccc_traits string_ini_list_argument_traits(ccc)
+inline ccc_traits listf_argument_traits(ccc)
 {
   return ccc_traits();
 }
@@ -156,7 +156,7 @@ int main()
 {
   bbb<double> bbb_instance;
   std::string output;
-  output += boost::string_il{bbb_instance};
+  output += boost::listf{bbb_instance};
   BOOST_TEST(output == "bbb");
 
   return boost::report_errors();

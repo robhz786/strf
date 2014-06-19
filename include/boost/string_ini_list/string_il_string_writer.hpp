@@ -10,10 +10,10 @@ namespace boost
 
   //--------------------------------------------------
   // std::string 
-  struct string_ini_lists_std_string_arg_traits
+  struct listf_std_string_arg_traits
   {
     template <class charT, class traits>
-    struct writer: public string_il_writer_base<charT>
+    struct writer: public listf_writer_base<charT>
     {
       const std::basic_string<charT, traits>& str;    
 
@@ -38,19 +38,19 @@ namespace boost
   
   template <class charT, class traits>
   inline
-  string_ini_lists_std_string_arg_traits 
-  string_ini_list_argument_traits(const std::basic_string<charT, traits>&)
+  listf_std_string_arg_traits 
+  listf_argument_traits(const std::basic_string<charT, traits>&)
   {
-    return string_ini_lists_std_string_arg_traits();
+    return listf_std_string_arg_traits();
   }
 
   //--------------------------------------------------
   // const charT* 
 
-  struct string_ini_lists_char_ptr_arg_traits
+  struct listf_char_ptr_arg_traits
   {
     template<typename charT,typename traits>
-    struct writer: string_il_writer_base<charT>
+    struct writer: listf_writer_base<charT>
     {
       const charT* str;    
 
@@ -75,10 +75,10 @@ namespace boost
 
   template <class charT>
   inline
-  string_ini_lists_char_ptr_arg_traits
-  string_ini_list_argument_traits(const charT*)
+  listf_char_ptr_arg_traits
+  listf_argument_traits(const charT*)
   {
-    return string_ini_lists_char_ptr_arg_traits();
+    return listf_char_ptr_arg_traits();
   }
 
 }; // namespace boost

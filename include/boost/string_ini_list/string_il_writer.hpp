@@ -8,10 +8,10 @@ namespace boost
 {
 
   template <typename charT>
-  class string_il_writer_base
+  class listf_writer_base
   {
   public:
-    virtual ~string_il_writer_base()=0;
+    virtual ~listf_writer_base()=0;
 
     /**
        return position after last written character
@@ -42,19 +42,19 @@ namespace boost
   };
 
   template <typename charT>
-  string_il_writer_base<charT>::~string_il_writer_base() 
+  listf_writer_base<charT>::~listf_writer_base() 
   {
   }
 
   //--------------------------------------------------
 
   template <typename T, typename charT, typename traits>
-  class string_il_writer : public string_il_writer_base<charT>
+  class listf_writer : public listf_writer_base<charT>
   {
     //This template class must be specialized for each type T.
     //type T must satisfy  is_same<T, remove_cv<remove_reference<T> > > 
 
-    string_il_writer(const T&){}
+    listf_writer(const T&){}
   };
 
 }; //namespace boost
