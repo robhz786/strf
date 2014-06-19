@@ -5,10 +5,10 @@ project
 
 import testing ;
 {
-test-suite "string_ini_list_tests"
+test-suite "listf_tests"
     : 
-      [ run string_il_string_writer_test.cpp ]
-      [ run string_il_int_writer_test.cpp ]
+      [ run listf_string_writer_test.cpp ]
+      [ run listf_int_writer_test.cpp ]
       [ run undesirable_implicit_convertion.cpp ]
     ;
 }

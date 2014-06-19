@@ -1,8 +1,8 @@
-#ifndef BOOST_STRING_INI_LIST_HPP_INCLUDED
-#define BOOST_STRING_INI_LIST_HPP_INCLUDED
+#ifndef BOOST_LISTF_HPP_INCLUDED
+#define BOOST_LISTF_HPP_INCLUDED
 
 #include <initializer_list>
-#include <boost/string_ini_list/detail/basic_string_il_element.hpp>
+#include <boost/listf/detail/basic_listf_element.hpp>
 
 namespace boost 
 {

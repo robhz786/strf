@@ -1,7 +1,8 @@
-#ifndef BOOST_STRING_IL_INT_WRITER_HPP_INCLUDED
-#define BOOST_STRING_IL_INT_WRITER_HPP_INCLUDED
+#ifndef BOOST_LISTF_INT_WRITER_HPP_INCLUDED
+#define BOOST_LISTF_INT_WRITER_HPP_INCLUDED
 
-#include <boost/string_ini_list/detail/characters_catalog.hpp>
+#include <boost/listf/detail/characters_catalog.hpp>
+#include <boost/listf/listf_writer_base.hpp>
 #include <type_traits>
 
 namespace boost

@@ -5,13 +5,13 @@
 #include <vector>
 #include <algorithm>
 #include <boost/timer/timer.hpp>
-#include <boost/string_ini_list.hpp>
+#include <boost/listf.hpp>
 
 
 
 static char buff[1000000];
 
-static long common_multiplier = 500000;
+static long common_multiplier = 200000;
 static long number_of_repetitions = 1000 * common_multiplier;
 
 using boost::timer::cpu_times;
@@ -122,7 +122,7 @@ int main()
 
 
 
-  number_of_repetitions = 100 * common_multiplier;
+  number_of_repetitions = 10 * common_multiplier;
   {
     std::string hello("hello");
     std::string fmt("%s");

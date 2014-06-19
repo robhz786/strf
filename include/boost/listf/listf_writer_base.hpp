@@ -1,7 +1,6 @@
-#ifndef BOOST_STRING_IL_WRITER_BASE_HPP_INCLUDED
-#define BOOST_STRING_IL_WRITER_BASE_HPP_INCLUDED
+#ifndef BOOST_LISTF_WRITER_BASE_HPP_INCLUDED
+#define BOOST_LISTF_WRITER_BASE_HPP_INCLUDED
 
-//#include <string>
 #include <cstddef>
 
 namespace boost 
@@ -52,7 +51,6 @@ namespace boost
   class listf_writer : public listf_writer_base<charT>
   {
     //This template class must be specialized for each type T.
-    //type T must satisfy  is_same<T, remove_cv<remove_reference<T> > > 
 
     listf_writer(const T&){}
   };

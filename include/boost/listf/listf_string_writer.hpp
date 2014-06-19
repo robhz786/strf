@@ -1,9 +1,9 @@
-#ifndef BOOST_STRING_IL_STRING_WRITER_HPP_INCLUDED
-#define BOOST_STRING_IL_STRING_WRITER_HPP_INCLUDED
+#ifndef BOOST_LISTF_STRING_WRITER_HPP_INCLUDED
+#define BOOST_LISTF_STRING_WRITER_HPP_INCLUDED
 
 #include <string>
 #include <algorithm>
-#include <boost/string_ini_list/string_il_writer.hpp>
+#include <boost/listf/listf_writer_base.hpp>
 
 namespace boost
 {

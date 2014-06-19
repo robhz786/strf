@@ -2,7 +2,7 @@
 #include <string.h>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/type_traits/is_same.hpp>
-#include <boost/string_ini_list.hpp>
+#include <boost/listf.hpp>
 
 template <typename charT, typename traits=std::char_traits<charT> >
 void test_std_basic_string()
