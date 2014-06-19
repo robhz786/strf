@@ -101,7 +101,18 @@ namespace boost
     str.resize(initial_length + (end_append - begin_append));
     return str;
   }
-
 };
+
+
+// BOOST_STRING_LITERAL: I dont know where to put this macro so I left it here.
+// example of how it can be used:
+// std::basic_string<someCharT> someString = BOOST_STRING_LITERAL(someCharT, "foobar");
+
+#define BOOST_STRING_LITERAL(charT, str)                                \
+  (::boost::is_same<charT, char32_t>::value ? reinterpret_cast<const charT*>(U ## str) : \
+   ::boost::is_same<charT, char16_t>::value ? reinterpret_cast<const charT*>(u ## str) : \
+   ::boost::is_same<charT, wchar_t>::value  ? reinterpret_cast<const charT*>(L ## str) : \
+   /*else: */                                 reinterpret_cast<const charT*>(str)) 
+
 
 #endif

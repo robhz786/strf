@@ -5,6 +5,7 @@
 #include <boost/type_traits/remove_reference.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/string_ini_list/string_il_string_writer.hpp>
+#include <boost/string_ini_list/string_il_int_writer.hpp>
 #include <boost/type_traits/is_base_of.hpp>
 
 #ifndef BOOST_MAX_SIZEOF_STRING_IL_WRITER
