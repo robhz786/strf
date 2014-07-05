@@ -12,7 +12,7 @@ template <typename charT,
 void test(intT value)
 {
   std::basic_string<charT, traits> result;
-  result += boost::basic_listf<charT, traits>{value};
+  result << boost::basic_listf<charT, traits>{value};
 
   std::basic_ostringstream<charT, traits> oss;
   oss.imbue(std::locale("C"));
@@ -42,30 +42,29 @@ int main()
   test_many_values<char>();
   test_many_values<wchar_t>();
  
-  // gcc 4.8 does not support well std::basic_ostringstream<char16_t> 
-  // and std::basic_ostringstream<char32_t> 
-
+  // gcc 4.8 does not support well std::basic_ostringstream
+  //  for char16_t char32_t 
   //test_many_values<char16_t>();
   //test_many_values<char32_t>();
 
   {
     std::u16string output;
-    output += boost::listf16{ 123 };
+    output << boost::listf16{ 123 };
     BOOST_TEST(output == u"123");
   }
   {
     std::u16string output;
-    output += boost::listf16{ -123 };
+    output << boost::listf16{ -123 };
     BOOST_TEST(output == u"-123");
   }
   {
     std::u32string output;
-    output += boost::listf32{ 123 };
+    output << boost::listf32{ 123 };
     BOOST_TEST(output == U"123");
   }
   {
     std::u32string output;
-    output += boost::listf32{ -123 };
+    output << boost::listf32{ -123 };
     BOOST_TEST(output == U"-123");
   }
 

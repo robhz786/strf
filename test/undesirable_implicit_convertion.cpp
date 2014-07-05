@@ -156,7 +156,7 @@ int main()
 {
   bbb<double> bbb_instance;
   std::string output;
-  output += boost::listf{bbb_instance};
+  output << boost::listf{bbb_instance};
   BOOST_TEST(output == "bbb");
 
   return boost::report_errors();

@@ -101,7 +101,7 @@ int main()
     }
     MEASURE_TIME2(1000)
     {
-      write(buff, boost::listf{"hello"});
+      buff << boost::listf{"hello"};
     }
     MEASURE_TIME3(1000)
     {
@@ -134,7 +134,7 @@ int main()
 
     MEASURE_TIME1(100)
     {
-      write(buff, boost::listf{hello});
+      buff << boost::listf{hello};
     }
     MEASURE_TIME2(25)
     {
@@ -166,7 +166,7 @@ int main()
 
     MEASURE_TIME1(40)
     {
-      write(buff, boost::listf{x});
+      buff << boost::listf{x};
     }
     MEASURE_TIME2(100)
     {

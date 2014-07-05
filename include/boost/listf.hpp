@@ -48,17 +48,6 @@ namespace boost
       *output = charT();
       return output;
     }
-
-    template<class Allocator>
-    void append_to(std::basic_string<charT, traits, Allocator>& str) const
-    {
-      std::size_t initial_length = str.length();
-      str.append(minimal_length(), charT());
-      charT* begin_append = & str[initial_length];
-      charT* end_append   = write_without_termination_char(begin_append);
-      str.resize(initial_length + (end_append - begin_append));
-    }
-
   };
 
   typedef basic_listf<char>      listf;
@@ -67,31 +56,26 @@ namespace boost
   typedef basic_listf<char32_t>  listf32;
 
 
-  template<typename charT, 
-           typename traits=std::char_traits<char> >
-  charT*
-  write(charT* output, 
-        const basic_listf<charT, traits>& inilist)
+  template<typename charT, typename traits>
+  charT* operator<<(charT* output, const basic_listf<charT, traits>& lsf)
   {
-    return inilist.write(output);
+    return lsf.write(output);
   }
 
 
-
-  template<typename charT,
-           typename traits,
-           typename Allocator>
+  template<typename charT, typename traits, typename Allocator>
   std::basic_string<charT, traits, Allocator>& 
-  operator+=(std::basic_string<charT, traits, Allocator>& str,
-             const basic_listf<charT, traits>& inilist)
+  operator<<(std::basic_string<charT, traits, Allocator>& str,
+             const basic_listf<charT, traits>& lsf)
   {
     std::size_t initial_length = str.length();
-    str.append(inilist.minimal_length(), charT());
+    str.append(lsf.minimal_length(), charT());
     charT* begin_append = & str[initial_length];
-    charT* end_append   = inilist.write_without_termination_char(begin_append);
+    charT* end_append   = lsf.write_without_termination_char(begin_append);
     str.resize(initial_length + (end_append - begin_append));
     return str;
   }
+
 };
 
 
