@@ -1,0 +1,8 @@
+    2.61  listf{"hello"}.minimal_length()
+      13  listf{"hello", "hello"}.minimal_length()
+    2.61  listf{string_with_1000_chars}.minimal_length()
+    2.61  listf{std_string_with_1000_chars}.minimal_length()
+    2.93  listf{25}.minimal_length()
+    19.5  listf{25, 25, 25}.minimal_length()
+    2.61  listf{INT_MAX}.minimal_length()
+    78.6  listf{INT_MAX, INT_MAX, INT_MAX}.minimal_length()

@@ -1,13 +1,14 @@
 #include <iostream>
-#include <iomanip>
+//#include <iomanip>
 #include <stdio.h>
-#include <string.h>
-#include <vector>
-#include <algorithm>
+//#include <string.h>
+#include <climits>
 #include <boost/timer/timer.hpp>
 #include <boost/listf.hpp>
-#include "measure_time.hpp"
+#include "loop_timer.hpp"
 
+#define PRINT_BENCHMARK(label)  \
+  BOOST_LOOP_TIMER(300, boost::timer::print_mean_time(label))
 
 void write_hello(char* out)
 {
@@ -23,15 +24,36 @@ int main()
 {
   using boost::listf;
   char buff[1000000];
+  char* char_ptr_output = buff;
 
+  std::cout << std::endl 
+            << "Copy from a string literal:" 
+            << std::endl;
+
+  PRINT_BENCHMARK("char_ptr_output << listf{\"hello\"}")
   {
-    MEASURE_TIME1  buff << listf{"hello"};
-    MEASURE_TIME2  write_hello(buff);
-    MEASURE_TIME3  sprintf(buff, "hello");
-    MEASURE_TIME4  sprintf(buff, "%s", "hello");
-    MEASURE_TIME5  strcpy(buff, "hello");
-    print_times(5);
+    char_ptr_output << listf{"hello"};
   }
+  PRINT_BENCHMARK("write_hello(char_ptr_output)")
+  {
+    write_hello(char_ptr_output);
+  }
+  PRINT_BENCHMARK("sprintf(char_ptr_output, \"hello\")")
+  {
+    sprintf(char_ptr_output, "hello");
+  }
+  PRINT_BENCHMARK("sprintf(char_ptr_output, \"%s\", \"hello\")")
+  {
+    sprintf(char_ptr_output, "%s", "hello");
+  }
+  PRINT_BENCHMARK("strcpy(char_ptr_output, \"hello\")")
+  {
+    strcpy(char_ptr_output, "hello");
+  }
+
+  std::cout << std::endl
+            << "Copy from a heap allocated short string:"
+            << std::endl;
   {
     std::string std_string_hello("hello");
     const char* hello = std_string_hello.c_str();
@@ -39,36 +61,114 @@ int main()
     std::string std_string_fmt("%s");
     const char* fmt = std_string_fmt.c_str();
 
-    MEASURE_TIME1  buff << listf{hello};
-    MEASURE_TIME2  sprintf(buff, hello);
-    MEASURE_TIME3  sprintf(buff, "%s", hello);
-    MEASURE_TIME4  sprintf(buff, fmt, hello);
-    MEASURE_TIME5  strcpy(buff, hello);
-    print_times(5);
+    PRINT_BENCHMARK("char_ptr_output << listf{hello}")
+    {
+      char_ptr_output << listf{hello};
+    }
+    PRINT_BENCHMARK("strcpy(char_ptr_output, hello)")
+    {
+      strcpy(char_ptr_output, hello);
+    }
+    PRINT_BENCHMARK("sprintf(char_ptr_output, hello)")
+    {
+      sprintf(char_ptr_output, hello);
+    }
+    PRINT_BENCHMARK("sprintf(char_ptr_output, \"%s\", hello)")
+    {
+      sprintf(char_ptr_output, "%s", hello);
+    }
+    PRINT_BENCHMARK("sprintf(char_ptr_output, fmt, hello)")
+    {
+      sprintf(char_ptr_output, fmt, hello);
+    }
   }
+
+  std::cout << std::endl 
+            << "Copy two strings" 
+            << std::endl;
+  PRINT_BENCHMARK("char_ptr_output << listf{\"hello\", \"hello\"}")
   {
-    int x = 12345;
-    std::string std_string_fmt("%d");
+    char_ptr_output << listf{"hello", "hello"};
+  }
+  PRINT_BENCHMARK("sprintf(char_ptr_output, \"%s%s\", \"hello\", \"hello\")")
+  {
+    sprintf(char_ptr_output, "%s%s", "hello", "hello");
+  }
+
+  std::cout << std::endl
+            << "Copy a long string ( 1000 characters ):"
+            << std::endl;
+  {
+    std::string std_string_long_string(1000, 'x');
+    const char* long_string = std_string_long_string.c_str();
+
+    std::string std_string_fmt("%s");
     const char* fmt = std_string_fmt.c_str();
-    MEASURE_TIME1  buff << listf{x};
-    MEASURE_TIME2  sprintf(buff, "%d", 12345);
-    MEASURE_TIME3  sprintf(buff, "%d", x);
-    MEASURE_TIME4  sprintf(buff, fmt, x);
-    print_times(4);
+
+    PRINT_BENCHMARK("char_ptr_output << listf{long_string}")
+    {
+      char_ptr_output << listf{long_string};
+    }
+    PRINT_BENCHMARK("strcpy(char_ptr_output, long_string)")
+    {
+      strcpy(char_ptr_output, long_string);
+    }
+    PRINT_BENCHMARK("sprintf(char_ptr_output, long_string)")
+    {
+      sprintf(char_ptr_output, long_string);
+    }
+    PRINT_BENCHMARK("sprintf(char_ptr_output, \"%s\", long_string)")
+    {
+      sprintf(char_ptr_output, "%s", long_string);
+    }
+    PRINT_BENCHMARK("sprintf(char_ptr_output, fmt, long_string)")
+    {
+      sprintf(char_ptr_output, fmt, long_string);
+    }
   }
+  std::cout << std::endl
+            << "write integers" 
+            << std::endl;
+  PRINT_BENCHMARK("char_ptr_output << listf{25}")
   {
-    MEASURE_TIME1  buff << listf{12345, "  ", 12345};
-    MEASURE_TIME2  sprintf(buff, "%d  %d", 12345, 12345);
-    print_times(2);
+    char_ptr_output << listf{25};
   }
-
+  PRINT_BENCHMARK("char_ptr_output << listf{25, 25, 25}")
   {
-    MEASURE_TIME1  buff << listf{"ten =  ", 10, ", twenty = ", 20};
-    MEASURE_TIME2  sprintf(buff, "ten = %d, twenty= %d", 10, 20);
-    print_times(2);
+    char_ptr_output << listf{25, 25, 25};
   }
-
-
+  PRINT_BENCHMARK("char_ptr_output << listf{INT_MAX}")
+  {
+    char_ptr_output << listf{INT_MAX};
+  }
+  PRINT_BENCHMARK("char_ptr_output << listf{INT_MAX, INT_MAX, INT_MAX}")
+  {
+    char_ptr_output << listf{INT_MAX, INT_MAX, INT_MAX};
+  }
+  PRINT_BENCHMARK("char_ptr_output << listf{\"ten =  \", 10, \", twenty = \", 20}")
+  {
+    char_ptr_output << listf{"ten =  ", 10, ", twenty = ", 20};
+  }
+  PRINT_BENCHMARK("sprintf(char_ptr_output, \"%d\", 25)")
+  {
+    sprintf(char_ptr_output, "%d", 12345);
+  }
+  PRINT_BENCHMARK("sprintf(char_ptr_output, \"%d%d%d\", 25, 25)")
+  {
+    sprintf(char_ptr_output, "%d%d%d", 25, 25, 25);
+  }
+  PRINT_BENCHMARK("sprintf(char_ptr_output, \"%d\", INT_MAX)")
+  {
+    sprintf(char_ptr_output, "%d", INT_MAX);
+  }
+  PRINT_BENCHMARK("sprintf(char_ptr_output, \"%d%d%d\", INT_MAX, INT_MAX, INT_MAX)")
+  {
+    sprintf(char_ptr_output, "%d%d%d", INT_MAX, INT_MAX, INT_MAX);
+  }
+  PRINT_BENCHMARK("sprintf(char_ptr_output, \"ten = %d, twenty= %d\", 10, 20)")
+  {
+    sprintf(char_ptr_output, "ten = %d, twenty= %d", 10, 20);
+  }
 
   return 1;
 }

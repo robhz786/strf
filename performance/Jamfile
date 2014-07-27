@@ -4,5 +4,32 @@ project
     : default-build release
     ;
 
-run versus_sprintf.cpp /boost//timer : : : : versus_sprintf ;
+lib loop_timer
+    : loop_timer.cpp
+    ;
+
+exe versus_sprintf
+    : versus_sprintf.cpp
+      loop_timer/<link>static
+      /boost//timer
+    ;
+
+exe calculate_size
+    : calculate_size.cpp
+      loop_timer/<link>static
+      /boost//timer
+    ;
+
+exe tmp_tests
+    : tmp_tests.cpp
+      loop_timer/<link>static
+      /boost//timer
+    ;
+
+install ./out 
+    : versus_sprintf
+      calculate_size
+      tmp_tests
+    ;
+
 
