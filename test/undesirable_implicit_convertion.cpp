@@ -1,5 +1,5 @@
 #include <boost/detail/lightweight_test.hpp>
-#include <boost/listf.hpp>
+#include <boost/rose/listf.hpp>
 
 
 struct aaa
@@ -43,7 +43,7 @@ struct ccc
 struct aaa_traits
 {
   template <typename charT, typename traits>
-  struct writer: public boost::listf_writer_base<charT>
+  struct writer: public boost::rose::listf_writer_base<charT>
   {
     writer(const aaa&)
     {
@@ -66,7 +66,7 @@ struct aaa_traits
 struct bbb_base_traits
 {
   template <typename charT, typename traits>
-  struct writer: public boost::listf_writer_base<charT>
+  struct writer: public boost::rose::listf_writer_base<charT>
   {
     writer(const bbb_base&)
     {
@@ -89,7 +89,7 @@ template <class T>
 struct bbb_traits
 {
   template <typename charT, typename traits>
-  struct writer: public boost::listf_writer_base<charT>
+  struct writer: public boost::rose::listf_writer_base<charT>
   {
     writer(bbb<T>)
     {
@@ -112,7 +112,7 @@ struct bbb_traits
 struct ccc_traits
 {
   template <typename charT, typename traits>
-  struct writer: public boost::listf_writer_base<charT>
+  struct writer: public boost::rose::listf_writer_base<charT>
   {
     writer(const ccc&)
     {
@@ -156,7 +156,7 @@ int main()
 {
   bbb<double> bbb_instance;
   std::string output;
-  output << boost::listf{bbb_instance};
+  output << boost::rose::listf{bbb_instance};
   BOOST_TEST(output == "bbb");
 
   return boost::report_errors();

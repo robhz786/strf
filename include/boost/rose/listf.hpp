@@ -2,9 +2,11 @@
 #define BOOST_LISTF_HPP_INCLUDED
 
 #include <initializer_list>
-#include <boost/listf/detail/basic_listf_element.hpp>
+#include <boost/rose/detail/basic_listf_element.hpp>
 
-namespace boost 
+namespace boost
+{
+namespace rose
 {
   template <typename charT, typename traits=std::char_traits<charT> >
   class basic_listf
@@ -76,7 +78,8 @@ namespace boost
     return str;
   }
 
-};
+} // namespace rose
+} // namespace boost
 
 
 // BOOST_STRING_LITERAL: I dont know where to put this macro so I left it here.

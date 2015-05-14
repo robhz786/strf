@@ -2,14 +2,14 @@
 #include <string.h>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/type_traits/is_same.hpp>
-#include <boost/listf.hpp>
+#include <boost/rose/listf.hpp>
 
 template <typename charT, typename traits=std::char_traits<charT> >
 void test_std_basic_string()
 {
   std::basic_string<charT> output;
   std::basic_string<charT> input = BOOST_STRING_LITERAL(charT, "asdfghjl");
-  typedef boost::basic_listf<charT, traits> gen_listf;
+  typedef boost::rose::basic_listf<charT, traits> gen_listf;
 
   output << gen_listf{input};
   BOOST_TEST(output == input);
@@ -32,21 +32,21 @@ void test_char_ptr()
   char * non_const_charT_ptr   = non_const_charT_arr;
   const char* const_charT_ptr  = "blablabla";
 
-  output << boost::listf({non_const_charT_arr});
+  output << boost::rose::listf({non_const_charT_arr});
   BOOST_TEST(output == non_const_charT_arr);
 
   output.clear();
-  output << boost::listf{non_const_charT_ptr};
+  output << boost::rose::listf{non_const_charT_ptr};
   BOOST_TEST(output == non_const_charT_ptr);
 
 
   output.clear();
-  output << boost::listf{const_charT_ptr};
+  output << boost::rose::listf{const_charT_ptr};
   BOOST_TEST(output == const_charT_ptr);
 
 
   output.clear();
-  output << boost::listf
+  output << boost::rose::listf
   {  
      non_const_charT_arr,
      const_charT_ptr,
@@ -70,7 +70,7 @@ int main()
 
   //todo: try to simplify compile error message on invalid types:
   //std::string output;
-  //output << boost::listf{L"asdf"};
+  //output << boost::rose::listf{L"asdf"};
 
 
   return  boost::report_errors();

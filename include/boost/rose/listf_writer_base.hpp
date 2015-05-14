@@ -3,7 +3,9 @@
 
 #include <cstddef>
 
-namespace boost 
+namespace boost
+{
+namespace rose 
 {
 
   template <typename charT>
@@ -55,7 +57,8 @@ namespace boost
     listf_writer(const T&){}
   };
 
-}; //namespace boost
+} //namespace rose
+} //namespace boost
 
 
 #endif

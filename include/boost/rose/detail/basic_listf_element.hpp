@@ -4,8 +4,8 @@
 #include <boost/type_traits/remove_cv.hpp>
 #include <boost/type_traits/remove_reference.hpp>
 #include <boost/static_assert.hpp>
-#include <boost/listf/listf_string_writer.hpp>
-#include <boost/listf/listf_int_writer.hpp>
+#include <boost/rose/listf_string_writer.hpp>
+#include <boost/rose/listf_int_writer.hpp>
 #include <boost/type_traits/is_base_of.hpp>
 
 #ifndef BOOST_MAX_SIZEOF_LISTF_WRITER
@@ -13,6 +13,8 @@
 #endif
 
 namespace boost
+{
+namespace rose
 {
 namespace detail
 {
@@ -76,7 +78,7 @@ namespace detail
       construct_writer<T, writer_t>(argument);
     }
 */
-
+/*
     template <class DERIVED_WRITER>
     struct is_aligned_with_base
     {
@@ -85,7 +87,7 @@ namespace detail
       static constexpr bool value = (reinterpret_cast<void*>(some_addr) == 
                                      reinterpret_cast<void*>(base_addr)); 
     };
-
+*/
 /*
     template <class T, class writer_t>
     void construct_writer(const T& argument)
@@ -117,11 +119,11 @@ namespace detail
     void verify_arg_writer_type()
     {
       BOOST_STATIC_ASSERT(sizeof(arg_writer_type) <= BOOST_MAX_SIZEOF_LISTF_WRITER);
-      BOOST_STATIC_ASSERT(is_aligned_with_base<arg_writer_type>::value);
     }
     
   };
 }; //namespace detail
+}; //namespace rose
 }; //namespace boost
 
 

@@ -3,9 +3,11 @@
 
 #include <string>
 #include <algorithm>
-#include <boost/listf/listf_writer_base.hpp>
+#include <boost/rose/listf_writer_base.hpp>
 
 namespace boost
+{
+namespace rose
 {
 
   //--------------------------------------------------
@@ -81,7 +83,8 @@ namespace boost
     return listf_char_ptr_arg_traits();
   }
 
-}; // namespace boost
+} // namespace rose
+} // namespace boost
 
 
 #endif

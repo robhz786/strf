@@ -1,5 +1,5 @@
 #include <boost/detail/lightweight_test.hpp>
-#include <boost/listf.hpp>
+#include <boost/rose/listf.hpp>
 #include <limits>
 #include <locale>
 #include <sstream>
@@ -12,7 +12,7 @@ template <typename charT,
 void test(intT value)
 {
   std::basic_string<charT, traits> result;
-  result << boost::basic_listf<charT, traits>{value};
+  result << boost::rose::basic_listf<charT, traits>{value};
 
   std::basic_ostringstream<charT, traits> oss;
   oss.imbue(std::locale("C"));
@@ -49,22 +49,22 @@ int main()
 
   {
     std::u16string output;
-    output << boost::listf16{ 123 };
+    output << boost::rose::listf16{ 123 };
     BOOST_TEST(output == u"123");
   }
   {
     std::u16string output;
-    output << boost::listf16{ -123 };
+    output << boost::rose::listf16{ -123 };
     BOOST_TEST(output == u"-123");
   }
   {
     std::u32string output;
-    output << boost::listf32{ 123 };
+    output << boost::rose::listf32{ 123 };
     BOOST_TEST(output == U"123");
   }
   {
     std::u32string output;
-    output << boost::listf32{ -123 };
+    output << boost::rose::listf32{ -123 };
     BOOST_TEST(output == U"-123");
   }
 

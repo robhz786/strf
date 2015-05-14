@@ -1,11 +1,13 @@
 #ifndef BOOST_LISTF_INT_WRITER_HPP_INCLUDED
 #define BOOST_LISTF_INT_WRITER_HPP_INCLUDED
 
-#include <boost/listf/detail/characters_catalog.hpp>
-#include <boost/listf/listf_writer_base.hpp>
+#include <boost/rose/detail/characters_catalog.hpp>
+#include <boost/rose/listf_writer_base.hpp>
 #include <type_traits>
 
 namespace boost
+{
+namespace rose
 {
   template <typename intT>
   struct listf_int_arg_traits
@@ -111,6 +113,7 @@ namespace boost
     return listf_int_arg_traits<unsigned long long>();
   }
 
+}//namespace rose
 }//namespace boost
 
 
