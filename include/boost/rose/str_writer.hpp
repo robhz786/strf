@@ -19,9 +19,9 @@ namespace rose
     /**
        return position after last written character
      */
-    virtual charT* write_without_termination_char(charT* output) const =0;
+    virtual charT* write_without_termination_char(charT* output) const noexcept =0;
 
-    charT* write(charT* output) const
+    charT* write(charT* output) const noexcept
     {
       charT* end = write_without_termination_char(output);
       *end = charT();
@@ -35,9 +35,9 @@ namespace rose
        difficult. But it must be greater or equal. And should not
        be much greater.
      */
-    virtual std::size_t minimal_length() const = 0;
+    virtual std::size_t minimal_length() const noexcept = 0;
 
-    std::size_t minimal_size() const
+    std::size_t minimal_size() const noexcept
     {
       return 1 + minimal_length();
     }
@@ -45,7 +45,7 @@ namespace rose
 
 
   template<typename charT>
-  charT* operator<<(charT* output, const str_writer<charT>& lsf)
+  charT* operator<<(charT* output, const str_writer<charT>& lsf) noexcept
   {
     return lsf.write(output);
   }

@@ -1,5 +1,5 @@
-#ifndef BOOST_LISTF_HPP_INCLUDED
-#define BOOST_LISTF_HPP_INCLUDED
+#ifndef BOOST_ROSE_LISTF_HPP_INCLUDED
+#define BOOST_ROSE_LISTF_HPP_INCLUDED
 
 #include <initializer_list>
 #include <boost/rose/str_writer.hpp>
@@ -15,7 +15,7 @@ namespace rose
 
     struct str_writer_ref
     {
-      str_writer_ref(const str_writer<charT>& w): writer(w) {}
+      str_writer_ref(const str_writer<charT>& w) noexcept: writer(w) {}
 
       template <class T>
       using str_writer_of = decltype(basic_argf<charT, traits>(*(const T*)(0)));
@@ -23,7 +23,8 @@ namespace rose
       template <typename T>
       str_writer_ref(
         const T& value,
-        str_writer_of<T> && wt = str_writer_of<T>()):
+        str_writer_of<T> && wt = str_writer_of<T>())
+      noexcept :
         writer(wt)
       {
         wt.set(value);
@@ -41,12 +42,12 @@ namespace rose
 
   public:
 
-    basic_listf(const initializer_list_type& _inilist):
+    basic_listf(const initializer_list_type& _inilist) noexcept:
       inilist(_inilist)
     {
     }
 
-    virtual std::size_t minimal_length() const
+    virtual std::size_t minimal_length() const noexcept
     {
       std::size_t sum=0;
       for(auto it = inilist.begin(); it != inilist.end(); ++it)
@@ -57,7 +58,7 @@ namespace rose
     }
 
 
-    virtual charT* write_without_termination_char(charT* output) const
+    virtual charT* write_without_termination_char(charT* output) const noexcept
     {
       for(auto it = inilist.begin(); it != inilist.end(); ++it)
       {

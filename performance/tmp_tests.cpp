@@ -23,6 +23,7 @@ int main()
   std::cout << std::endl
             << "write integers" 
             << std::endl;
+/*
   PRINT_BENCHMARK("char_ptr_output << argf(25)")
   {
     char_ptr_output << argf(25);
@@ -39,16 +40,51 @@ int main()
   {
     char_ptr_output << listf{INT_MAX};
   }
-  PRINT_BENCHMARK("char_ptr_output << argf(LLONG_MAX)")
+*/
+  long long x = LLONG_MIN + 10;
+  long long n = 0;
+  PRINT_BENCHMARK("char_ptr_output << argf(LLONG_MIN)")
   {
-    char_ptr_output << argf(LLONG_MAX);
+    x += (++n % 2) ? +1 : -1;
+    char_ptr_output << argf(x);
   }
-  PRINT_BENCHMARK("char_ptr_output << listf{LLONG_MAX}")
+  x = LLONG_MIN + 10;
+  n = 0;
+  PRINT_BENCHMARK("char_ptr_output << listf{LLONG_MIN}")
   {
-    char_ptr_output << listf{LLONG_MAX};
+    x += (++n % 2) ? +1 : -1;
+    char_ptr_output << listf{x};
   }
-
+  x = LLONG_MIN + 10;
+  n = 0;
+  PRINT_BENCHMARK("sprintf(char_ptr_output, ,LLONG_MIN, LLONG_MIN, LLONG_MIN, LLONG_MIN, LLONG_MIN, LLONG_MIN)")
+  {
+    x += (++n % 2) ? +1 : -1;
+    sprintf(char_ptr_output, "%lld%lld%lld%lld%lld%lld", x+1 , x+2, x+3, x+4, x+5, x+6);
+  }
+  x = LLONG_MIN + 10;
+  n = 0;
+  PRINT_BENCHMARK("char_ptr_output << listf{LLONG_MIN, LLONG_MIN, LLONG_MIN, LLONG_MIN, LLONG_MIN, LLONG_MIN}")
+  {
+    x += (++n % 2) ? +1 : -1; // avoid some "unfair" compiler optimizations ( clang )
+    char_ptr_output << listf{x+1 , x+2, x+3, x+4, x+5, x+6};
+  }
+//  std::cout << char_ptr_output << "    " << n << std::endl;
 
 
   return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

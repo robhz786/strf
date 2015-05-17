@@ -137,10 +137,10 @@ namespace timer
 } // namepace boost
 
 
-#define BOOST_LOOP_TIMER(size, result_handler)                  \
-  for(boost::timer::loop_timer lp(size, result_handler);        \
-      ! lp.finished();                                          \
-      lp.on_end_of_each_iteration())
+#define BOOST_LOOP_TIMER(size, result_handler)                           \
+  for(boost::timer::loop_timer boost_loop_timer(size, result_handler);   \
+      ! boost_loop_timer.finished();                                     \
+      boost_loop_timer.on_end_of_each_iteration())
 
 
 #endif
