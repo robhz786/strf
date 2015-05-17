@@ -11,19 +11,19 @@ lib loop_timer
 exe versus_sprintf
     : versus_sprintf.cpp
       loop_timer/<link>static
-      /boost//timer
+      /boost//timer/<link>static
     ;
 
 exe calculate_size
     : calculate_size.cpp
       loop_timer/<link>static
-      /boost//timer
+      /boost//timer/<link>static
     ;
 
 exe tmp_tests
     : tmp_tests.cpp
       loop_timer/<link>static
-      /boost//timer
+      /boost//timer/<link>static
     ;
 
 install ./out 

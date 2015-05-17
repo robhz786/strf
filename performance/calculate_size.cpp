@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <climits>
 #include <boost/timer/timer.hpp>
-#include <boost/rose/listf.hpp>
+#include <boost/rose.hpp>
 #include "loop_timer.hpp"
 
 #define PRINT_BENCHMARK(label)  \

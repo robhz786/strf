@@ -2,7 +2,7 @@
 #include <string.h>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/type_traits/is_same.hpp>
-#include <boost/rose/listf.hpp>
+#include <boost/rose.hpp>
 
 template <typename charT, typename traits=std::char_traits<charT> >
 void test_std_basic_string()
@@ -27,6 +27,7 @@ void test_std_basic_string()
 
 void test_char_ptr()
 {
+
   std::string output;
   char   non_const_charT_arr[] = "hello";
   char * non_const_charT_ptr   = non_const_charT_arr;

@@ -4,11 +4,11 @@
 //#include <string.h>
 #include <climits>
 #include <boost/timer/timer.hpp>
-#include <boost/rose/listf.hpp>
+#include <boost/rose.hpp>
 #include "loop_timer.hpp"
 
 #define PRINT_BENCHMARK(label)  \
-  BOOST_LOOP_TIMER(300, boost::timer::print_mean_time(label))
+  BOOST_LOOP_TIMER(500, boost::timer::print_mean_time(label))
 
 void write_hello(char* out)
 {
@@ -23,6 +23,7 @@ void write_hello(char* out)
 int main()
 {
   using boost::rose::listf;
+  using boost::rose::argf;
   char buff[1000000];
   char* char_ptr_output = buff;
 
@@ -30,6 +31,10 @@ int main()
             << "Copy from a string literal:" 
             << std::endl;
 
+  PRINT_BENCHMARK("char_ptr_output << argf(\"hello\")")
+  {
+    char_ptr_output << argf("hello");
+  }
   PRINT_BENCHMARK("char_ptr_output << listf{\"hello\"}")
   {
     char_ptr_output << listf{"hello"};
@@ -61,6 +66,11 @@ int main()
     std::string std_string_fmt("%s");
     const char* fmt = std_string_fmt.c_str();
 
+
+    PRINT_BENCHMARK("char_ptr_output << argf(hello)")
+    {
+      char_ptr_output << argf(hello);
+    }
     PRINT_BENCHMARK("char_ptr_output << listf{hello}")
     {
       char_ptr_output << listf{hello};
@@ -86,6 +96,10 @@ int main()
   std::cout << std::endl 
             << "Copy two strings" 
             << std::endl;
+  PRINT_BENCHMARK("char_ptr_output << argf(\"hello\") << argf(\"hello\")")
+  {
+    char_ptr_output << argf("hello") << argf("hello");
+  }
   PRINT_BENCHMARK("char_ptr_output << listf{\"hello\", \"hello\"}")
   {
     char_ptr_output << listf{"hello", "hello"};
@@ -105,6 +119,10 @@ int main()
     std::string std_string_fmt("%s");
     const char* fmt = std_string_fmt.c_str();
 
+    PRINT_BENCHMARK("char_ptr_output << argf(long_string)")
+    {
+      char_ptr_output << argf(long_string);
+    }
     PRINT_BENCHMARK("char_ptr_output << listf{long_string}")
     {
       char_ptr_output << listf{long_string};
@@ -126,44 +144,84 @@ int main()
       sprintf(char_ptr_output, fmt, long_string);
     }
   }
+
   std::cout << std::endl
             << "write integers" 
             << std::endl;
+  PRINT_BENCHMARK("char_ptr_output << argf(25)")
+  {
+    char_ptr_output << argf(25);
+  }
   PRINT_BENCHMARK("char_ptr_output << listf{25}")
   {
     char_ptr_output << listf{25};
-  }
-  PRINT_BENCHMARK("char_ptr_output << listf{25, 25, 25}")
-  {
-    char_ptr_output << listf{25, 25, 25};
-  }
-  PRINT_BENCHMARK("char_ptr_output << listf{INT_MAX}")
-  {
-    char_ptr_output << listf{INT_MAX};
-  }
-  PRINT_BENCHMARK("char_ptr_output << listf{INT_MAX, INT_MAX, INT_MAX}")
-  {
-    char_ptr_output << listf{INT_MAX, INT_MAX, INT_MAX};
-  }
-  PRINT_BENCHMARK("char_ptr_output << listf{\"ten =  \", 10, \", twenty = \", 20}")
-  {
-    char_ptr_output << listf{"ten =  ", 10, ", twenty = ", 20};
   }
   PRINT_BENCHMARK("sprintf(char_ptr_output, \"%d\", 25)")
   {
     sprintf(char_ptr_output, "%d", 12345);
   }
-  PRINT_BENCHMARK("sprintf(char_ptr_output, \"%d%d%d\", 25, 25)")
+  std::cout << std::endl;
+  PRINT_BENCHMARK("char_ptr_output << argf(INT_MAX)")
   {
-    sprintf(char_ptr_output, "%d%d%d", 25, 25, 25);
+    char_ptr_output << argf(INT_MAX);
+  }
+  PRINT_BENCHMARK("char_ptr_output << listf{INT_MAX}")
+  {
+    char_ptr_output << listf{INT_MAX};
   }
   PRINT_BENCHMARK("sprintf(char_ptr_output, \"%d\", INT_MAX)")
   {
     sprintf(char_ptr_output, "%d", INT_MAX);
   }
-  PRINT_BENCHMARK("sprintf(char_ptr_output, \"%d%d%d\", INT_MAX, INT_MAX, INT_MAX)")
+  std::cout << std::endl;
+  PRINT_BENCHMARK("char_ptr_output << argf(LLONG_MAX)")
   {
-    sprintf(char_ptr_output, "%d%d%d", INT_MAX, INT_MAX, INT_MAX);
+    char_ptr_output << argf(LLONG_MAX);
+  }
+  PRINT_BENCHMARK("char_ptr_output << listf{LLONG_MAX}")
+  {
+    char_ptr_output << listf{LLONG_MAX};
+  }
+  PRINT_BENCHMARK("sprintf(char_ptr_output, \"%lld\", LLONG_MAX)")
+  {
+    sprintf(char_ptr_output, "%lld", LLONG_MAX);
+  }
+  std::cout << std::endl;
+  PRINT_BENCHMARK("char_ptr_output << argf(25) << argf(25) << argf(25)")
+  {
+    char_ptr_output << argf(25)  << argf(25) << argf(25);
+  }
+  PRINT_BENCHMARK("char_ptr_output << listf{25, 25, 25}")
+  {
+    char_ptr_output << listf{25, 25, 25};
+  }
+  PRINT_BENCHMARK("sprintf(char_ptr_output, \"%d%d%d\", 25, 25, 25)")
+  {
+    sprintf(char_ptr_output, "%d%d%d", 25, 25, 25);
+  }
+  std::cout << std::endl;
+  PRINT_BENCHMARK("char_ptr_output << argf(LLONG_MAX) << argf(LLONG_MAX) << argf(LLONG_MAX)")
+  {
+    char_ptr_output << argf(LLONG_MAX)  << argf(LLONG_MAX) << argf(LLONG_MAX);
+  }
+  PRINT_BENCHMARK("char_ptr_output << listf{LLONG_MAX, LLONG_MAX, LLONG_MAX}")
+  {
+    char_ptr_output << listf{LLONG_MAX, LLONG_MAX, LLONG_MAX};
+  }
+  PRINT_BENCHMARK("sprintf(char_ptr_output, \"%d%d%d\", LLONG_MAX, LLONG_MAX, LLONG_MAX)")
+  {
+    sprintf(char_ptr_output, "%lld%lld%lld", LLONG_MAX, LLONG_MAX, LLONG_MAX);
+  }
+  std::cout << std::endl;
+  PRINT_BENCHMARK("char_ptr_output << argf(\"ten =  \") << argf(10)"
+                  " << argf(\", twenty = \") << argf(20)")
+  {
+    char_ptr_output << argf("ten =  ") << argf(10)
+                    << argf(", twenty = ") << argf(20);
+  }
+  PRINT_BENCHMARK("char_ptr_output << listf{\"ten =  \", 10, \", twenty = \", 20}")
+  {
+    char_ptr_output << listf{"ten =  ", 10, ", twenty = ", 20};
   }
   PRINT_BENCHMARK("sprintf(char_ptr_output, \"ten = %d, twenty= %d\", 10, 20)")
   {

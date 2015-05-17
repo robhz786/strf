@@ -1,5 +1,5 @@
-#ifndef BOOST_LISTF_WRITER_BASE_HPP_INCLUDED
-#define BOOST_LISTF_WRITER_BASE_HPP_INCLUDED
+#ifndef BOOST_ROSE_STR_WRITER_HPP_INCLUDED
+#define BOOST_ROSE_STR_WRITER_HPP_INCLUDED
 
 #include <cstddef>
 
@@ -9,10 +9,12 @@ namespace rose
 {
 
   template <typename charT>
-  class listf_writer_base
+  class str_writer
   {
   public:
-    virtual ~listf_writer_base()=0;
+    virtual ~str_writer()
+    {
+    }
 
     /**
        return position after last written character
@@ -39,23 +41,28 @@ namespace rose
     {
       return 1 + minimal_length();
     }
-
   };
 
-  template <typename charT>
-  listf_writer_base<charT>::~listf_writer_base() 
+
+  template<typename charT>
+  charT* operator<<(charT* output, const str_writer<charT>& lsf)
   {
+    return lsf.write(output);
   }
 
-  //--------------------------------------------------
 
-  template <typename T, typename charT, typename traits>
-  class listf_writer : public listf_writer_base<charT>
+  template<typename charT, typename traits, typename Allocator>
+  std::basic_string<charT, traits, Allocator>& 
+  operator<<(std::basic_string<charT, traits, Allocator>& str,
+             const str_writer<charT>& writer)
   {
-    //This template class must be specialized for each type T.
-
-    listf_writer(const T&){}
-  };
+    std::size_t initial_length = str.length();
+    str.append(writer.minimal_length(), charT());
+    charT* begin_append = & str[initial_length];
+    charT* end_append   = writer.write_without_termination_char(begin_append);
+    str.resize(initial_length + (end_append - begin_append));
+    return str;
+  }
 
 } //namespace rose
 } //namespace boost

@@ -2,17 +2,39 @@
 #define BOOST_LISTF_HPP_INCLUDED
 
 #include <initializer_list>
-#include <boost/rose/detail/basic_listf_element.hpp>
+#include <boost/rose/str_writer.hpp>
+#include <boost/rose/argf.hpp>
 
 namespace boost
 {
 namespace rose
 {
   template <typename charT, typename traits=std::char_traits<charT> >
-  class basic_listf
+  class basic_listf: public str_writer<charT>
   {
+
+    struct str_writer_ref
+    {
+      str_writer_ref(const str_writer<charT>& w): writer(w) {}
+
+      template <class T>
+      using str_writer_of = decltype(basic_argf<charT, traits>(*(const T*)(0)));
+
+      template <typename T>
+      str_writer_ref(
+        const T& value,
+        str_writer_of<T> && wt = str_writer_of<T>()):
+        writer(wt)
+      {
+        wt.set(value);
+      }
+
+      const str_writer<charT>& writer;
+    };
+
+
     typedef 
-      std::initializer_list<detail::basic_listf_element<charT, traits> >
+      std::initializer_list<str_writer_ref >
       initializer_list_type;
 
     const initializer_list_type inilist;
@@ -24,30 +46,23 @@ namespace rose
     {
     }
 
-    std::size_t minimal_length() const
+    virtual std::size_t minimal_length() const
     {
       std::size_t sum=0;
       for(auto it = inilist.begin(); it != inilist.end(); ++it)
       {
-        sum += it->minimal_length();
+        sum += it->writer.minimal_length();
       }
       return sum;
     }
 
 
-    charT* write_without_termination_char(charT* output) const
+    virtual charT* write_without_termination_char(charT* output) const
     {
       for(auto it = inilist.begin(); it != inilist.end(); ++it)
       {
-        output = it->write_without_termination_char(output);
+        output = it->writer.write_without_termination_char(output);
       }
-      return output;
-    }
-
-    charT* write(charT* output) const
-    {
-      output = write_without_termination_char(output);
-      *output = charT();
       return output;
     }
   };
@@ -56,28 +71,6 @@ namespace rose
   typedef basic_listf<wchar_t>   wlistf;
   typedef basic_listf<char16_t>  listf16;
   typedef basic_listf<char32_t>  listf32;
-
-
-  template<typename charT, typename traits>
-  charT* operator<<(charT* output, const basic_listf<charT, traits>& lsf)
-  {
-    return lsf.write(output);
-  }
-
-
-  template<typename charT, typename traits, typename Allocator>
-  std::basic_string<charT, traits, Allocator>& 
-  operator<<(std::basic_string<charT, traits, Allocator>& str,
-             const basic_listf<charT, traits>& lsf)
-  {
-    std::size_t initial_length = str.length();
-    str.append(lsf.minimal_length(), charT());
-    charT* begin_append = & str[initial_length];
-    charT* end_append   = lsf.write_without_termination_char(begin_append);
-    str.resize(initial_length + (end_append - begin_append));
-    return str;
-  }
-
 } // namespace rose
 } // namespace boost
 

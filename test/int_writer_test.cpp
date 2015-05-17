@@ -1,5 +1,5 @@
 #include <boost/detail/lightweight_test.hpp>
-#include <boost/rose/listf.hpp>
+#include <boost/rose.hpp>
 #include <limits>
 #include <locale>
 #include <sstream>

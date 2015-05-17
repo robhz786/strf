@@ -4,7 +4,7 @@
 #include <string.h>
 #include <climits>
 #include <boost/timer/timer.hpp>
-#include <boost/rose/listf.hpp>
+#include <boost/rose.hpp>
 #include "loop_timer.hpp"
 
 #define PRINT_BENCHMARK(label)  \
@@ -12,22 +12,43 @@
 
 int main()
 {
-  using boost::rose::listf;
+  using namespace boost::rose;
   char buff[1000000];
   char* char_ptr_output = buff;
 
   // std::string std_string_hello("hello");
   // const char* hello = std_string_hello.c_str();
 
-  PRINT_BENCHMARK("sprintf(char_ptr_output, \"%s%s\", \"hello\", \"hello\")")
+
+  std::cout << std::endl
+            << "write integers" 
+            << std::endl;
+  PRINT_BENCHMARK("char_ptr_output << argf(25)")
   {
-    sprintf(char_ptr_output, "%s%s", "hello", "hello");
+    char_ptr_output << argf(25);
+  }
+  PRINT_BENCHMARK("char_ptr_output << listf{25}")
+  {
+    char_ptr_output << listf{25};
+  }
+  PRINT_BENCHMARK("char_ptr_output << argf(INT_MAX)")
+  {
+    char_ptr_output << argf(INT_MAX);
+  }
+  PRINT_BENCHMARK("char_ptr_output << listf{INT_MAX}")
+  {
+    char_ptr_output << listf{INT_MAX};
+  }
+  PRINT_BENCHMARK("char_ptr_output << argf(LLONG_MAX)")
+  {
+    char_ptr_output << argf(LLONG_MAX);
+  }
+  PRINT_BENCHMARK("char_ptr_output << listf{LLONG_MAX}")
+  {
+    char_ptr_output << listf{LLONG_MAX};
   }
 
-  PRINT_BENCHMARK("delete new int(0)")
-  {
-    delete new int(0);
-  }
+
 
   return 0;
 }
