@@ -3,7 +3,7 @@
 
 #include <boost/rose/detail/characters_catalog.hpp>
 #include <boost/rose/str_writer.hpp>
-#include <type_traits>
+#include <boost/rose/detail/uint_traits.hpp>
 
 namespace boost
 {
@@ -13,6 +13,7 @@ namespace rose
   struct int_writer: public str_writer<charT>
   {
     typedef typename std::make_unsigned<intT>::type  unsigned_intT;
+    typedef detail::uint_traits<unsigned_intT> uint_traits;
 
     intT value;
 
@@ -35,23 +36,25 @@ namespace rose
     virtual std::size_t minimal_length() const noexcept
     {
       if(value < 0)
-        return number_of_digits() + 1;
-      return number_of_digits();
+        return 1 + uint_traits::number_of_digits(static_cast<unsigned_intT>(-(value + 1)) + 1);
+      return uint_traits::number_of_digits(static_cast<unsigned_intT>(value));
     }
 
     virtual charT* write_without_termination_char(charT* output) const noexcept
     {
-      if(value < 0){
-        traits::assign(*output, detail::the_sign_minus<charT>());
-        output++;
+      unsigned_intT abs_value;
+      if (value < 0)
+      {
+        traits::assign(*output++, detail::the_sign_minus<charT>());
+        abs_value = 1 + static_cast<unsigned_intT>(-(value + 1));
       }
-      output += number_of_digits();
-      charT* end = output;
-        
+      else
+      {
+        abs_value = static_cast<unsigned_intT>(value);
+      }
 
-      unsigned_intT abs_value = (value >= 0 
-                                 ? static_cast<unsigned_intT>(value)
-                                 : static_cast<unsigned_intT>(-(value + 1)) + 1);
+      output += uint_traits::number_of_digits(abs_value);
+      charT* end = output;
       do
       {
         traits::assign(*--output,
@@ -60,15 +63,6 @@ namespace rose
       while(abs_value /= 10);
 
       return end;
-    }
-
-    std::size_t number_of_digits() const noexcept
-    {
-      int num = 1;
-      intT val = value;
-      while(val /= 10)
-        ++num;
-      return num;
     }
 
     charT correspondig_character_of_digit(int digit) const noexcept

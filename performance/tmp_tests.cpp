@@ -15,6 +15,8 @@ int main()
   using namespace boost::rose;
   char buff[1000000];
   char* char_ptr_output = buff;
+  long long x = LLONG_MIN + 10;
+  long long n = 0;
 
   // std::string std_string_hello("hello");
   // const char* hello = std_string_hello.c_str();
@@ -23,6 +25,8 @@ int main()
   std::cout << std::endl
             << "write integers" 
             << std::endl;
+
+
 /*
   PRINT_BENCHMARK("char_ptr_output << argf(25)")
   {
@@ -40,9 +44,8 @@ int main()
   {
     char_ptr_output << listf{INT_MAX};
   }
-*/
-  long long x = LLONG_MIN + 10;
-  long long n = 0;
+  x = LLONG_MIN + 10;
+  n = 0;
   PRINT_BENCHMARK("char_ptr_output << argf(LLONG_MIN)")
   {
     x += (++n % 2) ? +1 : -1;
@@ -55,21 +58,27 @@ int main()
     x += (++n % 2) ? +1 : -1;
     char_ptr_output << listf{x};
   }
-  x = LLONG_MIN + 10;
+*/
+  x = 100;
   n = 0;
-  PRINT_BENCHMARK("sprintf(char_ptr_output, ,LLONG_MIN, LLONG_MIN, LLONG_MIN, LLONG_MIN, LLONG_MIN, LLONG_MIN)")
+  PRINT_BENCHMARK("sprintf()")
   {
     x += (++n % 2) ? +1 : -1;
-    sprintf(char_ptr_output, "%lld%lld%lld%lld%lld%lld", x+1 , x+2, x+3, x+4, x+5, x+6);
+    sprintf(char_ptr_output,
+            "%lld%lld%lld%lld%lld%lld%lld%lld%lld%lld",
+            x+1, x+2, x+3, x+4, x+5, x+6, x+7, x+8, x+9, x+10);
   }
-  x = LLONG_MIN + 10;
+  x = 100;
   n = 0;
-  PRINT_BENCHMARK("char_ptr_output << listf{LLONG_MIN, LLONG_MIN, LLONG_MIN, LLONG_MIN, LLONG_MIN, LLONG_MIN}")
+  PRINT_BENCHMARK("listf{}")
   {
     x += (++n % 2) ? +1 : -1; // avoid some "unfair" compiler optimizations ( clang )
-    char_ptr_output << listf{x+1 , x+2, x+3, x+4, x+5, x+6};
+    char_ptr_output << listf{x+1 , x+2, x+3, x+4, x+5, x+6, x+7, x+8, x+9, x+10};
   }
-//  std::cout << char_ptr_output << "    " << n << std::endl;
+
+
+//  char_ptr_output << listf{123};
+//  std::cout << char_ptr_output  << std::endl;
 
 
   return 0;
