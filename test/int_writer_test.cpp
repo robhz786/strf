@@ -5,35 +5,31 @@
 #include <sstream>
 
 
-template <typename charT, 
-          typename traits,
-          typename intT>
-
+template <typename charT, typename intT>
 void test(intT value)
 {
-  std::basic_string<charT, traits> result;
-  result << boost::rose::basic_listf<charT, traits>{value};
+  std::basic_string<charT> result;
+  result << boost::rose::basic_listf<charT>{value};
 
-  std::basic_ostringstream<charT, traits> oss;
+  std::basic_ostringstream<charT> oss;
   oss.imbue(std::locale("C"));
   oss << value;
   
   BOOST_TEST(result == oss.str());
 }
 
-template <typename charT, 
-          typename traits=std::char_traits<charT> >
+template <typename charT>
 void test_many_values()
 {
-  test<charT, traits>(0);
-  test<charT, traits>(123);
-  test<charT, traits>(-123);
-  test<charT, traits>(std::numeric_limits<int>::min());
-  test<charT, traits>(std::numeric_limits<int>::max());
-  test<charT, traits>(std::numeric_limits<long long>::min());
-  test<charT, traits>(std::numeric_limits<long long>::max());
-  test<charT, traits>(std::numeric_limits<unsigned int>::max());
-  test<charT, traits>(std::numeric_limits<unsigned long long>::max());
+  test<charT>(0);
+  test<charT>(123);
+  test<charT>(-123);
+  test<charT>(std::numeric_limits<int>::min());
+  test<charT>(std::numeric_limits<int>::max());
+  test<charT>(std::numeric_limits<long long>::min());
+  test<charT>(std::numeric_limits<long long>::max());
+  test<charT>(std::numeric_limits<unsigned int>::max());
+  test<charT>(std::numeric_limits<unsigned long long>::max());
 }
 
 

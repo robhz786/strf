@@ -7,36 +7,36 @@ namespace boost
 {
 namespace rose
 {
-  template <typename T, typename traits = std::char_traits<char> >
+  template <typename T>
   inline
-  decltype(basic_argf<char, traits>(*(const T*)(0)))
+  decltype(basic_argf<char>(*(const T*)(0)))
   argf(T value)
   {
-    return basic_argf<char, traits>(value); 
+    return basic_argf<char>(value); 
   }
 
-  template <typename T, typename traits = std::char_traits<wchar_t> >
+  template <typename T>
   inline
-  decltype(basic_argf<wchar_t, traits>(*(const T*)(0)))
+  decltype(basic_argf<wchar_t>(*(const T*)(0)))
   wargf(T value)
   {
-    return basic_argf<wchar_t, traits>(value); 
+    return basic_argf<wchar_t>(value); 
   }
 
-  template <typename T, typename traits = std::char_traits<char16_t> >
+  template <typename T>
   inline
-  decltype(basic_argf<char16_t, traits>(*(const T*)(0)))
+  decltype(basic_argf<char16_t>(*(const T*)(0)))
   argf16(T value)
   {
-    return basic_argf<char16_t, traits>(value); 
+    return basic_argf<char16_t>(value); 
   }
 
-  template <typename T, typename traits = std::char_traits<char32_t> >
+  template <typename T>
   inline
-  decltype(basic_argf<char32_t, traits>(*(const T*)(0)))
+  decltype(basic_argf<char32_t>(*(const T*)(0)))
   argf32(T value)
   {
-    return basic_argf<char32_t, traits>(value); 
+    return basic_argf<char32_t>(value); 
   }
 } // namespace rose
 } // namespace boost

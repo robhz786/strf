@@ -4,12 +4,12 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/rose.hpp>
 
-template <typename charT, typename traits=std::char_traits<charT> >
+template <typename charT>
 void test_std_basic_string()
 {
   std::basic_string<charT> output;
   std::basic_string<charT> input = BOOST_STRING_LITERAL(charT, "asdfghjl");
-  typedef boost::rose::basic_listf<charT, traits> gen_listf;
+  typedef boost::rose::basic_listf<charT> gen_listf;
 
   output << gen_listf{input};
   BOOST_TEST(output == input);

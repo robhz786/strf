@@ -8,7 +8,7 @@ namespace boost
 {
 namespace rose
 {
-  template <class charT, class traits>
+  template <typename charT>
   class char_writer: public str_writer<charT>
   {
     charT character;
@@ -36,13 +36,12 @@ namespace rose
 
     virtual charT* write_without_termination_char(charT* output) const noexcept
     {
-      traits::assign(*output, character);
+      *output = character;
       return output + 1;
     }
   };
 
 
-  template <typename traits>
   class char32_to_utf8: public str_writer<char>
   {
   public:
@@ -86,36 +85,36 @@ namespace rose
 
     char* write_utf8_range1(char* output) const noexcept
     {
-      traits::assign(*output, static_cast<char>(codepoint));
+      *output =  static_cast<char>(codepoint);
       return ++output;
     }
 
     char* write_utf8_range2(char* output) const noexcept
     {
-      traits::assign(*output,   static_cast<char>(0xC0 | ((codepoint & 0x7C0) >> 6)));
-      traits::assign(*++output, static_cast<char>(0x80 |  (codepoint &  0x3F)));
+      *  output = static_cast<char>(0xC0 | ((codepoint & 0x7C0) >> 6));
+      *++output = static_cast<char>(0x80 |  (codepoint &  0x3F));
       return ++output;
     }
 
     char* write_utf8_range3(char* output) const noexcept
     {
-      traits::assign(*output  , static_cast<char>(0xE0 | ((codepoint & 0xF000) >> 12)));
-      traits::assign(*++output, static_cast<char>(0x80 | ((codepoint &  0xFC0) >> 6)));
-      traits::assign(*++output, static_cast<char>(0x80 |  (codepoint &   0x3F)));
+      *  output = static_cast<char>(0xE0 | ((codepoint & 0xF000) >> 12));
+      *++output = static_cast<char>(0x80 | ((codepoint &  0xFC0) >> 6));
+      *++output = static_cast<char>(0x80 |  (codepoint &   0x3F));
       return ++output;
     }
 
     char* write_utf8_range4(char* output) const noexcept
     {
-      traits::assign(*output  , static_cast<char>(0xF0 | ((codepoint & 0x1C0000) >> 18)));
-      traits::assign(*++output, static_cast<char>(0x80 | ((codepoint &  0x3F000) >> 12)));
-      traits::assign(*++output, static_cast<char>(0x80 | ((codepoint &    0xFC0) >> 6)));
-      traits::assign(*++output, static_cast<char>(0x80 |  (codepoint &     0x3F)));
+      *  output = static_cast<char>(0xF0 | ((codepoint & 0x1C0000) >> 18));
+      *++output = static_cast<char>(0x80 | ((codepoint &  0x3F000) >> 12));
+      *++output = static_cast<char>(0x80 | ((codepoint &    0xFC0) >> 6));
+      *++output = static_cast<char>(0x80 |  (codepoint &     0x3F));
       return ++output;
     }
   };
 
-  template <typename charT, typename traits>
+  template <typename charT>
   class char32_to_utf16: public str_writer<charT>
   {
 
@@ -146,15 +145,15 @@ namespace rose
     {
       if (single_char_range())
       {
-        traits::assign(*output++, static_cast<charT>(codepoint));
+        *output++ = static_cast<charT>(codepoint);
       }
       else if (two_chars_range())
       {
         char32_t sub_codepoint = codepoint - 0x10000;
         char32_t high_surrogate = 0xD800 + ((sub_codepoint & 0xFFC00) >> 10);
         char32_t low_surrogate  = 0xDC00 +  (sub_codepoint &  0x3FF);
-        traits::assign(*output++, static_cast<charT>(high_surrogate));
-        traits::assign(*output++, static_cast<charT>(low_surrogate));
+        *output++ = static_cast<charT>(high_surrogate);
+        *output++ = static_cast<charT>(low_surrogate);
       }
       return output;
     }
@@ -174,61 +173,61 @@ namespace rose
     }
   };
 
-  template <int charT_size, typename charT, typename char_traits>
+  template <int charT_size, typename charT>
   struct char32_to_utf_traits
   {
   };
 
-  template <typename charT, typename char_traits>
-  struct char32_to_utf_traits<1, charT, char_traits>
+  template <typename charT>
+  struct char32_to_utf_traits<1, charT>
   {
-    typedef char32_to_utf8<char_traits> writer_type;
+    typedef char32_to_utf8 writer_type;
   };
 
-  template <typename charT, typename char_traits>
-  struct char32_to_utf_traits<2, charT, char_traits>
+  template <typename charT>
+  struct char32_to_utf_traits<2, charT>
   {
-    typedef char32_to_utf16<charT, char_traits> writer_type;
+    typedef char32_to_utf16<charT> writer_type;
   };
 
-  template <typename charT, typename char_traits>
-  struct char32_to_utf_traits<4, charT, char_traits>
+  template <typename charT>
+  struct char32_to_utf_traits<4, charT>
   {
-    typedef char_writer<charT, char_traits> writer_type;
+    typedef char_writer<charT> writer_type;
   };
 
-  template <typename charT, typename traits>
+  template <typename charT>
   inline
-  typename char32_to_utf_traits<sizeof(charT), charT, traits>::writer_type
+  typename char32_to_utf_traits<sizeof(charT), charT>::writer_type
   basic_argf(char32_t c) noexcept
   {
     return c;
   }
 
-  template <typename charT, typename traits>
+  template <typename charT>
   inline typename std::enable_if<
     (sizeof(charT) == 1),
-    char_writer<char, traits> >
+    char_writer<char> >
   ::type
   basic_argf(char c) noexcept
   {
     return c;
   }
 
-  template <typename charT, typename traits>
+  template <typename charT>
   inline typename std::enable_if<
     (sizeof(charT) == 2),
-    char_writer<char16_t, traits> >
+    char_writer<char16_t> >
   ::type
   basic_argf(char16_t c) noexcept
   {
     return c;
   }
 
-  template <typename charT, typename traits>
+  template <typename charT>
   inline typename std::enable_if<
     (sizeof(charT) == sizeof(wchar_t)),
-    char_writer<wchar_t, traits> >
+    char_writer<wchar_t> >
   ::type
   basic_argf(wchar_t c) noexcept
   {

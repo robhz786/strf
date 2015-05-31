@@ -9,7 +9,7 @@ namespace boost
 {
 namespace rose
 {
-  template <typename intT, typename charT, typename traits>
+  template <typename intT, typename charT>
   struct int_writer: public str_writer<charT>
   {
     typedef typename std::make_unsigned<intT>::type  unsigned_intT;
@@ -36,7 +36,8 @@ namespace rose
     virtual std::size_t minimal_length() const noexcept
     {
       if(value < 0)
-        return 1 + uint_traits::number_of_digits(static_cast<unsigned_intT>(-(value + 1)) + 1);
+        return 1 + uint_traits::number_of_digits(
+          static_cast<unsigned_intT>(-(value + 1)) + 1);
       return uint_traits::number_of_digits(static_cast<unsigned_intT>(value));
     }
 
@@ -45,7 +46,7 @@ namespace rose
       unsigned_intT abs_value;
       if (value < 0)
       {
-        traits::assign(*output++, detail::the_sign_minus<charT>());
+        *output++ = detail::the_sign_minus<charT>();
         abs_value = 1 + static_cast<unsigned_intT>(-(value + 1));
       }
       else
@@ -57,8 +58,7 @@ namespace rose
       charT* end = output;
       do
       {
-        traits::assign(*--output,
-                       correspondig_character_of_digit(abs_value % 10));
+        *--output = correspondig_character_of_digit(abs_value % 10);
       }
       while(abs_value /= 10);
 
@@ -71,44 +71,45 @@ namespace rose
     }
   };
 
-  template <typename charT, typename traits>
+  template <typename charT>
   inline                                    
-  int_writer<int, charT, traits> basic_argf(int i) noexcept
+  int_writer<int, charT> basic_argf(int i) noexcept
   {                                               
     return i;                                     
   }
 
-  template <typename charT, typename traits>
+  template <typename charT>
   inline
-  int_writer<long, charT, traits> basic_argf(long i) noexcept
+  int_writer<long, charT> basic_argf(long i) noexcept
   {
     return i;
   }
 
-  template <typename charT, typename traits>
+  template <typename charT>
   inline
-  int_writer<long long, charT, traits> basic_argf(long long i) noexcept
+  int_writer<long long, charT> basic_argf(long long i) noexcept
   {
     return i;
   }
 
-  template <typename charT, typename traits>
+  template <typename charT>
   inline
-  int_writer<unsigned int, charT, traits> basic_argf(unsigned int i) noexcept
+  int_writer<unsigned int, charT> basic_argf(unsigned int i) noexcept
   {
     return i;
   }
 
-  template <typename charT, typename traits>
+  template <typename charT>
   inline
-  int_writer<unsigned long, charT, traits> basic_argf(unsigned long i) noexcept
+  int_writer<unsigned long, charT> basic_argf(unsigned long i) noexcept
   {
     return i;
   }
 
-  template <typename charT, typename traits>
+  template <typename charT>
   inline
-  int_writer<unsigned long long, charT, traits> basic_argf(unsigned long long i) noexcept
+  int_writer<unsigned long long, charT>
+  basic_argf(unsigned long long i) noexcept
   {
     return i;
   }

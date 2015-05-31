@@ -9,7 +9,7 @@ namespace boost
 {
 namespace rose
 {
-  template <typename charT, typename traits=std::char_traits<charT> >
+  template <typename charT>
   class basic_listf: public str_writer<charT>
   {
 
@@ -18,7 +18,7 @@ namespace rose
       str_writer_ref(const str_writer<charT>& w) noexcept: writer(w) {}
 
       template <class T>
-      using str_writer_of = decltype(basic_argf<charT, traits>(*(const T*)(0)));
+      using str_writer_of = decltype(basic_argf<charT>(*(const T*)(0)));
 
       template <typename T>
       str_writer_ref(

@@ -58,9 +58,19 @@ namespace rose
   {
     std::size_t initial_length = str.length();
     str.append(writer.minimal_length(), charT());
-    charT* begin_append = & str[initial_length];
-    charT* end_append   = writer.write_without_termination_char(begin_append);
-    str.resize(initial_length + (end_append - begin_append));
+    charT* append_begin = & str[initial_length];
+
+    //write
+    charT* append_end   = writer.write_without_termination_char(append_begin);
+
+    //apply char_traits if necessary
+    std::size_t append_length = append_end - append_begin;
+    if( ! std::is_same<traits, std::char_traits<charT> >::value)
+      traits::move(append_begin, append_begin, append_length);
+
+    //set correct size ( current size might be greater )
+    str.resize(initial_length + append_length);
+
     return str;
   }
 

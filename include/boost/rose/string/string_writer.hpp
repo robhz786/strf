@@ -37,9 +37,8 @@ namespace rose
     {
       if( ! str)
         return output;
-      std::size_t length = str->length();
-      traits::copy(output, &*str->begin(), length);
-      return output + length;
+
+      return std::copy(str->begin(), str->end(), output);
     }
   };
 
@@ -51,44 +50,63 @@ namespace rose
     return str;
   }
 
-  template<typename charT,typename traits>
+  template<typename charT>
   struct char_ptr_writer: str_writer<charT>
   {
     const charT* str;    
 
-    char_ptr_writer() noexcept
-      :str(0)
+    char_ptr_writer() noexcept:
+      str(0),
+      len(0)
     {
     }
 
-    char_ptr_writer(const charT* _str) noexcept
-      :str(_str)
+    char_ptr_writer(const charT* _str) noexcept :
+      str(_str),
+      len(-1)
     {
     }
 
     void set(const charT* _str) noexcept
     {
       str = _str;
+      len = -1;
     }
 
     virtual std::size_t minimal_length() const noexcept
     {
-      return str ? traits::length(str) : 0;
+      return get_length();
     }
 
     virtual charT* write_without_termination_char(charT* output) const noexcept
     {
-      if( ! str)
-        return output;
-      std::size_t length = traits::length(str);
-      traits::copy(output, str, length);
-      return output + length;
+      return std::copy(str, str + get_length(), output);
     }
+
+  private:
+    mutable std::size_t len;
+
+    std::size_t get_length() const noexcept
+    {
+      if (len == -1)
+      {
+        try
+        {
+          len = std::char_traits<charT>::length(str);
+        }
+        catch(...)
+        {
+          len = 0;
+        }
+      }
+      return len;
+    }
+
   }; 
 
-  template <typename charT, typename traits>
+  template <typename charT>
   inline
-  char_ptr_writer<charT, traits> basic_argf(const charT* str) noexcept
+  char_ptr_writer<charT> basic_argf(const charT* str) noexcept
   {
     return str;
   }
