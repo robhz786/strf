@@ -8,28 +8,17 @@ lib loop_timer
     : loop_timer.cpp
     ;
 
-exe versus_sprintf
-    : versus_sprintf.cpp
-      loop_timer/<link>static
-      /boost//timer/<link>static
-    ;
+sources = [ glob *.cpp : loop_timer.cpp ] ;
 
-exe calculate_size
-    : calculate_size.cpp
-      loop_timer/<link>static
-      /boost//timer/<link>static
-    ;
+for local src in $(sources)
+{
+    exe $(src:B) 
+        : $(src)
+          loop_timer/<link>static
+          /boost//timer/<link>static
+        ;
+}
 
-exe tmp_tests
-    : tmp_tests.cpp
-      loop_timer/<link>static
-      /boost//timer/<link>static
-    ;
-
-install ./out 
-    : versus_sprintf
-      calculate_size
-      tmp_tests
-    ;
+install ./out : $(sources:B) ;
 
 
