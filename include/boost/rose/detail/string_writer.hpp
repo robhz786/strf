@@ -1,5 +1,5 @@
-#ifndef BOOST_ROSE_STRING_STRING_WRITER_HPP_INCLUDED
-#define BOOST_ROSE_STRING_STRING_WRITER_HPP_INCLUDED
+#ifndef BOOST_ROSE_DETAIL_STRING_WRITER_HPP_INCLUDED
+#define BOOST_ROSE_DETAIL_STRING_WRITER_HPP_INCLUDED
 
 #include <string>
 #include <boost/rose/str_writer.hpp>
@@ -8,6 +8,8 @@ namespace boost
 {
 namespace rose
 {
+namespace detail
+{  
   template <class charT, class traits>
   struct std_string_writer: public str_writer<charT>
   {
@@ -48,13 +50,6 @@ namespace rose
     }
   };
 
-  template <typename charT, typename traits>
-  inline
-  std_string_writer<charT, traits>
-  basic_argf(const std::basic_string<charT, traits>& str) noexcept
-  {
-    return str;
-  }
 
   template<typename charT>
   struct char_ptr_writer: str_writer<charT>
@@ -113,14 +108,8 @@ namespace rose
 
   }; 
 
-  template <typename charT>
-  inline
-  char_ptr_writer<charT> basic_argf(const charT* str) noexcept
-  {
-    return str;
-  }
 
-
+} // namespace detail
 } // namespace rose
 } // namespace boost
 

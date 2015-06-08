@@ -49,7 +49,7 @@ template <typename charT, int sizeof_char> struct utfx_to_utf8_tratis{};
 
 template <typename charT> struct utfx_to_utf8_tratis<charT, 1>
 {
-  typedef boost::rose::char_ptr_writer<char> writer;
+  typedef boost::rose::detail::char_ptr_writer<char> writer;
 };
 
 template <typename charT> struct utfx_to_utf8_tratis<charT, 2>

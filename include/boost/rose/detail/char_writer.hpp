@@ -1,5 +1,5 @@
-#ifndef BOOST_ROSE_CHAR_CHAR_WRITER_HPP_INCLUDED
-#define BOOST_ROSE_CHAR_CHAR_WRITER_HPP_INCLUDED
+#ifndef BOOST_ROSE_DETAIL_CHAR_WRITER_HPP_INCLUDED
+#define BOOST_ROSE_DETAIL_CHAR_WRITER_HPP_INCLUDED
 
 #include <boost/rose/str_writer.hpp>
 #include <type_traits>
@@ -7,6 +7,8 @@
 namespace boost
 {
 namespace rose
+{
+namespace detail
 {
   template <typename charT>
   class char_writer: public str_writer<charT>
@@ -201,67 +203,7 @@ namespace rose
     }
   };
 
-  template <int charT_size, typename charT>
-  struct char32_to_utf_traits
-  {
-  };
-
-  template <typename charT>
-  struct char32_to_utf_traits<1, charT>
-  {
-    typedef char32_to_utf8 writer_type;
-  };
-
-  template <typename charT>
-  struct char32_to_utf_traits<2, charT>
-  {
-    typedef char32_to_utf16<charT> writer_type;
-  };
-
-  template <typename charT>
-  struct char32_to_utf_traits<4, charT>
-  {
-    typedef char_writer<charT> writer_type;
-  };
-
-  template <typename charT>
-  inline
-  typename char32_to_utf_traits<sizeof(charT), charT>::writer_type
-  basic_argf(char32_t c) noexcept
-  {
-    return c;
-  }
-
-  template <typename charT>
-  inline typename std::enable_if<
-    (sizeof(charT) == 1),
-    char_writer<char> >
-  ::type
-  basic_argf(char c) noexcept
-  {
-    return c;
-  }
-
-  template <typename charT>
-  inline typename std::enable_if<
-    (sizeof(charT) == 2),
-    char_writer<char16_t> >
-  ::type
-  basic_argf(char16_t c) noexcept
-  {
-    return c;
-  }
-
-  template <typename charT>
-  inline typename std::enable_if<
-    (sizeof(charT) == sizeof(wchar_t)),
-    char_writer<wchar_t> >
-  ::type
-  basic_argf(wchar_t c) noexcept
-  {
-    return c;
-  }
-
+} // namespace detail
 } // namespace rose
 } // namespace boost
 

@@ -1,5 +1,5 @@
-#ifndef BOOST_ROSE_INT_INT_WRITER_HPP_INCLUDED
-#define BOOST_ROSE_INT_INT_WRITER_HPP_INCLUDED
+#ifndef BOOST_ROSE_DETAIL_INT_WRITER_HPP_INCLUDED
+#define BOOST_ROSE_DETAIL_INT_WRITER_HPP_INCLUDED
 
 #include <boost/rose/detail/characters_catalog.hpp>
 #include <boost/rose/str_writer.hpp>
@@ -8,6 +8,8 @@
 namespace boost
 {
 namespace rose
+{
+namespace detail
 {
   template <typename intT, typename charT>
   struct int_writer: public str_writer<charT>
@@ -74,8 +76,7 @@ namespace rose
       while(div /= 10);
     }
 
-
-private:
+  private:
     intT value;
     unsigned_intT abs_value;
 
@@ -85,49 +86,7 @@ private:
     }
   };
 
-  template <typename charT>
-  inline                                    
-  int_writer<int, charT> basic_argf(int i) noexcept
-  {                                               
-    return i;                                     
-  }
-
-  template <typename charT>
-  inline
-  int_writer<long, charT> basic_argf(long i) noexcept
-  {
-    return i;
-  }
-
-  template <typename charT>
-  inline
-  int_writer<long long, charT> basic_argf(long long i) noexcept
-  {
-    return i;
-  }
-
-  template <typename charT>
-  inline
-  int_writer<unsigned int, charT> basic_argf(unsigned int i) noexcept
-  {
-    return i;
-  }
-
-  template <typename charT>
-  inline
-  int_writer<unsigned long, charT> basic_argf(unsigned long i) noexcept
-  {
-    return i;
-  }
-
-  template <typename charT>
-  inline
-  int_writer<unsigned long long, charT>
-  basic_argf(unsigned long long i) noexcept
-  {
-    return i;
-  }
-
+}//namespace detail
 }//namespace rose
 }//namespace boost
 

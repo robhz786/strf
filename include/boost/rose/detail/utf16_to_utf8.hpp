@@ -1,7 +1,7 @@
 #ifndef BOOST_ROSE_DETAIL_UTF16_TO_UTF8_HPP_INCLUDED
 #define BOOST_ROSE_DETAIL_UTF16_TO_UTF8_HPP_INCLUDED
 
-#include <boost/rose/char/char_writer.hpp>
+#include <boost/rose/detail/char_writer.hpp>
 
 namespace boost {
 namespace rose {
