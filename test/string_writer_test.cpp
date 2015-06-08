@@ -1,78 +1,72 @@
-#include <string>
+#include "test_utils.hpp"
 #include <string.h>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/rose.hpp>
 
-template <typename charT>
-void test_std_basic_string()
+template <typename output_type>
+void test_template_output_type()
 {
-  std::basic_string<charT> output;
-  std::basic_string<charT> input = BOOST_STRING_LITERAL(charT, "asdfghjl");
+  typedef typename test_utils::output_traits<output_type>::char_type charT;
+  typedef typename test_utils::output_traits<output_type>::traits_type traits;
+
   typedef boost::rose::basic_listf<charT> gen_listf;
 
-  output << gen_listf{input};
-  BOOST_TEST(output == input);
-  output.clear();
-
-  output << gen_listf{input, input};
-  BOOST_TEST(output == input + input);
-  output.clear();
-
-  output << gen_listf{input, input.c_str(), input};
-  BOOST_TEST(output == input + input + input);
-  output.clear();
+  std::basic_string<charT, traits> input = BOOST_GENERIC_STR(charT, "ASDFasdf");
+  {
+    output_type output;
+    output << gen_listf{input};
+    BOOST_TEST(test_utils::str(output) == input);
+  }
+  {
+    output_type output;
+    output << gen_listf{input.c_str(), input};
+    BOOST_TEST(test_utils::str(output) == input + input);
+  }
 }
 
-
-void test_char_ptr()
+void test_many_output_types()
 {
+  test_template_output_type<char[200]> ();
+  test_template_output_type<wchar_t[200]> ();
+  test_template_output_type<char16_t[200]> ();
+  test_template_output_type<char32_t[200]> ();
 
-  std::string output;
-  char   non_const_charT_arr[] = "hello";
-  char * non_const_charT_ptr   = non_const_charT_arr;
-  const char* const_charT_ptr  = "blablabla";
+  test_template_output_type<std::basic_string<char> >();
+  test_template_output_type<std::basic_string<wchar_t> >();
+  test_template_output_type<std::basic_string<char16_t> >();
+  test_template_output_type<std::basic_string<char32_t> >();
 
-  output << boost::rose::listf({non_const_charT_arr});
-  BOOST_TEST(output == non_const_charT_arr);
-
-  output.clear();
-  output << boost::rose::listf{non_const_charT_ptr};
-  BOOST_TEST(output == non_const_charT_ptr);
-
-
-  output.clear();
-  output << boost::rose::listf{const_charT_ptr};
-  BOOST_TEST(output == const_charT_ptr);
+  test_template_output_type<std::basic_ostringstream<char> >();
+  test_template_output_type<std::basic_ostringstream<wchar_t> >();
+  test_template_output_type<std::basic_ostringstream<char16_t> >();
+  test_template_output_type<std::basic_ostringstream<char32_t> >();
 
 
-  output.clear();
-  output << boost::rose::listf
-  {  
-     non_const_charT_arr,
-     const_charT_ptr,
-     non_const_charT_ptr
-  };
-  BOOST_TEST(output == (std::string(non_const_charT_arr) +
-                        const_charT_ptr +
-                        non_const_charT_ptr));
+  typedef test_utils::to_upper_char_traits<char> traits8;
+  typedef test_utils::to_upper_char_traits<wchar_t> wtraits;
+  typedef test_utils::to_upper_char_traits<char16_t> traits16;
+  typedef test_utils::to_upper_char_traits<char32_t> traits32;
 
+  test_template_output_type<std::basic_string<char, traits8> >();
+  test_template_output_type<std::basic_string<wchar_t, wtraits> >();
+  test_template_output_type<std::basic_string<char16_t, traits16> >();
+  test_template_output_type<std::basic_string<char32_t, traits32> >();
+
+  test_template_output_type<std::basic_ostringstream<char, traits8> >();
+  test_template_output_type<std::basic_ostringstream<wchar_t, wtraits> >();
+  test_template_output_type<std::basic_ostringstream<char16_t, traits16> >();
+  test_template_output_type<std::basic_ostringstream<char32_t, traits32> >();
 }
 
 int main()
 {
-  test_std_basic_string<char>();
-  test_std_basic_string<wchar_t>();
-  test_std_basic_string<char16_t>();
-  test_std_basic_string<char32_t>();
-  // todo: test with some other char_traits
-
-  test_char_ptr();
-
-  //todo: try to simplify compile error message on invalid types:
-  //std::string output;
-  //output << boost::rose::listf{L"asdf"};
-
+  test_many_output_types();
 
   return  boost::report_errors();
 }
+
+
+
+
+

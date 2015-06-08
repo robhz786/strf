@@ -34,10 +34,15 @@ namespace rose
       return 1;
     }
 
-    virtual charT* write_without_termination_char(charT* output) const noexcept
+    virtual charT* write_without_termination_char(charT* out) const noexcept
     {
-      *output = character;
-      return output + 1;
+      *out = character;
+      return out + 1;
+    }
+
+    virtual void write(simple_ostream<charT>& out) const
+    {
+      out.put(character);
     }
   };
 
@@ -70,47 +75,54 @@ namespace rose
               /* invalid codepoit */ 0);
     }
 
-    virtual char* write_without_termination_char(char* output) const noexcept
+    virtual char* write_without_termination_char(char* out) const noexcept
     {
-      return (codepoint <     0x80 ? write_utf8_range1(output) :
-              codepoint <    0x800 ? write_utf8_range2(output) :
-              codepoint <  0x10000 ? write_utf8_range3(output) :
-              codepoint < 0x110000 ? write_utf8_range4(output) :
-              /* invalid codepoit */ output);
+      return (codepoint <     0x80 ? write_utf8_range1(out) :
+              codepoint <    0x800 ? write_utf8_range2(out) :
+              codepoint <  0x10000 ? write_utf8_range3(out) :
+              codepoint < 0x110000 ? write_utf8_range4(out) :
+              /* invalid codepoit */ out);
+    }
+
+    virtual void write(simple_ostream<char>& out) const
+    {
+      char buff[4];
+      write_without_termination_char(buff);
+      out.write(buff, 4);
     }
 
   private:
 
     char32_t codepoint;
 
-    char* write_utf8_range1(char* output) const noexcept
+    char* write_utf8_range1(char* out) const noexcept
     {
-      *output =  static_cast<char>(codepoint);
-      return ++output;
+      *out =  static_cast<char>(codepoint);
+      return ++out;
     }
 
-    char* write_utf8_range2(char* output) const noexcept
+    char* write_utf8_range2(char* out) const noexcept
     {
-      *  output = static_cast<char>(0xC0 | ((codepoint & 0x7C0) >> 6));
-      *++output = static_cast<char>(0x80 |  (codepoint &  0x3F));
-      return ++output;
+      *  out = static_cast<char>(0xC0 | ((codepoint & 0x7C0) >> 6));
+      *++out = static_cast<char>(0x80 |  (codepoint &  0x3F));
+      return ++out;
     }
 
-    char* write_utf8_range3(char* output) const noexcept
+    char* write_utf8_range3(char* out) const noexcept
     {
-      *  output = static_cast<char>(0xE0 | ((codepoint & 0xF000) >> 12));
-      *++output = static_cast<char>(0x80 | ((codepoint &  0xFC0) >> 6));
-      *++output = static_cast<char>(0x80 |  (codepoint &   0x3F));
-      return ++output;
+      *  out = static_cast<char>(0xE0 | ((codepoint & 0xF000) >> 12));
+      *++out = static_cast<char>(0x80 | ((codepoint &  0xFC0) >> 6));
+      *++out = static_cast<char>(0x80 |  (codepoint &   0x3F));
+      return ++out;
     }
 
-    char* write_utf8_range4(char* output) const noexcept
+    char* write_utf8_range4(char* out) const noexcept
     {
-      *  output = static_cast<char>(0xF0 | ((codepoint & 0x1C0000) >> 18));
-      *++output = static_cast<char>(0x80 | ((codepoint &  0x3F000) >> 12));
-      *++output = static_cast<char>(0x80 | ((codepoint &    0xFC0) >> 6));
-      *++output = static_cast<char>(0x80 |  (codepoint &     0x3F));
-      return ++output;
+      *  out = static_cast<char>(0xF0 | ((codepoint & 0x1C0000) >> 18));
+      *++out = static_cast<char>(0x80 | ((codepoint &  0x3F000) >> 12));
+      *++out = static_cast<char>(0x80 | ((codepoint &    0xFC0) >> 6));
+      *++out = static_cast<char>(0x80 |  (codepoint &     0x3F));
+      return ++out;
     }
   };
 
@@ -141,21 +153,37 @@ namespace rose
               two_chars_range()   ? 2 : 0);
     }
 
-    virtual charT* write_without_termination_char(charT* output) const noexcept
+    virtual charT* write_without_termination_char(charT* out) const noexcept
     {
       if (single_char_range())
       {
-        *output++ = static_cast<charT>(codepoint);
+        *out++ = static_cast<charT>(codepoint);
       }
       else if (two_chars_range())
       {
         char32_t sub_codepoint = codepoint - 0x10000;
         char32_t high_surrogate = 0xD800 + ((sub_codepoint & 0xFFC00) >> 10);
         char32_t low_surrogate  = 0xDC00 +  (sub_codepoint &  0x3FF);
-        *output++ = static_cast<charT>(high_surrogate);
-        *output++ = static_cast<charT>(low_surrogate);
+        *out++ = static_cast<charT>(high_surrogate);
+        *out++ = static_cast<charT>(low_surrogate);
       }
-      return output;
+      return out;
+    }
+
+    virtual void write(simple_ostream<charT>& out) const
+    {
+      if (single_char_range())
+      {
+        out.put(static_cast<charT>(codepoint));
+      }
+      else if (two_chars_range())
+      {
+        char32_t sub_codepoint = codepoint - 0x10000;
+        char32_t high_surrogate = 0xD800 + ((sub_codepoint & 0xFFC00) >> 10);
+        char32_t low_surrogate  = 0xDC00 +  (sub_codepoint &  0x3FF);
+        out.put(static_cast<charT>(high_surrogate));
+        out.put(static_cast<charT>(low_surrogate));
+      }
     }
 
   private:

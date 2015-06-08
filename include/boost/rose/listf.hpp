@@ -58,14 +58,23 @@ namespace rose
     }
 
 
-    virtual charT* write_without_termination_char(charT* output) const noexcept
+    virtual charT* write_without_termination_char(charT* out) const noexcept
     {
       for(auto it = inilist.begin(); it != inilist.end(); ++it)
       {
-        output = it->writer.write_without_termination_char(output);
+        out = it->writer.write_without_termination_char(out);
       }
-      return output;
+      return out;
     }
+
+    virtual void write(simple_ostream<charT>& out) const
+    {
+      for(auto it = inilist.begin(); it != inilist.end() && out.good(); ++it)
+      {
+        it->writer.write(out);
+      }
+    }
+
   };
 
   typedef basic_listf<char>      listf;
@@ -74,17 +83,6 @@ namespace rose
   typedef basic_listf<char32_t>  listf32;
 } // namespace rose
 } // namespace boost
-
-
-// BOOST_STRING_LITERAL: I dont know where to put this macro so I left it here.
-// example of how it can be used:
-// std::basic_string<someCharT> someString = BOOST_STRING_LITERAL(someCharT, "foobar");
-
-#define BOOST_STRING_LITERAL(charT, str)                                \
-  (::boost::is_same<charT, char32_t>::value ? reinterpret_cast<const charT*>(U ## str) : \
-   ::boost::is_same<charT, char16_t>::value ? reinterpret_cast<const charT*>(u ## str) : \
-   ::boost::is_same<charT, wchar_t>::value  ? reinterpret_cast<const charT*>(L ## str) : \
-   /*else: */                                 reinterpret_cast<const charT*>(str)) 
 
 
 #endif

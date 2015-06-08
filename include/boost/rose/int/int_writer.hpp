@@ -12,60 +12,74 @@ namespace rose
   template <typename intT, typename charT>
   struct int_writer: public str_writer<charT>
   {
+  private:
     typedef typename std::make_unsigned<intT>::type  unsigned_intT;
     typedef detail::uint_traits<unsigned_intT> uint_traits;
 
-    intT value;
+  public:
 
     int_writer() noexcept:
-      value(0)
+      value(0),
+      abs_value(0)
     {
     }
 
-    int_writer(intT _value) noexcept:
-      value(_value)
+    int_writer(intT _value) noexcept
     {
+      set(_value);
     }
 
     void set(intT _value) noexcept
     {
       value = (_value);
+      abs_value = (value > 0
+                   ? static_cast<unsigned_intT>(value)
+                   : static_cast<unsigned_intT>(-(value+1)) +1 );
     }
 
 
     virtual std::size_t minimal_length() const noexcept
     {
-      if(value < 0)
-        return 1 + uint_traits::number_of_digits(
-          static_cast<unsigned_intT>(-(value + 1)) + 1);
-      return uint_traits::number_of_digits(static_cast<unsigned_intT>(value));
+      return (uint_traits::number_of_digits(static_cast<unsigned_intT>(value))
+              + (value < 0 ? 1 : 0));
     }
 
-    virtual charT* write_without_termination_char(charT* output) const noexcept
+    virtual charT* write_without_termination_char(charT* out) const noexcept
     {
-      unsigned_intT abs_value;
       if (value < 0)
-      {
-        *output++ = detail::the_sign_minus<charT>();
-        abs_value = 1 + static_cast<unsigned_intT>(-(value + 1));
-      }
-      else
-      {
-        abs_value = static_cast<unsigned_intT>(value);
-      }
+        *out++ = detail::the_sign_minus<charT>();
 
-      output += uint_traits::number_of_digits(abs_value);
-      charT* end = output;
+      out += uint_traits::number_of_digits(abs_value);
+      unsigned_intT it_value = abs_value;
+      charT* end = out;
       do
       {
-        *--output = correspondig_character_of_digit(abs_value % 10);
+        *--out = correspondig_character_of_digit(it_value % 10);
       }
-      while(abs_value /= 10);
+      while(it_value /= 10);
 
       return end;
     }
 
-    charT correspondig_character_of_digit(int digit) const noexcept
+    virtual void write(simple_ostream<charT>& out) const
+    {
+      if (value < 0)
+        out.put(detail::the_sign_minus<charT>());
+
+      unsigned_intT div = uint_traits::greatest_power_of_10_less_than(abs_value);
+      do
+      {
+        out.put(correspondig_character_of_digit((abs_value / div) % 10));
+      }
+      while(div /= 10);
+    }
+
+
+private:
+    intT value;
+    unsigned_intT abs_value;
+
+    charT correspondig_character_of_digit(unsigned int digit) const noexcept
     {
       return detail::the_digit_zero<charT>() + digit;
     }

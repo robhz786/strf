@@ -33,12 +33,18 @@ namespace rose
       return str ? str->length() : 0;
     }
 
-    virtual charT* write_without_termination_char(charT* output) const noexcept
+    virtual charT* write_without_termination_char(charT* out) const noexcept
     {
       if( ! str)
-        return output;
+        return out;
 
-      return std::copy(str->begin(), str->end(), output);
+      return std::copy(str->begin(), str->end(), out);
+    }
+
+    virtual void write(simple_ostream<charT>& out) const
+    {
+      if(str)
+        out.write(str->c_str(), str->length());
     }
   };
 
@@ -78,10 +84,17 @@ namespace rose
       return get_length();
     }
 
-    virtual charT* write_without_termination_char(charT* output) const noexcept
+    virtual charT* write_without_termination_char(charT* out) const noexcept
     {
-      return std::copy(str, str + get_length(), output);
+      return std::copy(str, str + get_length(), out);
     }
+
+    virtual void write(simple_ostream<charT>& out) const
+    {
+      if(str)
+        out.write(str, get_length());
+    }
+
 
   private:
     mutable std::size_t len;
@@ -91,13 +104,9 @@ namespace rose
       if (len == -1)
       {
         try
-        {
-          len = std::char_traits<charT>::length(str);
-        }
+        { len = std::char_traits<charT>::length(str); }
         catch(...)
-        {
-          len = 0;
-        }
+        { len = 0; }
       }
       return len;
     }
