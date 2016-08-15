@@ -1,10 +1,10 @@
-#ifndef BOOST_ROSE_DETAIL_CHARACTERS_CATALOG_HPP_INCLUDED
-#define BOOST_ROSE_DETAIL_CHARACTERS_CATALOG_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_DETAIL_CHARACTERS_CATALOG_HPP_INCLUDED
+#define BOOST_STRINGIFY_DETAIL_CHARACTERS_CATALOG_HPP_INCLUDED
 
 
 namespace boost
 {
-namespace rose
+namespace stringify
 {
 namespace detail
 {
@@ -69,7 +69,7 @@ namespace detail
   template<> constexpr char32_t the_sign_plus<char32_t>(){ return U'+'; }
 
 }//namespace detail
-}//namespace rose
+}//namespace stringify
 }//namespace boot
 
 

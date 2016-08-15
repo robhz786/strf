@@ -1,11 +1,11 @@
-#ifndef BOOST_ROSE_ARGF_HPP_INCLUDED
-#define BOOST_ROSE_ARGF_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_ARGF_HPP_INCLUDED
+#define BOOST_STRINGIFY_ARGF_HPP_INCLUDED
 
 #include <string>
 
 namespace boost
 {
-namespace rose
+namespace stringify
 {
   template <typename T>
   inline
@@ -38,7 +38,7 @@ namespace rose
   {
     return basic_argf<char32_t>(value); 
   }
-} // namespace rose
+} // namespace stringify
 } // namespace boost
 
 #endif

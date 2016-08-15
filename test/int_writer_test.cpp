@@ -1,5 +1,5 @@
 #include <boost/detail/lightweight_test.hpp>
-#include <boost/rose.hpp>
+#include <boost/stringify.hpp>
 #include "test_utils.hpp"
 #include <limits>
 #include <locale>
@@ -12,7 +12,7 @@ struct tester
   typedef typename output_traits::char_type charT;
   typedef typename output_traits::traits_type char_traits;
 
-  static void test(const boost::rose::str_writer<charT>& writer, const char* expected)
+  static void test(const boost::stringify::str_writer<charT>& writer, const char* expected)
   {
     output_type out;
     out << writer;
@@ -21,7 +21,7 @@ struct tester
 
   static void test()
   {
-    using namespace boost::rose;
+    using namespace boost::stringify;
 
     test(basic_argf<charT>(0), "0") ;
 

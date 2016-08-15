@@ -1,10 +1,10 @@
-#ifndef ROSE_TEST_TEST_UTILS_HPP_INCLUDED
-#define ROSE_TEST_TEST_UTILS_HPP_INCLUDED
+#ifndef STRINGIFY_TEST_TEST_UTILS_HPP_INCLUDED
+#define STRINGIFY_TEST_TEST_UTILS_HPP_INCLUDED
 
 #include <sstream>
-#include <boost/rose/detail/utf32_to_utf8.hpp>
-#include <boost/rose/detail/utf16_to_utf8.hpp>
-#include <boost/rose.hpp>
+#include <boost/stringify/detail/utf32_to_utf8.hpp>
+#include <boost/stringify/detail/utf16_to_utf8.hpp>
+#include <boost/stringify.hpp>
 
 namespace test_utils {
 
@@ -49,17 +49,17 @@ template <typename charT, int sizeof_char> struct utfx_to_utf8_tratis{};
 
 template <typename charT> struct utfx_to_utf8_tratis<charT, 1>
 {
-  typedef boost::rose::detail::char_ptr_writer<char> writer;
+  typedef boost::stringify::detail::char_ptr_writer<char> writer;
 };
 
 template <typename charT> struct utfx_to_utf8_tratis<charT, 2>
 {
-  typedef boost::rose::detail::utf16_to_utf8<charT> writer;
+  typedef boost::stringify::detail::utf16_to_utf8<charT> writer;
 };
 
 template <typename charT> struct utfx_to_utf8_tratis<charT, 4>
 {
-  typedef boost::rose::detail::utf32_to_utf8<charT> writer;
+  typedef boost::stringify::detail::utf32_to_utf8<charT> writer;
 };
 
 template <typename output_type>

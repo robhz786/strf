@@ -1,10 +1,8 @@
 #include <iostream>
-//#include <iomanip>
 #include <stdio.h>
-//#include <string.h>
 #include <climits>
 #include <boost/timer/timer.hpp>
-#include <boost/rose.hpp>
+#include <boost/stringify.hpp>
 #include "loop_timer.hpp"
 
 #define PRINT_BENCHMARK(label)  \
@@ -22,13 +20,13 @@ void write_hello(char* out)
 
 int main()
 {
-  using boost::rose::listf;
-  using boost::rose::argf;
+  using boost::stringify::listf;
+  using boost::stringify::argf;
   char buff[1000000];
   char* char_ptr_output = buff;
 
   std::cout << std::endl 
-            << "Copy from a string literal:" 
+            << "Copy a string literal:" 
             << std::endl;
 
   PRINT_BENCHMARK("char_ptr_output << argf(\"hello\")")
@@ -57,7 +55,7 @@ int main()
   }
 
   std::cout << std::endl
-            << "Copy from a heap allocated short string:"
+            << "Copy a heap allocated short string:"
             << std::endl;
   {
     std::string std_string_hello("hello");

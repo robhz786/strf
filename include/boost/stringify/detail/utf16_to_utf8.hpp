@@ -1,10 +1,10 @@
-#ifndef BOOST_ROSE_DETAIL_UTF16_TO_UTF8_HPP_INCLUDED
-#define BOOST_ROSE_DETAIL_UTF16_TO_UTF8_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_DETAIL_UTF16_TO_UTF8_HPP_INCLUDED
+#define BOOST_STRINGIFY_DETAIL_UTF16_TO_UTF8_HPP_INCLUDED
 
-#include <boost/rose/detail/char_writer.hpp>
+#include <boost/stringify/detail/char_writer.hpp>
 
 namespace boost {
-namespace rose {
+namespace stringify {
 namespace detail {
 
 template<typename charT>
@@ -80,7 +80,7 @@ private:
 };
 
 }; //namespace boost
-}; //namespace rose
+}; //namespace stringify
 }; //namespace detail
 
 

@@ -1,14 +1,14 @@
-#ifndef BOOST_ROSE_INTPUT_TYPES_HPP_INCLUDED
-#define BOOST_ROSE_INTPUT_TYPES_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_INTPUT_TYPES_HPP_INCLUDED
+#define BOOST_STRINGIFY_INTPUT_TYPES_HPP_INCLUDED
 
-#include <boost/rose/detail/int_writer.hpp>
-#include <boost/rose/detail/char_writer.hpp>
-#include <boost/rose/detail/string_writer.hpp>
+#include <boost/stringify/detail/int_writer.hpp>
+#include <boost/stringify/detail/char_writer.hpp>
+#include <boost/stringify/detail/string_writer.hpp>
 
 
 namespace boost
 {
-namespace rose
+namespace stringify
 {
   //
   // integers
@@ -150,7 +150,7 @@ namespace rose
     return str;
   }
 
-}//namespace rose
+}//namespace stringify
 }//namespace boost
 
 

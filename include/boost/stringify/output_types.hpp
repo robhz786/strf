@@ -1,14 +1,14 @@
-#ifndef BOOST_ROSE_OUTPUT_TYPES_HPP_INCLUDED
-#define BOOST_ROSE_OUTPUT_TYPES_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_OUTPUT_TYPES_HPP_INCLUDED
+#define BOOST_STRINGIFY_OUTPUT_TYPES_HPP_INCLUDED
 
-#include <boost/rose/str_writer.hpp>
+#include <boost/stringify/str_writer.hpp>
 #include <string>
 #include <ostream>
 
 
 namespace boost
 {
-namespace rose 
+namespace stringify 
 {
   //
   // charT*
@@ -94,7 +94,7 @@ namespace rose
     return out;
   }
 
-} //namespace rose
+} //namespace stringify
 } //namespace boost
 
 #endif

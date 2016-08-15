@@ -1,12 +1,12 @@
-#ifndef BOOST_ROSE_STR_WRITER_HPP_INCLUDED
-#define BOOST_ROSE_STR_WRITER_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_STR_WRITER_HPP_INCLUDED
+#define BOOST_STRINGIFY_STR_WRITER_HPP_INCLUDED
 
 #include <boost/assert.hpp>
 #include <cstddef>
 
 namespace boost
 {
-namespace rose 
+namespace stringify 
 {
   template <typename charT>
   class simple_ostream;
@@ -68,7 +68,7 @@ namespace rose
     }
   };
 
-} //namespace rose
+} //namespace stringify
 } //namespace boost
 
 

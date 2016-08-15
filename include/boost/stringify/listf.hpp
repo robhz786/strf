@@ -1,13 +1,13 @@
-#ifndef BOOST_ROSE_LISTF_HPP_INCLUDED
-#define BOOST_ROSE_LISTF_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_LISTF_HPP_INCLUDED
+#define BOOST_STRINGIFY_LISTF_HPP_INCLUDED
 
 #include <initializer_list>
-#include <boost/rose/str_writer.hpp>
-#include <boost/rose/argf.hpp>
+#include <boost/stringify/str_writer.hpp>
+#include <boost/stringify/argf.hpp>
 
 namespace boost
 {
-namespace rose
+namespace stringify
 {
   template <typename charT>
   class basic_listf: public str_writer<charT>
@@ -81,7 +81,7 @@ namespace rose
   typedef basic_listf<wchar_t>   wlistf;
   typedef basic_listf<char16_t>  listf16;
   typedef basic_listf<char32_t>  listf32;
-} // namespace rose
+} // namespace stringify
 } // namespace boost
 
 

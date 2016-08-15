@@ -1,11 +1,11 @@
-#ifndef BOOST_ROSE_DETAIL_UINT_TRAITS_HPP_INCLUDED
-#define BOOST_ROSE_DETAIL_UINT_TRAITS_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_DETAIL_UINT_TRAITS_HPP_INCLUDED
+#define BOOST_STRINGIFY_DETAIL_UINT_TRAITS_HPP_INCLUDED
 
 #include <cstdint>
 #include <type_traits>
 
 namespace boost{
-namespace rose{
+namespace stringify{
 namespace detail{
 
   template<int INT_SIZE>
@@ -237,11 +237,11 @@ namespace detail{
 
 
 } //namespace boost
-} //namespace rose
+} //namespace stringify
 } //namespace detail
 
       
-#endif //#ifndef BOOST_ROSE_DETAIL_INT_HPP_INCLUDED
+#endif //#ifndef BOOST_STRINGIFY_DETAIL_INT_HPP_INCLUDED
 
 
 

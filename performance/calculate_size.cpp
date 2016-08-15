@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <climits>
 #include <boost/timer/timer.hpp>
-#include <boost/rose.hpp>
+#include <boost/stringify.hpp>
 #include "loop_timer.hpp"
 
 #define PRINT_BENCHMARK(label)  \
@@ -10,7 +10,7 @@
 
 int main()
 {
-  using boost::rose::listf;
+  using boost::stringify::listf;
 
   PRINT_BENCHMARK("listf{\"hello\"}.minimal_length()")
   {

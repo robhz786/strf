@@ -1,10 +1,10 @@
 #include <boost/detail/lightweight_test.hpp>
-#include <boost/rose.hpp>
+#include <boost/stringify.hpp>
 
 
 void test_char32_to_utf8()
 {
-  using namespace boost::rose;
+  using namespace boost::stringify;
 
   {
     std::string output;
@@ -29,7 +29,7 @@ void test_char32_to_utf8()
 
 void test_char32_to_utf16()
 {
-  using namespace boost::rose;
+  using namespace boost::stringify;
 
   {
     std::u16string output;
@@ -51,7 +51,7 @@ void test_char32_to_utf16()
 
 void test_char32_to_wstring()
 {
-  using namespace boost::rose;
+  using namespace boost::stringify;
   std::wstring output;
 
   output << wlistf

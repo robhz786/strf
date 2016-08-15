@@ -2,7 +2,7 @@
 #include <string.h>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/type_traits/is_same.hpp>
-#include <boost/rose.hpp>
+#include <boost/stringify.hpp>
 
 template <typename output_type>
 void test_template_output_type()
@@ -10,7 +10,7 @@ void test_template_output_type()
   typedef typename test_utils::output_traits<output_type>::char_type charT;
   typedef typename test_utils::output_traits<output_type>::traits_type traits;
 
-  typedef boost::rose::basic_listf<charT> gen_listf;
+  typedef boost::stringify::basic_listf<charT> gen_listf;
 
   std::basic_string<charT, traits> input = BOOST_GENERIC_STR(charT, "ASDFasdf");
   {

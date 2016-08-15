@@ -1,12 +1,17 @@
-#ifndef BOOST_ROSE_DETAIL_STRING_WRITER_HPP_INCLUDED
-#define BOOST_ROSE_DETAIL_STRING_WRITER_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_DETAIL_STRING_WRITER_HPP_INCLUDED
+#define BOOST_STRINGIFY_DETAIL_STRING_WRITER_HPP_INCLUDED
 
 #include <string>
-#include <boost/rose/str_writer.hpp>
+#include <limits>
+#include <boost/stringify/str_writer.hpp>
+
+#ifndef BOOST_PREVENT_MACRO_SUBSTITUTION
+#define BOOST_PREVENT_MACRO_SUBSTITUTION
+#endif
 
 namespace boost
 {
-namespace rose
+namespace stringify
 {
 namespace detail
 {  
@@ -64,14 +69,14 @@ namespace detail
 
     char_ptr_writer(const charT* _str) noexcept :
       str(_str),
-      len(-1)
+      len(std::numeric_limits<std::size_t>::max BOOST_PREVENT_MACRO_SUBSTITUTION ())
     {
     }
 
     void set(const charT* _str) noexcept
     {
       str = _str;
-      len = -1;
+      len = std::numeric_limits<std::size_t>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
     }
 
     virtual std::size_t minimal_length() const noexcept
@@ -96,7 +101,7 @@ namespace detail
 
     std::size_t get_length() const noexcept
     {
-      if (len == -1)
+      if (len == std::numeric_limits<std::size_t>::max BOOST_PREVENT_MACRO_SUBSTITUTION ())
       {
         try
         { len = std::char_traits<charT>::length(str); }
@@ -110,7 +115,7 @@ namespace detail
 
 
 } // namespace detail
-} // namespace rose
+} // namespace stringify
 } // namespace boost
 
 

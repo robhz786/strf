@@ -1,13 +1,13 @@
-#ifndef BOOST_ROSE_DETAIL_INT_WRITER_HPP_INCLUDED
-#define BOOST_ROSE_DETAIL_INT_WRITER_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_DETAIL_INT_WRITER_HPP_INCLUDED
+#define BOOST_STRINGIFY_DETAIL_INT_WRITER_HPP_INCLUDED
 
-#include <boost/rose/detail/characters_catalog.hpp>
-#include <boost/rose/str_writer.hpp>
-#include <boost/rose/detail/uint_traits.hpp>
+#include <boost/stringify/detail/characters_catalog.hpp>
+#include <boost/stringify/str_writer.hpp>
+#include <boost/stringify/detail/uint_traits.hpp>
 
 namespace boost
 {
-namespace rose
+namespace stringify
 {
 namespace detail
 {
@@ -87,7 +87,7 @@ namespace detail
   };
 
 }//namespace detail
-}//namespace rose
+}//namespace stringify
 }//namespace boost
 
 
