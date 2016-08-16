@@ -8,33 +8,25 @@ namespace boost
 namespace stringify
 {
   template <typename T>
-  inline
-  decltype(basic_argf<char>(*(const T*)(0)))
-  argf(T value)
+  inline auto argf(T value) noexcept -> decltype(basic_argf<char>(value))
   {
     return basic_argf<char>(value); 
   }
 
   template <typename T>
-  inline
-  decltype(basic_argf<wchar_t>(*(const T*)(0)))
-  wargf(T value)
+  inline auto wargf(T value) noexcept -> decltype(basic_argf<wchar_t>(value))
   {
     return basic_argf<wchar_t>(value); 
   }
 
   template <typename T>
-  inline
-  decltype(basic_argf<char16_t>(*(const T*)(0)))
-  argf16(T value)
+  inline auto argf16(T value) noexcept -> decltype(basic_argf<char16_t>(value))
   {
     return basic_argf<char16_t>(value); 
   }
 
   template <typename T>
-  inline
-  decltype(basic_argf<char32_t>(*(const T*)(0)))
-  argf32(T value)
+  inline auto argf32(T value) noexcept -> decltype(basic_argf<char32_t>(value))
   {
     return basic_argf<char32_t>(value); 
   }

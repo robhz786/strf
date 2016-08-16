@@ -18,7 +18,7 @@ namespace stringify
       str_writer_ref(const str_writer<charT>& w) noexcept: writer(w) {}
 
       template <class T>
-      using str_writer_of = decltype(basic_argf<charT>(*(const T*)(0)));
+      using str_writer_of = decltype(basic_argf<charT>(std::declval<const T>()));
 
       template <typename T>
       str_writer_ref(
