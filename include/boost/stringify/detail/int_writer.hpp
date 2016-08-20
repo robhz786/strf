@@ -11,80 +11,146 @@ namespace stringify
 {
 namespace detail
 {
-  template <typename intT, typename charT>
-  struct int_writer: public str_writer<charT>
-  {
-  private:
+template <typename intT, typename charT, typename Formating>
+struct int_writer: public boost::stringify::str_writer<charT, Formating>
+{
+private:
     typedef typename std::make_unsigned<intT>::type  unsigned_intT;
-    typedef detail::uint_traits<unsigned_intT> uint_traits;
+    typedef boost::stringify::detail::uint_traits<unsigned_intT> uint_traits;
 
-  public:
+public:
 
-    int_writer() noexcept:
-      value(0),
-      abs_value(0)
+    int_writer() noexcept
+        : value(0)
+        , abs_value(0)
     {
     }
 
     int_writer(intT _value) noexcept
     {
-      set(_value);
+        set(_value);
     }
 
     void set(intT _value) noexcept
     {
-      value = (_value);
-      abs_value = (value > 0
-                   ? static_cast<unsigned_intT>(value)
-                   : static_cast<unsigned_intT>(-(value+1)) +1 );
+        value = (_value);
+        abs_value = (value > 0
+                     ? static_cast<unsigned_intT>(value)
+                     : static_cast<unsigned_intT>(-(value+1)) +1 );
     }
 
 
-    virtual std::size_t minimal_length() const noexcept
+    virtual std::size_t minimal_length(const Formating&) const noexcept
     {
-      return (uint_traits::number_of_digits(static_cast<unsigned_intT>(value))
-              + (value < 0 ? 1 : 0));
+        return
+            ( uint_traits::number_of_digits(static_cast<unsigned_intT>(value))
+            + (value < 0 ? 1 : 0)
+            );
     }
 
-    virtual charT* write_without_termination_char(charT* out) const noexcept
+    virtual charT* write_without_termination_char
+        ( charT* out
+        , const Formating&
+        ) const noexcept
     {
-      if (value < 0)
-        *out++ = detail::the_sign_minus<charT>();
+        if (value < 0)
+            *out++ = boost::stringify::detail::the_sign_minus<charT>();
 
-      out += uint_traits::number_of_digits(abs_value);
-      unsigned_intT it_value = abs_value;
-      charT* end = out;
-      do
-      {
-        *--out = correspondig_character_of_digit(it_value % 10);
-      }
-      while(it_value /= 10);
+        out += uint_traits::number_of_digits(abs_value);
+        unsigned_intT it_value = abs_value;
+        charT* end = out;
+        do
+        {
+            *--out = correspondig_character_of_digit(it_value % 10);
+        }
+        while(it_value /= 10);
 
-      return end;
+        return end;
     }
 
-    virtual void write(simple_ostream<charT>& out) const
+    virtual void write(boost::stringify::simple_ostream<charT>& out, const Formating&) const
     {
-      if (value < 0)
-        out.put(detail::the_sign_minus<charT>());
+        if (value < 0)
+            out.put(boost::stringify::detail::the_sign_minus<charT>());
 
-      unsigned_intT div = uint_traits::greatest_power_of_10_less_than(abs_value);
-      do
-      {
-        out.put(correspondig_character_of_digit((abs_value / div) % 10));
-      }
-      while(div /= 10);
+        auto div{uint_traits::greatest_power_of_10_less_than(abs_value)};
+        do
+        {
+            out.put
+                ( correspondig_character_of_digit((abs_value / div) % 10)
+                );
+        }
+        while(div /= 10);
     }
 
-  private:
+private:
     intT value;
     unsigned_intT abs_value;
 
     charT correspondig_character_of_digit(unsigned int digit) const noexcept
     {
-      return detail::the_digit_zero<charT>() + digit;
+        return boost::stringify::detail::the_digit_zero<charT>() + digit;
     }
-  };
+};
+
+
+template <typename charT, typename Formating>
+inline                                    
+boost::stringify::detail::int_writer<int, charT, Formating>
+argf(int i) noexcept
+{                                               
+    return i;                                     
+}
+
+template <typename charT, typename Formating>
+inline                                    
+boost::stringify::detail::int_writer<int, charT, Formating>
+argf(int i, const char*) noexcept
+{                                               
+    return i;                                     
+}
+
+
+template <typename charT, typename Formating>
+inline
+boost::stringify::detail::int_writer<long, charT, Formating>
+argf(long i) noexcept
+{
+    return i;
+}
+
+template <typename charT, typename Formating>
+inline
+boost::stringify::detail::int_writer<long long, charT, Formating>
+argf(long long i) noexcept
+{
+    return i;
+}
+
+template <typename charT, typename Formating>
+inline
+boost::stringify::detail::int_writer<unsigned int, charT, Formating>
+argf(unsigned int i) noexcept
+{
+    return i;
+}
+
+template <typename charT, typename Formating>
+inline
+boost::stringify::detail::int_writer<unsigned long, charT, Formating>
+argf(unsigned long i) noexcept
+{
+    return i;
+}
+
+template <typename charT, typename Formating>
+inline
+boost::stringify::detail::int_writer<unsigned long long, charT, Formating>
+argf(unsigned long long i) noexcept
+{
+    return i;
+}
+
 
 }//namespace detail
 }//namespace stringify

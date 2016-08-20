@@ -2,85 +2,65 @@
 #define BOOST_STRINGIFY_LISTF_HPP_INCLUDED
 
 #include <initializer_list>
-#include <boost/stringify/str_writer.hpp>
-#include <boost/stringify/argf.hpp>
+#include <boost/stringify/detail/str_writer_ref.hpp>
 
 namespace boost
 {
 namespace stringify
 {
-  template <typename charT>
-  class basic_listf: public str_writer<charT>
-  {
 
-    struct str_writer_ref
-    {
-      str_writer_ref(const str_writer<charT>& w) noexcept: writer(w) {}
-
-      template <class T>
-      using str_writer_of = decltype(basic_argf<charT>(std::declval<const T>()));
-
-      template <typename T>
-      str_writer_ref(
-        const T& value,
-        str_writer_of<T> && wt = str_writer_of<T>())
-      noexcept :
-        writer(wt)
-      {
-        wt.set(value);
-      }
-
-      const str_writer<charT>& writer;
-    };
-
-
+template <typename charT, typename Formating>
+class listf: public boost::stringify::str_writer<charT, Formating>
+{
     typedef 
-      std::initializer_list<str_writer_ref >
-      initializer_list_type;
+    std::initializer_list
+        <boost::stringify::detail::str_writer_ref<charT, Formating > >
+    initializer_list_type;
 
-    const initializer_list_type inilist;
+    const initializer_list_type inputs;
 
-  public:
+public:
 
-    basic_listf(const initializer_list_type& _inilist) noexcept:
-      inilist(_inilist)
+    listf(const initializer_list_type& _inputs) noexcept:
+    inputs(_inputs)
     {
     }
 
-    virtual std::size_t minimal_length() const noexcept
+    virtual std::size_t minimal_length(const Formating& fmt) const noexcept
     {
-      std::size_t sum=0;
-      for(auto it = inilist.begin(); it != inilist.end(); ++it)
-      {
-        sum += it->writer.minimal_length();
-      }
-      return sum;
+        std::size_t sum=0;
+        for(auto it = inputs.begin(); it != inputs.end(); ++it)
+        {
+            sum += it->writer.minimal_length(fmt);
+        }
+        return sum;
     }
 
 
-    virtual charT* write_without_termination_char(charT* out) const noexcept
+    virtual charT* write_without_termination_char
+        ( charT* out
+        , const Formating& fmt
+        ) const noexcept
     {
-      for(auto it = inilist.begin(); it != inilist.end(); ++it)
-      {
-        out = it->writer.write_without_termination_char(out);
-      }
-      return out;
+        for(auto it = inputs.begin(); it != inputs.end(); ++it)
+        {
+            out = it->writer.write_without_termination_char(out, fmt);
+        }
+        return out;
     }
 
-    virtual void write(simple_ostream<charT>& out) const
+    virtual void write
+        ( simple_ostream<charT>& out
+        , const Formating& fmt
+        ) const
     {
-      for(auto it = inilist.begin(); it != inilist.end() && out.good(); ++it)
-      {
-        it->writer.write(out);
-      }
+        for(auto it = inputs.begin(); it != inputs.end() && out.good(); ++it)
+        {
+            it->writer.write(out, fmt);
+        }
     }
 
-  };
-
-  typedef basic_listf<char>      listf;
-  typedef basic_listf<wchar_t>   wlistf;
-  typedef basic_listf<char16_t>  listf16;
-  typedef basic_listf<char32_t>  listf32;
+};
 } // namespace stringify
 } // namespace boost
 

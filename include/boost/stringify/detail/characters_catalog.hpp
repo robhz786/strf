@@ -70,7 +70,7 @@ namespace detail
 
 }//namespace detail
 }//namespace stringify
-}//namespace boot
+}//namespace boost
 
 
 

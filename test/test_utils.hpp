@@ -1,13 +1,14 @@
 #ifndef STRINGIFY_TEST_TEST_UTILS_HPP_INCLUDED
 #define STRINGIFY_TEST_TEST_UTILS_HPP_INCLUDED
 
+#include <boost/detail/lightweight_test.hpp>
 #include <sstream>
 #include <boost/stringify/detail/utf32_to_utf8.hpp>
 #include <boost/stringify/detail/utf16_to_utf8.hpp>
 #include <boost/stringify.hpp>
 
 namespace test_utils {
-
+/*
 template <typename output_type>
 struct output_traits
 {
@@ -71,7 +72,7 @@ std::string str8(const output_type& x)
   result << utfx_to_utf8(str(x).c_str());
   return result;
 }
-
+*/
 
 template <typename charT>
 struct to_upper_char_traits : public std::char_traits<charT>
@@ -98,16 +99,45 @@ struct to_upper_char_traits : public std::char_traits<charT>
     return dest;
   }
 };
-
-
 }; //namespace test_utils
 
+    
 
-#define BOOST_GENERIC_STR(charT, str)                                \
-  (::std::is_same<charT, char32_t>::value ? reinterpret_cast<const charT*>(U ## str) : \
-   ::std::is_same<charT, char16_t>::value ? reinterpret_cast<const charT*>(u ## str) : \
-   ::std::is_same<charT, wchar_t>::value  ? reinterpret_cast<const charT*>(L ## str) : \
-   /*else: */                               reinterpret_cast<const charT*>(str)) 
+template <int LINE_NUM, typename charT, typename ... Formaters> 
+void test
+    ( const charT* expected_cstr
+    , const boost::stringify::formater_tuple<Formaters ...>& fmt
+    , const boost::stringify::listf
+        < charT
+        , boost::stringify::formater_tuple<Formaters ...>
+        >& input
+    )
+{
+    const std::basic_string<charT> expected = expected_cstr;
+    
+    charT char_arr_output[200];
+    boost::stringify::basic_write<charT>(char_arr_output, fmt, input);
+    BOOST_TEST(expected == char_arr_output);
+
+    std::basic_string<charT> std_string_output;
+    boost::stringify::basic_assign<charT>(std_string_output, fmt, input);
+    BOOST_TEST(expected == std_string_output);
+
+    std::basic_ostringstream<charT> std_ostream_output;
+    boost::stringify::basic_write<charT>(std_ostream_output, fmt, input);
+    BOOST_TEST(expected == std_ostream_output.str());
+    
+    typedef test_utils::to_upper_char_traits<charT> other_char_traits;
+    
+    std::basic_string<charT, other_char_traits> std_string_alt_traits_output;
+    boost::stringify::basic_assign<charT>(std_string_alt_traits_output, fmt, input);
+    BOOST_TEST(std_string_alt_traits_output == expected.c_str());
+
+    std::basic_ostringstream<charT, other_char_traits> std_ostream_output_alt_traits;
+    boost::stringify::basic_write<charT>(std_ostream_output_alt_traits, fmt, input);
+    BOOST_TEST(std_ostream_output.str() == expected.c_str());
+}
+
 
 
 

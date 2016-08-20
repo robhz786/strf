@@ -1,76 +1,35 @@
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/stringify.hpp>
+#include "test_utils.hpp"
 
-
-void test_char32_to_utf8()
-{
-  using namespace boost::stringify;
-
-  {
-    std::string output;
-    output << listf
-    {
-      U'\u007F', U'\u0080', U'\u07ff', U'\u0800',
-      U'\uFFFF', U'\U00010000', U'\U0010ffff'
-    }; 
-
-    BOOST_TEST(
-      output == u8"\u007F\u0080\u07ff\u0800\uFFFF\U00010000\U0010ffff");
-  }
-
-  {
-    // test invalid codepoints
-    std::string output;
-    output << listf{static_cast<char32_t>(0x110000)};
-    BOOST_TEST(output.empty());
-  }
-}
-
-
-void test_char32_to_utf16()
-{
-  using namespace boost::stringify;
-
-  {
-    std::u16string output;
-    output << listf16
-    {
-      U'\ud7ff', U'\ue000', U'\uffff', U'\U00010000', U'\U0010ffff'
-    };
-
-    BOOST_TEST(output == u"\ud7ff\ue000\uffff\U00010000\U0010ffff");
-  }
-  {
-    // invalid codepoints
-    std::u16string output;
-    output << listf16{static_cast<char32_t>(0xd800), static_cast<char32_t>(0xdfff)};
-    BOOST_TEST(output.empty());
-  }
-}
-
-
-void test_char32_to_wstring()
-{
-  using namespace boost::stringify;
-  std::wstring output;
-
-  output << wlistf
-  {
-    U'\ud7ff', U'\ue000', U'\uffff', U'\U00010000', U'\U0010ffff'
-  };
-
-  BOOST_TEST(output == L"\ud7ff\ue000\uffff\U00010000\U0010ffff");
-}
-
-
+#define TEST test<__LINE__>
 
 int main()
 {
-  test_char32_to_utf16();
-  test_char32_to_utf8();
-  test_char32_to_wstring();
 
-  return  boost::report_errors();
+    /*
+    TEST( "abcd", {}, {'a', u'b', U'c', L'd'});
+    TEST(u"abcd", {}, {'a', u'b', U'c', L'd'});
+    TEST(U"abcd", {}, {'a', u'b', U'c', L'd'});
+    TEST(L"abcd", {}, {'a', u'b', U'c', L'd'});
+
+    TEST (u8"\ud7ff\ue000\uffff\U00010000\U0010ffff", {},
+          {U'\ud7ff', U'\ue000', U'\uffff', U'\U00010000', U'\U0010ffff'});
+
+    TEST (u"\ud7ff\ue000\uffff\U00010000\U0010ffff", {},
+          {U'\ud7ff', U'\ue000', U'\uffff', U'\U00010000', U'\U0010ffff'});
+
+    TEST (L"\ud7ff\ue000\uffff\U00010000\U0010ffff", {},
+          {U'\ud7ff', U'\ue000', U'\uffff', U'\U00010000', U'\U0010ffff'});
+
+    TEST (U"\ud7ff\ue000\uffff\U00010000\U0010ffff", {},
+          {U'\ud7ff', U'\ue000', U'\uffff', U'\U00010000', U'\U0010ffff'});
+    
+    // invalid codepoints:
+    TEST ( "", {}, {static_cast<char32_t>(0x110000)});
+    TEST (u"", {}, {static_cast<char32_t>(0xd800), static_cast<char32_t>(0xdfff)});
+    */ 
+    return  boost::report_errors();
 }
 
 
