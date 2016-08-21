@@ -1,19 +1,19 @@
 #ifndef BOOST_STRINGIFY_DETAIL_UTF16_TO_UTF8_HPP_INCLUDED
 #define BOOST_STRINGIFY_DETAIL_UTF16_TO_UTF8_HPP_INCLUDED
 
-#include <boost/stringify/detail/char_writer.hpp>
+#include <boost/stringify/input_char.hpp>
 
 namespace boost {
 namespace stringify {
 namespace detail {
 
 template<typename charT, typename Formating>
-struct utf16_to_utf8: boost::stringify::str_writer<char, Formating>
+struct utf16_to_utf8: boost::stringify::input_base<char, Formating>
 {
     const charT* str;
 
-    utf16_to_utf8() noexcept:
-                     str(0)
+    utf16_to_utf8() noexcept
+        : str(0)
     {
     }
 

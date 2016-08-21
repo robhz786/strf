@@ -3,8 +3,8 @@
 
 #include <boost/detail/lightweight_test.hpp>
 #include <sstream>
-#include <boost/stringify/detail/utf32_to_utf8.hpp>
-#include <boost/stringify/detail/utf16_to_utf8.hpp>
+// #include <boost/stringify/detail/utf32_to_utf8.hpp>
+// #include <boost/stringify/detail/utf16_to_utf8.hpp>
 #include <boost/stringify.hpp>
 
 namespace test_utils {

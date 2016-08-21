@@ -4,7 +4,7 @@
 #include <initializer_list>
 #include <string>
 #include <ostream>
-#include <boost/stringify/str_writer.hpp>
+#include <boost/stringify/input_base.hpp>
 #include <boost/stringify/formater_tuple.hpp>
 #include <boost/stringify/listf.hpp>
 
@@ -21,7 +21,7 @@ template<typename charT, typename Formating>
 void basic_write
     ( charT* output
     , const Formating& fmt
-    , const boost::stringify::str_writer<charT, Formating>& writer
+    , const boost::stringify::input_base<charT, Formating>& writer
     )
 {
     writer.write(output, fmt);
@@ -31,7 +31,7 @@ template <typename ... Formaters>
 char* swrite
     ( char* output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::detail::str_writer_ref
+    , const boost::stringify::detail::input_base_ref
         < char
         , typename std::decay<decltype(fmt)>::type
         > & awr1
@@ -45,11 +45,11 @@ template <typename ... Formaters>
 char* swrite
     ( char* output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::detail::str_writer_ref
+    , const boost::stringify::detail::input_base_ref
         < char
         , typename std::decay<decltype(fmt)>::type
         > & awr1
-    , const boost::stringify::detail::str_writer_ref
+    , const boost::stringify::detail::input_base_ref
         < char
         , typename std::decay<decltype(fmt)>::type
         > & lastawr  
@@ -65,15 +65,15 @@ template <typename ... Formaters>
 char* swrite
     ( char* output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::detail::str_writer_ref
+    , const boost::stringify::detail::input_base_ref
         < char
         , typename std::decay<decltype(fmt)>::type
         > & awr1
-    , const boost::stringify::detail::str_writer_ref
+    , const boost::stringify::detail::input_base_ref
         < char
         , typename std::decay<decltype(fmt)>::type
         > & awr2
-    , const boost::stringify::detail::str_writer_ref
+    , const boost::stringify::detail::input_base_ref
         < char
         , typename std::decay<decltype(fmt)>::type
         > & lastawr
@@ -89,19 +89,19 @@ template <typename ... Formaters>
 char* swrite
     ( char* output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::detail::str_writer_ref
+    , const boost::stringify::detail::input_base_ref
         < char
         , typename std::decay<decltype(fmt)>::type
         > & awr1
-    , const boost::stringify::detail::str_writer_ref
+    , const boost::stringify::detail::input_base_ref
         < char
         , typename std::decay<decltype(fmt)>::type
         > & awr2
-    , const boost::stringify::detail::str_writer_ref
+    , const boost::stringify::detail::input_base_ref
         < char
         , typename std::decay<decltype(fmt)>::type
         > & awr3
-    , const boost::stringify::detail::str_writer_ref
+    , const boost::stringify::detail::input_base_ref
         < char
         , typename std::decay<decltype(fmt)>::type
         > & lastawr
@@ -122,7 +122,7 @@ template<typename charT, typename traits, typename Allocator, typename Formartin
 void basic_assign
     ( std::basic_string<charT, traits, Allocator>& str
     , const Formarting& fmt
-    , const boost::stringify::str_writer<charT, Formarting>& input
+    , const boost::stringify::input_base<charT, Formarting>& input
     )
 {
     str.assign(input.minimal_length(fmt), charT());
@@ -143,7 +143,7 @@ template<typename charT, typename traits, typename Allocator, typename Formartin
 void basic_append
     ( std::basic_string<charT, traits, Allocator>& str
     , const Formarting& fmt
-    , const boost::stringify::str_writer<charT, Formarting>& input
+    , const boost::stringify::input_base<charT, Formarting>& input
     )
 {
     // allocate memorry
@@ -205,7 +205,7 @@ template<typename charT, typename traits, typename Formarting>
 void basic_write
     ( std::basic_ostream<charT, traits>& output
     , const Formarting& fmt
-    , const boost::stringify::str_writer<charT, Formarting>& input
+    , const boost::stringify::input_base<charT, Formarting>& input
     )
 {
     boost::stringify::detail::std_ostream_adapter<charT, traits>

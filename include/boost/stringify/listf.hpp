@@ -2,7 +2,7 @@
 #define BOOST_STRINGIFY_LISTF_HPP_INCLUDED
 
 #include <initializer_list>
-#include <boost/stringify/detail/str_writer_ref.hpp>
+#include <boost/stringify/detail/input_base_ref.hpp>
 
 namespace boost
 {
@@ -10,11 +10,11 @@ namespace stringify
 {
 
 template <typename charT, typename Formating>
-class listf: public boost::stringify::str_writer<charT, Formating>
+class listf: public boost::stringify::input_base<charT, Formating>
 {
     typedef 
     std::initializer_list
-        <boost::stringify::detail::str_writer_ref<charT, Formating > >
+        <boost::stringify::detail::input_base_ref<charT, Formating > >
     initializer_list_type;
 
     const initializer_list_type inputs;

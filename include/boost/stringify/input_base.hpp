@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_STR_WRITER_HPP_INCLUDED
-#define BOOST_STRINGIFY_STR_WRITER_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_INPUT_BASE_HPP_INCLUDED
+#define BOOST_STRINGIFY_INPUT_BASE_HPP_INCLUDED
 
 #include <boost/assert.hpp>
 #include <cstddef>
@@ -12,10 +12,10 @@ template <typename charT>
 class simple_ostream;
 
 template <typename charT, typename Formating>
-class str_writer
+class input_base
 {
 public:
-      virtual ~str_writer()
+      virtual ~input_base()
       {}
 
       /**

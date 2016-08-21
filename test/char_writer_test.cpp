@@ -6,13 +6,12 @@
 
 int main()
 {
-
     /*
-    TEST( "abcd", {}, {'a', u'b', U'c', L'd'});
-    TEST(u"abcd", {}, {'a', u'b', U'c', L'd'});
-    TEST(U"abcd", {}, {'a', u'b', U'c', L'd'});
-    TEST(L"abcd", {}, {'a', u'b', U'c', L'd'});
-
+    TEST( "ab", {}, {'a', U'b'});
+    TEST(u"ab", {}, {'a', U'b'});
+    TEST(U"ab", {}, {'a', U'b'});
+    TEST(L"ab", {}, {'a', U'b'});
+  
     TEST (u8"\ud7ff\ue000\uffff\U00010000\U0010ffff", {},
           {U'\ud7ff', U'\ue000', U'\uffff', U'\U00010000', U'\U0010ffff'});
 

@@ -1,17 +1,17 @@
 #ifndef BOOST_STRINGIFY_DETAIL_STR_WRITE_REF_HPP
 #define BOOST_STRINGIFY_DETAIL_STR_WRITE_REF_HPP
 
-#include <boost/stringify/str_writer.hpp>
+#include <boost/stringify/input_base.hpp>
 
 namespace boost {
 namespace stringify {
 namespace detail {
 
 template <typename charT, typename Formating>
-struct str_writer_ref
+struct input_base_ref
 {
-    str_writer_ref
-        ( const boost::stringify::str_writer<charT, Formating>& w
+    input_base_ref
+        ( const boost::stringify::input_base<charT, Formating>& w
         )
         noexcept
         : writer(w)
@@ -19,13 +19,13 @@ struct str_writer_ref
     }
 
     template <class T>
-    using str_writer_of
+    using input_base_of
     = decltype(argf<charT, Formating>(std::declval<const T>()));
            
     template <typename T, typename ... ExtraArgs>
-    str_writer_ref
+    input_base_ref
         ( const T& value
-        , str_writer_of<T> && wt = str_writer_of<T>()
+        , input_base_of<T> && wt = input_base_of<T>()
         )
         noexcept
         : writer(wt)
@@ -35,10 +35,10 @@ struct str_writer_ref
 
     /*   
     template <typename T, typename ... ExtraArgs>
-    str_writer_ref
+    input_base_ref
         ( const T& value
-        , const typename str_writer_of<T>::local_formating& fmt
-        , str_writer_of<T> && wt = str_writer_of<T, const char*>()
+        , const typename input_base_of<T>::local_formating& fmt
+        , input_base_of<T> && wt = input_base_of<T, const char*>()
         ) noexcept
         : writer(wt)
     {
@@ -46,7 +46,7 @@ struct str_writer_ref
     }
     */
     
-    const boost::stringify::str_writer<charT, Formating>& writer;
+    const boost::stringify::input_base<charT, Formating>& writer;
 };
 
 

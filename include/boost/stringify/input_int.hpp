@@ -1,18 +1,17 @@
-#ifndef BOOST_STRINGIFY_DETAIL_INT_WRITER_HPP_INCLUDED
-#define BOOST_STRINGIFY_DETAIL_INT_WRITER_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_INPUT_INT_HPP_INCLUDED
+#define BOOST_STRINGIFY_INPUT_INT_HPP_INCLUDED
 
+#include <boost/stringify/input_base.hpp>
 #include <boost/stringify/detail/characters_catalog.hpp>
-#include <boost/stringify/str_writer.hpp>
 #include <boost/stringify/detail/uint_traits.hpp>
 
 namespace boost
 {
 namespace stringify
 {
-namespace detail
-{
+
 template <typename intT, typename charT, typename Formating>
-struct int_writer: public boost::stringify::str_writer<charT, Formating>
+struct input_int: public boost::stringify::input_base<charT, Formating>
 {
 private:
     typedef typename std::make_unsigned<intT>::type  unsigned_intT;
@@ -20,13 +19,13 @@ private:
 
 public:
 
-    int_writer() noexcept
+    input_int() noexcept
         : value(0)
         , abs_value(0)
     {
     }
 
-    int_writer(intT _value) noexcept
+    input_int(intT _value) noexcept
     {
         set(_value);
     }
@@ -96,7 +95,7 @@ private:
 
 template <typename charT, typename Formating>
 inline                                    
-boost::stringify::detail::int_writer<int, charT, Formating>
+boost::stringify::input_int<int, charT, Formating>
 argf(int i) noexcept
 {                                               
     return i;                                     
@@ -104,7 +103,7 @@ argf(int i) noexcept
 
 template <typename charT, typename Formating>
 inline                                    
-boost::stringify::detail::int_writer<int, charT, Formating>
+boost::stringify::input_int<int, charT, Formating>
 argf(int i, const char*) noexcept
 {                                               
     return i;                                     
@@ -113,7 +112,7 @@ argf(int i, const char*) noexcept
 
 template <typename charT, typename Formating>
 inline
-boost::stringify::detail::int_writer<long, charT, Formating>
+boost::stringify::input_int<long, charT, Formating>
 argf(long i) noexcept
 {
     return i;
@@ -121,7 +120,7 @@ argf(long i) noexcept
 
 template <typename charT, typename Formating>
 inline
-boost::stringify::detail::int_writer<long long, charT, Formating>
+boost::stringify::input_int<long long, charT, Formating>
 argf(long long i) noexcept
 {
     return i;
@@ -129,7 +128,7 @@ argf(long long i) noexcept
 
 template <typename charT, typename Formating>
 inline
-boost::stringify::detail::int_writer<unsigned int, charT, Formating>
+boost::stringify::input_int<unsigned int, charT, Formating>
 argf(unsigned int i) noexcept
 {
     return i;
@@ -137,7 +136,7 @@ argf(unsigned int i) noexcept
 
 template <typename charT, typename Formating>
 inline
-boost::stringify::detail::int_writer<unsigned long, charT, Formating>
+boost::stringify::input_int<unsigned long, charT, Formating>
 argf(unsigned long i) noexcept
 {
     return i;
@@ -145,14 +144,13 @@ argf(unsigned long i) noexcept
 
 template <typename charT, typename Formating>
 inline
-boost::stringify::detail::int_writer<unsigned long long, charT, Formating>
+boost::stringify::input_int<unsigned long long, charT, Formating>
 argf(unsigned long long i) noexcept
 {
     return i;
 }
 
 
-}//namespace detail
 }//namespace stringify
 }//namespace boost
 
