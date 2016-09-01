@@ -28,7 +28,7 @@ struct utf16_to_utf8: boost::stringify::input_base<char, Formating>
     }
 
     
-    virtual std::size_t minimal_length(const Formating& fmt) const noexcept
+    virtual std::size_t length(const Formating& fmt) const noexcept
     {
         std::size_t len = 0;
         const charT* it = str;
@@ -37,8 +37,7 @@ struct utf16_to_utf8: boost::stringify::input_base<char, Formating>
             char32_t codepoint = read_codepoint(it);
             if (codepoint)
             {
-                len += char32_to_utf8<Formating>(codepoint)
-                    .minimal_length(fmt);
+                len += char32_to_utf8<Formating>(codepoint).length(fmt);
             }
         }
         return len;

@@ -26,7 +26,7 @@ public:
         codepoint = _codepoint;
     }
 
-    virtual std::size_t minimal_length(const Formating&) const noexcept
+    virtual std::size_t length(const Formating&) const noexcept
     {
         return (single_char_range() ? 1 :
                 two_chars_range()   ? 2 : 0);
@@ -50,21 +50,24 @@ public:
         return out;
     }
 
-    virtual void write(simple_ostream<charT>& out, const Formating&) const
-    {
-        if (single_char_range())
-        {
-            out.put(static_cast<charT>(codepoint));
-        }
-        else if (two_chars_range())
-        {
-            char32_t sub_codepoint = codepoint - 0x10000;
-            char32_t high_surrogate = 0xD800 + ((sub_codepoint & 0xFFC00) >> 10);
-            char32_t low_surrogate  = 0xDC00 +  (sub_codepoint &  0x3FF);
-            out.put(static_cast<charT>(high_surrogate));
-            out.put(static_cast<charT>(low_surrogate));
-        }
-    }
+    // virtual void write_ostream
+    //     ( boost::stringify::simple_ostream<charT>& out
+    //     , const Formating&
+    //     ) const
+    // {
+    //     if (single_char_range())
+    //     {
+    //         out.put(static_cast<charT>(codepoint));
+    //     }
+    //     else if (two_chars_range())
+    //     {
+    //         char32_t sub_codepoint = codepoint - 0x10000;
+    //         char32_t high_surrogate = 0xD800 + ((sub_codepoint & 0xFFC00) >> 10);
+    //         char32_t low_surrogate  = 0xDC00 +  (sub_codepoint &  0x3FF);
+    //         out.put(static_cast<charT>(high_surrogate));
+    //         out.put(static_cast<charT>(low_surrogate));
+    //     }
+    // }
 
 private:
 

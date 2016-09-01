@@ -1,11 +1,10 @@
-#ifndef BOOST_STRINGIFY_DETAIL_STR_WRITE_REF_HPP
-#define BOOST_STRINGIFY_DETAIL_STR_WRITE_REF_HPP
+#ifndef BOOST_STRINGIFY_STR_WRITE_REF_HPP
+#define BOOST_STRINGIFY_STR_WRITE_REF_HPP
 
 #include <boost/stringify/input_base.hpp>
 
 namespace boost {
 namespace stringify {
-namespace detail {
 
 template <typename charT, typename Formating>
 struct input_base_ref
@@ -45,12 +44,35 @@ struct input_base_ref
         wt.set(value, fmt);
     }
     */
+
+    std::size_t length(const Formating& fmt) const noexcept
+    {
+        return writer.length(fmt);
+    }
+
+    charT* write_without_termination_char
+        ( charT* out
+        , const Formating& fmt
+        ) const noexcept
+    {
+        return writer.write_without_termination_char(out, fmt);
+    }
+        
+    charT* write
+        ( charT* out
+        , const Formating& fmt
+        ) const noexcept
+    {
+        return writer.write(out, fmt);
+    }
     
+private:
+   
     const boost::stringify::input_base<charT, Formating>& writer;
+
 };
 
 
-} // namespace detail
 } // namespace stringify
 } // namespace boost
 

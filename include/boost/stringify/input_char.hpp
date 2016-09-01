@@ -29,7 +29,7 @@ public:
         character = _character;
     }
 
-    virtual std::size_t minimal_length(const Formating&) const noexcept
+    virtual std::size_t length(const Formating&) const noexcept
     {
         return 1;
     }
@@ -41,10 +41,13 @@ public:
         return out + 1;
     }
 
-    virtual void write(simple_ostream<charT>& out, const Formating&) const
-    {
-        out.put(character);
-    }
+    // virtual void write
+    //     ( boost::stringify::simple_ostream<charT>& out
+    //     , const Formating&
+    //     ) const
+    // {
+    //     out.put(character);
+    // }
     
 private:
     
@@ -59,6 +62,16 @@ argf(charT c) noexcept
     return c;
 }
 
+
+template <typename charT, typename Formating>
+typename std::enable_if
+    < std::is_same<charT, wchar_t>::value && sizeof(charT) == sizeof(char32_t)
+    , boost::stringify::input_char<charT, Formating>
+    > :: type
+argf(char32_t c) noexcept
+{
+    return c;
+}
 
 } // namespace stringify
 } // namespace boost

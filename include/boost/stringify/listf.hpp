@@ -2,7 +2,7 @@
 #define BOOST_STRINGIFY_LISTF_HPP_INCLUDED
 
 #include <initializer_list>
-#include <boost/stringify/detail/input_base_ref.hpp>
+#include <boost/stringify/input_base_ref.hpp>
 
 namespace boost
 {
@@ -13,9 +13,9 @@ template <typename charT, typename Formating>
 class listf: public boost::stringify::input_base<charT, Formating>
 {
     typedef 
-    std::initializer_list
-        <boost::stringify::detail::input_base_ref<charT, Formating > >
-    initializer_list_type;
+        std::initializer_list
+            <boost::stringify::input_base_ref<charT, Formating > >
+        initializer_list_type;
 
     const initializer_list_type inputs;
 
@@ -26,12 +26,14 @@ public:
     {
     }
 
-    virtual std::size_t minimal_length(const Formating& fmt) const noexcept
+    using boost::stringify::input_base<charT, Formating>::write;
+    
+    virtual std::size_t length(const Formating& fmt) const noexcept
     {
         std::size_t sum=0;
         for(auto it = inputs.begin(); it != inputs.end(); ++it)
         {
-            sum += it->writer.minimal_length(fmt);
+            sum += it->length(fmt);
         }
         return sum;
     }
@@ -44,13 +46,13 @@ public:
     {
         for(auto it = inputs.begin(); it != inputs.end(); ++it)
         {
-            out = it->writer.write_without_termination_char(out, fmt);
+            out = it->write_without_termination_char(out, fmt);
         }
         return out;
     }
-
+/*
     virtual void write
-        ( simple_ostream<charT>& out
+        ( boost::stringify::simple_ostream<charT>& out
         , const Formating& fmt
         ) const
     {
@@ -59,7 +61,7 @@ public:
             it->writer.write(out, fmt);
         }
     }
-
+*/
 };
 } // namespace stringify
 } // namespace boost

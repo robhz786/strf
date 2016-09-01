@@ -26,7 +26,7 @@ public:
         codepoint = _codepoint;
     }
 
-    virtual std::size_t minimal_length(const Formating&) const noexcept
+    virtual std::size_t length(const Formating&) const noexcept
     {
         return (codepoint <     0x80 ? 1 :
                 codepoint <    0x800 ? 2 :
@@ -45,12 +45,15 @@ public:
                 /* invalid codepoit */ out);
     }
 
-    virtual void write(simple_ostream<char>& out, const Formating& fmt) const
-    {
-        char buff[4];
-        write_without_termination_char(buff, fmt);
-        out.write(buff, 4);
-    }
+    // virtual void write
+    //     ( boost::stringify::simple_ostream<char>& out
+    //     , const Formating& fmt
+    //     ) const
+    // {
+    //     char buff[4];
+    //     write_without_termination_char(buff, fmt);
+    //     out.write(buff, 4);
+    // }
 
 private:
 

@@ -8,7 +8,7 @@
 #include <boost/stringify/input_char_ptr.hpp>
 #include <boost/stringify/input_std_string.hpp>
 
-#include <boost/stringify/output_types.hpp>
-#include <boost/stringify/listf.hpp>
+#include <boost/stringify/lengthf.hpp>
+#include <boost/stringify/writef_char_ptr.hpp>
 
 #endif

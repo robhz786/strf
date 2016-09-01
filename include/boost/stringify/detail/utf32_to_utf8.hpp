@@ -27,11 +27,11 @@ struct utf32_to_utf8: boost::stringify::input_base<char, Formating>
         str = _str;
     }
 
-    virtual std::size_t minimal_length(const Formating& fmt) const noexcept
+    virtual std::size_t length(const Formating& fmt) const noexcept
     {
         std::size_t len = 0;
         for (const charT* it = str; *it != charT(); ++it)
-            len += char32_to_utf8<Formating>(*it).minimal_length(fmt);
+            len += char32_to_utf8<Formating>(*it).length(fmt);
 
         return len;
     }
@@ -50,7 +50,7 @@ struct utf32_to_utf8: boost::stringify::input_base<char, Formating>
         return out;
     }
 
-    virtual void write
+    virtual void write_ostream
         ( boost::stringify::simple_ostream<char>& out
         , const Formating& fmt
         )

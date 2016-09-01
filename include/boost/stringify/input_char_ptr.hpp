@@ -1,6 +1,7 @@
 #ifndef BOOST_STRINGIFY_INPUT_CHAR_PTR
 #define BOOST_STRINGIFY_INPUT_CHAR_PTR
 
+#include <algorithm>
 #include <limits>
 #include <boost/stringify/input_base.hpp>
 
@@ -30,7 +31,7 @@ struct input_char_ptr: boost::stringify::input_base<charT, Formating>
         len = (std::numeric_limits<std::size_t>::max) ();
     }
 
-    virtual std::size_t minimal_length(const Formating&) const noexcept
+    virtual std::size_t length(const Formating&) const noexcept
     {
         return get_length();
     }
@@ -40,13 +41,16 @@ struct input_char_ptr: boost::stringify::input_base<charT, Formating>
         return std::copy(str, str + get_length(), out);
     }
 
-    virtual void write(boost::stringify::simple_ostream<charT>& out, const Formating&) const
-    {
-        if(str)
-        {
-            out.write(str, get_length());
-        }
-    }
+    // virtual void write
+    //     ( boost::stringify::simple_ostream<charT>& out
+    //     , const Formating&
+    //     ) const
+    // {
+    //     if(str)
+    //     {
+    //         out.write(str, get_length());
+    //     }
+    // }
 
 
 private:

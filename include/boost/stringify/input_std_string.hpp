@@ -29,7 +29,7 @@ struct input_std_string: public boost::stringify::input_base<charT, Formating>
         str = &_str;
     }
 
-    virtual std::size_t minimal_length(const Formating&) const noexcept
+    virtual std::size_t length(const Formating&) const noexcept
     {
         return str ? str->length() : 0;
     }
@@ -46,13 +46,16 @@ struct input_std_string: public boost::stringify::input_base<charT, Formating>
         return std::copy(str->begin(), str->end(), out);
     }
 
-    virtual void write(boost::stringify::simple_ostream<charT>& out, const Formating&) const
-    {
-        if(str)
-        {
-            out.write(str->c_str(), str->length());
-        }
-    }
+    // virtual void write
+    //     ( boost::stringify::simple_ostream<charT>& out
+    //     , const Formating&
+    //     ) const
+    // {
+    //     if(str)
+    //     {
+    //         out.write(str->c_str(), str->length());
+    //     }
+    // }
 };
 
 

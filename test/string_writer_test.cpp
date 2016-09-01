@@ -7,8 +7,8 @@
 
 int main()
 {
-    TEST ( "asdf", {}, {"asdf"});
-    TEST ( "asdf", {}, {std::string("asdf")});
+    TEST ( "asdf", {}, "asdf");
+    TEST ( "asdf", {}, std::string("asdf"));
 
 
     
