@@ -103,73 +103,101 @@ struct to_upper_char_traits : public std::char_traits<charT>
 
 
 
-
-template
-    < int LINE_NUM
-    , typename charT
-    , typename ... GlobalFormaters
-    , typename ... Args  
-    >
-void test_impl
-    ( const std::basic_string<charT>& expected
-    , const boost::stringify::formater_tuple<GlobalFormaters ...>& fmt
-    , const Args& ... args
-    )
+template <typename charT>
+struct weird_char_traits : public std::char_traits<charT>
 {
-    BOOST_TEST(expected.length() == boost::stringify::lengthf<charT>(fmt, args...));
+  static charT*
+  copy(charT* to, const charT* from, std::size_t n)
+  {
+    charT* it = to;
+    while(n--)
+    {
+        assign(*it++, *from++);
+    }
+    return to;
+  }
 
-    BOOST_TEST(expected.length() == boost::stringify::lengthf_il<charT>(fmt, {args...}));
-    
-    charT char_arr_output[200];
-    boost::stringify::writef(char_arr_output, fmt, args...);
-    BOOST_TEST(expected == char_arr_output);
+  static void
+  assign(charT& c1, const charT& c2)
+  {
+      if (c2 == charT())
+      {
+          c1 = c2;
+      }
+      else
+      {
+          c1 = c2 | ( 1 << (sizeof(charT) * 8 - 1));
+      }
+  }
 
-    boost::stringify::writef_il(char_arr_output, fmt, {args...});
-    BOOST_TEST(expected == char_arr_output);
-}
-
-/*
-template
-    < int LINE_NUM
-    , typename charT
-    , typename ... Formaters
-    , typename Arg  
-    >
-void test
-    ( const charT* expected
-    , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , Arg&& arg
-    )
-{
-    typedef
-        const boost::stringify::input_base_ref
-            < decltype(getChar(expected))
-            , typename std::decay<decltype(fmt)>::type
-            >
-        A;
-    test_impl(expected, fmt, A(arg));
-}
-
-template
-    < int LINE_NUM
-    , typename charT
-    , typename ... Formaters
-    , typename Args  
-    >
-void test
-    ( const charT* expected
-    , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , Arg1 ... arg1
-    , Args&& ... arg
-    )
-{
- 
-}
-*/
+  static charT*
+  assign(charT* dest, std::size_t n, charT a)
+  {
+      charT b;
+      assign(b, a);
+      std::fill_n(dest, n, b);
+      return dest;
+  }
+};
 
 
 template <typename charT> charT getChar(const charT*);
 
+template
+    < int LINE_NUM
+    , typename charT
+    , typename charTraits  
+    , typename ... Formaters
+    , typename Arg
+    >
+void test_with_traits
+    ( const charT* _expected
+    , const boost::stringify::formater_tuple<Formaters ...>& fmt
+    , const Arg& arg
+    )
+{
+    typedef
+        boost::stringify::formater_tuple<Formaters ...>
+        Fmt;
+
+    typedef
+        boost::stringify::input_base_ref<charT, charTraits, Fmt>
+        str_arg;
+    
+    charT expected[200];
+    charT resulted[200];
+    std::size_t expected_len = charTraits::length(_expected);
+    charTraits::copy(expected, _expected, expected_len);
+  
+    std::size_t resulted_length = str_arg(arg).length(fmt);
+    BOOST_TEST(expected_len == resulted_length);
+    
+    charT* end = str_arg(arg).write(resulted, fmt);
+    BOOST_TEST(expected_len == static_cast<std::size_t>(end - resulted));
+    
+    int string_comparation = charTraits::compare(expected, resulted, expected_len);
+    BOOST_TEST(0 == string_comparation);
+}
+
+    
+template
+    < int LINE_NUM
+    , typename charT
+    , typename ... Formaters
+    , typename Arg
+    >
+void test
+    ( const charT* expected
+    , const boost::stringify::formater_tuple<Formaters ...>& fmt
+    , const Arg& arg
+    )
+{
+    test_with_traits<LINE_NUM, charT, std::char_traits<charT> >(expected, fmt, arg);
+    test_with_traits<LINE_NUM, charT, weird_char_traits<charT> >(expected, fmt, arg);
+}
+
+
+/*
 template
     < int LINE_NUM
     , typename charT
@@ -180,6 +208,7 @@ void test
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
     , const boost::stringify::input_base_ref
         < decltype(getChar(expected))
+        , std::char_traits<charT>
         , typename std::decay<decltype(fmt)>::type
         > & arg1
     )
@@ -198,6 +227,7 @@ void test
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
     , const boost::stringify::input_base_ref
         < decltype(getChar(expected))
+        , std::char_traits<charT>
         , typename std::decay<decltype(fmt)>::type
         > & arg1
     , decltype(arg1) arg2
@@ -217,6 +247,7 @@ void test
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
     , const boost::stringify::input_base_ref
         < decltype(getChar(expected))
+        , std::char_traits<charT>
         , typename std::decay<decltype(fmt)>::type
         > & arg1
     , decltype(arg1) arg2
@@ -237,6 +268,7 @@ void test
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
     , const boost::stringify::input_base_ref
         < decltype(getChar(expected))
+        , std::char_traits<charT>
         , typename std::decay<decltype(fmt)>::type
         > & arg1
     , decltype(arg1) arg2
@@ -258,6 +290,7 @@ void test
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
     , const boost::stringify::input_base_ref
         < decltype(getChar(expected))
+        , std::char_traits<charT>
         , typename std::decay<decltype(fmt)>::type
         > & arg1
     , decltype(arg1) arg2
@@ -268,7 +301,7 @@ void test
 {
     test_impl<LINE_NUM, charT>(expected, fmt, arg1, arg2, arg3, arg4, arg5);
 }
-
+*/
 
 
 #endif

@@ -10,7 +10,7 @@ namespace boost
 namespace stringify
 {
 
-template <typename intT, typename charT, typename Formating>
+template <typename intT, typename charT, typename traits, typename Formating>
 struct input_int: public boost::stringify::input_base<charT, Formating>
 {
 private:
@@ -50,14 +50,14 @@ public:
         ) const noexcept
     {
         if (value < 0)
-            *out++ = boost::stringify::detail::the_sign_minus<charT>();
+            traits::assign(*out++, boost::stringify::detail::the_sign_minus<charT>());
 
         out += uint_traits::number_of_digits(abs_value);
         unsigned_intT it_value = abs_value;
         charT* end = out;
         do
         {
-            *--out = character_of_digit(it_value % 10);
+            traits::assign(*--out, character_of_digit(it_value % 10));
         }
         while(it_value /= 10);
 
@@ -91,58 +91,58 @@ private:
 };
 
 
-template <typename charT, typename Formating>
+template <typename charT, typename traits, typename Formating>
 inline                                    
-boost::stringify::input_int<int, charT, Formating>
+boost::stringify::input_int<int, charT, traits, Formating>
 argf(int i) noexcept
 {                                               
     return i;                                     
 }
 
-template <typename charT, typename Formating>
+template <typename charT, typename traits, typename Formating>
 inline                                    
-boost::stringify::input_int<int, charT, Formating>
+boost::stringify::input_int<int, charT, traits, Formating>
 argf(int i, const char*) noexcept
 {                                               
     return i;                                     
 }
 
 
-template <typename charT, typename Formating>
+template <typename charT, typename traits, typename Formating>
 inline
-boost::stringify::input_int<long, charT, Formating>
+boost::stringify::input_int<long, charT, traits, Formating>
 argf(long i) noexcept
 {
     return i;
 }
 
-template <typename charT, typename Formating>
+template <typename charT, typename traits, typename Formating>
 inline
-boost::stringify::input_int<long long, charT, Formating>
+boost::stringify::input_int<long long, charT, traits, Formating>
 argf(long long i) noexcept
 {
     return i;
 }
 
-template <typename charT, typename Formating>
+template <typename charT, typename traits, typename Formating>
 inline
-boost::stringify::input_int<unsigned int, charT, Formating>
+boost::stringify::input_int<unsigned int, charT, traits, Formating>
 argf(unsigned int i) noexcept
 {
     return i;
 }
 
-template <typename charT, typename Formating>
+template <typename charT, typename traits, typename Formating>
 inline
-boost::stringify::input_int<unsigned long, charT, Formating>
+boost::stringify::input_int<unsigned long, charT, traits, Formating>
 argf(unsigned long i) noexcept
 {
     return i;
 }
 
-template <typename charT, typename Formating>
+template <typename charT, typename traits, typename Formating>
 inline
-boost::stringify::input_int<unsigned long long, charT, Formating>
+boost::stringify::input_int<unsigned long long, charT, traits, Formating>
 argf(unsigned long long i) noexcept
 {
     return i;

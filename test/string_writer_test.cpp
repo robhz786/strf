@@ -3,17 +3,12 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/stringify.hpp>
 
-#define TEST test<__LINE__>
-
 int main()
 {
-    TEST ( "asdf", {}, "asdf");
-    TEST ( "asdf", {}, std::string("asdf"));
-
-
-    
-
-  return  boost::report_errors();
+    test<__LINE__> ( "asdf", {}, "asdf");
+    test_with_traits<__LINE__, char, std::char_traits<char> > ( "asdf", {}, std::string("asdf"));
+  
+    return  boost::report_errors();
 }
 
 

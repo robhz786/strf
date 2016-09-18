@@ -10,7 +10,7 @@ namespace boost
 namespace stringify
 {
 
-template<typename charT, typename Formating>
+template<typename charT, typename traits, typename Formating>
 struct input_char_ptr: boost::stringify::input_base<charT, Formating>
 {
     input_char_ptr() noexcept:
@@ -38,7 +38,7 @@ struct input_char_ptr: boost::stringify::input_base<charT, Formating>
 
     virtual charT* write_without_termination_char(charT* out, const Formating&) const noexcept
     {
-        return std::copy(str, str + get_length(), out);
+        return traits::copy(out, str, get_length()) + get_length();
     }
 
     // virtual void write
@@ -61,23 +61,17 @@ private:
     {
         if (len == (std::numeric_limits<std::size_t>::max) ())
         {
-            try
-            {
-                len = std::char_traits<charT>::length(str);
-            }
-            catch(...)
-            {
-                len = 0;
-            }
+            len = std::char_traits<charT>::length(str);
         }
         return len;
     }
 
 }; 
 
-template <typename charT, typename Formating>
+template <typename charT, typename traits, typename Formating>
 inline
-boost::stringify::input_char_ptr<charT, Formating> argf(const charT* str) noexcept
+boost::stringify::input_char_ptr<charT, traits, Formating>
+argf(const charT* str) noexcept
 {
     return str;
 }

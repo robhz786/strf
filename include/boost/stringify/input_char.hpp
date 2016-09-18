@@ -9,7 +9,7 @@ namespace boost
 namespace stringify
 {
 
-template <typename charT, typename Formating>
+template <typename charT, typename traits, typename Formating>
 class input_char: public boost::stringify::input_base<charT, Formating>
 {
 public:
@@ -37,7 +37,7 @@ public:
     virtual charT* write_without_termination_char(charT* out, const Formating&)
         const noexcept
     {
-        *out = character;
+        traits::assign(*out, character);
         return out + 1;
     }
 
@@ -55,18 +55,18 @@ private:
 };
 
 
-template <typename charT, typename Formating>
-boost::stringify::input_char<charT, Formating>
+template <typename charT, typename traits, typename Formating>
+boost::stringify::input_char<charT, traits, Formating>
 argf(charT c) noexcept
 {
     return c;
 }
 
 
-template <typename charT, typename Formating>
+template <typename charT, typename traits, typename Formating>
 typename std::enable_if
     < std::is_same<charT, wchar_t>::value && sizeof(charT) == sizeof(char32_t)
-    , boost::stringify::input_char<charT, Formating>
+    , boost::stringify::input_char<charT, traits, Formating>
     > :: type
 argf(char32_t c) noexcept
 {

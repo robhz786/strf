@@ -6,7 +6,7 @@
 namespace boost {
 namespace stringify {
 
-template <typename charT, typename Formating>
+template <typename charT, typename charTraits, typename Formating>
 struct input_base_ref
 {
     input_base_ref
@@ -19,7 +19,7 @@ struct input_base_ref
 
     template <class T>
     using input_base_of
-    = decltype(argf<charT, Formating>(std::declval<const T>()));
+        = decltype(argf<charT, charTraits, Formating>(std::declval<const T>()));
            
     template <typename T, typename ... ExtraArgs>
     input_base_ref

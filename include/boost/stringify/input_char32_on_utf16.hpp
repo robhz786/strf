@@ -6,7 +6,7 @@ namespace boost
 namespace stringify
 {
 
-template <typename charT, typename Formating>
+template <typename charT, typename traits, typename Formating>
 class char32_to_utf16: public boost::stringify::input_base<charT, Formating>
 {
 public:
@@ -37,15 +37,15 @@ public:
     {
         if (single_char_range())
         {
-            *out++ = static_cast<charT>(codepoint);
+            traits::assign(*out++, static_cast<charT>(codepoint));
         }
         else if (two_chars_range())
         {
             char32_t sub_codepoint = codepoint - 0x10000;
             char32_t high_surrogate = 0xD800 + ((sub_codepoint & 0xFFC00) >> 10);
             char32_t low_surrogate  = 0xDC00 +  (sub_codepoint &  0x3FF);
-            *out++ = static_cast<charT>(high_surrogate);
-            *out++ = static_cast<charT>(low_surrogate);
+            traits::assign(*out++, static_cast<charT>(high_surrogate));
+            traits::assign(*out++, static_cast<charT>(low_surrogate));
         }
         return out;
     }
@@ -84,10 +84,10 @@ private:
     }
 };
 
-template <typename charT, typename Formating>
+template <typename charT, typename traits, typename Formating>
 inline typename std::enable_if
     < (sizeof(charT) == sizeof(char16_t))
-    , boost::stringify::char32_to_utf16<charT, Formating>
+    , boost::stringify::char32_to_utf16<charT, traits, Formating>
     >
     ::type
 argf(char32_t c) noexcept

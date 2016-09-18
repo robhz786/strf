@@ -18,13 +18,13 @@ int main()
               << "Copy a string literal:" 
               << std::endl;
 
-    PRINT_BENCHMARK("lengthf<char>({}, \"hello\")")
+    PRINT_BENCHMARK("lengthf({}, \"hello\")")
     {
-        strf::lengthf<char>({}, "hello");
+        strf::lengthf({}, "hello");
     }
-    PRINT_BENCHMARK("lengthf_il<char>({}, {\"hello\")}")
+    PRINT_BENCHMARK("lengthf_il({}, {\"hello\")}")
     {
-        strf::lengthf_il<char>({}, {"hello"});
+        strf::lengthf_il({}, {"hello"});
     }
     PRINT_BENCHMARK("writef(char_ptr_output, {}, \"hello\")")
     {
@@ -58,13 +58,13 @@ int main()
         const char* fmt = std_string_fmt.c_str();
 
 
-        PRINT_BENCHMARK("lengthf<char>({}, hello)")
+        PRINT_BENCHMARK("lengthf({}, hello)")
         {
-            strf::lengthf<char>({}, hello);
+            strf::lengthf({}, hello);
         }
-        PRINT_BENCHMARK("lengthf_il<char>({}, {hello})")
+        PRINT_BENCHMARK("lengthf_il({}, {hello})")
         {
-            strf::lengthf_il<char>({}, {hello});
+            strf::lengthf_il({}, {hello});
         }
         PRINT_BENCHMARK("writef(char_ptr_output, {}, hello)")
         {
@@ -96,13 +96,13 @@ int main()
               << "Copy two strings" 
               << std::endl;
 
-    PRINT_BENCHMARK("lengthf<char>({}, \"hello\", \"hello\")")
+    PRINT_BENCHMARK("lengthf({}, \"hello\", \"hello\")")
     {
-        strf::lengthf<char>({}, "hello", "hello");
+        strf::lengthf({}, "hello", "hello");
     }
-    PRINT_BENCHMARK("lengthf_il<char>({}, {\"hello\", \"hello\")}")
+    PRINT_BENCHMARK("lengthf_il({}, {\"hello\", \"hello\")}")
     {
-        strf::lengthf_il<char>({}, {"hello", "hello"});
+        strf::lengthf_il({}, {"hello", "hello"});
     }
     PRINT_BENCHMARK("writef(char_ptr_output, {}, \"hello\", \"hello\")")
     {
@@ -127,13 +127,13 @@ int main()
         std::string std_string_fmt("%s");
         const char* fmt = std_string_fmt.c_str();
 
-        PRINT_BENCHMARK("lengthf<char>({}, long_string)")
+        PRINT_BENCHMARK("lengthf({}, long_string)")
         {
-            strf::lengthf<char>({}, long_string);
+            strf::lengthf({}, long_string);
         }
-        PRINT_BENCHMARK("lengthf_il<char>({}, {long_string})")
+        PRINT_BENCHMARK("lengthf_il({}, {long_string})")
         {
-            strf::lengthf_il<char>({}, {long_string});
+            strf::lengthf_il({}, {long_string});
         }
         PRINT_BENCHMARK("writef(char_ptr_output, {}, long_string)")
         {
@@ -165,13 +165,13 @@ int main()
               << "write integers" 
               << std::endl;
 
-    PRINT_BENCHMARK("lengthf<char>({}, 25)")
+    PRINT_BENCHMARK("lengthf({}, 25)")
     {
-        strf::lengthf<char>({}, 25);
+        strf::lengthf({}, 25);
     }
-    PRINT_BENCHMARK("lengthf_il<char>({}, {25})")
+    PRINT_BENCHMARK("lengthf_il({}, {25})")
     {
-        strf::lengthf_il<char>({}, {25});
+        strf::lengthf_il({}, {25});
     }
     PRINT_BENCHMARK("writef(char_ptr_output, {}, 25)")
     {
@@ -186,13 +186,13 @@ int main()
         sprintf(char_ptr_output, "%d", 12345);
     }
     std::cout << std::endl;
-    PRINT_BENCHMARK("lengthf<char>({}, INT_MAX)")
+    PRINT_BENCHMARK("lengthf({}, INT_MAX)")
     {
-        strf::lengthf<char>({}, INT_MAX);
+        strf::lengthf({}, INT_MAX);
     }
-    PRINT_BENCHMARK("lengthf_il<char>({}, {INT_MAX})")
+    PRINT_BENCHMARK("lengthf_il({}, {INT_MAX})")
     {
-        strf::lengthf_il<char>({}, {INT_MAX});
+        strf::lengthf_il({}, {INT_MAX});
     }
     PRINT_BENCHMARK("writef(char_ptr_output, {}, INT_MAX)")
     {
@@ -207,13 +207,13 @@ int main()
         sprintf(char_ptr_output, "%d", INT_MAX);
     }
     std::cout << std::endl;
-    PRINT_BENCHMARK("lengthf<char>({}, LLONG_MAX)")
+    PRINT_BENCHMARK("lengthf({}, LLONG_MAX)")
     {
-        strf::lengthf<char>({}, LLONG_MAX);
+        strf::lengthf({}, LLONG_MAX);
     }
-    PRINT_BENCHMARK("lengthf_il<char>({}, {LLONG_MAX})")
+    PRINT_BENCHMARK("lengthf_il({}, {LLONG_MAX})")
     {
-        strf::lengthf_il<char>({}, {LLONG_MAX});
+        strf::lengthf_il({}, {LLONG_MAX});
     }
     PRINT_BENCHMARK("writef(char_ptr_output, {}, LLONG_MAX)")
     {
@@ -228,13 +228,13 @@ int main()
         sprintf(char_ptr_output, "%lld", LLONG_MAX);
     }
     std::cout << std::endl;
-    PRINT_BENCHMARK("lengthf<char>({}, 25, 25, 25)")
+    PRINT_BENCHMARK("lengthf({}, 25, 25, 25)")
     {
-        strf::lengthf<char>({}, 25, 25, 25);
+        strf::lengthf({}, 25, 25, 25);
     }
-    PRINT_BENCHMARK("lengthf_il<char>({}, {25, 25, 25})")
+    PRINT_BENCHMARK("lengthf_il({}, {25, 25, 25})")
     {
-        strf::lengthf_il<char>({}, {25, 25, 25});
+        strf::lengthf_il({}, {25, 25, 25});
     }
     PRINT_BENCHMARK("writef(char_ptr_output, {}, 25, 25, 25)")
     {
@@ -249,13 +249,13 @@ int main()
         sprintf(char_ptr_output, "%d%d%d", 25, 25, 25);
     }
     std::cout << std::endl;
-    PRINT_BENCHMARK("lengthf<char>({}, LLONG_MAX, LLONG_MAX, LLONG_MAX)")
+    PRINT_BENCHMARK("lengthf({}, LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
-        strf::lengthf<char>({}, LLONG_MAX, LLONG_MAX, LLONG_MAX);
+        strf::lengthf({}, LLONG_MAX, LLONG_MAX, LLONG_MAX);
     }
-    PRINT_BENCHMARK("lengthf_il<char>({}, {LLONG_MAX, LLONG_MAX, LLONG_MAX})")
+    PRINT_BENCHMARK("lengthf_il({}, {LLONG_MAX, LLONG_MAX, LLONG_MAX})")
     {
-        strf::lengthf_il<char>({}, {LLONG_MAX, LLONG_MAX, LLONG_MAX});
+        strf::lengthf_il({}, {LLONG_MAX, LLONG_MAX, LLONG_MAX});
     }
      PRINT_BENCHMARK("writef(char_ptr_output, {}, LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
@@ -270,13 +270,13 @@ int main()
         sprintf(char_ptr_output, "%lld%lld%lld", LLONG_MAX, LLONG_MAX, LLONG_MAX);
     }
     std::cout << std::endl;
-    PRINT_BENCHMARK("lengthf<char>({} \"ten =  \", 10, \", twenty = \", 20)")
+    PRINT_BENCHMARK("lengthf({} \"ten =  \", 10, \", twenty = \", 20)")
     {
-        strf::lengthf<char>({}, "ten =  ", 10, ", twenty = ", 20);
+        strf::lengthf({}, "ten =  ", 10, ", twenty = ", 20);
     }
-    PRINT_BENCHMARK("lengthf_il<char>({}, {\"ten =  \", 10, \", twenty = \", 20})")
+    PRINT_BENCHMARK("lengthf_il({}, {\"ten =  \", 10, \", twenty = \", 20})")
     {
-        strf::lengthf_il<char>({}, {"ten =  ", 10, ", twenty = ", 20});
+        strf::lengthf_il({}, {"ten =  ", 10, ", twenty = ", 20});
     }
     PRINT_BENCHMARK("writef(char_ptr_output, {} \"ten =  \", 10, \", twenty = \", 20)")
     {

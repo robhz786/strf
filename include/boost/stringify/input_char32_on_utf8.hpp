@@ -6,7 +6,7 @@ namespace boost
 namespace stringify
 {
 
-template <typename Formating>
+template <typename traits, typename Formating>
 class char32_to_utf8: public boost::stringify::input_base<char, Formating>
 {
 public:
@@ -61,40 +61,40 @@ private:
 
     char* write_utf8_range1(char* out) const noexcept
     {
-        *out =  static_cast<char>(codepoint);
+        traits::assign(*out, static_cast<char>(codepoint));
         return ++out;
     }
 
     char* write_utf8_range2(char* out) const noexcept
     {
-        *  out = static_cast<char>(0xC0 | ((codepoint & 0x7C0) >> 6));
-        *++out = static_cast<char>(0x80 |  (codepoint &  0x3F));
+        traits::assign(*  out, static_cast<char>(0xC0 | ((codepoint & 0x7C0) >> 6)));
+        traits::assign(*++out, static_cast<char>(0x80 |  (codepoint &  0x3F)));
         return ++out;
     }
 
     char* write_utf8_range3(char* out) const noexcept
     {
-        *  out = static_cast<char>(0xE0 | ((codepoint & 0xF000) >> 12));
-        *++out = static_cast<char>(0x80 | ((codepoint &  0xFC0) >> 6));
-        *++out = static_cast<char>(0x80 |  (codepoint &   0x3F));
+        traits::assign(*  out, static_cast<char>(0xE0 | ((codepoint & 0xF000) >> 12)));
+        traits::assign(*++out, static_cast<char>(0x80 | ((codepoint &  0xFC0) >> 6)));
+        traits::assign(*++out, static_cast<char>(0x80 |  (codepoint &   0x3F)));
         return ++out;
     }
 
     char* write_utf8_range4(char* out) const noexcept
     {
-        *  out = static_cast<char>(0xF0 | ((codepoint & 0x1C0000) >> 18));
-        *++out = static_cast<char>(0x80 | ((codepoint &  0x3F000) >> 12));
-        *++out = static_cast<char>(0x80 | ((codepoint &    0xFC0) >> 6));
-        *++out = static_cast<char>(0x80 |  (codepoint &     0x3F));
+        traits::assign(*  out, static_cast<char>(0xF0 | ((codepoint & 0x1C0000) >> 18)));
+        traits::assign(*++out, static_cast<char>(0x80 | ((codepoint &  0x3F000) >> 12)));
+        traits::assign(*++out, static_cast<char>(0x80 | ((codepoint &    0xFC0) >> 6)));
+        traits::assign(*++out, static_cast<char>(0x80 |  (codepoint &     0x3F)));
         return ++out;
     }
 };
 
 
-template <typename charT, typename Formating>
+template <typename charT, typename traits, typename Formating>
 inline typename std::enable_if
     < (sizeof(charT) == sizeof(char))
-    , boost::stringify::char32_to_utf8<Formating>
+    , boost::stringify::char32_to_utf8<traits, Formating>
     >
     ::type
 argf(char32_t c) noexcept

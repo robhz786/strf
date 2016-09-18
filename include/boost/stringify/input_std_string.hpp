@@ -1,5 +1,5 @@
 #ifndef BOOST_STRINGIFY_INPUT_STD_STRING_HPP_INCLUDED
-#define BOOST_STRINGIFY_INPUT_STD_STRING_HPP_HPP_INCLUDED
+#define BOOST_STRINGIFY_INPUT_STD_STRING_HPP_INCLUDED
 
 #include <string>
 #include <boost/stringify/input_base.hpp>
@@ -43,7 +43,8 @@ struct input_std_string: public boost::stringify::input_base<charT, Formating>
         {
             return out;
         }
-        return std::copy(str->begin(), str->end(), out);
+        traits::copy(out, &*str->begin(), str->length());
+        return out + str->length();
     }
 
     // virtual void write
@@ -59,7 +60,7 @@ struct input_std_string: public boost::stringify::input_base<charT, Formating>
 };
 
 
-template <typename charT, typename Formating, typename traits>
+template <typename charT, typename traits, typename Formating>
 inline
 boost::stringify::input_std_string<charT, traits, Formating>
 argf(const std::basic_string<charT, traits>& str) noexcept
