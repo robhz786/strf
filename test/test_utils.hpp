@@ -73,6 +73,7 @@ std::string str8(const output_type& x)
   return result;
 }
 */
+}; //namespace test_utils
 
 template <typename charT>
 struct to_upper_char_traits : public std::char_traits<charT>
@@ -99,7 +100,7 @@ struct to_upper_char_traits : public std::char_traits<charT>
     return dest;
   }
 };
-}; //namespace test_utils
+
 
 
 
