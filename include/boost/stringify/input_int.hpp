@@ -2,8 +2,10 @@
 #define BOOST_STRINGIFY_INPUT_INT_HPP_INCLUDED
 
 #include <boost/stringify/input_base.hpp>
+#include <boost/stringify/formater_tuple.hpp>
 #include <boost/stringify/detail/characters_catalog.hpp>
 #include <boost/stringify/detail/uint_traits.hpp>
+#include <boost/stringify/fmt_showpos.hpp>
 
 namespace boost
 {
@@ -14,7 +16,7 @@ template <typename intT, typename charT, typename traits, typename Formating>
 struct input_int: public boost::stringify::input_base<charT, Formating>
 {
 private:
-    typedef typename std::make_unsigned<intT>::type  unsigned_intT;
+    typedef typename std::make_unsigned<intT>::type unsigned_intT;
     typedef boost::stringify::detail::uint_traits<unsigned_intT> uint_traits;
 
 public:
@@ -35,33 +37,21 @@ public:
         value = (_value);
         abs_value = (value > 0
                      ? static_cast<unsigned_intT>(value)
-                     : static_cast<unsigned_intT>(-(value+1)) +1 );
+                     : 1 + static_cast<unsigned_intT>(-(value + 1)));
     }
 
-
-    virtual std::size_t length(const Formating&) const noexcept
+    virtual std::size_t length(const Formating& fmt) const noexcept
     {
-        return uint_traits::number_of_digits(abs_value) + (value < 0 ? 1 : 0);
+        return uint_traits::number_of_digits(abs_value) + (has_sign(fmt) ? 1 : 0);
     }
 
     virtual charT* write_without_termination_char
         ( charT* out
-        , const Formating&
+        , const Formating& fmt
         ) const noexcept
     {
-        if (value < 0)
-            traits::assign(*out++, boost::stringify::detail::the_sign_minus<charT>());
-
-        out += uint_traits::number_of_digits(abs_value);
-        unsigned_intT it_value = abs_value;
-        charT* end = out;
-        do
-        {
-            traits::assign(*--out, character_of_digit(it_value % 10));
-        }
-        while(it_value /= 10);
-
-        return end;
+        out = write_sign(out, fmt);
+        return write_digits(out, fmt);
     }
 /*
     virtual void write
@@ -84,6 +74,53 @@ private:
     intT value;
     unsigned_intT abs_value;
 
+    bool has_sign(const Formating& fmt) const noexcept
+    {
+        /*constexpr*/ if( std::is_signed<intT>::value)
+        {
+            return value < 0 || fmt_showpos(fmt);
+        }
+        return false;
+    }
+
+    charT* write_sign(charT* out, const Formating& fmt) const noexcept
+    {
+        /*constexpr*/ if( std::is_signed<intT>::value)
+        {
+            if (value < 0)
+            {
+                traits::assign(*out++, boost::stringify::detail::the_sign_minus<charT>());
+            }
+            else if(fmt_showpos(fmt))
+            {
+                traits::assign(*out++, boost::stringify::detail::the_sign_plus<charT>());
+
+                // todo refactor like this:
+                // typedef boost::stringify::detail::char_catalog<charT, traits> catalog; // at class' scope
+                // out = catalog::write_plus_sign(*out); 
+            }
+        }
+        return out;
+    }
+
+    charT* write_digits(charT* out, const Formating& fmt) const noexcept
+    {
+        out += uint_traits::number_of_digits(abs_value);
+        unsigned_intT it_value = abs_value;
+        charT* end = out;
+        do
+        {
+            traits::assign(*--out, character_of_digit(it_value % 10));
+        }
+        while(it_value /= 10);
+        return end;
+    }
+
+    static bool fmt_showpos(const Formating& fmt) noexcept
+    {
+        return fmt.template get_fmt<intT>(boost::stringify::ftype_showpos()).show();
+    }
+        
     charT character_of_digit(unsigned int digit) const noexcept
     {
         return boost::stringify::detail::the_digit_zero<charT>() + digit;

@@ -8,6 +8,8 @@
 #include <boost/stringify/input_char_ptr.hpp>
 #include <boost/stringify/input_std_string.hpp>
 
+#include <boost/stringify/fmt_showpos.hpp>
+
 #include <boost/stringify/lengthf.hpp>
 #include <boost/stringify/writef.hpp>
 

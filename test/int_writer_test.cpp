@@ -7,6 +7,8 @@
 
 int main()
 {
+    namespace strf = boost::stringify;
+    
     TEST ( "0", {}, 0);
     TEST (u"0", {}, 0);
     TEST (U"0", {}, 0);
@@ -21,7 +23,7 @@ int main()
     TEST (u"123", {}, 123);
     TEST (U"123", {}, 123);
     TEST (L"123", {}, 123);
-    
+
     TEST ( "-123", {}, -123);
     TEST (u"-123", {}, -123);
     TEST (U"-123", {}, -123);
@@ -36,6 +38,25 @@ int main()
     TEST ( std::to_string(UINT32_MAX).c_str(), {}, UINT32_MAX);
     TEST (std::to_wstring(UINT32_MAX).c_str(), {}, UINT32_MAX);
 
+    auto f_showpos = strf::make_formating(strf::showpos());
+    //strf::static_showpos<true> f_showpos;
+    TEST ("+123", f_showpos, 123);
+    TEST ( "-123", f_showpos, -123);
+    TEST ( "+0", f_showpos, 0);
+    TEST ("123", f_showpos, (unsigned)123);
+
+    
+    TEST (u"123", {}, 123);
+    TEST (U"123", {}, 123);
+    TEST (L"123", {}, 123);
+
+
+
+
+
+
+
+    
     return  boost::report_errors();
 }
 
