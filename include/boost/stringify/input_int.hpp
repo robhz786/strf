@@ -3,14 +3,59 @@
 
 #include <boost/stringify/input_base.hpp>
 #include <boost/stringify/formater_tuple.hpp>
-#include <boost/stringify/detail/characters_catalog.hpp>
-#include <boost/stringify/detail/uint_traits.hpp>
 #include <boost/stringify/fmt_showpos.hpp>
+#include <boost/stringify/detail/characters_catalog.hpp>
+#include <boost/stringify/detail/char_flags.hpp>
+#include <boost/stringify/detail/uint_traits.hpp>
+
+#include <boost/logic/tribool.hpp>
 
 namespace boost
 {
 namespace stringify
 {
+namespace detail
+{
+
+class local_formatting_int
+{
+
+public:
+
+    constexpr local_formatting_int(const char* charflags, double d = 0.0) : m_charflags(charflags)
+    {
+    }
+
+    constexpr local_formatting_int()
+    {
+    }
+
+    constexpr local_formatting_int(const local_formatting_int&) = default;
+    
+    local_formatting_int& operator=(const local_formatting_int&) = default;
+    
+    boost::tribool showpos() const
+    {
+        if (m_charflags.has_char('-'))
+            return false;
+
+        if (m_charflags.has_char('+'))
+            return true;
+     
+        return boost::logic::indeterminate;
+    }
+
+private:
+
+    typedef boost::stringify::detail::char_flags<'+', '-'> char_flags_type;
+    char_flags_type m_charflags;    
+};
+
+
+} // namespace detail
+
+
+
 
 template <typename intT, typename charT, typename traits, typename Formating>
 struct input_int: public boost::stringify::input_base<charT, Formating>
@@ -38,6 +83,18 @@ public:
         abs_value = (value > 0
                      ? static_cast<unsigned_intT>(value)
                      : 1 + static_cast<unsigned_intT>(-(value + 1)));
+    }
+
+    typedef boost::stringify::detail::local_formatting_int local_formatting;
+
+    
+    void set
+        ( intT _value
+        , local_formatting fmt
+        ) noexcept
+    {
+        set(_value);
+        m_local_fmt = fmt;
     }
 
     virtual std::size_t length(const Formating& fmt) const noexcept
@@ -72,13 +129,14 @@ public:
 */
 private:
     intT value;
-    unsigned_intT abs_value;
-
+    unsigned_intT abs_value; // TODO optimaze ( use a union when intT is usigned )
+    local_formatting m_local_fmt;
+    
     bool has_sign(const Formating& fmt) const noexcept
     {
         /*constexpr*/ if( std::is_signed<intT>::value)
         {
-            return value < 0 || fmt_showpos(fmt);
+            return value < 0 || showpos(fmt);
         }
         return false;
     }
@@ -91,13 +149,9 @@ private:
             {
                 traits::assign(*out++, boost::stringify::detail::the_sign_minus<charT>());
             }
-            else if(fmt_showpos(fmt))
+            else if(showpos(fmt))
             {
                 traits::assign(*out++, boost::stringify::detail::the_sign_plus<charT>());
-
-                // todo refactor like this:
-                // typedef boost::stringify::detail::char_catalog<charT, traits> catalog; // at class' scope
-                // out = catalog::write_plus_sign(*out); 
             }
         }
         return out;
@@ -116,9 +170,14 @@ private:
         return end;
     }
 
-    static bool fmt_showpos(const Formating& fmt) noexcept
+    bool showpos(const Formating& fmt) const noexcept
     {
-        return fmt.template get_fmt<intT>(boost::stringify::ftype_showpos()).show();
+        boost::tribool local_showpos = m_local_fmt.showpos();
+        if(indeterminate(local_showpos))
+        {
+            return fmt.template get_fmt<intT>(boost::stringify::ftype_showpos()).show();
+        }
+        return local_showpos;
     }
         
     charT character_of_digit(unsigned int digit) const noexcept

@@ -7,21 +7,15 @@ namespace boost {
 namespace stringify {
 
 template <typename charT, typename charTraits, typename Formating>
-struct input_base_ref
+class input_base_ref
 {
-    input_base_ref
-        ( const boost::stringify::input_base<charT, Formating>& w
-        )
-        noexcept
-        : writer(w)
-    {
-    }
+public:
 
     template <class T>
     using input_base_of
         = decltype(argf<charT, charTraits, Formating>(std::declval<const T>()));
            
-    template <typename T, typename ... ExtraArgs>
+    template <typename T>
     input_base_ref
         ( const T& value
         , input_base_of<T> && wt = input_base_of<T>()
@@ -31,19 +25,17 @@ struct input_base_ref
     {
         wt.set(value);
     }
-
-    /*   
-    template <typename T, typename ... ExtraArgs>
+   
+    template <typename T>
     input_base_ref
-        ( const T& value
-        , const typename input_base_of<T>::local_formating& fmt
-        , input_base_of<T> && wt = input_base_of<T, const char*>()
+        ( const T& arg
+        , const typename input_base_of<T>::local_formatting& arg_format
+        , input_base_of<T> && wt = input_base_of<T>()
         ) noexcept
         : writer(wt)
     {
-        wt.set(value, fmt);
+        wt.set(arg, arg_format);
     }
-    */
 
     std::size_t length(const Formating& fmt) const noexcept
     {
