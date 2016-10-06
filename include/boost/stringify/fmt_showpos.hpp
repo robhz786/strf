@@ -25,16 +25,10 @@ struct static_showpos
 };
 
 template <template <class> class Filter = std::is_object>
-decltype(auto) noshowpos()
-{
-    return boost::stringify::static_showpos<false, Filter>();
-}
+constexpr static_showpos<false, Filter> noshowpos = static_showpos<false, Filter>();
 
 template <template <class> class Filter = std::is_object>
-decltype(auto) showpos()
-{
-    return boost::stringify::static_showpos<true, Filter>();
-}
+constexpr static_showpos<true, Filter> showpos = static_showpos<true, Filter>();
 
 template <template <class> class Filter = std::is_object>
 struct dyn_showpos

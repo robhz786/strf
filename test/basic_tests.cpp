@@ -7,17 +7,6 @@
 #include <iostream>
 #include <string.h>
 
-namespace strf = boost::stringify;
-
-void f
-    ( char* out
-    , const strf::input_base_ref<char, void, strf::formater_tuple<> >& i
-    )
-{
-    i.write(out, {});
-}
-    
-
 template <typename T> struct is_long :  public std::is_same<long, T>
 {
 };
@@ -25,33 +14,17 @@ template <typename T> struct is_long :  public std::is_same<long, T>
 
 int main()
 {
-    {
-        auto ft = strf::make_formating
-            ( strf::noshowpos<std::is_signed>()
-              , strf::showpos()
-            );
-        
-        auto sp = ft.get_fmt<int>(strf::ftype_showpos());
-        static_assert( ! sp.show(), "");
-
-        auto sp2 = ft.get_fmt<unsigned>(strf::ftype_showpos());
-        static_assert( sp2.show(), "");
-
-        //std::cout << "sizeof(ft) ==" << sizeof(ft) << std::endl;
-        
-    }
-
+    namespace strf = boost::stringify;
+    
     {
         char buff[200] = "";
-        boost::stringify::writef(buff) (strf::showpos<std::is_signed>()) (5, 6, 7, (unsigned)8);
+        boost::stringify::writef(buff) (strf::showpos<std::is_signed>) (5, 6, 7, (unsigned)8);
         BOOST_TEST(std::string(buff) == "+5+6+78");
     }
     {
         char buff[200] = "";
         boost::stringify::writef(buff)
-            ( strf::noshowpos<is_long>()
-            , strf::showpos()
-            )
+            (strf::noshowpos<is_long>, strf::showpos<>)
             ((long)0, 1, 2, {3, "-"}, {(long)4, "+"});
         BOOST_TEST(std::string(buff) == "0+1+23+4");
     }

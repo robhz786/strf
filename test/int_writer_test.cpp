@@ -2,6 +2,7 @@
 #include <boost/stringify.hpp>
 #include "test_utils.hpp"
 #include <limits>
+#include <type_traits>
 
 #define TEST test<__LINE__>
 
@@ -39,9 +40,9 @@ int main()
     TEST (std::to_wstring(UINT32_MAX).c_str(), {}, UINT32_MAX);
 
     {
-        auto f_showpos = strf::make_formating(strf::showpos());
+        auto f_showpos = strf::make_formating(strf::showpos<>);
 
-        TEST ("+123", f_showpos, 123);
+        TEST ("+123", f_showpos , 123);
         TEST ("123", f_showpos, {123, "-"});
         TEST ("+123", {}, {123, "+"});
         TEST ( "-123", f_showpos, -123);
