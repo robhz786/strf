@@ -76,7 +76,7 @@ class final_writer
 {
 public:
     typedef 
-        boost::stringify::input_base_ref<charT, charTraits, Formating>
+        boost::stringify::input_arg<charT, charTraits, Formating>
         arg_type;
 
     typedef
@@ -245,7 +245,7 @@ public:
         output_type;
 
     typedef 
-        boost::stringify::input_base_ref
+        boost::stringify::input_arg
             < charT
             , charTraits
             , boost::stringify::formater_tuple<>
@@ -336,7 +336,7 @@ template
 charT* basic_writef
     ( charT* output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::input_base_ref
+    , const boost::stringify::input_arg
         < charT
         , charTraits
         , typename std::decay<decltype(fmt)>::type

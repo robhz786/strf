@@ -95,7 +95,7 @@ template
 auto basic_writef
     ( Output&& output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::input_base_ref
+    , const boost::stringify::input_arg
         < charType
         , charTraits
         , typename std::decay<decltype(fmt)>::type
@@ -119,7 +119,7 @@ template
 auto basic_writef
     ( Output&& output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::input_base_ref
+    , const boost::stringify::input_arg
         < charType
         , charTraits
         , typename std::decay<decltype(fmt)>::type
@@ -147,7 +147,7 @@ template
 auto basic_writef
     ( Output&& output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::input_base_ref
+    , const boost::stringify::input_arg
         < charType
         , charTraits
         , typename std::decay<decltype(fmt)>::type
@@ -178,7 +178,7 @@ template
 auto basic_writef
     ( Output&& output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::input_base_ref
+    , const boost::stringify::input_arg
         < charType
         , charTraits
         , typename std::decay<decltype(fmt)>::type
@@ -207,7 +207,7 @@ template <typename Output, typename ... Formaters>
 auto writef
     ( Output&& output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::input_base_ref
+    , const boost::stringify::input_arg
         < char
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
@@ -225,7 +225,7 @@ template <typename Output, typename ... Formaters>
 auto writef
     ( Output&& output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::input_base_ref
+    , const boost::stringify::input_arg
         < char
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
@@ -248,7 +248,7 @@ template <typename Output, typename ... Formaters>
 auto writef
     ( Output&& output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::input_base_ref
+    , const boost::stringify::input_arg
         < char
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
@@ -274,7 +274,7 @@ template <typename Output, typename ... Formaters>
 auto writef
     ( Output&& output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::input_base_ref
+    , const boost::stringify::input_arg
         < char
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
@@ -304,7 +304,7 @@ template <typename Output, typename ... Formaters>
 auto writef
     ( Output&& output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::input_base_ref
+    , const boost::stringify::input_arg
         < char
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
@@ -336,7 +336,7 @@ template <typename Output, typename ... Formaters>
 auto writef
     ( Output&& output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::input_base_ref
+    , const boost::stringify::input_arg
         < char
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
@@ -371,7 +371,7 @@ template <typename Output, typename ... Formaters>
 auto writef
     ( Output&& output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::input_base_ref
+    , const boost::stringify::input_arg
         < char
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
@@ -409,7 +409,7 @@ template <typename Output, typename ... Formaters>
 auto writef
     ( Output&& output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::input_base_ref
+    , const boost::stringify::input_arg
         < char
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
@@ -450,7 +450,7 @@ template <typename Output, typename ... Formaters>
 auto writef
     ( Output&& output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::input_base_ref
+    , const boost::stringify::input_arg
         < char
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
@@ -495,7 +495,7 @@ template <typename Output, typename ... Formaters>
 auto writef
     ( Output&& output
     , const boost::stringify::formater_tuple<Formaters ...>& fmt
-    , const boost::stringify::input_base_ref
+    , const boost::stringify::input_arg
         < char
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type

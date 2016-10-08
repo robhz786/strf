@@ -90,7 +90,7 @@ void test_with_traits
         Fmt;
 
     typedef
-        boost::stringify::input_base_ref<charT, charTraits, Fmt>
+        boost::stringify::input_arg<charT, charTraits, Fmt>
         str_arg;
     
     charT expected[200];

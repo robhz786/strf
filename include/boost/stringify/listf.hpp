@@ -2,7 +2,7 @@
 #define BOOST_STRINGIFY_LISTF_HPP_INCLUDED
 
 #include <initializer_list>
-#include <boost/stringify/input_base_ref.hpp>
+#include <boost/stringify/input_arg.hpp>
 
 namespace boost
 {
@@ -14,7 +14,7 @@ class listf: public boost::stringify::input_base<charT, Formating>
 {
     typedef 
         std::initializer_list
-            <boost::stringify::input_base_ref<charT, charTraits, Formating > >
+            <boost::stringify::input_arg<charT, charTraits, Formating > >
         initializer_list_type;
 
     const initializer_list_type inputs;
