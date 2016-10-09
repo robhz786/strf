@@ -13,9 +13,25 @@ namespace stringify
 template<typename charT, typename traits, typename Formating>
 struct input_char_ptr: boost::stringify::input_base<charT, Formating>
 {
-    input_char_ptr() noexcept:
-                       str(0),
-                       len(0)
+private:
+
+    typedef
+        typename Formating::template fimpl_type
+            < boost::stringify::ftype_width_calculator<char>
+            , const char*
+            >
+        width_calculator_type;
+
+
+    typedef
+        typename width_calculator_type::accumulator_type
+        width_accumulator_type;
+
+public:
+
+    input_char_ptr() noexcept
+        : str(0)
+        , len(0)
     {
     }
 
@@ -31,14 +47,22 @@ struct input_char_ptr: boost::stringify::input_base<charT, Formating>
         len = (std::numeric_limits<std::size_t>::max) ();
     }
 
-    virtual std::size_t length(const Formating&) const noexcept
+    virtual std::size_t length(const Formating& fmt) const noexcept
     {
-        return get_length();
+        return str_length() + fill_length(fmt);
     }
 
-    virtual charT* write_without_termination_char(charT* out, const Formating&) const noexcept
+    virtual charT* write_without_termination_char
+        ( charT* out
+        , const Formating& fmt
+        ) const noexcept
     {
-        return traits::copy(out, str, get_length()) + get_length();
+        auto fillwidth = fill_width(fmt);
+        if (fillwidth > 0)
+        {
+            out = write_fill(out, fillwidth, fmt);
+        }
+        return traits::copy(out, str, str_length()) + str_length();
     }
 
     // virtual void write
@@ -48,7 +72,7 @@ struct input_char_ptr: boost::stringify::input_base<charT, Formating>
     // {
     //     if(str)
     //     {
-    //         out.write(str, get_length());
+    //         out.write(str, str_length());
     //     }
     // }
 
@@ -57,15 +81,61 @@ private:
     const charT* str;
     mutable std::size_t len;
 
-    std::size_t get_length() const noexcept
+    std::size_t str_length() const noexcept
     {
         if (len == (std::numeric_limits<std::size_t>::max) ())
         {
-            len = std::char_traits<charT>::length(str);
+            len = traits::length(str);
         }
         return len;
     }
 
+    std::size_t fill_length(const Formating& fmt) const noexcept
+    {
+        auto fillwidth = fill_width(fmt);
+        if (fillwidth > 0)
+        {
+            return fmt_fill(fmt)
+                .template length<width_accumulator_type>(fillwidth);
+        }
+        return 0;
+    }
+    
+    charT* write_fill
+        ( charT* out
+        , boost::stringify::width_t fillwidth
+        , const Formating& fmt
+        )  const noexcept
+    {
+        return fmt_fill(fmt)
+            .template fill<traits, width_accumulator_type>(out, fillwidth);
+    }
+    
+    boost::stringify::width_t
+    fill_width(const Formating& fmt) const noexcept
+    {
+        auto width = fmt_width(fmt).width();
+        if (width > 0)
+        {
+            width_accumulator_type acc;
+            if(acc.add(str, str_length(), width))
+            {
+                return width - acc.result();
+            }
+        }
+        return 0;
+    }
+
+    decltype(auto) fmt_width(const Formating& fmt) const noexcept
+    {
+        return fmt.template get<boost::stringify::ftype_width, const char*>();
+    }
+
+    decltype(auto) fmt_fill(const Formating& fmt) const noexcept
+    {
+        return fmt.template get<boost::stringify::ftype_fill<char>, const char*>();
+    }
+    
 }; 
 
 template <typename charT, typename traits, typename Formating>

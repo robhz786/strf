@@ -2,6 +2,9 @@
 #define BOOST_STRINGIFY_INPUT_BASE_HPP_INCLUDED
 
 #include <boost/assert.hpp>
+#include <boost/stringify/fmt_fill.hpp>
+#include <boost/stringify/fmt_width.hpp>
+#include <boost/stringify/fmt_width_calculator.hpp>
 #include <cstddef>
 
 namespace boost
@@ -61,7 +64,9 @@ public:
 
 //     virtual void put(charT) = 0;
 
-//     virtual void write(const charT*, std::size_t) = 0;
+//     virtual void put(charT, std::size_t repetitions) = 0;
+
+//     virtual void write(const charT*, std::size_t length) = 0;
 // };
 
 } //namespace stringify

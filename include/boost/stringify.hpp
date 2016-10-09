@@ -9,6 +9,9 @@
 #include <boost/stringify/input_std_string.hpp>
 
 #include <boost/stringify/fmt_showpos.hpp>
+#include <boost/stringify/fmt_width.hpp>
+#include <boost/stringify/fmt_width_calculator.hpp>
+#include <boost/stringify/fmt_fill.hpp>
 
 #include <boost/stringify/lengthf.hpp>
 #include <boost/stringify/writef.hpp>

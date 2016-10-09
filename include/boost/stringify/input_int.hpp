@@ -175,7 +175,7 @@ private:
         boost::tribool local_showpos = m_local_fmt.showpos();
         if(indeterminate(local_showpos))
         {
-            return fmt.template get_fmt<intT>(boost::stringify::ftype_showpos()).show();
+            return fmt.template get<boost::stringify::ftype_showpos, intT>().show();
         }
         return local_showpos;
     }

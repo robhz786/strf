@@ -1,21 +1,15 @@
 #ifndef BOOST_STRINGIFY_FMT_SHOWPOS_HPP
 #define BOOST_STRINGIFY_FMT_SHOWPOS_HPP
 
-#include <type_traits>
+#include <boost/stringify/type_traits.hpp>
 
 namespace boost {
 namespace stringify {
 
-template <typename T>
- struct is_anytype: public std::true_type
- {
- };
-
-
 struct ftype_showpos;
 
-template <bool ShowIt, template <class> class Filter = std::is_object>
-struct static_showpos
+template <bool ShowIt, template <class> class Filter>
+struct fimpl_static_showpos
 {
     template <typename T> using accept_input_type = Filter<T>;
 
@@ -24,20 +18,22 @@ struct static_showpos
     constexpr bool show() const { return ShowIt; }
 };
 
-template <template <class> class Filter = std::is_object>
-constexpr static_showpos<false, Filter> noshowpos = static_showpos<false, Filter>();
+template <template <class> class Filter = boost::stringify::accept_any_type>
+constexpr fimpl_static_showpos<false, Filter> noshowpos
+  = fimpl_static_showpos<false, Filter>();
 
-template <template <class> class Filter = std::is_object>
-constexpr static_showpos<true, Filter> showpos = static_showpos<true, Filter>();
+template <template <class> class Filter = boost::stringify::accept_any_type>
+constexpr fimpl_static_showpos<true, Filter> showpos
+  = fimpl_static_showpos<true, Filter>();
 
-template <template <class> class Filter = std::is_object>
-struct dyn_showpos
+template <template <class> class Filter = boost::stringify::accept_any_type>
+struct fimpl_dyn_showpos
 {
     template <typename T> using accept_input_type = Filter<T>;
 
     typedef boost::stringify::ftype_showpos fmt_type;
     
-    dyn_showpos(bool show) : m_show(show)
+    fimpl_dyn_showpos(bool show) : m_show(show)
     {
     }
     
@@ -51,7 +47,9 @@ struct dyn_showpos
 
 struct ftype_showpos
 {
-    typedef static_showpos<false> default_impl;
+    typedef
+        fimpl_static_showpos<false, boost::stringify::accept_any_type>
+        default_impl;
 };
 
 

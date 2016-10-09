@@ -15,6 +15,13 @@ template <typename T> struct is_long :  public std::is_same<long, T>
 int main()
 {
     namespace strf = boost::stringify;
+
+    {
+        char buff[200] = "";
+        boost::stringify::writef(buff) (strf::fill('~'), strf::width(8)) ("AA", "BB");
+        BOOST_TEST(std::string(buff) == "~~~~~~AA~~~~~~BB");
+    }
+    
     
     {
         char buff[200] = "";
