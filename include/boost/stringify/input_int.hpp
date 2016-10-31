@@ -7,6 +7,7 @@
 #include <boost/stringify/detail/characters_catalog.hpp>
 #include <boost/stringify/detail/char_flags.hpp>
 #include <boost/stringify/detail/uint_traits.hpp>
+#include <boost/stringify/detail/int_digits.hpp>
 
 #include <boost/logic/tribool.hpp>
 
@@ -51,11 +52,7 @@ private:
     char_flags_type m_charflags;    
 };
 
-
 } // namespace detail
-
-
-
 
 template <typename intT, typename charT, typename traits, typename Formating>
 struct input_int: public boost::stringify::input_base<charT, Formating>
@@ -67,8 +64,8 @@ private:
 public:
 
     input_int() noexcept
-        : value(0)
-        , abs_value(0)
+        : m_value(0)
+        , m_abs_value(0)
     {
     }
 
@@ -79,10 +76,10 @@ public:
 
     void set(intT _value) noexcept
     {
-        value = (_value);
-        abs_value = (value > 0
-                     ? static_cast<unsigned_intT>(value)
-                     : 1 + static_cast<unsigned_intT>(-(value + 1)));
+        m_value = (_value);
+        m_abs_value = (m_value > 0
+                     ? static_cast<unsigned_intT>(m_value)
+                     : 1 + static_cast<unsigned_intT>(-(m_value + 1)));
     }
 
     typedef boost::stringify::detail::local_formatting_int local_formatting;
@@ -99,7 +96,7 @@ public:
 
     virtual std::size_t length(const Formating& fmt) const noexcept
     {
-        return uint_traits::number_of_digits(abs_value) + (has_sign(fmt) ? 1 : 0);
+        return uint_traits::number_of_digits(m_abs_value) + (has_sign(fmt) ? 1 : 0);
     }
 
     virtual charT* write_without_termination_char
@@ -110,33 +107,18 @@ public:
         out = write_sign(out, fmt);
         return write_digits(out, fmt);
     }
-/*
-    virtual void write
-        ( boost::stringify::simple_ostream<charT>& out
-        , const Formating&
-        ) const
-    {
-        if (value < 0)
-            out.put(boost::stringify::detail::the_sign_minus<charT>());
 
-        auto div = uint_traits::greatest_power_of_10_less_than(abs_value);
-        do
-        {
-            out.put(character_of_digit((abs_value / div) % 10));
-        }
-        while(div /= 10);
-    }
-*/
 private:
-    intT value;
-    unsigned_intT abs_value; // TODO optimaze ( use a union when intT is usigned )
+
+    intT m_value;
+    unsigned_intT m_abs_value; // TODO optimaze ( use a union when intT is usigned )
     local_formatting m_local_fmt;
     
     bool has_sign(const Formating& fmt) const noexcept
     {
         /*constexpr*/ if( std::is_signed<intT>::value)
         {
-            return value < 0 || showpos(fmt);
+            return m_value < 0 || showpos(fmt);
         }
         return false;
     }
@@ -145,7 +127,7 @@ private:
     {
         /*constexpr*/ if( std::is_signed<intT>::value)
         {
-            if (value < 0)
+            if (m_value < 0)
             {
                 traits::assign(*out++, boost::stringify::detail::the_sign_minus<charT>());
             }
@@ -157,16 +139,26 @@ private:
         return out;
     }
 
+    
+    
     charT* write_digits(charT* out, const Formating& fmt) const noexcept
     {
-        out += uint_traits::number_of_digits(abs_value);
-        unsigned_intT it_value = abs_value;
+        // boost::stringify::detail::int_digits<unsigned_intT, 10> digits(m_abs_value);
+        // while(! digits.empty())
+        // {
+        //     traits::assign(*out++, character_of_digit(digits.pop()));
+        // }
+        // return out;
+
+        out += uint_traits::number_of_digits(m_abs_value);
         charT* end = out;
-        do
+        unsigned_intT it_value = m_abs_value;
+        while(it_value >= 10)
         {
             traits::assign(*--out, character_of_digit(it_value % 10));
+            it_value /= 10;
         }
-        while(it_value /= 10);
+        traits::assign(*--out, character_of_digit(it_value));
         return end;
     }
 
@@ -182,7 +174,11 @@ private:
         
     charT character_of_digit(unsigned int digit) const noexcept
     {
-        return boost::stringify::detail::the_digit_zero<charT>() + digit;
+        if (digit < 10)
+        {
+            return boost::stringify::detail::the_digit_zero<charT>() + digit;
+        }
+        return boost::stringify::detail::the_character_a<charT>() + digit - 10;
     }
 };
 
