@@ -51,13 +51,6 @@ int main()
         TEST ("123", f_showpos, {(unsigned)123, "+"});
     }
     
-
-
-
-
-
-
-
     
     return  boost::report_errors();
 }

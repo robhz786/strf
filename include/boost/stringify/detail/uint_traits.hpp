@@ -156,55 +156,56 @@ namespace detail{
 
     static fast_type greatest_power_of_10_less_than(fast_type value) noexcept
     {
-      fast_type result = 1L;
+      fast_type result = 1LL;
 
-      if (value > 9999999999999999L) {
-        value /= 10000000000000000L;
-        result *= 10000000000000000L;
-        goto value_less_than_100;
+      if (value > 9999999999999999LL) {
+        value /= 10000000000000000LL;
+        result *= 10000000000000000LL;
+        goto value_less_than_10000;
       }
-      if (value > 99999999L) {
-        value /= 100000000L;
-        result *= 100000000L;
+      if (value > 99999999LL) {
+        value /= 100000000LL;
+        result *= 100000000LL;
       }
-      if (value > 9999L) {
-        value /= 10000L;
-        result *= 10000L;
+      value_less_than_10000:
+      if (value > 9999LL) {
+        value /= 10000LL;
+        result *= 10000LL;
       }
-      if (value > 99L) {
-        value /= 100L;
-        result *= 100L;
+      if (value > 99LL) {
+        value /= 100LL;
+        result *= 100LL;
       }
-      value_less_than_100:
-      if (value > 9L) {
-        result *= 10L;
+      if (value > 9LL) {
+        result *= 10LL;
       }
       return result;
     }
 
+
     static int number_of_digits(fast_type value) noexcept
     {
       int num_digits = 1;
-
-      if (value > 9999999999999999L) {
-        value /= 10000000000000000L;
+      
+      if (value > 9999999999999999LL) {
+        value /= 10000000000000000LL;
         num_digits += 16;
-        goto value_less_than_100;
+        goto value_less_than_10000;
       }
-      if (value > 99999999L) {
-        value /= 100000000L;
+      if (value > 99999999LL) {
+        value /= 100000000LL;
         num_digits += 8;
       }
-      if (value > 9999L) {
-        value /= 10000L;
+      value_less_than_10000:
+      if (value > 9999LL) {
+        value /= 10000LL;
         num_digits += 4;
       }
-      value_less_than_100:
-      if(value > 99L) {
-        value /= 100L;
+      if(value > 99LL) {
+        value /= 100LL;
         num_digits += 2;
       }
-      if(value > 9L)
+      if(value > 9LL)
         ++num_digits;
 
       return num_digits;
