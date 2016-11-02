@@ -92,12 +92,23 @@ public:
         return this->do_get<InputArg>(matching_preference(), FmtType());
     }
 
+private:
+    
     template <typename FmtType, typename InputArg>
-    using fimpl_type
-    = decltype
-        ( std::declval<const formater_tuple>()
-          .template do_get<InputArg>(matching_preference(), FmtType())
-        );
+    struct fimpl_type_helper
+    {
+        typedef
+            decltype
+                ( std::declval<formater_tuple<FmtImpl, OtherFmtImpls ...> >()
+                  .template do_get<InputArg>(matching_preference(), FmtType())
+                )
+            fimpl_type;
+    };
+    
+public:
+
+    template <typename FmtType, typename InputArg>
+    using fimpl_type = typename fimpl_type_helper<FmtType, InputArg>::fimpl_type;
     
 private:
 
