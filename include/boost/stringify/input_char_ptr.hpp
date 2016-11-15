@@ -10,11 +10,11 @@ namespace boost
 namespace stringify
 {
 
-template<typename charT, typename traits, typename Formating>
-struct input_char_ptr: boost::stringify::input_base<charT, Formating>
+template<typename charT, typename Output, typename Formating>
+struct input_char_ptr: boost::stringify::input_base<charT, Output, Formating>
 {
-private:
-
+    typedef boost::stringify::input_base<charT, Output, Formating> base;
+    
     typedef
         typename Formating::template fimpl_type
             < boost::stringify::ftype_width_calculator<char>
@@ -52,29 +52,22 @@ public:
         return str_length() + fill_length(fmt);
     }
 
-    virtual charT* write_without_termination_char
-        ( charT* out
+    void write
+        ( Output& out
         , const Formating& fmt
-        ) const noexcept
+        ) const noexcept(base::noexcept_output) override
     {
         auto fillwidth = fill_width(fmt);
         if (fillwidth > 0)
         {
-            out = write_fill(out, fillwidth, fmt);
+            write_fill(out, fillwidth, fmt);
         }
-        return traits::copy(out, str, str_length()) + str_length();
-    }
 
-    // virtual void write
-    //     ( boost::stringify::simple_ostream<charT>& out
-    //     , const Formating&
-    //     ) const
-    // {
-    //     if(str)
-    //     {
-    //         out.write(str, str_length());
-    //     }
-    // }
+        if(str)
+        {
+            out.put(str, str_length());
+        }
+    }
 
 
 private:
@@ -85,7 +78,7 @@ private:
     {
         if (len == (std::numeric_limits<std::size_t>::max) ())
         {
-            len = traits::length(str);
+            len = std::char_traits<charT>::length(str);
         }
         return len;
     }
@@ -101,21 +94,21 @@ private:
         return 0;
     }
     
-    charT* write_fill
-        ( charT* out
+    void write_fill
+        ( Output& out
         , boost::stringify::width_t fillwidth
         , const Formating& fmt
         )  const noexcept
     {
         return fmt_fill(fmt)
-            .template fill<traits, width_accumulator_type>(out, fillwidth);
+            .template fill<Output, width_accumulator_type>(out, fillwidth);
     }
-    
+   
     boost::stringify::width_t
     fill_width(const Formating& fmt) const noexcept
     {
         auto width = fmt_width(fmt).width();
-        if (width > 0)
+        if(width > 0)
         {
             width_accumulator_type acc;
             if(acc.add(str, str_length(), width))
@@ -138,9 +131,9 @@ private:
     
 }; 
 
-template <typename charT, typename traits, typename Formating>
+template <typename charT, typename Output, typename Formating>
 inline
-boost::stringify::input_char_ptr<charT, traits, Formating>
+boost::stringify::input_char_ptr<charT, Output, Formating>
 argf(const charT* str) noexcept
 {
     return str;

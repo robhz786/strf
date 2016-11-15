@@ -6,14 +6,14 @@
 namespace boost {
 namespace stringify {
 
-template <typename charT, typename charTraits, typename Formating>
+template <typename charT, typename Output, typename Formating>
 class input_arg
 {
 public:
 
     template <class T>
     using input_base_of
-        = decltype(argf<charT, charTraits, Formating>(std::declval<const T>()));
+    = decltype(argf<charT, Output, Formating>(std::declval<const T>()));
 
     template <typename T>
     input_arg
@@ -38,28 +38,7 @@ public:
         wt.set(arg, arg_format);  // will be removed after compilers add support to P0145R2
     }
 
-    std::size_t length(const Formating& fmt) const noexcept
-    {
-        return writer.length(fmt);
-    }
-
-    charT* write_without_termination_char
-        ( charT* out
-        , const Formating& fmt
-        ) const noexcept
-    {
-        return writer.write_without_termination_char(out, fmt);
-    }
-        
-    charT* write
-        ( charT* out
-        , const Formating& fmt
-        ) const noexcept
-    {
-        return writer.write(out, fmt);
-    }
-    
-    const boost::stringify::input_base<charT, Formating>& writer;
+    const boost::stringify::input_base<charT, Output, Formating>& writer;
 };
 
 

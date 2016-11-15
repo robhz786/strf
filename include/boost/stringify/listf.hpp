@@ -9,12 +9,12 @@ namespace boost
 namespace stringify
 {
 
-template <typename charT, typename charTraits, typename Formating>
-class listf: public boost::stringify::input_base<charT, Formating>
+template <typename charT, typename Output, typename Formating>
+class listf: public boost::stringify::input_base<charT, Output, Formating>
 {
     typedef 
         std::initializer_list
-            <boost::stringify::input_arg<charT, charTraits, Formating > >
+            <boost::stringify::input_arg<charT, Output, Formating > >
         initializer_list_type;
 
     const initializer_list_type inputs;
@@ -26,7 +26,7 @@ public:
     {
     }
 
-    using boost::stringify::input_base<charT, Formating>::write;
+    using boost::stringify::input_base<charT, Output, Formating>::write;
     
     virtual std::size_t length(const Formating& fmt) const noexcept
     {

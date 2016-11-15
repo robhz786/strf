@@ -11,23 +11,13 @@ namespace boost
 {
 namespace stringify 
 {
-template <typename charT>
-class simple_ostream;
 
-template <typename charT, typename Formating>
+template <typename charT, typename Output, typename Formating>
 class input_base
 {
 public:
   virtual ~input_base()
     {}
-
-    /**
-       return position after last written character
-    */
-    virtual charT* write_without_termination_char
-        ( charT* out
-        , const Formating& 
-        ) const noexcept =0;
 
     /**
        return the amount of character that needs to be allocated,
@@ -38,36 +28,12 @@ public:
     */
     virtual std::size_t length(const Formating&) const noexcept = 0;
 
-    charT* write(charT* out, const Formating& fmt) const noexcept
-    {
-        charT* end = write_without_termination_char(out, fmt);
-        *end = charT();
-        return end;
-    }
-/*
-    virtual void write
-        ( boost::stringify::simple_ostream<charT>& out
-        , const Formating& fmt
-        ) const = 0;
-*/
+    static constexpr bool random_access_output = true; // todo
+    static constexpr bool noexcept_output = true; // todo
+    
+    virtual void write(Output&, const Formating& fmt)
+        const noexcept(noexcept_output) {} // todo make pure virtual
 };
-
-
-// template <typename charT>
-// class simple_ostream
-// {
-// public:
-//     virtual ~simple_ostream()
-//     {}
-
-//     virtual bool good() = 0;
-
-//     virtual void put(charT) = 0;
-
-//     virtual void put(charT, std::size_t repetitions) = 0;
-
-//     virtual void write(const charT*, std::size_t length) = 0;
-// };
 
 } //namespace stringify
 } //namespace boost

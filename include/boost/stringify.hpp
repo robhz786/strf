@@ -13,7 +13,8 @@
 #include <boost/stringify/fmt_width_calculator.hpp>
 #include <boost/stringify/fmt_fill.hpp>
 
-#include <boost/stringify/lengthf.hpp>
-#include <boost/stringify/writef.hpp>
+//#include <boost/stringify/lengthf.hpp>
+//#include <boost/stringify/writef.hpp>
+#include <boost/stringify/writef_char_ptr.hpp>
 
 #endif

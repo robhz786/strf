@@ -13,6 +13,7 @@ std::size_t lengthf_il
     ( const boost::stringify::formater_tuple<Formaters ...>& fmt
     , const boost::stringify::listf
         < char
+        , boost::stringify::dummy_output<char>
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
         > & arg_list
@@ -27,6 +28,7 @@ std::size_t lengthf
     ( const boost::stringify::formater_tuple<Formaters ...>& fmt
     , const boost::stringify::input_arg
         < char
+        , boost::stringify::dummy_output<char>      
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
         > & arg1
@@ -41,6 +43,7 @@ std::size_t lengthf
     ( const boost::stringify::formater_tuple<Formaters ...>& fmt
     , const boost::stringify::input_arg
         < char
+        , boost::stringify::dummy_output<char>      
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
         > & arg1
@@ -56,6 +59,7 @@ std::size_t lengthf
     ( const boost::stringify::formater_tuple<Formaters ...>& fmt
     , const boost::stringify::input_arg
         < char
+        , boost::stringify::dummy_output<char>
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
         > & arg1
@@ -72,6 +76,7 @@ std::size_t lengthf
     ( const boost::stringify::formater_tuple<Formaters ...>& fmt
     , const boost::stringify::input_arg
         < char
+        , boost::stringify::dummy_output<char>
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
         > & arg1
@@ -91,6 +96,7 @@ std::size_t lengthf
     ( const boost::stringify::formater_tuple<Formaters ...>& fmt
     , const boost::stringify::input_arg
         < char
+        , boost::stringify::dummy_output<char>      
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
         > & arg1
@@ -111,6 +117,7 @@ std::size_t lengthf
     ( const boost::stringify::formater_tuple<Formaters ...>& fmt
     , const boost::stringify::input_arg
         < char
+        , boost::stringify::dummy_output<char>      
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
         > & arg1
@@ -132,6 +139,7 @@ std::size_t lengthf
     ( const boost::stringify::formater_tuple<Formaters ...>& fmt
     , const boost::stringify::input_arg
         < char
+        , boost::stringify::dummy_output<char>      
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
         > & arg1
@@ -155,6 +163,7 @@ std::size_t lengthf
     ( const boost::stringify::formater_tuple<Formaters ...>& fmt
     , const boost::stringify::input_arg
         < char
+        , boost::stringify::dummy_output<char>
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
         > & arg1
@@ -179,6 +188,7 @@ std::size_t lengthf
     ( const boost::stringify::formater_tuple<Formaters ...>& fmt
     , const boost::stringify::input_arg
         < char
+        , boost::stringify::dummy_output<char>
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
         > & arg1
@@ -204,6 +214,7 @@ std::size_t lengthf
     ( const boost::stringify::formater_tuple<Formaters ...>& fmt
     , const boost::stringify::input_arg
         < char
+        , boost::stringify::dummy_output<char>
         , std::char_traits<char>
         , typename std::decay<decltype(fmt)>::type
         > & arg1

@@ -5,8 +5,8 @@
 
 int main()
 {
-    test<__LINE__> ( "asdf", {}, "asdf");
-    test_with_traits<__LINE__, char, std::char_traits<char> > ( "asdf", {}, std::string("asdf"));
+    testf<__LINE__>( "asdf") () ("asdf");
+    
   
     return  boost::report_errors();
 }

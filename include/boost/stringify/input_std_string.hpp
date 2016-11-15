@@ -9,9 +9,13 @@ namespace boost
 namespace stringify
 {
 
-template <class charT, class traits, class Formating>
-struct input_std_string: public boost::stringify::input_base<charT, Formating>
+template <class charT, typename traits, typename Output, class Formating>
+class input_std_string: public boost::stringify::input_base<charT, Output, Formating>
 {
+    typedef boost::stringify::input_base<charT, Output, Formating> base;
+    
+public:
+    
     const std::basic_string<charT, traits>* str;    
 
     input_std_string() noexcept
@@ -34,35 +38,22 @@ struct input_std_string: public boost::stringify::input_base<charT, Formating>
         return str ? str->length() : 0;
     }
 
-    virtual charT* write_without_termination_char
-        ( charT* out
+    void write
+        ( Output& out
         , const Formating&
-        ) const noexcept
+        ) const noexcept(base::noexcept_output) override
     {
-        if( ! str)
+        if(str)
         {
-            return out;
+            out.put(str.c_str(), str->length());
         }
-        traits::copy(out, &*str->begin(), str->length());
-        return out + str->length();
     }
-
-    // virtual void write
-    //     ( boost::stringify::simple_ostream<charT>& out
-    //     , const Formating&
-    //     ) const
-    // {
-    //     if(str)
-    //     {
-    //         out.write(str->c_str(), str->length());
-    //     }
-    // }
 };
 
 
-template <typename charT, typename traits, typename Formating>
+template <typename charT, typename traits, typename Output, typename Formating>
 inline
-boost::stringify::input_std_string<charT, traits, Formating>
+boost::stringify::input_std_string<charT, traits, Output, Formating>
 argf(const std::basic_string<charT, traits>& str) noexcept
 {
     return str;

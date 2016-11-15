@@ -6,95 +6,76 @@ namespace boost
 namespace stringify
 {
 
-template <typename traits, typename Formating>
-class char32_to_utf8: public boost::stringify::input_base<char, Formating>
+template <typename Output, typename Formating>
+class char32_to_utf8: public boost::stringify::input_base<char, Output, Formating>
 {
+    typedef boost::stringify::input_base<char, Output, Formating> base;
+    
 public:
 
     char32_to_utf8() noexcept
-        : codepoint(0XFFFFFFFF)
+        : m_char32(0XFFFFFFFF)
     {
     }
 
     char32_to_utf8(char32_t _codepoint) noexcept
-        : codepoint(_codepoint)
+        : m_char32(_codepoint)
     {
     }
 
     void set(char32_t _codepoint) noexcept
     {
-        codepoint = _codepoint;
+        m_char32 = _codepoint;
     }
 
     virtual std::size_t length(const Formating&) const noexcept
     {
-        return (codepoint <     0x80 ? 1 :
-                codepoint <    0x800 ? 2 :
-                codepoint <  0x10000 ? 3 :
-                codepoint < 0x110000 ? 4 :
+        return (m_char32 <     0x80 ? 1 :
+                m_char32 <    0x800 ? 2 :
+                m_char32 <  0x10000 ? 3 :
+                m_char32 < 0x110000 ? 4 :
                 /* invalid codepoit */ 0);
     }
-
-    virtual char* write_without_termination_char(char* out, const Formating&)
-        const noexcept
+    
+    void write
+        ( Output& out
+        , const Formating& fmt
+        ) const noexcept(base::noexcept_output) override
     {
-        return (codepoint <     0x80 ? write_utf8_range1(out) :
-                codepoint <    0x800 ? write_utf8_range2(out) :
-                codepoint <  0x10000 ? write_utf8_range3(out) :
-                codepoint < 0x110000 ? write_utf8_range4(out) :
-                /* invalid codepoit */ out);
+        if (m_char32 <     0x80)
+        {
+            out.put(static_cast<char>(m_char32));
+        }
+        else if (m_char32 <    0x800)
+        {
+            out.put(static_cast<char>(0xC0 | ((m_char32 & 0x7C0) >> 6)));
+            out.put(static_cast<char>(0x80 |  (m_char32 &  0x3F)));
+        }
+        else if (m_char32 <  0x10000)
+        {
+            out.put(static_cast<char>(0xE0 | ((m_char32 & 0xF000) >> 12)));
+            out.put(static_cast<char>(0x80 | ((m_char32 &  0xFC0) >> 6)));
+            out.put(static_cast<char>(0x80 |  (m_char32 &   0x3F)));
+        }
+        else if (m_char32 < 0x110000)
+        {
+            out.put(static_cast<char>(0xF0 | ((m_char32 & 0x1C0000) >> 18)));
+            out.put(static_cast<char>(0x80 | ((m_char32 &  0x3F000) >> 12)));
+            out.put(static_cast<char>(0x80 | ((m_char32 &    0xFC0) >> 6)));
+            out.put(static_cast<char>(0x80 |  (m_char32 &     0x3F)));
+        }
     }
-
-    // virtual void write
-    //     ( boost::stringify::simple_ostream<char>& out
-    //     , const Formating& fmt
-    //     ) const
-    // {
-    //     char buff[4];
-    //     write_without_termination_char(buff, fmt);
-    //     out.write(buff, 4);
-    // }
 
 private:
 
-    char32_t codepoint;
-
-    char* write_utf8_range1(char* out) const noexcept
-    {
-        traits::assign(*out, static_cast<char>(codepoint));
-        return ++out;
-    }
-
-    char* write_utf8_range2(char* out) const noexcept
-    {
-        traits::assign(*  out, static_cast<char>(0xC0 | ((codepoint & 0x7C0) >> 6)));
-        traits::assign(*++out, static_cast<char>(0x80 |  (codepoint &  0x3F)));
-        return ++out;
-    }
-
-    char* write_utf8_range3(char* out) const noexcept
-    {
-        traits::assign(*  out, static_cast<char>(0xE0 | ((codepoint & 0xF000) >> 12)));
-        traits::assign(*++out, static_cast<char>(0x80 | ((codepoint &  0xFC0) >> 6)));
-        traits::assign(*++out, static_cast<char>(0x80 |  (codepoint &   0x3F)));
-        return ++out;
-    }
-
-    char* write_utf8_range4(char* out) const noexcept
-    {
-        traits::assign(*  out, static_cast<char>(0xF0 | ((codepoint & 0x1C0000) >> 18)));
-        traits::assign(*++out, static_cast<char>(0x80 | ((codepoint &  0x3F000) >> 12)));
-        traits::assign(*++out, static_cast<char>(0x80 | ((codepoint &    0xFC0) >> 6)));
-        traits::assign(*++out, static_cast<char>(0x80 |  (codepoint &     0x3F)));
-        return ++out;
-    }
+    char32_t m_char32;
 };
 
 
-template <typename charT, typename traits, typename Formating>
+template <typename charT, typename Output, typename Formating>
 inline typename std::enable_if
     < (sizeof(charT) == sizeof(char))
-    , boost::stringify::char32_to_utf8<traits, Formating>
+    , boost::stringify::char32_to_utf8<Output, Formating>
     >
     ::type
 argf(char32_t c) noexcept

@@ -9,6 +9,7 @@ lib loop_timer
     ;
 
 sources = [ glob *.cpp : loop_timer.cpp ] ;
+#sources = int.cpp ;
 
 for local src in $(sources)
 {

@@ -6,88 +6,80 @@ namespace boost
 namespace stringify
 {
 
-template <typename charT, typename traits, typename Formating>
-class char32_to_utf16: public boost::stringify::input_base<charT, Formating>
+template <typename charT, typename Output, typename Formating>
+class char32_to_utf16: public boost::stringify::input_base<charT, Output, Formating>
 {
+    typedef boost::stringify::input_base<charT, Output, Formating> base;
+    
 public:
 
     char32_to_utf16() noexcept
-        : codepoint(0xFFFFFFFF)
+        : m_char32(0xFFFFFFFF)
     {
     }
 
     char32_to_utf16(char32_t _codepoint) noexcept
-        : codepoint(_codepoint)
+        : m_char32(_codepoint)
     {
     }
 
     void set(char32_t _codepoint) noexcept
     {
-        codepoint = _codepoint;
+        m_char32 = _codepoint;
     }
 
     virtual std::size_t length(const Formating&) const noexcept
     {
-        return (single_char_range() ? 1 :
-                two_chars_range()   ? 2 : 0);
+        if(single_char_range())
+        {
+            return 1;
+        }
+        if(two_chars_range())
+        {
+            return 2;
+        }
+        return 0;
     }
-
-    virtual charT* write_without_termination_char(charT* out, const Formating&)
-        const noexcept
+    
+    void write
+        ( Output& out
+        , const Formating& fmt
+        ) const noexcept(base::noexcept_output) override
     {
         if (single_char_range())
         {
-            traits::assign(*out++, static_cast<charT>(codepoint));
+            out.put(static_cast<charT>(m_char32));
         }
         else if (two_chars_range())
         {
-            char32_t sub_codepoint = codepoint - 0x10000;
+            char32_t sub_codepoint = m_char32 - 0x10000;
             char32_t high_surrogate = 0xD800 + ((sub_codepoint & 0xFFC00) >> 10);
             char32_t low_surrogate  = 0xDC00 +  (sub_codepoint &  0x3FF);
-            traits::assign(*out++, static_cast<charT>(high_surrogate));
-            traits::assign(*out++, static_cast<charT>(low_surrogate));
+            out.put(static_cast<charT>(high_surrogate));
+            out.put(static_cast<charT>(low_surrogate));
         }
-        return out;
     }
 
-    // virtual void write_ostream
-    //     ( boost::stringify::simple_ostream<charT>& out
-    //     , const Formating&
-    //     ) const
-    // {
-    //     if (single_char_range())
-    //     {
-    //         out.put(static_cast<charT>(codepoint));
-    //     }
-    //     else if (two_chars_range())
-    //     {
-    //         char32_t sub_codepoint = codepoint - 0x10000;
-    //         char32_t high_surrogate = 0xD800 + ((sub_codepoint & 0xFFC00) >> 10);
-    //         char32_t low_surrogate  = 0xDC00 +  (sub_codepoint &  0x3FF);
-    //         out.put(static_cast<charT>(high_surrogate));
-    //         out.put(static_cast<charT>(low_surrogate));
-    //     }
-    // }
-
+ 
 private:
 
-    char32_t codepoint;
+    char32_t m_char32;
 
     bool single_char_range() const
     {
-        return codepoint < 0xd800 || (0xdfff < codepoint && codepoint <  0x10000);
+        return m_char32 < 0xd800 || (0xdfff < m_char32 && m_char32 <  0x10000);
     }
 
     bool two_chars_range() const
     {
-        return 0xffff < codepoint && codepoint < 0x110000;
+        return 0xffff < m_char32 && m_char32 < 0x110000;
     }
 };
 
-template <typename charT, typename traits, typename Formating>
+template <typename charT, typename Output, typename Formating>
 inline typename std::enable_if
     < (sizeof(charT) == sizeof(char16_t))
-    , boost::stringify::char32_to_utf16<charT, traits, Formating>
+    , boost::stringify::char32_to_utf16<charT, Output, Formating>
     >
     ::type
 argf(char32_t c) noexcept
