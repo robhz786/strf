@@ -14,7 +14,7 @@ class char_ptr_writer
 {
 public:
 
-    typedef charT character_type;
+    typedef charT char_type;
 
     char_ptr_writer(const char_ptr_writer&) = default;
     

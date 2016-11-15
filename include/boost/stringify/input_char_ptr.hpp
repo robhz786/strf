@@ -47,7 +47,7 @@ public:
         len = (std::numeric_limits<std::size_t>::max) ();
     }
 
-    virtual std::size_t length(const Formating& fmt) const noexcept
+    virtual std::size_t length(const Formating& fmt) const noexcept override
     {
         return str_length() + fill_length(fmt);
     }

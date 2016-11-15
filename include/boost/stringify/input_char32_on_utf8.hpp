@@ -28,7 +28,7 @@ public:
         m_char32 = _codepoint;
     }
 
-    virtual std::size_t length(const Formating&) const noexcept
+    virtual std::size_t length(const Formating&) const noexcept override
     {
         return (m_char32 <     0x80 ? 1 :
                 m_char32 <    0x800 ? 2 :

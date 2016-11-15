@@ -31,7 +31,7 @@ public:
         m_char = _character;
     }
 
-    virtual std::size_t length(const Formating&) const noexcept
+    virtual std::size_t length(const Formating&) const noexcept override
     {
         return 1;
     }

@@ -33,7 +33,7 @@ public:
         str = &_str;
     }
 
-    virtual std::size_t length(const Formating&) const noexcept
+    virtual std::size_t length(const Formating&) const noexcept override
     {
         return str ? str->length() : 0;
     }
@@ -45,7 +45,7 @@ public:
     {
         if(str)
         {
-            out.put(str.c_str(), str->length());
+            out.put(str->c_str(), str->length());
         }
     }
 };

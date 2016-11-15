@@ -28,7 +28,7 @@ public:
         m_char32 = _codepoint;
     }
 
-    virtual std::size_t length(const Formating&) const noexcept
+    virtual std::size_t length(const Formating&) const noexcept override
     {
         if(single_char_range())
         {

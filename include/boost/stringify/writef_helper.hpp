@@ -44,13 +44,15 @@ class final_writer
 
 public:
     
-    template <typename ... FmtArgs>
-    final_writer(output_type output, const FmtArgs& ... fmtargs)
-        : m_output(output)
+    template <typename ... Formaters>
+    final_writer(output_type&& output, const Formaters& ... fmtargs)
+        : m_output(std::move(output))
         , m_fmt(fmtargs ...)
     {
     }
 
+    final_writer(final_writer&& other) = default;
+    
     decltype(auto) operator[](const std::initializer_list<arg_type>& lst)
         && noexcept(noexcept_output)
     {
@@ -260,20 +262,20 @@ class writef_helper
 {
 public:
     
-    typedef typename output_type::character_type character_type;
+    typedef typename output_type::char_type char_type;
     
    
     template <typename ... Formaters>
         using final_writer_type
         = boost::stringify::detail::final_writer
-            < character_type
+            < char_type
             , boost::stringify::formater_tuple<Formaters...>
             , output_type 
             >;
 
     typedef 
         boost::stringify::input_arg
-            < character_type
+            < char_type
             , output_type
             , boost::stringify::formater_tuple<>
             >
@@ -303,12 +305,12 @@ public:
     template <typename ... Formaters>
     final_writer_type<Formaters ...> operator() (const Formaters& ... formaters) &&
     {
-        return final_writer_type<Formaters ...>(m_output, formaters ...);
+        return final_writer_type<Formaters ...>(std::move(m_output), formaters ...);
     }
 
     decltype(auto) operator[](std::initializer_list<default_input_arg> lst) &&
     {
-        return final_writer_type<>(m_output)[lst];
+        return final_writer_type<>(std::move(m_output))[lst];
     }
     
 private:

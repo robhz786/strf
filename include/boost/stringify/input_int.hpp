@@ -95,7 +95,7 @@ public:
         m_local_fmt = fmt;
     }
 
-    virtual std::size_t length(const Formating& fmt) const noexcept
+    virtual std::size_t length(const Formating& fmt) const noexcept override
     {
         return length_digits() + (has_sign(fmt) ? 1 : 0);
     }

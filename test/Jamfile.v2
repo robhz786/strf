@@ -10,6 +10,7 @@ test-suite "listf_tests"
       [ run string_writer_test.cpp ]
       [ run int_writer_test.cpp ]
       [ run char_writer_test.cpp ]
-      [ run basic_tests.cpp ]  
+      [ run output_types.cpp ]
+      [ run formating_test.cpp ]
     ;
 }

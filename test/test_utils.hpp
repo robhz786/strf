@@ -228,73 +228,70 @@ class tester
     writer_type;
     
 public:
-    typedef charT character_type;
+    typedef charT char_type;
     
     tester(std::basic_string<charT> expected)
-        : m_expected(std::move(expected))
-        , m_expected_size(0)
-        , buff(nullptr)
-        , writer(nullptr)
+        : m_expected_size(0)
+        , m_expected(std::move(expected))
     {
     }
 
+    tester(tester&&) = default;
+    
     ~tester()
     {
-        delete [] buff;
-        delete writer;
     }
           
     void reserve(std::size_t size)
     {
-        buff = new charT[2 * size];
-        writer = new writer_type(buff);
+        m_writer.reserve(size);
         m_expected_size = size;
     }
     
-    charT* finish()
+    bool finish()
     {
-        charT* res = writer->finish();
-        BOOST_TEST(m_expected == buff);
+        auto result = m_writer.finish();
+        BOOST_TEST(m_expected == result);
         BOOST_TEST(m_expected_size == 1 + m_expected.length());
-        return res;
+        return m_expected == result
+            && m_expected_size == 1 + m_expected.length();
     }
 
     void put(charT character) noexcept
     {
-        writer->put(character);
+        m_writer.put(character);
     }
 
     void put(charT character, std::size_t repetitions) noexcept
     {
-        writer->put(character, repetitions);
+        m_writer.put(character, repetitions);
     }
 
     void put(const charT* str, std::size_t count) noexcept
     {
-        writer->put(str, count);
+        m_writer.put(str, count);
     }
     
-    bool set_pos(charT* pos) noexcept
+    bool set_pos(std::size_t pos) noexcept
     {
-        return writer->set_pos(pos);
+        return m_writer.set_pos(pos);
     }
 
-    charT* get_pos() noexcept
+    decltype(auto) get_pos() noexcept
     {
-        return writer->get_pos();
+        return m_writer.get_pos();
     }
     
     void rput(charT character) noexcept
     {
-        writer->rput(character);
+        m_writer.rput(character);
     }
 
 private:
 
-    std::basic_string<charT> m_expected;
     std::size_t m_expected_size;
-    charT* buff;
-    writer_type* writer;
+    std::basic_string<charT> m_expected;
+    boost::stringify::detail::string_maker<std::basic_string<charT>> m_writer;
 };
       
 template<int LINE_NUM, typename charT>

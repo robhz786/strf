@@ -16,5 +16,6 @@
 //#include <boost/stringify/lengthf.hpp>
 //#include <boost/stringify/writef.hpp>
 #include <boost/stringify/writef_char_ptr.hpp>
+#include <boost/stringify/output_std_string.hpp>
 
 #endif
