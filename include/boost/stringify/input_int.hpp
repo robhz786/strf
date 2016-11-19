@@ -147,25 +147,10 @@ private:
     
     void write_digits(Output& out, const Formating& fmt) const noexcept(noexcept_output)
     {
-        if (out.set_pos(out.get_pos() + length_digits()))
+        boost::stringify::detail::int_digits<unsigned_intT, 10> digits(m_abs_value);
+        while(! digits.empty())
         {
-            auto pos_bk = out.get_pos();
-            unsigned_intT it_value = m_abs_value;
-            while(it_value >= 10)
-            {
-                out.rput(character_of_digit(it_value % 10));
-                it_value /= 10;
-            }
-            out.rput(character_of_digit(it_value));
-            out.set_pos(pos_bk);
-        }
-        else
-        {
-            boost::stringify::detail::int_digits<unsigned_intT, 10> digits(m_abs_value);
-            while(! digits.empty())
-            {
-                out.put(character_of_digit(digits.pop()));
-            }
+            out.put(character_of_digit(digits.pop()));
         }
     }
 

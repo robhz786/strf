@@ -46,21 +46,21 @@ public:
         return m_out;
     }
 
-    bool set_pos(charT* pos) noexcept
-    {
-        m_out = pos;
-        return true;
-    }
+    // bool set_pos(charT* pos) noexcept
+    // {
+    //     m_out = pos;
+    //     return true;
+    // }
 
-    charT* get_pos() noexcept
-    {
-        return m_out;
-    }
+    // charT* get_pos() noexcept
+    // {
+    //     return m_out;
+    // }
     
-    void rput(charT character) noexcept
-    {
-        traits::assign(*--m_out, character);
-    }
+    // void rput(charT character) noexcept
+    // {
+    //     traits::assign(*--m_out, character);
+    // }
 
 private:
 

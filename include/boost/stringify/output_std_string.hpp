@@ -43,22 +43,9 @@ public:
     {
         m_out.reserve(m_out.capacity() + size);
     }
-
-    constexpr bool set_pos(std::size_t size) const
-    {
-        return false;
-    }
-
-    std::size_t get_pos() const
-    {
-        return 0;
-    }
-
-    void rput(char_type)
-    {
-    }
     
 private:
+
     StringType m_out;               
 };
 
@@ -124,21 +111,8 @@ public:
         m_out.reserve(m_out.capacity() + size);
     }
 
-    constexpr bool set_pos(std::size_t size) const
-    {
-        return false;
-    }
-
-    std::size_t get_pos() const
-    {
-        return 0;
-    }
-
-    void rput(char_type)
-    {
-    }
-    
 private:
+
     StringType& m_out;               
 };
 
