@@ -11,6 +11,6 @@ test-suite "listf_tests"
       [ run int_writer_test.cpp ]
       [ run char_writer_test.cpp ]
       [ run output_types.cpp ]
-      [ run formating_test.cpp ]
+      [ run formatting_test.cpp ]
     ;
 }
