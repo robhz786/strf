@@ -1,77 +1,9 @@
-#ifndef BOOST_STRINGIFY_OUTPUT_STD_STRING_HPP
-#define BOOST_STRINGIFY_OUTPUT_STD_STRING_HPP
+#ifndef BOOST_STRINGIFY_ASSIGNF_APPENDF_STRING_HPP
+#define BOOST_STRINGIFY_ASSIGNF_APPENDF_STRING_HPP
 
 namespace boost {
 namespace stringify {
 namespace detail {
-
-
-template <typename StringType>
-class string_maker
-{
-public:
-
-    typedef typename StringType::value_type char_type;
-    
-    string_maker() = default;
-
-    string_maker(const string_maker&) = delete;
-
-    string_maker(string_maker&&) = default;
-    
-    void put(char_type character)
-    {
-        m_out.push_back(character);
-    }
-
-    void put(char_type character, std::size_t repetitions)
-    {
-        m_out.append(repetitions, character);
-    }
-
-    void put(const char_type* str, std::size_t count)
-    {
-        m_out.append(str, count);
-    }
-    
-    StringType finish()
-    {
-        return std::move(m_out);
-    }
-
-    void reserve(std::size_t size)
-    {
-        m_out.reserve(m_out.capacity() + size);
-    }
-    
-private:
-
-    StringType m_out;               
-};
-
-
-template <class StringType>
-struct make_string_helper
-{
-    typedef
-        boost::stringify::detail::string_maker<StringType>
-        writer_type;
-
-    template <typename ... Formaters>
-    using input_args_getter_type
-        = boost::stringify::detail::final_writer
-            < typename StringType::value_type
-            , boost::stringify::formater_tuple<Formaters...>
-            , writer_type
-            >;
-
-    template <typename ... Formaters>
-    static auto make_string(const Formaters& ... fmts)
-    {
-        return input_args_getter_type<Formaters...>(writer_type(), fmts ...);
-    }
-};
-
 
 template <typename StringType>
 class string_appender
@@ -116,7 +48,6 @@ private:
     StringType& m_out;               
 };
 
-
 template
     < typename StringType
     , typename CharT = typename StringType::value_type
@@ -134,23 +65,11 @@ auto satisfies_basic_string_output_concept(StringType& str)
     return std::true_type();
 }
 
-    
 template <typename T>
 std::false_type satisfies_basic_string_output_concept(...)
 {
     return std::false_type();
 }
-
-// template <StringType>
-// using satisfies_basic_string_output_concept
-// = decltype
-//     ( boost::stringify::detail::satisfies_basic_string_output_concept_func
-//       ( std::declval<StringType>())
-//     )  
-
-// template <StringType>
-// constexpr bool satisfies_basic_string_output_concept_v
-//     = satisfies_basic_string_output_concept<StringType>::value;
 
 } // namespace detail
 
@@ -192,17 +111,9 @@ auto assignf(StringType& str)
         >
         (str);
 }
-
-template <typename ... Formaters>
-auto make_string(const Formaters& ... fmts)
-{
-    return boost::stringify::detail::make_string_helper<std::string>
-        ::make_string(fmts ...);
-}
-
-
+                
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_OUTPUT_STD_STRING_HPP
+#endif  // BOOST_STRINGIFY_ASSIGNF_APPENDF_STRING_HPP
 
