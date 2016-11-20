@@ -15,13 +15,20 @@ struct input_char_ptr: boost::stringify::input_base<charT, Output, Formating>
 {
     typedef boost::stringify::input_base<charT, Output, Formating> base;
     
+    // typedef
+    //     typename Formating::template fimpl_type
+    //         < boost::stringify::ftype_width_calculator<char>
+    //         , const char*
+    //         >
+    //     width_calculator_type;
+
     typedef
-        typename Formating::template fimpl_type
-            < boost::stringify::ftype_width_calculator<char>
-            , const char*
+        boost::stringify::ftuple_get_return_type
+            < Formating
+            , boost::stringify::ftype_width_calculator<char>
+            , char*
             >
         width_calculator_type;
-
 
     typedef
         typename width_calculator_type::accumulator_type

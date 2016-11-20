@@ -2,7 +2,7 @@
 #define BOOST_STRINGIFY_INPUT_INT_HPP_INCLUDED
 
 #include <boost/stringify/input_base.hpp>
-#include <boost/stringify/formater_tuple.hpp>
+#include <boost/stringify/ftuple.hpp>
 #include <boost/stringify/fmt_showpos.hpp>
 #include <boost/stringify/detail/characters_catalog.hpp>
 #include <boost/stringify/detail/char_flags.hpp>

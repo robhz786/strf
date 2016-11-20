@@ -269,7 +269,7 @@ public:
         using final_writer_type
         = boost::stringify::detail::final_writer
             < char_type
-            , boost::stringify::formater_tuple<Formaters...>
+            , boost::stringify::ftuple<Formaters...>
             , output_type 
             >;
 
@@ -277,7 +277,7 @@ public:
         boost::stringify::input_arg
             < char_type
             , output_type
-            , boost::stringify::formater_tuple<>
+            , boost::stringify::ftuple<>
             >
         default_input_arg;
     

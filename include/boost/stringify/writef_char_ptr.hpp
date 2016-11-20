@@ -3,7 +3,7 @@
 
 #include <string>
 #include <boost/stringify/writef_helper.hpp>
-#include <boost/stringify/formater_tuple.hpp>
+#include <boost/stringify/ftuple.hpp>
 
 namespace boost{
 namespace stringify{
