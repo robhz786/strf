@@ -7,22 +7,22 @@ namespace boost {
 namespace stringify {
 namespace detail {
 
-template<typename charT, typename Formating>
+template<typename CharT, typename Formating>
 struct utf32_to_utf8: boost::stringify::input_base<char, Formating>
 {
-    const charT* str;
+    const CharT* str;
 
     utf32_to_utf8() noexcept:
                      str(0)
     {
     }
 
-    utf32_to_utf8(const charT* _str) noexcept :
+    utf32_to_utf8(const CharT* _str) noexcept :
                                       str(_str)
     {
     }
 
-    void set(const charT* _str) noexcept
+    void set(const CharT* _str) noexcept
     {
         str = _str;
     }
@@ -30,7 +30,7 @@ struct utf32_to_utf8: boost::stringify::input_base<char, Formating>
     virtual std::size_t length(const Formating& fmt) const noexcept
     {
         std::size_t len = 0;
-        for (const charT* it = str; *it != charT(); ++it)
+        for (const CharT* it = str; *it != CharT(); ++it)
             len += char32_to_utf8<Formating>(*it).length(fmt);
 
         return len;
@@ -42,7 +42,7 @@ struct utf32_to_utf8: boost::stringify::input_base<char, Formating>
         )
         const noexcept
     {
-        for (const charT* it = str; *it != charT(); ++it)
+        for (const CharT* it = str; *it != CharT(); ++it)
         {
             out = char32_to_utf8<Formating>(*it)
                 .write_without_termination_char(out, fmt);
@@ -56,7 +56,7 @@ struct utf32_to_utf8: boost::stringify::input_base<char, Formating>
         )
         const
     {
-        for (const charT* it = str; *it != charT() && out.good(); ++it)
+        for (const CharT* it = str; *it != CharT() && out.good(); ++it)
             char32_to_utf8<Formating>(*it).write(out, fmt);
     }
 };

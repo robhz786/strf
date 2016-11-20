@@ -6,14 +6,14 @@
 namespace boost {
 namespace stringify {
 
-template <typename charT, typename Output, typename Formating>
+template <typename CharT, typename Output, typename Formating>
 class input_arg
 {
 public:
 
     template <class T>
     using input_base_of
-    = decltype(argf<charT, Output, Formating>(std::declval<const T>()));
+    = decltype(argf<CharT, Output, Formating>(std::declval<const T>()));
 
     template <typename T>
     input_arg
@@ -38,7 +38,7 @@ public:
         wt.set(arg, arg_format);  // will be removed after compilers add support to P0145R2
     }
 
-    const boost::stringify::input_base<charT, Output, Formating>& writer;
+    const boost::stringify::input_base<CharT, Output, Formating>& writer;
 };
 
 

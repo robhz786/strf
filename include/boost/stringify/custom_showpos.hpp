@@ -6,14 +6,14 @@
 namespace boost {
 namespace stringify {
 
-struct ftype_showpos;
+struct showpos_tag;
 
 template <bool ShowIt, template <class> class Filter>
 struct fimpl_static_showpos
 {
     template <typename T> using accept_input_type = Filter<T>;
 
-    typedef boost::stringify::ftype_showpos fmt_type;
+    typedef boost::stringify::showpos_tag category;
 
     constexpr bool show() const { return ShowIt; }
 };
@@ -31,7 +31,7 @@ struct fimpl_dyn_showpos
 {
     template <typename T> using accept_input_type = Filter<T>;
 
-    typedef boost::stringify::ftype_showpos fmt_type;
+    typedef boost::stringify::showpos_tag category;
     
     fimpl_dyn_showpos(bool show) : m_show(show)
     {
@@ -45,12 +45,19 @@ struct fimpl_dyn_showpos
     bool m_show;
 };
 
-struct ftype_showpos
+struct showpos_tag
 {
     typedef
         fimpl_static_showpos<false, boost::stringify::accept_any_type>
         default_impl;
 };
+
+
+template <typename InputType, typename Formating>
+bool get_showpos(const Formating& fmt) noexcept
+{
+    return fmt.template get<boost::stringify::showpos_tag, InputType>().show();
+}
 
 
 } // namespace stringify

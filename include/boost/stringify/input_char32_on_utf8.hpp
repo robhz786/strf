@@ -72,9 +72,9 @@ private:
 };
 
 
-template <typename charT, typename Output, typename Formating>
+template <typename CharT, typename Output, typename Formating>
 inline typename std::enable_if
-    < (sizeof(charT) == sizeof(char))
+    < (sizeof(CharT) == sizeof(char))
     , boost::stringify::char32_to_utf8<Output, Formating>
     >
     ::type

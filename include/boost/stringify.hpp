@@ -2,10 +2,10 @@
 #define BOOST_STRINGIFY_HPP_INCLUDED
 
 
-#include <boost/stringify/fmt_showpos.hpp>
-#include <boost/stringify/fmt_width.hpp>
-#include <boost/stringify/fmt_width_calculator.hpp>
-#include <boost/stringify/fmt_fill.hpp>
+#include <boost/stringify/custom_showpos.hpp>
+#include <boost/stringify/custom_width.hpp>
+#include <boost/stringify/custom_width_calculator.hpp>
+#include <boost/stringify/custom_fill.hpp>
 
 // input 
 

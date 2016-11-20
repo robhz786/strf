@@ -2,9 +2,9 @@
 #define BOOST_STRINGIFY_INPUT_BASE_HPP_INCLUDED
 
 #include <boost/assert.hpp>
-#include <boost/stringify/fmt_fill.hpp>
-#include <boost/stringify/fmt_width.hpp>
-#include <boost/stringify/fmt_width_calculator.hpp>
+#include <boost/stringify/custom_fill.hpp>
+#include <boost/stringify/custom_width.hpp>
+#include <boost/stringify/custom_width_calculator.hpp>
 #include <cstddef>
 
 namespace boost
@@ -12,7 +12,7 @@ namespace boost
 namespace stringify 
 {
 
-template <typename charT, typename Output, typename Formating>
+template <typename CharT, typename Output, typename Formating>
 class input_base
 {
 public:

@@ -61,16 +61,16 @@ protected:
          < FmtImpl::template accept_input_type<InputArg>::value
          , const FmtImpl&
          > :: type
-    do_get(const matching_preference&, typename FmtImpl::fmt_type) const
+    do_get(const matching_preference&, typename FmtImpl::category) const
     {
         return *this;
     }
 
 public:
  
-    ftuple(const FmtImpl& fmt_impl, const OtherFmtImpls& ... otherfmtimpls)
+    ftuple(const FmtImpl& custom_impl, const OtherFmtImpls& ... otherfmtimpls)
         : parent(otherfmtimpls ...)
-        , FmtImpl(fmt_impl)
+        , FmtImpl(custom_impl)
     {
     }
 

@@ -9,26 +9,26 @@ namespace boost
 namespace stringify
 {
 
-template <class charT, typename traits, typename Output, class Formating>
-class input_std_string: public boost::stringify::input_base<charT, Output, Formating>
+template <class CharT, typename Traits, typename Output, class Formating>
+class input_std_string: public boost::stringify::input_base<CharT, Output, Formating>
 {
-    typedef boost::stringify::input_base<charT, Output, Formating> base;
+    typedef boost::stringify::input_base<CharT, Output, Formating> base;
     
 public:
     
-    const std::basic_string<charT, traits>* str;    
+    const std::basic_string<CharT, Traits>* str;    
 
     input_std_string() noexcept
         : str(0)
     {
     }
 
-    input_std_string(const std::basic_string<charT, traits>& _str) noexcept
+    input_std_string(const std::basic_string<CharT, Traits>& _str) noexcept
         : str(&_str)
     {
     }
 
-    void set(const std::basic_string<charT, traits>& _str) noexcept
+    void set(const std::basic_string<CharT, Traits>& _str) noexcept
     {
         str = &_str;
     }
@@ -51,10 +51,10 @@ public:
 };
 
 
-template <typename charT, typename traits, typename Output, typename Formating>
+template <typename CharT, typename Traits, typename Output, typename Formating>
 inline
-boost::stringify::input_std_string<charT, traits, Output, Formating>
-argf(const std::basic_string<charT, traits>& str) noexcept
+boost::stringify::input_std_string<CharT, Traits, Output, Formating>
+argf(const std::basic_string<CharT, Traits>& str) noexcept
 {
     return str;
 }

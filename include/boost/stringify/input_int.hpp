@@ -3,7 +3,7 @@
 
 #include <boost/stringify/input_base.hpp>
 #include <boost/stringify/ftuple.hpp>
-#include <boost/stringify/fmt_showpos.hpp>
+#include <boost/stringify/custom_showpos.hpp>
 #include <boost/stringify/detail/characters_catalog.hpp>
 #include <boost/stringify/detail/char_flags.hpp>
 #include <boost/stringify/detail/uint_traits.hpp>
@@ -54,10 +54,10 @@ private:
 
 } // namespace detail
 
-template <typename intT, typename charT, typename Output, typename Formating>
-struct input_int: public boost::stringify::input_base<charT, Output, Formating>
+template <typename intT, typename CharT, typename Output, typename Formating>
+struct input_int: public boost::stringify::input_base<CharT, Output, Formating>
 {
-    typedef boost::stringify::input_base<charT, Output, Formating> base;
+    typedef boost::stringify::input_base<CharT, Output, Formating> base;
     typedef typename std::make_unsigned<intT>::type unsigned_intT;
     typedef boost::stringify::detail::uint_traits<unsigned_intT> uint_traits;
     using base::noexcept_output;
@@ -136,11 +136,11 @@ private:
         {
             if (m_value < 0)
             {
-                out.put(boost::stringify::detail::the_sign_minus<charT>());
+                out.put(boost::stringify::detail::the_sign_minus<CharT>());
             }
             else if(showpos(fmt))
             {
-                out.put(boost::stringify::detail::the_sign_plus<charT>());
+                out.put(boost::stringify::detail::the_sign_plus<CharT>());
             }
         }
     }
@@ -159,74 +159,74 @@ private:
         boost::tribool local_showpos = m_local_fmt.showpos();
         if(indeterminate(local_showpos))
         {
-            return fmt.template get<boost::stringify::ftype_showpos, intT>().show();
+            return boost::stringify::get_showpos<intT>(fmt);
         }
         return local_showpos;
     }
         
-    charT character_of_digit(unsigned int digit) const noexcept
+    CharT character_of_digit(unsigned int digit) const noexcept
     {
         if (digit < 10)
         {
-            return boost::stringify::detail::the_digit_zero<charT>() + digit;
+            return boost::stringify::detail::the_digit_zero<CharT>() + digit;
         }
-        return boost::stringify::detail::the_character_a<charT>() + digit - 10;
+        return boost::stringify::detail::the_character_a<CharT>() + digit - 10;
     }
 };
 
 
-template <typename charT, typename Output, typename Formating>
+template <typename CharT, typename Output, typename Formating>
 inline                                    
-boost::stringify::input_int<int, charT, Output, Formating>
+boost::stringify::input_int<int, CharT, Output, Formating>
 argf(int i) noexcept
 {                                               
     return i;                                     
 }
 
-template <typename charT, typename Output, typename Formating>
+template <typename CharT, typename Output, typename Formating>
 inline                                    
-boost::stringify::input_int<int, charT, Output, Formating>
+boost::stringify::input_int<int, CharT, Output, Formating>
 argf(int i, const char*) noexcept
 {                                               
     return i;                                     
 }
 
 
-template <typename charT, typename Output, typename Formating>
+template <typename CharT, typename Output, typename Formating>
 inline
-boost::stringify::input_int<long, charT, Output, Formating>
+boost::stringify::input_int<long, CharT, Output, Formating>
 argf(long i) noexcept
 {
     return i;
 }
 
-template <typename charT, typename Output, typename Formating>
+template <typename CharT, typename Output, typename Formating>
 inline
-boost::stringify::input_int<long long, charT, Output, Formating>
+boost::stringify::input_int<long long, CharT, Output, Formating>
 argf(long long i) noexcept
 {
     return i;
 }
 
-template <typename charT, typename Output, typename Formating>
+template <typename CharT, typename Output, typename Formating>
 inline
-boost::stringify::input_int<unsigned int, charT, Output, Formating>
+boost::stringify::input_int<unsigned int, CharT, Output, Formating>
 argf(unsigned int i) noexcept
 {
     return i;
 }
 
-template <typename charT, typename Output, typename Formating>
+template <typename CharT, typename Output, typename Formating>
 inline
-boost::stringify::input_int<unsigned long, charT, Output, Formating>
+boost::stringify::input_int<unsigned long, CharT, Output, Formating>
 argf(unsigned long i) noexcept
 {
     return i;
 }
 
-template <typename charT, typename Output, typename Formating>
+template <typename CharT, typename Output, typename Formating>
 inline
-boost::stringify::input_int<unsigned long long, charT, Output, Formating>
+boost::stringify::input_int<unsigned long long, CharT, Output, Formating>
 argf(unsigned long long i) noexcept
 {
     return i;

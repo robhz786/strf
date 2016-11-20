@@ -8,16 +8,16 @@ namespace stringify {
 namespace detail {
 
 template
-    < typename charT
+    < typename CharT
     , typename Formating
     , typename output_type  
     >
 class final_writer
 {
-    typedef boost::stringify::input_arg<charT, output_type, Formating> arg_type;
+    typedef boost::stringify::input_arg<CharT, output_type, Formating> arg_type;
 
     static constexpr bool noexcept_output
-    = boost::stringify::input_base<charT, output_type, Formating>::noexcept_output;
+    = boost::stringify::input_base<CharT, output_type, Formating>::noexcept_output;
     
     template <typename Arg1, typename ... Args>
     std::size_t length(Arg1 && arg1, Args && ... args) noexcept

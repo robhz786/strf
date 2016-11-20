@@ -7,13 +7,13 @@
 namespace boost {
 namespace stringify {
 
-struct ftype_width;
-template <typename charT> struct ftype_filler;
+struct width_tag;
+template <typename CharT> struct filler_tag;
 
 template <template <class> class Filter>
 struct fimpl_width
 {
-    typedef boost::stringify::ftype_width fmt_type;
+    typedef boost::stringify::width_tag category;
     template <typename T> using accept_input_type = Filter<T>;    
 
     constexpr fimpl_width(boost::stringify::width_t v = 0)
@@ -36,7 +36,7 @@ private:
 template <template <class> class Filter>
 struct fimpl_default_width
 {
-    typedef boost::stringify::ftype_width fmt_type;
+    typedef boost::stringify::width_tag category;
     template <typename T> using accept_input_type = Filter<T>;    
 
     constexpr boost::stringify::width_t width() const noexcept
@@ -45,7 +45,7 @@ struct fimpl_default_width
     }
 };
 
-struct ftype_width
+struct width_tag
 {
     typedef
         boost::stringify::fimpl_default_width<boost::stringify::accept_any_type>
@@ -56,6 +56,12 @@ template <template <class> class Filter = boost::stringify::accept_any_type>
 constexpr auto width(boost::stringify::width_t w) noexcept
 {
     return boost::stringify::fimpl_width<Filter>(w);
+}
+
+template <typename InputType, typename Formating>
+boost::stringify::width_t get_width(const Formating& fmt) noexcept
+{
+    return fmt.template get<boost::stringify::width_tag, InputType>().width();
 }
 
 } // namespace stringify

@@ -7,22 +7,22 @@ namespace boost {
 namespace stringify {
 namespace detail {
 
-template<typename charT, typename Formating>
+template<typename CharT, typename Formating>
 struct utf16_to_utf8: boost::stringify::input_base<char, Formating>
 {
-    const charT* str;
+    const CharT* str;
 
     utf16_to_utf8() noexcept
         : str(0)
     {
     }
 
-    utf16_to_utf8(const charT* _str) noexcept :
+    utf16_to_utf8(const CharT* _str) noexcept :
                                       str(_str)
     {
     }
 
-    void set(const charT* _str) noexcept
+    void set(const CharT* _str) noexcept
     {
         str = _str;
     }
@@ -31,8 +31,8 @@ struct utf16_to_utf8: boost::stringify::input_base<char, Formating>
     virtual std::size_t length(const Formating& fmt) const noexcept
     {
         std::size_t len = 0;
-        const charT* it = str;
-        while (*it != charT())
+        const CharT* it = str;
+        while (*it != CharT())
         {
             char32_t codepoint = read_codepoint(it);
             if (codepoint)
@@ -50,8 +50,8 @@ struct utf16_to_utf8: boost::stringify::input_base<char, Formating>
         )
         const noexcept
     {
-        const charT* it = str;
-        while (*it != charT())
+        const CharT* it = str;
+        while (*it != CharT())
         {
             char32_t codepoint = read_codepoint(it);
             if (codepoint)
@@ -70,8 +70,8 @@ struct utf16_to_utf8: boost::stringify::input_base<char, Formating>
         )
         const
     {
-        const charT* it = str;
-        while (*it != charT())
+        const CharT* it = str;
+        while (*it != CharT())
         {
             char32_t codepoint = read_codepoint(it);
             if (codepoint)
@@ -84,9 +84,9 @@ struct utf16_to_utf8: boost::stringify::input_base<char, Formating>
 
     
 private:
-    typedef const charT * const_charT_ptr;
+    typedef const CharT * const_CharT_ptr;
 
-    static char32_t read_codepoint(const_charT_ptr& it) noexcept
+    static char32_t read_codepoint(const_CharT_ptr& it) noexcept
     {
         uint32_t unit = *it++;
         if (unit >= 0xd800 && unit <= 0xbdff) {

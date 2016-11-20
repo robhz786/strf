@@ -2,13 +2,15 @@
 #define BOOST_STRINGIFY_FMT_WIDTH_CALCULATOR_HPP
 
 #include <boost/stringify/type_traits.hpp>
+#include <boost/stringify/ftuple.hpp>
 
 namespace boost {
 namespace stringify {
 namespace detail
 {
 
-template <typename charT>
+
+template <typename CharT>
 class length_accumulator
 {
 public:
@@ -21,11 +23,11 @@ public:
         
     typedef boost::stringify::width_t width_type;
     
-    void add(const charT*, std::size_t len)
+    void add(const CharT*, std::size_t len)
     {
         m_sum += len;
     }
-    void add(charT)
+    void add(CharT)
     {
         ++ m_sum;
     }
@@ -36,7 +38,7 @@ public:
        retval true successfully added
        retval false nothing added because reach limit 
      */
-    bool add(const charT* str, std::size_t len, width_type limit)
+    bool add(const CharT* str, std::size_t len, width_type limit)
     {
         if(len + (std::size_t)m_sum.units() >= (std::size_t)limit.units())
         {
@@ -46,7 +48,7 @@ public:
         return true;
     }
     
-    bool add(charT, width_type limit)
+    bool add(CharT, width_type limit)
     {
         if(m_sum + 1 >= limit)
         {
@@ -73,24 +75,31 @@ private:
 
 } //namespace detail
 
-template <typename charT> struct ftype_width_calculator;
+template <typename CharT> struct width_calculator_tag;
 
 template
-    < typename charT
+    < typename CharT
     , template <class> class Filter = boost::stringify::accept_any_type
     >
 struct fimpl_width_as_length
 {
-    typedef boost::stringify::ftype_width_calculator<charT> fmt_type;
+    typedef boost::stringify::width_calculator_tag<CharT> category;
     template <typename T> using accept_input_type = Filter<T>;
-    typedef boost::stringify::detail::length_accumulator<charT> accumulator_type;
+    typedef boost::stringify::detail::length_accumulator<CharT> accumulator_type;
 };
 
-template <typename charT>
-struct ftype_width_calculator
+template <typename CharT>
+struct width_calculator_tag
 {
-    typedef fimpl_width_as_length<charT> default_impl;
+    typedef fimpl_width_as_length<CharT> default_impl;
 };
+
+template <typename Formating, typename InputType, typename CharT>
+using width_accumulator = typename boost::stringify::ftuple_get_return_type
+    < Formating
+    , boost::stringify::width_calculator_tag<CharT>
+    , InputType
+    > :: accumulator_type;
 
 } // namespace stringify
 } // namespace boost

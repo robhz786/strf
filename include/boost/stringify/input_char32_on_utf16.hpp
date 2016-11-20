@@ -6,10 +6,10 @@ namespace boost
 namespace stringify
 {
 
-template <typename charT, typename Output, typename Formating>
-class char32_to_utf16: public boost::stringify::input_base<charT, Output, Formating>
+template <typename CharT, typename Output, typename Formating>
+class char32_to_utf16: public boost::stringify::input_base<CharT, Output, Formating>
 {
-    typedef boost::stringify::input_base<charT, Output, Formating> base;
+    typedef boost::stringify::input_base<CharT, Output, Formating> base;
     
 public:
 
@@ -48,15 +48,15 @@ public:
     {
         if (single_char_range())
         {
-            out.put(static_cast<charT>(m_char32));
+            out.put(static_cast<CharT>(m_char32));
         }
         else if (two_chars_range())
         {
             char32_t sub_codepoint = m_char32 - 0x10000;
             char32_t high_surrogate = 0xD800 + ((sub_codepoint & 0xFFC00) >> 10);
             char32_t low_surrogate  = 0xDC00 +  (sub_codepoint &  0x3FF);
-            out.put(static_cast<charT>(high_surrogate));
-            out.put(static_cast<charT>(low_surrogate));
+            out.put(static_cast<CharT>(high_surrogate));
+            out.put(static_cast<CharT>(low_surrogate));
         }
     }
 
@@ -76,10 +76,10 @@ private:
     }
 };
 
-template <typename charT, typename Output, typename Formating>
+template <typename CharT, typename Output, typename Formating>
 inline typename std::enable_if
-    < (sizeof(charT) == sizeof(char16_t))
-    , boost::stringify::char32_to_utf16<charT, Output, Formating>
+    < (sizeof(CharT) == sizeof(char16_t))
+    , boost::stringify::char32_to_utf16<CharT, Output, Formating>
     >
     ::type
 argf(char32_t c) noexcept

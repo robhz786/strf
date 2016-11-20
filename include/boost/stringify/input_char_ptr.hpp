@@ -10,45 +10,32 @@ namespace boost
 namespace stringify
 {
 
-template<typename charT, typename Output, typename Formating>
-struct input_char_ptr: boost::stringify::input_base<charT, Output, Formating>
+template<typename CharT, typename Output, typename Formating>
+struct input_char_ptr: boost::stringify::input_base<CharT, Output, Formating>
 {
-    typedef boost::stringify::input_base<charT, Output, Formating> base;
+    typedef const CharT* input_type;
+
+    typedef boost::stringify::input_base<CharT, Output, Formating> base;
     
-    // typedef
-    //     typename Formating::template fimpl_type
-    //         < boost::stringify::ftype_width_calculator<char>
-    //         , const char*
-    //         >
-    //     width_calculator_type;
-
     typedef
-        boost::stringify::ftuple_get_return_type
-            < Formating
-            , boost::stringify::ftype_width_calculator<char>
-            , char*
-            >
-        width_calculator_type;
-
-    typedef
-        typename width_calculator_type::accumulator_type
+        boost::stringify::width_accumulator<Formating, input_type, CharT>
         width_accumulator_type;
-
+    
 public:
-
+   
     input_char_ptr() noexcept
         : str(0)
         , len(0)
     {
     }
 
-    input_char_ptr(const charT* _str) noexcept
+    input_char_ptr(const CharT* _str) noexcept
         : str(_str)
         , len((std::numeric_limits<std::size_t>::max) ())
     {
     }
 
-    void set(const charT* _str) noexcept
+    void set(const CharT* _str) noexcept
     {
         str = _str;
         len = (std::numeric_limits<std::size_t>::max) ();
@@ -67,7 +54,8 @@ public:
         auto fillwidth = fill_width(fmt);
         if (fillwidth > 0)
         {
-            write_fill(out, fillwidth, fmt);
+            boost::stringify::get_filler<CharT, input_type>(fmt)
+                .template fill<width_accumulator_type>(out, fillwidth);
         }
 
         if(str)
@@ -78,14 +66,14 @@ public:
 
 
 private:
-    const charT* str;
+    const CharT* str;
     mutable std::size_t len;
 
     std::size_t str_length() const noexcept
     {
         if (len == (std::numeric_limits<std::size_t>::max) ())
         {
-            len = std::char_traits<charT>::length(str);
+            len = std::char_traits<CharT>::length(str);
         }
         return len;
     }
@@ -95,53 +83,35 @@ private:
         auto fillwidth = fill_width(fmt);
         if (fillwidth > 0)
         {
-            return fmt_fill(fmt)
+            return boost::stringify::get_filler<CharT, input_type>(fmt)
                 .template length<width_accumulator_type>(fillwidth);
         }
         return 0;
     }
-    
-    void write_fill
-        ( Output& out
-        , boost::stringify::width_t fillwidth
-        , const Formating& fmt
-        )  const noexcept
+
+    boost::stringify::width_t fill_width(const Formating& fmt) const noexcept
     {
-        return fmt_fill(fmt)
-            .template fill<Output, width_accumulator_type>(out, fillwidth);
-    }
-   
-    boost::stringify::width_t
-    fill_width(const Formating& fmt) const noexcept
-    {
-        auto width = fmt_width(fmt).width();
-        if(width > 0)
+        auto total_width = boost::stringify::get_width<input_type>(fmt);
+        if(total_width > 0)
         {
             width_accumulator_type acc;
-            if(acc.add(str, str_length(), width))
+            if(acc.add(str, str_length(), total_width))
             {
-                return width - acc.result();
+                boost::stringify::width_t nonfill_width = acc.result();
+                if (nonfill_width < total_width)
+                {
+                    return total_width - nonfill_width;
+                }
             }
         }
         return 0;
     }
-
-    decltype(auto) fmt_width(const Formating& fmt) const noexcept
-    {
-        return fmt.template get<boost::stringify::ftype_width, const char*>();
-    }
-
-    decltype(auto) fmt_fill(const Formating& fmt) const noexcept
-    {
-        return fmt.template get<boost::stringify::ftype_fill<char>, const char*>();
-    }
-    
 }; 
 
-template <typename charT, typename Output, typename Formating>
+template <typename CharT, typename Output, typename Formating>
 inline
-boost::stringify::input_char_ptr<charT, Output, Formating>
-argf(const charT* str) noexcept
+boost::stringify::input_char_ptr<CharT, Output, Formating>
+argf(const CharT* str) noexcept
 {
     return str;
 }

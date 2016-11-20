@@ -9,71 +9,71 @@ namespace boost{
 namespace stringify{
 namespace detail{
 
-template<typename charT, typename traits>
+template<typename CharT, typename Traits>
 class char_ptr_writer
 {
 public:
 
-    typedef charT char_type;
+    typedef CharT char_type;
 
     char_ptr_writer(const char_ptr_writer&) = default;
     
-    char_ptr_writer(charT* out)
+    char_ptr_writer(CharT* out)
         : m_out(out)
     {
     }
 
-    void put(charT character) noexcept
+    void put(CharT character) noexcept
     {
-        traits::assign(*m_out++, character);
+        Traits::assign(*m_out++, character);
     }
 
-    void put(charT character, std::size_t repetitions) noexcept
+    void put(CharT character, std::size_t repetitions) noexcept
     {
-        traits::assign(m_out, repetitions, character);
+        Traits::assign(m_out, repetitions, character);
         m_out += repetitions;
     }
 
-    void put(const charT* str, std::size_t count) noexcept
+    void put(const CharT* str, std::size_t count) noexcept
     {
-        traits::copy(m_out, str, count);
+        Traits::copy(m_out, str, count);
         m_out += count;
     }
     
-    charT* finish() noexcept
+    CharT* finish() noexcept
     {
-        traits::assign(*m_out, charT());
+        Traits::assign(*m_out, CharT());
         return m_out;
     }
 
-    // bool set_pos(charT* pos) noexcept
+    // bool set_pos(CharT* pos) noexcept
     // {
     //     m_out = pos;
     //     return true;
     // }
 
-    // charT* get_pos() noexcept
+    // CharT* get_pos() noexcept
     // {
     //     return m_out;
     // }
     
-    // void rput(charT character) noexcept
+    // void rput(CharT character) noexcept
     // {
-    //     traits::assign(*--m_out, character);
+    //     Traits::assign(*--m_out, character);
     // }
 
 private:
 
-    charT* m_out;
+    CharT* m_out;
 };
 
 } // namespace detail
 
 
-template<typename charT, typename charTraits = std::char_traits<charT> >
+template<typename CharT, typename CharTraits = std::char_traits<CharT> >
 inline boost::stringify::writef_helper
-    < boost::stringify::detail::char_ptr_writer<charT, charTraits> >
-writef(charT* output)
+    < boost::stringify::detail::char_ptr_writer<CharT, CharTraits> >
+writef(CharT* output)
 {
     return output;
 }
