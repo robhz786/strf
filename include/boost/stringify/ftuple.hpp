@@ -89,7 +89,7 @@ using ftuple_get_return_type
 
 
 template <typename ... Fmts>
-boost::stringify::ftuple<Fmts ...> make_formating(const Fmts& ... fmts)
+boost::stringify::ftuple<Fmts ...> make_ftuple(const Fmts& ... fmts)
 {
     return boost::stringify::ftuple<Fmts ...>(fmts ...);
 }

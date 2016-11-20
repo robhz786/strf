@@ -94,9 +94,9 @@ struct width_calculator_tag
     typedef fimpl_width_as_length<CharT> default_impl;
 };
 
-template <typename Formating, typename InputType, typename CharT>
+template <typename Formatting, typename InputType, typename CharT>
 using width_accumulator = typename boost::stringify::ftuple_get_return_type
-    < Formating
+    < Formatting
     , boost::stringify::width_calculator_tag<CharT>
     , InputType
     > :: accumulator_type;

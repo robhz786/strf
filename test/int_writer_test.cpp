@@ -39,8 +39,6 @@ int main()
     TEST (std::to_wstring(UINT32_MAX).c_str()) () (UINT32_MAX);
 
     {
-//        auto f_showpos = strf::make_formating(strf::showpos<>);
-
         TEST ("+123") (strf::showpos<>) (123);
         TEST ("123")  (strf::showpos<>) ({123, "-"});
         TEST ("+123") ()                ({123, "+"});

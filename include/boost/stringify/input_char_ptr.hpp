@@ -10,15 +10,15 @@ namespace boost
 namespace stringify
 {
 
-template<typename CharT, typename Output, typename Formating>
-struct input_char_ptr: boost::stringify::input_base<CharT, Output, Formating>
+template<typename CharT, typename Output, typename Formatting>
+struct input_char_ptr: boost::stringify::input_base<CharT, Output, Formatting>
 {
     typedef const CharT* input_type;
 
-    typedef boost::stringify::input_base<CharT, Output, Formating> base;
+    typedef boost::stringify::input_base<CharT, Output, Formatting> base;
     
     typedef
-        boost::stringify::width_accumulator<Formating, input_type, CharT>
+        boost::stringify::width_accumulator<Formatting, input_type, CharT>
         width_accumulator_type;
     
 public:
@@ -41,14 +41,14 @@ public:
         len = (std::numeric_limits<std::size_t>::max) ();
     }
 
-    virtual std::size_t length(const Formating& fmt) const noexcept override
+    virtual std::size_t length(const Formatting& fmt) const noexcept override
     {
         return str_length() + fill_length(fmt);
     }
 
     void write
         ( Output& out
-        , const Formating& fmt
+        , const Formatting& fmt
         ) const noexcept(base::noexcept_output) override
     {
         auto fw = fill_width(fmt);
@@ -77,7 +77,7 @@ private:
         return len;
     }
 
-    std::size_t fill_length(const Formating& fmt) const noexcept
+    std::size_t fill_length(const Formatting& fmt) const noexcept
     {
         auto fw = fill_width(fmt);
         if (fw > 0)
@@ -87,7 +87,7 @@ private:
         return 0;
     }
 
-    boost::stringify::width_t fill_width(const Formating& fmt) const noexcept
+    boost::stringify::width_t fill_width(const Formatting& fmt) const noexcept
     {
         auto total_width = boost::stringify::get_width<input_type>(fmt);
         if(total_width > 0)
@@ -106,9 +106,9 @@ private:
     }
 }; 
 
-template <typename CharT, typename Output, typename Formating>
+template <typename CharT, typename Output, typename Formatting>
 inline
-boost::stringify::input_char_ptr<CharT, Output, Formating>
+boost::stringify::input_char_ptr<CharT, Output, Formatting>
 argf(const CharT* str) noexcept
 {
     return str;

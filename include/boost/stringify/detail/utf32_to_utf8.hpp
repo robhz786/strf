@@ -7,8 +7,8 @@ namespace boost {
 namespace stringify {
 namespace detail {
 
-template<typename CharT, typename Formating>
-struct utf32_to_utf8: boost::stringify::input_base<char, Formating>
+template<typename CharT, typename Formatting>
+struct utf32_to_utf8: boost::stringify::input_base<char, Formatting>
 {
     const CharT* str;
 
@@ -27,24 +27,24 @@ struct utf32_to_utf8: boost::stringify::input_base<char, Formating>
         str = _str;
     }
 
-    virtual std::size_t length(const Formating& fmt) const noexcept
+    virtual std::size_t length(const Formatting& fmt) const noexcept
     {
         std::size_t len = 0;
         for (const CharT* it = str; *it != CharT(); ++it)
-            len += char32_to_utf8<Formating>(*it).length(fmt);
+            len += char32_to_utf8<Formatting>(*it).length(fmt);
 
         return len;
     }
 
     virtual char* write_without_termination_char
         ( char* out
-        , const Formating& fmt
+        , const Formatting& fmt
         )
         const noexcept
     {
         for (const CharT* it = str; *it != CharT(); ++it)
         {
-            out = char32_to_utf8<Formating>(*it)
+            out = char32_to_utf8<Formatting>(*it)
                 .write_without_termination_char(out, fmt);
         }
         return out;
@@ -52,12 +52,12 @@ struct utf32_to_utf8: boost::stringify::input_base<char, Formating>
 
     virtual void write_ostream
         ( boost::stringify::simple_ostream<char>& out
-        , const Formating& fmt
+        , const Formatting& fmt
         )
         const
     {
         for (const CharT* it = str; *it != CharT() && out.good(); ++it)
-            char32_to_utf8<Formating>(*it).write(out, fmt);
+            char32_to_utf8<Formatting>(*it).write(out, fmt);
     }
 };
 

@@ -9,10 +9,10 @@ namespace boost
 namespace stringify
 {
 
-template <class CharT, typename Traits, typename Output, class Formating>
-class input_std_string: public boost::stringify::input_base<CharT, Output, Formating>
+template <class CharT, typename Traits, typename Output, class Formatting>
+class input_std_string: public boost::stringify::input_base<CharT, Output, Formatting>
 {
-    typedef boost::stringify::input_base<CharT, Output, Formating> base;
+    typedef boost::stringify::input_base<CharT, Output, Formatting> base;
     
 public:
     
@@ -33,14 +33,14 @@ public:
         str = &_str;
     }
 
-    virtual std::size_t length(const Formating&) const noexcept override
+    virtual std::size_t length(const Formatting&) const noexcept override
     {
         return str ? str->length() : 0;
     }
 
     void write
         ( Output& out
-        , const Formating&
+        , const Formatting&
         ) const noexcept(base::noexcept_output) override
     {
         if(str)
@@ -51,9 +51,9 @@ public:
 };
 
 
-template <typename CharT, typename Traits, typename Output, typename Formating>
+template <typename CharT, typename Traits, typename Output, typename Formatting>
 inline
-boost::stringify::input_std_string<CharT, Traits, Output, Formating>
+boost::stringify::input_std_string<CharT, Traits, Output, Formatting>
 argf(const std::basic_string<CharT, Traits>& str) noexcept
 {
     return str;

@@ -58,8 +58,8 @@ constexpr auto width(boost::stringify::width_t w) noexcept
     return boost::stringify::fimpl_width<Filter>(w);
 }
 
-template <typename InputType, typename Formating>
-boost::stringify::width_t get_width(const Formating& fmt) noexcept
+template <typename InputType, typename Formatting>
+boost::stringify::width_t get_width(const Formatting& fmt) noexcept
 {
     return fmt.template get<boost::stringify::width_tag, InputType>().width();
 }

@@ -9,15 +9,15 @@ namespace detail {
 
 template
     < typename CharT
-    , typename Formating
+    , typename Formatting
     , typename output_type  
     >
 class final_writer
 {
-    typedef boost::stringify::input_arg<CharT, output_type, Formating> arg_type;
+    typedef boost::stringify::input_arg<CharT, output_type, Formatting> arg_type;
 
     static constexpr bool noexcept_output
-    = boost::stringify::input_base<CharT, output_type, Formating>::noexcept_output;
+    = boost::stringify::input_base<CharT, output_type, Formatting>::noexcept_output;
     
     template <typename Arg1, typename ... Args>
     std::size_t length(Arg1 && arg1, Args && ... args) noexcept
@@ -251,7 +251,7 @@ public:
 private:
 
     output_type m_output;
-    Formating m_fmt;
+    Formatting m_fmt;
 };
 
 } //namescpace detail

@@ -12,7 +12,7 @@ namespace boost
 namespace stringify 
 {
 
-template <typename CharT, typename Output, typename Formating>
+template <typename CharT, typename Output, typename Formatting>
 class input_base
 {
 public:
@@ -26,12 +26,12 @@ public:
        difficult. But it must be greater or equal. And should not
        be much greater.
     */
-    virtual std::size_t length(const Formating&) const noexcept = 0;
+    virtual std::size_t length(const Formatting&) const noexcept = 0;
 
     static constexpr bool random_access_output = true; // todo
     static constexpr bool noexcept_output = true; // todo
     
-    virtual void write(Output&, const Formating& fmt)
+    virtual void write(Output&, const Formatting& fmt)
         const noexcept(noexcept_output) {} // todo make pure virtual
 };
 

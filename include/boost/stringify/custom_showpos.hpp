@@ -53,8 +53,8 @@ struct showpos_tag
 };
 
 
-template <typename InputType, typename Formating>
-bool get_showpos(const Formating& fmt) noexcept
+template <typename InputType, typename Formatting>
+bool get_showpos(const Formatting& fmt) noexcept
 {
     return fmt.template get<boost::stringify::showpos_tag, InputType>().show();
 }

@@ -7,8 +7,8 @@ namespace boost {
 namespace stringify {
 namespace detail {
 
-template<typename CharT, typename Formating>
-struct utf16_to_utf8: boost::stringify::input_base<char, Formating>
+template<typename CharT, typename Formatting>
+struct utf16_to_utf8: boost::stringify::input_base<char, Formatting>
 {
     const CharT* str;
 
@@ -28,7 +28,7 @@ struct utf16_to_utf8: boost::stringify::input_base<char, Formating>
     }
 
     
-    virtual std::size_t length(const Formating& fmt) const noexcept
+    virtual std::size_t length(const Formatting& fmt) const noexcept
     {
         std::size_t len = 0;
         const CharT* it = str;
@@ -37,7 +37,7 @@ struct utf16_to_utf8: boost::stringify::input_base<char, Formating>
             char32_t codepoint = read_codepoint(it);
             if (codepoint)
             {
-                len += char32_to_utf8<Formating>(codepoint).length(fmt);
+                len += char32_to_utf8<Formatting>(codepoint).length(fmt);
             }
         }
         return len;
@@ -46,7 +46,7 @@ struct utf16_to_utf8: boost::stringify::input_base<char, Formating>
     
     virtual char* write_without_termination_char
         ( char* out
-        , const Formating& fmt
+        , const Formatting& fmt
         )
         const noexcept
     {
@@ -56,7 +56,7 @@ struct utf16_to_utf8: boost::stringify::input_base<char, Formating>
             char32_t codepoint = read_codepoint(it);
             if (codepoint)
             {
-                out = char32_to_utf8<Formating>(codepoint)
+                out = char32_to_utf8<Formatting>(codepoint)
                     .write_without_termination_char(out);
             }
         }
@@ -66,7 +66,7 @@ struct utf16_to_utf8: boost::stringify::input_base<char, Formating>
     
     virtual void write
         ( boost::stringify::simple_ostream<char>& out
-        , const Formating& fmt
+        , const Formatting& fmt
         )
         const
     {
@@ -76,7 +76,7 @@ struct utf16_to_utf8: boost::stringify::input_base<char, Formating>
             char32_t codepoint = read_codepoint(it);
             if (codepoint)
             {
-                char32_to_utf8<Formating>(codepoint)
+                char32_to_utf8<Formatting>(codepoint)
                     .write(out, fmt);
             }
         }

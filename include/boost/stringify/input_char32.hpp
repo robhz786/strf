@@ -10,10 +10,10 @@ namespace boost
 namespace stringify
 {
 
-template <typename CharT, typename Output, typename Formating>
-class input_char32: public boost::stringify::input_base<CharT, Output, Formating>
+template <typename CharT, typename Output, typename Formatting>
+class input_char32: public boost::stringify::input_base<CharT, Output, Formatting>
 {
-    typedef boost::stringify::input_base<CharT, Output, Formating> base;
+    typedef boost::stringify::input_base<CharT, Output, Formatting> base;
     
 public:
     
@@ -32,7 +32,7 @@ public:
         m_char32 = ch;
     }
 
-    virtual std::size_t length(const Formating& fmt) const noexcept override
+    virtual std::size_t length(const Formatting& fmt) const noexcept override
     {
         return boost::stringify::get_char32_writer<CharT, char32_t>(fmt)
             .length(m_char32);
@@ -40,7 +40,7 @@ public:
     
     void write
         ( Output& out
-        , const Formating& fmt
+        , const Formatting& fmt
         ) const noexcept(base::noexcept_output) override
     {
         return boost::stringify::get_char32_writer<CharT, char32_t>(fmt)
@@ -52,8 +52,8 @@ private:
 };
 
 
-template <typename CharT, typename Output, typename Formating>
-boost::stringify::input_char32<CharT, Output, Formating>
+template <typename CharT, typename Output, typename Formatting>
+boost::stringify::input_char32<CharT, Output, Formatting>
 argf(char32_t c) noexcept
 {
     return c;
