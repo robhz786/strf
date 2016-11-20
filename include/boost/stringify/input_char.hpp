@@ -51,19 +51,11 @@ private:
 
 
 template <typename CharT, typename Output, typename Formating>
-boost::stringify::input_char<CharT, Output, Formating>
-argf(CharT c) noexcept
-{
-    return c;
-}
-
-
-template <typename CharT, typename Output, typename Formating>
 typename std::enable_if
-    < std::is_same<CharT, wchar_t>::value && sizeof(CharT) == sizeof(char32_t)
+    < ! std::is_same<CharT, char32_t>::value // because there is input_char32
     , boost::stringify::input_char<CharT, Output, Formating>
     > :: type
-argf(char32_t c) noexcept
+argf(CharT c) noexcept
 {
     return c;
 }

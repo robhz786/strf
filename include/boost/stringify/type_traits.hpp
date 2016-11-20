@@ -11,18 +11,21 @@ template <typename = void> struct accept_any_type : public std::true_type
 namespace detail
 {
 
-// TODO propose if_else_type to Boost.Traits
+// TODO propose ternary_trait to Boost.Traits
 template <bool Condition, typename ThenType, typename ElseType>
-struct if_else_type
+struct ternary_trait
 {
     typedef ThenType type;
 };
 
 template <typename ThenType, typename ElseType>
-struct if_else_type<false, ThenType, ElseType>
+struct ternary_trait<false, ThenType, ElseType>
 {
     typedef ElseType type;
 };
+
+template <bool Condition, typename ThenType, typename ElseType>
+using ternary_t = typename ternary_trait<Condition, ThenType, ElseType>::type;
 
 } // namespace detail
 } // namespace stringify
