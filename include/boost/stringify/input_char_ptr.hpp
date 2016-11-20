@@ -51,11 +51,10 @@ public:
         , const Formating& fmt
         ) const noexcept(base::noexcept_output) override
     {
-        auto fillwidth = fill_width(fmt);
-        if (fillwidth > 0)
+        auto fw = fill_width(fmt);
+        if (fw > 0)
         {
-            boost::stringify::get_filler<CharT, input_type>(fmt)
-                .template fill<width_accumulator_type>(out, fillwidth);
+            boost::stringify::write_fill<CharT, input_type>(fw, out, fmt);
         }
 
         if(str)
@@ -80,11 +79,10 @@ private:
 
     std::size_t fill_length(const Formating& fmt) const noexcept
     {
-        auto fillwidth = fill_width(fmt);
-        if (fillwidth > 0)
+        auto fw = fill_width(fmt);
+        if (fw > 0)
         {
-            return boost::stringify::get_filler<CharT, input_type>(fmt)
-                .template length<width_accumulator_type>(fillwidth);
+            return boost::stringify::fill_length<CharT, input_type>(fw, fmt);
         }
         return 0;
     }

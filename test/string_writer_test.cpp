@@ -8,7 +8,8 @@ int main()
     namespace strf = boost::stringify;
 
     testf<__LINE__>( "asdf") () ("asdf");
-    testf<__LINE__>("~~AA~~BB") (strf::fill('~'), strf::width(4)) ("AA", "BB");
+    testf<__LINE__>("~~AA~~BB") (strf::fill(U'~'), strf::width(4)) ("AA", "BB");
+    testf<__LINE__>("~~AA~~BB") (strf::fill<U'~'>(), strf::width(4)) ("AA", "BB");
   
     return  boost::report_errors();
 }

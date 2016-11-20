@@ -4,17 +4,17 @@
 #include <string>
 #include <boost/stringify/ftuple.hpp>
 #include <boost/stringify/custom_width.hpp>
+#include <boost/stringify/custom_char32_conversion.hpp>
 #include <boost/stringify/type_traits.hpp>
 #include <boost/stringify/detail/characters_catalog.hpp>
 
 namespace boost {
 namespace stringify {
 
-template <typename CharT> struct fill_tag;
+struct fill_tag;
 
 template
-    < typename CharT
-    , CharT fill_char = boost::stringify::detail::the_space_character<CharT>()
+    < char32_t fill_char = U' '
     , template <class> class Filter = boost::stringify::accept_any_type  
     >
 class fimpl_fill_static_single_char
@@ -22,184 +22,159 @@ class fimpl_fill_static_single_char
 public:
 
     typedef boost::stringify::width_t width_type;
-    typedef boost::stringify::fill_tag<CharT> category;
+    typedef boost::stringify::fill_tag category;
     template <typename T> using accept_input_type = Filter<T>;
     
-    template <class WidthAccumulator, class Output>
-    void fill
-        ( Output& out
-        , width_type width
-        ) const noexcept
+    template
+        < typename CharT
+        , typename InputType
+        , typename Output
+        , typename Formatting
+        >
+    void fill(width_type width, Output& out, const Formatting& fmt) const noexcept
     {
-        out.put(fill_char, repetitions<WidthAccumulator>(width));
+        decltype(auto) char32_writer
+            = boost::stringify::get_char32_writer<CharT, InputType>(fmt);
+        boost::stringify::width_t ch_width = fill_char_width<CharT, InputType>(fmt);
+        for ( boost::stringify::width_t acc_width = ch_width
+            ; acc_width <= width
+            ; acc_width += ch_width
+            )
+        {
+            char32_writer.write(fill_char, out);
+        }
     }
 
-    template <class WidthAccumulator>
-    std::size_t length(width_type width) const noexcept
+    template <typename CharT, typename InputType, typename Formatting>
+    std::size_t length(width_type width, const Formatting& fmt) const noexcept
     {
-        return repetitions<WidthAccumulator>(width);
+        std::size_t ch_length
+            = get_char32_writer<CharT, InputType>(fmt).length(fill_char);
+        boost::stringify::width_t ch_width = fill_char_width<CharT, InputType>(fmt);
+        return ch_length * std::size_t(width / ch_width);
     }
-    
+
 private:
-            
-    template <class WidthAccumulator>
-    width_type::scalar_type repetitions(width_type width) const noexcept
+
+    template <typename CharT, typename InputType, typename Formatting>
+    boost::stringify::width_t fill_char_width(const Formatting& fmt) const noexcept
     {
-        WidthAccumulator acc;
+        boost::stringify::width_accumulator<Formatting, InputType, CharT> acc;
         acc.add(fill_char);
-        return width / acc.result();        
+        return acc.result();
     }
 };
 
-template
-    < typename CharT
-    , template <class> class Filter = boost::stringify::accept_any_type  
-    >
+
+template <template <class> class Filter = boost::stringify::accept_any_type>
 class fimpl_fill_single_char
 {
 public:
     typedef boost::stringify::width_t width_type;
-    typedef boost::stringify::fill_tag<CharT> category;
+    typedef boost::stringify::fill_tag category;
     template <typename T> using accept_input_type = Filter<T>;
 
-    fimpl_fill_single_char(CharT fill) : m_fill_char(fill)
+    fimpl_fill_single_char(char32_t fill) : m_fill_char(fill)
     {
     }
 
     fimpl_fill_single_char(const fimpl_fill_single_char&) = default;
 
+    template
+        < typename CharT
+        , typename InputType
+        , typename Output
+        , typename Formatting
+        >
+    void fill(width_type width, Output& out, const Formatting& fmt) const noexcept
+    {
+        decltype(auto) char32_writer = get_char32_writer<CharT, InputType>(fmt);
+        boost::stringify::width_t ch_width = fill_char_width<CharT, InputType>(fmt);
+        for ( boost::stringify::width_t acc_width = ch_width
+            ; acc_width <= width
+            ; acc_width += ch_width
+            )
+        {
+            char32_writer.write(m_fill_char, out);
+        }
+    }
 
-    template <class WidthAccumulator, class Output>
-    void fill
-        ( Output& out
-        , width_type width
-        ) const noexcept
+    template <typename CharT, typename InputType, typename Formatting>
+    std::size_t length(width_type width, const Formatting& fmt) const noexcept
     {
-        out.put(m_fill_char, repetitions<WidthAccumulator>(width));
+        std::size_t ch_length
+            = get_char32_writer<CharT, InputType>(fmt).length(m_fill_char);
+        boost::stringify::width_t ch_width = fill_char_width<CharT, InputType>(fmt);
+        return ch_length * std::size_t(width / ch_width);
     }
-    
-    template <class WidthAccumulator>
-    std::size_t length(width_type width) const noexcept
-    {
-        return repetitions<WidthAccumulator>(width);
-    }
-    
+
 private:
-            
-    template <class WidthAccumulator>
-    width_type::scalar_type repetitions(width_type width) const noexcept
+
+    template <typename CharT, typename InputType, typename Formatting>
+    boost::stringify::width_t fill_char_width(const Formatting& fmt) const noexcept
     {
-        WidthAccumulator acc;
+        boost::stringify::width_accumulator<Formatting, InputType, CharT> acc;
         acc.add(m_fill_char);
-        return width / acc.result() ;        
+        return acc.result();
     }
 
-    CharT m_fill_char;
+    char32_t m_fill_char;
 };
 
 
-// template
-//     < typename CharT
-//     , template <class> class Filter = boost::stringify::accept_any_type  
-//     >
-// class fimpl_fill_str
-// {
-// public:
-//     typedef boost::stringify::width_t width_type;
-//     typedef boost::stringify::fill_tag<CharT> category;
-//     template <typename T> using accept_input_type = Filter<T>;
-
-//     fimpl_fill_str(const CharT* str) : m_fill(str)
-//     {
-//     }
-
-//     fimpl_fill_str(std::basic_string<CharT> str) : m_fill(std::move(str))
-//     {
-//     }
-    
-//     fimpl_fill_str(const fimpl_fill_str&) = default;
-    
-//     template <class CharTraits,  class WidthAccumulator>
-//     CharT* fill(CharT* out, width_type width) const noexcept
-//     {
-//         auto rep = repetitions<WidthAccumulator>(width);
-//         std::size_t len = m_fill.lenght() * rep;
-//         for(; rep > 0; --rep)
-//         {
-//             CharTraits::copy(out, m_fill, m_fill.length());
-//         }
-//         return out + len;
-//     }
-
-//     template <class OutputStreamFacade, class WidthAccumulator>
-//     void fill
-//         ( OutputStreamFacade& out
-//         , width_type width
-//         ) const noexcept
-//     {
-//         for(auto rep = repetitions<WidthAccumulator>(width); rep > 0; --rep)
-//         {
-//             out.put(m_fill, m_fill.lenght());
-//         }
-//     }
-
-//     template <class WidthAccumulator>
-//     std::size_t length(width_type width) const noexcept
-//     {
-//         return repetitions<WidthAccumulator>(width) * m_fill.length();
-//     }
-    
-// private:
-            
-//     template <class WidthAccumulator>
-//     width_type::scalar_type repetitions(width_type width) const noexcept
-//     {
-//         WidthAccumulator acc;
-//         acc.add(m_fill);
-//         return width / acc.result();
-//     }
-
-//     std::basic_string<CharT> m_fill;
-// };
-
-template <typename CharT>
 struct fill_tag
 {
     typedef 
         boost::stringify::fimpl_fill_static_single_char
-            < CharT
-            , boost::stringify::detail::the_space_character<CharT>()
+            < U' '
             , boost::stringify::accept_any_type
             >
         default_impl;
 };
 
 template
-    < typename CharT
-    , CharT fillChar
+    < char32_t fillChar
     , template <class> class Filter = boost::stringify::accept_any_type
     >
 auto fill()
 {
-    return fimpl_fill_static_single_char<CharT, fillChar, Filter>();
+    return fimpl_fill_static_single_char<fillChar, Filter>();
 }
 
-template
-    < typename CharT
-    , template <class> class Filter = boost::stringify::accept_any_type
-    >
-auto fill(CharT fillChar)
+template <template <class> class Filter = boost::stringify::accept_any_type>
+auto fill(char32_t fillChar)
 {
-    return fimpl_fill_single_char<CharT, Filter>(fillChar);
+    return fimpl_fill_single_char<Filter>(fillChar);
 }
 
 
-template <typename CharT, typename InputType, typename Formating>
-decltype(auto) get_filler(const Formating& fmt)
+template <typename InputType, typename Formatting>
+decltype(auto) get_filler(const Formatting& fmt)
 {
-    return fmt.template get<boost::stringify::fill_tag<CharT>, InputType>();
+    return fmt.template get<boost::stringify::fill_tag, InputType>();
 }
-    
+
+template <typename CharT, typename InputType, typename Output, typename Formatting>
+void write_fill
+( boost::stringify::width_t width
+  , Output& out
+  , const Formatting& fmt
+)
+{
+    boost::stringify::get_filler<InputType>(fmt)
+        . template fill<CharT, InputType>(width, out, fmt);
+}
+
+template <typename CharT, typename InputType, typename Formatting>
+std::size_t fill_length
+    ( boost::stringify::width_t width
+    , const Formatting& fmt
+    )
+{
+    return boost::stringify::get_filler<InputType>(fmt)
+        . template length<CharT, InputType>(width, fmt);
+}
+
 } // namespace stringify
 } // namespace boost
 
