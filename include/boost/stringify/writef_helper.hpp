@@ -308,6 +308,14 @@ public:
         return final_writer_type<Formaters ...>(std::move(m_output), formaters ...);
     }
 
+    template <typename ... Formaters>
+    final_writer_type<Formaters ...> operator()
+        (const boost::stringify::ftuple<Formaters...>& formaters) &&
+    {
+        return final_writer_type<Formaters ...>(std::move(m_output), formaters);
+    }
+
+    
     decltype(auto) operator[](std::initializer_list<default_input_arg> lst) &&
     {
         return final_writer_type<>(std::move(m_output))[lst];

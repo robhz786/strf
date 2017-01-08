@@ -14,7 +14,8 @@ int main()
     TEST(U"a") () (U'a');
     TEST(L"a") () (L'a');
     TEST(L"a") () (U'a');
-    
+
+   
     TEST (u8"\ud7ff")     () (U'\ud7ff');
     TEST (u8"\ue000")     () (U'\ue000');
     TEST (u8"\uffff")     () (U'\uffff');
@@ -43,7 +44,33 @@ int main()
     TEST( "") () (static_cast<char32_t>(0x110000));
     TEST(u"") () (static_cast<char32_t>(0xd800));
     TEST(u"") () (static_cast<char32_t>(0xdfff));
-   
+
+
+    // width and justificafion
+
+    // auto f1 = strf::make_ftuple(strf::fill(U'~'), strf::width(4));
+    // TEST( "~~~ab~~~c~") (f1) ( 'a', { 'b', "<"}, { 'c', {2, "<"}});
+    // TEST( "~~~ab~~~c~") (f1) (U'a', {U'b', "<"}, {U'c', {2, "<"}});
+    // TEST(u"~~~ab~~~c~") (f1) (U'a', {U'b', "<"}, {U'c', {2, "<"}});
+
+    // auto f2 = strf::make_ftuple(strf::fill(U'~'), strf::width(4), strf::internal<>);
+    // TEST( "~~~ab~~~c~") (f2) ( 'a', { 'b', "<"}, { 'c', {2, "<"}});
+    // TEST( "~~~ab~~~c~") (f2) (U'a', {U'b', "<"}, {U'c', {2, "<"}});
+    // TEST(u"~~~ab~~~c~") (f2) (U'a', {U'b', "<"}, {U'c', {2, "<"}});
+    
+    // auto f3 = strf::make_ftuple(strf::fill(U'~'), strf::width(4), strf::left<>);
+    // TEST( "a~~~~~~b~~c") (f3) ( 'a', { 'b', ">"}, { 'c', {2, "%"}});
+    // TEST( "a~~~~~~b~~c") (f3) (U'a', {U'b', ">"}, {U'c', {2, "%"}});
+    // TEST(u"a~~~~~~b~~c") (f3) (U'a', {U'b', ">"}, {U'c', {2, "%"}});
+
+    // TEST( "abc") (strf::width(1)) ( 'a', { 'b', "<"}, { 'c', "%"});
+    // TEST( "abc") (strf::width(0)) ( 'a', { 'b', "<"}, { 'c', "%"});
+    // TEST( "abc") (strf::width(1)) (U'a', {U'b', "<"}, {U'c', "%"});
+    // TEST( "abc") (strf::width(0)) (U'a', {U'b', "<"}, {U'c', "%"});
+    // TEST(u"abc") (strf::width(1)) (U'a', {U'b', "<"}, {U'c', "%"});
+    // TEST(u"abc") (strf::width(0)) (U'a', {U'b', "<"}, {U'c', "%"});
+
+    
     return  boost::report_errors();
 }
 

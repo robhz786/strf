@@ -69,6 +69,13 @@ struct make_string_helper
     {
         return input_args_getter_type<Formaters...>(writer_type(), fmts ...);
     }
+
+    template <typename ... Formaters>
+    static auto make_string(const boost::stringify::ftuple<Formaters ...>& fmts)
+    {
+        return input_args_getter_type<Formaters...>(writer_type(), fmts);
+    }
+
 };
 
 
