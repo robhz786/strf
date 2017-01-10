@@ -11,12 +11,9 @@
 
 #include <boost/logic/tribool.hpp>
 
-namespace boost
-{
-namespace stringify
-{
-namespace detail
-{
+namespace boost {
+namespace stringify {
+namespace detail {
 
 class local_formatting_int
 {
@@ -52,10 +49,10 @@ private:
     char_flags_type m_charflags;    
 };
 
-} // namespace detail
 
 template <typename intT, typename CharT, typename Output, typename Formatting>
-struct input_int: public boost::stringify::input_base<CharT, Output, Formatting>
+struct int_stringificator
+    : public boost::stringify::input_base<CharT, Output, Formatting>
 {
     typedef boost::stringify::input_base<CharT, Output, Formatting> base;
     typedef typename std::make_unsigned<intT>::type unsigned_intT;
@@ -64,13 +61,13 @@ struct input_int: public boost::stringify::input_base<CharT, Output, Formatting>
     using base::random_access_output;
 public:
 
-    input_int() noexcept
+    int_stringificator() noexcept
         : m_value(0)
         , m_abs_value(0)
     {
     }
 
-    input_int(intT _value) noexcept
+    int_stringificator(intT _value) noexcept
     {
         set(_value);
     }
@@ -175,63 +172,39 @@ private:
 };
 
 
-template <typename CharT, typename Output, typename Formatting>
-inline                                    
-boost::stringify::input_int<int, CharT, Output, Formatting>
-argf(int i) noexcept
-{                                               
-    return i;                                     
-}
-
-template <typename CharT, typename Output, typename Formatting>
-inline                                    
-boost::stringify::input_int<int, CharT, Output, Formatting>
-argf(int i, const char*) noexcept
-{                                               
-    return i;                                     
-}
-
-
-template <typename CharT, typename Output, typename Formatting>
-inline
-boost::stringify::input_int<long, CharT, Output, Formatting>
-argf(long i) noexcept
+template <typename IntT>
+struct int_input_traits
 {
-    return i;
-}
+    template <typename CharT, typename Output, typename Formatting>
+    using stringificator =
+        boost::stringify::detail::int_stringificator<IntT, CharT, Output, Formatting>;
+};
 
-template <typename CharT, typename Output, typename Formatting>
-inline
-boost::stringify::input_int<long long, CharT, Output, Formatting>
-argf(long long i) noexcept
-{
-    return i;
-}
+} // namespace detail
 
-template <typename CharT, typename Output, typename Formatting>
-inline
-boost::stringify::input_int<unsigned int, CharT, Output, Formatting>
-argf(unsigned int i) noexcept
-{
-    return i;
-}
+boost::stringify::detail::int_input_traits<short>
+boost_stringify_input_traits_of(short);
 
-template <typename CharT, typename Output, typename Formatting>
-inline
-boost::stringify::input_int<unsigned long, CharT, Output, Formatting>
-argf(unsigned long i) noexcept
-{
-    return i;
-}
+boost::stringify::detail::int_input_traits<int>
+boost_stringify_input_traits_of(int);
 
-template <typename CharT, typename Output, typename Formatting>
-inline
-boost::stringify::input_int<unsigned long long, CharT, Output, Formatting>
-argf(unsigned long long i) noexcept
-{
-    return i;
-}
+boost::stringify::detail::int_input_traits<long>
+boost_stringify_input_traits_of(long);
 
+boost::stringify::detail::int_input_traits<long long>
+boost_stringify_input_traits_of(long long);
+
+boost::stringify::detail::int_input_traits<unsigned short>
+boost_stringify_input_traits_of(unsigned short);
+
+boost::stringify::detail::int_input_traits<unsigned>
+boost_stringify_input_traits_of(unsigned);
+
+boost::stringify::detail::int_input_traits<unsigned long>
+boost_stringify_input_traits_of(unsigned long);
+
+boost::stringify::detail::int_input_traits<unsigned long long>
+boost_stringify_input_traits_of(unsigned long long);
 
 }//namespace stringify
 }//namespace boost

@@ -4,26 +4,26 @@
 #include <string>
 #include <boost/stringify/input_base.hpp>
 
-namespace boost
-{
-namespace stringify
-{
+namespace boost {
+namespace stringify{
+namespace detail {
 
 template <class CharT, typename Traits, typename Output, class Formatting>
-class input_std_string: public boost::stringify::input_base<CharT, Output, Formatting>
+class std_string_stringificator
+    : public boost::stringify::input_base<CharT, Output, Formatting>
 {
     typedef boost::stringify::input_base<CharT, Output, Formatting> base;
-    
-public:
-    
-    const std::basic_string<CharT, Traits>* str;    
 
-    input_std_string() noexcept
+public:
+
+    const std::basic_string<CharT, Traits>* str;
+
+    std_string_stringificator() noexcept
         : str(0)
     {
     }
 
-    input_std_string(const std::basic_string<CharT, Traits>& _str) noexcept
+    std_string_stringificator(const std::basic_string<CharT, Traits>& _str) noexcept
         : str(&_str)
     {
     }
@@ -50,14 +50,36 @@ public:
     }
 };
 
-
-template <typename CharT, typename Traits, typename Output, typename Formatting>
-inline
-boost::stringify::input_std_string<CharT, Traits, Output, Formatting>
-argf(const std::basic_string<CharT, Traits>& str) noexcept
+template <typename CharIn, typename CharTraits>
+struct std_string_input_traits
 {
-    return str;
-}
+private:
+
+    template <typename CharOut>
+    struct helper
+    {
+        static_assert(sizeof(CharIn) == sizeof(CharOut), "");
+
+        template <typename Output, typename Formatting>
+        using stringificator
+        = boost::stringify::detail::std_string_stringificator
+            <CharOut, CharTraits, Output, Formatting>;
+    };
+
+public:
+
+    template <typename CharT, typename Output, typename Formatting>
+    using stringificator
+    = typename helper<CharT>::template stingificator<Output, Formatting>;
+};
+
+} // namespace detail
+
+
+template <typename CharT, typename CharTraits>
+boost::stringify::detail::std_string_input_traits<CharT, CharTraits>
+boost_stringify_input_traits_of(const std::basic_string<CharT, CharTraits>&);
+
 
 } // namespace stringify
 } // namespace boost

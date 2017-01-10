@@ -6,20 +6,30 @@
 namespace boost {
 namespace stringify {
 
+template <class T>
+struct input_traits;
+
+// template <class T>
+// boost::stringify::input_traits<T>
+// boost_stringify_input_traits_of(...);
+
+
 template <typename CharT, typename Output, typename Formatting>
 class input_arg
 {
 public:
-
+ 
     template <class T>
-    using input_base_of
-    = decltype(argf<CharT, Output, Formatting>(std::declval<const T>()));
+    using stringificator = typename decltype
+        (boost_stringify_input_traits_of(std::declval<const T>()))
+        :: template stringificator<CharT, Output, Formatting>;
 
+    
     template <typename T>
     input_arg
         ( const T& value
-        , input_base_of<T> && wt = input_base_of<T>() // will be input_base_of<T>(value)
-                                                      // after P0145R2 is supported
+        , stringificator<T> && wt = stringificator<T>() // will be stringificator<T>(value)
+                                                        // after P0145R2 is supported
         )
         noexcept
         : writer(wt)
@@ -30,8 +40,8 @@ public:
     template <typename T>
     input_arg
         ( const T& arg
-        , const typename input_base_of<T>::local_formatting& arg_format
-        , input_base_of<T> && wt = input_base_of<T>() // will be input_base_of<T>(arg, arg_format)
+        , const typename stringificator<T>::local_formatting& arg_format
+        , stringificator<T> && wt = stringificator<T>() // will be stringificator<T>(arg, arg_format)
         ) noexcept
         : writer(wt)
     {

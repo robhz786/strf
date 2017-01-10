@@ -28,42 +28,54 @@ int main()
 {
     namespace strf = boost::stringify;
 
-    
+
     {
         //first match wins. Hence, more specific formatters shall come first.
         auto fmt_good = strf::make_ftuple(strf::noshowpos<is_long>, strf::showpos<>);
         auto fmt_bad  = strf::make_ftuple(strf::showpos<>, strf::noshowpos<is_long>);
-        
+
         auto str_good = strf::make_string(fmt_good) ((long)1, 2);
         auto str_bad  = strf::make_string(fmt_bad)  ((long)1, 2);
-        
+
         BOOST_TEST(str_good ==  "1+2");
         BOOST_TEST(str_bad  == "+1+2");
     }
 
-
     {
-        // merge ftuples
+        // merge ftuple
+
         auto fmt1 = strf::make_ftuple
             ( strf::noshowpos<is_long_or_longlong>
-            , strf::showpos<>
-            );
-      
-        auto fmt_merged  = strf::make_ftuple
-            ( strf::showpos<is_long>
-            , fmt1
-            , strf::noshowpos<>
+            , strf::noshowpos<is_short>
             );
 
-        static_assert(is_short<short>::value, "");
-        
-        auto result = strf::make_string(fmt_merged) ((long)1, (long long)2, 3);
+        auto result = strf::make_string
+            (strf::showpos<is_long>, fmt1, strf::showpos<>)
+            ((long)1, (long long)2, (short)3, (int)4);
 
         std::cout << result << std::endl;
-        BOOST_TEST(result == "+12+3");
+        BOOST_TEST(result == "+123+4");
     }
 
-    
+    {
+        // merge 2 ftuple
+        auto result = strf::make_string
+            ( strf::make_ftuple
+                ( strf::showpos<is_long>
+                , strf::noshowpos<is_short>
+                )
+            , strf::make_ftuple
+                ( strf::noshowpos<is_long_or_longlong>
+                , strf::showpos<>
+                )
+            )
+            ((long)1, (short)2, (long long)3, (int)4);
+
+        std::cout << result << std::endl;
+        BOOST_TEST(result == "+123+4");
+    }
+
+
     return  boost::report_errors();
 }
 

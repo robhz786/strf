@@ -5,13 +5,13 @@
 #include <limits>
 #include <boost/stringify/input_base.hpp>
 
-namespace boost
-{
-namespace stringify
-{
+namespace boost {
+namespace stringify {
+namespace detail {
 
 template<typename CharT, typename Output, typename Formatting>
-struct input_char_ptr: boost::stringify::input_base<CharT, Output, Formatting>
+struct char_ptr_stringificator
+    : boost::stringify::input_base<CharT, Output, Formatting>
 {
     typedef const CharT* input_type;
 
@@ -23,13 +23,13 @@ struct input_char_ptr: boost::stringify::input_base<CharT, Output, Formatting>
     
 public:
    
-    input_char_ptr() noexcept
+    char_ptr_stringificator() noexcept
         : str(0)
         , len(0)
     {
     }
 
-    input_char_ptr(const CharT* _str) noexcept
+    char_ptr_stringificator(const CharT* _str) noexcept
         : str(_str)
         , len((std::numeric_limits<std::size_t>::max) ())
     {
@@ -104,16 +104,45 @@ private:
         }
         return 0;
     }
-}; 
+};
 
-template <typename CharT, typename Output, typename Formatting>
-inline
-boost::stringify::input_char_ptr<CharT, Output, Formatting>
-argf(const CharT* str) noexcept
+
+template <typename CharIn>
+struct char_ptr_input_traits
 {
-    return str;
-}
+private:
 
+    template <typename CharOut>
+    struct helper
+    {
+        static_assert(sizeof(CharIn) == sizeof(CharOut), "");
+        
+        template <typename Output, typename Formatting>
+        using stringificator
+        = boost::stringify::detail::char_ptr_stringificator
+            <CharOut, Output, Formatting>;
+    };
+
+public:
+    
+    template <typename CharT, typename Output, typename Formatting>
+    using stringificator
+    = typename helper<CharT>::template stringificator<Output, Formatting>;
+};
+
+} // namespace detail
+
+boost::stringify::detail::char_ptr_input_traits<char>
+boost_stringify_input_traits_of(const char*);
+
+boost::stringify::detail::char_ptr_input_traits<char16_t>
+boost_stringify_input_traits_of(const char16_t*);
+
+boost::stringify::detail::char_ptr_input_traits<char32_t>
+boost_stringify_input_traits_of(const char32_t*);
+
+boost::stringify::detail::char_ptr_input_traits<wchar_t>
+boost_stringify_input_traits_of(const wchar_t*);
 
 } // namespace stringify
 } // namespace boost

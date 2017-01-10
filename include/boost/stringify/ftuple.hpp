@@ -41,13 +41,14 @@ template
     >
 class ftuple_simple
     : private ftuple_impl<PreviousTag, OtherFmts ...>
-    , private FmtImpl
 {
     typedef ftuple_impl<PreviousTag, OtherFmts ...> parent;
 
     template <typename, typename, typename ... >
     friend class boost::stringify::detail::ftuple_simple;
 
+    FmtImpl m_fmt;
+    
 public:
 
     struct tag: public parent::tag
@@ -56,7 +57,7 @@ public:
 
     ftuple_simple(const FmtImpl& fmtImpl, const OtherFmts& ...fmts)
         : parent(fmts ...)
-        , FmtImpl(fmtImpl)
+        , m_fmt(fmtImpl)
     {
     }
 
@@ -65,7 +66,7 @@ public:
     template <typename P>
     ftuple_simple(const ftuple_simple<P, FmtImpl, OtherFmts...>& r)
         : parent(r)
-        , FmtImpl(r)
+        , m_fmt(r.m_fmt)
     {
     }
 
@@ -78,7 +79,7 @@ public:
         > :: type
     do_get(const tag&, typename FmtImpl::category) const
     {
-        return *this;
+        return m_fmt;
     }
 
     template <typename P>
@@ -143,6 +144,83 @@ public:
 };
 
 
+
+template
+    < typename PreviousTag
+    , typename FTuple
+    >
+class ftuple_merge<PreviousTag, FTuple>
+    : private FTuple::template rebind_tag<PreviousTag>
+{
+    typedef typename FTuple::template rebind_tag<PreviousTag> parent;
+
+    template <typename, typename, typename ... >
+    friend class boost::stringify::detail::ftuple_merge;
+
+public:
+
+    ftuple_merge(const FTuple& ft)
+        : parent(ft)
+    {
+    }
+
+    template <typename P>
+    ftuple_merge(const ftuple_merge<P, FTuple>& r)
+        : parent(r)
+    {
+    }
+
+    using parent::do_get;
+    
+    struct tag : public parent::tag
+    {
+    };
+
+    template <typename P>
+    using rebind_tag
+    = boost::stringify::detail::ftuple_merge<P, FTuple>;
+
+    typedef std::true_type boost_stringify_ftuple_flag;
+};
+
+
+
+struct ftuple_tag_zero
+{
+};
+
+
+template <>
+class ftuple_impl<ftuple_tag_zero>
+{
+public:
+    ftuple_impl()
+    {
+    }
+
+    ftuple_impl(const ftuple_impl&)
+    {
+    }
+
+    template <typename P> ftuple_impl(const ftuple_impl<P>&)
+    {
+    }
+    
+    template <typename P>
+    using rebind_tag = ftuple_impl<P>;
+
+    typedef std::true_type boost_stringify_ftuple_flag;
+
+    typedef ftuple_tag_zero tag;
+    
+    template <typename InputArg, typename FmtType>
+    typename FmtType::default_impl do_get(const tag&, FmtType) const
+    {
+        return typename FmtType::default_impl();
+    }
+
+};
+
 template <typename PreviousTag>
 class ftuple_impl<PreviousTag>
 {
@@ -155,11 +233,8 @@ public:
     {
     };
 
-    template <typename InputArg, typename FmtType>
-    typename FmtType::default_impl
-    do_get(const tag&, FmtType) const
+    void do_get() const
     {
-        return typename FmtType::default_impl();
     }
 
     template <typename P> ftuple_impl(const ftuple_impl<P>&)
@@ -207,7 +282,9 @@ public:
 
     using parent::do_get;
 
-    typedef typename parent::tag tag;
+    struct tag : public parent::tag
+    {
+    };
 
     template <typename P>
     using rebind_tag = ftuple_impl<P, Fmt, OtherFmts ...>;
@@ -222,11 +299,6 @@ public:
         : parent(r)
     {
     }
-};
-
-
-struct ftuple_tag_zero
-{
 };
 
 

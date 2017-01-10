@@ -5,24 +5,24 @@
 #include <boost/stringify/custom_char32_conversion.hpp>
 #include <type_traits>
 
-namespace boost
-{
-namespace stringify
-{
+namespace boost {
+namespace stringify {
+namespace detail {
 
 template <typename CharT, typename Output, typename Formatting>
-class input_char32: public boost::stringify::input_base<CharT, Output, Formatting>
+class char32_stringificator
+    : public boost::stringify::input_base<CharT, Output, Formatting>
 {
     typedef boost::stringify::input_base<CharT, Output, Formatting> base;
     
 public:
     
-    input_char32() noexcept
+    char32_stringificator() noexcept
         : m_char32()
     {
     }
 
-    input_char32(char32_t ch) noexcept
+    char32_stringificator(char32_t ch) noexcept
         : m_char32(ch)
     {
     }
@@ -52,12 +52,19 @@ private:
 };
 
 
-template <typename CharT, typename Output, typename Formatting>
-boost::stringify::input_char32<CharT, Output, Formatting>
-argf(char32_t c) noexcept
+struct char32_input_traits
 {
-    return c;
-}
+    template <typename CharT, typename Output, typename Formatting>
+    using stringificator
+    = boost::stringify::detail::char32_stringificator
+        <CharT, Output, Formatting>;
+};
+
+} // namespace detail
+
+boost::stringify::detail::char32_input_traits
+boost_stringify_input_traits_of(char32_t);
+
 
 } // namespace stringify
 } // namespace boost
