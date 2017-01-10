@@ -1,6 +1,10 @@
 #ifndef BOOST_STRINGIFY_FMT_SHOWPOS_HPP
 #define BOOST_STRINGIFY_FMT_SHOWPOS_HPP
 
+//  Distributed under the Boost Software License, Version 1.0.
+//  (See accompanying file LICENSE_1_0.txt or copy at
+//  http://www.boost.org/LICENSE_1_0.txt)
+
 #include <boost/stringify/type_traits.hpp>
 
 namespace boost {

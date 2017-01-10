@@ -1,3 +1,7 @@
+//  Distributed under the Boost Software License, Version 1.0.
+//  (See accompanying file LICENSE_1_0.txt or copy at
+//  http://www.boost.org/LICENSE_1_0.txt)
+
 #include <iostream>
 #include <stdio.h>
 #include <climits>
@@ -18,14 +22,6 @@ int main()
               << "Copy a string literal:" 
               << std::endl;
 
-//    PRINT_BENCHMARK("lengthf({}, \"hello\")")
-    {
-//        strf::lengthf({}, "hello");
-    }
-//    PRINT_BENCHMARK("lengthf_il({}, {\"hello\")}")
-    {
-//        strf::lengthf_il({}, {"hello"});
-    }
     PRINT_BENCHMARK("writef(char_ptr_output) () (\"hello\")")
     {
         strf::writef(char_ptr_output) () ("hello");
@@ -58,14 +54,6 @@ int main()
         const char* fmt = std_string_fmt.c_str();
 
 
-//        PRINT_BENCHMARK("lengthf({}, hello)")
-        {
-//            strf::lengthf({}, hello);
-        }
-//        PRINT_BENCHMARK("lengthf_il({}, {hello})")
-        {
-//            strf::lengthf_il({}, {hello});
-        }
         PRINT_BENCHMARK("writef(char_ptr_output) () (hello)")
         {
             strf::writef(char_ptr_output) () (hello);
@@ -96,14 +84,6 @@ int main()
               << "Copy two strings" 
               << std::endl;
 
-//    PRINT_BENCHMARK("lengthf({}, \"hello\", \"hello\")")
-    {
-//        strf::lengthf({}, "hello", "hello");
-    }
-//    PRINT_BENCHMARK("lengthf_il({}, {\"hello\", \"hello\")}")
-    {
-//        strf::lengthf_il({}, {"hello", "hello"});
-    }
     PRINT_BENCHMARK("writef(char_ptr_output) () (\"hello\", \"hello\")")
     {
         strf::writef(char_ptr_output) () ("hello", "hello");
@@ -127,14 +107,6 @@ int main()
         std::string std_string_fmt("%s");
         const char* fmt = std_string_fmt.c_str();
 
-//        PRINT_BENCHMARK("lengthf({}, long_string)")
-        {
-//            strf::lengthf({}, long_string);
-        }
-//        PRINT_BENCHMARK("lengthf_il({}, {long_string})")
-        {
-//            strf::lengthf_il({}, {long_string});
-        }
         PRINT_BENCHMARK("writef(char_ptr_output) () (long_string)")
         {
             strf::writef(char_ptr_output) () (long_string);
@@ -165,14 +137,6 @@ int main()
               << "write integers" 
               << std::endl;
 
-//    PRINT_BENCHMARK("lengthf({}, 25)")
-    {
-//        strf::lengthf({}, 25);
-    }
-//    PRINT_BENCHMARK("lengthf_il({}, {25})")
-    {
-//        strf::lengthf_il({}, {25});
-    }
     PRINT_BENCHMARK("writef(char_ptr_output) () (25)")
     {
         strf::writef(char_ptr_output) () (25);
@@ -186,14 +150,6 @@ int main()
         sprintf(char_ptr_output, "%d", 12345);
     }
     std::cout << std::endl;
-//    PRINT_BENCHMARK("lengthf({}, INT_MAX)")
-    {
-//        strf::lengthf({}, INT_MAX);
-    }
-//    PRINT_BENCHMARK("lengthf_il({}, {INT_MAX})")
-    {
-//        strf::lengthf_il({}, {INT_MAX});
-    }
     PRINT_BENCHMARK("writef(char_ptr_output) () (INT_MAX)")
     {
         strf::writef(char_ptr_output) () (INT_MAX);
@@ -206,15 +162,8 @@ int main()
     {
         sprintf(char_ptr_output, "%d", INT_MAX);
     }
+
     std::cout << std::endl;
-//    PRINT_BENCHMARK("lengthf({}, LLONG_MAX)")
-    {
-//        strf::lengthf({}, LLONG_MAX);
-    }
-//    PRINT_BENCHMARK("lengthf_il({}, {LLONG_MAX})")
-    {
-//        strf::lengthf_il({}, {LLONG_MAX});
-    }
     PRINT_BENCHMARK("writef(char_ptr_output) () (LLONG_MAX)")
     {
         strf::writef(char_ptr_output) () (LLONG_MAX);
@@ -227,15 +176,8 @@ int main()
     {
         sprintf(char_ptr_output, "%lld", LLONG_MAX);
     }
+
     std::cout << std::endl;
-//    PRINT_BENCHMARK("lengthf({}, 25, 25, 25)")
-    {
-//        strf::lengthf({}, 25, 25, 25);
-    }
-//    PRINT_BENCHMARK("lengthf_il({}, {25, 25, 25})")
-    {
-//        strf::lengthf_il({}, {25, 25, 25});
-    }
     PRINT_BENCHMARK("writef(char_ptr_output) () (25, 25, 25)")
     {
         strf::writef(char_ptr_output) () (25, 25, 25);
@@ -248,16 +190,9 @@ int main()
     {
         sprintf(char_ptr_output, "%d%d%d", 25, 25, 25);
     }
+
     std::cout << std::endl;
-//    PRINT_BENCHMARK("lengthf({}, LLONG_MAX, LLONG_MAX, LLONG_MAX)")
-    {
-//        strf::lengthf({}, LLONG_MAX, LLONG_MAX, LLONG_MAX);
-    }
-//    PRINT_BENCHMARK("lengthf_il({}, {LLONG_MAX, LLONG_MAX, LLONG_MAX})")
-    {
-//        strf::lengthf_il({}, {LLONG_MAX, LLONG_MAX, LLONG_MAX});
-    }
-     PRINT_BENCHMARK("writef(char_ptr_output) () (LLONG_MAX, LLONG_MAX, LLONG_MAX)")
+    PRINT_BENCHMARK("writef(char_ptr_output) () (LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
         strf::writef(char_ptr_output) () (LLONG_MAX, LLONG_MAX, LLONG_MAX);
     }
@@ -269,16 +204,9 @@ int main()
     {
         sprintf(char_ptr_output, "%lld%lld%lld", LLONG_MAX, LLONG_MAX, LLONG_MAX);
     }
+
     std::cout << std::endl;
-//    PRINT_BENCHMARK("lengthf({} \"ten =  \", 10, \", twenty = \", 20)")
-    {
-//        strf::lengthf({}, "ten =  ", 10, ", twenty = ", 20);
-    }
-//    PRINT_BENCHMARK("lengthf_il({}, {\"ten =  \", 10, \", twenty = \", 20})")
-    {
-//        strf::lengthf_il({}, {"ten =  ", 10, ", twenty = ", 20});
-    }
-    PRINT_BENCHMARK("writef(char_ptr_output, {} \"ten =  \", 10, \", twenty = \", 20)")
+    PRINT_BENCHMARK("writef(char_ptr_output, {} (\"ten =  \", 10, \", twenty = \", 20)")
     {
         strf::writef(char_ptr_output) () ("ten =  ", 10, ", twenty = ", 20);
     }

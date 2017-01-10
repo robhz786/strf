@@ -1,6 +1,10 @@
 #ifndef BOOST_STRINGIFY_WRITEF_CHAR_PTR_HPP
 #define BOOST_STRINGIFY_WRITEF_CHAR_PTR_HPP
 
+//  Distributed under the Boost Software License, Version 1.0.
+//  (See accompanying file LICENSE_1_0.txt or copy at
+//  http://www.boost.org/LICENSE_1_0.txt)
+
 #include <string>
 #include <boost/stringify/writef_helper.hpp>
 #include <boost/stringify/ftuple.hpp>

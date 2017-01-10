@@ -1,6 +1,10 @@
 #ifndef BOOST_STRINGIFY_INPUT_CHAR32_HPP_INCLUDED
 #define BOOST_STRINGIFY_INPUT_CHAR32_HPP_INCLUDED
 
+//  Distributed under the Boost Software License, Version 1.0.
+//  (See accompanying file LICENSE_1_0.txt or copy at
+//  http://www.boost.org/LICENSE_1_0.txt)
+
 #include <boost/stringify/input_base.hpp>
 #include <boost/stringify/custom_char32_conversion.hpp>
 #include <type_traits>

@@ -1,6 +1,10 @@
 #ifndef BOOST_STRINGIFY_INPUT_BASE_HPP_INCLUDED
 #define BOOST_STRINGIFY_INPUT_BASE_HPP_INCLUDED
 
+//  Distributed under the Boost Software License, Version 1.0.
+//  (See accompanying file LICENSE_1_0.txt or copy at
+//  http://www.boost.org/LICENSE_1_0.txt)
+
 #include <boost/assert.hpp>
 #include <boost/stringify/custom_fill.hpp>
 #include <boost/stringify/custom_width.hpp>

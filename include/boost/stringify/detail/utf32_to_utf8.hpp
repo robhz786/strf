@@ -1,6 +1,10 @@
 #ifndef BOOST_STRINGIFY_DETAIL_UTF32_TO_UTF8_HPP_INCLUDED
 #define BOOST_STRINGIFY_DETAIL_UTF32_TO_UTF8_HPP_INCLUDED
 
+//  Distributed under the Boost Software License, Version 1.0.
+//  (See accompanying file LICENSE_1_0.txt or copy at
+//  http://www.boost.org/LICENSE_1_0.txt)
+
 #include <boost/stringify/input_char.hpp>
 
 namespace boost {
