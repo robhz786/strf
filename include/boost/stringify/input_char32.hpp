@@ -21,19 +21,9 @@ class char32_stringifier
     
 public:
     
-    char32_stringifier() noexcept
-        : m_char32()
-    {
-    }
-
     char32_stringifier(char32_t ch) noexcept
         : m_char32(ch)
     {
-    }
-
-    void set(char32_t ch) noexcept
-    {
-        m_char32 = ch;
     }
 
     virtual std::size_t length(const Formatting& fmt) const noexcept override
@@ -52,7 +42,9 @@ public:
     }
     
 private:
+
     char32_t m_char32;
+
 };
 
 

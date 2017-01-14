@@ -20,19 +20,9 @@ class char_stringifier
     
 public:
     
-    char_stringifier() noexcept
-        : m_char()
-    {
-    }
-
     char_stringifier(CharT _character) noexcept
         : m_char(_character)
     {
-    }
-
-    void set(CharT _character) noexcept
-    {
-        m_char = _character;
     }
 
     virtual std::size_t length(const Formatting&) const noexcept override

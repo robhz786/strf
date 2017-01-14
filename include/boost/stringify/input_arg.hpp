@@ -45,45 +45,62 @@ class input_arg
     template <class T>
     using stringifier_t = typename input_traits<T>        
         :: template stringifier<CharT, Output, Formatting>;
-    
+
+    template <typename T>
+    struct alignas(alignof(T)) memory_space
+    {
+        char space[sizeof(T)];
+    };
+
+    typedef 
+    boost::stringify::stringifier<CharT, Output, Formatting>
+    stringifier_base;
+
 public:
     
     template <typename T>
     input_arg
         ( const T& value
-        , stringifier_t<T> && s = stringifier_t<T>() // will be stringifier_t<T>(value)
-                                                     // after P0145R2 is supported
+        , memory_space<stringifier_t<T> > && ms =  memory_space<stringifier_t<T> >()
         )
         noexcept
-        : m_stringifier(s)
     {
-        s.set(value); // will be removed after compilers add support to P0145R2
+        stringifier_t<T> * ptr = (stringifier_t<T>*)(& ms);
+        new (ptr) stringifier_t<T>(value);
+        m_stringifier = ptr;
     }
-   
+
     template <typename T>
     input_arg
-        ( const T& arg
+        ( const T& value
         , const typename stringifier_t<T>::local_formatting& arg_format
-        , stringifier_t<T> && s = stringifier_t<T>() // will be stringifier_t<T>(arg, arg_format)
-        ) noexcept
-        : m_stringifier(s)
+        , memory_space<stringifier_t<T> > && ms =  memory_space<stringifier_t<T> >()
+        )
+        noexcept
     {
-        s.set(arg, arg_format);  // will be removed after compilers add support to P0145R2
+        stringifier_t<T> * ptr = (stringifier_t<T>*)(& ms);
+        new (ptr) stringifier_t<T>(value, arg_format);
+        m_stringifier = ptr;
     }
     
+    ~input_arg()
+    {
+        m_stringifier->~stringifier_base();
+    }
+
     std::size_t length(const Formatting& fmt) const
     {
-        return m_stringifier.length(fmt);
+        return m_stringifier->length(fmt);
     }
 
     void write(Output& out, const Formatting& fmt) const
     {
-        return m_stringifier.write(out, fmt);
+        return m_stringifier->write(out, fmt);
     }
             
 private:
-    
-    const boost::stringify::stringifier<CharT, Output, Formatting>& m_stringifier;
+
+    const boost::stringify::stringifier<CharT, Output, Formatting>* m_stringifier;
 };
 
 

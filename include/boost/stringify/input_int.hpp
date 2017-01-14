@@ -65,37 +65,30 @@ struct int_stringifier
     using base::random_access_output;
 public:
 
-    int_stringifier() noexcept
-        : m_value(0)
-        , m_abs_value(0)
-    {
-    }
-
-    int_stringifier(intT _value) noexcept
-    {
-        set(_value);
-    }
-
-    void set(intT _value) noexcept
-    {
-        m_value = (_value);
-        m_abs_value = (m_value > 0
+    typedef CharT char_type;
+    typedef Output output_type;
+    typedef Formatting ftuple_type;
+    typedef boost::stringify::detail::local_formatting_int format_type;
+    
+    int_stringifier(intT value) noexcept
+        : m_value(value)
+        , m_abs_value(m_value > 0
                      ? static_cast<unsigned_intT>(m_value)
-                     : 1 + static_cast<unsigned_intT>(-(m_value + 1)));
+                     : 1 + static_cast<unsigned_intT>(-(m_value + 1)))
+    {
     }
 
     typedef boost::stringify::detail::local_formatting_int local_formatting;
 
-    
-    void set
-        ( intT _value
-        , local_formatting fmt
-        ) noexcept
+    int_stringifier(intT value, local_formatting fmt) noexcept
+        : m_value(value)
+        , m_abs_value(m_value > 0
+                     ? static_cast<unsigned_intT>(m_value)
+                     : 1 + static_cast<unsigned_intT>(-(m_value + 1)))
+        , m_local_fmt(fmt)
     {
-        set(_value);
-        m_local_fmt = fmt;
     }
-
+   
     virtual std::size_t length(const Formatting& fmt) const noexcept override
     {
         return length_digits() + (has_sign(fmt) ? 1 : 0);

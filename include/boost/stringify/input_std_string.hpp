@@ -19,27 +19,19 @@ class std_string_stringifier
     typedef boost::stringify::stringifier<CharT, Output, Formatting> base;
 
 public:
-
-    const std::basic_string<CharT, Traits>* str;
-
-    std_string_stringifier() noexcept
-        : str(0)
-    {
-    }
+    typedef CharT char_type;
+    typedef Output output_type;
+    typedef Formatting ftuple_type;
+    
 
     std_string_stringifier(const std::basic_string<CharT, Traits>& _str) noexcept
-        : str(&_str)
+        : str(_str)
     {
-    }
-
-    void set(const std::basic_string<CharT, Traits>& _str) noexcept
-    {
-        str = &_str;
     }
 
     virtual std::size_t length(const Formatting&) const noexcept override
     {
-        return str ? str->length() : 0;
+        return str.length();
     }
 
     void write
@@ -49,9 +41,14 @@ public:
     {
         if(str)
         {
-            out.put(str->c_str(), str->length());
+            out.put(str.c_str(), str.length());
         }
     }
+    
+private:
+    
+    const std::basic_string<CharT, Traits>& str;
+    
 };
 
 template <typename CharIn, typename CharTraits>
