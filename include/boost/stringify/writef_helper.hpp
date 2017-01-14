@@ -40,12 +40,51 @@ class final_writer
     {
         output.reserve(1 + length(args...));
     }
+    
+    template <typename output_type2>
+    auto write_inilist
+        ( const std::initializer_list<arg_type>& lst
+        , output_type2& output
+        ) noexcept
+       -> decltype(output.reserve(std::size_t()), void())
+    {
+        std::size_t len = 0;
+        for(auto arg : lst)
+        {
+            len += arg.length();
+        }
+        output.reserve(len + 1);
+        for(auto arg : lst)
+        {
+            arg.write(output, m_fmt);
+        }
+    }
 
+    template <typename output_type2>
+    auto write_inilist(const std::initializer_list<arg_type>& lst, ...)noexcept
+    {
+        for(auto arg : lst)
+        {
+            arg.write(m_output);
+        }
+    }
+    
     template <typename output_type2, typename ... Args>
     void reserve(output_type2&, ...) noexcept
     {
     }
 
+    void write_args() noexcept
+    {
+    }
+    
+    template <typename Arg1, typename ... Args>
+    void write_args(Arg1&& arg1, Args && ... args)
+    {
+        arg1.write(m_output, m_fmt);
+        write_args(args ...);
+    }
+    
 public:
     
     template <typename ... Formaters>
@@ -60,23 +99,19 @@ public:
     decltype(auto) operator[](const std::initializer_list<arg_type>& lst)
         && noexcept(noexcept_output)
     {
-        for(auto arg : lst)
-        {
-            arg.write(m_output, m_fmt);
-        }
+        write_inilist<output_type>(lst, m_output);
         return m_output.finish();
     }
     
     decltype(auto) operator()() && noexcept(noexcept_output)
     {
-        reserve<output_type>(m_output);
         return m_output.finish();
     }
 
     decltype(auto) operator()(const arg_type& a1) && noexcept(noexcept_output)
     {
         reserve<output_type>(m_output, a1);
-        a1.write(m_output, m_fmt);
+        write_args(a1);
         return m_output.finish();
     }
   
@@ -86,8 +121,7 @@ public:
         ) && noexcept(noexcept_output)
     {
         reserve<output_type>(m_output, a1, a2);
-        a1.write(m_output, m_fmt);
-        a2.write(m_output, m_fmt);
+        write_args(a1, a2);
         return m_output.finish();
     }
 
@@ -98,9 +132,7 @@ public:
         ) && noexcept(noexcept_output)
     {
         reserve<output_type>(m_output, a1, a2, a3);
-        a1.write(m_output, m_fmt);
-        a2.write(m_output, m_fmt);
-        a3.write(m_output, m_fmt);
+        write_args(a1, a2, a3);
         return m_output.finish();
     }
 
@@ -112,10 +144,7 @@ public:
         ) && noexcept(noexcept_output)
     {
         reserve<output_type>(m_output, a1, a2, a3, a4);
-        a1.write(m_output, m_fmt);
-        a2.write(m_output, m_fmt);
-        a3.write(m_output, m_fmt);
-        a4.write(m_output, m_fmt);
+        write_args(a1, a2, a3, a4);
         return m_output.finish();
 
     }
@@ -129,11 +158,7 @@ public:
         ) && noexcept(noexcept_output)
     {
         reserve<output_type>(m_output, a1, a2, a3, a4, a5);
-        a1.write(m_output, m_fmt);
-        a2.write(m_output, m_fmt);
-        a3.write(m_output, m_fmt);
-        a4.write(m_output, m_fmt);
-        a5.write(m_output, m_fmt);
+        write_args(a1, a2, a3, a4, a5);
         return m_output.finish();
     }
 
@@ -147,12 +172,7 @@ public:
         ) && noexcept(noexcept_output)
     {
         reserve<output_type>(m_output, a1, a2, a3, a4, a5, a6);
-        a1.write(m_output, m_fmt);
-        a2.write(m_output, m_fmt);
-        a3.write(m_output, m_fmt);
-        a4.write(m_output, m_fmt);
-        a5.write(m_output, m_fmt);
-        a6.write(m_output, m_fmt);
+        write_args(a1, a2, a3, a4, a5, a6);
         return m_output.finish();
     }
 
@@ -167,13 +187,7 @@ public:
         ) && noexcept(noexcept_output)
     {
         reserve<output_type>(m_output, a1, a2, a3, a4, a5, a6, a7);
-        a1.write(m_output, m_fmt);
-        a2.write(m_output, m_fmt);
-        a3.write(m_output, m_fmt);
-        a4.write(m_output, m_fmt);
-        a5.write(m_output, m_fmt);
-        a6.write(m_output, m_fmt);
-        a7.write(m_output, m_fmt);
+        write_args(a1, a2, a3, a4, a5, a6, a7);
         return m_output.finish();
     }
 
@@ -189,14 +203,7 @@ public:
         ) && noexcept(noexcept_output)
     {
         reserve<output_type>(m_output, a1, a2, a3, a4, a5, a6, a7, a8);
-        a1.write(m_output, m_fmt);
-        a2.write(m_output, m_fmt);
-        a3.write(m_output, m_fmt);
-        a4.write(m_output, m_fmt);
-        a5.write(m_output, m_fmt);
-        a6.write(m_output, m_fmt);
-        a7.write(m_output, m_fmt);
-        a8.write(m_output, m_fmt);
+        write_args(a1, a2, a3, a4, a5, a6, a7, a8);      
         return m_output.finish();
     }
 
@@ -213,15 +220,7 @@ public:
         ) && noexcept(noexcept_output)
     {
         reserve<output_type>(m_output, a1, a2, a3, a4, a5, a6, a7, a8, a9);
-        a1.write(m_output, m_fmt);
-        a2.write(m_output, m_fmt);
-        a3.write(m_output, m_fmt);
-        a4.write(m_output, m_fmt);
-        a5.write(m_output, m_fmt);
-        a6.write(m_output, m_fmt);
-        a7.write(m_output, m_fmt);
-        a8.write(m_output, m_fmt);
-        a9.write(m_output, m_fmt);
+        write_args(a1, a2, a3, a4, a5, a6, a7, a8, a9);
         return m_output.finish();
     }
 
@@ -239,16 +238,7 @@ public:
         ) && noexcept(noexcept_output)
     {
         reserve<output_type>(m_output, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
-        a1.write(m_output, m_fmt);
-        a2.write(m_output, m_fmt);
-        a3.write(m_output, m_fmt);
-        a4.write(m_output, m_fmt);
-        a5.write(m_output, m_fmt);
-        a6.write(m_output, m_fmt);
-        a7.write(m_output, m_fmt);
-        a8.write(m_output, m_fmt);
-        a9.write(m_output, m_fmt);
-        a10.write(m_output, m_fmt);        
+        write_args(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);        
         return m_output.finish();
     }
 
