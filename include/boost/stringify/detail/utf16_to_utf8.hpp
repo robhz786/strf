@@ -12,7 +12,7 @@ namespace stringify {
 namespace detail {
 
 template<typename CharT, typename Formatting>
-struct utf16_to_utf8: boost::stringify::input_base<char, Formatting>
+struct utf16_to_utf8: boost::stringify::stringifier<char, Formatting>
 {
     const CharT* str;
 

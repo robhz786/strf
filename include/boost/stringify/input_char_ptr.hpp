@@ -3,19 +3,19 @@
 
 #include <algorithm>
 #include <limits>
-#include <boost/stringify/input_base.hpp>
+#include <boost/stringify/stringifier.hpp>
 
 namespace boost {
 namespace stringify {
 namespace detail {
 
 template<typename CharT, typename Output, typename Formatting>
-struct char_ptr_stringificator
-    : boost::stringify::input_base<CharT, Output, Formatting>
+struct char_ptr_stringifier
+    : boost::stringify::stringifier<CharT, Output, Formatting>
 {
     typedef const CharT* input_type;
 
-    typedef boost::stringify::input_base<CharT, Output, Formatting> base;
+    typedef boost::stringify::stringifier<CharT, Output, Formatting> base;
     
     typedef
         boost::stringify::width_accumulator<Formatting, input_type, CharT>
@@ -23,13 +23,13 @@ struct char_ptr_stringificator
     
 public:
    
-    char_ptr_stringificator() noexcept
+    char_ptr_stringifier() noexcept
         : str(0)
         , len(0)
     {
     }
 
-    char_ptr_stringificator(const CharT* _str) noexcept
+    char_ptr_stringifier(const CharT* _str) noexcept
         : str(_str)
         , len((std::numeric_limits<std::size_t>::max) ())
     {
@@ -118,16 +118,16 @@ private:
         static_assert(sizeof(CharIn) == sizeof(CharOut), "");
         
         template <typename Output, typename Formatting>
-        using stringificator
-        = boost::stringify::detail::char_ptr_stringificator
+        using stringifier
+        = boost::stringify::detail::char_ptr_stringifier
             <CharOut, Output, Formatting>;
     };
 
 public:
     
     template <typename CharT, typename Output, typename Formatting>
-    using stringificator
-    = typename helper<CharT>::template stringificator<Output, Formatting>;
+    using stringifier
+    = typename helper<CharT>::template stringifier<Output, Formatting>;
 };
 
 } // namespace detail

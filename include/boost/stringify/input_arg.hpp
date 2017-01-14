@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/input_base.hpp>
+#include <boost/stringify/stringifier.hpp>
 
 namespace boost {
 namespace stringify {
@@ -24,15 +24,15 @@ class input_arg
 public:
  
     template <class T>
-    using stringificator = typename decltype
+    using stringifier = typename decltype
         (boost_stringify_input_traits_of(std::declval<const T>()))
-        :: template stringificator<CharT, Output, Formatting>;
+        :: template stringifier<CharT, Output, Formatting>;
 
     
     template <typename T>
     input_arg
         ( const T& value
-        , stringificator<T> && wt = stringificator<T>() // will be stringificator<T>(value)
+        , stringifier<T> && wt = stringifier<T>() // will be stringifier<T>(value)
                                                         // after P0145R2 is supported
         )
         noexcept
@@ -44,15 +44,15 @@ public:
     template <typename T>
     input_arg
         ( const T& arg
-        , const typename stringificator<T>::local_formatting& arg_format
-        , stringificator<T> && wt = stringificator<T>() // will be stringificator<T>(arg, arg_format)
+        , const typename stringifier<T>::local_formatting& arg_format
+        , stringifier<T> && wt = stringifier<T>() // will be stringifier<T>(arg, arg_format)
         ) noexcept
         : writer(wt)
     {
         wt.set(arg, arg_format);  // will be removed after compilers add support to P0145R2
     }
 
-    const boost::stringify::input_base<CharT, Output, Formatting>& writer;
+    const boost::stringify::stringifier<CharT, Output, Formatting>& writer;
 };
 
 

@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/input_base.hpp>
+#include <boost/stringify/stringifier.hpp>
 #include <boost/stringify/custom_char32_conversion.hpp>
 #include <type_traits>
 
@@ -14,19 +14,19 @@ namespace stringify {
 namespace detail {
 
 template <typename CharT, typename Output, typename Formatting>
-class char32_stringificator
-    : public boost::stringify::input_base<CharT, Output, Formatting>
+class char32_stringifier
+    : public boost::stringify::stringifier<CharT, Output, Formatting>
 {
-    typedef boost::stringify::input_base<CharT, Output, Formatting> base;
+    typedef boost::stringify::stringifier<CharT, Output, Formatting> base;
     
 public:
     
-    char32_stringificator() noexcept
+    char32_stringifier() noexcept
         : m_char32()
     {
     }
 
-    char32_stringificator(char32_t ch) noexcept
+    char32_stringifier(char32_t ch) noexcept
         : m_char32(ch)
     {
     }
@@ -59,8 +59,8 @@ private:
 struct char32_input_traits
 {
     template <typename CharT, typename Output, typename Formatting>
-    using stringificator
-    = boost::stringify::detail::char32_stringificator
+    using stringifier
+    = boost::stringify::detail::char32_stringifier
         <CharT, Output, Formatting>;
 };
 

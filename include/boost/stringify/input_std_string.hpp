@@ -6,28 +6,28 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <string>
-#include <boost/stringify/input_base.hpp>
+#include <boost/stringify/stringifier.hpp>
 
 namespace boost {
 namespace stringify{
 namespace detail {
 
 template <class CharT, typename Traits, typename Output, class Formatting>
-class std_string_stringificator
-    : public boost::stringify::input_base<CharT, Output, Formatting>
+class std_string_stringifier
+    : public boost::stringify::stringifier<CharT, Output, Formatting>
 {
-    typedef boost::stringify::input_base<CharT, Output, Formatting> base;
+    typedef boost::stringify::stringifier<CharT, Output, Formatting> base;
 
 public:
 
     const std::basic_string<CharT, Traits>* str;
 
-    std_string_stringificator() noexcept
+    std_string_stringifier() noexcept
         : str(0)
     {
     }
 
-    std_string_stringificator(const std::basic_string<CharT, Traits>& _str) noexcept
+    std_string_stringifier(const std::basic_string<CharT, Traits>& _str) noexcept
         : str(&_str)
     {
     }
@@ -65,15 +65,15 @@ private:
         static_assert(sizeof(CharIn) == sizeof(CharOut), "");
 
         template <typename Output, typename Formatting>
-        using stringificator
-        = boost::stringify::detail::std_string_stringificator
+        using stringifier
+        = boost::stringify::detail::std_string_stringifier
             <CharOut, CharTraits, Output, Formatting>;
     };
 
 public:
 
     template <typename CharT, typename Output, typename Formatting>
-    using stringificator
+    using stringifier
     = typename helper<CharT>::template stingificator<Output, Formatting>;
 };
 

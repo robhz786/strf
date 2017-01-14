@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_INPUT_BASE_HPP_INCLUDED
-#define BOOST_STRINGIFY_INPUT_BASE_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_STRINGIFIER_HPP_INCLUDED
+#define BOOST_STRINGIFY_STRINGIFIER_HPP_INCLUDED
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -17,10 +17,10 @@ namespace stringify
 {
 
 template <typename CharT, typename Output, typename Formatting>
-class input_base
+class stringifier
 {
 public:
-  virtual ~input_base()
+  virtual ~stringifier()
     {}
 
     /**

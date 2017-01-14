@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/input_base.hpp>
+#include <boost/stringify/stringifier.hpp>
 #include <boost/stringify/ftuple.hpp>
 #include <boost/stringify/custom_showpos.hpp>
 #include <boost/stringify/detail/characters_catalog.hpp>
@@ -55,23 +55,23 @@ private:
 
 
 template <typename intT, typename CharT, typename Output, typename Formatting>
-struct int_stringificator
-    : public boost::stringify::input_base<CharT, Output, Formatting>
+struct int_stringifier
+    : public boost::stringify::stringifier<CharT, Output, Formatting>
 {
-    typedef boost::stringify::input_base<CharT, Output, Formatting> base;
+    typedef boost::stringify::stringifier<CharT, Output, Formatting> base;
     typedef typename std::make_unsigned<intT>::type unsigned_intT;
     typedef boost::stringify::detail::uint_traits<unsigned_intT> uint_traits;
     using base::noexcept_output;
     using base::random_access_output;
 public:
 
-    int_stringificator() noexcept
+    int_stringifier() noexcept
         : m_value(0)
         , m_abs_value(0)
     {
     }
 
-    int_stringificator(intT _value) noexcept
+    int_stringifier(intT _value) noexcept
     {
         set(_value);
     }
@@ -180,8 +180,8 @@ template <typename IntT>
 struct int_input_traits
 {
     template <typename CharT, typename Output, typename Formatting>
-    using stringificator =
-        boost::stringify::detail::int_stringificator<IntT, CharT, Output, Formatting>;
+    using stringifier =
+        boost::stringify::detail::int_stringifier<IntT, CharT, Output, Formatting>;
 };
 
 } // namespace detail

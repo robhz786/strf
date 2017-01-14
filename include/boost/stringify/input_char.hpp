@@ -13,19 +13,19 @@ namespace stringify {
 namespace detail {
 
 template <typename CharT, typename Output, typename Formatting>
-class char_stringificator
-    : public boost::stringify::input_base<CharT, Output, Formatting>
+class char_stringifier
+    : public boost::stringify::stringifier<CharT, Output, Formatting>
 {
-    typedef boost::stringify::input_base<CharT, Output, Formatting> base;
+    typedef boost::stringify::stringifier<CharT, Output, Formatting> base;
     
 public:
     
-    char_stringificator() noexcept
+    char_stringifier() noexcept
         : m_char()
     {
     }
 
-    char_stringificator(CharT _character) noexcept
+    char_stringifier(CharT _character) noexcept
         : m_char(_character)
     {
     }
@@ -65,16 +65,16 @@ private:
         static_assert(sizeof(CharIn) == sizeof(CharOut), "");
         
         template <typename Output, typename Formatting>
-        using stringificator
-        = boost::stringify::detail::char_stringificator
+        using stringifier
+        = boost::stringify::detail::char_stringifier
             <CharOut, Output, Formatting>;
     };
     
 public:
     
     template <typename CharT, typename Output, typename Formatting>
-    using stringificator
-    = typename helper<CharT>::template stringificator<Output, Formatting>;
+    using stringifier
+    = typename helper<CharT>::template stringifier<Output, Formatting>;
 };
 
 } //namepace detail

@@ -21,7 +21,7 @@ class final_writer
     typedef boost::stringify::input_arg<CharT, output_type, Formatting> arg_type;
 
     static constexpr bool noexcept_output
-    = boost::stringify::input_base<CharT, output_type, Formatting>::noexcept_output;
+    = boost::stringify::stringifier<CharT, output_type, Formatting>::noexcept_output;
     
     template <typename Arg1, typename ... Args>
     std::size_t length(Arg1 && arg1, Args && ... args) noexcept
