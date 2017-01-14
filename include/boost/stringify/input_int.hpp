@@ -63,12 +63,14 @@ struct int_stringifier
     typedef boost::stringify::detail::uint_traits<unsigned_intT> uint_traits;
     using base::noexcept_output;
     using base::random_access_output;
+
 public:
 
+    typedef intT input_type;
     typedef CharT char_type;
     typedef Output output_type;
     typedef Formatting ftuple_type;
-    typedef boost::stringify::detail::local_formatting_int format_type;
+    typedef boost::stringify::detail::local_formatting_int arg_format_type;
     
     int_stringifier(intT value) noexcept
         : m_value(value)
@@ -78,9 +80,7 @@ public:
     {
     }
 
-    typedef boost::stringify::detail::local_formatting_int local_formatting;
-
-    int_stringifier(intT value, local_formatting fmt) noexcept
+    int_stringifier(intT value, arg_format_type fmt) noexcept
         : m_value(value)
         , m_abs_value(m_value > 0
                      ? static_cast<unsigned_intT>(m_value)
@@ -113,7 +113,7 @@ private:
 
     intT m_value;
     unsigned_intT m_abs_value; // TODO optimaze ( use a union when intT is usigned )
-    local_formatting m_local_fmt;
+    arg_format_type m_local_fmt;
     
     bool has_sign(const Formatting& fmt) const noexcept
     {

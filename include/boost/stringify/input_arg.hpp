@@ -43,7 +43,7 @@ class input_arg
     using input_traits = decltype(input_traits_of<T>(std::declval<const T>()));
 
     template <class T>
-    using stringifier_t = typename input_traits<T>        
+    using stringifier = typename input_traits<T>        
         :: template stringifier<CharT, Output, Formatting>;
 
     template <typename T>
@@ -56,31 +56,120 @@ class input_arg
     boost::stringify::stringifier<CharT, Output, Formatting>
     stringifier_base;
 
+    typedef void (*construtor_function)
+    (stringifier_base*, const void*, const void*);
+    
+    template <typename Child, typename InputType>
+    static void construct__arg_is_ptr
+        ( stringifier_base* bptr
+        , const void* input_arg_v
+        , const void*
+        )
+    {
+        new (bptr) Child (static_cast<InputType>(input_arg_v));
+    }
+
+    template <typename Child, typename InputType>
+    static void construct__arg_is_ref
+        ( stringifier_base* bptr
+        , const void* input_arg_v
+        , const void*
+        )
+    {
+        new (bptr) Child (*static_cast<const InputType*>(input_arg_v));
+    }
+
+    template <typename Child, typename InputType>
+    static void construct__arg_is_ptr__with_fmt
+        ( stringifier_base* bptr
+        , const void* input_arg_v
+        , const void* format_arg_v
+        )
+    {
+        typedef typename Child::arg_format_type format_type;
+        new (bptr) Child
+            ( static_cast<InputType>(input_arg_v)
+            , *static_cast<const format_type*>(format_arg_v)
+            );
+    }
+
+    template <typename Child, typename InputType>
+    static void construct__arg_is_ref__withf_fmt
+        ( stringifier_base* bptr
+        , const void* input_arg_v
+        , const void* format_arg_v
+        )
+    {
+        typedef typename Child::arg_format_type format_type;
+        new (bptr) Child
+            ( *static_cast<const InputType*>(input_arg_v)
+            , *static_cast<const format_type*>(format_arg_v)
+            );
+    }
+
 public:
+
+    template <typename T>
+    input_arg
+        ( const T* value
+        , memory_space<stringifier<const T*> > && ms
+          =  memory_space<stringifier<const T*> >()
+        )
+        noexcept
+        : m_value(value)
+        , m_arg_format(nullptr)
+        , m_stringifier(reinterpret_cast<stringifier<const T*>*>(&ms))
+        , m_construct_function
+             (construct__arg_is_ptr<stringifier<const T*>, const T*>)
+    {
+    }
+    
+    template <typename T>
+    input_arg
+        ( const T* value
+        , const typename stringifier<T>::arg_format_type& arg_format
+        , memory_space<stringifier<const T*> > && ms
+          =  memory_space<stringifier<const T*> >()
+        )
+        noexcept
+        : m_value(value)
+        , m_arg_format(&arg_format)
+        , m_stringifier(reinterpret_cast<stringifier<const T*>*>(&ms))
+        , m_construct_function
+             (construct__arg_is_ptr__with_fmt<stringifier<const T*>, const T*>)
+    {
+       
+    }
     
     template <typename T>
     input_arg
         ( const T& value
-        , memory_space<stringifier_t<T> > && ms =  memory_space<stringifier_t<T> >()
+        , memory_space<stringifier<T>>&& ms = memory_space<stringifier<T>>()
         )
         noexcept
+        : m_value(&value)
+        , m_arg_format(nullptr)
+        , m_stringifier(reinterpret_cast<stringifier<T>*>(&ms))
+        , m_construct_function
+             (construct__arg_is_ref<stringifier<T>, T>)
     {
-        stringifier_t<T> * ptr = (stringifier_t<T>*)(& ms);
-        new (ptr) stringifier_t<T>(value);
-        m_stringifier = ptr;
+        
     }
 
     template <typename T>
     input_arg
         ( const T& value
-        , const typename stringifier_t<T>::local_formatting& arg_format
-        , memory_space<stringifier_t<T> > && ms =  memory_space<stringifier_t<T> >()
+        , const typename stringifier<T>::arg_format_type& arg_format
+        , memory_space<stringifier<T>>&& ms = memory_space<stringifier<T>>()
         )
         noexcept
+        : m_value(&value)
+        , m_arg_format(&arg_format)
+        , m_stringifier(reinterpret_cast<stringifier<T>*>(&ms))
+        , m_construct_function
+             (construct__arg_is_ref__withf_fmt<stringifier<T>, T>)
     {
-        stringifier_t<T> * ptr = (stringifier_t<T>*)(& ms);
-        new (ptr) stringifier_t<T>(value, arg_format);
-        m_stringifier = ptr;
+        
     }
     
     ~input_arg()
@@ -90,17 +179,32 @@ public:
 
     std::size_t length(const Formatting& fmt) const
     {
+        construct_if_necessary();
         return m_stringifier->length(fmt);
     }
 
     void write(Output& out, const Formatting& fmt) const
     {
+        construct_if_necessary();
         return m_stringifier->write(out, fmt);
     }
-            
-private:
 
-    const boost::stringify::stringifier<CharT, Output, Formatting>* m_stringifier;
+private:
+    
+    void construct_if_necessary() const
+    {
+        if (! m_constructed)
+        {
+            m_construct_function(m_stringifier, m_value, m_arg_format);            
+        }
+        m_constructed = true;
+    }
+    
+    const void* m_value;
+    const void* m_arg_format;
+    boost::stringify::stringifier<CharT, Output, Formatting>* m_stringifier;
+    construtor_function m_construct_function;
+    mutable bool m_constructed = false;
 };
 
 

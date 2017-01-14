@@ -19,6 +19,11 @@ class char_stringifier
     typedef boost::stringify::stringifier<CharT, Output, Formatting> base;
     
 public:
+
+    typedef CharT input_type;
+    typedef CharT char_type;
+    typedef Output output_type;
+    typedef Formatting ftuple_type;
     
     char_stringifier(CharT _character) noexcept
         : m_char(_character)

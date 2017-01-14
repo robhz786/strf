@@ -20,6 +20,11 @@ class char32_stringifier
     typedef boost::stringify::stringifier<CharT, Output, Formatting> base;
     
 public:
+
+    typedef char32_t input_type;
+    typedef CharT char_type;
+    typedef Output output_type;
+    typedef Formatting ftuple_type;
     
     char32_stringifier(char32_t ch) noexcept
         : m_char32(ch)

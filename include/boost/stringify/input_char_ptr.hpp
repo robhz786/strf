@@ -13,16 +13,23 @@ template<typename CharT, typename Output, typename Formatting>
 struct char_ptr_stringifier
     : boost::stringify::stringifier<CharT, Output, Formatting>
 {
-    typedef const CharT* input_type;
+public:
 
+    typedef const CharT* input_type;
+    typedef CharT char_type;
+    typedef Output output_type;
+    typedef Formatting ftuple_type;
+
+private:
+    
     typedef boost::stringify::stringifier<CharT, Output, Formatting> base;
     
     typedef
         boost::stringify::width_accumulator<Formatting, input_type, CharT>
         width_accumulator_type;
-    
+
 public:
-   
+    
     char_ptr_stringifier(const CharT* str) noexcept
         : m_str(str)
         , m_len(std::char_traits<CharT>::length(str))

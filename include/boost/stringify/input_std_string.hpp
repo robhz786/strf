@@ -19,10 +19,11 @@ class std_string_stringifier
     typedef boost::stringify::stringifier<CharT, Output, Formatting> base;
 
 public:
+
+    typedef const std::basic_string<CharT, Traits>& input_type;
     typedef CharT char_type;
     typedef Output output_type;
     typedef Formatting ftuple_type;
-    
 
     std_string_stringifier(const std::basic_string<CharT, Traits>& _str) noexcept
         : str(_str)
