@@ -30,26 +30,24 @@ private:
 
 public:
     
-    char_ptr_stringifier(const CharT* str) noexcept
-        : m_str(str)
+    char_ptr_stringifier(const Formatting& fmt, const CharT* str) noexcept
+        : m_fmt(fmt)
+        , m_str(str)
         , m_len(std::char_traits<CharT>::length(str))
     {
     }
 
-    virtual std::size_t length(const Formatting& fmt) const noexcept override
+    virtual std::size_t length() const noexcept override
     {
-        return m_len + fill_length(fmt);
+        return m_len + fill_length();
     }
 
-    void write
-        ( Output& out
-        , const Formatting& fmt
-        ) const noexcept(base::noexcept_output) override
+    void write(Output& out) const noexcept(base::noexcept_output) override
     {
-        auto fw = fill_width(fmt);
+        auto fw = fill_width();
         if (fw > 0)
         {
-            boost::stringify::write_fill<CharT, input_type>(fw, out, fmt);
+            boost::stringify::write_fill<CharT, input_type>(fw, out, m_fmt);
         }
 
         if(m_str)
@@ -60,22 +58,24 @@ public:
 
 
 private:
+
+    const Formatting& m_fmt;
     const CharT* m_str;
     mutable std::size_t m_len;
 
-    std::size_t fill_length(const Formatting& fmt) const noexcept
+    std::size_t fill_length() const noexcept
     {
-        auto fw = fill_width(fmt);
+        auto fw = fill_width();
         if (fw > 0)
         {
-            return boost::stringify::fill_length<CharT, input_type>(fw, fmt);
+            return boost::stringify::fill_length<CharT, input_type>(fw, m_fmt);
         }
         return 0;
     }
 
-    boost::stringify::width_t fill_width(const Formatting& fmt) const noexcept
+    boost::stringify::width_t fill_width() const noexcept
     {
-        auto total_width = boost::stringify::get_width<input_type>(fmt);
+        auto total_width = boost::stringify::get_width<input_type>(m_fmt);
         if(total_width > 0)
         {
             width_accumulator_type acc;

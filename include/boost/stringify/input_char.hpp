@@ -25,26 +25,25 @@ public:
     typedef Output output_type;
     typedef Formatting ftuple_type;
     
-    char_stringifier(CharT _character) noexcept
-        : m_char(_character)
+    char_stringifier(const Formatting& fmt, CharT _character) noexcept
+        : m_fmt(fmt)
+        , m_char(_character)
     {
     }
 
-    virtual std::size_t length(const Formatting&) const noexcept override
+    virtual std::size_t length() const noexcept override
     {
         return 1;
     }
     
-    void write
-        ( Output& out
-        , const Formatting& fmt
-        ) const noexcept(base::noexcept_output) override
+    void write(Output& out) const noexcept(base::noexcept_output) override
     {
         out.put(m_char);
     }
     
 private:
-    
+   
+    const Formatting& m_fmt; 
     CharT m_char;
 };
 

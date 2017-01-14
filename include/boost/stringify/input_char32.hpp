@@ -26,28 +26,27 @@ public:
     typedef Output output_type;
     typedef Formatting ftuple_type;
     
-    char32_stringifier(char32_t ch) noexcept
-        : m_char32(ch)
+    char32_stringifier(const Formatting& fmt, char32_t ch) noexcept
+        : m_fmt(fmt)
+        , m_char32(ch)
     {
     }
 
-    virtual std::size_t length(const Formatting& fmt) const noexcept override
+    virtual std::size_t length() const noexcept override
     {
-        return boost::stringify::get_char32_writer<CharT, char32_t>(fmt)
+        return boost::stringify::get_char32_writer<CharT, char32_t>(m_fmt)
             .length(m_char32);
     }
     
-    void write
-        ( Output& out
-        , const Formatting& fmt
-        ) const noexcept(base::noexcept_output) override
+    void write(Output& out) const noexcept(base::noexcept_output) override
     {
-        return boost::stringify::get_char32_writer<CharT, char32_t>(fmt)
+        return boost::stringify::get_char32_writer<CharT, char32_t>(m_fmt)
             .write(m_char32, out);
     }
     
 private:
 
+    const Formatting& m_fmt;
     char32_t m_char32;
 
 };

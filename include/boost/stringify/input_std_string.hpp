@@ -25,30 +25,32 @@ public:
     typedef Output output_type;
     typedef Formatting ftuple_type;
 
-    std_string_stringifier(const std::basic_string<CharT, Traits>& _str) noexcept
-        : str(_str)
+    std_string_stringifier
+        ( const Formatting& fmt
+        , const std::basic_string<CharT, Traits>& str
+        ) noexcept
+        : m_fmt(fmt)
+        , m_str(str)
     {
     }
 
-    virtual std::size_t length(const Formatting&) const noexcept override
+    virtual std::size_t length() const noexcept override
     {
-        return str.length();
+        return m_str.length();
     }
 
-    void write
-        ( Output& out
-        , const Formatting&
-        ) const noexcept(base::noexcept_output) override
+    void write(Output& out) const noexcept(base::noexcept_output) override
     {
-        if(str)
+        if(m_str)
         {
-            out.put(str.c_str(), str.length());
+            out.put(m_str.c_str(), m_str.length());
         }
     }
     
 private:
     
-    const std::basic_string<CharT, Traits>& str;
+    const Formatting& m_fmt;
+    const std::basic_string<CharT, Traits>& m_str;
     
 };
 

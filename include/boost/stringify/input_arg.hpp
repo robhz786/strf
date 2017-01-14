@@ -57,38 +57,42 @@ class input_arg
     stringifier_base;
 
     typedef void (*construtor_function)
-    (stringifier_base*, const void*, const void*);
+    (stringifier_base*, const Formatting&, const void*, const void*);
     
     template <typename Child, typename InputType>
     static void construct__arg_is_ptr
         ( stringifier_base* bptr
+        , const Formatting& fmt
         , const void* input_arg_v
         , const void*
         )
     {
-        new (bptr) Child (static_cast<InputType>(input_arg_v));
+        new (bptr) Child (fmt, static_cast<InputType>(input_arg_v));
     }
 
     template <typename Child, typename InputType>
     static void construct__arg_is_ref
         ( stringifier_base* bptr
+        , const Formatting& fmt
         , const void* input_arg_v
         , const void*
         )
     {
-        new (bptr) Child (*static_cast<const InputType*>(input_arg_v));
+        new (bptr) Child (fmt, *static_cast<const InputType*>(input_arg_v));
     }
 
     template <typename Child, typename InputType>
     static void construct__arg_is_ptr__with_fmt
         ( stringifier_base* bptr
+        , const Formatting& fmt
         , const void* input_arg_v
         , const void* format_arg_v
         )
     {
         typedef typename Child::arg_format_type format_type;
         new (bptr) Child
-            ( static_cast<InputType>(input_arg_v)
+            ( fmt
+            , static_cast<InputType>(input_arg_v)
             , *static_cast<const format_type*>(format_arg_v)
             );
     }
@@ -96,13 +100,15 @@ class input_arg
     template <typename Child, typename InputType>
     static void construct__arg_is_ref__withf_fmt
         ( stringifier_base* bptr
+        , const Formatting& fmt
         , const void* input_arg_v
         , const void* format_arg_v
         )
     {
         typedef typename Child::arg_format_type format_type;
         new (bptr) Child
-            ( *static_cast<const InputType*>(input_arg_v)
+            ( fmt
+            , *static_cast<const InputType*>(input_arg_v)
             , *static_cast<const format_type*>(format_arg_v)
             );
     }
@@ -179,23 +185,23 @@ public:
 
     std::size_t length(const Formatting& fmt) const
     {
-        construct_if_necessary();
-        return m_stringifier->length(fmt);
+        construct_if_necessary(fmt);
+        return m_stringifier->length();
     }
 
     void write(Output& out, const Formatting& fmt) const
     {
-        construct_if_necessary();
-        return m_stringifier->write(out, fmt);
+        construct_if_necessary(fmt);
+        return m_stringifier->write(out);
     }
 
 private:
     
-    void construct_if_necessary() const
+    void construct_if_necessary(const Formatting& fmt) const
     {
         if (! m_constructed)
         {
-            m_construct_function(m_stringifier, m_value, m_arg_format);            
+            m_construct_function(m_stringifier, fmt, m_value, m_arg_format);            
         }
         m_constructed = true;
     }

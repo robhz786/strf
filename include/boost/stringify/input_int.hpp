@@ -72,59 +72,58 @@ public:
     typedef Formatting ftuple_type;
     typedef boost::stringify::detail::local_formatting_int arg_format_type;
     
-    int_stringifier(intT value) noexcept
-        : m_value(value)
+    int_stringifier(const Formatting& fmt, intT value) noexcept
+        : m_fmt(fmt)
+        , m_value(value)
         , m_abs_value(m_value > 0
                      ? static_cast<unsigned_intT>(m_value)
                      : 1 + static_cast<unsigned_intT>(-(m_value + 1)))
     {
     }
 
-    int_stringifier(intT value, arg_format_type fmt) noexcept
-        : m_value(value)
+    int_stringifier(const Formatting& fmt, intT value, arg_format_type afmt) noexcept
+        : m_fmt(fmt)
+        , m_value(value)
         , m_abs_value(m_value > 0
                      ? static_cast<unsigned_intT>(m_value)
                      : 1 + static_cast<unsigned_intT>(-(m_value + 1)))
-        , m_local_fmt(fmt)
+        , m_local_fmt(afmt)
     {
     }
    
-    virtual std::size_t length(const Formatting& fmt) const noexcept override
+    virtual std::size_t length() const noexcept override
     {
-        return length_digits() + (has_sign(fmt) ? 1 : 0);
+        return length_digits() + (has_sign() ? 1 : 0);
     }
 
-    virtual void write
-        ( Output& out
-        , const Formatting& fmt
-        ) const noexcept(noexcept_output) override
+    virtual void write(Output& out) const noexcept(noexcept_output) override
     {
-        write_sign(out, fmt);
-        write_digits(out, fmt);
+        write_sign(out);
+        write_digits(out);
     }
 
 private:
+   
+    const Formatting& m_fmt;
+    intT m_value;
+    unsigned_intT m_abs_value; // TODO optimaze ( use a union when intT is usigned )
+    arg_format_type m_local_fmt;
 
     virtual std::size_t length_digits() const noexcept
     {
         return uint_traits::number_of_digits(m_abs_value);
     }
     
-
-    intT m_value;
-    unsigned_intT m_abs_value; // TODO optimaze ( use a union when intT is usigned )
-    arg_format_type m_local_fmt;
-    
-    bool has_sign(const Formatting& fmt) const noexcept
+    bool has_sign() const noexcept
     {
         /*constexpr*/ if( std::is_signed<intT>::value)
         {
-            return m_value < 0 || showpos(fmt);
+            return m_value < 0 || showpos();
         }
         return false;
     }
 
-    void write_sign(Output& out, const Formatting& fmt) const noexcept(noexcept_output)
+    void write_sign(Output& out) const noexcept(noexcept_output)
     {
         /*constexpr*/ if( std::is_signed<intT>::value)
         {
@@ -132,14 +131,14 @@ private:
             {
                 out.put(boost::stringify::detail::the_sign_minus<CharT>());
             }
-            else if(showpos(fmt))
+            else if(showpos())
             {
                 out.put(boost::stringify::detail::the_sign_plus<CharT>());
             }
         }
     }
     
-    void write_digits(Output& out, const Formatting& fmt) const noexcept(noexcept_output)
+    void write_digits(Output& out) const noexcept(noexcept_output)
     {
         boost::stringify::detail::int_digits<unsigned_intT, 10> digits(m_abs_value);
         while(! digits.empty())
@@ -148,12 +147,12 @@ private:
         }
     }
 
-    bool showpos(const Formatting& fmt) const noexcept
+    bool showpos() const noexcept
     {
         boost::tribool local_showpos = m_local_fmt.showpos();
         if(indeterminate(local_showpos))
         {
-            return boost::stringify::get_showpos<intT>(fmt);
+            return boost::stringify::get_showpos<intT>(m_fmt);
         }
         return local_showpos;
     }
