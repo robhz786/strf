@@ -18,10 +18,10 @@ namespace stringify {
 struct fill_tag;
 
 template
-    < char32_t fill_char = U' '
+    < char32_t FillChar = U' '
     , template <class> class Filter = boost::stringify::accept_any_type  
     >
-class fimpl_fill_static_single_char
+class fimpl_fill_static
 {
 public:
 
@@ -39,13 +39,18 @@ public:
     {
         decltype(auto) char32_writer
             = boost::stringify::get_char32_writer<CharT, InputType>(fmt);
-        boost::stringify::width_t ch_width = fill_char_width<CharT, InputType>(fmt);
-        for ( boost::stringify::width_t acc_width = ch_width
-            ; acc_width <= width
-            ; acc_width += ch_width
-            )
+        int count = quantity<CharT, InputType>(width, fmt);
+        
+        if (CharT ch = char32_writer.convert_if_length_is_1(FillChar))
         {
-            char32_writer.write(fill_char, out);
+            out.put(ch, count);
+        }
+        else
+        {
+            while(count -- > 0)
+            {
+                char32_writer.write(FillChar, out);
+            }
         }
     }
 
@@ -53,37 +58,42 @@ public:
     std::size_t length(width_type width, const Formatting& fmt) const noexcept
     {
         std::size_t ch_length
-            = get_char32_writer<CharT, InputType>(fmt).length(fill_char);
-        boost::stringify::width_t ch_width = fill_char_width<CharT, InputType>(fmt);
-        return ch_length * std::size_t(width / ch_width);
+            = get_char32_writer<CharT, InputType>(fmt).length(FillChar);
+        return ch_length * quantity<CharT, InputType>(width, fmt);
     }
 
 private:
-
+    
     template <typename CharT, typename InputType, typename Formatting>
-    boost::stringify::width_t fill_char_width(const Formatting& fmt) const noexcept
+    int quantity(width_type width, const Formatting& fmt) const noexcept
     {
-        boost::stringify::width_accumulator<Formatting, InputType, CharT> acc;
-        acc.add(fill_char);
-        return acc.result();
+        boost::stringify::width_t ch_width =
+            boost::stringify::get_width_calculator<InputType>(fmt)
+            .width_of(FillChar);
+
+        if (ch_width == 0 || ch_width == 1)
+        {
+            return width;
+        }
+        return width / ch_width;
     }
 };
 
 
 template <template <class> class Filter = boost::stringify::accept_any_type>
-class fimpl_fill_single_char
+class fimpl_fill
 {
 public:
-    typedef boost::stringify::width_t width_type;
-    typedef boost::stringify::fill_tag category;
-    template <typename T> using accept_input_type = Filter<T>;
-
-    fimpl_fill_single_char(char32_t fill) : m_fill_char(fill)
+    fimpl_fill(char32_t ch)
+        : m_fillchar(ch)
     {
     }
 
-    fimpl_fill_single_char(const fimpl_fill_single_char&) = default;
-
+    
+    typedef boost::stringify::width_t width_type;
+    typedef boost::stringify::fill_tag category;
+    template <typename T> using accept_input_type = Filter<T>;
+    
     template
         < typename CharT
         , typename InputType
@@ -92,14 +102,20 @@ public:
         >
     void fill(width_type width, Output& out, const Formatting& fmt) const noexcept
     {
-        decltype(auto) char32_writer = get_char32_writer<CharT, InputType>(fmt);
-        boost::stringify::width_t ch_width = fill_char_width<CharT, InputType>(fmt);
-        for ( boost::stringify::width_t acc_width = ch_width
-            ; acc_width <= width
-            ; acc_width += ch_width
-            )
+        const auto& char32_writer
+            = boost::stringify::get_char32_writer<CharT, InputType>(fmt);
+        int count = quantity<CharT, InputType>(width, fmt);
+
+        if (CharT ch = char32_writer.convert_if_length_is_1(m_fillchar))
         {
-            char32_writer.write(m_fill_char, out);
+            out.put(ch, count);
+        }
+        else
+        {
+            while(count -- > 0)
+            {
+                char32_writer.write(m_fillchar, out);
+            }
         }
     }
 
@@ -107,34 +123,40 @@ public:
     std::size_t length(width_type width, const Formatting& fmt) const noexcept
     {
         std::size_t ch_length
-            = get_char32_writer<CharT, InputType>(fmt).length(m_fill_char);
-        boost::stringify::width_t ch_width = fill_char_width<CharT, InputType>(fmt);
-        return ch_length * std::size_t(width / ch_width);
+            = get_char32_writer<CharT, InputType>(fmt).length(m_fillchar);
+        return ch_length * quantity<CharT, InputType>(width, fmt);
     }
 
 private:
 
+    char32_t m_fillchar;
+    
     template <typename CharT, typename InputType, typename Formatting>
-    boost::stringify::width_t fill_char_width(const Formatting& fmt) const noexcept
+    int quantity(width_type width, const Formatting& fmt) const noexcept
     {
-        boost::stringify::width_accumulator<Formatting, InputType, CharT> acc;
-        acc.add(m_fill_char);
-        return acc.result();
-    }
+        boost::stringify::width_t ch_width =
+            boost::stringify::get_width_calculator<InputType>(fmt)
+            .width_of(m_fillchar);
 
-    char32_t m_fill_char;
+        if (ch_width == 0 || ch_width == 1)
+        {
+            return width;
+        }
+        return width / ch_width;
+    }
 };
 
 
 struct fill_tag
 {
     typedef 
-        boost::stringify::fimpl_fill_static_single_char
+        boost::stringify::fimpl_fill_static
             < U' '
             , boost::stringify::accept_any_type
             >
         default_impl;
 };
+
 
 template
     < char32_t fillChar
@@ -142,13 +164,14 @@ template
     >
 auto fill()
 {
-    return fimpl_fill_static_single_char<fillChar, Filter>();
+    return fimpl_fill_static<fillChar, Filter>();
 }
+
 
 template <template <class> class Filter = boost::stringify::accept_any_type>
 auto fill(char32_t fillChar)
 {
-    return fimpl_fill_single_char<Filter>(fillChar);
+    return fimpl_fill<Filter>(fillChar);
 }
 
 
@@ -168,6 +191,7 @@ void write_fill
     boost::stringify::get_filler<InputType>(fmt)
         . template fill<CharT, InputType>(width, out, fmt);
 }
+
 
 template <typename CharT, typename InputType, typename Formatting>
 std::size_t fill_length

@@ -15,6 +15,17 @@ class char32_to_utf8_impl
 {
 public:
 
+    static constexpr std::size_t max_lenght = 4;
+
+    std::size_t length(char32_t ch) const noexcept
+    {
+        return (ch <     0x80 ? 1 :
+                ch <    0x800 ? 2 :
+                ch <  0x10000 ? 3 :
+                ch < 0x110000 ? 4 :
+                /* invalid codepoit */ 0);
+    }
+
     template <typename Output>
     void write(char32_t ch, Output& out) const noexcept
     {
@@ -42,20 +53,24 @@ public:
         }
     }
 
-    std::size_t length(char32_t ch) const noexcept
+    constexpr char convert_if_length_is_1(char32_t ch) const noexcept
     {
-        return (ch <     0x80 ? 1 :
-                ch <    0x800 ? 2 :
-                ch <  0x10000 ? 3 :
-                ch < 0x110000 ? 4 :
-                /* invalid codepoit */ 0);
+        if (ch < 0x80)
+        {
+            return static_cast<char>(ch);
+        }
+        return '\0';
     }
+
 };
 
 template <typename CharT>
 class char32_to_utf16_impl
 {
+
 public:
+
+    static constexpr std::size_t max_lenght = 2;
 
     std::size_t length(char32_t ch) const noexcept
     {
@@ -86,9 +101,19 @@ public:
             out.put(static_cast<CharT>(low_surrogate));
         }
     }
-    
+
+    constexpr char16_t convert_if_length_is_1(char32_t ch) const noexcept
+    {
+        if (single_char_range(ch))
+        {
+            return static_cast<char16_t>(ch);
+        }
+        return u'\0';
+    }
+
+
 private:
-    
+
     bool single_char_range(char32_t ch) const
     {
         return ch < 0xd800 || (0xdfff < ch && ch <  0x10000);
@@ -104,15 +129,23 @@ template <typename CharT>
 class char32_to_utf32_impl
 {
 public:
+
+    static constexpr std::size_t max_lenght = 4;
+
     constexpr std::size_t length(char32_t ch) const noexcept
     {
         return 1;
     }
 
     template <typename Output>
-    constexpr void write (char32_t ch, Output& out) const noexcept
+    void write (char32_t ch, Output& out) const noexcept
     {
         out.put(static_cast<CharT>(ch));
+    }
+
+    constexpr char32_t convert_if_length_is_1(char32_t ch)
+    {
+        return ch;
     }
 };
 
@@ -129,7 +162,7 @@ class char32_to_utf8
 {
 public:
     typedef char32_to_str_tag<char> category;
-    template <typename T> using accept_input_type = Filter<T>;    
+    template <typename T> using accept_input_type = Filter<T>;
 };
 
 
@@ -139,7 +172,7 @@ class char32_to_utf16
 {
 public:
     typedef char32_to_str_tag<char16_t> category;
-    template <typename T> using accept_input_type = Filter<T>;    
+    template <typename T> using accept_input_type = Filter<T>;
 };
 
 
@@ -149,7 +182,7 @@ class char32_to_utf32
 {
 public:
     typedef char32_to_str_tag<char32_t> category;
-    template <typename T> using accept_input_type = Filter<T>;    
+    template <typename T> using accept_input_type = Filter<T>;
 };
 
 
@@ -162,7 +195,7 @@ class default_char32_to_wstr
         >
 {
     typedef char32_to_str_tag<wchar_t> category;
-    template <typename T> using accept_input_type = Filter<T>;    
+    template <typename T> using accept_input_type = Filter<T>;
 };
 
 

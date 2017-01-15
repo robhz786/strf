@@ -5,6 +5,7 @@
 #include <limits>
 #include <boost/stringify/stringifier.hpp>
 #include <boost/stringify/custom_alignment.hpp>
+#include <boost/stringify/custom_width_calculator.hpp>
 
 
 namespace boost {
@@ -46,8 +47,6 @@ struct string_arg_formatting
 };
 
 
-
-
 template<typename CharT, typename Output, typename Formatting>
 struct char_ptr_stringifier
     : boost::stringify::stringifier<CharT, Output, Formatting>
@@ -64,10 +63,6 @@ private:
     typedef boost::stringify::width_t width_t;
     
     typedef boost::stringify::stringifier<CharT, Output, Formatting> base;
-    
-    typedef
-        boost::stringify::width_accumulator<Formatting, input_type, CharT>
-        width_accumulator_type;
 
 public:
     
@@ -145,19 +140,9 @@ private:
     
     width_t padding_width(width_t total_width) const noexcept
     {
-        if(total_width > 0)
-        {
-            width_accumulator_type acc;
-            if(acc.add(m_str, m_len, total_width))
-            {
-                boost::stringify::width_t nonfill_width = acc.result();
-                if (nonfill_width < total_width)
-                {
-                    return total_width - nonfill_width;
-                }
-            }
-        }
-        return 0;
+        return
+            boost::stringify::get_width_calculator<input_type>(m_fmt)
+            .remaining_width(total_width, m_str, m_len);
     }
 };
 
