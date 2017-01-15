@@ -129,7 +129,7 @@ public:
              (construct__arg_is_ptr<stringifier<const T*>, const T*>)
     {
     }
-    
+   
     template <typename T>
     input_arg
         ( const T* value
@@ -146,7 +146,7 @@ public:
     {
        
     }
-    
+
     template <typename T>
     input_arg
         ( const T& value
@@ -177,7 +177,7 @@ public:
     {
         
     }
-    
+
     ~input_arg()
     {
         m_stringifier->~stringifier_base();

@@ -23,12 +23,10 @@ struct fimpl_static_showpos
 };
 
 template <template <class> class Filter = boost::stringify::accept_any_type>
-constexpr fimpl_static_showpos<false, Filter> noshowpos
-  = fimpl_static_showpos<false, Filter>();
+constexpr auto noshowpos = fimpl_static_showpos<false, Filter>();
 
 template <template <class> class Filter = boost::stringify::accept_any_type>
-constexpr fimpl_static_showpos<true, Filter> showpos
-  = fimpl_static_showpos<true, Filter>();
+constexpr auto showpos = fimpl_static_showpos<true, Filter>();
 
 template <template <class> class Filter = boost::stringify::accept_any_type>
 struct fimpl_dyn_showpos
@@ -52,7 +50,8 @@ struct fimpl_dyn_showpos
 struct showpos_tag
 {
     typedef
-        fimpl_static_showpos<false, boost::stringify::accept_any_type>
+        boost::stringify::fimpl_static_showpos
+        <false, boost::stringify::accept_any_type>
         default_impl;
 };
 
@@ -62,6 +61,8 @@ bool get_showpos(const Formatting& fmt) noexcept
 {
     return fmt.template get<boost::stringify::showpos_tag, InputType>().show();
 }
+
+
 
 
 } // namespace stringify

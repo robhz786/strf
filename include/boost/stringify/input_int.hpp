@@ -13,45 +13,78 @@
 #include <boost/stringify/detail/uint_traits.hpp>
 #include <boost/stringify/detail/int_digits.hpp>
 
-#include <boost/logic/tribool.hpp>
-
 namespace boost {
 namespace stringify {
 namespace detail {
 
-class local_formatting_int
+struct int_arg_format
 {
-
-public:
-
-    constexpr local_formatting_int(const char* charflags, double d = 0.0) : m_charflags(charflags)
+    typedef boost::stringify::width_t width_t;
+    typedef boost::stringify::detail::char_flags
+        <'+', '-', '<', '>', 'o', 'd', 'x', 'X', 'c', 'C', '#', '$'>
+        char_flags_type;
+    
+    constexpr int_arg_format(const char* flags, width_t w = -1
+        )
+        : m_flags(flags)
+        , m_width(w)  
     {
     }
 
-    constexpr local_formatting_int()
+    constexpr int_arg_format(boost::stringify::width_t w)
+        : m_width(w)  
+    {
+    }
+    
+    constexpr int_arg_format()
     {
     }
 
-    constexpr local_formatting_int(const local_formatting_int&) = default;
+    constexpr int_arg_format(const int_arg_format&) = default;
     
-    local_formatting_int& operator=(const local_formatting_int&) = default;
-    
-    boost::tribool showpos() const
+    int_arg_format& operator=(const int_arg_format&) = default;
+
+    template <typename IntputType, typename FTuple>
+    bool get_showpos(const FTuple& fmt) const noexcept
     {
-        if (m_charflags.has_char('-'))
+        if (m_flags.has_char('-'))
+        {
             return false;
-
-        if (m_charflags.has_char('+'))
+        }
+        else if (m_flags.has_char('+'))
+        {
             return true;
-     
-        return boost::logic::indeterminate;
+        }
+        else
+        {
+            return boost::stringify::get_showpos<IntputType>(fmt);
+        }
     }
-
-private:
-
-    typedef boost::stringify::detail::char_flags<'+', '-'> char_flags_type;
-    char_flags_type m_charflags;    
+    
+    char_flags_type m_flags;
+    boost::stringify::width_t m_width = -1;
 };
+
+
+template
+    < typename intT
+    , typename unsigned_intT = typename std::make_unsigned<int>::type
+    >
+typename std::enable_if<std::is_signed<intT>::value, unsigned_intT>::type
+unsigned_abs(intT value)
+{
+    return ( value > 0
+           ? static_cast<unsigned_intT>(value)
+           : 1 + static_cast<unsigned_intT>(-(value + 1)));
+}
+
+
+template<typename intT>
+typename std::enable_if<std::is_unsigned<intT>::value, intT>::type
+unsigned_abs(intT value)
+{
+    return value;
+}
 
 
 template <typename intT, typename CharT, typename Output, typename Formatting>
@@ -70,24 +103,19 @@ public:
     typedef CharT char_type;
     typedef Output output_type;
     typedef Formatting ftuple_type;
-    typedef boost::stringify::detail::local_formatting_int arg_format_type;
+    typedef boost::stringify::detail::int_arg_format arg_format_type;
     
     int_stringifier(const Formatting& fmt, intT value) noexcept
         : m_fmt(fmt)
         , m_value(value)
-        , m_abs_value(m_value > 0
-                     ? static_cast<unsigned_intT>(m_value)
-                     : 1 + static_cast<unsigned_intT>(-(m_value + 1)))
+        , m_showpos(boost::stringify::get_showpos<input_type>(fmt))  
     {
     }
 
-    int_stringifier(const Formatting& fmt, intT value, arg_format_type afmt) noexcept
+    int_stringifier(const Formatting& fmt, intT value, arg_format_type argf) noexcept
         : m_fmt(fmt)
         , m_value(value)
-        , m_abs_value(m_value > 0
-                     ? static_cast<unsigned_intT>(m_value)
-                     : 1 + static_cast<unsigned_intT>(-(m_value + 1)))
-        , m_local_fmt(afmt)
+        , m_showpos(argf.get_showpos<input_type>(fmt))
     {
     }
    
@@ -105,33 +133,32 @@ public:
 private:
    
     const Formatting& m_fmt;
-    intT m_value;
-    unsigned_intT m_abs_value; // TODO optimaze ( use a union when intT is usigned )
-    arg_format_type m_local_fmt;
-
+    const intT m_value;
+    const bool m_showpos;
+    
     virtual std::size_t length_digits() const noexcept
     {
-        return uint_traits::number_of_digits(m_abs_value);
+        return uint_traits::number_of_digits(unsigned_abs(m_value));
     }
     
     bool has_sign() const noexcept
     {
-        /*constexpr*/ if( std::is_signed<intT>::value)
+        if( std::is_signed<intT>::value)
         {
-            return m_value < 0 || showpos();
+            return m_value < 0 || m_showpos;
         }
         return false;
     }
 
     void write_sign(Output& out) const noexcept(noexcept_output)
     {
-        /*constexpr*/ if( std::is_signed<intT>::value)
+        if( std::is_signed<intT>::value)
         {
             if (m_value < 0)
             {
                 out.put(boost::stringify::detail::the_sign_minus<CharT>());
             }
-            else if(showpos())
+            else if(m_showpos)
             {
                 out.put(boost::stringify::detail::the_sign_plus<CharT>());
             }
@@ -140,21 +167,12 @@ private:
     
     void write_digits(Output& out) const noexcept(noexcept_output)
     {
-        boost::stringify::detail::int_digits<unsigned_intT, 10> digits(m_abs_value);
+        boost::stringify::detail::int_digits<unsigned_intT, 10>
+            digits(unsigned_abs(m_value));
         while(! digits.empty())
         {
             out.put(character_of_digit(digits.pop()));
         }
-    }
-
-    bool showpos() const noexcept
-    {
-        boost::tribool local_showpos = m_local_fmt.showpos();
-        if(indeterminate(local_showpos))
-        {
-            return boost::stringify::get_showpos<intT>(m_fmt);
-        }
-        return local_showpos;
     }
         
     CharT character_of_digit(unsigned int digit) const noexcept

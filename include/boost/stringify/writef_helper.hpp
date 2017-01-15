@@ -11,6 +11,26 @@ namespace boost {
 namespace stringify {
 namespace detail {
 
+template <typename T>
+struct has_reserve
+{
+private:
+
+    template <class U>
+    static auto test(U* u)
+        -> decltype(u->reserve(std::size_t()), std::true_type());
+
+    template <class U>
+    static std::false_type test(...);
+
+public:
+
+    static constexpr bool value = decltype(test<T>((T*)0))::value;
+    
+};
+
+
+
 template
     < typename CharT
     , typename Formatting
@@ -39,6 +59,13 @@ class final_writer
     -> decltype(output.reserve(std::size_t()), void())
     {
         output.reserve(1 + length(args...));
+    }
+
+    
+    template <typename output_type2, typename ... Args>
+    std::enable_if_t<!boost::stringify::detail::has_reserve<output_type2>::value>
+    reserve(output_type2&, Args && ... args) noexcept
+    {
     }
     
     template <typename output_type2>
@@ -69,11 +96,6 @@ class final_writer
         }
     }
     
-    template <typename output_type2, typename ... Args>
-    void reserve(output_type2&, ...) noexcept
-    {
-    }
-
     void write_args() noexcept
     {
     }

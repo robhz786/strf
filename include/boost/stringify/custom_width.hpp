@@ -6,10 +6,11 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/stringify/type_traits.hpp>
-#include <boost/stringify/width_t.hpp>
 
 namespace boost {
 namespace stringify {
+
+typedef int width_t;
 
 struct width_tag;
 template <typename CharT> struct filler_tag;

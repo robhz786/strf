@@ -44,7 +44,8 @@ public:
      */
     bool add(const CharT* str, std::size_t len, width_type limit)
     {
-        if(len + (std::size_t)m_sum.units() >= (std::size_t)limit.units())
+        //if(len + (std::size_t)m_sum.units() >= (std::size_t)limit.units())
+        if(len + (std::size_t)m_sum >= (std::size_t)limit)
         {
             return false;
         }
