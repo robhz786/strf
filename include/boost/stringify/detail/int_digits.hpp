@@ -24,7 +24,7 @@ public:
             push(x % 10);
             x /= Base;
         }
-        push(x);
+        push(static_cast<unsigned>(x));
     }
 
     int pop()

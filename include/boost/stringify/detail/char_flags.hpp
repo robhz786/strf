@@ -36,6 +36,10 @@ public:
     char_flags& operator=(const char_flags&) = default;
     
 protected:
+
+    constexpr char_flags(const char*, int bits) : m_bits(bits)
+    {
+    }
     
     constexpr static int mask(char c)
     {
@@ -65,20 +69,22 @@ public:
     char_flags& operator=(const char_flags& other) = default;
     
     constexpr char_flags(const char* str)
-        : parent(str)
+        : parent(str, has_char(str, Char) ? this_mask() : 0)
     {
-        if (has_char(str, Char))
-        {
-            this->m_bits |= this_mask();
-        }
     }
 
-    bool has_char(char ch) const
+    constexpr bool has_char(char ch) const
     {
-        return this->m_bits & mask(ch);
+        return 0 != (this->m_bits & mask(ch));
     }
     
 protected:
+
+    constexpr char_flags(const char* str, int bits)
+        : parent(str, bits | (has_char(str, Char) ? this_mask() : 0))
+    {
+    }
+
 
     using parent::m_bits;
     

@@ -64,13 +64,13 @@ int main()
     
     // showpos 
 
-    TEST ("+123") (strf::showpos<>) (123);
-    TEST ("123")  (strf::showpos<>) ({123, "-"});
+    TEST ("+123") (strf::showpos) (123);
+    TEST ("123")  (strf::showpos) ({123, "-"});
     TEST ("+123") ()                ({123, "+"});
-    TEST ("-123") (strf::showpos<>) ( -123);
-    TEST ("+0")   (strf::showpos<>) (0);
-    TEST ("123")  (strf::showpos<>) ((unsigned)123);
-    TEST ("123")  (strf::showpos<>) ({(unsigned)123, "+"});
+    TEST ("-123") (strf::showpos) ( -123);
+    TEST ("+0")   (strf::showpos) (0);
+    TEST ("123")  (strf::showpos) ((unsigned)123);
+    TEST ("123")  (strf::showpos) ({(unsigned)123, "+"});
 
 
     // to do:

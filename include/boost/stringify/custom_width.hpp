@@ -7,26 +7,27 @@
 
 #include <boost/stringify/type_traits.hpp>
 
+
 namespace boost {
 namespace stringify {
 
 typedef int width_t;
 
 struct width_tag;
-template <typename CharT> struct filler_tag;
+
 
 template <template <class> class Filter>
-struct fimpl_width
+struct width_impl
 {
     typedef boost::stringify::width_tag category;
     template <typename T> using accept_input_type = Filter<T>;    
 
-    constexpr fimpl_width(boost::stringify::width_t v = 0)
+    constexpr width_impl(boost::stringify::width_t v = 0)
         : m_value(v)
     {
     }
 
-    constexpr fimpl_width(const fimpl_width& w) = default;
+    constexpr width_impl(const width_impl& w) = default;
 
     constexpr boost::stringify::width_t width() const noexcept
     {
@@ -38,30 +39,40 @@ private:
     boost::stringify::width_t m_value;
 };
 
-template <template <class> class Filter>
-struct fimpl_default_width
+
+template <boost::stringify::width_t Width, template <class> class Filter>
+struct width_impl_t
 {
     typedef boost::stringify::width_tag category;
     template <typename T> using accept_input_type = Filter<T>;    
 
     constexpr boost::stringify::width_t width() const noexcept
     {
-        return 0;
+        return Width;
     }
 };
+
 
 struct width_tag
 {
     typedef
-        boost::stringify::fimpl_default_width<boost::stringify::accept_any_type>
+    boost::stringify::width_impl_t<0, boost::stringify::true_trait>
         default_impl;
 };
 
-template <template <class> class Filter = boost::stringify::accept_any_type>
+
+template <template <class> class Filter = boost::stringify::true_trait>
+constexpr auto width_if(boost::stringify::width_t w) noexcept
+{
+    return boost::stringify::width_impl<Filter>(w);
+}
+
+
 constexpr auto width(boost::stringify::width_t w) noexcept
 {
-    return boost::stringify::fimpl_width<Filter>(w);
+    return boost::stringify::width_impl<boost::stringify::true_trait>(w);
 }
+
 
 template <typename InputType, typename Formatting>
 boost::stringify::width_t get_width(const Formatting& fmt) noexcept

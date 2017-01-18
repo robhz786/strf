@@ -12,6 +12,7 @@
 #include <boost/stringify/type_traits.hpp>
 #include <boost/stringify/detail/characters_catalog.hpp>
 
+
 namespace boost {
 namespace stringify {
 
@@ -19,9 +20,9 @@ struct fill_tag;
 
 template
     < char32_t FillChar = U' '
-    , template <class> class Filter = boost::stringify::accept_any_type  
+    , template <class> class Filter = boost::stringify::true_trait  
     >
-class fimpl_fill_static
+class fill_impl_t
 {
 public:
 
@@ -80,11 +81,11 @@ private:
 };
 
 
-template <template <class> class Filter = boost::stringify::accept_any_type>
-class fimpl_fill
+template <template <class> class Filter = boost::stringify::true_trait>
+class fill_impl
 {
 public:
-    fimpl_fill(char32_t ch)
+    fill_impl(char32_t ch)
         : m_fillchar(ch)
     {
     }
@@ -150,28 +151,35 @@ private:
 struct fill_tag
 {
     typedef 
-        boost::stringify::fimpl_fill_static
-            < U' '
-            , boost::stringify::accept_any_type
-            >
+        boost::stringify::fill_impl_t<U' ', boost::stringify::true_trait>
         default_impl;
 };
 
 
-template
-    < char32_t fillChar
-    , template <class> class Filter = boost::stringify::accept_any_type
-    >
-auto fill()
+auto fill(char32_t fillChar)
 {
-    return fimpl_fill_static<fillChar, Filter>();
+    return fill_impl<boost::stringify::true_trait>(fillChar);
 }
 
 
-template <template <class> class Filter = boost::stringify::accept_any_type>
-auto fill(char32_t fillChar)
+template <template <class> class Filter>
+auto fill_if(char32_t fillChar)
 {
-    return fimpl_fill<Filter>(fillChar);
+    return fill_impl<Filter>(fillChar);
+}
+
+
+template <char32_t fillChar>
+auto fill_t()
+{
+    return fill_impl_t<fillChar, boost::stringify::true_trait>();
+}
+
+
+template <char32_t Char, template <class> class Filter>
+auto fill_t_if()
+{
+    return fill_impl_t<Char, Filter>();
 }
 
 
@@ -180,6 +188,7 @@ decltype(auto) get_filler(const Formatting& fmt)
 {
     return fmt.template get<boost::stringify::fill_tag, InputType>();
 }
+
 
 template <typename CharT, typename InputType, typename Output, typename Formatting>
 void write_fill

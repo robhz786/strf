@@ -14,7 +14,7 @@ namespace stringify {
 
 struct width_calculator_tag;
 
-template <template <class> class Filter=boost::stringify::accept_any_type>
+template <template <class> class Filter=boost::stringify::true_trait>
 class simplest_width_calculator
 {
 public:
@@ -56,7 +56,7 @@ public:
 struct width_calculator_tag
 {
     typedef
-    boost::stringify::simplest_width_calculator<boost::stringify::accept_any_type>
+    boost::stringify::simplest_width_calculator<boost::stringify::true_trait>
     default_impl;
 };
 

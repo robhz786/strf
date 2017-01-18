@@ -55,11 +55,7 @@ public:
 
     constexpr char convert_if_length_is_1(char32_t ch) const noexcept
     {
-        if (ch < 0x80)
-        {
-            return static_cast<char>(ch);
-        }
-        return '\0';
+        return ch < 0x80 ? static_cast<char>(ch) : '\0';
     }
 
 };
@@ -104,11 +100,7 @@ public:
 
     constexpr char16_t convert_if_length_is_1(char32_t ch) const noexcept
     {
-        if (single_char_range(ch))
-        {
-            return static_cast<char16_t>(ch);
-        }
-        return u'\0';
+        return  single_char_range(ch) ? static_cast<char16_t>(ch) : u'\0';
     }
 
 
@@ -143,7 +135,7 @@ public:
         out.put(static_cast<CharT>(ch));
     }
 
-    constexpr char32_t convert_if_length_is_1(char32_t ch)
+    constexpr char32_t convert_if_length_is_1(char32_t ch) const noexcept
     {
         return ch;
     }
@@ -202,7 +194,7 @@ class default_char32_to_wstr
 template <> struct char32_to_str_tag<char>
 {
     typedef
-        boost::stringify::char32_to_utf8<boost::stringify::accept_any_type>
+        boost::stringify::char32_to_utf8<boost::stringify::true_trait>
         default_impl;
 };
 
@@ -210,7 +202,7 @@ template <> struct char32_to_str_tag<char>
 template <> struct char32_to_str_tag<wchar_t>
 {
     typedef
-        boost::stringify::default_char32_to_wstr<boost::stringify::accept_any_type>
+        boost::stringify::default_char32_to_wstr<boost::stringify::true_trait>
         default_impl;
 };
 
@@ -218,7 +210,7 @@ template <> struct char32_to_str_tag<wchar_t>
 template <> struct char32_to_str_tag<char16_t>
 {
     typedef
-        boost::stringify::char32_to_utf16<boost::stringify::accept_any_type>
+        boost::stringify::char32_to_utf16<boost::stringify::true_trait>
         default_impl;
 };
 
@@ -226,7 +218,7 @@ template <> struct char32_to_str_tag<char16_t>
 template <> struct char32_to_str_tag<char32_t>
 {
     typedef
-        boost::stringify::char32_to_utf32<boost::stringify::accept_any_type>
+        boost::stringify::char32_to_utf32<boost::stringify::true_trait>
         default_impl;
 };
 

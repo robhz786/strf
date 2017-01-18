@@ -12,30 +12,14 @@ namespace stringify {
 
 struct showpos_tag;
 
-template <bool ShowIt, template <class> class Filter>
-struct fimpl_static_showpos
-{
-    template <typename T> using accept_input_type = Filter<T>;
-
-    typedef boost::stringify::showpos_tag category;
-
-    constexpr bool show() const { return ShowIt; }
-};
-
-template <template <class> class Filter = boost::stringify::accept_any_type>
-constexpr auto noshowpos = fimpl_static_showpos<false, Filter>();
-
-template <template <class> class Filter = boost::stringify::accept_any_type>
-constexpr auto showpos = fimpl_static_showpos<true, Filter>();
-
-template <template <class> class Filter = boost::stringify::accept_any_type>
-struct fimpl_dyn_showpos
+template <template <class> class Filter = boost::stringify::true_trait>
+struct showpos_impl
 {
     template <typename T> using accept_input_type = Filter<T>;
 
     typedef boost::stringify::showpos_tag category;
     
-    fimpl_dyn_showpos(bool show) : m_show(show)
+    constexpr showpos_impl(bool show) : m_show(show)
     {
     }
     
@@ -47,11 +31,64 @@ struct fimpl_dyn_showpos
     bool m_show;
 };
 
+
+template <template <class> class Filter>
+struct showpos_true_impl
+{
+    template <typename T> using accept_input_type = Filter<T>;
+
+    typedef boost::stringify::showpos_tag category;
+
+    constexpr bool show() const { return true; }
+
+    constexpr boost::stringify::showpos_impl<Filter> operator()(bool s) const
+    {
+        return boost::stringify::showpos_impl<Filter>(s);
+    }
+
+    constexpr boost::stringify::showpos_true_impl<Filter> operator()() const
+    {
+        return *this;
+    }
+    
+};
+
+
+template <template <class> class Filter>
+struct showpos_false_impl
+{
+    template <typename T> using accept_input_type = Filter<T>;
+
+    typedef boost::stringify::showpos_tag category;
+
+    constexpr bool show() const { return false; }
+
+    constexpr boost::stringify::showpos_false_impl<Filter> operator()() const
+    {
+        return *this;
+    }
+};
+
+
+constexpr auto showpos
+= boost::stringify::showpos_true_impl<boost::stringify::true_trait>();
+
+constexpr auto noshowpos
+= boost::stringify::showpos_false_impl<boost::stringify::true_trait>();
+
+template <template <class> class F>
+boost::stringify::showpos_true_impl<F> showpos_if
+= boost::stringify::showpos_true_impl<F>();
+
+template <template <class> class F>
+boost::stringify::showpos_false_impl<F> noshowpos_if
+= boost::stringify::showpos_false_impl<F>();
+
+
 struct showpos_tag
 {
     typedef
-        boost::stringify::fimpl_static_showpos
-        <false, boost::stringify::accept_any_type>
+        boost::stringify::showpos_false_impl<boost::stringify::true_trait>
         default_impl;
 };
 
@@ -61,8 +98,6 @@ bool get_showpos(const Formatting& fmt) noexcept
 {
     return fmt.template get<boost::stringify::showpos_tag, InputType>().show();
 }
-
-
 
 
 } // namespace stringify

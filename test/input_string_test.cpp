@@ -17,10 +17,10 @@ int main()
     TEST("~~~abc") (strf::fill(U'~'), strf::width(6))   ("abc");
     TEST("~~~abc") (strf::fill(U'~'), strf::width(4))   ({"abc", 6});
     TEST("abc~~~") (strf::fill(U'~'))                   ({"abc", {"<", 6}});
-    TEST("abc~~~") (strf::fill(U'~'), strf::left<>)     ({"abc", 6});
-    TEST("~~~abc") (strf::fill(U'~'), strf::internal<>) ({"abc", 6});
-    TEST("~~~abc") (strf::fill(U'~'), strf::left<>)     ({"abc", {">", 6}});
-    TEST("~~~abc") (strf::fill(U'~'), strf::left<>)     ({"abc", {"=", 6}});
+    TEST("abc~~~") (strf::fill(U'~'), strf::left)       ({"abc", 6});
+    TEST("~~~abc") (strf::fill(U'~'), strf::internal)   ({"abc", 6});
+    TEST("~~~abc") (strf::fill(U'~'), strf::left)       ({"abc", {">", 6}}); 
+    TEST("~~~abc") (strf::fill(U'~'), strf::left)       ({"abc", {"=", 6}});
 
     TEST("   abcdefghi") (strf::width(3))  ("", {"abc", ">"}, {"def", "<"}, {"ghi", "="});
     TEST("  abcdefghi")  (strf::width(2))  ("", {"abc", ">"}, {"def", "<"}, {"ghi", "="});
@@ -34,10 +34,10 @@ int main()
     // TEST("~~~abc") (strf::fill(U'~'), strf::width(6))   (abc);
     // TEST("~~~abc") (strf::fill(U'~'), strf::width(4))   ({abc, 6});
     // TEST("abc~~~") (strf::fill(U'~'))                   ({abc, {"<", 6}});
-    // TEST("abc~~~") (strf::fill(U'~'), strf::left<>)     ({abc, 6});
-    // TEST("~~~abc") (strf::fill(U'~'), strf::internal<>) ({abc, 6});
-    // TEST("~~~abc") (strf::fill(U'~'), strf::left<>)     ({abc, {">", 6}});
-    // TEST("~~~abc") (strf::fill(U'~'), strf::left<>)     ({abc, {"=", 6}});
+    // TEST("abc~~~") (strf::fill(U'~'), strf::left)       ({abc, 6});
+    // TEST("~~~abc") (strf::fill(U'~'), strf::internal)   ({abc, 6});
+    // TEST("~~~abc") (strf::fill(U'~'), strf::left)       ({abc, {">", 6}});
+    // TEST("~~~abc") (strf::fill(U'~'), strf::left)       ({abc, {"=", 6}});
 
     // TEST("   abcdefghi") (strf::width(3))  ("", {abc, ">"}, {def, "<"}, {ghi, "="});
     // TEST("  abcdefghi")  (strf::width(2))  ("", {abc, ">"}, {def, "<"}, {ghi, "="});
