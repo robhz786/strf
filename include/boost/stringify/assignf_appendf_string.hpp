@@ -72,7 +72,7 @@ private:
              );
 
 
-    template <typename T>
+    template <typename S>
     static std::false_type test(...);
 
 public:

@@ -5,8 +5,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <string>
 #include <boost/stringify/input_char_ptr.hpp>
+#include <string>
+#include <type_traits>
 
 namespace boost {
 namespace stringify{
@@ -121,15 +122,34 @@ public:
 
     template <typename CharT, typename Output, typename Formatting>
     using stringifier
-    = typename helper<CharT>::template stingificator<Output, Formatting>;
+    = typename helper<CharT>::template stringifier<Output, Formatting>;
 };
 
 } // namespace detail
 
 
-template <typename CharT, typename CharTraits>
-boost::stringify::detail::std_string_input_traits<CharT, CharTraits>
-boost_stringify_input_traits_of(const std::basic_string<CharT, CharTraits>&);
+template
+    < typename String
+    , typename CharT = typename String::value_type
+    , typename CharTraits = typename String::traits_type
+    >
+auto boost_stringify_input_traits_of(const String& str)
+    -> std::enable_if_t
+        < std::is_same<String, std::basic_string<CharT, CharTraits> >::value
+        , boost::stringify::detail::std_string_input_traits<CharT, CharTraits>
+        >;
+/*    
+    -> std::enable_if_t
+        < std::is_same<typename CharTraits::char_type, CharT>::value
+       && std::is_convertible<decltype(str[0]), const CharT&>::value
+       && std::is_convertible<decltype(str.length()), std::size_t>::value
+       && std::is_same
+              < typename std::iterator_traits<typename String::iterator>::iterator_category
+              , std::random_access_iterator_tag
+              >::value  
+        , boost::stringify::detail::std_string_input_traits<CharT, CharTraits>
+        >;
+*/
 
 
 } // namespace stringify
