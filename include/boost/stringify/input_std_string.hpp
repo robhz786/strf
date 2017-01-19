@@ -21,7 +21,7 @@ class std_string_stringifier
 
 public:
     typedef boost::stringify::detail::string_arg_formatting arg_format_type;
-    typedef const std::basic_string<CharT, Traits>& input_type;
+    typedef std::basic_string<CharT, Traits> input_type;
     typedef CharT char_type;
     typedef Output output_type;
     typedef Formatting ftuple_type;
