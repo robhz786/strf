@@ -5,146 +5,134 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <chrono>
+#include <string>
 #include <functional>
 #include <iostream>
-#include <string>
-#include <boost/timer/timer.hpp>
-#include <boost/config.hpp>
+#include <iomanip>
 
-namespace boost
+class loop_timer
 {
-namespace timer
-{
-  boost::timer::cpu_times get_time_resolutions();
+public:
+    typedef std::chrono::steady_clock clock_type;
+    typedef clock_type::duration duration;
+    typedef clock_type::time_point time_point;
+    typedef clock_type::rep rep;
 
-  class loop_timer
-  {
-  public:
-    struct results_type
+    struct result
     {
-      results_type():
-        number_of_iterations(0)
-      {
-        total_elapsed_time.user = 0;
-        total_elapsed_time.system = 0;
-        total_elapsed_time.wall = 0;
-      }
-      results_type(const results_type& other):
-        total_elapsed_time(other.total_elapsed_time),
-        number_of_iterations(other.number_of_iterations)
-      {
-      }
-      
-      timer::cpu_times total_elapsed_time;
-      boost::int_least64_t number_of_iterations;
-
-      double get_mean_user_time() const
-      {
-        return (static_cast<double>(total_elapsed_time.user)
-                /
-                static_cast<double>(number_of_iterations));
-      } 
-      double get_mean_system_time() const
-      {
-        return (static_cast<double>(total_elapsed_time.system)
-                /
-                static_cast<double>(number_of_iterations));
-      } 
-      double get_mean_wall_time() const
-      {
-        return (static_cast<double>(total_elapsed_time.wall)
-                /
-                static_cast<double>(number_of_iterations));
-      } 
-      double get_mean_user_plus_system_time() const
-      {
-        return (static_cast<double>(total_elapsed_time.user
-                                    + 
-                                    total_elapsed_time.system)
-                /
-                static_cast<double>(number_of_iterations));
-      } 
+        duration total_duration;
+        std::size_t iterations_count;     
     };
 
 
-    typedef std::function<void(const results_type&)> result_handler_function;
-
-    loop_timer(result_handler_function _result_handler);
-
-    loop_timer(int time_resolution_multiplier, 
-               result_handler_function _result_handler);
-
-    ~loop_timer();
-  
-    bool finished()
+    struct default_reporter
     {
-      return results_are_good_enough;
-    }
-  
-    void on_end_of_each_iteration()
-    {
-      if(++sample_iterations_counter == num_iteratios_per_sample)
-        on_end_of_each_sample();
-    }
+        default_reporter(const std::string& label)
+            : m_label(label)
+        {
+        }
+        
+        void operator()(result r)
+        {
+            std::chrono::duration<double, std::nano> dur = r.total_duration;
+            std::cout
+                << std::setprecision(2)
+                << std::fixed
+                << std::setw(15)
+                << dur.count() / (double)r.iterations_count
+                << " ns  "
+                << m_label
+                << std::endl;
+        }
+        
+        std::string m_label;
+    };
 
-  private:
-
-    void on_end_of_each_sample()
-    {
-      last_sample_duration = timer.elapsed();
-      process_last_sample();
-      start_new_sample();
-    }
-
-    void process_last_sample();
-
-    void start_new_sample()
-    {
-      sample_iterations_counter = 0;
-      timer.start();
-    }
-
-    bool last_sample_was_too_small();
-
-    void resize_next_sample();
-
-    void update_accumulated_results();
-  
-    result_handler_function result_handler;
-    results_type accumulated_results;
-    boost::timer::cpu_timer timer;
-    boost::timer::cpu_times last_sample_duration;
-    boost::timer::nanosecond_type resolution;
-    boost::timer::nanosecond_type required_minimal_accumulated_duration;
-    boost::int_least64_t sample_iterations_counter;
-    boost::int_least64_t num_iteratios_per_sample;
-
-    bool results_are_good_enough = false;
-  };
-
-
-  struct print_mean_time
-  {
-    print_mean_time(const std::string& _label,
-                    std::ostream& _output = std::cout):
-      label(_label),
-      output(_output)
+    
+    /**
+       \param loop_relative_size duration of loop / resolution of the clock
+       \param report_func function to be called at the end
+     */
+    loop_timer(rep loop_relative_size, const std::function<void(result)>& report)
+            : m_report(report)
+            , m_loop_relative_size(loop_relative_size)
+            , m_it_count(0)
+            , m_it_count_stop(8)
+            , m_start_time(clock_type::now())
     {
     }
 
-    void operator()(const loop_timer::results_type& results);
+    loop_timer(rep loop_relative_size, const std::string& label)
+        : loop_timer(loop_relative_size, default_reporter(label))
+    {
+    }
 
-    std::string label;
-    std::ostream& output;
-  };
-} // namespace timer
-} // namepace boost
+    
+    ~loop_timer()
+    {
+        result r = {(m_stop_time - m_start_time), m_it_count};
+        m_report(r);
+    }
+
+    bool after_each_iteration()
+    {
+        if(++ m_it_count == m_it_count_stop)
+        {
+            m_stop_time = clock_type::now();
+            return restart_count();
+        }
+        return true;
+    }
+
+    bool restart_count()
+    {
+        duration dur = m_stop_time - m_start_time;
+        if (dur.count() > m_loop_relative_size)
+        {
+            return false;
+        }
+        else
+        {
+            calibrate((double)dur.count());
+            m_it_count = 0;
+            m_start_time = clock_type::now();
+            return true;
+        }
+    }
+
+    void calibrate(double dur_count)
+    {
+        if (dur_count < 1000.0)
+        {
+            m_it_count_stop *= 2;
+        }
+        else
+        {
+            m_it_count_stop = std::ceil
+                ( 1.4
+                * (double)(m_it_count_stop)
+                * (double)(m_loop_relative_size)
+                / dur_count
+                );
+        }
+    }
+    
+private:
+
+    std::function<void(result)> m_report;
+    rep m_loop_relative_size;
+    std::size_t m_it_count;
+    std::size_t m_it_count_stop;
+    time_point m_stop_time;
+    time_point m_start_time;
+};
 
 
-#define BOOST_LOOP_TIMER(size, result_handler)                           \
-  for(boost::timer::loop_timer boost_loop_timer(size, result_handler);   \
-      ! boost_loop_timer.finished();                                     \
-      boost_loop_timer.on_end_of_each_iteration())
+#define BOOST_LOOP_TIMER(size, label)          \
+  for(loop_timer loop_timer_instance(size, label);   \
+      loop_timer_instance.after_each_iteration() ; )
+
 
 
 #endif

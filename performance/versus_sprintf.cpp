@@ -4,13 +4,13 @@
 
 #include <iostream>
 #include <stdio.h>
+#include <string.h>
 #include <climits>
-#include <boost/timer/timer.hpp>
 #include <boost/stringify.hpp>
 #include "loop_timer.hpp"
 
 #define PRINT_BENCHMARK(label)  \
-  BOOST_LOOP_TIMER(500, boost::timer::print_mean_time(label))
+  BOOST_LOOP_TIMER(1000000000ll, label)
 
 int main()
 {

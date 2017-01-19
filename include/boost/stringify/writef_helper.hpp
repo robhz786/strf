@@ -92,7 +92,7 @@ class final_writer
     {
         for(auto arg : lst)
         {
-            arg.write(m_output);
+            arg.write(m_output, m_fmt);
         }
     }
     

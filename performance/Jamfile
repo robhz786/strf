@@ -8,20 +8,11 @@ project
     : default-build release
     ;
 
-lib loop_timer
-    : loop_timer.cpp
-    ;
-
-sources = [ glob *.cpp : loop_timer.cpp ] ;
-#sources = int.cpp ;
+sources = versus_sprintf.cpp ;
 
 for local src in $(sources)
 {
-    exe $(src:B) 
-        : $(src)
-          loop_timer/<link>static
-          /boost//timer/<link>static
-        ;
+    exe $(src:B) : $(src)  ;
 }
 
 install ./out : $(sources:B) ;
