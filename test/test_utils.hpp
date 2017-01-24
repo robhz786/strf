@@ -105,10 +105,12 @@ public:
     bool finish()
     {
         auto result = m_writer.finish();
-        BOOST_TEST(m_expected == result);
-        BOOST_TEST(m_expected_size == 1 + m_expected.length());
-        return m_expected == result
-            && m_expected_size == 1 + m_expected.length();
+        bool OUTPUT_STRING_AS_EXPECTED = m_expected == result;
+        bool OUTPUT_STRING_LENGTH_AS_EXPECTED = m_expected_size == 1 + m_expected.length();
+        BOOST_TEST( OUTPUT_STRING_AS_EXPECTED );
+        BOOST_TEST( OUTPUT_STRING_LENGTH_AS_EXPECTED );
+
+        return OUTPUT_STRING_AS_EXPECTED  && OUTPUT_STRING_LENGTH_AS_EXPECTED ;
     }
 
     void put(CharT character) noexcept

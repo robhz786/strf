@@ -226,10 +226,23 @@ template <> struct char32_to_str_tag<char32_t>
 template <typename CharT, typename InputType, typename Formatting>
 decltype(auto) get_char32_writer(const Formatting& fmt) noexcept
 {
-    typedef  boost::stringify::char32_to_str_tag<CharT> tag_type;
-    return fmt.template get<tag_type, InputType>();
+    typedef  boost::stringify::char32_to_str_tag<CharT> tag;
+    return fmt.template get<tag, InputType>();
 }
 
+template <typename CharT, typename InputType, typename Formatting>
+std::size_t get_char32_length(const Formatting& fmt, char32_t ch) noexcept
+{
+    typedef  boost::stringify::char32_to_str_tag<CharT> tag;
+    return fmt.template get<tag, InputType>().length(ch);
+}
+
+template <typename InputType, typename Formatting, typename Output>
+void write_char32(const Formatting& fmt, Output& out, char32_t ch) noexcept
+{
+    using tag = boost::stringify::char32_to_str_tag<typename Output::char_type>;
+    fmt.template get<tag, InputType>().write(ch, out);
+}
 
 } // namespace stringify
 } // namespace boost

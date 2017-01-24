@@ -4,11 +4,6 @@
 
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/stringify.hpp>
-#include <limits>
-#include <locale>
-#include <sstream>
-#include <iostream>
-#include <string.h>
 
 template <typename T> struct is_long_or_longlong
     : public std::integral_constant

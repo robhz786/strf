@@ -170,17 +170,11 @@ auto fill_if(char32_t fillChar)
 
 
 template <char32_t fillChar>
-auto fill_t()
-{
-    return fill_impl_t<fillChar, boost::stringify::true_trait>();
-}
+auto fill_t = fill_impl_t<fillChar, boost::stringify::true_trait>();
 
 
 template <char32_t Char, template <class> class Filter>
-auto fill_t_if()
-{
-    return fill_impl_t<Char, Filter>();
-}
+auto fill_t_if = fill_impl_t<Char, Filter>();
 
 
 template <typename InputType, typename Formatting>

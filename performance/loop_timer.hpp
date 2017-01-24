@@ -10,6 +10,7 @@
 #include <functional>
 #include <iostream>
 #include <iomanip>
+#include <cmath>
 
 class loop_timer
 {

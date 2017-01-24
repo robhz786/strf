@@ -100,10 +100,13 @@ namespace detail{
     {
       fast_type result = 1l;
 
-      if (value > 99999999l) {
+
+
+      
+      if (value > 99 999 999l) {
         value /= 100000000l;
         result *= 100000000l;
-        goto value_less_than_100;
+        //goto value_less_than_100;
       }
       //now value must be < 100000000
       if (value > 9999l) {
@@ -115,7 +118,7 @@ namespace detail{
         value /= 100l;
         result *= 100l;
       }
-      value_less_than_100:
+      //value_less_than_100:
       //now value must be < 100
       if (value > 9l) {
         value /= 10l;

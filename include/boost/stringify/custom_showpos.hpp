@@ -100,6 +100,22 @@ bool get_showpos(const Formatting& fmt) noexcept
 }
 
 
+template <typename InputType, typename Formatting, typename Flags>
+bool get_showpos(const Formatting& fmt, Flags& flags) noexcept
+{
+    if (flags.has_char('-'))
+    {
+        return false;
+    }
+    else if (flags.has_char('+'))
+    {                        
+        return true;
+    }
+    return fmt.template get<boost::stringify::showpos_tag, InputType>().show();
+}
+
+
+
 } // namespace stringify
 } // namespace boost
 
