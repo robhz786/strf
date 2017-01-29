@@ -364,6 +364,16 @@ boost::stringify::ftuple<Fmts ...> make_ftuple(const Fmts& ... fmts)
     return boost::stringify::ftuple<Fmts ...>(fmts ...);
 }
 
+template
+    < typename FacetTag
+    , typename TargetType
+    , typename FTuple  
+    >
+decltype(auto) get(const FTuple& f)
+{
+    return f.template get<FacetTag, TargetType>();
+}
+
 
 } // namespace stringify
 } // namespace boost
