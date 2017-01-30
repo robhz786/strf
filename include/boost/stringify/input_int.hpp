@@ -110,8 +110,6 @@ struct int_stringifier
     using base_class = boost::stringify::stringifier<CharT, Output, Formatting>;
     using unsigned_intT = typename std::make_unsigned<intT>::type;
     using width_t = boost::stringify::width_t;
-    using base_class::noexcept_output;
-    using base_class::random_access_output;
     using width_tag = boost::stringify::width_tag;
     using chars_catalog = boost::stringify::detail::characters_catalog;
     static constexpr bool is_signed = std::is_signed<intT>::value;
@@ -160,13 +158,13 @@ public:
     }
 
 
-    virtual std::size_t length() const noexcept override
+    virtual std::size_t length() const override
     {
         return length_body() + length_fill();
     }
 
 
-    virtual void write(Output& out) const noexcept(noexcept_output) override
+    virtual void write(Output& out) const override
     {
         width_t fill_width = 0;
         if (m_width > 0)
@@ -300,7 +298,7 @@ private:
     }
 
 
-    void write_sign(Output& out) const noexcept(noexcept_output)
+    void write_sign(Output& out) const
     {
         if (std::is_signed<intT>::value && m_base == 10)
         {

@@ -36,7 +36,7 @@ public:
         , typename Output
         , typename Formatting
         >
-    void fill(width_type width, Output& out, const Formatting& fmt) const noexcept
+    void fill(width_type width, Output& out, const Formatting& fmt) const
     {
         decltype(auto) char32_writer
             = boost::stringify::get_char32_writer<CharT, InputType>(fmt);
@@ -56,7 +56,7 @@ public:
     }
 
     template <typename CharT, typename InputType, typename Formatting>
-    std::size_t length(width_type width, const Formatting& fmt) const noexcept
+    std::size_t length(width_type width, const Formatting& fmt) const
     {
         std::size_t ch_length
             = get_char32_writer<CharT, InputType>(fmt).length(FillChar);
@@ -66,7 +66,7 @@ public:
 private:
     
     template <typename CharT, typename InputType, typename Formatting>
-    int quantity(width_type width, const Formatting& fmt) const noexcept
+    int quantity(width_type width, const Formatting& fmt) const
     {
         boost::stringify::width_t ch_width =
             boost::stringify::get_width_calculator<InputType>(fmt)
@@ -101,7 +101,7 @@ public:
         , typename Output
         , typename Formatting
         >
-    void fill(width_type width, Output& out, const Formatting& fmt) const noexcept
+    void fill(width_type width, Output& out, const Formatting& fmt) const
     {
         const auto& char32_writer
             = boost::stringify::get_char32_writer<CharT, InputType>(fmt);
@@ -121,7 +121,7 @@ public:
     }
 
     template <typename CharT, typename InputType, typename Formatting>
-    std::size_t length(width_type width, const Formatting& fmt) const noexcept
+    std::size_t length(width_type width, const Formatting& fmt) const
     {
         std::size_t ch_length
             = get_char32_writer<CharT, InputType>(fmt).length(m_fillchar);
@@ -133,7 +133,7 @@ private:
     char32_t m_fillchar;
     
     template <typename CharT, typename InputType, typename Formatting>
-    int quantity(width_type width, const Formatting& fmt) const noexcept
+    int quantity(width_type width, const Formatting& fmt) const
     {
         boost::stringify::width_t ch_width =
             boost::stringify::get_width_calculator<InputType>(fmt)

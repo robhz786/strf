@@ -31,12 +31,12 @@ public:
     {
     }
 
-    virtual std::size_t length() const noexcept override
+    virtual std::size_t length() const override
     {
         return 1;
     }
     
-    void write(Output& out) const noexcept(base::noexcept_output) override
+    void write(Output& out) const override
     {
         out.put(m_char);
     }

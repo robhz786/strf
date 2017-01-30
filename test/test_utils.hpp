@@ -12,65 +12,65 @@
 template <typename CharT>
 struct to_upper_char_traits : public std::char_traits<CharT>
 {
-  static CharT*
-  copy(CharT* to, const CharT* from, std::size_t n)
-  {
-    CharT* it = to;
-    while(n--)
-      *it++ = std::toupper(*from++);
-    return to;
-  }
+    static CharT*
+    copy(CharT* to, const CharT* from, std::size_t n)
+    {
+        CharT* it = to;
+        while(n--)
+            *it++ = std::toupper(*from++);
+        return to;
+    }
 
-  static void
-  assign(CharT& c1, const CharT& c2)
-  {
-    c1 = std::toupper(c2);
-  }
+    static void
+    assign(CharT& c1, const CharT& c2)
+    {
+        c1 = std::toupper(c2);
+    }
 
-  static CharT*
-  assign(CharT* dest, std::size_t n, CharT a)
-  {
-    std::fill_n(dest, n, std::toupper(a));
-    return dest;
-  }
+    static CharT*
+    assign(CharT* dest, std::size_t n, CharT a)
+    {
+        std::fill_n(dest, n, std::toupper(a));
+        return dest;
+    }
 };
 
 
 template <typename CharT>
 struct weird_char_traits : public std::char_traits<CharT>
 {
-  static CharT*
-  copy(CharT* to, const CharT* from, std::size_t n)
-  {
-    CharT* it = to;
-    while(n--)
+    static CharT*
+    copy(CharT* to, const CharT* from, std::size_t n)
     {
-        assign(*it++, *from++);
+        CharT* it = to;
+        while(n--)
+        {
+            assign(*it++, *from++);
+        }
+        return to;
     }
-    return to;
-  }
 
-  static void
-  assign(CharT& c1, const CharT& c2)
-  {
-      if (c2 == CharT())
-      {
-          c1 = c2;
-      }
-      else
-      {
-          c1 = c2 | ( 1 << (sizeof(CharT) * 8 - 1));
-      }
-  }
+    static void
+    assign(CharT& c1, const CharT& c2)
+    {
+        if (c2 == CharT())
+        {
+            c1 = c2;
+        }
+        else
+        {
+            c1 = c2 | ( 1 << (sizeof(CharT) * 8 - 1));
+        }
+    }
 
-  static CharT*
-  assign(CharT* dest, std::size_t n, CharT a)
-  {
-      CharT b;
-      assign(b, a);
-      std::fill_n(dest, n, b);
-      return dest;
-  }
+    static CharT*
+    assign(CharT* dest, std::size_t n, CharT a)
+    {
+        CharT b;
+        assign(b, a);
+        std::fill_n(dest, n, b);
+        return dest;
+    }
 };
 
 
@@ -113,32 +113,32 @@ public:
         return OUTPUT_STRING_AS_EXPECTED  && OUTPUT_STRING_LENGTH_AS_EXPECTED ;
     }
 
-    void put(CharT character) noexcept
+    void put(CharT character)
     {
         m_writer.put(character);
     }
 
-    void put(CharT character, std::size_t repetitions) noexcept
+    void put(CharT character, std::size_t repetitions)
     {
         m_writer.put(character, repetitions);
     }
 
-    void put(const CharT* str, std::size_t count) noexcept
+    void put(const CharT* str, std::size_t count)
     {
         m_writer.put(str, count);
     }
     
-    bool set_pos(std::size_t pos) noexcept
+    bool set_pos(std::size_t pos)
     {
         return m_writer.set_pos(pos);
     }
 
-    decltype(auto) get_pos() noexcept
+    decltype(auto) get_pos()
     {
         return m_writer.get_pos();
     }
     
-    void rput(CharT character) noexcept
+    void rput(CharT character)
     {
         m_writer.rput(character);
     }

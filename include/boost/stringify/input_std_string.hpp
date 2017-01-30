@@ -47,7 +47,7 @@ public:
     {
     }
 
-    virtual std::size_t length() const noexcept override
+    virtual std::size_t length() const override
     {
         if (m_padding_width > 0)
         {
@@ -58,7 +58,7 @@ public:
         return m_str.length();
     }
 
-    void write(Output& out) const noexcept(base::noexcept_output) override
+    void write(Output& out) const override
     {
         if (m_padding_width > 0)
         {
@@ -87,13 +87,13 @@ private:
     const width_t m_padding_width;
     boost::stringify::alignment m_alignment;
     
-    void write_fill(Output& out) const noexcept(base::noexcept_output)
+    void write_fill(Output& out) const
     {
         boost::stringify::write_fill<CharT, input_type>
                 (m_padding_width, out, m_fmt);
     }
     
-    width_t padding_width(width_t total_width) const noexcept
+    width_t padding_width(width_t total_width) const
     {
         return
             boost::stringify::get_width_calculator<input_type>(m_fmt)

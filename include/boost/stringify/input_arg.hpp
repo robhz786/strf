@@ -52,9 +52,8 @@ class input_arg
         char space[sizeof(T)];
     };
 
-    typedef 
-    boost::stringify::stringifier<CharT, Output, Formatting>
-    stringifier_base;
+    using stringifier_base
+    = boost::stringify::stringifier<CharT, Output, Formatting>;
 
     typedef void (*construtor_function)
     (stringifier_base*, const Formatting&, const void*, const void*);
@@ -120,8 +119,7 @@ public:
         ( const T* value
         , memory_space<stringifier<const T*> > && ms
           =  memory_space<stringifier<const T*> >()
-        )
-        noexcept
+        ) noexcept
         : m_value(value)
         , m_arg_format(nullptr)
         , m_stringifier(reinterpret_cast<stringifier<const T*>*>(&ms))
@@ -136,8 +134,7 @@ public:
         , const typename stringifier<T>::arg_format_type& arg_format
         , memory_space<stringifier<const T*> > && ms
           =  memory_space<stringifier<const T*> >()
-        )
-        noexcept
+        ) noexcept
         : m_value(value)
         , m_arg_format(&arg_format)
         , m_stringifier(reinterpret_cast<stringifier<const T*>*>(&ms))
@@ -151,8 +148,7 @@ public:
     input_arg
         ( const T& value
         , memory_space<stringifier<T>>&& ms = memory_space<stringifier<T>>()
-        )
-        noexcept
+        ) noexcept
         : m_value(&value)
         , m_arg_format(nullptr)
         , m_stringifier(reinterpret_cast<stringifier<T>*>(&ms))
@@ -167,8 +163,7 @@ public:
         ( const T& value
         , const typename stringifier<T>::arg_format_type& arg_format
         , memory_space<stringifier<T>>&& ms = memory_space<stringifier<T>>()
-        )
-        noexcept
+        ) noexcept
         : m_value(&value)
         , m_arg_format(&arg_format)
         , m_stringifier(reinterpret_cast<stringifier<T>*>(&ms))

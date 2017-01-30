@@ -38,24 +38,21 @@ template
     >
 class final_writer
 {
-    typedef boost::stringify::input_arg<CharT, output_type, Formatting> arg_type;
-
-    static constexpr bool noexcept_output
-    = boost::stringify::stringifier<CharT, output_type, Formatting>::noexcept_output;
-    
+    using arg_type =  boost::stringify::input_arg<CharT, output_type, Formatting>;
+  
     template <typename Arg1, typename ... Args>
-    std::size_t length(Arg1 && arg1, Args && ... args) noexcept
+    std::size_t length(Arg1 && arg1, Args && ... args)
     {
         return arg1.length(m_fmt) + length(args...);
     }
 
-    std::size_t length() noexcept
+    std::size_t length()
     {
         return 0;
     }
  
     template <typename output_type2, typename ... Args>
-    auto reserve(output_type2& output, Args && ... args) noexcept
+    auto reserve(output_type2& output, Args && ... args)
     -> decltype(output.reserve(std::size_t()), void())
     {
         output.reserve(1 + length(args...));
@@ -64,7 +61,7 @@ class final_writer
     
     template <typename output_type2, typename ... Args>
     std::enable_if_t<!boost::stringify::detail::has_reserve<output_type2>::value>
-    reserve(output_type2&, Args && ... args) noexcept
+    reserve(output_type2&, Args && ... args)
     {
     }
     
@@ -72,7 +69,7 @@ class final_writer
     auto write_inilist
         ( const std::initializer_list<arg_type>& lst
         , output_type2& output
-        ) noexcept
+        )
        -> decltype(output.reserve(std::size_t()), void())
     {
         std::size_t len = 0;
@@ -88,7 +85,7 @@ class final_writer
     }
 
     template <typename output_type2>
-    auto write_inilist(const std::initializer_list<arg_type>& lst, ...)noexcept
+    auto write_inilist(const std::initializer_list<arg_type>& lst, ...)
     {
         for(auto arg : lst)
         {
@@ -96,7 +93,7 @@ class final_writer
         }
     }
     
-    void write_args() noexcept
+    void write_args()
     {
     }
     
@@ -118,19 +115,18 @@ public:
 
     final_writer(final_writer&& other) = default;
     
-    decltype(auto) operator[](const std::initializer_list<arg_type>& lst)
-        && noexcept(noexcept_output)
+    decltype(auto) operator[](const std::initializer_list<arg_type>& lst) &&
     {
         write_inilist<output_type>(lst, m_output);
         return m_output.finish();
     }
     
-    decltype(auto) operator()() && noexcept(noexcept_output)
+    decltype(auto) operator()() &&
     {
         return m_output.finish();
     }
 
-    decltype(auto) operator()(const arg_type& a1) && noexcept(noexcept_output)
+    decltype(auto) operator()(const arg_type& a1) &&
     {
         reserve<output_type>(m_output, a1);
         write_args(a1);
@@ -140,7 +136,7 @@ public:
     decltype(auto) operator()
         ( const arg_type& a1
         , const arg_type& a2
-        ) && noexcept(noexcept_output)
+        ) &&
     {
         reserve<output_type>(m_output, a1, a2);
         write_args(a1, a2);
@@ -151,7 +147,7 @@ public:
         ( const arg_type& a1
         , const arg_type& a2
         , const arg_type& a3
-        ) && noexcept(noexcept_output)
+        ) &&
     {
         reserve<output_type>(m_output, a1, a2, a3);
         write_args(a1, a2, a3);
@@ -163,7 +159,7 @@ public:
         , const arg_type& a2
         , const arg_type& a3
         , const arg_type& a4
-        ) && noexcept(noexcept_output)
+        ) &&
     {
         reserve<output_type>(m_output, a1, a2, a3, a4);
         write_args(a1, a2, a3, a4);
@@ -177,7 +173,7 @@ public:
         , const arg_type& a3
         , const arg_type& a4
         , const arg_type& a5
-        ) && noexcept(noexcept_output)
+        ) &&
     {
         reserve<output_type>(m_output, a1, a2, a3, a4, a5);
         write_args(a1, a2, a3, a4, a5);
@@ -191,7 +187,7 @@ public:
         , const arg_type& a4
         , const arg_type& a5
         , const arg_type& a6
-        ) && noexcept(noexcept_output)
+        ) &&
     {
         reserve<output_type>(m_output, a1, a2, a3, a4, a5, a6);
         write_args(a1, a2, a3, a4, a5, a6);
@@ -206,7 +202,7 @@ public:
         , const arg_type& a5
         , const arg_type& a6
         , const arg_type& a7
-        ) && noexcept(noexcept_output)
+        ) &&
     {
         reserve<output_type>(m_output, a1, a2, a3, a4, a5, a6, a7);
         write_args(a1, a2, a3, a4, a5, a6, a7);
@@ -222,7 +218,7 @@ public:
         , const arg_type& a6
         , const arg_type& a7
         , const arg_type& a8
-        ) && noexcept(noexcept_output)
+        ) &&
     {
         reserve<output_type>(m_output, a1, a2, a3, a4, a5, a6, a7, a8);
         write_args(a1, a2, a3, a4, a5, a6, a7, a8);      
@@ -239,7 +235,7 @@ public:
         , const arg_type& a7
         , const arg_type& a8
         , const arg_type& a9
-        ) && noexcept(noexcept_output)
+        ) &&
     {
         reserve<output_type>(m_output, a1, a2, a3, a4, a5, a6, a7, a8, a9);
         write_args(a1, a2, a3, a4, a5, a6, a7, a8, a9);
@@ -257,7 +253,7 @@ public:
         , const arg_type& a8
         , const arg_type& a9
         , const arg_type& a10
-        ) && noexcept(noexcept_output)
+        ) &&
     {
         reserve<output_type>(m_output, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
         write_args(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);        

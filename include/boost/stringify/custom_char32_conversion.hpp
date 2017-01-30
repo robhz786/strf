@@ -27,7 +27,7 @@ public:
     }
 
     template <typename Output>
-    void write(char32_t ch, Output& out) const noexcept
+    void write(char32_t ch, Output& out) const
     {
         if (ch < 0x80)
         {
@@ -82,7 +82,7 @@ public:
     }
 
     template <typename Output>
-    void write(char32_t ch, Output& out) const noexcept
+    void write(char32_t ch, Output& out) const
     {
         if (single_char_range(ch))
         {
@@ -130,7 +130,7 @@ public:
     }
 
     template <typename Output>
-    void write (char32_t ch, Output& out) const noexcept
+    void write (char32_t ch, Output& out) const
     {
         out.put(static_cast<CharT>(ch));
     }
@@ -238,7 +238,7 @@ std::size_t get_char32_length(const Formatting& fmt, char32_t ch) noexcept
 }
 
 template <typename InputType, typename Formatting, typename Output>
-void write_char32(const Formatting& fmt, Output& out, char32_t ch) noexcept
+void write_char32(const Formatting& fmt, Output& out, char32_t ch)
 {
     using tag = boost::stringify::char32_to_str_tag<typename Output::char_type>;
     fmt.template get<tag, InputType>().write(ch, out);
