@@ -5,6 +5,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <boost/stringify/arg_format_common.hpp>
+#include <boost/stringify/char_flags.hpp>
 #include <boost/stringify/custom_alignment.hpp>
 #include <boost/stringify/custom_base_indication.hpp>
 #include <boost/stringify/custom_fill.hpp>
@@ -16,7 +18,6 @@
 #include <boost/stringify/ftuple.hpp>
 #include <boost/stringify/stringifier.hpp>
 #include <boost/stringify/detail/characters_catalog.hpp>
-#include <boost/stringify/detail/char_flags.hpp>
 #include <boost/stringify/detail/number_of_digits.hpp>
 #include <cstdint>
 
@@ -33,52 +34,101 @@ inline char32_t* global_buff()
 }
 
 
+template <typename InputType, typename FTuple>
 struct int_arg_format
+    : public boost::stringify::arg_format_common
+        <int_arg_format<InputType, FTuple>>
 {
-    typedef boost::stringify::width_t width_t;
-    typedef boost::stringify::detail::char_flags
-        <'+', '-', '<', '>', '=', 'o', 'd', 'x', 'X', 'c', 'C', '#', '$'>
-        char_flags_type;
 
-    constexpr int_arg_format(const char* flags, width_t w = -1
-        )
-        : m_flags(flags)
-        , m_width(w)
+    using ftuple_type = FTuple;
+    using input_type = InputType;
+    using width_t = boost::stringify::width_t;
+    using char_flags_type = boost::stringify::char_flags
+        <'+', '-', '<', '>', '=', 'o', 'd', 'x', 'X', 'c', 'C', '#', '$'>;
+
+    constexpr int_arg_format(width_t w, const char* f)
+        : flags(f)
+        , width(w)
     {
     }
 
-    constexpr int_arg_format(boost::stringify::width_t w)
-        : m_width(w)
+    constexpr int_arg_format(const char* f, width_t w)
+        : flags(f)
+        , width(w)
+    {
+    }
+    
+    constexpr int_arg_format(const char* f)
+        : flags(f)
+        , width(-1)
+    {
+    }
+    
+    constexpr int_arg_format(width_t w)
+        : width(w)
     {
     }
 
-    constexpr int_arg_format()
-    {
-    }
 
     constexpr int_arg_format(const int_arg_format&) = default;
 
     int_arg_format& operator=(const int_arg_format&) = default;
 
-    template <typename IntputType, typename FTuple>
-    bool get_showpos(const FTuple& fmt) const noexcept
+
+    int get_base(const ftuple_type& fmt)
     {
-        if (m_flags.has_char('-'))
+        if (flags.has_char('d'))
+        {
+            return 10;
+        }
+        if (flags.has_char('x') || flags.has_char('X'))
+        {
+            return 16;
+        }
+        else if (flags.has_char('o'))
+        {                        
+            return 8;
+        }
+        return get_facet<boost::stringify::intbase_tag>(fmt).value();
+    }
+
+    bool get_uppercase(const ftuple_type& fmt) noexcept
+    {
+        if (flags.has_char('c'))
         {
             return false;
         }
-        else if (m_flags.has_char('+'))
-        {
+        else if (flags.has_char('C') || flags.has_char('X'))
+        {                        
             return true;
         }
-        else
-        {
-            return boost::stringify::get_showpos<IntputType>(fmt);
-        }
+        return get_facet<boost::stringify::case_tag>(fmt).uppercase();
     }
 
-    char_flags_type m_flags;
-    boost::stringify::width_t m_width = -1;
+    bool get_showbase(const ftuple_type& fmt) noexcept
+    {
+        if (flags.has_char('$'))
+        {
+            return false;
+        }
+        else if (flags.has_char('#'))
+        {                        
+            return true;
+        }
+        return get_facet<boost::stringify::showbase_tag>(fmt).value();
+    }
+
+    const char_flags_type flags;
+    const boost::stringify::width_t width = -1;
+
+private:
+
+    template <typename Tag>
+    decltype(auto) get_facet(const ftuple_type& fmt)
+    {
+        return fmt.template get<Tag, input_type>();
+    }
+
 };
 
 
@@ -103,15 +153,20 @@ unsigned_abs(intT value)
 }
 
 
-template <typename intT, typename CharT, typename Output, typename Formatting>
+template <typename intT, typename CharT, typename Output, typename FTuple>
 struct int_stringifier
-    : public boost::stringify::stringifier<CharT, Output, Formatting>
+    : public boost::stringify::stringifier<CharT, Output, FTuple>
 {
-    using base_class = boost::stringify::stringifier<CharT, Output, Formatting>;
     using unsigned_intT = typename std::make_unsigned<intT>::type;
     using width_t = boost::stringify::width_t;
-    using width_tag = boost::stringify::width_tag;
     using chars_catalog = boost::stringify::detail::characters_catalog;
+
+    using alignment_tag  = boost::stringify::alignment_tag;
+    using case_tag = boost::stringify::case_tag;
+    using intbase_tag = boost::stringify::intbase_tag;
+    using showbase_tag = boost::stringify::showbase_tag;
+    using width_tag = boost::stringify::width_tag;
+    
     static constexpr bool is_signed = std::is_signed<intT>::value;
 
 public:
@@ -119,41 +174,33 @@ public:
     using input_type  = intT ;
     using har_type    = CharT ;
     using output_type = Output;
-    using ftuple_type = Formatting;
-    using arg_format_type = boost::stringify::detail::int_arg_format;
+    using ftuple_type = FTuple;
+    using arg_format_type = boost::stringify::detail::int_arg_format
+        <input_type, FTuple>;
 
 
-    int_stringifier(const Formatting& fmt, intT value) noexcept
+    int_stringifier(const FTuple& fmt, intT value) noexcept
         : m_fmt(fmt)
         , m_value(value)
         , m_width(get_facet<width_tag>().width())
-        , m_alignment(boost::stringify::get_alignment<input_type>(fmt))
-        , m_base(boost::stringify::get_intbase<input_type>(fmt))
-        , m_showpos
-            ( is_signed
-           && value >= 0
-           && boost::stringify::get_showpos<input_type>(fmt)
-            )
-        , m_showbase(boost::stringify::get_showbase<input_type>(fmt))
-        , m_uppercase(boost::stringify::get_uppercase<input_type>(fmt))
-
+        , m_alignment(get_facet<alignment_tag>().value())
+        , m_base(get_facet<intbase_tag>().value())
+        , m_showpos(is_signed && value >= 0 && get_facet<showpos_tag>().value())
+        , m_showbase(get_facet<showbase_tag>().value())
+        , m_uppercase(get_facet<case_tag>().uppercase())
     {
     }
 
 
-    int_stringifier(const Formatting& fmt, intT value, arg_format_type argf) noexcept
+    int_stringifier(const FTuple& fmt, intT value, arg_format_type argf) noexcept
         : m_fmt(fmt)
         , m_value(value)
-        , m_width(argf.m_width > -1 ? argf.m_width : get_facet<width_tag>().width())
-        , m_alignment(boost::stringify::get_alignment<input_type>(fmt, argf.m_flags))
-        , m_base(boost::stringify::get_intbase<input_type>(fmt, argf.m_flags))
-        , m_showpos
-            ( is_signed
-           && value >= 0
-           && boost::stringify::get_showpos<input_type>(fmt, argf.m_flags)
-            )
-        , m_showbase(boost::stringify::get_showbase<input_type>(fmt, argf.m_flags))
-        , m_uppercase(boost::stringify::get_uppercase<input_type>(fmt, argf.m_flags))
+        , m_width(argf.get_width(fmt))
+        , m_alignment(argf.get_alignment(fmt))
+        , m_base(argf.get_base(fmt))
+        , m_showpos(is_signed && value >= 0 && argf.get_showpos(fmt))
+        , m_showbase(argf.get_showbase(fmt))
+        , m_uppercase(argf.get_uppercase(fmt))
     {
     }
 
@@ -184,7 +231,7 @@ public:
 
 private:
 
-    const Formatting& m_fmt;
+    const FTuple& m_fmt;
     const intT m_value;
     const width_t m_width;
     const boost::stringify::alignment m_alignment;
@@ -457,9 +504,9 @@ private:
 template <typename IntT>
 struct int_input_traits
 {
-    template <typename CharT, typename Output, typename Formatting>
+    template <typename CharT, typename Output, typename FTuple>
     using stringifier =
-        boost::stringify::detail::int_stringifier<IntT, CharT, Output, Formatting>;
+        boost::stringify::detail::int_stringifier<IntT, CharT, Output, FTuple>;
 };
 
 } // namespace detail

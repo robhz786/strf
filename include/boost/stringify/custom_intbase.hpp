@@ -47,15 +47,15 @@ struct intbase_tag
         boost::stringify::intbase_impl_t<10, boost::stringify::true_trait>;
 };
 
-template <typename InputType, typename Formatting>
-constexpr int get_intbase(const Formatting& fmt) noexcept
+template <typename InputType, typename FTuple>
+constexpr int get_intbase(const FTuple& fmt) noexcept
 {
     return fmt.template get<boost::stringify::intbase_tag, InputType>().value();
 }
 
 
-template <typename InputType, typename Formatting, typename Flags>
-constexpr int get_intbase(const Formatting& fmt, const Flags& flags) noexcept
+template <typename InputType, typename FTuple, typename Flags>
+constexpr int get_intbase(const FTuple& fmt, const Flags& flags) noexcept
 {
     if (flags.has_char('d'))
     {

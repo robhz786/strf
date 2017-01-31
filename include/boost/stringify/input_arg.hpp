@@ -28,7 +28,7 @@ struct failed_intput_traits
 
 } // namespace detail
 
-template <typename CharT, typename Output, typename Formatting>
+template <typename CharT, typename Output, typename FTuple>
 class input_arg
 {
     template <typename T>
@@ -44,7 +44,7 @@ class input_arg
 
     template <class T>
     using stringifier = typename input_traits<T>        
-        :: template stringifier<CharT, Output, Formatting>;
+        :: template stringifier<CharT, Output, FTuple>;
 
     template <typename T>
     struct alignas(alignof(T)) memory_space
@@ -53,15 +53,15 @@ class input_arg
     };
 
     using stringifier_base
-    = boost::stringify::stringifier<CharT, Output, Formatting>;
+    = boost::stringify::stringifier<CharT, Output, FTuple>;
 
     typedef void (*construtor_function)
-    (stringifier_base*, const Formatting&, const void*, const void*);
+    (stringifier_base*, const FTuple&, const void*, const void*);
     
     template <typename Child, typename InputType>
     static void construct__arg_is_ptr
         ( stringifier_base* bptr
-        , const Formatting& fmt
+        , const FTuple& fmt
         , const void* input_arg_v
         , const void*
         )
@@ -72,7 +72,7 @@ class input_arg
     template <typename Child, typename InputType>
     static void construct__arg_is_ref
         ( stringifier_base* bptr
-        , const Formatting& fmt
+        , const FTuple& fmt
         , const void* input_arg_v
         , const void*
         )
@@ -83,7 +83,7 @@ class input_arg
     template <typename Child, typename InputType>
     static void construct__arg_is_ptr__with_fmt
         ( stringifier_base* bptr
-        , const Formatting& fmt
+        , const FTuple& fmt
         , const void* input_arg_v
         , const void* format_arg_v
         )
@@ -99,7 +99,7 @@ class input_arg
     template <typename Child, typename InputType>
     static void construct__arg_is_ref__withf_fmt
         ( stringifier_base* bptr
-        , const Formatting& fmt
+        , const FTuple& fmt
         , const void* input_arg_v
         , const void* format_arg_v
         )
@@ -178,13 +178,13 @@ public:
         m_stringifier->~stringifier_base();
     }
 
-    std::size_t length(const Formatting& fmt) const
+    std::size_t length(const FTuple& fmt) const
     {
         construct_if_necessary(fmt);
         return m_stringifier->length();
     }
 
-    void write(Output& out, const Formatting& fmt) const
+    void write(Output& out, const FTuple& fmt) const
     {
         construct_if_necessary(fmt);
         return m_stringifier->write(out);
@@ -192,7 +192,7 @@ public:
 
 private:
     
-    void construct_if_necessary(const Formatting& fmt) const
+    void construct_if_necessary(const FTuple& fmt) const
     {
         if (! m_constructed)
         {
@@ -203,7 +203,7 @@ private:
     
     const void* m_value;
     const void* m_arg_format;
-    boost::stringify::stringifier<CharT, Output, Formatting>* m_stringifier;
+    boost::stringify::stringifier<CharT, Output, FTuple>* m_stringifier;
     construtor_function m_construct_function;
     mutable bool m_constructed = false;
 };

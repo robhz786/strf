@@ -12,20 +12,19 @@ namespace boost {
 namespace stringify {
 namespace detail {
 
-template <typename CharT, typename Output, typename Formatting>
+template <typename CharT, typename Output, typename FTuple>
 class char_stringifier
-    : public boost::stringify::stringifier<CharT, Output, Formatting>
+    : public boost::stringify::stringifier<CharT, Output, FTuple>
 {
-    typedef boost::stringify::stringifier<CharT, Output, Formatting> base;
-    
+
 public:
 
-    typedef CharT input_type;
-    typedef CharT char_type;
-    typedef Output output_type;
-    typedef Formatting ftuple_type;
+    using input_type = CharT ;
+    using char_type = CharT;
+    using output_type = Output ;
+    using ftuple_type = FTuple ;
     
-    char_stringifier(const Formatting& fmt, CharT _character) noexcept
+    char_stringifier(const FTuple& fmt, CharT _character) noexcept
         : m_fmt(fmt)
         , m_char(_character)
     {
@@ -43,7 +42,7 @@ public:
     
 private:
    
-    const Formatting& m_fmt; 
+    const FTuple& m_fmt; 
     CharT m_char;
 };
 
@@ -58,17 +57,17 @@ private:
     {
         static_assert(sizeof(CharIn) == sizeof(CharOut), "");
         
-        template <typename Output, typename Formatting>
+        template <typename Output, typename FTuple>
         using stringifier
         = boost::stringify::detail::char_stringifier
-            <CharOut, Output, Formatting>;
+            <CharOut, Output, FTuple>;
     };
     
 public:
     
-    template <typename CharT, typename Output, typename Formatting>
+    template <typename CharT, typename Output, typename FTuple>
     using stringifier
-    = typename helper<CharT>::template stringifier<Output, Formatting>;
+    = typename helper<CharT>::template stringifier<Output, FTuple>;
 };
 
 } //namepace detail

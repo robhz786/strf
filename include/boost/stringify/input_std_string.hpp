@@ -13,37 +13,36 @@ namespace boost {
 namespace stringify{
 namespace detail {
 
-template <class CharT, typename Traits, typename Output, class Formatting>
+template <class CharT, typename Traits, typename Output, class FTuple>
 class std_string_stringifier
-    : public boost::stringify::stringifier<CharT, Output, Formatting>
+    : public boost::stringify::stringifier<CharT, Output, FTuple>
 {
-    typedef boost::stringify::stringifier<CharT, Output, Formatting> base;
 
 public:
-    typedef boost::stringify::detail::string_arg_formatting arg_format_type;
-    typedef std::basic_string<CharT, Traits> input_type;
-    typedef CharT char_type;
-    typedef Output output_type;
-    typedef Formatting ftuple_type;
+    
+    using input_type  = std::basic_string<CharT, Traits>;
+    using output_type = Output;
+    using ftuple_type = FTuple;
+    using arg_format_type = boost::stringify::detail::string_arg_format
+        <input_type, FTuple>;
 
    std_string_stringifier
-        ( const Formatting& fmt
+        ( const FTuple& fmt
         , const input_type& str
-        , arg_format_type argf
+        , arg_format_type argfmt
         ) noexcept
         : m_fmt(fmt)
         , m_str(str)
-        , m_padding_width(padding_width(argf.get_width<input_type>(fmt)))
-        , m_alignment(boost::stringify::get_alignment<input_type>(fmt, argf.m_flags))
+        , m_padding_width(padding_width(argfmt.get_width(fmt)))
+        , m_alignment(argfmt.get_alignment(fmt))
     {
     }
     
-    std_string_stringifier(const Formatting& fmt, const input_type& str) noexcept
+    std_string_stringifier(const FTuple& fmt, const input_type& str) noexcept
         : m_fmt(fmt)
         , m_str(str)
-        , m_padding_width
-          (padding_width(boost::stringify::get_width<input_type>(fmt)))
-        , m_alignment(boost::stringify::get_alignment<input_type>(fmt))
+        , m_padding_width(padding_width(get_facet<width_tag>().width()))
+        , m_alignment(get_facet<alignment_tag>().value())
     {
     }
 
@@ -82,10 +81,16 @@ public:
 
 private:
 
-    const Formatting& m_fmt;
+    const FTuple& m_fmt;
     const input_type& m_str;
     const width_t m_padding_width;
     boost::stringify::alignment m_alignment;
+
+    template <typename fmt_tag>
+    decltype(auto) get_facet() const noexcept
+    {
+        return m_fmt.template get<fmt_tag, input_type>();
+    }
     
     void write_fill(Output& out) const
     {
@@ -112,17 +117,17 @@ private:
     {
         static_assert(sizeof(CharIn) == sizeof(CharOut), "");
 
-        template <typename Output, typename Formatting>
+        template <typename Output, typename FTuple>
         using stringifier
         = boost::stringify::detail::std_string_stringifier
-            <CharOut, CharTraits, Output, Formatting>;
+            <CharOut, CharTraits, Output, FTuple>;
     };
 
 public:
 
-    template <typename CharT, typename Output, typename Formatting>
+    template <typename CharT, typename Output, typename FTuple>
     using stringifier
-    = typename helper<CharT>::template stringifier<Output, Formatting>;
+    = typename helper<CharT>::template stringifier<Output, FTuple>;
 };
 
 } // namespace detail

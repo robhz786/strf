@@ -124,34 +124,6 @@ struct alignment_tag
 };
 
 
-template <typename InputType, typename Formatting>
-boost::stringify::alignment
-get_alignment(const Formatting& fmt) noexcept
-{
-    return fmt.template get<boost::stringify::alignment_tag, InputType>().value();
-}
-
-
-template <typename InputType, typename Formatting, typename Flags>
-boost::stringify::alignment
-get_alignment(const Formatting& fmt, const Flags& flags) noexcept
-{
-    if (flags.has_char('>'))
-    {
-        return boost::stringify::alignment::right;
-    }
-    else if (flags.has_char('<'))
-    {                        
-        return boost::stringify::alignment::left;
-    }
-    else if (flags.has_char('='))
-    {
-        return boost::stringify::alignment::internal;
-    }
-    return fmt.template get<boost::stringify::alignment_tag, InputType>().value();
-}
-
-
 } // namespace stringify
 } // namespace boost
 

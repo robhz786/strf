@@ -43,31 +43,6 @@ struct case_tag
 };
 
 
-template <typename InputType, typename Formatting>
-bool get_uppercase(const Formatting& fmt) noexcept
-{
-    using tag = boost::stringify::case_tag;
-    return fmt.template get<tag, InputType>().uppercase();
-}
-
-
-template <typename InputType, typename Formatting, typename Flags>
-bool get_uppercase(const Formatting& fmt, const Flags& flags) noexcept
-{
-    if (flags.has_char('c'))
-    {
-        return false;
-    }
-    else if (flags.has_char('C') || flags.has_char('X'))
-    {                        
-        return true;
-    }
-    using tag = boost::stringify::case_tag;
-    return fmt.template get<tag, InputType>().uppercase();
-}
-
-
-
 } // namespace stringify
 } // namespace boost
 

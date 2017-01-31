@@ -16,7 +16,7 @@ namespace boost
 namespace stringify 
 {
 
-template <typename CharT, typename Output, typename Formatting>
+template <typename CharT, typename Output, typename FTuple>
 class stringifier
 {
 public:

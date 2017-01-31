@@ -13,20 +13,19 @@ namespace boost {
 namespace stringify {
 namespace detail {
 
-template <typename CharT, typename Output, typename Formatting>
+template <typename CharT, typename Output, typename FTuple>
 class char32_stringifier
-    : public boost::stringify::stringifier<CharT, Output, Formatting>
+    : public boost::stringify::stringifier<CharT, Output, FTuple>
 {
-    typedef boost::stringify::stringifier<CharT, Output, Formatting> base;
-    
+
 public:
 
-    typedef char32_t input_type;
-    typedef CharT char_type;
-    typedef Output output_type;
-    typedef Formatting ftuple_type;
+    using input_type = char32_t;
+    using char_type = CharT;
+    using output_type = Output;
+    using ftuple_type = FTuple;
     
-    char32_stringifier(const Formatting& fmt, char32_t ch) noexcept
+    char32_stringifier(const FTuple& fmt, char32_t ch) noexcept
         : m_fmt(fmt)
         , m_char32(ch)
     {
@@ -46,7 +45,7 @@ public:
     
 private:
 
-    const Formatting& m_fmt;
+    const FTuple& m_fmt;
     char32_t m_char32;
 
 };
@@ -54,10 +53,10 @@ private:
 
 struct char32_input_traits
 {
-    template <typename CharT, typename Output, typename Formatting>
+    template <typename CharT, typename Output, typename FTuple>
     using stringifier
     = boost::stringify::detail::char32_stringifier
-        <CharT, Output, Formatting>;
+        <CharT, Output, FTuple>;
 };
 
 } // namespace detail

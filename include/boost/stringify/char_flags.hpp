@@ -7,7 +7,6 @@
 
 namespace boost{
 namespace stringify{
-namespace detail{
 
 template <char ...>
 class char_flags;
@@ -85,7 +84,6 @@ protected:
     {
     }
 
-
     using parent::m_bits;
     
     constexpr static int mask(char ch)
@@ -105,7 +103,6 @@ protected:
 };
     
 
-} // namespace detail
 } // namespace stringify
 } // namespace boost
 

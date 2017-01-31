@@ -62,7 +62,7 @@ struct make_string_helper
 
     template <typename ... Formaters>
     using input_args_getter_type
-        = boost::stringify::detail::final_writer
+        = boost::stringify::arg_list_stringifier
             < typename StringType::value_type
             , boost::stringify::ftuple<Formaters...>
             , writer_type

@@ -29,16 +29,16 @@ public:
     
 };
 
-
+} // namespace detail
 
 template
     < typename CharT
-    , typename Formatting
+    , typename FTuple
     , typename output_type  
     >
-class final_writer
+class arg_list_stringifier
 {
-    using arg_type =  boost::stringify::input_arg<CharT, output_type, Formatting>;
+    using arg_type =  boost::stringify::input_arg<CharT, output_type, FTuple>;
   
     template <typename Arg1, typename ... Args>
     std::size_t length(Arg1 && arg1, Args && ... args)
@@ -107,13 +107,13 @@ class final_writer
 public:
     
     template <typename ... Formaters>
-    final_writer(output_type&& output, const Formaters& ... fmtargs)
+    arg_list_stringifier(output_type&& output, const Formaters& ... fmtargs)
         : m_output(std::move(output))
         , m_fmt(fmtargs ...)
     {
     }
 
-    final_writer(final_writer&& other) = default;
+    arg_list_stringifier(arg_list_stringifier&& other) = default;
     
     decltype(auto) operator[](const std::initializer_list<arg_type>& lst) &&
     {
@@ -263,10 +263,8 @@ public:
 private:
 
     output_type m_output;
-    Formatting m_fmt;
+    FTuple m_fmt;
 };
-
-} //namescpace detail
 
 
 template <typename output_type>
@@ -278,8 +276,8 @@ public:
     
    
     template <typename ... Formaters>
-        using final_writer_type
-        = boost::stringify::detail::final_writer
+        using arg_list_stringifier_type
+        = boost::stringify::arg_list_stringifier
             < char_type
             , boost::stringify::ftuple<Formaters...>
             , output_type 
@@ -315,22 +313,22 @@ public:
     }
     
     template <typename ... Formaters>
-    final_writer_type<Formaters ...> operator() (const Formaters& ... formaters) &&
+    arg_list_stringifier_type<Formaters ...> operator() (const Formaters& ... formaters) &&
     {
-        return final_writer_type<Formaters ...>(std::move(m_output), formaters ...);
+        return arg_list_stringifier_type<Formaters ...>(std::move(m_output), formaters ...);
     }
 
     template <typename ... Formaters>
-    final_writer_type<Formaters ...> operator()
+    arg_list_stringifier_type<Formaters ...> operator()
         (const boost::stringify::ftuple<Formaters...>& formaters) &&
     {
-        return final_writer_type<Formaters ...>(std::move(m_output), formaters);
+        return arg_list_stringifier_type<Formaters ...>(std::move(m_output), formaters);
     }
 
     
     decltype(auto) operator[](std::initializer_list<default_input_arg> lst) &&
     {
-        return final_writer_type<>(std::move(m_output))[lst];
+        return arg_list_stringifier_type<>(std::move(m_output))[lst];
     }
     
 private:

@@ -23,7 +23,7 @@ struct showpos_impl
     {
     }
     
-    constexpr bool show() const
+    constexpr bool value() const
     {
         return m_show;
     }
@@ -39,7 +39,7 @@ struct showpos_true_impl
 
     typedef boost::stringify::showpos_tag category;
 
-    constexpr bool show() const { return true; }
+    constexpr bool value() const { return true; }
 
     constexpr boost::stringify::showpos_impl<Filter> operator()(bool s) const
     {
@@ -61,7 +61,7 @@ struct showpos_false_impl
 
     typedef boost::stringify::showpos_tag category;
 
-    constexpr bool show() const { return false; }
+    constexpr bool value() const { return false; }
 
     constexpr boost::stringify::showpos_false_impl<Filter> operator()() const
     {
@@ -91,29 +91,6 @@ struct showpos_tag
         boost::stringify::showpos_false_impl<boost::stringify::true_trait>
         default_impl;
 };
-
-
-template <typename InputType, typename Formatting>
-bool get_showpos(const Formatting& fmt) noexcept
-{
-    return fmt.template get<boost::stringify::showpos_tag, InputType>().show();
-}
-
-
-template <typename InputType, typename Formatting, typename Flags>
-bool get_showpos(const Formatting& fmt, Flags& flags) noexcept
-{
-    if (flags.has_char('-'))
-    {
-        return false;
-    }
-    else if (flags.has_char('+'))
-    {                        
-        return true;
-    }
-    return fmt.template get<boost::stringify::showpos_tag, InputType>().show();
-}
-
 
 
 } // namespace stringify

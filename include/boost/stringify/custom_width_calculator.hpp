@@ -61,8 +61,8 @@ struct width_calculator_tag
     default_impl;
 };
 
-template <typename InputType, typename Formatting>
-decltype(auto) get_width_calculator(const Formatting& fmt)
+template <typename InputType, typename FTuple>
+decltype(auto) get_width_calculator(const FTuple& fmt)
 {
     return fmt.template get<boost::stringify::width_calculator_tag, InputType>();
 }

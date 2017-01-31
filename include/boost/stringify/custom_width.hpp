@@ -74,12 +74,6 @@ constexpr auto width(boost::stringify::width_t w) noexcept
 }
 
 
-template <typename InputType, typename Formatting>
-boost::stringify::width_t get_width(const Formatting& fmt) noexcept
-{
-    return fmt.template get<boost::stringify::width_tag, InputType>().width();
-}
-
 } // namespace stringify
 } // namespace boost
 

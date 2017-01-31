@@ -43,29 +43,6 @@ struct showbase_tag
 };
 
 
-template <typename InputType, typename Formatting>
-bool get_showbase(const Formatting& fmt) noexcept
-{
-    using tag = boost::stringify::showbase_tag;
-    return fmt.template get<tag, InputType>().value();
-}
-
-
-template <typename InputType, typename Formatting, typename Flags>
-bool get_showbase(const Formatting& fmt, const Flags& flags) noexcept
-{
-    if (flags.has_char('$'))
-    {
-        return false;
-    }
-    else if (flags.has_char('#'))
-    {                        
-        return true;
-    }
-    return boost::stringify::get_showbase<InputType>(fmt);
-}
-
-
 } // namespace stringify
 } // namespace boost
 
