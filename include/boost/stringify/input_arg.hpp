@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/stringifier.hpp>
+#include <boost/stringify/detail/deferred_stringifier_construction.hpp>
 
 namespace boost {
 namespace stringify {
@@ -47,165 +47,75 @@ class input_arg
         :: template stringifier<CharT, Output, FTuple>;
 
     template <typename T>
-    struct alignas(alignof(T)) memory_space
-    {
-        char space[sizeof(T)];
-    };
-
-    using stringifier_base
-    = boost::stringify::stringifier<CharT, Output, FTuple>;
-
-    typedef void (*construtor_function)
-    (stringifier_base*, const FTuple&, const void*, const void*);
-    
-    template <typename Child, typename InputType>
-    static void construct__arg_is_ptr
-        ( stringifier_base* bptr
-        , const FTuple& fmt
-        , const void* input_arg_v
-        , const void*
-        )
-    {
-        new (bptr) Child (fmt, static_cast<InputType>(input_arg_v));
-    }
-
-    template <typename Child, typename InputType>
-    static void construct__arg_is_ref
-        ( stringifier_base* bptr
-        , const FTuple& fmt
-        , const void* input_arg_v
-        , const void*
-        )
-    {
-        new (bptr) Child (fmt, *static_cast<const InputType*>(input_arg_v));
-    }
-
-    template <typename Child, typename InputType>
-    static void construct__arg_is_ptr__with_fmt
-        ( stringifier_base* bptr
-        , const FTuple& fmt
-        , const void* input_arg_v
-        , const void* format_arg_v
-        )
-    {
-        typedef typename Child::arg_format_type format_type;
-        new (bptr) Child
-            ( fmt
-            , static_cast<InputType>(input_arg_v)
-            , *static_cast<const format_type*>(format_arg_v)
-            );
-    }
-
-    template <typename Child, typename InputType>
-    static void construct__arg_is_ref__withf_fmt
-        ( stringifier_base* bptr
-        , const FTuple& fmt
-        , const void* input_arg_v
-        , const void* format_arg_v
-        )
-    {
-        typedef typename Child::arg_format_type format_type;
-        new (bptr) Child
-            ( fmt
-            , *static_cast<const InputType*>(input_arg_v)
-            , *static_cast<const format_type*>(format_arg_v)
-            );
-    }
-
+    using stringifier_constructor =
+        boost::stringify::detail::deferred_stringifier_construction_impl
+        <stringifier<T>, CharT, Output, FTuple>;
+   
 public:
 
     template <typename T>
     input_arg
         ( const T* value
-        , memory_space<stringifier<const T*> > && ms
-          =  memory_space<stringifier<const T*> >()
+        , stringifier_constructor<const T*> && strf = stringifier_constructor<const T*>()
         ) noexcept
-        : m_value(value)
-        , m_arg_format(nullptr)
-        , m_stringifier(reinterpret_cast<stringifier<const T*>*>(&ms))
-        , m_construct_function
-             (construct__arg_is_ptr<stringifier<const T*>, const T*>)
+        : m_stringifier_constructor(strf)
     {
+        strf.set_args(value);
     }
-   
+
+    
+    template <typename T>
+    input_arg
+        ( const T& value
+        , stringifier_constructor<T> && strf = stringifier_constructor<T>()
+        ) noexcept
+        : m_stringifier_constructor(strf)
+    {
+        strf.set_args(value);
+    }
+
     template <typename T>
     input_arg
         ( const T* value
-        , const typename stringifier<T>::arg_format_type& arg_format
-        , memory_space<stringifier<const T*> > && ms
-          =  memory_space<stringifier<const T*> >()
+        , const typename stringifier<const T*>::arg_format_type& arg_format
+        , stringifier_constructor<const T*> && strf = stringifier_constructor<const T*>() 
         ) noexcept
-        : m_value(value)
-        , m_arg_format(&arg_format)
-        , m_stringifier(reinterpret_cast<stringifier<const T*>*>(&ms))
-        , m_construct_function
-             (construct__arg_is_ptr__with_fmt<stringifier<const T*>, const T*>)
+        : m_stringifier_constructor(strf)
     {
-       
+        strf.set_args(value, arg_format);
     }
 
+    
     template <typename T>
     input_arg
-        ( const T& value
-        , memory_space<stringifier<T>>&& ms = memory_space<stringifier<T>>()
-        ) noexcept
-        : m_value(&value)
-        , m_arg_format(nullptr)
-        , m_stringifier(reinterpret_cast<stringifier<T>*>(&ms))
-        , m_construct_function
-             (construct__arg_is_ref<stringifier<T>, T>)
-    {
-        
-    }
-
-    template <typename T>
-    input_arg
-        ( const T& value
+        ( T&& value
         , const typename stringifier<T>::arg_format_type& arg_format
-        , memory_space<stringifier<T>>&& ms = memory_space<stringifier<T>>()
+        , stringifier_constructor<T> && strf = stringifier_constructor<T>() 
         ) noexcept
-        : m_value(&value)
-        , m_arg_format(&arg_format)
-        , m_stringifier(reinterpret_cast<stringifier<T>*>(&ms))
-        , m_construct_function
-             (construct__arg_is_ref__withf_fmt<stringifier<T>, T>)
+        : m_stringifier_constructor(strf)
     {
-        
+        strf.set_args(value, arg_format);
     }
 
     ~input_arg()
     {
-        m_stringifier->~stringifier_base();
     }
-
+    
     std::size_t length(const FTuple& fmt) const
     {
-        construct_if_necessary(fmt);
-        return m_stringifier->length();
+        return m_stringifier_constructor.length(fmt);
     }
 
     void write(Output& out, const FTuple& fmt) const
     {
-        construct_if_necessary(fmt);
-        return m_stringifier->write(out);
+        return m_stringifier_constructor.write(out, fmt);
     }
 
 private:
-    
-    void construct_if_necessary(const FTuple& fmt) const
-    {
-        if (! m_constructed)
-        {
-            m_construct_function(m_stringifier, fmt, m_value, m_arg_format);            
-        }
-        m_constructed = true;
-    }
-    
-    const void* m_value;
-    const void* m_arg_format;
-    boost::stringify::stringifier<CharT, Output, FTuple>* m_stringifier;
-    construtor_function m_construct_function;
-    mutable bool m_constructed = false;
+
+    boost::stringify::detail::deferred_stringifier_construction
+    <CharT, Output, FTuple>
+    & m_stringifier_constructor; 
 };
 
 
