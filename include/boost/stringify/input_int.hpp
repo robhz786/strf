@@ -52,12 +52,6 @@ struct int_arg_format
     {
     }
 
-    constexpr int_arg_format(const char* f, width_t w)
-        : flags(f)
-        , width(w)
-    {
-    }
-    
     constexpr int_arg_format(const char* f)
         : flags(f)
         , width(-1)

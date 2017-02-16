@@ -22,9 +22,15 @@ struct string_arg_format
     using input_type = InputType;
     using ftuple_type = FTuple;
 
-    constexpr string_arg_format(const char* f, int w = -1)
+    constexpr string_arg_format(int w, const char* f)
         : flags(f)
         , width(w)
+    {
+    }
+
+    constexpr string_arg_format(const char* f)
+        : flags(f)
+        , width(-1)
     {
     }
 
