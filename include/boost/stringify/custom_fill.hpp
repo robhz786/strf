@@ -30,17 +30,12 @@ public:
     typedef boost::stringify::fill_tag category;
     template <typename T> using accept_input_type = Filter<T>;
     
-    template
-        < typename CharT
-        , typename InputType
-        , typename Output
-        , typename FTuple
-        >
+    template<typename CharT, typename Output, typename FTuple>
     void fill(width_type width, Output& out, const FTuple& fmt) const
     {
         decltype(auto) char32_writer
-            = boost::stringify::get_char32_writer<CharT, InputType>(fmt);
-        int count = quantity<CharT, InputType>(width, fmt);
+            = boost::stringify::get_char32_writer<CharT, category>(fmt);
+        int count = quantity<CharT>(width, fmt);
         
         if (CharT ch = char32_writer.convert_if_length_is_1(FillChar))
         {
@@ -55,21 +50,21 @@ public:
         }
     }
 
-    template <typename CharT, typename InputType, typename FTuple>
+    template <typename CharT, typename FTuple>
     std::size_t length(width_type width, const FTuple& fmt) const
     {
         std::size_t ch_length
-            = get_char32_writer<CharT, InputType>(fmt).length(FillChar);
-        return ch_length * quantity<CharT, InputType>(width, fmt);
+            = get_char32_writer<CharT, category>(fmt).length(FillChar);
+        return ch_length * quantity<CharT>(width, fmt);
     }
 
 private:
     
-    template <typename CharT, typename InputType, typename FTuple>
+    template <typename CharT, typename FTuple>
     int quantity(width_type width, const FTuple& fmt) const
     {
         boost::stringify::width_t ch_width =
-            boost::stringify::get_width_calculator<InputType>(fmt)
+            boost::stringify::get_width_calculator<category>(fmt)
             .width_of(FillChar);
 
         if (ch_width == 0 || ch_width == 1)
@@ -95,17 +90,12 @@ public:
     typedef boost::stringify::fill_tag category;
     template <typename T> using accept_input_type = Filter<T>;
     
-    template
-        < typename CharT
-        , typename InputType
-        , typename Output
-        , typename FTuple
-        >
+    template <typename CharT, typename Output, typename FTuple>
     void fill(width_type width, Output& out, const FTuple& fmt) const
     {
         const auto& char32_writer
-            = boost::stringify::get_char32_writer<CharT, InputType>(fmt);
-        int count = quantity<CharT, InputType>(width, fmt);
+            = boost::stringify::get_char32_writer<CharT, category>(fmt);
+        int count = quantity<CharT>(width, fmt);
 
         if (CharT ch = char32_writer.convert_if_length_is_1(m_fillchar))
         {
@@ -120,23 +110,23 @@ public:
         }
     }
 
-    template <typename CharT, typename InputType, typename FTuple>
+    template <typename CharT, typename FTuple>
     std::size_t length(width_type width, const FTuple& fmt) const
     {
         std::size_t ch_length
-            = get_char32_writer<CharT, InputType>(fmt).length(m_fillchar);
-        return ch_length * quantity<CharT, InputType>(width, fmt);
+            = get_char32_writer<CharT, category>(fmt).length(m_fillchar);
+        return ch_length * quantity<CharT>(width, fmt);
     }
 
 private:
 
     char32_t m_fillchar;
     
-    template <typename CharT, typename InputType, typename FTuple>
+    template <typename CharT, typename FTuple>
     int quantity(width_type width, const FTuple& fmt) const
     {
         boost::stringify::width_t ch_width =
-            boost::stringify::get_width_calculator<InputType>(fmt)
+            boost::stringify::get_width_calculator<category>(fmt)
             .width_of(m_fillchar);
 
         if (ch_width == 0 || ch_width == 1)
@@ -153,6 +143,18 @@ struct fill_tag
     typedef 
         boost::stringify::fill_impl_t<U' ', boost::stringify::true_trait>
         default_impl;
+};
+
+
+template <typename T>
+struct ic_fill: public std::false_type
+{
+};
+
+
+template <>
+struct ic_fill<boost::stringify::fill_tag>: public std::true_type
+{
 };
 
 
@@ -192,7 +194,7 @@ void write_fill
 )
 {
     boost::stringify::get_filler<InputType>(fmt)
-        . template fill<CharT, InputType>(width, out, fmt);
+        . template fill<CharT>(width, out, fmt);
 }
 
 
@@ -203,7 +205,7 @@ std::size_t fill_length
     )
 {
     return boost::stringify::get_filler<InputType>(fmt)
-        . template length<CharT, InputType>(width, fmt);
+        . template length<CharT>(width, fmt);
 }
 
 } // namespace stringify

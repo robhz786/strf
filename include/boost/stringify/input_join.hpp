@@ -149,7 +149,7 @@ private:
         {
             boost::stringify::fill_impl<boost::stringify::true_trait>
                 fill_writer(m_join.fillchar);
-            return fill_writer.length<CharT, input_type>(m_fill_width, m_fmt);
+            return fill_writer.length<CharT>(m_fill_width, m_fmt);
         }
         else
         {
@@ -201,7 +201,7 @@ private:
         {
             boost::stringify::fill_impl<boost::stringify::true_trait>
                 fill_writer(m_join.fillchar);
-            fill_writer.fill<CharT, input_type>(m_fill_width, out, m_fmt);
+            fill_writer.fill<CharT>(m_fill_width, out, m_fmt);
         }
         else
         {
