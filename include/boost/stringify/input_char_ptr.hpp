@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <limits>
-#include <boost/stringify/stringifier.hpp>
 #include <boost/stringify/custom_alignment.hpp>
 #include <boost/stringify/custom_width_calculator.hpp>
 
@@ -46,7 +45,6 @@ struct string_arg_format
 
 template<typename CharT, typename Output, typename FTuple>
 class char_ptr_stringifier
-    : public boost::stringify::stringifier<CharT, Output, FTuple>
 {
 
 private:
@@ -88,7 +86,7 @@ public:
     {
     }
 
-    virtual std::size_t length() const override
+    virtual std::size_t length() const
     {
         if (m_padding_width > 0)
         {
@@ -99,7 +97,7 @@ public:
         return m_len;
     }
 
-    void write(Output& out) const override
+    void write(Output& out) const
     {
         if (m_padding_width > 0)
         {

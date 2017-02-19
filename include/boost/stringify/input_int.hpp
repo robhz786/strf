@@ -16,7 +16,6 @@
 #include <boost/stringify/custom_showpos.hpp>
 #include <boost/stringify/custom_width.hpp>
 #include <boost/stringify/ftuple.hpp>
-#include <boost/stringify/stringifier.hpp>
 #include <boost/stringify/detail/characters_catalog.hpp>
 #include <boost/stringify/detail/number_of_digits.hpp>
 #include <cstdint>
@@ -149,7 +148,6 @@ unsigned_abs(intT value)
 
 template <typename intT, typename CharT, typename Output, typename FTuple>
 struct int_stringifier
-    : public boost::stringify::stringifier<CharT, Output, FTuple>
 {
     using unsigned_intT = typename std::make_unsigned<intT>::type;
     using width_t = boost::stringify::width_t;
@@ -199,13 +197,13 @@ public:
     }
 
 
-    virtual std::size_t length() const override
+    virtual std::size_t length() const
     {
         return length_body() + length_fill();
     }
 
 
-    virtual void write(Output& out) const override
+    virtual void write(Output& out) const
     {
         width_t fill_width = 0;
         if (m_width > 0)

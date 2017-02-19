@@ -5,7 +5,6 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/stringifier.hpp>
 #include <boost/stringify/custom_char32_conversion.hpp>
 #include <type_traits>
 
@@ -15,7 +14,6 @@ namespace detail {
 
 template <typename CharT, typename Output, typename FTuple>
 class char32_stringifier
-    : public boost::stringify::stringifier<CharT, Output, FTuple>
 {
 
 public:
@@ -31,13 +29,13 @@ public:
     {
     }
 
-    virtual std::size_t length() const override
+    virtual std::size_t length() const
     {
         return boost::stringify::get_char32_writer<CharT, char32_t>(m_fmt)
             .length(m_char32);
     }
     
-    void write(Output& out) const override
+    void write(Output& out) const
     {
         return boost::stringify::get_char32_writer<CharT, char32_t>(m_fmt)
             .write(m_char32, out);

@@ -15,7 +15,6 @@ namespace detail {
 
 template <class CharT, typename Traits, typename Output, class FTuple>
 class std_string_stringifier
-    : public boost::stringify::stringifier<CharT, Output, FTuple>
 {
 
 public:
@@ -48,7 +47,7 @@ public:
     {
     }
 
-    virtual std::size_t length() const override
+    virtual std::size_t length() const
     {
         if (m_padding_width > 0)
         {
@@ -59,7 +58,7 @@ public:
         return m_str.length();
     }
 
-    void write(Output& out) const override
+    void write(Output& out) const
     {
         if (m_padding_width > 0)
         {

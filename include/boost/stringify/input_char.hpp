@@ -15,7 +15,6 @@ namespace detail {
 
 template <typename CharT, typename Output, typename FTuple>
 class char_stringifier
-    : public boost::stringify::stringifier<CharT, Output, FTuple>
 {
 
 public:
@@ -31,12 +30,12 @@ public:
     {
     }
 
-    virtual std::size_t length() const override
+    virtual std::size_t length() const
     {
         return 1;
     }
     
-    void write(Output& out) const override
+    void write(Output& out) const
     {
         out.put(m_char);
     }
