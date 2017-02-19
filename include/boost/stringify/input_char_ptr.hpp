@@ -72,7 +72,8 @@ public:
         : m_fmt(fmt)
         , m_str(str)
         , m_len(std::char_traits<CharT>::length(str))
-        , m_padding_width(padding_width(argfmt.get_width(fmt)))
+        , m_total_width(argfmt.get_width(fmt))
+        , m_padding_width(padding_width())
         , m_alignment(argfmt.get_alignment(fmt))
     {
     }
@@ -81,7 +82,8 @@ public:
         : m_fmt(fmt)
         , m_str(str)
         , m_len(std::char_traits<CharT>::length(str))
-        , m_padding_width(padding_width(get_facet<width_tag>().width()))
+        , m_total_width(get_facet<width_tag>().width())
+        , m_padding_width(padding_width())
         , m_alignment(get_facet<alignment_tag>().value())
     {
     }
@@ -119,11 +121,28 @@ public:
     }
 
 
+    int remaining_width(int w) const
+    {
+        if(m_total_width > w)
+        {
+            return 0;
+        }
+        if(m_padding_width > 0)
+        {
+            return w - m_total_width;
+        }
+        return
+            boost::stringify::get_width_calculator<input_type>(m_fmt)
+            .remaining_width(w, m_str, m_len);
+    }
+    
+
 private:
 
     const FTuple& m_fmt;
     const CharT* m_str;
     const std::size_t m_len;
+    const width_t m_total_width;
     const width_t m_padding_width;
     boost::stringify::alignment m_alignment;
 
@@ -139,11 +158,11 @@ private:
                 (m_padding_width, out, m_fmt);
     }
 
-    width_t padding_width(width_t total_width) const
+    width_t padding_width() const
     {
         return
             boost::stringify::get_width_calculator<input_type>(m_fmt)
-            .remaining_width(total_width, m_str, m_len);
+            .remaining_width(m_total_width, m_str, m_len);
     }
 };
 

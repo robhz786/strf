@@ -42,7 +42,14 @@ public:
         return boost::stringify::get_char32_writer<CharT, char32_t>(m_fmt)
             .write(m_char32, out);
     }
-    
+
+    int remaining_width(int w) const
+    {
+        auto calc = boost::stringify::get_width_calculator<input_type>(m_fmt);
+        return w - calc.width_of(m_char32);
+    }
+
+
 private:
 
     const FTuple& m_fmt;

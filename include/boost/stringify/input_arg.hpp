@@ -16,7 +16,7 @@ struct input_traits;
 namespace detail {
 
 template <typename InputType>
-struct failed_intput_traits
+struct failed_input_traits
 {
     template <typename C, typename O, typename F>
     struct stringifier
@@ -36,7 +36,7 @@ class input_arg
     input_traits_of(const T&);
 
     template <typename T>
-    static boost::stringify::detail::failed_intput_traits<T>
+    static boost::stringify::detail::failed_input_traits<T>
     input_traits_of(...);
     
     template <class T>
@@ -111,6 +111,11 @@ public:
         return m_stringifier_constructor.write(out, fmt);
     }
 
+    int remaining_width(int w, const FTuple& fmt) const
+    {
+        return m_stringifier_constructor.remaining_width(w, fmt);
+    }
+    
 private:
 
     boost::stringify::detail::deferred_stringifier_construction

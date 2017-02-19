@@ -7,6 +7,7 @@
 
 #include <boost/stringify/input_char32.hpp>
 #include <boost/stringify/type_traits.hpp>
+#include <boost/stringify/custom_width_calculator.hpp>
 
 namespace boost {
 namespace stringify {
@@ -39,6 +40,13 @@ public:
     {
         out.put(m_char);
     }
+
+    int remaining_width(int w) const
+    {
+        auto calc = boost::stringify::get_width_calculator<input_type>(m_fmt);
+        return w - calc.width_of(m_char);
+    }
+
     
 private:
    

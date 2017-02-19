@@ -14,6 +14,7 @@ test-suite "listf_tests"
       [ run input_string_test.cpp ]
       [ run input_int_test.cpp ]
       [ run input_char_test.cpp ]
+      [ run join_test.cpp ] 
       [ run output_types_test.cpp ]
       [ run ftuple_merge_test.cpp ]
     ;

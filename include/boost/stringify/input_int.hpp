@@ -166,7 +166,7 @@ struct int_stringifier
 public:
 
     using input_type  = intT ;
-    using har_type    = CharT ;
+    using char_type   = CharT ;
     using output_type = Output;
     using ftuple_type = FTuple;
     using arg_format_type = boost::stringify::detail::int_arg_format
@@ -223,6 +223,16 @@ public:
         }
     }
 
+    int remaining_width(int w) const
+    {
+        if (m_width > w)
+        {
+            return 0;
+        }
+        return std::max(0, w - std::max(m_width, width_body()));
+    }
+
+    
 private:
 
     const FTuple& m_fmt;

@@ -21,6 +21,8 @@ public:
     virtual std::size_t length(const FTuple& fmt) = 0;
         
     virtual void write(Output& out, const FTuple& fmt) = 0;
+
+    virtual int remaining_width(int w, const FTuple& fmt) = 0;
 };
 
 
@@ -61,6 +63,9 @@ class deferred_stringifier_construction_impl
         , input_type
         , const input_type*
         >;
+
+    using constructible_from_single_arg
+    = std::is_constructible<StringifierImpl, const FTuple&, input_type>;
     
 public:
 
@@ -79,6 +84,7 @@ public:
     
     void set_args(const input_type& value)
     {
+        static_assert(constructible_from_single_arg::value, "second argument needed");
         BOOST_ASSERT(state != stringifier_initialized);
         set_value(value);
         m_formatter_ptr = nullptr;
@@ -105,18 +111,14 @@ public:
         do_get()->write(out);
     };
 
-private:
     
-    auto get(const FTuple& fmt) -> const StringifierImpl*
+    int remaining_width(int w, const FTuple& fmt)
     {
-        if(state != stringifier_initialized)
-        {
-            BOOST_ASSERT(state == args_initialized);
-            construct(fmt);
-            state = stringifier_initialized;
-        }
-        return do_get();
+        construct_if_necessary(fmt);
+        return do_get()->remaining_width(w);
     }
+    
+private:
 
     constexpr auto do_get() const -> const StringifierImpl*
     {
@@ -128,36 +130,62 @@ private:
         if(state != stringifier_initialized)
         {
             BOOST_ASSERT(state == args_initialized);
-            construct(fmt, get_value(), m_formatter_ptr, has_arg_format_type());
+            construct<StringifierImpl>
+                ( fmt
+                , get_value()
+                , m_formatter_ptr
+                , has_arg_format_type()
+                , constructible_from_single_arg()
+                );
         }
     }
-    
+
+    template <typename S>
     void construct
         ( const FTuple& fmt
         , const input_type& value
         , const arg_format_type* formatter_ptr
         , std::true_type
+        , std::true_type  
         )
     {
         if (formatter_ptr)
         {
-            new (&space[0]) StringifierImpl(fmt, value, *formatter_ptr);
+            new (&space[0]) S(fmt, value, *formatter_ptr);
         }
         else
         {
-            new (&space[0]) StringifierImpl(fmt, value);
+            new (&space[0]) S(fmt, value);
         }
         state = stringifier_initialized;
     }
 
+    template <typename S>
+    void construct
+        ( const FTuple& fmt
+        , const input_type& value
+        , const arg_format_type* formatter_ptr
+        , std::true_type
+        , std::false_type  
+        )
+    {
+        BOOST_ASSERT(formatter_ptr);
+        new (&space[0]) S(fmt, value, *formatter_ptr);
+        state = stringifier_initialized;
+    }
+
+
+    
+    template <typename S>
     void construct
         ( const FTuple& fmt
         , const input_type& value
         , const arg_format_type*
         , std::false_type
+        , std::true_type  
         )
     {
-        new (&space[0]) StringifierImpl(fmt, value);
+        new (&space[0]) S(fmt, value);
         state = stringifier_initialized;
     }
 

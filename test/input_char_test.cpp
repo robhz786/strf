@@ -18,7 +18,8 @@ int main()
     TEST(U"a") () (U'a');
     TEST(L"a") () (L'a');
     TEST(L"a") () (U'a');
-
+    TEST(u"  a") () ({boost::stringify::join > 3, {u'a'}});
+    
    
     TEST (u8"\ud7ff")     () (U'\ud7ff');
     TEST (u8"\ue000")     () (U'\ue000');

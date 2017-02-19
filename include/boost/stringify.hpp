@@ -18,6 +18,7 @@
 #include <boost/stringify/input_char32.hpp>
 #include <boost/stringify/input_char_ptr.hpp>
 #include <boost/stringify/input_std_string.hpp>
+#include <boost/stringify/input_join.hpp>
 
 // output
 

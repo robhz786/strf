@@ -3,8 +3,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <string.h>
-#include <boost/type_traits/is_same.hpp>
 #include <boost/stringify.hpp>
 
 #define TEST testf<__LINE__>
@@ -21,7 +19,8 @@ int main()
     TEST("~~~abc") (strf::fill(U'~'), strf::internal)   ({"abc", 6});
     TEST("~~~abc") (strf::fill(U'~'), strf::left)       ({"abc", {6, ">"}});
     TEST("~~~abc") (strf::fill(U'~'), strf::left)       ({"abc", {6, "="}});
-
+    TEST("   abc") () ({strf::join > 6, {"abc"}});
+    
     TEST("   abcdefghi") (strf::width(3))  ("", {"abc", ">"}, {"def", "<"}, {"ghi", "="});
     TEST("  abcdefghi")  (strf::width(2))  ("", {"abc", ">"}, {"def", "<"}, {"ghi", "="});
     TEST("abcdefghi")    (strf::width(0))  ("", {"abc", ">"}, {"def", "<"}, {"ghi", "="});
@@ -42,7 +41,8 @@ int main()
     TEST("   abcdefghi") (strf::width(3))  ("", {abc, ">"}, {def, "<"}, {ghi, "="});
     TEST("  abcdefghi")  (strf::width(2))  ("", {abc, ">"}, {def, "<"}, {ghi, "="});
     TEST("abcdefghi")    (strf::width(0))  ("", {abc, ">"}, {def, "<"}, {ghi, "="});
-    
+    TEST("   abc") () ({strf::join > 6, {abc}});
+
     return  boost::report_errors();
 }
 
