@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/detail/deferred_stringifier_construction.hpp>
+#include <boost/stringify/detail/stringifier_wrapper.hpp>
 
 namespace boost {
 namespace stringify {
@@ -47,18 +47,32 @@ class input_arg
         :: template stringifier<CharT, Output, FTuple>;
 
     template <typename T>
-    using stringifier_constructor =
-        boost::stringify::detail::deferred_stringifier_construction_impl
+    using stringifier_wrapper_of =
+        boost::stringify::detail::stringifier_wrapper_impl
         <stringifier<T>, CharT, Output, FTuple>;
-   
+
+    using stringifier_wrapper
+        = boost::stringify::detail::stringifier_wrapper<CharT, Output, FTuple>;
+
+    stringifier_wrapper& empty_wrapper()
+    {
+        static stringifier_wrapper ewrapper;
+        return ewrapper;
+    }
+    
 public:
 
+    input_arg()
+        : m_stringifier(empty_wrapper())
+    {
+    }
+    
     template <typename T>
     input_arg
         ( const T* value
-        , stringifier_constructor<const T*> && strf = stringifier_constructor<const T*>()
+        , stringifier_wrapper_of<const T*> && strf = stringifier_wrapper_of<const T*>()
         ) noexcept
-        : m_stringifier_constructor(strf)
+        : m_stringifier(strf)
     {
         strf.set_args(value);
     }
@@ -67,9 +81,9 @@ public:
     template <typename T>
     input_arg
         ( const T& value
-        , stringifier_constructor<T> && strf = stringifier_constructor<T>()
+        , stringifier_wrapper_of<T> && strf = stringifier_wrapper_of<T>()
         ) noexcept
-        : m_stringifier_constructor(strf)
+        : m_stringifier(strf)
     {
         strf.set_args(value);
     }
@@ -78,9 +92,9 @@ public:
     input_arg
         ( const T* value
         , const typename stringifier<const T*>::arg_format_type& arg_format
-        , stringifier_constructor<const T*> && strf = stringifier_constructor<const T*>() 
+        , stringifier_wrapper_of<const T*> && strf = stringifier_wrapper_of<const T*>() 
         ) noexcept
-        : m_stringifier_constructor(strf)
+        : m_stringifier(strf)
     {
         strf.set_args(value, arg_format);
     }
@@ -90,9 +104,9 @@ public:
     input_arg
         ( T&& value
         , const typename stringifier<T>::arg_format_type& arg_format
-        , stringifier_constructor<T> && strf = stringifier_constructor<T>() 
+        , stringifier_wrapper_of<T> && strf = stringifier_wrapper_of<T>() 
         ) noexcept
-        : m_stringifier_constructor(strf)
+        : m_stringifier(strf)
     {
         strf.set_args(value, arg_format);
     }
@@ -103,24 +117,22 @@ public:
     
     std::size_t length(const FTuple& fmt) const
     {
-        return m_stringifier_constructor.length(fmt);
+        return m_stringifier.length(fmt);
     }
 
     void write(Output& out, const FTuple& fmt) const
     {
-        return m_stringifier_constructor.write(out, fmt);
+        return m_stringifier.write(out, fmt);
     }
 
     int remaining_width(int w, const FTuple& fmt) const
     {
-        return m_stringifier_constructor.remaining_width(w, fmt);
+        return m_stringifier.remaining_width(w, fmt);
     }
     
 private:
 
-    boost::stringify::detail::deferred_stringifier_construction
-    <CharT, Output, FTuple>
-    & m_stringifier_constructor; 
+    stringifier_wrapper& m_stringifier; 
 };
 
 

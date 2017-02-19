@@ -11,7 +11,7 @@ int main()
 {
     namespace strf = boost::stringify;
 
-    TEST("abcdef   123") () ({strf::join = 12, {"abc", "def", 1, 23}});
+    TEST("abcdef   123") () ({strf::join = 12, {"abc", "de", "f", {}, {}, 123}});
     TEST("abcdef123   ") () ({strf::join < 12, {"abc", "def", 123}});
     TEST("   abcdef123") () ({strf::join > 12, {"abc", "def", 123}});
     TEST("~~~abcdef123") () ({strf::join('~') > 12, {"abc", "def", 123}});

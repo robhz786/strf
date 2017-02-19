@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_DETAIL_DEFERRED_STRINGIFIER_CONSTRUCTION_HPP
-#define BOOST_STRINGIFY_DETAIL_DEFERRED_STRINGIFIER_CONSTRUCTION_HPP
+#ifndef BOOST_STRINGIFY_DETAIL_STRINGIFIER_WRAPPER_HPP
+#define BOOST_STRINGIFY_DETAIL_STRINGIFIER_WRAPPER_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -12,22 +12,32 @@ namespace stringify {
 namespace detail {
 
 template <typename CharT, typename Output, typename FTuple>
-class deferred_stringifier_construction
+class stringifier_wrapper
 {
 public:
-    virtual ~deferred_stringifier_construction() {};
+    virtual ~stringifier_wrapper()
+    {
+    };
 
-    virtual std::size_t length(const FTuple& fmt) = 0;
+    virtual std::size_t length(const FTuple& fmt)
+    {
+        return 0;
+    }
         
-    virtual void write(Output& out, const FTuple& fmt) = 0;
+    virtual void write(Output& out, const FTuple& fmt)
+    {
+    }
 
-    virtual int remaining_width(int w, const FTuple& fmt) = 0;
+    virtual int remaining_width(int w, const FTuple& fmt)
+    {
+        return w;
+    }
 };
 
 
 template <typename StringifierImpl, typename CharT, typename Output, typename FTuple>
-class deferred_stringifier_construction_impl
-    : public boost::stringify::detail::deferred_stringifier_construction
+class stringifier_wrapper_impl
+    : public boost::stringify::detail::stringifier_wrapper
         <CharT, Output, FTuple>
 {
     using input_type = typename StringifierImpl::input_type;
@@ -68,12 +78,12 @@ class deferred_stringifier_construction_impl
     
 public:
 
-    deferred_stringifier_construction_impl()
+    stringifier_wrapper_impl()
         : state(nothing_initialized)
     {
     }
 
-    ~deferred_stringifier_construction_impl()
+    ~stringifier_wrapper_impl()
     {
         if(state == stringifier_initialized)
         {
@@ -246,5 +256,5 @@ private:
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_DETAIL_DEFERRED_STRINGIFIER_CONSTRUCTION_HPP
+#endif  // BOOST_STRINGIFY_DETAIL_STRINGIFIER_WRAPPER_HPP
 
