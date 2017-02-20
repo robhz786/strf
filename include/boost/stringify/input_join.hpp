@@ -85,13 +85,13 @@ public:
     }
 
     
-    virtual std::size_t length() const
+    std::size_t length() const
     {
         return args_length() + m_fill_width;
     }
 
 
-    virtual void write(Output& out) const
+    void write(Output& out) const
     {
         if (m_fill_width <= 0)
         {

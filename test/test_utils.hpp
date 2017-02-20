@@ -151,10 +151,10 @@ private:
 };
       
 template<int LINE_NUM, typename CharT>
-decltype(auto)
-    testf(const CharT* expected)    
+auto testf(const CharT* expected)    
 {
-    return boost::stringify::writef_helper<tester<LINE_NUM, CharT>>(expected);
+    using writer = tester<LINE_NUM, CharT>;
+    return std::move(boost::stringify::make_args_handler<writer>(expected));
 }
 
 

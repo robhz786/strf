@@ -86,6 +86,22 @@ struct make_string_helper
 } // namespace detail
 
 
+template <typename CharT, typename Traits = std::char_traits<CharT> >
+constexpr auto make_basic_string
+= boost::stringify::make_args_handler
+    <boost::stringify::detail::string_maker
+        <std::basic_string<CharT, Traits>>>();
+
+//template <typename Traits = std::char_traits<char> >
+constexpr auto make_string
+= boost::stringify::make_args_handler
+    <boost::stringify::detail::string_maker<std::string>>();
+    
+
+
+
+/*
+
 template <typename ... Formaters>
 auto make_string(const Formaters& ... fmts)
 {
@@ -113,7 +129,7 @@ auto make_u32string(const Formaters& ... fmts)
     return boost::stringify::detail::make_string_helper<std::u32string>
         ::make_string(fmts ...);
 }
-
+*/
 } // namespace stringify
 } // namespace boost
 

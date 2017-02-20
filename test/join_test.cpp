@@ -11,14 +11,14 @@ int main()
 {
     namespace strf = boost::stringify;
 
-    TEST("abcdef   123") () ({strf::join = 12, {"abc", "de", "f", {}, {}, 123}});
-    TEST("abcdef123   ") () ({strf::join < 12, {"abc", "def", 123}});
-    TEST("   abcdef123") () ({strf::join > 12, {"abc", "def", 123}});
-    TEST("~~~abcdef123") () ({strf::join('~') > 12, {"abc", "def", 123}});
-    TEST("~~~abcdef123") (strf::fill(U'~')) ({strf::join > 12, {"abc", "def", 123}});
-    TEST("abcdef123") () ({strf::join = 9, {"abc", "def", 1, 23}});
-    TEST("abcdef123") () ({strf::join < 9, {"abc", "def", 123}});
-    TEST("abcdef123") () ({strf::join > 9, {"abc", "def", 123}});
+    TEST("abcdef   123") ({strf::join = 12, {"abc", "de", "f", {}, {}, 123}});
+    TEST("abcdef123   ") ({strf::join < 12, {"abc", "def", 123}});
+    TEST("   abcdef123") ({strf::join > 12, {"abc", "def", 123}});
+    TEST("~~~abcdef123") ({strf::join('~') > 12, {"abc", "def", 123}});
+    TEST("~~~abcdef123") .with(strf::fill(U'~')) ({strf::join > 12, {"abc", "def", 123}});
+    TEST("abcdef123") ({strf::join = 9, {"abc", "def", 1, 23}});
+    TEST("abcdef123") ({strf::join < 9, {"abc", "def", 123}});
+    TEST("abcdef123") ({strf::join > 9, {"abc", "def", 123}});
 
     
     return  boost::report_errors();

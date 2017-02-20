@@ -47,7 +47,7 @@ public:
     {
     }
 
-    virtual std::size_t length() const
+    std::size_t length() const
     {
         if (m_padding_width > 0)
         {

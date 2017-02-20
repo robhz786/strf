@@ -29,7 +29,7 @@ public:
     {
     }
 
-    virtual std::size_t length() const
+    std::size_t length() const
     {
         return boost::stringify::get_char32_writer<CharT, char32_t>(m_fmt)
             .length(m_char32);

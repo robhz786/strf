@@ -6,8 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <string>
-#include <boost/stringify/writef_helper.hpp>
-#include <boost/stringify/ftuple.hpp>
+#include <boost/stringify/args_handler.hpp>
 
 namespace boost{
 namespace stringify{
@@ -50,22 +49,6 @@ public:
         return m_out;
     }
 
-    // bool set_pos(CharT* pos) noexcept
-    // {
-    //     m_out = pos;
-    //     return true;
-    // }
-
-    // CharT* get_pos() noexcept
-    // {
-    //     return m_out;
-    // }
-    
-    // void rput(CharT character) noexcept
-    // {
-    //     Traits::assign(*--m_out, character);
-    // }
-
 private:
 
     CharT* m_out;
@@ -75,13 +58,12 @@ private:
 
 
 template<typename CharT, typename CharTraits = std::char_traits<CharT> >
-inline boost::stringify::writef_helper
-    < boost::stringify::detail::char_ptr_writer<CharT, CharTraits> >
-writef(CharT* output)
+auto writef(CharT* destination)
 {
-    return output;
+    using writer = boost::stringify::detail::char_ptr_writer<CharT, CharTraits>;
+    return boost::stringify::make_args_handler<writer, char*>(destination);
 }
-    
+
 
 } // namespace stringify
 } // namespace boost    

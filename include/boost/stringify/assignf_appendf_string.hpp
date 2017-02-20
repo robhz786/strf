@@ -53,7 +53,7 @@ private:
 };
 
 template <class T>
-struct std_string_output_concept
+struct std_string_destination
 {
 
 private:
@@ -84,33 +84,31 @@ public:
 } // namespace detail
 
 
-template <typename StringType>
-auto appendf(StringType& str) -> typename std::enable_if
-    < boost::stringify::detail::std_string_output_concept<StringType>::value
-    , boost::stringify::writef_helper
-        < boost::stringify::detail::string_appender<StringType> >
-    >::type
+template
+    < typename StringType
+    , typename = std::enable_if_t
+          < boost::stringify::detail::std_string_destination<StringType>::value >
+    >
+auto appendf(StringType& str)
 {
-    return
-        boost::stringify::writef_helper
-        < boost::stringify::detail::string_appender<StringType> >
-        (str);
+    using writer = boost::stringify::detail::string_appender<StringType>;
+    return boost::stringify::make_args_handler<writer, StringType&>(str);
 }
 
 
-template <typename StringType>
-auto assignf(StringType& str) -> typename std::enable_if
-    < boost::stringify::detail::std_string_output_concept<StringType>::value
-    , boost::stringify::writef_helper
-        < boost::stringify::detail::string_appender<StringType> >
-    >::type
+template
+    < typename StringType
+    , typename = std::enable_if_t
+          < boost::stringify::detail::std_string_destination<StringType>::value >
+    >
+auto assignf(StringType& str)
 {
     str.clear();
-    return boost::stringify::writef_helper
-        < boost::stringify::detail::string_appender<StringType> >
-        (str);
+    using writer = boost::stringify::detail::string_appender<StringType>;
+    return boost::stringify::make_args_handler<writer, StringType&>(str);
 }
-                
+
+
 } // namespace stringify
 } // namespace boost
 

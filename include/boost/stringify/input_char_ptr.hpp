@@ -86,7 +86,11 @@ public:
     {
     }
 
-    virtual std::size_t length() const
+    ~char_ptr_stringifier()
+    {
+    }
+
+    std::size_t length() const
     {
         if (m_padding_width > 0)
         {

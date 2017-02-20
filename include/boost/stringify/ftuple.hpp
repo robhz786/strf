@@ -65,10 +65,10 @@ public:
     {
     }
 
-    ftuple_simple(const ftuple_simple&) = default;
+    constexpr ftuple_simple(const ftuple_simple&) = default;
 
     template <typename P>
-    ftuple_simple(const ftuple_simple<P, FmtImpl, OtherFmts...>& r)
+    constexpr ftuple_simple(const ftuple_simple<P, FmtImpl, OtherFmts...>& r)
         : parent(r)
         , m_fmt(r.m_fmt)
     {
@@ -120,14 +120,14 @@ class ftuple_merge
 
 public:
 
-    ftuple_merge(const FTuple& ft, const OtherFmts& ... others)
+    constexpr ftuple_merge(const FTuple& ft, const OtherFmts& ... others)
         : parent1(ft)
         , parent2(others ...)
     {
     }
 
     template <typename P>
-    ftuple_merge(const ftuple_merge<P, FTuple, OtherFmts...>& r)
+    constexpr ftuple_merge(const ftuple_merge<P, FTuple, OtherFmts...>& r)
         : parent1(r)
         , parent2(r)
     {
@@ -163,13 +163,13 @@ class ftuple_merge<PreviousTag, FTuple>
 
 public:
 
-    ftuple_merge(const FTuple& ft)
+    constexpr ftuple_merge(const FTuple& ft)
         : parent(ft)
     {
     }
 
     template <typename P>
-    ftuple_merge(const ftuple_merge<P, FTuple>& r)
+    constexpr ftuple_merge(const ftuple_merge<P, FTuple>& r)
         : parent(r)
     {
     }
@@ -198,15 +198,16 @@ template <>
 class ftuple_impl<ftuple_tag_zero>
 {
 public:
-    ftuple_impl()
+    constexpr ftuple_impl()
     {
     }
 
-    ftuple_impl(const ftuple_impl&)
+    constexpr ftuple_impl(const ftuple_impl&)
     {
     }
 
-    template <typename P> ftuple_impl(const ftuple_impl<P>&)
+    template <typename P>
+    constexpr ftuple_impl(const ftuple_impl<P>&)
     {
     }
     
@@ -241,13 +242,14 @@ public:
     {
     }
 
-    template <typename P> ftuple_impl(const ftuple_impl<P>&)
+    template <typename P>
+    constexpr ftuple_impl(const ftuple_impl<P>&)
     {
     }
 
-    ftuple_impl() = default;
+    constexpr ftuple_impl() = default;
 
-    ftuple_impl(const ftuple_impl&) = default;
+    constexpr ftuple_impl(const ftuple_impl&) = default;
 
     template <typename P>
     using rebind_tag = ftuple_impl<P>;
@@ -293,13 +295,13 @@ public:
     template <typename P>
     using rebind_tag = ftuple_impl<P, Fmt, OtherFmts ...>;
 
-    ftuple_impl(const Fmt& f, const OtherFmts& ... otherFs)
+    constexpr ftuple_impl(const Fmt& f, const OtherFmts& ... otherFs)
         : parent(f, otherFs ...)
     {
     }
 
     template <typename P>
-    ftuple_impl(const ftuple_impl<P, Fmt, OtherFmts...>& r)
+    constexpr ftuple_impl(const ftuple_impl<P, Fmt, OtherFmts...>& r)
         : parent(r)
     {
     }
@@ -339,11 +341,11 @@ public:
     using rebind_tag
     = typename boost::stringify::detail::ftuple_impl<P, FmtImpls ...>;
 
-    ftuple(const FmtImpls& ... fmtimpls) : parent(fmtimpls ...)
+    constexpr ftuple(const FmtImpls& ... fmtimpls) : parent(fmtimpls ...)
     {
     }
 
-    ftuple(const ftuple&) = default;
+    constexpr ftuple(const ftuple&) = default;
 
     template <typename FmtType, typename InputArg>
     decltype(auto) get() const
@@ -353,13 +355,15 @@ public:
 };
 
 
+
+
 template <typename FTuple, typename FmtType, typename InputArg>
 using ftuple_get_return_type
 = decltype(std::declval<FTuple>().template get<FmtType, InputArg>());
 
 
 template <typename ... Fmts>
-boost::stringify::ftuple<Fmts ...> make_ftuple(const Fmts& ... fmts)
+constexpr boost::stringify::ftuple<Fmts ...> make_ftuple(const Fmts& ... fmts)
 {
     return boost::stringify::ftuple<Fmts ...>(fmts ...);
 }
