@@ -19,13 +19,13 @@ template <typename T> struct is_long :  public std::is_same<long, T>
 
 int main()
 {
-    namespace strf = boost::stringify;
+    namespace strf = boost::stringify::v1;
 
    
     {
         char buff[200] = "";
 
-        boost::stringify::writef(buff)
+        strf::writef(buff)
             .with(strf::noshowpos_if<is_long>(), strf::showpos)
             [{"abcd", (long)0, 1, 2, {3, "-"}, {(long)4, "+"}}];
 

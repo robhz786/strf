@@ -9,7 +9,7 @@
 
 int main()
 {
-    namespace strf = boost::stringify;
+    namespace strf = boost::stringify::v1;
 
     TEST("abc")     ("abc");
     TEST("~~~abc") .with(strf::fill(U'~'), strf::width(6))   ("abc");

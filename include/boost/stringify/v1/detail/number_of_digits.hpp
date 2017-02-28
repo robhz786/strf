@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_DETAIL_NUMBER_OF_DIGITS_HPP
-#define BOOST_STRINGIFY_DETAIL_NUMBER_OF_DIGITS_HPP
+#ifndef BOOST_STRINGIFY_V1_DETAIL_NUMBER_OF_DIGITS_HPP
+#define BOOST_STRINGIFY_V1_DETAIL_NUMBER_OF_DIGITS_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -7,6 +7,7 @@
 
 namespace boost {
 namespace stringify {
+inline namespace v1 {
 namespace detail {
 
 template <int Base, int IntSize>
@@ -263,14 +264,15 @@ template <unsigned Base, typename intT>
 unsigned number_of_digits(intT value)
 {
     static_assert(std::is_unsigned<intT>::value, "");
-    return boost::stringify::detail::digits_counter<Base, sizeof(intT)>
+    return boost::stringify::v1::detail::digits_counter<Base, sizeof(intT)>
         ::count_digits(value);
 }
 
 
 } // namespace detail
+} // inline namespace v1
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_DETAIL_NUMBER_OF_DIGITS_HPP
+#endif  // BOOST_STRINGIFY_V1_DETAIL_NUMBER_OF_DIGITS_HPP
 

@@ -11,7 +11,7 @@
 
 int main()
 {
-    namespace strf = boost::stringify;
+    namespace strf = boost::stringify::v1;
     
     TEST ( "0") (0);
     TEST (u"0") (0);

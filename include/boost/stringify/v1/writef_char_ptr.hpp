@@ -1,15 +1,16 @@
-#ifndef BOOST_STRINGIFY_WRITEF_CHAR_PTR_HPP
-#define BOOST_STRINGIFY_WRITEF_CHAR_PTR_HPP
+#ifndef BOOST_STRINGIFY_V1_WRITEF_CHAR_PTR_HPP
+#define BOOST_STRINGIFY_V1_WRITEF_CHAR_PTR_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <string>
-#include <boost/stringify/args_handler.hpp>
+#include <boost/stringify/v1/args_handler.hpp>
 
 namespace boost{
 namespace stringify{
+inline namespace v1 {
 namespace detail{
 
 template<typename CharT, typename Traits>
@@ -60,13 +61,13 @@ private:
 template<typename CharT, typename CharTraits = std::char_traits<CharT> >
 auto writef(CharT* destination)
 {
-    using writer = boost::stringify::detail::char_ptr_writer<CharT, CharTraits>;
-    return boost::stringify::make_args_handler<writer, char*>(destination);
+    using writer = boost::stringify::v1::detail::char_ptr_writer<CharT, CharTraits>;
+    return boost::stringify::v1::make_args_handler<writer, char*>(destination);
 }
 
-
+} // inline namespace v1
 } // namespace stringify
 } // namespace boost    
 
-#endif  /* BOOST_STRINGIFY_WRITEF_CHAR_PTR_HPP */
+#endif  /* BOOST_STRINGIFY_V1_WRITEF_CHAR_PTR_HPP */
 

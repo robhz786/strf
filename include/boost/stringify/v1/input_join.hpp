@@ -1,21 +1,22 @@
-#ifndef BOOST_STRINGIFY_JOIN_HPP
-#define BOOST_STRINGIFY_JOIN_HPP
+#ifndef BOOST_STRINGIFY_V1_JOIN_HPP
+#define BOOST_STRINGIFY_V1_JOIN_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/input_arg.hpp>
-#include <boost/stringify/custom_alignment.hpp>
+#include <boost/stringify/v1/input_arg.hpp>
+#include <boost/stringify/v1/custom_alignment.hpp>
 #include <initializer_list>
 
 namespace boost {
 namespace stringify {
+inline namespace v1 {
 namespace detail {
 
 struct join_t
 {
-    boost::stringify::alignment align;
+    boost::stringify::v1::alignment align;
     char32_t fillchar;
     int width;    
 };
@@ -35,19 +36,19 @@ struct join_generator
         return join_generator(fill_char);
     }
 
-    boost::stringify::detail::join_t operator<(int width) const
+    boost::stringify::v1::detail::join_t operator<(int width) const
     {
-        return {boost::stringify::alignment::left, m_fillchar, width};
+        return {boost::stringify::v1::alignment::left, m_fillchar, width};
     }
 
-    boost::stringify::detail::join_t operator>(int width) const
+    boost::stringify::v1::detail::join_t operator>(int width) const
     {
-        return {boost::stringify::alignment::right, m_fillchar, width};
+        return {boost::stringify::v1::alignment::right, m_fillchar, width};
     }
 
-    boost::stringify::detail::join_t operator=(int width) const
+    boost::stringify::v1::detail::join_t operator=(int width) const
     {
-        return {boost::stringify::alignment::internal, m_fillchar, width};
+        return {boost::stringify::v1::alignment::internal, m_fillchar, width};
     }
 
 private:
@@ -60,13 +61,13 @@ private:
 template <typename CharT, typename Output, typename FTuple>
 class join_stringifier
 {
-    using width_t = boost::stringify::width_t;
-    using width_tag = boost::stringify::width_tag;
-    using input_arg = boost::stringify::input_arg<CharT, Output, FTuple>;
+    using width_t = boost::stringify::v1::width_t;
+    using width_tag = boost::stringify::v1::width_tag;
+    using input_arg = boost::stringify::v1::input_arg<CharT, Output, FTuple>;
 
 public:
 
-    using input_type  = boost::stringify::detail::join_t ;
+    using input_type  = boost::stringify::v1::detail::join_t ;
     using char_type    = CharT ;
     using output_type = Output;
     using ftuple_type = FTuple;
@@ -100,15 +101,15 @@ public:
         else
             switch(m_join.align)
             {
-                case boost::stringify::alignment::left:
+                case boost::stringify::v1::alignment::left:
                     write_args(out);
                     write_fill(out);
                     break;
-                case boost::stringify::alignment::right:
+                case boost::stringify::v1::alignment::right:
                     write_fill(out);
                     write_args(out);
                     break;
-                case boost::stringify::alignment::internal:
+                case boost::stringify::v1::alignment::internal:
                     write_splitted(out);
                     break;
             }
@@ -147,13 +148,13 @@ private:
     {
         if(m_join.fillchar)
         {
-            boost::stringify::fill_impl<boost::stringify::true_trait>
+            boost::stringify::v1::fill_impl<boost::stringify::v1::true_trait>
                 fill_writer(m_join.fillchar);
             return fill_writer.length<CharT>(m_fill_width, m_fmt);
         }
         else
         {
-            boost::stringify::fill_length<CharT, input_type>(m_fill_width, m_fmt);
+            boost::stringify::v1::fill_length<CharT, input_type>(m_fill_width, m_fmt);
         }
     }
 
@@ -199,13 +200,13 @@ private:
     {
         if(m_join.fillchar)
         {
-            boost::stringify::fill_impl<boost::stringify::true_trait>
+            boost::stringify::v1::fill_impl<boost::stringify::v1::true_trait>
                 fill_writer(m_join.fillchar);
             fill_writer.fill<CharT>(m_fill_width, out, m_fmt);
         }
         else
         {
-            boost::stringify::write_fill<CharT, input_type>(m_fill_width, out, m_fmt);
+            boost::stringify::v1::write_fill<CharT, input_type>(m_fill_width, out, m_fmt);
         }
     }
 };
@@ -215,20 +216,21 @@ struct input_join_traits
 {
     template <typename CharT, typename Output, typename FTuple>
     using stringifier =
-        boost::stringify::detail::join_stringifier<CharT, Output, FTuple>;
+        boost::stringify::v1::detail::join_stringifier<CharT, Output, FTuple>;
 };
 
-boost::stringify::detail::input_join_traits
-boost_stringify_input_traits_of(const boost::stringify::detail::join_t&);
+boost::stringify::v1::detail::input_join_traits
+boost_stringify_input_traits_of(const boost::stringify::v1::detail::join_t&);
 
 
 } // namespace detail
 
-constexpr boost::stringify::detail::join_generator join = U'\0';
+constexpr boost::stringify::v1::detail::join_generator join = U'\0';
 
 
+} // inline namespace v1
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_JOIN_HPP
+#endif  // BOOST_STRINGIFY_V1_JOIN_HPP
 

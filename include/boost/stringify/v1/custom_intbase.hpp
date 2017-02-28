@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_CUSTOM_INTBASE_HPP
-#define BOOST_STRINGIFY_CUSTOM_INTBASE_HPP
+#ifndef BOOST_STRINGIFY_V1_CUSTOM_INTBASE_HPP
+#define BOOST_STRINGIFY_V1_CUSTOM_INTBASE_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -7,13 +7,14 @@
 
 namespace boost {
 namespace stringify {
+inline namespace v1 {
 
 struct intbase_tag;
 
 template <int Base, template <class> class Filter>
 struct intbase_impl_t
 {
-    using category = boost::stringify::intbase_tag;
+    using category = boost::stringify::v1::intbase_tag;
 
     template <typename T> using accept_input_type = Filter<T>;
     
@@ -24,33 +25,33 @@ struct intbase_impl_t
 };
 
 constexpr auto oct
-= boost::stringify::intbase_impl_t<8, boost::stringify::true_trait>();
+= boost::stringify::v1::intbase_impl_t<8, boost::stringify::v1::true_trait>();
 
 constexpr auto dec
-= boost::stringify::intbase_impl_t<10, boost::stringify::true_trait>();
+= boost::stringify::v1::intbase_impl_t<10, boost::stringify::v1::true_trait>();
 
 constexpr auto hex
-= boost::stringify::intbase_impl_t<16, boost::stringify::true_trait>();
+= boost::stringify::v1::intbase_impl_t<16, boost::stringify::v1::true_trait>();
 
 template <template <class> class F>
-auto oct_if = boost::stringify::intbase_impl_t<8, F>();
+auto oct_if = boost::stringify::v1::intbase_impl_t<8, F>();
 
 template <template <class> class F>
-auto dec_if = boost::stringify::intbase_impl_t<10, F>();
+auto dec_if = boost::stringify::v1::intbase_impl_t<10, F>();
 
 template <template <class> class F>
-auto hex_if = boost::stringify::intbase_impl_t<16, F>();
+auto hex_if = boost::stringify::v1::intbase_impl_t<16, F>();
 
 struct intbase_tag
 {
     using default_impl=
-        boost::stringify::intbase_impl_t<10, boost::stringify::true_trait>;
+        boost::stringify::v1::intbase_impl_t<10, boost::stringify::v1::true_trait>;
 };
 
 template <typename InputType, typename FTuple>
 constexpr int get_intbase(const FTuple& fmt) noexcept
 {
-    return fmt.template get<boost::stringify::intbase_tag, InputType>().value();
+    return fmt.template get<boost::stringify::v1::intbase_tag, InputType>().value();
 }
 
 
@@ -69,12 +70,13 @@ constexpr int get_intbase(const FTuple& fmt, const Flags& flags) noexcept
     {                        
         return 8;
     }
-    return boost::stringify::get_intbase<InputType>(fmt);
+    return boost::stringify::v1::get_intbase<InputType>(fmt);
 }
 
 
+} // inline namespace v1
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_CUSTOM_INTBASE_HPP
+#endif  // BOOST_STRINGIFY_V1_CUSTOM_INTBASE_HPP
 

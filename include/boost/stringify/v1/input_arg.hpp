@@ -1,14 +1,15 @@
-#ifndef BOOST_STRINGIFY_INPUT_ARG_HPP
-#define BOOST_STRINGIFY_INPUT_ARG_HPP
+#ifndef BOOST_STRINGIFY_V1_INPUT_ARG_HPP
+#define BOOST_STRINGIFY_V1_INPUT_ARG_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/detail/stringifier_wrapper.hpp>
+#include <boost/stringify/v1/detail/stringifier_wrapper.hpp>
 
 namespace boost {
 namespace stringify {
+inline namespace v1 {
 
 template <class T>
 struct input_traits;
@@ -36,7 +37,7 @@ class input_arg
     input_traits_of(const T&);
 
     template <typename T>
-    static boost::stringify::detail::failed_input_traits<T>
+    static boost::stringify::v1::detail::failed_input_traits<T>
     input_traits_of(...);
     
     template <class T>
@@ -48,11 +49,11 @@ class input_arg
 
     template <typename T>
     using stringifier_wrapper_of =
-        boost::stringify::detail::stringifier_wrapper_impl
+        boost::stringify::v1::detail::stringifier_wrapper_impl
         <stringifier<T>, CharT, Output, FTuple>;
 
     using stringifier_wrapper
-        = boost::stringify::detail::stringifier_wrapper<CharT, Output, FTuple>;
+        = boost::stringify::v1::detail::stringifier_wrapper<CharT, Output, FTuple>;
 
     stringifier_wrapper& empty_wrapper()
     {
@@ -136,8 +137,9 @@ private:
 };
 
 
+} // inline namespace v1
 } // namespace stringify
 } // namespace boost
 
-#endif  /* BOOST_STRINGIFY_DETAIL_STR_WRITE_REF_HPP */
+#endif  /* BOOST_STRINGIFY_V1_DETAIL_STR_WRITE_REF_HPP */
 

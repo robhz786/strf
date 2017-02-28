@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_TYPE_TRAITS_HPP
-#define BOOST_STRINGIFY_TYPE_TRAITS_HPP
+#ifndef BOOST_STRINGIFY_V1_TYPE_TRAITS_HPP
+#define BOOST_STRINGIFY_V1_TYPE_TRAITS_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -9,6 +9,7 @@
 
 namespace boost {
 namespace stringify {
+inline namespace v1 {
 namespace detail {
 
 // ternary_trait
@@ -47,7 +48,7 @@ auto has_arg_format_type_helper(...)  ->  std::false_type;
 
 template <typename Stringifier>
 using has_arg_format_type
-= decltype(boost::stringify::detail::has_arg_format_type_helper<Stringifier>
+= decltype(boost::stringify::v1::detail::has_arg_format_type_helper<Stringifier>
            ((Stringifier*)0));
 
 
@@ -59,8 +60,9 @@ template <typename> struct true_trait : public std::true_type
 };
 
 
+} // inline namespace v1
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_TYPE_TRAITS_HPP
+#endif  // BOOST_STRINGIFY_V1_TYPE_TRAITS_HPP
 

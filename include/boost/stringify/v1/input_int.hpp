@@ -1,27 +1,27 @@
-#ifndef BOOST_STRINGIFY_INPUT_INT_HPP_INCLUDED
-#define BOOST_STRINGIFY_INPUT_INT_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_V1_INPUT_INT_HPP_INCLUDED
+#define BOOST_STRINGIFY_V1_INPUT_INT_HPP_INCLUDED
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/arg_format_common.hpp>
-#include <boost/stringify/char_flags.hpp>
-#include <boost/stringify/custom_alignment.hpp>
-#include <boost/stringify/custom_base_indication.hpp>
-#include <boost/stringify/custom_fill.hpp>
-#include <boost/stringify/custom_intbase.hpp>
-#include <boost/stringify/custom_case.hpp>
-#include <boost/stringify/custom_showbase.hpp>
-#include <boost/stringify/custom_showpos.hpp>
-#include <boost/stringify/custom_width.hpp>
-#include <boost/stringify/ftuple.hpp>
-#include <boost/stringify/detail/characters_catalog.hpp>
-#include <boost/stringify/detail/number_of_digits.hpp>
+#include <boost/stringify/v1/arg_format_common.hpp>
+#include <boost/stringify/v1/char_flags.hpp>
+#include <boost/stringify/v1/custom_alignment.hpp>
+#include <boost/stringify/v1/custom_fill.hpp>
+#include <boost/stringify/v1/custom_intbase.hpp>
+#include <boost/stringify/v1/custom_case.hpp>
+#include <boost/stringify/v1/custom_showbase.hpp>
+#include <boost/stringify/v1/custom_showpos.hpp>
+#include <boost/stringify/v1/custom_width.hpp>
+#include <boost/stringify/v1/ftuple.hpp>
+#include <boost/stringify/v1/detail/characters_catalog.hpp>
+#include <boost/stringify/v1/detail/number_of_digits.hpp>
 #include <cstdint>
 
 namespace boost {
 namespace stringify {
+inline namespace v1 {
 namespace detail {
 
 
@@ -35,14 +35,14 @@ inline char32_t* global_buff()
 
 template <typename InputType, typename FTuple>
 struct int_arg_format
-    : public boost::stringify::arg_format_common
+    : public boost::stringify::v1::arg_format_common
         <int_arg_format<InputType, FTuple>>
 {
 
     using ftuple_type = FTuple;
     using input_type = InputType;
-    using width_t = boost::stringify::width_t;
-    using char_flags_type = boost::stringify::char_flags
+    using width_t = boost::stringify::v1::width_t;
+    using char_flags_type = boost::stringify::v1::char_flags
         <'+', '-', '<', '>', '=', 'o', 'd', 'x', 'X', 'c', 'C', '#', '$'>;
 
     constexpr int_arg_format(width_t w, const char* f)
@@ -82,7 +82,7 @@ struct int_arg_format
         {                        
             return 8;
         }
-        return get_facet<boost::stringify::intbase_tag>(fmt).value();
+        return get_facet<boost::stringify::v1::intbase_tag>(fmt).value();
     }
 
     bool get_uppercase(const ftuple_type& fmt) noexcept
@@ -95,7 +95,7 @@ struct int_arg_format
         {                        
             return true;
         }
-        return get_facet<boost::stringify::case_tag>(fmt).uppercase();
+        return get_facet<boost::stringify::v1::case_tag>(fmt).uppercase();
     }
 
     bool get_showbase(const ftuple_type& fmt) noexcept
@@ -108,11 +108,11 @@ struct int_arg_format
         {                        
             return true;
         }
-        return get_facet<boost::stringify::showbase_tag>(fmt).value();
+        return get_facet<boost::stringify::v1::showbase_tag>(fmt).value();
     }
 
     const char_flags_type flags;
-    const boost::stringify::width_t width = -1;
+    const boost::stringify::v1::width_t width = -1;
 
 private:
 
@@ -150,14 +150,14 @@ template <typename intT, typename CharT, typename Output, typename FTuple>
 struct int_stringifier
 {
     using unsigned_intT = typename std::make_unsigned<intT>::type;
-    using width_t = boost::stringify::width_t;
-    using chars_catalog = boost::stringify::detail::characters_catalog;
+    using width_t = boost::stringify::v1::width_t;
+    using chars_catalog = boost::stringify::v1::detail::characters_catalog;
 
-    using alignment_tag  = boost::stringify::alignment_tag;
-    using case_tag = boost::stringify::case_tag;
-    using intbase_tag = boost::stringify::intbase_tag;
-    using showbase_tag = boost::stringify::showbase_tag;
-    using width_tag = boost::stringify::width_tag;
+    using alignment_tag  = boost::stringify::v1::alignment_tag;
+    using case_tag = boost::stringify::v1::case_tag;
+    using intbase_tag = boost::stringify::v1::intbase_tag;
+    using showbase_tag = boost::stringify::v1::showbase_tag;
+    using width_tag = boost::stringify::v1::width_tag;
     
     static constexpr bool is_signed = std::is_signed<intT>::value;
 
@@ -167,7 +167,7 @@ public:
     using char_type   = CharT ;
     using output_type = Output;
     using ftuple_type = FTuple;
-    using arg_format_type = boost::stringify::detail::int_arg_format
+    using arg_format_type = boost::stringify::v1::detail::int_arg_format
         <input_type, FTuple>;
 
 
@@ -236,7 +236,7 @@ private:
     const FTuple& m_fmt;
     const intT m_value;
     const width_t m_width;
-    const boost::stringify::alignment m_alignment;
+    const boost::stringify::v1::alignment m_alignment;
     const unsigned short m_base;
     const bool m_showpos;
     const bool m_showbase;
@@ -254,7 +254,7 @@ private:
     {
         if(m_base == 10)
         {
-            return boost::stringify::detail::unsigned_abs(m_value);
+            return boost::stringify::v1::detail::unsigned_abs(m_value);
         }
         return static_cast<unsigned_intT>(m_value);
     }
@@ -265,7 +265,7 @@ private:
         width_t fill_width = m_width > 0 ? m_width - width_body() : 0;
         if (fill_width > 0)
         {
-            return boost::stringify::fill_length<CharT, input_type>
+            return boost::stringify::v1::fill_length<CharT, input_type>
                 (fill_width, m_fmt);
         }
         return 0;
@@ -289,7 +289,7 @@ private:
     template <unsigned Base>
     std::size_t length_digits() const noexcept
     {
-        return boost::stringify::detail::number_of_digits<Base>(unsigned_value());
+        return boost::stringify::v1::detail::number_of_digits<Base>(unsigned_value());
     }
 
 
@@ -297,15 +297,15 @@ private:
     // std::size_t length_separators(unsigned num_digits) const noexcept
     // {
     //     auto separators_count =
-    //         boost::stringify::numgrouping_count<input_type, Base>
+    //         boost::stringify::v1::numgrouping_count<input_type, Base>
     //         (m_fmt, num_digits);
 
     //     if (separators_count > 0)
     //     {
     //         char32_t separator
-    //             = boost::stringify::thousands_sep<input_type, Base>(m_fmt);
+    //             = boost::stringify::v1::thousands_sep<input_type, Base>(m_fmt);
     //         return separators_count
-    //             * boost::stringify::get_char32_length<CharT, input_type>
+    //             * boost::stringify::v1::get_char32_length<CharT, input_type>
     //               (m_fmt, separator);
     //     }
     //     return 0;
@@ -316,14 +316,14 @@ private:
     {
         switch (m_alignment)
         {
-            case boost::stringify::alignment::left:
+            case boost::stringify::v1::alignment::left:
                 write_sign(out);
                 write_base(out);
                 write_digits(out);
                 write_fill(out, fill_width);
                 break;
 
-            case boost::stringify::alignment::right:
+            case boost::stringify::v1::alignment::right:
                 write_fill(out, fill_width);
                 write_sign(out);
                 write_base(out);
@@ -331,7 +331,7 @@ private:
                 break;
 
             default:
-                BOOST_ASSERT(m_alignment == boost::stringify::alignment::internal);
+                BOOST_ASSERT(m_alignment == boost::stringify::v1::alignment::internal);
                 write_sign(out);
                 write_base(out);
                 write_fill(out, fill_width);
@@ -342,7 +342,7 @@ private:
 
     void write_fill(Output& out, width_t fill_width) const
     {
-        boost::stringify::write_fill<CharT, input_type>
+        boost::stringify::v1::write_fill<CharT, input_type>
                         (fill_width, out, m_fmt);
     }
 
@@ -434,8 +434,8 @@ private:
     CharT* buff_end() const noexcept
     {
         return reinterpret_cast<CharT*>
-            (& boost::stringify::detail::global_buff()
-             [boost::stringify::detail::global_buff_size]
+            (& boost::stringify::v1::detail::global_buff()
+             [boost::stringify::v1::detail::global_buff_size]
             );
     }
 
@@ -478,7 +478,7 @@ private:
             {
                 ++bw;
             }
-            bw += boost::stringify::detail::number_of_digits<10>(uv);
+            bw += boost::stringify::v1::detail::number_of_digits<10>(uv);
         }
         else if(m_base == 16)
         {
@@ -486,7 +486,7 @@ private:
             {
                 bw += 2;
             }
-            bw += boost::stringify::detail::number_of_digits<16>(uv);
+            bw += boost::stringify::v1::detail::number_of_digits<16>(uv);
         }
         else
         {
@@ -495,7 +495,7 @@ private:
             {
                 ++bw;
             }
-            bw += boost::stringify::detail::number_of_digits<8>(uv);
+            bw += boost::stringify::v1::detail::number_of_digits<8>(uv);
         }
         return bw;
     }
@@ -508,37 +508,38 @@ struct int_input_traits
 {
     template <typename CharT, typename Output, typename FTuple>
     using stringifier =
-        boost::stringify::detail::int_stringifier<IntT, CharT, Output, FTuple>;
+        boost::stringify::v1::detail::int_stringifier<IntT, CharT, Output, FTuple>;
 };
 
 } // namespace detail
 
-boost::stringify::detail::int_input_traits<short>
+boost::stringify::v1::detail::int_input_traits<short>
 boost_stringify_input_traits_of(short);
 
-boost::stringify::detail::int_input_traits<int>
+boost::stringify::v1::detail::int_input_traits<int>
 boost_stringify_input_traits_of(int);
 
-boost::stringify::detail::int_input_traits<long>
+boost::stringify::v1::detail::int_input_traits<long>
 boost_stringify_input_traits_of(long);
 
-boost::stringify::detail::int_input_traits<long long>
+boost::stringify::v1::detail::int_input_traits<long long>
 boost_stringify_input_traits_of(long long);
 
-boost::stringify::detail::int_input_traits<unsigned short>
+boost::stringify::v1::detail::int_input_traits<unsigned short>
 boost_stringify_input_traits_of(unsigned short);
 
-boost::stringify::detail::int_input_traits<unsigned>
+boost::stringify::v1::detail::int_input_traits<unsigned>
 boost_stringify_input_traits_of(unsigned);
 
-boost::stringify::detail::int_input_traits<unsigned long>
+boost::stringify::v1::detail::int_input_traits<unsigned long>
 boost_stringify_input_traits_of(unsigned long);
 
-boost::stringify::detail::int_input_traits<unsigned long long>
+boost::stringify::v1::detail::int_input_traits<unsigned long long>
 boost_stringify_input_traits_of(unsigned long long);
 
-}//namespace stringify
-}//namespace boost
+} // inline namespace v1
+} // namespace stringify
+} // namespace boost
 
 
-#endif
+#endif // BOOST_STRINGIFY_V1_INPUT_INT_HPP_INCLUDED

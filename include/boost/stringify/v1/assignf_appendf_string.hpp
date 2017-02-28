@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_ASSIGNF_APPENDF_STRING_HPP
-#define BOOST_STRINGIFY_ASSIGNF_APPENDF_STRING_HPP
+#ifndef BOOST_STRINGIFY_V1_ASSIGNF_APPENDF_STRING_HPP
+#define BOOST_STRINGIFY_V1_ASSIGNF_APPENDF_STRING_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -7,6 +7,7 @@
 
 namespace boost {
 namespace stringify {
+inline namespace v1 {
 namespace detail {
 
 template <typename StringType>
@@ -87,30 +88,31 @@ public:
 template
     < typename StringType
     , typename = std::enable_if_t
-          < boost::stringify::detail::std_string_destination<StringType>::value >
+          < boost::stringify::v1::detail::std_string_destination<StringType>::value >
     >
 auto appendf(StringType& str)
 {
-    using writer = boost::stringify::detail::string_appender<StringType>;
-    return boost::stringify::make_args_handler<writer, StringType&>(str);
+    using writer = boost::stringify::v1::detail::string_appender<StringType>;
+    return boost::stringify::v1::make_args_handler<writer, StringType&>(str);
 }
 
 
 template
     < typename StringType
     , typename = std::enable_if_t
-          < boost::stringify::detail::std_string_destination<StringType>::value >
+          < boost::stringify::v1::detail::std_string_destination<StringType>::value >
     >
 auto assignf(StringType& str)
 {
     str.clear();
-    using writer = boost::stringify::detail::string_appender<StringType>;
-    return boost::stringify::make_args_handler<writer, StringType&>(str);
+    using writer = boost::stringify::v1::detail::string_appender<StringType>;
+    return boost::stringify::v1::make_args_handler<writer, StringType&>(str);
 }
 
 
+} // inline namespace v1
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_ASSIGNF_APPENDF_STRING_HPP
+#endif  // BOOST_STRINGIFY_V1_ASSIGNF_APPENDF_STRING_HPP
 

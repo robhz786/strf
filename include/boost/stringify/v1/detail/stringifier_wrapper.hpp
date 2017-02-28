@@ -1,14 +1,15 @@
-#ifndef BOOST_STRINGIFY_DETAIL_STRINGIFIER_WRAPPER_HPP
-#define BOOST_STRINGIFY_DETAIL_STRINGIFIER_WRAPPER_HPP
+#ifndef BOOST_STRINGIFY_V1_DETAIL_STRINGIFIER_WRAPPER_HPP
+#define BOOST_STRINGIFY_V1_DETAIL_STRINGIFIER_WRAPPER_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/type_traits.hpp>
+#include <boost/stringify/v1/type_traits.hpp>
 
 namespace boost {
 namespace stringify {
+inline namespace v1 {
 namespace detail {
 
 template <typename CharT, typename Output, typename FTuple>
@@ -37,7 +38,7 @@ public:
 
 template <typename StringifierImpl, typename CharT, typename Output, typename FTuple>
 class stringifier_wrapper_impl
-    : public boost::stringify::detail::stringifier_wrapper
+    : public boost::stringify::v1::detail::stringifier_wrapper
         <CharT, Output, FTuple>
 {
     using input_type = typename StringifierImpl::input_type;
@@ -45,7 +46,7 @@ class stringifier_wrapper_impl
     using input_type_is_pointer = std::is_pointer<input_type>;
 
     using has_arg_format_type
-    = boost::stringify::detail::has_arg_format_type<StringifierImpl>;
+    = boost::stringify::v1::detail::has_arg_format_type<StringifierImpl>;
     
     struct no_arg_format_type{};
 
@@ -67,7 +68,7 @@ class stringifier_wrapper_impl
         ::type;
 
     using input_type_ptr
-    = boost::stringify::detail::ternary_t
+    = boost::stringify::v1::detail::ternary_t
         < input_type_is_pointer::value
         , input_type
         , const input_type*
@@ -252,9 +253,10 @@ private:
 };
 
 
-} //namespace detail
+} // namespace detail
+} // inline namespace v1
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_DETAIL_STRINGIFIER_WRAPPER_HPP
+#endif  // BOOST_STRINGIFY_V1_DETAIL_STRINGIFIER_WRAPPER_HPP
 

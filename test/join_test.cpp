@@ -9,7 +9,7 @@
 
 int main()
 {
-    namespace strf = boost::stringify;
+    namespace strf = boost::stringify::v1;
 
     TEST("abcdef   123") ({strf::join = 12, {"abc", "de", "f", {}, {}, 123}});
     TEST("abcdef123   ") ({strf::join < 12, {"abc", "def", 123}});

@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_DETAIL_CHAR_FLAGS_HPP
-#define BOOST_STRINGIFY_DETAIL_CHAR_FLAGS_HPP
+#ifndef BOOST_STRINGIFY_V1_DETAIL_CHAR_FLAGS_HPP
+#define BOOST_STRINGIFY_V1_DETAIL_CHAR_FLAGS_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -7,6 +7,7 @@
 
 namespace boost{
 namespace stringify{
+inline namespace v1 {
 
 template <char ...>
 class char_flags;
@@ -103,9 +104,10 @@ protected:
 };
     
 
+} // inline namespace v1
 } // namespace stringify
 } // namespace boost
 
 
-#endif  /* BOOST_STRINGIFY_DETAIL_CHAR_FLAGS_HPP */
+#endif  /* BOOST_STRINGIFY_V1_DETAIL_CHAR_FLAGS_HPP */
 

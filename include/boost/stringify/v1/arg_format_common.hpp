@@ -1,25 +1,26 @@
-#ifndef BOOST_STRINGIFY_ARG_FORMAT_COMMON_HPP
-#define BOOST_STRINGIFY_ARG_FORMAT_COMMON_HPP
+#ifndef BOOST_STRINGIFY_V1_ARG_FORMAT_COMMON_HPP
+#define BOOST_STRINGIFY_V1_ARG_FORMAT_COMMON_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/custom_showpos.hpp>
-#include <boost/stringify/custom_width.hpp>
-#include <boost/stringify/custom_alignment.hpp>
+#include <boost/stringify/v1/custom_showpos.hpp>
+#include <boost/stringify/v1/custom_width.hpp>
+#include <boost/stringify/v1/custom_alignment.hpp>
 
 namespace boost {
 namespace stringify {
+inline namespace v1 {
 
 // curiously recurring template pattern 
 template <typename T>
 class arg_format_common
 {
-    using showpos_tag = boost::stringify::showpos_tag;
-    using width_tag = boost::stringify::width_tag;
-    using width_t = boost::stringify::width_t;
-    using alignment = boost::stringify::alignment;
+    using showpos_tag = boost::stringify::v1::showpos_tag;
+    using width_tag = boost::stringify::v1::width_tag;
+    using width_t = boost::stringify::v1::width_t;
+    using alignment = boost::stringify::v1::alignment;
 
 public:
 
@@ -91,9 +92,9 @@ protected:
     
 };
 
-
+} // inline namespace v1
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_ARG_FORMAT_COMMON_HPP
+#endif  // BOOST_STRINGIFY_V1_ARG_FORMAT_COMMON_HPP
 

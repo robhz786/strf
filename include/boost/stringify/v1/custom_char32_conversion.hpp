@@ -1,14 +1,15 @@
-#ifndef BOOST_STRINGIFY_CUSTOM_CHAR32_CONVERSION_HPP
-#define BOOST_STRINGIFY_CUSTOM_CHAR32_CONVERSION_HPP
+#ifndef BOOST_STRINGIFY_V1_CUSTOM_CHAR32_CONVERSION_HPP
+#define BOOST_STRINGIFY_V1_CUSTOM_CHAR32_CONVERSION_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/type_traits.hpp>
+#include <boost/stringify/v1/type_traits.hpp>
 
 namespace boost {
 namespace stringify {
+inline namespace v1 {
 namespace detail {
 
 class char32_to_utf8_impl
@@ -150,7 +151,7 @@ template <typename CharT> struct char32_to_str_tag;
 
 template <template <class> class Filter>
 class char32_to_utf8
-    : public boost::stringify::detail::char32_to_utf8_impl
+    : public boost::stringify::v1::detail::char32_to_utf8_impl
 {
 public:
     typedef char32_to_str_tag<char> category;
@@ -160,7 +161,7 @@ public:
 
 template <template <class> class Filter>
 class char32_to_utf16
-    : public boost::stringify::detail::char32_to_utf16_impl<char16_t>
+    : public boost::stringify::v1::detail::char32_to_utf16_impl<char16_t>
 {
 public:
     typedef char32_to_str_tag<char16_t> category;
@@ -170,7 +171,7 @@ public:
 
 template <template <class> class Filter>
 class char32_to_utf32
-    : public boost::stringify::detail::char32_to_utf32_impl<char32_t>
+    : public boost::stringify::v1::detail::char32_to_utf32_impl<char32_t>
 {
 public:
     typedef char32_to_str_tag<char32_t> category;
@@ -180,10 +181,10 @@ public:
 
 template <template <class> class Filter>
 class default_char32_to_wstr
-    : public boost::stringify::detail::ternary_t
+    : public boost::stringify::v1::detail::ternary_t
         < (sizeof(wchar_t) == sizeof(char32_t))
-        , boost::stringify::detail::char32_to_utf32_impl<wchar_t>
-        , boost::stringify::detail::char32_to_utf16_impl<wchar_t>
+        , boost::stringify::v1::detail::char32_to_utf32_impl<wchar_t>
+        , boost::stringify::v1::detail::char32_to_utf16_impl<wchar_t>
         >
 {
     typedef char32_to_str_tag<wchar_t> category;
@@ -194,7 +195,7 @@ class default_char32_to_wstr
 template <> struct char32_to_str_tag<char>
 {
     typedef
-        boost::stringify::char32_to_utf8<boost::stringify::true_trait>
+        boost::stringify::v1::char32_to_utf8<boost::stringify::v1::true_trait>
         default_impl;
 };
 
@@ -202,7 +203,7 @@ template <> struct char32_to_str_tag<char>
 template <> struct char32_to_str_tag<wchar_t>
 {
     typedef
-        boost::stringify::default_char32_to_wstr<boost::stringify::true_trait>
+        boost::stringify::v1::default_char32_to_wstr<boost::stringify::v1::true_trait>
         default_impl;
 };
 
@@ -210,7 +211,7 @@ template <> struct char32_to_str_tag<wchar_t>
 template <> struct char32_to_str_tag<char16_t>
 {
     typedef
-        boost::stringify::char32_to_utf16<boost::stringify::true_trait>
+        boost::stringify::v1::char32_to_utf16<boost::stringify::v1::true_trait>
         default_impl;
 };
 
@@ -218,7 +219,7 @@ template <> struct char32_to_str_tag<char16_t>
 template <> struct char32_to_str_tag<char32_t>
 {
     typedef
-        boost::stringify::char32_to_utf32<boost::stringify::true_trait>
+        boost::stringify::v1::char32_to_utf32<boost::stringify::v1::true_trait>
         default_impl;
 };
 
@@ -226,26 +227,27 @@ template <> struct char32_to_str_tag<char32_t>
 template <typename CharT, typename InputType, typename FTuple>
 decltype(auto) get_char32_writer(const FTuple& fmt) noexcept
 {
-    typedef  boost::stringify::char32_to_str_tag<CharT> tag;
+    typedef  boost::stringify::v1::char32_to_str_tag<CharT> tag;
     return fmt.template get<tag, InputType>();
 }
 
 template <typename CharT, typename InputType, typename FTuple>
 std::size_t get_char32_length(const FTuple& fmt, char32_t ch) noexcept
 {
-    typedef  boost::stringify::char32_to_str_tag<CharT> tag;
+    typedef  boost::stringify::v1::char32_to_str_tag<CharT> tag;
     return fmt.template get<tag, InputType>().length(ch);
 }
 
 template <typename InputType, typename FTuple, typename Output>
 void write_char32(const FTuple& fmt, Output& out, char32_t ch)
 {
-    using tag = boost::stringify::char32_to_str_tag<typename Output::char_type>;
+    using tag = boost::stringify::v1::char32_to_str_tag<typename Output::char_type>;
     fmt.template get<tag, InputType>().write(ch, out);
 }
 
+} // inline namespace v1
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_CUSTOM_CHAR32_TO_STR_HPP
+#endif  // BOOST_STRINGIFY_V1_CUSTOM_CHAR32_TO_STR_HPP
 

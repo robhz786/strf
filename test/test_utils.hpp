@@ -78,7 +78,7 @@ template <int LINE_NUM, typename CharT>
 class tester
 {
     typedef
-    boost::stringify::detail::char_ptr_writer<CharT, std::char_traits<CharT> >
+    boost::stringify::v1::detail::char_ptr_writer<CharT, std::char_traits<CharT> >
     writer_type;
     
 public:
@@ -147,14 +147,14 @@ private:
 
     std::size_t m_expected_size;
     std::basic_string<CharT> m_expected;
-    boost::stringify::detail::string_maker<std::basic_string<CharT>> m_writer;
+    boost::stringify::v1::detail::string_maker<std::basic_string<CharT>> m_writer;
 };
       
 template<int LINE_NUM, typename CharT>
 auto testf(const CharT* expected)    
 {
     using writer = tester<LINE_NUM, CharT>;
-    return std::move(boost::stringify::make_args_handler<writer>(expected));
+    return std::move(boost::stringify::v1::make_args_handler<writer>(expected));
 }
 
 

@@ -1,16 +1,17 @@
-#ifndef BOOST_STRINGIFY_INPUT_CHAR_HPP_INCLUDED
-#define BOOST_STRINGIFY_INPUT_CHAR_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_V1_INPUT_CHAR_HPP_INCLUDED
+#define BOOST_STRINGIFY_V1_INPUT_CHAR_HPP_INCLUDED
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/input_char32.hpp>
-#include <boost/stringify/type_traits.hpp>
-#include <boost/stringify/custom_width_calculator.hpp>
+#include <boost/stringify/v1/input_char32.hpp>
+#include <boost/stringify/v1/type_traits.hpp>
+#include <boost/stringify/v1/custom_width_calculator.hpp>
 
 namespace boost {
 namespace stringify {
+inline namespace v1 {
 namespace detail {
 
 template <typename CharT, typename Output, typename FTuple>
@@ -42,7 +43,7 @@ public:
 
     int remaining_width(int w) const
     {
-        auto calc = boost::stringify::get_width_calculator<input_type>(m_fmt);
+        auto calc = boost::stringify::v1::get_width_calculator<input_type>(m_fmt);
         return w - calc.width_of(m_char);
     }
 
@@ -66,7 +67,7 @@ private:
         
         template <typename Output, typename FTuple>
         using stringifier
-        = boost::stringify::detail::char_stringifier
+        = boost::stringify::v1::detail::char_stringifier
             <CharOut, Output, FTuple>;
     };
     
@@ -80,20 +81,20 @@ public:
 } //namepace detail
 
 
-boost::stringify::detail::char_input_traits<char>
+boost::stringify::v1::detail::char_input_traits<char>
 boost_stringify_input_traits_of(char);
 
-boost::stringify::detail::char_input_traits<char16_t>
+boost::stringify::v1::detail::char_input_traits<char16_t>
 boost_stringify_input_traits_of(char16_t);
 
-boost::stringify::detail::char_input_traits<wchar_t>
+boost::stringify::v1::detail::char_input_traits<wchar_t>
 boost_stringify_input_traits_of(wchar_t);
 
-
+} // inline namespace v1
 } // namespace stringify
 } // namespace boost
 
-#endif
+#endif // BOOST_STRINGIFY_V1_INPUT_CHAR_HPP_INCLUDED
 
 
 

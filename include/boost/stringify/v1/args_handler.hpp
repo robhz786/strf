@@ -1,17 +1,17 @@
-#ifndef BOOST_STRINGIFY_ARGS_HANDLER_HPP
-#define BOOST_STRINGIFY_ARGS_HANDLER_HPP
+#ifndef BOOST_STRINGIFY_V1_ARGS_HANDLER_HPP
+#define BOOST_STRINGIFY_V1_ARGS_HANDLER_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/input_arg.hpp>
-#include <boost/stringify/writef_helper.hpp>
-#include <boost/stringify/ftuple.hpp>
+#include <boost/stringify/v1/input_arg.hpp>
+#include <boost/stringify/v1/ftuple.hpp>
 #include <tuple>
 
 namespace boost {
 namespace stringify {
+inline namespace v1 {
 namespace detail {
 
 template <typename ArgsHandlerImpl, typename ftuple_type, typename output_writer>
@@ -21,7 +21,7 @@ class args_handler_base
     // using output_writer = typename ArgsHandlerImpl::output_writer;
     // using ftuple_type = typename ArgsHandlerImpl::ftuple_type;
     using char_type = typename output_writer::char_type;
-    using arg_type =  boost::stringify::input_arg<char_type, output_writer, ftuple_type>;
+    using arg_type =  boost::stringify::v1::input_arg<char_type, output_writer, ftuple_type>;
   
     template <typename Arg1, typename ... Args>
     std::size_t length(Arg1 && arg1, Args && ... args) const
@@ -33,24 +33,37 @@ class args_handler_base
     {
         return 0;
     }
- 
+
+    struct matching_strength_1 {};
+    struct matching_strength_2 : matching_strength_1 {};
+    
     template <typename output_writer2, typename ... Args>
-    auto reserve(output_writer2& output, Args && ... args) const
-    -> decltype(output.reserve(std::size_t()), void())
+    auto reserve
+        ( const matching_strength_2&
+        , output_writer2& writer
+        , const Args & ... args
+        ) const
+        -> decltype(writer.reserve(std::size_t()), void())
     {
-        output.reserve(1 + length(args...));
+        writer.reserve(1 + length(args...));
     }
 
     
     template <typename output_writer2, typename ... Args>
-    std::enable_if_t<!boost::stringify::detail::has_reserve<output_writer2>::value>
-    reserve(output_writer2&, Args && ... args) const
+    void reserve
+        ( const matching_strength_1&
+        , output_writer2&
+        , const Args & ... args
+        ) const
     {
     }
 
-    struct matching_strength_1 {};
-    struct matching_strength_2 : matching_strength_1 {};
-
+    template <typename ... Args>
+    void reserve(output_writer& writer, const Args & ... args) const
+    {
+        reserve(matching_strength_2(), writer, args...); 
+    }
+    
     template <typename OW>
     auto write_inilist
         ( const matching_strength_2&
@@ -255,19 +268,19 @@ public:
 
 template <typename FTuple, typename OutputWriter, typename ... OutputWriterArgs>
 class args_handler
-    : public boost::stringify::detail::args_handler_base
+    : public boost::stringify::v1::detail::args_handler_base
         < args_handler<FTuple, OutputWriter, OutputWriterArgs...>
         , FTuple
         , OutputWriter
         >  
-    , private boost::stringify::detail::output_writer_instantiator
+    , private boost::stringify::v1::detail::output_writer_instantiator
         <OutputWriter, OutputWriterArgs...>
 {
-    friend class boost::stringify::detail::args_handler_base
+    friend class boost::stringify::v1::detail::args_handler_base
         < args_handler, FTuple, OutputWriter>;
 
     using output_writer_instantiator
-        = boost::stringify::detail::output_writer_instantiator
+        = boost::stringify::v1::detail::output_writer_instantiator
         <OutputWriter, OutputWriterArgs...>;    
   
 public:
@@ -288,7 +301,7 @@ public:
         return *this;
     }
 
-    constexpr const args_handler& with(boost::stringify::ftuple<>)
+    constexpr const args_handler& with(boost::stringify::v1::ftuple<>)
     {
         return *this;
     }       
@@ -297,22 +310,22 @@ public:
     constexpr auto with(const Formaters& ... formaters) const
     {
         return args_handler
-            < decltype(boost::stringify::make_ftuple(m_ftuple, formaters ...))
+            < decltype(boost::stringify::v1::make_ftuple(m_ftuple, formaters ...))
             , OutputWriter
             , OutputWriterArgs ...
             >
-            (boost::stringify::make_ftuple(m_ftuple, formaters ...), *this);
+            (boost::stringify::v1::make_ftuple(m_ftuple, formaters ...), *this);
     }
     
     template <typename ... Formaters>
-    constexpr auto with(const boost::stringify::ftuple<Formaters...>& ft) const
+    constexpr auto with(const boost::stringify::v1::ftuple<Formaters...>& ft) const
     {
         return args_handler
-            < boost::stringify::ftuple<Formaters...>
+            < boost::stringify::v1::ftuple<Formaters...>
             , OutputWriter
             , OutputWriterArgs ...
             >
-            (boost::stringify::make_ftuple(m_ftuple, ft), *this);
+            (boost::stringify::v1::make_ftuple(m_ftuple, ft), *this);
     }
 
     const FTuple& get_ftuple() const
@@ -329,36 +342,36 @@ private:
 
 template <typename OutputWriter, typename ... OutputWriterArgs>
 class args_handler
-    < boost::stringify::ftuple<>
+    < boost::stringify::v1::ftuple<>
     , OutputWriter
     , OutputWriterArgs...
     >
-    : public boost::stringify::detail::args_handler_base
+    : public boost::stringify::v1::detail::args_handler_base
         < args_handler
-             < boost::stringify::ftuple<>
+             < boost::stringify::v1::ftuple<>
              , OutputWriter
              , OutputWriterArgs...
              >
-        , boost::stringify::ftuple<>
+        , boost::stringify::v1::ftuple<>
         , OutputWriter
         >
-    , private boost::stringify::detail::output_writer_instantiator
+    , private boost::stringify::v1::detail::output_writer_instantiator
         <OutputWriter, OutputWriterArgs...>
-    , private boost::stringify::ftuple<>
+    , private boost::stringify::v1::ftuple<>
 {
-    friend class boost::stringify::detail::args_handler_base
+    friend class boost::stringify::v1::detail::args_handler_base
         < args_handler
-        , boost::stringify::ftuple<>
+        , boost::stringify::v1::ftuple<>
         , OutputWriter
         >;
 
     using output_writer_instantiator
-        = boost::stringify::detail::output_writer_instantiator
+        = boost::stringify::v1::detail::output_writer_instantiator
         <OutputWriter, OutputWriterArgs...>;    
 
 public:
 
-    using ftuple_type = boost::stringify::ftuple<>;
+    using ftuple_type = boost::stringify::v1::ftuple<>;
     using output_writer = OutputWriter;
 
     constexpr args_handler(args_handler&& x) = default;
@@ -373,7 +386,7 @@ public:
         return *this;
     }
 
-    constexpr const args_handler& with(boost::stringify::ftuple<>) const
+    constexpr const args_handler& with(boost::stringify::v1::ftuple<>) const
     {
         return *this;
     }
@@ -382,20 +395,20 @@ public:
     constexpr auto with(const Formaters& ... formaters) const
     {
         return args_handler
-            < decltype(boost::stringify::make_ftuple(formaters ...))
+            < decltype(boost::stringify::v1::make_ftuple(formaters ...))
             , OutputWriter
             , OutputWriterArgs ...
             >
-            ( boost::stringify::make_ftuple(formaters ...)
+            ( boost::stringify::v1::make_ftuple(formaters ...)
             , *this
             );
     }
     
     template <typename ... Formaters>
-    constexpr auto with(const boost::stringify::ftuple<Formaters...>& ft) const
+    constexpr auto with(const boost::stringify::v1::ftuple<Formaters...>& ft) const
     {
         return args_handler
-            < boost::stringify::ftuple<Formaters...>
+            < boost::stringify::v1::ftuple<Formaters...>
             , OutputWriter
             , OutputWriterArgs ...
             >
@@ -404,7 +417,7 @@ public:
             );
     }
 
-    constexpr const boost::stringify::ftuple<>& get_ftuple() const
+    constexpr const boost::stringify::v1::ftuple<>& get_ftuple() const
     {
         return *this;
     }
@@ -417,8 +430,8 @@ template <typename OutputWriter, typename ... Args>
 constexpr auto make_args_handler(Args ... args)
 {
     using args_handler_type
-        = boost::stringify::detail::args_handler
-            < boost::stringify::ftuple<>
+        = boost::stringify::v1::detail::args_handler
+            < boost::stringify::v1::ftuple<>
             , OutputWriter
             , Args ...
             >;
@@ -426,9 +439,9 @@ constexpr auto make_args_handler(Args ... args)
     return std::move(args_handler_type(args...));
 }
 
-
+} // inline namespace v1
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_ARGS_HANDLER_HPP
+#endif  // BOOST_STRINGIFY_V1_ARGS_HANDLER_HPP
 

@@ -1,16 +1,17 @@
-#ifndef BOOST_STRINGIFY_INPUT_STD_STRING_HPP_INCLUDED
-#define BOOST_STRINGIFY_INPUT_STD_STRING_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_V1_INPUT_STD_STRING_HPP_INCLUDED
+#define BOOST_STRINGIFY_V1_INPUT_STD_STRING_HPP_INCLUDED
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/input_char_ptr.hpp>
+#include <boost/stringify/v1/input_char_ptr.hpp>
 #include <string>
 #include <type_traits>
 
 namespace boost {
 namespace stringify{
+inline namespace v1 {
 namespace detail {
 
 template <class CharT, typename Traits, typename Output, class FTuple>
@@ -22,7 +23,7 @@ public:
     using input_type  = std::basic_string<CharT, Traits>;
     using output_type = Output;
     using ftuple_type = FTuple;
-    using arg_format_type = boost::stringify::detail::string_arg_format
+    using arg_format_type = boost::stringify::v1::detail::string_arg_format
         <input_type, FTuple>;
 
    std_string_stringifier
@@ -52,7 +53,7 @@ public:
         if (m_padding_width > 0)
         {
             return m_str.length() + 
-                boost::stringify::fill_length<CharT, input_type>
+                boost::stringify::v1::fill_length<CharT, input_type>
                 (m_padding_width, m_fmt);
         }
         return m_str.length();
@@ -62,7 +63,7 @@ public:
     {
         if (m_padding_width > 0)
         {
-            if(m_alignment == boost::stringify::alignment::left)
+            if(m_alignment == boost::stringify::v1::alignment::left)
             {
                 out.put(&m_str[0], m_str.length());
                 write_fill(out);
@@ -90,7 +91,7 @@ public:
             return w - m_total_width;
         }
         return
-            boost::stringify::get_width_calculator<input_type>(m_fmt)
+            boost::stringify::v1::get_width_calculator<input_type>(m_fmt)
             .remaining_width(w, m_str.c_str(), m_str.length());
     }
 
@@ -101,7 +102,7 @@ private:
     const input_type& m_str;
     const width_t m_total_width;
     const width_t m_padding_width;
-    boost::stringify::alignment m_alignment;
+    boost::stringify::v1::alignment m_alignment;
 
     template <typename fmt_tag>
     decltype(auto) get_facet() const noexcept
@@ -111,14 +112,14 @@ private:
     
     void write_fill(Output& out) const
     {
-        boost::stringify::write_fill<CharT, input_type>
+        boost::stringify::v1::write_fill<CharT, input_type>
                 (m_padding_width, out, m_fmt);
     }
     
     width_t padding_width() const
     {
         return
-            boost::stringify::get_width_calculator<input_type>(m_fmt)
+            boost::stringify::v1::get_width_calculator<input_type>(m_fmt)
             .remaining_width(m_total_width, &m_str[0], m_str.length());
     }
 };
@@ -136,7 +137,7 @@ private:
 
         template <typename Output, typename FTuple>
         using stringifier
-        = boost::stringify::detail::std_string_stringifier
+        = boost::stringify::v1::detail::std_string_stringifier
             <CharOut, CharTraits, Output, FTuple>;
     };
 
@@ -158,7 +159,7 @@ template
 auto boost_stringify_input_traits_of(const String& str)
     -> std::enable_if_t
         < std::is_same<String, std::basic_string<CharT, CharTraits> >::value
-        , boost::stringify::detail::std_string_input_traits<CharT, CharTraits>
+        , boost::stringify::v1::detail::std_string_input_traits<CharT, CharTraits>
         >;
 /*    
     -> std::enable_if_t
@@ -169,13 +170,13 @@ auto boost_stringify_input_traits_of(const String& str)
               < typename std::iterator_traits<typename String::iterator>::iterator_category
               , std::random_access_iterator_tag
               >::value  
-        , boost::stringify::detail::std_string_input_traits<CharT, CharTraits>
+        , boost::stringify::v1::detail::std_string_input_traits<CharT, CharTraits>
         >;
 */
 
 
+} // inline namespace v1
 } // namespace stringify
 } // namespace boost
 
-
-#endif
+#endif //BOOST_STRINGIFY_V1_INPUT_STD_STRING_HPP_INCLUDED

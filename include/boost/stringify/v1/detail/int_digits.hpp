@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_DETAIL_INT_DIGITS_HPP
-#define BOOST_STRINGIFY_DETAIL_INT_DIGITS_HPP
+#ifndef BOOST_STRINGIFY_V1_DETAIL_INT_DIGITS_HPP
+#define BOOST_STRINGIFY_V1_DETAIL_INT_DIGITS_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -10,6 +10,7 @@
 
 namespace boost {
 namespace stringify {
+inline namespace v1 {
 namespace detail{
 
 template <typename intT, int Base>
@@ -60,8 +61,9 @@ private:
 };
 
 } // namespace detail
+} // inline namespace v1
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_DETAIL_INT_DIGITS_HPP
+#endif  // BOOST_STRINGIFY_V1_DETAIL_INT_DIGITS_HPP
 

@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_FTUPLE_HPP
-#define BOOST_STRINGIFY_FTUPLE_HPP
+#ifndef BOOST_STRINGIFY_V1_FTUPLE_HPP
+#define BOOST_STRINGIFY_V1_FTUPLE_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -9,6 +9,7 @@
 
 namespace boost {
 namespace stringify {
+inline namespace v1 {
 namespace detail {
 
 template <typename, typename ...>
@@ -49,7 +50,7 @@ class ftuple_simple
     typedef ftuple_impl<PreviousTag, OtherFmts ...> parent;
 
     template <typename, typename, typename ... >
-    friend class boost::stringify::detail::ftuple_simple;
+    friend class boost::stringify::v1::detail::ftuple_simple;
 
     FmtImpl m_fmt;
     
@@ -100,15 +101,15 @@ template
     >
 class ftuple_merge
     : private FTuple::template rebind_tag
-        < typename boost::stringify::detail::ftuple_impl
+        < typename boost::stringify::v1::detail::ftuple_impl
               < PreviousTag
               , OtherFmts ...
               >::tag
         >
-    , private boost::stringify::detail::ftuple_impl<PreviousTag, OtherFmts ...>
+    , private boost::stringify::v1::detail::ftuple_impl<PreviousTag, OtherFmts ...>
 {
     typedef
-        boost::stringify::detail::ftuple_impl<PreviousTag, OtherFmts ...>
+        boost::stringify::v1::detail::ftuple_impl<PreviousTag, OtherFmts ...>
         parent2;
 
     typedef
@@ -116,7 +117,7 @@ class ftuple_merge
         parent1;
 
     template <typename, typename, typename ... >
-    friend class boost::stringify::detail::ftuple_merge;
+    friend class boost::stringify::v1::detail::ftuple_merge;
 
 public:
 
@@ -142,7 +143,7 @@ public:
 
     template <typename P>
     using rebind_tag
-    = boost::stringify::detail::ftuple_merge<P, FTuple, OtherFmts...>;
+    = boost::stringify::v1::detail::ftuple_merge<P, FTuple, OtherFmts...>;
 
     typedef std::true_type boost_stringify_ftuple_flag;
 };
@@ -159,7 +160,7 @@ class ftuple_merge<PreviousTag, FTuple>
     typedef typename FTuple::template rebind_tag<PreviousTag> parent;
 
     template <typename, typename, typename ... >
-    friend class boost::stringify::detail::ftuple_merge;
+    friend class boost::stringify::v1::detail::ftuple_merge;
 
 public:
 
@@ -182,7 +183,7 @@ public:
 
     template <typename P>
     using rebind_tag
-    = boost::stringify::detail::ftuple_merge<P, FTuple>;
+    = boost::stringify::v1::detail::ftuple_merge<P, FTuple>;
 
     typedef std::true_type boost_stringify_ftuple_flag;
 };
@@ -262,8 +263,8 @@ template
     , typename ... OtherFmts
     >
 class ftuple_impl<PreviousTag, Fmt, OtherFmts ...>
-    : private boost::stringify::detail::ternary_trait
-        < boost::stringify::detail::is_ftuple<Fmt>::value
+    : private boost::stringify::v1::detail::ternary_trait
+        < boost::stringify::v1::detail::is_ftuple<Fmt>::value
         , ftuple_merge<PreviousTag, Fmt, OtherFmts ...>
         , ftuple_simple<PreviousTag, Fmt, OtherFmts ...>
         > :: type
@@ -272,15 +273,15 @@ class ftuple_impl<PreviousTag, Fmt, OtherFmts ...>
 private:
 
     typedef
-    typename boost::stringify::detail::ternary_trait
-        < boost::stringify::detail::is_ftuple<Fmt>::value
+    typename boost::stringify::v1::detail::ternary_trait
+        < boost::stringify::v1::detail::is_ftuple<Fmt>::value
         , ftuple_merge<PreviousTag, Fmt, OtherFmts ...>
         , ftuple_simple<PreviousTag, Fmt, OtherFmts ...>
         > :: type
     parent;
 
     template <typename, typename ...>
-    friend class boost::stringify::detail::ftuple_impl;
+    friend class boost::stringify::v1::detail::ftuple_impl;
 
 public:
 
@@ -313,14 +314,14 @@ public:
 
 template <typename ... FmtImpls>
 class ftuple
-    : private boost::stringify::detail::ftuple_impl
-        < boost::stringify::detail::ftuple_tag_zero
+    : private boost::stringify::v1::detail::ftuple_impl
+        < boost::stringify::v1::detail::ftuple_tag_zero
         , FmtImpls ...
         >
 {
     typedef
-        boost::stringify::detail::ftuple_impl
-            < boost::stringify::detail::ftuple_tag_zero
+        boost::stringify::v1::detail::ftuple_impl
+            < boost::stringify::v1::detail::ftuple_tag_zero
             , FmtImpls ...
             >
         parent;
@@ -328,10 +329,10 @@ class ftuple
     typedef typename parent::tag tag;
 
     template <typename, typename, typename...>
-    friend class boost::stringify::detail::ftuple_merge;
+    friend class boost::stringify::v1::detail::ftuple_merge;
 
     template <typename T>
-    friend struct boost::stringify::detail::is_ftuple;
+    friend struct boost::stringify::v1::detail::is_ftuple;
 
     typedef std::true_type boost_stringify_ftuple_flag;
 
@@ -339,7 +340,7 @@ public:
 
     template <typename P>
     using rebind_tag
-    = typename boost::stringify::detail::ftuple_impl<P, FmtImpls ...>;
+    = typename boost::stringify::v1::detail::ftuple_impl<P, FmtImpls ...>;
 
     constexpr ftuple(const FmtImpls& ... fmtimpls) : parent(fmtimpls ...)
     {
@@ -363,9 +364,9 @@ using ftuple_get_return_type
 
 
 template <typename ... Fmts>
-constexpr boost::stringify::ftuple<Fmts ...> make_ftuple(const Fmts& ... fmts)
+constexpr boost::stringify::v1::ftuple<Fmts ...> make_ftuple(const Fmts& ... fmts)
 {
-    return boost::stringify::ftuple<Fmts ...>(fmts ...);
+    return boost::stringify::v1::ftuple<Fmts ...>(fmts ...);
 }
 
 template
@@ -379,10 +380,9 @@ decltype(auto) get(const FTuple& f)
 }
 
 
+} // inline namespace v1
 } // namespace stringify
 } // namespace boost
 
-
-
-#endif  /* BOOST_STRINGIFY_FTUPLE_HPP */
+#endif  /* BOOST_STRINGIFY_V1_FTUPLE_HPP */
 

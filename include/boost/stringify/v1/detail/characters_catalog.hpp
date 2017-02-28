@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_DETAIL_CHARACTERS_CATALOG_HPP_INCLUDED
-#define BOOST_STRINGIFY_DETAIL_CHARACTERS_CATALOG_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_V1_DETAIL_CHARACTERS_CATALOG_HPP_INCLUDED
+#define BOOST_STRINGIFY_V1_DETAIL_CHARACTERS_CATALOG_HPP_INCLUDED
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -7,6 +7,7 @@
 
 namespace boost{
 namespace stringify{
+inline namespace v1 {
 namespace detail{
 
 template<typename CharT> constexpr CharT the_digit_zero();
@@ -72,42 +73,41 @@ template<> constexpr char32_t the_sign_plus<char32_t>(){ return U'+'; }
 struct characters_catalog
 {
     template <typename CharT>
-    static const CharT zero = boost::stringify::detail::the_digit_zero<CharT>();
+    static const CharT zero = boost::stringify::v1::detail::the_digit_zero<CharT>();
 
     template <typename CharT>
-    static const CharT x = boost::stringify::detail::the_character_x<CharT>();
+    static const CharT x = boost::stringify::v1::detail::the_character_x<CharT>();
 
     template <typename CharT>
-    static const CharT X = boost::stringify::detail::the_character_X<CharT>();
+    static const CharT X = boost::stringify::v1::detail::the_character_X<CharT>();
 
     template <typename CharT>
-    static const CharT a = boost::stringify::detail::the_character_a<CharT>();
+    static const CharT a = boost::stringify::v1::detail::the_character_a<CharT>();
 
     template <typename CharT>
-    static const CharT A = boost::stringify::detail::the_character_A<CharT>();
+    static const CharT A = boost::stringify::v1::detail::the_character_A<CharT>();
 
     template <typename CharT>
-    static const CharT space = boost::stringify::detail::the_space_character<CharT>();
+    static const CharT space = boost::stringify::v1::detail::the_space_character<CharT>();
 
     template <typename CharT>
-    static const CharT dot = boost::stringify::detail::the_dot_character<CharT>();
+    static const CharT dot = boost::stringify::v1::detail::the_dot_character<CharT>();
 
     template <typename CharT>
-    static const CharT comma = boost::stringify::detail::the_comma_character<CharT>();
+    static const CharT comma = boost::stringify::v1::detail::the_comma_character<CharT>();
 
     template <typename CharT>
-    static const CharT minus = boost::stringify::detail::the_sign_minus<CharT>();
+    static const CharT minus = boost::stringify::v1::detail::the_sign_minus<CharT>();
 
     template <typename CharT>
-    static const CharT plus = boost::stringify::detail::the_sign_plus<CharT>();
+    static const CharT plus = boost::stringify::v1::detail::the_sign_plus<CharT>();
 
 };
 
 
-}//namespace detail
-}//namespace stringify
-}//namespace boost
+} // namespace detail
+} // inline namespace v1
+} // namespace stringify
+} // namespace boost
 
-
-
-#endif
+#endif // BOOST_STRINGIFY_V1_DETAIL_CHARACTERS_CATALOG_HPP_INCLUDED

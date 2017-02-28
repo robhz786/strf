@@ -1,25 +1,26 @@
-#ifndef BOOST_STRINGIFY_FMT_WIDTH_CALCULATOR_HPP
-#define BOOST_STRINGIFY_FMT_WIDTH_CALCULATOR_HPP
+#ifndef BOOST_STRINGIFY_V1_FMT_WIDTH_CALCULATOR_HPP
+#define BOOST_STRINGIFY_V1_FMT_WIDTH_CALCULATOR_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/type_traits.hpp>
-#include <boost/stringify/ftuple.hpp>
+#include <boost/stringify/v1/type_traits.hpp>
+#include <boost/stringify/v1/ftuple.hpp>
 #include <boost/assert.hpp>
 #include <limits>
 
 namespace boost {
 namespace stringify {
+inline namespace v1 {
 
 struct width_calculator_tag;
 
-template <template <class> class Filter=boost::stringify::true_trait>
+template <template <class> class Filter=boost::stringify::v1::true_trait>
 class simplest_width_calculator
 {
 public:
-    typedef boost::stringify::width_calculator_tag category;
+    typedef boost::stringify::v1::width_calculator_tag category;
 
     template <typename T> using accept_input_type = Filter<T>;
   
@@ -57,19 +58,20 @@ public:
 struct width_calculator_tag
 {
     typedef
-    boost::stringify::simplest_width_calculator<boost::stringify::true_trait>
+    boost::stringify::v1::simplest_width_calculator<boost::stringify::v1::true_trait>
     default_impl;
 };
 
 template <typename InputType, typename FTuple>
 decltype(auto) get_width_calculator(const FTuple& fmt)
 {
-    return fmt.template get<boost::stringify::width_calculator_tag, InputType>();
+    return fmt.template get<boost::stringify::v1::width_calculator_tag, InputType>();
 }
 
 
+} // inline namespace v1
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_FMT_WIDTH_CALCULATOR_HPP
+#endif  // BOOST_STRINGIFY_V1_FMT_WIDTH_CALCULATOR_HPP
 
