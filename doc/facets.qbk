@@ -1,0 +1,311 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+
+
+[section Facet Categories]
+
+Each of the following sub-sections describe a facet category.
+
+Facets are policy classes that comply the [*/Requirements/] described bellow. `F` represents the class name, and `f` represents an instance of `F`. In addition to the items listed in /Requirements/, all facets must have:
+
+* A [*copy constructor]. And it should be a fast, because facets are passed by copy in many operations - especially during the construction of an ftuple. Fortunately, this should not be difficult since there is no need to provide any non-const member function. Hence if you need to implement a facet that needs to use some large complex data structure, you can just ensure that such structure never changes and then your facet can just hold a shared_ptr to it, and copy just that shared_ptr in its copy contructor, instead of the whole structure.
+
+* The [*`category`] member type. [/, which identifies the category.]
+
+* The [*`accept_input_type`] member type template. It takes a type as template parameter, and `F::accept_input_type<T>::value` must be a boolean constexpr that tells whether the facet applies to input type `T`. By default it is an alias to [^true_trait], which is simply defined as:
+
+```
+namespace boost{ namespace stringify{ inline namespace v1 {
+
+template <typename> struct true_trait: public std::true_type {};
+
+} } }
+
+```
+However, unless you want to implement you own facet or to implement support to a new input type, you don't need to pay attention to the facet requirements
+but only to the [*/Generator expressions/] listed bellow. Each of them is a expression that returns a facet instance. You will note a common pattern: the `_if` suffix is used in expressions that take a trait class as a template parameter. This be equal to the `accept_input_type` of the facet. Also, the prefix `t` denotes that the expressions takes the value as a template parameter, while the equivalent expression without the `t` prefix takes it as a function argument. For instance, you can use `twidth<`[~w]`>` or `width(`[~w]`)`. The return type of the former is an empty type. An `ftuple` that contains only emtpy (facets) types is also an empty type, /i.e./ its size is equal to one byte. The Generator expressions whose return type are empty types are [_underlined].
+
+
+
+
+[/
+You will note that all facets have the `category` member type. The category is passed as a template parameter to the `get` function template that extract a facet from a `ftuple`:
+
+```
+namespace boost{
+namespace stringify{
+inline namespace v1 {
+
+template <typename Category, typename Input, typename FTuple>
+const auto& get(const FTuple& fmt)
+{
+   // returns a facet instance
+}
+
+}
+}
+}
+```
+For example:
+```
+namespace strf = boost::stringify;
+auto fmt = strf::make_ftuple(strf::width_if<std::is_integral>(20), strf::width(10));
+int wi = stf::get<stf::width_tag, int  >(fmt).width();
+int wf = stf::get<stf::width_tag, float>(fmt).width();
+
+BOOST_ASSERT(wi == 20);
+BOOST_ASSERT(wf == 10);
+```
+In addition to the items listed in the following /Requirements/, all facets must have a copy constructor and a member trait class called `accept_input_type`. The later is used to restrict the facet to certain input types. For example, in the code above, the ftuple has two facets of the same category, but in the first one will
+
+If ever you implement an facet, it's important to provide a fast copy constructor, because facets are passed by copy in many operations - especially during the construction of an ftuple. Fortunately, this should not be difficult since there is no need to provide any non-const member function. So if need to implement a facet that needs to use some large complex data structure, you can just ensure that such structure never changes and then your facet can just hold a shared_ptr to it, and copy just that shared_ptr in its copy contructor, instead of the whole structure.
+
+]
+
+
+
+[/
+
+Facets are policy classes. They are not based on inheritance like the facets used in std::locale. As a result, a facet may be an empty type, i.e., with size equal to 1 byte. And so it is even possible that an ftuple that contains several facets be also an empty type.
+
+
+
+You don't need to pay attention to the policy requirements, unless you need to implement a new facet because none of the Boost.Stringify
+
+providing the purpose, requirements, some expressions 
+
+
+The following sub-sections describe the policy requirements of each facet category. But you usually only need to know them if you extend Boost.Stringify to add support to a new input type.
+
+Because Boost.Stringify already provides expressions ( which may be functions, varaible templates, constexpr, etc ) that create facets object for most situations. Some of them instantiate empty types, usually paried with another that creates the equivalent as an non empty type, whose value can de choosed at execution time. For instance ...
+
+You will note something common in all facet policies: the member type [^category] and the member class template ...
+This is the basic requimerent for all facets.
+
+]
+
+[br][br][section Width]
+
+Defines the width of each input as the quantity of [@https://en.wikipedia.org/wiki/En_(typography) en] units. The algorithm that calculates this is defined by another facet category - [link width_calculation width calculation].
+
+[h4 Requirements]
+
+[table
+[[Expression]     [Return type]    [description]]
+[[`F::category`]  [`width_tag`]    []]
+[[`f.width()`]    [`int`]          [the width]]
+]
+
+[h4 Generator expressions]
+
+* `width(`[~width]`)`
+* `width_if<`[~trait]`>(`[~width]`)`
+* [_`twidth<`[~width]`>`] --------------- (todo)
+* [_`twidth_if<`[~trait]`, `[~width]`>`] --------------(todo)
+
+
+[h4 Default: [^twidth<0>]]
+
+[endsect]
+
+[br][br][section Alignment - /a.k.a/ justification]
+
+[h4 Requirements]
+
+[table
+[[Expression]     [Return type]    [description]]
+[[`F::category`]  [`alignment_tag`]    []]
+[[`f.value()`]    [`alignment`]        []]
+]
+
+```
+enum class alignment{left, right, internal};
+```
+
+
+[h4 Generator Expressions]
+
+* [_`left`]
+* [_`right`]
+* [_`internal`]
+* [_`left_if<`[~trait]`>`]
+* [_`right_if<`[~trait]`>`]
+* [_`internal_if<`[~trait]`>`]
+
+[h4 Default: [^right]] 
+
+[endsect]
+
+[br][br][section Fill character]
+
+[h4 Requirements]
+
+
+[/
+Given
+* `width`, an value of `int`
+* `fmt`, an object whose type is a template instance of `ftuple`
+* `destination`, an object whose type satisfies [link OutputWriter OutputWriter requirements]
+* `CharT`, one of the character types: `char`, `char16_t`, `char32_t` or `wchar_t`
+]
+[table
+[[Expression]     [Return type]    [description]]
+[[`F::category`]  [`fill_tag`]    []]
+
+[[ todo ]  [ todo ]    [ todo ]]
+
+
+
+[/
+todo: remove template parameter CharT from fill
+
+[ [`f.fill(`[~width, destination, fmt])]
+  [`void`]
+  [Writes a fill with the given width in [~destination] ]]
+  
+[ [`f.length<CharT>(`[~width, fmt])]
+  [`void`]
+  [Returns how may [~CharT] values are necessary contain a fill of this width.]
+]
+
+]
+
+]
+
+[h4 Generator Expressions]
+
+* `fill(`[~character]`)`
+* `fill_if<`[~trait]`>(`[~character]`)`
+* [_`tfill<`[~character]`>`]   ---------------- todo
+* [_`tfill_if<`[~character]`, `[~trait]`>`] -------------todo
+
+
+[h4 Default: [^tfill<U' '>]]
+
+[endsect]
+
+[br][br][section Positive sign presence]
+[Controls whether the positive sign "`+`" is present in non-negative numbers]
+
+[h4 Requirements]
+
+[table
+[[Expression]     [Return type]    [description]]
+[[`F::category`]  [`showpos_tag`]  []]
+[[`f.value()`]    [`bool`]         [whether the positive sign shall be printed]]
+]
+
+[h4 Generator Expressions]
+
+* [_`showpos`]
+* [_`noshowpos`]
+* `showpos(`[~boolean]`)`
+* [_`showpos_if<`[~trait]`>`]
+* [_`noshowpos_if<`[~trait]`>`]
+
+[h4 Default: [^noshowpos]]
+
+[endsect]
+
+[br][br][section Integer base]
+[h4 Requirements]
+
+[table
+[[Expression]     [Return type]    [description]]
+[[`F::category`]  [`intbase_tag`]  []]
+[[`f.value()`]    [`int`]          [The base. Must be `8`, `10` or `16`]]
+]
+
+[h4 Generator Expressions]
+* [_`oct`]
+* [_`dec`]
+* [_`hex`]
+* [_`oct_if<`[~trait]`>`]
+* [_`dec_if<`[~trait]`>`]
+* [_`hex_if<`[~trait]`>`]
+
+[h4 Default: [^dec]]
+
+[endsect]
+
+[br][br][section Integer base indication presence]
+[/Whether the base indication - a "`0`" in octadecimal or a "`0x`" - is inserted.]
+
+[h4 Requirements]
+
+[table
+[[Expression]     [Return type]    [description]]
+[[`F::category`]  [`showbase_tag`]    []]
+[[`f.value()`]    [`bool`]         [whether the base indications be printed]]
+]
+
+[h4 Generator Expressions]
+* [_`showbase`]
+* [_`noshowbase`]
+* `showbase(`[~boolean]`)` -----------todo
+* [_`showbase_if<`[~trait]`>`]
+* [_`noshowbase_if<`[~trait]`>`]
+
+[h4 Default: [^noshowbase]]
+
+[endsect]
+
+[br][br][section Case]
+[h4 Requirements]
+
+[table
+[[Expression]     [Return type]    [description]]
+[[`F::category`]  [`case_tag`]     []]
+[[`f.uppercase()`]    [`bool`]     [Whether uppercase characters shall be used]]
+
+]
+
+[h4 Generator Expressions]
+* [_`lowercase`]
+* [_`uppercase`]
+* `lowercase(`[~boolean]`)` -----------todo
+* `uppercase(`[~boolean]`)` -----------todo
+* [_`lowercase_if<`[~trait]`>`]
+* [_`uppercase_if<`[~trait]`>`]
+
+[h4 Default: [^lowercase]]
+
+[endsect]
+
+
+[#width_calculation]
+[br][br][section Width calculation ['(todo)]]
+Defines the algorithm used to calculate the width. You may choose a less accurate but faster implementation or a more accurate but slower one. An you may, of course, create your own implementation.
+
+It is assumed that the font is aways monospace.
+
+[/
+[h4 Generator Expressions]
+
+[h4 Requirements]
+(todo)
+
+[h4 Default]
+(todo)
+]
+[endsect]
+
+
+[br][br][section Thousand separator ['(todo)]]
+[endsect]
+
+[br][br][section Numeric grouping ['(todo)]]
+[endsect]
+
+[br][br][section UTF-32 to narrow string convertion ['(todo)]]
+[endsect]
+
+[br][br][section Narrow string to UTF-32 convertion ['(todo)]]
+[endsect]
+
+[endsect]
+

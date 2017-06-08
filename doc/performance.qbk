@@ -1,0 +1,67 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+
+[section:performance Performance results]
+
+These are some results of how much time it take to write to `char*` using Boost.Stringify and sprintf. Compiled with gcc-5.4.0
+
+[teletype]```
+   Copy a string literal:
+              1.74 ns  writef(char_ptr_output) ("hello")
+             11.08 ns  writef(char_ptr_output) [{"hello"}]
+              1.73 ns  sprintf(char_ptr_output, "hello")
+              1.43 ns  sprintf(char_ptr_output, "%s", "hello")
+              1.74 ns  strcpy(char_ptr_output, "hello")
+   
+   Copy a heap allocated short string:
+              6.94 ns  writef(char_ptr_output) (hello)
+             11.23 ns  writef(char_ptr_output) [{hello}]
+              4.58 ns  strcpy(char_ptr_output, hello)
+             33.09 ns  sprintf(char_ptr_output, hello)
+              5.51 ns  sprintf(char_ptr_output, "%s", hello)
+             74.67 ns  sprintf(char_ptr_output, fmt, hello)
+   
+   Copy two strings
+             19.50 ns  writef(char_ptr_output) ("hello", "hello")
+             22.15 ns  writef(char_ptr_output) [{"hello", "hello"}]
+            120.10 ns  sprintf(char_ptr_output, "%s%s", "hello", "hello")
+   
+   Copy a long string ( 1000 characters ):
+             32.90 ns  writef(char_ptr_output) (long_string)
+             40.35 ns  writef(char_ptr_output) [{long_string}]
+             32.32 ns  strcpy(char_ptr_output, long_string)
+            103.71 ns  sprintf(char_ptr_output, long_string)
+             32.37 ns  sprintf(char_ptr_output, "%s", long_string)
+            803.99 ns  sprintf(char_ptr_output, fmt, long_string)
+   
+   write integers
+             15.07 ns  writef(char_ptr_output) (25)
+             16.82 ns  writef(char_ptr_output) [{25}]
+             66.37 ns  sprintf(char_ptr_output, "%d", 25)
+   
+             29.13 ns  writef(char_ptr_output) (INT_MAX)
+             28.92 ns  writef(char_ptr_output) [{INT_MAX}]
+             77.78 ns  sprintf(char_ptr_output, "%d", INT_MAX)
+   
+             46.67 ns  writef(char_ptr_output) (LLONG_MAX)
+             47.28 ns  writef(char_ptr_output) [{LLONG_MAX}]
+            113.63 ns  sprintf(char_ptr_output, "%lld", LLONG_MAX)
+   
+             46.33 ns  writef(char_ptr_output) (25, 25, 25)
+             47.71 ns  writef(char_ptr_output) [{25, 25, 25}]
+            116.75 ns  sprintf(char_ptr_output, "%d%d%d", 25, 25, 25)
+   
+            134.37 ns  writef(char_ptr_output) (LLONG_MAX, LLONG_MAX, LLONG_MAX)
+            138.47 ns  writef(char_ptr_output) [{LLONG_MAX, LLONG_MAX, LLONG_MAX}]
+            260.17 ns  sprintf(char_ptr_output, "%d%d%d", LLONG_MAX, LLONG_MAX, LLONG_MAX)
+   
+             47.00 ns  writef(char_ptr_output) ("ten =  ", 10, ", twenty = ", 20)
+             49.50 ns  writef(char_ptr_output) [{"ten =  ", 10, ", twenty = ", 20}]
+            102.77 ns  sprintf(char_ptr_output, "ten = %d, twenty= %d", 10, 20)
+```
+
+[endsect]

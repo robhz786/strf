@@ -1,0 +1,103 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+[section:usage Usage]
+
+[table
+[ []  [Destination type] [Expression] [Return]]
+[
+  [1]
+  [`std::basic_string<C, T>`]
+  [ [*`append_to(`][~destination][*`)`]`.with(`[~facets...]`)(`[~args...]`)`]
+  [nothing]
+]
+[
+  [2]
+  [`std::basic_string<C, T>`]
+  [ [*`assign_to(`][~destination][*`)`]`.with(`[~facets...]`)(`[~args...]`)`]
+  [nothing]
+]
+[
+  [3]
+  [`std::string`]
+  [ [*`make_string`]`.with(`[~facets...]`)(`[~args...]`)`]
+  [The result as a `std::string`]
+]
+[
+  [4]
+  [`std::u16string`]
+  [ [*`make_u16string`]`.with(`[~facets...]`)(`[~args...]`)`]
+  [The result as a `std::u16string`]
+]
+[
+  [5]
+  [`std::u32string`]
+  [ [*`make_u32string`]`.with(`[~facets...]`)(`[~args...]`)`]
+  [The result as a `std::u32string`]
+]
+[
+  [6]
+  [`std::wstring`]
+  [ [*`make_wstring`]`.with(`[~facets...]`)(`[~args...]`)`]
+  [The result as a `std::wstring`]
+]
+[
+  [7]
+  [`std::basic_string<C, T>`]
+  [ [*`assign_to(`][~destination][*`)`]`.with(`[~facets...]`)(`[~args...]`)`]
+  [The result as a `std::basic_string<C, T>`]
+]
+
+[
+  [8]
+  [ `char*`, `char16_t*`, `char32_t*`, `wchar_t*`]
+  [ [*`write_to(`][~destination][*`)`]`.with(`[~facets...]`)(`[~args...]`)`]
+  [ Number of writen characters, not counting the terminationg null character ]
+]
+
+[
+  [9 (/todo/)]
+  [ `char*`, `char16_t*`, `char32_t*`, `wchar_t*`]
+  [ [*`write_to(`][~destination][*`)`]`.with(`[~facets...]`)(`[~args...]`)`]
+  [ ]
+]
+
+[
+  [10 (/todo/)]
+  [ `std::basic_streambuf<C, T>`]
+  [ [*`write_to(`][~destination][*`)`]`.with(`[~facets...]`)(`[~args...]`)`]
+  [ Number of writen characters ]
+]
+[
+  [11 (/todo/)]
+  [ `FILE*` ( using narrow function) ]
+  [ [*`write_to(`][~destination][*`)`]`.with(`[~facets...]`)(`[~args...]`)`]
+  [ Number of writen characters ]
+]
+[
+  [12 (/todo/)]
+  [ `FILE*` ( using wide functions) ]
+  [ [*`wwrite_to(`][~destination][*`)`]`.with(`[~facets...]`)(`[~args...]`)`]
+  [ Number of writen characters ]
+]
+]
+
+[table
+[[ Notes ]]
+[[
+[*\u2022] The use of `.with(`[~facets]`...)` is optional.
+
+[*\u2022] Instead of `(`[~args...]`)`, you can also use `[{`[~args...]`}]`. The former is limited up to 10 argumets, but it has shown better performance when the number of arguments is very small.
+
+[*\u2022] When writing to a std::basic_string (cases 1 to 7), an adequate capacity is reserved before writting any character so that at most only one memory allocation happens inside the destination string.
+
+[/ bullet chars : \u2022 [*\u2022]  \u26ab \u23FA \u25cf \u2b24  ]
+
+]]
+]
+
+[endsect]
+

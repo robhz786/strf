@@ -1,0 +1,60 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+[import ../examples/v1/trivial_sample.cpp]
+[import ../examples/v1/trivial_formatting.cpp]
+[import ../examples/v1/facets.cpp]
+
+[section Tutorial]
+
+A trivial example:
+
+[trivial_sample]
+
+An argument can just be a value to be stringified, as above,
+or can be a /braced-init-list/ composed by two arguments.
+The first one is the value to be stringified. Its type defines
+the type and the purpose of the second argument which
+may also be a /braced-init-list/ and usually specifies formatting as described
+[link conventional_formatting here].
+
+[trivial_formatting_sample]
+
+[/
+However keep in mind that an input type does not necessarily take formatting
+arguments as in the sample above. Actually if an user add support for some
+user-defined type, it is up to him/her to decide what sort of formatting
+options are avaible, if any. A certain input may not use any formatting string,
+and if it does, it doesn't have to follow the table above. 
+Refer to the documentation of each input type.
+]
+
+[h3 Using facets]
+
+The /braced-init-list/ form previouly demonstrated aims to provide a pratical and compact syntax for formatting. But it does not support many formatting options, just those more frequently used. To compensate this limitation, there is another way to customize formatting: /formatting facets/.
+
+[trivial_facets_sample]
+
+You can group several facets into a /ftuple/ ( a tuple of facets ).
+This may resemble `std::locale` a little, but there are two differences:
+ (1) `ftuple` class template solve most things at compilation time in order to gain performance, and (2) facets here are not necessarily related to localization.
+
+You can also create ftuple from others ftuples:
+
+[ftuple_sample]
+
+[/
+It is possible to apply a ftuple to only some of the arguments. 
+
+[ftuple_sub_args]
+]
+
+And it is possible to create facets that only applies to certain input types: 
+
+[facet_filters]
+
+[endsect]
+

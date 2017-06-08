@@ -1,0 +1,32 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+[section Overview]
+
+[warning
+This library is not part of the Boost C++ Libraries, although it aims to be.
+It is incomplete and things documented here are subject to change and some of them
+may not have been implemented yet.
+]
+
+Boost.Stringify is a C++14 locale-independent formatting library which
+
+* is header only
+* has good [link performance.performance performance]
+* supports all character types ( `char`, `wchar_t`, `char32_t` and `char16_t`)
+* supports many [link usage.usage destination types]
+* is extensible 
+
+[h3 Compliance]
+
+The following compilers are known to work with Boost.Stringify:
+
+* gcc 6.2 ( with [^-std=c++14] option)
+* clang 3.8 ( with [^-std=c++14] option)
+
+
+[endsect]
+
