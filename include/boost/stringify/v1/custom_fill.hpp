@@ -34,6 +34,8 @@ public:
     template<typename CharT, typename Output, typename FTuple>
     void fill(width_type width, Output& out, const FTuple& fmt) const
     {
+        using charT = typename Output::char_type;
+        
         decltype(auto) char32_writer
             = boost::stringify::v1::get_char32_writer<CharT, category>(fmt);
         int count = quantity<CharT>(width, fmt);

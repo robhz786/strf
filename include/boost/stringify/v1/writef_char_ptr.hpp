@@ -62,7 +62,7 @@ template<typename CharT, typename CharTraits = std::char_traits<CharT> >
 auto writef(CharT* destination)
 {
     using writer = boost::stringify::v1::detail::char_ptr_writer<CharT, CharTraits>;
-    return boost::stringify::v1::make_args_handler<writer, char*>(destination);
+    return boost::stringify::v1::make_args_handler<writer, CharT*>(destination);
 }
 
 } // inline namespace v1
