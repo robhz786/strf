@@ -36,12 +36,8 @@ using ternary_t = typename ternary_trait<Condition, ThenType, ElseType>::type;
 
 // has_arg_format_type
 
-template <typename Stringifier>
-auto has_arg_format_type_helper(const Stringifier*)
-    -> decltype
-        ( std::declval<typename Stringifier::arg_format_type>()
-        , std::true_type()
-        );
+template <typename Stringifier, typename = typename Stringifier::arg_format_type>
+auto has_arg_format_type_helper(const Stringifier*) -> std::true_type;
 
 template <typename Stringifier>
 auto has_arg_format_type_helper(...)  ->  std::false_type;

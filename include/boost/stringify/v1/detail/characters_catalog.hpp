@@ -73,34 +73,65 @@ template<> constexpr char32_t the_sign_plus<char32_t>(){ return U'+'; }
 struct characters_catalog
 {
     template <typename CharT>
-    static const CharT zero = boost::stringify::v1::detail::the_digit_zero<CharT>();
+
+    static constexpr CharT zero()
+    {
+        return boost::stringify::detail::the_digit_zero<CharT>();
+    }
 
     template <typename CharT>
-    static const CharT x = boost::stringify::v1::detail::the_character_x<CharT>();
+    static constexpr CharT x()
+    {
+        return boost::stringify::detail::the_character_x<CharT>();
+    }
 
     template <typename CharT>
-    static const CharT X = boost::stringify::v1::detail::the_character_X<CharT>();
+    static constexpr CharT X()
+    {
+        return boost::stringify::detail::the_character_X<CharT>();
+    }
 
     template <typename CharT>
-    static const CharT a = boost::stringify::v1::detail::the_character_a<CharT>();
+    static constexpr CharT a()
+    {
+        return boost::stringify::detail::the_character_a<CharT>();
+    }
 
     template <typename CharT>
-    static const CharT A = boost::stringify::v1::detail::the_character_A<CharT>();
+    static constexpr CharT A()
+    {
+        return boost::stringify::detail::the_character_A<CharT>();
+    }
 
     template <typename CharT>
-    static const CharT space = boost::stringify::v1::detail::the_space_character<CharT>();
+    static constexpr CharT space()
+    {
+        return boost::stringify::detail::the_space_character<CharT>();
+    }
 
     template <typename CharT>
-    static const CharT dot = boost::stringify::v1::detail::the_dot_character<CharT>();
+    static constexpr CharT dot()
+    {
+        return boost::stringify::detail::the_dot_character<CharT>();
+    }
 
     template <typename CharT>
-    static const CharT comma = boost::stringify::v1::detail::the_comma_character<CharT>();
+    static constexpr CharT comma()
+    {
+        return boost::stringify::detail::the_comma_character<CharT>();
+    }
 
     template <typename CharT>
-    static const CharT minus = boost::stringify::v1::detail::the_sign_minus<CharT>();
+    static constexpr CharT minus()
+    {
+        return boost::stringify::detail::the_sign_minus<CharT>();
+    }
 
     template <typename CharT>
-    static const CharT plus = boost::stringify::v1::detail::the_sign_plus<CharT>();
+    static constexpr CharT plus()
+    {
+        return boost::stringify::detail::the_sign_plus<CharT>();
+    }
 
 };
 

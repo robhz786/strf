@@ -43,7 +43,8 @@ int main()
     TEST("abcdefghi")    .with(strf::width(0))  ("", {abc, ">"}, {def, "<"}, {ghi, "="});
     TEST("   abc")     ({strf::join > 6, {abc}});
 
-    return  boost::report_errors();
+    int rc = boost::report_errors();
+    return rc;
 }
 
 

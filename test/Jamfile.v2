@@ -9,7 +9,7 @@ project
 
 import testing ;
 {
-test-suite "listf_tests"
+test-suite "BoostStringify_tests"
     : 
       [ run input_string_test.cpp ]
       [ run input_int_test.cpp ]

@@ -75,8 +75,8 @@ int main()
     // TEST(u"abc") .with(strf::width(1)) (U'a', {U'b', "<"}, {U'c', "%"});
     // TEST(u"abc") .with(strf::width(0)) (U'a', {U'b', "<"}, {U'c', "%"});
 
-    
-    return  boost::report_errors();
+    int rc = boost::report_errors();
+    return rc;
 }
 
 

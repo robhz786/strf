@@ -110,7 +110,7 @@ public:
         }
         else
         {
-            m_it_count_stop = std::ceil
+            m_it_count_stop = (std::size_t) std::ceil
                 ( 1.4
                 * (double)(m_it_count_stop)
                 * (double)(m_loop_relative_size)

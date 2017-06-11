@@ -250,7 +250,7 @@ private:
     }
 
 
-    constexpr unsigned_intT unsigned_value() const noexcept
+    unsigned_intT unsigned_value() const noexcept
     {
         if(m_base == 10)
         {
@@ -353,11 +353,11 @@ private:
         {
             if (m_value < 0)
             {
-                out.put(chars_catalog::minus<CharT>);
+                out.put(chars_catalog::minus<CharT>());
             }
             else if(m_showpos)
             {
-                out.put(chars_catalog::plus<CharT>);
+                out.put(chars_catalog::plus<CharT>());
             }
         }
     }
@@ -391,19 +391,19 @@ private:
         {
             if (m_base == 16)
             {
-                out.put(chars_catalog::zero<CharT>);
+                out.put(chars_catalog::zero<CharT>());
                 if (m_uppercase)
                 {
-                    out.put(chars_catalog::X<CharT>);
+                    out.put(chars_catalog::X<CharT>());
                 }
                 else
                 {
-                    out.put(chars_catalog::x<CharT>);
+                    out.put(chars_catalog::x<CharT>());
                 }
             }
             else if(m_base == 8)
             {
-                out.put(chars_catalog::zero<CharT>);
+                out.put(chars_catalog::zero<CharT>());
             }
         }
     }
@@ -449,22 +449,22 @@ private:
             *--it = character_of_digit(value % Base);
             value /= Base;
         }
-        *--it = character_of_digit(value);
+        *--it = character_of_digit(static_cast<unsigned>(value));
         return it;
     }
 
 
-    CharT character_of_digit(unsigned int digit) const noexcept
+    CharT character_of_digit(unsigned digit) const noexcept
     {
         if (digit < 10)
         {
-            return chars_catalog::zero<CharT> + digit;
+            return chars_catalog::zero<CharT>() + digit;
         }
         else if (m_uppercase)
         {
-            return chars_catalog::A<CharT> + digit - 10;
+            return chars_catalog::A<CharT>() + digit - 10;
         }
-        return chars_catalog::a<CharT> + digit - 10;
+        return chars_catalog::a<CharT>() + digit - 10;
     }
 
 

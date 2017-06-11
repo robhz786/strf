@@ -73,12 +73,12 @@ class args_handler_base
        -> decltype(writer.reserve(std::size_t()), void())
     {
         std::size_t len = 0;
+        decltype(auto) fmt = get_ftuple();
         for(auto arg : lst)
         {
-            len += arg.length();
+            len += arg.length(fmt);
         }
         writer.reserve(len + 1);
-        decltype(auto) fmt = get_ftuple();
         for(auto arg : lst)
         {
             arg.write(writer, fmt);
@@ -301,7 +301,7 @@ public:
         return *this;
     }
 
-    constexpr const args_handler& with(boost::stringify::v1::ftuple<>)
+    constexpr const args_handler& with(boost::stringify::v1::ftuple<>) const
     {
         return *this;
     }       

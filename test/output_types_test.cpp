@@ -59,8 +59,8 @@ int main()
         BOOST_TEST(str == "abcd0+1+23+4");
     }
 
-
-    return  boost::report_errors();
+    int rc = boost::report_errors();
+    return rc;
 }
 
 

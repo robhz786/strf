@@ -11,7 +11,7 @@ int main()
 {
     namespace strf = boost::stringify::v1;
 
-    TEST("abcdef   123") ({strf::join = 12, {"abc", "de", "f", {}, {}, 123}});
+//  TEST("abcdef   123") ({strf::join = 12, {"abc", "de", "f", {}, {}, 123}});
     TEST("abcdef123   ") ({strf::join < 12, {"abc", "def", 123}});
     TEST("   abcdef123") ({strf::join > 12, {"abc", "def", 123}});
     TEST("~~~abcdef123") ({strf::join('~') > 12, {"abc", "def", 123}});
@@ -20,6 +20,6 @@ int main()
     TEST("abcdef123") ({strf::join < 9, {"abc", "def", 123}});
     TEST("abcdef123") ({strf::join > 9, {"abc", "def", 123}});
 
-    
-    return  boost::report_errors();
+    int rc = boost::report_errors();
+    return rc;
 }

@@ -12,41 +12,44 @@ namespace stringify {
 inline namespace v1 {
 namespace detail {
 
-template <typename CharT, typename Output, typename FTuple>
+template <typename Output, typename FTuple>
 class stringifier_wrapper
 {
 public:
     virtual ~stringifier_wrapper()
     {
-    };
-
-    virtual std::size_t length(const FTuple& fmt)
-    {
-        return 0;
     }
+
+    virtual std::size_t length(const FTuple& fmt) = 0;
         
-    virtual void write(Output& out, const FTuple& fmt)
-    {
-    }
+    virtual void write(Output& out, const FTuple& fmt) = 0;
 
-    virtual int remaining_width(int w, const FTuple& fmt)
-    {
-        return w;
-    }
+    virtual int remaining_width(int w, const FTuple& fmt) = 0;
 };
 
-
-template <typename StringifierImpl, typename CharT, typename Output, typename FTuple>
+template <typename StringifierImpl>
 class stringifier_wrapper_impl
     : public boost::stringify::v1::detail::stringifier_wrapper
-        <CharT, Output, FTuple>
+        < typename StringifierImpl::output_type
+        , typename StringifierImpl::ftuple_type
+        >
 {
-    using input_type = typename StringifierImpl::input_type;
-    
+    using output_type = typename StringifierImpl::output_type;
+    using input_type  = typename StringifierImpl::input_type;
+    using ftuple_type = typename StringifierImpl::ftuple_type;
+
     using input_type_is_pointer = std::is_pointer<input_type>;
 
+    template <typename Stringifier, typename = typename Stringifier::arg_format_type>
+    static std::true_type has_arg_format_type_helper(const Stringifier*);
+
+    template <typename Stringifier>
+    static std::false_type has_arg_format_type_helper(...);
+
+    template <typename Stringifier>
     using has_arg_format_type
-    = boost::stringify::v1::detail::has_arg_format_type<StringifierImpl>;
+		= decltype(has_arg_format_type_helper<Stringifier>((Stringifier*)0));
+	
     
     struct no_arg_format_type{};
 
@@ -64,7 +67,9 @@ class stringifier_wrapper_impl
 
     using arg_format_type
     = typename arg_format_type_trait
-        <StringifierImpl, has_arg_format_type::value>
+        < StringifierImpl
+        , has_arg_format_type<StringifierImpl>::value
+        >
         ::type;
 
     using input_type_ptr
@@ -75,7 +80,7 @@ class stringifier_wrapper_impl
         >;
 
     using constructible_from_single_arg
-    = std::is_constructible<StringifierImpl, const FTuple&, input_type>;
+    = std::is_constructible<StringifierImpl, const ftuple_type&, input_type>;
     
 public:
 
@@ -109,20 +114,20 @@ public:
         state = args_initialized;
     }
 
-    std::size_t length(const FTuple& fmt)
+    std::size_t length(const ftuple_type& fmt) override
     {
         construct_if_necessary(fmt);
         return do_get()->length();
     }
         
-    virtual void write(Output& out, const FTuple& fmt)
+    virtual void write(output_type& out, const ftuple_type& fmt) override
     {
         construct_if_necessary(fmt);
         do_get()->write(out);
     };
 
     
-    int remaining_width(int w, const FTuple& fmt)
+    int remaining_width(int w, const ftuple_type& fmt) override
     {
         construct_if_necessary(fmt);
         return do_get()->remaining_width(w);
@@ -135,7 +140,7 @@ private:
         return reinterpret_cast<const StringifierImpl*>(&space[0]);
     }
 
-    void construct_if_necessary(const FTuple& fmt)
+    void construct_if_necessary(const ftuple_type& fmt)
     {
         if(state != stringifier_initialized)
         {
@@ -144,7 +149,7 @@ private:
                 ( fmt
                 , get_value()
                 , m_formatter_ptr
-                , has_arg_format_type()
+                , has_arg_format_type<StringifierImpl>()
                 , constructible_from_single_arg()
                 );
         }
@@ -152,7 +157,7 @@ private:
 
     template <typename S>
     void construct
-        ( const FTuple& fmt
+        ( const ftuple_type& fmt
         , const input_type& value
         , const arg_format_type* formatter_ptr
         , std::true_type
@@ -172,7 +177,7 @@ private:
 
     template <typename S>
     void construct
-        ( const FTuple& fmt
+        ( const ftuple_type& fmt
         , const input_type& value
         , const arg_format_type* formatter_ptr
         , std::true_type
@@ -188,7 +193,7 @@ private:
     
     template <typename S>
     void construct
-        ( const FTuple& fmt
+        ( const ftuple_type& fmt
         , const input_type& value
         , const arg_format_type*
         , std::false_type
