@@ -364,7 +364,7 @@ using ftuple_get_return_type
 
 
 template <typename ... Fmts>
-constexpr boost::stringify::v1::ftuple<Fmts ...> make_ftuple(const Fmts& ... fmts)
+constexpr auto make_ftuple(const Fmts& ... fmts)
 {
     return boost::stringify::v1::ftuple<Fmts ...>(fmts ...);
 }

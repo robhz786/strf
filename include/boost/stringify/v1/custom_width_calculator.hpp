@@ -8,6 +8,7 @@
 #include <boost/stringify/v1/type_traits.hpp>
 #include <boost/stringify/v1/ftuple.hpp>
 #include <boost/assert.hpp>
+#include <string>
 #include <limits>
 
 namespace boost {

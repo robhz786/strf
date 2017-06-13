@@ -1,21 +1,30 @@
 #include <boost/stringify.hpp>
 #include <boost/assert.hpp>
+#include <iostream>
 
 int main()
 {
+    //[joins_example
     namespace strf = boost::stringify::v1;
-    auto result = strf::make_string("---", {strf::join > 14, {"abc", "def", 123}}, "---");
-    BOOST_ASSERT(result == "---     abcdef123---");
 
-    result = strf::make_string({strf::join(U'.') < 14, {"abc", "def", 123}});
-    BOOST_ASSERT(result == "abcdef123.....");
+    auto result = strf::make_string
+        ( "___[", {strf::join_right(14), {"abc", "def", 123}}, "]___");
+    BOOST_ASSERT(result == "___[     abcdef123]___");
 
-    auto mk_string_f = strf::make_string.with(strf::fill(U'~'));
-
-    result = mk_string_f({strf::join > 14, {"abc", "def", 123}});
-    BOOST_ASSERT(result == "~~~~~abcdef123");
-
-    result = mk_string_f({strf::join('.') > 14, {"abc", "def", 123}});
-    BOOST_ASSERT(result == ".....abcdef123");
     
+    result = strf::make_string
+        ( "___[", {strf::join_left(14, U'.'), {"abc", {"def", 5}, 123}}, "]___");
+    BOOST_ASSERT(result == "___[abc  def123...]___");
+
+    
+    result = strf::make_string.with(strf::fill(U'~'))
+        ( "___[", {strf::join_internal(14, 2), {"abc", "def", 123}}, "]___");
+    BOOST_ASSERT(result == "___[abcdef~~~~~123]___");
+
+    
+    result = strf::make_string.with(strf::fill(U'='))
+        ( "___[", {strf::join_internal(14, 1, '.'), {{"abc", {5, "<"}}, "def", 123}}, "]___");
+    BOOST_ASSERT(result == "___[abc==...def123]___");
+    //]
+    return 0;
 } 

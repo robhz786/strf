@@ -17,5 +17,6 @@ test-suite "BoostStringify_tests"
       [ run join_test.cpp ] 
       [ run output_types_test.cpp ]
       [ run ftuple_merge_test.cpp ]
+      [ run tmp_tests.cpp ]
     ;
 }

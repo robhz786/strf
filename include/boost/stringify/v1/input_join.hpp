@@ -13,50 +13,43 @@ namespace boost {
 namespace stringify {
 inline namespace v1 {
 namespace detail {
-
 struct join_t
 {
     boost::stringify::v1::alignment align;
-    char32_t fillchar;
-    int width;    
+    char32_t fillchar = char32_t();
+    int width = 0;
+    int num_leading_args = 1;
 };
 
-struct join_generator
+}
+
+boost::stringify::v1::detail::join_t
+join_left(int width, char32_t fillchar =char32_t())
 {
-    constexpr join_generator(char32_t fillchar = U'\0')
-        : m_fillchar(fillchar)
-    {
-    }
+    return {boost::stringify::v1::alignment::left, fillchar, width, 0};
+}
 
-    constexpr join_generator(const join_generator&) = default;
-    
-    auto operator()(char32_t fill_char) const
-    -> join_generator
-    {
-        return join_generator(fill_char);
-    }
 
-    boost::stringify::v1::detail::join_t operator<(int width) const
-    {
-        return {boost::stringify::v1::alignment::left, m_fillchar, width};
-    }
+boost::stringify::v1::detail::join_t
+join_right(int width, char32_t fillchar =char32_t())
+{
+    return {boost::stringify::v1::alignment::right, fillchar, width, 0};
+}
 
-    boost::stringify::v1::detail::join_t operator>(int width) const
-    {
-        return {boost::stringify::v1::alignment::right, m_fillchar, width};
-    }
+boost::stringify::v1::detail::join_t
+join_internal(int width, int num_leading_args = 1, char32_t fillchar =char32_t())
+{
+    return {boost::stringify::v1::alignment::internal
+            , fillchar, width, num_leading_args};
+}
 
-    boost::stringify::v1::detail::join_t operator=(int width) const
-    {
-        return {boost::stringify::v1::alignment::internal, m_fillchar, width};
-    }
+boost::stringify::v1::detail::join_t
+join_internal(int width, char32_t fillchar)
+{
+    return {boost::stringify::v1::alignment::internal, fillchar, width, 1};
+}
 
-private:
-
-    const char32_t m_fillchar;
-
-};
-
+namespace detail {
 
 template <typename CharT, typename Output, typename FTuple>
 class join_stringifier
@@ -172,13 +165,12 @@ private:
 
     void write_splitted(Output& out) const
     {
-        std::size_t reg_count = m_args.size() / 2;
         auto it = m_args.begin();
-        while(reg_count && it != m_args.end())
+        for ( int count = m_join.num_leading_args
+            ; count > 0 && it != m_args.end()
+            ; --count, ++it)      
         {
             (*it).write(out, m_fmt);
-            ++it;
-            --reg_count;
         }
         write_fill(out);
         while(it != m_args.end())
@@ -224,8 +216,6 @@ boost_stringify_input_traits_of(const boost::stringify::v1::detail::join_t&);
 
 
 } // namespace detail
-
-constexpr boost::stringify::v1::detail::join_generator join = U'\0';
 
 
 } // inline namespace v1

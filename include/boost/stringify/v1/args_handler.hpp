@@ -74,12 +74,12 @@ class args_handler_base
     {
         std::size_t len = 0;
         decltype(auto) fmt = get_ftuple();
-        for(auto arg : lst)
+        for(const auto& arg : lst)
         {
             len += arg.length(fmt);
         }
         writer.reserve(len + 1);
-        for(auto arg : lst)
+        for(const auto& arg : lst)
         {
             arg.write(writer, fmt);
         }
@@ -93,7 +93,7 @@ class args_handler_base
         ) const
     {
         decltype(auto) fmt = get_ftuple();
-        for(auto arg : lst)
+        for(const auto& arg : lst)
         {
             arg.write(writer, fmt);
         }
@@ -289,13 +289,20 @@ public:
     using output_writer = OutputWriter;
 
     constexpr args_handler(args_handler&& x) = default;
-    
+
+
     constexpr args_handler(FTuple&& ft, const output_writer_instantiator& owi)
         : output_writer_instantiator(owi)
         , m_ftuple(std::move(ft))
     {
     }
- 
+
+    constexpr args_handler(const FTuple& ft, const output_writer_instantiator& owi)
+        : output_writer_instantiator(owi)
+        , m_ftuple(std::move(ft))
+    {
+    }
+
     constexpr const args_handler& with() const
     {
         return *this;
@@ -306,8 +313,8 @@ public:
         return *this;
     }       
 
-    template <typename ... Formaters>
-    constexpr auto with(const Formaters& ... formaters) const
+    template <typename ... Facets>
+    constexpr auto with(const Facets& ... formaters) const
     {
         return args_handler
             < decltype(boost::stringify::v1::make_ftuple(m_ftuple, formaters ...))
@@ -317,11 +324,11 @@ public:
             (boost::stringify::v1::make_ftuple(m_ftuple, formaters ...), *this);
     }
     
-    template <typename ... Formaters>
-    constexpr auto with(const boost::stringify::v1::ftuple<Formaters...>& ft) const
+    template <typename ... Facets>
+    constexpr auto with(const boost::stringify::v1::ftuple<Facets...>& ft) const
     {
         return args_handler
-            < boost::stringify::v1::ftuple<Formaters...>
+            < decltype(boost::stringify::v1::make_ftuple(m_ftuple, ft))
             , OutputWriter
             , OutputWriterArgs ...
             >
@@ -391,28 +398,28 @@ public:
         return *this;
     }
     
-    template <typename ... Formaters>
-    constexpr auto with(const Formaters& ... formaters) const
+    template <typename ... Facets>
+    constexpr auto with(const Facets& ... facets) const
     {
         return args_handler
-            < decltype(boost::stringify::v1::make_ftuple(formaters ...))
+            < decltype(boost::stringify::v1::make_ftuple(facets ...))
             , OutputWriter
             , OutputWriterArgs ...
             >
-            ( boost::stringify::v1::make_ftuple(formaters ...)
+            ( boost::stringify::v1::make_ftuple(facets ...)
             , *this
             );
     }
     
-    template <typename ... Formaters>
-    constexpr auto with(const boost::stringify::v1::ftuple<Formaters...>& ft) const
+    template <typename ... Facets>
+    constexpr auto with(const boost::stringify::v1::ftuple<Facets...>& ft) const
     {
         return args_handler
-            < boost::stringify::v1::ftuple<Formaters...>
+            < boost::stringify::v1::ftuple<Facets...>
             , OutputWriter
             , OutputWriterArgs ...
             >
-            ( std::move(ft)
+            ( ft
             , *this
             );
     }

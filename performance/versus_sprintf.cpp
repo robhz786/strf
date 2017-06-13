@@ -12,7 +12,7 @@
 #include "loop_timer.hpp"
 
 #define PRINT_BENCHMARK(label)  \
-  BOOST_LOOP_TIMER(1000000000ll, label)
+  BOOST_LOOP_TIMER(3000000000ll, label)
 
 int main()
 {
@@ -24,13 +24,13 @@ int main()
               << "Copy a string literal:" 
               << std::endl;
 
-    PRINT_BENCHMARK("writef(char_ptr_output) (\"hello\")")
+    PRINT_BENCHMARK("write_to(char_ptr_output) (\"hello\")")
     {
-        strf::writef(char_ptr_output) ("hello");
+        strf::write_to(char_ptr_output) ("hello");
     }
-    PRINT_BENCHMARK("writef(char_ptr_output) [{\"hello\"}]")
+    PRINT_BENCHMARK("write_to(char_ptr_output) [{\"hello\"}]")
     {
-        strf::writef(char_ptr_output) [{"hello"}];
+        strf::write_to(char_ptr_output) [{"hello"}];
     }
     PRINT_BENCHMARK("sprintf(char_ptr_output, \"hello\")")
     {
@@ -56,13 +56,13 @@ int main()
         const char* fmt = std_string_fmt.c_str();
 
 
-        PRINT_BENCHMARK("writef(char_ptr_output) (hello)")
+        PRINT_BENCHMARK("write_to(char_ptr_output) (hello)")
         {
-            strf::writef(char_ptr_output) (hello);
+            strf::write_to(char_ptr_output) (hello);
         }
-        PRINT_BENCHMARK("writef(char_ptr_output) [{hello}]")
+        PRINT_BENCHMARK("write_to(char_ptr_output) [{hello}]")
         {
-            strf::writef(char_ptr_output) [{hello}];
+            strf::write_to(char_ptr_output) [{hello}];
         }
         PRINT_BENCHMARK("strcpy(char_ptr_output, hello)")
         {
@@ -86,13 +86,13 @@ int main()
               << "Copy two strings" 
               << std::endl;
 
-    PRINT_BENCHMARK("writef(char_ptr_output) (\"hello\", \"hello\")")
+    PRINT_BENCHMARK("write_to(char_ptr_output) (\"hello\", \"hello\")")
     {
-        strf::writef(char_ptr_output) ("hello", "hello");
+        strf::write_to(char_ptr_output) ("hello", "hello");
     }
-    PRINT_BENCHMARK("writef(char_ptr_output) [{\"hello\", \"hello\"}]")
+    PRINT_BENCHMARK("write_to(char_ptr_output) [{\"hello\", \"hello\"}]")
     {
-        strf::writef(char_ptr_output) [{"hello", "hello"}];
+        strf::write_to(char_ptr_output) [{"hello", "hello"}];
     }
     PRINT_BENCHMARK("sprintf(char_ptr_output, \"%s%s\", \"hello\", \"hello\")")
     {
@@ -109,13 +109,13 @@ int main()
         std::string std_string_fmt("%s");
         const char* fmt = std_string_fmt.c_str();
 
-        PRINT_BENCHMARK("writef(char_ptr_output) (long_string)")
+        PRINT_BENCHMARK("write_to(char_ptr_output) (long_string)")
         {
-            strf::writef(char_ptr_output) (long_string);
+            strf::write_to(char_ptr_output) (long_string);
         }
-        PRINT_BENCHMARK("writef(char_ptr_output) [{long_string}]")
+        PRINT_BENCHMARK("write_to(char_ptr_output) [{long_string}]")
         {
-            strf::writef(char_ptr_output) [{long_string}];
+            strf::write_to(char_ptr_output) [{long_string}];
         }
         PRINT_BENCHMARK("strcpy(char_ptr_output, long_string)")
         {
@@ -139,26 +139,26 @@ int main()
               << "write integers" 
               << std::endl;
 
-    PRINT_BENCHMARK("writef(char_ptr_output) (25)")
+    PRINT_BENCHMARK("write_to(char_ptr_output) (25)")
     {
-        strf::writef(char_ptr_output) (25);
+        strf::write_to(char_ptr_output) (25);
     }
-    PRINT_BENCHMARK("writef(char_ptr_output) [{25}]")
+    PRINT_BENCHMARK("write_to(char_ptr_output) [{25}]")
     {
-        strf::writef(char_ptr_output) [{25}];
+        strf::write_to(char_ptr_output) [{25}];
     }
     PRINT_BENCHMARK("sprintf(char_ptr_output, \"%d\", 25)")
     {
         sprintf(char_ptr_output, "%d", 12345);
     }
     std::cout << std::endl;
-    PRINT_BENCHMARK("writef(char_ptr_output) (INT_MAX)")
+    PRINT_BENCHMARK("write_to(char_ptr_output) (INT_MAX)")
     {
-        strf::writef(char_ptr_output) (INT_MAX);
+        strf::write_to(char_ptr_output) (INT_MAX);
     }
-    PRINT_BENCHMARK("writef(char_ptr_output) [{INT_MAX}]")
+    PRINT_BENCHMARK("write_to(char_ptr_output) [{INT_MAX}]")
     {
-        strf::writef(char_ptr_output) [{INT_MAX}];
+        strf::write_to(char_ptr_output) [{INT_MAX}];
     }
     PRINT_BENCHMARK("sprintf(char_ptr_output, \"%d\", INT_MAX)")
     {
@@ -166,13 +166,13 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("writef(char_ptr_output) (LLONG_MAX)")
+    PRINT_BENCHMARK("write_to(char_ptr_output) (LLONG_MAX)")
     {
-        strf::writef(char_ptr_output) (LLONG_MAX);
+        strf::write_to(char_ptr_output) (LLONG_MAX);
     }
-    PRINT_BENCHMARK("writef(char_ptr_output) [{LLONG_MAX}]")
+    PRINT_BENCHMARK("write_to(char_ptr_output) [{LLONG_MAX}]")
     {
-        strf::writef(char_ptr_output) [{LLONG_MAX}];
+        strf::write_to(char_ptr_output) [{LLONG_MAX}];
     }
     PRINT_BENCHMARK("sprintf(char_ptr_output, \"%lld\", LLONG_MAX)")
     {
@@ -180,13 +180,13 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("writef(char_ptr_output) (25, 25, 25)")
+    PRINT_BENCHMARK("write_to(char_ptr_output) (25, 25, 25)")
     {
-        strf::writef(char_ptr_output) (25, 25, 25);
+        strf::write_to(char_ptr_output) (25, 25, 25);
     }
-    PRINT_BENCHMARK("writef(char_ptr_output) [{25, 25, 25}]")
+    PRINT_BENCHMARK("write_to(char_ptr_output) [{25, 25, 25}]")
     {
-        strf::writef(char_ptr_output) [{25, 25, 25}];
+        strf::write_to(char_ptr_output) [{25, 25, 25}];
     }
     PRINT_BENCHMARK("sprintf(char_ptr_output, \"%d%d%d\", 25, 25, 25)")
     {
@@ -194,13 +194,13 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("writef(char_ptr_output) (LLONG_MAX, LLONG_MAX, LLONG_MAX)")
+    PRINT_BENCHMARK("write_to(char_ptr_output) (LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
-        strf::writef(char_ptr_output) (LLONG_MAX, LLONG_MAX, LLONG_MAX);
+        strf::write_to(char_ptr_output) (LLONG_MAX, LLONG_MAX, LLONG_MAX);
     }
-    PRINT_BENCHMARK("writef(char_ptr_output) [{LLONG_MAX, LLONG_MAX, LLONG_MAX}]")
+    PRINT_BENCHMARK("write_to(char_ptr_output) [{LLONG_MAX, LLONG_MAX, LLONG_MAX}]")
     {
-        strf::writef(char_ptr_output) [{LLONG_MAX, LLONG_MAX, LLONG_MAX}];
+        strf::write_to(char_ptr_output) [{LLONG_MAX, LLONG_MAX, LLONG_MAX}];
     }
     PRINT_BENCHMARK("sprintf(char_ptr_output, \"%d%d%d\", LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
@@ -208,13 +208,13 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("writef(char_ptr_output) (\"ten =  \", 10, \", twenty = \", 20)")
+    PRINT_BENCHMARK("write_to(char_ptr_output) (\"ten =  \", 10, \", twenty = \", 20)")
     {
-        strf::writef(char_ptr_output) ("ten =  ", 10, ", twenty = ", 20);
+        strf::write_to(char_ptr_output) ("ten =  ", 10, ", twenty = ", 20);
     }
-    PRINT_BENCHMARK("writef(char_ptr_output) [{\"ten =  \", 10, \", twenty = \", 20}]")
+    PRINT_BENCHMARK("write_to(char_ptr_output) [{\"ten =  \", 10, \", twenty = \", 20}]")
     {
-        strf::writef(char_ptr_output) [{"ten =  ", 10, ", twenty = ", 20}];
+        strf::write_to(char_ptr_output) [{"ten =  ", 10, ", twenty = ", 20}];
     }
     PRINT_BENCHMARK("sprintf(char_ptr_output, \"ten = %d, twenty= %d\", 10, 20)")
     {

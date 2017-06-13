@@ -1,0 +1,111 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+
+[section:input_types Supported input types]
+
+As previously explained, an input argument can be a single value or a /braced-init-list/ composed by two arguments. Lets call the second argument as /secundary argument/.
+
+
+[section:conventional "Conventional" input types]
+
+A conventional argument can be:
+
+* an integer ( `short, int, long, long long, unsigned short, unsigned int, unsigned long, unsigned long long`)
+* a string ( a raw string or a `std::basic_string`)
+* a single character ['( todo )]
+* a boolean ['( todo )]
+* a void pointer ['( todo )]
+* a floating point ['( todo )]
+
+[#conventional_formatting]The /secundary argument/ take the one the forms:
+
+* [~width]
+* [~formatting_string]
+* {[~width], [~formatting_string]}
+* {[~width], [~formatting_string], [~precision]}
+* {[~formatting_string], [~precision]}
+
+[~width] and [~precision] are `int`. If [~width]` < 0` then the width is taken from the facets. In the [~formatting_string], the characters order makes no difference, and unsupported characters are ignored. If conflicting characters are present, then the character in a higher row in the table below wins (for example, the formating string `"+QW-xd><$#"` has the same effect of `"-d>$"`).
+
+[table
+[[Formatting char] [Meaning]]
+[[[^ >]] [Right alignment ( or left, if you using a left-to-right script like arabic )]]
+[[[^ <]] [Left alignment ( or right, if you using a left-to-right script like arabic )]]
+[[[^ =]] [Internal alignment ]]
+[[[^ ^]] [Center alignment ['(todo)]]]
+[[[^ -]] [Dont show positive sign]]
+[[[^ +]] [Show positive sign ( only affects signed integers )]]
+[[[^ c]] [Lowercase]]
+[[[^ C]] [Uppercase]]
+[[[^ d]] [Decimal base]]
+[[[^ X]] [Hexadecimal base and uppercase ]]
+[[[^ x]] [Hexadecimal base]]
+[[[^ o]] [Octadecimal base]]
+[[[^ $]] [Don't show base]]
+[[[^ #]] [Show base]]      
+]
+
+Naturally, some of the formatting characters above are not supported in some input types. Also, the [~precision] can actually mean nothing related with precision:
+
+[table
+[[Input type]    [Supported formatting chars]  [What [~precision] means]]
+[[string]        [[^ < > = ^ ]] [Nothing. Argument not supported. Presence yields to compilation error]]
+[[boolean]       [[^ < > = ^ ]] [idem]]
+[[void pointer]  [[^ < > = ^ ]] [idem]]
+[[character]     [[^ < > = ^ ]] [Repetitions. This character will be written [~precision] times]]
+[[integer]
+ [[^ < > = ^ o d x X c C + - # $ ]]
+ [Leading zeros are inserted such that the number of digits is not less than [~precision]]
+]
+[[floating point] [['(todo)]] [floating point precision]]
+
+]
+
+
+[endsect]
+[section "Special" input types]
+
+[h3 Joins]
+
+[import ../examples/v1/joins.cpp]
+
+Joins aligns a sublist of arguments as if it where one argument. A join is created with one of the expressions
+
+* `join_left(`[~width]`)`
+* `join_left(`[~width]`, `[~fill_character]`)`
+* `join_rigth(`[~width]`)`
+* `join_rigth(`[~width]`, `[~fill_character]`)`
+* `join_internal(`[~width]`)`
+* `join_internal(`[~width]`, `[~fill_character]`)`
+* `join_internal(`[~width]`, `[~num_args_before_fill]`)`
+* `join_internal(`[~width]`, `[~num_args_before_fill]`, `[~fill_character]`)`
+
+where:
+
+* [~width] is `int`
+* [~num_args_before_fill] is `int`
+* [~fill_character] is `char32_t`
+
+The secondary argument is a sublist of arguments that will be aligned as if they are one input argument.
+
+[joins_example]
+
+[h3 FTuple ['(todo)]]
+
+[import ../examples/v1/ftuple_as_input_arg.cpp]
+
+The secondary argument is a sublist of arguments under the influence of the ftuple.
+
+[ftuple_as_input_arg]
+
+[h3 Range of iterators ['(todo)]]
+
+The secondary argument is used as the secondary argument to each element of the range.
+
+[endsect]
+[endsect]
+

@@ -90,7 +90,7 @@
 [[
 [*\u2022] The use of `.with(`[~facets]`...)` is optional.
 
-[*\u2022] Instead of `(`[~args...]`)`, you can also use `[{`[~args...]`}]`. The former is limited up to 10 argumets, but it has shown better performance when the number of arguments is very small.
+[*\u2022] Instead of `(`[~args...]`)`, you can also use `[{`[~args...]`}]`. The former is limited up to 10 argumets, but it has shown better [link performance.performance performance].
 
 [*\u2022] When writing to a std::basic_string (cases 1 to 7), an adequate capacity is reserved before writting any character so that at most only one memory allocation happens inside the destination string.
 

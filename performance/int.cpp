@@ -21,30 +21,30 @@ int main()
   char buff[1000000];
   char* char_ptr_output = buff;
 
-  writef(char_ptr_output) () (LLONG_MAX);
+  write_to(char_ptr_output) () (LLONG_MAX);
   std::cout << char_ptr_output << std::endl;
-  writef(char_ptr_output) () (ULLONG_MAX);
+  write_to(char_ptr_output) () (ULLONG_MAX);
   std::cout << char_ptr_output << std::endl;
 
   
-  PRINT_BENCHMARK("writef(char_ptr_output)()(LLONG_MAX)")
+  PRINT_BENCHMARK("write_to(char_ptr_output)()(LLONG_MAX)")
   {
-      writef(char_ptr_output) () (std::numeric_limits<long long>::max());
+      write_to(char_ptr_output) () (std::numeric_limits<long long>::max());
           
   }
 
-  PRINT_BENCHMARK("writef(char_ptr_output)()(LLONG_MAX, LLONG_MAX, LLONG_MAX)")
+  PRINT_BENCHMARK("write_to(char_ptr_output)()(LLONG_MAX, LLONG_MAX, LLONG_MAX)")
   {
-      writef(char_ptr_output) ()
+      write_to(char_ptr_output) ()
           ( std::numeric_limits<long long>::max()
           , std::numeric_limits<long long>::max()
           , std::numeric_limits<long long>::max()
           );          
   }
 
-  PRINT_BENCHMARK("writef(char_ptr_output)()(LLONG_MAX, LLONG_MAX, LLONG_MAX, LLONG_MAX, LLONG_MAX, LLONG_MAX)")
+  PRINT_BENCHMARK("write_to(char_ptr_output)()(LLONG_MAX, LLONG_MAX, LLONG_MAX, LLONG_MAX, LLONG_MAX, LLONG_MAX)")
   {
-      writef(char_ptr_output) ()
+      write_to(char_ptr_output) ()
           ( std::numeric_limits<long long>::max()
           , std::numeric_limits<long long>::max()
           , std::numeric_limits<long long>::max()
@@ -62,20 +62,20 @@ int main()
   }
 
   
-  PRINT_BENCHMARK("writef(char_ptr_output)()(INT_MAX)")
+  PRINT_BENCHMARK("write_to(char_ptr_output)()(INT_MAX)")
   {
-      writef(char_ptr_output) () (std::numeric_limits<int>::max());
+      write_to(char_ptr_output) () (std::numeric_limits<int>::max());
   }
   
-  PRINT_BENCHMARK("writef(char_ptr_output)()(INT_MAX, INT_MAX, INT_MAX)")
+  PRINT_BENCHMARK("write_to(char_ptr_output)()(INT_MAX, INT_MAX, INT_MAX)")
   {
-      writef(writef(writef(char_ptr_output) () (INT_MAX)) () (INT_MAX)) () (INT_MAX);
+      write_to(write_to(write_to(char_ptr_output) () (INT_MAX)) () (INT_MAX)) () (INT_MAX);
           
   }
 
-  PRINT_BENCHMARK("writef(char_ptr_output)()(INT_MAX, INT_MAX, INT_MAX, INT_MAX, INT_MAX, INT_MAX)")
+  PRINT_BENCHMARK("write_to(char_ptr_output)()(INT_MAX, INT_MAX, INT_MAX, INT_MAX, INT_MAX, INT_MAX)")
   {
-      writef(char_ptr_output) () (
+      write_to(char_ptr_output) () (
           std::numeric_limits<int>::max(),
           std::numeric_limits<int>::max(),
           std::numeric_limits<int>::max(),
@@ -85,14 +85,14 @@ int main()
   }
   
 
-  PRINT_BENCHMARK("writef(char_ptr_output)()(25, 25, 25)")
+  PRINT_BENCHMARK("write_to(char_ptr_output)()(25, 25, 25)")
   {
-      writef(char_ptr_output) () (25, 25, 25);
+      write_to(char_ptr_output) () (25, 25, 25);
   }
 
-  PRINT_BENCHMARK("writef(char_ptr_output)()(25)")
+  PRINT_BENCHMARK("write_to(char_ptr_output)()(25)")
   {
-      writef(char_ptr_output) () (25);
+      write_to(char_ptr_output) () (25);
   }
 
   

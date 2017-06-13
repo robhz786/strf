@@ -1,0 +1,20 @@
+#  Distributed under the Boost Software License, Version 1.0.
+#  (See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt)
+
+project
+    : requirements 
+      <include>../include
+    ;
+
+import testing ;
+{
+test-suite "BoostStringify_examples"
+    : 
+      [ run facets.cpp ]
+      [ run joins.cpp ]
+      [ run trivial_formatting.cpp ]
+      [ run trivial_sample.cpp ]
+#      [ run ftuple_as_input_arg.cpp ]
+    ;
+}

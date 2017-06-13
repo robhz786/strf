@@ -22,7 +22,7 @@ public:
 
     char_ptr_writer(const char_ptr_writer&) = default;
     
-    char_ptr_writer(CharT* out)
+    explicit char_ptr_writer(CharT* out)
         : m_out(out)
     {
     }
@@ -59,7 +59,7 @@ private:
 
 
 template<typename CharT, typename CharTraits = std::char_traits<CharT> >
-auto writef(CharT* destination)
+auto write_to(CharT* destination)
 {
     using writer = boost::stringify::v1::detail::char_ptr_writer<CharT, CharTraits>;
     return boost::stringify::v1::make_args_handler<writer, CharT*>(destination);

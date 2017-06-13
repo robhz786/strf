@@ -90,7 +90,7 @@ template
     , typename = std::enable_if_t
           < boost::stringify::v1::detail::std_string_destination<StringType>::value >
     >
-auto appendf(StringType& str)
+auto append_to(StringType& str)
 {
     using writer = boost::stringify::v1::detail::string_appender<StringType>;
     return boost::stringify::v1::make_args_handler<writer, StringType&>(str);
@@ -102,7 +102,7 @@ template
     , typename = std::enable_if_t
           < boost::stringify::v1::detail::std_string_destination<StringType>::value >
     >
-auto assignf(StringType& str)
+auto assign_to(StringType& str)
 {
     str.clear();
     using writer = boost::stringify::v1::detail::string_appender<StringType>;

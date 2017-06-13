@@ -19,7 +19,7 @@ int main()
     TEST("~~~abc") .with(strf::fill(U'~'), strf::internal)   ({"abc", 6});
     TEST("~~~abc") .with(strf::fill(U'~'), strf::left)       ({"abc", {6, ">"}});
     TEST("~~~abc") .with(strf::fill(U'~'), strf::left)       ({"abc", {6, "="}});
-    TEST("   abc") ({strf::join > 6, {"abc"}});
+    TEST("   abc") ({strf::join_right(6), {"abc"}});
     
     TEST("   abcdefghi") .with(strf::width(3))  ("", {"abc", ">"}, {"def", "<"}, {"ghi", "="});
     TEST("  abcdefghi")  .with(strf::width(2))  ("", {"abc", ">"}, {"def", "<"}, {"ghi", "="});
@@ -41,7 +41,7 @@ int main()
     TEST("   abcdefghi") .with(strf::width(3))  ("", {abc, ">"}, {def, "<"}, {ghi, "="});
     TEST("  abcdefghi")  .with(strf::width(2))  ("", {abc, ">"}, {def, "<"}, {ghi, "="});
     TEST("abcdefghi")    .with(strf::width(0))  ("", {abc, ">"}, {def, "<"}, {ghi, "="});
-    TEST("   abc")     ({strf::join > 6, {abc}});
+    TEST("   abc")     ({strf::join_right(6), {abc}});
 
     int rc = boost::report_errors();
     return rc;

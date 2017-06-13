@@ -121,7 +121,7 @@ int main()
     TEST ("_____1234567890") .with(w15, strf::fill(U'_')) (1234567890l);
     TEST ("            123") .with(w15, strf::hex)     ({123, "d"});
     TEST ("  123") .with(w15) ({123, 5});
-    TEST ("  123") ({strf::join > 5, {123}});
+    TEST ("  123") ({strf::join_right(5), {123}});
 
     // showpos
     TEST ("           +123") .with(w15, strf::showpos) (123);

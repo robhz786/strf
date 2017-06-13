@@ -25,7 +25,7 @@ int main()
     {
         char buff[200] = "";
 
-        strf::writef(buff)
+        strf::write_to(buff)
             .with(strf::noshowpos_if<is_long>(), strf::showpos)
             [{"abcd", (long)0, 1, 2, {3, "-"}, {(long)4, "+"}}];
 
@@ -42,7 +42,7 @@ int main()
 
     {
         std::string str = "qwert";
-        strf::appendf(str)
+        strf::append_to(str)
             .with(strf::noshowpos_if<is_long>(), strf::showpos)
             ("abcd", (long)0, 1, 2, {3, "-"}, {(long)4, "+"});
 
@@ -52,7 +52,7 @@ int main()
 
     {
         std::string str = "qwert";
-        strf::assignf(str)
+        strf::assign_to(str)
             .with(strf::noshowpos_if<is_long>(), strf::showpos)
             ("abcd", (long)0, 1, 2, {3, "-"}, {(long)4, "+"});
 

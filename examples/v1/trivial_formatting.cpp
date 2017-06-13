@@ -1,7 +1,7 @@
 #include <boost/stringify.hpp>
 #include <boost/assert.hpp>
 
-int sample_formatting()
+int main()
 {
     //[trivial_formatting_sample
     namespace strf = boost::stringify::v1;
@@ -15,12 +15,14 @@ int sample_formatting()
 
     // with width equal to 6
     result = strf::make_string("----", {value, 6}, "----");
-    BOOST_ASSERT(result == "----   255---");
+    BOOST_ASSERT(result == "----   255----");
 
     // width and formatting string
     result = strf::make_string("----", {value, {6, /*<<
     `'<'` = justify left >>*/"#x"}}, "----");
-    BOOST_ASSERT(result == "----  0xff---");
+    BOOST_ASSERT(result == "----  0xff----");
     //]
+
+    return 0;
 }
 
