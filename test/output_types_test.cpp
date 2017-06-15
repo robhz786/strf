@@ -26,7 +26,7 @@ int main()
         char buff[200] = "";
 
         strf::write_to(buff)
-            .with(strf::noshowpos_if<is_long>(), strf::showpos)
+            .with(strf::showpos, strf::noshowpos_if<is_long>())
             [{"abcd", (long)0, 1, 2, {3, "-"}, {(long)4, "+"}}];
 
         BOOST_TEST(std::string(buff) == "abcd0+1+23+4");
@@ -34,7 +34,7 @@ int main()
     
     {
         auto str = strf::make_string
-            .with(strf::noshowpos_if<is_long>(), strf::showpos)
+            .with(strf::showpos, strf::noshowpos_if<is_long>())
             ("abcd", (long)0, 1, 2, {3, "-"}, {(long)4, "+"});
 
         BOOST_TEST(str == "abcd0+1+23+4");
@@ -43,7 +43,7 @@ int main()
     {
         std::string str = "qwert";
         strf::append_to(str)
-            .with(strf::noshowpos_if<is_long>(), strf::showpos)
+            .with(strf::showpos, strf::noshowpos_if<is_long>())
             ("abcd", (long)0, 1, 2, {3, "-"}, {(long)4, "+"});
 
         BOOST_TEST(str == "qwertabcd0+1+23+4");
@@ -53,7 +53,8 @@ int main()
     {
         std::string str = "qwert";
         strf::assign_to(str)
-            .with(strf::noshowpos_if<is_long>(), strf::showpos)
+            .with(strf::showpos)
+            .with(strf::noshowpos_if<is_long>())
             ("abcd", (long)0, 1, 2, {3, "-"}, {(long)4, "+"});
 
         BOOST_TEST(str == "abcd0+1+23+4");

@@ -46,7 +46,7 @@ public:
     using highest_tag = LowestTag;
 
     constexpr empty_ftuple() = default;
-    
+
     constexpr empty_ftuple(const empty_ftuple& ) = default;
 
     template <typename OtherLowestTag>
@@ -70,9 +70,9 @@ public:
 
     template <typename OtherLowestTag>
     using rebind = single_facet_ftuple<OtherLowestTag, Facet>;
-  
+
     using ftuple_end<LowestTag>::do_get_facet;
-    
+
     template
         < typename InputType
         , typename = typename std::enable_if_t
@@ -83,13 +83,13 @@ public:
     {
         return *this;
     }
-    
+
 };
 
 
 
-template<typename HigherFTuple, typename LowerFTuple>  
-class ftuple_join : private HigherFTuple, private LowerFTuple
+template< typename LowerFTuple, typename HigherFTuple>
+class ftuple_join : private LowerFTuple, private HigherFTuple
 {
 public:
 
@@ -103,10 +103,10 @@ public:
 
     using highest_tag = typename HigherFTuple::highest_tag;
     using lowest_tag = typename LowerFTuple::lowest_tag;
-    
-    constexpr ftuple_join(const HigherFTuple& hf, const LowerFTuple lf)
-        : HigherFTuple(hf)
-        , LowerFTuple(lf)
+
+    constexpr ftuple_join(const LowerFTuple lf, const HigherFTuple& hf)
+        : LowerFTuple(lf)
+        , HigherFTuple(hf)
     {
     }
 
@@ -121,9 +121,9 @@ public:
         using new_higher_ftuple
             = typename HigherFTuple::template rebind<tag>;
 
-        using type = ftuple_join<new_higher_ftuple, new_lower_ftuple>;
+        using type = ftuple_join<new_lower_ftuple, new_higher_ftuple>;
     };
-    
+
     template <typename OtherLowestTag>
     using rebind = typename rebind_helper<OtherLowestTag>::type;
 
@@ -141,40 +141,42 @@ template <typename LowestTag, typename Facet, typename = typename Facet::categor
 single_facet_ftuple<LowestTag, Facet>
 rebinded_ftuple_value(const Facet& f);
 
-constexpr empty_ftuple<base_tag> join_multi_ftuples()
+template <typename LowestTag>
+constexpr empty_ftuple<LowestTag> join_multi_ftuples()
 {
-    return empty_ftuple<base_tag>();
+    return empty_ftuple<LowestTag>();
 }
 
-template <typename FTuple>
-constexpr FTuple join_multi_ftuples(const FTuple& f)
+template <typename LowestTag, typename FTuple>
+constexpr auto join_multi_ftuples(const FTuple& f)
 {
-    return f;
+    using rebinded_ftuple = typename FTuple::template rebind<LowestTag>;
+    return reinterpret_cast<const rebinded_ftuple&>(f);
 }
 
 
-template <typename FTuple1, typename FTuple2, typename ... LowerFTuples>
+template <typename LowestTag, typename FTuple1, typename FTuple2, typename ... HigherFTuples>
 constexpr auto join_multi_ftuples
     ( const FTuple1& f1
-    , const FTuple2& f2  
-    , const LowerFTuples& ... lfs
+    , const FTuple2& f2
+    , const HigherFTuples& ... hfs
     )
 {
-    //auto lower = join_multi_ftuples(f2, lfs ...);
-    using lower_type = decltype(join_multi_ftuples(f2, lfs ...));
-    using tag = increment_tag<typename lower_type::highest_tag>;
-    using rebinded_higher_type = decltype(rebinded_ftuple_value<tag>(f1));
-    const auto& higher = *reinterpret_cast<const rebinded_higher_type*>(&f1);
+    using lower_type = typename FTuple1::template rebind<LowestTag>;
+    using middle_tag = increment_tag<typename lower_type::highest_tag>;
+    using higher_type = decltype(join_multi_ftuples<middle_tag>(f2, hfs ...));
 
-    return ftuple_join<rebinded_higher_type, lower_type>
-        { higher, join_multi_ftuples(f2, lfs ...) };
+    return ftuple_join<lower_type, higher_type>
+        { reinterpret_cast<const lower_type&>(f1)
+        , join_multi_ftuples<middle_tag>(f2, hfs ...)
+        };
 }
 
 template <typename Facet, typename = typename Facet::category>
 constexpr const auto& as_ftuple(const Facet& f)
 {
     using ftuple_type = single_facet_ftuple<base_tag, Facet>;
-    return * reinterpret_cast<const ftuple_type*>(&f);
+    return reinterpret_cast<const ftuple_type&>(f);
 }
 
 template <typename FTuple, typename = typename FTuple::highest_tag>
@@ -190,6 +192,7 @@ template <typename ... F>
 constexpr auto make_ftuple(const F& ... f)
 {
     return boost::stringify::v1::detail::join_multi_ftuples
+        <boost::stringify::v1::detail::base_tag>
         (boost::stringify::v1::detail::as_ftuple(f)...);
 }
 
@@ -202,7 +205,7 @@ using ftuple
 template
     < typename FacetCategory
     , typename InputType
-    , typename FTuple  
+    , typename FTuple
     >
 constexpr decltype(auto) get_facet(const FTuple& f)
 {

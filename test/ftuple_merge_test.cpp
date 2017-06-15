@@ -64,42 +64,42 @@ int main()
 {
 
     {
-        auto fmt = strf::make_ftuple(f1, f2, f3, f4, f5);
+        auto fmt = strf::make_ftuple(f5, f4, f3, f2, f1);
         BOOST_TEST(digest(fmt) == expected);
     }
 
     {
-        auto fmt = strf::make_ftuple(f1, f1, f2, f1, f2, f3, f4, f5, f5);
+        auto fmt = strf::make_ftuple(f5, f5, f4, f5, f4, f3, f2, f1, f1);
         BOOST_TEST(digest(fmt) == expected);
     }
     
     {
         auto fmt = strf::make_ftuple
-            (strf::make_ftuple(f1), f2, f3, f4, f5);
+            (strf::make_ftuple(f5), f4, f3, f2, f1);
         BOOST_TEST(digest(fmt) == expected);
     }
 
     {
         auto fmt = strf::make_ftuple
-            (f1, f2, f3, f4, strf::make_ftuple(f5));
+            (f5, f4, f3, f2, strf::make_ftuple(f1));
         BOOST_TEST(digest(fmt) == expected);
     }
 
     {
         auto fmt = strf::make_ftuple
-            (f1, strf::make_ftuple(f2, f3), f4, f5);
+            (f5, strf::make_ftuple(f4, f3), f2, f1);
         BOOST_TEST(digest(fmt) == expected);
     }
 
     {
         auto fmt = strf::make_ftuple
             ( strf::make_ftuple()
-            , strf::make_ftuple(strf::make_ftuple(f1))
-            , strf::make_ftuple(f2, f3)
-            , strf::make_ftuple(f2, f3)
-            , f4
+            , strf::make_ftuple(strf::make_ftuple(f5))
+            , strf::make_ftuple(f4, f3)
+            , strf::make_ftuple(f4, f3)
+            , f2
             , strf::make_ftuple(strf::make_ftuple())  
-            , f5
+            , f1
             , strf::make_ftuple()  
             );
         BOOST_TEST(digest(fmt) == expected);

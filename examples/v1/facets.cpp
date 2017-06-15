@@ -29,17 +29,18 @@ void sample2()
     //[ftuple_sample
     namespace strf = boost::stringify::v1;
 
-    auto f1 = strf::hex;
+    auto f1 = strf::showbase;
     auto f2 = strf::fill_t<U'.'>;
-    auto f3 = strf::showbase;
+    auto f3 = strf::hex;
+
    
-    auto fmt1 = strf::make_ftuple(f1, f2);
-    auto fmt2 = strf::make_ftuple(f3, strf::left);
-    auto fmt3 = strf::make_ftuple( /*<< `strf::fill<U'~'>` overrides `f1`
-       since it comes first. When two facets of the same category are present,
-       the first one wins.
-       >>*/strf::fill_t<U'~'>, fmt1, fmt2);
-    // fmt3 is equivalent to strf::make_ftuple(strf::fill<U'~'>, f1, f2, f3, strf::left)
+    auto fmt1 = strf::make_ftuple(strf::left, f1);
+    auto fmt2 = strf::make_ftuple(f2, f3);
+    auto fmt3 = strf::make_ftuple( /*<< `strf::fill<U'~'>` overrides `f2`
+       since it comes after. When two facets of the same category are present,
+       the one that comes after ( at the right in the argument list ) wins.
+       >>*/fmt1, fmt2, strf::fill_t<U'~'>);
+    // fmt3 is equivalent to strf::make_ftuple(strf::left, f1, f2, f3, strf::fill<U'~'>)
 
 
     auto result = strf::make_string.with(fmt3) [{{255, 8}, {255, {8, "d"}}}];
@@ -47,52 +48,24 @@ void sample2()
 
     //]
     
-    // you can also create you own version of make_string
-    // auto my_make_string = strf::make_string.with(fmt3);
+    //you can also create you own version of make_string
+    auto my_make_string = strf::make_string.with(fmt3);
 
-    // result = my_make_string({255, 8}, {255, {8, "d"}});
-    // BOOST_ASSERT(result == "0xff~~~~255~~~~~");
+    result = my_make_string({255, 8}, {255, {8, "d"}});
+    BOOST_ASSERT(result == "0xff~~~~255~~~~~");
 
-    // result = my_make_string.with(fmt3)/*<<
-    //   Here `f1` overrides `strf::fill<U'~'>` in `fmt3`. 
-    //   You can call `.with()` again and again, like `make_string.with(f1, f2).with(f3).with(f4)`.
-    //   The facets passed in a `.with()` call overrides the ones passed in the previous calls.
-    // >>*/.with(f1) ({255, 8}, {255, {8, "d"}});
-    // BOOST_ASSERT(result == "0xff....255.....");
+    result = my_make_string.with(fmt3)/*<<
+      Here `f2` overrides `strf::fill<U'~'>` in `fmt3`. 
+      You can call `.with()` again and again, like `make_string.with(f1, f2).with(f3).with(f4)`.
+      The facets passed in a `.with()` call overrides the ones passed in the previous calls.
+    >>*/.with(f2) ({255, 8}, {255, {8, "d"}});
+    BOOST_ASSERT(result == "0xff....255.....");
     
 }
 
 
 
-
-// void sample3()
-// {
-//     //[ftuple_sub_args
-//     namespace strf = boost::stringify::v1;
-// 
-//     auto outer_ftuple = strf::make_ftuple(strf::width(3), strf::left);
-//     auto inner_ftuple = strf::make_ftuple(strf::hex, strf::right);
-// 
-//     auto result = strf::make_string.with(outer_ftuple)
-//         (10, 11, {inner_ftuple, /*<<
-//         This sublist of arguments could contain just anything that can be inserted
-//         in the outer argument list ( including another ftuple with its own
-//         argument sublist ).
-//         >>*/{"~~~", 12, 13, {14, "d"}, 15, "~~~"}}, 16, 17);
-// 
-//     BOOST_ASSERT(result == "10 11 ~~~  c  d 14  f~~~16 17 "); /*< Note that `outer_ftuple`
-//         still has effect inside the sublist ( which is why width is 3 there ),
-//         but the facets of `inner_ftuple` are prefered
-//         ( which is why arguments are aligned to the right )>*/
-//     //]
-// }
-
-
-
-
-
-
-void sample4()
+void sample3()
 {
     
 //[facet_filters
@@ -105,13 +78,6 @@ void sample4()
 //]
 
 }
-
-
-
-
-
-
-
 
 
 // template <typename T>
@@ -146,8 +112,7 @@ int main()
 {
     sample1();
     sample2();
-    //sample3();
-    sample4();
+    sample3();
 
     return 0;
 }

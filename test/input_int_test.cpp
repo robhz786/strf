@@ -129,7 +129,7 @@ int main()
     TEST ("           +123") .with(w15)                ({123, "+"});
     TEST ("           -123") .with(w15, strf::showpos) ( -123);
     TEST ("             +0") .with(w15, strf::showpos) (0);
-    TEST ("              0") .with(w15, strf::noshowpos, strf::showpos) (0);
+    TEST ("              0") .with(w15, strf::showpos, strf::noshowpos) (0);
     TEST ("            123") .with(w15, strf::showpos) ((unsigned)123);
     TEST ("            123") .with(w15, strf::showpos) ({(unsigned)123, "+"});
 
@@ -149,7 +149,7 @@ int main()
     TEST("1234567890ABCDEF")                        ({0x1234567890abcdefLL, "xC"});
     TEST("1234567890abcdef") .with(strf::uppercase) ({0x1234567890abcdefLL, "xc"});
     TEST("1234567890abcdef") .with(strf::uppercase) ({0x1234567890abcdefLL, "xc"});
-    TEST("1234567890abcdef") .with(strf::lowercase, strf::uppercase) ({0x1234567890abcdefLL, "x"});
+    TEST("1234567890abcdef") .with(strf::uppercase, strf::lowercase) ({0x1234567890abcdefLL, "x"});
 
     // hexadecimal with showbase
     
@@ -157,13 +157,13 @@ int main()
     TEST("           0XAA") .with(w15) ({0xAA, "#X"});
     TEST("           0xaa") .with(w15) ({0xAA, "#x"});
     TEST("           0xaa") .with(strf::noshowbase, w15) ({0xAA, "#x"});
-    TEST("             aa") .with(strf::noshowbase, strf::showbase, w15) ({0xAA, "x"});
+    TEST("             aa") .with(strf::showbase, strf::noshowbase, w15) ({0xAA, "x"});
 
     // hexadecimal aligment
     
     TEST("0xaa           ") .with(w15, strf::left)     ({0xAA, "#x"});
     TEST("0x           aa") .with(w15, strf::internal) ({0xAA, "#x"});
-    TEST("           0xaa") .with(w15, strf::right, strf::left)     ({0xAA, "#x"});
+    TEST("           0xaa") .with(w15, strf::left, strf::right)     ({0xAA, "#x"});
     TEST("0xaa           ") .with(w15, strf::right) ({0xAA, "#x<"});
     TEST("0x           aa") .with(w15, strf::right) ({0xAA, "#x="});
     TEST("           0xaa") .with(w15, strf::left) ({0xAA, "#x>"});
@@ -173,13 +173,13 @@ int main()
     
     TEST("            077") .with(w15) ({077, "#o"});
     TEST("            077") .with(strf::noshowbase, w15) ({077, "#o"});
-    TEST("             77") .with(strf::noshowbase, strf::showbase, w15) ({077, "o"});
+    TEST("             77") .with(strf::showbase, strf::noshowbase, w15) ({077, "o"});
 
     // octadecimal aligment
     
     TEST("077            ") .with(w15, strf::left)     ({077, "#o"});
     TEST("0            77") .with(w15, strf::internal) ({077, "#o"});
-    TEST("            077") .with(w15, strf::right, strf::left)     ({077, "#o"});
+    TEST("            077") .with(w15, strf::right)    ({077, "#o"});
     TEST("077            ") .with(w15, strf::right) ({077, "#o<"});
     TEST("0            77") .with(w15, strf::right) ({077, "#o="});
     TEST("            077") .with(w15, strf::left) ({077, "#o>"});
