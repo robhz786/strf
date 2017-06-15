@@ -196,6 +196,12 @@ constexpr auto make_ftuple(const F& ... f)
         (boost::stringify::v1::detail::as_ftuple(f)...);
 }
 
+constexpr auto make_ftuple()
+{
+    return boost::stringify::v1::detail::empty_ftuple
+        <boost::stringify::v1::detail::base_tag>();
+}
+
 
 template <typename ... F>
 using ftuple
