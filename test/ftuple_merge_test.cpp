@@ -49,11 +49,11 @@ std::vector<int> digest(const FTuple& fmt)
 {
     return std::vector<int> 
     {
-        strf::get<strf::width_tag, t<1>>(fmt).width(),
-        strf::get<strf::width_tag, t<2>>(fmt).width(),
-        strf::get<strf::width_tag, t<3>>(fmt).width(),
-        strf::get<strf::width_tag, t<4>>(fmt).width(),
-        strf::get<strf::width_tag, t<5>>(fmt).width()
+        strf::get_facet<strf::width_tag, t<1>>(fmt).width(),
+        strf::get_facet<strf::width_tag, t<2>>(fmt).width(),
+        strf::get_facet<strf::width_tag, t<3>>(fmt).width(),
+        strf::get_facet<strf::width_tag, t<4>>(fmt).width(),
+        strf::get_facet<strf::width_tag, t<5>>(fmt).width()
     };
 }
 

@@ -183,7 +183,8 @@ auto fill_t_if = fill_impl_t<Char, Filter>();
 template <typename InputType, typename FTuple>
 decltype(auto) get_filler(const FTuple& fmt)
 {
-    return fmt.template get<boost::stringify::v1::fill_tag, InputType>();
+    return boost::stringify::v1::get_facet
+        <boost::stringify::v1::fill_tag, InputType>(fmt);
 }
 
 

@@ -74,10 +74,11 @@ public:
 
 protected:
 
-    template <typename Tag, typename FTuple>
+    template <typename FacetCategory, typename FTuple>
     decltype(auto) get_facet(const FTuple& fmt) const noexcept
     {
-        return fmt.template get<Tag, typename T::input_type>();
+        return boost::stringify::v1::get_facet
+            <FacetCategory, typename T::input_type>(fmt);
     }
     
     constexpr bool flag(char flag) const

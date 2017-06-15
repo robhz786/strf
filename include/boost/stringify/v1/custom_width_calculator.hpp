@@ -66,7 +66,8 @@ struct width_calculator_tag
 template <typename InputType, typename FTuple>
 decltype(auto) get_width_calculator(const FTuple& fmt)
 {
-    return fmt.template get<boost::stringify::v1::width_calculator_tag, InputType>();
+    return boost::stringify::v1::get_facet
+        <boost::stringify::v1::width_calculator_tag, InputType>(fmt);
 }
 
 

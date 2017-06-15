@@ -243,7 +243,7 @@ private:
     template<std::size_t ... I>
     OutputWriter do_instantiate(std::index_sequence<I...>) const
     {
-        return std::move(OutputWriter(get<I>(m_args) ...));
+        return std::move(OutputWriter(std::get<I>(m_args) ...));
     }
             
     std::tuple<Args...> m_args;

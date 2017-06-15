@@ -116,10 +116,10 @@ struct int_arg_format
 
 private:
 
-    template <typename Tag>
+    template <typename FacetCategory>
     decltype(auto) get_facet(const ftuple_type& fmt)
     {
-        return fmt.template get<Tag, input_type>();
+        return boost::stringify::v1::get_facet<FacetCategory, input_type>(fmt);
     }
 
 };
@@ -243,10 +243,10 @@ private:
     const bool m_uppercase;
 
 
-    template <typename fmt_tag>
+    template <typename FacetCategory>
     decltype(auto) get_facet() const noexcept
     {
-        return m_fmt.template get<fmt_tag, input_type>();
+        return boost::stringify::v1::get_facet<FacetCategory, input_type>(m_fmt);
     }
 
 

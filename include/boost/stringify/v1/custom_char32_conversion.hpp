@@ -227,8 +227,8 @@ template <> struct char32_to_str_tag<char32_t>
 template <typename CharT, typename InputType, typename FTuple>
 decltype(auto) get_char32_writer(const FTuple& fmt) noexcept
 {
-    typedef  boost::stringify::v1::char32_to_str_tag<CharT> tag;
-    return fmt.template get<tag, InputType>();
+    using facet_category = boost::stringify::v1::char32_to_str_tag<CharT>;
+    return boost::stringify::v1::get_facet<facet_category, InputType>(fmt);
 }
 
 template <typename CharT, typename InputType, typename FTuple>
