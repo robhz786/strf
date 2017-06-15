@@ -208,6 +208,76 @@ int main()
     }
 
     std::cout << std::endl;
+    PRINT_BENCHMARK("write_to(char_ptr_output) ({25, 6})")
+    {
+        strf::write_to(char_ptr_output) ({25, 6});
+    }
+    PRINT_BENCHMARK("write_to(char_ptr_output) [{{25, 6}}]")
+    {
+        strf::write_to(char_ptr_output)[{{25, 6}}];
+    }
+    PRINT_BENCHMARK("write_to(char_ptr_output) .with(strf::width(6)) [{25}]")
+    {
+        strf::write_to(char_ptr_output).with(strf::width(6)) [{25}];
+    }
+    PRINT_BENCHMARK("sprintf(char_ptr_output, \"%6d\", 25)")
+    {
+        sprintf(char_ptr_output, "%6d", 25);
+    }
+
+    
+    std::cout << std::endl;
+    PRINT_BENCHMARK("write_to(char_ptr_output) ({25, {6, \"<+\"}})")
+    {
+        strf::write_to(char_ptr_output) ({ 25, {6, "<+"}});
+    }
+    PRINT_BENCHMARK("write_to(char_ptr_output) [{25, {6, \"<+\"}}]")
+    {
+        strf::write_to(char_ptr_output)[{25, {6, "<+"}}];
+    }
+    PRINT_BENCHMARK("write_to(char_ptr_output).with(width(6), left, showpos) [{25}]")
+    {
+        strf::write_to(char_ptr_output).with(strf::width(6), strf::left, strf::showpos) [{25}];
+    }
+    PRINT_BENCHMARK("sprintf(char_ptr_output, \"%6-+d\", 25)")
+    {
+        sprintf(char_ptr_output, "%-+6d", 25);
+    }
+
+    std::cout << std::endl;
+    PRINT_BENCHMARK("write_to(char_ptr_output) ({25, \"#x\"})")
+    {
+        strf::write_to(char_ptr_output) ({25, "#x"});
+    }
+    PRINT_BENCHMARK("write_to(char_ptr_output) [{25, \"#x\"}]")
+    {
+        strf::write_to(char_ptr_output) [{25, "#x"}];
+    }
+    PRINT_BENCHMARK("write_to(char_ptr_output) .with(hex, showbase) [{25}]")
+    {
+        strf::write_to(char_ptr_output).with(strf::hex, strf::showbase) [{25}];
+    }
+    PRINT_BENCHMARK("sprintf(char_ptr_output, \"%#x\", 25)")
+    {
+        sprintf(char_ptr_output, "%#x", 25);
+    }
+
+    std::cout << std::endl;
+    PRINT_BENCHMARK("write_to(char_ptr_output) (25, {25, {6, \"<+\"}} , {25, \"#x\"})")
+    {
+        strf::write_to(char_ptr_output) (25, {25, {6, "<+"}} , {25, "#x"});
+    }
+    PRINT_BENCHMARK("write_to(char_ptr_output) [{25, {25, {6, \"<+\"}} , {25, \"#x\"}}]")
+    {
+        strf::write_to(char_ptr_output) [{25, {25, {6, "<+"}} , {25, "#x"}}];
+    }
+    PRINT_BENCHMARK("sprintf(char_ptr_output, \"%d%-+6d%#x\", 25, 25, 25)")
+    {
+        sprintf(char_ptr_output, "%d%-+6d%#x", 25, 25, 25);
+    }
+
+    
+    std::cout << std::endl;
     PRINT_BENCHMARK("write_to(char_ptr_output) (\"ten =  \", 10, \", twenty = \", 20)")
     {
         strf::write_to(char_ptr_output) ("ten =  ", 10, ", twenty = ", 20);
