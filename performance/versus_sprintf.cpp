@@ -231,9 +231,9 @@ int main()
     {
         strf::write_to(char_ptr_output) ({ 25, {6, "<+"}});
     }
-    PRINT_BENCHMARK("write_to(char_ptr_output) [{25, {6, \"<+\"}}]")
+    PRINT_BENCHMARK("write_to(char_ptr_output) [{{25, {6, \"<+\"}}}]")
     {
-        strf::write_to(char_ptr_output)[{25, {6, "<+"}}];
+        strf::write_to(char_ptr_output)[{{25, {6, "<+"}}}];
     }
     PRINT_BENCHMARK("write_to(char_ptr_output).with(width(6), left, showpos) [{25}]")
     {
@@ -249,9 +249,9 @@ int main()
     {
         strf::write_to(char_ptr_output) ({25, "#x"});
     }
-    PRINT_BENCHMARK("write_to(char_ptr_output) [{25, \"#x\"}]")
+    PRINT_BENCHMARK("write_to(char_ptr_output) [{{25, \"#x\"}}]")
     {
-        strf::write_to(char_ptr_output) [{25, "#x"}];
+        strf::write_to(char_ptr_output) [{{25, "#x"}}];
     }
     PRINT_BENCHMARK("write_to(char_ptr_output) .with(hex, showbase) [{25}]")
     {

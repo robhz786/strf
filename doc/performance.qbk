@@ -5,63 +5,93 @@
 ===============================================================================/]
 
 
-[section:performance Performance results]
+[section:performance Some performance results]
 
-These are some results of how much time it take to write to `char*` using Boost.Stringify and sprintf. Compiled with gcc-5.4.0
+These are some results of how much time it take to write to `char*` using Boost.Stringify and sprintf. You can run these performance tests by compiling and executing [^performance/versus_sprintf.cpp]
 
-[teletype]```
-   Copy a string literal:
-              1.74 ns  writef(char_ptr_output) ("hello")
-             11.08 ns  writef(char_ptr_output) [{"hello"}]
-              1.73 ns  sprintf(char_ptr_output, "hello")
-              1.43 ns  sprintf(char_ptr_output, "%s", "hello")
-              1.74 ns  strcpy(char_ptr_output, "hello")
-   
-   Copy a heap allocated short string:
-              6.94 ns  writef(char_ptr_output) (hello)
-             11.23 ns  writef(char_ptr_output) [{hello}]
-              4.58 ns  strcpy(char_ptr_output, hello)
-             33.09 ns  sprintf(char_ptr_output, hello)
-              5.51 ns  sprintf(char_ptr_output, "%s", hello)
-             74.67 ns  sprintf(char_ptr_output, fmt, hello)
-   
-   Copy two strings
-             19.50 ns  writef(char_ptr_output) ("hello", "hello")
-             22.15 ns  writef(char_ptr_output) [{"hello", "hello"}]
-            120.10 ns  sprintf(char_ptr_output, "%s%s", "hello", "hello")
-   
-   Copy a long string ( 1000 characters ):
-             32.90 ns  writef(char_ptr_output) (long_string)
-             40.35 ns  writef(char_ptr_output) [{long_string}]
-             32.32 ns  strcpy(char_ptr_output, long_string)
-            103.71 ns  sprintf(char_ptr_output, long_string)
-             32.37 ns  sprintf(char_ptr_output, "%s", long_string)
-            803.99 ns  sprintf(char_ptr_output, fmt, long_string)
-   
-   write integers
-             15.07 ns  writef(char_ptr_output) (25)
-             16.82 ns  writef(char_ptr_output) [{25}]
-             66.37 ns  sprintf(char_ptr_output, "%d", 25)
-   
-             29.13 ns  writef(char_ptr_output) (INT_MAX)
-             28.92 ns  writef(char_ptr_output) [{INT_MAX}]
-             77.78 ns  sprintf(char_ptr_output, "%d", INT_MAX)
-   
-             46.67 ns  writef(char_ptr_output) (LLONG_MAX)
-             47.28 ns  writef(char_ptr_output) [{LLONG_MAX}]
-            113.63 ns  sprintf(char_ptr_output, "%lld", LLONG_MAX)
-   
-             46.33 ns  writef(char_ptr_output) (25, 25, 25)
-             47.71 ns  writef(char_ptr_output) [{25, 25, 25}]
-            116.75 ns  sprintf(char_ptr_output, "%d%d%d", 25, 25, 25)
-   
-            134.37 ns  writef(char_ptr_output) (LLONG_MAX, LLONG_MAX, LLONG_MAX)
-            138.47 ns  writef(char_ptr_output) [{LLONG_MAX, LLONG_MAX, LLONG_MAX}]
-            260.17 ns  sprintf(char_ptr_output, "%d%d%d", LLONG_MAX, LLONG_MAX, LLONG_MAX)
-   
-             47.00 ns  writef(char_ptr_output) ("ten =  ", 10, ", twenty = ", 20)
-             49.50 ns  writef(char_ptr_output) [{"ten =  ", 10, ", twenty = ", 20}]
-            102.77 ns  sprintf(char_ptr_output, "ten = %d, twenty= %d", 10, 20)
-```
+These results correpond to commit 58bb919b5046268fa26cf92485b4231b123a3a13 ( from Jun 15 2017 )
+
+[table
+[[ GCC 6.2 - Ubuntu 16.04 ] [ MSVC 2017 15.2 - Windows 10 ] [Expression]]
+
+[[  7.30 ns][  19.53 ns][`write_to(char_ptr_output) ("hello")`]]
+[[ 12.95 ns][  22.21 ns][`write_to(char_ptr_output) [{"hello"}]`]]
+[[  1.74 ns][  59.80 ns][`sprintf(char_ptr_output, "hello")`]]
+[[  1.74 ns][  70.60 ns][`sprintf(char_ptr_output, "%s", "hello")`]]
+[[  1.40 ns][   1.08 ns][`strcpy(char_ptr_output, "hello")`]]
+[[         ][          ][  ]]
+[[ 10.20 ns][  20.09 ns][`write_to(char_ptr_output) (hello)`]]
+[[ 12.89 ns][  22.48 ns][`write_to(char_ptr_output) [{hello}]`]]
+[[  5.21 ns][   2.90 ns][`strcpy(char_ptr_output, hello)`]]
+[[ 31.98 ns][  59.77 ns][`sprintf(char_ptr_output, hello)`]]
+[[  4.52 ns][  68.49 ns][`sprintf(char_ptr_output, "%s", hello)`]]
+[[ 80.91 ns][  68.04 ns][`sprintf(char_ptr_output, fmt, hello)`]]
+[[         ][          ][  ]]
+[[ 19.37 ns][  39.77 ns][`write_to(char_ptr_output) ("hello", "hello")`]]
+[[ 23.66 ns][  41.45 ns][`write_to(char_ptr_output) [{"hello", "hello"}]`]]
+[[119.41 ns][ 108.68 ns][`sprintf(char_ptr_output, "%s%s", "hello", "hello")`]]
+[[         ][          ][  ]]
+[[ 37.08 ns][ 505.58 ns][`write_to(char_ptr_output) (long_string)`]]
+[[ 46.65 ns][ 508.13 ns][`write_to(char_ptr_output) [{long_string}]`]]
+[[ 32.08 ns][ 369.45 ns][`strcpy(char_ptr_output, long_string)`]]
+[[104.56 ns][5669.25 ns][`sprintf(char_ptr_output, long_string)`]]
+[[ 32.50 ns][ 160.34 ns][`sprintf(char_ptr_output, "%s", long_string)`]]
+[[804.14 ns][ 160.21 ns][`sprintf(char_ptr_output, fmt, long_string)`]]
+[[         ][          ][  ]]
+[[ 16.54 ns][  26.56 ns][`write_to(char_ptr_output) (25)`]]
+[[ 20.36 ns][  24.96 ns][`write_to(char_ptr_output) [{25}]`]]
+[[ 65.57 ns][ 105.11 ns][`sprintf(char_ptr_output, "%d", 25)`]]
+[[         ][          ][  ]]
+[[ 27.98 ns][  42.63 ns][`write_to(char_ptr_output) (INT_MAX)`]]
+[[ 34.13 ns][  39.50 ns][`write_to(char_ptr_output) [{INT_MAX}]`]]
+[[ 77.55 ns][ 148.48 ns][`sprintf(char_ptr_output, "%d", INT_MAX)`]]
+[[         ][          ][  ]]
+[[ 44.68 ns][  61.99 ns][`write_to(char_ptr_output) (LLONG_MAX)`]]
+[[ 52.64 ns][  57.54 ns][`write_to(char_ptr_output) [{LLONG_MAX}]`]]
+[[110.24 ns][ 302.07 ns][`sprintf(char_ptr_output, "%lld", LLONG_MAX)`]]
+[[         ][          ][  ]]
+[[ 51.24 ns][  83.21 ns][`write_to(char_ptr_output) (25, 25, 25)`]]
+[[ 52.59 ns][  71.47 ns][`write_to(char_ptr_output) [{25, 25, 25}]`]]
+[[121.34 ns][ 161.64 ns][`sprintf(char_ptr_output, "%d%d%d", 25, 25, 25)`]]
+[[         ][          ][  ]]
+[[140.11 ns][ 169.54 ns][`write_to(char_ptr_output) (LLONG_MAX, LLONG_MAX, LLONG_MAX)`]]
+[[141.90 ns][ 173.78 ns][`write_to(char_ptr_output) [{LLONG_MAX, LLONG_MAX, LLONG_MAX}]`]]
+[[260.62 ns][ 827.72 ns][`sprintf(char_ptr_output, "%d%d%d", LLONG_MAX, LLONG_MAX, LLONG_MAX)`]]
+[[         ][          ][  ]]
+[[ 24.45 ns][  42.80 ns][`write_to(char_ptr_output) ({25, 6})`]]
+[[ 28.54 ns][  43.22 ns][`write_to(char_ptr_output) [{{25, 6}}]`]]
+[[ 17.11 ns][  38.39 ns][`write_to(char_ptr_output) .with(strf::width(6)) [{25}]`]]
+[[ 73.63 ns][ 151.31 ns][`sprintf(char_ptr_output, "%6d", 25)`]]
+[[         ][          ][  ]]
+[[ 26.07 ns][ 112.42 ns][`write_to(char_ptr_output) ({25, {6, "<+"}})`]]
+[[ 29.84 ns][ 114.31 ns][`write_to(char_ptr_output) [{25, {6, "<+"}}]`]]
+[[ 18.05 ns][  49.85 ns][`write_to(char_ptr_output).with(width(6), left, showpos) [{25}]`]]
+[[ 75.71 ns][ 173.84 ns][`sprintf(char_ptr_output, "%6-+d", 25)`]]
+[[         ][          ][  ]]
+[[ 19.73 ns][ 106.80 ns][`write_to(char_ptr_output) ({25, "#x"})`]]
+[[ 23.17 ns][ 108.53 ns][`write_to(char_ptr_output) [{25, "#x"}]`]]
+[[ 14.26 ns][  37.73 ns][`write_to(char_ptr_output) .with(hex, showbase) [{25}]`]]
+[[ 63.72 ns][  89.65 ns][`sprintf(char_ptr_output, "%#x", 25)`]]
+[[         ][          ][  ]]
+[[ 67.11 ns][ 243.43 ns][`write_to(char_ptr_output) (25, {25, {6, "<+"}} , {25, "#x"})`]]
+[[ 68.99 ns][ 240.41 ns][`write_to(char_ptr_output) [{25, {25, {6, "<+"}} , {25, "#x"}}]`]]
+[[144.86 ns][ 257.01 ns][`sprintf(char_ptr_output, "%d%-+6d%#x", 25, 25, 25)`]]
+[[         ][          ][  ]]
+[[ 51.37 ns][ 104.80 ns][`write_to(char_ptr_output) ("ten =  ", 10, ", twenty = ", 20)`]]
+[[ 52.85 ns][ 100.82 ns][`write_to(char_ptr_output) [{"ten =  ", 10, ", twenty = ", 20}]`]]
+[[ 98.04 ns][ 211.18 ns][`sprintf(char_ptr_output, "ten = %d, twenty= %d", 10, 20)`]]
+
+]
+
+
+
+
 
 [endsect]
+
+
+
+
+
+
+

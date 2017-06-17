@@ -7,12 +7,12 @@
 [section Overview]
 
 [warning
-This library is not part of the Boost C++ Libraries, although it aims to be.
-It is incomplete and things documented here are subject to change and some of them
-may not have been implemented yet.
+This library is not part of the Boost C++ Libraries yet.
+It is still in and early stage of development and subject to change without
+preserving backwards compatibility.
 ]
 
-Boost.Stringify is a C++14 locale-independent formatting library which
+Boost.Stringify is a locale-independent formatting library which
 
 * is header only
 * has good [link performance.performance performance]
@@ -22,11 +22,13 @@ Boost.Stringify is a C++14 locale-independent formatting library which
 
 [h3 Compliance]
 
-The following compilers are known to work with Boost.Stringify:
+In its current state, Boost.Stringify is known to work in the following compilers:
 
-* gcc 6.2 ( with [^-std=c++14] option)
-* clang 3.8 ( with [^-std=c++14] option)
+* GCC 6.2
+* Clang 3.8 ( with [^-std=c++14] option)
+* Visual Studio 2017 15.2
 
+However, more recent compilers may be necessary as the library evolves.
 
 [endsect]
 

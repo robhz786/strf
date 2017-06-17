@@ -6,16 +6,32 @@
 #
 # ---------------------------------------------------------------------------
 
-import quickbook ;
-import boostbook ;
-# import doxygen ; # todo
-import modules ;
+#import quickbook ;
+#import boostbook ;
+## import doxygen ; # todo
+#import modules ;
+#
+#
+#xml stringify : stringify.qbk : ;
+#
+#boostbook standalone
+#    : stringify
+#    :
+#      <format>html:<xsl:param>boost.root=../../../..
+#    ;
+#
 
+using quickbook ;
 
-xml stringify : stringify.qbk : ;
+xml stringify
+  : stringify.qbk
+  ;
+
+explicit stringify ;
 
 boostbook standalone
     : stringify
-    :
-      <format>html:<xsl:param>boost.root=../../../..
-    ;
+    : 
+        <xsl:param>boost.root=../..
+        <format>pdf:<xsl:param>boost.url.prefix=http://www.boost.org/doc/libs/release/doc/html
+;

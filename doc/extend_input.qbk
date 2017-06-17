@@ -4,9 +4,9 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[section How to add support to a new input type]
+[section How to add support to a new input type (todo)]
 
-todo - (this section has not been written yet)
+This section has not been written yet. It will guide you how to extend Boost.Stringify to support other input types. And you will be able to decide how the formatting is specified and what formatting options to be supported for this new type. And you can also create new facets categories.
 
 [endsect]
 
