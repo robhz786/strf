@@ -24,8 +24,8 @@ Boost.Stringify is a locale-independent formatting library which
 
 In its current state, Boost.Stringify is known to work in the following compilers:
 
-* GCC 6.2
-* Clang 3.8 ( with [^-std=c++14] option)
+* GCC 6 and 7
+* Clang 3.6, 3.7, 3.8 and 3.9 ( with [^-std=c++14] option)
 * Visual Studio 2017 15.2
 
 However, more recent compilers may be necessary as the library evolves.
