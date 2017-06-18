@@ -2,20 +2,27 @@
 #  (See accompanying file LICENSE_1_0.txt or copy at
 #  http://www.boost.org/LICENSE_1_0.txt)
 
-project
+project libs/stringify/test
     : requirements 
       <include>../include
     ;
 
-import testing ;
-{
-test-suite "BoostStringify_tests"
-    : 
-      [ run input_string_test.cpp ]
-      [ run input_int_test.cpp ]
-      [ run input_char_test.cpp ]
-      [ run join_test.cpp ] 
-      [ run output_types_test.cpp ]
-      [ run ftuple_merge_test.cpp ]
-    ;
-}
+sources-v1 =
+    v1/input_string_test.cpp
+    v1/input_int_test.cpp
+    v1/input_char_test.cpp
+    v1/join_test.cpp 
+    v1/output_types_test.cpp
+    v1/ftuple_merge_test.cpp
+;
+
+test-suite stringify-v1 : [ run-stringify-tests $(sources-v1) ] ;
+
+# Satisfy the Boost library requirements
+test-suite minimal  : stringify-v1 ;
+test-suite full     : stringify-v1 ;
+test-suite extra    : stringify-v1 ;
+
+explicit stringify-v1 ;
+explicit minimal ;
+explicit extra ;
