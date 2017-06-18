@@ -23,6 +23,7 @@ install:
   - git submodule init tools/build
   - git submodule init tools/inspect
   - git submodule update
+  - mkdir -p libs/stringify
   - cp -r $TRAVIS_BUILD_DIR/* libs/stringify
   - ./bootstrap.sh
   - ./b2 headers
