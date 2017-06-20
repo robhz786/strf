@@ -24,15 +24,6 @@ namespace stringify {
 inline namespace v1 {
 namespace detail {
 
-
-constexpr unsigned global_buff_size = 6 * sizeof(std::uintmax_t);
-inline char32_t* global_buff()
-{
-    static thread_local char32_t arr[global_buff_size];
-    return arr;
-}
-
-
 template <typename InputType, typename FTuple>
 struct int_arg_format
     : public boost::stringify::v1::arg_format_common
@@ -425,20 +416,12 @@ private:
     template <unsigned Base>
     void write_digits_t(Output& out) const
     {
-        auto end = buff_end();
+        constexpr std::size_t buff_size = sizeof(intT) * 6;
+        CharT buff[buff_size];
+        CharT* end = &buff[buff_size - 1];
         auto begin = write_digits_backwards<Base>(unsigned_value(), end);
         out.put(begin, (end - begin));
     }
-
-
-    CharT* buff_end() const noexcept
-    {
-        return reinterpret_cast<CharT*>
-            (& boost::stringify::v1::detail::global_buff()
-             [boost::stringify::v1::detail::global_buff_size]
-            );
-    }
-
 
     template <unsigned Base, typename OutputIterator>
     OutputIterator*
