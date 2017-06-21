@@ -7,4 +7,4 @@ project libs/stringify/example
       <include>../include
     ;
 
-build-project v1 ;
+build-project v0 ;
