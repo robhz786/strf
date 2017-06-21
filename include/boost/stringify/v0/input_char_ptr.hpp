@@ -44,7 +44,7 @@ struct string_arg_format
 };
 
 
-template<typename CharT, typename Output, typename FTuple>
+template<typename Output, typename FTuple>
 class char_ptr_stringifier
 {
 
@@ -56,8 +56,8 @@ private:
 
 public:
 
-    using char_type  = CharT;
-    using input_type = const CharT*;
+    using char_type  = typename Output::char_type;
+    using input_type = const char_type*;
     using output_type = Output;
     using ftuple_type = FTuple;
     using arg_format_type = boost::stringify::v0::detail::string_arg_format
@@ -65,22 +65,22 @@ public:
 
     char_ptr_stringifier
         ( const FTuple& fmt
-        , const CharT* str
+        , const char_type* str
         , arg_format_type argfmt
         ) noexcept
         : m_fmt(fmt)
         , m_str(str)
-        , m_len(std::char_traits<CharT>::length(str))
+        , m_len(std::char_traits<char_type>::length(str))
         , m_total_width(argfmt.get_width(fmt))
         , m_padding_width(padding_width())
         , m_alignment(argfmt.get_alignment(fmt))
     {
     }
 
-    char_ptr_stringifier(const FTuple& fmt, const CharT* str) noexcept
+    char_ptr_stringifier(const FTuple& fmt, const char_type* str) noexcept
         : m_fmt(fmt)
         , m_str(str)
-        , m_len(std::char_traits<CharT>::length(str))
+        , m_len(std::char_traits<char_type>::length(str))
         , m_total_width(get_facet<width_tag>().width())
         , m_padding_width(padding_width())
         , m_alignment(get_facet<alignment_tag>().value())
@@ -96,7 +96,7 @@ public:
         if (m_padding_width > 0)
         {
             return m_len +
-                boost::stringify::v0::fill_length<CharT, input_type>
+                boost::stringify::v0::fill_length<char_type, input_type>
                 (m_padding_width, m_fmt);
         }
         return m_len;
@@ -143,7 +143,7 @@ public:
 private:
 
     const FTuple& m_fmt;
-    const CharT* m_str;
+    const char_type* m_str;
     const std::size_t m_len;
     const width_t m_total_width;
     const width_t m_padding_width;
@@ -157,7 +157,7 @@ private:
 
     void write_fill(Output& out) const
     {
-        boost::stringify::v0::write_fill<CharT, input_type>
+        boost::stringify::v0::write_fill<char_type, input_type>
                 (m_padding_width, out, m_fmt);
     }
 
@@ -175,22 +175,19 @@ struct char_ptr_input_traits
 {
 private:
 
-    template <typename CharOut>
+    template <typename Output, typename FTuple>
     struct helper
     {
-        static_assert(sizeof(CharIn) == sizeof(CharOut), "");
+        static_assert(sizeof(CharIn) == sizeof(typename Output::char_type), "");
 
-        template <typename Output, typename FTuple>
-        using stringifier
-        = boost::stringify::v0::detail::char_ptr_stringifier
-            <CharOut, Output, FTuple>;
+        using stringifier = boost::stringify::v0::detail::char_ptr_stringifier
+            <Output, FTuple>;
     };
 
 public:
 
-    template <typename CharT, typename Output, typename FTuple>
-    using stringifier
-    = typename helper<CharT>::template stringifier<Output, FTuple>;
+    template <typename Output, typename FTuple>
+    using stringifier = typename helper<Output, FTuple>::stringifier;
 };
 
 } // namespace detail
