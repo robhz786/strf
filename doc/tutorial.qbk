@@ -4,9 +4,9 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[import ../examples/v1/trivial_sample.cpp]
-[import ../examples/v1/trivial_formatting.cpp]
-[import ../examples/v1/facets.cpp]
+[import ../example/v1/trivial_sample.cpp]
+[import ../example/v1/trivial_formatting.cpp]
+[import ../example/v1/facets.cpp]
 
 [section Tutorial]
 
