@@ -1,4 +1,3 @@
-# Copyright 2016 Peter Dimov
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
 
@@ -8,29 +7,32 @@ shallow_clone: true
 
 branches:
   only:
+    - master
     - develop
+    - /feature\/.*/
+
+environment:
+  matrix:
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      TOOLSET: msvc-14.1
+
 
 install:
   - cd ..
   - git clone -b %APPVEYOR_REPO_BRANCH% https://github.com/boostorg/boost.git boost-root
   - cd boost-root
   - git submodule init libs/assert
+  - git submodule init libs/config
+  - git submodule init libs/core
   - git submodule init libs/detail
   - git submodule init tools/build
   - git submodule init tools/inspect
   - git submodule update
-  - xcopy /s /e /q %APPVEYOR_BUILD_FOLDER% libs\stringify
+  - xcopy /s /e /q /i %APPVEYOR_BUILD_FOLDER% libs\stringify\
   - bootstrap
   - b2 headers
 
 build: off
 
 test_script:
-  - cd libs/stringify
-  - mkdir cmake_build
-  - cd cmake_build
-  - cmake -G "Visual Studio 15 2017" ..
-  - cmake --build .
-  - ctest -C Debug
-
-#  - b2 libs/smart_ptr/test toolset=msvc-15.0
+  - b2 libs/stringify/test toolset=%TOOLSET%
