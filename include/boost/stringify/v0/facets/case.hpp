@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_CUSTOM_CASE_HPP
-#define BOOST_STRINGIFY_V0_CUSTOM_CASE_HPP
+#ifndef BOOST_STRINGIFY_V0_FACETS_CASE_HPP
+#define BOOST_STRINGIFY_V0_FACETS_CASE_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -48,5 +48,5 @@ struct case_tag
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_V0_CUSTOM_CASE_HPP
+#endif  // BOOST_STRINGIFY_V0_FACETS_CASE_HPP
 

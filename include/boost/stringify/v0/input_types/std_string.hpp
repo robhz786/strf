@@ -1,11 +1,11 @@
-#ifndef BOOST_STRINGIFY_V0_INPUT_STD_STRING_HPP_INCLUDED
-#define BOOST_STRINGIFY_V0_INPUT_STD_STRING_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_V0_INPUT_TYPES_STD_STRING_HPP_INCLUDED
+#define BOOST_STRINGIFY_V0_INPUT_TYPES_STD_STRING_HPP_INCLUDED
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/input_char_ptr.hpp>
+#include <boost/stringify/v0/input_types/char_ptr.hpp>
 #include <string>
 #include <type_traits>
 
@@ -14,13 +14,14 @@ namespace stringify{
 inline namespace v0 {
 namespace detail {
 
-template <class CharT, typename Traits, typename Output, class FTuple>
+template <typename Traits, typename Output, class FTuple>
 class std_string_stringifier
 {
 
 public:
-    
-    using input_type  = std::basic_string<CharT, Traits>;
+
+    using char_type = typename Output::char_type;
+    using input_type  = std::basic_string<char_type, Traits>;
     using output_type = Output;
     using ftuple_type = FTuple;
     using arg_format_type = boost::stringify::v0::detail::string_arg_format
@@ -53,7 +54,7 @@ public:
         if (m_padding_width > 0)
         {
             return m_str.length() + 
-                boost::stringify::v0::fill_length<CharT, input_type>
+                boost::stringify::v0::fill_length<char_type, input_type>
                 (m_padding_width, m_fmt);
         }
         return m_str.length();
@@ -112,7 +113,7 @@ private:
     
     void write_fill(Output& out) const
     {
-        boost::stringify::v0::write_fill<CharT, input_type>
+        boost::stringify::v0::write_fill<char_type, input_type>
                 (m_padding_width, out, m_fmt);
     }
     
@@ -130,22 +131,19 @@ struct std_string_input_traits
 {
 private:
 
-    template <typename CharOut>
+    template <typename Output, typename FTuple>
     struct helper
     {
-        static_assert(sizeof(CharIn) == sizeof(CharOut), "");
+        static_assert(sizeof(CharIn) == sizeof(typename Output::char_type), "");
 
-        template <typename Output, typename FTuple>
-        using stringifier
-        = boost::stringify::v0::detail::std_string_stringifier
-            <CharOut, CharTraits, Output, FTuple>;
+        using stringifier = boost::stringify::v0::detail::std_string_stringifier
+            <CharTraits, Output, FTuple>;
     };
 
 public:
 
-    template <typename CharT, typename Output, typename FTuple>
-    using stringifier
-    = typename helper<CharT>::template stringifier<Output, FTuple>;
+    template <typename Output, typename FTuple>
+    using stringifier = typename helper<Output, FTuple>::stringifier;
 };
 
 } // namespace detail
@@ -161,22 +159,10 @@ auto boost_stringify_input_traits_of(const String& str)
         < std::is_same<String, std::basic_string<CharT, CharTraits> >::value
         , boost::stringify::v0::detail::std_string_input_traits<CharT, CharTraits>
         >;
-/*    
-    -> std::enable_if_t
-        < std::is_same<typename CharTraits::char_type, CharT>::value
-       && std::is_convertible<decltype(str[0]), const CharT&>::value
-       && std::is_convertible<decltype(str.length()), std::size_t>::value
-       && std::is_same
-              < typename std::iterator_traits<typename String::iterator>::iterator_category
-              , std::random_access_iterator_tag
-              >::value  
-        , boost::stringify::v0::detail::std_string_input_traits<CharT, CharTraits>
-        >;
-*/
 
 
 } // inline namespace v0
 } // namespace stringify
 } // namespace boost
 
-#endif //BOOST_STRINGIFY_V0_INPUT_STD_STRING_HPP_INCLUDED
+#endif //BOOST_STRINGIFY_V0_INPUT_TYPES_STD_STRING_HPP_INCLUDED

@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/stringify/v0/input_arg.hpp>
-#include <boost/stringify/v0/custom_alignment.hpp>
+#include <boost/stringify/v0/facets/alignment.hpp>
 #include <initializer_list>
 
 namespace boost {
@@ -51,20 +51,20 @@ join_internal(int width, char32_t fillchar)
 
 namespace detail {
 
-template <typename CharT, typename Output, typename FTuple>
+template <typename Output, typename FTuple>
 class join_stringifier
 {
     using width_t = boost::stringify::v0::width_t;
     using width_tag = boost::stringify::v0::width_tag;
-    using input_arg = boost::stringify::v0::input_arg<CharT, Output, FTuple>;
-
+    using input_arg = boost::stringify::v0::input_arg<Output, FTuple>;
+    using ini_list_type = std::initializer_list<input_arg>;
 public:
 
+    using char_type    = typename Output::char_type ;
     using input_type  = boost::stringify::v0::detail::join_t ;
-    using char_type    = CharT ;
     using output_type = Output;
     using ftuple_type = FTuple;
-    using arg_format_type = std::initializer_list<input_arg>;
+    using arg_format_type = ini_list_type;
     
     join_stringifier
         ( const FTuple& fmt
@@ -123,7 +123,7 @@ private:
 
     const FTuple& m_fmt;
     const input_type& m_join;
-    const std::initializer_list<input_arg>& m_args;
+    const ini_list_type& m_args;
     const int m_fill_width;
 
     std::size_t args_length() const
@@ -143,11 +143,11 @@ private:
         {
             boost::stringify::v0::fill_impl<boost::stringify::v0::true_trait>
                 fill_writer(m_join.fillchar);
-            return fill_writer.length<CharT>(m_fill_width, m_fmt);
+            return fill_writer.length<char_type>(m_fill_width, m_fmt);
         }
         else
         {
-            boost::stringify::v0::fill_length<CharT, input_type>(m_fill_width, m_fmt);
+            boost::stringify::v0::fill_length<char_type, input_type>(m_fill_width, m_fmt);
         }
     }
 
@@ -194,11 +194,11 @@ private:
         {
             boost::stringify::v0::fill_impl<boost::stringify::v0::true_trait>
                 fill_writer(m_join.fillchar);
-            fill_writer.fill<CharT>(m_fill_width, out, m_fmt);
+            fill_writer.fill<char_type>(m_fill_width, out, m_fmt);
         }
         else
         {
-            boost::stringify::v0::write_fill<CharT, input_type>(m_fill_width, out, m_fmt);
+            boost::stringify::v0::write_fill<char_type, input_type>(m_fill_width, out, m_fmt);
         }
     }
 };
@@ -206,9 +206,9 @@ private:
 
 struct input_join_traits
 {
-    template <typename CharT, typename Output, typename FTuple>
+    template <typename Output, typename FTuple>
     using stringifier =
-        boost::stringify::v0::detail::join_stringifier<CharT, Output, FTuple>;
+        boost::stringify::v0::detail::join_stringifier<Output, FTuple>;
 };
 
 boost::stringify::v0::detail::input_join_traits

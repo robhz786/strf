@@ -11,7 +11,11 @@ int main()
 {
     namespace strf = boost::stringify::v0;
 
+    TEST("   abcdef123") ({ strf::join_internal(12, -5),{ "abc", "de", "f", 123 } });
+    TEST("   abcdef123") ({ strf::join_internal(12, 0),{ "abc", "de", "f", 123 } });
     TEST("abcdef   123") ({strf::join_internal(12, 3), {"abc", "de", "f", 123}});
+    TEST("abcdef123   ") ({ strf::join_internal(12, 4),{ "abc", "de", "f", 123 } });
+    TEST("abcdef123   ") ({ strf::join_internal(12, 5),{ "abc", "de", "f", 123 } });
     TEST("abcdef123   ") ({strf::join_left(12), {"abc", "def", 123}});
     TEST("   abcdef123") ({strf::join_right(12), {"abc", "def", 123}});
     TEST("~~~abcdef123") ({strf::join_right(12, '~'), {"abc", "def", 123}});

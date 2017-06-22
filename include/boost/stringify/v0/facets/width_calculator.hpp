@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_FMT_WIDTH_CALCULATOR_HPP
-#define BOOST_STRINGIFY_V0_FMT_WIDTH_CALCULATOR_HPP
+#ifndef BOOST_STRINGIFY_V0_FACETS_WIDTH_CALCULATOR_HPP
+#define BOOST_STRINGIFY_V0_FACETS_WIDTH_CALCULATOR_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -75,5 +75,5 @@ decltype(auto) get_width_calculator(const FTuple& fmt)
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_V0_FMT_WIDTH_CALCULATOR_HPP
+#endif  // BOOST_STRINGIFY_V0_FACETS_WIDTH_CALCULATOR_HPP
 

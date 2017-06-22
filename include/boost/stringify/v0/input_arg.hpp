@@ -15,94 +15,39 @@ namespace boost {
 namespace stringify {
 inline namespace v0 {
 
-template <class T>
-struct input_traits;
-
-namespace detail {
-
-template <typename InputType>
-struct failed_input_traits
-{
-    template <typename C, typename O, typename F>
-    struct stringifier
-    {
-        static_assert(sizeof(C) == 0,
-                      "unable to find stringifier for this input type");
-    };
-};
-
-} // namespace detail
-
-template <typename CharT, typename Output, typename FTuple>
+template <typename Output, typename FTuple>
 class input_arg
 {
-    template <typename T>
-    static decltype(boost_stringify_input_traits_of(std::declval<const T>()))
-    input_traits_of(const T&);
+    template <class T>
+    using trait = decltype(boost_stringify_input_traits_of(std::declval<const T>()));
+                                                         
+    template <class T>
+    using stringifier = typename trait<T>::template stringifier<Output, FTuple>;
 
-    template <typename T>
-    static boost::stringify::v0::detail::failed_input_traits<T>
-    input_traits_of(...);
+    template <typename S>
+    using wrapper = boost::stringify::v0::detail::stringifier_wrapper_impl<S>;
     
-    template <class T>
-    using input_traits = decltype(input_traits_of<T>(std::declval<const T>()));
-
-    template <class T>
-    using stringifier = typename input_traits<T>        
-        :: template stringifier<CharT, Output, FTuple>;
-
-    template <typename T>
-    using stringifier_wrapper_of =
-        boost::stringify::v0::detail::stringifier_wrapper_impl
-        <stringifier<T>>;
-
-    using stringifier_wrapper
-        = boost::stringify::v0::detail::stringifier_wrapper<Output, FTuple>;
-
 public:
    
-    template <typename T>
+    template <typename T, typename S = stringifier<T>>
     input_arg
-        ( const T* value
-        , stringifier_wrapper_of<const T*> && strf = stringifier_wrapper_of<const T*>()
+        ( const T& arg1
+        , wrapper<S> && strf = wrapper<S>()
         )
         : m_stringifier(strf)
     {
-        strf.set_args(value);
+        strf.set_args(arg1);
     }
-
-    
-    template <typename T>
+   
+    template <typename T, typename S = stringifier<T>>
     input_arg
-        ( const T& value
-        , stringifier_wrapper_of<T> && strf = stringifier_wrapper_of<T>()
+        ( const T& arg1
+        , const typename S::arg_format_type& arg2
+        , wrapper<S> && strf = wrapper<S>() 
         )
         : m_stringifier(strf)
     {
-        strf.set_args(value);
-    }
-
-    template <typename T>
-    input_arg
-        ( const T* value
-        , const typename stringifier<const T*>::arg_format_type& arg_format
-        , stringifier_wrapper_of<const T*> && strf = stringifier_wrapper_of<const T*>() 
-        )
-        : m_stringifier(strf)
-    {
-        strf.set_args(value, arg_format);
-    }
-
-    
-    template <typename T>
-    input_arg
-        ( T&& value
-        , const typename stringifier<T>::arg_format_type& arg_format
-        , stringifier_wrapper_of<T> && strf = stringifier_wrapper_of<T>() 
-        )
-        : m_stringifier(strf)
-    {
-        strf.set_args(value, arg_format);
+        strf.set_args(arg1, arg2);
     }
 
     ~input_arg()
@@ -126,7 +71,8 @@ public:
     
 private:
 
-    stringifier_wrapper& m_stringifier; 
+    boost::stringify::v0::detail::stringifier_wrapper<Output, FTuple>& m_stringifier;
+
 };
 
 

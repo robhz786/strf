@@ -15,14 +15,14 @@ namespace boost {
 namespace stringify {
 inline namespace v0 {
 
-template <typename CharT, typename Output, typename FTuple>
+template <typename Output, typename FTuple>
 class input_arg
 {
     template <typename X>
     static decltype(auto) format_type_of(const X& x)
     {
         using traits_x = decltype(boost_stringify_input_traits_of(x));
-        using stringifier_x = traits_x::template stringifier<CharT, Output, FTuple>;
+        using stringifier_x = traits_x::template stringifier<Output, FTuple>;
         using arg_format_x = typename stringifier_x::arg_format_type;
         return std::declval<const arg_format_x>();
     }
@@ -31,7 +31,7 @@ class input_arg
     auto* instantiate_wrapper(const Value& x)
     {
         using traits_x = decltype(boost_stringify_input_traits_of(x));
-        using stringifier_x = traits_x::template stringifier<CharT, Output, FTuple>;
+        using stringifier_x = traits_x::template stringifier<Output, FTuple>;
         using stringifier_wrapper_impl =
             boost::stringify::v0::detail::stringifier_wrapper_impl<stringifier_x>;
         static_assert

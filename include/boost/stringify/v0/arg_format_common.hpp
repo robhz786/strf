@@ -5,9 +5,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/custom_showpos.hpp>
-#include <boost/stringify/v0/custom_width.hpp>
-#include <boost/stringify/v0/custom_alignment.hpp>
+#include <boost/stringify/v0/facets/showpos.hpp>
+#include <boost/stringify/v0/facets/width.hpp>
+#include <boost/stringify/v0/facets/alignment.hpp>
 
 namespace boost {
 namespace stringify {

@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_WRITEF_CHAR_PTR_HPP
-#define BOOST_STRINGIFY_V0_WRITEF_CHAR_PTR_HPP
+#ifndef BOOST_STRINGIFY_V0_OUTPUT_TYPES_CHAR_PTR_HPP
+#define BOOST_STRINGIFY_V0_OUTPUT_TYPES_CHAR_PTR_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -69,5 +69,5 @@ auto write_to(CharT* destination)
 } // namespace stringify
 } // namespace boost    
 
-#endif  /* BOOST_STRINGIFY_V0_WRITEF_CHAR_PTR_HPP */
+#endif  /* BOOST_STRINGIFY_V0_OUTPUT_TYPES_CHAR_PTR_HPP */
 

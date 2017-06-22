@@ -1,31 +1,31 @@
-#ifndef BOOST_STRINGIFY_V0_INPUT_CHAR_HPP_INCLUDED
-#define BOOST_STRINGIFY_V0_INPUT_CHAR_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR_HPP_INCLUDED
+#define BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR_HPP_INCLUDED
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/input_char32.hpp>
+#include <boost/stringify/v0/input_types/char32.hpp>
 #include <boost/stringify/v0/type_traits.hpp>
-#include <boost/stringify/v0/custom_width_calculator.hpp>
+#include <boost/stringify/v0/facets/width_calculator.hpp>
 
 namespace boost {
 namespace stringify {
 inline namespace v0 {
 namespace detail {
 
-template <typename CharT, typename Output, typename FTuple>
+template <typename Output, typename FTuple>
 class char_stringifier
 {
 
 public:
 
-    using input_type = CharT ;
-    using char_type = CharT;
+    using char_type = typename Output::char_type;
+    using input_type = char_type ;
     using output_type = Output ;
     using ftuple_type = FTuple ;
     
-    char_stringifier(const FTuple& fmt, CharT _character) noexcept
+    char_stringifier(const FTuple& fmt, char_type _character) noexcept
         : m_fmt(fmt)
         , m_char(_character)
     {
@@ -51,7 +51,7 @@ public:
 private:
    
     const FTuple& m_fmt; 
-    CharT m_char;
+    char_type m_char;
 };
 
 template <typename CharIn>
@@ -59,23 +59,20 @@ struct char_input_traits
 {
     
 private:
-
-    template <typename CharOut>
-    struct helper
+    
+    template <typename Output, typename FTuple>
+    struct checker
     {
-        static_assert(sizeof(CharIn) == sizeof(CharOut), "");
+        static_assert(sizeof(CharIn) == sizeof(typename Output::char_type), "");
         
-        template <typename Output, typename FTuple>
         using stringifier
-        = boost::stringify::v0::detail::char_stringifier
-            <CharOut, Output, FTuple>;
+        = boost::stringify::v0::detail::char_stringifier<Output, FTuple>;
     };
     
 public:
     
-    template <typename CharT, typename Output, typename FTuple>
-    using stringifier
-    = typename helper<CharT>::template stringifier<Output, FTuple>;
+    template <typename Output, typename FTuple>
+    using stringifier = typename checker<Output, FTuple>::stringifier;
 };
 
 } //namepace detail
@@ -94,7 +91,7 @@ boost_stringify_input_traits_of(wchar_t);
 } // namespace stringify
 } // namespace boost
 
-#endif // BOOST_STRINGIFY_V0_INPUT_CHAR_HPP_INCLUDED
+#endif // BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR_HPP_INCLUDED
 
 
 
