@@ -1,5 +1,3 @@
-<a target="_blank" href="http://semver.org">![Version][badge.version]</a>
-
 Boost.Stringify is a C++ header-only locale-independed formatting library. It is fast, extensible, and aims to provide many formatting options.
 
 Branch   | Travis | Appveyor
@@ -9,4 +7,4 @@ Master   | [![Build Status](https://travis-ci.org/robhz786/stringify.svg?branch=
 
 
 Documentation: http://robhz786.github.io/stringify/doc/html/index.html
-
+Version: 0.1.0
