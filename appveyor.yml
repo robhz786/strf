@@ -1,0 +1,38 @@
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
+
+version: 1.0.{build}-{branch}
+
+shallow_clone: true
+
+branches:
+  only:
+    - master
+    - develop
+    - /feature\/.*/
+
+environment:
+  matrix:
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      TOOLSET: msvc-14.1
+
+
+install:
+  - cd ..
+  - git clone -b %APPVEYOR_REPO_BRANCH% https://github.com/boostorg/boost.git boost-root
+  - cd boost-root
+  - git submodule init libs/assert
+  - git submodule init libs/config
+  - git submodule init libs/core
+  - git submodule init libs/detail
+  - git submodule init tools/build
+  - git submodule init tools/inspect
+  - git submodule update
+  - xcopy /s /e /q /i %APPVEYOR_BUILD_FOLDER% libs\stringify\
+  - bootstrap
+  - b2 headers
+
+build: off
+
+test_script:
+  - b2 libs/stringify/test toolset=%TOOLSET%

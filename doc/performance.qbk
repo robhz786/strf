@@ -1,0 +1,98 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+
+[section:performance Some performance results]
+
+These are some results of how much time it take to write to `char*` using Boost.Stringify and sprintf. You can run these performance tests by compiling and executing [^performance/versus_sprintf.cpp]
+
+[table 
+[[ GCC 6.2 - Ubuntu 16.04 ] [ MSVC 2017 15.2 - Windows 10 ] [Expression]]
+[[]         []          [[*Copy a string literal]]]
+[[  7.65 ns][  21.97 ns][`write_to(char_ptr_output) ("hello")`]]
+[[ 12.54 ns][  34.52 ns][`write_to(char_ptr_output) [{"hello"}]`]]
+[[  1.73 ns][  70.71 ns][`sprintf(char_ptr_output, "hello")`]]
+[[  1.84 ns][  72.82 ns][`sprintf(char_ptr_output, "%s", "hello")`]]
+[[  1.76 ns][   1.08 ns][`strcpy(char_ptr_output, "hello")`]]
+[[]         []          []]
+[[]         []          [[*Copy a heap allocated short string]]]
+[[ 10.88 ns][  22.54 ns][`write_to(char_ptr_output) (hello)`]]
+[[ 13.28 ns][  35.86 ns][`write_to(char_ptr_output) [{hello}]`]]
+[[  4.74 ns][   3.70 ns][`strcpy(char_ptr_output, hello)`]]
+[[ 34.82 ns][  72.93 ns][`sprintf(char_ptr_output, hello)`]]
+[[  5.50 ns][  74.96 ns][`sprintf(char_ptr_output, "%s", hello)`]]
+[[ 79.45 ns][  74.73 ns][`sprintf(char_ptr_output, fmt, hello)`]]
+[[]         []          []]
+[[]         []          [[*Copy two strings]]]
+[[ 19.09 ns][  49.19 ns][`write_to(char_ptr_output) ("hello", "hello")`]]
+[[ 22.75 ns][  61.32 ns][`write_to(char_ptr_output) [{"hello", "hello"}]`]]
+[[122.26 ns][ 114.27 ns][`sprintf(char_ptr_output, "%s%s", "hello", "hello")`]]
+[[]         []          []]
+[[]         []          [[*Copy a long string ( 1000 characters )]]]
+[[ 37.43 ns][ 532.04 ns][`write_to(char_ptr_output) (long_string)`]]
+[[ 44.85 ns][ 545.62 ns][`write_to(char_ptr_output) [{long_string}]`]]
+[[ 31.88 ns][ 430.85 ns][`strcpy(char_ptr_output, long_string)`]]
+[[106.63 ns][7355.04 ns][`sprintf(char_ptr_output, long_string)`]]
+[[ 31.87 ns][ 123.16 ns][`sprintf(char_ptr_output, "%s", long_string)`]]
+[[807.23 ns][ 124.28 ns][`sprintf(char_ptr_output, fmt, long_string)`]]
+[[]         []          []]
+[[]         []          [[*Write integers]]]
+[[ 16.16 ns][  25.80 ns][`write_to(char_ptr_output) (25)`]]
+[[ 20.31 ns][  38.39 ns][`write_to(char_ptr_output) [{25}]`]]
+[[ 68.95 ns][ 109.73 ns][`sprintf(char_ptr_output, "%d", 25)`]]
+[[]         []          []]
+[[ 27.07 ns][  41.70 ns][`write_to(char_ptr_output) (INT_MAX)`]]
+[[ 34.88 ns][  64.01 ns][`write_to(char_ptr_output) [{INT_MAX}]`]]
+[[ 81.59 ns][ 158.29 ns][`sprintf(char_ptr_output, "%d", INT_MAX)`]]
+[[]         []          []]
+[[ 44.13 ns][ 239.71 ns][`write_to(char_ptr_output) (LLONG_MAX)`]]
+[[ 54.28 ns][ 254.48 ns][`write_to(char_ptr_output) [{LLONG_MAX}]`]]
+[[110.85 ns][ 344.95 ns][`sprintf(char_ptr_output, "%lld", LLONG_MAX)`]]
+[[]         []          []]
+[[ 50.97 ns][  86.09 ns][`write_to(char_ptr_output) (25, 25, 25)`]]
+[[ 53.43 ns][ 107.43 ns][`write_to(char_ptr_output) [{25, 25, 25}]`]]
+[[115.25 ns][ 179.55 ns][`sprintf(char_ptr_output, "%d%d%d", 25, 25, 25)`]]
+[[]         []          []]
+[[140.99 ns][ 712.27 ns][`write_to(char_ptr_output) (LLONG_MAX, LLONG_MAX, LLONG_MAX)`]]
+[[145.79 ns][ 740.99 ns][`write_to(char_ptr_output) [{LLONG_MAX, LLONG_MAX, LLONG_MAX}]`]]
+[[264.27 ns][ 979.42 ns][`sprintf(char_ptr_output, "%d%d%d", LLONG_MAX, LLONG_MAX, LLONG_MAX)`]]
+[[]         []          []]
+[[ 24.39 ns][  51.17 ns][`write_to(char_ptr_output) ({25, 6})`]]
+[[ 28.29 ns][  67.16 ns][`write_to(char_ptr_output) [{{25, 6}}]`]]
+[[ 17.33 ns][  61.09 ns][`write_to(char_ptr_output) .with(strf::width(6)) [{25}]`]]
+[[ 75.16 ns][ 170.74 ns][`sprintf(char_ptr_output, "%6d", 25)`]]
+[[]         []          []]
+[[ 27.87 ns][  60.13 ns][`write_to(char_ptr_output) ({25, {6, "<+"}})`]]
+[[ 30.93 ns][  73.82 ns][`write_to(char_ptr_output) [{{25, {6, "<+"}}}]`]]
+[[ 18.01 ns][  71.59 ns][`write_to(char_ptr_output).with(width(6), left, showpos) [{25}]`]]
+[[ 77.48 ns][ 187.23 ns][`sprintf(char_ptr_output, "%6-+d", 25)`]]
+[[]         []          []]
+[[ 25.07 ns][  59.37 ns][`write_to(char_ptr_output) ({25, "#x"})`]]
+[[ 29.11 ns][  78.08 ns][`write_to(char_ptr_output) [{{25, "#x"}}]`]]
+[[ 14.20 ns][  58.95 ns][`write_to(char_ptr_output) .with(hex, showbase) [{25}]`]]
+[[ 64.06 ns][  99.36 ns][`sprintf(char_ptr_output, "%#x", 25)`]]
+[[]         []          []]
+[[ 71.46 ns][ 145.04 ns][`write_to(char_ptr_output) (25, {25, {6, "<+"}} , {25, "#x"})`]]
+[[ 71.93 ns][ 168.95 ns][`write_to(char_ptr_output) [{25, {25, {6, "<+"}} , {25, "#x"}}]`]]
+[[141.74 ns][ 302.06 ns][`sprintf(char_ptr_output, "%d%-+6d%#x", 25, 25, 25)`]]
+[[]         []          []]
+[[ 50.82 ns][ 111.91 ns][`write_to(char_ptr_output) ("ten =  ", 10, ", twenty = ", 20)`]]
+[[ 52.53 ns][ 141.88 ns][`write_to(char_ptr_output) [{"ten =  ", 10, ", twenty = ", 20}]`]]
+[[ 98.36 ns][ 295.37 ns][`sprintf(char_ptr_output, "ten = %d, twenty= %d", 10, 20)`]]
+]
+
+
+
+
+
+[endsect]
+
+
+
+
+
+
+

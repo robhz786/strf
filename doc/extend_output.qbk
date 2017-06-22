@@ -1,0 +1,50 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+[section How to add support to a new destination type]
+
+Suppose you have a type `foobar` and you want to create a function named `write` that takes a `foobar&` as a parameter and can be used just like the [link usage.usage other functions]
+
+Step 1) Create a class - let's call it `foobar_writer` - that satisfies the [link OutputWriter `OutputWriter`] concept. It also problably needs to have a constructor that take as `foobar&` as argument and saves it as an atribute.
+
+Step 2) Implement function `write` like this:
+
+```
+  auto write(foobar& destination)
+  {
+     return boost::stringify::make_args_handler<foobar_writer, foobar&>(destination);
+  }
+```
+
+The argument(s) passed to function template `make_args_handler` will be used to construct `foobar_writer`. Its signature is:
+
+```
+template <typename OutputWriter, typename ... Args>
+constexpr auto make_args_handler(Args ... args) -> /* implementation_defined */;
+```
+The expresion `write(`[~some_foobar]`) (`[~args]` ...)` will return `foobar_writer::finish()`.
+
+[h3 The `OutputWriter` concept]
+
+[#OutputWriter] Given 
+
+* `W`, a type that satisfies `OutputWriter` concept
+* `w`, an object of type `W`
+* `ch`, a value of type `W::char_type`
+* `str`, a pointer of `W::char_type`
+* `i`, `n`, values of type `std::size_t`
+
+[table
+[ [Expression]       [Return type] [Description] ]
+[ [`W::char_type`]   []      [The character type (`char`, `wchar_t`, `char32_t` or `char16_t`)] ]
+[ [`w.put(ch)`]      [void]  [Writes character `ch`]]
+[ [`w.put(ch, n)`]   [void]  [For each `i` in `[0, n)`, peforms `w.put(ch)` ]]
+[ [`w.put(str, n)`]  [void]  [For each `i` in `[0, n)`, peforms `w.put(str[i])` ]]
+[ [`w.finish()`]     [anything] [ Finalizes the writing process. This funcion is called at the end. ]]
+]
+
+
+[endsect]

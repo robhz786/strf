@@ -1,0 +1,28 @@
+#  Distributed under the Boost Software License, Version 1.0.
+#  (See accompanying file LICENSE_1_0.txt or copy at
+#  http://www.boost.org/LICENSE_1_0.txt)
+
+import testing ;
+import regex ;
+
+project libs/stringify ;
+
+rule run-stringify-tests ( sources * ) {
+     local flags = 
+        <toolset>clang:<cxxflags>"-std=c++1y -Wall -Wextra"
+        <toolset>darwin:<cxxflags>"-std=c++1y -Wall -Wextra"
+     ;
+
+     local result ;
+
+     for local source in $(sources)
+     {
+         local target = [ regex.replace $(source) "\.cpp" "" ] ;
+         result += [ run $(source) : : : $(flags) : test.$(target) ] ;
+     }
+
+}
+
+
+build-project example ;
+build-project test ;
