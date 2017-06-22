@@ -6,24 +6,20 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 
-#include <boost/stringify/v0/custom_showpos.hpp>
-#include <boost/stringify/v0/custom_width.hpp>
-#include <boost/stringify/v0/custom_width_calculator.hpp>
-#include <boost/stringify/v0/custom_fill.hpp>
+#include <boost/stringify/v0/facets/showpos.hpp>
+#include <boost/stringify/v0/facets/width.hpp>
+#include <boost/stringify/v0/facets/width_calculator.hpp>
+#include <boost/stringify/v0/facets/fill.hpp>
 
-// input 
+#include <boost/stringify/v0/input_types/int.hpp>
+#include <boost/stringify/v0/input_types/char.hpp>
+#include <boost/stringify/v0/input_types/char32.hpp>
+#include <boost/stringify/v0/input_types/char_ptr.hpp>
+#include <boost/stringify/v0/input_types/std_string.hpp>
+#include <boost/stringify/v0/input_types/join.hpp>
 
-#include <boost/stringify/v0/input_int.hpp>
-#include <boost/stringify/v0/input_char.hpp>
-#include <boost/stringify/v0/input_char32.hpp>
-#include <boost/stringify/v0/input_char_ptr.hpp>
-#include <boost/stringify/v0/input_std_string.hpp>
-#include <boost/stringify/v0/input_join.hpp>
-
-// output
-
-#include <boost/stringify/v0/writef_char_ptr.hpp>
-#include <boost/stringify/v0/make_string.hpp>
-#include <boost/stringify/v0/assignf_appendf_string.hpp>
+#include <boost/stringify/v0/output_types/char_ptr.hpp>
+#include <boost/stringify/v0/output_types/make_string.hpp>
+#include <boost/stringify/v0/output_types/std_string.hpp>
 
 #endif

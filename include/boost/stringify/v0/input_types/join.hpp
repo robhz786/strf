@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/stringify/v0/input_arg.hpp>
-#include <boost/stringify/v0/custom_alignment.hpp>
+#include <boost/stringify/v0/facets/alignment.hpp>
 #include <initializer_list>
 
 namespace boost {

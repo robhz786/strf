@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_CUSTOM_SHOWBASE_HPP
-#define BOOST_STRINGIFY_V0_CUSTOM_SHOWBASE_HPP
+#ifndef BOOST_STRINGIFY_V0_FACETS_SHOWBASE_HPP
+#define BOOST_STRINGIFY_V0_FACETS_SHOWBASE_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -48,5 +48,5 @@ struct showbase_tag
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_V0_CUSTOM_SHOWBASE_HPP
+#endif  // BOOST_STRINGIFY_V0_FACETS_SHOWBASE_HPP
 

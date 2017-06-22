@@ -1,13 +1,13 @@
-#ifndef BOOST_STRINGIFY_V0_INPUT_CHAR_HPP_INCLUDED
-#define BOOST_STRINGIFY_V0_INPUT_CHAR_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR_HPP_INCLUDED
+#define BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR_HPP_INCLUDED
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/input_char32.hpp>
+#include <boost/stringify/v0/input_types/char32.hpp>
 #include <boost/stringify/v0/type_traits.hpp>
-#include <boost/stringify/v0/custom_width_calculator.hpp>
+#include <boost/stringify/v0/facets/width_calculator.hpp>
 
 namespace boost {
 namespace stringify {
@@ -91,7 +91,7 @@ boost_stringify_input_traits_of(wchar_t);
 } // namespace stringify
 } // namespace boost
 
-#endif // BOOST_STRINGIFY_V0_INPUT_CHAR_HPP_INCLUDED
+#endif // BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR_HPP_INCLUDED
 
 
 

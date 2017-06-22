@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_FMT_SHOWPOS_HPP
-#define BOOST_STRINGIFY_V0_FMT_SHOWPOS_HPP
+#ifndef BOOST_STRINGIFY_V0_FACETS_SHOWPOS_HPP
+#define BOOST_STRINGIFY_V0_FACETS_SHOWPOS_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -99,5 +99,5 @@ struct showpos_tag
 } // namespace boost
 
 
-#endif  /* BOOST_STRINGIFY_V0_FMT_SHOWPOS_HPP */
+#endif  /* BOOST_STRINGIFY_V0_FACETS_SHOWPOS_HPP */
 

@@ -1,11 +1,11 @@
-#ifndef BOOST_STRINGIFY_V0_INPUT_CHAR32_HPP_INCLUDED
-#define BOOST_STRINGIFY_V0_INPUT_CHAR32_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR32_HPP_INCLUDED
+#define BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR32_HPP_INCLUDED
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/custom_char32_conversion.hpp>
+#include <boost/stringify/v0/facets/char32_conversion.hpp>
 #include <type_traits>
 
 namespace boost {
@@ -75,7 +75,7 @@ boost_stringify_input_traits_of(char32_t);
 } // namespace stringify
 } // namespace boost
 
-#endif // BOOST_STRINGIFY_V0_INPUT_CHAR32_HPP_INCLUDED
+#endif // BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR32_HPP_INCLUDED
 
 
 

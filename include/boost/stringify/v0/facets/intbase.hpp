@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_CUSTOM_INTBASE_HPP
-#define BOOST_STRINGIFY_V0_CUSTOM_INTBASE_HPP
+#ifndef BOOST_STRINGIFY_V0_FACETS_INTBASE_HPP
+#define BOOST_STRINGIFY_V0_FACETS_INTBASE_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -78,5 +78,5 @@ constexpr int get_intbase(const FTuple& fmt, const Flags& flags) noexcept
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_V0_CUSTOM_INTBASE_HPP
+#endif  // BOOST_STRINGIFY_V0_FACETS_INTBASE_HPP
 

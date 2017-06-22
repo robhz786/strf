@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_CUSTOM_FILL_HPP
-#define BOOST_STRINGIFY_V0_CUSTOM_FILL_HPP
+#ifndef BOOST_STRINGIFY_V0_FACETS_FILL_HPP
+#define BOOST_STRINGIFY_V0_FACETS_FILL_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -7,8 +7,8 @@
 
 #include <string>
 #include <boost/stringify/v0/ftuple.hpp>
-#include <boost/stringify/v0/custom_width.hpp>
-#include <boost/stringify/v0/custom_char32_conversion.hpp>
+#include <boost/stringify/v0/facets/width.hpp>
+#include <boost/stringify/v0/facets/char32_conversion.hpp>
 #include <boost/stringify/v0/type_traits.hpp>
 #include <boost/stringify/v0/detail/characters_catalog.hpp>
 
@@ -214,5 +214,5 @@ std::size_t fill_length
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_V0_CUSTOM_FILL_HPP
+#endif  // BOOST_STRINGIFY_V0_FACETS_FILL_HPP
 

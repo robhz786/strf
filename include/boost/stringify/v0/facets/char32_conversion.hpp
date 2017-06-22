@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_CUSTOM_CHAR32_CONVERSION_HPP
-#define BOOST_STRINGIFY_V0_CUSTOM_CHAR32_CONVERSION_HPP
+#ifndef BOOST_STRINGIFY_V0_FACETS_CHAR32_CONVERSION_HPP
+#define BOOST_STRINGIFY_V0_FACETS_CHAR32_CONVERSION_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -249,5 +249,5 @@ void write_char32(const FTuple& fmt, Output& out, char32_t ch)
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_V0_CUSTOM_CHAR32_TO_STR_HPP
+#endif  // BOOST_STRINGIFY_V0_FACETS_CHAR32_TO_STR_HPP
 

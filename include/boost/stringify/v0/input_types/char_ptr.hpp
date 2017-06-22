@@ -1,10 +1,10 @@
-#ifndef BOOST_STRINGIFY_V0_INPUT_CHAR_PTR
-#define BOOST_STRINGIFY_V0_INPUT_CHAR_PTR
+#ifndef BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR_PTR
+#define BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR_PTR
 
 #include <algorithm>
 #include <limits>
-#include <boost/stringify/v0/custom_alignment.hpp>
-#include <boost/stringify/v0/custom_width_calculator.hpp>
+#include <boost/stringify/v0/facets/alignment.hpp>
+#include <boost/stringify/v0/facets/width_calculator.hpp>
 
 
 namespace boost {
@@ -210,5 +210,5 @@ boost_stringify_input_traits_of(const wchar_t*);
 
 
 
-#endif  /* BOOST_STRINGIFY_V0_INPUT_CHAR_PTR */
+#endif  /* BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR_PTR */
 

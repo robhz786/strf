@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_INPUT_INT_HPP_INCLUDED
-#define BOOST_STRINGIFY_V0_INPUT_INT_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_V0_INPUT_TYPES_INT_HPP_INCLUDED
+#define BOOST_STRINGIFY_V0_INPUT_TYPES_INT_HPP_INCLUDED
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -7,13 +7,13 @@
 
 #include <boost/stringify/v0/arg_format_common.hpp>
 #include <boost/stringify/v0/char_flags.hpp>
-#include <boost/stringify/v0/custom_alignment.hpp>
-#include <boost/stringify/v0/custom_fill.hpp>
-#include <boost/stringify/v0/custom_intbase.hpp>
-#include <boost/stringify/v0/custom_case.hpp>
-#include <boost/stringify/v0/custom_showbase.hpp>
-#include <boost/stringify/v0/custom_showpos.hpp>
-#include <boost/stringify/v0/custom_width.hpp>
+#include <boost/stringify/v0/facets/alignment.hpp>
+#include <boost/stringify/v0/facets/fill.hpp>
+#include <boost/stringify/v0/facets/intbase.hpp>
+#include <boost/stringify/v0/facets/case.hpp>
+#include <boost/stringify/v0/facets/showbase.hpp>
+#include <boost/stringify/v0/facets/showpos.hpp>
+#include <boost/stringify/v0/facets/width.hpp>
 #include <boost/stringify/v0/ftuple.hpp>
 #include <boost/stringify/v0/detail/characters_catalog.hpp>
 #include <boost/stringify/v0/detail/number_of_digits.hpp>
@@ -525,4 +525,4 @@ boost_stringify_input_traits_of(unsigned long long);
 } // namespace boost
 
 
-#endif // BOOST_STRINGIFY_V0_INPUT_INT_HPP_INCLUDED
+#endif // BOOST_STRINGIFY_V0_INPUT_TYPES_INT_HPP_INCLUDED

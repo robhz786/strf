@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_CUSTOM_ALIGNMENT_HPP
-#define BOOST_STRINGIFY_V0_CUSTOM_ALIGNMENT_HPP
+#ifndef BOOST_STRINGIFY_V0_FACETS_ALIGNMENT_HPP
+#define BOOST_STRINGIFY_V0_FACETS_ALIGNMENT_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -128,5 +128,5 @@ struct alignment_tag
 } // namespace stringify
 } // namespace boost
 
-#endif  // BOOST_STRINGIFY_V0_CUSTOM_ALIGNMENT_HPP
+#endif  // BOOST_STRINGIFY_V0_FACETS_ALIGNMENT_HPP
 
