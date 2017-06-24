@@ -149,17 +149,9 @@ public:
 } // namespace detail
 
 
-template
-    < typename String
-    , typename CharT = typename String::value_type
-    , typename CharTraits = typename String::traits_type
-    >
-auto boost_stringify_input_traits_of(const String& str)
-    -> std::enable_if_t
-        < std::is_same<String, std::basic_string<CharT, CharTraits> >::value
-        , boost::stringify::v0::detail::std_string_input_traits<CharT, CharTraits>
-        >;
-
+template<typename CharT, typename CharTraits>
+auto boost_stringify_input_traits_of(const std::basic_string<CharT, CharTraits>& str)
+    -> boost::stringify::v0::detail::std_string_input_traits<CharT, CharTraits>;
 
 } // inline namespace v0
 } // namespace stringify

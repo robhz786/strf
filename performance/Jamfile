@@ -12,7 +12,7 @@ sources = versus_sprintf.cpp ;
 
 for local src in $(sources)
 {
-    exe $(src:B) : $(src)  ;
+    exe $(src:B) : $(src) : <optimization>speed ;
 }
 
 install ./out : $(sources:B) ;
