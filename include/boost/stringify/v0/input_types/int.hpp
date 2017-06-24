@@ -158,7 +158,7 @@ public:
     using char_type   = typename Output::char_type ;
     using output_type = Output;
     using ftuple_type = FTuple;
-    using arg_format_type = boost::stringify::v0::detail::int_arg_format
+    using second_arg = boost::stringify::v0::detail::int_arg_format
         <input_type, FTuple>;
 
 
@@ -175,7 +175,7 @@ public:
     }
 
 
-    int_stringifier(const FTuple& fmt, intT value, arg_format_type argf) noexcept
+    int_stringifier(const FTuple& fmt, intT value, second_arg argf) noexcept
         : m_fmt(fmt)
         , m_value(value)
         , m_width(argf.get_width(fmt))

@@ -31,7 +31,7 @@ public:
     using ftuple_type = ParentFTuple;
     using input_type = ChildFTuple;
     using output_type = Output;
-    using arg_format_type = ini_list_type;
+    using second_arg = ini_list_type;
 
     ftuple_stringifier
         ( const ParentFTuple& parentF

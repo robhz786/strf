@@ -24,13 +24,13 @@ public:
     using input_type  = std::basic_string<char_type, Traits>;
     using output_type = Output;
     using ftuple_type = FTuple;
-    using arg_format_type = boost::stringify::v0::detail::string_arg_format
+    using second_arg = boost::stringify::v0::detail::string_arg_format
         <input_type, FTuple>;
 
    std_string_stringifier
         ( const FTuple& fmt
         , const input_type& str
-        , arg_format_type argfmt
+        , second_arg argfmt
         ) noexcept
         : m_fmt(fmt)
         , m_str(str)

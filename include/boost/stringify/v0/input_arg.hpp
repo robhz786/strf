@@ -35,7 +35,7 @@ public:
     template <typename T, typename S = stringifier<T>>
     input_arg
         ( const T& arg1
-        , const typename S::arg_format_type& arg2
+        , const typename S::second_arg& arg2
         , wrapper<S> && strf = wrapper<S>() 
         )
         : m_stringifier(strf)
