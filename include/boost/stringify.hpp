@@ -16,7 +16,9 @@
 #include <boost/stringify/v0/input_types/char32.hpp>
 #include <boost/stringify/v0/input_types/char_ptr.hpp>
 #include <boost/stringify/v0/input_types/std_string.hpp>
-#include <boost/stringify/v0/input_types/join.hpp>
+#include <boost/stringify/v0/input_types/join.hpp>      
+#include <boost/stringify/v0/input_types/ftuple.hpp>    
+
 
 #include <boost/stringify/v0/output_types/char_ptr.hpp>
 #include <boost/stringify/v0/output_types/make_string.hpp>

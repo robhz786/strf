@@ -47,7 +47,7 @@
 [
   [7]
   [`std::basic_string<C, T>`]
-  [ [*`assign_to(`][~destination][*`)`]`.with(`[~facets...]`)(`[~args...]`)`]
+  [ [*`make_basic_string<C, T>(`][~destination][*`)`]`.with(`[~facets...]`)(`[~args...]`)`]
   [The result as a `std::basic_string<C, T>`]
 ]
 
