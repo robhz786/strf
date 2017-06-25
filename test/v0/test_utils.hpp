@@ -7,7 +7,7 @@
 
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/stringify.hpp>
-
+#include <cctype>
 
 template <typename CharT>
 struct to_upper_char_traits : public std::char_traits<CharT>
