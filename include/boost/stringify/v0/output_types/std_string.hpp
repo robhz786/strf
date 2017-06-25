@@ -52,9 +52,9 @@ private:
 
     StringType& m_out;               
 };
-
+/*
 template <class T>
-struct std_string_destination
+struct std_string_destination_concept
 {
 
 private:
@@ -72,7 +72,6 @@ private:
              , std::true_type()
              );
 
-
     template <typename S>
     static std::false_type test(...);
 
@@ -81,32 +80,26 @@ public:
     static constexpr bool value = decltype(test<T>((T*)0))::value;
 
 };
-
+*/
 } // namespace detail
 
 
-template
-    < typename StringType
-    , typename = std::enable_if_t
-          < boost::stringify::v0::detail::std_string_destination<StringType>::value >
-    >
-auto append_to(StringType& str)
+template <typename CharT, typename Traits>
+auto append_to(std::basic_string<CharT, Traits>& str)
 {
-    using writer = boost::stringify::v0::detail::string_appender<StringType>;
-    return boost::stringify::v0::make_args_handler<writer, StringType&>(str);
+    using string_type = std::basic_string<CharT, Traits>;
+    using writer = boost::stringify::v0::detail::string_appender<string_type>;
+    return boost::stringify::v0::make_args_handler<writer, string_type&>(str);
 }
 
 
-template
-    < typename StringType
-    , typename = std::enable_if_t
-          < boost::stringify::v0::detail::std_string_destination<StringType>::value >
-    >
-auto assign_to(StringType& str)
+template <typename CharT, typename Traits>
+auto assign_to(std::basic_string<CharT, Traits>& str)
 {
+    using string_type = std::basic_string<CharT, Traits>;
     str.clear();
-    using writer = boost::stringify::v0::detail::string_appender<StringType>;
-    return boost::stringify::v0::make_args_handler<writer, StringType&>(str);
+    using writer = boost::stringify::v0::detail::string_appender<string_type>;
+    return boost::stringify::v0::make_args_handler<writer, string_type&>(str);
 }
 
 
