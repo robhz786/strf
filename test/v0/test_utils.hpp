@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/detail/lightweight_test.hpp>
+#include <iostream>
 #include <boost/stringify.hpp>
 #include <cctype>
 
@@ -74,90 +74,130 @@ struct weird_char_traits : public std::char_traits<CharT>
 };
 
 
-template <int LINE_NUM, typename CharT>
-class tester
+
+static int global_errors_count = 0;
+
+int report_errors()
 {
-    typedef
-    boost::stringify::v0::detail::char_ptr_writer<CharT, std::char_traits<CharT> >
-    writer_type;
-    
-public:
-    typedef CharT char_type;
-    
-    tester(std::basic_string<CharT> expected)
-        : m_expected_size(0)
-        , m_expected(std::move(expected))
+    if (global_errors_count)
     {
+        std::cout << global_errors_count << " tests failed\n";
+    }
+    else
+    {
+        std::cout << "No errors found\n";
     }
 
-    tester(tester&&) = default;
-    
-    ~tester()
-    {
-    }
-          
-    void reserve(std::size_t size)
-    {
-        m_writer.reserve(size);
-        m_expected_size = size;
-    }
-    
-    bool finish()
-    {
-        auto result = m_writer.finish();
-        bool OUTPUT_STRING_AS_EXPECTED = m_expected == result;
-        bool OUTPUT_STRING_LENGTH_AS_EXPECTED = m_expected_size == 1 + m_expected.length();
-        BOOST_TEST( OUTPUT_STRING_AS_EXPECTED );
-        BOOST_TEST( OUTPUT_STRING_LENGTH_AS_EXPECTED );
-
-        return OUTPUT_STRING_AS_EXPECTED  && OUTPUT_STRING_LENGTH_AS_EXPECTED ;
-    }
-
-    void put(CharT character)
-    {
-        m_writer.put(character);
-    }
-
-    void put(CharT character, std::size_t repetitions)
-    {
-        m_writer.put(character, repetitions);
-    }
-
-    void put(const CharT* str, std::size_t count)
-    {
-        m_writer.put(str, count);
-    }
-    
-    bool set_pos(std::size_t pos)
-    {
-        return m_writer.set_pos(pos);
-    }
-
-    decltype(auto) get_pos()
-    {
-        return m_writer.get_pos();
-    }
-    
-    void rput(CharT character)
-    {
-        m_writer.rput(character);
-    }
-
-private:
-
-    std::size_t m_expected_size;
-    std::basic_string<CharT> m_expected;
-    boost::stringify::v0::detail::string_maker<std::basic_string<CharT>> m_writer;
-};
-      
-template<int LINE_NUM, typename CharT>
-auto testf(const CharT* expected)    
-{
-    using writer = tester<LINE_NUM, CharT>;
-    return std::move(boost::stringify::v0::make_args_handler<writer>(expected));
+    return global_errors_count;
 }
 
 
+void print(const char* label, const std::u16string&)
+{
+    std::cout << label << ": (unable to print) \n";
+}
+
+void print(const char* label, const std::u32string&)
+{
+    std::cout << label << ": (unable to print) \n";
+}
+
+
+void print(const char* label, const std::string& str)
+{
+    std::cout << label << ": \"" << str << "\"\n";
+}
+
+void print(const char* label, const std::wstring& str)
+{
+    std::cout << label << ": \"";
+    std::wcout << str;
+    std::cout  << "\"\n";
+}
+
+
+template <typename CharT>
+class input_tester
+{
+public:
+    input_tester
+        ( std::basic_string<CharT> expected
+        , std::string src_filename
+        , int src_line
+        )
+        : m_expected(std::move(expected))
+        , m_reserved_size(0)
+        , m_src_filename(std::move(src_filename))
+        , m_src_line(src_line)
+    {
+    }
+
+    using char_type = CharT;
+
+    void put(char_type character)
+    {
+        m_result.push_back(character);
+    }
+
+    void put(char_type character, std::size_t repetitions)
+    {
+        m_result.append(repetitions, character);
+    }
+
+    void put(const char_type* str, std::size_t count)
+    {
+        m_result.append(str, count);
+    }
+
+    std::basic_string<CharT> finish()
+    {
+        if (m_expected != m_result || m_reserved_size != 1 + m_result.length())
+        {
+            std::cout << m_src_filename << ":" << m_src_line << ":" << " error: \n";
+            ++global_errors_count;
+        }
+        if (m_expected != m_result)
+        {
+            print("expected", m_expected);
+            print("obtained", m_result);
+        }
+        if(m_reserved_size != 1 + m_result.length())
+        {
+            std::cout << "reserved size  :" <<  m_reserved_size << "\n";
+            std::cout << "necessary size :" <<  m_result.length() + 1 << "\n";
+        }
+
+        return std::move(m_result);
+    }
+
+    void reserve(std::size_t size)
+    {
+        m_reserved_size = size;
+        m_result.reserve(size);
+    }
+
+
+private:
+
+    std::basic_string<CharT> m_result;
+    std::basic_string<CharT> m_expected;
+    std::size_t m_reserved_size;
+    std::string m_src_filename;
+    int m_src_line;
+};
+
+
+template<typename CharT>
+auto make_tester(const CharT* expected, const char* filename, int line)
+{
+    using writer = input_tester<CharT>;
+    return std::move(boost::stringify::v0::make_args_handler
+                     <writer, const CharT*, const char*, int>
+                     (expected, filename, line));
+}
+
+
+#define TEST(EXPECTED) make_tester((EXPECTED), __FILE__, __LINE__)
 
 #endif
 

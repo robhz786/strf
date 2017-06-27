@@ -5,8 +5,6 @@
 #include "test_utils.hpp"
 #include <boost/stringify.hpp>
 
-#define TEST testf<__LINE__>
-
 int main()
 {
     namespace strf = boost::stringify::v0; 
@@ -90,7 +88,7 @@ int main()
 
     
     
-    int rc = boost::report_errors();
+    int rc = report_errors();
     return rc;
 }
 

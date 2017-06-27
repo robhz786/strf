@@ -6,8 +6,6 @@
 #include <boost/stringify.hpp>
 #include "test_utils.hpp"
 
-#define TEST testf<__LINE__>
-
 int main()
 {
     namespace strf = boost::stringify::v0;
