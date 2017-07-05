@@ -248,7 +248,7 @@ constexpr decltype(auto) get_facet(const FTuple& f)
 }
 
 
-} // namespace v0
+} // inline namespace v0
 } // namespace stringify
 } // namespace boost
 
