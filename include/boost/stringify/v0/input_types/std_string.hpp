@@ -24,19 +24,27 @@ public:
     using input_type  = std::basic_string<CharT, Traits>;
     using output_type = boost::stringify::v0::output_writer<CharT>;
     using ftuple_type = FTuple;
-    using second_arg = boost::stringify::v0::detail::string_arg_format
-        <input_type, FTuple>;
+    using second_arg = boost::stringify::v0::detail::string_argf;
 
-   std_string_stringifier
-        ( const FTuple& fmt
+private:
+
+    using argf_reader = boost::stringify::v0::conventional_argf_reader<input_type>;
+    using width_t = boost::stringify::v0::width_t;
+    using width_tag = boost::stringify::v0::width_tag;
+    using alignment_tag = boost::stringify::v0::alignment_tag;
+
+public:    
+
+    std_string_stringifier
+        ( const FTuple& ft
         , const input_type& str
-        , second_arg argfmt
+        , second_arg argf
         ) noexcept
-        : m_fmt(fmt)
+        : m_fmt(ft)
         , m_str(str)
-        , m_total_width(argfmt.get_width(fmt))
+        , m_total_width(argf_reader::get_width(argf, ft))
         , m_padding_width(padding_width())
-        , m_alignment(argfmt.get_alignment(fmt))
+        , m_alignment(argf_reader::get_alignment(argf, ft))
     {
     }
     

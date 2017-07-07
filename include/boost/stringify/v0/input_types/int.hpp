@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/arg_format_common.hpp>
+#include <boost/stringify/v0/conventional_argf_reader.hpp>
 #include <boost/stringify/v0/char_flags.hpp>
 #include <boost/stringify/v0/output_writer.hpp>
 #include <boost/stringify/v0/facets/alignment.hpp>
@@ -25,95 +25,18 @@ namespace stringify {
 inline namespace v0 {
 namespace detail {
 
-template <typename InputType, typename FTuple>
-struct int_arg_format
-    : public boost::stringify::v0::arg_format_common
-        <int_arg_format<InputType, FTuple>>
+struct int_argf
 {
-
-    using ftuple_type = FTuple;
-    using input_type = InputType;
-    using width_t = boost::stringify::v0::width_t;
     using char_flags_type = boost::stringify::v0::char_flags
         <'+', '-', '<', '>', '=', 'o', 'd', 'x', 'X', 'c', 'C', '#', '$'>;
-
-    constexpr int_arg_format(width_t w, const char* f)
-        : flags(f)
-        , width(w)
-    {
-    }
-
-    constexpr int_arg_format(const char* f)
-        : flags(f)
-        , width(-1)
-    {
-    }
     
-    constexpr int_arg_format(width_t w)
-        : width(w)
-    {
-    }
-
-
-    constexpr int_arg_format(const int_arg_format&) = default;
-
-    int_arg_format& operator=(const int_arg_format&) = default;
-
-
-    int get_base(const ftuple_type& fmt)
-    {
-        if (flags.has_char('d'))
-        {
-            return 10;
-        }
-        if (flags.has_char('x') || flags.has_char('X'))
-        {
-            return 16;
-        }
-        else if (flags.has_char('o'))
-        {                        
-            return 8;
-        }
-        return get_facet<boost::stringify::v0::intbase_tag>(fmt).value();
-    }
-
-    bool get_uppercase(const ftuple_type& fmt) noexcept
-    {
-        if (flags.has_char('c'))
-        {
-            return false;
-        }
-        else if (flags.has_char('C') || flags.has_char('X'))
-        {                        
-            return true;
-        }
-        return get_facet<boost::stringify::v0::case_tag>(fmt).uppercase();
-    }
-
-    bool get_showbase(const ftuple_type& fmt) noexcept
-    {
-        if (flags.has_char('$'))
-        {
-            return false;
-        }
-        else if (flags.has_char('#'))
-        {                        
-            return true;
-        }
-        return get_facet<boost::stringify::v0::showbase_tag>(fmt).value();
-    }
-
-    const char_flags_type flags;
-    const boost::stringify::v0::width_t width = -1;
-
-private:
-
-    template <typename FacetCategory>
-    decltype(auto) get_facet(const ftuple_type& fmt)
-    {
-        return boost::stringify::v0::get_facet<FacetCategory, input_type>(fmt);
-    }
-
+    constexpr int_argf(int w): width(w) {}
+    constexpr int_argf(const char* f): flags(f) {}
+    constexpr int_argf(int w, const char* f): width(w), flags(f) {}
+    constexpr int_argf(const int_argf&) = default;
+    
+    int width = -1;
+    char_flags_type flags;
 };
 
 
@@ -159,9 +82,13 @@ public:
     using char_type   = CharT;
     using output_type = boost::stringify::v0::output_writer<CharT>;
     using ftuple_type = FTuple;
-    using second_arg = boost::stringify::v0::detail::int_arg_format
-        <input_type, FTuple>;
+    using second_arg = boost::stringify::v0::detail::int_argf;
+    
+private:
 
+    using argf_reader = boost::stringify::v0::conventional_argf_reader<input_type>;
+
+public:
 
     int_stringifier(const FTuple& fmt, intT value) noexcept
         : m_fmt(fmt)
@@ -179,12 +106,12 @@ public:
     int_stringifier(const FTuple& fmt, intT value, second_arg argf) noexcept
         : m_fmt(fmt)
         , m_value(value)
-        , m_width(argf.get_width(fmt))
-        , m_alignment(argf.get_alignment(fmt))
-        , m_base(argf.get_base(fmt))
-        , m_showpos(is_signed && value >= 0 && argf.get_showpos(fmt))
-        , m_showbase(argf.get_showbase(fmt))
-        , m_uppercase(argf.get_uppercase(fmt))
+        , m_width(argf_reader::get_width(argf, fmt))
+        , m_alignment(argf_reader::get_alignment(argf, fmt))
+        , m_base(argf_reader::get_base(argf, fmt))
+        , m_showpos(is_signed && value >= 0 && argf_reader::get_showpos(argf, fmt))
+        , m_showbase(argf_reader::get_showbase(argf, fmt))
+        , m_uppercase(argf_reader::get_uppercase(argf, fmt))
     {
     }
 

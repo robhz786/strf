@@ -3,7 +3,7 @@
 
 #include <algorithm>
 #include <limits>
-#include <boost/stringify/v0/facets/alignment.hpp>
+#include <boost/stringify/v0/conventional_argf_reader.hpp>
 #include <boost/stringify/v0/facets/width_calculator.hpp>
 
 
@@ -12,35 +12,17 @@ namespace stringify {
 inline namespace v0 {
 namespace detail {
 
-template <typename InputType, typename FTuple>
-struct string_arg_format
-   : public boost::stringify::v0::arg_format_common
-       <string_arg_format<InputType, FTuple>>
+struct string_argf
 {
-    using width_t = boost::stringify::v0::width_t;
     using char_flags_type = boost::stringify::v0::char_flags<'<', '>', '='>;
-    using input_type = InputType;
-    using ftuple_type = FTuple;
-
-    constexpr string_arg_format(int w, const char* f)
-        : flags(f)
-        , width(w)
-    {
-    }
-
-    constexpr string_arg_format(const char* f)
-        : flags(f)
-        , width(-1)
-    {
-    }
-
-    constexpr string_arg_format(int w)
-        : width(w)
-    {
-    }
-
+    
+    constexpr string_argf(int w): width(w) {}
+    constexpr string_argf(const char* f): flags(f) {}
+    constexpr string_argf(int w, const char* f): width(w), flags(f) {}
+    constexpr string_argf(const string_argf&) = default;
+    
+    int width = -1;
     char_flags_type flags;
-    width_t width;
 };
 
 
@@ -48,32 +30,34 @@ template<typename CharT, typename FTuple>
 class char_ptr_stringifier
 {
 
-private:
-
-    using width_t = boost::stringify::v0::width_t;
-    using width_tag = boost::stringify::v0::width_tag;
-    using alignment_tag = boost::stringify::v0::alignment_tag;
-
 public:
 
     using char_type  = CharT;
     using input_type = const CharT*;
     using output_type = boost::stringify::v0::output_writer<CharT>;
     using ftuple_type = FTuple;
-    using second_arg = boost::stringify::v0::detail::string_arg_format
-        <input_type, FTuple>;
+    using second_arg = boost::stringify::v0::detail::string_argf;
 
+private:
+
+    using argf_reader = boost::stringify::v0::conventional_argf_reader<input_type>;
+    using width_t = boost::stringify::v0::width_t;
+    using width_tag = boost::stringify::v0::width_tag;
+    using alignment_tag = boost::stringify::v0::alignment_tag;
+
+public:
+    
     char_ptr_stringifier
-        ( const FTuple& fmt
+        ( const FTuple& ft
         , const char_type* str
-        , second_arg argfmt
+        , second_arg argf
         ) noexcept
-        : m_fmt(fmt)
+        : m_fmt(ft)
         , m_str(str)
         , m_len(std::char_traits<char_type>::length(str))
-        , m_total_width(argfmt.get_width(fmt))
+        , m_total_width(argf_reader::get_width(argf, ft))
         , m_padding_width(padding_width())
-        , m_alignment(argfmt.get_alignment(fmt))
+        , m_alignment(argf_reader::get_alignment(argf, ft))
     {
     }
 
