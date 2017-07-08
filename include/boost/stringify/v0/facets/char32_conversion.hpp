@@ -194,9 +194,15 @@ class default_char32_to_wstr
 
 template <> struct char32_to_str_tag<char>
 {
-    typedef
-        boost::stringify::v0::char32_to_utf8<boost::stringify::v0::true_trait>
-        default_impl;
+    using default_impl =
+        boost::stringify::v0::char32_to_utf8<boost::stringify::v0::true_trait>;
+
+    constexpr static default_impl default_facet {};
+
+    constexpr static const auto& get_default() noexcept
+    {
+        return default_facet;
+    }
 };
 
 
@@ -205,6 +211,13 @@ template <> struct char32_to_str_tag<wchar_t>
     typedef
         boost::stringify::v0::default_char32_to_wstr<boost::stringify::v0::true_trait>
         default_impl;
+
+    constexpr static default_impl default_facet {};
+
+    constexpr static const auto& get_default() noexcept
+    {
+        return default_facet;
+    }
 };
 
 
@@ -213,6 +226,13 @@ template <> struct char32_to_str_tag<char16_t>
     typedef
         boost::stringify::v0::char32_to_utf16<boost::stringify::v0::true_trait>
         default_impl;
+
+    constexpr static default_impl default_facet {};
+
+    constexpr static const auto& get_default() noexcept
+    {
+        return default_facet;
+    }
 };
 
 
@@ -221,11 +241,18 @@ template <> struct char32_to_str_tag<char32_t>
     typedef
         boost::stringify::v0::char32_to_utf32<boost::stringify::v0::true_trait>
         default_impl;
+
+    constexpr static default_impl default_facet {};
+
+    constexpr static const auto& get_default() noexcept
+    {
+        return default_facet;
+    }
 };
 
 
 template <typename CharT, typename InputType, typename FTuple>
-decltype(auto) get_char32_writer(const FTuple& fmt) noexcept
+const auto& get_char32_writer(const FTuple& fmt) noexcept
 {
     using facet_category = boost::stringify::v0::char32_to_str_tag<CharT>;
     return boost::stringify::v0::get_facet<facet_category, InputType>(fmt);

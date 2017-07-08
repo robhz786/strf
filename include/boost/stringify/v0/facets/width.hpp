@@ -53,12 +53,17 @@ struct width_impl_t
     }
 };
 
-
+constexpr
+boost::stringify::v0::width_impl_t<0, boost::stringify::v0::true_trait>
+default_width;
+       
+       
 struct width_tag
 {
-    typedef
-    boost::stringify::v0::width_impl_t<0, boost::stringify::v0::true_trait>
-        default_impl;
+    constexpr static const auto& get_default() noexcept
+    {
+        return boost::stringify::v0::default_width;
+    }
 };
 
 

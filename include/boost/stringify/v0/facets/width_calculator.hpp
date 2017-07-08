@@ -56,15 +56,21 @@ public:
     }
 };
 
+constexpr 
+boost::stringify::v0::simplest_width_calculator<boost::stringify::v0::true_trait>
+default_width_calculator
+{};
+
 struct width_calculator_tag
 {
-    typedef
-    boost::stringify::v0::simplest_width_calculator<boost::stringify::v0::true_trait>
-    default_impl;
+    constexpr static const auto& get_default()
+    {
+        return boost::stringify::v0::default_width_calculator;        
+    }
 };
 
 template <typename InputType, typename FTuple>
-decltype(auto) get_width_calculator(const FTuple& fmt)
+const auto& get_width_calculator(const FTuple& fmt)
 {
     return boost::stringify::v0::get_facet
         <boost::stringify::v0::width_calculator_tag, InputType>(fmt);

@@ -117,10 +117,10 @@ internal_if
 
 struct alignment_tag
 {
-    typedef
-        boost::stringify::v0::align_impl_t
-        <boost::stringify::v0::alignment::right, boost::stringify::v0::true_trait>
-        default_impl;
+    constexpr static const auto& get_default() noexcept
+    {
+        return boost::stringify::v0::right;
+    }
 };
 
 

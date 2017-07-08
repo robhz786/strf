@@ -163,7 +163,7 @@ private:
 
 
     template <typename FacetCategory>
-    decltype(auto) get_facet() const noexcept
+    const auto& get_facet() const noexcept
     {
         return boost::stringify::v0::get_facet<FacetCategory, input_type>(m_fmt);
     }

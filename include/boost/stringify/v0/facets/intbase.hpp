@@ -44,8 +44,10 @@ auto hex_if = boost::stringify::v0::intbase_impl_t<16, F>();
 
 struct intbase_tag
 {
-    using default_impl=
-        boost::stringify::v0::intbase_impl_t<10, boost::stringify::v0::true_trait>;
+    constexpr static const auto& get_default() noexcept
+    {
+        return boost::stringify::v0::dec;
+    }
 };
 
 template <typename InputType, typename FTuple>

@@ -39,8 +39,10 @@ auto noshowbase_if = boost::stringify::v0::showbase_impl_t<false, F>();
 
 struct showbase_tag
 {
-    using default_impl =
-        boost::stringify::v0::showbase_impl_t<false, boost::stringify::v0::true_trait>;
+    constexpr static const auto& get_default() noexcept
+    {
+        return boost::stringify::v0::noshowbase;
+    }
 };
 
 

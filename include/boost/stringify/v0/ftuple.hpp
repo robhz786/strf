@@ -15,9 +15,16 @@ template <typename ... F> class ftuple;
 
 namespace detail {
 
-template <typename Tag>  struct increment_tag: Tag {};
+template <typename Tag>
+struct increment_tag: Tag
+{
+};
 
-struct absolute_lowest_tag {};
+
+struct absolute_lowest_tag
+{
+};
+
 
 using base_tag = increment_tag<absolute_lowest_tag>;
 
@@ -28,14 +35,15 @@ struct ftuple_end
     void do_get_facet();
 };
 
+
 template <>
 struct ftuple_end<base_tag>
 {
     template <typename, typename FacetCategory>
-    constexpr decltype(auto)
+    constexpr const auto&
     do_get_facet (const absolute_lowest_tag&, FacetCategory) const
     {
-        return typename FacetCategory::default_impl();
+        return FacetCategory::get_default();
     }
 };
 
@@ -222,7 +230,7 @@ public:
     }
    
     template <typename FacetCategory, typename InputType>
-    constexpr decltype(auto) get_facet() const
+    constexpr const auto& get_facet() const
     {
         return this->template do_get_facet<InputType>
             (typename impl::highest_tag(), FacetCategory());
@@ -242,7 +250,7 @@ template
     , typename InputType
     , typename FTuple
     >
-constexpr decltype(auto) get_facet(const FTuple& f)
+constexpr const auto& get_facet(const FTuple& f)
 {
     return f.template get_facet<FacetCategory, InputType>();
 }

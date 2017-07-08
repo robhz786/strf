@@ -138,12 +138,16 @@ private:
     }
 };
 
+constexpr
+boost::stringify::v0::fill_impl_t<U' ', boost::stringify::v0::true_trait>
+default_fill {};
 
 struct fill_tag
 {
-    typedef 
-        boost::stringify::v0::fill_impl_t<U' ', boost::stringify::v0::true_trait>
-        default_impl;
+    constexpr static const auto& get_default() noexcept
+    {
+        return boost::stringify::v0::default_fill;
+    }
 };
 
 
@@ -181,7 +185,7 @@ auto fill_t_if = fill_impl_t<Char, Filter>();
 
 
 template <typename InputType, typename FTuple>
-decltype(auto) get_filler(const FTuple& fmt)
+const auto& get_filler(const FTuple& fmt)
 {
     return boost::stringify::v0::get_facet
         <boost::stringify::v0::fill_tag, InputType>(fmt);

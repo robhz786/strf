@@ -88,9 +88,10 @@ boost::stringify::v0::showpos_false_impl<F> noshowpos_if
 
 struct showpos_tag
 {
-    typedef
-        boost::stringify::v0::showpos_false_impl<boost::stringify::v0::true_trait>
-        default_impl;
+    constexpr static const auto& get_default() noexcept
+    {
+        return boost::stringify::v0::noshowpos;
+    }
 };
 
 
