@@ -84,19 +84,19 @@ public:
 } // namespace detail
 
 
-template <typename CharT, typename Traits>
-auto append_to(std::basic_string<CharT, Traits>& str)
+template <typename CharT, typename Traits, typename Allocator>
+auto append_to(std::basic_string<CharT, Traits, Allocator>& str)
 {
-    using string_type = std::basic_string<CharT, Traits>;
+    using string_type = std::basic_string<CharT, Traits, Allocator>;
     using writer = boost::stringify::v0::detail::string_appender<string_type>;
     return boost::stringify::v0::make_args_handler<writer, string_type&>(str);
 }
 
 
-template <typename CharT, typename Traits>
-auto assign_to(std::basic_string<CharT, Traits>& str)
+template <typename CharT, typename Traits, typename Allocator>
+auto assign_to(std::basic_string<CharT, Traits, Allocator>& str)
 {
-    using string_type = std::basic_string<CharT, Traits>;
+    using string_type = std::basic_string<CharT, Traits, Allocator>;
     str.clear();
     using writer = boost::stringify::v0::detail::string_appender<string_type>;
     return boost::stringify::v0::make_args_handler<writer, string_type&>(str);

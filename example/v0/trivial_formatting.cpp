@@ -3,9 +3,9 @@
 
 int main()
 {
-    //[trivial_formatting_sample
     namespace strf = boost::stringify::v0;
 
+    //[trivial_formatting_sample
     int value = 255;
 
     // write in hexadecimal
@@ -19,8 +19,8 @@ int main()
 
     // width and formatting string
     result = strf::make_string("----", {value, {6, /*<<
-    `'<'` = justify left >>*/"#x"}}, "----");
-    BOOST_ASSERT(result == "----  0xff----");
+    `'<'` = justify left >>*/"<#x"}}, "----");
+    BOOST_ASSERT(result == "----0xff  ----");
     //]
 
     return 0;

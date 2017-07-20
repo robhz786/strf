@@ -2,6 +2,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#define  _CRT_SECURE_NO_WARNINGS
+
 #include <boost/detail/lightweight_test.hpp>
 #include "test_utils.hpp"
 #include <boost/stringify.hpp>
@@ -15,9 +17,6 @@
 template <typename T> struct is_long :  public std::is_same<long, T>
 {
 };
-
-#define SAMPLE
-
 
 int main()
 {

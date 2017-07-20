@@ -1,9 +1,0 @@
-cmake_minimum_required (VERSION 2.6)
-project (performance_tests)
-
-include_directories("../../../")
-
-add_executable(versus_sprintf versus_sprintf.cpp)
-
-install(TARGETS versus_sprintf DESTINATION "./")
-

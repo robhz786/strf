@@ -5,10 +5,12 @@
 project
     : requirements 
       <include>../include
+      <include>./fmt-4.0.0
+      <define>FMT_HEADER_ONLY=1
     : default-build release
     ;
 
-sources = versus_sprintf.cpp ;
+sources = to_char_ptr.cpp ;
 
 for local src in $(sources)
 {
