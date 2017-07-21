@@ -15,7 +15,7 @@ preserving backwards compatibility.
 Boost.Stringify is a locale-independent formatting library which
 
 * is header only
-* has good [link performance.performance performance]
+* has good [link benchmarks.benchmarks.performance performance]
 * supports all character types ( `char`, `wchar_t`, `char32_t` and `char16_t`)
 * supports many [link usage.usage destination types]
 * is extensible 

@@ -56,11 +56,15 @@ private:
 } // namespace detail
 
 
-template <typename CharT, typename Traits = std::char_traits<CharT> >
+template
+    < typename CharT
+    , typename Traits = std::char_traits<CharT>
+    , typename Allocator = std::allocator<CharT>
+    >  
 constexpr auto make_basic_string
 = boost::stringify::v0::make_args_handler
     <boost::stringify::v0::detail::string_maker
-        <std::basic_string<CharT, Traits>>>();
+         <std::basic_string<CharT, Traits, Allocator>>>();
 
 
 constexpr auto make_string

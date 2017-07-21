@@ -10,9 +10,20 @@
 
 [section Tutorial]
 
-A trivial example:
+
+To avoid repetition, let's consider as if these lines were present in the further code snipets:
+``
+#include <boost/stringify.hpp>
+namespace strf = boost::stringify::v0; // v0 is an inline namespace
+``
+So let's start with a trivial example:
 
 [trivial_sample]
+
+This form does not support more than ten arguments. It also produces some ugly messages on compilation erros. This could be solved with /Fixed Size Parameter Packs/ (as defined in [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4072.html n4072]), if C++ supported it, but it doesn't.
+So there is an alternative form that doesn't have these issues, although its [link benchmarks.benchmarks.performance performance] is a little inferior: to pass the arguments in a initializer list passed to `operator[]`:
+
+[trivial_sample_initializer_list]
 
 An argument can just be a value to be stringified, as above,
 or can be a /braced-init-list/ composed by two arguments.
@@ -34,27 +45,34 @@ Refer to the documentation of each input type.
 
 [h3 Using facets]
 
-The /braced-init-list/ form previouly demonstrated aims to provide a pratical and compact syntax for formatting. But it does not support many formatting options, just those more frequently used. To compensate this limitation, there is another way to customize formatting: /formatting facets/.
+The /braced-init-list/ form previously shown aims to provide a pratical and compact syntax for formatting. But it does not support many formatting options, just those more frequently used. To compensate this limitation, there is another way to customize formatting: /formatting facets/.
 
 [trivial_facets_sample]
 
-You can group several facets into a /ftuple/ ( a tuple of facets ).
-This may resemble `std::locale` a little, but there are two differences:
- (1) `ftuple` class template solve most things at compilation time in order to gain performance, and (2) facets here are not necessarily related to localization.
-
-You can also create ftuple from others ftuples:
-
-[ftuple_sample]
-
-[/
-It is possible to apply a ftuple to only some of the arguments. 
-
-[ftuple_sub_args]
-]
-
-And it is possible to create facets that only applies to certain input types: 
+It is possible to create facets that only applies to certain input types: 
 
 [facet_filters]
+
+The order of the facets matters. In the presence of two or more facets of the same category that apply to the same input type, the later wins.
+
+[facet_overriding]
+
+Occasionaly you may want to reuse a certain combination of facets several times. In order to avoid  retyping it again and again, you can store it into a /ftuple/ ( a tuple of facets ).
+
+[basic_ftuple_sample]
+
+But you can also create your own version of `make_string`:
+
+[custom_make_string]
+
+And you can create ftuple from others ftuples:
+
+[ftuple_of_ftuple]
+
+[/
+ftuples may resemble `std::locale` a little, but there are two differences:
+ (1) `ftuple` class template solve most things at compilation time in order to gain performance, and (2) facets here are not necessarily related to localization.
+]
 
 [endsect]
 

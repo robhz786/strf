@@ -34,17 +34,17 @@ template <bool Condition, typename ThenType, typename ElseType>
 using ternary_t = typename ternary_trait<Condition, ThenType, ElseType>::type;
 
 
-// has_arg_format_type
+// has_second_arg
 
-template <typename Stringifier, typename = typename Stringifier::arg_format_type>
-auto has_arg_format_type_helper(const Stringifier*) -> std::true_type;
-
-template <typename Stringifier>
-auto has_arg_format_type_helper(...)  ->  std::false_type;
+template <typename Stringifier, typename = typename Stringifier::second_arg>
+auto has_second_arg_helper(const Stringifier*) -> std::true_type;
 
 template <typename Stringifier>
-using has_arg_format_type
-= decltype(boost::stringify::v0::detail::has_arg_format_type_helper<Stringifier>
+auto has_second_arg_helper(...)  ->  std::false_type;
+
+template <typename Stringifier>
+using has_second_arg
+= decltype(boost::stringify::v0::detail::has_second_arg_helper<Stringifier>
            ((Stringifier*)0));
 
 

@@ -94,7 +94,7 @@ The secondary argument is a sublist of arguments that will be aligned as if they
 
 [joins_example]
 
-[h3 FTuple ['(todo)]]
+[h3 FTuple]
 
 [import ../example/v0/ftuple_as_input_arg.cpp]
 

@@ -5,8 +5,6 @@
 #include "test_utils.hpp"
 #include <boost/stringify.hpp>
 
-#define TEST testf<__LINE__>
-
 int main()
 {
     namespace strf = boost::stringify::v0;
@@ -24,6 +22,6 @@ int main()
     TEST("abcdef123") ({strf::join_left(9), {"abc", "def", 123}});
     TEST("abcdef123") ({strf::join_right(9), {"abc", "def", 123}});
 
-    int rc = boost::report_errors();
+    int rc = report_errors();
     return rc;
 }

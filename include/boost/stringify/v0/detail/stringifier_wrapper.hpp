@@ -40,35 +40,35 @@ class stringifier_wrapper_impl
 
     using input_type_is_pointer = std::is_pointer<input_type>;
 
-    template <typename Stringifier, typename = typename Stringifier::arg_format_type>
-    static std::true_type has_arg_format_type_helper(const Stringifier*);
+    template <typename Stringifier, typename = typename Stringifier::second_arg>
+    static std::true_type has_second_arg_helper(const Stringifier*);
 
     template <typename Stringifier>
-    static std::false_type has_arg_format_type_helper(...);
+    static std::false_type has_second_arg_helper(...);
 
     template <typename Stringifier>
-    using has_arg_format_type
-		= decltype(has_arg_format_type_helper<Stringifier>((Stringifier*)0));
+    using has_second_arg
+		= decltype(has_second_arg_helper<Stringifier>((Stringifier*)0));
 	
     
-    struct no_arg_format_type{};
+    struct no_second_arg{};
 
     template <typename S, bool HasArgFormatType>
-    struct arg_format_type_trait
+    struct second_arg_trait
     {
-        using type = typename S::arg_format_type;
+        using type = typename S::second_arg;
     };
     
     template <typename S>
-    struct arg_format_type_trait<S, false>
+    struct second_arg_trait<S, false>
     {
-        using type = no_arg_format_type;
+        using type = no_second_arg;
     };
 
-    using arg_format_type
-    = typename arg_format_type_trait
+    using second_arg
+    = typename second_arg_trait
         < StringifierImpl
-        , has_arg_format_type<StringifierImpl>::value
+        , has_second_arg<StringifierImpl>::value
         >
         ::type;
 
@@ -106,7 +106,7 @@ public:
         state = args_initialized;
     }
 
-    void set_args(const input_type& value, const arg_format_type& formatter)
+    void set_args(const input_type& value, const second_arg& formatter)
     {
         BOOST_ASSERT(state != stringifier_initialized);
         set_value(value);
@@ -149,7 +149,7 @@ private:
                 ( fmt
                 , get_value()
                 , m_formatter_ptr
-                , has_arg_format_type<StringifierImpl>()
+                , has_second_arg<StringifierImpl>()
                 , constructible_from_single_arg()
                 );
         }
@@ -159,7 +159,7 @@ private:
     void construct
         ( const ftuple_type& fmt
         , const input_type& value
-        , const arg_format_type* formatter_ptr
+        , const second_arg* formatter_ptr
         , std::true_type
         , std::true_type  
         )
@@ -179,7 +179,7 @@ private:
     void construct
         ( const ftuple_type& fmt
         , const input_type& value
-        , const arg_format_type* formatter_ptr
+        , const second_arg* formatter_ptr
         , std::true_type
         , std::false_type  
         )
@@ -195,7 +195,7 @@ private:
     void construct
         ( const ftuple_type& fmt
         , const input_type& value
-        , const arg_format_type*
+        , const second_arg*
         , std::false_type
         , std::true_type  
         )
@@ -213,7 +213,7 @@ private:
         struct
         {
             input_type_ptr m_value_ptr;
-            const arg_format_type* m_formatter_ptr;
+            const second_arg* m_formatter_ptr;
         };
     };
 

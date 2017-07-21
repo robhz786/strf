@@ -6,7 +6,7 @@
 #include <boost/stringify.hpp>
 #include "test_utils.hpp"
 
-#define TEST testf<__LINE__>
+#define TEST(EXPECTED) make_tester((EXPECTED), __FILE__, __LINE__)
 
 int main()
 {
@@ -75,8 +75,7 @@ int main()
     // TEST(u"abc") .with(strf::width(1)) (U'a', {U'b', "<"}, {U'c', "%"});
     // TEST(u"abc") .with(strf::width(0)) (U'a', {U'b', "<"}, {U'c', "%"});
 
-    int rc = boost::report_errors();
-    return rc;
+    return report_errors();
 }
 
 

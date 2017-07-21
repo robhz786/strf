@@ -11,6 +11,7 @@ sources-v0 =
     v0/input_string_test.cpp
     v0/input_int_test.cpp
     v0/input_char_test.cpp
+    v0/input_ftuple_test.cpp
     v0/join_test.cpp 
     v0/output_types_test.cpp
     v0/ftuple_merge_test.cpp

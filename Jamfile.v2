@@ -17,8 +17,7 @@ rule run-stringify-tests ( sources * ) {
 
      for local source in $(sources)
      {
-         local target = [ regex.replace $(source) "\.cpp" "" ] ;
-         result += [ run $(source) : : : $(flags) : test.$(target) ] ;
+         result += [ run $(source) : : : $(flags) ] ;
      }
 
 }

@@ -64,12 +64,12 @@ public:
     using input_type  = boost::stringify::v0::detail::join_t ;
     using output_type = Output;
     using ftuple_type = FTuple;
-    using arg_format_type = ini_list_type;
+    using second_arg = ini_list_type;
     
     join_stringifier
         ( const FTuple& fmt
         , const input_type& j
-        , const arg_format_type& args
+        , const second_arg& args
         )
         : m_fmt(fmt)
         , m_join(j)

@@ -1,10 +1,6 @@
 #ifndef BOOST_STRINGIFY_V0_INPUT_ARG_HPP
 #define BOOST_STRINGIFY_V0_INPUT_ARG_HPP
 
-#ifdef _MSC_VER
-#include <boost/stringify/v0/detail/input_arg_workaround_msvc.hpp>
-#else
-
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -30,10 +26,7 @@ class input_arg
 public:
    
     template <typename T, typename S = stringifier<T>>
-    input_arg
-        ( const T& arg1
-        , wrapper<S> && strf = wrapper<S>()
-        )
+    input_arg(const T& arg1, wrapper<S> && strf = wrapper<S>())
         : m_stringifier(strf)
     {
         strf.set_args(arg1);
@@ -42,7 +35,7 @@ public:
     template <typename T, typename S = stringifier<T>>
     input_arg
         ( const T& arg1
-        , const typename S::arg_format_type& arg2
+        , const typename S::second_arg& arg2
         , wrapper<S> && strf = wrapper<S>() 
         )
         : m_stringifier(strf)
@@ -50,10 +43,6 @@ public:
         strf.set_args(arg1, arg2);
     }
 
-    ~input_arg()
-    {
-    }
-    
     std::size_t length(const FTuple& fmt) const
     {
         return m_stringifier.length(fmt);
@@ -80,6 +69,5 @@ private:
 } // namespace stringify
 } // namespace boost
 
-#endif  /* _MSC_VER */
 #endif  /* BOOST_STRINGIFY_V0_INPUT_ARG_HPP */
 

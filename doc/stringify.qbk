@@ -20,6 +20,15 @@
 [include:tutorial tutorial.qbk]
 [include:input_types input_types.qbk]
 [include:facets facets.qbk]
-[include:extend_output extend_output.qbk]
+
+[section How to add support to a new destination type (todo)]
+
+This section has not been written yet. It will guide you how to extend Boost.Stringify to support other destination types in addition to those listed [link usage.usage here].
+
+[endsect]
+
+[/ [include:extend_output extend_output.qbk]]
+
+
 [include:extend_input extend_input.qbk]
-[include:performance performance.qbk]
+[include:benchmarks benchmarks.qbk]
