@@ -51,18 +51,18 @@ join_internal(int width, char32_t fillchar)
 
 namespace detail {
 
-template <typename Output, typename FTuple>
+template <typename CharT, typename FTuple>
 class join_stringifier
 {
     using width_t = boost::stringify::v0::width_t;
     using width_tag = boost::stringify::v0::width_tag;
-    using input_arg = boost::stringify::v0::input_arg<Output, FTuple>;
+    using input_arg = boost::stringify::v0::input_arg<CharT, FTuple>;
     using ini_list_type = std::initializer_list<input_arg>;
 public:
 
-    using char_type    = typename Output::char_type ;
+    using char_type   = CharT;
     using input_type  = boost::stringify::v0::detail::join_t ;
-    using output_type = Output;
+    using output_type = boost::stringify::v0::output_writer<CharT>;
     using ftuple_type = FTuple;
     using second_arg = ini_list_type;
     
@@ -85,7 +85,7 @@ public:
     }
 
 
-    void write(Output& out) const
+    void write(output_type& out) const
     {
         if (m_fill_width <= 0)
         {
@@ -143,11 +143,11 @@ private:
         {
             boost::stringify::v0::fill_impl<boost::stringify::v0::true_trait>
                 fill_writer(m_join.fillchar);
-            return fill_writer.length<char_type>(m_fill_width, m_fmt);
+            return fill_writer.length<CharT>(m_fill_width, m_fmt);
         }
         else
         {
-            boost::stringify::v0::fill_length<char_type, input_type>(m_fill_width, m_fmt);
+            boost::stringify::v0::fill_length<CharT, input_type>(m_fill_width, m_fmt);
         }
     }
 
@@ -163,7 +163,7 @@ private:
     }
 
 
-    void write_splitted(Output& out) const
+    void write_splitted(output_type& out) const
     {
         auto it = m_args.begin();
         for ( int count = m_join.num_leading_args
@@ -180,7 +180,7 @@ private:
         }
     }
 
-    void write_args(Output& out) const
+    void write_args(output_type& out) const
     {
         for(const auto& arg : m_args)
         {
@@ -188,17 +188,17 @@ private:
         }
     }
     
-    void write_fill(Output& out) const
+    void write_fill(output_type& out) const
     {
         if(m_join.fillchar)
         {
             boost::stringify::v0::fill_impl<boost::stringify::v0::true_trait>
                 fill_writer(m_join.fillchar);
-            fill_writer.fill<char_type>(m_fill_width, out, m_fmt);
+            fill_writer.fill<CharT>(m_fill_width, out, m_fmt);
         }
         else
         {
-            boost::stringify::v0::write_fill<char_type, input_type>(m_fill_width, out, m_fmt);
+            boost::stringify::v0::write_fill<CharT, input_type>(m_fill_width, out, m_fmt);
         }
     }
 };
@@ -206,9 +206,9 @@ private:
 
 struct input_join_traits
 {
-    template <typename Output, typename FTuple>
+    template <typename CharT, typename FTuple>
     using stringifier =
-        boost::stringify::v0::detail::join_stringifier<Output, FTuple>;
+        boost::stringify::v0::detail::join_stringifier<CharT, FTuple>;
 };
 
 boost::stringify::v0::detail::input_join_traits

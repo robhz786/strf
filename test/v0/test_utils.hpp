@@ -117,7 +117,7 @@ void print(const char* label, const std::wstring& str)
 
 
 template <typename CharT>
-class input_tester
+class input_tester: public boost::stringify::v0::output_writer<CharT>
 {
 public:
     input_tester
@@ -134,17 +134,17 @@ public:
 
     using char_type = CharT;
 
-    void put(char_type character)
+    void put(char_type character) override
     {
         m_result.push_back(character);
     }
 
-    void put(char_type character, std::size_t repetitions)
+    void repeat(char_type character, std::size_t repetitions) override
     {
         m_result.append(repetitions, character);
     }
 
-    void put(const char_type* str, std::size_t count)
+    void put(const char_type* str, std::size_t count) override
     {
         m_result.append(str, count);
     }

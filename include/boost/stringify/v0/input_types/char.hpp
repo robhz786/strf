@@ -5,6 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <boost/stringify/v0/output_writer.hpp>
 #include <boost/stringify/v0/input_types/char32.hpp>
 #include <boost/stringify/v0/type_traits.hpp>
 #include <boost/stringify/v0/facets/width_calculator.hpp>
@@ -14,20 +15,20 @@ namespace stringify {
 inline namespace v0 {
 namespace detail {
 
-template <typename Output, typename FTuple>
+template <typename CharT, typename FTuple>
 class char_stringifier
 {
 
 public:
 
-    using char_type = typename Output::char_type;
-    using input_type = char_type ;
-    using output_type = Output ;
+    using char_type = CharT;
+    using input_type = char_type;
+    using output_type = boost::stringify::v0::output_writer<CharT>;
     using ftuple_type = FTuple ;
-    
-    char_stringifier(const FTuple& fmt, char_type _character) noexcept
+
+    char_stringifier(const FTuple& fmt, CharT ch) noexcept
         : m_fmt(fmt)
-        , m_char(_character)
+        , m_char(ch)
     {
     }
 
@@ -35,8 +36,8 @@ public:
     {
         return 1;
     }
-    
-    void write(Output& out) const
+
+    void write(output_type& out) const
     {
         out.put(m_char);
     }
@@ -47,32 +48,32 @@ public:
         return w - calc.width_of(m_char);
     }
 
-    
+
 private:
-   
-    const FTuple& m_fmt; 
-    char_type m_char;
+
+    const FTuple& m_fmt;
+    CharT m_char;
 };
 
 template <typename CharIn>
 struct char_input_traits
 {
-    
+
 private:
-    
-    template <typename Output, typename FTuple>
+
+    template <typename CharOut, typename FTuple>
     struct checker
     {
-        static_assert(sizeof(CharIn) == sizeof(typename Output::char_type), "");
-        
+        static_assert(sizeof(CharIn) == sizeof(CharOut), "");
+
         using stringifier
-        = boost::stringify::v0::detail::char_stringifier<Output, FTuple>;
+        = boost::stringify::v0::detail::char_stringifier<CharOut, FTuple>;
     };
-    
+
 public:
-    
-    template <typename Output, typename FTuple>
-    using stringifier = typename checker<Output, FTuple>::stringifier;
+
+    template <typename CharOut, typename FTuple>
+    using stringifier = typename checker<CharOut, FTuple>::stringifier;
 };
 
 } //namepace detail

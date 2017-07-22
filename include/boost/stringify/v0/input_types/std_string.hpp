@@ -14,15 +14,15 @@ namespace stringify{
 inline namespace v0 {
 namespace detail {
 
-template <typename Traits, typename Output, class FTuple>
+template <typename Traits, typename CharT, class FTuple>
 class std_string_stringifier
 {
 
 public:
 
-    using char_type = typename Output::char_type;
-    using input_type  = std::basic_string<char_type, Traits>;
-    using output_type = Output;
+    using char_type = CharT;
+    using input_type  = std::basic_string<CharT, Traits>;
+    using output_type = boost::stringify::v0::output_writer<CharT>;
     using ftuple_type = FTuple;
     using second_arg = boost::stringify::v0::detail::string_arg_format
         <input_type, FTuple>;
@@ -54,13 +54,13 @@ public:
         if (m_padding_width > 0)
         {
             return m_str.length() + 
-                boost::stringify::v0::fill_length<char_type, input_type>
+                boost::stringify::v0::fill_length<CharT, input_type>
                 (m_padding_width, m_fmt);
         }
         return m_str.length();
     }
 
-    void write(Output& out) const
+    void write(output_type& out) const
     {
         if (m_padding_width > 0)
         {
@@ -111,9 +111,9 @@ private:
         return boost::stringify::v0::get_facet<FacetCategory, input_type>(m_fmt);
     }
     
-    void write_fill(Output& out) const
+    void write_fill(output_type& out) const
     {
-        boost::stringify::v0::write_fill<char_type, input_type>
+        boost::stringify::v0::write_fill<CharT, input_type>
                 (m_padding_width, out, m_fmt);
     }
     
@@ -131,13 +131,13 @@ struct std_string_input_traits
 {
 private:
 
-    template <typename Output, typename FTuple>
+    template <typename CharOut, typename FTuple>
     struct helper
     {
-        static_assert(sizeof(CharIn) == sizeof(typename Output::char_type), "");
+        static_assert(sizeof(CharIn) == sizeof(CharOut), "");
 
         using stringifier = boost::stringify::v0::detail::std_string_stringifier
-            <CharTraits, Output, FTuple>;
+            <CharTraits, CharOut, FTuple>;
     };
 
 public:

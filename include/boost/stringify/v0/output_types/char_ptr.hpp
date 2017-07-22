@@ -7,6 +7,7 @@
 
 #include <string>
 #include <boost/stringify/v0/args_handler.hpp>
+#include <boost/stringify/v0/output_writer.hpp>
 
 namespace boost{
 namespace stringify{
@@ -21,7 +22,7 @@ struct char_ptr_result
 namespace detail{
 
 template<typename CharT, typename Traits>
-class char_ptr_writer
+class char_ptr_writer: public output_writer<CharT>
 {
 public:
 
@@ -34,18 +35,18 @@ public:
     {
     }
 
-    void put(CharT character) noexcept
+    void put(CharT character) noexcept override
     {
         Traits::assign(*m_out++, character);
     }
 
-    void put(CharT character, std::size_t repetitions) noexcept
+    void repeat(CharT character, std::size_t repetitions) noexcept override
     {
         Traits::assign(m_out, repetitions, character);
         m_out += repetitions;
     }
 
-    void put(const CharT* str, std::size_t count) noexcept
+    void put(const CharT* str, std::size_t count) noexcept override
     {
         Traits::copy(m_out, str, count);
         m_out += count;
@@ -64,7 +65,7 @@ private:
 
 
 template<typename CharT, typename Traits>
-class limited_char_ptr_writer
+class limited_char_ptr_writer: public output_writer<CharT>
 {
 public:
 
@@ -79,7 +80,7 @@ public:
     {
     }
 
-    void put(CharT character) noexcept
+    void put(CharT character) noexcept override
     {
         if (m_it != m_end)
         {
@@ -88,14 +89,14 @@ public:
         }
     }
 
-    void put(CharT character, std::size_t count) noexcept
+    void repeat(CharT character, std::size_t count) noexcept override
     {
         count = std::min(count, static_cast<std::size_t>(m_end - m_it));
         Traits::assign(m_it, count, character);
         m_it += count;
     }
 
-    void put(const CharT* str, std::size_t count) noexcept
+    void put(const CharT* str, std::size_t count) noexcept override
     {
         count = std::min(count, static_cast<std::size_t>(m_end - m_it));
         Traits::copy(m_it, str, count);

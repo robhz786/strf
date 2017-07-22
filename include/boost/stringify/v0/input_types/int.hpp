@@ -7,6 +7,7 @@
 
 #include <boost/stringify/v0/arg_format_common.hpp>
 #include <boost/stringify/v0/char_flags.hpp>
+#include <boost/stringify/v0/output_writer.hpp>
 #include <boost/stringify/v0/facets/alignment.hpp>
 #include <boost/stringify/v0/facets/fill.hpp>
 #include <boost/stringify/v0/facets/intbase.hpp>
@@ -137,7 +138,7 @@ unsigned_abs(intT value)
 }
 
 
-template <typename intT, typename Output, typename FTuple>
+template <typename intT, typename CharT, typename FTuple>
 struct int_stringifier
 {
     using unsigned_intT = typename std::make_unsigned<intT>::type;
@@ -155,8 +156,8 @@ struct int_stringifier
 public:
 
     using input_type  = intT ;
-    using char_type   = typename Output::char_type ;
-    using output_type = Output;
+    using char_type   = CharT;
+    using output_type = boost::stringify::v0::output_writer<CharT>;
     using ftuple_type = FTuple;
     using second_arg = boost::stringify::v0::detail::int_arg_format
         <input_type, FTuple>;
@@ -194,7 +195,7 @@ public:
     }
 
 
-    void write(Output& out) const
+    void write(output_type& out) const
     {
         width_t fill_width = 0;
         if (m_width > 0)
@@ -256,7 +257,7 @@ private:
         width_t fill_width = m_width > 0 ? m_width - width_body() : 0;
         if (fill_width > 0)
         {
-            return boost::stringify::v0::fill_length<char_type, input_type>
+            return boost::stringify::v0::fill_length<CharT, input_type>
                 (fill_width, m_fmt);
         }
         return 0;
@@ -296,14 +297,14 @@ private:
     //         char32_t separator
     //             = boost::stringify::v0::thousands_sep<input_type, Base>(m_fmt);
     //         return separators_count
-    //             * boost::stringify::v0::get_char32_length<char_type, input_type>
+    //             * boost::stringify::v0::get_char32_length<CharT, input_type>
     //               (m_fmt, separator);
     //     }
     //     return 0;
     // }
 
 
-    void write(Output& out, width_t fill_width) const
+    void write(output_type& out, width_t fill_width) const
     {
         switch (m_alignment)
         {
@@ -331,30 +332,30 @@ private:
     }
 
 
-    void write_fill(Output& out, width_t fill_width) const
+    void write_fill(output_type& out, width_t fill_width) const
     {
-        boost::stringify::v0::write_fill<char_type, input_type>
+        boost::stringify::v0::write_fill<CharT, input_type>
                         (fill_width, out, m_fmt);
     }
 
 
-    void write_sign(Output& out) const
+    void write_sign(output_type& out) const
     {
         if (std::is_signed<intT>::value && m_base == 10)
         {
             if (m_value < 0)
             {
-                out.put(chars_catalog::minus<char_type>());
+                out.put(chars_catalog::minus<CharT>());
             }
             else if(m_showpos)
             {
-                out.put(chars_catalog::plus<char_type>());
+                out.put(chars_catalog::plus<CharT>());
             }
         }
     }
 
 
-    void write_without_fill(Output& out) const
+    void write_without_fill(output_type& out) const
     {
         switch(m_base)
         {
@@ -376,31 +377,31 @@ private:
     }
 
 
-    void write_base(Output& out) const
+    void write_base(output_type& out) const
     {
         if(m_showbase)
         {
             if (m_base == 16)
             {
-                out.put(chars_catalog::zero<char_type>());
+                out.put(chars_catalog::zero<CharT>());
                 if (m_uppercase)
                 {
-                    out.put(chars_catalog::X<char_type>());
+                    out.put(chars_catalog::X<CharT>());
                 }
                 else
                 {
-                    out.put(chars_catalog::x<char_type>());
+                    out.put(chars_catalog::x<CharT>());
                 }
             }
             else if(m_base == 8)
             {
-                out.put(chars_catalog::zero<char_type>());
+                out.put(chars_catalog::zero<CharT>());
             }
         }
     }
 
 
-    void write_digits(Output& out) const
+    void write_digits(output_type& out) const
     {
         switch (m_base)
         {
@@ -414,11 +415,11 @@ private:
 
 
     template <unsigned Base>
-    void write_digits_t(Output& out) const
+    void write_digits_t(output_type& out) const
     {
         constexpr std::size_t buff_size = sizeof(intT) * 6;
-        char_type buff[buff_size];
-        char_type* end = &buff[buff_size - 1];
+        CharT buff[buff_size];
+        CharT* end = &buff[buff_size - 1];
         auto begin = write_digits_backwards<Base>(unsigned_value(), end);
         out.put(begin, (end - begin));
     }
@@ -437,17 +438,17 @@ private:
     }
 
 
-    char_type character_of_digit(unsigned digit) const noexcept
+    CharT character_of_digit(unsigned digit) const noexcept
     {
         if (digit < 10)
         {
-            return chars_catalog::zero<char_type>() + digit;
+            return chars_catalog::zero<CharT>() + digit;
         }
         else if (m_uppercase)
         {
-            return chars_catalog::A<char_type>() + digit - 10;
+            return chars_catalog::A<CharT>() + digit - 10;
         }
-        return chars_catalog::a<char_type>() + digit - 10;
+        return chars_catalog::a<CharT>() + digit - 10;
     }
 
 
@@ -489,9 +490,9 @@ private:
 template <typename IntT>
 struct int_input_traits
 {
-    template <typename Output, typename FTuple>
+    template <typename CharT, typename FTuple>
     using stringifier =
-        boost::stringify::v0::detail::int_stringifier<IntT, Output, FTuple>;
+        boost::stringify::v0::detail::int_stringifier<IntT, CharT, FTuple>;
 };
 
 } // namespace detail

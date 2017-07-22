@@ -7,6 +7,7 @@
 
 
 #include <cstdio>
+#include <boost/stringify/v0/output_writer.hpp>
 
 namespace boost {
 namespace stringify {
@@ -20,7 +21,7 @@ struct FILE_result
 
 namespace detail {
 
-class narrow_file_writer
+class narrow_file_writer: public output_writer<char>
 {
 
 public:
@@ -31,7 +32,7 @@ public:
     {
     }
 
-    void put(char_type ch)
+    void put(char_type ch) override
     {
         if(std::fputc(ch, m_file) == EOF)
         {
@@ -43,7 +44,7 @@ public:
         }
     }
 
-    void put(char_type ch, std::size_t repetitions)
+    void repeat(char_type ch, std::size_t repetitions) override
     {
         while(repetitions-- > 0)
         {
@@ -51,7 +52,7 @@ public:
         }
     }
 
-    void put(const char_type* str, std::size_t count)
+    void put(const char_type* str, std::size_t count) override
     {
         std::size_t count_inc = std::fwrite(str, 1, count, m_file);
         m_success &= (count == count_inc);
@@ -72,7 +73,7 @@ private:
 };
 
 
-class wide_file_writer
+class wide_file_writer: public output_writer<wchar_t>
 {
 
 public:

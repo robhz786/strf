@@ -11,20 +11,20 @@ namespace boost {
 namespace stringify {
 inline namespace v0 {
 
-template <typename Output, typename FTuple>
+template <typename CharT, typename FTuple>
 class input_arg
 {
     template <class T>
     using trait = decltype(boost_stringify_input_traits_of(std::declval<const T>()));
                                                          
     template <class T>
-    using stringifier = typename trait<T>::template stringifier<Output, FTuple>;
+    using stringifier = typename trait<T>::template stringifier<CharT, FTuple>;
 
     template <typename S>
     using wrapper = boost::stringify::v0::detail::stringifier_wrapper_impl<S>;
     
 public:
-   
+    
     template <typename T, typename S = stringifier<T>>
     input_arg(const T& arg1, wrapper<S> && strf = wrapper<S>())
         : m_stringifier(strf)
@@ -48,7 +48,7 @@ public:
         return m_stringifier.length(fmt);
     }
 
-    void write(Output& out, const FTuple& fmt) const
+    void write(boost::stringify::v0::output_writer<CharT>& out, const FTuple& fmt) const
     {
         return m_stringifier.write(out, fmt);
     }
@@ -60,7 +60,7 @@ public:
     
 private:
 
-    boost::stringify::v0::detail::stringifier_wrapper<Output, FTuple>& m_stringifier;
+    boost::stringify::v0::detail::stringifier_wrapper<CharT, FTuple>& m_stringifier;
 
 };
 

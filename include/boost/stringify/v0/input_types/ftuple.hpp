@@ -14,7 +14,7 @@ namespace stringify {
 inline namespace v0{
 namespace detail {
 
-template <typename Output, typename ParentFTuple, typename ChildFTuple>
+template <typename CharT, typename ParentFTuple, typename ChildFTuple>
 class ftuple_stringifier
 {
 
@@ -22,15 +22,15 @@ private:
 
     using composed_ftuple_type
     = boost::stringify::ftuple<ParentFTuple, ChildFTuple>;
-    using input_arg = boost::stringify::v0::input_arg<Output, composed_ftuple_type>;
+    using input_arg = boost::stringify::v0::input_arg<CharT, composed_ftuple_type>;
     using ini_list_type = std::initializer_list<input_arg>;
 
 public:
 
-    using char_type   = typename Output::char_type ;
+    using char_type   = CharT ;
     using ftuple_type = ParentFTuple;
     using input_type = ChildFTuple;
-    using output_type = Output;
+    using output_type = boost::stringify::v0::output_writer<CharT>;;
     using second_arg = ini_list_type;
 
     ftuple_stringifier
@@ -62,7 +62,7 @@ public:
         return w;
     }
 
-    void write(Output& out) const
+    void write(output_type& out) const
     {
         for(const auto& arg : m_args)
         {
@@ -80,10 +80,10 @@ private:
 template <typename ChildFtuple>
 struct input_ftuple_traits
 {
-    template <typename Output, typename FTuple>
+    template <typename CharT, typename FTuple>
     using stringifier =
         boost::stringify::v0::detail::ftuple_stringifier
-        <Output, FTuple, ChildFtuple>;
+        <CharT, FTuple, ChildFtuple>;
 };
 
 } // namespace detail

@@ -6,6 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <streambuf>
+#include <boost/stringify/v0/output_writer.hpp>
 
 namespace boost {
 namespace stringify {
@@ -20,7 +21,7 @@ struct streambuf_result
 namespace detail {
 
 template <typename CharT, typename Traits>
-class std_streambuf_writer
+class std_streambuf_writer: public output_writer<CharT>
 {
 public:
 
@@ -31,7 +32,7 @@ public:
     {
     }
 
-    void put(CharT character) noexcept
+    void put(CharT character) override
     {
         if(m_out.sputc(character) == Traits::eof())
         {
@@ -43,7 +44,7 @@ public:
         }
     }
 
-    void put(CharT character, std::size_t repetitions) noexcept
+    void repeat(CharT character, std::size_t repetitions) override
     {
         for(;repetitions > 0; --repetitions)
         {
@@ -51,7 +52,7 @@ public:
         }
     }
 
-    void put(const CharT* str, std::size_t ucount) noexcept
+    void put(const CharT* str, std::size_t ucount) override
     {
         std::streamsize count = ucount;
         auto count_inc = m_out.sputn(str, count);

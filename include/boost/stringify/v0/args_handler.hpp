@@ -19,7 +19,7 @@ class args_handler_base
 {
     
     using char_type = typename output_writer::char_type;
-    using arg_type =  boost::stringify::v0::input_arg<output_writer, ftuple_type>;
+    using arg_type =  boost::stringify::v0::input_arg<char_type, ftuple_type>;
   
     template <typename Arg1, typename ... Args>
     std::size_t length(Arg1 && arg1, Args && ... args) const

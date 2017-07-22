@@ -40,7 +40,7 @@ public:
         
         if (CharT ch = char32_writer.convert_if_length_is_1(FillChar))
         {
-            out.put(ch, count);
+            out.repeat(ch, count);
         }
         else
         {
@@ -100,7 +100,7 @@ public:
 
         if (CharT ch = char32_writer.convert_if_length_is_1(m_fillchar))
         {
-            out.put(ch, count);
+            out.repeat(ch, count);
         }
         else
         {

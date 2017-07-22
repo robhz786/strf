@@ -5,6 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <boost/stringify/v0/output_writer.hpp>
 #include <boost/stringify/v0/facets/char32_conversion.hpp>
 #include <type_traits>
 
@@ -13,15 +14,15 @@ namespace stringify {
 inline namespace v0 {
 namespace detail {
 
-template <typename Output, typename FTuple>
+template <typename CharT, typename FTuple>
 class char32_stringifier
 {
 
 public:
 
     using input_type = char32_t;
-    using char_type = typename Output::char_type;
-    using output_type = Output;
+    using char_type = CharT;
+    using output_type = boost::stringify::v0::output_writer<CharT>;;
     using ftuple_type = FTuple;
     
     char32_stringifier(const FTuple& fmt, char32_t ch) noexcept
@@ -36,7 +37,7 @@ public:
             .length(m_char32);
     }
     
-    void write(Output& out) const
+    void write(output_type& out) const
     {
         return boost::stringify::v0::get_char32_writer<char_type, char32_t>(m_fmt)
             .write(m_char32, out);
@@ -59,10 +60,9 @@ private:
 
 struct char32_input_traits
 {
-    template <typename Output, typename FTuple>
+    template <typename CharT, typename FTuple>
     using stringifier
-    = boost::stringify::v0::detail::char32_stringifier
-        <Output, FTuple>;
+    = boost::stringify::v0::detail::char32_stringifier<CharT, FTuple>;
 };
 
 } // namespace detail

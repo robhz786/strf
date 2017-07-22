@@ -5,13 +5,15 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <boost/stringify/v0/output_writer.hpp>
+
 namespace boost {
 namespace stringify {
 inline namespace v0 {
 namespace detail {
 
 template <typename StringType>
-class string_appender
+class string_appender: public output_writer<typename StringType::value_type>
 {
 public:
     typedef typename StringType::value_type char_type;
@@ -23,17 +25,17 @@ public:
 
     string_appender(const string_appender&) = default;
     
-    void put(char_type character)
+    void put(char_type character) override
     {
         m_out.push_back(character);
     }
 
-    void put(char_type character, std::size_t repetitions)
+    void repeat(char_type character, std::size_t repetitions) override
     {
         m_out.append(repetitions, character);
     }
 
-    void put(const char_type* str, std::size_t count)
+    void put(const char_type* str, std::size_t count) override
     {
         m_out.append(str, count);
     }

@@ -12,17 +12,20 @@ namespace stringify {
 inline namespace v0 {
 namespace detail {
 
-template <typename Output, typename FTuple>
+template <typename CharT, typename FTuple>
 class stringifier_wrapper
 {
 public:
+
+    using output_type = boost::stringify::v0::output_writer<CharT>;
+    
     virtual ~stringifier_wrapper()
     {
     }
 
     virtual std::size_t length(const FTuple& fmt) = 0;
         
-    virtual void write(Output& out, const FTuple& fmt) = 0;
+    virtual void write(output_type& out, const FTuple& fmt) = 0;
 
     virtual int remaining_width(int w, const FTuple& fmt) = 0;
 };
@@ -30,14 +33,14 @@ public:
 template <typename StringifierImpl>
 class stringifier_wrapper_impl
     : public boost::stringify::v0::detail::stringifier_wrapper
-        < typename StringifierImpl::output_type
+        < typename StringifierImpl::char_type
         , typename StringifierImpl::ftuple_type
         >
 {
-    using output_type = typename StringifierImpl::output_type;
+    using char_type   = typename StringifierImpl::char_type;
     using input_type  = typename StringifierImpl::input_type;
     using ftuple_type = typename StringifierImpl::ftuple_type;
-
+    using output_type = boost::stringify::v0::output_writer<char_type>;
     using input_type_is_pointer = std::is_pointer<input_type>;
 
     template <typename Stringifier, typename = typename Stringifier::second_arg>
