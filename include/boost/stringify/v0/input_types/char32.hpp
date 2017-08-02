@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/stringify/v0/output_writer.hpp>
-#include <boost/stringify/v0/facets/char32_conversion.hpp>
+#include <boost/stringify/v0/facets/conversion_from_utf32.hpp>
 #include <type_traits>
 
 namespace boost {
@@ -14,46 +14,48 @@ namespace stringify {
 inline namespace v0 {
 namespace detail {
 
-template <typename CharT, typename FTuple>
+template <typename CharT>
 class char32_stringifier
 {
+
+    using cv_tag = boost::stringify::v0::conversion_from_utf32_tag<CharT>;
+    using wc_tag = boost::stringify::v0::width_calculator_tag;
 
 public:
 
     using input_type = char32_t;
     using char_type = CharT;
-    using output_type = boost::stringify::v0::output_writer<CharT>;;
-    using ftuple_type = FTuple;
-    
+    using writer_type = boost::stringify::v0::output_writer<CharT>;;
+
+    template <typename FTuple>
     char32_stringifier(const FTuple& fmt, char32_t ch) noexcept
-        : m_fmt(fmt)
+        : m_conv(fmt.template get_facet<cv_tag, char32_t>())
         , m_char32(ch)
+        , m_width(fmt.template get_facet<wc_tag, char32_t>().width_of(ch))
     {
     }
 
     std::size_t length() const
     {
-        return boost::stringify::v0::get_char32_writer<char_type, char32_t>(m_fmt)
-            .length(m_char32);
+        return m_conv.length(m_char32);
     }
     
-    void write(output_type& out) const
+    void write(writer_type& out) const
     {
-        return boost::stringify::v0::get_char32_writer<char_type, char32_t>(m_fmt)
-            .write(m_char32, out);
+        m_conv.write(out, m_char32);
     }
 
     int remaining_width(int w) const
     {
-        auto calc = boost::stringify::v0::get_width_calculator<input_type>(m_fmt);
-        return w - calc.width_of(m_char32);
+        return std::max(0, w - m_width);
     }
 
 
 private:
 
-    const FTuple& m_fmt;
+    const boost::stringify::v0::conversion_from_utf32<CharT>& m_conv;
     char32_t m_char32;
+    int m_width;
 
 };
 
@@ -62,7 +64,7 @@ struct char32_input_traits
 {
     template <typename CharT, typename FTuple>
     using stringifier
-    = boost::stringify::v0::detail::char32_stringifier<CharT, FTuple>;
+    = boost::stringify::v0::detail::char32_stringifier<CharT>;
 };
 
 } // namespace detail

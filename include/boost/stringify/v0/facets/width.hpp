@@ -55,7 +55,7 @@ struct width_impl_t
 
 constexpr
 boost::stringify::v0::width_impl_t<0, boost::stringify::v0::true_trait>
-default_width;
+default_width {};
        
        
 struct width_tag

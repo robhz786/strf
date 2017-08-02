@@ -30,16 +30,16 @@ public:
     virtual int remaining_width(int w, const FTuple& fmt) = 0;
 };
 
-template <typename StringifierImpl>
+template <typename StringifierImpl, typename FTuple>
 class stringifier_wrapper_impl
     : public boost::stringify::v0::detail::stringifier_wrapper
         < typename StringifierImpl::char_type
-        , typename StringifierImpl::ftuple_type
+        , FTuple
         >
 {
     using char_type   = typename StringifierImpl::char_type;
     using input_type  = typename StringifierImpl::input_type;
-    using ftuple_type = typename StringifierImpl::ftuple_type;
+    using ftuple_type = FTuple;
     using output_type = boost::stringify::v0::output_writer<char_type>;
     using input_type_is_pointer = std::is_pointer<input_type>;
 

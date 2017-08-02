@@ -46,9 +46,9 @@ int main()
     TEST (U"\U0010ffff") (U'\U0010ffff');
     
     // invalid codepoints:
-    TEST( "") (static_cast<char32_t>(0x110000));
-    TEST(u"") (static_cast<char32_t>(0xd800));
-    TEST(u"") (static_cast<char32_t>(0xdfff));
+    TEST(u8"\ufffd") (static_cast<char32_t>(0x110000));
+    TEST(u"\ufffd") (static_cast<char32_t>(0xd800));
+    TEST(u"\ufffd") (static_cast<char32_t>(0xdfff));
 
 
     // width and justificafion

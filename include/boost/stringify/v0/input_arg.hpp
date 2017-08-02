@@ -21,7 +21,7 @@ class input_arg
     using stringifier = typename trait<T>::template stringifier<CharT, FTuple>;
 
     template <typename S>
-    using wrapper = boost::stringify::v0::detail::stringifier_wrapper_impl<S>;
+    using wrapper = boost::stringify::v0::detail::stringifier_wrapper_impl<S, FTuple>;
     
 public:
     

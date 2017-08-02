@@ -9,7 +9,7 @@
 
 namespace boost {
 namespace stringify {
-namespace v0 {
+inline namespace v0 {
 
 struct width_tag;
 struct showpos_tag;

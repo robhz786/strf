@@ -7,7 +7,7 @@
 
 namespace boost {
 namespace stringify {
-namespace v0 {
+inline namespace v0 {
 namespace detail {
 
 
