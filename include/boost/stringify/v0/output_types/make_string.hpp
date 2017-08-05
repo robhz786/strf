@@ -7,9 +7,7 @@
 
 #include <boost/stringify/v0/output_writer.hpp>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 template <typename StringType>
@@ -131,10 +129,7 @@ constexpr auto make_wstring
     <boost::stringify::v0::detail::string_maker<std::wstring>>();
 
 
-
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_OUTPUT_TYPES_MAKE_STRING_HPP
 

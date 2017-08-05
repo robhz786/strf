@@ -9,9 +9,7 @@
 #include <string>
 #include <type_traits>
 
-namespace boost {
-namespace stringify{
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 template <typename Traits, typename CharT>
@@ -159,8 +157,6 @@ template<typename CharT, typename CharTraits>
 auto boost_stringify_input_traits_of(const std::basic_string<CharT, CharTraits>& str)
     -> boost::stringify::v0::detail::std_string_input_traits<CharT, CharTraits>;
 
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif //BOOST_STRINGIFY_V0_INPUT_TYPES_STD_STRING_HPP_INCLUDED

@@ -9,9 +9,7 @@
 #include <boost/stringify/v0/ftuple.hpp>
 #include <tuple>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 template <typename ArgsHandlerImpl, typename ftuple_type, typename output_writer>
@@ -444,9 +442,7 @@ constexpr auto make_args_handler(Args ... args)
     return std::move(args_handler_type(args...));
 }
 
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_ARGS_HANDLER_HPP
 

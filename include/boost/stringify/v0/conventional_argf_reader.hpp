@@ -7,9 +7,7 @@
 
 #include <boost/stringify/v0/facets/alignment.hpp>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 struct width_tag;
 struct showpos_tag;
@@ -122,9 +120,7 @@ struct conventional_argf_reader
     } 
 };
 
-} // inline namespace stringify
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_CONVENTIONAL_ARGF_READER_HPP
 

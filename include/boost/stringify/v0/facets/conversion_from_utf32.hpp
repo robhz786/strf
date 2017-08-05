@@ -8,9 +8,7 @@
 #include <boost/stringify/v0/type_traits.hpp>
 #include <boost/stringify/v0/output_writer.hpp>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <typename CharT> struct conversion_from_utf32_tag;
 
@@ -247,11 +245,7 @@ template <> struct conversion_from_utf32_tag<wchar_t>
     }
 };
 
-
-
-} // namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_FACETS_CONVERSION_FROM_UTF32_HPP
 

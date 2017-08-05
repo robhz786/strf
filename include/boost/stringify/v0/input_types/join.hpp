@@ -9,9 +9,7 @@
 #include <boost/stringify/v0/facets/alignment.hpp>
 #include <initializer_list>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 struct join_t
 {
@@ -227,10 +225,7 @@ boost_stringify_input_traits_of(const boost::stringify::v0::detail::join_t&);
 
 } // namespace detail
 
-
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_JOIN_HPP
 

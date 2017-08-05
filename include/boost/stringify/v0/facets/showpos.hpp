@@ -7,9 +7,7 @@
 
 #include <boost/stringify/v0/type_traits.hpp>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 struct showpos_tag;
 
@@ -95,10 +93,7 @@ struct showpos_tag
 };
 
 
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
-
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  /* BOOST_STRINGIFY_V0_FACETS_SHOWPOS_HPP */
 

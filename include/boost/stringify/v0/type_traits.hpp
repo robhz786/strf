@@ -6,10 +6,9 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <type_traits>
+#include <boost/stringify/v0/config.hpp>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 // ternary_trait
@@ -47,18 +46,13 @@ using has_second_arg
 = decltype(boost::stringify::v0::detail::has_second_arg_helper<Stringifier>
            ((Stringifier*)0));
 
-
 } // namespace detail
-
 
 template <typename> struct true_trait : public std::true_type
 {
 };
 
-
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_TYPE_TRAITS_HPP
 

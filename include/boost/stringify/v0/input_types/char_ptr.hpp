@@ -6,10 +6,7 @@
 #include <boost/stringify/v0/conventional_argf_reader.hpp>
 #include <boost/stringify/v0/facets/width_calculator.hpp>
 
-
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 struct string_argf
@@ -184,11 +181,7 @@ boost_stringify_input_traits_of(const char32_t*);
 boost::stringify::v0::detail::char_ptr_input_traits<wchar_t>
 boost_stringify_input_traits_of(const wchar_t*);
 
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
-
-
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  /* BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR_PTR */
 

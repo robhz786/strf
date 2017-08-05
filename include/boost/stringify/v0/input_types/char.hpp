@@ -10,9 +10,7 @@
 #include <boost/stringify/v0/type_traits.hpp>
 #include <boost/stringify/v0/facets/width_calculator.hpp>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 template <typename CharT, typename FTuple>
@@ -88,9 +86,7 @@ boost_stringify_input_traits_of(char16_t);
 boost::stringify::v0::detail::char_input_traits<wchar_t>
 boost_stringify_input_traits_of(wchar_t);
 
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif // BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR_HPP_INCLUDED
 

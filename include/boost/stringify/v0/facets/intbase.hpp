@@ -5,9 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 struct intbase_tag;
 
@@ -76,9 +74,7 @@ constexpr int get_intbase(const FTuple& fmt, const Flags& flags) noexcept
 }
 
 
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_FACETS_INTBASE_HPP
 

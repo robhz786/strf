@@ -7,9 +7,7 @@
 
 #include <boost/stringify/v0/type_traits.hpp>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 template <typename CharT, typename FTuple>
@@ -262,9 +260,8 @@ private:
 
 
 } // namespace detail
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_DETAIL_STRINGIFIER_WRAPPER_HPP
 

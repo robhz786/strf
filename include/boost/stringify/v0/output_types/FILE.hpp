@@ -5,13 +5,10 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-
 #include <cstdio>
 #include <boost/stringify/v0/output_writer.hpp>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 struct FILE_result
 {
@@ -227,9 +224,7 @@ auto wwrite_to(std::FILE* destination)
     return boost::stringify::v0::make_args_handler<writer, std::FILE*>(destination);
 }
 
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_OUTPUT_TYPES_FILE_HPP
 

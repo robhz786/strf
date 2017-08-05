@@ -7,10 +7,7 @@
 
 #include <boost/stringify/v0/type_traits.hpp>
 
-
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 typedef int width_t;
 
@@ -79,10 +76,7 @@ constexpr auto width(boost::stringify::v0::width_t w) noexcept
     return boost::stringify::v0::width_impl<boost::stringify::v0::true_trait>(w);
 }
 
-
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_FACETS_WIDTH_HPP
 

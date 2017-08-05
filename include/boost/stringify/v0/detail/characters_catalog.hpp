@@ -5,9 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-namespace boost{
-namespace stringify{
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail{
 
 template<typename CharT> constexpr CharT the_digit_zero();
@@ -137,8 +135,6 @@ struct characters_catalog
 
 
 } // namespace detail
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif // BOOST_STRINGIFY_V0_DETAIL_CHARACTERS_CATALOG_HPP_INCLUDED

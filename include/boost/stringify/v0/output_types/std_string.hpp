@@ -7,9 +7,8 @@
 
 #include <boost/stringify/v0/output_writer.hpp>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+
 namespace detail {
 
 template <typename StringType>
@@ -121,10 +120,7 @@ auto assign_to(std::basic_string<CharT, Traits, Allocator>& str)
     return boost::stringify::v0::make_args_handler<writer, string_type&>(str);
 }
 
-
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_OUTPUT_TYPES_STD_STRING_HPP
 

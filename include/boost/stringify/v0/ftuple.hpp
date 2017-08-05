@@ -7,9 +7,7 @@
 
 #include <boost/stringify/v0/type_traits.hpp>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <typename ... F> class ftuple;
 
@@ -255,10 +253,7 @@ constexpr const auto& get_facet(const FTuple& f)
     return f.template get_facet<FacetCategory, InputType>();
 }
 
-
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_FTUPLE2_HPP
 

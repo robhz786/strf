@@ -11,9 +11,7 @@
 #include <string>
 #include <limits>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 struct width_calculator_tag;
 
@@ -77,9 +75,7 @@ const auto& get_width_calculator(const FTuple& fmt)
 }
 
 
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_FACETS_WIDTH_CALCULATOR_HPP
 

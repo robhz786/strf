@@ -9,9 +9,7 @@
 #include <boost/stringify/v0/ftuple.hpp>
 #include <initializer_list>
 
-namespace boost {
-namespace stringify {
-inline namespace v0{
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 template <typename CharT, typename ParentFTuple, typename ChildFTuple>
@@ -92,10 +90,7 @@ template <typename ... F>
 boost::stringify::v0::detail::input_ftuple_traits<boost::stringify::v0::ftuple<F...>>
 boost_stringify_input_traits_of(boost::stringify::v0::ftuple<F...> fmt);
 
-
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_INPUT_TYPES_FTUPLE_HPP
 

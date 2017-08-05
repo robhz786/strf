@@ -20,9 +20,7 @@
 #include <boost/stringify/v0/detail/number_of_digits.hpp>
 #include <cstdint>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 struct int_argf
@@ -435,9 +433,6 @@ boost_stringify_input_traits_of(unsigned long);
 boost::stringify::v0::detail::int_input_traits<unsigned long long>
 boost_stringify_input_traits_of(unsigned long long);
 
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
-
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif // BOOST_STRINGIFY_V0_INPUT_TYPES_INT_HPP_INCLUDED

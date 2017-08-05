@@ -8,9 +8,7 @@
 #include <boost/assert.hpp>
 #include <boost/type_traits.hpp>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail{
 
 template <typename intT, int Base>
@@ -61,9 +59,7 @@ private:
 };
 
 } // namespace detail
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_DETAIL_INT_DIGITS_HPP
 

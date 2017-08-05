@@ -5,9 +5,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+#include <boost/stringify/v0/config.hpp>
+
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <typename CharT>
 class output_writer
@@ -33,9 +33,7 @@ public:
     virtual void repeat(CharT ch1, CharT ch2, CharT ch3, CharT ch4, std::size_t count) = 0;
 };
 
-} // namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_OUTPUT_WRITER_HPP
 

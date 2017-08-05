@@ -8,9 +8,7 @@
 #include <streambuf>
 #include <boost/stringify/v0/output_writer.hpp>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 struct streambuf_result
 {
@@ -129,10 +127,7 @@ auto write_to(std::basic_streambuf<CharT, Traits>* destination)
     return boost::stringify::v0::make_args_handler<writer, intput_type>(*destination);
 }
 
-
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_OUTPUT_TYPES_STD_STREAMBUF_HPP
 

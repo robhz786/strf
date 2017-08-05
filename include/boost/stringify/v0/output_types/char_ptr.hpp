@@ -9,9 +9,7 @@
 #include <boost/stringify/v0/args_handler.hpp>
 #include <boost/stringify/v0/output_writer.hpp>
 
-namespace boost{
-namespace stringify{
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 struct char_ptr_result
 {
@@ -313,9 +311,7 @@ auto write_to(wchar_t* destination, std::size_t count)
 }
 
 
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  /* BOOST_STRINGIFY_V0_OUTPUT_TYPES_CHAR_PTR_HPP */
 

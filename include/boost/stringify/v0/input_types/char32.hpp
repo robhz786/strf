@@ -9,9 +9,7 @@
 #include <boost/stringify/v0/facets/conversion_from_utf32.hpp>
 #include <type_traits>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 template <typename CharT>
@@ -73,9 +71,7 @@ boost::stringify::v0::detail::char32_input_traits
 boost_stringify_input_traits_of(char32_t);
 
 
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif // BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR32_HPP_INCLUDED
 

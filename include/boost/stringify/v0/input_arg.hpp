@@ -7,9 +7,7 @@
 
 #include <boost/stringify/v0/detail/stringifier_wrapper.hpp>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <typename CharT, typename FTuple>
 class input_arg
@@ -64,10 +62,7 @@ private:
 
 };
 
-
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  /* BOOST_STRINGIFY_V0_INPUT_ARG_HPP */
 
