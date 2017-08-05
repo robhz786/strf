@@ -8,11 +8,6 @@
 namespace boost {
 namespace stringify {
 inline namespace v0 {
-namespace detail {
-
-
-} // namespace detail
-
 
 template <typename CharT>
 class output_writer
@@ -25,57 +20,17 @@ public:
     {
     }
 
+    virtual void put(const CharT* str, std::size_t size) = 0;
+    
     virtual void put(CharT ch) = 0;
     
-    virtual void put(const CharT* str, std::size_t size) = 0;
-/*    
-    virtual void repeat(CharT ch, std::size_t repeat) = 0;
+    virtual void repeat(CharT ch, std::size_t count) = 0;
 
-    virtual void repeat(CharT ch1, CharT ch2, std::size_t repeat) = 0;
+    virtual void repeat(CharT ch1, CharT ch2, std::size_t count) = 0;
 
-    virtual void repeat(CharT ch1, CharT ch2, CharT ch3, std::size_t repeat) = 0;
+    virtual void repeat(CharT ch1, CharT ch2, CharT ch3, std::size_t count) = 0;
     
-    virtual void repeat(CharT ch1, CharT ch2, CharT ch3, CharT ch4, std::size_t repeat) = 0;
-*/
-
-    virtual void repeat(CharT ch, std::size_t repeat)
-    {
-        for(; repeat > 0; --repeat)
-        {
-            put(ch);
-        }
-    }
-
-    virtual void repeat(CharT ch1, CharT ch2, std::size_t repeat)
-    {
-        for(; repeat > 0; --repeat)
-        {
-            put(ch1);
-            put(ch2);
-        }
-    }
-
-    virtual void repeat(CharT ch1, CharT ch2, CharT ch3, std::size_t repeat)
-    {
-        for(; repeat > 0; --repeat)
-        {
-            put(ch1);
-            put(ch2);
-            put(ch3);
-        }
-    }
-    
-    virtual void repeat(CharT ch1, CharT ch2, CharT ch3, CharT ch4, std::size_t repeat)
-    {
-        for(; repeat > 0; --repeat)
-        {
-            put(ch1);
-            put(ch2);
-            put(ch3);
-            put(ch4);
-        }
-    }
-
+    virtual void repeat(CharT ch1, CharT ch2, CharT ch3, CharT ch4, std::size_t count) = 0;
 };
 
 } // namespace v0

@@ -158,7 +158,7 @@ private:
 
     bool single_char_range(char32_t ch) const noexcept
     {
-        return ch < 0xd800 || (0xdfff < ch && ch <  0x10000);
+        return ch < 0xd800 || (0xdfff < ch && ch < 0x10000);
     }
 
     bool two_chars_range(char32_t ch) const noexcept

@@ -17,7 +17,7 @@ class stringifier_wrapper
 {
 public:
 
-    using output_type = boost::stringify::v0::output_writer<CharT>;
+    using writer_type = boost::stringify::v0::output_writer<CharT>;
     
     virtual ~stringifier_wrapper()
     {
@@ -25,7 +25,7 @@ public:
 
     virtual std::size_t length(const FTuple& fmt) = 0;
         
-    virtual void write(output_type& out, const FTuple& fmt) = 0;
+    virtual void write(writer_type& out, const FTuple& fmt) = 0;
 
     virtual int remaining_width(int w, const FTuple& fmt) = 0;
 };
@@ -40,7 +40,7 @@ class stringifier_wrapper_impl
     using char_type   = typename StringifierImpl::char_type;
     using input_type  = typename StringifierImpl::input_type;
     using ftuple_type = FTuple;
-    using output_type = boost::stringify::v0::output_writer<char_type>;
+    using writer_type = boost::stringify::v0::output_writer<char_type>;
     using input_type_is_pointer = std::is_pointer<input_type>;
 
     template <typename Stringifier, typename = typename Stringifier::second_arg>
@@ -123,7 +123,7 @@ public:
         return do_get()->length();
     }
         
-    virtual void write(output_type& out, const ftuple_type& fmt) override
+    virtual void write(writer_type& out, const ftuple_type& fmt) override
     {
         construct_if_necessary(fmt);
         do_get()->write(out);

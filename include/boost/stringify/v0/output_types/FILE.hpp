@@ -32,7 +32,65 @@ public:
     {
     }
 
+    void put(const char_type* str, std::size_t count) override
+    {
+        std::size_t count_inc = std::fwrite(str, 1, count, m_file);
+        m_success &= (count == count_inc);
+        m_count += count_inc;
+    }
+
     void put(char_type ch) override
+    {
+        do_put(ch);
+    }
+
+    void repeat(char_type ch, std::size_t count) override
+    {
+        for(;count > 0; --count)
+        {
+            do_put(ch);
+        }
+    }
+
+    void repeat(char_type ch1, char_type ch2, std::size_t count) override
+    {
+        for(;count > 0; --count)
+        {
+            do_put(ch1);
+            do_put(ch2);
+        }
+    }
+
+    void repeat(char_type ch1, char_type ch2, char_type ch3, std::size_t count) override
+    {
+        for(;count > 0; --count)
+        {
+            do_put(ch1);
+            do_put(ch2);
+            do_put(ch3);
+        }
+    }
+
+    void repeat(char_type ch1, char_type ch2, char_type ch3, char_type ch4, std::size_t count) override
+    {
+        for(;count > 0; --count)
+        {
+            do_put(ch1);
+            do_put(ch2);
+            do_put(ch3);
+            do_put(ch4);
+        }
+    }
+
+    boost::stringify::v0::FILE_result finish()
+    {
+        std::fflush(m_file);
+        return {m_count, m_success};
+    }
+
+private:
+
+    void do_put(char_type ch)
     {
         if(std::fputc(ch, m_file) == EOF)
         {
@@ -43,29 +101,6 @@ public:
             ++m_count;
         }
     }
-
-    void repeat(char_type ch, std::size_t repetitions) override
-    {
-        while(repetitions-- > 0)
-        {
-            put(ch);
-        }
-    }
-
-    void put(const char_type* str, std::size_t count) override
-    {
-        std::size_t count_inc = std::fwrite(str, 1, count, m_file);
-        m_success &= (count == count_inc);
-        m_count += count_inc;
-    }
-
-    boost::stringify::v0::FILE_result finish()
-    {
-        std::fflush(m_file);
-        return {m_count, m_success};
-    }
-
-private:
 
     std::FILE* m_file;
     std::size_t m_count = 0;
@@ -84,32 +119,70 @@ public:
     {
     }
 
-    void put(char_type ch)
-    {
-        if(std::fputwc(ch, m_file) == WEOF)
-        {
-            m_success = false;
-        }
-        else
-        {
-            ++m_count;
-        }
-    }
-
-    void put(char_type ch, std::size_t repetitions)
-    {
-        while(repetitions-- > 0)
-        {
-            put(ch);
-        }
-    }
-
-    void put(const char_type* str, std::size_t count)
+    void put(const char_type* str, std::size_t count) override
     {
         for(;count > 0; --count)
         {
             put(*str);
             ++str;
+        }
+    }
+
+    void put(char_type ch) override
+    {
+        do_put(ch);
+    }
+
+    void repeat(char_type ch, std::size_t count) override
+    {
+        for(;count > 0; --count)
+        {
+            do_put(ch);
+        }
+    }
+
+    void repeat
+        ( char_type ch1
+        , char_type ch2
+        , std::size_t count
+        ) override
+    {
+        for(;count > 0; --count)
+        {
+            do_put(ch1);
+            do_put(ch2);
+        }
+    }
+
+    void repeat
+        ( char_type ch1
+        , char_type ch2
+        , char_type ch3
+        , std::size_t count
+        ) override
+    {
+        for(;count > 0; --count)
+        {
+            do_put(ch1);
+            do_put(ch2);
+            do_put(ch3);
+        }
+    }
+
+    void repeat
+        ( char_type ch1
+        , char_type ch2
+        , char_type ch3
+        , char_type ch4
+        , std::size_t count
+        ) override
+    {
+        for(;count > 0; --count)
+        {
+            do_put(ch1);
+            do_put(ch2);
+            do_put(ch3);
+            do_put(ch4);
         }
     }
 
@@ -120,6 +193,18 @@ public:
     }
 
 private:
+
+    void do_put(char_type ch)
+    {
+        if(std::fputwc(ch, m_file) == WEOF)
+        {
+            m_success = false;
+        }
+        else
+        {
+            ++m_count;
+        }
+    }
 
     std::FILE* m_file;
     std::size_t m_count = 0;

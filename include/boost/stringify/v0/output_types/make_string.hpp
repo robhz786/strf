@@ -18,28 +18,73 @@ class string_maker: public output_writer<typename StringType::value_type>
 public:
 
     typedef typename StringType::value_type char_type;
-    
+
     string_maker() = default;
 
     string_maker(const string_maker&) = delete;
 
     string_maker(string_maker&&) = default;
-    
-    void put(char_type character) override
-    {
-        m_out.push_back(character);
-    }
-
-    void repeat(char_type character, std::size_t repetitions) override
-    {
-        m_out.append(repetitions, character);
-    }
 
     void put(const char_type* str, std::size_t count) override
     {
         m_out.append(str, count);
     }
-    
+
+    void put(char_type ch) override
+    {
+        m_out.push_back(ch);
+    }
+
+    void repeat(char_type ch, std::size_t count) override
+    {
+        m_out.append(count, ch);
+    }
+
+    void repeat
+        ( char_type ch1
+        , char_type ch2
+        , std::size_t count
+        ) override
+    {
+        for(; count > 0; --count)
+        {
+            m_out.push_back(ch1);
+            m_out.push_back(ch2);
+        }
+    }
+
+    void repeat
+        ( char_type ch1
+        , char_type ch2
+        , char_type ch3
+        , std::size_t count
+        ) override
+    {
+        for(; count > 0; --count)
+        {
+            m_out.push_back(ch1);
+            m_out.push_back(ch2);
+            m_out.push_back(ch3);
+        }
+    }
+
+    void repeat
+        ( char_type ch1
+        , char_type ch2
+        , char_type ch3
+        , char_type ch4
+        , std::size_t count
+        ) override
+    {
+        for(; count > 0; --count)
+        {
+            m_out.push_back(ch1);
+            m_out.push_back(ch2);
+            m_out.push_back(ch3);
+            m_out.push_back(ch4);
+        }
+    }
+
     StringType finish()
     {
         return std::move(m_out);
@@ -49,10 +94,10 @@ public:
     {
         m_out.reserve(m_out.capacity() + size);
     }
-    
+
 private:
 
-    StringType m_out;               
+    StringType m_out;
 };
 
 } // namespace detail
@@ -62,7 +107,7 @@ template
     < typename CharT
     , typename Traits = std::char_traits<CharT>
     , typename Allocator = std::allocator<CharT>
-    >  
+    >
 constexpr auto make_basic_string
 = boost::stringify::v0::make_args_handler
     <boost::stringify::v0::detail::string_maker

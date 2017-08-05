@@ -23,7 +23,7 @@ public:
 
     using char_type = CharT;
     using input_type = char_type;
-    using output_type = boost::stringify::v0::output_writer<CharT>;
+    using writer_type = boost::stringify::v0::output_writer<CharT>;
     using ftuple_type = FTuple ;
 
     char_stringifier(const FTuple& fmt, CharT ch) noexcept
@@ -37,7 +37,7 @@ public:
         return 1;
     }
 
-    void write(output_type& out) const
+    void write(writer_type& out) const
     {
         out.put(m_char);
     }

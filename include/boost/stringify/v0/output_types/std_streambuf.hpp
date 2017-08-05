@@ -17,7 +17,7 @@ struct streambuf_result
     std::streamsize count;
     bool success;
 };
-       
+
 namespace detail {
 
 template <typename CharT, typename Traits>
@@ -32,7 +32,65 @@ public:
     {
     }
 
-    void put(CharT character) override
+    void put(const CharT* str, std::size_t ucount) override
+    {
+        std::streamsize count = ucount;
+        auto count_inc = m_out.sputn(str, count);
+        m_success &= (count_inc == count);
+        m_count += count_inc;
+    }
+
+    void put(CharT ch) override
+    {
+        do_put(ch);
+    }
+
+    void repeat(CharT ch, std::size_t count) override
+    {
+        for(; count > 0; --count)
+        {
+            do_put(ch);
+        }
+    }
+
+    void repeat(CharT ch1, CharT ch2, std::size_t count) override
+    {
+        for(; count > 0; --count)
+        {
+            do_put(ch1);
+            do_put(ch2);
+        }
+    }
+
+    void repeat(CharT ch1, CharT ch2, CharT ch3, std::size_t count) override
+    {
+        for(; count > 0; --count)
+        {
+            do_put(ch1);
+            do_put(ch2);
+            do_put(ch3);
+        }
+    }
+
+    void repeat(CharT ch1, CharT ch2, CharT ch3, CharT ch4, std::size_t count) override
+    {
+        for(; count > 0; --count)
+        {
+            do_put(ch1);
+            do_put(ch2);
+            do_put(ch3);
+            do_put(ch4);
+        }
+    }
+
+    boost::stringify::v0::streambuf_result finish() noexcept
+    {
+        return {m_count, m_success};
+    }
+
+private:
+
+    void do_put(CharT character)
     {
         if(m_out.sputc(character) == Traits::eof())
         {
@@ -44,33 +102,11 @@ public:
         }
     }
 
-    void repeat(CharT character, std::size_t repetitions) override
-    {
-        for(;repetitions > 0; --repetitions)
-        {
-            put(character);
-        }
-    }
-
-    void put(const CharT* str, std::size_t ucount) override
-    {
-        std::streamsize count = ucount;
-        auto count_inc = m_out.sputn(str, count);
-        m_success &= (count_inc == count);
-        m_count += count_inc;
-    }
-
-    boost::stringify::v0::streambuf_result finish() noexcept
-    {
-        return {m_count, m_success};
-    }
-
-private:
 
     std::basic_streambuf<CharT, Traits>& m_out;
     std::streamsize m_count = 0;
     bool m_success = true;
-    
+
 };
 
 } // namespace detail

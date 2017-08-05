@@ -134,19 +134,49 @@ public:
 
     using char_type = CharT;
 
+    void put(const char_type* str, std::size_t count) override
+    {
+        m_result.append(str, count);
+    }
+
     void put(char_type character) override
     {
         m_result.push_back(character);
     }
 
-    void repeat(char_type character, std::size_t repetitions) override
+    void repeat(char_type ch, std::size_t count) override
     {
-        m_result.append(repetitions, character);
+        m_result.append(count, ch);
     }
 
-    void put(const char_type* str, std::size_t count) override
+    void repeat(char_type ch1, char_type ch2, std::size_t count) override
     {
-        m_result.append(str, count);
+        for(; count > 0; --count)
+        {
+            m_result.push_back(ch1);
+            m_result.push_back(ch2);
+        }
+    }
+
+    void repeat(char_type ch1, char_type ch2, char_type ch3, std::size_t count) override
+    {
+        for(; count > 0; --count)
+        {
+            m_result.push_back(ch1);
+            m_result.push_back(ch2);
+            m_result.push_back(ch3);
+        }
+    }
+
+    void repeat(char_type ch1, char_type ch2, char_type ch3, char_type ch4, std::size_t count) override
+    {
+        for(; count > 0; --count)
+        {
+            m_result.push_back(ch1);
+            m_result.push_back(ch2);
+            m_result.push_back(ch3);
+            m_result.push_back(ch4);
+        }
     }
 
     std::basic_string<CharT> finish()

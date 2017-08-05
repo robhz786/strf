@@ -75,7 +75,7 @@ public:
 
     using input_type  = intT ;
     using char_type   = CharT;
-    using output_type = boost::stringify::v0::output_writer<CharT>;
+    using writer_type = boost::stringify::v0::output_writer<CharT>;
     using second_arg = boost::stringify::v0::detail::int_argf;
 
 private:
@@ -119,7 +119,7 @@ public:
         return length_body() + length_fill();
     }
 
-    void write(output_type& out) const
+    void write(writer_type& out) const
     {
         if (m_fillcount > 0)
         {
@@ -212,7 +212,7 @@ private:
     //     return 0;
     // }
 
-    void write_with_fill(output_type& out) const
+    void write_with_fill(writer_type& out) const
     {
         switch (m_alignment)
         {
@@ -239,7 +239,7 @@ private:
         }
     }
 
-    void write_sign(output_type& out) const
+    void write_sign(writer_type& out) const
     {
         if (std::is_signed<intT>::value && m_base == 10)
         {
@@ -254,7 +254,7 @@ private:
         }
     }
 
-    void write_without_fill(output_type& out) const
+    void write_without_fill(writer_type& out) const
     {
         switch(m_base)
         {
@@ -275,7 +275,7 @@ private:
         }
     }
 
-    void write_base(output_type& out) const
+    void write_base(writer_type& out) const
     {
         if(m_showbase)
         {
@@ -298,7 +298,7 @@ private:
         }
     }
 
-    void write_digits(output_type& out) const
+    void write_digits(writer_type& out) const
     {
         switch (m_base)
         {
@@ -311,7 +311,7 @@ private:
     }
 
     template <unsigned Base>
-    void write_digits_t(output_type& out) const
+    void write_digits_t(writer_type& out) const
     {
         constexpr std::size_t buff_size = sizeof(intT) * 6;
         CharT buff[buff_size];
@@ -361,7 +361,7 @@ private:
         }
     }
 
-    void write_fill(output_type& out) const
+    void write_fill(writer_type& out) const
     {
         m_conv.write(out, m_fillchar, m_fillcount);
     }

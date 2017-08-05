@@ -22,7 +22,7 @@ public:
 
     using char_type = CharT;
     using input_type  = std::basic_string<CharT, Traits>;
-    using output_type = boost::stringify::v0::output_writer<CharT>;
+    using writer_type = boost::stringify::v0::output_writer<CharT>;
     using second_arg = boost::stringify::v0::detail::string_argf;
 
 private:
@@ -68,7 +68,7 @@ public:
         return m_str.length();
     }
 
-    void write(output_type& out) const
+    void write(writer_type& out) const
     {
         if (m_fillcount > 0)
         {
@@ -125,7 +125,7 @@ private:
         }
     }
 
-    void write_fill(output_type& out) const
+    void write_fill(writer_type& out) const
     {
         m_conv.write(out, m_fillchar, m_fillcount);
     }

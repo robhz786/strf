@@ -30,7 +30,7 @@ public:
     using char_type   = CharT ;
     using ftuple_type = ParentFTuple;
     using input_type = ChildFTuple;
-    using output_type = boost::stringify::v0::output_writer<CharT>;;
+    using writer_type = boost::stringify::v0::output_writer<CharT>;;
     using second_arg = ini_list_type;
 
     ftuple_stringifier
@@ -62,7 +62,7 @@ public:
         return w;
     }
 
-    void write(output_type& out) const
+    void write(writer_type& out) const
     {
         for(const auto& arg : m_args)
         {

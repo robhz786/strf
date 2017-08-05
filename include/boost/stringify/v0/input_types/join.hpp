@@ -63,7 +63,7 @@ public:
 
     using char_type   = CharT;
     using input_type  = boost::stringify::v0::detail::join_t ;
-    using output_type = boost::stringify::v0::output_writer<CharT>;
+    using writer_type = boost::stringify::v0::output_writer<CharT>;
     using ftuple_type = FTuple;
     using second_arg = ini_list_type;
 
@@ -84,7 +84,7 @@ public:
         return args_length() + fill_length();
     }
 
-    void write(output_type& out) const
+    void write(writer_type& out) const
     {
         if (m_fillcount <= 0)
         {
@@ -180,7 +180,7 @@ private:
         return w;
     }
 
-    void write_splitted(output_type& out) const
+    void write_splitted(writer_type& out) const
     {
         auto it = m_args.begin();
         for ( int count = m_join.num_leading_args
@@ -197,7 +197,7 @@ private:
         }
     }
 
-    void write_args(output_type& out) const
+    void write_args(writer_type& out) const
     {
         for(const auto& arg : m_args)
         {
@@ -205,7 +205,7 @@ private:
         }
     }
 
-    void write_fill(output_type& out) const
+    void write_fill(writer_type& out) const
     {
          get_facet<from_utf32_tag>().write(out, m_fillchar, m_fillcount);
     }

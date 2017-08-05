@@ -17,14 +17,19 @@ class string_appender: public output_writer<typename StringType::value_type>
 {
 public:
     typedef typename StringType::value_type char_type;
-    
+
     string_appender(StringType& out)
         : m_out(out)
     {
     }
 
     string_appender(const string_appender&) = default;
-    
+
+    void put(const char_type* str, std::size_t count) override
+    {
+        m_out.append(str, count);
+    }
+
     void put(char_type character) override
     {
         m_out.push_back(character);
@@ -35,11 +40,51 @@ public:
         m_out.append(repetitions, character);
     }
 
-    void put(const char_type* str, std::size_t count) override
+    void repeat
+        ( char_type ch1
+        , char_type ch2
+        , std::size_t count
+        ) override
     {
-        m_out.append(str, count);
+        for(; count > 0; --count)
+        {
+            m_out.push_back(ch1);
+            m_out.push_back(ch2);
+        }
     }
-    
+
+    void repeat
+        ( char_type ch1
+        , char_type ch2
+        , char_type ch3
+        , std::size_t count
+        ) override
+    {
+        for(; count > 0; --count)
+        {
+            m_out.push_back(ch1);
+            m_out.push_back(ch2);
+            m_out.push_back(ch3);
+        }
+    }
+
+    void repeat
+        ( char_type ch1
+        , char_type ch2
+        , char_type ch3
+        , char_type ch4
+        , std::size_t count
+        ) override
+    {
+        for(; count > 0; --count)
+        {
+            m_out.push_back(ch1);
+            m_out.push_back(ch2);
+            m_out.push_back(ch3);
+            m_out.push_back(ch4);
+        }
+    }
+
     StringType& finish()
     {
         return m_out;
@@ -52,37 +97,9 @@ public:
 
 private:
 
-    StringType& m_out;               
+    StringType& m_out;
 };
-/*
-template <class T>
-struct std_string_destination_concept
-{
 
-private:
-
-    template
-        < typename S
-        , typename CharT = typename S::value_type
-        , typename Traits = typename S::traits_type
-        >  
-    static auto test(S* str) -> decltype
-             ( str->push_back(CharT())
-             , str->append(CharT(), std::size_t())
-             , str->append((const CharT*)(0), std::size_t())
-             , str->reserve(std::size_t())
-             , std::true_type()
-             );
-
-    template <typename S>
-    static std::false_type test(...);
-
-public:
-
-    static constexpr bool value = decltype(test<T>((T*)0))::value;
-
-};
-*/
 } // namespace detail
 
 

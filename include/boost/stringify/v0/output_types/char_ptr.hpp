@@ -18,7 +18,7 @@ struct char_ptr_result
     std::size_t length;
     bool success;
 };
-       
+
 namespace detail{
 
 template<typename CharT, typename Traits>
@@ -35,21 +35,57 @@ public:
     {
     }
 
-    void put(CharT character) noexcept override
+    void put(const CharT* str, std::size_t count) override
+    {
+        Traits::copy(m_out, str, count);
+        m_out += count;
+    }
+
+    void put(CharT character) override
     {
         Traits::assign(*m_out++, character);
     }
 
-    void repeat(CharT character, std::size_t repetitions) noexcept override
+    void repeat(CharT character, std::size_t count) override
     {
-        Traits::assign(m_out, repetitions, character);
-        m_out += repetitions;
+        Traits::assign(m_out, count, character);
+        m_out += count;
     }
 
-    void put(const CharT* str, std::size_t count) noexcept override
+    void repeat(CharT ch1, CharT ch2, std::size_t count) override
     {
-        Traits::copy(m_out, str, count);
-        m_out += count;
+        std::size_t n = 2 * count;
+        for(std::size_t i=0; i < n; i += 2)
+        {
+            Traits::assign(m_out[i],   ch1);
+            Traits::assign(m_out[i+1], ch2);
+        }
+        m_out += n;
+    }
+
+    void repeat(CharT ch1, CharT ch2, CharT ch3, std::size_t count) override
+    {
+        std::size_t n = 3 * count;
+        for(std::size_t i=0; i < n; i += 3)
+        {
+            Traits::assign(m_out[i],   ch1);
+            Traits::assign(m_out[i + 1], ch2);
+            Traits::assign(m_out[i + 2], ch3);
+        }
+        m_out += n;
+    }
+
+    void repeat(CharT ch1, CharT ch2, CharT ch3, CharT ch4, std::size_t count) override
+    {
+        std::size_t n = 4 * count;
+        for(std::size_t i=0; i < n; i += 4)
+        {
+            Traits::assign(m_out[i],   ch1);
+            Traits::assign(m_out[i + 1], ch2);
+            Traits::assign(m_out[i + 2], ch3);
+            Traits::assign(m_out[i + 3], ch4);
+        }
+        m_out += n;
     }
 
     CharT* finish() noexcept
@@ -80,7 +116,14 @@ public:
     {
     }
 
-    void put(CharT character) noexcept override
+    void put(const CharT* str, std::size_t count) override
+    {
+        count = std::min(count, static_cast<std::size_t>(m_end - m_it));
+        Traits::copy(m_it, str, count);
+        m_it += count;
+    }
+
+    void put(CharT character) override
     {
         if (m_it != m_end)
         {
@@ -89,18 +132,64 @@ public:
         }
     }
 
-    void repeat(CharT character, std::size_t count) noexcept override
+    void repeat(CharT character, std::size_t count) override
     {
         count = std::min(count, static_cast<std::size_t>(m_end - m_it));
         Traits::assign(m_it, count, character);
         m_it += count;
     }
-
-    void put(const CharT* str, std::size_t count) noexcept override
+    
+    void repeat(CharT ch1, CharT ch2, std::size_t count) override
     {
-        count = std::min(count, static_cast<std::size_t>(m_end - m_it));
-        Traits::copy(m_it, str, count);
-        m_it += count;
+        for(;count > 0 && m_it != m_end; --count)
+        {
+            Traits::assign(*m_it, ch1);
+            if(++m_it != m_end)
+            {
+                Traits::assign(*m_it, ch2);
+            }
+        }
+    }
+
+    void repeat(CharT ch1, CharT ch2, CharT ch3, std::size_t count) override
+    {
+        for(;count > 0 && m_it != m_end; --count)
+        {
+            Traits::assign(*m_it, ch1);
+            if(++m_it == m_end)
+            {
+                break;
+            }
+            Traits::assign(*m_it, ch2);
+            if(++m_it == m_end)
+            {
+                break;
+            }
+            Traits::assign(*m_it, ch3);
+        }
+    }
+
+    void repeat(CharT ch1, CharT ch2, CharT ch3, CharT ch4, std::size_t count) override
+    {
+        for(;count > 0 && m_it != m_end; --count)
+        {
+            Traits::assign(*m_it, ch1);
+            if(++m_it == m_end)
+            {
+                break;
+            }
+            Traits::assign(*m_it, ch2);
+            if(++m_it == m_end)
+            {
+                break;
+            }
+            Traits::assign(*m_it, ch3);
+            if(++m_it == m_end)
+            {
+                break;
+            }
+            Traits::assign(*m_it, ch4);
+        }
     }
 
     boost::stringify::v0::char_ptr_result finish() noexcept
@@ -222,7 +311,6 @@ auto write_to(wchar_t* destination, std::size_t count)
     return boost::stringify::v0::make_args_handler<writer, wchar_t*, wchar_t*>
         (destination, destination + count);
 }
-       
 
 
 } // inline namespace v0
