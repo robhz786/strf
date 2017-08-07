@@ -217,35 +217,35 @@ int main()
 
     {
         auto str = strf::make_string
-            .with(strf::showpos, strf::noshowpos_if<is_long>())
+            .with(strf::showpos, strf::noshowpos_if<is_long>)
             ("abcd", (long)0, 1, 2, {3, "-"}, {(long)4, "+"});
 
         BOOST_TEST(str == "abcd0+1+23+4");
     }
     {
         auto str = strf::make_string
-            .with(strf::showpos, strf::noshowpos_if<is_long>())
+            .with(strf::showpos, strf::noshowpos_if<is_long>)
             ("abcd", (long)0, 1, 2, {3, "-"}, {(long)4, "+"});
 
         BOOST_TEST(str == "abcd0+1+23+4");
     }
     {
         auto str = strf::make_u16string
-            .with(strf::showpos, strf::noshowpos_if<is_long>())
+            .with(strf::showpos, strf::noshowpos_if<is_long>)
             (u"abcd", (long)0, 1, 2, {3, "-"}, {(long)4, "+"});
 
         BOOST_TEST(str == u"abcd0+1+23+4");
     }
     {
         auto str = strf::make_u32string
-            .with(strf::showpos, strf::noshowpos_if<is_long>())
+            .with(strf::showpos, strf::constrain<is_long>(strf::noshowpos))
             (U"abcd", (long)0, 1, 2, {3, "-"}, {(long)4, "+"});
 
         BOOST_TEST(str == U"abcd0+1+23+4");
     }
     {
         auto str = strf::make_wstring
-            .with(strf::showpos, strf::noshowpos_if<is_long>())
+            .with(strf::showpos, strf::noshowpos_if<is_long>)
             (L"abcd", (long)0, 1, 2, {3, "-"}, {(long)4, "+"});
 
         BOOST_TEST(str == L"abcd0+1+23+4");

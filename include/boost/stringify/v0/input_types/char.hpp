@@ -7,7 +7,6 @@
 
 #include <boost/stringify/v0/output_writer.hpp>
 #include <boost/stringify/v0/input_types/char32.hpp>
-#include <boost/stringify/v0/type_traits.hpp>
 #include <boost/stringify/v0/facets/width_calculator.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN

@@ -5,20 +5,16 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/type_traits.hpp>
+#include <boost/stringify/v0/constrained_facet.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 struct fill_tag;
 
-template
-    < char32_t FillChar = U' '
-    , template <class> class Filter = boost::stringify::v0::true_trait
-    >
+template<char32_t FillChar = U' '>
 struct fill_impl_t
 {
     typedef boost::stringify::v0::fill_tag category;
-    template <typename T> using accept_input_type = Filter<T>;
 
     constexpr char32_t fill_char() const
     {
@@ -27,7 +23,6 @@ struct fill_impl_t
 };
 
 
-template <template <class> class Filter = boost::stringify::v0::true_trait>
 class fill_impl
 {
 public:
@@ -38,7 +33,6 @@ public:
     }
 
     typedef boost::stringify::v0::fill_tag category;
-    template <typename T> using accept_input_type = Filter<T>;
 
     constexpr char32_t fill_char() const
     {
@@ -51,9 +45,7 @@ private:
 };
 
 
-constexpr
-boost::stringify::v0::fill_impl_t<U' ', boost::stringify::v0::true_trait>
-default_fill {};
+constexpr boost::stringify::v0::fill_impl_t<U' '> default_fill {};
 
 struct fill_tag
 {
@@ -65,21 +57,21 @@ struct fill_tag
 
 auto fill(char32_t fillChar)
 {
-    return fill_impl<boost::stringify::v0::true_trait>(fillChar);
+    return fill_impl(fillChar);
 }
 
 template <template <class> class Filter>
 auto fill_if(char32_t fillChar)
 {
-    return fill_impl<Filter>(fillChar);
+    return constrained_facet<Filter, fill_impl>(fillChar);
 }
 
 
 template <char32_t fillChar>
-auto fill_t = fill_impl_t<fillChar, boost::stringify::v0::true_trait>();
+auto fill_t = fill_impl_t<fillChar>{};
 
 template <char32_t Char, template <class> class Filter>
-auto fill_t_if = fill_impl_t<Char, Filter>();
+auto fill_t_if = constrained_facet<Filter, fill_impl_t<Char>>{};
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

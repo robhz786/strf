@@ -9,30 +9,28 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 struct case_tag;
 
-template <bool Uppercase, template <class> class Filter>
+template <bool Uppercase>
 struct case_impl_t
 {
     using category = boost::stringify::v0::case_tag;
 
-    template <typename T> using accept_input_type = Filter<T>;
-    
     constexpr bool uppercase() const
     {
         return Uppercase;
     }
 };
 
-constexpr auto uppercase =
-    boost::stringify::v0::case_impl_t<true, boost::stringify::v0::true_trait>();
 
-constexpr auto  lowercase =
-    boost::stringify::v0::case_impl_t<false, boost::stringify::v0::true_trait>();
+constexpr boost::stringify::v0::case_impl_t<true> uppercase {};
 
-template <template <class> class F>
-constexpr auto uppercase_if = boost::stringify::v0::case_impl_t<true, F>();
+constexpr boost::stringify::v0::case_impl_t<false> lowercase {};
+
 
 template <template <class> class F>
-constexpr auto lowercase_if = boost::stringify::v0::case_impl_t<false, F>();
+constrained_facet<F, case_impl_t<true>> upppercase_if {};
+
+template <template <class> class F>
+constrained_facet<F, case_impl_t<false>> lowercase_if {};
 
 
 struct case_tag

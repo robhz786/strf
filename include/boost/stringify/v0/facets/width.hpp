@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/type_traits.hpp>
+#include <boost/stringify/v0/constrained_facet.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -13,12 +13,9 @@ typedef int width_t;
 
 struct width_tag;
 
-
-template <template <class> class Filter>
 struct width_impl
 {
     typedef boost::stringify::v0::width_tag category;
-    template <typename T> using accept_input_type = Filter<T>;    
 
     constexpr width_impl(boost::stringify::v0::width_t v = 0)
         : m_value(v)
@@ -38,11 +35,10 @@ private:
 };
 
 
-template <boost::stringify::v0::width_t Width, template <class> class Filter>
+template <boost::stringify::v0::width_t Width>
 struct width_impl_t
 {
     typedef boost::stringify::v0::width_tag category;
-    template <typename T> using accept_input_type = Filter<T>;    
 
     constexpr boost::stringify::v0::width_t width() const noexcept
     {
@@ -50,10 +46,8 @@ struct width_impl_t
     }
 };
 
-constexpr
-boost::stringify::v0::width_impl_t<0, boost::stringify::v0::true_trait>
-default_width {};
-       
+
+constexpr width_impl_t<0> default_width {};       
        
 struct width_tag
 {
@@ -64,17 +58,18 @@ struct width_tag
 };
 
 
-template <template <class> class Filter = boost::stringify::v0::true_trait>
+template <template <class> class Filter>
 constexpr auto width_if(boost::stringify::v0::width_t w) noexcept
 {
-    return boost::stringify::v0::width_impl<Filter>(w);
+    return constrained_facet<Filter, width_impl>{w};
 }
 
 
 constexpr auto width(boost::stringify::v0::width_t w) noexcept
 {
-    return boost::stringify::v0::width_impl<boost::stringify::v0::true_trait>(w);
+    return width_impl{w};
 }
+
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

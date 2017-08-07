@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/type_traits.hpp>
+#include <boost/stringify/v0/constrained_facet.hpp>
 #include <boost/stringify/v0/ftuple.hpp>
 #include <boost/assert.hpp>
 #include <string>
@@ -15,14 +15,11 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 struct width_calculator_tag;
 
-template <template <class> class Filter=boost::stringify::v0::true_trait>
 class simplest_width_calculator
 {
 public:
     typedef boost::stringify::v0::width_calculator_tag category;
 
-    template <typename T> using accept_input_type = Filter<T>;
-  
     template <typename CharT>
     constexpr int width_of(CharT) const
     {
@@ -54,10 +51,7 @@ public:
     }
 };
 
-constexpr 
-boost::stringify::v0::simplest_width_calculator<boost::stringify::v0::true_trait>
-default_width_calculator
-{};
+constexpr simplest_width_calculator default_width_calculator {};
 
 struct width_calculator_tag
 {

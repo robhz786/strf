@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/type_traits.hpp>
+#include <boost/stringify/v0/detail/mp_if.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
@@ -73,8 +73,7 @@ class stringifier_wrapper_impl
         >
         ::type;
 
-    using input_type_ptr
-    = boost::stringify::v0::detail::ternary_t
+    using input_type_ptr = boost::stringify::v0::detail::mp_if
         < input_type_is_pointer::value
         , input_type
         , const input_type*

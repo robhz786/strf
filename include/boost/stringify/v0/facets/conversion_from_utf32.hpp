@@ -5,8 +5,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/type_traits.hpp>
 #include <boost/stringify/v0/output_writer.hpp>
+#include <boost/stringify/v0/detail/mp_if.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -29,14 +29,11 @@ public:
         ) const = 0;
 };
 
-template <template <class> class Filter = boost::stringify::v0::true_trait>
 class to_utf8: public conversion_from_utf32<char>
 {
 public:
 
     using category = boost::stringify::v0::conversion_from_utf32_tag<char>;
-
-    template <typename T> using accept_input_type = Filter<T>;
 
     to_utf8() = default;
 
@@ -96,17 +93,12 @@ public:
 };
 
 
-template
-    < template <class> class Filter = boost::stringify::v0::true_trait
-    , typename CharT = char16_t
-    >
+template <typename CharT = char16_t>
 class to_utf16: public conversion_from_utf32<CharT>
 {
 public:
 
     using category = boost::stringify::v0::conversion_from_utf32_tag<CharT>;
-
-    template <typename T> using accept_input_type = Filter<T>;
 
     to_utf16() = default;
 
@@ -165,17 +157,12 @@ private:
     }
 };
 
-template
-    < template <class> class Filter = boost::stringify::v0::true_trait
-    , typename CharT = char32_t
-    >
+template <typename CharT = char32_t>
 class utf32_to_utf32: public conversion_from_utf32<CharT>
 {
 public:
 
     using category = boost::stringify::v0::conversion_from_utf32_tag<CharT>;
-
-    template <typename T> using accept_input_type = Filter<T>;
 
     utf32_to_utf32() = default;
 
@@ -196,12 +183,10 @@ public:
     }
 };
 
-template <template <class> class Filter = boost::stringify::v0::true_trait>
-class utf32_to_wstr
-    : public boost::stringify::v0::detail::ternary_t
+class utf32_to_wstr : public boost::stringify::v0::detail::mp_if
         < sizeof(wchar_t) == sizeof(char16_t)
-        , to_utf16<Filter, wchar_t>
-        , utf32_to_utf32<Filter, wchar_t>
+        , to_utf16<wchar_t>
+        , utf32_to_utf32<wchar_t>
         >
 {
 };
@@ -211,7 +196,7 @@ template <> struct conversion_from_utf32_tag<char>
 {
     static const auto& get_default() noexcept
     {
-        const static boost::stringify::v0::to_utf8<boost::stringify::v0::true_trait> x{};
+        const static boost::stringify::v0::to_utf8 x{};
         return x;
     }
 };
@@ -221,7 +206,7 @@ template <> struct conversion_from_utf32_tag<char16_t>
 {
     static const auto& get_default() noexcept
     {
-        const static boost::stringify::v0::to_utf16<boost::stringify::v0::true_trait> x{};
+        const static boost::stringify::v0::to_utf16<char16_t> x{};
         return x;
     }
 };
@@ -231,7 +216,7 @@ template <> struct conversion_from_utf32_tag<char32_t>
 {
     static const auto& get_default() noexcept
     {
-        const static boost::stringify::v0::utf32_to_utf32<boost::stringify::v0::true_trait> x{};
+        const static boost::stringify::v0::utf32_to_utf32<char32_t> x{};
         return x;
     }
 };
@@ -240,7 +225,7 @@ template <> struct conversion_from_utf32_tag<wchar_t>
 {
     static const auto& get_default() noexcept
     {
-        const static boost::stringify::v0::utf32_to_wstr<boost::stringify::v0::true_trait> x{};
+        const static boost::stringify::v0::utf32_to_wstr x{};
         return x;
     }
 };

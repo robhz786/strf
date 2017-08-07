@@ -5,7 +5,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/type_traits.hpp>
+#include <type_traits>
+#include <boost/stringify/v0/constrained_facet.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -82,15 +83,47 @@ public:
 
     using ftuple_end<LowestTag>::do_get_facet;
 
-    template
-        < typename InputType
-        , typename = typename std::enable_if_t
-          <Facet::template accept_input_type<InputType>::value>
-        >
+    template <typename>
     constexpr const Facet& do_get_facet
         (const highest_tag&, typename Facet::category) const
     {
         return *this;
+    }
+
+};
+
+
+template <typename LowestTag, typename ConstrainedFacet>
+class single_constrained_facet_ftuple
+    : private ConstrainedFacet
+    , public ftuple_end<LowestTag>
+{
+    
+public:
+
+    constexpr single_constrained_facet_ftuple
+        (const ConstrainedFacet& f) : ConstrainedFacet(f) {};
+
+    constexpr single_constrained_facet_ftuple
+        (const single_constrained_facet_ftuple& r) = default;
+
+    using lowest_tag = LowestTag;
+    using highest_tag = LowestTag;
+
+    template <typename OtherLowestTag>
+    using rebind = single_constrained_facet_ftuple<OtherLowestTag, ConstrainedFacet>;
+
+    using ftuple_end<LowestTag>::do_get_facet;
+
+    template
+        < typename InputType
+        , typename = typename std::enable_if_t
+            <ConstrainedFacet::template matches<InputType>::value>
+        >
+    constexpr const auto& do_get_facet
+        (const highest_tag&, typename ConstrainedFacet::category) const
+    {
+        return ConstrainedFacet::facet;
     }
 
 };
@@ -184,6 +217,15 @@ struct ftuple_helper
     {
         using ftuple_type = single_facet_ftuple<base_tag, Facet>;
         return reinterpret_cast<const ftuple_type&>(f);
+    }
+
+    template <template <class> class Filter, typename Facet>
+    static constexpr const auto& as_ftuple(const constrained_facet<Filter, Facet>& cf)
+    {
+        using ftuple_type = single_constrained_facet_ftuple
+            < base_tag
+            , constrained_facet<Filter, Facet> >;
+        return reinterpret_cast<const ftuple_type&>(cf);
     }
 
     template <typename ... F>

@@ -5,9 +5,6 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/assert.hpp>
-#include <boost/type_traits.hpp>
-
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail{
 
