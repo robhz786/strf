@@ -94,7 +94,7 @@ public:
         , m_showbase(get_facet<showbase_tag>(ft).value())
         , m_uppercase(get_facet<case_tag>(ft).uppercase())
     {
-        calculate_fill(get_facet<wcalc_tag>(ft));
+        determinate_fill(get_facet<wcalc_tag>(ft));
     }
 
     template <typename FTuple>
@@ -109,7 +109,7 @@ public:
         , m_showbase(argf_reader::get_showbase(argf, ft))
         , m_uppercase(argf_reader::get_uppercase(argf, ft))
     {
-        calculate_fill(get_facet<wcalc_tag>(ft));
+        determinate_fill(get_facet<wcalc_tag>(ft));
     }
 
     std::size_t length() const
@@ -344,8 +344,7 @@ private:
         return chars_catalog::a<CharT>() + digit - 10;
     }
 
-    template <typename WidthCalculator>
-    void calculate_fill(const WidthCalculator& wcalc)
+    void determinate_fill(const width_calculator& wcalc)
     {
         int content_width = width_body();
         if(content_width < m_total_width)

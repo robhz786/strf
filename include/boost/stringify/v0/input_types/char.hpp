@@ -12,7 +12,7 @@
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
-template <typename CharT, typename FTuple>
+template <typename CharT>
 class char_stringifier
 {
 
@@ -21,10 +21,10 @@ public:
     using char_type = CharT;
     using input_type = char_type;
     using writer_type = boost::stringify::v0::output_writer<CharT>;
-    using ftuple_type = FTuple ;
 
+    template <typename FTuple>
     char_stringifier(const FTuple& fmt, CharT ch) noexcept
-        : m_fmt(fmt)
+        : m_wcalc(fmt.template get_facet<width_calculator_tag, input_type>())
         , m_char(ch)
     {
     }
@@ -41,14 +41,13 @@ public:
 
     int remaining_width(int w) const
     {
-        auto calc = boost::stringify::v0::get_width_calculator<input_type>(m_fmt);
-        return w - calc.width_of(m_char);
+        return w - m_wcalc.width_of(m_char);
     }
 
 
 private:
 
-    const FTuple& m_fmt;
+    const width_calculator& m_wcalc;
     CharT m_char;
 };
 
@@ -58,19 +57,19 @@ struct char_input_traits
 
 private:
 
-    template <typename CharOut, typename FTuple>
+    template <typename CharOut>
     struct checker
     {
         static_assert(sizeof(CharIn) == sizeof(CharOut), "");
 
         using stringifier
-        = boost::stringify::v0::detail::char_stringifier<CharOut, FTuple>;
+        = boost::stringify::v0::detail::char_stringifier<CharOut>;
     };
 
 public:
 
-    template <typename CharOut, typename FTuple>
-    using stringifier = typename checker<CharOut, FTuple>::stringifier;
+    template <typename CharOut, typename>
+    using stringifier = typename checker<CharOut>::stringifier;
 };
 
 } //namepace detail

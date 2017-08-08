@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/constrained_facet.hpp>
+#include <boost/stringify/v0/facets/conversion_to_utf32.hpp>
 #include <boost/stringify/v0/ftuple.hpp>
 #include <boost/assert.hpp>
 #include <string>
@@ -15,33 +15,152 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 struct width_calculator_tag;
 
-class simplest_width_calculator
+class width_calculator
 {
+
+    struct width_decrementer
+    {
+        int width = 0;
+        const width_calculator& wcalc;
+
+        bool operator()(char32_t ch)
+        {
+            width -= wcalc.width_of(ch);
+            return width > 0;
+        }
+    };
+
 public:
+
     typedef boost::stringify::v0::width_calculator_tag category;
 
-    template <typename CharT>
-    constexpr int width_of(CharT) const
+    virtual ~width_calculator() = default;
+
+    virtual int width_of(char32_t) const = 0;
+
+    virtual int remaining_width
+        ( int width
+        , const char32_t* str
+        , std::size_t str_len
+        ) const
+    {
+        const char32_t* end = str + str_len;
+        for(const char32_t* it = str; it != end && width > 0; ++it)
+        {
+            width -= width_of(*it);
+        }
+        return std::max(0, width);
+    }
+
+    virtual int remaining_width
+        ( int width
+        , const char32_t* str
+        , std::size_t str_len
+        , const conversion_to_utf32<char32_t>&
+        ) const
+    {
+        return remaining_width(width, str, str_len);
+    }
+
+    virtual int remaining_width
+        ( int width
+        , const char* str
+        , std::size_t str_len
+        , const conversion_to_utf32<char>& conv
+        ) const
+    {
+        width_decrementer decrementer = {width, *this};
+        conv.convert(decrementer, str, str_len);
+        return std::max(0, decrementer.width);
+    }
+
+    virtual int remaining_width
+        ( int width
+        , const char16_t* str
+        , std::size_t str_len
+        , const conversion_to_utf32<char16_t>& conv
+        ) const
+    {
+        width_decrementer decrementer = {width, *this};
+        conv.convert(decrementer, str, str_len);
+        return std::max(0, decrementer.width);
+    }
+
+    virtual int remaining_width
+        ( int width
+        , const wchar_t* str
+        , std::size_t str_len
+        , const conversion_to_utf32<wchar_t>& conv
+        ) const
+    {
+        width_decrementer decrementer = {width, *this};
+        conv.convert(decrementer, str, str_len);
+        return std::max(0, decrementer.width);
+    }
+
+};
+
+
+class simplest_width_calculator: public width_calculator
+{
+public:
+
+    int width_of(char32_t) const override
     {
         return 1;
     }
 
     template <typename CharT>
-    constexpr int width_of(const CharT*, std::size_t len) const
+    int width_of(const CharT*, std::size_t len) const
     {
         BOOST_ASSERT(len < (std::size_t) std::numeric_limits<int>::max ());
         return static_cast<int>(len);
     }
 
-    template <typename CharT>
-    int width_of(const CharT* str) const
+   virtual int remaining_width
+        ( int width
+        , const char32_t* str
+        , std::size_t str_len
+        ) const override
     {
-        return width_of(str, std::char_traits<CharT>::length(str));
+        return remaining_width_impl(width, str, str_len);
     }
 
+    virtual int remaining_width
+        ( int width
+        , const char* str
+        , std::size_t str_len
+        , const conversion_to_utf32<char>&
+        ) const override
+    {
+        return remaining_width_impl(width, str, str_len);
+    }
+
+    virtual int remaining_width
+        ( int width
+        , const char16_t* str
+        , std::size_t str_len
+        , const conversion_to_utf32<char16_t>&
+        ) const override
+    {
+        return remaining_width_impl(width, str, str_len);
+    }
+
+    virtual int remaining_width
+        ( int width
+        , const wchar_t* str
+        , std::size_t str_len
+        , const conversion_to_utf32<wchar_t>&
+        ) const override
+    {
+        return remaining_width_impl(width, str, str_len);
+    }
+
+private:
+
     template <typename CharT>
-    int remaining_width
-    (int total_width, const CharT*, std::size_t str_len) const
+    int remaining_width_impl
+        (int total_width, const CharT*, std::size_t str_len) const
     {
         if (str_len > (std::size_t)(total_width))
         {
@@ -51,22 +170,15 @@ public:
     }
 };
 
-constexpr simplest_width_calculator default_width_calculator {};
 
 struct width_calculator_tag
 {
-    constexpr static const auto& get_default()
+    static const auto& get_default()
     {
-        return boost::stringify::v0::default_width_calculator;        
+        static simplest_width_calculator x {};
+        return x;
     }
 };
-
-template <typename InputType, typename FTuple>
-const auto& get_width_calculator(const FTuple& fmt)
-{
-    return boost::stringify::v0::get_facet
-        <boost::stringify::v0::width_calculator_tag, InputType>(fmt);
-}
 
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
