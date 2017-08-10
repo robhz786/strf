@@ -12,7 +12,7 @@
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
-template <typename Traits, typename CharT>
+template <typename CharT, typename Traits>
 class std_string_stringifier
 {
 
@@ -25,7 +25,8 @@ public:
 
 private:
 
-    using cv_tag = boost::stringify::v0::conversion_from_utf32_tag<CharT>;
+    using from32_tag = boost::stringify::v0::conversion_from_utf32_tag<CharT>;
+    using to32_tag = boost::stringify::v0::conversion_to_utf32_tag<CharT>;
     using wcalc_tag = boost::stringify::v0::width_calculator_tag;
     using argf_reader = boost::stringify::v0::conventional_argf_reader<input_type>;
 
@@ -38,30 +39,40 @@ public:
         , second_arg argf
         ) noexcept
         : m_str(str)
-        , m_conv(get_facet<cv_tag>(ft))
+        , m_from32conv(get_facet<from32_tag>(ft))
+        , m_to32conv(get_facet<to32_tag>(ft))
+        , m_wcalc(get_facet<wcalc_tag>(ft))
         , m_fillchar(get_facet<fill_tag>(ft).fill_char())
-        , m_total_width(argf_reader::get_width(argf, ft))
+        , m_width(argf_reader::get_width(argf, ft))
         , m_alignment(argf_reader::get_alignment(argf, ft))
     {
-        init(get_facet<wcalc_tag>(ft));
+        if(m_width > 0)
+        {
+            determinate_fill();
+        }
     }
 
     template <typename FTuple>
     std_string_stringifier(const FTuple& ft, const input_type& str) noexcept
         : m_str(str)
-        , m_conv(get_facet<cv_tag>(ft))
+        , m_from32conv(get_facet<from32_tag>(ft))
+        , m_to32conv(get_facet<to32_tag>(ft))
+        , m_wcalc(get_facet<wcalc_tag>(ft))
         , m_fillchar(get_facet<fill_tag>(ft).fill_char())
-        , m_total_width(get_facet<width_tag>(ft).width())
+        , m_width(get_facet<width_tag>(ft).width())
         , m_alignment(get_facet<alignment_tag>(ft).value())
     {
-        init(get_facet<wcalc_tag>(ft));
+        if(m_width > 0)
+        {
+            determinate_fill();
+        }
     }
 
     std::size_t length() const
     {
         if (m_fillcount > 0)
         {
-            return m_str.length() +  m_conv.length(m_fillchar) * m_fillcount;
+            return m_str.length() +  m_from32conv.length(m_fillchar) * m_fillcount;
         }
         return m_str.length();
     }
@@ -89,17 +100,23 @@ public:
 
     int remaining_width(int w) const
     {
-        return w > m_total_width ? w - m_total_width : 0;
+        if(m_fillcount > 0)
+        {
+            return w > m_width ? w - m_width : 0;
+        }
+        return m_wcalc.remaining_width(w, &m_str[0], m_str.length(), m_to32conv);
     }
 
 
 private:
 
     const input_type& m_str;
-    const boost::stringify::v0::conversion_from_utf32<CharT>& m_conv;
+    const boost::stringify::v0::conversion_from_utf32<CharT>& m_from32conv;
+    const boost::stringify::v0::conversion_to_utf32<CharT>& m_to32conv;
+    const boost::stringify::v0::width_calculator& m_wcalc;
     const char32_t m_fillchar;
     width_t m_fillcount = 0;
-    width_t m_total_width;
+    width_t m_width;
     boost::stringify::v0::alignment m_alignment;
 
     template <typename Category, typename FTuple>
@@ -108,26 +125,38 @@ private:
         return ft.template get_facet<Category, input_type>();
     }
 
-    template <typename WidthCalculator>
-    void init(const WidthCalculator& wcalc)
+    void determinate_fill()
     {
-        int content_width = wcalc.width_of(m_str.c_str(), m_str.length());
-        if(content_width < m_total_width)
+        int fillwidth = m_wcalc.remaining_width
+            (m_width, &m_str[0], m_str.length(), m_to32conv);
+
+        if (fillwidth > 0)
         {
-            auto fillchar_width = wcalc.width_of(m_fillchar);
-            m_fillcount = (m_total_width - content_width) / fillchar_width;
-        }
-        else
-        {
-            m_total_width = content_width;
+            m_fillcount = fillwidth / m_wcalc.width_of(m_fillchar);
         }
     }
 
     void write_fill(writer_type& out) const
     {
-        m_conv.write(out, m_fillchar, m_fillcount);
+        m_from32conv.write(out, m_fillchar, m_fillcount);
     }
 };
+
+#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class std_string_stringifier<char, std::char_traits<char>>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class std_string_stringifier<char16_t, std::char_traits<char16_t>>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class std_string_stringifier<char32_t, std::char_traits<char32_t>>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class std_string_stringifier<wchar_t, std::char_traits<wchar_t>>;
+
+#endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
 
 template <typename CharIn, typename CharTraits>
@@ -141,7 +170,7 @@ private:
         static_assert(sizeof(CharIn) == sizeof(CharOut), "");
 
         using stringifier = boost::stringify::v0::detail::std_string_stringifier
-            <CharTraits, CharOut>;
+            <CharOut, CharTraits>;
     };
 
 public:

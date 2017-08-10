@@ -21,27 +21,27 @@ struct join_t
 
 }
 
-boost::stringify::v0::detail::join_t
+inline boost::stringify::v0::detail::join_t
 join_left(int width, char32_t fillchar =char32_t())
 {
     return {boost::stringify::v0::alignment::left, fillchar, width, 0};
 }
 
 
-boost::stringify::v0::detail::join_t
+inline boost::stringify::v0::detail::join_t
 join_right(int width, char32_t fillchar =char32_t())
 {
     return {boost::stringify::v0::alignment::right, fillchar, width, 0};
 }
 
-boost::stringify::v0::detail::join_t
+inline boost::stringify::v0::detail::join_t
 join_internal(int width, int num_leading_args = 1, char32_t fillchar =char32_t())
 {
     return {boost::stringify::v0::alignment::internal
             , fillchar, width, num_leading_args};
 }
 
-boost::stringify::v0::detail::join_t
+inline boost::stringify::v0::detail::join_t
 join_internal(int width, char32_t fillchar)
 {
     return {boost::stringify::v0::alignment::internal, fillchar, width, 1};
@@ -111,7 +111,7 @@ public:
     {
         if (m_fillcount > 0)
         {
-            return std::max(0, w - m_join.width);
+            return (std::max)(0, w - m_join.width);
         }
         return remaining_width_from_arglist(w);
     }

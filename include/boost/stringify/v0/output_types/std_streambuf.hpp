@@ -107,6 +107,22 @@ private:
 
 };
 
+#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class std_streambuf_writer<char, std::char_traits<char>>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class std_streambuf_writer<char16_t, std::char_traits<char16_t>>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class std_streambuf_writer<char32_t, std::char_traits<char32_t>>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class std_streambuf_writer<wchar_t, std::char_traits<wchar_t>>;
+
+#endif
+
 } // namespace detail
 
 

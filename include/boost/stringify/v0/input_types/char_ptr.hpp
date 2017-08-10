@@ -192,6 +192,19 @@ boost_stringify_input_traits_of(const char32_t*);
 boost::stringify::v0::detail::char_ptr_input_traits<wchar_t>
 boost_stringify_input_traits_of(const wchar_t*);
 
+#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+
+namespace detail
+{
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_ptr_stringifier<char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_ptr_stringifier<char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_ptr_stringifier<char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_ptr_stringifier<wchar_t>;
+}
+
+#endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+
+
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  /* BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR_PTR */

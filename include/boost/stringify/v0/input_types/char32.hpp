@@ -45,7 +45,7 @@ public:
 
     int remaining_width(int w) const
     {
-        return std::max(0, w - m_width);
+        return (std::max)(0, w - m_width);
     }
 
 
@@ -56,6 +56,15 @@ private:
     int m_width;
 
 };
+
+#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_stringifier<char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_stringifier<char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_stringifier<char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_stringifier<wchar_t>;
+
+#endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
 
 struct char32_input_traits

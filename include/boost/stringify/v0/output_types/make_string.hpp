@@ -17,11 +17,19 @@ public:
 
     typedef typename StringType::value_type char_type;
 
-    string_maker() = default;
+    string_maker()
+    {
+    }
 
-    string_maker(const string_maker&) = delete;
+    string_maker(const string_maker& r)
+        : m_out(r.m_out)
+    {
+    }
 
-    string_maker(string_maker&&) = default;
+    string_maker(string_maker&& r)
+        : m_out(std::move(r.m_out))
+    {
+    }
 
     void put(const char_type* str, std::size_t count) override
     {
@@ -97,6 +105,15 @@ private:
 
     StringType m_out;
 };
+
+#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_maker<std::string>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_maker<std::u16string>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_maker<std::u32string>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_maker<std::wstring>;
+
+#endif
 
 } // namespace detail
 

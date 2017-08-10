@@ -55,7 +55,7 @@ struct fill_tag
     }
 };
 
-auto fill(char32_t fillChar)
+inline auto fill(char32_t fillChar)
 {
     return fill_impl(fillChar);
 }

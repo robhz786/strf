@@ -21,6 +21,7 @@
 #include <cstdint>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+
 namespace detail {
 
 struct int_argf
@@ -60,7 +61,7 @@ unsigned_abs(intT value)
 
 
 template <typename intT, typename CharT>
-struct int_stringifier
+class int_stringifier
 {
     using unsigned_intT = typename std::make_unsigned<intT>::type;
     using width_t = boost::stringify::v0::width_t;
@@ -397,7 +398,6 @@ private:
 
 };
 
-
 template <typename IntT>
 struct int_input_traits
 {
@@ -431,6 +431,50 @@ boost_stringify_input_traits_of(unsigned long);
 
 boost::stringify::v0::detail::int_input_traits<unsigned long long>
 boost_stringify_input_traits_of(unsigned long long);
+
+#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+
+namespace detail
+{
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<short, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<short, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<short, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<short, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<int, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<int, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<int, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<int, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<long, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<long, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<long, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<long, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<long long, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<long long, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<long long, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<long long, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned short, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned short, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned short, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned short, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned int, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned int, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned int, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned int, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned long, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned long, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned long, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned long, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned long long, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned long long, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned long long, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned long long, wchar_t>;
+}
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_flags
+         <'+', '-', '<', '>', '=', 'o', 'd', 'x', 'X', 'c', 'C', '#', '$'>;
+
+#endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

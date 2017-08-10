@@ -7,6 +7,7 @@ project
       <include>../include
       <include>./fmt-4.0.0
       <define>FMT_HEADER_ONLY=1
+      <define>BOOST_STRINGIFY_NOT_HEADER_ONLY
     : default-build release
     ;
 
@@ -14,7 +15,7 @@ sources = to_char_ptr.cpp ;
 
 for local src in $(sources)
 {
-    exe $(src:B) : $(src) : <optimization>speed ;
+    exe $(src:B) : $(src) /boost/stringify//boost_stringify : <optimization>speed ;
 }
 
 install ./out : $(sources:B) ;

@@ -5,23 +5,6 @@
 import testing ;
 import regex ;
 
-project libs/stringify ;
-
-rule run-stringify-tests ( sources * ) {
-     local flags = 
-        <toolset>clang:<cxxflags>"-std=c++1y -Wall -Wextra"
-        <toolset>darwin:<cxxflags>"-std=c++1y -Wall -Wextra"
-     ;
-
-     local result ;
-
-     for local source in $(sources)
-     {
-         result += [ run $(source) : : : $(flags) ] ;
-     }
-
-}
-
-
 build-project example ;
 build-project test ;
+build-project build ;

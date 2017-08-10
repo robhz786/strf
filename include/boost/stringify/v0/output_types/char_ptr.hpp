@@ -26,7 +26,10 @@ public:
 
     typedef CharT char_type;
 
-    char_ptr_writer(const char_ptr_writer&) = default;
+    char_ptr_writer(const char_ptr_writer& r)
+        : m_out(r.m_out)
+    {
+    }
 
     explicit char_ptr_writer(CharT* out)
         : m_out(out)
@@ -105,7 +108,12 @@ public:
 
     typedef CharT char_type;
 
-    limited_char_ptr_writer(const limited_char_ptr_writer&) = default;
+    limited_char_ptr_writer(const limited_char_ptr_writer& r)
+        : m_begin(r.m_begin)
+        , m_it(r.m_it)
+        , m_end(r.m_end)
+    {
+    }
 
     explicit limited_char_ptr_writer(CharT* destination, CharT* end)
         : m_begin(destination)
@@ -116,7 +124,7 @@ public:
 
     void put(const CharT* str, std::size_t count) override
     {
-        count = std::min(count, static_cast<std::size_t>(m_end - m_it));
+        count = (std::min)(count, static_cast<std::size_t>(m_end - m_it));
         Traits::copy(m_it, str, count);
         m_it += count;
     }
@@ -132,7 +140,7 @@ public:
 
     void repeat(CharT character, std::size_t count) override
     {
-        count = std::min(count, static_cast<std::size_t>(m_end - m_it));
+        count = (std::min)(count, static_cast<std::size_t>(m_end - m_it));
         Traits::assign(m_it, count, character);
         m_it += count;
     }
@@ -213,7 +221,33 @@ private:
     CharT* m_end;
 };
 
+#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class char_ptr_writer<char, std::char_traits<char>>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class char_ptr_writer<char16_t, std::char_traits<char16_t>>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class char_ptr_writer<char32_t, std::char_traits<char32_t>>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class char_ptr_writer<wchar_t, std::char_traits<wchar_t>>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class limited_char_ptr_writer<char, std::char_traits<char>>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class limited_char_ptr_writer<char16_t, std::char_traits<char16_t>>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class limited_char_ptr_writer<char32_t, std::char_traits<char32_t>>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class limited_char_ptr_writer<wchar_t, std::char_traits<wchar_t>>;
+
+#endif
 
 } // namespace detail
 
@@ -309,7 +343,6 @@ auto write_to(wchar_t* destination, std::size_t count)
     return boost::stringify::v0::make_args_handler<writer, wchar_t*, wchar_t*>
         (destination, destination + count);
 }
-
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

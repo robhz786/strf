@@ -22,7 +22,10 @@ public:
     {
     }
 
-    string_appender(const string_appender&) = default;
+    string_appender(const string_appender& r)
+        : m_out(r.m_out)
+    {
+    }
 
     void put(const char_type* str, std::size_t count) override
     {
@@ -98,6 +101,15 @@ private:
 
     StringType& m_out;
 };
+
+#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_appender<std::string>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_appender<std::u16string>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_appender<std::u32string>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_appender<std::wstring>;
+
+#endif 
 
 } // namespace detail
 

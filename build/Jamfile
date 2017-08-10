@@ -1,0 +1,12 @@
+
+project libs/stringify 
+    : requirements <include>../../.. 
+    ; 
+ 
+lib boost_stringify 
+    : stringify.cpp 
+    : <link>static 
+    ; 
+ 
+boost-install boost_stringify ; 
+ 

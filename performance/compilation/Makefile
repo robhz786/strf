@@ -27,17 +27,18 @@ out/O3/%.o: %.cpp phony_target
 	@$(PRINTF_CMD)   "$<"  "-O3"  "$(GET_COMPILATION_TIMES)"  "$(GET_OBJ_FILE_SIZE)"
 
 
-sources := \
-sample1_BoostStringify.cpp \
-sample1_BoostFormat.cpp \
-sample1_fmtlib_header_only.cpp \
-sample1_fmtlib.cpp \
-sample1_ostream.cpp \
-sample1_fprintf.cpp \
-\
-sample2_BoostStringify.cpp \
-sample2_fmtlib_header_only.cpp \
-sample2_fmtlib.cpp 
+sources += sample1_BoostStringify_header_only.cpp
+sources += sample1_BoostStringify_linked_lib.cpp
+sources += sample1_BoostFormat.cpp
+sources += sample1_fmtlib_header_only.cpp
+sources += sample1_fmtlib.cpp
+sources += sample1_ostream.cpp
+sources += sample1_fprintf.cpp
+
+sources += sample2_BoostStringify_header_only.cpp
+sources += sample2_BoostStringify_linked_lib.cpp
+sources += sample2_fmtlib_header_only.cpp
+sources += sample2_fmtlib.cpp 
 
 
 default_target: print_table_header $(foreach bsrc,$(basename $(sources)),out/debug/$(bsrc).o out/O0/$(bsrc).o out/O3/$(bsrc).o)

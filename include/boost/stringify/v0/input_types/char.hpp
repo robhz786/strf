@@ -51,6 +51,17 @@ private:
     CharT m_char;
 };
 
+
+#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_stringifier<char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_stringifier<char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_stringifier<char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_stringifier<wchar_t>;
+
+#endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+
+
 template <typename CharIn>
 struct char_input_traits
 {
