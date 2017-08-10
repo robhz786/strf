@@ -5,6 +5,7 @@
 #include <limits>
 #include <boost/stringify/v0/conventional_argf_reader.hpp>
 #include <boost/stringify/v0/facets/width_calculator.hpp>
+#include <boost/stringify/v0/stringifier.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
@@ -24,7 +25,7 @@ struct string_argf
 
 
 template<typename CharT>
-class char_ptr_stringifier
+class char_ptr_stringifier: public stringifier<CharT>
 {
 
 public:
@@ -85,7 +86,7 @@ public:
     {
     }
 
-    std::size_t length() const
+    std::size_t length() const override
     {
         if (m_fillcount > 0)
         {
@@ -94,7 +95,7 @@ public:
         return m_len;
     }
 
-    void write(writer_type& out) const
+    void write(writer_type& out) const override
     {
         if (m_fillcount > 0)
         {
@@ -115,7 +116,7 @@ public:
         }
     }
 
-    int remaining_width(int w) const
+    int remaining_width(int w) const override
     {
         if(m_fillcount > 0)
         {

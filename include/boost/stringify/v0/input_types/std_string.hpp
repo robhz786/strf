@@ -13,7 +13,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 template <typename CharT, typename Traits>
-class std_string_stringifier
+class std_string_stringifier: public stringifier<CharT>
 {
 
 public:
@@ -68,7 +68,7 @@ public:
         }
     }
 
-    std::size_t length() const
+    std::size_t length() const override
     {
         if (m_fillcount > 0)
         {
@@ -77,7 +77,7 @@ public:
         return m_str.length();
     }
 
-    void write(writer_type& out) const
+    void write(writer_type& out) const override
     {
         if (m_fillcount > 0)
         {
@@ -98,7 +98,7 @@ public:
         }
     }
 
-    int remaining_width(int w) const
+    int remaining_width(int w) const override
     {
         if(m_fillcount > 0)
         {

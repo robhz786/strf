@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/output_writer.hpp>
+#include <boost/stringify/v0/stringifier.hpp>
 #include <boost/stringify/v0/facets/conversion_from_utf32.hpp>
 #include <type_traits>
 
@@ -13,7 +13,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 template <typename CharT>
-class char32_stringifier
+class char32_stringifier: public stringifier<CharT>
 {
 
     using cv_tag = boost::stringify::v0::conversion_from_utf32_tag<CharT>;
@@ -33,17 +33,17 @@ public:
     {
     }
 
-    std::size_t length() const
+    std::size_t length() const override
     {
         return m_conv.length(m_char32);
     }
     
-    void write(writer_type& out) const
+    void write(writer_type& out) const override
     {
         m_conv.write(out, m_char32);
     }
 
-    int remaining_width(int w) const
+    int remaining_width(int w) const override
     {
         return (std::max)(0, w - m_width);
     }

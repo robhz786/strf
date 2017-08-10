@@ -131,6 +131,7 @@ BOOST_STRINGIFY_INLINE int width_calculator::remaining_width
     {
         width -= width_of(*it);
     }
+
     return (std::max)(0, width);
 }
 

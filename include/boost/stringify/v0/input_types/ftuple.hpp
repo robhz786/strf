@@ -7,13 +7,14 @@
 
 #include <boost/stringify/v0/input_arg.hpp>
 #include <boost/stringify/v0/ftuple.hpp>
+#include <boost/stringify/v0/stringifier.hpp>
 #include <initializer_list>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 template <typename CharT, typename ParentFTuple, typename ChildFTuple>
-class ftuple_stringifier
+class ftuple_stringifier: public stringifier<CharT>
 {
 
 private:
@@ -41,7 +42,7 @@ public:
     {
     }
 
-    std::size_t length() const
+    std::size_t length() const override
     {
         std::size_t sum = 0;
         for(const auto& arg : m_args)
@@ -51,7 +52,7 @@ public:
         return sum;
     }
 
-    int remaining_width(int w) const
+    int remaining_width(int w) const override
     {
         for(const auto& arg : m_args)
         {
@@ -60,7 +61,7 @@ public:
         return w;
     }
 
-    void write(writer_type& out) const
+    void write(writer_type& out) const override
     {
         for(const auto& arg : m_args)
         {

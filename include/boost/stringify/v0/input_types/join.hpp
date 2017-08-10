@@ -22,20 +22,20 @@ struct join_t
 }
 
 inline boost::stringify::v0::detail::join_t
-join_left(int width, char32_t fillchar =char32_t())
+join_left(int width, char32_t fillchar = char32_t())
 {
     return {boost::stringify::v0::alignment::left, fillchar, width, 0};
 }
 
 
 inline boost::stringify::v0::detail::join_t
-join_right(int width, char32_t fillchar =char32_t())
+join_right(int width, char32_t fillchar = char32_t())
 {
     return {boost::stringify::v0::alignment::right, fillchar, width, 0};
 }
 
 inline boost::stringify::v0::detail::join_t
-join_internal(int width, int num_leading_args = 1, char32_t fillchar =char32_t())
+join_internal(int width, int num_leading_args = 1, char32_t fillchar = char32_t())
 {
     return {boost::stringify::v0::alignment::internal
             , fillchar, width, num_leading_args};
@@ -50,7 +50,7 @@ join_internal(int width, char32_t fillchar)
 namespace detail {
 
 template <typename CharT, typename FTuple>
-class join_stringifier
+class join_stringifier: public stringifier<CharT>
 {
     using width_calc_tag = boost::stringify::v0::width_calculator_tag;
     using from_utf32_tag = boost::stringify::v0::conversion_from_utf32_tag<CharT>;
@@ -77,12 +77,12 @@ public:
         determinate_fill();
     }
 
-    std::size_t length() const
+    std::size_t length() const override
     {
         return args_length() + fill_length();
     }
 
-    void write(writer_type& out) const
+    void write(writer_type& out) const override
     {
         if (m_fillcount <= 0)
         {
@@ -107,7 +107,7 @@ public:
         }
     }
 
-    int remaining_width(int w) const
+    int remaining_width(int w) const override
     {
         if (m_fillcount > 0)
         {

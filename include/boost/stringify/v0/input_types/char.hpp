@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/output_writer.hpp>
+#include <boost/stringify/v0/stringifier.hpp>
 #include <boost/stringify/v0/input_types/char32.hpp>
 #include <boost/stringify/v0/facets/width_calculator.hpp>
 
@@ -13,7 +13,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 template <typename CharT>
-class char_stringifier
+class char_stringifier: public stringifier<CharT>
 {
 
 public:
@@ -29,17 +29,17 @@ public:
     {
     }
 
-    std::size_t length() const
+    std::size_t length() const override
     {
         return 1;
     }
 
-    void write(writer_type& out) const
+    void write(writer_type& out) const override
     {
         out.put(m_char);
     }
 
-    int remaining_width(int w) const
+    int remaining_width(int w) const override
     {
         return w - m_wcalc.width_of(m_char);
     }

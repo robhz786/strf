@@ -7,7 +7,6 @@
 
 #include <boost/stringify/v0/conventional_argf_reader.hpp>
 #include <boost/stringify/v0/char_flags.hpp>
-#include <boost/stringify/v0/output_writer.hpp>
 #include <boost/stringify/v0/facets/alignment.hpp>
 #include <boost/stringify/v0/facets/fill.hpp>
 #include <boost/stringify/v0/facets/intbase.hpp>
@@ -18,6 +17,7 @@
 #include <boost/stringify/v0/ftuple.hpp>
 #include <boost/stringify/v0/detail/characters_catalog.hpp>
 #include <boost/stringify/v0/detail/number_of_digits.hpp>
+#include <boost/stringify/v0/stringifier.hpp>
 #include <cstdint>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -61,7 +61,7 @@ unsigned_abs(intT value)
 
 
 template <typename intT, typename CharT>
-class int_stringifier
+class int_stringifier: public stringifier<CharT>
 {
     using unsigned_intT = typename std::make_unsigned<intT>::type;
     using width_t = boost::stringify::v0::width_t;
@@ -113,12 +113,12 @@ public:
         determinate_fill(get_facet<wcalc_tag>(ft));
     }
 
-    std::size_t length() const
+    std::size_t length() const override
     {
         return length_body() + length_fill();
     }
 
-    void write(writer_type& out) const
+    void write(writer_type& out) const override
     {
         if (m_fillcount > 0)
         {
@@ -130,7 +130,7 @@ public:
         }
     }
 
-    int remaining_width(int w) const
+    int remaining_width(int w) const override
     {
         return w > m_total_width ? w - m_total_width : 0;
     }
