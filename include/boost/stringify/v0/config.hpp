@@ -26,6 +26,14 @@
 #endif
 
 
+#if defined(__has_include)
+#if __has_include(<string_view>)
+#define BOOST_STRINGIFY_HAS_STD_STRING_VIEW
+#include <string_view>
+#endif
+#endif
+
+
 #define BOOST_STRINGIFY_V0_NAMESPACE_BEGIN         \
 namespace boost {                                  \
 namespace stringify {                              \

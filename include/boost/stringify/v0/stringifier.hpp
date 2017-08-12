@@ -14,15 +14,13 @@ class stringifier
 {
 public:
 
-    using writer_type = boost::stringify::v0::output_writer<CharT>;
-    
     virtual ~stringifier()
     {
     }
 
     virtual std::size_t length() const = 0;
         
-    virtual void write(writer_type& out) const = 0;
+    virtual void write(stringify::v0::output_writer<CharT>& out) const = 0;
 
     virtual int remaining_width(int w) const = 0;
 };
