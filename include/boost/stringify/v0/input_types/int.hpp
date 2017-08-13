@@ -26,7 +26,7 @@ namespace detail {
 
 struct int_argf
 {
-    using char_flags_type = boost::stringify::v0::char_flags
+    using char_flags_type = stringify::v0::char_flags
         <'+', '-', '<', '>', '=', 'o', 'd', 'x', 'X', 'c', 'C', '#', '$'>;
 
     constexpr int_argf(int w): width(w) {}
@@ -64,53 +64,58 @@ template <typename intT, typename CharT>
 class int_stringifier: public stringifier<CharT>
 {
     using unsigned_intT = typename std::make_unsigned<intT>::type;
-    using width_t = boost::stringify::v0::width_t;
-    using chars_catalog = boost::stringify::v0::detail::characters_catalog;
-    using cv_tag = boost::stringify::v0::conversion_from_utf32_tag<CharT>;
-    using wcalc_tag = boost::stringify::v0::width_calculator_tag;
+    using chars_catalog = stringify::v0::detail::characters_catalog;
+    using from32_tag = stringify::v0::conversion_from_utf32_tag<CharT>;
+    using wcalc_tag = stringify::v0::width_calculator_tag;
     static constexpr bool is_signed = std::is_signed<intT>::value;
 
 public:
 
     using input_type  = intT ;
     using char_type   = CharT;
-    using writer_type = boost::stringify::v0::output_writer<CharT>;
-    using second_arg = boost::stringify::v0::detail::int_argf;
+    using writer_type = stringify::v0::output_writer<CharT>;
+    using second_arg = stringify::v0::detail::int_argf;
 
 private:
 
-    using argf_reader = boost::stringify::v0::conventional_argf_reader<input_type>;
+    using argf_reader = stringify::v0::conventional_argf_reader<input_type>;
 
 public:
 
     template <typename FTuple>
     int_stringifier(const FTuple& ft, intT value) noexcept
-        : m_value(value)
-        , m_conv(get_facet<cv_tag>(ft))
-        , m_fillchar(get_facet<fill_tag>(ft).fill_char())
-        , m_total_width(get_facet<width_tag>(ft).width())
-        , m_alignment(get_facet<alignment_tag>(ft).value())
+        : m_value{value}
+        , m_form32vc{get_facet<from32_tag>(ft)}
+        , m_width{get_facet<width_tag>(ft).width()}
+        , m_fillchar{get_facet<fill_tag>(ft).fill_char()}
+        , m_alignment{get_facet<alignment_tag>(ft).value()}
         , m_base(get_facet<intbase_tag>(ft).value())
-        , m_showpos(is_signed && value >= 0 && get_facet<showpos_tag>(ft).value())
-        , m_showbase(get_facet<showbase_tag>(ft).value())
-        , m_uppercase(get_facet<case_tag>(ft).uppercase())
+        , m_showpos{is_signed && value >= 0 && get_facet<showpos_tag>(ft).value()}
+        , m_showbase{get_facet<showbase_tag>(ft).value()}
+        , m_uppercase{get_facet<case_tag>(ft).uppercase()}
     {
-        determinate_fill(get_facet<wcalc_tag>(ft));
+        if(m_width > 0)
+        {
+            determinate_fill(get_facet<wcalc_tag>(ft));
+        }
     }
 
     template <typename FTuple>
     int_stringifier(const FTuple& ft, intT value, second_arg argf) noexcept
-        : m_value(value)
-        , m_conv(get_facet<cv_tag>(ft))
-        , m_fillchar(get_facet<fill_tag>(ft).fill_char())
-        , m_total_width(argf_reader::get_width(argf, ft))
-        , m_alignment(argf_reader::get_alignment(argf, ft))
+        : m_value{value}
+        , m_form32vc{get_facet<from32_tag>(ft)}
+        , m_width{argf_reader::get_width(argf, ft)}
+        , m_fillchar{get_facet<fill_tag>(ft).fill_char()}
         , m_base(argf_reader::get_base(argf, ft))
-        , m_showpos(is_signed && value >= 0 && argf_reader::get_showpos(argf, ft))
-        , m_showbase(argf_reader::get_showbase(argf, ft))
-        , m_uppercase(argf_reader::get_uppercase(argf, ft))
+        , m_showpos{is_signed && value >= 0 && argf_reader::get_showpos(argf, ft)}
+        , m_showbase{argf_reader::get_showbase(argf, ft)}
+        , m_uppercase{argf_reader::get_uppercase(argf, ft)}
     {
-        determinate_fill(get_facet<wcalc_tag>(ft));
+        if(m_width > 0)
+        {
+            m_alignment = argf_reader::get_alignment(argf, ft);
+            determinate_fill(get_facet<wcalc_tag>(ft));
+        }
     }
 
     std::size_t length() const override
@@ -132,21 +137,25 @@ public:
 
     int remaining_width(int w) const override
     {
-        return w > m_total_width ? w - m_total_width : 0;
+        if(m_width <= 0)
+        {
+            m_width = width_body();
+        }
+        return w > m_width ? w - m_width : 0;
     }
 
 private:
 
     const intT m_value;
-    const boost::stringify::v0::conversion_from_utf32<CharT>& m_conv;
-    const char32_t m_fillchar;
-    width_t m_fillcount = 0;
-    width_t m_total_width;
-    const boost::stringify::v0::alignment m_alignment;
-    const unsigned short m_base;
-    const bool m_showpos;
-    const bool m_showbase;
-    const bool m_uppercase;
+    const stringify::v0::conversion_from_utf32<CharT>& m_form32vc;
+    mutable int m_width;
+    char32_t m_fillchar = U' ';
+    int m_fillcount = 0;
+    stringify::v0::alignment m_alignment = stringify::v0::alignment::right;
+    unsigned short m_base;
+    bool m_showpos;
+    bool m_showbase;
+    bool m_uppercase;
 
 
     template <typename FacetCategory, typename FTuple>
@@ -159,7 +168,7 @@ private:
     {
         if(m_base == 10)
         {
-            return boost::stringify::v0::detail::unsigned_abs(m_value);
+            return stringify::v0::detail::unsigned_abs(m_value);
         }
         return static_cast<unsigned_intT>(m_value);
     }
@@ -168,7 +177,7 @@ private:
     {
         if (m_fillcount > 0)
         {
-            return m_fillcount * m_conv.length(m_fillchar);
+            return m_fillcount * m_form32vc.length(m_fillchar);
         }
         return 0;
     }
@@ -189,40 +198,21 @@ private:
     template <unsigned Base>
     std::size_t length_digits() const noexcept
     {
-        return boost::stringify::v0::detail::number_of_digits<Base>(unsigned_value());
+        return stringify::v0::detail::number_of_digits<Base>(unsigned_value());
     }
-
-
-    // template <unsigned Base>
-    // std::size_t length_separators(unsigned num_digits) const noexcept
-    // {
-    //     auto separators_count =
-    //         boost::stringify::v0::numgrouping_count<input_type, Base>
-    //         (m_fmt, num_digits);
-
-    //     if (separators_count > 0)
-    //     {
-    //         char32_t separator
-    //             = boost::stringify::v0::thousands_sep<input_type, Base>(m_fmt);
-    //         return separators_count
-    //             * boost::stringify::v0::get_char32_length<CharT, input_type>
-    //               (m_fmt, separator);
-    //     }
-    //     return 0;
-    // }
 
     void write_with_fill(writer_type& out) const
     {
         switch (m_alignment)
         {
-            case boost::stringify::v0::alignment::left:
+            case stringify::v0::alignment::left:
                 write_sign(out);
                 write_base(out);
                 write_digits(out);
                 write_fill(out);
                 break;
 
-            case boost::stringify::v0::alignment::right:
+            case stringify::v0::alignment::right:
                 write_fill(out);
                 write_sign(out);
                 write_base(out);
@@ -230,7 +220,7 @@ private:
                 break;
 
             default:
-                BOOST_ASSERT(m_alignment == boost::stringify::v0::alignment::internal);
+                BOOST_ASSERT(m_alignment == stringify::v0::alignment::internal);
                 write_sign(out);
                 write_base(out);
                 write_fill(out);
@@ -348,25 +338,25 @@ private:
     void determinate_fill(const width_calculator& wcalc)
     {
         int content_width = width_body();
-        if(content_width < m_total_width)
+        if(content_width < m_width)
         {
             auto fillchar_width = wcalc.width_of(m_fillchar);
-            m_fillcount = (m_total_width - content_width) / fillchar_width;
+            m_fillcount = (m_width - content_width) / fillchar_width;
         }
         else
         {
-            m_total_width = content_width;
+            m_width = content_width;
         }
     }
 
     void write_fill(writer_type& out) const
     {
-        m_conv.write(out, m_fillchar, m_fillcount);
+        m_form32vc.write(out, m_fillchar, m_fillcount);
     }
 
-    width_t width_body() const noexcept
+    int width_body() const noexcept
     {
-        width_t bw = 0;
+        int bw = 0;
         auto uv = unsigned_value();
         if(m_base == 10)
         {
@@ -374,7 +364,7 @@ private:
             {
                 ++bw;
             }
-            bw += boost::stringify::v0::detail::number_of_digits<10>(uv);
+            bw += stringify::v0::detail::number_of_digits<10>(uv);
         }
         else if(m_base == 16)
         {
@@ -382,7 +372,7 @@ private:
             {
                 bw += 2;
             }
-            bw += boost::stringify::v0::detail::number_of_digits<16>(uv);
+            bw += stringify::v0::detail::number_of_digits<16>(uv);
         }
         else
         {
@@ -391,7 +381,7 @@ private:
             {
                 ++bw;
             }
-            bw += boost::stringify::v0::detail::number_of_digits<8>(uv);
+            bw += stringify::v0::detail::number_of_digits<8>(uv);
         }
         return bw;
     }
@@ -403,33 +393,33 @@ struct int_input_traits
 {
     template <typename CharT, typename>
     using stringifier =
-        boost::stringify::v0::detail::int_stringifier<IntT, CharT>;
+        stringify::v0::detail::int_stringifier<IntT, CharT>;
 };
 
 } // namespace detail
 
-boost::stringify::v0::detail::int_input_traits<short>
+stringify::v0::detail::int_input_traits<short>
 boost_stringify_input_traits_of(short);
 
-boost::stringify::v0::detail::int_input_traits<int>
+stringify::v0::detail::int_input_traits<int>
 boost_stringify_input_traits_of(int);
 
-boost::stringify::v0::detail::int_input_traits<long>
+stringify::v0::detail::int_input_traits<long>
 boost_stringify_input_traits_of(long);
 
-boost::stringify::v0::detail::int_input_traits<long long>
+stringify::v0::detail::int_input_traits<long long>
 boost_stringify_input_traits_of(long long);
 
-boost::stringify::v0::detail::int_input_traits<unsigned short>
+stringify::v0::detail::int_input_traits<unsigned short>
 boost_stringify_input_traits_of(unsigned short);
 
-boost::stringify::v0::detail::int_input_traits<unsigned>
+stringify::v0::detail::int_input_traits<unsigned>
 boost_stringify_input_traits_of(unsigned);
 
-boost::stringify::v0::detail::int_input_traits<unsigned long>
+stringify::v0::detail::int_input_traits<unsigned long>
 boost_stringify_input_traits_of(unsigned long);
 
-boost::stringify::v0::detail::int_input_traits<unsigned long long>
+stringify::v0::detail::int_input_traits<unsigned long long>
 boost_stringify_input_traits_of(unsigned long long);
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
