@@ -22,7 +22,7 @@ void sample2(std::streambuf& out)
     strf::write_to(out) ({123, "x"}, "abcdef", 456);
 }
 
-void sample3(char* out)
+void sample3(char (&out)[200])
 {
     strf::write_to(out) (20);
     strf::write_to(out) (20, 20u);
@@ -32,7 +32,7 @@ void sample3(char* out)
     strf::write_to(out) ({123, "x"}, "abcdef", 456);
 }
 
-void sample3(wchar_t* out)
+void sample3(wchar_t (&out)[200])
 {
     strf::write_to(out) (20);
     strf::write_to(out) (20, 20u);

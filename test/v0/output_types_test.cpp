@@ -52,6 +52,39 @@ int main()
             .with(fmt) [{u"abcd", 10, 11}];
         BOOST_TEST(std::u16string(buff) == u"ABCD0XA0XB");
     }
+    
+   {
+        char buff[9] = "";        
+
+        auto result = strf::write_to(buff) ({"abcd", 8}, 'e');
+        BOOST_TEST(result.length == 8);
+        BOOST_TEST( ! result.success);
+        BOOST_TEST(std::string(buff) == "    abcd");
+    }
+    {
+        char16_t buff[9] = u"";
+
+        auto result = strf::write_to(buff) ({u"abcd", 8}, u'e');
+        BOOST_TEST(result.length == 8);
+        BOOST_TEST( ! result.success);
+        BOOST_TEST(std::u16string(buff) == u"    abcd");
+    }
+    {
+        char32_t buff[9] = U"";
+
+        auto result = strf::write_to(buff) ({U"abcd", 8}, U'e');
+        BOOST_TEST(result.length == 8);
+        BOOST_TEST( ! result.success);
+        BOOST_TEST(std::u32string(buff) == U"    abcd");
+    }
+    {
+        wchar_t buff[9] = L"";
+
+        auto result = strf::write_to(buff) ({L"abcd", 8}, L'e');
+        BOOST_TEST(result.length == 8);
+        BOOST_TEST( ! result.success);
+        BOOST_TEST(std::wstring(buff) == L"    abcd");
+    }
 
     // write_to(char*, char* end)
 

@@ -24,9 +24,8 @@ int main()
     namespace strf = boost::stringify;
     namespace spirit = boost::spirit;
     namespace karma = boost::spirit::karma;
-    char buff[1000000];
-    char* const dest = &buff[0];
-    constexpr std::size_t dest_size = sizeof(buff);
+    char dest[1000000];
+    constexpr std::size_t dest_size = sizeof(dest);
     
  
     std::cout << std::endl 

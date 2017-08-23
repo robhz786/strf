@@ -2,7 +2,7 @@
 
 namespace strf = boost::stringify;
 
-void write_sample(char* out)
+void write_sample(std::FILE* out)
 {
     strf::write_to(out) (20);
     strf::write_to(out) (20, 20u);

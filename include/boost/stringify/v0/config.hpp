@@ -26,7 +26,7 @@
 #endif
 
 
-#if defined(__has_include)
+#if __cplusplus >= 201703L && defined(__has_include)
 #if __has_include(<string_view>)
 #define BOOST_STRINGIFY_HAS_STD_STRING_VIEW
 #include <string_view>
