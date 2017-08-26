@@ -6,6 +6,7 @@
 
 #include <boost/detail/lightweight_test.hpp>
 #include "test_utils.hpp"
+#include "invalid_arg.hpp"
 #include <boost/stringify.hpp>
 #include <limits>
 #include <locale>
@@ -13,6 +14,8 @@
 #include <iostream>
 #include <fstream>
 #include <string.h>
+
+
 
 template <typename T> struct is_long :  public std::is_same<long, T>
 {
@@ -23,172 +26,6 @@ int main()
     namespace strf = boost::stringify::v0;
 
     auto fmt = strf::make_ftuple(strf::showbase, strf::hex);
-
-    // write_to(char*)
-
-    {
-        char buff[200] = "";
-        strf::write_to(buff).with(fmt) [{"abcd", 10, 11}];
-        BOOST_TEST(std::string(buff) == "abcd0xa0xb");
-    }
-    {
-        wchar_t buff[200] = L"";
-        strf::write_to(buff).with(fmt) [{L"abcd", 10, 11}];
-        BOOST_TEST(std::wstring(buff) == L"abcd0xa0xb");
-    }
-    {
-        char16_t buff[200] = u"";
-        strf::write_to(buff).with(fmt) [{u"abcd", 10, 11}];
-        BOOST_TEST(std::u16string(buff) == u"abcd0xa0xb");
-    }
-    {
-        char32_t buff[200] = U"";
-        strf::write_to(buff).with(fmt) [{U"abcd", 10, 11}];
-        BOOST_TEST(std::u32string(buff) == U"abcd0xa0xb");
-    }
-    {
-        char16_t buff[200] = u"";
-        strf::write_to<to_upper_char_traits<char16_t>> (buff)
-            .with(fmt) [{u"abcd", 10, 11}];
-        BOOST_TEST(std::u16string(buff) == u"ABCD0XA0XB");
-    }
-    
-   {
-        char buff[9] = "";        
-
-        auto result = strf::write_to(buff) ({"abcd", 8}, 'e');
-        BOOST_TEST(result.length == 8);
-        BOOST_TEST( ! result.success);
-        BOOST_TEST(std::string(buff) == "    abcd");
-    }
-    {
-        char16_t buff[9] = u"";
-
-        auto result = strf::write_to(buff) ({u"abcd", 8}, u'e');
-        BOOST_TEST(result.length == 8);
-        BOOST_TEST( ! result.success);
-        BOOST_TEST(std::u16string(buff) == u"    abcd");
-    }
-    {
-        char32_t buff[9] = U"";
-
-        auto result = strf::write_to(buff) ({U"abcd", 8}, U'e');
-        BOOST_TEST(result.length == 8);
-        BOOST_TEST( ! result.success);
-        BOOST_TEST(std::u32string(buff) == U"    abcd");
-    }
-    {
-        wchar_t buff[9] = L"";
-
-        auto result = strf::write_to(buff) ({L"abcd", 8}, L'e');
-        BOOST_TEST(result.length == 8);
-        BOOST_TEST( ! result.success);
-        BOOST_TEST(std::wstring(buff) == L"    abcd");
-    }
-
-    // write_to(char*, char* end)
-
-    {
-        char buff[200] = "---------------------------------------";
-        char* end = buff + 200;
-        auto result = strf::write_to(buff, end) ({"abcd", 8}, 'e');
-        BOOST_TEST(result.length == 9);
-        BOOST_TEST(result.success);
-        BOOST_TEST(std::string(buff) == "    abcde");
-    }
-    {
-        char buff[200] = "aaa";
-        auto result = strf::write_to(buff, buff) ({"abcd", 8}, 'e');
-        BOOST_TEST(result.length == 0);
-        BOOST_TEST(! result.success);
-        BOOST_TEST(std::string(buff) == "aaa");
-    }
-    {
-        char buff[200] = "---------------------------------------";
-        auto result = strf::write_to(buff, buff+1) ({"abcd", 8}, 'e');
-        BOOST_TEST(result.length == 0);
-        BOOST_TEST(! result.success);
-        BOOST_TEST(std::string(buff) == "");
-    }
-    
-    {
-        char buff[200] = "---------------------------------------";
-        char* end = buff + 10;
-        auto result = strf::write_to(buff, end) ({"abcd", 8}, 'e');
-        BOOST_TEST(result.length == 9);
-        BOOST_TEST(result.success);
-
-        BOOST_TEST(std::string(buff) == "    abcde");
-    }
-    {
-        char buff[200] = "---------------------------------------";
-        char* end = buff + 9;
-
-        auto result = strf::write_to(buff, end) ({"abcd", 8}, 'e');
-        BOOST_TEST(result.length == 8);
-        BOOST_TEST( ! result.success);
-        BOOST_TEST(std::string(buff) == "    abcd");
-    }
-    {
-        char buff[200] = "---------------------------------------";
-        char* end = buff + 9;
-        auto result = strf::write_to(buff, end) ({"abcde", 9});
-        BOOST_TEST(result.length == 8);
-        BOOST_TEST( ! result.success);
-        BOOST_TEST(std::string(buff) == "    abcd");
-    }
-    {
-        char buff[200] = "---------------------------------------";
-        char* end = buff + 9;
-        auto result = strf::write_to(buff, end) ({"abcde", {9, "<"}});
-        BOOST_TEST(result.length == 8);
-        BOOST_TEST( ! result.success);
-        BOOST_TEST(std::string(buff) == "abcde   ");
-    }
-    
-    {
-        char16_t buff[200] = u"---------------------------------------";
-        char16_t* end = buff + 200;
-        strf::write_to<to_upper_char_traits<char16_t>>(buff, end).with(fmt)
-            ({u"abcd", 8}, u'e');
-        BOOST_TEST(std::u16string(buff) == u"    ABCDE");
-    }
-    
-
-    // write_to(char*, std::size_t end)
-    {
-        char buff[] = "---------------------------------------";
-
-        auto result = strf::write_to(buff, 9) ({"abcd", 8}, 'e');
-        BOOST_TEST(result.length == 8);
-        BOOST_TEST( ! result.success);
-        BOOST_TEST(std::string(buff) == "    abcd");
-    }
-    {
-        char16_t buff[] = u"---------------------------------------";
-
-        auto result = strf::write_to(buff, 9) ({u"abcd", 8}, u'e');
-        BOOST_TEST(result.length == 8);
-        BOOST_TEST( ! result.success);
-        BOOST_TEST(std::u16string(buff) == u"    abcd");
-    }
-    {
-        char32_t buff[] = U"---------------------------------------";
-
-        auto result = strf::write_to(buff, 9) ({U"abcd", 8}, U'e');
-        BOOST_TEST(result.length == 8);
-        BOOST_TEST( ! result.success);
-        BOOST_TEST(std::u32string(buff) == U"    abcd");
-    }
-    {
-        wchar_t buff[] = L"---------------------------------------";
-
-        auto result = strf::write_to(buff, 9) ({L"abcd", 8}, L'e');
-        BOOST_TEST(result.length == 8);
-        BOOST_TEST( ! result.success);
-        BOOST_TEST(std::wstring(buff) == L"    abcd");
-    }
-
 
     // append_to(std::string)
 
@@ -315,7 +152,7 @@ int main()
         BOOST_TEST(status.count == 9);
         BOOST_TEST(oss.str() == L"    abcde");
     }
-    
+
     {
         const char* filename = "stringify_tmptestfile.tmp";
         std::remove(filename);

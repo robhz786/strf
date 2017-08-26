@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <cstddef>
+#include <system_error>
 #include <boost/stringify/v0/config.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -21,6 +21,17 @@ public:
     {
     }
 
+    virtual void set_error(std::error_code err)
+    {
+        // todo: pure virtual
+    }
+
+    virtual bool good() const
+    {
+        // todo: pure virtual
+        return true;
+    }
+    
     virtual void put(const CharT* str, std::size_t size) = 0;
     
     virtual void put(CharT ch) = 0;

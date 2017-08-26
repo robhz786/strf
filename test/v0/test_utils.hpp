@@ -9,6 +9,79 @@
 #include <boost/stringify.hpp>
 #include <cctype>
 
+
+template <typename W>
+decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::string& expected)
+{
+    expected =
+        u8" abcd xyyabb\u0080\u0081\u0081\u0800\u0801\u0801"
+        u8"\U00010000\U00010001\U00010001";
+    
+    return w
+        [{
+            " abcd ", 'x', {'y', {"", 2}}, {'z', {"", 0}},
+            U'a', {U'b', {"", 2}}, {U'c', {"", 0}},
+            U'\u0080', {U'\u0081', {"", 2}}, {U'\u0082', {"", 0}},
+            U'\u0800', {U'\u0801', {"", 2}}, {U'\u0802', {"", 0}},
+            U'\U00010000', {U'\U00010001', {"", 2}}, {U'\U00010002', {"", 0}},
+        }];
+}
+
+template <typename W>
+decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::u16string& expected)
+{
+    expected =
+        u" abcd xyyabb\u0080\u0081\u0081\u0800\u0801\u0801"
+        u"\U00010000\U00010001\U00010001";
+    
+    return w
+        [{
+                u" abcd ", u'x', {u'y', {"", 2}}, {u'z', {"", 0}},
+                U'a', {U'b', {"", 2}}, {U'c', {"", 0}},
+                U'\u0080', {U'\u0081', {"", 2}}, {U'\u0082', {"", 0}},
+                U'\u0800', {U'\u0801', {"", 2}}, {U'\u0802', {"", 0}},
+                U'\U00010000', {U'\U00010001', {"", 2}}, {U'\U00010002', {"", 0}},
+        }];
+
+}
+
+template <typename W>
+decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::u32string& expected)
+{
+    expected =
+        U" abcd xyyabb\u0080\u0081\u0081\u0800\u0801\u0801"
+        U"\U00010000\U00010001\U00010001";
+    
+    return w
+        [{
+               U" abcd ", U'x', {U'y', {"", 2}}, {U'z', {"", 0}},
+               U'a', {U'b', {"", 2}}, {U'c', {"", 0}},
+               U'\u0080', {U'\u0081', {"", 2}}, {U'\u0082', {"", 0}},
+               U'\u0800', {U'\u0801', {"", 2}}, {U'\u0802', {"", 0}},
+               U'\U00010000', {U'\U00010001', {"", 2}}, {U'\U00010002', {"", 0}},
+        }];
+
+}
+
+
+template <typename W>
+decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::wstring& expected)
+{
+    expected =
+        L" abcd xyyabb\u0080\u0081\u0081\u0800\u0801\u0801"
+        L"\U00010000\U00010001\U00010001";
+    
+    return w
+        [{
+               L" abcd ", L'x', {L'y', {"", 2}}, {L'z', {"", 0}},
+               U'a', {U'b', {"", 2}}, {U'c', {"", 0}},
+               U'\u0080', {U'\u0081', {"", 2}}, {U'\u0082', {"", 0}},
+               U'\u0800', {U'\u0801', {"", 2}}, {U'\u0802', {"", 0}},
+               U'\U00010000', {U'\U00010001', {"", 2}}, {U'\U00010002', {"", 0}},
+        }];
+
+}
+
 template <typename CharT>
 struct to_upper_char_traits : public std::char_traits<CharT>
 {
