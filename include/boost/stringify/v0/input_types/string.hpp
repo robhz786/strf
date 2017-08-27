@@ -67,7 +67,7 @@ public:
 
     template <typename FTuple>
     string_stringifier
-        (const FTuple& ft
+        ( const FTuple& ft
         , const CharT* str
         , const std::size_t len
         ) noexcept
