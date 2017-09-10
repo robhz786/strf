@@ -10,12 +10,6 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-struct streambuf_result
-{
-    std::streamsize count;
-    bool success;
-};
-
 namespace detail {
 
 template <typename CharT, typename Traits>
@@ -25,85 +19,138 @@ public:
 
     using char_type = CharT;
 
-    explicit std_streambuf_writer(std::basic_streambuf<CharT, Traits>& out)
+    explicit std_streambuf_writer
+        ( std::basic_streambuf<CharT, Traits>& out
+        , std::size_t* count
+        )
         : m_out(out)
+        , m_count(count)
     {
+        if(m_count)
+        {
+            *m_count = 0;
+        }
+    }
+
+    bool good() const override
+    {
+        return ! m_err;
+    }
+
+    void set_error(std::error_code err) override
+    {
+        if (err && ! m_err)
+        {
+            m_err = err;
+        }
     }
 
     void put(const CharT* str, std::size_t ucount) override
     {
-        std::streamsize count = ucount;
-        auto count_inc = m_out.sputn(str, count);
-        m_success &= (count_inc == count);
-        m_count += count_inc;
+        if( ! m_err)
+        {
+            std::streamsize count = ucount;
+            auto count_inc = m_out.sputn(str, count);
+            if(m_count != nullptr)
+            {
+                *m_count += count_inc;
+            }
+            if (count_inc != count)
+            {
+                m_err = std::make_error_code(std::errc::io_error);
+            }
+        }
     }
 
     void put(CharT ch) override
     {
-        do_put(ch);
-    }
-
-    void repeat(CharT ch, std::size_t count) override
-    {
-        for(; count > 0; --count)
+        if( ! m_err)
         {
             do_put(ch);
         }
     }
 
+    void repeat(CharT ch, std::size_t count) override
+    {
+        if( ! m_err)
+        {
+            while(count > 0 && do_put(ch))
+            {
+                --count;
+            }
+        }
+    }
+
     void repeat(CharT ch1, CharT ch2, std::size_t count) override
     {
-        for(; count > 0; --count)
+        if( ! m_err)
         {
-            do_put(ch1);
-            do_put(ch2);
+            while(count > 0 && do_put(ch1) && do_put(ch2))
+            {
+                --count;
+            }
         }
     }
 
     void repeat(CharT ch1, CharT ch2, CharT ch3, std::size_t count) override
     {
-        for(; count > 0; --count)
+        if( ! m_err)
         {
-            do_put(ch1);
-            do_put(ch2);
-            do_put(ch3);
+            while(count > 0 && do_put(ch1) && do_put(ch2) && do_put(ch3))
+            {
+                --count;
+            }
         }
     }
 
-    void repeat(CharT ch1, CharT ch2, CharT ch3, CharT ch4, std::size_t count) override
+    void repeat
+        ( CharT ch1
+        , CharT ch2
+        , CharT ch3
+        , CharT ch4
+        , std::size_t count
+        ) override
     {
-        for(; count > 0; --count)
+        if( ! m_err)
         {
-            do_put(ch1);
-            do_put(ch2);
-            do_put(ch3);
-            do_put(ch4);
+            while
+                ( count > 0
+               && do_put(ch1)
+               && do_put(ch2)
+               && do_put(ch3)
+               && do_put(ch4)
+                )
+            {
+                --count;
+            }
         }
     }
 
-    boost::stringify::v0::streambuf_result finish() noexcept
+    std::error_code finish() noexcept
     {
-        return {m_count, m_success};
+        return m_err;
     }
 
 private:
 
-    void do_put(CharT character)
+    bool do_put(CharT character)
     {
-        if(m_out.sputc(character) == Traits::eof())
+        if(Traits::eq_int_type(m_out.sputc(character), Traits::eof()))
         {
-            m_success = false;
+            m_err = std::make_error_code(std::errc::io_error);
+            return false;
         }
-        else
+        if(m_count != nullptr)
         {
-            ++m_count;
+            ++ *m_count;
         }
+        return true;
     }
 
 
     std::basic_streambuf<CharT, Traits>& m_out;
-    std::streamsize m_count = 0;
-    bool m_success = true;
+    std::size_t * m_count = 0;
+    std::error_code m_err;
 
 };
 
@@ -127,20 +174,26 @@ class std_streambuf_writer<wchar_t, std::char_traits<wchar_t>>;
 
 
 template<typename CharT, typename Traits = std::char_traits<CharT> >
-auto write_to(std::basic_streambuf<CharT, Traits>& destination)
+auto write_to
+    ( std::basic_streambuf<CharT, Traits>& dest
+    , std::size_t* count = nullptr
+    )
 {
     using intput_type = std::basic_streambuf<CharT, Traits>&;
-    using writer = boost::stringify::v0::detail::std_streambuf_writer<CharT, Traits>;
-    return boost::stringify::v0::make_args_handler<writer, intput_type>(destination);
+    using writer = stringify::v0::detail::std_streambuf_writer<CharT, Traits>;
+    return stringify::v0::make_args_handler<writer, intput_type>(dest, count);
 }
 
 
 template<typename CharT, typename Traits = std::char_traits<CharT> >
-auto write_to(std::basic_streambuf<CharT, Traits>* destination)
+auto write_to
+    ( std::basic_streambuf<CharT, Traits>* dest
+    , std::size_t* count = nullptr
+    )
 {
     using intput_type = std::basic_streambuf<CharT, Traits>&;
-    using writer = boost::stringify::v0::detail::std_streambuf_writer<CharT, Traits>;
-    return boost::stringify::v0::make_args_handler<writer, intput_type>(*destination);
+    using writer = stringify::v0::detail::std_streambuf_writer<CharT, Traits>;
+    return stringify::v0::make_args_handler<writer, intput_type>(*dest, count);
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

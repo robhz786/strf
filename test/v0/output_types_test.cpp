@@ -6,7 +6,6 @@
 
 #include <boost/detail/lightweight_test.hpp>
 #include "test_utils.hpp"
-#include "invalid_arg.hpp"
 #include <boost/stringify.hpp>
 #include <limits>
 #include <locale>
@@ -126,31 +125,6 @@ int main()
             (u"abcd", 11);
 
         BOOST_TEST(std::u16string(str.c_str()) == u"ABCD0XB");
-    }
-
-    {
-        std::ostringstream oss;
-        auto status = strf::write_to(oss.rdbuf()) .with(fmt) ({"abcd", 8}, 'e');
-        BOOST_TEST(status.count == 9);
-        BOOST_TEST(oss.str() == "    abcde");
-    }
-    {
-        std::basic_ostringstream<char16_t> oss;
-        auto status = strf::write_to(oss.rdbuf()) .with(fmt) ({u"abcd", 8}, u'e');
-        BOOST_TEST(status.count == 9);
-        BOOST_TEST(oss.str() == u"    abcde");
-    }
-    {
-        std::basic_ostringstream<char32_t> oss;
-        auto status = strf::write_to(oss.rdbuf()) .with(fmt) ({U"abcd", 8}, U'e');
-        BOOST_TEST(status.count == 9);
-        BOOST_TEST(oss.str() == U"    abcde");
-    }
-    {
-        std::basic_ostringstream<wchar_t> oss;
-        auto status = strf::write_to(oss.rdbuf()) .with(fmt) ({L"abcd", 8}, L'e');
-        BOOST_TEST(status.count == 9);
-        BOOST_TEST(oss.str() == L"    abcde");
     }
 
     {
