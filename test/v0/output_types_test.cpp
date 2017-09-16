@@ -127,44 +127,6 @@ int main()
         BOOST_TEST(std::u16string(str.c_str()) == u"ABCD0XB");
     }
 
-    {
-        const char* filename = "stringify_tmptestfile.tmp";
-        std::remove(filename);
-        {
-            std::FILE* file = fopen(filename, "w");
-            auto result = strf::write_to(file) .with(fmt) ({"abcd", 8}, 'e');
-            fclose(file);
-            BOOST_TEST(result.success);
-            BOOST_TEST(result.count == 9);
-        }
-        {
-            std::ifstream file(filename);
-            std::string line;
-            std::getline(file, line);
-            BOOST_TEST(line == "    abcde");
-        }
-        std::remove(filename);
-    }
-    {
-        const char* filename = "stringify_tmptestfile.tmp";
-        std::remove(filename);
-        {
-            std::FILE* file = fopen(filename, "w");
-            auto result = strf::wwrite_to(file) .with(fmt) ({L"abcd", 8}, L'e');
-            fclose(file);
-            BOOST_TEST(result.success);
-            BOOST_TEST(result.count == 9);
-        }
-        {
-            std::wifstream file(filename);
-            std::wstring line;
-            std::getline(file, line);
-            BOOST_TEST(line == L"    abcde");
-        }
-        std::remove(filename);
-    }
-
-
     int rc = boost::report_errors();
     return rc;
 }
