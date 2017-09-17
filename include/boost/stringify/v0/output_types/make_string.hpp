@@ -5,9 +5,39 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <string>
+#include <system_error>
 #include <boost/stringify/v0/output_writer.hpp>
+#include <boost/stringify/v0/detail/expected.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+
+template <typename CharT, typename Traits>
+using expected_basic_string = stringify::v0::detail::expected
+    < std::basic_string<CharT, Traits>
+    , std::error_code
+    >;
+
+using expected_string = stringify::v0::detail::expected
+    < std::string
+    , std::error_code
+    >;
+
+using expected_u16string = stringify::v0::detail::expected
+    < std::u16string
+    , std::error_code
+    >;
+
+using expected_u32string = stringify::v0::detail::expected
+    < std::u32string
+    , std::error_code
+    >;
+
+using expected_wstring = stringify::v0::detail::expected
+    < std::wstring
+    , std::error_code
+    >;
+
 namespace detail {
 
 template <typename StringType>
@@ -15,7 +45,7 @@ class string_maker: public output_writer<typename StringType::value_type>
 {
 public:
 
-    typedef typename StringType::value_type char_type;
+    using char_type = typename StringType::value_type;
 
     string_maker()
     {
@@ -31,19 +61,41 @@ public:
     {
     }
 
+    void set_error(std::error_code err) override
+    {
+        if(err && ! m_err)
+        {
+            m_err = err;
+        }
+    }
+
+    bool good() const override
+    {
+        return ! m_err;
+    }
+
     void put(const char_type* str, std::size_t count) override
     {
-        m_out.append(str, count);
+        if( ! m_err)
+        {
+            m_out.append(str, count);
+        }
     }
 
     void put(char_type ch) override
     {
-        m_out.push_back(ch);
+        if( ! m_err)
+        {
+            m_out.push_back(ch);
+        }
     }
 
     void repeat(char_type ch, std::size_t count) override
     {
-        m_out.append(count, ch);
+        if( ! m_err)
+        {
+            m_out.append(count, ch);
+        }
     }
 
     void repeat
@@ -52,10 +104,13 @@ public:
         , std::size_t count
         ) override
     {
-        for(; count > 0; --count)
+        if( ! m_err)
         {
-            m_out.push_back(ch1);
-            m_out.push_back(ch2);
+            for(; count > 0; --count)
+            {
+                m_out.push_back(ch1);
+                m_out.push_back(ch2);
+            }
         }
     }
 
@@ -66,11 +121,14 @@ public:
         , std::size_t count
         ) override
     {
-        for(; count > 0; --count)
+        if( ! m_err)
         {
-            m_out.push_back(ch1);
-            m_out.push_back(ch2);
-            m_out.push_back(ch3);
+            for(; count > 0; --count)
+            {
+                m_out.push_back(ch1);
+                m_out.push_back(ch2);
+                m_out.push_back(ch3);
+            }
         }
     }
 
@@ -82,17 +140,24 @@ public:
         , std::size_t count
         ) override
     {
-        for(; count > 0; --count)
+        if( ! m_err)
         {
-            m_out.push_back(ch1);
-            m_out.push_back(ch2);
-            m_out.push_back(ch3);
-            m_out.push_back(ch4);
+            for(; count > 0; --count)
+            {
+                m_out.push_back(ch1);
+                m_out.push_back(ch2);
+                m_out.push_back(ch3);
+                m_out.push_back(ch4);
+            }
         }
     }
 
-    StringType finish()
+    stringify::v0::detail::expected<StringType, std::error_code> finish()
     {
+        if (m_err)
+        {
+            return m_err;
+        }
         return std::move(m_out);
     }
 
@@ -104,7 +169,9 @@ public:
 private:
 
     StringType m_out;
+    std::error_code m_err;
 };
+
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 

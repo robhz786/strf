@@ -16,7 +16,7 @@ decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::string& exp
     expected =
         u8" abcd xyyabb\u00a1\u00a2\u00a2\u2080\u2081\u2081"
         u8"\U00010000\U00010001\U00010001";
-    
+
     return w
         [{
             " abcd ", 'x', {'y', {"", 2}}, {'z', {"", 0}},
@@ -33,7 +33,7 @@ decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::u16string& 
     expected =
         u" abcd xyyabb\u0080\u0081\u0081\u0800\u0801\u0801"
         u"\U00010000\U00010001\U00010001";
-    
+
     return w
         [{
                 u" abcd ", u'x', {u'y', {"", 2}}, {u'z', {"", 0}},
@@ -51,7 +51,7 @@ decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::u32string& 
     expected =
         U" abcd xyyabb\u0080\u0081\u0081\u0800\u0801\u0801"
         U"\U00010000\U00010001\U00010001";
-    
+
     return w
         [{
                U" abcd ", U'x', {U'y', {"", 2}}, {U'z', {"", 0}},
@@ -70,7 +70,7 @@ decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::wstring& ex
     expected =
         L" abcd xyyabb\u00a1\u00a2\u00a2\u0800\u0801\u0801"
         L"\U00010000\U00010001\U00010001";
-    
+
     return w
         [{
                L" abcd ", L'x', {L'y', {"", 2}}, {L'z', {"", 0}},
@@ -206,6 +206,20 @@ public:
     }
 
     using char_type = CharT;
+
+    void set_error(std::error_code err) override
+    {
+        std::string err_msg = "[*** error code ***]";
+        for(auto it = err_msg.begin(); it != err_msg.end(); ++it)
+        {
+            m_result.push_back(static_cast<CharT>(*it));
+        }
+    }
+
+    virtual bool good() const override
+    {
+        return true;
+    }
 
     void put(const char_type* str, std::size_t count) override
     {

@@ -16,7 +16,7 @@ int main()
         argument sublist ).
         >>*/{"~~~", 12, 13, {14, "d"}, 15, "~~~"}}, 16, 17);
 
-    BOOST_ASSERT(result == "10 11 ~~~  c  d 14  f~~~16 17 "); /*< Note that `outer_ftuple`
+    BOOST_ASSERT(result.value() == "10 11 ~~~  c  d 14  f~~~16 17 "); /*< Note that `outer_ftuple`
         still has effect inside the sublist ( which is why width is 3 there ),
         but the facets of `inner_ftuple` are prefered
         ( which is why arguments are aligned to the right )>*/

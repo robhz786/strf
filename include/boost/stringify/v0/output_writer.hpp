@@ -16,32 +16,25 @@ class output_writer
 public:
 
     using char_type = CharT;
-    
+
     virtual ~output_writer()
     {
     }
 
-    virtual void set_error(std::error_code err)
-    {
-        // todo: pure virtual
-    }
+    virtual void set_error(std::error_code err) = 0;
 
-    virtual bool good() const
-    {
-        // todo: pure virtual
-        return true;
-    }
-    
+    virtual bool good() const = 0;
+
     virtual void put(const CharT* str, std::size_t size) = 0;
-    
+
     virtual void put(CharT ch) = 0;
-    
+
     virtual void repeat(CharT ch, std::size_t count) = 0;
 
     virtual void repeat(CharT ch1, CharT ch2, std::size_t count) = 0;
 
     virtual void repeat(CharT ch1, CharT ch2, CharT ch3, std::size_t count) = 0;
-    
+
     virtual void repeat(CharT ch1, CharT ch2, CharT ch3, CharT ch4, std::size_t count) = 0;
 };
 
