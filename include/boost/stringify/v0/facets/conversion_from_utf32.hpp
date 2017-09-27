@@ -152,7 +152,14 @@ BOOST_STRINGIFY_INLINE void to_utf8::write
 {
     if (ch < 0x80)
     {
-        out.repeat(static_cast<char>(ch), count);
+        if(count == 1)
+        {
+            out.put(static_cast<char>(ch)); 
+        }
+        else
+        {
+            out.repeat(static_cast<char>(ch), count);
+        }
     }
     else if (ch < 0x800)
     {

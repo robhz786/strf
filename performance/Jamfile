@@ -11,7 +11,7 @@ project
     : default-build release
     ;
 
-sources = to_char_ptr.cpp ;
+sources = to_char_ptr.cpp utf32_to_utf8.cpp ;
 
 for local src in $(sources)
 {

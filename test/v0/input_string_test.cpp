@@ -71,6 +71,33 @@ int main()
 
 #endif
 
+    {   // convertion from utf32
+    
+        TEST(u8"--\u0080--\u07ff--\u0800--\uffff--\U00010000--\U0010ffff")
+            (U"--\u0080--\u07ff--\u0800--\uffff--\U00010000--\U0010ffff");
+
+        TEST(u"--\u0080--\u07ff--\u0800--\uffff--\U00010000--\U0010ffff")
+            (U"--\u0080--\u07ff--\u0800--\uffff--\U00010000--\U0010ffff");
+
+        char32_t abc[] = U"abc";
+        char32_t def[] = U"def";
+        char32_t ghi[] = U"ghi";
+
+        TEST(u8"abc")  (abc);
+        TEST(u8"~~~abc") .with(strf::fill(U'~'), strf::width(6))   (abc);
+        TEST(u8"~~~abc") .with(strf::fill(U'~'), strf::width(4))   ({abc, 6});
+        TEST(u8"abc~~~") .with(strf::fill(U'~'))                   ({abc, {6, "<"}});
+        TEST(u8"abc~~~") .with(strf::fill(U'~'), strf::left)       ({abc, 6});
+        TEST(u8"~~~abc") .with(strf::fill(U'~'), strf::internal)   ({abc, 6});
+        TEST(u8"~~~abc") .with(strf::fill(U'~'), strf::left)       ({abc, {6, ">"}});
+        TEST(u8"~~~abc") .with(strf::fill(U'~'), strf::left)       ({abc, {6, "="}});
+
+        TEST(u8"   abcdefghi") .with(strf::width(3))  (U"", {abc, ">"}, {def, "<"}, {ghi, "="});
+        TEST(u8"  abcdefghi")  .with(strf::width(2))  (U"", {abc, ">"}, {def, "<"}, {ghi, "="});
+        TEST(u8"abcdefghi")    .with(strf::width(0))  (U"", {abc, ">"}, {def, "<"}, {ghi, "="});
+        TEST(u8"   abc")     ({strf::join_right(6), {abc}});
+    }
+    
     int rc = report_errors();
     return rc;
 }
