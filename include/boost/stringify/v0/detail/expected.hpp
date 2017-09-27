@@ -32,11 +32,11 @@ public:
     {
         if (m_has_value)
         {
-            init_value(other.assume_value());
+            init_value(*other.assume_value());
         }
         else
         {
-            init_error(other.assume_error());
+            init_error(*other.assume_error());
         }
     }
 
@@ -45,11 +45,11 @@ public:
     {
         if (m_has_value)
         {
-            init_value(std::move(other.assume_value()));
+            init_value(std::move(*other.assume_value()));
         }
         else
         {
-            init_error(std::move(other.assume_error()));
+            init_error(std::move(*other.assume_error()));
         }
     }
 
@@ -88,12 +88,12 @@ public:
         {
             if(this->m_has_value)
             {
-                assume_value() = other.assume_value();
+                *assume_value() = *other.assume_value();
             }
             else
             {
                 destroy_error();
-                emplace_value(other.assume_value());
+                emplace_value(*other.assume_value());
             }
         }
         else // other has error
@@ -101,11 +101,11 @@ public:
             if(this->m_has_value)
             {
                 destroy_value();
-                emplace_error(other.assume_error());
+                emplace_error(*other.assume_error());
             }
             else
             {
-                assume_error() = other.assume_error();
+                *assume_error() = *other.assume_error();
             }
         }
         return *this;
@@ -117,12 +117,12 @@ public:
         {
             if(this->m_has_value)
             {
-                assume_value() = std::move(other.assume_value());
+                *assume_value() = std::move(*other.assume_value());
             }
             else
             {
                 destroy_error();
-                emplace_value(std::move(other.assume_value()));
+                emplace_value(std::move(*other.assume_value()));
             }
         }
         else // other has error
@@ -130,11 +130,11 @@ public:
             if(this->m_has_value)
             {
                 destroy_value();
-                emplace_error(std::move(other.assume_error()));
+                emplace_error(std::move(*other.assume_error()));
             }
             else
             {
-                assume_error() = std::move(other.assume_error());
+                *assume_error() = std::move(*other.assume_error());
             }
         }
         return *this;
@@ -144,11 +144,11 @@ public:
     {
         if (m_has_value)
         {
-            return other.m_has_value && assume_value() == other.assume_value();
+            return other.m_has_value && *assume_value() == *other.assume_value();
         }
         else
         {
-            return ! other.m_has_value && assume_error() == other.assume_error();
+            return ! other.m_has_value && *assume_error() == *other.assume_error();
         }
     }
 
@@ -200,9 +200,9 @@ public:
     {
         if ( ! m_has_value)
         {
-            throw std::logic_error(assume_error().message());
+            throw std::logic_error(assume_error()->message());
         }
-        return assume_value();
+        return *assume_value();
     }
 
     constexpr const error_type& error() const
@@ -211,7 +211,7 @@ public:
         {
             throw std::logic_error("expected error");
         }
-        return assume_error();
+        return *assume_error();
     }
 
 private:
@@ -232,24 +232,24 @@ private:
     storage_type m_storage;
     bool m_has_value=false;
 
-    constexpr value_type& assume_value() noexcept
+    constexpr value_type* assume_value() noexcept
     {
-        return * reinterpret_cast<value_type*>(&m_storage);
+        return reinterpret_cast<value_type*>(&m_storage);
     }
 
-    constexpr error_type& assume_error() noexcept
+    constexpr error_type* assume_error() noexcept
     {
-        return * reinterpret_cast<error_type*>(&m_storage);
+        return reinterpret_cast<error_type*>(&m_storage);
     }
 
-    constexpr const value_type& assume_value() const noexcept
+    constexpr const value_type* assume_value() const noexcept
     {
-        return * reinterpret_cast<const value_type*>(&m_storage);
+        return reinterpret_cast<const value_type*>(&m_storage);
     }
 
-    constexpr const error_type& assume_error() const noexcept
+    constexpr const error_type* assume_error() const noexcept
     {
-        return * reinterpret_cast<const error_type*>(&m_storage);
+        return reinterpret_cast<const error_type*>(&m_storage);
     }
 
     template <typename ... Args>
@@ -266,12 +266,12 @@ private:
 
     constexpr void destroy_error()
     {
-        assume_error(). ~error_type();
+        assume_error()-> ~error_type();
     }
 
     constexpr void destroy_value()
     {
-        assume_value(). ~value_type();
+        assume_value()-> ~value_type();
     }
 
     constexpr void destroy_data()
