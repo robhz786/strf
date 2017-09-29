@@ -207,7 +207,7 @@ public:
 
     using char_type = CharT;
 
-    void set_error(std::error_code err) override
+    void set_error(std::error_code) override
     {
         std::string err_msg = "[*** error code ***]";
         for(auto it = err_msg.begin(); it != err_msg.end(); ++it)

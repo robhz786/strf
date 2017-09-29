@@ -20,7 +20,7 @@ class exceptional_stringifier: public boost::stringify::v0::stringifier<CharT>
 public:
 
     template <typename FTuple>
-    exceptional_stringifier(const FTuple&, exception_tag t) noexcept
+    exceptional_stringifier(const FTuple&, exception_tag) noexcept
     {
     }
 
@@ -29,7 +29,7 @@ public:
         return 0;
     }
 
-    void write(boost::stringify::v0::output_writer<CharT>& out) const override
+    void write(boost::stringify::v0::output_writer<CharT>&) const override
     {
         throw std::invalid_argument("invalid stringifier");
     }

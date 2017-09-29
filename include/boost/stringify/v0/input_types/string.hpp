@@ -376,6 +376,7 @@ private:
         static_assert
             ( std::is_same<CharIn, CharOut>::value
            || std::is_same<CharIn, char32_t>::value
+            , "unsupported string character type"
             );
 
         using stringifier = typename std::conditional

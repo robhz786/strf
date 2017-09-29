@@ -24,7 +24,7 @@ public:
         Base::setp(m_buffer.begin(), m_buffer.end());
     }
 
-    int_type overflow(int_type ch) override
+    int_type overflow(int_type) override
     {
         return Traits::eof();
     }
