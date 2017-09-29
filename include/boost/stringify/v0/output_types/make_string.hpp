@@ -51,16 +51,6 @@ public:
     {
     }
 
-    string_maker(const string_maker& r)
-        : m_out(r.m_out)
-    {
-    }
-
-    string_maker(string_maker&& r)
-        : m_out(std::move(r.m_out))
-    {
-    }
-
     void set_error(std::error_code err) override
     {
         if(err && ! m_err)

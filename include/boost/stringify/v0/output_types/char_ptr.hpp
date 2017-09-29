@@ -37,16 +37,7 @@ public:
         }
     }
 
-    char_ptr_writer(const char_ptr_writer& r)
-        : m_begin{r.m_begin}
-        , m_it{r.m_it}
-        , m_end{r.m_end}
-        , m_out_count{r.m_out_count}
-        , m_err{r.m_err}
-    {
-    }
-
-    explicit char_ptr_writer
+    char_ptr_writer
         ( CharT* destination
         , CharT* end
         , std::size_t* out_count

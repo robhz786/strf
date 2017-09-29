@@ -24,15 +24,6 @@ public:
     {
     }
 
-    string_appender(string_appender&& other)
-        : m_out(other.m_out)
-        , m_initial_length(other.m_initial_length)
-        , m_err(other.m_err)
-        , m_finished(other.m_finished)
-    {
-        other.m_out = nullptr;
-    }
-
     ~string_appender()
     {
         if (! m_finished && m_out != nullptr)
