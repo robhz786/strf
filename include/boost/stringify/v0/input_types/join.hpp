@@ -205,7 +205,7 @@ private:
 
     void write_fill(writer_type& out) const
     {
-         get_facet<from_utf32_tag>().write(out, m_fillchar, m_fillcount);
+         get_facet<from_utf32_tag>().write(out, m_fillcount, m_fillchar);
     }
 
 };

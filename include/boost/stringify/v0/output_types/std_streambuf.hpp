@@ -70,7 +70,7 @@ public:
         }
     }
 
-    void repeat(CharT ch, std::size_t count) override
+    void repeat(std::size_t count, CharT ch) override
     {
         if( ! m_err)
         {
@@ -81,7 +81,7 @@ public:
         }
     }
 
-    void repeat(CharT ch1, CharT ch2, std::size_t count) override
+    void repeat(std::size_t count, CharT ch1, CharT ch2) override
     {
         if( ! m_err)
         {
@@ -92,7 +92,7 @@ public:
         }
     }
 
-    void repeat(CharT ch1, CharT ch2, CharT ch3, std::size_t count) override
+    void repeat(std::size_t count, CharT ch1, CharT ch2, CharT ch3) override
     {
         if( ! m_err)
         {
@@ -104,11 +104,12 @@ public:
     }
 
     void repeat
-        ( CharT ch1
+        ( std::size_t count
+        , CharT ch1
         , CharT ch2
         , CharT ch3
         , CharT ch4
-        , std::size_t count
+        
         ) override
     {
         if( ! m_err)

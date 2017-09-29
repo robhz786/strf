@@ -185,7 +185,7 @@ private:
 
     void write_fill(writer_type& out) const
     {
-        m_from32cv.write(out, m_fillchar, m_fillcount);
+        m_from32cv.write(out, m_fillcount, m_fillchar);
     }
 };
 
@@ -352,14 +352,14 @@ private:
 
     void write_fill(writer_type& out) const
     {
-        m_from32cv.write(out, m_fillchar, m_fillcount);
+        m_from32cv.write(out, m_fillcount, m_fillchar);
     }
 
     void write_str(writer_type& out) const
     {
         for(std::size_t i = 0; i < m_len; ++i)
         {
-            m_from32cv.write(out, m_str[i], 1);
+            m_from32cv.write(out, 1, m_str[i]);
         }
     }
 };

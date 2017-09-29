@@ -231,12 +231,12 @@ public:
         m_result.push_back(character);
     }
 
-    void repeat(char_type ch, std::size_t count) override
+    void repeat(std::size_t count, char_type ch) override
     {
         m_result.append(count, ch);
     }
 
-    void repeat(char_type ch1, char_type ch2, std::size_t count) override
+    void repeat(std::size_t count, char_type ch1, char_type ch2) override
     {
         for(; count > 0; --count)
         {
@@ -245,7 +245,7 @@ public:
         }
     }
 
-    void repeat(char_type ch1, char_type ch2, char_type ch3, std::size_t count) override
+    void repeat(std::size_t count, char_type ch1, char_type ch2, char_type ch3) override
     {
         for(; count > 0; --count)
         {
@@ -255,7 +255,7 @@ public:
         }
     }
 
-    void repeat(char_type ch1, char_type ch2, char_type ch3, char_type ch4, std::size_t count) override
+    void repeat(std::size_t count, char_type ch1, char_type ch2, char_type ch3, char_type ch4) override
     {
         for(; count > 0; --count)
         {

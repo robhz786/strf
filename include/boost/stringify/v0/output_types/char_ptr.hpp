@@ -24,10 +24,8 @@ public:
 
     ~char_ptr_writer()
     {
-        if (! m_finished)
+        if (! m_finished) // means that an exception has been thrown
         {
-            // Something wrong happened
-            // Probably an exception has been thrown
             if(m_begin != m_end)
             {
                 Traits::assign(*m_begin, CharT());
@@ -98,35 +96,40 @@ public:
         }
     }
 
-    void put(CharT character) override
+    void put(CharT ch) override
     {
-        if(m_it + 1 >= m_end)
+        if (m_it + 1 >= m_end)
         {
             set_overflow_error();
         }
         else
         {
-            Traits::assign(*m_it, character);
+            Traits::assign(*m_it, ch);
             ++m_it;
         }
-    }
+     }
 
-    void repeat(CharT character, std::size_t count) override
+    void repeat(std::size_t count, CharT ch) override
     {
         if (m_it + count >= m_end)
         {
             set_overflow_error();
         }
+        else if (count == 1)
+        {
+            Traits::assign(*m_it, ch);
+            ++m_it;
+        }
         else
         {
-            Traits::assign(m_it, count, character);
+            Traits::assign(m_it, count, ch);
             m_it += count;
         }
     }
 
-    void repeat(CharT ch1, CharT ch2, std::size_t count) override
+    void repeat(std::size_t count, CharT ch1, CharT ch2) override
     {
-        if(m_it + 2 * count >= m_end)
+        if (m_it + 2 * count >= m_end)
         {
             set_overflow_error();
         }
@@ -142,9 +145,9 @@ public:
         }
     }
 
-    void repeat(CharT ch1, CharT ch2, CharT ch3, std::size_t count) override
+    void repeat(std::size_t count, CharT ch1, CharT ch2, CharT ch3) override
     {
-        if(m_it + 3 * count >= m_end)
+        if (m_it + 3 * count >= m_end)
         {
             set_overflow_error();
         }
@@ -162,20 +165,21 @@ public:
     }
 
     void repeat
-        ( CharT ch1
+        ( std::size_t count
+        , CharT ch1
         , CharT ch2
         , CharT ch3
         , CharT ch4
-        , std::size_t count
+        
         ) override
     {
-        if(m_it + 4 * count >= m_end)
+        if (m_it + 4 * count >= m_end)
         {
             set_overflow_error();
         }
         else
         {
-            while(count > 0)
+            while (count > 0)
             {
                 Traits::assign(m_it[0], ch1);
                 Traits::assign(m_it[1], ch2);

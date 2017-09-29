@@ -105,17 +105,17 @@ public:
     {
         if (m_fillcount == 0)
         {
-            m_from32cv.write(out, m_char, m_count);
+            m_from32cv.write(out, m_count, m_char);
         }
         else if(m_alignment == stringify::v0::alignment::left)
         {
-            m_from32cv.write(out, m_char, m_count);
-            m_from32cv.write(out, m_fillchar, m_fillcount);
+            m_from32cv.write(out, m_count, m_char);
+            m_from32cv.write(out, m_fillcount, m_fillchar);
         }
         else
         {
-            m_from32cv.write(out, m_fillchar, m_fillcount);
-            m_from32cv.write(out, m_char, m_count);
+            m_from32cv.write(out, m_fillcount, m_fillchar);
+            m_from32cv.write(out, m_count, m_char);
         }
     }
 

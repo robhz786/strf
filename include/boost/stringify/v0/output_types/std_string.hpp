@@ -76,18 +76,18 @@ public:
         }
     }
 
-    void repeat(char_type character, std::size_t repetitions) override
+    void repeat(std::size_t count, char_type character) override
     {
         if(m_out != nullptr)
         {
-            m_out->append(repetitions, character);
+            m_out->append(count, character);
         }
     }
 
     void repeat
-        ( char_type ch1
+        ( std::size_t count
+        , char_type ch1
         , char_type ch2
-        , std::size_t count
         ) override
     {
         if(m_out != nullptr)
@@ -101,10 +101,10 @@ public:
     }
 
     void repeat
-        ( char_type ch1
+        ( std::size_t count
+        , char_type ch1
         , char_type ch2
         , char_type ch3
-        , std::size_t count
         ) override
     {
         if(m_out != nullptr)
@@ -119,11 +119,11 @@ public:
     }
 
     void repeat
-        ( char_type ch1
+        ( std::size_t count
+        , char_type ch1
         , char_type ch2
         , char_type ch3
         , char_type ch4
-        , std::size_t count
         ) override
     {
         if(m_out != nullptr)

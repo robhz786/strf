@@ -351,7 +351,7 @@ private:
 
     void write_fill(writer_type& out) const
     {
-        m_form32vc.write(out, m_fillchar, m_fillcount);
+        m_form32vc.write(out, m_fillcount, m_fillchar);
     }
 
     int width_body() const noexcept

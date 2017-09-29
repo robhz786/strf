@@ -90,7 +90,7 @@ public:
         }
     }
 
-    void repeat(char_type ch, std::size_t count) override
+    void repeat(std::size_t count, char_type ch) override
     {
         if( ! m_err)
         {
@@ -99,9 +99,10 @@ public:
     }
 
     void repeat
-        ( char_type ch1
+        ( std::size_t count
+        , char_type ch1
         , char_type ch2
-        , std::size_t count
+        
         ) override
     {
         if( ! m_err)
@@ -115,10 +116,11 @@ public:
     }
 
     void repeat
-        ( char_type ch1
+        ( std::size_t count
+        , char_type ch1
         , char_type ch2
         , char_type ch3
-        , std::size_t count
+        
         ) override
     {
         if( ! m_err)
@@ -133,11 +135,12 @@ public:
     }
 
     void repeat
-        ( char_type ch1
+        ( std::size_t count
+        , char_type ch1
         , char_type ch2
         , char_type ch3
         , char_type ch4
-        , std::size_t count
+        
         ) override
     {
         if( ! m_err)

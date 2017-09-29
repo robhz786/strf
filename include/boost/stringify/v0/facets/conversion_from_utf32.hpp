@@ -23,9 +23,10 @@ public:
 
     virtual void write
         ( boost::stringify::v0::output_writer<CharT>& destination
+        , std::size_t count
         , char32_t ch
-        , std::size_t count = 1
         ) const = 0;
+
 };
 
 
@@ -42,9 +43,9 @@ public:
     std::size_t length(char32_t ch) const noexcept override;
 
     void write
-        ( boost::stringify::v0::output_writer<char>& out
-        , char32_t ch
+        ( boost::stringify::v0::output_writer<char>& destination
         , std::size_t count
+        , char32_t ch
         ) const override;
 
 };
@@ -64,8 +65,8 @@ public:
 
     void write
         ( boost::stringify::v0::output_writer<char16_t>& destination
-        , char32_t ch
         , std::size_t count
+        , char32_t ch
         ) const override;
 };
 
@@ -87,11 +88,11 @@ public:
 
     void write
         ( boost::stringify::v0::output_writer<char32_t>& destination
-        , char32_t ch
         , std::size_t count
+        , char32_t ch
         ) const override
     {
-        destination.repeat(ch, count);
+        destination.repeat(count, ch);
     }
 };
 
@@ -106,8 +107,8 @@ public:
 
     void write
         ( boost::stringify::v0::output_writer<wchar_t>& destination
-        , char32_t ch
         , std::size_t count
+        , char32_t ch
         ) const override;
 };
 
@@ -145,51 +146,52 @@ BOOST_STRINGIFY_INLINE std::size_t to_utf8::length(char32_t ch) const noexcept
 }
 
 BOOST_STRINGIFY_INLINE void to_utf8::write
-    ( boost::stringify::v0::output_writer<char>& out
-    , char32_t ch
+    ( boost::stringify::v0::output_writer<char>& destination
     , std::size_t count
+    , char32_t ch
     ) const
 {
     if (ch < 0x80)
     {
-        if(count == 1)
+        if (count == 1)
         {
-            out.put(static_cast<char>(ch)); 
+            destination.put(static_cast<char>(ch));
         }
         else
         {
-            out.repeat(static_cast<char>(ch), count);
+            destination.repeat(count, static_cast<char>(ch));
         }
     }
     else if (ch < 0x800)
     {
-        out.repeat
-            ( static_cast<char>(0xC0 | ((ch & 0x7C0) >> 6))
+        destination.repeat
+            ( count
+            , static_cast<char>(0xC0 | ((ch & 0x7C0) >> 6))
             , static_cast<char>(0x80 |  (ch &  0x3F))
-            , count);
+            );
     }
     else if (ch <  0x10000)
     {
-        out.repeat
-            ( static_cast<char>(0xE0 | ((ch & 0xF000) >> 12))
+        destination.repeat
+            ( count
+            , static_cast<char>(0xE0 | ((ch & 0xF000) >> 12))
             , static_cast<char>(0x80 | ((ch &  0xFC0) >> 6))
             , static_cast<char>(0x80 |  (ch &   0x3F))
-            , count
             );
     }
     else if (ch < 0x110000)
     {
-        out.repeat
-            ( static_cast<char>(0xF0 | ((ch & 0x1C0000) >> 18))
+        destination.repeat
+            ( count
+            , static_cast<char>(0xF0 | ((ch & 0x1C0000) >> 18))
             , static_cast<char>(0x80 | ((ch &  0x3F000) >> 12))
             , static_cast<char>(0x80 | ((ch &    0xFC0) >> 6))
             , static_cast<char>(0x80 |  (ch &     0x3F))
-            , count
             );
     }
     else
     {
-        write(out, 0xFFFD, count);
+        write(destination, count, 0xFFFD);
     }
 }
 
@@ -217,13 +219,20 @@ public:
     template <typename CharT>
     static void write
         ( boost::stringify::v0::output_writer<CharT>& destination
-        , char32_t ch
         , std::size_t count
+        , char32_t ch
         )
     {
         if (single_char_range(ch))
         {
-            destination.repeat(static_cast<CharT>(ch), count);
+            if (count == 1)
+            {
+                destination.put(static_cast<CharT>(ch));
+            }
+            else
+            {
+                destination.repeat(count, static_cast<CharT>(ch));
+            }
         }
         else if (two_chars_range(ch))
         {
@@ -231,14 +240,14 @@ public:
             char32_t high_surrogate = 0xD800 + ((sub_codepoint & 0xFFC00) >> 10);
             char32_t low_surrogate  = 0xDC00 +  (sub_codepoint &  0x3FF);
             destination.repeat
-                ( static_cast<CharT>(high_surrogate)
+                ( count
+                , static_cast<CharT>(high_surrogate)
                 , static_cast<CharT>(low_surrogate)
-                , count
                 );
         }
         else
         {
-            write(destination, 0xFFFD, count);
+            write(destination, count, 0xFFFD);
         }
     }
 
@@ -263,11 +272,11 @@ BOOST_STRINGIFY_INLINE std::size_t to_utf16::length(char32_t ch) const noexcept
 
 BOOST_STRINGIFY_INLINE void to_utf16::write
     ( boost::stringify::v0::output_writer<char16_t>& destination
-    , char32_t ch
     , std::size_t count
+    , char32_t ch
     ) const
 {
-    detail::to_utf16_impl::write<char16_t>(destination, ch, count);
+    detail::to_utf16_impl::write<char16_t>(destination, count, ch);
 }
 
 
@@ -285,17 +294,17 @@ BOOST_STRINGIFY_INLINE std::size_t default_utf32_to_wstr::length(char32_t ch) co
 
 BOOST_STRINGIFY_INLINE void default_utf32_to_wstr::write
     ( boost::stringify::v0::output_writer<wchar_t>& destination
-    , char32_t ch
     , std::size_t count
+    , char32_t ch
     ) const
 {
     if (sizeof(wchar_t) == sizeof(char16_t))
     {
-        detail::to_utf16_impl::write<wchar_t>(destination, ch, count);
+        detail::to_utf16_impl::write<wchar_t>(destination, count, ch);
     }
     else
     {
-        destination.repeat(static_cast<wchar_t>(ch), count);
+        destination.repeat(count, static_cast<wchar_t>(ch));
     }
 }
 
