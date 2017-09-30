@@ -16,19 +16,12 @@ Facets are policy classes that comply the [*/Requirements/] described bellow. `F
 
 * The [*`category`] member type. [/, which identifies the category.]
 
-* The [*`accept_input_type`] member type template. It takes a type as template parameter, and `F::accept_input_type<T>::value` must be a boolean constexpr that tells whether the facet applies to input type `T`. By default it is an alias to [^true_trait], which is simply defined as:
-
-```
-namespace boost{ namespace stringify{ inline namespace v1 {
-
-template <typename> struct true_trait: public std::true_type {};
-
-} } }
-
-```
 However, unless you want to implement you own facet or to implement support to a new input type, you don't need to pay attention to the facet requirements
-but only to the [*/Generator expressions/] listed bellow. Each of them is a expression that returns a facet instance. You will note a common pattern: the `_if` suffix is used in expressions that take a trait class as a template parameter. This be equal to the `accept_input_type` of the facet. Also, the prefix `t` denotes that the expressions takes the value as a template parameter, while the equivalent expression without the `t` prefix takes it as a function argument. For instance, you can use `twidth<`[~w]`>` or `width(`[~w]`)`. The return type of the former is an empty type. An `ftuple` that contains only emtpy (facets) types is also an empty type, /i.e./ its size is equal to one byte. The Generator expressions whose return type are empty types are [_underlined].
+but only to the [*/Generator expressions/] listed bellow. Each of them is a expression that returns a facet instance. Some of them contian the `_if` suffix. These are shortcuts for constrained facets. For example, `width_if<`[~trait]`>(`[~width]`)` is equivalent to `constrain<`[~trait]`>(width(`[~width]`))`
 
+[/
+You will note a common pattern: the `_if` suffix is used in expressions that take a trait class as a template parameter. This be equal to the `accept_input_type` of the facet. Also, the prefix `t` denotes that the expressions takes the value as a template parameter, while the equivalent expression without the `t` prefix takes it as a function argument. For instance, you can use `twidth<`[~w]`>` or `width(`[~w]`)`. The return type of the former is an empty type. An `ftuple` that contains only emtpy (facets) types is also an empty type, /i.e./ its size is equal to one byte. The Generator expressions whose return type are empty types are [_underlined].
+]
 
 
 
@@ -104,11 +97,12 @@ Defines the width of each input as the quantity of [@https://en.wikipedia.org/wi
 
 * `width(`[~width]`)`
 * `width_if<`[~trait]`>(`[~width]`)`
+[/
 * [_`twidth<`[~width]`>`] --------------- (todo)
 * [_`twidth_if<`[~trait]`, `[~width]`>`] --------------(todo)
+]
 
-
-[h4 Default: [^twidth<0>]]
+[h4 Default: [^width(0)]]
 
 [endsect]
 
@@ -129,12 +123,12 @@ enum class alignment{left, right, internal};
 
 [h4 Generator Expressions]
 
-* [_`left`]
-* [_`right`]
-* [_`internal`]
-* [_`left_if<`[~trait]`>`]
-* [_`right_if<`[~trait]`>`]
-* [_`internal_if<`[~trait]`>`]
+* `left`
+* `right`
+* `internal`
+* `left_if<`[~trait]`>`
+* `right_if<`[~trait]`>`
+* `internal_if<`[~trait]`>`
 
 [h4 Default: [^right]] 
 
@@ -180,11 +174,12 @@ todo: remove template parameter CharT from fill
 
 * `fill(`[~character]`)`
 * `fill_if<`[~trait]`>(`[~character]`)`
+[/
 * [_`tfill<`[~character]`>`]   ---------------- todo
 * [_`tfill_if<`[~character]`, `[~trait]`>`] -------------todo
+]
 
-
-[h4 Default: [^tfill<U' '>]]
+[h4 Default: [^fill(U' ')]]
 
 [endsect]
 
@@ -201,11 +196,11 @@ todo: remove template parameter CharT from fill
 
 [h4 Generator Expressions]
 
-* [_`showpos`]
-* [_`noshowpos`]
+* `showpos`
+* `noshowpos`
 * `showpos(`[~boolean]`)`
-* [_`showpos_if<`[~trait]`>`]
-* [_`noshowpos_if<`[~trait]`>`]
+* `showpos_if<`[~trait]`>`
+* `noshowpos_if<`[~trait]`>`
 
 [h4 Default: [^noshowpos]]
 
@@ -221,12 +216,12 @@ todo: remove template parameter CharT from fill
 ]
 
 [h4 Generator Expressions]
-* [_`oct`]
-* [_`dec`]
-* [_`hex`]
-* [_`oct_if<`[~trait]`>`]
-* [_`dec_if<`[~trait]`>`]
-* [_`hex_if<`[~trait]`>`]
+* `oct`
+* `dec`
+* `hex`
+* `oct_if<`[~trait]`>`
+* `dec_if<`[~trait]`>`
+* `hex_if<`[~trait]`>`
 
 [h4 Default: [^dec]]
 
@@ -244,11 +239,11 @@ todo: remove template parameter CharT from fill
 ]
 
 [h4 Generator Expressions]
-* [_`showbase`]
-* [_`noshowbase`]
+* `showbase`
+* `noshowbase`
 * `showbase(`[~boolean]`)` -----------todo
-* [_`showbase_if<`[~trait]`>`]
-* [_`noshowbase_if<`[~trait]`>`]
+* `showbase_if<`[~trait]`>`
+* `noshowbase_if<`[~trait]`>`
 
 [h4 Default: [^noshowbase]]
 
@@ -265,12 +260,12 @@ todo: remove template parameter CharT from fill
 ]
 
 [h4 Generator Expressions]
-* [_`lowercase`]
-* [_`uppercase`]
+* `lowercase`
+* `uppercase`
 * `lowercase(`[~boolean]`)` -----------todo
 * `uppercase(`[~boolean]`)` -----------todo
-* [_`lowercase_if<`[~trait]`>`]
-* [_`uppercase_if<`[~trait]`>`]
+* `lowercase_if<`[~trait]`>`
+* `uppercase_if<`[~trait]`>`
 
 [h4 Default: [^lowercase]]
 

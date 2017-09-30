@@ -14,11 +14,22 @@ preserving backwards compatibility.
 
 Boost.Stringify is a locale-independent formatting library which
 
-* is header only
 * has good [link benchmarks.benchmarks.performance performance]
 * supports all character types ( `char`, `wchar_t`, `char32_t` and `char16_t`)
-* supports many [link usage.usage destination types]
+* supports many [link output_types.output_types destination types]
 * is extensible 
+
+[h3 As static library]
+
+[def __STRINGIFY_CPP__
+[@../../build/stringify.cpp build/stringify.cpp]
+]
+
+By default Boost.Stringify is prepared to be used as a header-only library. But can use it as a static library, which reduces [link benchmarks.benchmarks.compilation_perfomance code bloat].
+
+In order to do this, you must define the macro `BOOST_STRINGIFY_NOT_HEADER_ONLY`.
+
+And in order to build the library, since there is only one source file ( __STRINGIFY_CPP__ ), probably the best way it to just copy this file to your own project, and configure the use the build system of your choice to generate the library file from it.
 
 [h3 Compliance]
 

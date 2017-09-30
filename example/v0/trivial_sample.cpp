@@ -12,15 +12,8 @@ int main()
     namespace strf = boost::stringify::v0; // v0 is an inline namespace
 
     {
-//[ trivial_sample
-    strf::expected_string result = strf::make_string("ten = ", 10, " and twenty = ", 20);
-    BOOST_ASSERT(result.value()== "ten = 10 and twenty = 20");
-//]
-    }
-
-    {
 //[ trivial_sample_initializer_list
-    strf::expected_string  result = strf::make_string[{"ten = ", 10, " and twenty = ", 20}];
+    strf::expected_string result = strf::make_string [{"ten = ", 10, " and twenty = ", 20}];
 //]
     BOOST_ASSERT(result.value() == "ten = 10 and twenty = 20");
     }

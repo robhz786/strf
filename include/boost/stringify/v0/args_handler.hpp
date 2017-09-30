@@ -167,9 +167,9 @@ public:
     {
         output_writer_from_tuple<output_writer> writer(this->m_args);
         reserve_lst(has_reserve{}, writer, lst);
-        for(const auto& arg : lst)
+        for(auto it = lst.begin(); it != lst.end() && writer.good(); ++it)
         {
-            arg.write(writer, m_ftuple);
+            (*it).write(writer, m_ftuple);
         }
         return writer.finish();
     }

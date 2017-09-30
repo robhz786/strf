@@ -18,11 +18,6 @@ namespace strf = boost::stringify::v0; // v0 is an inline namespace
 ``
 So let's start with a trivial example:
 
-[trivial_sample]
-
-This form does not support more than ten arguments. It also produces some ugly messages on compilation erros. This could be solved with /Fixed Size Parameter Packs/ (as defined in [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4072.html n4072]), if C++ supported it, but it doesn't.
-So there is an alternative form that doesn't have these issues, although its [link benchmarks.benchmarks.performance performance] is a little inferior: to pass the arguments in a initializer list passed to `operator[]`:
-
 [trivial_sample_initializer_list]
 
 An argument can just be a value to be stringified, as above,
@@ -49,7 +44,7 @@ The /braced-init-list/ form previously shown aims to provide a pratical and comp
 
 [trivial_facets_sample]
 
-It is possible to create facets that only applies to certain input types: 
+It is possible to constrain a facet to only apply to certain input types: 
 
 [facet_filters]
 

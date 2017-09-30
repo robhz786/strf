@@ -30,21 +30,21 @@ int main()
     constexpr std::size_t dest_size = sizeof(dest) / sizeof(dest[0]);
     char* dest_end = &dest[dest_size];
 
-    PRINT_BENCHMARK("write_to(dest) (u32sample1)")
+    PRINT_BENCHMARK("write_to(dest) [{u32sample1}]")
     {
-        strf::write_to(dest) (u32sample1);
+        strf::write_to(dest) [{u32sample1}];
     }
-    PRINT_BENCHMARK("write_to(dest) (u32sample2)")
+    PRINT_BENCHMARK("write_to(dest) [{u32sample2}]")
     {
-        strf::write_to(dest) (u32sample2);
+        strf::write_to(dest) [{u32sample2}];
     }
-    PRINT_BENCHMARK("write_to(dest) (u32sample3)")
+    PRINT_BENCHMARK("write_to(dest) [{u32sample3}]")
     {
-        strf::write_to(dest) (u32sample3);
+        strf::write_to(dest) [{u32sample3}];
     }
-    PRINT_BENCHMARK("write_to(dest) (u32sample4)")
+    PRINT_BENCHMARK("write_to(dest) [{u32sample4}]")
     {
-        strf::write_to(dest) (u32sample4);
+        strf::write_to(dest) [{u32sample4}];
     }
 
     std::locale::global(std::locale("en_US.utf8"));

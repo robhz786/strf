@@ -196,6 +196,15 @@ public:
         return ! m_has_value;
     }
 
+    constexpr value_type& value()
+    {
+        if ( ! m_has_value)
+        {
+            throw std::logic_error(assume_error()->message());
+        }
+        return *assume_value();
+    }
+    
     constexpr const value_type& value() const
     {
         if ( ! m_has_value)
