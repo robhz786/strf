@@ -25,11 +25,20 @@ Boost.Stringify is a locale-independent formatting library which
 [@../../build/stringify.cpp build/stringify.cpp]
 ]
 
-By default Boost.Stringify is prepared to be used as a header-only library. But can use it as a static library, which reduces [link benchmarks.benchmarks.compilation_perfomance code bloat].
+By default Boost.Stringify is prepared to be used as a header-only library. But it can also be used as a static library. This reduces the [link benchmarks.benchmarks.compilation_perfomance code bloat].
 
-In order to do this, you must define the macro `BOOST_STRINGIFY_NOT_HEADER_ONLY`.
-
+[/
 And in order to build the library, since there is only one source file ( __STRINGIFY_CPP__ ), probably the best way it to just copy this file to your own project, and configure the use the build system of your choice to generate the library file from it.
+]
+
+Probably the best way build the library is to create a project in the build system of your own choice to do this. This should be easy, since there is only one source file ( __STRINGIFY_CPP__ ) to compile
+
+
+
+Also, the code that uses it as static library must have the macro  `BOOST_STRINGIFY_NOT_HEADER_ONLY` defined.
+
+
+
 
 [h3 Compliance]
 

@@ -10,24 +10,52 @@
 
 [section Tutorial]
 
+Different output types are supported. They all share a similar usage based in the following syntax:
 
-To avoid repetition, let's consider as if these lines were present in the further code snipets:
+[/ Railroad diagram generated from the EBNF below, in online generator bottlecaps.de/rr
+
+  usage ::= 'leading_expression' ( '.with(facets...)' ) * 
+                                 ( '(assembly_string)' | '()' ) ?
+                                 ( ' = { arguments... }' | '[{ arguments... }]' )
+]
+
+[$../usage.png]
+
+, where:
+
+* [~assembly_string] is analogous to what in others formatting libraries is called as the /format string/, but is does not contain any format flag.
+* [~leading_expression] varies according to the output type, as show in [link output_types.output_types this table].
+* [~facets] are explained further
+
+Before we proceed, let's assume as if that these lines are present in all the further code snipets:
 ``
 #include <boost/stringify.hpp>
+#include <boost/assert.hpp>
+
 namespace strf = boost::stringify::v0; // v0 is an inline namespace
 ``
-So let's start with a trivial example:
+Now, a simple example where the destination type is `char[]`, and the [~leading_expression] is thus [~write_to(destination)]:
 
-[trivial_sample_initializer_list]
+[trivial_sample]
 
-An argument can just be a value to be stringified, as above,
-or can be a /braced-init-list/ composed by two arguments.
-The first one is the value to be stringified. Its type defines
-the type and the purpose of the second argument which
-may also be a /braced-init-list/ and usually specifies formatting as described
-[link conventional_formatting here].
+Naturally, if the [~leading_expression] is not assignable, it is not possible to make [~leading_expression]` = {`[~arguments]` ...}`. This is the case of `make_string`, which is a `constexpr`:
+
+[make_string_is_not_assignable]
+
+An input argument can be just a value to be stringified as above,
+or it can be a /braced-init-list/ composed by two arguments:
+the first one is the value to be stringified whose type defines
+the type and the purpose of the second argument,
+which may also be a /braced-init-list/ and usually specifies formatting
+( as described [link conventional_formatting here] ).
+For example:
 
 [trivial_formatting_sample]
+
+It is not possible to specify any formatting in the assembly string. This is why, by the way, it's not called as "/format string/", like in others formatting libraries. Here, the term "/format string/" usually refers to that little string used to format a single argument, like the string `"<#x"` in the sample above.
+
+
+The advantage of this is that when the assembly string is formed by some translation system like [@https://en.wikipedia.org/wiki/Gettext gettext], the translation is decoupled from formatting. You can change the format of an argument without asking the translation team to update all the translated versions of the text.
 
 [/
 However keep in mind that an input type does not necessarily take formatting
@@ -40,7 +68,7 @@ Refer to the documentation of each input type.
 
 [h3 Using facets]
 
-The /braced-init-list/ form previously shown aims to provide a pratical and compact syntax for formatting. But it does not support many formatting options, just those more frequently used. To compensate this limitation, there is another way to customize formatting: /formatting facets/.
+The /braced-init-list/ form previously shown aims to provide a pratical and compact syntax for formatting. But it does not support many formatting options, just those more frequently used. To compensate this limitation, there is another way to customize formatting: /format facets/.
 
 [trivial_facets_sample]
 
@@ -60,7 +88,7 @@ But you can also create your own version of `make_string`:
 
 [custom_make_string]
 
-And you can create ftuple from others ftuples:
+And you can create an ftuple from others ftuples:
 
 [ftuple_of_ftuple]
 

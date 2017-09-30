@@ -52,7 +52,7 @@ int main()
     const char32_t* from_next = nullptr;
     char* to_next = nullptr;
 
-    strf::write_to(stdout)('\n');
+    strf::write_to(stdout) = {'\n'};
 
     PRINT_BENCHMARK("std::codecvt / u32sample1")
     {                                                 

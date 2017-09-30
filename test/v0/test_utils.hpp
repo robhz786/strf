@@ -195,74 +195,90 @@ class input_tester: public boost::stringify::v0::output_writer<CharT>
 public:
     input_tester
         ( std::basic_string<CharT> expected
-        , std::string src_filename
-        , int src_line
+        , std::error_code expected_error
+        , std::string src_filename      
+        , int src_line                  
         )
         : m_expected(std::move(expected))
-        , m_reserved_size(0)
+        , m_expected_error(expected_error)
+        , m_reserved_size(0)            
         , m_src_filename(std::move(src_filename))
-        , m_src_line(src_line)
+        , m_src_line(src_line)          
     {
     }
 
     using char_type = CharT;
 
-    void set_error(std::error_code) override
+    void set_error(std::error_code err) override
     {
-        std::string err_msg = "[*** error code ***]";
-        for(auto it = err_msg.begin(); it != err_msg.end(); ++it)
-        {
-            m_result.push_back(static_cast<CharT>(*it));
-        }
+        m_obtained_error = err;
     }
 
     virtual bool good() const override
     {
-        return true;
+        return ! m_obtained_error;
     }
 
     void put(const char_type* str, std::size_t count) override
     {
-        m_result.append(str, count);
+        if (good())
+        {
+            m_result.append(str, count);
+        }
     }
 
     void put(char_type character) override
     {
-        m_result.push_back(character);
+        if (good())
+        {
+            m_result.push_back(character);
+        }
     }
 
     void repeat(std::size_t count, char_type ch) override
     {
-        m_result.append(count, ch);
+        if (good())
+        {
+            m_result.append(count, ch);
+        }
     }
 
     void repeat(std::size_t count, char_type ch1, char_type ch2) override
     {
-        for(; count > 0; --count)
+        if (good())
         {
-            m_result.push_back(ch1);
-            m_result.push_back(ch2);
+            for(; count > 0; --count)
+            {
+                m_result.push_back(ch1);
+                m_result.push_back(ch2);
+            }
         }
     }
 
     void repeat(std::size_t count, char_type ch1, char_type ch2, char_type ch3) override
     {
-        for(; count > 0; --count)
+        if (good())
         {
-            m_result.push_back(ch1);
-            m_result.push_back(ch2);
-            m_result.push_back(ch3);
+            for(; count > 0; --count)
+            {
+                m_result.push_back(ch1);
+                m_result.push_back(ch2);
+                m_result.push_back(ch3);
+            }
         }
     }
 
     void repeat(std::size_t count, char_type ch1, char_type ch2, char_type ch3, char_type ch4) override
     {
-        for(; count > 0; --count)
+        if (good())
         {
-            m_result.push_back(ch1);
-            m_result.push_back(ch2);
-            m_result.push_back(ch3);
-            m_result.push_back(ch4);
+            for(; count > 0; --count)
+            {
+                m_result.push_back(ch1);
+                m_result.push_back(ch2);
+                m_result.push_back(ch3);
+                m_result.push_back(ch4);
+            }
         }
     }
 
@@ -298,6 +314,8 @@ private:
 
     std::basic_string<CharT> m_result;
     std::basic_string<CharT> m_expected;
+    std::error_code m_expected_error;
+    std::error_code m_obtained_error;
     std::size_t m_reserved_size;
     std::string m_src_filename;
     int m_src_line;
@@ -305,12 +323,12 @@ private:
 
 
 template<typename CharT>
-auto make_tester(const CharT* expected, const char* filename, int line)
+auto make_tester(const CharT* expected, const char* filename, int line, std::error_code err = {})
 {
     using writer = input_tester<CharT>;
-    return std::move(boost::stringify::v0::make_args_handler
-                     <writer, const CharT*, const char*, int>
-                     (expected, filename, line));
+    return boost::stringify::v0::make_args_handler
+        <writer, const CharT*,std::error_code, const char*, int>
+        (expected, err, filename, line);
 }
 
 

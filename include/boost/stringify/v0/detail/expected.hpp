@@ -24,7 +24,7 @@ public:
 
     constexpr expected()
     {
-        init_error();
+        init_value();
     }
 
     constexpr expected(const expected& other)
@@ -265,12 +265,14 @@ private:
     constexpr void init_error(Args &&... args)
     {
         new (&m_storage) error_type(std::forward<Args>(args)...);
+        m_has_value = false;
     }
 
     template <typename ... Args>
     constexpr void init_value(Args &&... args)
     {
         new (&m_storage) value_type(std::forward<Args>(args)...);
+        m_has_value = true;
     }
 
     constexpr void destroy_error()

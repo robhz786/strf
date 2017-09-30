@@ -8,6 +8,11 @@ enable_testing()
 
 project (BoostStringify)
 
+if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
+  add_compile_options("-O3")
+endif(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+
+
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/out/${CMAKE_BUILD_TYPE})
 
 add_subdirectory(build build)

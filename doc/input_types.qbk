@@ -14,25 +14,25 @@ As previously explained, an input argument can be a single value or a /braced-in
 
 A conventional argument can be:
 
-* an integer ( `short, int, long, long long, unsigned short, unsigned int, unsigned long, unsigned long long`)
-* a string ( a raw string or a `std::basic_string`)
-* a single character ['( todo )]
+* an integer ( `int, long, long long, unsigned int, unsigned long or unsigned long long`)
+* a string ( a raw string or a `std::basic_string` or `std::basic_string_view`)
+* a single character
 * a boolean ['( todo )]
 * a void pointer ['( todo )]
 * a floating point ['( todo )]
 
-[#conventional_formatting]The /secundary argument/ take the one the forms:
+[#conventional_formatting]The /secundary argument/ takes the one the forms:
 
 * [~width]
-* [~formatting_string]
-* {[~width], [~formatting_string]}
-* {[~width], [~formatting_string], [~precision]}
-* {[~formatting_string], [~precision]}
+* [~format_string]
+* {[~width], [~format_string]}
+* {[~width], [~format_string], [~precision]}
+* {[~format_string], [~precision]}
 
-[~width] and [~precision] are `int`. If [~width]` < 0` then the width is taken from the facets. In the [~formatting_string], the characters order makes no difference, and unsupported characters are ignored. If conflicting characters are present, then the character in a higher row in the table below wins (for example, the formating string `"+QW-xd><$#"` has the same effect of `"-d>$"`).
+[~width] and [~precision] are `int`. If [~width]` < 0` then the width is taken from the facets. In the [~format_string], the characters order makes no difference, and unsupported characters are ignored. If conflicting characters are present, then the character in a higher row in the table below wins (for example, the formating string `"+QW-xd><$#"` has the same effect of `"-d>$"`).
 
 [table
-[[Formatting char] [Meaning]]
+[[Format char] [Meaning]]
 [[[^ >]] [Right alignment ( or left, if you using a left-to-right script like arabic )]]
 [[[^ <]] [Left alignment ( or right, if you using a left-to-right script like arabic )]]
 [[[^ =]] [Internal alignment ]]
@@ -49,10 +49,10 @@ A conventional argument can be:
 [[[^ #]] [Show base]]      
 ]
 
-Naturally, some of the formatting characters above are not supported in some input types. Also, the [~precision] can actually mean nothing related with precision:
+Naturally, some of the format characters above are not supported in some input types. Also, the [~precision] can actually mean nothing related with precision:
 
 [table
-[[Input type]    [Supported formatting chars]  [What [~precision] means]]
+[[Input type]    [Supported format chars]  [What [~precision] means]]
 [[string]        [[^ < > = ^ ]] [Nothing. Argument not supported. Presence yields to compilation error]]
 [[boolean]       [[^ < > = ^ ]] [idem]]
 [[void pointer]  [[^ < > = ^ ]] [idem]]

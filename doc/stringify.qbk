@@ -17,6 +17,7 @@
 
 [include overview.qbk]
 [include:tutorial tutorial.qbk]
+[include:assembly_string assembly_string.qbk]
 [include:output_types output_types.qbk]
 [include:input_types input_types.qbk]
 [include:facets facets.qbk]

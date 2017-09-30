@@ -34,6 +34,11 @@ int main()
     {
         strf::write_to(dest) [{"Hello ", "World", "!"}];
     }
+    PRINT_BENCHMARK("write_to(dest) (\"Hello {}!\") = {\"World\"}")
+    {
+        strf::write_to(dest) ("Hello {}!") = {"World"};
+    }
+
     PRINT_BENCHMARK("karma::generate(dest, karma::lit(\"Hello \") << \"World\" << \"!\")")
     {
         char* d = dest;
@@ -146,6 +151,11 @@ int main()
     {
         strf::write_to(dest) [{25, 25, 25}];
     }
+    PRINT_BENCHMARK("write_to(dest) (\"{}{}{}\") = {25, 25, 25}")
+    {
+        strf::write_to(dest) ("{}{}{}") = {25, 25, 25};
+    }
+
     PRINT_BENCHMARK("karma::generate(dest, int_ << int_ << int_, 25, 25, 25)")
     {
         char* d = dest;
@@ -196,9 +206,9 @@ int main()
     {
         strf::write_to(dest).with(strf::width(20)) [{25}];
     }
-    PRINT_BENCHMARK("write_to(dest) ({join_right(20), {25}})")
+    PRINT_BENCHMARK("write_to(dest) [{ {join_right(20), {25}} }]")
     {
-        strf::write_to(dest) ({strf::join_right(20), {25}});
+        strf::write_to(dest) [{ {strf::join_right(20), {25}} }];
     }
     PRINT_BENCHMARK("karma::generate(dest, right_align(20)[int_], 25);")
     {
@@ -224,14 +234,14 @@ int main()
     {
         strf::write_to(dest)[{{25, {6, "<+"}}}];
     }
-    PRINT_BENCHMARK("write_to(dest).with(width(6), left, showpos) (25)")
+    PRINT_BENCHMARK("write_to(dest).with(width(6), left, showpos) [{ 25 }]")
     {
-        strf::write_to(dest).with(strf::width(6), strf::left, strf::showpos) (25);
+        strf::write_to(dest).with(strf::width(6), strf::left, strf::showpos) [{ 25 }];
     }
 
     PRINT_BENCHMARK("write_to(dest)({strf::make_ftuple(width(6), left, showpos), {25}})")
     {
-        strf::write_to(dest)({strf::make_ftuple(strf::width(6), strf::left, strf::showpos), {25}});
+        strf::write_to(dest) [{ {strf::make_ftuple(strf::width(6), strf::left, strf::showpos), {25}} }];
     }
     PRINT_BENCHMARK("karma::generate(dest, karma::left_align(6)[dec_showpos], 25)")
     {

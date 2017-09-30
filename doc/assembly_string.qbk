@@ -1,0 +1,48 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+[import ../example/v0/assembly_string.cpp]
+
+[section Assembly string syntax]
+
+
+
+[table 
+[[A `'{'` followed by]  [until]                       [means]]
+[[`'/'`]                [this same `'/'`]             [an escaped `'{'`]]
+[[`'-'`]                [next `'}'` or end of string] [a comment]]
+[[a digit]              [next `'}'` or end of string] [a positional argument]]
+[[any other character]  [next `'}'` or end of string] [a non positional argument]]
+]
+
+[variablelist Notes:
+
+[[Escapes]
+[ There is no way ( and no need ) to escape the `'}'` character, because the `'}'` has special meaning only if it corresponds to a previous `'{'`]
+[[asmstr_escape_sample]]
+]
+
+[[Comments]
+[When the assembly string is translated to another language, you may want to add a comment destinated to the person who translates it]
+[[asmstr_comment_sample]]
+]
+
+[[Positional argument]
+[Position zero refers to the first input argument]
+[The characters the after the digits are ignored by the parser, so you can see them as comments.]
+[[asmstr_positional_arg]]
+]
+
+[[Non positional argument]
+[The characters the after the `'{'` are ignored as well]
+[[asmstr_non_positional_arg]]
+]
+
+]
+
+
+
+[endsect]

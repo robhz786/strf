@@ -11,50 +11,52 @@
 
 [ [1]
   [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Allocator]`>`]
-  [ [*`append_to (`][~destination][*`)`] \u00b7\u00b7\u00b7]]
+  [ [*`append_to (`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [2] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Allocator]`>`]
-  [ [*`assign_to (`][~destination][*`)`] \u00b7\u00b7\u00b7]]
+  [ [*`assign_to (`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [3] [`std::string`]
-  [ [*`make_string`] \u00b7\u00b7\u00b7]]
+  [ [*`make_string `] [*\u00b7\u00b7\u00b7]]]
 
 [ [4] [`std::u16string`]
-  [ [*`make_u16string`] \u00b7\u00b7\u00b7]]
+  [ [*`make_u16string `] [*\u00b7\u00b7\u00b7]]]
 
 [ [5] [`std::u32string`]
-  [ [*`make_u32string`] \u00b7\u00b7\u00b7]]
+  [ [*`make_u32string `] [*\u00b7\u00b7\u00b7]]]
 
 [ [6] [`std::wstring`]
-  [ [*`make_wstring`] \u00b7\u00b7\u00b7]]
+  [ [*`make_wstring `] [*\u00b7\u00b7\u00b7]]]
 
 [ [7] [`std::basic_string<`[~CharT]`, `[~Traits]`, `[~Allocator]`>`]
-  [ [*`make_basic_string <`][~CharT]`, `[~Traits]`, `[~Allocator][*`> (`][~destination][*`)`] \u00b7\u00b7\u00b7]]
+  [ [*`make_basic_string <`][~CharT]`, `[~Traits]`, `[~Allocator][*`> (`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [8]  [[~CharT]`*`]
-  [ [*`write_to <`][~Traits][*`> (`][~destination]`, `[~limit]`, `[~countptr][*`)`] \u00b7\u00b7\u00b7]]
+  [ [*`write_to <`][~Traits][*`> (`][~destination]`, `[~limit]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [9] [[~CharT]`*`]
-  [ [*`write_to <`][~Traits][*`> (`][~destination]`, `[~end]`, `[~countptr][*`)`] \u00b7\u00b7\u00b7]]
+  [ [*`write_to <`][~Traits][*`> (`][~destination]`, `[~end]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [10] [[~CharT[size]]]
-  [ [*`write_to <`][~Traits][*`> (`][~destination]`, `[~countptr][*`)`] \u00b7\u00b7\u00b7]]
+  [ [*`write_to <`][~Traits][*`> (`][~destination]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [11] [ `std::basic_streambuf <`[~CharT]`, `[~Traits]`>`]
-  [ [*`write_to (`][~destination]`, `[~countptr][*`)`] \u00b7\u00b7\u00b7]]
+  [ [*`write_to (`][~destination]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [12] [ `FILE*` ( using narrow functions) ]
-  [ [*`write_to <`][~CharT][*`> (`][~destination]`,` [~countptr] [*`)`] \u00b7\u00b7\u00b7]]
+  [ [*`write_to <`][~CharT][*`> (`][~destination]`,` [~countptr] [*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [13]  [ `FILE*` ( using wide functions) ]
-  [ [*`wwrite_to (`][~destination]`, `[~countptr][*`)`] \u00b7\u00b7\u00b7]]
+  [ [*`wwrite_to (`][~destination]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
 ]
+
+where:
 
 * [~limit] is `std::size_t`. It determinates the maximum number of characters that can be written, including the termination character.
 * [~countptr] is `std::size_t*` and is optional. The number of succefully written characters will be assigned to [~*countptr].
 * [~end] is [~CharT]*
 * [~CharT] can be `char`, `char16_t`, `char32_t` or `wchar_t`
-* "\u00b7\u00b7\u00b7" is the remaining part of the expression which shall contain the input arguments ( inside the `[{ }]` )
+* " [*\u00b7\u00b7\u00b7] " is the remaining part of the expression, and it's like:  [$../remaining.png]
 
 [h3 Effect]
 
@@ -71,7 +73,9 @@
 [h3 Return type]
 
 * 1 - 2) `std::error_code`
-* 3 - 7) `expected_basic_string<`[~CharT`, `Traits]`>`, which mimics `std::expected<std::basic_string<`[~CharT`, `Traits]`>, std::error_code>`
+* 3 - 7) `expected_basic_string<`[~CharT`, `Traits]`>`, which mimics
+[@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0323r1.pdf
+`std::expected`]`<std::basic_string<`[~CharT`, `Traits]`>, std::error_code>`
 * 8 - 13) `std::error_code`
 
 [h3 On error]
@@ -86,5 +90,7 @@
 * 7-10) [~Traits] is optional. If omitted, it is `std::char_traits<`[~CharT]`>`
 * 12) [~CharT] is optional. If omitted, it is `char`
 * 12-13) `std::fflush` is [_not] called
+
+[caution In (12) the output should be in binary mode, uncless [~CharT] is `char`.]
 
 [endsect]

@@ -3,6 +3,7 @@ project (unit_tests)
 
 include_directories("../../../")
 
+add_executable(assembly_string_test_header_only   v0/assembly_string_test.cpp)
 add_executable(input_string_test_header_only      v0/input_string_test.cpp)
 add_executable(input_int_test_header_only         v0/input_int_test.cpp)
 add_executable(input_char_test_header_only        v0/input_char_test.cpp)
@@ -15,6 +16,7 @@ add_executable(output_streambuf_test_header_only  v0/output_streambuf_test.cpp)
 add_executable(output_FILE_test_header_only       v0/output_FILE_test.cpp)
 add_executable(ftuple_merge_test_header_only      v0/ftuple_merge_test.cpp)
 
+target_link_libraries(assembly_string_test_header_only   boost_stringify_header_only)
 target_link_libraries(input_string_test_header_only      boost_stringify_header_only)
 target_link_libraries(input_int_test_header_only         boost_stringify_header_only)
 target_link_libraries(input_char_test_header_only        boost_stringify_header_only)
@@ -27,6 +29,7 @@ target_link_libraries(output_streambuf_test_header_only  boost_stringify_header_
 target_link_libraries(output_FILE_test_header_only       boost_stringify_header_only)
 target_link_libraries(ftuple_merge_test_header_only      boost_stringify_header_only)
 
+add_test(run-assembly_string_test_header_only  assembly_string_test_header_only   )
 add_test(run-input_string_test_header_only     input_string_test_header_only      )
 add_test(run-input_int_test_header_only        input_int_test_header_only         )
 add_test(run-input_char_test_header_only       input_char_test_header_only        )
@@ -41,7 +44,7 @@ add_test(run-ftuple_merge_test_header_only     ftuple_merge_test_header_only    
 
 
 
-
+add_executable(assembly_string_test_static_lib   v0/assembly_string_test.cpp)
 add_executable(input_string_test_static_lib      v0/input_string_test.cpp)
 add_executable(input_int_test_static_lib         v0/input_int_test.cpp)
 add_executable(input_char_test_static_lib        v0/input_char_test.cpp)
@@ -54,6 +57,7 @@ add_executable(output_streambuf_test_static_lib  v0/output_streambuf_test.cpp)
 add_executable(output_FILE_test_static_lib       v0/output_FILE_test.cpp)
 add_executable(ftuple_merge_test_static_lib      v0/ftuple_merge_test.cpp)
 
+target_link_libraries(assembly_string_test_static_lib   boost_stringify)
 target_link_libraries(input_string_test_static_lib      boost_stringify)
 target_link_libraries(input_int_test_static_lib         boost_stringify)
 target_link_libraries(input_char_test_static_lib        boost_stringify)
@@ -66,6 +70,7 @@ target_link_libraries(output_streambuf_test_static_lib  boost_stringify)
 target_link_libraries(output_FILE_test_static_lib       boost_stringify)
 target_link_libraries(ftuple_merge_test_static_lib      boost_stringify)
 
+add_test(run-assembly_string_test_static_lib  assembly_string_test_static_lib   )
 add_test(run-input_string_test_static_lib     input_string_test_static_lib      )
 add_test(run-input_int_test_static_lib        input_int_test_static_lib         )
 add_test(run-input_char_test_static_lib       input_char_test_static_lib        )
