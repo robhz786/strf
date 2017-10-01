@@ -26,7 +26,7 @@ public:
     template <typename FTuple>
     char_stringifier
         ( const FTuple& ft
-        , char32_t ch
+        , CharT ch
         ) noexcept
         : m_from32cv(get_facet<from32_tag>(ft))
         , m_width(get_facet<width_tag>(ft).width())
@@ -40,7 +40,7 @@ public:
     template <typename FTuple>
     char_stringifier
         ( const FTuple& ft
-        , char32_t ch
+        , CharT ch
         , const second_arg& argf
         ) noexcept
         : m_from32cv(get_facet<from32_tag>(ft))

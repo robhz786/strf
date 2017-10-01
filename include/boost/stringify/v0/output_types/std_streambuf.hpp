@@ -51,9 +51,9 @@ public:
         {
             std::streamsize count = ucount;
             auto count_inc = m_out.sputn(str, count);
-            if(m_count != nullptr)
+            if(m_count != nullptr && count_inc > 0)
             {
-                *m_count += count_inc;
+                *m_count += static_cast<std::size_t>(count_inc);
             }
             if (count_inc != count)
             {

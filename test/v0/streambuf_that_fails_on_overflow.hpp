@@ -2,7 +2,6 @@
 #define BOOST_STRINGIFY_TEST_V0_STREAMBUF_THAT_FAILS_ON_OVERFLOW_HPP
 
 #include <streambuf>
-#include <array>
 #include <string>
 
 template
@@ -21,7 +20,7 @@ public:
 
     streambuf_that_fails_on_overflow()
     {
-        Base::setp(m_buffer.begin(), m_buffer.end());
+        Base::setp(&m_buffer[0], &m_buffer[SIZE]);
     }
 
     int_type overflow(int_type) override
@@ -36,7 +35,8 @@ public:
 
 private:
 
-    std::array<char_type, SIZE> m_buffer = {};
+    char_type m_buffer[SIZE];
+
 };
 
 #endif

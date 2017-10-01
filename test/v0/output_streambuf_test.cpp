@@ -33,7 +33,6 @@ void basic_test()
 
 int main()
 {
-
     basic_test<char>();
     basic_test<char16_t>();
     basic_test<char32_t>();
@@ -50,7 +49,6 @@ int main()
         BOOST_TEST(!err);
         BOOST_TEST(expected == result.str());
     }
-
 
     {   // When set_error is called
 
@@ -109,7 +107,7 @@ int main()
 
         auto err = strf::write_to(result, &result_length)
         [{
-            "ABCDEF", {'a', {"", 6}}, "ABCDEF"
+                "ABCDEF", {'a', {"", 6}}, "ABCDEF"
         }];
 
         BOOST_TEST(err == std::errc::io_error);

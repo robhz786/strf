@@ -8,7 +8,9 @@ include_directories(
 
 add_definitions(-DFMT_HEADER_ONLY=1)
 
-add_executable(to_char_ptr to_char_ptr.cpp)
+add_executable(to_char_ptr    to_char_ptr.cpp)
+#add_executable(utf32_to_utf8  utf32_to_utf8.cpp)
 
-install(TARGETS to_char_ptr DESTINATION "./")
+install(TARGETS to_char_ptr   DESTINATION "./")
+#install(TARGETS utf32_to_utf8 DESTINATION "./")
 

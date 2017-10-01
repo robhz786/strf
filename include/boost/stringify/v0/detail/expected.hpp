@@ -140,7 +140,7 @@ public:
         return *this;
     }
 
-    constexpr bool operator=(const expected& other) const
+    constexpr bool operator==(const expected& other) const
     {
         if (m_has_value)
         {
