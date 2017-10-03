@@ -5,82 +5,161 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+#include <boost/stringify/v0/output_writer.hpp>
+#include <system_error>
+
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+
 namespace detail {
 
 template <typename StringType>
-class string_appender
+class string_appender: public output_writer<typename StringType::value_type>
 {
 public:
     typedef typename StringType::value_type char_type;
-    
+
     string_appender(StringType& out)
-        : m_out(out)
+        : m_out(&out)
+        , m_initial_length(out.length())
     {
     }
 
-    string_appender(const string_appender&) = default;
-    
-    void put(char_type character)
+    ~string_appender()
     {
-        m_out.push_back(character);
+        if (! m_finished && m_out != nullptr)
+        {
+            m_out->resize(m_initial_length);
+        }
     }
 
-    void put(char_type character, std::size_t repetitions)
+    void set_error(std::error_code err) override
     {
-        m_out.append(repetitions, character);
+        if (err && ! m_err)
+        {
+            m_err = err;
+            if (m_out != nullptr)
+            {
+                m_out->resize(m_initial_length);
+                m_out = nullptr;
+            }
+        }
     }
 
-    void put(const char_type* str, std::size_t count)
+    bool good() const override
     {
-        m_out.append(str, count);
+        return ! m_err;
     }
-    
-    StringType& finish()
+
+
+    void put(const char_type* str, std::size_t count) override
     {
-        return m_out;
+        if(m_out != nullptr)
+        {
+            m_out->append(str, count);
+        }
+    }
+
+    void put(char_type character) override
+    {
+        if(m_out != nullptr)
+        {
+            m_out->push_back(character);
+        }
+    }
+
+    void repeat(std::size_t count, char_type character) override
+    {
+        if(m_out != nullptr)
+        {
+            m_out->append(count, character);
+        }
+    }
+
+    void repeat
+        ( std::size_t count
+        , char_type ch1
+        , char_type ch2
+        ) override
+    {
+        if(m_out != nullptr)
+        {
+            for(; count > 0; --count)
+            {
+                m_out->push_back(ch1);
+                m_out->push_back(ch2);
+            }
+        }
+    }
+
+    void repeat
+        ( std::size_t count
+        , char_type ch1
+        , char_type ch2
+        , char_type ch3
+        ) override
+    {
+        if(m_out != nullptr)
+        {
+            for(; count > 0; --count)
+            {
+                m_out->push_back(ch1);
+                m_out->push_back(ch2);
+                m_out->push_back(ch3);
+            }
+        }
+    }
+
+    void repeat
+        ( std::size_t count
+        , char_type ch1
+        , char_type ch2
+        , char_type ch3
+        , char_type ch4
+        ) override
+    {
+        if(m_out != nullptr)
+        {
+            for(; count > 0; --count)
+            {
+                m_out->push_back(ch1);
+                m_out->push_back(ch2);
+                m_out->push_back(ch3);
+                m_out->push_back(ch4);
+            }
+        }
+    }
+
+    std::error_code finish()
+    {
+        m_finished = true;
+        return m_err;
     }
 
     void reserve(std::size_t size)
     {
-        m_out.reserve(m_out.capacity() + size);
+        if(m_out != nullptr)
+        {
+            m_out->reserve(m_out->capacity() + size);
+        }
     }
 
 private:
 
-    StringType& m_out;               
+    StringType* m_out = nullptr;
+    std::size_t m_initial_length = 0;
+    std::error_code m_err;
+    bool m_finished = false;
 };
-/*
-template <class T>
-struct std_string_destination_concept
-{
 
-private:
+#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
-    template
-        < typename S
-        , typename CharT = typename S::value_type
-        , typename Traits = typename S::traits_type
-        >  
-    static auto test(S* str) -> decltype
-             ( str->push_back(CharT())
-             , str->append(CharT(), std::size_t())
-             , str->append((const CharT*)(0), std::size_t())
-             , str->reserve(std::size_t())
-             , std::true_type()
-             );
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_appender<std::string>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_appender<std::u16string>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_appender<std::u32string>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_appender<std::wstring>;
 
-    template <typename S>
-    static std::false_type test(...);
+#endif
 
-public:
-
-    static constexpr bool value = decltype(test<T>((T*)0))::value;
-
-};
-*/
 } // namespace detail
 
 
@@ -102,10 +181,7 @@ auto assign_to(std::basic_string<CharT, Traits, Allocator>& str)
     return boost::stringify::v0::make_args_handler<writer, string_type&>(str);
 }
 
-
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_OUTPUT_TYPES_STD_STRING_HPP
 

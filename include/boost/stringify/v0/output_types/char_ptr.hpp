@@ -7,226 +7,367 @@
 
 #include <string>
 #include <boost/stringify/v0/args_handler.hpp>
+#include <boost/stringify/v0/output_writer.hpp>
 
-namespace boost{
-namespace stringify{
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-struct char_ptr_result
-{
-    std::size_t length;
-    bool success;
-};
-       
 namespace detail{
 
 template<typename CharT, typename Traits>
-class char_ptr_writer
+class char_ptr_writer: public output_writer<CharT>
 {
 public:
 
     typedef CharT char_type;
 
-    char_ptr_writer(const char_ptr_writer&) = default;
+    char_ptr_writer() = delete;
 
-    explicit char_ptr_writer(CharT* out)
-        : m_out(out)
+    ~char_ptr_writer()
     {
-    }
-
-    void put(CharT character) noexcept
-    {
-        Traits::assign(*m_out++, character);
-    }
-
-    void put(CharT character, std::size_t repetitions) noexcept
-    {
-        Traits::assign(m_out, repetitions, character);
-        m_out += repetitions;
-    }
-
-    void put(const CharT* str, std::size_t count) noexcept
-    {
-        Traits::copy(m_out, str, count);
-        m_out += count;
-    }
-
-    CharT* finish() noexcept
-    {
-        Traits::assign(*m_out, CharT());
-        return m_out;
-    }
-
-private:
-
-    CharT* m_out;
-};
-
-
-template<typename CharT, typename Traits>
-class limited_char_ptr_writer
-{
-public:
-
-    typedef CharT char_type;
-
-    limited_char_ptr_writer(const limited_char_ptr_writer&) = default;
-
-    explicit limited_char_ptr_writer(CharT* destination, CharT* end)
-        : m_begin(destination)
-        , m_it(destination)
-        , m_end(end)
-    {
-    }
-
-    void put(CharT character) noexcept
-    {
-        if (m_it != m_end)
+        if (! m_finished) // means that an exception has been thrown
         {
-            Traits::assign(*m_it, character);
+            if(m_begin != m_end)
+            {
+                Traits::assign(*m_begin, CharT());
+            }
+            if(m_out_count != nullptr)
+            {
+                *m_out_count = 0;
+            }
+        }
+    }
+
+    char_ptr_writer
+        ( CharT* destination
+        , CharT* end
+        , std::size_t* out_count
+        )
+        : m_begin{destination}
+        , m_it{destination}
+        , m_end{end}
+        , m_out_count{out_count}
+    {
+        if(m_end < m_begin)
+        {
+            set_overflow_error();
+        }
+    }
+
+    void set_error(std::error_code err) override
+    {
+        if (err && ! m_err)
+        {
+            m_err = err;
+            if (m_begin != m_end)
+            {
+                Traits::assign(*m_begin, CharT());
+            }
+
+            // prevent any further writting:
+            m_end = m_begin;
+            m_it = m_begin;
+        }
+    }
+
+    bool good() const override
+    {
+        return ! m_err;
+    }
+
+    void put(const CharT* str, std::size_t count) override
+    {
+        if (m_it + count >= m_end)
+        {
+            set_overflow_error();
+        }
+        else
+        {
+            Traits::copy(m_it, str, count);
+            m_it += count;
+        }
+    }
+
+    void put(CharT ch) override
+    {
+        if (m_it + 1 >= m_end)
+        {
+            set_overflow_error();
+        }
+        else
+        {
+            Traits::assign(*m_it, ch);
             ++m_it;
         }
-    }
+     }
 
-    void put(CharT character, std::size_t count) noexcept
+    void repeat(std::size_t count, CharT ch) override
     {
-        count = std::min(count, static_cast<std::size_t>(m_end - m_it));
-        Traits::assign(m_it, count, character);
-        m_it += count;
-    }
-
-    void put(const CharT* str, std::size_t count) noexcept
-    {
-        count = std::min(count, static_cast<std::size_t>(m_end - m_it));
-        Traits::copy(m_it, str, count);
-        m_it += count;
-    }
-
-    boost::stringify::v0::char_ptr_result finish() noexcept
-    {
-        if(m_begin == m_end)
+        if (m_it + count >= m_end)
         {
-            return {0, false};
+            set_overflow_error();
         }
-        if(m_it == m_end)
+        else if (count == 1)
         {
-            -- m_it;
-            Traits::assign(*m_it, CharT());
-            return {static_cast<std::size_t>(m_it - m_begin), false};
+            Traits::assign(*m_it, ch);
+            ++m_it;
         }
-        Traits::assign(*m_it, CharT());
-        return {static_cast<std::size_t>(m_it - m_begin), true};
+        else
+        {
+            Traits::assign(m_it, count, ch);
+            m_it += count;
+        }
+    }
+
+    void repeat(std::size_t count, CharT ch1, CharT ch2) override
+    {
+        if (m_it + 2 * count >= m_end)
+        {
+            set_overflow_error();
+        }
+        else
+        {
+            while(count > 0)
+            {
+                Traits::assign(m_it[0], ch1);
+                Traits::assign(m_it[1], ch2);
+                m_it += 2;
+                --count;
+            }
+        }
+    }
+
+    void repeat(std::size_t count, CharT ch1, CharT ch2, CharT ch3) override
+    {
+        if (m_it + 3 * count >= m_end)
+        {
+            set_overflow_error();
+        }
+        else
+        {
+            while(count > 0)
+            {
+                Traits::assign(m_it[0], ch1);
+                Traits::assign(m_it[1], ch2);
+                Traits::assign(m_it[2], ch3);
+                m_it += 3;
+                --count;
+            }
+        }
+    }
+
+    void repeat
+        ( std::size_t count
+        , CharT ch1
+        , CharT ch2
+        , CharT ch3
+        , CharT ch4
+        
+        ) override
+    {
+        if (m_it + 4 * count >= m_end)
+        {
+            set_overflow_error();
+        }
+        else
+        {
+            while (count > 0)
+            {
+                Traits::assign(m_it[0], ch1);
+                Traits::assign(m_it[1], ch2);
+                Traits::assign(m_it[2], ch3);
+                Traits::assign(m_it[3], ch4);
+                m_it += 4;
+                --count;
+            }
+        }
+    }
+
+    std::error_code finish() noexcept
+    {
+        if ( ! m_finished)
+        {
+            do_finish();
+        }
+        m_finished = true;
+        return m_err;
     }
 
 private:
+
+    void do_finish() noexcept
+    {
+        if(m_begin != m_end)
+        {
+            BOOST_ASSERT(m_it != m_end);
+            Traits::assign(*m_it, CharT());
+        }
+        if(m_out_count != nullptr)
+        {
+            *m_out_count = (m_it - m_begin);
+        }
+    }
+    
+    void set_overflow_error()
+    {
+        set_error(std::make_error_code(std::errc::result_out_of_range));
+    }
 
     CharT* m_begin;
     CharT* m_it;
     CharT* m_end;
+    std::size_t* m_out_count = nullptr;
+    std::error_code m_err;
+    bool m_finished = false;
 };
 
+#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class char_ptr_writer<char, std::char_traits<char>>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class char_ptr_writer<char16_t, std::char_traits<char16_t>>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class char_ptr_writer<char32_t, std::char_traits<char32_t>>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class char_ptr_writer<wchar_t, std::char_traits<wchar_t>>;
+
+#endif
 
 
 } // namespace detail
 
 
-template<typename CharTraits = std::char_traits<char> >
-auto write_to(char* destination)
+template<typename CharTraits = std::char_traits<char>, std::size_t N>
+auto write_to(char (&destination)[N], std::size_t* out_count = nullptr)
 {
-    using writer = boost::stringify::v0::detail::char_ptr_writer<char, CharTraits>;
-    return boost::stringify::v0::make_args_handler<writer, char*>(destination);
+    using writer = stringify::v0::detail::char_ptr_writer<char, CharTraits>;
+    return stringify::v0::make_args_handler<writer, char*>
+        (destination, destination + N, out_count);
 }
 
-template<typename CharTraits = std::char_traits<char16_t> >
-auto write_to(char16_t* destination)
+template<typename CharTraits = std::char_traits<char16_t>, std::size_t N>
+auto write_to(char16_t (&destination)[N], std::size_t* out_count = nullptr)
 {
-    using writer = boost::stringify::v0::detail::char_ptr_writer<char16_t, CharTraits>;
-    return boost::stringify::v0::make_args_handler<writer, char16_t*>(destination);
+    using writer = stringify::v0::detail::char_ptr_writer<char16_t, CharTraits>;
+    return stringify::v0::make_args_handler<writer, char16_t*>
+        (destination, destination + N, out_count);
 }
 
-template<typename CharTraits = std::char_traits<char32_t> >
-auto write_to(char32_t* destination)
+template<typename CharTraits = std::char_traits<char32_t>, std::size_t N>
+auto write_to(char32_t (&destination)[N], std::size_t* out_count = nullptr)
 {
-    using writer = boost::stringify::v0::detail::char_ptr_writer<char32_t, CharTraits>;
-    return boost::stringify::v0::make_args_handler<writer, char32_t*>(destination);
+    using writer = stringify::v0::detail::char_ptr_writer<char32_t, CharTraits>;
+    return stringify::v0::make_args_handler<writer, char32_t*>
+        (destination, destination + N, out_count);
 }
 
-template<typename CharTraits = std::char_traits<wchar_t> >
-auto write_to(wchar_t* destination)
+template<typename CharTraits = std::char_traits<wchar_t>, std::size_t N>
+auto write_to(wchar_t (&destination)[N], std::size_t* out_count = nullptr)
 {
-    using writer = boost::stringify::v0::detail::char_ptr_writer<wchar_t, CharTraits>;
-    return boost::stringify::v0::make_args_handler<writer, wchar_t*>(destination);
-}
-
-template<typename CharTraits = std::char_traits<char> >
-auto write_to(char* destination, char* end)
-{
-    using writer = boost::stringify::v0::detail::limited_char_ptr_writer<char, CharTraits>;
-    return boost::stringify::v0::make_args_handler<writer, char*, char*>
-        (destination, end);
-}
-
-template<typename CharTraits = std::char_traits<char16_t> >
-auto write_to(char16_t* destination, char16_t* end)
-{
-    using writer = boost::stringify::v0::detail::limited_char_ptr_writer<char16_t, CharTraits>;
-    return boost::stringify::v0::make_args_handler<writer, char16_t*, char16_t*>
-        (destination, end);
-}
-
-template<typename CharTraits = std::char_traits<char32_t> >
-auto write_to(char32_t* destination, char32_t* end)
-{
-    using writer = boost::stringify::v0::detail::limited_char_ptr_writer<char32_t, CharTraits>;
-    return boost::stringify::v0::make_args_handler<writer, char32_t*, char32_t*>
-        (destination, end);
-}
-
-template<typename CharTraits = std::char_traits<wchar_t> >
-auto write_to(wchar_t* destination, wchar_t* end)
-{
-    using writer = boost::stringify::v0::detail::limited_char_ptr_writer<wchar_t, CharTraits>;
-    return boost::stringify::v0::make_args_handler<writer, wchar_t*, wchar_t*>
-        (destination, end);
+    using writer = stringify::v0::detail::char_ptr_writer<wchar_t, CharTraits>;
+    return stringify::v0::make_args_handler<writer, wchar_t*>
+        (destination, destination + N, out_count);
 }
 
 template<typename CharTraits = std::char_traits<char> >
-auto write_to(char* destination, std::size_t count)
+auto write_to
+    ( char* destination
+    , char* end
+    , std::size_t* out_count = nullptr
+    )
 {
-    using writer = boost::stringify::v0::detail::limited_char_ptr_writer<char, CharTraits>;
-    return boost::stringify::v0::make_args_handler<writer, char*, char*>
-        (destination, destination + count);
+    using writer = stringify::v0::detail::char_ptr_writer<char, CharTraits>;
+    return stringify::v0::make_args_handler<writer, char*, char*>
+        (destination, end, out_count);
 }
 
 template<typename CharTraits = std::char_traits<char16_t> >
-auto write_to(char16_t* destination, std::size_t count)
+auto write_to
+    ( char16_t* destination
+    , char16_t* end
+    , std::size_t* out_count = nullptr
+    )
 {
-    using writer = boost::stringify::v0::detail::limited_char_ptr_writer<char16_t, CharTraits>;
-    return boost::stringify::v0::make_args_handler<writer, char16_t*, char16_t*>
-        (destination, destination + count);
+    using writer = stringify::v0::detail::char_ptr_writer<char16_t, CharTraits>;
+    return stringify::v0::make_args_handler<writer, char16_t*, char16_t*>
+        (destination, end, out_count);
 }
 
 template<typename CharTraits = std::char_traits<char32_t> >
-auto write_to(char32_t* destination, std::size_t count)
+auto write_to
+    ( char32_t* destination
+    , char32_t* end
+    , std::size_t* out_count = nullptr
+    )
 {
-    using writer = boost::stringify::v0::detail::limited_char_ptr_writer<char32_t, CharTraits>;
-    return boost::stringify::v0::make_args_handler<writer, char32_t*, char32_t*>
-        (destination, destination + count);
+    using writer = stringify::v0::detail::char_ptr_writer<char32_t, CharTraits>;
+    return stringify::v0::make_args_handler<writer, char32_t*, char32_t*>
+        (destination, end, out_count);
 }
 
 template<typename CharTraits = std::char_traits<wchar_t> >
-auto write_to(wchar_t* destination, std::size_t count)
+auto write_to
+    ( wchar_t* destination
+    , wchar_t* end
+    , std::size_t* out_count = nullptr
+    )
 {
-    using writer = boost::stringify::v0::detail::limited_char_ptr_writer<wchar_t, CharTraits>;
-    return boost::stringify::v0::make_args_handler<writer, wchar_t*, wchar_t*>
-        (destination, destination + count);
+    using writer = stringify::v0::detail::char_ptr_writer<wchar_t, CharTraits>;
+    return stringify::v0::make_args_handler<writer, wchar_t*, wchar_t*>
+        (destination, end, out_count);
 }
-       
 
+template<typename CharTraits = std::char_traits<char> >
+auto write_to
+    ( char* destination
+    , std::size_t count
+    , std::size_t* out_count = nullptr
+    )
+{
+    using writer = stringify::v0::detail::char_ptr_writer<char, CharTraits>;
+    return stringify::v0::make_args_handler<writer, char*, char*>
+        (destination, destination + count, out_count);
+}
 
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+template<typename CharTraits = std::char_traits<char16_t> >
+auto write_to
+    ( char16_t* destination
+    , std::size_t count
+    , std::size_t* out_count = nullptr
+    )
+{
+    using writer = stringify::v0::detail::char_ptr_writer<char16_t, CharTraits>;
+    return stringify::v0::make_args_handler<writer, char16_t*, char16_t*>
+        (destination, destination + count, out_count);
+}
+
+template<typename CharTraits = std::char_traits<char32_t> >
+auto write_to
+    ( char32_t* destination
+    , std::size_t count
+    , std::size_t* out_count = nullptr
+    )
+{
+    using writer = stringify::v0::detail::char_ptr_writer<char32_t, CharTraits>;
+    return stringify::v0::make_args_handler<writer, char32_t*, char32_t*>
+        (destination, destination + count, out_count);
+}
+
+template<typename CharTraits = std::char_traits<wchar_t> >
+auto write_to
+    ( wchar_t* destination
+    , std::size_t count
+    , std::size_t* out_count = nullptr)
+{
+    using writer = stringify::v0::detail::char_ptr_writer<wchar_t, CharTraits>;
+    return stringify::v0::make_args_handler<writer, wchar_t*, wchar_t*>
+        (destination, destination + count, out_count);
+}
+
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  /* BOOST_STRINGIFY_V0_OUTPUT_TYPES_CHAR_PTR_HPP */
 

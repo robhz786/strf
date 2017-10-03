@@ -5,9 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-namespace boost{
-namespace stringify{
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <char ...>
 class char_flags;
@@ -99,10 +97,7 @@ protected:
 };
     
 
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
-
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  /* BOOST_STRINGIFY_V0_DETAIL_CHAR_FLAGS_HPP */
 

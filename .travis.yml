@@ -7,9 +7,7 @@ sudo: false
 
 branches:
   only:
-    - master
-    - develop
-    - /feature\/.*/
+    - /.*/
 
 matrix:
   include:
@@ -61,94 +59,83 @@ matrix:
       env: TOOLSET=gcc COMPILER=g++-7 CXXSTD=c++1z
 
 
-    - os: linux
-      compiler: clang++-3.6
-      env: TOOLSET=clang COMPILER=clang++-3.6 CXXSTD=c++14
-      addons:
-        apt:
-          packages:
-            - clang-3.6
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
-    - os: linux
-      compiler: clang++-3.6
-      env: TOOLSET=clang COMPILER=clang++-3.6 CXXSTD=c++1z
-      addons:
-        apt:
-          packages:
-            - clang-3.6
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
-
-    - os: linux
-      compiler: clang++-3.7
-      env: TOOLSET=clang COMPILER=clang++-3.7 CXXSTD=c++14
-      addons:
-        apt:
-          packages:
-            - clang-3.7
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.7
-
-    - os: linux
-      compiler: clang++-3.7
-      env: TOOLSET=clang COMPILER=clang++-3.7 CXXSTD=c++1z
-      addons:
-        apt:
-          packages:
-            - clang-3.7
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.7
-
-    - os: linux
-      compiler: clang++-3.8
-      env: TOOLSET=clang COMPILER=clang++-3.8 CXXSTD=c++14
-      addons:
-        apt:
-          packages:
-            - clang-3.8
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.8
-
-    - os: linux
-      compiler: clang++-3.8
-      env: TOOLSET=clang COMPILER=clang++-3.8 CXXSTD=c++1z
-      addons:
-        apt:
-          packages:
-            - clang-3.8
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.8
-
-
-    - os: linux
-      compiler: clang++-3.9
-      env: TOOLSET=clang COMPILER=clang++-3.9 CXXSTD=c++14
-      addons:
-        apt:
-          packages:
-            - clang-3.9
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.9
-
-    - os: linux
-      compiler: clang++-3.9
-      env: TOOLSET=clang COMPILER=clang++-3.9 CXXSTD=c++1z
-      addons:
-        apt:
-          packages:
-            - clang-3.9
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.9
-
+#    - os: linux
+#      compiler: clang++-3.6
+#      env: TOOLSET=clang COMPILER=clang++-3.6 CXXSTD=c++14
+#      addons:
+#        apt:
+#          packages:
+#            - clang-3.6
+#          sources:
+#            - ubuntu-toolchain-r-test
+#            - llvm-toolchain-precise-3.6
+#    - os: linux
+#      compiler: clang++-3.6
+#      env: TOOLSET=clang LLVM_VERSION=3.6.2 COMPILER=clang++-3.6 CXXSTD=c++1z
+#      addons:
+#        apt:
+#          packages:
+#            - clang-3.6
+#          sources:
+#            - ubuntu-toolchain-r-test
+#            - llvm-toolchain-precise-3.6
+#
+#    - os: linux
+#      compiler: clang++-3.7
+#      env: TOOLSET=clang LLVM_VERSION=3.7.1 COMPILER=clang++-3.7 CXXSTD=c++14
+#      addons:
+#        apt:
+#          packages:
+#            - clang-3.7
+#          sources:
+#            - ubuntu-toolchain-r-test
+#            - llvm-toolchain-precise-3.7
+#
+#    - os: linux
+#      compiler: clang++-3.8
+#      env: TOOLSET=clang LLVM_VERSION=3.8.0 COMPILER=clang++-3.8 CXXSTD=c++14
+#      addons:
+#        apt:
+#          packages:
+#            - clang-3.8
+#          sources:
+#            - ubuntu-toolchain-r-test
+#            - llvm-toolchain-precise-3.8
+#
+#    - os: linux
+#      compiler: clang++-3.8
+#      env: TOOLSET=clang LLVM_VERSION=3.8.0 COMPILER=clang++-3.8 CXXSTD=c++1z
+#      addons:
+#        apt:
+#          packages:
+#            - clang-3.8
+#          sources:
+#            - ubuntu-toolchain-r-test
+#            - llvm-toolchain-precise-3.8
+#
+#
+#    - os: linux
+#      compiler: clang++-3.9
+#      env: TOOLSET=clang LLVM_VERSION=3.9.0 COMPILER=clang++-3.9 CXXSTD=c++14
+#      addons:
+#        apt:
+#          packages:
+#            - clang-3.9
+#          sources:
+#            - ubuntu-toolchain-r-test
+#            - llvm-toolchain-precise-3.9
+#
+#    - os: linux
+#      compiler: clang++-3.9
+#      env: TOOLSET=clang LLVM_VERSION=3.9.0 COMPILER=clang++-3.9 CXXSTD=c++1z
+#      addons:
+#        apt:
+#          packages:
+#            - clang-3.9
+#          sources:
+#            - ubuntu-toolchain-r-test
+#            - llvm-toolchain-precise-3.9
+#
 #    - os: linux
 #      compiler: clang++-4.0
 #      env: TOOLSET=clang COMPILER=clang++-4.0 CXXSTD=c++14

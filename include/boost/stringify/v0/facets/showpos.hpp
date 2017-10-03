@@ -5,99 +5,82 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/type_traits.hpp>
+#include <boost/stringify/v0/constrained_facet.hpp>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 struct showpos_tag;
 
-template <template <class> class Filter = boost::stringify::v0::true_trait>
-struct showpos_impl
-{
-    template <typename T> using accept_input_type = Filter<T>;
-
-    typedef boost::stringify::v0::showpos_tag category;
+// struct showpos_impl
+// {
+//     typedef boost::stringify::v0::showpos_tag category;
     
-    constexpr showpos_impl(bool show) : m_show(show)
-    {
-    }
+//     constexpr showpos_impl(bool show) : m_show(show)
+//     {
+//     }
     
-    constexpr bool value() const
-    {
-        return m_show;
-    }
+//     constexpr bool value() const
+//     {
+//         return m_show;
+//     }
     
-    bool m_show;
-};
+//     bool m_show;
+// };
 
 
-template <template <class> class Filter>
 struct showpos_true_impl
 {
-    template <typename T> using accept_input_type = Filter<T>;
-
     typedef boost::stringify::v0::showpos_tag category;
 
     constexpr bool value() const { return true; }
 
-    constexpr boost::stringify::v0::showpos_impl<Filter> operator()(bool s) const
-    {
-        return boost::stringify::v0::showpos_impl<Filter>(s);
-    }
+    // constexpr boost::stringify::v0::showpos_impl<Filter> operator()(bool s) const
+    // {
+    //     return boost::stringify::v0::showpos_impl<Filter>(s);
+    // }
 
-    constexpr boost::stringify::v0::showpos_true_impl<Filter> operator()() const
-    {
-        return *this;
-    }
-    
+    // constexpr boost::stringify::v0::showpos_true_impl<Filter> operator()() const
+    // {
+    //     return *this;
+    // }
 };
 
 
-template <template <class> class Filter>
 struct showpos_false_impl
 {
-    template <typename T> using accept_input_type = Filter<T>;
-
     typedef boost::stringify::v0::showpos_tag category;
 
     constexpr bool value() const { return false; }
 
-    constexpr boost::stringify::v0::showpos_false_impl<Filter> operator()() const
-    {
-        return *this;
-    }
+    // constexpr boost::stringify::v0::showpos_false_impl<Filter> operator()() const
+    // {
+    //     return *this;
+    // }
 };
 
 
 constexpr auto showpos
-= boost::stringify::v0::showpos_true_impl<boost::stringify::v0::true_trait>();
+= boost::stringify::v0::showpos_true_impl();
 
 constexpr auto noshowpos
-= boost::stringify::v0::showpos_false_impl<boost::stringify::v0::true_trait>();
+= boost::stringify::v0::showpos_false_impl();
 
 template <template <class> class F>
-boost::stringify::v0::showpos_true_impl<F> showpos_if
-= boost::stringify::v0::showpos_true_impl<F>();
+constrained_facet<F, boost::stringify::v0::showpos_true_impl> showpos_if {};
 
 template <template <class> class F>
-boost::stringify::v0::showpos_false_impl<F> noshowpos_if
-= boost::stringify::v0::showpos_false_impl<F>();
-
+constrained_facet<F, boost::stringify::v0::showpos_false_impl> noshowpos_if {};
 
 struct showpos_tag
 {
-    typedef
-        boost::stringify::v0::showpos_false_impl<boost::stringify::v0::true_trait>
-        default_impl;
+    constexpr static const auto& get_default() noexcept
+    {
+        return boost::stringify::v0::noshowpos;
+    }
 };
 
 
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
-
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  /* BOOST_STRINGIFY_V0_FACETS_SHOWPOS_HPP */
 

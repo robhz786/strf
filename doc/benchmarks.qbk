@@ -18,86 +18,77 @@ Boost.Stringify is compared againts Boost.Karma, [@http://fmtlib.net/latest/inde
 * `fmt_writer` is a `fmt::BasicArrayWriter<char>`, from [@http://fmtlib.net/latest/index.html fmtlib]
 [table
 [[ GCC 7.1 - Ubuntu 16.04 ] [ MSVC 2017 15.2 - Windows 10 ] [Expression]]
-[[          ][           ][[*Some smalls strings]]]
-[[ 30.21 ns ][  58.54 ns ][`write_to(dest) ("Hello ", "World", "!")`]]
-[[ 31.50 ns ][  57.16 ns ][`write_to(dest) [{"Hello ", "World", "!"}]`]]
-[[ 62.86 ns ][ 202.34 ns ][`karma::generate(dest, karma::lit("Hello ") << "World" << "!")`]]
-[[ 52.24 ns ][  70.90 ns ][`fmt_writer.write("Hello {}!", "World")`]]
-[[ 83.15 ns ][ 123.47 ns ][`sprintf(dest, "Hello %s!", "World")`]]
+
+[[          ][           ][[*small strings]]]
+[[ 63.99 ns ][  83.20 ns ][`write_to(dest) [{"Hello ", "World", "!"}]`]]
+[[ 63.68 ns ][ 192.98 ns ][`karma::generate(dest, karma::lit("Hello ") << "World" << "!")`]]
+[[ 43.97 ns ][  63.49 ns ][`fmt_writer.write("Hello {}!", "World")`]]
+[[ 82.49 ns ][ 107.54 ns ][`sprintf(dest, "Hello %s!", "World")`]]
 [[          ][           ][]]
-[[          ][           ][[*A long string ( 1000 characters )]]]
-[[ 62.82 ns ][ 552.03 ns ][`write_to(dest) ("Hello ", long_string, "!")`]]
-[[ 61.93 ns ][ 549.62 ns ][`write_to(dest) [{"Hello ", long_string, "!"}]`]]
-[[310.29 ns ][3792.75 ns ][`karma::generate(dest, lit("Hello ") << long_string << "!")`]]
-[[ 78.25 ns ][ 563.62 ns ][`fmt_writer.write("Hello {}!", long_string)`]]
-[[820.15 ns ][ 186.94 ns ][`sprintf(dest, "Hello %s!", long_string)`]]
+[[          ][           ][[*long string ( 1000 characters )]]]
+[[ 89.69 ns ][ 580.54 ns ][`write_to(dest) [{"Hello ", long_string, "!"}]`]]
+[[329.74 ns ][3586.10 ns ][`karma::generate(dest, lit("Hello ") << long_string << "!")`]]
+[[ 70.79 ns ][ 542.34 ns ][`fmt_writer.write("Hello {}!", long_string)`]]
+[[833.96 ns ][ 200.58 ns ][`sprintf(dest, "Hello %s!", long_string)`]]
 [[          ][           ][]]
-[[          ][           ][[*Integers]]]
-[[ 16.82 ns ][  23.23 ns ][`write_to(dest) (25)`]]
-[[ 21.04 ns ][  23.09 ns ][`write_to(dest) [{25}]`]]
-[[  9.11 ns ][   9.58 ns ][`karma::generate(dest, karma::int_, 25)`]]
-[[ 40.16 ns ][  75.69 ns ][`fmt_writer.write("{}", 25)`]]
-[[ 58.40 ns ][  82.25 ns ][`sprintf(dest, "%d", 25)`]]
+[[          ][           ][[*integers]]]
+[[ 27.69 ns ][  36.84 ns ][`write_to(dest) [{25}]`]]
+[[  7.57 ns ][   7.52 ns ][`karma::generate(dest, karma::int_, 25)`]]
+[[ 40.49 ns ][  68.63 ns ][`fmt_writer.write("{}", 25)`]]
+[[ 60.69 ns ][  76.20 ns ][`sprintf(dest, "%d", 25)`]]
 [[          ][           ][]]
-[[ 30.21 ns ][  39.76 ns ][`write_to(dest) (INT_MAX)`]]
-[[ 34.38 ns ][  44.07 ns ][`write_to(dest) [{INT_MAX}]`]]
-[[ 36.75 ns ][  46.65 ns ][`karma::generate(dest, karma::int_, INT_MAX);`]]
-[[ 46.22 ns ][  79.83 ns ][`fmt_writer.write("{}", INT_MAX)`]]
-[[ 77.93 ns ][ 157.06 ns ][`sprintf(dest, "%d", INT_MAX)`]]
+[[ 41.25 ns ][  49.40 ns ][`write_to(dest) [{INT_MAX}]`]]
+[[ 34.87 ns ][  34.31 ns ][`karma::generate(dest, karma::int_, INT_MAX);`]]
+[[ 47.90 ns ][  72.63 ns ][`fmt_writer.write("{}", INT_MAX)`]]
+[[ 79.46 ns ][ 149.89 ns ][`sprintf(dest, "%d", INT_MAX)`]]
 [[          ][           ][]]
-[[ 43.23 ns ][ 233.87 ns ][`write_to(dest) (LLONG_MAX)`]]
-[[ 51.53 ns ][ 244.95 ns ][`write_to(dest) [{LLONG_MAX}]`]]
-[[ 70.54 ns ][ 270.75 ns ][`karma::generate(dest, karma::long_long, LLONG_MAX);`]]
-[[ 55.55 ns ][ 180.17 ns ][`fmt_writer.write("{}", LLONG_MAX)`]]
-[[111.95 ns ][ 333.41 ns ][`sprintf(dest, "%lld", LLONG_MAX)`]]
+[[ 58.77 ns ][  66.98 ns ][`write_to(dest) [{LLONG_MAX}]`]]
+[[ 75.12 ns ][  73.81 ns ][`karma::generate(dest, karma::long_long, LLONG_MAX);`]]
+[[ 57.11 ns ][  83.51 ns ][`fmt_writer.write("{}", LLONG_MAX)`]]
+[[117.22 ns ][ 304.18 ns ][`sprintf(dest, "%lld", LLONG_MAX)`]]
 [[          ][           ][]]
-[[ 55.29 ns ][  75.52 ns ][`write_to(dest) (25, 25, 25)`]]
-[[ 56.05 ns ][  77.96 ns ][`write_to(dest) [{25, 25, 25}]`]]
-[[ 24.07 ns ][  49.67 ns ][`karma::generate(dest, int_ << int_ << int_, 25, 25, 25)`]]
-[[107.81 ns ][ 185.09 ns ][`fmt_writer.write("{}{}{}", 25, 25, 25)`]]
-[[114.66 ns ][ 177.38 ns ][`sprintf(dest, "%d%d%d", 25, 25, 25)`]]
+[[ 68.47 ns ][  89.97 ns ][`write_to(dest) [{25, 25, 25}]`]]
+[[ 21.68 ns ][  37.01 ns ][`karma::generate(dest, int_ << int_ << int_, 25, 25, 25)`]]
+[[105.70 ns ][ 172.74 ns ][`fmt_writer.write("{}{}{}", 25, 25, 25)`]]
+[[122.54 ns ][ 157.19 ns ][`sprintf(dest, "%d%d%d", 25, 25, 25)`]]
 [[          ][           ][]]
-[[138.21 ns ][ 684.19 ns ][`write_to(dest) (LLONG_MAX, LLONG_MAX, LLONG_MAX)`]]
-[[143.71 ns ][ 682.48 ns ][`write_to(dest) [{LLONG_MAX, LLONG_MAX, LLONG_MAX}]`]]
-[[224.49 ns ][ 819.07 ns ][`karma::generate(dest, long_long_x3, LLONG_MAX, LLONG_MAX, LLONG_MAX)`]]
-[[157.74 ns ][ 500.06 ns ][`fmt_writer.write("{}{}{}", LLONG_MAX, LLONG_MAX, LLONG_MAX)`]]
-[[267.21 ns ][ 938.62 ns ][`sprintf(dest, "%d%d%d", LLONG_MAX, LLONG_MAX, LLONG_MAX)`]]
+[[161.37 ns ][ 199.34 ns ][`write_to(dest) [{LLONG_MAX, LLONG_MAX, LLONG_MAX}]`]]
+[[210.51 ns ][ 232.63 ns ][`karma::generate(dest, long_long_x3, LLONG_MAX, LLONG_MAX, LLONG_MAX)`]]
+[[154.51 ns ][ 224.45 ns ][`fmt_writer.write("{}{}{}", LLONG_MAX, LLONG_MAX, LLONG_MAX)`]]
+[[268.69 ns ][ 826.84 ns ][`sprintf(dest, "%d%d%d", LLONG_MAX, LLONG_MAX, LLONG_MAX)`]]
 [[          ][           ][]]
-[[ 26.83 ns ][  45.60 ns ][`write_to(dest) ({25, 20})`]]
-[[ 31.30 ns ][  49.26 ns ][`write_to(dest) [{{25, 20}}]`]]
-[[ 23.92 ns ][  44.64 ns ][`write_to(dest) .with(strf::width(20)) [{25}]`]]
-[[ 33.02 ns ][  66.23 ns ][`write_to(dest) ({join_right(20), {25}})`]]
-[[133.94 ns ][ 228.17 ns ][`karma::generate(dest, right_align(20)[int_], 25);`]]
-[[ 51.98 ns ][  84.95 ns ][`fmt_writer.write("{:20}", 25)`]]
-[[ 73.76 ns ][ 166.36 ns ][`sprintf(dest, "%6d", 25)`]]
+[[ 48.85 ns ][  68.78 ns ][`write_to(dest) [{{25, 20}}]`]]
+[[ 40.47 ns ][  62.66 ns ][`write_to(dest) .with(strf::width(20)) [{25}]`]]
+[[ 48.69 ns ][  96.22 ns ][`write_to(dest) ({join_right(20), {25}})`]]
+[[115.34 ns ][ 172.52 ns ][`karma::generate(dest, right_align(20)[int_], 25);`]]
+[[ 49.37 ns ][  75.31 ns ][`fmt_writer.write("{:20}", 25)`]]
+[[ 93.44 ns ][ 191.79 ns ][`sprintf(dest, "%20d", 25)`]]
 [[          ][           ][]]
-[[ 29.06 ns ][  52.28 ns ][`write_to(dest) ({25, {6, "<+"}})`]]
-[[ 35.01 ns ][  54.90 ns ][`write_to(dest) [{{25, {6, "<+"}}}]`]]
-[[ 21.82 ns ][  52.81 ns ][`write_to(dest).with(width(6), left, showpos) (25)`]]
-[[ 24.42 ns ][  60.17 ns ][`write_to(dest)({strf::make_ftuple(width(6), left, showpos), {25}})`]]
-[[ 74.09 ns ][  79.41 ns ][`karma::generate(dest, karma::left_align(6)[dec_showpos], 25)`]]
-[[ 58.51 ns ][ 103.93 ns ][`fmt_writer.write("{:<+6}", 25)`]]
-[[ 76.38 ns ][ 180.54 ns ][`sprintf(dest, "%6-+d", 25)`]]
+[[ 49.42 ns ][  76.46 ns ][`write_to(dest) [{{25, {6, "<+"}}}]`]]
+[[ 38.41 ns ][  70.24 ns ][`write_to(dest).with(width(6), left, showpos) (25)`]]
+[[ 49.26 ns ][  85.68 ns ][`write_to(dest)({strf::make_ftuple(width(6), left, showpos), {25}})`]]
+[[ 78.81 ns ][  63.66 ns ][`karma::generate(dest, karma::left_align(6)[dec_showpos], 25)`]]
+[[ 55.19 ns ][  78.98 ns ][`fmt_writer.write("{:<+6}", 25)`]]
+[[ 83.55 ns ][ 157.08 ns ][`sprintf(dest, "%6-+d", 25)`]]
 [[          ][           ][]]
-[[ 24.05 ns ][  52.57 ns ][`write_to(dest) ({25, "#x"})`]]
-[[ 29.81 ns ][  55.65 ns ][`write_to(dest) [{{25, "#x"}}]`]]
-[[ 18.55 ns ][  38.29 ns ][`write_to(dest) .with(hex, showbase) [{25}]`]]
-[[ 27.22 ns ][ 113.87 ns ][`karma::generate(dest, karma::generate(d, lit("0x") << hex, 25)`]]
-[[ 50.05 ns ][  83.09 ns ][`fmt_writer.write("{:#x}", 25)`]]
-[[ 64.74 ns ][  94.35 ns ][`sprintf(dest, "%#x", 25)`]]
+[[ 38.09 ns ][  63.13 ns ][`write_to(dest) [{{25, "#x"}}]`]]
+[[ 26.16 ns ][  54.49 ns ][`write_to(dest) .with(hex, showbase) [{25}]`]]
+[[ 30.20 ns ][  86.13 ns ][`karma::generate(dest, karma::generate(d, lit("0x") << hex, 25)`]]
+[[ 49.29 ns ][  74.02 ns ][`fmt_writer.write("{:#x}", 25)`]]
+[[ 65.26 ns ][  88.04 ns ][`sprintf(dest, "%#x", 25)`]]
 [[          ][           ][]]
-[[ 74.71 ns ][ 130.58 ns ][`write_to(dest) (25, {25, {6, "<+"}} , {25, "#x"})`]]
-[[ 74.60 ns ][ 131.09 ns ][`write_to(dest) [{25, {25, {6, "<+"}} , {25, "#x"}}]`]]
-[[ 75.48 ns ][ 244.40 ns ][`karma::generate(dest, int_ << left_6_show << "0x" << hex, 25,25,25)`]]
-[[129.22 ns ][ 196.14 ns ][`fmt_writer.write("{}{:<6}{:#x}", 25, 25, 25)`]]
-[[141.90 ns ][ 293.30 ns ][`sprintf(dest, "%d%-+6d%#x", 25, 25, 25)`]]
+[[102.75 ns ][ 158.92 ns ][`write_to(dest) [{25, {25, {6, "<+"}} , {25, "#x"}}]`]]
+[[ 81.87 ns ][ 192.09 ns ][`karma::generate(dest, int_ << left_6_show << "0x" << hex, 25,25,25)`]]
+[[120.76 ns ][ 182.32 ns ][`fmt_writer.write("{}{:<6}{:#x}", 25, 25, 25)`]]
+[[145.57 ns ][ 251.54 ns ][`sprintf(dest, "%d%-+6d%#x", 25, 25, 25)`]]
 [[          ][           ][]]
-[[          ][           ][[*Strings and itegers mixed]]]
-[[ 51.71 ns ][ 100.56 ns ][`write_to(dest) ("ten =  ", 10, ", twenty = ", 20)`]]
-[[ 54.64 ns ][ 105.41 ns ][`write_to(dest) [{"ten =  ", 10, ", twenty = ", 20}]`]]
-[[108.04 ns ][ 315.69 ns ][`karma::generate(dest, lit("ten= ") << int_ <<", twenty = " << int_, 10, 20`]]
-[[ 98.72 ns ][ 152.05 ns ][`fmt_writer.write("ten = {}, twenty = {}", 10, 20)`]]
-[[ 97.31 ns ][ 270.06 ns ][`sprintf(dest, "ten = %d, twenty= %d", 10, 20)`]]
+[[          ][           ][[*Strings and integers mixed]]]
+[[ 86.80 ns ][ 124.44 ns ][`write_to(dest) [{"ten =  ", 10, ", twenty = ", 20}]`]]
+[[111.12 ns ][ 250.74 ns ][`karma::generate(dest, lit("ten= ") << int_ <<", twenty = " << int_, 10, 20`]]
+[[ 90.98 ns ][ 139.22 ns ][`fmt_writer.write("ten = {}, twenty = {}", 10, 20)`]]
+[[113.72 ns ][ 214.56 ns ][`sprintf(dest, "ten = %d, twenty= %d", 10, 20)`]]
+
+
 ]
 
 [endsect]
@@ -106,13 +97,18 @@ Boost.Stringify is compared againts Boost.Karma, [@http://fmtlib.net/latest/inde
 
 These samples were tested with gcc-7.1 on Ubuntu 16.04 64 bits. You can run them in your system by executing [^make] on [^performance/compilation] directory.
 
-Unfortunately, Boost.Stringify clearly produces to much code bloat, as shown below.
-The next release will be dedicated to address this issue.
-
 [h4 sample 1]
 
-[def __SAMPLE1_STRIGIFY__
-[@../../performance/compilation/sample1_BoostStringify.cpp sample1_BoostStringify.cpp]
+[def __SAMPLE1_STRIGIFY_HEADER_ONLY__
+[@../../performance/compilation/sample1_BoostStringify_header_only.cpp
+  sample1_BoostStringify_header_only.cpp
+]
+]
+
+[def __SAMPLE1_STRIGIFY_STATIC_LIB__
+[@../../performance/compilation/sample1_BoostStringify_static_lib.cpp
+  sample1_BoostStringify_static_lib.cpp
+]
 ]
 
 [def __SAMPLE1_BOOSTFORMAT__
@@ -138,9 +134,15 @@ The next release will be dedicated to address this issue.
 [table
 
 [[Source file][Flags][Real time][User time][System time][Object file size]]
-[[ __SAMPLE1_STRIGIFY__ ][  -g ][ 0.75 s ][ 0.72 s ][ 0.02 s ][  1120 K]]
-[[                      ][ -O0 ][ 0.64 s ][ 0.59 s ][ 0.04 s ][   468 K]]
-[[                      ][ -O3 ][ 1.24 s ][ 1.21 s ][ 0.02 s ][    92 K]]
+
+[[ __SAMPLE1_STRIGIFY_HEADER_ONLY__ ][   -g ][ 0.90 s ][ 0.73 s ][ 0.06 s ][   992 K]]
+[[                                  ][  -O0 ][ 0.63 s ][ 0.60 s ][ 0.02 s ][   420 K]]
+[[                                  ][  -O3 ][ 1.56 s ][ 1.50 s ][ 0.04 s ][   156 K]]
+
+[[][][][][][]]
+[[ __SAMPLE1_STRIGIFY_STATIC_LIB__  ][   -g ][ 0.49 s ][ 0.46 s ][ 0.02 s ][   576 K]]
+[[                                  ][  -O0 ][ 0.42 s ][ 0.40 s ][ 0.01 s ][   176 K]]
+[[                                  ][  -O3 ][ 0.47 s ][ 0.43 s ][ 0.03 s ][    20 K]]
 
 [[][][][][][]]
 [[__SAMPLE1_BOOSTFORMAT__][-g][0.83 s][0.78 s][0.04 s][640 K]]
@@ -171,6 +173,18 @@ The next release will be dedicated to address this issue.
 
 [h4 sample 2]
 
+[def __SAMPLE2_STRIGIFY_HEADER_ONLY__
+[@../../performance/compilation/sample2_BoostStringify_header_only.cpp
+  sample2_BoostStringify_header_only.cpp
+]
+]
+
+[def __SAMPLE2_STRIGIFY_STATIC_LIB__
+[@../../performance/compilation/sample2_BoostStringify_static_lib.cpp
+  sample2_BoostStringify_static_lib.cpp
+]
+]
+
 [def __SAMPLE2_FMTLIB__
 [@../../performance/compilation/sample2_fmtlib.cpp  sample2_fmtlib.cpp]
 ]
@@ -179,16 +193,16 @@ The next release will be dedicated to address this issue.
 [@../../performance/compilation/sample2_fmtlib_header_only.cpp  sample2_fmtlib_header_only.cpp]
 ]
 
-[def __SAMPLE2_BOOSTSTRINGIFY__
-[@../../performance/compilation/sample2_BoostStringify.cpp  sample2_BoostStringify.cpp]
-]
-
 [table
 
 [[Source file] [Flags][Real time][User time][System time][Object file size]]
-[[ __SAMPLE2_BOOSTSTRINGIFY__ ][  -g ][ 2.12 s ][ 2.06 s ][ 0.05 s ][  3732 K]]
-[[                            ][ -O0 ][ 1.88 s ][ 1.80 s ][ 0.07 s ][  1976 K]]
-[[                            ][ -O3 ][ 3.61 s ][ 3.54 s ][ 0.07 s ][   580 K]]
+[[ __SAMPLE2_STRIGIFY_HEADER_ONLY__ ][   -g ][ 1.18 s ][ 1.12 s ][ 0.05 s ][  1704 K]]
+[[                                  ][  -O0 ][ 1.05 s ][ 1.01 s ][ 0.03 s ][   808 K]]
+[[                                  ][  -O3 ][ 2.07 s ][ 2.02 s ][ 0.04 s ][   288 K]]
+[[][][][][][]]
+[[ __SAMPLE2_STRIGIFY_STATIC_LIB__  ][   -G ][ 0.75 s ][ 0.69 s ][ 0.04 s ][   988 K]]
+[[                                  ][  -O0 ][ 0.65 s ][ 0.59 s ][ 0.05 s ][   384 K]]
+[[                                  ][  -O3 ][ 1.08 s ][ 1.03 s ][ 0.04 s ][    76 K]]
 [[][][][][][]]
 [[ __SAMPLE2_FMTLIB_HEADER_ONLY__ ][ -g ] [ 1.06 s ][ 0.98 s ][ 0.07 s ][ 1140 K ]]
 [[                                ][ -O0 ][ 0.95 s ][ 0.91 s ][ 0.04 s ][ 508 K ]]

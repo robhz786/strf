@@ -5,19 +5,25 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/type_traits.hpp>
+#include <type_traits>
+#include <boost/stringify/v0/constrained_facet.hpp>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <typename ... F> class ftuple;
 
 namespace detail {
 
-template <typename Tag>  struct increment_tag: Tag {};
+template <typename Tag>
+struct increment_tag: Tag
+{
+};
 
-struct absolute_lowest_tag {};
+
+struct absolute_lowest_tag
+{
+};
+
 
 using base_tag = increment_tag<absolute_lowest_tag>;
 
@@ -28,14 +34,15 @@ struct ftuple_end
     void do_get_facet();
 };
 
+
 template <>
 struct ftuple_end<base_tag>
 {
     template <typename, typename FacetCategory>
-    constexpr decltype(auto)
+    constexpr const auto&
     do_get_facet (const absolute_lowest_tag&, FacetCategory) const
     {
-        return typename FacetCategory::default_impl();
+        return FacetCategory::get_default();
     }
 };
 
@@ -76,15 +83,47 @@ public:
 
     using ftuple_end<LowestTag>::do_get_facet;
 
-    template
-        < typename InputType
-        , typename = typename std::enable_if_t
-          <Facet::template accept_input_type<InputType>::value>
-        >
+    template <typename>
     constexpr const Facet& do_get_facet
         (const highest_tag&, typename Facet::category) const
     {
         return *this;
+    }
+
+};
+
+
+template <typename LowestTag, typename ConstrainedFacet>
+class single_constrained_facet_ftuple
+    : private ConstrainedFacet
+    , public ftuple_end<LowestTag>
+{
+    
+public:
+
+    constexpr single_constrained_facet_ftuple
+        (const ConstrainedFacet& f) : ConstrainedFacet(f) {};
+
+    constexpr single_constrained_facet_ftuple
+        (const single_constrained_facet_ftuple& r) = default;
+
+    using lowest_tag = LowestTag;
+    using highest_tag = LowestTag;
+
+    template <typename OtherLowestTag>
+    using rebind = single_constrained_facet_ftuple<OtherLowestTag, ConstrainedFacet>;
+
+    using ftuple_end<LowestTag>::do_get_facet;
+
+    template
+        < typename InputType
+        , typename = typename std::enable_if_t
+            <ConstrainedFacet::template matches<InputType>::value>
+        >
+    constexpr const auto& do_get_facet
+        (const highest_tag&, typename ConstrainedFacet::category) const
+    {
+        return ConstrainedFacet::facet;
     }
 
 };
@@ -180,6 +219,15 @@ struct ftuple_helper
         return reinterpret_cast<const ftuple_type&>(f);
     }
 
+    template <template <class> class Filter, typename Facet>
+    static constexpr const auto& as_ftuple(const constrained_facet<Filter, Facet>& cf)
+    {
+        using ftuple_type = single_constrained_facet_ftuple
+            < base_tag
+            , constrained_facet<Filter, Facet> >;
+        return reinterpret_cast<const ftuple_type&>(cf);
+    }
+
     template <typename ... F>
     static constexpr const boost::stringify::ftuple<F...>&
     as_ftuple(const boost::stringify::ftuple<F...>& f)
@@ -222,7 +270,7 @@ public:
     }
    
     template <typename FacetCategory, typename InputType>
-    constexpr decltype(auto) get_facet() const
+    constexpr const auto& get_facet() const
     {
         return this->template do_get_facet<InputType>
             (typename impl::highest_tag(), FacetCategory());
@@ -242,15 +290,12 @@ template
     , typename InputType
     , typename FTuple
     >
-constexpr decltype(auto) get_facet(const FTuple& f)
+constexpr const auto& get_facet(const FTuple& f)
 {
     return f.template get_facet<FacetCategory, InputType>();
 }
 
-
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_FTUPLE2_HPP
 

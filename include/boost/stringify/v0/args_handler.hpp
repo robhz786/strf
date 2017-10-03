@@ -9,22 +9,71 @@
 #include <boost/stringify/v0/ftuple.hpp>
 #include <tuple>
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
-template <typename ArgsHandlerImpl, typename ftuple_type, typename output_writer>
-class args_handler_base
+template <typename OutputWriter>
+class output_writer_from_tuple: public OutputWriter
 {
-    
+public:
+
+    template <typename ... Args>
+    output_writer_from_tuple(const std::tuple<Args...>& tp)
+        : output_writer_from_tuple(tp, std::make_index_sequence<sizeof...(Args)>{})
+    {
+    }
+
+private:
+
+    template <typename ArgsTuple, std::size_t ... I>
+    output_writer_from_tuple(const ArgsTuple& args, std::index_sequence<I...>)
+        : OutputWriter(std::get<I>(args)...)
+    {
+    }
+
+};
+
+template
+    < typename output_writer
+    , typename ftuple_type
+    , typename init_args_tuple_type
+    >
+class args_handler
+{
     using char_type = typename output_writer::char_type;
-    using arg_type =  boost::stringify::v0::input_arg<output_writer, ftuple_type>;
-  
+    using arg_type =  stringify::v0::input_arg<char_type, ftuple_type>;
+    using arg_list_type = std::initializer_list<arg_type>;
+
+    template <typename W>
+    static auto has_reserve_impl(W&& ow)
+        -> decltype(ow.reserve(std::size_t{}), std::true_type{});
+
+    template <typename W>
+    static std::false_type has_reserve_impl(...);
+
+    using has_reserve
+    = decltype(has_reserve_impl<output_writer>(std::declval<output_writer>()));
+
+    template <typename W>
+    void reserve_lst(std::true_type, W& writer, const arg_list_type& lst) const
+    {
+        std::size_t len = 1;
+        for(const auto& arg : lst)
+        {
+            len += arg.length(m_ftuple);
+        }
+        writer.reserve(len);
+    }
+
+    template <typename W>
+    void reserve_lst(std::false_type, W&, const arg_list_type&) const
+    {
+    }
+
     template <typename Arg1, typename ... Args>
     std::size_t length(Arg1 && arg1, Args && ... args) const
     {
-        return arg1.length(get_ftuple()) + length(args...);
+        return arg1.length(m_ftuple) + length(args...);
     }
 
     std::size_t length() const
@@ -32,109 +81,99 @@ class args_handler_base
         return 0;
     }
 
-    struct matching_strength_1 {};
-    struct matching_strength_2 : matching_strength_1 {};
-    
-    template <typename output_writer2, typename ... Args>
-    auto reserve
-        ( const matching_strength_2&
-        , output_writer2& writer
-        , const Args & ... args
-        ) const
-        -> decltype(writer.reserve(std::size_t()), void())
+    template <typename W, typename ... Args>
+    auto reserve(std::true_type, W& writer, const Args & ... args) const
     {
         writer.reserve(1 + length(args...));
     }
 
-    
-    template <typename output_writer2, typename ... Args>
-    void reserve
-        ( const matching_strength_1&
-        , output_writer2&
-        , const Args & ...
-        ) const
+    template <typename W, typename ... Args>
+    void reserve(std::false_type, W&, const Args & ...) const
     {
     }
 
-    template <typename ... Args>
-    void reserve(output_writer& writer, const Args & ... args) const
-    {
-        reserve(matching_strength_2(), writer, args...); 
-    }
-    
-    template <typename OW>
-    auto write_inilist
-        ( const matching_strength_2&
-        , const std::initializer_list<arg_type>& lst
-        , OW& writer
-        ) const
-       -> decltype(writer.reserve(std::size_t()), void())
-    {
-        std::size_t len = 0;
-        decltype(auto) fmt = get_ftuple();
-        for(const auto& arg : lst)
-        {
-            len += arg.length(fmt);
-        }
-        writer.reserve(len + 1);
-        for(const auto& arg : lst)
-        {
-            arg.write(writer, fmt);
-        }
-    }
-
-    template <typename OW>
-    auto write_inilist
-        ( const matching_strength_1&
-        , const std::initializer_list<arg_type>& lst
-        , OW& writer  
-        ) const
-    {
-        decltype(auto) fmt = get_ftuple();
-        for(const auto& arg : lst)
-        {
-            arg.write(writer, fmt);
-        }
-    }
-
-    void do_write(output_writer&, const ftuple_type) const
+    void do_write(output_writer&) const
     {
 
     }
 
-    template <typename Arg1, typename ... Args>
-    void do_write
-        ( output_writer& out
-        , const ftuple_type& fmt
-        , const Arg1& arg1
-        , const Args& ... args
-        ) const
+    template <typename Arg, typename ... Args>
+    void do_write(output_writer& out, const Arg& a1, const Args& ... args) const
     {
-        arg1.write(out, fmt);
-        do_write(out, fmt, args ...);
+        a1.write(out, m_ftuple);
+        do_write(out, args ...);
     }
 
     template <typename ... Args>
     decltype(auto) write(const Args & ... args) const
     {
-        decltype(auto) owriter
-            = static_cast<const ArgsHandlerImpl&&>(*this).get_writer();
-        reserve(owriter, args ...);
-        do_write(owriter, get_ftuple(), args ...);
-        return owriter.finish();
+        output_writer_from_tuple<output_writer> writer(this->m_args);
+        reserve(has_reserve{}, writer, args ...);
+        do_write(writer, args ...);
+        return writer.finish();
     }
 
-    
 public:
+
+    constexpr args_handler(ftuple_type&& ft, init_args_tuple_type&& args)
+        : m_ftuple(std::move(ft))
+        , m_args(std::move(args))
+    {
+    }
+
+    constexpr args_handler(const ftuple_type& ft, const init_args_tuple_type& a)
+        : m_ftuple(ft)
+        , m_args(a)
+    {
+    }
+
+    constexpr const args_handler& with() const
+    {
+        return *this;
+    }
+
+    constexpr const args_handler& with(stringify::v0::ftuple<>) const
+    {
+        return *this;
+    }
+
+    template <typename ... Facets>
+    constexpr auto with(const Facets& ... facets) const
+    {
+        return args_handler
+            < output_writer
+            , decltype(stringify::v0::make_ftuple(m_ftuple, facets ...))
+            , init_args_tuple_type
+            >
+            ( stringify::v0::make_ftuple(m_ftuple, facets ...)
+            , m_args
+            );
+    }
+
+    template <typename ... Facets>
+    constexpr auto with(const stringify::v0::ftuple<Facets...>& ft) const
+    {
+        return args_handler
+            < output_writer
+            , decltype(stringify::v0::make_ftuple(m_ftuple, ft))
+            , init_args_tuple_type
+            >
+            ( stringify::v0::make_ftuple(m_ftuple, ft)
+            , m_args
+            );
+    }
 
     decltype(auto) operator[](const std::initializer_list<arg_type>& lst) const
     {
-        decltype(auto) owriter
-            = static_cast<const ArgsHandlerImpl&&>(*this).get_writer();
-        write_inilist(matching_strength_2(), lst, owriter);
-        return owriter.finish();
+        output_writer_from_tuple<output_writer> writer(this->m_args);
+        reserve_lst(has_reserve{}, writer, lst);
+        for(auto it = lst.begin(); it != lst.end() && writer.good(); ++it)
+        {
+            (*it).write(writer, m_ftuple);
+        }
+        return writer.finish();
     }
-    
+
     decltype(auto) operator()() const
     {
         return write();
@@ -144,7 +183,7 @@ public:
     {
         return write(a1);
     }
-  
+
     decltype(auto) operator() (arg_type a1, arg_type a2) const
     {
         return write(a1, a2);
@@ -209,244 +248,24 @@ public:
 
 private:
 
-    decltype(auto) get_ftuple() const
-    {
-        return static_cast<const ArgsHandlerImpl&>(*this).get_ftuple();
-    }
-    
+    ftuple_type m_ftuple;
+    init_args_tuple_type m_args;
 };
-
-
-template <typename OutputWriter, typename ... Args>
-class output_writer_instantiator
-{
-public:
-    constexpr output_writer_instantiator(output_writer_instantiator&& ) = default;
-
-    constexpr output_writer_instantiator(const output_writer_instantiator& ) = default;
-    
-    constexpr output_writer_instantiator(Args ... args)
-        : m_args(std::forward<Args>(args)...)
-    {
-    }
-
-    OutputWriter get_writer() const
-    {
-        using index_sequence = std::make_index_sequence<sizeof...(Args)>;
-        return std::move(do_instantiate(index_sequence()));
-    }
-    
-private:
-
-    template<std::size_t ... I>
-    OutputWriter do_instantiate(std::index_sequence<I...>) const
-    {
-        return std::move(OutputWriter(std::get<I>(m_args) ...));
-    }
-            
-    std::tuple<Args...> m_args;
-};
-
-template <typename OutputWriter>
-class output_writer_instantiator<OutputWriter>
-{
-public:
-    constexpr output_writer_instantiator(output_writer_instantiator&& ) = default;
-
-    constexpr output_writer_instantiator(const output_writer_instantiator& ) = default;
-    
-    constexpr output_writer_instantiator() = default;
-
-    OutputWriter get_writer() const
-    {
-        return std::move(OutputWriter());
-    }
-};
-
-
-template <typename FTuple, typename OutputWriter, typename ... OutputWriterArgs>
-class args_handler
-    : public boost::stringify::v0::detail::args_handler_base
-        < args_handler<FTuple, OutputWriter, OutputWriterArgs...>
-        , FTuple
-        , OutputWriter
-        >  
-    , private boost::stringify::v0::detail::output_writer_instantiator
-        <OutputWriter, OutputWriterArgs...>
-{
-    friend class boost::stringify::v0::detail::args_handler_base
-        < args_handler, FTuple, OutputWriter>;
-
-    using output_writer_instantiator
-        = boost::stringify::v0::detail::output_writer_instantiator
-        <OutputWriter, OutputWriterArgs...>;    
-  
-public:
-
-    using ftuple_type = FTuple;
-    using output_writer = OutputWriter;
-
-    constexpr args_handler(args_handler&& x) = default;
-
-
-    constexpr args_handler(FTuple&& ft, const output_writer_instantiator& owi)
-        : output_writer_instantiator(owi)
-        , m_ftuple(std::move(ft))
-    {
-    }
-
-    constexpr args_handler(const FTuple& ft, const output_writer_instantiator& owi)
-        : output_writer_instantiator(owi)
-        , m_ftuple(std::move(ft))
-    {
-    }
-
-    constexpr const args_handler& with() const
-    {
-        return *this;
-    }
-
-    constexpr const args_handler& with(boost::stringify::v0::ftuple<>) const
-    {
-        return *this;
-    }       
-
-    template <typename ... Facets>
-    constexpr auto with(const Facets& ... formaters) const
-    {
-        return args_handler
-            < decltype(boost::stringify::v0::make_ftuple(m_ftuple, formaters ...))
-            , OutputWriter
-            , OutputWriterArgs ...
-            >
-            (boost::stringify::v0::make_ftuple(m_ftuple, formaters ...), *this);
-    }
-    
-    template <typename ... Facets>
-    constexpr auto with(const boost::stringify::v0::ftuple<Facets...>& ft) const
-    {
-        return args_handler
-            < decltype(boost::stringify::v0::make_ftuple(m_ftuple, ft))
-            , OutputWriter
-            , OutputWriterArgs ...
-            >
-            (boost::stringify::v0::make_ftuple(m_ftuple, ft), *this);
-    }
-
-    const FTuple& get_ftuple() const
-    {
-        return m_ftuple;
-    }
-
-private:
-
-    const FTuple m_ftuple;
-    
-};
-
-
-template <typename OutputWriter, typename ... OutputWriterArgs>
-class args_handler
-    < boost::stringify::v0::ftuple<>
-    , OutputWriter
-    , OutputWriterArgs...
-    >
-    : public boost::stringify::v0::detail::args_handler_base
-        < args_handler
-             < boost::stringify::v0::ftuple<>
-             , OutputWriter
-             , OutputWriterArgs...
-             >
-        , boost::stringify::v0::ftuple<>
-        , OutputWriter
-        >
-    , private boost::stringify::v0::detail::output_writer_instantiator
-        <OutputWriter, OutputWriterArgs...>
-    , private boost::stringify::v0::ftuple<>
-{
-    friend class boost::stringify::v0::detail::args_handler_base
-        < args_handler
-        , boost::stringify::v0::ftuple<>
-        , OutputWriter
-        >;
-
-    using output_writer_instantiator
-        = boost::stringify::v0::detail::output_writer_instantiator
-        <OutputWriter, OutputWriterArgs...>;    
-
-public:
-
-    using ftuple_type = boost::stringify::v0::ftuple<>;
-    using output_writer = OutputWriter;
-
-    constexpr args_handler(args_handler&& x) = default;
-    
-    constexpr args_handler(OutputWriterArgs ... args)
-        : output_writer_instantiator(std::forward<OutputWriterArgs>(args)...)
-    {
-    }
-
-    constexpr const args_handler& with() const
-    {
-        return *this;
-    }
-
-    constexpr const args_handler& with(boost::stringify::v0::ftuple<>) const
-    {
-        return *this;
-    }
-    
-    template <typename ... Facets>
-    constexpr auto with(const Facets& ... facets) const
-    {
-        return args_handler
-            < decltype(boost::stringify::v0::make_ftuple(facets ...))
-            , OutputWriter
-            , OutputWriterArgs ...
-            >
-            ( boost::stringify::v0::make_ftuple(facets ...)
-            , *this
-            );
-    }
-    
-    template <typename ... Facets>
-    constexpr auto with(const boost::stringify::v0::ftuple<Facets...>& ft) const
-    {
-        return args_handler
-            < boost::stringify::v0::ftuple<Facets...>
-            , OutputWriter
-            , OutputWriterArgs ...
-            >
-            ( ft
-            , *this
-            );
-    }
-
-    constexpr const boost::stringify::v0::ftuple<>& get_ftuple() const
-    {
-        return *this;
-    }
-};
-
 
 } // namespace detail
 
 template <typename OutputWriter, typename ... Args>
 constexpr auto make_args_handler(Args ... args)
+    -> stringify::v0::detail::args_handler
+            < OutputWriter
+            , stringify::v0::ftuple<>
+            , std::tuple<Args ...>
+            >
 {
-    using args_handler_type
-        = boost::stringify::v0::detail::args_handler
-            < boost::stringify::v0::ftuple<>
-            , OutputWriter
-            , Args ...
-            >;
-
-    return std::move(args_handler_type(args...));
+    return {stringify::v0::ftuple<>{}, std::tuple<Args ...>{args ...}};
 }
 
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_ARGS_HANDLER_HPP
 

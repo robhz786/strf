@@ -8,73 +8,172 @@
 
 #define TEST(EXPECTED) make_tester((EXPECTED), __FILE__, __LINE__)
 
+template <typename T>
+struct is_char: public std::is_same<T, char>
+{
+};
+
 int main()
 {
+    namespace strf = boost::stringify::v0;
     
-    TEST( "a") ( 'a');
-    TEST( "a") (U'a');
-    TEST(u"a") (u'a');
-    TEST(u"a") (U'a');
-    TEST(U"a") (U'a');
-    TEST(L"a") (L'a');
-    TEST(L"a") (U'a');
-    TEST(u"  a") ({boost::stringify::v0::join_right(3), {u'a'}});
+    // width, alignment, and repetitions
+    TEST("aaaa|bbbb|cccc  |    |aaaa|bbbb|  cccc|    ")
+    [{
+            {'a', {2, "<", 4}}, '|',
+            {'b', {4, "<", 4}}, '|',
+            {'c', {6, "<", 4}}, '|',
+            {'d', {4, "<", 0}}, '|',
+
+            {'a', {2, ">", 4}}, '|',
+            {'b', {4, ">", 4}}, '|',
+            {'c', {6, ">", 4}}, '|',
+            {'d', {4, "<", 0}}
+    }];
+
+
+    // width calculations inside joins
+    TEST("aaaa|  bb|cccc|  dd|eeee--|  ff--")
+    [{
+        {strf::join_left(2, '-'), {{'a', {2, "", 4}}}}, '|',
+        {strf::join_left(2, '-'), {{'b', {4, "", 2}}}}, '|',
+        {strf::join_left(4, '-'), {{'c', {2, "", 4}}}}, '|',
+        {strf::join_left(4, '-'), {{'d', {4, "", 2}}}}, '|',
+        {strf::join_left(6, '-'), {{'e', {2, "", 4}}}}, '|',
+        {strf::join_left(6, '-'), {{'f', {4, "", 2}}}}
+    }];
+
+
+
+    // facets
+    TEST("---a--bb----|--a-bb---|a--bb----|--a-bb---|--a-bb---")
+        .with
+        ( strf::fill_if<is_char>(U'-')
+        , strf::width_if<is_char>(4)
+        )
+    [{
+         'a',
+         {'b', {"", 2}},
+         {'c', {"", 0}},
+         {'|', 0},
+
+         {'a', 3},
+         {'b', {3, "", 2}},
+         {'c', {3, "", 0}},
+         {'|', 0},
+
+         {'a', {3, "<"}},
+         {'b', {3, "<", 2}},
+         {'c', {3, "<", 0}},
+         {'|', 0},
+
+         {'a', {3, "="}},
+         {'b', {3, "=", 2}},
+         {'c', {3, "=", 0}},
+         {'|', 0},
+
+         {'a', {3, ">"}},
+         {'b', {3, ">", 2}},
+         {'c', {3, ">", 0}},
+    }];
+
+    TEST("---a--bb----|--a-bb---|a--bb----|--a-bb---|--a-bb---")
+        .with
+        ( strf::fill_if<is_char>(U'-')
+        , strf::width_if<is_char>(4)
+        , strf::internal_if<is_char>
+        )
+    [{
+         'a',
+         {'b', {"", 2}},
+         {'c', {"", 0}},
+         {'|', 0},
+
+         {'a', 3},
+         {'b', {3, "", 2}},
+         {'c', {3, "", 0}},
+         {'|', 0},
+
+         {'a', {3, "<"}},
+         {'b', {3, "<", 2}},
+         {'c', {3, "<", 0}},
+         {'|', 0},
+
+         {'a', {3, "="}},
+         {'b', {3, "=", 2}},
+         {'c', {3, "=", 0}},
+         {'|', 0},
+
+         {'a', {3, ">"}},
+         {'b', {3, ">", 2}},
+         {'c', {3, ">", 0}},
+    }];
+
+    TEST("---a--bb----|--a-bb---|a--bb----|--a-bb---|--a-bb---")
+        .with
+        ( strf::fill_if<is_char>(U'-')
+        , strf::width_if<is_char>(4)
+        , strf::right_if<is_char>
+        )
+    [{
+         'a',
+         {'b', {"", 2}},
+         {'c', {"", 0}},
+         {'|', 0},
+
+         {'a', 3},
+         {'b', {3, "", 2}},
+         {'c', {3, "", 0}},
+         {'|', 0},
+
+         {'a', {3, "<"}},
+         {'b', {3, "<", 2}},
+         {'c', {3, "<", 0}},
+         {'|', 0},
+
+         {'a', {3, "="}},
+         {'b', {3, "=", 2}},
+         {'c', {3, "=", 0}},
+         {'|', 0},
+
+         {'a', {3, ">"}},
+         {'b', {3, ">", 2}},
+         {'c', {3, ">", 0}},
+    }];
+
+
+    TEST("a---bb------|a--bb----|a--bb----|--a-bb---|--a-bb---")
+        .with
+        ( strf::fill_if<is_char>(U'-')
+        , strf::width_if<is_char>(4)
+        , strf::left_if<is_char>
+        )
+    [{
+         'a',
+         {'b', {"", 2}},
+         {'c', {"", 0}},
+         {'|', 0},
+
+         {'a', 3},
+         {'b', {3, "", 2}},
+         {'c', {3, "", 0}},
+         {'|', 0},
+
+         {'a', {3, "<"}},
+         {'b', {3, "<", 2}},
+         {'c', {3, "<", 0}},
+         {'|', 0},
+
+         {'a', {3, "="}},
+         {'b', {3, "=", 2}},
+         {'c', {3, "=", 0}},
+         {'|', 0},
+
+         {'a', {3, ">"}},
+         {'b', {3, ">", 2}},
+         {'c', {3, ">", 0}},
+    }];
     
-   
-    TEST (u8"\ud7ff")     (U'\ud7ff');
-    TEST (u8"\ue000")     (U'\ue000');
-    TEST (u8"\uffff")     (U'\uffff');
-    TEST (u8"\U00010000") (U'\U00010000');
-    TEST (u8"\U0010ffff") (U'\U0010ffff');
-
-    TEST (u"\ud7ff")     (U'\ud7ff');
-    TEST (u"\ue000")     (U'\ue000');
-    TEST (u"\uffff")     (U'\uffff');
-    TEST (u"\U00010000") (U'\U00010000');
-    TEST (u"\U0010ffff") (U'\U0010ffff');
-
-    TEST (L"\ud7ff")     (U'\ud7ff');
-    TEST (L"\ue000")     (U'\ue000');
-    TEST (L"\uffff")     (U'\uffff');
-    TEST (L"\U00010000") (U'\U00010000');
-    TEST (L"\U0010ffff") (U'\U0010ffff');
-
-    TEST (U"\ud7ff")     (U'\ud7ff');
-    TEST (U"\ue000")     (U'\ue000');
-    TEST (U"\uffff")     (U'\uffff');
-    TEST (U"\U00010000") (U'\U00010000');
-    TEST (U"\U0010ffff") (U'\U0010ffff');
-    
-    // invalid codepoints:
-    TEST( "") (static_cast<char32_t>(0x110000));
-    TEST(u"") (static_cast<char32_t>(0xd800));
-    TEST(u"") (static_cast<char32_t>(0xdfff));
-
-
-    // width and justificafion
-
-    // auto f1 = strf::make_ftuple(strf::fill(U'~'), strf::width(4));
-    // TEST( "~~~ab~~~c~") .with(f1) ( 'a', { 'b', "<"}, { 'c', {2, "<"}});
-    // TEST( "~~~ab~~~c~") .with(f1) (U'a', {U'b', "<"}, {U'c', {2, "<"}});
-    // TEST(u"~~~ab~~~c~") .with(f1) (U'a', {U'b', "<"}, {U'c', {2, "<"}});
-
-    // auto f2 = strf::make_ftuple(strf::fill(U'~'), strf::width(4), strf::internal<>);
-    // TEST( "~~~ab~~~c~") .with(f2) ( 'a', { 'b', "<"}, { 'c', {2, "<"}});
-    // TEST( "~~~ab~~~c~") .with(f2) (U'a', {U'b', "<"}, {U'c', {2, "<"}});
-    // TEST(u"~~~ab~~~c~") .with(f2) (U'a', {U'b', "<"}, {U'c', {2, "<"}});
-    
-    // auto f3 = strf::make_ftuple(strf::fill(U'~'), strf::width(4), strf::left<>);
-    // TEST( "a~~~~~~b~~c") .with(f3) ( 'a', { 'b', ">"}, { 'c', {2, "%"}});
-    // TEST( "a~~~~~~b~~c") .with(f3) (U'a', {U'b', ">"}, {U'c', {2, "%"}});
-    // TEST(u"a~~~~~~b~~c") .with(f3) (U'a', {U'b', ">"}, {U'c', {2, "%"}});
-
-    // TEST( "abc") .with(strf::width(1)) ( 'a', { 'b', "<"}, { 'c', "%"});
-    // TEST( "abc") .with(strf::width(0)) ( 'a', { 'b', "<"}, { 'c', "%"});
-    // TEST( "abc") .with(strf::width(1)) (U'a', {U'b', "<"}, {U'c', "%"});
-    // TEST( "abc") .with(strf::width(0)) (U'a', {U'b', "<"}, {U'c', "%"});
-    // TEST(u"abc") .with(strf::width(1)) (U'a', {U'b', "<"}, {U'c', "%"});
-    // TEST(u"abc") .with(strf::width(0)) (U'a', {U'b', "<"}, {U'c', "%"});
-
     return report_errors();
 }
 

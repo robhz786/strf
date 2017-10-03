@@ -5,7 +5,7 @@
 ===============================================================================/]
 
 
-[section:input_types Supported input types]
+[section:input_types Input types]
 
 As previously explained, an input argument can be a single value or a /braced-init-list/ composed by two arguments. Lets call the second argument as /secundary argument/.
 

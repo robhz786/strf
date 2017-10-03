@@ -5,41 +5,152 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+#include <string>
+#include <system_error>
+#include <boost/stringify/v0/output_writer.hpp>
+#include <boost/stringify/v0/detail/expected.hpp>
+
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+
+template <typename CharT, typename Traits>
+using expected_basic_string = stringify::v0::detail::expected
+    < std::basic_string<CharT, Traits>
+    , std::error_code
+    >;
+
+using expected_string = stringify::v0::detail::expected
+    < std::string
+    , std::error_code
+    >;
+
+using expected_u16string = stringify::v0::detail::expected
+    < std::u16string
+    , std::error_code
+    >;
+
+using expected_u32string = stringify::v0::detail::expected
+    < std::u32string
+    , std::error_code
+    >;
+
+using expected_wstring = stringify::v0::detail::expected
+    < std::wstring
+    , std::error_code
+    >;
+
 namespace detail {
 
 template <typename StringType>
-class string_maker
+class string_maker: public output_writer<typename StringType::value_type>
 {
 public:
 
-    typedef typename StringType::value_type char_type;
-    
-    string_maker() = default;
+    using char_type = typename StringType::value_type;
 
-    string_maker(const string_maker&) = delete;
-
-    string_maker(string_maker&&) = default;
-    
-    void put(char_type character)
+    string_maker()
     {
-        m_out.push_back(character);
     }
 
-    void put(char_type character, std::size_t repetitions)
+    void set_error(std::error_code err) override
     {
-        m_out.append(repetitions, character);
+        if(err && ! m_err)
+        {
+            m_err = err;
+        }
     }
 
-    void put(const char_type* str, std::size_t count)
+    bool good() const override
     {
-        m_out.append(str, count);
+        return ! m_err;
     }
-    
-    StringType finish()
+
+    void put(const char_type* str, std::size_t count) override
     {
+        if( ! m_err)
+        {
+            m_out.append(str, count);
+        }
+    }
+
+    void put(char_type ch) override
+    {
+        if( ! m_err)
+        {
+            m_out.push_back(ch);
+        }
+    }
+
+    void repeat(std::size_t count, char_type ch) override
+    {
+        if( ! m_err)
+        {
+            m_out.append(count, ch);
+        }
+    }
+
+    void repeat
+        ( std::size_t count
+        , char_type ch1
+        , char_type ch2
+        
+        ) override
+    {
+        if( ! m_err)
+        {
+            for(; count > 0; --count)
+            {
+                m_out.push_back(ch1);
+                m_out.push_back(ch2);
+            }
+        }
+    }
+
+    void repeat
+        ( std::size_t count
+        , char_type ch1
+        , char_type ch2
+        , char_type ch3
+        
+        ) override
+    {
+        if( ! m_err)
+        {
+            for(; count > 0; --count)
+            {
+                m_out.push_back(ch1);
+                m_out.push_back(ch2);
+                m_out.push_back(ch3);
+            }
+        }
+    }
+
+    void repeat
+        ( std::size_t count
+        , char_type ch1
+        , char_type ch2
+        , char_type ch3
+        , char_type ch4
+        
+        ) override
+    {
+        if( ! m_err)
+        {
+            for(; count > 0; --count)
+            {
+                m_out.push_back(ch1);
+                m_out.push_back(ch2);
+                m_out.push_back(ch3);
+                m_out.push_back(ch4);
+            }
+        }
+    }
+
+    stringify::v0::detail::expected<StringType, std::error_code> finish()
+    {
+        if (m_err)
+        {
+            return m_err;
+        }
         return std::move(m_out);
     }
 
@@ -47,11 +158,22 @@ public:
     {
         m_out.reserve(m_out.capacity() + size);
     }
-    
+
 private:
 
-    StringType m_out;               
+    StringType m_out;
+    std::error_code m_err;
 };
+
+
+#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_maker<std::string>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_maker<std::u16string>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_maker<std::u32string>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_maker<std::wstring>;
+
+#endif
 
 } // namespace detail
 
@@ -60,7 +182,7 @@ template
     < typename CharT
     , typename Traits = std::char_traits<CharT>
     , typename Allocator = std::allocator<CharT>
-    >  
+    >
 constexpr auto make_basic_string
 = boost::stringify::v0::make_args_handler
     <boost::stringify::v0::detail::string_maker
@@ -84,10 +206,7 @@ constexpr auto make_wstring
     <boost::stringify::v0::detail::string_maker<std::wstring>>();
 
 
-
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_OUTPUT_TYPES_MAKE_STRING_HPP
 

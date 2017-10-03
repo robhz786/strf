@@ -5,24 +5,16 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 enum class alignment{left, right, internal};
 
-
 struct alignment_tag;
 
-
-template < template <class> class Filter>
 struct align_impl
 {
     typedef boost::stringify::v0::alignment_tag category;
 
-    template <typename T> using accept_input_type = Filter<T>;
-    
     constexpr align_impl(boost::stringify::v0::alignment align)
         : m_align(align)
     {
@@ -39,16 +31,11 @@ private:
 };
 
 
-template
-    < boost::stringify::v0::alignment Align
-    , template <class> class Filter
-    >
+template <boost::stringify::v0::alignment Align>
 struct align_impl_t
 {
     typedef boost::stringify::v0::alignment_tag category;
 
-    template <typename T> using accept_input_type = Filter<T>;
-    
     constexpr boost::stringify::v0::alignment value() const
     {
         return Align;
@@ -58,75 +45,40 @@ struct align_impl_t
 
 constexpr auto align(boost::stringify::v0::alignment a)
 {
-    return boost::stringify::v0::align_impl<boost::stringify::v0::true_trait>(a);
+    return boost::stringify::v0::align_impl{a};
 }
 
 
 template < template <class> class F>
 constexpr auto align_if(boost::stringify::v0::alignment a)
 {
-    return boost::stringify::v0::align_impl<F>(a);
+    return constrained_facet<F, align_impl>{a};
 }
 
 
-constexpr boost::stringify::v0::align_impl_t
-     < boost::stringify::v0::alignment::left
-     , boost::stringify::v0::true_trait
-     >
-left = boost::stringify::v0::align_impl_t
-     < boost::stringify::v0::alignment::left
-     , boost::stringify::v0::true_trait
-     > ();
-
-
-constexpr boost::stringify::v0::align_impl_t
-     < boost::stringify::v0::alignment::right
-     , boost::stringify::v0::true_trait
-     >
-right = boost::stringify::v0::align_impl_t
-     < boost::stringify::v0::alignment::right
-     , boost::stringify::v0::true_trait
-     > ();
-
-
-constexpr boost::stringify::v0::align_impl_t
-     < boost::stringify::v0::alignment::internal
-     , boost::stringify::v0::true_trait
-     >
-internal = boost::stringify::v0::align_impl_t
-     < boost::stringify::v0::alignment::internal
-     , boost::stringify::v0::true_trait
-     > ();
-
+constexpr align_impl_t <alignment::left> left {};
+constexpr align_impl_t <alignment::right> right {};
+constexpr align_impl_t <alignment::internal> internal {};
 
 template <template <class> class F>
-boost::stringify::v0::align_impl_t <boost::stringify::v0::alignment::left, F>
-left_if
-= boost::stringify::v0::align_impl_t <boost::stringify::v0::alignment::left, F>();
+constrained_facet<F, align_impl_t<alignment::left> > left_if {};
 
 template <template <class> class F>
-boost::stringify::v0::align_impl_t <boost::stringify::v0::alignment::right, F>
-right_if
-= boost::stringify::v0::align_impl_t <boost::stringify::v0::alignment::right, F>();
+constrained_facet<F, align_impl_t<alignment::right> > right_if {};
 
 template <template <class> class F>
-boost::stringify::v0::align_impl_t <boost::stringify::v0::alignment::internal, F>
-internal_if
-= boost::stringify::v0::align_impl_t <boost::stringify::v0::alignment::internal, F>();
-
+constrained_facet<F, align_impl_t<alignment::internal> > internal_if {};
 
 struct alignment_tag
 {
-    typedef
-        boost::stringify::v0::align_impl_t
-        <boost::stringify::v0::alignment::right, boost::stringify::v0::true_trait>
-        default_impl;
+    constexpr static const auto& get_default() noexcept
+    {
+        return boost::stringify::v0::right;
+    }
 };
 
 
-} // inline namespace v0
-} // namespace stringify
-} // namespace boost
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_FACETS_ALIGNMENT_HPP
 

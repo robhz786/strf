@@ -11,33 +11,34 @@ PRINTF_CMD = printf "[[ %-40s  ][ %4s ]%s[%8s]]\n"
 
 out/debug/%.o: %.cpp phony_target
 	@mkdir -p out/debug
-	@$(MEASURE_TIMES) $(CXX) -g $(INCLUDES) -c $< -o $@
+	@$(MEASURE_TIMES) $(CXX) -std=c++14 -g $(INCLUDES) -c $< -o $@
 	@$(PRINTF_CMD)   "$<"  "-g"  "$(GET_COMPILATION_TIMES)"  "$(GET_OBJ_FILE_SIZE)"
 
 
 out/O0/%.o: %.cpp phony_target
 	@mkdir -p $(@D)
-	@$(MEASURE_TIMES) $(CXX) -O0 $(INCLUDES) -c $< -o $@
+	@$(MEASURE_TIMES) $(CXX) -std=c++14 -O0 $(INCLUDES) -c $< -o $@
 	@$(PRINTF_CMD)   "$<"  "-O0"  "$(GET_COMPILATION_TIMES)"  "$(GET_OBJ_FILE_SIZE)"
 
 
 out/O3/%.o: %.cpp phony_target
 	@mkdir -p $(@D)
-	@$(MEASURE_TIMES) $(CXX) -O3 $(INCLUDES) -c $< -o $@
+	@$(MEASURE_TIMES) $(CXX) -std=c++14 -O3 $(INCLUDES) -c $< -o $@
 	@$(PRINTF_CMD)   "$<"  "-O3"  "$(GET_COMPILATION_TIMES)"  "$(GET_OBJ_FILE_SIZE)"
 
 
-sources := \
-sample1_BoostStringify.cpp \
-sample1_BoostFormat.cpp \
-sample1_fmtlib_header_only.cpp \
-sample1_fmtlib.cpp \
-sample1_ostream.cpp \
-sample1_fprintf.cpp \
-\
-sample2_BoostStringify.cpp \
-sample2_fmtlib_header_only.cpp \
-sample2_fmtlib.cpp 
+sources += sample1_BoostStringify_header_only.cpp
+sources += sample1_BoostStringify_linked_lib.cpp
+sources += sample1_BoostFormat.cpp
+sources += sample1_fmtlib_header_only.cpp
+sources += sample1_fmtlib.cpp
+sources += sample1_ostream.cpp
+sources += sample1_fprintf.cpp
+
+sources += sample2_BoostStringify_header_only.cpp
+sources += sample2_BoostStringify_linked_lib.cpp
+sources += sample2_fmtlib_header_only.cpp
+sources += sample2_fmtlib.cpp 
 
 
 default_target: print_table_header $(foreach bsrc,$(basename $(sources)),out/debug/$(bsrc).o out/O0/$(bsrc).o out/O3/$(bsrc).o)

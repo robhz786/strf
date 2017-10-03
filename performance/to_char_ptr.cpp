@@ -17,26 +17,19 @@ using namespace boost::spirit;
 
 
 #define PRINT_BENCHMARK(label)  \
-  BOOST_LOOP_TIMER(3000000000ll, label)
+  BOOST_LOOP_TIMER(9000000000ll, label)
 
 int main()
 {
     namespace strf = boost::stringify;
     namespace spirit = boost::spirit;
     namespace karma = boost::spirit::karma;
-    char buff[1000000];
-    char* const dest = &buff[0];
-    constexpr std::size_t dest_size = sizeof(buff);
-    
- 
-    std::cout << std::endl 
-              << "A small string" 
-              << std::endl;
+    char dest[1000000];
+    constexpr std::size_t dest_size = sizeof(dest);
 
-    PRINT_BENCHMARK("write_to(dest) (\"Hello \", \"World\", \"!\")")
-    {
-        strf::write_to(dest) ("Hello ", "World", "!");
-    }
+
+    std::cout << "\n small strings \n";
+
     PRINT_BENCHMARK("write_to(dest) [{\"Hello \", \"World\", \"!\"}]")
     {
         strf::write_to(dest) [{"Hello ", "World", "!"}];
@@ -57,18 +50,12 @@ int main()
         sprintf(dest, "Hello %s!", "World");
     }
 
+    std::cout << "\n long string ( 1000 characters ): \n";
 
-    std::cout << std::endl
-              << "A long string ( 1000 characters ):"
-              << std::endl;
     {
         std::string std_string_long_string(1000, 'x');
         const char* long_string = std_string_long_string.c_str();
 
-        PRINT_BENCHMARK("write_to(dest) (\"Hello \", long_string, \"!\")")
-        {
-            strf::write_to(dest) ("Hello ", long_string, "!");
-        }
         PRINT_BENCHMARK("write_to(dest) [{\"Hello \", long_string, \"!\"}]")
         {
             strf::write_to(dest) [{"Hello ", long_string, "!"}];
@@ -90,14 +77,8 @@ int main()
         }
     }
 
-    std::cout << std::endl
-              << "write integers" 
-              << std::endl;
+    std::cout << "\n integers \n";
 
-    PRINT_BENCHMARK("write_to(dest) (25)")
-    {
-        strf::write_to(dest) (25);
-    }
     PRINT_BENCHMARK("write_to(dest) [{25}]")
     {
         strf::write_to(dest) [{25}];
@@ -117,12 +98,8 @@ int main()
     {
         sprintf(dest, "%d", 25);
     }
-    
+
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) (INT_MAX)")
-    {
-        strf::write_to(dest) (INT_MAX);
-    }
     PRINT_BENCHMARK("write_to(dest) [{INT_MAX}]")
     {
         strf::write_to(dest) [{INT_MAX}];
@@ -144,10 +121,6 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) (LLONG_MAX)")
-    {
-        strf::write_to(dest) (LLONG_MAX);
-    }
     PRINT_BENCHMARK("write_to(dest) [{LLONG_MAX}]")
     {
         strf::write_to(dest) [{LLONG_MAX}];
@@ -167,12 +140,8 @@ int main()
     {
         sprintf(dest, "%lld", LLONG_MAX);
     }
-   
+
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) (25, 25, 25)")
-    {
-        strf::write_to(dest) (25, 25, 25);
-    }
     PRINT_BENCHMARK("write_to(dest) [{25, 25, 25}]")
     {
         strf::write_to(dest) [{25, 25, 25}];
@@ -193,13 +162,9 @@ int main()
     {
         sprintf(dest, "%d%d%d", 25, 25, 25);
     }
-    
-    
+
+
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) (LLONG_MAX, LLONG_MAX, LLONG_MAX)")
-    {
-        strf::write_to(dest) (LLONG_MAX, LLONG_MAX, LLONG_MAX);
-    }
     PRINT_BENCHMARK("write_to(dest) [{LLONG_MAX, LLONG_MAX, LLONG_MAX}]")
     {
         strf::write_to(dest) [{LLONG_MAX, LLONG_MAX, LLONG_MAX}];
@@ -220,13 +185,9 @@ int main()
     {
         sprintf(dest, "%lld%lld%lld", LLONG_MAX, LLONG_MAX, LLONG_MAX);
     }
-    
+
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) ({25, 20})")
-    {
-        strf::write_to(dest) ({25, 20});
-    }
     PRINT_BENCHMARK("write_to(dest) [{{25, 20}}]")
     {
         strf::write_to(dest)[{{25, 20}}];
@@ -252,17 +213,13 @@ int main()
         fmt::BasicArrayWriter<char> writer(dest, dest_size);
         writer.write("{:20}", 25);
     }
-    PRINT_BENCHMARK("sprintf(dest, \"%6d\", 25)")
+    PRINT_BENCHMARK("sprintf(dest, \"%20d\", 25)")
     {
-        sprintf(dest, "%6d", 25);
+        sprintf(dest, "%20d", 25);
     }
-    
-    
+
+
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) ({25, {6, \"<+\"}})")
-    {
-        strf::write_to(dest) ({ 25, {6, "<+"}});
-    }
     PRINT_BENCHMARK("write_to(dest) [{{25, {6, \"<+\"}}}]")
     {
         strf::write_to(dest)[{{25, {6, "<+"}}}];
@@ -292,13 +249,9 @@ int main()
     {
         sprintf(dest, "%-+6d", 25);
     }
-    
-    
+
+
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) ({25, \"#x\"})")
-    {
-        strf::write_to(dest) ({25, "#x"});
-    }
     PRINT_BENCHMARK("write_to(dest) [{{25, \"#x\"}}]")
     {
         strf::write_to(dest) [{{25, "#x"}}];
@@ -324,13 +277,9 @@ int main()
     {
         sprintf(dest, "%#x", 25);
     }
-    
-    
+
+
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) (25, {25, {6, \"<+\"}} , {25, \"#x\"})")
-    {
-        strf::write_to(dest) (25, {25, {6, "<+"}} , {25, "#x"});
-    }
     PRINT_BENCHMARK("write_to(dest) [{25, {25, {6, \"<+\"}} , {25, \"#x\"}}]")
     {
         strf::write_to(dest) [{25, {25, {6, "<+"}} , {25, "#x"}}];
@@ -353,16 +302,10 @@ int main()
     {
         sprintf(dest, "%d%-+6d%#x", 25, 25, 25);
     }
-    
-    std::cout << std::endl 
-              << "Strings and itegers mixed:" 
-              << std::endl;
-    
+
+    std::cout << "\n Strings and itegers mixed: \n";
+
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) (\"ten =  \", 10, \", twenty = \", 20)")
-    {
-        strf::write_to(dest) ("ten =  ", 10, ", twenty = ", 20);
-    }
     PRINT_BENCHMARK("write_to(dest) [{\"ten =  \", 10, \", twenty = \", 20}]")
     {
         strf::write_to(dest) [{"ten =  ", 10, ", twenty = ", 20}];
@@ -377,17 +320,16 @@ int main()
 
         *d = '\0';
     }
-    
-    PRINT_BENCHMARK("sprintf(dest, \"ten = %d, twenty= %d\", 10, 20)")
-    {
-        sprintf(dest, "ten = %d, twenty= %d", 10, 20);
-    }
     PRINT_BENCHMARK("fmt_writer.write(\"ten = {}, twenty = {}\", 10, 20)")
     {
         fmt::BasicArrayWriter<char> writer(dest, dest_size);
         writer.write("ten = {}, twenty = {}", 10, 20);
     }
+    PRINT_BENCHMARK("sprintf(dest, \"ten = %d, twenty= %d\", 10, 20)")
+    {
+        sprintf(dest, "ten = %d, twenty= %d", 10, 20);
+    }
 
-    
+
     return 1;
 }
