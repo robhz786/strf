@@ -77,8 +77,6 @@ int main()
     basic_make_test<wchar_t>();
 
 
-   //TODO
-
     {   // When set_error is called during make_string
 
         auto result = strf::make_string

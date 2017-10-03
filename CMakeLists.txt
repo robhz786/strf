@@ -10,9 +10,13 @@ project (BoostStringify)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/out/${CMAKE_BUILD_TYPE})
 
+add_subdirectory(build build)
 add_subdirectory(test test)
 add_subdirectory(example example)
+
+if (BOOST_STRINGIFY_BUILD_PERFORMANCE_TESTS)
 add_subdirectory(performance performance)
 add_subdirectory(performance/fmt-4.0.0 fmt)
-add_subdirectory(build build)
+endif (BOOST_STRINGIFY_BUILD_PERFORMANCE_TESTS)
+
 

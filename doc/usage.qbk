@@ -31,13 +31,13 @@
   [ [*`make_basic_string<`][~CharT, Traits, Allocator][*`>(`][~destination][*`)`]`.with(`[~facets...]`)(`[~args...]`)`]]
 
 [ [8] [[~CharT]`*`]
-  [ [*`write_to<`][~Traits][*>`(`][~destination][*`)`]`.with(`[~facets...]`)(`[~args...]`)`]]
+  [ [*`write_to<`][~Traits]` = std::char_traits<CharT>`[*`> (`][~destination][*`)`]`.with(`[~facets...]`)(`[~args...]`)`]]
 
 [ [9]  [[~CharT]`*`]
-  [ [*`write_to<`][~Traits][*>`(`][~destination], [~count][*`)`]`.with(`[~facets...]`)(`[~args...]`)`]]
+  [ [*`write_to<`][~Traits]` = std::char_traits<CharT>`[*`> `]`(`][~destination], [~count][*`)`]`.with(`[~facets...]`)(`[~args...]`)`]]
 
 [ [10] [[~CharT]`*`]
-  [ [*`write_to<`][~Traits][*>`(`][~destination], [~end][*`)`]`.with(`[~facets...]`)(`[~args...]`)`]]
+  [ [*`write_to<`][~Traits]` = std::char_traits<CharT>`[*`> `]`(`][~destination], [~end][*`)`]`.with(`[~facets...]`)(`[~args...]`)`]]
 
 [ [11] [ `std::basic_streambuf<`[~CharT, Traits]`>`]
   [ [*`write_to(`][~destination][*`)`]`.with(`[~facets...]`)(`[~args...]`)`]]

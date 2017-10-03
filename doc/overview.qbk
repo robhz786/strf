@@ -36,7 +36,7 @@ And in order to build the library, since there is only one source file ( __STRIN
 In its current state, Boost.Stringify is known to work in the following compilers:
 
 * GCC 6 and 7
-* Clang 3.6, 3.7, 3.8 and 3.9 ( with [^-std=c++14] option)
+* Clang 4.2
 * Visual Studio 2017 15.2
 
 However, more recent compilers may be necessary as the library evolves.

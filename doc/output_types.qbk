@@ -10,11 +10,11 @@
 [ []  [Destination type] [Expression]]
 
 [ [1]
-  [`std::basic_string<`[~CharT]`, `[~Traits]`, `[~Allocator]`>`]
-  [ [*`append_to(`][~destination][*`)`] \u00b7\u00b7\u00b7]]
+  [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Allocator]`>`]
+  [ [*`append_to (`][~destination][*`)`] \u00b7\u00b7\u00b7]]
 
-[ [2] [`std::basic_string<`[~CharT]`, `[~Traits]`, `[~Allocator]`>`]
-  [ [*`assign_to(`][~destination][*`)`] \u00b7\u00b7\u00b7]]
+[ [2] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Allocator]`>`]
+  [ [*`assign_to (`][~destination][*`)`] \u00b7\u00b7\u00b7]]
 
 [ [3] [`std::string`]
   [ [*`make_string`] \u00b7\u00b7\u00b7]]
@@ -29,25 +29,25 @@
   [ [*`make_wstring`] \u00b7\u00b7\u00b7]]
 
 [ [7] [`std::basic_string<`[~CharT]`, `[~Traits]`, `[~Allocator]`>`]
-  [ [*`make_basic_string<`][~CharT]`, `[~Traits]`, `[~Allocator][*`>(`][~destination][*`)`] \u00b7\u00b7\u00b7]]
+  [ [*`make_basic_string <`][~CharT]`, `[~Traits]`, `[~Allocator][*`> (`][~destination][*`)`] \u00b7\u00b7\u00b7]]
 
 [ [8]  [[~CharT]`*`]
-  [ [*`write_to<`][~Traits][*>`(`][~destination]`, `[~limit]`, `[~countptr][*`)`] \u00b7\u00b7\u00b7]]
+  [ [*`write_to <`][~Traits][*`> (`][~destination]`, `[~limit]`, `[~countptr][*`)`] \u00b7\u00b7\u00b7]]
 
 [ [9] [[~CharT]`*`]
-  [ [*`write_to<`][~Traits][*>`(`][~destination]`, `[~end]`, `[~countptr][*`)`] \u00b7\u00b7\u00b7]]
+  [ [*`write_to <`][~Traits][*`> (`][~destination]`, `[~end]`, `[~countptr][*`)`] \u00b7\u00b7\u00b7]]
 
 [ [10] [[~CharT[size]]]
-  [ [*`write_to<`][~Traits][*>`(`][~destination]`, `[~countptr][*`)`] \u00b7\u00b7\u00b7]]
+  [ [*`write_to <`][~Traits][*`> (`][~destination]`, `[~countptr][*`)`] \u00b7\u00b7\u00b7]]
 
-[ [11] [ `std::basic_streambuf<`[~CharT]`, `[~Traits]`>`]
-  [ [*`write_to(`][~destination]`, `[~countptr][*`)`] \u00b7\u00b7\u00b7]]
+[ [11] [ `std::basic_streambuf <`[~CharT]`, `[~Traits]`>`]
+  [ [*`write_to (`][~destination]`, `[~countptr][*`)`] \u00b7\u00b7\u00b7]]
 
 [ [12] [ `FILE*` ( using narrow functions) ]
-  [ [*`write_to<`][~CharT][*`>(`][~destination]`,` [~countptr] [*`)`] \u00b7\u00b7\u00b7]]
+  [ [*`write_to <`][~CharT][*`> (`][~destination]`,` [~countptr] [*`)`] \u00b7\u00b7\u00b7]]
 
 [ [13]  [ `FILE*` ( using wide functions) ]
-  [ [*`wwrite_to(`][~destination]`, `[~countptr][*`)`] \u00b7\u00b7\u00b7]]
+  [ [*`wwrite_to (`][~destination]`, `[~countptr][*`)`] \u00b7\u00b7\u00b7]]
 ]
 
 * [~limit] is `std::size_t`. It determinates the maximum number of characters that can be written, including the termination character.
@@ -79,5 +79,12 @@
 * 2) [~destination] becames empty.
 * 8 - 10) [~destination]`[0]` is set to `'\0'`, unless [~limit] is `0`. 
 
+[h3 Notes]
+
+* 1-7) An adequate capacity is reserved before writting any character so that at most only one memory allocation happens inside the destination string.
+* 7) [~Allocator] is optional. If omitted, it is `std::allocator<`[~CharT]`>`
+* 7-10) [~Traits] is optional. If omitted, it is `std::char_traits<`[~CharT]`>`
+* 12) [~CharT] is optional. If omitted, it is `char`
+* 12-13) `std::fflush` is [_not] called
 
 [endsect]
