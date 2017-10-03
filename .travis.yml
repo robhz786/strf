@@ -7,9 +7,7 @@ sudo: false
 
 branches:
   only:
-    - master
-    - develop
-    - /feature\/.*/
+    - /.*/
 
 matrix:
   include:
@@ -68,6 +66,8 @@ matrix:
         apt:
           packages:
             - clang-3.6
+            - g++-6
+            - gcc-6
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.6
@@ -78,6 +78,8 @@ matrix:
         apt:
           packages:
             - clang-3.6
+            - g++-6
+            - gcc-6
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.6
@@ -90,6 +92,8 @@ matrix:
           packages:
             - clang-3.7
           sources:
+            - g++-6
+            - gcc-6
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.7
 
@@ -112,6 +116,8 @@ matrix:
           packages:
             - clang-3.8
           sources:
+            - g++-6
+            - gcc-6
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.8
 
@@ -123,6 +129,8 @@ matrix:
           packages:
             - clang-3.8
           sources:
+            - g++-6
+            - gcc-6
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.8
 
@@ -135,6 +143,8 @@ matrix:
           packages:
             - clang-3.9
           sources:
+            - g++-6
+            - gcc-6
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.9
 
@@ -146,6 +156,8 @@ matrix:
           packages:
             - clang-3.9
           sources:
+            - g++-6
+            - gcc-6
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.9
 
