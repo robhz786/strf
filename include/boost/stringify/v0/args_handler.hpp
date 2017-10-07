@@ -36,7 +36,7 @@ private:
 template
     < typename output_writer
     , typename ftuple_type
-    , typename init_args_tuple_type
+    , typename init_args_tuple
     >
 class args_handler
 {
@@ -70,60 +70,17 @@ class args_handler
     {
     }
 
-    template <typename Arg1, typename ... Args>
-    std::size_t length(Arg1 && arg1, Args && ... args) const
-    {
-        return arg1.length(m_ftuple) + length(args...);
-    }
-
-    std::size_t length() const
-    {
-        return 0;
-    }
-
-    template <typename W, typename ... Args>
-    auto reserve(std::true_type, W& writer, const Args & ... args) const
-    {
-        writer.reserve(1 + length(args...));
-    }
-
-    template <typename W, typename ... Args>
-    void reserve(std::false_type, W&, const Args & ...) const
-    {
-    }
-
-    void do_write(output_writer&) const
-    {
-
-    }
-
-    template <typename Arg, typename ... Args>
-    void do_write(output_writer& out, const Arg& a1, const Args& ... args) const
-    {
-        a1.write(out, m_ftuple);
-        do_write(out, args ...);
-    }
-
-    template <typename ... Args>
-    decltype(auto) write(const Args & ... args) const
-    {
-        output_writer_from_tuple<output_writer> writer(this->m_args);
-        reserve(has_reserve{}, writer, args ...);
-        do_write(writer, args ...);
-        return writer.finish();
-    }
-
 public:
 
-    constexpr args_handler(ftuple_type&& ft, init_args_tuple_type&& args)
+    constexpr args_handler(ftuple_type&& ft, init_args_tuple&& args)
         : m_ftuple(std::move(ft))
         , m_args(std::move(args))
     {
     }
 
-    constexpr args_handler(const ftuple_type& ft, const init_args_tuple_type& a)
+    constexpr args_handler(const ftuple_type& ft, const init_args_tuple& args)
         : m_ftuple(ft)
-        , m_args(a)
+        , m_args(args)
     {
     }
 
@@ -143,7 +100,7 @@ public:
         return args_handler
             < output_writer
             , decltype(stringify::v0::make_ftuple(m_ftuple, facets ...))
-            , init_args_tuple_type
+            , init_args_tuple
             >
             ( stringify::v0::make_ftuple(m_ftuple, facets ...)
             , m_args
@@ -156,7 +113,7 @@ public:
         return args_handler
             < output_writer
             , decltype(stringify::v0::make_ftuple(m_ftuple, ft))
-            , init_args_tuple_type
+            , init_args_tuple
             >
             ( stringify::v0::make_ftuple(m_ftuple, ft)
             , m_args
@@ -174,82 +131,10 @@ public:
         return writer.finish();
     }
 
-    decltype(auto) operator()() const
-    {
-        return write();
-    }
-
-    decltype(auto) operator()(arg_type a1) const
-    {
-        return write(a1);
-    }
-
-    decltype(auto) operator() (arg_type a1, arg_type a2) const
-    {
-        return write(a1, a2);
-    }
-
-    decltype(auto) operator() (arg_type a1, arg_type a2, arg_type a3) const
-    {
-        return write(a1, a2, a3);
-    }
-
-    decltype(auto) operator()
-        (arg_type a1, arg_type a2, arg_type a3, arg_type a4) const
-    {
-        return write(a1, a2, a3, a4);
-    }
-
-    decltype(auto) operator()
-        (arg_type a1, arg_type a2, arg_type a3, arg_type a4, arg_type a5) const
-    {
-        return write(a1, a2, a3, a4, a5);
-    }
-
-    decltype(auto) operator()
-        ( arg_type a1, arg_type a2, arg_type a3, arg_type a4, arg_type a5
-        , arg_type a6
-        ) const
-    {
-        return write(a1, a2, a3, a4, a5, a6);
-    }
-
-    decltype(auto) operator()
-        ( arg_type a1, arg_type a2, arg_type a3, arg_type a4, arg_type a5
-        , arg_type a6, arg_type a7
-        ) const
-    {
-        return write(a1, a2, a3, a4, a5, a6, a7);
-    }
-
-    decltype(auto) operator()
-        ( arg_type a1, arg_type a2, arg_type a3, arg_type a4, arg_type a5
-        , arg_type a6, arg_type a7, arg_type a8
-        ) const
-    {
-        return write(a1, a2, a3, a4, a5, a6, a7, a8);
-    }
-
-    decltype(auto) operator()
-        ( arg_type a1, arg_type a2, arg_type a3, arg_type a4, arg_type a5
-        , arg_type a6, arg_type a7, arg_type a8, arg_type a9
-        ) const
-    {
-        return write(a1, a2, a3, a4, a5, a6, a7, a8, a9);
-    }
-
-    decltype(auto) operator()
-        ( arg_type a1, arg_type a2, arg_type a3, arg_type a4, arg_type a5
-        , arg_type a6, arg_type a7, arg_type a8, arg_type a9, arg_type a10
-        ) const
-    {
-        return write(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
-    }
-
 private:
 
     ftuple_type m_ftuple;
-    init_args_tuple_type m_args;
+    init_args_tuple m_args;
 };
 
 } // namespace detail

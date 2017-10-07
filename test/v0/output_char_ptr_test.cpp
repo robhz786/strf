@@ -36,7 +36,7 @@ void test_array_too_small()
     CharT buff[3] = { 'a', 'a', 0 };
     std::size_t result_length = 1000;
 
-    std::error_code ec = strf::write_to(buff, &result_length) (1234567);
+    std::error_code ec = strf::write_to(buff, &result_length) [{ 1234567 }];
 
     BOOST_TEST(buff[0] == 0);
     BOOST_TEST(result_length == 0);
@@ -49,7 +49,7 @@ void test_informed_size_too_small()
     CharT buff[100] = { 'a', 'a', 0 };
     std::size_t result_length = 1000;
 
-    std::error_code ec = strf::write_to(buff, 3, &result_length) (1234567);
+    std::error_code ec = strf::write_to(buff, 3, &result_length) [{ 1234567 }];
 
     BOOST_TEST(buff[0] == 0);
     BOOST_TEST(result_length == 0);
@@ -62,7 +62,7 @@ void test_informed_end_too_close()
     CharT buff[100] = { 'a', 'a', 0 };
     std::size_t result_length = 1000;
 
-    std::error_code ec = strf::write_to(buff, &buff[3], &result_length) (1234567);
+    std::error_code ec = strf::write_to(buff, &buff[3], &result_length) [{ 1234567 }];
 
     BOOST_TEST(buff[0] == 0);
     BOOST_TEST(result_length == 0);
@@ -150,7 +150,7 @@ int main()
         char16_t result[200] = u"--------------------------------------------------";
         std::size_t result_length = 1000;
 
-        std::error_code ec = strf::write_to(result, 3, &result_length) (u"abc");
+        std::error_code ec = strf::write_to(result, 3, &result_length) [{ u"abc" }];
 
         BOOST_TEST(result[0] == u'\0');
         BOOST_TEST(result_length == 0);
@@ -162,7 +162,7 @@ int main()
         char16_t result[200] = u"--------------------------------------------------";
         std::size_t result_length = 1000;
 
-        std::error_code ec = strf::write_to(result, 3, &result_length) (u'a', u'b', u'c');
+        std::error_code ec = strf::write_to(result, 3, &result_length) [{ u'a', u'b', u'c' }];
 
         BOOST_TEST(result[0] == u'\0');
         BOOST_TEST(result_length == 0);
