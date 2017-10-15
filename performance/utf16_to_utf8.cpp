@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <locale>
+#include <codecvt>
 #include <fstream>
 
 #include <boost/stringify.hpp>
@@ -21,87 +22,88 @@ int main()
 {
     namespace strf = boost::stringify::v0;
     
-    std::u32string u32sample1(500, U'A');
-    std::u32string u32sample2(500, U'\u0100');
-    std::u32string u32sample3(500, U'\u0800');
-    std::u32string u32sample4(500, U'\U00010000');
+    std::u16string u16sample1(500, u'A');
+    std::u16string u16sample2(500, u'\u0100');
+    std::u16string u16sample3(500, u'\u0800');
+    std::u16string u16sample4;
+    for(int i = 0; i < 500; ++i) u16sample4.append(u"\U00010000");
+ 
 
     char u8dest[100000];
     constexpr std::size_t u8dest_size = sizeof(u8dest) / sizeof(u8dest[0]);
     char* u8dest_end = &u8dest[u8dest_size];
 
-    PRINT_BENCHMARK("write_to(u8dest) [{u32sample1}]")
+    PRINT_BENCHMARK("write_to(u8dest) [{u16sample1}]")
     {
-        strf::write_to(u8dest) [{u32sample1}];
+        strf::write_to(u8dest) [{u16sample1}];
     }
-    PRINT_BENCHMARK("write_to(u8dest) [{u32sample2}]")
+    PRINT_BENCHMARK("write_to(u8dest) [{u16sample2}]")
     {
-        strf::write_to(u8dest) [{u32sample2}];
+        strf::write_to(u8dest) [{u16sample2}];
     }
-    PRINT_BENCHMARK("write_to(u8dest) [{u32sample3}]")
+    PRINT_BENCHMARK("write_to(u8dest) [{u16sample3}]")
     {
-        strf::write_to(u8dest) [{u32sample3}];
+        strf::write_to(u8dest) [{u16sample3}];
     }
-    PRINT_BENCHMARK("write_to(u8dest) [{u32sample4}]")
+    PRINT_BENCHMARK("write_to(u8dest) [{u16sample4}]")
     {
-        strf::write_to(u8dest) [{u32sample4}];
+        strf::write_to(u8dest) [{u16sample4}];
     }
 
-    std::locale::global(std::locale("en_US.utf8"));
-    auto& codecvt = std::use_facet<std::codecvt<char32_t, char, std::mbstate_t>>(std::locale());
-    const char32_t* cu32next = nullptr;
+    std::codecvt_utf8_utf16<char16_t> codecvt;
+    const char16_t* cu16next = nullptr;
     char* u8next = nullptr;
 
     strf::write_to(stdout) = {'\n'};
 
-    PRINT_BENCHMARK("std::codecvt / u32sample1")
+    PRINT_BENCHMARK("std::codecvt / u16sample1")
     {                                                 
         std::mbstate_t mb{};
         codecvt.out
             ( mb
-            , &*u32sample1.begin()
-            , &*u32sample1.end()
-            , cu32next
+            , &*u16sample1.begin()
+            , &*u16sample1.end()
+            , cu16next
             , u8dest
             , u8dest_end
             , u8next);
         *u8next = '\0';
     }
 
-    PRINT_BENCHMARK("std::codecvt / u32sample2")
+    PRINT_BENCHMARK("std::codecvt / u16sample2")
     {                                                 
         std::mbstate_t mb{};
         codecvt.out
             ( mb
-            , &*u32sample2.begin()
-            , &*u32sample2.end()
-            , cu32next
+            , &*u16sample2.begin()
+            , &*u16sample2.end()
+            , cu16next
             , u8dest
             , u8dest_end
             , u8next);
         *u8next = '\0';
     }
-    PRINT_BENCHMARK("std::codecvt / u32sample3")
+    PRINT_BENCHMARK("std::codecvt / u16sample3")
     {                                                 
         std::mbstate_t mb{};
         codecvt.out
             ( mb
-            , &*u32sample3.begin()
-            , &*u32sample3.end()
-            , cu32next
+            , &*u16sample3.begin()
+            , &*u16sample3.end()
+            , cu16next
             , u8dest
             , u8dest_end
             , u8next);
         *u8next = '\0';
     }
-    PRINT_BENCHMARK("std::codecvt / u32sample4")
+    PRINT_BENCHMARK("std::codecvt / u16sample4")
     {                                                 
         std::mbstate_t mb{};
         codecvt.out
             ( mb
-            , &*u32sample4.begin()
-            , &*u32sample4.end()
-            , cu32next
+            , &*u16sample4.begin()
+            , &*u16sample4.end()
+            , cu16next
             , u8dest
             , u8dest_end
             , u8next);

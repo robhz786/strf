@@ -65,7 +65,7 @@ class int_stringifier: public stringifier<CharT>
 {
     using unsigned_intT = typename std::make_unsigned<intT>::type;
     using chars_catalog = stringify::v0::detail::characters_catalog;
-    using from32_tag = stringify::v0::conversion_from_utf32_tag<CharT>;
+    using from32_tag = stringify::v0::encoder_tag<CharT>;
     using wcalc_tag = stringify::v0::width_calculator_tag;
     static constexpr bool is_signed = std::is_signed<intT>::value;
 
@@ -147,7 +147,7 @@ public:
 private:
 
     const intT m_value;
-    const stringify::v0::conversion_from_utf32<CharT>& m_form32vc;
+    const stringify::v0::encoder<CharT>& m_form32vc;
     mutable int m_width;
     char32_t m_fillchar = U' ';
     int m_fillcount = 0;

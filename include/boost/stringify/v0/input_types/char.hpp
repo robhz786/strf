@@ -15,7 +15,7 @@ class char_stringifier: public stringifier<CharT>
 {
     using input_type = CharT;
     using writer_type = stringify::v0::output_writer<CharT>;
-    using from32_tag = stringify::v0::conversion_from_utf32_tag<CharT>;
+    using from32_tag = stringify::v0::encoder_tag<CharT>;
     using wcalc_tag = stringify::v0::width_calculator_tag;
     using argf_reader = stringify::v0::conventional_argf_reader<input_type>;
 
@@ -94,7 +94,7 @@ public:
 
 private:
 
-    const stringify::v0::conversion_from_utf32<CharT>& m_from32cv;
+    const stringify::v0::encoder<CharT>& m_from32cv;
     const std::size_t m_count = 1;
     std::size_t m_width;
     const char32_t m_fillchar;

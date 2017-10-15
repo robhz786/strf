@@ -165,14 +165,24 @@ int report_errors()
 }
 
 
-void print(const char* label, const std::u16string&)
+void print(const char* label, const std::u16string& str)
 {
-    std::cout << label << ": (unable to print) \n";
+    std::cout << label << "\n";
+    for(auto it = str.begin(); it != str.end(); ++it)
+    {
+        printf("%4x ", (unsigned)*it);
+    }
+    std::cout << "\n";
 }
 
-void print(const char* label, const std::u32string&)
+void print(const char* label, const std::u32string& str)
 {
-    std::cout << label << ": (unable to print) \n";
+    std::cout << label << "\n";
+    for(auto it = str.begin(); it != str.end(); ++it)
+    {
+        printf("%8x ", (unsigned)*it);
+    }
+    std::cout << "\n";
 }
 
 
@@ -196,14 +206,16 @@ public:
     input_tester
         ( std::basic_string<CharT> expected
         , std::error_code expected_error
-        , std::string src_filename      
-        , int src_line                  
+        , std::string src_filename
+        , int src_line
+        , double reserve_factor
         )
         : m_expected(std::move(expected))
         , m_expected_error(expected_error)
-        , m_reserved_size(0)            
+        , m_reserved_size(0)
         , m_src_filename(std::move(src_filename))
-        , m_src_line(src_line)          
+        , m_src_line(src_line)
+        , m_reserve_factor(reserve_factor)
     {
     }
 
@@ -284,20 +296,25 @@ public:
 
     std::basic_string<CharT> finish()
     {
-        if (m_expected != m_result || m_reserved_size != 1 + m_result.length())
+        if (m_expected_error != m_obtained_error || m_expected != m_result || wrongly_reserved())
         {
             std::cout << m_src_filename << ":" << m_src_line << ":" << " error: \n";
             ++global_errors_count;
+        }
+        if (m_expected_error != m_obtained_error)
+        {
+            print("expected error_code", m_expected_error.message());
+            print("obtained error_code", m_obtained_error.message());
         }
         if (m_expected != m_result)
         {
             print("expected", m_expected);
             print("obtained", m_result);
         }
-        if(m_reserved_size != 1 + m_result.length())
+        if(wrongly_reserved())
         {
             std::cout << "reserved size  :" <<  m_reserved_size << "\n";
-            std::cout << "necessary size :" <<  m_result.length() + 1 << "\n";
+            std::cout << "necessary size :" <<  m_result.length() << "\n";
         }
 
         return std::move(m_result);
@@ -312,6 +329,22 @@ public:
 
 private:
 
+    bool wrongly_reserved() const
+    {
+        return
+            ( ! m_obtained_error
+              && (m_reserved_size < m_result.length() || too_much_reserved()));
+    }
+
+    bool too_much_reserved() const
+    {
+        return
+            static_cast<double>(m_reserved_size) /
+            static_cast<double>(m_result.length())
+            > m_reserve_factor;
+    }
+
+
     std::basic_string<CharT> m_result;
     std::basic_string<CharT> m_expected;
     std::error_code m_expected_error;
@@ -319,16 +352,37 @@ private:
     std::size_t m_reserved_size;
     std::string m_src_filename;
     int m_src_line;
+    double m_reserve_factor;
 };
 
 
 template<typename CharT>
-auto make_tester(const CharT* expected, const char* filename, int line, std::error_code err = {})
+auto make_tester
+    ( const CharT* expected
+    , const char* filename
+    , int line
+    , std::error_code err = {}
+    , double reserve_factor = 1.0
+    )
 {
     using writer = input_tester<CharT>;
     return boost::stringify::v0::make_args_handler
         <writer, const CharT*,std::error_code, const char*, int>
-        (expected, err, filename, line);
+        (expected, err, filename, line, reserve_factor);
+}
+
+template<typename CharT>
+auto make_tester
+    ( const CharT* expected
+    , const char* filename
+    , int line
+    , double reserve_factor
+    )
+{
+    using writer = input_tester<CharT>;
+    return boost::stringify::v0::make_args_handler
+        <writer, const CharT*,std::error_code, const char*, int>
+        (expected, {}, filename, line, reserve_factor);
 }
 
 

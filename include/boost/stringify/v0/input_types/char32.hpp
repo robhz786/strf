@@ -9,7 +9,7 @@
 #include <boost/stringify/v0/stringifier.hpp>
 #include <boost/stringify/v0/char_flags.hpp>
 #include <boost/stringify/v0/facets/alignment.hpp>
-#include <boost/stringify/v0/facets/conversion_from_utf32.hpp>
+#include <boost/stringify/v0/facets/encoder.hpp>
 #include <boost/stringify/v0/facets/fill.hpp>
 #include <boost/stringify/v0/facets/width.hpp>
 #include <boost/stringify/v0/facets/width_calculator.hpp>
@@ -47,8 +47,8 @@ class char32_stringifier: public stringifier<CharT>
 {
     using input_type = char32_t;
     using writer_type = stringify::v0::output_writer<CharT>;
-    using from32_tag = stringify::v0::conversion_from_utf32_tag<CharT>;
-    using to32_tag = stringify::v0::conversion_to_utf32_tag<CharT>;
+    using from32_tag = stringify::v0::encoder_tag<CharT>;
+    using to32_tag = stringify::v0::decoder_tag<CharT>;
     using wcalc_tag = stringify::v0::width_calculator_tag;
     using argf_reader = stringify::v0::conventional_argf_reader<input_type>;
 
@@ -130,7 +130,7 @@ public:
 
 private:
 
-    const stringify::v0::conversion_from_utf32<CharT>& m_from32cv;
+    const stringify::v0::encoder<CharT>& m_from32cv;
     const std::size_t m_count = 1;
     std::size_t m_width;
     const char32_t m_char;

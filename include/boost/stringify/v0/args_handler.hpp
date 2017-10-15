@@ -278,7 +278,7 @@ private:
     template <typename W>
     void reserve(std::true_type, W& writer, const arglist_type& lst) const
     {
-        std::size_t len = 1;
+        std::size_t len = 0;
         for(const auto& arg : lst)
         {
             len += arg.length(m_ftuple);

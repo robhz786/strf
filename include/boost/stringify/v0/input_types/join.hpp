@@ -53,7 +53,7 @@ template <typename CharT, typename FTuple>
 class join_stringifier: public stringifier<CharT>
 {
     using width_calc_tag = boost::stringify::v0::width_calculator_tag;
-    using from_utf32_tag = boost::stringify::v0::conversion_from_utf32_tag<CharT>;
+    using from_utf32_tag = boost::stringify::v0::encoder_tag<CharT>;
     using input_arg = boost::stringify::v0::input_arg<CharT, FTuple>;
     using ini_list_type = std::initializer_list<input_arg>;
 

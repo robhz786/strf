@@ -15,8 +15,23 @@ target_link_libraries(to_char_ptr_ho boost_stringify_header_only fmt::fmt-header
 install(TARGETS to_char_ptr_ho   DESTINATION "./")
 
 
-if (NOT ${MSVC})
+if (NOT MSVC)
+
   add_executable(utf32_to_utf8  utf32_to_utf8.cpp)
   target_link_libraries(utf32_to_utf8 boost_stringify)
   install(TARGETS utf32_to_utf8 DESTINATION "./")
-endif (NOT ${MSVC})
+
+  add_executable(utf8_to_utf32  utf8_to_utf32.cpp)
+  target_link_libraries(utf8_to_utf32 boost_stringify)
+  install(TARGETS utf8_to_utf32 DESTINATION "./")
+
+  add_executable(utf8_to_utf16  utf8_to_utf16.cpp)
+  target_link_libraries(utf8_to_utf16 boost_stringify)
+  install(TARGETS utf8_to_utf16 DESTINATION "./")
+
+  add_executable(utf16_to_utf8  utf16_to_utf8.cpp)
+  target_link_libraries(utf16_to_utf8 boost_stringify)
+  install(TARGETS utf16_to_utf8 DESTINATION "./")
+
+  
+endif (NOT MSVC)

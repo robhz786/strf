@@ -5,6 +5,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <type_traits>
+
 #if defined(BOOST_STRINGIFY_SOURCE) && !defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 #define BOOST_STRINGIFY_NOT_HEADER_ONLY
 #endif
@@ -40,6 +42,25 @@ namespace stringify {                              \
 inline namespace v0 {                              \
 
 #define BOOST_STRINGIFY_V0_NAMESPACE_END  } } }
+
+
+#if ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
+
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+namespace detail
+{
+
+constexpr std::integral_constant<bool, sizeof(wchar_t) == 2> wchar_is_16 {};
+constexpr std::integral_constant<bool, sizeof(wchar_t) == 4> wchar_is_32 {};
+using wchar_equivalent =
+    typename std::conditional<sizeof(wchar_t) == 4, char32_t, char16_t>::type;
+
+}
+
+BOOST_STRINGIFY_V0_NAMESPACE_END
+
+#endif // ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
+
 
 
 #endif  // BOOST_STRINGIFY_V0_CONFIG_HPP
