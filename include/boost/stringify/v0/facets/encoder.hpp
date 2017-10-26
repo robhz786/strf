@@ -5,6 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <system_error>
 #include <boost/stringify/v0/output_writer.hpp>
 #include <boost/stringify/v0/ftuple.hpp>
 
@@ -22,7 +23,7 @@ public:
 
     virtual std::size_t length(char32_t ch) const = 0;
 
-    virtual void write
+    virtual void encode
         ( stringify::v0::output_writer<CharT>& destination
         , std::size_t count
         , char32_t ch
@@ -169,7 +170,7 @@ public:
         return {m_err_func, m_mutf8, b};
     }
 
-    void write
+    void encode
         ( stringify::v0::output_writer<char>& destination
         , std::size_t count
         , char32_t ch
@@ -289,7 +290,7 @@ public:
         return single_char_range(ch) ? 1 : 2;
     }
 
-    void write
+    void encode
         ( stringify::v0::output_writer<CharT>& destination
         , std::size_t count
         , char32_t ch
@@ -438,7 +439,7 @@ public:
         return 1;
     }
 
-    void write
+    void encode
         ( stringify::v0::output_writer<CharT>& destination
         , std::size_t count
         , char32_t ch
@@ -457,7 +458,7 @@ public:
 
     std::size_t length(char32_t) const noexcept override;
 
-    void write
+    void encode
         ( stringify::v0::output_writer<wchar_t>& destination
         , std::size_t count
         , char32_t ch

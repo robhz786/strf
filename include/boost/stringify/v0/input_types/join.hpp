@@ -53,7 +53,7 @@ template <typename CharT, typename FTuple>
 class join_stringifier: public stringifier<CharT>
 {
     using width_calc_tag = boost::stringify::v0::width_calculator_tag;
-    using from_utf32_tag = boost::stringify::v0::encoder_tag<CharT>;
+    using encoder_tag = boost::stringify::v0::encoder_tag<CharT>;
     using input_arg = boost::stringify::v0::input_arg<CharT, FTuple>;
     using ini_list_type = std::initializer_list<input_arg>;
 
@@ -73,8 +73,9 @@ public:
         : m_ft(ft)
         , m_join(j)
         , m_args(args)
+        , m_fillchar{j.fillchar != 0 ? j.fillchar : get_facet<fill_tag>().fill_char()}
+        , m_fillcount{remaining_width_from_arglist(m_join.width)}
     {
-        determinate_fill();
     }
 
     std::size_t length() const override
@@ -144,29 +145,9 @@ private:
     {
         if(m_fillcount > 0)
         {
-            return m_fillcount * get_facet<from_utf32_tag>().length(m_fillchar);
+            return m_fillcount * get_facet<encoder_tag>().length(m_fillchar);
         }
         return 0;
-    }
-
-    void determinate_fill()
-    {
-        int fill_width = remaining_width_from_arglist(m_join.width);
-        if(fill_width > 0)
-        {
-            m_fillchar = determinate_fillchar();
-            int fillchar_width = get_facet<width_calc_tag>().width_of(m_fillchar);
-            m_fillcount = fill_width / fillchar_width;
-        }
-    }
-
-    char32_t determinate_fillchar() const
-    {
-        if(m_join.fillchar != 0)
-        {
-            return m_join.fillchar;
-        }
-        return get_facet<fill_tag>().fill_char();
     }
 
     int remaining_width_from_arglist(int w) const
@@ -205,7 +186,7 @@ private:
 
     void write_fill(writer_type& out) const
     {
-         get_facet<from_utf32_tag>().write(out, m_fillcount, m_fillchar);
+         get_facet<encoder_tag>().encode(out, m_fillcount, m_fillchar);
     }
 
 };

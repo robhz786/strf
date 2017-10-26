@@ -47,8 +47,7 @@ class char32_stringifier: public stringifier<CharT>
 {
     using input_type = char32_t;
     using writer_type = stringify::v0::output_writer<CharT>;
-    using from32_tag = stringify::v0::encoder_tag<CharT>;
-    using to32_tag = stringify::v0::decoder_tag<CharT>;
+    using encoder_tag = stringify::v0::encoder_tag<CharT>;
     using wcalc_tag = stringify::v0::width_calculator_tag;
     using argf_reader = stringify::v0::conventional_argf_reader<input_type>;
 
@@ -61,7 +60,7 @@ public:
         ( const FTuple& ft
         , char32_t ch
         ) noexcept
-        : m_from32cv(get_facet<from32_tag>(ft))
+        : m_encoder(get_facet<encoder_tag>(ft))
         , m_width(get_facet<width_tag>(ft).width())
         , m_char(ch)
         , m_fillchar(get_facet<fill_tag>(ft).fill_char())
@@ -76,7 +75,7 @@ public:
         , char32_t ch
         , const second_arg& argf
         ) noexcept
-        : m_from32cv(get_facet<from32_tag>(ft))
+        : m_encoder(get_facet<encoder_tag>(ft))
         , m_count(argf.count)
         , m_width(argf_reader::get_width(argf, ft))
         , m_char(ch)
@@ -92,11 +91,11 @@ public:
         std::size_t len = 0;
         if (m_count > 0)
         {
-            len = m_count * m_from32cv.length(m_char);
+            len = m_count * m_encoder.length(m_char);
         }
         if (m_fillcount > 0)
         {
-            len += m_fillcount * m_from32cv.length(m_fillchar);
+            len += m_fillcount * m_encoder.length(m_fillchar);
         }
         return len;
     }
@@ -105,17 +104,17 @@ public:
     {
         if (m_fillcount == 0)
         {
-            m_from32cv.write(out, m_count, m_char);
+            m_encoder.encode(out, m_count, m_char);
         }
         else if(m_alignment == stringify::v0::alignment::left)
         {
-            m_from32cv.write(out, m_count, m_char);
-            m_from32cv.write(out, m_fillcount, m_fillchar);
+            m_encoder.encode(out, m_count, m_char);
+            m_encoder.encode(out, m_fillcount, m_fillchar);
         }
         else
         {
-            m_from32cv.write(out, m_fillcount, m_fillchar);
-            m_from32cv.write(out, m_count, m_char);
+            m_encoder.encode(out, m_fillcount, m_fillchar);
+            m_encoder.encode(out, m_count, m_char);
         }
     }
 
@@ -130,7 +129,7 @@ public:
 
 private:
 
-    const stringify::v0::encoder<CharT>& m_from32cv;
+    const stringify::v0::encoder<CharT>& m_encoder;
     const std::size_t m_count = 1;
     std::size_t m_width;
     const char32_t m_char;
@@ -158,8 +157,7 @@ private:
         }
         else
         {
-            int fillwidth = static_cast<int>(m_width - content_width);
-            m_fillcount = fillwidth / wcalc.width_of(m_fillchar);
+            m_fillcount = static_cast<int>(m_width - content_width);
         }
     }
 };

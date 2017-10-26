@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/assert.hpp>
+#include <system_error>
 #include <boost/stringify/v0/ftuple.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN

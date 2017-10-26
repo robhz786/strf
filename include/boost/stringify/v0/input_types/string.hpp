@@ -84,7 +84,7 @@ public:
 
     bool put(char32_t ch) override
     {
-        m_encoder.write(m_destination, 1, ch);
+        m_encoder.encode(m_destination, 1, ch);
         return m_destination.good();
     }
 
@@ -105,8 +105,8 @@ class string_writer_decode_encode
 {
     using input_tag = stringify::v0::string_input_tag<CharIn>;
     using writer_type = stringify::v0::output_writer<CharOut>;
-    using from32_tag = stringify::v0::encoder_tag<CharOut>;
-    using to32_tag = stringify::v0::decoder_tag<CharIn>;
+    using encoder_tag = stringify::v0::encoder_tag<CharOut>;
+    using decoder_tag = stringify::v0::decoder_tag<CharIn>;
     using wcalc_tag = stringify::v0::width_calculator_tag;
 
     template <typename Category, typename FTuple>
@@ -125,8 +125,8 @@ public:
         ) noexcept
         : m_begin(begin)
         , m_end(end)
-        , m_decoder(get_facet<to32_tag>(ft))
-        , m_encoder(get_facet<from32_tag>(ft))
+        , m_decoder(get_facet<decoder_tag>(ft))
+        , m_encoder(get_facet<encoder_tag>(ft))
         , m_wcalc(get_facet<wcalc_tag>(ft))
     {
     }
@@ -165,8 +165,6 @@ class string_writer_from32_to32
     using CharIn = char32_t;
     using input_tag = stringify::v0::string_input_tag<CharIn>;
     using writer_type = stringify::v0::output_writer<CharOut>;
-    using from32_tag = stringify::v0::encoder_tag<CharOut>;
-    using to32_tag = stringify::v0::decoder_tag<CharIn>;
     using wcalc_tag = stringify::v0::width_calculator_tag;
 
     template <typename Category, typename FTuple>
@@ -218,7 +216,7 @@ class string_writer_reinterpret
 {
     using input_tag = stringify::v0::string_input_tag<CharIn>;
     using writer_type = stringify::v0::output_writer<CharOut>;
-    using to32_tag = stringify::v0::decoder_tag<CharIn>;
+    using decoder_tag = stringify::v0::decoder_tag<CharIn>;
     using wcalc_tag = stringify::v0::width_calculator_tag;
 
     template <typename Category, typename FTuple>
@@ -237,7 +235,7 @@ public:
         ) noexcept
         : m_begin(begin)
         , m_end(end)
-        , m_decoder(get_facet<to32_tag>(ft))
+        , m_decoder(get_facet<decoder_tag>(ft))
         , m_wcalc(get_facet<wcalc_tag>(ft))
     {
     }
@@ -274,8 +272,7 @@ class string_writer_from32
 
     using input_tag = stringify::v0::string_input_tag<CharIn>;
     using writer_type = stringify::v0::output_writer<CharOut>;
-    using from32_tag = stringify::v0::encoder_tag<CharOut>;
-    using to32_tag = stringify::v0::decoder_tag<CharIn>;
+    using encoder_tag = stringify::v0::encoder_tag<CharOut>;
     using wcalc_tag = stringify::v0::width_calculator_tag;
 
     template <typename Category, typename FTuple>
@@ -294,7 +291,7 @@ public:
         ) noexcept
         : m_begin(begin)
         , m_end(end)
-        , m_encoder(get_facet<from32_tag>(ft))
+        , m_encoder(get_facet<encoder_tag>(ft))
         , m_wcalc(get_facet<wcalc_tag>(ft))
     {
     }
@@ -303,7 +300,7 @@ public:
     {
         for(auto it = m_begin; it < m_end && dest.good(); ++it)
         {
-            m_encoder.write(dest, 1, *it);
+            m_encoder.encode(dest, 1, *it);
         }
     }
 
@@ -396,9 +393,7 @@ private:
 
     using input_tag = stringify::v0::string_input_tag<CharIn>;
     using writer_type = stringify::v0::output_writer<CharOut>;
-    using from32_tag = stringify::v0::encoder_tag<CharOut>;
-    using to32_tag = stringify::v0::decoder_tag<CharIn>;
-    using wcalc_tag = stringify::v0::width_calculator_tag;
+    using encoder_tag = stringify::v0::encoder_tag<CharOut>;
     using argf_reader = stringify::v0::conventional_argf_reader<input_tag>;
 
 public:
@@ -411,7 +406,7 @@ public:
         , const second_arg& argf
         ) noexcept
         : m_str(ft, begin, end)
-        , m_encoder(get_facet<from32_tag>(ft))
+        , m_encoder(get_facet<encoder_tag>(ft))
         , m_fillchar(get_facet<fill_tag>(ft).fill_char())
         , m_width(argf_reader::get_width(argf, ft))
         , m_alignment(argf_reader::get_alignment(argf, ft))
@@ -429,7 +424,7 @@ public:
         , const CharIn* end
         ) noexcept
         : m_str(ft, begin, end)
-        , m_encoder(get_facet<from32_tag>(ft))
+        , m_encoder(get_facet<encoder_tag>(ft))
         , m_fillchar(get_facet<fill_tag>(ft).fill_char())
         , m_width(get_facet<width_tag>(ft).width())
         , m_alignment(get_facet<alignment_tag>(ft).value())
@@ -533,7 +528,7 @@ private:
 
     void write_fill(writer_type& out) const
     {
-        m_encoder.write(out, m_fillcount, m_fillchar);
+        m_encoder.encode(out, m_fillcount, m_fillchar);
     }
 };
 

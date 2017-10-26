@@ -5,6 +5,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <boost/stringify/v0/config.hpp>
+#include <boost/stringify/v0/constrained_facet.hpp>
+
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 enum class alignment{left, right, internal};

@@ -11,13 +11,16 @@
 #include <boost/stringify/v0/facets/fill.hpp>
 #include <boost/stringify/v0/facets/intbase.hpp>
 #include <boost/stringify/v0/facets/case.hpp>
+#include <boost/stringify/v0/facets/encoder.hpp>
 #include <boost/stringify/v0/facets/showbase.hpp>
 #include <boost/stringify/v0/facets/showpos.hpp>
+#include <boost/stringify/v0/facets/width.hpp>
 #include <boost/stringify/v0/facets/width.hpp>
 #include <boost/stringify/v0/ftuple.hpp>
 #include <boost/stringify/v0/detail/characters_catalog.hpp>
 #include <boost/stringify/v0/detail/number_of_digits.hpp>
 #include <boost/stringify/v0/stringifier.hpp>
+#include <boost/assert.hpp>
 #include <cstdint>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -66,7 +69,6 @@ class int_stringifier: public stringifier<CharT>
     using unsigned_intT = typename std::make_unsigned<intT>::type;
     using chars_catalog = stringify::v0::detail::characters_catalog;
     using from32_tag = stringify::v0::encoder_tag<CharT>;
-    using wcalc_tag = stringify::v0::width_calculator_tag;
     static constexpr bool is_signed = std::is_signed<intT>::value;
 
 public:
@@ -85,27 +87,29 @@ public:
     template <typename FTuple>
     int_stringifier(const FTuple& ft, intT value) noexcept
         : m_value{value}
-        , m_form32vc{get_facet<from32_tag>(ft)}
-        , m_width{get_facet<width_tag>(ft).width()}
-        , m_fillchar{get_facet<fill_tag>(ft).fill_char()}
-        , m_alignment{get_facet<alignment_tag>(ft).value()}
-        , m_base(get_facet<intbase_tag>(ft).value())
-        , m_showpos{is_signed && value >= 0 && get_facet<showpos_tag>(ft).value()}
-        , m_showbase{get_facet<showbase_tag>(ft).value()}
-        , m_uppercase{get_facet<case_tag>(ft).uppercase()}
+        , m_encoder{get_facet<stringify::v0::encoder_tag<CharT>>(ft)}
+        , m_width{get_facet<stringify::v0::width_tag>(ft).width()}
+        , m_fillchar{get_facet<stringify::v0::fill_tag>(ft).fill_char()}
+        , m_alignment{get_facet<stringify::v0::alignment_tag>(ft).value()}
+        , m_base(get_facet<stringify::v0::intbase_tag>(ft).value())
+        , m_showpos
+            { is_signed && value >= 0 &&
+              get_facet<stringify::v0::showpos_tag>(ft).value() }
+        , m_showbase{get_facet<stringify::v0::showbase_tag>(ft).value()}
+        , m_uppercase{get_facet<stringify::v0::case_tag>(ft).uppercase()}
     {
         if(m_width > 0)
         {
-            determinate_fill(get_facet<wcalc_tag>(ft));
+            determinate_fill();
         }
     }
 
     template <typename FTuple>
     int_stringifier(const FTuple& ft, intT value, second_arg argf) noexcept
         : m_value{value}
-        , m_form32vc{get_facet<from32_tag>(ft)}
+        , m_encoder{get_facet<stringify::v0::encoder_tag<CharT>>(ft)}
         , m_width{argf_reader::get_width(argf, ft)}
-        , m_fillchar{get_facet<fill_tag>(ft).fill_char()}
+        , m_fillchar{get_facet<stringify::v0::fill_tag>(ft).fill_char()}
         , m_base(argf_reader::get_base(argf, ft))
         , m_showpos{is_signed && value >= 0 && argf_reader::get_showpos(argf, ft)}
         , m_showbase{argf_reader::get_showbase(argf, ft)}
@@ -114,7 +118,7 @@ public:
         if(m_width > 0)
         {
             m_alignment = argf_reader::get_alignment(argf, ft);
-            determinate_fill(get_facet<wcalc_tag>(ft));
+            determinate_fill();
         }
     }
 
@@ -147,7 +151,7 @@ public:
 private:
 
     const intT m_value;
-    const stringify::v0::encoder<CharT>& m_form32vc;
+    const stringify::v0::encoder<CharT>& m_encoder;
     mutable int m_width;
     char32_t m_fillchar = U' ';
     int m_fillcount = 0;
@@ -177,7 +181,7 @@ private:
     {
         if (m_fillcount > 0)
         {
-            return m_fillcount * m_form32vc.length(m_fillchar);
+            return m_fillcount * m_encoder.length(m_fillchar);
         }
         return 0;
     }
@@ -335,13 +339,12 @@ private:
         return chars_catalog::a<CharT>() + digit - 10;
     }
 
-    void determinate_fill(const width_calculator& wcalc)
+    void determinate_fill()
     {
         int content_width = width_body();
         if(content_width < m_width)
         {
-            auto fillchar_width = wcalc.width_of(m_fillchar);
-            m_fillcount = (m_width - content_width) / fillchar_width;
+            m_fillcount = m_width - content_width;
         }
         else
         {
@@ -351,7 +354,7 @@ private:
 
     void write_fill(writer_type& out) const
     {
-        m_form32vc.write(out, m_fillcount, m_fillchar);
+        m_encoder.encode(out, m_fillcount, m_fillchar);
     }
 
     int width_body() const noexcept
