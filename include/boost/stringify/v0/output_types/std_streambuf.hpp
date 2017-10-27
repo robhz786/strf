@@ -45,7 +45,7 @@ public:
         }
     }
 
-    void put(const CharT* str, std::size_t ucount) override
+    bool put(const CharT* str, std::size_t ucount) override
     {
         if( ! m_err)
         {
@@ -60,71 +60,82 @@ public:
                 m_err = std::make_error_code(std::errc::io_error);
             }
         }
+        return false;
     }
 
-    void put(CharT ch) override
+    bool put(CharT ch) override
+    {
+        return ! m_err && do_put(ch);
+    }
+
+    bool repeat(std::size_t count, CharT ch) override
     {
         if( ! m_err)
         {
-            do_put(ch);
-        }
-    }
-
-    void repeat(std::size_t count, CharT ch) override
-    {
-        if( ! m_err)
-        {
-            while(count > 0 && do_put(ch))
+            for(; count > 0; --count)
             {
-                --count;
+                if(!do_put(ch))
+                {
+                    return false;
+                }
             }
+            return true;
         }
+        return false;
     }
 
-    void repeat(std::size_t count, CharT ch1, CharT ch2) override
+    bool repeat(std::size_t count, CharT ch1, CharT ch2) override
     {
         if( ! m_err)
         {
-            while(count > 0 && do_put(ch1) && do_put(ch2))
+            for(; count > 0; --count)
             {
-                --count;
+                if(!do_put(ch1) || !do_put(ch2))
+                {
+                    return false;
+                }
             }
+            return true;
         }
+        return false;
     }
 
-    void repeat(std::size_t count, CharT ch1, CharT ch2, CharT ch3) override
+    bool repeat(std::size_t count, CharT ch1, CharT ch2, CharT ch3) override
     {
         if( ! m_err)
         {
-            while(count > 0 && do_put(ch1) && do_put(ch2) && do_put(ch3))
+            for(; count > 0; --count)
             {
-                --count;
+                if(!do_put(ch1) || !do_put(ch2) || !do_put(ch3))
+                {
+                    return false;
+                }
             }
+            return true;
         }
+        return false;
     }
 
-    void repeat
+    bool repeat
         ( std::size_t count
         , CharT ch1
         , CharT ch2
         , CharT ch3
         , CharT ch4
-        
         ) override
     {
         if( ! m_err)
         {
-            while
-                ( count > 0
-               && do_put(ch1)
-               && do_put(ch2)
-               && do_put(ch3)
-               && do_put(ch4)
-                )
+            for(; count > 0; --count)
             {
-                --count;
+                if(!do_put(ch1) || !do_put(ch2) || !do_put(ch3) || !do_put(ch4))
+                {
+                    return false;
+                }
             }
+            return true;
         }
+        return false;
     }
 
     std::error_code finish() noexcept

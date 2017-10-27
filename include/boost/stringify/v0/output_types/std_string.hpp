@@ -51,31 +51,37 @@ public:
     }
 
 
-    void put(const char_type* str, std::size_t count) override
+    bool put(const char_type* str, std::size_t count) override
     {
         if(m_out != nullptr)
         {
             m_out->append(str, count);
+            return true;
         }
+        return false;
     }
 
-    void put(char_type character) override
+    bool put(char_type character) override
     {
         if(m_out != nullptr)
         {
             m_out->push_back(character);
+            return true;
         }
+        return false;
     }
 
-    void repeat(std::size_t count, char_type character) override
+    bool repeat(std::size_t count, char_type character) override
     {
         if(m_out != nullptr)
         {
             m_out->append(count, character);
+            return true;
         }
+        return false;
     }
 
-    void repeat
+    bool repeat
         ( std::size_t count
         , char_type ch1
         , char_type ch2
@@ -88,10 +94,12 @@ public:
                 m_out->push_back(ch1);
                 m_out->push_back(ch2);
             }
+            return true;
         }
+        return false;
     }
 
-    void repeat
+    bool repeat
         ( std::size_t count
         , char_type ch1
         , char_type ch2
@@ -106,10 +114,12 @@ public:
                 m_out->push_back(ch2);
                 m_out->push_back(ch3);
             }
+            return true;
         }
+        return false;
     }
 
-    void repeat
+    bool repeat
         ( std::size_t count
         , char_type ch1
         , char_type ch2
@@ -126,7 +136,9 @@ public:
                 m_out->push_back(ch3);
                 m_out->push_back(ch4);
             }
+            return true;
         }
+        return false;
     }
 
     std::error_code finish()

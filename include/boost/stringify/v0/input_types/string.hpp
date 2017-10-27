@@ -84,8 +84,7 @@ public:
 
     bool put(char32_t ch) override
     {
-        m_encoder.encode(m_destination, 1, ch);
-        return m_destination.good();
+        return m_encoder.encode(m_destination, 1, ch);
     }
 
     void set_error(std::error_code err) override
@@ -298,9 +297,12 @@ public:
 
     void write_str(stringify::v0::output_writer<CharOut>& dest) const
     {
-        for(auto it = m_begin; it < m_end && dest.good(); ++it)
+        for(auto it = m_begin; it < m_end; ++it)
         {
-            m_encoder.encode(dest, 1, *it);
+            if( ! m_encoder.encode(dest, 1, *it))
+            {
+                break;
+            }
         }
     }
 

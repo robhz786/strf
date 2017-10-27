@@ -74,39 +74,39 @@ public:
         return ! m_err;
     }
 
-    void put(const CharT* str, std::size_t count) override
+    bool put(const CharT* str, std::size_t count) override
     {
         if (m_it + count >= m_end)
         {
             set_overflow_error();
+            return false;
         }
-        else
-        {
-            Traits::copy(m_it, str, count);
-            m_it += count;
-        }
+        Traits::copy(m_it, str, count);
+        m_it += count;
+        return true;
     }
 
-    void put(CharT ch) override
+    bool put(CharT ch) override
     {
         if (m_it + 1 >= m_end)
         {
             set_overflow_error();
+            return false;
         }
-        else
-        {
-            Traits::assign(*m_it, ch);
-            ++m_it;
-        }
+        Traits::assign(*m_it, ch);
+        ++m_it;
+        return true;
      }
 
-    void repeat(std::size_t count, CharT ch) override
+    bool repeat(std::size_t count, CharT ch) override
     {
         if (m_it + count >= m_end)
         {
             set_overflow_error();
+            return false;
         }
-        else if (count == 1)
+
+        if (count == 1)
         {
             Traits::assign(*m_it, ch);
             ++m_it;
@@ -116,70 +116,68 @@ public:
             Traits::assign(m_it, count, ch);
             m_it += count;
         }
+        return true;
     }
 
-    void repeat(std::size_t count, CharT ch1, CharT ch2) override
+    bool repeat(std::size_t count, CharT ch1, CharT ch2) override
     {
         if (m_it + 2 * count >= m_end)
         {
             set_overflow_error();
+            return false;
         }
-        else
+        while(count > 0)
         {
-            while(count > 0)
-            {
-                Traits::assign(m_it[0], ch1);
-                Traits::assign(m_it[1], ch2);
-                m_it += 2;
-                --count;
-            }
+            Traits::assign(m_it[0], ch1);
+            Traits::assign(m_it[1], ch2);
+            m_it += 2;
+            --count;
         }
+        return true;
     }
 
-    void repeat(std::size_t count, CharT ch1, CharT ch2, CharT ch3) override
+    bool repeat(std::size_t count, CharT ch1, CharT ch2, CharT ch3) override
     {
         if (m_it + 3 * count >= m_end)
         {
             set_overflow_error();
+            return false;
         }
-        else
+        while(count > 0)
         {
-            while(count > 0)
-            {
-                Traits::assign(m_it[0], ch1);
-                Traits::assign(m_it[1], ch2);
-                Traits::assign(m_it[2], ch3);
-                m_it += 3;
-                --count;
-            }
+            Traits::assign(m_it[0], ch1);
+            Traits::assign(m_it[1], ch2);
+            Traits::assign(m_it[2], ch3);
+            m_it += 3;
+            --count;
         }
+        return true;
     }
 
-    void repeat
+    bool repeat
         ( std::size_t count
         , CharT ch1
         , CharT ch2
         , CharT ch3
         , CharT ch4
-        
+
         ) override
     {
         if (m_it + 4 * count >= m_end)
         {
             set_overflow_error();
+            return false;
         }
-        else
+        while (count > 0)
         {
-            while (count > 0)
-            {
-                Traits::assign(m_it[0], ch1);
-                Traits::assign(m_it[1], ch2);
-                Traits::assign(m_it[2], ch3);
-                Traits::assign(m_it[3], ch4);
-                m_it += 4;
-                --count;
-            }
+            Traits::assign(m_it[0], ch1);
+            Traits::assign(m_it[1], ch2);
+            Traits::assign(m_it[2], ch3);
+            Traits::assign(m_it[3], ch4);
+            m_it += 4;
+            --count;
         }
+        return true;
     }
 
     std::error_code finish() noexcept
@@ -206,7 +204,7 @@ private:
             *m_out_count = (m_it - m_begin);
         }
     }
-    
+
     void set_overflow_error()
     {
         set_error(std::make_error_code(std::errc::result_out_of_range));

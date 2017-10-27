@@ -23,7 +23,7 @@ public:
 
     virtual std::size_t length(char32_t ch) const = 0;
 
-    virtual void encode
+    virtual bool encode
         ( stringify::v0::output_writer<CharT>& destination
         , std::size_t count
         , char32_t ch
@@ -31,46 +31,48 @@ public:
 
 };
 
-inline void to_utf8_put_replacement_char
+inline bool to_utf8_put_replacement_char
     ( stringify::v0::output_writer<char>& ow
     , std::size_t count
     )
 {
-    ow.repeat(count, '\xEF', '\xBF', '\xBD');
+    return ow.repeat(count, '\xEF', '\xBF', '\xBD');
 }
 
 template <typename CharT>
-inline void to_utf16_put_replacement_char
+inline bool to_utf16_put_replacement_char
     ( stringify::v0::output_writer<CharT>& ow
     , std::size_t count
     )
 {
-    ow.repeat(count, static_cast<CharT>(u'\uFFFD'));
+    return ow.repeat(count, static_cast<CharT>(u'\uFFFD'));
 }
 
 template <typename CharT>
-inline void from_utf32_throw
+inline bool from_utf32_throw
     ( stringify::v0::output_writer<CharT>&
     , std::size_t
     )
 {
     throw std::system_error(std::make_error_code(std::errc::illegal_byte_sequence));
+    return false;
 }
 
 template <typename CharT>
-inline void from_utf32_set_error_code
+inline bool from_utf32_set_error_code
     ( stringify::v0::output_writer<CharT>& ow
     , std::size_t
     )
 {
     ow.set_error(std::make_error_code(std::errc::illegal_byte_sequence));
+    return false;
 }
 
 
 
 template <typename CharT>
 using from_utf32_err_func
-= void(*)(stringify::v0::output_writer<CharT>&, std::size_t);
+= bool(*)(stringify::v0::output_writer<CharT>&, std::size_t);
 
 
 template <typename ErrHandlingFunc = from_utf32_err_func<char>>
@@ -147,7 +149,7 @@ public:
         return {m_err_func, b};
     }
 
-    void encode
+    bool encode
         ( stringify::v0::output_writer<char>& destination
         , std::size_t count
         , char32_t ch
@@ -157,40 +159,34 @@ public:
         {
             if (count == 1)
             {
-                destination.put(static_cast<char>(ch));
+                return destination.put(static_cast<char>(ch));
             }
-            else
-            {
-                destination.repeat(count, static_cast<char>(ch));
-            }
+            return destination.repeat(count, static_cast<char>(ch));
         }
-        else if (ch < 0x800)
+        if (ch < 0x800)
         {
-            destination.repeat
+            return destination.repeat
                 ( count
                 , static_cast<char>(0xC0 | ((ch & 0x7C0) >> 6))
                 , static_cast<char>(0x80 |  (ch &  0x3F))
                 );
         }
-        else if (ch <  0x10000)
+        if (ch <  0x10000)
         {
             if (is_surrogate(ch) && ! m_wtf8)
             {
-                m_err_func(destination, count);
+                return m_err_func(destination, count);
             }
-            else
-            {
-                destination.repeat
-                    ( count
-                    , static_cast<char>(0xE0 | ((ch & 0xF000) >> 12))
-                    , static_cast<char>(0x80 | ((ch &  0xFC0) >> 6))
-                    , static_cast<char>(0x80 |  (ch &   0x3F))
-                    );
-            }
+            return destination.repeat
+                ( count
+                , static_cast<char>(0xE0 | ((ch & 0xF000) >> 12))
+                , static_cast<char>(0x80 | ((ch &  0xFC0) >> 6))
+                , static_cast<char>(0x80 |  (ch &   0x3F))
+                );
         }
-        else if (ch < 0x110000)
+        if (ch < 0x110000)
         {
-            destination.repeat
+            return destination.repeat
                 ( count
                 , static_cast<char>(0xF0 | ((ch & 0x1C0000) >> 18))
                 , static_cast<char>(0x80 | ((ch &  0x3F000) >> 12))
@@ -198,10 +194,7 @@ public:
                 , static_cast<char>(0x80 |  (ch &     0x3F))
                 );
         }
-        else
-        {
-            m_err_func(destination, count);
-        }
+        return m_err_func(destination, count);
     }
 
 private:
@@ -210,7 +203,7 @@ private:
     {
         return ch >> 11 == 0x1B;
     }
-    
+
     ErrHandlingFunc m_err_func;
     bool m_wtf8;
 };
@@ -253,13 +246,13 @@ public:
     }
 
     ~u16encoder() = default;
-          
+
     std::size_t length(char32_t ch) const noexcept override
     {
         return single_char_range(ch) ? 1 : 2;
     }
 
-    void encode
+    bool encode
         ( stringify::v0::output_writer<CharT>& destination
         , std::size_t count
         , char32_t ch
@@ -269,11 +262,11 @@ public:
         {
             if (count == 1)
             {
-                destination.put(static_cast<CharT>(ch));
+                return destination.put(static_cast<CharT>(ch));
             }
             else
             {
-                destination.repeat(count, static_cast<CharT>(ch));
+                return destination.repeat(count, static_cast<CharT>(ch));
             }
         }
         else if (two_chars_range(ch))
@@ -281,7 +274,7 @@ public:
             char32_t sub_codepoint = ch - 0x10000;
             char32_t high_surrogate = 0xD800 + ((sub_codepoint & 0xFFC00) >> 10);
             char32_t low_surrogate  = 0xDC00 +  (sub_codepoint &  0x3FF);
-            destination.repeat
+            return destination.repeat
                 ( count
                 , static_cast<CharT>(high_surrogate)
                 , static_cast<CharT>(low_surrogate)
@@ -289,7 +282,7 @@ public:
         }
         else
         {
-            m_err_func(destination, count);
+           return m_err_func(destination, count);
         }
     }
 
@@ -321,7 +314,7 @@ private:
     {
         return 0xffff < ch && ch < 0x110000;
     }
-    
+
     ErrHandlingFunc m_err_func;
     bool m_tolerate_surr;
 };
@@ -400,7 +393,7 @@ public:
     utf32_to_utf32(const utf32_to_utf32&)
     {
     }
-    
+
     ~utf32_to_utf32() = default;
 
     std::size_t length(char32_t) const noexcept override
@@ -408,13 +401,13 @@ public:
         return 1;
     }
 
-    void encode
+    bool encode
         ( stringify::v0::output_writer<CharT>& destination
         , std::size_t count
         , char32_t ch
         ) const override
     {
-        destination.repeat(count, static_cast<CharT>(ch));
+        return destination.repeat(count, static_cast<CharT>(ch));
     }
 };
 
@@ -427,7 +420,7 @@ public:
 
     std::size_t length(char32_t) const noexcept override;
 
-    void encode
+    bool encode
         ( stringify::v0::output_writer<wchar_t>& destination
         , std::size_t count
         , char32_t ch
@@ -467,7 +460,7 @@ template <> struct encoder_tag<wchar_t>
 private:
 
     using utf32_impl = stringify::v0::utf32_to_utf32<wchar_t>;
-    
+
     using utf16_impl = stringify::v0::u16encoder
               < wchar_t
               , stringify::v0::from_utf32_err_func<wchar_t>
@@ -476,7 +469,7 @@ private:
     static const utf32_impl& get_default(std::true_type) noexcept;
 
     static const utf16_impl& get_default(std::false_type) noexcept;
-    
+
 };
 
 #endif // ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)

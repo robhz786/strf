@@ -25,17 +25,17 @@ public:
 
     virtual bool good() const = 0;
 
-    virtual void put(const CharT* str, std::size_t size) = 0;
+    virtual bool put(const CharT* str, std::size_t size) = 0;
 
-    virtual void put(CharT ch) = 0;
+    virtual bool put(CharT ch) = 0;
 
-    virtual void repeat(std::size_t count, CharT ch) = 0;
+    virtual bool repeat(std::size_t count, CharT ch) = 0;
 
-    virtual void repeat(std::size_t count, CharT ch1, CharT ch2) = 0;
+    virtual bool repeat(std::size_t count, CharT ch1, CharT ch2) = 0;
 
-    virtual void repeat(std::size_t count, CharT ch1, CharT ch2, CharT ch3) = 0;
+    virtual bool repeat(std::size_t count, CharT ch1, CharT ch2, CharT ch3) = 0;
 
-    virtual void repeat(std::size_t count, CharT ch1, CharT ch2, CharT ch3, CharT ch4) = 0;
+    virtual bool repeat(std::size_t count, CharT ch1, CharT ch2, CharT ch3, CharT ch4) = 0;
 };
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

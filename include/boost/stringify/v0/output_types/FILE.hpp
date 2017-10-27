@@ -43,7 +43,7 @@ public:
         return ! m_err;
     }
 
-    void put(const char_type* str, std::size_t count) override
+    bool put(const char_type* str, std::size_t count) override
     {
         if ( ! m_err )
         {
@@ -57,33 +57,38 @@ public:
             if (count != count_inc)
             {
                 m_err = std::error_code{errno, std::generic_category()};
+                return false;
             }
+            return true;
         }
+        return false;
     }
 
-    void put(char_type ch) override
+    bool put(char_type ch) override
     {
-        if ( ! m_err)
-        {
-            do_put(ch);
-        }
+        return ! m_err && do_put(ch);
     }
 
-    void repeat
+    bool repeat
         ( std::size_t count
         , char_type ch
         ) override
     {
         if( ! m_err)
         {
-            while(count > 0 && do_put(ch))
+            for(; count > 0; --count)
             {
-                --count;
+                if (!do_put(ch))
+                {
+                    return false;
+                }
             }
+            return true;
         }
+        return false;
     }
 
-    void repeat
+    bool repeat
         ( std::size_t count
         , char_type ch1
         , char_type ch2
@@ -91,14 +96,19 @@ public:
     {
         if( ! m_err)
         {
-            while(count > 0 && do_put(ch1) && do_put(ch2))
+            for(; count > 0; --count)
             {
-                --count;
+                if(! do_put(ch1) || ! do_put(ch2))
+                {
+                    return false;
+                }
             }
+            return true;
         }
+        return false;
     }
 
-    void repeat
+    bool repeat
         ( std::size_t count
         , char_type ch1
         , char_type ch2
@@ -107,14 +117,19 @@ public:
     {
         if( ! m_err)
         {
-            while(count > 0 && do_put(ch1) && do_put(ch2) && do_put(ch3))
+            for(; count > 0; --count)
             {
-                --count;
+                if(! do_put(ch1) || ! do_put(ch2) || ! do_put(ch3))
+                {
+                    return false;
+                }
             }
+            return true;
         }
+        return false;
     }
 
-    void repeat
+    bool repeat
         ( std::size_t count
         , char_type ch1
         , char_type ch2
@@ -124,17 +139,16 @@ public:
     {
         if( ! m_err)
         {
-            while
-                ( count > 0
-                  && do_put(ch1)
-                  && do_put(ch2)
-                  && do_put(ch3)
-                  && do_put(ch4)
-                )
+            for(; count > 0; --count)
             {
-                --count;
+                if(!do_put(ch1) || !do_put(ch2) || !do_put(ch3) || !do_put(ch4))
+                {
+                    return false;
+                }
             }
-        }    
+            return true;
+        }
+        return false;
     }
 
     std::error_code finish()
@@ -189,29 +203,29 @@ public:
 
     bool good() const override;
 
-    void put(const char_type* str, std::size_t count) override;
+    bool put(const char_type* str, std::size_t count) override;
 
-    void put(char_type ch) override;
+    bool put(char_type ch) override;
 
-    void repeat
+    bool repeat
         ( std::size_t count
         , char_type ch
         ) override;
 
-    void repeat
+    bool repeat
         ( std::size_t count
         , char_type ch1
         , char_type ch2
         ) override;
 
-    void repeat
+    bool repeat
         ( std::size_t count
         , char_type ch1
         , char_type ch2
         , char_type ch3
         ) override;
 
-    void repeat
+    bool repeat
         ( std::size_t count
         , char_type ch1
         , char_type ch2
@@ -256,41 +270,47 @@ BOOST_STRINGIFY_INLINE bool wide_file_writer::good() const
 }
 
 
-BOOST_STRINGIFY_INLINE void wide_file_writer::put
+BOOST_STRINGIFY_INLINE bool wide_file_writer::put
     ( const char_type* str
     , std::size_t count
     )
 {
     if ( ! m_err)
     {
-        while(count > 0 && do_put(*str))
+        for (; count != 0; --count, ++str)
         {
-            --count;
-            ++str;
+            if(!do_put(*str))
+            {
+                return false;
+            }
         }
+        return true;
     }
+    return false;
 }
 
-BOOST_STRINGIFY_INLINE void wide_file_writer::put(char_type ch)
+BOOST_STRINGIFY_INLINE bool wide_file_writer::put(char_type ch)
 {
-    if ( ! m_err)
-    {
-        do_put(ch);
-    }
+    return ! m_err && do_put(ch);
 }
 
-BOOST_STRINGIFY_INLINE void wide_file_writer::repeat(std::size_t count, char_type ch)
+BOOST_STRINGIFY_INLINE bool wide_file_writer::repeat(std::size_t count, char_type ch)
 {
-    if( ! m_err)
-    {
-        while(count > 0 && do_put(ch))
+        if( ! m_err)
         {
-            --count;
+            for(; count > 0; --count)
+            {
+                if (!do_put(ch))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
-    }
+        return false;
 }
 
-BOOST_STRINGIFY_INLINE void wide_file_writer::repeat
+BOOST_STRINGIFY_INLINE bool wide_file_writer::repeat
     ( std::size_t count
     , char_type ch1
     , char_type ch2
@@ -298,14 +318,19 @@ BOOST_STRINGIFY_INLINE void wide_file_writer::repeat
 {
     if( ! m_err)
     {
-        while(count > 0 && do_put(ch1) && do_put(ch2))
+        for(; count > 0; --count)
         {
-            --count;
+            if(!do_put(ch1) || !do_put(ch2))
+            {
+                return false;
+            }
         }
+        return true;
     }
+    return false;
 }
 
-BOOST_STRINGIFY_INLINE void wide_file_writer::repeat
+BOOST_STRINGIFY_INLINE bool wide_file_writer::repeat
     ( std::size_t count
     , char_type ch1
     , char_type ch2
@@ -314,14 +339,19 @@ BOOST_STRINGIFY_INLINE void wide_file_writer::repeat
 {
     if( ! m_err)
     {
-        while(count > 0 && do_put(ch1) && do_put(ch2) && do_put(ch3))
+        for(; count > 0; --count)
         {
-            --count;
+            if(!do_put(ch1) || !do_put(ch2) || !do_put(ch3))
+            {
+                return false;
+            }
         }
+        return true;
     }
+    return false;
 }
 
-BOOST_STRINGIFY_INLINE void wide_file_writer::repeat
+BOOST_STRINGIFY_INLINE bool wide_file_writer::repeat
     ( std::size_t count
     , char_type ch1
     , char_type ch2
@@ -331,17 +361,16 @@ BOOST_STRINGIFY_INLINE void wide_file_writer::repeat
 {
     if( ! m_err)
     {
-        while
-            ( count > 0
-           && do_put(ch1)
-           && do_put(ch2)
-           && do_put(ch3)
-           && do_put(ch4)
-            )
+        for(; count > 0; --count)
         {
-            --count;
+            if(!do_put(ch1) || !do_put(ch2) || !do_put(ch3) || !do_put(ch4))
+            {
+                return false;
+            }
         }
+        return true;
     }
+    return false;
 }
 
 BOOST_STRINGIFY_INLINE std::error_code wide_file_writer::finish()
@@ -351,8 +380,7 @@ BOOST_STRINGIFY_INLINE std::error_code wide_file_writer::finish()
 
 BOOST_STRINGIFY_INLINE bool wide_file_writer::do_put(char_type ch)
 {
-    if(std::fputwc(ch, m_file) == WEOF) 
-    //if(std::fwrite(&ch, sizeof(char_type), 1, m_file) != sizeof(char_type))
+    if(std::fputwc(ch, m_file) == WEOF)
     {
         m_err = std::error_code{errno, std::generic_category()};
         return false;

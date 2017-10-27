@@ -231,31 +231,37 @@ public:
         return ! m_obtained_error;
     }
 
-    void put(const char_type* str, std::size_t count) override
+    bool put(const char_type* str, std::size_t count) override
     {
         if (good())
         {
             m_result.append(str, count);
+            return true;
         }
+        return false;
     }
 
-    void put(char_type character) override
+    bool put(char_type character) override
     {
         if (good())
         {
             m_result.push_back(character);
+            return true;
         }
+        return false;
     }
 
-    void repeat(std::size_t count, char_type ch) override
+    bool repeat(std::size_t count, char_type ch) override
     {
         if (good())
         {
             m_result.append(count, ch);
+            return true;
         }
+        return false;
     }
 
-    void repeat(std::size_t count, char_type ch1, char_type ch2) override
+    bool repeat(std::size_t count, char_type ch1, char_type ch2) override
     {
         if (good())
         {
@@ -264,10 +270,12 @@ public:
                 m_result.push_back(ch1);
                 m_result.push_back(ch2);
             }
+            return true;
         }
+        return false;
     }
 
-    void repeat(std::size_t count, char_type ch1, char_type ch2, char_type ch3) override
+    bool repeat(std::size_t count, char_type ch1, char_type ch2, char_type ch3) override
     {
         if (good())
         {
@@ -277,10 +285,12 @@ public:
                 m_result.push_back(ch2);
                 m_result.push_back(ch3);
             }
+            return true;
         }
+        return false;
     }
 
-    void repeat(std::size_t count, char_type ch1, char_type ch2, char_type ch3, char_type ch4) override
+    bool repeat(std::size_t count, char_type ch1, char_type ch2, char_type ch3, char_type ch4) override
     {
         if (good())
         {
@@ -291,7 +301,9 @@ public:
                 m_result.push_back(ch3);
                 m_result.push_back(ch4);
             }
+            return true;
         }
+        return false;
     }
 
     std::basic_string<CharT> finish()

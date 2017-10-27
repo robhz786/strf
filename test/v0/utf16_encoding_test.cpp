@@ -41,7 +41,7 @@ int main()
 
     {   // replace invalid codepoints by '?'
 
-        auto err_func = [](auto& ow, auto count){ ow.repeat(count, u'x'); };
+        auto err_func = [](auto& ow, auto count) -> bool { return ow.repeat(count, u'x'); };
         auto facet = strf::make_u16encoder<char16_t>(err_func);
 
         TEST_RF(u"------x------x------x------x------xxx------", 1.5)
