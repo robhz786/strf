@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <system_error>
-#include <boost/stringify/v0/stringifier.hpp>
+#include <boost/stringify/v0/formatter.hpp>
 
 struct error_tag
 {
@@ -19,13 +19,13 @@ static error_tag error_code_emitter_arg{ std::make_error_code(std::errc::invalid
 namespace detail{
 
 template <typename CharT>
-class erroneous_stringifier: public boost::stringify::v0::stringifier<CharT>
+class erroneous_formatter: public boost::stringify::v0::formatter<CharT>
 {
 
 public:
 
     template <typename FTuple>
-    erroneous_stringifier(const FTuple&, error_tag t) noexcept
+    erroneous_formatter(const FTuple&, error_tag t) noexcept
         : m_err(t.ec)
     {
     }
@@ -50,16 +50,16 @@ private:
     std::error_code m_err;
 };
 
-struct erroneous_stringifier_traits
+struct erroneous_formatter_traits
 {
     template <typename CharT, typename>
-    using stringifier = erroneous_stringifier<CharT>;    
+    using formatter = erroneous_formatter<CharT>;    
 };
 
 
 }
 
-detail::erroneous_stringifier_traits boost_stringify_input_traits_of(error_tag);
+detail::erroneous_formatter_traits boost_stringify_input_traits_of(error_tag);
 
 
 #endif

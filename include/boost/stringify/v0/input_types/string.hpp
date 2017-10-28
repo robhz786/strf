@@ -5,7 +5,7 @@
 #include <limits>
 #include <boost/stringify/v0/conventional_argf_reader.hpp>
 #include <boost/stringify/v0/facets/width_calculator.hpp>
-#include <boost/stringify/v0/stringifier.hpp>
+#include <boost/stringify/v0/formatter.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -382,7 +382,7 @@ using string_writer
 
 
 template<typename CharIn, typename CharOut>
-class string_stringifier: public stringifier<CharOut>
+class string_formatter: public formatter<CharOut>
 {
 
 public:
@@ -399,7 +399,7 @@ private:
 public:
 
     template <typename FTuple>
-    string_stringifier
+    string_formatter
         ( const FTuple& ft
         , const CharIn* begin
         , const CharIn* end
@@ -418,7 +418,7 @@ public:
     }
 
     template <typename FTuple>
-    string_stringifier
+    string_formatter
         ( const FTuple& ft
         , const CharIn* begin
         , const CharIn* end
@@ -436,22 +436,22 @@ public:
     }
 
     template <typename FTuple, typename StringType>
-    string_stringifier(const FTuple& ft, const StringType& str) noexcept
-        : string_stringifier(ft, &str[0], end_of(str))
+    string_formatter(const FTuple& ft, const StringType& str) noexcept
+        : string_formatter(ft, &str[0], end_of(str))
     {
     }
 
     template <typename FTuple, typename StringType>
-    string_stringifier
+    string_formatter
         ( const FTuple& ft
         , const StringType& str
         , const second_arg& argf
         ) noexcept
-        : string_stringifier(ft, &str[0], end_of(str), argf)
+        : string_formatter(ft, &str[0], end_of(str), argf)
     {
     }
 
-    ~string_stringifier()
+    ~string_formatter()
     {
     }
 
@@ -537,32 +537,32 @@ template <typename CharIn>
 struct string_input_traits
 {
     template <typename CharOut, typename FTuple>
-    using stringifier
-    = stringify::v0::detail::string_stringifier<CharIn, CharOut>;
+    using formatter
+    = stringify::v0::detail::string_formatter<CharIn, CharOut>;
 };
 
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_stringifier<char, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_stringifier<char, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_stringifier<char, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_stringifier<char, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_formatter<char, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_formatter<char, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_formatter<char, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_formatter<char, wchar_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_stringifier<char16_t, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_stringifier<char16_t, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_stringifier<char16_t, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_stringifier<char16_t, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_formatter<char16_t, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_formatter<char16_t, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_formatter<char16_t, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_formatter<char16_t, wchar_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_stringifier<char32_t, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_stringifier<char32_t, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_stringifier<char32_t, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_stringifier<char32_t, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_formatter<char32_t, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_formatter<char32_t, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_formatter<char32_t, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_formatter<char32_t, wchar_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_stringifier<wchar_t, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_stringifier<wchar_t, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_stringifier<wchar_t, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_stringifier<wchar_t, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_formatter<wchar_t, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_formatter<wchar_t, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_formatter<wchar_t, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_formatter<wchar_t, wchar_t>;
 
 #endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 

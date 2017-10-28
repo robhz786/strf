@@ -7,14 +7,14 @@
 
 #include <boost/stringify/v0/input_arg.hpp>
 #include <boost/stringify/v0/ftuple.hpp>
-#include <boost/stringify/v0/stringifier.hpp>
+#include <boost/stringify/v0/formatter.hpp>
 #include <initializer_list>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 template <typename CharT, typename ParentFTuple, typename ChildFTuple>
-class ftuple_stringifier: public stringifier<CharT>
+class ftuple_formatter: public formatter<CharT>
 {
 
 private:
@@ -32,7 +32,7 @@ public:
     using writer_type = boost::stringify::v0::output_writer<CharT>;;
     using second_arg = ini_list_type;
 
-    ftuple_stringifier
+    ftuple_formatter
         ( const ParentFTuple& parentF
         , const ChildFTuple& childF
         , ini_list_type args = {}
@@ -80,8 +80,8 @@ template <typename ChildFtuple>
 struct input_ftuple_traits
 {
     template <typename CharT, typename FTuple>
-    using stringifier =
-        boost::stringify::v0::detail::ftuple_stringifier
+    using formatter =
+        boost::stringify::v0::detail::ftuple_formatter
         <CharT, FTuple, ChildFtuple>;
 };
 

@@ -11,7 +11,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 template <typename CharT>
-class char_stringifier: public stringifier<CharT>
+class char_formatter: public formatter<CharT>
 {
     using input_type = CharT;
     using writer_type = stringify::v0::output_writer<CharT>;
@@ -24,7 +24,7 @@ public:
     using second_arg = stringify::v0::char_argf;
 
     template <typename FTuple>
-    char_stringifier
+    char_formatter
         ( const FTuple& ft
         , CharT ch
         ) noexcept
@@ -38,7 +38,7 @@ public:
     }
 
     template <typename FTuple>
-    char_stringifier
+    char_formatter
         ( const FTuple& ft
         , CharT ch
         , const second_arg& argf
@@ -131,10 +131,10 @@ private:
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_stringifier<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_stringifier<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_stringifier<char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_stringifier<wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_formatter<char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_formatter<char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_formatter<char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_formatter<wchar_t>;
 
 #endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
@@ -150,14 +150,14 @@ private:
     {
         static_assert(sizeof(CharIn) == sizeof(CharOut), "");
 
-        using stringifier
-        = boost::stringify::v0::detail::char_stringifier<CharOut>;
+        using formatter
+        = boost::stringify::v0::detail::char_formatter<CharOut>;
     };
 
 public:
 
     template <typename CharOut, typename>
-    using stringifier = typename checker<CharOut>::stringifier;
+    using formatter = typename checker<CharOut>::formatter;
 };
 
 } //namepace detail

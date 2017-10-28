@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/stringifier.hpp>
+#include <boost/stringify/v0/formatter.hpp>
 
 struct exception_tag {};
 
@@ -14,13 +14,13 @@ constexpr exception_tag exception_thrower_arg {};
 namespace detail{
 
 template <typename CharT>
-class exceptional_stringifier: public boost::stringify::v0::stringifier<CharT>
+class exceptional_formatter: public boost::stringify::v0::formatter<CharT>
 {
 
 public:
 
     template <typename FTuple>
-    exceptional_stringifier(const FTuple&, exception_tag) noexcept
+    exceptional_formatter(const FTuple&, exception_tag) noexcept
     {
     }
 
@@ -31,7 +31,7 @@ public:
 
     void write(boost::stringify::v0::output_writer<CharT>&) const override
     {
-        throw std::invalid_argument("invalid stringifier");
+        throw std::invalid_argument("invalid formatter");
     }
 
     int remaining_width(int w) const override
@@ -40,16 +40,16 @@ public:
     }
 };
 
-struct exceptional_stringifier_traits
+struct exceptional_formatter_traits
 {
     template <typename CharT, typename>
-    using stringifier = exceptional_stringifier<CharT>;    
+    using formatter = exceptional_formatter<CharT>;    
 };
 
 
 }
 
-detail::exceptional_stringifier_traits boost_stringify_input_traits_of(exception_tag);
+detail::exceptional_formatter_traits boost_stringify_input_traits_of(exception_tag);
 
 
 #endif

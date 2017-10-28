@@ -19,7 +19,7 @@
 #include <boost/stringify/v0/ftuple.hpp>
 #include <boost/stringify/v0/detail/characters_catalog.hpp>
 #include <boost/stringify/v0/detail/number_of_digits.hpp>
-#include <boost/stringify/v0/stringifier.hpp>
+#include <boost/stringify/v0/formatter.hpp>
 #include <boost/assert.hpp>
 #include <cstdint>
 
@@ -64,7 +64,7 @@ unsigned_abs(intT value)
 
 
 template <typename intT, typename CharT>
-class int_stringifier: public stringifier<CharT>
+class int_formatter: public formatter<CharT>
 {
     using unsigned_intT = typename std::make_unsigned<intT>::type;
     using chars_catalog = stringify::v0::detail::characters_catalog;
@@ -85,7 +85,7 @@ private:
 public:
 
     template <typename FTuple>
-    int_stringifier(const FTuple& ft, intT value) noexcept
+    int_formatter(const FTuple& ft, intT value) noexcept
         : m_value{value}
         , m_encoder{get_facet<stringify::v0::encoder_tag<CharT>>(ft)}
         , m_width{get_facet<stringify::v0::width_tag>(ft).width()}
@@ -105,7 +105,7 @@ public:
     }
 
     template <typename FTuple>
-    int_stringifier(const FTuple& ft, intT value, second_arg argf) noexcept
+    int_formatter(const FTuple& ft, intT value, second_arg argf) noexcept
         : m_value{value}
         , m_encoder{get_facet<stringify::v0::encoder_tag<CharT>>(ft)}
         , m_width{argf_reader::get_width(argf, ft)}
@@ -395,8 +395,8 @@ template <typename IntT>
 struct int_input_traits
 {
     template <typename CharT, typename>
-    using stringifier =
-        stringify::v0::detail::int_stringifier<IntT, CharT>;
+    using formatter =
+        stringify::v0::detail::int_formatter<IntT, CharT>;
 };
 
 } // namespace detail
@@ -429,38 +429,38 @@ boost_stringify_input_traits_of(unsigned long long);
 
 namespace detail
 {
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<short, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<short, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<short, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<short, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<int, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<int, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<int, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<int, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<long, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<long, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<long, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<long, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<long long, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<long long, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<long long, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<long long, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned short, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned short, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned short, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned short, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned int, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned int, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned int, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned int, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned long, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned long, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned long, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned long, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned long long, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned long long, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned long long, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_stringifier<unsigned long long, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<short, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<short, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<short, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<short, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<int, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<int, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<int, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<int, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<long, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<long, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<long, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<long, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<long long, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<long long, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<long long, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<long long, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned short, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned short, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned short, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned short, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned int, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned int, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned int, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned int, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long long, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long long, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long long, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long long, wchar_t>;
 }
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_flags

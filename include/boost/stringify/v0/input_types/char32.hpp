@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <type_traits>
-#include <boost/stringify/v0/stringifier.hpp>
+#include <boost/stringify/v0/formatter.hpp>
 #include <boost/stringify/v0/char_flags.hpp>
 #include <boost/stringify/v0/facets/alignment.hpp>
 #include <boost/stringify/v0/facets/encoder.hpp>
@@ -43,7 +43,7 @@ struct char_argf
 namespace detail {
 
 template <typename CharT>
-class char32_stringifier: public stringifier<CharT>
+class char32_formatter: public formatter<CharT>
 {
     using input_type = char32_t;
     using writer_type = stringify::v0::output_writer<CharT>;
@@ -56,7 +56,7 @@ public:
     using second_arg = stringify::v0::char_argf;
 
     template <typename FTuple>
-    char32_stringifier
+    char32_formatter
         ( const FTuple& ft
         , char32_t ch
         ) noexcept
@@ -70,7 +70,7 @@ public:
     }
 
     template <typename FTuple>
-    char32_stringifier
+    char32_formatter
         ( const FTuple& ft
         , char32_t ch
         , const second_arg& argf
@@ -164,10 +164,10 @@ private:
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_stringifier<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_stringifier<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_stringifier<char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_stringifier<wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_formatter<char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_formatter<char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_formatter<char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_formatter<wchar_t>;
 
 #endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
@@ -175,8 +175,8 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_stringifier<wchar_t>;
 struct char32_input_traits
 {
     template <typename CharT, typename FTuple>
-    using stringifier
-    = stringify::v0::detail::char32_stringifier<CharT>;
+    using formatter
+    = stringify::v0::detail::char32_formatter<CharT>;
 };
 
 } // namespace detail

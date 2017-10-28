@@ -50,7 +50,7 @@ join_internal(int width, char32_t fillchar)
 namespace detail {
 
 template <typename CharT, typename FTuple>
-class join_stringifier: public stringifier<CharT>
+class join_formatter: public formatter<CharT>
 {
     using width_calc_tag = boost::stringify::v0::width_calculator_tag;
     using encoder_tag = boost::stringify::v0::encoder_tag<CharT>;
@@ -65,7 +65,7 @@ public:
     using ftuple_type = FTuple;
     using second_arg = ini_list_type;
 
-    join_stringifier
+    join_formatter
         ( const FTuple& ft
         , const input_type& j
         , const second_arg& args
@@ -195,8 +195,8 @@ private:
 struct input_join_traits
 {
     template <typename CharT, typename FTuple>
-    using stringifier =
-        boost::stringify::v0::detail::join_stringifier<CharT, FTuple>;
+    using formatter =
+        boost::stringify::v0::detail::join_formatter<CharT, FTuple>;
 };
 
 
