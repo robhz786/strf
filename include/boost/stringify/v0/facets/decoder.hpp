@@ -357,9 +357,9 @@ public:
         {
             ch = *str;
             ++str;
-            if (ch >> 10 == 0x36
+            if (is_high_surrogate(ch)
                 && str != end
-                && (ch2 = *str, (ch2 >> 10 == 0x37)))
+                && is_low_surrogate(ch2 = *str))
             {
                 ch = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
                 ++str;
@@ -367,6 +367,19 @@ public:
             shall_continue = dest.put(ch);
         }
     }
+
+private:
+
+    static bool is_high_surrogate(unsigned long ch) noexcept
+    {
+        return ch >> 10 == 0x36;
+    }
+
+    static bool is_low_surrogate(unsigned long ch) noexcept
+    {
+        return ch >> 10 == 0x37;
+    }
+
 };
 
 template <typename CharT, typename ErrHandlingFunc>

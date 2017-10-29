@@ -94,11 +94,11 @@ int main()
             };
     }
 
-    {   // MUTF8
-        auto facet = strf::make_u8encoder().mutf8();
+    // {   // MUTF8
+    //     auto facet = strf::make_u8encoder().mutf8();
 
-        TEST("--\xc0\x80--") .with(facet) = { "--", U'\0', "--" };
-    }
+    //     TEST("--\xc0\x80--") .with(facet) = { "--", U'\0', "--" };
+    // }
 
     {   // NO MUTF8
         auto rstr = strf::make_string [{"--", U'\0', "--"}];

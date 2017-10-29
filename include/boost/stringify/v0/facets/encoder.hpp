@@ -82,25 +82,21 @@ public:
 
     u8encoder
         ( ErrHandlingFunc err_func
-        , bool mutf8 = false // write null char as two bytes
         , bool wtf8 = false  // tolerate surrogates
         )
         : m_err_func(err_func)
-        , m_mutf8(mutf8)
         , m_wtf8(wtf8)
     {
     }
 
     u8encoder(const u8encoder& other)
         : m_err_func(other.m_err_func)
-        , m_mutf8(other.m_mutf8)
         , m_wtf8(other.m_wtf8)
     {
     }
 
     u8encoder(u8encoder&& other)
         : m_err_func(std::move(other.m_err_func))
-        , m_mutf8(other.m_mutf8)
         , m_wtf8(other.m_wtf8)
     {
     }
@@ -110,31 +106,12 @@ public:
 
     std::size_t length(char32_t ch) const noexcept override
     {
-        return (ch == U'\0' && m_mutf8 ? 2 :
-                ch <     0x80 ? 1 :
+        return (ch <     0x80 ? 1 :
                 ch <    0x800 ? 2 :
                 ! m_wtf8 && is_surrogate(ch) ? 4 :
                 ch <  0x10000 ? 3 :
                 4); // 0xFFFD
     }
-
-    u8encoder & mutf8(bool b = true) &
-    {
-        m_mutf8 = b;
-        return *this;
-    }
-
-    u8encoder && mutf8(bool b = true) &&
-    {
-        m_mutf8 = b;
-        return std::move(*this);
-    }
-
-    u8encoder mutf8(bool b = true) const &
-    {
-        return {m_err_func, b, m_wtf8};
-    }
-
 
     u8encoder & wtf8(bool b = true) &
     {
@@ -150,7 +127,7 @@ public:
 
     u8encoder wtf8(bool b = true) const &
     {
-        return {m_err_func, m_mutf8, b};
+        return {m_err_func, b};
     }
 
     u8encoder & tolerate_surrogates(bool b = true) &
@@ -167,7 +144,7 @@ public:
 
     u8encoder tolerate_surrogates(bool b = true) const &
     {
-        return {m_err_func, m_mutf8, b};
+        return {m_err_func, b};
     }
 
     void encode
@@ -176,11 +153,7 @@ public:
         , char32_t ch
         ) const override
     {
-        if (ch == 0 && m_mutf8)
-        {
-            destination.repeat(count, '\xC0', '\x80');
-        }
-        else if (ch < 0x80)
+        if (ch < 0x80)
         {
             if (count == 1)
             {
@@ -201,7 +174,7 @@ public:
         }
         else if (ch <  0x10000)
         {
-            if (! m_wtf8 && is_surrogate(ch))
+            if (is_surrogate(ch) && ! m_wtf8)
             {
                 m_err_func(destination, count);
             }
@@ -239,23 +212,19 @@ private:
     }
     
     ErrHandlingFunc m_err_func;
-    bool m_mutf8;
     bool m_wtf8;
 };
 
 
-inline u8encoder<from_utf32_err_func<char>> make_u8encoder
-    ( bool mutf8 = false
-    , bool wtf8 = false
-    )
+inline u8encoder<from_utf32_err_func<char>> make_u8encoder(bool wtf8 = false)
 {
-    return {to_utf8_put_replacement_char, mutf8, wtf8};
+    return {to_utf8_put_replacement_char, wtf8};
 }
 
 template <typename F>
-u8encoder<F> make_u8encoder(F err_func, bool mutf8 = false, bool wtf8 = false)
+u8encoder<F> make_u8encoder(F err_func,  bool wtf8 = false)
 {
-    return {err_func, mutf8, wtf8};
+    return {err_func, wtf8};
 }
 
 template <typename CharT, typename ErrHandlingFunc = from_utf32_err_func<CharT>>

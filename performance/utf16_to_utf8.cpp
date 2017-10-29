@@ -33,6 +33,12 @@ int main()
     constexpr std::size_t u8dest_size = sizeof(u8dest) / sizeof(u8dest[0]);
     char* u8dest_end = &u8dest[u8dest_size];
 
+    auto lax_dec = strf::lax_u16decoder<char16_t>{};
+
+    PRINT_BENCHMARK("write_to(u8dest).with(lax_dec) [{u16sample1}]")
+    {
+        strf::write_to(u8dest).with(lax_dec) [{u16sample1}];
+    }
     PRINT_BENCHMARK("write_to(u8dest) [{u16sample1}]")
     {
         strf::write_to(u8dest) [{u16sample1}];

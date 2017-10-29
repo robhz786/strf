@@ -159,28 +159,28 @@ int main()
         BOOST_TEST(result[6] == U'\uFFFF');
     }
 
-    { // Modified UTF8
+    // { // Modified UTF8
 
-        auto result = * strf::make_u32string
-            .with(strf::make_u8decoder().mutf8())
-            [{
-                highsurr_D800,
-                lowsurr_DFFF,
-                toobig_110000,
-                mtf8_null,
-                overlong_007F,
-                overlong_07FF,
-                overlong_FFFF
-            }];
+    //     auto result = * strf::make_u32string
+    //         .with(strf::make_u8decoder().mutf8())
+    //         [{
+    //             highsurr_D800,
+    //             lowsurr_DFFF,
+    //             toobig_110000,
+    //             mtf8_null,
+    //             overlong_007F,
+    //             overlong_07FF,
+    //             overlong_FFFF
+    //         }];
 
-        BOOST_TEST(result[0] == U'\uFFFD');
-        BOOST_TEST(result[1] == U'\uFFFD');
-        BOOST_TEST(result[2] == U'\uFFFD');
-        BOOST_TEST(result[3] == U'\0');
-        BOOST_TEST(result[4] == U'\uFFFD');
-        BOOST_TEST(result[5] == U'\uFFFD');
-        BOOST_TEST(result[6] == U'\uFFFD');
-    }
+    //     BOOST_TEST(result[0] == U'\uFFFD');
+    //     BOOST_TEST(result[1] == U'\uFFFD');
+    //     BOOST_TEST(result[2] == U'\uFFFD');
+    //     BOOST_TEST(result[3] == U'\0');
+    //     BOOST_TEST(result[4] == U'\uFFFD');
+    //     BOOST_TEST(result[5] == U'\uFFFD');
+    //     BOOST_TEST(result[6] == U'\uFFFD');
+    // }
     
     
 
