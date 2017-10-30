@@ -20,7 +20,27 @@
 int main()
 {
     namespace strf = boost::stringify::v0;
-    
+
+    std::u16string u16sample1(500, u'A');
+    std::u16string u16sample4;
+    for(int i = 0; i < 500; ++i) u16sample4.append(u"\U00010000");
+
+    char32_t u32output[100000];
+    constexpr std::size_t u32output_size = sizeof(u32output) / sizeof(u32output[0]);
+    char32_t* u32output_end = &u32output[u32output_size];
+
+    std::cout << "\nUTF-16 to UTF-32\n";
+
+    PRINT_BENCHMARK("write_to(u32output) [{u16sample1}]")
+    {
+        strf::write_to(u32output) [{u16sample1}];
+    }
+    PRINT_BENCHMARK("write_to(u32output) [{u16sample4}]")
+    {
+        strf::write_to(u32output) [{u16sample4}];
+    }
+
+    std::cout << "\nUTF-8 to UTF-32\n";
     std::string u8sample1(500, 'A');
     std::string u8sample2;
     std::string u8sample3;
@@ -28,11 +48,6 @@ int main()
     for(int i = 0; i < 500; ++i) u8sample2.append(u8"\u0100");
     for(int i = 0; i < 500; ++i) u8sample3.append(u8"\u0800");
     for(int i = 0; i < 500; ++i) u8sample4.append(u8"\U00010000");
-
-
-    char32_t u32output[100000];
-    constexpr std::size_t u32output_size = sizeof(u32output) / sizeof(u32output[0]);
-    char32_t* u32output_end = &u32output[u32output_size];
 
     PRINT_BENCHMARK("write_to(u32output) [{u8sample1}]")
     {
@@ -51,15 +66,17 @@ int main()
         strf::write_to(u32output) [{u8sample4}];
     }
 
+#if ! defined(MSVC)
+
     std::locale::global(std::locale("en_US.utf8"));
     auto& codecvt = std::use_facet<std::codecvt<char32_t, char, std::mbstate_t>>(std::locale());
     const char* u8from_next = nullptr;
     char32_t* u32to_next = nullptr;
 
-    strf::write_to(stdout) = {'\n'};
+    std::cout << "\nUTF-8 to UTF-32 using std::codecvt<char32_t, char>\n";
 
     PRINT_BENCHMARK("std::codecvt / u8sample1 to utf32")
-    {                                                 
+    {
         std::mbstate_t mb{};
         codecvt.in
             ( mb
@@ -73,7 +90,7 @@ int main()
     }
 
     PRINT_BENCHMARK("std::codecvt / u8sample2 to utf32")
-    {                                                 
+    {
         std::mbstate_t mb{};
         codecvt.in
             ( mb
@@ -86,7 +103,7 @@ int main()
         *u32to_next = '\0';
     }
     PRINT_BENCHMARK("std::codecvt / u8sample3 to utf32")
-    {                                                 
+    {
         std::mbstate_t mb{};
         codecvt.in
             ( mb
@@ -99,7 +116,7 @@ int main()
         *u32to_next = '\0';
     }
     PRINT_BENCHMARK("std::codecvt / u8sample4 to utf32")
-    {                                                 
+    {
         std::mbstate_t mb{};
         codecvt.in
             ( mb
@@ -111,5 +128,7 @@ int main()
             , u32to_next);
         *u32to_next = '\0';
     }
+
+#endif // ! defined(MSVC)
 
 }

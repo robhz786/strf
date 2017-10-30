@@ -21,7 +21,7 @@
 int main()
 {
     namespace strf = boost::stringify::v0;
-    
+
     std::string u8sample1(500, 'A');
     std::string u8sample2;
     std::string u8sample3;
@@ -31,87 +31,92 @@ int main()
     for(int i = 0; i < 500; ++i) u8sample4.append(u8"\U00010000");
 
 
-    char16_t u16output[100000];
-    constexpr std::size_t u16output_size = sizeof(u16output) / sizeof(u16output[0]);
-    char16_t* u16output_end = &u16output[u16output_size];
+    char16_t u16dest[100000];
+    constexpr std::size_t u16dest_size = sizeof(u16dest) / sizeof(u16dest[0]);
+    char16_t* u16dest_end = &u16dest[u16dest_size];
 
-    PRINT_BENCHMARK("write_to(u16output) [{u8sample1}]")
+    std::cout << "\nUTF-8 to UTF-16\n";
+
+    PRINT_BENCHMARK("write_to(u16dest) [{u8sample1}]")
     {
-        strf::write_to(u16output) [{u8sample1}];
+        strf::write_to(u16dest) [{u8sample1}];
     }
-    PRINT_BENCHMARK("write_to(u16output) [{u8sample2}]")
+    PRINT_BENCHMARK("write_to(u16dest) [{u8sample2}]")
     {
-        strf::write_to(u16output) [{u8sample2}];
+        strf::write_to(u16dest) [{u8sample2}];
     }
-    PRINT_BENCHMARK("write_to(u16output) [{u8sample3}]")
+    PRINT_BENCHMARK("write_to(u16dest) [{u8sample3}]")
     {
-        strf::write_to(u16output) [{u8sample3}];
+        strf::write_to(u16dest) [{u8sample3}];
     }
-    PRINT_BENCHMARK("write_to(u16output) [{u8sample4}]")
+    PRINT_BENCHMARK("write_to(u16dest) [{u8sample4}]")
     {
-        strf::write_to(u16output) [{u8sample4}];
+        strf::write_to(u16dest) [{u8sample4}];
     }
+
+
+#if ! defined(MSVC)
 
     std::codecvt_utf8_utf16<char16_t> codecvt;
-    // std::locale::global(std::locale("en_US.utf8"));
-    // auto& codecvt = std::use_facet<std::codecvt<char16_t, char, std::mbstate_t>>(std::locale());
     const char* u8from_next = nullptr;
     char16_t* u16to_next = nullptr;
 
-    strf::write_to(stdout) = {'\n'};
+    std::cout << "\nUTF-8 to UTF-16 using std::codecvt_utf8_utf16<char16_t>\n";
 
     PRINT_BENCHMARK("std::codecvt / u8sample1 to utf16")
-    {                                                 
+    {
         std::mbstate_t mb{};
         codecvt.in
             ( mb
             , &*u8sample1.begin()
             , &*u8sample1.end()
             , u8from_next
-            , u16output
-            , u16output_end
+            , u16dest
+            , u16dest_end
             , u16to_next);
         *u16to_next = '\0';
     }
 
-    PRINT_BENCHMARK("std::codecvt / u8sample2 to utf16")
-    {                                                 
+    PRINT_BENCHMARK("std::codecvt / u8sample2")
+    {
         std::mbstate_t mb{};
         codecvt.in
             ( mb
             , &*u8sample2.begin()
             , &*u8sample2.end()
             , u8from_next
-            , u16output
-            , u16output_end
+            , u16dest
+            , u16dest_end
             , u16to_next);
         *u16to_next = '\0';
     }
-    PRINT_BENCHMARK("std::codecvt / u8sample3 to utf16")
-    {                                                 
+    PRINT_BENCHMARK("std::codecvt / u8sample3")
+    {
         std::mbstate_t mb{};
         codecvt.in
             ( mb
             , &*u8sample3.begin()
             , &*u8sample3.end()
             , u8from_next
-            , u16output
-            , u16output_end
+            , u16dest
+            , u16dest_end
             , u16to_next);
         *u16to_next = '\0';
     }
-    PRINT_BENCHMARK("std::codecvt / u8sample4 to utf16")
-    {                                                 
+    PRINT_BENCHMARK("std::codecvt / u8sample4")
+    {
         std::mbstate_t mb{};
         codecvt.in
             ( mb
             , &*u8sample4.begin()
             , &*u8sample4.end()
             , u8from_next
-            , u16output
-            , u16output_end
+            , u16dest
+            , u16dest_end
             , u16to_next);
         *u16to_next = '\0';
     }
+
+#endif // ! defined(MSVC)
 
 }

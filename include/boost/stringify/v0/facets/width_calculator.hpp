@@ -74,7 +74,7 @@ public:
 private:
 
     const stringify::v0::char_width_calculator& m_wcalc;
-    bool m_err;
+    bool m_err = false;
     int m_width = 0;
 
 };
@@ -247,7 +247,17 @@ const stringify::v0::width_calculator& width_calculator_tag::get_default()
     return x;
 }
 
+BOOST_STRINGIFY_INLINE
+const width_calculator& width_as_codepoints()
+{
+    static const stringify::v0::detail::char_width_aways_one x;
+    static stringify::v0::width_calculator wc{&x};
+    return wc;
+}
+
 #endif // ! defined(BOOST_STRINGIFY_OMIT_IMPL)
+
+const width_calculator& width_as_codepoints();
 
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
