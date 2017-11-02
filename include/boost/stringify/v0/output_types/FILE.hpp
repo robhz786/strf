@@ -6,6 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <cstdio>
+#include <cstring>
 #include <boost/stringify/v0/output_writer.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -24,9 +25,17 @@ public:
         : m_file(file)
         , m_count(count)
     {
-        if(m_count != nullptr)
+        if (m_count != nullptr)
         {
             *m_count = 0;
+        }
+    }
+
+    ~narrow_file_writer()
+    {
+        if (m_buff_pos > 0)
+        {
+            flush();
         }
     }
 
@@ -45,28 +54,37 @@ public:
 
     bool put(const char_type* str, std::size_t count) override
     {
-        if ( ! m_err )
+        if (m_err)
         {
-            std::size_t count_inc = std::fwrite
-                (str, sizeof(char_type), count, m_file);
-
-            if(m_count != nullptr)
+            return false;
+        }
+        std::size_t remaining_buff_capacity = m_buff_size - m_buff_pos;
+        if(remaining_buff_capacity < count)
+        {
+            if ( ! flush())
             {
-                *m_count += count_inc;
-            }
-            if (count != count_inc)
-            {
-                m_err = std::error_code{errno, std::generic_category()};
                 return false;
             }
-            return true;
+            remaining_buff_capacity = m_buff_size;
         }
-        return false;
+        if(remaining_buff_capacity < count)
+        {
+            return write(str, count);
+        }
+        std::memcpy(&m_buff[m_buff_pos], str, count * sizeof(char_type));
+        m_buff_pos += count;
+        return true;
     }
 
     bool put(char_type ch) override
     {
-        return ! m_err && do_put(ch);
+        if (m_err || (m_buff_pos == m_buff_size && ! flush()))
+        {
+            return false;
+        }
+        m_buff[m_buff_pos] = ch;
+        ++m_buff_pos;
+        return true;
     }
 
     bool repeat
@@ -74,18 +92,9 @@ public:
         , char_type ch
         ) override
     {
-        if( ! m_err)
-        {
-            for(; count > 0; --count)
-            {
-                if (!do_put(ch))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
+        return count == 1
+            ? put(ch)
+            : do_repeat<1>(count, {{ch}});
     }
 
     bool repeat
@@ -94,18 +103,9 @@ public:
         , char_type ch2
         ) override
     {
-        if( ! m_err)
-        {
-            for(; count > 0; --count)
-            {
-                if(! do_put(ch1) || ! do_put(ch2))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
+        return count == 1
+            ? put_sequence(char_array<2>{{ch1, ch2}})
+            : do_repeat<2>(count, {{ch1, ch2}});
     }
 
     bool repeat
@@ -115,18 +115,9 @@ public:
         , char_type ch3
         ) override
     {
-        if( ! m_err)
-        {
-            for(; count > 0; --count)
-            {
-                if(! do_put(ch1) || ! do_put(ch2) || ! do_put(ch3))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
+        return count == 1
+            ? put_sequence<3>({{ch1, ch2, ch3}})
+            : do_repeat<3>(count, {{ch1, ch2, ch3}});
     }
 
     bool repeat
@@ -137,44 +128,98 @@ public:
         , char_type ch4
         ) override
     {
-        if( ! m_err)
-        {
-            for(; count > 0; --count)
-            {
-                if(!do_put(ch1) || !do_put(ch2) || !do_put(ch3) || !do_put(ch4))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
+        return count == 1
+            ? put_sequence<4>({{ch1, ch2, ch3, ch4}})
+            : do_repeat<4>(count, {{ch1, ch2, ch3, ch4}});
     }
 
     std::error_code finish()
     {
+        if (m_buff_pos > 0)
+        {
+            flush();
+        }
         return m_err;
     }
 
-
 private:
 
-    bool do_put(char_type ch)
+    template <std::size_t N>
+    struct char_array
     {
-        if(0 == std::fwrite(&ch, sizeof(char_type), 1, m_file))
+        char_type arr[N];
+    };
+
+    template <std::size_t N>
+    bool put_sequence(char_array<N> obj)
+    {
+        if(m_err || (m_buff_pos >= m_buff_size - N && ! flush()))
+        {
+            return false;
+        }
+        *reinterpret_cast<char_array<N>*>(&m_buff[m_buff_pos]) = obj;
+        m_buff_pos += N;
+        return true;
+    }
+
+    template <std::size_t N>
+    bool do_repeat(std::size_t count, char_array<N> obj)
+    {
+        if(m_err)
+        {
+            return false;
+        }
+        while (count > 0)
+        {
+            std::size_t remaining_buff_capacity = (m_buff_size - m_buff_pos) / N;
+            if(remaining_buff_capacity == 0)
+            {
+                if ( ! flush())
+                {
+                    return false;
+                }
+                remaining_buff_capacity = m_buff_size / N;
+            }
+            std::size_t sub_count = std::min(count, remaining_buff_capacity);
+            auto* buff_head = reinterpret_cast<char_array<N>*>(&m_buff[m_buff_pos]);
+            std::fill_n(buff_head, sub_count, obj);
+            m_buff_pos += sub_count * N;
+            count -= sub_count;
+        }
+        return true;
+    }
+
+    bool flush()
+    {
+        std::size_t pos = m_buff_pos;
+        m_buff_pos = 0;
+        return write(m_buff, pos);
+    }
+
+    bool write(const char_type* str, std::size_t count)
+    {
+        auto count_inc = std::fwrite(str, sizeof(char_type), count, m_file);
+
+        if (m_count != nullptr)
+        {
+            *m_count += count_inc;
+        }
+        if (count != count_inc)
         {
             m_err = std::error_code{errno, std::generic_category()};
             return false;
         }
-        else
-        {
-            if(m_count != nullptr)
-            {
-                ++ *m_count;
-            }
-            return true;
-        }
+        return true;
     }
+
+public:
+
+    constexpr static std::size_t m_buff_size = 60;
+
+private:
+
+    std::size_t m_buff_pos = 0;
+    char_type m_buff[m_buff_size];
 
     std::FILE* m_file;
     std::size_t* m_count = nullptr;
@@ -193,7 +238,7 @@ public:
         : m_file(file)
         , m_count(count)
     {
-        if(m_count != nullptr)
+        if (m_count != nullptr)
         {
             *m_count = 0;
         }
@@ -409,7 +454,7 @@ inline auto write_to(std::FILE* destination, std::size_t* count = nullptr)
 inline auto wwrite_to(std::FILE* destination, std::size_t* count = nullptr)
 {
     using writer = boost::stringify::v0::detail::wide_file_writer;
-    return boost::stringify::v0::make_args_handler<writer>(destination, count);
+    return stringify::v0::make_args_handler<writer>(destination, count);
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

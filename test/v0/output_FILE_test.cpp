@@ -67,7 +67,7 @@ std::basic_string<CharT> read_file(const char* filename)
     {
         fclose(file);
     }
-    
+
     return result;
 }
 
@@ -80,9 +80,9 @@ void basic_test__narrow()
     std::basic_string<CharT> result;
     std::error_code err = std::make_error_code(std::errc::operation_canceled);
     std::FILE* file = nullptr;
-    
-    try 
-    {   
+
+    try
+    {
         file = std::tmpfile();
         err = use_all_writing_function_of_output_writer
             ( strf::write_to<CharT>(file, &result_length)
@@ -94,7 +94,7 @@ void basic_test__narrow()
     catch(...)
     {
     }
-    
+
     if(file != nullptr)
     {
         std::fclose(file);
@@ -118,9 +118,9 @@ void error_code_test__narrow()
     std::basic_string<CharT> result;
     std::error_code err {};
     std::FILE* file = nullptr;
-    
-    try 
-    {   
+
+    try
+    {
         file = std::tmpfile();
         err = strf::write_to<CharT>(file, &result_length)
             = {U'a', U'b', U'c', error_code_emitter_arg, U'x', U'y', U'z'};
@@ -131,7 +131,7 @@ void error_code_test__narrow()
     catch(...)
     {
     }
-    
+
     if(file != nullptr)
     {
         std::fclose(file);
@@ -155,8 +155,8 @@ void exception_thrown_test__narrow()
     std::basic_string<CharT> result;
     if(std::FILE* file = std::tmpfile())
     {
-        try 
-        {                         
+        try
+        {
             strf::write_to<CharT>(file, &result_length)
                 &= {U'a', U'b', U'c', exception_thrower_arg, U'x', U'y', U'z'};
 
@@ -180,8 +180,8 @@ void basic_test__wide()
     std::wstring result;
     std::error_code err = std::make_error_code(std::errc::operation_canceled);
     std::FILE* file = nullptr;
-    
-    try 
+
+    try
     {
         file = std::tmpfile();
         err = strf::wwrite_to(file, &result_length)
@@ -194,7 +194,7 @@ void basic_test__wide()
     catch(...)
     {
     }
-    
+
     if(file != nullptr)
     {
         std::fclose(file);
@@ -213,9 +213,9 @@ void error_code_test__wide()
     std::wstring result;
     std::error_code err {};
     std::FILE* file = nullptr;
-    
-    try 
-    {   
+
+    try
+    {
         file = std::tmpfile();
         err = strf::wwrite_to(file, &result_length)
             = {L"abc", error_code_emitter_arg, L"xyz"};
@@ -226,7 +226,7 @@ void error_code_test__wide()
     catch(...)
     {
     }
-    
+
     if(file != nullptr)
     {
         std::fclose(file);
@@ -244,8 +244,8 @@ void exception_thrown_test__wide()
     std::wstring result;
     if (std::FILE* file = std::tmpfile())
     {
-        try 
-        {   
+        try
+        {
             strf::wwrite_to(file, &result_length)
                 &= {L"abc", exception_thrower_arg, L"xyz"};
 
@@ -281,6 +281,62 @@ int main()
     exception_thrown_test__narrow<char32_t>();
     exception_thrown_test__narrow<wchar_t>();
     exception_thrown_test__wide();
+
+
+    const std::size_t buff_size = strf::detail::narrow_file_writer<char>::m_buff_size;
+
+    {   // testing narrow_file_writer::put(char_type)
+
+        std::string result;
+        std::string str(buff_size - 2, 'x');
+
+        {
+            FILE* file = std::tmpfile();
+            strf::write_to(file) &= { str, 'a', 'b', 'c', 'd', 'e', 'f'};
+            std::rewind(file);
+            result = read_file<char>(file);
+        }
+
+        BOOST_TEST(result == str + "abcdef");
+
+    }
+
+    {   // testing narrow_file_writer::put(const char_type* str, std::size count)
+
+        std::string str_a(buff_size / 3, 'a');
+        std::string str_b(buff_size / 3, 'b');
+        std::string str_c(buff_size / 2, 'c');
+        std::string str_d(buff_size * 2, 'd');
+
+        std::string result;
+        {
+            FILE* file = std::tmpfile();
+            strf::write_to(file) &={str_a, str_b, str_c, str_d};
+            std::rewind(file);
+            result = read_file<char>(file);
+        }
+
+        std::string expected = strf::make_string() &= {str_a, str_b, str_c, str_d};
+
+        BOOST_TEST(expected == result);
+    }
+
+
+    {   // testing narrow_file_writer::repeat
+
+        std::string result;
+        {
+            FILE* file = std::tmpfile();
+            strf::write_to(file) &= {{U'\u0800', {"", buff_size * 2}}};
+            std::rewind(file);
+            result = read_file<char>(file);
+            std::fclose(file);
+        }
+
+        std::string expected = strf::make_string() &= {{U'\u0800', {"", buff_size * 2}}};
+        BOOST_TEST(expected == result);
+    }
+
 
     return report_errors() || boost::report_errors();
 }

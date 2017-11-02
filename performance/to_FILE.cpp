@@ -183,8 +183,8 @@ int main()
         fprintf(dest, "blah blah %d blah %#-8x blah %s", INT_MAX, 1234, "abcdef");
     }
 
-
     std::cout << std::endl;
+
     PRINT_BENCHMARK("boost::stringify::write_to(dest) [\"ten = {}, twenty = {}\"] = {10, 20}")
     {
         auto err = strf::write_to(dest) ["ten = {}, twenty = {}"] = {10, 20};
@@ -204,7 +204,44 @@ int main()
         fprintf(dest, "ten = %d, twenty= %d", 10, 20);
     }
 
-
+    std::cout << "\n Converting UTF-16 to UTF8\n";
+    {
+        std::u16string u16sample1(500, u'A');
+        std::u16string u16sample2(500, u'\u0100');
+        std::u16string u16sample3(500, u'\u0800');
+        char buff[100000];
+    
+        PRINT_BENCHMARK("strf::write_to(buff) &= {u16sample1}; strf::write_to(dest) &= {buff}")
+        {
+            strf::write_to(buff) &= {u16sample1};
+            strf::write_to(dest) &= {buff};
+        }
+        PRINT_BENCHMARK("strf::write_to(dest) &= {u16sample1}")
+        {
+            strf::write_to(dest) &= {u16sample1};
+        }
+        std::cout << "\n";
+        PRINT_BENCHMARK("strf::write_to(buff) &= {u16sample2}; strf::write_to(dest) &= {buff}")
+        {
+            strf::write_to(buff) &= {u16sample2};
+            strf::write_to(dest) &= {buff};
+        }
+        PRINT_BENCHMARK("strf::write_to(dest) &= {u16sample2}")
+        {
+            strf::write_to(dest) &= {u16sample2};
+        }
+        std::cout << "\n";
+        PRINT_BENCHMARK("strf::write_to(buff) &= {u16sample3}; strf::write_to(dest) &= {buff}")
+        {
+            strf::write_to(buff) &= {u16sample3};
+            strf::write_to(dest) &= {buff};
+        }
+        PRINT_BENCHMARK("strf::write_to(dest) &= {u16sample3}")
+        {
+            strf::write_to(dest) &= {u16sample3};
+        }
+    }
+    
     fclose(dest);
     return 1;
 }
