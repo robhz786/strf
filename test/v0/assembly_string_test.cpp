@@ -36,22 +36,22 @@ int main()
     TEST("asdfqwert")
         ("as{-xxxx}df{-abc{}qwert") = {"ignored"};
 
-    TEST("{}  aaa {")      ("X aaa Y")      = {"X", "Y"};
-    TEST("{}  aaa {bbb")   ("X aaa Y")      = {"X", "Y"};
-    TEST("{}  aaa {/")     ("X aaa {")      = {"X", "Y"};
-    TEST("{}  aaa {/bbb")  ("X aaa {bbb")   = {"X", "Y"};
-    TEST("{}  aaa {-")     ("X aaa ")       = {"X", "Y"};
-    TEST("{}  aaa {-bbb")  ("X aaa ")       = {"X", "Y"};
-    TEST("{}  aaa {1")     ("X aaa Y")      = {"X", "Y"};
-    TEST("{}  aaa {1bb")   ("X aaa Y")      = {"X", "Y"};
-    TEST("{}  aaa {}")     ("X aaa Y")      = {"X", "Y"};
-    TEST("{}  aaa {bbb}")  ("X aaa Y")      = {"X", "Y"};
-    TEST("{}  aaa {/}")    ("X aaa {}")     = {"X", "Y"};
-    TEST("{}  aaa {/bbb}") ("X aaa {bbb}")  = {"X", "Y"};
-    TEST("{}  aaa {-}")    ("X aaa ")       = {"X", "Y"};
-    TEST("{}  aaa {-bbb}") ("X aaa ")       = {"X", "Y"};
-    TEST("{}  aaa {1}")    ("X aaa Y")      = {"X", "Y"};
-    TEST("{}  aaa {1bb}")  ("X aaa Y")      = {"X", "Y"};
+    TEST("X aaa Y")      ("{} aaa {")      = {"X", "Y"};
+    TEST("X aaa Y")      ("{} aaa {bbb")   = {"X", "Y"};
+    TEST("X aaa {")      ("{} aaa {/")     = {"X", "Y"};
+    TEST("X aaa {bbb")   ("{} aaa {/bbb")  = {"X", "Y"};
+    TEST("X aaa ")       ("{} aaa {-")     = {"X", "Y"};
+    TEST("X aaa ")       ("{} aaa {-bbb")  = {"X", "Y"};
+    TEST("X aaa Y")      ("{} aaa {1")     = {"X", "Y"};
+    TEST("X aaa Y")      ("{} aaa {1bb")   = {"X", "Y"};
+    TEST("X aaa Y")      ("{} aaa {}")     = {"X", "Y"};
+    TEST("X aaa Y")      ("{} aaa {bbb}")  = {"X", "Y"};
+    TEST("X aaa {}")     ("{} aaa {/}")    = {"X", "Y"};
+    TEST("X aaa {bbb}")  ("{} aaa {/bbb}") = {"X", "Y"};
+    TEST("X aaa ")       ("{} aaa {-}")    = {"X", "Y"};
+    TEST("X aaa ")       ("{} aaa {-bbb}") = {"X", "Y"};
+    TEST("X aaa Y")      ("{} aaa {1}")    = {"X", "Y"};
+    TEST("X aaa Y")      ("{} aaa {1bb}")  = {"X", "Y"};
 
 
     // now in utf16:
@@ -83,6 +83,6 @@ int main()
         ("{ } {} {10} {} {}") = {0, 1, 2, 3};
     
 
-    return boost::report_errors();
+    return report_errors() || boost::report_errors();
 
 }

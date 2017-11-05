@@ -21,7 +21,7 @@ int main()
     TEST( "1011") [{ 10, fmt1, {fmt2, {}}, 11 }];
 
 
-    int rc = boost::report_errors();
+    int rc = report_errors() || boost::report_errors();
     return rc;
 }
 

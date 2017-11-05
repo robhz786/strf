@@ -177,43 +177,50 @@ void parse_asm_string
 
     while(it != end && proc.good())
     {
-        {
-            auto prev = it;
-            it = std::find(it, end, static_cast<CharT>('{'));
-            proc.put(prev, it);
-        }
+        auto prev = it;
+        it = std::find(it, end, static_cast<CharT>('{'));
+
         if (it == end)
         {
+            proc.put(prev, it);
             return;
         }
-        if (++it == end)
+        if (it + 1 == end)
         {
+            proc.put(prev, it);
             proc.put_arg(arg_idx);
             return;
         }
-        CharT ch = *it;
+
+        CharT ch = *++it;
+
         if (ch == static_cast<CharT>('}'))
         {
-            ++it;
+            proc.put(prev, it - 1);
             proc.put_arg(arg_idx);
+            ++it;
             ++arg_idx;
         }
         else if (static_cast<CharT>('0') <= ch && ch <= static_cast<CharT>('9'))
         {
+            proc.put(prev, it - 1);
             auto res = read_uint(it, end);
             it = after_closing_bracket(res.ptr, end);
             proc.put_arg(res.value);
         }
         else if (ch == static_cast<CharT>('/'))
         {
+            proc.put(prev, it);
             ++it;
         }
         else if (ch == static_cast<CharT>('-'))
         {
+            proc.put(prev, it - 1);
             it = after_closing_bracket(it + 1 , end);
         }
         else
         {
+            proc.put(prev, it - 1);
             it = after_closing_bracket(it + 1, end);
             proc.put_arg(arg_idx);
             ++arg_idx;

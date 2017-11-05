@@ -187,7 +187,7 @@ int main()
     TEST("aa") .with(strf::showpos) [{ {0xAA, "+x"} }];
     TEST("77") .with(strf::showpos) [{ {077, "+o"} }];
 
-    int rc = boost::report_errors();
+    int rc = report_errors() || boost::report_errors();
     return rc;
 }
 

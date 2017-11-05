@@ -141,5 +141,5 @@ int main()
         BOOST_TEST(result == "bla");
     }
 
-    return boost::report_errors();
+    return report_errors() || boost::report_errors();
 }

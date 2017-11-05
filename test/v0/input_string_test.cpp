@@ -3,6 +3,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
+#include <boost/detail/lightweight_test.hpp>
 #include <boost/stringify.hpp>
 
 int main()
@@ -98,7 +99,7 @@ int main()
         TEST(u8"   abc")                              [{ {strf::join_right(6), {abc}} }];
     }
     
-    int rc = report_errors();
+    int rc = report_errors() || boost::report_errors();
     return rc;
 }
 

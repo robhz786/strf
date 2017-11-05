@@ -174,7 +174,7 @@ int main()
          {'c', {3, ">", 0}},
     }];
     
-    return report_errors();
+    return report_errors() || boost::report_errors();
 }
 
 

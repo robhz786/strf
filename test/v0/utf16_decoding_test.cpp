@@ -163,5 +163,5 @@ int main()
     char16_tests();
     wchar_tests();
 
-    return report_errors();
+    return report_errors() || boost::report_errors();
 }

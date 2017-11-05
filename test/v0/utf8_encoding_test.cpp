@@ -105,5 +105,5 @@ int main()
         BOOST_TEST(rstr && rstr.value() == std::string("--\0--", 5));
     }
 
-    return report_errors();
+    return report_errors() || boost::report_errors();
 }

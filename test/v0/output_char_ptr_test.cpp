@@ -222,6 +222,6 @@ int main()
        BOOST_TEST(ec == std::errc::result_out_of_range);
    }
 
-    int rc = boost::report_errors();
+    int rc = report_errors() || boost::report_errors();
     return rc;
 }

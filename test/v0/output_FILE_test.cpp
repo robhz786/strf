@@ -282,5 +282,5 @@ int main()
     exception_thrown_test__narrow<wchar_t>();
     exception_thrown_test__wide();
 
-    return boost::report_errors();
+    return report_errors() || boost::report_errors();
 }

@@ -115,5 +115,5 @@ int main()
         BOOST_TEST(result.str() == "ABCDEFaaaa");
     }
 
-    return boost::report_errors();
+    return report_errors() || boost::report_errors();
 }

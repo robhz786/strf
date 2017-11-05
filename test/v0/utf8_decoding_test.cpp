@@ -215,5 +215,5 @@ int main()
     }
     
     
-    return report_errors();
+    return report_errors() || boost::report_errors();
 }
