@@ -13,9 +13,6 @@
 #include "fmt/format.h"
 
 
-#define PRINT_BENCHMARK(label)  \
-  BOOST_LOOP_TIMER(500000000ll, label)
-
 int main()
 {
     namespace strf = boost::stringify;

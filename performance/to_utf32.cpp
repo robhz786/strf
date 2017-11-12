@@ -14,9 +14,6 @@
 #include "loop_timer.hpp"
 
 
-#define PRINT_BENCHMARK(label)  \
-  BOOST_LOOP_TIMER(10000000000ll, label)
-
 int main()
 {
     namespace strf = boost::stringify::v0;

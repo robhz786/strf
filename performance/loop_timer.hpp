@@ -23,7 +23,8 @@ public:
     struct result
     {
         duration total_duration;
-        std::size_t iterations_count;     
+        std::size_t iterations_count;
+        std::size_t samples_count;
     };
 
 
@@ -33,107 +34,132 @@ public:
             : m_label(label)
         {
         }
-        
+
         void operator()(result r)
         {
-            std::chrono::duration<double, std::nano> dur = r.total_duration;
+            std::chrono::duration<double, std::nano>  total_ns = r.total_duration;
             std::cout
                 << std::setprecision(2)
                 << std::fixed
                 << std::setw(15)
-                << dur.count() / (double)r.iterations_count
+                // << total_ms.count()
+                // << " ms (total) | "
+                // << std::setw(10)
+                // << r.iterations_count
+                // << " iterations | "
+                // << std::setw(10)
+                << total_ns.count() / (double)r.iterations_count
                 << " ns  "
                 << m_label
                 << std::endl;
         }
-        
+
         std::string m_label;
     };
 
-    
+
     /**
        \param loop_relative_size duration of loop / resolution of the clock
        \param report_func function to be called at the end
      */
-    loop_timer(rep loop_relative_size, const std::function<void(result)>& report)
-            : m_report(report)
-            , m_loop_relative_size(loop_relative_size)
-            , m_it_count(0)
-            , m_it_count_stop(8)
-            , m_start_time(clock_type::now())
+    loop_timer
+        ( const std::function<void(result)>& report
+        , duration expected_duration = std::chrono::seconds{1}
+        )
+        : m_report(report)
+        , m_expected_duration(expected_duration)
+        , m_it_count(0)
+        , m_it_count_stop(1000)
+    {
+        start();
+    }
+
+    loop_timer
+        ( const std::string& label
+        , duration expected_duration = std::chrono::seconds{1}
+        )
+        : loop_timer(default_reporter(label), expected_duration)
     {
     }
 
-    loop_timer(rep loop_relative_size, const std::string& label)
-        : loop_timer(loop_relative_size, default_reporter(label))
-    {
-    }
 
-    
     ~loop_timer()
     {
         result r = {(m_stop_time - m_start_time), m_it_count};
         m_report(r);
     }
 
-    bool after_each_iteration()
+    bool shall_continue()
     {
         if(++ m_it_count == m_it_count_stop)
         {
             m_stop_time = clock_type::now();
-            return restart_count();
+            if (duration_is_long_enough())
+            {
+                return false;
+            }
+            calibrate();
+            start();
         }
         return true;
     }
 
-    bool restart_count()
+private:
+
+    bool duration_is_long_enough()
     {
         duration dur = m_stop_time - m_start_time;
-        if (dur.count() > m_loop_relative_size)
-        {
-            return false;
-        }
-        else
-        {
-            calibrate((double)dur.count());
-            m_it_count = 0;
-            m_start_time = clock_type::now();
-            return true;
-        }
+        return dur > m_expected_duration;
     }
 
-    void calibrate(double dur_count)
+    void calibrate()
     {
-        if (dur_count < 1000.0)
+        decltype(m_expected_duration) dur = m_stop_time - m_start_time;
+        if (dur < std::chrono::milliseconds{1})
         {
+            // duration too small even for calibration.
+            // So calibrate next (or further) time
             m_it_count_stop *= 2;
         }
         else
         {
             m_it_count_stop = (std::size_t) std::ceil
-                ( 1.4
-                * (double)(m_it_count_stop)
-                * (double)(m_loop_relative_size)
-                / dur_count
+                ( 1.2
+                * static_cast<double>(m_it_count_stop)
+                * (m_expected_duration / dur)
                 );
         }
     }
-    
-private:
+
+    void start()
+    {
+        m_it_count = 0;
+        std::cout << std::flush;
+        std::cout << std::flush;
+        fflush(stdout);
+        fflush(stdout);
+        clock_type::now();
+        clock_type::now();
+        clock_type::now();
+        clock_type::now();
+        clock_type::now();
+
+        m_start_time = clock_type::now();
+    }
 
     std::function<void(result)> m_report;
-    rep m_loop_relative_size;
-    std::size_t m_it_count;
-    std::size_t m_it_count_stop;
+    std::chrono::duration<double, std::nano> m_expected_duration;
+    std::size_t m_it_count = 0;
+    std::size_t m_it_count_stop = 1000;
     time_point m_stop_time;
     time_point m_start_time;
 };
 
+#define LOOP_TIMER(LABEL, TIME)      \
+    for(loop_timer loop_timer_obj{LABEL, TIME};  loop_timer_obj.shall_continue(); )
 
-#define BOOST_LOOP_TIMER(size, label)          \
-  for(loop_timer loop_timer_instance(size, label);   \
-      loop_timer_instance.after_each_iteration() ; )
 
+#define PRINT_BENCHMARK(LABEL) LOOP_TIMER(LABEL, std::chrono::seconds{10})
 
 
 #endif

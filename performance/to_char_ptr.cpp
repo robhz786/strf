@@ -16,9 +16,6 @@
 using namespace boost::spirit;
 
 
-#define PRINT_BENCHMARK(label)  \
-  BOOST_LOOP_TIMER(9000000000ll, label)
-
 int main()
 {
     namespace strf = boost::stringify;
