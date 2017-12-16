@@ -5,12 +5,9 @@
 ===============================================================================/]
 
 [import ../example/v0/trivial_sample.cpp]
-[import ../example/v0/trivial_formatting.cpp]
+[import ../example/v0/syntax_samples.cpp]
 [import ../example/v0/facets.cpp]
-
-[section Tutorial]
-
-Different output types are supported. They all share a similar usage based in the following syntax:
+[section Syntax]
 
 [/ Railroad diagram generated from the EBNF below, in online generator bottlecaps.de/rr
 
@@ -19,43 +16,37 @@ Different output types are supported. They all share a similar usage based in th
                                  ( ' = { arguments... }' | '[{ arguments... }]' )
 ]
 
+[#syntax_diagram]
 [$../usage.png]
 
-, where:
-
-* [~assembly_string] is analogous to what in others formatting libraries is called as the /format string/, but is does not contain any format flag.
-* [~leading_expression] varies according to the output type, as show in [link output_types.output_types this table].
-* [~facets] are explained further
-
-Before we proceed, let's assume as if that these lines are present in all the further code snipets:
-``
-#include <boost/stringify.hpp>
-#include <boost/assert.hpp>
-
-namespace strf = boost::stringify::v0; // v0 is an inline namespace
-``
-Now, a simple example where the destination type is `char[]`, and the [~leading_expression] is thus [~write_to(destination)]:
+Example 
 
 [trivial_sample]
 
-Naturally, if the [~leading_expression] is not assignable, it is not possible to make [~leading_expression]` = {`[~arguments]` ...}`. This is the case of `make_string`, which is a `constexpr`:
+[variablelist
 
-[make_string_is_not_assignable]
+[[Leading expression]
+ [This is the part of the expression the varies according to the output type, as show in [link output_types.output_types this table].]
+]
 
-An input argument can be just a value to be stringified as above,
-or it can be a /braced-init-list/ composed by two arguments:
-the first one is the value to be stringified whose type defines
-the type and the purpose of the second argument,
-which may also be a /braced-init-list/ and usually specifies formatting
-( as described [link conventional_formatting here] ).
-For example:
+[[Assembly string]
+ [The [link section_assembly_string assembly_string] is analogous to what in others formatting libraries is called as the /format string/, but is does not specify any formatting. Here, the term "/format string/" usually refers to something else.]
+]
 
+[[Arguments]
+[An [link section_input_types input argument] can be just a value to be stringified as above, or it can be a /braced-init-list/ composed by two arguments: the first one is the value to be stringified whose type defines the type and the purpose of the second argument, which may also be a /braced-init-list/ and usually specifies formatting ( as described [link conventional_formatting here] ). For example:
 [trivial_formatting_sample]
+This /braced-init-list/ aims to provide a pratical and compact syntax for formatting. But it does not support many formatting options, just those more frequently used. /Facets/ can be used to compensate this limitation.]
+]
 
-It is not possible to specify any formatting in the assembly string. This is why, by the way, it's not called as "/format string/", like in others formatting libraries. Here, the term "/format string/" usually refers to that little string used to format a single argument, like the string `"<#x"` in the sample above.
+[ [Facets]
+[[link section_facets Facets] can be used for ordinary formatting, like changing the default alignment or numeric base. But also to customize more complex things.]
+]
+
+]
 
 
-The advantage of this is that when the assembly string is formed by some translation system like [@https://en.wikipedia.org/wiki/Gettext gettext], the translation is decoupled from formatting. You can change the format of an argument without asking the translation team to update all the translated versions of the text.
+[/ The reason why one would use the empty call `()` without any assembly string is t ]
 
 [/
 However keep in mind that an input type does not necessarily take formatting
@@ -64,37 +55,6 @@ user-defined type, it is up to him/her to decide what sort of formatting
 options are avaible, if any. A certain input may not use any formatting string,
 and if it does, it doesn't have to follow the table above. 
 Refer to the documentation of each input type.
-]
-
-[h3 Using facets]
-
-The /braced-init-list/ form previously shown aims to provide a pratical and compact syntax for formatting. But it does not support many formatting options, just those more frequently used. To compensate this limitation, there is another way to customize formatting: /format facets/.
-
-[trivial_facets_sample]
-
-It is possible to constrain a facet to only apply to certain input types: 
-
-[facet_filters]
-
-The order of the facets matters. In the presence of two or more facets of the same category that apply to the same input type, the later wins.
-
-[facet_overriding]
-
-Occasionaly you may want to reuse a certain combination of facets several times. In order to avoid  retyping it again and again, you can store it into a /ftuple/ ( a tuple of facets ).
-
-[basic_ftuple_sample]
-
-But you can also create your own version of `make_string`:
-
-[custom_make_string]
-
-And you can create an ftuple from others ftuples:
-
-[ftuple_of_ftuple]
-
-[/
-ftuples may resemble `std::locale` a little, but there are two differences:
- (1) `ftuple` class template solve most things at compilation time in order to gain performance, and (2) facets here are not necessarily related to localization.
 ]
 
 [endsect]

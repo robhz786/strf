@@ -250,7 +250,7 @@ const stringify::v0::width_calculator& width_calculator_tag::get_default()
 BOOST_STRINGIFY_INLINE
 const width_calculator& width_as_codepoints()
 {
-    static const stringify::v0::detail::char_width_aways_one x;
+    static const stringify::v0::detail::char_width_aways_one x{};
     static stringify::v0::width_calculator wc{&x};
     return wc;
 }

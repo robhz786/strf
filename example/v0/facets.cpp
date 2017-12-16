@@ -88,44 +88,43 @@ void sample4()
     BOOST_ASSERT(result.value() == "+15 0XF");
 }
 
-void sample5()
-{
-//[custom_make_string
-    auto my_make_string = strf::make_string.with(strf::showbase, strf::showpos);
-    auto result = my_make_string = {15, ' ', {15, "x"}};
-    BOOST_ASSERT(result.value() == "+15 0xf");
-
-    result = my_make_string /*<<
-    Yes, you can call `with()` again and again:
-
-    `strf::make_string.with(f1).with(f2).with(f3) `
-    is equivalent to `strf::make_string.with(f1, f2, f3)`
-    >>*/ .with(strf::uppercase) = {15, ' ', {15, "x"}};
-    BOOST_ASSERT(result.value() == "+15 0XF");
-    
-//]
-    
-    //Note, all the following are equivalent:
-/*
-    my_make_string
-        .with(strf::uppercase);
-
-    strf::make_string
-        .with(my_default_formatting)
-        .with(strf::uppercase);
-
-    strf::make_string
-        .with(my_default_formatting, strf::uppercase);
-
-    strf::make_string
-        .with(strf::showbase, strf::showpos, strf::uppercase);
-
-    strf::make_string
-        .with(strf::showbase)
-        .with(strf::showpos)
-        .with(strf::uppercase);
-*/    
-}
+// void sample5()
+// {
+// //[custom_make_string
+//     auto my_make_string = strf::make_string.with(strf::showbase, strf::showpos);
+//     auto result = my_make_string = {15, ' ', {15, "x"}};
+//     BOOST_ASSERT(result.value() == "+15 0xf");
+// 
+//     result = my_make_string /*<<
+//     Yes, you can call `with()` again and again:
+// 
+//     `strf::make_string.with(f1).with(f2).with(f3) `
+//     is equivalent to `strf::make_string.with(f1, f2, f3)`
+//     >>*/ .with(strf::uppercase) = {15, ' ', {15, "x"}};
+//     BOOST_ASSERT(result.value() == "+15 0XF");
+//     
+// //]
+//     
+//     //Note, all the following are equivalent:
+// 
+//     my_make_string
+//         .with(strf::uppercase);
+// 
+//     strf::make_string
+//         .with(my_default_formatting)
+//         .with(strf::uppercase);
+// 
+//     strf::make_string
+//         .with(my_default_formatting, strf::uppercase);
+// 
+//     strf::make_string
+//         .with(strf::showbase, strf::showpos, strf::uppercase);
+// 
+//     strf::make_string
+//         .with(strf::showbase)
+//         .with(strf::showpos)
+//         .with(strf::uppercase);
+// }
 
 
 
@@ -192,14 +191,13 @@ void sample6()
 
 
 
-
 int main()
 {
     sample1();
     sample2();
     sample3();
     sample4();
-    sample5();
+    //sample5();
     sample6();
 
     return 0;

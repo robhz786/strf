@@ -4,7 +4,7 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[section:output_types Destination types]
+[section:output_types Output types]
 
 [table
 [ []  [Destination type] [Expression]]
@@ -56,7 +56,7 @@ where:
 * [~countptr] is `std::size_t*` and is optional. The number of succefully written characters will be assigned to [~*countptr].
 * [~end] is [~CharT]*
 * [~CharT] can be `char`, `char16_t`, `char32_t` or `wchar_t`
-* " [*\u00b7\u00b7\u00b7] " is the remaining part of the expression, and it's like:  [$../remaining.png]
+* " [*\u00b7\u00b7\u00b7] " is the remaining part of the expression. It is anything that comes after the /leading expression/ are ilustraded [link syntax_diagram here].
 
 [h3 Effect]
 
@@ -90,7 +90,8 @@ where:
 * 7-10) [~Traits] is optional. If omitted, it is `std::char_traits<`[~CharT]`>`
 * 12) [~CharT] is optional. If omitted, it is `char`
 * 12-13) `std::fflush` is [_not] called
+* 3-7) The [link syntax_diagram leading expression] is not assignable. Hence the expression `make_string = {args ...}` does not compile. So you need to use any of the alternative forms.
 
-[caution In (12) the output should be in binary mode, uncless [~CharT] is `char`.]
+[caution In (12) the output should be in binary mode, unless [~CharT] is `char`.]
 
 [endsect]

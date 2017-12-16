@@ -17,18 +17,32 @@
 
 [include overview.qbk]
 [include:tutorial tutorial.qbk]
-[include:assembly_string assembly_string.qbk]
 [include:output_types output_types.qbk]
+[include:assembly_string assembly_string.qbk]
 [include:input_types input_types.qbk]
 [include:facets facets.qbk]
+[include:ordinary_facets ordinary_formatting_facets.qbk]
+[include:codec_facets encoding_conversion.qbk]
 
-[section How to add support to a new destination type (todo)]
 
-This section has not been written yet. It will guide you how to extend Boost.Stringify to support other destination types in addition to those listed [link output_types.output_types here].
+[#width_calculation]
+[section Facets to customize the width calculation ['(todo)]]
+Defines the algorithm used to calculate the width. You may choose a less accurate but faster implementation or a more accurate but slower one. Three kinds will be provided:
+
+* width equals the length. This is the default and is also what is usually ( if not aways ) used in the other formatting libraries. It is the fastest.
+* width equals the number of codepoints. This considers as if all codepoints have the same width.
+* each codepoint may have a different width. Here, you inject a function or function object that returns the width of each `char32_t`. The width of a codepoint may be zero ( like combining or control caracters ), one ( the usual ) , two ( for "em" characters ) or maybe even more, but is aways an interger value. The customization of the width calculation is not intented to possibly support non monospace fonts. The customization is aimed only allow you to chose a more accurate algorithm ( in the sacrifice of performance ), but aways assuming the font to be monospace.
 
 [endsect]
 
-[/ [include:extend_output extend_output.qbk]]
+[section Facets to customize thousand separator ['(todo)]]
+[endsect]
+
+[section Facets to customize the numeric grouping ['(todo)]]
+[endsect]
+
+
+[include:extend_output extend_output.qbk]
 
 
 [include:extend_input extend_input.qbk]

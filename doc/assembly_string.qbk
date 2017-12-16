@@ -6,9 +6,8 @@
 
 [import ../example/v0/assembly_string.cpp]
 
-[section Assembly string syntax]
-
-
+[#section_assembly_string]
+[section The assembly string]
 
 [table 
 [[A `'{'` followed by]  [until]                       [means]]
@@ -21,18 +20,20 @@
 [variablelist Notes:
 
 [[Escapes]
-[ There is no way ( and no need ) to escape the `'}'` character, because the `'}'` has special meaning only if it corresponds to a previous `'{'`]
+[ There is no way to escape the `'}'` character. There is no need to, since the `'}'` has special meaning only if it corresponds to a previous `'{'`]
 [[asmstr_escape_sample]]
 ]
 
 [[Comments]
-[When the assembly string is translated to another language, you may want to add a comment destinated to the person who translates it]
+[Comments are usefull for internationalization, /i.e./ when the assembly string has to be translated to another languages.
+The translation may be the role of someone else than you. So you can add comments destinated to help such person.
+]
 [[asmstr_comment_sample]]
 ]
 
 [[Positional argument]
-[Position zero refers to the first input argument]
-[The characters the after the digits are ignored by the parser, so you can see them as comments.]
+[Position zero refers to the first input argument.]
+[The characters the after the digits are ignored by the parser. So they can also be seen as comments.]
 [[asmstr_positional_arg]]
 ]
 
@@ -43,6 +44,8 @@
 
 ]
 
-
+[/
+It is not possible to specify any formatting in the assembly string. This is why, by the way, it's not called as "format string", like in others formatting libraries. The advantage of this is that when the assembly string is formed by some translation system like [@https://en.wikipedia.org/wiki/Gettext gettext], the translation is decoupled from formatting. You can change the format of an argument without asking the translation team to update all the translated versions of the text.
+]
 
 [endsect]

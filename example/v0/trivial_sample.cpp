@@ -4,54 +4,39 @@
     http://www.boost.org/LICENSE_1_0.txt)
 =============================================================================*/
 
-void fff();
-
-
+//[ trivial_sample
 #include <boost/stringify.hpp>
 #include <boost/assert.hpp>
+#include <cstring>
 
 int main()
 {
-    namespace strf = boost::stringify::v0; // v0 is an inline namespace
+    namespace strf = boost::stringify::v0;
 
-//[ trivial_sample
-    int age = 22;
-    std::string name = "Anna";
-    const std::string expected = "Anna is 22 years old.";
-    char buff[80];
-
-    // example with assembly string
-    std::error_code err1 = strf::write_to(buff) ("{} is {} years old.") = {name, age};
-    BOOST_ASSERT(!err1 && expected == buff);
+    char output[80];
+    auto leading_expression = strf::write_to(output);
+    const auto name = "Anna";
+    const auto age  = int{22};
+    const auto assembly_string = "{} is {} years old.";
+    const auto expected_result = "Anna is 22 years old.";
     
-    // and without assembly string
-    buff[0] = '\0';
-    std::error_code err2 = strf::write_to(buff) = {name, " is ", 22, " years old."};
-    BOOST_ASSERT(!err2 && expected == buff);
-//]
-
-    {
-       
-//[ trivial_make_string_sample
-        strf::expected_string xstr = strf::make_string("ten = {}, and twenty = {}") = {10, 20};
-
-        BOOST_ASSERT(xstr && *xstr == "ten = 10, and twenty = 20");
-//]
-    }
-
+    // with assembly string:
+    std::error_code err1 = leading_expression (assembly_string) = {name, age};
+    BOOST_ASSERT(!err1 && strcmp(expected_result, output) == 0);
     
-    {
-//[ make_string_is_not_assignable
-        /*
-          auto xstr1 = strf::make_string = {"blah", "blah", "blah"}; // compilation error
-        */
-        auto xstr2 = strf::make_string() = {"blah", "blah", "blah"}; // ok
+    // without assembly string:
+    std::error_code err2 = leading_expression = {name, " is ", age, " years old."};
+    BOOST_ASSERT(!err2 && strcmp(expected_result, output) == 0);
 
-        auto xstr3 = strf::make_string [{"blah", "blah", "blah"}]; // ok
-//]
-    }
-
+    // when the leading is not assignable, you can make:
+    std::error_code err3 = leading_expression() = {name, " is ", age, " years old."};
+    BOOST_ASSERT(!err3 && strcmp(expected_result, output) == 0);
+    
+    // or:
+    std::error_code err4 = leading_expression [{name, " is ", age, " years old."}];
+    BOOST_ASSERT(!err4 && strcmp(expected_result, output) == 0);
+    
     return 0;
 }
-
+//]
 

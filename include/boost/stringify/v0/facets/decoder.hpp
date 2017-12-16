@@ -12,7 +12,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <typename CharT> struct decoder_tag;
 
-
+//[ u32output_class
 class u32output
 {
 public:
@@ -25,10 +25,15 @@ public:
 
     virtual void set_error(std::error_code err) = 0;
 };
+//]
 
+
+//[ decoder_class_template
 template <typename CharT> class decoder
 {
 public:
+
+    using category = stringify::v0::decoder_tag<CharT>;
 
     virtual ~decoder() = default;
 
@@ -38,6 +43,7 @@ public:
         , const CharT* end
         ) const = 0;
 };
+//]
 
 
 typedef bool (*decoder_err_func)(stringify::v0::u32output&);
@@ -47,7 +53,12 @@ inline bool decoder_err_put_replacement_char(stringify::v0::u32output& rec)
     return rec.put(U'\uFFFD');
 }
 
-template <typename ErrHandlingFunc = stringify::v0::decoder_err_func>
+
+template <typename ErrHandlingFunc>
+//requires requires(ErrHandlingFunc func, stringify::v0::u32output& out)
+//{
+//    {func(out) -> bool};
+//};
 class u8decoder: public stringify::v0::decoder<char>
 {
 
@@ -65,8 +76,6 @@ class u8decoder: public stringify::v0::decoder<char>
     }
 
 public:
-
-    using category = stringify::v0::decoder_tag<char>;
 
     u8decoder(const u8decoder& cp) // = default
         : m_err_func(cp.m_err_func)
@@ -251,7 +260,7 @@ make_u8decoder(ErrHandlingFunc err_func)
 }
 
 inline
-stringify::v0::u8decoder<stringify::v0::decoder_err_func>
+stringify::v0::u8decoder<bool(*)(u32output&)>
 make_u8decoder()
 {
     return {stringify::v0::decoder_err_put_replacement_char};
@@ -262,8 +271,6 @@ template <typename CharT, typename ErrHandlingFunc>
 class u16decoder: public stringify::v0::decoder<CharT>
 {
 public:
-
-    using category = decoder_tag<CharT>;
 
     u16decoder(ErrHandlingFunc err_func)
         : m_err_func(err_func)
@@ -342,8 +349,6 @@ class lax_u16decoder: public stringify::v0::decoder<CharT>
 {
 public:
 
-    using category = stringify::v0::decoder_tag<CharT>;
-
     void decode
         ( stringify::v0::u32output& dest
         , const CharT* str
@@ -397,6 +402,9 @@ make_u16decoder()
 }
 
 #if ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
+
+
+
 
 
 namespace detail
@@ -495,8 +503,6 @@ template <typename CharT>
 class u32decoder: public stringify::v0::decoder<CharT>
 {
 public:
-
-    using category = stringify::v0::decoder_tag<CharT>;
 
     virtual ~u32decoder() = default;
 

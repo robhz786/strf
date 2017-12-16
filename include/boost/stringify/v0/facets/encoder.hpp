@@ -31,7 +31,7 @@ public:
 
 };
 
-inline bool to_utf8_put_replacement_char
+inline bool put_utf8_replacement_char
     ( stringify::v0::output_writer<char>& ow
     , std::size_t count
     )
@@ -40,7 +40,7 @@ inline bool to_utf8_put_replacement_char
 }
 
 template <typename CharT>
-inline bool to_utf16_put_replacement_char
+inline bool put_utf16_replacement_char
     ( stringify::v0::output_writer<CharT>& ow
     , std::size_t count
     )
@@ -211,7 +211,7 @@ private:
 
 inline u8encoder<from_utf32_err_func<char>> make_u8encoder(bool wtf8 = false)
 {
-    return {to_utf8_put_replacement_char, wtf8};
+    return {put_utf8_replacement_char, wtf8};
 }
 
 template <typename F>
@@ -324,7 +324,7 @@ template <typename CharT>
 inline u16encoder<CharT, from_utf32_err_func<CharT>> make_u16encoder
     ( bool tolerate_surrogates = false )
 {
-    return {to_utf16_put_replacement_char<char16_t>, tolerate_surrogates};
+    return {put_utf16_replacement_char<char16_t>, tolerate_surrogates};
 }
 
 template <typename CharT, typename F>
@@ -343,10 +343,10 @@ inline auto make_u16encoders(bool tolerate_surrogates, std::true_type)
 {
     return stringify::v0::make_ftuple
         ( stringify::v0::u16encoder<char16_t>
-              { to_utf16_put_replacement_char<char16_t>
+              { put_utf16_replacement_char<char16_t>
               , tolerate_surrogates }
         , stringify::v0::u16encoder<wchar_t>
-              { to_utf16_put_replacement_char<wchar_t>
+              { put_utf16_replacement_char<wchar_t>
               , tolerate_surrogates }
         );
 }
@@ -354,7 +354,7 @@ inline auto make_u16encoders(bool tolerate_surrogates, std::true_type)
 inline auto make_u16encoders(bool tolerate_surrogates, std::false_type)
 {
     return stringify::v0::u16encoder<char16_t>
-              { to_utf16_put_replacement_char<char16_t>
+              { put_utf16_replacement_char<char16_t>
               , tolerate_surrogates };
 }
 
@@ -373,7 +373,7 @@ inline auto make_u16encoders(bool tolerate_surrogates = false)
 inline auto make_u16encoders(bool tolerate_surrogates = false)
 {
     return stringify::v0::u16encoder<char16_t>
-              { to_utf16_put_replacement_char<char16_t>
+              { put_utf16_replacement_char<char16_t>
               , tolerate_surrogates };
 }
 
@@ -508,7 +508,7 @@ encoder_tag<char>::get_default() noexcept
 {
     const static stringify::v0::u8encoder
         <stringify::v0::from_utf32_err_func<char>>
-        x{to_utf8_put_replacement_char};
+        x{put_utf8_replacement_char};
 
     return x;
 }
@@ -520,7 +520,7 @@ encoder_tag<char16_t>::get_default() noexcept
 {
     const static stringify::v0::u16encoder
         <char16_t, stringify::v0::from_utf32_err_func<char16_t>>
-        x{to_utf16_put_replacement_char<char16_t>};
+        x{put_utf16_replacement_char<char16_t>};
 
     return x;
 }
@@ -540,7 +540,7 @@ BOOST_STRINGIFY_INLINE
 const stringify::v0::encoder_tag<wchar_t>::utf16_impl&
 encoder_tag<wchar_t>::get_default(std::false_type) noexcept
 {
-    const static utf16_impl x{to_utf16_put_replacement_char<wchar_t>};
+    const static utf16_impl x{put_utf16_replacement_char<wchar_t>};
 
     return x;
 }

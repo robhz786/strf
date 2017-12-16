@@ -4,32 +4,37 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[section How to add support to a new destination type]
+[section:extend_output How to add support to a new destination type]
 
-Suppose you have a type `foobar` and you want to create a function named `write` that takes a `foobar&` as a parameter and can be used just like the [link usage.usage other functions]
+Suppose you have a type `foobar` and you want to create a function named `write_to` that takes a `foobar&` as a parameter and can be used just like the [link output_types.output_types other functions]
 
-Step 1) Create a class - let's call it `foobar_writer` - that satisfies the [link OutputWriter `OutputWriter`] concept. It also problably needs to have a constructor that take as `foobar&` as argument and saves it as an atribute.
 
-Step 2) Implement function `write` like this:
+[*Step 1)] Create a class - let's call it `foobar_writer` - that satisfies the following requirements:
+
+* inherits from [link output_writer `output_writer<`[~CharT]`>`], where [~CharT] is `char`, `char16_t`, `char32_t` or `wchar_t`. ( or rather, make `foobar_writer` class template );
+* is not abstract
+* has a `finish()` public member function. This function will be called just before `foobar` is destroyed. Its returned value will be the return of the expression `write_to(foobar_instance) = {args...}`.
+* [#OutputWriter_reserve] optionally, it may contain a `reserve(std::size_t size)` public member function. If present, this funtion is called before any call of the writing functions (`put` and `repeat`) of `output_writer`. The argument will be the total number of chararacters that will be written until `finish()` is called.
+
+[*Step 2)] Implement function `write_to` ( or whatever name you prefer ) like below:
 
 ```
-  auto write(foobar& destination)
+  auto write_to(foobar& destination)
   {
      return boost::stringify::make_args_handler<foobar_writer, foobar&>(destination);
   }
 ```
-
 The argument(s) passed to function template `make_args_handler` will be used to construct `foobar_writer`. Its signature is:
 
 ```
 template <typename OutputWriter, typename ... Args>
 constexpr auto make_args_handler(Args ... args) -> /* implementation_defined */;
 ```
-The expresion `write(`[~some_foobar]`) (`[~args]` ...)` will return `foobar_writer::finish()`.
+Note that the parameters are `(Args ... arg)` and not `(Args && ... args)`. Hence, if you want to pass a paramenter by reference, don't expect template type deduction to work. You must specify the parameters type, as done in the example of `write_to(foobar& )` above.
 
-[h3 The `OutputWriter` concept]
 
-[#OutputWriter] Given 
+[/
+Given 
 
 * `W`, a type that satisfies `OutputWriter` concept
 * `w`, an object of type `W`
@@ -40,11 +45,51 @@ The expresion `write(`[~some_foobar]`) (`[~args]` ...)` will return `foobar_writ
 [table
 [ [Expression]       [Return type] [Description] ]
 [ [`W::char_type`]   []      [The character type (`char`, `wchar_t`, `char32_t` or `char16_t`)] ]
-[ [`w.put(ch)`]      [void]  [Writes character `ch`]]
-[ [`w.put(ch, n)`]   [void]  [For each `i` in `[0, n)`, peforms `w.put(ch)` ]]
-[ [`w.put(str, n)`]  [void]  [For each `i` in `[0, n)`, peforms `w.put(str[i])` ]]
 [ [`w.finish()`]     [anything] [ Finalizes the writing process. This funcion is called at the end. ]]
 ]
+]
+
+[h3 The `output_writer` class template]
+
+[#output_writer]
+``
+template <typename CharT>
+class output_writer
+{
+public:
+
+    using char_type = CharT;
+
+    virtual ~output_writer();
+
+    virtual void set_error(std::error_code err) = 0;
+
+    virtual bool good() const = 0;
+
+    virtual bool put(const CharT* str, std::size_t size) = 0;
+
+    virtual bool put(CharT ch) = 0;
+
+    virtual bool repeat(std::size_t count, CharT ch) = 0;
+
+    virtual bool repeat(std::size_t count, CharT ch1, CharT ch2) = 0;
+
+    virtual bool repeat(std::size_t count, CharT ch1, CharT ch2, CharT ch3) = 0;
+
+    virtual bool repeat(std::size_t count, CharT ch1, CharT ch2, CharT ch3, CharT ch4) = 0;
+};
+
+``
+
+* The `repeat` function shall attempt to write [~count] times the sequence of character [~ch1], [~ch2], ... , and return `true` on success and `false` on failure.
+
+* `put(CharT ch)` shall attempt to write the character [~ch] and return `true` on success and `false` on failure.
+
+* `put(const CharT* str, std::size_t size)` shall attempt to write [~size] chararacter of [~str], /i.e./ the range `[str[0], str[size])`, and return `true` on success and `false` on failure.
+
+*  Once the function `set_error` is called, `good()` shall return `false` and all the writting functions (`put` and `repeat`) shall have no effect and return `false`.
+
+*  `good()` returns whether this `output_writer` instance is capable of writing more characters ( through the `put` and `repeat` functions ). Once `good()` returns false, it shall not return `true` anymore, and all the writting functions (`put` and `repeat`) shall have no effect and return `false`.
 
 
 [endsect]
