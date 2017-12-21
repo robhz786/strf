@@ -2,8 +2,6 @@
 cmake_minimum_required (VERSION 2.6)
 project (performance_tests)
 
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
-
 foreach(x to_char_ptr to_FILE)
 
   add_executable(${x}_ho   ${x}.cpp)

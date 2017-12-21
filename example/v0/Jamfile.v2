@@ -11,7 +11,7 @@ test-suite strigify-example-v0 :
     [ run assembly_string.cpp ]
     [ run custom_decoder.cpp ]
     [ run custom_decoding_error_handling.cpp ]
-    [ run custom_encoding_error_handling.cpp ]  
+#    [ run custom_encoding_error_handling.cpp ]  
     [ run decoding_facets.cpp ]
     [ run facets.cpp ]
     [ run ftuple_as_input_arg.cpp ]

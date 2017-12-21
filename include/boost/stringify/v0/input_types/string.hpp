@@ -509,7 +509,7 @@ private:
     template <typename StringType>
     static const auto* end_of(const StringType& str)
     {
-        return &*str.end();
+        return &str[0] + str.length();
     }
 
     static const CharIn* end_of(const CharIn* str)

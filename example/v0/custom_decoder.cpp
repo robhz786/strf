@@ -68,7 +68,9 @@ int main()
 {
     auto xstr = strf::make_u32string.with(ascii_iso_8859_7_decoder{}) = { "\xE1\xE2\xE3" };
 
-    assert(xstr && xstr.value() == U"αβγ");
+    assert(xstr);
+    auto str = xstr.value();
+    assert(str[0] == U'\u03B1' && str[1] == U'\u03B2' && str[2] == U'\u03B3');
     
     return 0;
 }

@@ -324,7 +324,7 @@ template <typename CharT>
 inline u16encoder<CharT, from_utf32_err_func<CharT>> make_u16encoder
     ( bool tolerate_surrogates = false )
 {
-    return {put_utf16_replacement_char<char16_t>, tolerate_surrogates};
+    return {put_utf16_replacement_char<CharT>, tolerate_surrogates};
 }
 
 template <typename CharT, typename F>

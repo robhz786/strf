@@ -43,7 +43,7 @@ void char16_tests()
             u' ', 0xDBFF,
             u' ', 0xDC00,
             u' ', 0xDFFF,
-            u' '
+            u' ', 0x0
         };
 
 
@@ -53,9 +53,10 @@ void char16_tests()
 
     // allowing alone surrogates
     {
-        auto result = * strf::make_u32string
+        auto result = strf::make_u32string
             .with(strf::make_lax_u16decoders())
-            [{ sample_with_alone_surrogates }];
+            [{ sample_with_alone_surrogates }]
+            .value();
 
         BOOST_TEST(result[1] == 0xD800);
         BOOST_TEST(result[3] == 0xD800);
@@ -117,7 +118,7 @@ void wchar_tests()
             L' ', 0xDBFF,
             L' ', 0xDC00,
             L' ', 0xDFFF,
-            L' '
+            L' ', L'\0'
         };
 
 

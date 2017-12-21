@@ -83,14 +83,15 @@ int main()
     }
 
     {   // tolerate surrogates
-        auto facet = strf::make_u16encoders().tolerate_surrogates();
+        auto facet = strf::make_u16encoders(true);
 
         char16_t sample [] =
             {
                 u'-', (char16_t)0xD800,
                 u'-', (char16_t)0xDBFF,
                 u'-', (char16_t)0xDC00,
-                u'-', (char16_t)0xDFFF
+                u'-', (char16_t)0xDFFF,
+                u'\0'
             };
 
         TEST(sample) .with(facet) = {sample};
@@ -112,7 +113,7 @@ int main()
 
     {   // replace invalid codepoints by '?'
 
-        auto err_func = [](auto& ow, auto count){ ow.repeat(count, u'x'); };
+        auto err_func = [](auto& ow, auto count) -> bool { return ow.repeat(count, u'x'); };
         auto facet = strf::make_u16encoder<wchar_t>(err_func);
 
         TEST_RF(L"------x------x------x------x------xxx------", 1.5)
@@ -144,7 +145,7 @@ int main()
         std::exception_ptr eptr;
         try
         {
-            auto rstr = strf::make_u16string .with(facet) = { (char32_t)0x110000 };
+            auto rstr = strf::make_wstring .with(facet) = { (char32_t)0x110000 };
         }
         catch(...)
         {
@@ -154,17 +155,27 @@ int main()
     }
 
     {   // tolerate surrogates
-        auto facet = strf::make_u16encoder().tolerate_surrogates();
+        auto facet = strf::make_u16encoder<wchar_t>().tolerate_surrogates();
 
-        wchar_t sample [] =
+        const wchar_t expected [] =
             {
-                u'-', (wchar_t)0xD800,
-                u'-', (wchar_t)0xDBFF,
-                u'-', (wchar_t)0xDC00,
-                u'-', (wchar_t)0xDFFF
+                L'-', (wchar_t)0xD800,
+                L'-', (wchar_t)0xDBFF,
+                L'-', (wchar_t)0xDC00,
+                L'-', (wchar_t)0xDFFF,
+                L'\0'
             };
 
-        TEST(sample) .with(facet) = {sample};
+        const char32_t sample [] =
+        {
+            U'-', (char32_t)0xD800,
+            U'-', (char32_t)0xDBFF,
+            U'-', (char32_t)0xDC00,
+            U'-', (char32_t)0xDFFF,
+            U'\0'
+        };
+
+        TEST(expected) .with(facet) = {sample};
     }
 
 #endif

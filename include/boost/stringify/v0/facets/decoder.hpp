@@ -414,7 +414,7 @@ inline auto make_lax_u16decoders(std::true_type)
 {
     return stringify::v0::make_ftuple
         ( stringify::v0::lax_u16decoder<char16_t>{}
-        , stringify::v0::lax_u16decoder<char32_t>{}
+        , stringify::v0::lax_u16decoder<wchar_t>{}
         );
 }
 
