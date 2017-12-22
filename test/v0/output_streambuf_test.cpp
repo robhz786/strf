@@ -56,9 +56,9 @@ int main()
         std::size_t result_length = 1000;
 
         std::error_code ec = strf::write_to(result.rdbuf(), &result_length)
-        [{
+        = {
             "abcd", error_code_emitter_arg, "lkjlj"
-        }];
+        };
 
         BOOST_TEST(ec == std::errc::invalid_argument);
         BOOST_TEST(result.str() == "abcd");
@@ -73,9 +73,7 @@ int main()
         try
         {
             strf::write_to(result.rdbuf(), &result_length)
-            [{
-                "abcd", exception_thrower_arg, "lkjlj"
-            }];
+            = {"abcd", exception_thrower_arg, "lkjlj"};
         }
         catch(...)
         {
@@ -91,9 +89,7 @@ int main()
         std::size_t result_length = 1000;
 
         auto err = strf::write_to(result, &result_length)
-        [{
-            {'a', {"", 6}}, "ABCDEF", 'b'
-        }];
+        = {{'a', {"", 6}}, "ABCDEF", 'b'};
 
         BOOST_TEST(err == std::errc::io_error);
         BOOST_TEST(result_length == 10);
@@ -106,9 +102,7 @@ int main()
         std::size_t result_length = 1000;
 
         auto err = strf::write_to(result, &result_length)
-        [{
-                "ABCDEF", {'a', {"", 6}}, "ABCDEF"
-        }];
+        = {"ABCDEF", {'a', {"", 6}}, "ABCDEF"};
 
         BOOST_TEST(err == std::errc::io_error);
         BOOST_TEST(result_length == 10);

@@ -14,12 +14,23 @@
   usage ::= 'leading_expression' ( '.with(facets...)' ) * 
                                  ( '(assembly_string)' | '()' ) ?
                                  ( ' = { arguments... }' | '[{ arguments... }]' )
+
+  usage ::= 'leading_expression'
+  ( '()' | '.no_reserve()' | '.reserve_auto()' | '.reserve(size)' | '.with(facets...)' ) *
+  ( ( '[assembly_string]'?
+      ('.arg_list({arguments...})' | '={arguments...}' | '&={arguments...}'))
+    | '.args(arguments...)')
+
 ]
 
 [#syntax_diagram]
+[/
 [$../usage.png]
+[footnote This railroad diagram was generated on [@http://bottlecaps.de/rr bottlecaps.de/rr]]
+]
+/(todo: diagram)/
 
-Example 
+Example:
 
 [trivial_sample]
 

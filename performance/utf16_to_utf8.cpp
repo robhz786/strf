@@ -33,25 +33,25 @@ int main()
 
     std::cout << "\nUTF-16 to UTF-8\n";
 
-    PRINT_BENCHMARK("write_to(u8dest).with(lax_dec) [{u16sample1}]")
+    PRINT_BENCHMARK("write_to(u8dest).with(lax_dec) [{u16sample1}")
     {
-        strf::write_to(u8dest).with(lax_dec) [{u16sample1}];
+        strf::write_to(u8dest).with(lax_dec) = {u16sample1};
     }
-    PRINT_BENCHMARK("write_to(u8dest) [{u16sample1}]")
+    PRINT_BENCHMARK("write_to(u8dest) = {u16sample1}")
     {
-        strf::write_to(u8dest) [{u16sample1}];
+        strf::write_to(u8dest) = {u16sample1};
     }
-    PRINT_BENCHMARK("write_to(u8dest) [{u16sample2}]")
+    PRINT_BENCHMARK("write_to(u8dest) = {u16sample2}")
     {
-        strf::write_to(u8dest) [{u16sample2}];
+        strf::write_to(u8dest) = {u16sample2};
     }
-    PRINT_BENCHMARK("write_to(u8dest) [{u16sample3}]")
+    PRINT_BENCHMARK("write_to(u8dest) = {u16sample3}")
     {
-        strf::write_to(u8dest) [{u16sample3}];
+        strf::write_to(u8dest) = {u16sample3};
     }
-    PRINT_BENCHMARK("write_to(u8dest) [{u16sample4}]")
+    PRINT_BENCHMARK("write_to(u8dest) = {u16sample4}")
     {
-        strf::write_to(u8dest) [{u16sample4}];
+        strf::write_to(u8dest) = {u16sample4};
     }
 
 #if ! defined(MSVC)

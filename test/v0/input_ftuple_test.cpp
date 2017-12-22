@@ -14,11 +14,9 @@ int main()
 
     TEST( "---10..0xb..0xc~~~~D~14~~~~F.0x10---17---18")
         .with(strf::width(5), strf::fill(U'-'))
-        [{
-            10, {fmt1, {11, 12, {fmt2, {13, {14, {3, "d"}}, 15}}, 16}}, 17, 18
-        }];
+        = { 10, {fmt1, {11, 12, {fmt2, {13, {14, {3, "d"}}, 15}}, 16}}, 17, 18 };
 
-    TEST( "1011") [{ 10, fmt1, {fmt2, {}}, 11 }];
+    TEST( "1011") = { 10, fmt1, {fmt2, {}}, 11 };
 
 
     int rc = report_errors() || boost::report_errors();

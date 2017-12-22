@@ -123,7 +123,7 @@ void error_code_test__narrow()
     {   
         file = std::tmpfile();
         err = strf::write_to<CharT>(file, &result_length)
-            [{U'a', U'b', U'c', error_code_emitter_arg, U'x', U'y', U'z'}];
+            = {U'a', U'b', U'c', error_code_emitter_arg, U'x', U'y', U'z'};
 
         std::rewind(file);
         result = read_file<CharT>(file);
@@ -158,7 +158,7 @@ void exception_thrown_test__narrow()
         try 
         {                         
             strf::write_to<CharT>(file, &result_length)
-                [{U'a', U'b', U'c', exception_thrower_arg, U'x', U'y', U'z'}];
+                = {U'a', U'b', U'c', exception_thrower_arg, U'x', U'y', U'z'};
 
         }
         catch(...)
@@ -185,9 +185,9 @@ void basic_test__wide()
     {
         file = std::tmpfile();
         err = strf::wwrite_to(file, &result_length)
-        [{
+        = {
             L"abcd", {L'x', {"", 0}}, {L'y', {"", 4}}, L'z'
-        }];
+        };
         std::rewind(file);
         result = read_wfile(file);
     }
@@ -218,7 +218,7 @@ void error_code_test__wide()
     {   
         file = std::tmpfile();
         err = strf::wwrite_to(file, &result_length)
-            [{L"abc", error_code_emitter_arg, L"xyz"}];
+            = {L"abc", error_code_emitter_arg, L"xyz"};
 
         std::rewind(file);
         result = read_wfile(file);
@@ -247,7 +247,7 @@ void exception_thrown_test__wide()
         try 
         {   
             strf::wwrite_to(file, &result_length)
-                [{L"abc", exception_thrower_arg, L"xyz"}];
+                = {L"abc", exception_thrower_arg, L"xyz"};
 
         }
         catch(...)

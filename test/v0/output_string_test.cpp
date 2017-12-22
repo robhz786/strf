@@ -79,8 +79,8 @@ int main()
 
     {   // When set_error is called during make_string
 
-        auto result = strf::make_string
-            [{ "abcd", error_code_emitter_arg, "lkjlj" }];
+        auto result = strf::make_string()
+            = {"abcd", error_code_emitter_arg, "lkjlj"};
 
         BOOST_TEST(!result);
         BOOST_TEST(!result && result.error() == std::errc::invalid_argument);
@@ -91,7 +91,7 @@ int main()
         std::string result = "bla";
 
         std::error_code ec = strf::assign_to(result)
-            [{"abcd", error_code_emitter_arg, "lkjlj"}];
+            = {"abcd", error_code_emitter_arg, "lkjlj"};
 
         BOOST_TEST(ec == std::errc::invalid_argument);
         BOOST_TEST(result == "");
@@ -102,7 +102,7 @@ int main()
         std::string result = "bla";
 
         std::error_code ec = strf::append_to(result)
-            [{ "abcd", error_code_emitter_arg, "lkjlj" }];
+            = { "abcd", error_code_emitter_arg, "lkjlj" };
 
         BOOST_TEST(ec == std::errc::invalid_argument);
         BOOST_TEST(result == "bla");
@@ -116,7 +116,7 @@ int main()
         try
         {
             strf::assign_to(result)
-                [{"abcd", exception_thrower_arg, "lkjlj"}];
+                = {"abcd", exception_thrower_arg, "lkjlj"};
         }
         catch(...)
         {
@@ -132,7 +132,7 @@ int main()
         try
         {
             strf::append_to(result)
-                [{ "abcd", exception_thrower_arg, "lkjlj" }];
+                = { "abcd", exception_thrower_arg, "lkjlj"};
         }
         catch(...)
         {

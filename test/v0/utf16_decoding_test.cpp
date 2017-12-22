@@ -55,7 +55,7 @@ void char16_tests()
     {
         auto result = strf::make_u32string
             .with(strf::make_lax_u16decoders())
-            [{ sample_with_alone_surrogates }]
+            ({ sample_with_alone_surrogates })
             .value();
 
         BOOST_TEST(result[1] == 0xD800);
@@ -77,7 +77,7 @@ void char16_tests()
 
         TEST_ERR(U" ", err)
             .with(strf::make_u16decoders(err_hndl_func))
-            ={sample_with_alone_surrogates};
+            = {sample_with_alone_surrogates};
     }
 
     {   // emit error code on invalid sequece
@@ -85,7 +85,7 @@ void char16_tests()
 
         TEST_ERR(U"blah ", expected_error)
             .with(strf::make_u16decoders(emit_illegal_byte_sequence))
-            [{ u"blah", sample_with_alone_surrogates, u"blah"}];
+            = { u"blah", sample_with_alone_surrogates, u"blah"};
     }
 
 }

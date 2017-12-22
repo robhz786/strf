@@ -36,7 +36,7 @@ void test_array_too_small()
     CharT buff[3] = { 'a', 'a', 0 };
     std::size_t result_length = 1000;
 
-    std::error_code ec = strf::write_to(buff, &result_length) [{ 1234567 }];
+    std::error_code ec = strf::write_to(buff, &result_length) = { 1234567 };
 
     BOOST_TEST(buff[0] == 0);
     BOOST_TEST(result_length == 0);
@@ -49,7 +49,7 @@ void test_informed_size_too_small()
     CharT buff[100] = { 'a', 'a', 0 };
     std::size_t result_length = 1000;
 
-    std::error_code ec = strf::write_to(buff, 3, &result_length) [{ 1234567 }];
+    std::error_code ec = strf::write_to(buff, 3, &result_length) = { 1234567 };
 
     BOOST_TEST(buff[0] == 0);
     BOOST_TEST(result_length == 0);
@@ -62,7 +62,7 @@ void test_informed_end_too_close()
     CharT buff[100] = { 'a', 'a', 0 };
     std::size_t result_length = 1000;
 
-    std::error_code ec = strf::write_to(buff, &buff[3], &result_length) [{ 1234567 }];
+    std::error_code ec = strf::write_to(buff, &buff[3], &result_length) = { 1234567 };
 
     BOOST_TEST(buff[0] == 0);
     BOOST_TEST(result_length == 0);
@@ -83,9 +83,7 @@ int main()
         using traits = to_upper_char_traits<char16_t>;
 
         auto err = strf::write_to<traits>(result, &result_length)
-            [{
-                    u'a', {u'b', {"", 3}}, u"zzz", {10, "#x"}
-            }];
+            = {u'a', {u'b', {"", 3}}, u"zzz", {10, "#x"}};
 
         const std::u16string expected = u"ABBBZZZ0XA";
         BOOST_TEST(!err);
@@ -105,7 +103,7 @@ int main()
         std::size_t result_length = 1000;
 
         std::error_code ec = strf::write_to(result, &result_length)
-            [{u"abcd", error_code_emitter_arg, u"lkjlj"}];
+            = {u"abcd", error_code_emitter_arg, u"lkjlj"};
 
         BOOST_TEST(result[0] == u'\0');
         BOOST_TEST(result_length == 0);
@@ -120,7 +118,7 @@ int main()
         try
         {
             strf::write_to(result, &result_length)
-                [{u"abcd", exception_thrower_arg, u"lkjlj"}];
+                = {u"abcd", exception_thrower_arg, u"lkjlj"};
         }
         catch(...)
         {
@@ -150,7 +148,7 @@ int main()
         char16_t result[200] = u"--------------------------------------------------";
         std::size_t result_length = 1000;
 
-        std::error_code ec = strf::write_to(result, 3, &result_length) [{ u"abc" }];
+        std::error_code ec = strf::write_to(result, 3, &result_length) = { u"abc" };
 
         BOOST_TEST(result[0] == u'\0');
         BOOST_TEST(result_length == 0);
@@ -162,7 +160,7 @@ int main()
         char16_t result[200] = u"--------------------------------------------------";
         std::size_t result_length = 1000;
 
-        std::error_code ec = strf::write_to(result, 3, &result_length) [{ u'a', u'b', u'c' }];
+        std::error_code ec = strf::write_to(result, 3, &result_length) = { u'a', u'b', u'c' };
 
         BOOST_TEST(result[0] == u'\0');
         BOOST_TEST(result_length == 0);
@@ -175,9 +173,7 @@ int main()
        char result[200] = "--------------------------------------------------";
        std::size_t result_length = 1000;
        std::error_code ec = strf::write_to(result, 2, &result_length)
-       [{
-               {'x', {"", 10}}
-       }];
+       = {{'x', {"", 10}}};
        BOOST_TEST(result[0] == '\0');
        BOOST_TEST(result_length == 0);
        BOOST_TEST(ec == std::errc::result_out_of_range);
@@ -187,9 +183,7 @@ int main()
        char result[1] = "";
        std::size_t result_length = 1000;
        std::error_code ec = strf::write_to(result, 3, &result_length)
-       [{
-               {U'\u0080', {"", 2}}
-       }];
+       = {{U'\u0080', {"", 2}}};
 
        BOOST_TEST(result[0] == '\0');
        BOOST_TEST(result_length == 0);
@@ -200,9 +194,7 @@ int main()
        char result[200] = "--------------------------------------------------";
        std::size_t result_length = 1000;
        std::error_code ec = strf::write_to(result, 5, &result_length)
-       [{
-               {U'\u0800', {"", 2}}
-       }];
+       = {{U'\u0800', {"", 2}}};
 
        BOOST_TEST(result[0] == '\0');
        BOOST_TEST(result_length == 0);
@@ -213,9 +205,7 @@ int main()
        char result[200] = "--------------------------------------------------";
        std::size_t result_length = 1000;
        std::error_code ec = strf::write_to(result, 7, &result_length)
-       [{
-               {U'\U00010000', {"", 2}}
-       }];
+       = {{U'\U00010000', {"", 2}}};
 
        BOOST_TEST(result[0] == '\0');
        BOOST_TEST(result_length == 0);

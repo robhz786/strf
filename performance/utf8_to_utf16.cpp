@@ -33,21 +33,21 @@ int main()
 
     std::cout << "\nUTF-8 to UTF-16\n";
 
-    PRINT_BENCHMARK("write_to(u16dest) [{u8sample1}]")
+    PRINT_BENCHMARK("write_to(u16dest) = {u8sample1}")
     {
-        strf::write_to(u16dest) [{u8sample1}];
+        strf::write_to(u16dest) = {u8sample1};
     }
-    PRINT_BENCHMARK("write_to(u16dest) [{u8sample2}]")
+    PRINT_BENCHMARK("write_to(u16dest) = {u8sample2}")
     {
-        strf::write_to(u16dest) [{u8sample2}];
+        strf::write_to(u16dest) = {u8sample2};
     }
-    PRINT_BENCHMARK("write_to(u16dest) [{u8sample3}]")
+    PRINT_BENCHMARK("write_to(u16dest) = {u8sample3}")
     {
-        strf::write_to(u16dest) [{u8sample3}];
+        strf::write_to(u16dest) = {u8sample3};
     }
-    PRINT_BENCHMARK("write_to(u16dest) [{u8sample4}]")
+    PRINT_BENCHMARK("write_to(u16dest) = {u8sample4}")
     {
-        strf::write_to(u16dest) [{u8sample4}];
+        strf::write_to(u16dest) = {u8sample4};
     }
 
 

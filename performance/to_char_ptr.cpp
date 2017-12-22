@@ -27,13 +27,13 @@ int main()
 
     std::cout << "\n small strings \n";
 
-    PRINT_BENCHMARK("write_to(dest) [{\"Hello \", \"World\", \"!\"}]")
+    PRINT_BENCHMARK("write_to(dest) = {\"Hello \", \"World\", \"!\"}")
     {
-        strf::write_to(dest) [{"Hello ", "World", "!"}];
+        strf::write_to(dest) = {"Hello ", "World", "!"};
     }
-    PRINT_BENCHMARK("write_to(dest) (\"Hello {}!\") = {\"World\"}")
+    PRINT_BENCHMARK("write_to(dest) [\"Hello {}!\"] = {\"World\"}")
     {
-        strf::write_to(dest) ("Hello {}!") = {"World"};
+        strf::write_to(dest) ["Hello {}!"] = {"World"};
     }
 
     PRINT_BENCHMARK("karma::generate(dest, karma::lit(\"Hello \") << \"World\" << \"!\")")
@@ -58,9 +58,9 @@ int main()
         std::string std_string_long_string(1000, 'x');
         const char* long_string = std_string_long_string.c_str();
 
-        PRINT_BENCHMARK("write_to(dest) [{\"Hello \", long_string, \"!\"}]")
+        PRINT_BENCHMARK("write_to(dest) = {\"Hello \", long_string, \"!\"}")
         {
-            strf::write_to(dest) [{"Hello ", long_string, "!"}];
+            strf::write_to(dest) = {"Hello ", long_string, "!"};
         }
         PRINT_BENCHMARK("karma::generate(dest, lit(\"Hello \") << long_string << \"!\")")
         {
@@ -81,9 +81,9 @@ int main()
 
     std::cout << "\n integers \n";
 
-    PRINT_BENCHMARK("write_to(dest) [{25}]")
+    PRINT_BENCHMARK("write_to(dest) = {25}")
     {
-        strf::write_to(dest) [{25}];
+        strf::write_to(dest) = {25};
     }
     PRINT_BENCHMARK("karma::generate(dest, karma::int_, 25)")
     {
@@ -102,9 +102,9 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) [{INT_MAX}]")
+    PRINT_BENCHMARK("write_to(dest) = {INT_MAX}")
     {
-        strf::write_to(dest) [{INT_MAX}];
+        strf::write_to(dest) = {INT_MAX};
     }
     PRINT_BENCHMARK("karma::generate(dest, karma::int_, INT_MAX);")
     {
@@ -123,9 +123,9 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) [{LLONG_MAX}]")
+    PRINT_BENCHMARK("write_to(dest) = {LLONG_MAX}")
     {
-        strf::write_to(dest) [{LLONG_MAX}];
+        strf::write_to(dest) = {LLONG_MAX};
     }
     PRINT_BENCHMARK("karma::generate(dest, karma::long_long, LLONG_MAX);")
     {
@@ -144,13 +144,13 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) [{25, 25, 25}]")
+    PRINT_BENCHMARK("write_to(dest) = {25, 25, 25}")
     {
-        strf::write_to(dest) [{25, 25, 25}];
+        strf::write_to(dest) = {25, 25, 25};
     }
-    PRINT_BENCHMARK("write_to(dest) (\"{}{}{}\") = {25, 25, 25}")
+    PRINT_BENCHMARK("write_to(dest) [\"{}{}{}\"] = {25, 25, 25}")
     {
-        strf::write_to(dest) ("{}{}{}") = {25, 25, 25};
+        strf::write_to(dest) ["{}{}{}"] = {25, 25, 25};
     }
 
     PRINT_BENCHMARK("karma::generate(dest, int_ << int_ << int_, 25, 25, 25)")
@@ -172,9 +172,9 @@ int main()
 
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) [{LLONG_MAX, LLONG_MAX, LLONG_MAX}]")
+    PRINT_BENCHMARK("write_to(dest) = {LLONG_MAX, LLONG_MAX, LLONG_MAX}")
     {
-        strf::write_to(dest) [{LLONG_MAX, LLONG_MAX, LLONG_MAX}];
+        strf::write_to(dest) = {LLONG_MAX, LLONG_MAX, LLONG_MAX};
     }
     PRINT_BENCHMARK("karma::generate(dest, long_long_x3, LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
@@ -195,17 +195,17 @@ int main()
 
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) [{{25, 20}}]")
+    PRINT_BENCHMARK("write_to(dest) = {{25, 20}}")
     {
-        strf::write_to(dest)[{{25, 20}}];
+        strf::write_to(dest)= {{25, 20}};
     }
-    PRINT_BENCHMARK("write_to(dest) .with(strf::width(20)) [{25}]")
+    PRINT_BENCHMARK("write_to(dest) .with(strf::width(20)) = {25}")
     {
-        strf::write_to(dest).with(strf::width(20)) [{25}];
+        strf::write_to(dest).with(strf::width(20)) = {25};
     }
-    PRINT_BENCHMARK("write_to(dest) [{ {join_right(20), {25}} }]")
+    PRINT_BENCHMARK("write_to(dest) = { {join_right(20), {25}} }")
     {
-        strf::write_to(dest) [{ {strf::join_right(20), {25}} }];
+        strf::write_to(dest) = { {strf::join_right(20), {25}} };
     }
     PRINT_BENCHMARK("karma::generate(dest, right_align(20)[int_], 25);")
     {
@@ -227,18 +227,18 @@ int main()
 
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) [{{25, {6, \"<+\"}}}]")
+    PRINT_BENCHMARK("write_to(dest) = {{25, {6, \"<+\"}}}")
     {
-        strf::write_to(dest)[{{25, {6, "<+"}}}];
+        strf::write_to(dest)= {{25, {6, "<+"}}};
     }
-    PRINT_BENCHMARK("write_to(dest).with(width(6), left, showpos) [{ 25 }]")
+    PRINT_BENCHMARK("write_to(dest).with(width(6), left, showpos) = { 25 }")
     {
-        strf::write_to(dest).with(strf::width(6), strf::left, strf::showpos) [{ 25 }];
+        strf::write_to(dest).with(strf::width(6), strf::left, strf::showpos) = { 25 };
     }
 
     PRINT_BENCHMARK("write_to(dest)({strf::make_ftuple(width(6), left, showpos), {25}})")
     {
-        strf::write_to(dest) [{ {strf::make_ftuple(strf::width(6), strf::left, strf::showpos), {25}} }];
+        strf::write_to(dest) = { {strf::make_ftuple(strf::width(6), strf::left, strf::showpos), {25}} };
     }
     PRINT_BENCHMARK("karma::generate(dest, karma::left_align(6)[dec_showpos], 25)")
     {
@@ -259,13 +259,13 @@ int main()
 
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) [{{25, \"#x\"}}]")
+    PRINT_BENCHMARK("write_to(dest) = {{25, \"#x\"}}")
     {
-        strf::write_to(dest) [{{25, "#x"}}];
+        strf::write_to(dest) = {{25, "#x"}};
     }
-    PRINT_BENCHMARK("write_to(dest) .with(hex, showbase) [{25}]")
+    PRINT_BENCHMARK("write_to(dest) .with(hex, showbase) = {25}")
     {
-        strf::write_to(dest).with(strf::hex, strf::showbase) [{25}];
+        strf::write_to(dest).with(strf::hex, strf::showbase) = {25};
     }
     PRINT_BENCHMARK("karma::generate(dest, karma::generate(d, lit(\"0x\") << hex, 25)")
     {
@@ -287,9 +287,9 @@ int main()
 
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) [{25, {25, {6, \"<+\"}} , {25, \"#x\"}}]")
+    PRINT_BENCHMARK("write_to(dest) = {25, {25, {6, \"<+\"}} , {25, \"#x\"}}")
     {
-        strf::write_to(dest) [{25, {25, {6, "<+"}} , {25, "#x"}}];
+        strf::write_to(dest) = {25, {25, {6, "<+"}} , {25, "#x"}};
     }
     PRINT_BENCHMARK("karma::generate(dest, int_ << left_6_show << \"0x\" << hex, 25,25,25)")
     {
@@ -313,9 +313,9 @@ int main()
     std::cout << "\n Strings and itegers mixed: \n";
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) [{\"ten =  \", 10, \", twenty = \", 20}]")
+    PRINT_BENCHMARK("write_to(dest) = {\"ten =  \", 10, \", twenty = \", 20}")
     {
-        strf::write_to(dest) [{"ten =  ", 10, ", twenty = ", 20}];
+        strf::write_to(dest) = {"ten =  ", 10, ", twenty = ", 20};
     }
     PRINT_BENCHMARK("karma::generate(dest, lit(\"ten= \") << int_ <<\", twenty = \" << int_, 10, 20")
     {

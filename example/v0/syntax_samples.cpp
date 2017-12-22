@@ -15,17 +15,17 @@ void arg_formatting()
      `std::expected`]`<std::string, std::error_code>` >*/
 
     // write in hexadecimal
-    result = strf::make_string("{} in hexadecimal is {}") = {value, {value, /*<<
+    result = strf::make_string["{} in hexadecimal is {}"] = {value, {value, /*<<
     This is what is here called as the /format string/.
     `'x'` implies hexadecimal base and `'#'` to show the base indication. >>*/"#x"}};
     BOOST_ASSERT(*result == "255 in hexadecimal is 0xff");
 
     // with width equal to 6
-    result = strf::make_string("--{}--") = {{value, 6}};
+    result = strf::make_string ["--{}--"] = {{value, 6}};
     //BOOST_ASSERT(*result == "--   255--");
 
     // with width and format string
-    result = strf::make_string("--{}--") = {{value, {6, /*<<
+    result = strf::make_string ["--{}--"] = {{value, {6, /*<<
        `'<'` justifies to left >>*/"<#x"}}};
     //BOOST_ASSERT(*result == "--0xff  --");
     //]
@@ -38,7 +38,7 @@ void make_string()
        
 //[ trivial_make_string_sample
     namespace strf = boost::stringify::v0;
-    strf::expected_string xstr = strf::make_string("ten = {}, and twenty = {}") = {10, 20};
+    strf::expected_string xstr = strf::make_string["ten = {}, and twenty = {}"] = {10, 20};
 
     BOOST_ASSERT(xstr && *xstr == "ten = 10, and twenty = 20");
 //]
@@ -53,7 +53,7 @@ void make_string_is_not_assignable()
     */
     auto xstr2 = strf::make_string() = {"blah", "blah", "blah"}; // ok
 
-    auto xstr3 = strf::make_string [{"blah", "blah", "blah"}]; // ok
+    auto xstr3 = strf::make_string ({"blah", "blah", "blah"}); // ok
 //]
 }
 

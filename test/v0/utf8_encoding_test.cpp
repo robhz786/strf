@@ -101,7 +101,7 @@ int main()
     // }
 
     {   // NO MUTF8
-        auto rstr = strf::make_string [{"--", U'\0', "--"}];
+        auto rstr = strf::make_string() = {"--", U'\0', "--"};
         BOOST_TEST(rstr && rstr.value() == std::string("--\0--", 5));
     }
 

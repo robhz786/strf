@@ -70,7 +70,7 @@ public:
     {
     }
 
-    decltype(auto) operator[](arglist_type args) const
+    decltype(auto) operator()(arglist_type args) const
     {
         stringify::v0::detail::output_writer_from_tuple<OutputWriter> writer{m_owinit};
         reserve(writer, args);
@@ -80,12 +80,12 @@ public:
 
     decltype(auto) operator=(arglist_type args) &
     {
-        return operator[] (args);
+        return operator() (args);
     }
 
     decltype(auto) operator=(arglist_type args) &&
     {
-        return operator[] (args);
+        return operator() (args);
     }
 
 private:
@@ -213,7 +213,7 @@ public:
         return std::move(*this);
     }
 
-    decltype(auto) operator[](arglist_type lst) const
+    decltype(auto) operator()(arglist_type lst) const
     {
         return process_arg_list(lst);
     }
@@ -248,22 +248,22 @@ public:
         return *this;
     }
 
-    asm_string operator()(const char_type* asm_str) &&
+    asm_string operator[](const char_type* asm_str) &&
     {
         return {m_ftuple, m_owinit, asm_str};
     }
 
-    asm_string operator()(const char_type* asm_str) const &&
+    asm_string operator[](const char_type* asm_str) const &&
     {
         return {m_ftuple, m_owinit, asm_str};
     }
 
-    asm_string operator()(const char_type* asm_str) &
+    asm_string operator[](const char_type* asm_str) &
     {
         return {m_ftuple, m_owinit, asm_str};
     }
 
-    asm_string operator()(const char_type* asm_str) const &
+    asm_string operator[](const char_type* asm_str) const &
     {
         return {m_ftuple, m_owinit, asm_str};
     }

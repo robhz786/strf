@@ -115,9 +115,9 @@ int main()
 
     {   // tolerate surrogates
 
-        auto result = * strf::make_u32string
+        auto result = strf::make_u32string
             .with(strf::make_u8decoder().wtf8())
-            [{
+            ({
                 highsurr_D800,
                 lowsurr_DFFF,
                 toobig_110000,
@@ -125,7 +125,7 @@ int main()
                 overlong_007F,
                 overlong_07FF,
                 overlong_FFFF
-            }];
+            }) .value();
         
         BOOST_TEST(result[0] == (char32_t)0xD800);
         BOOST_TEST(result[1] == (char32_t)0XDFFF);
@@ -138,9 +138,9 @@ int main()
 
     { // tolerate overlong sequences
 
-        auto result = * strf::make_u32string
+        auto result = strf::make_u32string
             .with(strf::make_u8decoder().tolerate_overlong())
-            [{
+            ({
                 highsurr_D800,
                 lowsurr_DFFF,
                 toobig_110000,
@@ -148,7 +148,7 @@ int main()
                 overlong_007F,
                 overlong_07FF,
                 overlong_FFFF
-            }];
+            }).value();
         
         BOOST_TEST(result[0] == U'\uFFFD');
         BOOST_TEST(result[1] == U'\uFFFD');
@@ -162,8 +162,8 @@ int main()
     // { // Modified UTF8
 
     //     auto result = * strf::make_u32string
-    //         .with(strf::make_u8decoder().mutf8())
-    //         [{
+    //         .with(strf::make_u8decoder().mutf8()) =
+    //         {
     //             highsurr_D800,
     //             lowsurr_DFFF,
     //             toobig_110000,
@@ -171,7 +171,7 @@ int main()
     //             overlong_007F,
     //             overlong_07FF,
     //             overlong_FFFF
-    //         }];
+    //         };
 
     //     BOOST_TEST(result[0] == U'\uFFFD');
     //     BOOST_TEST(result[1] == U'\uFFFD');
@@ -187,23 +187,23 @@ int main()
     // an invalid byte sequece followed by continuation
     // bytes produce only one error:
     //
-    TEST(U"\uFFFD ") =  { "\xFF\xBF\xBF\xBF\xBF " };     // after invalid leading byte
-    TEST(U"\uFFFD ") =  { "\xED\xA0\x80\xBF\xBF " };     // after D800
-    TEST(U"\uFFFD ") =  { "\xED\xBF\xBF\xBF\xBF " };     // after DFFF
-    TEST(U"\uFFFD ") =  { "\xF4\x90\x80\x80\xBF\xBF " }; // after 110000
-    TEST(U"\uFFFD ") =  { "\xC0\x80\xBF\xBF " };         // after overlong null
-    TEST(U"\uFFFD ") =  { "\xC1\xBF\xBF\xBF " };         // after overlong 7F
-    TEST(U"\uFFFD ") =  { "\xE0\x9F\xBF\xBF\xBF " };     // after overlong FF
-    TEST(U"\uFFFD ") =  { "\xF0\x8F\xBF\xBF\xBF\xBF " }; // after overlong FFFF
+    TEST(U"\uFFFD ") = { "\xFF\xBF\xBF\xBF\xBF " };     // after invalid leading byte
+    TEST(U"\uFFFD ") = { "\xED\xA0\x80\xBF\xBF " };     // after D800
+    TEST(U"\uFFFD ") = { "\xED\xBF\xBF\xBF\xBF " };     // after DFFF
+    TEST(U"\uFFFD ") = { "\xF4\x90\x80\x80\xBF\xBF " }; // after 110000
+    TEST(U"\uFFFD ") = { "\xC0\x80\xBF\xBF " };         // after overlong null
+    TEST(U"\uFFFD ") = { "\xC1\xBF\xBF\xBF " };         // after overlong 7F
+    TEST(U"\uFFFD ") = { "\xE0\x9F\xBF\xBF\xBF " };     // after overlong FF
+    TEST(U"\uFFFD ") = { "\xF0\x8F\xBF\xBF\xBF\xBF " }; // after overlong FFFF
     // now without the trailing space:
-    TEST(U"\uFFFD") =  { "\xFF\xBF\xBF\xBF\xBF" };     // after invalid leading byte
-    TEST(U"\uFFFD") =  { "\xED\xA0\x80\xBF\xBF" };     // after D800
-    TEST(U"\uFFFD") =  { "\xED\xBF\xBF\xBF\xBF" };     // after DFFF
-    TEST(U"\uFFFD") =  { "\xF4\x90\x80\x80\xBF\xBF" }; // after 110000
-    TEST(U"\uFFFD") =  { "\xC0\x80\xBF\xBF" };         // after overlong null
-    TEST(U"\uFFFD") =  { "\xC1\xBF\xBF\xBF" };         // after overlong 7F
-    TEST(U"\uFFFD") =  { "\xE0\x9F\xBF\xBF\xBF" };     // after overlong FF
-    TEST(U"\uFFFD") =  { "\xF0\x8F\xBF\xBF\xBF\xBF" }; // after overlong FFFF
+    TEST(U"\uFFFD") = { "\xFF\xBF\xBF\xBF\xBF" };     // after invalid leading byte
+    TEST(U"\uFFFD") = { "\xED\xA0\x80\xBF\xBF" };     // after D800
+    TEST(U"\uFFFD") = { "\xED\xBF\xBF\xBF\xBF" };     // after DFFF
+    TEST(U"\uFFFD") = { "\xF4\x90\x80\x80\xBF\xBF" }; // after 110000
+    TEST(U"\uFFFD") = { "\xC0\x80\xBF\xBF" };         // after overlong null
+    TEST(U"\uFFFD") = { "\xC1\xBF\xBF\xBF" };         // after overlong 7F
+    TEST(U"\uFFFD") = { "\xE0\x9F\xBF\xBF\xBF" };     // after overlong FF
+    TEST(U"\uFFFD") = { "\xF0\x8F\xBF\xBF\xBF\xBF" }; // after overlong FFFF
 
    
     {   // emit error code on invalid sequece
@@ -211,7 +211,7 @@ int main()
         
         TEST_ERR(U"blah blah ", expected_error)
             .with(strf::make_u8decoder(emit_illegal_byte_sequence))
-            [{ "blah", " blah \xEF\xBF", "blah"}];
+             = { "blah", " blah \xEF\xBF", "blah"};
     }
     
     

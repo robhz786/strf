@@ -28,13 +28,13 @@ int main()
 
     std::cout << "\nUTF-16 to UTF-32\n";
 
-    PRINT_BENCHMARK("write_to(u32output) [{u16sample1}]")
+    PRINT_BENCHMARK("write_to(u32output) = {u16sample1}")
     {
-        strf::write_to(u32output) [{u16sample1}];
+        strf::write_to(u32output) = {u16sample1};
     }
-    PRINT_BENCHMARK("write_to(u32output) [{u16sample4}]")
+    PRINT_BENCHMARK("write_to(u32output) = {u16sample4}")
     {
-        strf::write_to(u32output) [{u16sample4}];
+        strf::write_to(u32output) = {u16sample4};
     }
 
     std::cout << "\nUTF-8 to UTF-32\n";
@@ -46,21 +46,21 @@ int main()
     for(int i = 0; i < 500; ++i) u8sample3.append(u8"\u0800");
     for(int i = 0; i < 500; ++i) u8sample4.append(u8"\U00010000");
 
-    PRINT_BENCHMARK("write_to(u32output) [{u8sample1}]")
+    PRINT_BENCHMARK("write_to(u32output) = {u8sample1}")
     {
-        strf::write_to(u32output) [{u8sample1}];
+        strf::write_to(u32output) = {u8sample1};
     }
-    PRINT_BENCHMARK("write_to(u32output) [{u8sample2}]")
+    PRINT_BENCHMARK("write_to(u32output) = {u8sample2}")
     {
-        strf::write_to(u32output) [{u8sample2}];
+        strf::write_to(u32output) = {u8sample2};
     }
-    PRINT_BENCHMARK("write_to(u32output) [{u8sample3}]")
+    PRINT_BENCHMARK("write_to(u32output) = {u8sample3}")
     {
-        strf::write_to(u32output) [{u8sample3}];
+        strf::write_to(u32output) = {u8sample3};
     }
-    PRINT_BENCHMARK("write_to(u32output) [{u8sample4}]")
+    PRINT_BENCHMARK("write_to(u32output) = {u8sample4}")
     {
-        strf::write_to(u32output) [{u8sample4}];
+        strf::write_to(u32output) = {u8sample4};
     }
 
 #if ! defined(MSVC)
