@@ -28,48 +28,48 @@ void utf8_decoding_options()
     const char* overlong_007F = "\xC1\xBF";
 
     {
-        auto xstr = strf::make_u32string() = {surr_D800, mtf8_null, overlong_007F};
-        BOOST_ASSERT(xstr.value() == U"\uFFFD\uFFFD\uFFFD");
+        auto str = strf::make_u32string() &= {surr_D800, mtf8_null, overlong_007F};
+        BOOST_ASSERT(str == U"\uFFFD\uFFFD\uFFFD");
     }
 
     {
-        auto xstr = strf::make_u32string
+        auto str = strf::make_u32string
             .with(strf::make_u8decoder().tolerate_overlong())
-            = {surr_D800, mtf8_null, overlong_007F};
+            &= {surr_D800, mtf8_null, overlong_007F};
     
-        BOOST_ASSERT(xstr.value()[0] == U'\uFFFD');
-        BOOST_ASSERT(xstr.value()[1] == U'\0');
-        BOOST_ASSERT(xstr.value()[2] == U'\u007F');
+        BOOST_ASSERT(str[0] == U'\uFFFD');
+        BOOST_ASSERT(str[1] == U'\0');
+        BOOST_ASSERT(str[2] == U'\u007F');
     }
 
     {
-        auto xstr = strf::make_u32string
+        auto str = strf::make_u32string
             .with(strf::make_u8decoder().mutf8())
-            = {surr_D800, mtf8_null, overlong_007F};
+            &= {surr_D800, mtf8_null, overlong_007F};
     
-        BOOST_ASSERT(xstr.value()[0] == U'\uFFFD');
-        BOOST_ASSERT(xstr.value()[1] == U'\0');
-        BOOST_ASSERT(xstr.value()[2] == U'\uFFFD');
+        BOOST_ASSERT(str[0] == U'\uFFFD');
+        BOOST_ASSERT(str[1] == U'\0');
+        BOOST_ASSERT(str[2] == U'\uFFFD');
     }
 
     {
-        auto xstr = strf::make_u32string
+        auto str = strf::make_u32string
             .with(strf::make_u8decoder().wtf8())
-            = {surr_D800, mtf8_null, overlong_007F};
+            &= {surr_D800, mtf8_null, overlong_007F};
     
-        BOOST_ASSERT(xstr.value()[0] == 0xD800);
-        BOOST_ASSERT(xstr.value()[1] == U'\uFFFD');
-        BOOST_ASSERT(xstr.value()[2] == U'\uFFFD');
+        BOOST_ASSERT(str[0] == 0xD800);
+        BOOST_ASSERT(str[1] == U'\uFFFD');
+        BOOST_ASSERT(str[2] == U'\uFFFD');
     }
 
     {  
-        auto xstr = strf::make_u32string
+        auto str = strf::make_u32string
             .with(strf::make_u8decoder().wtf8().mutf8())
-            = {surr_D800, mtf8_null, overlong_007F};
+            &= {surr_D800, mtf8_null, overlong_007F};
     
-        BOOST_ASSERT(xstr.value()[0] == 0xD800);
-        BOOST_ASSERT(xstr.value()[1] == U'\0');
-        BOOST_ASSERT(xstr.value()[2] == U'\uFFFD');
+        BOOST_ASSERT(str[0] == 0xD800);
+        BOOST_ASSERT(str[1] == U'\0');
+        BOOST_ASSERT(str[2] == U'\uFFFD');
     }
 
     //]

@@ -19,7 +19,7 @@ namespace strf = boost::stringify::v0;
 int main()
 {
     {
-        TEST(u8"--\u0080--\u07ff--\u0800--\uffff--\U00010000--\U0010ffff") =
+        TEST(u8"--\u0080--\u07ff--\u0800--\uffff--\U00010000--\U0010ffff") &=
             {
                 "--", U'\u0080',
                 "--", U'\u07ff',
@@ -32,7 +32,7 @@ int main()
     }
 
     {   // defaul error handling: replace codepoints, by '\uFFFD'
-        TEST_RF(u8"--\uFFFD--\uFFFD--\uFFFD--\uFFFD--\uFFFD\uFFFD\uFFFD--", 1.5) =
+        TEST_RF(u8"--\uFFFD--\uFFFD--\uFFFD--\uFFFD--\uFFFD\uFFFD\uFFFD--", 1.5) &=
             {
                 "--", (char32_t)0xD800,
                 "--", (char32_t)0xDBFF,
@@ -49,7 +49,7 @@ int main()
         auto facet = strf::make_u8encoder
             ( [](auto& ow, auto count) -> bool { return ow.repeat(count, 'X'); } );
 
-        TEST_RF(u8"------X------X------X------X------XXX------", 1.5) .with(facet) =
+        TEST_RF(u8"------X------X------X------X------XXX------", 1.5) .with(facet) &=
             {
                 "------", (char32_t)0xD800,
                 "------", (char32_t)0xDBFF,
@@ -64,7 +64,7 @@ int main()
     {   // emit error code on invalid codepoints
         TEST_ERR("------", std::make_error_code(std::errc::illegal_byte_sequence))
             .with(strf::make_u8encoder(strf::from_utf32_set_error_code<char>))
-            = { "------", (char32_t)0x110000 };
+            &= { "------", (char32_t)0x110000 };
     }
 
 
@@ -85,7 +85,7 @@ int main()
     {   // WTF8 ( tolerate surrogates )
         auto facet = strf::make_u8encoder().wtf8();
 
-        TEST("--\xED\xA0\x80--\xED\xAF\xBF--\xED\xB0\x80--\xED\xBF\xBF") .with(facet) =
+        TEST("--\xED\xA0\x80--\xED\xAF\xBF--\xED\xB0\x80--\xED\xBF\xBF") .with(facet) &=
             {
                 "--", (char32_t)0xD800,
                 "--", (char32_t)0xDBFF,
@@ -93,12 +93,6 @@ int main()
                 "--", (char32_t)0xDFFF
             };
     }
-
-    // {   // MUTF8
-    //     auto facet = strf::make_u8encoder().mutf8();
-
-    //     TEST("--\xc0\x80--") .with(facet) = { "--", U'\0', "--" };
-    // }
 
     {   // NO MUTF8
         auto rstr = strf::make_string() = {"--", U'\0', "--"};

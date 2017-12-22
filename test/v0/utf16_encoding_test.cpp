@@ -15,20 +15,20 @@ namespace strf = boost::stringify::v0;
 int main()
 {
     {
-        TEST(u"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF") =
-            {
+        TEST(u"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF")
+            ({
                 u"--", (char32_t)0x0080,
                 u"--", (char32_t)0xD7FF,
                 u"--", (char32_t)0xE000,
                 u"--", (char32_t)0xFFFF,
                 u"--", (char32_t)0x100000,
                 u"--", (char32_t)0x10FFFF,
-            };
+            });
 
     }
 
     {   // defaul error handling: replace codepoints, by '\uFFFD'
-        TEST_RF(u"--\uFFFD--\uFFFD--\uFFFD--\uFFFD--\uFFFD\uFFFD\uFFFD--", 1.5) =
+        TEST_RF(u"--\uFFFD--\uFFFD--\uFFFD--\uFFFD--\uFFFD\uFFFD\uFFFD--", 1.5) &=
             {
                 u"--", (char32_t)0xD800,
                 u"--", (char32_t)0xDBFF,
@@ -45,7 +45,7 @@ int main()
         auto facet = strf::make_u16encoder<char16_t>(err_func);
 
         TEST_RF(u"------x------x------x------x------xxx------", 1.5)
-            .with(facet) =
+            .with(facet) &=
             {
                 u"------", (char32_t)0xD800,
                 u"------", (char32_t)0xDBFF,
@@ -63,7 +63,7 @@ int main()
 
         TEST_ERR(u"------", expected_error)
             .with(facet)
-            = { u"------", (char32_t)0x110000 };
+            &= { u"------", (char32_t)0x110000 };
     }
 
     {  // throw exception on invalid codepoints
@@ -94,13 +94,13 @@ int main()
                 u'\0'
             };
 
-        TEST(sample) .with(facet) = {sample};
+        TEST(sample) .with(facet) &= {sample};
     }
 
 #if defined(_WIN32) && ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
 
     {   // defaul error handling: replace codepoints, by '\uFFFD'
-        TEST_RF(L"--\uFFFD--\uFFFD--\uFFFD--\uFFFD--\uFFFD\uFFFD\uFFFD--", 1.5) =
+        TEST_RF(L"--\uFFFD--\uFFFD--\uFFFD--\uFFFD--\uFFFD\uFFFD\uFFFD--", 1.5) &=
             {
                 L"--", (char32_t)0xD800,
                 L"--", (char32_t)0xDBFF,
@@ -117,7 +117,7 @@ int main()
         auto facet = strf::make_u16encoder<wchar_t>(err_func);
 
         TEST_RF(L"------x------x------x------x------xxx------", 1.5)
-            .with(facet) =
+            .with(facet) &=
             {
                 L"------", (char32_t)0xD800,
                 L"------", (char32_t)0xDBFF,
@@ -135,7 +135,7 @@ int main()
 
         TEST_ERR(L"------", expected_error)
             .with(facet)
-            = { L"------", (char32_t)0x110000 };
+            &= { L"------", (char32_t)0x110000 };
     }
 
     {  // throw exception on invalid codepoints
@@ -175,7 +175,7 @@ int main()
             U'\0'
         };
 
-        TEST(expected) .with(facet) = {sample};
+        TEST(expected) .with(facet) &= {sample};
     }
 
 #endif

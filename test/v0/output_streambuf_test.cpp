@@ -73,7 +73,7 @@ int main()
         try
         {
             strf::write_to(result.rdbuf(), &result_length)
-            = {"abcd", exception_thrower_arg, "lkjlj"};
+            &= {"abcd", exception_thrower_arg, "lkjlj"};
         }
         catch(...)
         {

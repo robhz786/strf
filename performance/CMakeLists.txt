@@ -2,7 +2,12 @@
 cmake_minimum_required (VERSION 2.6)
 project (performance_tests)
 
-foreach(x to_char_ptr to_FILE)
+foreach(
+    x
+    to_char_ptr
+    to_FILE
+    make_string
+)
 
   add_executable(${x}_ho   ${x}.cpp)
   target_link_libraries(${x}_ho boost_stringify_header_only fmt::fmt-header-only)
@@ -15,7 +20,15 @@ foreach(x to_char_ptr to_FILE)
 endforeach(x)
 
 
-foreach(x width_calculation from_utf32 to_utf32 utf8_to_utf16 utf16_to_utf8)
+
+foreach(
+    x
+    width_calculation
+    from_utf32
+    to_utf32
+    utf8_to_utf16
+    utf16_to_utf8
+)
 
   add_executable(${x}_ho    ${x}.cpp)
   target_link_libraries(${x}_ho boost_stringify_header_only)

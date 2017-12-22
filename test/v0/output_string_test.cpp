@@ -116,7 +116,7 @@ int main()
         try
         {
             strf::assign_to(result)
-                = {"abcd", exception_thrower_arg, "lkjlj"};
+                &= {"abcd", exception_thrower_arg, "lkjlj"};
         }
         catch(...)
         {
@@ -132,7 +132,7 @@ int main()
         try
         {
             strf::append_to(result)
-                = { "abcd", exception_thrower_arg, "lkjlj"};
+                &= { "abcd", exception_thrower_arg, "lkjlj"};
         }
         catch(...)
         {

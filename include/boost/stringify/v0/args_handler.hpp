@@ -12,6 +12,85 @@
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
+class output_size_reservation_dummy
+{
+
+public:
+
+    constexpr output_size_reservation_dummy() = default;
+
+    constexpr output_size_reservation_dummy(const output_size_reservation_dummy&)
+    = default;
+
+    template <typename ... Args>
+    constexpr void reserve(Args&& ...) const
+    {
+    }
+
+    constexpr void set_reserve_size(std::size_t)
+    {
+    }
+
+    constexpr void set_reserve_auto()
+    {
+    }
+
+    constexpr void set_no_reserve()
+    {
+    }
+};
+
+class output_size_reservation_impl
+{
+    std::size_t m_size = 0;
+    enum {calculate_size, predefined_size, no_reserve} m_flag = calculate_size;
+
+public:
+
+    constexpr output_size_reservation_impl() = default;
+
+    constexpr output_size_reservation_impl(const output_size_reservation_impl&)
+    = default;
+
+    template <typename SizeCalculator, typename OutputWriter, typename ArgList>
+    void reserve
+        ( SizeCalculator& calc
+        , OutputWriter& writer
+        , const ArgList& args
+        ) const
+    {
+        switch(m_flag)
+        {
+            case calculate_size:
+                writer.reserve(calc.calculate_size(args));
+                break;
+            case predefined_size:
+                writer.reserve(m_size);
+                break;
+            case no_reserve:
+            default:
+                ;
+        }
+    }
+
+    constexpr void set_reserve_size(std::size_t size)
+    {
+        m_flag = predefined_size;
+        m_size = size;
+    }
+
+    constexpr void set_reserve_auto()
+    {
+        m_flag = calculate_size;
+    }
+
+    constexpr void set_no_reserve()
+    {
+        m_flag = no_reserve;
+    }
+};
+
+
 template <typename W>
 static auto has_reserve_impl(W&& ow)
     -> decltype(ow.reserve(std::size_t{}), std::true_type{});
@@ -22,6 +101,14 @@ static std::false_type has_reserve_impl(...);
 template <typename W>
 using has_reserve
 = decltype(stringify::v0::detail::has_reserve_impl<W>(std::declval<W>()));
+
+template <typename OutputWriter>
+using output_size_reservation
+= typename std::conditional
+    < stringify::v0::detail::has_reserve<OutputWriter>::value
+    , output_size_reservation_impl
+    , output_size_reservation_dummy
+    > :: type;
 
 
 template <typename OutputWriter>
@@ -45,16 +132,85 @@ private:
 
 };
 
+template <typename Child, typename Arg, typename R>
+class throw_on_error_code
+{
+};
+
+template
+    < typename Child
+    , typename Arg
+    , template <typename...> class Expected
+    , typename T
+    >
+class throw_on_error_code<Child, Arg, Expected<T, std::error_code> >
+{
+public:
+
+    auto operator&=(std::initializer_list<Arg> args) &&
+    {
+        auto result = static_cast<Child&>(*this)(args);
+        if(!result)
+        {
+            throw  std::system_error(result.error());
+        }
+        return * std::move(result);
+
+    }
+
+    auto operator&=(std::initializer_list<Arg> args) &
+    {
+        auto result = static_cast<Child&>(*this)(args);
+        if(!result)
+        {
+            throw  std::system_error(result.error());
+        }
+        return * std::move(result);
+    }
+};
+
+template <typename Child, typename Arg>
+class throw_on_error_code <Child, Arg, std::error_code>
+{
+public:
+
+    void operator&=(std::initializer_list<Arg> args) &&
+    {
+        std::error_code ec = static_cast<Child&>(*this)(args);
+        if (ec)
+        {
+            throw std::system_error(ec);
+        }
+    }
+
+    void operator&=(std::initializer_list<Arg> args) &
+    {
+        std::error_code ec = static_cast<Child&>(*this)(args);
+        if (ec)
+        {
+            throw std::system_error(ec);
+        }
+    }
+};
+
 template
     < typename FTuple
     , typename OutputWriter
     , typename OutputWriterInitArgsTuple
     >
 class assembly_string
+    : public stringify::v0::detail::throw_on_error_code
+        < stringify::v0::detail::assembly_string
+              <FTuple, OutputWriter, OutputWriterInitArgsTuple>
+        , stringify::v0::input_arg<typename OutputWriter::char_type, FTuple>
+        , decltype(std::declval<OutputWriter>().finish())
+        >
 {
     using char_type = typename OutputWriter::char_type;
     using arg_type = stringify::v0::input_arg<char_type, FTuple>;
     using arglist_type = std::initializer_list<arg_type>;
+    using reservation_type
+        = stringify::v0::detail::output_size_reservation<OutputWriter>;
 
 public:
 
@@ -62,53 +218,44 @@ public:
         ( const FTuple& ft
         , const OutputWriterInitArgsTuple& owinit
         , const char_type* str
+        , const reservation_type& res
         )
         : m_ftuple(ft)
         , m_owinit(owinit)
         , m_str(str)
         , m_end(str + std::char_traits<char_type>::length(str))
+        , m_reservation(res)
     {
     }
 
-    decltype(auto) operator()(arglist_type args) const
+    BOOST_STRINGIFY_NODISCARD decltype(auto) operator()(arglist_type args) const
     {
-        stringify::v0::detail::output_writer_from_tuple<OutputWriter> writer{m_owinit};
-        reserve(writer, args);
+        stringify::v0::detail::output_writer_from_tuple<OutputWriter> writer
+          {m_owinit};
+        m_reservation.reserve(*this, writer, args);
         write(writer, args);
         return writer.finish();
     }
 
-    decltype(auto) operator=(arglist_type args) &
+    BOOST_STRINGIFY_NODISCARD decltype(auto) operator=(arglist_type args) &
     {
         return operator() (args);
     }
 
-    decltype(auto) operator=(arglist_type args) &&
+    BOOST_STRINGIFY_NODISCARD decltype(auto) operator=(arglist_type args) &&
     {
         return operator() (args);
     }
 
-private:
-
-    template <typename W>
-    void reserve(std::true_type, W& writer, const arglist_type& args) const
+    std::size_t calculate_size(arglist_type args) const
     {
         stringify::v0::detail::asm_string_measurer<char_type, FTuple>
             measurer{args, m_ftuple};
         stringify::v0::detail::parse_asm_string(m_str, m_end, measurer);
-        writer.reserve(measurer.result());
+        return measurer.result();
     }
 
-    template <typename W>
-    void reserve(std::false_type, W&, const arglist_type&) const
-    {
-    }
-
-    void reserve(OutputWriter& owriter, const arglist_type& args) const
-    {
-        stringify::v0::detail::has_reserve<OutputWriter> has_reserve;
-        reserve(has_reserve, owriter, args);
-    }
+private:
 
     void write(OutputWriter& owriter, const arglist_type& args) const
     {
@@ -121,6 +268,7 @@ private:
     const OutputWriterInitArgsTuple& m_owinit;
     const char_type* const m_str;
     const char_type* const m_end;
+    reservation_type m_reservation;
 };
 
 
@@ -130,6 +278,12 @@ template
     , typename OutputWriterInitArgsTuple
     >
 class args_handler
+    : public stringify::v0::detail::throw_on_error_code
+        < stringify::v0::detail::args_handler
+              <FTuple, OutputWriter, OutputWriterInitArgsTuple>
+        , stringify::v0::input_arg<typename OutputWriter::char_type, FTuple>
+        , decltype(std::declval<OutputWriter>().finish())
+        >
 {
 public:
 
@@ -213,17 +367,76 @@ public:
         return std::move(*this);
     }
 
+    constexpr args_handler no_reserve() const &
+    {
+        args_handler copy = *this;
+        copy.m_reservation.set_no_reserve();
+        return copy;
+    }
+    constexpr args_handler no_reserve() const &&
+    {
+        args_handler copy = *this;
+        copy.m_reservation.set_no_reserve();
+        return copy;
+    }
+    constexpr args_handler no_reserve() &
+    {
+        m_reservation.set_no_reserve();
+        return *this;
+    }
+    constexpr args_handler no_reserve() &&
+    {
+        m_reservation.set_no_reserve();
+        return *this;
+    }
+
+    constexpr args_handler reserve_auto() const &
+    {
+        args_handler copy = *this;
+        copy.m_reservation.set_reserve_auto();
+        return copy;
+    }
+    constexpr args_handler reserve_auto() const &&
+    {
+        args_handler copy = *this;
+        copy.m_reservation.set_reserve_auto();
+        return copy;
+    }
+    constexpr args_handler reserve_auto() &
+    {
+        m_reservation.set_reserve_auto();
+        return *this;
+    }
+    constexpr args_handler reserve_auto() &&
+    {
+        m_reservation.set_reserve_auto();
+        return *this;
+    }
+
+    constexpr args_handler reserve(std::size_t size) const &
+    {
+        args_handler copy = *this;
+        copy.m_reservation.set_reserve_size(size);
+        return copy;
+    }
+    constexpr args_handler reserve(std::size_t size) const &&
+    {
+        args_handler copy = *this;
+        copy.m_reservation.set_reserve_size(size);
+        return copy;
+    }
+    constexpr args_handler reserve(std::size_t size) &
+    {
+        m_reservation.set_reserve_size(size);
+        return *this;
+    }
+    constexpr args_handler reserve(std::size_t size) &&
+    {
+        m_reservation.set_reserve_size(size);
+        return *this;
+    }
+
     decltype(auto) operator()(arglist_type lst) const
-    {
-        return process_arg_list(lst);
-    }
-
-    constexpr decltype(auto) operator=(arglist_type lst) &&
-    {
-        return process_arg_list(lst);
-    }
-
-    constexpr decltype(auto) operator=(arglist_type lst) &
     {
         return process_arg_list(lst);
     }
@@ -248,49 +461,54 @@ public:
         return *this;
     }
 
+    std::size_t calculate_size(arglist_type args) const
+    {
+        std::size_t len = 0;
+        for(const auto& arg : args)
+        {
+            len += arg.length(m_ftuple);
+        }
+        return len;
+    }
+
     asm_string operator[](const char_type* asm_str) &&
     {
-        return {m_ftuple, m_owinit, asm_str};
+        return {m_ftuple, m_owinit, asm_str, m_reservation};
     }
 
     asm_string operator[](const char_type* asm_str) const &&
     {
-        return {m_ftuple, m_owinit, asm_str};
+        return {m_ftuple, m_owinit, asm_str, m_reservation};
     }
 
     asm_string operator[](const char_type* asm_str) &
     {
-        return {m_ftuple, m_owinit, asm_str};
+        return {m_ftuple, m_owinit, asm_str, m_reservation};
     }
 
     asm_string operator[](const char_type* asm_str) const &
     {
-        return {m_ftuple, m_owinit, asm_str};
+        return {m_ftuple, m_owinit, asm_str, m_reservation};
+    }
+
+    BOOST_STRINGIFY_NODISCARD
+    constexpr decltype(auto) operator=(arglist_type lst) &&
+    {
+        return process_arg_list(lst);
+    }
+
+    BOOST_STRINGIFY_NODISCARD
+    constexpr decltype(auto) operator=(arglist_type lst) &
+    {
+        return process_arg_list(lst);
     }
 
 private:
 
-    template <typename W>
-    void reserve(std::false_type, W&, const arglist_type&) const
-    {
-    }
-
-    template <typename W>
-    void reserve(std::true_type, W& writer, const arglist_type& lst) const
-    {
-        std::size_t len = 0;
-        for(const auto& arg : lst)
-        {
-            len += arg.length(m_ftuple);
-        }
-        writer.reserve(len);
-    }
-
     decltype(auto) process_arg_list(arglist_type lst) const
     {
         stringify::v0::detail::output_writer_from_tuple<OutputWriter> writer{m_owinit};
-        stringify::v0::detail::has_reserve<OutputWriter> has_reserve;
-        reserve(has_reserve, writer, lst);
+        m_reservation.reserve(*this, writer, lst);
         for(auto it = lst.begin(); it != lst.end() && writer.good(); ++it)
         {
             (*it).write(writer, m_ftuple);
@@ -300,6 +518,8 @@ private:
 
     FTuple m_ftuple;
     OutputWriterInitArgsTuple m_owinit;
+    stringify::v0::detail::output_size_reservation<OutputWriter>
+    m_reservation;
 };
 
 } // namespace detail
@@ -318,4 +538,3 @@ constexpr auto make_args_handler(Args ... args)
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_ARGS_HANDLER_HPP
-

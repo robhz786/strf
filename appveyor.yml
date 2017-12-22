@@ -10,6 +10,7 @@ branches:
     - master
     - develop
     - /feature\/.*/
+    - /release-.*/
 
 environment:
   matrix:
@@ -19,7 +20,7 @@ environment:
 
 install:
   - cd ..
-  - git clone -b %APPVEYOR_REPO_BRANCH% https://github.com/boostorg/boost.git boost-root
+  - git clone -b develop https://github.com/boostorg/boost.git boost-root
   - cd boost-root
   - git submodule init libs/assert
   - git submodule init libs/config

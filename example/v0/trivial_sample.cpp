@@ -7,11 +7,10 @@
 //[ trivial_sample
 #include <boost/stringify.hpp>
 #include <boost/assert.hpp>
-#include <cstring>
 
 int main()
 {
-    namespace strf = boost::stringify::v0;
+    namespace strf = boost::stringify::v0; // v0 is an inline namespace
 
     char output[80];
     const auto name = "Anna";

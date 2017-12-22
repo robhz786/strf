@@ -33,25 +33,29 @@ int main()
 
     std::cout << "\nUTF-8 to UTF-16\n";
 
-    PRINT_BENCHMARK("write_to(u16dest) = {u8sample1}")
+    PRINT_BENCHMARK("boost::stringify::write_to(u16dest) = {u8sample1}")
     {
-        strf::write_to(u16dest) = {u8sample1};
+        auto err = strf::write_to(u16dest) = {u8sample1};
+        (void)err;
     }
-    PRINT_BENCHMARK("write_to(u16dest) = {u8sample2}")
+    PRINT_BENCHMARK("boost::stringify::write_to(u16dest) = {u8sample2}")
     {
-        strf::write_to(u16dest) = {u8sample2};
+        auto err = strf::write_to(u16dest) = {u8sample2};
+        (void)err;
     }
-    PRINT_BENCHMARK("write_to(u16dest) = {u8sample3}")
+    PRINT_BENCHMARK("boost::stringify::write_to(u16dest) = {u8sample3}")
     {
-        strf::write_to(u16dest) = {u8sample3};
+        auto err = strf::write_to(u16dest) = {u8sample3};
+        (void)err;
     }
-    PRINT_BENCHMARK("write_to(u16dest) = {u8sample4}")
+    PRINT_BENCHMARK("boost::stringify::write_to(u16dest) = {u8sample4}")
     {
-        strf::write_to(u16dest) = {u8sample4};
+        auto err = strf::write_to(u16dest) = {u8sample4};
+        (void)err;
     }
 
 
-#if ! defined(MSVC)
+#if ! defined(_MSC_VER)
 
     std::codecvt_utf8_utf16<char16_t> codecvt;
     const char* u8from_next = nullptr;

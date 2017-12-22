@@ -5,29 +5,33 @@
 #define  _CRT_SECURE_NO_WARNINGS
 
 #include <iostream>
-#include <stdio.h>
-#include <string.h>
 #include <climits>
+#include <stdio.h>
 #include <boost/stringify.hpp>
 #include "loop_timer.hpp"
 #include "fmt/format.h"
-
 
 int main()
 {
     namespace strf = boost::stringify;
 
+#ifdef _WIN32
+    FILE* dest = fopen("NUL", "w");
+#else
     FILE* dest = fopen("/dev/null", "w");
+#endif
 
     std::cout << "\n small strings \n";
 
-    PRINT_BENCHMARK("write_to(dest) = {\"Hello \", \"World\", \"!\"}")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) = {\"Hello \", \"World\", \"!\"}")
     {
-        strf::write_to(dest) = {"Hello ", "World", "!"};
+        auto err = strf::write_to(dest) = {"Hello ", "World", "!"};
+        (void)err;
     }
-    PRINT_BENCHMARK("write_to(dest) [\"Hello {}!\"] = {\"World\"}")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) [\"Hello {}!\"] = {\"World\"}")
     {
-        strf::write_to(dest) ["Hello {}!"] = {"World"};
+        auto err = strf::write_to(dest) ["Hello {}!"] = {"World"};
+        (void)err;
     }
     PRINT_BENCHMARK("fmt::print(dest, \"Hello {}!\", \"World\")")
     {
@@ -44,9 +48,15 @@ int main()
         std::string std_string_long_string(1000, 'x');
         const char* long_string = std_string_long_string.c_str();
 
-        PRINT_BENCHMARK("write_to(dest) = {\"Hello \", long_string, \"!\"}")
+        PRINT_BENCHMARK("boost::stringify::write_to(dest) = {\"Hello \", long_string, \"!\"}")
         {
-            strf::write_to(dest) = {"Hello ", long_string, "!"};
+            auto err = strf::write_to(dest) = {"Hello ", long_string, "!"};
+            (void)err;
+        }
+        PRINT_BENCHMARK("boost::stringify::write_to(dest) [\"Hello {}!\"] = {long_string}")
+        {
+            auto err = strf::write_to(dest) ["Hello {}!"] = {long_string};
+            (void)err;
         }
         PRINT_BENCHMARK("fmt::print(dest, \"Hello {}!\", long_string)")
         {
@@ -58,11 +68,38 @@ int main()
         }
     }
 
+    std::cout << "\n padding \n";
+
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) = {{\"aa\", 20}}")
+    {
+        auto err = strf::write_to(dest) = {{"aa", 20}};
+        (void)err;
+    }
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) .with(strf::width(20)) = {\"aa\"}")
+    {
+        auto err = strf::write_to(dest) .with(strf::width(20)) = {"aa"};
+        (void)err;
+    }
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) = { {join_right(20), {\"aa\"}} }")
+    {
+        auto err = strf::write_to(dest) = { {strf::join_right(20), {"aa"}} };
+        (void)err;
+    }
+    PRINT_BENCHMARK("fmt::print(dest, \"{:20}\", \"aa\")")
+    {
+        fmt::print(dest, "{:20}", "aa");
+    }
+    PRINT_BENCHMARK("fprintf(dest, \"%20s\", \"aa\")")
+    {
+        fprintf(dest, "%20s", "aa");
+    }
+
     std::cout << "\n integers \n";
 
-    PRINT_BENCHMARK("write_to(dest) = {25}")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) = {25}")
     {
-        strf::write_to(dest) = {25};
+        auto err = strf::write_to(dest) = {25};
+        (void)err;
     }
     PRINT_BENCHMARK("fmt::print(dest, \"{}\", 25)")
     {
@@ -74,23 +111,10 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) = {INT_MAX}")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) = {LLONG_MAX}")
     {
-        strf::write_to(dest) = {INT_MAX};
-    }
-    PRINT_BENCHMARK("fmt::print(dest, \"{}\", INT_MAX)")
-    {
-        fmt::print(dest, "{}", INT_MAX);
-    }
-    PRINT_BENCHMARK("fprintf(dest, \"%d\", INT_MAX)")
-    {
-        fprintf(dest, "%d", INT_MAX);
-    }
-
-    std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) = {LLONG_MAX}")
-    {
-        strf::write_to(dest) = {LLONG_MAX};
+        auto err = strf::write_to(dest) = {LLONG_MAX};
+        (void)err;
     }
     PRINT_BENCHMARK("fmt::print(dest, \"{}\", LLONG_MAX)")
     {
@@ -102,29 +126,15 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) = {25, 25, 25}")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) = {LLONG_MAX, LLONG_MAX, LLONG_MAX}")
     {
-        strf::write_to(dest) = {25, 25, 25};
+        auto err = strf::write_to(dest) = {LLONG_MAX, LLONG_MAX, LLONG_MAX};
+        (void)err;
     }
-    PRINT_BENCHMARK("write_to(dest) [\"{}{}{}\"] = {25, 25, 25}")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) [\"{}{}{}\"] = {LLONG_MAX, LLONG_MAX, LLONG_MAX}")
     {
-        strf::write_to(dest) ["{}{}{}"] = {25, 25, 25};
-    }
-
-    PRINT_BENCHMARK("fmt::print(dest, \"{}{}{}\", 25, 25, 25)")
-    {
-        fmt::print(dest, "{}{}{}", 25, 25, 25);
-    }
-    PRINT_BENCHMARK("fprintf(dest, \"%d%d%d\", 25, 25, 25)")
-    {
-        fprintf(dest, "%d%d%d", 25, 25, 25);
-    }
-
-
-    std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) = {LLONG_MAX, LLONG_MAX, LLONG_MAX}")
-    {
-        strf::write_to(dest) = {LLONG_MAX, LLONG_MAX, LLONG_MAX};
+        auto err = strf::write_to(dest) ["{}{}{}"] = {LLONG_MAX, LLONG_MAX, LLONG_MAX};
+        (void)err;
     }
     PRINT_BENCHMARK("fmt::print(dest, \"{}{}{}\", LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
@@ -135,93 +145,55 @@ int main()
         fprintf(dest, "%lld%lld%lld", LLONG_MAX, LLONG_MAX, LLONG_MAX);
     }
 
+    std::cout << "\n formatted integers \n";
 
-    std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) = {{25, 20}}")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) [\"{}{}{}\"] = {55555, {55555, {8, \"<+\"}} , {55555, \"#x\"}}")
     {
-        strf::write_to(dest)= {{25, 20}};
+        auto err = strf::write_to(dest) ["{}{}{}"] = {55555, {55555, {8, "<+"}} , {55555, "#x"}};
+        (void)err;
     }
-    PRINT_BENCHMARK("write_to(dest) .with(strf::width(20)) = {25}")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) = {55555, {55555, {8, \"<+\"}} , {55555, \"#x\"}}")
     {
-        strf::write_to(dest).with(strf::width(20)) = {25};
+        auto err = strf::write_to(dest) = {55555, {55555, {8, "<+"}} , {55555, "#x"}};
+        (void)err;
     }
-    PRINT_BENCHMARK("write_to(dest) = { {join_right(20), {25}} }")
+    PRINT_BENCHMARK("fmt::print(dest, \"{}{:<8}{:#x}\", 55555, 55555, 55555)")
     {
-        strf::write_to(dest) = { {strf::join_right(20), {25}} };
+        fmt::print(dest, "{}{:<8}{:#x}", 55555, 55555, 55555);
     }
-    PRINT_BENCHMARK("fmt::print(dest, \"{:20}\", 25)")
+    PRINT_BENCHMARK("sprintf(dest, \"%d%-+8d%#x\", 55555, 55555, 55555)")
     {
-        fmt::print(dest, "{:20}", 25);
-    }
-    PRINT_BENCHMARK("fprintf(dest, \"%20d\", 25)")
-    {
-        fprintf(dest, "%20d", 25);
+        fprintf(dest, "%d%-+8d%#x", 55555, 55555, 55555);
     }
 
-
-    std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) = {{25, {6, \"<+\"}}}")
-    {
-        strf::write_to(dest)= {{25, {6, "<+"}}};
-    }
-    PRINT_BENCHMARK("write_to(dest).with(width(6), left, showpos) = { 25 }")
-    {
-        strf::write_to(dest).with(strf::width(6), strf::left, strf::showpos) = { 25 };
-    }
-
-    PRINT_BENCHMARK("write_to(dest)({strf::make_ftuple(width(6), left, showpos), {25}})")
-    {
-        strf::write_to(dest) = { {strf::make_ftuple(strf::width(6), strf::left, strf::showpos), {25}} };
-    }
-    PRINT_BENCHMARK("fmt::print(dest, \"{:<+6}\", 25)")
-    {
-        fmt::print(dest, "{:<+6}", 25);
-    }
-    PRINT_BENCHMARK("fprintf(dest, \"%6-+d\", 25)")
-    {
-        fprintf(dest, "%-+6d", 25);
-    }
-
-
-    std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) = {{25, \"#x\"}}")
-    {
-        strf::write_to(dest) = {{25, "#x"}};
-    }
-    PRINT_BENCHMARK("write_to(dest) .with(hex, showbase) = {25}")
-    {
-        strf::write_to(dest).with(strf::hex, strf::showbase) = {25};
-    }
-    PRINT_BENCHMARK("fmt::print(dest, \"{:#x}\", 25)")
-    {
-        fmt::print(dest, "{:#x}", 25);
-    }
-    PRINT_BENCHMARK("fprintf(dest, \"%#x\", 25)")
-    {
-        fprintf(dest, "%#x", 25);
-    }
-
-
-    std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) = {25, {25, {6, \"<+\"}} , {25, \"#x\"}}")
-    {
-        strf::write_to(dest) = {25, {25, {6, "<+"}} , {25, "#x"}};
-    }
-    PRINT_BENCHMARK("fmt::print(dest, \"{}{:<6}{:#x}\", 25, 25, 25)")
-    {
-        fmt::print(dest, "{}{:<6}{:#x}", 25, 25, 25);
-    }
-    PRINT_BENCHMARK("fprintf(dest, \"%d%-+6d%#x\", 25, 25, 25)")
-    {
-        fprintf(dest, "%d%-+6d%#x", 25, 25, 25);
-    }
 
     std::cout << "\n Strings and itegers mixed: \n";
 
-    std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) = {\"ten =  \", 10, \", twenty = \", 20}")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) [\"blah blah {} blah {} blah {}\"] = {INT_MAX, {1234, {8, \"<#x\"}}, \"abcdef\"}")
     {
-        strf::write_to(dest) = {"ten =  ", 10, ", twenty = ", 20};
+        auto err = strf::write_to(dest) ["blah blah {} blah {} blah {}"] = {INT_MAX, {1234, {8, "<#x"}}, "abcdef"};
+        (void)err;
+    }
+    PRINT_BENCHMARK("fmt::print(dest, \"blah blah {} blah {:<#8x} blah {}\", INT_MAX, 1234, \"abcdef\")")
+    {
+        fmt::print(dest, "blah blah {} blah {:<#8x} blah {}", INT_MAX, 1234, "abcdef");
+    }
+    PRINT_BENCHMARK("fprintf(dest, \"blah blah %d blah %#-8x blah %s\", INT_MAX, 1234, \"abcdef\")")
+    {
+        fprintf(dest, "blah blah %d blah %#-8x blah %s", INT_MAX, 1234, "abcdef");
+    }
+
+
+    std::cout << std::endl;
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) [\"ten = {}, twenty = {}\"] = {10, 20}")
+    {
+        auto err = strf::write_to(dest) ["ten = {}, twenty = {}"] = {10, 20};
+        (void)err;
+    }
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) = {\"ten =  \", 10, \", twenty = \", 20}")
+    {
+        auto err = strf::write_to(dest) = {"ten =  ", 10, ", twenty = ", 20};
+        (void)err;
     }
     PRINT_BENCHMARK("fmt::print(dest, \"ten = {}, twenty = {}\", 10, 20)")
     {

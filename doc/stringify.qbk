@@ -14,6 +14,11 @@
     [source-mode c++]
 ]
 
+[def
+__STD_EXPECTED__
+  [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0323r4.html `std::expected`]
+]
+
 
 [include overview.qbk]
 [include:tutorial tutorial.qbk]

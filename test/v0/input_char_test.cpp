@@ -18,7 +18,7 @@ int main()
     namespace strf = boost::stringify::v0;
     
     // width, alignment, and repetitions
-    TEST("aaaa|bbbb|cccc  |    |aaaa|bbbb|  cccc|    ") =
+    TEST("aaaa|bbbb|cccc  |    |aaaa|bbbb|  cccc|    ") &=
     {
             {'a', {2, "<", 4}}, '|',
             {'b', {4, "<", 4}}, '|',
@@ -33,7 +33,7 @@ int main()
 
 
     // width calculations inside joins
-    TEST("aaaa|  bb|cccc|  dd|eeee--|  ff--") =
+    TEST("aaaa|  bb|cccc|  dd|eeee--|  ff--") &=
     {
         {strf::join_left(2, '-'), {{'a', {2, "", 4}}}}, '|',
         {strf::join_left(2, '-'), {{'b', {4, "", 2}}}}, '|',
@@ -50,7 +50,7 @@ int main()
         .with
         ( strf::fill_if<is_char>(U'-')
         , strf::width_if<is_char>(4)
-        ) =
+        ) &=
     {
          'a',
          {'b', {"", 2}},
@@ -82,7 +82,7 @@ int main()
         ( strf::fill_if<is_char>(U'-')
         , strf::width_if<is_char>(4)
         , strf::internal_if<is_char>
-        ) =
+        ) &=
     {
          'a',
          {'b', {"", 2}},
@@ -114,7 +114,7 @@ int main()
         ( strf::fill_if<is_char>(U'-')
         , strf::width_if<is_char>(4)
         , strf::right_if<is_char>
-        ) =
+        ) &=
     {
          'a',
          {'b', {"", 2}},
@@ -147,7 +147,7 @@ int main()
         ( strf::fill_if<is_char>(U'-')
         , strf::width_if<is_char>(4)
         , strf::left_if<is_char>
-        ) =
+        ) &=
     {
          'a',
          {'b', {"", 2}},

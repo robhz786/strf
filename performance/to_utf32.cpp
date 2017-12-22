@@ -30,11 +30,13 @@ int main()
 
     PRINT_BENCHMARK("write_to(u32output) = {u16sample1}")
     {
-        strf::write_to(u32output) = {u16sample1};
+        auto err = strf::write_to(u32output) = {u16sample1};
+        (void)err;
     }
     PRINT_BENCHMARK("write_to(u32output) = {u16sample4}")
     {
-        strf::write_to(u32output) = {u16sample4};
+        auto err = strf::write_to(u32output) = {u16sample4};
+        (void)err;
     }
 
     std::cout << "\nUTF-8 to UTF-32\n";
@@ -48,22 +50,26 @@ int main()
 
     PRINT_BENCHMARK("write_to(u32output) = {u8sample1}")
     {
-        strf::write_to(u32output) = {u8sample1};
+        auto err = strf::write_to(u32output) = {u8sample1};
+        (void)err;
     }
     PRINT_BENCHMARK("write_to(u32output) = {u8sample2}")
     {
-        strf::write_to(u32output) = {u8sample2};
+        auto err = strf::write_to(u32output) = {u8sample2};
+        (void)err;
     }
     PRINT_BENCHMARK("write_to(u32output) = {u8sample3}")
     {
-        strf::write_to(u32output) = {u8sample3};
+        auto err = strf::write_to(u32output) = {u8sample3};
+        (void)err;
     }
     PRINT_BENCHMARK("write_to(u32output) = {u8sample4}")
     {
-        strf::write_to(u32output) = {u8sample4};
+        auto err = strf::write_to(u32output) = {u8sample4};
+        (void)err;
     }
 
-#if ! defined(MSVC)
+#if ! defined(_MSC_VER)
 
     std::locale::global(std::locale("en_US.utf8"));
     auto& codecvt = std::use_facet<std::codecvt<char32_t, char, std::mbstate_t>>(std::locale());

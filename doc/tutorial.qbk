@@ -16,48 +16,28 @@
                                  ( ' = { arguments... }' | '[{ arguments... }]' )
 
   usage ::= 'leading_expression'
-  ( '()' | '.no_reserve()' | '.reserve_auto()' | '.reserve(size)' | '.with(facets...)' ) *
-  ( ( '[assembly_string]'?
-      ('.arg_list({arguments...})' | '={arguments...}' | '&={arguments...}'))
-    | '.args(arguments...)')
-
+  ( '()' | '.no_reserve()' | '.reserve(size)' | '.reserve_auto()' | '.with(facets...)' ) *
+  ( '[assembly_string]' ? ('({arguments...})' | '={arguments...}' | '&={arguments...}'))
 ]
 
 [#syntax_diagram]
-[/
+
 [$../usage.png]
 [footnote This railroad diagram was generated on [@http://bottlecaps.de/rr bottlecaps.de/rr]]
-]
-/(todo: diagram)/
+
+The ['[*leading expression]] is the part of the expression the varies according to the output type, as show in [link output_types.output_types this table].
+
+The [link section_assembly_string ['[*assembly string]]] is analogous to what in others formatting libraries is called as the /format string/, but is does not specify any formatting. Here, the term "/format string/" usually refers to something else.
 
 Example:
 
 [trivial_sample]
 
-[variablelist
+[h4 Arguments]
 
-[[Leading expression]
- [This is the part of the expression the varies according to the output type, as show in [link output_types.output_types this table].]
-]
-
-[[Assembly string]
- [The [link section_assembly_string assembly_string] is analogous to what in others formatting libraries is called as the /format string/, but is does not specify any formatting. Here, the term "/format string/" usually refers to something else.]
-]
-
-[[Arguments]
-[An [link section_input_types input argument] can be just a value to be stringified as above, or it can be a /braced-init-list/ composed by two arguments: the first one is the value to be stringified whose type defines the type and the purpose of the second argument, which may also be a /braced-init-list/ and usually specifies formatting ( as described [link conventional_formatting here] ). For example:
+An [link section_input_types input argument] can be just a value to be stringified as above, or it can be a /braced-init-list/ composed by two arguments: the first one is the value to be stringified whose type defines the purpose and type of the second argument, which may also be a /braced-init-list/ and usually specifies formatting ( as described [link conventional_formatting here] ). For example:
 [trivial_formatting_sample]
-This /braced-init-list/ aims to provide a pratical and compact syntax for formatting. But it does not support many formatting options, just those more frequently used. /Facets/ can be used to compensate this limitation.]
-]
-
-[ [Facets]
-[[link section_facets Facets] can be used for ordinary formatting, like changing the default alignment or numeric base. But also to customize more complex things.]
-]
-
-]
-
-
-[/ The reason why one would use the empty call `()` without any assembly string is t ]
+This /braced-init-list/ aims to provide a pratical and compact syntax for formatting. But it does not support many formatting options, just those more frequently used. [link section_facets Facets] can be used to compensate this limitation.
 
 [/
 However keep in mind that an input type does not necessarily take formatting
@@ -67,6 +47,54 @@ options are avaible, if any. A certain input may not use any formatting string,
 and if it does, it doesn't have to follow the table above. 
 Refer to the documentation of each input type.
 ]
+
+
+As shown in the diagram, there are diferent ways you can inject the arguments:
+
+[variablelist
+
+[ [ \u2022 /leading_expression/  \u00b7\u00b7\u00b7  `({`[~args ...]`})` ]
+ [This expression returns the same as the [link OutputWriterConcept `finish()`] member function of the writer object. This varies according to the leading expressiong, as described [link ReturnTypes here]]
+
+ [The disadvantage of this form is that some IDEs get cofused when identing the code. ]
+ [/[*Synopsis: ]  [~implementation_defined]`::operator()(std::initializer_list<`[~implementation_defined]`>)`]
+ [/[*Return: ] The return of [link OutputWriterConcept `finish()`] member function of the writer object. This varies according to the leading expressiong, as described [link ReturnTypes here]]
+]
+]
+
+[variablelist
+
+[[ \u2022 /leading_expression/  \u00b7\u00b7\u00b7 ` = {`[~args ...]`}`]
+ [This is equivalent to /leading_expression/  \u00b7\u00b7\u00b7  `({`[~args ...]`})`. Its  disavantange is that, in addition to being perhaps non intuitive, it requires the expression on the left to assignable. This is not the case of `make_string` which is a `constexpr`, for example. But any of the member functions appliable to the /leading expession/ returns an assignable object. 
+ [make_string_is_not_assignable]
+ ]
+
+ [/[*Synopsis: ]  [~implementation_defined]`::operator=(std::initializer_list<`[~implementation_defined]`>)`]
+ [/[*Return: ] same as [~leading_expression]  \u00b7\u00b7\u00b7  `({`[~args ...]`})`]
+]
+]
+
+[variablelist
+
+[[ \u2022 /leading_expression/  \u00b7\u00b7\u00b7 ` &= {`[~args ...]`}`]
+ [This is the form for those who prefer to use exceptions instead of error codes]
+ [While the other two forms return `std::error_code` or `expected<`[~SomeType]`, std::error_code>` (depending on the /leading expression/), here the return type is instead `void` or [~SomeType] respectively. If the generated `std::error_code` is not empty then this expression throws an `std::system_error` construted from this `std::error_code`.]
+ 
+
+
+]
+]
+
+[h4 Reserving output size]
+
+The following member functions only have effect in some output types ( cases 1 to 7 in [link output_types.output_types this table], or when you create the [link OutputWriterConcept reserve] method when defining your own ouput type ). 
+
+* [*`reserve_auto()`] : The necessary amount of characters is calculated and reserved in the destination object. This is the default.
+* [*`reserve(std::size_t size)`] : The calculation is skipped and the specified `size` is used instead.
+* [*`no_reserve()`] : No reservation is done.
+
+[syntax_reserve]
+
 
 [endsect]
 

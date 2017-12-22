@@ -3,7 +3,7 @@
 #  http://www.boost.org/LICENSE_1_0.txt)
 
 project libs/stringify/test
-    : requirements 
+    : requirements
       <include>../include
       <toolset>clang:<cxxflags>"-std=c++1y -Wall -Wextra"
       <toolset>darwin:<cxxflags>"-std=c++1y -Wall -Wextra"
@@ -29,10 +29,12 @@ test-suite stringify-v0 :
    [ run v0/output_streambuf_test.cpp : : : : v0-output_streambuf_test-ho ]
    [ run v0/output_FILE_test.cpp      : : : : v0-output_FILE_test-ho ]
    [ run v0/ftuple_merge_test.cpp     : : : : v0-ftuple_merge_test-ho ]
+   [ run v0/reserve_test.cpp          : : : : v0-reserve_test-ho ]
+   [ run v0/throw_on_error_code_test.cpp : : : : v0-throw_on_error_code_test-ho ]
    [ run v0/utf8_encoding_test.cpp    : : : : v0-utf8_encoding_test-ho ]
    [ run v0/utf8_decoding_test.cpp    : : : : v0-utf8_decoding_test-ho ]
    [ run v0/utf16_encoding_test.cpp   : : : : v0-utf16_encoding_test-ho ]
-   [ run v0/utf16_decoding_test.cpp   : : : : v0-utf16_decoding_test-ho ]  
+   [ run v0/utf16_decoding_test.cpp   : : : : v0-utf16_decoding_test-ho ]
 
 
    # as static library:
@@ -49,10 +51,12 @@ test-suite stringify-v0 :
    [ run v0/output_streambuf_test.cpp $(slib) : : : $(nho) : v0-output_streambuf_test-nho ]
    [ run v0/output_FILE_test.cpp      $(slib) : : : $(nho) : v0-output_FILE_test-nho ]
    [ run v0/ftuple_merge_test.cpp     $(slib) : : : $(nho) : v0-ftuple_merge_test-nho ]
+   [ run v0/reserve_test.cpp          $(slib) : : : $(nho) : v0-reserve_test-nho ]
+   [ run v0/throw_on_error_code_test.cpp $(slib) : : : $(nho) : v0-throw_on_error_code_test-nho ]
    [ run v0/utf8_encoding_test.cpp    $(slib) : : : $(nho) : v0-utf8_encoding_test-nho ]
    [ run v0/utf8_decoding_test.cpp    $(slib) : : : $(nho) : v0-utf8_decoding_test-nho ]
    [ run v0/utf16_encoding_test.cpp   $(slib) : : : $(nho) : v0-utf16_encoding_test-nho ]
-   [ run v0/utf16_decoding_test.cpp   $(slib) : : : $(nho) : v0-utf16_decoding_test-nho ]  
+   [ run v0/utf16_decoding_test.cpp   $(slib) : : : $(nho) : v0-utf16_decoding_test-nho ]
 ;
 
 # Satisfy the Boost library requirements

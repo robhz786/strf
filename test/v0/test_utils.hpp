@@ -306,7 +306,7 @@ public:
         return false;
     }
 
-    std::basic_string<CharT> finish()
+    std::error_code finish()
     {
         if (m_expected_error != m_obtained_error || m_expected != m_result || wrongly_reserved())
         {
@@ -329,7 +329,7 @@ public:
             std::cout << "necessary size :" <<  m_result.length() << "\n";
         }
 
-        return std::move(m_result);
+        return {};
     }
 
     void reserve(std::size_t size)

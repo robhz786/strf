@@ -8,7 +8,7 @@
 
 Suppose you have a type `foobar` and you want to create a function named `write_to` that takes a `foobar&` as a parameter and can be used just like the [link output_types.output_types other functions]
 
-
+[#OutputWriterConcept]
 [*Step 1)] Create a class - let's call it `foobar_writer` - that satisfies the following requirements:
 
 * inherits from [link output_writer `output_writer<`[~CharT]`>`], where [~CharT] is `char`, `char16_t`, `char32_t` or `wchar_t`. ( or rather, make `foobar_writer` class template );

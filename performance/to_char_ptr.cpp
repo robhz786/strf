@@ -24,18 +24,18 @@ int main()
     char dest[1000000];
     constexpr std::size_t dest_size = sizeof(dest);
 
-
     std::cout << "\n small strings \n";
 
-    PRINT_BENCHMARK("write_to(dest) = {\"Hello \", \"World\", \"!\"}")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) = {\"Hello \", \"World\", \"!\"}")
     {
-        strf::write_to(dest) = {"Hello ", "World", "!"};
+        auto err = strf::write_to(dest) = {"Hello ", "World", "!"};
+        (void)err;
     }
-    PRINT_BENCHMARK("write_to(dest) [\"Hello {}!\"] = {\"World\"}")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) [\"Hello {}!\"] = {\"World\"}")
     {
-        strf::write_to(dest) ["Hello {}!"] = {"World"};
+        auto err = strf::write_to(dest) ["Hello {}!"] = {"World"};
+        (void)err;
     }
-
     PRINT_BENCHMARK("karma::generate(dest, karma::lit(\"Hello \") << \"World\" << \"!\")")
     {
         char* d = dest;
@@ -58,9 +58,15 @@ int main()
         std::string std_string_long_string(1000, 'x');
         const char* long_string = std_string_long_string.c_str();
 
-        PRINT_BENCHMARK("write_to(dest) = {\"Hello \", long_string, \"!\"}")
+        PRINT_BENCHMARK("boost::stringify::write_to(dest) = {\"Hello \", long_string, \"!\"}")
         {
-            strf::write_to(dest) = {"Hello ", long_string, "!"};
+            auto err = strf::write_to(dest) = {"Hello ", long_string, "!"};
+            (void)err;
+        }
+        PRINT_BENCHMARK("boost::stringify::write_to(dest) [\"Hello {}!\"] = {long_string}")
+        {
+            auto err = strf::write_to(dest) ["Hello {}!"] = {long_string};
+            (void)err;
         }
         PRINT_BENCHMARK("karma::generate(dest, lit(\"Hello \") << long_string << \"!\")")
         {
@@ -79,11 +85,45 @@ int main()
         }
     }
 
+    std::cout << "\n padding \n";
+
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) = {{\"aa\", 20}}")
+    {
+        auto err = strf::write_to(dest) = {{"aa", 20}};
+        (void)err;
+    }
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) .with(strf::width(20)) = {\"aa\"}")
+    {
+        auto err = strf::write_to(dest) .with(strf::width(20)) = {"aa"};
+        (void)err;
+    }
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) = { {join_right(20), {\"aa\"}} }")
+    {
+        auto err = strf::write_to(dest) = { {strf::join_right(20), {"aa"}} };
+        (void)err;
+    }
+    PRINT_BENCHMARK("karma::generate(dest, karma::right_align(20)[\"aa\"])")
+    {
+        char* d = dest;
+        karma::generate(d, karma::right_align(20)["aa"]);
+        *d = '\0';
+    }
+    PRINT_BENCHMARK("fmt_writer.write(dest, \"{:20}\", \"aa\")")
+    {
+        fmt::BasicArrayWriter<char> writer(dest, dest_size);
+        writer.write(dest, "{:20}", "aa");
+    }
+    PRINT_BENCHMARK("sprintf(dest, \"%20s\", \"aa\")")
+    {
+        sprintf(dest, "%20s", "aa");
+    }
+
     std::cout << "\n integers \n";
 
-    PRINT_BENCHMARK("write_to(dest) = {25}")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) = {25}")
     {
-        strf::write_to(dest) = {25};
+        auto err = strf::write_to(dest) = {25};
+        (void)err;
     }
     PRINT_BENCHMARK("karma::generate(dest, karma::int_, 25)")
     {
@@ -102,32 +142,12 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) = {INT_MAX}")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) = {LLONG_MAX}")
     {
-        strf::write_to(dest) = {INT_MAX};
+        auto err = strf::write_to(dest) = {LLONG_MAX};
+        (void)err;
     }
-    PRINT_BENCHMARK("karma::generate(dest, karma::int_, INT_MAX);")
-    {
-        char* d = dest;
-        karma::generate(d, karma::int_, INT_MAX);
-        *d = '\0';
-    }
-    PRINT_BENCHMARK("fmt_writer.write(\"{}\", INT_MAX)")
-    {
-        fmt::BasicArrayWriter<char> writer(dest, dest_size);
-        writer.write("{}", INT_MAX);
-    }
-    PRINT_BENCHMARK("sprintf(dest, \"%d\", INT_MAX)")
-    {
-        sprintf(dest, "%d", INT_MAX);
-    }
-
-    std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) = {LLONG_MAX}")
-    {
-        strf::write_to(dest) = {LLONG_MAX};
-    }
-    PRINT_BENCHMARK("karma::generate(dest, karma::long_long, LLONG_MAX);")
+    PRINT_BENCHMARK("karma::generate(dest, karma::long_long, LLONG_MAX)")
     {
         char* d = dest;
         karma::generate(d, karma::long_long, LLONG_MAX);
@@ -142,15 +162,17 @@ int main()
     {
         sprintf(dest, "%lld", LLONG_MAX);
     }
-
+/*
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) = {25, 25, 25}")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) = {25, 25, 25}")
     {
-        strf::write_to(dest) = {25, 25, 25};
+        auto err = strf::write_to(dest) = {25, 25, 25};
+        (void)err;
     }
-    PRINT_BENCHMARK("write_to(dest) [\"{}{}{}\"] = {25, 25, 25}")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) [\"{}{}{}\"] = {25, 25, 25}")
     {
-        strf::write_to(dest) ["{}{}{}"] = {25, 25, 25};
+        auto err = strf::write_to(dest) ["{}{}{}"] = {25, 25, 25};
+        (void)err;
     }
 
     PRINT_BENCHMARK("karma::generate(dest, int_ << int_ << int_, 25, 25, 25)")
@@ -169,14 +191,20 @@ int main()
     {
         sprintf(dest, "%d%d%d", 25, 25, 25);
     }
-
+*/
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) = {LLONG_MAX, LLONG_MAX, LLONG_MAX}")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) = {LLONG_MAX, LLONG_MAX, LLONG_MAX}")
     {
-        strf::write_to(dest) = {LLONG_MAX, LLONG_MAX, LLONG_MAX};
+        auto err = strf::write_to(dest) = {LLONG_MAX, LLONG_MAX, LLONG_MAX};
+        (void)err;
     }
-    PRINT_BENCHMARK("karma::generate(dest, long_long_x3, LLONG_MAX, LLONG_MAX, LLONG_MAX)")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) [\"{}{}{}\"] = {LLONG_MAX, LLONG_MAX, LLONG_MAX}")
+    {
+        auto err = strf::write_to(dest) ["{}{}{}"] = {LLONG_MAX, LLONG_MAX, LLONG_MAX};
+        (void)err;
+    }
+    PRINT_BENCHMARK("karma::generate(d, long_long << long_long << long_long, LLONG_MAX, LLONG_MAX, LLONG_MAX);")
     {
         char* d = dest;
         using karma::long_long;
@@ -193,129 +221,75 @@ int main()
         sprintf(dest, "%lld%lld%lld", LLONG_MAX, LLONG_MAX, LLONG_MAX);
     }
 
-
-    std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) = {{25, 20}}")
+    std::cout << "\n formatted integers \n";
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) [\"{}{}{}\"] = {55555, {55555, {8, \"<+\"}} , {55555, \"#x\"}}")
     {
-        strf::write_to(dest)= {{25, 20}};
+        auto err = strf::write_to(dest) ["{}{}{}"] = {55555, {55555, {8, "<+"}} , {55555, "#x"}};
+        (void)err;
     }
-    PRINT_BENCHMARK("write_to(dest) .with(strf::width(20)) = {25}")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) = {55555, {55555, {8, \"<+\"}} , {55555, \"#x\"}}")
     {
-        strf::write_to(dest).with(strf::width(20)) = {25};
+        auto err = strf::write_to(dest) = {55555, {55555, {8, "<+"}} , {55555, "#x"}};
+        (void)err;
     }
-    PRINT_BENCHMARK("write_to(dest) = { {join_right(20), {25}} }")
-    {
-        strf::write_to(dest) = { {strf::join_right(20), {25}} };
-    }
-    PRINT_BENCHMARK("karma::generate(dest, right_align(20)[int_], 25);")
+    PRINT_BENCHMARK("karma::generate(dest, int_ << left_align(8)[int_generator<int, 10, true>{}] << \"0x\" << int_generator<int, 16, false>{}, 55555, 55555, 55555)")
     {
         char* d = dest;
-        using karma::right_align;
-        using karma::int_;
-        karma::generate(d, right_align(20)[int_], 25);
-        *d = '\0';
-    }
-    PRINT_BENCHMARK("fmt_writer.write(\"{:20}\", 25)")
-    {
-        fmt::BasicArrayWriter<char> writer(dest, dest_size);
-        writer.write("{:20}", 25);
-    }
-    PRINT_BENCHMARK("sprintf(dest, \"%20d\", 25)")
-    {
-        sprintf(dest, "%20d", 25);
-    }
-
-
-    std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) = {{25, {6, \"<+\"}}}")
-    {
-        strf::write_to(dest)= {{25, {6, "<+"}}};
-    }
-    PRINT_BENCHMARK("write_to(dest).with(width(6), left, showpos) = { 25 }")
-    {
-        strf::write_to(dest).with(strf::width(6), strf::left, strf::showpos) = { 25 };
-    }
-
-    PRINT_BENCHMARK("write_to(dest)({strf::make_ftuple(width(6), left, showpos), {25}})")
-    {
-        strf::write_to(dest) = { {strf::make_ftuple(strf::width(6), strf::left, strf::showpos), {25}} };
-    }
-    PRINT_BENCHMARK("karma::generate(dest, karma::left_align(6)[dec_showpos], 25)")
-    {
-        char* d = dest;
-        karma::int_generator<int, 10, true> dec_showpos;
-        karma::generate(d, karma::right_align(6)[dec_showpos], 25);
-        *d = '\0';
-    }
-    PRINT_BENCHMARK("fmt_writer.write(\"{:<+6}\", 25)")
-    {
-        fmt::BasicArrayWriter<char> writer(dest, dest_size);
-        writer.write("{:<+6}", 25);
-    }
-    PRINT_BENCHMARK("sprintf(dest, \"%6-+d\", 25)")
-    {
-        sprintf(dest, "%-+6d", 25);
-    }
-
-
-    std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) = {{25, \"#x\"}}")
-    {
-        strf::write_to(dest) = {{25, "#x"}};
-    }
-    PRINT_BENCHMARK("write_to(dest) .with(hex, showbase) = {25}")
-    {
-        strf::write_to(dest).with(strf::hex, strf::showbase) = {25};
-    }
-    PRINT_BENCHMARK("karma::generate(dest, karma::generate(d, lit(\"0x\") << hex, 25)")
-    {
-        char* d = dest;
-        karma::int_generator<int, 16, false> hex;
+        using karma::int_generator;
         using karma::left_align;
-        karma::generate(d, karma::lit("0x") << hex, 25);
+        karma::generate(d, int_ << left_align(8)[int_generator<int, 10, true>{}] << "0x" << int_generator<int, 16, false>{}, 55555, 55555, 55555);
+
         *d = '\0';
     }
-    PRINT_BENCHMARK("fmt_writer.write(\"{:#x}\", 25)")
+    PRINT_BENCHMARK("fmt_writer.write(\"{}{:<8}{:#x}\", 55555, 55555, 55555)")
     {
         fmt::BasicArrayWriter<char> writer(dest, dest_size);
-        writer.write("{:#x}", 25);
+        writer.write("{}{:<8}{:#x}", 55555, 55555, 55555);
     }
-    PRINT_BENCHMARK("sprintf(dest, \"%#x\", 25)")
+    PRINT_BENCHMARK("sprintf(dest, \"%d%-+8d%#x\", 55555, 55555, 55555)")
     {
-        sprintf(dest, "%#x", 25);
-    }
-
-
-    std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) = {25, {25, {6, \"<+\"}} , {25, \"#x\"}}")
-    {
-        strf::write_to(dest) = {25, {25, {6, "<+"}} , {25, "#x"}};
-    }
-    PRINT_BENCHMARK("karma::generate(dest, int_ << left_6_show << \"0x\" << hex, 25,25,25)")
-    {
-        char* d = dest;
-        karma::int_generator<int, 16, false> hex;
-        karma::int_generator<int, 10, true> showpos;
-        using karma::left_align;
-        karma::generate(d, karma::int_ << left_align(6)[showpos] << "0x" << hex, 25,25,25);
-        *d = '\0';
-    }
-    PRINT_BENCHMARK("fmt_writer.write(\"{}{:<6}{:#x}\", 25, 25, 25)")
-    {
-        fmt::BasicArrayWriter<char> writer(dest, dest_size);
-        writer.write("{}{:<6}{:#x}", 25, 25, 25);
-    }
-    PRINT_BENCHMARK("sprintf(dest, \"%d%-+6d%#x\", 25, 25, 25)")
-    {
-        sprintf(dest, "%d%-+6d%#x", 25, 25, 25);
+        sprintf(dest, "%d%-+8d%#x", 55555, 55555, 55555);
     }
 
     std::cout << "\n Strings and itegers mixed: \n";
 
-    std::cout << std::endl;
-    PRINT_BENCHMARK("write_to(dest) = {\"ten =  \", 10, \", twenty = \", 20}")
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) [\"blah blah {} blah {} blah {}\"] = {INT_MAX, {1234, {8, \"<#x\"}}, \"abcdef\"}")
     {
-        strf::write_to(dest) = {"ten =  ", 10, ", twenty = ", 20};
+        auto err = strf::write_to(dest) ["blah blah {} blah {} blah {}"] = {INT_MAX, {1234, {8, "<#x"}}, "abcdef"};
+        (void)err;
+    }
+    PRINT_BENCHMARK("karma::generate(dest, lit(\"blah blah \") << int_ << \" blah \" << left_align(8)[int_generator<int, 16, false>{}] << \" blah \" << \"abcdef\", INT_MAX, 1234)")
+    {
+        char* d = dest;
+        using namespace karma;
+        karma::generate
+            ( d
+              , lit("blah blah ") << int_ << " blah " << left_align(8)[int_generator<int, 16, false>{}] << " blah " << "abcdef"
+            , INT_MAX, 1234
+            );
+
+        *d = '\0';
+    }
+    PRINT_BENCHMARK("fmt_writer.write(\"blah blah {} blah {:<#8x} blah {}\", INT_MAX, 1234, \"abcdef\")")
+    {
+        fmt::BasicArrayWriter<char> writer(dest, dest_size);
+        writer.write("blah blah {} blah {:<#8x} blah {}", INT_MAX, 1234, "abcdef");
+    }
+    PRINT_BENCHMARK("sprintf(dest, \"blah blah %d blah %#-8x blah %s\", INT_MAX, 1234, \"abcdef\")")
+    {
+        sprintf(dest, "blah blah %d blah %#-8x blah %s", INT_MAX, 1234, "abcdef");
+    }
+
+    std::cout << std::endl;
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) [\"ten = {}, twenty = {}\"] = {10, 20}")
+    {
+        auto err = strf::write_to(dest) ["ten = {}, twenty = {}"] = {10, 20};
+        (void)err;
+    }
+    PRINT_BENCHMARK("boost::stringify::write_to(dest) = {\"ten =  \", 10, \", twenty = \", 20}")
+    {
+        auto err = strf::write_to(dest) = {"ten =  ", 10, ", twenty = ", 20};
+        (void)err;
     }
     PRINT_BENCHMARK("karma::generate(dest, lit(\"ten= \") << int_ <<\", twenty = \" << int_, 10, 20")
     {

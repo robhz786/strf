@@ -44,7 +44,7 @@ void sample3(wchar_t (&out)[200])
 
 std::string sample4()
 {
-    return * strf::make_string() = 
+    return strf::make_string() &=
         {
             20, " ", 20u, " ", 20l, " ", 20ul, " ", 20ll, " ",
             20ul, " aaa ", {123, {10, "<x"}}, " ", "abc"
@@ -53,9 +53,9 @@ std::string sample4()
 
 std::wstring sample4w()
 {
-    return * strf::make_wstring
-        ({
+    return strf::make_wstring() &=
+        {
             20, L" ", 20u, L" ", 20l, L" ", 20ul, L" ", 20ll, L" ",
             20ul, L" aaa ", {123, {10, "<x"}}, L" ", L"abc"
-        });
+        };
 }

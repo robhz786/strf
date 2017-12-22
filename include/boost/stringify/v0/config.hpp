@@ -7,6 +7,13 @@
 
 #include <type_traits>
 
+#define BOOST_STRINGIFY_V0_NAMESPACE_BEGIN         \
+namespace boost {                                  \
+namespace stringify {                              \
+inline namespace v0 {                              \
+
+#define BOOST_STRINGIFY_V0_NAMESPACE_END  } } }
+
 #if defined(BOOST_STRINGIFY_SOURCE) && !defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 #define BOOST_STRINGIFY_NOT_HEADER_ONLY
 #endif
@@ -28,20 +35,66 @@
 #endif
 
 
-#if __cplusplus >= 201703L && defined(__has_include)
+#if defined(_MSC_VER) && _MSC_VER < 1911
+#define BOOST_STRINGIFY_NO_NODISCARD
+#endif
+
+#if defined(__GNUC__) && __GNUC__ < 7
+#define BOOST_STRINGIFY_NO_NODISCARD
+#endif
+
+#if defined(__clang__)
+#if __has_attribute(nodiscard) == 0
+#define BOOST_STRINGIFY_NO_NODISCARD
+#endif
+#endif
+
+#if defined(__INTEL_COMPILER) && __INTEL_COMPILER < 1800
+#define BOOST_STRINGIFY_NO_NODISCARD
+#endif
+
+#if __cplusplus < 201703L
+#define BOOST_STRINGIFY_NO_NODISCARD
+#endif
+
+
+#if __cplusplus >= 201703L
+
+#if ! defined(BOOST_STRINGIFY_NO_NODISCARD)
+#define BOOST_STRINGIFY_HAS_NODISCARD
+#endif
+
+#if defined(__has_include)
+
 #if __has_include(<string_view>)
 #define BOOST_STRINGIFY_HAS_STD_STRING_VIEW
 #include <string_view>
 #endif
+
+#if __has_include(<optional>)
+#define BOOST_STRINGIFY_HAS_STD_OPTIONAL
+#include <optional>
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN;
+using in_place_t = ::std::in_place_t;
+BOOST_STRINGIFY_V0_NAMESPACE_END;
 #endif
 
+#endif // defined(__has_include)
 
-#define BOOST_STRINGIFY_V0_NAMESPACE_BEGIN         \
-namespace boost {                                  \
-namespace stringify {                              \
-inline namespace v0 {                              \
+#endif // __cplusplus >= 201703L 
 
-#define BOOST_STRINGIFY_V0_NAMESPACE_END  } } }
+#if defined(BOOST_STRINGIFY_HAS_NODISCARD)
+#define BOOST_STRINGIFY_NODISCARD [[nodiscard]]
+#else
+#define BOOST_STRINGIFY_NODISCARD
+#endif //defined(BOOST_STRINGIFY_HAS_NODISCARD)
+
+
+#if ! defined(BOOST_STRINGIFY_HAS_STD_OPTIONAL)
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN;
+struct in_place_t {};
+BOOST_STRINGIFY_V0_NAMESPACE_END;
+#endif //! defined(BOOST_STRINGIFY_HAS_STD_OPTIONAL)
 
 
 #if ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)

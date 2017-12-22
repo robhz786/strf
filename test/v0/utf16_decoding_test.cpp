@@ -22,14 +22,14 @@ bool emit_illegal_byte_sequence(strf::u32output& rec)
 void char16_tests()
 {
     // basic sample
-    TEST(U"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF") =
+    TEST(U"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF") &=
         {
             u"--\u0080--\uD7FF--\uE000--\uFFFF"
             u"--\U00100000--\U0010FFFF"
         };
 
     TEST(U"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF")
-        .with(strf::lax_u16decoder<char16_t>{}) =
+        .with(strf::lax_u16decoder<char16_t>{}) &=
         {
             u"--\u0080--\uD7FF--\uE000--\uFFFF"
             u"--\U00100000--\U0010FFFF"
@@ -48,7 +48,7 @@ void char16_tests()
 
 
     // defaul error handling: replace invalid codepoints, by '\uFFFD'
-    TEST(U" \uFFFD \uFFFD \uFFFD \uFFFD \uFFFD ") =
+    TEST(U" \uFFFD \uFFFD \uFFFD \uFFFD \uFFFD ") &=
         { sample_with_alone_surrogates };
 
     // allowing alone surrogates
@@ -77,7 +77,7 @@ void char16_tests()
 
         TEST_ERR(U" ", err)
             .with(strf::make_u16decoders(err_hndl_func))
-            = {sample_with_alone_surrogates};
+            &= {sample_with_alone_surrogates};
     }
 
     {   // emit error code on invalid sequece
@@ -85,7 +85,7 @@ void char16_tests()
 
         TEST_ERR(U"blah ", expected_error)
             .with(strf::make_u16decoders(emit_illegal_byte_sequence))
-            = { u"blah", sample_with_alone_surrogates, u"blah"};
+            &= { u"blah", sample_with_alone_surrogates, u"blah"};
     }
 
 }
@@ -96,7 +96,7 @@ void wchar_tests()
 #if defined(_WIN32) && ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
 
     // basic sample
-    TEST(U"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF") =
+    TEST(U"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF") &=
         {
             L"--\u0080--\uD7FF--\uE000--\uFFFF"
             L"--\U00100000--\U0010FFFF"
@@ -104,7 +104,7 @@ void wchar_tests()
 
     // basic sample
     TEST(U"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF")
-        .with(strf::make_u16decoders())  =
+        .with(strf::make_u16decoders())  &=
         {
             L"--\u0080--\uD7FF--\uE000--\uFFFF"
             L"--\U00100000--\U0010FFFF"
@@ -123,14 +123,14 @@ void wchar_tests()
 
 
     // defaul error handling: replace invalid codepoints, by '\uFFFD'
-    TEST(U" \uFFFD \uFFFD \uFFFD \uFFFD \uFFFD ") =
+    TEST(U" \uFFFD \uFFFD \uFFFD \uFFFD \uFFFD ") &=
         { sample_with_alone_surrogates };
 
     // allowing alone surrogates
     {
-        auto result = * strf::make_u32string
+        auto result = strf::make_u32string
             .with(strf::make_lax_u16decoders())
-            [{ sample_with_alone_surrogates }];
+            &={ sample_with_alone_surrogates };
 
         BOOST_TEST(result[1] == 0xD800);
         BOOST_TEST(result[3] == 0xD800);

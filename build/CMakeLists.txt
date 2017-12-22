@@ -1,15 +1,9 @@
 cmake_minimum_required (VERSION 3.0)
 project (build)
 
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3") 
-
-set(features
-  cxx_aggregate_default_initializers
-  cxx_alias_templates
-  cxx_decltype_auto
-  cxx_extern_templates
-  cxx_variable_templates
-)
+if (${CMAKE_BUILD_TYPE} STREQUAL "Release" AND NOT MSVC)
+  add_compile_options("-O3")
+endif(${CMAKE_BUILD_TYPE} STREQUAL "Release" AND NOT MSVC)
 
 add_library(boost_stringify STATIC stringify.cpp)
 target_compile_definitions(boost_stringify PUBLIC BOOST_STRINGIFY_NOT_HEADER_ONLY)

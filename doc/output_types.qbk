@@ -70,12 +70,11 @@ where:
 * 12) Write content to `FILE*` using narrow orientated functions.
 * 13) Write content to `FILE*` using wide orientated functions.
 
+[#ReturnTypes]
 [h3 Return type]
 
 * 1 - 2) `std::error_code`
-* 3 - 7) `expected_basic_string<`[~CharT`, `Traits]`>`, which mimics
-[@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0323r1.pdf
-`std::expected`]`<std::basic_string<`[~CharT`, `Traits]`>, std::error_code>`
+* 3 - 7) `expected<std::basic_string<`[~CharT]`, `[~Traits]`>>`, where the ` expected ` class template is a bare implementation of the proposed __STD_EXPECTED__.
 * 8 - 13) `std::error_code`
 
 [h3 On error]

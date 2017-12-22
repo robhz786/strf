@@ -8,35 +8,9 @@
 #include <string>
 #include <system_error>
 #include <boost/stringify/v0/output_writer.hpp>
-#include <boost/stringify/v0/detail/expected.hpp>
+#include <boost/stringify/v0/expected.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
-
-template <typename CharT, typename Traits>
-using expected_basic_string = stringify::v0::detail::expected
-    < std::basic_string<CharT, Traits>
-    , std::error_code
-    >;
-
-using expected_string = stringify::v0::detail::expected
-    < std::string
-    , std::error_code
-    >;
-
-using expected_u16string = stringify::v0::detail::expected
-    < std::u16string
-    , std::error_code
-    >;
-
-using expected_u32string = stringify::v0::detail::expected
-    < std::u32string
-    , std::error_code
-    >;
-
-using expected_wstring = stringify::v0::detail::expected
-    < std::wstring
-    , std::error_code
-    >;
 
 namespace detail {
 
@@ -157,13 +131,13 @@ public:
         return false;
     }
 
-    stringify::v0::detail::expected<StringType, std::error_code> finish()
+    stringify::v0::expected<StringType, std::error_code> finish()
     {
         if (m_err)
         {
-            return m_err;
+            return {boost::stringify::v0::unexpect_t{}, m_err};
         }
-        return std::move(m_out);
+        return {boost::stringify::v0::in_place_t{}, std::move(m_out)};
     }
 
     void reserve(std::size_t size)
@@ -188,6 +162,16 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_maker<std::wstring>;
 #endif
 
 } // namespace detail
+
+#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class expected<std::string, std::error_code>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class expected<std::u16string, std::error_code>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class expected<std::u32string, std::error_code>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class expected<std::wstring, std::error_code>;
+
+#endif
+
 
 
 template

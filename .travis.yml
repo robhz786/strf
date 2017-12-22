@@ -7,7 +7,10 @@ sudo: false
 
 branches:
   only:
-    - /.*/
+    - master
+    - develop
+    - /feature\/.*/
+    - /release-.*/
 
 matrix:
   include:
@@ -167,7 +170,7 @@ matrix:
 
 install:
   - cd ..
-  - git clone -b $TRAVIS_BRANCH https://github.com/boostorg/boost.git boost-root
+  - git clone -b develop https://github.com/boostorg/boost.git boost-root
   - cd boost-root
   - git submodule init libs/assert
   - git submodule init libs/config

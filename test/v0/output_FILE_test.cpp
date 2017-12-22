@@ -158,7 +158,7 @@ void exception_thrown_test__narrow()
         try 
         {                         
             strf::write_to<CharT>(file, &result_length)
-                = {U'a', U'b', U'c', exception_thrower_arg, U'x', U'y', U'z'};
+                &= {U'a', U'b', U'c', exception_thrower_arg, U'x', U'y', U'z'};
 
         }
         catch(...)
@@ -247,7 +247,7 @@ void exception_thrown_test__wide()
         try 
         {   
             strf::wwrite_to(file, &result_length)
-                = {L"abc", exception_thrower_arg, L"xyz"};
+                &= {L"abc", exception_thrower_arg, L"xyz"};
 
         }
         catch(...)

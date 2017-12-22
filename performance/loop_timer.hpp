@@ -24,7 +24,6 @@ public:
     {
         duration total_duration;
         std::size_t iterations_count;
-        std::size_t samples_count;
     };
 
 

@@ -118,7 +118,7 @@ int main()
         try
         {
             strf::write_to(result, &result_length)
-                = {u"abcd", exception_thrower_arg, u"lkjlj"};
+                &= {u"abcd", exception_thrower_arg, u"lkjlj"};
         }
         catch(...)
         {
@@ -180,7 +180,7 @@ int main()
    }
    {   // When overflow happens in char_ptr_writer::repeat(ch, ch, count)
 
-       char result[1] = "";
+       char result[3] = "";
        std::size_t result_length = 1000;
        std::error_code ec = strf::write_to(result, 3, &result_length)
        = {{U'\u0080', {"", 2}}};

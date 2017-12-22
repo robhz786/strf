@@ -17,6 +17,8 @@ foreach(
   output_streambuf_test
   output_FILE_test
   ftuple_merge_test
+  reserve_test
+  throw_on_error_code_test
   utf8_encoding_test
   utf8_decoding_test
   utf16_encoding_test

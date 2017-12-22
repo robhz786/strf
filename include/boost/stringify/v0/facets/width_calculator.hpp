@@ -7,7 +7,6 @@
 
 #include <boost/stringify/v0/facets/decoder.hpp>
 #include <boost/stringify/v0/ftuple.hpp>
-#include <boost/stringify/v0/detail/expected.hpp>
 #include <boost/assert.hpp>
 #include <string>
 #include <limits>

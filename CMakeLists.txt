@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.0)
 
 if (NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "CMAKE_BUILD_TYPE set to Relase")
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Relase")
 endif (NOT CMAKE_BUILD_TYPE)
 
 enable_testing()

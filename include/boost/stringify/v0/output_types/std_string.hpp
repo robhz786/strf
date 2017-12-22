@@ -151,7 +151,7 @@ public:
     {
         if(m_out != nullptr)
         {
-            m_out->reserve(m_out->capacity() + size);
+            m_out->reserve(m_out->length() + size);
         }
     }
 
