@@ -132,66 +132,6 @@ private:
 
 };
 
-template <typename Child, typename Arg, typename R>
-class throw_on_error_code
-{
-};
-
-template
-    < typename Child
-    , typename Arg
-    , template <typename...> class Expected
-    , typename T
-    >
-class throw_on_error_code<Child, Arg, Expected<T, std::error_code> >
-{
-public:
-
-    auto operator&=(std::initializer_list<Arg> args) &&
-    {
-        auto result = static_cast<Child&>(*this)(args);
-        if(!result)
-        {
-            throw  std::system_error(result.error());
-        }
-        return * std::move(result);
-
-    }
-
-    auto operator&=(std::initializer_list<Arg> args) &
-    {
-        auto result = static_cast<Child&>(*this)(args);
-        if(!result)
-        {
-            throw  std::system_error(result.error());
-        }
-        return * std::move(result);
-    }
-};
-
-template <typename Child, typename Arg>
-class throw_on_error_code <Child, Arg, std::error_code>
-{
-public:
-
-    void operator&=(std::initializer_list<Arg> args) &&
-    {
-        std::error_code ec = static_cast<Child&>(*this)(args);
-        if (ec)
-        {
-            throw std::system_error(ec);
-        }
-    }
-
-    void operator&=(std::initializer_list<Arg> args) &
-    {
-        std::error_code ec = static_cast<Child&>(*this)(args);
-        if (ec)
-        {
-            throw std::system_error(ec);
-        }
-    }
-};
 
 template
     < typename FTuple
@@ -199,18 +139,14 @@ template
     , typename OutputWriterInitArgsTuple
     >
 class assembly_string
-    : public stringify::v0::detail::throw_on_error_code
-        < stringify::v0::detail::assembly_string
-              <FTuple, OutputWriter, OutputWriterInitArgsTuple>
-        , stringify::v0::input_arg<typename OutputWriter::char_type, FTuple>
-        , decltype(std::declval<OutputWriter>().finish())
-        >
 {
     using char_type = typename OutputWriter::char_type;
     using arg_type = stringify::v0::input_arg<char_type, FTuple>;
     using arglist_type = std::initializer_list<arg_type>;
     using reservation_type
         = stringify::v0::detail::output_size_reservation<OutputWriter>;
+    using output_writer_wrapper
+        = stringify::v0::detail::output_writer_from_tuple<OutputWriter>;
 
 public:
 
@@ -230,21 +166,37 @@ public:
 
     BOOST_STRINGIFY_NODISCARD decltype(auto) operator()(arglist_type args) const
     {
-        stringify::v0::detail::output_writer_from_tuple<OutputWriter> writer
-          {m_owinit};
-        m_reservation.reserve(*this, writer, args);
+        output_writer_wrapper writer{m_owinit};
         write(writer, args);
         return writer.finish();
     }
 
     BOOST_STRINGIFY_NODISCARD decltype(auto) operator=(arglist_type args) &
     {
-        return operator() (args);
+        output_writer_wrapper writer{m_owinit};
+        write(writer, args);
+        return writer.finish();
     }
 
     BOOST_STRINGIFY_NODISCARD decltype(auto) operator=(arglist_type args) &&
     {
-        return operator() (args);
+        output_writer_wrapper writer{m_owinit};
+        write(writer, args);
+        return writer.finish();
+    }
+
+    decltype(auto) operator&=(arglist_type args) &
+    {
+        output_writer_wrapper writer{m_owinit};
+        write(writer, args);
+        return writer.finish_throw();
+    }
+
+    decltype(auto) operator&=(arglist_type args) &&
+    {
+        output_writer_wrapper writer{m_owinit};
+        write(writer, args);
+        return writer.finish_throw();
     }
 
     std::size_t calculate_size(arglist_type args) const
@@ -259,6 +211,7 @@ private:
 
     void write(OutputWriter& owriter, const arglist_type& args) const
     {
+        m_reservation.reserve(*this, owriter, args);
         stringify::v0::detail::asm_string_writer<char_type, FTuple>
             writer{args, owriter, m_ftuple};
         stringify::v0::detail::parse_asm_string(m_str, m_end, writer);
@@ -278,12 +231,6 @@ template
     , typename OutputWriterInitArgsTuple
     >
 class args_handler
-    : public stringify::v0::detail::throw_on_error_code
-        < stringify::v0::detail::args_handler
-              <FTuple, OutputWriter, OutputWriterInitArgsTuple>
-        , stringify::v0::input_arg<typename OutputWriter::char_type, FTuple>
-        , decltype(std::declval<OutputWriter>().finish())
-        >
 {
 public:
 
@@ -292,6 +239,8 @@ public:
     using arglist_type = std::initializer_list<arg_type>;
     using asm_string = stringify::v0::detail::assembly_string
         <FTuple, OutputWriter, OutputWriterInitArgsTuple>;
+    using output_writer_wrapper
+        = stringify::v0::detail::output_writer_from_tuple<OutputWriter>;
 
 public:
 
@@ -436,11 +385,6 @@ public:
         return *this;
     }
 
-    decltype(auto) operator()(arglist_type lst) const
-    {
-        return process_arg_list(lst);
-    }
-
     constexpr args_handler&& operator()() &&
     {
         return std::move(*this);
@@ -492,28 +436,52 @@ public:
     }
 
     BOOST_STRINGIFY_NODISCARD
-    constexpr decltype(auto) operator=(arglist_type lst) &&
+    constexpr decltype(auto) operator()(arglist_type args) const
     {
-        return process_arg_list(lst);
+        output_writer_wrapper writer{m_owinit};
+        write(writer, args);
+        return writer.finish();
     }
 
     BOOST_STRINGIFY_NODISCARD
-    constexpr decltype(auto) operator=(arglist_type lst) &
+    constexpr decltype(auto) operator=(arglist_type args) &&
     {
-        return process_arg_list(lst);
+        output_writer_wrapper writer{m_owinit};
+        write(writer, args);
+        return writer.finish();
+    }
+
+    BOOST_STRINGIFY_NODISCARD
+    constexpr decltype(auto) operator=(arglist_type args) &
+    {
+        output_writer_wrapper writer{m_owinit};
+        write(writer, args);
+        return writer.finish();
+    }
+
+    constexpr decltype(auto) operator&=(arglist_type args) &&
+    {
+        output_writer_wrapper writer{m_owinit};
+        write(writer, args);
+        return writer.finish_throw();
+    }
+
+    constexpr decltype(auto) operator&=(arglist_type args) &
+    {
+        output_writer_wrapper writer{m_owinit};
+        write(writer, args);
+        return writer.finish_throw();
     }
 
 private:
 
-    decltype(auto) process_arg_list(arglist_type lst) const
+    void write(OutputWriter& writer,arglist_type args) const
     {
-        stringify::v0::detail::output_writer_from_tuple<OutputWriter> writer{m_owinit};
-        m_reservation.reserve(*this, writer, lst);
-        for(auto it = lst.begin(); it != lst.end() && writer.good(); ++it)
+        m_reservation.reserve(*this, writer, args);
+        for(auto it = args.begin(); it != args.end() && writer.good(); ++it)
         {
             (*it).write(writer, m_ftuple);
         }
-        return writer.finish();
     }
 
     FTuple m_ftuple;

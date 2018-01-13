@@ -72,7 +72,6 @@ public:
         ( std::size_t count
         , char_type ch1
         , char_type ch2
-        
         ) override
     {
         if( ! m_err)
@@ -92,7 +91,6 @@ public:
         , char_type ch1
         , char_type ch2
         , char_type ch3
-        
         ) override
     {
         if( ! m_err)
@@ -114,7 +112,6 @@ public:
         , char_type ch2
         , char_type ch3
         , char_type ch4
-        
         ) override
     {
         if( ! m_err)
@@ -140,6 +137,15 @@ public:
         return {boost::stringify::v0::in_place_t{}, std::move(m_out)};
     }
 
+    StringType finish_throw()
+    {
+        if(m_err)
+        {
+            throw std::system_error(m_err);
+        }
+        return std::move(m_out);
+    }
+    
     void reserve(std::size_t size)
     {
         m_out.reserve(m_out.capacity() + size);

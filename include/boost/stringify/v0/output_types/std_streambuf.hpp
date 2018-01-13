@@ -143,6 +143,14 @@ public:
         return m_err;
     }
 
+    void finish_throw()
+    {
+        if(m_err)
+        {
+            throw std::system_error(m_err);
+        }
+    }
+
 private:
 
     bool do_put(CharT character)

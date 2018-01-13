@@ -332,6 +332,15 @@ public:
         return {};
     }
 
+    void finish_throw()
+    {
+        auto err = finish();
+        if(err)
+        {
+            throw std::system_error(err);
+        }
+    }
+
     void reserve(std::size_t size)
     {
         m_reserved_size = size;

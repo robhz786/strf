@@ -68,6 +68,10 @@ public:
     {
         return {};
     }
+
+    void finish_throw()
+    {
+    }
     
 private:
 
@@ -125,7 +129,7 @@ int main()
     {
         std::size_t size{initial_value};
         auto tester = reservation_test(size);
-        tester ({"abcd"});
+        tester &= {"abcd"};
         BOOST_TEST(size == 4); 
     }
     {
@@ -152,7 +156,8 @@ int main()
     {
         std::size_t size{initial_value};
         const auto tester = reservation_test(size);
-        tester ({"abcd"});
+        auto err = tester ({"abcd"});
+        BOOST_TEST(!err);
         BOOST_TEST(size == 4); 
     }
     {
@@ -179,7 +184,8 @@ int main()
     {
         std::size_t size{initial_value};
         const auto tester = reservation_test(size);
-        tester ({"abcd"});
+        auto err = tester ({"abcd"});
+        BOOST_TEST(! err);
         BOOST_TEST(size == 4); 
     }
     {

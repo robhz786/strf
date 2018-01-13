@@ -71,11 +71,23 @@ where:
 * 13) Write content to `FILE*` using wide orientated functions.
 
 [#ReturnTypes]
-[h3 Return type]
+[h3 Return type when using the form [~expression...]` = { `[~ args ...]`}`]
 
 * 1 - 2) `std::error_code`
 * 3 - 7) `expected<std::basic_string<`[~CharT]`, `[~Traits]`>>`, where the ` expected ` class template is a bare implementation of the proposed __STD_EXPECTED__.
 * 8 - 13) `std::error_code`
+
+[#ReturnTypes_throw]
+[h3 Return type when using the form [~expression...]` &= { `[~ args ...]`}`]
+* 1 - 2) `void`
+* 3 - 7) `std::basic_string<`[~CharT]`, `[~Traits]`>`
+* 8 - 13) `void`
+
+[*Note:] In all cases ( from 1 to 13 ), if the generated `std::error_code` ( that would be returned if the form [~expression...]` = { `[~ args ...]`}` were used ) is not empty, than a `std::system_error` is thrown.
+
+[/
+This does not mean that others types of exception may not be thrown. For example, the use of `make_string` may throw and 
+]
 
 [h3 On error]
 * 1) Nothing is appended.

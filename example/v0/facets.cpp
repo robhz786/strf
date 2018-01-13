@@ -14,7 +14,7 @@ void sample1()
     auto f3 = strf::showbase;
 
     auto result = strf::make_string .with(f1, f2, f3) = {{255, 8}, {255, {8, /*<<
-        `'d'` = decimal base. >>*/"d"}}};
+        `The 'd'` flag implies decimal base. Local formatting has priority over facets>>*/"d"}}};
     BOOST_ASSERT(result.value() == "....0xff.....255");
     //]
 }

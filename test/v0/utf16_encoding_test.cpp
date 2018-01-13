@@ -15,15 +15,15 @@ namespace strf = boost::stringify::v0;
 int main()
 {
     {
-        TEST(u"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF")
-            ({
+        TEST(u"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF") &=
+            {
                 u"--", (char32_t)0x0080,
                 u"--", (char32_t)0xD7FF,
                 u"--", (char32_t)0xE000,
                 u"--", (char32_t)0xFFFF,
                 u"--", (char32_t)0x100000,
                 u"--", (char32_t)0x10FFFF,
-            });
+            };
 
     }
 

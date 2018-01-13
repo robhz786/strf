@@ -142,6 +142,18 @@ public:
         return m_err;
     }
 
+    void finish_throw()
+    {
+        if (m_buff_pos > 0)
+        {
+            flush();
+        }
+        if(m_err)
+        {
+            throw std::system_error(m_err);
+        }
+    }
+
 private:
 
     template <std::size_t N>
@@ -279,6 +291,8 @@ public:
         ) override;
 
     std::error_code finish();
+
+    void finish_throw();
 
 private:
 
@@ -421,6 +435,14 @@ BOOST_STRINGIFY_INLINE bool wide_file_writer::repeat
 BOOST_STRINGIFY_INLINE std::error_code wide_file_writer::finish()
 {
     return m_err;
+}
+
+BOOST_STRINGIFY_INLINE void wide_file_writer::finish_throw()
+{
+    if(m_err)
+    {
+        throw std::system_error(m_err);
+    }
 }
 
 BOOST_STRINGIFY_INLINE bool wide_file_writer::do_put(char_type ch)

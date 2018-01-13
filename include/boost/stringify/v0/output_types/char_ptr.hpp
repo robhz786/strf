@@ -182,27 +182,36 @@ public:
 
     std::error_code finish() noexcept
     {
-        if ( ! m_finished)
-        {
-            do_finish();
-        }
-        m_finished = true;
+        do_finish();
         return m_err;
+    }
+
+    void finish_throw()
+    {
+        do_finish();
+        if(m_err)
+        {
+            throw std::system_error(m_err);
+        }
     }
 
 private:
 
     void do_finish() noexcept
     {
-        if(m_begin != m_end)
+        if ( ! m_finished)
         {
-            BOOST_ASSERT(m_it != m_end);
-            Traits::assign(*m_it, CharT());
+            if(m_begin != m_end)
+            {
+                BOOST_ASSERT(m_it != m_end);
+                Traits::assign(*m_it, CharT());
+            }
+            if(m_out_count != nullptr)
+            {
+                *m_out_count = (m_it - m_begin);
+            }
         }
-        if(m_out_count != nullptr)
-        {
-            *m_out_count = (m_it - m_begin);
-        }
+        m_finished = true;
     }
 
     void set_overflow_error()

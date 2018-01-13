@@ -147,6 +147,15 @@ public:
         return m_err;
     }
 
+    void finish_throw()
+    {
+        m_finished = true;
+        if(m_err)
+        {
+            throw std::system_error(m_err);
+        }
+    }
+
     void reserve(std::size_t size)
     {
         if(m_out != nullptr)
