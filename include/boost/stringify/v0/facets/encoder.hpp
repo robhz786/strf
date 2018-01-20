@@ -17,6 +17,8 @@ template <typename CharT> class encoder
 {
 public:
 
+    using category = stringify::v0::encoder_tag<CharT>;
+
     virtual ~encoder()
     {
     };
@@ -79,8 +81,6 @@ template <typename ErrHandlingFunc = from_utf32_err_func<char>>
 class u8encoder: public stringify::v0::encoder<char>
 {
 public:
-
-    using category = stringify::v0::encoder_tag<char>;
 
     u8encoder
         ( ErrHandlingFunc err_func
@@ -224,8 +224,6 @@ template <typename CharT, typename ErrHandlingFunc = from_utf32_err_func<CharT>>
 class u16encoder: public stringify::v0::encoder<CharT>
 {
 public:
-
-    using category = stringify::v0::encoder_tag<CharT>;
 
     u16encoder(ErrHandlingFunc err_func, bool tolerate_surrogates = false)
         : m_err_func(err_func)
@@ -384,8 +382,6 @@ class utf32_to_utf32: public stringify::v0::encoder<CharT>
 {
 public:
 
-    using category = stringify::v0::encoder_tag<CharT>;
-
     utf32_to_utf32()
     {
     }
@@ -415,8 +411,6 @@ public:
 class default_utf32_to_wstr : public stringify::v0::encoder<wchar_t>
 {
 public:
-
-    using category = stringify::v0::encoder_tag<wchar_t>;
 
     std::size_t length(char32_t) const noexcept override;
 

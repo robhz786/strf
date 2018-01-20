@@ -15,18 +15,16 @@ bool cause_error_code(strf::output_writer<CharT>& out, std::size_t)
 
 int main()
 {
-    auto mk_string = strf::make_u16string
-        // surrogates halves allowed during the convertion from UTF-8 to UTF-32
-        .with(strf::make_u8decoder().wtf8())
+    // surrogates halves allowed during the convertion from UTF-8 to UTF-32
+    auto f1 = strf::make_u8decoder().wtf8();
 
-        // but not in the convertion from UTF-32 to UTF-16
-        .with(strf::make_u16encoder<char16_t>(cause_error_code<char16_t>));
-
+    // but not in the convertion from UTF-32 to UTF-16
+    auto f2 = strf::make_u16encoder<char16_t>(cause_error_code<char16_t>);
     
     {
         const char* u8str_with_surr_D800  = "-- \xED\xA0\x80 --";
         
-        auto xstr = mk_string = {u8str_with_surr_D800};
+        auto xstr = strf::make_u16string.with(f1, f2) = {u8str_with_surr_D800};
         BOOST_ASSERT(! xstr);
         BOOST_ASSERT(xstr.error() == std::errc::illegal_byte_sequence);
     }
@@ -36,7 +34,7 @@ int main()
         const char32_t u32str_with_surr_D800[] =
             {U'-', U'-', U' ', 0xD800, U' ', U'-', U'-'};
 
-        auto xstr = mk_string = {u32str_with_surr_D800};
+        auto xstr = strf::make_u16string.with(f1, f2) = {u32str_with_surr_D800};
         BOOST_ASSERT(! xstr);
         BOOST_ASSERT(xstr.error() == std::errc::illegal_byte_sequence);
 
