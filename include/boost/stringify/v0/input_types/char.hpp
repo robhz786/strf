@@ -75,6 +75,13 @@ public:
             out.repeat(m_count, m_char);
             m_encoder.encode(out, m_fillcount, m_fillchar);
         }
+        else if(m_alignment == stringify::v0::alignment::center)
+        {
+            auto halfcount = m_fillcount / 2;
+            m_encoder.encode(out, halfcount, m_fillchar);
+            m_encoder.encode(out, m_count, m_char);
+            m_encoder.encode(out, m_fillcount - halfcount, m_fillchar);
+        }
         else
         {
             m_encoder.encode(out, m_fillcount, m_fillchar);

@@ -23,7 +23,7 @@ namespace detail {
 
 struct string_argf
 {
-    using char_flags_type = stringify::v0::char_flags<'<', '>', '='>;
+    using char_flags_type = stringify::v0::char_flags<'<', '>', '=', '^'>;
 
     constexpr string_argf(int w): width(w) {}
     constexpr string_argf(const char* f): flags(f) {}
@@ -474,11 +474,18 @@ public:
             if(m_alignment == stringify::v0::alignment::left)
             {
                 m_str.write_str(out);
-                write_fill(out);
+                write_fill(out, m_fillcount);
+            }
+            else if (m_alignment == stringify::v0::alignment::center)
+            {
+                int halfcount = m_fillcount / 2;
+                write_fill(out, halfcount);
+                m_str.write_str(out);
+                write_fill(out, m_fillcount - halfcount);
             }
             else
             {
-                write_fill(out);
+                write_fill(out, m_fillcount);
                 m_str.write_str(out);
             }
         }
@@ -528,9 +535,9 @@ private:
         m_fillcount = m_str.remaining_width(m_width);
     }
 
-    void write_fill(writer_type& out) const
+    void write_fill(writer_type& out, int count ) const
     {
-        m_encoder.encode(out, m_fillcount, m_fillchar);
+        m_encoder.encode(out, count, m_fillchar);
     }
 };
 

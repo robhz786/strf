@@ -10,7 +10,7 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-enum class alignment{left, right, internal};
+enum class alignment{left, right, internal, center};
 
 struct alignment_tag;
 
@@ -62,6 +62,7 @@ constexpr auto align_if(boost::stringify::v0::alignment a)
 constexpr align_impl_t <alignment::left> left {};
 constexpr align_impl_t <alignment::right> right {};
 constexpr align_impl_t <alignment::internal> internal {};
+constexpr align_impl_t <alignment::center> center {};
 
 template <template <class> class F>
 constrained_facet<F, align_impl_t<alignment::left> > left_if {};
@@ -71,6 +72,9 @@ constrained_facet<F, align_impl_t<alignment::right> > right_if {};
 
 template <template <class> class F>
 constrained_facet<F, align_impl_t<alignment::internal> > internal_if {};
+
+template <template <class> class F>
+constrained_facet<F, align_impl_t<alignment::center> > center_if {};
 
 struct alignment_tag
 {

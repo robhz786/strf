@@ -18,7 +18,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 struct char_argf
 {
-    using char_flags_type = stringify::v0::char_flags<'<', '>', '='>;
+    using char_flags_type = stringify::v0::char_flags<'<', '>', '=', '^'>;
 
     constexpr char_argf(int w)
         : width(w)
@@ -110,6 +110,13 @@ public:
         {
             m_encoder.encode(out, m_count, m_char);
             m_encoder.encode(out, m_fillcount, m_fillchar);
+        }
+        else if(m_alignment == stringify::v0::alignment::center)
+        {
+            auto halfcount = m_fillcount / 2;
+            m_encoder.encode(out, halfcount, m_fillchar);
+            m_encoder.encode(out, m_count, m_char);
+            m_encoder.encode(out, m_fillcount - halfcount, m_fillchar);
         }
         else
         {

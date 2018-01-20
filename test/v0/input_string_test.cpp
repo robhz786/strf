@@ -19,11 +19,12 @@ int main()
         TEST("~~~abc") .with(strf::fill(U'~'), strf::internal)   &= { {"abc", 6} };
         TEST("~~~abc") .with(strf::fill(U'~'), strf::left)       &= { {"abc", {6, ">"}} };
         TEST("~~~abc") .with(strf::fill(U'~'), strf::left)       &= { {"abc", {6, "="}} };
+        TEST("~abc~~") .with(strf::fill(U'~'), strf::left)       &= { {"abc", {6, "^"}} };
         TEST("   abc") &= { {strf::join_right(6), {"abc"}} };
 
-        TEST("   abcdefghi") .with(strf::width(3))  &= { "", {"abc", ">"}, {"def", "<"}, {"ghi", "="} };
-        TEST("  abcdefghi")  .with(strf::width(2))  &= { "", {"abc", ">"}, {"def", "<"}, {"ghi", "="} };
-        TEST("abcdefghi")    .with(strf::width(0))  &= { "", {"abc", ">"}, {"def", "<"}, {"ghi", "="} };
+        TEST("   abcdefghijkl") .with(strf::width(3))  &= { "", {"abc", ">"}, {"def", "<"}, {"ghi", "="}, {"jkl", "^"} };
+        TEST("  abcdefghijkl")  .with(strf::width(2))  &= { "", {"abc", ">"}, {"def", "<"}, {"ghi", "="}, {"jkl", "^"} };
+        TEST("abcdefghijkl")    .with(strf::width(0))  &= { "", {"abc", ">"}, {"def", "<"}, {"ghi", "="}, {"jkl", "^"} };
     }
 
     {
@@ -39,10 +40,11 @@ int main()
         TEST(L"~~~abc") .with(strf::fill(U'~'), strf::internal)   &= { {abc, 6} };
         TEST(L"~~~abc") .with(strf::fill(U'~'), strf::left)       &= { {abc, {6, ">"}} };
         TEST(L"~~~abc") .with(strf::fill(U'~'), strf::left)       &= { {abc, {6, "="}} };
+        TEST(L"~abc~~") .with(strf::fill(U'~'), strf::left)       &= { {abc, {6, "^"}} };
 
-        TEST(L"   abcdefghi") .with(strf::width(3))  &= { L"", {abc, ">"}, {def, "<"}, {ghi, "="} };
-        TEST(L"  abcdefghi")  .with(strf::width(2))  &= { L"", {abc, ">"}, {def, "<"}, {ghi, "="} };
-        TEST(L"abcdefghi")    .with(strf::width(0))  &= { L"", {abc, ">"}, {def, "<"}, {ghi, "="} };
+        TEST(L"   abcdefghijkl") .with(strf::width(3))  &= { L"", {abc, ">"}, {def, "<"}, {ghi, "="}, {"jkl", "^"}  };
+        TEST(L"  abcdefghijkl")  .with(strf::width(2))  &= { L"", {abc, ">"}, {def, "<"}, {ghi, "="}, {"jkl", "^"}  };
+        TEST(L"abcdefghijkl")    .with(strf::width(0))  &= { L"", {abc, ">"}, {def, "<"}, {ghi, "="}, {"jkl", "^"}  };
         TEST(L"   abc")     &= { {strf::join_right(6), {abc}} };
     }
 
@@ -92,10 +94,11 @@ int main()
         TEST(u8"~~~abc") .with(strf::fill(U'~'), strf::internal)   &= { {abc, 6} };
         TEST(u8"~~~abc") .with(strf::fill(U'~'), strf::left)       &= { {abc, {6, ">"}} };
         TEST(u8"~~~abc") .with(strf::fill(U'~'), strf::left)       &= { {abc, {6, "="}} };
+        TEST(u8"~abc~~") .with(strf::fill(U'~'), strf::left)       &= { {abc, {6, "^"}} };
 
-        TEST(u8"   abcdefghi") .with(strf::width(3))  &= { U"", {abc, ">"}, {def, "<"}, {ghi, "="} };
-        TEST(u8"  abcdefghi")  .with(strf::width(2))  &= { U"", {abc, ">"}, {def, "<"}, {ghi, "="} };
-        TEST(u8"abcdefghi")    .with(strf::width(0))  &= { U"", {abc, ">"}, {def, "<"}, {ghi, "="} };
+        TEST(u8"   abcdefghijkl") .with(strf::width(3))  &= { U"", {abc, ">"}, {def, "<"}, {ghi, "="}, {"jkl", "^"}  };
+        TEST(u8"  abcdefghijkl")  .with(strf::width(2))  &= { U"", {abc, ">"}, {def, "<"}, {ghi, "="}, {"jkl", "^"}  };
+        TEST(u8"abcdefghijkl")    .with(strf::width(0))  &= { U"", {abc, ">"}, {def, "<"}, {ghi, "="}, {"jkl", "^"}  };
         TEST(u8"   abc")                              &= { {strf::join_right(6), {abc}} };
     }
     

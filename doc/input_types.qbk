@@ -40,7 +40,7 @@ The format string is aways a narrow string. The table bellow describes the meani
 [[[^ >]] [Right alignment ( or left, if you using a left-to-right script like arabic )]]
 [[[^ <]] [Left alignment ( or right, if you using a left-to-right script like arabic )]]
 [[[^ =]] [Internal alignment ]]
-[[[^ ^]] [Center alignment ['(todo)]]]
+[[[^ ^]] [Center alignment]]
 [[[^ -]] [Dont show positive sign]]
 [[[^ +]] [Show positive sign ( only affects signed integers )]]
 [[[^ c]] [Lowercase]]
@@ -85,12 +85,10 @@ Joins aligns a sublist of arguments as if it where one argument. A join is creat
 * `join_left(`[~width]`, `[~fill_character]`)`
 * `join_rigth(`[~width]`)`
 * `join_rigth(`[~width]`, `[~fill_character]`)`
-* `join_center(`[~width]`)` \u2014 /(todo)/
-* `join_center(`[~width]`, `[~fill_character]`)` \u2014 /(todo)/
-* `join_internal(`[~width]`)`
-* `join_internal(`[~width]`, `[~fill_character]`)`
+* `join_center(`[~width]`)`
+* `join_center(`[~width]`, `[~fill_character]`)`
 * `join_internal(`[~width]`, `[~num_args_before_fill]`)`
-* `join_internal(`[~width]`, `[~num_args_before_fill]`, `[~fill_character]`)`
+* `join_internal(`[~width]`, `[~fill_character]`, `[~num_args_before_fill]`)`
 
 
 where:

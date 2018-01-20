@@ -30,7 +30,7 @@ namespace detail {
 struct int_argf
 {
     using char_flags_type = stringify::v0::char_flags
-        <'+', '-', '<', '>', '=', 'o', 'd', 'x', 'X', 'c', 'C', '#', '$'>;
+        <'+', '-', '<', '>', '=', '^', 'o', 'd', 'x', 'X', 'c', 'C', '#', '$'>;
 
     constexpr int_argf(int w): width(w) {}
     constexpr int_argf(const char* f): flags(f) {}
@@ -213,22 +213,34 @@ private:
                 write_sign(out);
                 write_base(out);
                 write_digits(out);
-                write_fill(out);
+                write_fill(out, m_fillcount);
                 break;
 
             case stringify::v0::alignment::right:
-                write_fill(out);
+                write_fill(out, m_fillcount);
                 write_sign(out);
                 write_base(out);
+                write_digits(out);
+                break;
+
+
+            case stringify::v0::alignment::internal:
+                write_sign(out);
+                write_base(out);
+                write_fill(out, m_fillcount);
                 write_digits(out);
                 break;
 
             default:
-                BOOST_ASSERT(m_alignment == stringify::v0::alignment::internal);
+            {
+                BOOST_ASSERT(m_alignment == stringify::v0::alignment::center);
+                auto halfcount = m_fillcount / 2;
+                write_fill(out, halfcount);
                 write_sign(out);
                 write_base(out);
-                write_fill(out);
                 write_digits(out);
+                write_fill(out, m_fillcount - halfcount);
+            }
         }
     }
 
@@ -352,9 +364,9 @@ private:
         }
     }
 
-    void write_fill(writer_type& out) const
+    void write_fill(writer_type& out, int count) const
     {
-        m_encoder.encode(out, m_fillcount, m_fillchar);
+        m_encoder.encode(out, count, m_fillchar);
     }
 
     int width_body() const noexcept

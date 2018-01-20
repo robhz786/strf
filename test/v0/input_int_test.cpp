@@ -133,13 +133,14 @@ int main()
 
     // width and aligment (decimal only)
     TEST("+  123")        &= { {123, {6, "+="}} };
-    TEST("11  22+  33")   &= { 11, {22, {4, ">"}}, {33, {5, "+="}} };
-    TEST("11__22+__33") .with(strf::fill(U'_'))   &= { 11, {22, {4, ">"}}, {33, {5, "+="}} };
+    TEST("11  22+  33 44 ")   &= { 11, {22, {4, ">"}}, {33, {5, "+="}}, {44, {4, "^"}}};
+    TEST("11__22+__33_44_") .with(strf::fill(U'_'))  &=
+    { 11, {22, {4, ">"}}, {33, {5, "+="}}, {44, {4, "^"}} };
     TEST("  11   22")   .with(strf::width(4))                 &= { 11, {22, 5} };
     TEST("   1122  ")   .with(strf::width(5), strf::right)    &= { 11, {22, {4, "<"}} };
     TEST("11    22  ")  .with(strf::width(6), strf::left)     &= { 11, {22, 4} };
     TEST("   11+  22")  .with(strf::width(5), strf::internal) &= { 11, {22, "+"} };
-
+    TEST("  11   22 ")  .with(strf::width(6), strf::center)   &= { 11, {22, 4} };
     // hexadecimal case
 
     TEST("1234567890abcdef") .with(strf::hex)       &= { 0x1234567890abcdefLL };
@@ -165,7 +166,7 @@ int main()
     TEST("0xaa           ") .with(w15, strf::right)    &= { {0xAA, "#x<"} };
     TEST("0x           aa") .with(w15, strf::right)    &= { {0xAA, "#x="} };
     TEST("           0xaa") .with(w15, strf::left)     &= { {0xAA, "#x>"} };
-
+    TEST("     0xaa      ") .with(w15, strf::left)     &= { {0xAA, "#x^"} };
 
    // octadecimal with showbase
     
@@ -181,6 +182,7 @@ int main()
     TEST("077            ") .with(w15, strf::right)    &= { {077, "#o<"} };
     TEST("0            77") .with(w15, strf::right)    &= { {077, "#o="} };
     TEST("            077") .with(w15, strf::left)     &= { {077, "#o>"} };
+    TEST("      077      ") .with(w15, strf::left)     &= { {077, "#o^"} };
 
     // showpos in octadecimal and hexadecimal must not have any effect
     

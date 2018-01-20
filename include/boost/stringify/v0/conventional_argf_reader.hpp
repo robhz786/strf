@@ -50,6 +50,10 @@ struct conventional_argf_reader
         {
             return alignment::internal;
         }
+        else if (argf.flags.has_char('^'))
+        {
+            return alignment::center;
+        }
         else
         {
             return getf<boost::stringify::v0::alignment_tag>(ft).value();

@@ -16,7 +16,7 @@ struct is_char: public std::is_same<T, char>
 int main()
 {
     namespace strf = boost::stringify::v0;
-    
+
     // width, alignment, and repetitions
     TEST("aaaa|bbbb|cccc  |    |aaaa|bbbb|  cccc|    ") &=
     {
@@ -46,7 +46,7 @@ int main()
 
 
     // facets
-    TEST("---a--bb----|--a-bb---|a--bb----|--a-bb---|--a-bb---")
+    TEST("---a--bb----|--a-bb---|a--bb----|--a-bb---|--a-bb---|-a-bb----")
         .with
         ( strf::fill_if<is_char>(U'-')
         , strf::width_if<is_char>(4)
@@ -75,9 +75,14 @@ int main()
          {'a', {3, ">"}},
          {'b', {3, ">", 2}},
          {'c', {3, ">", 0}},
+         {'|', 0},
+
+         {'a', {3, "^"}},
+         {'b', {3, "^", 2}},
+         {'c', {3, "^", 0}}
     };
 
-    TEST("---a--bb----|--a-bb---|a--bb----|--a-bb---|--a-bb---")
+    TEST("---a--bb----|--a-bb---|a--bb----|--a-bb---|--a-bb---|-a-bb----")
         .with
         ( strf::fill_if<is_char>(U'-')
         , strf::width_if<is_char>(4)
@@ -107,9 +112,14 @@ int main()
          {'a', {3, ">"}},
          {'b', {3, ">", 2}},
          {'c', {3, ">", 0}},
+         {'|', 0},
+
+         {'a', {3, "^"}},
+         {'b', {3, "^", 2}},
+         {'c', {3, "^", 0}}
     };
 
-    TEST("---a--bb----|--a-bb---|a--bb----|--a-bb---|--a-bb---")
+    TEST("---a--bb----|--a-bb---|a--bb----|--a-bb---|--a-bb---|-a-bb----")
         .with
         ( strf::fill_if<is_char>(U'-')
         , strf::width_if<is_char>(4)
@@ -139,10 +149,15 @@ int main()
          {'a', {3, ">"}},
          {'b', {3, ">", 2}},
          {'c', {3, ">", 0}},
+         {'|', 0},
+
+         {'a', {3, "^"}},
+         {'b', {3, "^", 2}},
+         {'c', {3, "^", 0}}
     };
 
 
-    TEST("a---bb------|a--bb----|a--bb----|--a-bb---|--a-bb---")
+    TEST("a---bb------|a--bb----|a--bb----|--a-bb---|--a-bb---|-a-bb----")
         .with
         ( strf::fill_if<is_char>(U'-')
         , strf::width_if<is_char>(4)
@@ -172,9 +187,51 @@ int main()
          {'a', {3, ">"}},
          {'b', {3, ">", 2}},
          {'c', {3, ">", 0}},
+         {'|', 0},
+
+         {'a', {3, "^"}},
+         {'b', {3, "^", 2}},
+         {'c', {3, "^", 0}}
     };
-    
-    return report_errors() || boost::report_errors();
+
+    TEST("-a---bb-----|-a-bb----|a--bb----|--a-bb---|--a-bb---|-a-bb----")
+        .with
+        ( strf::fill_if<is_char>(U'-')
+        , strf::width_if<is_char>(4)
+        , strf::center_if<is_char>
+        ) &=
+    {
+         'a',
+         {'b', {"", 2}},
+         {'c', {"", 0}},
+         {'|', 0},
+
+         {'a', 3},
+         {'b', {3, "", 2}},
+         {'c', {3, "", 0}},
+         {'|', 0},
+
+         {'a', {3, "<"}},
+         {'b', {3, "<", 2}},
+         {'c', {3, "<", 0}},
+         {'|', 0},
+
+         {'a', {3, "="}},
+         {'b', {3, "=", 2}},
+         {'c', {3, "=", 0}},
+         {'|', 0},
+
+         {'a', {3, ">"}},
+         {'b', {3, ">", 2}},
+         {'c', {3, ">", 0}},
+         {'|', 0},
+
+         {'a', {3, "^"}},
+         {'b', {3, "^", 2}},
+         {'c', {3, "^", 0}}
+    };
+
+   return report_errors() || boost::report_errors();
 }
 
 
