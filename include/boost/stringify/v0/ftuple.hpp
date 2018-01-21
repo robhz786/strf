@@ -67,11 +67,11 @@ public:
 
 
 template <typename LowestTag, typename Facet>
-class single_facet_ftuple: private Facet, public ftuple_end<LowestTag>
+class single_facet_ftuple: public ftuple_end<LowestTag>
 {
 public:
 
-    constexpr single_facet_ftuple(const Facet& f) : Facet(f) {};
+    constexpr single_facet_ftuple(const Facet& f) : m_facet(f) {}
 
     constexpr single_facet_ftuple(const single_facet_ftuple& r) = default;
 
@@ -87,45 +87,142 @@ public:
     constexpr const Facet& do_get_facet
         (const highest_tag&, typename Facet::category) const
     {
-        return *this;
+        return m_facet;
     }
 
+private:
+
+    Facet m_facet;
 };
 
 
-template <typename LowestTag, typename ConstrainedFacet>
-class single_constrained_facet_ftuple
-    : private ConstrainedFacet
-    , public ftuple_end<LowestTag>
+template
+    < typename LowestTag
+    , template <class> class Filter
+    , typename Facet
+    >
+class single_facet_ftuple
+        < LowestTag
+        , boost::stringify::v0::constrained_facet<Filter, Facet>
+        >
+    : public ftuple_end<LowestTag>
 {
-    
+
+    using ConstrainedFacet = boost::stringify::v0::constrained_facet<Filter, Facet>;
+
 public:
 
-    constexpr single_constrained_facet_ftuple
-        (const ConstrainedFacet& f) : ConstrainedFacet(f) {};
+    constexpr single_facet_ftuple
+        (const ConstrainedFacet& f) : m_constrained_facet(f) {};
 
-    constexpr single_constrained_facet_ftuple
-        (const single_constrained_facet_ftuple& r) = default;
+    constexpr single_facet_ftuple
+        (const single_facet_ftuple& r) = default;
 
     using lowest_tag = LowestTag;
     using highest_tag = LowestTag;
 
     template <typename OtherLowestTag>
-    using rebind = single_constrained_facet_ftuple<OtherLowestTag, ConstrainedFacet>;
+    using rebind = single_facet_ftuple<OtherLowestTag, ConstrainedFacet>;
 
     using ftuple_end<LowestTag>::do_get_facet;
 
     template
         < typename InputType
-        , typename = typename std::enable_if_t
-            <ConstrainedFacet::template matches<InputType>::value>
+        , typename = typename std::enable_if<Filter<InputType>::value>::type
         >
     constexpr const auto& do_get_facet
-        (const highest_tag&, typename ConstrainedFacet::category) const
+        ( const highest_tag&
+        , typename ConstrainedFacet::category
+        ) const
     {
-        return ConstrainedFacet::facet;
+        return m_constrained_facet.get_facet();
     }
 
+private:
+
+    ConstrainedFacet m_constrained_facet;
+};
+
+
+template <typename LowestTag, typename Facet>
+class ref_facet_ftuple: public ftuple_end<LowestTag>
+{
+public:
+
+    constexpr ref_facet_ftuple(std::reference_wrapper<Facet> facet_ref)
+        : m_facet_ref(facet_ref)
+    {
+    }
+
+    constexpr ref_facet_ftuple(const ref_facet_ftuple& copy) = default;
+
+    using lowest_tag = LowestTag;
+    using highest_tag = LowestTag;
+
+    template <typename OtherLowestTag>
+    using rebind = ref_facet_ftuple<OtherLowestTag, Facet>;
+
+    using ftuple_end<LowestTag>::do_get_facet;
+
+    template <typename>
+    constexpr const Facet& do_get_facet
+        (const highest_tag&, typename Facet::category) const
+    {
+        return m_facet_ref.get();
+    }
+
+private:
+
+    std::reference_wrapper<Facet> m_facet_ref;
+};
+
+
+template
+    < typename LowestTag
+    , template <class> class Filter
+    , typename Facet
+    >
+class ref_facet_ftuple
+        < LowestTag
+        , const boost::stringify::v0::constrained_facet<Filter, Facet > >
+    : public ftuple_end<LowestTag>
+{
+
+    using ConstrainedFacet = boost::stringify::v0::constrained_facet<Filter, Facet>;
+    using RefConstrainedFacet = std::reference_wrapper<const ConstrainedFacet>;
+
+public:
+
+    constexpr ref_facet_ftuple(RefConstrainedFacet facet_ref)
+        : m_facet_ref(facet_ref)
+    {
+    }
+
+    constexpr ref_facet_ftuple(const ref_facet_ftuple&) = default;
+
+    using lowest_tag = LowestTag;
+    using highest_tag = LowestTag;
+
+    template <typename OtherLowestTag>
+    using rebind = ref_facet_ftuple<OtherLowestTag, const ConstrainedFacet>;
+
+    using ftuple_end<LowestTag>::do_get_facet;
+
+    template
+        < typename InputType
+        , typename = typename std::enable_if<Filter<InputType>::value>::type
+        >
+    constexpr const auto& do_get_facet
+        ( const highest_tag&
+        , typename ConstrainedFacet::category
+        ) const
+    {
+        return m_facet_ref.get().get_facet();
+    }
+
+private:
+
+    RefConstrainedFacet m_facet_ref;
 };
 
 
@@ -219,18 +316,16 @@ struct ftuple_helper
         return reinterpret_cast<const ftuple_type&>(f);
     }
 
-    template <template <class> class Filter, typename Facet>
-    static constexpr const auto& as_ftuple(const constrained_facet<Filter, Facet>& cf)
+    template <typename Facet>
+    static constexpr auto as_ftuple(std::reference_wrapper<Facet> f)
     {
-        using ftuple_type = single_constrained_facet_ftuple
-            < base_tag
-            , constrained_facet<Filter, Facet> >;
-        return reinterpret_cast<const ftuple_type&>(cf);
+        return stringify::v0::detail::ref_facet_ftuple<base_tag, const Facet>
+        {f.get()};
     }
 
     template <typename ... F>
-    static constexpr const boost::stringify::ftuple<F...>&
-    as_ftuple(const boost::stringify::ftuple<F...>& f)
+    static constexpr const stringify::v0::ftuple<F...>&
+    as_ftuple(const stringify::v0::ftuple<F...>& f)
     {
         return f;
     }
@@ -240,35 +335,35 @@ struct ftuple_helper
 template <typename ... F>
 static constexpr auto make_ftuple_impl(const F& ... f)
 {
-    using base_tag = boost::stringify::v0::detail::base_tag;
-    using helper = boost::stringify::v0::detail::ftuple_helper;
+    using base_tag = stringify::v0::detail::base_tag;
+    using helper = stringify::v0::detail::ftuple_helper;
     return helper::join_multi_ftuples<base_tag>(helper::as_ftuple(f)...);
 }
 
 template <typename ... F>
 using ftuple_impl
-= decltype(boost::stringify::v0::detail::make_ftuple_impl(std::declval<F>()...));
+= decltype(stringify::v0::detail::make_ftuple_impl(std::declval<F>()...));
 
 } // namespace detail
 
 
 template <typename ... F>
-class ftuple: private boost::stringify::v0::detail::ftuple_impl<F...>
+class ftuple: private stringify::v0::detail::ftuple_impl<F...>
 {
-    using impl = boost::stringify::v0::detail::ftuple_impl<F...>;
+    using impl = stringify::v0::detail::ftuple_impl<F...>;
 
-    friend struct boost::stringify::v0::detail::ftuple_helper;
+    friend struct stringify::v0::detail::ftuple_helper;
 
     template <typename, typename>
-    friend class boost::stringify::v0::detail::ftuple_join;
+    friend class stringify::v0::detail::ftuple_join;
 
 public:
 
     constexpr ftuple(const F& ... f)
-        : impl(boost::stringify::v0::detail::make_ftuple_impl(f...))
+        : impl(stringify::v0::detail::make_ftuple_impl(f...))
     {
     }
-   
+
     template <typename FacetCategory, typename InputType>
     constexpr const auto& get_facet() const
     {
@@ -281,7 +376,7 @@ public:
 template <typename ... F>
 auto make_ftuple(const F& ... f)
 {
-    return boost::stringify::v0::ftuple<F...>(f...);
+    return stringify::v0::ftuple<F...>(f...);
 }
 
 

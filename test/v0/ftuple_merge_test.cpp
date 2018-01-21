@@ -9,104 +9,171 @@
 
 namespace strf = boost::stringify::v0;
 
-template <int I> struct t
+struct facet_category;
+
+struct facet_type
 {
-    static constexpr int value = I;
+    using category = facet_category;
+    int value = 0;
 };
 
-template<typename T> struct le1
+struct facet_category
 {
-    static constexpr bool value = (T::value <= 1); 
+    static const auto& get_default() noexcept
+    {
+        static const facet_type f {};
+        return f;
+    }
 };
 
-template<typename T> struct le2
+template <int I> struct input_type
 {
-    static constexpr bool value = (T::value <= 2); 
+    static constexpr int type_n_id = I;
 };
 
-template<typename T> struct le3
+template<typename T, int N> struct filter_le
 {
-    static constexpr bool value = (T::value <= 3); 
+    static constexpr bool value = (T::type_n_id <= N);
 };
 
-template<typename T> struct le4
-{
-    static constexpr bool value = (T::value <= 4); 
-};
 
-template<typename T> struct le5
-{
-    static constexpr bool value = (T::value <= 5); 
-};
+template<typename T> using filter_le1 = filter_le<T, 1>;
+template<typename T> using filter_le2 = filter_le<T, 2>;
+template<typename T> using filter_le3 = filter_le<T, 3>;
+template<typename T> using filter_le4 = filter_le<T, 4>;
+template<typename T> using filter_le5 = filter_le<T, 5>;
+template<typename T> using filter_le6 = filter_le<T, 6>;
+template<typename T> using filter_le7 = filter_le<T, 7>;
 
-auto f1 = strf::width_if<le1>(1);
-auto f2 = strf::width_if<le2>(2);
-auto f3 = strf::width_if<le3>(3);
-auto f4 = strf::width_if<le4>(4);
-auto f5 = strf::width_if<le5>(5);
+
+facet_type f1 = {1};
+facet_type f2 = {2};
+facet_type f3 = {3};
+facet_type f4 = {4};
+facet_type f5 = {5};
+facet_type f6 = {6};
+facet_type f7 = {7};
+
+
+auto x1 = strf::constrain<filter_le1>(f1);
+auto x2 = strf::constrain<filter_le2>(std::ref(f2));
+auto x3 = strf::constrain<filter_le3>(std::cref(f3));
+auto x4_ = strf::constrain<filter_le4>(f4);
+auto x5_ = strf::constrain<filter_le5>(f5);
+auto x6_ = strf::constrain<filter_le6>(std::ref(f6));
+auto x7_ = strf::constrain<filter_le7>(std::cref(f7));
+auto x4 = std::ref (x4_);
+auto x5 = std::cref(x5_);
+auto x6 = std::ref (x6_);
+auto x7 = std::cref(x7_);
 
 template <typename FTuple>
 std::vector<int> digest(const FTuple& fmt)
 {
-    return std::vector<int> 
+    return std::vector<int>
     {
-        strf::get_facet<strf::width_tag, t<1>>(fmt).width(),
-        strf::get_facet<strf::width_tag, t<2>>(fmt).width(),
-        strf::get_facet<strf::width_tag, t<3>>(fmt).width(),
-        strf::get_facet<strf::width_tag, t<4>>(fmt).width(),
-        strf::get_facet<strf::width_tag, t<5>>(fmt).width()
+        strf::get_facet< facet_category, input_type<1> >(fmt).value,
+        strf::get_facet< facet_category, input_type<2> >(fmt).value,
+        strf::get_facet< facet_category, input_type<3> >(fmt).value,
+        strf::get_facet< facet_category, input_type<4> >(fmt).value,
+        strf::get_facet< facet_category, input_type<5> >(fmt).value,
+        strf::get_facet< facet_category, input_type<6> >(fmt).value,
+        strf::get_facet< facet_category, input_type<7> >(fmt).value
     };
 }
 
-std::vector<int> expected = {1, 2, 3, 4, 5};
-    
+std::vector<int> expected = {1, 2, 3, 4, 5, 6, 7};
+
 
 int main()
 {
 
     {
-        auto fmt = strf::make_ftuple(f5, f4, f3, f2, f1);
+        auto fmt = strf::make_ftuple(x7, x6, x5, x4, x3, x2, x1);
         BOOST_TEST(digest(fmt) == expected);
     }
 
     {
-        auto fmt = strf::make_ftuple(f5, f5, f4, f5, f4, f3, f2, f1, f1);
-        BOOST_TEST(digest(fmt) == expected);
-    }
-    
-    {
-        auto fmt = strf::make_ftuple
-            (strf::make_ftuple(f5), f4, f3, f2, f1);
+        auto fmt = strf::make_ftuple(x7, x6, x5, x5, x4, x5, x4, x3, x2, x1, x1);
         BOOST_TEST(digest(fmt) == expected);
     }
 
     {
         auto fmt = strf::make_ftuple
-            (f5, f4, f3, f2, strf::make_ftuple(f1));
+            (strf::make_ftuple(x7), strf::make_ftuple(x6, x5), x4, x3, x2, x1);
         BOOST_TEST(digest(fmt) == expected);
     }
 
     {
         auto fmt = strf::make_ftuple
-            (f5, strf::make_ftuple(f4, f3), f2, f1);
+            (x7, x6, x5, x4, x3, x2, strf::make_ftuple(x1));
         BOOST_TEST(digest(fmt) == expected);
     }
 
     {
         auto fmt = strf::make_ftuple
-            ( strf::make_ftuple()
-            , strf::make_ftuple(strf::make_ftuple(f5))
-            , strf::make_ftuple(f4, f3)
-            , strf::make_ftuple(f4, f3)
-            , f2
-            , strf::make_ftuple(strf::make_ftuple())  
-            , f1
-            , strf::make_ftuple()  
+            (x7, x6, x5, strf::make_ftuple(x4, x3), x2, x1);
+        BOOST_TEST(digest(fmt) == expected);
+    }
+
+    {
+        auto fmt = strf::make_ftuple
+            ( strf::make_ftuple(x7)
+            , strf::make_ftuple(x6)
+            , strf::make_ftuple(x5)
+            , strf::make_ftuple(x4)
+            , strf::make_ftuple(x3)
+            , strf::make_ftuple(x2)
+            , strf::make_ftuple(x1)
             );
         BOOST_TEST(digest(fmt) == expected);
     }
+    {
+        auto fmt = strf::make_ftuple
+            ( strf::make_ftuple(strf::make_ftuple(x7))
+            , strf::make_ftuple(strf::make_ftuple(x6))
+            , strf::make_ftuple(strf::make_ftuple(x5))
+            , strf::make_ftuple(strf::make_ftuple(x4))
+            , strf::make_ftuple(strf::make_ftuple(x3))
+            , strf::make_ftuple(strf::make_ftuple(x2))
+            , strf::make_ftuple(strf::make_ftuple(x1))
+            );
+        BOOST_TEST(digest(fmt) == expected);
+    }
+    {
+        auto fmt = strf::make_ftuple
+            ( strf::make_ftuple(strf::make_ftuple(x7), strf::make_ftuple(x6))
+            , strf::make_ftuple(strf::make_ftuple(x5), strf::make_ftuple(x4))
+            , strf::make_ftuple(strf::make_ftuple(x3), strf::make_ftuple(x2))
+            , strf::make_ftuple(strf::make_ftuple(x2), strf::make_ftuple(x1))
+            );
+        BOOST_TEST(digest(fmt) == expected);
+    }
+    {
+        auto fmt = strf::make_ftuple
+            ( strf::make_ftuple(strf::make_ftuple(x7, x6, x5))
+            , strf::make_ftuple(x6, x5, x4)
+            , x4, x3, x2
+            , strf::make_ftuple(strf::make_ftuple(x2, x1))
+            );
+        BOOST_TEST(digest(fmt) == expected);
+    }
+    {
+        auto fmt = strf::make_ftuple
+            ( strf::make_ftuple()
+            , strf::make_ftuple(strf::make_ftuple(x7, x6))
+            , strf::make_ftuple(x5, x4, x5, x4)
+            , strf::make_ftuple(x5, x4)
+            , x3
+            , x2
+            , strf::make_ftuple(strf::make_ftuple(x2, x1))
+            , strf::make_ftuple()
+            );
 
-    
+        BOOST_TEST(digest(fmt) == expected);
+    }
+
+
     return report_errors() || boost::report_errors();
 }
 
