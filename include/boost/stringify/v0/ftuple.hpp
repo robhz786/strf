@@ -108,7 +108,8 @@ class single_facet_ftuple
     : public ftuple_end<LowestTag>
 {
 
-    using ConstrainedFacet = boost::stringify::v0::constrained_facet<Filter, Facet>;
+    using ConstrainedFacet
+        = boost::stringify::v0::constrained_facet<Filter, Facet>;
 
 public:
 
@@ -128,7 +129,9 @@ public:
 
     template
         < typename InputType
-        , typename = typename std::enable_if<Filter<InputType>::value>::type
+        , typename = typename std::enable_if
+            <ConstrainedFacet::template matches<InputType>::value>
+            ::type
         >
     constexpr const auto& do_get_facet
         ( const highest_tag&
@@ -188,7 +191,8 @@ class ref_facet_ftuple
     : public ftuple_end<LowestTag>
 {
 
-    using ConstrainedFacet = boost::stringify::v0::constrained_facet<Filter, Facet>;
+    using ConstrainedFacet
+        = boost::stringify::v0::constrained_facet<Filter, Facet>;
     using RefConstrainedFacet = std::reference_wrapper<const ConstrainedFacet>;
 
 public:
@@ -210,7 +214,8 @@ public:
 
     template
         < typename InputType
-        , typename = typename std::enable_if<Filter<InputType>::value>::type
+        , typename = typename std::enable_if
+            <ConstrainedFacet::template matches<InputType>::value>::type
         >
     constexpr const auto& do_get_facet
         ( const highest_tag&
