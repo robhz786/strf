@@ -92,7 +92,8 @@ public:
     template
         < typename T
         , typename S = formatter_impl<T>
-        , typename = std::enable_if_t<!std::is_array<T>::value>>
+        , typename = std::enable_if_t
+            <!std::is_array<T>::value && !std::is_pointer<T>::value>>
     input_arg(const T& arg1, storage<S> && st = storage<S>())
         : m_initializer(detail::formatter_init_ref<S, FTuple, T>)
         , m_formatter(reinterpret_cast<formatter<CharT>*>(&st.data))
@@ -111,7 +112,8 @@ public:
     template
         < typename T
         , typename S = formatter_impl<T>
-        , typename = std::enable_if_t<!std::is_array<T>::value>>
+        , typename = std::enable_if_t
+            <!std::is_array<T>::value && !std::is_pointer<T>::value>>
     input_arg
         ( const T& arg1
         , const typename S::second_arg& arg2

@@ -568,7 +568,7 @@ private:
 
 #if ! defined(BOOST_STRINGIFY_OMIT_IMPL)
 
-
+BOOST_STRINGIFY_INLINE
 const u8decoder<stringify::v0::decoder_err_func>&
 decoder_tag<char>::get_default() noexcept
 {
