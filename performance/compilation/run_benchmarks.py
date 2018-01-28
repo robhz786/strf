@@ -168,6 +168,7 @@ def build_program_command(release, main_src, basename, num_objs, libs) :
     cmd = [gxx]
     cmd.append("-O3" if release else "-g")
     cmd.append(main_src)
+#   cmd.append(boost_incl)
     cmd.extend(obj_files(release, basename, num_objs))
     cmd.extend(libs + ["-o", program_name(basename, num_objs)])
     return cmd
@@ -189,6 +190,7 @@ def build_lib_stringify(flag, libname):
         print("error building" + libname)
         exit(1)
 
+
 shutil.rmtree('tmp/', ignore_errors=True)
 os.makedirs('tmp/')
 
@@ -206,6 +208,7 @@ benchmark_release(basename = 'to_string_fmtlib',
                   flags    = [fmt_incl],
                   libs     = [libfmt_release])
 print(empty_row())
+
 benchmark_release(basename = 'to_charptr_stringify',
                   main_src = 'to_charptr_main.cpp',
                   flags    = [boost_incl],
@@ -219,6 +222,7 @@ benchmark_release(basename = 'to_charptr_sprintf',
                   flags    = [],
                   libs     = [])
 print(empty_row())
+
 benchmark_release(basename = 'to_FILE_stringify',
                   main_src = 'to_FILE_main.cpp',
                   flags    = [boost_incl],
@@ -232,6 +236,7 @@ benchmark_release(basename = 'to_FILE_fprintf',
                   flags    = [],
                   libs     = [])
 print(empty_row())
+
 benchmark_release(basename = 'to_ostream_stringify',
                   main_src = 'to_ostream_main.cpp',
                   flags    = [boost_incl],
@@ -249,7 +254,6 @@ print(']\n')
 print('\n[table Release mode / header-only libraries \n')
 print(table_header())
 print(empty_row())
-print(empty_row())
 benchmark_release(basename = 'to_string_stringify_ho',
                   main_src = 'to_string_main.cpp',
                   flags    = [boost_incl],
@@ -258,6 +262,7 @@ benchmark_release(basename = 'to_string_fmtlib_ho',
                   main_src = 'to_string_main.cpp',
                   flags    = [fmt_incl],
                   libs     = [])
+print(empty_row())
 
 benchmark_release(basename = 'to_charptr_stringify_ho',
                   main_src = 'to_charptr_main.cpp',
@@ -268,6 +273,7 @@ benchmark_release(basename = 'to_charptr_fmtlib_ho',
                   flags    = [fmt_incl],
                   libs     = [])
 print(empty_row())
+
 benchmark_release(basename = 'to_FILE_stringify_ho',
                   main_src = 'to_FILE_main.cpp',
                   flags    = [boost_incl],
@@ -277,6 +283,7 @@ benchmark_release(basename = 'to_FILE_fmtlib_ho',
                   flags    = [fmt_incl],
                   libs     = [])
 print(empty_row())
+
 benchmark_release(basename = 'to_ostream_stringify_ho',
                   main_src = 'to_ostream_main.cpp',
                   flags    = [boost_incl],
@@ -303,6 +310,7 @@ benchmark_debug(basename = 'to_string_fmtlib',
                   flags    = [fmt_incl],
                   libs     = [libfmt_debug])
 print(empty_row())
+
 benchmark_debug(basename = 'to_charptr_stringify',
                   main_src = 'to_charptr_main.cpp',
                   flags    = [boost_incl],
@@ -315,8 +323,8 @@ benchmark_debug(basename = 'to_charptr_sprintf',
                   main_src = 'to_charptr_main.cpp',
                   flags    = [],
                   libs     = [])
-
 print(empty_row())
+
 benchmark_debug(basename = 'to_FILE_stringify',
                   main_src = 'to_FILE_main.cpp',
                   flags    = [boost_incl],
@@ -329,8 +337,8 @@ benchmark_debug(basename = 'to_FILE_fprintf',
                   main_src = 'to_FILE_main.cpp',
                   flags    = [],
                   libs     = [])
-
 print(empty_row())
+
 benchmark_debug(basename = 'to_ostream_stringify',
                   main_src = 'to_ostream_main.cpp',
                   flags    = [boost_incl],
@@ -357,6 +365,7 @@ benchmark_debug(basename = 'to_string_fmtlib_ho',
                   main_src = 'to_string_main.cpp',
                   flags    = [fmt_incl],
                   libs     = [])
+print(empty_row())
 
 benchmark_debug(basename = 'to_charptr_stringify_ho',
                   main_src = 'to_charptr_main.cpp',
@@ -367,6 +376,7 @@ benchmark_debug(basename = 'to_charptr_fmtlib_ho',
                   flags    = [fmt_incl],
                   libs     = [])
 print(empty_row())
+
 benchmark_debug(basename = 'to_FILE_stringify_ho',
                   main_src = 'to_FILE_main.cpp',
                   flags    = [boost_incl],
@@ -376,6 +386,7 @@ benchmark_debug(basename = 'to_FILE_fmtlib_ho',
                   flags    = [fmt_incl],
                   libs     = [])
 print(empty_row())
+
 benchmark_debug(basename = 'to_ostream_stringify_ho',
                   main_src = 'to_ostream_main.cpp',
                   flags    = [boost_incl],

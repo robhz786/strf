@@ -424,28 +424,47 @@ public:
 
 template <> struct encoder_tag<char>
 {
-    static auto get_default() noexcept
-    -> const stringify::v0::u8encoder<stringify::v0::from_utf32_err_func<char>> &;
+    static const auto& get_default() noexcept
+    {
+        using encoder_type =
+            stringify::v0::u8encoder<stringify::v0::from_utf32_err_func<char>>;
+
+        const static encoder_type x {stringify::v0::put_utf8_replacement_char};
+        return x;
+    }
 };
 
 template <> struct encoder_tag<char16_t>
 {
-    static auto get_default() noexcept
-        -> const stringify::v0::u16encoder
-            <char16_t, stringify::v0::from_utf32_err_func<char16_t>>&;
+    static const auto& get_default() noexcept
+    {
+        using encoder_type =
+            stringify::v0::u16encoder
+                < char16_t
+                , stringify::v0::from_utf32_err_func<char16_t>
+                >;
+
+        const static encoder_type x
+            { stringify::v0::put_utf16_replacement_char<char16_t> };
+
+        return x;
+    }
 };
 
 template <> struct encoder_tag<char32_t>
 {
-    static const stringify::v0::utf32_to_utf32<char32_t>& get_default() noexcept;
+    static const auto& get_default() noexcept
+    {
+        const static stringify::v0::utf32_to_utf32<char32_t> x {};
+        return x;
+    }
 };
 
 #if ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
 
 template <> struct encoder_tag<wchar_t>
 {
-
-    static decltype(auto) get_default() noexcept
+    static const auto& get_default() noexcept
     {
         constexpr bool wchar_is_32 = sizeof(wchar_t) == sizeof(char32_t);
         return get_default(std::integral_constant<bool, wchar_is_32>{});
@@ -460,14 +479,23 @@ private:
               , stringify::v0::from_utf32_err_func<wchar_t>
               >;
 
-    static const utf32_impl& get_default(std::true_type) noexcept;
+    static const utf32_impl& get_default(std::true_type) noexcept
+    {
+        const static utf32_impl x {};
+        return x;
+    }
 
-    static const utf16_impl& get_default(std::false_type) noexcept;
+    static const utf16_impl& get_default(std::false_type) noexcept
+    {
+        const static utf16_impl x
+            { stringify::v0::put_utf16_replacement_char<wchar_t> };
+
+        return x;
+    }
 
 };
 
 #endif // ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
-
 
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
@@ -493,64 +521,6 @@ class u16encoder<wchar_t, stringify::v0::from_utf32_err_func<wchar_t>>;
 #endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
 
-
-#if ! defined(BOOST_STRINGIFY_OMIT_IMPL)
-
-BOOST_STRINGIFY_INLINE
-const stringify::v0::u8encoder<stringify::v0::from_utf32_err_func<char>>&
-encoder_tag<char>::get_default() noexcept
-{
-    const static stringify::v0::u8encoder
-        <stringify::v0::from_utf32_err_func<char>>
-        x{put_utf8_replacement_char};
-
-    return x;
-}
-
-BOOST_STRINGIFY_INLINE
-const stringify::v0::u16encoder
-    <char16_t, stringify::v0::from_utf32_err_func<char16_t>>&
-encoder_tag<char16_t>::get_default() noexcept
-{
-    const static stringify::v0::u16encoder
-        <char16_t, stringify::v0::from_utf32_err_func<char16_t>>
-        x{put_utf16_replacement_char<char16_t>};
-
-    return x;
-}
-
-BOOST_STRINGIFY_INLINE
-const stringify::v0::utf32_to_utf32<char32_t>&
-encoder_tag<char32_t>::get_default() noexcept
-{
-    const static stringify::v0::utf32_to_utf32<char32_t> x;
-
-    return x;
-}
-
-#if ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
-
-BOOST_STRINGIFY_INLINE
-const stringify::v0::encoder_tag<wchar_t>::utf16_impl&
-encoder_tag<wchar_t>::get_default(std::false_type) noexcept
-{
-    const static utf16_impl x{put_utf16_replacement_char<wchar_t>};
-
-    return x;
-}
-
-BOOST_STRINGIFY_INLINE
-const stringify::v0::encoder_tag<wchar_t>::utf32_impl&
-encoder_tag<wchar_t>::get_default(std::true_type) noexcept
-{
-    const static utf32_impl x;
-
-    return x;
-}
-
-#endif // ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
-
-#endif // ! defined(BOOST_STRINGIFY_OMIT_IMPL)
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

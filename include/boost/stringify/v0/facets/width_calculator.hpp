@@ -133,7 +133,11 @@ private:
 
 struct width_calculator_tag
 {
-    static const stringify::v0::width_calculator& get_default();
+    static const stringify::v0::width_calculator& get_default()
+    {
+        static stringify::v0::width_calculator x {nullptr};
+        return x;
+    }
 };
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
@@ -237,13 +241,6 @@ BOOST_STRINGIFY_INLINE int width_calculator::remaining_width
         }
         return width > 0 ? width : 0;
     }
-}
-
-BOOST_STRINGIFY_INLINE
-const stringify::v0::width_calculator& width_calculator_tag::get_default()
-{
-    static stringify::v0::width_calculator x {nullptr};
-    return x;
 }
 
 BOOST_STRINGIFY_INLINE

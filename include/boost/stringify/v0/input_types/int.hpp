@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/stringify/v0/ftuple.hpp>
-#include <boost/stringify/v0/char_flags.hpp>
+#include <boost/stringify/v0/arg_fmt.hpp>
 #include <boost/stringify/v0/facets/encoder.hpp>
 #include <boost/stringify/v0/detail/number_of_digits.hpp>
 #include <boost/stringify/v0/formatter.hpp>
@@ -29,7 +29,6 @@ unsigned_abs(intT value)
            : 1 + static_cast<unsigned_intT>(-(value + 1)));
 }
 
-
 template<typename intT>
 typename std::enable_if<std::is_unsigned<intT>::value, intT>::type
 unsigned_abs(intT value)
@@ -37,10 +36,9 @@ unsigned_abs(intT value)
     return value;
 }
 
+
 } // namespace detail
 
-using int_fmt = stringify::v0::basic_arg_fmt
-    <int, 0, '+', '-', '<', '>', '=', '^', 'o', 'd', 'x', 'X', '#'>;
 
 template <typename intT, typename CharT>
 class int_formatter: public formatter<CharT>
@@ -59,7 +57,7 @@ public:
     int_formatter
         ( const FTuple& ft
         , intT value
-        , const second_arg& fmt = {}
+        , const second_arg& fmt = stringify::v0::default_int_fmt()
         ) noexcept
         : int_formatter(get_encoder(ft), value, fmt)
     {
@@ -69,35 +67,15 @@ public:
         ( const stringify::v0::encoder<CharT>& encoder
         , intT value
         , const second_arg& fmt
-        ) noexcept
-        : m_value{value}
-        , m_encoder{encoder}
-        , m_fmt(fmt)
-    {
-        determinate_fill();
-    }
+        ) noexcept;
 
-    std::size_t length() const override
-    {
-        return length_body() + length_fill();
-    }
+    virtual ~int_formatter();
 
-    void write(writer_type& out) const override
-    {
-        if (m_fillcount > 0)
-        {
-            write_with_fill(out);
-        }
-        else
-        {
-            write_without_fill(out);
-        }
-    }
+    std::size_t length() const override;
 
-    int remaining_width(int w) const override
-    {
-        return w > m_fmt.width() ? (w - m_fmt.width()) : 0;
-    }
+    void write(writer_type& out) const override;
+
+    int remaining_width(int w) const override;
 
 private:
 
@@ -105,10 +83,7 @@ private:
     const stringify::v0::encoder<CharT>& m_encoder;
     boost::stringify::v0::int_fmt m_fmt;
     boost::stringify::v0::int_fmt::width_type m_fillcount = 0;
-    unsigned short m_base
-        = m_fmt.has_char<'X'>() || m_fmt.has_char<'x'>() ? 16 :
-          m_fmt.has_char<'o'>() ? 8 : 10;
-    bool m_showpos = is_signed && m_fmt.has_char<'+'>();
+    bool m_showpos = is_signed && m_fmt.showpos();
 
     template <typename FTuple>
     const stringify::v0::encoder<CharT>& get_encoder(const FTuple& ft) noexcept
@@ -119,7 +94,7 @@ private:
 
     unsigned_intT unsigned_value() const noexcept
     {
-        if(m_base == 10)
+        if(m_fmt.base() == 10)
         {
             return stringify::v0::detail::unsigned_abs(m_value);
         }
@@ -137,12 +112,12 @@ private:
 
     std::size_t length_body() const
     {
-        switch(m_base)
+        switch(m_fmt.base())
         {
-            case 16: return length_digits<16>() + (m_fmt.has_char<'#'>() ? 2 : 0);
-            case  8: return length_digits<8>() + (m_fmt.has_char<'#'>() ? 1 : 0);
+            case 16: return length_digits<16>() + (m_fmt.showbase() ? 2 : 0);
+            case  8: return length_digits<8>() + (m_fmt.showbase() ? 1 : 0);
         }
-        BOOST_ASSERT(m_base == 10);
+        BOOST_ASSERT(m_fmt.base() == 10);
         return length_digits<10>() + (m_value < 0 || m_showpos ? 1 : 0);
     }
 
@@ -154,41 +129,43 @@ private:
 
     void write_with_fill(writer_type& out) const
     {
-        if(m_fmt.has_char<'<'>())
+        switch(m_fmt.alignment())
         {
-            write_sign(out);
-            write_base(out);
-            write_digits(out);
-            write_fill(out, m_fillcount);
-        }
-        else if(m_fmt.has_char<'='>())
-        {
-            write_sign(out);
-            write_base(out);
-            write_fill(out, m_fillcount);
-            write_digits(out);
-        }
-        else if(m_fmt.has_char<'^'>())
-        {
-            auto halfcount = m_fillcount / 2;
-            write_fill(out, halfcount);
-            write_sign(out);
-            write_base(out);
-            write_digits(out);
-            write_fill(out, m_fillcount - halfcount);
-        }
-        else
-        {
-            write_fill(out, m_fillcount);
-            write_sign(out);
-            write_base(out);
-            write_digits(out);
+            case stringify::v0::int_alignment::left:
+                write_sign(out);
+                write_base(out);
+                write_digits(out);
+                write_fill(out, m_fillcount);
+                break;
+
+            case stringify::v0::int_alignment::internal:
+                write_sign(out);
+                write_base(out);
+                write_fill(out, m_fillcount);
+                write_digits(out);
+                break;
+
+            case stringify::v0::int_alignment::center:
+            {
+                auto halfcount = m_fillcount / 2;
+                write_fill(out, halfcount);
+                write_sign(out);
+                write_base(out);
+                write_digits(out);
+                write_fill(out, m_fillcount - halfcount);
+                break;
+            }
+            default:
+                write_fill(out, m_fillcount);
+                write_sign(out);
+                write_base(out);
+                write_digits(out);
         }
     }
 
     void write_sign(writer_type& out) const
     {
-        if (std::is_signed<intT>::value && m_base == 10)
+        if (std::is_signed<intT>::value && m_fmt.base() == 10)
         {
             if (m_value < 0)
             {
@@ -203,7 +180,7 @@ private:
 
     void write_without_fill(writer_type& out) const
     {
-        switch(m_base)
+        switch(m_fmt.base())
         {
             case 16:
                 write_base(out);
@@ -216,7 +193,7 @@ private:
                 break;
 
             default:
-                BOOST_ASSERT(m_base == 10);
+                BOOST_ASSERT(m_fmt.base() == 10);
                 write_sign(out);
                 write_digits_t<10>(out);
         }
@@ -224,28 +201,24 @@ private:
 
     void write_base(writer_type& out) const
     {
-        if(m_base != 10 && m_fmt.has_char<'#'>())
+        if(m_fmt.base() != 10 && m_fmt.showbase())
         {
             out.put(CharT('0'));
-            if(m_fmt.has_char<'X'>())
+            if(m_fmt.base() == 16)
             {
-                out.put(CharT('X'));
-            }
-            else if(m_fmt.has_char<'x'>())
-            {
-                out.put(CharT('x'));
+                out.put(m_fmt.uppercase() ? CharT('X'): CharT('x'));
             }
         }
     }
 
     void write_digits(writer_type& out) const
     {
-        switch (m_base)
+        switch (m_fmt.base())
         {
             case 10 : write_digits_t<10>(out); break;
             case 16 : write_digits_t<16>(out); break;
             default:
-                BOOST_ASSERT(m_base == 8);
+                BOOST_ASSERT(m_fmt.base() == 8);
                 write_digits_t<8>(out);
         }
     }
@@ -279,7 +252,7 @@ private:
         {
             return CharT('0') + digit;
         }
-        const CharT char_a = m_fmt.has_char<'X'>() ? 'A' : 'a';
+        const CharT char_a = m_fmt.uppercase() ? 'A' : 'a';
         return  char_a + digit - 10;
     }
 
@@ -305,7 +278,7 @@ private:
     {
         int bw = 0;
         auto uv = unsigned_value();
-        if(m_base == 10)
+        if(m_fmt.base() == 10)
         {
             if(m_value < 0 || m_showpos)
             {
@@ -313,9 +286,9 @@ private:
             }
             bw += stringify::v0::detail::number_of_digits<10>(uv);
         }
-        else if(m_base == 16)
+        else if(m_fmt.base() == 16)
         {
-            if (m_fmt.has_char<'#'>())
+            if (m_fmt.showbase())
             {
                 bw += 2;
             }
@@ -323,8 +296,8 @@ private:
         }
         else
         {
-            BOOST_ASSERT(m_base == 8);
-            if (m_fmt.has_char<'#'>())
+            BOOST_ASSERT(m_fmt.base() == 8);
+            if (m_fmt.showbase())
             {
                 ++bw;
             }
@@ -334,6 +307,50 @@ private:
     }
 
 };
+
+template <typename IntT, typename CharT>
+int_formatter<IntT, CharT>::int_formatter
+    ( const stringify::v0::encoder<CharT>& encoder
+    , IntT value
+    , const stringify::v0::int_fmt& fmt
+    ) noexcept
+    : m_value{value}
+    , m_encoder{encoder}
+    , m_fmt(fmt)
+{
+    determinate_fill();
+}
+
+
+template <typename IntT, typename CharT>
+int_formatter<IntT, CharT>::~int_formatter()
+{
+}
+
+template <typename IntT, typename CharT>
+std::size_t int_formatter<IntT, CharT>::length() const
+{
+    return length_body() + length_fill();
+}
+
+template <typename IntT, typename CharT>
+void int_formatter<IntT, CharT>::write(writer_type& out) const
+{
+    if (m_fillcount > 0)
+    {
+        write_with_fill(out);
+    }
+    else
+    {
+        write_without_fill(out);
+    }
+}
+
+template <typename IntT, typename CharT>
+int int_formatter<IntT, CharT>::remaining_width(int w) const
+{
+    return w > m_fmt.width() ? (w - m_fmt.width()) : 0;
+}
 
 namespace detail {
 

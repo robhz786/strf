@@ -64,17 +64,21 @@ int main()
     TEST(".....") &= { {U'a', {5, U'.', ">", 0}} };
     TEST(".....") &= { {U'a', {5, U'.', "^", 0}} };
 
-    // width calculations inside joins
-    TEST("aaaa|  bb|cccc|  dd|eeee--|  ff--") &=
-        {
-            {strf::join_left(2, U'-'), {{U'a', {2, "", 4}}}}, U'|',
-            {strf::join_left(2, U'-'), {{U'b', {4, "", 2}}}}, U'|',
-            {strf::join_left(4, U'-'), {{U'c', {2, "", 4}}}}, U'|',
-            {strf::join_left(4, U'-'), {{U'd', {4, "", 2}}}}, U'|',
-            {strf::join_left(6, U'-'), {{U'e', {2, "", 4}}}}, U'|',
-            {strf::join_left(6, U'-'), {{U'f', {4, "", 2}}}}
-        };
+    TEST("a")      &= { {strf::join_left(0, '.'), {U'a'}} };
+    TEST("   a")   &= { {strf::join_left(1, '.'), {{U'a', 4}}} };
+    TEST("   a..") &= { {strf::join_left(6, '.'), {{U'a', 4}}} };
 
+    TEST("  aa")   &= { {strf::join_left(2, '.'), {{U'a', {4, "", 2}}}} };
+    TEST("  aa")   &= { {strf::join_left(4, '.'), {{U'a', {4, "", 2}}}} };
+    TEST("  aa..") &= { {strf::join_left(6, '.'), {{U'a', {4, "", 2}}}} };
+
+    TEST("aaaa")   &= { {strf::join_left(2, '.'), {{U'a', {2, "", 4}}}} };
+    TEST("aaaa")   &= { {strf::join_left(4, '.'), {{U'a', {2, "", 4}}}} };
+    TEST("aaaa..") &= { {strf::join_left(6, '.'), {{U'a', {2, "", 4}}}} };
+
+    TEST("aaaa")   &= { {strf::join_left(2, '.'), {{U'a', {4, "", 4}}}} };
+    TEST("aaaa")   &= { {strf::join_left(4, '.'), {{U'a', {4, "", 4}}}} };
+    TEST("aaaa..") &= { {strf::join_left(6, '.'), {{U'a', {4, "", 4}}}} };
 
     return report_errors() || boost::report_errors();
 }

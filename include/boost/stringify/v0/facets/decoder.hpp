@@ -519,25 +519,43 @@ public:
     }
 };
 
-
 template <> struct decoder_tag<char>
 {
-    static const
-    stringify::v0::u8decoder<stringify::v0::decoder_err_func>&
-    get_default() noexcept;
+    static const auto& get_default() noexcept
+    {
+        using decoder_type =
+            stringify::v0::u8decoder<stringify::v0::decoder_err_func>;
+
+        const static decoder_type x
+            { stringify::v0::decoder_err_put_replacement_char };
+
+        return x;
+    }
 };
 
 template <> struct decoder_tag<char16_t>
 {
-    static const
-    stringify::v0::u16decoder<char16_t, stringify::v0::decoder_err_func>&
-    get_default() noexcept;
+    static const auto& get_default() noexcept
+    {
+        using decoder_type
+            = stringify::v0::u16decoder
+                <char16_t, stringify::v0::decoder_err_func>;
+
+        const static decoder_type x
+            { stringify::v0::decoder_err_put_replacement_char };
+
+        return x;
+    }
 };
 
 template <> struct decoder_tag<char32_t>
 {
     static const stringify::v0::u32decoder<char32_t>&
-    get_default() noexcept;
+    get_default() noexcept
+    {
+        const static stringify::v0::u32decoder<char32_t> x{};
+        return x;
+    }
 };
 
 #if ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
@@ -557,68 +575,42 @@ private:
     using wstr_decoder_u32 =
         stringify::v0::u32decoder<wchar_t>;
 
-    static const wstr_decoder_u32& get_default(std::true_type) noexcept;
+    static const wstr_decoder_u32& get_default(std::true_type) noexcept
+    {
+        const static wstr_decoder_u32 x{};
+        return x;
+    }
 
-    static const wstr_decoder_u16& get_default(std::false_type) noexcept;
+    static const wstr_decoder_u16& get_default(std::false_type) noexcept
+    {
+        const static wstr_decoder_u16 x
+            { stringify::v0::decoder_err_put_replacement_char };
+        return x;
+    }
 
 };
 
 #endif // ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
 
 
-#if ! defined(BOOST_STRINGIFY_OMIT_IMPL)
+#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
-BOOST_STRINGIFY_INLINE
-const u8decoder<stringify::v0::decoder_err_func>&
-decoder_tag<char>::get_default() noexcept
-{
-    const static stringify::v0::u8decoder
-        <stringify::v0::decoder_err_func> x
-        { stringify::v0::decoder_err_put_replacement_char };
-    return x;
-}
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class u8decoder <stringify::v0::decoder_err_func>;
 
-BOOST_STRINGIFY_INLINE
-const u16decoder<char16_t, stringify::v0::decoder_err_func>&
-decoder_tag<char16_t>::get_default() noexcept
-{
-    const static stringify::v0::u16decoder
-        <char16_t, stringify::v0::decoder_err_func> x
-        { stringify::v0::decoder_err_put_replacement_char };
-    return x;
-}
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class u16decoder<char16_t, stringify::v0::decoder_err_func>;
 
-BOOST_STRINGIFY_INLINE
-const u32decoder<char32_t>&
-decoder_tag<char32_t>::get_default() noexcept
-{
-    const static stringify::v0::u32decoder<char32_t> x{};
-    return x;
-}
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class u32decoder<char32_t>;
+
 #if ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
 
-BOOST_STRINGIFY_INLINE
-const stringify::v0::decoder_tag<wchar_t>::wstr_decoder_u32&
-decoder_tag<wchar_t>::get_default(std::true_type) noexcept
-{
-    const static wstr_decoder_u32 x{};
-    return x;
-}
-
-BOOST_STRINGIFY_INLINE
-const stringify::v0::decoder_tag<wchar_t>::wstr_decoder_u16&
-decoder_tag<wchar_t>::get_default(std::false_type) noexcept
-{
-    const static wstr_decoder_u16 x
-        { stringify::v0::decoder_err_put_replacement_char };
-    return x;
-}
-
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class u32decoder<wchar_t>;
 
 #endif // ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
 
-#endif // ! defined(BOOST_STRINGIFY_OMIT_IMPL)
-
+#endif //  defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

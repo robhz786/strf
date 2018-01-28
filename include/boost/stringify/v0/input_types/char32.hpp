@@ -8,14 +8,11 @@
 #include <type_traits>
 #include <boost/stringify/v0/ftuple.hpp>
 #include <boost/stringify/v0/formatter.hpp>
-#include <boost/stringify/v0/char_flags.hpp>
+#include <boost/stringify/v0/arg_fmt.hpp>
 #include <boost/stringify/v0/facets/encoder.hpp>
 #include <boost/stringify/v0/facets/width_calculator.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
-
-using char_fmt
-    = stringify::v0::basic_arg_fmt_with_count<int, 0, int, 1, '<', '^'>;
 
 namespace detail {
 
@@ -33,7 +30,7 @@ public:
     char32_formatter
         ( const FTuple& ft
         , char32_t ch
-        , const second_arg& fmt = {}
+        , const second_arg& fmt = stringify::v0::default_char_fmt()
         ) noexcept
         : char32_formatter(get_encoder(ft), get_width_calculator(ft), ch, fmt)
     {
@@ -44,61 +41,15 @@ public:
         , const stringify::v0::width_calculator& wcalc
         , char32_t ch
         , const second_arg& fmt = {}
-        ) noexcept
-        : m_encoder(encoder)
-        , m_char(ch)
-        , m_fmt(fmt)
-    {
-        determinate_fill_and_width(wcalc);
-    }
+        ) noexcept;
 
-    std::size_t length() const override
-    {
-        std::size_t len = 0;
-        if (m_fmt.count() > 0)
-        {
-            len = m_fmt.count() * m_encoder.length(m_char);
-        }
-        if (m_fillcount > 0)
-        {
-            len += m_fillcount * m_encoder.length(m_fmt.fill());
-        }
-        return len;
-    }
+    virtual ~char32_formatter();
 
-    void write(writer_type& out) const override
-    {
-        if (m_fillcount == 0)
-        {
-            m_encoder.encode(out, m_fmt.count(), m_char);
-        }
-        else if(m_fmt.has_char<'<'>())
-        {
-            m_encoder.encode(out, m_fmt.count(), m_char);
-            m_encoder.encode(out, m_fillcount, m_fmt.fill());
-        }
-        else if(m_fmt.has_char<'^'>())
-        {
-            auto halfcount = m_fillcount / 2;
-            m_encoder.encode(out, halfcount, m_fmt.fill());
-            m_encoder.encode(out, m_fmt.count(), m_char);
-            m_encoder.encode(out, m_fillcount - halfcount, m_fmt.fill());
-        }
-        else
-        {
-            m_encoder.encode(out, m_fillcount, m_fmt.fill());
-            m_encoder.encode(out, m_fmt.count(), m_char);
-        }
-    }
+    std::size_t length() const override;
 
-    int remaining_width(int w) const override
-    {
-        if (w > 0 && static_cast<char_fmt::width_type>(w) > m_fmt.width())
-        {
-            return w - static_cast<int>(m_fmt.width());
-        }
-        return 0;
-    }
+    void write(writer_type& out) const override;
+
+    int remaining_width(int w) const override;
 
 private:
 
@@ -139,6 +90,89 @@ private:
         }
     }
 };
+
+
+template <typename CharT>
+char32_formatter<CharT>::char32_formatter
+    ( const stringify::v0::encoder<CharT>& encoder
+    , const stringify::v0::width_calculator& wcalc
+    , char32_t ch
+    , const second_arg& fmt
+    ) noexcept
+    : m_encoder(encoder)
+    , m_char(ch)
+    , m_fmt(fmt)
+{
+    determinate_fill_and_width(wcalc);
+}
+
+
+template <typename CharT>
+char32_formatter<CharT>::~char32_formatter()
+{
+}
+
+
+template <typename CharT>
+std::size_t char32_formatter<CharT>::length() const
+{
+    std::size_t len = 0;
+    if (m_fmt.count() > 0)
+    {
+        len = m_fmt.count() * m_encoder.length(m_char);
+    }
+    if (m_fillcount > 0)
+    {
+        len += m_fillcount * m_encoder.length(m_fmt.fill());
+    }
+    return len;
+}
+
+
+template <typename CharT>
+void char32_formatter<CharT>::write(writer_type& out) const
+{
+    if (m_fillcount == 0)
+    {
+        m_encoder.encode(out, m_fmt.count(), m_char);
+    }
+    else
+    {
+        switch(m_fmt.alignment())
+        {
+            case stringify::v0::basic_alignment::left:
+            {
+                m_encoder.encode(out, m_fmt.count(), m_char);
+                m_encoder.encode(out, m_fillcount, m_fmt.fill());
+                break;
+            }
+            case stringify::v0::basic_alignment::center:
+            {
+                auto halfcount = m_fillcount / 2;
+                m_encoder.encode(out, halfcount, m_fmt.fill());
+                m_encoder.encode(out, m_fmt.count(), m_char);
+                m_encoder.encode(out, m_fillcount - halfcount, m_fmt.fill());
+                break;
+            }
+            default:
+            {
+                m_encoder.encode(out, m_fillcount, m_fmt.fill());
+                m_encoder.encode(out, m_fmt.count(), m_char);
+            }
+        }
+    }
+}
+
+
+template <typename CharT>
+int char32_formatter<CharT>::remaining_width(int w) const
+{
+    if (w > 0 && static_cast<char_fmt::width_type>(w) > m_fmt.width())
+    {
+        return w - static_cast<int>(m_fmt.width());
+    }
+    return 0;
+}
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 

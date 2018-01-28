@@ -17,7 +17,11 @@ int main()
         TEST("...abc")   &= { {"abc", {6, '.', ">"}} };
         TEST("...abc")   &= { {"abc", {6, '.', "="}} };
         TEST(".abc..")   &= { {"abc", {6, '.', "^"}} };
-        TEST("   abc")   &= { {strf::join_right(6), {"abc"}} };
+        TEST("     abc")   &= { {strf::join_right(8), {"abc"}} };
+        TEST("...abc~~")   &= { {strf::join_right(8, '.'), {{"abc", {5, U'~', "<"}}}} };
+        TEST(".....abc")   &= { {strf::join_right(8, '.'), {{"abc", {3, U'~', "<"}}}} };
+        TEST(".....abc")   &= { {strf::join_right(8, '.'), {{"abc", {2, U'~', "<"}}}} };
+
 
         TEST("   abcdefghijkl") &= { {"", 3}, {"abc", {3, ">"}}, {"def", {3, "<"}}, {"ghi", {3, "="}}, {"jkl", {3, "^"}} };
         TEST("  abcdefghijkl")  &= { {"", 2}, {"abc", {2, ">"}}, {"def", {2, "<"}}, {"ghi", {2, "="}}, {"jkl", {2, "^"}} };
@@ -34,7 +38,12 @@ int main()
         TEST(L"   abc") &= { {abc, {6, ">"}} };
         TEST(L"   abc") &= { {abc, {6, "="}} };
         TEST(L" abc  ") &= { {abc, {6, "^"}} };
-        TEST(L"   abc") &= { {strf::join_right(6), {abc}} };
+        TEST(L"     abc")   &= { {strf::join_right(8), {"abc"}} };
+        TEST(L"...abc~~")   &= { {strf::join_right(8, '.'), {{abc, {5, U'~', "<"}}}} };
+        TEST(L".....abc")   &= { {strf::join_right(8, '.'), {{abc, {3, U'~', "<"}}}} };
+        TEST(L".....abc")   &= { {strf::join_right(8, '.'), {{abc, {2, U'~', "<"}}}} };
+
+
 
         TEST(L"   abcdefghijkl") &= { {L"", 3}, {abc, {3, ">"}}, {def, {3, "<"}}, {ghi, {3, "="}}, {L"jkl", {3, "^"}} };
         TEST(L"  abcdefghijkl")  &= { {L"", 2}, {abc, {2, ">"}}, {def, {2, "<"}}, {ghi, {2, "="}}, {L"jkl", {2, "^"}} };
@@ -85,7 +94,11 @@ int main()
         TEST("   abc")   &= { {abc, {6, ">"}} };
         TEST("   abc")   &= { {abc, {6, "="}} };
         TEST(" abc  ")   &= { {abc, {6, "^"}} };
-        TEST("   abc")   &= { {strf::join_right(6), {abc}} };
+        TEST("     abc")   &= { {strf::join_right(8), {abc}} };
+        TEST("...abc~~")   &= { {strf::join_right(8, '.'), {{abc, {5, U'~', "<"}}}} };
+        TEST(".....abc")   &= { {strf::join_right(8, '.'), {{abc, {3, U'~', "<"}}}} };
+        TEST(".....abc")   &= { {strf::join_right(8, '.'), {{abc, {2, U'~', "<"}}}} };
+
 
         TEST("   abcdefghijkl") &= { {U"", 3}, {abc, {3, ">"}}, {def, {3, "<"}}, {ghi, {3, "="}}, {U"jkl", {3, "^"}} };
         TEST("  abcdefghijkl")  &= { {U"", 2}, {abc, {2, ">"}}, {def, {2, "<"}}, {ghi, {2, "="}}, {U"jkl", {2, "^"}} };
