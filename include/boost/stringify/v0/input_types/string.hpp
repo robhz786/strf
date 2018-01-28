@@ -3,9 +3,11 @@
 
 #include <algorithm>
 #include <limits>
-#include <boost/stringify/v0/conventional_argf_reader.hpp>
-#include <boost/stringify/v0/facets/width_calculator.hpp>
+#include <boost/stringify/v0/ftuple.hpp>
 #include <boost/stringify/v0/formatter.hpp>
+#include <boost/stringify/v0/facets/encoder.hpp>
+#include <boost/stringify/v0/facets/decoder.hpp>
+#include <boost/stringify/v0/facets/width_calculator.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -20,20 +22,6 @@ struct string_input_tag: string_input_tag_base
 
 
 namespace detail {
-
-struct string_argf
-{
-    using char_flags_type = stringify::v0::char_flags<'<', '>', '=', '^'>;
-
-    constexpr string_argf(int w): width(w) {}
-    constexpr string_argf(const char* f): flags(f) {}
-    constexpr string_argf(int w, const char* f): width(w), flags(f) {}
-    constexpr string_argf(const string_argf&) = default;
-
-    int width = -1;
-    char_flags_type flags;
-};
-
 
 template <typename CharOut>
 class length_accumulator: public stringify::v0::u32output
@@ -383,57 +371,39 @@ using string_writer
 = typename stringify::v0::detail::string_writer_helper<CharIn, CharOut>::type;
 
 
+} // namespace detail
+
+
+using string_fmt = stringify::v0::basic_arg_fmt<int, 0 , '<', '^'>;
+
+
 template<typename CharIn, typename CharOut>
 class string_formatter: public formatter<CharOut>
 {
-
-public:
-
-    using second_arg = stringify::v0::detail::string_argf;
-
 private:
 
     using input_tag = stringify::v0::string_input_tag<CharIn>;
     using writer_type = stringify::v0::output_writer<CharOut>;
     using encoder_tag = stringify::v0::encoder_tag<CharOut>;
-    using argf_reader = stringify::v0::conventional_argf_reader<input_tag>;
 
 public:
 
-    template <typename FTuple>
-    string_formatter
-        ( const FTuple& ft
-        , const CharIn* begin
-        , const CharIn* end
-        , const second_arg& argf
-        ) noexcept
-        : m_str(ft, begin, end)
-        , m_encoder(get_facet<encoder_tag>(ft))
-        , m_fillchar(get_facet<fill_tag>(ft).fill_char())
-        , m_width(argf_reader::get_width(argf, ft))
-        , m_alignment(argf_reader::get_alignment(argf, ft))
-    {
-        if(m_width > 0)
-        {
-            determinate_fill();
-        }
-    }
+    using second_arg = stringify::v0::string_fmt;
 
     template <typename FTuple>
     string_formatter
         ( const FTuple& ft
         , const CharIn* begin
         , const CharIn* end
+        , const second_arg& fmt = {}
         ) noexcept
         : m_str(ft, begin, end)
         , m_encoder(get_facet<encoder_tag>(ft))
-        , m_fillchar(get_facet<fill_tag>(ft).fill_char())
-        , m_width(get_facet<width_tag>(ft).width())
-        , m_alignment(get_facet<alignment_tag>(ft).value())
+        , m_fmt(fmt)
     {
-        if(m_width > 0)
+        if(m_fmt.width() > 0)
         {
-            determinate_fill();
+            m_fillcount = m_str.remaining_width(m_fmt.width());
         }
     }
 
@@ -462,7 +432,7 @@ public:
         std::size_t len = m_str.length();
         if (m_fillcount > 0)
         {
-            len += m_encoder.length(m_fillchar) * m_fillcount;
+            len += m_encoder.length(m_fmt.fill()) * m_fillcount;
         }
         return len;
     }
@@ -471,12 +441,12 @@ public:
     {
         if (m_fillcount > 0)
         {
-            if(m_alignment == stringify::v0::alignment::left)
+            if(m_fmt.has_char<'<'>())
             {
                 m_str.write_str(out);
                 write_fill(out, m_fillcount);
             }
-            else if (m_alignment == stringify::v0::alignment::center)
+            else if (m_fmt.has_char<'^'>())
             {
                 int halfcount = m_fillcount / 2;
                 write_fill(out, halfcount);
@@ -499,7 +469,7 @@ public:
     {
         if(m_fillcount > 0)
         {
-            return w > m_width ? w - m_width : 0;
+            return w > m_fmt.width() ? w - m_fmt.width() : 0;
         }
         return m_str.remaining_width(w);
     }
@@ -508,10 +478,8 @@ private:
 
     const stringify::v0::detail::string_writer<CharIn, CharOut> m_str;
     const stringify::v0::encoder<CharOut>& m_encoder;
-    const char32_t m_fillchar;
-    width_t m_fillcount = 0;
-    width_t m_width;
-    stringify::v0::alignment m_alignment;
+    stringify::v0::string_fmt m_fmt;
+    stringify::v0::string_fmt::width_type m_fillcount = 0;
 
     template <typename StringType>
     static const auto* end_of(const StringType& str)
@@ -530,24 +498,10 @@ private:
         return ft.template get_facet<Category, input_tag>();
     }
 
-    void determinate_fill()
-    {
-        m_fillcount = m_str.remaining_width(m_width);
-    }
-
     void write_fill(writer_type& out, int count ) const
     {
-        m_encoder.encode(out, count, m_fillchar);
+        m_encoder.encode(out, count, m_fmt.fill());
     }
-};
-
-
-template <typename CharIn>
-struct string_input_traits
-{
-    template <typename CharOut, typename FTuple>
-    using formatter
-    = stringify::v0::detail::string_formatter<CharIn, CharOut>;
 };
 
 
@@ -574,6 +528,16 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_formatter<wchar_t, char32_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_formatter<wchar_t, wchar_t>;
 
 #endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+
+namespace detail {
+
+template <typename CharIn>
+struct string_input_traits
+{
+    template <typename CharOut, typename FTuple>
+    using formatter
+    = stringify::v0::string_formatter<CharIn, CharOut>;
+};
 
 } // namespace detail
 

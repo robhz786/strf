@@ -5,19 +5,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/conventional_argf_reader.hpp>
-#include <boost/stringify/v0/char_flags.hpp>
-#include <boost/stringify/v0/facets/alignment.hpp>
-#include <boost/stringify/v0/facets/fill.hpp>
-#include <boost/stringify/v0/facets/intbase.hpp>
-#include <boost/stringify/v0/facets/case.hpp>
-#include <boost/stringify/v0/facets/encoder.hpp>
-#include <boost/stringify/v0/facets/showbase.hpp>
-#include <boost/stringify/v0/facets/showpos.hpp>
-#include <boost/stringify/v0/facets/width.hpp>
-#include <boost/stringify/v0/facets/width.hpp>
 #include <boost/stringify/v0/ftuple.hpp>
-#include <boost/stringify/v0/detail/characters_catalog.hpp>
+#include <boost/stringify/v0/char_flags.hpp>
+#include <boost/stringify/v0/facets/encoder.hpp>
 #include <boost/stringify/v0/detail/number_of_digits.hpp>
 #include <boost/stringify/v0/formatter.hpp>
 #include <boost/assert.hpp>
@@ -26,21 +16,6 @@
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 namespace detail {
-
-struct int_argf
-{
-    using char_flags_type = stringify::v0::char_flags
-        <'+', '-', '<', '>', '=', '^', 'o', 'd', 'x', 'X', 'c', 'C', '#', '$'>;
-
-    constexpr int_argf(int w): width(w) {}
-    constexpr int_argf(const char* f): flags(f) {}
-    constexpr int_argf(int w, const char* f): width(w), flags(f) {}
-    constexpr int_argf(const int_argf&) = default;
-
-    int width = -1;
-    char_flags_type flags;
-};
-
 
 template
     < typename intT
@@ -62,13 +37,15 @@ unsigned_abs(intT value)
     return value;
 }
 
+} // namespace detail
+
+using int_fmt = stringify::v0::basic_arg_fmt
+    <int, 0, '+', '-', '<', '>', '=', '^', 'o', 'd', 'x', 'X', '#'>;
 
 template <typename intT, typename CharT>
 class int_formatter: public formatter<CharT>
 {
     using unsigned_intT = typename std::make_unsigned<intT>::type;
-    using chars_catalog = stringify::v0::detail::characters_catalog;
-    using from32_tag = stringify::v0::encoder_tag<CharT>;
     static constexpr bool is_signed = std::is_signed<intT>::value;
 
 public:
@@ -76,50 +53,28 @@ public:
     using input_type  = intT ;
     using char_type   = CharT;
     using writer_type = stringify::v0::output_writer<CharT>;
-    using second_arg = stringify::v0::detail::int_argf;
-
-private:
-
-    using argf_reader = stringify::v0::conventional_argf_reader<input_type>;
-
-public:
+    using second_arg = stringify::v0::int_fmt;
 
     template <typename FTuple>
-    int_formatter(const FTuple& ft, intT value) noexcept
-        : m_value{value}
-        , m_encoder{get_facet<stringify::v0::encoder_tag<CharT>>(ft)}
-        , m_width{get_facet<stringify::v0::width_tag>(ft).width()}
-        , m_fillchar{get_facet<stringify::v0::fill_tag>(ft).fill_char()}
-        , m_alignment{get_facet<stringify::v0::alignment_tag>(ft).value()}
-        , m_base(get_facet<stringify::v0::intbase_tag>(ft).value())
-        , m_showpos
-            { is_signed && value >= 0 &&
-              get_facet<stringify::v0::showpos_tag>(ft).value() }
-        , m_showbase{get_facet<stringify::v0::showbase_tag>(ft).value()}
-        , m_uppercase{get_facet<stringify::v0::case_tag>(ft).uppercase()}
+    int_formatter
+        ( const FTuple& ft
+        , intT value
+        , const second_arg& fmt = {}
+        ) noexcept
+        : int_formatter(get_encoder(ft), value, fmt)
     {
-        if(m_width > 0)
-        {
-            determinate_fill();
-        }
     }
 
-    template <typename FTuple>
-    int_formatter(const FTuple& ft, intT value, second_arg argf) noexcept
+    int_formatter
+        ( const stringify::v0::encoder<CharT>& encoder
+        , intT value
+        , const second_arg& fmt
+        ) noexcept
         : m_value{value}
-        , m_encoder{get_facet<stringify::v0::encoder_tag<CharT>>(ft)}
-        , m_width{argf_reader::get_width(argf, ft)}
-        , m_fillchar{get_facet<stringify::v0::fill_tag>(ft).fill_char()}
-        , m_base(argf_reader::get_base(argf, ft))
-        , m_showpos{is_signed && value >= 0 && argf_reader::get_showpos(argf, ft)}
-        , m_showbase{argf_reader::get_showbase(argf, ft)}
-        , m_uppercase{argf_reader::get_uppercase(argf, ft)}
+        , m_encoder{encoder}
+        , m_fmt(fmt)
     {
-        if(m_width > 0)
-        {
-            m_alignment = argf_reader::get_alignment(argf, ft);
-            determinate_fill();
-        }
+        determinate_fill();
     }
 
     std::size_t length() const override
@@ -141,31 +96,25 @@ public:
 
     int remaining_width(int w) const override
     {
-        if(m_width <= 0)
-        {
-            m_width = width_body();
-        }
-        return w > m_width ? w - m_width : 0;
+        return w > m_fmt.width() ? (w - m_fmt.width()) : 0;
     }
 
 private:
 
     const intT m_value;
     const stringify::v0::encoder<CharT>& m_encoder;
-    mutable int m_width;
-    char32_t m_fillchar = U' ';
-    int m_fillcount = 0;
-    stringify::v0::alignment m_alignment = stringify::v0::alignment::right;
-    unsigned short m_base;
-    bool m_showpos;
-    bool m_showbase;
-    bool m_uppercase;
+    boost::stringify::v0::int_fmt m_fmt;
+    boost::stringify::v0::int_fmt::width_type m_fillcount = 0;
+    unsigned short m_base
+        = m_fmt.has_char<'X'>() || m_fmt.has_char<'x'>() ? 16 :
+          m_fmt.has_char<'o'>() ? 8 : 10;
+    bool m_showpos = is_signed && m_fmt.has_char<'+'>();
 
-
-    template <typename FacetCategory, typename FTuple>
-    static const auto& get_facet(const FTuple& ft) noexcept
+    template <typename FTuple>
+    const stringify::v0::encoder<CharT>& get_encoder(const FTuple& ft) noexcept
     {
-        return ft.template get_facet<FacetCategory, input_type>();
+        using tag = stringify::v0::encoder_tag<CharT>;
+        return ft.template get_facet<tag, input_type>();
     }
 
     unsigned_intT unsigned_value() const noexcept
@@ -181,7 +130,7 @@ private:
     {
         if (m_fillcount > 0)
         {
-            return m_fillcount * m_encoder.length(m_fillchar);
+            return m_fillcount * m_encoder.length(m_fmt.fill());
         }
         return 0;
     }
@@ -190,10 +139,8 @@ private:
     {
         switch(m_base)
         {
-            case 16:
-                return length_digits<16>() + (m_showbase ? 2 : 0);
-            case  8:
-                return length_digits<8>() + (m_showbase ? 1 : 0);
+            case 16: return length_digits<16>() + (m_fmt.has_char<'#'>() ? 2 : 0);
+            case  8: return length_digits<8>() + (m_fmt.has_char<'#'>() ? 1 : 0);
         }
         BOOST_ASSERT(m_base == 10);
         return length_digits<10>() + (m_value < 0 || m_showpos ? 1 : 0);
@@ -207,40 +154,35 @@ private:
 
     void write_with_fill(writer_type& out) const
     {
-        switch (m_alignment)
+        if(m_fmt.has_char<'<'>())
         {
-            case stringify::v0::alignment::left:
-                write_sign(out);
-                write_base(out);
-                write_digits(out);
-                write_fill(out, m_fillcount);
-                break;
-
-            case stringify::v0::alignment::right:
-                write_fill(out, m_fillcount);
-                write_sign(out);
-                write_base(out);
-                write_digits(out);
-                break;
-
-
-            case stringify::v0::alignment::internal:
-                write_sign(out);
-                write_base(out);
-                write_fill(out, m_fillcount);
-                write_digits(out);
-                break;
-
-            default:
-            {
-                BOOST_ASSERT(m_alignment == stringify::v0::alignment::center);
-                auto halfcount = m_fillcount / 2;
-                write_fill(out, halfcount);
-                write_sign(out);
-                write_base(out);
-                write_digits(out);
-                write_fill(out, m_fillcount - halfcount);
-            }
+            write_sign(out);
+            write_base(out);
+            write_digits(out);
+            write_fill(out, m_fillcount);
+        }
+        else if(m_fmt.has_char<'='>())
+        {
+            write_sign(out);
+            write_base(out);
+            write_fill(out, m_fillcount);
+            write_digits(out);
+        }
+        else if(m_fmt.has_char<'^'>())
+        {
+            auto halfcount = m_fillcount / 2;
+            write_fill(out, halfcount);
+            write_sign(out);
+            write_base(out);
+            write_digits(out);
+            write_fill(out, m_fillcount - halfcount);
+        }
+        else
+        {
+            write_fill(out, m_fillcount);
+            write_sign(out);
+            write_base(out);
+            write_digits(out);
         }
     }
 
@@ -250,11 +192,11 @@ private:
         {
             if (m_value < 0)
             {
-                out.put(chars_catalog::minus<CharT>());
+                out.put(CharT('-'));
             }
             else if(m_showpos)
             {
-                out.put(chars_catalog::plus<CharT>());
+                out.put(CharT('+'));
             }
         }
     }
@@ -282,23 +224,16 @@ private:
 
     void write_base(writer_type& out) const
     {
-        if(m_showbase)
+        if(m_base != 10 && m_fmt.has_char<'#'>())
         {
-            if (m_base == 16)
+            out.put(CharT('0'));
+            if(m_fmt.has_char<'X'>())
             {
-                out.put(chars_catalog::zero<CharT>());
-                if (m_uppercase)
-                {
-                    out.put(chars_catalog::X<CharT>());
-                }
-                else
-                {
-                    out.put(chars_catalog::x<CharT>());
-                }
+                out.put(CharT('X'));
             }
-            else if(m_base == 8)
+            else if(m_fmt.has_char<'x'>())
             {
-                out.put(chars_catalog::zero<CharT>());
+                out.put(CharT('x'));
             }
         }
     }
@@ -342,31 +277,28 @@ private:
     {
         if (digit < 10)
         {
-            return chars_catalog::zero<CharT>() + digit;
+            return CharT('0') + digit;
         }
-        else if (m_uppercase)
-        {
-            return chars_catalog::A<CharT>() + digit - 10;
-        }
-        return chars_catalog::a<CharT>() + digit - 10;
+        const CharT char_a = m_fmt.has_char<'X'>() ? 'A' : 'a';
+        return  char_a + digit - 10;
     }
 
     void determinate_fill()
     {
         int content_width = width_body();
-        if(content_width < m_width)
+        if(content_width < m_fmt.width())
         {
-            m_fillcount = m_width - content_width;
+            m_fillcount = m_fmt.width() - content_width;
         }
         else
         {
-            m_width = content_width;
+            m_fmt.width(content_width);
         }
     }
 
     void write_fill(writer_type& out, int count) const
     {
-        m_encoder.encode(out, count, m_fillchar);
+        m_encoder.encode(out, count, m_fmt.fill());
     }
 
     int width_body() const noexcept
@@ -383,7 +315,7 @@ private:
         }
         else if(m_base == 16)
         {
-            if (m_showbase)
+            if (m_fmt.has_char<'#'>())
             {
                 bw += 2;
             }
@@ -392,7 +324,7 @@ private:
         else
         {
             BOOST_ASSERT(m_base == 8);
-            if (m_showbase)
+            if (m_fmt.has_char<'#'>())
             {
                 ++bw;
             }
@@ -403,12 +335,14 @@ private:
 
 };
 
+namespace detail {
+
 template <typename IntT>
 struct int_input_traits
 {
     template <typename CharT, typename>
     using formatter =
-        stringify::v0::detail::int_formatter<IntT, CharT>;
+        stringify::v0::int_formatter<IntT, CharT>;
 };
 
 } // namespace detail
@@ -439,8 +373,6 @@ boost_stringify_input_traits_of(unsigned long long);
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
-namespace detail
-{
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<short, char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<short, char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<short, char32_t>;
@@ -473,13 +405,8 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long long, char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long long, char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long long, char32_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long long, wchar_t>;
-}
-
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_flags
-         <'+', '-', '<', '>', '=', 'o', 'd', 'x', 'X', 'c', 'C', '#', '$'>;
 
 #endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
-
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

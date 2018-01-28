@@ -11,8 +11,6 @@ foreach(x
     custom_decoding_error_handling
     custom_encoding_error_handling
     decoding_facets
-    facets
-    ftuple_as_input_arg
     joins
     syntax_samples
     trivial_sample)

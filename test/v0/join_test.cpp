@@ -18,7 +18,6 @@ int main()
     TEST("abcdef123   ") &= {{strf::join_left(12), {"abc", "def", 123}}};
     TEST("   abcdef123") &= {{strf::join_right(12), {"abc", "def", 123}}};
     TEST("~~~abcdef123") &= {{strf::join_right(12, '~'), {"abc", "def", 123}}};
-    TEST("~~~abcdef123") .with(strf::fill(U'~')) &= {{strf::join_right(12), {"abc", "def", 123}}};
     TEST("abcdef123") &= {{strf::join_center(9), {"abc", "def", 123}}};
     TEST("abcdef123") &= {{strf::join_internal(9, 1), {"abc", "def", 1, 23}}};
     TEST("abcdef123") &= {{strf::join_left(9), {"abc", "def", 123}}};

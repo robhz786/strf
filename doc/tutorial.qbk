@@ -6,7 +6,6 @@
 
 [import ../example/v0/trivial_sample.cpp]
 [import ../example/v0/syntax_samples.cpp]
-[import ../example/v0/facets.cpp]
 [section Syntax]
 
 [/ Railroad diagram generated from the EBNF below, in online generator bottlecaps.de/rr
@@ -37,7 +36,7 @@ Example:
 
 An [link section_input_types input argument] can be just a value to be stringified as above, or it can be a /braced-init-list/ composed by two arguments: the first one is the value to be stringified whose type defines the purpose and type of the second argument, which may also be a /braced-init-list/ and usually specifies formatting ( as described [link conventional_formatting here] ). For example:
 [trivial_formatting_sample]
-This /braced-init-list/ aims to provide a pratical and compact syntax for formatting. But it does not support many formatting options, just those more frequently used. [link section_facets Facets] can be used to compensate this limitation.
+This /braced-init-list/ aims to provide a pratical and compact syntax for formatting. But it does not support many formatting options, just those more frequently used. Facets can be used to compensate this limitation.
 
 [/
 However keep in mind that an input type does not necessarily take formatting

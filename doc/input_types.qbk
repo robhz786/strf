@@ -33,23 +33,17 @@ For these inputs types, the /secundary argument/ is used for formatting, and tak
 
 [h4 Format string]
 
-The format string is aways a narrow string. The table bellow describes the meaning that each character produces. Unsupported characters are ignored. If conflicting characters are present, then the character in a higher row in the table wins (for example, the formating string `"+QW-xd><$#"` has the same effect of `"-d>$"`). The order in which they appear inside the string makes no difference.
+The format string is aways a narrow string. The table bellow describes the meaning that each character produces. Unsupported characters are ignored. If conflicting characters are present, then the character in a higher row in the table wins (for example, the formating string `"QW-x<=^#"` has the same effect of `"<#x"`). The order in which they appear inside the string makes no difference.
 
 [table
 [[Format char] [Meaning]]
-[[[^ >]] [Right alignment ( or left, if you using a left-to-right script like arabic )]]
 [[[^ <]] [Left alignment ( or right, if you using a left-to-right script like arabic )]]
-[[[^ =]] [Internal alignment ]]
 [[[^ ^]] [Center alignment]]
-[[[^ -]] [Dont show positive sign]]
+[[[^ =]] [Internal alignment ]]
 [[[^ +]] [Show positive sign ( only affects signed integers )]]
-[[[^ c]] [Lowercase]]
-[[[^ C]] [Uppercase]]
-[[[^ d]] [Decimal base]]
-[[[^ X]] [Hexadecimal base and uppercase ]]
+[[[^ X]] [Hexadecimal base in uppercase]]
 [[[^ x]] [Hexadecimal base]]
 [[[^ o]] [Octadecimal base]]
-[[[^ $]] [Don't show base]]
 [[[^ #]] [Show base]]      
 ]
 
@@ -57,13 +51,11 @@ Naturally, some of the format characters above are not supported in some input t
 
 [table
 [[Input type]    [Supported format chars]  [What [~precision] means]]
-[[string]        [[^ < > = ^ ]] [Nothing. Argument not supported. Presence yields to compilation error]]
-[[boolean]       [[^ < > = ^ ]] [idem]]
-[[void pointer]  [[^ < > = ^ ]] [idem]]
-[[character]     [[^ < > = ^ ]] [Repetitions. This character will be written [~precision] times]]
-[[integer]
- [[^ < > = ^ o d x X c C + - # $ ]]
- [Leading zeros are inserted such that the number of digits is not less than [~precision] - /(todo)/]
+[[string]        [[^ < ^]] [Nothing. Argument not supported. Presence yields to compilation error]]
+[[boolean]       [[^ < ^]] [idem]]
+[[void pointer]  [[^ < ^]] [idem]]
+[[character]     [[^ < ^]] [Repetitions. This character will be written [~precision] times]]
+[[integer]       [[^ < ^ = o x X + #]] [Leading zeros are inserted such that the number of digits is not less than [~precision] - /(todo)/]
 ]
 [[floating point] [['(todo)]] [floating point precision]]
 
@@ -101,13 +93,9 @@ The secondary argument is a sublist of arguments that will be aligned as if they
 
 [joins_example]
 
-[h3 FTuple]
-
-[import ../example/v0/ftuple_as_input_arg.cpp]
+[h3 FTuple['(todo)]]
 
 The secondary argument is a sublist of arguments under the influence of the ftuple.
-
-[ftuple_as_input_arg]
 
 [h3 Range of iterators ['(todo)]]
 

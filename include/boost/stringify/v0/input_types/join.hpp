@@ -6,17 +6,18 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/stringify/v0/input_arg.hpp>
-#include <boost/stringify/v0/facets/alignment.hpp>
 #include <initializer_list>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+
+enum class alignment{left, right, internal, center};
 
 namespace detail {
 struct join_t
 {
     int width = 0;
     stringify::v0::alignment align = stringify::v0::alignment::right;
-    char32_t fillchar = char32_t();
+    char32_t fillchar = U' ';
     int num_leading_args = 1;
 };
 }
@@ -24,7 +25,7 @@ struct join_t
 inline stringify::v0::detail::join_t
 join( int width = 0
     , stringify::v0::alignment align = stringify::v0::alignment::right
-    , char32_t fillchar = char32_t()
+    , char32_t fillchar = U' '
     , int num_leading_args = 0
     )
 {
@@ -32,20 +33,20 @@ join( int width = 0
 }
 
 inline stringify::v0::detail::join_t
-join_center(int width, char32_t fillchar = char32_t())
+join_center(int width, char32_t fillchar = U' ')
 {
     return {width, stringify::v0::alignment::center, fillchar, 0};
 }
 
 inline stringify::v0::detail::join_t
-join_left(int width, char32_t fillchar = char32_t())
+join_left(int width, char32_t fillchar = U' ')
 {
     return {width, stringify::v0::alignment::left, fillchar, 0};
 }
 
 
 inline stringify::v0::detail::join_t
-join_right(int width, char32_t fillchar = char32_t())
+join_right(int width, char32_t fillchar = U' ')
 {
     return {width, stringify::v0::alignment::right, fillchar, 0};
 }
@@ -59,7 +60,7 @@ join_internal(int width, char32_t fillchar, int num_leading_args)
 inline stringify::v0::detail::join_t
 join_internal(int width, int num_leading_args)
 {
-    return {width, stringify::v0::alignment::internal, char32_t(), num_leading_args};
+    return {width, stringify::v0::alignment::internal, U' ', num_leading_args};
 }
 
 template <typename CharT, typename FTuple>
@@ -88,10 +89,6 @@ public:
         , m_args(args)
         , m_fillcount{remaining_width_from_arglist(m_join.width)}
     {
-        if(j.fillchar == 0)
-        {
-            m_join.fillchar =  get_facet<fill_tag>().fill_char();
-        }
     }
 
     std::size_t length() const override

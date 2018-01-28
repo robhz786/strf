@@ -25,7 +25,6 @@ __STD_EXPECTED__
 [include:output_types output_types.qbk]
 [include:assembly_string assembly_string.qbk]
 [include:input_types input_types.qbk]
-[include:facets facets.qbk]
 [include:ordinary_facets ordinary_formatting_facets.qbk]
 [include:codec_facets encoding_conversion.qbk]
 

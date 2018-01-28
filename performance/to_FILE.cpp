@@ -75,11 +75,6 @@ int main()
         auto err = strf::write_to(dest) = {{"aa", 20}};
         (void)err;
     }
-    PRINT_BENCHMARK("boost::stringify::write_to(dest) .with(strf::width(20)) = {\"aa\"}")
-    {
-        auto err = strf::write_to(dest) .with(strf::width(20)) = {"aa"};
-        (void)err;
-    }
     PRINT_BENCHMARK("boost::stringify::write_to(dest) = { {join_right(20), {\"aa\"}} }")
     {
         auto err = strf::write_to(dest) = { {strf::join_right(20), {"aa"}} };
