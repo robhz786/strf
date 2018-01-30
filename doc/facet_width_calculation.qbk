@@ -1,0 +1,25 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+[import ../example/v0/custom_width_calculation.cpp]
+[import ../example/v0/width_calculation_in_encoding_conversion.cpp]
+
+[#width_calculation]
+[section Facets to customize the width calculation]
+
+This facet defines the algorithm used to calculate the width. You may choose a less accurate but faster implementation or a more accurate but slower one. Three kinds are provided:
+
+* width equals the length. This is the default and is also what is usually ( if not aways ) used in the other formatting libraries. It is the fastest.
+* width equals the number of codepoints. This considers as if all codepoints have the same width.
+* each codepoint may have a different width. Here, you use a function of your own that returns the width of each `char32_t`. The width of a codepoint may be zero ( like combining or control caracters ), one ( the usual ) , two ( for "em" characters ) or maybe even more, but is aways an interger value. The customization of the width calculation is not intented to possibly support non monospace fonts. The customization is aimed only allow you to chose a more accurate algorithm ( in the sacrifice of performance ), but aways assuming the font to be monospace.
+
+[custom_width_calculation_sample]
+
+When an input string uses a different character type than of the destination, the width calculation facet applies to the input encoding:
+
+[width_calculation_in_encoding_convertion_sample]
+
+[endsect]

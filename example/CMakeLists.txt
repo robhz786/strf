@@ -10,6 +10,8 @@ foreach(x
     custom_decoder
     custom_decoding_error_handling
     custom_encoding_error_handling
+    custom_width_calculation
+    width_calculation_in_encoding_conversion
     decoding_facets
     joins
     syntax_samples

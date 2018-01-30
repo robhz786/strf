@@ -24,6 +24,7 @@ foreach(
   utf8_decoding_test
   utf16_encoding_test
   utf16_decoding_test
+  width_calculator_test
   )
 
   add_executable(${t}_header_only   v0/${t}.cpp)
