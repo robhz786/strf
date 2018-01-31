@@ -184,6 +184,37 @@ int main()
     TEST("123")    &= { {strf::join_right(2, '.'), {{123, {3, U'~', "<"}}}} };
     TEST("123")    &= { {strf::join_right(2, '.'), {{123, {2, U'~', "<"}}}} };
 
+    {
+        auto punct = strf::monotonic_grouping<10>{3};
+
+        TEST("       0").with(punct) &= {{0, 8}};
+        TEST("     100").with(punct) &= {{100, 8}};
+        TEST("   1,000").with(punct) &= {{1000, 8}};
+        TEST("    1000").with(punct) &= {{0x1000, {8, "x"}}};
+
+        TEST("       0").with(punct) &= { {strf::join_right(8), {0}} };
+        TEST("     100").with(punct) &= { {strf::join_right(8), {100}} };
+        TEST("   1,000").with(punct) &= { {strf::join_right(8), {1000}} };
+        TEST("    1000").with(punct) &= { {strf::join_right(8), {{0x1000, "x"}}} };
+    }
+
+    {
+        auto punct = strf::monotonic_grouping<16>{3}.thousands_sep('\'');
+
+        TEST("     0x0").with(punct) &= {{0x0, {8, "#x"}}};
+        TEST("   0x100").with(punct) &= {{0x100, {8, "#x"}}};
+        TEST(" 0x1'000").with(punct) &= {{0x1000, {8, "#x"}}};
+        TEST("   1'000").with(punct) &= {{0x1000, {8, "x"}}};
+
+        TEST("     0x0").with(punct) &= { {strf::join_right(8), {{0x0, "#x"}}} };
+        TEST("   0x100").with(punct) &= { {strf::join_right(8), {{0x100, "#x"}}} };
+        TEST(" 0x1'000").with(punct) &= { {strf::join_right(8), {{0x1000, "#x"}}} };
+
+        TEST("     0x0").with(punct) &= { {strf::join_right(8), {{0x0, "#x"}}} };
+        TEST("   0x100").with(punct) &= { {strf::join_right(8), {{0x100, "#x"}}} };
+        TEST(" 0x1'000").with(punct) &= { {strf::join_right(8), {{0x1000, "#x"}}} };
+    }
+
 
     int rc = report_errors() || boost::report_errors();
     return rc;

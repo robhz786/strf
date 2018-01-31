@@ -11,6 +11,7 @@ foreach(x
     custom_decoding_error_handling
     custom_encoding_error_handling
     custom_width_calculation
+    numpunct_facets
     width_calculation_in_encoding_conversion
     decoding_facets
     joins

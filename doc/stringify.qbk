@@ -27,6 +27,7 @@ __STD_EXPECTED__
 [include:input_types input_types.qbk]
 #[include:ordinary_facets ordinary_formatting_facets.qbk]
 
+[include:numpunct_facets numpunct_facets.qbk]
 [include:width_calculation facet_width_calculation.qbk]
 [include:codec_facets encoding_conversion.qbk]
 

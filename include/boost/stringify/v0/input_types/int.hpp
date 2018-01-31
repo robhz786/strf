@@ -8,6 +8,7 @@
 #include <boost/stringify/v0/ftuple.hpp>
 #include <boost/stringify/v0/arg_fmt.hpp>
 #include <boost/stringify/v0/facets/encoder.hpp>
+#include <boost/stringify/v0/facets/numpunct.hpp>
 #include <boost/stringify/v0/detail/number_of_digits.hpp>
 #include <boost/stringify/v0/formatter.hpp>
 #include <boost/assert.hpp>
@@ -36,7 +37,6 @@ unsigned_abs(intT value)
     return value;
 }
 
-
 } // namespace detail
 
 
@@ -59,13 +59,23 @@ public:
         , intT value
         , const second_arg& fmt = stringify::v0::default_int_fmt()
         ) noexcept
-        : int_formatter(get_encoder(ft), value, fmt)
+        : int_formatter
+            ( value
+            , get_encoder(ft)
+            , get_numpunct<8>(ft)
+            , get_numpunct<10>(ft)
+            , get_numpunct<16>(ft)
+            , fmt
+            )
     {
     }
 
     int_formatter
-        ( const stringify::v0::encoder<CharT>& encoder
-        , intT value
+        ( intT value
+        , const stringify::v0::encoder<CharT>& encoder
+        , const stringify::v0::numpunct<8>& numpunct_oct
+        , const stringify::v0::numpunct<10>& numpunct_dec
+        , const stringify::v0::numpunct<16>& numpunct_hex
         , const second_arg& fmt
         ) noexcept;
 
@@ -81,15 +91,26 @@ private:
 
     const intT m_value;
     const stringify::v0::encoder<CharT>& m_encoder;
+    const stringify::v0::numpunct_base& m_numpunct;
     boost::stringify::v0::int_fmt m_fmt;
     boost::stringify::v0::int_fmt::width_type m_fillcount = 0;
-    bool m_showpos = is_signed && m_fmt.showpos();
 
     template <typename FTuple>
     const stringify::v0::encoder<CharT>& get_encoder(const FTuple& ft) noexcept
     {
         using tag = stringify::v0::encoder_tag<CharT>;
         return ft.template get_facet<tag, input_type>();
+    }
+    template <int Base, typename FTuple>
+    const stringify::v0::numpunct<Base>& get_numpunct(const FTuple& ft) noexcept
+    {
+        using tag = stringify::v0::numpunct_tag<Base>;
+        return ft.template get_facet<tag, input_type>();
+    }
+
+    bool showsign() const
+    {
+        return is_signed && (m_fmt.showpos() || m_value < 0);
     }
 
     unsigned_intT unsigned_value() const noexcept
@@ -114,17 +135,30 @@ private:
     {
         switch(m_fmt.base())
         {
-            case 16: return length_digits<16>() + (m_fmt.showbase() ? 2 : 0);
-            case  8: return length_digits<8>() + (m_fmt.showbase() ? 1 : 0);
+            case  10:
+                return length_digits<10>() + (showsign() ? 1 : 0);
+
+            case 16:
+                return length_digits<16>() + (m_fmt.showbase() ? 2 : 0);
+
+            default:
+                BOOST_ASSERT(m_fmt.base() == 8);
+                return length_digits<8>() + (m_fmt.showbase() ? 1 : 0);
         }
-        BOOST_ASSERT(m_fmt.base() == 10);
-        return length_digits<10>() + (m_value < 0 || m_showpos ? 1 : 0);
     }
 
     template <unsigned Base>
     std::size_t length_digits() const noexcept
     {
-        return stringify::v0::detail::number_of_digits<Base>(unsigned_value());
+        unsigned num_digits
+            = stringify::v0::detail::number_of_digits<Base>(unsigned_value());
+
+        if (unsigned num_seps = m_numpunct.thousands_sep_count(num_digits))
+        {
+            auto sep_len = m_encoder.length(m_numpunct.thousands_sep());
+            return num_digits + num_seps * sep_len;
+        }
+        return num_digits;
     }
 
     void write_with_fill(writer_type& out) const
@@ -165,13 +199,13 @@ private:
 
     void write_sign(writer_type& out) const
     {
-        if (std::is_signed<intT>::value && m_fmt.base() == 10)
+        if (is_signed && m_fmt.base() == 10)
         {
             if (m_value < 0)
             {
                 out.put(CharT('-'));
             }
-            else if(m_showpos)
+            else if(showsign())
             {
                 out.put(CharT('+'));
             }
@@ -215,8 +249,14 @@ private:
     {
         switch (m_fmt.base())
         {
-            case 10 : write_digits_t<10>(out); break;
-            case 16 : write_digits_t<16>(out); break;
+            case 10:
+                write_digits_t<10>(out);
+                break;
+
+            case 16:
+                write_digits_t<16>(out);
+                break;
+
             default:
                 BOOST_ASSERT(m_fmt.base() == 8);
                 write_digits_t<8>(out);
@@ -229,8 +269,35 @@ private:
         constexpr std::size_t buff_size = sizeof(intT) * 6;
         CharT buff[buff_size];
         CharT* end = &buff[buff_size - 1];
-        auto begin = write_digits_backwards<Base>(unsigned_value(), end);
-        out.put(begin, (end - begin));
+        auto* begin = write_digits_backwards<Base>(unsigned_value(), end);
+        unsigned num_digits = end - begin;
+        if (m_numpunct.thousands_sep_count(num_digits) == 0)
+        {
+            out.put(begin, num_digits);
+        }
+        else
+        {
+            write_digits_with_punctuation(out, begin, num_digits);
+        }
+    }
+
+    void write_digits_with_punctuation
+        ( writer_type& out
+        , const CharT* digits
+        , unsigned num_digits
+        ) const
+    {
+        char32_t thousands_sep = m_numpunct.thousands_sep();
+        unsigned char groups[sizeof(intT) * 6];
+        auto* it = m_numpunct.groups(num_digits, groups);
+        out.put(digits, *it);
+        digits += *it;
+        while(--it >= groups)
+        {
+            m_encoder.encode(out, 1, thousands_sep);
+            out.put(digits, *it);
+            digits += *it;
+        }
     }
 
     template <unsigned Base, typename OutputIterator>
@@ -276,46 +343,54 @@ private:
 
     int width_body() const noexcept
     {
-        int bw = 0;
+        unsigned num_digits = 0;
+        unsigned extra_chars = 0;
         auto uv = unsigned_value();
-        if(m_fmt.base() == 10)
+        switch(m_fmt.base())
         {
-            if(m_value < 0 || m_showpos)
+            case 10:
             {
-                ++bw;
+                num_digits = stringify::v0::detail::number_of_digits<10>(uv);
+                extra_chars = showsign() ? 1 : 0;
+                break;
             }
-            bw += stringify::v0::detail::number_of_digits<10>(uv);
-        }
-        else if(m_fmt.base() == 16)
-        {
-            if (m_fmt.showbase())
+            case 16:
             {
-                bw += 2;
+                num_digits = stringify::v0::detail::number_of_digits<16>(uv);
+                extra_chars = m_fmt.showbase() ? 2 : 0;
+                break;
             }
-            bw += stringify::v0::detail::number_of_digits<16>(uv);
-        }
-        else
-        {
-            BOOST_ASSERT(m_fmt.base() == 8);
-            if (m_fmt.showbase())
+            default:
             {
-                ++bw;
+                BOOST_ASSERT(m_fmt.base() == 8);
+                num_digits = stringify::v0::detail::number_of_digits<8>(uv);
+                extra_chars = m_fmt.showbase() ? 1 : 0;
             }
-            bw += stringify::v0::detail::number_of_digits<8>(uv);
         }
-        return bw;
-    }
 
+        unsigned num_separators = m_numpunct.thousands_sep_count(num_digits);
+        return num_digits + extra_chars + num_separators;
+    }
 };
 
 template <typename IntT, typename CharT>
 int_formatter<IntT, CharT>::int_formatter
-    ( const stringify::v0::encoder<CharT>& encoder
-    , IntT value
+    ( IntT value
+    , const stringify::v0::encoder<CharT>& encoder
+    , const stringify::v0::numpunct<8>& numpunct_oct
+    , const stringify::v0::numpunct<10>& numpunct_dec
+    , const stringify::v0::numpunct<16>& numpunct_hex
     , const stringify::v0::int_fmt& fmt
     ) noexcept
     : m_value{value}
     , m_encoder{encoder}
+    , m_numpunct
+        ( fmt.base() == 10
+          ? static_cast<const stringify::v0::numpunct_base&>(numpunct_dec)
+          : fmt.base() == 16
+          ? static_cast<const stringify::v0::numpunct_base&>(numpunct_hex)
+          : static_cast<const stringify::v0::numpunct_base&>(numpunct_oct)
+        )
     , m_fmt(fmt)
 {
     determinate_fill();

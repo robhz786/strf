@@ -234,7 +234,7 @@ inline stringify::v0::width_calculator width_as_length()
     return stringify::v0::width_calculator{nullptr};
 }
 
-inline stringify::v0::width_calculator width_as_codepoints()
+inline stringify::v0::width_calculator width_as_codepoints_count()
 {
     return stringify::v0::width_calculator
         { stringify::v0::detail::char_width_aways_one };

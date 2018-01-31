@@ -11,6 +11,7 @@ foreach(
   input_char_test
   input_char32_test
   input_ftuple_test
+  numpunct_test
   join_test
   output_string_test
   output_char_ptr_test

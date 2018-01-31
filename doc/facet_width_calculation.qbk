@@ -8,9 +8,9 @@
 [import ../example/v0/width_calculation_in_encoding_conversion.cpp]
 
 [#width_calculation]
-[section Facets to customize the width calculation]
+[section Facets for width calculation]
 
-This facet defines the algorithm used to calculate the width. You may choose a less accurate but faster implementation or a more accurate but slower one. Three kinds are provided:
+This facet category enables you can customize how the width is calculated. You may choose a less accurate but faster implementation or a more accurate but slower one. Three options are provided:
 
 * width equals the length. This is the default and is also what is usually ( if not aways ) used in the other formatting libraries. It is the fastest.
 * width equals the number of codepoints. This considers as if all codepoints have the same width.

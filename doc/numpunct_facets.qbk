@@ -1,0 +1,112 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+[import ../example/v0/numpunct_facets.cpp]
+
+[section Facets for numeric punctuation]
+
+You can specify the grouping with a string using the `str_grouping` class template:
+
+[str_grouping]
+
+If all groups have the same size, then you can use the `monotonic_grouping` class template, which is optimized for this situation.
+
+[monotonic_grouping]
+
+[h4 The `str_grouping` class template]
+
+``
+template <int Base>
+class str_grouping: public numpunct<Base>
+{
+public:
+
+    str_grouping(std::string grouping);
+    str_grouping(const str_grouping&);
+    str_grouping(str_grouping&&);
+
+    str_grouping &  thousands_sep(char32_t ch) &;
+    str_grouping && thousands_sep(char32_t ch) &&;
+
+    str_grouping &  decimal_point(char32_t ch) &;
+    str_grouping && decimal_point(char32_t ch) &&;
+
+    char32_t thousands_sep() const override;
+    char32_t decimal_point() const override;
+
+    unsigned char* groups
+        ( unsigned num_digits
+        , unsigned char* groups_array
+        ) const override;
+
+    unsigned thousands_sep_count(unsigned num_digits) const override;
+};
+
+``
+
+[h4 The `monotonic_grouping` class template]
+
+``
+template <int Base>
+class monotonic_grouping: public numpunct<Base>
+{
+public:
+
+    constexpr monotonic_grouping(unsigned char groups_size);
+    constexpr monotonic_grouping(const monotonic_grouping&);
+
+    monotonic_grouping &  thousands_sep(char32_t ch) &;
+    monotonic_grouping && thousands_sep(char32_t ch) &&;
+
+    monotonic_grouping &  decimal_point(char32_t ch) &;
+    monotonic_grouping && decimal_point(char32_t ch) &&;
+
+    char32_t thousands_sep() const override;
+    char32_t decimal_point() const override;
+
+    unsigned char* groups
+        ( unsigned num_digits
+        , unsigned char* groups_array
+        ) const override;
+
+    unsigned thousands_sep_count(unsigned num_digits) const override;
+};
+``
+[h4 The `numpunct` class template]
+
+``
+template <int Base>
+class numpunct: public numpunct_base
+{
+public:
+
+    using category = numpunct_tag<Base>;
+
+};
+``
+[h4 The `numpunct_base` class]
+
+``
+class numpunct_base
+{
+public:
+
+    virtual ~numpunct_base();
+
+    virtual unsigned char* groups
+        ( unsigned num_digits
+        , unsigned char* groups_array
+        ) const = 0;
+
+    virtual unsigned thousands_sep_count(unsigned num_digits) const = 0;
+
+    virtual char32_t thousands_sep() const = 0;
+
+    virtual char32_t decimal_point() const = 0;
+};
+``
+
+[endsect]

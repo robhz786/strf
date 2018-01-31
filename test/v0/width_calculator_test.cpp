@@ -8,6 +8,7 @@
 
 namespace strf = boost::stringify::v0;
 
+
 int custom_width_calculator_function(char32_t ch)
 {
     if(ch == U'\u2E3A') return 4;
@@ -17,7 +18,7 @@ int custom_width_calculator_function(char32_t ch)
 
 int main()
 {
-    auto cp_count = strf::width_as_codepoints();
+    auto cp_count = strf::width_as_codepoints_count();
     auto wtable = strf::width_as(custom_width_calculator_function);
 
     TEST( "  \u2E3A\u2E3A\u2014")        .with(wtable)   &={{ "\u2E3A\u2E3A\u2014", 12}};

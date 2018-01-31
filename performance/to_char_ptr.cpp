@@ -157,6 +157,16 @@ int main()
     {
         sprintf(dest, "%lld", LLONG_MAX);
     }
+
+    std::cout << std::endl;
+    strf::monotonic_grouping<10> numpunct_3(3, U'.');
+    PRINT_BENCHMARK("boost::stringify::write_to(dest).with(numpunct_3) = {LLONG_MAX}")
+    {
+        auto err = strf::write_to(dest).with(numpunct_3) = {LLONG_MAX};
+        (void)err;
+    }
+
+    
 /*
     std::cout << std::endl;
     PRINT_BENCHMARK("boost::stringify::write_to(dest) = {25, 25, 25}")
