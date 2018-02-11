@@ -33,7 +33,8 @@ void sample2()
         .with(strf::monotonic_grouping<8> {6}.thousands_sep(U':'))
         .with(strf::monotonic_grouping<10>{3}.thousands_sep(U'.'))
         .with(strf::monotonic_grouping<16>{4}.thousands_sep(U'\''))
-        ["{} / {} / {}"] &= { value, {value, "x"}, {value, "o"} };
+        ["{} / {} / {}"]
+        &= {value, strf::hex(value), strf::oct(value)};
 
     BOOST_ASSERT(str == "68.719.476.735 / f'ffff'ffff / 777777:777777");
     //]

@@ -44,41 +44,41 @@ int main()
     TEST (U"\U0010ffff") &= {U'\U0010ffff'};
 
     TEST("a") &= { U'a' };
-    TEST("aaaa") &= { {U'a', {"", 4}} };
-    TEST("  aa") &= { {U'a', {4, 2}} };
+    TEST("aaaa") &= { strf::multi(U'a', 4) };
+    TEST("  aa") &= { strf::multi(U'a', 2) > 4 };
 
-    TEST("    a") &= { {U'a', 5} };
-    TEST("a    ") &= { {U'a', {5, "<"}} };
-    TEST("aa   ") &= { {U'a', {5, "<", 2}} };
+    TEST("    a") &= { strf::right(U'a', 5) };
+    TEST("a    ") &= { strf::left(U'a', 5)  };
+    TEST("aa   ") &= { strf::multi(U'a', 2) < 5 };
 
-    TEST("....a") &= { {U'a', {5, U'.'}} };
-    TEST("a....") &= { {U'a', {5, U'.', "<"}} };
-    TEST("....a") &= { {U'a', {5, U'.', ">"}} };
-    TEST("..a..") &= { {U'a', {5, U'.', "^"}} };
+    TEST("....a") &= { strf::right(U'a', 5, '.')  };
+    TEST("a....") &= { strf::left(U'a', 5, '.')   };
+    TEST("..a..") &= { strf::center(U'a', 5, '.') };
 
-    TEST("aa...") &= { {U'a', {5, U'.', "<", 2}} };
-    TEST("...aa") &= { {U'a', {5, U'.', ">", 2}} };
-    TEST(".aa..") &= { {U'a', {5, U'.', "^", 2}} };
+    TEST("...aa") &= { strf::right(U'a', 5, '.').multi(2)  };
+    TEST("aa...") &= { strf::left(U'a', 5, '.').multi(2)   };
+    TEST(".aa..") &= { strf::center(U'a', 5, '.').multi(2) };
 
-    TEST(".....") &= { {U'a', {5, U'.', "<", 0}} };
-    TEST(".....") &= { {U'a', {5, U'.', ">", 0}} };
-    TEST(".....") &= { {U'a', {5, U'.', "^", 0}} };
+    TEST(".....") &= { strf::right(U'a', 5, '.').multi(0)  };
+    TEST(".....") &= { strf::left(U'a', 5, '.').multi(0)   };
+    TEST(".....") &= { strf::center(U'a', 5, '.').multi(0) };
 
     TEST("a")      &= { {strf::join_left(0, '.'), {U'a'}} };
-    TEST("   a")   &= { {strf::join_left(1, '.'), {{U'a', 4}}} };
-    TEST("   a..") &= { {strf::join_left(6, '.'), {{U'a', 4}}} };
+    TEST("   a")   &= { {strf::join_left(1, '.'), {strf::right(U'a', 4)}} };
+    TEST("   a..") &= { {strf::join_left(6, '.'), {strf::right(U'a', 4)}} };
 
-    TEST("  aa")   &= { {strf::join_left(2, '.'), {{U'a', {4, "", 2}}}} };
-    TEST("  aa")   &= { {strf::join_left(4, '.'), {{U'a', {4, "", 2}}}} };
-    TEST("  aa..") &= { {strf::join_left(6, '.'), {{U'a', {4, "", 2}}}} };
+    TEST("  aa")   &= { {strf::join_left(2, '.'), {strf::multi(U'a', 2) > 4}} };
+    TEST("  aa")   &= { {strf::join_left(2, '.'), {strf::multi(U'a', 2) > 4}} };
+    TEST("  aa")   &= { {strf::join_left(4, '.'), {strf::multi(U'a', 2) > 4}} };
+    TEST("  aa..") &= { {strf::join_left(6, '.'), {strf::multi(U'a', 2) > 4}} };
 
-    TEST("aaaa")   &= { {strf::join_left(2, '.'), {{U'a', {2, "", 4}}}} };
-    TEST("aaaa")   &= { {strf::join_left(4, '.'), {{U'a', {2, "", 4}}}} };
-    TEST("aaaa..") &= { {strf::join_left(6, '.'), {{U'a', {2, "", 4}}}} };
+    TEST("aaaa")   &= { {strf::join_left(2, '.'), {strf::multi(U'a', 4) > 2}} };
+    TEST("aaaa")   &= { {strf::join_left(4, '.'), {strf::multi(U'a', 4) > 2}} };
+    TEST("aaaa..") &= { {strf::join_left(6, '.'), {strf::multi(U'a', 4) > 2}} };
 
-    TEST("aaaa")   &= { {strf::join_left(2, '.'), {{U'a', {4, "", 4}}}} };
-    TEST("aaaa")   &= { {strf::join_left(4, '.'), {{U'a', {4, "", 4}}}} };
-    TEST("aaaa..") &= { {strf::join_left(6, '.'), {{U'a', {4, "", 4}}}} };
+    TEST("aaaa")   &= { {strf::join_left(2, '.'), {strf::multi(U'a', 4) > 4}} };
+    TEST("aaaa")   &= { {strf::join_left(4, '.'), {strf::multi(U'a', 4) > 4}} };
+    TEST("aaaa..") &= { {strf::join_left(6, '.'), {strf::multi(U'a', 4) > 4}} };
 
     return report_errors() || boost::report_errors();
 }

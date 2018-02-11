@@ -1,0 +1,62 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+[#section_input_types]
+[section:special_input_types Special input types]
+
+[/
+Actually, there is nothing really special about this category. The only difference from the "conventional" input types, is here the /secondary argument/ is different.
+]
+
+[section Joins]
+
+[import ../example/v0/joins.cpp]
+
+Joins aligns a sublist of arguments as if it where one argument. A join is created as pair of argumets between curling braces. The second of them is the list of arguments, which also has to be between curling braces:
+
+* `{ `[~join_expession]`, {`[~arguments_sub_list]`} }`
+
+where, the [~join_expression] is one of the following:
+
+* `join_left(`[~width]`)`
+* `join_left(`[~width]`, `[~fill_character]`)`
+* `join_rigth(`[~width]`)`
+* `join_rigth(`[~width]`, `[~fill_character]`)`
+* `join_center(`[~width]`)`
+* `join_center(`[~width]`, `[~fill_character]`)`
+* `join_internal(`[~width]`, `[~num_args_before_fill]`)`
+* `join_internal(`[~width]`, `[~fill_character]`, `[~num_args_before_fill]`)`
+
+where:
+
+* [~width] is `int`
+* [~num_args_before_fill] is `int`
+* [~fill_character] is `char32_t`
+
+[h4 Example]
+
+[joins_example]
+
+You may want to use joins without the purpose of alignment, but solely to treat a whole sublist of arguments as one because, for example, the assembly string - which you may not be able to edit - expects one argument instead of many:
+
+[join_with_assembly_string_part1]
+[join_with_assembly_string_part2]
+[join_with_assembly_string_part3]
+
+[endsect]
+
+[section Facets ['(todo)]]
+[endsect]
+
+[section Range ['(todo)]]
+[endsect]
+
+[section Assembly string ['(todo)]]
+[endsect]
+
+[endsect]
+
+

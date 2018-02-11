@@ -1,4 +1,4 @@
-Boost.Stringify is a C++ locale-independed formatting library. It aims to be fast, highly extensible and to provide many formatting options.
+Boost.Stringify is a C++ locale-independed format library. It aims to be fast, highly extensible and to provide many formatting options.
 
 Branch   | Travis | Appveyor
 ---------|--------|---------

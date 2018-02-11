@@ -25,9 +25,9 @@ int main()
     
     const char* str = "\u2E3A\u2E3A\u2014";
     
-    auto s_len = strf::make_string.with(width_as_len) &= {{str, {12, U'.'}}};
-    auto s_cpc = strf::make_string.with(width_as_cpc) &= {{str, {12, U'.'}}};
-    auto s_my  = strf::make_string.with(width_my)     &= {{str, {12, U'.'}}};
+    auto s_len = strf::make_string.with(width_as_len) &= {strf::right(str, 12, U'.')};
+    auto s_cpc = strf::make_string.with(width_as_cpc) &= {strf::right(str, 12, U'.')};
+    auto s_my  = strf::make_string.with(width_my)     &= {strf::right(str, 12, U'.')};
 
     BOOST_ASSERT(s_len == "...\u2E3A\u2E3A\u2014");       // width = strlen(str) = 9
     BOOST_ASSERT(s_cpc == ".........\u2E3A\u2E3A\u2014"); // width = 3
@@ -37,9 +37,9 @@ int main()
 
     const char16_t* str16 = u"\u2E3A\u2E3A\u2014";
     
-    auto s16_len = strf::make_u16string.with(width_as_len) &= {{str16, {12, U'.'}}};
-    auto s16_cpc = strf::make_u16string.with(width_as_cpc) &= {{str16, {12, U'.'}}};
-    auto s16_my  = strf::make_u16string.with(width_my)     &= {{str16, {12, U'.'}}};
+    auto s16_len = strf::make_u16string.with(width_as_len) &= {strf::right(str16, 12, U'.')};
+    auto s16_cpc = strf::make_u16string.with(width_as_cpc) &= {strf::right(str16, 12, U'.')};
+    auto s16_my  = strf::make_u16string.with(width_my)     &= {strf::right(str16, 12, U'.')};
     
     BOOST_ASSERT(s16_len == u".........\u2E3A\u2E3A\u2014"); // width = 3
     BOOST_ASSERT(s16_cpc == u".........\u2E3A\u2E3A\u2014"); // width = 3

@@ -89,7 +89,7 @@ int main()
         std::size_t result_length = 1000;
 
         auto err = strf::write_to(result, &result_length)
-        = {{'a', {"", 6}}, "ABCDEF", 'b'};
+            = {strf::multi('a', 6), "ABCDEF", 'b'};
 
         BOOST_TEST(err == std::errc::io_error);
         BOOST_TEST(result_length == 10);
@@ -102,7 +102,7 @@ int main()
         std::size_t result_length = 1000;
 
         auto err = strf::write_to(result, &result_length)
-        = {"ABCDEF", {'a', {"", 6}}, "ABCDEF"};
+            = {"ABCDEF", strf::multi('a', 6), "ABCDEF"};
 
         BOOST_TEST(err == std::errc::io_error);
         BOOST_TEST(result_length == 10);

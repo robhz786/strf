@@ -26,11 +26,11 @@ int main()
 
     std::cout << "\n small strings \n";
 
-    PRINT_BENCHMARK("wwrite_to(dest) [{L\"Hello \", L\"World\", L\"!\"}]")
+    PRINT_BENCHMARK("strf::wwrite_to(dest) [{L\"Hello \", L\"World\", L\"!\"}]")
     {
         strf::wwrite_to(dest) [{L"Hello ", L"World", L"!"}];
     }
-    PRINT_BENCHMARK("wwrite_to(dest) (L\"Hello {}!\") = {L\"World\"}")
+    PRINT_BENCHMARK("strf::wwrite_to(dest) (L\"Hello {}!\") = {L\"World\"}")
     {
         strf::wwrite_to(dest) (L"Hello {}!") = {L"World"};
     }
@@ -45,11 +45,11 @@ int main()
         std::string std_string_long_string(1000, 'x');
         const char* long_string = std_string_long_string.c_str();
 
-        PRINT_BENCHMARK("wwrite_to(dest) [{L\"Hello \", long_string, L\"!\"}]")
+        PRINT_BENCHMARK("strf::wwrite_to(dest) [{L\"Hello \", long_string, L\"!\"}]")
         {
             strf::wwrite_to(dest) [{L"Hello ", long_string, L"!"}];
         }
-        PRINT_BENCHMARK("wwrite_to(dest) (L\"Hello {}!\") = {long_string}")
+        PRINT_BENCHMARK("strf::wwrite_to(dest) (L\"Hello {}!\") = {long_string}")
         {
             strf::wwrite_to(dest) (L"Hello {}!") = {long_string};
         }
@@ -61,7 +61,7 @@ int main()
 
     std::cout << "\n integers \n";
 
-    PRINT_BENCHMARK("wwrite_to(dest) [{25}]")
+    PRINT_BENCHMARK("strf::wwrite_to(dest) [{25}]")
     {
         strf::wwrite_to(dest) [{25}];
     }
@@ -71,7 +71,7 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("wwrite_to(dest) [{INT_MAX}]")
+    PRINT_BENCHMARK("strf::wwrite_to(dest) [{INT_MAX}]")
     {
         strf::wwrite_to(dest) [{INT_MAX}];
     }
@@ -81,7 +81,7 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("wwrite_to(dest) [{LLONG_MAX}]")
+    PRINT_BENCHMARK("strf::wwrite_to(dest) [{LLONG_MAX}]")
     {
         strf::wwrite_to(dest) [{LLONG_MAX}];
     }
@@ -91,11 +91,11 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("wwrite_to(dest) [{25, 25, 25}]")
+    PRINT_BENCHMARK("strf::wwrite_to(dest) [{25, 25, 25}]")
     {
         strf::wwrite_to(dest) [{25, 25, 25}];
     }
-    PRINT_BENCHMARK("wwrite_to(dest) (L\"{}{}{}\") = {25, 25, 25}")
+    PRINT_BENCHMARK("strf::wwrite_to(dest) (L\"{}{}{}\") = {25, 25, 25}")
     {
         strf::wwrite_to(dest) (L"{}{}{}") = {25, 25, 25};
     }
@@ -106,7 +106,7 @@ int main()
 
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("wwrite_to(dest) [{LLONG_MAX, LLONG_MAX, LLONG_MAX}]")
+    PRINT_BENCHMARK("strf::wwrite_to(dest) [{LLONG_MAX, LLONG_MAX, LLONG_MAX}]")
     {
         strf::wwrite_to(dest) [{LLONG_MAX, LLONG_MAX, LLONG_MAX}];
     }
@@ -117,15 +117,15 @@ int main()
 
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("wwrite_to(dest) [{{25, 20}}]")
+    PRINT_BENCHMARK("strf::wwrite_to(dest) [{{25, 20}}]")
     {
         strf::wwrite_to(dest)[{{25, 20}}];
     }
-    PRINT_BENCHMARK("wwrite_to(dest) .with(strf::width(20)) [{25}]")
+    PRINT_BENCHMARK("strf::wwrite_to(dest) .with(strf::width(20)) [{25}]")
     {
         strf::wwrite_to(dest).with(strf::width(20)) [{25}];
     }
-    PRINT_BENCHMARK("wwrite_to(dest) [{ {join_right(20), {25}} }]")
+    PRINT_BENCHMARK("strf::wwrite_to(dest) [{ {join_right(20), {25}} }]")
     {
         strf::wwrite_to(dest) [{ {strf::join_right(20), {25}} }];
     }
@@ -136,16 +136,16 @@ int main()
 
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("wwrite_to(dest) [{{25, {6, L\"<+\"}}}]")
+    PRINT_BENCHMARK("strf::wwrite_to(dest) [{{25, {6, L\"<+\"}}}]")
     {
         strf::wwrite_to(dest)[{{25, {6, "<+"}}}];
     }
-    PRINT_BENCHMARK("wwrite_to(dest).with(width(6), left, showpos) [{ 25 }]")
+    PRINT_BENCHMARK("strf::wwrite_to(dest).with(width(6), left, showpos) [{ 25 }]")
     {
         strf::wwrite_to(dest).with(strf::width(6), strf::left, strf::showpos) [{ 25 }];
     }
 
-    PRINT_BENCHMARK("wwrite_to(dest)({strf::make_ftuple(width(6), left, showpos), {25}})")
+    PRINT_BENCHMARK("strf::wwrite_to(dest)({strf::make_ftuple(width(6), left, showpos), {25}})")
     {
         strf::wwrite_to(dest) [{ {strf::make_ftuple(strf::width(6), strf::left, strf::showpos), {25}} }];
     }
@@ -156,11 +156,11 @@ int main()
 
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("wwrite_to(dest) [{{25, L\"#x\"}}]")
+    PRINT_BENCHMARK("strf::wwrite_to(dest) [{{25, L\"#x\"}}]")
     {
         strf::wwrite_to(dest) [{{25, "#x"}}];
     }
-    PRINT_BENCHMARK("wwrite_to(dest) .with(hex, showbase) [{25}]")
+    PRINT_BENCHMARK("strf::wwrite_to(dest) .with(hex, showbase) [{25}]")
     {
         strf::wwrite_to(dest).with(strf::hex, strf::showbase) [{25}];
     }
@@ -171,9 +171,9 @@ int main()
 
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("wwrite_to(dest) [{25, {25, {6, L\"<+\"}} , {25, L\"#x\"}}]")
+    PRINT_BENCHMARK("strf::wwrite_to(dest) [{25, +strf::fmt(25)<6, ~strf::hex(25)]")
     {
-        strf::wwrite_to(dest) [{25, {25, {6, "<+"}} , {25, "#x"}}];
+        strf::wwrite_to(dest) &= {25, +strf::fmt(25)<6, ~strf::hex(25)};
     }
     PRINT_BENCHMARK("fwprintf(dest, L\"%d%-+6d%#x\", 25, 25, 25)")
     {
@@ -183,11 +183,11 @@ int main()
     std::cout << "\n Strings and itegers mixed: \n";
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("wwrite_to(dest) [{L\"ten =  \", 10, L\", twenty = \", 20}]")
+    PRINT_BENCHMARK("strf::wwrite_to(dest) [{L\"ten =  \", 10, L\", twenty = \", 20}]")
     {
         strf::wwrite_to(dest) [{L"ten =  ", 10, L", twenty = ", 20}];
     }
-    PRINT_BENCHMARK("wwrite_to(dest) [{L\"ten =  \", 10, L\", twenty = \", 20}]")
+    PRINT_BENCHMARK("strf::wwrite_to(dest) [{L\"ten =  \", 10, L\", twenty = \", 20}]")
     {
         strf::wwrite_to(dest) (L"ten = {}, twenty = {}") = {10, 20};
     }

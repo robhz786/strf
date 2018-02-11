@@ -83,7 +83,7 @@ int main()
         using traits = to_upper_char_traits<char16_t>;
 
         auto err = strf::write_to<traits>(result, &result_length)
-            = {u'a', {u'b', {"", 3}}, u"zzz", {10, "#x"}};
+            = {u'a', strf::multi(u'b', 3), u"zzz", ~strf::hex(10)};
 
         const std::u16string expected = u"ABBBZZZ0XA";
         BOOST_TEST(!err);
@@ -173,7 +173,7 @@ int main()
        char result[200] = "--------------------------------------------------";
        std::size_t result_length = 1000;
        std::error_code ec = strf::write_to(result, 2, &result_length)
-       = {{'x', {"", 10}}};
+           = {strf::multi('x', 10)};
        BOOST_TEST(result[0] == '\0');
        BOOST_TEST(result_length == 0);
        BOOST_TEST(ec == std::errc::result_out_of_range);
@@ -183,7 +183,7 @@ int main()
        char result[3] = "";
        std::size_t result_length = 1000;
        std::error_code ec = strf::write_to(result, 3, &result_length)
-       = {{U'\u0080', {"", 2}}};
+           = {strf::multi(U'\u0080', 2)};
 
        BOOST_TEST(result[0] == '\0');
        BOOST_TEST(result_length == 0);
@@ -194,7 +194,7 @@ int main()
        char result[200] = "--------------------------------------------------";
        std::size_t result_length = 1000;
        std::error_code ec = strf::write_to(result, 5, &result_length)
-       = {{U'\u0800', {"", 2}}};
+           = {strf::multi(U'\u0800', 2)};
 
        BOOST_TEST(result[0] == '\0');
        BOOST_TEST(result_length == 0);
@@ -205,7 +205,7 @@ int main()
        char result[200] = "--------------------------------------------------";
        std::size_t result_length = 1000;
        std::error_code ec = strf::write_to(result, 7, &result_length)
-       = {{U'\U00010000', {"", 2}}};
+           = {strf::multi(U'\U00010000', 2)};
 
        BOOST_TEST(result[0] == '\0');
        BOOST_TEST(result_length == 0);

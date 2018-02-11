@@ -202,6 +202,91 @@ private:
 
 };
 
+template <typename T>
+constexpr auto fmt(const T& value)
+{
+    return decltype(boost_stringify_input_traits_of(value))::fmt(value);
+}
+
+template <typename T>
+constexpr auto uphex(const T& value)
+{
+    return fmt(value).uphex();
+}
+
+template <typename T>
+constexpr auto hex(const T& value)
+{
+    return fmt(value).hex();
+}
+
+template <typename T>
+constexpr auto dec(const T& value)
+{
+    return fmt(value).dec();
+}
+
+template <typename T>
+constexpr auto oct(const T& value)
+{
+    return fmt(value).oct();
+}
+
+template <typename T>
+constexpr auto left(const T& value, int width)
+{
+    return fmt(value) < width;
+}
+
+template <typename T>
+constexpr auto right(const T& value, int width)
+{
+    return fmt(value) > width;
+}
+
+template <typename T>
+constexpr auto internal(const T& value, int width)
+{
+    return fmt(value) % width;
+}
+
+template <typename T>
+constexpr auto center(const T& value, int width)
+{
+    return fmt(value) ^ width;
+}
+
+template <typename T>
+constexpr auto left(const T& value, int width, char32_t fill)
+{
+    return fmt(value).fill(fill) < width;
+}
+
+template <typename T>
+constexpr auto right(const T& value, int width, char32_t fill)
+{
+    return fmt(value).fill(fill) > width;
+}
+
+template <typename T>
+constexpr auto internal(const T& value, int width, char32_t fill)
+{
+    return fmt(value).fill(fill) % width;
+}
+
+template <typename T>
+constexpr auto center(const T& value, int width, char32_t fill)
+{
+    return fmt(value).fill(fill) ^ width;
+}
+
+template <typename T, typename I>
+constexpr auto multi(const T& value, I count)
+{
+    return fmt(value).multi(count);
+}
+
+
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  /* BOOST_STRINGIFY_V0_INPUT_ARG_HPP */

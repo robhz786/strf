@@ -191,6 +191,8 @@ def build_lib_stringify(flag, libname):
         exit(1)
 
 
+only_boost_stringify = False
+
 shutil.rmtree('tmp/', ignore_errors=True)
 os.makedirs('tmp/')
 
@@ -199,56 +201,63 @@ build_lib_stringify('-g', lib_boost_stringify_debug)
 
 print('\n[table Release mode / linked libraries \n')
 print(table_header())
+
 benchmark_release(basename = 'to_string_stringify',
                   main_src = 'to_string_main.cpp',
                   flags    = [boost_incl],
                   libs     = [lib_boost_stringify_release])
-benchmark_release(basename = 'to_string_fmtlib',
-                  main_src = 'to_string_main.cpp',
-                  flags    = [fmt_incl],
-                  libs     = [libfmt_release])
+
+if not only_boost_stringify :
+    benchmark_release(basename = 'to_string_fmtlib',
+                      main_src = 'to_string_main.cpp',
+                      flags    = [fmt_incl],
+                      libs     = [libfmt_release])
 print(empty_row())
 
 benchmark_release(basename = 'to_charptr_stringify',
                   main_src = 'to_charptr_main.cpp',
                   flags    = [boost_incl],
                   libs     = [lib_boost_stringify_release])
-benchmark_release(basename = 'to_charptr_fmtlib',
-                  main_src = 'to_charptr_main.cpp',
-                  flags    = [fmt_incl],
-                  libs     = [libfmt_release])
-benchmark_release(basename = 'to_charptr_sprintf',
-                  main_src = 'to_charptr_main.cpp',
-                  flags    = [],
-                  libs     = [])
+
+if not only_boost_stringify :
+    benchmark_release(basename = 'to_charptr_fmtlib',
+                      main_src = 'to_charptr_main.cpp',
+                      flags    = [fmt_incl],
+                      libs     = [libfmt_release])
+    benchmark_release(basename = 'to_charptr_sprintf',
+                      main_src = 'to_charptr_main.cpp',
+                      flags    = [],
+                      libs     = [])
 print(empty_row())
 
 benchmark_release(basename = 'to_FILE_stringify',
                   main_src = 'to_FILE_main.cpp',
                   flags    = [boost_incl],
                   libs     = [lib_boost_stringify_release])
-benchmark_release(basename = 'to_FILE_fmtlib',
-                  main_src = 'to_FILE_main.cpp',
-                  flags    = [fmt_incl],
-                  libs     = [libfmt_release])
-benchmark_release(basename = 'to_FILE_fprintf',
-                  main_src = 'to_FILE_main.cpp',
-                  flags    = [],
-                  libs     = [])
+if not only_boost_stringify :
+    benchmark_release(basename = 'to_FILE_fmtlib',
+                      main_src = 'to_FILE_main.cpp',
+                      flags    = [fmt_incl],
+                      libs     = [libfmt_release])
+    benchmark_release(basename = 'to_FILE_fprintf',
+                      main_src = 'to_FILE_main.cpp',
+                      flags    = [],
+                      libs     = [])
 print(empty_row())
 
 benchmark_release(basename = 'to_ostream_stringify',
                   main_src = 'to_ostream_main.cpp',
                   flags    = [boost_incl],
                   libs     = [lib_boost_stringify_release])
-benchmark_release(basename = 'to_ostream_fmtlib',
-                  main_src = 'to_ostream_main.cpp',
-                  flags    = [fmt_incl],
-                  libs     = [libfmt_release])
-benchmark_release(basename = 'to_ostream_itself',
-                  main_src = 'to_ostream_main.cpp',
-                  flags    = [],
-                  libs     = [])
+if not only_boost_stringify :
+    benchmark_release(basename = 'to_ostream_fmtlib',
+                      main_src = 'to_ostream_main.cpp',
+                      flags    = [fmt_incl],
+                      libs     = [libfmt_release])
+    benchmark_release(basename = 'to_ostream_itself',
+                      main_src = 'to_ostream_main.cpp',
+                      flags    = [],
+                      libs     = [])
 print(']\n')
 
 print('\n[table Release mode / header-only libraries \n')
@@ -258,44 +267,48 @@ benchmark_release(basename = 'to_string_stringify_ho',
                   main_src = 'to_string_main.cpp',
                   flags    = [boost_incl],
                   libs     = [])
-benchmark_release(basename = 'to_string_fmtlib_ho',
-                  main_src = 'to_string_main.cpp',
-                  flags    = [fmt_incl],
-                  libs     = [])
+if not only_boost_stringify :
+    benchmark_release(basename = 'to_string_fmtlib_ho',
+                      main_src = 'to_string_main.cpp',
+                      flags    = [fmt_incl],
+                      libs     = [])
 print(empty_row())
 
 benchmark_release(basename = 'to_charptr_stringify_ho',
                   main_src = 'to_charptr_main.cpp',
                   flags    = [boost_incl],
                   libs     = [])
-benchmark_release(basename = 'to_charptr_fmtlib_ho',
-                  main_src = 'to_charptr_main.cpp',
-                  flags    = [fmt_incl],
-                  libs     = [])
+if not only_boost_stringify :
+    benchmark_release(basename = 'to_charptr_fmtlib_ho',
+                      main_src = 'to_charptr_main.cpp',
+                      flags    = [fmt_incl],
+                      libs     = [])
 print(empty_row())
 
 benchmark_release(basename = 'to_FILE_stringify_ho',
                   main_src = 'to_FILE_main.cpp',
                   flags    = [boost_incl],
                   libs     = [])
-benchmark_release(basename = 'to_FILE_fmtlib_ho',
-                  main_src = 'to_FILE_main.cpp',
-                  flags    = [fmt_incl],
-                  libs     = [])
+if not only_boost_stringify :
+    benchmark_release(basename = 'to_FILE_fmtlib_ho',
+                      main_src = 'to_FILE_main.cpp',
+                      flags    = [fmt_incl],
+                      libs     = [])
 print(empty_row())
 
 benchmark_release(basename = 'to_ostream_stringify_ho',
                   main_src = 'to_ostream_main.cpp',
                   flags    = [boost_incl],
                   libs     = [])
-benchmark_release(basename = 'to_ostream_fmtlib_ho',
-                  main_src = 'to_ostream_main.cpp',
-                  flags    = [fmt_incl],
-                  libs     = [])
-benchmark_release(basename = 'to_ostream_BoostFormat',
-                  main_src = 'to_ostream_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [])
+if not only_boost_stringify :
+    benchmark_release(basename = 'to_ostream_fmtlib_ho',
+                      main_src = 'to_ostream_main.cpp',
+                      flags    = [fmt_incl],
+                      libs     = [])
+    benchmark_release(basename = 'to_ostream_BoostFormat',
+                      main_src = 'to_ostream_main.cpp',
+                      flags    = [boost_incl],
+                      libs     = [])
 
 print(']\n')
 
@@ -305,52 +318,57 @@ benchmark_debug(basename = 'to_string_stringify',
                   main_src = 'to_string_main.cpp',
                   flags    = [boost_incl],
                   libs     = [lib_boost_stringify_debug])
-benchmark_debug(basename = 'to_string_fmtlib',
-                  main_src = 'to_string_main.cpp',
-                  flags    = [fmt_incl],
-                  libs     = [libfmt_debug])
+if not only_boost_stringify :
+    benchmark_debug(basename = 'to_string_fmtlib',
+                    main_src = 'to_string_main.cpp',
+                    flags    = [fmt_incl],
+                    libs     = [libfmt_debug])
 print(empty_row())
 
 benchmark_debug(basename = 'to_charptr_stringify',
                   main_src = 'to_charptr_main.cpp',
                   flags    = [boost_incl],
                   libs     = [lib_boost_stringify_debug])
-benchmark_debug(basename = 'to_charptr_fmtlib',
-                  main_src = 'to_charptr_main.cpp',
-                  flags    = [fmt_incl],
-                  libs     = [libfmt_debug])
-benchmark_debug(basename = 'to_charptr_sprintf',
-                  main_src = 'to_charptr_main.cpp',
-                  flags    = [],
-                  libs     = [])
+if not only_boost_stringify :
+    benchmark_debug(basename = 'to_charptr_fmtlib',
+                    main_src = 'to_charptr_main.cpp',
+                    flags    = [fmt_incl],
+                    libs     = [libfmt_debug])
+    benchmark_debug(basename = 'to_charptr_sprintf',
+                    main_src = 'to_charptr_main.cpp',
+                    flags    = [],
+                    libs     = [])
 print(empty_row())
 
 benchmark_debug(basename = 'to_FILE_stringify',
                   main_src = 'to_FILE_main.cpp',
                   flags    = [boost_incl],
                   libs     = [lib_boost_stringify_debug])
-benchmark_debug(basename = 'to_FILE_fmtlib',
-                  main_src = 'to_FILE_main.cpp',
-                  flags    = [fmt_incl],
-                  libs     = [libfmt_debug])
-benchmark_debug(basename = 'to_FILE_fprintf',
-                  main_src = 'to_FILE_main.cpp',
-                  flags    = [],
-                  libs     = [])
+if not only_boost_stringify :
+    benchmark_debug(basename = 'to_FILE_fmtlib',
+                    main_src = 'to_FILE_main.cpp',
+                    flags    = [fmt_incl],
+                    libs     = [libfmt_debug])
+    benchmark_debug(basename = 'to_FILE_fprintf',
+                    main_src = 'to_FILE_main.cpp',
+                    flags    = [],
+                    libs     = [])
 print(empty_row())
 
 benchmark_debug(basename = 'to_ostream_stringify',
                   main_src = 'to_ostream_main.cpp',
                   flags    = [boost_incl],
                   libs     = [lib_boost_stringify_debug])
-benchmark_debug(basename = 'to_ostream_fmtlib',
-                  main_src = 'to_ostream_main.cpp',
-                  flags    = [fmt_incl],
-                  libs     = [libfmt_debug])
-benchmark_debug(basename = 'to_ostream_itself',
-                  main_src = 'to_ostream_main.cpp',
-                  flags    = [],
-                  libs     = [])
+
+if not only_boost_stringify :
+    benchmark_debug(basename = 'to_ostream_fmtlib',
+                    main_src = 'to_ostream_main.cpp',
+                    flags    = [fmt_incl],
+                    libs     = [libfmt_debug])
+    benchmark_debug(basename = 'to_ostream_itself',
+                    main_src = 'to_ostream_main.cpp',
+                    flags    = [],
+                    libs     = [])
 print(']\n')
 
 
@@ -361,44 +379,51 @@ benchmark_debug(basename = 'to_string_stringify_ho',
                   main_src = 'to_string_main.cpp',
                   flags    = [boost_incl],
                   libs     = [])
-benchmark_debug(basename = 'to_string_fmtlib_ho',
-                  main_src = 'to_string_main.cpp',
-                  flags    = [fmt_incl],
-                  libs     = [])
+
+if not only_boost_stringify :
+    benchmark_debug(basename = 'to_string_fmtlib_ho',
+                    main_src = 'to_string_main.cpp',
+                    flags    = [fmt_incl],
+                    libs     = [])
 print(empty_row())
 
 benchmark_debug(basename = 'to_charptr_stringify_ho',
                   main_src = 'to_charptr_main.cpp',
                   flags    = [boost_incl],
                   libs     = [])
-benchmark_debug(basename = 'to_charptr_fmtlib_ho',
-                  main_src = 'to_charptr_main.cpp',
-                  flags    = [fmt_incl],
-                  libs     = [])
+if not only_boost_stringify :
+    benchmark_debug(basename = 'to_charptr_fmtlib_ho',
+                    main_src = 'to_charptr_main.cpp',
+                    flags    = [fmt_incl],
+                    libs     = [])
 print(empty_row())
 
 benchmark_debug(basename = 'to_FILE_stringify_ho',
                   main_src = 'to_FILE_main.cpp',
                   flags    = [boost_incl],
                   libs     = [])
-benchmark_debug(basename = 'to_FILE_fmtlib_ho',
-                  main_src = 'to_FILE_main.cpp',
-                  flags    = [fmt_incl],
-                  libs     = [])
+
+if not only_boost_stringify :
+    benchmark_debug(basename = 'to_FILE_fmtlib_ho',
+                    main_src = 'to_FILE_main.cpp',
+                    flags    = [fmt_incl],
+                    libs     = [])
 print(empty_row())
 
 benchmark_debug(basename = 'to_ostream_stringify_ho',
                   main_src = 'to_ostream_main.cpp',
                   flags    = [boost_incl],
                   libs     = [])
-benchmark_debug(basename = 'to_ostream_fmtlib_ho',
-                  main_src = 'to_ostream_main.cpp',
-                  flags    = [fmt_incl],
-                  libs     = [])
-benchmark_debug(basename = 'to_ostream_BoostFormat',
-                  main_src = 'to_ostream_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [])
+
+if not only_boost_stringify :
+    benchmark_debug(basename = 'to_ostream_fmtlib_ho',
+                    main_src = 'to_ostream_main.cpp',
+                    flags    = [fmt_incl],
+                    libs     = [])
+    benchmark_debug(basename = 'to_ostream_BoostFormat',
+                    main_src = 'to_ostream_main.cpp',
+                    flags    = [boost_incl],
+                    libs     = [])
 print(']\n')
 
 print('Remark: many temporary files saved in ./tmp/. You may want to delete them.')

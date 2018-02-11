@@ -38,8 +38,8 @@ int main()
                 "--", (char32_t)0xDBFF,
                 "--", (char32_t)0xDC00,
                 "--", (char32_t)0xDFFF,
-                "--", {(char32_t)0x110000, {"", 3}},
-                "--", {(char32_t)0x110000, {"", 0}}
+                "--", strf::multi((char32_t)0x110000, 3),
+                "--", strf::multi((char32_t)0x110000, 0)
             };
     }
 
@@ -55,8 +55,8 @@ int main()
                 "------", (char32_t)0xDBFF,
                 "------", (char32_t)0xDC00,
                 "------", (char32_t)0xDFFF,
-                "------", {(char32_t)0x110000, {"", 3}},
-                "------", {(char32_t)0x110000, {"", 0}},
+                "------", strf::multi((char32_t)0x110000, 3),
+                "------", strf::multi((char32_t)0x110000, 0),
             };
     }
 

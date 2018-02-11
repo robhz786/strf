@@ -186,7 +186,7 @@ void basic_test__wide()
         file = std::tmpfile();
         err = strf::wwrite_to(file, &result_length)
         = {
-            L"abcd", {L'x', {"", 0}}, {L'y', {"", 4}}, L'z'
+            L"abcd", strf::multi(L'x', 0), strf::multi(L'y', 4), L'z'
         };
         std::rewind(file);
         result = read_wfile(file);
@@ -327,13 +327,13 @@ int main()
         std::string result;
         {
             FILE* file = std::tmpfile();
-            strf::write_to(file) &= {{U'\u0800', {"", buff_size * 2}}};
+            strf::write_to(file) &= {strf::multi(U'\u0800', buff_size * 2)};
             std::rewind(file);
             result = read_file<char>(file);
             std::fclose(file);
         }
 
-        std::string expected = strf::make_string() &= {{U'\u0800', {"", buff_size * 2}}};
+        std::string expected = strf::make_string() &= {strf::multi(U'\u0800', buff_size * 2)};
         BOOST_TEST(expected == result);
     }
 

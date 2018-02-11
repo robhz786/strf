@@ -34,8 +34,8 @@ int main()
                 u"--", (char32_t)0xDBFF,
                 u"--", (char32_t)0xDC00,
                 u"--", (char32_t)0xDFFF,
-                u"--", {(char32_t)0x110000, {"", 3}},
-                u"--", {(char32_t)0x110000, {"", 0}}
+                u"--", strf::multi((char32_t)0x110000, 3),
+                u"--", strf::multi((char32_t)0x110000, 0)
             };
     }
 
@@ -51,8 +51,8 @@ int main()
                 u"------", (char32_t)0xDBFF,
                 u"------", (char32_t)0xDC00,
                 u"------", (char32_t)0xDFFF,
-                u"------", {(char32_t)0x110000, {"", 3}},
-                u"------", {(char32_t)0x110000, {"", 0}}
+                u"------", strf::multi((char32_t)0x110000, 3),
+                u"------", strf::multi((char32_t)0x110000, 0)
             };
     }
 
@@ -106,8 +106,8 @@ int main()
                 L"--", (char32_t)0xDBFF,
                 L"--", (char32_t)0xDC00,
                 L"--", (char32_t)0xDFFF,
-                L"--", {(char32_t)0x110000, {"", 3}},
-                L"--", {(char32_t)0x110000, {"", 0}}
+                L"--", strf::multi((char32_t)0x110000, 3),
+                L"--", strf::multi((char32_t)0x110000, 0)
             };
     }
 
@@ -123,8 +123,8 @@ int main()
                 L"------", (char32_t)0xDBFF,
                 L"------", (char32_t)0xDC00,
                 L"------", (char32_t)0xDFFF,
-                L"------", {(char32_t)0x110000, {"", 3}},
-                L"------", {(char32_t)0x110000, {"", 0}}
+                L"------", strf::multi((char32_t)0x110000, 3),
+                L"------", strf::multi((char32_t)0x110000, 0)
             };
     }
 

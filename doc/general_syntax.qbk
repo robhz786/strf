@@ -26,27 +26,26 @@
 
 The ['[*leading expression]] is the part of the expression the varies according to the output type, as show in [link output_types.output_types this table].
 
-The [link section_assembly_string ['[*assembly string]]] is analogous to what in others formatting libraries is called as the /format string/, but is does not specify any formatting. Here, the term "/format string/" usually refers to something else.
+The [link section_assembly_string ['[*assembly string]]] is analogous to what in others format libraries is called as the /format string/, except that it does not format any of the arguments. Formatting is specified instead with [link format_functions format functions].
 
 Example:
 
 [trivial_sample]
 
+In order to reduce code bloat and increase perfomance, it is recomended to use the assembly string if it reduces the number of arguments.
+
 [h3 Arguments]
 
-An [link section_input_types input argument] can be just a value to be stringified as above, or it can be a /braced-init-list/ composed by two arguments: the first one is the value to be stringified whose type defines the purpose and type of the second argument, which may also be a /braced-init-list/ and usually specifies formatting ( as described [link conventional_formatting here] ). For example:
-[trivial_formatting_sample]
-This /braced-init-list/ aims to provide a pratical and compact syntax for formatting. But it does not support many formatting options, just those more frequently used. Facets can be used to compensate this limitation.
+The "conventional" input types are ( or will be ) supported:
 
-[/
-However keep in mind that an input type does not necessarily take formatting
-arguments as in the sample above. Actually if an user add support for some
-user-defined type, it is up to him/her to decide what sort of formatting
-options are avaible, if any. A certain input may not use any formatting string,
-and if it does, it doesn't have to follow the table above. 
-Refer to the documentation of each input type.
-]
+* an integer ( `int, long, long long, unsigned int, unsigned long or unsigned long long`)
+* a string ( a raw string or a `std::basic_string` or `std::basic_string_view`)
+* a single character
+* a boolean ['( todo )]
+* a void pointer ['( todo )]
+* a floating point ['( todo )]
 
+In addition to those, there are also some "special" input types, that are explained in another section.
 
 As shown in the diagram, there are diferent ways you can inject the arguments:
 

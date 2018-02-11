@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <boost/stringify/v0/arg_format.hpp>
 #include <boost/stringify/v0/ftuple.hpp>
 #include <boost/stringify/v0/formatter.hpp>
 #include <boost/stringify/v0/facets/encoder.hpp>
@@ -10,6 +11,87 @@
 #include <boost/stringify/v0/facets/width_calculator.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+
+
+template <typename CharT>
+class string_with_format
+    : public stringify::v0::string_format<string_with_format<CharT> >
+{
+public:
+
+    template <typename T>
+    using fmt_tmpl = stringify::v0::string_format<T>;
+
+    using fmt_type = fmt_tmpl<string_with_format>;
+
+    constexpr string_with_format
+        ( const CharT* begin
+        , const CharT* end
+        ) noexcept
+        : m_str(begin)
+        , m_end(end)
+    {
+    }
+
+    constexpr string_with_format
+        ( const CharT* begin
+        , const CharT* end
+        , const fmt_type& fmt
+        ) noexcept
+        : fmt_type(fmt)
+        , m_str(begin)
+        , m_end(end)
+    {
+    }
+
+    constexpr string_with_format
+        ( const CharT* str
+        ) noexcept
+        : m_str(str)
+        , m_end(str + std::char_traits<CharT>::length(str))
+    {
+    }
+
+    template <class StringType>
+    constexpr string_with_format
+        ( const StringType& str
+        ) noexcept
+        : m_str(&str[0])
+        , m_end(&str[0] + str.length())
+    {
+    }
+
+    constexpr string_with_format(const string_with_format&) = default;
+
+    void value(const CharT* str)
+    {
+        m_str = str;
+        m_end = std::char_traits<CharT>::length(str);
+    }
+
+    template <class StringType>
+    void value(const StringType& str)
+    {
+        m_str = &str[0];
+        m_end = m_str + str.length();
+    }
+
+    constexpr const CharT* begin() const
+    {
+        return m_str;
+    }
+    constexpr const CharT* end() const
+    {
+        return m_end;
+    }
+
+private:
+
+    const CharT* m_str;
+    const CharT* m_end;
+};
+
+
 
 struct string_input_tag_base
 {
@@ -365,21 +447,9 @@ private:
 
 public:
 
-    using second_arg = stringify::v0::string_fmt;
-
     template <typename FTuple, typename StringType>
     string_formatter(const FTuple& ft, const StringType& str) noexcept
         : string_formatter(ft, &str[0], end_of(str))
-    {
-    }
-
-    template <typename FTuple, typename StringType>
-    string_formatter
-        ( const FTuple& ft
-        , const StringType& str
-        , const second_arg& argf
-        ) noexcept
-        : string_formatter(ft, &str[0], end_of(str), argf)
     {
     }
 
@@ -388,23 +458,43 @@ public:
         ( const FTuple& ft
         , const CharIn* begin
         , const CharIn* end
-        , const second_arg& fmt = stringify::v0::default_string_fmt()
         ) noexcept
         : string_formatter
-            ( get_facet<stringify::v0::decoder_tag<CharIn>>(ft)
+            ( stringify::v0::string_with_format<CharIn>{begin, end}
+            , get_facet<stringify::v0::decoder_tag<CharIn>>(ft)
             , get_facet<stringify::v0::encoder_tag<CharOut>>(ft)
             , get_facet<stringify::v0::width_calculator_tag>(ft)
-            , begin, end, fmt)
+            )
+    {
+    }
+
+    template <typename FTuple>
+    string_formatter
+        ( const FTuple& ft
+        , const stringify::v0::string_with_format<CharIn>& input
+        ) noexcept
+        : string_formatter
+            ( input
+            , get_facet<stringify::v0::decoder_tag<CharIn>>(ft)
+            , get_facet<stringify::v0::encoder_tag<CharOut>>(ft)
+            , get_facet<stringify::v0::width_calculator_tag>(ft)
+            )
     {
     }
 
     string_formatter
-        ( const stringify::v0::decoder<CharIn>& decoder
+        ( const stringify::v0::string_with_format<CharIn>& input
+        , const stringify::v0::decoder<CharIn>& decoder
         , const stringify::v0::encoder<CharOut>& encoder
         , const stringify::v0::width_calculator& wcalc
-        , const CharIn* begin
+        ) noexcept;
+
+    string_formatter
+        ( const CharIn* begin
         , const CharIn* end
-        , const second_arg& fmt
+        , const stringify::v0::decoder<CharIn>& decoder
+        , const stringify::v0::encoder<CharOut>& encoder
+        , const stringify::v0::width_calculator& wcalc
         ) noexcept;
 
     ~string_formatter();
@@ -418,8 +508,8 @@ public:
 private:
 
     const stringify::v0::detail::string_writer<CharIn, CharOut> m_str;
-    const stringify::v0::string_fmt m_fmt;
-    const stringify::v0::string_fmt::width_type m_fillcount = 0;
+    const typename stringify::v0::string_with_format<CharIn>::fmt_type m_fmt;
+    const int m_fillcount = 0;
 
     template <typename StringType>
     static const auto* end_of(const StringType& str)
@@ -446,19 +536,28 @@ private:
 
 template<typename CharIn, typename CharOut>
 string_formatter<CharIn, CharOut>::string_formatter
-    ( const stringify::v0::decoder<CharIn>& decoder
+    ( const stringify::v0::string_with_format<CharIn>& input
+    , const stringify::v0::decoder<CharIn>& decoder
     , const stringify::v0::encoder<CharOut>& encoder
     , const stringify::v0::width_calculator& wcalc
-    , const CharIn* begin
-    , const CharIn* end
-    , const second_arg& fmt
     ) noexcept
-    : m_str(begin, end, wcalc, decoder, encoder)
-    , m_fmt(fmt)
-    , m_fillcount(fmt.width() > 0 ? m_str.remaining_width(fmt.width()) : 0)
+    : m_str(input.begin(), input.end(), wcalc, decoder, encoder)
+    , m_fmt(input)
+    , m_fillcount(input.width() > 0 ? m_str.remaining_width(input.width()) : 0)
 {
 }
 
+template<typename CharIn, typename CharOut>
+string_formatter<CharIn, CharOut>::string_formatter
+    ( const CharIn* begin
+    , const CharIn* end
+    , const stringify::v0::decoder<CharIn>& decoder
+    , const stringify::v0::encoder<CharOut>& encoder
+    , const stringify::v0::width_calculator& wcalc
+    ) noexcept
+    : m_str(begin, end, wcalc, decoder, encoder)
+{
+}
 
 template<typename CharIn, typename CharOut>
 string_formatter<CharIn, CharOut>::~string_formatter()
@@ -485,13 +584,13 @@ void string_formatter<CharIn, CharOut>::write(writer_type& out) const
     {
         switch(m_fmt.alignment())
         {
-            case stringify::v0::basic_alignment::left:
+            case stringify::v0::alignment::left:
             {
                 m_str.write_str(out);
                 write_fill(out, m_fillcount);
                 break;
             }
-            case stringify::v0::basic_alignment::center:
+            case stringify::v0::alignment::center:
             {
                 int halfcount = m_fillcount / 2;
                 write_fill(out, halfcount);
@@ -552,6 +651,13 @@ struct string_input_traits
     template <typename CharOut, typename FTuple>
     using formatter
     = stringify::v0::string_formatter<CharIn, CharOut>;
+
+    template <typename StringType>
+    constexpr static auto fmt(const StringType& str)
+        -> stringify::v0::string_with_format<CharIn>
+    {
+        return {str};
+    }
 };
 
 } // namespace detail
@@ -579,6 +685,11 @@ stringify::v0::detail::string_input_traits<CharT>
 boost_stringify_input_traits_of(const std::basic_string_view<CharT, CharTraits>& str);
 
 #endif //defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
+
+template<typename CharT>
+stringify::v0::detail::string_input_traits<CharT>
+boost_stringify_input_traits_of
+    (const stringify::v0::string_with_format<CharT>&);
 
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
