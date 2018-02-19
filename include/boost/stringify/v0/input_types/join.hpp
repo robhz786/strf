@@ -64,8 +64,8 @@ join_internal(int width, int num_leading_args)
 template <typename CharT, typename FTuple>
 class join_formatter: public formatter<CharT>
 {
-    using width_calc_tag = stringify::v0::width_calculator_tag;
-    using encoder_tag = stringify::v0::encoder_tag<CharT>;
+    using width_calc_category = stringify::v0::width_calculator_category;
+    using encoder_category = stringify::v0::encoder_category<CharT>;
     using input_arg = stringify::v0::input_arg<CharT, FTuple>;
     using ini_list_type = std::initializer_list<input_arg>;
 
@@ -164,7 +164,8 @@ private:
     {
         if(m_fillcount > 0)
         {
-            return m_fillcount * get_facet<encoder_tag>().length(m_join.fillchar);
+            return m_fillcount
+                * get_facet<encoder_category>().length(m_join.fillchar);
         }
         return 0;
     }
@@ -205,7 +206,7 @@ private:
 
     void write_fill(writer_type& out, int count) const
     {
-         get_facet<encoder_tag>().encode(out, count, m_join.fillchar);
+         get_facet<encoder_category>().encode(out, count, m_join.fillchar);
     }
 
 };

@@ -164,13 +164,6 @@ public:
     {
     }
 
-    BOOST_STRINGIFY_NODISCARD decltype(auto) operator()(arglist_type args) const
-    {
-        output_writer_wrapper writer{m_owinit};
-        write(writer, args);
-        return writer.finish();
-    }
-
     BOOST_STRINGIFY_NODISCARD decltype(auto) operator=(arglist_type args) &
     {
         output_writer_wrapper writer{m_owinit};
@@ -433,14 +426,6 @@ public:
     asm_string operator[](const char_type* asm_str) const &
     {
         return {m_ftuple, m_owinit, asm_str, m_reservation};
-    }
-
-    BOOST_STRINGIFY_NODISCARD
-    constexpr decltype(auto) operator()(arglist_type args) const
-    {
-        output_writer_wrapper writer{m_owinit};
-        write(writer, args);
-        return writer.finish();
     }
 
     BOOST_STRINGIFY_NODISCARD

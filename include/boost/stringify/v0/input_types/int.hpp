@@ -144,13 +144,13 @@ private:
     template <typename FTuple>
     const stringify::v0::encoder<CharT>& get_encoder(const FTuple& ft) noexcept
     {
-        using tag = stringify::v0::encoder_tag<CharT>;
+        using tag = stringify::v0::encoder_category<CharT>;
         return ft.template get_facet<tag, input_type>();
     }
     template <int Base, typename FTuple>
     const stringify::v0::numpunct<Base>& get_numpunct(const FTuple& ft) noexcept
     {
-        using tag = stringify::v0::numpunct_tag<Base>;
+        using tag = stringify::v0::numpunct_category<Base>;
         return ft.template get_facet<tag, input_type>();
     }
 
@@ -316,7 +316,7 @@ private:
         CharT buff[buff_size];
         CharT* end = &buff[buff_size - 1];
         auto* begin = write_digits_backwards<Base>(unsigned_value(), end);
-        unsigned num_digits = end - begin;
+        unsigned num_digits = static_cast<unsigned>(end - begin);
         if (m_numpunct.thousands_sep_count(num_digits) == 0)
         {
             out.put(begin, num_digits);

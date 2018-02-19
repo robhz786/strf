@@ -89,14 +89,14 @@ private:
     template <typename FTuple>
     static const auto& get_encoder(const FTuple& ft)
     {
-        using category = stringify::v0::encoder_tag<CharT>;
+        using category = stringify::v0::encoder_category<CharT>;
         return ft.template get_facet<category, input_type>();
     }
 
     template <typename FTuple>
     static const auto& get_width_calculator(const FTuple& ft)
     {
-        using category = stringify::v0::width_calculator_tag;
+        using category = stringify::v0::width_calculator_category;
         return ft.template get_facet<category, input_type>();
     }
 

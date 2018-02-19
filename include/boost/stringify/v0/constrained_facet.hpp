@@ -125,6 +125,41 @@ auto constrain(const Facet& facet)
 }
 
 
+template <typename> struct is_int_number: public std::false_type {};
+template <> struct is_int_number<short>: public std::true_type {};
+template <> struct is_int_number<int>: public std::true_type {};
+template <> struct is_int_number<long>: public std::true_type {};
+template <> struct is_int_number<long long>: public std::true_type {};
+template <> struct is_int_number<unsigned short>: public std::true_type {};
+template <> struct is_int_number<unsigned int>: public std::true_type {};
+template <> struct is_int_number<unsigned long>: public std::true_type {};
+template <> struct is_int_number<unsigned long long>: public std::true_type {};
+
+template <typename> struct is_char: public std::false_type {};
+template <> struct is_char<char>: public std::true_type {};
+template <> struct is_char<char16_t>: public std::true_type {};
+template <> struct is_char<char32_t>: public std::true_type {};
+template <> struct is_char<wchar_t>: public std::true_type {};
+
+struct string_input_tag_base
+{
+};
+
+template <typename CharT>
+struct string_input_tag: string_input_tag_base
+{
+};
+
+template <typename CharT>
+struct is_string_of
+{
+    template <typename T>
+    using fn = std::is_base_of<string_input_tag<CharT>, T>;
+};
+
+template <typename T>
+using is_string = std::is_base_of<string_input_tag_base, T>;
+
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_CONSTRAINED_FACET_HPP

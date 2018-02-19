@@ -6,6 +6,7 @@
 
 [import ../example/v0/custom_encoding_error_handling.cpp]
 
+[#encoder_facet]
 [section Encoding UTF-8]
 [h4 The `u8encoder` class template]
 

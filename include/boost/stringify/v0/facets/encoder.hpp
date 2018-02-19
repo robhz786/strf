@@ -11,13 +11,13 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-template <typename CharT> struct encoder_tag;
+template <typename CharT> struct encoder_category;
 
 template <typename CharT> class encoder
 {
 public:
 
-    using category = stringify::v0::encoder_tag<CharT>;
+    using category = stringify::v0::encoder_category<CharT>;
 
     virtual ~encoder()
     {
@@ -422,7 +422,7 @@ public:
 };
 
 
-template <> struct encoder_tag<char>
+template <> struct encoder_category<char>
 {
     static const auto& get_default() noexcept
     {
@@ -434,7 +434,7 @@ template <> struct encoder_tag<char>
     }
 };
 
-template <> struct encoder_tag<char16_t>
+template <> struct encoder_category<char16_t>
 {
     static const auto& get_default() noexcept
     {
@@ -451,7 +451,7 @@ template <> struct encoder_tag<char16_t>
     }
 };
 
-template <> struct encoder_tag<char32_t>
+template <> struct encoder_category<char32_t>
 {
     static const auto& get_default() noexcept
     {
@@ -462,7 +462,7 @@ template <> struct encoder_tag<char32_t>
 
 #if ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
 
-template <> struct encoder_tag<wchar_t>
+template <> struct encoder_category<wchar_t>
 {
     static const auto& get_default() noexcept
     {

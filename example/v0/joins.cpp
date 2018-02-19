@@ -48,7 +48,7 @@ const char* msg_the_ip_address_of_X_is_X();
 
 //[ join_with_assembly_string_part2
 
-// in some source file you can not edit
+// in some source file you shall not edit
 
 const char* msg_the_ip_address_of_X_is_X()
 {

@@ -352,10 +352,10 @@ using ftuple_impl
 } // namespace detail
 
 
-template <typename ... F>
-class ftuple: private stringify::v0::detail::ftuple_impl<F...>
+template <typename ... Facets>
+class ftuple: private stringify::v0::detail::ftuple_impl<Facets...>
 {
-    using impl = stringify::v0::detail::ftuple_impl<F...>;
+    using impl = stringify::v0::detail::ftuple_impl<Facets...>;
 
     friend struct stringify::v0::detail::ftuple_helper;
 
@@ -364,7 +364,7 @@ class ftuple: private stringify::v0::detail::ftuple_impl<F...>
 
 public:
 
-    constexpr ftuple(const F& ... f)
+    constexpr ftuple(const Facets& ... f)
         : impl(stringify::v0::detail::make_ftuple_impl(f...))
     {
     }
@@ -378,21 +378,21 @@ public:
 };
 
 
-template <typename ... F>
-auto make_ftuple(const F& ... f)
+template <typename ... Facets>
+auto make_ftuple(const Facets& ... f)
 {
-    return stringify::v0::ftuple<F...>(f...);
+    return stringify::v0::ftuple<Facets...>(f...);
 }
 
 
 template
     < typename FacetCategory
     , typename InputType
-    , typename FTuple
+    , typename ... Facets
     >
-constexpr const auto& get_facet(const FTuple& f)
+constexpr const auto& get_facet(const stringify::v0::ftuple<Facets...>& ft)
 {
-    return f.template get_facet<FacetCategory, InputType>();
+    return ft.template get_facet<FacetCategory, InputType>();
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

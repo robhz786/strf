@@ -6,6 +6,7 @@
 
 [import ../example/v0/numpunct_facets.cpp]
 
+[#numpunct]
 [section Facets for numeric punctuation]
 
 You can specify the grouping with a string using the `str_grouping` class template:

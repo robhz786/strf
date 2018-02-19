@@ -14,7 +14,7 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-struct width_calculator_tag;
+struct width_calculator_category;
 class width_calculator;
 
 
@@ -64,7 +64,7 @@ class width_calculator
 
 public:
 
-    typedef stringify::v0::width_calculator_tag category;
+    typedef stringify::v0::width_calculator_category category;
 
     explicit width_calculator
     ( const stringify::v0::char_width_calculator ch_wcalc
@@ -113,7 +113,7 @@ private:
 };
 
 
-struct width_calculator_tag
+struct width_calculator_category
 {
     static const stringify::v0::width_calculator& get_default()
     {

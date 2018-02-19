@@ -10,7 +10,7 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-template <typename CharT> struct decoder_tag;
+template <typename CharT> struct decoder_category;
 
 //[ u32output_class
 class u32output
@@ -33,7 +33,7 @@ template <typename CharT> class decoder
 {
 public:
 
-    using category = stringify::v0::decoder_tag<CharT>;
+    using category = stringify::v0::decoder_category<CharT>;
 
     virtual ~decoder() = default;
 
@@ -519,7 +519,7 @@ public:
     }
 };
 
-template <> struct decoder_tag<char>
+template <> struct decoder_category<char>
 {
     static const auto& get_default() noexcept
     {
@@ -533,7 +533,7 @@ template <> struct decoder_tag<char>
     }
 };
 
-template <> struct decoder_tag<char16_t>
+template <> struct decoder_category<char16_t>
 {
     static const auto& get_default() noexcept
     {
@@ -548,7 +548,7 @@ template <> struct decoder_tag<char16_t>
     }
 };
 
-template <> struct decoder_tag<char32_t>
+template <> struct decoder_category<char32_t>
 {
     static const stringify::v0::u32decoder<char32_t>&
     get_default() noexcept
@@ -560,7 +560,7 @@ template <> struct decoder_tag<char32_t>
 
 #if ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
 
-template <> struct decoder_tag<wchar_t>
+template <> struct decoder_category<wchar_t>
 {
 
     static const auto& get_default() noexcept

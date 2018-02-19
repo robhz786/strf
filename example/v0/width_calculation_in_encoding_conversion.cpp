@@ -12,12 +12,12 @@ namespace strf = boost::stringify::v0;
 int main()
 {
     // from UTF-8 to UTF-16
-    auto u16str = strf::make_u16string() &= {strf::right("\u0800", 4, U'.')};
+    auto u16str = strf::make_u16string() &= {strf::right(u8"\u0800", 4, U'.')};
     BOOST_ASSERT(u16str == u".\u0800");
 
     // from UTF-16 to UTF-8
     auto u8str  = strf::make_string()    &= {strf::right(u"\u0800", 4, U'.')};
-    BOOST_ASSERT(u8str == "...\u0800");
+    BOOST_ASSERT(u8str == u8"...\u0800");
 
     return 0;
 }

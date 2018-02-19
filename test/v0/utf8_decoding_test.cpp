@@ -116,8 +116,8 @@ int main()
     {   // tolerate surrogates
 
         auto result = strf::make_u32string
-            .with(strf::make_u8decoder().wtf8())
-            ({
+            .with(strf::make_u8decoder().wtf8()) &=
+            {
                 highsurr_D800,
                 lowsurr_DFFF,
                 toobig_110000,
@@ -125,7 +125,7 @@ int main()
                 overlong_007F,
                 overlong_07FF,
                 overlong_FFFF
-            }) .value();
+            };
         
         BOOST_TEST(result[0] == (char32_t)0xD800);
         BOOST_TEST(result[1] == (char32_t)0XDFFF);
@@ -139,8 +139,8 @@ int main()
     { // tolerate overlong sequences
 
         auto result = strf::make_u32string
-            .with(strf::make_u8decoder().tolerate_overlong())
-            ({
+            .with(strf::make_u8decoder().tolerate_overlong()) &=
+            {
                 highsurr_D800,
                 lowsurr_DFFF,
                 toobig_110000,
@@ -148,7 +148,7 @@ int main()
                 overlong_007F,
                 overlong_07FF,
                 overlong_FFFF
-            }).value();
+            };
         
         BOOST_TEST(result[0] == U'\uFFFD');
         BOOST_TEST(result[1] == U'\uFFFD');

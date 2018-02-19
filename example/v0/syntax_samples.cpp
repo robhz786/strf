@@ -7,14 +7,17 @@ void make_string_is_not_assignable()
     //[ make_string_is_not_assignable
     namespace strf = boost::stringify::v0;
 
-    auto xstr1 = strf::make_string ({"blah", "blah", "blah"}); // ok
+    // make_string is not assignable:
+    // auto str = strf::make_string  = {"blah", "blah", "blah"}; // compilation error
+    // auto str = strf::make_string &= {"blah", "blah", "blah"}; // compilation error
 
-    //auto xstr2 = strf::make_string = {"blah", "blah", "blah"}; // compilation error
+    auto str1 = strf::make_string["{}{}{}"] &= {"blah", "blah", "blah"}; // ok
 
-    // the only purpose of adding an () is to return an assignable equivalent:
-    auto xstr3 = strf::make_string() = {"blah", "blah", "blah"}; // ok
+    auto str2 = strf::make_string.with() &= {"blah", "blah", "blah"}; // ok
 
-    auto xstr4 = strf::make_string.with() = {"blah", "blah", "blah"}; // ok
+    // the only purpose of adding an () is to get an assignable expression:
+    auto str3 = strf::make_string() &= {"blah", "blah", "blah"}; // ok
+
     //]
 }
 
@@ -29,13 +32,13 @@ void reserve()
 
     auto append = strf::append_to(output).no_reserve();
 
-    append &={"bleh", "bleh"};
-    append &={"blih", "blih"};
-    append &={"bloh", "bloh"};
-    append.reserve_auto() &={"bluh", "bluh"};
+    append &= {"bleh", "bleh"};
+    append &= {"blih", "blih"};
+    append &= {"bloh", "bloh"};
+    append.reserve_auto() &= {"bluh", "bluh"};
     //]
 }
-    
+
 
 int main()
 {

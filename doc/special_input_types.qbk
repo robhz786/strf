@@ -11,6 +11,7 @@
 Actually, there is nothing really special about this category. The only difference from the "conventional" input types, is here the /secondary argument/ is different.
 ]
 
+[#joins]
 [section Joins]
 
 [import ../example/v0/joins.cpp]
@@ -40,7 +41,8 @@ where:
 
 [joins_example]
 
-You may want to use joins without the purpose of alignment, but solely to treat a whole sublist of arguments as one because, for example, the assembly string - which you may not be able to edit - expects one argument instead of many:
+You may want to use joins without the purpose of alignment, but solely to treat a whole sublist of arguments as one.
+This is something you way need to do in case you are using an [link section_assembly_string assembly string], especially if you can not edit the assembly string.
 
 [join_with_assembly_string_part1]
 [join_with_assembly_string_part2]
@@ -48,13 +50,55 @@ You may want to use joins without the purpose of alignment, but solely to treat 
 
 [endsect]
 
-[section Facets ['(todo)]]
+[section ftuple]
+[import ../example/v0/ftuple_as_input.cpp]
+
+If you want to apply some facet objects to only a subset of the arguments,
+you can use an [link ftuple ftuple] object as an input arg.
+The syntax is similar to the [link joins join] syntax :
+
+* `{ `[~ftuple_obj]` , { `[~arguments_sub_list] `} }`
+
+[ftuple_input]
+
+Note that the arguments in the sub list can be of any type that is possible in the outer list.
+You can you, for instance, another ftuple:
+
+[ftuple_input_2]
+
+When using assembly string, be aware that the sublist of argument is treated as it where just one argument:
+
+[ftuple_input_in_assembly_string]
+
 [endsect]
 
 [section Range ['(todo)]]
+[import ../example/v0/range_input.cpp]
+
+A /range/ is any container. The syntax is:
+
+* `iterate(`[~range]`)`
+* `iterate(`[~range], [~separator]`)`
+
+[range_sample]
+
+You can use the format functions to format the range's elements
+
+[range_sample_2]
+
 [endsect]
 
 [section Assembly string ['(todo)]]
+[import ../example/v0/assembly_string_input.cpp]
+
+[note It is not decided yet wheter this will ever be implemented]
+
+syntax:
+
+* `{ assm(`[~assembly string]`) , { `[~arguments_sub_list]` } }`
+
+[assembly_string_as_input]
+
 [endsect]
 
 [endsect]

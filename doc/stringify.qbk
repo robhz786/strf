@@ -21,14 +21,15 @@ __STD_EXPECTED__
 
 
 [include overview.qbk]
-[include:syntax general_syntax.qbk]
+[include:general_syntax general_syntax.qbk]
 [include:output_types output_types.qbk]
 [include:assembly_string assembly_string.qbk]
 [include:format_functions format_functions.qbk]
+[include:facets facets.qbk]
 [include:special_input_types special_input_types.qbk]
 [include:numpunct_facets numpunct_facets.qbk]
-[include:width_calculation facet_width_calculation.qbk]
-[include:codec_facets encoding_conversion.qbk]
+[include:facet_width_calculation facet_width_calculation.qbk]
+[include:encoding_facets encoding_conversion.qbk]
 [include:extend_output extend_output.qbk]
 [include:extend_input extend_input.qbk]
 [include:benchmarks benchmarks.qbk]

@@ -11,11 +11,11 @@ Suppose you have a type `foobar` and you want to create a function named `write_
 [#OutputWriterConcept]
 [*Step 1)] Create a class - let's call it `foobar_writer` - that satisfies the following requirements:
 
-* inherits from [link output_writer `output_writer<`[~CharT]`>`], where [~CharT] is `char`, `char16_t`, `char32_t` or `wchar_t`. ( or rather, make `foobar_writer` class template );
-* is not abstract
-* has a [*`finish()`] public member function. This function will be called just before `foobar` is destroyed when the expression [link syntax_args_form2 `write_to(foobar_instance) = {args...}`] is used. By convention, it should return an `std::error_code` or an object that contains an `std::error_code` ( like and __STD_EXPECTED__ )
-* has a [*`finish_throw()`] public member function. This function will be called just before `foobar` is destroyed when the expression [link syntax_args_form3 `write_to(foobar_instance) &= {args...}`] is used. By conventions, instead of returning an `std::error_code` or object that contains an `std::error_code` ( like `finish()` does), this function should throw an exception created from such `std::error_code`.
-* [#OutputWriter_reserve] optionally, it may contain a [*`reserve(std::size_t size)`] public member function. This function is called (or not) according to the use of [link syntax_reserve `reserve_auto()`, `reserve()` or `no_reseve()`] in the [link syntax_diagram basic invocation syntax]. The parameter `size` tells how many characters will be written. This function will be called no more than once, and only before any of the writing functions ([link output_writer `put`] and [link output_writer `repeat`]). The argument will be the total number of chararacters that will be written until `finish()` of `finish_throw()` is called.
+* inherits from [link output_writer `output_writer<`[~CharT]`>`], where [~CharT] is `char`, `char16_t`, `char32_t` or `wchar_t` ( or rather, make `foobar_writer` a class template ).
+* is not abstract.
+* has a [*`finish()`] public member function. This function will be called just before `foobar_writer` is destroyed when the expression [link syntax_args_form2 `write_to(foobar_instance) = {args...}`] is used. By convention, it should return an `std::error_code` or an object that contains an `std::error_code` ( like an __STD_EXPECTED__ )
+* has a [*`finish_throw()`] public member function. This function will be called just before `foobar_writer` is destroyed when the expression [link syntax_args_form3 `write_to(foobar_instance) &= {args...}`] is used. By conventions, instead of returning an `std::error_code` or object that contains an `std::error_code` ( like `finish()` does), this function should throw an exception created from such `std::error_code`.
+* [#OutputWriter_reserve] [_optionally], it may contain a [*`reserve(std::size_t size)`] public member function. If present, this function is called (or not) according to the use of [link syntax_reserve `reserve_auto()`, `reserve()` or `no_reseve()`] in the [link syntax_diagram basic invocation syntax]. The parameter `size` tells how many characters will be written. This function will be called no more than once, and only before any of the writing functions ([link output_writer `put`] and [link output_writer `repeat`]). The argument will be the total number of chararacters that will be written until `finish()` of `finish_throw()` is called.
 
 [*Step 2)] Implement function `write_to` ( or whatever name you prefer ) like below:
 
@@ -31,7 +31,8 @@ The argument(s) passed to function template `make_args_handler` will be used to 
 template <typename OutputWriter, typename ... Args>
 constexpr auto make_args_handler(Args ... args) -> /* implementation_defined */;
 ```
-Note that the parameters are `(Args ... arg)` and not `(Args && ... args)`. Hence, if you want to pass a paramenter by reference, template type deduction does't work correctly. So you shall specify the parameters type, as done in the example of `write_to(foobar& )` above.
+[important Note that the parameters list of `make_args_handler` is `(Args ... arg)` and [_not] `(Args `[*`&&`]` ... args)`. Hence, if you want to pass a paramenter by reference, template type deduction won't do what you want. You must specify the type of each argument, as done in the example above ]
+
 
 
 [/

@@ -284,6 +284,8 @@ int main()
 
 
     const std::size_t buff_size = strf::detail::narrow_file_writer<char>::m_buff_size;
+    BOOST_ASSERT(buff_size <= (INT_MAX));
+    const int buff_size_int = static_cast<int>(buff_size);
 
     {   // testing narrow_file_writer::put(char_type)
 
@@ -327,13 +329,13 @@ int main()
         std::string result;
         {
             FILE* file = std::tmpfile();
-            strf::write_to(file) &= {strf::multi(U'\u0800', buff_size * 2)};
+            strf::write_to(file) &= {strf::multi(U'\u0800', buff_size_int * 2)};
             std::rewind(file);
             result = read_file<char>(file);
             std::fclose(file);
         }
 
-        std::string expected = strf::make_string() &= {strf::multi(U'\u0800', buff_size * 2)};
+        std::string expected = strf::make_string() &= {strf::multi(U'\u0800', buff_size_int * 2)};
         BOOST_TEST(expected == result);
     }
 

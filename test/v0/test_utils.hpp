@@ -19,14 +19,14 @@ decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::string& exp
         u8" abcd xyyabb\u00a1\u00a2\u00a2\u2080\u2081\u2081"
         u8"\U00010000\U00010001\U00010001";
 
-    return w
-        ({
+    return w () =
+        {
             " abcd ", 'x', strf::multi('y', 2), strf::multi('z', 0),
             U'a', strf::multi(U'b', 2), strf::multi(U'c', 0),
             U'\u00a1', strf::multi(U'\u00a2', 2), strf::multi(U'\u00a3', 0),
             U'\u2080', strf::multi(U'\u2081', 2), strf::multi(U'\u2082', 0),
             U'\U00010000', strf::multi(U'\U00010001', 2), strf::multi(U'\U00010002', 0),
-        });
+        };
 }
 
 template <typename W>
@@ -38,14 +38,14 @@ decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::u16string& 
         u" abcd xyyabb\u0080\u0081\u0081\u0800\u0801\u0801"
         u"\U00010000\U00010001\U00010001";
 
-    return w
-        ({
+    return w () =
+        {
             u" abcd ", u'x', strf::multi(u'y', 2), strf::multi(u'z', 0),
             U'a', strf::multi(U'b', 2), strf::multi(U'c', 0),
             U'\u0080', strf::multi(U'\u0081', 2), strf::multi(U'\u0082', 0),
             U'\u0800', strf::multi(U'\u0801', 2), strf::multi(U'\u0802', 0),
             U'\U00010000', strf::multi(U'\U00010001', 2), strf::multi(U'\U00010002', 0),
-        });
+        };
 
 }
 
@@ -58,14 +58,14 @@ decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::u32string& 
         U" abcd xyyabb\u0080\u0081\u0081\u0800\u0801\u0801"
         U"\U00010000\U00010001\U00010001";
 
-    return w
-        ({
+    return w() =
+        {
             U" abcd ", U'x', strf::multi(U'y', 2), strf::multi(U'z', 0),
             U'a', strf::multi(U'b', 2), strf::multi(U'c', 0),
             U'\u0080', strf::multi(U'\u0081', 2), strf::multi(U'\u0082', 0),
             U'\u0800', strf::multi(U'\u0801', 2), strf::multi(U'\u0802', 0),
             U'\U00010000', strf::multi(U'\U00010001', 2), strf::multi(U'\U00010002', 0),
-        });
+        };
 
 }
 
@@ -79,14 +79,14 @@ decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::wstring& ex
         L" abcd xyyabb\u00a1\u00a2\u00a2\u0800\u0801\u0801"
         L"\U00010000\U00010001\U00010001";
 
-    return w
-        ({
+    return w() =
+        {
             L" abcd ", L'x', strf::multi(L'y', 2), strf::multi(L'z', 0),
             U'a', strf::multi(U'b', 2), strf::multi(U'c', 0),
             L'\u00a1', strf::multi(L'\u00a2', 2), strf::multi(L'\u00a3', 0),
             L'\u0800', strf::multi(L'\u0801', 2), strf::multi(L'\u0802', 0),
             U'\U00010000', strf::multi(U'\U00010001', 2), strf::multi(U'\U00010002', 0)
-        });
+        };
 
 }
 

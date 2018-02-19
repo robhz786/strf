@@ -21,28 +21,28 @@ int main()
     auto cp_count = strf::width_as_codepoints_count();
     auto wtable = strf::width_as(custom_width_calculator_function);
 
-    TEST( "  \u2E3A\u2E3A\u2014")        .with(wtable)   &={strf::right( "\u2E3A\u2E3A\u2014", 12)};
-    TEST(u"  \u2E3A\u2E3A\u2014")        .with(wtable)   &={strf::right(u"\u2E3A\u2E3A\u2014", 12)};
-    TEST(U"  \u2E3A\u2E3A\u2014")        .with(wtable)   &={strf::right(U"\u2E3A\u2E3A\u2014", 12)};
-    TEST(L"  \u2E3A\u2E3A\u2014")        .with(wtable)   &={strf::right(L"\u2E3A\u2E3A\u2014", 12)};
-    TEST( "  \u2E3A\u2E3A\u2014")        .with(wtable)   &={strf::right(u"\u2E3A\u2E3A\u2014", 12)};
-    TEST(u"  \u2E3A\u2E3A\u2014")        .with(wtable)   &={strf::right( "\u2E3A\u2E3A\u2014", 12)};
+    TEST(u8"  \u2E3A\u2E3A\u2014")        .with(wtable)   &={strf::right(u8"\u2E3A\u2E3A\u2014", 12)};
+    TEST( u"  \u2E3A\u2E3A\u2014")        .with(wtable)   &={strf::right( u"\u2E3A\u2E3A\u2014", 12)};
+    TEST( U"  \u2E3A\u2E3A\u2014")        .with(wtable)   &={strf::right( U"\u2E3A\u2E3A\u2014", 12)};
+    TEST( L"  \u2E3A\u2E3A\u2014")        .with(wtable)   &={strf::right( L"\u2E3A\u2E3A\u2014", 12)};
+    TEST(u8"  \u2E3A\u2E3A\u2014")        .with(wtable)   &={strf::right( u"\u2E3A\u2E3A\u2014", 12)};
+    TEST( u"  \u2E3A\u2E3A\u2014")        .with(wtable)   &={strf::right(u8"\u2E3A\u2E3A\u2014", 12)};
 
-    TEST( "         \u2E3A\u2E3A\u2014") .with(cp_count) &={strf::right( "\u2E3A\u2E3A\u2014", 12)};
-    TEST(u"         \u2E3A\u2E3A\u2014") .with(cp_count) &={strf::right(u"\u2E3A\u2E3A\u2014", 12)};
-    TEST(U"         \u2E3A\u2E3A\u2014") .with(cp_count) &={strf::right(U"\u2E3A\u2E3A\u2014", 12)};
-    TEST(L"         \u2E3A\u2E3A\u2014") .with(cp_count) &={strf::right(L"\u2E3A\u2E3A\u2014", 12)};
-    TEST( "         \u2E3A\u2E3A\u2014") .with(cp_count) &={strf::right( "\u2E3A\u2E3A\u2014", 12)};
-    TEST(u"         \u2E3A\u2E3A\u2014") .with(cp_count) &={strf::right(u"\u2E3A\u2E3A\u2014", 12)};
+    TEST(u8"         \u2E3A\u2E3A\u2014") .with(cp_count) &={strf::right(u8"\u2E3A\u2E3A\u2014", 12)};
+    TEST( u"         \u2E3A\u2E3A\u2014") .with(cp_count) &={strf::right( u"\u2E3A\u2E3A\u2014", 12)};
+    TEST( U"         \u2E3A\u2E3A\u2014") .with(cp_count) &={strf::right( U"\u2E3A\u2E3A\u2014", 12)};
+    TEST( L"         \u2E3A\u2E3A\u2014") .with(cp_count) &={strf::right( L"\u2E3A\u2E3A\u2014", 12)};
+    TEST(u8"         \u2E3A\u2E3A\u2014") .with(cp_count) &={strf::right(u8"\u2E3A\u2E3A\u2014", 12)};
+    TEST( u"         \u2E3A\u2E3A\u2014") .with(cp_count) &={strf::right( u"\u2E3A\u2E3A\u2014", 12)};
 
-    TEST( "   \u2E3A\u2E3A\u2014")                    &={strf::right( "\u2E3A\u2E3A\u2014", 12)};
-    TEST(u"         \u2E3A\u2E3A\u2014")              &={strf::right(u"\u2E3A\u2E3A\u2014", 12)};
-    TEST(U"         \u2E3A\u2E3A\u2014")              &={strf::right(U"\u2E3A\u2E3A\u2014", 12)};
+    TEST(u8"   \u2E3A\u2E3A\u2014")                    &={strf::right(u8"\u2E3A\u2E3A\u2014", 12)};
+    TEST( u"         \u2E3A\u2E3A\u2014")              &={strf::right( u"\u2E3A\u2E3A\u2014", 12)};
+    TEST( U"         \u2E3A\u2E3A\u2014")              &={strf::right( U"\u2E3A\u2E3A\u2014", 12)};
 
-    TEST(u"   \u2E3A\u2E3A\u2014")                    &={strf::right( "\u2E3A\u2E3A\u2014", 12)};
-    TEST( "         \u2E3A\u2E3A\u2014")              &={strf::right(u"\u2E3A\u2E3A\u2014", 12)};
-    TEST( "         \u2E3A\u2E3A\u2014")              &={strf::right(U"\u2E3A\u2E3A\u2014", 12)};
-    TEST(u"         \u2E3A\u2E3A\u2014")              &={strf::right(U"\u2E3A\u2E3A\u2014", 12)};
+    TEST( u"   \u2E3A\u2E3A\u2014")                    &={strf::right(u8"\u2E3A\u2E3A\u2014", 12)};
+    TEST(u8"         \u2E3A\u2E3A\u2014")              &={strf::right( u"\u2E3A\u2E3A\u2014", 12)};
+    TEST(u8"         \u2E3A\u2E3A\u2014")              &={strf::right( U"\u2E3A\u2E3A\u2014", 12)};
+    TEST( u"         \u2E3A\u2E3A\u2014")              &={strf::right( U"\u2E3A\u2E3A\u2014", 12)};
 
     return report_errors() || boost::report_errors();
 }

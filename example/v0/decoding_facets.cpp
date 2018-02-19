@@ -6,15 +6,15 @@ void input_ouput_different_char_types()
     //[input_ouput_different_char_types
     namespace strf = boost::stringify::v0;
 
-    auto xstr   = strf::make_string()    = {"aaa-", u"bbb-", U"ccc-", L"ddd"};
-    auto xstr16 = strf::make_u16string() = {"aaa-", u"bbb-", U"ccc-", L"ddd"};
-    auto xstr32 = strf::make_u32string() = {"aaa-", u"bbb-", U"ccc-", L"ddd"};
-    auto wxstr  = strf::make_wstring()   = {"aaa-", u"bbb-", U"ccc-", L"ddd"};
+    auto str   = strf::make_string()    &= {"aaa-", u"bbb-", U"ccc-", L"ddd"};
+    auto str16 = strf::make_u16string() &= {"aaa-", u"bbb-", U"ccc-", L"ddd"};
+    auto str32 = strf::make_u32string() &= {"aaa-", u"bbb-", U"ccc-", L"ddd"};
+    auto wstr  = strf::make_wstring()   &= {"aaa-", u"bbb-", U"ccc-", L"ddd"};
     
-    BOOST_ASSERT(xstr.value()   ==  "aaa-bbb-ccc-ddd");
-    BOOST_ASSERT(xstr16.value() == u"aaa-bbb-ccc-ddd");
-    BOOST_ASSERT(xstr32.value() == U"aaa-bbb-ccc-ddd");
-    BOOST_ASSERT(wxstr.value()  == L"aaa-bbb-ccc-ddd");
+    BOOST_ASSERT(str   ==  "aaa-bbb-ccc-ddd");
+    BOOST_ASSERT(str16 == u"aaa-bbb-ccc-ddd");
+    BOOST_ASSERT(str32 == U"aaa-bbb-ccc-ddd");
+    BOOST_ASSERT(wstr  == L"aaa-bbb-ccc-ddd");
     //]
 }
 

@@ -8,6 +8,7 @@
 [import ../example/v0/custom_decoding_error_handling.cpp]
 [import ../example/v0/custom_decoder.cpp]
 
+[#decoder_facet]
 [section  Decoding UTF-8]
 
 [h4 The [^u8decoder] class template]
@@ -130,7 +131,7 @@ template <typename F>
 
 Note that the name of the three later are in plural (...[^decoder[*s]]). The return type of these depends on `sizeof(wchar_t)`. If it `sizeof(wchar_t) == 2` and `BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING` macro is not defined, then the return is an `ftuple` containing two decoders, one for `char16_t` a another for `wchar_t`.
 
-When `make_u16decoders()` or `make_u16decoder()` is used ( without argument ) the error handling is to replace each invalid sequence by the replacement character "�" ( U'\uFFFD' ).
+When `make_u16decoders()` or `make_u16decoder()` is used ( without argument ) the error handling is to replace each invalid sequence by the replacement character "\uFFFD" ( `U'\uFFFD'` ).
 
 [endsect]
 [section Customizing the decoder error handling function]

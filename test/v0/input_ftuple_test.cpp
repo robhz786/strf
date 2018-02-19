@@ -10,39 +10,29 @@ int main()
 {
     namespace strf = boost::stringify::v0;
 
-    //TODO ( as soon as there are some facet cathegories that can be used as sample )
+    auto ft1 = strf::make_ftuple
+        ( strf::monotonic_grouping<10>(3)
+        , strf::monotonic_grouping<16>(4).thousands_sep('\'')
+        , strf::monotonic_grouping<8>(6).thousands_sep('\'')
+        );
 
-    // auto fmt1 = strf::make_ftuple(strf::hex, strf::showbase, strf::fill(U'.'));
-    // auto fmt2 = strf::make_ftuple(strf::noshowbase, strf::uppercase, strf::fill(U'~'));
+    auto ft2 = strf::make_ftuple
+        ( strf::monotonic_grouping<10>(3).thousands_sep('.')
+        , strf::monotonic_grouping<16>(2).thousands_sep('^')
+        );
 
-    // TEST( "---10..0xb..0xc~~~~D~14~~~~F.0x10---17---18")
-    //     .with(strf::width(5), strf::fill(U'-'))
-    //     &= { 10
-    //        , { fmt1
-    //          , { 11, 12
-    //            , { fmt2, {13, {14, {3, "d"}}, 15}}
-    //            , 16
-    //            }
-    //          }
-    //        , 17, 18
-    //        };
-
-    // TEST( "1011") &= { 10, fmt1, {fmt2, {}}, 11 };
-
+    TEST("1,0,0,0,0 10000 1000000 10,000 1'0000 1'000000 10.000 1^00^00 1'000000")
+        .with(strf::monotonic_grouping<10>(1)) &=
+    {
+        10000, ' ', strf::hex(0x10000), ' ', strf::oct(01000000), ' ', 
+        { ft1
+        ,   { 10000, ' ', strf::hex(0x10000), ' ', strf::oct(01000000), ' ' 
+            , {ft2, {10000, ' ', strf::hex(0x10000), ' ', strf::oct(01000000)}}
+            }
+        }
+    };
 
     int rc = report_errors() || boost::report_errors();
     return rc;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 

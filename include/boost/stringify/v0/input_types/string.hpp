@@ -92,17 +92,6 @@ private:
 };
 
 
-
-struct string_input_tag_base
-{
-};
-
-template <typename CharT>
-struct string_input_tag: string_input_tag_base
-{
-};
-
-
 namespace detail {
 
 template <typename CharOut>
@@ -461,9 +450,9 @@ public:
         ) noexcept
         : string_formatter
             ( stringify::v0::string_with_format<CharIn>{begin, end}
-            , get_facet<stringify::v0::decoder_tag<CharIn>>(ft)
-            , get_facet<stringify::v0::encoder_tag<CharOut>>(ft)
-            , get_facet<stringify::v0::width_calculator_tag>(ft)
+            , get_facet<stringify::v0::decoder_category<CharIn>>(ft)
+            , get_facet<stringify::v0::encoder_category<CharOut>>(ft)
+            , get_facet<stringify::v0::width_calculator_category>(ft)
             )
     {
     }
@@ -475,9 +464,9 @@ public:
         ) noexcept
         : string_formatter
             ( input
-            , get_facet<stringify::v0::decoder_tag<CharIn>>(ft)
-            , get_facet<stringify::v0::encoder_tag<CharOut>>(ft)
-            , get_facet<stringify::v0::width_calculator_tag>(ft)
+            , get_facet<stringify::v0::decoder_category<CharIn>>(ft)
+            , get_facet<stringify::v0::encoder_category<CharOut>>(ft)
+            , get_facet<stringify::v0::width_calculator_category>(ft)
             )
     {
     }
@@ -556,6 +545,7 @@ string_formatter<CharIn, CharOut>::string_formatter
     , const stringify::v0::width_calculator& wcalc
     ) noexcept
     : m_str(begin, end, wcalc, decoder, encoder)
+    , m_fmt()
 {
 }
 

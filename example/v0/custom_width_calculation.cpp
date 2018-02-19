@@ -23,15 +23,15 @@ int main()
 
     // in UTF-8
     
-    const char* str = "\u2E3A\u2E3A\u2014";
+    const char* str = u8"\u2E3A\u2E3A\u2014";
     
     auto s_len = strf::make_string.with(width_as_len) &= {strf::right(str, 12, U'.')};
     auto s_cpc = strf::make_string.with(width_as_cpc) &= {strf::right(str, 12, U'.')};
     auto s_my  = strf::make_string.with(width_my)     &= {strf::right(str, 12, U'.')};
 
-    BOOST_ASSERT(s_len == "...\u2E3A\u2E3A\u2014");       // width = strlen(str) = 9
-    BOOST_ASSERT(s_cpc == ".........\u2E3A\u2E3A\u2014"); // width = 3
-    BOOST_ASSERT(s_my  == "..\u2E3A\u2E3A\u2014");        // width = 4 + 4 + 2 = 10
+    BOOST_ASSERT(s_len == u8"...\u2E3A\u2E3A\u2014");       // width = strlen(str) = 9
+    BOOST_ASSERT(s_cpc == u8".........\u2E3A\u2E3A\u2014"); // width = 3
+    BOOST_ASSERT(s_my  == u8"..\u2E3A\u2E3A\u2014");        // width = 4 + 4 + 2 = 10
 
     // in UTF-16
 

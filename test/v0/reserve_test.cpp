@@ -155,13 +155,6 @@ int main()
     }
     {
         std::size_t size{initial_value};
-        const auto tester = reservation_test(size);
-        auto err = tester ({"abcd"});
-        BOOST_TEST(!err);
-        BOOST_TEST(size == 4); 
-    }
-    {
-        std::size_t size{initial_value};
         const auto tester = reservation_test(size) .reserve(5555);
         tester.reserve_auto() &= {"abcd"};
         BOOST_TEST(size == 4); 
@@ -180,13 +173,6 @@ int main()
         const auto tester = reservation_test(size);
         std::move(tester).reserve(5555) &= {"abcd"};
         BOOST_TEST(size == 5555); 
-    }
-    {
-        std::size_t size{initial_value};
-        const auto tester = reservation_test(size);
-        auto err = tester ({"abcd"});
-        BOOST_TEST(! err);
-        BOOST_TEST(size == 4); 
     }
     {
         std::size_t size{initial_value};

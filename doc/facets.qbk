@@ -9,71 +9,190 @@
 [#section_facets]
 [section Facets]
 
-The facets are injected with the `with` member function:
-
-[trivial_facets_sample]
-
-It is possible to constrain a facet to only apply to certain input types: 
-
-[facet_filters]
-
-The order of the facets matters. In the presence of two or more facets of the same category that apply to the same input type, the later wins.
-
-[facet_overriding]
-
-Occasionaly you may want to reuse a certain combination of facets several times. In order to avoid  retyping it again and again, you can store it into a /ftuple/ ( a tuple of facets ).
-
-[basic_ftuple_sample]
-
-And you can create an ftuple from others ftuples:
-
-[ftuple_of_ftuple]
-
-
 [/
-ftuples may resemble `std::locale` a little, but there are two differences:
- (1) `ftuple` class template solve most things at compilation time in order to gain performance, and (2) facets here are not necessarily related to localization.
+This section aims provide a theorical background for the other sections.
+]
+While [link format_functions format functions] aim to customize some things,
+others customizations are handled by /facets/.
+Every /facet/ belongs to some /facet category/. 
+
+
+[table
+[[facet category][what it controls][where is used]]
+
+[
+[[link width_calculation `width_calculation_category`]]
+[how the width is calculated]
+[[link joins joins] and all conventional types]
 ]
 
-
-[/
-
-Each of the following sub-sections describe a facet category.
-
-Facets are policy classes that comply the [*/Requirements/] described bellow. `F` represents the class name, and `f` represents an instance of `F`. In addition to the items listed in /Requirements/, all facets must have:
-
-* A [*copy constructor]. And it should be a fast, because facets are passed by copy in many operations - especially during the construction of an ftuple. Fortunately, this should not be difficult since there is no need to provide any non-const member function. Hence if you need to implement a facet that needs to use some large complex data structure, you can just ensure that such structure never changes and then your facet can just hold a shared_ptr to it, and copy just that shared_ptr in its copy contructor, instead of the whole structure.
-
-* The [*`category`] member type. [/, which identifies the category.]
-
+[
+[[link numpunct `numpunct_category<10>`]]
+[numeric punctuation for decimal base]
+[integers and floating points numbers]
 ]
 
-[/
-If ever you implement an facet, it's important to provide a fast copy constructor, because facets are passed by copy in many operations - especially during the construction of an ftuple. Fortunately, this should not be difficult since there is no need to provide any non-const member function. So if need to implement a facet that needs to use some large complex data structure, you can just ensure that such structure never changes and then your facet can just hold a shared_ptr to it, and copy just that shared_ptr in its copy contructor, instead of the whole structure.
+[
+[[link numpunct `numpunct_category<16>`]]
+[numeric punctuation for hexadecimal base]
+[integers and floating points numbers]
 ]
 
+[
+[[link numpunct `numpunct_category<8>`]]
+[numeric punctuation for octadecimal base]
+[integers numbers]
+]
 
+[
+[[link encoder_facet `encoder_category<`[~CharT]`>`]]
+[Convertion from UTF-32 to the destination's encoding]
+[
+Only if the destination character type is [~CharT]. [br]
+It is used to encode the fill character (which is `char32_t`). [br]
+Also when the encoding of an input string differs from of the destination.
+]
+]
 
-[/
-
-Facets are policy classes. They are not based on inheritance like the facets used in std::locale. As a result, a facet may be an empty type, i.e., with size equal to 1 byte. And so it is even possible that an ftuple that contains several facets be also an empty type.
-
-
-You don't need to pay attention to the policy requirements, unless you need to implement a new facet because none of the Boost.Stringify
-
-providing the purpose, requirements, some expressions 
-
-
-The following sub-sections describe the policy requirements of each facet category. But you usually only need to know them if you extend Boost.Stringify to add support to a new input type.
-
-Because Boost.Stringify already provides expressions ( which may be functions, varaible templates, constexpr, etc ) that create facets object for most situations. Some of them instantiate empty types, usually paried with another that creates the equivalent as an non empty type, whose value can de choosed at execution time. For instance ...
-
-You will note something common in all facet policies: the member type [^category] and the member class template ...
-This is the basic requimerent for all facets.
+[
+[[link decoder_facet `decoder_category<`[~CharT]`>`]]
+[Convertion of [~CharT]-type strings to UTF-32]
+[
+Used when the encoding of an input string differs from of the destination [br]
+( because it is converted to UTF-32 and then from UTF-32 to destination encoding )
+]
+]
 
 ]
 
 
+Each facet category corresponds to a concept, /i.e./ a set of requirements that a class must satisfy. A class that satisfy such requitements is a facet of such facet category. Hence, facets are policy classes. And for each facet category there is a representative class, whose name, by convention, is the name of the category. This class aways have static member function named `get_default` which has no parameter and returns a reference to a constant object, whose type is a facet of this category. Also a facet must have member type named `category` which is an alias to the representative class of its category.
+
+For example, the `width_calculator` class is a facet:
+
+``
+namespace boost { namespace stringify { inline namespace v0 {
+
+
+struct width_calculator_category;
+
+
+class width_calculator
+{
+public:
+    using category = boost::stringify::v0::width_calculator_category;
+    // ...
+};
+
+
+struct width_calculator_category
+{
+    static const width_calculator& get_default();
+};
+
+
+}}}
+``
+In order to use a facet object, you pass it to the [link syntax_diagram `with`] member function.
+
+[basic_facet_sample]
+
+[#constrainted_facets]
+[h4 Constrained facets]
+
+Using the `constrain` function template you can instantiate /constrained facet/, which it a facet that only apply to certain input types. The template parameter of `constrain` is a template class that has one template type parameter and a `value` member constant whose type must be (or implicitly convertible to ) `bool` [/( just like those several functions in `<type_traits>` : `std::is_integral`, `std::is_floating_point`, etc )]:
+
+[constrained_facet_sample]
+
+Some type traits are provided to be used in the `constrain` function template.
+
+[table
+[[trait] [description]]
+[[`is_int_number`] [matches `short`, `int`, `long`, `long long` and the corresponding unsigned types]]
+[[`is_char`]       [matches `char`, `wchar_t`, `char16_t`, and `char32_t`]]
+[[`is_string`]     [matches strings inputs]]
+]
+
+[h4 Facets overriding]
+
+You can pass several facets in one call, as well as call `.with()` several times. Calling `.with(a, b, c)` is equivalent to `.with(a).with(b).with(c)`. If two facets objects of the same category apply to the same input type, then the later overrides the first.
+
+[facets_overriding]
+
+[#ftuple]
+[h4 The `ftuple` class template]
+The purpose of the `ftuple` class template is to group several facets objects.
+``
+template <typename ... Facets>
+class ftuple
+{
+public:
+
+    ftuple(const Facets & ...);
+    ftuple(const ftuple& );
+    ftuple(ftuple&& );
+
+    template <typename FacetCategory, typename InputType>
+    const auto& get_facet() const  {  /* ... */  }
+};
+
+``
+``
+template <typename ... Facets>
+ftuple<Facets> make_ftuple(const Facets& ... facets)
+{
+    return ftuple<Facets>{facets ...};
+}
+``
+``
+template <typename FacetCategory, typename InputType, typename ... Facets>
+constexpr const auto& get_facet(const ftuple<Facets...>& ft)
+{
+    return ft.template get_facet<FacetCategory, InputType>();
+}
+``
+Passing an ftuple to the `.with` function is equivalent to pass all the facet objects it contains ( internally they would be grouped in a ftuple anyway ).
+
+[/
+The purpose of the `ftuple` class template is similar to that of `std::locale`: to group several facets objects. The difference is that the facets here are not necessarily related to localization. And also that `ftuple` solves most of things at compilation time, very much like `std::tuple`. Passing an ftuple to the `.with` function is equivalent to pass all the facet objects it contains ( internally they would be grouped in a ftuple anyway ).
+]
+[/
+An ftuple can be created with the `make_ftuple` function template.
+]
+[/
+You can use an `ftuple` in order to group several facets objects, so that you can reuse without retyping them again and again.
+]
+[/
+You can store many facets objects into a /ftuple/ (a tuple of facets), so that you can reuse such group of facets without needing to retype them all again and again.
+]
+
+
+[table Equivalences
+[ [expression] [equivalent expression] ]
+[
+[`make_ftuple(a1, a2, ... , make_ftuple(b1, b2, ...), c1, c2, ...)`]
+[`make_ftuple(a1, a2, ... , b1, b2, ... , c1, c2, ...)`]
+]
+[
+[[~leading_expression]` .with( make_ftuple(a1, a2, ...) )` ]
+[[~leading_expression]` .with(a1, a2, ...) ` ]
+]
+[
+[[~leading_expression]` .with(a1, a2, ... , b1, b2, ...)` ]
+[[~leading_expression]` .with(a1, a2, ...) .with(b1, b2, ...) ` ]
+]
+]
+
+
+You will probably only use the `get_facet` function template if you ever extend the library for a [link extend_input.extend_input new input type]. It returns a reference to a constant facet object inside the `ftuple` that belongs to the given `FacetCategory` and that can be applied to `InputType` ( since facets can be [link constrainted_facets constrained] to apply to only certain input types ). If the `ftuple` does not contain such facet, then `FacetCategory::get_default()` is returned.
+
+[note 
+Passing a facet object to `make_ftuple` or to `constrain` creates a [_copy] of it into the `ftuple` or into the constrained facet object. In order to avoid copying, you can pass instead a [@http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper `std::reference_wrapper`]. However all facets are designed to provide a fast copy. The [link numpunct str_grouping] is probably the slowest one, since it contains internally a `std::string`.
+]
+
+
+
+[get_facet_sample]
 
 
 [endsect]

@@ -11,7 +11,9 @@ foreach(x
     custom_decoding_error_handling
     custom_encoding_error_handling
     custom_width_calculation
+    facets
     format_functions
+    ftuple_as_input
     numpunct_facets
     width_calculation_in_encoding_conversion
     decoding_facets

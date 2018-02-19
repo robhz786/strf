@@ -10,13 +10,9 @@
 
 [/ Railroad diagram generated from the EBNF below, in online generator bottlecaps.de/rr
 
-  usage ::= 'leading_expression' ( '.with(facets...)' ) * 
-                                 ( '(assembly_string)' | '()' ) ?
-                                 ( ' = { arguments... }' | '[{ arguments... }]' )
-
   usage ::= 'leading_expression'
   ( '()' | '.no_reserve()' | '.reserve(size)' | '.reserve_auto()' | '.with(facets...)' ) *
-  ( '[assembly_string]' ? ('({arguments...})' | '={arguments...}' | '&={arguments...}'))
+  ( '[assembly_string]' ? ('={arguments...}' | '&={arguments...}'))
 ]
 
 [#syntax_diagram]
@@ -47,29 +43,12 @@ The "conventional" input types are ( or will be ) supported:
 
 In addition to those, there are also some "special" input types, that are explained in another section.
 
-As shown in the diagram, there are diferent ways you can inject the arguments:
-
-[#syntax_args_form1]
-[variablelist     
-[ [ \u2022 /leading_expression/  \u00b7\u00b7\u00b7  `({`[~args ...]`})` ]
- [This expression call and returns the return the [link OutputWriterConcept `finish()`] member function of the writer object. This varies according to the leading expressiong as described [link ReturnTypes here], but should be `std::error_code` or some type that contains an `std::error_code` ( like __STD_EXPECTED__`<some_type, std::error_code>` )]
-
-
- [The disadvantage of this form is that some IDEs get cofused when identing the code. ]
- [/[*Synopsis: ]  [~implementation_defined]`::operator()(std::initializer_list<`[~implementation_defined]`>)`]
- [/[*Return: ] The return of [link OutputWriterConcept `finish()`] member function of the writer object. This varies according to the leading expressiong, as described [link ReturnTypes here]]
-]
-]
+As shown in the diagram, there two diferent ways you can inject the arguments:
 
 [#syntax_args_form2]
 [variablelist     
 [[ \u2022 /leading_expression/  \u00b7\u00b7\u00b7 ` = {`[~args ...]`}`]
- [This is equivalent to /leading_expression/  \u00b7\u00b7\u00b7  `({`[~args ...]`})`. Its  disavantange is that it requires the expression on the left to assignable. This is not the case of `make_string` which is a `constexpr`, for example. But you get an assignable expressing from it by simply calling `operator()()`, or any of others member functions ( `with()`, `reserve()`, `reserve(std::size_t)` or `no_reserve()` ):
- [make_string_is_not_assignable]
- ]
-
- [/[*Synopsis: ]  [~implementation_defined]`::operator=(std::initializer_list<`[~implementation_defined]`>)`]
- [/[*Return: ] same as [~leading_expression]  \u00b7\u00b7\u00b7  `({`[~args ...]`})`]
+ [This expression call and returns the return the [link OutputWriterConcept `finish()`] member function of the writer object. This varies according to the leading expressiong as described [link ReturnTypes here], but should be `std::error_code` or some type that contains an `std::error_code` ( like __STD_EXPECTED__`<some_type, std::error_code>` )]
 ]
 ]
 
@@ -84,6 +63,8 @@ As shown in the diagram, there are diferent ways you can inject the arguments:
 
 [note Although the two former forms ( /leading_expression/  \u00b7\u00b7\u00b7  `({`[~args ...]`})` and /leading_expression/  \u00b7\u00b7\u00b7  ` = {`[~args ...]`}` ) are based on error code, this does not mean they never throw, /i.e./ eventual exceptions are [_not] intercepted. Although the library's code does not throw anywhere ( except in [link OutputWriterConcept `finish_throw()`] definitions ), exceptions may still come from user extensions or from the destination object. For example, the expression `append_to(destination_str) = {`[~args ...]`}` may throw an `std::bad_alloc` originated from `destination_str`.]
 
+In some cases the /leading expression/ is not assignable. This is the case of `make_string` which is a `constexpr`, for example. But you can get an assignable expressing from it by simply calling `operator()()`, or any of others member functions ( `with()`, `reserve()`, `reserve(std::size_t)` or `no_reserve()` ):
+[make_string_is_not_assignable]
 
 [#syntax_reserve]
 [h3 Reserving output size]
