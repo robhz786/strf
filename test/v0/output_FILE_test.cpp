@@ -10,7 +10,7 @@
 #include "test_utils.hpp"
 #include "error_code_emitter_arg.hpp"
 #include "exception_thrower_arg.hpp"
-
+#include <climits>
 
 namespace strf = boost::stringify::v0;
 
