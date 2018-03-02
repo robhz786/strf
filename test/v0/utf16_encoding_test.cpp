@@ -83,7 +83,7 @@ int main()
     }
 
     {   // tolerate surrogates
-        auto facet = strf::make_u16encoders(true);
+        auto facet = strf::make_u16encoder<char16_t>(true);
 
         char16_t sample [] =
             {

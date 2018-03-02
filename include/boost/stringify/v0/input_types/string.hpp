@@ -127,16 +127,14 @@ private:
 };
 
 
-
 template <typename CharOut>
-class u32writer: public stringify::v0::u32output
+class encoder_adapter: public stringify::v0::u32output
 {
 public:
-    u32writer
-    (
-        const stringify::v0::encoder<CharOut>& encoder,
-        stringify::v0::output_writer<CharOut>& destination
-    )
+    encoder_adapter
+        ( const stringify::v0::encoder<CharOut>& encoder
+        , stringify::v0::output_writer<CharOut>& destination
+        )
         : m_encoder(encoder)
         , m_destination(destination)
     {
@@ -158,204 +156,124 @@ private:
     stringify::v0::output_writer<CharOut>& m_destination;
 };
 
+template <typename CharOut>
+class u32writer: public stringify::v0::u32output
+{
+public:
+
+    u32writer(stringify::v0::output_writer<CharOut>& destination)
+        : m_destination(destination)
+    {
+    }
+
+    bool put(char32_t ch) override
+    {
+        return m_destination.put(static_cast<CharOut>(ch));
+    }
+
+    void set_error(std::error_code err) override
+    {
+        m_destination.set_error(err);
+    }
+
+private:
+
+    stringify::v0::output_writer<CharOut>& m_destination;
+};
 
 template <typename CharIn, typename CharOut>
-class string_writer_decode_encode
+class string_writer
 {
     using input_tag = stringify::v0::string_input_tag<CharIn>;
 
 public:
 
-    string_writer_decode_encode
+    string_writer
         ( const CharIn* begin
         , const CharIn* end
         , const stringify::v0::width_calculator& wcalc
         , const stringify::v0::decoder<CharIn>& decoder
         , const stringify::v0::encoder<CharOut>& encoder
+//        , bool assume_wchar_encoding
         ) noexcept
         : m_begin(begin)
         , m_end(end)
         , m_wcalc(wcalc)
         , m_decoder(decoder)
         , m_encoder(encoder)
+//        , m_assume_wchar_encoding(assume_wchar_encoding)
     {
     }
 
     void write_str(stringify::v0::output_writer<CharOut>& dest) const
     {
-        stringify::v0::detail::u32writer<CharOut> c32w{m_encoder, dest};
-        m_decoder.decode(c32w, m_begin, m_end);
-    }
-
-    auto remaining_width(int w) const
-    {
-        return m_wcalc.remaining_width(w, m_begin, m_end, m_decoder);
-    }
-
-    std::size_t length() const
-    {
-        stringify::v0::detail::length_accumulator<CharOut> acc{m_encoder};
-        m_decoder.decode(acc, m_begin, m_end);
-        return acc.get_length();
-    }
-
-private:
-
-    const CharIn* m_begin;
-    const CharIn* m_end;
-
-public:
-
-    const stringify::v0::width_calculator& m_wcalc;
-    const stringify::v0::decoder<CharIn>& m_decoder;
-    const stringify::v0::encoder<CharOut>& m_encoder;
-};
-
-
-class string_writer_from32_to32
-{
-    using CharOut = char32_t;
-    using CharIn = char32_t;
-
-public:
-
-    string_writer_from32_to32
-        ( const CharIn* begin
-        , const CharIn* end
-        , const stringify::v0::width_calculator& wcalc
-        , const stringify::v0::decoder<CharIn>&
-        , const stringify::v0::encoder<CharOut>& encoder
-        ) noexcept
-        : m_begin(begin)
-        , m_end(end)
-        , m_wcalc(wcalc)
-        , m_encoder(encoder)
-    {
-    }
-
-    void write_str(stringify::v0::output_writer<CharOut>& dest) const
-    {
-        dest.put(m_begin, m_end - m_begin);
-    }
-
-    auto remaining_width(int w) const
-    {
-        return m_wcalc.remaining_width(w, m_begin, m_end);
-    }
-
-    std::size_t length() const
-    {
-        return m_end - m_begin;
-    }
-
-private:
-
-    const CharIn* m_begin;
-    const CharIn* m_end;
-
-public:
-
-    const stringify::v0::width_calculator& m_wcalc;
-    const stringify::v0::encoder<CharOut>& m_encoder;
-};
-
-
-
-template <typename CharIn, typename CharOut>
-class string_writer_reinterpret
-{
-
-public:
-
-    string_writer_reinterpret
-        ( const CharIn* begin
-        , const CharIn* end
-        , const stringify::v0::width_calculator& wcalc
-        , const stringify::v0::decoder<CharIn>& decoder
-        , const stringify::v0::encoder<CharOut>& encoder
-        ) noexcept
-        : m_begin(begin)
-        , m_end(end)
-        , m_wcalc(wcalc)
-        , m_decoder(decoder)
-        , m_encoder(encoder)
-    {
-    }
-
-    void write_str(stringify::v0::output_writer<CharOut>& dest) const
-    {
-        dest.put(reinterpret_cast<const CharOut*>(m_begin), m_end - m_begin);
-    }
-
-    auto remaining_width(int w) const
-    {
-        return m_wcalc.remaining_width(w, m_begin, m_end, m_decoder);
-    }
-
-    std::size_t length() const
-    {
-        return m_end - m_begin;
-    }
-
-private:
-
-    const CharIn* m_begin;
-    const CharIn* m_end;
-
-public:
-
-    const stringify::v0::width_calculator& m_wcalc;
-    const stringify::v0::decoder<CharIn>& m_decoder;
-    const stringify::v0::encoder<CharOut>& m_encoder;
-};
-
-
-
-template <typename CharOut>
-class string_writer_from32
-{
-    using CharIn = char32_t;
-
-public:
-
-    string_writer_from32
-        ( const CharIn* begin
-        , const CharIn* end
-        , const stringify::v0::width_calculator& wcalc
-        , const stringify::v0::decoder<CharIn>&
-        , const stringify::v0::encoder<CharOut>& encoder
-        ) noexcept
-        : m_begin(begin)
-        , m_end(end)
-        , m_wcalc(wcalc)
-        , m_encoder(encoder)
-    {
-    }
-
-    void write_str(stringify::v0::output_writer<CharOut>& dest) const
-    {
-        for(auto it = m_begin; it < m_end; ++it)
+        if (shall_skip_encoder_and_decoder())
         {
-            if( ! m_encoder.encode(dest, 1, *it))
+            dest.put(reinterpret_cast<const CharOut*>(m_begin), m_end - m_begin);
+        }
+        else if(shall_skip_decoder())
+        {
+            for(auto it = m_begin; it < m_end; ++it)
             {
-                break;
+                if( ! m_encoder.encode(dest, 1, *it))
+                {
+                    return;
+                }
             }
         }
+        else if(shall_skip_encoder())
+        {
+            stringify::v0::detail::u32writer<CharOut> writer{dest};
+            m_decoder.decode(writer, m_begin, m_end);
+        }
+        else
+        {
+            //decode and encode
+            stringify::v0::detail::encoder_adapter<CharOut> c32w{m_encoder, dest};
+            m_decoder.decode(c32w, m_begin, m_end);
+        }
     }
 
-    int remaining_width(int w) const
+    auto remaining_width(int w) const
     {
-        return m_wcalc.remaining_width(w, m_begin, m_end);
+        if (shall_skip_encoder())
+        {
+            auto begin = reinterpret_cast<const char32_t*>(m_begin);
+            auto end   = reinterpret_cast<const char32_t*>(m_end);
+            return m_wcalc.remaining_width(w, begin, end);
+        }
+        return m_wcalc.remaining_width(w, m_begin, m_end, m_decoder);
     }
 
     std::size_t length() const
     {
-        std::size_t len = 0;
-        for(auto it = m_begin; it != m_end; ++it)
+
+        if(shall_skip_encoder_and_decoder())
         {
-            len += m_encoder.length(*it);
+            return m_end - m_begin;
         }
-        return len;
+        else if(shall_skip_decoder())
+        {
+            std::size_t len = 0;
+            for(auto it = m_begin; it != m_end; ++it)
+            {
+                len += m_encoder.length(*it);
+            }
+            return len;
+        }
+        else if(shall_skip_encoder())
+        {
+            stringify::v0::u32encoder<char32_t> dummy_encoder;
+            stringify::v0::detail::length_accumulator<char32_t> acc{dummy_encoder};
+            m_decoder.decode(acc, m_begin, m_end);
+            return acc.get_length();
+        }
+        else
+        {
+            stringify::v0::detail::length_accumulator<CharOut> acc{m_encoder};
+            m_decoder.decode(acc, m_begin, m_end);
+            return acc.get_length();
+        }
     }
 
 private:
@@ -366,62 +284,32 @@ private:
 public:
 
     const stringify::v0::width_calculator& m_wcalc;
+    const stringify::v0::decoder<CharIn>& m_decoder;
     const stringify::v0::encoder<CharOut>& m_encoder;
+
+private:
+
+    constexpr static bool m_assume_wchar_encoding = true;
+
+    constexpr bool shall_skip_encoder_and_decoder() const
+    {
+        return
+            std::is_same<CharIn, CharOut>::value
+            || (m_assume_wchar_encoding && sizeof(CharIn) == sizeof(CharOut));
+    }
+
+    constexpr bool shall_skip_decoder() const
+    {
+        return std::is_same<CharIn, char32_t>::value
+            || (m_assume_wchar_encoding && sizeof(CharIn) == 4);
+    }
+
+    constexpr bool shall_skip_encoder() const
+    {
+        return std::is_same<CharOut, char32_t>::value
+            || (m_assume_wchar_encoding && sizeof(CharOut) == 4);
+    }
 };
-
-
-template <typename CharIn, typename CharOut>
-struct string_writer_helper
-{
-    using type
-    = stringify::v0::detail::string_writer_decode_encode<CharIn, CharOut>;
-};
-
-template <>
-struct string_writer_helper<char32_t, char32_t>
-{
-    using type = stringify::v0::detail::string_writer_from32_to32;
-};
-
-template <typename CharT>
-struct string_writer_helper<char32_t, CharT>
-{
-    using type = stringify::v0::detail::string_writer_from32<CharT>;
-};
-
-template <typename CharT>
-struct string_writer_helper<CharT, CharT>
-{
-    using type = stringify::v0::detail::string_writer_reinterpret<CharT, CharT>;
-};
-
-
-#if ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
-
-template <>
-struct string_writer_helper<stringify::v0::detail::wchar_equivalent, wchar_t>
-{
-    using type = stringify::v0::detail::string_writer_reinterpret
-        < stringify::v0::detail::wchar_equivalent
-        , wchar_t
-        >;
-};
-
-template <>
-struct string_writer_helper<wchar_t, stringify::v0::detail::wchar_equivalent>
-{
-    using type = stringify::v0::detail::string_writer_reinterpret
-        < wchar_t
-        , stringify::v0::detail::wchar_equivalent
-        >;
-};
-
-#endif //  ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
-
-template <typename CharIn, typename CharOut>
-using string_writer
-= typename stringify::v0::detail::string_writer_helper<CharIn, CharOut>::type;
-
 
 } // namespace detail
 
@@ -530,7 +418,13 @@ string_formatter<CharIn, CharOut>::string_formatter
     , const stringify::v0::encoder<CharOut>& encoder
     , const stringify::v0::width_calculator& wcalc
     ) noexcept
-    : m_str(input.begin(), input.end(), wcalc, decoder, encoder)
+    : m_str
+          ( input.begin()
+          , input.end()
+          , wcalc
+          , decoder
+          , encoder
+          )
     , m_fmt(input)
     , m_fillcount(input.width() > 0 ? m_str.remaining_width(input.width()) : 0)
 {

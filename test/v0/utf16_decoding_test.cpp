@@ -54,7 +54,7 @@ void char16_tests()
     // allowing alone surrogates
     {
         auto result = strf::make_u32string
-            .with(strf::make_lax_u16decoders()) &=
+            .with(strf::lax_u16decoder<char16_t>{}) &=
             { sample_with_alone_surrogates };
 
         BOOST_TEST(result[1] == 0xD800);
@@ -75,7 +75,7 @@ void char16_tests()
             };
 
         TEST_ERR(U" ", err)
-            .with(strf::make_u16decoders(err_hndl_func))
+            .with(strf::make_u16decoder<char16_t>(err_hndl_func))
             &= {sample_with_alone_surrogates};
     }
 
@@ -83,7 +83,7 @@ void char16_tests()
         auto expected_error = std::make_error_code(std::errc::illegal_byte_sequence);
 
         TEST_ERR(U"blah ", expected_error)
-            .with(strf::make_u16decoders(emit_illegal_byte_sequence))
+            .with(strf::make_u16decoder<char16_t>(emit_illegal_byte_sequence))
             &= { u"blah", sample_with_alone_surrogates, u"blah"};
     }
 
@@ -103,7 +103,7 @@ void wchar_tests()
 
     // basic sample
     TEST(U"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF")
-        .with(strf::make_u16decoders())  &=
+        .with(strf::make_u16decoder<wchar_t>())  &=
         {
             L"--\u0080--\uD7FF--\uE000--\uFFFF"
             L"--\U00100000--\U0010FFFF"
@@ -128,7 +128,7 @@ void wchar_tests()
     // allowing alone surrogates
     {
         auto result = strf::make_u32string
-            .with(strf::make_lax_u16decoders())
+            .with(strf::lax_u16decoder<wchar_t>{})
             &={ sample_with_alone_surrogates };
 
         BOOST_TEST(result[1] == 0xD800);
@@ -149,7 +149,7 @@ void wchar_tests()
             };
 
         TEST_ERR(U" ", err)
-            .with(strf::make_u16decoders(err_hndl_func))
+            .with(strf::make_u16decoder<wchar_t>(err_hndl_func))
             ={sample_with_alone_surrogates};
     }
 
