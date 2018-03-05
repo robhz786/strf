@@ -401,104 +401,6 @@ make_u16decoder()
     return {stringify::v0::decoder_err_put_replacement_char};
 }
 
-#if ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
-
-
-
-
-
-namespace detail
-{
-
-inline auto make_lax_u16decoders(std::true_type)
-{
-    return stringify::v0::make_ftuple
-        ( stringify::v0::lax_u16decoder<char16_t>{}
-        , stringify::v0::lax_u16decoder<wchar_t>{}
-        );
-}
-
-inline auto make_lax_u16decoders(std::false_type)
-{
-    return stringify::v0::lax_u16decoder<char16_t>{};
-}
-
-
-template <typename ErrHandlingFunc>
-auto make_u16decoders(ErrHandlingFunc err_func, std::true_type)
-{
-    return stringify::v0::make_ftuple
-        ( stringify::v0::u16decoder<char16_t, ErrHandlingFunc>{err_func}
-        , stringify::v0::u16decoder<wchar_t, ErrHandlingFunc>{err_func}
-        );
-}
-
-
-template <typename ErrHandlingFunc>
-auto make_u16decoders(ErrHandlingFunc err_func, std::false_type)
-{
-    return stringify::v0::u16decoder<char16_t, ErrHandlingFunc>{err_func};
-}
-
-
-inline auto make_u16decoders(std::true_type)
-{
-    auto func = stringify::v0::decoder_err_put_replacement_char;
-    return stringify::v0::make_ftuple
-        ( stringify::v0::u16decoder<char16_t, stringify::v0::decoder_err_func>{func}
-        , stringify::v0::u16decoder<wchar_t, stringify::v0::decoder_err_func>{func}
-        );
-}
-
-inline auto make_u16decoders(std::false_type)
-{
-    return stringify::v0::u16decoder<char16_t, stringify::v0::decoder_err_func>
-    {stringify::v0::decoder_err_put_replacement_char};
-}
-
-} // namespace detail
-
-inline auto make_lax_u16decoders()
-{
-    return stringify::v0::detail::make_lax_u16decoders
-        (stringify::v0::detail::wchar_is_16);
-}
-
-inline auto make_u16decoders()
-{
-    return stringify::v0::detail::make_u16decoders
-        (stringify::v0::detail::wchar_is_16);
-}
-
-template <typename ErrHandlingFunc>
-auto make_u16decoders(ErrHandlingFunc err_func)
-{
-    return stringify::v0::detail::make_u16decoders
-        (err_func, stringify::v0::detail::wchar_is_16);
-}
-
-#else  // if defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
-
-inline auto make_lax_u16decoders()
-{
-    return stringify::v0::lax_u16dcoder<char16_t>{};
-}
-
-inline auto make_u16decoders()
-{
-    return stringify::v0::detail::make_u16decoder<char16_t>();
-}
-
-template <typename ErrHandlingFunc>
-auto make_u16decoders(ErrHandlingFunc err_func)
-{
-    return stringify::v0::detail::make_u16decoder<char16_t>(err_func);
-}
-
-
-#endif // defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
-
-
 template <typename CharT>
 class u32decoder: public stringify::v0::decoder<CharT>
 {
@@ -558,14 +460,13 @@ template <> struct decoder_category<char32_t>
     }
 };
 
-#if ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
 
 template <> struct decoder_category<wchar_t>
 {
 
     static const auto& get_default() noexcept
     {
-        return get_default(stringify::v0::detail::wchar_is_32);
+        return get_default(stringify::v0::detail::wchar_equivalent{});
     }
 
 private:
@@ -575,13 +476,13 @@ private:
     using wstr_decoder_u32 =
         stringify::v0::u32decoder<wchar_t>;
 
-    static const wstr_decoder_u32& get_default(std::true_type) noexcept
+    static const wstr_decoder_u32& get_default(char32_t) noexcept
     {
         const static wstr_decoder_u32 x{};
         return x;
     }
 
-    static const wstr_decoder_u16& get_default(std::false_type) noexcept
+    static const wstr_decoder_u16& get_default(char16_t) noexcept
     {
         const static wstr_decoder_u16 x
             { stringify::v0::decoder_err_put_replacement_char };
@@ -589,9 +490,6 @@ private:
     }
 
 };
-
-#endif // ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
-
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
@@ -602,13 +500,13 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 class u16decoder<char16_t, stringify::v0::decoder_err_func>;
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class u16decoder<wchar_t, stringify::v0::decoder_err_func>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 class u32decoder<char32_t>;
 
-#if ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
-
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class u32decoder<wchar_t>;
-
-#endif // ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class u32decoder<wchar_t>;
 
 #endif //  defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 

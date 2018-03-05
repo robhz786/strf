@@ -25,7 +25,7 @@ Boost.Stringify is a locale-independent format library with some unique features
 * It supports many [link output_types.output_types destination types]
 * It is highly extensible.
     * When adding [link extend_input.extend_input new input types], you can create your own new format options, as well as new [link section_facets facet categories]
-    * You can also add [link extend_output.extend_output new destination types]. If you work, for instance, with some non standard string type ( as it is usual in C++ ), you will probably find it easy to extend Boost.Stringify to write into this string type.
+    * You can also add [link extend_output.extend_output new destination types]. If you work, for instance, with some non standard string type ( as is usual in C++ ), you will probably find it easy to extend Boost.Stringify to write into this string type.
 
 
 [/

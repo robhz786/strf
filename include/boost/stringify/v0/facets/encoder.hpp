@@ -332,65 +332,20 @@ u16encoder<CharT, F> make_u16encoder
     return {err_func, tolerate_surrogates};
 }
 
-#if ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
-
-namespace detail
-{
-
-inline auto make_u16encoders(bool tolerate_surrogates, std::true_type)
-{
-    return stringify::v0::make_ftuple
-        ( stringify::v0::u16encoder<char16_t>
-              { put_utf16_replacement_char<char16_t>
-              , tolerate_surrogates }
-        , stringify::v0::u16encoder<wchar_t>
-              { put_utf16_replacement_char<wchar_t>
-              , tolerate_surrogates }
-        );
-}
-
-inline auto make_u16encoders(bool tolerate_surrogates, std::false_type)
-{
-    return stringify::v0::u16encoder<char16_t>
-              { put_utf16_replacement_char<char16_t>
-              , tolerate_surrogates };
-}
-
-} // namespace detail
-
-inline auto make_u16encoders(bool tolerate_surrogates = false)
-{
-    return stringify::v0::detail::make_u16encoders
-        ( tolerate_surrogates
-        , stringify::v0::detail::wchar_is_16
-        );
-}
-
-#else // defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
-
-inline auto make_u16encoders(bool tolerate_surrogates = false)
-{
-    return stringify::v0::u16encoder<char16_t>
-              { put_utf16_replacement_char<char16_t>
-              , tolerate_surrogates };
-}
-
-#endif // defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
-
 template <typename CharT>
-class utf32_to_utf32: public stringify::v0::encoder<CharT>
+class u32encoder: public stringify::v0::encoder<CharT>
 {
 public:
 
-    utf32_to_utf32()
+    u32encoder()
     {
     }
 
-    utf32_to_utf32(const utf32_to_utf32&)
+    u32encoder(const u32encoder&)
     {
     }
 
-    ~utf32_to_utf32() = default;
+    ~u32encoder() = default;
 
     std::size_t length(char32_t) const noexcept override
     {
@@ -455,37 +410,34 @@ template <> struct encoder_category<char32_t>
 {
     static const auto& get_default() noexcept
     {
-        const static stringify::v0::utf32_to_utf32<char32_t> x {};
+        const static stringify::v0::u32encoder<char32_t> x {};
         return x;
     }
 };
-
-#if ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
 
 template <> struct encoder_category<wchar_t>
 {
     static const auto& get_default() noexcept
     {
-        constexpr bool wchar_is_32 = sizeof(wchar_t) == sizeof(char32_t);
-        return get_default(std::integral_constant<bool, wchar_is_32>{});
+        return get_default(stringify::v0::detail::wchar_equivalent{});
     }
 
 private:
 
-    using utf32_impl = stringify::v0::utf32_to_utf32<wchar_t>;
+    using utf32_impl = stringify::v0::u32encoder<wchar_t>;
 
     using utf16_impl = stringify::v0::u16encoder
               < wchar_t
               , stringify::v0::from_utf32_err_func<wchar_t>
               >;
 
-    static const utf32_impl& get_default(std::true_type) noexcept
+    static const utf32_impl& get_default(char32_t) noexcept
     {
         const static utf32_impl x {};
         return x;
     }
 
-    static const utf16_impl& get_default(std::false_type) noexcept
+    static const utf16_impl& get_default(char16_t) noexcept
     {
         const static utf16_impl x
             { stringify::v0::put_utf16_replacement_char<wchar_t> };
@@ -495,9 +447,6 @@ private:
 
 };
 
-#endif // ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
-
-
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
@@ -506,16 +455,14 @@ class u8encoder<stringify::v0::from_utf32_err_func<char>>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 class u16encoder<char16_t, stringify::v0::from_utf32_err_func<char16_t>>;
 
-
-#if ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
-
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE
-class utf32_to_utf32<wchar_t>;
-
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 class u16encoder<wchar_t, stringify::v0::from_utf32_err_func<wchar_t>>;
 
-#endif // ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class u32encoder<wchar_t>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class u32encoder<char32_t>;
 
 
 #endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)

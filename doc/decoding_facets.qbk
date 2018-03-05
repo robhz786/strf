@@ -9,9 +9,127 @@
 [import ../example/v0/custom_decoder.cpp]
 
 [#decoder_facet]
-[section  Decoding UTF-8]
+[section:decoders Decoding facets]
 
-[h4 The [^u8decoder] class template]
+These are the facets used to decode input strings. By using a different facet instead of the default you can specify which is the input encoding, as well as how erroneous input is handled.
+
+Here, the facet category is an instance of the `decoding_category` template:
+
+``
+template <typename CharT> struct decoding_category;
+``
+The table below lists the facets that this library currently provides. You are not limited to them since you can also implement your own facets.
+[table
+
+[[facet category] [facets this library provides] [default facet object]]
+
+[
+[`decoding_category<char>`]
+[
+  [link decoding_facets.decoders.u8decoder `u8decoder`] class template
+  (where you can choose beetween UTF-8,
+   [@https://en.wikipedia.org/wiki/UTF-8#WTF-8 WTF-8] or
+   [@https://en.wikipedia.org/wiki/UTF-8#Modified_UTF-8 Modified UTF-8]
+  )
+]
+[
+  An object identical as the return of
+  [link decoding_facets.decoders.u8decoder.make_u8decoder `make_u8decoder`]`()`
+]
+]
+
+[
+[`decoding_category<char16_t>`]
+[
+  [link decoding_facets.decoders.u16decoders.u16decoder `u16decoder`] and
+  [link decoding_facets.decoders.u16decoders.lax_u16decoder `lax_16decoder`] class template
+]
+[
+  An object identical as the return of
+  [link decoding_facets.decoders.u16decoders.make_u16decoder `make_u16decoder`]`<char16_t>()`
+]
+]
+
+
+[
+[`decoding_category<char32_t>`]
+[[link decoding_facets.decoders.u32decoder `u32decoder`]`<char32_t>` class]
+[An instance of [link decoding_facets.decoders.u32decoder `u32decoder`]`<char32_t>`]
+]
+
+
+[
+[`decoding_category<wchar_t>`]
+[
+  If `sizeof(wchar_t) == 2` :
+  [link decoding_facets.decoders.u16decoders.u16decoder `u16decoder`] and
+  [link decoding_facets.decoders.u16decoders.lax_u16decoder `lax_16decoder`] class templates[br]
+  If `sizeof(wchar_t) == 4` : [link decoding_facets.decoders.u32decoder `u32decoder`]`<wchar_t>`
+  class
+]
+[
+  If `sizeof(wchar_t) == 2` : an object identical as the return of
+  [link decoding_facets.decoders.u16decoders.make_u16decoder `make_u16decoder`]`<wchar_t>()`
+[br]
+  If `sizeof(wchar_t) == 4` : an instance of
+  [link decoding_facets.decoders.u32decoder `u32decoder`]`<wchar_t>`
+]
+]
+
+]
+
+[section Requirements of the `decoder_category<`[~CharT]`>` category]
+
+A facet of the `decoder_category<`[~CharT]`>` category shall:
+
+* derives from `decoder<CharT>` class
+* be non-abstract and [@http://en.cppreference.com/w/cpp/concept/CopyConstructible CopyConstructible] ( as in all facet categories )
+
+[h4 The [^decoder] class template]
+``
+template <typename CharT> class decoder
+{
+public:
+
+    using category = decoder_category<CharT>;
+
+    virtual ~decoder();
+
+    virtual void decode
+        ( u32output& destinaion
+        , const CharT* begin
+        , const CharT* end
+        ) const = 0;
+};
+``
+
+The [*`decode`] member function shall reads the string contained in `[begin, end)`, and calls `u32output::put` for each code point.
+
+[#u32output]
+[h4 The [^u32output] class]
+``
+class u32output
+{
+public:
+
+    virtual ~u32output();
+
+    virtual bool put(char32_t ch) = 0;
+
+    virtual void set_error(std::error_code err) = 0;
+};
+``
+
+[#example_custom_decoder]
+[h4 Example]
+
+This is an example of how to implement a decoder that expects the input in [@https://en.wikipedia.org/wiki/ISO/IEC_8859-7 ISO/IEC 8859-7]
+
+[custom_decoder]
+[endsect]
+
+
+[section:u8decoder The [^u8decoder] class template]
 
 An instance of the `u8decoder` class template is a facet that decodes UTF-8.
 
@@ -45,9 +163,9 @@ The `error_handling_function` argument passed in the constructor is a function o
 
 * `tolerate_overlong` \u2014 Allow [@https://en.wikipedia.org/wiki/UTF-8#Overlong_encodings overlong byte sequences].
 * `mutf8` \u2014 Allow the byte sequence `"\xC0\x80"` as valid, converting it to `U'\0'`.
-* `wtf8` \u2014 Allow the encodings of the surrogates halves.
+* `wtf8` \u2014 Allow the surrogates halves ( codepoints from U+D800 to U+DFFF )
 
-[h4 Helper functions]
+[h4:make_u8decoder Helper functions]
 
 The library provides two helper functions to instantiate UTF-8 decoding facets:
 ``
@@ -65,11 +183,13 @@ When `make_u8decoder()` is used ( without any argument ) the decoder is initiali
 [utf8_decoding_options]
 
 [endsect]
-[section Decoding UTF-16]
+
+
+[section:u16decoders The [^u16decoder] and [^lax_u16decoder] class templates]
 
 The library provides two UTF-16 decoders: The `u16decoder` and `lax_u16decoder` class templates.
 
-[h4 The [^u16decoder] class template]
+[h4:u16decoder The [^u16decoder] class template]
 
 ``
 template <typename CharT, typename F>
@@ -86,9 +206,9 @@ public:
 }
 ``
 
-An instance of the `u16decoder` class template is a facet that decodes UTF-16. It considers an error when a high surrogate is not followed by a low surrogate, as well as when a low surragate is not preceded by a high surrogate. When this happens, it calls the error handling function object defined in its construction. 
+An instance of the `u16decoder` class template is a facet that decodes UTF-16. It considers an error when a high surrogate is not followed by a low surrogate, as well as when a low surragate is not preceded by a high surrogate. When this happens, it calls the error handling function object passed in its construction. 
 
-[h4 The [^lax_u16decoder] class template]
+[h4:lax_u16decoder The [^lax_u16decoder] class template]
 
 The `lax_u16decoder` on the other hand never considers the input as invalid. If a high surrogate is not followed by a low surrogate, then it simply produces a `char32_t` with the same value, even if this is considered an illegal code point. The same happens when a low surragate is not preceded by a high surrogate.
 
@@ -104,40 +224,27 @@ public:
     void decode(u32output& dest, const CharT* begin, const CharT* end) const override;
 }
 ``
-[h4 Helper functions]
+[h4:make_u16decoder Helper functions]
 
 The library provides the following helper function templates to instatiate UTF-16 decoders:
 ``
 // Creates a u16decoder with the default error handler
 template <typename CharT>
-u16decoder<bool(*)(u32output&)> make_u16decoder();
+u16decoder<CharT, bool(*)(u32output&)> make_u16decoder();
 ``
 ``
 template <typename CharT, typename F>
 // requires requires(F func, u32output& out) {{func(out)} -> bool;};
-u16decoder<F> make_u16decoder(F error_handling_funcion);
-``
-``
-/* implementation defined */ make_lax_u16decoders();
-``
-``
-/* implementation defined */ make_u16decoders();
-``
-``
-template <typename F>
-// requires requires(F func, u32output& out) {{func(out)} -> bool;};
-/* implementation defined */ make_u16decoders(F error_handling_function);
+u16decoder<CharT, F> make_u16decoder(F error_handling_funcion);
 ``
 
-Note that the name of the three later are in plural (...[^decoder[*s]]). The return type of these depends on `sizeof(wchar_t)`. If it `sizeof(wchar_t) == 2` and `BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING` macro is not defined, then the return is an `ftuple` containing two decoders, one for `char16_t` a another for `wchar_t`.
-
-When `make_u16decoders()` or `make_u16decoder()` is used ( without argument ) the error handling is to replace each invalid sequence by the replacement character "\uFFFD" ( `U'\uFFFD'` ).
+When `make_u16decoder()` is used ( without argument ) the error handling is to replace each invalid sequence by the replacement character "\uFFFD" ( `U'\uFFFD'` ).
 
 [endsect]
-[section Customizing the decoder error handling function]
+[section Customizing the decoder error handling function ( for `u8decoder` and `u16decoder` )]
 
 As already mentioned, the default error handling is to translate the invalid sequence by a
-"\uFFFD" character ( `U'\uFFFD'` ). However you can write and error handler that behaves differently.
+"\uFFFD" character ( `U'\uFFFD'` ). However you can write and error handler that does something differently.
 The error handler of a
 [@http://en.cppreference.com/w/cpp/concept/CopyConstructible CopyConstructible]
 and [@http://en.cppreference.com/w/cpp/concept/Callable Callable] type.
@@ -149,93 +256,40 @@ If you want an error handler that
 
 * replaces the invalid input sequence by some other character, then write a handler that calls [link u32output `u32output`]`::put` and returns `true`.
 * that causes a certain `std::error_code` to be returned, then write a handler that calls [link u32output `u32output`]`::set_error` and returns `false`.
-* thats throws an exception, then write a handler that throws such exception.
+* thats throws an exception, then write a handler that, well, just throws such exception.
 
 [h4 Example]
 
 [custom_decoding_error_handling]
 
 [endsect]
-[section How to implement your own decoder]
 
-You need to create a non abstract, [@http://en.cppreference.com/w/cpp/concept/CopyConstructible CopyConstructible] class that inherits from [^decoder<][~CharT][^>], where [~CharT] is `char`, `wchar_t`, `char16_t` or `char32_t`.
+[section:u32decoder The `u32decoder` class template]
 
+This class template exists and is mentioned here just for completeness. What it does is to convert UTF-32 into, well, UTF-32. It has to exists in order to avoid compilation/linkage error, since every category needs a default facet object.
 
-[h4 The [^decoder] class template]
-``
-template <typename CharT> class decoder
-{
-public:
-
-    using category = decoder_tag<CharT>;
-
-    virtual ~decoder();
-
-    virtual void decode
-        ( u32output& destinaion
-        , const CharT* begin
-        , const CharT* end
-        ) const = 0;
-};
-``
-
-The [*`decode`] member function shall reads the string contained in `[begin, end)`, and calls `u32output::put` for each code point.
-
-[#u32output]
-[h4 The [^u32output] class]
-``
-class u32output
-{
-public:
-
-    virtual ~u32output();
-
-    virtual bool put(char32_t ch) = 0;
-
-    virtual void set_error(std::error_code err) = 0;
-};
-``
-
-[h4 Example]
-
-[custom_decoder]
+It is not actually used when translating an UTF-32 input into some other encoding, sice the decoding process is skipped in this case.
 
 [/
+Also if you define the [link encoding_convertion.encoding_convertion `BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING`] but don't provide a decoder for `wchar_t`, then `u32decoder<wchar_t>` is used ( assuming `sizeof(char32_t) == 4` ).
 
-
-``
-template <typename F>
-concept DecoderErrHandlingFunc
-    = std::CopyConstructable
-   && requires(F f, stringify::u32output& out) { {f(out)} -> bool; }
-
-template <DecoderErrHandlingFunc ErrHandlingFunc> class u8decoder;
-``
-[h4 Member functions]
-
-* `tolerate_overlong`
-* `mutf8` 
-* `wtf8`
-
-[h4 ]
-
-* `make_u8decoder()`
-* `make_u8decoder(err_func)`
-
-
-
-[h4 Requirements]
-``
-    template <typename T, typename CharT>
-    concept Decoder
-        = std::CopyConstructable<T>
-       && std::Destructable<T>;
-       && std::is_base_of<T, stringify::decoder<CharT>>::value;
-``
-the `decoder` class template is defined as:
-
-[decoder_class_template]
-
+It is not used during the process of translating an input string based on `char32_t` into destination based on `char`, for example, since the decoding process is skipped in this case.
 ]
+
+``
+template <typename CharT> 
+class u32decoder: public decoder<CharT>
+{
+public:
+    void decode
+        ( u32output& dest
+        , const CharT* str
+        , const CharT* end
+        ) const override;
+};
+``
+
+[endsect]
+
 
 [endsect]

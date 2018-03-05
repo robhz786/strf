@@ -53,7 +53,7 @@ int main()
 
     {   // invalid UTF-16 / replace
         auto xstr = strf::make_u32string
-            .with(strf::make_u16decoders(replace_by_X)) = { u16input };
+            .with(strf::make_u16decoder<char16_t>(replace_by_X)) = { u16input };
 
         BOOST_ASSERT(xstr.value() == U"blah blah X blah");
     }

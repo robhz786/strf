@@ -9,4 +9,4 @@ Master   | [![Build Status](https://travis-ci.org/robhz786/stringify.svg?branch=
 
 Documentation: http://robhz786.github.io/stringify/doc/html/
 
-Version: 0.5.0
+Version: 0.5.1

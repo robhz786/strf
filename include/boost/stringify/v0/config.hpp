@@ -97,8 +97,6 @@ BOOST_STRINGIFY_V0_NAMESPACE_END;
 #endif //! defined(BOOST_STRINGIFY_HAS_STD_OPTIONAL)
 
 
-#if ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
-
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail
 {
@@ -109,12 +107,7 @@ using wchar_equivalent =
     typename std::conditional<sizeof(wchar_t) == 4, char32_t, char16_t>::type;
 
 }
-
 BOOST_STRINGIFY_V0_NAMESPACE_END
-
-#endif // ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
-
-
 
 #endif  // BOOST_STRINGIFY_V0_CONFIG_HPP
 
