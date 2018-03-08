@@ -52,18 +52,18 @@
 
 where:
 
-* [~limit] is `std::size_t`. It determinates the maximum number of characters that can be written, including the termination character.
-* [~countptr] is `std::size_t*` and is optional. The number of succefully written characters will be assigned to [~*countptr].
+* [~limit] is `std::size_t`. It determines the maximum number of characters that can be written, including the termination character.
+* [~countptr] is `std::size_t*` and is optional. The number of successfully written characters will be assigned to [~*countptr].
 * [~end] is [~CharT]*
 * [~CharT] can be `char`, `char16_t`, `char32_t` or `wchar_t`
-* " [*\u00b7\u00b7\u00b7] " is the remaining part of the expression. It is anything that comes after the /leading expression/ are ilustraded [link syntax_diagram here].
+* " [*\u00b7\u00b7\u00b7] " is the remaining part of the expression. It is anything that comes after the /leading expression/ are illustrated [link syntax_diagram here].
 
 [h3 Effect]
 
 * 1) Append to string.
 * 2) Assign to string.
 * 3-7) Generate string.
-* 8) Write raw string. Write at most [~limit] characters, including the terminating null character, which is aways written, except if [~limit]` == 0`.
+* 8) Write raw string. Write at most [~limit] characters, including the terminating null character, which is always written, except if [~limit]` == 0`.
 * 9) Same as `write_to(`[~destination]`, `[~end]` - `[~destination]`, `[~countptr]`)`.
 * 10) Same as `write_to(`[~destination]`, `[~size]`, `[~countptr]`)`.
 * 11) Write content to `std::basic_streambuf`.
@@ -91,12 +91,12 @@ This does not mean that others types of exception may not be thrown. For example
 
 [h3 On error]
 * 1) Nothing is appended.
-* 2) [~destination] becames empty.
+* 2) [~destination] becomes empty.
 * 8 - 10) [~destination]`[0]` is set to `'\0'`, unless [~limit] is `0`. 
 
 [h3 Notes]
 
-* 1-7) An adequate capacity is reserved before writting any character so that at most only one memory allocation happens inside the destination string.
+* 1-7) An adequate capacity is reserved before writing any character so that at most only one memory allocation happens inside the destination string.
 * 7) [~Allocator] is optional. If omitted, it is `std::allocator<`[~CharT]`>`
 * 7-10) [~Traits] is optional. If omitted, it is `std::char_traits<`[~CharT]`>`
 * 12) [~CharT] is optional. If omitted, it is `char`

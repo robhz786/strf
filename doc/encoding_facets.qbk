@@ -10,14 +10,14 @@
 
 [section:encoders Encoding facets]
 
-This are the facets used to encode the output. By using a different facet instead of the default you can specify which is the output encoding, as well as how invalid codepoints are handled.
+This are the facets used to encode the output. By using a different facet instead of the default you can specify which is the output encoding, as well as how invalid code points are handled.
 
-Here the facet category is an insntace of the `encoding_category` template;
+Here the facet category is an instance of the `encoding_category` template;
 
 ``
 template <typename CharT> struct encoding_category;
 ``
-The table below lists the facets the library corrently provides. You are not limited to those, since you can implement your own facets.
+The table below lists the facets the library currently provides. You are not limited to those, since you can implement your own facets.
 
 [table
 
@@ -137,9 +137,9 @@ public:
 };
 
 ``
-`u8encoder<F>::encode(destination, count, ch)` writes `count` times into `destination` the code point `ch`, if it is a valid code point. Otherwise it calls and returns `error_handling_function(destination, count)`. It return `false` on the ocurrence of a such failure that there is not point in writing anything else.
+`u8encoder<F>::encode(destination, count, ch)` writes `count` times into `destination` the code point `ch`, if it is a valid code point. Otherwise it calls and returns `error_handling_function(destination, count)`. It return `false` on the occurrence of a such failure that there is not point in writing anything else.
 
-The `wtf8` flag determinates wheter the surrogates halves ( the code points in the range U+D800 to U+DFFF ) are considered valid ( if it's `true` then they valid ). The code points greater than U+10FFFF are aways considered invalid. 
+The `wtf8` flag determines whether the surrogates halves ( the code points in the range U+D800 to U+DFFF ) are considered valid ( if it's `true` then they valid ). The code points greater than U+10FFFF are always considered invalid. 
 
 
 [h4:make_u8encoder Helper functions]
@@ -204,9 +204,9 @@ public:
 
 };
 ``
-`u16encoder<F>::encode(destination, count, ch)`  writes `count` times into `destination` the code point `ch`, if it is a valid code point. Otherwise it calls and returns `error_handling_function(destination, count)`. `false` is returned on the ocurrence of a such failure that there is not point in writing anything else into `destination`.
+`u16encoder<F>::encode(destination, count, ch)`  writes `count` times into `destination` the code point `ch`, if it is a valid code point. Otherwise it calls and returns `error_handling_function(destination, count)`. `false` is returned on the occurrence of a such failure that there is not point in writing anything else into `destination`.
 
-If the the flag `tolerate_surrogates` is `true`, then the code points in the range U+D800 to U+DFFF (the surrogates halves) are allowed, and are translated just as the other code points below U+10000. The code points greater than U+10FFFF are aways considered invalid.
+If the the flag `tolerate_surrogates` is `true`, then the code points in the range U+D800 to U+DFFF (the surrogates halves) are allowed, and are translated just as the other code points below U+10000. The code points greater than U+10FFFF are always considered invalid.
 
 [h4:make_u16encoder The `make_u16encoder` helper functions]
 [#put_utf16_replacement_char]
@@ -244,7 +244,7 @@ By default, UTF-16 is encoded using `u16encoder` with the `tolerate_surrogates` 
 [section Customizing the encoder error handling function ( for `u8encoder` and `u16encoder`) ]
 
 [/
-The function object that handles the invalid code point in `u8encoder` and `u16encoder` receives two paramenters:
+The function object that handles the invalid code point in `u8encoder` and `u16encoder` receives two parameters:
 ]
 
 Both `u8encoder` and `u16encoder` receive in their constructors a function object [~`error_handling_function`] that handles invalid code points. This function receives two parameters:

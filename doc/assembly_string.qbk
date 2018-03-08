@@ -25,7 +25,7 @@
 ]
 
 [[Comments]
-[Comments are usefull for internationalization, /i.e./ when the assembly string has to be translated to another languages.
+[Comments are useful for internationalization, /i.e./ when the assembly string has to be translated to another languages.
 The translation may be the role of someone else than you. So you can add comments intended to help such person.
 ]
 [[asmstr_comment_sample]]

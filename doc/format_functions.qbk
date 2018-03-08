@@ -43,7 +43,7 @@ does not compile, since hexadecimal formatting does not apply to strings.
 ]
 
 
-[[`operator<(int width)`] [left adjustement] [all]]
+[[`operator<(int width)`] [left adjustment] [all]]
 [[`operator^(int width)`] [centered adjustment] [all]]
 [
 [`operator%(int width)`]
@@ -79,9 +79,9 @@ does not compile, since hexadecimal formatting does not apply to strings.
 
 ]
 
-[h4 Syntatic sugars]
+[h4 Syntactic sugars]
 
-[table Syntatic sugars
+[table Syntactic sugars
 [[expression] [equivalent to]]
 [[`hex(x)`][`fmt(x).hex()`]]
 [[`uphex(x)`][`fmt(x).hex().uppercase(true)`]]

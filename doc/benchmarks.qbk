@@ -8,11 +8,11 @@
 
 [note The performance is likely to degrade as the library evolves.]
 
-[section:performance Runtime performance]
+[section:performance Run-time performance]
 [section Writing to raw string]
 
 The table below shows the time it takes to execute each of the expressions of the rightmost column.
-Boost.Stringify is compared againts Boost.Karma, [@http://fmtlib.net/latest/index.html fmtlib] and sprintf.
+Boost.Stringify is compared against Boost.Karma, [@http://fmtlib.net/latest/index.html fmtlib] and sprintf.
 
 * `dest` is a `char*`
 * `strf` is `boost::stringify` namespace
@@ -192,14 +192,14 @@ Boost.Stringify is compared againts Boost.Karma, [@http://fmtlib.net/latest/inde
 * `u16sample1` is an UTF-16 string that contains 500 times the character `u'A'` ( 1 byte in UTF-8)
 * `u16sample2` is an UTF-16 string that contains 500 times the character `u'\u0100'` ( 2 bytes in UTF-8)
 * `u16sample3` is an UTF-16 string that contains 500 times the character `u'\u0800'` ( 3 bytes in UTF-8)
-* `u16sample4` is an UTF-16 string that contains 500 times the substring `u"\U00010000"` ( 4 bytes in UTF-8)
+* `u16sample4` is an UTF-16 string that contains 500 times the sub-string `u"\U00010000"` ( 4 bytes in UTF-8)
 *  You can check the source code [@../../performance/utf16_to_utf8.cpp here]
 
 [table
 
 [[time] [operation]]
 [[][]]
-[[             ][[*using Boost.Stringiy ]]]
+[[             ][[*using Boost.Stringify ]]]
 [[ 1696.90 ns  ][`boost::stringify::write_to(u8dest).with(strf::lax_u16decoder<char16_t>) = {u16sample1}`]]
 [[ 1503.04 ns  ][`boost::stringify::write_to(u8dest) = {u16sample1}`]]
 [[ 2325.99 ns  ][`boost::stringify::write_to(u8dest) = {u16sample2}`]]
@@ -220,9 +220,9 @@ Boost.Stringify is compared againts Boost.Karma, [@http://fmtlib.net/latest/inde
 *  The compiler is /gcc-7.1/ and OS is the /Ubuntu 16.04 64 bits/
 * `u16dest` is a `char16_t*`
 * `u16sample1` is an UTF-8 string that contains 500 times the character `'A'` ( 1 byte in UTF-8)
-* `u16sample2` is an UTF-8 string that contains 500 times the substring `u8"\u0100"` ( 2 bytes in UTF-8)
-* `u16sample3` is an UTF-8 string that contains 500 times the substring `u8"\u0800"` ( 3 bytes in UTF-8)
-* `u16sample4` is an UTF-8 string that contains 500 times the substring `u8"\U00010000"` ( 4 bytes in UTF-8)
+* `u16sample2` is an UTF-8 string that contains 500 times the sub-string `u8"\u0100"` ( 2 bytes in UTF-8)
+* `u16sample3` is an UTF-8 string that contains 500 times the sub-string `u8"\u0800"` ( 3 bytes in UTF-8)
+* `u16sample4` is an UTF-8 string that contains 500 times the sub-string `u8"\U00010000"` ( 4 bytes in UTF-8)
 *  You can check the source code [@../../performance/utf8_to_utf16.cpp here]
 
 [table
@@ -245,7 +245,7 @@ Boost.Stringify is compared againts Boost.Karma, [@http://fmtlib.net/latest/inde
 [endsect]
 [endsect]
 
-[section:compilation_perfomance Compilation times and generated binary size]
+[section:compilation_performance Compilation times and generated binary size]
 
 [def _COMP_BENCHMARKS_SCRIPT [@ ../../performance/compilation/run_benchmarks.py run_benchmarks.py]]
 

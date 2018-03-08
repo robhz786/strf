@@ -28,7 +28,7 @@ Example:
 
 [trivial_sample]
 
-In order to reduce code bloat and increase perfomance, it is recomended to use the assembly string if it reduces the number of arguments.
+In order to reduce code bloat and increase performance, it is recommended to use the assembly string if it reduces the number of arguments.
 
 [h3 Arguments]
 
@@ -37,25 +37,25 @@ The "conventional" input types are ( or will be ) supported:
 * an integer ( `int, long, long long, unsigned int, unsigned long or unsigned long long`)
 * a string ( a raw string or a `std::basic_string` or `std::basic_string_view`)
 * a single character
-* a boolean ['( todo )]
-* a void pointer ['( todo )]
+* a `bool` ['( todo )]
+* a `void*` ['( todo )]
 * a floating point ['( todo )]
 
 In addition to those, there are also some "special" input types, that are explained in another section.
 
-As shown in the diagram, there two diferent ways you can inject the arguments:
+As shown in the diagram, there two different ways you can inject the arguments:
 
 [#syntax_args_form2]
 [variablelist     
 [[ \u2022 /leading_expression/  \u00b7\u00b7\u00b7 ` = {`[~args ...]`}`]
- [This expression call and returns the return the [link OutputWriterConcept `finish()`] member function of the writer object. This varies according to the leading expressiong as described [link ReturnTypes here], but should be `std::error_code` or some type that contains an `std::error_code` ( like __STD_EXPECTED__`<some_type, std::error_code>` )]
+ [This expression call and returns the return the [link OutputWriterConcept `finish()`] member function of the writer object. This varies according to the leading expression as described [link ReturnTypes here], but should be `std::error_code` or some type that contains an `std::error_code` ( like __STD_EXPECTED__`<some_type, std::error_code>` )]
 ]
 ]
 
 [#syntax_args_form3]
 [variablelist
 [[ \u2022 /leading_expression/  \u00b7\u00b7\u00b7 ` &= {`[~args ...]`}`]
- [This form use exceptions instead of error codes. It calls and returns the return of [link OutputWriterConcept `finish_throw()`] instead of `finish()`. So instead of returning an `std::error_code` ( or an object that contains an `std::error_code` ) it throws an exception createad from such `std::error_code`, if such `std::error_code` is not empty. The return types are listed [link ReturnTypes_throw here].
+ [This form use exceptions instead of error codes. It calls and returns the return of [link OutputWriterConcept `finish_throw()`] instead of `finish()`. So instead of returning an `std::error_code` ( or an object that contains an `std::error_code` ) it throws an exception created from such `std::error_code`, if such `std::error_code` is not empty. The return types are listed [link ReturnTypes_throw here].
 ]
 
 ]
@@ -69,7 +69,7 @@ In some cases the /leading expression/ is not assignable. This is the case of `m
 [#syntax_reserve]
 [h3 Reserving output size]
 
-The following member functions only have effect in some output types ( cases 1 to 7 in [link output_types.output_types this table], or when you create the [link OutputWriterConcept reserve] method when defining your own ouput type ). 
+The following member functions only have effect in some output types ( cases 1 to 7 in [link output_types.output_types this table], or when you create the [link OutputWriterConcept reserve] method when defining your own output type ). 
 
 * [*`reserve_auto()`] : The necessary amount of characters is calculated and reserved in the destination object. This is the default.
 * [*`reserve(std::size_t size)`] : The calculation is skipped and the specified `size` is used instead.

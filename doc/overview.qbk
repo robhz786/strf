@@ -17,7 +17,7 @@ preserving backwards compatibility.
 Boost.Stringify is a locale-independent format library with some unique features.
 
 
-[h3 Why ( and why not ) to use Boost.Stringiy]
+[h3 Why ( and why not ) to use Boost.Stringify]
 
 [h4 Pros]
 
@@ -35,11 +35,11 @@ Boost.Stringify is a locale-independent format library with some unique features
     * Support for all character types ( `char`, `wchar_t`, `char32_t` and `char16_t`)
     * You can customize [link facet_width_calculation.width_calculation how the width is calculated], choosing more accurate methods than just assuming that width equals to length.
     * The [link format_functions fill] and [link numpunct punctuation] characters are `char32_t`, which gives you options beyond the ASCII table ( when the destination character type is `char` )
-    * It provides an easy to convert one encoding to another ( and you can customize how such convertions are done ):  [input_ouput_different_char_types]
+    * It provides an easy to convert one encoding to another ( and you can customize how such conversions are done ):  [input_output_different_char_types]
 
 [h4 Cons]
 
-* [link benchmarks.benchmarks.compilation_perfomance Code bloat]
+* [link benchmarks.benchmarks.compilation_performance Code bloat]
 * Requires a C++14 compiler
 * No support for date and time input (yet)
 * Tends to be more verbose than libraries based on format string ( like printf )
@@ -51,7 +51,7 @@ Boost.Stringify is a locale-independent format library with some unique features
 [@../../build/stringify.cpp build/stringify.cpp]
 ]
 
-By default Boost.Stringify is prepared to be used as a header-only library. But it can also be used as a static library. This reduces the [link benchmarks.benchmarks.compilation_perfomance code bloat].
+By default Boost.Stringify is prepared to be used as a header-only library. But it can also be used as a static library. This reduces the [link benchmarks.benchmarks.compilation_performance code bloat].
 
 [/
 And in order to build the library, since there is only one source file ( __STRINGIFY_CPP__ ), probably the best way it to just copy this file to your own project, and configure the use the build system of your choice to generate the library file from it.

@@ -27,7 +27,7 @@ The table below lists the facets that this library currently provides. You are n
 [`decoding_category<char>`]
 [
   [link decoding_facets.decoders.u8decoder `u8decoder`] class template
-  (where you can choose beetween UTF-8,
+  (where you can choose between UTF-8,
    [@https://en.wikipedia.org/wiki/UTF-8#WTF-8 WTF-8] or
    [@https://en.wikipedia.org/wiki/UTF-8#Modified_UTF-8 Modified UTF-8]
   )
@@ -96,7 +96,7 @@ public:
     virtual ~decoder();
 
     virtual void decode
-        ( u32output& destinaion
+        ( u32output& destination
         , const CharT* begin
         , const CharT* end
         ) const = 0;
@@ -163,7 +163,7 @@ The `error_handling_function` argument passed in the constructor is a function o
 
 * `tolerate_overlong` \u2014 Allow [@https://en.wikipedia.org/wiki/UTF-8#Overlong_encodings overlong byte sequences].
 * `mutf8` \u2014 Allow the byte sequence `"\xC0\x80"` as valid, converting it to `U'\0'`.
-* `wtf8` \u2014 Allow the surrogates halves ( codepoints from U+D800 to U+DFFF )
+* `wtf8` \u2014 Allow the surrogates halves ( code points from U+D800 to U+DFFF )
 
 [h4:make_u8decoder Helper functions]
 
@@ -206,11 +206,11 @@ public:
 }
 ``
 
-An instance of the `u16decoder` class template is a facet that decodes UTF-16. It considers an error when a high surrogate is not followed by a low surrogate, as well as when a low surragate is not preceded by a high surrogate. When this happens, it calls the error handling function object passed in its construction. 
+An instance of the `u16decoder` class template is a facet that decodes UTF-16. It considers an error when a high surrogate is not followed by a low surrogate, as well as when a low surrogate is not preceded by a high surrogate. When this happens, it calls the error handling function object passed in its construction. 
 
 [h4:lax_u16decoder The [^lax_u16decoder] class template]
 
-The `lax_u16decoder` on the other hand never considers the input as invalid. If a high surrogate is not followed by a low surrogate, then it simply produces a `char32_t` with the same value, even if this is considered an illegal code point. The same happens when a low surragate is not preceded by a high surrogate.
+The `lax_u16decoder` on the other hand never considers the input as invalid. If a high surrogate is not followed by a low surrogate, then it simply produces a `char32_t` with the same value, even if this is considered an illegal code point. The same happens when a low surrogate is not preceded by a high surrogate.
 
 ``
 template <typename CharT>
@@ -226,7 +226,7 @@ public:
 ``
 [h4:make_u16decoder Helper functions]
 
-The library provides the following helper function templates to instatiate UTF-16 decoders:
+The library provides the following helper function templates to instantiate UTF-16 decoders:
 ``
 // Creates a u16decoder with the default error handler
 template <typename CharT>
@@ -248,7 +248,7 @@ As already mentioned, the default error handling is to translate the invalid seq
 The error handler of a
 [@http://en.cppreference.com/w/cpp/concept/CopyConstructible CopyConstructible]
 and [@http://en.cppreference.com/w/cpp/concept/Callable Callable] type.
-It receives a [link u32output `u32output&`] as paramenter and returns a `bool`.
+It receives a [link u32output `u32output&`] as parameter and returns a `bool`.
 When `false` is returned, the `decode` member function of the decoder returns immediately,
 otherwise it continues to process the remaining input.
 
@@ -256,7 +256,7 @@ If you want an error handler that
 
 * replaces the invalid input sequence by some other character, then write a handler that calls [link u32output `u32output`]`::put` and returns `true`.
 * that causes a certain `std::error_code` to be returned, then write a handler that calls [link u32output `u32output`]`::set_error` and returns `false`.
-* thats throws an exception, then write a handler that, well, just throws such exception.
+* that throws an exception, then write a handler that, well, just throws such exception.
 
 [h4 Example]
 
@@ -268,10 +268,10 @@ If you want an error handler that
 
 This class template exists and is mentioned here just for completeness. What it does is to convert UTF-32 into, well, UTF-32. It has to exists in order to avoid compilation/linkage error, since every category needs a default facet object.
 
-It is not actually used when translating an UTF-32 input into some other encoding, sice the decoding process is skipped in this case.
+It is not actually used when translating an UTF-32 input into some other encoding, since the decoding process is skipped in this case.
 
 [/
-Also if you define the [link encoding_convertion.encoding_convertion `BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING`] but don't provide a decoder for `wchar_t`, then `u32decoder<wchar_t>` is used ( assuming `sizeof(char32_t) == 4` ).
+Also if you define the [link encoding_conversion.encoding_conversion `BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING`] but don't provide a decoder for `wchar_t`, then `u32decoder<wchar_t>` is used ( assuming `sizeof(char32_t) == 4` ).
 
 It is not used during the process of translating an input string based on `char32_t` into destination based on `char`, for example, since the decoding process is skipped in this case.
 ]
@@ -290,6 +290,5 @@ public:
 ``
 
 [endsect]
-
 
 [endsect]

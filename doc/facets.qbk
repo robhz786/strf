@@ -9,9 +9,6 @@
 [#section_facets]
 [section Facets]
 
-[/
-This section aims provide a theorical background for the other sections.
-]
 While [link format_functions format functions] aim to customize some things,
 others customizations are handled by /facets/.
 Every /facet/ belongs to some /facet category/. 
@@ -46,7 +43,7 @@ Every /facet/ belongs to some /facet category/.
 
 [
 [[link encoder_facet `encoder_category<`[~CharT]`>`]]
-[Convertion from UTF-32 to the destination's encoding]
+[Conversion from UTF-32 to the destination's encoding]
 [
 Only if the destination character type is [~CharT]. [br]
 It is used to encode the fill character (which is `char32_t`). [br]
@@ -56,7 +53,7 @@ Also when the encoding of an input string differs from of the destination.
 
 [
 [[link decoder_facet `decoder_category<`[~CharT]`>`]]
-[Convertion of [~CharT]-type strings to UTF-32]
+[Conversion of [~CharT]-type strings to UTF-32]
 [
 Used when the encoding of an input string differs from of the destination [br]
 ( because it is converted to UTF-32 and then from UTF-32 to destination encoding )
@@ -66,7 +63,7 @@ Used when the encoding of an input string differs from of the destination [br]
 ]
 
 
-Each facet category corresponds to a concept, /i.e./ a set of requirements that a class must satisfy. A class that satisfy such requitements is a facet of such facet category. Hence, facets are policy classes. And for each facet category there is a representative class, whose name, by convention, is the name of the category. This class aways have static member function named `get_default` which has no parameter and returns a reference to a constant object, whose type is a facet of this category. Also a facet must have member type named `category` which is an alias to the representative class of its category.
+Each facet category corresponds to a concept, /i.e./ a set of requirements that a class must satisfy. A class that satisfy such requirements is a facet of such facet category. Hence, facets are policy classes. And for each facet category there is a representative class, whose name, by convention, is the name of the category. This class always have static member function named `get_default` which has no parameter and returns a reference to a constant object, whose type is a facet of this category. Also a facet must have member type named `category` which is an alias to the representative class of its category.
 
 For example, the `width_calculator` class is a facet:
 
@@ -97,7 +94,7 @@ In order to use a facet object, you pass it to the [link syntax_diagram `with`] 
 
 [basic_facet_sample]
 
-[#constrainted_facets]
+[#constrained_facets]
 [h4 Constrained facets]
 
 Using the `constrain` function template you can instantiate /constrained facet/, which it a facet that only apply to certain input types. The template parameter of `constrain` is a template class that has one template type parameter and a `value` member constant whose type must be (or implicitly convertible to ) `bool` [/( just like those several functions in `<type_traits>` : `std::is_integral`, `std::is_floating_point`, etc )]:
@@ -184,7 +181,7 @@ You can store many facets objects into a /ftuple/ (a tuple of facets), so that y
 ]
 
 
-You will probably only use the `get_facet` function template if you ever extend the library for a [link extend_input.extend_input new input type]. It returns a reference to a constant facet object inside the `ftuple` that belongs to the given `FacetCategory` and that can be applied to `InputType` ( since facets can be [link constrainted_facets constrained] to apply to only certain input types ). If the `ftuple` does not contain such facet, then `FacetCategory::get_default()` is returned.
+You will probably only use the `get_facet` function template if you ever extend the library for a [link extend_input.extend_input new input type]. It returns a reference to a constant facet object inside the `ftuple` that belongs to the given `FacetCategory` and that can be applied to `InputType` ( since facets can be [link constrained_facets constrained] to apply to only certain input types ). If the `ftuple` does not contain such facet, then `FacetCategory::get_default()` is returned.
 
 [note 
 Passing a facet object to `make_ftuple` or to `constrain` creates a [_copy] of it into the `ftuple` or into the constrained facet object. In order to avoid copying, you can pass instead a [@http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper `std::reference_wrapper`]. However all facets are designed to provide a fast copy. The [link numpunct str_grouping] is probably the slowest one, since it contains internally a `std::string`.
