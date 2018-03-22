@@ -6,21 +6,21 @@
 
 [section:extend_output How to add support to a new destination type]
 
-Suppose you have a type `foobar` and you want to create a function named `write_to` that takes a `foobar&` as a parameter and can be used just like the [link output_types.output_types other functions]
+Suppose you have a type `foobar` and you want to create a function named `format` that takes a `foobar&` as a parameter and can be used just like the [link output_types.output_types other functions]
 
 [#OutputWriterConcept]
 [*Step 1)] Create a class - let's call it `foobar_writer` - that satisfies the following requirements:
 
 * inherits from [link output_writer `output_writer<`[~CharT]`>`], where [~CharT] is `char`, `char16_t`, `char32_t` or `wchar_t` ( or rather, make `foobar_writer` a class template ).
 * is not abstract.
-* has a [*`finish()`] public member function. This function will be called just before `foobar_writer` is destroyed when the expression [link syntax_args_form2 `write_to(foobar_instance) = {args...}`] is used. By convention, it should return an `std::error_code` or an object that contains an `std::error_code` ( like an __STD_EXPECTED__ )
-* has a [*`finish_throw()`] public member function. This function will be called just before `foobar_writer` is destroyed when the expression [link syntax_args_form3 `write_to(foobar_instance) &= {args...}`] is used. By conventions, instead of returning an `std::error_code` or object that contains an `std::error_code` ( like `finish()` does), this function should throw an exception created from such `std::error_code`.
-* [#OutputWriter_reserve] [_optionally], it may contain a [*`reserve(std::size_t size)`] public member function. If present, this function is called (or not) according to the use of [link syntax_reserve `reserve_auto()`, `reserve()` or `no_reserve()`] in the [link syntax_diagram basic invocation syntax]. The parameter `size` tells how many characters will be written. This function will be called no more than once, and only before any of the writing functions ([link output_writer `put`] and [link output_writer `repeat`]). The argument will be the total number of characters that will be written until `finish()` of `finish_throw()` is called.
+* has a [*`finish_error_code()`] public member function. This function will be called just before `foobar_writer` is destroyed when the expression [link syntax_args_form2 `format(foobar_instance) = {args...}`] is used. By convention, it should return an `std::error_code` or an object that contains an `std::error_code` ( like an __STD_EXPECTED__ )
+* has a [*`finish_exception()`] public member function. This function will be called just before `foobar_writer` is destroyed when the expression [link syntax_args_form3 `format(foobar_instance) &= {args...}`] is used. By conventions, instead of returning an `std::error_code` or object that contains an `std::error_code` ( like `finish_error_code()` does), this function should throw an exception created from such `std::error_code`.
+* [#OutputWriter_reserve] [_optionally], it may contain a [*`reserve(std::size_t size)`] public member function. If present, this function is called (or not) according to the use of [link syntax_reserve `reserve_auto()`, `reserve()` or `no_reserve()`] in the [link syntax_diagram basic invocation syntax]. The parameter `size` tells how many characters will be written. This function will be called no more than once, and only before any of the writing functions ([link output_writer `put`] and [link output_writer `repeat`]). The argument will be the total number of characters that will be written until `finish_error_code()` of `finish_exception()` is called.
 
-[*Step 2)] Implement function `write_to` ( or whatever name you prefer ) like below:
+[*Step 2)] Implement function `format` ( or whatever name you prefer ) like below:
 
 ```
-  auto write_to(foobar& destination)
+  auto format(foobar& destination)
   {
      return boost::stringify::make_args_handler<foobar_writer, foobar&>(destination);
   }
@@ -47,7 +47,8 @@ Given
 [table
 [ [Expression]       [Return type] [Description] ]
 [ [`W::char_type`]   []      [The character type (`char`, `wchar_t`, `char32_t` or `char16_t`)] ]
-[ [`w.finish()`]     [anything] [ Finalizes the writing process. This function is called at the end. ]]
+[ [`w.finish_error_code()`]  [anything] [ Finalizes the writing process. ]]
+[ [`w.finish_exception()`]   [anything] [ Finalizes the writing process. ]]
 ]
 ]
 
@@ -97,10 +98,10 @@ public:
 
 You can read how the [link output_types.output_types already supported output types] are implemented:
 
-* [@../../include/boost/stringify/v0/output_types/std_string.hpp    std_string.hpp] : This is the source file that implements the [*`append_to`] and [*`assign_to`] function templates.
+* [@../../include/boost/stringify/v0/output_types/std_string.hpp    std_string.hpp] : This is the source file that implements the [*`append`] and [*`assign`] function templates.
 * [@../../include/boost/stringify/v0/output_types/make_string.hpp   make_string.hpp] : This is the source file implements the [*`make_string`], [*`make_u16string`], [*`make_u32string`], [*`make_wstring`] and [*`make_basic_string`] function templates.
-* [@../../include/boost/stringify/v0/output_types/char_ptr.hpp char_ptr.hpp] : This is the source file implements the [*`write_to`] function templates that write to raw strings.
-* [@../../include/boost/stringify/v0/output_types/std_streambuf.hpp std_streambuf.hpp] : This is the source file that implements the [*`write_to`] functing template that writes to `std::streambuff`.
-* [@../../include/boost/stringify/v0/output_types/FILE.hpp FILE.hpp] : This is the source file that implements the [*`write_to`] and [*`wwrite_to`] function templates that writes to `FILE*`.
+* [@../../include/boost/stringify/v0/output_types/char_ptr.hpp char_ptr.hpp] : This is the source file implements the [*`format`] function templates that write to raw strings.
+* [@../../include/boost/stringify/v0/output_types/std_streambuf.hpp std_streambuf.hpp] : This is the source file that implements the [*`format`] functing template that writes to `std::streambuff`.
+* [@../../include/boost/stringify/v0/output_types/FILE.hpp FILE.hpp] : This is the source file that implements the [*`format`] and [*`wformat`] function templates that writes to `FILE*`.
 
 [endsect]

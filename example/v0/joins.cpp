@@ -7,29 +7,30 @@ void samples()
     //[joins_example
     namespace strf = boost::stringify::v0;
 
-    auto result = strf::make_string()
-       &= {"---", {strf::join_right(15), {"abc", "def", 123}}, "---"};
+    auto result = strf::make_string.exception
+        ("---", strf::join_right(15) ("abc", "def", 123), "---");
+
     BOOST_ASSERT(result == "---      abcdef123---");
 
 
-    result = strf::make_string()
-       &= {"---", {strf::join_center(15), {"abc", "def", 123}}, "---"};
+    result = strf::make_string.exception
+        ("---", strf::join_center(15) ("abc", "def", 123), "---");
     BOOST_ASSERT(result == "---   abcdef123   ---");
 
 
-    result = strf::make_string()
-       &= { "---"
-          , {strf::join_left(15, U'.'), {"abc", strf::right("def", 5), 123}}
-          , "---"
-          };
+    result = strf::make_string.exception
+        ( "---"
+        , strf::join_left(15, U'.') ("abc", strf::right("def", 5), 123)
+        , "---"
+        );
 
     BOOST_ASSERT(result == "---abc  def123....---");
 
-    result = strf::make_string()
-       &= { "---"
-          , {strf::join_internal(15, '.', 1), {strf::left("abc", 5), "def", 123}}
-          , "---"
-          };
+    result = strf::make_string.exception
+        ( "---"
+        , strf::join_internal(15, '.', 1) (strf::left("abc", 5), "def", 123)
+        , "---"
+        );
     BOOST_ASSERT(result == "---abc  ....def123---");
     //]
 }
@@ -78,12 +79,11 @@ void sample()
     std::string host_name = "boost.org";
     unsigned char ip_addr [4] = {146, 20, 110, 251};
     
-    auto result = strf::make_string [msg_the_ip_address_of_X_is_X()] &=
-    {   host_name 
-    ,   {   strf::join_left(0)
-        ,   { ip_addr[0], '.', ip_addr[1], '.', ip_addr[2], '.', ip_addr[3] }
-        }
-    };
+    auto result = strf::make_string (msg_the_ip_address_of_X_is_X()) .exception
+        ( host_name
+        , strf::join_left(0)
+            (ip_addr[0], '.', ip_addr[1], '.', ip_addr[2], '.', ip_addr[3])
+        );
 
     if (get_current_language() == language::English)
     {

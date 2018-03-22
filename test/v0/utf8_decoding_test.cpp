@@ -30,31 +30,31 @@ int main()
 {
     // simple correct utf8 sample
     //
-    TEST( U"\u0079 \u0080 \u07FF \u0800 \uFFFF \U00010000 \U0010FFFF") &=
-        {u8"\u0079 \u0080 \u07FF \u0800 \uFFFF \U00010000 \U0010FFFF"};
+    TEST( U"\u0079 \u0080 \u07FF \u0800 \uFFFF \U00010000 \U0010FFFF").exception
+        (u8"\u0079 \u0080 \u07FF \u0800 \uFFFF \U00010000 \U0010FFFF");
 
     
     // leading byte not followed by enough continuation bytes
     //
-    TEST(U" \uFFFD  \uFFFD  \uFFFD ")   &= {" \xC0  \xEF\xBF  \xF1\xBF\xBF "};
-    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD ") &= {" \xC0""\xEF\xBF""\xF1\xBF\xBF\xC0 "};
+    TEST(U" \uFFFD  \uFFFD  \uFFFD ")   .exception(" \xC0  \xEF\xBF  \xF1\xBF\xBF ");
+    TEST(U" \uFFFD\uFFFD\uFFFD\uFFFD ") .exception(" \xC0""\xEF\xBF""\xF1\xBF\xBF\xC0 ");
 
     
     // string ends before the sequence is complete
     //
-    TEST(U"\uFFFD\uFFFD\uFFFD") &= {"\xC0", "\xEF\xBF", "\xF1\xBF\xBF"};
+    TEST(U"\uFFFD\uFFFD\uFFFD") .exception("\xC0", "\xEF\xBF", "\xF1\xBF\xBF");
     
 
     // invalid leading byte
     //
-    TEST(U"\uFFFD \uFFFD") &= {"\xF5\xBF\xBF\xBF \xF5\xBF\xBF\xBF"};
-    TEST(U"\uFFFD \uFFFD") &= {"\xF6\xBF\xBF\xBF \xF6\xBF\xBF\xBF"};
-    TEST(U"\uFFFD \uFFFD") &= {"\xF7\xBF\xBF\xBF \xF7\xBF\xBF\xBF"};
-    TEST(U"\uFFFD \uFFFD") &= {"\xF8\xB1\xBF\xBF\xBF \xF8\xB1\xBF\xBF\xBF"};
-    TEST(U"\uFFFD \uFFFD") &= {"\xF9\xB1\xBF\xBF\xBF \xF9\xB1\xBF\xBF\xBF"};
+    TEST(U"\uFFFD \uFFFD") .exception("\xF5\xBF\xBF\xBF \xF5\xBF\xBF\xBF");
+    TEST(U"\uFFFD \uFFFD") .exception("\xF6\xBF\xBF\xBF \xF6\xBF\xBF\xBF");
+    TEST(U"\uFFFD \uFFFD") .exception("\xF7\xBF\xBF\xBF \xF7\xBF\xBF\xBF");
+    TEST(U"\uFFFD \uFFFD") .exception("\xF8\xB1\xBF\xBF\xBF \xF8\xB1\xBF\xBF\xBF");
+    TEST(U"\uFFFD \uFFFD") .exception("\xF9\xB1\xBF\xBF\xBF \xF9\xB1\xBF\xBF\xBF");
 
-    TEST(U"XXXXXXXXXXX").with(replace_err_by_X)
-        &= {"\xF5\xF6\xF7\xF8\xF9\xFA\xFB\xFC\xFD\xFE\xFF"};
+    TEST(U"XXXXXXXXXXX").facets(replace_err_by_X)
+        .exception("\xF5\xF6\xF7\xF8\xF9\xFA\xFB\xFC\xFD\xFE\xFF");
 
 
     // codepoints greater than 10FFFF
@@ -62,34 +62,34 @@ int main()
     //     10   00100000 00000000
     //   10001  00000000 00000000
     
-    TEST(U"\U0010FFFF ") &= {u8"\U0010FFFF "};
-    TEST(U"\uFFFD ") &= {"\xF4\x90\x80\x80 "};
-    TEST(U"\uFFFD ") &= {"\xF5\xBF\xBF\xBF "};
-    TEST(U"\uFFFD ") &= {"\xF6\xBF\xBF\xBF "};
-    TEST(U"\uFFFD ") &= {"\xF7\xBF\xBF\xBF "};
-    TEST(U"\uFFFD ") &= {"\xF8\xBF\xBF\xBF\xBF "};
-    TEST(U"\uFFFD ") &= {"\xF9\xBF\xBF\xBF\xBF "};
-    TEST(U"\uFFFD ") &= {"\xFA\xBF\xBF\xBF\xBF "};
-    TEST(U"\uFFFD ") &= {"\xFB\xBF\xBF\xBF\xBF "};
-    TEST(U"\uFFFD ") &= {"\xFC\xBF\xBF\xBF\xBF\xBF "};
-    TEST(U"\uFFFD ") &= {"\xFD\xBF\xBF\xBF\xBF\xBF "};
-    TEST(U"\uFFFD ") &= {"\xFE\xBF\xBF\xBF\xBF\xBF "};
-    TEST(U"\uFFFD ") &= {"\xFF\xBF\xBF\xBF\xBF\xBF "};
+    TEST(U"\U0010FFFF ") .exception(u8"\U0010FFFF ");
+    TEST(U"\uFFFD ") .exception("\xF4\x90\x80\x80 ");
+    TEST(U"\uFFFD ") .exception("\xF5\xBF\xBF\xBF ");
+    TEST(U"\uFFFD ") .exception("\xF6\xBF\xBF\xBF ");
+    TEST(U"\uFFFD ") .exception("\xF7\xBF\xBF\xBF ");
+    TEST(U"\uFFFD ") .exception("\xF8\xBF\xBF\xBF\xBF ");
+    TEST(U"\uFFFD ") .exception("\xF9\xBF\xBF\xBF\xBF ");
+    TEST(U"\uFFFD ") .exception("\xFA\xBF\xBF\xBF\xBF ");
+    TEST(U"\uFFFD ") .exception("\xFB\xBF\xBF\xBF\xBF ");
+    TEST(U"\uFFFD ") .exception("\xFC\xBF\xBF\xBF\xBF\xBF ");
+    TEST(U"\uFFFD ") .exception("\xFD\xBF\xBF\xBF\xBF\xBF ");
+    TEST(U"\uFFFD ") .exception("\xFE\xBF\xBF\xBF\xBF\xBF ");
+    TEST(U"\uFFFD ") .exception("\xFF\xBF\xBF\xBF\xBF\xBF ");
     //
     // again without the trailing space
-    TEST(U"\U0010FFFF") &= {u8"\U0010FFFF"};
-    TEST(U"\uFFFD") &= {"\xF4\x90\x80\x80"};
-    TEST(U"\uFFFD") &= {"\xF5\xBF\xBF\xBF"};
-    TEST(U"\uFFFD") &= {"\xF6\xBF\xBF\xBF"};
-    TEST(U"\uFFFD") &= {"\xF7\xBF\xBF\xBF"};
-    TEST(U"\uFFFD") &= {"\xF8\xBF\xBF\xBF\xBF"};
-    TEST(U"\uFFFD") &= {"\xF9\xBF\xBF\xBF\xBF"};
-    TEST(U"\uFFFD") &= {"\xFA\xBF\xBF\xBF\xBF"};
-    TEST(U"\uFFFD") &= {"\xFB\xBF\xBF\xBF\xBF"};
-    TEST(U"\uFFFD") &= {"\xFC\xBF\xBF\xBF\xBF\xBF"};
-    TEST(U"\uFFFD") &= {"\xFD\xBF\xBF\xBF\xBF\xBF"};
-    TEST(U"\uFFFD") &= {"\xFE\xBF\xBF\xBF\xBF\xBF"};
-    TEST(U"\uFFFD") &= {"\xFF\xBF\xBF\xBF\xBF\xBF"};
+    TEST(U"\U0010FFFF") .exception(u8"\U0010FFFF");
+    TEST(U"\uFFFD") .exception("\xF4\x90\x80\x80");
+    TEST(U"\uFFFD") .exception("\xF5\xBF\xBF\xBF");
+    TEST(U"\uFFFD") .exception("\xF6\xBF\xBF\xBF");
+    TEST(U"\uFFFD") .exception("\xF7\xBF\xBF\xBF");
+    TEST(U"\uFFFD") .exception("\xF8\xBF\xBF\xBF\xBF");
+    TEST(U"\uFFFD") .exception("\xF9\xBF\xBF\xBF\xBF");
+    TEST(U"\uFFFD") .exception("\xFA\xBF\xBF\xBF\xBF");
+    TEST(U"\uFFFD") .exception("\xFB\xBF\xBF\xBF\xBF");
+    TEST(U"\uFFFD") .exception("\xFC\xBF\xBF\xBF\xBF\xBF");
+    TEST(U"\uFFFD") .exception("\xFD\xBF\xBF\xBF\xBF\xBF");
+    TEST(U"\uFFFD") .exception("\xFE\xBF\xBF\xBF\xBF\xBF");
+    TEST(U"\uFFFD") .exception("\xFF\xBF\xBF\xBF\xBF\xBF");
     
 
     const char* highsurr_D800 = "\xED\xA0\x80";
@@ -101,31 +101,29 @@ int main()
     const char* overlong_FFFF = "\xF0\x8F\xBF\xBF";
 
     // many invalid code sequeces:
-    TEST(U"XXXXXXX").with(replace_err_by_X) &=
-        {
-            highsurr_D800,
-            lowsurr_DFFF,
-            toobig_110000,
-            mtf8_null,
-            overlong_007F,
-            overlong_07FF,
-            overlong_FFFF
-        };
+    TEST(U"XXXXXXX").facets(replace_err_by_X) .exception
+        ( highsurr_D800,
+          lowsurr_DFFF,
+          toobig_110000,
+          mtf8_null,
+          overlong_007F,
+          overlong_07FF,
+          overlong_FFFF
+        );
 
 
     {   // tolerate surrogates
 
         auto result = strf::make_u32string
-            .with(strf::make_u8decoder().wtf8()) &=
-            {
-                highsurr_D800,
-                lowsurr_DFFF,
-                toobig_110000,
-                mtf8_null,
-                overlong_007F,
-                overlong_07FF,
-                overlong_FFFF
-            };
+            .facets(strf::make_u8decoder().wtf8()) .exception
+            ( highsurr_D800,
+              lowsurr_DFFF,
+              toobig_110000,
+              mtf8_null,
+              overlong_007F,
+              overlong_07FF,
+              overlong_FFFF
+            );
         
         BOOST_TEST(result[0] == (char32_t)0xD800);
         BOOST_TEST(result[1] == (char32_t)0XDFFF);
@@ -139,16 +137,15 @@ int main()
     { // tolerate overlong sequences
 
         auto result = strf::make_u32string
-            .with(strf::make_u8decoder().tolerate_overlong()) &=
-            {
-                highsurr_D800,
-                lowsurr_DFFF,
-                toobig_110000,
-                mtf8_null,
-                overlong_007F,
-                overlong_07FF,
-                overlong_FFFF
-            };
+            .facets(strf::make_u8decoder().tolerate_overlong()) .exception
+            ( highsurr_D800,
+              lowsurr_DFFF,
+              toobig_110000,
+              mtf8_null,
+              overlong_007F,
+              overlong_07FF,
+              overlong_FFFF
+            );
         
         BOOST_TEST(result[0] == U'\uFFFD');
         BOOST_TEST(result[1] == U'\uFFFD');
@@ -162,31 +159,31 @@ int main()
     // an invalid byte sequece followed by continuation
     // bytes produce only one error:
     //
-    TEST(U"\uFFFD ") &= { "\xFF\xBF\xBF\xBF\xBF " };     // after invalid leading byte
-    TEST(U"\uFFFD ") &= { "\xED\xA0\x80\xBF\xBF " };     // after D800
-    TEST(U"\uFFFD ") &= { "\xED\xBF\xBF\xBF\xBF " };     // after DFFF
-    TEST(U"\uFFFD ") &= { "\xF4\x90\x80\x80\xBF\xBF " }; // after 110000
-    TEST(U"\uFFFD ") &= { "\xC0\x80\xBF\xBF " };         // after overlong null
-    TEST(U"\uFFFD ") &= { "\xC1\xBF\xBF\xBF " };         // after overlong 7F
-    TEST(U"\uFFFD ") &= { "\xE0\x9F\xBF\xBF\xBF " };     // after overlong FF
-    TEST(U"\uFFFD ") &= { "\xF0\x8F\xBF\xBF\xBF\xBF " }; // after overlong FFFF
+    TEST(U"\uFFFD ") .exception("\xFF\xBF\xBF\xBF\xBF ");     // after invalid leading byte
+    TEST(U"\uFFFD ") .exception("\xED\xA0\x80\xBF\xBF ");     // after D800
+    TEST(U"\uFFFD ") .exception("\xED\xBF\xBF\xBF\xBF ");     // after DFFF
+    TEST(U"\uFFFD ") .exception("\xF4\x90\x80\x80\xBF\xBF "); // after 110000
+    TEST(U"\uFFFD ") .exception("\xC0\x80\xBF\xBF ");         // after overlong null
+    TEST(U"\uFFFD ") .exception("\xC1\xBF\xBF\xBF ");         // after overlong 7F
+    TEST(U"\uFFFD ") .exception("\xE0\x9F\xBF\xBF\xBF ");     // after overlong FF
+    TEST(U"\uFFFD ") .exception("\xF0\x8F\xBF\xBF\xBF\xBF "); // after overlong FFFF
     // now without the trailing space:
-    TEST(U"\uFFFD") &= { "\xFF\xBF\xBF\xBF\xBF" };     // after invalid leading byte
-    TEST(U"\uFFFD") &= { "\xED\xA0\x80\xBF\xBF" };     // after D800
-    TEST(U"\uFFFD") &= { "\xED\xBF\xBF\xBF\xBF" };     // after DFFF
-    TEST(U"\uFFFD") &= { "\xF4\x90\x80\x80\xBF\xBF" }; // after 110000
-    TEST(U"\uFFFD") &= { "\xC0\x80\xBF\xBF" };         // after overlong null
-    TEST(U"\uFFFD") &= { "\xC1\xBF\xBF\xBF" };         // after overlong 7F
-    TEST(U"\uFFFD") &= { "\xE0\x9F\xBF\xBF\xBF" };     // after overlong FF
-    TEST(U"\uFFFD") &= { "\xF0\x8F\xBF\xBF\xBF\xBF" }; // after overlong FFFF
+    TEST(U"\uFFFD") .exception("\xFF\xBF\xBF\xBF\xBF");     // after invalid leading byte
+    TEST(U"\uFFFD") .exception("\xED\xA0\x80\xBF\xBF");     // after D800
+    TEST(U"\uFFFD") .exception("\xED\xBF\xBF\xBF\xBF");     // after DFFF
+    TEST(U"\uFFFD") .exception("\xF4\x90\x80\x80\xBF\xBF"); // after 110000
+    TEST(U"\uFFFD") .exception("\xC0\x80\xBF\xBF");         // after overlong null
+    TEST(U"\uFFFD") .exception("\xC1\xBF\xBF\xBF");         // after overlong 7F
+    TEST(U"\uFFFD") .exception("\xE0\x9F\xBF\xBF\xBF");     // after overlong FF
+    TEST(U"\uFFFD") .exception("\xF0\x8F\xBF\xBF\xBF\xBF"); // after overlong FFFF
 
    
     {   // emit error code on invalid sequece
         auto expected_error = std::make_error_code(std::errc::illegal_byte_sequence);
         
         TEST_ERR(U"blah blah ", expected_error)
-            .with(strf::make_u8decoder(emit_illegal_byte_sequence))
-             &= { "blah", " blah \xEF\xBF", "blah"};
+            .facets(strf::make_u8decoder(emit_illegal_byte_sequence))
+            .exception("blah", " blah \xEF\xBF", "blah");
     }
     
     

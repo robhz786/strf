@@ -90,7 +90,7 @@ struct width_calculator_category
 
 }}}
 ``
-In order to use a facet object, you pass it to the [link syntax_diagram `with`] member function.
+In order to use a facet object, you pass it to the [link syntax_diagram `facets`] member function.
 
 [basic_facet_sample]
 
@@ -112,7 +112,7 @@ Some type traits are provided to be used in the `constrain` function template.
 
 [h4 Facets overriding]
 
-You can pass several facets in one call, as well as call `.with()` several times. Calling `.with(a, b, c)` is equivalent to `.with(a).with(b).with(c)`. If two facets objects of the same category apply to the same input type, then the later overrides the first.
+You can pass several facets in one call, as well as call `.facets()` several times. Calling `.facets(a, b, c)` is equivalent to `.facets(a).facets(b).facets(c)`. If two facets objects of the same category apply to the same input type, then the later overrides the first.
 
 [facets_overriding]
 
@@ -148,10 +148,10 @@ constexpr const auto& get_facet(const ftuple<Facets...>& ft)
     return ft.template get_facet<FacetCategory, InputType>();
 }
 ``
-Passing an ftuple to the `.with` function is equivalent to pass all the facet objects it contains ( internally they would be grouped in a ftuple anyway ).
+Passing an ftuple to the `.facets` function is equivalent to pass all the facet objects it contains ( internally they would be grouped in a ftuple anyway ).
 
 [/
-The purpose of the `ftuple` class template is similar to that of `std::locale`: to group several facets objects. The difference is that the facets here are not necessarily related to localization. And also that `ftuple` solves most of things at compilation time, very much like `std::tuple`. Passing an ftuple to the `.with` function is equivalent to pass all the facet objects it contains ( internally they would be grouped in a ftuple anyway ).
+The purpose of the `ftuple` class template is similar to that of `std::locale`: to group several facets objects. The difference is that the facets here are not necessarily related to localization. And also that `ftuple` solves most of things at compilation time, very much like `std::tuple`. Passing an ftuple to the `.facets` function is equivalent to pass all the facet objects it contains ( internally they would be grouped in a ftuple anyway ).
 ]
 [/
 An ftuple can be created with the `make_ftuple` function template.
@@ -171,12 +171,12 @@ You can store many facets objects into a /ftuple/ (a tuple of facets), so that y
 [`make_ftuple(a1, a2, ... , b1, b2, ... , c1, c2, ...)`]
 ]
 [
-[[~leading_expression]` .with( make_ftuple(a1, a2, ...) )` ]
-[[~leading_expression]` .with(a1, a2, ...) ` ]
+[[~leading_expression]` .facets( make_ftuple(a1, a2, ...) )` ]
+[[~leading_expression]` .facets(a1, a2, ...) ` ]
 ]
 [
-[[~leading_expression]` .with(a1, a2, ... , b1, b2, ...)` ]
-[[~leading_expression]` .with(a1, a2, ...) .with(b1, b2, ...) ` ]
+[[~leading_expression]` .facets(a1, a2, ... , b1, b2, ...)` ]
+[[~leading_expression]` .facets(a1, a2, ...) .facets(b1, b2, ...) ` ]
 ]
 ]
 

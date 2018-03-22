@@ -17,42 +17,42 @@ int main()
 {
     namespace strf = boost::stringify::v0;
 
-    TEST("a") &= { 'a' };
-    TEST("aaaa") &= { strf::multi('a', 4) };
-    TEST("  aa") &= { strf::multi('a', 2) > 4 };
+    TEST("a")    .exception( 'a' );
+    TEST("aaaa") .exception( strf::multi('a', 4) );
+    TEST("  aa") .exception( strf::multi('a', 2) > 4 );
 
-    TEST("    a") &= { strf::right('a', 5) };
-    TEST("a    ") &= { strf::left('a', 5)  };
-    TEST("aa   ") &= { strf::multi('a', 2) < 5 };
+    TEST("    a") .exception( strf::right('a', 5) );
+    TEST("a    ") .exception( strf::left('a', 5)  );
+    TEST("aa   ") .exception( strf::multi('a', 2) < 5 );
 
-    TEST("....a") &= { strf::right('a', 5, '.')  };
-    TEST("a....") &= { strf::left('a', 5, '.')   };
-    TEST("..a..") &= { strf::center('a', 5, '.') };
+    TEST("....a") .exception( strf::right('a', 5, '.')  );
+    TEST("a....") .exception( strf::left('a', 5, '.')   );
+    TEST("..a..") .exception( strf::center('a', 5, '.') );
 
-    TEST("...aa") &= { strf::right('a', 5, '.').multi(2)  };
-    TEST("aa...") &= { strf::left('a', 5, '.').multi(2)   };
-    TEST(".aa..") &= { strf::center('a', 5, '.').multi(2) };
+    TEST("...aa") .exception( strf::right('a', 5, '.').multi(2)  );
+    TEST("aa...") .exception( strf::left('a', 5, '.').multi(2)   );
+    TEST(".aa..") .exception( strf::center('a', 5, '.').multi(2) );
 
-    TEST(".....") &= { strf::right('a', 5, '.').multi(0)  };
-    TEST(".....") &= { strf::left('a', 5, '.').multi(0)   };
-    TEST(".....") &= { strf::center('a', 5, '.').multi(0) };
+    TEST(".....") .exception( strf::right('a', 5, '.').multi(0)  );
+    TEST(".....") .exception( strf::left('a', 5, '.').multi(0)   );
+    TEST(".....") .exception( strf::center('a', 5, '.').multi(0) );
 
-    TEST("a")      &= { {strf::join_left(0, '.'), {'a'}} };
-    TEST("   a")   &= { {strf::join_left(1, '.'), {strf::right('a', 4)}} };
-    TEST("   a..") &= { {strf::join_left(6, '.'), {strf::right('a', 4)}} };
+    TEST("a")      .exception( strf::join_left(0, '.')('a') );
+    TEST("   a")   .exception( strf::join_left(1, '.')(strf::right('a', 4)) );
+    TEST("   a..") .exception( strf::join_left(6, '.')(strf::right('a', 4)) );
 
-    TEST("  aa")   &= { {strf::join_left(2, '.'), {strf::multi('a', 2) > 4}} };
-    TEST("  aa")   &= { {strf::join_left(2, '.'), {strf::multi('a', 2) > 4}} };
-    TEST("  aa")   &= { {strf::join_left(4, '.'), {strf::multi('a', 2) > 4}} };
-    TEST("  aa..") &= { {strf::join_left(6, '.'), {strf::multi('a', 2) > 4}} };
+    TEST("  aa")   .exception( strf::join_left(2, '.')(strf::multi('a', 2) > 4) );
+    TEST("  aa")   .exception( strf::join_left(2, '.')(strf::multi('a', 2) > 4) );
+    TEST("  aa")   .exception( strf::join_left(4, '.')(strf::multi('a', 2) > 4) );
+    TEST("  aa..") .exception( strf::join_left(6, '.')(strf::multi('a', 2) > 4) );
 
-    TEST("aaaa")   &= { {strf::join_left(2, '.'), {strf::multi('a', 4) > 2}} };
-    TEST("aaaa")   &= { {strf::join_left(4, '.'), {strf::multi('a', 4) > 2}} };
-    TEST("aaaa..") &= { {strf::join_left(6, '.'), {strf::multi('a', 4) > 2}} };
+    TEST("aaaa")   .exception( strf::join_left(2, '.')(strf::multi('a', 4) > 2) );
+    TEST("aaaa")   .exception( strf::join_left(4, '.')(strf::multi('a', 4) > 2) );
+    TEST("aaaa..") .exception( strf::join_left(6, '.')(strf::multi('a', 4) > 2) );
 
-    TEST("aaaa")   &= { {strf::join_left(2, '.'), {strf::multi('a', 4) > 4}} };
-    TEST("aaaa")   &= { {strf::join_left(4, '.'), {strf::multi('a', 4) > 4}} };
-    TEST("aaaa..") &= { {strf::join_left(6, '.'), {strf::multi('a', 4) > 4}} };
+    TEST("aaaa")   .exception( strf::join_left(2, '.')(strf::multi('a', 4) > 4) );
+    TEST("aaaa")   .exception( strf::join_left(4, '.')(strf::multi('a', 4) > 4) );
+    TEST("aaaa..") .exception( strf::join_left(6, '.')(strf::multi('a', 4) > 4) );
 
     return report_errors() || boost::report_errors();
 }

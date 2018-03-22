@@ -85,7 +85,7 @@ void basic_test__narrow()
     {
         file = std::tmpfile();
         err = use_all_writing_function_of_output_writer
-            ( strf::write_to<CharT>(file, &result_length)
+            ( strf::format<CharT>(file, &result_length)
             , expected );
 
         std::rewind(file);
@@ -122,8 +122,8 @@ void error_code_test__narrow()
     try
     {
         file = std::tmpfile();
-        err = strf::write_to<CharT>(file, &result_length)
-            = {U'a', U'b', U'c', error_code_emitter_arg, U'x', U'y', U'z'};
+        err = strf::format<CharT>(file, &result_length)
+            .error_code(U'a', U'b', U'c', error_code_emitter_arg, U'x', U'y', U'z');
 
         std::rewind(file);
         result = read_file<CharT>(file);
@@ -157,8 +157,8 @@ void exception_thrown_test__narrow()
     {
         try
         {
-            strf::write_to<CharT>(file, &result_length)
-                &= {U'a', U'b', U'c', exception_thrower_arg, U'x', U'y', U'z'};
+            strf::format<CharT>(file, &result_length)
+                .exception(U'a', U'b', U'c', exception_thrower_arg, U'x', U'y', U'z');
 
         }
         catch(...)
@@ -184,10 +184,8 @@ void basic_test__wide()
     try
     {
         file = std::tmpfile();
-        err = strf::wwrite_to(file, &result_length)
-        = {
-            L"abcd", strf::multi(L'x', 0), strf::multi(L'y', 4), L'z'
-        };
+        err = strf::wformat(file, &result_length)
+            .error_code(L"abcd", strf::multi(L'x', 0), strf::multi(L'y', 4), L'z');
         std::rewind(file);
         result = read_wfile(file);
     }
@@ -217,8 +215,8 @@ void error_code_test__wide()
     try
     {
         file = std::tmpfile();
-        err = strf::wwrite_to(file, &result_length)
-            = {L"abc", error_code_emitter_arg, L"xyz"};
+        err = strf::wformat(file, &result_length)
+            .error_code(L"abc", error_code_emitter_arg, L"xyz");
 
         std::rewind(file);
         result = read_wfile(file);
@@ -246,8 +244,8 @@ void exception_thrown_test__wide()
     {
         try
         {
-            strf::wwrite_to(file, &result_length)
-                &= {L"abc", exception_thrower_arg, L"xyz"};
+            strf::wformat(file, &result_length)
+                .exception(L"abc", exception_thrower_arg, L"xyz");
 
         }
         catch(...)
@@ -294,7 +292,7 @@ int main()
 
         {
             FILE* file = std::tmpfile();
-            strf::write_to(file) &= { str, 'a', 'b', 'c', 'd', 'e', 'f'};
+            strf::format(file) .exception( str, 'a', 'b', 'c', 'd', 'e', 'f');
             std::rewind(file);
             result = read_file<char>(file);
         }
@@ -313,12 +311,12 @@ int main()
         std::string result;
         {
             FILE* file = std::tmpfile();
-            strf::write_to(file) &={str_a, str_b, str_c, str_d};
+            strf::format(file) .exception(str_a, str_b, str_c, str_d);
             std::rewind(file);
             result = read_file<char>(file);
         }
 
-        std::string expected = strf::make_string() &= {str_a, str_b, str_c, str_d};
+        std::string expected = strf::make_string.exception(str_a, str_b, str_c, str_d);
 
         BOOST_TEST(expected == result);
     }
@@ -329,13 +327,13 @@ int main()
         std::string result;
         {
             FILE* file = std::tmpfile();
-            strf::write_to(file) &= {strf::multi(U'\u0800', buff_size_int * 2)};
+            strf::format(file) .exception(strf::multi(U'\u0800', buff_size_int * 2));
             std::rewind(file);
             result = read_file<char>(file);
             std::fclose(file);
         }
 
-        std::string expected = strf::make_string() &= {strf::multi(U'\u0800', buff_size_int * 2)};
+        std::string expected = strf::make_string.exception(strf::multi(U'\u0800', buff_size_int * 2));
         BOOST_TEST(expected == result);
     }
 

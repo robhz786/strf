@@ -141,13 +141,13 @@ public:
         return false;
     }
 
-    std::error_code finish()
+    std::error_code finish_error_code()
     {
         m_finished = true;
         return m_err;
     }
 
-    void finish_throw()
+    void finish_exception()
     {
         m_finished = true;
         if(m_err)
@@ -185,7 +185,7 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_appender<std::wstring>;
 
 
 template <typename CharT, typename Traits, typename Allocator>
-auto append_to(std::basic_string<CharT, Traits, Allocator>& str)
+auto append(std::basic_string<CharT, Traits, Allocator>& str)
 {
     using string_type = std::basic_string<CharT, Traits, Allocator>;
     using writer = boost::stringify::v0::detail::string_appender<string_type>;
@@ -194,7 +194,7 @@ auto append_to(std::basic_string<CharT, Traits, Allocator>& str)
 
 
 template <typename CharT, typename Traits, typename Allocator>
-auto assign_to(std::basic_string<CharT, Traits, Allocator>& str)
+auto assign(std::basic_string<CharT, Traits, Allocator>& str)
 {
     using string_type = std::basic_string<CharT, Traits, Allocator>;
     str.clear();

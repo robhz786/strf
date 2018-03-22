@@ -22,18 +22,18 @@ bool emit_illegal_byte_sequence(strf::u32output& rec)
 void char16_tests()
 {
     // basic sample
-    TEST(U"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF") &=
-        {
+    TEST(U"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF") .exception
+        (
             u"--\u0080--\uD7FF--\uE000--\uFFFF"
             u"--\U00100000--\U0010FFFF"
-        };
+        );
 
     TEST(U"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF")
-        .with(strf::lax_u16decoder<char16_t>{}) &=
-        {
+        .facets(strf::lax_u16decoder<char16_t>{}) .exception
+        (
             u"--\u0080--\uD7FF--\uE000--\uFFFF"
             u"--\U00100000--\U0010FFFF"
-        };
+        );
 
 
     const char16_t sample_with_alone_surrogates[] =
@@ -48,14 +48,14 @@ void char16_tests()
 
 
     // defaul error handling: replace invalid codepoints, by '\uFFFD'
-    TEST(U" \uFFFD \uFFFD \uFFFD \uFFFD \uFFFD ") &=
-        { sample_with_alone_surrogates };
+    TEST(U" \uFFFD \uFFFD \uFFFD \uFFFD \uFFFD ") .exception
+        (sample_with_alone_surrogates);
 
     // allowing alone surrogates
     {
         auto result = strf::make_u32string
-            .with(strf::lax_u16decoder<char16_t>{}) &=
-            { sample_with_alone_surrogates };
+            .facets(strf::lax_u16decoder<char16_t>{}) .exception
+            (sample_with_alone_surrogates);
 
         BOOST_TEST(result[1] == 0xD800);
         BOOST_TEST(result[3] == 0xD800);
@@ -75,16 +75,16 @@ void char16_tests()
             };
 
         TEST_ERR(U" ", err)
-            .with(strf::make_u16decoder<char16_t>(err_hndl_func))
-            &= {sample_with_alone_surrogates};
+            .facets(strf::make_u16decoder<char16_t>(err_hndl_func))
+            .exception(sample_with_alone_surrogates);
     }
 
     {   // emit error code on invalid sequece
         auto expected_error = std::make_error_code(std::errc::illegal_byte_sequence);
 
         TEST_ERR(U"blah ", expected_error)
-            .with(strf::make_u16decoder<char16_t>(emit_illegal_byte_sequence))
-            &= { u"blah", sample_with_alone_surrogates, u"blah"};
+            .facets(strf::make_u16decoder<char16_t>(emit_illegal_byte_sequence))
+            .exception( u"blah", sample_with_alone_surrogates, u"blah");
     }
 
 }
@@ -95,41 +95,35 @@ void wchar_tests()
 #if defined(_WIN32) && ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)
 
     // basic sample
-    TEST(U"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF") &=
-        {
-            L"--\u0080--\uD7FF--\uE000--\uFFFF"
-            L"--\U00100000--\U0010FFFF"
-        };
+    TEST(U"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF") .exception
+        (L"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF");
 
     // basic sample
     TEST(U"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF")
-        .with(strf::make_u16decoder<wchar_t>())  &=
-        {
-            L"--\u0080--\uD7FF--\uE000--\uFFFF"
-            L"--\U00100000--\U0010FFFF"
-        };
+        .facets(strf::make_u16decoder<wchar_t>()) .exception
+        (L"--\u0080--\uD7FF--\uE000--\uFFFF--\U00100000--\U0010FFFF");
 
 
     const wchar_t sample_with_alone_surrogates[] =
-        {
-            L' ', 0xD800,
-            L' ', 0xD800,
-            L' ', 0xDBFF,
-            L' ', 0xDC00,
-            L' ', 0xDFFF,
-            L' ', L'\0'
-        };
+    {
+        L' ', 0xD800,
+        L' ', 0xD800,
+        L' ', 0xDBFF,
+        L' ', 0xDC00,
+        L' ', 0xDFFF,
+        L' ', L'\0'
+    };
 
 
     // defaul error handling: replace invalid codepoints, by '\uFFFD'
-    TEST(U" \uFFFD \uFFFD \uFFFD \uFFFD \uFFFD ") &=
-        { sample_with_alone_surrogates };
+    TEST(U" \uFFFD \uFFFD \uFFFD \uFFFD \uFFFD ")
+        .exception(sample_with_alone_surrogates);
 
     // allowing alone surrogates
     {
         auto result = strf::make_u32string
-            .with(strf::lax_u16decoder<wchar_t>{})
-            &={ sample_with_alone_surrogates };
+            .facets(strf::lax_u16decoder<wchar_t>{})
+            .exception(sample_with_alone_surrogates);
 
         BOOST_TEST(result[1] == 0xD800);
         BOOST_TEST(result[3] == 0xD800);
@@ -143,14 +137,14 @@ void wchar_tests()
         auto errcond = std::errc::illegal_byte_sequence;
         auto err = std::make_error_code(errcond);
         auto err_hndl_func = [=](strf::u32output& out) -> bool
-            {
-                out.set_error(err);
-                return false;
-            };
+        {
+            out.set_error(err);
+            return false;
+        };
 
         TEST_ERR(U" ", err)
-            .with(strf::make_u16decoder<wchar_t>(err_hndl_func))
-            ={sample_with_alone_surrogates};
+            .facets(strf::make_u16decoder<wchar_t>(err_hndl_func))
+            .error_code(sample_with_alone_surrogates);
     }
 
 #endif // defined(_WIN32) && ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)

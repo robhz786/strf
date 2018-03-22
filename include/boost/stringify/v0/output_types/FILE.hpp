@@ -133,7 +133,7 @@ public:
             : do_repeat<4>(count, {{ch1, ch2, ch3, ch4}});
     }
 
-    std::error_code finish()
+    std::error_code finish_error_code()
     {
         if (m_buff_pos > 0)
         {
@@ -142,7 +142,7 @@ public:
         return m_err;
     }
 
-    void finish_throw()
+    void finish_exception()
     {
         if (m_buff_pos > 0)
         {
@@ -290,9 +290,9 @@ public:
         , char_type ch4
         ) override;
 
-    std::error_code finish();
+    std::error_code finish_error_code();
 
-    void finish_throw();
+    void finish_exception();
 
 private:
 
@@ -432,12 +432,12 @@ BOOST_STRINGIFY_INLINE bool wide_file_writer::repeat
     return false;
 }
 
-BOOST_STRINGIFY_INLINE std::error_code wide_file_writer::finish()
+BOOST_STRINGIFY_INLINE std::error_code wide_file_writer::finish_error_code()
 {
     return m_err;
 }
 
-BOOST_STRINGIFY_INLINE void wide_file_writer::finish_throw()
+BOOST_STRINGIFY_INLINE void wide_file_writer::finish_exception()
 {
     if(m_err)
     {
@@ -467,13 +467,13 @@ BOOST_STRINGIFY_INLINE bool wide_file_writer::do_put(char_type ch)
 } // namespace detail
 
 template <typename CharT = char>
-inline auto write_to(std::FILE* destination, std::size_t* count = nullptr)
+inline auto format(std::FILE* destination, std::size_t* count = nullptr)
 {
     using writer = stringify::v0::detail::narrow_file_writer<CharT>;
     return stringify::v0::make_args_handler<writer>(destination, count);
 }
 
-inline auto wwrite_to(std::FILE* destination, std::size_t* count = nullptr)
+inline auto wformat(std::FILE* destination, std::size_t* count = nullptr)
 {
     using writer = boost::stringify::v0::detail::wide_file_writer;
     return stringify::v0::make_args_handler<writer>(destination, count);

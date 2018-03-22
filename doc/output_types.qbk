@@ -11,10 +11,10 @@
 
 [ [1]
   [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Allocator]`>`]
-  [ [*`append_to (`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`append (`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [2] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Allocator]`>`]
-  [ [*`assign_to (`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`assign (`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [3] [`std::string`]
   [ [*`make_string `] [*\u00b7\u00b7\u00b7]]]
@@ -32,22 +32,22 @@
   [ [*`make_basic_string <`][~CharT]`, `[~Traits]`, `[~Allocator][*`> (`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [8]  [[~CharT]`*`]
-  [ [*`write_to <`][~Traits][*`> (`][~destination]`, `[~limit]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`format <`][~Traits][*`> (`][~destination]`, `[~limit]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [9] [[~CharT]`*`]
-  [ [*`write_to <`][~Traits][*`> (`][~destination]`, `[~end]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`format <`][~Traits][*`> (`][~destination]`, `[~end]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [10] [[~CharT[size]]]
-  [ [*`write_to <`][~Traits][*`> (`][~destination]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`format <`][~Traits][*`> (`][~destination]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [11] [ `std::basic_streambuf <`[~CharT]`, `[~Traits]`>`]
-  [ [*`write_to (`][~destination]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`format (`][~destination]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [12] [ `FILE*` ( using narrow functions) ]
-  [ [*`write_to <`][~CharT][*`> (`][~destination]`,` [~countptr] [*`) `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`format <`][~CharT][*`> (`][~destination]`,` [~countptr] [*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [13]  [ `FILE*` ( using wide functions) ]
-  [ [*`wwrite_to (`][~destination]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`wformat (`][~destination]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
 ]
 
 where:
@@ -64,8 +64,8 @@ where:
 * 2) Assign to string.
 * 3-7) Generate string.
 * 8) Write raw string. Write at most [~limit] characters, including the terminating null character, which is always written, except if [~limit]` == 0`.
-* 9) Same as `write_to(`[~destination]`, `[~end]` - `[~destination]`, `[~countptr]`)`.
-* 10) Same as `write_to(`[~destination]`, `[~size]`, `[~countptr]`)`.
+* 9) Same as `format(`[~destination]`, `[~end]` - `[~destination]`, `[~countptr]`)`.
+* 10) Same as `format(`[~destination]`, `[~size]`, `[~countptr]`)`.
 * 11) Write content to `std::basic_streambuf`.
 * 12) Write content to `FILE*` using narrow orientated functions.
 * 13) Write content to `FILE*` using wide orientated functions.

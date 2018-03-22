@@ -15,19 +15,19 @@ int main()
 {
     namespace strf = boost::stringify;
 
-    PRINT_BENCHMARK("boost::stringiy::make_string() &= {25}")
+    PRINT_BENCHMARK("strf::make_string.exception(25)")
     {
-        auto s = strf::make_string() &= {25};
+        auto s = strf::make_string.exception(25);
         (void)s;
     }
-    PRINT_BENCHMARK("boost::stringiy::make_string.reserve(2) &= {25}")
+    PRINT_BENCHMARK("strf::make_string.reserve(2).exception(25)")
     {
-        auto s = strf::make_string.reserve(2) &= {25};
+        auto s = strf::make_string.reserve(2).exception(25);
         (void)s;
     }
-    PRINT_BENCHMARK("boost::stringiy::make_string.no_reserve() &= {25}")
+    PRINT_BENCHMARK("strf::make_string.no_reserve().exception(25)")
     {
-        std::string s = strf::make_string.no_reserve() &= {25};
+        std::string s = strf::make_string.no_reserve().exception(25);
         (void)s;
     }
     PRINT_BENCHMARK("fmt::format(\"{}\", 25)")
@@ -43,19 +43,19 @@ int main()
 
     std::cout << "\n";
 
-    PRINT_BENCHMARK("boost::stringiy::make_string() &= {LLONG_MAX}")
+    PRINT_BENCHMARK("strf::make_string.exception(LLONG_MAX)")
     {
-        auto s = strf::make_string() &= {LLONG_MAX};
+        auto s = strf::make_string.exception(LLONG_MAX);
         (void)s;
     }
-    PRINT_BENCHMARK("boost::stringiy::make_string.no_reserve() &= {LLONG_MAX}")
+    PRINT_BENCHMARK("strf::make_string.no_reserve().exception(LLONG_MAX)")
     {
-        auto s = strf::make_string.no_reserve() &= {LLONG_MAX};
+        auto s = strf::make_string.no_reserve().exception(LLONG_MAX);
         (void)s;
     }
-    PRINT_BENCHMARK("boost::stringiy::make_string.reserve(100) &= {LLONG_MAX}")
+    PRINT_BENCHMARK("strf::make_string.reserve(100).exception(LLONG_MAX)")
     {
-        auto s = strf::make_string.reserve(100) &= {LLONG_MAX};
+        auto s = strf::make_string.reserve(100).exception(LLONG_MAX);
         (void)s;
     }
     PRINT_BENCHMARK("fmt::format(\"{}\", LLONG_MAX)")
@@ -71,19 +71,19 @@ int main()
 
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::make_string [\"ten = {}, twenty = {}\"] = {10, 20}")
+    PRINT_BENCHMARK("strf::make_string (\"ten = {}, twenty = {}\").error_code(10, 20)")
     {
-        auto s = strf::make_string ["ten = {}, twenty = {}"] = {10, 20};
+        auto s = strf::make_string ("ten = {}, twenty = {}").error_code(10, 20);
         (void)s;
     }
-    PRINT_BENCHMARK("strf::make_string [\"ten = {}, twenty = {}\"] &= {10, 20}")
+    PRINT_BENCHMARK("strf::make_string (\"ten = {}, twenty = {}\").exception(10, 20)")
     {
-        auto s = strf::make_string ["ten = {}, twenty = {}"] &= {10, 20};
+        auto s = strf::make_string ("ten = {}, twenty = {}").exception(10, 20);
         (void)s;
     }
-    PRINT_BENCHMARK("strf::make_string .reserve(30) [\"ten = {}, twenty = {}\"] &= {10, 20}")
+    PRINT_BENCHMARK("strf::make_string .reserve(30) (\"ten = {}, twenty = {}\").exception(10, 20)")
     {
-        auto s = strf::make_string ["ten = {}, twenty = {}"] &= {10, 20};
+        auto s = strf::make_string ("ten = {}, twenty = {}").exception(10, 20);
         (void)s;
     }
     PRINT_BENCHMARK("fmt::format(\"ten = {}, twenty = {}\", 10, 20)")

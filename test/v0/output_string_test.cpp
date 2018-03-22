@@ -20,7 +20,7 @@ void basic_assign_test()
     std::basic_string<CharT> expected;
 
     std::error_code err = use_all_writing_function_of_output_writer
-        ( strf::assign_to(result)
+        ( strf::assign(result)
         , expected );
 
     BOOST_TEST(!err);
@@ -36,7 +36,7 @@ void basic_append_test()
     std::basic_string<CharT> expected_append;
 
     std::error_code err = use_all_writing_function_of_output_writer
-        ( strf::append_to(result)
+        ( strf::append(result)
         , expected_append );
 
     expected += expected_append;
@@ -79,44 +79,44 @@ int main()
 
     {   // When set_error is called during make_string
 
-        auto result = strf::make_string()
-            = {"abcd", error_code_emitter_arg, "lkjlj"};
+        auto result = strf::make_string
+            .error_code("abcd", error_code_emitter_arg, "lkjlj");
 
         BOOST_TEST(!result);
         BOOST_TEST(!result && result.error() == std::errc::invalid_argument);
     }
 
-    {   // When set_error is called during assign_to
+    {   // When set_error is called during assign
 
         std::string result = "bla";
 
-        std::error_code ec = strf::assign_to(result)
-            = {"abcd", error_code_emitter_arg, "lkjlj"};
+        std::error_code ec = strf::assign(result)
+            .error_code("abcd", error_code_emitter_arg, "lkjlj");
 
         BOOST_TEST(ec == std::errc::invalid_argument);
         BOOST_TEST(result == "");
     }
 
-    {   // When set_error is called during append_to
+    {   // When set_error is called during append
 
         std::string result = "bla";
 
-        std::error_code ec = strf::append_to(result)
-            = { "abcd", error_code_emitter_arg, "lkjlj" };
+        std::error_code ec = strf::append(result)
+            .error_code( "abcd", error_code_emitter_arg, "lkjlj" );
 
         BOOST_TEST(ec == std::errc::invalid_argument);
         BOOST_TEST(result == "bla");
     }
 
 
-    {   // When exception is thrown in assign_to
+    {   // When exception is thrown in assign
 
         std::string result = "bla";
 
         try
         {
-            strf::assign_to(result)
-                &= {"abcd", exception_thrower_arg, "lkjlj"};
+            strf::assign(result)
+                .exception("abcd", exception_thrower_arg, "lkjlj");
         }
         catch(...)
         {
@@ -125,14 +125,14 @@ int main()
         BOOST_TEST(result == "");
     }
 
-    {   // When exception is thrown in append_to
+    {   // When exception is thrown in append
 
         std::string result = "bla";
 
         try
         {
-            strf::append_to(result)
-                &= { "abcd", exception_thrower_arg, "lkjlj"};
+            strf::append(result)
+                .exception( "abcd", exception_thrower_arg, "lkjlj");
         }
         catch(...)
         {

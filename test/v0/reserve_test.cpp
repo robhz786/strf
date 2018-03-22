@@ -64,12 +64,12 @@ public:
         m_reserve_size = s;
     }
 
-    std::error_code finish()
+    std::error_code finish_error_code()
     {
         return {};
     }
 
-    void finish_throw()
+    void finish_exception()
     {
     }
     
@@ -93,22 +93,22 @@ int main()
    
     {
         std::size_t size{initial_value};
-        reservation_test(size) .no_reserve() &= {"abcd"};
+        reservation_test(size) .no_reserve() .exception("abcd");
         BOOST_TEST(size == initial_value); 
     }
     {
         std::size_t size{initial_value};
-        reservation_test(size) .reserve(5555) &= {"abcd"};
+        reservation_test(size) .reserve(5555) .exception("abcd");
         BOOST_TEST(size == 5555); 
     }
     {
         std::size_t size{initial_value};
-        reservation_test(size) &= {"abcd"};
+        reservation_test(size) .exception("abcd");
         BOOST_TEST(size == 4); 
     }
     {
         std::size_t size{initial_value};
-        reservation_test(size) .reserve(5555) .reserve_auto() &= {"abcd"};
+        reservation_test(size) .reserve(5555) .reserve_auto() .exception("abcd");
         BOOST_TEST(size == 4); 
     }
 
@@ -117,25 +117,25 @@ int main()
     {
         std::size_t size{initial_value};
         auto tester = reservation_test(size);
-        tester.no_reserve() &= {"abcd"};
+        tester.no_reserve() .exception("abcd");
         BOOST_TEST(size == initial_value); 
     }
     {
         std::size_t size{initial_value};
         auto tester = reservation_test(size);
-        tester.reserve(5555) &= {"abcd"};
+        tester.reserve(5555) .exception("abcd");
         BOOST_TEST(size == 5555); 
     }
     {
         std::size_t size{initial_value};
         auto tester = reservation_test(size);
-        tester &= {"abcd"};
+        tester .exception("abcd");
         BOOST_TEST(size == 4); 
     }
     {
         std::size_t size{initial_value};
         auto tester = reservation_test(size) .reserve(5555);
-        tester.reserve_auto() &= {"abcd"};
+        tester.reserve_auto() .exception("abcd");
         BOOST_TEST(size == 4); 
     }
 
@@ -144,19 +144,19 @@ int main()
     {
         std::size_t size{initial_value};
         const auto tester = reservation_test(size);
-        tester.no_reserve() &= {"abcd"};
+        tester.no_reserve() .exception("abcd");
         BOOST_TEST(size == initial_value); 
     }
     {
         std::size_t size{initial_value};
         const auto tester = reservation_test(size);
-        tester.reserve(5555) &= {"abcd"};
+        tester.reserve(5555) .exception("abcd");
         BOOST_TEST(size == 5555); 
     }
     {
         std::size_t size{initial_value};
         const auto tester = reservation_test(size) .reserve(5555);
-        tester.reserve_auto() &= {"abcd"};
+        tester.reserve_auto() .exception("abcd");
         BOOST_TEST(size == 4); 
     }
 
@@ -165,19 +165,19 @@ int main()
     {
         std::size_t size{initial_value};
         const auto tester = reservation_test(size);
-        std::move(tester).no_reserve() &= {"abcd"};
+        std::move(tester).no_reserve() .exception("abcd");
         BOOST_TEST(size == initial_value); 
     }
     {
         std::size_t size{initial_value};
         const auto tester = reservation_test(size);
-        std::move(tester).reserve(5555) &= {"abcd"};
+        std::move(tester).reserve(5555) .exception("abcd");
         BOOST_TEST(size == 5555); 
     }
     {
         std::size_t size{initial_value};
         const auto tester = reservation_test(size) .reserve(5555);
-        std::move(tester).reserve_auto() &= {"abcd"};
+        std::move(tester).reserve_auto() .exception("abcd");
         BOOST_TEST(size == 4); 
     }
 

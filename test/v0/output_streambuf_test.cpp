@@ -22,7 +22,7 @@ void basic_test()
     std::basic_string<CharT> expected;
 
     std::error_code err = use_all_writing_function_of_output_writer
-        ( strf::write_to(result.rdbuf(), &result_length)
+        ( strf::format(result.rdbuf(), &result_length)
         , expected );
 
     BOOST_TEST(!err);
@@ -43,7 +43,7 @@ int main()
         std::basic_string<char> expected;
 
         std::error_code err = use_all_writing_function_of_output_writer
-            ( strf::write_to(result.rdbuf(), nullptr)
+            ( strf::format(result.rdbuf(), nullptr)
             , expected );
 
         BOOST_TEST(!err);
@@ -55,10 +55,8 @@ int main()
         std::ostringstream result;
         std::size_t result_length = 1000;
 
-        std::error_code ec = strf::write_to(result.rdbuf(), &result_length)
-        = {
-            "abcd", error_code_emitter_arg, "lkjlj"
-        };
+        std::error_code ec = strf::format(result.rdbuf(), &result_length)
+            .error_code("abcd", error_code_emitter_arg, "lkjlj");
 
         BOOST_TEST(ec == std::errc::invalid_argument);
         BOOST_TEST(result.str() == "abcd");
@@ -72,8 +70,8 @@ int main()
 
         try
         {
-            strf::write_to(result.rdbuf(), &result_length)
-            &= {"abcd", exception_thrower_arg, "lkjlj"};
+            strf::format(result.rdbuf(), &result_length)
+                .exception("abcd", exception_thrower_arg, "lkjlj");
         }
         catch(...)
         {
@@ -88,8 +86,8 @@ int main()
         streambuf_that_fails_on_overflow<10> result;
         std::size_t result_length = 1000;
 
-        auto err = strf::write_to(result, &result_length)
-            = {strf::multi('a', 6), "ABCDEF", 'b'};
+        auto err = strf::format(result, &result_length)
+            .error_code(strf::multi('a', 6), "ABCDEF", 'b');
 
         BOOST_TEST(err == std::errc::io_error);
         BOOST_TEST(result_length == 10);
@@ -101,8 +99,8 @@ int main()
         streambuf_that_fails_on_overflow<10> result;
         std::size_t result_length = 1000;
 
-        auto err = strf::write_to(result, &result_length)
-            = {"ABCDEF", strf::multi('a', 6), "ABCDEF"};
+        auto err = strf::format(result, &result_length)
+            .error_code("ABCDEF", strf::multi('a', 6), "ABCDEF");
 
         BOOST_TEST(err == std::errc::io_error);
         BOOST_TEST(result_length == 10);

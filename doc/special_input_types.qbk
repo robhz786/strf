@@ -16,9 +16,9 @@ Actually, there is nothing really special about this category. The only differen
 
 [import ../example/v0/joins.cpp]
 
-Joins aligns a sub-list of arguments as if it where one argument. A join is created as pair of arguments between curling braces. The second of them is the list of arguments, which also has to be between curling braces:
+Joins aligns a sub-list of arguments as if it where one argument. A join is created with the following syntax:
 
-* `{ `[~join_expression]`, {`[~arguments_sub_list]`} }`
+* [~join_expression]` (`[~arguments]`...)`
 
 where, the [~join_expression] is one of the following:
 
@@ -50,14 +50,12 @@ This is something you way need to do in case you are using an [link section_asse
 
 [endsect]
 
-[section ftuple]
+[section Facets]
 [import ../example/v0/ftuple_as_input.cpp]
 
-If you want to apply some facet objects to only a subset of the arguments,
-you can use an [link ftuple ftuple] object as an input arg.
-The syntax is similar to the [link joins join] syntax :
+You want to apply some facet objects to only a subset of the arguments using the following syntax :
 
-* `{ `[~ftuple_obj]` , { `[~arguments_sub_list] `} }`
+* `facets(`[~facets_obj]`...) (`[~arguments]`...)`
 
 [ftuple_input]
 
@@ -95,7 +93,7 @@ You can use the format functions to format the range's elements
 
 syntax:
 
-* `{ assm(`[~assembly string]`) , { `[~arguments_sub_list]` } }`
+* `assemble(`[~assembly_string]`) (`[~arguments]...`)`
 
 [assembly_string_as_input]
 

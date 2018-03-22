@@ -138,12 +138,12 @@ public:
         return false;
     }
 
-    std::error_code finish() noexcept
+    std::error_code finish_error_code() noexcept
     {
         return m_err;
     }
 
-    void finish_throw()
+    void finish_exception()
     {
         if(m_err)
         {
@@ -194,7 +194,7 @@ class std_streambuf_writer<wchar_t, std::char_traits<wchar_t>>;
 
 
 template<typename CharT, typename Traits = std::char_traits<CharT> >
-auto write_to
+auto format
     ( std::basic_streambuf<CharT, Traits>& dest
     , std::size_t* count = nullptr
     )
@@ -206,7 +206,7 @@ auto write_to
 
 
 template<typename CharT, typename Traits = std::char_traits<CharT> >
-auto write_to
+auto format
     ( std::basic_streambuf<CharT, Traits>* dest
     , std::size_t* count = nullptr
     )

@@ -213,29 +213,30 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_formatter<wchar_t>;
 
 #endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
-namespace detail {
-
-struct char32_input_traits
+template
+    < typename CharT
+    , typename FTuple
+    , typename = typename std::enable_if<!std::is_same<CharT, char32_t>::value>::type
+    >
+inline stringify::v0::char32_formatter<CharT>
+boost_stringify_make_formatter(const FTuple& ft, char32_t ch)
 {
-    template <typename CharT, typename FTuple>
-    using formatter
-    = stringify::v0::char32_formatter<CharT>;
+    return {ft, ch};
+}
 
-    constexpr static auto fmt(char32_t value)
-        -> stringify::v0::char_with_format<char32_t>
-    {
-        return {value};
-    }
-};
-
-} // namespace detail
-
-stringify::v0::detail::char32_input_traits
-boost_stringify_input_traits_of(char32_t);
-
-stringify::v0::detail::char32_input_traits
-boost_stringify_input_traits_of(const stringify::v0::char_with_format<char32_t>&);
-
+template
+    < typename CharT
+    , typename FTuple
+    , typename = typename std::enable_if<!std::is_same<CharT, char32_t>::value>::type
+    >
+inline stringify::v0::char32_formatter<CharT>
+boost_stringify_make_formatter
+    ( const FTuple& ft
+    , const stringify::v0::char_with_format<char32_t>& ch
+    )
+{
+    return {ft, ch};
+}
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

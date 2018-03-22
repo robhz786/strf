@@ -10,11 +10,11 @@ void sample()
     
     std::vector<int> vec = { 11, 22, 33 };
 
-    auto result = strf::make_string() &=
-    {   " ("
-    ,   strf::iterate(vec, ", ")
-    ,   ") "
-    };
+    auto result = strf::make_string() .exception
+        ( " ("
+        , strf::iterate(vec, ", ")
+        , ") "
+        );
 
     BOOST_ASSERT(result == " (11, 22, 33) ");
     //]
@@ -28,11 +28,11 @@ void sample2()
     
     std::vector<int> vec = { 250, 251, 252 };
 
-    auto result = strf::make_string() &=
-    {   " ("
-    ,   ~strf::hex(strf::iterate(vec, ", "))
-    ,   ") "
-    };
+    auto result = strf::make_string() .exception
+        ( " ("
+        , ~strf::hex(strf::iterate(vec, ", "))
+        , ") "
+        );
 
     BOOST_ASSERT(result == " (0xfa, 0xfb, 0xfc) ");
     //]

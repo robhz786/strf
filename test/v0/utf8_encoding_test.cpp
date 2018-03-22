@@ -19,28 +19,26 @@ namespace strf = boost::stringify::v0;
 int main()
 {
     {
-        TEST(u8"--\u0080--\u07ff--\u0800--\uffff--\U00010000--\U0010ffff") &=
-            {
-                "--", U'\u0080',
-                "--", U'\u07ff',
-                "--", U'\u0800',
-                "--", U'\uffff',
-                "--", U'\U00010000',
-                "--", U'\U0010ffff',
-            };
+        TEST(u8"--\u0080--\u07ff--\u0800--\uffff--\U00010000--\U0010ffff") .exception
+            ( "--", U'\u0080',
+              "--", U'\u07ff',
+              "--", U'\u0800',
+              "--", U'\uffff',
+              "--", U'\U00010000',
+              "--", U'\U0010ffff'
+            );
 
     }
 
     {   // defaul error handling: replace codepoints, by '\uFFFD'
-        TEST_RF(u8"--\uFFFD--\uFFFD--\uFFFD--\uFFFD--\uFFFD\uFFFD\uFFFD--", 1.5) &=
-            {
-                "--", (char32_t)0xD800,
-                "--", (char32_t)0xDBFF,
-                "--", (char32_t)0xDC00,
-                "--", (char32_t)0xDFFF,
-                "--", strf::multi((char32_t)0x110000, 3),
-                "--", strf::multi((char32_t)0x110000, 0)
-            };
+        TEST_RF(u8"--\uFFFD--\uFFFD--\uFFFD--\uFFFD--\uFFFD\uFFFD\uFFFD--", 1.5) .exception
+            ( "--", (char32_t)0xD800,
+              "--", (char32_t)0xDBFF,
+              "--", (char32_t)0xDC00,
+              "--", (char32_t)0xDFFF,
+              "--", strf::multi((char32_t)0x110000, 3),
+              "--", strf::multi((char32_t)0x110000, 0)
+            );
     }
 
 
@@ -49,22 +47,21 @@ int main()
         auto facet = strf::make_u8encoder
             ( [](auto& ow, auto count) -> bool { return ow.repeat(count, 'X'); } );
 
-        TEST_RF(u8"------X------X------X------X------XXX------", 1.5) .with(facet) &=
-            {
-                "------", (char32_t)0xD800,
-                "------", (char32_t)0xDBFF,
-                "------", (char32_t)0xDC00,
-                "------", (char32_t)0xDFFF,
-                "------", strf::multi((char32_t)0x110000, 3),
-                "------", strf::multi((char32_t)0x110000, 0),
-            };
+        TEST_RF(u8"------X------X------X------X------XXX------", 1.5) .facets(facet) .exception
+            ( "------", (char32_t)0xD800,
+              "------", (char32_t)0xDBFF,
+              "------", (char32_t)0xDC00,
+              "------", (char32_t)0xDFFF,
+              "------", strf::multi((char32_t)0x110000, 3),
+              "------", strf::multi((char32_t)0x110000, 0)
+            );
     }
 
 
     {   // emit error code on invalid codepoints
         TEST_ERR("------", std::make_error_code(std::errc::illegal_byte_sequence))
-            .with(strf::make_u8encoder(strf::from_utf32_set_error_code<char>))
-            &= { "------", (char32_t)0x110000 };
+            .facets(strf::make_u8encoder(strf::from_utf32_set_error_code<char>))
+            .exception("------", (char32_t)0x110000);
     }
 
 
@@ -73,7 +70,7 @@ int main()
         try
         {
             auto facet = strf::make_u8encoder(strf::from_utf32_throw<char>);
-            auto rstr = strf::make_string .with(facet) = { (char32_t)0x110000 };
+            auto rstr = strf::make_string.facets(facet).error_code((char32_t)0x110000);
         }
         catch(...)
         {
@@ -85,17 +82,18 @@ int main()
     {   // WTF8 ( tolerate surrogates )
         auto facet = strf::make_u8encoder().wtf8();
 
-        TEST("--\xED\xA0\x80--\xED\xAF\xBF--\xED\xB0\x80--\xED\xBF\xBF") .with(facet) &=
-            {
-                "--", (char32_t)0xD800,
-                "--", (char32_t)0xDBFF,
-                "--", (char32_t)0xDC00,
-                "--", (char32_t)0xDFFF
-            };
+        TEST("--\xED\xA0\x80--\xED\xAF\xBF--\xED\xB0\x80--\xED\xBF\xBF")
+            .facets(facet)
+            .exception
+            ( "--", (char32_t)0xD800,
+              "--", (char32_t)0xDBFF,
+              "--", (char32_t)0xDC00,
+              "--", (char32_t)0xDFFF
+            );
     }
 
     {   // NO MUTF8
-        auto rstr = strf::make_string() = {"--", U'\0', "--"};
+        auto rstr = strf::make_string.error_code("--", U'\0', "--");
         BOOST_TEST(rstr && rstr.value() == std::string("--\0--", 5));
     }
 

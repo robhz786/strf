@@ -23,8 +23,8 @@ int main()
 
     {   // invalid UTF-8 / error code
         auto xstr = strf::make_u32string
-            .with(strf::make_u8decoder(cause_error_code))
-            = { "blah blah \xFF\xFF\xFF blah" };
+            .facets(strf::make_u8decoder(cause_error_code))
+            .error_code("blah blah \xFF\xFF\xFF blah");
 
         BOOST_ASSERT(! xstr);
         BOOST_ASSERT(xstr.error() == std::errc::illegal_byte_sequence);
@@ -32,8 +32,8 @@ int main()
 
     {   // invalid UTF-8 / replace
         auto xstr = strf::make_u32string
-            .with(strf::make_u8decoder(replace_by_X))
-            = { "blah blah \xFF blah" };
+            .facets(strf::make_u8decoder(replace_by_X))
+            .error_code("blah blah \xFF blah");
 
         BOOST_ASSERT(xstr.value() == U"blah blah X blah");
     }
@@ -45,7 +45,8 @@ int main()
     
     {   // invalid UTF-16 / error code
         auto xstr = strf::make_u32string
-            .with(strf::make_u16decoder<char16_t>(cause_error_code)) = { u16input };
+            .facets(strf::make_u16decoder<char16_t>(cause_error_code))
+            .error_code(u16input);
 
         BOOST_ASSERT( ! xstr);
         BOOST_ASSERT(xstr.error() == std::errc::illegal_byte_sequence);
@@ -53,7 +54,8 @@ int main()
 
     {   // invalid UTF-16 / replace
         auto xstr = strf::make_u32string
-            .with(strf::make_u16decoder<char16_t>(replace_by_X)) = { u16input };
+            .facets(strf::make_u16decoder<char16_t>(replace_by_X))
+            .error_code(u16input);
 
         BOOST_ASSERT(xstr.value() == U"blah blah X blah");
     }

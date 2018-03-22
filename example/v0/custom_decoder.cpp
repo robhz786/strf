@@ -66,7 +66,9 @@ private:
 
 int main()
 {
-    auto xstr = strf::make_u32string.with(ascii_iso_8859_7_decoder{}) = { "\xE1\xE2\xE3" };
+    auto xstr = strf::make_u32string
+        .facets(ascii_iso_8859_7_decoder{})
+        .error_code("\xE1\xE2\xE3");
 
     assert(xstr);
     auto str = xstr.value();

@@ -16,7 +16,7 @@ int main()
     {
         strf::monotonic_grouping<10> grouper(0);
 
-        TEST("100000000000000") .with(grouper) &= {100000000000000};
+        TEST("100000000000000") .facets(grouper) .exception(100000000000000);
         BOOST_TEST(grouper.thousands_sep_count(0) == 0);
         BOOST_TEST(grouper.thousands_sep_count(1) == 0);
         BOOST_TEST(grouper.thousands_sep_count(2) == 0);
@@ -81,8 +81,8 @@ int main()
     auto big_value = 10000000000000000000ull;
     {
         strf::str_grouping<10> grouper{std::string{}};
-        TEST("1000") .with(grouper) &= {1000};
-        TEST("0") .with(grouper) &= {0};
+        TEST("1000") .facets(grouper) .exception(1000);
+        TEST("0") .facets(grouper) .exception(0);
 
         BOOST_TEST(grouper.thousands_sep_count(0) == 0);
         BOOST_TEST(grouper.thousands_sep_count(1) == 0);
@@ -91,8 +91,8 @@ int main()
     }
     {
         strf::str_grouping<10> grouper{std::string("\0", 1)};
-        TEST("1000") .with(grouper) &= {1000};
-        TEST("0") .with(grouper) &= {0};
+        TEST("1000") .facets(grouper) .exception(1000);
+        TEST("0") .facets(grouper) .exception(0);
 
         BOOST_TEST(grouper.thousands_sep_count(0) == 0);
         BOOST_TEST(grouper.thousands_sep_count(1) == 0);
@@ -102,8 +102,8 @@ int main()
     }
     {
         strf::str_grouping<10> grouper{std::string("\001\002\003\000", 4)};
-        TEST("10000000000000,000,00,0") .with(grouper) &= {big_value};
-        TEST("0") .with(grouper) &= {0};
+        TEST("10000000000000,000,00,0") .facets(grouper) .exception(big_value);
+        TEST("0") .facets(grouper) .exception(0);
 
         BOOST_TEST(grouper.thousands_sep_count(0) == 0);
         BOOST_TEST(grouper.thousands_sep_count(1) == 0);
@@ -121,8 +121,8 @@ int main()
     }
     {
         strf::str_grouping<10> grouper{std::string("\001\002\003")};
-        TEST("10,000,000,000,000,000,00,0") .with(grouper) &= {big_value};
-        TEST("0") .with(grouper) &= {0};
+        TEST("10,000,000,000,000,000,00,0") .facets(grouper) .exception(big_value);
+        TEST("0") .facets(grouper) .exception(0);
 
         BOOST_TEST(grouper.thousands_sep_count(0) == 0);
         BOOST_TEST(grouper.thousands_sep_count(1) == 0);
@@ -140,15 +140,15 @@ int main()
     }
     {
         strf::str_grouping<10> grouper{std::string("\xff")};
-        TEST("10000000000000000000") .with(grouper) &= {big_value};
-        TEST("0") .with(grouper) &= {0};
+        TEST("10000000000000000000") .facets(grouper) .exception(big_value);
+        TEST("0") .facets(grouper) .exception(0);
 
     }
     {
         auto grouper = strf::str_grouping<10>{std::string("\x0f\002")}.thousands_sep(',');
-        TEST("1,00,00,000000000000000") .with(grouper) &= {big_value};
-        TEST("100000000000000") .with(grouper) &= {100000000000000};
-        TEST("0") .with(grouper) &= {0};
+        TEST("1,00,00,000000000000000") .facets(grouper) .exception(big_value);
+        TEST("100000000000000") .facets(grouper) .exception(100000000000000);
+        TEST("0") .facets(grouper) .exception(0);
 
 
         BOOST_TEST(grouper.thousands_sep_count(0) == 0);

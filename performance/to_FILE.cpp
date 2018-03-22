@@ -23,15 +23,13 @@ int main()
 
     std::cout << "\n small strings \n";
 
-    PRINT_BENCHMARK("strf::write_to(dest) = {\"Hello \", \"World\", \"!\"}")
+    PRINT_BENCHMARK("strf::format(dest) .error_code(\"Hello \", \"World\", \"!\")")
     {
-        auto err = strf::write_to(dest) = {"Hello ", "World", "!"};
-        (void)err;
+        (void)strf::format(dest) .error_code("Hello ", "World", "!");
     }
-    PRINT_BENCHMARK("strf::write_to(dest) [\"Hello {}!\"] = {\"World\"}")
+    PRINT_BENCHMARK("strf::format(dest) (\"Hello {}!\") .error_code(\"World\")")
     {
-        auto err = strf::write_to(dest) ["Hello {}!"] = {"World"};
-        (void)err;
+        (void)strf::format(dest) ("Hello {}!") .error_code("World");
     }
     PRINT_BENCHMARK("fmt::print(dest, \"Hello {}!\", \"World\")")
     {
@@ -48,15 +46,13 @@ int main()
         std::string std_string_long_string(1000, 'x');
         const char* long_string = std_string_long_string.c_str();
 
-        PRINT_BENCHMARK("strf::write_to(dest) = {\"Hello \", long_string, \"!\"}")
+        PRINT_BENCHMARK("strf::format(dest) .error_code(\"Hello \", long_string, \"!\")")
         {
-            auto err = strf::write_to(dest) = {"Hello ", long_string, "!"};
-            (void)err;
+            (void)strf::format(dest) .error_code("Hello ", long_string, "!");
         }
-        PRINT_BENCHMARK("strf::write_to(dest) [\"Hello {}!\"] = {long_string}")
+        PRINT_BENCHMARK("strf::format(dest) (\"Hello {}!\") .error_code(long_string)")
         {
-            auto err = strf::write_to(dest) ["Hello {}!"] = {long_string};
-            (void)err;
+            (void)strf::format(dest) ("Hello {}!") .error_code(long_string);
         }
         PRINT_BENCHMARK("fmt::print(dest, \"Hello {}!\", long_string)")
         {
@@ -70,15 +66,13 @@ int main()
 
     std::cout << "\n padding \n";
 
-    PRINT_BENCHMARK("strf::write_to(dest) = {strf::right(\"aa\", 20)}")
+    PRINT_BENCHMARK("strf::format(dest) .error_code(strf::right(\"aa\", 20))")
     {
-        auto err = strf::write_to(dest) = {strf::right("aa", 20)};
-        (void)err;
+        (void)strf::format(dest) .error_code(strf::right("aa", 20));
     }
-    PRINT_BENCHMARK("strf::write_to(dest) = { {join_right(20), {\"aa\"}} }")
+    PRINT_BENCHMARK("strf::format(dest) .error_code(join_right(20)(\"aa\"))")
     {
-        auto err = strf::write_to(dest) = { {strf::join_right(20), {"aa"}} };
-        (void)err;
+        (void)strf::format(dest) .error_code(strf::join_right(20)("aa"));
     }
     PRINT_BENCHMARK("fmt::print(dest, \"{:20}\", \"aa\")")
     {
@@ -91,10 +85,9 @@ int main()
 
     std::cout << "\n integers \n";
 
-    PRINT_BENCHMARK("strf::write_to(dest) = {25}")
+    PRINT_BENCHMARK("strf::format(dest) .error_code(25)")
     {
-        auto err = strf::write_to(dest) = {25};
-        (void)err;
+        (void)strf::format(dest) .error_code(25);
     }
     PRINT_BENCHMARK("fmt::print(dest, \"{}\", 25)")
     {
@@ -106,10 +99,9 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("strf::write_to(dest) = {LLONG_MAX}")
+    PRINT_BENCHMARK("strf::format(dest) .error_code(LLONG_MAX)")
     {
-        auto err = strf::write_to(dest) = {LLONG_MAX};
-        (void)err;
+        (void)strf::format(dest) .error_code(LLONG_MAX);
     }
     PRINT_BENCHMARK("fmt::print(dest, \"{}\", LLONG_MAX)")
     {
@@ -122,22 +114,19 @@ int main()
 
     std::cout << std::endl;
     strf::monotonic_grouping<10> numpunct_3(3);
-    PRINT_BENCHMARK("strf::write_to(dest).with(numpunct_3) = {LLONG_MAX}")
+    PRINT_BENCHMARK("strf::format(dest).facets(numpunct_3) .error_code(LLONG_MAX)")
     {
-        auto err = strf::write_to(dest).with(numpunct_3) = {LLONG_MAX};
-        (void)err;
+        (void)strf::format(dest).facets(numpunct_3) .error_code(LLONG_MAX);
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("strf::write_to(dest) = {LLONG_MAX, LLONG_MAX, LLONG_MAX}")
+    PRINT_BENCHMARK("strf::format(dest) .error_code(LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
-        auto err = strf::write_to(dest) = {LLONG_MAX, LLONG_MAX, LLONG_MAX};
-        (void)err;
+        (void)strf::format(dest) .error_code(LLONG_MAX, LLONG_MAX, LLONG_MAX);
     }
-    PRINT_BENCHMARK("strf::write_to(dest) [\"{}{}{}\"] = {LLONG_MAX, LLONG_MAX, LLONG_MAX}")
+    PRINT_BENCHMARK("strf::format(dest) (\"{}{}{}\") .error_code(LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
-        auto err = strf::write_to(dest) ["{}{}{}"] = {LLONG_MAX, LLONG_MAX, LLONG_MAX};
-        (void)err;
+        (void)strf::format(dest) ("{}{}{}") .error_code(LLONG_MAX, LLONG_MAX, LLONG_MAX);
     }
     PRINT_BENCHMARK("fmt::print(dest, \"{}{}{}\", LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
@@ -150,15 +139,13 @@ int main()
 
     std::cout << "\n formatted integers \n";
 
-    PRINT_BENCHMARK("strf::write_to(dest) [\"{}{}{}\"] = {55555, +strf::fmt(55555)<8 , +strf::hex(55555)}")
+    PRINT_BENCHMARK("strf::format(dest) (\"{}{}{}\") .error_code(55555, +strf::fmt(55555)<8 , +strf::hex(55555))")
     {
-        auto err = strf::write_to(dest) ["{}{}{}"] = {55555, +strf::fmt(55555)<8 , +strf::hex(55555)};
-        (void)err;
+        (void)strf::format(dest) ("{}{}{}") .error_code(55555, +strf::fmt(55555)<8 , +strf::hex(55555));
     }
-    PRINT_BENCHMARK("strf::write_to(dest) = {55555, +strf::fmt(55555)<8 , +strf::hex(55555)}")
+    PRINT_BENCHMARK("strf::format(dest) .error_code(55555, +strf::fmt(55555)<8 , +strf::hex(55555))")
     {
-        auto err = strf::write_to(dest) = {55555, +strf::fmt(55555)<8 , +strf::hex(55555)};
-        (void)err;
+        (void)strf::format(dest) .error_code(55555, +strf::fmt(55555)<8 , +strf::hex(55555));
     }
     PRINT_BENCHMARK("fmt::print(dest, \"{}{:<8}{:#x}\", 55555, 55555, 55555)")
     {
@@ -172,10 +159,9 @@ int main()
 
     std::cout << "\n Strings and itegers mixed: \n";
 
-    PRINT_BENCHMARK("strf::write_to(dest) [\"blah blah {} blah {} blah {}\"] = {INT_MAX, ~strf::hex(1234)<8, \"abcdef\"}")
+    PRINT_BENCHMARK("strf::format(dest) (\"blah blah {} blah {} blah {}\") .error_code(INT_MAX, ~strf::hex(1234)<8, \"abcdef\")")
     {
-        auto err = strf::write_to(dest) ["blah blah {} blah {} blah {}"] = {INT_MAX, ~strf::hex(1234)<8, "abcdef"};
-        (void)err;
+        (void)strf::format(dest) ("blah blah {} blah {} blah {}") .error_code(INT_MAX, ~strf::hex(1234)<8, "abcdef");
     }
     PRINT_BENCHMARK("fmt::print(dest, \"blah blah {} blah {:<#8x} blah {}\", INT_MAX, 1234, \"abcdef\")")
     {
@@ -188,15 +174,13 @@ int main()
 
     std::cout << std::endl;
 
-    PRINT_BENCHMARK("strf::write_to(dest) [\"ten = {}, twenty = {}\"] = {10, 20}")
+    PRINT_BENCHMARK("strf::format(dest) (\"ten = {}, twenty = {}\") .error_code(10, 20)")
     {
-        auto err = strf::write_to(dest) ["ten = {}, twenty = {}"] = {10, 20};
-        (void)err;
+        (void)strf::format(dest) ("ten = {}, twenty = {}") .error_code(10, 20);
     }
-    PRINT_BENCHMARK("strf::write_to(dest) = {\"ten =  \", 10, \", twenty = \", 20}")
+    PRINT_BENCHMARK("strf::format(dest) .error_code(\"ten =  \", 10, \", twenty = \", 20)")
     {
-        auto err = strf::write_to(dest) = {"ten =  ", 10, ", twenty = ", 20};
-        (void)err;
+        (void)strf::format(dest) .error_code("ten =  ", 10, ", twenty = ", 20);
     }
     PRINT_BENCHMARK("fmt::print(dest, \"ten = {}, twenty = {}\", 10, 20)")
     {
@@ -214,34 +198,34 @@ int main()
         std::u16string u16sample3(500, u'\u0800');
         char buff[100000];
     
-        PRINT_BENCHMARK("strf::write_to(buff) &= {u16sample1}; strf::write_to(dest) &= {buff}")
+        PRINT_BENCHMARK("strf::format(buff) .exception(u16sample1); strf::format(dest) .exception(buff)")
         {
-            strf::write_to(buff) &= {u16sample1};
-            strf::write_to(dest) &= {buff};
+            strf::format(buff) .exception(u16sample1);
+            strf::format(dest) .exception(buff);
         }
-        PRINT_BENCHMARK("strf::write_to(dest) &= {u16sample1}")
+        PRINT_BENCHMARK("strf::format(dest) .exception(u16sample1)")
         {
-            strf::write_to(dest) &= {u16sample1};
-        }
-        std::cout << "\n";
-        PRINT_BENCHMARK("strf::write_to(buff) &= {u16sample2}; strf::write_to(dest) &= {buff}")
-        {
-            strf::write_to(buff) &= {u16sample2};
-            strf::write_to(dest) &= {buff};
-        }
-        PRINT_BENCHMARK("strf::write_to(dest) &= {u16sample2}")
-        {
-            strf::write_to(dest) &= {u16sample2};
+            strf::format(dest) .exception(u16sample1);
         }
         std::cout << "\n";
-        PRINT_BENCHMARK("strf::write_to(buff) &= {u16sample3}; strf::write_to(dest) &= {buff}")
+        PRINT_BENCHMARK("strf::format(buff) .exception(u16sample2); strf::format(dest) .exception(buff)")
         {
-            strf::write_to(buff) &= {u16sample3};
-            strf::write_to(dest) &= {buff};
+            strf::format(buff) .exception(u16sample2);
+            strf::format(dest) .exception(buff);
         }
-        PRINT_BENCHMARK("strf::write_to(dest) &= {u16sample3}")
+        PRINT_BENCHMARK("strf::format(dest) .exception(u16sample2)")
         {
-            strf::write_to(dest) &= {u16sample3};
+            strf::format(dest) .exception(u16sample2);
+        }
+        std::cout << "\n";
+        PRINT_BENCHMARK("strf::format(buff) .exception(u16sample3); strf::format(dest) .exception(buff)")
+        {
+            strf::format(buff) .exception(u16sample3);
+            strf::format(dest) .exception(buff);
+        }
+        PRINT_BENCHMARK("strf::format(dest) .exception(u16sample3)")
+        {
+            strf::format(dest) .exception(u16sample3);
         }
     }
     

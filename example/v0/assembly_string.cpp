@@ -7,7 +7,7 @@ int main()
 {
     {
         //[ asmstr_escape_sample
-        auto str = strf::make_string["} }/ {/ } {}"] &= {"aaa"};
+        auto str = strf::make_string("} }/ {/ } {}").exception("aaa");
         BOOST_ASSERT(str == "} }/ { } aaa");
         //]
     }
@@ -15,8 +15,8 @@ int main()
     {
         //[ asmstr_comment_sample
         auto str = strf::make_string
-            ["You can learn more about python{-the programming language, not the reptile} at {}"]
-            &= {"www.python.org"};
+            ("You can learn more about python{-the programming language, not the reptile} at {}")
+            .exception("www.python.org");
         BOOST_ASSERT(str == "You can learn more about python at www.python.org");
         //]
     }
@@ -24,14 +24,14 @@ int main()
     
     {
         //[ asmstr_positional_arg
-        auto str = strf::make_string ["{1 person} likes {0 food}."] &= {"sandwich", "Paul"};
+        auto str = strf::make_string("{1 person} likes {0 food}.").exception("sandwich", "Paul");
         BOOST_ASSERT(str == "Paul likes sandwich.");
         //]
     }
 
     {
         //[ asmstr_non_positional_arg
-        auto str = strf::make_string ["{person} likes {food}."] &= {"Paul", "sandwich"};
+        auto str = strf::make_string("{person} likes {food}.").exception("Paul", "sandwich");
         BOOST_ASSERT(str == "Paul likes sandwich.");
         //]
     }

@@ -40,16 +40,13 @@ public:
     }
 };
 
-struct exceptional_formatter_traits
+} // namespace detail
+
+template <typename CharT, typename FTuple>
+inline detail::exceptional_formatter<CharT>
+boost_stringify_make_formatter(const FTuple& ft, exception_tag x)
 {
-    template <typename CharT, typename>
-    using formatter = exceptional_formatter<CharT>;    
-};
-
-
+    return {ft, x};
 }
-
-detail::exceptional_formatter_traits boost_stringify_input_traits_of(exception_tag);
-
 
 #endif

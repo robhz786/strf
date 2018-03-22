@@ -10,7 +10,7 @@ void basic_facet_sample()
     // str_grouping<10> facet belongs to numpunct_category<10> category
     strf::str_grouping<10> facet_obj{"\2\2\3"};
 
-    auto str = strf::make_string.with(facet_obj) &= { 10000000000000LL };
+    auto str = strf::make_string.facets(facet_obj).exception(10000000000000LL);
 
     BOOST_ASSERT(str == "1,000,000,000,00,00");
     //]
@@ -25,7 +25,7 @@ void constrained_facet()
 
     auto facet_obj = strf::constrain<std::is_signed>(strf::monotonic_grouping<10>{3});
 
-    auto str = strf::make_string.with(facet_obj) ["{}  {}"] &= { 100000u, 100000 };
+    auto str = strf::make_string.facets(facet_obj)("{}  {}").exception(100000u, 100000 );
 
     BOOST_ASSERT(str == "100000  100,000");
     //]
@@ -49,15 +49,15 @@ void overriding_sample()
     // hence the presence of punt_dec_1 bellow has no effect.
 
     auto str = strf::make_string
-        .with
+        .facets
             ( punct_hex
             , punct_oct
             , punct_dec_1
             , punct_dec_2
             , strf::constrain<std::is_signed>(punct_dec_3)
             )
-        ["{}  {}  {}  {}"]
-        &= { 100000, 100000u, strf::hex(100000), strf::oct(100000) };
+        ("{}  {}  {}  {}")
+        .exception(100000, 100000u, strf::hex(100000), strf::oct(100000));
 
     BOOST_ASSERT(str == "100^000  10.00.00  1'86a0  303_240");
     //]

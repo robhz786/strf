@@ -6,8 +6,8 @@ import subprocess
 import tempfile
 import shutil
 
-gxx = os.environ.get('CXX')
-if not gxx or not os.path.isfile(gxx) :
+cxx = os.environ.get('CXX')
+if not cxx or not os.path.isfile(cxx) :
     print("set CXX environment variable to a valid compiler")
     quit(1)
 
@@ -124,8 +124,9 @@ def compile_unit(release, flags, basename, obj_id):
              'output size' : obj_size }
 
 def compile_unit_cmd(release, flags, basename, obj_id) :
-    cmd = [ gxx,
+    cmd = [ cxx,
             "-O3" if release else "-g",
+            "-std=c++14",
             "-DSRC_ID=" + obj_id,
             "-DFUNCTION_NAME=function" + obj_id]
     cmd.extend(flags)
@@ -165,8 +166,9 @@ def write_auxiliary_src_files(num_objs) :
     sub_cpp_file.close()
    
 def build_program_command(release, main_src, basename, num_objs, libs) :
-    cmd = [gxx]
+    cmd = [cxx]
     cmd.append("-O3" if release else "-g")
+    cmd.append("-std=c++14")
     cmd.append(main_src)
 #   cmd.append(boost_incl)
     cmd.extend(obj_files(release, basename, num_objs))
@@ -184,7 +186,7 @@ def obj_files(release, basename, num_objs):
 
 def build_lib_stringify(flag, libname):
     print("building " + libname + " ...")
-    cmd = [gxx, flag, boost_incl, '-c', stringify_cpp,
+    cmd = [cxx, flag, "-std=c++14", boost_incl, '-c', stringify_cpp,
            '-o', libname]
     if 0 != subprocess.call(cmd):
         print("error building" + libname)
@@ -234,6 +236,7 @@ benchmark_release(basename = 'to_FILE_stringify',
                   main_src = 'to_FILE_main.cpp',
                   flags    = [boost_incl],
                   libs     = [lib_boost_stringify_release])
+
 if not only_boost_stringify :
     benchmark_release(basename = 'to_FILE_fmtlib',
                       main_src = 'to_FILE_main.cpp',
@@ -285,10 +288,12 @@ if not only_boost_stringify :
                       libs     = [])
 print(empty_row())
 
+
 benchmark_release(basename = 'to_FILE_stringify_ho',
                   main_src = 'to_FILE_main.cpp',
                   flags    = [boost_incl],
                   libs     = [])
+
 if not only_boost_stringify :
     benchmark_release(basename = 'to_FILE_fmtlib_ho',
                       main_src = 'to_FILE_main.cpp',

@@ -8,7 +8,7 @@
 #include <boost/stringify/v0/input_types/char32.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
-namespace detail {
+
 
 template <typename CharT>
 class char_formatter: public formatter<CharT>
@@ -172,50 +172,39 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_formatter<wchar_t>;
 
 #endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
-
-template <typename CharIn>
-struct char_input_traits
+template <typename CharT, typename FTuple>
+inline stringify::v0::char_formatter<CharT>
+boost_stringify_make_formatter(const FTuple& ft, CharT ch)
 {
+    return {ft, ch};
+}
 
-private:
+template <typename CharT, typename FTuple>
+inline stringify::v0::char_formatter<CharT>
+boost_stringify_make_formatter
+    ( const FTuple& ft
+    , const stringify::v0::char_with_format<CharT>& ch
+    )
+{
+    return {ft, ch};
+}
 
-    template <typename CharOut>
-    struct checker
-    {
-        static_assert(sizeof(CharIn) == sizeof(CharOut), "");
-
-        using formatter
-        = stringify::v0::detail::char_formatter<CharOut>;
-    };
-
-public:
-
-    template <typename CharOut, typename>
-    using formatter = typename checker<CharOut>::formatter;
-
-    constexpr static auto fmt(CharIn value)
-        -> stringify::v0::char_with_format<CharIn>
-    {
-        return {value};
-    }
-
-};
-
-} //namepace detail
-
-
-stringify::v0::detail::char_input_traits<char>
-boost_stringify_input_traits_of(char);
-
-stringify::v0::detail::char_input_traits<char16_t>
-boost_stringify_input_traits_of(char16_t);
-
-stringify::v0::detail::char_input_traits<wchar_t>
-boost_stringify_input_traits_of(wchar_t);
-
-template <typename CharT>
-stringify::v0::detail::char_input_traits<CharT>
-boost_stringify_input_traits_of(const stringify::v0::char_with_format<CharT>&);
+inline stringify::v0::char_with_format<char> boost_stringify_fmt(char ch)
+{
+    return {ch};
+}
+inline stringify::v0::char_with_format<wchar_t> boost_stringify_fmt(wchar_t ch)
+{
+    return {ch};
+}
+inline stringify::v0::char_with_format<char16_t> boost_stringify_fmt(char16_t ch)
+{
+    return {ch};
+}
+inline stringify::v0::char_with_format<char32_t> boost_stringify_fmt(char32_t ch)
+{
+    return {ch};
+}
 
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

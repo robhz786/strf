@@ -474,51 +474,109 @@ int int_formatter<IntT, CharT>::remaining_width(int w) const
     return w > m_input.width() ? (w - m_input.width()) : 0;
 }
 
-namespace detail {
 
-template <typename IntT>
-struct int_input_traits
+template <typename CharT, typename FTuple>
+inline stringify::v0::int_formatter<short, CharT>
+boost_stringify_make_formatter(const FTuple& ft, short x)
 {
-    template <typename CharT, typename>
-    using formatter =
-        stringify::v0::int_formatter<IntT, CharT>;
+    return {ft, x};
+}
+template <typename CharT, typename FTuple>
+inline stringify::v0::int_formatter<int, CharT>
+boost_stringify_make_formatter(const FTuple& ft, int x)
+{
+    return {ft, x};
+}
+template <typename CharT, typename FTuple>
+inline stringify::v0::int_formatter<long, CharT>
+boost_stringify_make_formatter(const FTuple& ft, long x)
+{
+    return {ft, x};
+}
+template <typename CharT, typename FTuple>
+inline stringify::v0::int_formatter<long long, CharT>
+boost_stringify_make_formatter(const FTuple& ft, long long x)
+{
+    return {ft, x};
+}
+template <typename CharT, typename FTuple>
+inline stringify::v0::int_formatter<unsigned short, CharT>
+boost_stringify_make_formatter(const FTuple& ft, unsigned short x)
+{
+    return {ft, x};
+}
+template <typename CharT, typename FTuple>
+inline stringify::v0::int_formatter<unsigned int, CharT>
+boost_stringify_make_formatter(const FTuple& ft, unsigned int x)
+{
+    return {ft, x};
+}
+template <typename CharT, typename FTuple>
+inline stringify::v0::int_formatter<unsigned long, CharT>
+boost_stringify_make_formatter(const FTuple& ft, unsigned long x)
+{
+    return {ft, x};
+}
+template <typename CharT, typename FTuple>
+inline stringify::v0::int_formatter<unsigned long long, CharT>
+boost_stringify_make_formatter(const FTuple& ft, unsigned long long x)
+{
+    return {ft, x};
+}
 
-    constexpr static stringify::v0::int_with_format<IntT> fmt(IntT value)
-    {
-        return {value};
-    }
-};
 
-} // namespace detail
+template <typename CharT, typename FTuple, typename IntT>
+inline stringify::v0::int_formatter<IntT, CharT>
+boost_stringify_make_formatter
+    ( const FTuple& ft
+    , const stringify::v0::int_with_format<IntT>& x
+    )
+{
+    return {ft, x};
+}
 
-stringify::v0::detail::int_input_traits<short>
-boost_stringify_input_traits_of(short);
+inline stringify::v0::int_with_format<short>
+boost_stringify_fmt(short x)
+{
+    return {x};
+}
+inline stringify::v0::int_with_format<int>
+boost_stringify_fmt(int x)
+{
+    return {x};
+}
+inline stringify::v0::int_with_format<long>
+boost_stringify_fmt(long x)
+{
+    return {x};
+}
+inline stringify::v0::int_with_format<long long>
+boost_stringify_fmt(long long x)
+{
+    return {x};
+}
+inline stringify::v0::int_with_format<unsigned short>
+boost_stringify_fmt(unsigned short x)
+{
+    return {x};
+}
+inline stringify::v0::int_with_format<unsigned>
+boost_stringify_fmt(unsigned x)
+{
+    return {x};
+}
+inline stringify::v0::int_with_format<unsigned long>
+boost_stringify_fmt(unsigned long x)
+{
+    return {x};
+}
+inline stringify::v0::int_with_format<unsigned long long>
+boost_stringify_fmt(unsigned long long x)
+{
+    return {x};
+}
 
-stringify::v0::detail::int_input_traits<int>
-boost_stringify_input_traits_of(int);
 
-stringify::v0::detail::int_input_traits<long>
-boost_stringify_input_traits_of(long);
-
-stringify::v0::detail::int_input_traits<long long>
-boost_stringify_input_traits_of(long long);
-
-stringify::v0::detail::int_input_traits<unsigned short>
-boost_stringify_input_traits_of(unsigned short);
-
-stringify::v0::detail::int_input_traits<unsigned>
-boost_stringify_input_traits_of(unsigned);
-
-stringify::v0::detail::int_input_traits<unsigned long>
-boost_stringify_input_traits_of(unsigned long);
-
-stringify::v0::detail::int_input_traits<unsigned long long>
-boost_stringify_input_traits_of(unsigned long long);
-
-
-template <typename IntT>
-stringify::v0::detail::int_input_traits<IntT>
-boost_stringify_input_traits_of(const stringify::v0::int_with_format<IntT>&);
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 

@@ -9,23 +9,23 @@ int main()
 {
     namespace strf = boost::stringify::v0;
 
-    TEST("   abcdef123   ") &= {{strf::join_center(15), {"abc", "de", "f", 123 }}};
-    TEST("   abcdef123") &= {{strf::join_internal(12, -5), {"abc", "de", "f", 123 }}};
-    TEST("   abcdef123") &= {{strf::join_internal(12, 0), {"abc", "de", "f", 123 }}};
-    TEST("abcdef   123") &= {{strf::join_internal(12, 3), {"abc", "de", "f", 123}}};
-    TEST("abcdef123   ") &= {{strf::join_internal(12, 4), {"abc", "de", "f", 123 }}};
-    TEST("abcdef123   ") &= {{strf::join_internal(12, 5), {"abc", "de", "f", 123 }}};
-    TEST("abcdef123   ") &= {{strf::join_left(12), {"abc", "def", 123}}};
-    TEST("   abcdef123") &= {{strf::join_right(12), {"abc", "def", 123}}};
-    TEST("~~~abcdef123") &= {{strf::join_right(12, '~'), {"abc", "def", 123}}};
-    TEST("abcdef123") &= {{strf::join_center(9), {"abc", "def", 123}}};
-    TEST("abcdef123") &= {{strf::join_internal(9, 1), {"abc", "def", 1, 23}}};
-    TEST("abcdef123") &= {{strf::join_left(9), {"abc", "def", 123}}};
-    TEST("abcdef123") &= {{strf::join_right(9), {"abc", "def", 123}}};
-    TEST("abcdef123") &= {{strf::join_center(8), {"abc", "def", 123}}};
-    TEST("abcdef123") &= {{strf::join_internal(8, 1), {"abc", "def", 1, 23}}};
-    TEST("abcdef123") &= {{strf::join_left(8), {"abc", "def", 123}}};
-    TEST("abcdef123") &= {{strf::join_right(8), {"abc", "def", 123}}};
+    TEST("   abcdef123   ") .exception(strf::join_center(15)("abc", "de", "f", 123));
+    TEST("   abcdef123") .exception(strf::join_internal(12, -5)("abc", "de", "f", 123));
+    TEST("   abcdef123") .exception(strf::join_internal(12, 0)("abc", "de", "f", 123));
+    TEST("abcdef   123") .exception(strf::join_internal(12, 3)("abc", "de", "f", 123));
+    TEST("abcdef123   ") .exception(strf::join_internal(12, 4)("abc", "de", "f", 123));
+    TEST("abcdef123   ") .exception(strf::join_internal(12, 5)("abc", "de", "f", 123));
+    TEST("abcdef123   ") .exception(strf::join_left(12)("abc", "def", 123));
+    TEST("   abcdef123") .exception(strf::join_right(12)("abc", "def", 123));
+    TEST("~~~abcdef123") .exception(strf::join_right(12, '~')("abc", "def", 123));
+    TEST("abcdef123") .exception(strf::join_center(9)("abc", "def", 123));
+    TEST("abcdef123") .exception(strf::join_internal(9, 1)("abc", "def", 1, 23));
+    TEST("abcdef123") .exception(strf::join_left(9)("abc", "def", 123));
+    TEST("abcdef123") .exception(strf::join_right(9)("abc", "def", 123));
+    TEST("abcdef123") .exception(strf::join_center(8)("abc", "def", 123));
+    TEST("abcdef123") .exception(strf::join_internal(8, 1)("abc", "def", 1, 23));
+    TEST("abcdef123") .exception(strf::join_left(8)("abc", "def", 123));
+    TEST("abcdef123") .exception(strf::join_right(8)("abc", "def", 123));
 
     int rc = report_errors();
     return rc;

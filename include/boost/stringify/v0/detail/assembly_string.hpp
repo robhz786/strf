@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/input_arg.hpp>
+#include <boost/stringify/v0/config.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
@@ -26,70 +26,68 @@ public:
     virtual void put_arg(std::size_t index) = 0;
 };
 
-
-template <typename CharT, typename FTuple>
-class asm_string_writer: public asm_string_processor<CharT>
+template <typename CharIn, typename CharOut>
+class asm_string_writer: public asm_string_processor<CharIn>
 {
-    using arg_type =  stringify::v0::input_arg<CharT, FTuple>;
-    using arglist_type = std::initializer_list<arg_type>;
-
 public:
 
+    using formatter_ptr = const stringify::v0::formatter<CharOut>*;
+    using arglist_type = std::initializer_list<formatter_ptr>;
+
+    template <typename FTuple>
     asm_string_writer
-        ( const arglist_type& arglist
-        , stringify::v0::output_writer<CharT>& writer
-        , const FTuple& ft
+        ( const FTuple&
+        , stringify::v0::output_writer<CharOut>& dest
+        , arglist_type args
         )
-        : m_arglist(arglist)
-        , m_writer(writer)
-        , m_ftuple(ft)
+        : m_dest(dest)
+        , m_args(args)
     {
     }
 
-    virtual bool good()
+    bool good() override
     {
-        return m_writer.good();
+        return m_dest.good();
     }
 
-    virtual void put(const CharT* begin, const CharT* end)
+    void put(const CharIn* begin, const CharIn* end) override
     {
-        BOOST_ASSERT(end >= begin);
-        m_writer.put(begin, end - begin);
-    }
-
-    virtual void put_arg(std::size_t index)
-    {
-        if (index >= m_arglist.size())
+        if(begin < end)
         {
-            m_writer.set_error(std::make_error_code(std::errc::value_too_large));
+            m_dest.put(begin, (end - begin));
+        }
+    }
+
+    void put_arg(std::size_t index) override
+    {
+        if (index < m_args.size())
+        {
+            m_args.begin()[index]->write(m_dest);
         }
         else
         {
-            m_arglist.begin()[index].write(m_writer, m_ftuple);
+            m_dest.set_error(std::make_error_code(std::errc::value_too_large));
         }
     }
 
 private:
 
-    arglist_type m_arglist;
-    stringify::v0::output_writer<CharT>& m_writer;
-    const FTuple& m_ftuple;
+    stringify::v0::output_writer<CharOut>& m_dest;
+    arglist_type m_args;
 };
 
-template <typename CharT, typename FTuple>
-class asm_string_measurer: public asm_string_processor<CharT>
+
+template <typename CharIn, typename CharOut>
+class asm_string_measurer: public asm_string_processor<CharIn>
 {
-    using arg_type =  stringify::v0::input_arg<CharT, FTuple>;
-    using arglist_type = std::initializer_list<arg_type>;
+
+    using formatter_ptr = const stringify::v0::formatter<CharOut>*;
+    using arglist_type = std::initializer_list<formatter_ptr>;
 
 public:
 
-    explicit asm_string_measurer
-        ( const arglist_type& arglist
-        , const FTuple& ft
-        )
+    explicit asm_string_measurer(const arglist_type& arglist)
         : m_arglist(arglist)
-        , m_ftuple(ft)
     {
     }
 
@@ -98,7 +96,7 @@ public:
         return true;
     }
 
-    virtual void put(const CharT* begin, const CharT* end)
+    virtual void put(const CharIn* begin, const CharIn* end)
     {
         BOOST_ASSERT(end >= begin);
         m_length += (end - begin);
@@ -108,7 +106,7 @@ public:
     {
         if (index < m_arglist.size())
         {
-            m_length += m_arglist.begin()[index].length(m_ftuple);
+            m_length += m_arglist.begin()[index]->length();
         }
     }
 
@@ -121,9 +119,7 @@ private:
 
     std::size_t m_length = 0;
     arglist_type m_arglist;
-    const FTuple& m_ftuple;
 };
-
 
 template <typename CharT>
 struct read_uint_result

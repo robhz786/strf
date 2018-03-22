@@ -50,16 +50,13 @@ private:
     std::error_code m_err;
 };
 
-struct erroneous_formatter_traits
+} // namespace detail
+
+template <typename CharT, typename FTuple>
+inline detail::erroneous_formatter<CharT>
+boost_stringify_make_formatter(const FTuple& ft, error_tag x)
 {
-    template <typename CharT, typename>
-    using formatter = erroneous_formatter<CharT>;    
-};
-
-
+    return {ft, x};
 }
-
-detail::erroneous_formatter_traits boost_stringify_input_traits_of(error_tag);
-
 
 #endif

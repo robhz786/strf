@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <string>
-#include <boost/stringify/v0/args_handler.hpp>
+#include <boost/stringify/v0/syntax.hpp>
 #include <boost/stringify/v0/output_writer.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -180,13 +180,13 @@ public:
         return true;
     }
 
-    std::error_code finish() noexcept
+    std::error_code finish_error_code() noexcept
     {
         do_finish();
         return m_err;
     }
 
-    void finish_throw()
+    void finish_exception()
     {
         do_finish();
         if(m_err)
@@ -248,7 +248,7 @@ class char_ptr_writer<wchar_t, std::char_traits<wchar_t>>;
 
 
 template<typename CharTraits = std::char_traits<char>, std::size_t N>
-auto write_to(char (&destination)[N], std::size_t* out_count = nullptr)
+auto format(char (&destination)[N], std::size_t* out_count = nullptr)
 {
     using writer = stringify::v0::detail::char_ptr_writer<char, CharTraits>;
     return stringify::v0::make_args_handler<writer, char*>
@@ -256,7 +256,7 @@ auto write_to(char (&destination)[N], std::size_t* out_count = nullptr)
 }
 
 template<typename CharTraits = std::char_traits<char16_t>, std::size_t N>
-auto write_to(char16_t (&destination)[N], std::size_t* out_count = nullptr)
+auto format(char16_t (&destination)[N], std::size_t* out_count = nullptr)
 {
     using writer = stringify::v0::detail::char_ptr_writer<char16_t, CharTraits>;
     return stringify::v0::make_args_handler<writer, char16_t*>
@@ -264,7 +264,7 @@ auto write_to(char16_t (&destination)[N], std::size_t* out_count = nullptr)
 }
 
 template<typename CharTraits = std::char_traits<char32_t>, std::size_t N>
-auto write_to(char32_t (&destination)[N], std::size_t* out_count = nullptr)
+auto format(char32_t (&destination)[N], std::size_t* out_count = nullptr)
 {
     using writer = stringify::v0::detail::char_ptr_writer<char32_t, CharTraits>;
     return stringify::v0::make_args_handler<writer, char32_t*>
@@ -272,7 +272,7 @@ auto write_to(char32_t (&destination)[N], std::size_t* out_count = nullptr)
 }
 
 template<typename CharTraits = std::char_traits<wchar_t>, std::size_t N>
-auto write_to(wchar_t (&destination)[N], std::size_t* out_count = nullptr)
+auto format(wchar_t (&destination)[N], std::size_t* out_count = nullptr)
 {
     using writer = stringify::v0::detail::char_ptr_writer<wchar_t, CharTraits>;
     return stringify::v0::make_args_handler<writer, wchar_t*>
@@ -280,7 +280,7 @@ auto write_to(wchar_t (&destination)[N], std::size_t* out_count = nullptr)
 }
 
 template<typename CharTraits = std::char_traits<char> >
-auto write_to
+auto format
     ( char* destination
     , char* end
     , std::size_t* out_count = nullptr
@@ -292,7 +292,7 @@ auto write_to
 }
 
 template<typename CharTraits = std::char_traits<char16_t> >
-auto write_to
+auto format
     ( char16_t* destination
     , char16_t* end
     , std::size_t* out_count = nullptr
@@ -304,7 +304,7 @@ auto write_to
 }
 
 template<typename CharTraits = std::char_traits<char32_t> >
-auto write_to
+auto format
     ( char32_t* destination
     , char32_t* end
     , std::size_t* out_count = nullptr
@@ -316,7 +316,7 @@ auto write_to
 }
 
 template<typename CharTraits = std::char_traits<wchar_t> >
-auto write_to
+auto format
     ( wchar_t* destination
     , wchar_t* end
     , std::size_t* out_count = nullptr
@@ -328,7 +328,7 @@ auto write_to
 }
 
 template<typename CharTraits = std::char_traits<char> >
-auto write_to
+auto format
     ( char* destination
     , std::size_t count
     , std::size_t* out_count = nullptr
@@ -340,7 +340,7 @@ auto write_to
 }
 
 template<typename CharTraits = std::char_traits<char16_t> >
-auto write_to
+auto format
     ( char16_t* destination
     , std::size_t count
     , std::size_t* out_count = nullptr
@@ -352,7 +352,7 @@ auto write_to
 }
 
 template<typename CharTraits = std::char_traits<char32_t> >
-auto write_to
+auto format
     ( char32_t* destination
     , std::size_t count
     , std::size_t* out_count = nullptr
@@ -364,7 +364,7 @@ auto write_to
 }
 
 template<typename CharTraits = std::char_traits<wchar_t> >
-auto write_to
+auto format
     ( wchar_t* destination
     , std::size_t count
     , std::size_t* out_count = nullptr)

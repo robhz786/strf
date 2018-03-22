@@ -128,7 +128,7 @@ public:
         return false;
     }
 
-    stringify::v0::expected<StringType, std::error_code> finish()
+    stringify::v0::expected<StringType, std::error_code> finish_error_code()
     {
         if (m_err)
         {
@@ -137,7 +137,7 @@ public:
         return {boost::stringify::v0::in_place_t{}, std::move(m_out)};
     }
 
-    StringType finish_throw()
+    StringType finish_exception()
     {
         if(m_err)
         {

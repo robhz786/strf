@@ -24,7 +24,7 @@ int main()
     {
         const char* u8str_with_surr_D800  = "-- \xED\xA0\x80 --";
         
-        auto xstr = strf::make_u16string.with(f1, f2) = {u8str_with_surr_D800};
+        auto xstr = strf::make_u16string.facets(f1, f2).error_code(u8str_with_surr_D800);
         BOOST_ASSERT(! xstr);
         BOOST_ASSERT(xstr.error() == std::errc::illegal_byte_sequence);
     }
@@ -34,7 +34,7 @@ int main()
         const char32_t u32str_with_surr_D800[] =
             {U'-', U'-', U' ', 0xD800, U' ', U'-', U'-'};
 
-        auto xstr = strf::make_u16string.with(f1, f2) = {u32str_with_surr_D800};
+        auto xstr = strf::make_u16string.facets(f1, f2).error_code(u32str_with_surr_D800);
         BOOST_ASSERT(! xstr);
         BOOST_ASSERT(xstr.error() == std::errc::illegal_byte_sequence);
 
