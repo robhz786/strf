@@ -5,8 +5,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <boost/stringify/v0/basic_types.hpp>
 #include <boost/stringify/v0/ftuple.hpp>
-#include <boost/stringify/v0/formatter.hpp>
 #include <boost/stringify/v0/input_types/join.hpp>
 #include <initializer_list>
 
@@ -138,7 +138,35 @@ public:
     }
 };
 
+// struct ftuple_input_traits
+// {
+//     template
+//         < typename CharT
+//         , typename ParentFTuple
+//         , typename ChildFTuple
+//         , typename ... Args
+//         >
+//     static inline stringify::v0::detail::ftuple_formatter
+//         < CharT
+//         , ParentFTuple
+//         , ChildFTuple
+//         , Args...
+//         >
+//     make_formatter
+//         ( const ParentFTuple& ft
+//         , const detail::inner_ftuple_with_args<ChildFTuple, Args...>& x
+//         )
+//     {
+//         return {ft, x};
+//     }
+// };
+
 } // namespace detail
+
+// template <typename ChildFTuple, typename ... Args>
+// stringify::v0::detail::ftuple_input_traits
+// stringify_get_input_traits
+// ( const stringify::v0::detail::inner_ftuple_with_args<ChildFTuple, Args...>& fmt );
 
 template <typename ... Facets>
 stringify::v0::detail::inner_ftuple<stringify::v0::ftuple<Facets ...>>
@@ -154,7 +182,6 @@ facets(const stringify::v0::ftuple<Facets...>& ft)
     return {ft};
 }
 
-
 template
    < typename CharT
    , typename FTuple
@@ -162,15 +189,13 @@ template
    , typename ... Args
    >
 inline stringify::v0::detail::ftuple_formatter<CharT, FTuple, ChildFTuple, Args...>
-boost_stringify_make_formatter
+stringify_make_formatter
    ( const FTuple& ft
    , const stringify::v0::detail::inner_ftuple_with_args<ChildFTuple, Args...>& fmt
    )
 {
     return {ft, fmt};
 }
-
-
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <system_error>
-#include <boost/stringify/v0/formatter.hpp>
+#include <boost/stringify/v0/basic_types.hpp>
 
 struct error_tag
 {
@@ -50,13 +50,29 @@ private:
     std::error_code m_err;
 };
 
+struct error_tag_input_traits
+{
+    template <typename CharT, typename FTuple>
+    static inline detail::erroneous_formatter<CharT> make_formatter
+        (const FTuple& ft, error_tag x)
+    {
+        return {ft, x};
+    }
+};
+
 } // namespace detail
 
+detail::error_tag_input_traits stringify_get_input_traits(error_tag x);
+
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+
 template <typename CharT, typename FTuple>
-inline detail::erroneous_formatter<CharT>
-boost_stringify_make_formatter(const FTuple& ft, error_tag x)
+inline ::detail::erroneous_formatter<CharT>
+stringify_make_formatter(const FTuple& ft, error_tag x)
 {
     return {ft, x};
 }
+
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif

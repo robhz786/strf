@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <system_error>
-#include <boost/stringify/v0/output_writer.hpp>
+#include <boost/stringify/v0/basic_types.hpp>
 #include <boost/stringify/v0/ftuple.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN

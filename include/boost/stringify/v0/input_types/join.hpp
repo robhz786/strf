@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/formatter.hpp>
+#include <boost/stringify/v0/basic_types.hpp>
 #include <initializer_list>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -92,12 +92,19 @@ public:
 template <typename CharT, typename FTuple, typename Arg, typename ... Args>
 class formatters_tuple<CharT, FTuple, Arg, Args...>
 {
+    using formatter_type
+        = decltype
+            ( stringify_make_formatter<CharT, FTuple>
+                ( std::declval<FTuple>()
+                , std::declval<const Arg>()));
 public:
+
     formatters_tuple
         ( const FTuple& ft
         , const stringify::v0::detail::args_tuple<Arg, Args...>& args
         )
-        : m_formatter(boost_stringify_make_formatter<CharT, FTuple>(ft, args.first_arg))
+        : m_formatter
+          (stringify_make_formatter<CharT, FTuple>(ft, args.first_arg))
         , m_rest(ft, args.remove_first())
     {
     }
@@ -111,12 +118,6 @@ public:
     }
 
 private:
-
-    using formatter_type
-    = decltype
-        ( boost_stringify_make_formatter<CharT, FTuple>
-               ( std::declval<FTuple>()
-               , std::declval<const Arg>()));
 
     formatter_type m_formatter;
     formatters_tuple<CharT, FTuple, Args...> m_rest;
@@ -369,17 +370,34 @@ private:
     }
 };
 
+// struct join_input_traits
+// {
+//     template <typename CharT, typename FTuple, typename ... Args>
+//     static inline stringify::v0::detail::join_formatter<CharT, FTuple, Args...>
+//     make_formatter
+//         ( const FTuple& ft
+//         , const stringify::v0::detail::joined_args<Args...>& x
+//         )
+//     {
+//         return {ft, x};
+//     }
+// };
+
+} // namespace detail
+
+// template <typename ... Args>
+// stringify::v0::detail::join_input_traits stringify_get_input_traits
+// (const stringify::v0::detail::joined_args<Args...>&);
+
 template <typename CharT, typename FTuple, typename ... Args>
 inline stringify::v0::detail::join_formatter<CharT, FTuple, Args...>
-boost_stringify_make_formatter
+stringify_make_formatter
   ( const FTuple& ft
   , const stringify::v0::detail::joined_args<Args...>& x
 )
 {
     return {ft, x};
 }
-
-} // namespace detail
 
 inline stringify::v0::detail::join_t
 join( int width = 0

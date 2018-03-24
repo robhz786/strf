@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/formatter.hpp>
+#include <boost/stringify/v0/basic_types.hpp>
 
 struct exception_tag {};
 
@@ -40,13 +40,30 @@ public:
     }
 };
 
+struct exception_tag_input_traits
+{
+    template <typename CharT, typename FTuple>
+    static inline detail::exceptional_formatter<CharT>
+    make_formatter(const FTuple& ft, exception_tag x)
+    {
+        return {ft, x};
+    }
+};
+
 } // namespace detail
 
+detail::exception_tag_input_traits stringify_get_input_traits(exception_tag x);
+
+
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+
 template <typename CharT, typename FTuple>
-inline detail::exceptional_formatter<CharT>
-boost_stringify_make_formatter(const FTuple& ft, exception_tag x)
+inline ::detail::exceptional_formatter<CharT>
+stringify_make_formatter(const FTuple& ft, exception_tag x)
 {
     return {ft, x};
 }
+
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif

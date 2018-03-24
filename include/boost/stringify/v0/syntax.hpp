@@ -5,11 +5,51 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/ftuple.hpp>
 #include <boost/stringify/v0/detail/assembly_string.hpp>
+#include <boost/stringify/v0/ftuple.hpp>
 #include <tuple>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+
+// template
+//     < typename CharT
+//     , typename FTuple
+//     , typename InputArg
+//     >
+// auto get_input_traits_helper(int)
+//     -> decltype(stringify_get_input_traits(std::declval<const InputArg&>()));
+
+// template
+//     < typename CharT
+//     , typename FTuple
+//     , typename InputArg
+//     >
+// auto get_input_traits_helper(...)
+//     -> typename stringify::v0::get_input_traits<InputArg>::type;
+
+// template
+//     < typename CharT
+//     , typename FTuple
+//     , typename InputArg
+//     >
+// using input_traits = decltype(get_input_traits_helper<CharT, FTuple, InputArg>(0));
+
+
+// template < typename CharT, typename FTuple, typename InputArg>
+// inline auto make_formatter(const FTuple& ft, const InputArg& arg)
+// {
+//     using input_traits = decltype(stringify_get_input_traits(arg));
+//     return input_traits::template make_formatter<CharT, FTuple>(ft, arg);
+// }
+
+// template < typename CharT, typename FTuple, typename InputArg>
+// inline auto make_formatter(const FTuple& ft, const InputArg& arg)
+// {
+
+//     using traits = stringify::v0::input_traits<CharT, FTuple, InputArg>;
+//     return input_traits::template make_formatter<CharT, FTuple>(ft, arg);
+// }
+
 
 namespace detail {
 
@@ -126,7 +166,6 @@ private:
 
 };
 
-
 template
     < typename FTuple
     , typename OutputWriter
@@ -163,7 +202,7 @@ public:
     decltype(auto) error_code(const Args& ... args) const
     {
         output_writer_wrapper writer{m_owinit};
-        write(writer, {as_pointer(make_formatter(args)) ...});
+        write(writer, {as_pointer(mk_formatter<Args>(args)) ...});
         return writer.finish_error_code();
     }
 
@@ -171,7 +210,7 @@ public:
     decltype(auto) exception(const Args& ... args) const
     {
         output_writer_wrapper writer{m_owinit};
-        write(writer, {as_pointer(make_formatter(args)) ...});
+        write(writer, {as_pointer(mk_formatter<Args>(args)) ...});
         return writer.finish_exception();
     }
 
@@ -185,9 +224,9 @@ public:
 private:
 
     template <typename Arg>
-    auto make_formatter(const Arg& arg) const
+    auto mk_formatter(const Arg& arg) const
     {
-        return boost_stringify_make_formatter<char_type, FTuple>(m_ftuple, arg);
+        return stringify_make_formatter<char_type, FTuple>(m_ftuple, arg);
     }
 
     static const stringify::v0::formatter<char_type>*
@@ -391,7 +430,7 @@ public:
     decltype(auto) error_code(const Args& ... args) const
     {
         output_writer_wrapper writer{m_owinit};
-        write(writer, {as_pointer(make_formatter(args)) ...});
+        write(writer, {as_pointer(mk_formatter<Args>(args)) ...});
         return writer.finish_error_code();
     }
 
@@ -399,7 +438,7 @@ public:
     decltype(auto) exception(const Args& ... args) const
     {
         output_writer_wrapper writer{m_owinit};
-        write(writer, {as_pointer(make_formatter(args)) ...});
+        write(writer, {as_pointer(mk_formatter<Args>(args)) ...});
         return writer.finish_exception();
     }
 
@@ -412,9 +451,9 @@ private:
     }
 
     template <typename Arg>
-    auto make_formatter(const Arg& arg) const
+    auto mk_formatter(const Arg& arg) const
     {
-        return boost_stringify_make_formatter<char_type, FTuple>(m_ftuple, arg);
+        return stringify_make_formatter<char_type, FTuple>(m_ftuple, arg);
     }
 
     void write(OutputWriter& writer, arglist_type args) const
@@ -450,7 +489,9 @@ constexpr auto make_args_handler(Args ... args)
 template <typename T>
 constexpr auto fmt(const T& value)
 {
-    return boost_stringify_fmt(value);
+    //using input_traits = decltype(stringify_get_input_traits(value));
+    //return input_traits::fmt(value);
+    return stringify_fmt(value);
 }
 
 template <typename T>

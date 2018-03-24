@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_OUTPUT_WRITER_HPP
-#define BOOST_STRINGIFY_V0_OUTPUT_WRITER_HPP
+#ifndef BOOST_STRINGIFY_V0_BASIC_TYPES_HPP
+#define BOOST_STRINGIFY_V0_BASIC_TYPES_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -38,7 +38,23 @@ public:
     virtual bool repeat(std::size_t count, CharT ch1, CharT ch2, CharT ch3, CharT ch4) = 0;
 };
 
+template <typename CharT>
+class formatter
+{
+public:
+
+    virtual ~formatter()
+    {
+    }
+
+    virtual std::size_t length() const = 0;
+
+    virtual void write(stringify::v0::output_writer<CharT>& out) const = 0;
+
+    virtual int remaining_width(int w) const = 0;
+};
+
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_OUTPUT_WRITER_HPP
+#endif  // BOOST_STRINGIFY_V0_BASIC_TYPES_HPP
 

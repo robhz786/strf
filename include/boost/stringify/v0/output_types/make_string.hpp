@@ -7,7 +7,7 @@
 
 #include <string>
 #include <system_error>
-#include <boost/stringify/v0/output_writer.hpp>
+#include <boost/stringify/v0/syntax.hpp>
 #include <boost/stringify/v0/expected.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN

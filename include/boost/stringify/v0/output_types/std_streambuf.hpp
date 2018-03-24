@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <streambuf>
-#include <boost/stringify/v0/output_writer.hpp>
+#include <boost/stringify/v0/syntax.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 

@@ -6,6 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/stringify/v0/config.hpp>
+#include <boost/stringify/v0/basic_types.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {

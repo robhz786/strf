@@ -5,12 +5,12 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <boost/stringify/v0/basic_types.hpp>
 #include <boost/stringify/v0/ftuple.hpp>
 #include <boost/stringify/v0/arg_format.hpp>
 #include <boost/stringify/v0/facets/encoder.hpp>
 #include <boost/stringify/v0/facets/numpunct.hpp>
 #include <boost/stringify/v0/detail/number_of_digits.hpp>
-#include <boost/stringify/v0/formatter.hpp>
 #include <boost/assert.hpp>
 #include <cstdint>
 
@@ -474,52 +474,130 @@ int int_formatter<IntT, CharT>::remaining_width(int w) const
     return w > m_input.width() ? (w - m_input.width()) : 0;
 }
 
+// namespace detail {
+
+// template <typename IntT>
+// struct int_input_traits
+// {
+//     template <typename CharT, typename FTuple>
+//     static inline stringify::v0::int_formatter<IntT, CharT> make_formatter
+//         ( const FTuple& ft
+//         , IntT ch
+//         )
+//     {
+//         return {ft, ch};
+//     }
+
+//     template <typename CharT, typename FTuple>
+//     static inline stringify::v0::int_formatter<IntT, CharT> make_formatter
+//         ( const FTuple& ft
+//         , const stringify::v0::int_with_format<IntT>& ch
+//         )
+//     {
+//         return {ft, ch};
+//     }
+
+//     static inline stringify::v0::int_with_format<IntT> fmt(IntT ch)
+//     {
+//         return {ch};
+//     }
+// };
+// }
+
+// stringify::v0::detail::int_input_traits<short>
+// stringify_get_input_traits (stringify::v0::int_with_format<short>);
+
+// stringify::v0::detail::int_input_traits<int>
+// stringify_get_input_traits (stringify::v0::int_with_format<int>);
+
+// stringify::v0::detail::int_input_traits<long>
+// stringify_get_input_traits (stringify::v0::int_with_format<long>);
+
+// stringify::v0::detail::int_input_traits<long long>
+// stringify_get_input_traits (stringify::v0::int_with_format<long long>);
+
+// stringify::v0::detail::int_input_traits<unsigned short>
+// stringify_get_input_traits (stringify::v0::int_with_format<unsigned short>);
+
+// stringify::v0::detail::int_input_traits<unsigned int>
+// stringify_get_input_traits (stringify::v0::int_with_format<unsigned int>);
+
+// stringify::v0::detail::int_input_traits<unsigned long>
+// stringify_get_input_traits (stringify::v0::int_with_format<unsigned long>);
+
+// stringify::v0::detail::int_input_traits<unsigned long long>
+// stringify_get_input_traits (stringify::v0::int_with_format<unsigned long long>);
+
+// stringify::v0::detail::int_input_traits<short>
+// stringify_get_input_traits(short);
+
+// stringify::v0::detail::int_input_traits<int>
+// stringify_get_input_traits(int);
+
+// stringify::v0::detail::int_input_traits<long>
+// stringify_get_input_traits(long);
+
+// stringify::v0::detail::int_input_traits<long long>
+// stringify_get_input_traits(long long);
+
+// stringify::v0::detail::int_input_traits<unsigned short>
+// stringify_get_input_traits(unsigned short);
+
+// stringify::v0::detail::int_input_traits<unsigned int>
+// stringify_get_input_traits(unsigned int);
+
+// stringify::v0::detail::int_input_traits<unsigned long>
+// stringify_get_input_traits(unsigned long);
+
+// stringify::v0::detail::int_input_traits<unsigned long long>
+// stringify_get_input_traits(unsigned long long);
+
 
 template <typename CharT, typename FTuple>
 inline stringify::v0::int_formatter<short, CharT>
-boost_stringify_make_formatter(const FTuple& ft, short x)
+stringify_make_formatter(const FTuple& ft, short x)
 {
     return {ft, x};
 }
 template <typename CharT, typename FTuple>
 inline stringify::v0::int_formatter<int, CharT>
-boost_stringify_make_formatter(const FTuple& ft, int x)
+stringify_make_formatter(const FTuple& ft, int x)
 {
     return {ft, x};
 }
 template <typename CharT, typename FTuple>
 inline stringify::v0::int_formatter<long, CharT>
-boost_stringify_make_formatter(const FTuple& ft, long x)
+stringify_make_formatter(const FTuple& ft, long x)
 {
     return {ft, x};
 }
 template <typename CharT, typename FTuple>
 inline stringify::v0::int_formatter<long long, CharT>
-boost_stringify_make_formatter(const FTuple& ft, long long x)
+stringify_make_formatter(const FTuple& ft, long long x)
 {
     return {ft, x};
 }
 template <typename CharT, typename FTuple>
 inline stringify::v0::int_formatter<unsigned short, CharT>
-boost_stringify_make_formatter(const FTuple& ft, unsigned short x)
+stringify_make_formatter(const FTuple& ft, unsigned short x)
 {
     return {ft, x};
 }
 template <typename CharT, typename FTuple>
 inline stringify::v0::int_formatter<unsigned int, CharT>
-boost_stringify_make_formatter(const FTuple& ft, unsigned int x)
+stringify_make_formatter(const FTuple& ft, unsigned int x)
 {
     return {ft, x};
 }
 template <typename CharT, typename FTuple>
 inline stringify::v0::int_formatter<unsigned long, CharT>
-boost_stringify_make_formatter(const FTuple& ft, unsigned long x)
+stringify_make_formatter(const FTuple& ft, unsigned long x)
 {
     return {ft, x};
 }
 template <typename CharT, typename FTuple>
 inline stringify::v0::int_formatter<unsigned long long, CharT>
-boost_stringify_make_formatter(const FTuple& ft, unsigned long long x)
+stringify_make_formatter(const FTuple& ft, unsigned long long x)
 {
     return {ft, x};
 }
@@ -527,7 +605,7 @@ boost_stringify_make_formatter(const FTuple& ft, unsigned long long x)
 
 template <typename CharT, typename FTuple, typename IntT>
 inline stringify::v0::int_formatter<IntT, CharT>
-boost_stringify_make_formatter
+stringify_make_formatter
     ( const FTuple& ft
     , const stringify::v0::int_with_format<IntT>& x
     )
@@ -536,46 +614,45 @@ boost_stringify_make_formatter
 }
 
 inline stringify::v0::int_with_format<short>
-boost_stringify_fmt(short x)
+stringify_fmt(short x)
 {
     return {x};
 }
 inline stringify::v0::int_with_format<int>
-boost_stringify_fmt(int x)
+stringify_fmt(int x)
 {
     return {x};
 }
 inline stringify::v0::int_with_format<long>
-boost_stringify_fmt(long x)
+stringify_fmt(long x)
 {
     return {x};
 }
 inline stringify::v0::int_with_format<long long>
-boost_stringify_fmt(long long x)
+stringify_fmt(long long x)
 {
     return {x};
 }
 inline stringify::v0::int_with_format<unsigned short>
-boost_stringify_fmt(unsigned short x)
+stringify_fmt(unsigned short x)
 {
     return {x};
 }
 inline stringify::v0::int_with_format<unsigned>
-boost_stringify_fmt(unsigned x)
+stringify_fmt(unsigned x)
 {
     return {x};
 }
 inline stringify::v0::int_with_format<unsigned long>
-boost_stringify_fmt(unsigned long x)
+stringify_fmt(unsigned long x)
 {
     return {x};
 }
 inline stringify::v0::int_with_format<unsigned long long>
-boost_stringify_fmt(unsigned long long x)
+stringify_fmt(unsigned long long x)
 {
     return {x};
 }
-
 
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
