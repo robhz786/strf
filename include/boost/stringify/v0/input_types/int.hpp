@@ -7,7 +7,7 @@
 
 #include <boost/stringify/v0/basic_types.hpp>
 #include <boost/stringify/v0/ftuple.hpp>
-#include <boost/stringify/v0/arg_format.hpp>
+#include <boost/stringify/v0/align_formatting.hpp>
 #include <boost/stringify/v0/facets/encoder.hpp>
 #include <boost/stringify/v0/facets/numpunct.hpp>
 #include <boost/stringify/v0/detail/number_of_digits.hpp>
@@ -43,36 +43,181 @@ unsigned_abs(IntT value)
 
 } // namespace detail
 
+template <class T>
+class int_formatting: public stringify::v0::align_formatting<T>
+{
+
+    using child_type = typename std::conditional
+        < std::is_same<T, void>::value
+        , int_formatting<void>
+        , T
+        > :: type;
+
+public:
+
+    template <typename U>
+    friend class int_formatting;
+    
+    template <typename U>
+    using fmt_tmpl = stringify::v0::int_formatting<U>;
+    
+    constexpr int_formatting() = default;
+
+    constexpr int_formatting(const int_formatting&) = default;
+
+    ~int_formatting() = default;
+
+    template <typename U>
+    constexpr child_type& format_as(const int_formatting<U> & other) &
+    {
+        align_formatting<T>::format_as(other);
+        m_base = other.m_base;
+        m_showbase = other.m_showbase;
+        m_showpos = other.m_showpos;
+        m_uppercase = other.m_uppercase;
+        return static_cast<child_type&>(*this);
+    }
+
+    template <typename U>
+    constexpr child_type&& format_as(const int_formatting<U> & other) &&
+    {
+        return static_cast<child_type&&>(format_as(other));
+    }
+    
+    constexpr child_type&& uphex() &&
+    {
+        m_base = 16;
+        m_uppercase = true;
+        return static_cast<child_type&&>(*this);
+    }
+    constexpr child_type& uphex() &
+    {
+        m_base = 16;
+        m_uppercase = true;
+        return static_cast<child_type&>(*this);
+    }
+    constexpr child_type&& hex() &&
+    {
+        m_base = 16;
+        m_uppercase = false;
+        return static_cast<child_type&&>(*this);
+    }
+    constexpr child_type& hex() &
+    {
+        m_base = 16;
+        m_uppercase = false;
+        return static_cast<child_type&>(*this);
+    }
+    constexpr child_type&& dec() &&
+    {
+        m_base = 10;
+        return static_cast<child_type&&>(*this);
+    }
+    constexpr child_type& dec() &
+    {
+        m_base = 10;
+        return static_cast<child_type&>(*this);
+    }
+    constexpr child_type&& oct() &&
+    {
+        m_base = 8;
+        return static_cast<child_type&&>(*this);
+    }
+    constexpr child_type& oct() &
+    {
+        m_base = 8;
+        return static_cast<child_type&>(*this);
+    }
+    constexpr child_type&& operator+() &&
+    {
+        m_showpos = true;
+        return static_cast<child_type&&>(*this);
+    }
+    constexpr child_type& operator+() &
+    {
+        m_showpos = true;
+        return static_cast<child_type&&>(*this);
+    }
+    constexpr child_type&& operator~() &&
+    {
+        m_showbase = true;
+        return static_cast<child_type&&>(*this);
+    }
+    constexpr child_type& operator~() &
+    {
+        m_showbase = true;
+        return static_cast<child_type&>(*this);
+    }
+    constexpr child_type&& uppercase(bool u) &&
+    {
+        m_uppercase = u;
+        return static_cast<child_type&&>(*this);
+    }
+    constexpr child_type& uppercase(bool u) &
+    {
+        m_uppercase = u;
+        return static_cast<child_type&>(*this);
+    }
+    constexpr child_type&& showbase(bool s) &&
+    {
+        m_showbase = s;
+        return static_cast<child_type&&>(*this);
+    }
+    constexpr child_type& showbase(bool s) &
+    {
+        m_showbase = s;
+        return static_cast<child_type&>(*this);
+    }
+    constexpr child_type&& showpos(bool s) &&
+    {
+        m_showpos = s;
+        return static_cast<child_type&&>(*this);
+    }
+    constexpr child_type& showpos(bool s) &
+    {
+        m_showpos = s;
+        return static_cast<child_type&>(*this);
+    }
+    constexpr unsigned base() const
+    {
+        return m_base;
+    }
+    constexpr bool showbase() const
+    {
+        return m_showbase;
+    }
+    constexpr bool showpos() const
+    {
+        return m_showpos;
+    }
+    constexpr bool uppercase() const
+    {
+        return m_uppercase;
+    }
+
+private:
+
+    unsigned short m_base = 10;
+    bool m_showbase = false;
+    bool m_showpos = false;
+    bool m_uppercase = false;
+
+};
+
 template <typename IntT>
-class int_with_format: public int_format<int_with_format<IntT> >
+class int_with_formatting: public int_formatting<int_with_formatting<IntT> >
 {
 
 public:
 
-    template <typename T>
-    using fmt_tmpl = stringify::v0::int_format<T>;
+    //int_with_formatting() = default;
 
-    using fmt_type = fmt_tmpl<int_with_format>;
-
-    int_with_format() = default;
-
-    int_with_format(IntT value)
+    int_with_formatting(IntT value)
         : m_value(value)
     {
     }
 
-    int_with_format(IntT value, const fmt_type& fmt)
-        : fmt_type(fmt)
-        , m_value(value)
-    {
-    }
-
-    int_with_format(const fmt_type& fmt)
-        : fmt_type(fmt)
-    {
-    }
-
-    int_with_format(const int_with_format&) = default;
+    int_with_formatting(const int_with_formatting&) = default;
 
     constexpr IntT value() const
     {
@@ -105,7 +250,7 @@ public:
     template <typename FTuple>
     int_printer
         ( const FTuple& ft
-        , const stringify::v0::int_with_format<IntT>& value
+        , const stringify::v0::int_with_formatting<IntT>& value
         ) noexcept
         : int_printer
             ( value
@@ -119,7 +264,7 @@ public:
 
 
     int_printer
-        ( const stringify::v0::int_with_format<IntT>& value
+        ( const stringify::v0::int_with_formatting<IntT>& value
         , const stringify::v0::encoder<CharT>& encoder
         , const stringify::v0::numpunct<8>& numpunct_oct
         , const stringify::v0::numpunct<10>& numpunct_dec
@@ -136,7 +281,7 @@ public:
 
 private:
 
-    boost::stringify::v0::int_with_format<IntT> m_input;
+    boost::stringify::v0::int_with_formatting<IntT> m_input;
     const stringify::v0::encoder<CharT>& m_encoder;
     const stringify::v0::numpunct_base& m_numpunct;
     int m_fillcount = 0;
@@ -425,7 +570,7 @@ private:
 
 template <typename IntT, typename CharT>
 int_printer<IntT, CharT>::int_printer
-    ( const stringify::v0::int_with_format<IntT>& valuef
+    ( const stringify::v0::int_with_formatting<IntT>& valuef
     , const stringify::v0::encoder<CharT>& encoder
     , const stringify::v0::numpunct<8>& numpunct_oct
     , const stringify::v0::numpunct<10>& numpunct_dec
@@ -491,13 +636,13 @@ int int_printer<IntT, CharT>::remaining_width(int w) const
 //     template <typename CharT, typename FTuple>
 //     static inline stringify::v0::int_printer<IntT, CharT> make_printer
 //         ( const FTuple& ft
-//         , const stringify::v0::int_with_format<IntT>& ch
+//         , const stringify::v0::int_with_formatting<IntT>& ch
 //         )
 //     {
 //         return {ft, ch};
 //     }
 
-//     static inline stringify::v0::int_with_format<IntT> fmt(IntT ch)
+//     static inline stringify::v0::int_with_formatting<IntT> fmt(IntT ch)
 //     {
 //         return {ch};
 //     }
@@ -505,28 +650,28 @@ int int_printer<IntT, CharT>::remaining_width(int w) const
 // }
 
 // stringify::v0::detail::int_input_traits<short>
-// stringify_get_input_traits (stringify::v0::int_with_format<short>);
+// stringify_get_input_traits (stringify::v0::int_with_formatting<short>);
 
 // stringify::v0::detail::int_input_traits<int>
-// stringify_get_input_traits (stringify::v0::int_with_format<int>);
+// stringify_get_input_traits (stringify::v0::int_with_formatting<int>);
 
 // stringify::v0::detail::int_input_traits<long>
-// stringify_get_input_traits (stringify::v0::int_with_format<long>);
+// stringify_get_input_traits (stringify::v0::int_with_formatting<long>);
 
 // stringify::v0::detail::int_input_traits<long long>
-// stringify_get_input_traits (stringify::v0::int_with_format<long long>);
+// stringify_get_input_traits (stringify::v0::int_with_formatting<long long>);
 
 // stringify::v0::detail::int_input_traits<unsigned short>
-// stringify_get_input_traits (stringify::v0::int_with_format<unsigned short>);
+// stringify_get_input_traits (stringify::v0::int_with_formatting<unsigned short>);
 
 // stringify::v0::detail::int_input_traits<unsigned int>
-// stringify_get_input_traits (stringify::v0::int_with_format<unsigned int>);
+// stringify_get_input_traits (stringify::v0::int_with_formatting<unsigned int>);
 
 // stringify::v0::detail::int_input_traits<unsigned long>
-// stringify_get_input_traits (stringify::v0::int_with_format<unsigned long>);
+// stringify_get_input_traits (stringify::v0::int_with_formatting<unsigned long>);
 
 // stringify::v0::detail::int_input_traits<unsigned long long>
-// stringify_get_input_traits (stringify::v0::int_with_format<unsigned long long>);
+// stringify_get_input_traits (stringify::v0::int_with_formatting<unsigned long long>);
 
 // stringify::v0::detail::int_input_traits<short>
 // stringify_get_input_traits(short);
@@ -607,52 +752,62 @@ template <typename CharT, typename FTuple, typename IntT>
 inline stringify::v0::int_printer<IntT, CharT>
 stringify_make_printer
     ( const FTuple& ft
-    , const stringify::v0::int_with_format<IntT>& x
+    , const stringify::v0::int_with_formatting<IntT>& x
     )
 {
     return {ft, x};
 }
 
-inline stringify::v0::int_with_format<short>
+inline stringify::v0::int_with_formatting<short>
 stringify_fmt(short x)
 {
     return {x};
 }
-inline stringify::v0::int_with_format<int>
+inline stringify::v0::int_with_formatting<int>
 stringify_fmt(int x)
 {
     return {x};
 }
-inline stringify::v0::int_with_format<long>
+inline stringify::v0::int_with_formatting<long>
 stringify_fmt(long x)
 {
     return {x};
 }
-inline stringify::v0::int_with_format<long long>
+inline stringify::v0::int_with_formatting<long long>
 stringify_fmt(long long x)
 {
     return {x};
 }
-inline stringify::v0::int_with_format<unsigned short>
+inline stringify::v0::int_with_formatting<unsigned short>
 stringify_fmt(unsigned short x)
 {
     return {x};
 }
-inline stringify::v0::int_with_format<unsigned>
+inline stringify::v0::int_with_formatting<unsigned>
 stringify_fmt(unsigned x)
 {
     return {x};
 }
-inline stringify::v0::int_with_format<unsigned long>
+inline stringify::v0::int_with_formatting<unsigned long>
 stringify_fmt(unsigned long x)
 {
     return {x};
 }
-inline stringify::v0::int_with_format<unsigned long long>
+inline stringify::v0::int_with_formatting<unsigned long long>
 stringify_fmt(unsigned long long x)
 {
     return {x};
 }
+
+template <typename> struct is_int_number: public std::false_type {};
+template <> struct is_int_number<short>: public std::true_type {};
+template <> struct is_int_number<int>: public std::true_type {};
+template <> struct is_int_number<long>: public std::true_type {};
+template <> struct is_int_number<long long>: public std::true_type {};
+template <> struct is_int_number<unsigned short>: public std::true_type {};
+template <> struct is_int_number<unsigned int>: public std::true_type {};
+template <> struct is_int_number<unsigned long>: public std::true_type {};
+template <> struct is_int_number<unsigned long long>: public std::true_type {};
 
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)

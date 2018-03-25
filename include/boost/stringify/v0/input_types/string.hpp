@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <limits>
 #include <boost/stringify/v0/basic_types.hpp>
-#include <boost/stringify/v0/arg_format.hpp>
+#include <boost/stringify/v0/align_formatting.hpp>
 #include <boost/stringify/v0/ftuple.hpp>
 #include <boost/stringify/v0/facets/encoder.hpp>
 #include <boost/stringify/v0/facets/decoder.hpp>
@@ -12,19 +12,38 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
+struct string_input_tag_base
+{
+};
 
 template <typename CharT>
-class string_with_format
-    : public stringify::v0::string_format<string_with_format<CharT> >
+struct string_input_tag: string_input_tag_base
+{
+};
+
+template <typename CharT>
+struct is_string_of
+{
+    template <typename T>
+    using fn = std::is_base_of<string_input_tag<CharT>, T>;
+};
+
+template <typename T>
+using is_string = std::is_base_of<string_input_tag_base, T>;
+
+
+template <typename CharT>
+class string_with_formatting
+    : public stringify::v0::align_formatting<string_with_formatting<CharT> >
 {
 public:
 
     template <typename T>
-    using fmt_tmpl = stringify::v0::string_format<T>;
+    using fmt_tmpl = stringify::v0::align_formatting<T>;
 
-    using fmt_type = fmt_tmpl<string_with_format>;
+    using fmt_type = fmt_tmpl<string_with_formatting>;
 
-    constexpr string_with_format
+    constexpr string_with_formatting
         ( const CharT* str
         , std::size_t len
         ) noexcept
@@ -33,7 +52,7 @@ public:
     {
     }
 
-    constexpr string_with_format
+    constexpr string_with_formatting
         ( const CharT* str
         , std::size_t len
         , const fmt_type& fmt
@@ -44,7 +63,7 @@ public:
     {
     }
 
-    constexpr string_with_format
+    constexpr string_with_formatting
         ( const CharT* str
         ) noexcept
         : m_str(str)
@@ -52,7 +71,7 @@ public:
     {
     }
 
-    constexpr string_with_format(const string_with_format&) = default;
+    constexpr string_with_formatting(const string_with_formatting&) = default;
 
     void value(const CharT* str)
     {
@@ -75,6 +94,8 @@ public:
     {
         return m_end;
     }
+
+    void operator%(int) const = delete;
 
 private:
 
@@ -322,7 +343,7 @@ public:
         , std::size_t len
         ) noexcept
         : string_printer
-            ( stringify::v0::string_with_format<CharIn>{str, len}
+            ( stringify::v0::string_with_formatting<CharIn>{str, len}
             , get_facet<stringify::v0::decoder_category<CharIn>>(ft)
             , get_facet<stringify::v0::encoder_category<CharOut>>(ft)
             , get_facet<stringify::v0::width_calculator_category>(ft)
@@ -333,7 +354,7 @@ public:
     template <typename FTuple>
     string_printer
         ( const FTuple& ft
-        , const stringify::v0::string_with_format<CharIn>& input
+        , const stringify::v0::string_with_formatting<CharIn>& input
         ) noexcept
         : string_printer
             ( input
@@ -345,7 +366,7 @@ public:
     }
 
     string_printer
-        ( const stringify::v0::string_with_format<CharIn>& input
+        ( const stringify::v0::string_with_formatting<CharIn>& input
         , const stringify::v0::decoder<CharIn>& decoder
         , const stringify::v0::encoder<CharOut>& encoder
         , const stringify::v0::width_calculator& wcalc
@@ -370,7 +391,7 @@ public:
 private:
 
     const stringify::v0::detail::string_writer<CharIn, CharOut> m_str;
-    const typename stringify::v0::string_with_format<CharIn>::fmt_type m_fmt;
+    const typename stringify::v0::string_with_formatting<CharIn>::fmt_type m_fmt;
     const int m_fillcount = 0;
 
     template <typename Category, typename FTuple>
@@ -387,7 +408,7 @@ private:
 
 template<typename CharIn, typename CharOut>
 string_printer<CharIn, CharOut>::string_printer
-    ( const stringify::v0::string_with_format<CharIn>& input
+    ( const stringify::v0::string_with_formatting<CharIn>& input
     , const stringify::v0::decoder<CharIn>& decoder
     , const stringify::v0::encoder<CharOut>& encoder
     , const stringify::v0::width_calculator& wcalc
@@ -531,20 +552,20 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_printer<wchar_t, wchar_t>;
 //     static inline stringify::v0::string_printer<CharIn, CharOut>
 //     make_printer
 //        ( const FTuple& ft
-//        , stringify::v0::string_with_format<CharIn> x
+//        , stringify::v0::string_with_formatting<CharIn> x
 //        )
 //     {
 //         return {ft, x};
 //     }
 
 //     template <typename String, typename CharIn = typename String::value_type>
-//     static inline stringify::v0::string_with_format<CharIn> fmt(const String& str)
+//     static inline stringify::v0::string_with_formatting<CharIn> fmt(const String& str)
 //     {
 //         return {str.data(), str.size()};
 //     }
 
 //     template <typename CharIn>
-//     static inline stringify::v0::string_with_format<CharIn> fmt(const CharIn* str)
+//     static inline stringify::v0::string_with_formatting<CharIn> fmt(const CharIn* str)
 //     {
 //         return {str, std::char_traits<CharIn>::length(str)};
 //     }
@@ -569,16 +590,16 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_printer<wchar_t, wchar_t>;
 // #endif // defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
 
 // stringify::v0::detail::string_input_traits
-// stringify_get_input_traits(const stringify::v0::string_with_format<char>&);
+// stringify_get_input_traits(const stringify::v0::string_with_formatting<char>&);
 
 // stringify::v0::detail::string_input_traits
-// stringify_get_input_traits(const stringify::v0::string_with_format<wchar_t>&);
+// stringify_get_input_traits(const stringify::v0::string_with_formatting<wchar_t>&);
 
 // stringify::v0::detail::string_input_traits
-// stringify_get_input_traits(const stringify::v0::string_with_format<char16_t>&);
+// stringify_get_input_traits(const stringify::v0::string_with_formatting<char16_t>&);
 
 // stringify::v0::detail::string_input_traits
-// stringify_get_input_traits(const stringify::v0::string_with_format<char32_t>&);
+// stringify_get_input_traits(const stringify::v0::string_with_formatting<char32_t>&);
 
 template
     < typename CharOut
@@ -637,28 +658,28 @@ stringify_make_printer
 }
 
 template <typename CharT, typename Traits>
-inline stringify::v0::string_with_format<CharT>
+inline stringify::v0::string_with_formatting<CharT>
 stringify_fmt(const std::basic_string<CharT, Traits>& str)
 {
     return {str.data(), str.size()};
 }
 
-inline stringify::v0::string_with_format<char>
+inline stringify::v0::string_with_formatting<char>
 stringify_fmt(const char* str)
 {
     return {str, std::char_traits<char>::length(str)};
 }
-inline stringify::v0::string_with_format<wchar_t>
+inline stringify::v0::string_with_formatting<wchar_t>
 stringify_fmt(const wchar_t* str)
 {
     return {str, std::char_traits<wchar_t>::length(str)};
 }
-inline stringify::v0::string_with_format<char16_t>
+inline stringify::v0::string_with_formatting<char16_t>
 stringify_fmt(const char16_t* str)
 {
     return {str, std::char_traits<char16_t>::length(str)};
 }
-inline stringify::v0::string_with_format<char32_t>
+inline stringify::v0::string_with_formatting<char32_t>
 stringify_fmt(const char32_t* str)
 {
     return {str, std::char_traits<char32_t>::length(str)};
@@ -677,7 +698,7 @@ stringify_make_printer
 }
 
 template <typename CharT, typename Traits>
-inline stringify::v0::string_with_format<CharT>
+inline stringify::v0::string_with_formatting<CharT>
 stringify_fmt(const std::basic_string_view<CharT, Traits>& str)
 {
     return {str.data(), str.size()};
@@ -689,7 +710,7 @@ template <typename CharOut, typename FTuple, typename CharIn>
 inline stringify::v0::string_printer<CharIn, CharOut>
 stringify_make_printer
     ( const FTuple& ft
-    , const stringify::v0::string_with_format<CharIn>& ch
+    , const stringify::v0::string_with_formatting<CharIn>& ch
     )
 {
     return {ft, ch};
