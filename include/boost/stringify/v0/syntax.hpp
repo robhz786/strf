@@ -36,18 +36,18 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 
 // template < typename CharT, typename FTuple, typename InputArg>
-// inline auto make_formatter(const FTuple& ft, const InputArg& arg)
+// inline auto make_printer(const FTuple& ft, const InputArg& arg)
 // {
 //     using input_traits = decltype(stringify_get_input_traits(arg));
-//     return input_traits::template make_formatter<CharT, FTuple>(ft, arg);
+//     return input_traits::template make_printer<CharT, FTuple>(ft, arg);
 // }
 
 // template < typename CharT, typename FTuple, typename InputArg>
-// inline auto make_formatter(const FTuple& ft, const InputArg& arg)
+// inline auto make_printer(const FTuple& ft, const InputArg& arg)
 // {
 
 //     using traits = stringify::v0::input_traits<CharT, FTuple, InputArg>;
-//     return input_traits::template make_formatter<CharT, FTuple>(ft, arg);
+//     return input_traits::template make_printer<CharT, FTuple>(ft, arg);
 // }
 
 
@@ -174,7 +174,7 @@ template
 class syntax_after_assembly_string
 {
     using char_type = typename OutputWriter::char_type;
-    using arglist_type = std::initializer_list<const stringify::v0::formatter<char_type>*>;
+    using arglist_type = std::initializer_list<const stringify::v0::printer<char_type>*>;
 
     using reservation_type
         = stringify::v0::detail::output_size_reservation<OutputWriter>;
@@ -202,7 +202,7 @@ public:
     decltype(auto) error_code(const Args& ... args) const
     {
         output_writer_wrapper writer{m_owinit};
-        write(writer, {as_pointer(mk_formatter<Args>(args)) ...});
+        write(writer, {as_pointer(mk_printer<Args>(args)) ...});
         return writer.finish_error_code();
     }
 
@@ -210,7 +210,7 @@ public:
     decltype(auto) exception(const Args& ... args) const
     {
         output_writer_wrapper writer{m_owinit};
-        write(writer, {as_pointer(mk_formatter<Args>(args)) ...});
+        write(writer, {as_pointer(mk_printer<Args>(args)) ...});
         return writer.finish_exception();
     }
 
@@ -224,15 +224,15 @@ public:
 private:
 
     template <typename Arg>
-    auto mk_formatter(const Arg& arg) const
+    auto mk_printer(const Arg& arg) const
     {
-        return stringify_make_formatter<char_type, FTuple>(m_ftuple, arg);
+        return stringify_make_printer<char_type, FTuple>(m_ftuple, arg);
     }
 
-    static const stringify::v0::formatter<char_type>*
-    as_pointer(const stringify::v0::formatter<char_type>& fmt)
+    static const stringify::v0::printer<char_type>*
+    as_pointer(const stringify::v0::printer<char_type>& p)
     {
-        return &fmt;
+        return &p;
     }
 
     void write(OutputWriter& owriter, const arglist_type& args) const
@@ -261,7 +261,7 @@ class syntax_after_leading_expr
 public:
 
     using char_type = typename OutputWriter::char_type;
-    using arglist_type = std::initializer_list<const stringify::v0::formatter<char_type>*>;
+    using arglist_type = std::initializer_list<const stringify::v0::printer<char_type>*>;
     using asm_string = stringify::v0::detail::syntax_after_assembly_string
         <FTuple, OutputWriter, OutputWriterInitArgsTuple>;
     using output_writer_wrapper
@@ -430,7 +430,7 @@ public:
     decltype(auto) error_code(const Args& ... args) const
     {
         output_writer_wrapper writer{m_owinit};
-        write(writer, {as_pointer(mk_formatter<Args>(args)) ...});
+        write(writer, {as_pointer(mk_printer<Args>(args)) ...});
         return writer.finish_error_code();
     }
 
@@ -438,22 +438,22 @@ public:
     decltype(auto) exception(const Args& ... args) const
     {
         output_writer_wrapper writer{m_owinit};
-        write(writer, {as_pointer(mk_formatter<Args>(args)) ...});
+        write(writer, {as_pointer(mk_printer<Args>(args)) ...});
         return writer.finish_exception();
     }
 
 private:
 
-    static const stringify::v0::formatter<char_type>*
-    as_pointer(const stringify::v0::formatter<char_type>& fmt)
+    static const stringify::v0::printer<char_type>*
+    as_pointer(const stringify::v0::printer<char_type>& p)
     {
-        return &fmt;
+        return &p;
     }
 
     template <typename Arg>
-    auto mk_formatter(const Arg& arg) const
+    auto mk_printer(const Arg& arg) const
     {
-        return stringify_make_formatter<char_type, FTuple>(m_ftuple, arg);
+        return stringify_make_printer<char_type, FTuple>(m_ftuple, arg);
     }
 
     void write(OutputWriter& writer, arglist_type args) const

@@ -14,13 +14,13 @@ constexpr exception_tag exception_thrower_arg {};
 namespace detail{
 
 template <typename CharT>
-class exceptional_formatter: public boost::stringify::v0::formatter<CharT>
+class exceptional_printer: public boost::stringify::v0::printer<CharT>
 {
 
 public:
 
     template <typename FTuple>
-    exceptional_formatter(const FTuple&, exception_tag) noexcept
+    exceptional_printer(const FTuple&, exception_tag) noexcept
     {
     }
 
@@ -31,7 +31,7 @@ public:
 
     void write(boost::stringify::v0::output_writer<CharT>&) const override
     {
-        throw std::invalid_argument("invalid formatter");
+        throw std::invalid_argument("invalid printer");
     }
 
     int remaining_width(int w) const override
@@ -43,8 +43,8 @@ public:
 struct exception_tag_input_traits
 {
     template <typename CharT, typename FTuple>
-    static inline detail::exceptional_formatter<CharT>
-    make_formatter(const FTuple& ft, exception_tag x)
+    static inline detail::exceptional_printer<CharT>
+    make_printer(const FTuple& ft, exception_tag x)
     {
         return {ft, x};
     }
@@ -58,8 +58,8 @@ detail::exception_tag_input_traits stringify_get_input_traits(exception_tag x);
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <typename CharT, typename FTuple>
-inline ::detail::exceptional_formatter<CharT>
-stringify_make_formatter(const FTuple& ft, exception_tag x)
+inline ::detail::exceptional_printer<CharT>
+stringify_make_printer(const FTuple& ft, exception_tag x)
 {
     return {ft, x};
 }

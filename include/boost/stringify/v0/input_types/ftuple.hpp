@@ -54,20 +54,20 @@ struct inner_ftuple_ref
 };
 
 template <typename CharT>
-class range_formatter: public stringify::v0::formatter<CharT>
+class pp_range_printer: public stringify::v0::printer<CharT>
 {
 
-    using formatter_type = stringify::v0::formatter<CharT>;
-    using fmt_range = stringify::v0::detail::formatters_range<CharT>;
+    using printer_type = stringify::v0::printer<CharT>;
+    using pp_range = stringify::v0::detail::printer_ptr_range<CharT>;
 
 public:
 
-    range_formatter(const fmt_range& args)
+    pp_range_printer(const pp_range& args)
         : m_args(args)
     {
     }
 
-    virtual ~range_formatter()
+    virtual ~pp_range_printer()
     {
     }
 
@@ -100,22 +100,22 @@ public:
 
 private:
 
-    fmt_range m_args;
+    pp_range m_args;
 };
 
 
 template <typename CharT, typename ParentFTuple, typename ChildFTuple, typename ... Args>
-class ftuple_formatter
+class ftuple_printer
     : private stringify::v0::ftuple<ParentFTuple, ChildFTuple>
-    , private stringify::v0::detail::formatters_group
+    , private stringify::v0::detail::printers_group
           < CharT
           , stringify::v0::ftuple<ParentFTuple, ChildFTuple>
           , Args...
           >
-    , public stringify::v0::detail::range_formatter<CharT>
+    , public stringify::v0::detail::pp_range_printer<CharT>
 {
     using fmt_group
-    = stringify::v0::detail::formatters_group
+    = stringify::v0::detail::printers_group
           < CharT
           , stringify::v0::ftuple<ParentFTuple, ChildFTuple>
           , Args...
@@ -123,17 +123,17 @@ class ftuple_formatter
 
 public:
 
-    ftuple_formatter
+    ftuple_printer
         ( const ParentFTuple& parent_ft
         , const stringify::v0::detail::inner_ftuple_with_args<ChildFTuple, Args...>& args
         )
         : stringify::v0::ftuple<ParentFTuple, ChildFTuple>{parent_ft, args.ft}
         , fmt_group{*this, args.args}
-        , stringify::v0::detail::range_formatter<CharT>{fmt_group::range()}
+        , stringify::v0::detail::pp_range_printer<CharT>{fmt_group::range()}
     {
     }
 
-    virtual ~ftuple_formatter()
+    virtual ~ftuple_printer()
     {
     }
 };
@@ -146,13 +146,13 @@ public:
 //         , typename ChildFTuple
 //         , typename ... Args
 //         >
-//     static inline stringify::v0::detail::ftuple_formatter
+//     static inline stringify::v0::detail::ftuple_printer
 //         < CharT
 //         , ParentFTuple
 //         , ChildFTuple
 //         , Args...
 //         >
-//     make_formatter
+//     make_printer
 //         ( const ParentFTuple& ft
 //         , const detail::inner_ftuple_with_args<ChildFTuple, Args...>& x
 //         )
@@ -188,8 +188,8 @@ template
    , typename ChildFTuple
    , typename ... Args
    >
-inline stringify::v0::detail::ftuple_formatter<CharT, FTuple, ChildFTuple, Args...>
-stringify_make_formatter
+inline stringify::v0::detail::ftuple_printer<CharT, FTuple, ChildFTuple, Args...>
+stringify_make_printer
    ( const FTuple& ft
    , const stringify::v0::detail::inner_ftuple_with_args<ChildFTuple, Args...>& fmt
    )

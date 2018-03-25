@@ -91,7 +91,7 @@ private:
 
 
 template <typename IntT, typename CharT>
-class int_formatter: public formatter<CharT>
+class int_printer: public printer<CharT>
 {
     using unsigned_type = typename std::make_unsigned<IntT>::type;
     static constexpr bool is_signed = std::is_signed<IntT>::value;
@@ -103,11 +103,11 @@ public:
     using writer_type = stringify::v0::output_writer<CharT>;
 
     template <typename FTuple>
-    int_formatter
+    int_printer
         ( const FTuple& ft
         , const stringify::v0::int_with_format<IntT>& value
         ) noexcept
-        : int_formatter
+        : int_printer
             ( value
             , get_encoder(ft)
             , get_numpunct<8>(ft)
@@ -118,7 +118,7 @@ public:
     }
 
 
-    int_formatter
+    int_printer
         ( const stringify::v0::int_with_format<IntT>& value
         , const stringify::v0::encoder<CharT>& encoder
         , const stringify::v0::numpunct<8>& numpunct_oct
@@ -126,7 +126,7 @@ public:
         , const stringify::v0::numpunct<16>& numpunct_hex
         ) noexcept;
 
-    virtual ~int_formatter();
+    virtual ~int_printer();
 
     std::size_t length() const override;
 
@@ -424,7 +424,7 @@ private:
 };
 
 template <typename IntT, typename CharT>
-int_formatter<IntT, CharT>::int_formatter
+int_printer<IntT, CharT>::int_printer
     ( const stringify::v0::int_with_format<IntT>& valuef
     , const stringify::v0::encoder<CharT>& encoder
     , const stringify::v0::numpunct<8>& numpunct_oct
@@ -445,18 +445,18 @@ int_formatter<IntT, CharT>::int_formatter
 }
 
 template <typename IntT, typename CharT>
-int_formatter<IntT, CharT>::~int_formatter()
+int_printer<IntT, CharT>::~int_printer()
 {
 }
 
 template <typename IntT, typename CharT>
-std::size_t int_formatter<IntT, CharT>::length() const
+std::size_t int_printer<IntT, CharT>::length() const
 {
     return length_body() + length_fill();
 }
 
 template <typename IntT, typename CharT>
-void int_formatter<IntT, CharT>::write(writer_type& out) const
+void int_printer<IntT, CharT>::write(writer_type& out) const
 {
     if (m_fillcount > 0)
     {
@@ -469,7 +469,7 @@ void int_formatter<IntT, CharT>::write(writer_type& out) const
 }
 
 template <typename IntT, typename CharT>
-int int_formatter<IntT, CharT>::remaining_width(int w) const
+int int_printer<IntT, CharT>::remaining_width(int w) const
 {
     return w > m_input.width() ? (w - m_input.width()) : 0;
 }
@@ -480,7 +480,7 @@ int int_formatter<IntT, CharT>::remaining_width(int w) const
 // struct int_input_traits
 // {
 //     template <typename CharT, typename FTuple>
-//     static inline stringify::v0::int_formatter<IntT, CharT> make_formatter
+//     static inline stringify::v0::int_printer<IntT, CharT> make_printer
 //         ( const FTuple& ft
 //         , IntT ch
 //         )
@@ -489,7 +489,7 @@ int int_formatter<IntT, CharT>::remaining_width(int w) const
 //     }
 
 //     template <typename CharT, typename FTuple>
-//     static inline stringify::v0::int_formatter<IntT, CharT> make_formatter
+//     static inline stringify::v0::int_printer<IntT, CharT> make_printer
 //         ( const FTuple& ft
 //         , const stringify::v0::int_with_format<IntT>& ch
 //         )
@@ -554,58 +554,58 @@ int int_formatter<IntT, CharT>::remaining_width(int w) const
 
 
 template <typename CharT, typename FTuple>
-inline stringify::v0::int_formatter<short, CharT>
-stringify_make_formatter(const FTuple& ft, short x)
+inline stringify::v0::int_printer<short, CharT>
+stringify_make_printer(const FTuple& ft, short x)
 {
     return {ft, x};
 }
 template <typename CharT, typename FTuple>
-inline stringify::v0::int_formatter<int, CharT>
-stringify_make_formatter(const FTuple& ft, int x)
+inline stringify::v0::int_printer<int, CharT>
+stringify_make_printer(const FTuple& ft, int x)
 {
     return {ft, x};
 }
 template <typename CharT, typename FTuple>
-inline stringify::v0::int_formatter<long, CharT>
-stringify_make_formatter(const FTuple& ft, long x)
+inline stringify::v0::int_printer<long, CharT>
+stringify_make_printer(const FTuple& ft, long x)
 {
     return {ft, x};
 }
 template <typename CharT, typename FTuple>
-inline stringify::v0::int_formatter<long long, CharT>
-stringify_make_formatter(const FTuple& ft, long long x)
+inline stringify::v0::int_printer<long long, CharT>
+stringify_make_printer(const FTuple& ft, long long x)
 {
     return {ft, x};
 }
 template <typename CharT, typename FTuple>
-inline stringify::v0::int_formatter<unsigned short, CharT>
-stringify_make_formatter(const FTuple& ft, unsigned short x)
+inline stringify::v0::int_printer<unsigned short, CharT>
+stringify_make_printer(const FTuple& ft, unsigned short x)
 {
     return {ft, x};
 }
 template <typename CharT, typename FTuple>
-inline stringify::v0::int_formatter<unsigned int, CharT>
-stringify_make_formatter(const FTuple& ft, unsigned int x)
+inline stringify::v0::int_printer<unsigned int, CharT>
+stringify_make_printer(const FTuple& ft, unsigned int x)
 {
     return {ft, x};
 }
 template <typename CharT, typename FTuple>
-inline stringify::v0::int_formatter<unsigned long, CharT>
-stringify_make_formatter(const FTuple& ft, unsigned long x)
+inline stringify::v0::int_printer<unsigned long, CharT>
+stringify_make_printer(const FTuple& ft, unsigned long x)
 {
     return {ft, x};
 }
 template <typename CharT, typename FTuple>
-inline stringify::v0::int_formatter<unsigned long long, CharT>
-stringify_make_formatter(const FTuple& ft, unsigned long long x)
+inline stringify::v0::int_printer<unsigned long long, CharT>
+stringify_make_printer(const FTuple& ft, unsigned long long x)
 {
     return {ft, x};
 }
 
 
 template <typename CharT, typename FTuple, typename IntT>
-inline stringify::v0::int_formatter<IntT, CharT>
-stringify_make_formatter
+inline stringify::v0::int_printer<IntT, CharT>
+stringify_make_printer
     ( const FTuple& ft
     , const stringify::v0::int_with_format<IntT>& x
     )
@@ -657,38 +657,38 @@ stringify_fmt(unsigned long long x)
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<short, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<short, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<short, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<short, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<int, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<int, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<int, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<int, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<long, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<long, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<long, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<long, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<long long, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<long long, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<long long, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<long long, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned short, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned short, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned short, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned short, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned int, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned int, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned int, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned int, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long long, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long long, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long long, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_formatter<unsigned long long, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<short, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<short, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<short, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<short, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<int, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<int, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<int, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<int, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<long, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<long, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<long, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<long, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<long long, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<long long, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<long long, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<long long, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned short, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned short, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned short, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned short, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned int, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned int, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned int, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned int, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned long, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned long, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned long, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned long, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned long long, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned long long, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned long long, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned long long, wchar_t>;
 
 #endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 

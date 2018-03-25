@@ -47,9 +47,9 @@ public:
 };
 
 template <typename CharT>
-struct formatters_range
+struct printer_ptr_range
 {
-    using fmt_ptr = const stringify::v0::formatter<CharT>*;
+    using fmt_ptr = const stringify::v0::printer<CharT>*;
 
     const fmt_ptr* begin() const
     {
@@ -70,17 +70,17 @@ struct formatters_range
 
 
 template <typename CharT, typename FTuple, typename ... Args>
-class formatters_tuple;
+class printers_tuple;
 
 template <typename CharT, typename FTuple>
-class formatters_tuple<CharT, FTuple>
+class printers_tuple<CharT, FTuple>
 {
 public:
-    formatters_tuple(const FTuple&, const stringify::v0::detail::args_tuple<>&)
+    printers_tuple(const FTuple&, const stringify::v0::detail::args_tuple<>&)
     {
     }
 
-    using fmt_ptr = const stringify::v0::formatter<CharT>*;
+    using fmt_ptr = const stringify::v0::printer<CharT>*;
 
     fmt_ptr* fill(fmt_ptr* out_it) const
     {
@@ -90,47 +90,47 @@ public:
 
 
 template <typename CharT, typename FTuple, typename Arg, typename ... Args>
-class formatters_tuple<CharT, FTuple, Arg, Args...>
+class printers_tuple<CharT, FTuple, Arg, Args...>
 {
-    using formatter_type
+    using printer_type
         = decltype
-            ( stringify_make_formatter<CharT, FTuple>
+            ( stringify_make_printer<CharT, FTuple>
                 ( std::declval<FTuple>()
                 , std::declval<const Arg>()));
 public:
 
-    formatters_tuple
+    printers_tuple
         ( const FTuple& ft
         , const stringify::v0::detail::args_tuple<Arg, Args...>& args
         )
-        : m_formatter
-          (stringify_make_formatter<CharT, FTuple>(ft, args.first_arg))
+        : m_printer
+          (stringify_make_printer<CharT, FTuple>(ft, args.first_arg))
         , m_rest(ft, args.remove_first())
     {
     }
 
-    using fmt_ptr = const stringify::v0::formatter<CharT>*;
+    using fmt_ptr = const stringify::v0::printer<CharT>*;
 
     fmt_ptr* fill(fmt_ptr* out_it) const
     {
-        *out_it = &m_formatter;
+        *out_it = &m_printer;
         return m_rest.fill(++out_it);
     }
 
 private:
 
-    formatter_type m_formatter;
-    formatters_tuple<CharT, FTuple, Args...> m_rest;
+    printer_type m_printer;
+    printers_tuple<CharT, FTuple, Args...> m_rest;
 };
 
 
 
 template <typename CharT, typename FTuple, typename ... Args>
-class formatters_group
+class printers_group
 {
 public:
 
-    formatters_group
+    printers_group
         ( const FTuple& ft
         , const stringify::v0::detail::args_tuple<Args...>& args
         )
@@ -140,7 +140,7 @@ public:
         m_range.m_begin = m_array;
     }
 
-    virtual ~formatters_group()
+    virtual ~printers_group()
     {
     }
 
@@ -151,11 +151,11 @@ public:
 
 private:
 
-    stringify::v0::detail::formatters_tuple<CharT, FTuple, Args...> m_impl;
+    stringify::v0::detail::printers_tuple<CharT, FTuple, Args...> m_impl;
 
-    using fmt_ptr = const stringify::v0::formatter<CharT>*;
+    using fmt_ptr = const stringify::v0::printer<CharT>*;
     fmt_ptr m_array[sizeof...(Args)];
-    stringify::v0::detail::formatters_range<CharT> m_range;
+    stringify::v0::detail::printer_ptr_range<CharT> m_range;
 };
 
 
@@ -185,11 +185,11 @@ struct join_t
 
 
 template <typename CharT>
-class join_formatter_impl: public formatter<CharT>
+class join_printer_impl: public printer<CharT>
 {
     using encoder_category = stringify::v0::encoder_category<CharT>;
-    using formatter_type = stringify::v0::formatter<CharT>;
-    using fmt_range = stringify::v0::detail::formatters_range<CharT>;
+    using printer_type = stringify::v0::printer<CharT>;
+    using pp_range = stringify::v0::detail::printer_ptr_range<CharT>;
 
 public:
 
@@ -197,19 +197,19 @@ public:
     using input_type  = stringify::v0::detail::join_t ;
     using writer_type = stringify::v0::output_writer<CharT>;
 
-    join_formatter_impl
-        ( const stringify::v0::detail::formatters_range<CharT>& fmt_range
+    join_printer_impl
+        ( const stringify::v0::detail::printer_ptr_range<CharT>& pp_range
         , const stringify::v0::detail::join_t& j
         , const stringify::v0::encoder<CharT>& encoder
         )
         : m_join(j)
         , m_encoder{encoder}
-        , m_args{fmt_range}
+        , m_args{pp_range}
     {
         m_fillcount = remaining_width_from_arglist(m_join.width);
     }
 
-    ~join_formatter_impl()
+    ~join_printer_impl()
     {
     }
 
@@ -269,7 +269,7 @@ private:
     input_type m_join;
     int m_fillcount = 0;
     const stringify::v0::encoder<CharT>& m_encoder;
-    fmt_range m_args = nullptr;
+    pp_range m_args = nullptr;
 
     std::size_t args_length() const
     {
@@ -333,22 +333,22 @@ private:
 
 
 template <typename CharT, typename FTuple, typename ... Args>
-class join_formatter
-    : private stringify::v0::detail::formatters_group<CharT, FTuple, Args...>
-    , public stringify::v0::detail::join_formatter_impl<CharT>
+class join_printer
+    : private stringify::v0::detail::printers_group<CharT, FTuple, Args...>
+    , public stringify::v0::detail::join_printer_impl<CharT>
 {
     using fmt_group
-    = stringify::v0::detail::formatters_group<CharT, FTuple, Args...>;
+    = stringify::v0::detail::printers_group<CharT, FTuple, Args...>;
 
     using join_impl
-    = stringify::v0::detail::join_formatter_impl<CharT>;
+    = stringify::v0::detail::join_printer_impl<CharT>;
 
 
 public:
 
     using input_type  = stringify::v0::detail::join_t ;
 
-    join_formatter
+    join_printer
         ( const FTuple& ft
         , const stringify::v0::detail::joined_args<Args...>& ja
         )
@@ -357,7 +357,7 @@ public:
     {
     }
 
-    virtual ~join_formatter()
+    virtual ~join_printer()
     {
     }
 
@@ -373,8 +373,8 @@ private:
 // struct join_input_traits
 // {
 //     template <typename CharT, typename FTuple, typename ... Args>
-//     static inline stringify::v0::detail::join_formatter<CharT, FTuple, Args...>
-//     make_formatter
+//     static inline stringify::v0::detail::join_printer<CharT, FTuple, Args...>
+//     make_printer
 //         ( const FTuple& ft
 //         , const stringify::v0::detail::joined_args<Args...>& x
 //         )
@@ -390,8 +390,8 @@ private:
 // (const stringify::v0::detail::joined_args<Args...>&);
 
 template <typename CharT, typename FTuple, typename ... Args>
-inline stringify::v0::detail::join_formatter<CharT, FTuple, Args...>
-stringify_make_formatter
+inline stringify::v0::detail::join_printer<CharT, FTuple, Args...>
+stringify_make_printer
   ( const FTuple& ft
   , const stringify::v0::detail::joined_args<Args...>& x
 )

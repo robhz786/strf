@@ -68,17 +68,17 @@ auto x6 = std::ref (x6_);
 auto x7 = std::cref(x7_);
 
 template <typename FTuple>
-std::vector<int> digest(const FTuple& fmt)
+std::vector<int> digest(const FTuple& ft)
 {
     return std::vector<int>
     {
-        strf::get_facet< facet_category, input_type<1> >(fmt).value,
-        strf::get_facet< facet_category, input_type<2> >(fmt).value,
-        strf::get_facet< facet_category, input_type<3> >(fmt).value,
-        strf::get_facet< facet_category, input_type<4> >(fmt).value,
-        strf::get_facet< facet_category, input_type<5> >(fmt).value,
-        strf::get_facet< facet_category, input_type<6> >(fmt).value,
-        strf::get_facet< facet_category, input_type<7> >(fmt).value
+        strf::get_facet< facet_category, input_type<1> >(ft).value,
+        strf::get_facet< facet_category, input_type<2> >(ft).value,
+        strf::get_facet< facet_category, input_type<3> >(ft).value,
+        strf::get_facet< facet_category, input_type<4> >(ft).value,
+        strf::get_facet< facet_category, input_type<5> >(ft).value,
+        strf::get_facet< facet_category, input_type<6> >(ft).value,
+        strf::get_facet< facet_category, input_type<7> >(ft).value
     };
 }
 
@@ -89,35 +89,35 @@ int main()
 {
 
     {
-        auto fmt = strf::make_ftuple(x7, x6, x5, x4, x3, x2, x1);
-        BOOST_TEST(digest(fmt) == expected);
+        auto ft = strf::make_ftuple(x7, x6, x5, x4, x3, x2, x1);
+        BOOST_TEST(digest(ft) == expected);
     }
 
     {
-        auto fmt = strf::make_ftuple(x7, x6, x5, x5, x4, x5, x4, x3, x2, x1, x1);
-        BOOST_TEST(digest(fmt) == expected);
+        auto ft = strf::make_ftuple(x7, x6, x5, x5, x4, x5, x4, x3, x2, x1, x1);
+        BOOST_TEST(digest(ft) == expected);
     }
 
     {
-        auto fmt = strf::make_ftuple
+        auto ft = strf::make_ftuple
             (strf::make_ftuple(x7), strf::make_ftuple(x6, x5), x4, x3, x2, x1);
-        BOOST_TEST(digest(fmt) == expected);
+        BOOST_TEST(digest(ft) == expected);
     }
 
     {
-        auto fmt = strf::make_ftuple
+        auto ft = strf::make_ftuple
             (x7, x6, x5, x4, x3, x2, strf::make_ftuple(x1));
-        BOOST_TEST(digest(fmt) == expected);
+        BOOST_TEST(digest(ft) == expected);
     }
 
     {
-        auto fmt = strf::make_ftuple
+        auto ft = strf::make_ftuple
             (x7, x6, x5, strf::make_ftuple(x4, x3), x2, x1);
-        BOOST_TEST(digest(fmt) == expected);
+        BOOST_TEST(digest(ft) == expected);
     }
 
     {
-        auto fmt = strf::make_ftuple
+        auto ft = strf::make_ftuple
             ( strf::make_ftuple(x7)
             , strf::make_ftuple(x6)
             , strf::make_ftuple(x5)
@@ -126,10 +126,10 @@ int main()
             , strf::make_ftuple(x2)
             , strf::make_ftuple(x1)
             );
-        BOOST_TEST(digest(fmt) == expected);
+        BOOST_TEST(digest(ft) == expected);
     }
     {
-        auto fmt = strf::make_ftuple
+        auto ft = strf::make_ftuple
             ( strf::make_ftuple(strf::make_ftuple(x7))
             , strf::make_ftuple(strf::make_ftuple(x6))
             , strf::make_ftuple(strf::make_ftuple(x5))
@@ -138,28 +138,28 @@ int main()
             , strf::make_ftuple(strf::make_ftuple(x2))
             , strf::make_ftuple(strf::make_ftuple(x1))
             );
-        BOOST_TEST(digest(fmt) == expected);
+        BOOST_TEST(digest(ft) == expected);
     }
     {
-        auto fmt = strf::make_ftuple
+        auto ft = strf::make_ftuple
             ( strf::make_ftuple(strf::make_ftuple(x7), strf::make_ftuple(x6))
             , strf::make_ftuple(strf::make_ftuple(x5), strf::make_ftuple(x4))
             , strf::make_ftuple(strf::make_ftuple(x3), strf::make_ftuple(x2))
             , strf::make_ftuple(strf::make_ftuple(x2), strf::make_ftuple(x1))
             );
-        BOOST_TEST(digest(fmt) == expected);
+        BOOST_TEST(digest(ft) == expected);
     }
     {
-        auto fmt = strf::make_ftuple
+        auto ft = strf::make_ftuple
             ( strf::make_ftuple(strf::make_ftuple(x7, x6, x5))
             , strf::make_ftuple(x6, x5, x4)
             , x4, x3, x2
             , strf::make_ftuple(strf::make_ftuple(x2, x1))
             );
-        BOOST_TEST(digest(fmt) == expected);
+        BOOST_TEST(digest(ft) == expected);
     }
     {
-        auto fmt = strf::make_ftuple
+        auto ft = strf::make_ftuple
             ( strf::make_ftuple()
             , strf::make_ftuple(strf::make_ftuple(x7, x6))
             , strf::make_ftuple(x5, x4, x5, x4)
@@ -170,7 +170,7 @@ int main()
             , strf::make_ftuple()
             );
 
-        BOOST_TEST(digest(fmt) == expected);
+        BOOST_TEST(digest(ft) == expected);
     }
 
 

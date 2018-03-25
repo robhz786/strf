@@ -19,13 +19,13 @@ static error_tag error_code_emitter_arg{ std::make_error_code(std::errc::invalid
 namespace detail{
 
 template <typename CharT>
-class erroneous_formatter: public boost::stringify::v0::formatter<CharT>
+class erroneous_printer: public boost::stringify::v0::printer<CharT>
 {
 
 public:
 
     template <typename FTuple>
-    erroneous_formatter(const FTuple&, error_tag t) noexcept
+    erroneous_printer(const FTuple&, error_tag t) noexcept
         : m_err(t.ec)
     {
     }
@@ -53,7 +53,7 @@ private:
 struct error_tag_input_traits
 {
     template <typename CharT, typename FTuple>
-    static inline detail::erroneous_formatter<CharT> make_formatter
+    static inline detail::erroneous_printer<CharT> make_printer
         (const FTuple& ft, error_tag x)
     {
         return {ft, x};
@@ -67,8 +67,8 @@ detail::error_tag_input_traits stringify_get_input_traits(error_tag x);
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <typename CharT, typename FTuple>
-inline ::detail::erroneous_formatter<CharT>
-stringify_make_formatter(const FTuple& ft, error_tag x)
+inline ::detail::erroneous_printer<CharT>
+stringify_make_printer(const FTuple& ft, error_tag x)
 {
     return {ft, x};
 }

@@ -39,11 +39,11 @@ public:
 };
 
 template <typename CharT>
-class formatter
+class printer
 {
 public:
 
-    virtual ~formatter()
+    virtual ~printer()
     {
     }
 

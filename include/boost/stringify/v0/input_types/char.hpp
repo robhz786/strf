@@ -49,7 +49,7 @@ private:
 };
 
 template <typename CharT>
-class char32_formatter: public formatter<CharT>
+class char32_printer: public printer<CharT>
 {
     using input_type = char32_t;
     using writer_type = stringify::v0::output_writer<CharT>;
@@ -57,21 +57,21 @@ class char32_formatter: public formatter<CharT>
 public:
 
     template <typename FTuple>
-    char32_formatter
+    char32_printer
         ( const FTuple& ft
         , const stringify::v0::char_with_format<char32_t>& input
         ) noexcept
-        : char32_formatter(input, get_encoder(ft), get_width_calculator(ft))
+        : char32_printer(input, get_encoder(ft), get_width_calculator(ft))
     {
     }
 
-    char32_formatter
+    char32_printer
         ( const stringify::v0::char_with_format<char32_t>& input
         , const stringify::v0::encoder<CharT>& encoder
         , const stringify::v0::width_calculator& wcalc
         ) noexcept;
 
-    virtual ~char32_formatter();
+    virtual ~char32_printer();
 
     std::size_t length() const override;
 
@@ -124,7 +124,7 @@ private:
 
 
 template <typename CharT>
-char32_formatter<CharT>::char32_formatter
+char32_printer<CharT>::char32_printer
     ( const stringify::v0::char_with_format<char32_t>& input
     , const stringify::v0::encoder<CharT>& encoder
     , const stringify::v0::width_calculator& wcalc
@@ -137,13 +137,13 @@ char32_formatter<CharT>::char32_formatter
 
 
 template <typename CharT>
-char32_formatter<CharT>::~char32_formatter()
+char32_printer<CharT>::~char32_printer()
 {
 }
 
 
 template <typename CharT>
-std::size_t char32_formatter<CharT>::length() const
+std::size_t char32_printer<CharT>::length() const
 {
     std::size_t len = 0;
     if (m_fmt.count() > 0)
@@ -159,7 +159,7 @@ std::size_t char32_formatter<CharT>::length() const
 
 
 template <typename CharT>
-void char32_formatter<CharT>::write(writer_type& out) const
+void char32_printer<CharT>::write(writer_type& out) const
 {
     if (m_fillcount == 0)
     {
@@ -194,7 +194,7 @@ void char32_formatter<CharT>::write(writer_type& out) const
 
 
 template <typename CharT>
-int char32_formatter<CharT>::remaining_width(int w) const
+int char32_printer<CharT>::remaining_width(int w) const
 {
     if (w > m_fmt.width())
     {
@@ -205,15 +205,15 @@ int char32_formatter<CharT>::remaining_width(int w) const
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_formatter<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_formatter<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_formatter<char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_formatter<wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_printer<char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_printer<char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_printer<char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_printer<wchar_t>;
 
 #endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
 template <typename CharT>
-class char_formatter: public formatter<CharT>
+class char_printer: public printer<CharT>
 {
     using input_type = CharT;
     using writer_type = stringify::v0::output_writer<CharT>;
@@ -221,21 +221,21 @@ class char_formatter: public formatter<CharT>
 public:
 
     template <typename FTuple>
-    char_formatter
+    char_printer
         ( const FTuple& ft
         , const stringify::v0::char_with_format<CharT>& input
         ) noexcept
-        : char_formatter(input, get_encoder(ft), get_width_calculator(ft))
+        : char_printer(input, get_encoder(ft), get_width_calculator(ft))
     {
     }
 
-    char_formatter
+    char_printer
         ( const stringify::v0::char_with_format<CharT>& input
         , const stringify::v0::encoder<CharT>& encoder
         , const stringify::v0::width_calculator& wcalc
         ) noexcept;
 
-    virtual ~char_formatter();
+    virtual ~char_printer();
 
     std::size_t length() const override;
 
@@ -289,7 +289,7 @@ private:
 
 
 template <typename CharT>
-char_formatter<CharT>::char_formatter
+char_printer<CharT>::char_printer
     ( const stringify::v0::char_with_format<CharT>& input
     , const stringify::v0::encoder<CharT>& encoder
     , const stringify::v0::width_calculator& wcalc
@@ -301,13 +301,13 @@ char_formatter<CharT>::char_formatter
 }
 
 template <typename CharT>
-char_formatter<CharT>::~char_formatter()
+char_printer<CharT>::~char_printer()
 {
 }
 
 
 template <typename CharT>
-std::size_t char_formatter<CharT>::length() const
+std::size_t char_printer<CharT>::length() const
 {
     std::size_t len = m_fmt.count();
     if (m_fillcount > 0)
@@ -319,7 +319,7 @@ std::size_t char_formatter<CharT>::length() const
 
 
 template <typename CharT>
-void char_formatter<CharT>::write(writer_type& out) const
+void char_printer<CharT>::write(writer_type& out) const
 {
     if (m_fillcount == 0)
     {
@@ -354,7 +354,7 @@ void char_formatter<CharT>::write(writer_type& out) const
 
 
 template <typename CharT>
-int char_formatter<CharT>::remaining_width(int w) const
+int char_printer<CharT>::remaining_width(int w) const
 {
     if (w > m_fmt.width())
     {
@@ -365,10 +365,10 @@ int char_formatter<CharT>::remaining_width(int w) const
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_formatter<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_formatter<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_formatter<char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_formatter<wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<wchar_t>;
 
 #endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
@@ -378,35 +378,35 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_formatter<wchar_t>;
 
 // template <typename CharT> struct char_input_traits_helper<CharT, CharT>
 // {
-//     using type = stringify::v0::char_formatter<CharT>;
+//     using type = stringify::v0::char_printer<CharT>;
 // };
 // template <> struct char_input_traits_helper<char, char32_t>
 // {
-//     using type = stringify::v0::char32_formatter<char>;
+//     using type = stringify::v0::char32_printer<char>;
 // };
 // template <> struct char_input_traits_helper<wchar_t, char32_t>
 // {
-//     using type = stringify::v0::char32_formatter<wchar_t>;
+//     using type = stringify::v0::char32_printer<wchar_t>;
 // };
 // template <> struct char_input_traits_helper<char16_t, char32_t>
 // {
-//     using type = stringify::v0::char32_formatter<char16_t>;
+//     using type = stringify::v0::char32_printer<char16_t>;
 // };
 
 // struct char_input_traits
 // {
 //     template <typename CharOut, typename CharIn>
-//     using formatter_type
+//     using printer_type
 //     = typename stringify::v0::detail::char_input_traits_helper<CharOut, CharIn>::type;
 
 //     template <typename CharOut, typename FTuple, typename CharIn>
-//     static inline formatter_type<CharOut, CharIn> make_formatter
+//     static inline printer_type<CharOut, CharIn> make_printer
 //         ( const FTuple& ft, CharIn ch )
 //     {
 //         return {ft, ch};
 //     }
 //     template <typename CharOut, typename FTuple, typename CharIn>
-//     static inline formatter_type<CharOut, CharIn> make_formatter
+//     static inline printer_type<CharOut, CharIn> make_printer
 //         ( const FTuple& ft
 //         , const stringify::v0::char_with_format<CharIn>& ch
 //         )
@@ -436,8 +436,8 @@ template
     , typename FTuple
     , typename = typename std::enable_if<!std::is_same<CharT, char32_t>::value>::type
     >
-inline stringify::v0::char32_formatter<CharT>
-stringify_make_formatter(const FTuple& ft, char32_t ch)
+inline stringify::v0::char32_printer<CharT>
+stringify_make_printer(const FTuple& ft, char32_t ch)
 {
     return {ft, ch};
 }
@@ -447,8 +447,8 @@ template
     , typename FTuple
     , typename = typename std::enable_if<!std::is_same<CharT, char32_t>::value>::type
     >
-inline stringify::v0::char32_formatter<CharT>
-stringify_make_formatter
+inline stringify::v0::char32_printer<CharT>
+stringify_make_printer
     ( const FTuple& ft
     , const stringify::v0::char_with_format<char32_t>& ch
     )
@@ -457,15 +457,15 @@ stringify_make_formatter
 }
 
 template <typename CharT, typename FTuple>
-inline stringify::v0::char_formatter<CharT>
-stringify_make_formatter(const FTuple& ft, CharT ch)
+inline stringify::v0::char_printer<CharT>
+stringify_make_printer(const FTuple& ft, CharT ch)
 {
     return {ft, ch};
 }
 
 template <typename CharT, typename FTuple>
-inline stringify::v0::char_formatter<CharT>
-stringify_make_formatter
+inline stringify::v0::char_printer<CharT>
+stringify_make_printer
     ( const FTuple& ft
     , const stringify::v0::char_with_format<CharT>& ch
     )

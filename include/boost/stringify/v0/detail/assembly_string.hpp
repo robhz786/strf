@@ -32,8 +32,8 @@ class asm_string_writer: public asm_string_processor<CharIn>
 {
 public:
 
-    using formatter_ptr = const stringify::v0::formatter<CharOut>*;
-    using arglist_type = std::initializer_list<formatter_ptr>;
+    using printer_ptr = const stringify::v0::printer<CharOut>*;
+    using arglist_type = std::initializer_list<printer_ptr>;
 
     template <typename FTuple>
     asm_string_writer
@@ -82,8 +82,8 @@ template <typename CharIn, typename CharOut>
 class asm_string_measurer: public asm_string_processor<CharIn>
 {
 
-    using formatter_ptr = const stringify::v0::formatter<CharOut>*;
-    using arglist_type = std::initializer_list<formatter_ptr>;
+    using printer_ptr = const stringify::v0::printer<CharOut>*;
+    using arglist_type = std::initializer_list<printer_ptr>;
 
 public:
 
