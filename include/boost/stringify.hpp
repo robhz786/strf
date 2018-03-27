@@ -8,8 +8,9 @@
 #include <boost/stringify/v0/input_types/int.hpp>
 #include <boost/stringify/v0/input_types/char.hpp>
 #include <boost/stringify/v0/input_types/string.hpp>
-#include <boost/stringify/v0/input_types/join.hpp>      
-#include <boost/stringify/v0/input_types/ftuple.hpp>    
+#include <boost/stringify/v0/input_types/join.hpp>
+#include <boost/stringify/v0/input_types/ftuple.hpp>
+#include <boost/stringify/v0/input_types/range.hpp>
 
 #include <boost/stringify/v0/output_types/char_ptr.hpp>
 #include <boost/stringify/v0/output_types/make_string.hpp>

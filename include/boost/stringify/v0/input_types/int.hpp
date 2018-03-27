@@ -59,7 +59,7 @@ public:
     friend class int_formatting;
     
     template <typename U>
-    using fmt_tmpl = stringify::v0::int_formatting<U>;
+    using other = stringify::v0::int_formatting<U>;
     
     constexpr int_formatting() = default;
 

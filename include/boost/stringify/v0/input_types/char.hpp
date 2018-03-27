@@ -14,7 +14,7 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-template <class T = void>
+template <class T>
 class char_formatting: public stringify::v0::align_formatting<T>
 {
 
@@ -27,24 +27,26 @@ class char_formatting: public stringify::v0::align_formatting<T>
 public:
 
     template <typename U>
-    using fmt_tmpl = stringify::v0::char_formatting<U>;
+    friend class char_formatting;
+
+    template <typename U>
+    using other = stringify::v0::char_formatting<U>;
 
     constexpr char_formatting() = default;
 
     constexpr char_formatting(const char_formatting&) = default;
 
     template <typename U>
-    constexpr char_formatting& format_as(const char_formatting<U>& other) &
+    constexpr child_type& format_as(const char_formatting<U>& other) &
     {
-        align_formatting<T>::format_as(other);
         m_count = other.m_count;
-        return *this;
+        return align_formatting<T>::format_as(other);
     }
 
     template <typename U>
-    constexpr char_formatting&& format_as(const char_formatting<U>& other) &&
+    constexpr child_type&& format_as(const char_formatting<U>& other) &&
     {
-        return static_cast<char_formatting&&>(format_as(other));
+        return static_cast<child_type&&>(format_as(other));
     }
     
     ~char_formatting() = default;
@@ -78,19 +80,10 @@ class char_with_formatting
 {
 public:
 
-    template <typename T>
-    using fmt_tmpl = stringify::v0::char_formatting<T>;
-
-    using fmt_type = fmt_tmpl<char_with_formatting>;
+    constexpr char_with_formatting() = default;
 
     constexpr char_with_formatting(CharT value)
         : m_value(value)
-    {
-    }
-
-    constexpr char_with_formatting(CharT value, const fmt_type& fmt)
-        : fmt_type(fmt)
-        , m_value(value)
     {
     }
 

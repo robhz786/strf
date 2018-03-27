@@ -39,9 +39,9 @@ class string_with_formatting
 public:
 
     template <typename T>
-    using fmt_tmpl = stringify::v0::align_formatting<T>;
+    using other = stringify::v0::align_formatting<T>;
 
-    using fmt_type = fmt_tmpl<string_with_formatting>;
+    using fmt_type = other<string_with_formatting>;
 
     constexpr string_with_formatting
         ( const CharT* str
