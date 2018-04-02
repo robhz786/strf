@@ -51,6 +51,30 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 // }
 
 
+template <typename CharT>
+struct asm_string_input_tag: stringify::v0::string_input_tag<CharT>
+{
+};
+
+template <typename CharT>
+struct is_asm_string_of
+{
+    template <typename T>
+    using fn = std::is_same<stringify::v0::asm_string_input_tag<CharT>, T>;
+};
+
+
+template <typename T>
+struct is_asm_string: std::false_type
+{
+};
+
+template <typename CharT>
+struct is_asm_string<stringify::v0::is_asm_string_of<CharT>> : std::true_type 
+{
+};
+
+
 namespace detail {
 
 template <typename W>
@@ -167,14 +191,15 @@ private:
 };
 
 template
-    < typename FTuple
+    < typename CharIn
+    , typename FTuple
     , typename OutputWriter
     , typename OutputWriterInitArgsTuple
     >
 class syntax_after_assembly_string
 {
-    using char_type = typename OutputWriter::char_type;
-    using arglist_type = std::initializer_list<const stringify::v0::printer<char_type>*>;
+    using CharOut = typename OutputWriter::char_type;
+    using arglist_type = std::initializer_list<const stringify::v0::printer<CharOut>*>;
 
     using reservation_type
         = stringify::v0::detail::output_size_reservation<OutputWriter>;
@@ -186,13 +211,19 @@ public:
     syntax_after_assembly_string
         ( const FTuple& ft
         , const OutputWriterInitArgsTuple& owinit
-        , const char_type* str
+        , const CharIn* str
+        , const CharIn* str_end
         , const reservation_type& res
         )
         : m_ftuple(ft)
         , m_owinit(owinit)
         , m_str(str)
-        , m_end(str + std::char_traits<char_type>::length(str))
+        , m_end(str_end)// + std::char_traits<CharIn>::length(str))
+        , m_trans
+            ( get_facet<stringify::v0::width_calculator_category>()
+            , get_facet<stringify::v0::decoder_category<CharIn>>()
+            , get_facet<stringify::v0::encoder_category<CharOut>>()
+            )
         , m_reservation(res)
     {
     }
@@ -216,21 +247,29 @@ public:
 
     std::size_t calculate_size(arglist_type args) const
     {
-        stringify::v0::detail::asm_string_measurer<char_type, char_type> measurer{args};
+        stringify::v0::detail::asm_string_measurer<CharIn, CharOut> measurer{args, m_trans};
         stringify::v0::detail::parse_asm_string(m_str, m_end, measurer);
         return measurer.result();
     }
 
 private:
 
+    template <typename FCategory>
+    const auto& get_facet() const
+    {
+        using input_type = stringify::v0::asm_string_input_tag<CharIn>;
+        return m_ftuple.template get_facet<FCategory, input_type>();
+    }
+
+
     template <typename Arg>
     auto mk_printer(const Arg& arg) const
     {
-        return stringify_make_printer<char_type, FTuple>(m_ftuple, arg);
+        return stringify_make_printer<CharOut, FTuple>(m_ftuple, arg);
     }
 
-    static const stringify::v0::printer<char_type>*
-    as_pointer(const stringify::v0::printer<char_type>& p)
+    static const stringify::v0::printer<CharOut>*
+    as_pointer(const stringify::v0::printer<CharOut>& p)
     {
         return &p;
     }
@@ -238,16 +277,17 @@ private:
     void write(OutputWriter& owriter, const arglist_type& args) const
     {
         m_reservation.reserve(*this, owriter, args);
-        stringify::v0::detail::asm_string_writer<char_type, char_type> asm_writer
-        {m_ftuple, owriter, args};
+        stringify::v0::detail::asm_string_writer<CharIn, CharOut> asm_writer
+        {m_ftuple, owriter, args, m_trans};
 
         stringify::v0::detail::parse_asm_string(m_str, m_end, asm_writer);
     }
 
     const FTuple& m_ftuple;
     const OutputWriterInitArgsTuple& m_owinit;
-    const char_type* const m_str;
-    const char_type* const m_end;
+    const CharIn* const m_str;
+    const CharIn* const m_end;
+    const stringify::v0::detail::transcoder<CharIn, CharOut> m_trans;
     reservation_type m_reservation;
 };
 
@@ -262,10 +302,12 @@ public:
 
     using char_type = typename OutputWriter::char_type;
     using arglist_type = std::initializer_list<const stringify::v0::printer<char_type>*>;
-    using asm_string = stringify::v0::detail::syntax_after_assembly_string
-        <FTuple, OutputWriter, OutputWriterInitArgsTuple>;
     using output_writer_wrapper
         = stringify::v0::detail::output_writer_from_tuple<OutputWriter>;
+
+    template <typename CharIn>
+    using asm_string = stringify::v0::detail::syntax_after_assembly_string
+        <CharIn, FTuple, OutputWriter, OutputWriterInitArgsTuple>;
 
 public:
 
@@ -420,10 +462,29 @@ public:
         return len;
     }
 
-    asm_string operator()(const char_type* asm_str) const
+    template <typename CharIn>
+    asm_string<CharIn> operator()(const CharIn* str) const
     {
-        return {m_ftuple, m_owinit, asm_str, m_reservation};
+        return asm_str(str, str + std::char_traits<CharIn>::length(str));
     }
+
+    template <typename CharIn, typename Traits, typename Allocator>
+    asm_string<CharIn> operator()
+        (const std::basic_string<CharIn, Traits, Allocator>& str) const
+    {
+        return asm_str(str.data(), str.data() + str.size());
+    }
+
+#if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
+
+    template <typename CharIn, typename Traits>
+    asm_string<CharIn> operator()
+        (const std::basic_string_view<CharIn, Traits>& str) const
+    {
+        return asm_str(str.begin(), str.end());
+    }
+
+#endif
 
     template <typename ... Args>
     BOOST_STRINGIFY_NODISCARD
@@ -444,6 +505,13 @@ public:
 
 private:
 
+    template <typename CharIn>
+    asm_string<CharIn> asm_str(const CharIn* begin, const CharIn* end) const
+    {
+        return {m_ftuple, m_owinit, begin, end, m_reservation};
+    }
+
+    
     static const stringify::v0::printer<char_type>*
     as_pointer(const stringify::v0::printer<char_type>& p)
     {

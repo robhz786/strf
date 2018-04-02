@@ -5,8 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/config.hpp>
-#include <boost/stringify/v0/basic_types.hpp>
+#include <boost/stringify/v0/detail/transcoder.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
@@ -22,9 +21,23 @@ public:
 
     virtual bool good() = 0;
 
-    virtual void put(const CharT* begin, const CharT* end) = 0;
+    void put(const CharT* begin, const CharT* end)
+    {
+        if(begin < end)
+        {
+            do_put(begin, end);
+        }
+    }
 
-    virtual void put_arg(std::size_t index) = 0;
+    void put_arg(std::size_t index)
+    {
+        do_put_arg(index);
+    }
+
+    virtual void do_put(const CharT* begin, const CharT* end) = 0;
+
+    virtual void do_put_arg(std::size_t index) = 0;
+
 };
 
 template <typename CharIn, typename CharOut>
@@ -40,9 +53,11 @@ public:
         ( const FTuple&
         , stringify::v0::output_writer<CharOut>& dest
         , arglist_type args
+        , const stringify::v0::detail::transcoder<CharIn, CharOut>& trans
         )
         : m_dest(dest)
         , m_args(args)
+        , m_trans(trans)
     {
     }
 
@@ -51,15 +66,12 @@ public:
         return m_dest.good();
     }
 
-    void put(const CharIn* begin, const CharIn* end) override
+    void do_put(const CharIn* begin, const CharIn* end) override
     {
-        if(begin < end)
-        {
-            m_dest.put(begin, (end - begin));
-        }
+        m_trans.write(m_dest, begin, end);
     }
 
-    void put_arg(std::size_t index) override
+    void do_put_arg(std::size_t index) override
     {
         if (index < m_args.size())
         {
@@ -75,6 +87,7 @@ private:
 
     stringify::v0::output_writer<CharOut>& m_dest;
     arglist_type m_args;
+    const stringify::v0::detail::transcoder<CharIn, CharOut>& m_trans;
 };
 
 
@@ -87,8 +100,12 @@ class asm_string_measurer: public asm_string_processor<CharIn>
 
 public:
 
-    explicit asm_string_measurer(const arglist_type& arglist)
+    explicit asm_string_measurer
+        ( const arglist_type& arglist
+        , const stringify::v0::detail::transcoder<CharIn, CharOut>& trans
+        )
         : m_arglist(arglist)
+        , m_trans(trans)
     {
     }
 
@@ -97,13 +114,12 @@ public:
         return true;
     }
 
-    virtual void put(const CharIn* begin, const CharIn* end)
+    virtual void do_put(const CharIn* begin, const CharIn* end)
     {
-        BOOST_ASSERT(end >= begin);
-        m_length += (end - begin);
+        m_length += m_trans.length(begin, end);
     }
 
-    virtual void put_arg(std::size_t index)
+    virtual void do_put_arg(std::size_t index)
     {
         if (index < m_arglist.size())
         {
@@ -120,6 +136,7 @@ private:
 
     std::size_t m_length = 0;
     arglist_type m_arglist;
+    const stringify::v0::detail::transcoder<CharIn, CharOut>& m_trans;
 };
 
 template <typename CharT>
@@ -164,7 +181,7 @@ const CharT* after_closing_bracket(const CharT* it, const CharT* end)
 
 
 template <typename CharT>
-void parse_asm_string
+void parse_asm_string_old
     ( const CharT* it
     , const CharT* end
     , asm_string_processor<CharT>& proc
@@ -224,6 +241,67 @@ void parse_asm_string
         }
     }
 }
+
+template <typename CharT>
+void parse_asm_string
+    ( const CharT* it
+    , const CharT* end
+    , asm_string_processor<CharT>& proc
+    )
+{
+    std::size_t arg_idx = 0;
+    const CharT* prev = it;
+    while(it != end)
+    {
+        if (*it != '{')
+        {
+            ++it;
+            continue;
+        }
+        if (++it == end)
+        {
+            proc.put(prev, it - 1);
+            proc.put_arg(arg_idx);
+            prev = end;
+            break;
+        }
+        CharT ch = *it;
+        if(ch == static_cast<CharT>('}'))
+        {
+            proc.put(prev, it - 1);
+            prev = ++it;
+            proc.put_arg(arg_idx);
+            ++arg_idx;
+            continue;
+        }
+        if(static_cast<CharT>('0') <= ch && ch <= static_cast<CharT>('9'))
+        {
+            proc.put(prev, it - 1);
+            auto res = read_uint(it, end);
+            it = after_closing_bracket(res.ptr, end);
+            prev = it;
+            proc.put_arg(res.value);
+            continue;
+        }
+        if(ch == static_cast<CharT>('/'))
+        {
+            proc.put(prev, it);
+            ++it;
+            prev = it;
+            continue;
+        }
+        proc.put(prev, it - 1);
+        it = after_closing_bracket(it, end);
+        prev = it;
+        if(ch != static_cast<CharT>('-'))
+        {
+            proc.put_arg(arg_idx);
+            ++arg_idx;
+        }
+    }
+    proc.put(prev, end);
+}
+
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 

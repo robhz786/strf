@@ -19,7 +19,6 @@ int main()
         ("{ } {2} {} {} {11}")
         .exception(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
 
-    
     auto xstr = strf::make_string("{ } {2} {} {} {} {}") .error_code(0, 1, 2, 3);
     BOOST_TEST(!xstr);
     
@@ -53,8 +52,9 @@ int main()
     TEST("X aaa Y")      ("{} aaa {1}")    .exception("X", "Y");
     TEST("X aaa Y")      ("{} aaa {1bb}")  .exception("X", "Y");
 
-
+    //
     // now in utf16:
+    //
 
     // positional argument and automatic arguments
     TEST(u"0 2 1 2")
@@ -74,15 +74,28 @@ int main()
     TEST(u"asdfqwert")
         (u"as{-xxxx}df{-abc{}qwert") .exception(u"ignored");
 
+    //
+    // different ecoding
+    //
 
+    TEST("0 2 1 2 11")
+        ("{ } {2} {} {} {11}")
+        .exception(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+
+    //
     // errors
+    //
     TEST_ERR("0 2 1 2 3 ", std::make_error_code(std::errc::value_too_large))
         ("{ } {2} {} {} {} {}") .exception(0, 1, 2, 3);
     
     TEST_ERR("0 1 ", std::make_error_code(std::errc::value_too_large))
         ("{ } {} {10} {} {}") .exception(0, 1, 2, 3);
-    
 
+
+
+    // TODO test contrained facets
+
+    
     return report_errors() || boost::report_errors();
 
 }
