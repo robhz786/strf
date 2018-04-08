@@ -12,14 +12,34 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 namespace detail{
 
-template<typename CharT, typename Traits>
+template<typename CharT>
 class char_ptr_writer: public output_writer<CharT>
 {
+    using Traits = std::char_traits<CharT>;
+
 public:
 
-    typedef CharT char_type;
+    using char_type = CharT;
 
     char_ptr_writer() = delete;
+
+    char_ptr_writer
+        ( stringify::v0::output_writer_init<CharT> init
+        , CharT* destination
+        , CharT* end
+        , std::size_t* out_count
+        )
+        : stringify::v0::output_writer<CharT>{init}
+        , m_begin{destination}
+        , m_it{destination}
+        , m_end{end}
+        , m_out_count{out_count}
+    {
+        if(m_end < m_begin)
+        {
+            set_overflow_error();
+        }
+    }
 
     ~char_ptr_writer()
     {
@@ -36,32 +56,16 @@ public:
         }
     }
 
-    char_ptr_writer
-        ( CharT* destination
-        , CharT* end
-        , std::size_t* out_count
-        )
-        : m_begin{destination}
-        , m_it{destination}
-        , m_end{end}
-        , m_out_count{out_count}
-    {
-        if(m_end < m_begin)
-        {
-            set_overflow_error();
-        }
-    }
-
     void set_error(std::error_code err) override
     {
-        if (err && ! m_err)
+        if (m_good)
         {
             m_err = err;
+            m_good = false;
             if (m_begin != m_end)
             {
                 Traits::assign(*m_begin, CharT());
             }
-
             // prevent any further writting:
             m_end = m_begin;
             m_it = m_begin;
@@ -72,6 +76,51 @@ public:
     {
         return ! m_err;
     }
+
+
+    bool put(stringify::v0::source<char_type>& src) override
+    {
+        m_it = src.get(m_it, m_end);
+        if(src.more())
+        {
+            set_overflow_error();
+            return false;
+        }
+        return src.success();
+    };
+
+    
+    // bool put32(char32_t ch) override
+    // {
+    //     auto it = this->encode(m_it, m_end, ch);
+    //     if(it != nullptr && it != m_end + 1)
+    //     {
+    //         m_it = it;
+    //         return true;
+    //     }
+    //     if (it == m_end + 1)
+    //     {
+    //         set_overflow_error();
+    //         return false;
+    //     }
+    //     return this->signal_encoding_error();
+    // }
+
+    // bool put32(std::size_t count, char32_t ch) override
+    // {
+    //     auto res = this->encode(m_it, m_end, count, ch);
+    //     if (res.dest_it == nullptr)
+    //     {
+    //         return this->signal_encoding_error();
+    //     }
+    //     if(res.count == count)
+    //     {
+    //         m_it = res.dest_it;
+    //         return true;
+    //     }
+    //     set_overflow_error();
+    //     return false;
+    // }
 
     bool put(const CharT* str, std::size_t count) override
     {
@@ -87,7 +136,7 @@ public:
 
     bool put(CharT ch) override
     {
-        if (m_it + 1 >= m_end)
+        if (m_it + 1 == m_end)
         {
             set_overflow_error();
             return false;
@@ -97,85 +146,15 @@ public:
         return true;
      }
 
-    bool repeat(std::size_t count, CharT ch) override
+    bool put(std::size_t count, CharT ch) override
     {
         if (m_it + count >= m_end)
         {
             set_overflow_error();
             return false;
         }
-
-        if (count == 1)
-        {
-            Traits::assign(*m_it, ch);
-            ++m_it;
-        }
-        else
-        {
-            Traits::assign(m_it, count, ch);
-            m_it += count;
-        }
-        return true;
-    }
-
-    bool repeat(std::size_t count, CharT ch1, CharT ch2) override
-    {
-        if (m_it + 2 * count >= m_end)
-        {
-            set_overflow_error();
-            return false;
-        }
-        while(count > 0)
-        {
-            Traits::assign(m_it[0], ch1);
-            Traits::assign(m_it[1], ch2);
-            m_it += 2;
-            --count;
-        }
-        return true;
-    }
-
-    bool repeat(std::size_t count, CharT ch1, CharT ch2, CharT ch3) override
-    {
-        if (m_it + 3 * count >= m_end)
-        {
-            set_overflow_error();
-            return false;
-        }
-        while(count > 0)
-        {
-            Traits::assign(m_it[0], ch1);
-            Traits::assign(m_it[1], ch2);
-            Traits::assign(m_it[2], ch3);
-            m_it += 3;
-            --count;
-        }
-        return true;
-    }
-
-    bool repeat
-        ( std::size_t count
-        , CharT ch1
-        , CharT ch2
-        , CharT ch3
-        , CharT ch4
-
-        ) override
-    {
-        if (m_it + 4 * count >= m_end)
-        {
-            set_overflow_error();
-            return false;
-        }
-        while (count > 0)
-        {
-            Traits::assign(m_it[0], ch1);
-            Traits::assign(m_it[1], ch2);
-            Traits::assign(m_it[2], ch3);
-            Traits::assign(m_it[3], ch4);
-            m_it += 4;
-            --count;
-        }
+        Traits::assign(m_it, count, ch);
+        m_it += count;
         return true;
     }
 
@@ -188,7 +167,7 @@ public:
     void finish_exception()
     {
         do_finish();
-        if(m_err)
+        if(m_err != std::error_code{})
         {
             throw std::system_error(m_err);
         }
@@ -202,7 +181,12 @@ private:
         {
             if(m_begin != m_end)
             {
-                BOOST_ASSERT(m_it != m_end);
+                if(m_it == m_end)
+                {
+                    m_err = std::make_error_code(std::errc::result_out_of_range);
+                    m_good = false;
+                    m_it = m_begin;
+                }
                 Traits::assign(*m_it, CharT());
             }
             if(m_out_count != nullptr)
@@ -223,22 +207,16 @@ private:
     CharT* m_end;
     std::size_t* m_out_count = nullptr;
     std::error_code m_err;
+    bool m_good = true;
     bool m_finished = false;
 };
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE
-class char_ptr_writer<char, std::char_traits<char>>;
-
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE
-class char_ptr_writer<char16_t, std::char_traits<char16_t>>;
-
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE
-class char_ptr_writer<char32_t, std::char_traits<char32_t>>;
-
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE
-class char_ptr_writer<wchar_t, std::char_traits<wchar_t>>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_ptr_writer<char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_ptr_writer<char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_ptr_writer<char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_ptr_writer<wchar_t>;
 
 #endif
 
@@ -246,129 +224,121 @@ class char_ptr_writer<wchar_t, std::char_traits<wchar_t>>;
 } // namespace detail
 
 
-template<typename CharTraits = std::char_traits<char>, std::size_t N>
+template<std::size_t N>
 auto format(char (&destination)[N], std::size_t* out_count = nullptr)
 {
-    using writer = stringify::v0::detail::char_ptr_writer<char, CharTraits>;
+    using writer = stringify::v0::detail::char_ptr_writer<char>;
     return stringify::v0::make_args_handler<writer, char*>
         (destination, destination + N, out_count);
 }
 
-template<typename CharTraits = std::char_traits<char16_t>, std::size_t N>
+template<std::size_t N>
 auto format(char16_t (&destination)[N], std::size_t* out_count = nullptr)
 {
-    using writer = stringify::v0::detail::char_ptr_writer<char16_t, CharTraits>;
+    using writer = stringify::v0::detail::char_ptr_writer<char16_t>;
     return stringify::v0::make_args_handler<writer, char16_t*>
         (destination, destination + N, out_count);
 }
 
-template<typename CharTraits = std::char_traits<char32_t>, std::size_t N>
+template<std::size_t N>
 auto format(char32_t (&destination)[N], std::size_t* out_count = nullptr)
 {
-    using writer = stringify::v0::detail::char_ptr_writer<char32_t, CharTraits>;
+    using writer = stringify::v0::detail::char_ptr_writer<char32_t>;
     return stringify::v0::make_args_handler<writer, char32_t*>
         (destination, destination + N, out_count);
 }
 
-template<typename CharTraits = std::char_traits<wchar_t>, std::size_t N>
+template<std::size_t N>
 auto format(wchar_t (&destination)[N], std::size_t* out_count = nullptr)
 {
-    using writer = stringify::v0::detail::char_ptr_writer<wchar_t, CharTraits>;
+    using writer = stringify::v0::detail::char_ptr_writer<wchar_t>;
     return stringify::v0::make_args_handler<writer, wchar_t*>
         (destination, destination + N, out_count);
 }
 
-template<typename CharTraits = std::char_traits<char> >
-auto format
+inline auto  format
     ( char* destination
     , char* end
     , std::size_t* out_count = nullptr
     )
 {
-    using writer = stringify::v0::detail::char_ptr_writer<char, CharTraits>;
+    using writer = stringify::v0::detail::char_ptr_writer<char>;
     return stringify::v0::make_args_handler<writer, char*, char*>
         (destination, end, out_count);
 }
 
-template<typename CharTraits = std::char_traits<char16_t> >
-auto format
+inline auto format
     ( char16_t* destination
     , char16_t* end
     , std::size_t* out_count = nullptr
     )
 {
-    using writer = stringify::v0::detail::char_ptr_writer<char16_t, CharTraits>;
+    using writer = stringify::v0::detail::char_ptr_writer<char16_t>;
     return stringify::v0::make_args_handler<writer, char16_t*, char16_t*>
         (destination, end, out_count);
 }
 
-template<typename CharTraits = std::char_traits<char32_t> >
-auto format
+inline auto format
     ( char32_t* destination
     , char32_t* end
     , std::size_t* out_count = nullptr
     )
 {
-    using writer = stringify::v0::detail::char_ptr_writer<char32_t, CharTraits>;
+    using writer = stringify::v0::detail::char_ptr_writer<char32_t>;
     return stringify::v0::make_args_handler<writer, char32_t*, char32_t*>
         (destination, end, out_count);
 }
 
-template<typename CharTraits = std::char_traits<wchar_t> >
-auto format
+inline auto format
     ( wchar_t* destination
     , wchar_t* end
     , std::size_t* out_count = nullptr
     )
 {
-    using writer = stringify::v0::detail::char_ptr_writer<wchar_t, CharTraits>;
+    using writer = stringify::v0::detail::char_ptr_writer<wchar_t>;
     return stringify::v0::make_args_handler<writer, wchar_t*, wchar_t*>
         (destination, end, out_count);
 }
 
-template<typename CharTraits = std::char_traits<char> >
-auto format
+inline auto format
     ( char* destination
     , std::size_t count
     , std::size_t* out_count = nullptr
     )
 {
-    using writer = stringify::v0::detail::char_ptr_writer<char, CharTraits>;
+    using writer = stringify::v0::detail::char_ptr_writer<char>;
     return stringify::v0::make_args_handler<writer, char*, char*>
         (destination, destination + count, out_count);
 }
 
-template<typename CharTraits = std::char_traits<char16_t> >
-auto format
+inline auto format
     ( char16_t* destination
     , std::size_t count
     , std::size_t* out_count = nullptr
     )
 {
-    using writer = stringify::v0::detail::char_ptr_writer<char16_t, CharTraits>;
+    using writer = stringify::v0::detail::char_ptr_writer<char16_t>;
     return stringify::v0::make_args_handler<writer, char16_t*, char16_t*>
         (destination, destination + count, out_count);
 }
 
-template<typename CharTraits = std::char_traits<char32_t> >
-auto format
+inline auto format
     ( char32_t* destination
     , std::size_t count
     , std::size_t* out_count = nullptr
     )
 {
-    using writer = stringify::v0::detail::char_ptr_writer<char32_t, CharTraits>;
+    using writer = stringify::v0::detail::char_ptr_writer<char32_t>;
     return stringify::v0::make_args_handler<writer, char32_t*, char32_t*>
         (destination, destination + count, out_count);
 }
 
-template<typename CharTraits = std::char_traits<wchar_t> >
-auto format
+inline auto format
     ( wchar_t* destination
     , std::size_t count
     , std::size_t* out_count = nullptr)
 {
-    using writer = stringify::v0::detail::char_ptr_writer<wchar_t, CharTraits>;
+    using writer = stringify::v0::detail::char_ptr_writer<wchar_t>;
     return stringify::v0::make_args_handler<writer, wchar_t*, wchar_t*>
         (destination, destination + count, out_count);
 }

@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/syntax.hpp>
+#include <boost/stringify/v0/output_types/FILE.hpp>
 #include <system_error>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -13,147 +13,32 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 template <typename StringType>
-class string_appender: public output_writer<typename StringType::value_type>
+class string_appender: public buffered_writer<typename StringType::value_type>
 {
+    using parent = buffered_writer<typename StringType::value_type>;
+
 public:
+
     typedef typename StringType::value_type char_type;
 
-    string_appender(StringType& out)
-        : m_out(&out)
+    string_appender
+        ( stringify::v0::output_writer_init<char_type> init
+        , StringType& out
+        )
+        : stringify::v0::buffered_writer<char_type>{init}
+        , m_out(&out)
         , m_initial_length(out.length())
     {
     }
 
     ~string_appender()
     {
-        if (! m_finished && m_out != nullptr)
+        if(m_out != nullptr)
         {
             m_out->resize(m_initial_length);
         }
-    }
-
-    void set_error(std::error_code err) override
-    {
-        if (err && ! m_err)
-        {
-            m_err = err;
-            if (m_out != nullptr)
-            {
-                m_out->resize(m_initial_length);
-                m_out = nullptr;
-            }
-        }
-    }
-
-    bool good() const override
-    {
-        return ! m_err;
-    }
-
-
-    bool put(const char_type* str, std::size_t count) override
-    {
-        if(m_out != nullptr)
-        {
-            m_out->append(str, count);
-            return true;
-        }
-        return false;
-    }
-
-    bool put(char_type character) override
-    {
-        if(m_out != nullptr)
-        {
-            m_out->push_back(character);
-            return true;
-        }
-        return false;
-    }
-
-    bool repeat(std::size_t count, char_type character) override
-    {
-        if(m_out != nullptr)
-        {
-            m_out->append(count, character);
-            return true;
-        }
-        return false;
-    }
-
-    bool repeat
-        ( std::size_t count
-        , char_type ch1
-        , char_type ch2
-        ) override
-    {
-        if(m_out != nullptr)
-        {
-            for(; count > 0; --count)
-            {
-                m_out->push_back(ch1);
-                m_out->push_back(ch2);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    bool repeat
-        ( std::size_t count
-        , char_type ch1
-        , char_type ch2
-        , char_type ch3
-        ) override
-    {
-        if(m_out != nullptr)
-        {
-            for(; count > 0; --count)
-            {
-                m_out->push_back(ch1);
-                m_out->push_back(ch2);
-                m_out->push_back(ch3);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    bool repeat
-        ( std::size_t count
-        , char_type ch1
-        , char_type ch2
-        , char_type ch3
-        , char_type ch4
-        ) override
-    {
-        if(m_out != nullptr)
-        {
-            for(; count > 0; --count)
-            {
-                m_out->push_back(ch1);
-                m_out->push_back(ch2);
-                m_out->push_back(ch3);
-                m_out->push_back(ch4);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    std::error_code finish_error_code()
-    {
-        m_finished = true;
-        return m_err;
-    }
-
-    void finish_exception()
-    {
-        m_finished = true;
-        if(m_err)
-        {
-            throw std::system_error(m_err);
-        }
+        m_out = nullptr;
+        this->discard();
     }
 
     void reserve(std::size_t size)
@@ -162,6 +47,41 @@ public:
         {
             m_out->reserve(m_out->length() + size);
         }
+    }
+
+    void set_error(std::error_code ec) override
+    {
+        if(m_out != nullptr)
+        {
+            m_out->resize(m_initial_length);
+            m_out = nullptr;
+        }
+        parent::set_error(ec);
+    }
+
+    std::error_code finish_error_code()
+    {
+        this->flush();
+        m_out = nullptr;
+        return parent::finish_error_code();
+    }
+
+    void finish_exception()
+    {
+        this->flush();
+        m_out = nullptr;
+        parent::finish_exception();
+    }
+
+protected:
+
+    bool do_put(const char_type* str, std::size_t count) override
+    {
+        if (m_out != nullptr)
+        {
+            m_out->append(str, count);
+        }
+        return true;
     }
 
 private:

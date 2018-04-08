@@ -208,17 +208,21 @@ void print(const char* label, const std::wstring& str)
 
 
 template <typename CharT>
-class input_tester: public boost::stringify::v0::output_writer<CharT>
+class input_tester: public boost::stringify::v0::buffered_writer<CharT>
 {
+    using parent = boost::stringify::v0::buffered_writer<CharT>;
+    
 public:
     input_tester
-        ( std::basic_string<CharT> expected
+        ( boost::stringify::v0::output_writer_init<CharT> init
+        , std::basic_string<CharT> expected
         , std::error_code expected_error
         , std::string src_filename
         , int src_line
         , double reserve_factor
         )
-        : m_expected(std::move(expected))
+        : boost::stringify::v0::buffered_writer<CharT>{init}
+        , m_expected(std::move(expected))
         , m_expected_error(expected_error)
         , m_reserved_size(0)
         , m_src_filename(std::move(src_filename))
@@ -227,111 +231,34 @@ public:
     {
     }
 
+    ~input_tester()
+    {
+        this->flush();
+    }
+
     using char_type = CharT;
-
-    void set_error(std::error_code err) override
-    {
-        m_obtained_error = err;
-    }
-
-    virtual bool good() const override
-    {
-        return ! m_obtained_error;
-    }
-
-    bool put(const char_type* str, std::size_t count) override
-    {
-        if (good())
-        {
-            m_result.append(str, count);
-            return true;
-        }
-        return false;
-    }
-
-    bool put(char_type character) override
-    {
-        if (good())
-        {
-            m_result.push_back(character);
-            return true;
-        }
-        return false;
-    }
-
-    bool repeat(std::size_t count, char_type ch) override
-    {
-        if (good())
-        {
-            m_result.append(count, ch);
-            return true;
-        }
-        return false;
-    }
-
-    bool repeat(std::size_t count, char_type ch1, char_type ch2) override
-    {
-        if (good())
-        {
-            for(; count > 0; --count)
-            {
-                m_result.push_back(ch1);
-                m_result.push_back(ch2);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    bool repeat(std::size_t count, char_type ch1, char_type ch2, char_type ch3) override
-    {
-        if (good())
-        {
-            for(; count > 0; --count)
-            {
-                m_result.push_back(ch1);
-                m_result.push_back(ch2);
-                m_result.push_back(ch3);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    bool repeat(std::size_t count, char_type ch1, char_type ch2, char_type ch3, char_type ch4) override
-    {
-        if (good())
-        {
-            for(; count > 0; --count)
-            {
-                m_result.push_back(ch1);
-                m_result.push_back(ch2);
-                m_result.push_back(ch3);
-                m_result.push_back(ch4);
-            }
-            return true;
-        }
-        return false;
-    }
 
     std::error_code finish_error_code()
     {
-        if (m_expected_error != m_obtained_error || m_expected != m_result || wrongly_reserved())
+        std::error_code obtained_error = parent::finish_error_code();
+        if ( m_expected_error != obtained_error
+          || m_expected != m_result
+          || (obtained_error == std::error_code{} && wrongly_reserved()))
         {
             std::cout << m_src_filename << ":" << m_src_line << ":" << " error: \n";
             ++global_errors_count;
         }
-        if (m_expected_error != m_obtained_error)
+        if (m_expected_error != obtained_error)
         {
             print("expected error_code", m_expected_error.message());
-            print("obtained error_code", m_obtained_error.message());
+            print("obtained error_code", obtained_error.message());
         }
         if (m_expected != m_result)
         {
             print("expected", m_expected);
             print("obtained", m_result);
         }
-        if(wrongly_reserved())
+        if(obtained_error == std::error_code{} && wrongly_reserved())
         {
             std::cout << "reserved size  :" <<  m_reserved_size << "\n";
             std::cout << "necessary size :" <<  m_result.length() << "\n";
@@ -343,7 +270,7 @@ public:
     void finish_exception()
     {
         auto err = finish_error_code();
-        if(err)
+        if(err != std::error_code{})
         {
             throw std::system_error(err);
         }
@@ -355,14 +282,19 @@ public:
         m_result.reserve(size);
     }
 
+protected:
+
+    bool do_put(const CharT* str, std::size_t count) override
+    {
+        m_result.append(str, count);
+        return true;            
+    }
 
 private:
 
     bool wrongly_reserved() const
     {
-        return
-            ( ! m_obtained_error
-              && (m_reserved_size < m_result.length() || too_much_reserved()));
+        return (m_reserved_size < m_result.length() || too_much_reserved());
     }
 
     bool too_much_reserved() const
@@ -377,7 +309,6 @@ private:
     std::basic_string<CharT> m_result;
     std::basic_string<CharT> m_expected;
     std::error_code m_expected_error;
-    std::error_code m_obtained_error;
     std::size_t m_reserved_size;
     std::string m_src_filename;
     int m_src_line;

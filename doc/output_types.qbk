@@ -32,13 +32,13 @@
   [ [*`make_basic_string <`][~CharT]`, `[~Traits]`, `[~Allocator][*`> (`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [8]  [[~CharT]`*`]
-  [ [*`format <`][~Traits][*`> (`][~destination]`, `[~limit]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`format(`][~destination]`, `[~limit]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [9] [[~CharT]`*`]
-  [ [*`format <`][~Traits][*`> (`][~destination]`, `[~end]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`format(`][~destination]`, `[~end]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [10] [[~CharT[size]]]
-  [ [*`format <`][~Traits][*`> (`][~destination]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`format(`][~destination]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [11] [ `std::basic_streambuf <`[~CharT]`, `[~Traits]`>`]
   [ [*`format (`][~destination]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
@@ -71,14 +71,14 @@ where:
 * 13) Write content to `FILE*` using wide orientated functions.
 
 [#ReturnTypes]
-[h3 Return type when using the form [~expression...]` = { `[~ args ...]`}`]
+[h3 Return type when using the form [~expression...]` .error_code( `[~ args ...]`)`]
 
 * 1 - 2) `std::error_code`
 * 3 - 7) `expected<std::basic_string<`[~CharT]`, `[~Traits]`>>`, where the ` expected ` class template is a bare implementation of the proposed __STD_EXPECTED__.
 * 8 - 13) `std::error_code`
 
 [#ReturnTypes_throw]
-[h3 Return type when using the form [~expression...]` &= { `[~ args ...]`}`]
+[h3 Return type when using the form [~expression...]` .exception `[~ args ...]`)`]
 * 1 - 2) `void`
 * 3 - 7) `std::basic_string<`[~CharT]`, `[~Traits]`>`
 * 8 - 13) `void`

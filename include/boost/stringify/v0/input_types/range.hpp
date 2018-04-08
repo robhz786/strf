@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <initializer_list>
-
+#include <boost/stringify/v0/facets/encodings.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
@@ -106,11 +106,13 @@ public:
     // }
 
     range_printer
-        ( const FTuple& ft
+        ( writer_type& ow
+        , const FTuple& ft
         , iterator begin
         , iterator end
         )
-        : m_ft(ft)
+        : m_out(ow)
+        , m_ft(ft)
         , m_begin(begin)
         , m_end(end)
     {
@@ -121,8 +123,7 @@ public:
         std::size_t len = 0;
         for(auto it = m_begin; it < m_end; ++it)
         {
-            //m_fmt.set_value(value);
-            len += stringify_make_printer<CharT, FTuple>(m_ft, *it).length();
+            len += stringify_make_printer<CharT, FTuple>(m_out, m_ft, *it).length();
         }
         return len;
     }
@@ -131,23 +132,22 @@ public:
     {
         for(auto it = m_begin; it < m_end && w > 0; ++it)
         {
-            //m_fmt.set_value(value);
-            w = stringify_make_printer<CharT, FTuple>(m_ft, *it).remaining_width(w);
+            w = stringify_make_printer<CharT, FTuple>(m_out, m_ft, *it).remaining_width(w);
         }
         return w;
     }
 
-    void write(writer_type& out) const override
+    void write() const override
     {
         for(auto it = m_begin; it < m_end; ++it)
         {
-            //m_fmt.set_value(value);
-            stringify_make_printer<CharT, FTuple>(m_ft, *it).write(out);
+            stringify_make_printer<CharT, FTuple>(m_out, m_ft, *it).write();
         }
     }
 
 private:
 
+    stringify::v0::output_writer<CharT>& m_out;
     const FTuple& m_ft;
     iterator m_begin;
     iterator m_end;
@@ -164,10 +164,12 @@ public:
     using fmt_type = stringify::v0::detail::range_with_formatting<Iterator>;
 
     fmt_range_printer
-        ( const FTuple& ft
+        ( writer_type& ow
+        , const FTuple& ft
         , const fmt_type& fmt
         )
-        : m_ft(ft)
+        : m_out(ow)
+        , m_ft(ft)
         , m_fmt(fmt)
     {
     }
@@ -194,11 +196,11 @@ public:
         return w;
     }
 
-    void write(writer_type& out) const override
+    void write() const override
     {
         for(const auto& value : m_fmt)
         {
-            make_printer(value).write(out);
+            make_printer(value).write();
         }
     }
 
@@ -206,19 +208,21 @@ private:
 
     auto make_printer(const value_type& value) const
     {
-        return stringify_make_printer<CharT, FTuple>(m_ft, apply_fmt(stringify_fmt(value)));
+        return stringify_make_printer<CharT, FTuple>
+            ( m_out, m_ft, apply_fmt(stringify_fmt(value)) );
     }
 
     template <typename ElemFmtWithValue>
     ElemFmtWithValue&& apply_fmt(ElemFmtWithValue&& fmt_with_value) const
     {
         // This functions aims just to check if the return type of
-        // ElemFmtWithValue::format_as is correct, producing an easy compile
-        // error message instead of a long and incomprehensible one.
+        // ElemFmtWithValue::format_as is correct, producing a compile
+        // error message easier to understand.
 
         return std::move(fmt_with_value.format_as(m_fmt));
     }
-    
+
+    stringify::v0::output_writer<CharT>& m_out;
     const FTuple& m_ft;
     fmt_type m_fmt;
 };
@@ -226,19 +230,23 @@ private:
 
 template <typename CharT, typename FTuple, typename Iterator>
 inline stringify::v0::range_printer<CharT, FTuple, Iterator>
-stringify_make_printer(const FTuple& ft, stringify::v0::detail::range_p<Iterator> r)
+stringify_make_printer
+    ( stringify::v0::output_writer<CharT>& out
+    , const FTuple& ft
+    , stringify::v0::detail::range_p<Iterator> r )
 {
-    return {ft, r.begin, r.end};
+    return {out, ft, r.begin, r.end};
 }
 
 
 template <typename CharT, typename FTuple, typename Iterator>
 inline stringify::v0::fmt_range_printer<CharT, FTuple, Iterator>
 stringify_make_printer
-    ( const FTuple& ft
+    ( stringify::v0::output_writer<CharT>& out
+    , const FTuple& ft
     , const stringify::v0::detail::range_with_formatting<Iterator>& fmt)
 {
-    return {ft, fmt};
+    return {out, ft, fmt};
 }
 
 

@@ -9,16 +9,12 @@ project libs/stringify/example/v0
 
 test-suite strigify-example-v0 :
     [ run assembly_string.cpp ]
-    [ run custom_decoder.cpp ]
-    [ run custom_decoding_error_handling.cpp ]
-    [ run custom_encoding_error_handling.cpp ]
-    [ run custom_width_calculation.cpp ]
+    [ run encoding_conversion.cpp ]
     [ run facets.cpp ]
     [ run ftuple_as_input.cpp ]
     [ run format_functions.cpp ]
     [ run numpunct_facets.cpp ]
     [ run width_calculation_in_encoding_conversion.cpp ]
-    [ run decoding_facets.cpp ]
     [ run joins.cpp ]
     [ run syntax_samples.cpp ]
     [ run trivial_sample.cpp ]

@@ -51,30 +51,6 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 // }
 
 
-template <typename CharT>
-struct asm_string_input_tag: stringify::v0::string_input_tag<CharT>
-{
-};
-
-template <typename CharT>
-struct is_asm_string_of
-{
-    template <typename T>
-    using fn = std::is_same<stringify::v0::asm_string_input_tag<CharT>, T>;
-};
-
-
-template <typename T>
-struct is_asm_string: std::false_type
-{
-};
-
-template <typename CharT>
-struct is_asm_string<stringify::v0::is_asm_string_of<CharT>> : std::true_type 
-{
-};
-
-
 namespace detail {
 
 template <typename W>
@@ -138,7 +114,10 @@ public:
     {
         if (m_flag != no_reserve)
         {
-            writer.reserve(m_flag == calculate_size ? calc.calculate_size(args): m_size);
+            writer.reserve
+                ( m_flag == calculate_size
+                ? calc.calculate_size(writer, args)
+                : m_size );
         }
     }
 
@@ -170,21 +149,37 @@ using output_size_reservation
 
 
 template <typename OutputWriter>
-class output_writer_from_tuple: public OutputWriter
+class output_writer_from_tuple
 {
 public:
 
-    template <typename ... Args>
-    output_writer_from_tuple(const std::tuple<Args...>& tp)
-        : output_writer_from_tuple(tp, std::make_index_sequence<sizeof...(Args)>{})
+    template <typename FTuple, typename ... Args>
+    output_writer_from_tuple
+        ( const FTuple& ft
+        , const std::tuple<Args...>& tp
+        )
+        : output_writer_from_tuple(ft, tp, std::make_index_sequence<sizeof...(Args)>{})
     {
     }
 
+    OutputWriter& get()
+    {
+        return m_out;
+    }
+    
 private:
 
-    template <typename ArgsTuple, std::size_t ... I>
-    output_writer_from_tuple(const ArgsTuple& args, std::index_sequence<I...>)
-        : OutputWriter(std::get<I>(args)...)
+    OutputWriter m_out;
+    
+    using CharOut = typename OutputWriter::char_type;
+    using Init = typename stringify::v0::output_writer_init<CharOut>;
+    
+    template <typename FTuple, typename ArgsTuple, std::size_t ... I>
+    output_writer_from_tuple
+        ( const FTuple& ft
+        , const ArgsTuple& args
+        , std::index_sequence<I...>)
+        : m_out(Init{ft}, std::get<I>(args)...)
     {
     }
 
@@ -206,6 +201,8 @@ class syntax_after_assembly_string
     using output_writer_wrapper
         = stringify::v0::detail::output_writer_from_tuple<OutputWriter>;
 
+    using input_tag = stringify::v0::asm_string_input_tag<CharIn>;
+
 public:
 
     syntax_after_assembly_string
@@ -214,17 +211,14 @@ public:
         , const CharIn* str
         , const CharIn* str_end
         , const reservation_type& res
+        , bool sanitise = false
         )
         : m_ftuple(ft)
         , m_owinit(owinit)
         , m_str(str)
-        , m_end(str_end)// + std::char_traits<CharIn>::length(str))
-        , m_trans
-            ( get_facet<stringify::v0::width_calculator_category>()
-            , get_facet<stringify::v0::decoder_category<CharIn>>()
-            , get_facet<stringify::v0::encoder_category<CharOut>>()
-            )
+        , m_end(str_end)
         , m_reservation(res)
+        , m_sanitise(sanitise)
     {
     }
 
@@ -232,22 +226,23 @@ public:
     BOOST_STRINGIFY_NODISCARD
     decltype(auto) error_code(const Args& ... args) const
     {
-        output_writer_wrapper writer{m_owinit};
-        write(writer, {as_pointer(mk_printer<Args>(args)) ...});
-        return writer.finish_error_code();
+        output_writer_wrapper dest{m_ftuple, m_owinit};
+        write(dest.get(), {as_pointer(mk_printer<Args>(dest.get(), args)) ...});
+        return dest.get().finish_error_code();
     }
 
     template <typename ... Args>
     decltype(auto) exception(const Args& ... args) const
     {
-        output_writer_wrapper writer{m_owinit};
-        write(writer, {as_pointer(mk_printer<Args>(args)) ...});
-        return writer.finish_exception();
+        output_writer_wrapper dest{m_ftuple, m_owinit};
+        write(dest.get(), {as_pointer(mk_printer<Args>(dest.get(), args)) ...});
+        return dest.get().finish_exception();
     }
 
-    std::size_t calculate_size(arglist_type args) const
+    std::size_t calculate_size(OutputWriter& dest, arglist_type args) const
     {
-        stringify::v0::detail::asm_string_measurer<CharIn, CharOut> measurer{args, m_trans};
+        stringify::v0::detail::asm_string_measurer<CharIn, CharOut> measurer
+        { dest, m_ftuple, args, m_sanitise };
         stringify::v0::detail::parse_asm_string(m_str, m_end, measurer);
         return measurer.result();
     }
@@ -255,17 +250,18 @@ public:
 private:
 
     template <typename FCategory>
-    const auto& get_facet() const
+    const auto& get_facet(const FTuple& ft) const
     {
-        using input_type = stringify::v0::asm_string_input_tag<CharIn>;
-        return m_ftuple.template get_facet<FCategory, input_type>();
+        return ft.template get_facet<FCategory, input_tag>();
     }
 
-
     template <typename Arg>
-    auto mk_printer(const Arg& arg) const
+    auto mk_printer
+        ( stringify::v0::output_writer<CharOut>& dest
+        , const Arg& arg
+        ) const
     {
-        return stringify_make_printer<CharOut, FTuple>(m_ftuple, arg);
+        return stringify_make_printer<CharOut, FTuple>(dest, m_ftuple, arg);
     }
 
     static const stringify::v0::printer<CharOut>*
@@ -278,17 +274,18 @@ private:
     {
         m_reservation.reserve(*this, owriter, args);
         stringify::v0::detail::asm_string_writer<CharIn, CharOut> asm_writer
-        {m_ftuple, owriter, args, m_trans};
+        { owriter, m_ftuple, args, m_sanitise };
 
         stringify::v0::detail::parse_asm_string(m_str, m_end, asm_writer);
     }
 
     const FTuple& m_ftuple;
     const OutputWriterInitArgsTuple& m_owinit;
+    //output_writer_wrapper m_writer;
     const CharIn* const m_str;
     const CharIn* const m_end;
-    const stringify::v0::detail::transcoder<CharIn, CharOut> m_trans;
     reservation_type m_reservation;
+    bool m_sanitise;
 };
 
 template
@@ -452,7 +449,7 @@ public:
         return *this;
     }
 
-    std::size_t calculate_size(arglist_type args) const
+    std::size_t calculate_size(OutputWriter&, arglist_type args) const
     {
         std::size_t len = 0;
         for(const auto& arg : args)
@@ -490,17 +487,17 @@ public:
     BOOST_STRINGIFY_NODISCARD
     decltype(auto) error_code(const Args& ... args) const
     {
-        output_writer_wrapper writer{m_owinit};
-        write(writer, {as_pointer(mk_printer<Args>(args)) ...});
-        return writer.finish_error_code();
+        output_writer_wrapper writer{m_ftuple, m_owinit};
+        write(writer.get(), {as_pointer(mk_printer<Args>(writer.get(), args)) ...});
+        return writer.get().finish_error_code();
     }
 
     template <typename ... Args>
     decltype(auto) exception(const Args& ... args) const
     {
-        output_writer_wrapper writer{m_owinit};
-        write(writer, {as_pointer(mk_printer<Args>(args)) ...});
-        return writer.finish_exception();
+        output_writer_wrapper writer{m_ftuple, m_owinit};
+        write(writer.get(), {as_pointer(mk_printer<Args>(writer.get(), args)) ...});
+        return writer.get().finish_exception();
     }
 
 private:
@@ -519,9 +516,12 @@ private:
     }
 
     template <typename Arg>
-    auto mk_printer(const Arg& arg) const
+    auto mk_printer
+        ( stringify::v0::output_writer<char_type>& ow
+        , const Arg& arg )
+        const
     {
-        return stringify_make_printer<char_type, FTuple>(m_ftuple, arg);
+        return stringify_make_printer<char_type, FTuple>(ow, m_ftuple, arg);
     }
 
     void write(OutputWriter& writer, arglist_type args) const
@@ -529,7 +529,7 @@ private:
         m_reservation.reserve(*this, writer, args);
         for(auto it = args.begin(); it != args.end() && writer.good(); ++it)
         {
-            (*it)->write(writer);
+            (*it)->write();
         }
     }
 
@@ -560,6 +560,12 @@ constexpr auto fmt(const T& value)
     //using input_traits = decltype(stringify_get_input_traits(value));
     //return input_traits::fmt(value);
     return stringify_fmt(value);
+}
+
+template <typename T, typename ... Args>
+constexpr auto sani(const T& value, const Args& ... args)
+{
+    return stringify_fmt(value).sani(args...);
 }
 
 template <typename T>

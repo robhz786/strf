@@ -221,16 +221,14 @@ int main()
     }
 
     std::cout << "\n formatted integers \n";
-    PRINT_BENCHMARK("strf::format(dest) (\"{}{}{}\").error_code(55555, +strf::left(55555, 8) , ~strf::hex(55555))")
-    {
-        (void)strf::format(dest) ("{}{}{}").error_code(55555, +strf::left(55555, 8) , ~strf::hex(55555));
-    }
     PRINT_BENCHMARK("strf::format(dest).error_code(55555, +strf::left(55555, 8) , ~strf::hex(55555))")
     {
         (void)strf::format(dest).error_code(55555, +strf::left(55555, 8) , ~strf::hex(55555));
     }
-
-
+    PRINT_BENCHMARK("strf::format(dest) (\"{}{}{}\").error_code(55555, +strf::left(55555, 8) , ~strf::hex(55555))")
+    {
+        (void)strf::format(dest) ("{}{}{}").error_code(55555, +strf::left(55555, 8) , ~strf::hex(55555));
+    }
     PRINT_BENCHMARK("karma::generate(dest, int_ << left_align(8)[int_generator<int, 10, true>{}] << \"0x\" << int_generator<int, 16, false>{}, 55555, 55555, 55555)")
     {
         char* d = dest;
@@ -252,7 +250,12 @@ int main()
 
     std::cout << "\n Strings and itegers mixed: \n";
 
-    PRINT_BENCHMARK("strf::format(dest) (\"blah blah {} blah {} blah {}\").error_code(INT_MAX, {1234, ~strf::hex(1234)<8, \"abcdef\")")
+    PRINT_BENCHMARK("strf::format(dest).error_code(\"blah blah \", INT_MAX, \" blah \", ~strf::hex(1234)<8, \" blah \", \"abcdef\")" )
+    {
+        (void)strf::format(dest) .error_code("blah blah ", INT_MAX, " blah ", ~strf::hex(1234)<8, " blah ", "abcdef");
+    }
+
+    PRINT_BENCHMARK("strf::format(dest) (\"blah blah {} blah {} blah {}\").error_code(INT_MAX, ~strf::hex(1234)<8, \"abcdef\")")
     {
         (void)strf::format(dest) ("blah blah {} blah {} blah {}").error_code(INT_MAX, ~strf::hex(1234)<8, "abcdef");
     }
@@ -279,13 +282,13 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("strf::format(dest) (\"ten = {}, twenty = {}\").error_code(10, 20}")
-    {
-        (void)strf::format(dest) ("ten = {}, twenty = {}").error_code(10, 20);
-    }
     PRINT_BENCHMARK("strf::format(dest).error_code(\"ten =  \", 10, \", twenty = \", 20)")
     {
         (void)strf::format(dest).error_code("ten =  ", 10, ", twenty = ", 20);
+    }
+    PRINT_BENCHMARK("strf::format(dest) (\"ten = {}, twenty = {}\").error_code(10, 20)")
+    {
+        (void)strf::format(dest) ("ten = {}, twenty = {}").error_code(10, 20);
     }
     PRINT_BENCHMARK("karma::generate(dest, lit(\"ten= \") << int_ <<\", twenty = \" << int_, 10, 20")
     {

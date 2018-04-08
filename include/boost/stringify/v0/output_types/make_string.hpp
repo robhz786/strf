@@ -9,10 +9,67 @@
 #include <system_error>
 #include <boost/stringify/v0/syntax.hpp>
 #include <boost/stringify/v0/expected.hpp>
+#include <boost/stringify/v0/output_types/FILE.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 namespace detail {
+
+
+// template <typename StringType>
+// class string_maker: public buffered_writer<typename StringType::value_type>
+// {
+
+// public:
+//     using char_type = typename StringType::value_type;
+//     using parent = stringify::v0::buffered_writer<char_type>;
+
+
+//     string_maker(stringify::v0::output_writer_init<char_type> init)
+//         : stringify::v0::buffered_writer<char_type>{init}
+//     {
+//     }
+
+//     ~string_maker()
+//     {
+//         this->discard();
+//     }
+
+//     stringify::v0::expected<StringType, std::error_code> finish_error_code()
+//     {
+//         auto ec = parent::finish_error_code();
+//         if (ec == std::error_code{})
+//         {
+//             return {boost::stringify::v0::in_place_t{}, std::move(m_out)};
+//         }
+//         return {boost::stringify::v0::unexpect_t{}, ec};
+//     }
+
+//     StringType finish_exception()
+//     {
+//         parent::finish_exception();
+//         return std::move(m_out);
+//     }
+
+//     void reserve(std::size_t size)
+//     {
+//         m_out.reserve(m_out.size() + size);
+//     }
+
+// protected:
+
+//     bool do_put(const char_type* str, std::size_t count) override
+//     {
+//         m_out.append(str, count);
+//         return true;
+//     }
+
+// private:
+
+//     StringType m_out;
+
+// };
+
 
 template <typename StringType>
 class string_maker: public output_writer<typename StringType::value_type>
@@ -20,29 +77,104 @@ class string_maker: public output_writer<typename StringType::value_type>
 public:
 
     using char_type = typename StringType::value_type;
+    using Traits = typename StringType::traits_type;
 
-    string_maker()
+    string_maker(stringify::v0::output_writer_init<char_type> init)
+        : stringify::v0::output_writer<char_type>{init}
     {
+        m_out.resize(m_out.capacity());
+        m_it = &m_out[0];
+        m_end = &m_out[0] + m_out.size();
+    }
+
+    void reserve(std::size_t s)
+    {
+        std::size_t it_pos = m_it - &m_out[0];
+        std::size_t old_s = m_out.size();
+        std::size_t new_s = old_s + s;
+        if (new_s > m_out.capacity())
+        {
+            m_out.resize(new_s);
+            m_it = &m_out[0] + it_pos;
+            m_end = &m_out[0] + m_out.size();
+        }
     }
 
     void set_error(std::error_code err) override
     {
-        if(err && ! m_err)
+        if(m_good)
         {
             m_err = err;
+            m_good = false;
         }
     }
 
     bool good() const override
     {
-        return ! m_err;
+        return m_good;
     }
+
+    bool put(stringify::v0::source<char_type>& src) override
+    {
+        do
+        {
+            m_it = src.get(m_it, m_end);
+        }
+        while(src.more() && (resize(), true));
+
+        return src.success();        
+    }
+    
+    // bool put32(char32_t ch) override
+    // {
+    //     if(m_good)
+    //     {
+    //         auto it = this->encode(m_it, m_end, ch);
+    //         if(it != nullptr && it != m_end + 1)
+    //         {
+    //             m_it = it;
+    //             return true;
+    //         }
+    //         if (it == nullptr)
+    //         {
+    //             return this->signal_encoding_error();
+    //         }
+    //         resize();
+    //         return put32(ch);
+    //     }
+    //     return false;
+    // }
+
+    // bool put32(std::size_t count, char32_t ch) override
+    // {
+    //     if(m_good)
+    //     {
+    //         auto res = this->encode(m_it, m_end, count, ch);
+    //         if (res.dest_it == nullptr)
+    //         {
+    //             return this->signal_encoding_error();
+    //         }
+    //         if(res.count == count)
+    //         {
+    //             m_it = res.dest_it;
+    //             return true;
+    //         }
+    //         resize();
+    //         return put32(count, ch);
+    //     }
+    //     return false;
+    // }
 
     bool put(const char_type* str, std::size_t count) override
     {
-        if( ! m_err)
+        if(m_good)
         {
-            m_out.append(str, count);
+            if (m_it + count >= m_end)
+            {
+                resize();
+            }
+            Traits::copy(m_it, str, count);
+            m_it += count;
             return true;
         }
         return false;
@@ -50,113 +182,71 @@ public:
 
     bool put(char_type ch) override
     {
-        if( ! m_err)
+        if( ! m_good)
         {
-            m_out.push_back(ch);
-            return true;
+            return false;
         }
-        return false;
-    }
+        if (m_it + 1 >= m_end)
+        {
+            resize();
+        }
+        Traits::assign(*m_it, ch);
+        ++m_it;
+        return true;
+     }
 
-    bool repeat(std::size_t count, char_type ch) override
-    {
-        if( ! m_err)
-        {
-            m_out.append(count, ch);
-            return true;
-        }
-        return false;
-    }
 
-    bool repeat
-        ( std::size_t count
-        , char_type ch1
-        , char_type ch2
-        ) override
+    bool put(std::size_t count, char_type ch) override
     {
-        if( ! m_err)
+        if( ! m_good)
         {
-            for(; count > 0; --count)
-            {
-                m_out.push_back(ch1);
-                m_out.push_back(ch2);
-            }
-            return true;
+            return false;
         }
-        return false;
-    }
-
-    bool repeat
-        ( std::size_t count
-        , char_type ch1
-        , char_type ch2
-        , char_type ch3
-        ) override
-    {
-        if( ! m_err)
+        if (m_it + count >= m_end)
         {
-            for(; count > 0; --count)
-            {
-                m_out.push_back(ch1);
-                m_out.push_back(ch2);
-                m_out.push_back(ch3);
-            }
-            return true;
+            resize();
         }
-        return false;
-    }
-
-    bool repeat
-        ( std::size_t count
-        , char_type ch1
-        , char_type ch2
-        , char_type ch3
-        , char_type ch4
-        ) override
-    {
-        if( ! m_err)
-        {
-            for(; count > 0; --count)
-            {
-                m_out.push_back(ch1);
-                m_out.push_back(ch2);
-                m_out.push_back(ch3);
-                m_out.push_back(ch4);
-            }
-            return true;
-        }
-        return false;
+        Traits::assign(m_it, count, ch);
+        m_it += count;
+        return true;
     }
 
     stringify::v0::expected<StringType, std::error_code> finish_error_code()
     {
-        if (m_err)
+        m_out.resize(m_it - &m_out[0]);
+        if (m_err == std::error_code{})
         {
-            return {boost::stringify::v0::unexpect_t{}, m_err};
+            return {boost::stringify::v0::in_place_t{}, std::move(m_out)};
         }
-        return {boost::stringify::v0::in_place_t{}, std::move(m_out)};
+        return {boost::stringify::v0::unexpect_t{}, m_err};
     }
 
     StringType finish_exception()
     {
-        if(m_err)
+        if ( ! m_good)
         {
             throw std::system_error(m_err);
         }
-        return std::move(m_out);
-    }
-    
-    void reserve(std::size_t size)
-    {
-        m_out.reserve(m_out.capacity() + size);
+        m_out.resize(m_it - &m_out[0]);
+        return static_cast<StringType&&>(m_out);
     }
 
 private:
 
-    StringType m_out;
-    std::error_code m_err;
-};
+    void resize()
+    {
+        std::size_t pos = m_it - &m_out[0];
+        m_out.resize(m_out.capacity() * 2);
+        m_it = &m_out[0] + pos;
+        m_end = &m_out[0] + m_out.size();
+    }
 
+    StringType m_out;
+    char_type* m_it;
+    char_type* m_end;
+    std::error_code m_err;
+    bool m_good = true;
+};
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 

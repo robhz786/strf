@@ -19,8 +19,7 @@ class exceptional_printer: public boost::stringify::v0::printer<CharT>
 
 public:
 
-    template <typename FTuple>
-    exceptional_printer(const FTuple&, exception_tag) noexcept
+    exceptional_printer( exception_tag) noexcept
     {
     }
 
@@ -29,7 +28,7 @@ public:
         return 0;
     }
 
-    void write(boost::stringify::v0::output_writer<CharT>&) const override
+    void write() const override
     {
         throw std::invalid_argument("invalid printer");
     }
@@ -40,28 +39,31 @@ public:
     }
 };
 
-struct exception_tag_input_traits
-{
-    template <typename CharT, typename FTuple>
-    static inline detail::exceptional_printer<CharT>
-    make_printer(const FTuple& ft, exception_tag x)
-    {
-        return {ft, x};
-    }
-};
+// struct exception_tag_input_traits
+// {
+//     template <typename CharT, typename FTuple>
+//     static inline detail::exceptional_printer<CharT>
+//     make_printer(const FTuple& ft, exception_tag x)
+//     {
+//         return {ft, x};
+//     }
+// };
 
 } // namespace detail
 
-detail::exception_tag_input_traits stringify_get_input_traits(exception_tag x);
+//detail::exception_tag_input_traits stringify_get_input_traits(exception_tag x);
 
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <typename CharT, typename FTuple>
 inline ::detail::exceptional_printer<CharT>
-stringify_make_printer(const FTuple& ft, exception_tag x)
+stringify_make_printer
+    ( const stringify::v0::output_writer<CharT>&
+    , const FTuple&
+    , exception_tag x )
 {
-    return {ft, x};
+    return {x};
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

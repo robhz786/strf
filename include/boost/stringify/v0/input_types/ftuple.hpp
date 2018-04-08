@@ -81,11 +81,11 @@ public:
         return sum;
     }
 
-    void write(stringify::v0::output_writer<CharT>& out) const override
+    void write() const override
     {
         for(const auto& arg : m_args)
         {
-            arg->write(out);
+            arg->write();
         }
     }
 
@@ -124,11 +124,12 @@ class ftuple_printer
 public:
 
     ftuple_printer
-        ( const ParentFTuple& parent_ft
+        ( stringify::v0::output_writer<CharT>& out
+        , const ParentFTuple& parent_ft
         , const stringify::v0::detail::inner_ftuple_with_args<ChildFTuple, Args...>& args
         )
         : stringify::v0::ftuple<ParentFTuple, ChildFTuple>{parent_ft, args.ft}
-        , fmt_group{*this, args.args}
+        , fmt_group{out, *this, args.args}
         , stringify::v0::detail::pp_range_printer<CharT>{fmt_group::range()}
     {
     }
@@ -190,11 +191,12 @@ template
    >
 inline stringify::v0::detail::ftuple_printer<CharT, FTuple, ChildFTuple, Args...>
 stringify_make_printer
-   ( const FTuple& ft
+   ( stringify::v0::output_writer<CharT>& out
+   , const FTuple& ft
    , const stringify::v0::detail::inner_ftuple_with_args<ChildFTuple, Args...>& fmt
    )
 {
-    return {ft, fmt};
+    return {out, ft, fmt};
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

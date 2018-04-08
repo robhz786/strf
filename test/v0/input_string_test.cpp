@@ -25,7 +25,6 @@ int main()
         TEST("  abcdefghi")  .exception( strf::right("", 2), strf::right("abc", 2), strf::left("def", 2), strf::center("ghi", 2) );
         TEST("abcdefghi")    .exception( strf::right("", 0), strf::right("abc", 0), strf::left("def", 0), strf::center("ghi", 0) );
     }
-
     {
         wchar_t abc[] = L"abc";
         wchar_t def[] = L"def";

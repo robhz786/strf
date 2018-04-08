@@ -76,7 +76,6 @@ int main()
     basic_make_test<char32_t>();
     basic_make_test<wchar_t>();
 
-
     {   // When set_error is called during make_string
 
         auto result = strf::make_string

@@ -76,25 +76,6 @@ int main()
     basic_test<char32_t>();
     basic_test<wchar_t>();
 
-    {  // Test alternative char traits
-
-        char16_t result[200] = u"";
-        std::size_t result_length = 10000;
-        using traits = to_upper_char_traits<char16_t>;
-
-        auto err = strf::format<traits>(result, &result_length)
-            .error_code(u'a', strf::multi(u'b', 3), u"zzz", ~strf::hex(10));
-
-        const std::u16string expected = u"ABBBZZZ0XA";
-        BOOST_TEST(!err);
-        BOOST_TEST(expected.length() == result_length);
-        BOOST_TEST(expected == result);
-    }
-
-    {
-        // TODO: Test alternative char traits in repeat(ch, ch, ...)
-    }
-
     {   // Test char_ptr_writer::set_error
         //
         // When set_error(some_err) is called, some_err is returned at the end
@@ -168,7 +149,7 @@ int main()
     }
 
     
-   {   // When overflow happens in char_ptr_writer::repeat(ch, count)
+   {   // When overflow happens in char_ptr_writer::put(ch, count)
 
        char result[200] = "--------------------------------------------------";
        std::size_t result_length = 1000;
@@ -178,7 +159,7 @@ int main()
        BOOST_TEST(result_length == 0);
        BOOST_TEST(ec == std::errc::result_out_of_range);
    }
-   {   // When overflow happens in char_ptr_writer::repeat(ch, ch, count)
+   {   // When overflow happens in char_ptr_writer::put(ch, ch, count)
 
        char result[3] = "";
        std::size_t result_length = 1000;
@@ -189,7 +170,7 @@ int main()
        BOOST_TEST(result_length == 0);
        BOOST_TEST(ec == std::errc::result_out_of_range);
    }
-   {   // When overflow happens in char_ptr_writer::repeat(ch, ch, ch, count)
+   {   // When overflow happens in char_ptr_writer::put(ch, ch, ch, count)
 
        char result[200] = "--------------------------------------------------";
        std::size_t result_length = 1000;
@@ -200,7 +181,7 @@ int main()
        BOOST_TEST(result_length == 0);
        BOOST_TEST(ec == std::errc::result_out_of_range);
    }
-   {   // When overflow happens in char_ptr_writer::repeat(ch, ch, ch, ch, count)
+   {   // When overflow happens in char_ptr_writer::put(ch, ch, ch, ch, count)
 
        char result[200] = "--------------------------------------------------";
        std::size_t result_length = 1000;

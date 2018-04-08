@@ -7,16 +7,17 @@ remove_definitions(-DNDEBUG)
 
 foreach(x
     assembly_string
-    custom_decoder
-    custom_decoding_error_handling
-    custom_encoding_error_handling
+    encoding_conversion
+#    custom_decoder
+#    custom_decoding_error_handling
+#    custom_encoding_error_handling
     custom_width_calculation
     facets
     format_functions
     ftuple_as_input
     numpunct_facets
     width_calculation_in_encoding_conversion
-    decoding_facets
+#    decoding_facets
     joins
     syntax_samples
     trivial_sample)

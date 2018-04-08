@@ -4,27 +4,15 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[import ../example/v0/decoding_facets.cpp]
+[import ../example/v0/encoding_conversion.cpp]
 
-[section:encoding_conversion Facets for encoding conversion]
+[section:encoding_conversion Encoding conversion (todo)]
 
-Input and output can be based on the different character types:
+Input and output can be based on the different character types, and also on different encodings.
 
 [input_output_different_char_types]
 
-You can customize how this conversion is done, and how the errors are handled. Two facet category families are involved in this process: the [*`de`]`coder_category<`[~CharIn]`>` and  [*`en`]`coder_category<`[~CharOut]`>`. For instance, when an input string is of type `char16_t` and the destination character type is `char`, then a facet that belongs to the `decoder_category<char16_t>` is used to convert this input into UTF-32. Next, a facet of the `encoder_category<char>` converts this intermediate UTF-32 to the destination encoding. When the input and output character types are the same, these conversions are bypassed.
+By default, the encoding for `char` is UTF-8 and for `wchar_t` is UTF-16 if `sizeof(wchar_t) == 2`, and UTF-32 if `sizeof(wchar_t) == 4`. However it will be possible to select alternatives encodings so that one input string could be, for instance, in window-1252 and another in iso-8859/1 while the ouput is in UTF-8. This is expected to be implemented in the next release.
 
-The default facet of `encoder_category<char>` converts UTF-32 to UTF-8. You can use other output encodings, but you will need to implement your own encoding facet, since this library currently does only provide UTF-8 encoding facets.
 
-The default facet of `decoder_category<char>` expects the input to be UTF-8 too. If you have an input that is not UTF-8 then you need to implement you own decoding facet. [link example_custom_decoder Here] there is an example of how to implement a facet that expects [@https://en.wikipedia.org/wiki/ISO/IEC_8859-7 ISO/IEC 8859-7] instead.
-
-It is assumed that the encoding corresponding to `wchar_t` is either UTF-16 or UTF-32, depending on whether `sizeof(size_t)` is `2` or `4`. The conversion from wide strings to the corresponding assumed UTF-[~X] is bypassed. For example, if the input is `const wchar_t*` and the output is `std::u16string` and `sizeof(wchar_t) == 2`, then this input is simply casted as `reinterpret_cast<const char16_t*>`. The analogous happen if the output is based on `wchar_t` and the input is based on `char16_t` (when `sizeof(wchar_t) == 2`) or on `char32_t` (when `sizeof(wchar_t) == 4`).
-
-[/
-If you want to suppress this behavior, you need to define the macro `BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING` and also to implement and use your own decoder and/or encoder for `wchar_t`, because the default facets simply casts each `wchar_t` value to/from a `char16_t` or `char32_t` value. This macro does not create any binary incompatibly. It is perfectly safe to define it in one translation unit and not define it in another, as well as defining it during the compilation of the library ( if are not using it as header-only ) and not defining it in the code that uses it ( or vice-versa ).
-]
-
-[/
-The next two sections explains how to customize the decoding and the encoding facets respectively.
-]
 [endsect]

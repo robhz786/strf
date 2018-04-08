@@ -45,7 +45,7 @@ int main()
     {   // replace invalid codepoints by '?'
 
         auto facet = strf::make_u8encoder
-            ( [](auto& ow, auto count) -> bool { return ow.repeat(count, 'X'); } );
+            ( [](auto& ow, auto count) -> bool { return ow.put(count, 'X'); } );
 
         TEST_RF(u8"------X------X------X------X------XXX------", 1.5) .facets(facet) .exception
             ( "------", (char32_t)0xD800,

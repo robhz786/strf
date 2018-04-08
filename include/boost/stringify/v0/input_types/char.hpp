@@ -8,8 +8,6 @@
 #include <type_traits>
 #include <boost/stringify/v0/basic_types.hpp>
 #include <boost/stringify/v0/ftuple.hpp>
-#include <boost/stringify/v0/align_formatting.hpp>
-#include <boost/stringify/v0/facets/encoder.hpp>
 #include <boost/stringify/v0/facets/width_calculator.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -109,16 +107,17 @@ public:
 
     template <typename FTuple>
     char32_printer
-        ( const FTuple& ft
+        ( stringify::v0::output_writer<CharT>& out
+        , const FTuple& ft
         , const stringify::v0::char_with_formatting<char32_t>& input
         ) noexcept
-        : char32_printer(input, get_encoder(ft), get_width_calculator(ft))
+        : char32_printer(out, input, get_width_calculator(ft))
     {
     }
 
     char32_printer
-        ( const stringify::v0::char_with_formatting<char32_t>& input
-        , const stringify::v0::encoder<CharT>& encoder
+        ( stringify::v0::output_writer<CharT>& out
+        , const stringify::v0::char_with_formatting<char32_t>& input
         , const stringify::v0::width_calculator& wcalc
         ) noexcept;
 
@@ -126,20 +125,20 @@ public:
 
     std::size_t length() const override;
 
-    void write(writer_type& out) const override;
+    void write() const override;
 
     int remaining_width(int w) const override;
 
 private:
 
+    stringify::v0::output_writer<CharT>& m_out;
     stringify::v0::char_with_formatting<char32_t> m_fmt;
-    const stringify::v0::encoder<CharT>& m_encoder;
     int m_fillcount = 0;
 
     template <typename FTuple>
-    static const auto& get_encoder(const FTuple& ft)
+    static const auto& get_out_encoding(const FTuple& ft)
     {
-        using category = stringify::v0::encoder_category<CharT>;
+        using category = stringify::v0::output_encoding_category<CharT>;
         return ft.template get_facet<category, input_type>();
     }
 
@@ -148,6 +147,11 @@ private:
     {
         using category = stringify::v0::width_calculator_category;
         return ft.template get_facet<category, input_type>();
+    }
+
+    std::size_t length(char32_t ch) const
+    {
+        return m_out.required_size(ch);
     }
 
     void determinate_fill_and_width(const stringify::v0::width_calculator& wcalc)
@@ -176,12 +180,12 @@ private:
 
 template <typename CharT>
 char32_printer<CharT>::char32_printer
-    ( const stringify::v0::char_with_formatting<char32_t>& input
-    , const stringify::v0::encoder<CharT>& encoder
+    ( stringify::v0::output_writer<CharT>& out
+    , const stringify::v0::char_with_formatting<char32_t>& input
     , const stringify::v0::width_calculator& wcalc
     ) noexcept
-    : m_fmt(input)
-    , m_encoder(encoder)
+    : m_out(out)
+    , m_fmt(input)
 {
     determinate_fill_and_width(wcalc);
 }
@@ -199,22 +203,22 @@ std::size_t char32_printer<CharT>::length() const
     std::size_t len = 0;
     if (m_fmt.count() > 0)
     {
-        len = m_fmt.count() * m_encoder.length(m_fmt.value());
+        len = m_fmt.count() * length(m_fmt.value());
     }
     if (m_fillcount > 0)
     {
-        len += m_fillcount * m_encoder.length(m_fmt.fill());
+        len += m_fillcount * length(m_fmt.fill());
     }
     return len;
 }
 
 
 template <typename CharT>
-void char32_printer<CharT>::write(writer_type& out) const
+void char32_printer<CharT>::write() const
 {
     if (m_fillcount == 0)
     {
-        m_encoder.encode(out, m_fmt.count(), m_fmt.value());
+        m_out.put32(m_fmt.count(), m_fmt.value());
     }
     else
     {
@@ -222,22 +226,22 @@ void char32_printer<CharT>::write(writer_type& out) const
         {
             case stringify::v0::alignment::left:
             {
-                m_encoder.encode(out, m_fmt.count(), m_fmt.value());
-                m_encoder.encode(out, m_fillcount, m_fmt.fill());
+                m_out.put32(m_fmt.count(), m_fmt.value());
+                m_out.put32(m_fillcount, m_fmt.fill());
                 break;
             }
             case stringify::v0::alignment::center:
             {
                 auto halfcount = m_fillcount / 2;
-                m_encoder.encode(out, halfcount, m_fmt.fill());
-                m_encoder.encode(out, m_fmt.count(), m_fmt.value());
-                m_encoder.encode(out, m_fillcount - halfcount, m_fmt.fill());
+                m_out.put32(halfcount, m_fmt.fill());
+                m_out.put32(m_fmt.count(), m_fmt.value());
+                m_out.put32(m_fillcount - halfcount, m_fmt.fill());
                 break;
             }
             default:
             {
-                m_encoder.encode(out, m_fillcount, m_fmt.fill());
-                m_encoder.encode(out, m_fmt.count(), m_fmt.value());
+                m_out.put32(m_fillcount, m_fmt.fill());
+                m_out.put32(m_fmt.count(), m_fmt.value());
             }
         }
     }
@@ -273,16 +277,17 @@ public:
 
     template <typename FTuple>
     char_printer
-        ( const FTuple& ft
+        ( stringify::v0::output_writer<CharT>& out
+        , const FTuple& ft
         , const stringify::v0::char_with_formatting<CharT>& input
         ) noexcept
-        : char_printer(input, get_encoder(ft), get_width_calculator(ft))
+        : char_printer(out, input, get_width_calculator(ft))
     {
     }
 
     char_printer
-        ( const stringify::v0::char_with_formatting<CharT>& input
-        , const stringify::v0::encoder<CharT>& encoder
+        ( stringify::v0::output_writer<CharT>& out
+        , const stringify::v0::char_with_formatting<CharT>& input
         , const stringify::v0::width_calculator& wcalc
         ) noexcept;
 
@@ -290,20 +295,20 @@ public:
 
     std::size_t length() const override;
 
-    void write(writer_type& out) const override;
+    void write() const override;
 
     int remaining_width(int w) const override;
 
 private:
 
+    stringify::v0::output_writer<CharT>& m_out;
     stringify::v0::char_with_formatting<CharT> m_fmt;
-    const stringify::v0::encoder<CharT>& m_encoder;
     int m_fillcount = 0;
 
     template <typename FTuple>
-    static const auto& get_encoder(const FTuple& ft)
+    static const auto& get_out_encoding(const FTuple& ft)
     {
-        using category = stringify::v0::encoder_category<CharT>;
+        using category = stringify::v0::output_encoding_category<CharT>;
         return ft.template get_facet<category, input_type>();
     }
 
@@ -312,6 +317,11 @@ private:
     {
         using category = stringify::v0::width_calculator_category;
         return ft.template get_facet<category, input_type>();
+    }
+
+    std::size_t length(char32_t ch) const
+    {
+        return m_out.required_size(ch);
     }
 
     void determinate_fill_and_width(const stringify::v0::width_calculator& wcalc)
@@ -341,12 +351,12 @@ private:
 
 template <typename CharT>
 char_printer<CharT>::char_printer
-    ( const stringify::v0::char_with_formatting<CharT>& input
-    , const stringify::v0::encoder<CharT>& encoder
+    ( stringify::v0::output_writer<CharT>& out
+    , const stringify::v0::char_with_formatting<CharT>& input
     , const stringify::v0::width_calculator& wcalc
     ) noexcept
-    : m_fmt(input)
-    , m_encoder(encoder)
+    : m_out(out)
+    , m_fmt(input)
 {
     determinate_fill_and_width(wcalc);
 }
@@ -363,18 +373,18 @@ std::size_t char_printer<CharT>::length() const
     std::size_t len = m_fmt.count();
     if (m_fillcount > 0)
     {
-        len += m_fillcount * m_encoder.length(m_fmt.fill());
+        len += m_fillcount * length(m_fmt.fill());
     }
     return len;
 }
 
 
 template <typename CharT>
-void char_printer<CharT>::write(writer_type& out) const
+void char_printer<CharT>::write() const
 {
     if (m_fillcount == 0)
     {
-        out.repeat(m_fmt.count(), m_fmt.value());
+        m_out.put(m_fmt.count(), m_fmt.value());
     }
     else
     {
@@ -382,22 +392,22 @@ void char_printer<CharT>::write(writer_type& out) const
         {
             case stringify::v0::alignment::left:
             {
-                out.repeat(m_fmt.count(), m_fmt.value());
-                m_encoder.encode(out, m_fillcount, m_fmt.fill());
+                m_out.put(m_fmt.count(), m_fmt.value());
+                m_out.put32(m_fillcount, m_fmt.fill());
                 break;
             }
             case stringify::v0::alignment::center:
             {
                 auto halfcount = m_fillcount / 2;
-                m_encoder.encode(out, halfcount, m_fmt.fill());
-                m_encoder.encode(out, m_fmt.count(), m_fmt.value());
-                m_encoder.encode(out, m_fillcount - halfcount, m_fmt.fill());
+                m_out.put32(halfcount, m_fmt.fill());
+                m_out.put(m_fmt.count(), m_fmt.value());
+                m_out.put32(m_fillcount - halfcount, m_fmt.fill());
                 break;
             }
             default:
             {
-                m_encoder.encode(out, m_fillcount, m_fmt.fill());
-                out.repeat(m_fmt.count(), m_fmt.value());
+                m_out.put32(m_fillcount, m_fmt.fill());
+                m_out.put(m_fmt.count(), m_fmt.value());
             }
         }
     }
@@ -488,9 +498,13 @@ template
     , typename = typename std::enable_if<!std::is_same<CharT, char32_t>::value>::type
     >
 inline stringify::v0::char32_printer<CharT>
-stringify_make_printer(const FTuple& ft, char32_t ch)
+stringify_make_printer
+    ( stringify::v0::output_writer<CharT>& out
+    , const FTuple& ft
+    , char32_t ch
+    )
 {
-    return {ft, ch};
+    return {out, ft, ch};
 }
 
 template
@@ -500,28 +514,31 @@ template
     >
 inline stringify::v0::char32_printer<CharT>
 stringify_make_printer
-    ( const FTuple& ft
-    , const stringify::v0::char_with_formatting<char32_t>& ch
-    )
+    ( stringify::v0::output_writer<CharT>& out
+    , const FTuple& ft
+    , const stringify::v0::char_with_formatting<char32_t>& ch )
 {
-    return {ft, ch};
-}
-
-template <typename CharT, typename FTuple>
-inline stringify::v0::char_printer<CharT>
-stringify_make_printer(const FTuple& ft, CharT ch)
-{
-    return {ft, ch};
+    return {out, ft, ch};
 }
 
 template <typename CharT, typename FTuple>
 inline stringify::v0::char_printer<CharT>
 stringify_make_printer
-    ( const FTuple& ft
-    , const stringify::v0::char_with_formatting<CharT>& ch
-    )
+    ( stringify::v0::output_writer<CharT>& out
+    , const FTuple& ft
+    , CharT ch )
 {
-    return {ft, ch};
+    return {out, ft, ch};
+}
+
+template <typename CharT, typename FTuple>
+inline stringify::v0::char_printer<CharT>
+stringify_make_printer
+    ( stringify::v0::output_writer<CharT>& out
+    , const FTuple& ft
+    , const stringify::v0::char_with_formatting<CharT>& ch )
+{
+    return {out, ft, ch};
 }
 
 inline stringify::v0::char_with_formatting<char> stringify_fmt(char ch)

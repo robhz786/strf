@@ -15,16 +15,26 @@ class reservation_tester : public strf::output_writer<char>
 {
 public:
 
-    reservation_tester(std::size_t& reserve_size)
-        : m_reserve_size(reserve_size)
+    reservation_tester
+        ( strf::output_writer_init<char> init
+        , std::size_t& reserve_size
+        )
+        : strf::output_writer<char>{init}
+        , m_reserve_size(reserve_size)
     {
     }
+
     
     virtual void set_error(std::error_code) override
     {
     }
 
     virtual bool good() const override
+    {
+        return true;
+    }
+
+    virtual bool put(strf::source<char>&) override
     {
         return true;
     }
@@ -39,22 +49,7 @@ public:
         return true;
     }
 
-    virtual bool repeat(std::size_t, char) override
-    {
-        return true;
-    }
-
-    virtual bool repeat(std::size_t, char, char) override
-    {
-        return true;
-    }
-
-    virtual bool repeat(std::size_t, char, char, char) override
-    {
-        return true;
-    }
-
-    virtual bool repeat(std::size_t, char, char, char, char) override
+    virtual bool put(std::size_t, char) override
     {
         return true;
     }

@@ -5,9 +5,10 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/detail/transcoder.hpp>
+#include <boost/stringify/v0/facets/encodings.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+
 namespace detail {
 
 template <typename CharT>
@@ -19,7 +20,7 @@ public:
     {
     }
 
-    virtual bool good() = 0;
+    //virtual bool good() = 0;
 
     void put(const CharT* begin, const CharT* end)
     {
@@ -37,7 +38,6 @@ public:
     virtual void do_put(const CharT* begin, const CharT* end) = 0;
 
     virtual void do_put_arg(std::size_t index) = 0;
-
 };
 
 template <typename CharIn, typename CharOut>
@@ -50,32 +50,34 @@ public:
 
     template <typename FTuple>
     asm_string_writer
-        ( const FTuple&
-        , stringify::v0::output_writer<CharOut>& dest
-        , arglist_type args
-        , const stringify::v0::detail::transcoder<CharIn, CharOut>& trans
-        )
+        ( stringify::v0::output_writer<CharOut>& dest
+        , const FTuple& ft
+        , const arglist_type& args
+        , bool sanitise )
         : m_dest(dest)
         , m_args(args)
-        , m_trans(trans)
+        , m_sw
+            ( dest
+            , get_facet<stringify::v0::input_encoding_category<CharIn>>(ft).id
+            , sanitise )
     {
     }
 
-    bool good() override
-    {
-        return m_dest.good();
-    }
+    // bool good() override
+    // {
+    //     return m_dest.good();
+    // }
 
     void do_put(const CharIn* begin, const CharIn* end) override
     {
-        m_trans.write(m_dest, begin, end);
+        m_sw.write(begin, end);
     }
 
     void do_put_arg(std::size_t index) override
     {
         if (index < m_args.size())
         {
-            m_args.begin()[index]->write(m_dest);
+            m_args.begin()[index]->write();
         }
         else
         {
@@ -84,10 +86,16 @@ public:
     }
 
 private:
+    template <typename Category, typename FTuple>
+    const auto& get_facet(const FTuple& ft) const
+    {
+        using input_tag = stringify::v0::asm_string_input_tag<CharIn>;
+        return ft.template get_facet<Category, input_tag>();
+    }
 
     stringify::v0::output_writer<CharOut>& m_dest;
     arglist_type m_args;
-    const stringify::v0::detail::transcoder<CharIn, CharOut>& m_trans;
+    stringify::v0::string_writer<CharIn, CharOut> m_sw;
 };
 
 
@@ -100,30 +108,35 @@ class asm_string_measurer: public asm_string_processor<CharIn>
 
 public:
 
-    explicit asm_string_measurer
-        ( const arglist_type& arglist
-        , const stringify::v0::detail::transcoder<CharIn, CharOut>& trans
-        )
-        : m_arglist(arglist)
-        , m_trans(trans)
+    template <typename FTuple>
+    asm_string_measurer
+        ( stringify::v0::output_writer<CharOut>& dest
+        , const FTuple& ft
+        , const arglist_type& args
+        , bool sanitise )
+        : m_args(args)
+        , m_sw
+            ( dest
+            , get_facet<stringify::v0::input_encoding_category<CharIn>>(ft).id
+            , sanitise )
     {
     }
 
-    virtual bool good()
-    {
-        return true;
-    }
+    // virtual bool good()
+    // {
+    //     return true;
+    // }
 
     virtual void do_put(const CharIn* begin, const CharIn* end)
     {
-        m_length += m_trans.length(begin, end);
+        m_length += m_sw.length(begin, end);
     }
 
     virtual void do_put_arg(std::size_t index)
     {
-        if (index < m_arglist.size())
+        if (index < m_args.size())
         {
-            m_length += m_arglist.begin()[index]->length();
+            m_length += m_args.begin()[index]->length();
         }
     }
 
@@ -135,8 +148,15 @@ public:
 private:
 
     std::size_t m_length = 0;
-    arglist_type m_arglist;
-    const stringify::v0::detail::transcoder<CharIn, CharOut>& m_trans;
+    arglist_type m_args;
+    stringify::v0::string_writer<CharIn, CharOut> m_sw;
+
+    template <typename Category, typename FTuple>
+    const auto& get_facet(const FTuple& ft) const
+    {
+        using input_tag = stringify::v0::asm_string_input_tag<CharIn>;
+        return ft.template get_facet<Category, input_tag>();
+    }
 };
 
 template <typename CharT>
@@ -177,69 +197,6 @@ const CharT* after_closing_bracket(const CharT* it, const CharT* end)
 {
     it = std::find(it, end, static_cast<CharT>('}'));
     return it == end ? end : it + 1;
-}
-
-
-template <typename CharT>
-void parse_asm_string_old
-    ( const CharT* it
-    , const CharT* end
-    , asm_string_processor<CharT>& proc
-    )
-{
-    std::size_t arg_idx = 0;
-
-    while(it != end && proc.good())
-    {
-        auto prev = it;
-        it = std::find(it, end, static_cast<CharT>('{'));
-
-        if (it == end)
-        {
-            proc.put(prev, it);
-            return;
-        }
-        if (it + 1 == end)
-        {
-            proc.put(prev, it);
-            proc.put_arg(arg_idx);
-            return;
-        }
-
-        CharT ch = *++it;
-
-        if (ch == static_cast<CharT>('}'))
-        {
-            proc.put(prev, it - 1);
-            proc.put_arg(arg_idx);
-            ++it;
-            ++arg_idx;
-        }
-        else if (static_cast<CharT>('0') <= ch && ch <= static_cast<CharT>('9'))
-        {
-            proc.put(prev, it - 1);
-            auto res = read_uint(it, end);
-            it = after_closing_bracket(res.ptr, end);
-            proc.put_arg(res.value);
-        }
-        else if (ch == static_cast<CharT>('/'))
-        {
-            proc.put(prev, it);
-            ++it;
-        }
-        else if (ch == static_cast<CharT>('-'))
-        {
-            proc.put(prev, it - 1);
-            it = after_closing_bracket(it + 1 , end);
-        }
-        else
-        {
-            proc.put(prev, it - 1);
-            it = after_closing_bracket(it + 1, end);
-            proc.put_arg(arg_idx);
-            ++arg_idx;
-        }
-    }
 }
 
 template <typename CharT>

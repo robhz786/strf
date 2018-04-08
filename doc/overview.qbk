@@ -4,8 +4,6 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[import ../example/v0/decoding_facets.cpp]
-
 [section Overview]
 
 [warning

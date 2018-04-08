@@ -30,11 +30,6 @@ int main()
 
     std::cout << "\nUTF-16 to UTF-8\n";
 
-    PRINT_BENCHMARK("boost::stringify::format(u8dest).facets(strf::lax_u16decoder<char16_t>).error_code(u16sample1)")
-    {
-        auto err = strf::format(u8dest).facets(strf::lax_u16decoder<char16_t>{}).error_code(u16sample1);
-        (void)err;
-    }
     PRINT_BENCHMARK("boost::stringify::format(u8dest).error_code(u16sample1)")
     {
         auto err = strf::format(u8dest).error_code(u16sample1);

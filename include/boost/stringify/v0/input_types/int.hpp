@@ -7,8 +7,7 @@
 
 #include <boost/stringify/v0/basic_types.hpp>
 #include <boost/stringify/v0/ftuple.hpp>
-#include <boost/stringify/v0/align_formatting.hpp>
-#include <boost/stringify/v0/facets/encoder.hpp>
+#include <boost/stringify/v0/facets/encodings.hpp>
 #include <boost/stringify/v0/facets/numpunct.hpp>
 #include <boost/stringify/v0/detail/number_of_digits.hpp>
 #include <boost/assert.hpp>
@@ -249,12 +248,13 @@ public:
 
     template <typename FTuple>
     int_printer
-        ( const FTuple& ft
+        ( stringify::v0::output_writer<CharT>& out
+        , const FTuple& ft
         , const stringify::v0::int_with_formatting<IntT>& value
         ) noexcept
         : int_printer
-            ( value
-            , get_encoder(ft)
+            ( out
+            , value
             , get_numpunct<8>(ft)
             , get_numpunct<10>(ft)
             , get_numpunct<16>(ft)
@@ -264,8 +264,8 @@ public:
 
 
     int_printer
-        ( const stringify::v0::int_with_formatting<IntT>& value
-        , const stringify::v0::encoder<CharT>& encoder
+        ( stringify::v0::output_writer<CharT>& out
+        , const stringify::v0::int_with_formatting<IntT>& value
         , const stringify::v0::numpunct<8>& numpunct_oct
         , const stringify::v0::numpunct<10>& numpunct_dec
         , const stringify::v0::numpunct<16>& numpunct_hex
@@ -275,23 +275,17 @@ public:
 
     std::size_t length() const override;
 
-    void write(writer_type& out) const override;
+    void write() const override;
 
     int remaining_width(int w) const override;
 
 private:
 
+    stringify::v0::output_writer<CharT>& m_out;
     boost::stringify::v0::int_with_formatting<IntT> m_input;
-    const stringify::v0::encoder<CharT>& m_encoder;
     const stringify::v0::numpunct_base& m_numpunct;
     int m_fillcount = 0;
 
-    template <typename FTuple>
-    const stringify::v0::encoder<CharT>& get_encoder(const FTuple& ft) noexcept
-    {
-        using tag = stringify::v0::encoder_category<CharT>;
-        return ft.template get_facet<tag, input_type>();
-    }
     template <int Base, typename FTuple>
     const stringify::v0::numpunct<Base>& get_numpunct(const FTuple& ft) noexcept
     {
@@ -317,7 +311,7 @@ private:
     {
         if (m_fillcount > 0)
         {
-            return m_fillcount * m_encoder.length(m_input.fill());
+            return m_fillcount * m_out.required_size(m_input.fill());
         }
         return 0;
     }
@@ -346,116 +340,116 @@ private:
 
         if (unsigned num_seps = m_numpunct.thousands_sep_count(num_digits))
         {
-            auto sep_len = m_encoder.length(m_numpunct.thousands_sep());
+            auto sep_len = m_out.required_size(m_numpunct.thousands_sep());
             return num_digits + num_seps * sep_len;
         }
         return num_digits;
     }
 
-    void write_with_fill(writer_type& out) const
+    void write_with_fill() const
     {
         switch(m_input.alignment())
         {
             case stringify::v0::alignment::left:
-                write_sign(out);
-                write_base(out);
-                write_digits(out);
-                write_fill(out, m_fillcount);
+                write_sign();
+                write_base();
+                write_digits();
+                m_out.put32(m_fillcount, m_input.fill());
                 break;
 
             case stringify::v0::alignment::internal:
-                write_sign(out);
-                write_base(out);
-                write_fill(out, m_fillcount);
-                write_digits(out);
+                write_sign();
+                write_base();
+                m_out.put32(m_fillcount, m_input.fill());
+                write_digits();
                 break;
 
             case stringify::v0::alignment::center:
             {
                 auto halfcount = m_fillcount / 2;
-                write_fill(out, halfcount);
-                write_sign(out);
-                write_base(out);
-                write_digits(out);
-                write_fill(out, m_fillcount - halfcount);
+                m_out.put32(halfcount, m_input.fill());
+                write_sign();
+                write_base();
+                write_digits();
+                m_out.put32(m_fillcount - halfcount, m_input.fill());
                 break;
             }
             default:
-                write_fill(out, m_fillcount);
-                write_sign(out);
-                write_base(out);
-                write_digits(out);
+                m_out.put32(m_fillcount, m_input.fill());                
+                write_sign();
+                write_base();
+                write_digits();
         }
     }
 
-    void write_sign(writer_type& out) const
+    void write_sign() const
     {
         if (is_signed && m_input.base() == 10)
         {
             if (m_input.value() < 0)
             {
-                out.put(CharT('-'));
+                m_out.put(CharT('-'));
             }
             else if(showsign())
             {
-                out.put(CharT('+'));
+                m_out.put(CharT('+'));
             }
         }
     }
 
-    void write_without_fill(writer_type& out) const
+    void write_without_fill() const
     {
         switch(m_input.base())
         {
             case 16:
-                write_base(out);
-                write_digits_t<16>(out);
+                write_base();
+                write_digits_t<16>();
                 break;
 
             case  8:
-                write_base(out);
-                write_digits_t<8>(out);
+                write_base();
+                write_digits_t<8>();
                 break;
 
             default:
                 BOOST_ASSERT(m_input.base() == 10);
-                write_sign(out);
-                write_digits_t<10>(out);
+                write_sign();
+                write_digits_t<10>();
         }
     }
 
-    void write_base(writer_type& out) const
+    void write_base() const
     {
         if(m_input.base() != 10 && m_input.showbase())
         {
-            out.put(CharT('0'));
+            m_out.put(CharT('0'));
             if(m_input.base() == 16)
             {
-                out.put(m_input.uppercase() ? CharT('X'): CharT('x'));
+                m_out.put(m_input.uppercase() ? CharT('X'): CharT('x'));
             }
         }
     }
 
-    void write_digits(writer_type& out) const
+    void write_digits() const
     {
         switch (m_input.base())
         {
             case 10:
-                write_digits_t<10>(out);
+                write_digits_t<10>();
                 break;
 
             case 16:
-                write_digits_t<16>(out);
+                write_digits_t<16>();
                 break;
 
             default:
                 BOOST_ASSERT(m_input.base() == 8);
-                write_digits_t<8>(out);
+                write_digits_t<8>();
         }
     }
 
     template <unsigned Base>
-    void write_digits_t(writer_type& out) const
+    void write_digits_t() const
     {
         constexpr std::size_t buff_size = sizeof(IntT) * 6;
         CharT buff[buff_size];
@@ -464,31 +458,46 @@ private:
         unsigned num_digits = static_cast<unsigned>(end - begin);
         if (m_numpunct.thousands_sep_count(num_digits) == 0)
         {
-            out.put(begin, num_digits);
+            m_out.put(begin, num_digits);
         }
         else
         {
-            write_digits_with_punctuation(out, begin, num_digits);
+            write_digits_with_punctuation(begin, num_digits);
         }
     }
 
     void write_digits_with_punctuation
-        ( writer_type& out
-        , const CharT* digits
+        ( const CharT* digits
         , unsigned num_digits
         ) const
     {
         char32_t thousands_sep = m_numpunct.thousands_sep();
         unsigned char groups[sizeof(IntT) * 6];
-        auto* it = m_numpunct.groups(num_digits, groups);
-        out.put(digits, *it);
-        digits += *it;
-        while(--it >= groups)
+        constexpr std::size_t buff_size = sizeof(IntT) * 12;
+        CharT buff[buff_size];
+        CharT* it_buff = buff;
+        CharT* buff_end = buff + buff_size;
+        const auto& encoder = m_out.encoder();
+
+        auto* it_grp = m_numpunct.groups(num_digits, groups);
+        while(true)
         {
-            m_encoder.encode(out, 1, thousands_sep);
-            out.put(digits, *it);
-            digits += *it;
+            unsigned grp_size = *it_grp;
+            for(unsigned i = 0; i < grp_size; ++i)
+            {
+                *it_buff = *digits;
+                ++it_buff;
+                ++digits;
+            }
+            if(--it_grp < groups)
+            {
+                break;
+            }
+            it_buff = encoder.convert(thousands_sep, it_buff, buff_end, true);
+            BOOST_ASSERT(it_buff != nullptr);
+            BOOST_ASSERT(it_buff < buff_end);
         }
+        m_out.put(buff, it_buff - buff);
     }
 
     template <unsigned Base, typename OutputIterator>
@@ -531,11 +540,6 @@ private:
         }
     }
 
-    void write_fill(writer_type& out, int count) const
-    {
-        m_encoder.encode(out, count, m_input.fill());
-    }
-
     int width_body() const noexcept
     {
         unsigned num_digits = 0;
@@ -570,14 +574,14 @@ private:
 
 template <typename IntT, typename CharT>
 int_printer<IntT, CharT>::int_printer
-    ( const stringify::v0::int_with_formatting<IntT>& valuef
-    , const stringify::v0::encoder<CharT>& encoder
+    ( stringify::v0::output_writer<CharT>& out
+    , const stringify::v0::int_with_formatting<IntT>& valuef
     , const stringify::v0::numpunct<8>& numpunct_oct
     , const stringify::v0::numpunct<10>& numpunct_dec
     , const stringify::v0::numpunct<16>& numpunct_hex
     ) noexcept
-    : m_input{valuef}
-    , m_encoder{encoder}
+    : m_out(out)
+    , m_input{valuef}
     , m_numpunct
         ( valuef.base() == 10
           ? static_cast<const stringify::v0::numpunct_base&>(numpunct_dec)
@@ -601,15 +605,15 @@ std::size_t int_printer<IntT, CharT>::length() const
 }
 
 template <typename IntT, typename CharT>
-void int_printer<IntT, CharT>::write(writer_type& out) const
+void int_printer<IntT, CharT>::write() const
 {
     if (m_fillcount > 0)
     {
-        write_with_fill(out);
+        write_with_fill();
     }
     else
     {
-        write_without_fill(out);
+        write_without_fill();
     }
 }
 
@@ -700,62 +704,87 @@ int int_printer<IntT, CharT>::remaining_width(int w) const
 
 template <typename CharT, typename FTuple>
 inline stringify::v0::int_printer<short, CharT>
-stringify_make_printer(const FTuple& ft, short x)
+stringify_make_printer
+    ( stringify::v0::output_writer<CharT>& out
+    , const FTuple& ft
+    , short x )
 {
-    return {ft, x};
+    return {out, ft, x};
 }
 template <typename CharT, typename FTuple>
 inline stringify::v0::int_printer<int, CharT>
-stringify_make_printer(const FTuple& ft, int x)
+stringify_make_printer
+    ( stringify::v0::output_writer<CharT>& out
+    , const FTuple& ft
+    , int x )
 {
-    return {ft, x};
+    return {out, ft, x};
 }
 template <typename CharT, typename FTuple>
 inline stringify::v0::int_printer<long, CharT>
-stringify_make_printer(const FTuple& ft, long x)
+stringify_make_printer
+    ( stringify::v0::output_writer<CharT>& out
+    , const FTuple& ft
+    , long x )
 {
-    return {ft, x};
+    return {out, ft, x};
 }
 template <typename CharT, typename FTuple>
 inline stringify::v0::int_printer<long long, CharT>
-stringify_make_printer(const FTuple& ft, long long x)
+stringify_make_printer
+    ( stringify::v0::output_writer<CharT>& out
+    , const FTuple& ft
+    , long long x )
 {
-    return {ft, x};
+    return {out, ft, x};
 }
 template <typename CharT, typename FTuple>
 inline stringify::v0::int_printer<unsigned short, CharT>
-stringify_make_printer(const FTuple& ft, unsigned short x)
+stringify_make_printer
+    ( stringify::v0::output_writer<CharT>& out
+    , const FTuple& ft
+    , unsigned short x )
 {
-    return {ft, x};
+    return {out, ft, x};
 }
 template <typename CharT, typename FTuple>
 inline stringify::v0::int_printer<unsigned int, CharT>
-stringify_make_printer(const FTuple& ft, unsigned int x)
+stringify_make_printer
+    ( stringify::v0::output_writer<CharT>& out
+    , const FTuple& ft
+    , unsigned int x )
 {
-    return {ft, x};
+    return {out, ft, x};
 }
 template <typename CharT, typename FTuple>
 inline stringify::v0::int_printer<unsigned long, CharT>
-stringify_make_printer(const FTuple& ft, unsigned long x)
+stringify_make_printer
+    ( stringify::v0::output_writer<CharT>& out
+    , const FTuple& ft
+    , unsigned long x )
 {
-    return {ft, x};
+    return {out, ft, x};
 }
 template <typename CharT, typename FTuple>
 inline stringify::v0::int_printer<unsigned long long, CharT>
-stringify_make_printer(const FTuple& ft, unsigned long long x)
+stringify_make_printer
+    ( stringify::v0::output_writer<CharT>& out
+    , const FTuple& ft
+    , unsigned long long x )
 {
-    return {ft, x};
+    return {out, ft, x};
 }
 
 
 template <typename CharT, typename FTuple, typename IntT>
 inline stringify::v0::int_printer<IntT, CharT>
 stringify_make_printer
-    ( const FTuple& ft
+    ( stringify::v0::output_writer<CharT>& out
+    , const FTuple& ft
     , const stringify::v0::int_with_formatting<IntT>& x
     )
 {
-    return {ft, x};
+    return {out, ft, x};
 }
 
 inline stringify::v0::int_with_formatting<short>

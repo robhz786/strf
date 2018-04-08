@@ -44,5 +44,6 @@ int main()
     TEST(u8"         \u2E3A\u2E3A\u2014")              .exception(strf::right( U"\u2E3A\u2E3A\u2014", 12));
     TEST( u"         \u2E3A\u2E3A\u2014")              .exception(strf::right( U"\u2E3A\u2E3A\u2014", 12));
 
+
     return report_errors() || boost::report_errors();
 }

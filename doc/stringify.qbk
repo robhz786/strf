@@ -31,9 +31,15 @@ __STD_EXPECTED__
 [include:facet_width_calculation facet_width_calculation.qbk]
 
 [include:encoding_convertion encoding_conversion.qbk]
-[include:decoding_facets decoding_facets.qbk]
-[include:encoding_facets encoding_facets.qbk]
+
+[include:extend_input extend_input.qbk]
 
 [include:extend_output extend_output.qbk]
-[include:extend_input extend_input.qbk]
+
+[/
+This section has not been written yet. It will guide you how to extend Boost.Stringify to support other destination types. For example: to create a `makeQString` function similar to [link output_types.output_types `make_string`] but that would return a [@http://doc.qt.io/qt-5/qstring.html `QString`] ( from Qt framework ) instead of a `std::string`.
+
+]
+
+
 [include:benchmarks benchmarks.qbk]

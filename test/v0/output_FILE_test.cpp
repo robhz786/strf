@@ -307,6 +307,7 @@ int main()
         std::string str_b(buff_size / 3, 'b');
         std::string str_c(buff_size / 2, 'c');
         std::string str_d(buff_size * 2, 'd');
+        std::string expected = str_a + str_b + str_c + str_d;
 
         std::string result;
         {
@@ -316,13 +317,11 @@ int main()
             result = read_file<char>(file);
         }
 
-        std::string expected = strf::make_string.exception(str_a, str_b, str_c, str_d);
-
         BOOST_TEST(expected == result);
     }
 
 
-    {   // testing narrow_file_writer::repeat
+    {   // testing narrow_file_writer::put
 
         std::string result;
         {

@@ -29,6 +29,7 @@ Every /facet/ belongs to some /facet category/.
 [integers and floating points numbers]
 ]
 
+
 [
 [[link numpunct `numpunct_category<16>`]]
 [numeric punctuation for hexadecimal base]
@@ -41,38 +42,17 @@ Every /facet/ belongs to some /facet category/.
 [integers numbers]
 ]
 
-[
-[[link encoder_facet `encoder_category<`[~CharT]`>`]]
-[Conversion from UTF-32 to the destination's encoding]
-[
-Only if the destination character type is [~CharT]. [br]
-It is used to encode the fill character (which is `char32_t`). [br]
-Also when the encoding of an input string differs from of the destination.
-]
-]
-
-[
-[[link decoder_facet `decoder_category<`[~CharT]`>`]]
-[Conversion of [~CharT]-type strings to UTF-32]
-[
-Used when the encoding of an input string differs from of the destination [br]
-( because it is converted to UTF-32 and then from UTF-32 to destination encoding )
-]
-]
-
 ]
 
 
-Each facet category corresponds to a concept, /i.e./ a set of requirements that a class must satisfy. A class that satisfy such requirements is a facet of such facet category. Hence, facets are policy classes. And for each facet category there is a representative class, whose name, by convention, is the name of the category. This class always have static member function named `get_default` which has no parameter and returns a reference to a constant object, whose type is a facet of this category. Also a facet must have member type named `category` which is an alias to the representative class of its category.
+Each facet category corresponds to a concept, /i.e./ a set of requirements that a class must satisfy. A class that satisfy such requirements is a facet of such facet category. Hence, facets are policy classes. And for each facet category there is a representative class, which is not a facet and whose name, by convention, is the name of the category. This class always have static member function named `get_default` which has no parameter and returns a reference to a constant object, whose type is a facet of this category. Also a facet must have member type named `category` which is an alias to the representative class of its category.
 
 For example, the `width_calculator` class is a facet:
 
 ``
 namespace boost { namespace stringify { inline namespace v0 {
 
-
 struct width_calculator_category;
-
 
 class width_calculator
 {
@@ -90,14 +70,21 @@ struct width_calculator_category
 
 }}}
 ``
-In order to use a facet object, you pass it to the [link syntax_diagram `facets`] member function.
+In order to use a facet object, you pass it to the [link syntax_diagram `facets`] function:
 
 [basic_facet_sample]
 
 [#constrained_facets]
 [h4 Constrained facets]
 
-Using the `constrain` function template you can instantiate /constrained facet/, which it a facet that only apply to certain input types. The template parameter of `constrain` is a template class that has one template type parameter and a `value` member constant whose type must be (or implicitly convertible to ) `bool` [/( just like those several functions in `<type_traits>` : `std::is_integral`, `std::is_floating_point`, etc )]:
+Using the `constrain` function template you can instantiate /constrained facet/, which it a facet that only apply to certain input types.
+
+``
+template <template <class> class Filter, typename Facet>
+auto constrain(const Facet& facet) -> /*implementation defined*/ ;
+``
+
+The first template parameter of `constrain` ( named here as `Filter` ) is a template type that must follow the same design of `std::is_signed`, `std::is_pointer` and those others metafunctions defined in <type_traits>. It must contains a `value` member constant conversible to bool that tells wheter a given input type shall be under the influence of the given facet:
 
 [constrained_facet_sample]
 

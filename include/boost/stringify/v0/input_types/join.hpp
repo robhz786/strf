@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/basic_types.hpp>
+#include <boost/stringify/v0/facets/encodings.hpp>
 #include <initializer_list>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -76,7 +76,10 @@ template <typename CharT, typename FTuple>
 class printers_tuple<CharT, FTuple>
 {
 public:
-    printers_tuple(const FTuple&, const stringify::v0::detail::args_tuple<>&)
+    printers_tuple
+        ( stringify::v0::output_writer<CharT>&
+        , const FTuple&
+        , const stringify::v0::detail::args_tuple<>& )
     {
     }
 
@@ -95,17 +98,19 @@ class printers_tuple<CharT, FTuple, Arg, Args...>
     using printer_type
         = decltype
             ( stringify_make_printer<CharT, FTuple>
-                ( std::declval<FTuple>()
+                ( * std::declval<stringify::v0::output_writer<CharT>*> ()
+                , std::declval<FTuple>()
                 , std::declval<const Arg>()));
 public:
 
     printers_tuple
-        ( const FTuple& ft
+        ( stringify::v0::output_writer<CharT>& out
+        , const FTuple& ft
         , const stringify::v0::detail::args_tuple<Arg, Args...>& args
         )
         : m_printer
-          (stringify_make_printer<CharT, FTuple>(ft, args.first_arg))
-        , m_rest(ft, args.remove_first())
+          (stringify_make_printer<CharT, FTuple>(out, ft, args.first_arg))
+        , m_rest(out, ft, args.remove_first())
     {
     }
 
@@ -131,10 +136,11 @@ class printers_group
 public:
 
     printers_group
-        ( const FTuple& ft
+        ( stringify::v0::output_writer<CharT>& out
+        , const FTuple& ft
         , const stringify::v0::detail::args_tuple<Args...>& args
         )
-        : m_impl(ft, args)
+        : m_impl(out, ft, args)
     {
         m_range.m_end = m_impl.fill(m_array);
         m_range.m_begin = m_array;
@@ -187,7 +193,6 @@ struct join_t
 template <typename CharT>
 class join_printer_impl: public printer<CharT>
 {
-    using encoder_category = stringify::v0::encoder_category<CharT>;
     using printer_type = stringify::v0::printer<CharT>;
     using pp_range = stringify::v0::detail::printer_ptr_range<CharT>;
 
@@ -198,12 +203,15 @@ public:
     using writer_type = stringify::v0::output_writer<CharT>;
 
     join_printer_impl
-        ( const stringify::v0::detail::printer_ptr_range<CharT>& pp_range
+        ( stringify::v0::output_writer<CharT>& out
+        , const stringify::v0::detail::printer_ptr_range<CharT>& pp_range
         , const stringify::v0::detail::join_t& j
-        , const stringify::v0::encoder<CharT>& encoder
+        , const stringify::v0::output_encoding<CharT>& encoding
         )
-        : m_join(j)
-        , m_encoder{encoder}
+        : m_out(out)
+        , m_join(j)
+        , m_encoder{encoding.encoder()}
+        , m_keepsurr{encoding.keep_surrogates()}
         , m_args{pp_range}
     {
         m_fillcount = remaining_width_from_arglist(m_join.width);
@@ -218,34 +226,33 @@ public:
         return args_length() + fill_length();
     }
 
-    void write(writer_type& out) const override
+    void write() const override
     {
-
         if (m_fillcount <= 0)
         {
-            write_args(out);
+            write_args();
         }
         else
         {
             switch(m_join.align)
             {
                 case stringify::v0::alignment::left:
-                    write_args(out);
-                    write_fill(out, m_fillcount);
+                    write_args();
+                    write_fill(m_fillcount);
                     break;
                 case stringify::v0::alignment::right:
-                    write_fill(out, m_fillcount);
-                    write_args(out);
+                    write_fill(m_fillcount);
+                    write_args();
                     break;
                 case stringify::v0::alignment::internal:
-                    write_splitted(out);
+                    write_splitted();
                     break;
                 case stringify::v0::alignment::center:
                 {
                     auto half_fillcount = m_fillcount / 2;
-                    write_fill(out, half_fillcount);
-                    write_args(out);
-                    write_fill(out, m_fillcount - half_fillcount);
+                    write_fill(half_fillcount);
+                    write_args();
+                    write_fill(m_fillcount - half_fillcount);
                     break;
                 }
 
@@ -266,9 +273,11 @@ public:
 
 private:
 
+    stringify::v0::output_writer<CharT>& m_out;    
     input_type m_join;
     int m_fillcount = 0;
     const stringify::v0::encoder<CharT>& m_encoder;
+    bool m_keepsurr;
     pp_range m_args = nullptr;
 
     std::size_t args_length() const
@@ -285,7 +294,7 @@ private:
     {
         if(m_fillcount > 0)
         {
-            return m_fillcount * m_encoder.length(m_join.fillchar);
+            return m_fillcount * m_encoder.length(m_join.fillchar, m_keepsurr);
         }
         return 0;
     }
@@ -299,35 +308,34 @@ private:
         return w;
     }
 
-    void write_splitted(writer_type& out) const
+    void write_splitted() const
     {
         auto it = m_args.begin();
         for ( int count = m_join.num_leading_args
             ; count > 0 && it != m_args.end()
             ; --count, ++it)
         {
-            (*it)->write(out);
+            (*it)->write();
         }
-        write_fill(out, m_fillcount);
+        write_fill(m_fillcount);
         while(it != m_args.end())
         {
-            (*it)->write(out);
+            (*it)->write();
             ++it;
         }
     }
 
-    void write_args(writer_type& out) const
+    void write_args() const
     {
-
         for(const auto& arg : m_args)
         {
-            arg->write(out);
+            arg->write();
         }
     }
 
-    void write_fill(writer_type& out, int count) const
+    void write_fill(int count) const
     {
-         m_encoder.encode(out, count, m_join.fillchar);
+        m_out.put32(count, m_join.fillchar);
     }
 };
 
@@ -349,11 +357,12 @@ public:
     using input_type  = stringify::v0::detail::join_t ;
 
     join_printer
-        ( const FTuple& ft
+        ( stringify::v0::output_writer<CharT>& out
+        , const FTuple& ft
         , const stringify::v0::detail::joined_args<Args...>& ja
         )
-        : fmt_group(ft, ja.args)
-        , join_impl{fmt_group::range(), ja.join, get_encoder(ft)}
+        : fmt_group(out, ft, ja.args)
+        , join_impl{out, fmt_group::range(), ja.join, get_encoding(ft)}
     {
     }
 
@@ -363,9 +372,9 @@ public:
 
 private:
 
-    static const auto& get_encoder(const FTuple& ft)
+    static const auto& get_encoding(const FTuple& ft)
     {
-        using encoder_category = stringify::v0::encoder_category<CharT>;
+        using encoder_category = stringify::v0::output_encoding_category<CharT>;
         return ft.template get_facet<encoder_category, input_type>();
     }
 };
@@ -392,11 +401,11 @@ private:
 template <typename CharT, typename FTuple, typename ... Args>
 inline stringify::v0::detail::join_printer<CharT, FTuple, Args...>
 stringify_make_printer
-  ( const FTuple& ft
-  , const stringify::v0::detail::joined_args<Args...>& x
-)
+    ( stringify::v0::output_writer<CharT>& out
+    , const FTuple& ft
+    , const stringify::v0::detail::joined_args<Args...>& x )
 {
-    return {ft, x};
+    return {out, ft, x};
 }
 
 inline stringify::v0::detail::join_t
