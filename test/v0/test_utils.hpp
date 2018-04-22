@@ -19,7 +19,7 @@ decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::string& exp
         u8" abcd xyyabb\u00a1\u00a2\u00a2\u2080\u2081\u2081"
         u8"\U00010000\U00010001\U00010001";
 
-    return w.error_code
+    return w
         (
             " abcd ", 'x', strf::multi('y', 2), strf::multi('z', 0),
             U'a', strf::multi(U'b', 2), strf::multi(U'c', 0),
@@ -38,7 +38,7 @@ decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::u16string& 
         u" abcd xyyabb\u0080\u0081\u0081\u0800\u0801\u0801"
         u"\U00010000\U00010001\U00010001";
 
-    return w.error_code
+    return w
         (
             u" abcd ", u'x', strf::multi(u'y', 2), strf::multi(u'z', 0),
             U'a', strf::multi(U'b', 2), strf::multi(U'c', 0),
@@ -58,7 +58,7 @@ decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::u32string& 
         U" abcd xyyabb\u0080\u0081\u0081\u0800\u0801\u0801"
         U"\U00010000\U00010001\U00010001";
 
-    return w.error_code
+    return w
         (
             U" abcd ", U'x', strf::multi(U'y', 2), strf::multi(U'z', 0),
             U'a', strf::multi(U'b', 2), strf::multi(U'c', 0),
@@ -79,7 +79,7 @@ decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::wstring& ex
         L" abcd xyyabb\u00a1\u00a2\u00a2\u0800\u0801\u0801"
         L"\U00010000\U00010001\U00010001";
 
-    return w.error_code
+    return w
         (
             L" abcd ", L'x', strf::multi(L'y', 2), strf::multi(L'z', 0),
             U'a', strf::multi(U'b', 2), strf::multi(U'c', 0),
@@ -238,9 +238,11 @@ public:
 
     using char_type = CharT;
 
-    std::error_code finish_error_code()
+    void finish()
     {
-        std::error_code obtained_error = parent::finish_error_code();
+        auto x = parent::finish();
+        std::error_code obtained_error = x ? std::error_code{} : x.error();
+
         if ( m_expected_error != obtained_error
           || m_expected != m_result
           || (obtained_error == std::error_code{} && wrongly_reserved()))
@@ -263,17 +265,7 @@ public:
             std::cout << "reserved size  :" <<  m_reserved_size << "\n";
             std::cout << "necessary size :" <<  m_result.length() << "\n";
         }
-
-        return {};
-    }
-
-    void finish_exception()
-    {
-        auto err = finish_error_code();
-        if(err != std::error_code{})
-        {
-            throw std::system_error(err);
-        }
+        
     }
 
     void reserve(std::size_t size)

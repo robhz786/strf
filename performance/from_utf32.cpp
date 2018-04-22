@@ -28,13 +28,13 @@ int main()
     //constexpr std::size_t u16dest_size = sizeof(u16dest) / sizeof(u16dest[0]);
     //char16_t* u16dest_end = &u16dest[u16dest_size];
 
-    PRINT_BENCHMARK("format(u16dest) .exception(u32sample1)")
+    PRINT_BENCHMARK("format(u16dest) (u32sample1)")
     {
-        strf::format(u16dest) .exception(u32sample1);
+        (void)strf::format(u16dest) (u32sample1);
     }
-    PRINT_BENCHMARK("format(u16dest) .exception(u32sample4)")
+    PRINT_BENCHMARK("format(u16dest) (u32sample4)")
     {
-        strf::format(u16dest) .exception(u32sample4);
+        (void)strf::format(u16dest) (u32sample4);
     }
 
     std::cout << "\nUTF-32 to UTF-8\n";
@@ -43,21 +43,21 @@ int main()
     constexpr std::size_t u8dest_size = sizeof(u8dest) / sizeof(u8dest[0]);
     char* u8dest_end = &u8dest[u8dest_size];
 
-    PRINT_BENCHMARK("format(u8dest) .exception(u32sample1)")
+    PRINT_BENCHMARK("format(u8dest) (u32sample1)")
     {
-        strf::format(u8dest) .exception(u32sample1);
+        (void)strf::format(u8dest) (u32sample1);
     }
-    PRINT_BENCHMARK("format(u8dest) .exception(u32sample2)")
+    PRINT_BENCHMARK("format(u8dest) (u32sample2)")
     {
-        strf::format(u8dest) .exception(u32sample2);
+        (void)strf::format(u8dest) (u32sample2);
     }
-    PRINT_BENCHMARK("format(u8dest) .exception(u32sample3)")
+    PRINT_BENCHMARK("format(u8dest) (u32sample3)")
     {
-        strf::format(u8dest) .exception(u32sample3);
+        (void)strf::format(u8dest) (u32sample3);
     }
-    PRINT_BENCHMARK("format(u8dest) .exception(u32sample4)")
+    PRINT_BENCHMARK("format(u8dest) (u32sample4)")
     {
-        strf::format(u8dest) .exception(u32sample4);
+        (void)strf::format(u8dest) (u32sample4);
     }
 
 #if ! defined(_MSC_VER)

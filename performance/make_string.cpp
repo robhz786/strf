@@ -15,87 +15,70 @@ int main()
 {
     namespace strf = boost::stringify;
 
-    PRINT_BENCHMARK("strf::make_string.no_reserve().error_code(\"Hello \", \"World\", \"!\")")
+    PRINT_BENCHMARK("strf::make_string.no_reserve()(\"Hello \", \"World\", \"!\")")
     {
-        auto s = strf::make_string.no_reserve().error_code("Hello ", "World", "!");
-        (void)s;
-    }
-    PRINT_BENCHMARK("strf::make_string.no_reserve().exception(\"Hello \", \"World\", \"!\")")
-    {
-        auto s = strf::make_string.no_reserve().exception("Hello ", "World", "!");
-        (void)s;
+        (void)strf::make_string.no_reserve()("Hello ", "World", "!");
     }
     PRINT_BENCHMARK("fmt::format(\"Hello {}!\", \"World\")")
     {
-        auto s = fmt::format("Hello {}!", "World");
-        (void)s;
+        (void)fmt::format("Hello {}!", "World");
     }
 
     std::cout << "\n";
     
-    PRINT_BENCHMARK("strf::make_string.exception(25)")
+    PRINT_BENCHMARK("strf::make_string(25)")
     {
-        auto s = strf::make_string.exception(25);
-        (void)s;
+        (void)strf::make_string(25);
     }
-    PRINT_BENCHMARK("strf::make_string.reserve(2).exception(25)")
+    PRINT_BENCHMARK("strf::make_string.reserve(2)(25)")
     {
-        auto s = strf::make_string.reserve(2).exception(25);
-        (void)s;
+        (void)strf::make_string.reserve(2)(25);
     }
-    PRINT_BENCHMARK("strf::make_string.no_reserve().exception(25)")
+    PRINT_BENCHMARK("strf::make_string.no_reserve()(25)")
     {
-        std::string s = strf::make_string.no_reserve().exception(25);
-        (void)s;
+        auto x = strf::make_string.no_reserve()(25);
     }
     PRINT_BENCHMARK("fmt::format(\"{}\", 25)")
     {
         std::string s = fmt::format("{}", 25);
-        (void)s;
     }
     PRINT_BENCHMARK("std::to_string(25)")
     {
         std::string s = std::to_string(25);
-        (void)s;
     }
 
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::make_string.exception(LLONG_MAX)")
+    PRINT_BENCHMARK("strf::make_string(LLONG_MAX)")
     {
-        auto s = strf::make_string.exception(LLONG_MAX);
-        (void)s;
+        (void)strf::make_string(LLONG_MAX);
     }
-    PRINT_BENCHMARK("strf::make_string.no_reserve().exception(LLONG_MAX)")
+    PRINT_BENCHMARK("strf::make_string.no_reserve()(LLONG_MAX)")
     {
-        auto s = strf::make_string.no_reserve().exception(LLONG_MAX);
-        (void)s;
+        (void)strf::make_string.no_reserve()(LLONG_MAX);
     }
-    PRINT_BENCHMARK("strf::make_string.reserve(100).exception(LLONG_MAX)")
+    PRINT_BENCHMARK("strf::make_string.reserve(100)(LLONG_MAX)")
     {
-        auto s = strf::make_string.reserve(100).exception(LLONG_MAX);
-        (void)s;
+        (void)strf::make_string.reserve(100)(LLONG_MAX);
     }
     PRINT_BENCHMARK("fmt::format(\"{}\", LLONG_MAX)")
     {
-        auto s = fmt::format("{}", LLONG_MAX);
-        (void)s;
+        (void)fmt::format("{}", LLONG_MAX);
     }
     PRINT_BENCHMARK("std::to_string(LLONG_MAX)")
     {
-        auto s = std::to_string(LLONG_MAX);
-        (void)s;
+        (void)std::to_string(LLONG_MAX);
     }
 
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::make_string.exception(strf::right(\"aa\", 20))")
+    PRINT_BENCHMARK("strf::make_string(strf::right(\"aa\", 20))")
     {
-        (void)strf::make_string.exception(strf::right("aa", 20));
+        (void)strf::make_string(strf::right("aa", 20));
     }
-    PRINT_BENCHMARK("strf::make_string.reseve(20).exception(strf::right(\"aa\", 20))")
+    PRINT_BENCHMARK("strf::make_string.reseve(20)(strf::right(\"aa\", 20))")
     {
-        (void)strf::make_string.reserve(20).exception(strf::right("aa", 20));
+        (void)strf::make_string.reserve(20)(strf::right("aa", 20));
     }
 
     PRINT_BENCHMARK("fmt::format(dest, \"{:20}\", \"aa\")")
@@ -105,31 +88,26 @@ int main()
     
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::make_string.no_reserve().exception(\"ten = \", 10, \"twenty = \", 20)")
+    PRINT_BENCHMARK("strf::make_string.no_reserve()(\"ten = \", 10, \"twenty = \", 20)")
     {
-        auto s = strf::make_string.no_reserve().exception("ten = ", 10, "twenty = ", 20);
-        (void)s;
+        (void)strf::make_string.no_reserve()("ten = ", 10, "twenty = ", 20);
     }
     
-    PRINT_BENCHMARK("strf::make_string (\"ten = {}, twenty = {}\").error_code(10, 20)")
+    PRINT_BENCHMARK("strf::make_string .as(\"ten = {}, twenty = {}\")(10, 20)")
     {
-        auto s = strf::make_string ("ten = {}, twenty = {}").error_code(10, 20);
-        (void)s;
+        (void)strf::make_string.as("ten = {}, twenty = {}")(10, 20);
     }
-    PRINT_BENCHMARK("strf::make_string (\"ten = {}, twenty = {}\").exception(10, 20)")
+    PRINT_BENCHMARK("strf::make_string .as(\"ten = {}, twenty = {}\")(10, 20)")
     {
-        auto s = strf::make_string ("ten = {}, twenty = {}").exception(10, 20);
-        (void)s;
+        (void)strf::make_string.as("ten = {}, twenty = {}")(10, 20);
     }
-    PRINT_BENCHMARK("strf::make_string .reserve(30) (\"ten = {}, twenty = {}\").exception(10, 20)")
+    PRINT_BENCHMARK("strf::make_string .reserve(30) .as(\"ten = {}, twenty = {}\")(10, 20)")
     {
-        auto s = strf::make_string ("ten = {}, twenty = {}").exception(10, 20);
-        (void)s;
+        (void)strf::make_string.as("ten = {}, twenty = {}")(10, 20);
     }
     PRINT_BENCHMARK("fmt::format(\"ten = {}, twenty = {}\", 10, 20)")
     {
-        auto s = fmt::format("ten = {}, twenty = {}", 10, 20);
-        (void)s;
+        (void)fmt::format("ten = {}, twenty = {}", 10, 20);
     }
 
     PRINT_BENCHMARK("oss << \"ten = \" << 10 << \", twenty = \" << 20")
@@ -167,22 +145,22 @@ int main()
         // for(int i = 0; i < 500; ++i) u8sample3.append(u8"\u0800");
         // for(int i = 0; i < 500; ++i) u8sample4.append(u8"\U00010000");
 
-        PRINT_BENCHMARK("strf::make_u16string.no_reserve() .exception(u8sample1)")
+        PRINT_BENCHMARK("strf::make_u16string.no_reserve() (u8sample1)")
         {
-            strf::make_u16string.no_reserve().exception(u8sample1);
+            (void)strf::make_u16string.no_reserve()(u8sample1);
         }
-        PRINT_BENCHMARK("strf::format(buff) .exception(u8sample1); strf::make_u16string.exception(buff)")
+        PRINT_BENCHMARK("strf::format(buff) (u8sample1); strf::make_u16string(buff)")
         {
-            strf::format(buff).exception(u8sample1);
-            strf::make_u16string.exception(buff);
+            (void)strf::format(buff)(u8sample1);
+            (void)strf::make_u16string(buff);
         }
-        PRINT_BENCHMARK("strf::make_u16string .exception(u8sample1)")
+        PRINT_BENCHMARK("strf::make_u16string (u8sample1)")
         {
-            strf::make_u16string.exception(u8sample1);
+            (void)strf::make_u16string(u8sample1);
         }
-        PRINT_BENCHMARK("strf::make_u16string.reserve(510) .exception(u8sample1)")
+        PRINT_BENCHMARK("strf::make_u16string.reserve(510) (u8sample1)")
         {
-            strf::make_u16string.reserve(510).exception(u8sample1);
+            (void)strf::make_u16string.reserve(510)(u8sample1);
         }
 
     }
@@ -194,22 +172,22 @@ int main()
         // std::u16string u16sample2(500, u'\u0100');
         // std::u16string u16sample3(500, u'\u0800');
 
-        PRINT_BENCHMARK("strf::make_string.no_reserve() .exception(u16sample1)")
+        PRINT_BENCHMARK("strf::make_string.no_reserve() (u16sample1)")
         {
-            strf::make_string.no_reserve().exception(u16sample1);
+            (void)strf::make_string.no_reserve()(u16sample1);
         }
-        PRINT_BENCHMARK("strf::format(buff) .exception(u16sample1); strf::make_string.exception(buff)")
+        PRINT_BENCHMARK("strf::format(buff) (u16sample1); strf::make_string(buff)")
         {
-            strf::format(buff).exception(u16sample1);
-            strf::make_string.exception(buff);
+            (void)strf::format(buff)(u16sample1);
+            (void)strf::make_string(buff);
         }
-        PRINT_BENCHMARK("strf::make_string .exception(u16sample1)")
+        PRINT_BENCHMARK("strf::make_string (u16sample1)")
         {
-            strf::make_string.exception(u16sample1);
+            (void)strf::make_string(u16sample1);
         }
-        PRINT_BENCHMARK("strf::make_string.reserve(510) .exception(u16sample1)")
+        PRINT_BENCHMARK("strf::make_string.reserve(510) (u16sample1)")
         {
-            strf::make_string.reserve(510).exception(u16sample1);
+            (void)strf::make_string.reserve(510)(u16sample1);
         }
 
     }

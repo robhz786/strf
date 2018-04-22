@@ -19,11 +19,11 @@ void basic_assign_test()
     std::basic_string<CharT> result('a', 10);;
     std::basic_string<CharT> expected;
 
-    std::error_code err = use_all_writing_function_of_output_writer
+    auto x = use_all_writing_function_of_output_writer
         ( strf::assign(result)
         , expected );
 
-    BOOST_TEST(!err);
+    BOOST_TEST(x);
     BOOST_TEST(expected == result);
 }
 
@@ -35,13 +35,13 @@ void basic_append_test()
     std::basic_string<CharT> expected = result;
     std::basic_string<CharT> expected_append;
 
-    std::error_code err = use_all_writing_function_of_output_writer
+    auto x = use_all_writing_function_of_output_writer
         ( strf::append(result)
         , expected_append );
 
     expected += expected_append;
 
-    BOOST_TEST(!err);
+    BOOST_TEST(x);
     BOOST_TEST(expected == result);
 }
 
@@ -79,7 +79,7 @@ int main()
     {   // When set_error is called during make_string
 
         auto result = strf::make_string
-            .error_code("abcd", error_code_emitter_arg, "lkjlj");
+            ("abcd", error_code_emitter_arg, "lkjlj");
 
         BOOST_TEST(!result);
         BOOST_TEST(!result && result.error() == std::errc::invalid_argument);
@@ -89,10 +89,10 @@ int main()
 
         std::string result = "bla";
 
-        std::error_code ec = strf::assign(result)
-            .error_code("abcd", error_code_emitter_arg, "lkjlj");
+        auto x = strf::assign(result)
+            ("abcd", error_code_emitter_arg, "lkjlj");
 
-        BOOST_TEST(ec == std::errc::invalid_argument);
+        BOOST_TEST(!x && x.error() == std::errc::invalid_argument);
         BOOST_TEST(result == "");
     }
 
@@ -100,10 +100,10 @@ int main()
 
         std::string result = "bla";
 
-        std::error_code ec = strf::append(result)
-            .error_code( "abcd", error_code_emitter_arg, "lkjlj" );
+        auto x = strf::append(result)
+            ( "abcd", error_code_emitter_arg, "lkjlj" );
 
-        BOOST_TEST(ec == std::errc::invalid_argument);
+        BOOST_TEST(!x && x.error() == std::errc::invalid_argument);
         BOOST_TEST(result == "bla");
     }
 
@@ -114,8 +114,7 @@ int main()
 
         try
         {
-            strf::assign(result)
-                .exception("abcd", exception_thrower_arg, "lkjlj");
+            (void) strf::assign(result) ("abcd", exception_thrower_arg, "lkjlj");
         }
         catch(...)
         {
@@ -130,8 +129,7 @@ int main()
 
         try
         {
-            strf::append(result)
-                .exception( "abcd", exception_thrower_arg, "lkjlj");
+            (void) strf::append(result) ( "abcd", exception_thrower_arg, "lkjlj");
         }
         catch(...)
         {

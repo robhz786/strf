@@ -8,15 +8,15 @@ void input_ouput_different_char_types()
     //[input_output_different_char_types
     namespace strf = boost::stringify::v0;
 
-    auto str   = strf::make_string    .exception("aaa-", u"bbb-", U"ccc-", L"ddd");
-    auto str16 = strf::make_u16string .exception("aaa-", u"bbb-", U"ccc-", L"ddd");
-    auto str32 = strf::make_u32string .exception("aaa-", u"bbb-", U"ccc-", L"ddd");
-    auto wstr  = strf::make_wstring   .exception("aaa-", u"bbb-", U"ccc-", L"ddd");
+    auto str   = strf::make_string    ("aaa-", u"bbb-", U"ccc-", L"ddd");
+    auto str16 = strf::make_u16string ("aaa-", u"bbb-", U"ccc-", L"ddd");
+    auto str32 = strf::make_u32string ("aaa-", u"bbb-", U"ccc-", L"ddd");
+    auto wstr  = strf::make_wstring   ("aaa-", u"bbb-", U"ccc-", L"ddd");
     
-    BOOST_ASSERT(str   ==  "aaa-bbb-ccc-ddd");
-    BOOST_ASSERT(str16 == u"aaa-bbb-ccc-ddd");
-    BOOST_ASSERT(str32 == U"aaa-bbb-ccc-ddd");
-    BOOST_ASSERT(wstr  == L"aaa-bbb-ccc-ddd");
+    BOOST_ASSERT(str.value()   ==  "aaa-bbb-ccc-ddd");
+    BOOST_ASSERT(str16.value() == u"aaa-bbb-ccc-ddd");
+    BOOST_ASSERT(str32.value() == U"aaa-bbb-ccc-ddd");
+    BOOST_ASSERT(wstr.value()  == L"aaa-bbb-ccc-ddd");
     //]
 }
 
@@ -31,14 +31,14 @@ void input_ouput_different_char_types()
 //     std::u16string str_utf16 {u"---\0---", 7};
 //     auto str_mtf8 = strf::make_string
 //         .facets(strf::to_mtf8())
-//         .exception(str_utf16);
+//         (str_utf16);
 
 //     BOOST_ASSERT(0 == str_mtf8.compare(0, 8, "---\xC0\x80---", 8));
 
 //     // from Modified UTF-8 (MTF-8) to UTF-8
 //     auto str_utf8 = strf::make_string
 //         .facets(strf::from_mtf8())
-//         .exception(str_mtf8);
+//         (str_mtf8);
 
 //     BOOST_ASSERT(0 == str_utf8.compare(0, 7,"---\0---", 7));
     
@@ -53,14 +53,14 @@ void input_ouput_different_char_types()
 //     // From Windows-1252 to utf8
 //     auto str_utf8 = strf::make_string
 //         .facets(strf::from_windows_1252())
-//         .exception(u8"--\x80--\x99--\x9D--"); // '\x9D' is invalid
+//         (u8"--\x80--\x99--\x9D--"); // '\x9D' is invalid
 
 //     BOOST_ASSERT(str_utf8 == u8"--\u20AC--\u2122--\uFFFE--");
 
 //     // Back to Windows-1252
 //     auto str_win1252 = strf::make_string
 //         .facets(strf::to_windows_1252())
-//         .exception(str_utf8);
+//         (str_utf8);
 
 //     BOOST_ASSERT(str_win1252 == "--\x80--\x99--?--");
 //     //]
@@ -71,7 +71,7 @@ void input_ouput_different_char_types()
 // {
 //     //[ sanitise
 //     namespace strf = boost::stringify::v0;
-//     auto str = strf::make_string.exception("--\x99--", strf::sani("--\x99--"));
+//     auto str = strf::make_string("--\x99--", strf::sani("--\x99--"));
 //     BOOST_ASSERT(str == u8"--\x99----\uFFFE--");
 //     //]
 // }
@@ -86,7 +86,7 @@ void input_ouput_different_char_types()
 //     //
 //     auto str = strf::make_string
 //         .facets(strf::to_utf8().on_error(U'\u2639'))
-//         .exception("--\x99--", strf::sani("--\x99--"));
+//         ("--\x99--", strf::sani("--\x99--"));
     
 //     BOOST_ASSERT(str == u8"--\x99----\u2639--");
 
@@ -97,7 +97,7 @@ void input_ouput_different_char_types()
 //     auto err_code = std::make_error_code(std::errc::illegal_byte_sequence);
 //     auto xstr = strf::make_string
 //         .facets(strf::to_utf8().on_error(err_code))
-//         .error_code("--\x99--", strf::sani("--\x99--"));
+//         ("--\x99--", strf::sani("--\x99--"));
     
 //     BOOST_ASSERT(!xstr && xstr.error() == err_code);
 
@@ -118,7 +118,7 @@ void input_ouput_different_char_types()
 //     {
 //         strf::make_string
 //             .facets(strf::to_ascii().on_error(x::thrower_func))
-//             .exception("--\u10000--");
+//             ("--\u10000--");
 //     }
 //     catch(std::invalid_argument& e)
 //     {
@@ -141,11 +141,11 @@ void input_ouput_different_char_types()
 
 //     auto str1 = strf::make_string
 //         .facets(strf::to_mtf8().keep_surrogates(false))
-//         .exception(input_utf16);
+//         (input_utf16);
 
 //     auto str2 = strf::make_string
 //         .facets(strf::to_mtf8().keep_surrogates(true))
-//         .exception(input_utf16);
+//         (input_utf16);
 
     
 //     BOOST_ASSERT(str1 == u8"-\uFFFE-\xC0\x80---");
@@ -154,7 +154,7 @@ void input_ouput_different_char_types()
 //     // now back to UTF-16, preserving the surrogates:
 //     auto str3 = strf::make_u16string
 //         .facets(strf::to_utf16<char16_t>().keep_surrogates(true))
-//         .exception(str2);
+//         (str2);
 
 //     BOOST_ASSERT(str3 == input_utf16);
 //     //]

@@ -19,12 +19,12 @@ int main()
     const auto expected_result = std::string{"Anna is 22 years old."};
     
     // with assembly string:
-    std::error_code err1 = strf::format(output) (assembly_string).error_code(name, age);
-    BOOST_ASSERT(!err1 && expected_result == output);
+    auto x1 = strf::format(output) .as(assembly_string)(name, age);
+    BOOST_ASSERT(x1 && expected_result == output);
     
     // without assembly string:
-    std::error_code err2 = strf::format(output) .error_code(name, " is ", age, " years old.");
-    BOOST_ASSERT(!err2 && expected_result == output);
+    auto x2 = strf::format(output)(name, " is ", age, " years old.");
+    BOOST_ASSERT(x2 && expected_result == output);
 
     return 0;
 }

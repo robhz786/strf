@@ -224,13 +224,12 @@ public:
 
     template <typename ... Args>
     BOOST_STRINGIFY_NODISCARD
-    decltype(auto) error_code(const Args& ... args) const
+    decltype(auto) operator()(const Args& ... args) const
     {
         output_writer_wrapper dest{m_ftuple, m_owinit};
         write(dest.get(), {as_pointer(mk_printer<Args>(dest.get(), args)) ...});
-        return dest.get().finish_error_code();
+        return dest.get().finish();
     }
-
     template <typename ... Args>
     decltype(auto) exception(const Args& ... args) const
     {
@@ -281,7 +280,6 @@ private:
 
     const FTuple& m_ftuple;
     const OutputWriterInitArgsTuple& m_owinit;
-    //output_writer_wrapper m_writer;
     const CharIn* const m_str;
     const CharIn* const m_end;
     reservation_type m_reservation;
@@ -460,14 +458,14 @@ public:
     }
 
     template <typename CharIn>
-    asm_string<CharIn> operator()(const CharIn* str) const
+    asm_string<CharIn> as(const CharIn* str) const
     {
         return asm_str(str, str + std::char_traits<CharIn>::length(str));
     }
 
     template <typename CharIn, typename Traits, typename Allocator>
-    asm_string<CharIn> operator()
-        (const std::basic_string<CharIn, Traits, Allocator>& str) const
+    asm_string<CharIn>
+    as(const std::basic_string<CharIn, Traits, Allocator>& str) const
     {
         return asm_str(str.data(), str.data() + str.size());
     }
@@ -485,11 +483,11 @@ public:
 
     template <typename ... Args>
     BOOST_STRINGIFY_NODISCARD
-    decltype(auto) error_code(const Args& ... args) const
+    decltype(auto) operator()(const Args& ... args) const
     {
         output_writer_wrapper writer{m_ftuple, m_owinit};
         write(writer.get(), {as_pointer(mk_printer<Args>(writer.get(), args)) ...});
-        return writer.get().finish_error_code();
+        return writer.get().finish();
     }
 
     template <typename ... Args>
@@ -557,8 +555,6 @@ constexpr auto make_args_handler(Args ... args)
 template <typename T>
 constexpr auto fmt(const T& value)
 {
-    //using input_traits = decltype(stringify_get_input_traits(value));
-    //return input_traits::fmt(value);
     return stringify_fmt(value);
 }
 

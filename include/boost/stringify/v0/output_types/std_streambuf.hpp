@@ -45,9 +45,9 @@ protected:
     {
         auto count_inc = m_out.sputn(str, count);
 
-        if (m_count != nullptr)
+        if (m_count != nullptr && count_inc > 0)
         {
-            *m_count += count_inc;
+            *m_count += static_cast<std::size_t>(count_inc);
         }
         if (static_cast<std::streamsize>(count) != count_inc)
         {
@@ -191,7 +191,7 @@ protected:
 //         return false;
 //     }
 
-//     std::error_code finish_error_code() noexcept
+//     std::error_code finish() noexcept
 //     {
 //         return m_err;
 //     }

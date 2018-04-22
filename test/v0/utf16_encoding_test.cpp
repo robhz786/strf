@@ -73,7 +73,7 @@ int main()
         std::exception_ptr eptr;
         try
         {
-            auto rstr = strf::make_u16string .facets(facet) .error_code((char32_t)0x110000);
+            auto rstr = strf::make_u16string .facets(facet) ((char32_t)0x110000);
         }
         catch(...)
         {

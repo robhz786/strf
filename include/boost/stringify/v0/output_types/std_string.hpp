@@ -59,11 +59,11 @@ public:
         parent::set_error(ec);
     }
 
-    std::error_code finish_error_code()
+    auto finish()
     {
         this->flush();
         m_out = nullptr;
-        return parent::finish_error_code();
+        return parent::finish();
     }
 
     void finish_exception()

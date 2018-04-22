@@ -19,66 +19,66 @@ int main()
 
     // conversion
 
-    TEST (u8"\ud7ff")     .exception(U'\ud7ff');
-    TEST (u8"\ue000")     .exception(U'\ue000');
-    TEST (u8"\uffff")     .exception(U'\uffff');
-    TEST (u8"\U00010000") .exception(U'\U00010000');
-    TEST (u8"\U0010ffff") .exception(U'\U0010ffff');
+    TEST (u8"\ud7ff")     (U'\ud7ff');
+    TEST (u8"\ue000")     (U'\ue000');
+    TEST (u8"\uffff")     (U'\uffff');
+    TEST (u8"\U00010000") (U'\U00010000');
+    TEST (u8"\U0010ffff") (U'\U0010ffff');
 
-    TEST (u"\ud7ff")     .exception(U'\ud7ff');
-    TEST (u"\ue000")     .exception(U'\ue000');
-    TEST (u"\uffff")     .exception(U'\uffff');
-    TEST (u"\U00010000") .exception(U'\U00010000');
-    TEST (u"\U0010ffff") .exception(U'\U0010ffff');
+    TEST (u"\ud7ff")     (U'\ud7ff');
+    TEST (u"\ue000")     (U'\ue000');
+    TEST (u"\uffff")     (U'\uffff');
+    TEST (u"\U00010000") (U'\U00010000');
+    TEST (u"\U0010ffff") (U'\U0010ffff');
 
-    TEST (L"\ud7ff")     .exception(U'\ud7ff');
-    TEST (L"\ue000")     .exception(U'\ue000');
-    TEST (L"\uffff")     .exception(U'\uffff');
-    TEST (L"\U00010000") .exception(U'\U00010000');
-    TEST (L"\U0010ffff") .exception(U'\U0010ffff');
+    TEST (L"\ud7ff")     (U'\ud7ff');
+    TEST (L"\ue000")     (U'\ue000');
+    TEST (L"\uffff")     (U'\uffff');
+    TEST (L"\U00010000") (U'\U00010000');
+    TEST (L"\U0010ffff") (U'\U0010ffff');
 
-    TEST (U"\ud7ff")     .exception(U'\ud7ff');
-    TEST (U"\ue000")     .exception(U'\ue000');
-    TEST (U"\uffff")     .exception(U'\uffff');
-    TEST (U"\U00010000") .exception(U'\U00010000');
-    TEST (U"\U0010ffff") .exception(U'\U0010ffff');
+    TEST (U"\ud7ff")     (U'\ud7ff');
+    TEST (U"\ue000")     (U'\ue000');
+    TEST (U"\uffff")     (U'\uffff');
+    TEST (U"\U00010000") (U'\U00010000');
+    TEST (U"\U0010ffff") (U'\U0010ffff');
 
-    TEST("a") .exception( U'a' );
-    TEST("aaaa") .exception( strf::multi(U'a', 4) );
-    TEST("  aa") .exception( strf::multi(U'a', 2) > 4 );
+    TEST("a") ( U'a' );
+    TEST("aaaa") ( strf::multi(U'a', 4) );
+    TEST("  aa") ( strf::multi(U'a', 2) > 4 );
 
-    TEST("    a") .exception( strf::right(U'a', 5) );
-    TEST("a    ") .exception( strf::left(U'a', 5)  );
-    TEST("aa   ") .exception( strf::multi(U'a', 2) < 5 );
+    TEST("    a") ( strf::right(U'a', 5) );
+    TEST("a    ") ( strf::left(U'a', 5)  );
+    TEST("aa   ") ( strf::multi(U'a', 2) < 5 );
 
-    TEST("....a") .exception( strf::right(U'a', 5, '.')  );
-    TEST("a....") .exception( strf::left(U'a', 5, '.')   );
-    TEST("..a..") .exception( strf::center(U'a', 5, '.') );
+    TEST("....a") ( strf::right(U'a', 5, '.')  );
+    TEST("a....") ( strf::left(U'a', 5, '.')   );
+    TEST("..a..") ( strf::center(U'a', 5, '.') );
 
-    TEST("...aa") .exception( strf::right(U'a', 5, '.').multi(2)  );
-    TEST("aa...") .exception( strf::left(U'a', 5, '.').multi(2)   );
-    TEST(".aa..") .exception( strf::center(U'a', 5, '.').multi(2) );
+    TEST("...aa") ( strf::right(U'a', 5, '.').multi(2)  );
+    TEST("aa...") ( strf::left(U'a', 5, '.').multi(2)   );
+    TEST(".aa..") ( strf::center(U'a', 5, '.').multi(2) );
 
-    TEST(".....") .exception( strf::right(U'a', 5, '.').multi(0)  );
-    TEST(".....") .exception( strf::left(U'a', 5, '.').multi(0)   );
-    TEST(".....") .exception( strf::center(U'a', 5, '.').multi(0) );
+    TEST(".....") ( strf::right(U'a', 5, '.').multi(0)  );
+    TEST(".....") ( strf::left(U'a', 5, '.').multi(0)   );
+    TEST(".....") ( strf::center(U'a', 5, '.').multi(0) );
 
-    TEST("a")      .exception( strf::join_left(0, '.')(U'a') );
-    TEST("   a")   .exception( strf::join_left(1, '.')(strf::right(U'a', 4)) );
-    TEST("   a..") .exception( strf::join_left(6, '.')(strf::right(U'a', 4)) );
+    TEST("a")      ( strf::join_left(0, '.')(U'a') );
+    TEST("   a")   ( strf::join_left(1, '.')(strf::right(U'a', 4)) );
+    TEST("   a..") ( strf::join_left(6, '.')(strf::right(U'a', 4)) );
 
-    TEST("  aa")   .exception( strf::join_left(2, '.')(strf::multi(U'a', 2) > 4) );
-    TEST("  aa")   .exception( strf::join_left(2, '.')(strf::multi(U'a', 2) > 4) );
-    TEST("  aa")   .exception( strf::join_left(4, '.')(strf::multi(U'a', 2) > 4) );
-    TEST("  aa..") .exception( strf::join_left(6, '.')(strf::multi(U'a', 2) > 4) );
+    TEST("  aa")   ( strf::join_left(2, '.')(strf::multi(U'a', 2) > 4) );
+    TEST("  aa")   ( strf::join_left(2, '.')(strf::multi(U'a', 2) > 4) );
+    TEST("  aa")   ( strf::join_left(4, '.')(strf::multi(U'a', 2) > 4) );
+    TEST("  aa..") ( strf::join_left(6, '.')(strf::multi(U'a', 2) > 4) );
 
-    TEST("aaaa")   .exception( strf::join_left(2, '.')(strf::multi(U'a', 4) > 2) );
-    TEST("aaaa")   .exception( strf::join_left(4, '.')(strf::multi(U'a', 4) > 2) );
-    TEST("aaaa..") .exception( strf::join_left(6, '.')(strf::multi(U'a', 4) > 2) );
+    TEST("aaaa")   ( strf::join_left(2, '.')(strf::multi(U'a', 4) > 2) );
+    TEST("aaaa")   ( strf::join_left(4, '.')(strf::multi(U'a', 4) > 2) );
+    TEST("aaaa..") ( strf::join_left(6, '.')(strf::multi(U'a', 4) > 2) );
 
-    TEST("aaaa")   .exception( strf::join_left(2, '.')(strf::multi(U'a', 4) > 4) );
-    TEST("aaaa")   .exception( strf::join_left(4, '.')(strf::multi(U'a', 4) > 4) );
-    TEST("aaaa..") .exception( strf::join_left(6, '.')(strf::multi(U'a', 4) > 4) );
+    TEST("aaaa")   ( strf::join_left(2, '.')(strf::multi(U'a', 4) > 4) );
+    TEST("aaaa")   ( strf::join_left(4, '.')(strf::multi(U'a', 4) > 4) );
+    TEST("aaaa..") ( strf::join_left(6, '.')(strf::multi(U'a', 4) > 4) );
 
     return report_errors() || boost::report_errors();
 }

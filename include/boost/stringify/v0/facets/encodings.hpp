@@ -6,6 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/stringify/v0/basic_types.hpp>
+#include <algorithm>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -845,8 +846,8 @@ BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> utf8_encoder::convert
     std::size_t c=0;
     if (ch < 0x80)
     {
-        c = std::min(count, std::size_t(end - dest));
-        std::char_traits<char>::assign(dest, c, ch);
+        c = (std::min)(count, std::size_t(end - dest));
+        std::char_traits<char>::assign(dest, c, static_cast<char>(ch));
         dest += c;
     }
     else if (ch < 0x800)
@@ -1069,8 +1070,8 @@ CharOut* utf16_encoder<CharOut>::convert
     if (ch < 0x110000 && (end - dest) > 1)
     {
         char32_t sub_codepoint = ch - 0x10000;
-        dest[0] = 0xD800 + ((sub_codepoint & 0xFFC00) >> 10);
-        dest[1] = 0xDC00 +  (sub_codepoint &  0x3FF);
+        dest[0] = static_cast<CharOut>(0xD800 + ((sub_codepoint & 0xFFC00) >> 10));
+        dest[1] = static_cast<CharOut>(0xDC00 +  (sub_codepoint &  0x3FF));
         return dest + 2;
     }
     return ch >= 0x110000 ? nullptr : end + 1;
@@ -1091,7 +1092,7 @@ stringify::v0::char_cv_result<CharOut> utf16_encoder<CharOut>::convert
         if(keep_surr || ! is_surrogate(ch))
         {
             count = std::min(count, space);
-            std::char_traits<CharOut>::assign(dest_begin, count, ch);
+            std::char_traits<CharOut>::assign(dest_begin, count, static_cast<CharOut>(ch));
             return {count, dest_begin + count};
         }
         return {0, nullptr};
@@ -1100,8 +1101,8 @@ stringify::v0::char_cv_result<CharOut> utf16_encoder<CharOut>::convert
     {
         char32_t sub_codepoint = ch - 0x10000;
         std::pair<CharOut, CharOut> obj =
-            { 0xD800 + ((sub_codepoint & 0xFFC00) >> 10)
-            , 0xDC00 +  (sub_codepoint &  0x3FF) };
+            { static_cast<CharOut>(0xD800 + ((sub_codepoint & 0xFFC00) >> 10))
+            , static_cast<CharOut>(0xDC00 +  (sub_codepoint &  0x3FF)) };
         count = std::min(count, space / 2);
         std::fill_n(reinterpret_cast<decltype(obj)*>(dest_begin), count, obj);
         return {count, dest_begin + count * 2};
@@ -1464,7 +1465,7 @@ stringify::v0::str_cv_result<CharIn, char> utf16_to_utf8<CharIn>::convert
         {
             if(dest_it != dest_end)
             {
-                *dest_it = ch;
+                *dest_it = static_cast<char>(ch);
                 ++dest_it;
             }
             else
@@ -1476,8 +1477,8 @@ stringify::v0::str_cv_result<CharIn, char> utf16_to_utf8<CharIn>::convert
         {
             if(dest_it + 1 < dest_end)
             {
-                dest_it[0] = (0xC0 | ((ch & 0x7C0) >> 6));
-                dest_it[1] = (0x80 |  (ch &  0x3F));
+                dest_it[0] = static_cast<char>((0xC0 | ((ch & 0x7C0) >> 6)));
+                dest_it[1] = static_cast<char>((0x80 |  (ch &  0x3F)));
                 dest_it += 2;
             }
             else
@@ -1507,10 +1508,10 @@ stringify::v0::str_cv_result<CharIn, char> utf16_to_utf8<CharIn>::convert
                 unsigned long ch2 = *++src_it;
                 unsigned long codepoint = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
 
-                dest_it[0] = (0xF0 | ((codepoint & 0x1C0000) >> 18));
-                dest_it[1] = (0x80 | ((codepoint &  0x3F000) >> 12));
-                dest_it[2] = (0x80 | ((codepoint &    0xFC0) >> 6));
-                dest_it[3] = (0x80 |  (codepoint &     0x3F));
+                dest_it[0] = static_cast<char>((0xF0 | ((codepoint & 0x1C0000) >> 18)));
+                dest_it[1] = static_cast<char>((0x80 | ((codepoint &  0x3F000) >> 12)));
+                dest_it[2] = static_cast<char>((0x80 | ((codepoint &    0xFC0) >> 6)));
+                dest_it[3] = static_cast<char>((0x80 |  (codepoint &     0x3F)));
                 dest_it += 4;
             }
             else

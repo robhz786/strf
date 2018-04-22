@@ -30,24 +30,24 @@ int main()
 
     std::cout << "\nUTF-16 to UTF-8\n";
 
-    PRINT_BENCHMARK("boost::stringify::format(u8dest).error_code(u16sample1)")
+    PRINT_BENCHMARK("boost::stringify::format(u8dest)(u16sample1)")
     {
-        auto err = strf::format(u8dest).error_code(u16sample1);
+        auto err = strf::format(u8dest)(u16sample1);
         (void)err;
     }
-    PRINT_BENCHMARK("boost::stringify::format(u8dest).error_code(u16sample2)")
+    PRINT_BENCHMARK("boost::stringify::format(u8dest)(u16sample2)")
     {
-        auto err = strf::format(u8dest).error_code(u16sample2);
+        auto err = strf::format(u8dest)(u16sample2);
         (void)err;
     }
-    PRINT_BENCHMARK("boost::stringify::format(u8dest).error_code(u16sample3)")
+    PRINT_BENCHMARK("boost::stringify::format(u8dest)(u16sample3)")
     {
-        auto err = strf::format(u8dest).error_code(u16sample3);
+        auto err = strf::format(u8dest)(u16sample3);
         (void)err;
     }
-    PRINT_BENCHMARK("boost::stringify::format(u8dest).error_code(u16sample4)")
+    PRINT_BENCHMARK("boost::stringify::format(u8dest)(u16sample4)")
     {
-        auto err = strf::format(u8dest).error_code(u16sample4);
+        auto err = strf::format(u8dest)(u16sample4);
         (void)err;
     }
 

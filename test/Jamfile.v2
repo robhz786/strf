@@ -33,7 +33,6 @@ test-suite stringify-v0 :
    [ run v0/ftuple_merge_test.cpp     : : : : v0-ftuple_merge_test-ho ]
    [ run v0/ftuple_test.cpp           : : : : v0-ftuple_test-ho ]
    [ run v0/reserve_test.cpp          : : : : v0-reserve_test-ho ]
-   [ run v0/throw_on_error_code_test.cpp : : : : v0-throw_on_error_code_test-ho ]
    [ run v0/width_calculator_test.cpp : : : : v0-width_calculator_test-ho ]
    [ run v0/transcoding_test.cpp      : : : : v0-transcoding_test-ho ]
 
@@ -55,7 +54,6 @@ test-suite stringify-v0 :
    [ run v0/ftuple_merge_test.cpp     $(slib) : : : $(nho) : v0-ftuple_merge_test-nho ]
    [ run v0/ftuple_test.cpp           $(slib) : : : $(nho) : v0-ftuple_test-nho ]
    [ run v0/reserve_test.cpp          $(slib) : : : $(nho) : v0-reserve_test-nho ]
-   [ run v0/throw_on_error_code_test.cpp $(slib) : : : $(nho) : v0-throw_on_error_code_test-nho ]
    [ run v0/width_calculator_test.cpp $(slib) : : : $(nho) : v0-width_calculator_test-nho ]
    [ run v0/transcoding_test.cpp      $(slib) : : : $(nho) : v0-transcoding_test-nho ]
 ;

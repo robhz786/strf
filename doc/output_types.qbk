@@ -32,13 +32,13 @@
   [ [*`make_basic_string <`][~CharT]`, `[~Traits]`, `[~Allocator][*`> (`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [8]  [[~CharT]`*`]
-  [ [*`format(`][~destination]`, `[~limit]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`format(`][~destination]`, `[~limit][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [9] [[~CharT]`*`]
-  [ [*`format(`][~destination]`, `[~end]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`format(`][~destination]`, `[~end][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [10] [[~CharT[size]]]
-  [ [*`format(`][~destination]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`format(`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [11] [ `std::basic_streambuf <`[~CharT]`, `[~Traits]`>`]
   [ [*`format (`][~destination]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
@@ -73,17 +73,10 @@ where:
 [#ReturnTypes]
 [h3 Return type when using the form [~expression...]` .error_code( `[~ args ...]`)`]
 
-* 1 - 2) `std::error_code`
-* 3 - 7) `expected<std::basic_string<`[~CharT]`, `[~Traits]`>>`, where the ` expected ` class template is a bare implementation of the proposed __STD_EXPECTED__.
-* 8 - 13) `std::error_code`
-
-[#ReturnTypes_throw]
-[h3 Return type when using the form [~expression...]` .exception `[~ args ...]`)`]
-* 1 - 2) `void`
-* 3 - 7) `std::basic_string<`[~CharT]`, `[~Traits]`>`
-* 8 - 13) `void`
-
-[*Note:] In all cases ( from 1 to 13 ), if the generated `std::error_code` ( that would be returned if the form [~expression...]` = { `[~ args ...]`}` were used ) is not empty, than a `std::system_error` is thrown.
+* 1 - 2) `expected<void, std::error_code>`
+* 3 - 7) `expected<std::basic_string<`[~CharT]`, `[~Traits]`>, std::error_code>`
+* 8 - 10 `expected<std::size_t, std::error_code>`, where the `std::size_t` value is the number of written characters, not counting the termination chararcter
+* 11 - 13) `expected<void, std::error_code>`
 
 [/
 This does not mean that others types of exception may not be thrown. For example, the use of `make_string` may throw and 

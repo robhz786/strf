@@ -12,7 +12,7 @@
 
   syntax ::= 'leading_expression'
   ( '.no_reserve()' | '.reserve( size )' | '.reserve_auto()' | '.facets( facets... )' ) *
-  ( '(  assembly_string )' ? (' .error_code( arguments... ) ' | ' .exception( arguments... ) '))
+  '.as(  assembly_string )' ? ' ( arguments... ) '
 ]
 
 [#syntax_diagram]
@@ -28,8 +28,6 @@ Example:
 
 [trivial_sample]
 
-In order to reduce code bloat and increase performance, it is recommended to use the assembly string if it reduces the number of arguments.
-
 [h3 Arguments]
 
 The "conventional" input types that are ( or will be ) supported:
@@ -42,24 +40,6 @@ The "conventional" input types that are ( or will be ) supported:
 * a floating point ['( todo )]
 
 In addition to those, there are also some [link special_input_types.special_input_types "special" input types], that are explained in another section.
-
-As shown in the diagram, there two different ways you can inject the arguments:
-
-[#syntax_args_form2]
-[variablelist
-[[ \u2022 /leading_expression/  \u00b7\u00b7\u00b7 ` .error_code(`[~args ...]`)`]
- [This expression call and returns the return the [link OutputWriterConcept `finish_error_code()`] member function of the writer object. This varies according to the leading expression as described [link ReturnTypes here], but should be `std::error_code` or some type that contains an `std::error_code` ( like __STD_EXPECTED__`<some_type, std::error_code>` )]
-]
-]
-
-[#syntax_args_form3]
-[variablelist
-[[ \u2022 /leading_expression/  \u00b7\u00b7\u00b7 ` .exception(`[~args ...]`)`]
- [This form use exceptions instead of error codes. It calls and returns the return of [link OutputWriterConcept `finish_exception()`] instead of `finish()`. So instead of returning an `std::error_code` ( or an object that contains an `std::error_code` ) it throws an exception created from such `std::error_code`, if such `std::error_code` is not empty. The return types are listed [link ReturnTypes_throw here].
-]
-
-]
-]
 
 [#syntax_reserve]
 [h3 Reserving output size]

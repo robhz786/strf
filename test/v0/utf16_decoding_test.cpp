@@ -144,7 +144,7 @@ void wchar_tests()
 
         TEST_ERR(U" ", err)
             .facets(strf::make_u16decoder<wchar_t>(err_hndl_func))
-            .error_code(sample_with_alone_surrogates);
+            (sample_with_alone_surrogates);
     }
 
 #endif // defined(_WIN32) && ! defined(BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING)

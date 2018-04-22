@@ -35,9 +35,9 @@ namespace detail {
 //         this->discard();
 //     }
 
-//     stringify::v0::expected<StringType, std::error_code> finish_error_code()
+//     stringify::v0::expected<StringType, std::error_code> finish()
 //     {
-//         auto ec = parent::finish_error_code();
+//         auto ec = parent::finish();
 //         if (ec == std::error_code{})
 //         {
 //             return {boost::stringify::v0::in_place_t{}, std::move(m_out)};
@@ -211,7 +211,7 @@ public:
         return true;
     }
 
-    stringify::v0::expected<StringType, std::error_code> finish_error_code()
+    stringify::v0::expected<StringType, std::error_code> finish()
     {
         m_out.resize(m_it - &m_out[0]);
         if (m_err == std::error_code{})

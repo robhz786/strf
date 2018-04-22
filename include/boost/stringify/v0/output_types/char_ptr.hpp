@@ -7,6 +7,7 @@
 
 #include <string>
 #include <boost/stringify/v0/syntax.hpp>
+#include <boost/stringify/v0/expected.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -27,13 +28,11 @@ public:
         ( stringify::v0::output_writer_init<CharT> init
         , CharT* destination
         , CharT* end
-        , std::size_t* out_count
         )
         : stringify::v0::output_writer<CharT>{init}
         , m_begin{destination}
         , m_it{destination}
         , m_end{end}
-        , m_out_count{out_count}
     {
         if(m_end < m_begin)
         {
@@ -48,10 +47,6 @@ public:
             if(m_begin != m_end)
             {
                 Traits::assign(*m_begin, CharT());
-            }
-            if(m_out_count != nullptr)
-            {
-                *m_out_count = 0;
             }
         }
     }
@@ -158,10 +153,18 @@ public:
         return true;
     }
 
-    std::error_code finish_error_code() noexcept
+    stringify::v0::expected<std::size_t, std::error_code>
+    finish() noexcept
     {
         do_finish();
-        return m_err;
+        if (m_good)
+        {
+            return {boost::stringify::v0::in_place_t{}, m_it - m_begin};
+        }
+        else
+        {
+            return {boost::stringify::v0::unexpect_t{}, m_err};
+        }
     }
 
     void finish_exception()
@@ -189,10 +192,6 @@ private:
                 }
                 Traits::assign(*m_it, CharT());
             }
-            if(m_out_count != nullptr)
-            {
-                *m_out_count = (m_it - m_begin);
-            }
         }
         m_finished = true;
     }
@@ -205,7 +204,6 @@ private:
     CharT* m_begin;
     CharT* m_it;
     CharT* m_end;
-    std::size_t* m_out_count = nullptr;
     std::error_code m_err;
     bool m_good = true;
     bool m_finished = false;
@@ -225,122 +223,91 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_ptr_writer<wchar_t>;
 
 
 template<std::size_t N>
-auto format(char (&destination)[N], std::size_t* out_count = nullptr)
+auto format(char (&destination)[N])
 {
     using writer = stringify::v0::detail::char_ptr_writer<char>;
     return stringify::v0::make_args_handler<writer, char*>
-        (destination, destination + N, out_count);
+        (destination, destination + N);
 }
 
 template<std::size_t N>
-auto format(char16_t (&destination)[N], std::size_t* out_count = nullptr)
+auto format(char16_t (&destination)[N])
 {
     using writer = stringify::v0::detail::char_ptr_writer<char16_t>;
     return stringify::v0::make_args_handler<writer, char16_t*>
-        (destination, destination + N, out_count);
+        (destination, destination + N);
 }
 
 template<std::size_t N>
-auto format(char32_t (&destination)[N], std::size_t* out_count = nullptr)
+auto format(char32_t (&destination)[N])
 {
     using writer = stringify::v0::detail::char_ptr_writer<char32_t>;
     return stringify::v0::make_args_handler<writer, char32_t*>
-        (destination, destination + N, out_count);
+        (destination, destination + N);
 }
 
 template<std::size_t N>
-auto format(wchar_t (&destination)[N], std::size_t* out_count = nullptr)
+auto format(wchar_t (&destination)[N])
 {
     using writer = stringify::v0::detail::char_ptr_writer<wchar_t>;
     return stringify::v0::make_args_handler<writer, wchar_t*>
-        (destination, destination + N, out_count);
+        (destination, destination + N);
 }
 
-inline auto  format
-    ( char* destination
-    , char* end
-    , std::size_t* out_count = nullptr
-    )
+inline auto  format(char* destination, char* end)
 {
     using writer = stringify::v0::detail::char_ptr_writer<char>;
     return stringify::v0::make_args_handler<writer, char*, char*>
-        (destination, end, out_count);
+        (destination, end);
 }
 
-inline auto format
-    ( char16_t* destination
-    , char16_t* end
-    , std::size_t* out_count = nullptr
-    )
+inline auto format(char16_t* destination, char16_t* end)
 {
     using writer = stringify::v0::detail::char_ptr_writer<char16_t>;
     return stringify::v0::make_args_handler<writer, char16_t*, char16_t*>
-        (destination, end, out_count);
+        (destination, end);
 }
 
-inline auto format
-    ( char32_t* destination
-    , char32_t* end
-    , std::size_t* out_count = nullptr
-    )
+inline auto format(char32_t* destination, char32_t* end)
 {
     using writer = stringify::v0::detail::char_ptr_writer<char32_t>;
     return stringify::v0::make_args_handler<writer, char32_t*, char32_t*>
-        (destination, end, out_count);
+        (destination, end);
 }
 
-inline auto format
-    ( wchar_t* destination
-    , wchar_t* end
-    , std::size_t* out_count = nullptr
-    )
+inline auto format(wchar_t* destination, wchar_t* end)
 {
     using writer = stringify::v0::detail::char_ptr_writer<wchar_t>;
     return stringify::v0::make_args_handler<writer, wchar_t*, wchar_t*>
-        (destination, end, out_count);
+        (destination, end);
 }
 
-inline auto format
-    ( char* destination
-    , std::size_t count
-    , std::size_t* out_count = nullptr
-    )
+inline auto format(char* destination, std::size_t count)
 {
     using writer = stringify::v0::detail::char_ptr_writer<char>;
     return stringify::v0::make_args_handler<writer, char*, char*>
-        (destination, destination + count, out_count);
+        (destination, destination + count);
 }
 
-inline auto format
-    ( char16_t* destination
-    , std::size_t count
-    , std::size_t* out_count = nullptr
-    )
+inline auto format(char16_t* destination, std::size_t count)
 {
     using writer = stringify::v0::detail::char_ptr_writer<char16_t>;
     return stringify::v0::make_args_handler<writer, char16_t*, char16_t*>
-        (destination, destination + count, out_count);
+        (destination, destination + count);
 }
 
-inline auto format
-    ( char32_t* destination
-    , std::size_t count
-    , std::size_t* out_count = nullptr
-    )
+inline auto format(char32_t* destination, std::size_t count)
 {
     using writer = stringify::v0::detail::char_ptr_writer<char32_t>;
     return stringify::v0::make_args_handler<writer, char32_t*, char32_t*>
-        (destination, destination + count, out_count);
+        (destination, destination + count);
 }
 
-inline auto format
-    ( wchar_t* destination
-    , std::size_t count
-    , std::size_t* out_count = nullptr)
+inline auto format(wchar_t* destination, std::size_t count)
 {
     using writer = stringify::v0::detail::char_ptr_writer<wchar_t>;
     return stringify::v0::make_args_handler<writer, wchar_t*, wchar_t*>
-        (destination, destination + count, out_count);
+        (destination, destination + count);
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

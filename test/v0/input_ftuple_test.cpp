@@ -12,7 +12,6 @@ int main()
 
     TEST("1,0,0,0,0 10000 1000000 10,000 1'0000 1'000000 10.000 1^00^00 1'000000")
         .facets(strf::monotonic_grouping<10>(1))
-        .exception
         ( 10000, ' '
         , strf::hex(0x10000), ' '
         , strf::oct(01000000), ' '

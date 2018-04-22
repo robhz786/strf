@@ -21,7 +21,6 @@ foreach(
   ftuple_merge_test
   ftuple_test
   reserve_test
-  throw_on_error_code_test
   width_calculator_test
   transcoding_test
   )

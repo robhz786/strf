@@ -117,7 +117,7 @@ public:
         }
         else if(m_type == stringify::width_calculation_type::as_codepoints_count)
         {
-            return conv.remaining_codepoints_count(width, begin, end);
+            return static_cast<int>(conv.remaining_codepoints_count(width, begin, end));
         }
         else
         {
@@ -140,7 +140,7 @@ private:
         stringify::v0::char_width_calculator m_ch_wcalc;
     };
 
-    static_assert(sizeof(m_type) >= sizeof(m_ch_wcalc), "");
+    static_assert(sizeof(stringify::v0::width_calculation_type) >= sizeof(stringify::v0::char_width_calculator), "");
 };
 
 

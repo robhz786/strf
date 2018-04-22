@@ -16,41 +16,41 @@ int main()
 
     // positional argument and automatic arguments
     TEST("0 2 1 2 11")
-        ("{ } {2} {} {} {11}")
-        .exception(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+        .as("{ } {2} {} {} {11}")
+(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
 
-    auto xstr = strf::make_string("{ } {2} {} {} {} {}") .error_code(0, 1, 2, 3);
+    auto xstr = strf::make_string.as("{ } {2} {} {} {} {}")(0, 1, 2, 3);
     BOOST_TEST(!xstr);
     
     // escape "{" when is followed by /
     TEST("} } { {/ } {abc}")
-        ("} } {/ {// } {/abc}")
-        .exception("ignored");
+        .as("} } {/ {// } {/abc}")
+        ("ignored");
 
     // arguments with comments
     TEST("0 2 0 1 2 3")
-        ("{ arg0} {2xxx} {0  yyy} {} { arg2} {    }") .exception(0, 1, 2, 3, 4);
+        .as("{ arg0} {2xxx} {0  yyy} {} { arg2} {    }") (0, 1, 2, 3, 4);
 
     // comments
     TEST("asdfqwert")
-        ("as{-xxxx}df{-abc{}qwert") .exception("ignored");
+        .as("as{-xxxx}df{-abc{}qwert") ("ignored");
 
-    TEST("X aaa Y")      ("{} aaa {")      .exception("X", "Y");
-    TEST("X aaa Y")      ("{} aaa {bbb")   .exception("X", "Y");
-    TEST("X aaa {")      ("{} aaa {/")     .exception("X", "Y");
-    TEST("X aaa {bbb")   ("{} aaa {/bbb")  .exception("X", "Y");
-    TEST("X aaa ")       ("{} aaa {-")     .exception("X", "Y");
-    TEST("X aaa ")       ("{} aaa {-bbb")  .exception("X", "Y");
-    TEST("X aaa Y")      ("{} aaa {1")     .exception("X", "Y");
-    TEST("X aaa Y")      ("{} aaa {1bb")   .exception("X", "Y");
-    TEST("X aaa Y")      ("{} aaa {}")     .exception("X", "Y");
-    TEST("X aaa Y")      ("{} aaa {bbb}")  .exception("X", "Y");
-    TEST("X aaa {}")     ("{} aaa {/}")    .exception("X", "Y");
-    TEST("X aaa {bbb}")  ("{} aaa {/bbb}") .exception("X", "Y");
-    TEST("X aaa ")       ("{} aaa {-}")    .exception("X", "Y");
-    TEST("X aaa ")       ("{} aaa {-bbb}") .exception("X", "Y");
-    TEST("X aaa Y")      ("{} aaa {1}")    .exception("X", "Y");
-    TEST("X aaa Y")      ("{} aaa {1bb}")  .exception("X", "Y");
+    TEST("X aaa Y")      .as("{} aaa {")      ("X", "Y");
+    TEST("X aaa Y")      .as("{} aaa {bbb")   ("X", "Y");
+    TEST("X aaa {")      .as("{} aaa {/")     ("X", "Y");
+    TEST("X aaa {bbb")   .as("{} aaa {/bbb")  ("X", "Y");
+    TEST("X aaa ")       .as("{} aaa {-")     ("X", "Y");
+    TEST("X aaa ")       .as("{} aaa {-bbb")  ("X", "Y");
+    TEST("X aaa Y")      .as("{} aaa {1")     ("X", "Y");
+    TEST("X aaa Y")      .as("{} aaa {1bb")   ("X", "Y");
+    TEST("X aaa Y")      .as("{} aaa {}")     ("X", "Y");
+    TEST("X aaa Y")      .as("{} aaa {bbb}")  ("X", "Y");
+    TEST("X aaa {}")     .as("{} aaa {/}")    ("X", "Y");
+    TEST("X aaa {bbb}")  .as("{} aaa {/bbb}") ("X", "Y");
+    TEST("X aaa ")       .as("{} aaa {-}")    ("X", "Y");
+    TEST("X aaa ")       .as("{} aaa {-bbb}") ("X", "Y");
+    TEST("X aaa Y")      .as("{} aaa {1}")    ("X", "Y");
+    TEST("X aaa Y")      .as("{} aaa {1bb}")  ("X", "Y");
 
     //
     // now in utf16:
@@ -58,38 +58,38 @@ int main()
 
     // positional argument and automatic arguments
     TEST(u"0 2 1 2")
-        (u"{ } {2} {} {}")
-        .exception(0, 1, 2, 3);
+        .as(u"{ } {2} {} {}")
+        (0, 1, 2, 3);
 
     // escape "{" when is followed by /
     TEST(u"} } { {/ } {abc}")
-        (u"} } {/ {// } {/abc}")
-        .exception(u"ignored");
+        .as(u"} } {/ {// } {/abc}")
+        (u"ignored");
     
     // arguments with comments
     TEST(u"0 2 0 1 2 3")
-        (u"{ arg0} {2xxx} {0  yyy} {} { arg2} {    }") .exception(0, 1, 2, 3, 4);
+        .as(u"{ arg0} {2xxx} {0  yyy} {} { arg2} {    }") (0, 1, 2, 3, 4);
 
     // comments
     TEST(u"asdfqwert")
-        (u"as{-xxxx}df{-abc{}qwert") .exception(u"ignored");
+        .as(u"as{-xxxx}df{-abc{}qwert") (u"ignored");
 
     //
     // different ecoding
     //
 
     TEST("0 2 1 2 11")
-        ("{ } {2} {} {} {11}")
-        .exception(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+        .as("{ } {2} {} {} {11}")
+        (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
 
     //
     // errors
     //
     TEST_ERR("0 2 1 2 3 ", std::make_error_code(std::errc::value_too_large))
-        ("{ } {2} {} {} {} {}") .exception(0, 1, 2, 3);
+        .as("{ } {2} {} {} {} {}") (0, 1, 2, 3);
     
     TEST_ERR("0 1 ", std::make_error_code(std::errc::value_too_large))
-        ("{ } {} {10} {} {}") .exception(0, 1, 2, 3);
+        .as("{ } {} {10} {} {}") (0, 1, 2, 3);
 
 
 

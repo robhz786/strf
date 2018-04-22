@@ -8,9 +8,8 @@
 #include <cstdio>
 #include <cstring>
 #include <boost/stringify/v0/syntax.hpp>
+#include <boost/stringify/v0/expected.hpp>
 
-#include <iostream>
-#include <iomanip>
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <typename CharT>
@@ -107,15 +106,19 @@ public:
         return m_good;
     }
 
-    std::error_code finish_error_code()
+    stringify::v0::expected<void, std::error_code> finish()
     {
         flush();
-        if (!m_good && m_err == std::error_code{})
+        if(m_good)
+        {
+            return {};
+        }
+        else if (m_err == std::error_code{})
         {
             // this seems to me to be the closest to "unknown error"
             m_err = std::make_error_code(std::errc::operation_canceled);
         }
-        return m_err;
+        return {stringify::v0::unexpect_t{}, m_err};
     }
 
     void finish_exception()
@@ -160,6 +163,7 @@ private:
     char_type m_buff[m_buff_size];
     char_type* m_it = m_buff;
     char_type* const m_end = m_buff + m_buff_size;
+    std::size_t m_count = 0;
     bool m_good = true;
 
 };

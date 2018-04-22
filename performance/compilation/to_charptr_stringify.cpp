@@ -12,7 +12,7 @@ void FUNCTION_NAME (int)
     char* out = buff;
     std::size_t len = 0;
 
-    strf::format(out, end, &len) ("blah blah blah {} {} {} blah {} {} {}\n").exception
+    auto x = strf::format(out, end) .as("blah blah blah {} {} {} blah {} {} {}\n")
         ( strf::right(arg_a0, 10)
         , arg_a1
         , +strf::fmt(arg_a2) > 5
@@ -21,8 +21,8 @@ void FUNCTION_NAME (int)
         , arg_a5
         );
 
-    out += len;
-    strf::format(out, end, &len) ("blah blah {} {}{} {} {} blah {} {} {}\n").exception
+    out += x.value();
+    x = strf::format(out, end) .as("blah blah {} {}{} {} {} blah {} {} {}\n")
         ( arg_b0
           , strf::right(arg_b1, 9)
           , arg_b2
@@ -33,8 +33,8 @@ void FUNCTION_NAME (int)
           , arg_b7
         );
 
-    out += len;
-    strf::format(out, end) ("blah blah {} {:>10} {} {} {} {} {} {}\n").exception
+    out += x.value();
+    (void)strf::format(out, end) .as("blah blah {} {:>10} {} {} {} {} {} {}\n")
         ( arg_c0
           , strf::right(arg_c1, 10)
           , arg_c2

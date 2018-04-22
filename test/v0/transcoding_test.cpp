@@ -14,7 +14,7 @@ namespace strf = boost::stringify::v0;
 int main()
 {
 
-    TEST(u"abc\u0200\uD500\U0010FF00").exception(u8"abc\u0200\uD500\U0010FF00");
+    TEST(u"abc\u0200\uD500\U0010FF00")(u8"abc\u0200\uD500\U0010FF00");
 
     
     const char* str8_with_surr=  "--\xED\xA0\x80--";
@@ -33,8 +33,8 @@ int main()
     TEST(str16_with_surr)
         .facets(strf::to_utf16<char16_t>().keep_surrogates(true))
         .facets(strf::from_utf8())
-        (str8_with_surr)
-        .exception();
+        .as(str8_with_surr)
+        ();
 
     // TODO ...
 

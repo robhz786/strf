@@ -8,7 +8,7 @@ void FUNCTION_NAME (std::ostream& out_)
 {
     auto* out = out_.rdbuf();
 
-    strf::format(out) ("blah blah blah {} {} {} blah {} {} {}\n").exception
+    (void)strf::format(out) .as("blah blah blah {} {} {} blah {} {} {}\n")
            ( strf::right(arg_a0, 10)
            , arg_a1
            , +strf::fmt(arg_a2) > 5
@@ -17,7 +17,7 @@ void FUNCTION_NAME (std::ostream& out_)
            , arg_a5
            );
 
-    strf::format(out) ("blah blah {} {}{} {} {} blah {} {} {}\n").exception
+    (void)strf::format(out) .as("blah blah {} {}{} {} {} blah {} {} {}\n")
            ( arg_b0
            , strf::right(arg_b1, 9)
            , arg_b2
@@ -28,7 +28,7 @@ void FUNCTION_NAME (std::ostream& out_)
            , arg_b7
            );
 
-    strf::format(out) ("blah blah {} {:>10} {} {} {} {} {} {}\n").exception
+    (void)strf::format(out) .as("blah blah {} {:>10} {} {} {} {} {} {}\n")
            ( arg_c0
            , strf::right(arg_c1, 10)
            , arg_c2
