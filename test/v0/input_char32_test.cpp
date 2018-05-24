@@ -6,8 +6,6 @@
 #include <boost/stringify.hpp>
 #include "test_utils.hpp"
 
-#define TEST(EXPECTED) make_tester((EXPECTED), __FILE__, __LINE__)
-
 template <typename T>
 struct is_char32: public std::is_same<T, char32_t>
 {

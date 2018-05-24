@@ -15,17 +15,19 @@ Every /facet/ belongs to some /facet category/.
 
 
 [table
-[[facet category][what it controls][where is used]]
+[[facet category][what it controls][constrainable][where is used]]
 
 [
 [[link width_calculation `width_calculation_category`]]
 [how the width is calculated]
+[yes]
 [[link joins joins] and all conventional types]
 ]
 
 [
 [[link numpunct `numpunct_category<10>`]]
 [numeric punctuation for decimal base]
+[yes]
 [integers and floating points numbers]
 ]
 
@@ -33,14 +35,38 @@ Every /facet/ belongs to some /facet category/.
 [
 [[link numpunct `numpunct_category<16>`]]
 [numeric punctuation for hexadecimal base]
+[yes]
 [integers and floating points numbers]
 ]
 
 [
 [[link numpunct `numpunct_category<8>`]]
 [numeric punctuation for octal base]
+[yes]
 [integers numbers]
 ]
+
+[
+[[link encoding_conversion.encoding_conversion.encodings encoding]]
+[encoding]
+[no]
+[]
+]
+
+[
+[[link encoding_conversion.encoding_conversion.encoding_error encoding_error]]
+[encoding error handling]
+[no]
+[]
+]
+
+[
+[[link encoding_conversion.encoding_conversion.keep_surrogates keep_surrogates]]
+[tells whether surrogate code points are allowed]
+[no]
+[]
+]
+
 
 ]
 

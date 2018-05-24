@@ -7,7 +7,6 @@
 #include "test_utils.hpp"
 #include <vector>
 
-#define TEST(EXPECTED) make_tester((EXPECTED), __FILE__, __LINE__)
 
 int main()
 {

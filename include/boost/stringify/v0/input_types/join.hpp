@@ -206,12 +206,12 @@ public:
         ( stringify::v0::output_writer<CharT>& out
         , const stringify::v0::detail::printer_ptr_range<CharT>& pp_range
         , const stringify::v0::detail::join_t& j
-        , const stringify::v0::output_encoding<CharT>& encoding
+        , const stringify::v0::encoding<CharT>& encoding
         )
         : m_out(out)
         , m_join(j)
         , m_encoder{encoding.encoder()}
-        , m_keepsurr{encoding.keep_surrogates()}
+        , m_keepsurr{out.keep_surrogates()}
         , m_args{pp_range}
     {
         m_fillcount = remaining_width_from_arglist(m_join.width);
@@ -374,7 +374,7 @@ private:
 
     static const auto& get_encoding(const FTuple& ft)
     {
-        using encoder_category = stringify::v0::output_encoding_category<CharT>;
+        using encoder_category = stringify::v0::encoding_category<CharT>;
         return ft.template get_facet<encoder_category, input_type>();
     }
 };

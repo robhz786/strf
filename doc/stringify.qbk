@@ -27,10 +27,11 @@ __STD_EXPECTED__
 [include:format_functions format_functions.qbk]
 [include:facets facets.qbk]
 [include:special_input_types special_input_types.qbk]
+[include:encoding_conversion encoding_conversion.qbk]
 [include:numpunct_facets numpunct_facets.qbk]
 [include:facet_width_calculation facet_width_calculation.qbk]
 
-[include:encoding_convertion encoding_conversion.qbk]
+
 
 [include:extend_input extend_input.qbk]
 

@@ -25,11 +25,11 @@ int main()
     constexpr std::size_t dest_size = sizeof(dest);
 
     std::cout << "\n small strings \n";
-    PRINT_BENCHMARK("strf::format(dest)(\"Hello \", \"World\", \"!\")")
+    PRINT_BENCHMARK("strf::format(dest) (\"Hello \", \"World\", \"!\")")
     {
         (void)strf::format(dest)("Hello ", "World", "!");
     }
-    PRINT_BENCHMARK("strf::format(dest) .as(\"Hello {}!\")(\"World\")")
+    PRINT_BENCHMARK("strf::format(dest) .as(\"Hello {}!\") (\"World\")")
     {
         (void)strf::format(dest) .as("Hello {}!")("World");
     }
@@ -55,11 +55,11 @@ int main()
         std::string std_string_long_string(1000, 'x');
         const char* long_string = std_string_long_string.c_str();
 
-        PRINT_BENCHMARK("strf::format(dest)(\"Hello \", long_string, \"!\")")
+        PRINT_BENCHMARK("strf::format(dest) (\"Hello \", long_string, \"!\")")
         {
             (void)strf::format(dest)("Hello ", long_string, "!");
         }
-        PRINT_BENCHMARK("strf::format(dest) .as(\"Hello {}!\")(long_string)")
+        PRINT_BENCHMARK("strf::format(dest) .as(\"Hello {}!\") (long_string)")
         {
             (void)strf::format(dest) .as("Hello {}!")(long_string);
         }
@@ -82,11 +82,11 @@ int main()
 
     std::cout << "\n padding \n";
 
-    PRINT_BENCHMARK("strf::format(dest)(strf::right(\"aa\", 20))")
+    PRINT_BENCHMARK("strf::format(dest) (strf::right(\"aa\", 20))")
     {
         (void)strf::format(dest)(strf::right("aa", 20));
     }
-    PRINT_BENCHMARK("strf::format(dest)(join_right(20)(\"aa\") )")
+    PRINT_BENCHMARK("strf::format(dest) (join_right(20)(\"aa\"))")
     {
         (void)strf::format(dest)(strf::join_right(20)("aa"));
     }
@@ -108,7 +108,7 @@ int main()
 
     std::cout << "\n integers \n";
 
-    PRINT_BENCHMARK("strf::format(dest)(25)")
+    PRINT_BENCHMARK("strf::format(dest) (25)")
     {
         (void)strf::format(dest)(25);
     }
@@ -129,7 +129,7 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("strf::format(dest)(LLONG_MAX)")
+    PRINT_BENCHMARK("strf::format(dest) (LLONG_MAX)")
     {
         (void)strf::format(dest)(LLONG_MAX);
     }
@@ -152,7 +152,7 @@ int main()
     std::cout << std::endl;
     std::setlocale(LC_ALL, "en_US.UTF-8");
     strf::monotonic_grouping<10> numpunct_3(3);
-    PRINT_BENCHMARK("strf::format(dest).facets(numpunct_3)(LLONG_MAX)")
+    PRINT_BENCHMARK("strf::format(dest) .facets(numpunct_3) (LLONG_MAX)")
     {
         (void)strf::format(dest).facets(numpunct_3)(LLONG_MAX);
     }
@@ -167,13 +167,13 @@ int main()
     }
 /*
     std::cout << std::endl;
-    PRINT_BENCHMARK("strf::format(dest)(25, 25, 25)")
+    PRINT_BENCHMARK("strf::format(dest) (25, 25, 25)")
     {
-        (void)strf::format(dest)(25, 25, 25);
+        (void)strf::format(dest) (25, 25, 25);
     }
-    PRINT_BENCHMARK("strf::format(dest) .as(\"{}{}{}\")(25, 25, 25)")
+    PRINT_BENCHMARK("strf::format(dest) .as(\"{}{}{}\") (25, 25, 25)")
     {
-        (void)strf::format(dest) .as("{}{}{}")(25, 25, 25);
+        (void)strf::format(dest) .as("{}{}{}") (25, 25, 25);
     }
 
     PRINT_BENCHMARK("karma::generate(dest, int_ << int_ << int_, 25, 25, 25)")
@@ -195,13 +195,13 @@ int main()
 */
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("strf::format(dest)(LLONG_MAX, LLONG_MAX, LLONG_MAX)")
+    PRINT_BENCHMARK("strf::format(dest) (LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
-        (void)strf::format(dest)(LLONG_MAX, LLONG_MAX, LLONG_MAX);
+        (void)strf::format(dest) (LLONG_MAX, LLONG_MAX, LLONG_MAX);
     }
-    PRINT_BENCHMARK("strf::format(dest).as(\"{}{}{}\")(LLONG_MAX, LLONG_MAX, LLONG_MAX)")
+    PRINT_BENCHMARK("strf::format(dest) .as(\"{}{}{}\") (LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
-        (void)strf::format(dest).as("{}{}{}")(LLONG_MAX, LLONG_MAX, LLONG_MAX);
+        (void)strf::format(dest) .as("{}{}{}") (LLONG_MAX, LLONG_MAX, LLONG_MAX);
     }
     PRINT_BENCHMARK("karma::generate(d, long_long << long_long << long_long, LLONG_MAX, LLONG_MAX, LLONG_MAX);")
     {
@@ -221,13 +221,13 @@ int main()
     }
 
     std::cout << "\n formatted integers \n";
-    PRINT_BENCHMARK("strf::format(dest)(55555, +strf::left(55555, 8) , ~strf::hex(55555))")
+    PRINT_BENCHMARK("strf::format(dest) (55555, +strf::left(55555, 8) , ~strf::hex(55555))")
     {
-        (void)strf::format(dest)(55555, +strf::left(55555, 8) , ~strf::hex(55555));
+        (void)strf::format(dest) (55555, +strf::left(55555, 8) , ~strf::hex(55555));
     }
-    PRINT_BENCHMARK("strf::format(dest).as(\"{}{}{}\")(55555, +strf::left(55555, 8) , ~strf::hex(55555))")
+    PRINT_BENCHMARK("strf::format(dest) .as(\"{}{}{}\") (55555, +strf::left(55555, 8) , ~strf::hex(55555))")
     {
-        (void)strf::format(dest).as("{}{}{}")(55555, +strf::left(55555, 8) , ~strf::hex(55555));
+        (void)strf::format(dest) .as("{}{}{}") (55555, +strf::left(55555, 8) , ~strf::hex(55555));
     }
     PRINT_BENCHMARK("karma::generate(dest, int_ << left_align(8)[int_generator<int, 10, true>{}] << \"0x\" << int_generator<int, 16, false>{}, 55555, 55555, 55555)")
     {
@@ -250,12 +250,12 @@ int main()
 
     std::cout << "\n Strings and itegers mixed: \n";
 
-    PRINT_BENCHMARK("strf::format(dest)(\"blah blah \", INT_MAX, \" blah \", ~strf::hex(1234)<8, \" blah \", \"abcdef\")" )
+    PRINT_BENCHMARK("strf::format(dest) (\"blah blah \", INT_MAX, \" blah \", ~strf::hex(1234)<8, \" blah \", \"abcdef\")" )
     {
         (void)strf::format(dest)("blah blah ", INT_MAX, " blah ", ~strf::hex(1234)<8, " blah ", "abcdef");
     }
 
-    PRINT_BENCHMARK("strf::format(dest).as(\"blah blah {} blah {} blah {}\")(INT_MAX, ~strf::hex(1234)<8, \"abcdef\")")
+    PRINT_BENCHMARK("strf::format(dest) .as(\"blah blah {} blah {} blah {}\") (INT_MAX, ~strf::hex(1234)<8, \"abcdef\")")
     {
         (void)strf::format(dest).as("blah blah {} blah {} blah {}")(INT_MAX, ~strf::hex(1234)<8, "abcdef");
     }
@@ -282,11 +282,11 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("strf::format(dest)(\"ten =  \", 10, \", twenty = \", 20)")
+    PRINT_BENCHMARK("strf::format(dest) (\"ten =  \", 10, \", twenty = \", 20)")
     {
         (void)strf::format(dest)("ten =  ", 10, ", twenty = ", 20);
     }
-    PRINT_BENCHMARK("strf::format(dest).as(\"ten = {}, twenty = {}\")(10, 20)")
+    PRINT_BENCHMARK("strf::format(dest) .as(\"ten = {}, twenty = {}\") (10, 20)")
     {
         (void)strf::format(dest).as("ten = {}, twenty = {}")(10, 20);
     }

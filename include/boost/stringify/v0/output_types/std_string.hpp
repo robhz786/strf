@@ -15,6 +15,9 @@ namespace detail {
 template <typename StringType>
 class string_appender: public buffered_writer<typename StringType::value_type>
 {
+    constexpr static std::size_t buffer_size = 60;
+    typename StringType::value_type buffer[buffer_size];
+
     using parent = buffered_writer<typename StringType::value_type>;
 
 public:
@@ -25,7 +28,7 @@ public:
         ( stringify::v0::output_writer_init<char_type> init
         , StringType& out
         )
-        : stringify::v0::buffered_writer<char_type>{init}
+        : stringify::v0::buffered_writer<char_type>{init, buffer, buffer_size}
         , m_out(&out)
         , m_initial_length(out.length())
     {

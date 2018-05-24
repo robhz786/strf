@@ -15,6 +15,9 @@ namespace detail {
 template <typename CharT, typename Traits>
 class std_streambuf_writer: public buffered_writer<CharT>
 {
+    constexpr static std::size_t buffer_size = 60;
+    CharT buffer[40];
+
 public:
 
     using char_type = CharT;
@@ -24,7 +27,7 @@ public:
         , std::basic_streambuf<CharT, Traits>& out
         , std::size_t* count
         )
-        : stringify::v0::buffered_writer<CharT>{init}
+        : stringify::v0::buffered_writer<CharT>{init, buffer, buffer_size}
         , m_out(out)
         , m_count(count)
     {

@@ -162,6 +162,54 @@ public:
 //     }
 // };
 
+
+
+template <typename F>
+struct is_constrainable
+{
+    using category = typename F::category;
+    constexpr static bool value = category::constrainable;
+};
+
+template <typename ... F>
+constexpr bool are_constrainable_impl()
+{
+    constexpr std::size_t N = sizeof...(F);
+    constexpr bool values[N]
+        = {stringify::v0::detail::is_constrainable<F>::value ...};
+
+    for (std::size_t i = 0; i < N; ++i)
+    {
+        if( ! values[i])
+        {
+            return false;
+        }
+    }
+    return true;;
+}
+
+template <>
+constexpr bool are_constrainable_impl<>()
+{
+    return true;
+}
+
+template <typename ... F>
+struct is_constrainable<stringify::v0::ftuple<F...>>
+{
+    constexpr static bool value
+        = stringify::v0::detail::are_constrainable_impl<F...>();
+};
+
+template <typename ... F>
+struct all_are_constrainable
+{
+    constexpr static bool value
+        = stringify::v0::detail::are_constrainable_impl<F...>();
+};
+
+
+
 } // namespace detail
 
 // template <typename ChildFTuple, typename ... Args>
@@ -173,6 +221,9 @@ template <typename ... Facets>
 stringify::v0::detail::inner_ftuple<stringify::v0::ftuple<Facets ...>>
 facets(const Facets& ... facets)
 {
+    static_assert
+        ( stringify::v0::detail::all_are_constrainable<Facets...>::value
+        , "All facet categories must be constrainable" );
     return {stringify::v0::make_ftuple(facets ...)};
 }
 
@@ -180,6 +231,9 @@ template <typename ... Facets>
 stringify::v0::detail::inner_ftuple_ref<stringify::v0::ftuple<Facets ...>>
 facets(const stringify::v0::ftuple<Facets...>& ft)
 {
+    static_assert
+        ( stringify::v0::detail::all_are_constrainable<Facets...>::value
+        , "All facet categories must be constrainable" );
     return {ft};
 }
 

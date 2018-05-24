@@ -206,13 +206,27 @@ void print(const char* label, const std::wstring& str)
     std::cout  << "\"\n";
 }
 
+template <typename CharT>
+struct input_tester_buffer
+{
+    input_tester_buffer(typename std::basic_string<CharT>::size_type size)
+        : buffer(size, static_cast<CharT>('#'))
+    {
+    }
+
+    std::basic_string<CharT> buffer;
+};
+
 
 template <typename CharT>
-class input_tester: public boost::stringify::v0::buffered_writer<CharT>
+class input_tester
+    : private input_tester_buffer<CharT>
+    , public boost::stringify::v0::buffered_writer<CharT>
 {
     using parent = boost::stringify::v0::buffered_writer<CharT>;
-    
+    using  input_tester_buffer<CharT>::buffer;
 public:
+
     input_tester
         ( boost::stringify::v0::output_writer_init<CharT> init
         , std::basic_string<CharT> expected
@@ -220,8 +234,13 @@ public:
         , std::string src_filename
         , int src_line
         , double reserve_factor
+        , std::size_t buffer_size = 60
         )
-        : boost::stringify::v0::buffered_writer<CharT>{init}
+        : input_tester_buffer<CharT>{buffer_size}
+        , boost::stringify::v0::buffered_writer<CharT>
+            { init
+            , &buffer.front()
+            , buffer.size() }
         , m_expected(std::move(expected))
         , m_expected_error(expected_error)
         , m_reserved_size(0)
@@ -308,37 +327,97 @@ private:
 };
 
 
-template<typename CharT>
-auto make_tester
-    ( const CharT* expected
-    , const char* filename
-    , int line
-    , std::error_code err = {}
-    , double reserve_factor = 1.0
-    )
-{
-    using writer = input_tester<CharT>;
-    return boost::stringify::v0::make_args_handler
-        <writer, const CharT*,std::error_code, const char*, int>
-        (expected, err, filename, line, reserve_factor);
-}
+//template<typename CharT>
+//auto make_tester
+//    ( const CharT* expected
+//    , const char* filename
+//    , int line
+//    , std::error_code err = {}
+//    , double reserve_factor = 1.0
+//    )
+//{
+//    using writer = input_tester<CharT>;
+//    return boost::stringify::v0::make_args_handler
+//        <writer, const CharT*, std::error_code, const char*, int>
+//        (expected, err, filename, line, reserve_factor);
+//}
+
+//template<typename CharT>
+//auto make_tester
+//    ( const CharT* expected
+//    , const char* filename
+//    , int line
+//    , double reserve_factor
+//    )
+//{
+//    using writer = input_tester<CharT>;
+//    return boost::stringify::v0::make_args_handler
+//        <writer, const CharT*, std::error_code, const char*, int, double, std::size_t>
+//        (expected, {}, filename, line, reserve_factor, buffer_size);
+//}
+
 
 template<typename CharT>
 auto make_tester
     ( const CharT* expected
     , const char* filename
     , int line
+    , std::error_code err
     , double reserve_factor
-    )
+    , std::size_t buffer_size)
 {
     using writer = input_tester<CharT>;
     return boost::stringify::v0::make_args_handler
-        <writer, const CharT*,std::error_code, const char*, int>
-        (expected, {}, filename, line, reserve_factor);
+        <writer, const CharT*, std::error_code, const char*, int, double, std::size_t>
+        (expected, err, filename, line, reserve_factor, buffer_size);
 }
 
+template<typename CharT>
+auto make_tester
+    ( const std::basic_string<CharT>& expected
+    , const char* filename
+    , int line
+    , std::error_code err
+    , double reserve_factor
+    , std::size_t buffer_size )
+{
+    using writer = input_tester<CharT>;
+    return boost::stringify::v0::make_args_handler
+        <writer, const std::basic_string<CharT>&, std::error_code, const char*, int, double, std::size_t>
+        (expected, err, filename, line, reserve_factor, buffer_size);
+}
 
-#define TEST(EXPECTED) make_tester((EXPECTED), __FILE__, __LINE__)
+//template<typename CharT>
+//auto make_tester
+//    ( const std::basic_string<CharT>& expected
+//    , const char* filename
+//    , int line
+//    , double reserve_factor
+//    , std::size_t buffer_size = 60 )
+//{
+//    using writer = input_tester<CharT>;
+//    return boost::stringify::v0::make_args_handler
+//        <writer, const std::basic_string<CharT>&, std::error_code, const char*, int, std::size_t >
+//        (expected, {}, filename, line, reserve_factor, buffer_size);
+//}
+
+
+#define TEST(EXPECTED) make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), 1.0, 60)
+
+#define TEST_RF(EXPECTED, RF) make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), (RF), 60)
+
+#define TEST_ERR(EXPECTED, ERR) make_tester((EXPECTED), __FILE__, __LINE__, (ERR), 1.0, 60)
+
+#define TEST_ERR_RF(EXPECTED, ERR, RF) make_tester((EXPECTED), __FILE__, __LINE__, (ERR), (RF), 60)
+
+#define BUFFERED_TEST(SIZE, EXPECTED) make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), 1.0, (SIZE))
+
+#define BUFFERED_TEST_RF(SIZE, EXPECTED, RF) make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), (RF), (SIZE))
+
+#define BUFFERED_TEST_ERR(SIZE, EXPECTED, ERR) make_tester((EXPECTED), __FILE__, __LINE__, (ERR), 1.0, (SIZE))
+
+#define BUFFERED_TEST_ERR_RF(SIZE, EXPECTED, ERR, RF) make_tester((EXPECTED), __FILE__, __LINE__, (ERR), (RF), (SIZE))
+
 
 #endif
 

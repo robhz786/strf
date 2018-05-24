@@ -6,13 +6,188 @@
 
 [import ../example/v0/encoding_conversion.cpp]
 
-[section:encoding_conversion Encoding conversion (todo)]
+[section:encoding_conversion Encoding conversion]
 
 Input and output can be based on the different character types, and also on different encodings.
 
 [input_output_different_char_types]
 
-By default, the encoding for `char` is UTF-8 and for `wchar_t` is UTF-16 if `sizeof(wchar_t) == 2`, and UTF-32 if `sizeof(wchar_t) == 4`. However it will be possible to select alternatives encodings so that one input string could be, for instance, in window-1252 and another in iso-8859/1 while the ouput is in UTF-8. This is expected to be implemented in the next release.
+By default, the encoding for `char` is UTF-8 and for `wchar_t` is UTF-16 if `sizeof(wchar_t) == 2`, and UTF-32 if `sizeof(wchar_t) == 4`. However it will be possible to select alternatives encodings using the functions below:
 
+[table:encodings
+[ [function or function template] [description] ]
+
+[
+[`encoding<char> utf8();`]
+[The UTF-8 encoding. This is the default for `char`.]
+]
+
+[
+[`encoding<char> mutf8();`]
+[The [@https://en.wikipedia.org/wiki/UTF-8#Modified_UTF-8 Modified UTF-8] encoding]
+]
+
+[
+[`encoding<char> cesu8(); // TODO `]
+[The [@https://en.wikipedia.org/wiki/CESU-8 CESU-8] encoding. /(not implemented yet)/]
+]
+
+[
+[`encoding<char> iso_8859_1();`]
+[The [@https://en.wikipedia.org/wiki/ISO/IEC_8859-1 ISO/IEC 8859-1] encoding]
+]
+
+[
+[`encoding<char> iso_8859_15();`]
+[The [@https://en.wikipedia.org/wiki/ISO/IEC_8859-15 ISO/IEC 8859-15] encoding]
+]
+
+[
+[`encoding<char> windows_1252();`]
+[The [@https://en.wikipedia.org/wiki/Windows-1252 Windows-1252] encoding]
+]
+
+[
+[`encoding<char> ascii();`]
+[Pure ASCII. Any character greater than `0xf9` is treated as error]
+]
+
+
+[
+[`template <typename CharT>`[br]`encoding<CharT> utf16();`]
+[The UTF-16 encoding. `sizeof(CharT)` must be `2`.[br]  `utf16<char16_t>()` is the default encoding for `char16_t` ( and currently the only one available ).]
+]
+
+[
+[`template <typename CharT>`[br]`encoding<CharT> utf32();`]
+[The UTF-32 encoding. `sizeof(CharT)` must be `4`.[br]`utf32<char32_t>` is the default encoding for `char32_t` ( and currently the only one available ). ]
+]
+
+[
+[`encoding<wchar_t> utfw();`]
+[This is the default ( actually the only currently available ) encoding for `wchar_t`. [br]Returns the same as `utf16<wchar_t>()` or `utf32<wchar_t>()` depending on whether `sizeof(wchar_t)` is `2` or `4`.]
+]
+
+
+]
+
+[/
+#
+# In order to choose a different encoding, you use the `encoding` class template.
+#
+# ```
+# namespace boost {
+# namespace stringify {
+#
+# template <typename CharT> struct encoding_category;
+#
+# template <typename CharT> class encoding {
+# public:
+#
+#     typedef encoding_category<CharT> category;
+#
+#     encoding(const encoding&);
+#     encoding& operator=(const encoding&);
+#     bool operator==(const encoding&);
+# };
+#
+# } // namespace stringify
+# } // namespace boost
+#
+# ```
+# The library currently provides the following encodings:
+# ```
+# namespace boost {
+# namespace stringify {
+#
+# encoding<char> ascii();
+#
+# encoding<char> iso_8859_1();
+#
+# encoding<char> iso_8859_15();
+#
+# encoding<char> windows_1252();
+#
+# encoding<char> utf8();
+#
+# encoding<char> mtf8();
+#
+# template <typename CharT> encoding<CharT> utf16();
+#
+# template <typename CharT> encoding<CharT> utf32();
+#
+# encoding<wchar_t> utfw();
+#
+# } // namespace stringify
+# } // namespace boost
+# ```
+#
+]
+
+The class `encoding<`[~CharT]`>` is a facet that specify the encoding associated to character type [~CharT].
+
+[mutf8_sample]
+
+Instead of using as a facet, you can apply an encoding to a single argument:
+
+[arg_encoding]
+
+Or, using the abbreviated form:
+
+[arg_encoding_abbreviated]
+
+[h1 Sanitization]
+
+Unless you specify otherwise, an input string is assumed to strictly conform its corresponding encoding. For instance, if the output is in UTF-8 and an input string is specified as ASCII, then no conversion happens, since a strict ASCII string is also in UTF-8. Then, if there is any character greater than `0x79`, then you get an invalid UTF-8 output:
+
+[not_sanitized_inputs]
+
+In the sample above you can see that, differently from the others, the string in ISO 8859-1 has been sanitized ( by replacing the invalid character by the \ufffd character (U+FFFD)). This may happen sometimes as a side effect of the conversion from one encoding to another, but you can not be sure it will. Depending on the encodings involved only a partial sanitization happens ( if any ). In order to ensure a complete sanitization, you shall use the `sani` function:
+
+[sanitized_inputs]
+
+[h1:encoding_error Error handling customization]
+
+When an input string is sanitized as well as during encoding conversion, failures may happen. The input string may contain invalid sequences or the output encoding may not support certain code-points. The default error handling is to replace the invalid or unsupported sequence by the [@ https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character replacement character \ufffd (U+FFFD)] or, if it is not supported by the output encoding, by the question mark `'?'`.
+
+However, you can choose an alternative behavior with the `encoding_error` facet. The way you construct it determines what is done regarding the invalid or unsupported input sequence:
+
+[variablelist
+
+[
+[Skip / ignore it]
+[When `encoding_error` is default constructed]
+[[error_signal_skip]]
+]
+
+[
+[Replace it by some Unicode character]
+[When `encoding_error` is constructed with a `wchar_t`. If the the output encoding does not support the provided character, then the character `'?'` is used instead.]
+[[error_signal_char]]
+]
+
+
+[
+[Emit an error code]
+[When `encoding_error` is constructed with and `std::error_code`]
+[[error_signal_code]]
+]
+
+[
+[Throw an exception]
+[When `encoding_error` is constructed with a pointer to function that throws]
+[[error_signal_throw]]
+]
+]
+
+[h1:keep_surrogates The `keep_surrogates` facet]
+
+You may have noticed that there is no support for the [@https://en.wikipedia.org/wiki/UTF-8#WTF-8 WTF-8] encoding. WTF-8 is variant of UTF-8 where surrogates code points are allowed. If WTF-8 were supported, then we would also need an analogous equivalent of UTF-16 and UTF-32. So instead, the `keep_surrogates` facet was created to specify whether the surrogates are allowed or not in whatever encoding is used. In UTF-16 this means to allow unpaired surrogates (high surrogate not followed by a low surrogate, or a low surrogate not proceeded by a high surrogate). In ASCII and ASCII extensions this facets has no effect.
+
+The default `keep_surrogates` facet object is `true`.
+
+[keep_surrogates]
+
+[h1 How to add support to other encodings /(to-do)/]
 
 [endsect]

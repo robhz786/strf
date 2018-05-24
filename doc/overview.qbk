@@ -32,8 +32,8 @@ Boost.Stringify is a locale-independent format library with some unique features
 * It's UTF-8 and UTF-16 friendly:
     * Support for all character types ( `char`, `wchar_t`, `char32_t` and `char16_t`)
     * You can customize [link facet_width_calculation.width_calculation how the width is calculated], choosing more accurate methods than just assuming that width equals to length.
-    * The [link format_functions fill] and [link numpunct punctuation] characters are `char32_t`, which gives you options beyond the ASCII table ( when the destination character type is `char` )
-    * It provides an easy to convert one encoding to another ( and you can customize how such conversions are done ):  [input_output_different_char_types]
+    * The [link format_functions fill] and [link numpunct punctuation] characters are `char32_t`, which gives you options beyond the ASCII table when the destination character type is `char`.
+    * It provides an way easy to convert one encoding to another ( see section [link encoding_conversion.encoding_conversion Encoding conversion] )
 
 [h4 Cons]
 

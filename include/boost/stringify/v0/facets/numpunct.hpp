@@ -341,6 +341,8 @@ private:
 
 template <int Base> struct numpunct_category
 {
+    static constexpr bool constrainable = true;
+
     constexpr static int base = Base;
 
     static const stringify::v0::monotonic_grouping<base>& get_default()

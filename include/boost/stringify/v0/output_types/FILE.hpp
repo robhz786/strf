@@ -19,8 +19,13 @@ public:
 
     using char_type = CharT;
 
-    buffered_writer(stringify::v0::output_writer_init<CharT> init)
+    buffered_writer
+        ( stringify::v0::output_writer_init<CharT> init
+        , CharT* buffer
+        , std::size_t buffer_size )
         : stringify::v0::output_writer<CharT>(init)
+        , m_buff(buffer)
+        , m_buff_size(buffer_size)
     {
     }
 
@@ -55,7 +60,19 @@ public:
                 m_it = src.get(m_it, m_end);
             }
             while(src.more() && do_flush());
-            m_good = src.success();
+            if( ! m_good)
+            {
+                // set_error has been called. Force flush
+                if(m_it != m_buff)
+                {
+                    do_put(m_buff, m_it - m_buff);
+                    m_it = m_buff;
+                }
+            }
+            else
+            {
+                m_good = src.success();
+            }
         }
         return m_good;
     }
@@ -140,8 +157,6 @@ public:
         m_it = m_buff;
     }
 
-    constexpr static std::size_t m_buff_size = 60;
-
 protected:
 
     virtual bool do_put(const CharT* str, std::size_t count) = 0;
@@ -160,7 +175,8 @@ private:
     }
 
     std::error_code m_err;
-    char_type m_buff[m_buff_size];
+    char_type* m_buff;
+    std::size_t m_buff_size;
     char_type* m_it = m_buff;
     char_type* const m_end = m_buff + m_buff_size;
     std::size_t m_count = 0;
@@ -183,6 +199,12 @@ template <typename CharT>
 class narrow_file_writer final: public stringify::v0::buffered_writer<CharT>
 {
 public:
+    constexpr static std::size_t buff_size = 60;
+
+private:
+    CharT buff[buff_size];
+
+public:
 
     using char_type = CharT;
 
@@ -191,7 +213,7 @@ public:
         , std::FILE* file
         , std::size_t* count
         )
-        : stringify::v0::buffered_writer<CharT>{init}
+        : stringify::v0::buffered_writer<CharT>{init, buff, buff_size}
         , m_file(file)
         , m_count(count)
     {
@@ -234,6 +256,9 @@ protected:
 
 class wide_file_writer final: public stringify::v0::buffered_writer<wchar_t>
 {
+    constexpr static std::size_t buff_size = 60;
+    wchar_t buff[buff_size];
+
 public:
 
     using char_type = wchar_t;
@@ -270,7 +295,7 @@ BOOST_STRINGIFY_INLINE wide_file_writer::wide_file_writer
     , std::FILE* file
     , std::size_t* count
     )
-    : stringify::v0::buffered_writer<wchar_t>{init}
+    : stringify::v0::buffered_writer<wchar_t>{init, buff, buff_size}
     , m_file(file)
     , m_count(count)
 {

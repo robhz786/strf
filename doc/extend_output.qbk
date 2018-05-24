@@ -4,7 +4,7 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[section:extend_output How to add support to a new destination type (todo)]
+[section:extend_output How to add support to a new destination type]
 
 
 Suppose you have a type `foobar` and you want to create a function named `format` that takes a `foobar&` as a parameter and can be used just like the [link output_types.output_types other functions]
@@ -140,7 +140,7 @@ class buffered_writer: public output_writer<CharT>
 {
 public:
 
-    buffered_writer(output_writer_init<CharT>);
+    buffered_writer(output_writer_init<CharT>, CharT* buffer, std::size_t buffer_size);
 
     virtual ~buffered_writer();
 
@@ -167,6 +167,8 @@ protected:
 
 }}} // namespace boost::stringify::v0
 ``
+The buffer that is passed in the constructor shall be written and readen by `buffered_writer` class template only. The subclass shall not directly access it. The `do_put` function is called by `flush()`, and the argument `str` will be aways in range \[`buffer, buffer + buffer_size`), and `str + count` in \[`buffer, buffer + buffer_size`\];
+
 You may be wondering, why the comment says that `flush()` or `discard()` shall be called in the destructor? You know the buffer should be empty at such time, since `finish_error_code()` or `finish_exception()` must have been called. But not if an exception has been thrown. So you shall decide wheter the remaining content in the buffer should be flushed or discarded in this case.
 
 [h3 Examples]

@@ -66,14 +66,14 @@ public:
         m_sani = s;
         return static_cast<child_type&&>(*this);
     }
-    constexpr child_type& encoding(stringify::v0::encoding_id<CharIn> eid) &
+    constexpr child_type& encoding(stringify::v0::encoding<CharIn> eid) &
     {
         m_encoding_info = *eid.info();
         return *this;
     }
-    constexpr child_type&& encoding(stringify::v0::encoding_id<CharIn> eid) &&
+    constexpr child_type&& encoding(stringify::v0::encoding<CharIn> eid) &&
     {
-        m_encoding_info = *eid.info();
+        m_encoding_info = & eid.info();
         return static_cast<child_type&&>(*this);
     }
     constexpr bool get_sani() const
@@ -84,7 +84,7 @@ public:
     {
         return  m_encoding_info != nullptr;
     }
-    stringify::v0::encoding_id<CharIn> encoding() const
+    stringify::v0::encoding<CharIn> encoding() const
     {
         BOOST_ASSERT(has_encoding());
         return *m_encoding_info;
@@ -196,7 +196,7 @@ public:
             ( out
             , str
             , str + len
-            , get_facet<stringify::v0::input_encoding_category<CharIn>>(ft)
+            , get_facet<stringify::v0::encoding_category<CharIn>>(ft)
             , get_facet<stringify::v0::width_calculator_category>(ft)
             )
     {
@@ -206,12 +206,12 @@ public:
         ( stringify::v0::output_writer<CharOut>& out
         , const CharIn* begin
         , const CharIn* end
-        , const stringify::v0::input_encoding<CharIn> input_enc
-          , const stringify::v0::width_calculator& wcalc
+        , const stringify::v0::encoding<CharIn>& input_enc
+        , const stringify::v0::width_calculator& wcalc
         ) noexcept
         : m_begin(begin)
         , m_end(end)
-        , m_sw(out, input_enc.id, false)
+        , m_sw(out, input_enc, false)
         , m_decoder(input_enc.decoder())
         , m_wcalc(wcalc)
     {
@@ -264,7 +264,75 @@ int simple_string_printer<CharIn, CharOut>::remaining_width(int w) const
         , m_sw.keep_surrogates() );
 }
 
+template <typename CharT>
+class simple_string_printer<CharT, CharT>: public stringify::v0::printer<CharT>
+{
+    using CharIn = CharT;
+    using CharOut = CharT;
+    using input_tag = stringify::v0::string_input_tag<CharIn>;
+    using writer_type = stringify::v0::output_writer<CharOut>;
 
+public:
+
+    template <typename FTuple>
+    simple_string_printer
+        ( stringify::v0::output_writer<CharOut>& out
+        , const FTuple& ft
+        , const CharIn* str
+        , std::size_t len
+        ) noexcept
+        : m_out(out)
+        , m_str(str)
+        , m_len(len)
+        , m_wcalc(get_facet<stringify::v0::width_calculator_category>(ft))
+    {
+    }
+
+    ~simple_string_printer() = default;
+
+    std::size_t length() const override;
+
+    void write() const override;
+
+    int remaining_width(int w) const override;
+
+private:
+
+    stringify::v0::output_writer<CharOut>& m_out;
+    const CharIn* m_str;
+    const std::size_t m_len;
+    const stringify::v0::width_calculator m_wcalc;
+
+    template <typename Category, typename FTuple>
+    const auto& get_facet(const FTuple& ft) const
+    {
+        return ft.template get_facet<Category, input_tag>();
+    }
+};
+
+template<typename CharT>
+std::size_t simple_string_printer<CharT, CharT>::length() const
+{
+    return m_len;
+}
+
+template<typename CharT>
+void simple_string_printer<CharT, CharT>::write() const
+{
+    m_out.put(m_str, m_len);
+}
+
+template<typename CharT>
+int simple_string_printer<CharT, CharT>::remaining_width(int w) const
+{
+    return m_wcalc.remaining_width
+        ( w
+        , m_str
+        , m_str + m_len
+        , m_out.encoding().decoder()
+        , m_out.on_error()
+        , m_out.keep_surrogates() );
+}
 
 template<typename CharIn, typename CharOut>
 class string_printer: public printer<CharOut>
@@ -285,7 +353,7 @@ public:
         : string_printer
             ( out
             , input
-            , get_facet<stringify::v0::input_encoding_category<CharIn>>(ft)
+            , get_facet<stringify::v0::encoding_category<CharIn>>(ft)
             , get_facet<stringify::v0::width_calculator_category>(ft)
             )
     {
@@ -294,7 +362,7 @@ public:
     string_printer
         ( stringify::v0::output_writer<CharOut>& out
         , const stringify::v0::string_with_formatting<CharIn>& input
-        , const stringify::v0::input_encoding<CharIn> input_enc
+        , const stringify::v0::encoding<CharIn> input_enc
         , const stringify::v0::width_calculator& wcalc
         ) noexcept;
 
@@ -335,13 +403,13 @@ template<typename CharIn, typename CharOut>
 string_printer<CharIn, CharOut>::string_printer
     ( stringify::v0::output_writer<CharOut>& out
     , const stringify::v0::string_with_formatting<CharIn>& input
-    , const stringify::v0::input_encoding<CharIn> input_enc
+    , const stringify::v0::encoding<CharIn> input_enc
     , const stringify::v0::width_calculator& wcalc
     ) noexcept
     : m_fmt(input)
     , m_sw
         ( out
-        , input.has_encoding() ? input.encoding() : input_enc.id
+        , input.has_encoding() ? input.encoding() : input_enc
         , input.get_sani() )
     , m_decoder(input_enc.decoder())
     , m_wcalc(wcalc)

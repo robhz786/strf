@@ -2,14 +2,6 @@
 #include <boost/stringify.hpp>
 #include "test_utils.hpp"
 
-#define TEST(EXPECTED) make_tester((EXPECTED), __FILE__, __LINE__)
-
-#define TEST_RF(EXPECTED, RF) make_tester((EXPECTED), __FILE__, __LINE__, RF)
-
-#define TEST_ERR(EXPECTED, ERR) make_tester((EXPECTED), __FILE__, __LINE__, ERR)
-
-#define TEST_ERR_RF(EXPECTED, ERR, RF) make_tester((EXPECTED), __FILE__, __LINE__, ERR, RF)
-
 namespace strf = boost::stringify::v0;
 
 int main()

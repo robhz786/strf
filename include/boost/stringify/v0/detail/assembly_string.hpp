@@ -58,7 +58,7 @@ public:
         , m_args(args)
         , m_sw
             ( dest
-            , get_facet<stringify::v0::input_encoding_category<CharIn>>(ft).id
+            , get_facet<stringify::v0::encoding_category<CharIn>>(ft)
             , sanitise )
     {
     }
@@ -117,7 +117,7 @@ public:
         : m_args(args)
         , m_sw
             ( dest
-            , get_facet<stringify::v0::input_encoding_category<CharIn>>(ft).id
+            , get_facet<stringify::v0::encoding_category<CharIn>>(ft)
             , sanitise )
     {
     }

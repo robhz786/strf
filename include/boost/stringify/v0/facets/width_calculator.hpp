@@ -41,9 +41,9 @@ public:
     {
     }
 
-    bool put32(char32_t ch) override;
+    stringify::v0::cv_result put32(char32_t ch) override;
 
-    bool signal_error() override;
+    bool signalize_error() override;
 
     int get_remaining_width() const
     {
@@ -72,7 +72,7 @@ class width_calculator
 
 public:
 
-    typedef stringify::v0::width_calculator_category category;
+    using category = stringify::v0::width_calculator_category;
 
     explicit width_calculator
     ( const stringify::v0::width_calculation_type calc_type
@@ -122,7 +122,7 @@ public:
         else
         {
             detail::width_decrementer decrementer{width, *m_ch_wcalc, err_sig};
-            conv.decode(decrementer, begin, end, keep_surrogates);
+            (void) conv.decode(decrementer, begin, end, keep_surrogates);
             return decrementer.get_remaining_width();
         }
     }
@@ -146,6 +146,8 @@ private:
 
 struct width_calculator_category
 {
+    static constexpr bool constrainable = true;
+
     static const stringify::v0::width_calculator& get_default()
     {
         static stringify::v0::width_calculator x {nullptr};
@@ -202,17 +204,19 @@ int width_calculator::remaining_width<wchar_t>
 
 namespace detail {
 
-BOOST_STRINGIFY_INLINE bool width_decrementer::put32(char32_t ch)
+BOOST_STRINGIFY_INLINE stringify::v0::cv_result width_decrementer::put32(char32_t ch)
 {
     m_width -= m_wcalc(ch);
-    return m_width > 0;
+    return m_width > 0
+        ? stringify::v0::cv_result::success
+        : stringify::v0::cv_result::insufficient_space;
 }
 
-BOOST_STRINGIFY_INLINE bool width_decrementer::signal_error()
+BOOST_STRINGIFY_INLINE bool width_decrementer::signalize_error()
 {
     if (m_err_sig.has_char())
     {
-        return put32(m_err_sig.get_char());
+        return put32(m_err_sig.get_char()) == stringify::v0::cv_result::success;
     }
     return true; 
 }

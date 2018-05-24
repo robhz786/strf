@@ -282,7 +282,7 @@ int main()
     exception_thrown_test__wide();
 
 
-    const std::size_t buff_size = strf::detail::narrow_file_writer<char>::m_buff_size;
+    const std::size_t buff_size = strf::detail::narrow_file_writer<char>::buff_size;
     BOOST_ASSERT(buff_size <= (INT_MAX));
     const int buff_size_int = static_cast<int>(buff_size);
 

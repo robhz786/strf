@@ -252,7 +252,7 @@ public:
             && (m_has_value || assume_error() == other.assume_error());
     }
 
-    constexpr operator bool() const
+    constexpr explicit operator bool() const
     {
         return m_has_value;
     }
@@ -527,7 +527,7 @@ public:
         }
     }
 
-    constexpr operator bool() const
+    constexpr explicit operator bool() const
     {
         return has_value();
     }

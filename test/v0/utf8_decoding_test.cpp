@@ -6,9 +6,6 @@
 #include <boost/stringify.hpp>
 #include "test_utils.hpp"
 
-#define TEST(EXPECTED) make_tester((EXPECTED), __FILE__, __LINE__)
-#define TEST_ERR(EXPECTED, ERR) make_tester((EXPECTED), __FILE__, __LINE__, ERR)
-
 namespace strf = boost::stringify::v0;
 
 bool put_X(strf::u32output& rec)

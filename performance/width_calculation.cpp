@@ -29,29 +29,29 @@ int main()
 
     (void)strf::format(stdout)("UTF-8:\n");
     
-    PRINT_BENCHMARK("format(u8dest) .facets(strf::width_as_codepoints_count())(\"aaaaa\", strf::right(u8\"bbb\\03B1\\03B2\", 10))")
+    PRINT_BENCHMARK("format(u8dest) .facets(strf::width_as_codepoints_count()) (\"aaaaa\", strf::right(u8\"bbb\\03B1\\03B2\", 10))")
     {
         (void)strf::format(u8dest)
             .facets(strf::width_as_codepoints_count())
             ("aaaaa", strf::right(u8"bbb\03B1\03B2", 10));
     }
-    PRINT_BENCHMARK("format(u8dest)(\"aaaaa\", strf::right(u8\"bbb\\03B1\\03B2\", 10))")
+    PRINT_BENCHMARK("format(u8dest) (\"aaaaa\", strf::right(u8\"bbb\\03B1\\03B2\", 10))")
     {
         (void)strf::format(u8dest)("aaa", strf::right(u8"bbb\03B1\03B2", 10));
     }
-    PRINT_BENCHMARK("format(u8dest) .facets(strf::width_as_codepoints_count())(strf::right(u8str_50, 60))")
+    PRINT_BENCHMARK("format(u8dest) .facets(strf::width_as_codepoints_count()) (strf::right(u8str_50, 60))")
     {
         (void)strf::format(u8dest).facets(strf::width_as_codepoints_count())
            (strf::right("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 60));
     }
-    PRINT_BENCHMARK("format(u8dest) ={strf::right(u8str_50, 60)}")
+    PRINT_BENCHMARK("format(u8dest) (strf::right(u8str_50, 60))")
     {
         (void)strf::format(u8dest)(strf::right("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 60));
     }
 
     (void)strf::format(stdout)("\nUTF-8:\n");
     
-    PRINT_BENCHMARK("format(u16dest) .facets(strf::width_as_codepoints_count())(u\"aaaaa\", strf::right(u\"bbb\\03B1\\03B2\", 10))")
+    PRINT_BENCHMARK("format(u16dest) .facets(strf::width_as_codepoints_count()) (u\"aaaaa\", strf::right(u\"bbb\\03B1\\03B2\", 10))")
     {
         (void)strf::format(u16dest).facets(strf::width_as_codepoints_count())
            (u"aaaaa", strf::right(u"bbb\03B1\03B2", 10));
@@ -61,12 +61,12 @@ int main()
     {
         (void)strf::format(u16dest)(u"aaaaa", strf::right(u"bbb\03B1\03B2", 10));
     }
-    PRINT_BENCHMARK("format(u16dest) .facets(strf::width_as_codepoints_count())(strf::right(u16str_50, 60))")
+    PRINT_BENCHMARK("format(u16dest) .facets(strf::width_as_codepoints_count()) (strf::right(u16str_50, 60))")
     {
         (void)strf::format(u16dest).facets(strf::width_as_codepoints_count())
             (strf::right(u"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 60));
     }
-    PRINT_BENCHMARK("format(u16dest) ={strf::right(u16str_50, 60)}")
+    PRINT_BENCHMARK("format(u16dest) (strf::right(u16str_50, 60))")
     {
         (void)strf::format(u16dest)
             (strf::right(u"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 60));

@@ -2,7 +2,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-//[ width_calculation_in_encoding_convertion_sample
+//[ width_calculation_in_encoding_conversion_sample
 
 #include <boost/stringify.hpp>
 #include <boost/assert.hpp>

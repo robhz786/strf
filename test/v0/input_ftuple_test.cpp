@@ -34,6 +34,41 @@ int main()
             )
         );
 
+    static_assert
+        ( strf::detail::all_are_constrainable<>::value
+        , "all_are_constrainable ill implemented");
+
+    static_assert
+        ( strf::detail::all_are_constrainable
+          < strf::width_calculator
+          , strf::numpunct<10> >
+          :: value
+        , "these facets should be constrainble");
+
+    static_assert
+        ( ! strf::detail::all_are_constrainable
+          < strf::encoding<char>
+          , strf::width_calculator
+          , strf::numpunct<10> >
+          :: value
+        , "keep_surrogates shall not be constrainble");
+
+    static_assert
+        ( ! strf::detail::all_are_constrainable
+          < strf::width_calculator
+          , strf::keep_surrogates
+          , strf::numpunct<10> >
+          :: value
+        , "keep_surrogates shall not be constrainble");
+
+    static_assert
+        ( ! strf::detail::all_are_constrainable
+          < strf::width_calculator
+          , strf::numpunct<10>
+          , strf::encoding_error >
+          :: value
+        , "encoding_error shall not be constrainble");
+
     int rc = report_errors() || boost::report_errors();
     return rc;
 }

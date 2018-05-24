@@ -138,7 +138,7 @@ private:
     template <typename FTuple>
     static const auto& get_out_encoding(const FTuple& ft)
     {
-        using category = stringify::v0::output_encoding_category<CharT>;
+        using category = stringify::v0::encoding_category<CharT>;
         return ft.template get_facet<category, input_type>();
     }
 
@@ -308,7 +308,7 @@ private:
     template <typename FTuple>
     static const auto& get_out_encoding(const FTuple& ft)
     {
-        using category = stringify::v0::output_encoding_category<CharT>;
+        using category = stringify::v0::encoding_category<CharT>;
         return ft.template get_facet<category, input_type>();
     }
 

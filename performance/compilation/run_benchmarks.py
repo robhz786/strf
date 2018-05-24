@@ -12,13 +12,15 @@ if not cxx or not os.path.isfile(cxx) :
     quit(1)
 
 pwd = os.path.dirname(os.path.realpath(__file__))
+tmp_dir = pwd + "/tmp"
 boost_incl = "-I" + os.path.normpath(pwd + "/../../../../")
 fmt_incl = "-I" + os.path.normpath(pwd + "/../fmt-4.0.0")
 stringify_cpp = os.path.normpath(pwd + "/../../build/stringify.cpp")
-lib_boost_stringify_release = "tmp/boost_stringify.a"
-lib_boost_stringify_debug = "tmp/boost_stringify.g"
+lib_boost_stringify_release = tmp_dir + "/boost_stringify.a"
+lib_boost_stringify_debug = tmp_dir + "/boost_stringify.g"
 libfmt_release = "libfmt.a"
 libfmt_debug  = "libfmt.g"
+
 
 files_per_program = [1, 21, 41]
 
@@ -136,7 +138,7 @@ def compile_unit_cmd(release, flags, basename, obj_id) :
 
 def obj_filename(release, basename, obj_id) :
     ext = ".rel.o" if release else ".debug.o"
-    return "tmp/" + basename + "." + obj_id + ext
+    return tmp_dir + "/" + basename + "." + obj_id + ext
 
 def build_programs(release, main_src, basename, libs, num_objs_list) :
     programs_size = []
@@ -157,8 +159,8 @@ def build_program(release, main_src, basename, libs, num_objs) :
 
 
 def write_auxiliary_src_files(num_objs) :
-    header_file = open('tmp/functions_declations.hpp', 'w')
-    sub_cpp_file = open('tmp/functions_calls.cpp', 'w')
+    header_file = open(tmp_dir + '/functions_declations.hpp', 'w')
+    sub_cpp_file = open(tmp_dir + '/functions_calls.cpp', 'w')
     for i in range(num_objs) :
         header_file.write('void function' + str(i) + "(output_type);\n")
         sub_cpp_file.write('function' + str(i) + "(destination);\n")
@@ -176,7 +178,7 @@ def build_program_command(release, main_src, basename, num_objs, libs) :
     return cmd
 
 def program_name(basename, num_objs):
-    return "tmp/" + basename + '.' + str(num_objs) + '.exe'
+    return tmp_dir + "/" + basename + '.' + str(num_objs) + '.exe'
               
 def obj_files(release, basename, num_objs):
     filenames = []
@@ -195,8 +197,8 @@ def build_lib_stringify(flag, libname):
 
 only_boost_stringify = False
 
-shutil.rmtree('tmp/', ignore_errors=True)
-os.makedirs('tmp/')
+shutil.rmtree(tmp_dir, ignore_errors=True)
+os.makedirs(tmp_dir)
 
 build_lib_stringify('-O3', lib_boost_stringify_release)
 build_lib_stringify('-g', lib_boost_stringify_debug)
@@ -431,4 +433,4 @@ if not only_boost_stringify :
                     libs     = [])
 print(']\n')
 
-print('Remark: many temporary files saved in ./tmp/. You may want to delete them.')
+shutil.rmtree(tmp_dir, ignore_errors=True)

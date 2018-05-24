@@ -15,7 +15,7 @@ int main()
 {
     namespace strf = boost::stringify;
 
-    PRINT_BENCHMARK("strf::make_string.no_reserve()(\"Hello \", \"World\", \"!\")")
+    PRINT_BENCHMARK("strf::make_string .no_reserve() (\"Hello \", \"World\", \"!\")")
     {
         (void)strf::make_string.no_reserve()("Hello ", "World", "!");
     }
@@ -30,11 +30,11 @@ int main()
     {
         (void)strf::make_string(25);
     }
-    PRINT_BENCHMARK("strf::make_string.reserve(2)(25)")
+    PRINT_BENCHMARK("strf::make_string .reserve(2) (25)")
     {
         (void)strf::make_string.reserve(2)(25);
     }
-    PRINT_BENCHMARK("strf::make_string.no_reserve()(25)")
+    PRINT_BENCHMARK("strf::make_string .no_reserve() (25)")
     {
         auto x = strf::make_string.no_reserve()(25);
     }
@@ -49,15 +49,15 @@ int main()
 
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::make_string(LLONG_MAX)")
+    PRINT_BENCHMARK("strf::make_string (LLONG_MAX)")
     {
         (void)strf::make_string(LLONG_MAX);
     }
-    PRINT_BENCHMARK("strf::make_string.no_reserve()(LLONG_MAX)")
+    PRINT_BENCHMARK("strf::make_string .no_reserve() (LLONG_MAX)")
     {
         (void)strf::make_string.no_reserve()(LLONG_MAX);
     }
-    PRINT_BENCHMARK("strf::make_string.reserve(100)(LLONG_MAX)")
+    PRINT_BENCHMARK("strf::make_string .reserve(100) (LLONG_MAX)")
     {
         (void)strf::make_string.reserve(100)(LLONG_MAX);
     }
@@ -76,7 +76,7 @@ int main()
     {
         (void)strf::make_string(strf::right("aa", 20));
     }
-    PRINT_BENCHMARK("strf::make_string.reseve(20)(strf::right(\"aa\", 20))")
+    PRINT_BENCHMARK("strf::make_string .reseve(20) (strf::right(\"aa\", 20))")
     {
         (void)strf::make_string.reserve(20)(strf::right("aa", 20));
     }
@@ -88,20 +88,20 @@ int main()
     
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::make_string.no_reserve()(\"ten = \", 10, \"twenty = \", 20)")
+    PRINT_BENCHMARK("strf::make_string .no_reserve() (\"ten = \", 10, \"twenty = \", 20)")
     {
         (void)strf::make_string.no_reserve()("ten = ", 10, "twenty = ", 20);
     }
     
-    PRINT_BENCHMARK("strf::make_string .as(\"ten = {}, twenty = {}\")(10, 20)")
+    PRINT_BENCHMARK("strf::make_string .as(\"ten = {}, twenty = {}\") (10, 20)")
     {
         (void)strf::make_string.as("ten = {}, twenty = {}")(10, 20);
     }
-    PRINT_BENCHMARK("strf::make_string .as(\"ten = {}, twenty = {}\")(10, 20)")
+    PRINT_BENCHMARK("strf::make_string .as(\"ten = {}, twenty = {}\") (10, 20)")
     {
         (void)strf::make_string.as("ten = {}, twenty = {}")(10, 20);
     }
-    PRINT_BENCHMARK("strf::make_string .reserve(30) .as(\"ten = {}, twenty = {}\")(10, 20)")
+    PRINT_BENCHMARK("strf::make_string .reserve(30) .as(\"ten = {}, twenty = {}\") (10, 20)")
     {
         (void)strf::make_string.as("ten = {}, twenty = {}")(10, 20);
     }
@@ -158,7 +158,7 @@ int main()
         {
             (void)strf::make_u16string(u8sample1);
         }
-        PRINT_BENCHMARK("strf::make_u16string.reserve(510) (u8sample1)")
+        PRINT_BENCHMARK("strf::make_u16string .reserve(510) (u8sample1)")
         {
             (void)strf::make_u16string.reserve(510)(u8sample1);
         }
