@@ -250,7 +250,7 @@ class std_streambuf_writer<wchar_t, std::char_traits<wchar_t>>;
 
 
 template<typename CharT, typename Traits = std::char_traits<CharT> >
-auto format
+auto write
     ( std::basic_streambuf<CharT, Traits>& dest
     , std::size_t* count = nullptr
     )
@@ -262,7 +262,7 @@ auto format
 
 
 template<typename CharT, typename Traits = std::char_traits<CharT> >
-auto format
+auto write
     ( std::basic_streambuf<CharT, Traits>* dest
     , std::size_t* count = nullptr
     )

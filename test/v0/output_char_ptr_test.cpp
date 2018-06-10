@@ -20,7 +20,7 @@ void basic_test()
     std::basic_string<CharT> expected;
 
     auto x = use_all_writing_function_of_output_writer
-        ( strf::format(result)
+        ( strf::write(result)
         , expected );
 
     BOOST_TEST(x);
@@ -33,7 +33,7 @@ template <typename CharT>
 void test_array_too_small()
 {
     CharT buff[3] = { 'a', 'a', 0 };
-    auto x = strf::format(buff) ( 1234567 );
+    auto x = strf::write(buff) ( 1234567 );
 
     BOOST_TEST(buff[0] == 0);
     BOOST_TEST(!x);
@@ -44,7 +44,7 @@ template <typename CharT>
 void test_informed_size_too_small()
 {
     CharT buff[100] = { 'a', 'a', 0 };
-    auto x = strf::format(buff, 3) ( 1234567 );
+    auto x = strf::write(buff, 3) ( 1234567 );
 
     BOOST_TEST(buff[0] == 0);
     BOOST_TEST(! x);
@@ -55,7 +55,7 @@ template <typename CharT>
 void test_informed_end_too_close()
 {
     CharT buff[100] = { 'a', 'a', 0 };
-    auto x = strf::format(buff, &buff[3]) ( 1234567 );
+    auto x = strf::write(buff, &buff[3]) ( 1234567 );
 
     BOOST_TEST(buff[0] == 0);
     BOOST_TEST(! x);
@@ -75,7 +75,7 @@ int main()
         
         char16_t result[200] = u"-----------------------------";
 
-        auto x = strf::format(result)
+        auto x = strf::write(result)
             (u"abcd", error_code_emitter_arg, u"lkjlj");
 
         BOOST_TEST(result[0] == u'\0');
@@ -88,7 +88,7 @@ int main()
         char16_t result[200] = u"-----------------------------";
         try
         {
-            (void) strf::format(result) (u"abcd", exception_thrower_arg, u"lkjlj");
+            (void) strf::write(result) (u"abcd", exception_thrower_arg, u"lkjlj");
         }
         catch(...)
         {
@@ -116,7 +116,7 @@ int main()
 
         char16_t result[200] = u"--------------------------------------------------";
 
-        auto x = strf::format(result, 3) ( u"abc" );
+        auto x = strf::write(result, 3) ( u"abc" );
 
         BOOST_TEST(result[0] == u'\0');
         BOOST_TEST(! x);    
@@ -127,7 +127,7 @@ int main()
 
         char16_t result[200] = u"--------------------------------------------------";
 
-        auto x = strf::format(result, 3) ( u'a', u'b', u'c' );
+        auto x = strf::write(result, 3) ( u'a', u'b', u'c' );
 
         BOOST_TEST(result[0] == u'\0');
         BOOST_TEST(! x);
@@ -138,7 +138,7 @@ int main()
    {   // When overflow happens in char_ptr_writer::put(ch, count)
 
        char result[200] = "--------------------------------------------------";
-       auto x = strf::format(result, 2) (strf::multi('x', 10));
+       auto x = strf::write(result, 2) (strf::multi('x', 10));
        BOOST_TEST(result[0] == '\0');
        BOOST_TEST(! x);
        BOOST_TEST(x.error() == std::errc::result_out_of_range);
@@ -146,7 +146,7 @@ int main()
    // {   // When overflow happens in char_ptr_writer::put(ch, ch, count)
 
    //     char result[3] = "";
-   //     auto x = strf::format(result, 3)
+   //     auto x = strf::write(result, 3)
    //         (strf::multi(U'\u0080', 2));
 
    //     BOOST_TEST(result[0] == '\0');
@@ -156,7 +156,7 @@ int main()
    // {   // When overflow happens in char_ptr_writer::put(ch, ch, ch, count)
 
    //     char result[200] = "--------------------------------------------------";
-   //     auto x = strf::format(result, 5)
+   //     auto x = strf::write(result, 5)
    //         (strf::multi(U'\u0800', 2));
 
    //     BOOST_TEST(result[0] == '\0');
@@ -166,7 +166,7 @@ int main()
    // {   // When overflow happens in char_ptr_writer::put(ch, ch, ch, ch, count)
 
    //     char result[200] = "--------------------------------------------------";
-   //     auto x = strf::format(result, 7)
+   //     auto x = strf::write(result, 7)
    //         (strf::multi(U'\U00010000', 2));
 
    //     BOOST_TEST(result[0] == '\0');

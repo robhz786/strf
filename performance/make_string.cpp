@@ -149,9 +149,9 @@ int main()
         {
             (void)strf::make_u16string.no_reserve()(u8sample1);
         }
-        PRINT_BENCHMARK("strf::format(buff) (u8sample1); strf::make_u16string(buff)")
+        PRINT_BENCHMARK("strf::write(buff) (u8sample1); strf::make_u16string(buff)")
         {
-            (void)strf::format(buff)(u8sample1);
+            (void)strf::write(buff)(u8sample1);
             (void)strf::make_u16string(buff);
         }
         PRINT_BENCHMARK("strf::make_u16string (u8sample1)")
@@ -176,9 +176,9 @@ int main()
         {
             (void)strf::make_string.no_reserve()(u16sample1);
         }
-        PRINT_BENCHMARK("strf::format(buff) (u16sample1); strf::make_string(buff)")
+        PRINT_BENCHMARK("strf::write(buff) (u16sample1); strf::make_string(buff)")
         {
-            (void)strf::format(buff)(u16sample1);
+            (void)strf::write(buff)(u16sample1);
             (void)strf::make_string(buff);
         }
         PRINT_BENCHMARK("strf::make_string (u16sample1)")

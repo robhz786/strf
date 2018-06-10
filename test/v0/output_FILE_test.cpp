@@ -85,7 +85,7 @@ void basic_test__narrow()
     {
         file = std::tmpfile();
         x = use_all_writing_function_of_output_writer
-            ( strf::format<CharT>(file, &result_length)
+            ( strf::write<CharT>(file, &result_length)
             , expected );
 
         std::rewind(file);
@@ -122,7 +122,7 @@ void error_code_test__narrow()
     try
     {
         file = std::tmpfile();
-        x = strf::format<CharT>(file, &result_length)
+        x = strf::write<CharT>(file, &result_length)
             (U'a', U'b', U'c', error_code_emitter_arg, U'x', U'y', U'z');
 
         std::rewind(file);
@@ -158,7 +158,7 @@ void exception_thrown_test__narrow()
     {
         try
         {
-            (void) strf::format<CharT>(file, &result_length)
+            (void) strf::write<CharT>(file, &result_length)
                 (U'a', U'b', U'c', exception_thrower_arg, U'x', U'y', U'z');
 
         }
@@ -185,7 +185,7 @@ void basic_test__wide()
     try
     {
         file = std::tmpfile();
-        x = strf::wformat(file, &result_length)
+        x = strf::wwrite(file, &result_length)
             (L"abcd", strf::multi(L'x', 0), strf::multi(L'y', 4), L'z');
         std::rewind(file);
         result = read_wfile(file);
@@ -216,7 +216,7 @@ void error_code_test__wide()
     try
     {
         file = std::tmpfile();
-        x = strf::wformat(file, &result_length)(L"abc", error_code_emitter_arg, L"xyz");
+        x = strf::wwrite(file, &result_length)(L"abc", error_code_emitter_arg, L"xyz");
 
         std::rewind(file);
         result = read_wfile(file);
@@ -245,7 +245,7 @@ void exception_thrown_test__wide()
     {
         try
         {
-            (void)strf::wformat(file, &result_length)
+            (void)strf::wwrite(file, &result_length)
                 (L"abc", exception_thrower_arg, L"xyz");
 
         }
@@ -293,7 +293,7 @@ int main()
 
         {
             FILE* file = std::tmpfile();
-            (void)strf::format(file) ( str, 'a', 'b', 'c', 'd', 'e', 'f');
+            (void)strf::write(file) ( str, 'a', 'b', 'c', 'd', 'e', 'f');
             std::rewind(file);
             result = read_file<char>(file);
         }
@@ -313,7 +313,7 @@ int main()
         std::string result;
         {
             FILE* file = std::tmpfile();
-            (void)strf::format(file) (str_a, str_b, str_c, str_d);
+            (void)strf::write(file) (str_a, str_b, str_c, str_d);
             std::rewind(file);
             result = read_file<char>(file);
         }
@@ -327,7 +327,7 @@ int main()
         std::string result;
         {
             FILE* file = std::tmpfile();
-            (void)strf::format(file) (strf::multi(U'\u0800', buff_size_int * 2));
+            (void)strf::write(file) (strf::multi(U'\u0800', buff_size_int * 2));
             std::rewind(file);
             result = read_file<char>(file);
             std::fclose(file);

@@ -335,13 +335,13 @@ BOOST_STRINGIFY_INLINE bool wide_file_writer::do_put(const wchar_t* str, std::si
 } // namespace detail
 
 template <typename CharT = char>
-inline auto format(std::FILE* destination, std::size_t* count = nullptr)
+inline auto write(std::FILE* destination, std::size_t* count = nullptr)
 {
     using writer = stringify::v0::detail::narrow_file_writer<CharT>;
     return stringify::v0::make_args_handler<writer>(destination, count);
 }
 
-inline auto wformat(std::FILE* destination, std::size_t* count = nullptr)
+inline auto wwrite(std::FILE* destination, std::size_t* count = nullptr)
 {
     using writer = boost::stringify::v0::detail::wide_file_writer;
     return stringify::v0::make_args_handler<writer>(destination, count);

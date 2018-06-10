@@ -30,11 +30,11 @@ int main()
 
     PRINT_BENCHMARK("format(u16dest) (u32sample1)")
     {
-        (void)strf::format(u16dest) (u32sample1);
+        (void)strf::write(u16dest) (u32sample1);
     }
     PRINT_BENCHMARK("format(u16dest) (u32sample4)")
     {
-        (void)strf::format(u16dest) (u32sample4);
+        (void)strf::write(u16dest) (u32sample4);
     }
 
     std::cout << "\nUTF-32 to UTF-8\n";
@@ -45,19 +45,19 @@ int main()
 
     PRINT_BENCHMARK("format(u8dest) (u32sample1)")
     {
-        (void)strf::format(u8dest) (u32sample1);
+        (void)strf::write(u8dest) (u32sample1);
     }
     PRINT_BENCHMARK("format(u8dest) (u32sample2)")
     {
-        (void)strf::format(u8dest) (u32sample2);
+        (void)strf::write(u8dest) (u32sample2);
     }
     PRINT_BENCHMARK("format(u8dest) (u32sample3)")
     {
-        (void)strf::format(u8dest) (u32sample3);
+        (void)strf::write(u8dest) (u32sample3);
     }
     PRINT_BENCHMARK("format(u8dest) (u32sample4)")
     {
-        (void)strf::format(u8dest) (u32sample4);
+        (void)strf::write(u8dest) (u32sample4);
     }
 
 #if ! defined(_MSC_VER)

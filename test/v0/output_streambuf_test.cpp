@@ -22,7 +22,7 @@ void basic_test()
     std::basic_string<CharT> expected;
 
     auto x = use_all_writing_function_of_output_writer
-        ( strf::format(result.rdbuf(), &result_length)
+        ( strf::write(result.rdbuf(), &result_length)
         , expected );
 
     BOOST_TEST(x);
@@ -43,7 +43,7 @@ int main()
         std::basic_string<char> expected;
 
         auto x = use_all_writing_function_of_output_writer
-            ( strf::format(result.rdbuf(), nullptr)
+            ( strf::write(result.rdbuf(), nullptr)
             , expected );
 
         BOOST_TEST(x);
@@ -55,7 +55,7 @@ int main()
         std::ostringstream result;
         std::size_t result_length = 1000;
 
-        auto x = strf::format(result.rdbuf(), &result_length)
+        auto x = strf::write(result.rdbuf(), &result_length)
             ("abcd", error_code_emitter_arg, "lkjlj");
 
         BOOST_TEST(!x);
@@ -71,7 +71,7 @@ int main()
 
         try
         {
-            (void) strf::format(result.rdbuf(), &result_length)
+            (void) strf::write(result.rdbuf(), &result_length)
                 ("abcd", exception_thrower_arg, "lkjlj");
         }
         catch(...)
@@ -87,7 +87,7 @@ int main()
         streambuf_that_fails_on_overflow<10> result;
         std::size_t result_length = 1000;
 
-        auto x = strf::format(result, &result_length)
+        auto x = strf::write(result, &result_length)
             (strf::multi('a', 6), "ABCDEF", 'b');
 
         BOOST_TEST(!x && x.error() == std::errc::io_error);
@@ -100,7 +100,7 @@ int main()
         streambuf_that_fails_on_overflow<10> result;
         std::size_t result_length = 1000;
 
-        auto x = strf::format(result, &result_length)
+        auto x = strf::write(result, &result_length)
             ("ABCDEF", strf::multi('a', 6), "ABCDEF");
 
         BOOST_TEST(!x && x.error() == std::errc::io_error);

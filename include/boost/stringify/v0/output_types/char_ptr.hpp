@@ -223,7 +223,7 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_ptr_writer<wchar_t>;
 
 
 template<std::size_t N>
-auto format(char (&destination)[N])
+auto write(char (&destination)[N])
 {
     using writer = stringify::v0::detail::char_ptr_writer<char>;
     return stringify::v0::make_args_handler<writer, char*>
@@ -231,7 +231,7 @@ auto format(char (&destination)[N])
 }
 
 template<std::size_t N>
-auto format(char16_t (&destination)[N])
+auto write(char16_t (&destination)[N])
 {
     using writer = stringify::v0::detail::char_ptr_writer<char16_t>;
     return stringify::v0::make_args_handler<writer, char16_t*>
@@ -239,7 +239,7 @@ auto format(char16_t (&destination)[N])
 }
 
 template<std::size_t N>
-auto format(char32_t (&destination)[N])
+auto write(char32_t (&destination)[N])
 {
     using writer = stringify::v0::detail::char_ptr_writer<char32_t>;
     return stringify::v0::make_args_handler<writer, char32_t*>
@@ -247,63 +247,63 @@ auto format(char32_t (&destination)[N])
 }
 
 template<std::size_t N>
-auto format(wchar_t (&destination)[N])
+auto write(wchar_t (&destination)[N])
 {
     using writer = stringify::v0::detail::char_ptr_writer<wchar_t>;
     return stringify::v0::make_args_handler<writer, wchar_t*>
         (destination, destination + N);
 }
 
-inline auto  format(char* destination, char* end)
+inline auto write(char* destination, char* end)
 {
     using writer = stringify::v0::detail::char_ptr_writer<char>;
     return stringify::v0::make_args_handler<writer, char*, char*>
         (destination, end);
 }
 
-inline auto format(char16_t* destination, char16_t* end)
+inline auto write(char16_t* destination, char16_t* end)
 {
     using writer = stringify::v0::detail::char_ptr_writer<char16_t>;
     return stringify::v0::make_args_handler<writer, char16_t*, char16_t*>
         (destination, end);
 }
 
-inline auto format(char32_t* destination, char32_t* end)
+inline auto write(char32_t* destination, char32_t* end)
 {
     using writer = stringify::v0::detail::char_ptr_writer<char32_t>;
     return stringify::v0::make_args_handler<writer, char32_t*, char32_t*>
         (destination, end);
 }
 
-inline auto format(wchar_t* destination, wchar_t* end)
+inline auto write(wchar_t* destination, wchar_t* end)
 {
     using writer = stringify::v0::detail::char_ptr_writer<wchar_t>;
     return stringify::v0::make_args_handler<writer, wchar_t*, wchar_t*>
         (destination, end);
 }
 
-inline auto format(char* destination, std::size_t count)
+inline auto write(char* destination, std::size_t count)
 {
     using writer = stringify::v0::detail::char_ptr_writer<char>;
     return stringify::v0::make_args_handler<writer, char*, char*>
         (destination, destination + count);
 }
 
-inline auto format(char16_t* destination, std::size_t count)
+inline auto write(char16_t* destination, std::size_t count)
 {
     using writer = stringify::v0::detail::char_ptr_writer<char16_t>;
     return stringify::v0::make_args_handler<writer, char16_t*, char16_t*>
         (destination, destination + count);
 }
 
-inline auto format(char32_t* destination, std::size_t count)
+inline auto write(char32_t* destination, std::size_t count)
 {
     using writer = stringify::v0::detail::char_ptr_writer<char32_t>;
     return stringify::v0::make_args_handler<writer, char32_t*, char32_t*>
         (destination, destination + count);
 }
 
-inline auto format(wchar_t* destination, std::size_t count)
+inline auto write(wchar_t* destination, std::size_t count)
 {
     using writer = stringify::v0::detail::char_ptr_writer<wchar_t>;
     return stringify::v0::make_args_handler<writer, wchar_t*, wchar_t*>

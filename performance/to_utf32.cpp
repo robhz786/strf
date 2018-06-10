@@ -30,12 +30,12 @@ int main()
 
     PRINT_BENCHMARK("format(u32output)(u16sample1)")
     {
-        auto err = strf::format(u32output)(u16sample1);
+        auto err = strf::write(u32output)(u16sample1);
         (void)err;
     }
     PRINT_BENCHMARK("format(u32output)(u16sample4)")
     {
-        auto err = strf::format(u32output)(u16sample4);
+        auto err = strf::write(u32output)(u16sample4);
         (void)err;
     }
 
@@ -50,22 +50,22 @@ int main()
 
     PRINT_BENCHMARK("format(u32output)(u8sample1)")
     {
-        auto err = strf::format(u32output)(u8sample1);
+        auto err = strf::write(u32output)(u8sample1);
         (void)err;
     }
     PRINT_BENCHMARK("format(u32output)(u8sample2)")
     {
-        auto err = strf::format(u32output)(u8sample2);
+        auto err = strf::write(u32output)(u8sample2);
         (void)err;
     }
     PRINT_BENCHMARK("format(u32output)(u8sample3)")
     {
-        auto err = strf::format(u32output)(u8sample3);
+        auto err = strf::write(u32output)(u8sample3);
         (void)err;
     }
     PRINT_BENCHMARK("format(u32output)(u8sample4)")
     {
-        auto err = strf::format(u32output)(u8sample4);
+        auto err = strf::write(u32output)(u8sample4);
         (void)err;
     }
 
