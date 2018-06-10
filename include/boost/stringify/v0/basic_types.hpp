@@ -15,7 +15,7 @@ template <typename CharIn>  class encoding_info;
 template <typename CharIn, typename CharOut> class transcoder;
 template <typename CharOut> class output_writer;
 template <typename CharOut> struct encoding_category;
-struct keep_surrogates_category;
+struct allow_surrogates_category;
 struct encoding_error_category;
 
 enum class cv_result
@@ -65,7 +65,7 @@ public:
         ( stringify::v0::u32output& dest
         , const CharIn* begin
         , const CharIn* end
-        , bool keep_surrogates
+        , bool allow_surrogates
         ) const = 0;
 
     /**
@@ -99,7 +99,7 @@ public:
 
     virtual std::size_t length
         ( char32_t ch
-        , bool keep_surrogates )
+        , bool allow_surrogates )
         const = 0;
 
     /**
@@ -110,7 +110,7 @@ public:
         , char32_t ch
         , CharOut* dest_begin
         , CharOut* dest_end
-        , bool keep_surrogates ) const = 0;
+        , bool allow_surrogates ) const = 0;
 
     /**
     return
@@ -122,7 +122,7 @@ public:
         ( char32_t ch
         , CharOut* dest
         , CharOut* dest_end
-        , bool keep_surrogates ) const = 0;
+        , bool allow_surrogates ) const = 0;
 };
 
 class error_signal
@@ -323,7 +323,7 @@ stringify::v0::char_cv_result<CharOut> emit
     , std::size_t count
     , CharOut* dest
     , CharOut* dest_end
-    , bool keep_surrogates )
+    , bool allow_surrogates )
 {
     if(err_sig.skip())
     {
@@ -332,13 +332,13 @@ stringify::v0::char_cv_result<CharOut> emit
     if(err_sig.has_char())
     {
         char32_t ch = err_sig.get_char();
-        auto r = encoder.convert(ch, dest, dest_end, keep_surrogates);
+        auto r = encoder.convert(ch, dest, dest_end, allow_surrogates);
         if(nullptr == r.dest_it)
         {
             BOOST_ASSERT(0 == r.count);
             ch = U'?';
             err_sig.reset(ch);
-            r = encoder.convert(ch, dest, dest_end, keep_surrogates);
+            r = encoder.convert(ch, dest, dest_end, allow_surrogates);
         }
         BOOST_ASSERT(nullptr != r.dest_it);
         return r;
@@ -358,7 +358,7 @@ CharOut* emit
     , const stringify::v0::encoder<CharOut>& encoder
     , CharOut* dest
     , CharOut* dest_end
-    , bool keep_surrogates )
+    , bool allow_surrogates )
 {
     if(err_sig.skip())
     {
@@ -367,12 +367,12 @@ CharOut* emit
     if(err_sig.has_char())
     {
         char32_t ch = err_sig.get_char();
-        auto it = encoder.convert(ch, dest, dest_end, keep_surrogates);
+        auto it = encoder.convert(ch, dest, dest_end, allow_surrogates);
         if(nullptr == it)
         {
             ch = U'?';
             err_sig.reset(ch);
-            it = encoder.convert(ch, dest, dest_end, keep_surrogates);
+            it = encoder.convert(ch, dest, dest_end, allow_surrogates);
         }
         BOOST_ASSERT(it != nullptr);
         return it;
@@ -394,9 +394,9 @@ inline stringify::v0::char_cv_result<CharOut> emit
     , std::size_t count
     , CharOut* dest
     , CharOut* dest_end
-    , bool keep_surrogates )
+    , bool allow_surrogates )
 {
-    return stringify::v0::emit(err_sig, encoder, count, dest, dest_end, keep_surrogates);
+    return stringify::v0::emit(err_sig, encoder, count, dest, dest_end, allow_surrogates);
 }
 
 template <typename CharOut>
@@ -406,9 +406,9 @@ inline stringify::v0::char_cv_result<CharOut> emit
     , std::size_t count
     , CharOut* dest
     , CharOut* dest_end
-    , bool keep_surrogates )
+    , bool allow_surrogates )
 {
-    return stringify::v0::emit(stringify::v0::error_signal{ err_sig }, encoder, count, dest, dest_end, keep_surrogates);
+    return stringify::v0::emit(stringify::v0::error_signal{ err_sig }, encoder, count, dest, dest_end, allow_surrogates);
 }
 
 template <typename CharOut>
@@ -417,9 +417,9 @@ inline CharOut* emit
     , const stringify::v0::encoder<CharOut>& encoder
     , CharOut* dest
     , CharOut* dest_end
-    , bool keep_surrogates )
+    , bool allow_surrogates )
 {
-    return stringify::v0::emit(err_sig, encoder, dest, dest_end, keep_surrogates);
+    return stringify::v0::emit(err_sig, encoder, dest, dest_end, allow_surrogates);
 }
 
 template <typename CharOut>
@@ -428,9 +428,9 @@ inline CharOut* emit
     , const stringify::v0::encoder<CharOut>& encoder
     , CharOut* dest
     , CharOut* dest_end
-    , bool keep_surrogates )
+    , bool allow_surrogates )
 {
-    return stringify::v0::emit(stringify::v0::error_signal{ err_sig }, encoder, dest, dest_end, keep_surrogates);
+    return stringify::v0::emit(stringify::v0::error_signal{ err_sig }, encoder, dest, dest_end, allow_surrogates);
 }
 
 template <typename CharT>
@@ -697,32 +697,32 @@ private:
 };
 
 
-class keep_surrogates
+class allow_surrogates
 {
 public:
 
-    using category = keep_surrogates_category;
+    using category = allow_surrogates_category;
 
-    constexpr keep_surrogates(bool v) : m_value(v) {}
+    constexpr allow_surrogates(bool v) : m_value(v) {}
 
-    constexpr keep_surrogates(const keep_surrogates& ) = default;
+    constexpr allow_surrogates(const allow_surrogates& ) = default;
 
     constexpr bool value() const
     {
         return m_value;
     }
-    constexpr keep_surrogates value(bool k) const &
+    constexpr allow_surrogates value(bool k) const &
     {
         return {k};
     }
-    constexpr keep_surrogates& value(bool k) &
+    constexpr allow_surrogates& value(bool k) &
     {
         m_value = k;
         return *this;
     }
-    constexpr keep_surrogates&& value(bool k) &&
+    constexpr allow_surrogates&& value(bool k) &&
     {
-        return static_cast<keep_surrogates&&>(value(k));
+        return static_cast<allow_surrogates&&>(value(k));
     }
 
 private:
@@ -760,14 +760,14 @@ public:
         , CharOut* dest_begin
         , CharOut* dest_end
         , const stringify::v0::error_signal& err_sig
-        , bool keep_surrogates
+        , bool allow_surrogates
         ) const = 0;
 
     virtual std::size_t required_size
         ( const CharIn* begin
         , const CharIn* end
         , const stringify::v0::error_signal& err_sig
-        , bool keep_surrogates
+        , bool allow_surrogates
         ) const = 0;
 
     // from single char
@@ -777,7 +777,7 @@ public:
         , CharOut* dest_begin
         , CharOut* dest_end
         , const stringify::v0::error_signal& err_sig
-        , bool keep_surrogates
+        , bool allow_surrogates
         ) const = 0;
 
     virtual char_cv_result convert
@@ -786,13 +786,13 @@ public:
         , CharOut* dest_begin
         , CharOut* dest_end
         , const stringify::v0::error_signal& err_sig
-        , bool keep_surrogates
+        , bool allow_surrogates
         ) const = 0;
 
     virtual std::size_t required_size
         ( CharIn ch
         , const stringify::v0::error_signal& err_sig
-        , bool keep_surrogates
+        , bool allow_surrogates
         ) const = 0;
 };
 
@@ -911,9 +911,9 @@ struct output_writer_init
                 < stringify::v0::encoding_error_category
                 , stringify::v0::output_writer<CharOut> >
                 ().on_error() }
-        , m_keep_surr
+        , m_allow_surr
             { ft.template get_facet
-                < stringify::v0::keep_surrogates_category
+                < stringify::v0::allow_surrogates_category
                 , stringify::v0::output_writer<CharOut> >
                 ().value() }
     {
@@ -926,7 +926,7 @@ private:
 
     const stringify::v0::encoding<CharOut>& m_encoding;
     const stringify::v0::error_signal& m_encoding_err;
-    bool m_keep_surr;
+    bool m_allow_surr;
 };
 
 
@@ -939,7 +939,7 @@ public:
     output_writer(stringify::v0::output_writer_init<CharOut> init)
         : m_encoding(init.m_encoding)
         , m_encoding_err(init.m_encoding_err)
-        , m_keep_surr(init.m_keep_surr)
+        , m_allow_surr(init.m_allow_surr)
     {
     }
 
@@ -953,9 +953,9 @@ public:
         return m_encoding;
     }
 
-    bool keep_surrogates() const
+    bool allow_surrogates() const
     {
-        return m_keep_surr;
+        return m_allow_surr;
     }
 
     const auto& on_error() const
@@ -965,7 +965,7 @@ public:
 
     std::size_t required_size(char32_t ch) const
     {
-        return encoder().length(ch, keep_surrogates());
+        return encoder().length(ch, allow_surrogates());
     }
 
     //bool signal_encoding_error();
@@ -1019,12 +1019,12 @@ protected:
 
     CharOut* encode(CharOut* dest_it, CharOut* dest_end, char32_t ch) const
     {
-        return encoder().convert(ch, dest_it, dest_end, keep_surrogates());
+        return encoder().convert(ch, dest_it, dest_end, allow_surrogates());
     }
 
     auto encode(CharOut* dest_it, CharOut* dest_end, std::size_t count, char32_t ch) const
     {
-        return encoder().convert(count, ch, dest_it, dest_end, keep_surrogates());
+        return encoder().convert(count, ch, dest_it, dest_end, allow_surrogates());
     }
 
     constexpr static std::size_t buff_size = sizeof(CharOut) == 1 ? 6 : 2;
@@ -1034,7 +1034,7 @@ private:
 
     const stringify::v0::encoding<CharOut> m_encoding;
     const stringify::v0::error_signal m_encoding_err;
-    bool m_keep_surr;
+    bool m_allow_surr;
 };
 
 namespace detail {
@@ -1047,17 +1047,17 @@ public:
     length_accumulator
         ( const stringify::v0::encoder<CharOut>& encoder
         , const stringify::v0::error_signal& err_sig
-        , bool keep_surr
+        , bool allow_surr
         )
         : m_encoder(encoder)
         , m_err_sig(err_sig)
-        , m_keep_surr(keep_surr)
+        , m_allow_surr(allow_surr)
     {
     }
 
     stringify::v0::cv_result put32(char32_t ch) override
     {
-        m_length += m_encoder.length(ch, m_keep_surr);
+        m_length += m_encoder.length(ch, m_allow_surr);
         return stringify::v0::cv_result::success;
     }
 
@@ -1091,7 +1091,7 @@ private:
     std::size_t m_length = 0;
     stringify::v0::error_signal m_err_sig;
     stringify::v0::cv_result m_status = stringify::v0::cv_result::success;
-    bool m_keep_surr;
+    bool m_allow_surr;
 };
 
 
@@ -1104,14 +1104,14 @@ public:
         , CharOut* dest_it
         , CharOut* dest_end
         , const stringify::v0::error_signal& err_sig
-        , bool keep_surr
+        , bool allow_surr
         )
         : m_encoder(encoder)
         , m_dest_it(dest_it)
         , m_dest_end(dest_end)
         , m_insufficient_space(dest_end + 1)
         , m_err_sig(err_sig)
-        , m_keep_surr(keep_surr)
+        , m_allow_surr(allow_surr)
     {
     }
 
@@ -1119,7 +1119,7 @@ public:
     {
         if (m_status == stringify::v0::cv_result::success)
         {
-            CharOut* it = m_encoder.convert(ch, m_dest_it, m_dest_end, m_keep_surr);
+            CharOut* it = m_encoder.convert(ch, m_dest_it, m_dest_end, m_allow_surr);
             if (it != nullptr)
             {
                 if (it != m_insufficient_space)
@@ -1141,7 +1141,7 @@ public:
 
     bool signalize_error() override
     {
-        auto it = stringify::v0::emit(m_err_sig, m_encoder, m_dest_it, m_dest_end, m_keep_surr);
+        auto it = stringify::v0::emit(m_err_sig, m_encoder, m_dest_it, m_dest_end, m_allow_surr);
         if(nullptr == it)
         {
             m_status = stringify::v0::cv_result::invalid_char;
@@ -1171,7 +1171,7 @@ private:
     //bool signal_error_as_char()
     //{
     //     auto ch = m_err_sig.get_char();
-    //     CharOut* it = m_encoder.convert(ch, m_dest_it, m_dest_end, m_keep_surr);
+    //     CharOut* it = m_encoder.convert(ch, m_dest_it, m_dest_end, m_allow_surr);
     //     if (it == nullptr)
     //     {
     //         if(ch != U'?')
@@ -1197,7 +1197,7 @@ private:
     CharOut* const m_insufficient_space;;
     stringify::v0::error_signal m_err_sig;
     stringify::v0::cv_result m_status = stringify::v0::cv_result::success;
-    bool m_keep_surr;
+    bool m_allow_surr;
 };
 
 
@@ -1224,14 +1224,14 @@ public:
         , CharOut* dest_begin
         , CharOut* dest_end
         , const stringify::v0::error_signal& err_sig
-        , bool keep_surrogates
+        , bool allow_surrogates
         ) const override;
 
     virtual std::size_t required_size
         ( const CharIn* src_begin
         , const CharIn* src_end
         , const stringify::v0::error_signal & err_sig
-        , bool keep_surrogates
+        , bool allow_surrogates
         ) const override;
 
     virtual CharOut* convert
@@ -1239,7 +1239,7 @@ public:
         , CharOut* dest_begin
         , CharOut* dest_end
         , const stringify::v0::error_signal & err_sig
-        , bool keep_surrogates
+        , bool allow_surrogates
         ) const override;
 
     virtual char_cv_result convert
@@ -1248,13 +1248,13 @@ public:
         , CharOut* dest_begin
         , CharOut* dest_end
         , const stringify::v0::error_signal & err_sig
-        , bool keep_surrogates
+        , bool allow_surrogates
         ) const override;
 
     virtual std::size_t required_size
         ( CharIn ch
         , const stringify::v0::error_signal & err_sig
-        , bool keep_surrogates
+        , bool allow_surrogates
         ) const override;
 
 private:
@@ -1272,13 +1272,13 @@ decode_encode<CharIn, CharOut>::convert
     , CharOut* dest_begin
     , CharOut* dest_end
     , const stringify::v0::error_signal& err_sig
-    , bool keep_surrogates
+    , bool allow_surrogates
     ) const
 {
     stringify::v0::detail::encoder_adapter<CharOut> adapter
-        ( m_encoder, dest_begin, dest_end, err_sig, keep_surrogates );
+        ( m_encoder, dest_begin, dest_end, err_sig, allow_surrogates );
     auto r = m_decoder.decode
-        ( adapter, src_begin, src_end, keep_surrogates );
+        ( adapter, src_begin, src_end, allow_surrogates );
 
     return {r.src_it, adapter.dest_it(), adapter.result()};
 }
@@ -1288,13 +1288,13 @@ std::size_t decode_encode<CharIn, CharOut>::required_size
     ( const CharIn* src_begin
     , const CharIn* src_end
     , const stringify::v0::error_signal & err_sig
-    , bool keep_surrogates
+    , bool allow_surrogates
     ) const
 {
     stringify::v0::detail::length_accumulator<CharOut> adapter
-        ( m_encoder, err_sig, keep_surrogates );
+        ( m_encoder, err_sig, allow_surrogates );
     m_decoder.decode
-        ( adapter, src_begin, src_end, keep_surrogates );
+        ( adapter, src_begin, src_end, allow_surrogates );
     return adapter.get_length();
 }
 
@@ -1304,7 +1304,7 @@ CharOut* decode_encode<CharIn, CharOut>::convert
     , CharOut* dest_begin
     , CharOut* dest_end
     , const stringify::v0::error_signal & err_sig
-    , bool keep_surrogates
+    , bool allow_surrogates
     ) const
 {
 
@@ -1313,7 +1313,7 @@ CharOut* decode_encode<CharIn, CharOut>::convert
     (void) dest_begin;
     (void) dest_end;
     (void) err_sig;
-    (void) keep_surrogates;
+    (void) allow_surrogates;
     BOOST_ASSERT(dest_begin == dest_end);
     return dest_end + 1;
 }
@@ -1325,7 +1325,7 @@ stringify::v0::char_cv_result<CharOut> decode_encode<CharIn, CharOut>::convert
     , CharOut* dest_begin
     , CharOut* dest_end
     , const stringify::v0::error_signal & err_sig
-    , bool keep_surrogates
+    , bool allow_surrogates
     ) const
 {
     //todo
@@ -1335,7 +1335,7 @@ stringify::v0::char_cv_result<CharOut> decode_encode<CharIn, CharOut>::convert
     (void) dest_begin;
     (void) dest_end;
     (void) err_sig;
-    (void) keep_surrogates;
+    (void) allow_surrogates;
     using result_type = stringify::v0::char_cv_result<CharOut>;
     BOOST_ASSERT(dest_begin == dest_end);
     return result_type{0, dest_begin};
@@ -1345,12 +1345,12 @@ template <typename CharIn, typename CharOut>
 std::size_t decode_encode<CharIn, CharOut>::required_size
     ( CharIn ch
     , const stringify::v0::error_signal & err_sig
-    , bool keep_surrogates
+    , bool allow_surrogates
     ) const
 {
     (void) ch;
     (void) err_sig;
-    (void) keep_surrogates;
+    (void) allow_surrogates;
     BOOST_ASSERT(ch == 0xFFFFFFF);
     return 0;  //todo
 }
@@ -1433,7 +1433,7 @@ public:
                 ( begin
                 , end
                 , m_out.on_error()
-                , keep_surrogates() );
+                , allow_surrogates() );
     }
     std::size_t length(const CharIn* begin, std::size_t count) const
     {
@@ -1443,7 +1443,7 @@ public:
                 ( begin
                 , begin + count
                 , m_out.on_error()
-                , keep_surrogates() );
+                , allow_surrogates() );
     }
 
 
@@ -1467,9 +1467,9 @@ public:
         return m_out.on_error();
     }
 
-    bool keep_surrogates() const
+    bool allow_surrogates() const
     {
-        return m_out.keep_surrogates();
+        return m_out.allow_surrogates();
     }
 
 
@@ -1715,7 +1715,7 @@ bool output_writer<CharOut>::signal_encoding_error()
             ( err_sig.get_char()
             , buff
             , buff + buff_size
-            , m_encoding.keep_surrogates() );
+            , m_encoding.allow_surrogates() );
 
         if (it != nullptr && it != buff + buff_size + 1)
         {
@@ -1747,7 +1747,7 @@ CharOut* str_source<CharIn, CharOut>::get
         , dest_begin
         , dest_end
         , m_out.on_error()
-        , m_out.keep_surrogates() );
+        , m_out.allow_surrogates() );
 
     this->m_status = res.result;
     if(res.result == stringify::v0::cv_result::invalid_char)
@@ -1782,7 +1782,7 @@ CharOut* char32_source<CharOut>::get
         ( m_char
         , dest_begin
         , dest_end
-        , m_out.keep_surrogates() );
+        , m_out.allow_surrogates() );
 
     if(it == nullptr)
     {
@@ -1827,7 +1827,7 @@ CharOut* repeated_char32_source<CharOut>::get
         , m_char
         , dest_begin
         , dest_end
-        , m_out.keep_surrogates() );
+        , m_out.allow_surrogates() );
 
     if(res.dest_it == nullptr)
     {

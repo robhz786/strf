@@ -211,7 +211,7 @@ public:
         : m_out(out)
         , m_join(j)
         , m_encoder{encoding.encoder()}
-        , m_keepsurr{out.keep_surrogates()}
+        , m_keepsurr{out.allow_surrogates()}
         , m_args{pp_range}
     {
         m_fillcount = remaining_width_from_arglist(m_join.width);

@@ -161,9 +161,9 @@ void sample()
 }
 //]
 
-void keep_surrogates ()
+void allow_surrogates ()
 {
-    //[ keep_surrogates
+    //[ allow_surrogates
     namespace strf = boost::stringify::v0;
 
     std::u16string input_utf16 {u"-----"};
@@ -171,11 +171,11 @@ void keep_surrogates ()
 
 
     auto str1 = strf::to_string
-        .facets(strf::keep_surrogates{false})
+        .facets(strf::allow_surrogates{false})
         (input_utf16);
 
     auto str2 = strf::to_string
-        .facets(strf::keep_surrogates{true})
+        .facets(strf::allow_surrogates{true})
         (input_utf16);
 
 
@@ -184,11 +184,11 @@ void keep_surrogates ()
 
     // now back to UTF-16
     auto utf16_no_surr = strf::to_u16string
-        .facets(strf::keep_surrogates{false})
+        .facets(strf::allow_surrogates{false})
         (str2.value());
 
     auto utf16_with_surr = strf::to_u16string
-        .facets(strf::keep_surrogates{true})
+        .facets(strf::allow_surrogates{true})
         (str2.value());
 
     BOOST_ASSERT(utf16_no_surr.value() == u"-\uFFFD---");
@@ -209,7 +209,7 @@ int main()
     error_signal_char();
     error_signal_code();
     sample();
-    keep_surrogates();
+    allow_surrogates();
 
     return 0;
 }

@@ -105,7 +105,7 @@ public:
         , const CharIn* end
         , const stringify::v0::decoder<CharIn>& conv
         , const stringify::v0::error_signal& err_sig
-        , bool keep_surrogates
+        , bool allow_surrogates
         ) const
     {
         if (m_type == stringify::width_calculation_type::as_length)
@@ -122,7 +122,7 @@ public:
         else
         {
             detail::width_decrementer decrementer{width, *m_ch_wcalc, err_sig};
-            (void) conv.decode(decrementer, begin, end, keep_surrogates);
+            (void) conv.decode(decrementer, begin, end, allow_surrogates);
             return decrementer.get_remaining_width();
         }
     }
@@ -164,7 +164,7 @@ int width_calculator::remaining_width<char>
     , const char* end
     , const stringify::v0::decoder<char>& conv
     , const stringify::v0::error_signal& err_sig
-    , bool keep_surrogates
+    , bool allow_surrogates
     ) const;
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
@@ -174,7 +174,7 @@ int width_calculator::remaining_width<char16_t>
     , const char16_t* end
     , const stringify::v0::decoder<char16_t>& conv
     , const stringify::v0::error_signal& err_sig
-    , bool keep_surrogates
+    , bool allow_surrogates
     ) const;
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
@@ -184,7 +184,7 @@ int width_calculator::remaining_width<char32_t>
     , const char32_t* end
     , const stringify::v0::decoder<char32_t>& conv
     , const stringify::v0::error_signal& err_sig
-    , bool keep_surrogates
+    , bool allow_surrogates
     ) const;
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
@@ -194,7 +194,7 @@ int width_calculator::remaining_width<wchar_t>
     , const wchar_t* end
     , const stringify::v0::decoder<wchar_t>& conv
     , const stringify::v0::error_signal& err_sig
-    , bool keep_surrogates
+    , bool allow_surrogates
     ) const;
 
 #endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)

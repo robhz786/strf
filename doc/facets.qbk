@@ -61,7 +61,7 @@ Every /facet/ belongs to some /facet category/.
 ]
 
 [
-[[link encoding_conversion.encoding_conversion.keep_surrogates keep_surrogates]]
+[[link encoding_conversion.encoding_conversion.allow_surrogates allow_surrogates]]
 [tells whether surrogate code points are allowed]
 [no]
 []

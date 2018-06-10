@@ -180,13 +180,13 @@ However, you can choose an alternative behavior with the `encoding_error` facet.
 ]
 ]
 
-[h1:keep_surrogates The `keep_surrogates` facet]
+[h1:allow_surrogates The `allow_surrogates` facet]
 
-You may have noticed that there is no support for the [@https://en.wikipedia.org/wiki/UTF-8#WTF-8 WTF-8] encoding. WTF-8 is variant of UTF-8 where surrogates code points are allowed. If WTF-8 were supported, then we would also need an analogous equivalent of UTF-16 and UTF-32. So instead, the `keep_surrogates` facet was created to specify whether the surrogates are allowed or not in whatever encoding is used. In UTF-16 this means to allow unpaired surrogates (high surrogate not followed by a low surrogate, or a low surrogate not proceeded by a high surrogate). In ASCII and ASCII extensions this facets has no effect.
+You may have noticed that there is no support for the [@https://en.wikipedia.org/wiki/UTF-8#WTF-8 WTF-8] encoding. WTF-8 is variant of UTF-8 where surrogates code points are allowed. If WTF-8 were supported, then we would also need an analogous equivalent of UTF-16 and UTF-32. So instead, the `allow_surrogates` facet was created to specify whether the surrogates are allowed or not in whatever encoding is used. In UTF-16 this means to allow unpaired surrogates (high surrogate not followed by a low surrogate, or a low surrogate not proceeded by a high surrogate). In ASCII and ASCII extensions this facets has no effect.
 
-The default `keep_surrogates` facet object is `true`.
+The value of the default `allow_surrogates` facet object is `false`.
 
-[keep_surrogates]
+[allow_surrogates]
 
 [h1 How to add support to other encodings /(to-do)/]
 

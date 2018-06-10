@@ -58,37 +58,37 @@ void test_in_buffered_output(strf::encoding<CharIn> ein, strf::encoding<CharOut>
     // when an invalid char is replaced
     // just before the buffer capacity is reached
     BUFFERED_TEST(10, str_0_to_9(eout).substr(0, 9) + repstr + str_abcde(eout))
-        .facets(eout, strf::keep_surrogates{false}, replacement_facet(eout))
+        .facets(eout, strf::allow_surrogates{false}, replacement_facet(eout))
         (strf::sani(str_0_to_9_failed_last(ein) + str_abcde(ein)).encoding(ein));
 
     // when an invalid char is replaced
     // just after the buffer capacity was reached
     BUFFERED_TEST(10, str_0_to_9(eout) + repstr + str_abcde(eout).substr(1, 5))
-        .facets(eout, strf::keep_surrogates{false}, replacement_facet(eout))
+        .facets(eout, strf::allow_surrogates{false}, replacement_facet(eout))
         (strf::sani(str_0_to_9(ein) + str_abcde_failed_first(ein)).encoding(ein));
 
     // when an invalid char is removed
     // just before the buffer capacity is reached
     BUFFERED_TEST_RF(10, str_0_to_9(eout).substr(0, 9) + str_abcde(eout), 1.5)
-        .facets(eout, strf::keep_surrogates{false}, strf::encoding_error())
+        .facets(eout, strf::allow_surrogates{false}, strf::encoding_error())
         (strf::sani(str_0_to_9_failed_last(ein) + str_abcde(ein)).encoding(ein));
 
     // when an invalid char is removed
     // just after the buffer capacity was reached
     BUFFERED_TEST_RF(10, str_0_to_9(eout) + str_abcde(eout).substr(1, 5), 1.5)
-        .facets(eout, strf::keep_surrogates{false}, strf::encoding_error())
+        .facets(eout, strf::allow_surrogates{false}, strf::encoding_error())
         (strf::sani(str_0_to_9(ein) + str_abcde_failed_first(ein)).encoding(ein));
 
     // when an invalid char causes an error code
     // just before the buffer capacity is reached
     BUFFERED_TEST_ERR(10, str_0_to_9(eout).substr(0, 9), errcode)
-        .facets(eout, strf::keep_surrogates{false}, strf::encoding_error(errcode))
+        .facets(eout, strf::allow_surrogates{false}, strf::encoding_error(errcode))
         (strf::sani(str_0_to_9_failed_last(ein) + str_abcde(ein)).encoding(ein));
 
     // when an invalid char causes an error code
     // just after the buffer capacity was reached
     BUFFERED_TEST_ERR(10, str_0_to_9(eout), errcode)
-        .facets(eout, strf::keep_surrogates{false}, strf::encoding_error(errcode))
+        .facets(eout, strf::allow_surrogates{false}, strf::encoding_error(errcode))
         (strf::sani(str_0_to_9(ein) + str_abcde_failed_first(ein)).encoding(ein));
 
 
@@ -104,13 +104,13 @@ void test_in_buffered_output(strf::encoding<CharIn> ein, strf::encoding<CharOut>
     expected.append(10, CharOut('a'));
     expected.append(5, CharOut('b'));
     BUFFERED_TEST(10, expected)
-        .facets(eout, strf::keep_surrogates{false}, replacement_facet(eout))
+        .facets(eout, strf::allow_surrogates{false}, replacement_facet(eout))
         (strf::multi(CharInT('a'), 10), strf::multi(CharInT('b'), 5));
 
     //if(std::is_same(char32_t, CharOut)::value) // TODO remove this condition as soon as .sani is supporter
     //{
     //    BUFFERED_TEST(10, repstr_x12 + std::basic_string<CharOut>(5, CharOut('b')))
-    //        .facets(eout, strf::keep_surrogates{ false }, replacement_facet(eout))
+    //        .facets(eout, strf::allow_surrogates{ false }, replacement_facet(eout))
     //        (strf::multi(invalid_char, 12)/*.sani() TODO */, strf::multi(CharInT('b'), 5));
     //}
 }
@@ -136,47 +136,47 @@ void test_utf8_variant(strf::encoding<char> enc)
     TEST(u8"a \u0080 \u0800 \U00010000 \U0010FFFF ").facets(enc) (u16sample);
 
     TEST(" \xED\xA0\x80 \xED\xAF\xBF \xED\xB0\x80 \xED\xBF\xBF \xEF\xBF\xBD ")
-        .facets(enc, strf::keep_surrogates{ true })
+        .facets(enc, strf::allow_surrogates{ true })
         (u32_invalid_chars);
     TEST(" \xED\xA0\x80 \xED\xAF\xBF \xED\xB0\x80 \xED\xBF\xBF ")
-        .facets(enc, strf::keep_surrogates{ true })
+        .facets(enc, strf::allow_surrogates{ true })
         (u16_invalid_chars);
 
     TEST(u8" \uFFFD \uFFFD \uFFFD \uFFFD \uFFFD ")
-        .facets(enc, strf::keep_surrogates{ false })
+        .facets(enc, strf::allow_surrogates{ false })
         (u32_invalid_chars);
     TEST(u8" \uFFFD \uFFFD \uFFFD \uFFFD ")
-        .facets(enc, strf::keep_surrogates{ false })
+        .facets(enc, strf::allow_surrogates{ false })
         (u16_invalid_chars);
 
     TEST(u8" * * * * * ")
-        .facets(enc, strf::keep_surrogates{ false }, strf::encoding_error{ U'*' })
+        .facets(enc, strf::allow_surrogates{ false }, strf::encoding_error{ U'*' })
         (u32_invalid_chars);
     TEST(u8" * * * * ")
-        .facets(enc, strf::keep_surrogates{ false }, strf::encoding_error{ U'*' })
+        .facets(enc, strf::allow_surrogates{ false }, strf::encoding_error{ U'*' })
         (u16_invalid_chars);
     TEST(u8"      ")
-        .facets(enc, strf::keep_surrogates{ false }, strf::encoding_error{})
+        .facets(enc, strf::allow_surrogates{ false }, strf::encoding_error{})
         (u32_invalid_chars);
     TEST(u8"     ")
-        .facets(enc, strf::keep_surrogates{ false }, strf::encoding_error{})
+        .facets(enc, strf::allow_surrogates{ false }, strf::encoding_error{})
         (u16_invalid_chars);
 
     TEST_ERR(" \xED\xA0\x80 \xED\xAF\xBF \xED\xB0\x80 \xED\xBF\xBF ", errcode)
-        .facets(enc, strf::keep_surrogates{ true }, strf::encoding_error(errcode))
+        .facets(enc, strf::allow_surrogates{ true }, strf::encoding_error(errcode))
         (u32_invalid_chars);
 
     // from UTF-8
     TEST(u32sample).facets(enc) (u8"a \u0080 \u0800 \U00010000 \U0010FFFF ");
     TEST(u16sample).facets(enc) (u8"a \u0080 \u0800 \U00010000 \U0010FFFF ");
     TEST(u16_invalid_chars)
-        .facets(enc, strf::keep_surrogates{ true })
+        .facets(enc, strf::allow_surrogates{ true })
         (" \xED\xA0\x80 \xED\xAF\xBF \xED\xB0\x80 \xED\xBF\xBF ");
 
     // sanitization
 
     TEST(" * * * - * * * - * - * * * * ")
-        .facets(enc, strf::keep_surrogates(false), strf::encoding_error(U'*'))
+        .facets(enc, strf::allow_surrogates(false), strf::encoding_error(U'*'))
         ( strf::sani
            ( " \xDF \xEF\x80 \xF3\x80\x80 " //leading byte with not enough continuation bytes
              "- \x80 \x80\x80 \xBF\xBF\x80 " //continuation bytes not preceeded by a leading byte
@@ -184,7 +184,7 @@ void test_utf8_variant(strf::encoding<char> enc)
              "- \xED\xA0\x80 \xED\xAF\xBF \xED\xB0\x80 \xED\xBF\xBF ")); // surrogates
 
     TEST(" * * * - * * * - * - \xED\xA0\x80 \xED\xAF\xBF \xED\xB0\x80 \xED\xBF\xBF ")
-        .facets(enc, strf::keep_surrogates(true), strf::encoding_error(U'*'))
+        .facets(enc, strf::allow_surrogates(true), strf::encoding_error(U'*'))
         ( strf::sani
             ( " \xDF \xEF\x80 \xF3\x80\x80 " //leading byte with not enough continuation bytes
               "- \x80 \x80\x80 \xBF\xBF\x80 " //continuation bytes not preceeded by a leading byte
@@ -202,13 +202,13 @@ void test_utf8_variant(strf::encoding<char> enc)
     BUFFERED_TEST(10,  U"012345678\uFFFD abc") (strf::sani("012345678\xBF\xBF\xBF\xBF\xBF\xBF\xBF abc").encoding(enc));
 
     BUFFERED_TEST(10, u8"012345678\uFFFD abc")
-        .facets(strf::keep_surrogates(false))
+        .facets(strf::allow_surrogates(false))
         (strf::sani("012345678\xED\xA0\x80\xBF\xBF\xBF\xBF\xBF\xBF\xBF abc").encoding(enc));
     BUFFERED_TEST_RF(10, u"012345678\uFFFD abc", 1.25)
-        .facets(strf::keep_surrogates(false))
+        .facets(strf::allow_surrogates(false))
         (strf::sani("012345678\xED\xA0\x80\xBF\xBF\xBF\xBF\xBF\xBF\xBF abc").encoding(enc));
     BUFFERED_TEST(10, U"012345678\uFFFD abc")
-        .facets(strf::keep_surrogates(false))
+        .facets(strf::allow_surrogates(false))
         (strf::sani("012345678\xED\xA0\x80\xBF\xBF\xBF\xBF\xBF\xBF\xBF abc").encoding(enc));
 }
 
@@ -297,19 +297,19 @@ int main()
     TEST("--\xC0\x80--").facets(strf::mutf8())(std::u16string(u"--\0--", 5));
 
     // UTF-16
-    TEST_RF(u"--\uFFFD--", 1.2).facets(strf::keep_surrogates(false))("--\xED\xA0\x80--");
+    TEST_RF(u"--\uFFFD--", 1.2).facets(strf::allow_surrogates(false))("--\xED\xA0\x80--");
     {
         std::u16string expected{ '-', '-', 0xD800, '-', '-' };
-        TEST(expected).facets(strf::keep_surrogates(true))("--\xED\xA0\x80--");
+        TEST(expected).facets(strf::allow_surrogates(true))("--\xED\xA0\x80--");
     }
     BUFFERED_TEST_RF(10, u"012345678\uFFFD\uFFFD", 1.2)
-        .facets(strf::keep_surrogates(false))
+        .facets(strf::allow_surrogates(false))
         ("012345678", strf::sani(std::u16string(2, char16_t(0xD800))));
     BUFFERED_TEST_RF(10, u8"012345678\uFFFD\uFFFD", 1.2)
-        .facets(strf::keep_surrogates(false))
+        .facets(strf::allow_surrogates(false))
         ("012345678", std::u16string(2, char16_t(0xD800)));
     BUFFERED_TEST_RF(10, U"012345678\uFFFD\uFFFD", 1.2)
-        .facets(strf::keep_surrogates(false))
+        .facets(strf::allow_surrogates(false))
         ("012345678", std::u16string(2, char16_t(0xD800)));
 
     // TODO: more UTF-16 tests

@@ -51,15 +51,15 @@ int main()
           , strf::width_calculator
           , strf::numpunct<10> >
           :: value
-        , "keep_surrogates shall not be constrainble");
+        , "encoding shall not be constrainble");
 
     static_assert
         ( ! strf::detail::all_are_constrainable
           < strf::width_calculator
-          , strf::keep_surrogates
+          , strf::allow_surrogates
           , strf::numpunct<10> >
           :: value
-        , "keep_surrogates shall not be constrainble");
+        , "allow_surrogates shall not be constrainble");
 
     static_assert
         ( ! strf::detail::all_are_constrainable

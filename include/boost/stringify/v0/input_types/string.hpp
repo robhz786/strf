@@ -261,7 +261,7 @@ int simple_string_printer<CharIn, CharOut>::remaining_width(int w) const
         , m_end
         , m_decoder
         , m_sw.on_error()
-        , m_sw.keep_surrogates() );
+        , m_sw.allow_surrogates() );
 }
 
 template <typename CharT>
@@ -331,7 +331,7 @@ int simple_string_printer<CharT, CharT>::remaining_width(int w) const
         , m_str + m_len
         , m_out.encoding().decoder()
         , m_out.on_error()
-        , m_out.keep_surrogates() );
+        , m_out.allow_surrogates() );
 }
 
 template<typename CharIn, typename CharOut>
@@ -421,7 +421,7 @@ string_printer<CharIn, CharOut>::string_printer
             , input.end()
             , input_enc.decoder()
             , out.on_error()
-            , out.keep_surrogates() )
+            , out.allow_surrogates() )
         : 0 )
 {
 }
@@ -491,7 +491,7 @@ int string_printer<CharIn, CharOut>::remaining_width(int w) const
             , m_fmt.end()
             , m_decoder
             , m_sw.on_error()
-            , m_sw.keep_surrogates() );
+            , m_sw.allow_surrogates() );
     }
     return 0;
 }
