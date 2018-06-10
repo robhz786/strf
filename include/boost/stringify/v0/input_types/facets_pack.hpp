@@ -1,52 +1,52 @@
-#ifndef BOOST_STRINGIFY_V0_INPUT_TYPES_FTUPLE_HPP
-#define BOOST_STRINGIFY_V0_INPUT_TYPES_FTUPLE_HPP
+#ifndef BOOST_STRINGIFY_V0_INPUT_TYPES_FACETS_PACK_HPP
+#define BOOST_STRINGIFY_V0_INPUT_TYPES_FACETS_PACK_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/stringify/v0/basic_types.hpp>
-#include <boost/stringify/v0/ftuple.hpp>
+#include <boost/stringify/v0/facets_pack.hpp>
 #include <boost/stringify/v0/input_types/join.hpp>
 #include <initializer_list>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
-template <typename FTuple, typename ... Args>
-struct inner_ftuple_with_args
+template <typename FPack, typename ... Args>
+struct inner_pack_with_args
 {
-    const FTuple& ft;
+    const FPack& ft;
     stringify::v0::detail::args_tuple<Args...> args;
 };
 
 
-template <typename FTuple>
-struct inner_ftuple
+template <typename FPack>
+struct inner_pack
 {
-    FTuple ft;
+    FPack ft;
 
     template <typename ... Args>
-    stringify::v0::detail::inner_ftuple_with_args<FTuple, Args...>
+    stringify::v0::detail::inner_pack_with_args<FPack, Args...>
     operator()(const Args& ... args)
     {
-        return stringify::v0::detail::inner_ftuple_with_args<FTuple, Args...>
+        return stringify::v0::detail::inner_pack_with_args<FPack, Args...>
             { ft
             , stringify::v0::detail::args_tuple<Args...>{args ...}
             };
     }
 };
 
-template <typename FTuple>
-struct inner_ftuple_ref
+template <typename FPack>
+struct inner_pack_ref
 {
-    const FTuple& ft;
+    const FPack& ft;
 
     template <typename ... Args>
-    stringify::v0::detail::inner_ftuple_with_args<FTuple, Args...>
+    stringify::v0::detail::inner_pack_with_args<FPack, Args...>
     operator()(const Args& ... args)
     {
-        return stringify::v0::detail::inner_ftuple_with_args<FTuple, Args...>
+        return stringify::v0::detail::inner_pack_with_args<FPack, Args...>
             { ft
             , stringify::v0::detail::args_tuple<Args...>{args ...}
             };
@@ -104,12 +104,12 @@ private:
 };
 
 
-template <typename CharT, typename ParentFTuple, typename ChildFTuple, typename ... Args>
-class ftuple_printer
-    : private stringify::v0::ftuple<ParentFTuple, ChildFTuple>
+template <typename CharT, typename ParentFPack, typename ChildFPack, typename ... Args>
+class facets_pack_printer
+    : private stringify::v0::facets_pack<ParentFPack, ChildFPack>
     , private stringify::v0::detail::printers_group
           < CharT
-          , stringify::v0::ftuple<ParentFTuple, ChildFTuple>
+          , stringify::v0::facets_pack<ParentFPack, ChildFPack>
           , Args...
           >
     , public stringify::v0::detail::pp_range_printer<CharT>
@@ -117,45 +117,45 @@ class ftuple_printer
     using fmt_group
     = stringify::v0::detail::printers_group
           < CharT
-          , stringify::v0::ftuple<ParentFTuple, ChildFTuple>
+          , stringify::v0::facets_pack<ParentFPack, ChildFPack>
           , Args...
           >;
 
 public:
 
-    ftuple_printer
+    facets_pack_printer
         ( stringify::v0::output_writer<CharT>& out
-        , const ParentFTuple& parent_ft
-        , const stringify::v0::detail::inner_ftuple_with_args<ChildFTuple, Args...>& args
+        , const ParentFPack& parent_ft
+        , const stringify::v0::detail::inner_pack_with_args<ChildFPack, Args...>& args
         )
-        : stringify::v0::ftuple<ParentFTuple, ChildFTuple>{parent_ft, args.ft}
+        : stringify::v0::facets_pack<ParentFPack, ChildFPack>{parent_ft, args.ft}
         , fmt_group{out, *this, args.args}
         , stringify::v0::detail::pp_range_printer<CharT>{fmt_group::range()}
     {
     }
 
-    virtual ~ftuple_printer()
+    virtual ~facets_pack_printer()
     {
     }
 };
 
-// struct ftuple_input_traits
+// struct facets_pack_input_traits
 // {
 //     template
 //         < typename CharT
-//         , typename ParentFTuple
-//         , typename ChildFTuple
+//         , typename ParentFPack
+//         , typename ChildFPack
 //         , typename ... Args
 //         >
-//     static inline stringify::v0::detail::ftuple_printer
+//     static inline stringify::v0::detail::facets_pack_printer
 //         < CharT
-//         , ParentFTuple
-//         , ChildFTuple
+//         , ParentFPack
+//         , ChildFPack
 //         , Args...
 //         >
 //     make_printer
-//         ( const ParentFTuple& ft
-//         , const detail::inner_ftuple_with_args<ChildFTuple, Args...>& x
+//         ( const ParentFPack& ft
+//         , const detail::inner_pack_with_args<ChildFPack, Args...>& x
 //         )
 //     {
 //         return {ft, x};
@@ -195,7 +195,7 @@ constexpr bool are_constrainable_impl<>()
 }
 
 template <typename ... F>
-struct is_constrainable<stringify::v0::ftuple<F...>>
+struct is_constrainable<stringify::v0::facets_pack<F...>>
 {
     constexpr static bool value
         = stringify::v0::detail::are_constrainable_impl<F...>();
@@ -212,24 +212,24 @@ struct all_are_constrainable
 
 } // namespace detail
 
-// template <typename ChildFTuple, typename ... Args>
-// stringify::v0::detail::ftuple_input_traits
+// template <typename ChildFPack, typename ... Args>
+// stringify::v0::detail::facets_pack_input_traits
 // stringify_get_input_traits
-// ( const stringify::v0::detail::inner_ftuple_with_args<ChildFTuple, Args...>& fmt );
+// ( const stringify::v0::detail::inner_pack_with_args<ChildFPack, Args...>& fmt );
 
 template <typename ... Facets>
-stringify::v0::detail::inner_ftuple<stringify::v0::ftuple<Facets ...>>
+stringify::v0::detail::inner_pack<stringify::v0::facets_pack<Facets ...>>
 facets(const Facets& ... facets)
 {
     static_assert
         ( stringify::v0::detail::all_are_constrainable<Facets...>::value
         , "All facet categories must be constrainable" );
-    return {stringify::v0::make_ftuple(facets ...)};
+    return {stringify::v0::pack(facets ...)};
 }
 
 template <typename ... Facets>
-stringify::v0::detail::inner_ftuple_ref<stringify::v0::ftuple<Facets ...>>
-facets(const stringify::v0::ftuple<Facets...>& ft)
+stringify::v0::detail::inner_pack_ref<stringify::v0::facets_pack<Facets ...>>
+facets(const stringify::v0::facets_pack<Facets...>& ft)
 {
     static_assert
         ( stringify::v0::detail::all_are_constrainable<Facets...>::value
@@ -239,15 +239,15 @@ facets(const stringify::v0::ftuple<Facets...>& ft)
 
 template
    < typename CharT
-   , typename FTuple
-   , typename ChildFTuple
+   , typename FPack
+   , typename ChildFPack
    , typename ... Args
    >
-inline stringify::v0::detail::ftuple_printer<CharT, FTuple, ChildFTuple, Args...>
+inline stringify::v0::detail::facets_pack_printer<CharT, FPack, ChildFPack, Args...>
 stringify_make_printer
    ( stringify::v0::output_writer<CharT>& out
-   , const FTuple& ft
-   , const stringify::v0::detail::inner_ftuple_with_args<ChildFTuple, Args...>& fmt
+   , const FPack& ft
+   , const stringify::v0::detail::inner_pack_with_args<ChildFPack, Args...>& fmt
    )
 {
     return {out, ft, fmt};
@@ -255,5 +255,5 @@ stringify_make_printer
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_INPUT_TYPES_FTUPLE_HPP
+#endif  // BOOST_STRINGIFY_V0_INPUT_TYPES_FACETS_PACK_HPP
 

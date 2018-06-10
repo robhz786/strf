@@ -41,9 +41,9 @@ public:
 
 // struct exception_tag_input_traits
 // {
-//     template <typename CharT, typename FTuple>
+//     template <typename CharT, typename FPack>
 //     static inline detail::exceptional_printer<CharT>
-//     make_printer(const FTuple& ft, exception_tag x)
+//     make_printer(const FPack& ft, exception_tag x)
 //     {
 //         return {ft, x};
 //     }
@@ -56,11 +56,11 @@ public:
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-template <typename CharT, typename FTuple>
+template <typename CharT, typename FPack>
 inline ::detail::exceptional_printer<CharT>
 stringify_make_printer
     ( const stringify::v0::output_writer<CharT>&
-    , const FTuple&
+    , const FPack&
     , exception_tag x )
 {
     return {x};

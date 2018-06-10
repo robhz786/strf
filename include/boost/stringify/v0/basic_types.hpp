@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <system_error>
-#include <boost/stringify/v0/ftuple.hpp>
+#include <boost/stringify/v0/facets_pack.hpp>
 #include <boost/assert.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -900,8 +900,8 @@ private:
 template <typename CharOut>
 struct output_writer_init
 {
-    template <typename FTuple>
-    output_writer_init(const FTuple& ft)
+    template <typename FPack>
+    output_writer_init(const FPack& ft)
         : m_encoding
             { ft.template get_facet
                 < stringify::v0::encoding_category<CharOut>

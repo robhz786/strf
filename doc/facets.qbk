@@ -129,18 +129,18 @@ You can pass several facets in one call, as well as call `.facets()` several tim
 
 [facets_overriding]
 
-[#ftuple]
-[h4 The `ftuple` class template]
-The purpose of the `ftuple` class template is to group several facets objects.
+[#facets_pack]
+[h4 The `facets_pack` class template]
+The purpose of the `facets_pack` class template is to group several facets objects.
 ``
 template <typename ... Facets>
-class ftuple
+class facets_pack
 {
 public:
 
-    ftuple(const Facets & ...);
-    ftuple(const ftuple& );
-    ftuple(ftuple&& );
+    facets_pack(const Facets & ...);
+    facets_pack(const facets_pack& );
+    facets_pack(facets_pack&& );
 
     template <typename FacetCategory, typename InputType>
     const auto& get_facet() const  {  /* ... */  }
@@ -149,42 +149,29 @@ public:
 ``
 ``
 template <typename ... Facets>
-ftuple<Facets> make_ftuple(const Facets& ... facets)
+facets_pack<Facets> pack(const Facets& ... facets)
 {
-    return ftuple<Facets>{facets ...};
+    return facets_pack<Facets>{facets ...};
 }
 ``
 ``
 template <typename FacetCategory, typename InputType, typename ... Facets>
-constexpr const auto& get_facet(const ftuple<Facets...>& ft)
+constexpr const auto& get_facet(const facets_pack<Facets...>& ft)
 {
     return ft.template get_facet<FacetCategory, InputType>();
 }
 ``
-Passing an ftuple to the `.facets` function is equivalent to pass all the facet objects it contains ( internally they would be grouped in a ftuple anyway ).
-
-[/
-The purpose of the `ftuple` class template is similar to that of `std::locale`: to group several facets objects. The difference is that the facets here are not necessarily related to localization. And also that `ftuple` solves most of things at compilation time, very much like `std::tuple`. Passing an ftuple to the `.facets` function is equivalent to pass all the facet objects it contains ( internally they would be grouped in a ftuple anyway ).
-]
-[/
-An ftuple can be created with the `make_ftuple` function template.
-]
-[/
-You can use an `ftuple` in order to group several facets objects, so that you can reuse without retyping them again and again.
-]
-[/
-You can store many facets objects into a /ftuple/ (a tuple of facets), so that you can reuse such group of facets without needing to retype them all again and again.
-]
+Passing a `facets_pack` to the `.facets` function is equivalent to pass all the facet objects it contains ( internally they would be grouped in a `facets_pack` anyway ).
 
 
 [table Equivalences
 [ [expression] [equivalent expression] ]
 [
-[`make_ftuple(a1, a2, ... , make_ftuple(b1, b2, ...), c1, c2, ...)`]
-[`make_ftuple(a1, a2, ... , b1, b2, ... , c1, c2, ...)`]
+[`pack(a1, a2, ... , pack(b1, b2, ...), c1, c2, ...)`]
+[`pack(a1, a2, ... , b1, b2, ... , c1, c2, ...)`]
 ]
 [
-[[~leading_expression]` .facets( make_ftuple(a1, a2, ...) )` ]
+[[~leading_expression]` .facets(pack(a1, a2, ...))` ]
 [[~leading_expression]` .facets(a1, a2, ...) ` ]
 ]
 [
@@ -194,10 +181,10 @@ You can store many facets objects into a /ftuple/ (a tuple of facets), so that y
 ]
 
 
-You will probably only use the `get_facet` function template if you ever extend the library for a [link extend_input.extend_input new input type]. It returns a reference to a constant facet object inside the `ftuple` that belongs to the given `FacetCategory` and that can be applied to `InputType` ( since facets can be [link constrained_facets constrained] to apply to only certain input types ). If the `ftuple` does not contain such facet, then `FacetCategory::get_default()` is returned.
+You will probably only use the `get_facet` function template if you ever extend the library for a [link extend_input.extend_input new input type]. It returns a reference to a constant facet object inside the `facets_pack` that belongs to the given `FacetCategory` and that can be applied to `InputType` ( since facets can be [link constrained_facets constrained] to apply to only certain input types ). If the `facets_pack` does not contain such facet, then `FacetCategory::get_default()` is returned.
 
 [note 
-Passing a facet object to `make_ftuple` or to `constrain` creates a [_copy] of it into the `ftuple` or into the constrained facet object. In order to avoid copying, you can pass instead a [@http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper `std::reference_wrapper`]. However all facets are designed to provide a fast copy. The [link numpunct str_grouping] is probably the slowest one, since it contains internally a `std::string`.
+Passing a facet object to `pack` or to `constrain` creates a [_copy] of it into the `facets_pack` or into the constrained facet object. In order to avoid copying, you can pass instead a [@http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper `std::reference_wrapper`]. However all facets are designed to provide a fast copy. The [link numpunct str_grouping] is probably the slowest one, since it contains internally a `std::string`.
 ]
 
 

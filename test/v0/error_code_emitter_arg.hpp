@@ -24,10 +24,10 @@ class erroneous_printer: public boost::stringify::v0::printer<CharT>
 
 public:
 
-    template <typename FTuple>
+    template <typename FPack>
     erroneous_printer
         ( boost::stringify::v0::output_writer<CharT>& out
-        , const FTuple&
+        , const FPack&
         , error_tag t )
         noexcept
         : m_out(out)
@@ -57,10 +57,10 @@ private:
 
 // struct error_tag_input_traits
 // {
-//     template <typename CharT, typename FTuple>
+//     template <typename CharT, typename FPack>
 //     static inline detail::erroneous_printer<CharT> make_printer
 //         ( const boost::stringify::v0::output_writer<CharT>& ow
-//         , const FTuple& ft
+//         , const FPack& ft
 //         , error_tag x )
 //     {
 //         return {ft, x};
@@ -73,11 +73,11 @@ private:
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-template <typename CharT, typename FTuple>
+template <typename CharT, typename FPack>
 inline ::detail::erroneous_printer<CharT>
 stringify_make_printer
     ( boost::stringify::v0::output_writer<CharT>& ow
-    , const FTuple& ft
+    , const FPack& ft
     , error_tag x )
 {
     return {ow, ft, x};

@@ -6,14 +6,14 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/stringify/v0/detail/assembly_string.hpp>
-#include <boost/stringify/v0/ftuple.hpp>
+#include <boost/stringify/v0/facets_pack.hpp>
 #include <tuple>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 // template
 //     < typename CharT
-//     , typename FTuple
+//     , typename FPack
 //     , typename InputArg
 //     >
 // auto get_input_traits_helper(int)
@@ -21,7 +21,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 // template
 //     < typename CharT
-//     , typename FTuple
+//     , typename FPack
 //     , typename InputArg
 //     >
 // auto get_input_traits_helper(...)
@@ -29,25 +29,25 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 // template
 //     < typename CharT
-//     , typename FTuple
+//     , typename FPack
 //     , typename InputArg
 //     >
-// using input_traits = decltype(get_input_traits_helper<CharT, FTuple, InputArg>(0));
+// using input_traits = decltype(get_input_traits_helper<CharT, FPack, InputArg>(0));
 
 
-// template < typename CharT, typename FTuple, typename InputArg>
-// inline auto make_printer(const FTuple& ft, const InputArg& arg)
+// template < typename CharT, typename FPack, typename InputArg>
+// inline auto make_printer(const FPack& ft, const InputArg& arg)
 // {
 //     using input_traits = decltype(stringify_get_input_traits(arg));
-//     return input_traits::template make_printer<CharT, FTuple>(ft, arg);
+//     return input_traits::template make_printer<CharT, FPack>(ft, arg);
 // }
 
-// template < typename CharT, typename FTuple, typename InputArg>
-// inline auto make_printer(const FTuple& ft, const InputArg& arg)
+// template < typename CharT, typename FPack, typename InputArg>
+// inline auto make_printer(const FPack& ft, const InputArg& arg)
 // {
 
-//     using traits = stringify::v0::input_traits<CharT, FTuple, InputArg>;
-//     return input_traits::template make_printer<CharT, FTuple>(ft, arg);
+//     using traits = stringify::v0::input_traits<CharT, FPack, InputArg>;
+//     return input_traits::template make_printer<CharT, FPack>(ft, arg);
 // }
 
 
@@ -153,9 +153,9 @@ class output_writer_from_tuple
 {
 public:
 
-    template <typename FTuple, typename ... Args>
+    template <typename FPack, typename ... Args>
     output_writer_from_tuple
-        ( const FTuple& ft
+        ( const FPack& ft
         , const std::tuple<Args...>& tp
         )
         : output_writer_from_tuple(ft, tp, std::make_index_sequence<sizeof...(Args)>{})
@@ -174,9 +174,9 @@ private:
     using CharOut = typename OutputWriter::char_type;
     using Init = typename stringify::v0::output_writer_init<CharOut>;
     
-    template <typename FTuple, typename ArgsTuple, std::size_t ... I>
+    template <typename FPack, typename ArgsTuple, std::size_t ... I>
     output_writer_from_tuple
-        ( const FTuple& ft
+        ( const FPack& ft
         , const ArgsTuple& args
         , std::index_sequence<I...>)
         : m_out(Init{ft}, std::get<I>(args)...)
@@ -187,7 +187,7 @@ private:
 
 template
     < typename CharIn
-    , typename FTuple
+    , typename FPack
     , typename OutputWriter
     , typename OutputWriterInitArgsTuple
     >
@@ -206,14 +206,14 @@ class syntax_after_assembly_string
 public:
 
     syntax_after_assembly_string
-        ( const FTuple& ft
+        ( const FPack& ft
         , const OutputWriterInitArgsTuple& owinit
         , const CharIn* str
         , const CharIn* str_end
         , const reservation_type& res
         , bool sanitise = false
         )
-        : m_ftuple(ft)
+        : m_fpack(ft)
         , m_owinit(owinit)
         , m_str(str)
         , m_end(str_end)
@@ -226,14 +226,14 @@ public:
     BOOST_STRINGIFY_NODISCARD
     decltype(auto) operator()(const Args& ... args) const
     {
-        output_writer_wrapper dest{m_ftuple, m_owinit};
+        output_writer_wrapper dest{m_fpack, m_owinit};
         write(dest.get(), {as_pointer(mk_printer<Args>(dest.get(), args)) ...});
         return dest.get().finish();
     }
     template <typename ... Args>
     decltype(auto) exception(const Args& ... args) const
     {
-        output_writer_wrapper dest{m_ftuple, m_owinit};
+        output_writer_wrapper dest{m_fpack, m_owinit};
         write(dest.get(), {as_pointer(mk_printer<Args>(dest.get(), args)) ...});
         return dest.get().finish_exception();
     }
@@ -241,7 +241,7 @@ public:
     std::size_t calculate_size(OutputWriter& dest, arglist_type args) const
     {
         stringify::v0::detail::asm_string_measurer<CharIn, CharOut> measurer
-        { dest, m_ftuple, args, m_sanitise };
+        { dest, m_fpack, args, m_sanitise };
         stringify::v0::detail::parse_asm_string(m_str, m_end, measurer);
         return measurer.result();
     }
@@ -249,7 +249,7 @@ public:
 private:
 
     template <typename FCategory>
-    const auto& get_facet(const FTuple& ft) const
+    const auto& get_facet(const FPack& ft) const
     {
         return ft.template get_facet<FCategory, input_tag>();
     }
@@ -260,7 +260,7 @@ private:
         , const Arg& arg
         ) const
     {
-        return stringify_make_printer<CharOut, FTuple>(dest, m_ftuple, arg);
+        return stringify_make_printer<CharOut, FPack>(dest, m_fpack, arg);
     }
 
     static const stringify::v0::printer<CharOut>*
@@ -273,12 +273,12 @@ private:
     {
         m_reservation.reserve(*this, owriter, args);
         stringify::v0::detail::asm_string_writer<CharIn, CharOut> asm_writer
-        { owriter, m_ftuple, args, m_sanitise };
+        { owriter, m_fpack, args, m_sanitise };
 
         stringify::v0::detail::parse_asm_string(m_str, m_end, asm_writer);
     }
 
-    const FTuple& m_ftuple;
+    const FPack& m_fpack;
     const OutputWriterInitArgsTuple& m_owinit;
     const CharIn* const m_str;
     const CharIn* const m_end;
@@ -287,7 +287,7 @@ private:
 };
 
 template
-    < typename FTuple
+    < typename FPack
     , typename OutputWriter
     , typename OutputWriterInitArgsTuple
     >
@@ -302,18 +302,18 @@ public:
 
     template <typename CharIn>
     using asm_string = stringify::v0::detail::syntax_after_assembly_string
-        <CharIn, FTuple, OutputWriter, OutputWriterInitArgsTuple>;
+        <CharIn, FPack, OutputWriter, OutputWriterInitArgsTuple>;
 
 public:
 
-    constexpr syntax_after_leading_expr(FTuple&& ft, OutputWriterInitArgsTuple&& args)
-        : m_ftuple(std::move(ft))
+    constexpr syntax_after_leading_expr(FPack&& ft, OutputWriterInitArgsTuple&& args)
+        : m_fpack(std::move(ft))
         , m_owinit(std::move(args))
     {
     }
 
-    constexpr syntax_after_leading_expr(const FTuple& ft, const OutputWriterInitArgsTuple& args)
-        : m_ftuple(ft)
+    constexpr syntax_after_leading_expr(const FPack& ft, const OutputWriterInitArgsTuple& args)
+        : m_fpack(ft)
         , m_owinit(args)
     {
     }
@@ -326,24 +326,24 @@ public:
     constexpr auto facets(const Facets& ... facets) const
     {
         return syntax_after_leading_expr
-            < decltype(stringify::v0::make_ftuple(m_ftuple, facets ...))
+            < decltype(stringify::v0::pack(m_fpack, facets ...))
             , OutputWriter
             , OutputWriterInitArgsTuple
             >
-            ( stringify::v0::make_ftuple(m_ftuple, facets ...)
+            ( stringify::v0::pack(m_fpack, facets ...)
             , m_owinit
             );
     }
 
     template <typename ... Facets>
-    constexpr auto facets(const stringify::v0::ftuple<Facets...>& ft) const
+    constexpr auto facets(const stringify::v0::facets_pack<Facets...>& ft) const
     {
         return syntax_after_leading_expr
-            < decltype(stringify::v0::make_ftuple(m_ftuple, ft))
+            < decltype(stringify::v0::pack(m_fpack, ft))
             , OutputWriter
             , OutputWriterInitArgsTuple
             >
-            ( stringify::v0::make_ftuple(m_ftuple, ft)
+            ( stringify::v0::pack(m_fpack, ft)
             , m_owinit
             );
     }
@@ -363,17 +363,17 @@ public:
         return std::move(*this);
     }
 
-    constexpr syntax_after_leading_expr facets(stringify::v0::ftuple<>) const &
+    constexpr syntax_after_leading_expr facets(stringify::v0::facets_pack<>) const &
     {
         return *this;
     }
 
-    constexpr syntax_after_leading_expr& facets(stringify::v0::ftuple<>) &
+    constexpr syntax_after_leading_expr& facets(stringify::v0::facets_pack<>) &
     {
         return *this;
     }
 
-    constexpr syntax_after_leading_expr&& facets(stringify::v0::ftuple<>) &&
+    constexpr syntax_after_leading_expr&& facets(stringify::v0::facets_pack<>) &&
     {
         return std::move(*this);
     }
@@ -485,7 +485,7 @@ public:
     BOOST_STRINGIFY_NODISCARD
     decltype(auto) operator()(const Args& ... args) const
     {
-        output_writer_wrapper writer{m_ftuple, m_owinit};
+        output_writer_wrapper writer{m_fpack, m_owinit};
         write(writer.get(), {as_pointer(mk_printer<Args>(writer.get(), args)) ...});
         return writer.get().finish();
     }
@@ -493,7 +493,7 @@ public:
     template <typename ... Args>
     decltype(auto) exception(const Args& ... args) const
     {
-        output_writer_wrapper writer{m_ftuple, m_owinit};
+        output_writer_wrapper writer{m_fpack, m_owinit};
         write(writer.get(), {as_pointer(mk_printer<Args>(writer.get(), args)) ...});
         return writer.get().finish_exception();
     }
@@ -503,7 +503,7 @@ private:
     template <typename CharIn>
     asm_string<CharIn> asm_str(const CharIn* begin, const CharIn* end) const
     {
-        return {m_ftuple, m_owinit, begin, end, m_reservation};
+        return {m_fpack, m_owinit, begin, end, m_reservation};
     }
 
     
@@ -519,7 +519,7 @@ private:
         , const Arg& arg )
         const
     {
-        return stringify_make_printer<char_type, FTuple>(ow, m_ftuple, arg);
+        return stringify_make_printer<char_type, FPack>(ow, m_fpack, arg);
     }
 
     void write(OutputWriter& writer, arglist_type args) const
@@ -532,7 +532,7 @@ private:
     }
 
 
-    FTuple m_ftuple;
+    FPack m_fpack;
     OutputWriterInitArgsTuple m_owinit;
     stringify::v0::detail::output_size_reservation<OutputWriter>
     m_reservation;
@@ -544,12 +544,12 @@ private:
 template <typename OutputWriter, typename ... Args>
 constexpr auto make_args_handler(Args ... args)
     -> stringify::v0::detail::syntax_after_leading_expr
-        < stringify::v0::ftuple<>
+        < stringify::v0::facets_pack<>
         , OutputWriter
         , std::tuple<Args ...>
         >
 {
-    return {stringify::v0::ftuple<>{}, std::tuple<Args ...>{args ...}};
+    return {stringify::v0::facets_pack<>{}, std::tuple<Args ...>{args ...}};
 }
 
 template <typename T>

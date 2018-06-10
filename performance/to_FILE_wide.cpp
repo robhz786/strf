@@ -145,9 +145,9 @@ int main()
         strf::wwrite(dest).facets(strf::width(6), strf::left, strf::showpos) [{ 25 }];
     }
 
-    PRINT_BENCHMARK("strf::wwrite(dest)({strf::make_ftuple(width(6), left, showpos), {25}})")
+    PRINT_BENCHMARK("strf::wwrite(dest)({strf::pack(width(6), left, showpos), {25}})")
     {
-        strf::wwrite(dest) [{ {strf::make_ftuple(strf::width(6), strf::left, strf::showpos), {25}} }];
+        strf::wwrite(dest) [{ {strf::pack(strf::width(6), strf::left, strf::showpos), {25}} }];
     }
     PRINT_BENCHMARK("fwprintf(dest, L\"%6-+d\", 25)")
     {

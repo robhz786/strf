@@ -3,7 +3,7 @@
 
 #include <algorithm>
 #include <limits>
-#include <boost/stringify/v0/ftuple.hpp>
+#include <boost/stringify/v0/facets_pack.hpp>
 #include <boost/stringify/v0/facets/width_calculator.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -185,10 +185,10 @@ class simple_string_printer: public stringify::v0::printer<CharOut>
 
 public:
 
-    template <typename FTuple>
+    template <typename FPack>
     simple_string_printer
         ( stringify::v0::output_writer<CharOut>& out
-        , const FTuple& ft
+        , const FPack& ft
         , const CharIn* str
         , std::size_t len
         ) noexcept
@@ -233,8 +233,8 @@ private:
     const stringify::v0::decoder<CharIn>& m_decoder;
     const stringify::v0::width_calculator m_wcalc;
 
-    template <typename Category, typename FTuple>
-    const auto& get_facet(const FTuple& ft) const
+    template <typename Category, typename FPack>
+    const auto& get_facet(const FPack& ft) const
     {
         return ft.template get_facet<Category, input_tag>();
     }
@@ -274,10 +274,10 @@ class simple_string_printer<CharT, CharT>: public stringify::v0::printer<CharT>
 
 public:
 
-    template <typename FTuple>
+    template <typename FPack>
     simple_string_printer
         ( stringify::v0::output_writer<CharOut>& out
-        , const FTuple& ft
+        , const FPack& ft
         , const CharIn* str
         , std::size_t len
         ) noexcept
@@ -303,8 +303,8 @@ private:
     const std::size_t m_len;
     const stringify::v0::width_calculator m_wcalc;
 
-    template <typename Category, typename FTuple>
-    const auto& get_facet(const FTuple& ft) const
+    template <typename Category, typename FPack>
+    const auto& get_facet(const FPack& ft) const
     {
         return ft.template get_facet<Category, input_tag>();
     }
@@ -344,10 +344,10 @@ private:
 
 public:
 
-    template <typename FTuple>
+    template <typename FPack>
     string_printer
         ( stringify::v0::output_writer<CharOut>& out
-        , const FTuple& ft
+        , const FPack& ft
         , const stringify::v0::string_with_formatting<CharIn>& input
         ) noexcept
         : string_printer
@@ -382,8 +382,8 @@ private:
     const stringify::v0::width_calculator m_wcalc;
     const int m_fillcount = 0;
 
-    template <typename Category, typename FTuple>
-    const auto& get_facet(const FTuple& ft) const
+    template <typename Category, typename FPack>
+    const auto& get_facet(const FPack& ft) const
     {
         return ft.template get_facet<Category, input_tag>();
     }
@@ -540,31 +540,31 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_printer<wchar_t, wchar_t>;
 // {
 //     template
 //         < typename CharOut
-//         , typename FTuple
+//         , typename FPack
 //         , typename CharIn
 //         >
 //     static inline stringify::v0::string_printer<CharIn, CharOut>
-//     make_printer(const FTuple& ft, const CharIn* str)
+//     make_printer(const FPack& ft, const CharIn* str)
 //     {
 //         return {ft, str, std::char_traits<CharIn>::length(str)};
 //     }
 
 //     template
 //         < typename CharOut
-//         , typename FTuple
+//         , typename FPack
 //         , typename String
 //         , typename CharIn = typename String::value_type
 //         >
 //     static inline stringify::v0::string_printer<CharIn, CharOut>
-//     make_printer(const FTuple& ft, const String& str)
+//     make_printer(const FPack& ft, const String& str)
 //     {
 //         return {ft, str.data(), str.size()};
 //     }
 
-//     template <typename CharOut, typename FTuple, typename CharIn>
+//     template <typename CharOut, typename FPack, typename CharIn>
 //     static inline stringify::v0::string_printer<CharIn, CharOut>
 //     make_printer
-//        ( const FTuple& ft
+//        ( const FPack& ft
 //        , stringify::v0::string_with_formatting<CharIn> x
 //        )
 //     {
@@ -616,7 +616,7 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_printer<wchar_t, wchar_t>;
 
 template
     < typename CharOut
-    , typename FTuple
+    , typename FPack
     , typename CharIn
     , typename Traits
     , typename Allocator
@@ -624,51 +624,51 @@ template
 inline stringify::v0::simple_string_printer<CharIn, CharOut>
 stringify_make_printer
    ( stringify::v0::output_writer<CharOut>& out
-   , const FTuple& ft
+   , const FPack& ft
    , const std::basic_string<CharIn, Traits, Allocator>& str
    )
 {
     return {out, ft, str.data(), str.size()};
 }
 
-template <typename CharOut, typename FTuple>
+template <typename CharOut, typename FPack>
 inline stringify::v0::simple_string_printer<char, CharOut>
 stringify_make_printer
    ( stringify::v0::output_writer<CharOut>& out
-   , const FTuple& ft
+   , const FPack& ft
    , const char* str
    )
 {
     return {out, ft, str, std::char_traits<char>::length(str)};
 }
 
-template <typename CharOut, typename FTuple>
+template <typename CharOut, typename FPack>
 inline stringify::v0::simple_string_printer<wchar_t, CharOut>
 stringify_make_printer
    ( stringify::v0::output_writer<CharOut>& out
-   , const FTuple& ft
+   , const FPack& ft
    , const wchar_t* str
    )
 {
     return {out, ft, str, std::char_traits<wchar_t>::length(str)};
 }
 
-template <typename CharOut, typename FTuple>
+template <typename CharOut, typename FPack>
 inline stringify::v0::simple_string_printer<char16_t, CharOut>
 stringify_make_printer
    ( stringify::v0::output_writer<CharOut>& out
-   , const FTuple& ft
+   , const FPack& ft
    , const char16_t* str
    )
 {
     return {out, ft, str, std::char_traits<char16_t>::length(str)};
 }
 
-template <typename CharOut, typename FTuple>
+template <typename CharOut, typename FPack>
 inline stringify::v0::simple_string_printer<char32_t, CharOut>
 stringify_make_printer
    ( stringify::v0::output_writer<CharOut>& out
-   , const FTuple& ft
+   , const FPack& ft
    , const char32_t* str
    )
 {
@@ -705,11 +705,11 @@ stringify_fmt(const char32_t* str)
 
 #if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
 
-template <typename CharOut, typename FTuple, typename CharIn, typename Traits>
+template <typename CharOut, typename FPack, typename CharIn, typename Traits>
 inline stringify::v0::simple_string_printer<CharIn, CharOut>
 stringify_make_printer
    ( stringify::v0::output_writer<CharOut>& out
-   , const FTuple& ft
+   , const FPack& ft
    , const std::basic_string_view<CharIn, Traits>& str
    )
 {
@@ -725,11 +725,11 @@ stringify_fmt(const std::basic_string_view<CharIn, Traits>& str)
 
 #endif
 
-template <typename CharOut, typename FTuple, typename CharIn>
+template <typename CharOut, typename FPack, typename CharIn>
 inline stringify::v0::string_printer<CharIn, CharOut>
 stringify_make_printer
     ( stringify::v0::output_writer<CharOut>& out
-    , const FTuple& ft
+    , const FPack& ft
     , const stringify::v0::string_with_formatting<CharIn>& ch
     )
 {

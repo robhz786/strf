@@ -48,10 +48,10 @@ public:
     using printer_ptr = const stringify::v0::printer<CharOut>*;
     using arglist_type = std::initializer_list<printer_ptr>;
 
-    template <typename FTuple>
+    template <typename FPack>
     asm_string_writer
         ( stringify::v0::output_writer<CharOut>& dest
-        , const FTuple& ft
+        , const FPack& ft
         , const arglist_type& args
         , bool sanitise )
         : m_dest(dest)
@@ -86,8 +86,8 @@ public:
     }
 
 private:
-    template <typename Category, typename FTuple>
-    const auto& get_facet(const FTuple& ft) const
+    template <typename Category, typename FPack>
+    const auto& get_facet(const FPack& ft) const
     {
         using input_tag = stringify::v0::asm_string_input_tag<CharIn>;
         return ft.template get_facet<Category, input_tag>();
@@ -108,10 +108,10 @@ class asm_string_measurer: public asm_string_processor<CharIn>
 
 public:
 
-    template <typename FTuple>
+    template <typename FPack>
     asm_string_measurer
         ( stringify::v0::output_writer<CharOut>& dest
-        , const FTuple& ft
+        , const FPack& ft
         , const arglist_type& args
         , bool sanitise )
         : m_args(args)
@@ -151,8 +151,8 @@ private:
     arglist_type m_args;
     stringify::v0::string_writer<CharIn, CharOut> m_sw;
 
-    template <typename Category, typename FTuple>
-    const auto& get_facet(const FTuple& ft) const
+    template <typename Category, typename FPack>
+    const auto& get_facet(const FPack& ft) const
     {
         using input_tag = stringify::v0::asm_string_input_tag<CharIn>;
         return ft.template get_facet<Category, input_tag>();

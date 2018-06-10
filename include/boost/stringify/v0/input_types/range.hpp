@@ -83,7 +83,7 @@ private:
 } // namespace detail
 
 
-template <typename CharT, typename FTuple, typename Iterator>
+template <typename CharT, typename FPack, typename Iterator>
 class range_printer: public printer<CharT>
 {
 public:
@@ -93,7 +93,7 @@ public:
     //using fmt_type = decltype(stringify_fmt(std::declval<const value_type&>()));
 
     // range_printer
-    //     ( const FTuple& ft
+    //     ( const FPack& ft
     //     , iterator begin
     //     , iterator end
     //     , const fmt_type& fmt
@@ -107,7 +107,7 @@ public:
 
     range_printer
         ( writer_type& ow
-        , const FTuple& ft
+        , const FPack& ft
         , iterator begin
         , iterator end
         )
@@ -123,7 +123,7 @@ public:
         std::size_t len = 0;
         for(auto it = m_begin; it < m_end; ++it)
         {
-            len += stringify_make_printer<CharT, FTuple>(m_out, m_ft, *it).length();
+            len += stringify_make_printer<CharT, FPack>(m_out, m_ft, *it).length();
         }
         return len;
     }
@@ -132,7 +132,7 @@ public:
     {
         for(auto it = m_begin; it < m_end && w > 0; ++it)
         {
-            w = stringify_make_printer<CharT, FTuple>(m_out, m_ft, *it).remaining_width(w);
+            w = stringify_make_printer<CharT, FPack>(m_out, m_ft, *it).remaining_width(w);
         }
         return w;
     }
@@ -141,20 +141,20 @@ public:
     {
         for(auto it = m_begin; it < m_end; ++it)
         {
-            stringify_make_printer<CharT, FTuple>(m_out, m_ft, *it).write();
+            stringify_make_printer<CharT, FPack>(m_out, m_ft, *it).write();
         }
     }
 
 private:
 
     stringify::v0::output_writer<CharT>& m_out;
-    const FTuple& m_ft;
+    const FPack& m_ft;
     iterator m_begin;
     iterator m_end;
 };
 
 
-template <typename CharT, typename FTuple, typename Iterator>
+template <typename CharT, typename FPack, typename Iterator>
 class fmt_range_printer: public printer<CharT>
 {
 public:
@@ -165,7 +165,7 @@ public:
 
     fmt_range_printer
         ( writer_type& ow
-        , const FTuple& ft
+        , const FPack& ft
         , const fmt_type& fmt
         )
         : m_out(ow)
@@ -180,7 +180,7 @@ public:
         for(const auto& value : m_fmt)
         {
             // auto rebinded_fmt = stringify_fmt(value).format_as(m_fmt);
-            // auto printer = stringify_make_printer<CharT, FTuple>(m_ft, rebinded_fmt);
+            // auto printer = stringify_make_printer<CharT, FPack>(m_ft, rebinded_fmt);
             // len += printer.length();
             len += make_printer(value).length();
         }
@@ -208,7 +208,7 @@ private:
 
     auto make_printer(const value_type& value) const
     {
-        return stringify_make_printer<CharT, FTuple>
+        return stringify_make_printer<CharT, FPack>
             ( m_out, m_ft, apply_fmt(stringify_fmt(value)) );
     }
 
@@ -223,27 +223,27 @@ private:
     }
 
     stringify::v0::output_writer<CharT>& m_out;
-    const FTuple& m_ft;
+    const FPack& m_ft;
     fmt_type m_fmt;
 };
 
 
-template <typename CharT, typename FTuple, typename Iterator>
-inline stringify::v0::range_printer<CharT, FTuple, Iterator>
+template <typename CharT, typename FPack, typename Iterator>
+inline stringify::v0::range_printer<CharT, FPack, Iterator>
 stringify_make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FTuple& ft
+    , const FPack& ft
     , stringify::v0::detail::range_p<Iterator> r )
 {
     return {out, ft, r.begin, r.end};
 }
 
 
-template <typename CharT, typename FTuple, typename Iterator>
-inline stringify::v0::fmt_range_printer<CharT, FTuple, Iterator>
+template <typename CharT, typename FPack, typename Iterator>
+inline stringify::v0::fmt_range_printer<CharT, FPack, Iterator>
 stringify_make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FTuple& ft
+    , const FPack& ft
     , const stringify::v0::detail::range_with_formatting<Iterator>& fmt)
 {
     return {out, ft, fmt};

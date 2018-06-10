@@ -7,7 +7,7 @@
 
 void sample1()
 {
-    //[ ftuple_input
+    //[ facets_pack_input
     namespace strf = boost::stringify::v0;
 
     auto str = strf::to_string.facets(strf::monotonic_grouping<10>(1))
@@ -33,10 +33,10 @@ void sample1()
 
 void sample2()
 {
-    //[ ftuple_input_2
+    //[ facets_pack_input_2
     namespace strf = boost::stringify::v0;
 
-    auto ft = strf::make_ftuple
+    auto ft = strf::pack
         ( strf::monotonic_grouping<10>(3)
         , strf::monotonic_grouping<16>(4).thousands_sep('\'')
         );
@@ -62,7 +62,7 @@ void sample2()
 
 void sample3()
 {
-    //[ ftuple_input_in_assembly_string
+    //[ facets_pack_input_in_assembly_string
     namespace strf = boost::stringify::v0;
     auto str = strf::to_string.as("{} -- {} -- {}") 
         ( "aaa"

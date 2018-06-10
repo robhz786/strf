@@ -10,7 +10,7 @@ foreach(
   input_int_test
   input_char_test
   input_char32_test
-  input_ftuple_test
+  input_facets_pack_test
   input_range_test
   numpunct_test
   join_test
@@ -18,8 +18,8 @@ foreach(
   output_char_ptr_test
   output_streambuf_test
   output_FILE_test
-  ftuple_merge_test
-  ftuple_test
+  facets_pack_merge_test
+  facets_pack_test
   reserve_test
   width_calculator_test
   transcoding_test

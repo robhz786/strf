@@ -7,7 +7,7 @@
 
 #include <type_traits>
 #include <boost/stringify/v0/basic_types.hpp>
-#include <boost/stringify/v0/ftuple.hpp>
+#include <boost/stringify/v0/facets_pack.hpp>
 #include <boost/stringify/v0/facets/width_calculator.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -105,10 +105,10 @@ class char32_printer: public printer<CharT>
 
 public:
 
-    template <typename FTuple>
+    template <typename FPack>
     char32_printer
         ( stringify::v0::output_writer<CharT>& out
-        , const FTuple& ft
+        , const FPack& ft
         , const stringify::v0::char_with_formatting<char32_t>& input
         ) noexcept
         : char32_printer(out, input, get_width_calculator(ft))
@@ -135,15 +135,15 @@ private:
     stringify::v0::char_with_formatting<char32_t> m_fmt;
     int m_fillcount = 0;
 
-    template <typename FTuple>
-    static const auto& get_out_encoding(const FTuple& ft)
+    template <typename FPack>
+    static const auto& get_out_encoding(const FPack& ft)
     {
         using category = stringify::v0::encoding_category<CharT>;
         return ft.template get_facet<category, input_type>();
     }
 
-    template <typename FTuple>
-    static const auto& get_width_calculator(const FTuple& ft)
+    template <typename FPack>
+    static const auto& get_width_calculator(const FPack& ft)
     {
         using category = stringify::v0::width_calculator_category;
         return ft.template get_facet<category, input_type>();
@@ -275,10 +275,10 @@ class char_printer: public printer<CharT>
 
 public:
 
-    template <typename FTuple>
+    template <typename FPack>
     char_printer
         ( stringify::v0::output_writer<CharT>& out
-        , const FTuple& ft
+        , const FPack& ft
         , const stringify::v0::char_with_formatting<CharT>& input
         ) noexcept
         : char_printer(out, input, get_width_calculator(ft))
@@ -305,15 +305,15 @@ private:
     stringify::v0::char_with_formatting<CharT> m_fmt;
     int m_fillcount = 0;
 
-    template <typename FTuple>
-    static const auto& get_out_encoding(const FTuple& ft)
+    template <typename FPack>
+    static const auto& get_out_encoding(const FPack& ft)
     {
         using category = stringify::v0::encoding_category<CharT>;
         return ft.template get_facet<category, input_type>();
     }
 
-    template <typename FTuple>
-    static const auto& get_width_calculator(const FTuple& ft)
+    template <typename FPack>
+    static const auto& get_width_calculator(const FPack& ft)
     {
         using category = stringify::v0::width_calculator_category;
         return ft.template get_facet<category, input_type>();
@@ -460,15 +460,15 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<wchar_t>;
 //     using printer_type
 //     = typename stringify::v0::detail::char_input_traits_helper<CharOut, CharIn>::type;
 
-//     template <typename CharOut, typename FTuple, typename CharIn>
+//     template <typename CharOut, typename FPack, typename CharIn>
 //     static inline printer_type<CharOut, CharIn> make_printer
-//         ( const FTuple& ft, CharIn ch )
+//         ( const FPack& ft, CharIn ch )
 //     {
 //         return {ft, ch};
 //     }
-//     template <typename CharOut, typename FTuple, typename CharIn>
+//     template <typename CharOut, typename FPack, typename CharIn>
 //     static inline printer_type<CharOut, CharIn> make_printer
-//         ( const FTuple& ft
+//         ( const FPack& ft
 //         , const stringify::v0::char_with_formatting<CharIn>& ch
 //         )
 //     {
@@ -494,13 +494,13 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<wchar_t>;
 
 template
     < typename CharT
-    , typename FTuple
+    , typename FPack
     , typename = typename std::enable_if<!std::is_same<CharT, char32_t>::value>::type
     >
 inline stringify::v0::char32_printer<CharT>
 stringify_make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FTuple& ft
+    , const FPack& ft
     , char32_t ch
     )
 {
@@ -509,33 +509,33 @@ stringify_make_printer
 
 template
     < typename CharT
-    , typename FTuple
+    , typename FPack
     , typename = typename std::enable_if<!std::is_same<CharT, char32_t>::value>::type
     >
 inline stringify::v0::char32_printer<CharT>
 stringify_make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FTuple& ft
+    , const FPack& ft
     , const stringify::v0::char_with_formatting<char32_t>& ch )
 {
     return {out, ft, ch};
 }
 
-template <typename CharT, typename FTuple>
+template <typename CharT, typename FPack>
 inline stringify::v0::char_printer<CharT>
 stringify_make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FTuple& ft
+    , const FPack& ft
     , CharT ch )
 {
     return {out, ft, ch};
 }
 
-template <typename CharT, typename FTuple>
+template <typename CharT, typename FPack>
 inline stringify::v0::char_printer<CharT>
 stringify_make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FTuple& ft
+    , const FPack& ft
     , const stringify::v0::char_with_formatting<CharT>& ch )
 {
     return {out, ft, ch};

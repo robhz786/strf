@@ -51,22 +51,22 @@ This is something you way need to do in case you are using an [link section_asse
 [endsect]
 
 [section Facets]
-[import ../example/v0/ftuple_as_input.cpp]
+[import ../example/v0/facets_pack_as_input.cpp]
 
 You want to apply some facet objects to only a subset of the arguments using the following syntax :
 
 * `facets(`[~facets_obj]`...) (`[~arguments]`...)`
 
-[ftuple_input]
+[facets_pack_input]
 
 Note that the arguments in the sub list can be of any type that is possible in the outer list.
-You can you, for instance, another ftuple:
+You can you, for instance, another facets_pack:
 
-[ftuple_input_2]
+[facets_pack_input_2]
 
 When using assembly string, be aware that the sub-list of argument is treated as it where just one argument:
 
-[ftuple_input_in_assembly_string]
+[facets_pack_input_in_assembly_string]
 
 [endsect]
 

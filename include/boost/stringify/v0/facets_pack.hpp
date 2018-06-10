@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_FTUPLE_HPP
-#define BOOST_STRINGIFY_V0_FTUPLE_HPP
+#ifndef BOOST_STRINGIFY_V0_FACETS_PACK_HPP
+#define BOOST_STRINGIFY_V0_FACETS_PACK_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -126,7 +126,7 @@ auto constrain(const Facet& facet)
     return constrained_facet<Filter, Facet>(facet);
 }
 
-template <typename ... F> class ftuple;
+template <typename ... F> class facets_pack;
 
 namespace detail {
 
@@ -145,14 +145,14 @@ using base_tag = increment_tag<absolute_lowest_tag>;
 
 
 template <typename LowestTag>
-struct ftuple_end
+struct facets_pack_end
 {
     void do_get_facet();
 };
 
 
 template <>
-struct ftuple_end<base_tag>
+struct facets_pack_end<base_tag>
 {
     template <typename, typename FacetCategory>
     constexpr const auto&
@@ -164,40 +164,40 @@ struct ftuple_end<base_tag>
 
 
 template <typename LowestTag>
-class empty_ftuple: public ftuple_end<LowestTag>
+class empty_fpack: public facets_pack_end<LowestTag>
 {
 public:
 
     using lowest_tag = LowestTag;
     using highest_tag = LowestTag;
 
-    constexpr empty_ftuple() = default;
+    constexpr empty_fpack() = default;
 
-    constexpr empty_ftuple(const empty_ftuple& ) = default;
+    constexpr empty_fpack(const empty_fpack& ) = default;
 
     template <typename OtherLowestTag>
-    using rebind = empty_ftuple<OtherLowestTag>;
+    using rebind = empty_fpack<OtherLowestTag>;
 
-    using ftuple_end<LowestTag>::do_get_facet;
+    using facets_pack_end<LowestTag>::do_get_facet;
 };
 
 
 template <typename LowestTag, typename Facet>
-class single_facet_ftuple: public ftuple_end<LowestTag>
+class single_facet_pack: public facets_pack_end<LowestTag>
 {
 public:
 
-    constexpr single_facet_ftuple(const Facet& f) : m_facet(f) {}
+    constexpr single_facet_pack(const Facet& f) : m_facet(f) {}
 
-    constexpr single_facet_ftuple(const single_facet_ftuple& r) = default;
+    constexpr single_facet_pack(const single_facet_pack& r) = default;
 
     using lowest_tag = LowestTag;
     using highest_tag = LowestTag;
 
     template <typename OtherLowestTag>
-    using rebind = single_facet_ftuple<OtherLowestTag, Facet>;
+    using rebind = single_facet_pack<OtherLowestTag, Facet>;
 
-    using ftuple_end<LowestTag>::do_get_facet;
+    using facets_pack_end<LowestTag>::do_get_facet;
 
     template <typename>
     constexpr const Facet& do_get_facet
@@ -217,11 +217,11 @@ template
     , template <class> class Filter
     , typename Facet
     >
-class single_facet_ftuple
+class single_facet_pack
         < LowestTag
         , boost::stringify::v0::constrained_facet<Filter, Facet>
         >
-    : public ftuple_end<LowestTag>
+    : public facets_pack_end<LowestTag>
 {
 
     using ConstrainedFacet
@@ -229,19 +229,19 @@ class single_facet_ftuple
 
 public:
 
-    constexpr single_facet_ftuple
+    constexpr single_facet_pack
         (const ConstrainedFacet& f) : m_constrained_facet(f) {};
 
-    constexpr single_facet_ftuple
-        (const single_facet_ftuple& r) = default;
+    constexpr single_facet_pack
+        (const single_facet_pack& r) = default;
 
     using lowest_tag = LowestTag;
     using highest_tag = LowestTag;
 
     template <typename OtherLowestTag>
-    using rebind = single_facet_ftuple<OtherLowestTag, ConstrainedFacet>;
+    using rebind = single_facet_pack<OtherLowestTag, ConstrainedFacet>;
 
-    using ftuple_end<LowestTag>::do_get_facet;
+    using facets_pack_end<LowestTag>::do_get_facet;
 
     template
         < typename InputType
@@ -264,24 +264,24 @@ private:
 
 
 template <typename LowestTag, typename Facet>
-class ref_facet_ftuple: public ftuple_end<LowestTag>
+class ref_facet_pack: public facets_pack_end<LowestTag>
 {
 public:
 
-    constexpr ref_facet_ftuple(std::reference_wrapper<Facet> facet_ref)
+    constexpr ref_facet_pack(std::reference_wrapper<Facet> facet_ref)
         : m_facet_ref(facet_ref)
     {
     }
 
-    constexpr ref_facet_ftuple(const ref_facet_ftuple& copy) = default;
+    constexpr ref_facet_pack(const ref_facet_pack& copy) = default;
 
     using lowest_tag = LowestTag;
     using highest_tag = LowestTag;
 
     template <typename OtherLowestTag>
-    using rebind = ref_facet_ftuple<OtherLowestTag, Facet>;
+    using rebind = ref_facet_pack<OtherLowestTag, Facet>;
 
-    using ftuple_end<LowestTag>::do_get_facet;
+    using facets_pack_end<LowestTag>::do_get_facet;
 
     template <typename>
     constexpr const Facet& do_get_facet
@@ -301,10 +301,10 @@ template
     , template <class> class Filter
     , typename Facet
     >
-class ref_facet_ftuple
+class ref_facet_pack
         < LowestTag
         , const boost::stringify::v0::constrained_facet<Filter, Facet > >
-    : public ftuple_end<LowestTag>
+    : public facets_pack_end<LowestTag>
 {
 
     using ConstrainedFacet
@@ -313,20 +313,20 @@ class ref_facet_ftuple
 
 public:
 
-    constexpr ref_facet_ftuple(RefConstrainedFacet facet_ref)
+    constexpr ref_facet_pack(RefConstrainedFacet facet_ref)
         : m_facet_ref(facet_ref)
     {
     }
 
-    constexpr ref_facet_ftuple(const ref_facet_ftuple&) = default;
+    constexpr ref_facet_pack(const ref_facet_pack&) = default;
 
     using lowest_tag = LowestTag;
     using highest_tag = LowestTag;
 
     template <typename OtherLowestTag>
-    using rebind = ref_facet_ftuple<OtherLowestTag, const ConstrainedFacet>;
+    using rebind = ref_facet_pack<OtherLowestTag, const ConstrainedFacet>;
 
-    using ftuple_end<LowestTag>::do_get_facet;
+    using facets_pack_end<LowestTag>::do_get_facet;
 
     template
         < typename InputType
@@ -347,141 +347,141 @@ private:
 };
 
 
-template< typename LowerFTuple, typename HigherFTuple>
-class ftuple_join : private LowerFTuple, private HigherFTuple
+template< typename LowerFPack, typename HigherFPack>
+class facets_pack_join : private LowerFPack, private HigherFPack
 {
 public:
 
     static_assert
         ( std::is_base_of
-              < typename LowerFTuple::highest_tag
-              , typename HigherFTuple::lowest_tag
+              < typename LowerFPack::highest_tag
+              , typename HigherFPack::lowest_tag
               >::value
         , "inconsistent tags"
         );
 
-    using highest_tag = typename HigherFTuple::highest_tag;
-    using lowest_tag = typename LowerFTuple::lowest_tag;
+    using highest_tag = typename HigherFPack::highest_tag;
+    using lowest_tag = typename LowerFPack::lowest_tag;
 
-    constexpr ftuple_join(const LowerFTuple lf, const HigherFTuple& hf)
-        : LowerFTuple(lf)
-        , HigherFTuple(hf)
+    constexpr facets_pack_join(const LowerFPack lf, const HigherFPack& hf)
+        : LowerFPack(lf)
+        , HigherFPack(hf)
     {
     }
 
-    constexpr ftuple_join(const ftuple_join&) = default;
+    constexpr facets_pack_join(const facets_pack_join&) = default;
 
     template <typename OtherLowestTag>
     struct rebind_helper
     {
-        using new_lower_ftuple
-            = typename LowerFTuple::template rebind<OtherLowestTag>;
-        using tag = increment_tag<typename new_lower_ftuple::highest_tag>;
-        using new_higher_ftuple
-            = typename HigherFTuple::template rebind<tag>;
+        using new_lower_fpack
+            = typename LowerFPack::template rebind<OtherLowestTag>;
+        using tag = increment_tag<typename new_lower_fpack::highest_tag>;
+        using new_higher_fpack
+            = typename HigherFPack::template rebind<tag>;
 
-        using type = ftuple_join<new_lower_ftuple, new_higher_ftuple>;
+        using type = facets_pack_join<new_lower_fpack, new_higher_fpack>;
     };
 
     template <typename OtherLowestTag>
     using rebind = typename rebind_helper<OtherLowestTag>::type;
 
-    using HigherFTuple::do_get_facet;
-    using LowerFTuple::do_get_facet;
+    using HigherFPack::do_get_facet;
+    using LowerFPack::do_get_facet;
 
 };
 
-struct ftuple_helper
+struct facets_pack_helper
 {
 
     template <typename LowestTag>
-    static constexpr empty_ftuple<LowestTag> join_multi_ftuples()
+    static constexpr empty_fpack<LowestTag> join_multi_fpacks()
     {
-        return empty_ftuple<LowestTag>();
+        return empty_fpack<LowestTag>();
     }
 
-    template <typename LowestTag, typename FTuple>
-    static constexpr auto join_multi_ftuples(const FTuple& f)
+    template <typename LowestTag, typename FPack>
+    static constexpr auto join_multi_fpacks(const FPack& f)
     {
-        using rebinded_ftuple = typename FTuple::template rebind<LowestTag>;
-        return reinterpret_cast<const rebinded_ftuple&>(f);
+        using rebinded_fpack = typename FPack::template rebind<LowestTag>;
+        return reinterpret_cast<const rebinded_fpack&>(f);
     }
 
 
     template
         < typename LowestTag
-        , typename FTuple1
-        , typename FTuple2
-        , typename ... HigherFTuples
+        , typename FPack1
+        , typename FPack2
+        , typename ... HigherFPacks
         >
-    static constexpr auto join_multi_ftuples
-        ( const FTuple1& f1
-        , const FTuple2& f2
-        , const HigherFTuples& ... hfs
+    static constexpr auto join_multi_fpacks
+        ( const FPack1& f1
+        , const FPack2& f2
+        , const HigherFPacks& ... hfs
         )
     {
-        using lower_type = typename FTuple1::template rebind<LowestTag>;
+        using lower_type = typename FPack1::template rebind<LowestTag>;
         using middle_tag = increment_tag<typename lower_type::highest_tag>;
-        using higher_type = decltype(join_multi_ftuples<middle_tag>(f2, hfs ...));
+        using higher_type = decltype(join_multi_fpacks<middle_tag>(f2, hfs ...));
 
-        return ftuple_join<lower_type, higher_type>
+        return facets_pack_join<lower_type, higher_type>
             { reinterpret_cast<const lower_type&>(f1)
-            , join_multi_ftuples<middle_tag>(f2, hfs ...)
+            , join_multi_fpacks<middle_tag>(f2, hfs ...)
             };
     }
 
     template <typename Facet, typename = typename Facet::category>
-    static constexpr const auto& as_ftuple(const Facet& f)
+    static constexpr const auto& as_pack(const Facet& f)
     {
-        using ftuple_type = single_facet_ftuple<base_tag, Facet>;
-        return reinterpret_cast<const ftuple_type&>(f);
+        using fpack_type = single_facet_pack<base_tag, Facet>;
+        return reinterpret_cast<const fpack_type&>(f);
     }
 
     template <typename Facet>
-    static constexpr auto as_ftuple(std::reference_wrapper<Facet> f)
+    static constexpr auto as_pack(std::reference_wrapper<Facet> f)
     {
-        return stringify::v0::detail::ref_facet_ftuple<base_tag, const Facet>
+        return stringify::v0::detail::ref_facet_pack<base_tag, const Facet>
         {f.get()};
     }
 
     template <typename ... F>
-    static constexpr const stringify::v0::ftuple<F...>&
-    as_ftuple(const stringify::v0::ftuple<F...>& f)
+    static constexpr const stringify::v0::facets_pack<F...>&
+    as_pack(const stringify::v0::facets_pack<F...>& f)
     {
         return f;
     }
 
-}; // struct ftuple_helper
+}; // struct facets_pack_helper
 
 template <typename ... F>
-static constexpr auto make_ftuple_impl(const F& ... f)
+static constexpr auto pack_impl(const F& ... f)
 {
     using base_tag = stringify::v0::detail::base_tag;
-    using helper = stringify::v0::detail::ftuple_helper;
-    return helper::join_multi_ftuples<base_tag>(helper::as_ftuple(f)...);
+    using helper = stringify::v0::detail::facets_pack_helper;
+    return helper::join_multi_fpacks<base_tag>(helper::as_pack(f)...);
 }
 
 template <typename ... F>
-using ftuple_impl
-= decltype(stringify::v0::detail::make_ftuple_impl(std::declval<F>()...));
+using facets_pack_impl
+= decltype(stringify::v0::detail::pack_impl(std::declval<F>()...));
 
 } // namespace detail
 
 
 template <typename ... Facets>
-class ftuple: private stringify::v0::detail::ftuple_impl<Facets...>
+class facets_pack: private stringify::v0::detail::facets_pack_impl<Facets...>
 {
-    using impl = stringify::v0::detail::ftuple_impl<Facets...>;
+    using impl = stringify::v0::detail::facets_pack_impl<Facets...>;
 
-    friend struct stringify::v0::detail::ftuple_helper;
+    friend struct stringify::v0::detail::facets_pack_helper;
 
     template <typename, typename>
-    friend class stringify::v0::detail::ftuple_join;
+    friend class stringify::v0::detail::facets_pack_join;
 
 public:
 
-    constexpr ftuple(const Facets& ... f)
-        : impl(stringify::v0::detail::make_ftuple_impl(f...))
+    constexpr facets_pack(const Facets& ... f)
+        : impl(stringify::v0::detail::pack_impl(f...))
     {
     }
 
@@ -495,9 +495,9 @@ public:
 
 
 template <typename ... Facets>
-auto make_ftuple(const Facets& ... f)
+auto pack(const Facets& ... f)
 {
-    return stringify::v0::ftuple<Facets...>(f...);
+    return stringify::v0::facets_pack<Facets...>(f...);
 }
 
 
@@ -506,12 +506,12 @@ template
     , typename InputType
     , typename ... Facets
     >
-constexpr const auto& get_facet(const stringify::v0::ftuple<Facets...>& ft)
+constexpr const auto& get_facet(const stringify::v0::facets_pack<Facets...>& ft)
 {
     return ft.template get_facet<FacetCategory, InputType>();
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_FTUPLE2_HPP
+#endif  // BOOST_STRINGIFY_V0_FACETS_PACK_HPP
 

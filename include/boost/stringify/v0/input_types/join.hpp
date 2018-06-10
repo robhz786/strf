@@ -69,16 +69,16 @@ struct printer_ptr_range
 };
 
 
-template <typename CharT, typename FTuple, typename ... Args>
+template <typename CharT, typename FPack, typename ... Args>
 class printers_tuple;
 
-template <typename CharT, typename FTuple>
-class printers_tuple<CharT, FTuple>
+template <typename CharT, typename FPack>
+class printers_tuple<CharT, FPack>
 {
 public:
     printers_tuple
         ( stringify::v0::output_writer<CharT>&
-        , const FTuple&
+        , const FPack&
         , const stringify::v0::detail::args_tuple<>& )
     {
     }
@@ -92,24 +92,24 @@ public:
 };
 
 
-template <typename CharT, typename FTuple, typename Arg, typename ... Args>
-class printers_tuple<CharT, FTuple, Arg, Args...>
+template <typename CharT, typename FPack, typename Arg, typename ... Args>
+class printers_tuple<CharT, FPack, Arg, Args...>
 {
     using printer_type
         = decltype
-            ( stringify_make_printer<CharT, FTuple>
+            ( stringify_make_printer<CharT, FPack>
                 ( * std::declval<stringify::v0::output_writer<CharT>*> ()
-                , std::declval<FTuple>()
+                , std::declval<FPack>()
                 , std::declval<const Arg>()));
 public:
 
     printers_tuple
         ( stringify::v0::output_writer<CharT>& out
-        , const FTuple& ft
+        , const FPack& ft
         , const stringify::v0::detail::args_tuple<Arg, Args...>& args
         )
         : m_printer
-          (stringify_make_printer<CharT, FTuple>(out, ft, args.first_arg))
+          (stringify_make_printer<CharT, FPack>(out, ft, args.first_arg))
         , m_rest(out, ft, args.remove_first())
     {
     }
@@ -125,19 +125,19 @@ public:
 private:
 
     printer_type m_printer;
-    printers_tuple<CharT, FTuple, Args...> m_rest;
+    printers_tuple<CharT, FPack, Args...> m_rest;
 };
 
 
 
-template <typename CharT, typename FTuple, typename ... Args>
+template <typename CharT, typename FPack, typename ... Args>
 class printers_group
 {
 public:
 
     printers_group
         ( stringify::v0::output_writer<CharT>& out
-        , const FTuple& ft
+        , const FPack& ft
         , const stringify::v0::detail::args_tuple<Args...>& args
         )
         : m_impl(out, ft, args)
@@ -157,7 +157,7 @@ public:
 
 private:
 
-    stringify::v0::detail::printers_tuple<CharT, FTuple, Args...> m_impl;
+    stringify::v0::detail::printers_tuple<CharT, FPack, Args...> m_impl;
 
     using fmt_ptr = const stringify::v0::printer<CharT>*;
     fmt_ptr m_array[sizeof...(Args)];
@@ -340,13 +340,13 @@ private:
 };
 
 
-template <typename CharT, typename FTuple, typename ... Args>
+template <typename CharT, typename FPack, typename ... Args>
 class join_printer
-    : private stringify::v0::detail::printers_group<CharT, FTuple, Args...>
+    : private stringify::v0::detail::printers_group<CharT, FPack, Args...>
     , public stringify::v0::detail::join_printer_impl<CharT>
 {
     using fmt_group
-    = stringify::v0::detail::printers_group<CharT, FTuple, Args...>;
+    = stringify::v0::detail::printers_group<CharT, FPack, Args...>;
 
     using join_impl
     = stringify::v0::detail::join_printer_impl<CharT>;
@@ -358,7 +358,7 @@ public:
 
     join_printer
         ( stringify::v0::output_writer<CharT>& out
-        , const FTuple& ft
+        , const FPack& ft
         , const stringify::v0::detail::joined_args<Args...>& ja
         )
         : fmt_group(out, ft, ja.args)
@@ -372,7 +372,7 @@ public:
 
 private:
 
-    static const auto& get_encoding(const FTuple& ft)
+    static const auto& get_encoding(const FPack& ft)
     {
         using encoder_category = stringify::v0::encoding_category<CharT>;
         return ft.template get_facet<encoder_category, input_type>();
@@ -381,10 +381,10 @@ private:
 
 // struct join_input_traits
 // {
-//     template <typename CharT, typename FTuple, typename ... Args>
-//     static inline stringify::v0::detail::join_printer<CharT, FTuple, Args...>
+//     template <typename CharT, typename FPack, typename ... Args>
+//     static inline stringify::v0::detail::join_printer<CharT, FPack, Args...>
 //     make_printer
-//         ( const FTuple& ft
+//         ( const FPack& ft
 //         , const stringify::v0::detail::joined_args<Args...>& x
 //         )
 //     {
@@ -398,11 +398,11 @@ private:
 // stringify::v0::detail::join_input_traits stringify_get_input_traits
 // (const stringify::v0::detail::joined_args<Args...>&);
 
-template <typename CharT, typename FTuple, typename ... Args>
-inline stringify::v0::detail::join_printer<CharT, FTuple, Args...>
+template <typename CharT, typename FPack, typename ... Args>
+inline stringify::v0::detail::join_printer<CharT, FPack, Args...>
 stringify_make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FTuple& ft
+    , const FPack& ft
     , const stringify::v0::detail::joined_args<Args...>& x )
 {
     return {out, ft, x};

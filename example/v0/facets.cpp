@@ -71,18 +71,18 @@ void get_facet_sample()
     auto punct_hex  = strf::monotonic_grouping<16>{4}.thousands_sep('\'');
     auto punct_dec  = strf::monotonic_grouping<10>{3}.thousands_sep('.');
 
-    auto ftuple_obj = strf::make_ftuple
+    auto fp = strf::pack
         ( std::ref(punct_hex) // note the use of std::ref here
         , strf::constrain<strf::is_int_number>(std::ref(punct_dec)) // and here
         );
 
-    const auto& f1 = strf::get_facet<strf::numpunct_category<16>, int>(ftuple_obj);
+    const auto& f1 = strf::get_facet<strf::numpunct_category<16>, int>(fp);
     BOOST_ASSERT(&f1 == &punct_hex);
 
-    const auto& f2 = strf::get_facet<strf::numpunct_category<10>, int>(ftuple_obj);
+    const auto& f2 = strf::get_facet<strf::numpunct_category<10>, int>(fp);
     BOOST_ASSERT(&f2 == &punct_dec);
 
-    const auto& f3 = strf::get_facet<strf::numpunct_category<10>, double>(ftuple_obj);
+    const auto& f3 = strf::get_facet<strf::numpunct_category<10>, double>(fp);
     BOOST_ASSERT(&f3 == &strf::numpunct_category<10>::get_default());
     //]
     (void)f1;

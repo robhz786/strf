@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/stringify/v0/basic_types.hpp>
-#include <boost/stringify/v0/ftuple.hpp>
+#include <boost/stringify/v0/facets_pack.hpp>
 #include <boost/stringify/v0/facets/encodings.hpp>
 #include <boost/stringify/v0/facets/numpunct.hpp>
 #include <boost/stringify/v0/detail/number_of_digits.hpp>
@@ -246,10 +246,10 @@ public:
     using char_type   = CharT;
     using writer_type = stringify::v0::output_writer<CharT>;
 
-    template <typename FTuple>
+    template <typename FPack>
     int_printer
         ( stringify::v0::output_writer<CharT>& out
-        , const FTuple& ft
+        , const FPack& ft
         , const stringify::v0::int_with_formatting<IntT>& value
         ) noexcept
         : int_printer
@@ -286,8 +286,8 @@ private:
     const stringify::v0::numpunct_base& m_numpunct;
     int m_fillcount = 0;
 
-    template <int Base, typename FTuple>
-    const stringify::v0::numpunct<Base>& get_numpunct(const FTuple& ft) noexcept
+    template <int Base, typename FPack>
+    const stringify::v0::numpunct<Base>& get_numpunct(const FPack& ft) noexcept
     {
         using tag = stringify::v0::numpunct_category<Base>;
         return ft.template get_facet<tag, input_type>();
@@ -628,18 +628,18 @@ int int_printer<IntT, CharT>::remaining_width(int w) const
 // template <typename IntT>
 // struct int_input_traits
 // {
-//     template <typename CharT, typename FTuple>
+//     template <typename CharT, typename FPack>
 //     static inline stringify::v0::int_printer<IntT, CharT> make_printer
-//         ( const FTuple& ft
+//         ( const FPack& ft
 //         , IntT ch
 //         )
 //     {
 //         return {ft, ch};
 //     }
 
-//     template <typename CharT, typename FTuple>
+//     template <typename CharT, typename FPack>
 //     static inline stringify::v0::int_printer<IntT, CharT> make_printer
-//         ( const FTuple& ft
+//         ( const FPack& ft
 //         , const stringify::v0::int_with_formatting<IntT>& ch
 //         )
 //     {
@@ -702,85 +702,85 @@ int int_printer<IntT, CharT>::remaining_width(int w) const
 // stringify_get_input_traits(unsigned long long);
 
 
-template <typename CharT, typename FTuple>
+template <typename CharT, typename FPack>
 inline stringify::v0::int_printer<short, CharT>
 stringify_make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FTuple& ft
+    , const FPack& ft
     , short x )
 {
     return {out, ft, x};
 }
-template <typename CharT, typename FTuple>
+template <typename CharT, typename FPack>
 inline stringify::v0::int_printer<int, CharT>
 stringify_make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FTuple& ft
+    , const FPack& ft
     , int x )
 {
     return {out, ft, x};
 }
-template <typename CharT, typename FTuple>
+template <typename CharT, typename FPack>
 inline stringify::v0::int_printer<long, CharT>
 stringify_make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FTuple& ft
+    , const FPack& ft
     , long x )
 {
     return {out, ft, x};
 }
-template <typename CharT, typename FTuple>
+template <typename CharT, typename FPack>
 inline stringify::v0::int_printer<long long, CharT>
 stringify_make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FTuple& ft
+    , const FPack& ft
     , long long x )
 {
     return {out, ft, x};
 }
-template <typename CharT, typename FTuple>
+template <typename CharT, typename FPack>
 inline stringify::v0::int_printer<unsigned short, CharT>
 stringify_make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FTuple& ft
+    , const FPack& ft
     , unsigned short x )
 {
     return {out, ft, x};
 }
-template <typename CharT, typename FTuple>
+template <typename CharT, typename FPack>
 inline stringify::v0::int_printer<unsigned int, CharT>
 stringify_make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FTuple& ft
+    , const FPack& ft
     , unsigned int x )
 {
     return {out, ft, x};
 }
-template <typename CharT, typename FTuple>
+template <typename CharT, typename FPack>
 inline stringify::v0::int_printer<unsigned long, CharT>
 stringify_make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FTuple& ft
+    , const FPack& ft
     , unsigned long x )
 {
     return {out, ft, x};
 }
-template <typename CharT, typename FTuple>
+template <typename CharT, typename FPack>
 inline stringify::v0::int_printer<unsigned long long, CharT>
 stringify_make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FTuple& ft
+    , const FPack& ft
     , unsigned long long x )
 {
     return {out, ft, x};
 }
 
 
-template <typename CharT, typename FTuple, typename IntT>
+template <typename CharT, typename FPack, typename IntT>
 inline stringify::v0::int_printer<IntT, CharT>
 stringify_make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FTuple& ft
+    , const FPack& ft
     , const stringify::v0::int_with_formatting<IntT>& x
     )
 {

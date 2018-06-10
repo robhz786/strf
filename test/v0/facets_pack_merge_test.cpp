@@ -67,8 +67,8 @@ auto x5 = std::cref(x5_);
 auto x6 = std::ref (x6_);
 auto x7 = std::cref(x7_);
 
-template <typename FTuple>
-std::vector<int> digest(const FTuple& ft)
+template <typename FPack>
+std::vector<int> digest(const FPack& ft)
 {
     return std::vector<int>
     {
@@ -89,85 +89,85 @@ int main()
 {
 
     {
-        auto ft = strf::make_ftuple(x7, x6, x5, x4, x3, x2, x1);
+        auto ft = strf::pack(x7, x6, x5, x4, x3, x2, x1);
         BOOST_TEST(digest(ft) == expected);
     }
 
     {
-        auto ft = strf::make_ftuple(x7, x6, x5, x5, x4, x5, x4, x3, x2, x1, x1);
+        auto ft = strf::pack(x7, x6, x5, x5, x4, x5, x4, x3, x2, x1, x1);
         BOOST_TEST(digest(ft) == expected);
     }
 
     {
-        auto ft = strf::make_ftuple
-            (strf::make_ftuple(x7), strf::make_ftuple(x6, x5), x4, x3, x2, x1);
+        auto ft = strf::pack
+            (strf::pack(x7), strf::pack(x6, x5), x4, x3, x2, x1);
         BOOST_TEST(digest(ft) == expected);
     }
 
     {
-        auto ft = strf::make_ftuple
-            (x7, x6, x5, x4, x3, x2, strf::make_ftuple(x1));
+        auto ft = strf::pack
+            (x7, x6, x5, x4, x3, x2, strf::pack(x1));
         BOOST_TEST(digest(ft) == expected);
     }
 
     {
-        auto ft = strf::make_ftuple
-            (x7, x6, x5, strf::make_ftuple(x4, x3), x2, x1);
+        auto ft = strf::pack
+            (x7, x6, x5, strf::pack(x4, x3), x2, x1);
         BOOST_TEST(digest(ft) == expected);
     }
 
     {
-        auto ft = strf::make_ftuple
-            ( strf::make_ftuple(x7)
-            , strf::make_ftuple(x6)
-            , strf::make_ftuple(x5)
-            , strf::make_ftuple(x4)
-            , strf::make_ftuple(x3)
-            , strf::make_ftuple(x2)
-            , strf::make_ftuple(x1)
+        auto ft = strf::pack
+            ( strf::pack(x7)
+            , strf::pack(x6)
+            , strf::pack(x5)
+            , strf::pack(x4)
+            , strf::pack(x3)
+            , strf::pack(x2)
+            , strf::pack(x1)
             );
         BOOST_TEST(digest(ft) == expected);
     }
     {
-        auto ft = strf::make_ftuple
-            ( strf::make_ftuple(strf::make_ftuple(x7))
-            , strf::make_ftuple(strf::make_ftuple(x6))
-            , strf::make_ftuple(strf::make_ftuple(x5))
-            , strf::make_ftuple(strf::make_ftuple(x4))
-            , strf::make_ftuple(strf::make_ftuple(x3))
-            , strf::make_ftuple(strf::make_ftuple(x2))
-            , strf::make_ftuple(strf::make_ftuple(x1))
+        auto ft = strf::pack
+            ( strf::pack(strf::pack(x7))
+            , strf::pack(strf::pack(x6))
+            , strf::pack(strf::pack(x5))
+            , strf::pack(strf::pack(x4))
+            , strf::pack(strf::pack(x3))
+            , strf::pack(strf::pack(x2))
+            , strf::pack(strf::pack(x1))
             );
         BOOST_TEST(digest(ft) == expected);
     }
     {
-        auto ft = strf::make_ftuple
-            ( strf::make_ftuple(strf::make_ftuple(x7), strf::make_ftuple(x6))
-            , strf::make_ftuple(strf::make_ftuple(x5), strf::make_ftuple(x4))
-            , strf::make_ftuple(strf::make_ftuple(x3), strf::make_ftuple(x2))
-            , strf::make_ftuple(strf::make_ftuple(x2), strf::make_ftuple(x1))
+        auto ft = strf::pack
+            ( strf::pack(strf::pack(x7), strf::pack(x6))
+            , strf::pack(strf::pack(x5), strf::pack(x4))
+            , strf::pack(strf::pack(x3), strf::pack(x2))
+            , strf::pack(strf::pack(x2), strf::pack(x1))
             );
         BOOST_TEST(digest(ft) == expected);
     }
     {
-        auto ft = strf::make_ftuple
-            ( strf::make_ftuple(strf::make_ftuple(x7, x6, x5))
-            , strf::make_ftuple(x6, x5, x4)
+        auto ft = strf::pack
+            ( strf::pack(strf::pack(x7, x6, x5))
+            , strf::pack(x6, x5, x4)
             , x4, x3, x2
-            , strf::make_ftuple(strf::make_ftuple(x2, x1))
+            , strf::pack(strf::pack(x2, x1))
             );
         BOOST_TEST(digest(ft) == expected);
     }
     {
-        auto ft = strf::make_ftuple
-            ( strf::make_ftuple()
-            , strf::make_ftuple(strf::make_ftuple(x7, x6))
-            , strf::make_ftuple(x5, x4, x5, x4)
-            , strf::make_ftuple(x5, x4)
+        auto ft = strf::pack
+            ( strf::pack()
+            , strf::pack(strf::pack(x7, x6))
+            , strf::pack(x5, x4, x5, x4)
+            , strf::pack(x5, x4)
             , x3
             , x2
-            , strf::make_ftuple(strf::make_ftuple(x2, x1))
-            , strf::make_ftuple()
+            , strf::pack(strf::pack(x2, x1))
+            , strf::pack()
             );
 
         BOOST_TEST(digest(ft) == expected);
