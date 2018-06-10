@@ -10,19 +10,14 @@
 [section The assembly string]
 
 [table 
-[[A `'{'` followed by]  [until]                       [means]]
-[[`'/'`]                [this same `'/'`]             [an escaped `'{'`]]
-[[`'-'`]                [next `'}'` or end of string] [a comment]]
-[[a digit]              [next `'}'` or end of string] [a positional argument]]
-[[any other character]  [next `'}'` or end of string] [a non positional argument]]
+[[A `'{'` followed by]  [until]                           [means]]
+[[`'-'`]                [the next `'}'` or end of string] [a comment]]
+[[a digit]              [the next `'}'` or end of string] [a positional argument]]
+[[any other character]  [the next `'}'` or end of string] [a non positional argument]]
+[[another `'{'`]        [the second `'{'`]                [an escaped `'{'`]]
 ]
 
 [variablelist Notes:
-
-[[Escapes]
-[ There is no way to escape the `'}'` character. There is no need to, since the `'}'` has special meaning only if it corresponds to a previous `'{'`]
-[[asmstr_escape_sample]]
-]
 
 [[Comments]
 [Comments are useful for internationalization, /i.e./ when the assembly string has to be translated to another languages.
@@ -42,6 +37,11 @@ The translation may be the role of someone else than you. So you can add comment
 [[asmstr_non_positional_arg]]
 ]
 
+]
+
+[[Escapes]
+[ There is no way to escape the `'}'` character. There is no need to, since the `'}'` has special meaning only if it corresponds to a previous `'{'`]
+[[asmstr_escape_sample]]
 ]
 
 [/

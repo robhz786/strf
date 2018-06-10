@@ -18,9 +18,9 @@ int main()
     auto xstr = strf::to_string.as("{ } {2} {} {} {} {}")(0, 1, 2, 3);
     BOOST_TEST(!xstr);
     
-    // escape "{" when is followed by /
-    TEST("} } { {/ } {abc}")
-        .as("} } {/ {// } {/abc}")
+    // escape "{" when is followed by another "{"
+    TEST("} } { {a } {abc}")
+        .as("} } {{ {{a } {{abc}")
         ("ignored");
 
     // arguments with comments
@@ -33,16 +33,16 @@ int main()
 
     TEST("X aaa Y")      .as("{} aaa {")      ("X", "Y");
     TEST("X aaa Y")      .as("{} aaa {bbb")   ("X", "Y");
-    TEST("X aaa {")      .as("{} aaa {/")     ("X", "Y");
-    TEST("X aaa {bbb")   .as("{} aaa {/bbb")  ("X", "Y");
+    TEST("X aaa {")      .as("{} aaa {{")     ("X", "Y");
+    TEST("X aaa {bbb")   .as("{} aaa {{bbb")  ("X", "Y");
     TEST("X aaa ")       .as("{} aaa {-")     ("X", "Y");
     TEST("X aaa ")       .as("{} aaa {-bbb")  ("X", "Y");
     TEST("X aaa Y")      .as("{} aaa {1")     ("X", "Y");
     TEST("X aaa Y")      .as("{} aaa {1bb")   ("X", "Y");
     TEST("X aaa Y")      .as("{} aaa {}")     ("X", "Y");
     TEST("X aaa Y")      .as("{} aaa {bbb}")  ("X", "Y");
-    TEST("X aaa {}")     .as("{} aaa {/}")    ("X", "Y");
-    TEST("X aaa {bbb}")  .as("{} aaa {/bbb}") ("X", "Y");
+    TEST("X aaa {}")     .as("{} aaa {{}")    ("X", "Y");
+    TEST("X aaa {bbb}")  .as("{} aaa {{bbb}") ("X", "Y");
     TEST("X aaa ")       .as("{} aaa {-}")    ("X", "Y");
     TEST("X aaa ")       .as("{} aaa {-bbb}") ("X", "Y");
     TEST("X aaa Y")      .as("{} aaa {1}")    ("X", "Y");
@@ -57,9 +57,9 @@ int main()
         .as(u"{ } {2} {} {}")
         (0, 1, 2, 3);
 
-    // escape "{" when is followed by /
+    // escape "{" when is followed by '{'
     TEST(u"} } { {/ } {abc}")
-        .as(u"} } {/ {// } {/abc}")
+        .as(u"} } {{ {{/ } {{abc}")
         (u"ignored");
     
     // arguments with comments

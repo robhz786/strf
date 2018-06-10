@@ -240,7 +240,7 @@ void parse_asm_string
             proc.put_arg(res.value);
             continue;
         }
-        if(ch == static_cast<CharT>('/'))
+        if(ch == static_cast<CharT>('{'))
         {
             proc.put(prev, it);
             ++it;

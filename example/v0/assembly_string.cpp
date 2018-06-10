@@ -7,8 +7,8 @@ int main()
 {
     {
         //[ asmstr_escape_sample
-        auto str = strf::to_string.as("} }/ {/ } {}")("aaa");
-        BOOST_ASSERT(str.value() == "} }/ { } aaa");
+        auto str = strf::to_string.as("} {{ } {}")("aaa");
+        BOOST_ASSERT(str.value() == "} { } aaa");
         //]
     }
 
