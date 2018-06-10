@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_OUTPUT_TYPES_MAKE_STRING_HPP
-#define BOOST_STRINGIFY_V0_OUTPUT_TYPES_MAKE_STRING_HPP
+#ifndef BOOST_STRINGIFY_V0_OUTPUT_TYPES_TO_STRING_HPP
+#define BOOST_STRINGIFY_V0_OUTPUT_TYPES_TO_STRING_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -275,30 +275,30 @@ template
     , typename Traits = std::char_traits<CharT>
     , typename Allocator = std::allocator<CharT>
     >
-constexpr auto make_basic_string
+constexpr auto to_basic_string
 = boost::stringify::v0::make_args_handler
     <boost::stringify::v0::detail::string_maker
          <std::basic_string<CharT, Traits, Allocator>>>();
 
 
-constexpr auto make_string
+constexpr auto to_string
 = boost::stringify::v0::make_args_handler
     <boost::stringify::v0::detail::string_maker<std::string>>();
 
-constexpr auto make_u16string
+constexpr auto to_u16string
 = boost::stringify::v0::make_args_handler
     <boost::stringify::v0::detail::string_maker<std::u16string>>();
 
-constexpr auto make_u32string
+constexpr auto to_u32string
 = boost::stringify::v0::make_args_handler
     <boost::stringify::v0::detail::string_maker<std::u32string>>();
 
-constexpr auto make_wstring
+constexpr auto to_wstring
 = boost::stringify::v0::make_args_handler
     <boost::stringify::v0::detail::string_maker<std::wstring>>();
 
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_OUTPUT_TYPES_MAKE_STRING_HPP
+#endif  // BOOST_STRINGIFY_V0_OUTPUT_TYPES_TO_STRING_HPP
 

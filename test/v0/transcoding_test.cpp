@@ -46,11 +46,11 @@ void test_in_buffered_output(strf::encoding<CharIn> ein, strf::encoding<CharOut>
 {
     std::error_code errcode = std::make_error_code(std::errc::illegal_byte_sequence);
 
-    auto repstr = strf::make_basic_string<CharOut>
+    auto repstr = strf::to_basic_string<CharOut>
         (replacement_facet(eout).on_error().get_char())
         .value();
 
-    const auto repstr_x12 = strf::make_basic_string<CharOut>
+    const auto repstr_x12 = strf::to_basic_string<CharOut>
         ( repstr, repstr, repstr, repstr, repstr, repstr
         , repstr, repstr, repstr, repstr, repstr, repstr )
         .value();

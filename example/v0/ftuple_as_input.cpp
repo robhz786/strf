@@ -10,7 +10,7 @@ void sample1()
     //[ ftuple_input
     namespace strf = boost::stringify::v0;
 
-    auto str = strf::make_string.facets(strf::monotonic_grouping<10>(1))
+    auto str = strf::to_string.facets(strf::monotonic_grouping<10>(1))
         ( 10000
         , "  "
         , strf::hex(0x10000)
@@ -41,7 +41,7 @@ void sample2()
         , strf::monotonic_grouping<16>(4).thousands_sep('\'')
         );
 
-    auto str = strf::make_string.facets(strf::monotonic_grouping<10>(1))
+    auto str = strf::to_string.facets(strf::monotonic_grouping<10>(1))
         ( 10000
         , "  "
         , strf::hex(0x10000)
@@ -64,7 +64,7 @@ void sample3()
 {
     //[ ftuple_input_in_assembly_string
     namespace strf = boost::stringify::v0;
-    auto str = strf::make_string.as("{} -- {} -- {}") 
+    auto str = strf::to_string.as("{} -- {} -- {}") 
         ( "aaa"
         , strf::facets()("bbb", "ccc", "ddd")
         , "eee"

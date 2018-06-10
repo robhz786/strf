@@ -51,7 +51,7 @@ void basic_make_test()
     std::basic_string<CharT> expected;
 
     auto result = use_all_writing_function_of_output_writer
-        ( strf::make_basic_string<CharT>
+        ( strf::to_basic_string<CharT>
         , expected );
 
     BOOST_TEST(result);
@@ -76,9 +76,9 @@ int main()
     basic_make_test<char32_t>();
     basic_make_test<wchar_t>();
 
-    {   // When set_error is called during make_string
+    {   // When set_error is called during to_string
 
-        auto result = strf::make_string
+        auto result = strf::to_string
             ("abcd", error_code_emitter_arg, "lkjlj");
 
         BOOST_TEST(!result);

@@ -17,19 +17,19 @@
   [ [*`assign (`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [3] [`std::string`]
-  [ [*`make_string `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`to_string `] [*\u00b7\u00b7\u00b7]]]
 
 [ [4] [`std::u16string`]
-  [ [*`make_u16string `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`to_u16string `] [*\u00b7\u00b7\u00b7]]]
 
 [ [5] [`std::u32string`]
-  [ [*`make_u32string `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`to_u32string `] [*\u00b7\u00b7\u00b7]]]
 
 [ [6] [`std::wstring`]
-  [ [*`make_wstring `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`to_wstring `] [*\u00b7\u00b7\u00b7]]]
 
 [ [7] [`std::basic_string<`[~CharT]`, `[~Traits]`, `[~Allocator]`>`]
-  [ [*`make_basic_string <`][~CharT]`, `[~Traits]`, `[~Allocator][*`> (`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`to_basic_string <`][~CharT]`, `[~Traits]`, `[~Allocator][*`> (`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [8]  [[~CharT]`*`]
   [ [*`write(`][~destination]`, `[~limit][*`) `] [*\u00b7\u00b7\u00b7]]]
@@ -79,7 +79,7 @@ where:
 * 11 - 13) `expected<void, std::error_code>`
 
 [/
-This does not mean that others types of exception may not be thrown. For example, the use of `make_string` may throw and 
+This does not mean that others types of exception may not be thrown. For example, the use of `to_string` may throw and 
 ]
 
 [h3 On error]
@@ -94,7 +94,6 @@ This does not mean that others types of exception may not be thrown. For example
 * 7-10) [~Traits] is optional. If omitted, it is `std::char_traits<`[~CharT]`>`
 * 12) [~CharT] is optional. If omitted, it is `char`
 * 12-13) `std::fflush` is [_not] called
-* 3-7) The [link syntax_diagram leading expression] is not assignable. Hence the expression `make_string = {args ...}` does not compile. So you need to use any of the alternative forms.
 
 [caution In (12) the output should be in binary mode, unless [~CharT] is `char`.]
 

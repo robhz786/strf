@@ -111,7 +111,7 @@ int main()
 
     {   // tolerate surrogates
 
-        auto result = strf::make_u32string
+        auto result = strf::to_u32string
             .facets(strf::make_u8decoder().wtf8()) .exception
             ( highsurr_D800,
               lowsurr_DFFF,
@@ -133,7 +133,7 @@ int main()
 
     { // tolerate overlong sequences
 
-        auto result = strf::make_u32string
+        auto result = strf::to_u32string
             .facets(strf::make_u8decoder().tolerate_overlong()) .exception
             ( highsurr_D800,
               lowsurr_DFFF,

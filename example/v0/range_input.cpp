@@ -10,7 +10,7 @@ void sample()
     
     std::vector<int> vec = { 11, 22, 33 };
 
-    auto str = strf::make_string()
+    auto str = strf::to_string()
         ( " ("
         , strf::iterate(vec, ", ")
         , ") "
@@ -28,7 +28,7 @@ void sample2()
     
     std::vector<int> vec = { 250, 251, 252 };
 
-    auto str = strf::make_string()
+    auto str = strf::to_string()
         ( " ("
         , ~strf::hex(strf::iterate(vec, ", "))
         , ") "

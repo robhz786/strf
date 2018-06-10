@@ -176,7 +176,7 @@ You may be wondering, why the comment says that `flush()` or `discard()` shall b
 You can read how the [link output_types.output_types already supported output types] are implemented:
 
 * [@../../include/boost/stringify/v0/output_types/std_string.hpp    std_string.hpp] : This is the source file that implements the [*`append`] and [*`assign`] function templates.
-* [@../../include/boost/stringify/v0/output_types/make_string.hpp   make_string.hpp] : This is the source file implements the [*`make_string`], [*`make_u16string`], [*`make_u32string`], [*`make_wstring`] and [*`make_basic_string`] function templates.
+* [@../../include/boost/stringify/v0/output_types/to_string.hpp   to_string.hpp] : This is the source file implements the [*`to_string`], [*`to_u16string`], [*`to_u32string`], [*`to_wstring`] and [*`to_basic_string`] function templates.
 * [@../../include/boost/stringify/v0/output_types/char_ptr.hpp char_ptr.hpp] : This is the source file implements the [*`format`] function templates that write to raw strings.
 * [@../../include/boost/stringify/v0/output_types/std_streambuf.hpp std_streambuf.hpp] : This is the source file that implements the [*`format`] functing template that writes to `std::streambuff`.
 * [@../../include/boost/stringify/v0/output_types/FILE.hpp FILE.hpp] : This is the source file that implements the [*`format`] and [*`wformat`] function templates that writes to `FILE*`.

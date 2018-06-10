@@ -45,7 +45,7 @@ void char16_tests()
 
     // allowing alone surrogates
     {
-        auto result = strf::make_u32string
+        auto result = strf::to_u32string
             .facets(strf::lax_u16decoder<char16_t>{}) .exception
             (sample_with_alone_surrogates);
 
@@ -113,7 +113,7 @@ void wchar_tests()
 
     // allowing alone surrogates
     {
-        auto result = strf::make_u32string
+        auto result = strf::to_u32string
             .facets(strf::lax_u16decoder<wchar_t>{})
             .exception(sample_with_alone_surrogates);
 

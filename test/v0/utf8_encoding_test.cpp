@@ -62,7 +62,7 @@ int main()
         try
         {
             auto facet = strf::make_u8encoder(strf::from_utf32_throw<char>);
-            auto rstr = strf::make_string.facets(facet)((char32_t)0x110000);
+            auto rstr = strf::to_string.facets(facet)((char32_t)0x110000);
         }
         catch(...)
         {
@@ -85,7 +85,7 @@ int main()
     }
 
     {   // NO MUTF8
-        auto rstr = strf::make_string("--", U'\0', "--");
+        auto rstr = strf::to_string("--", U'\0', "--");
         BOOST_TEST(rstr && rstr.value() == std::string("--\0--", 5));
     }
 

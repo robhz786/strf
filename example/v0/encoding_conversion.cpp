@@ -8,10 +8,10 @@ void input_ouput_different_char_types()
     //[input_output_different_char_types
     namespace strf = boost::stringify::v0;
 
-    auto str   = strf::make_string    ("aaa-", u"bbb-", U"ccc-", L"ddd");
-    auto str16 = strf::make_u16string ("aaa-", u"bbb-", U"ccc-", L"ddd");
-    auto str32 = strf::make_u32string ("aaa-", u"bbb-", U"ccc-", L"ddd");
-    auto wstr  = strf::make_wstring   ("aaa-", u"bbb-", U"ccc-", L"ddd");
+    auto str   = strf::to_string    ("aaa-", u"bbb-", U"ccc-", L"ddd");
+    auto str16 = strf::to_u16string ("aaa-", u"bbb-", U"ccc-", L"ddd");
+    auto str32 = strf::to_u32string ("aaa-", u"bbb-", U"ccc-", L"ddd");
+    auto wstr  = strf::to_wstring   ("aaa-", u"bbb-", U"ccc-", L"ddd");
 
     BOOST_ASSERT(str.value()   ==  "aaa-bbb-ccc-ddd");
     BOOST_ASSERT(str16.value() == u"aaa-bbb-ccc-ddd");
@@ -29,12 +29,12 @@ void mutf8 ()
 
     // from UTF-16 to  Modified UTF-8 (MTF-8)
     std::u16string str_utf16 {u"---\0---", 7};
-    auto str_mutf8 = strf::make_string.facets(strf::mutf8()) (str_utf16);
+    auto str_mutf8 = strf::to_string.facets(strf::mutf8()) (str_utf16);
 
     BOOST_ASSERT(str_mutf8.value() == "---\xC0\x80---");
 
     // from Modified UTF-8 (MTF-8) back to UTF-16
-    auto str_utf16_2 = strf::make_u16string.facets(strf::mutf8()) (str_mutf8.value());
+    auto str_utf16_2 = strf::to_u16string.facets(strf::mutf8()) (str_mutf8.value());
     BOOST_ASSERT(str_utf16 == str_utf16_2.value());
     //]
 }
@@ -44,7 +44,7 @@ void arg()
     //[ arg_encoding
     namespace strf = boost::stringify::v0;
 
-    auto str_utf8 = strf::make_string
+    auto str_utf8 = strf::to_string
         ( strf::fmt("--\xA4--").encoding(strf::iso_8859_1())
         , strf::fmt("--\xA4--").encoding(strf::iso_8859_15()));
 
@@ -58,7 +58,7 @@ void arg_abbreviated()
     //[ arg_encoding_abbreviated
     namespace strf = boost::stringify::v0;
 
-    auto str_utf8 = strf::make_string
+    auto str_utf8 = strf::to_string
         ( strf::iso_8859_1("--\xA4--")
         , strf::iso_8859_15("--\xA4--") );
 
@@ -71,7 +71,7 @@ void not_sanitized_inputs()
     //[ not_sanitized_inputs
     namespace strf = boost::stringify::v0;
 
-    auto str_utf8 = strf::make_string
+    auto str_utf8 = strf::to_string
         ( "--\xbf\xbf--"                  // non-conformant UTF-8
         , strf::ascii("--\x80--")         // non-conformant ASCII
         , strf::iso_8859_1("--\x80--") ); // non-conformant ISO 8859-1
@@ -87,7 +87,7 @@ void sanitized_inputs()
     //[ sanitized_inputs
     namespace strf = boost::stringify::v0;
 
-    auto str_utf8 = strf::make_string
+    auto str_utf8 = strf::to_string
         ( strf::sani("--\xbf\xbf--")             // non-conformant UTF-8
         , strf::ascii("--\x80--").sani()         // non-conformant ASCII
         , strf::iso_8859_1("--\x80--").sani() ); // non-conformant ISO 8859-1
@@ -102,7 +102,7 @@ void error_signal_char()
     namespace strf = boost::stringify::v0;
 
     strf::encoding_error enc_err{U'!'};
-    auto str = strf::make_string .facets(enc_err) (strf::sani("--\x99--"));
+    auto str = strf::to_string .facets(enc_err) (strf::sani("--\x99--"));
 
     BOOST_ASSERT(str.value() == "--!--");
     //]
@@ -114,7 +114,7 @@ void error_signal_skip()
     namespace strf = boost::stringify::v0;
 
     strf::encoding_error enc_err{};
-    auto str = strf::make_string .facets(enc_err) (strf::sani("--\x99--"));
+    auto str = strf::to_string .facets(enc_err) (strf::sani("--\x99--"));
 
     BOOST_ASSERT(str.value() == "----");
     //]
@@ -129,7 +129,7 @@ void error_signal_code()
     std::error_code ec{std::make_error_code(std::errc::illegal_byte_sequence)};
     strf::encoding_error enc_err{ec};
 
-    auto str = strf::make_string .facets(enc_err) (strf::sani("--\x99--"));
+    auto str = strf::to_string .facets(enc_err) (strf::sani("--\x99--"));
 
     BOOST_ASSERT(!str && str.error() == ec);
     //]
@@ -150,7 +150,7 @@ void sample()
     {
         namespace strf = boost::stringify::v0;
         strf::encoding_error enc_err{thrower_func};
-        (void) strf::make_string .facets(enc_err) (strf::sani("--\x99--"));
+        (void) strf::to_string .facets(enc_err) (strf::sani("--\x99--"));
     }
     catch(std::invalid_argument& e)
     {
@@ -170,11 +170,11 @@ void keep_surrogates ()
     input_utf16[1] = 0xD800; // a surrogate character alone
 
 
-    auto str1 = strf::make_string
+    auto str1 = strf::to_string
         .facets(strf::keep_surrogates{false})
         (input_utf16);
 
-    auto str2 = strf::make_string
+    auto str2 = strf::to_string
         .facets(strf::keep_surrogates{true})
         (input_utf16);
 
@@ -183,11 +183,11 @@ void keep_surrogates ()
     BOOST_ASSERT(str2.value() ==   "-\xED\xA0\x80---");
 
     // now back to UTF-16
-    auto utf16_no_surr = strf::make_u16string
+    auto utf16_no_surr = strf::to_u16string
         .facets(strf::keep_surrogates{false})
         (str2.value());
 
-    auto utf16_with_surr = strf::make_u16string
+    auto utf16_with_surr = strf::to_u16string
         .facets(strf::keep_surrogates{true})
         (str2.value());
 

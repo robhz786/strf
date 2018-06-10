@@ -7,18 +7,18 @@ void samples()
     //[joins_example
     namespace strf = boost::stringify::v0;
 
-    auto str = strf::make_string
+    auto str = strf::to_string
         ("---", strf::join_right(15) ("abc", "def", 123), "---");
 
     BOOST_ASSERT(str.value() == "---      abcdef123---");
 
 
-    str = strf::make_string
+    str = strf::to_string
         ("---", strf::join_center(15) ("abc", "def", 123), "---");
     BOOST_ASSERT(str.value() == "---   abcdef123   ---");
 
 
-    str = strf::make_string
+    str = strf::to_string
         ( "---"
         , strf::join_left(15, U'.') ("abc", strf::right("def", 5), 123)
         , "---"
@@ -26,7 +26,7 @@ void samples()
 
     BOOST_ASSERT(str.value() == "---abc  def123....---");
 
-    str = strf::make_string
+    str = strf::to_string
         ( "---"
         , strf::join_internal(15, '.', 1) (strf::left("abc", 5), "def", 123)
         , "---"
@@ -79,7 +79,7 @@ void sample()
     std::string host_name = "boost.org";
     unsigned char ip_addr [4] = {146, 20, 110, 251};
     
-    auto str = strf::make_string .as(msg_the_ip_address_of_X_is_X())
+    auto str = strf::to_string .as(msg_the_ip_address_of_X_is_X())
         ( host_name
         , strf::join_left(0)
             (ip_addr[0], '.', ip_addr[1], '.', ip_addr[2], '.', ip_addr[3])

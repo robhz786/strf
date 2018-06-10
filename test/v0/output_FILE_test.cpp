@@ -334,7 +334,7 @@ int main()
         }
 
         std::string expected
-            = strf::make_string(strf::multi(U'\u0800', buff_size_int * 2))
+            = strf::to_string(strf::multi(U'\u0800', buff_size_int * 2))
             .value();
         BOOST_TEST(expected == result);
     }

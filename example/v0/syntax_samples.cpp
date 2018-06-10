@@ -9,7 +9,7 @@ void reserve()
     namespace strf = boost::stringify::v0;
 
     // reserving a bigger size because there are some further appends:
-    auto str = strf::make_string.reserve(500)("blah", "blah");
+    auto str = strf::to_string.reserve(500)("blah", "blah");
 
     // by the way, note that in order to avoid repetition
     // you can store part of the syntax in a variable:
