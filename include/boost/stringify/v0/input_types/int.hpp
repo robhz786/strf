@@ -493,7 +493,7 @@ private:
             {
                 break;
             }
-            it_buff = encoder.convert(thousands_sep, it_buff, buff_end, true);
+            it_buff = encoder.encode(thousands_sep, it_buff, buff_end, true);
             BOOST_ASSERT(it_buff != nullptr);
             BOOST_ASSERT(it_buff < buff_end);
         }

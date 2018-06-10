@@ -91,14 +91,14 @@ class ascii_encoder: public stringify::v0::detail::ascii_variant_encoder
 {
 public:
 
-    char* convert
+    char* encode
         ( char32_t ch
         , char* dest
         , char* end
         , bool allow_surrogates
         ) const override;
 
-    stringify::v0::char_cv_result<char> convert
+    stringify::v0::char_cv_result<char> encode
         ( std::size_t count
         , char32_t ch
         , char* dest
@@ -124,14 +124,14 @@ class iso_8859_1_encoder: public stringify::v0::detail::ascii_variant_encoder
 {
 public:
 
-    char* convert
+    char* encode
         ( char32_t ch
         , char* dest
         , char* end
         , bool allow_surrogates
         ) const override;
 
-    stringify::v0::char_cv_result<char> convert
+    stringify::v0::char_cv_result<char> encode
         ( std::size_t count
         , char32_t ch
         , char* dest
@@ -156,14 +156,14 @@ class iso_8859_15_encoder: public stringify::v0::detail::ascii_variant_encoder
 {
 public:
 
-    char* convert
+    char* encode
         ( char32_t ch
         , char* dest
         , char* end
         , bool allow_surrogates
         ) const override;
 
-    stringify::v0::char_cv_result<char> convert
+    stringify::v0::char_cv_result<char> encode
         ( std::size_t count
         , char32_t ch
         , char* dest
@@ -194,14 +194,14 @@ class windows_1252_encoder: public stringify::v0::detail::ascii_variant_encoder
 {
 public:
 
-    char* convert
+    char* encode
         ( char32_t ch
         , char* dest
         , char* end
         , bool allow_surrogates
         ) const override;
 
-    stringify::v0::char_cv_result<char> convert
+    stringify::v0::char_cv_result<char> encode
         ( std::size_t count
         , char32_t ch
         , char* dest
@@ -252,14 +252,14 @@ public:
 
     std::size_t length(char32_t ch, bool allow_surrogates) const override;
 
-    char* convert
+    char* encode
         ( char32_t ch
         , char* dest
         , char* end
         , bool allow_surrogates
         ) const override;
 
-    stringify::v0::char_cv_result<char> convert
+    stringify::v0::char_cv_result<char> encode
         ( std::size_t count
         , char32_t ch
         , char* dest
@@ -282,14 +282,14 @@ public:
         , bool allow_surrogates )
         const override;
 
-    char* convert
+    char* encode
         ( char32_t ch
         , char* dest
         , char* end
         , bool allow_surrogates )
         const override;
 
-    stringify::v0::char_cv_result<char> convert
+    stringify::v0::char_cv_result<char> encode
         ( std::size_t count
         , char32_t ch
         , char* dest
@@ -335,14 +335,14 @@ public:
 
     std::size_t length(char32_t ch, bool allow_surrogates) const override;
 
-    CharOut* convert
+    CharOut* encode
         ( char32_t ch
         , CharOut* dest_begin
         , CharOut* dest_end
         , bool allow_surrogates )
         const override;
 
-   stringify::v0::char_cv_result<CharOut> convert
+   stringify::v0::char_cv_result<CharOut> encode
         ( std::size_t count
         , char32_t ch
         , CharOut* dest_begin
@@ -397,14 +397,14 @@ public:
 
     std::size_t length(char32_t ch, bool allow_surrogates) const override;
 
-    CharOut* convert
+    CharOut* encode
         ( char32_t ch
         , CharOut* dest_begin
         , CharOut* dest_end
         , bool allow_surrogates)
         const override;
 
-    stringify::v0::char_cv_result<CharOut> convert
+    stringify::v0::char_cv_result<CharOut> encode
         ( std::size_t count
         , char32_t ch
         , CharOut* dest_begin
@@ -474,7 +474,6 @@ class utf8_to_utf16
 {
     using encoder = stringify::v0::detail::utf16_encoder<CharOut>;
     static_assert(sizeof(CharOut) == 2, "incompatible character type for UTF-16");
-    using encoder::convert;
 
 public:
 
@@ -538,8 +537,6 @@ class utf16_to_utf8
 {
     using encoder = stringify::v0::detail::utf8_encoder;
     static_assert(sizeof(CharIn) == 2, "incompatible character type for UTF-16");
-
-    using encoder::convert;
 
 public:
 
@@ -646,7 +643,7 @@ BOOST_STRINGIFY_INLINE stringify::v0::decoder_result<char> ascii_decoder::decode
     return { end, stringify::v0::cv_result::success };
 }
 
-BOOST_STRINGIFY_INLINE char* ascii_encoder::convert
+BOOST_STRINGIFY_INLINE char* ascii_encoder::encode
     ( char32_t ch
     , char* dest
     , char* end
@@ -666,7 +663,7 @@ BOOST_STRINGIFY_INLINE char* ascii_encoder::convert
     return end + 1;
 }
 
-BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> ascii_encoder::convert
+BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> ascii_encoder::encode
     ( std::size_t count
     , char32_t ch
     , char* dest
@@ -718,7 +715,7 @@ BOOST_STRINGIFY_INLINE stringify::v0::decoder_result<char> iso_8859_1_decoder::d
     return { end , stringify::v0::cv_result::success };
 }
 
-BOOST_STRINGIFY_INLINE char* iso_8859_1_encoder::convert
+BOOST_STRINGIFY_INLINE char* iso_8859_1_encoder::encode
     ( char32_t ch
     , char* dest
     , char* end
@@ -738,7 +735,7 @@ BOOST_STRINGIFY_INLINE char* iso_8859_1_encoder::convert
     return nullptr;
 }
 
-BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> iso_8859_1_encoder::convert
+BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> iso_8859_1_encoder::encode
     ( std::size_t count
     , char32_t ch
     , char* dest
@@ -823,7 +820,7 @@ BOOST_STRINGIFY_INLINE stringify::v0::decoder_result<char> iso_8859_15_decoder::
     return { end, stringify::v0::cv_result::success};
 }
 
-BOOST_STRINGIFY_INLINE char* iso_8859_15_encoder::convert
+BOOST_STRINGIFY_INLINE char* iso_8859_15_encoder::encode
     ( char32_t ch
     , char* dest
     , char* end
@@ -845,7 +842,7 @@ BOOST_STRINGIFY_INLINE char* iso_8859_15_encoder::convert
     return nullptr;
 }
 
-BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> iso_8859_15_encoder::convert
+BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> iso_8859_15_encoder::encode
     ( std::size_t count
     , char32_t ch
     , char* dest
@@ -965,7 +962,7 @@ BOOST_STRINGIFY_INLINE stringify::v0::decoder_result<char> windows_1252_decoder:
     return { end, stringify::v0::cv_result::success };
 }
 
-BOOST_STRINGIFY_INLINE char* windows_1252_encoder::convert
+BOOST_STRINGIFY_INLINE char* windows_1252_encoder::encode
     ( char32_t ch
     , char* dest
     , char* end
@@ -989,7 +986,7 @@ BOOST_STRINGIFY_INLINE char* windows_1252_encoder::convert
     return nullptr;
 }
 
-BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> windows_1252_encoder::convert
+BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> windows_1252_encoder::encode
     ( std::size_t count
     , char32_t ch
     , char* dest
@@ -1121,7 +1118,7 @@ BOOST_STRINGIFY_INLINE std::size_t utf8_decoder::remaining_codepoints_count
     return minuend;
 }
 
-BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> utf8_encoder::convert
+BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> utf8_encoder::encode
     ( std::size_t count
     , char32_t ch
     , char* dest
@@ -1180,7 +1177,7 @@ BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> utf8_encoder::convert
     return {c, dest};
 }
 
-BOOST_STRINGIFY_INLINE char* utf8_encoder::convert
+BOOST_STRINGIFY_INLINE char* utf8_encoder::encode
     ( char32_t ch
     , char* dest
     , char* end
@@ -1230,7 +1227,7 @@ BOOST_STRINGIFY_INLINE std::size_t utf8_encoder::length(char32_t ch, bool allow_
             ch < 0x10000 ? 3 : 4);
 }
 
-BOOST_STRINGIFY_INLINE char* mutf8_encoder::convert
+BOOST_STRINGIFY_INLINE char* mutf8_encoder::encode
     ( char32_t ch
     , char* dest
     , char* end
@@ -1240,7 +1237,7 @@ BOOST_STRINGIFY_INLINE char* mutf8_encoder::convert
     if (ch != 0)
     {
         return stringify::v0::detail::utf8_encoder
-            ::convert(ch, dest, end, allow_surrogates);
+            ::encode(ch, dest, end, allow_surrogates);
     }
     if (dest + 1 < end)
     {
@@ -1251,7 +1248,7 @@ BOOST_STRINGIFY_INLINE char* mutf8_encoder::convert
     return end + 1;
 }
 
-BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> mutf8_encoder::convert
+BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> mutf8_encoder::encode
     ( std::size_t count
     , char32_t ch
     , char* dest
@@ -1262,7 +1259,7 @@ BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> mutf8_encoder::conver
     if (ch != 0)
     {
         return stringify::v0::detail::utf8_encoder
-            ::convert(count, ch, dest, end, allow_surrogates);
+            ::encode(count, ch, dest, end, allow_surrogates);
     }
     std::size_t c = 0;
     for(; c != count; ++c)
@@ -1369,7 +1366,7 @@ std::size_t utf16_encoder<CharOut>::length(char32_t ch, bool allow_surrogates) c
 }
 
 template <typename CharOut>
-CharOut* utf16_encoder<CharOut>::convert
+CharOut* utf16_encoder<CharOut>::encode
     ( char32_t ch
     , CharOut* dest
     , CharOut* end
@@ -1396,7 +1393,7 @@ CharOut* utf16_encoder<CharOut>::convert
 }
 
 template <typename CharOut>
-stringify::v0::char_cv_result<CharOut> utf16_encoder<CharOut>::convert
+stringify::v0::char_cv_result<CharOut> utf16_encoder<CharOut>::encode
     ( std::size_t count
     , char32_t ch
     , CharOut* dest_begin
@@ -1404,14 +1401,14 @@ stringify::v0::char_cv_result<CharOut> utf16_encoder<CharOut>::convert
     , bool allow_surr )
     const
 {
-    std::size_t space = dest_end - dest_begin;
+    std::size_t capacity = dest_end - dest_begin;
     if (ch < 0x10000)
     {
         if(allow_surr || ! is_surrogate(ch))
         {
-            count = std::min(count, space);
-            std::char_traits<CharOut>::assign(dest_begin, count, static_cast<CharOut>(ch));
-            return {count, dest_begin + count};
+            count = std::min(count, capacity);
+            auto it = std::fill_n(dest_begin, count, static_cast<CharOut>(ch));
+            return {count, it};
         }
         return {0, nullptr};
     }
@@ -1421,7 +1418,7 @@ stringify::v0::char_cv_result<CharOut> utf16_encoder<CharOut>::convert
         std::pair<CharOut, CharOut> obj =
             { static_cast<CharOut>(0xD800 + ((sub_codepoint & 0xFFC00) >> 10))
             , static_cast<CharOut>(0xDC00 +  (sub_codepoint &  0x3FF)) };
-        count = std::min(count, space / 2);
+        count = std::min(count, capacity / 2);
         std::fill_n(reinterpret_cast<decltype(obj)*>(dest_begin), count, obj);
         return {count, dest_begin + count * 2};
     }
@@ -1509,7 +1506,7 @@ std::size_t utf32_encoder<CharOut>::length(char32_t ch, bool allow_surrogates) c
 }
 
 template <typename CharOut>
-CharOut* utf32_encoder<CharOut>::convert
+CharOut* utf32_encoder<CharOut>::encode
     ( char32_t ch
     , CharOut* dest
     , CharOut * end
@@ -1525,7 +1522,7 @@ CharOut* utf32_encoder<CharOut>::convert
 }
 
 template <typename CharOut>
-stringify::v0::char_cv_result<CharOut> utf32_encoder<CharOut>::convert
+stringify::v0::char_cv_result<CharOut> utf32_encoder<CharOut>::encode
     ( std::size_t count
     , char32_t ch
     , CharOut* dest_begin
@@ -1566,14 +1563,15 @@ bypass_transcoder<CharIn, CharOut>::convert
 
 #if defined(_MSC_VER)
 
-    for (std::size_t i = 0; i < min_size; ++i)
+    for(std::size_t i = 0; i < min_size; ++i)
     {
         dest_begin[i] = static_cast<CharOut>(src_begin[i]);
     }
-    CharOut* it = dest_begin + min_size;
+    CharOut *it = dest_begin + min_size;
 
 #else
 
+    // this emits a warning in Visual Studio
     CharOut* it = std::copy_n(src_begin, min_size, dest_begin);
 
 #endif
@@ -1968,7 +1966,7 @@ stringify::v0::str_cv_result<CharIn, char> utf16_to_utf8<CharIn>::convert
         }
         else if(err_sig.has_char())
         {
-            auto it = encoder::convert
+            auto it = encoder::encode
                 ( err_sig.get_char(), dest_it, dest_end, allow_surrogates );
             if (it == dest_end + 1)
             {
@@ -2046,7 +2044,7 @@ char* utf16_to_utf8<CharIn>::convert
     ) const
 {
     (void) err_sig;
-    return encoder::convert(ch, dest_begin, dest_end, allow_surrogates);
+    return encoder::encode(ch, dest_begin, dest_end, allow_surrogates);
 }
 
 template <typename CharIn>
@@ -2060,7 +2058,7 @@ stringify::v0::char_cv_result<char> utf16_to_utf8<CharIn>::convert
     ) const
 {
     (void) err_sig;
-    return encoder::convert(count, ch, dest_begin, dest_end, allow_surrogates);
+    return encoder::encode(count, ch, dest_begin, dest_end, allow_surrogates);
 }
 
 template <typename CharIn>

@@ -105,7 +105,7 @@ public:
     /**
     if ch is invalid or not supported return {0, nullptr}
     */
-    virtual stringify::v0::char_cv_result<CharOut> convert
+    virtual stringify::v0::char_cv_result<CharOut> encode
        ( std::size_t count
         , char32_t ch
         , CharOut* dest_begin
@@ -118,7 +118,7 @@ public:
     - space is insufficient : end + 1
     - ch is invalid or not supported: nullptr
     */
-    virtual CharOut* convert
+    virtual CharOut* encode
         ( char32_t ch
         , CharOut* dest
         , CharOut* dest_end
@@ -332,13 +332,13 @@ stringify::v0::char_cv_result<CharOut> emit
     if(err_sig.has_char())
     {
         char32_t ch = err_sig.get_char();
-        auto r = encoder.convert(ch, dest, dest_end, allow_surrogates);
+        auto r = encoder.encode(ch, dest, dest_end, allow_surrogates);
         if(nullptr == r.dest_it)
         {
             BOOST_ASSERT(0 == r.count);
             ch = U'?';
             err_sig.reset(ch);
-            r = encoder.convert(ch, dest, dest_end, allow_surrogates);
+            r = encoder.encode(ch, dest, dest_end, allow_surrogates);
         }
         BOOST_ASSERT(nullptr != r.dest_it);
         return r;
@@ -367,12 +367,12 @@ CharOut* emit
     if(err_sig.has_char())
     {
         char32_t ch = err_sig.get_char();
-        auto it = encoder.convert(ch, dest, dest_end, allow_surrogates);
+        auto it = encoder.encode(ch, dest, dest_end, allow_surrogates);
         if(nullptr == it)
         {
             ch = U'?';
             err_sig.reset(ch);
-            it = encoder.convert(ch, dest, dest_end, allow_surrogates);
+            it = encoder.encode(ch, dest, dest_end, allow_surrogates);
         }
         BOOST_ASSERT(it != nullptr);
         return it;
@@ -1019,12 +1019,12 @@ protected:
 
     CharOut* encode(CharOut* dest_it, CharOut* dest_end, char32_t ch) const
     {
-        return encoder().convert(ch, dest_it, dest_end, allow_surrogates());
+        return encoder().encode(ch, dest_it, dest_end, allow_surrogates());
     }
 
     auto encode(CharOut* dest_it, CharOut* dest_end, std::size_t count, char32_t ch) const
     {
-        return encoder().convert(count, ch, dest_it, dest_end, allow_surrogates());
+        return encoder().encode(count, ch, dest_it, dest_end, allow_surrogates());
     }
 
     constexpr static std::size_t buff_size = sizeof(CharOut) == 1 ? 6 : 2;
@@ -1119,7 +1119,7 @@ public:
     {
         if (m_status == stringify::v0::cv_result::success)
         {
-            CharOut* it = m_encoder.convert(ch, m_dest_it, m_dest_end, m_allow_surr);
+            CharOut* it = m_encoder.encode(ch, m_dest_it, m_dest_end, m_allow_surr);
             if (it != nullptr)
             {
                 if (it != m_insufficient_space)
@@ -1171,7 +1171,7 @@ private:
     //bool signal_error_as_char()
     //{
     //     auto ch = m_err_sig.get_char();
-    //     CharOut* it = m_encoder.convert(ch, m_dest_it, m_dest_end, m_allow_surr);
+    //     CharOut* it = m_encoder.encode(ch, m_dest_it, m_dest_end, m_allow_surr);
     //     if (it == nullptr)
     //     {
     //         if(ch != U'?')
@@ -1711,7 +1711,7 @@ bool output_writer<CharOut>::signal_encoding_error()
     const auto& err_sig = m_encoding.on_error();
     if (err_sig.has_char())
     {
-        CharOut* it = encoder().convert
+        CharOut* it = encoder().encode
             ( err_sig.get_char()
             , buff
             , buff + buff_size
@@ -1778,7 +1778,7 @@ CharOut* char32_source<CharOut>::get
     ( CharOut* dest_begin
     , CharOut* dest_end )
 {
-    CharOut* it = m_out.encoder().convert
+    CharOut* it = m_out.encoder().encode
         ( m_char
         , dest_begin
         , dest_end
@@ -1822,7 +1822,7 @@ CharOut* repeated_char32_source<CharOut>::get
     ( CharOut* dest_begin
     , CharOut* dest_end )
 {
-    auto res = m_out.encoder().convert
+    auto res = m_out.encoder().encode
         ( m_count
         , m_char
         , dest_begin
