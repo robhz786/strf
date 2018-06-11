@@ -21,11 +21,7 @@ __STD_EXPECTED__
 
 
 [include overview.qbk]
-[include:general_syntax general_syntax.qbk]
-[include:output_types output_types.qbk]
-[include:assembly_string assembly_string.qbk]
-[include:format_functions format_functions.qbk]
-[include:facets facets.qbk]
+[include:syntax syntax.qbk]
 [include:special_input_types special_input_types.qbk]
 [include:encoding_conversion encoding_conversion.qbk]
 [include:numpunct_facets numpunct_facets.qbk]

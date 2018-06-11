@@ -76,7 +76,7 @@ int main()
     {
         (void)strf::to_string(strf::right("aa", 20));
     }
-    PRINT_BENCHMARK("strf::to_string .reseve(20) (strf::right(\"aa\", 20))")
+    PRINT_BENCHMARK("strf::to_string .reserve(20) (strf::right(\"aa\", 20))")
     {
         (void)strf::to_string.reserve(20)(strf::right("aa", 20));
     }

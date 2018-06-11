@@ -1407,8 +1407,8 @@ stringify::v0::char_cv_result<CharOut> utf16_encoder<CharOut>::encode
         if(allow_surr || ! is_surrogate(ch))
         {
             count = std::min(count, capacity);
-            auto it = std::fill_n(dest_begin, count, static_cast<CharOut>(ch));
-            return {count, it};
+            auto dest_it = std::fill_n(dest_begin, count, static_cast<CharOut>(ch));
+            return {count, dest_it};
         }
         return {0, nullptr};
     }
@@ -1533,8 +1533,8 @@ stringify::v0::char_cv_result<CharOut> utf32_encoder<CharOut>::encode
     if(ch < 0x110000 && (allow_surr || ! is_surrogate(ch)))
     {
         count = std::min(count, std::size_t(dest_end - dest_begin));
-        std::char_traits<CharOut>::assign(dest_begin, count, ch);
-        return {count, dest_begin + count};
+        auto dest_it = std::fill_n(dest_begin, count, ch);
+        return {count, dest_it};
     }
     return {0, nullptr};
 }
@@ -1632,8 +1632,8 @@ stringify::v0::char_cv_result<CharOut> bypass_transcoder<CharIn, CharOut>::conve
     {
         count = dest_size;
     }
-    auto it = std::fill_n(dest_begin, count, ch);
-    return {count, it};
+    auto dest_it = std::fill_n(dest_begin, count, ch);
+    return {count, dest_it};
 }
 
 template <typename CharIn, typename CharOut>
@@ -1868,7 +1868,7 @@ stringify::v0::char_cv_result<CharOut> utf8_to_utf16<CharOut>::convert
         {
             count = dest_size;
         }
-        std::char_traits<CharOut>::assign(dest_begin, count, ch);
+        std::fill_n(dest_begin, count, ch);
     }
     return {0, nullptr};
 }

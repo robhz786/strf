@@ -151,13 +151,13 @@ int main()
     {
         fmt::print(dest, "{}{:<8}{:#x}", 55555, 55555, 55555);
     }
-    PRINT_BENCHMARK("sprintf(dest, \"%d%-+8d%#x\", 55555, 55555, 55555)")
+    PRINT_BENCHMARK("fprintf(dest, \"%d%-+8d%#x\", 55555, 55555, 55555)")
     {
         fprintf(dest, "%d%-+8d%#x", 55555, 55555, 55555);
     }
 
 
-    std::cout << "\n Strings and itegers mixed: \n";
+    std::cout << "\n Strings and integers mixed: \n";
 
     PRINT_BENCHMARK("strf::write(dest) .as(\"blah blah {} blah {} blah {}\") (INT_MAX, ~strf::hex(1234)<8, \"abcdef\")")
     {

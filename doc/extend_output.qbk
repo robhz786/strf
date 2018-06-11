@@ -93,7 +93,7 @@ public:
 
 * `put(const CharT* str, std::size_t size)` shall attempt to write [~size] character of [~str], /i.e./ the range `[str[0], str[size])`, and return `true` on success and `false` on failure.
 
-* `put(source<CharT>& src)` shall attempt to write the content provided by `src` and return `true` if `src.success()` returns `true` ( see the descriprion of `source` class template below ) and `false` otherwise.
+* `put(source<CharT>& src)` shall attempt to write the content provided by `src` and return `true` if `src.success()` returns `true` ( see the description of `source` class template below ) and `false` otherwise.
 
 *  Once the function `set_error` is called, `good()` shall return `false`.
 
@@ -118,13 +118,13 @@ public:
 
 }}} // namespace boost::stringify::v0
 ``
-`get(dest_begin, dest_out)` returns the pointer immediately after the last writen location in the range \[`dest_begin`, `dest_out`).
+`get(dest_begin, dest_out)` returns the pointer immediately after the last written location in the range \[`dest_begin`, `dest_out`).
 If there is not enough space, a subsequent call to `more()` returns `true`, meaning that `get` must be called again,
 with the pointer returned in the previous call as the first argument.
 ( the return of `get(dest_begin, dest_out)` is [_not] necessarily equal to `dest_end` when there is not enough space ).
-If `get` fails for some other reason, then `more()` and `success()` will subsequentely return `false`.
+If `get` fails for some other reason, then `more()` and `success()` will subsequently return `false`.
 
-`success()` returns `true` only after all content is succefully writen. So, only after `more()` returns `false`, you shall call `success()` to check whether any error happened.
+`success()` returns `true` only after all content is succesfully written. So, only after `more()` returns `false`, you shall call `success()` to check whether any error happened.
 
 
 [h3 The `buffered_writer` class template]
@@ -169,7 +169,7 @@ protected:
 ``
 The buffer that is passed in the constructor shall be written and readen by `buffered_writer` class template only. The subclass shall not directly access it. The `do_put` function is called by `flush()`, and the argument `str` will be aways in range \[`buffer, buffer + buffer_size`), and `str + count` in \[`buffer, buffer + buffer_size`\];
 
-You may be wondering, why the comment says that `flush()` or `discard()` shall be called in the destructor? You know the buffer should be empty at such time, since `finish_error_code()` or `finish_exception()` must have been called. But not if an exception has been thrown. So you shall decide wheter the remaining content in the buffer should be flushed or discarded in this case.
+You may be wondering, why the comment says that `flush()` or `discard()` shall be called in the destructor? You know the buffer should be empty at such time, since `finish_error_code()` or `finish_exception()` must have been called. But not if an exception has been thrown. So you shall decide whether the remaining content in the buffer should be flushed or discarded in this case.
 
 [h3 Examples]
 

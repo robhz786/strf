@@ -248,7 +248,7 @@ int main()
         sprintf(dest, "%d%-+8d%#x", 55555, 55555, 55555);
     }
 
-    std::cout << "\n Strings and itegers mixed: \n";
+    std::cout << "\n Strings and integers mixed: \n";
 
     PRINT_BENCHMARK("strf::write(dest) (\"blah blah \", INT_MAX, \" blah \", ~strf::hex(1234)<8, \" blah \", \"abcdef\")" )
     {

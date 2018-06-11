@@ -12,19 +12,16 @@ int main()
 {
     namespace strf = boost::stringify::v0; // v0 is an inline namespace
 
-    char output[80];
     const auto name = "Anna";
     const auto age  = 22;
-    const auto assembly_string = "{} is {} years old.";
-    const auto expected_result = std::string{"Anna is 22 years old."};
-    
-    // with assembly string:
-    auto x1 = strf::write(output) .as(assembly_string)(name, age);
-    BOOST_ASSERT(x1 && expected_result == output);
     
     // without assembly string:
-    auto x2 = strf::write(output)(name, " is ", age, " years old.");
-    BOOST_ASSERT(x2 && expected_result == output);
+    auto x2 = strf::to_string(name, " is ", age, " years old.");
+    BOOST_ASSERT(x2.value() == "Anna is 22 years old.");
+
+    // with assembly string:
+    auto x1 = strf::to_string .as("{} is {} years old.") (name, age);
+    BOOST_ASSERT(x2.value() == "Anna is 22 years old.");
 
     return 0;
 }

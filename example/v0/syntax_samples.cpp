@@ -6,7 +6,7 @@
 void reserve()
 {
     //[ syntax_reserve
-    namespace strf = boost::stringify::v0;
+    namespace strf = boost::stringify::v0;  // v0 is an inline namespace
 
     // reserving a bigger size because there are some further appends:
     auto str = strf::to_string.reserve(500)("blah", "blah");

@@ -70,7 +70,7 @@ When using assembly string, be aware that the sub-list of argument is treated as
 
 [endsect]
 
-[section Range ['(todo)]]
+[section Range ['(to do)]]
 [import ../example/v0/range_input.cpp]
 
 A /range/ is any container. The syntax is:
@@ -86,7 +86,7 @@ You can use the format functions to format the range's elements
 
 [endsect]
 
-[section Assembly string ['(todo)]]
+[section Assembly string ['(to do)]]
 [import ../example/v0/assembly_string_input.cpp]
 
 [note It is not decided yet whether this will ever be implemented]

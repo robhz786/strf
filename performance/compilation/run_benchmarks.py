@@ -267,7 +267,6 @@ print(']\n')
 
 print('\n[table Release mode / header-only libraries \n')
 print(table_header())
-print(empty_row())
 benchmark_release(basename = 'to_string_stringify_ho',
                   main_src = 'to_string_main.cpp',
                   flags    = [boost_incl],
@@ -381,7 +380,6 @@ print(']\n')
 
 print('\n[table Debug mode / header-only libraries \n')
 print(table_header())
-print(empty_row())
 benchmark_debug(basename = 'to_string_stringify_ho',
                   main_src = 'to_string_main.cpp',
                   flags    = [boost_incl],

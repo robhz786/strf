@@ -20,29 +20,19 @@
 [$../syntax.png]
 [footnote This railroad diagram was generated on [@http://bottlecaps.de/rr bottlecaps.de/rr]]
 
-The ['[*leading expression]] is the part of the expression the varies according to the output type, as show in [link output_types.output_types this table].
+[/
+where:
 
-The [link section_assembly_string ['[*assembly string]]] is analogous to what in others format libraries is called as the /format string/, except that it does not format any of the arguments. Formatting is specified instead with [link format_functions format functions].
+* the ['[*leading expression]]  the varies according to the output type, as show in the table below
+* the ['[*assembly string]] is explained [link section_assembly_string here]
+* ['[*facets]] are explained in [link facets.facets another section]
+* ['[*reservation]] is explained [link syntax_reserve here]
+]
 
-Example:
-
-[trivial_sample]
-
-[h3 Arguments]
-
-The "conventional" input types that are ( or will be ) supported:
-
-* an integer ( `int, long, long long, unsigned int, unsigned long or unsigned long long`)
-* a string ( a raw string or a `std::basic_string` or `std::basic_string_view`)
-* a single character
-* a `bool` ['( todo )]
-* a `void*` ['( todo )]
-* a floating point ['( todo )]
-
-In addition to those, there are also some [link special_input_types.special_input_types "special" input types], that are explained in another section.
+[include:output_types output_types.qbk]
 
 [#syntax_reserve]
-[h3 Reserving output size]
+[section Reserving output size]
 
 The following member functions only have effect in some output types ( cases 1 to 7 in [link output_types.output_types this table], or when you create the [link OutputWriterConcept reserve] method when defining your own output type ). 
 
@@ -51,7 +41,14 @@ The following member functions only have effect in some output types ( cases 1 t
 * [*`no_reserve()`] : No reservation is done.
 
 [syntax_reserve]
+[endsect]
 
+
+[include:assembly_string assembly_string.qbk]
+
+[include:format_functions format_functions.qbk]
+
+[include:facets facets.qbk]
 
 [endsect]
 

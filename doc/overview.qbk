@@ -19,21 +19,16 @@ Boost.Stringify is a locale-independent format library with some unique features
 
 [h4 Pros]
 
-* Provides some nice [link special_input_types.special_input_types special input types].
 * It supports many [link output_types.output_types destination types]
 * It is highly extensible.
     * When adding [link extend_input.extend_input new input types], you can create your own new format options, as well as new [link section_facets facet categories]
     * You can also add [link extend_output.extend_output new destination types]. If you work, for instance, with some non standard string type ( as is usual in C++ ), you will probably find it easy to extend Boost.Stringify to write into this string type.
-
-
-[/
-* Any ill-specified formatting ( like applying hexadecimal format to string ) leads to compilation errors instead of run-time errors.
-]
+* Supports [link encoding_conversion.encoding_conversion Encoding conversion].
 * It's UTF-8 and UTF-16 friendly:
-    * Support for all character types ( `char`, `wchar_t`, `char32_t` and `char16_t`)
     * You can customize [link facet_width_calculation.width_calculation how the width is calculated], choosing more accurate methods than just assuming that width equals to length.
     * The [link format_functions fill] and [link numpunct punctuation] characters are `char32_t`, which gives you options beyond the ASCII table when the destination character type is `char`.
-    * It provides an way easy to convert one encoding to another ( see section [link encoding_conversion.encoding_conversion Encoding conversion] )
+* Supports all character types: `char`, `wchar_t`, `char32_t` and `char16_t`.
+* Provides some interesting [link special_input_types.special_input_types special input types].
 
 [h4 Cons]
 

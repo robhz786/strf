@@ -7,7 +7,7 @@
 [import ../example/v0/facets.cpp]
 
 [#section_facets]
-[section Facets]
+[section:facets Facets]
 
 While [link format_functions format functions] aim to customize some things,
 others customizations are handled by /facets/.
@@ -110,7 +110,7 @@ template <template <class> class Filter, typename Facet>
 auto constrain(const Facet& facet) -> /*implementation defined*/ ;
 ``
 
-The first template parameter of `constrain` ( named here as `Filter` ) is a template type that must follow the same design of `std::is_signed`, `std::is_pointer` and those others metafunctions defined in <type_traits>. It must contains a `value` member constant conversible to bool that tells wheter a given input type shall be under the influence of the given facet:
+The first template parameter of `constrain` ( named here as `Filter` ) is a template type that must follow the same design of `std::is_signed`, `std::is_pointer` and those others metafunctions defined in <type_traits>. It must contains a `value` member constant convertible to bool that tells whether a given input type shall be under the influence of the given facet:
 
 [constrained_facet_sample]
 
