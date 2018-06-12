@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/formatter.hpp>
+#include <boost/stringify/v0/basic_types.hpp>
 
 struct exception_tag {};
 
@@ -14,13 +14,12 @@ constexpr exception_tag exception_thrower_arg {};
 namespace detail{
 
 template <typename CharT>
-class exceptional_formatter: public boost::stringify::v0::formatter<CharT>
+class exceptional_printer: public boost::stringify::v0::printer<CharT>
 {
 
 public:
 
-    template <typename FTuple>
-    exceptional_formatter(const FTuple&, exception_tag) noexcept
+    exceptional_printer( exception_tag) noexcept
     {
     }
 
@@ -29,9 +28,9 @@ public:
         return 0;
     }
 
-    void write(boost::stringify::v0::output_writer<CharT>&) const override
+    void write() const override
     {
-        throw std::invalid_argument("invalid formatter");
+        throw std::invalid_argument("invalid printer");
     }
 
     int remaining_width(int w) const override
@@ -40,16 +39,33 @@ public:
     }
 };
 
-struct exceptional_formatter_traits
+// struct exception_tag_input_traits
+// {
+//     template <typename CharT, typename FPack>
+//     static inline detail::exceptional_printer<CharT>
+//     make_printer(const FPack& ft, exception_tag x)
+//     {
+//         return {ft, x};
+//     }
+// };
+
+} // namespace detail
+
+//detail::exception_tag_input_traits stringify_get_input_traits(exception_tag x);
+
+
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+
+template <typename CharT, typename FPack>
+inline ::detail::exceptional_printer<CharT>
+stringify_make_printer
+    ( const stringify::v0::output_writer<CharT>&
+    , const FPack&
+    , exception_tag x )
 {
-    template <typename CharT, typename>
-    using formatter = exceptional_formatter<CharT>;    
-};
-
-
+    return {x};
 }
 
-detail::exceptional_formatter_traits boost_stringify_input_traits_of(exception_tag);
-
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif

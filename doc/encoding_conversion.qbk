@@ -4,27 +4,180 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[import ../example/v0/decoding_facets.cpp]
+[import ../example/v0/encoding_conversion.cpp]
 
-[section:encoding_convertion Facets for encoding convertion]
+[section:encoding_conversion Encoding conversion]
 
-Input and output can be based on the different charater types:
+Input and output can be based on the different character types, and also on different encodings.
 
-[input_ouput_different_char_types]
+[input_output_different_char_types]
 
-You can customize how this convertion is done, and how the errors are handled. Two facet category families are involved in this process: the [*`de`]`coder_category<`[~CharIn]`>` and  [*`en`]`coder_category<`[~CharOut]`>`. For instance, when an input string is of type `char16_t` and the destination character type is `char`, then a facet that belongs to the `decoder_category<char16_t>` is used to convert this input into UTF-32. Next, a facet of the `encoder_category<char>` converts this intermediate UTF-32 to the destination encoding. When the input and output character types are the same, these conversions are bypassed.
+By default, the encoding for `char` is UTF-8 and for `wchar_t` is UTF-16 if `sizeof(wchar_t) == 2`, and UTF-32 if `sizeof(wchar_t) == 4`. However it will be possible to select alternatives encodings. The currently supported encodings are available through the function below:
 
-The default facet of `encoder_category<char>` converts UTF-32 to UTF-8. You can use other output encodings, but you will need to implement your own encoding facet, since this library currently does only provide UTF-8 encoding facets.
 
-The default facet of `decoder_category<char>` expects the input to be UTF-8 too. If you have an input that is not UTF-8 then you need to implement you own decoding facet. [link example_custom_decoder Here] there is an example of how to implement a facet that expects [@https://en.wikipedia.org/wiki/ISO/IEC_8859-7 ISO/IEC 8859-7] instead.
+[table:encodings
+[ [function or function template] [description] ]
 
-It is assumed that the encoding corresponding to `wchar_t` is either UTF-16 or UTF-32, depending on whether `sizeof(size_t)` is `2` or `4`. The convertion from wide strings to the corresponding assumed UTF-[~X] is bypassed. For example, if the input is `const wchar_t*` and the ouput is `std::u16string` and `sizeof(wchar_t) == 2`, then this input is simply casted as `reinterpret_cast<const char16_t*>`. The analougous happen if the output is based on `wchar_t` and the input is based on `char16_t` (when `sizeof(wchar_t) == 2`) or on `char32_t` (when `sizeof(wchar_t) == 4`).
+[
+[`encoding<char> utf8();`]
+[The UTF-8 encoding. This is the default for `char`.]
+]
 
-[/
-If you want to surppress this behaviour, you need to define the macro `BOOST_STRINGIFY_DONT_ASSUME_WCHAR_ENCODING` and also to implement and use your own decoder and/or encoder for `wchar_t`, because the default facets simply casts each `wchar_t` value to/from a `char16_t` or `char32_t` value. This macro does not create any binary incompatibily. It is perfectly safe to define it in one translation unit and not define it in another, as well as defining it during the compilation of the library ( if are not using it as header-only ) and not defining it in the code that uses it ( or vice-versa ).
+[
+[`encoding<char> mutf8();`]
+[The [@https://en.wikipedia.org/wiki/UTF-8#Modified_UTF-8 Modified UTF-8] encoding]
 ]
 
 [/
-The next two sections explains how to customize the decoding and the encoding facets respectively.
+[`encoding<char> cesu8(); // TODO `]
+[The [@https://en.wikipedia.org/wiki/CESU-8 CESU-8] encoding. /(not implemented yet)/]
 ]
+
+[
+[`encoding<char> iso_8859_1();`]
+[The [@https://en.wikipedia.org/wiki/ISO/IEC_8859-1 ISO/IEC 8859-1] encoding]
+]
+
+[
+[`encoding<char> iso_8859_15();`]
+[The [@https://en.wikipedia.org/wiki/ISO/IEC_8859-15 ISO/IEC 8859-15] encoding]
+]
+
+[
+[`encoding<char> windows_1252();`]
+[The [@https://en.wikipedia.org/wiki/Windows-1252 Windows-1252] encoding]
+]
+
+[
+[`encoding<char> ascii();`]
+[Pure ASCII. Any character greater than `0xf9` is treated as error]
+]
+
+
+[
+[`template <typename CharT>`[br]`encoding<CharT> utf16();`]
+[The UTF-16 encoding. `sizeof(CharT)` must be `2`.[br]  `utf16<char16_t>()` is the default encoding for `char16_t` ( and currently the only one available ).]
+]
+
+[
+[`template <typename CharT>`[br]`encoding<CharT> utf32();`]
+[The UTF-32 encoding. `sizeof(CharT)` must be `4`.[br]`utf32<char32_t>` is the default encoding for `char32_t` ( and currently the only one available ). ]
+]
+
+[
+[`encoding<wchar_t> utfw();`]
+[This is the default ( actually the only currently available ) encoding for `wchar_t`. [br]Returns the same as `utf16<wchar_t>()` or `utf32<wchar_t>()` depending on whether `sizeof(wchar_t)` is `2` or `4`.]
+]
+
+]
+
+[section.encoding_class The `encoding` class template]
+
+The class `encoding<`[~CharT]`>` basically just stores an encoding identification. Its objects are small and fast to copy and to compare.
+
+```
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <typename CharT> struct encoding_category;
+
+template <typename CharT> class encoding {
+public:
+
+    using category = encoding_category<CharT>;
+
+    constexpr encoding(const encoding_info<CharT>&);
+
+    constexpr encoding(const encoding&);
+
+    constexpr encoding& operator=(const encoding&);
+
+    template <typename Ch>
+    constexpr bool operator==(encoding<Ch> other) const;
+
+    template <typename Ch>
+    constexpr bool operator!=(encoding<Ch> other) const;
+};
+
+} } } // namespace boost::stringify::v0
+```
+
+As you can see, `operator==` is a template. The expression: `utf16<char16_t>() == utf16<wchar_t>()`, for example, evaluates to `true` ( However, `utf16<wchar_t>()` it is only compilable if `sizeof(wchar_t) == 2` ).
+
+The `encoding<`[~CharT]`>` is also a facet that specify the encoding associated to character type [~CharT], both of input strings as well as of the output object.
+
+[mutf8_sample]
+
+You can apply an encoding to a single input argument using the `encoding` format function. This is the only way to pass an input string whose encoding is different from of the output object when the character type is the same:
+
+[arg_encoding]
+
+Or, using the abbreviated form:
+
+[arg_encoding_abbreviated]
+
+[endsect]
+
+[section:sanitization Sanitization]
+
+Unless you specify otherwise, an input string is assumed to strictly conform its corresponding encoding. For instance, if the output is in UTF-8 and an input string is specified as ASCII, then no conversion happens, since a strict ASCII string is also in UTF-8. Then, if there is any character greater than `0x79`, then you get an invalid UTF-8 output:
+
+[not_sanitized_inputs]
+
+In the sample above you can see that, differently from the others, the string in ISO 8859-1 has been sanitized ( by replacing the invalid character by the \ufffd character (U+FFFD)). This may happen sometimes as a side effect of the conversion from one encoding to another, but you can not be sure it will. Depending on the encodings involved only a partial sanitization happens ( if any ). In order to ensure a complete sanitization, you shall use the `sani` function:
+
+[sanitized_inputs]
+
+[endsect]
+
+[section:encoding_error Error handling customization]
+
+When an input string is sanitized as well as during encoding conversion, failures may happen. The input string may contain invalid sequences or the output encoding may not support certain code-points. The default error handling is to replace the invalid or unsupported sequence by the [@ https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character replacement character \ufffd (U+FFFD)] or, if it is not supported by the output encoding, by the question mark `'?'`.
+
+However, you can choose an alternative behavior with the `encoding_error` facet. The way you construct it determines what is done regarding the invalid or unsupported input sequence:
+
+[variablelist
+
+[
+[Skip / ignore it]
+[When `encoding_error` is default constructed]
+[[error_signal_skip]]
+]
+
+[
+[Replace it by some Unicode character]
+[When `encoding_error` is constructed with a `wchar_t`. If the the output encoding does not support the provided character, then the character `'?'` is used instead.]
+[[error_signal_char]]
+]
+
+
+[
+[Emit an error code]
+[When `encoding_error` is constructed with and `std::error_code`]
+[[error_signal_code]]
+]
+
+[
+[Throw an exception]
+[When `encoding_error` is constructed with a pointer to function that throws]
+[[error_signal_throw]]
+]
+]
+
+[endsect]
+
+[section:allow_surrogates The `allow_surrogates` facet]
+
+You may have noticed that there is no support for the [@https://en.wikipedia.org/wiki/UTF-8#WTF-8 WTF-8] encoding. WTF-8 is variant of UTF-8 where surrogates code points are allowed. If WTF-8 were supported, then we would also need an analogous equivalent of UTF-16 and UTF-32. So instead, the `allow_surrogates` facet was created to specify whether the surrogates are allowed or not in whatever encoding is used. In UTF-16 this means to allow unpaired surrogates (high surrogate not followed by a low surrogate, or a low surrogate not proceeded by a high surrogate). In ASCII and ASCII extensions this facets has no effect.
+
+The value of the default `allow_surrogates` facet object is `false`.
+
+[allow_surrogates]
+
+[endsect]
+
+[section How to add support to other encodings /(to do)/]
+[endsect]
+
 [endsect]

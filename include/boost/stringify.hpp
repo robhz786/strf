@@ -7,13 +7,13 @@
 
 #include <boost/stringify/v0/input_types/int.hpp>
 #include <boost/stringify/v0/input_types/char.hpp>
-#include <boost/stringify/v0/input_types/char32.hpp>
 #include <boost/stringify/v0/input_types/string.hpp>
-#include <boost/stringify/v0/input_types/join.hpp>      
-#include <boost/stringify/v0/input_types/ftuple.hpp>    
+#include <boost/stringify/v0/input_types/join.hpp>
+#include <boost/stringify/v0/input_types/facets_pack.hpp>
+#include <boost/stringify/v0/input_types/range.hpp>
 
 #include <boost/stringify/v0/output_types/char_ptr.hpp>
-#include <boost/stringify/v0/output_types/make_string.hpp>
+#include <boost/stringify/v0/output_types/to_string.hpp>
 #include <boost/stringify/v0/output_types/std_string.hpp>
 #include <boost/stringify/v0/output_types/FILE.hpp>
 #include <boost/stringify/v0/output_types/std_streambuf.hpp>

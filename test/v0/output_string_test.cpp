@@ -19,11 +19,11 @@ void basic_assign_test()
     std::basic_string<CharT> result('a', 10);;
     std::basic_string<CharT> expected;
 
-    std::error_code err = use_all_writing_function_of_output_writer
-        ( strf::assign_to(result)
+    auto x = use_all_writing_function_of_output_writer
+        ( strf::assign(result)
         , expected );
 
-    BOOST_TEST(!err);
+    BOOST_TEST(x);
     BOOST_TEST(expected == result);
 }
 
@@ -35,13 +35,13 @@ void basic_append_test()
     std::basic_string<CharT> expected = result;
     std::basic_string<CharT> expected_append;
 
-    std::error_code err = use_all_writing_function_of_output_writer
-        ( strf::append_to(result)
+    auto x = use_all_writing_function_of_output_writer
+        ( strf::append(result)
         , expected_append );
 
     expected += expected_append;
 
-    BOOST_TEST(!err);
+    BOOST_TEST(x);
     BOOST_TEST(expected == result);
 }
 
@@ -51,7 +51,7 @@ void basic_make_test()
     std::basic_string<CharT> expected;
 
     auto result = use_all_writing_function_of_output_writer
-        ( strf::make_basic_string<CharT>
+        ( strf::to_basic_string<CharT>
         , expected );
 
     BOOST_TEST(result);
@@ -76,47 +76,45 @@ int main()
     basic_make_test<char32_t>();
     basic_make_test<wchar_t>();
 
+    {   // When set_error is called during to_string
 
-    {   // When set_error is called during make_string
-
-        auto result = strf::make_string()
-            = {"abcd", error_code_emitter_arg, "lkjlj"};
+        auto result = strf::to_string
+            ("abcd", error_code_emitter_arg, "lkjlj");
 
         BOOST_TEST(!result);
         BOOST_TEST(!result && result.error() == std::errc::invalid_argument);
     }
 
-    {   // When set_error is called during assign_to
+    {   // When set_error is called during assign
 
         std::string result = "bla";
 
-        std::error_code ec = strf::assign_to(result)
-            = {"abcd", error_code_emitter_arg, "lkjlj"};
+        auto x = strf::assign(result)
+            ("abcd", error_code_emitter_arg, "lkjlj");
 
-        BOOST_TEST(ec == std::errc::invalid_argument);
+        BOOST_TEST(!x && x.error() == std::errc::invalid_argument);
         BOOST_TEST(result == "");
     }
 
-    {   // When set_error is called during append_to
+    {   // When set_error is called during append
 
         std::string result = "bla";
 
-        std::error_code ec = strf::append_to(result)
-            = { "abcd", error_code_emitter_arg, "lkjlj" };
+        auto x = strf::append(result)
+            ( "abcd", error_code_emitter_arg, "lkjlj" );
 
-        BOOST_TEST(ec == std::errc::invalid_argument);
+        BOOST_TEST(!x && x.error() == std::errc::invalid_argument);
         BOOST_TEST(result == "bla");
     }
 
 
-    {   // When exception is thrown in assign_to
+    {   // When exception is thrown in assign
 
         std::string result = "bla";
 
         try
         {
-            strf::assign_to(result)
-                &= {"abcd", exception_thrower_arg, "lkjlj"};
+            (void) strf::assign(result) ("abcd", exception_thrower_arg, "lkjlj");
         }
         catch(...)
         {
@@ -125,14 +123,13 @@ int main()
         BOOST_TEST(result == "");
     }
 
-    {   // When exception is thrown in append_to
+    {   // When exception is thrown in append
 
         std::string result = "bla";
 
         try
         {
-            strf::append_to(result)
-                &= { "abcd", exception_thrower_arg, "lkjlj"};
+            (void) strf::append(result) ( "abcd", exception_thrower_arg, "lkjlj");
         }
         catch(...)
         {

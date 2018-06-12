@@ -123,6 +123,226 @@ struct unexpect_t {};
 
 constexpr unexpect_t unexpect{};
 
+template <typename ValueType, typename ErrorType> class expected;
+
+
+template <typename ErrorType> class expected<void, ErrorType>
+{
+public:
+
+    using error_type = ErrorType;
+    using value_type = void;
+    using unexpected_type = boost::stringify::v0::unexpected<ErrorType>;
+
+    constexpr expected() : m_has_value(true)
+    {
+    }
+
+    constexpr expected(const expected& other)
+        : m_has_value(other.m_has_value)
+    {
+        if (other.m_has_value)
+        {
+            init_error(assume_error());
+        }
+    }
+
+    constexpr expected(expected&& other)
+        : m_has_value(other.m_has_value)
+    {
+        if (!other.m_has_value)
+        {
+            init_error(std::move(assume_error()));
+        }
+    }
+
+    constexpr expected(const unexpected_type& unex)
+        : m_has_value(false)
+    {
+        init_error(unex.value());
+    }
+
+    constexpr expected(unexpected_type&& unex)
+        : m_has_value(false)
+    {
+        init_error(std::move(unex.value()));
+    }
+
+    template <typename ... Args>
+    constexpr expected(boost::stringify::v0::unexpect_t, Args&& ... args)
+        : m_has_value(true)
+    {
+        init_error(std::forward<Args>(args)...);
+    }
+
+    ~expected()
+    {
+        destroy_data();
+    }
+
+    constexpr expected& operator=(const expected& other)
+    {
+        if(other.m_has_value)
+        {
+            destroy_data();
+        }
+        else // other has error
+        {
+            if(this->m_has_value)
+            {
+                emplace_error(other.assume_error());
+            }
+            else
+            {
+                assume_error() = other.assume_error();
+            }
+        }
+        return *this;
+    }
+
+    constexpr expected& operator=(expected&& other)
+    {
+        if(other.m_has_value)
+        {
+            destroy_data();
+        }
+        else // other has error
+        {
+            if(this->m_has_value)
+            {
+                emplace_error(std::move(other.assume_error()));
+            }
+            else
+            {
+                assume_error() = std::move(other.assume_error());
+            }
+        }
+        return *this;
+    }
+
+    constexpr expected& operator=(const unexpected_type& other)
+    {
+        if(this->m_has_value)
+        {
+            emplace_error(other.value());
+        }
+        else
+        {
+            assume_error() = other.value();
+        }
+        return *this;
+    }
+
+    constexpr expected& operator=(unexpected_type&& other)
+    {
+        if(this->m_has_value)
+        {
+            emplace_error(std::move(other.value()));
+        }
+        else
+        {
+            assume_error() = std::move(other.value());
+        }
+        return *this;
+    }
+
+    constexpr bool operator==(const expected& other) const
+    {
+        return m_has_value == other.m_has_value
+            && (m_has_value || assume_error() == other.assume_error());
+    }
+
+    constexpr explicit operator bool() const
+    {
+        return m_has_value;
+    }
+    constexpr bool operator!() const
+    {
+        return ! m_has_value;
+    }
+    constexpr bool has_value() const noexcept
+    {
+        return m_has_value;
+    }
+    constexpr bool has_error() const noexcept
+    {
+        return ! m_has_value;
+    }
+
+    constexpr void value() const
+    {
+    }
+
+    constexpr const error_type& error() const &
+    {
+        BOOST_ASSERT(!m_has_value);
+        return assume_error();
+    }
+    constexpr error_type& error() &
+    {
+        BOOST_ASSERT(!m_has_value);
+        return assume_error();
+    }
+    constexpr const error_type&& error() const &&
+    {
+        BOOST_ASSERT(!m_has_value);
+        return std::move(assume_error());
+    }
+    constexpr error_type&& error() &&
+    {
+        BOOST_ASSERT(!m_has_value);
+        return std::move(assume_error());
+    }
+private:
+
+    constexpr static std::size_t storage_align = alignof(error_type);
+    constexpr static std::size_t storage_size = sizeof(error_type);
+
+    using storage_type
+    = typename std::aligned_storage<storage_size, storage_align>::type;
+
+    storage_type m_storage;
+    bool m_has_value=false;
+
+    template <typename ... Args>
+    constexpr void emplace_error(Args&& ... args)
+    {
+        destroy_data();
+        init_error(std::forward<Args>(args)...);
+    }
+
+     constexpr error_type& assume_error() noexcept
+    {
+        auto *unex = reinterpret_cast<unexpected_type*>(&m_storage);
+        return unex->value();
+    }
+
+    constexpr const error_type& assume_error() const noexcept
+    {
+        auto *unex = reinterpret_cast<const unexpected_type*>(&m_storage);
+        return unex->value();
+    }
+
+    template <typename ... Args>
+    constexpr void init_error(Args &&... args)
+    {
+        new (&m_storage) unexpected_type(std::forward<Args>(args)...);
+        m_has_value = false;
+    }
+    constexpr void destroy_error()
+    {
+        assume_error() . ~error_type();
+    }
+    constexpr void destroy_data()
+    {
+        if (! m_has_value)
+        {
+            destroy_error();
+        }
+    }
+};
+
+
 template <typename ValueType, typename ErrorType>
 class expected
 {
@@ -140,7 +360,7 @@ public:
     constexpr expected(const expected& other)
         : m_has_value(other.m_has_value)
     {
-        if (m_has_value)
+        if (other.m_has_value)
         {
             init_value(assume_value());
         }
@@ -153,7 +373,7 @@ public:
     constexpr expected(expected&& other)
         : m_has_value(other.m_has_value)
     {
-        if (m_has_value)
+        if (other.m_has_value)
         {
             init_value(std::move(assume_value()));
         }
@@ -307,7 +527,7 @@ public:
         }
     }
 
-    constexpr operator bool() const
+    constexpr explicit operator bool() const
     {
         return has_value();
     }

@@ -9,9 +9,20 @@
 [#format_functions]
 [section Format functions]
 
+The "conventional" input types that are ( or will be ) supported are:
+
+* an integer ( `int, long, long long, unsigned int, unsigned long or unsigned long long`)
+* a string ( a raw string or a `std::basic_string` or `std::basic_string_view`)
+* a single character
+* a `bool` ['( to do )]
+* a `void*` ['( to do )]
+* a floating point ['( to do )]
+
+In addition to those, there are also some [link special_input_types.special_input_types "special" input types], but these are covered in another section.
+
 The library provides some functions ( actually function templates ) to be used to
-specify formatting. For example, in order to print some integer in hexadecimal,
-you can use `hex`:
+specify formatting of the conventional input arguments.
+For example, in order to print some integer in hexadecimal, you can use the `hex` function template:
 
 [trivial_hex_sample]
 
@@ -27,7 +38,8 @@ constexpr auto hex(const T& value)
 
 The [*`fmt`] function template returns an object that contains the value to be
 printed well as formatting information, which can be changed with the member functions
-listed in the table below. All these member functions return `*this`.
+listed in the table below. All these member functions return `*this`,
+so that you can use more of one of them, /e.g./, `fmt(x).hex().showbase()^20` .
 
 The return type of `fmt(arg)` depends on the type of `arg`, which may not contain
 some of the member functions below. That's why `hex("blah blah")`,
@@ -43,7 +55,7 @@ does not compile, since hexadecimal formatting does not apply to strings.
 ]
 
 
-[[`operator<(int width)`] [left adjustement] [all]]
+[[`operator<(int width)`] [left adjustment] [all]]
 [[`operator^(int width)`] [centered adjustment] [all]]
 [
 [`operator%(int width)`]
@@ -77,11 +89,25 @@ does not compile, since hexadecimal formatting does not apply to strings.
 [[`operator~()`][same as `showbase(true)`][integer]]
 [[`multi(int count)`][print the character [~count] times][character]]
 
+[
+[`encoding(encoding<CharT>)`]
+[specify the encoding of the input string (see [link encoding_conversion.encoding_conversion encoding] ) ]
+[string and (to do) character]
 ]
 
-[h4 Syntatic sugars]
+[
+[`sani()`]
+[sanitizes the input string according to its encoding
+ (see [link encoding_conversion.encoding_conversion.sanitization sanitization] )
+]
+[string and (to do) character]
+]
 
-[table Syntatic sugars
+]
+
+[h4 Syntactic sugars]
+
+[table Syntactic sugars
 [[expression] [equivalent to]]
 [[`hex(x)`][`fmt(x).hex()`]]
 [[`uphex(x)`][`fmt(x).hex().uppercase(true)`]]
@@ -96,64 +122,18 @@ does not compile, since hexadecimal formatting does not apply to strings.
 [[`center(x, width, fill)`]  [`fmt(x).fill(fill) ^ width`]]
 [[`internal(x, width, fill)`][`fmt(x).fill(fill) % width`]]
 [[`multi(x, count)`] [`fmt(x).multi(count)`]]
+[[`sani(x)`] [`fmt(x).sani()`]]
+[[`ascii(x)`][`fmt(x).encoding(ascii())`]]
+[[`iso_8859_1(x)`  ][`fmt(x).encoding(iso_8859_1())`]]
+[[`iso_8859_15(x)` ][`fmt(x).encoding(iso_8859_15())`]]
+[[`windows_1252(x)`][`fmt(x).encoding(windows_1252())`]]
+[[`utf8(x)`        ][`fmt(x).encoding(utf8())`]]
+[[`mutf8(x)`       ][`fmt(x).encoding(mutf8())`]]
+[[`utf16(x)`       ][`fmt(x).encoding(utf16<std::remove_cvref_t>(decltype(x[0]))>()`]]
+[[`utf32(x)`       ][`fmt(x).encoding(utf32<std::remove_cvref_t>(decltype(x[0]))>()`]]
+[[`utfw(x)`        ][`fmt(x).encoding(utfw())`]]
 ]
 
-[/
-``
-template <typename T> constexpr auto uphex(const T& value)
-{
-  return fmt(value).uppercase(true).hex();
-}
-template <typename T> constexpr auto hex(const T& value)
-{
-    return fmt(value).hex();
-}
-template <typename T> constexpr auto dec(const T& value)
-{
-    return fmt(value).dec();
-}
-template <typename T> constexpr auto oct(const T& value)
-{
-    return fmt(value).oct();
-}
-template <typename T> constexpr auto left(const T& value, int width)
-{
-    return fmt(value) < width;
-}
-template <typename T> constexpr auto right(const T& value, int width)
-{
-    return fmt(value) > width;
-}
-template <typename T> constexpr auto internal(const T& value, int width)
-{
-    return fmt(value) % width;
-}
-template <typename T> constexpr auto center(const T& value, int width)
-{
-    return fmt(value) ^ width;
-}
-template <typename T> constexpr auto left(const T& value, int width, char32_t fill)
-{
-    return fmt(value).fill(fill) < width;
-}
-template <typename T> constexpr auto right(const T& value, int width, char32_t fill)
-{
-    return fmt(value).fill(fill) > width;
-}
-template <typename T> constexpr auto internal(const T& value, int width, char32_t fill)
-{
-    return fmt(value).fill(fill) % width;
-}
-template <typename T> constexpr auto center(const T& value, int width, char32_t fill)
-{
-    return fmt(value).fill(fill) ^ width;
-}
-template <typename T, typename I> constexpr auto multi(const T& value, I count)
-{
-    return fmt(value).multi(count);
-}
-``
-]
 [h4 Example]
 
 [formatting_samples]

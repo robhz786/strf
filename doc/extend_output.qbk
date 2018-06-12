@@ -6,21 +6,21 @@
 
 [section:extend_output How to add support to a new destination type]
 
-Suppose you have a type `foobar` and you want to create a function named `write_to` that takes a `foobar&` as a parameter and can be used just like the [link output_types.output_types other functions]
+
+Suppose you have a type `foobar` and you want to create a function named `format` that takes a `foobar&` as a parameter and can be used just like the [link output_types.output_types other functions]
 
 [#OutputWriterConcept]
 [*Step 1)] Create a class - let's call it `foobar_writer` - that satisfies the following requirements:
 
-* inherits from [link output_writer `output_writer<`[~CharT]`>`], where [~CharT] is `char`, `char16_t`, `char32_t` or `wchar_t` ( or rather, make `foobar_writer` a class template ).
-* is not abstract.
-* has a [*`finish()`] public member function. This function will be called just before `foobar_writer` is destroyed when the expression [link syntax_args_form2 `write_to(foobar_instance) = {args...}`] is used. By convention, it should return an `std::error_code` or an object that contains an `std::error_code` ( like an __STD_EXPECTED__ )
-* has a [*`finish_throw()`] public member function. This function will be called just before `foobar_writer` is destroyed when the expression [link syntax_args_form3 `write_to(foobar_instance) &= {args...}`] is used. By conventions, instead of returning an `std::error_code` or object that contains an `std::error_code` ( like `finish()` does), this function should throw an exception created from such `std::error_code`.
-* [#OutputWriter_reserve] [_optionally], it may contain a [*`reserve(std::size_t size)`] public member function. If present, this function is called (or not) according to the use of [link syntax_reserve `reserve_auto()`, `reserve()` or `no_reseve()`] in the [link syntax_diagram basic invocation syntax]. The parameter `size` tells how many characters will be written. This function will be called no more than once, and only before any of the writing functions ([link output_writer `put`] and [link output_writer `repeat`]). The argument will be the total number of chararacters that will be written until `finish()` of `finish_throw()` is called.
+* it is a non abstract class that derives from the abstract class [link output_writer `output_writer<`[~CharT]`>`], where [~CharT] is `char`, `char16_t`, `char32_t` or `wchar_t` ( or rather, make `foobar_writer` a class template as well).
+* has a [*`finish()`] public member function. This function will be called just before `foobar_writer` is destroyed. Its return is returned by the [~leading_expression]` ... (` [~args]` ...)` ( see  [link syntax_diagram syntax] )
+* [#OutputWriter_reserve] [_optionally], it may contain a [*`reserve(std::size_t size)`] public member function. If present, this function is called (or not) according to the use of [link syntax_reserve `reserve_auto()`, `reserve()` or `no_reserve()`] in the [link syntax_diagram basic invocation syntax]. The parameter `size` tells how many characters will be written. This function will be called no more than once, and only before any of the writing functions (the [link output_writer `put`] overloads). The argument will be the total number of characters that will be written until `finish_error_code()` of `finish_exception()` is called.
+* The first parameter of its constructor must be of type `boost::stringify::v0::output_writer_init<CharT>`. It must be used to construct the [link output_writer `output_writer<`[~CharT]`>`] base class.
 
-[*Step 2)] Implement function `write_to` ( or whatever name you prefer ) like below:
+[*Step 2)] Implement function `format` ( or whatever name you prefer ) like below:
 
 ```
-  auto write_to(foobar& destination)
+  auto format(foobar& destination)
   {
      return boost::stringify::make_args_handler<foobar_writer, foobar&>(destination);
   }
@@ -31,12 +31,14 @@ The argument(s) passed to function template `make_args_handler` will be used to 
 template <typename OutputWriter, typename ... Args>
 constexpr auto make_args_handler(Args ... args) -> /* implementation_defined */;
 ```
-[important Note that the parameters list of `make_args_handler` is `(Args ... arg)` and [_not] `(Args `[*`&&`]` ... args)`. Hence, if you want to pass a paramenter by reference, template type deduction won't do what you want. You must specify the type of each argument, as done in the example above ]
+The arguments passed to `make_args_handler` will be used to as the remaining arguments used to construct `OutputWriter` ( after the `output_writer_init<CharT>` wich must be the first parameter of the constructor ).
+
+[important Note that the parameters list of `make_args_handler` is `(Args ... arg)` and [_not] `(Args `[*`&&`]` ... args)`. Hence, if you want to pass a parameter by reference, template type deduction won't do what you want. You must specify the type of each argument, as done in the example above ]
 
 
 
 [/
-Given 
+Given
 
 * `W`, a type that satisfies `OutputWriter` concept
 * `w`, an object of type `W`
@@ -47,7 +49,8 @@ Given
 [table
 [ [Expression]       [Return type] [Description] ]
 [ [`W::char_type`]   []      [The character type (`char`, `wchar_t`, `char32_t` or `char16_t`)] ]
-[ [`w.finish()`]     [anything] [ Finalizes the writing process. This funcion is called at the end. ]]
+[ [`w.finish_error_code()`]  [anything] [ Finalizes the writing process. ]]
+[ [`w.finish_exception()`]   [anything] [ Finalizes the writing process. ]]
 ]
 ]
 
@@ -55,12 +58,16 @@ Given
 
 [#output_writer]
 ``
+namespace boost { namespace stringify { inline namespace v0 {
+
 template <typename CharT>
 class output_writer
 {
 public:
 
     using char_type = CharT;
+
+    output_writer(output_writer_init<CharT>)
 
     virtual ~output_writer();
 
@@ -72,35 +79,107 @@ public:
 
     virtual bool put(CharT ch) = 0;
 
-    virtual bool repeat(std::size_t count, CharT ch) = 0;
+    virtual bool put(std::size_t count, CharT ch) = 0;
 
-    virtual bool repeat(std::size_t count, CharT ch1, CharT ch2) = 0;
-
-    virtual bool repeat(std::size_t count, CharT ch1, CharT ch2, CharT ch3) = 0;
-
-    virtual bool repeat(std::size_t count, CharT ch1, CharT ch2, CharT ch3, CharT ch4) = 0;
+    virtual bool put(source<CharT>& src) = 0;
 };
 
+}}} // namespace boost::stringify::v0
 ``
 
 * The `repeat` function shall attempt to write [~count] times the sequence of character [~ch1], [~ch2], ... , and return `true` on success and `false` on failure.
 
 * `put(CharT ch)` shall attempt to write the character [~ch] and return `true` on success and `false` on failure.
 
-* `put(const CharT* str, std::size_t size)` shall attempt to write [~size] chararacter of [~str], /i.e./ the range `[str[0], str[size])`, and return `true` on success and `false` on failure.
+* `put(const CharT* str, std::size_t size)` shall attempt to write [~size] character of [~str], /i.e./ the range `[str[0], str[size])`, and return `true` on success and `false` on failure.
 
-*  Once the function `set_error` is called, `good()` shall return `false` and all the writting functions (`put` and `repeat`) shall have no effect and return `false`.
+* `put(source<CharT>& src)` shall attempt to write the content provided by `src` and return `true` if `src.success()` returns `true` ( see the description of `source` class template below ) and `false` otherwise.
 
-*  `good()` returns whether this `output_writer` instance is capable of writing more characters ( through the `put` and `repeat` functions ). Once `good()` returns false, it shall not return `true` anymore, and all the writting functions (`put` and `repeat`) shall have no effect and return `false`.
+*  Once the function `set_error` is called, `good()` shall return `false`.
+
+*  `good()` returns whether this `output_writer` instance is capable of writing more characters. Once `good()` returns false, it shall not return `true` anymore, and all the `put` overloads shall have no effect and return `false`.
+
+
+[h3 The `source` class template]
+``
+namespace boost { namespace stringify { inline namespace v0 {
+
+template <typename CharT>
+class source
+{
+public:
+
+    virtual CharT* get(CharT* dest_begin, CharT* dest_end) = 0;
+
+    bool more();
+
+    bool success();
+};
+
+}}} // namespace boost::stringify::v0
+``
+`get(dest_begin, dest_out)` returns the pointer immediately after the last written location in the range \[`dest_begin`, `dest_out`).
+If there is not enough space, a subsequent call to `more()` returns `true`, meaning that `get` must be called again,
+with the pointer returned in the previous call as the first argument.
+( the return of `get(dest_begin, dest_out)` is [_not] necessarily equal to `dest_end` when there is not enough space ).
+If `get` fails for some other reason, then `more()` and `success()` will subsequently return `false`.
+
+`success()` returns `true` only after all content is succesfully written. So, only after `more()` returns `false`, you shall call `success()` to check whether any error happened.
+
+
+[h3 The `buffered_writer` class template]
+
+Your class can derive from `buffered_writer` rather than from `output_writer`. This requires much less work.
+
+[#buffered_writer]
+``
+namespace boost { namespace stringify { inline namespace v0 {
+
+template <typename CharT>
+class buffered_writer: public output_writer<CharT>
+{
+public:
+
+    buffered_writer(output_writer_init<CharT>, CharT* buffer, std::size_t buffer_size);
+
+    virtual ~buffered_writer();
+
+    std::error_code finish_error_code(); // calls flush()
+    void finish_exception(); // class flush()
+
+    // it implements for you all pure virtual function of output_writer:
+    virtual void set_error(std::error_code err) override;
+    virtual bool good() const override;
+    virtual bool put(const CharT* str, std::size_t size) final;
+    virtual bool put(CharT ch) final;
+    virtual bool put(std::size_t count, CharT ch) final;
+    virtual bool put(source<CharT>& src) final;
+
+protected:
+
+    // ... so that you only have to override this one:
+    virtual bool do_put(const CharT* str, std::size_t count) = 0;
+
+    // you should call one of these in the destructor of your subclass:
+    bool flush();  // flush the buffer ( calls do_put )
+    void discard(); // discards the buffer.
+};
+
+}}} // namespace boost::stringify::v0
+``
+The buffer that is passed in the constructor shall be written and readen by `buffered_writer` class template only. The subclass shall not directly access it. The `do_put` function is called by `flush()`, and the argument `str` will be aways in range \[`buffer, buffer + buffer_size`), and `str + count` in \[`buffer, buffer + buffer_size`\];
+
+You may be wondering, why the comment says that `flush()` or `discard()` shall be called in the destructor? You know the buffer should be empty at such time, since `finish_error_code()` or `finish_exception()` must have been called. But not if an exception has been thrown. So you shall decide whether the remaining content in the buffer should be flushed or discarded in this case.
 
 [h3 Examples]
 
 You can read how the [link output_types.output_types already supported output types] are implemented:
 
-* [@../../include/boost/stringify/v0/output_types/std_string.hpp    std_string.hpp] : This is the source file that implements the [*`append_to`] and [*`assign_to`] funcion templates.
-* [@../../include/boost/stringify/v0/output_types/make_string.hpp   make_string.hpp] : This is the source file implements the [*`make_string`], [*`make_u16string`], [*`make_u32string`], [*`make_wstring`] and [*`make_basic_string`] funcion templates.
-* [@../../include/boost/stringify/v0/output_types/char_ptr.hpp char_ptr.hpp] : This is the source file implements the [*`write_to`] funcion templates that write to raw strings.
-* [@../../include/boost/stringify/v0/output_types/std_streambuf.hpp std_streambuf.hpp] : This is the source file that implements the [*`write_to`] funcion template that writes to `std::streambuff`.
-* [@../../include/boost/stringify/v0/output_types/FILE.hpp FILE.hpp] : This is the source file that implements the [*`write_to`] and [*`wwrite_to`] funcion templates that writes to `FILE*`.
+* [@../../include/boost/stringify/v0/output_types/std_string.hpp    std_string.hpp] : This is the source file that implements the [*`append`] and [*`assign`] function templates.
+* [@../../include/boost/stringify/v0/output_types/to_string.hpp   to_string.hpp] : This is the source file implements the [*`to_string`], [*`to_u16string`], [*`to_u32string`], [*`to_wstring`] and [*`to_basic_string`] function templates.
+* [@../../include/boost/stringify/v0/output_types/char_ptr.hpp char_ptr.hpp] : This is the source file implements the [*`format`] function templates that write to raw strings.
+* [@../../include/boost/stringify/v0/output_types/std_streambuf.hpp std_streambuf.hpp] : This is the source file that implements the [*`format`] functing template that writes to `std::streambuff`.
+* [@../../include/boost/stringify/v0/output_types/FILE.hpp FILE.hpp] : This is the source file that implements the [*`format`] and [*`wformat`] function templates that writes to `FILE*`.
+
 
 [endsect]

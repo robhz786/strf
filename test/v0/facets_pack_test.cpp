@@ -45,7 +45,7 @@ int main()
     struct dummy_type{};
 
     {
-        auto ft = strf::make_ftuple(
+        auto ft = strf::pack(
             f1_10,
             f2_20,
             f2_21,
@@ -72,7 +72,7 @@ int main()
     {   // using std::reference_wrapper<Facet>
         // and constrained_faced<Filter, std::reference_wrapper<F>>
 
-        auto ft = strf::make_ftuple(
+        auto ft = strf::pack(
             std::ref(f1_10),
             std::cref(f2_20),
             strf::constrain<std::is_arithmetic>(std::ref(f2_21)),
@@ -109,7 +109,7 @@ int main()
         auto constrained_f2_21 = strf::constrain<std::is_arithmetic>(f2_21);
         auto constrained_f2_22 = strf::constrain<std::is_integral>(f2_22);
 
-        auto ft = strf::make_ftuple(
+        auto ft = strf::pack(
             std::cref(f1_10),
             std::ref(f2_20),
             std::ref(constrained_f2_21),
@@ -147,7 +147,7 @@ int main()
         auto constrained_ref_f2_21 = strf::constrain<std::is_arithmetic>(std::ref(f2_21));
         auto constrained_ref_f2_22 = strf::constrain<std::is_integral>(std::cref(f2_22));
 
-        auto ft = strf::make_ftuple(
+        auto ft = strf::pack(
             std::cref(f1_10),
             std::ref(f2_20),
             std::ref(constrained_ref_f2_21),
@@ -185,7 +185,7 @@ int main()
         auto f2_20_empty_and_derives_from_x
             = strf::constrain<derives_from_x>(f2_20_empty);
 
-        auto ft = strf::make_ftuple
+        auto ft = strf::pack
             (
                 strf::constrain<std::is_empty>(f2_21),
                 strf::constrain<derives_from_x>(f2_22),
@@ -209,7 +209,7 @@ int main()
         auto f2_20_empty_and_derives_from_x
             = strf::constrain<derives_from_x>(std::ref(f2_20_empty));
 
-        auto ft = strf::make_ftuple
+        auto ft = strf::pack
             (
                 strf::constrain<std::is_empty>(std::cref(f2_21)),
                 strf::constrain<derives_from_x>(std::ref(f2_22)),

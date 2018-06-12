@@ -6,7 +6,7 @@ foreach(
     x
     to_char_ptr
     to_FILE
-    make_string
+    to_string
 )
 
   add_executable(${x}_ho   ${x}.cpp)

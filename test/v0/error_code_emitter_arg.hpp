@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <system_error>
-#include <boost/stringify/v0/formatter.hpp>
+#include <boost/stringify/v0/basic_types.hpp>
 
 struct error_tag
 {
@@ -19,14 +19,19 @@ static error_tag error_code_emitter_arg{ std::make_error_code(std::errc::invalid
 namespace detail{
 
 template <typename CharT>
-class erroneous_formatter: public boost::stringify::v0::formatter<CharT>
+class erroneous_printer: public boost::stringify::v0::printer<CharT>
 {
 
 public:
 
-    template <typename FTuple>
-    erroneous_formatter(const FTuple&, error_tag t) noexcept
-        : m_err(t.ec)
+    template <typename FPack>
+    erroneous_printer
+        ( boost::stringify::v0::output_writer<CharT>& out
+        , const FPack&
+        , error_tag t )
+        noexcept
+        : m_out(out)
+        , m_err(t.ec)
     {
     }
 
@@ -35,9 +40,9 @@ public:
         return 0;
     }
 
-    void write(boost::stringify::v0::output_writer<CharT>& out) const override
+    void write() const override
     {
-        out.set_error(m_err);
+        m_out.set_error(m_err);
     }
 
     int remaining_width(int w) const override
@@ -46,20 +51,38 @@ public:
     }
 
 private:
-
+    boost::stringify::v0::output_writer<CharT>& m_out;
     std::error_code m_err;
 };
 
-struct erroneous_formatter_traits
+// struct error_tag_input_traits
+// {
+//     template <typename CharT, typename FPack>
+//     static inline detail::erroneous_printer<CharT> make_printer
+//         ( const boost::stringify::v0::output_writer<CharT>& ow
+//         , const FPack& ft
+//         , error_tag x )
+//     {
+//         return {ft, x};
+//     }
+// };
+
+} // namespace detail
+
+//detail::error_tag_input_traits stringify_get_input_traits(error_tag x);
+
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+
+template <typename CharT, typename FPack>
+inline ::detail::erroneous_printer<CharT>
+stringify_make_printer
+    ( boost::stringify::v0::output_writer<CharT>& ow
+    , const FPack& ft
+    , error_tag x )
 {
-    template <typename CharT, typename>
-    using formatter = erroneous_formatter<CharT>;    
-};
-
-
+    return {ow, ft, x};
 }
 
-detail::erroneous_formatter_traits boost_stringify_input_traits_of(error_tag);
-
+BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif

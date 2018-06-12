@@ -19,14 +19,14 @@ decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::string& exp
         u8" abcd xyyabb\u00a1\u00a2\u00a2\u2080\u2081\u2081"
         u8"\U00010000\U00010001\U00010001";
 
-    return w () =
-        {
+    return w
+        (
             " abcd ", 'x', strf::multi('y', 2), strf::multi('z', 0),
             U'a', strf::multi(U'b', 2), strf::multi(U'c', 0),
             U'\u00a1', strf::multi(U'\u00a2', 2), strf::multi(U'\u00a3', 0),
             U'\u2080', strf::multi(U'\u2081', 2), strf::multi(U'\u2082', 0),
-            U'\U00010000', strf::multi(U'\U00010001', 2), strf::multi(U'\U00010002', 0),
-        };
+            U'\U00010000', strf::multi(U'\U00010001', 2), strf::multi(U'\U00010002', 0)
+        );
 }
 
 template <typename W>
@@ -38,14 +38,14 @@ decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::u16string& 
         u" abcd xyyabb\u0080\u0081\u0081\u0800\u0801\u0801"
         u"\U00010000\U00010001\U00010001";
 
-    return w () =
-        {
+    return w
+        (
             u" abcd ", u'x', strf::multi(u'y', 2), strf::multi(u'z', 0),
             U'a', strf::multi(U'b', 2), strf::multi(U'c', 0),
             U'\u0080', strf::multi(U'\u0081', 2), strf::multi(U'\u0082', 0),
             U'\u0800', strf::multi(U'\u0801', 2), strf::multi(U'\u0802', 0),
-            U'\U00010000', strf::multi(U'\U00010001', 2), strf::multi(U'\U00010002', 0),
-        };
+            U'\U00010000', strf::multi(U'\U00010001', 2), strf::multi(U'\U00010002', 0)
+        );
 
 }
 
@@ -58,14 +58,14 @@ decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::u32string& 
         U" abcd xyyabb\u0080\u0081\u0081\u0800\u0801\u0801"
         U"\U00010000\U00010001\U00010001";
 
-    return w() =
-        {
+    return w
+        (
             U" abcd ", U'x', strf::multi(U'y', 2), strf::multi(U'z', 0),
             U'a', strf::multi(U'b', 2), strf::multi(U'c', 0),
             U'\u0080', strf::multi(U'\u0081', 2), strf::multi(U'\u0082', 0),
             U'\u0800', strf::multi(U'\u0801', 2), strf::multi(U'\u0802', 0),
-            U'\U00010000', strf::multi(U'\U00010001', 2), strf::multi(U'\U00010002', 0),
-        };
+            U'\U00010000', strf::multi(U'\U00010001', 2), strf::multi(U'\U00010002', 0)
+        );
 
 }
 
@@ -79,14 +79,14 @@ decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::wstring& ex
         L" abcd xyyabb\u00a1\u00a2\u00a2\u0800\u0801\u0801"
         L"\U00010000\U00010001\U00010001";
 
-    return w() =
-        {
+    return w
+        (
             L" abcd ", L'x', strf::multi(L'y', 2), strf::multi(L'z', 0),
             U'a', strf::multi(U'b', 2), strf::multi(U'c', 0),
             L'\u00a1', strf::multi(L'\u00a2', 2), strf::multi(L'\u00a3', 0),
             L'\u0800', strf::multi(L'\u0801', 2), strf::multi(L'\u0802', 0),
             U'\U00010000', strf::multi(U'\U00010001', 2), strf::multi(U'\U00010002', 0)
-        };
+        );
 
 }
 
@@ -206,19 +206,42 @@ void print(const char* label, const std::wstring& str)
     std::cout  << "\"\n";
 }
 
+template <typename CharT>
+struct input_tester_buffer
+{
+    input_tester_buffer(typename std::basic_string<CharT>::size_type size)
+        : buffer(size, static_cast<CharT>('#'))
+    {
+    }
+
+    std::basic_string<CharT> buffer;
+};
+
 
 template <typename CharT>
-class input_tester: public boost::stringify::v0::output_writer<CharT>
+class input_tester
+    : private input_tester_buffer<CharT>
+    , public boost::stringify::v0::buffered_writer<CharT>
 {
+    using parent = boost::stringify::v0::buffered_writer<CharT>;
+    using  input_tester_buffer<CharT>::buffer;
 public:
+
     input_tester
-        ( std::basic_string<CharT> expected
+        ( boost::stringify::v0::output_writer_init<CharT> init
+        , std::basic_string<CharT> expected
         , std::error_code expected_error
         , std::string src_filename
         , int src_line
         , double reserve_factor
+        , std::size_t buffer_size = 60
         )
-        : m_expected(std::move(expected))
+        : input_tester_buffer<CharT>{buffer_size}
+        , boost::stringify::v0::buffered_writer<CharT>
+            { init
+            , &buffer.front()
+            , buffer.size() }
+        , m_expected(std::move(expected))
         , m_expected_error(expected_error)
         , m_reserved_size(0)
         , m_src_filename(std::move(src_filename))
@@ -227,126 +250,41 @@ public:
     {
     }
 
+    ~input_tester()
+    {
+        this->flush();
+    }
+
     using char_type = CharT;
 
-    void set_error(std::error_code err) override
+    void finish()
     {
-        m_obtained_error = err;
-    }
+        auto x = parent::finish();
+        std::error_code obtained_error = x ? std::error_code{} : x.error();
 
-    virtual bool good() const override
-    {
-        return ! m_obtained_error;
-    }
-
-    bool put(const char_type* str, std::size_t count) override
-    {
-        if (good())
-        {
-            m_result.append(str, count);
-            return true;
-        }
-        return false;
-    }
-
-    bool put(char_type character) override
-    {
-        if (good())
-        {
-            m_result.push_back(character);
-            return true;
-        }
-        return false;
-    }
-
-    bool repeat(std::size_t count, char_type ch) override
-    {
-        if (good())
-        {
-            m_result.append(count, ch);
-            return true;
-        }
-        return false;
-    }
-
-    bool repeat(std::size_t count, char_type ch1, char_type ch2) override
-    {
-        if (good())
-        {
-            for(; count > 0; --count)
-            {
-                m_result.push_back(ch1);
-                m_result.push_back(ch2);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    bool repeat(std::size_t count, char_type ch1, char_type ch2, char_type ch3) override
-    {
-        if (good())
-        {
-            for(; count > 0; --count)
-            {
-                m_result.push_back(ch1);
-                m_result.push_back(ch2);
-                m_result.push_back(ch3);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    bool repeat(std::size_t count, char_type ch1, char_type ch2, char_type ch3, char_type ch4) override
-    {
-        if (good())
-        {
-            for(; count > 0; --count)
-            {
-                m_result.push_back(ch1);
-                m_result.push_back(ch2);
-                m_result.push_back(ch3);
-                m_result.push_back(ch4);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    std::error_code finish()
-    {
-        if (m_expected_error != m_obtained_error || m_expected != m_result || wrongly_reserved())
+        if ( m_expected_error != obtained_error
+          || m_expected != m_result
+          || (obtained_error == std::error_code{} && wrongly_reserved()))
         {
             std::cout << m_src_filename << ":" << m_src_line << ":" << " error: \n";
             ++global_errors_count;
         }
-        if (m_expected_error != m_obtained_error)
+        if (m_expected_error != obtained_error)
         {
             print("expected error_code", m_expected_error.message());
-            print("obtained error_code", m_obtained_error.message());
+            print("obtained error_code", obtained_error.message());
         }
         if (m_expected != m_result)
         {
             print("expected", m_expected);
             print("obtained", m_result);
         }
-        if(wrongly_reserved())
+        if(obtained_error == std::error_code{} && wrongly_reserved())
         {
             std::cout << "reserved size  :" <<  m_reserved_size << "\n";
             std::cout << "necessary size :" <<  m_result.length() << "\n";
         }
-
-        return {};
-    }
-
-    void finish_throw()
-    {
-        auto err = finish();
-        if(err)
-        {
-            throw std::system_error(err);
-        }
+        
     }
 
     void reserve(std::size_t size)
@@ -355,14 +293,19 @@ public:
         m_result.reserve(size);
     }
 
+protected:
+
+    bool do_put(const CharT* str, std::size_t count) override
+    {
+        m_result.append(str, count);
+        return true;            
+    }
 
 private:
 
     bool wrongly_reserved() const
     {
-        return
-            ( ! m_obtained_error
-              && (m_reserved_size < m_result.length() || too_much_reserved()));
+        return (m_reserved_size < m_result.length() || too_much_reserved());
     }
 
     bool too_much_reserved() const
@@ -377,7 +320,6 @@ private:
     std::basic_string<CharT> m_result;
     std::basic_string<CharT> m_expected;
     std::error_code m_expected_error;
-    std::error_code m_obtained_error;
     std::size_t m_reserved_size;
     std::string m_src_filename;
     int m_src_line;
@@ -385,37 +327,97 @@ private:
 };
 
 
-template<typename CharT>
-auto make_tester
-    ( const CharT* expected
-    , const char* filename
-    , int line
-    , std::error_code err = {}
-    , double reserve_factor = 1.0
-    )
-{
-    using writer = input_tester<CharT>;
-    return boost::stringify::v0::make_args_handler
-        <writer, const CharT*,std::error_code, const char*, int>
-        (expected, err, filename, line, reserve_factor);
-}
+//template<typename CharT>
+//auto make_tester
+//    ( const CharT* expected
+//    , const char* filename
+//    , int line
+//    , std::error_code err = {}
+//    , double reserve_factor = 1.0
+//    )
+//{
+//    using writer = input_tester<CharT>;
+//    return boost::stringify::v0::make_args_handler
+//        <writer, const CharT*, std::error_code, const char*, int>
+//        (expected, err, filename, line, reserve_factor);
+//}
+
+//template<typename CharT>
+//auto make_tester
+//    ( const CharT* expected
+//    , const char* filename
+//    , int line
+//    , double reserve_factor
+//    )
+//{
+//    using writer = input_tester<CharT>;
+//    return boost::stringify::v0::make_args_handler
+//        <writer, const CharT*, std::error_code, const char*, int, double, std::size_t>
+//        (expected, {}, filename, line, reserve_factor, buffer_size);
+//}
+
 
 template<typename CharT>
 auto make_tester
     ( const CharT* expected
     , const char* filename
     , int line
+    , std::error_code err
     , double reserve_factor
-    )
+    , std::size_t buffer_size)
 {
     using writer = input_tester<CharT>;
     return boost::stringify::v0::make_args_handler
-        <writer, const CharT*,std::error_code, const char*, int>
-        (expected, {}, filename, line, reserve_factor);
+        <writer, const CharT*, std::error_code, const char*, int, double, std::size_t>
+        (expected, err, filename, line, reserve_factor, buffer_size);
 }
 
+template<typename CharT>
+auto make_tester
+    ( const std::basic_string<CharT>& expected
+    , const char* filename
+    , int line
+    , std::error_code err
+    , double reserve_factor
+    , std::size_t buffer_size )
+{
+    using writer = input_tester<CharT>;
+    return boost::stringify::v0::make_args_handler
+        <writer, const std::basic_string<CharT>&, std::error_code, const char*, int, double, std::size_t>
+        (expected, err, filename, line, reserve_factor, buffer_size);
+}
 
-#define TEST(EXPECTED) make_tester((EXPECTED), __FILE__, __LINE__)
+//template<typename CharT>
+//auto make_tester
+//    ( const std::basic_string<CharT>& expected
+//    , const char* filename
+//    , int line
+//    , double reserve_factor
+//    , std::size_t buffer_size = 60 )
+//{
+//    using writer = input_tester<CharT>;
+//    return boost::stringify::v0::make_args_handler
+//        <writer, const std::basic_string<CharT>&, std::error_code, const char*, int, std::size_t >
+//        (expected, {}, filename, line, reserve_factor, buffer_size);
+//}
+
+
+#define TEST(EXPECTED) make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), 1.0, 60)
+
+#define TEST_RF(EXPECTED, RF) make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), (RF), 60)
+
+#define TEST_ERR(EXPECTED, ERR) make_tester((EXPECTED), __FILE__, __LINE__, (ERR), 1.0, 60)
+
+#define TEST_ERR_RF(EXPECTED, ERR, RF) make_tester((EXPECTED), __FILE__, __LINE__, (ERR), (RF), 60)
+
+#define BUFFERED_TEST(SIZE, EXPECTED) make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), 1.0, (SIZE))
+
+#define BUFFERED_TEST_RF(SIZE, EXPECTED, RF) make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), (RF), (SIZE))
+
+#define BUFFERED_TEST_ERR(SIZE, EXPECTED, ERR) make_tester((EXPECTED), __FILE__, __LINE__, (ERR), 1.0, (SIZE))
+
+#define BUFFERED_TEST_ERR_RF(SIZE, EXPECTED, ERR, RF) make_tester((EXPECTED), __FILE__, __LINE__, (ERR), (RF), (SIZE))
+
 
 #endif
 

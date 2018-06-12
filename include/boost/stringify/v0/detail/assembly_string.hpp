@@ -5,9 +5,10 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/input_arg.hpp>
+#include <boost/stringify/v0/facets/encodings.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+
 namespace detail {
 
 template <typename CharT>
@@ -19,96 +20,123 @@ public:
     {
     }
 
-    virtual bool good() = 0;
+    //virtual bool good() = 0;
 
-    virtual void put(const CharT* begin, const CharT* end) = 0;
+    void put(const CharT* begin, const CharT* end)
+    {
+        if(begin < end)
+        {
+            do_put(begin, end);
+        }
+    }
 
-    virtual void put_arg(std::size_t index) = 0;
+    void put_arg(std::size_t index)
+    {
+        do_put_arg(index);
+    }
+
+    virtual void do_put(const CharT* begin, const CharT* end) = 0;
+
+    virtual void do_put_arg(std::size_t index) = 0;
 };
 
-
-template <typename CharT, typename FTuple>
-class asm_string_writer: public asm_string_processor<CharT>
+template <typename CharIn, typename CharOut>
+class asm_string_writer: public asm_string_processor<CharIn>
 {
-    using arg_type =  stringify::v0::input_arg<CharT, FTuple>;
-    using arglist_type = std::initializer_list<arg_type>;
-
 public:
 
+    using printer_ptr = const stringify::v0::printer<CharOut>*;
+    using arglist_type = std::initializer_list<printer_ptr>;
+
+    template <typename FPack>
     asm_string_writer
-        ( const arglist_type& arglist
-        , stringify::v0::output_writer<CharT>& writer
-        , const FTuple& ft
-        )
-        : m_arglist(arglist)
-        , m_writer(writer)
-        , m_ftuple(ft)
+        ( stringify::v0::output_writer<CharOut>& dest
+        , const FPack& ft
+        , const arglist_type& args
+        , bool sanitise )
+        : m_dest(dest)
+        , m_args(args)
+        , m_sw
+            ( dest
+            , get_facet<stringify::v0::encoding_category<CharIn>>(ft)
+            , sanitise )
     {
     }
 
-    virtual bool good()
+    // bool good() override
+    // {
+    //     return m_dest.good();
+    // }
+
+    void do_put(const CharIn* begin, const CharIn* end) override
     {
-        return m_writer.good();
+        m_sw.write(begin, end);
     }
 
-    virtual void put(const CharT* begin, const CharT* end)
+    void do_put_arg(std::size_t index) override
     {
-        BOOST_ASSERT(end >= begin);
-        m_writer.put(begin, end - begin);
-    }
-
-    virtual void put_arg(std::size_t index)
-    {
-        if (index >= m_arglist.size())
+        if (index < m_args.size())
         {
-            m_writer.set_error(std::make_error_code(std::errc::value_too_large));
+            m_args.begin()[index]->write();
         }
         else
         {
-            m_arglist.begin()[index].write(m_writer, m_ftuple);
+            m_dest.set_error(std::make_error_code(std::errc::value_too_large));
         }
     }
 
 private:
+    template <typename Category, typename FPack>
+    const auto& get_facet(const FPack& ft) const
+    {
+        using input_tag = stringify::v0::asm_string_input_tag<CharIn>;
+        return ft.template get_facet<Category, input_tag>();
+    }
 
-    arglist_type m_arglist;
-    stringify::v0::output_writer<CharT>& m_writer;
-    const FTuple& m_ftuple;
+    stringify::v0::output_writer<CharOut>& m_dest;
+    arglist_type m_args;
+    stringify::v0::string_writer<CharIn, CharOut> m_sw;
 };
 
-template <typename CharT, typename FTuple>
-class asm_string_measurer: public asm_string_processor<CharT>
+
+template <typename CharIn, typename CharOut>
+class asm_string_measurer: public asm_string_processor<CharIn>
 {
-    using arg_type =  stringify::v0::input_arg<CharT, FTuple>;
-    using arglist_type = std::initializer_list<arg_type>;
+
+    using printer_ptr = const stringify::v0::printer<CharOut>*;
+    using arglist_type = std::initializer_list<printer_ptr>;
 
 public:
 
-    explicit asm_string_measurer
-        ( const arglist_type& arglist
-        , const FTuple& ft
-        )
-        : m_arglist(arglist)
-        , m_ftuple(ft)
+    template <typename FPack>
+    asm_string_measurer
+        ( stringify::v0::output_writer<CharOut>& dest
+        , const FPack& ft
+        , const arglist_type& args
+        , bool sanitise )
+        : m_args(args)
+        , m_sw
+            ( dest
+            , get_facet<stringify::v0::encoding_category<CharIn>>(ft)
+            , sanitise )
     {
     }
 
-    virtual bool good()
+    // virtual bool good()
+    // {
+    //     return true;
+    // }
+
+    virtual void do_put(const CharIn* begin, const CharIn* end)
     {
-        return true;
+        m_length += m_sw.length(begin, end);
     }
 
-    virtual void put(const CharT* begin, const CharT* end)
+    virtual void do_put_arg(std::size_t index)
     {
-        BOOST_ASSERT(end >= begin);
-        m_length += (end - begin);
-    }
-
-    virtual void put_arg(std::size_t index)
-    {
-        if (index < m_arglist.size())
+        if (index < m_args.size())
         {
-            m_length += m_arglist.begin()[index].length(m_ftuple);
+            m_length += m_args.begin()[index]->length();
         }
     }
 
@@ -120,10 +148,16 @@ public:
 private:
 
     std::size_t m_length = 0;
-    arglist_type m_arglist;
-    const FTuple& m_ftuple;
-};
+    arglist_type m_args;
+    stringify::v0::string_writer<CharIn, CharOut> m_sw;
 
+    template <typename Category, typename FPack>
+    const auto& get_facet(const FPack& ft) const
+    {
+        using input_tag = stringify::v0::asm_string_input_tag<CharIn>;
+        return ft.template get_facet<Category, input_tag>();
+    }
+};
 
 template <typename CharT>
 struct read_uint_result
@@ -165,7 +199,6 @@ const CharT* after_closing_bracket(const CharT* it, const CharT* end)
     return it == end ? end : it + 1;
 }
 
-
 template <typename CharT>
 void parse_asm_string
     ( const CharT* it
@@ -174,59 +207,58 @@ void parse_asm_string
     )
 {
     std::size_t arg_idx = 0;
-
-    while(it != end && proc.good())
+    const CharT* prev = it;
+    while(it != end)
     {
-        auto prev = it;
-        it = std::find(it, end, static_cast<CharT>('{'));
-
-        if (it == end)
+        if (*it != '{')
         {
-            proc.put(prev, it);
-            return;
+            ++it;
+            continue;
         }
-        if (it + 1 == end)
-        {
-            proc.put(prev, it);
-            proc.put_arg(arg_idx);
-            return;
-        }
-
-        CharT ch = *++it;
-
-        if (ch == static_cast<CharT>('}'))
+        if (++it == end)
         {
             proc.put(prev, it - 1);
             proc.put_arg(arg_idx);
-            ++it;
-            ++arg_idx;
+            prev = end;
+            break;
         }
-        else if (static_cast<CharT>('0') <= ch && ch <= static_cast<CharT>('9'))
+        CharT ch = *it;
+        if(ch == static_cast<CharT>('}'))
+        {
+            proc.put(prev, it - 1);
+            prev = ++it;
+            proc.put_arg(arg_idx);
+            ++arg_idx;
+            continue;
+        }
+        if(static_cast<CharT>('0') <= ch && ch <= static_cast<CharT>('9'))
         {
             proc.put(prev, it - 1);
             auto res = read_uint(it, end);
             it = after_closing_bracket(res.ptr, end);
+            prev = it;
             proc.put_arg(res.value);
+            continue;
         }
-        else if (ch == static_cast<CharT>('/'))
+        if(ch == static_cast<CharT>('{'))
         {
             proc.put(prev, it);
             ++it;
+            prev = it;
+            continue;
         }
-        else if (ch == static_cast<CharT>('-'))
+        proc.put(prev, it - 1);
+        it = after_closing_bracket(it, end);
+        prev = it;
+        if(ch != static_cast<CharT>('-'))
         {
-            proc.put(prev, it - 1);
-            it = after_closing_bracket(it + 1 , end);
-        }
-        else
-        {
-            proc.put(prev, it - 1);
-            it = after_closing_bracket(it + 1, end);
             proc.put_arg(arg_idx);
             ++arg_idx;
         }
     }
+    proc.put(prev, end);
 }
+
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
