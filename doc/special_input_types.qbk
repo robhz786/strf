@@ -70,19 +70,38 @@ When using assembly string, be aware that the sub-list of argument is treated as
 
 [endsect]
 
-[section Range ['(to do)]]
+[section Range]
 [import ../example/v0/range_input.cpp]
 
-A /range/ is any container. The syntax is:
+Syntax:
 
-* `iterate(`[~range]`)`
-* `iterate(`[~range], [~separator]`)`
+* `range(`[~range_expression]`)`
+* `range(`[~range_expression]`, `[~separator]`)`
+* `fmt_range(`[~range_expression]`)`
+* `fmt_range(`[~range_expression]`, `[~separator]`)`
+
+* `iterate(`[~first]`, `[~last]`)`
+* `iterate(`[~first]`, `[~last]`, `[~separator]`)`
+* `fmt_iterate(`[~first]`, `[~last]`)`
+* `fmt_iterate(`[~first]`, `[~last]`, `[~separator]`)`
+
+, where:
+
+* [~range_expression] is a range that provides the multi-pass guarantee.
+* [~first], [~last] are [@https://en.cppreference.com/w/cpp/named_req/ForwardIterator ForwardIterators].
+* [~separator] is a raw string ( of `char`, `wchar_t`, `char16_t` or `char32_t`)
+
+Example:
 
 [range_sample]
 
 You can use the format functions to format the range's elements
 
 [range_sample_2]
+
+The expression `fmt_iterate(`[~args]`...)` is equivalent to `fmt(iterate(`[~args]...`)`
+
+[range_sample_3]
 
 [endsect]
 
@@ -93,7 +112,7 @@ You can use the format functions to format the range's elements
 
 syntax:
 
-* `assemble(`[~assembly_string]`) (`[~arguments]...`)`
+* `as(`[~assembly_string]`) (`[~arguments]...`)`
 
 [assembly_string_as_input]
 

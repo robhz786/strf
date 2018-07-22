@@ -71,7 +71,7 @@ By default, the encoding for `char` is UTF-8 and for `wchar_t` is UTF-16 if `siz
 
 ]
 
-[section.encoding_class The `encoding` class template]
+[section:encoding_class The `encoding` class template]
 
 The class `encoding<`[~CharT]`>` basically just stores an encoding identification. Its objects are small and fast to copy and to compare.
 

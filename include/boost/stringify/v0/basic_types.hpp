@@ -1688,6 +1688,13 @@ struct asm_string_input_tag: stringify::v0::string_input_tag<CharIn>
 };
 
 template <typename CharIn>
+struct range_separator_input_tag: stringify::v0::string_input_tag<CharIn>
+{
+};
+
+
+
+template <typename CharIn>
 struct is_asm_string_of
 {
     template <typename T>

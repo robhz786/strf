@@ -15,6 +15,7 @@ foreach(x
     numpunct_facets
     width_calculation_in_encoding_conversion
     joins
+    range_input
     syntax_samples
     trivial_sample)
 
