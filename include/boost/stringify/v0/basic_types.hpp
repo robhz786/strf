@@ -1528,19 +1528,15 @@ public:
 
 enum class alignment {left, right, internal, center};
 
-template <class T = void>
+template <class T>
 class align_formatting
 {
-    using child_type = typename std::conditional
-        < std::is_void<T>::value
-        , align_formatting<void>
-        , T
-        > :: type;
+    using child_type = T;
 
 public:
 
     template <typename U>
-    using other = stringify::v0::align_formatting<U>;
+    using fmt_other = stringify::v0::align_formatting<U>;
 
     constexpr align_formatting()
     {
@@ -1550,30 +1546,15 @@ public:
     constexpr align_formatting(const align_formatting&) = default;
 
     template <typename U>
-    constexpr align_formatting(const align_formatting<U>& other)
-        : m_fill(other.m_fill)
-        , m_width(other.m_width)
-        , m_alignment(other.m_alignment)
+    constexpr align_formatting(const align_formatting<U>& u)
+        : m_fill(u.fill())
+        , m_width(u.width())
+        , m_alignment(u.alignment())
     {
     }
 
     ~align_formatting()
     {
-    }
-
-    template <typename U>
-    constexpr child_type& format_as(const align_formatting<U>& other) &
-    {
-        m_fill = other.m_fill;
-        m_width = other.m_width;
-        m_alignment = other.m_alignment;
-        return static_cast<child_type&>(*this);
-    }
-
-    template <typename U>
-    constexpr child_type&& format_as(const align_formatting<U>& other) &&
-    {
-        return static_cast<child_type&&>(format_as(other));
     }
 
     constexpr child_type&& operator<(int width) &&

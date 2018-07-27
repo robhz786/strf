@@ -22,7 +22,7 @@ struct range_p
 };
 
 template <typename ForwardIt, typename CharIn>
-struct range_sep_p
+struct sep_range_p
 {
     using iterator = ForwardIt;
     using value_type = typename std::iterator_traits<ForwardIt>::value_type;
@@ -32,104 +32,6 @@ struct range_sep_p
     const CharIn* separator_begin;
     const CharIn* separator_end;
 };
-
-
-template
-    < typename ForwardIt
-    , typename ChildClass
-    , typename value_type = typename std::iterator_traits<ForwardIt>::value_type
-    , typename value_with_formatting
-      = decltype(stringify_fmt(std::declval<const value_type>()))
-    >
-using range_format
-    = typename value_with_formatting::template other<ChildClass>;
-
-
-template <typename ForwardIt>
-class range_with_formatting
-    : public stringify::v0::detail::range_format
-        < ForwardIt
-        , range_with_formatting<ForwardIt> >
-{
-public:
-
-    template <typename T>
-    using other = stringify::v0::detail::range_format<ForwardIt, T>;
-
-    range_with_formatting
-        ( ForwardIt begin
-        , ForwardIt end
-        )
-        : m_begin(begin)
-        , m_end(end)
-    {
-    }
-
-    ForwardIt begin() const
-    {
-        return m_begin;
-    }
-    ForwardIt end() const
-    {
-        return m_end;
-    }
-
-private:
-
-    ForwardIt m_begin;
-    ForwardIt m_end;
-};
-
-template <typename ForwardIt, typename CharIn>
-class range_sep_with_formatting
-    : public stringify::v0::detail::range_format
-        < ForwardIt
-        , range_sep_with_formatting<ForwardIt, CharIn> >
-{
-
-public:
-
-    template <typename T>
-    using other = stringify::v0::detail::range_format<ForwardIt, T>;
-
-    range_sep_with_formatting
-        ( ForwardIt begin
-        , ForwardIt end
-        , const CharIn* sep_begin
-        , const CharIn* sep_end )
-        : m_begin(begin)
-        , m_end(end)
-        , m_sep_begin(sep_begin)
-        , m_sep_end(sep_end)
-    {
-    }
-
-    ForwardIt begin() const
-    {
-        return m_begin;
-    }
-    ForwardIt end() const
-    {
-        return m_end;
-    }
-
-    const CharIn* sep_begin() const
-    {
-        return m_sep_begin;
-    }
-    const CharIn* sep_end() const
-    {
-        return m_sep_end;
-    }
-
-private:
-
-    ForwardIt m_begin;
-    ForwardIt m_end;
-    const CharIn* m_sep_begin;
-    const CharIn* m_sep_end;
-};
-
 
 } // namespace detail
 
@@ -192,7 +94,7 @@ private:
 
 
 template <typename CharOut, typename CharIn, typename FPack, typename ForwardIt>
-class range_sep_printer: public printer<CharOut>
+class sep_range_printer: public printer<CharOut>
 {
     using sep_tag = stringify::v0::range_separator_input_tag<CharIn>;
 
@@ -202,7 +104,7 @@ public:
     using iterator = ForwardIt;
     using value_type = typename std::iterator_traits<ForwardIt>::value_type;
 
-    range_sep_printer
+    sep_range_printer
         ( writer_type& ow
         , const FPack& fp
         , iterator begin
@@ -244,7 +146,7 @@ private:
 };
 
 template <typename CharOut, typename CharIn, typename FPack, typename ForwardIt>
-int range_sep_printer<CharOut, CharIn, FPack, ForwardIt>::remaining_width(int w) const
+int sep_range_printer<CharOut, CharIn, FPack, ForwardIt>::remaining_width(int w) const
 {
     const auto& wcalc = get_facet<stringify::v0::width_calculator_category>(m_fp);
     const auto encoding = get_facet<stringify::v0::encoding_category<CharIn>>(m_fp);
@@ -284,7 +186,7 @@ int range_sep_printer<CharOut, CharIn, FPack, ForwardIt>::remaining_width(int w)
 }
 
 template <typename CharOut, typename CharIn, typename FPack, typename ForwardIt>
-std::size_t range_sep_printer<CharOut, CharIn, FPack, ForwardIt>::length() const
+std::size_t sep_range_printer<CharOut, CharIn, FPack, ForwardIt>::length() const
 {
     std::size_t len = 0;
     std::size_t sep_len = -1;
@@ -304,7 +206,7 @@ std::size_t range_sep_printer<CharOut, CharIn, FPack, ForwardIt>::length() const
 }
 
 template <typename CharOut, typename CharIn, typename FPack, typename ForwardIt>
-void range_sep_printer<CharOut, CharIn, FPack, ForwardIt>::write() const
+void sep_range_printer<CharOut, CharIn, FPack, ForwardIt>::write() const
 {
     bool not_first = false;
     for(auto it = m_begin; it != m_end; ++it)
@@ -318,6 +220,103 @@ void range_sep_printer<CharOut, CharIn, FPack, ForwardIt>::write() const
     }
 }
 
+namespace detail{
+
+template <typename ForwardIt>
+struct fmt_range_helper
+{
+    using value_type = typename std::iterator_traits<ForwardIt>::value_type;
+    using fmt_value_type = decltype(stringify_fmt(std::declval<const value_type>()));
+
+    template <typename T>
+    using formatting = typename fmt_value_type::template fmt_other<T>;
+
+};
+
+template <typename ForwardIt>
+class fmt_range
+    : public stringify::v0::detail::fmt_range_helper<ForwardIt>
+        ::template formatting<fmt_range<ForwardIt>>
+{
+public:
+
+    using original_fmt
+        = typename stringify::v0::detail::fmt_range_helper<ForwardIt>
+        ::fmt_value_type;
+
+    fmt_range(ForwardIt begin, ForwardIt end)
+        : m_begin(begin)
+        , m_end(end)
+    {
+    }
+
+    ForwardIt begin() const
+    {
+        return m_begin;
+    }
+    ForwardIt end() const
+    {
+        return m_end;
+    }
+
+private:
+
+    ForwardIt m_begin;
+    ForwardIt m_end;
+};
+
+template <typename ForwardIt, typename CharIn>
+class fmt_sep_range
+    : public stringify::v0::detail::fmt_range_helper<ForwardIt>
+        ::template formatting<fmt_sep_range<ForwardIt, CharIn> >
+{
+public:
+
+    using original_fmt
+        = typename stringify::v0::detail::fmt_range_helper<ForwardIt>
+        ::fmt_value_type;
+
+    fmt_sep_range
+        ( ForwardIt begin
+        , ForwardIt end
+        , const CharIn* sep_begin
+        , const CharIn* sep_end )
+        : m_begin(begin)
+        , m_end(end)
+        , m_sep_begin(sep_begin)
+        , m_sep_end(sep_end)
+    {
+    }
+
+    ForwardIt begin() const
+    {
+        return m_begin;
+    }
+    ForwardIt end() const
+    {
+        return m_end;
+    }
+
+    const CharIn* sep_begin() const
+    {
+        return m_sep_begin;
+    }
+    const CharIn* sep_end() const
+    {
+        return m_sep_end;
+    }
+
+private:
+
+    ForwardIt m_begin;
+    ForwardIt m_end;
+    const CharIn* m_sep_begin;
+    const CharIn* m_sep_end;
+};
+
+} // namespace detail
+
+
 template <typename CharOut, typename FPack, typename ForwardIt>
 class fmt_range_printer: public printer<CharOut>
 {
@@ -325,13 +324,13 @@ public:
     using writer_type = stringify::v0::output_writer<CharOut>;
     using iterator = ForwardIt;
     using value_type = typename std::iterator_traits<ForwardIt>::value_type;
-    using fmt_type = stringify::v0::detail::range_with_formatting<ForwardIt>;
+    using fmt_type = stringify::v0::detail::fmt_range<ForwardIt>;
+    using original_fmt_type = typename fmt_type::original_fmt;
 
     fmt_range_printer
         ( writer_type& ow
         , const FPack& fp
-        , const fmt_type& fmt
-        )
+        , const fmt_type& fmt )
         : m_out(ow)
         , m_fp(fp)
         , m_fmt(fmt)
@@ -370,17 +369,7 @@ private:
     auto make_printer(const value_type& value) const
     {
         return stringify_make_printer<CharOut, FPack>
-            ( m_out, m_fp, apply_fmt(stringify_fmt(value)) );
-    }
-
-    template <typename ElemFmtWithValue>
-    ElemFmtWithValue&& apply_fmt(ElemFmtWithValue&& fmt_with_value) const
-    {
-        // This functions aims just to check if the return type of
-        // ElemFmtWithValue::format_as is correct, producing a compile
-        // error message easier to understand.
-
-        return std::move(fmt_with_value.format_as(m_fmt));
+            ( m_out, m_fp, original_fmt_type{value, m_fmt} );
     }
 
     stringify::v0::output_writer<CharOut>& m_out;
@@ -389,7 +378,7 @@ private:
 };
 
 template <typename CharOut, typename CharIn, typename FPack, typename ForwardIt>
-class fmt_range_sep_printer: public printer<CharOut>
+class fmt_sep_range_printer: public printer<CharOut>
 {
     using sep_tag = stringify::v0::range_separator_input_tag<CharIn>;
 
@@ -398,9 +387,10 @@ public:
     using writer_type = stringify::v0::output_writer<CharOut>;
     using iterator = ForwardIt;
     using value_type = typename std::iterator_traits<ForwardIt>::value_type;
-    using fmt_type = stringify::v0::detail::range_sep_with_formatting<ForwardIt, CharIn>;
+    using fmt_type = stringify::v0::detail::fmt_sep_range<ForwardIt, CharIn>;
+    using original_fmt_type = typename fmt_type::original_fmt;
 
-    fmt_range_sep_printer
+    fmt_sep_range_printer
         ( writer_type& ow
         , const FPack& fp
         , const fmt_type& fmt
@@ -428,13 +418,7 @@ private:
     auto make_printer(const value_type& value) const
     {
         return stringify_make_printer<CharOut, FPack>
-            ( m_out, m_fp, apply_fmt(stringify_fmt(value)) );
-    }
-
-    template <typename ElemFmtWithValue>
-    ElemFmtWithValue&& apply_fmt(ElemFmtWithValue&& fmt_with_value) const
-    {
-        return std::move(fmt_with_value.format_as(m_fmt));
+            ( m_out, m_fp, original_fmt_type{value, m_fmt} );
     }
 
     template <typename Category>
@@ -445,7 +429,7 @@ private:
 };
 
 template <typename CharOut, typename CharIn, typename FPack, typename ForwardIt>
-std::size_t fmt_range_sep_printer<CharOut, CharIn, FPack, ForwardIt>::length() const
+std::size_t fmt_sep_range_printer<CharOut, CharIn, FPack, ForwardIt>::length() const
 {
     std::size_t len = 0;
     std::size_t sep_len = -1;
@@ -465,7 +449,7 @@ std::size_t fmt_range_sep_printer<CharOut, CharIn, FPack, ForwardIt>::length() c
 }
 
 template <typename CharOut, typename CharIn, typename FPack, typename ForwardIt>
-int fmt_range_sep_printer<CharOut, CharIn, FPack, ForwardIt>::remaining_width(int w) const
+int fmt_sep_range_printer<CharOut, CharIn, FPack, ForwardIt>::remaining_width(int w) const
 {
     const auto& wcalc = get_facet<stringify::v0::width_calculator_category>(m_fp);
     const auto encoding = get_facet<stringify::v0::encoding_category<CharIn>>(m_fp);
@@ -505,7 +489,7 @@ int fmt_range_sep_printer<CharOut, CharIn, FPack, ForwardIt>::remaining_width(in
 }
 
 template <typename CharOut, typename CharIn, typename FPack, typename ForwardIt>
-void fmt_range_sep_printer<CharOut, CharIn, FPack, ForwardIt>::write() const
+void fmt_sep_range_printer<CharOut, CharIn, FPack, ForwardIt>::write() const
 {
     bool not_first = false;
     for(const auto& value : m_fmt)
@@ -531,11 +515,11 @@ stringify_make_printer
 }
 
 template <typename CharOut, typename FPack, typename ForwardIt, typename CharIn>
-inline stringify::v0::range_sep_printer<CharOut, CharIn, FPack, ForwardIt>
+inline stringify::v0::sep_range_printer<CharOut, CharIn, FPack, ForwardIt>
 stringify_make_printer
     ( stringify::v0::output_writer<CharOut>& out
     , const FPack& fp
-    , stringify::v0::detail::range_sep_p<ForwardIt, CharIn> r )
+    , stringify::v0::detail::sep_range_p<ForwardIt, CharIn> r )
 {
     return {out, fp, r.begin, r.end, r.separator_begin, r.separator_end};
 }
@@ -545,31 +529,31 @@ inline stringify::v0::fmt_range_printer<CharOut, FPack, ForwardIt>
 stringify_make_printer
     ( stringify::v0::output_writer<CharOut>& out
     , const FPack& fp
-    , const stringify::v0::detail::range_with_formatting<ForwardIt>& fmt)
+    , const stringify::v0::detail::fmt_range<ForwardIt>& fmt)
 {
     return {out, fp, fmt};
 }
 
 template <typename CharOut, typename FPack, typename ForwardIt, typename CharIn>
-inline stringify::v0::fmt_range_sep_printer<CharOut, CharIn, FPack, ForwardIt>
+inline stringify::v0::fmt_sep_range_printer<CharOut, CharIn, FPack, ForwardIt>
 stringify_make_printer
     ( stringify::v0::output_writer<CharOut>& out
     , const FPack& fp
-    , const stringify::v0::detail::range_sep_with_formatting<ForwardIt, CharIn>& fmt)
+    , const stringify::v0::detail::fmt_sep_range<ForwardIt, CharIn>& fmt)
 {
     return {out, fp, fmt};
 }
 
 template <typename ForwardIt>
-inline stringify::v0::detail::range_with_formatting<ForwardIt>
+inline stringify::v0::detail::fmt_range<ForwardIt>
 stringify_fmt(stringify::v0::detail::range_p<ForwardIt> r)
 {
     return {r.begin, r.end};
 }
 
 template <typename ForwardIt, typename CharIn>
-inline stringify::v0::detail::range_sep_with_formatting<ForwardIt, CharIn>
-stringify_fmt(stringify::v0::detail::range_sep_p<ForwardIt, CharIn> r)
+inline stringify::v0::detail::fmt_sep_range<ForwardIt, CharIn>
+stringify_fmt(stringify::v0::detail::sep_range_p<ForwardIt, CharIn> r)
 {
     return {r.begin, r.end, r.separator_begin, r.separator_end};
 }
@@ -583,7 +567,7 @@ iterate(ForwardIt begin, ForwardIt end)
 }
 
 template <typename ForwardIt, typename CharIn>
-stringify::v0::detail::range_sep_p<ForwardIt, CharIn>
+stringify::v0::detail::sep_range_p<ForwardIt, CharIn>
 iterate(ForwardIt begin, ForwardIt end, const CharIn* sep)
 {
     std::size_t sep_len = std::char_traits<CharIn>::length(sep);
@@ -591,14 +575,14 @@ iterate(ForwardIt begin, ForwardIt end, const CharIn* sep)
 }
 
 template <typename ForwardIt>
-stringify::v0::detail::range_with_formatting<ForwardIt>
+stringify::v0::detail::fmt_range<ForwardIt>
 fmt_iterate(ForwardIt begin, ForwardIt end)
 {
     return {begin, end};
 }
 
 template <typename ForwardIt, typename CharIn>
-stringify::v0::detail::range_sep_with_formatting<ForwardIt, CharIn>
+stringify::v0::detail::fmt_sep_range<ForwardIt, CharIn>
 fmt_iterate(ForwardIt begin, ForwardIt end, const CharIn* sep)
 {
     std::size_t sep_len = std::char_traits<CharIn>::length(sep);
@@ -622,7 +606,7 @@ range(T (&array)[N])
 }
 
 template <typename Range, typename CharIn>
-stringify::v0::detail::range_sep_p<typename Range::const_iterator, CharIn>
+stringify::v0::detail::sep_range_p<typename Range::const_iterator, CharIn>
 range(const Range& range, const CharIn* sep)
 {
     std::size_t sep_len = std::char_traits<CharIn>::length(sep);
@@ -631,7 +615,7 @@ range(const Range& range, const CharIn* sep)
 }
 
 template <typename T, std::size_t N, typename CharIn>
-stringify::v0::detail::range_sep_p<const T*, CharIn>
+stringify::v0::detail::sep_range_p<const T*, CharIn>
 range(T (&array)[N], const CharIn* sep)
 {
     std::size_t sep_len = std::char_traits<CharIn>::length(sep);
@@ -640,7 +624,7 @@ range(T (&array)[N], const CharIn* sep)
 
 
 template <typename Range>
-inline stringify::v0::detail::range_with_formatting
+inline stringify::v0::detail::fmt_range
     < typename Range::const_iterator >
 fmt_range(const Range& range)
 {
@@ -649,7 +633,7 @@ fmt_range(const Range& range)
 }
 
 template <typename T, std::size_t N>
-inline stringify::v0::detail::range_with_formatting<const T*>
+inline stringify::v0::detail::fmt_range<const T*>
 fmt_range(T (&array)[N])
 {
     using namespace std;
@@ -657,7 +641,7 @@ fmt_range(T (&array)[N])
 }
 
 template <typename Range, typename CharIn>
-inline stringify::v0::detail::range_sep_with_formatting
+inline stringify::v0::detail::fmt_sep_range
     < typename Range::const_iterator, CharIn >
 fmt_range(const Range& range, const CharIn* sep)
 {
@@ -667,7 +651,7 @@ fmt_range(const Range& range, const CharIn* sep)
 }
 
 template <typename T, std::size_t N, typename CharIn>
-inline stringify::v0::detail::range_sep_with_formatting<const T*, CharIn>
+inline stringify::v0::detail::fmt_sep_range<const T*, CharIn>
 fmt_range(T (&array)[N], const CharIn* sep)
 {
     std::size_t sep_len = std::char_traits<CharIn>::length(sep);

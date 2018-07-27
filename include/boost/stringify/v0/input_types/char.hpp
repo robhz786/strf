@@ -16,35 +16,22 @@ template <class T>
 class char_formatting: public stringify::v0::align_formatting<T>
 {
 
-    using child_type = typename std::conditional
-        < std::is_same<T, void>::value
-        , char_formatting<void>
-        , T
-        > :: type;
+    using child_type = T;
 
 public:
 
     template <typename U>
-    friend class char_formatting;
-
-    template <typename U>
-    using other = stringify::v0::char_formatting<U>;
+    using fmt_other = stringify::v0::char_formatting<U>;
 
     constexpr char_formatting() = default;
 
     constexpr char_formatting(const char_formatting&) = default;
 
     template <typename U>
-    constexpr child_type& format_as(const char_formatting<U>& other) &
+    constexpr char_formatting(const char_formatting<U>& u)
+        : stringify::v0::align_formatting<T>(u)
+        , m_count(u.count())
     {
-        m_count = other.m_count;
-        return align_formatting<T>::format_as(other);
-    }
-
-    template <typename U>
-    constexpr child_type&& format_as(const char_formatting<U>& other) &&
-    {
-        return static_cast<child_type&&>(format_as(other));
     }
     
     ~char_formatting() = default;
@@ -78,10 +65,15 @@ class char_with_formatting
 {
 public:
 
-    constexpr char_with_formatting() = default;
-
     constexpr char_with_formatting(CharT value)
         : m_value(value)
+    {
+    }
+
+    template <typename U>
+    constexpr char_with_formatting(CharT value, const char_formatting<U>& u)
+        : stringify::v0::char_formatting<char_with_formatting>(u)
+        , m_value(value)
     {
     }
 

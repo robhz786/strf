@@ -46,19 +46,15 @@ template <class T>
 class int_formatting: public stringify::v0::align_formatting<T>
 {
 
-    using child_type = typename std::conditional
-        < std::is_same<T, void>::value
-        , int_formatting<void>
-        , T
-        > :: type;
+    using child_type = T;
 
 public:
 
-    template <typename U>
-    friend class int_formatting;
+    // template <typename U>
+    // friend class int_formatting;
     
     template <typename U>
-    using other = stringify::v0::int_formatting<U>;
+    using fmt_other = stringify::v0::int_formatting<U>;
     
     constexpr int_formatting() = default;
 
@@ -67,22 +63,15 @@ public:
     ~int_formatting() = default;
 
     template <typename U>
-    constexpr child_type& format_as(const int_formatting<U> & other) &
+    constexpr int_formatting(const int_formatting<U> & u)
+        : stringify::v0::align_formatting<T>(u)
+        , m_base(u.base())
+        , m_showbase(u.showbase())
+        , m_showpos(u.showpos())
+        , m_uppercase(u.uppercase())
     {
-        align_formatting<T>::format_as(other);
-        m_base = other.m_base;
-        m_showbase = other.m_showbase;
-        m_showpos = other.m_showpos;
-        m_uppercase = other.m_uppercase;
-        return static_cast<child_type&>(*this);
     }
 
-    template <typename U>
-    constexpr child_type&& format_as(const int_formatting<U> & other) &&
-    {
-        return static_cast<child_type&&>(format_as(other));
-    }
-    
     constexpr child_type&& uphex() &&
     {
         m_base = 16;
@@ -209,8 +198,6 @@ class int_with_formatting: public int_formatting<int_with_formatting<IntT> >
 
 public:
 
-    //int_with_formatting() = default;
-
     int_with_formatting(IntT value)
         : m_value(value)
     {
@@ -218,14 +205,17 @@ public:
 
     int_with_formatting(const int_with_formatting&) = default;
 
+
+    template <typename U>
+    int_with_formatting(IntT value, const int_formatting<U>& u)
+        : int_formatting<int_with_formatting>(u)
+        , m_value(value)
+    {
+    }
+    
     constexpr IntT value() const
     {
         return m_value;
-    }
-
-    constexpr void value(IntT v)
-    {
-        m_value = v;
     }
 
 private:
