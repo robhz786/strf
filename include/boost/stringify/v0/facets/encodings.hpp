@@ -1732,7 +1732,7 @@ stringify::v0::str_cv_result<char, CharOut> utf8_to_utf16<CharOut>::convert
         continue;
 
     invalid_char:
-        auto it = emit(err_sig, *this, dest_it, dest_end, allow_surrogates);
+        auto it = emit_error(err_sig, *this, dest_it, dest_end, allow_surrogates);
         if(it == dest_end + 1)
         {
             return { previous_src_it, dest_it, stringify::v0::cv_result::insufficient_space };

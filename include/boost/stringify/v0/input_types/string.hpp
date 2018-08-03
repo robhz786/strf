@@ -5,6 +5,7 @@
 #include <limits>
 #include <boost/stringify/v0/facets_pack.hpp>
 #include <boost/stringify/v0/facets/width_calculator.hpp>
+#include <boost/utility/string_view.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -98,6 +99,12 @@ public:
     constexpr string_with_formatting(const CharIn* str) noexcept
         : m_begin(str)
         , m_end(str + std::char_traits<CharIn>::length(str))
+    {
+    }
+
+    constexpr string_with_formatting(const CharIn* str, std::size_t len) noexcept
+        : m_begin(str)
+        , m_end(str + len)
     {
     }
 
@@ -640,6 +647,22 @@ stringify_make_printer
     return {out, ft, str.data(), str.size()};
 }
 
+template
+    < typename CharOut
+    , typename FPack
+    , typename CharIn
+    , typename Traits
+    >
+inline stringify::v0::simple_string_printer<CharIn, CharOut>
+stringify_make_printer
+   ( stringify::v0::output_writer<CharOut>& out
+   , const FPack& ft
+   , const boost::basic_string_view<CharIn, Traits>& str
+   )
+{
+    return {out, ft, str.data(), str.size()};
+}
+
 template <typename CharOut, typename FPack>
 inline stringify::v0::simple_string_printer<char, CharOut>
 stringify_make_printer
@@ -684,12 +707,21 @@ stringify_make_printer
     return {out, ft, str, std::char_traits<char32_t>::length(str)};
 }
 
+
 template <typename CharIn, typename Traits>
 inline stringify::v0::string_with_formatting<CharIn>
 stringify_fmt(const std::basic_string<CharIn, Traits>& str)
 {
     return {str};
 }
+
+template <typename CharIn, typename Traits>
+inline stringify::v0::string_with_formatting<CharIn>
+stringify_fmt(const boost::basic_string_view<CharIn, Traits>& str)
+{
+    return {str.data(), str.size()};
+}
+
 inline stringify::v0::string_with_formatting<char>
 stringify_fmt(const char* str)
 {

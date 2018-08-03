@@ -317,7 +317,7 @@ void error_signal::init_from(const error_signal& other)
 #endif //! defined(BOOST_STRINGIFY_OMIT_IMPL)
 
 template <typename CharOut>
-stringify::v0::char_cv_result<CharOut> emit
+stringify::v0::char_cv_result<CharOut> emit_error
     ( stringify::v0::error_signal& err_sig
     , const stringify::v0::encoder<CharOut>& encoder
     , std::size_t count
@@ -353,7 +353,7 @@ stringify::v0::char_cv_result<CharOut> emit
 }
 
 template <typename CharOut>
-CharOut* emit
+CharOut* emit_error
     ( stringify::v0::error_signal& err_sig
     , const stringify::v0::encoder<CharOut>& encoder
     , CharOut* dest
@@ -388,7 +388,7 @@ CharOut* emit
 
 
 template <typename CharOut>
-inline stringify::v0::char_cv_result<CharOut> emit
+inline stringify::v0::char_cv_result<CharOut> emit_error
     ( stringify::v0::error_signal&& err_sig
     , const stringify::v0::encoder<CharOut>& encoder
     , std::size_t count
@@ -396,11 +396,12 @@ inline stringify::v0::char_cv_result<CharOut> emit
     , CharOut* dest_end
     , bool allow_surrogates )
 {
-    return stringify::v0::emit(err_sig, encoder, count, dest, dest_end, allow_surrogates);
+    return stringify::v0::emit_error
+        ( err_sig, encoder, count, dest, dest_end, allow_surrogates );
 }
 
 template <typename CharOut>
-inline stringify::v0::char_cv_result<CharOut> emit
+inline stringify::v0::char_cv_result<CharOut> emit_error
     ( const stringify::v0::error_signal& err_sig
     , const stringify::v0::encoder<CharOut>& encoder
     , std::size_t count
@@ -408,29 +409,45 @@ inline stringify::v0::char_cv_result<CharOut> emit
     , CharOut* dest_end
     , bool allow_surrogates )
 {
-    return stringify::v0::emit(stringify::v0::error_signal{ err_sig }, encoder, count, dest, dest_end, allow_surrogates);
+    return stringify::v0::emit_error
+        ( stringify::v0::error_signal{ err_sig }
+        , encoder
+        , count
+        , dest
+        , dest_end
+        , allow_surrogates );
 }
 
 template <typename CharOut>
-inline CharOut* emit
+inline CharOut* emit_error
     ( stringify::v0::error_signal&& err_sig
     , const stringify::v0::encoder<CharOut>& encoder
     , CharOut* dest
     , CharOut* dest_end
     , bool allow_surrogates )
 {
-    return stringify::v0::emit(err_sig, encoder, dest, dest_end, allow_surrogates);
+    return stringify::v0::emit_error
+        ( err_sig
+        , encoder
+        , dest
+        , dest_end
+        , allow_surrogates );
 }
 
 template <typename CharOut>
-inline CharOut* emit
+inline CharOut* emit_error
     ( const stringify::v0::error_signal& err_sig
     , const stringify::v0::encoder<CharOut>& encoder
     , CharOut* dest
     , CharOut* dest_end
     , bool allow_surrogates )
 {
-    return stringify::v0::emit(stringify::v0::error_signal{ err_sig }, encoder, dest, dest_end, allow_surrogates);
+    return stringify::v0::emit_error
+        ( stringify::v0::error_signal{ err_sig }
+        , encoder
+        , dest
+        , dest_end
+        , allow_surrogates );
 }
 
 template <typename CharT>
@@ -1141,7 +1158,13 @@ public:
 
     bool signalize_error() override
     {
-        auto it = stringify::v0::emit(m_err_sig, m_encoder, m_dest_it, m_dest_end, m_allow_surr);
+        auto it = stringify::v0::emit_error
+            ( m_err_sig
+            , m_encoder
+            , m_dest_it
+            , m_dest_end
+            , m_allow_surr );
+
         if(nullptr == it)
         {
             m_status = stringify::v0::cv_result::invalid_char;
@@ -1508,30 +1531,32 @@ void string_writer<CharIn, CharOut>::init_transcoder
     }
 }
 
+enum class alignment {left, right, internal, center};
 
-template <typename CharIn>
-class printer
+namespace detail {
+
+template <typename fmt_base, typename T>
+struct fmt_derived_impl
 {
-public:
-
-    virtual ~printer()
-    {
-    }
-
-    virtual std::size_t length() const = 0;
-
-    virtual void write() const = 0;
-
-    virtual int remaining_width(int w) const = 0;
+    using type = T;
 };
 
+template <typename fmt_base>
+struct fmt_derived_impl<fmt_base, void>
+{
+    using type = fmt_base;
+};
 
-enum class alignment {left, right, internal, center};
+} // namespace detail
+
+template <typename FmtBase, typename FmtDerived>
+using fmt_derived
+= typename stringify::v0::detail::fmt_derived_impl<FmtBase, FmtDerived>::type;
 
 template <class T>
 class align_formatting
 {
-    using child_type = T;
+    using derived = stringify::v0::fmt_derived<align_formatting<T>, T>;
 
 public:
 
@@ -1540,7 +1565,7 @@ public:
 
     constexpr align_formatting()
     {
-        static_assert(std::is_base_of<align_formatting, child_type>::value, "");
+        static_assert(std::is_base_of<align_formatting, derived>::value, "");
     }
 
     constexpr align_formatting(const align_formatting&) = default;
@@ -1557,73 +1582,73 @@ public:
     {
     }
 
-    constexpr child_type&& operator<(int width) &&
+    constexpr derived&& operator<(int width) &&
     {
         m_alignment = stringify::v0::alignment::left;
         m_width = width;
-        return static_cast<child_type&&>(*this);
+        return static_cast<derived&&>(*this);
     }
-    constexpr child_type& operator<(int width) &
+    constexpr derived& operator<(int width) &
     {
         m_alignment = stringify::v0::alignment::left;
         m_width = width;
-        return static_cast<child_type&>(*this);
+        return static_cast<derived&>(*this);
     }
-    constexpr child_type&& operator>(int width) &&
+    constexpr derived&& operator>(int width) &&
     {
         m_alignment = stringify::v0::alignment::right;
         m_width = width;
-        return static_cast<child_type&&>(*this);
+        return static_cast<derived&&>(*this);
     }
-    constexpr child_type& operator>(int width) &
+    constexpr derived& operator>(int width) &
     {
         m_alignment = stringify::v0::alignment::right;
         m_width = width;
-        return static_cast<child_type&>(*this);
+        return static_cast<derived&>(*this);
     }
-    constexpr child_type&& operator^(int width) &&
+    constexpr derived&& operator^(int width) &&
     {
         m_alignment = stringify::v0::alignment::center;
         m_width = width;
-        return static_cast<child_type&&>(*this);
+        return static_cast<derived&&>(*this);
     }
-    constexpr child_type& operator^(int width) &
+    constexpr derived& operator^(int width) &
     {
         m_alignment = stringify::v0::alignment::center;
         m_width = width;
-        return static_cast<child_type&>(*this);
+        return static_cast<derived&>(*this);
     }
-    constexpr child_type&& operator%(int width) &&
+    constexpr derived&& operator%(int width) &&
     {
         m_alignment = stringify::v0::alignment::internal;
         m_width = width;
-        return static_cast<child_type&&>(*this);
+        return static_cast<derived&&>(*this);
     }
-    constexpr child_type& operator%(int width) &
+    constexpr derived& operator%(int width) &
     {
         m_alignment = stringify::v0::alignment::internal;
         m_width = width;
-        return static_cast<child_type&>(*this);
+        return static_cast<derived&>(*this);
     }
-    constexpr child_type&& fill(char32_t ch) &&
+    constexpr derived&& fill(char32_t ch) &&
     {
         m_fill = ch;
-        return static_cast<child_type&&>(*this);
+        return static_cast<derived&&>(*this);
     }
-    constexpr child_type& fill(char32_t ch) &
+    constexpr derived& fill(char32_t ch) &
     {
         m_fill = ch;
-        return static_cast<child_type&>(*this);
+        return static_cast<derived&>(*this);
     }
-    constexpr child_type&& width(int w) &&
+    constexpr derived&& width(int w) &&
     {
         m_width = w;
-        return static_cast<child_type&&>(*this);
+        return static_cast<derived&&>(*this);
     }
-    constexpr child_type& width(int w) &
+    constexpr derived& width(int w) &
     {
         m_width = w;
-        return static_cast<child_type&>(*this);
+        return static_cast<derived&>(*this);
     }
     constexpr int width() const
     {
@@ -1647,6 +1672,234 @@ private:
     int m_width = 0;
     stringify::v0::alignment m_alignment = stringify::v0::alignment::right;
 };
+
+
+template <typename CharOut>
+class printer
+{
+public:
+
+    virtual ~printer()
+    {
+    }
+
+    virtual std::size_t length() const = 0;
+
+    virtual void write() const = 0;
+
+    virtual int remaining_width(int w) const = 0;
+};
+
+template <typename CharOut>
+class stream
+{
+public:
+
+    virtual ~stream()
+    {
+    }
+
+    virtual bool put(const stringify::v0::printer<CharOut>& ) = 0;
+};
+
+namespace detail {
+
+template <typename CharOut>
+class width_dec_stream: public stream<CharOut>
+{
+public:
+
+    width_dec_stream(int w)
+        : m_width(w)
+    {
+    }
+
+    bool put(const stringify::v0::printer<CharOut>& p) override;
+
+    int remaining_width() const
+    {
+        return m_width;
+    }
+
+private:
+
+    int m_width;
+};
+
+template <typename CharOut>
+bool width_dec_stream<CharOut>::put(const stringify::v0::printer<CharOut>& p)
+{
+    m_width = p.remaining_width(m_width);
+    return m_width > 0;
+}
+
+template <typename CharOut>
+class length_acc_stream: public stream<CharOut>
+{
+public:
+
+    length_acc_stream() = default;
+
+    bool put(const stringify::v0::printer<CharOut>& p) override;
+
+    std::size_t accumulated_length() const
+    {
+        return m_len;
+    }
+
+private:
+
+    std::size_t m_len = 0;
+};
+
+template <typename CharOut>
+bool length_acc_stream<CharOut>::put(const stringify::v0::printer<CharOut>& p)
+{
+    m_len += p.length();
+    return true;
+}
+
+template <typename CharOut>
+class writer_stream: public stream<CharOut>
+{
+public:
+
+    writer_stream() = default;
+
+    bool put(const stringify::v0::printer<CharOut>& p) override;
+};
+
+template <typename CharOut>
+bool writer_stream<CharOut>::put(const stringify::v0::printer<CharOut>& p)
+{
+    p.write();
+    return true;
+}
+
+} // namespace detail
+
+template <typename CharOut>
+class streamed_printer: public stringify::v0::printer<CharOut>
+{
+public:
+
+    streamed_printer(stringify::v0::output_writer<CharOut>& out)
+        : m_out(out)
+    {
+    }
+
+    std::size_t length() const override;
+
+    void write() const override;
+
+    int remaining_width(int w) const override;
+
+protected:
+
+    virtual stringify::v0::align_formatting<void> formatting() const = 0;
+
+    virtual void compose(stringify::v0::stream<CharOut>& out) const = 0;
+
+private:
+
+    void write_with_fill(int fillcount) const;
+
+    void write_without_fill() const;
+
+    stringify::v0::output_writer<CharOut>& m_out;
+};
+
+
+template <typename CharOut>
+std::size_t streamed_printer<CharOut>::length() const
+{
+    std::size_t fill_len = 0;
+    const auto fmt = formatting();
+    if(fmt.width() > 0)
+    {
+        stringify::v0::detail::width_dec_stream<CharOut> wds{fmt.width()};
+        compose(wds);
+        std::size_t fillcount = wds.remaining_width();
+        fill_len = m_out.required_size(fmt.fill()) * fillcount;
+    }
+
+    stringify::v0::detail::length_acc_stream<CharOut> s;
+    compose(s);
+    return s.accumulated_length() + fill_len;
+}
+
+template <typename CharOut>
+int streamed_printer<CharOut>::remaining_width(int w) const
+{
+    const auto fmt_width = formatting().width();
+    if (fmt_width > w)
+    {
+        return 0;
+    }
+
+    stringify::v0::detail::width_dec_stream<CharOut> s{w};
+    compose(s);
+    int rw = s.remaining_width();
+    return (w - rw < fmt_width) ? (w - fmt_width) : rw;
+}
+
+template <typename CharOut>
+void streamed_printer<CharOut>::write() const
+{
+    auto fmt = formatting();
+    auto fillcount = fmt.width();
+    if(fillcount > 0)
+    {
+        stringify::v0::detail::width_dec_stream<CharOut> wds{fillcount};
+        compose(wds);
+        fillcount = wds.remaining_width();
+    }
+    if(fillcount > 0)
+    {
+        write_with_fill(fillcount);
+    }
+    else
+    {
+        write_without_fill();
+    }
+}
+
+template <typename CharOut>
+void streamed_printer<CharOut>::write_without_fill() const
+{
+    stringify::v0::detail::writer_stream<CharOut> s;
+    compose(s);
+}
+
+template <typename CharOut>
+void streamed_printer<CharOut>::write_with_fill(int fillcount) const
+{
+    auto fmt = formatting();
+    switch (fmt.alignment())
+    {
+        case stringify::v0::alignment::left:
+        {
+            write_without_fill();
+            m_out.put32(fillcount, fmt.fill());
+            break;
+        }
+        case stringify::v0::alignment::center:
+        {
+            auto halfcount = fillcount / 2;
+            m_out.put32(halfcount, fmt.fill());
+            write_without_fill();
+            m_out.put32(fillcount - halfcount, fmt.fill());
+            break;
+        }
+        //case stringify::v0::alignment::internal:
+        default:
+        {
+            m_out.put32(fillcount, fmt.fill());
+            write_without_fill();
+        }
+    }
+}
+
 
 template <typename T>
 struct identity

@@ -227,14 +227,16 @@ public:
     decltype(auto) operator()(const Args& ... args) const
     {
         output_writer_wrapper dest{m_fpack, m_owinit};
-        write(dest.get(), {as_pointer(mk_printer<Args>(dest.get(), args)) ...});
+        auto& ow = dest.get();
+        write(dest.get(), {as_pointer(stringify_make_printer<CharOut, FPack>(ow, m_fpack, args)) ...});
         return dest.get().finish();
     }
     template <typename ... Args>
     decltype(auto) exception(const Args& ... args) const
     {
         output_writer_wrapper dest{m_fpack, m_owinit};
-        write(dest.get(), {as_pointer(mk_printer<Args>(dest.get(), args)) ...});
+        auto& ow = dest.get();
+        write(dest.get(), {as_pointer(stringify_make_printer<CharOut, FPack>(ow, m_fpack, args)) ...});
         return dest.get().finish_exception();
     }
 
@@ -252,15 +254,6 @@ private:
     const auto& get_facet(const FPack& ft) const
     {
         return ft.template get_facet<FCategory, input_tag>();
-    }
-
-    template <typename Arg>
-    auto mk_printer
-        ( stringify::v0::output_writer<CharOut>& dest
-        , const Arg& arg
-        ) const
-    {
-        return stringify_make_printer<CharOut, FPack>(dest, m_fpack, arg);
     }
 
     static const stringify::v0::printer<CharOut>*
@@ -486,7 +479,9 @@ public:
     decltype(auto) operator()(const Args& ... args) const
     {
         output_writer_wrapper writer{m_fpack, m_owinit};
-        write(writer.get(), {as_pointer(mk_printer<Args>(writer.get(), args)) ...});
+        auto& ow = writer.get();
+        write( writer.get()
+             , { as_pointer(stringify_make_printer<char_type, FPack>(ow, m_fpack, args)) ...});
         return writer.get().finish();
     }
 
@@ -494,7 +489,8 @@ public:
     decltype(auto) exception(const Args& ... args) const
     {
         output_writer_wrapper writer{m_fpack, m_owinit};
-        write(writer.get(), {as_pointer(mk_printer<Args>(writer.get(), args)) ...});
+        auto& ow = writer.get();
+        write(writer.get(), {as_pointer(stringify_make_printer<char_type, FPack>(ow, m_fpack, args)) ...});
         return writer.get().finish_exception();
     }
 
@@ -511,15 +507,6 @@ private:
     as_pointer(const stringify::v0::printer<char_type>& p)
     {
         return &p;
-    }
-
-    template <typename Arg>
-    auto mk_printer
-        ( stringify::v0::output_writer<char_type>& ow
-        , const Arg& arg )
-        const
-    {
-        return stringify_make_printer<char_type, FPack>(ow, m_fpack, arg);
     }
 
     void write(OutputWriter& writer, arglist_type args) const
@@ -539,6 +526,13 @@ private:
 };
 
 } // namespace detail
+
+template <typename CharOut, typename FPack, typename Arg>
+using printer_impl
+= decltype(stringify_make_printer<CharOut, FPack>
+             ( *(stringify::v0::output_writer<CharOut>*)(nullptr)
+             , *(const FPack*)(nullptr)
+             , std::declval<Arg>() ) );
 
 
 template <typename OutputWriter, typename ... Args>

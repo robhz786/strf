@@ -38,5 +38,7 @@ target_include_directories(boost_stringify PUBLIC ../../../)
 add_library(boost_stringify_header_only INTERFACE)
 target_include_directories(boost_stringify_header_only INTERFACE ../../../)
 
+set(features cxx_return_type_deduction cxx_decltype_auto cxx_relaxed_constexpr)
+
 target_compile_features(boost_stringify PUBLIC ${features})
 target_compile_features(boost_stringify_header_only INTERFACE ${features})

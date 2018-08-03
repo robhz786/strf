@@ -8,10 +8,11 @@ enable_testing()
 
 project (BoostStringify)
 
+#set_directory_properties(PROPERTIES CXX_STANDARD 14)
+
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release" AND NOT MSVC)
   add_compile_options("-O3")
 endif(${CMAKE_BUILD_TYPE} STREQUAL "Release" AND NOT MSVC)
-
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/out/${CMAKE_BUILD_TYPE})
 
