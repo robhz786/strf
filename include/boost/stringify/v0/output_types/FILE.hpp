@@ -51,13 +51,13 @@ public:
         return m_good;
     }
 
-    bool put(stringify::v0::source<char_type>& src) final
+    bool put(stringify::v0::piecemeal_writer<char_type>& src) final
     {
         if (m_good)
         {
             do
             {
-                m_it = src.get(m_it, m_end);
+                m_it = src.write(m_it, m_end);
             }
             while(src.more() && do_flush());
             if( ! m_good)
@@ -338,13 +338,13 @@ template <typename CharT = char>
 inline auto write(std::FILE* destination, std::size_t* count = nullptr)
 {
     using writer = stringify::v0::detail::narrow_file_writer<CharT>;
-    return stringify::v0::make_args_handler<writer>(destination, count);
+    return stringify::v0::make_destination<writer>(destination, count);
 }
 
 inline auto wwrite(std::FILE* destination, std::size_t* count = nullptr)
 {
     using writer = boost::stringify::v0::detail::wide_file_writer;
-    return stringify::v0::make_args_handler<writer>(destination, count);
+    return stringify::v0::make_destination<writer>(destination, count);
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

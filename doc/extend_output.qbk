@@ -22,18 +22,18 @@ Suppose you have a type `foobar` and you want to create a function named `format
 ```
   auto format(foobar& destination)
   {
-     return boost::stringify::make_args_handler<foobar_writer, foobar&>(destination);
+     return boost::stringify::make_destination<foobar_writer, foobar&>(destination);
   }
 ```
-The argument(s) passed to function template `make_args_handler` will be used to construct `foobar_writer`. Its signature is:
+The argument(s) passed to function template `make_destination` will be used to construct `foobar_writer`. Its signature is:
 
 ```
 template <typename OutputWriter, typename ... Args>
-constexpr auto make_args_handler(Args ... args) -> /* implementation_defined */;
+constexpr auto make_destination(Args ... args) -> /* implementation_defined */;
 ```
-The arguments passed to `make_args_handler` will be used to as the remaining arguments used to construct `OutputWriter` ( after the `output_writer_init<CharT>` wich must be the first parameter of the constructor ).
+The arguments passed to `make_destination` will be used to as the remaining arguments used to construct `OutputWriter` ( after the `output_writer_init<CharT>` wich must be the first parameter of the constructor ).
 
-[important Note that the parameters list of `make_args_handler` is `(Args ... arg)` and [_not] `(Args `[*`&&`]` ... args)`. Hence, if you want to pass a parameter by reference, template type deduction won't do what you want. You must specify the type of each argument, as done in the example above ]
+[important Note that the parameters list of `make_destination` is `(Args ... arg)` and [_not] `(Args `[*`&&`]` ... args)`. Hence, if you want to pass a parameter by reference, template type deduction won't do what you want. You must specify the type of each argument, as done in the example above ]
 
 
 
@@ -81,7 +81,7 @@ public:
 
     virtual bool put(std::size_t count, CharT ch) = 0;
 
-    virtual bool put(source<CharT>& src) = 0;
+    virtual bool put(piecemeal_writer<CharT>& src) = 0;
 };
 
 }}} // namespace boost::stringify::v0
@@ -93,27 +93,44 @@ public:
 
 * `put(const CharT* str, std::size_t size)` shall attempt to write [~size] character of [~str], /i.e./ the range `[str[0], str[size])`, and return `true` on success and `false` on failure.
 
-* `put(source<CharT>& src)` shall attempt to write the content provided by `src` and return `true` if `src.success()` returns `true` ( see the description of `source` class template below ) and `false` otherwise.
+* `put(piecemeal_writer<CharT>& src)` shall attempt to write the content provided by `src` and return `true` if `src.success()` returns `true` ( see the description of `piecemeal_writer` class template below ) and `false` otherwise.
 
 *  Once the function `set_error` is called, `good()` shall return `false`.
 
 *  `good()` returns whether this `output_writer` instance is capable of writing more characters. Once `good()` returns false, it shall not return `true` anymore, and all the `put` overloads shall have no effect and return `false`.
 
 
-[h3 The `source` class template]
+[h3 The `piecemeal_writer` class template]
 ``
 namespace boost { namespace stringify { inline namespace v0 {
 
+enum class cv_result
+{
+    success,
+    invalid_char,
+    insufficient_space
+};
+
 template <typename CharT>
-class source
+class piecemeal_writer
 {
 public:
 
     virtual CharT* get(CharT* dest_begin, CharT* dest_end) = 0;
 
-    bool more();
+    bool more()
+    {
+        return m_status == cv_result::insufficient_space;
+    }
 
-    bool success();
+    bool success()
+    {
+        return m_status == cv_result::success;
+    }
+
+protected:
+
+    cv_result m_status = cv_result::insufficient_space;
 };
 
 }}} // namespace boost::stringify::v0
@@ -153,7 +170,7 @@ public:
     virtual bool put(const CharT* str, std::size_t size) final;
     virtual bool put(CharT ch) final;
     virtual bool put(std::size_t count, CharT ch) final;
-    virtual bool put(source<CharT>& src) final;
+    virtual bool put(piecemeal_writer<CharT>& src) final;
 
 protected:
 

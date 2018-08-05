@@ -36,7 +36,7 @@ void sample2()
     //[ facets_pack_input_2
     namespace strf = boost::stringify::v0;
 
-    auto ft = strf::pack
+    auto fp = strf::pack
         ( strf::monotonic_grouping<10>(3)
         , strf::monotonic_grouping<16>(4).thousands_sep('\'')
         );
@@ -45,7 +45,7 @@ void sample2()
         ( 10000
         , "  "
         , strf::hex(0x10000)
-        , strf::facets(ft)
+        , strf::facets(fp)
             ( "  { "
             , 10000
             , "  "

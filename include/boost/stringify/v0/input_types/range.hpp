@@ -57,12 +57,13 @@ public:
     {
     }
 
-    std::size_t length() const override
+    std::size_t necessary_size() const override
     {
         std::size_t len = 0;
         for(auto it = m_begin; it != m_end; ++it)
         {
-            len += stringify_make_printer<CharT, FPack>(m_out, m_fp, *it).length();
+            len += make_printer<CharT, FPack>(m_out, m_fp, *it)
+                .necessary_size();
         }
         return len;
     }
@@ -71,7 +72,7 @@ public:
     {
         for(auto it = m_begin; it != m_end && w > 0; ++it)
         {
-            w = stringify_make_printer<CharT, FPack>(m_out, m_fp, *it).remaining_width(w);
+            w = make_printer<CharT, FPack>(m_out, m_fp, *it).remaining_width(w);
         }
         return w;
     }
@@ -80,7 +81,7 @@ public:
     {
         for(auto it = m_begin; it != m_end; ++it)
         {
-            stringify_make_printer<CharT, FPack>(m_out, m_fp, *it).write();
+            make_printer<CharT, FPack>(m_out, m_fp, *it).write();
         }
     }
 
@@ -122,7 +123,7 @@ public:
     {
     }
 
-    std::size_t length() const override;
+    std::size_t necessary_size() const override;
 
     int remaining_width(int w) const override;
 
@@ -156,7 +157,7 @@ int sep_range_printer<CharOut, CharIn, FPack, ForwardIt>::remaining_width(int w)
     bool not_first = false;
     for(auto it = m_begin; it != m_end && w > 0; ++it)
     {
-        w = stringify_make_printer<CharOut, FPack>(m_out, m_fp, *it).remaining_width(w);
+        w = make_printer<CharOut, FPack>(m_out, m_fp, *it).remaining_width(w);
         if (not_first && w > 0)
         {
             if (sep_width == -1)
@@ -186,16 +187,17 @@ int sep_range_printer<CharOut, CharIn, FPack, ForwardIt>::remaining_width(int w)
 }
 
 template <typename CharOut, typename CharIn, typename FPack, typename ForwardIt>
-std::size_t sep_range_printer<CharOut, CharIn, FPack, ForwardIt>::length() const
+std::size_t
+sep_range_printer<CharOut, CharIn, FPack, ForwardIt>::necessary_size() const
 {
     std::size_t len = 0;
     std::size_t sep_len = -1;
     for(auto it = m_begin; it != m_end; ++it)
     {
-        len += stringify_make_printer<CharOut, FPack>(m_out, m_fp, *it).length();
+        len += make_printer<CharOut, FPack>(m_out, m_fp, *it).necessary_size();
         if (sep_len == static_cast<std::size_t>(-1))
         {
-            sep_len = m_sw.length(m_sep_begin, m_sep_end);
+            sep_len = m_sw.necessary_size(m_sep_begin, m_sep_end);
         }
         else
         {
@@ -216,7 +218,7 @@ void sep_range_printer<CharOut, CharIn, FPack, ForwardIt>::write() const
             m_sw.write(m_sep_begin, m_sep_end);
         }
         not_first = true;
-        stringify_make_printer<CharOut, FPack>(m_out, m_fp, *it).write();
+        make_printer<CharOut, FPack>(m_out, m_fp, *it).write();
     }
 }
 
@@ -226,8 +228,9 @@ template <typename ForwardIt>
 struct fmt_range_helper
 {
     using value_type = typename std::iterator_traits<ForwardIt>::value_type;
-    using fmt_value_type = decltype(stringify_fmt(std::declval<const value_type>()));
-
+    using fmt_value_type
+        = decltype(make_fmt( stringify::v0::tag{}
+                           , std::declval<const value_type>() ));
     template <typename T>
     using formatting = typename fmt_value_type::template fmt_other<T>;
 
@@ -337,12 +340,14 @@ public:
     {
     }
 
-    std::size_t length() const override
+    std::size_t necessary_size() const override
     {
         std::size_t len = 0;
         for(const auto& value : m_fmt)
         {
-            len += make_printer(value).length();
+            len += make_printer<CharOut, FPack>
+                ( m_out, m_fp, original_fmt_type{value, m_fmt} )
+                .necessary_size();
         }
         return len;
     }
@@ -351,7 +356,9 @@ public:
     {
         for(auto it = m_fmt.begin(); it != m_fmt.end() && w > 0; ++it)
         {
-            w = make_printer(*it).remaining_width(w);
+            w = make_printer<CharOut, FPack>
+                ( m_out, m_fp, original_fmt_type{*it, m_fmt} )
+                .remaining_width(w);
         }
         return w;
     }
@@ -360,17 +367,13 @@ public:
     {
         for(const auto& value : m_fmt)
         {
-            make_printer(value).write();
+            make_printer<CharOut, FPack>
+                ( m_out, m_fp, original_fmt_type{value, m_fmt} )
+                .write();
         }
     }
 
 private:
-
-    auto make_printer(const value_type& value) const
-    {
-        return stringify_make_printer<CharOut, FPack>
-            ( m_out, m_fp, original_fmt_type{value, m_fmt} );
-    }
 
     stringify::v0::output_writer<CharOut>& m_out;
     const FPack& m_fp;
@@ -402,7 +405,7 @@ public:
     {
     }
 
-    std::size_t length() const override;
+    std::size_t necessary_size() const override;
 
     int remaining_width(int w) const override;
 
@@ -415,12 +418,6 @@ private:
     fmt_type m_fmt;
     const stringify::v0::string_writer<CharIn, CharOut> m_sw;
 
-    auto make_printer(const value_type& value) const
-    {
-        return stringify_make_printer<CharOut, FPack>
-            ( m_out, m_fp, original_fmt_type{value, m_fmt} );
-    }
-
     template <typename Category>
     const auto& get_facet(const FPack& fp) const
     {
@@ -429,16 +426,19 @@ private:
 };
 
 template <typename CharOut, typename CharIn, typename FPack, typename ForwardIt>
-std::size_t fmt_sep_range_printer<CharOut, CharIn, FPack, ForwardIt>::length() const
+std::size_t
+fmt_sep_range_printer<CharOut, CharIn, FPack, ForwardIt>::necessary_size() const
 {
     std::size_t len = 0;
     std::size_t sep_len = -1;
     for(const auto& value : m_fmt)
     {
-        len += make_printer(value).length();
+        len += make_printer<CharOut, FPack>
+                ( m_out, m_fp, original_fmt_type{value, m_fmt} )
+                .necessary_size();
         if (sep_len == static_cast<std::size_t>(-1))
         {
-            sep_len = m_sw.length(m_fmt.sep_begin(), m_fmt.sep_end());
+            sep_len = m_sw.necessary_size(m_fmt.sep_begin(), m_fmt.sep_end());
         }
         else
         {
@@ -459,7 +459,9 @@ int fmt_sep_range_printer<CharOut, CharIn, FPack, ForwardIt>::remaining_width(in
     bool not_first = false;
     for(auto it = m_fmt.begin(); it != m_fmt.end() && w > 0; ++it)
     {
-        w = make_printer(*it).remaining_width(w);
+        w = make_printer<CharOut, FPack>
+                ( m_out, m_fp, original_fmt_type{*it, m_fmt} )
+                .remaining_width(w);
         if (not_first && w > 0)
         {
             if (sep_width == -1)
@@ -499,14 +501,16 @@ void fmt_sep_range_printer<CharOut, CharIn, FPack, ForwardIt>::write() const
             m_sw.write(m_fmt.sep_begin(), m_fmt.sep_end());
         }
         not_first = true;
-        make_printer(value).write();
+        make_printer<CharOut, FPack>
+            ( m_out, m_fp, original_fmt_type{value, m_fmt} )
+            .write();
     }
 }
 
 
 template <typename CharOut, typename FPack, typename ForwardIt>
 inline stringify::v0::range_printer<CharOut, FPack, ForwardIt>
-stringify_make_printer
+make_printer
     ( stringify::v0::output_writer<CharOut>& out
     , const FPack& fp
     , stringify::v0::detail::range_p<ForwardIt> r )
@@ -516,7 +520,7 @@ stringify_make_printer
 
 template <typename CharOut, typename FPack, typename ForwardIt, typename CharIn>
 inline stringify::v0::sep_range_printer<CharOut, CharIn, FPack, ForwardIt>
-stringify_make_printer
+make_printer
     ( stringify::v0::output_writer<CharOut>& out
     , const FPack& fp
     , stringify::v0::detail::sep_range_p<ForwardIt, CharIn> r )
@@ -526,7 +530,7 @@ stringify_make_printer
 
 template <typename CharOut, typename FPack, typename ForwardIt>
 inline stringify::v0::fmt_range_printer<CharOut, FPack, ForwardIt>
-stringify_make_printer
+make_printer
     ( stringify::v0::output_writer<CharOut>& out
     , const FPack& fp
     , const stringify::v0::detail::fmt_range<ForwardIt>& fmt)
@@ -536,7 +540,7 @@ stringify_make_printer
 
 template <typename CharOut, typename FPack, typename ForwardIt, typename CharIn>
 inline stringify::v0::fmt_sep_range_printer<CharOut, CharIn, FPack, ForwardIt>
-stringify_make_printer
+make_printer
     ( stringify::v0::output_writer<CharOut>& out
     , const FPack& fp
     , const stringify::v0::detail::fmt_sep_range<ForwardIt, CharIn>& fmt)
@@ -546,14 +550,14 @@ stringify_make_printer
 
 template <typename ForwardIt>
 inline stringify::v0::detail::fmt_range<ForwardIt>
-stringify_fmt(stringify::v0::detail::range_p<ForwardIt> r)
+make_fmt(stringify::v0::tag, stringify::v0::detail::range_p<ForwardIt> r)
 {
     return {r.begin, r.end};
 }
 
 template <typename ForwardIt, typename CharIn>
 inline stringify::v0::detail::fmt_sep_range<ForwardIt, CharIn>
-stringify_fmt(stringify::v0::detail::sep_range_p<ForwardIt, CharIn> r)
+make_fmt(stringify::v0::tag, stringify::v0::detail::sep_range_p<ForwardIt, CharIn> r)
 {
     return {r.begin, r.end, r.separator_begin, r.separator_end};
 }

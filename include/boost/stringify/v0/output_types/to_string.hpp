@@ -114,11 +114,11 @@ public:
         return m_good;
     }
 
-    bool put(stringify::v0::source<char_type>& src) override
+    bool put(stringify::v0::piecemeal_writer<char_type>& src) override
     {
         do
         {
-            m_it = src.get(m_it, m_end);
+            m_it = src.write(m_it, m_end);
         }
         while(src.more() && (resize(), true));
 
@@ -276,25 +276,25 @@ template
     , typename Allocator = std::allocator<CharT>
     >
 constexpr auto to_basic_string
-= boost::stringify::v0::make_args_handler
+= boost::stringify::v0::make_destination
     <boost::stringify::v0::detail::string_maker
          <std::basic_string<CharT, Traits, Allocator>>>();
 
 
 constexpr auto to_string
-= boost::stringify::v0::make_args_handler
+= boost::stringify::v0::make_destination
     <boost::stringify::v0::detail::string_maker<std::string>>();
 
 constexpr auto to_u16string
-= boost::stringify::v0::make_args_handler
+= boost::stringify::v0::make_destination
     <boost::stringify::v0::detail::string_maker<std::u16string>>();
 
 constexpr auto to_u32string
-= boost::stringify::v0::make_args_handler
+= boost::stringify::v0::make_destination
     <boost::stringify::v0::detail::string_maker<std::u32string>>();
 
 constexpr auto to_wstring
-= boost::stringify::v0::make_args_handler
+= boost::stringify::v0::make_destination
     <boost::stringify::v0::detail::string_maker<std::wstring>>();
 
 

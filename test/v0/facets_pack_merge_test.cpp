@@ -68,17 +68,17 @@ auto x6 = std::ref (x6_);
 auto x7 = std::cref(x7_);
 
 template <typename FPack>
-std::vector<int> digest(const FPack& ft)
+std::vector<int> digest(const FPack& fp)
 {
     return std::vector<int>
     {
-        strf::get_facet< facet_category, input_type<1> >(ft).value,
-        strf::get_facet< facet_category, input_type<2> >(ft).value,
-        strf::get_facet< facet_category, input_type<3> >(ft).value,
-        strf::get_facet< facet_category, input_type<4> >(ft).value,
-        strf::get_facet< facet_category, input_type<5> >(ft).value,
-        strf::get_facet< facet_category, input_type<6> >(ft).value,
-        strf::get_facet< facet_category, input_type<7> >(ft).value
+        strf::get_facet< facet_category, input_type<1> >(fp).value,
+        strf::get_facet< facet_category, input_type<2> >(fp).value,
+        strf::get_facet< facet_category, input_type<3> >(fp).value,
+        strf::get_facet< facet_category, input_type<4> >(fp).value,
+        strf::get_facet< facet_category, input_type<5> >(fp).value,
+        strf::get_facet< facet_category, input_type<6> >(fp).value,
+        strf::get_facet< facet_category, input_type<7> >(fp).value
     };
 }
 
@@ -89,35 +89,35 @@ int main()
 {
 
     {
-        auto ft = strf::pack(x7, x6, x5, x4, x3, x2, x1);
-        BOOST_TEST(digest(ft) == expected);
+        auto fp = strf::pack(x7, x6, x5, x4, x3, x2, x1);
+        BOOST_TEST(digest(fp) == expected);
     }
 
     {
-        auto ft = strf::pack(x7, x6, x5, x5, x4, x5, x4, x3, x2, x1, x1);
-        BOOST_TEST(digest(ft) == expected);
+        auto fp = strf::pack(x7, x6, x5, x5, x4, x5, x4, x3, x2, x1, x1);
+        BOOST_TEST(digest(fp) == expected);
     }
 
     {
-        auto ft = strf::pack
+        auto fp = strf::pack
             (strf::pack(x7), strf::pack(x6, x5), x4, x3, x2, x1);
-        BOOST_TEST(digest(ft) == expected);
+        BOOST_TEST(digest(fp) == expected);
     }
 
     {
-        auto ft = strf::pack
+        auto fp = strf::pack
             (x7, x6, x5, x4, x3, x2, strf::pack(x1));
-        BOOST_TEST(digest(ft) == expected);
+        BOOST_TEST(digest(fp) == expected);
     }
 
     {
-        auto ft = strf::pack
+        auto fp = strf::pack
             (x7, x6, x5, strf::pack(x4, x3), x2, x1);
-        BOOST_TEST(digest(ft) == expected);
+        BOOST_TEST(digest(fp) == expected);
     }
 
     {
-        auto ft = strf::pack
+        auto fp = strf::pack
             ( strf::pack(x7)
             , strf::pack(x6)
             , strf::pack(x5)
@@ -126,10 +126,10 @@ int main()
             , strf::pack(x2)
             , strf::pack(x1)
             );
-        BOOST_TEST(digest(ft) == expected);
+        BOOST_TEST(digest(fp) == expected);
     }
     {
-        auto ft = strf::pack
+        auto fp = strf::pack
             ( strf::pack(strf::pack(x7))
             , strf::pack(strf::pack(x6))
             , strf::pack(strf::pack(x5))
@@ -138,28 +138,28 @@ int main()
             , strf::pack(strf::pack(x2))
             , strf::pack(strf::pack(x1))
             );
-        BOOST_TEST(digest(ft) == expected);
+        BOOST_TEST(digest(fp) == expected);
     }
     {
-        auto ft = strf::pack
+        auto fp = strf::pack
             ( strf::pack(strf::pack(x7), strf::pack(x6))
             , strf::pack(strf::pack(x5), strf::pack(x4))
             , strf::pack(strf::pack(x3), strf::pack(x2))
             , strf::pack(strf::pack(x2), strf::pack(x1))
             );
-        BOOST_TEST(digest(ft) == expected);
+        BOOST_TEST(digest(fp) == expected);
     }
     {
-        auto ft = strf::pack
+        auto fp = strf::pack
             ( strf::pack(strf::pack(x7, x6, x5))
             , strf::pack(x6, x5, x4)
             , x4, x3, x2
             , strf::pack(strf::pack(x2, x1))
             );
-        BOOST_TEST(digest(ft) == expected);
+        BOOST_TEST(digest(fp) == expected);
     }
     {
-        auto ft = strf::pack
+        auto fp = strf::pack
             ( strf::pack()
             , strf::pack(strf::pack(x7, x6))
             , strf::pack(x5, x4, x5, x4)
@@ -170,7 +170,7 @@ int main()
             , strf::pack()
             );
 
-        BOOST_TEST(digest(ft) == expected);
+        BOOST_TEST(digest(fp) == expected);
     }
 
 

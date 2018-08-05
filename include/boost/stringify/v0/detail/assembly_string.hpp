@@ -51,14 +51,14 @@ public:
     template <typename FPack>
     asm_string_writer
         ( stringify::v0::output_writer<CharOut>& dest
-        , const FPack& ft
+        , const FPack& fp
         , const arglist_type& args
         , bool sanitise )
         : m_dest(dest)
         , m_args(args)
         , m_sw
             ( dest
-            , get_facet<stringify::v0::encoding_category<CharIn>>(ft)
+            , get_facet<stringify::v0::encoding_category<CharIn>>(fp)
             , sanitise )
     {
     }
@@ -87,10 +87,10 @@ public:
 
 private:
     template <typename Category, typename FPack>
-    const auto& get_facet(const FPack& ft) const
+    const auto& get_facet(const FPack& fp) const
     {
         using input_tag = stringify::v0::asm_string_input_tag<CharIn>;
-        return ft.template get_facet<Category, input_tag>();
+        return fp.template get_facet<Category, input_tag>();
     }
 
     stringify::v0::output_writer<CharOut>& m_dest;
@@ -111,13 +111,13 @@ public:
     template <typename FPack>
     asm_string_measurer
         ( stringify::v0::output_writer<CharOut>& dest
-        , const FPack& ft
+        , const FPack& fp
         , const arglist_type& args
         , bool sanitise )
         : m_args(args)
         , m_sw
             ( dest
-            , get_facet<stringify::v0::encoding_category<CharIn>>(ft)
+            , get_facet<stringify::v0::encoding_category<CharIn>>(fp)
             , sanitise )
     {
     }
@@ -129,14 +129,14 @@ public:
 
     virtual void do_put(const CharIn* begin, const CharIn* end)
     {
-        m_length += m_sw.length(begin, end);
+        m_length += m_sw.necessary_size(begin, end);
     }
 
     virtual void do_put_arg(std::size_t index)
     {
         if (index < m_args.size())
         {
-            m_length += m_args.begin()[index]->length();
+            m_length += m_args.begin()[index]->necessary_size();
         }
     }
 
@@ -152,10 +152,10 @@ private:
     stringify::v0::string_writer<CharIn, CharOut> m_sw;
 
     template <typename Category, typename FPack>
-    const auto& get_facet(const FPack& ft) const
+    const auto& get_facet(const FPack& fp) const
     {
         using input_tag = stringify::v0::asm_string_input_tag<CharIn>;
-        return ft.template get_facet<Category, input_tag>();
+        return fp.template get_facet<Category, input_tag>();
     }
 };
 

@@ -35,7 +35,7 @@ public:
     {
     }
 
-    std::size_t length() const override
+    std::size_t necessary_size() const override
     {
         return 0;
     }
@@ -60,10 +60,10 @@ private:
 //     template <typename CharT, typename FPack>
 //     static inline detail::erroneous_printer<CharT> make_printer
 //         ( const boost::stringify::v0::output_writer<CharT>& ow
-//         , const FPack& ft
+//         , const FPack& fp
 //         , error_tag x )
 //     {
-//         return {ft, x};
+//         return {fp, x};
 //     }
 // };
 
@@ -75,12 +75,12 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <typename CharT, typename FPack>
 inline ::detail::erroneous_printer<CharT>
-stringify_make_printer
+make_printer
     ( boost::stringify::v0::output_writer<CharT>& ow
-    , const FPack& ft
+    , const FPack& fp
     , error_tag x )
 {
-    return {ow, ft, x};
+    return {ow, fp, x};
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

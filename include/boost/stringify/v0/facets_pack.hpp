@@ -506,9 +506,9 @@ template
     , typename InputType
     , typename ... Facets
     >
-constexpr const auto& get_facet(const stringify::v0::facets_pack<Facets...>& ft)
+constexpr const auto& get_facet(const stringify::v0::facets_pack<Facets...>& fp)
 {
-    return ft.template get_facet<FacetCategory, InputType>();
+    return fp.template get_facet<FacetCategory, InputType>();
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

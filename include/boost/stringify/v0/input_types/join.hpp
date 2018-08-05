@@ -97,7 +97,7 @@ class printers_tuple<CharT, FPack, Arg, Args...>
 {
     using printer_type
         = decltype
-            ( stringify_make_printer<CharT, FPack>
+            ( make_printer<CharT, FPack>
                 ( * std::declval<stringify::v0::output_writer<CharT>*> ()
                 , std::declval<FPack>()
                 , std::declval<const Arg>()));
@@ -105,12 +105,12 @@ public:
 
     printers_tuple
         ( stringify::v0::output_writer<CharT>& out
-        , const FPack& ft
+        , const FPack& fp
         , const stringify::v0::detail::args_tuple<Arg, Args...>& args
         )
         : m_printer
-          (stringify_make_printer<CharT, FPack>(out, ft, args.first_arg))
-        , m_rest(out, ft, args.remove_first())
+          (make_printer<CharT, FPack>(out, fp, args.first_arg))
+        , m_rest(out, fp, args.remove_first())
     {
     }
 
@@ -137,10 +137,10 @@ public:
 
     printers_group
         ( stringify::v0::output_writer<CharT>& out
-        , const FPack& ft
+        , const FPack& fp
         , const stringify::v0::detail::args_tuple<Args...>& args
         )
-        : m_impl(out, ft, args)
+        : m_impl(out, fp, args)
     {
         m_range.m_end = m_impl.fill(m_array);
         m_range.m_begin = m_array;
@@ -221,7 +221,7 @@ public:
     {
     }
 
-    std::size_t length() const override
+    std::size_t necessary_size() const override
     {
         return args_length() + fill_length();
     }
@@ -285,7 +285,7 @@ private:
         std::size_t sum = 0;
         for(const auto* arg : m_args)
         {
-            sum += arg->length();
+            sum += arg->necessary_size();
         }
         return sum;
     }
@@ -294,7 +294,8 @@ private:
     {
         if(m_fillcount > 0)
         {
-            return m_fillcount * m_encoder.length(m_join.fillchar, m_keepsurr);
+            return m_fillcount
+                * m_encoder.necessary_size(m_join.fillchar, m_keepsurr);
         }
         return 0;
     }
@@ -358,11 +359,11 @@ public:
 
     join_printer
         ( stringify::v0::output_writer<CharT>& out
-        , const FPack& ft
+        , const FPack& fp
         , const stringify::v0::detail::joined_args<Args...>& ja
         )
-        : fmt_group(out, ft, ja.args)
-        , join_impl{out, fmt_group::range(), ja.join, get_encoding(ft)}
+        : fmt_group(out, fp, ja.args)
+        , join_impl{out, fmt_group::range(), ja.join, get_encoding(fp)}
     {
     }
 
@@ -372,10 +373,10 @@ public:
 
 private:
 
-    static const auto& get_encoding(const FPack& ft)
+    static const auto& get_encoding(const FPack& fp)
     {
         using encoder_category = stringify::v0::encoding_category<CharT>;
-        return ft.template get_facet<encoder_category, input_type>();
+        return fp.template get_facet<encoder_category, input_type>();
     }
 };
 
@@ -384,11 +385,11 @@ private:
 //     template <typename CharT, typename FPack, typename ... Args>
 //     static inline stringify::v0::detail::join_printer<CharT, FPack, Args...>
 //     make_printer
-//         ( const FPack& ft
+//         ( const FPack& fp
 //         , const stringify::v0::detail::joined_args<Args...>& x
 //         )
 //     {
-//         return {ft, x};
+//         return {fp, x};
 //     }
 // };
 
@@ -400,12 +401,12 @@ private:
 
 template <typename CharT, typename FPack, typename ... Args>
 inline stringify::v0::detail::join_printer<CharT, FPack, Args...>
-stringify_make_printer
+make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FPack& ft
+    , const FPack& fp
     , const stringify::v0::detail::joined_args<Args...>& x )
 {
-    return {out, ft, x};
+    return {out, fp, x};
 }
 
 inline stringify::v0::detail::join_t

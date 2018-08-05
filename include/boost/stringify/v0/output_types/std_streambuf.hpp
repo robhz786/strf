@@ -257,7 +257,7 @@ auto write
 {
     using intput_type = std::basic_streambuf<CharT, Traits>&;
     using writer = stringify::v0::detail::std_streambuf_writer<CharT, Traits>;
-    return stringify::v0::make_args_handler<writer, intput_type>(dest, count);
+    return stringify::v0::make_destination<writer, intput_type>(dest, count);
 }
 
 
@@ -269,7 +269,7 @@ auto write
 {
     using intput_type = std::basic_streambuf<CharT, Traits>&;
     using writer = stringify::v0::detail::std_streambuf_writer<CharT, Traits>;
-    return stringify::v0::make_args_handler<writer, intput_type>(*dest, count);
+    return stringify::v0::make_destination<writer, intput_type>(*dest, count);
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

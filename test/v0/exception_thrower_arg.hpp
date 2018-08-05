@@ -23,7 +23,7 @@ public:
     {
     }
 
-    std::size_t length() const override
+    std::size_t necessary_size() const override
     {
         return 0;
     }
@@ -58,7 +58,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <typename CharT, typename FPack>
 inline ::detail::exceptional_printer<CharT>
-stringify_make_printer
+make_printer
     ( const stringify::v0::output_writer<CharT>&
     , const FPack&
     , exception_tag x )

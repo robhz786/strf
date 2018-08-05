@@ -50,7 +50,7 @@ bool QStringCreator::do_put(const char16_t* str, std::size_t count)
     return true;
 }
 
-constexpr auto toQString = strf::make_args_handler<QStringCreator>();
+constexpr auto toQString = strf::make_destination<QStringCreator>();
 
 
 int main()

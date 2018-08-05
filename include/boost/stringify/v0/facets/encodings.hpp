@@ -64,15 +64,16 @@ public:
     std::size_t remaining_codepoints_count
         ( std::size_t minuend
         , const char* begin
-        , const char* end
-        ) const override;
+        , const char* end ) const override;
 };
 
 class ascii_variant_encoder: public stringify::v0::encoder<char>
 {
 public:
 
-    std::size_t length(char32_t ch, bool allow_surrogates) const override;
+    std::size_t necessary_size
+        ( char32_t ch
+        , bool allow_surrogates ) const override;
 };
 
 class ascii_decoder: public stringify::v0::detail::ascii_variant_decoder
@@ -83,8 +84,7 @@ public:
         ( stringify::v0::u32output& dest
         , const char* begin
         , const char* end
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 };
 
 class ascii_encoder: public stringify::v0::detail::ascii_variant_encoder
@@ -95,16 +95,14 @@ public:
         ( char32_t ch
         , char* dest
         , char* end
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 
     stringify::v0::char_cv_result<char> encode
         ( std::size_t count
         , char32_t ch
         , char* dest
         , char* end
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 };
 
 
@@ -116,8 +114,7 @@ public:
         ( stringify::v0::u32output& dest
         , const char* begin
         , const char* end
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 };
 
 class iso_8859_1_encoder: public stringify::v0::detail::ascii_variant_encoder
@@ -128,16 +125,14 @@ public:
         ( char32_t ch
         , char* dest
         , char* end
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 
     stringify::v0::char_cv_result<char> encode
         ( std::size_t count
         , char32_t ch
         , char* dest
         , char* end
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 };
 
 class iso_8859_15_decoder: public stringify::v0::detail::ascii_variant_decoder
@@ -148,8 +143,7 @@ public:
         ( stringify::v0::u32output& dest
         , const char* begin
         , const char* end
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 };
 
 class iso_8859_15_encoder: public stringify::v0::detail::ascii_variant_encoder
@@ -160,16 +154,14 @@ public:
         ( char32_t ch
         , char* dest
         , char* end
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 
     stringify::v0::char_cv_result<char> encode
         ( std::size_t count
         , char32_t ch
         , char* dest
         , char* end
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 
 private:
 
@@ -185,8 +177,7 @@ public:
         ( stringify::v0::u32output& dest
         , const char* begin
         , const char* end
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 };
 
 
@@ -198,16 +189,14 @@ public:
         ( char32_t ch
         , char* dest
         , char* end
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 
     stringify::v0::char_cv_result<char> encode
         ( std::size_t count
         , char32_t ch
         , char* dest
         , char* end
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 
 private:
 
@@ -226,14 +215,12 @@ public:
         ( stringify::v0::u32output& dest
         , const char* begin
         , const char* end
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 
     std::size_t remaining_codepoints_count
         ( std::size_t minuend
         , const char* begin
-        , const char* end
-        ) const override;
+        , const char* end ) const override;
 
 private:
 
@@ -250,22 +237,22 @@ public:
     utf8_encoder() = default;
     ~utf8_encoder() = default;
 
-    std::size_t length(char32_t ch, bool allow_surrogates) const override;
+    std::size_t necessary_size
+        ( char32_t ch
+        , bool allow_surrogates ) const override;
 
     char* encode
         ( char32_t ch
         , char* dest
         , char* end
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 
     stringify::v0::char_cv_result<char> encode
         ( std::size_t count
         , char32_t ch
         , char* dest
         , char* end
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 };
 
 using mutf8_decoder = stringify::v0::detail::utf8_decoder;
@@ -277,7 +264,7 @@ public:
     mutf8_encoder() = default;
     ~mutf8_encoder() = default;
 
-    std::size_t length
+    std::size_t necessary_size
         ( char32_t ch
         , bool allow_surrogates )
         const override;
@@ -333,7 +320,9 @@ public:
     utf16_encoder() = default;
     ~utf16_encoder() = default;
 
-    std::size_t length(char32_t ch, bool allow_surrogates) const override;
+    std::size_t necessary_size
+        ( char32_t ch
+        , bool allow_surrogates ) const override;
 
     CharOut* encode
         ( char32_t ch
@@ -395,7 +384,9 @@ public:
     {
     }
 
-    std::size_t length(char32_t ch, bool allow_surrogates) const override;
+    std::size_t necessary_size
+        ( char32_t ch
+        , bool allow_surrogates ) const override;
 
     CharOut* encode
         ( char32_t ch
@@ -433,23 +424,20 @@ public:
         , CharOut* dest_begin
         , CharOut* dest_end
         , const stringify::v0::error_signal& err_sig
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 
-    virtual std::size_t required_size
+    virtual std::size_t necessary_size
         ( const CharIn* begin
         , const CharIn* end
         , const stringify::v0::error_signal& err_sig
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 
     virtual CharOut* convert
         ( CharIn ch
         , CharOut* dest_begin
         , CharOut* dest_end
         , const stringify::v0::error_signal& err_sig
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 
     virtual char_cv_result convert
         ( std::size_t count
@@ -457,14 +445,12 @@ public:
         , CharOut* dest_begin
         , CharOut* dest_end
         , const stringify::v0::error_signal& err_sig
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 
-    virtual std::size_t required_size
+    virtual std::size_t necessary_size
         ( CharIn ch
         , const stringify::v0::error_signal& err_sig
-        , bool allow_surrogates
-        ) const override;
+        , bool allow_surrogates ) const override;
 };
 
 template <typename CharOut>
@@ -472,8 +458,9 @@ class utf8_to_utf16
     : public stringify::v0::transcoder<char, CharOut>
     , private stringify::v0::detail::utf16_encoder<CharOut>
 {
-    using encoder = stringify::v0::detail::utf16_encoder<CharOut>;
     static_assert(sizeof(CharOut) == 2, "incompatible character type for UTF-16");
+    using encoder = stringify::v0::detail::utf16_encoder<CharOut>;
+    using encoder::necessary_size;
 
 public:
 
@@ -491,7 +478,7 @@ public:
         , bool allow_surrogates )
         const override;
 
-    virtual std::size_t required_size
+    virtual std::size_t necessary_size
         ( const CharIn* src_begin
         , const CharIn* src_end
         , const stringify::v0::error_signal& err_sig
@@ -515,7 +502,7 @@ public:
         , bool allow_surrogates )
         const override;
 
-    virtual std::size_t required_size
+    virtual std::size_t necessary_size
         ( char ch
         , const stringify::v0::error_signal& err_sig
         , bool allow_surrogates )
@@ -535,8 +522,10 @@ class utf16_to_utf8
     : public stringify::v0::transcoder<CharIn, char>
     , private stringify::v0::detail::utf8_encoder
 {
-    using encoder = stringify::v0::detail::utf8_encoder;
     static_assert(sizeof(CharIn) == 2, "incompatible character type for UTF-16");
+
+    using encoder = stringify::v0::detail::utf8_encoder;
+    using encoder::necessary_size;
 
 public:
 
@@ -555,7 +544,7 @@ public:
         , bool allow_surrogates )
         const override;
 
-    virtual std::size_t required_size
+    virtual std::size_t necessary_size
         ( const CharIn* begin
         , const CharIn* end
         , const stringify::v0::error_signal& err_sig
@@ -579,7 +568,7 @@ public:
         , bool allow_surrogates )
         const override;
 
-    virtual std::size_t required_size
+    virtual std::size_t necessary_size
         ( CharIn ch
         , const stringify::v0::error_signal& err_sig
         , bool allow_surrogates )
@@ -591,17 +580,15 @@ public:
 BOOST_STRINGIFY_INLINE std::size_t ascii_variant_decoder::remaining_codepoints_count
     ( std::size_t minuend
     , const char* begin
-    , const char* end
-    ) const
+    , const char* end ) const
 {
     std::size_t len = end - begin;
     return len > minuend ? len - minuend : 0;
 }
 
-BOOST_STRINGIFY_INLINE std::size_t ascii_variant_encoder::length
+BOOST_STRINGIFY_INLINE std::size_t ascii_variant_encoder::necessary_size
     ( char32_t ch
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void)ch;
     (void)allow_surrogates;
@@ -612,8 +599,7 @@ BOOST_STRINGIFY_INLINE stringify::v0::decoder_result<char> ascii_decoder::decode
     ( stringify::v0::u32output& dest
     , const char* begin
     , const char* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void) allow_surrogates;
 
@@ -647,8 +633,7 @@ BOOST_STRINGIFY_INLINE char* ascii_encoder::encode
     ( char32_t ch
     , char* dest
     , char* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void)allow_surrogates;
     if(ch >= 0x80)
@@ -668,8 +653,7 @@ BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> ascii_encoder::encode
     , char32_t ch
     , char* dest
     , char* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void)allow_surrogates;
 
@@ -687,8 +671,7 @@ BOOST_STRINGIFY_INLINE stringify::v0::decoder_result<char> iso_8859_1_decoder::d
     ( stringify::v0::u32output& dest
     , const char* begin
     , const char* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void)allow_surrogates;
     for (auto it = begin; it < end; ++it)
@@ -719,8 +702,7 @@ BOOST_STRINGIFY_INLINE char* iso_8859_1_encoder::encode
     ( char32_t ch
     , char* dest
     , char* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void) allow_surrogates;
     if(ch < 0x80 || (0x9F < ch && ch < 0x100))
@@ -740,8 +722,7 @@ BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> iso_8859_1_encoder::e
     , char32_t ch
     , char* dest
     , char* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void)allow_surrogates;
     if(ch < 0x80 || (0x9F < ch && ch < 0x100))
@@ -757,8 +738,7 @@ BOOST_STRINGIFY_INLINE stringify::v0::decoder_result<char> iso_8859_15_decoder::
     ( stringify::v0::u32output& dest
     , const char* begin
     , const char* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void)allow_surrogates;
     constexpr unsigned short invalid = 0xFFFF;
@@ -824,8 +804,7 @@ BOOST_STRINGIFY_INLINE char* iso_8859_15_encoder::encode
     ( char32_t ch
     , char* dest
     , char* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void)allow_surrogates;
 
@@ -847,8 +826,7 @@ BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> iso_8859_15_encoder::
     , char32_t ch
     , char* dest
     , char* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void)allow_surrogates;
     unsigned ch2 = convert_from_char32(ch);
@@ -897,8 +875,7 @@ BOOST_STRINGIFY_INLINE stringify::v0::decoder_result<char> windows_1252_decoder:
     ( stringify::v0::u32output& dest
     , const char* begin
     , const char* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void)allow_surrogates;
     constexpr unsigned short invalid = 0xFFFF;
@@ -966,8 +943,7 @@ BOOST_STRINGIFY_INLINE char* windows_1252_encoder::encode
     ( char32_t ch
     , char* dest
     , char* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void)allow_surrogates;
 
@@ -991,8 +967,7 @@ BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> windows_1252_encoder:
     , char32_t ch
     , char* dest
     , char* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void)allow_surrogates;
     unsigned ch2 = (ch < 0x80 || (0x9F < ch && ch < 0x100))
@@ -1047,8 +1022,7 @@ BOOST_STRINGIFY_INLINE stringify::v0::decoder_result<char> utf8_decoder::decode
         ( stringify::v0::u32output& dest
         , const char* begin
         , const char* end
-        , bool allow_surrogates
-        ) const
+        , bool allow_surrogates ) const
 {
     unsigned long ch1, ch2, ch3, x;
     bool failed_previous = false;
@@ -1105,8 +1079,7 @@ BOOST_STRINGIFY_INLINE stringify::v0::decoder_result<char> utf8_decoder::decode
 BOOST_STRINGIFY_INLINE std::size_t utf8_decoder::remaining_codepoints_count
         ( std::size_t minuend
         , const char* begin
-        , const char* end
-        ) const
+        , const char* end ) const
 {
     for(auto it = begin; it != end && minuend != 0; ++it)
     {
@@ -1123,8 +1096,7 @@ BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> utf8_encoder::encode
     , char32_t ch
     , char* dest
     , char* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     std::size_t c=0;
     if (ch < 0x80)
@@ -1181,8 +1153,7 @@ BOOST_STRINGIFY_INLINE char* utf8_encoder::encode
     ( char32_t ch
     , char* dest
     , char* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     if (ch < 0x80 && dest != end)
     {
@@ -1219,7 +1190,9 @@ BOOST_STRINGIFY_INLINE char* utf8_encoder::encode
     return ch >= 0x110000 ? nullptr : end + 1;
 }
 
-BOOST_STRINGIFY_INLINE std::size_t utf8_encoder::length(char32_t ch, bool allow_surrogates) const
+BOOST_STRINGIFY_INLINE std::size_t utf8_encoder::necessary_size
+    ( char32_t ch
+    , bool allow_surrogates ) const
 {
     return (ch < 0x80 ? 1 :
             ch < 0x800 ? 2 :
@@ -1231,8 +1204,7 @@ BOOST_STRINGIFY_INLINE char* mutf8_encoder::encode
     ( char32_t ch
     , char* dest
     , char* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     if (ch != 0)
     {
@@ -1253,8 +1225,7 @@ BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> mutf8_encoder::encode
     , char32_t ch
     , char* dest
     , char* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     if (ch != 0)
     {
@@ -1271,7 +1242,9 @@ BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> mutf8_encoder::encode
     return {c, dest};
 }
 
-BOOST_STRINGIFY_INLINE std::size_t mutf8_encoder::length(char32_t ch, bool allow_surrogates) const
+BOOST_STRINGIFY_INLINE std::size_t mutf8_encoder::necessary_size
+    ( char32_t ch
+    , bool allow_surrogates ) const
 {
     return (ch ==  0 ? 2 :
             ch < 0x80 ? 1 :
@@ -1287,8 +1260,7 @@ stringify::v0::decoder_result<CharIn> utf16_decoder<CharIn>::decode
     ( stringify::v0::u32output& dest
     , const CharIn* begin
     , const CharIn* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void) allow_surrogates;
 
@@ -1346,8 +1318,7 @@ template <typename CharIn>
 std::size_t utf16_decoder<CharIn>::remaining_codepoints_count
     ( std::size_t minuend
     , const CharIn* begin
-    , const CharIn* end
-    ) const
+    , const CharIn* end ) const
 {
     for(auto it = begin; it != end && minuend != 0; ++it, --minuend)
     {
@@ -1360,7 +1331,9 @@ std::size_t utf16_decoder<CharIn>::remaining_codepoints_count
 }
 
 template <typename CharOut>
-std::size_t utf16_encoder<CharOut>::length(char32_t ch, bool allow_surrogates) const
+std::size_t utf16_encoder<CharOut>::necessary_size
+    ( char32_t ch
+    , bool allow_surrogates ) const
 {
     return (ch < 0x10000 && (allow_surrogates || ! is_surrogate(ch))) ? 1 : 2;
 }
@@ -1370,8 +1343,7 @@ CharOut* utf16_encoder<CharOut>::encode
     ( char32_t ch
     , CharOut* dest
     , CharOut* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     if (ch < 0x10000 && dest != end)
     {
@@ -1430,8 +1402,7 @@ stringify::v0::decoder_result<CharIn> utf32_decoder<CharIn>::decode
     ( stringify::v0::u32output& dest
     , const CharIn* begin
     , const CharIn* end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     auto it =begin;
     if(allow_surrogates)
@@ -1490,15 +1461,16 @@ template <typename CharIn>
 std::size_t utf32_decoder<CharIn>::remaining_codepoints_count
     ( std::size_t minuend
     , const CharIn* begin
-    , const CharIn* end
-    ) const
+    , const CharIn* end ) const
 {
     std::size_t len = end - begin;
     return len < minuend ? minuend - len : 0;
 }
 
 template <typename CharOut>
-std::size_t utf32_encoder<CharOut>::length(char32_t ch, bool allow_surrogates) const
+std::size_t utf32_encoder<CharOut>::necessary_size
+    ( char32_t ch
+    , bool allow_surrogates ) const
 {
     (void)ch;
     (void)allow_surrogates;
@@ -1510,8 +1482,7 @@ CharOut* utf32_encoder<CharOut>::encode
     ( char32_t ch
     , CharOut* dest
     , CharOut * end
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     if (dest != end && ch < 0x110000 && (allow_surrogates || ! is_surrogate(ch)))
     {
@@ -1552,8 +1523,7 @@ bypass_transcoder<CharIn, CharOut>::convert
     , CharOut* dest_begin
     , CharOut* dest_end
     , const stringify::v0::error_signal& err_sig
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void) allow_surrogates;
     (void) err_sig;
@@ -1584,12 +1554,11 @@ bypass_transcoder<CharIn, CharOut>::convert
 }
 
 template <typename CharIn, typename CharOut>
-std::size_t bypass_transcoder<CharIn, CharOut>::required_size
+std::size_t bypass_transcoder<CharIn, CharOut>::necessary_size
     ( const CharIn* begin
     , const CharIn* end
     , const stringify::v0::error_signal& err_sig
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void) err_sig;
     (void) allow_surrogates;
@@ -1602,8 +1571,7 @@ CharOut* bypass_transcoder<CharIn, CharOut>::convert
     , CharOut* dest_begin
     , CharOut* dest_end
     , const stringify::v0::error_signal& err_sig
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void) err_sig;
     (void) allow_surrogates;
@@ -1622,8 +1590,7 @@ stringify::v0::char_cv_result<CharOut> bypass_transcoder<CharIn, CharOut>::conve
     , CharOut* dest_begin
     , CharOut* dest_end
     , const stringify::v0::error_signal& err_sig
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void) err_sig;
     (void) allow_surrogates;
@@ -1637,11 +1604,10 @@ stringify::v0::char_cv_result<CharOut> bypass_transcoder<CharIn, CharOut>::conve
 }
 
 template <typename CharIn, typename CharOut>
-std::size_t bypass_transcoder<CharIn, CharOut>::required_size
+std::size_t bypass_transcoder<CharIn, CharOut>::necessary_size
     ( CharIn ch
     , const stringify::v0::error_signal& err_sig
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void) ch;
     (void) err_sig;
@@ -1656,8 +1622,7 @@ stringify::v0::str_cv_result<char, CharOut> utf8_to_utf16<CharOut>::convert
     , CharOut* dest_begin
     , CharOut* dest_end
     , const stringify::v0::error_signal& err_sig
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void) err_sig;
     using stringify::v0::detail::utf8_decode;
@@ -1755,12 +1720,11 @@ stringify::v0::str_cv_result<char, CharOut> utf8_to_utf16<CharOut>::convert
 }
 
 template <typename CharOut>
-std::size_t utf8_to_utf16<CharOut>::required_size
+std::size_t utf8_to_utf16<CharOut>::necessary_size
         ( const char* src_begin
         , const char* src_end
         , const stringify::v0::error_signal& err_sig
-        , bool allow_surrogates
-        ) const
+        , bool allow_surrogates ) const
 {
     (void) err_sig;
     using stringify::v0::detail::utf8_decode;
@@ -1832,8 +1796,7 @@ CharOut* utf8_to_utf16<CharOut>::convert
     , CharOut* dest_begin
     , CharOut* dest_end
     , const stringify::v0::error_signal& err_sig
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void) err_sig;
     (void) allow_surrogates;
@@ -1856,8 +1819,7 @@ stringify::v0::char_cv_result<CharOut> utf8_to_utf16<CharOut>::convert
     , CharOut* dest_begin
     , CharOut* dest_end
     , const stringify::v0::error_signal& err_sig
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void) err_sig;
     (void) allow_surrogates;
@@ -1874,11 +1836,10 @@ stringify::v0::char_cv_result<CharOut> utf8_to_utf16<CharOut>::convert
 }
 
 template <typename CharOut>
-std::size_t utf8_to_utf16<CharOut>::required_size
+std::size_t utf8_to_utf16<CharOut>::necessary_size
     ( char ch
     , const stringify::v0::error_signal& err_sig
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void) err_sig;
     (void) allow_surrogates;
@@ -1892,8 +1853,7 @@ stringify::v0::str_cv_result<CharIn, char> utf16_to_utf8<CharIn>::convert
     , char* dest_begin
     , char* dest_end
     , const stringify::v0::error_signal& err_sig
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void) err_sig;
     using result = stringify::v0::str_cv_result<CharIn, char>;
@@ -1992,12 +1952,11 @@ stringify::v0::str_cv_result<CharIn, char> utf16_to_utf8<CharIn>::convert
 }
 
 template <typename CharIn>
-std::size_t utf16_to_utf8<CharIn>::required_size
+std::size_t utf16_to_utf8<CharIn>::necessary_size
     ( const CharIn* src_begin
     , const CharIn* src_end
     , const stringify::v0::error_signal & err_sig
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void) err_sig;
     (void) allow_surrogates;
@@ -2040,8 +1999,7 @@ char* utf16_to_utf8<CharIn>::convert
     , CharOut* dest_begin
     , CharOut* dest_end
     , const stringify::v0::error_signal& err_sig
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void) err_sig;
     return encoder::encode(ch, dest_begin, dest_end, allow_surrogates);
@@ -2054,22 +2012,20 @@ stringify::v0::char_cv_result<char> utf16_to_utf8<CharIn>::convert
     , char* dest_begin
     , char* dest_end
     , const stringify::v0::error_signal& err_sig
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void) err_sig;
     return encoder::encode(count, ch, dest_begin, dest_end, allow_surrogates);
 }
 
 template <typename CharIn>
-std::size_t utf16_to_utf8<CharIn>::required_size
+std::size_t utf16_to_utf8<CharIn>::necessary_size
     ( CharIn ch
     , const stringify::v0::error_signal& err_sig
-    , bool allow_surrogates
-    ) const
+    , bool allow_surrogates ) const
 {
     (void) err_sig;
-    return encoder::length(ch, allow_surrogates);
+    return encoder::necessary_size(ch, allow_surrogates);
 }
 
 /*
@@ -2090,8 +2046,7 @@ public:
         , const CharIn* begin
         , const CharIn* end
         , const stringify::v0::error_signal& err_sig
-        , bool allow_surrogates
-        ) const override
+        , bool allow_surrogates ) const override
     {
         for(auto it = begin; it != end; ++it)
         {
@@ -2108,11 +2063,10 @@ public:
         }
     }
 
-    virtual std::size_t length
+    virtual std::size_t necessary_size
         ( const CharIn* begin
         , const CharIn* end
-        , bool allow_surrogates
-        ) const override
+        , bool allow_surrogates ) const override
     {
         return begin - end;
     }
@@ -2140,8 +2094,7 @@ public:
         , const CharIn* begin
         , const CharIn* end
         , const stringify::v0::error_signal& err_sig
-        , bool allow_surrogates
-        ) const override
+        , bool allow_surrogates ) const override
     {
         if (m_clean)
         {
@@ -2158,11 +2111,10 @@ public:
         }
     }
 
-    virtual std::size_t length
+    virtual std::size_t necessary_size
         ( const CharIn* begin
         , const CharIn* end
-        , bool allow_surrogates
-        ) const override
+        , bool allow_surrogates ) const override
     {
         return begin - end;
     }
@@ -2193,8 +2145,7 @@ public:
         ( stringify::v0::output_writer<CharOut>& dest
         , const CharIn* begin
         , const CharIn* end
-        , const stringify::v0::error_signal& err_sig
-        ) const override
+        , const stringify::v0::error_signal& err_sig ) const override
     {
         const char* prev = begin;
         const char* it = begin;
@@ -2217,8 +2168,7 @@ protected:
         ( stringify::v0::output_writer<char>& dest
         , const char* begin
         , const char* end
-        , const stringify::v0::error_signal& err_sig
-        ) const = 0;
+        , const stringify::v0::error_signal& err_sig ) const = 0;
 };
 
 class ascii_to_narrow: public from_narrow_to_narrow
@@ -2252,29 +2202,25 @@ public:
 
 
    virtual const stringify::v0::transcoder<CharIn, char>* converter
-        ( stringify::v0::encoding<char>& output_encoding
-        ) const override
+        ( stringify::v0::encoding<char>& output_encoding ) const override
     {
         return do_get_converter(output_encoding);
     }
 
     virtual const stringify::v0::transcoder<CharIn, char16_t>* converter
-        ( stringify::v0::encoding<char16_t>& output_encoding
-        ) const override
+        ( stringify::v0::encoding<char16_t>& output_encoding ) const override
     {
         return do_get_converter(output_encoding);
     }
 
     virtual const stringify::v0::transcoder<CharIn, char32_t>* converter
-        ( stringify::v0::encoding<char32_t>& output_encoding
-        ) const override
+        ( stringify::v0::encoding<char32_t>& output_encoding ) const override
     {
         return do_get_converter(output_encoding);
     }
 
     virtual const stringify::v0::transcoder<CharIn, wchar_t>* converter
-        ( stringify::v0::encoding<wchar_t>& output_encoding
-        ) const override
+        ( stringify::v0::encoding<wchar_t>& output_encoding ) const override
     {
         return do_get_converter(output_encoding);
     }
@@ -2283,8 +2229,7 @@ private:
 
     template <typename CharOut>
     const stringify::v0::transcoder<CharIn, CharOut>* converter_impl
-        ( stringify::v0::encoding<CharOut>& output_encoding
-        ) const override
+        ( stringify::v0::encoding<CharOut>& output_encoding ) const override
     {
         if (m_clean)
         {

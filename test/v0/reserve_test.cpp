@@ -23,7 +23,6 @@ public:
         , m_reserve_size(reserve_size)
     {
     }
-
     
     virtual void set_error(std::error_code) override
     {
@@ -34,7 +33,7 @@ public:
         return true;
     }
 
-    virtual bool put(strf::source<char>&) override
+    virtual bool put(strf::piecemeal_writer<char>&) override
     {
         return true;
     }
@@ -76,7 +75,7 @@ private:
 
 auto reservation_test(std::size_t & s)
 {
-    return strf::make_args_handler<reservation_tester, std::size_t&>(s);
+    return strf::make_destination<reservation_tester, std::size_t&>(s);
 }
 
 

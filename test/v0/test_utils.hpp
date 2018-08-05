@@ -337,7 +337,7 @@ private:
 //    )
 //{
 //    using writer = input_tester<CharT>;
-//    return boost::stringify::v0::make_args_handler
+//    return boost::stringify::v0::make_destination
 //        <writer, const CharT*, std::error_code, const char*, int>
 //        (expected, err, filename, line, reserve_factor);
 //}
@@ -351,7 +351,7 @@ private:
 //    )
 //{
 //    using writer = input_tester<CharT>;
-//    return boost::stringify::v0::make_args_handler
+//    return boost::stringify::v0::make_destination
 //        <writer, const CharT*, std::error_code, const char*, int, double, std::size_t>
 //        (expected, {}, filename, line, reserve_factor, buffer_size);
 //}
@@ -367,7 +367,7 @@ auto make_tester
     , std::size_t buffer_size)
 {
     using writer = input_tester<CharT>;
-    return boost::stringify::v0::make_args_handler
+    return boost::stringify::v0::make_destination
         <writer, const CharT*, std::error_code, const char*, int, double, std::size_t>
         (expected, err, filename, line, reserve_factor, buffer_size);
 }
@@ -382,7 +382,7 @@ auto make_tester
     , std::size_t buffer_size )
 {
     using writer = input_tester<CharT>;
-    return boost::stringify::v0::make_args_handler
+    return boost::stringify::v0::make_destination
         <writer, const std::basic_string<CharT>&, std::error_code, const char*, int, double, std::size_t>
         (expected, err, filename, line, reserve_factor, buffer_size);
 }
@@ -396,7 +396,7 @@ auto make_tester
 //    , std::size_t buffer_size = 60 )
 //{
 //    using writer = input_tester<CharT>;
-//    return boost::stringify::v0::make_args_handler
+//    return boost::stringify::v0::make_destination
 //        <writer, const std::basic_string<CharT>&, std::error_code, const char*, int, std::size_t >
 //        (expected, {}, filename, line, reserve_factor, buffer_size);
 //}

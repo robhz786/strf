@@ -4,7 +4,7 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[section:output_types Leading expressions]
+[section:output_types Output types]
 
 [table
 [ []  [Destination type] [Leading expression]]
@@ -29,7 +29,7 @@
   [ [*`to_wstring `] [*\u00b7\u00b7\u00b7]]]
 
 [ [7] [`std::basic_string<`[~CharT]`, `[~Traits]`, `[~Allocator]`>`]
-  [ [*`to_basic_string <`][~CharT]`, `[~Traits]`, `[~Allocator][*`> (`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
+  [ [*`to_basic_string <`][~CharT]`, `[~Traits]`, `[~Allocator][*`>`] [*\u00b7\u00b7\u00b7]]]
 
 [ [8]  [[~CharT]`*`]
   [ [*`write(`][~destination]`, `[~limit][*`) `] [*\u00b7\u00b7\u00b7]]]

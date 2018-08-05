@@ -239,15 +239,15 @@ public:
     template <typename FPack>
     int_printer
         ( stringify::v0::output_writer<CharT>& out
-        , const FPack& ft
+        , const FPack& fp
         , const stringify::v0::int_with_formatting<IntT>& value
         ) noexcept
         : int_printer
             ( out
             , value
-            , get_numpunct<8>(ft)
-            , get_numpunct<10>(ft)
-            , get_numpunct<16>(ft)
+            , get_numpunct<8>(fp)
+            , get_numpunct<10>(fp)
+            , get_numpunct<16>(fp)
             )
     {
     }
@@ -263,7 +263,7 @@ public:
 
     virtual ~int_printer();
 
-    std::size_t length() const override;
+    std::size_t necessary_size() const override;
 
     void write() const override;
 
@@ -277,10 +277,10 @@ private:
     int m_fillcount = 0;
 
     template <int Base, typename FPack>
-    const stringify::v0::numpunct<Base>& get_numpunct(const FPack& ft) noexcept
+    const stringify::v0::numpunct<Base>& get_numpunct(const FPack& fp) noexcept
     {
         using tag = stringify::v0::numpunct_category<Base>;
-        return ft.template get_facet<tag, input_type>();
+        return fp.template get_facet<tag, input_type>();
     }
 
     bool showsign() const
@@ -301,7 +301,7 @@ private:
     {
         if (m_fillcount > 0)
         {
-            return m_fillcount * m_out.required_size(m_input.fill());
+            return m_fillcount * m_out.necessary_size(m_input.fill());
         }
         return 0;
     }
@@ -330,7 +330,7 @@ private:
 
         if (unsigned num_seps = m_numpunct.thousands_sep_count(num_digits))
         {
-            auto sep_len = m_out.required_size(m_numpunct.thousands_sep());
+            auto sep_len = m_out.necessary_size(m_numpunct.thousands_sep());
             return num_digits + num_seps * sep_len;
         }
         return num_digits;
@@ -589,7 +589,7 @@ int_printer<IntT, CharT>::~int_printer()
 }
 
 template <typename IntT, typename CharT>
-std::size_t int_printer<IntT, CharT>::length() const
+std::size_t int_printer<IntT, CharT>::necessary_size() const
 {
     return length_body() + length_fill();
 }
@@ -620,20 +620,20 @@ int int_printer<IntT, CharT>::remaining_width(int w) const
 // {
 //     template <typename CharT, typename FPack>
 //     static inline stringify::v0::int_printer<IntT, CharT> make_printer
-//         ( const FPack& ft
+//         ( const FPack& fp
 //         , IntT ch
 //         )
 //     {
-//         return {ft, ch};
+//         return {fp, ch};
 //     }
 
 //     template <typename CharT, typename FPack>
 //     static inline stringify::v0::int_printer<IntT, CharT> make_printer
-//         ( const FPack& ft
+//         ( const FPack& fp
 //         , const stringify::v0::int_with_formatting<IntT>& ch
 //         )
 //     {
-//         return {ft, ch};
+//         return {fp, ch};
 //     }
 
 //     static inline stringify::v0::int_with_formatting<IntT> fmt(IntT ch)
@@ -694,126 +694,126 @@ int int_printer<IntT, CharT>::remaining_width(int w) const
 
 template <typename CharT, typename FPack>
 inline stringify::v0::int_printer<short, CharT>
-stringify_make_printer
+make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FPack& ft
+    , const FPack& fp
     , short x )
 {
-    return {out, ft, x};
+    return {out, fp, x};
 }
 template <typename CharT, typename FPack>
 inline stringify::v0::int_printer<int, CharT>
-stringify_make_printer
+make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FPack& ft
+    , const FPack& fp
     , int x )
 {
-    return {out, ft, x};
+    return {out, fp, x};
 }
 template <typename CharT, typename FPack>
 inline stringify::v0::int_printer<long, CharT>
-stringify_make_printer
+make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FPack& ft
+    , const FPack& fp
     , long x )
 {
-    return {out, ft, x};
+    return {out, fp, x};
 }
 template <typename CharT, typename FPack>
 inline stringify::v0::int_printer<long long, CharT>
-stringify_make_printer
+make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FPack& ft
+    , const FPack& fp
     , long long x )
 {
-    return {out, ft, x};
+    return {out, fp, x};
 }
 template <typename CharT, typename FPack>
 inline stringify::v0::int_printer<unsigned short, CharT>
-stringify_make_printer
+make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FPack& ft
+    , const FPack& fp
     , unsigned short x )
 {
-    return {out, ft, x};
+    return {out, fp, x};
 }
 template <typename CharT, typename FPack>
 inline stringify::v0::int_printer<unsigned int, CharT>
-stringify_make_printer
+make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FPack& ft
+    , const FPack& fp
     , unsigned int x )
 {
-    return {out, ft, x};
+    return {out, fp, x};
 }
 template <typename CharT, typename FPack>
 inline stringify::v0::int_printer<unsigned long, CharT>
-stringify_make_printer
+make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FPack& ft
+    , const FPack& fp
     , unsigned long x )
 {
-    return {out, ft, x};
+    return {out, fp, x};
 }
 template <typename CharT, typename FPack>
 inline stringify::v0::int_printer<unsigned long long, CharT>
-stringify_make_printer
+make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FPack& ft
+    , const FPack& fp
     , unsigned long long x )
 {
-    return {out, ft, x};
+    return {out, fp, x};
 }
 
 
 template <typename CharT, typename FPack, typename IntT>
 inline stringify::v0::int_printer<IntT, CharT>
-stringify_make_printer
+make_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const FPack& ft
+    , const FPack& fp
     , const stringify::v0::int_with_formatting<IntT>& x
     )
 {
-    return {out, ft, x};
+    return {out, fp, x};
 }
 
 inline stringify::v0::int_with_formatting<short>
-stringify_fmt(short x)
+make_fmt(stringify::v0::tag, short x)
 {
     return {x};
 }
 inline stringify::v0::int_with_formatting<int>
-stringify_fmt(int x)
+make_fmt(stringify::v0::tag, int x)
 {
     return {x};
 }
 inline stringify::v0::int_with_formatting<long>
-stringify_fmt(long x)
+make_fmt(stringify::v0::tag, long x)
 {
     return {x};
 }
 inline stringify::v0::int_with_formatting<long long>
-stringify_fmt(long long x)
+make_fmt(stringify::v0::tag, long long x)
 {
     return {x};
 }
 inline stringify::v0::int_with_formatting<unsigned short>
-stringify_fmt(unsigned short x)
+make_fmt(stringify::v0::tag, unsigned short x)
 {
     return {x};
 }
 inline stringify::v0::int_with_formatting<unsigned>
-stringify_fmt(unsigned x)
+make_fmt(stringify::v0::tag, unsigned x)
 {
     return {x};
 }
 inline stringify::v0::int_with_formatting<unsigned long>
-stringify_fmt(unsigned long x)
+make_fmt(stringify::v0::tag, unsigned long x)
 {
     return {x};
 }
 inline stringify::v0::int_with_formatting<unsigned long long>
-stringify_fmt(unsigned long long x)
+make_fmt(stringify::v0::tag, unsigned long long x)
 {
     return {x};
 }

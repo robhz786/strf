@@ -15,12 +15,12 @@ struct base
 
 
 template <typename CharOut, typename FPack, typename T>
-inline auto stringify_make_printer
+inline auto make_printer
     ( strf::output_writer<CharOut>& out
     , const FPack& fp
     , const base<T> b )
 {
-    return stringify_make_printer<CharOut, FPack>(out, fp, b.value);
+    return make_printer<CharOut, FPack>(out, fp, b.value);
 }
 
 

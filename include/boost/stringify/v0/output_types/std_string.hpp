@@ -112,7 +112,7 @@ auto append(std::basic_string<CharT, Traits, Allocator>& str)
 {
     using string_type = std::basic_string<CharT, Traits, Allocator>;
     using writer = boost::stringify::v0::detail::string_appender<string_type>;
-    return boost::stringify::v0::make_args_handler<writer, string_type&>(str);
+    return boost::stringify::v0::make_destination<writer, string_type&>(str);
 }
 
 
@@ -122,7 +122,7 @@ auto assign(std::basic_string<CharT, Traits, Allocator>& str)
     using string_type = std::basic_string<CharT, Traits, Allocator>;
     str.clear();
     using writer = boost::stringify::v0::detail::string_appender<string_type>;
-    return boost::stringify::v0::make_args_handler<writer, string_type&>(str);
+    return boost::stringify::v0::make_destination<writer, string_type&>(str);
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

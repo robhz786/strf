@@ -45,7 +45,7 @@ int main()
     struct dummy_type{};
 
     {
-        auto ft = strf::pack(
+        auto fp = strf::pack(
             f1_10,
             f2_20,
             f2_21,
@@ -53,10 +53,10 @@ int main()
             f3_30
         );
 
-        decltype(auto) f1i = strf::get_facet<facet_category<1>, int>(ft);
-        decltype(auto) f2d = strf::get_facet<facet_category<2>, double>(ft);
-        decltype(auto) f2i = strf::get_facet<facet_category<2>, int>(ft);
-        decltype(auto) f3i = strf::get_facet<facet_category<3>, int>(ft);
+        decltype(auto) f1i = strf::get_facet<facet_category<1>, int>(fp);
+        decltype(auto) f2d = strf::get_facet<facet_category<2>, double>(fp);
+        decltype(auto) f2i = strf::get_facet<facet_category<2>, int>(fp);
+        decltype(auto) f3i = strf::get_facet<facet_category<3>, int>(fp);
 
         static_assert(std::is_same<decltype(f1i), const facet_type<1>&>::value, "wrong type");
         static_assert(std::is_same<decltype(f2d), const facet_type<2>&>::value, "wrong type");
@@ -72,7 +72,7 @@ int main()
     {   // using std::reference_wrapper<Facet>
         // and constrained_faced<Filter, std::reference_wrapper<F>>
 
-        auto ft = strf::pack(
+        auto fp = strf::pack(
             std::ref(f1_10),
             std::cref(f2_20),
             strf::constrain<std::is_arithmetic>(std::ref(f2_21)),
@@ -80,11 +80,11 @@ int main()
             f3_30
         );
 
-        decltype(auto) f1i = strf::get_facet<facet_category<1>, int>(ft);
-        decltype(auto) f2t = strf::get_facet<facet_category<2>, dummy_type>(ft);
-        decltype(auto) f2d = strf::get_facet<facet_category<2>, double>(ft);
-        decltype(auto) f2i = strf::get_facet<facet_category<2>, int>(ft);
-        decltype(auto) f3i = strf::get_facet<facet_category<3>, int>(ft);
+        decltype(auto) f1i = strf::get_facet<facet_category<1>, int>(fp);
+        decltype(auto) f2t = strf::get_facet<facet_category<2>, dummy_type>(fp);
+        decltype(auto) f2d = strf::get_facet<facet_category<2>, double>(fp);
+        decltype(auto) f2i = strf::get_facet<facet_category<2>, int>(fp);
+        decltype(auto) f3i = strf::get_facet<facet_category<3>, int>(fp);
 
         static_assert(std::is_same<decltype(f1i), const facet_type<1>&>::value, "wrong type");
         static_assert(std::is_same<decltype(f2t), const facet_type<2>&>::value, "wrong type");
@@ -109,7 +109,7 @@ int main()
         auto constrained_f2_21 = strf::constrain<std::is_arithmetic>(f2_21);
         auto constrained_f2_22 = strf::constrain<std::is_integral>(f2_22);
 
-        auto ft = strf::pack(
+        auto fp = strf::pack(
             std::cref(f1_10),
             std::ref(f2_20),
             std::ref(constrained_f2_21),
@@ -117,11 +117,11 @@ int main()
             f3_30
         );
 
-        decltype(auto) f1i = strf::get_facet<facet_category<1>, int>(ft);
-        decltype(auto) f2t = strf::get_facet<facet_category<2>, dummy_type>(ft);
-        decltype(auto) f2d = strf::get_facet<facet_category<2>, double>(ft);
-        decltype(auto) f2i = strf::get_facet<facet_category<2>, int>(ft);
-        decltype(auto) f3i = strf::get_facet<facet_category<3>, int>(ft);
+        decltype(auto) f1i = strf::get_facet<facet_category<1>, int>(fp);
+        decltype(auto) f2t = strf::get_facet<facet_category<2>, dummy_type>(fp);
+        decltype(auto) f2d = strf::get_facet<facet_category<2>, double>(fp);
+        decltype(auto) f2i = strf::get_facet<facet_category<2>, int>(fp);
+        decltype(auto) f3i = strf::get_facet<facet_category<3>, int>(fp);
 
         static_assert(std::is_same<decltype(f1i), const facet_type<1>&>::value, "wrong type");
         static_assert(std::is_same<decltype(f2t), const facet_type<2>&>::value, "wrong type");
@@ -147,7 +147,7 @@ int main()
         auto constrained_ref_f2_21 = strf::constrain<std::is_arithmetic>(std::ref(f2_21));
         auto constrained_ref_f2_22 = strf::constrain<std::is_integral>(std::cref(f2_22));
 
-        auto ft = strf::pack(
+        auto fp = strf::pack(
             std::cref(f1_10),
             std::ref(f2_20),
             std::ref(constrained_ref_f2_21),
@@ -155,11 +155,11 @@ int main()
             f3_30
         );
 
-        decltype(auto) f1i = strf::get_facet<facet_category<1>, int>(ft);
-        decltype(auto) f2t = strf::get_facet<facet_category<2>, dummy_type>(ft);
-        decltype(auto) f2d = strf::get_facet<facet_category<2>, double>(ft);
-        decltype(auto) f2i = strf::get_facet<facet_category<2>, int>(ft);
-        decltype(auto) f3i = strf::get_facet<facet_category<3>, int>(ft);
+        decltype(auto) f1i = strf::get_facet<facet_category<1>, int>(fp);
+        decltype(auto) f2t = strf::get_facet<facet_category<2>, dummy_type>(fp);
+        decltype(auto) f2d = strf::get_facet<facet_category<2>, double>(fp);
+        decltype(auto) f2i = strf::get_facet<facet_category<2>, int>(fp);
+        decltype(auto) f3i = strf::get_facet<facet_category<3>, int>(fp);
 
         static_assert(std::is_same<decltype(f1i), const facet_type<1>&>::value, "wrong type");
         static_assert(std::is_same<decltype(f2t), const facet_type<2>&>::value, "wrong type");
@@ -185,16 +185,16 @@ int main()
         auto f2_20_empty_and_derives_from_x
             = strf::constrain<derives_from_x>(f2_20_empty);
 
-        auto ft = strf::pack
+        auto fp = strf::pack
             (
                 strf::constrain<std::is_empty>(f2_21),
                 strf::constrain<derives_from_x>(f2_22),
                 f2_20_empty_and_derives_from_x
             );
 
-        decltype(auto) xf2_20 = strf::get_facet<facet_category<2>, class_xa>(ft);
-        decltype(auto) xf2_22 = strf::get_facet<facet_category<2>, class_xb>(ft);
-        decltype(auto) xf2_21 = strf::get_facet<facet_category<2>, class_c>(ft);
+        decltype(auto) xf2_20 = strf::get_facet<facet_category<2>, class_xa>(fp);
+        decltype(auto) xf2_22 = strf::get_facet<facet_category<2>, class_xb>(fp);
+        decltype(auto) xf2_21 = strf::get_facet<facet_category<2>, class_c>(fp);
         static_assert(std::is_same<decltype(xf2_20), const facet_type<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_21), const facet_type<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_22), const facet_type<2>&>::value, "wrong type");
@@ -209,15 +209,15 @@ int main()
         auto f2_20_empty_and_derives_from_x
             = strf::constrain<derives_from_x>(std::ref(f2_20_empty));
 
-        auto ft = strf::pack
+        auto fp = strf::pack
             (
                 strf::constrain<std::is_empty>(std::cref(f2_21)),
                 strf::constrain<derives_from_x>(std::ref(f2_22)),
                 std::cref(f2_20_empty_and_derives_from_x)
             );
-        decltype(auto) xf2_20 = strf::get_facet<facet_category<2>, class_xa>(ft);
-        decltype(auto) xf2_22 = strf::get_facet<facet_category<2>, class_xb>(ft);
-        decltype(auto) xf2_21 = strf::get_facet<facet_category<2>, class_c>(ft);
+        decltype(auto) xf2_20 = strf::get_facet<facet_category<2>, class_xa>(fp);
+        decltype(auto) xf2_22 = strf::get_facet<facet_category<2>, class_xb>(fp);
+        decltype(auto) xf2_21 = strf::get_facet<facet_category<2>, class_c>(fp);
         static_assert(std::is_same<decltype(xf2_20), const facet_type<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_21), const facet_type<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_22), const facet_type<2>&>::value, "wrong type");

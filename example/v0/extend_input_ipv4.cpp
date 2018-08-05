@@ -30,14 +30,14 @@ struct ipv4_addr
 
 
 template <typename CharT, typename FPack>
-inline auto stringify_make_printer
+inline auto make_printer
     ( strf::output_writer<CharT>& out
-    , const FPack& ft
+    , const FPack& fp
     , ipv4_addr addr )
 {
-    (void)ft;
+    (void)fp;
     constexpr CharT dot('.');
-    return strf::stringify_make_printer<CharT, strf::facets_pack<>>
+    return strf::make_printer<CharT, strf::facets_pack<>>
         ( out
         , strf::facets_pack<>{}
         , strf::join()
@@ -68,14 +68,14 @@ public:
 };
 
 
-fmt_ipv4_addr stringify_fmt(ipv4_addr x)
+fmt_ipv4_addr make_fmt(strf::tag, ipv4_addr x)
 {
     return {x};
 }
 
 
 template <typename CharT, typename FPack>
-inline auto stringify_make_printer
+inline auto make_printer
     ( strf::output_writer<CharT>& out
     , const FPack& fp
     , fmt_ipv4_addr fmt_addr )
@@ -83,7 +83,7 @@ inline auto stringify_make_printer
     (void)fp;
     constexpr CharT dot('.');
 
-    return strf::stringify_make_printer<CharT, strf::facets_pack<>>
+    return strf::make_printer<CharT, strf::facets_pack<>>
         ( out
         , strf::facets_pack<>{}
         , strf::join(fmt_addr.width(), fmt_addr.alignment(), fmt_addr.fill())

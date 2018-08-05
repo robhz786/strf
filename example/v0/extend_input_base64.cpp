@@ -124,7 +124,7 @@ public:
 
     base64_printer_impl(base64_facet f) : m_facet(f) {};
 
-    std::size_t length(std::size_t num_bytes, int indentation) const
+    std::size_t necessary_size(std::size_t num_bytes, int indentation) const
     {
         std::size_t num_digits = 4 * (num_bytes + 2) / 3;
         std::size_t num_lines
@@ -203,9 +203,9 @@ public:
         return 0;
     }
 
-    std::size_t length() const override
+    std::size_t necessary_size() const override
     {
-        return m_impl.length(m_data.num_bytes, m_indentation);
+        return m_impl.necessary_size(m_data.num_bytes, m_indentation);
     }
 
     void write() const override
@@ -260,7 +260,7 @@ private:
 
 
 template <typename CharT, typename FPack>
-inline base64_printer<CharT> stringify_make_printer
+inline base64_printer<CharT> make_printer
     ( strf::output_writer<CharT>& out
     , const FPack& fp
     , const base64_tag& d )
@@ -269,7 +269,7 @@ inline base64_printer<CharT> stringify_make_printer
 }
 
 template <typename CharT, typename FPack>
-inline base64_printer<CharT> stringify_make_printer
+inline base64_printer<CharT> make_printer
     ( strf::output_writer<CharT>& out
     , const FPack& fp
     , const fmt_base64& f )
@@ -277,7 +277,7 @@ inline base64_printer<CharT> stringify_make_printer
     return {out, fp, f};
 }
 
-inline fmt_base64 stringify_fmt(const base64_tag& d)
+inline fmt_base64 make_fmt(strf::tag, const base64_tag& d)
 {
     return d;
 }

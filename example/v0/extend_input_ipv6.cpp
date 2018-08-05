@@ -210,28 +210,26 @@ private:
 
 
 template <typename CharOut, typename FPack>
-inline ipv6_printer<CharOut> stringify_make_printer
-    ( boost::stringify::v0::output_writer<CharOut>& ow
+inline ipv6_printer<CharOut> make_printer
+    ( strf::output_writer<CharOut>& ow
     , const FPack& fp
-    , const ipv6_addr& addr
-    )
+    , const ipv6_addr& addr )
 {
     (void)fp;
     return ipv6_printer<CharOut>{ow, addr};
 }
 
 template <typename CharOut, typename FPack>
-inline ipv6_printer<CharOut> stringify_make_printer
-    ( boost::stringify::v0::output_writer<CharOut>& ow
+inline ipv6_printer<CharOut> make_printer
+    ( strf::output_writer<CharOut>& ow
     , const FPack& fp
-    , const fmt_ipv6& addr
-    )
+    , const fmt_ipv6& addr )
 {
     (void)fp;
     return ipv6_printer<CharOut>{ow, addr};
 }
 
-inline fmt_ipv6 stringify_fmt(const ipv6_addr& addr)
+inline fmt_ipv6 make_fmt(strf::tag, const ipv6_addr& addr)
 {
     return {addr};
 }

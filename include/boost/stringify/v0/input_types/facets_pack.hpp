@@ -16,7 +16,7 @@ namespace detail {
 template <typename FPack, typename ... Args>
 struct inner_pack_with_args
 {
-    const FPack& ft;
+    const FPack& fp;
     stringify::v0::detail::args_tuple<Args...> args;
 };
 
@@ -24,14 +24,14 @@ struct inner_pack_with_args
 template <typename FPack>
 struct inner_pack
 {
-    FPack ft;
+    FPack fp;
 
     template <typename ... Args>
     stringify::v0::detail::inner_pack_with_args<FPack, Args...>
     operator()(const Args& ... args)
     {
         return stringify::v0::detail::inner_pack_with_args<FPack, Args...>
-            { ft
+            { fp
             , stringify::v0::detail::args_tuple<Args...>{args ...}
             };
     }
@@ -40,14 +40,14 @@ struct inner_pack
 template <typename FPack>
 struct inner_pack_ref
 {
-    const FPack& ft;
+    const FPack& fp;
 
     template <typename ... Args>
     stringify::v0::detail::inner_pack_with_args<FPack, Args...>
     operator()(const Args& ... args)
     {
         return stringify::v0::detail::inner_pack_with_args<FPack, Args...>
-            { ft
+            { fp
             , stringify::v0::detail::args_tuple<Args...>{args ...}
             };
     }
@@ -71,12 +71,12 @@ public:
     {
     }
 
-    std::size_t length() const override
+    std::size_t necessary_size() const override
     {
         std::size_t sum = 0;
         for(const auto* arg : m_args)
         {
-            sum += arg->length();
+            sum += arg->necessary_size();
         }
         return sum;
     }
@@ -125,10 +125,10 @@ public:
 
     facets_pack_printer
         ( stringify::v0::output_writer<CharT>& out
-        , const ParentFPack& parent_ft
+        , const ParentFPack& parent_fp
         , const stringify::v0::detail::inner_pack_with_args<ChildFPack, Args...>& args
         )
-        : stringify::v0::facets_pack<ParentFPack, ChildFPack>{parent_ft, args.ft}
+        : stringify::v0::facets_pack<ParentFPack, ChildFPack>{parent_fp, args.fp}
         , fmt_group{out, *this, args.args}
         , stringify::v0::detail::pp_range_printer<CharT>{fmt_group::range()}
     {
@@ -154,11 +154,11 @@ public:
 //         , Args...
 //         >
 //     make_printer
-//         ( const ParentFPack& ft
+//         ( const ParentFPack& fp
 //         , const detail::inner_pack_with_args<ChildFPack, Args...>& x
 //         )
 //     {
-//         return {ft, x};
+//         return {fp, x};
 //     }
 // };
 
@@ -229,12 +229,12 @@ facets(const Facets& ... facets)
 
 template <typename ... Facets>
 stringify::v0::detail::inner_pack_ref<stringify::v0::facets_pack<Facets ...>>
-facets(const stringify::v0::facets_pack<Facets...>& ft)
+facets(const stringify::v0::facets_pack<Facets...>& fp)
 {
     static_assert
         ( stringify::v0::detail::all_are_constrainable<Facets...>::value
         , "All facet categories must be constrainable" );
-    return {ft};
+    return {fp};
 }
 
 template
@@ -244,13 +244,13 @@ template
    , typename ... Args
    >
 inline stringify::v0::detail::facets_pack_printer<CharT, FPack, ChildFPack, Args...>
-stringify_make_printer
+make_printer
    ( stringify::v0::output_writer<CharT>& out
-   , const FPack& ft
+   , const FPack& fp
    , const stringify::v0::detail::inner_pack_with_args<ChildFPack, Args...>& fmt
    )
 {
-    return {out, ft, fmt};
+    return {out, fp, fmt};
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
