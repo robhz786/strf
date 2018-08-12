@@ -818,6 +818,8 @@ public:
 template <typename CharOut>
 class piecemeal_writer
 {
+    enum e_status {waiting_more, successfully_complete, error_reported};
+
 public:
 
     virtual ~piecemeal_writer()
@@ -826,20 +828,41 @@ public:
 
     virtual CharOut* write(CharOut* dest_begin, CharOut* dest_end) = 0;
 
-    bool more()
+    bool more() const
     {
-        return m_status == stringify::v0::cv_result::insufficient_space;
+        return m_status == waiting_more;
     }
 
-    bool success()
+    bool success() const
     {
-        return m_status == stringify::v0::cv_result::success;
+        return m_status == successfully_complete;
+    }
+
+    std::error_code get_error() const
+    {
+        return m_err;
     }
 
 protected:
 
-    stringify::v0::cv_result m_status
-    = stringify::v0::cv_result::insufficient_space;
+    void report_error(std::error_code err)
+    {
+        BOOST_ASSERT(err != std::error_code{});
+        BOOST_ASSERT(m_status == waiting_more);
+        m_err = err;
+        m_status = error_reported;
+    }
+
+    void report_success()
+    {
+        BOOST_ASSERT(m_status == waiting_more);
+        m_status = successfully_complete;
+    }
+
+private:
+
+    std::error_code m_err;
+    e_status m_status = waiting_more;
 };
 
 namespace detail {
@@ -850,12 +873,14 @@ class str_pm_writer: public stringify::v0::piecemeal_writer<CharOut>
 public:
     str_pm_writer
         ( const stringify::v0::transcoder<CharIn, CharOut>& trans
-        , stringify::v0::output_writer<CharOut>& out
+        , stringify::v0::error_signal err_sig
+        , bool allow_surrogates
         , const CharIn* src_it
         , const CharIn* src_end )
         noexcept
         : m_trans(trans)
-        , m_out(out)
+        , m_err_sig(err_sig)
+        , m_allow_surrogates(allow_surrogates)
         , m_src_it(src_it)
         , m_src_end(src_end)
     {
@@ -866,7 +891,8 @@ public:
 private:
 
     const stringify::v0::transcoder<CharIn, CharOut>& m_trans;
-    stringify::v0::output_writer<CharOut>& m_out;
+    const stringify::v0::error_signal m_err_sig;
+    const bool m_allow_surrogates;
     const CharIn* m_src_it;
     const CharIn* m_src_end;
 };
@@ -875,8 +901,14 @@ template <typename CharOut>
 class char32_pm_writer: public stringify::v0::piecemeal_writer<CharOut>
 {
 public:
-    char32_pm_writer(stringify::v0::output_writer<CharOut>& out, char32_t ch) noexcept
-        : m_out(out)
+    char32_pm_writer
+        ( const stringify::v0::encoder<CharOut>& encoder
+        , stringify::v0::error_signal err_sig
+        , bool allow_surrogates
+        , char32_t ch ) noexcept
+        : m_encoder(encoder)
+        , m_err_sig(err_sig)
+        , m_allow_surrogates(allow_surrogates)
         , m_char(ch)
     {
     }
@@ -885,7 +917,9 @@ public:
 
 private:
 
-    stringify::v0::output_writer<CharOut>& m_out;
+    const stringify::v0::encoder<CharOut>& m_encoder;
+    const stringify::v0::error_signal m_err_sig;
+    const bool m_allow_surrogates;
     char32_t m_char;
 };
 
@@ -894,11 +928,15 @@ class repeated_char32_pm_writer: public stringify::v0::piecemeal_writer<CharOut>
 {
 public:
     repeated_char32_pm_writer
-        ( stringify::v0::output_writer<CharOut>& out
+        ( const stringify::v0::encoder<CharOut>& encoder
+        , stringify::v0::error_signal err_sig
+        , bool allow_surrogates
         , std::size_t count
         , char32_t ch )
         noexcept
-        : m_out(out)
+        : m_encoder(encoder)
+        , m_err_sig(err_sig)
+        , m_allow_surrogates(allow_surrogates)
         , m_count(count)
         , m_char(ch)
     {
@@ -908,7 +946,9 @@ public:
 
 private:
 
-    stringify::v0::output_writer<CharOut>& m_out;
+    const stringify::v0::encoder<CharOut>& m_encoder;
+    const stringify::v0::error_signal m_err_sig;
+    const bool m_allow_surrogates;
     std::size_t m_count;
     char32_t m_char;
 };
@@ -976,7 +1016,7 @@ public:
         return m_allow_surr;
     }
 
-    const auto& on_error() const
+    const auto& on_encoding_error() const
     {
         return m_encoding_err;
     }
@@ -986,14 +1026,6 @@ public:
         return encoder().necessary_size(ch, allow_surrogates());
     }
 
-    //bool signal_encoding_error();
-
-    void set_error_invalid_char()
-    {
-        set_error(std::make_error_code(std::errc::illegal_byte_sequence));
-    }
-
-
     template <typename CharIn>
     bool put
         ( const stringify::v0::transcoder<CharIn, CharOut>& trans
@@ -1001,20 +1033,21 @@ public:
         , const CharIn* src_end )
     {
         stringify::v0::detail::str_pm_writer<CharIn, CharOut> src
-            ( trans, *this, src_begin, src_end );
+            { trans, m_encoding_err, m_allow_surr, src_begin, src_end };
         return put(src);
     }
 
     bool put32(std::size_t count, char32_t ch)
     {
         stringify::v0::detail::repeated_char32_pm_writer<CharOut> src
-            { *this, count, ch };
+            { encoder(), m_encoding_err, m_allow_surr, count, ch };
         return put(src);
     }
 
     bool put32(char32_t ch)
     {
-        stringify::v0::detail::char32_pm_writer<CharOut> src{*this, ch};
+        stringify::v0::detail::char32_pm_writer<CharOut> src
+            { encoder(), m_encoding_err, m_allow_surr, ch};
         return put(src);
     }
 
@@ -1457,7 +1490,7 @@ public:
             : m_transcoder->necessary_size
                 ( begin
                 , end
-                , m_out.on_error()
+                , on_encoding_error()
                 , allow_surrogates() );
     }
     std::size_t necessary_size(const CharIn* begin, std::size_t count) const
@@ -1467,7 +1500,7 @@ public:
             : m_transcoder->necessary_size
                 ( begin
                 , begin + count
-                , m_out.on_error()
+                , on_encoding_error()
                 , allow_surrogates() );
     }
 
@@ -1487,9 +1520,9 @@ public:
         return m_out.necessary_size(ch);
     }
 
-    const auto& on_error() const
+    const auto& on_encoding_error() const
     {
-        return m_out.on_error();
+        return m_out.on_encoding_error();
     }
 
     bool allow_surrogates() const
@@ -1989,24 +2022,17 @@ CharOut* str_pm_writer<CharIn, CharOut>::write
         , m_src_end
         , dest_begin
         , dest_end
-        , m_out.on_error()
-        , m_out.allow_surrogates() );
+        , m_err_sig
+        , m_allow_surrogates );
 
-    this->m_status = res.result;
-    if(res.result == stringify::v0::cv_result::invalid_char)
+    if(res.result == stringify::v0::cv_result::success)
     {
-        if(m_out.on_error().has_error_code())
-        {
-            m_out.set_error(m_out.on_error().get_error_code());
-        }
-        else if(m_out.on_error().has_function())
-        {
-            m_out.on_error().get_function()();
-        }
-        else
-        {
-            m_out.set_error_invalid_char();
-        }
+        this->report_success();
+    }
+    else if(res.result == stringify::v0::cv_result::invalid_char)
+    {
+        BOOST_ASSERT(m_err_sig.has_error_code());
+        this->report_error(m_err_sig.get_error_code());
     }
     BOOST_ASSERT(m_src_it <= res.src_it);
     BOOST_ASSERT(res.src_it <= m_src_end);
@@ -2021,42 +2047,24 @@ CharOut* char32_pm_writer<CharOut>::write
     ( CharOut* dest_begin
     , CharOut* dest_end )
 {
-    CharOut* it = m_out.encoder().encode
+    CharOut* it = m_encoder.encode
         ( m_char
         , dest_begin
         , dest_end
-        , m_out.allow_surrogates() );
+        , m_allow_surrogates );
 
     if(it == nullptr)
     {
-        if(m_out.on_error().skip())
-        {
-            return dest_begin;
-        }
-        if(m_out.on_error().has_char())
-        {
-            auto echar = m_out.on_error().get_char();
-            m_char = echar == m_char ? U'?' : echar;
-            return write(dest_begin, dest_end);
-        }
-        else if(m_out.on_error().has_error_code())
-        {
-            m_out.set_error(m_out.on_error().get_error_code());
-        }
-        else if(m_out.on_error().has_function())
-        {
-            m_out.on_error().get_function()();
-        }
-        this->m_status = stringify::v0::cv_result::invalid_char;
+        BOOST_ASSERT(m_err_sig.has_error_code());
+        this->report_error(m_err_sig.get_error_code());
         return dest_begin;
     }
     if(it != dest_end + 1)
     {
         BOOST_ASSERT(dest_begin < it && it <= dest_end);
-        this->m_status = stringify::v0::cv_result::success;
+        this->report_success();
         return it;
     }
-    this->m_status = stringify::v0::cv_result::insufficient_space;
     return dest_begin;
 }
 
@@ -2065,47 +2073,26 @@ CharOut* repeated_char32_pm_writer<CharOut>::write
     ( CharOut* dest_begin
     , CharOut* dest_end )
 {
-    auto res = m_out.encoder().encode
+    auto res = m_encoder.encode
         ( m_count
         , m_char
         , dest_begin
         , dest_end
-        , m_out.allow_surrogates() );
+        , m_allow_surrogates );
 
     if(res.dest_it == nullptr)
     {
-        if(m_out.on_error().has_char())
-        {
-            auto echar = m_out.on_error().get_char();
-            m_char = echar == m_char ? U'?' : echar;
-            return write(dest_begin, dest_end);
-        }
-        if(m_out.on_error().skip())
-        {
-            return dest_begin;
-        }
-        if(m_out.on_error().has_error_code())
-        {
-            m_out.set_error(m_out.on_error().get_error_code());
-        }
-        else if(m_out.on_error().has_function())
-        {
-            m_out.on_error().get_function()();
-        }
-        this->m_status = stringify::v0::cv_result::invalid_char;
+        BOOST_ASSERT(m_err_sig.has_error_code());
+        this->report_error(m_err_sig.get_error_code());
         return dest_begin;
     }
     if(res.count == m_count)
     {
         BOOST_ASSERT(dest_begin < res.dest_it || m_count == 0);
         BOOST_ASSERT(res.dest_it <= dest_end);
-        this->m_status = stringify::v0::cv_result::success;
+        this->report_success();
     }
-    else
-    {
-        m_count -= res.count;
-        this->m_status = stringify::v0::cv_result::insufficient_space;
-    }
+    m_count -= res.count;
     return res.dest_it;
 }
 

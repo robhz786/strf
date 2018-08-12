@@ -168,7 +168,7 @@ int sep_range_printer<CharOut, CharIn, FPack, ForwardIt>::remaining_width(int w)
                     , m_sep_begin
                     , m_sep_end
                     , decoder
-                    , m_sw.on_error()
+                    , m_sw.on_encoding_error()
                     , m_sw.allow_surrogates() );
                 sep_width = w_prev - w;
             }
@@ -472,7 +472,7 @@ int fmt_sep_range_printer<CharOut, CharIn, FPack, ForwardIt>::remaining_width(in
                     , m_fmt.sep_begin()
                     , m_fmt.sep_end()
                     , decoder
-                    , m_sw.on_error()
+                    , m_sw.on_encoding_error()
                     , m_sw.allow_surrogates() );
                 sep_width = w_prev - w;
             }

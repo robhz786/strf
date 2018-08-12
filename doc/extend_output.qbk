@@ -60,7 +60,7 @@ Given
 ``
 namespace boost { namespace stringify { inline namespace v0 {
 
-template <typename CharT>
+template<typename CharT>
 class output_writer
 {
 public:
@@ -82,6 +82,25 @@ public:
     virtual bool put(std::size_t count, CharT ch) = 0;
 
     virtual bool put(piecemeal_writer<CharT>& src) = 0;
+
+    std::size_t necessary_size(char32_t ch) const;
+
+    bool put32(char32_t ch);
+
+    bool put32(std::size_t count, char32_t ch);
+
+    template<typename CharIn>
+    bool put( const stringify::v0::transcoder<CharIn, CharOut>& trans
+            , const CharIn* src_begin
+            , const CharIn* src_end );
+
+    const stringify::v0::encoder<CharOut>& encoder() const;
+
+    stringify::v0::encoding<CharOut> encoding() const;
+
+    bool allow_surrogates() const;
+
+    const auto& on_encoding_error() const;
 };
 
 }}} // namespace boost::stringify::v0
@@ -104,13 +123,6 @@ public:
 ``
 namespace boost { namespace stringify { inline namespace v0 {
 
-enum class cv_result
-{
-    success,
-    invalid_char,
-    insufficient_space
-};
-
 template <typename CharT>
 class piecemeal_writer
 {
@@ -118,19 +130,14 @@ public:
 
     virtual CharT* get(CharT* dest_begin, CharT* dest_end) = 0;
 
-    bool more()
-    {
-        return m_status == cv_result::insufficient_space;
-    }
-
-    bool success()
-    {
-        return m_status == cv_result::success;
-    }
+    bool more() const;
+    bool success() const;
+    std::error_code get_error() const;
 
 protected:
 
-    cv_result m_status = cv_result::insufficient_space;
+    void report_success();
+    void report_error(std::error_code);
 };
 
 }}} // namespace boost::stringify::v0
@@ -139,9 +146,9 @@ protected:
 If there is not enough space, a subsequent call to `more()` returns `true`, meaning that `get` must be called again,
 with the pointer returned in the previous call as the first argument.
 ( the return of `get(dest_begin, dest_out)` is [_not] necessarily equal to `dest_end` when there is not enough space ).
-If `get` fails for some other reason, then `more()` and `success()` will subsequently return `false`.
+If `get` fails for some other reason, then `more()` and `success()` will subsequently return `false`. `success()` returns `true` only after all content is succesfully written. So, only after `more()` returns `false`, you shall call `success()` to check whether any error happened. Calling `get()` after `more()` returned `false` produces undefined behavior.
 
-`success()` returns `true` only after all content is succesfully written. So, only after `more()` returns `false`, you shall call `success()` to check whether any error happened.
+The implementation of `get()` shall call either `report_success` or `report_error` when there is nothing else to be written. This will make `more()` to return `false`. While neither `report_success` nor `report_error` is called, `more()` returns `true`.
 
 
 [h3 The `buffered_writer` class template]

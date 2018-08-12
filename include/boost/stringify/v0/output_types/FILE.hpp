@@ -53,26 +53,27 @@ public:
 
     bool put(stringify::v0::piecemeal_writer<char_type>& src) final
     {
-        if (m_good)
+        if (!m_good)
         {
-            do
-            {
-                m_it = src.write(m_it, m_end);
-            }
-            while(src.more() && do_flush());
-            if( ! m_good)
-            {
-                // set_error has been called. Force flush
-                if(m_it != m_buff)
-                {
-                    do_put(m_buff, m_it - m_buff);
-                    m_it = m_buff;
-                }
-            }
-            else
-            {
-                m_good = src.success();
-            }
+            return false;
+        }
+
+        do
+        {
+            m_it = src.write(m_it, m_end);
+        }
+        while(src.more() && do_flush());
+
+        if(m_it != m_buff)
+        {
+            m_good = do_put(m_buff, m_it - m_buff);
+            m_it = m_buff;
+        }
+        if(! src.success())
+        {
+            BOOST_ASSERT(m_err == std::error_code{});
+            m_err = src.get_error();
+            m_good = false;
         }
         return m_good;
     }

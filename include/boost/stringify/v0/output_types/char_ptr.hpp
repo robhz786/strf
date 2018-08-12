@@ -81,7 +81,12 @@ public:
             set_overflow_error();
             return false;
         }
-        return src.success();
+        if(src.success())
+        {
+            return true;
+        }
+        set_error(src.get_error());
+        return false;
     };
 
     

@@ -121,8 +121,12 @@ public:
             m_it = src.write(m_it, m_end);
         }
         while(src.more() && (resize(), true));
-
-        return src.success();        
+        if(src.success())
+        {
+            return true;
+        }
+        set_error(src.get_error());
+        return false;
     }
     
     // bool put32(char32_t ch) override

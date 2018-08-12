@@ -13,6 +13,11 @@ public:
     {
     }
 
+    ~QStringCreator()
+    {
+        this->flush();
+    }
+
     void reserve(std::size_t size)
     {
         Q_ASSERT(size < static_cast<std::size_t>(INT_MAX));
