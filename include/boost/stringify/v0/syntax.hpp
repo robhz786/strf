@@ -531,7 +531,7 @@ template <typename CharOut, typename FPack, typename Arg>
 using printer_impl
 = decltype(make_printer<CharOut, FPack>
              ( *(stringify::v0::output_writer<CharOut>*)(nullptr)
-             , *(const FPack*)(nullptr)
+             , std::declval<FPack>()//*(const FPack*)(nullptr)
              , std::declval<Arg>() ) );
 
 template <typename OutputWriter, typename ... Args>

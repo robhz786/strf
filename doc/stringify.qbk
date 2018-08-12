@@ -26,7 +26,7 @@ __STD_EXPECTED__
 [include:encoding_conversion encoding_conversion.qbk]
 [include:numpunct_facets numpunct_facets.qbk]
 [include:facet_width_calculation facet_width_calculation.qbk]
-[include:extend_input extend_input.qbk]
 [include:extend_output extend_output.qbk]
+[include:extend_input extend_input.qbk]
 
 [include:benchmarks benchmarks.qbk]

@@ -194,13 +194,15 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class buffered_writer<wchar_t>;
 
 #endif
 
+constexpr std::size_t BOOST_STRINGIFY_MIN_BUFFER_SIZE = 60;
+
 namespace detail {
 
 template <typename CharT>
 class narrow_file_writer final: public stringify::v0::buffered_writer<CharT>
 {
 public:
-    constexpr static std::size_t buff_size = 60;
+    constexpr static std::size_t buff_size = BOOST_STRINGIFY_MIN_BUFFER_SIZE;
 
 private:
     CharT buff[buff_size];

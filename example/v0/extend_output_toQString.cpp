@@ -15,7 +15,7 @@ public:
 
     ~QStringCreator()
     {
-        this->flush();
+        this->discard();
     }
 
     void reserve(std::size_t size)
@@ -42,7 +42,7 @@ private:
 
     QString m_str;
 
-    constexpr static std::size_t buffer_size = 60;
+    constexpr static std::size_t buffer_size = BOOST_STRINGIFY_MIN_BUFFER_SIZE;
     char16_t buffer[buffer_size];
     QChar    qchar_buffer[buffer_size];
 };

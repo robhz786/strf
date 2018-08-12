@@ -1725,12 +1725,13 @@ public:
     virtual int remaining_width(int w) const = 0;
 };
 
+
 template <typename CharOut>
-class stream
+class printers_receiver
 {
 public:
 
-    virtual ~stream()
+    virtual ~printers_receiver()
     {
     }
 
@@ -1740,11 +1741,11 @@ public:
 namespace detail {
 
 template <typename CharOut>
-class width_dec_stream: public stream<CharOut>
+class width_subtracter: public printers_receiver<CharOut>
 {
 public:
 
-    width_dec_stream(int w)
+    width_subtracter(int w)
         : m_width(w)
     {
     }
@@ -1762,18 +1763,18 @@ private:
 };
 
 template <typename CharOut>
-bool width_dec_stream<CharOut>::put(const stringify::v0::printer<CharOut>& p)
+bool width_subtracter<CharOut>::put(const stringify::v0::printer<CharOut>& p)
 {
     m_width = p.remaining_width(m_width);
     return m_width > 0;
 }
 
 template <typename CharOut>
-class length_acc_stream: public stream<CharOut>
+class necessary_size_sum: public printers_receiver<CharOut>
 {
 public:
 
-    length_acc_stream() = default;
+    necessary_size_sum() = default;
 
     bool put(const stringify::v0::printer<CharOut>& p) override;
 
@@ -1788,24 +1789,24 @@ private:
 };
 
 template <typename CharOut>
-bool length_acc_stream<CharOut>::put(const stringify::v0::printer<CharOut>& p)
+bool necessary_size_sum<CharOut>::put(const stringify::v0::printer<CharOut>& p)
 {
     m_len += p.necessary_size();
     return true;
 }
 
 template <typename CharOut>
-class writer_stream: public stream<CharOut>
+class serial_writer: public printers_receiver<CharOut>
 {
 public:
 
-    writer_stream() = default;
+    serial_writer() = default;
 
     bool put(const stringify::v0::printer<CharOut>& p) override;
 };
 
 template <typename CharOut>
-bool writer_stream<CharOut>::put(const stringify::v0::printer<CharOut>& p)
+bool serial_writer<CharOut>::put(const stringify::v0::printer<CharOut>& p)
 {
     p.write();
     return true;
@@ -1814,11 +1815,11 @@ bool writer_stream<CharOut>::put(const stringify::v0::printer<CharOut>& p)
 } // namespace detail
 
 template <typename CharOut>
-class streamed_printer: public stringify::v0::printer<CharOut>
+class dynamic_join_printer: public stringify::v0::printer<CharOut>
 {
 public:
 
-    streamed_printer(stringify::v0::output_writer<CharOut>& out)
+    dynamic_join_printer(stringify::v0::output_writer<CharOut>& out)
         : m_out(out)
     {
     }
@@ -1831,9 +1832,9 @@ public:
 
 protected:
 
-    virtual stringify::v0::align_formatting<void> formatting() const = 0;
+    virtual stringify::v0::align_formatting<void> formatting() const;
 
-    virtual void compose(stringify::v0::stream<CharOut>& out) const = 0;
+    virtual void compose(stringify::v0::printers_receiver<CharOut>& out) const = 0;
 
 private:
 
@@ -1844,27 +1845,33 @@ private:
     stringify::v0::output_writer<CharOut>& m_out;
 };
 
+template <typename CharOut>
+stringify::v0::align_formatting<void>
+dynamic_join_printer<CharOut>::formatting() const
+{
+    return {};
+}
 
 template <typename CharOut>
-std::size_t streamed_printer<CharOut>::necessary_size() const
+std::size_t dynamic_join_printer<CharOut>::necessary_size() const
 {
     std::size_t fill_len = 0;
     const auto fmt = formatting();
     if(fmt.width() > 0)
     {
-        stringify::v0::detail::width_dec_stream<CharOut> wds{fmt.width()};
+        stringify::v0::detail::width_subtracter<CharOut> wds{fmt.width()};
         compose(wds);
         std::size_t fillcount = wds.remaining_width();
         fill_len = m_out.necessary_size(fmt.fill()) * fillcount;
     }
 
-    stringify::v0::detail::length_acc_stream<CharOut> s;
+    stringify::v0::detail::necessary_size_sum<CharOut> s;
     compose(s);
     return s.accumulated_length() + fill_len;
 }
 
 template <typename CharOut>
-int streamed_printer<CharOut>::remaining_width(int w) const
+int dynamic_join_printer<CharOut>::remaining_width(int w) const
 {
     const auto fmt_width = formatting().width();
     if (fmt_width > w)
@@ -1872,20 +1879,20 @@ int streamed_printer<CharOut>::remaining_width(int w) const
         return 0;
     }
 
-    stringify::v0::detail::width_dec_stream<CharOut> s{w};
+    stringify::v0::detail::width_subtracter<CharOut> s{w};
     compose(s);
     int rw = s.remaining_width();
     return (w - rw < fmt_width) ? (w - fmt_width) : rw;
 }
 
 template <typename CharOut>
-void streamed_printer<CharOut>::write() const
+void dynamic_join_printer<CharOut>::write() const
 {
     auto fmt = formatting();
     auto fillcount = fmt.width();
     if(fillcount > 0)
     {
-        stringify::v0::detail::width_dec_stream<CharOut> wds{fillcount};
+        stringify::v0::detail::width_subtracter<CharOut> wds{fillcount};
         compose(wds);
         fillcount = wds.remaining_width();
     }
@@ -1900,14 +1907,14 @@ void streamed_printer<CharOut>::write() const
 }
 
 template <typename CharOut>
-void streamed_printer<CharOut>::write_without_fill() const
+void dynamic_join_printer<CharOut>::write_without_fill() const
 {
-    stringify::v0::detail::writer_stream<CharOut> s;
+    stringify::v0::detail::serial_writer<CharOut> s;
     compose(s);
 }
 
 template <typename CharOut>
-void streamed_printer<CharOut>::write_with_fill(int fillcount) const
+void dynamic_join_printer<CharOut>::write_with_fill(int fillcount) const
 {
     auto fmt = formatting();
     switch (fmt.alignment())

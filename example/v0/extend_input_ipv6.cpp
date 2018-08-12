@@ -6,13 +6,14 @@ namespace strf = boost::stringify::v0;
 
 namespace xxx {
 
-struct ipv6_addr
+//[ ipv6_address
+struct ipv6_address
 {
     std::uint16_t hextets[8];
 };
+//]
 
-
-static int abbreviation(ipv6_addr addr)
+static int abbreviation(ipv6_address addr)
 {
     const auto* const begin  = & addr.hextets[0];
     const auto* const end    = & addr.hextets[8];
@@ -40,33 +41,38 @@ static int abbreviation(ipv6_addr addr)
                      (0xFF << (greatest_zgroup_idx + greatest_zgroup_size))));
 }
 
-
+//[ ipv6_formatting
 template <class T>
 class ipv6_formatting: public strf::align_formatting<T>
 {
-
-    using derived = strf::fmt_derived<ipv6_formatting<T>, T>;
+  /*<< `fmt_derived<This, Derived>` is an alias to `This` when `Derived`
+        is `void`, otherwise it is an alias to `Derived`
+>>*/using derived_type = strf::fmt_derived<ipv6_formatting<T>, T>;
 
 public:
 
-    template <typename U>
+  /*<< This template alias is a required by [link ranges `fmt_range`]
+>>*/template <typename U>
     using fmt_other = ipv6_formatting<U>;
 
-    constexpr ipv6_formatting() = default;
+  /*<< Default constructor is also a required by [link ranges `fmt_range`]
+>>*/constexpr ipv6_formatting() = default;
 
     constexpr ipv6_formatting(const ipv6_formatting&) = default;
 
-    template <typename U>
+  /*<< This kind of copy constructor template is also required by [link ranges `fmt_range`]
+       ( it has to be a template like this )
+>>*/template <typename U>
     constexpr ipv6_formatting(const ipv6_formatting<U>& u)
         : strf::align_formatting<T>(u)
         , m_abbreviate(u.abbreviated())
     {
     }
 
-    constexpr derived&& abbreviate() &&
+    constexpr derived_type&& abbreviate() &&
     {
         m_abbreviate = true;
-        return static_cast<derived&&>(*this);
+        return static_cast<derived_type&&>(*this);
     }
 
     constexpr bool abbreviated() const
@@ -80,165 +86,195 @@ private:
 
     bool m_abbreviate = false;
 };
+//]
 
-
+//[ fmt_ipv6
 class fmt_ipv6: public ipv6_formatting<fmt_ipv6>
 {
 public:
 
     fmt_ipv6(const fmt_ipv6&) = default;
 
-    fmt_ipv6(ipv6_addr a) : addr(a) {}
+    fmt_ipv6(ipv6_address a) : addr(a) {}
 
-    template <typename U>
-    fmt_ipv6(ipv6_addr a, const ipv6_formatting<U>& fmt)
+ /*<< This constructor template is required by [link ranges fmt_range].
+    The first argument will be `*it`, where `it` is an iterator of the range.
+>>*/template <typename U>
+    fmt_ipv6(ipv6_address a, const ipv6_formatting<U>& fmt)
         : ipv6_formatting<fmt_ipv6>(fmt)
         , addr(a)
     {
     }
 
-    ipv6_addr addr;
+    ipv6_address addr;
 };
 
 
-template <typename CharOut>
-class ipv6_printer: public strf::streamed_printer<CharOut>
+inline fmt_ipv6 make_fmt(strf::tag, const ipv6_address& addr)
+{
+    return {addr};
+}
+//]
+
+//[ ipv6_printer
+template <typename CharT>
+class ipv6_printer: public strf::dynamic_join_printer<CharT>
 {
 public:
 
-    ipv6_printer(strf::output_writer<CharOut>& out, ipv6_addr addr)
-        : strf::streamed_printer<CharOut>{out}
-        , m_fmt(addr)
-        , m_hextets
-            { {out, fp, strf::hex(addr.hextets[0])}
-            , {out, fp, strf::hex(addr.hextets[1])}
-            , {out, fp, strf::hex(addr.hextets[2])}
-            , {out, fp, strf::hex(addr.hextets[3])}
-            , {out, fp, strf::hex(addr.hextets[4])}
-            , {out, fp, strf::hex(addr.hextets[5])}
-            , {out, fp, strf::hex(addr.hextets[6])}
-            , {out, fp, strf::hex(addr.hextets[7])} }
-        , m_colon{out, fp, static_cast<CharOut>(':')}
-
-    {
-    }
-
-    ipv6_printer(strf::output_writer<CharOut>& out, fmt_ipv6 fmt)
-        : strf::streamed_printer<CharOut>{out}
-        , m_fmt(fmt)
-        , m_hextets
-            { {out, fp, strf::hex(fmt.addr.hextets[0])}
-            , {out, fp, strf::hex(fmt.addr.hextets[1])}
-            , {out, fp, strf::hex(fmt.addr.hextets[2])}
-            , {out, fp, strf::hex(fmt.addr.hextets[3])}
-            , {out, fp, strf::hex(fmt.addr.hextets[4])}
-            , {out, fp, strf::hex(fmt.addr.hextets[5])}
-            , {out, fp, strf::hex(fmt.addr.hextets[6])}
-            , {out, fp, strf::hex(fmt.addr.hextets[7])} }
-        , m_colon{out, fp, static_cast<CharOut>(':')}
-
-    {
-    }
+    ipv6_printer(strf::output_writer<CharT>& out, fmt_ipv6 fmt);
 
 protected:
 
-    void compose(strf::stream<CharOut>& out) const override
-    {
-        if(m_fmt.abbreviated())
-        {
-            compose_abbreviated(out);
-        }
-        else
-        {
-            compose_non_abbreviated(out);
-        }
-    }
-
-    strf::align_formatting<void> formatting() const override
-    {
-        return m_fmt;
-    }
+    void compose(strf::printers_receiver<CharT>& out) const override;
+    strf::align_formatting<void> formatting() const override;
 
 private:
 
-    void compose_non_abbreviated(strf::stream<CharOut>& out) const
-    {
-        bool cont = out.put(m_hextets[0]);
-        for(int i = 1; cont && i < 8; ++i)
-        {
-            cont = cont
-                && out.put(m_colon)
-                && out.put(m_hextets[i]);
-        }
-    }
-
-
-    void compose_abbreviated(strf::stream<CharOut>& out) const
-    {
-        int abbr_bits = abbreviation(m_fmt.addr);
-        bool prev_show = true;
-        for (int i = 0; i < 8; ++i)
-        {
-            bool show_hextet = abbr_bits & 1;
-            if (show_hextet)
-            {
-                if(i > 0)
-                {
-                    out.put(m_colon);
-                }
-                out.put(m_hextets[i]);
-            }
-            else if(prev_show)
-            {
-                out.put(m_colon);
-            }
-            prev_show = show_hextet;
-            abbr_bits = abbr_bits >> 1;
-        }
-        if (!prev_show)
-        {
-            out.put(m_colon);
-        }
-    }
-
+    void compose_non_abbreviated(strf::printers_receiver<CharT>& out) const;
+    void compose_abbreviated(strf::printers_receiver<CharT>& out) const;
 
     strf::facets_pack<> fp;
     fmt_ipv6 m_fmt;
-    strf::printer_impl<CharOut, strf::facets_pack<>, unsigned short> m_hextets[8];
-    strf::printer_impl<CharOut, strf::facets_pack<>, CharOut> m_colon;
+    strf::printer_impl<CharT, strf::facets_pack<>, std::uint16_t> m_hextets[8];
+  /*<< The `printer_impl` is a template alias.
+     `printer_impl<CharT, FPack, Arg>` is equivalent to
+     `decltype(make_printer(out, fp, std::declval<Arg>())`
+      where the type `out` of is `output_writer<CharT>&`,
+      and the type of `fp` is `const Fpack&`
+ >>*/strf::printer_impl<CharT, strf::facets_pack<>, CharT> m_colon;
 };
+//]
 
-
-template <typename CharOut, typename FPack>
-inline ipv6_printer<CharOut> make_printer
-    ( strf::output_writer<CharOut>& ow
-    , const FPack& fp
-    , const ipv6_addr& addr )
+//[ipv6_printer__contructor
+template <typename CharT>
+ipv6_printer<CharT>::ipv6_printer( strf::output_writer<CharT>& out
+                                 , fmt_ipv6 fmt )
+    : strf::dynamic_join_printer<CharT>{out}
+    , m_fmt(fmt)
+    , m_hextets
+        { {strf::make_printer(out, /*<< Note that we can not use
+          `strf::pack()` as the argument instead of `fp` here. Because
+           then the printer object would hold a dangling reference.
+           >>*/fp, strf::hex(fmt.addr.hextets[0]))}
+        , {strf::make_printer(out, fp, strf::hex(fmt.addr.hextets[1]))}
+        , {strf::make_printer(out, fp, strf::hex(fmt.addr.hextets[2]))}
+        , {strf::make_printer(out, fp, strf::hex(fmt.addr.hextets[3]))}
+        , {strf::make_printer(out, fp, strf::hex(fmt.addr.hextets[4]))}
+        , {strf::make_printer(out, fp, strf::hex(fmt.addr.hextets[5]))}
+        , {strf::make_printer(out, fp, strf::hex(fmt.addr.hextets[6]))}
+        , {strf::make_printer(out, fp, strf::hex(fmt.addr.hextets[7]))} }
+    , m_colon{strf::make_printer(out, fp, static_cast<CharT>(':'))}
 {
-    (void)fp;
-    return ipv6_printer<CharOut>{ow, addr};
+}
+//]
+
+
+//[ ipv6_printer__formatting
+template <typename CharT>
+strf::align_formatting<void> ipv6_printer<CharT>::formatting() const
+{
+    return m_fmt;
+}
+//]
+
+
+//[ ipv6_printer__compose
+template <typename CharT>
+void ipv6_printer<CharT>::compose(strf::printers_receiver<CharT>& out) const
+{
+    if(m_fmt.abbreviated())
+    {
+        compose_abbreviated(out);
+    }
+    else
+    {
+        compose_non_abbreviated(out);
+    }
 }
 
-template <typename CharOut, typename FPack>
-inline ipv6_printer<CharOut> make_printer
-    ( strf::output_writer<CharOut>& ow
+
+template <typename CharT>
+void ipv6_printer<CharT>::compose_non_abbreviated
+    ( strf::printers_receiver<CharT>& out ) const
+{
+    bool good = out.put(m_hextets[0]);
+    for(int i = 1; good && i < 8; ++i)
+    {
+        good = good
+            && out.put(m_colon)
+            && out.put(m_hextets[i]);
+    }
+}
+
+
+template <typename CharT>
+void ipv6_printer<CharT>::compose_abbreviated
+    ( strf::printers_receiver<CharT>& out ) const
+{
+    int abbr_bits = /*<<
+    You can see the implementation of the `abbreviation` function
+    in the [@../../example/v0/extend_input_ipv6.cpp source file].
+    Each of the eight rightmost bits of the returned value tells
+    whether the corresponding hextext shall be displayed or
+    omitted in the abbreviated IPv6 representation
+    >>*/ abbreviation(m_fmt.addr);
+    bool prev_show = true;
+    bool good = true;
+    for (int i = 0; good && i < 8; ++i) 
+    {
+        bool show_hextet = abbr_bits & 1;
+        abbr_bits >>= 1;
+
+        if (show_hextet)
+        {
+            if(i > 0)
+            {
+                good = good && out.put(m_colon);
+            }
+            good = good && out.put(m_hextets[i]);
+        }
+        else if(prev_show)
+        {
+            good = good && out.put(m_colon);
+        }
+        prev_show = show_hextet;
+    }
+    if (!prev_show && good)
+    {
+        out.put(m_colon);
+    }
+}
+//]
+
+//[ipv6__make_printer
+template <typename CharT, typename FPack>
+inline ipv6_printer<CharT> make_printer
+    ( strf::output_writer<CharT>& ow
+    , const FPack& fp
+    , const ipv6_address& addr )
+{
+    (void)fp;
+    return ipv6_printer<CharT>{ow, addr};
+}
+
+template <typename CharT, typename FPack>
+inline ipv6_printer<CharT> make_printer
+    ( strf::output_writer<CharT>& ow
     , const FPack& fp
     , const fmt_ipv6& addr )
 {
     (void)fp;
-    return ipv6_printer<CharOut>{ow, addr};
+    return ipv6_printer<CharT>{ow, addr};
 }
-
-inline fmt_ipv6 make_fmt(strf::tag, const ipv6_addr& addr)
-{
-    return {addr};
-}
+//]
 
 } // namespace xxx
 
 int main()
 {
-    xxx::ipv6_addr addr{0xaa, 0, 0, 0, 0xbb, 0, 0, 0xcc};
+    //[ ipv6_samples
+    xxx::ipv6_address addr{{0xaa, 0, 0, 0, 0xbb, 0, 0, 0xcc}};
     auto s = strf::to_string(addr).value();
     BOOST_ASSERT(s == "aa:0:0:0:bb:0:0:cc");
 
@@ -254,12 +290,12 @@ int main()
     s = strf::to_string(strf::fmt(addr).abbreviate()) .value();
     BOOST_ASSERT(s == "aa::bb:0:0:cc");
 
-    std::vector<xxx::ipv6_addr> vec =
-        { {0,0,0,0,0,0}
-        , {0,0,0,1,2,3}
-        , {1,2,3,0,0,0}
-        , {0,0,1,0,0,0}
-        , {0,0,0,1,0,0} };
+    std::vector<xxx::ipv6_address> vec =
+        { {{0, 0, 0, 0, 0, 0}}
+        , {{0, 0, 0, 1, 2, 3}}
+        , {{1, 2, 3, 0, 0, 0}}
+        , {{0, 0, 1, 0, 0, 0}}
+        , {{0, 0, 0, 1, 0, 0}} };
 
     s = strf::to_string
         ( strf::fmt_range(vec, "\n").abbreviate().fill(U'~') > 20, "\n" )
@@ -273,6 +309,6 @@ int main()
         "~~~~~~~~~~~0:0:0:1::\n";
 
     BOOST_ASSERT(s == expected_result);
-
+    //]
     return 0;
 }

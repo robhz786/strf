@@ -4,8 +4,8 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[section:width_calculation Facets for width calculation]
 [#width_calculation]
+[section:width_calculation Facets for width calculation]
 
 [import ../example/v0/custom_width_calculation.cpp]
 [import ../example/v0/width_calculation_in_encoding_conversion.cpp]

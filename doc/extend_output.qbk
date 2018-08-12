@@ -81,7 +81,7 @@ public:
 
     virtual bool put(std::size_t count, CharT ch) = 0;
 
-    virtual bool put(piecemeal_writer<CharT>& src) = 0;
+    virtual bool put(piecemeal_writer<CharT>& pmw) = 0;
 
     std::size_t necessary_size(char32_t ch) const;
 
@@ -112,14 +112,14 @@ public:
 
 * `put(const CharT* str, std::size_t size)` shall attempt to write [~size] character of [~str], /i.e./ the range `[str[0], str[size])`, and return `true` on success and `false` on failure.
 
-* `put(piecemeal_writer<CharT>& src)` shall attempt to write the content provided by `src` and return `true` if `src.success()` returns `true` ( see the description of `piecemeal_writer` class template below ) and `false` otherwise.
+* `put(piecemeal_writer<CharT>& pmw)` shall successively call `it2 = pmw.write(it, end)` and write the range \[`it, it2`) after each call until `pmw.more()` returns `false`
 
 *  Once the function `set_error` is called, `good()` shall return `false`.
 
 *  `good()` returns whether this `output_writer` instance is capable of writing more characters. Once `good()` returns false, it shall not return `true` anymore, and all the `put` overloads shall have no effect and return `false`.
 
-
-[h3 The `piecemeal_writer` class template]
+[#piecemeal_writer]
+[h4 The `piecemeal_writer` class template]
 ``
 namespace boost { namespace stringify { inline namespace v0 {
 
@@ -128,7 +128,7 @@ class piecemeal_writer
 {
 public:
 
-    virtual CharT* get(CharT* dest_begin, CharT* dest_end) = 0;
+    virtual CharT* write(CharT* dest_begin, CharT* dest_end) = 0;
 
     bool more() const;
     bool success() const;
@@ -142,20 +142,34 @@ protected:
 
 }}} // namespace boost::stringify::v0
 ``
-`get(dest_begin, dest_out)` returns the pointer immediately after the last written location in the range \[`dest_begin`, `dest_out`).
-If there is not enough space, a subsequent call to `more()` returns `true`, meaning that `get` must be called again,
-with the pointer returned in the previous call as the first argument.
-( the return of `get(dest_begin, dest_out)` is [_not] necessarily equal to `dest_end` when there is not enough space ).
-If `get` fails for some other reason, then `more()` and `success()` will subsequently return `false`. `success()` returns `true` only after all content is succesfully written. So, only after `more()` returns `false`, you shall call `success()` to check whether any error happened. Calling `get()` after `more()` returned `false` produces undefined behavior.
 
-The implementation of `get()` shall call either `report_success` or `report_error` when there is nothing else to be written. This will make `more()` to return `false`. While neither `report_success` nor `report_error` is called, `more()` returns `true`.
+`write(dest_begin, dest_end)` writes into \[`dest_begin, dest_end`) 
+a part of the content and returns the pointer immediately after
+the last written location, which is not greater than `dest_end`.
+It is expected to be called successively until `more()` returns `false`,
+and each call writes the continuation of the previous written part.
+When there is nothing else to be written, `write(dest_begin, dest_end)`
+call either `report_success()` or `report_error(`[~some_error_code]`)`,
+which in turn causes `more()` to return `false`.
+
+[#BOOST_STRINGIFY_MIN_BUFFER_SIZE]
+If `(dest_end - dest_begin < BOOST_STRINGIFY_MIN_BUFFER_SIZE)`
+then `write(dest_begin, dest_end)` is not required to write
+anything and may just return `dest_begin`, expecting a larger
+output range to be passed in the next call.
+Otherwise it is required write some part of the content.
+The caller, on the other hand, must be aware that
+if the passed range is aways smaller than
+BOOST_STRINGIFY_MIN_BUFFER_SIZE is all calls,
+then an infinite loop may occur. Currently the
+value of BOOST_STRINGIFY_MIN_BUFFER_SIZE is 60.
 
 
+[#buffered_writer]
 [h3 The `buffered_writer` class template]
 
 Your class can derive from `buffered_writer` rather than from `output_writer`. This requires much less work.
 
-[#buffered_writer]
 ``
 namespace boost { namespace stringify { inline namespace v0 {
 

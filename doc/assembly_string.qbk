@@ -12,7 +12,7 @@
 
 The ['assembly string] is analogous to what in others formatting libraries is called as the /format string/, except that it does not format any of the arguments. Formatting is specified instead with [link format_functions format functions].
 
-As shown in the diagram, the assembly string is optional. When not used, the arguments are just printed sequentially. The main reason it exists is to enable the creation of multilingual programs by the use of translation tools like [@https://en.wikipedia.org/wiki/Gettext gettext].
+As shown in the diagram, the assembly string is optional. When not used, the arguments are just printed sequentially. The main reason it exists is to enable the creation of multilingual programs, with the use of translation tools like [@https://en.wikipedia.org/wiki/Gettext gettext].
 
 [trivial_sample]
 

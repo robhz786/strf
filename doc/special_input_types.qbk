@@ -70,6 +70,7 @@ When using assembly string, be aware that the sub-list of argument is treated as
 
 [endsect]
 
+[#ranges]
 [section Range]
 [import ../example/v0/range_input.cpp]
 

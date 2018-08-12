@@ -4,9 +4,419 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
+
 [section:extend_input How to add support to a new input type /(to do)/]
 
-This section has not been written yet. It will guide you how to extend Boost.Stringify to support other input types. And you will be able to decide how the formatting is specified and what formatting options to be supported for this new type. And you can also create new facets categories.
+Probably you only need to read the first example add most the input types you desire. There, we a print a IPv4 address, which is very simple since it is aways four integer numbers separated by dots. Of course, there is no need to determinate each digit of the each of these numbers, since we use the library to print the numbers.
+
+The second example is for when you need to determinate each character one by one. It also exemplifies how to create a new facet category.
+
+The third example is a half term of the former two: an IPv6 address. The printing of the numbers (the hexts ) is delegated to the libraby. However since we provide an formatting option that enables the IPv6 abbreviated representation, it is not possible to simply use a [link joins join] as we do with IPv4.
+
+Anyway the procedure aways boils down to two steps:
+
+[variablelist
+
+[ [Step 1]
+[Overload `make_printer` function template like this:
+``
+template <typename CharT, typename FacetsPack>
+printer_type make_printer( boost::stringify::output_writer<CharT>&
+                         , const FacetsPack fp&
+                         , your_input_type );
+``
+where
+[itemized_list
+[`CharT` is the output chararacter type and it's determined by the output type. For instance, it is `char16_t` when `to_u16string` is used.]
+[`FacetsPack` is aways an instance of [link facets_pack facets_pack] class template]
+[`printer_type` must be a non abstract type that inherits from [link printer `printer`]`<CharT>`. So actually there is still a previous step which is to define `printer_type`. But in the most simple ( and probably common ) case this is unnecessary, because you can just return a call to another overload of `make_printer`. [/ like as in the [link extend_input.extend_input.ipv4_example first example] ]
+]
+
+]
+
+]
+] [/ end step 1]
+
+
+[
+[Step 2]
+[If you want to provide formatting options for this new type ( formatting functions ), then create a class ( let's name it here as `your_fmt_type` ) that contains the formatting information and the value (or reference) of `your_input_type`. Then overload the `make_fmt` function like this:
+``
+your_fmt_type make_fmt(boost::stringify::tag, your_input_type);
+``
+]
+[And define another overload of `make_printer` that takes formatting object as input:
+``
+template <typename CharT, typename FacetsPack>
+printer_type make_printer( boost::stringify::output_writer<CharT>&
+                         , const FacetsPack fp&
+                         , your_fmt_type );
+``
+]
+] [/ end step 2]
+
+] [/ end of variable_list ]
+
+
+[#ipv4_example]
+[section:ipv4_example Example 1: IPv4 address]
+[import ../example/v0/extend_input_ipv4.cpp]
+
+Suppose `ipv4_addr` below is the input type:
+
+[ipv4_addr_type]
+
+[/
+Since it's representation is just its numbers separated by dots, there is no need to define a new class that inherits from `printer<CharT>`. /]
+
+Here, we can simply create a [link joins join] and return the result of calling `make_printer` over it:
+
+[make_printer_ipv4_addr]
+
+And it's done:
+
+[ipv4_basic_sample]
+
+[h4 Adding alignment formatting options]
+
+Now we want to go further and enable alignment, /a.k.a./ justification, like this:
+[ipv4_fmt_sample]
+
+The first sub-step is to define the class that contains the formatting information. By inheriting from `align_formatting` will already get almost all we need:
+
+[fmt_ipv4_addr]
+
+The `align_formatting` class template contains the [link format_functions formatting functions] related to alignment ( the `fill` and operators `>`, `<`, `^` and `%` ). Note that we need to pass the type `fmt_ipv4_addr` as the template paramenter of `align_formatting`. This is because the return type of these formatting functions needs be `fmt_ipv4_addr &&`.
+
+Now, we need to implement `make_fmt`, which is trivial:
+
+[make_fmt_ipv4]
+
+And to implement the other overload of `make_printer`, the one that takes an `fmt_ipv4_addr`.
+
+[make_printer_fmt_ipv4]
+
+And it's done!
+
+[endsect]
+
+[#base64_example]
+[section Example 2: Base64]
+[import ../example/v0/extend_input_base64.cpp]
+
+[/
+It's like we wanted to create a function that takes an array of bytes and encodes it in [@https://en.wikipedia.org/wiki/Base64 Base64].
+But we rather create an extension to Boost.Stringify,
+[/taking thus advantage of the support the library provides for a wide range of output types.]
+taking thus advantage of the wide range of output types supported by the library.
+Because otherwise we would need a create one function for each output type.
+]
+
+In this example we don't want exactly add support to a certain input type,
+but to create a function \u2014 let's name `base64` \u2014 that takes an array of bytes that will be encoded in [@https://en.wikipedia.org/wiki/Base64 Base64]:
+``
+boost::stringify::write(destination) (xxx::base64(bytes_array, num_bytes));
+``
+However we need an input type in order to overload `make_printer`, so we will create one.
+Also, let's add some formatting option to make the example more complete.
+This requires a class/struct that holds the formatting stuffs in addition to the data to be printed.
+Does this implies two new input types ? Maybe we only need the later for now.
+
+[h4 Formatting class - the simplified version]
+
+Since the output wil be commonly printed in multiple lines,
+alignment formatting does't make much sense here.
+Let's then add indentation, which could be useful when the
+content is printed into XML or YAML files. So here we go:
+
+[fmt_base64_simple_version]
+
+Note the `indentation(int)&& ` member function that returns `static_cast<fmt_base64&&>(*this)`.
+This is the convention for format functions. It is what allows constructions
+like `hex(200).uppercase().showbase().fill(U'.') > 20`.
+Not really important in our case though since there is only one format function
+( we could just add identation as an argument of `base64` function ).
+Anyway, the indentation can be specified like this:
+``
+boost::stringify::write(destination) (xxx::base64(bytes_array, num_bytes).identation(4)) ;
+``
+However the title says that this is the simplified version.
+That's because it will not work in [link ranges `fmt_range`].
+If such feature is not necessary we can just leave it like that,
+otherwise ...
+
+[#base64_complete_formatting_class]
+[h4 Formatting class - the complete version ( that works with `fmt_range` ) ]
+
+... otherwise there are some extra steps:
+
+The elements of the range need to have type. So this time we define an input type that is decoupled from formatting stuffs:
+
+[fmt_base64_complete_version__input]
+
+Then we need to create a class template that is deals only with formatting. It does not contain the data to be printed:
+
+[fmt_base64_complete_version__formatting]
+
+And finally we define a class that gathers formatting with the input value:
+
+[fmt_base64_complete_version__fmt]
+
+And then we define `base64` and `make_fmt` function:
+
+[fmt_base64_complete_version__functions]
+
+[h4 Creating a new facet category]
+
+
+
+[base64_facet]
+
+[h4 Implementing the printer]
+
+Now we need to create a class template that inherits from the `printer` class template below:
+
+[#printer]
+
+``
+namespace boost { namespace stringify { inline namespace v0 {
+
+template <typename CharT>
+class printer
+{
+public:
+
+    virtual ~printer() { }
+
+    virtual void write() const = 0;
+    virtual std::size_t necessary_size() const = 0;
+    virtual int remaining_width( int w ) const = 0;
+};
+
+}}}
+
+``
+[itemized_list
+[ [*write()] shall write the content into the [link output_writer `output_writer<CharT>`]
+      that is passed in `make_pinter` to construct the printer. ]
+[ [*necessary_size()] shall return the amount of characters written
+      by `write()`, or a little more if the exact calculation is difficult,
+      but never less. It is called when the ouput type needs to pre-allocate
+      memory ( see [link syntax_reserve `reserve_auto()`] function ).]
+[ [*remaining_width(w)] shall return the same as `std::max(0, w - this_width)`,
+      where `this_width` is the width of the content written by `write()`.
+      This function is used in [link joins `joins`]. The implementation
+      may have to use the [link width_calculation facets for width calculation]
+      ( /to do/: this needs to be better documented ) ]
+
+]
+
+So it will be something like this:
+
+``
+namespace xxx {
+
+template <typename CharT>
+class base64_printer: public strf::printer<CharT>
+{
+public:
+
+    base64_printer( strf::output_writer<CharT>& out
+                  , base64_facet facet
+                  , const fmt_base64& fmt )
+    : m_out(out), m_facet(facet), m_fmt(fmt)
+    {
+    }
+
+    void write() const override;
+    std::size_t necessary_size() const override;
+    int remaining_width( int w ) const override;
+
+private:
+
+    strf::output_writer<CharT>& m_out;
+    const base64_facet m_facet;
+    const fmt_base64 m_fmt;
+};
+
+}
+``
+`write()` shall put the content into the [link output_writer `output_writer`]
+passed in the constructor. You can see that [link output_writer `output_writer`]
+provides different functions (named `put` and `put32`) to do that.
+One option we have is to this call `put(CharT)` for every single character
+of the base64 content. That's however not very efficient.
+Another option is to use `put(`[link piecemeal_writer `piecemeal_writer`]`<CharT>&)`.
+This implies to create a class template that inherits from `piecemeal_writer`
+and overrides the `write` function which writes directly into a raw string,
+which is usually the internal buffer of `output_writer` instance.
+
+Actually I created two of such class templates. One for single line mode and
+another for multiline. So that `base64_printer::write` is:
+
+[base64_printer__write]
+
+Let's see the implementation of `single_line_base64_pm_writer`:
+
+[single_line_base64_pm_writer]
+
+Each time `write(`[~begin], [~end]`)` is invoked it shall
+write the continuation of the part written in the previous call.
+That's why we need member variables like `m_column` \u2014
+which keep track of how many the indentation characters have been written \u2014
+and `m_index` \u2014 that records how many bytes have been encoded.
+`report_success()` is called at the end to signal that there
+is nothing else to write.
+You can see that `write(begin, end)` is not required to return `end` when
+there is not enough space in the range \[`begin, end`). But the distance
+from the returned position to `end` shall not be greater than
+[link BOOST_STRINGIFY_MIN_BUFFER_SIZE BOOST_STRINGIFY_MIN_BUFFER_SIZE].
+
+
+The implementation of `multiline_base64_pm_writer` is more
+complex. After all, some blocks may need to be split by a end of line
+followed by indentation. Hence there is a larger number of
+situations where the content may need to be interrupted to be
+later continued in the next call of `write(`[~begin], [~end]`)`:
+
+[multiline_base64_pm_writer__write]
+
+After we define `base64_printer`, we can finally overload `make_printer`:
+
+[make_printer_base64]
+
+And it's done. Some of the code has been omitted. You can see the full
+implementation [@ ../../example/v0/extend_input_base64.cpp here].
+
+[base64_sample]
+
+[endsect]
+
+[section Example 3: IPv6 address /(to do)/]
+[import ../example/v0/extend_input_ipv6.cpp]
+
+Now our input type represents an [@https://en.wikipedia.org/wiki/IPv6_address IPv6 address]:
+
+[ipv6_address]
+
+Here we want to add a formatting option that enables the
+[https://en.wikipedia.org/wiki/IPv6_address#Representation abbreviated notation].
+So an address like 2001:db8:0:0:0:0:0:1 is represented as
+2001:db8::1 when such option is active.
+Now we can not from simply use a [link joins join] as done in the
+[link ipv4_example IPv4 example], because that
+is only possible when we know at compilation time all the
+elements that composes the [link joins join].
+So will create a class template that derives from
+the [link dynamic_join_printer dynamic_join_printer]
+that in turn derives from [link printer `printer`].
+
+
+[#dynamic_join_printer]
+[h4 The `dynamic_join_printer` class template]
+``
+template <typename CharOut>
+class dynamic_join_printer: public stringify::v0::printer<CharOut>
+{
+public:
+
+    dynamic_join_printer(stringify::v0::output_writer<CharOut>& out);
+
+    void write() const override;
+    std::size_t necessary_size() const override;
+    int remaining_width(int w) const override;
+
+protected:
+
+    virtual void compose(stringify::v0::printers_receiver<CharOut>& out) const = 0;
+
+    virtual stringify::v0::align_formatting<void> formatting() const
+    {
+        return {}; // by default the width is zero
+    }
+};
+``
+
+The `printers_receiver` class template is simply:
+``
+template <typename CharOut>
+class printers_receiver
+{
+public:
+
+    virtual ~printers_receiver();
+
+    virtual bool put(const stringify::v0::printer<CharOut>& ) = 0;
+};
+
+When the `put` member function returns `false` there is no point
+in calling it again with the remaining printers. This does not
+necessarily mean that an error happened.
+[\
+For example, the implementation of `remaining_width`
+creates a `printer_receivers` whose `put` function
+returns false when the remaining width is alreaty zero.
+]
+``
+[h4 The formatting class]
+
+In addition to the formatting option that enables the abbreviated
+representation, let's to support alignment formatting, just
+as we did in the [link ipv4_example IPv4 example].
+And we also want to enable this input type be used in
+[link ranges fmt_range]. So, just as we did in the
+[link base64_complete_formatting_class base64 example]
+we first need to create a class template that handles
+exclusively formatting and satifies certain requirements:
+
+[ipv6_formatting]
+
+Now we define the class that gather the IPv6 address value
+with the formatting information, and overload `make_fmt`:
+
+[fmt_ipv6]
+
+[h4 The printer]
+
+Now we define the class template the derives from
+[link dynamic_join_printer dynamic_join_printer]
+
+[ipv6_printer]
+
+First, let's take a look at the member variables.
+The `printer_impl` template alias gives us the concrete class that derives
+from [link printer `printer`] that handles the given input type.
+Hence the type of `m_colon` derives from `printer<CharT>`, and same applies
+to the elements of `m_hextets`.
+
+[ipv6_printer__contructor]
+
+These printer objects are passed to the `printers_receiver` which is
+passed to `compose` function:
+
+[ipv6_printer__compose]
+
+We also need to override the `formatting()` function. That's easy:
+
+[ipv6_printer__formatting]
+
+This works because the `align_formatting<void>` can be implicitly converted from
+`align_formatting<`[~AnyType]`>`, as long as `align_formatting<`[~AnyType]`>`
+is not a template specialization.
+
+Now we just need to overload `make_printer`
+
+[ipv6__make_printer]
+
+And it's done. Let's play around:
+
+[ipv6_samples]
+
+You can see the full source code of the implementation [@../../exemple/v0/extend_input_ipv6.cpp here].
+
+[endsect]
+
+
 
 [endsect]
 

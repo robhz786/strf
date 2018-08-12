@@ -30,10 +30,10 @@ void sample2()
     unsigned long long value = 0xfffffffffLLU;
 
     auto str = strf::to_string
-        .facets(strf::monotonic_grouping<8> {6}.thousands_sep(U':'))
         .facets(strf::monotonic_grouping<10>{3}.thousands_sep(U'.'))
         .facets(strf::monotonic_grouping<16>{4}.thousands_sep(U'\''))
-(value, " / ", strf::hex(value), " / ", strf::oct(value));
+        .facets(strf::monotonic_grouping<8> {6}.thousands_sep(U':'))
+    (value, " / ", strf::hex(value), " / ", strf::oct(value));
 
     BOOST_ASSERT(str.value() == "68.719.476.735 / f'ffff'ffff / 777777:777777");
     //]
