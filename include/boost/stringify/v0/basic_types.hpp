@@ -100,14 +100,17 @@ public:
 
     virtual std::size_t necessary_size
         ( char32_t ch
-        , bool allow_surrogates )
-        const = 0;
+        , bool allow_surrogates ) const = 0;
+
+    virtual std::size_t validate
+        ( char32_t ch
+        , bool allow_surrogates ) const = 0;
 
     /**
     if ch is invalid or not supported return {0, nullptr}
     */
     virtual stringify::v0::char_cv_result<CharOut> encode
-       ( std::size_t count
+        ( std::size_t count
         , char32_t ch
         , CharOut* dest_begin
         , CharOut* dest_end
@@ -254,7 +257,6 @@ private:
         return reinterpret_cast<const std::error_code*>(&m_error_code_storage);
     }
 
-    enum { e_omit, e_char, e_error_code, e_function } m_variant;
     using error_code_storage_type
     = std::aligned_storage_t<sizeof(std::error_code), alignof(std::error_code)>;
 
@@ -264,6 +266,7 @@ private:
         error_code_storage_type m_error_code_storage;
         func_ptr m_function;
     };
+    enum { e_omit, e_char, e_error_code, e_function } m_variant;
 };
 
 
@@ -350,7 +353,7 @@ stringify::v0::char_cv_result<CharOut> emit_error
     }
     BOOST_ASSERT(err_sig.has_function());
     err_sig.get_function() ();
-    throw std::logic_error("encoding error");
+    return { count, dest };
 }
 
 template <typename CharOut>
@@ -384,7 +387,7 @@ CharOut* emit_error
     }
     BOOST_ASSERT(err_sig.has_function());
     err_sig.get_function() ();
-    throw std::logic_error("encoding error");
+    return dest;
 }
 
 
@@ -859,11 +862,66 @@ protected:
         m_status = successfully_complete;
     }
 
+    // // helper functions
+    // struct encode_char_result
+    // {
+    //     CharOut* it;
+    //     char32_t ch;
+    // };
+
+    // encode_char_result encode_char
+    //     ( const stringify::v0::encoder<CharOut>& encoder
+    //     , const stringify::v0::error_signal& err_sig
+    //     , char32_t ch
+    //     , CharOut* dest
+    //     , CharOut* dest_end
+    //     , bool allow_surrogates );
+
 private:
 
     std::error_code m_err;
     e_status m_status = waiting_more;
 };
+
+
+// template <typename CharOut>
+// typename piecemeal_writer<CharOut>::encode_char_result
+// piecemeal_writer<CharOut>::encode_char
+//     ( const stringify::v0::encoder<CharOut>& encoder
+//     , const stringify::v0::error_signal& err_sig
+//     , char32_t ch
+//     , CharOut* dest
+//     , CharOut* dest_end
+//     , bool allow_surrogates )
+// {
+//     auto it = encoder.encode(ch, dest, dest_end, allow_surrogates);
+//     if (it != nullptr)
+//     {
+//         return {it, ch};
+//     }
+//     if(err_sig.has_char())
+//     {
+//         auto ech = err_sig.get_char();
+//         if (ch != ech)
+//         {
+//             return encode_char( encoder, err_sig, ech
+//                               , dest, dest_end, allow_surrogates );
+//         }
+//         auto it = encoder.encode(U'?', dest, dest_end, allow_surrogates);
+//         BOOST_ASSERT(it != nullptr);
+//         return {it, U'?'};
+//     }
+//     if(err_sig.has_error_code())
+//     {
+//         this->report_error(err_sig.get_error_code());
+//         return {nullptr, ch};
+//     }
+//     if(err_sig.has_function())
+//     {
+//         err_sig.get_function() ();
+//     }
+//     return {dest, U'\0'};
+// }
 
 namespace detail {
 
@@ -987,6 +1045,12 @@ private:
     bool m_allow_surr;
 };
 
+struct codepoint_validation_result
+{
+    std::size_t size;
+    char32_t ch;
+    bool error_emitted;
+};
 
 template <typename CharOut>
 class output_writer
@@ -1021,10 +1085,9 @@ public:
         return m_encoding_err;
     }
 
-    std::size_t necessary_size(char32_t ch) const
-    {
-        return encoder().necessary_size(ch, allow_surrogates());
-    }
+    stringify::v0::codepoint_validation_result validate(char32_t ch);
+
+    std::size_t necessary_size(char32_t ch) const;
 
     template <typename CharIn>
     bool put
@@ -1088,6 +1151,58 @@ private:
     const stringify::v0::error_signal m_encoding_err;
     bool m_allow_surr;
 };
+
+
+template <typename CharOut>
+stringify::v0::codepoint_validation_result
+output_writer<CharOut>::validate(char32_t ch)
+{
+    auto s = encoder().validate(ch, m_allow_surr);
+    if (s != 0)
+    {
+        return {s, ch, false};
+    }
+    if(m_encoding_err.has_char())
+    {
+        s = encoder().validate(m_encoding_err.get_char(), m_allow_surr);
+        if (s != 0)
+        {
+            return {s, m_encoding_err.get_char(), false};
+        }
+        return {s, U'?', false};
+    }
+    if(m_encoding_err.has_error_code())
+    {
+        set_error(m_encoding_err.get_error_code());
+        return {0, ch, true};
+    }
+    if(m_encoding_err.has_function())
+    {
+        m_encoding_err.get_function() ();
+    }
+    return {0, ch, false};
+}
+
+template <typename CharOut>
+std::size_t output_writer<CharOut>::necessary_size(char32_t ch) const
+{
+    auto s = encoder().validate(ch, m_allow_surr);
+    if (s != 0)
+    {
+        return s;
+    }
+    if(m_encoding_err.has_char())
+    {
+        s = encoder().validate(m_encoding_err.get_char(), m_allow_surr);
+        if (s != 0)
+        {
+            return s;
+        }
+        return 1;
+    }
+    return 0;
+}
+
 
 namespace detail {
 

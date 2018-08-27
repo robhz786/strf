@@ -10,6 +10,8 @@
 #include <boost/stringify/v0/syntax.hpp>
 #include <boost/stringify/v0/expected.hpp>
 
+constexpr std::size_t BOOST_STRINGIFY_MIN_BUFFER_SIZE = 60;
+
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <typename CharT>
@@ -193,8 +195,6 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class buffered_writer<char32_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class buffered_writer<wchar_t>;
 
 #endif
-
-constexpr std::size_t BOOST_STRINGIFY_MIN_BUFFER_SIZE = 60;
 
 namespace detail {
 

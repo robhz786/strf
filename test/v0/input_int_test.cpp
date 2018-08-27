@@ -7,9 +7,10 @@
 #include "test_utils.hpp"
 #include <limits>
 
+namespace strf = boost::stringify::v0;
+
 int main()
 {
-    namespace strf = boost::stringify::v0;
 
     TEST ( "0") ( 0 );
     TEST (u"0") ( 0 );
@@ -213,14 +214,84 @@ int main()
         TEST("   0x100").facets(punct) ( strf::join_right(8)(~strf::hex(0x100)) );
         TEST(" 0x1'000").facets(punct) ( strf::join_right(8)(~strf::hex(0x1000)) );
     }
+    {
+        TEST("1'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7")
+            .facets(strf::monotonic_grouping<8>{1}.thousands_sep('\''))
+            ( strf::oct(01777777777777777777777LL) );
+    }
+    {
+        const char* expected =
+            "1\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF"
+            "7\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF"
+            "7\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF"
+            "7\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF"
+            "7\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF"
+            "7\U0010FFFF" "7";
+
+        TEST(expected)
+            .facets(strf::monotonic_grouping<8>{1}.thousands_sep(0x10FFFF))
+            (strf::oct(01777777777777777777777LL));
+    }
+    {
+        // invalid punctuation char
+        auto punct = strf::monotonic_grouping<10>{3}.thousands_sep(0xD800);
+
+        TEST("100\xED\xA0\x80" "000\xED\xA0\x80" "000")
+            .facets(punct)
+            .facets(strf::allow_surrogates(true))
+            (100000000);
+
+        TEST(u8"100\uFFFD000\uFFFD000")
+            .facets(punct)
+            .facets(strf::allow_surrogates(false))
+            (100000000);
+
+        TEST(u8"100;000;000")
+            .facets(punct)
+            .facets(strf::allow_surrogates(false))
+            .facets(strf::encoding_error{U';'})
+            (100000000);
+
+        TEST(u8"100000000")
+            .facets(punct)
+            .facets(strf::allow_surrogates{false})
+            .facets(strf::encoding_error{})
+            (100000000);
+
+        auto ec = std::make_error_code(std::errc::message_size);
+        TEST_ERR(u8"", ec)
+            .facets(punct)
+            .facets(strf::allow_surrogates(false))
+            .facets(strf::encoding_error(ec))
+            (100000000);
+
+        {
+            class my_exception: public std::exception
+            {
+            };
+
+            bool my_exception_thrown = false;
+
+            try
+            {
+                auto thrower_func = [](){throw my_exception{};};
+
+                auto s = strf::to_string
+                    .facets(punct)
+                    .facets(strf::allow_surrogates(false))
+                    .facets(strf::encoding_error(thrower_func))
+                    (100000000);
+            }
+            catch (const my_exception& e)
+            {
+                my_exception_thrown = true;
+            }
+            BOOST_TEST(my_exception_thrown);
+        }
+    }
 
 
     int rc = report_errors() || boost::report_errors();
     return rc;
 }
-
-
-
-
-
 

@@ -9,38 +9,14 @@
 #include <boost/stringify/v0/facets_pack.hpp>
 #include <boost/stringify/v0/facets/encodings.hpp>
 #include <boost/stringify/v0/facets/numpunct.hpp>
-#include <boost/stringify/v0/detail/number_of_digits.hpp>
+#include <boost/stringify/v0/detail/int_digits.hpp>
 #include <boost/assert.hpp>
 #include <cstdint>
 
 // todo: optimize as in:
 // https://pvk.ca/Blog/2017/12/22/appnexus-common-framework-its-out-also-how-to-print-integers-faster/
 
-
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
-
-namespace detail {
-
-template
-    < typename IntT
-    , typename unsigned_IntT = typename std::make_unsigned<IntT>::type
-    >
-typename std::enable_if<std::is_signed<IntT>::value, unsigned_IntT>::type
-unsigned_abs(IntT value)
-{
-    return ( value > 0
-           ? static_cast<unsigned_IntT>(value)
-           : 1 + static_cast<unsigned_IntT>(-(value + 1)));
-}
-
-template<typename IntT>
-typename std::enable_if<std::is_unsigned<IntT>::value, IntT>::type
-unsigned_abs(IntT value)
-{
-    return value;
-}
-
-} // namespace detail
 
 template <class T>
 class int_formatting: public stringify::v0::align_formatting<T>
@@ -50,12 +26,9 @@ class int_formatting: public stringify::v0::align_formatting<T>
 
 public:
 
-    // template <typename U>
-    // friend class int_formatting;
-    
     template <typename U>
     using fmt_other = stringify::v0::int_formatting<U>;
-    
+
     constexpr int_formatting() = default;
 
     constexpr int_formatting(const int_formatting&) = default;
@@ -72,6 +45,16 @@ public:
     {
     }
 
+    constexpr child_type&& p(unsigned _) &&
+    {
+        m_precision = _;
+        return static_cast<child_type&&>(*this);
+    }
+    constexpr child_type& p(unsigned _) &
+    {
+        m_precision = _;
+        return *this;
+    }
     constexpr child_type&& uphex() &&
     {
         m_base = 16;
@@ -166,7 +149,11 @@ public:
         m_showpos = s;
         return static_cast<child_type&>(*this);
     }
-    constexpr unsigned base() const
+    constexpr unsigned precision() const
+    {
+        return m_precision;
+    }
+    constexpr unsigned short base() const
     {
         return m_base;
     }
@@ -185,6 +172,7 @@ public:
 
 private:
 
+    unsigned m_precision = 0;
     unsigned short m_base = 10;
     bool m_showbase = false;
     bool m_showpos = false;
@@ -212,7 +200,7 @@ public:
         , m_value(value)
     {
     }
-    
+
     constexpr IntT value() const
     {
         return m_value;
@@ -229,6 +217,7 @@ class int_printer: public printer<CharT>
 {
     using unsigned_type = typename std::make_unsigned<IntT>::type;
     static constexpr bool is_signed = std::is_signed<IntT>::value;
+    constexpr static unsigned max_digcount = (sizeof(IntT) * 8 + 2) / 3;
 
 public:
 
@@ -271,10 +260,12 @@ public:
 
 private:
 
+    const stringify::v0::numpunct_base* m_punct;
     stringify::v0::output_writer<CharT>& m_out;
-    boost::stringify::v0::int_with_formatting<IntT> m_input;
-    const stringify::v0::numpunct_base& m_numpunct;
-    int m_fillcount = 0;
+    boost::stringify::v0::int_with_formatting<IntT> m_fmt;
+    unsigned short m_digcount;
+    unsigned short m_sepcount;
+    unsigned m_fillcount;
 
     template <int Base, typename FPack>
     const stringify::v0::numpunct<Base>& get_numpunct(const FPack& fp) noexcept
@@ -285,302 +276,288 @@ private:
 
     bool showsign() const
     {
-        return is_signed && (m_input.showpos() || m_input.value() < 0);
+        return is_signed && (m_fmt.showpos() || m_fmt.value() < 0);
     }
 
     unsigned_type unsigned_value() const noexcept
     {
-        if(m_input.base() == 10)
+        if(m_fmt.base() == 10)
         {
-            return stringify::v0::detail::unsigned_abs(m_input.value());
+            return stringify::v0::detail::unsigned_abs(m_fmt.value());
         }
-        return static_cast<unsigned_type>(m_input.value());
+        return static_cast<unsigned_type>(m_fmt.value());
     }
 
     std::size_t length_fill() const
     {
         if (m_fillcount > 0)
         {
-            return m_fillcount * m_out.necessary_size(m_input.fill());
+            return m_fillcount * m_out.necessary_size(m_fmt.fill());
         }
         return 0;
     }
 
     std::size_t length_body() const
     {
-        switch(m_input.base())
-        {
-            case  10:
-                return length_digits<10>() + (showsign() ? 1 : 0);
-
-            case 16:
-                return length_digits<16>() + (m_input.showbase() ? 2 : 0);
-
-            default:
-                BOOST_ASSERT(m_input.base() == 8);
-                return length_digits<8>() + (m_input.showbase() ? 1 : 0);
-        }
+        return length_complement() + length_digits();
     }
 
-    template <unsigned Base>
+    std::size_t length_complement() const noexcept
+    {
+        if (m_fmt.base() == 10)
+        {
+            return showsign() ? 1 : 0;
+        }
+        else if (m_fmt.base() == 16)
+        {
+            return m_fmt.showbase() ? 2 : 0;
+        }
+        BOOST_ASSERT(m_fmt.base() == 8);
+        return m_fmt.showbase() ? 1 : 0;
+    }
+
     std::size_t length_digits() const noexcept
     {
-        unsigned num_digits
-            = stringify::v0::detail::number_of_digits<Base>(unsigned_value());
-
-        if (unsigned num_seps = m_numpunct.thousands_sep_count(num_digits))
+        auto total_digcount
+            = m_fmt.precision() > m_digcount
+            ? m_fmt.precision() : m_digcount;
+        if (m_sepcount > 0)
         {
-            auto sep_len = m_out.necessary_size(m_numpunct.thousands_sep());
-            return num_digits + num_seps * sep_len;
+            auto sep_len = m_out.necessary_size(m_punct->thousands_sep());
+            return total_digcount + m_sepcount * sep_len;
         }
-        return num_digits;
+        return total_digcount;
     }
 
     void write_with_fill() const
     {
-        switch(m_input.alignment())
+        switch(m_fmt.alignment())
         {
             case stringify::v0::alignment::left:
-                write_sign();
-                write_base();
+                write_complement();
                 write_digits();
-                m_out.put32(m_fillcount, m_input.fill());
+                m_out.put32(m_fillcount, m_fmt.fill());
                 break;
 
             case stringify::v0::alignment::internal:
-                write_sign();
-                write_base();
-                m_out.put32(m_fillcount, m_input.fill());
+                write_complement();
+                m_out.put32(m_fillcount, m_fmt.fill());
                 write_digits();
                 break;
 
             case stringify::v0::alignment::center:
             {
                 auto halfcount = m_fillcount / 2;
-                m_out.put32(halfcount, m_input.fill());
-                write_sign();
-                write_base();
+                m_out.put32(halfcount, m_fmt.fill());
+                write_complement();
                 write_digits();
-                m_out.put32(m_fillcount - halfcount, m_input.fill());
+                m_out.put32(m_fillcount - halfcount, m_fmt.fill());
                 break;
             }
             default:
-                m_out.put32(m_fillcount, m_input.fill());                
-                write_sign();
-                write_base();
+                m_out.put32(m_fillcount, m_fmt.fill());
+                write_complement();
                 write_digits();
         }
     }
 
-    void write_sign() const
+    void write_complement() const
     {
-        if (is_signed && m_input.base() == 10)
+        if (m_fmt.base() == 10)
         {
-            if (m_input.value() < 0)
+            if(is_signed)
             {
-                m_out.put(CharT('-'));
-            }
-            else if(showsign())
-            {
-                m_out.put(CharT('+'));
+                if(m_fmt.value() < 0)
+                {
+                    m_out.put(CharT('-'));
+                }
+                else if( m_fmt.showpos())
+                {
+                    m_out.put(CharT('+'));
+                }
             }
         }
-    }
-
-    void write_without_fill() const
-    {
-        switch(m_input.base())
-        {
-            case 16:
-                write_base();
-                write_digits_t<16>();
-                break;
-
-            case  8:
-                write_base();
-                write_digits_t<8>();
-                break;
-
-            default:
-                BOOST_ASSERT(m_input.base() == 10);
-                write_sign();
-                write_digits_t<10>();
-        }
-    }
-
-    void write_base() const
-    {
-        if(m_input.base() != 10 && m_input.showbase())
+        else if (m_fmt.showbase())
         {
             m_out.put(CharT('0'));
-            if(m_input.base() == 16)
+            if(m_fmt.base() == 16)
             {
-                m_out.put(m_input.uppercase() ? CharT('X'): CharT('x'));
+                m_out.put(m_fmt.uppercase() ? CharT('X'): CharT('x'));
             }
         }
     }
 
     void write_digits() const
     {
-        switch (m_input.base())
+        if(m_fmt.precision() > m_digcount)
         {
-            case 10:
-                write_digits_t<10>();
-                break;
-
-            case 16:
-                write_digits_t<16>();
-                break;
-
-            default:
-                BOOST_ASSERT(m_input.base() == 8);
-                write_digits_t<8>();
+            m_out.put(m_fmt.precision() - m_digcount, CharT('0'));
         }
-    }
-
-    template <unsigned Base>
-    void write_digits_t() const
-    {
-        constexpr std::size_t buff_size = sizeof(IntT) * 6;
-        CharT buff[buff_size];
-        CharT* end = &buff[buff_size - 1];
-        auto* begin = write_digits_backwards<Base>(unsigned_value(), end);
-        unsigned num_digits = static_cast<unsigned>(end - begin);
-        if (m_numpunct.thousands_sep_count(num_digits) == 0)
+        if (m_sepcount == 0)
         {
-            m_out.put(begin, num_digits);
+            write_digits_nosep();
         }
         else
         {
-            write_digits_with_punctuation(begin, num_digits);
+            write_digits_sep();
         }
     }
 
-    void write_digits_with_punctuation
-        ( const CharT* digits
-        , unsigned num_digits
-        ) const
+    void write_digits_nosep() const
     {
-        char32_t thousands_sep = m_numpunct.thousands_sep();
-        unsigned char groups[sizeof(IntT) * 6];
-        constexpr std::size_t buff_size = sizeof(IntT) * 12;
-        CharT buff[buff_size];
-        CharT* it_buff = buff;
-        CharT* buff_end = buff + buff_size;
+        CharT dig_buff[max_digcount];
+        CharT* dig_it = stringify::v0::detail::write_int_txtdigits_backwards
+            ( m_fmt.value()
+            , m_fmt.base()
+            , m_fmt.uppercase()
+            , dig_buff + max_digcount );
+        BOOST_ASSERT(dig_it + m_digcount == dig_buff + max_digcount);
+        m_out.put(dig_it, m_digcount);
+    }
+
+    void write_digits_sep() const
+    {
         const auto& encoder = m_out.encoder();
-
-        auto* it_grp = m_numpunct.groups(num_digits, groups);
-        while(true)
+        auto sep = m_out.validate(m_punct->thousands_sep());
+        if(sep.error_emitted)
         {
-            unsigned grp_size = *it_grp;
-            for(unsigned i = 0; i < grp_size; ++i)
-            {
-                *it_buff = *digits;
-                ++it_buff;
-                ++digits;
-            }
-            if(--it_grp < groups)
-            {
-                break;
-            }
-            it_buff = encoder.encode(thousands_sep, it_buff, buff_end, true);
-            BOOST_ASSERT(it_buff != nullptr);
-            BOOST_ASSERT(it_buff < buff_end);
+            return;
         }
-        m_out.put(buff, it_buff - buff);
-    }
-
-    template <unsigned Base, typename OutputIterator>
-    OutputIterator*
-    write_digits_backwards(unsigned_type value, OutputIterator* it) const
-    {
-        while(value >= Base)
+        if(sep.size == 0)
         {
-            *--it = character_of_digit(value % Base);
-            value /= Base;
+            write_digits_nosep();
+            return;
         }
-        *--it = character_of_digit(static_cast<unsigned>(value));
-        return it;
-    }
 
-    CharT character_of_digit(unsigned digit) const noexcept
-    {
-        if (digit < 10)
-        {
-            return CharT('0') + digit;
-        }
-        const CharT char_a = m_input.uppercase() ? 'A' : 'a';
-        return  char_a + digit - 10;
-    }
+        char dig_buff[max_digcount];
+        char* dig_it = stringify::v0::detail::write_int_txtdigits_backwards
+            ( m_fmt.value()
+            , m_fmt.base()
+            , m_fmt.uppercase()
+            , dig_buff + max_digcount );
 
-    void determinate_fill()
-    {
-        int content_width = width_body();
-        if(m_input.width() < 0)
+        unsigned char grp_buff[max_digcount];
+        auto* grp_it = m_punct->groups(m_digcount, grp_buff);
+
+        if (sep.size == 1)
         {
-            m_input.width(0);
-        }
-        if(content_width < m_input.width())
-        {
-            m_fillcount = m_input.width() - content_width;
+            CharT sep_ch;
+            auto t = encoder.encode
+                ( sep.ch, &sep_ch, &sep_ch + 1, m_out.allow_surrogates() );
+            BOOST_ASSERT(t != &sep_ch + 2);
+            BOOST_ASSERT(t != nullptr);
+            write_digits_littlesep(dig_it, grp_buff, grp_it, sep_ch);
         }
         else
         {
-            m_input.width(content_width);
+            write_digits_bigsep(dig_it, grp_buff, grp_it, sep.ch, sep.size);
         }
     }
 
-    int width_body() const noexcept
+    void write_digits_littlesep
+        ( char* dig_it
+        , unsigned char* grp
+        , unsigned char* grp_it
+        , CharT sep ) const
     {
-        unsigned num_digits = 0;
-        unsigned extra_chars = 0;
-        auto uv = unsigned_value();
-        switch(m_input.base())
+        CharT buff[max_digcount * 2];
+        CharT* it = buff;
+        for(unsigned i = *grp_it; i != 0; --i)
         {
-            case 10:
+            *it++ = *dig_it++;
+        }
+        do
+        {
+            *it++ = sep;
+            for(unsigned i = *--grp_it; i != 0; --i)
             {
-                num_digits = stringify::v0::detail::number_of_digits<10>(uv);
-                extra_chars = showsign() ? 1 : 0;
-                break;
-            }
-            case 16:
-            {
-                num_digits = stringify::v0::detail::number_of_digits<16>(uv);
-                extra_chars = m_input.showbase() ? 2 : 0;
-                break;
-            }
-            default:
-            {
-                BOOST_ASSERT(m_input.base() == 8);
-                num_digits = stringify::v0::detail::number_of_digits<8>(uv);
-                extra_chars = m_input.showbase() ? 1 : 0;
+                *it++ = *dig_it++;
             }
         }
+        while(grp_it > grp);
+        BOOST_ASSERT(buff + m_digcount + m_sepcount == it);
+        m_out.put(buff, m_digcount + m_sepcount);
+    }
 
-        unsigned num_separators = m_numpunct.thousands_sep_count(num_digits);
-        return num_digits + extra_chars + num_separators;
+    void write_digits_bigsep
+        ( char* dig_it
+        , unsigned char* grp
+        , unsigned char* grp_it
+        , char32_t sep_char
+        , unsigned sep_char_size ) const
+    {
+        stringify::v0::detail::intdigits_writer<IntT, CharT> writer
+            { dig_it
+            , grp
+            , grp_it
+            , m_out.encoder()
+            , sep_char
+            , sep_char_size };
+
+        m_out.put(writer);
     }
 };
 
 template <typename IntT, typename CharT>
 int_printer<IntT, CharT>::int_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const stringify::v0::int_with_formatting<IntT>& valuef
+    , const stringify::v0::int_with_formatting<IntT>& fmt
     , const stringify::v0::numpunct<8>& numpunct_oct
     , const stringify::v0::numpunct<10>& numpunct_dec
     , const stringify::v0::numpunct<16>& numpunct_hex
     ) noexcept
     : m_out(out)
-    , m_input{valuef}
-    , m_numpunct
-        ( valuef.base() == 10
-          ? static_cast<const stringify::v0::numpunct_base&>(numpunct_dec)
-          : valuef.base() == 16
-          ? static_cast<const stringify::v0::numpunct_base&>(numpunct_hex)
-          : static_cast<const stringify::v0::numpunct_base&>(numpunct_oct)
-        )
+    , m_fmt{fmt}
 {
-    determinate_fill();
+    auto extra_chars_count = 0;
+    if (fmt.base() == 10)
+    {
+        m_punct = & numpunct_dec;
+        m_digcount = stringify::v0::detail::count_digits<10>(fmt.value());
+        m_sepcount = m_punct->thousands_sep_count(m_digcount);
+        if(showsign())
+        {
+            extra_chars_count = 1;
+        }
+    }
+    else if (fmt.base() == 16)
+    {
+        m_punct = & numpunct_hex;
+        m_digcount = stringify::v0::detail::count_digits<16>(fmt.value());
+        if(fmt.showbase())
+        {
+            extra_chars_count = 2;
+        }
+    }
+    else
+    {
+        BOOST_ASSERT(fmt.base() == 8);
+        m_digcount = stringify::v0::detail::count_digits<8>(fmt.value());
+        m_punct = & numpunct_oct;
+        if(fmt.showbase())
+        {
+            extra_chars_count = 1;
+        }
+    }
+    m_sepcount = m_punct->thousands_sep_count(m_digcount);
+    m_fillcount = 0;
+    int content_width
+        = static_cast<int>(fmt.precision() > m_digcount ? fmt.precision() : m_digcount)
+        + static_cast<int>(m_sepcount)
+        + extra_chars_count;
+
+    if (m_fmt.width() > content_width)
+    {
+        m_fillcount = m_fmt.width() - content_width;
+    }
+    else
+    {
+        m_fmt.width(content_width);
+        m_fillcount = 0;
+    }
+
+    BOOST_ASSERT(m_digcount <= max_digcount);
+    BOOST_ASSERT(m_sepcount <= max_digcount);
 }
 
 template <typename IntT, typename CharT>
@@ -603,93 +580,16 @@ void int_printer<IntT, CharT>::write() const
     }
     else
     {
-        write_without_fill();
+        write_complement();
+        write_digits();
     }
 }
 
 template <typename IntT, typename CharT>
 int int_printer<IntT, CharT>::remaining_width(int w) const
 {
-    return w > m_input.width() ? (w - m_input.width()) : 0;
+    return w > m_fmt.width() ? (w - m_fmt.width()) : 0;
 }
-
-// namespace detail {
-
-// template <typename IntT>
-// struct int_input_traits
-// {
-//     template <typename CharT, typename FPack>
-//     static inline stringify::v0::int_printer<IntT, CharT> make_printer
-//         ( const FPack& fp
-//         , IntT ch
-//         )
-//     {
-//         return {fp, ch};
-//     }
-
-//     template <typename CharT, typename FPack>
-//     static inline stringify::v0::int_printer<IntT, CharT> make_printer
-//         ( const FPack& fp
-//         , const stringify::v0::int_with_formatting<IntT>& ch
-//         )
-//     {
-//         return {fp, ch};
-//     }
-
-//     static inline stringify::v0::int_with_formatting<IntT> fmt(IntT ch)
-//     {
-//         return {ch};
-//     }
-// };
-// }
-
-// stringify::v0::detail::int_input_traits<short>
-// stringify_get_input_traits (stringify::v0::int_with_formatting<short>);
-
-// stringify::v0::detail::int_input_traits<int>
-// stringify_get_input_traits (stringify::v0::int_with_formatting<int>);
-
-// stringify::v0::detail::int_input_traits<long>
-// stringify_get_input_traits (stringify::v0::int_with_formatting<long>);
-
-// stringify::v0::detail::int_input_traits<long long>
-// stringify_get_input_traits (stringify::v0::int_with_formatting<long long>);
-
-// stringify::v0::detail::int_input_traits<unsigned short>
-// stringify_get_input_traits (stringify::v0::int_with_formatting<unsigned short>);
-
-// stringify::v0::detail::int_input_traits<unsigned int>
-// stringify_get_input_traits (stringify::v0::int_with_formatting<unsigned int>);
-
-// stringify::v0::detail::int_input_traits<unsigned long>
-// stringify_get_input_traits (stringify::v0::int_with_formatting<unsigned long>);
-
-// stringify::v0::detail::int_input_traits<unsigned long long>
-// stringify_get_input_traits (stringify::v0::int_with_formatting<unsigned long long>);
-
-// stringify::v0::detail::int_input_traits<short>
-// stringify_get_input_traits(short);
-
-// stringify::v0::detail::int_input_traits<int>
-// stringify_get_input_traits(int);
-
-// stringify::v0::detail::int_input_traits<long>
-// stringify_get_input_traits(long);
-
-// stringify::v0::detail::int_input_traits<long long>
-// stringify_get_input_traits(long long);
-
-// stringify::v0::detail::int_input_traits<unsigned short>
-// stringify_get_input_traits(unsigned short);
-
-// stringify::v0::detail::int_input_traits<unsigned int>
-// stringify_get_input_traits(unsigned int);
-
-// stringify::v0::detail::int_input_traits<unsigned long>
-// stringify_get_input_traits(unsigned long);
-
-// stringify::v0::detail::int_input_traits<unsigned long long>
-// stringify_get_input_traits(unsigned long long);
 
 
 template <typename CharT, typename FPack>
