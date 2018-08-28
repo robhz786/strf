@@ -211,7 +211,6 @@ public:
         : m_out(out)
         , m_join(j)
         , m_encoder{encoding.encoder()}
-        , m_keepsurr{out.allow_surrogates()}
         , m_args{pp_range}
     {
         m_fillcount = remaining_width_from_arglist(m_join.width);
@@ -277,7 +276,6 @@ private:
     input_type m_join;
     int m_fillcount = 0;
     const stringify::v0::encoder<CharT>& m_encoder;
-    bool m_keepsurr;
     pp_range m_args = nullptr;
 
     std::size_t args_length() const
@@ -294,8 +292,7 @@ private:
     {
         if(m_fillcount > 0)
         {
-            return m_fillcount
-                * m_encoder.necessary_size(m_join.fillchar, m_keepsurr);
+            return m_fillcount * m_out.necessary_size(m_join.fillchar);
         }
         return 0;
     }

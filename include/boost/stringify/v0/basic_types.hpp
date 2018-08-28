@@ -19,116 +19,6 @@ struct allow_surrogates_category;
 struct encoding_error_category;
 struct tag {};
 
-enum class cv_result
-{
-    success,
-    invalid_char,
-    insufficient_space
-};
-
-class u32output
-{
-public:
-
-    virtual ~u32output()
-    {
-    }
-
-    BOOST_STRINGIFY_NODISCARD
-    virtual stringify::v0::cv_result put32(char32_t ch) = 0;
-
-    /**
-    @retval true success
-    @retval false insufficient space
-    */
-    BOOST_STRINGIFY_NODISCARD
-    virtual bool signalize_error() = 0;
-};
-
-template <typename CharIn>
-struct decoder_result
-{
-    const CharIn* src_it;
-    stringify::v0::cv_result result;
-};
-
-template <typename CharIn>
-class decoder
-{
-public:
-
-    virtual ~decoder()
-    {
-    }
-
-    BOOST_STRINGIFY_NODISCARD
-    virtual stringify::v0::decoder_result<CharIn> decode
-        ( stringify::v0::u32output& dest
-        , const CharIn* begin
-        , const CharIn* end
-        , bool allow_surrogates
-        ) const = 0;
-
-    /**
-    dont treat surrogates as invalid
-    @retval 0x0FFFFFF on error
-    */
-    // virtual char32_t decode(CharIn ch) const = 0; //todo
-
-    virtual std::size_t remaining_codepoints_count
-        ( std::size_t minuend
-        , const CharIn* begin
-        , const CharIn* end
-        ) const = 0;
-};
-
-template <typename CharOut>
-struct char_cv_result
-{
-    std::size_t count;
-    CharOut* dest_it;
-};
-
-template <typename CharOut>
-class encoder
-{
-public:
-
-    virtual ~encoder()
-    {
-    }
-
-    virtual std::size_t necessary_size
-        ( char32_t ch
-        , bool allow_surrogates ) const = 0;
-
-    virtual std::size_t validate
-        ( char32_t ch
-        , bool allow_surrogates ) const = 0;
-
-    /**
-    if ch is invalid or not supported return {0, nullptr}
-    */
-    virtual stringify::v0::char_cv_result<CharOut> encode
-        ( std::size_t count
-        , char32_t ch
-        , CharOut* dest_begin
-        , CharOut* dest_end
-        , bool allow_surrogates ) const = 0;
-
-    /**
-    return
-    - success: != nullptr && <=end
-    - space is insufficient : end + 1
-    - ch is invalid or not supported: nullptr
-    */
-    virtual CharOut* encode
-        ( char32_t ch
-        , CharOut* dest
-        , CharOut* dest_end
-        , bool allow_surrogates ) const = 0;
-};
-
 class error_signal
 {
 public:
@@ -139,32 +29,25 @@ public:
         : m_variant(e_omit)
     {
     }
-
     explicit error_signal(char32_t ch) noexcept
         : m_variant(e_char)
     {
         m_char = ch;
     }
-
     explicit error_signal(func_ptr func) noexcept
         : m_variant(e_function)
     {
         m_function = func;
     }
-
     explicit error_signal(std::error_code ec) noexcept
         : m_variant(e_error_code)
     {
         new (&m_error_code_storage) std::error_code(ec);
     }
-
-
-
     error_signal(const error_signal& other) noexcept
     {
         init_from(other);
     }
-
     ~error_signal() noexcept
     {
         if(m_variant == e_error_code)
@@ -319,6 +202,142 @@ void error_signal::init_from(const error_signal& other)
 }
 
 #endif //! defined(BOOST_STRINGIFY_OMIT_IMPL)
+
+
+enum class cv_result
+{
+    success,
+    invalid_char,
+    insufficient_space
+};
+
+class u32output
+{
+public:
+
+    virtual ~u32output()
+    {
+    }
+
+    BOOST_STRINGIFY_NODISCARD
+    virtual stringify::v0::cv_result put32(char32_t ch) = 0;
+
+    /**
+    @retval true success
+    @retval false insufficient space
+    */
+    BOOST_STRINGIFY_NODISCARD
+    virtual bool signalize_error() = 0;
+};
+
+template <typename CharIn>
+struct decoder_result
+{
+    const CharIn* src_it;
+    stringify::v0::cv_result result;
+};
+
+template <typename CharIn>
+class decoder
+{
+public:
+
+    virtual ~decoder()
+    {
+    }
+
+    BOOST_STRINGIFY_NODISCARD
+    virtual stringify::v0::decoder_result<CharIn> decode
+        ( stringify::v0::u32output& dest
+        , const CharIn* begin
+        , const CharIn* end
+        , bool allow_surrogates
+        ) const = 0;
+
+    /**
+    dont treat surrogates as invalid
+    @retval 0x0FFFFFF on error
+    */
+    // virtual char32_t decode(CharIn ch) const = 0; //todo
+
+    virtual std::size_t remaining_codepoints_count
+        ( std::size_t minuend
+        , const CharIn* begin
+        , const CharIn* end
+        ) const = 0;
+};
+
+template <typename CharOut>
+struct char_cv_result
+{
+    std::size_t count;
+    CharOut* dest_it;
+};
+
+template <typename CharOut>
+class encoder
+{
+public:
+
+    virtual ~encoder()
+    {
+    }
+
+    std::size_t necessary_size
+        ( char32_t ch
+        , const stringify::v0::error_signal& esig
+        , bool allow_surrogates ) const;
+
+    virtual std::size_t validate
+        ( char32_t ch
+        , bool allow_surrogates ) const = 0;
+
+    /**
+    if ch is invalid or not supported return {0, nullptr}
+    */
+    virtual stringify::v0::char_cv_result<CharOut> encode
+        ( std::size_t count
+        , char32_t ch
+        , CharOut* dest_begin
+        , CharOut* dest_end
+        , bool allow_surrogates ) const = 0;
+
+    /**
+    return
+    - success: != nullptr && <=end
+    - space is insufficient : end + 1
+    - ch is invalid or not supported: nullptr
+    */
+    virtual CharOut* encode
+        ( char32_t ch
+        , CharOut* dest
+        , CharOut* dest_end
+        , bool allow_surrogates ) const = 0;
+};
+
+template <typename CharOut>
+std::size_t encoder<CharOut>::necessary_size
+    ( char32_t ch
+    , const stringify::v0::error_signal& esig
+    , bool allow_surrogates ) const
+{
+    auto size = validate(ch, allow_surrogates);
+    if (size != 0)
+    {
+        return size;
+    }
+    if (esig.has_char())
+    {
+        size = validate(esig.get_char(), allow_surrogates);
+        if (size != 0)
+        {
+            return size;
+        }
+        return 1; // size of U'?'
+    }
+    return 0;
+}
+
 
 template <typename CharOut>
 stringify::v0::char_cv_result<CharOut> emit_error
@@ -1087,7 +1106,10 @@ public:
 
     stringify::v0::codepoint_validation_result validate(char32_t ch);
 
-    std::size_t necessary_size(char32_t ch) const;
+    std::size_t necessary_size(char32_t ch) const
+    {
+        return encoder().necessary_size(ch, m_encoding_err, m_allow_surr);
+    }
 
     template <typename CharIn>
     bool put
@@ -1183,27 +1205,6 @@ output_writer<CharOut>::validate(char32_t ch)
     return {0, ch, false};
 }
 
-template <typename CharOut>
-std::size_t output_writer<CharOut>::necessary_size(char32_t ch) const
-{
-    auto s = encoder().validate(ch, m_allow_surr);
-    if (s != 0)
-    {
-        return s;
-    }
-    if(m_encoding_err.has_char())
-    {
-        s = encoder().validate(m_encoding_err.get_char(), m_allow_surr);
-        if (s != 0)
-        {
-            return s;
-        }
-        return 1;
-    }
-    return 0;
-}
-
-
 namespace detail {
 
 template <typename CharOut>
@@ -1224,7 +1225,7 @@ public:
 
     stringify::v0::cv_result put32(char32_t ch) override
     {
-        m_length += m_encoder.necessary_size(ch, m_allow_surr);
+        m_length += m_encoder.necessary_size(ch, m_err_sig, m_allow_surr);
         return stringify::v0::cv_result::success;
     }
 

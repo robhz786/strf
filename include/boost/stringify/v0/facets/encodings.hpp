@@ -67,15 +67,6 @@ public:
         , const char* end ) const override;
 };
 
-class ascii_variant_encoder: public stringify::v0::encoder<char>
-{
-public:
-
-    std::size_t necessary_size
-        ( char32_t ch
-        , bool allow_surrogates ) const override;
-};
-
 class ascii_decoder: public stringify::v0::detail::ascii_variant_decoder
 {
 public:
@@ -87,7 +78,7 @@ public:
         , bool allow_surrogates ) const override;
 };
 
-class ascii_encoder: public stringify::v0::detail::ascii_variant_encoder
+class ascii_encoder: public stringify::v0::encoder<char>
 {
 public:
 
@@ -121,7 +112,7 @@ public:
         , bool allow_surrogates ) const override;
 };
 
-class iso_8859_1_encoder: public stringify::v0::detail::ascii_variant_encoder
+class iso_8859_1_encoder: public stringify::v0::encoder<char>
 {
 public:
 
@@ -154,7 +145,7 @@ public:
         , bool allow_surrogates ) const override;
 };
 
-class iso_8859_15_encoder: public stringify::v0::detail::ascii_variant_encoder
+class iso_8859_15_encoder: public stringify::v0::encoder<char>
 {
 public:
 
@@ -193,7 +184,7 @@ public:
 };
 
 
-class windows_1252_encoder: public stringify::v0::detail::ascii_variant_encoder
+class windows_1252_encoder: public stringify::v0::encoder<char>
 {
 public:
 
@@ -253,10 +244,6 @@ public:
     utf8_encoder() = default;
     ~utf8_encoder() = default;
 
-    std::size_t necessary_size
-        ( char32_t ch
-        , bool allow_surrogates ) const override;
-
     std::size_t validate
         ( char32_t ch
         , bool allow_surrogates ) const override;
@@ -284,7 +271,7 @@ public:
     mutf8_encoder() = default;
     ~mutf8_encoder() = default;
 
-    std::size_t necessary_size
+    std::size_t validate
         ( char32_t ch
         , bool allow_surrogates )
         const override;
@@ -341,10 +328,6 @@ public:
     ~utf16_encoder() = default;
 
     std::size_t validate
-        ( char32_t ch
-        , bool allow_surrogates ) const override;
-
-    std::size_t necessary_size
         ( char32_t ch
         , bool allow_surrogates ) const override;
 
@@ -407,10 +390,6 @@ public:
     ~utf32_encoder()
     {
     }
-
-    std::size_t necessary_size
-        ( char32_t ch
-        , bool allow_surrogates ) const override;
 
     std::size_t validate
         ( char32_t ch
@@ -612,15 +591,6 @@ BOOST_STRINGIFY_INLINE std::size_t ascii_variant_decoder::remaining_codepoints_c
 {
     std::size_t len = end - begin;
     return len > minuend ? len - minuend : 0;
-}
-
-BOOST_STRINGIFY_INLINE std::size_t ascii_variant_encoder::necessary_size
-    ( char32_t ch
-    , bool allow_surrogates ) const
-{
-    (void)ch;
-    (void)allow_surrogates;
-    return 1;
 }
 
 BOOST_STRINGIFY_INLINE stringify::v0::decoder_result<char> ascii_decoder::decode
@@ -1252,16 +1222,6 @@ BOOST_STRINGIFY_INLINE char* utf8_encoder::encode
     return ch >= 0x110000 ? nullptr : end + 1;
 }
 
-BOOST_STRINGIFY_INLINE std::size_t utf8_encoder::necessary_size
-    ( char32_t ch
-    , bool allow_surrogates ) const
-{
-    return (ch < 0x80 ? 1 :
-            ch < 0x800 ? 2 :
-            ! allow_surrogates && is_surrogate(ch) ? 4 :
-            ch < 0x10000 ? 3 : 4);
-}
-
 BOOST_STRINGIFY_INLINE std::size_t utf8_encoder::validate
     ( char32_t ch
     , bool allow_surrogates ) const
@@ -1316,15 +1276,16 @@ BOOST_STRINGIFY_INLINE stringify::v0::char_cv_result<char> mutf8_encoder::encode
     return {c, dest};
 }
 
-BOOST_STRINGIFY_INLINE std::size_t mutf8_encoder::necessary_size
+BOOST_STRINGIFY_INLINE std::size_t mutf8_encoder::validate
     ( char32_t ch
     , bool allow_surrogates ) const
 {
     return (ch ==  0 ? 2 :
             ch < 0x80 ? 1 :
             ch < 0x800 ? 2 :
-            ! allow_surrogates && is_surrogate(ch) ? 4 :
-            ch < 0x10000 ? 3 : 4);
+            ! allow_surrogates && is_surrogate(ch) ? 0 :
+            ch < 0x10000 ? 3 :
+            ch < 0x110000 ? 4 : 0);
 }
 
 #endif // ! defined(BOOST_STRINGIFY_OMIT_IMPL)
@@ -1414,14 +1375,6 @@ BOOST_STRINGIFY_INLINE std::size_t utf16_encoder<CharOut>::validate
         return (allow_surrogates || ! is_surrogate(ch));
     }
     return 2;
-}
-
-template <typename CharOut>
-std::size_t utf16_encoder<CharOut>::necessary_size
-    ( char32_t ch
-    , bool allow_surrogates ) const
-{
-    return (ch < 0x10000 && (allow_surrogates || ! is_surrogate(ch))) ? 1 : 2;
 }
 
 template <typename CharOut>
@@ -1559,16 +1512,6 @@ std::size_t utf32_encoder<CharOut>::validate
     , bool allow_surrogates ) const
 {
     return (ch < 0x10000 && (allow_surrogates || ! is_surrogate(ch)));
-}
-
-template <typename CharOut>
-std::size_t utf32_encoder<CharOut>::necessary_size
-    ( char32_t ch
-    , bool allow_surrogates ) const
-{
-    (void)ch;
-    (void)allow_surrogates;
-    return 1;
 }
 
 template <typename CharOut>
@@ -2118,8 +2061,7 @@ std::size_t utf16_to_utf8<CharIn>::necessary_size
     , const stringify::v0::error_signal& err_sig
     , bool allow_surrogates ) const
 {
-    (void) err_sig;
-    return encoder::necessary_size(ch, allow_surrogates);
+    return encoder::necessary_size(ch, err_sig, allow_surrogates);
 }
 
 /*
