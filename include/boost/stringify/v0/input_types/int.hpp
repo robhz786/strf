@@ -446,6 +446,7 @@ private:
                 ( sep.ch, &sep_ch, &sep_ch + 1, m_out.allow_surrogates() );
             BOOST_ASSERT(t != &sep_ch + 2);
             BOOST_ASSERT(t != nullptr);
+            (void) t;
             write_digits_littlesep(dig_it, grp_buff, grp_it, sep_ch);
         }
         else

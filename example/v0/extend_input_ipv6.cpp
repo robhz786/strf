@@ -314,5 +314,6 @@ int main()
 
     BOOST_ASSERT(s == expected_result);
     //]
+    (void)expected_result;
     return 0;
 }

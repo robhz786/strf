@@ -76,6 +76,13 @@ template <typename CharT, typename FPack>
 class printers_tuple<CharT, FPack>
 {
 public:
+
+    printers_tuple(const printers_tuple&) = default;
+
+    printers_tuple(printers_tuple&&)
+    {
+    }
+
     printers_tuple
         ( stringify::v0::output_writer<CharT>&
         , const FPack&
@@ -103,13 +110,20 @@ class printers_tuple<CharT, FPack, Arg, Args...>
                 , std::declval<const Arg>()));
 public:
 
+    printers_tuple(const printers_tuple&) = default;
+
+    printers_tuple(const printers_tuple&& rval)
+        : m_printer(std::move(rval.m_printer))
+        , m_rest(std::move(rval.m_rest))
+    {
+    }
+
     printers_tuple
         ( stringify::v0::output_writer<CharT>& out
         , const FPack& fp
         , const stringify::v0::detail::args_tuple<Arg, Args...>& args
         )
-        : m_printer
-          (make_printer<CharT, FPack>(out, fp, args.first_arg))
+        : m_printer(make_printer<CharT, FPack>(out, fp, args.first_arg))
         , m_rest(out, fp, args.remove_first())
     {
     }
@@ -146,6 +160,21 @@ public:
         m_range.m_begin = m_array;
     }
 
+    printers_group(const printers_group& cp)
+        : m_impl(cp.m_impl)
+    {
+        m_range.m_end = m_impl.fill(m_array);
+        m_range.m_begin = m_array;
+    }
+
+    printers_group(printers_group&& rval)
+        : m_impl(std::move(rval.m_impl))
+    {
+        m_range.m_end = m_impl.fill(m_array);
+        m_range.m_begin = m_array;
+    }
+
+
     virtual ~printers_group()
     {
     }
@@ -159,8 +188,8 @@ private:
 
     stringify::v0::detail::printers_tuple<CharT, FPack, Args...> m_impl;
 
-    using fmt_ptr = const stringify::v0::printer<CharT>*;
-    fmt_ptr m_array[sizeof...(Args)];
+    using printer_ptr = const stringify::v0::printer<CharT>*;
+    printer_ptr m_array[sizeof...(Args)];
     stringify::v0::detail::printer_ptr_range<CharT> m_range;
 };
 
@@ -185,7 +214,7 @@ struct join_t
     template <typename ... Args>
     stringify::v0::detail::joined_args<Args...> operator()(const Args& ... args) const
     {
-        return {*this, stringify::v0::detail::args_tuple<Args...>{args...}};
+        return {*this, {args...}};
     }
 };
 
@@ -204,16 +233,34 @@ public:
 
     join_printer_impl
         ( stringify::v0::output_writer<CharT>& out
-        , const stringify::v0::detail::printer_ptr_range<CharT>& pp_range
+        , const stringify::v0::detail::printer_ptr_range<CharT>& args
         , const stringify::v0::detail::join_t& j
-        , const stringify::v0::encoding<CharT>& encoding
         )
-        : m_out(out)
-        , m_join(j)
-        , m_encoder{encoding.encoder()}
-        , m_args{pp_range}
+        : m_out{out}
+        , m_join{j}
+        , m_args{args}
     {
         m_fillcount = remaining_width_from_arglist(m_join.width);
+    }
+
+    join_printer_impl( const join_printer_impl& cp ) = delete;
+
+    join_printer_impl
+        ( const join_printer_impl& cp
+        , const stringify::v0::detail::printer_ptr_range<CharT>& args )
+        : m_out{cp.m_out}
+        , m_join{cp.m_join}
+        , m_args{args}
+    {
+    }
+
+    join_printer_impl
+        ( join_printer_impl&& tmp
+        , const stringify::v0::detail::printer_ptr_range<CharT>& args )
+        : m_out{tmp.m_out}
+        , m_join{std::move(tmp.m_join)}
+        , m_args{std::move(args)}
+    {
     }
 
     ~join_printer_impl()
@@ -272,10 +319,9 @@ public:
 
 private:
 
-    stringify::v0::output_writer<CharT>& m_out;    
+    stringify::v0::output_writer<CharT>& m_out;
     input_type m_join;
     int m_fillcount = 0;
-    const stringify::v0::encoder<CharT>& m_encoder;
     pp_range m_args = nullptr;
 
     std::size_t args_length() const
@@ -360,41 +406,28 @@ public:
         , const stringify::v0::detail::joined_args<Args...>& ja
         )
         : fmt_group(out, fp, ja.args)
-        , join_impl{out, fmt_group::range(), ja.join, get_encoding(fp)}
+        , join_impl{out, fmt_group::range(), ja.join}
+    {
+    }
+
+    join_printer(const join_printer& cp)
+        : fmt_group(cp)
+        , join_impl(cp, fmt_group::range())
+    {
+    }
+
+    join_printer(join_printer&& tmp)
+        : fmt_group(std::move(tmp))
+        , join_impl(std::move(tmp), fmt_group::range())
     {
     }
 
     virtual ~join_printer()
     {
     }
-
-private:
-
-    static const auto& get_encoding(const FPack& fp)
-    {
-        using encoder_category = stringify::v0::encoding_category<CharT>;
-        return fp.template get_facet<encoder_category, input_type>();
-    }
 };
 
-// struct join_input_traits
-// {
-//     template <typename CharT, typename FPack, typename ... Args>
-//     static inline stringify::v0::detail::join_printer<CharT, FPack, Args...>
-//     make_printer
-//         ( const FPack& fp
-//         , const stringify::v0::detail::joined_args<Args...>& x
-//         )
-//     {
-//         return {fp, x};
-//     }
-// };
-
 } // namespace detail
-
-// template <typename ... Args>
-// stringify::v0::detail::join_input_traits stringify_get_input_traits
-// (const stringify::v0::detail::joined_args<Args...>&);
 
 template <typename CharT, typename FPack, typename ... Args>
 inline stringify::v0::detail::join_printer<CharT, FPack, Args...>

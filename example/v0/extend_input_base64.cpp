@@ -802,6 +802,7 @@ void sample()
 
     BOOST_ASSERT(obtained == expected);
 //]
+    (void)expected;
 };
 
 int main()
