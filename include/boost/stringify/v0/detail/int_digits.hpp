@@ -309,17 +309,48 @@ inline char to_digit(unsigned digit)
     return '0' + digit;
 }
 
+inline const char* chars_00_to_99()
+{
+    static const char array[] =
+        "00010203040506070809"
+        "10111213141516171819"
+        "20212223242526272829"
+        "30313233343536373839"
+        "40414243444546474849"
+        "50515253545556575859"
+        "60616263646566676869"
+        "70717273747576777879"
+        "80818283848586878889"
+        "90919293949596979899";
+
+    return array;
+}
+
 template <typename IntT, typename CharT>
 CharT* write_int_dec_txtdigits_backwards(IntT value, CharT* it) noexcept
 {
     auto uvalue = stringify::v0::detail::unsigned_abs(value);
-    while(uvalue >= 10)
+    const char* arr = stringify::v0::detail::chars_00_to_99();
+    while(uvalue > 99)
     {
-        *--it = stringify::v0::detail::to_digit(uvalue % 10);
-        uvalue /= 10;
+        auto index = (uvalue % 100) << 1;
+        it[-2] = arr[index];
+        it[-1] = arr[index + 1];
+        it -= 2;
+        uvalue /= 100;
     }
-    *--it = stringify::v0::detail::to_digit(uvalue);
-    return it;
+    if (uvalue < 10)
+    {
+        *--it = to_digit(uvalue);
+        return it;
+    }
+    else
+    {
+        auto index = uvalue << 1;
+        it[-2] = arr[index];
+        it[-1] = arr[index + 1];
+        return it - 2;
+    }
 }
 
 template <typename IntT, typename CharT>
