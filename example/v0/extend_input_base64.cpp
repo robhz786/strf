@@ -238,7 +238,7 @@ public:
 
     std::size_t necessary_size(std::size_t num_bytes, unsigned indentation) const;
 
-    std::array<char, 4> encode(const unsigned char* octets, unsigned num) const;
+    std::array<char, 4> encode(const unsigned char* octets, std::size_t num) const;
 
     char encode(unsigned hextet) const;
 
@@ -266,7 +266,7 @@ std::size_t base64_common_impl::necessary_size(std::size_t num_bytes, unsigned i
     return num_digits;
 }
 
-std::array<char, 4> base64_common_impl::encode(const unsigned char* octets, unsigned num) const
+std::array<char, 4> base64_common_impl::encode(const unsigned char* octets, std::size_t num) const
 {
     char ch0 = encode(octets[0] >> 2);
     char ch1 = encode(((octets[0] & 0x03) << 4) |
@@ -369,7 +369,7 @@ CharT* single_line_base64_pm_writer<CharT>::write_indentation(CharT* begin, Char
     std::size_t remaining_indentation_size = m_fmt.indentation() - m_column;
     auto count = (std::min) (availabe_space, remaining_indentation_size);
     std::fill(begin, begin + count, static_cast<CharT>(' '));
-    m_column += count;
+    m_column += static_cast<unsigned>(count);
     return begin + count;
 }
 //]
@@ -479,7 +479,7 @@ CharT* multiline_base64_pm_writer<CharT>::write_indentation
     std::size_t remaining_indentation_size = m_fmt.indentation() - m_column;
     auto count = (std::min) (availabe_space, remaining_indentation_size);
     std::fill(begin, begin + count, static_cast<CharT>(' '));
-    m_column += count;
+    m_column += static_cast<unsigned>(count);
     return begin + count;
 }
 

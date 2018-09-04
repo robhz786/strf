@@ -451,7 +451,12 @@ private:
         }
         else
         {
-            write_digits_bigsep(dig_it, grp_buff, grp_it, sep.ch, sep.size);
+            write_digits_bigsep
+                ( dig_it
+                , grp_buff
+                , grp_it
+                , sep.ch
+                , static_cast<unsigned>(sep.size) );
         }
     }
 

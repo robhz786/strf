@@ -68,6 +68,7 @@ int main()
     TEST("100000000")                ( strf::oct(0100000000l) );
     TEST("10000000000000000")        ( strf::oct(010000000000000000LL) );
     TEST("1000000000000000000000")   ( strf::oct(01000000000000000000000LL) );
+    TEST("1777777777777777777777")   ( strf::oct(01777777777777777777777LL) );
 
     TEST("9")                    ( 9 );
     TEST("99")                   ( 99 );
@@ -221,12 +222,12 @@ int main()
     }
     {
         const char* expected =
-            "1\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF"
-            "7\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF"
-            "7\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF"
-            "7\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF"
-            "7\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF" "7\U0010FFFF"
-            "7\U0010FFFF" "7";
+            u8"1\U0010FFFF" u8"7\U0010FFFF" u8"7\U0010FFFF" u8"7\U0010FFFF"
+            u8"7\U0010FFFF" u8"7\U0010FFFF" u8"7\U0010FFFF" u8"7\U0010FFFF"
+            u8"7\U0010FFFF" u8"7\U0010FFFF" u8"7\U0010FFFF" u8"7\U0010FFFF"
+            u8"7\U0010FFFF" u8"7\U0010FFFF" u8"7\U0010FFFF" u8"7\U0010FFFF"
+            u8"7\U0010FFFF" u8"7\U0010FFFF" u8"7\U0010FFFF" u8"7\U0010FFFF"
+            u8"7\U0010FFFF" u8"7";
 
         TEST(expected)
             .facets(strf::monotonic_grouping<8>{1}.thousands_sep(0x10FFFF))
@@ -282,7 +283,7 @@ int main()
                     .facets(strf::encoding_error(thrower_func))
                     (100000000);
             }
-            catch (const my_exception& e)
+            catch (const my_exception&)
             {
                 my_exception_thrown = true;
             }

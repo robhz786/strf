@@ -176,6 +176,7 @@ install:
   - git submodule init libs/config
   - git submodule init libs/core
   - git submodule init libs/detail
+  - git submodule init libs/utility
   - git submodule init tools/build
   - git submodule init tools/inspect
   - git submodule update

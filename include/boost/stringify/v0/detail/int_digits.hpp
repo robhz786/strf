@@ -9,6 +9,25 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 namespace detail {
 
+template
+    < typename IntT
+    , typename unsigned_IntT = typename std::make_unsigned<IntT>::type
+    >
+typename std::enable_if<std::is_signed<IntT>::value, unsigned_IntT>::type
+unsigned_abs(IntT value)
+{
+    return ( value > 0
+           ? static_cast<unsigned_IntT>(value)
+           : 1 + static_cast<unsigned_IntT>(-(value + 1)));
+}
+
+template<typename IntT>
+typename std::enable_if<std::is_unsigned<IntT>::value, IntT>::type
+unsigned_abs(IntT value)
+{
+    return value;
+}
+
 template <int Base, int IntSize>
 struct digits_counter;
 
@@ -18,17 +37,17 @@ struct digits_counter<8, 2>
     static unsigned count_digits(uint_fast16_t value)
     {
         unsigned num_digits = 1;
-        if(value > 07777)
+        if(value > 07777u)
         {
             value >>= 12;
             num_digits += 4;
         }
-        if(value > 077)
+        if(value > 077u)
         {
             value >>= 6;
             num_digits += 2;
         }
-        if(value > 07)
+        if(value > 07u)
         {
             ++num_digits;
         }
@@ -42,22 +61,22 @@ struct digits_counter<8, 4>
     static unsigned count_digits(uint_fast32_t value)
     {
         unsigned num_digits = 1;
-        if(value > 077777777l)
+        if(value > 077777777ul)
         {
             value >>= 24;
             num_digits += 8;
         }
-        if(value > 07777l)
+        if(value > 07777ul)
         {
             value >>= 12;
             num_digits += 4;
         }
-        if(value > 077l)
+        if(value > 077ul)
         {
             value >>= 6;
             num_digits += 2;
         }
-        if(value > 07l)
+        if(value > 07ul)
         {
             ++num_digits;
         }
@@ -71,27 +90,27 @@ struct digits_counter<8, 8>
     static unsigned count_digits(uint_fast64_t value)
     {
         unsigned num_digits = 1;
-        if(value > 07777777777777777LL)
+        if(value > 07777777777777777uLL)
         {
             value >>= 48;
             num_digits += 16;
         }
-        if(value > 077777777LL)
+        if(value > 077777777uLL)
         {
             value >>= 24;
             num_digits += 8;
         }
-        if(value > 07777LL)
+        if(value > 07777uLL)
         {
             value >>= 12;
             num_digits += 4;
         }
-        if(value > 077LL)
+        if(value > 077uLL)
         {
             value >>= 6;
             num_digits += 2;
         }
-        if(value > 07LL)
+        if(value > 07uLL)
         {
             ++num_digits;
         }
@@ -103,7 +122,7 @@ struct digits_counter<8, 8>
 template<>
 struct digits_counter<10, 2>
 {
-    static unsigned count_digits(uint_fast16_t value)
+    static unsigned count_digits_unsigned(uint_fast16_t value)
     {
         unsigned num_digits = 1;
         if (value > 9999) {
@@ -118,39 +137,54 @@ struct digits_counter<10, 2>
         }
         return num_digits;
     }
+
+    template <typename IntT>
+    static unsigned count_digits(IntT value)
+    {
+        auto uvalue = stringify::v0::detail::unsigned_abs(value);
+        return count_digits_unsigned(uvalue);
+    }
 };
 
 
 template<>
 struct digits_counter<10, 4>
 {
-    static unsigned count_digits(uint_fast32_t value)
+    static unsigned count_digits_unsigned(uint_fast32_t value)
     {
-        unsigned num_digits = 1l;
+        unsigned num_digits = 1;
 
-        if (value > 99999999l)
+        if (value > 99999999ul)
         {
-            value /= 100000000l;
+            value /= 100000000ul;
             num_digits += 8;
             goto value_less_than_100;
         }
-        if (value > 9999l)
+        if (value > 9999ul)
         {
-            value /= 10000l;
+            value /= 10000ul;
             num_digits += 4;
         }
-        if( value > 99l )
+        if( value > 99ul )
         {
-            value /= 100l;
+            value /= 100ul;
             num_digits += 2 ;
         }
         value_less_than_100:
-        if (value > 9l)
+        if (value > 9ul)
         {
              ++num_digits;
         }
 
         return num_digits;
+    }
+
+
+    template <typename IntT>
+    static unsigned count_digits(IntT value)
+    {
+        auto uvalue = stringify::v0::detail::unsigned_abs(value);
+        return count_digits_unsigned(uvalue);
     }
 };
 
@@ -158,7 +192,7 @@ struct digits_counter<10, 4>
 template<>
 struct digits_counter<10, 8>
 {
-    static unsigned count_digits(uint_fast64_t value)
+    static unsigned count_digits_unsigned(uint_fast64_t value)
     {
         unsigned num_digits = 1LL;
 
@@ -190,6 +224,13 @@ struct digits_counter<10, 8>
         }
         return num_digits;
     }
+
+    template <typename IntT>
+    static unsigned count_digits(IntT value)
+    {
+        auto uvalue = stringify::v0::detail::unsigned_abs(value);
+        return count_digits_unsigned(uvalue);
+    }
 };
 
 
@@ -199,11 +240,11 @@ struct digits_counter<16, 2>
     static unsigned count_digits(uint_fast16_t value)
     {
         unsigned num_digits = 1;
-        if( value > 0xff ) {
+        if( value > 0xffu ) {
             value >>= 8;
             num_digits += 2 ;
         }
-        if (value > 0xf) {
+        if (value > 0xfu) {
             ++num_digits;
         }
         return num_digits;
@@ -217,15 +258,15 @@ struct digits_counter<16, 4>
     static unsigned count_digits(uint_fast32_t value)
     {
         unsigned num_digits = 1;
-        if( value > 0xffffl ) {
+        if( value > 0xfffful ) {
             value >>= 16;
             num_digits += 4 ;
         }
-        if( value > 0xffl ) {
+        if( value > 0xfful ) {
             value >>= 8;
             num_digits += 2 ;
         }
-        if (value > 0xfl) {
+        if (value > 0xful) {
             ++num_digits;
         }
         return num_digits;
@@ -239,19 +280,19 @@ struct digits_counter<16, 8>
     static unsigned count_digits(uint_fast64_t value)
     {
         unsigned num_digits = 1;
-        if( value > 0xffffffffLL ) {
+        if( value > 0xffffffffuLL ) {
             value >>= 32;
             num_digits += 8 ;
         }
-        if( value > 0xffffLL ) {
+        if( value > 0xffffuLL ) {
             value >>= 16;
             num_digits += 4 ;
         }
-        if( value > 0xffLL ) {
+        if( value > 0xffuLL ) {
             value >>= 8;
             num_digits += 2 ;
         }
-        if (value > 0xfLL) {
+        if( value > 0xfuLL ) {
             ++num_digits;
         }
         return num_digits;
@@ -259,30 +300,11 @@ struct digits_counter<16, 8>
 };
 
 
-template
-    < typename IntT
-    , typename unsigned_IntT = typename std::make_unsigned<IntT>::type
-    >
-typename std::enable_if<std::is_signed<IntT>::value, unsigned_IntT>::type
-unsigned_abs(IntT value)
-{
-    return ( value > 0
-           ? static_cast<unsigned_IntT>(value)
-           : 1 + static_cast<unsigned_IntT>(-(value + 1)));
-}
-
-template<typename IntT>
-typename std::enable_if<std::is_unsigned<IntT>::value, IntT>::type
-unsigned_abs(IntT value)
-{
-    return value;
-}
-
 template <unsigned Base, typename intT>
 unsigned count_digits(intT value)
 {
     return stringify::v0::detail::digits_counter<Base, sizeof(intT)>
-        ::count_digits(stringify::v0::detail::unsigned_abs(value));
+        ::count_digits(value);
 }
 
 template <typename intT>
@@ -341,7 +363,7 @@ CharT* write_int_dec_txtdigits_backwards(IntT value, CharT* it) noexcept
     }
     if (uvalue < 10)
     {
-        *--it = to_digit(uvalue);
+        *--it = to_digit(static_cast<unsigned>(uvalue));
         return it;
     }
     else
@@ -356,24 +378,28 @@ CharT* write_int_dec_txtdigits_backwards(IntT value, CharT* it) noexcept
 template <typename IntT, typename CharT>
 CharT* write_int_hex_txtdigits_backwards(IntT value, bool uppercase, CharT* it) noexcept
 {
+    using uIntT = typename std::make_unsigned<IntT>::type;
+    uIntT uvalue = value;
     do
     {
-        *--it = stringify::v0::detail::to_xdigit(value & 0xF, uppercase);
-        value >>= 4;
+        *--it = stringify::v0::detail::to_xdigit(uvalue & 0xF, uppercase);
+        uvalue >>= 4;
     }
-    while(value != 0);
+    while(uvalue != 0);
     return it;
 }
 
 template <typename IntT, typename CharT>
 CharT* write_int_oct_txtdigits_backwards(IntT value, CharT* it) noexcept
 {
+    using uIntT = typename std::make_unsigned<IntT>::type;
+    uIntT uvalue = value;
     do
     {
-        *--it = stringify::v0::detail::to_digit(value & 7);
-        value >>= 3;
+        *--it = stringify::v0::detail::to_digit(uvalue & 7);
+        uvalue >>= 3;
     }
-    while(value != 0);
+    while(uvalue != 0);
     return it;
 }
 
