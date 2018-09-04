@@ -179,6 +179,7 @@ install:
   - git submodule init libs/utility         # boost::string_view
   - git submodule init libs/exception       # required by boost::string_view
   - git submodule init libs/throw_exception # required by boost::string_view
+  - git submodule init libs/container_hash  # required by boost::string_view
   - git submodule init tools/build
   - git submodule init tools/inspect
   - git submodule update
