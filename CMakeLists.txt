@@ -1,28 +1,33 @@
-cmake_minimum_required (VERSION 3.0)
+#
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+#
 
-if (NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "Relase")
-endif (NOT CMAKE_BUILD_TYPE)
-
+cmake_minimum_required (VERSION 3.5)
+project (Boost.Stringify CXX)
 enable_testing()
 
-project (BoostStringify)
+option(STRINGIFY_BUILD_TESTS "Build Boost.Stringify unit test" OFF)
+option(STRINGIFY_BUILD_EXAMPLES "Test Boost.Stringify examples files" OFF)
+option(STRINGIFY_BUILD_PERFORMANCE_TESTS "Build Boost.Stringify performace test" OFF)
 
-#set_directory_properties(PROPERTIES CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 14)
 
-if (${CMAKE_BUILD_TYPE} STREQUAL "Release" AND NOT MSVC)
-  add_compile_options("-O3")
-endif(${CMAKE_BUILD_TYPE} STREQUAL "Release" AND NOT MSVC)
-
-set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/out/${CMAKE_BUILD_TYPE})
+message("CMAKE_INSTALL_PREFIX is ${CMAKE_INSTALL_PREFIX}")
 
 add_subdirectory(build build)
-add_subdirectory(test test)
-add_subdirectory(example example)
 
-if (BOOST_STRINGIFY_BUILD_PERFORMANCE_TESTS)
-add_subdirectory(performance performance)
-add_subdirectory(performance/fmt-4.0.0 fmt)
-endif (BOOST_STRINGIFY_BUILD_PERFORMANCE_TESTS)
+if (STRINGIFY_BUILD_TESTS)
+  add_subdirectory(test test)
+endif(STRINGIFY_BUILD_TESTS)
 
+if (STRINGIFY_BUILD_EXAMPLES)
+  add_subdirectory(example example)
+endif (STRINGIFY_BUILD_EXAMPLES)
+
+if (STRINGIFY_BUILD_PERFORMANCE_TESTS)
+  add_subdirectory(performance performance)
+  add_subdirectory(performance/fmt-4.0.0 fmt)
+endif (STRINGIFY_BUILD_PERFORMANCE_TESTS)
 

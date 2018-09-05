@@ -1,3 +1,9 @@
+#
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+#
+
 cmake_minimum_required (VERSION 3.0)
 project (unit_tests)
 
@@ -25,14 +31,14 @@ foreach(
   transcoding_test
   )
 
-  add_executable(${t}_header_only   v0/${t}.cpp)
-  add_executable(${t}_static_lib    v0/${t}.cpp)
+  add_executable(${t}-header-only   v0/${t}.cpp)
+  add_executable(${t}-static-lib    v0/${t}.cpp)
 
-  target_link_libraries(${t}_header_only   boost_stringify_header_only)
-  target_link_libraries(${t}_static_lib    boost_stringify)
+  target_link_libraries(${t}-header-only   boost_stringify-header-only)
+  target_link_libraries(${t}-static-lib    boost_stringify)
 
-  add_test(run-${t}_header_only     ${t}_header_only)
-  add_test(run-${t}_static_lib      ${t}_static_lib)
+  add_test(run-${t}-header-only     ${t}-header-only)
+  add_test(run-${t}-static-lib      ${t}-static-lib)
 
 endforeach(t)
 

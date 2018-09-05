@@ -1,3 +1,10 @@
+#
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+#
+
+
 cmake_minimum_required (VERSION 3.0)
 enable_testing()
 
@@ -37,6 +44,5 @@ if (Qt5Core_FOUND)
   add_executable(extend_ouput_toQString v0/extend_output_toQString.cpp)
   target_link_libraries(extend_ouput_toQString Qt5::Core boost_stringify)
   add_test(NAME run_extend_ouput_toQString COMMAND extend_ouput_toQString)
-#  set_target_properties(extend_ouput_toQString PROPERTIES CXX_STANDARD 14)
   
 endif(Qt5Core_FOUND)
