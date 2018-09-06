@@ -485,13 +485,62 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<wchar_t>;
 // stringify::v0::detail::char_input_traits stringify_get_input_traits( stringify::v0::char_with_formatting<char32_t> );
 
 template
-    < typename CharT
+    < typename CharOut
     , typename FPack
-    , typename = typename std::enable_if<!std::is_same<CharT, char32_t>::value>::type
+    , typename = typename std::enable_if<!std::is_same<CharOut, char32_t>::value>::type
     >
-inline stringify::v0::char32_printer<CharT>
+inline stringify::v0::char32_printer<CharOut>
 make_printer
-    ( stringify::v0::output_writer<CharT>& out
+    ( stringify::v0::output_writer<CharOut>& out
+    , const FPack& fp
+    , const stringify::v0::char_with_formatting<char32_t>& ch )
+{
+    return {out, fp, ch};
+}
+
+template <typename CharOut, typename FPack>
+inline stringify::v0::char_printer<CharOut>
+make_printer
+    ( stringify::v0::output_writer<CharOut>& out
+    , const FPack& fp
+    , char ch )
+{
+    static_assert( std::is_same<CharOut, char>::value
+                 , "encoding convertion for single char not supported yet" );
+    return {out, fp, ch};
+}
+
+template <typename CharOut, typename FPack>
+inline stringify::v0::char_printer<CharOut>
+make_printer
+    ( stringify::v0::output_writer<CharOut>& out
+    , const FPack& fp
+    , wchar_t ch )
+{
+    static_assert( std::is_same<CharOut, wchar_t>::value
+                 , "encoding convertion for single char not supported yet" );
+    return {out, fp, ch};
+}
+
+template <typename CharOut, typename FPack>
+inline stringify::v0::char_printer<CharOut>
+make_printer
+    ( stringify::v0::output_writer<CharOut>& out
+    , const FPack& fp
+    , char16_t ch )
+{
+    static_assert( std::is_same<CharOut, char16_t>::value
+                 , "encoding convertion for single char not supported yet" );
+    return {out, fp, ch};
+}
+
+template< typename CharOut, typename FPack >
+std::conditional_t
+    < std::is_same<CharOut, char32_t>::value
+    , stringify::v0::char_printer<char32_t>
+    , stringify::v0::char32_printer<CharOut> >
+make_printer
+    ( stringify::v0::output_writer<CharOut>& out
     , const FPack& fp
     , char32_t ch
     )
@@ -499,53 +548,33 @@ make_printer
     return {out, fp, ch};
 }
 
-template
-    < typename CharT
-    , typename FPack
-    , typename = typename std::enable_if<!std::is_same<CharT, char32_t>::value>::type
-    >
-inline stringify::v0::char32_printer<CharT>
+template <typename CharOut, typename FPack>
+inline stringify::v0::char_printer<CharOut>
 make_printer
-    ( stringify::v0::output_writer<CharT>& out
+    ( stringify::v0::output_writer<CharOut>& out
     , const FPack& fp
-    , const stringify::v0::char_with_formatting<char32_t>& ch )
+    , const stringify::v0::char_with_formatting<CharOut>& ch )
 {
     return {out, fp, ch};
 }
 
-template <typename CharT, typename FPack>
-inline stringify::v0::char_printer<CharT>
-make_printer
-    ( stringify::v0::output_writer<CharT>& out
-    , const FPack& fp
-    , CharT ch )
-{
-    return {out, fp, ch};
-}
-
-template <typename CharT, typename FPack>
-inline stringify::v0::char_printer<CharT>
-make_printer
-    ( stringify::v0::output_writer<CharT>& out
-    , const FPack& fp
-    , const stringify::v0::char_with_formatting<CharT>& ch )
-{
-    return {out, fp, ch};
-}
-
-inline stringify::v0::char_with_formatting<char> make_fmt(stringify::v0::tag, char ch)
+inline stringify::v0::char_with_formatting<char>
+make_fmt(stringify::v0::tag, char ch)
 {
     return {ch};
 }
-inline stringify::v0::char_with_formatting<wchar_t> make_fmt(stringify::v0::tag, wchar_t ch)
+inline stringify::v0::char_with_formatting<wchar_t>
+make_fmt(stringify::v0::tag, wchar_t ch)
 {
     return {ch};
 }
-inline stringify::v0::char_with_formatting<char16_t> make_fmt(stringify::v0::tag, char16_t ch)
+inline stringify::v0::char_with_formatting<char16_t>
+make_fmt(stringify::v0::tag, char16_t ch)
 {
     return {ch};
 }
-inline stringify::v0::char_with_formatting<char32_t> make_fmt(stringify::v0::tag, char32_t ch)
+inline stringify::v0::char_with_formatting<char32_t>
+make_fmt(stringify::v0::tag, char32_t ch)
 {
     return {ch};
 }
