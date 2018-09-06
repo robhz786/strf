@@ -565,14 +565,14 @@ make_fmt(stringify::v0::tag, stringify::v0::detail::sep_range_p<ForwardIt, CharI
 
 template <typename ForwardIt>
 stringify::v0::detail::range_p<ForwardIt>
-iterate(ForwardIt begin, ForwardIt end)
+range(ForwardIt begin, ForwardIt end)
 {
     return {begin, end};
 }
 
 template <typename ForwardIt, typename CharIn>
 stringify::v0::detail::sep_range_p<ForwardIt, CharIn>
-iterate(ForwardIt begin, ForwardIt end, const CharIn* sep)
+range(ForwardIt begin, ForwardIt end, const CharIn* sep)
 {
     std::size_t sep_len = std::char_traits<CharIn>::length(sep);
     return {begin, end, sep, sep + sep_len};
@@ -580,14 +580,14 @@ iterate(ForwardIt begin, ForwardIt end, const CharIn* sep)
 
 template <typename ForwardIt>
 stringify::v0::detail::fmt_range<ForwardIt>
-fmt_iterate(ForwardIt begin, ForwardIt end)
+fmt_range(ForwardIt begin, ForwardIt end)
 {
     return {begin, end};
 }
 
 template <typename ForwardIt, typename CharIn>
 stringify::v0::detail::fmt_sep_range<ForwardIt, CharIn>
-fmt_iterate(ForwardIt begin, ForwardIt end, const CharIn* sep)
+fmt_range(ForwardIt begin, ForwardIt end, const CharIn* sep)
 {
     std::size_t sep_len = std::char_traits<CharIn>::length(sep);
     return {begin, end, sep + sep_len};
