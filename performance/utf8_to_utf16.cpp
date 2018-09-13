@@ -54,9 +54,6 @@ int main()
         (void)err;
     }
 
-
-#if ! defined(_MSC_VER)
-
     std::codecvt_utf8_utf16<char16_t> codecvt;
     const char* u8from_next = nullptr;
     char16_t* u16to_next = nullptr;
@@ -116,7 +113,5 @@ int main()
             , u16to_next);
         *u16to_next = '\0';
     }
-
-#endif // ! defined(MSVC)
 
 }

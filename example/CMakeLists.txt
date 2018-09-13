@@ -13,6 +13,7 @@ project (example)
 remove_definitions(-DNDEBUG)
 
 foreach(x
+    overview
     syntax_samples
     trivial_sample
     assembly_string

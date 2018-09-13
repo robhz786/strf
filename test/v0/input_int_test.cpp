@@ -101,10 +101,15 @@ int main()
 
     TEST ("       123")  (  strf::right(123 , 10) );
     TEST (".......123")  (  strf::right(123 , 10, '.') );
-    TEST ("......+123")  ( +strf::right(123 , 10, '.') );
-    TEST ("......-123")  ( +strf::right(-123, 10, '.') );
-    TEST ("........+0")  ( +strf::right(0   , 10, '.') );
-    TEST (".......123")  ( +strf::right(123u, 10, '.') );
+    TEST ("......-123")  (  strf::right(-123, 10, '.') );
+    TEST (".........0")  (  strf::right(0   , 10, '.') );
+    TEST (".......123")  (  strf::right(123u, 10, '.') );
+    TEST (".......123")  (  strf::right(123u, 10, '.').p(3) );
+    TEST (".....00123")  (  strf::right(123 , 10, '.').p(5) );
+    TEST ("....-00123")  (  strf::right(-123 , 10, '.').p(5) );
+    TEST ("-000000123")  (  strf::right(-123 , 10, '.').p(9) );
+    TEST ("0000000123")  (  strf::right(123 , 10, '.').p(10) );
+    TEST ("000000000123")  (  strf::right(123 , 10, '.').p(12) );
 
     TEST ("......+123")  ( +strf::right(123 , 10, '.') );
     TEST ("......-123")  ( +strf::right(-123, 10, '.') );
@@ -117,6 +122,10 @@ int main()
     TEST ("+........0")  ( +strf::internal(0,    10, '.') );
     TEST (".........0")  (  strf::internal(0,    10, '.') );
     TEST (".......123")  ( +strf::internal(123u, 10, '.') );
+    TEST ("+.....0123")  ( +strf::internal(123,  10, '.').p(4) );
+    TEST ("+000000123")  ( +strf::internal(123,  10, '.').p(9) );
+    TEST ("+0000000123") ( +strf::internal(123,  10, '.').p(10) );
+
 
     TEST ("123.......")  (  strf::left(123,  10, '.') );
     TEST ("+123......")  ( +strf::left(123,  10, '.') );
@@ -138,8 +147,6 @@ int main()
 
     // hexadecimal aligment
 
-    TEST("        aa")   (  strf::hex(0xAA).width(10) );
-    TEST("      0xaa")   ( ~strf::hex(0xAA)>10 );
     TEST("        aa")   (  strf::hex(0xAA)>10 );
     TEST("      0xaa")   ( ~strf::hex(0xAA)>10 );
     TEST("aa        ")   (  strf::hex(0xAA)<10 );
@@ -149,11 +156,37 @@ int main()
     TEST("    aa    ")   (  strf::hex(0xAA)^10 );
     TEST("   0xaa   ")   ( ~strf::hex(0xAA)^10 );
 
-    // octadecimal aligment
+    TEST("     000aa")   (  strf::hex(0xAA).p(5)>10 );
+    TEST("   0x000aa")   ( ~strf::hex(0xAA).p(5)>10 );
+    TEST("000aa     ")   (  strf::hex(0xAA).p(5)<10 );
+    TEST("0x000aa   ")   ( ~strf::hex(0xAA).p(5)<10 );
+    TEST("     000aa")   (  strf::hex(0xAA).p(5)%10 );
+    TEST("0x   000aa")   ( ~strf::hex(0xAA).p(5)%10 );
+    TEST("  000aa   ")   (  strf::hex(0xAA).p(5)^10 );
+    TEST(" 0x000aa  ")   ( ~strf::hex(0xAA).p(5)^10 );
+
+    TEST("00000000aa")   (  strf::hex(0xAA).p(10)>10 );
+    TEST("0x000000aa")   ( ~strf::hex(0xAA).p(8)>10 );
+    TEST("00000000aa")   (  strf::hex(0xAA).p(10)<10 );
+    TEST("0x000000aa")   ( ~strf::hex(0xAA).p(8)<10 );
+    TEST("00000000aa")   (  strf::hex(0xAA).p(10)%10 );
+    TEST("0x000000aa")   ( ~strf::hex(0xAA).p(8)%10 );
+    TEST("00000000aa")   (  strf::hex(0xAA).p(10)^10 );
+    TEST("0x000000aa")   ( ~strf::hex(0xAA).p(8)^10 );
+
+    TEST("000000000aa")   (  strf::hex(0xAA).p(11)>10 );
+    TEST("0x0000000aa")   ( ~strf::hex(0xAA).p(9)>10 );
+    TEST("000000000aa")   (  strf::hex(0xAA).p(11)<10 );
+    TEST("0x0000000aa")   ( ~strf::hex(0xAA).p(9)<10 );
+    TEST("000000000aa")   (  strf::hex(0xAA).p(11)%10 );
+    TEST("0x0000000aa")   ( ~strf::hex(0xAA).p(9)%10 );
+    TEST("000000000aa")   (  strf::hex(0xAA).p(11)^10 );
+    TEST("0x0000000aa")   ( ~strf::hex(0xAA).p(9)^10 );
+
+
+// octadecimal aligment
 
     TEST("        77")   (  strf::oct(077).width(10) );
-    TEST("       077")   ( ~strf::oct(077)>10 );
-    TEST("        77")   (  strf::oct(077)>10 );
     TEST("       077")   ( ~strf::oct(077)>10 );
     TEST("77        ")   (  strf::oct(077)<10 );
     TEST("077       ")   ( ~strf::oct(077)<10 );
@@ -161,6 +194,15 @@ int main()
     TEST("0       77")   ( ~strf::oct(077)%10 );
     TEST("    77    ")   (  strf::oct(077)^10 );
     TEST("   077    ")   ( ~strf::oct(077)^10 );
+
+    TEST("      0077")   (  strf::oct(077).p(4).width(10) );
+    TEST("     00077")   ( ~strf::oct(077).p(4)>10 );
+    TEST("0077      ")   (  strf::oct(077).p(4)<10 );
+    TEST("00077     ")   ( ~strf::oct(077).p(4)<10 );
+    TEST("      0077")   (  strf::oct(077).p(4)%10 );
+    TEST("0     0077")   ( ~strf::oct(077).p(4)%10 );
+    TEST("   0077   ")   (  strf::oct(077).p(4)^10 );
+    TEST("  00077   ")   ( ~strf::oct(077).p(4)^10 );
 
     // showpos in octadecimal and hexadecimal must not have any effect
 
@@ -185,12 +227,21 @@ int main()
     TEST("123")    ( strf::join_right(2, '.')(strf::left(123, 3, U'~')) );
     TEST("123")    ( strf::join_right(2, '.')(strf::left(123, 2, U'~')) );
 
+    TEST("   00123")   ( strf::join_right(8)(strf::fmt(123).p(5)));
+    TEST("..00123~~~")  ( strf::join_right(10, '.')(strf::left(123, 8, U'~').p(5)) );
+    TEST(".....00123")  ( strf::join_right(10, '.')(strf::left(123, 5, U'~').p(5)) );
+
+    TEST("00123~~")  ( strf::join_right(7, '.')(strf::left(123, 7, U'~').p(5)) );
+    TEST("00123")    ( strf::join_right(5, '.')(strf::left(123, 5, U'~').p(5)) );
+    TEST("00123")    ( strf::join_right(5, '.')(strf::left(123, 3, U'~').p(5)) );
+
     {
         auto punct = strf::monotonic_grouping<10>{3};
 
         TEST("       0").facets(punct) (strf::right(0, 8));
         TEST("     100").facets(punct) (strf::right(100, 8));
         TEST("   1,000").facets(punct) (strf::right(1000, 8));
+        TEST("   00000000001,000").facets(punct) (strf::right(1000,18).p(14));
         TEST("    1000").facets(punct) (strf::hex(0x1000) > 8);
 
         TEST("       0").facets(punct) ( strf::join_right(8)(0) );

@@ -12,8 +12,6 @@ option(STRINGIFY_BUILD_TESTS "Build Boost.Stringify unit test" OFF)
 option(STRINGIFY_BUILD_EXAMPLES "Test Boost.Stringify examples files" OFF)
 option(STRINGIFY_BUILD_PERFORMANCE_TESTS "Build Boost.Stringify performace test" OFF)
 
-set(CMAKE_CXX_STANDARD 14)
-
 message("CMAKE_INSTALL_PREFIX is ${CMAKE_INSTALL_PREFIX}")
 
 add_subdirectory(build build)
@@ -28,6 +26,6 @@ endif (STRINGIFY_BUILD_EXAMPLES)
 
 if (STRINGIFY_BUILD_PERFORMANCE_TESTS)
   add_subdirectory(performance performance)
-  add_subdirectory(performance/fmt-4.0.0 fmt)
+  add_subdirectory(performance/fmt-5.2.0 fmt)
 endif (STRINGIFY_BUILD_PERFORMANCE_TESTS)
 

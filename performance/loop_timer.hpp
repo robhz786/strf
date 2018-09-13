@@ -137,11 +137,11 @@ private:
         std::cout << std::flush;
         fflush(stdout);
         fflush(stdout);
-        clock_type::now();
-        clock_type::now();
-        clock_type::now();
-        clock_type::now();
-        clock_type::now();
+        (void)clock_type::now();
+        (void)clock_type::now();
+        (void)clock_type::now();
+        (void)clock_type::now();
+        (void)clock_type::now();
 
         m_start_time = clock_type::now();
     }

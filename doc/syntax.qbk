@@ -24,7 +24,7 @@
 where:
 
 * the ['[*leading expression]]  the varies according to the output type, as show in the table below
-* the ['[*assembly string]] is explained [link section_assembly_string here]
+* the ['[*assembly string]] is explained [link assembly_string here]
 * ['[*facets]] are explained in [link facets.facets another section]
 * ['[*reservation]] is explained [link syntax_reserve here]
 ]
@@ -34,7 +34,7 @@ where:
 [#syntax_reserve]
 [section Reserving output size]
 
-The following member functions only have effect in some output types ( cases 1 to 7 in [link output_types.output_types this table], or when you create the [link OutputWriterConcept reserve] method when defining your own output type ). 
+The following member functions only have effect in some output types ( cases 1 to 7 in [link output_types this table], or when you create the [link OutputWriterConcept reserve] method when defining your own output type ). 
 
 * [*`reserve_auto()`] : The necessary amount of characters is calculated and reserved in the destination object. This is the default.
 * [*`reserve(std::size_t size)`] : The calculation is skipped and the specified `size` is used instead.

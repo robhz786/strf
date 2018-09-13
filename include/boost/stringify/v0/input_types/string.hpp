@@ -119,8 +119,8 @@ public:
 
     template <typename Traits>
     string_with_formatting(const std::basic_string_view<CharIn, Traits>& str)
-        : m_begin(str.begin())
-        , m_end(str.end())
+        : m_begin(&*str.begin())
+        , m_end(&*str.end())
     {
     }
 

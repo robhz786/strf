@@ -1467,7 +1467,7 @@ std::size_t decode_encode<CharIn, CharOut>::necessary_size
 {
     stringify::v0::detail::length_accumulator<CharOut> adapter
         ( m_encoder, err_sig, allow_surrogates );
-    m_decoder.decode
+    (void)m_decoder.decode
         ( adapter, src_begin, src_end, allow_surrogates );
     return adapter.get_length();
 }

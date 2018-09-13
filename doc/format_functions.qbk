@@ -62,8 +62,8 @@ does not compile, since hexadecimal formatting does not apply to strings.
 [internal adjustment (as in [@http://en.cppreference.com/w/cpp/io/manip/left `std::internal`])]
 [integer and floating point]
 ]
-[[`fill(char32_t ch)`][set the fill character to [~ch]] [all]]
-
+[[`fill(char32_t ch)`][sets the fill character to [~ch]] [all]]
+[[`p(int precision)`][sets the precision] [integer and floating point]]
 [[`dec()`] [decimal base] [integer and floating point]]
 [[`hex()`] [hexadecimal base] [integer and floating point]]
 [[`oct()`] [octal base] [integer]]
@@ -84,7 +84,6 @@ does not compile, since hexadecimal formatting does not apply to strings.
 [if [~b] is `true`, print the numeric base indication (as in [@http://en.cppreference.com/w/cpp/io/manip/showbase `std::showbase`])]
 [integer and floating point]
 ]
-
 [[`operator+()`][same as `showpos(true)`][integer and floating point]]
 [[`operator~()`][same as `showbase(true)`][integer]]
 [[`multi(int count)`][print the character [~count] times][character]]

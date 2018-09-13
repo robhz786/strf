@@ -6,7 +6,7 @@
 
 [import ../example/v0/facets.cpp]
 
-[#section_facets]
+[#facets]
 [section:facets Facets]
 
 While [link format_functions format functions] aim to customize some things,
@@ -54,7 +54,7 @@ Every /facet/ belongs to some /facet category/.
 ]
 
 [
-[[link encoding_conversion.encoding_conversion.encoding_error encoding_error]]
+[[link encoding_error encoding_error]]
 [encoding error handling]
 [no]
 []

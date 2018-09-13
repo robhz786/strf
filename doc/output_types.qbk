@@ -5,7 +5,7 @@
 ===============================================================================/]
 
 [section:output_types Output types]
-
+[#output_types]
 [table
 [ []  [Destination type] [Leading expression]]
 
@@ -78,7 +78,7 @@ where:
 * 8 - 10 `expected<std::size_t, std::error_code>`, where the `std::size_t` value is the number of written characters, not counting the termination character
 * 11 - 13) `expected<void, std::error_code>`
 
-( where the `expected` class template is a bare implementation of the proposed [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0323r4.html std::expected] )
+( where the `expected` class template is a bare implementation of the proposed __STD_EXPECTED__ )
 
 [/
 This does not mean that others types of exception may not be thrown. For example, the use of `to_string` may throw and 

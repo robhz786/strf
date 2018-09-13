@@ -7,6 +7,7 @@ It does not make part of the [Boost libraries](www.boost.org), but the plan is t
 - Version: 0.6
 
 Build status:
+
 Branch   | Travis | Appveyor
 ---------|--------|---------
 Develop  | [![Build Status](https://travis-ci.org/robhz786/stringify.svg?branch=develop)](https://travis-ci.org/robhz786/stringify) | [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/stringify?branch=develop&svg=true)](https://ci.appveyor.com/project/robhz786/stringify)
@@ -83,7 +84,7 @@ In its current state, Boost.Stringify is known to work with the following compil
 
 * Clang 3.8 (with `--std=c++14` option )
 * GCC 6 (with `--std=c++14` option ) and 7
-* Visual Studio 2017 15.2
+* Visual Studio 2017 15.8
 
 However, more recent compilers may be necessary as the library evolves.
 

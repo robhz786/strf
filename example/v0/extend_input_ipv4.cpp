@@ -19,6 +19,7 @@ struct ipv4_addr
 
 //[ make_printer_ipv4_addr
 #include <boost/stringify.hpp>
+
 namespace strf = boost::stringify::v0;
 
 namespace xxx {
@@ -31,8 +32,8 @@ auto make_printer(strf::output_writer<CharT>& out, const FPack& fp, ipv4_addr ad
         ( out
         , /*<< Should we pass `fp` here instead of an empty facets pack?
 The aswer is no because it could yield to an incorrect IPv4 representation.
-Consider, for example, if numeric punctuation were applied. Here we just want to use the
-default facets. In other input types, however, you may decide to propagate
+Consider, for example, if numeric punctuation were applied. Here we want to use
+the default facets. In other input types, however, you may decide to propagate
 some, or all of the facets.
 >>*/strf::pack()
         , strf::join()
@@ -66,7 +67,7 @@ public:
 
     fmt_ipv4_addr(ipv4_addr a) : addr(a) {}
 
-  /*<< This constructor is only needed if you want to enable the formatting of a range of `ipv4_addr` like this: [table [ [   ] [ [fmt_range_ipv4_addr] ]] ]
+  /*<< This constructor is only needed if you want to enable `ipv4_addr` in [link ranges `fmt_range`]
 >>*/ template <typename U>
     fmt_ipv4_addr(ipv4_addr value, const strf::align_formatting<U>& fmt)
         : strf::align_formatting<fmt_ipv4_addr>(fmt)
@@ -84,7 +85,7 @@ public:
 
 //[make_fmt_ipv4
 namespace xxx {
-inline fmt_ipv4_addr make_fmt( /*<< The `tag` paramenter is not used. It is present just to ensure that there is no other `make_fmt` function around there with the same signature. >>*/ strf::tag, ipv4_addr x) { return {x}; }
+inline fmt_ipv4_addr make_fmt( /*<< The `tag` paramenter is not used. Its only purpose is to ensure there is no other `make_fmt` function around there with the same signature. >>*/ strf::tag, ipv4_addr x) { return {x}; }
 }
 //]
 
@@ -114,27 +115,24 @@ auto make_printer( strf::output_writer<CharT>& out
 
 void sample_fmt_sample()
 {
-    //[ipv4_fmt_sample
+
+//[formatted_ipv4_addr
     xxx::ipv4_addr addr {{146, 20, 110, 251}};
 
-    auto s2 = strf::to_string("boost.org: ", strf::right(addr, 20, U'.')) .value();
-    BOOST_ASSERT(s2 == "boost.org: ......146.20.110.251");
-    //]
-}
+    auto s = strf::to_string("boost.org: ", strf::right(addr, 20, U'.')) .value();
+    BOOST_ASSERT(s == "boost.org: ......146.20.110.251");
 
+    // also in ranges:
 
-void sample_fmt_range_ipv4_addr()
-{
-//[fmt_range_ipv4_addr
     std::vector<xxx::ipv4_addr> vec = { {{127, 0, 0, 1}}
                                       , {{146, 20, 110, 251}}
                                       , {{110, 110, 110, 110}} };
-    auto s4 = strf::to_string("[", strf::fmt_range(vec) > 16, "]").value();
-    BOOST_ASSERT(s4 == "[       127.0.0.1  146.20.110.251 110.110.110.110]");
+    auto s2 = strf::to_string("[", strf::fmt_range(vec, " ;") > 16, "]").value();
+    BOOST_ASSERT(s2 == "[       127.0.0.1 ;  146.20.110.251 ; 110.110.110.110]");
 //]
 
-    auto s3 = strf::to_string("[", strf::range(vec, " ; "), "]").value();
-    BOOST_ASSERT(s3 == "[127.0.0.1 ; 146.20.110.251 ; 110.110.110.110]");
+    // auto s3 = strf::to_string("[", strf::range(vec, " ; "), "]").value();
+    // BOOST_ASSERT(s3 == "[127.0.0.1 ; 146.20.110.251 ; 110.110.110.110]");
 }
 
 
@@ -144,6 +142,5 @@ int main()
 {
     basic_sample();
     sample_fmt_sample();
-    sample_fmt_range_ipv4_addr();
     return boost::report_errors();
 }

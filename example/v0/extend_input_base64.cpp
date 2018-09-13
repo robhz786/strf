@@ -184,7 +184,7 @@ public:
     {
     }
 
-    // format functions
+    // formatting functions
 
     fmt_base64&& indentation(unsigned i) &&
     {

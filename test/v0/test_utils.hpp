@@ -257,7 +257,7 @@ public:
 
     using char_type = CharT;
 
-    void finish()
+    boost::stringify::v0::expected<void, std::error_code> finish()
     {
         auto x = parent::finish();
         std::error_code obtained_error = x ? std::error_code{} : x.error();
@@ -284,7 +284,7 @@ public:
             std::cout << "reserved size  :" <<  m_reserved_size << "\n";
             std::cout << "necessary size :" <<  m_result.length() << "\n";
         }
-        
+        return x;
     }
 
     void reserve(std::size_t size)
@@ -402,21 +402,21 @@ auto make_tester
 //}
 
 
-#define TEST(EXPECTED) make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), 1.0, 60)
+#define TEST(EXPECTED) (void)make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), 1.0, 60)
 
-#define TEST_RF(EXPECTED, RF) make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), (RF), 60)
+#define TEST_RF(EXPECTED, RF) (void)make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), (RF), 60)
 
-#define TEST_ERR(EXPECTED, ERR) make_tester((EXPECTED), __FILE__, __LINE__, (ERR), 1.0, 60)
+#define TEST_ERR(EXPECTED, ERR) (void)make_tester((EXPECTED), __FILE__, __LINE__, (ERR), 1.0, 60)
 
-#define TEST_ERR_RF(EXPECTED, ERR, RF) make_tester((EXPECTED), __FILE__, __LINE__, (ERR), (RF), 60)
+#define TEST_ERR_RF(EXPECTED, ERR, RF) (void)make_tester((EXPECTED), __FILE__, __LINE__, (ERR), (RF), 60)
 
-#define BUFFERED_TEST(SIZE, EXPECTED) make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), 1.0, (SIZE))
+#define BUFFERED_TEST(SIZE, EXPECTED) (void)make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), 1.0, (SIZE))
 
-#define BUFFERED_TEST_RF(SIZE, EXPECTED, RF) make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), (RF), (SIZE))
+#define BUFFERED_TEST_RF(SIZE, EXPECTED, RF) (void)make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), (RF), (SIZE))
 
-#define BUFFERED_TEST_ERR(SIZE, EXPECTED, ERR) make_tester((EXPECTED), __FILE__, __LINE__, (ERR), 1.0, (SIZE))
+#define BUFFERED_TEST_ERR(SIZE, EXPECTED, ERR) (void)make_tester((EXPECTED), __FILE__, __LINE__, (ERR), 1.0, (SIZE))
 
-#define BUFFERED_TEST_ERR_RF(SIZE, EXPECTED, ERR, RF) make_tester((EXPECTED), __FILE__, __LINE__, (ERR), (RF), (SIZE))
+#define BUFFERED_TEST_ERR_RF(SIZE, EXPECTED, ERR, RF) (void)make_tester((EXPECTED), __FILE__, __LINE__, (ERR), (RF), (SIZE))
 
 
 #endif

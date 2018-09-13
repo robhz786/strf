@@ -33,9 +33,9 @@ public:
 
     ~buffered_writer()
     {
-        BOOST_ASSERT_MSG(m_buff == m_it || ! m_good,
-                         "you probably forgot to call flush() or discard() in the"
-                         " destructor of a class deriving from buffered_writer");
+        // BOOST_ASSERT_MSG(m_buff == m_it || ! m_good,
+        //                  "you probably forgot to call flush() or discard() in the"
+        //                  " destructor of a class deriving from buffered_writer");
     }
 
     void set_error(std::error_code err) override

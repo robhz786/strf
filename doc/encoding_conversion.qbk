@@ -8,7 +8,7 @@
 
 [section:encoding_conversion Encoding conversion]
 
-Input and output can be based on the different character types, and also on different encodings.
+Input and output can be based on different character types, and also on different encodings.
 
 [input_output_different_char_types]
 
@@ -131,7 +131,8 @@ In the sample above you can see that, differently from the others, the string in
 
 [endsect]
 
-[section:encoding_error Error handling customization]
+[#encoding_error]
+[section Error handling customization]
 
 When an input string is sanitized as well as during encoding conversion, failures may happen. The input string may contain invalid sequences or the output encoding may not support certain code-points. The default error handling is to replace the invalid or unsupported sequence by the [@ https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character replacement character \ufffd (U+FFFD)] or, if it is not supported by the output encoding, by the question mark `'?'`.
 

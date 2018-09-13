@@ -469,7 +469,7 @@ public:
     asm_string<CharIn> operator()
         (const std::basic_string_view<CharIn, Traits>& str) const
     {
-        return asm_str(str.begin(), str.end());
+        return asm_str(&*str.begin(), &*str.end());
     }
 
 #endif

@@ -7,7 +7,7 @@
 [import ../example/v0/assembly_string.cpp]
 [import ../example/v0/trivial_sample.cpp]
 
-[#section_assembly_string]
+[#assembly_string]
 [section The assembly string]
 
 The ['assembly string] is analogous to what in others formatting libraries is called as the /format string/, except that it does not format any of the arguments. Formatting is specified instead with [link format_functions format functions].
