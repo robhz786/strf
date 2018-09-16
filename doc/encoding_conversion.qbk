@@ -4,7 +4,7 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[import ../example/v0/encoding_conversion.cpp]
+[import ../example/encoding_conversion.cpp]
 
 [section:encoding_conversion Encoding conversion]
 

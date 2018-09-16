@@ -4,7 +4,7 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[import ../example/v0/numpunct_facets.cpp]
+[import ../example/numpunct_facets.cpp]
 
 [#numpunct]
 [section Facets for numeric punctuation]

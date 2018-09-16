@@ -1,6 +1,6 @@
 
 cmake_minimum_required (VERSION 2.6)
-project (performance_tests)
+project (boost_stringify_performance)
 
 foreach(
     x
@@ -9,13 +9,19 @@ foreach(
     to_string
 )
 
-  add_executable(${x}_ho   ${x}.cpp)
-  target_link_libraries(${x}_ho boost_stringify-header-only fmt::fmt-header-only)
-  install(TARGETS ${x}_ho   DESTINATION "$<CONFIG>/performance_tests")
+  add_executable(perfomance_${x}_ho   ${x}.cpp)
+  target_link_libraries(perfomance_${x}_ho boost_stringify-header-only fmt::fmt-header-only)
+  set_target_properties(perfomance_${x}_ho PROPERTIES OUTPUT_NAME ${x}_ho)
+  install(
+    TARGETS perfomance_${x}_ho
+    DESTINATION "./${BOOST_INSTALL_SUBDIR}/$<CONFIG>/performance_tests" )
 
-  add_executable(${x} ${x}.cpp)
-  target_link_libraries(${x} fmt::fmt boost_stringify)
-  install(TARGETS ${x} DESTINATION "$<CONFIG>/performance_tests")
+  add_executable(perfomance_${x} ${x}.cpp)
+  target_link_libraries(perfomance_${x} fmt::fmt boost_stringify)
+  set_target_properties(perfomance_${x} PROPERTIES OUTPUT_NAME ${x})
+  install(
+    TARGETS perfomance_${x}
+    DESTINATION "./${BOOST_INSTALL_SUBDIR}/$<CONFIG>/performance_tests")
   
 endforeach(x)
 
@@ -30,13 +36,19 @@ foreach(
     utf16_to_utf8
 )
 
-  add_executable(${x}_ho    ${x}.cpp)
-  target_link_libraries(${x}_ho boost_stringify-header-only)
-  install(TARGETS ${x}_ho   DESTINATION "$<CONFIG>/performance_tests")
+  add_executable(perfomance_${x}_ho    ${x}.cpp)
+  target_link_libraries(perfomance_${x}_ho boost_stringify-header-only)
+  set_target_properties(perfomance_${x}_ho PROPERTIES OUTPUT_NAME ${x}_ho)
+  install(
+    TARGETS perfomance_${x}_ho
+    DESTINATION "./${BOOST_INSTALL_SUBDIR}/$<CONFIG>/performance_tests")
 
-  add_executable(${x} ${x}.cpp)
-  target_link_libraries(${x} boost_stringify)
-  install(TARGETS ${x} DESTINATION "$<CONFIG>/performance_tests")
+  add_executable(perfomance_${x} ${x}.cpp)
+  target_link_libraries(perfomance_${x} boost_stringify)
+  set_target_properties(perfomance_${x} PROPERTIES OUTPUT_NAME ${x})
+  install(
+    TARGETS perfomance_${x}
+    DESTINATION "./${BOOST_INSTALL_SUBDIR}/$<CONFIG>/performance_tests")
   
 endforeach(x)
   

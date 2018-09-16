@@ -13,7 +13,7 @@ Suppose you have a type `foobar` and you want to create a function named `format
 [*Step 1)] Create a class - let's call it `foobar_writer` - that satisfies the following requirements:
 
 * it is a concrete class that derives from the abstract class [link output_writer `output_writer<`[~CharT]`>`], where [~CharT] is `char`, `char16_t`, `char32_t` or `wchar_t` ( or rather, make `foobar_writer` a class template as well).
-* has a [*`finish()`] public member function. This function will be called just before `foobar_writer` is destroyed. Its return is returned by the expression [~leading_expression]` ... (` [~args]` ...)` 
+* has a [*`finish()`] public member function. This function will be called just before `foobar_writer` is destroyed. Its return is returned by the expression [~leading_expression]` ... (` [~args]` ...)`
 * [#OutputWriter_reserve] [_optionally], it may contain a [*`reserve(std::size_t size)`] public member function. If present, this function is called (or not) according to the use of [link syntax_reserve `reserve_auto()`, `reserve()` or `no_reserve()`] in the [link syntax_diagram basic invocation syntax]. The parameter `size` tells how many characters will be written. This function will be called no more than once, and only before any of the writing functions (the [link output_writer `put`] overloads). The argument will be the total number of characters that will be written until `finish_error_code()` of `finish_exception()` is called.
 * The first parameter of its constructor must be of type `boost::stringify::v0::output_writer_init<CharT>`. It must be used to construct the [link output_writer `output_writer<`[~CharT]`>`] base class.
 
@@ -143,7 +143,7 @@ protected:
 }}} // namespace boost::stringify::v0
 ``
 
-`write(dest_begin, dest_end)` writes into \[`dest_begin, dest_end`) 
+`write(dest_begin, dest_end)` writes into \[`dest_begin, dest_end`)
 a part of the content and returns the pointer immediately after
 the last written location, which is not greater than `dest_end`.
 It is expected to be called successively until `more()` returns `false`,
@@ -210,7 +210,7 @@ You may be wondering, why the comment says that `flush()` or `discard()` shall b
 ]
 [h3 Examples]
 
-* [@../../example/v0/extend_output_toQString.cpp extend_output_toQString.cpp]: This file implements `toQString`, which is an equivalent to `to_string` that creates an QString ( from Qt framework ) instead. 
+* [@../../example/extend_output_toQString.cpp extend_output_toQString.cpp]: This file implements `toQString`, which is an equivalent to `to_string` that creates an QString ( from Qt framework ) instead.
 
 You can also see how the [link output_types already supported output types] are implemented:
 

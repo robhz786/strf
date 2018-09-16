@@ -4,7 +4,7 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[import ../example/v0/facets.cpp]
+[import ../example/facets.cpp]
 
 [#facets]
 [section:facets Facets]

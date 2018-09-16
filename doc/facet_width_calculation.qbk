@@ -7,8 +7,8 @@
 [#width_calculation]
 [section:width_calculation Facets for width calculation]
 
-[import ../example/v0/custom_width_calculation.cpp]
-[import ../example/v0/width_calculation_in_encoding_conversion.cpp]
+[import ../example/custom_width_calculation.cpp]
+[import ../example/width_calculation_in_encoding_conversion.cpp]
 
 
 This facet category enables you can customize how the width is calculated. You may choose a less accurate but faster implementation or a more accurate but slower one. Three options are provided:

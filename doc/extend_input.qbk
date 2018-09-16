@@ -95,7 +95,7 @@ public:
 
 [#ipv4_example]
 [section:ipv4_example Example 1: IPv4 address]
-[import ../example/v0/extend_input_ipv4.cpp]
+[import ../example/extend_input_ipv4.cpp]
 
 Suppose `ipv4_addr` below is the input type:
 
@@ -146,7 +146,7 @@ And it's done:
 [endsect]
 
 [section Example 2: IPv6 address]
-[import ../example/v0/extend_input_ipv6.cpp]
+[import ../example/extend_input_ipv6.cpp]
 
 Now our input type represents an [@https://en.wikipedia.org/wiki/IPv6_address IPv6 address]:
 
@@ -284,13 +284,13 @@ And it's done:
 
 [ipv6_samples]
 
-You can see the full source code of the implementation [@../../example/v0/extend_input_ipv6.cpp here].
+You can see the full source code of the implementation [@../../example/extend_input_ipv6.cpp here].
 
 [endsect]
 
 [#base64_example]
 [section Example 3: Base64]
-[import ../example/v0/extend_input_base64.cpp]
+[import ../example/extend_input_base64.cpp]
 
 [/
 It's like we wanted to create a function that takes an array of bytes and encodes it in
@@ -437,7 +437,7 @@ And it's done.
 [base64_sample]
 
 Some of the code has been omitted. You can see the full implementation
-[@ ../../example/v0/extend_input_base64.cpp here].
+[@ ../../example/extend_input_base64.cpp here].
 
 [endsect]
 

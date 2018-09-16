@@ -4,8 +4,8 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[import ../example/v0/trivial_sample.cpp]
-[import ../example/v0/syntax_samples.cpp]
+[import ../example/trivial_sample.cpp]
+[import ../example/syntax_samples.cpp]
 [section Syntax]
 
 [/ Railroad diagram generated from the EBNF below, in online generator bottlecaps.de/rr

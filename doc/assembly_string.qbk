@@ -4,8 +4,8 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[import ../example/v0/assembly_string.cpp]
-[import ../example/v0/trivial_sample.cpp]
+[import ../example/assembly_string.cpp]
+[import ../example/trivial_sample.cpp]
 
 [#assembly_string]
 [section The assembly string]

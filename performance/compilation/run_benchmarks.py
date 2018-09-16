@@ -172,8 +172,7 @@ def cmake_generate_stringify(buildtype):
     build_dir = tmp_dir + "/stringify-" + buildtype
     src_dir = os.path.normpath(pwd + "/../..")
     os.makedirs(build_dir)
-    gen_args = ["cmake", "-G", "Unix Makefiles", "-DCMAKE_BUILD_TYPE=" + buildtype,
-                "DCMAKE_INSTALL_PREFIX=.", src_dir]
+    gen_args = ["cmake", "-G", "Unix Makefiles", "-DCMAKE_BUILD_TYPE=" + buildtype, src_dir]
     gen_p = subprocess.Popen(gen_args, cwd=build_dir)
     gen_p.wait()
     if gen_p.returncode != 0:

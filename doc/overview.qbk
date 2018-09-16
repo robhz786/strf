@@ -4,7 +4,7 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[import ../example/v0/overview.cpp]
+[import ../example/overview.cpp]
 
 [section Overview]
 
@@ -98,7 +98,7 @@ you may first want to see more reasons of why to choose it over others.
 Boost.Stringify allows you not only to add input types but also output types.
 Qt users, for instance, might be interested in a `to_string`-equivalent that
 creates a `QString` instead of an `std::string`. Take a look at
-[@../../example/v0/extend_output_toQString.cpp this implementation] to see how
+[@../../example/extend_output_toQString.cpp this implementation] to see how
 easy this is. Another example: instead of writing to a `FILE*` or
 `std::streambuf`, you might want to implement an extension that is based
 in lower-level, OS-specific, file functions to get better performance.

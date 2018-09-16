@@ -60,7 +60,7 @@ On Windows:
 cd libs\stringify
 mkdir cmake_build
 cd cmake_build
-cmake -G "Visual Studio 15 2017" -DCMAKE_INSTALL_PREFIX=output-dir ..
+cmake -G "Visual Studio 15 2017" -DBOOST_INSTALL_PREFIX=output-dir -DBOOST_INSTALL_SUBDIR=subdir ..
 cmake --build . --config Release --target INSTALL
 ```
 
@@ -69,11 +69,14 @@ On Posix-like operating systems:
 cd libs/stringify
 mkdir cmake_build
 cd cmake_build
-cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=output-dir ..
+cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBOOST_INSTALL_PREFIX=output-dir -DBOOST_INSTALL_SUBDIR=subdir ..
 cmake --build . && make install
 ```
 
-, where `output-dir` is a directory of your choice. Inside this directory, CMake will create a subdirectory name `cmake` containing a file named `BoostStringify.cmake` that you can include in your CMake project. This file defines the target `boost::stringify` as an imported static library, and this target defines the macro `BOOST_STRINGIFY_NOT_HEADER_ONLY` for the consumers targets. Also, a directory named `include` containing a copy of all the headers of Boost.Stringify is created in `output-dir`, and added as an include directory for the consumer targes. This does not eliminate, however, the need of adding the _boost root directory_ as an include directory, since Boost.Stringify depends on others Boost headers.
+Inside `output-dir`, CMake will copy all the headers of Boost.Stringify and create the directory `subdir` containing the library files and a directory `cmake` with the file `boost_stringify.cmake`. This file can be included in your CMake project. It defines target `boost::stringify` as an imported static library.
+
+By default, `output_dir` is this _boost root directory_, and `subdir` is the concatenation of two CMake variables: `${CMAKE_CXX_COMPILER_ID}${CMAKE_CXX_COMPILER_VERSION}`.
+
 
 ##### Option 3: Do it in your own way
 Using the build tool of your choice, simply generate a static library from the source file `libs/stringify/build/stringify.cpp`.

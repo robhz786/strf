@@ -13,56 +13,56 @@ project libs/stringify/test
 nho = <define>BOOST_STRINGIFY_NOT_HEADER_ONLY ;
 slib = /boost/stringify//boost_stringify ;
 
-test-suite stringify-v0 :
+test-suite stringify :
 
    # as header-only library:
 
-   [ run v0/assembly_string_test.cpp   : : : : v0-assembly_string_test-ho ]
-   [ run v0/input_string_test.cpp      : : : : v0-input_string_test-ho ]
-   [ run v0/input_int_test.cpp         : : : : v0-input_int_test-ho ]
-   [ run v0/input_char_test.cpp        : : : : v0-input_char_test-ho ]
-   [ run v0/input_char32_test.cpp      : : : : v0-input_char32_test-ho ]
-   [ run v0/input_facets_pack_test.cpp : : : : v0-input_facets_pack_test-ho ]
-   [ run v0/input_range_test.cpp       : : : : v0-input_range_test-ho ]
-   [ run v0/numpunct_test.cpp          : : : : v0-numpunct_test-ho ]
-   [ run v0/join_test.cpp              : : : : v0-join_test-ho ]
-   [ run v0/output_string_test.cpp     : : : : v0-output_string_test-ho ]
-   [ run v0/output_char_ptr_test.cpp   : : : : v0-output_char_ptr_test-ho ]
-   [ run v0/output_streambuf_test.cpp  : : : : v0-output_streambuf_test-ho ]
-   [ run v0/output_FILE_test.cpp       : : : : v0-output_FILE_test-ho ]
-   [ run v0/facets_pack_merge_test.cpp : : : : v0-facets_pack_merge_test-ho ]
-   [ run v0/facets_pack_test.cpp       : : : : v0-facets_pack_test-ho ]
-   [ run v0/reserve_test.cpp           : : : : v0-reserve_test-ho ]
-   [ run v0/width_calculator_test.cpp  : : : : v0-width_calculator_test-ho ]
-   [ run v0/transcoding_test.cpp       : : : : v0-transcoding_test-ho ]
+   [ run assembly_string.cpp   : : : : test-assembly_string-ho ]
+   [ run input_string.cpp      : : : : test-input_string-ho ]
+   [ run input_int.cpp         : : : : test-input_int-ho ]
+   [ run input_char.cpp        : : : : test-input_char-ho ]
+   [ run input_char32.cpp      : : : : test-input_char32-ho ]
+   [ run input_facets_pack.cpp : : : : test-input_facets_pack-ho ]
+   [ run input_range.cpp       : : : : test-input_range-ho ]
+   [ run numpunct.cpp          : : : : test-numpunct-ho ]
+   [ run join.cpp              : : : : test-join-ho ]
+   [ run output_string.cpp     : : : : test-output_string-ho ]
+   [ run output_char_ptr.cpp   : : : : test-output_char_ptr-ho ]
+   [ run output_streambuf.cpp  : : : : test-output_streambuf-ho ]
+   [ run output_FILE.cpp       : : : : test-output_FILE-ho ]
+   [ run facets_pack_merge.cpp : : : : test-facets_pack_merge-ho ]
+   [ run facets_pack.cpp       : : : : test-facets_pack-ho ]
+   [ run reserve.cpp           : : : : test-reserve-ho ]
+   [ run width_calculator.cpp  : : : : test-width_calculator-ho ]
+   [ run transcoding.cpp       : : : : test-transcoding-ho ]
 
    # as static library:
 
-   [ run v0/assembly_string_test.cpp   $(slib) : : : $(nho) : v0-assembly_string_test-nho ]
-   [ run v0/input_string_test.cpp      $(slib) : : : $(nho) : v0-input_string_test-nho ]
-   [ run v0/input_int_test.cpp         $(slib) : : : $(nho) : v0-input_int_test-nho ]
-   [ run v0/input_char_test.cpp        $(slib) : : : $(nho) : v0-input_char_test-nho ]
-   [ run v0/input_char32_test.cpp      $(slib) : : : $(nho) : v0-input_char32_test-nho ]
-   [ run v0/input_facets_pack_test.cpp $(slib) : : : $(nho) : v0-input_facets_pack_test-nho ]
-   [ run v0/input_range_test.cpp       $(slib) : : : $(nho) : v0-input_range_test-nho ]
-   [ run v0/numpunct_test.cpp          $(slib) : : : $(nho) : v0-numpunct_test-nho ]
-   [ run v0/join_test.cpp              $(slib) : : : $(nho) : v0-join_test-nho ]
-   [ run v0/output_string_test.cpp     $(slib) : : : $(nho) : v0-output_string_test-nho ]
-   [ run v0/output_char_ptr_test.cpp   $(slib) : : : $(nho) : v0-output_char_ptr_test-nho ]
-   [ run v0/output_streambuf_test.cpp  $(slib) : : : $(nho) : v0-output_streambuf_test-nho ]
-   [ run v0/output_FILE_test.cpp       $(slib) : : : $(nho) : v0-output_FILE_test-nho ]
-   [ run v0/facets_pack_merge_test.cpp $(slib) : : : $(nho) : v0-facets_pack_merge_test-nho ]
-   [ run v0/facets_pack_test.cpp       $(slib) : : : $(nho) : v0-facets_pack_test-nho ]
-   [ run v0/reserve_test.cpp           $(slib) : : : $(nho) : v0-reserve_test-nho ]
-   [ run v0/width_calculator_test.cpp  $(slib) : : : $(nho) : v0-width_calculator_test-nho ]
-   [ run v0/transcoding_test.cpp       $(slib) : : : $(nho) : v0-transcoding_test-nho ]
+   [ run assembly_string.cpp   $(slib) : : : $(nho) : test-assembly_string-nho ]
+   [ run input_string.cpp      $(slib) : : : $(nho) : test-input_string-nho ]
+   [ run input_int.cpp         $(slib) : : : $(nho) : test-input_int-nho ]
+   [ run input_char.cpp        $(slib) : : : $(nho) : test-input_char-nho ]
+   [ run input_char32.cpp      $(slib) : : : $(nho) : test-input_char32-nho ]
+   [ run input_facets_pack.cpp $(slib) : : : $(nho) : test-input_facets_pack-nho ]
+   [ run input_range.cpp       $(slib) : : : $(nho) : test-input_range-nho ]
+   [ run numpunct.cpp          $(slib) : : : $(nho) : test-numpunct-nho ]
+   [ run join.cpp              $(slib) : : : $(nho) : test-join-nho ]
+   [ run output_string.cpp     $(slib) : : : $(nho) : test-output_string-nho ]
+   [ run output_char_ptr.cpp   $(slib) : : : $(nho) : test-output_char_ptr-nho ]
+   [ run output_streambuf.cpp  $(slib) : : : $(nho) : test-output_streambuf-nho ]
+   [ run output_FILE.cpp       $(slib) : : : $(nho) : test-output_FILE-nho ]
+   [ run facets_pack_merge.cpp $(slib) : : : $(nho) : test-facets_pack_merge-nho ]
+   [ run facets_pack.cpp       $(slib) : : : $(nho) : test-facets_pack-nho ]
+   [ run reserve.cpp           $(slib) : : : $(nho) : test-reserve-nho ]
+   [ run width_calculator.cpp  $(slib) : : : $(nho) : test-width_calculator-nho ]
+   [ run transcoding.cpp       $(slib) : : : $(nho) : test-transcoding-nho ]
 ;
 
 # Satisfy the Boost library requirements
-test-suite minimal  : stringify-v0 ;
-test-suite full     : stringify-v0 ;
-test-suite extra    : stringify-v0 ;
+test-suite minimal  : stringify ;
+test-suite full     : stringify ;
+test-suite extra    : stringify ;
 
-explicit stringify-v0 ;
+explicit stringify ;
 explicit minimal ;
 explicit extra ;
