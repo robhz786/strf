@@ -416,7 +416,7 @@ is nothing else to write.
 You can see that `write(begin, end)` is not required to return `end` when
 there is not enough space in the range \[`begin, end`). But the distance
 from the returned position to `end` shall not be greater than
-[link BOOST_STRINGIFY_MIN_BUFFER_SIZE BOOST_STRINGIFY_MIN_BUFFER_SIZE].
+[link min_buff_size min_buff_size].
 
 
 The implementation of `multiline_base64_pm_writer` is more

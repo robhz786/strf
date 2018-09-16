@@ -11,6 +11,8 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
+constexpr std::size_t min_buff_size = 60;
+
 template <typename CharIn>  class encoding_info;
 template <typename CharIn, typename CharOut> class transcoder;
 template <typename CharOut> class output_writer;
@@ -835,7 +837,6 @@ public:
         , bool allow_surrogates
         ) const = 0;
 };
-
 
 template <typename CharOut>
 class piecemeal_writer

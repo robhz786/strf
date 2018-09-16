@@ -234,7 +234,7 @@ public:
         , std::string src_filename
         , int src_line
         , double reserve_factor
-        , std::size_t buffer_size = 60
+        , std::size_t buffer_size = boost::stringify::v0::min_buff_size
         )
         : input_tester_buffer<CharT>{buffer_size}
         , boost::stringify::v0::buffered_writer<CharT>

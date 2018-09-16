@@ -152,18 +152,26 @@ When there is nothing else to be written, `write(dest_begin, dest_end)`
 call either `report_success()` or `report_error(`[~some_error_code]`)`,
 which in turn causes `more()` to return `false`.
 
-If `(dest_end - dest_begin < BOOST_STRINGIFY_MIN_BUFFER_SIZE)`
+[#min_buff_size]
+If `(dest_end - dest_begin < `[*`min_buff_size`]`)`
 then `write(dest_begin, dest_end)` is not required to write
 anything and may just return `dest_begin`, expecting a larger
 output range to be passed in the next call.
 Otherwise it is required write some part of the content.
 The caller, on the other hand, must be aware that
-if the passed range is aways smaller than
-BOOST_STRINGIFY_MIN_BUFFER_SIZE is all calls,
+if the passed range is smaller than `min_buff_size` is all calls,
 then an infinite loop may occur.
 
-[#BOOST_STRINGIFY_MIN_BUFFER_SIZE]
-Currently the value of BOOST_STRINGIFY_MIN_BUFFER_SIZE is 60.
+Currently `min_buff_size` is defined as:.
+
+``
+namespace boost { namespace stringify { inline namespace v0 {
+
+constexpr std::size_t min_buff_size = 60;
+
+} } }
+``
+
 
 [#buffered_writer]
 [h3 The `buffered_writer` class template]

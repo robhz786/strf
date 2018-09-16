@@ -41,7 +41,7 @@ private:
 
     QString m_str;
 
-    constexpr static std::size_t buffer_size = BOOST_STRINGIFY_MIN_BUFFER_SIZE;
+    constexpr static std::size_t buffer_size = strf::min_buff_size;
     char16_t buffer[buffer_size];
     QChar    qchar_buffer[buffer_size];
 };

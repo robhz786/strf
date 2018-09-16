@@ -262,6 +262,40 @@ void parse_asm_string
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_writer<char, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_writer<char, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_writer<char, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_writer<char, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_writer<wchar_t, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_writer<wchar_t, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_writer<wchar_t, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_writer<wchar_t, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_writer<char16_t, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_writer<char16_t, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_writer<char16_t, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_writer<char16_t, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_writer<char32_t, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_writer<char32_t, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_writer<char32_t, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_writer<char32_t, char32_t>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_measurer<char, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_measurer<char, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_measurer<char, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_measurer<char, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_measurer<wchar_t, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_measurer<wchar_t, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_measurer<wchar_t, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_measurer<wchar_t, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_measurer<char16_t, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_measurer<char16_t, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_measurer<char16_t, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_measurer<char16_t, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_measurer<char32_t, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_measurer<char32_t, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_measurer<char32_t, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class asm_string_measurer<char32_t, char32_t>;
+
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 void parse_asm_string<char>
     ( const char* it, const char* end, asm_string_processor<char>& proc);
