@@ -9,10 +9,7 @@
 [#facets]
 [section:facets Facets]
 
-While [link format_functions format functions] aim to customize some things,
-others customizations are handled by /facets/.
 Every /facet/ belongs to some /facet category/. 
-
 
 [table
 [[facet category][what it controls][constrainable][where is used]]
@@ -71,7 +68,7 @@ Every /facet/ belongs to some /facet category/.
 ]
 
 
-Each facet category corresponds to a concept, /i.e./ a set of requirements that a class must satisfy. A class that satisfy such requirements is a facet of such facet category. Hence, facets are policy classes. And for each facet category there is a representative class, which is not a facet and whose name, by convention, is the name of the category. This class always have static member function named `get_default` which has no parameter and returns a reference to a constant object, whose type is a facet of this category. Also a facet must have member type named `category` which is an alias to the representative class of its category.
+Each facet category corresponds to a concept, /i.e./ a set of requirements that a class must satisfy. A class that satisfies such requirements is a facet of such facet category. Hence, facets are policy classes. Also, for each facet category, there is a representative class, which is not a facet and whose name, by convention, is the name of the category. This class always have a static member function named `get_default` which has no parameter and returns a reference to a constant object, whose type is a facet of this category. Also, a facet must have member type named `category` which is an alias to the representative class of its category.
 
 For example, the `width_calculator` class is a facet:
 
@@ -96,25 +93,25 @@ struct width_calculator_category
 
 }}}
 ``
-In order to use a facet object, you pass it to the [link syntax_diagram `facets`] function:
+To use a facet object, you pass it to the [link syntax_diagram `facets`] function:
 
 [basic_facet_sample]
 
 [#constrained_facets]
 [h4 Constrained facets]
 
-Using the `constrain` function template you can instantiate /constrained facet/, which it a facet that only apply to certain input types.
+With the `constrain` function template you can instantiate /constrained facet/, which is a facet that only applies to certain input types.
 
 ``
 template <template <class> class Filter, typename Facet>
 auto constrain(const Facet& facet) -> /*implementation defined*/ ;
 ``
 
-The first template parameter of `constrain` ( named here as `Filter` ) is a template type that must follow the same design of `std::is_signed`, `std::is_pointer` and those others metafunctions defined in <type_traits>. It must contains a `value` member constant convertible to bool that tells whether a given input type shall be under the influence of the given facet:
+The first template parameter of `constrain` ( named here as `Filter` ) is a template type that must follow the same design of `std::is_signed`, `std::is_pointer` and those others metafunctions defined in <type_traits>. It must contain a `value` member constant convertible to bool that tells whether a given input type shall be under the influence of the given facet:
 
 [constrained_facet_sample]
 
-Some type traits are provided to be used in the `constrain` function template.
+The library provides some type trait of this kind:
 
 [table
 [[trait] [description]]
@@ -123,9 +120,9 @@ Some type traits are provided to be used in the `constrain` function template.
 [[`is_string`]     [matches strings inputs]]
 ]
 
-[h4 Facets overriding]
+[h4 Overriding facets]
 
-You can pass several facets in one call, as well as call `.facets()` several times. Calling `.facets(a, b, c)` is equivalent to `.facets(a).facets(b).facets(c)`. If two facets objects of the same category apply to the same input type, then the later overrides the first.
+You can pass several facets in one call, as well as call `.facets()` several times. Calling `.facets(a, b, c)` is equivalent to `.facets(a).facets(b).facets(c)`. If two facets objects of the same category apply to the same input type, then the latter overrides the first.
 
 [facets_overriding]
 
@@ -161,7 +158,7 @@ constexpr const auto& get_facet(const facets_pack<Facets...>& ft)
     return ft.template get_facet<FacetCategory, InputType>();
 }
 ``
-Passing a `facets_pack` to the `.facets` function is equivalent to pass all the facet objects it contains ( internally they would be grouped in a `facets_pack` anyway ).
+Passing a `facets_pack` to the `.facets` function is equivalent to pass all the facet objects it contains ( internally they are be grouped in a `facets_pack` anyway ).
 
 
 [table Equivalences
@@ -181,7 +178,7 @@ Passing a `facets_pack` to the `.facets` function is equivalent to pass all the 
 ]
 
 
-You will probably only use the `get_facet` function template if you ever extend the library for a [link extend_input.extend_input new input type]. It returns a reference to a constant facet object inside the `facets_pack` that belongs to the given `FacetCategory` and that can be applied to `InputType` ( since facets can be [link constrained_facets constrained] to apply to only certain input types ). If the `facets_pack` does not contain such facet, then `FacetCategory::get_default()` is returned.
+You will probably only use the `get_facet` function template if you ever extend the library for a [link extend_input.extend_input new input type]. It returns a reference to a constant facet object inside the `facets_pack` that belongs to the given `FacetCategory`, and that applies to `InputType` ( since facets can be [link constrained_facets constrained] to apply to only certain input types ). If the `facets_pack` does not contain such facet, then `FacetCategory::get_default()` is returned.
 
 [note 
 Passing a facet object to `pack` or to `constrain` creates a [_copy] of it into the `facets_pack` or into the constrained facet object. In order to avoid copying, you can pass instead a [@http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper `std::reference_wrapper`]. However all facets are designed to provide a fast copy. The [link numpunct str_grouping] is probably the slowest one, since it contains internally a `std::string`.

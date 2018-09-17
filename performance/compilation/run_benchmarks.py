@@ -216,10 +216,10 @@ def build_libfmt_debug():
     return build_libfmt("Debug", "libfmtd.a")
 
 def build_libstringify_release():
-    return build_libstringify("Release", "build/libboost_stringify.a")
+    return build_libstringify("Release", "libboost_stringify.a")
 
 def build_libstringify_debug():
-    return build_libstringify("Debug", "build/libboost_stringify.a")
+    return build_libstringify("Debug", "libboost_stringify.a")
 
 only_boost_stringify = False
 

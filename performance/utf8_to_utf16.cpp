@@ -54,6 +54,11 @@ int main()
         (void)err;
     }
 
+#if defined(_MSC_VER)
+// disable warning that std::codecvt_utf8_utf16 is deprecated
+#pragma warning (disable:4996)
+#endif
+
     std::codecvt_utf8_utf16<char16_t> codecvt;
     const char* u8from_next = nullptr;
     char16_t* u16to_next = nullptr;

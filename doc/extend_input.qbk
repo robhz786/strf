@@ -5,7 +5,7 @@
 ===============================================================================/]
 
 
-[section:extend_input How to add support to a new input type]
+[section:extend_input How to add a new input type]
 
 [/
 Probably you only need to read the first example to know how to add most the input types you desire. There, we a print a IPv4 address, which is very simple since it is always four integer numbers separated by dots. Of course, there is no need to determinate each digit of the each of these numbers, since we use the library to print the numbers.

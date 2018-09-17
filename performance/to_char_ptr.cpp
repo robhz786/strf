@@ -161,7 +161,7 @@ int main()
         fmt::format_to(dest, "{:n}", LLONG_MAX);
     }
 
-#if defined(__GNU_LIBRARY)
+#if defined(__GNU_LIBRARY__)
     PRINT_BENCHMARK("std::sprintf(dest, \"%'lld\", LLONG_MAX)")
     {
         std::sprintf(dest, "%'lld", LLONG_MAX);

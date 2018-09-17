@@ -14,14 +14,14 @@ foreach(
   set_target_properties(perfomance_${x}_ho PROPERTIES OUTPUT_NAME ${x}_ho)
   install(
     TARGETS perfomance_${x}_ho
-    DESTINATION "./${BOOST_INSTALL_SUBDIR}/$<CONFIG>/performance_tests" )
+    DESTINATION "${BOOST_INSTALL_SUBDIR}/$<CONFIG>/benchmarks" )
 
   add_executable(perfomance_${x} ${x}.cpp)
   target_link_libraries(perfomance_${x} fmt::fmt boost_stringify)
   set_target_properties(perfomance_${x} PROPERTIES OUTPUT_NAME ${x})
   install(
     TARGETS perfomance_${x}
-    DESTINATION "./${BOOST_INSTALL_SUBDIR}/$<CONFIG>/performance_tests")
+    DESTINATION "${BOOST_INSTALL_SUBDIR}/$<CONFIG>/benchmarks")
   
 endforeach(x)
 
@@ -41,14 +41,14 @@ foreach(
   set_target_properties(perfomance_${x}_ho PROPERTIES OUTPUT_NAME ${x}_ho)
   install(
     TARGETS perfomance_${x}_ho
-    DESTINATION "./${BOOST_INSTALL_SUBDIR}/$<CONFIG>/performance_tests")
+    DESTINATION "${BOOST_INSTALL_SUBDIR}/$<CONFIG>/benchmarks")
 
   add_executable(perfomance_${x} ${x}.cpp)
   target_link_libraries(perfomance_${x} boost_stringify)
   set_target_properties(perfomance_${x} PROPERTIES OUTPUT_NAME ${x})
   install(
     TARGETS perfomance_${x}
-    DESTINATION "./${BOOST_INSTALL_SUBDIR}/$<CONFIG>/performance_tests")
+    DESTINATION "${BOOST_INSTALL_SUBDIR}/$<CONFIG>/benchmarks")
   
 endforeach(x)
   

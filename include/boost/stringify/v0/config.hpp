@@ -55,7 +55,7 @@ inline namespace v0 {                              \
 #define BOOST_STRINGIFY_NO_NODISCARD
 #endif
 
-#if __cplusplus >= 201703L || ( defined(_MSC_VER) && defined(_HAS_CXX17))
+#if __cplusplus >= 201703L || ( defined(_MSC_VER) && defined(_HAS_CXX17) && _HAS_CXX17)
 
 #define BOOST_STRINGIFY_HAS_CXX17
 

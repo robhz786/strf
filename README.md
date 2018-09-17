@@ -60,7 +60,10 @@ On Windows:
 cd libs\stringify
 mkdir cmake_build
 cd cmake_build
-cmake -G "Visual Studio 15 2017" -DBOOST_INSTALL_PREFIX=output-dir -DBOOST_INSTALL_SUBDIR=subdir ..
+cmake -G "Visual Studio 15 2017" ^
+  -DBOOST_INSTALL_PREFIX=<output-dir> ^
+  -DBOOST_INSTALL_SUBDIR=<subdir> ^
+  -DCMAKE_CXX_STANDARD=14 ..
 cmake --build . --config Release --target INSTALL
 ```
 
@@ -69,14 +72,20 @@ On Posix-like operating systems:
 cd libs/stringify
 mkdir cmake_build
 cd cmake_build
-cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBOOST_INSTALL_PREFIX=output-dir -DBOOST_INSTALL_SUBDIR=subdir ..
+cmake -G "Unix Makefiles" \
+   -DCMAKE_BUILD_TYPE=Release \
+   -DBOOST_INSTALL_PREFIX=<output-dir> \
+   -DBOOST_INSTALL_SUBDIR=<subdir>  \
+   -DCMAKE_CXX_STANDARD=14 ..
 cmake --build . && make install
 ```
+Where `<output-dir>` and `<subdir>` are paths of your choice. `<subdir>` must be a relative path. By default, `<output-dir>` is this _boost root directory_, and `<subdir>` is the concatenation of two CMake variables: `${CMAKE_CXX_COMPILER_ID}${CMAKE_CXX_COMPILER_VERSION}`.
 
-Inside `output-dir`, CMake will copy all the headers of Boost.Stringify and create the directory `subdir` containing the library files and a directory `cmake` with the file `boost_stringify.cmake`. This file can be included in your CMake project. It defines target `boost::stringify` as an imported static library.
+The last command install Boost.Stringify into `<output-dir>` including the binaries (inside `<subdir>` ) and headers. It also creates the file `<output-dir>/<subdir>/cmake/boost_stringify.cmake` that you can include in your CMake project and that defines the target `boost::stringify` as an imported static library.
 
-By default, `output_dir` is this _boost root directory_, and `subdir` is the concatenation of two CMake variables: `${CMAKE_CXX_COMPILER_ID}${CMAKE_CXX_COMPILER_VERSION}`.
+If you additionaly want to check whether the unit tests pass in your environment, then add the option `-DBOOST_BUILD_TESTS=ON` on the `cmake -G ...` command. And run the command `ctest -C Release`.
 
+If you additionaly want to run the benchmarks in your environment, then add the option `-DBOOST_BUILD_BENCHMARKS=ON` on the `cmake -G ...` command. This will cause the install process to create a directory `benchmark` inside the `<subdir>` directory with the benchmark programs.
 
 ##### Option 3: Do it in your own way
 Using the build tool of your choice, simply generate a static library from the source file `libs/stringify/build/stringify.cpp`.
