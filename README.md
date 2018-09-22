@@ -4,7 +4,7 @@ Boost.Stringify is a C++ locale-independent format library. It is fast, highly e
 It does not make part of the [Boost libraries](www.boost.org), but the plan is to propose there some day. At this moment it is still in the initial stage of development and not ready for production use.
 
 - Documentation: http://robhz786.github.io/stringify/doc/html/
-- Version: 0.6
+- Version: 0.7
 
 Build status:
 
