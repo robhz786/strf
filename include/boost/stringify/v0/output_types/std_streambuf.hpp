@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <streambuf>
-#include <boost/stringify/v0/output_types/FILE.hpp>
+#include <boost/stringify/v0/output_types/buffered_writer.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -15,7 +15,7 @@ namespace detail {
 template <typename CharT, typename Traits>
 class std_streambuf_writer: public buffered_writer<CharT>
 {
-    constexpr static std::size_t buffer_size = 60;
+    constexpr static std::size_t buffer_size = stringify::v0::min_buff_size;
     CharT buffer[40];
 
 public:
@@ -41,7 +41,7 @@ public:
     {
         this->flush();
     }
-    
+
 protected:
 
     bool do_put(const CharT* str, std::size_t count) override
@@ -257,7 +257,7 @@ auto write
 {
     using intput_type = std::basic_streambuf<CharT, Traits>&;
     using writer = stringify::v0::detail::std_streambuf_writer<CharT, Traits>;
-    return stringify::v0::make_args_handler<writer, intput_type>(dest, count);
+    return stringify::v0::make_destination<writer, intput_type>(dest, count);
 }
 
 
@@ -269,7 +269,7 @@ auto write
 {
     using intput_type = std::basic_streambuf<CharT, Traits>&;
     using writer = stringify::v0::detail::std_streambuf_writer<CharT, Traits>;
-    return stringify::v0::make_args_handler<writer, intput_type>(*dest, count);
+    return stringify::v0::make_destination<writer, intput_type>(*dest, count);
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

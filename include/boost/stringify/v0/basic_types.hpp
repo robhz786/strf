@@ -11,119 +11,15 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
+constexpr std::size_t min_buff_size = 60;
+
 template <typename CharIn>  class encoding_info;
 template <typename CharIn, typename CharOut> class transcoder;
 template <typename CharOut> class output_writer;
 template <typename CharOut> struct encoding_category;
 struct allow_surrogates_category;
 struct encoding_error_category;
-
-enum class cv_result
-{
-    success,
-    invalid_char,
-    insufficient_space
-};
-
-class u32output
-{
-public:
-
-    virtual ~u32output()
-    {
-    }
-
-    BOOST_STRINGIFY_NODISCARD
-    virtual stringify::v0::cv_result put32(char32_t ch) = 0;
-
-    /**
-    @retval true success
-    @retval false insufficient space
-    */
-    BOOST_STRINGIFY_NODISCARD
-    virtual bool signalize_error() = 0;
-};
-
-template <typename CharIn>
-struct decoder_result
-{
-    const CharIn* src_it;
-    stringify::v0::cv_result result;
-};
-
-template <typename CharIn>
-class decoder
-{
-public:
-
-    virtual ~decoder()
-    {
-    }
-
-    BOOST_STRINGIFY_NODISCARD
-    virtual stringify::v0::decoder_result<CharIn> decode
-        ( stringify::v0::u32output& dest
-        , const CharIn* begin
-        , const CharIn* end
-        , bool allow_surrogates
-        ) const = 0;
-
-    /**
-    dont treat surrogates as invalid
-    @retval 0x0FFFFFF on error
-    */
-    // virtual char32_t decode(CharIn ch) const = 0; //todo
-
-    virtual std::size_t remaining_codepoints_count
-        ( std::size_t minuend
-        , const CharIn* begin
-        , const CharIn* end
-        ) const = 0;
-};
-
-template <typename CharOut>
-struct char_cv_result
-{
-    std::size_t count;
-    CharOut* dest_it;
-};
-
-template <typename CharOut>
-class encoder
-{
-public:
-
-    virtual ~encoder()
-    {
-    }
-
-    virtual std::size_t length
-        ( char32_t ch
-        , bool allow_surrogates )
-        const = 0;
-
-    /**
-    if ch is invalid or not supported return {0, nullptr}
-    */
-    virtual stringify::v0::char_cv_result<CharOut> encode
-       ( std::size_t count
-        , char32_t ch
-        , CharOut* dest_begin
-        , CharOut* dest_end
-        , bool allow_surrogates ) const = 0;
-
-    /**
-    return
-    - success: != nullptr && <=end
-    - space is insufficient : end + 1
-    - ch is invalid or not supported: nullptr
-    */
-    virtual CharOut* encode
-        ( char32_t ch
-        , CharOut* dest
-        , CharOut* dest_end
-        , bool allow_surrogates ) const = 0;
-};
+struct tag {};
 
 class error_signal
 {
@@ -135,32 +31,25 @@ public:
         : m_variant(e_omit)
     {
     }
-
     explicit error_signal(char32_t ch) noexcept
         : m_variant(e_char)
     {
         m_char = ch;
     }
-
     explicit error_signal(func_ptr func) noexcept
         : m_variant(e_function)
     {
         m_function = func;
     }
-
     explicit error_signal(std::error_code ec) noexcept
         : m_variant(e_error_code)
     {
         new (&m_error_code_storage) std::error_code(ec);
     }
-
-
-
     error_signal(const error_signal& other) noexcept
     {
         init_from(other);
     }
-
     ~error_signal() noexcept
     {
         if(m_variant == e_error_code)
@@ -253,7 +142,6 @@ private:
         return reinterpret_cast<const std::error_code*>(&m_error_code_storage);
     }
 
-    enum { e_omit, e_char, e_error_code, e_function } m_variant;
     using error_code_storage_type
     = std::aligned_storage_t<sizeof(std::error_code), alignof(std::error_code)>;
 
@@ -263,6 +151,7 @@ private:
         error_code_storage_type m_error_code_storage;
         func_ptr m_function;
     };
+    enum { e_omit, e_char, e_error_code, e_function } m_variant;
 };
 
 
@@ -316,8 +205,144 @@ void error_signal::init_from(const error_signal& other)
 
 #endif //! defined(BOOST_STRINGIFY_OMIT_IMPL)
 
+
+enum class cv_result
+{
+    success,
+    invalid_char,
+    insufficient_space
+};
+
+class u32output
+{
+public:
+
+    virtual ~u32output()
+    {
+    }
+
+    BOOST_STRINGIFY_NODISCARD
+    virtual stringify::v0::cv_result put32(char32_t ch) = 0;
+
+    /**
+    @retval true success
+    @retval false insufficient space
+    */
+    BOOST_STRINGIFY_NODISCARD
+    virtual bool signalize_error() = 0;
+};
+
+template <typename CharIn>
+struct decoder_result
+{
+    const CharIn* src_it;
+    stringify::v0::cv_result result;
+};
+
+template <typename CharIn>
+class decoder
+{
+public:
+
+    virtual ~decoder()
+    {
+    }
+
+    BOOST_STRINGIFY_NODISCARD
+    virtual stringify::v0::decoder_result<CharIn> decode
+        ( stringify::v0::u32output& dest
+        , const CharIn* begin
+        , const CharIn* end
+        , bool allow_surrogates
+        ) const = 0;
+
+    /**
+    dont treat surrogates as invalid
+    @retval 0x0FFFFFF on error
+    */
+    // virtual char32_t decode(CharIn ch) const = 0; //todo
+
+    virtual std::size_t remaining_codepoints_count
+        ( std::size_t minuend
+        , const CharIn* begin
+        , const CharIn* end
+        ) const = 0;
+};
+
 template <typename CharOut>
-stringify::v0::char_cv_result<CharOut> emit
+struct char_cv_result
+{
+    std::size_t count;
+    CharOut* dest_it;
+};
+
+template <typename CharOut>
+class encoder
+{
+public:
+
+    virtual ~encoder()
+    {
+    }
+
+    std::size_t necessary_size
+        ( char32_t ch
+        , const stringify::v0::error_signal& esig
+        , bool allow_surrogates ) const;
+
+    virtual std::size_t validate
+        ( char32_t ch
+        , bool allow_surrogates ) const = 0;
+
+    /**
+    if ch is invalid or not supported return {0, nullptr}
+    */
+    virtual stringify::v0::char_cv_result<CharOut> encode
+        ( std::size_t count
+        , char32_t ch
+        , CharOut* dest_begin
+        , CharOut* dest_end
+        , bool allow_surrogates ) const = 0;
+
+    /**
+    return
+    - success: != nullptr && <=end
+    - space is insufficient : end + 1
+    - ch is invalid or not supported: nullptr
+    */
+    virtual CharOut* encode
+        ( char32_t ch
+        , CharOut* dest
+        , CharOut* dest_end
+        , bool allow_surrogates ) const = 0;
+};
+
+template <typename CharOut>
+std::size_t encoder<CharOut>::necessary_size
+    ( char32_t ch
+    , const stringify::v0::error_signal& esig
+    , bool allow_surrogates ) const
+{
+    auto size = validate(ch, allow_surrogates);
+    if (size != 0)
+    {
+        return size;
+    }
+    if (esig.has_char())
+    {
+        size = validate(esig.get_char(), allow_surrogates);
+        if (size != 0)
+        {
+            return size;
+        }
+        return 1; // size of U'?'
+    }
+    return 0;
+}
+
+
+template <typename CharOut>
+stringify::v0::char_cv_result<CharOut> emit_error
     ( stringify::v0::error_signal& err_sig
     , const stringify::v0::encoder<CharOut>& encoder
     , std::size_t count
@@ -349,11 +374,11 @@ stringify::v0::char_cv_result<CharOut> emit
     }
     BOOST_ASSERT(err_sig.has_function());
     err_sig.get_function() ();
-    throw std::logic_error("encoding error");
+    return { count, dest };
 }
 
 template <typename CharOut>
-CharOut* emit
+CharOut* emit_error
     ( stringify::v0::error_signal& err_sig
     , const stringify::v0::encoder<CharOut>& encoder
     , CharOut* dest
@@ -383,12 +408,12 @@ CharOut* emit
     }
     BOOST_ASSERT(err_sig.has_function());
     err_sig.get_function() ();
-    throw std::logic_error("encoding error");
+    return dest;
 }
 
 
 template <typename CharOut>
-inline stringify::v0::char_cv_result<CharOut> emit
+inline stringify::v0::char_cv_result<CharOut> emit_error
     ( stringify::v0::error_signal&& err_sig
     , const stringify::v0::encoder<CharOut>& encoder
     , std::size_t count
@@ -396,11 +421,12 @@ inline stringify::v0::char_cv_result<CharOut> emit
     , CharOut* dest_end
     , bool allow_surrogates )
 {
-    return stringify::v0::emit(err_sig, encoder, count, dest, dest_end, allow_surrogates);
+    return stringify::v0::emit_error
+        ( err_sig, encoder, count, dest, dest_end, allow_surrogates );
 }
 
 template <typename CharOut>
-inline stringify::v0::char_cv_result<CharOut> emit
+inline stringify::v0::char_cv_result<CharOut> emit_error
     ( const stringify::v0::error_signal& err_sig
     , const stringify::v0::encoder<CharOut>& encoder
     , std::size_t count
@@ -408,29 +434,45 @@ inline stringify::v0::char_cv_result<CharOut> emit
     , CharOut* dest_end
     , bool allow_surrogates )
 {
-    return stringify::v0::emit(stringify::v0::error_signal{ err_sig }, encoder, count, dest, dest_end, allow_surrogates);
+    return stringify::v0::emit_error
+        ( stringify::v0::error_signal{ err_sig }
+        , encoder
+        , count
+        , dest
+        , dest_end
+        , allow_surrogates );
 }
 
 template <typename CharOut>
-inline CharOut* emit
+inline CharOut* emit_error
     ( stringify::v0::error_signal&& err_sig
     , const stringify::v0::encoder<CharOut>& encoder
     , CharOut* dest
     , CharOut* dest_end
     , bool allow_surrogates )
 {
-    return stringify::v0::emit(err_sig, encoder, dest, dest_end, allow_surrogates);
+    return stringify::v0::emit_error
+        ( err_sig
+        , encoder
+        , dest
+        , dest_end
+        , allow_surrogates );
 }
 
 template <typename CharOut>
-inline CharOut* emit
+inline CharOut* emit_error
     ( const stringify::v0::error_signal& err_sig
     , const stringify::v0::encoder<CharOut>& encoder
     , CharOut* dest
     , CharOut* dest_end
     , bool allow_surrogates )
 {
-    return stringify::v0::emit(stringify::v0::error_signal{ err_sig }, encoder, dest, dest_end, allow_surrogates);
+    return stringify::v0::emit_error
+        ( stringify::v0::error_signal{ err_sig }
+        , encoder
+        , dest
+        , dest_end
+        , allow_surrogates );
 }
 
 template <typename CharT>
@@ -763,7 +805,7 @@ public:
         , bool allow_surrogates
         ) const = 0;
 
-    virtual std::size_t required_size
+    virtual std::size_t necessary_size
         ( const CharIn* begin
         , const CharIn* end
         , const stringify::v0::error_signal& err_sig
@@ -789,108 +831,202 @@ public:
         , bool allow_surrogates
         ) const = 0;
 
-    virtual std::size_t required_size
+    virtual std::size_t necessary_size
         ( CharIn ch
         , const stringify::v0::error_signal& err_sig
         , bool allow_surrogates
         ) const = 0;
 };
 
-
 template <typename CharOut>
-class source
+class piecemeal_writer
 {
+    enum e_status {waiting_more, successfully_complete, error_reported};
+
 public:
 
-    virtual ~source()
+    virtual ~piecemeal_writer()
     {
     }
 
-    virtual CharOut* get(CharOut* dest_begin, CharOut* dest_end) = 0;
+    virtual CharOut* write(CharOut* dest_begin, CharOut* dest_end) = 0;
 
-    bool more()
+    bool more() const
     {
-        return m_status == stringify::v0::cv_result::insufficient_space;
+        return m_status == waiting_more;
     }
 
-    bool success()
+    bool success() const
     {
-        return m_status == stringify::v0::cv_result::success;
+        return m_status == successfully_complete;
+    }
+
+    std::error_code get_error() const
+    {
+        return m_err;
     }
 
 protected:
 
-    stringify::v0::cv_result m_status
-    = stringify::v0::cv_result::insufficient_space;
+    void report_error(std::error_code err)
+    {
+        BOOST_ASSERT(err != std::error_code{});
+        BOOST_ASSERT(m_status == waiting_more);
+        m_err = err;
+        m_status = error_reported;
+    }
+
+    void report_success()
+    {
+        BOOST_ASSERT(m_status == waiting_more);
+        m_status = successfully_complete;
+    }
+
+    // // helper functions
+    // struct encode_char_result
+    // {
+    //     CharOut* it;
+    //     char32_t ch;
+    // };
+
+    // encode_char_result encode_char
+    //     ( const stringify::v0::encoder<CharOut>& encoder
+    //     , const stringify::v0::error_signal& err_sig
+    //     , char32_t ch
+    //     , CharOut* dest
+    //     , CharOut* dest_end
+    //     , bool allow_surrogates );
+
+private:
+
+    std::error_code m_err;
+    e_status m_status = waiting_more;
 };
+
+
+// template <typename CharOut>
+// typename piecemeal_writer<CharOut>::encode_char_result
+// piecemeal_writer<CharOut>::encode_char
+//     ( const stringify::v0::encoder<CharOut>& encoder
+//     , const stringify::v0::error_signal& err_sig
+//     , char32_t ch
+//     , CharOut* dest
+//     , CharOut* dest_end
+//     , bool allow_surrogates )
+// {
+//     auto it = encoder.encode(ch, dest, dest_end, allow_surrogates);
+//     if (it != nullptr)
+//     {
+//         return {it, ch};
+//     }
+//     if(err_sig.has_char())
+//     {
+//         auto ech = err_sig.get_char();
+//         if (ch != ech)
+//         {
+//             return encode_char( encoder, err_sig, ech
+//                               , dest, dest_end, allow_surrogates );
+//         }
+//         auto it = encoder.encode(U'?', dest, dest_end, allow_surrogates);
+//         BOOST_ASSERT(it != nullptr);
+//         return {it, U'?'};
+//     }
+//     if(err_sig.has_error_code())
+//     {
+//         this->report_error(err_sig.get_error_code());
+//         return {nullptr, ch};
+//     }
+//     if(err_sig.has_function())
+//     {
+//         err_sig.get_function() ();
+//     }
+//     return {dest, U'\0'};
+// }
 
 namespace detail {
 
 template <typename CharIn, typename CharOut>
-class str_source: public stringify::v0::source<CharOut>
+class str_pm_writer: public stringify::v0::piecemeal_writer<CharOut>
 {
 public:
-    str_source
+    str_pm_writer
         ( const stringify::v0::transcoder<CharIn, CharOut>& trans
-        , stringify::v0::output_writer<CharOut>& out
+        , stringify::v0::error_signal err_sig
+        , bool allow_surrogates
         , const CharIn* src_it
         , const CharIn* src_end )
         noexcept
         : m_trans(trans)
-        , m_out(out)
+        , m_err_sig(err_sig)
+        , m_allow_surrogates(allow_surrogates)
         , m_src_it(src_it)
         , m_src_end(src_end)
     {
     }
 
-    virtual CharOut* get(CharOut* dest_begin, CharOut* dest_end) override;
+    virtual CharOut* write(CharOut* dest_begin, CharOut* dest_end) override;
 
 private:
 
     const stringify::v0::transcoder<CharIn, CharOut>& m_trans;
-    stringify::v0::output_writer<CharOut>& m_out;
+    const stringify::v0::error_signal m_err_sig;
+    const bool m_allow_surrogates;
     const CharIn* m_src_it;
     const CharIn* m_src_end;
 };
 
 template <typename CharOut>
-class char32_source: public stringify::v0::source<CharOut>
+class char32_pm_writer: public stringify::v0::piecemeal_writer<CharOut>
 {
 public:
-    char32_source(stringify::v0::output_writer<CharOut>& out, char32_t ch) noexcept
-        : m_out(out)
+    char32_pm_writer
+        ( const stringify::v0::encoder<CharOut>& encoder
+        , stringify::v0::error_signal err_sig
+        , bool allow_surrogates
+        , char32_t ch ) noexcept
+        : m_encoder(encoder)
+        , m_err_sig(err_sig)
+        , m_allow_surrogates(allow_surrogates)
         , m_char(ch)
     {
     }
 
-    virtual CharOut* get(CharOut* dest_begin, CharOut* dest_end) override;
+    virtual CharOut* write(CharOut* dest_begin, CharOut* dest_end) override;
 
 private:
 
-    stringify::v0::output_writer<CharOut>& m_out;
+    const stringify::v0::encoder<CharOut>& m_encoder;
+    const stringify::v0::error_signal m_err_sig;
+    const bool m_allow_surrogates;
     char32_t m_char;
 };
 
 template <typename CharOut>
-class repeated_char32_source: public stringify::v0::source<CharOut>
+class repeated_char32_pm_writer: public stringify::v0::piecemeal_writer<CharOut>
 {
 public:
-    repeated_char32_source
-        ( stringify::v0::output_writer<CharOut>& out
+    repeated_char32_pm_writer
+        ( const stringify::v0::encoder<CharOut>& encoder
+        , stringify::v0::error_signal err_sig
+        , bool allow_surrogates
         , std::size_t count
         , char32_t ch )
         noexcept
-        : m_out(out)
+        : m_encoder(encoder)
+        , m_err_sig(err_sig)
+        , m_allow_surrogates(allow_surrogates)
         , m_count(count)
         , m_char(ch)
     {
     }
 
-    virtual CharOut* get(CharOut* dest_begin, CharOut* dest_end) override;
+    virtual CharOut* write(CharOut* dest_begin, CharOut* dest_end) override;
 
 private:
 
-    stringify::v0::output_writer<CharOut>& m_out;
+    const stringify::v0::encoder<CharOut>& m_encoder;
+    const stringify::v0::error_signal m_err_sig;
+    const bool m_allow_surrogates;
     std::size_t m_count;
     char32_t m_char;
 };
@@ -901,18 +1037,18 @@ template <typename CharOut>
 struct output_writer_init
 {
     template <typename FPack>
-    output_writer_init(const FPack& ft)
+    output_writer_init(const FPack& fp)
         : m_encoding
-            { ft.template get_facet
+            { fp.template get_facet
                 < stringify::v0::encoding_category<CharOut>
                 , stringify::v0::output_writer<CharOut> >() }
         , m_encoding_err
-            { ft.template get_facet
+            { fp.template get_facet
                 < stringify::v0::encoding_error_category
                 , stringify::v0::output_writer<CharOut> >
                 ().on_error() }
         , m_allow_surr
-            { ft.template get_facet
+            { fp.template get_facet
                 < stringify::v0::allow_surrogates_category
                 , stringify::v0::output_writer<CharOut> >
                 ().value() }
@@ -929,6 +1065,12 @@ private:
     bool m_allow_surr;
 };
 
+struct codepoint_validation_result
+{
+    std::size_t size;
+    char32_t ch;
+    bool error_emitted;
+};
 
 template <typename CharOut>
 class output_writer
@@ -958,23 +1100,17 @@ public:
         return m_allow_surr;
     }
 
-    const auto& on_error() const
+    const auto& on_encoding_error() const
     {
         return m_encoding_err;
     }
 
-    std::size_t required_size(char32_t ch) const
+    stringify::v0::codepoint_validation_result validate(char32_t ch);
+
+    std::size_t necessary_size(char32_t ch) const
     {
-        return encoder().length(ch, allow_surrogates());
+        return encoder().necessary_size(ch, m_encoding_err, m_allow_surr);
     }
-
-    //bool signal_encoding_error();
-
-    void set_error_invalid_char()
-    {
-        set_error(std::make_error_code(std::errc::illegal_byte_sequence));
-    }
-
 
     template <typename CharIn>
     bool put
@@ -982,20 +1118,22 @@ public:
         , const CharIn* src_begin
         , const CharIn* src_end )
     {
-        stringify::v0::detail::str_source<CharIn, CharOut> src
-            ( trans, *this, src_begin, src_end );
+        stringify::v0::detail::str_pm_writer<CharIn, CharOut> src
+            { trans, m_encoding_err, m_allow_surr, src_begin, src_end };
         return put(src);
     }
 
     bool put32(std::size_t count, char32_t ch)
     {
-        stringify::v0::detail::repeated_char32_source<CharOut> src{*this, count, ch};
+        stringify::v0::detail::repeated_char32_pm_writer<CharOut> src
+            { encoder(), m_encoding_err, m_allow_surr, count, ch };
         return put(src);
     }
 
     bool put32(char32_t ch)
     {
-        stringify::v0::detail::char32_source<CharOut> src{*this, ch};
+        stringify::v0::detail::char32_pm_writer<CharOut> src
+            { encoder(), m_encoding_err, m_allow_surr, ch};
         return put(src);
     }
 
@@ -1007,7 +1145,7 @@ public:
 
     virtual bool good() const = 0;
 
-    virtual bool put(stringify::v0::source<CharOut>& src) = 0;
+    virtual bool put(stringify::v0::piecemeal_writer<CharOut>& src) = 0;
 
     virtual bool put(const CharOut* str, std::size_t size) = 0;
 
@@ -1037,6 +1175,37 @@ private:
     bool m_allow_surr;
 };
 
+
+template <typename CharOut>
+stringify::v0::codepoint_validation_result
+output_writer<CharOut>::validate(char32_t ch)
+{
+    auto s = encoder().validate(ch, m_allow_surr);
+    if (s != 0)
+    {
+        return {s, ch, false};
+    }
+    if(m_encoding_err.has_char())
+    {
+        s = encoder().validate(m_encoding_err.get_char(), m_allow_surr);
+        if (s != 0)
+        {
+            return {s, m_encoding_err.get_char(), false};
+        }
+        return {s, U'?', false};
+    }
+    if(m_encoding_err.has_error_code())
+    {
+        set_error(m_encoding_err.get_error_code());
+        return {0, ch, true};
+    }
+    if(m_encoding_err.has_function())
+    {
+        m_encoding_err.get_function() ();
+    }
+    return {0, ch, false};
+}
+
 namespace detail {
 
 template <typename CharOut>
@@ -1057,7 +1226,7 @@ public:
 
     stringify::v0::cv_result put32(char32_t ch) override
     {
-        m_length += m_encoder.length(ch, m_allow_surr);
+        m_length += m_encoder.necessary_size(ch, m_err_sig, m_allow_surr);
         return stringify::v0::cv_result::success;
     }
 
@@ -1141,7 +1310,13 @@ public:
 
     bool signalize_error() override
     {
-        auto it = stringify::v0::emit(m_err_sig, m_encoder, m_dest_it, m_dest_end, m_allow_surr);
+        auto it = stringify::v0::emit_error
+            ( m_err_sig
+            , m_encoder
+            , m_dest_it
+            , m_dest_end
+            , m_allow_surr );
+
         if(nullptr == it)
         {
             m_status = stringify::v0::cv_result::invalid_char;
@@ -1227,7 +1402,7 @@ public:
         , bool allow_surrogates
         ) const override;
 
-    virtual std::size_t required_size
+    virtual std::size_t necessary_size
         ( const CharIn* src_begin
         , const CharIn* src_end
         , const stringify::v0::error_signal & err_sig
@@ -1251,7 +1426,7 @@ public:
         , bool allow_surrogates
         ) const override;
 
-    virtual std::size_t required_size
+    virtual std::size_t necessary_size
         ( CharIn ch
         , const stringify::v0::error_signal & err_sig
         , bool allow_surrogates
@@ -1284,7 +1459,7 @@ decode_encode<CharIn, CharOut>::convert
 }
 
 template <typename CharIn, typename CharOut>
-std::size_t decode_encode<CharIn, CharOut>::required_size
+std::size_t decode_encode<CharIn, CharOut>::necessary_size
     ( const CharIn* src_begin
     , const CharIn* src_end
     , const stringify::v0::error_signal & err_sig
@@ -1293,7 +1468,7 @@ std::size_t decode_encode<CharIn, CharOut>::required_size
 {
     stringify::v0::detail::length_accumulator<CharOut> adapter
         ( m_encoder, err_sig, allow_surrogates );
-    m_decoder.decode
+    (void)m_decoder.decode
         ( adapter, src_begin, src_end, allow_surrogates );
     return adapter.get_length();
 }
@@ -1342,7 +1517,7 @@ stringify::v0::char_cv_result<CharOut> decode_encode<CharIn, CharOut>::convert
 }
 
 template <typename CharIn, typename CharOut>
-std::size_t decode_encode<CharIn, CharOut>::required_size
+std::size_t decode_encode<CharIn, CharOut>::necessary_size
     ( CharIn ch
     , const stringify::v0::error_signal & err_sig
     , bool allow_surrogates
@@ -1425,24 +1600,24 @@ public:
     //         : m_out.put(*m_transcoder, count, ch);
     // }
 
-    std::size_t length(const CharIn* begin, const CharIn* end) const
+    std::size_t necessary_size(const CharIn* begin, const CharIn* end) const
     {
         return m_transcoder == nullptr
             ? (end - begin)
-            : m_transcoder->required_size
+            : m_transcoder->necessary_size
                 ( begin
                 , end
-                , m_out.on_error()
+                , on_encoding_error()
                 , allow_surrogates() );
     }
-    std::size_t length(const CharIn* begin, std::size_t count) const
+    std::size_t necessary_size(const CharIn* begin, std::size_t count) const
     {
         return m_transcoder == nullptr
             ? count
-            : m_transcoder->required_size
+            : m_transcoder->necessary_size
                 ( begin
                 , begin + count
-                , m_out.on_error()
+                , on_encoding_error()
                 , allow_surrogates() );
     }
 
@@ -1457,14 +1632,14 @@ public:
         return m_out.put32(ch);
     }
 
-    std::size_t required_size(char32_t ch) const
+    std::size_t necessary_size(char32_t ch) const
     {
-        return m_out.required_size(ch);
+        return m_out.necessary_size(ch);
     }
 
-    const auto& on_error() const
+    const auto& on_encoding_error() const
     {
-        return m_out.on_error();
+        return m_out.on_encoding_error();
     }
 
     bool allow_surrogates() const
@@ -1508,52 +1683,50 @@ void string_writer<CharIn, CharOut>::init_transcoder
     }
 }
 
-
-template <typename CharIn>
-class printer
-{
-public:
-
-    virtual ~printer()
-    {
-    }
-
-    virtual std::size_t length() const = 0;
-
-    virtual void write() const = 0;
-
-    virtual int remaining_width(int w) const = 0;
-};
-
-
 enum class alignment {left, right, internal, center};
 
-template <class T = void>
+namespace detail {
+
+template <typename fmt_base, typename T>
+struct fmt_derived_impl
+{
+    using type = T;
+};
+
+template <typename fmt_base>
+struct fmt_derived_impl<fmt_base, void>
+{
+    using type = fmt_base;
+};
+
+} // namespace detail
+
+template <typename FmtBase, typename FmtDerived>
+using fmt_derived
+= typename stringify::v0::detail::fmt_derived_impl<FmtBase, FmtDerived>::type;
+
+template <class T>
 class align_formatting
 {
-    using child_type = typename std::conditional
-        < std::is_void<T>::value
-        , align_formatting<void>
-        , T
-        > :: type;
+    using derived = stringify::v0::fmt_derived<align_formatting<T>, T>;
 
 public:
 
     template <typename U>
-    using other = stringify::v0::align_formatting<U>;
+    using fmt_other = stringify::v0::align_formatting<U>;
 
     constexpr align_formatting()
     {
-        static_assert(std::is_base_of<align_formatting, child_type>::value, "");
+        static_assert(std::is_base_of<align_formatting, derived>::value, "");
     }
 
     constexpr align_formatting(const align_formatting&) = default;
 
     template <typename U>
-    constexpr align_formatting(const align_formatting<U>& other)
-        : m_fill(other.m_fill)
-        , m_width(other.m_width)
-        , m_alignment(other.m_alignment)
+    constexpr align_formatting(const align_formatting<U>& u)
+        : m_fill(u.fill())
+        , m_width(u.width())
+        , m_alignment(u.alignment())
     {
     }
 
@@ -1561,88 +1734,73 @@ public:
     {
     }
 
-    template <typename U>
-    constexpr child_type& format_as(const align_formatting<U>& other) &
-    {
-        m_fill = other.m_fill;
-        m_width = other.m_width;
-        m_alignment = other.m_alignment;
-        return static_cast<child_type&>(*this);
-    }
-
-    template <typename U>
-    constexpr child_type&& format_as(const align_formatting<U>& other) &&
-    {
-        return static_cast<child_type&&>(format_as(other));
-    }
-
-    constexpr child_type&& operator<(int width) &&
+    constexpr derived&& operator<(int width) &&
     {
         m_alignment = stringify::v0::alignment::left;
         m_width = width;
-        return static_cast<child_type&&>(*this);
+        return static_cast<derived&&>(*this);
     }
-    constexpr child_type& operator<(int width) &
+    constexpr derived& operator<(int width) &
     {
         m_alignment = stringify::v0::alignment::left;
         m_width = width;
-        return static_cast<child_type&>(*this);
+        return static_cast<derived&>(*this);
     }
-    constexpr child_type&& operator>(int width) &&
+    constexpr derived&& operator>(int width) &&
     {
         m_alignment = stringify::v0::alignment::right;
         m_width = width;
-        return static_cast<child_type&&>(*this);
+        return static_cast<derived&&>(*this);
     }
-    constexpr child_type& operator>(int width) &
+    constexpr derived& operator>(int width) &
     {
         m_alignment = stringify::v0::alignment::right;
         m_width = width;
-        return static_cast<child_type&>(*this);
+        return static_cast<derived&>(*this);
     }
-    constexpr child_type&& operator^(int width) &&
+    constexpr derived&& operator^(int width) &&
     {
         m_alignment = stringify::v0::alignment::center;
         m_width = width;
-        return static_cast<child_type&&>(*this);
+        return static_cast<derived&&>(*this);
     }
-    constexpr child_type& operator^(int width) &
+    constexpr derived& operator^(int width) &
     {
         m_alignment = stringify::v0::alignment::center;
         m_width = width;
-        return static_cast<child_type&>(*this);
+        return static_cast<derived&>(*this);
     }
-    constexpr child_type&& operator%(int width) &&
+    constexpr derived&& operator%(int width) &&
     {
         m_alignment = stringify::v0::alignment::internal;
         m_width = width;
-        return static_cast<child_type&&>(*this);
+        return static_cast<derived&&>(*this);
     }
-    constexpr child_type& operator%(int width) &
+    constexpr derived& operator%(int width) &
     {
         m_alignment = stringify::v0::alignment::internal;
         m_width = width;
-        return static_cast<child_type&>(*this);
+        return static_cast<derived&>(*this);
     }
-    constexpr child_type&& fill(char32_t ch) &&
+    constexpr derived&& fill(char32_t ch) &&
     {
         m_fill = ch;
-        return static_cast<child_type&&>(*this);
+        return static_cast<derived&&>(*this);
     }
-    constexpr child_type& fill(char32_t ch) &
+    constexpr derived& fill(char32_t ch) &
     {
         m_fill = ch;
-        return static_cast<child_type&>(*this);
+        return static_cast<derived&>(*this);
     }
-    constexpr child_type&& width(int w) &&
+    constexpr derived&& width(int w) &&
     {
         m_width = w;
-        return static_cast<child_type&&>(*this);
+        return static_cast<derived&&>(*this);
     }
-    constexpr child_type& width(int w) &
+    constexpr derived& width(int w) &
     {
         m_width = w;
-        return static_cast<child_type&>(*this);
+        return static_cast<derived&>(*this);
     }
     constexpr int width() const
     {
@@ -1667,6 +1825,241 @@ private:
     stringify::v0::alignment m_alignment = stringify::v0::alignment::right;
 };
 
+
+template <typename CharOut>
+class printer
+{
+public:
+
+    virtual ~printer()
+    {
+    }
+
+    virtual std::size_t necessary_size() const = 0;
+
+    virtual void write() const = 0;
+
+    virtual int remaining_width(int w) const = 0;
+};
+
+
+template <typename CharOut>
+class printers_receiver
+{
+public:
+
+    virtual ~printers_receiver()
+    {
+    }
+
+    virtual bool put(const stringify::v0::printer<CharOut>& ) = 0;
+};
+
+namespace detail {
+
+template <typename CharOut>
+class width_subtracter: public printers_receiver<CharOut>
+{
+public:
+
+    width_subtracter(int w)
+        : m_width(w)
+    {
+    }
+
+    bool put(const stringify::v0::printer<CharOut>& p) override;
+
+    int remaining_width() const
+    {
+        return m_width;
+    }
+
+private:
+
+    int m_width;
+};
+
+template <typename CharOut>
+bool width_subtracter<CharOut>::put(const stringify::v0::printer<CharOut>& p)
+{
+    m_width = p.remaining_width(m_width);
+    return m_width > 0;
+}
+
+template <typename CharOut>
+class necessary_size_sum: public printers_receiver<CharOut>
+{
+public:
+
+    necessary_size_sum() = default;
+
+    bool put(const stringify::v0::printer<CharOut>& p) override;
+
+    std::size_t accumulated_length() const
+    {
+        return m_len;
+    }
+
+private:
+
+    std::size_t m_len = 0;
+};
+
+template <typename CharOut>
+bool necessary_size_sum<CharOut>::put(const stringify::v0::printer<CharOut>& p)
+{
+    m_len += p.necessary_size();
+    return true;
+}
+
+template <typename CharOut>
+class serial_writer: public printers_receiver<CharOut>
+{
+public:
+
+    serial_writer() = default;
+
+    bool put(const stringify::v0::printer<CharOut>& p) override;
+};
+
+template <typename CharOut>
+bool serial_writer<CharOut>::put(const stringify::v0::printer<CharOut>& p)
+{
+    p.write();
+    return true;
+}
+
+} // namespace detail
+
+template <typename CharOut>
+class dynamic_join_printer: public stringify::v0::printer<CharOut>
+{
+public:
+
+    dynamic_join_printer(stringify::v0::output_writer<CharOut>& out)
+        : m_out(out)
+    {
+    }
+
+    std::size_t necessary_size() const override;
+
+    void write() const override;
+
+    int remaining_width(int w) const override;
+
+protected:
+
+    virtual stringify::v0::align_formatting<void> formatting() const;
+
+    virtual void compose(stringify::v0::printers_receiver<CharOut>& out) const = 0;
+
+private:
+
+    void write_with_fill(int fillcount) const;
+
+    void write_without_fill() const;
+
+    stringify::v0::output_writer<CharOut>& m_out;
+};
+
+template <typename CharOut>
+stringify::v0::align_formatting<void>
+dynamic_join_printer<CharOut>::formatting() const
+{
+    return {};
+}
+
+template <typename CharOut>
+std::size_t dynamic_join_printer<CharOut>::necessary_size() const
+{
+    std::size_t fill_len = 0;
+    const auto fmt = formatting();
+    if(fmt.width() > 0)
+    {
+        stringify::v0::detail::width_subtracter<CharOut> wds{fmt.width()};
+        compose(wds);
+        std::size_t fillcount = wds.remaining_width();
+        fill_len = m_out.necessary_size(fmt.fill()) * fillcount;
+    }
+
+    stringify::v0::detail::necessary_size_sum<CharOut> s;
+    compose(s);
+    return s.accumulated_length() + fill_len;
+}
+
+template <typename CharOut>
+int dynamic_join_printer<CharOut>::remaining_width(int w) const
+{
+    const auto fmt_width = formatting().width();
+    if (fmt_width > w)
+    {
+        return 0;
+    }
+
+    stringify::v0::detail::width_subtracter<CharOut> s{w};
+    compose(s);
+    int rw = s.remaining_width();
+    return (w - rw < fmt_width) ? (w - fmt_width) : rw;
+}
+
+template <typename CharOut>
+void dynamic_join_printer<CharOut>::write() const
+{
+    auto fmt = formatting();
+    auto fillcount = fmt.width();
+    if(fillcount > 0)
+    {
+        stringify::v0::detail::width_subtracter<CharOut> wds{fillcount};
+        compose(wds);
+        fillcount = wds.remaining_width();
+    }
+    if(fillcount > 0)
+    {
+        write_with_fill(fillcount);
+    }
+    else
+    {
+        write_without_fill();
+    }
+}
+
+template <typename CharOut>
+void dynamic_join_printer<CharOut>::write_without_fill() const
+{
+    stringify::v0::detail::serial_writer<CharOut> s;
+    compose(s);
+}
+
+template <typename CharOut>
+void dynamic_join_printer<CharOut>::write_with_fill(int fillcount) const
+{
+    auto fmt = formatting();
+    switch (fmt.alignment())
+    {
+        case stringify::v0::alignment::left:
+        {
+            write_without_fill();
+            m_out.put32(fillcount, fmt.fill());
+            break;
+        }
+        case stringify::v0::alignment::center:
+        {
+            auto halfcount = fillcount / 2;
+            m_out.put32(halfcount, fmt.fill());
+            write_without_fill();
+            m_out.put32(fillcount - halfcount, fmt.fill());
+            break;
+        }
+        //case stringify::v0::alignment::internal:
+        default:
+        {
+            m_out.put32(fillcount, fmt.fill());
+            write_without_fill();
+        }
+    }
+}
+
+
 template <typename T>
 struct identity
 {
@@ -1686,6 +2079,13 @@ template <typename CharIn>
 struct asm_string_input_tag: stringify::v0::string_input_tag<CharIn>
 {
 };
+
+template <typename CharIn>
+struct range_separator_input_tag: stringify::v0::string_input_tag<CharIn>
+{
+};
+
+
 
 template <typename CharIn>
 struct is_asm_string_of
@@ -1737,7 +2137,7 @@ bool output_writer<CharOut>::signal_encoding_error()
 namespace detail {
 
 template <typename CharIn, typename CharOut>
-CharOut* str_source<CharIn, CharOut>::get
+CharOut* str_pm_writer<CharIn, CharOut>::write
     ( CharOut* dest_begin
     , CharOut* dest_end )
 {
@@ -1746,24 +2146,17 @@ CharOut* str_source<CharIn, CharOut>::get
         , m_src_end
         , dest_begin
         , dest_end
-        , m_out.on_error()
-        , m_out.allow_surrogates() );
+        , m_err_sig
+        , m_allow_surrogates );
 
-    this->m_status = res.result;
-    if(res.result == stringify::v0::cv_result::invalid_char)
+    if(res.result == stringify::v0::cv_result::success)
     {
-        if(m_out.on_error().has_error_code())
-        {
-            m_out.set_error(m_out.on_error().get_error_code());
-        }
-        else if(m_out.on_error().has_function())
-        {
-            m_out.on_error().get_function()();
-        }
-        else
-        {
-            m_out.set_error_invalid_char();
-        }
+        this->report_success();
+    }
+    else if(res.result == stringify::v0::cv_result::invalid_char)
+    {
+        BOOST_ASSERT(m_err_sig.has_error_code());
+        this->report_error(m_err_sig.get_error_code());
     }
     BOOST_ASSERT(m_src_it <= res.src_it);
     BOOST_ASSERT(res.src_it <= m_src_end);
@@ -1774,95 +2167,56 @@ CharOut* str_source<CharIn, CharOut>::get
 }
 
 template <typename CharOut>
-CharOut* char32_source<CharOut>::get
+CharOut* char32_pm_writer<CharOut>::write
     ( CharOut* dest_begin
     , CharOut* dest_end )
 {
-    CharOut* it = m_out.encoder().encode
+    CharOut* it = m_encoder.encode
         ( m_char
         , dest_begin
         , dest_end
-        , m_out.allow_surrogates() );
+        , m_allow_surrogates );
 
     if(it == nullptr)
     {
-        if(m_out.on_error().skip())
-        {
-            return dest_begin;
-        }
-        if(m_out.on_error().has_char())
-        {
-            auto echar = m_out.on_error().get_char();
-            m_char = echar == m_char ? U'?' : echar;
-            return get(dest_begin, dest_end);
-        }
-        else if(m_out.on_error().has_error_code())
-        {
-            m_out.set_error(m_out.on_error().get_error_code());
-        }
-        else if(m_out.on_error().has_function())
-        {
-            m_out.on_error().get_function()();
-        }
-        this->m_status = stringify::v0::cv_result::invalid_char;
+        BOOST_ASSERT(m_err_sig.has_error_code());
+        this->report_error(m_err_sig.get_error_code());
         return dest_begin;
     }
     if(it != dest_end + 1)
     {
         BOOST_ASSERT(dest_begin < it && it <= dest_end);
-        this->m_status = stringify::v0::cv_result::success;
+        this->report_success();
         return it;
     }
-    this->m_status = stringify::v0::cv_result::insufficient_space;
     return dest_begin;
 }
 
 template <typename CharOut>
-CharOut* repeated_char32_source<CharOut>::get
+CharOut* repeated_char32_pm_writer<CharOut>::write
     ( CharOut* dest_begin
     , CharOut* dest_end )
 {
-    auto res = m_out.encoder().encode
+    auto res = m_encoder.encode
         ( m_count
         , m_char
         , dest_begin
         , dest_end
-        , m_out.allow_surrogates() );
+        , m_allow_surrogates );
 
     if(res.dest_it == nullptr)
     {
-        if(m_out.on_error().has_char())
-        {
-            auto echar = m_out.on_error().get_char();
-            m_char = echar == m_char ? U'?' : echar;
-            return get(dest_begin, dest_end);
-        }
-        if(m_out.on_error().skip())
-        {
-            return dest_begin;
-        }
-        if(m_out.on_error().has_error_code())
-        {
-            m_out.set_error(m_out.on_error().get_error_code());
-        }
-        else if(m_out.on_error().has_function())
-        {
-            m_out.on_error().get_function()();
-        }
-        this->m_status = stringify::v0::cv_result::invalid_char;
+        BOOST_ASSERT(m_err_sig.has_error_code());
+        this->report_error(m_err_sig.get_error_code());
         return dest_begin;
     }
     if(res.count == m_count)
     {
         BOOST_ASSERT(dest_begin < res.dest_it || m_count == 0);
         BOOST_ASSERT(res.dest_it <= dest_end);
-        this->m_status = stringify::v0::cv_result::success;
+        this->report_success();
     }
-    else
-    {
-        m_count -= res.count;
-        this->m_status = stringify::v0::cv_result::insufficient_space;
-    }
+    m_count -= res.count;
     return res.dest_it;
 }
 
@@ -1889,32 +2243,32 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class decode_encode<char32_t, wchar_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class decode_encode<char32_t, char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class decode_encode<char32_t, char32_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_source<char, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_source<char, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_source<char, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_source<char, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_source<wchar_t, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_source<wchar_t, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_source<wchar_t, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_source<wchar_t, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_source<char16_t, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_source<char16_t, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_source<char16_t, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_source<char16_t, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_source<char32_t, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_source<char32_t, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_source<char32_t, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_source<char32_t, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<wchar_t, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<wchar_t, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<wchar_t, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<wchar_t, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char16_t, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char16_t, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char16_t, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char16_t, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char32_t, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char32_t, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char32_t, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char32_t, char32_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_source<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_source<wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_source<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_source<char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_pm_writer<char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_pm_writer<wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_pm_writer<char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_pm_writer<char32_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class repeated_char32_source<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class repeated_char32_source<wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class repeated_char32_source<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class repeated_char32_source<char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class repeated_char32_pm_writer<char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class repeated_char32_pm_writer<wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class repeated_char32_pm_writer<char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class repeated_char32_pm_writer<char32_t>;
 
 } // namespace detail
 

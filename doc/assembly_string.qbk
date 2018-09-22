@@ -4,15 +4,15 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[import ../example/v0/assembly_string.cpp]
-[import ../example/v0/trivial_sample.cpp]
+[import ../example/assembly_string.cpp]
+[import ../example/trivial_sample.cpp]
 
-[#section_assembly_string]
+[#assembly_string]
 [section The assembly string]
 
-The ['assembly string] is analogous to what in others formatting libraries is called as the /format string/, except that it does not format any of the arguments. Formatting is specified instead with [link format_functions format functions].
+The ['assembly string] is analogous to what in others formatting libraries is called as the /format string/, except that it doesn't format any of the arguments. Formatting is specified instead with [link format_functions format functions].
 
-As shown in the diagram, the assembly string is optional. When not used, the arguments are just printed sequentially. The main reason it exists is to enable the creation of multilingual programs by the use of translation tools like [@https://en.wikipedia.org/wiki/Gettext gettext].
+As shown in the diagram, the assembly string is optional. When not used, the arguments are just printed sequentially. The main reason it exists is to enable the creation of multilingual programs, with the use of translation tools like [@https://en.wikipedia.org/wiki/Gettext gettext].
 
 [trivial_sample]
 
@@ -21,27 +21,28 @@ As shown in the diagram, the assembly string is optional. When not used, the arg
 [table 
 [[A `'{'` followed by]  [until]                           [means]]
 [[`'-'`]                [the next `'}'` or end of string] [a comment]]
-[[a digit]              [the next `'}'` or end of string] [a positional argument]]
-[[any other character]  [the next `'}'` or end of string] [a non positional argument]]
+[[a digit]              [the next `'}'` or end of string] [a positional argument reference]]
+[[any other character]  [the next `'}'` or end of string] [a non positional argument reference]]
 [[another `'{'`]        [the second `'{'`]                [an escaped `'{'`]]
 ]
 
 [variablelist
 
 [[Comments]
-[Comments are useful for internationalization, /i.e./ when the assembly string has to be translated to another languages.
-The translation may be the role of someone else than you. So you can add comments intended to help such person.
+
+
+[When the assembly string has to be translated to other languages, the translation may be in charge of someone else than you. So you can add comments intended to help such person.
 ]
 [[asmstr_comment_sample]]
 ]
 
-[[Positional argument]
+[[Positional argument reference]
 [Position zero refers to the first input argument.]
 [The characters the after the digits are ignored by the parser. So they can also be seen as comments.]
 [[asmstr_positional_arg]]
 ]
 
-[[Non positional argument]
+[[Non positional argument reference]
 [The characters the after the `'{'` are ignored as well]
 [[asmstr_non_positional_arg]]
 ]
@@ -51,5 +52,7 @@ The translation may be the role of someone else than you. So you can add comment
 [[asmstr_escape_sample]]
 ]
 ]
+
+Currently, in case of an invalid argument reference, the library emits an error code created from `std::errc::value_too_large`. However, this policy is expected to change in the next release.
 
 [endsect]

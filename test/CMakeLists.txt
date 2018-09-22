@@ -1,38 +1,44 @@
+#
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+#
+
 cmake_minimum_required (VERSION 3.0)
-project (unit_tests)
+project (boost_stringify_test)
 
 include_directories("../../../")
 
 foreach(
   t
-  assembly_string_test
-  input_string_test
-  input_int_test
-  input_char_test
-  input_char32_test
-  input_facets_pack_test
-  input_range_test
-  numpunct_test
-  join_test
-  output_string_test
-  output_char_ptr_test
-  output_streambuf_test
-  output_FILE_test
-  facets_pack_merge_test
-  facets_pack_test
-  reserve_test
-  width_calculator_test
-  transcoding_test
+  assembly_string
+  input_string
+  input_int
+  input_char
+  input_char32
+  input_facets_pack
+  input_range
+  numpunct
+  join
+  output_string
+  output_char_ptr
+  output_streambuf
+  output_FILE
+  facets_pack_merge
+  facets_pack
+  reserve
+  width_calculator
+  transcoding
   )
 
-  add_executable(${t}_header_only   v0/${t}.cpp)
-  add_executable(${t}_static_lib    v0/${t}.cpp)
+  add_executable(test-${t}-header-only   ${t}.cpp)
+  add_executable(test-${t}-static-lib    ${t}.cpp)
 
-  target_link_libraries(${t}_header_only   boost_stringify_header_only)
-  target_link_libraries(${t}_static_lib    boost_stringify)
+  target_link_libraries(test-${t}-header-only   boost_stringify-header-only)
+  target_link_libraries(test-${t}-static-lib    boost_stringify)
 
-  add_test(run-${t}_header_only     ${t}_header_only)
-  add_test(run-${t}_static_lib      ${t}_static_lib)
+  add_test(run-test-${t}-header-only   test-${t}-header-only)
+  add_test(run-test-${t}-static-lib    test-${t}-static-lib)
 
 endforeach(t)
 

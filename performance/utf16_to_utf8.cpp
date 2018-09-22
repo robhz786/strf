@@ -51,7 +51,10 @@ int main()
         (void)err;
     }
 
-#if ! defined(_MSC_VER)
+#if defined(_MSC_VER)
+// disable warning that std::codecvt_utf8_utf16 is deprecated
+#pragma warning (disable:4996)
+#endif
 
     std::codecvt_utf8_utf16<char16_t> codecvt;
     const char16_t* cu16next = nullptr;
@@ -112,7 +115,5 @@ int main()
             , u8next);
         *u8next = '\0';
     }
-
-#endif // ! defined(MSVC)
 
 }

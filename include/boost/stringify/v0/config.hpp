@@ -35,36 +35,40 @@ inline namespace v0 {                              \
 #endif
 
 
-#if defined(_MSC_VER) && _MSC_VER < 1911
+#if defined(_MSC_VER)
+#if _MSC_VER < 1911
 #define BOOST_STRINGIFY_NO_NODISCARD
 #endif
 
-#if defined(__GNUC__) && __GNUC__ < 7
+#elif defined(__GNUC__) && __GNUC__ < 7
 #define BOOST_STRINGIFY_NO_NODISCARD
-#endif
 
-#if defined(__clang__)
+#elif defined(__clang__)
 #if __has_attribute(nodiscard) == 0
 #define BOOST_STRINGIFY_NO_NODISCARD
 #endif
-#endif
 
-#if defined(__INTEL_COMPILER) && __INTEL_COMPILER < 1800
+#elif defined(__INTEL_COMPILER) && __INTEL_COMPILER < 1800
+#define BOOST_STRINGIFY_NO_NODISCARD
+
+#elif __cplusplus < 201703L
 #define BOOST_STRINGIFY_NO_NODISCARD
 #endif
 
-#if __cplusplus < 201703L
-#define BOOST_STRINGIFY_NO_NODISCARD
-#endif
+#if __cplusplus >= 201703L || ( defined(_MSC_VER) && defined(_HAS_CXX17) && _HAS_CXX17)
 
-
-#if __cplusplus >= 201703L
+#define BOOST_STRINGIFY_HAS_CXX17
 
 #if ! defined(BOOST_STRINGIFY_NO_NODISCARD)
 #define BOOST_STRINGIFY_HAS_NODISCARD
 #endif
 
 #if defined(__has_include)
+
+#if __has_include(<charconv>)
+#include <charconv>
+#define BOOST_STRINGIFY_HAS_STD_CHARCONV
+#endif
 
 #if __has_include(<string_view>)
 #define BOOST_STRINGIFY_HAS_STD_STRING_VIEW
@@ -81,7 +85,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_END;
 
 #endif // defined(__has_include)
 
-#endif // __cplusplus >= 201703L 
+#endif // __cplusplus >= 201703L || ( defined(_MSV_VER) && defined(_HAS_CXX17))
 
 #if defined(BOOST_STRINGIFY_HAS_NODISCARD)
 #define BOOST_STRINGIFY_NODISCARD [[nodiscard]]

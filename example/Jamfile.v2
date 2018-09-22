@@ -7,4 +7,25 @@ project libs/stringify/example
       <include>../include
     ;
 
-build-project v0 ;
+test-suite strigify-example :
+    [ run overview.cpp ]
+    [ run extend_input_ipv4.cpp ]
+    [ run extend_input_ipv6.cpp ]
+    [ run extend_input_base64.cpp ]
+    [ run extend_input_template.cpp ]
+    [ run assembly_string.cpp ]
+    [ run encoding_conversion.cpp ]
+    [ run facets.cpp ]
+    [ run facets_pack_as_input.cpp ]
+    [ run format_functions.cpp ]
+    [ run numpunct_facets.cpp ]
+    [ run width_calculation_in_encoding_conversion.cpp ]
+    [ run joins.cpp ]
+    [ run range_input.cpp ]
+    [ run syntax_samples.cpp ]
+    [ run trivial_sample.cpp ]
+;
+    
+explicit stringify-example ;
+
+

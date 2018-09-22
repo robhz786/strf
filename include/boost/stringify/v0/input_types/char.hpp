@@ -16,35 +16,22 @@ template <class T>
 class char_formatting: public stringify::v0::align_formatting<T>
 {
 
-    using child_type = typename std::conditional
-        < std::is_same<T, void>::value
-        , char_formatting<void>
-        , T
-        > :: type;
+    using child_type = T;
 
 public:
 
     template <typename U>
-    friend class char_formatting;
-
-    template <typename U>
-    using other = stringify::v0::char_formatting<U>;
+    using fmt_other = stringify::v0::char_formatting<U>;
 
     constexpr char_formatting() = default;
 
     constexpr char_formatting(const char_formatting&) = default;
 
     template <typename U>
-    constexpr child_type& format_as(const char_formatting<U>& other) &
+    constexpr char_formatting(const char_formatting<U>& u)
+        : stringify::v0::align_formatting<T>(u)
+        , m_count(u.count())
     {
-        m_count = other.m_count;
-        return align_formatting<T>::format_as(other);
-    }
-
-    template <typename U>
-    constexpr child_type&& format_as(const char_formatting<U>& other) &&
-    {
-        return static_cast<child_type&&>(format_as(other));
     }
     
     ~char_formatting() = default;
@@ -78,10 +65,15 @@ class char_with_formatting
 {
 public:
 
-    constexpr char_with_formatting() = default;
-
     constexpr char_with_formatting(CharT value)
         : m_value(value)
+    {
+    }
+
+    template <typename U>
+    constexpr char_with_formatting(CharT value, const char_formatting<U>& u)
+        : stringify::v0::char_formatting<char_with_formatting>(u)
+        , m_value(value)
     {
     }
 
@@ -108,10 +100,10 @@ public:
     template <typename FPack>
     char32_printer
         ( stringify::v0::output_writer<CharT>& out
-        , const FPack& ft
+        , const FPack& fp
         , const stringify::v0::char_with_formatting<char32_t>& input
         ) noexcept
-        : char32_printer(out, input, get_width_calculator(ft))
+        : char32_printer(out, input, get_width_calculator(fp))
     {
     }
 
@@ -123,7 +115,7 @@ public:
 
     virtual ~char32_printer();
 
-    std::size_t length() const override;
+    std::size_t necessary_size() const override;
 
     void write() const override;
 
@@ -136,22 +128,22 @@ private:
     int m_fillcount = 0;
 
     template <typename FPack>
-    static const auto& get_out_encoding(const FPack& ft)
+    static const auto& get_out_encoding(const FPack& fp)
     {
         using category = stringify::v0::encoding_category<CharT>;
-        return ft.template get_facet<category, input_type>();
+        return fp.template get_facet<category, input_type>();
     }
 
     template <typename FPack>
-    static const auto& get_width_calculator(const FPack& ft)
+    static const auto& get_width_calculator(const FPack& fp)
     {
         using category = stringify::v0::width_calculator_category;
-        return ft.template get_facet<category, input_type>();
+        return fp.template get_facet<category, input_type>();
     }
 
-    std::size_t length(char32_t ch) const
+    std::size_t necessary_size(char32_t ch) const
     {
-        return m_out.required_size(ch);
+        return m_out.necessary_size(ch);
     }
 
     void determinate_fill_and_width(const stringify::v0::width_calculator& wcalc)
@@ -198,16 +190,16 @@ char32_printer<CharT>::~char32_printer()
 
 
 template <typename CharT>
-std::size_t char32_printer<CharT>::length() const
+std::size_t char32_printer<CharT>::necessary_size() const
 {
     std::size_t len = 0;
     if (m_fmt.count() > 0)
     {
-        len = m_fmt.count() * length(m_fmt.value());
+        len = m_fmt.count() * necessary_size(m_fmt.value());
     }
     if (m_fillcount > 0)
     {
-        len += m_fillcount * length(m_fmt.fill());
+        len += m_fillcount * necessary_size(m_fmt.fill());
     }
     return len;
 }
@@ -278,10 +270,10 @@ public:
     template <typename FPack>
     char_printer
         ( stringify::v0::output_writer<CharT>& out
-        , const FPack& ft
+        , const FPack& fp
         , const stringify::v0::char_with_formatting<CharT>& input
         ) noexcept
-        : char_printer(out, input, get_width_calculator(ft))
+        : char_printer(out, input, get_width_calculator(fp))
     {
     }
 
@@ -293,7 +285,7 @@ public:
 
     virtual ~char_printer();
 
-    std::size_t length() const override;
+    std::size_t necessary_size() const override;
 
     void write() const override;
 
@@ -306,22 +298,22 @@ private:
     int m_fillcount = 0;
 
     template <typename FPack>
-    static const auto& get_out_encoding(const FPack& ft)
+    static const auto& get_out_encoding(const FPack& fp)
     {
         using category = stringify::v0::encoding_category<CharT>;
-        return ft.template get_facet<category, input_type>();
+        return fp.template get_facet<category, input_type>();
     }
 
     template <typename FPack>
-    static const auto& get_width_calculator(const FPack& ft)
+    static const auto& get_width_calculator(const FPack& fp)
     {
         using category = stringify::v0::width_calculator_category;
-        return ft.template get_facet<category, input_type>();
+        return fp.template get_facet<category, input_type>();
     }
 
-    std::size_t length(char32_t ch) const
+    std::size_t necessary_size(char32_t ch) const
     {
-        return m_out.required_size(ch);
+        return m_out.necessary_size(ch);
     }
 
     void determinate_fill_and_width(const stringify::v0::width_calculator& wcalc)
@@ -368,12 +360,12 @@ char_printer<CharT>::~char_printer()
 
 
 template <typename CharT>
-std::size_t char_printer<CharT>::length() const
+std::size_t char_printer<CharT>::necessary_size() const
 {
     std::size_t len = m_fmt.count();
     if (m_fillcount > 0)
     {
-        len += m_fillcount * length(m_fmt.fill());
+        len += m_fillcount * necessary_size(m_fmt.fill());
     }
     return len;
 }
@@ -462,17 +454,17 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<wchar_t>;
 
 //     template <typename CharOut, typename FPack, typename CharIn>
 //     static inline printer_type<CharOut, CharIn> make_printer
-//         ( const FPack& ft, CharIn ch )
+//         ( const FPack& fp, CharIn ch )
 //     {
-//         return {ft, ch};
+//         return {fp, ch};
 //     }
 //     template <typename CharOut, typename FPack, typename CharIn>
 //     static inline printer_type<CharOut, CharIn> make_printer
-//         ( const FPack& ft
+//         ( const FPack& fp
 //         , const stringify::v0::char_with_formatting<CharIn>& ch
 //         )
 //     {
-//         return {ft, ch};
+//         return {fp, ch};
 //     }
 //     template <typename CharIn>
 //     static inline stringify::v0::char_with_formatting<CharIn> fmt(CharIn ch)
@@ -493,67 +485,96 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<wchar_t>;
 // stringify::v0::detail::char_input_traits stringify_get_input_traits( stringify::v0::char_with_formatting<char32_t> );
 
 template
-    < typename CharT
+    < typename CharOut
     , typename FPack
-    , typename = typename std::enable_if<!std::is_same<CharT, char32_t>::value>::type
+    , typename = typename std::enable_if<!std::is_same<CharOut, char32_t>::value>::type
     >
-inline stringify::v0::char32_printer<CharT>
-stringify_make_printer
-    ( stringify::v0::output_writer<CharT>& out
-    , const FPack& ft
+inline stringify::v0::char32_printer<CharOut>
+make_printer
+    ( stringify::v0::output_writer<CharOut>& out
+    , const FPack& fp
+    , const stringify::v0::char_with_formatting<char32_t>& ch )
+{
+    return {out, fp, ch};
+}
+
+template <typename CharOut, typename FPack>
+inline stringify::v0::char_printer<CharOut>
+make_printer
+    ( stringify::v0::output_writer<CharOut>& out
+    , const FPack& fp
+    , char ch )
+{
+    static_assert( std::is_same<CharOut, char>::value
+                 , "encoding convertion for single char not supported yet" );
+    return {out, fp, ch};
+}
+
+template <typename CharOut, typename FPack>
+inline stringify::v0::char_printer<CharOut>
+make_printer
+    ( stringify::v0::output_writer<CharOut>& out
+    , const FPack& fp
+    , wchar_t ch )
+{
+    static_assert( std::is_same<CharOut, wchar_t>::value
+                 , "encoding convertion for single char not supported yet" );
+    return {out, fp, ch};
+}
+
+template <typename CharOut, typename FPack>
+inline stringify::v0::char_printer<CharOut>
+make_printer
+    ( stringify::v0::output_writer<CharOut>& out
+    , const FPack& fp
+    , char16_t ch )
+{
+    static_assert( std::is_same<CharOut, char16_t>::value
+                 , "encoding convertion for single char not supported yet" );
+    return {out, fp, ch};
+}
+
+template< typename CharOut, typename FPack >
+std::conditional_t
+    < std::is_same<CharOut, char32_t>::value
+    , stringify::v0::char_printer<char32_t>
+    , stringify::v0::char32_printer<CharOut> >
+make_printer
+    ( stringify::v0::output_writer<CharOut>& out
+    , const FPack& fp
     , char32_t ch
     )
 {
-    return {out, ft, ch};
+    return {out, fp, ch};
 }
 
-template
-    < typename CharT
-    , typename FPack
-    , typename = typename std::enable_if<!std::is_same<CharT, char32_t>::value>::type
-    >
-inline stringify::v0::char32_printer<CharT>
-stringify_make_printer
-    ( stringify::v0::output_writer<CharT>& out
-    , const FPack& ft
-    , const stringify::v0::char_with_formatting<char32_t>& ch )
+template <typename CharOut, typename FPack>
+inline stringify::v0::char_printer<CharOut>
+make_printer
+    ( stringify::v0::output_writer<CharOut>& out
+    , const FPack& fp
+    , const stringify::v0::char_with_formatting<CharOut>& ch )
 {
-    return {out, ft, ch};
+    return {out, fp, ch};
 }
 
-template <typename CharT, typename FPack>
-inline stringify::v0::char_printer<CharT>
-stringify_make_printer
-    ( stringify::v0::output_writer<CharT>& out
-    , const FPack& ft
-    , CharT ch )
-{
-    return {out, ft, ch};
-}
-
-template <typename CharT, typename FPack>
-inline stringify::v0::char_printer<CharT>
-stringify_make_printer
-    ( stringify::v0::output_writer<CharT>& out
-    , const FPack& ft
-    , const stringify::v0::char_with_formatting<CharT>& ch )
-{
-    return {out, ft, ch};
-}
-
-inline stringify::v0::char_with_formatting<char> stringify_fmt(char ch)
+inline stringify::v0::char_with_formatting<char>
+make_fmt(stringify::v0::tag, char ch)
 {
     return {ch};
 }
-inline stringify::v0::char_with_formatting<wchar_t> stringify_fmt(wchar_t ch)
+inline stringify::v0::char_with_formatting<wchar_t>
+make_fmt(stringify::v0::tag, wchar_t ch)
 {
     return {ch};
 }
-inline stringify::v0::char_with_formatting<char16_t> stringify_fmt(char16_t ch)
+inline stringify::v0::char_with_formatting<char16_t>
+make_fmt(stringify::v0::tag, char16_t ch)
 {
     return {ch};
 }
-inline stringify::v0::char_with_formatting<char32_t> stringify_fmt(char32_t ch)
+inline stringify::v0::char_with_formatting<char32_t>
+make_fmt(stringify::v0::tag, char32_t ch)
 {
     return {ch};
 }
