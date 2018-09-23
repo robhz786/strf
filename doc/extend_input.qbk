@@ -392,9 +392,9 @@ passed in the constructor. You can see that [link output_writer `output_writer`]
 provides different functions (named `put` and `put32`) to do that.
 One option is to this call `put(CharT)` for every single character
 of the base64 content. That's not very efficient.
-Another option is to use `put(`[link piecemeal_writer `piecemeal_writer`]`<CharT>&)`.
-This implies to create a class template that inherits from `piecemeal_writer`
-and overrides the `write` function which writes directly into a raw string,
+Another option is to use `put(`[link piecemeal_input `piecemeal_input`]`<CharT>&)`.
+This implies to create a class template that inherits from `piecemeal_input`
+and overrides the it `get_some` function which writes directly into a raw string,
 which is usually the internal buffer of the `output_writer` instance.
 
 Actually I created two of such class templates. One for single line mode and
@@ -402,31 +402,31 @@ another for multiline. So that `base64_printer::write` is:
 
 [base64_printer__write]
 
-Let's see the implementation of `single_line_base64_pm_writer`:
+Let's see the implementation of `single_line_base64_pm_input`:
 
-[single_line_base64_pm_writer]
+[single_line_base64_pm_input]
 
-Each time `write(`[~begin], [~end]`)` is invoked it shall
+Each time `get_some(`[~begin], [~end]`)` is invoked it shall
 write the continuation of the part written in the previous call.
 That's why we need member variables like `m_column` \u2014
 which keep track of how many the indentation characters have been written \u2014
 and `m_index` \u2014 that records how many bytes have been encoded.
 In the end, `report_success()` is called to signal that there
 is nothing else to write.
-You can see that `write(begin, end)` is not required to return `end` when
+You can see that `get_some(begin, end)` is not required to return `end` when
 there is not enough space in the range \[`begin, end`). But the distance
 from the returned position to `end` shall not be greater than
 [link min_buff_size min_buff_size].
 
 
-The implementation of `multiline_base64_pm_writer` is more
+The implementation of `multiline_base64_pm_input` is more
 complex. After all, some blocks may need to be split by an end of line
 followed by indentation. Hence there is a larger number of
 situations where the content may need to be interrupted to be
-later continued in the next call of `write(`[~begin], [~end]`)`.
-I will just show here the `write` function:
+later continued in the next call of `get_some(`[~begin], [~end]`)`.
+I will just show here the `get_some` function:
 
-[multiline_base64_pm_writer__write]
+[multiline_base64_pm_input__get_some]
 
 After we define `base64_printer`, we can finally overload `make_printer`:
 

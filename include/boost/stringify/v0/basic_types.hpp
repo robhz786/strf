@@ -839,17 +839,17 @@ public:
 };
 
 template <typename CharOut>
-class piecemeal_writer
+class piecemeal_input
 {
     enum e_status {waiting_more, successfully_complete, error_reported};
 
 public:
 
-    virtual ~piecemeal_writer()
+    virtual ~piecemeal_input()
     {
     }
 
-    virtual CharOut* write(CharOut* dest_begin, CharOut* dest_end) = 0;
+    virtual CharOut* get_some(CharOut* dest_begin, CharOut* dest_end) = 0;
 
     bool more() const
     {
@@ -905,8 +905,8 @@ private:
 
 
 // template <typename CharOut>
-// typename piecemeal_writer<CharOut>::encode_char_result
-// piecemeal_writer<CharOut>::encode_char
+// typename piecemeal_input<CharOut>::encode_char_result
+// piecemeal_input<CharOut>::encode_char
 //     ( const stringify::v0::encoder<CharOut>& encoder
 //     , const stringify::v0::error_signal& err_sig
 //     , char32_t ch
@@ -946,10 +946,10 @@ private:
 namespace detail {
 
 template <typename CharIn, typename CharOut>
-class str_pm_writer: public stringify::v0::piecemeal_writer<CharOut>
+class str_pm_input: public stringify::v0::piecemeal_input<CharOut>
 {
 public:
-    str_pm_writer
+    str_pm_input
         ( const stringify::v0::transcoder<CharIn, CharOut>& trans
         , stringify::v0::error_signal err_sig
         , bool allow_surrogates
@@ -964,7 +964,7 @@ public:
     {
     }
 
-    virtual CharOut* write(CharOut* dest_begin, CharOut* dest_end) override;
+    virtual CharOut* get_some(CharOut* dest_begin, CharOut* dest_end) override;
 
 private:
 
@@ -976,10 +976,10 @@ private:
 };
 
 template <typename CharOut>
-class char32_pm_writer: public stringify::v0::piecemeal_writer<CharOut>
+class char32_pm_input: public stringify::v0::piecemeal_input<CharOut>
 {
 public:
-    char32_pm_writer
+    char32_pm_input
         ( const stringify::v0::encoder<CharOut>& encoder
         , stringify::v0::error_signal err_sig
         , bool allow_surrogates
@@ -991,7 +991,7 @@ public:
     {
     }
 
-    virtual CharOut* write(CharOut* dest_begin, CharOut* dest_end) override;
+    virtual CharOut* get_some(CharOut* dest_begin, CharOut* dest_end) override;
 
 private:
 
@@ -1002,10 +1002,10 @@ private:
 };
 
 template <typename CharOut>
-class repeated_char32_pm_writer: public stringify::v0::piecemeal_writer<CharOut>
+class repeated_char32_pm_input: public stringify::v0::piecemeal_input<CharOut>
 {
 public:
-    repeated_char32_pm_writer
+    repeated_char32_pm_input
         ( const stringify::v0::encoder<CharOut>& encoder
         , stringify::v0::error_signal err_sig
         , bool allow_surrogates
@@ -1020,7 +1020,7 @@ public:
     {
     }
 
-    virtual CharOut* write(CharOut* dest_begin, CharOut* dest_end) override;
+    virtual CharOut* get_some(CharOut* dest_begin, CharOut* dest_end) override;
 
 private:
 
@@ -1118,21 +1118,21 @@ public:
         , const CharIn* src_begin
         , const CharIn* src_end )
     {
-        stringify::v0::detail::str_pm_writer<CharIn, CharOut> src
+        stringify::v0::detail::str_pm_input<CharIn, CharOut> src
             { trans, m_encoding_err, m_allow_surr, src_begin, src_end };
         return put(src);
     }
 
     bool put32(std::size_t count, char32_t ch)
     {
-        stringify::v0::detail::repeated_char32_pm_writer<CharOut> src
+        stringify::v0::detail::repeated_char32_pm_input<CharOut> src
             { encoder(), m_encoding_err, m_allow_surr, count, ch };
         return put(src);
     }
 
     bool put32(char32_t ch)
     {
-        stringify::v0::detail::char32_pm_writer<CharOut> src
+        stringify::v0::detail::char32_pm_input<CharOut> src
             { encoder(), m_encoding_err, m_allow_surr, ch};
         return put(src);
     }
@@ -1145,7 +1145,7 @@ public:
 
     virtual bool good() const = 0;
 
-    virtual bool put(stringify::v0::piecemeal_writer<CharOut>& src) = 0;
+    virtual bool put(stringify::v0::piecemeal_input<CharOut>& src) = 0;
 
     virtual bool put(const CharOut* str, std::size_t size) = 0;
 
@@ -2137,7 +2137,7 @@ bool output_writer<CharOut>::signal_encoding_error()
 namespace detail {
 
 template <typename CharIn, typename CharOut>
-CharOut* str_pm_writer<CharIn, CharOut>::write
+CharOut* str_pm_input<CharIn, CharOut>::get_some
     ( CharOut* dest_begin
     , CharOut* dest_end )
 {
@@ -2167,7 +2167,7 @@ CharOut* str_pm_writer<CharIn, CharOut>::write
 }
 
 template <typename CharOut>
-CharOut* char32_pm_writer<CharOut>::write
+CharOut* char32_pm_input<CharOut>::get_some
     ( CharOut* dest_begin
     , CharOut* dest_end )
 {
@@ -2193,7 +2193,7 @@ CharOut* char32_pm_writer<CharOut>::write
 }
 
 template <typename CharOut>
-CharOut* repeated_char32_pm_writer<CharOut>::write
+CharOut* repeated_char32_pm_input<CharOut>::get_some
     ( CharOut* dest_begin
     , CharOut* dest_end )
 {
@@ -2243,32 +2243,32 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class decode_encode<char32_t, wchar_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class decode_encode<char32_t, char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class decode_encode<char32_t, char32_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<wchar_t, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<wchar_t, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<wchar_t, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<wchar_t, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char16_t, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char16_t, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char16_t, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char16_t, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char32_t, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char32_t, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char32_t, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_writer<char32_t, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_input<char, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_input<char, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_input<char, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_input<char, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_input<wchar_t, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_input<wchar_t, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_input<wchar_t, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_input<wchar_t, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_input<char16_t, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_input<char16_t, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_input<char16_t, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_input<char16_t, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_input<char32_t, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_input<char32_t, wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_input<char32_t, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class str_pm_input<char32_t, char32_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_pm_writer<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_pm_writer<wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_pm_writer<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_pm_writer<char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_pm_input<char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_pm_input<wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_pm_input<char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_pm_input<char32_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class repeated_char32_pm_writer<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class repeated_char32_pm_writer<wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class repeated_char32_pm_writer<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class repeated_char32_pm_writer<char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class repeated_char32_pm_input<char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class repeated_char32_pm_input<wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class repeated_char32_pm_input<char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class repeated_char32_pm_input<char32_t>;
 
 } // namespace detail
 

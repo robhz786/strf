@@ -73,9 +73,9 @@ public:
     }
 
 
-    bool put(stringify::v0::piecemeal_writer<char_type>& src) override
+    bool put(stringify::v0::piecemeal_input<char_type>& src) override
     {
-        m_it = src.write(m_it, m_end);
+        m_it = src.get_some(m_it, m_end);
         if(src.more())
         {
             set_overflow_error();

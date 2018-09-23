@@ -33,7 +33,7 @@ public:
         return true;
     }
 
-    virtual bool put(strf::piecemeal_writer<char>&) override
+    virtual bool put(strf::piecemeal_input<char>&) override
     {
         return true;
     }

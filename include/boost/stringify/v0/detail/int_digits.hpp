@@ -419,7 +419,7 @@ CharT* write_int_txtdigits_backwards(IntT value, int base, bool uppercase, CharT
 }
 
 template <typename IntT, typename CharT>
-class intdigits_writer: public stringify::v0::piecemeal_writer<CharT>
+class intdigits_writer: public stringify::v0::piecemeal_input<CharT>
 {
 public:
 
@@ -439,7 +439,7 @@ public:
     {
     }
 
-    CharT* write(CharT* begin, CharT* end) override;
+    CharT* get_some(CharT* begin, CharT* end) override;
 
 private:
 
@@ -464,7 +464,7 @@ private:
 
 
 template <typename IntT, typename CharT>
-CharT* intdigits_writer<IntT, CharT>::write(CharT* begin, CharT* end)
+CharT* intdigits_writer<IntT, CharT>::get_some(CharT* begin, CharT* end)
 {
     auto it = begin;
     if(m_first_grp)
