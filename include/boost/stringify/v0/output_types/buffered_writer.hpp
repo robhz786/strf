@@ -47,7 +47,7 @@ public:
         return m_good;
     }
 
-    bool put(stringify::v0::piecemeal_writer<char_type>& src) final
+    bool put(stringify::v0::piecemeal_input<char_type>& src) final
     {
         if (!m_good)
         {
@@ -56,7 +56,7 @@ public:
 
         do
         {
-            m_it = src.write(m_it, m_end);
+            m_it = src.get_some(m_it, m_end);
         }
         while(src.more() && do_flush());
 

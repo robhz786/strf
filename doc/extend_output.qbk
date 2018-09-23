@@ -104,7 +104,7 @@ public:
     virtual bool put(const CharT* str, std::size_t size) final;
     virtual bool put(CharT ch) final;
     virtual bool put(std::size_t count, CharT ch) final;
-    virtual bool put(piecemeal_writer<CharT>& src) final;
+    virtual bool put(piecemeal_input<CharT>& src) final;
 
 protected:
 
@@ -158,7 +158,7 @@ public:
 
     virtual bool put(std::size_t count, CharT ch) = 0;
 
-    virtual bool put(piecemeal_writer<CharT>& pmw) = 0;
+    virtual bool put(piecemeal_input<CharT>& pmw) = 0;
 
     std::size_t necessary_size(char32_t ch) const;
 
@@ -189,10 +189,10 @@ public:
 
 * `put(const CharT* str, std::size_t size)` shall attempt to write the first [~size] characters of [~str], and return `true` on success and `false` on failure.
 
-* `put(piecemeal_writer<CharT>& pmw)` implementation shall be equivalent to this:
+* `put(piecemeal_input<CharT>& pmw)` implementation shall be equivalent to this:
 
 ``
-bool put(boost::stringify::piecemeal_writer<char_type>& src)
+bool put(boost::stringify::piecemeal_input<char_type>& src)
 {
     if (!this->good())
     {
@@ -203,7 +203,7 @@ bool put(boost::stringify::piecemeal_writer<char_type>& src)
         CharT buff[boost::stringify::min_buff_size];
         CharT* const buff_end = buff + (sizeof[buff] / sizeof(CharT));
         
-        auto it = pmw.write(buff, buff_end);
+        auto it = pmw.get_some(buff, buff_end);
         if (!pmw.more())
         {
             if (pmw.success())
@@ -226,17 +226,17 @@ bool put(boost::stringify::piecemeal_writer<char_type>& src)
 
 *  `good()` returns whether this `output_writer` instance is capable of writing more characters. Once `good()` returns false, it shall not return `true` anymore, and all the `put` overloads shall have no effect and return `false`.
 
-[#piecemeal_writer]
-[h4 The `piecemeal_writer` class template]
+[#piecemeal_input]
+[h4 The `piecemeal_input` class template]
 ``
 namespace boost { namespace stringify { inline namespace v0 {
 
 template <typename CharT>
-class piecemeal_writer
+class piecemeal_input
 {
 public:
 
-    virtual CharT* write(CharT* dest_begin, CharT* dest_end) = 0;
+    virtual CharT* get_some(CharT* dest_begin, CharT* dest_end) = 0;
 
     bool more() const;
     bool success() const;
@@ -251,18 +251,18 @@ protected:
 }}} // namespace boost::stringify::v0
 ``
 
-`write(dest_begin, dest_end)` shall write into `dest_begin`
+`get_some(dest_begin, dest_end)` shall write into `dest_begin`
 a part of the content and returns the pointer immediately after
-the last written location, which must not greater than `dest_end`.
+the last written location, which must not be greater than `dest_end`.
 It is expected to be called successively until `more()` returns `false`,
 and each call shall write the continuation of the previously written part.
-When there is nothing else to be written, `write(dest_begin, dest_end)`
+When there is nothing else to be written, `get_some(dest_begin, dest_end)`
 shall call either `report_success()` or `report_error(`[~some_error_code]`)`,
 which in turn causes `more()` to return `false`.
 
 [#min_buff_size]
 If `(dest_end - dest_begin < `[*`min_buff_size`]`)`
-then `write(dest_begin, dest_end)` is not required to write
+then `get_some(dest_begin, dest_end)` is not required to write
 anything and may just return `dest_begin`, expecting a larger
 output range to be passed in the next call.
 Otherwise, it is required to write some part of the content.

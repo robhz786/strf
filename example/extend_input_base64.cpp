@@ -295,15 +295,15 @@ char base64_common_impl::encode(unsigned hextet) const
 
 
 
-//[single_line_base64_pm_writer
+//[single_line_base64_pm_input
 template <typename CharT>
-class single_line_base64_pm_writer
-    : public strf::piecemeal_writer<CharT>
+class single_line_base64_pm_input
+    : public strf::piecemeal_input<CharT>
     , private base64_common_impl
 {
 public:
 
-    single_line_base64_pm_writer
+    single_line_base64_pm_input
         ( base64_facet facet
         , const fmt_base64& fmt )
         : base64_common_impl(facet)
@@ -312,7 +312,7 @@ public:
         BOOST_ASSERT(facet.single_line());
     }
 
-    CharT* write(CharT* begin, CharT* end) override;
+    CharT* get_some(CharT* begin, CharT* end) override;
 
 private:
 
@@ -326,7 +326,7 @@ private:
 
 
 template <typename CharT>
-CharT* single_line_base64_pm_writer<CharT>::write(CharT* begin, CharT* end)
+CharT* single_line_base64_pm_input<CharT>::get_some(CharT* begin, CharT* end)
 {
     CharT* it =  begin;
 
@@ -347,7 +347,7 @@ CharT* single_line_base64_pm_writer<CharT>::write(CharT* begin, CharT* end)
 
 
 template <typename CharT>
-CharT* single_line_base64_pm_writer<CharT>::write_block(CharT* it)
+CharT* single_line_base64_pm_input<CharT>::write_block(CharT* it)
 {
     std::array<char, 4> arr = encode( m_fmt.data() + m_index
                                     , m_fmt.size() - m_index );
@@ -361,7 +361,7 @@ CharT* single_line_base64_pm_writer<CharT>::write_block(CharT* it)
 
 
 template <typename CharT>
-CharT* single_line_base64_pm_writer<CharT>::write_indentation(CharT* begin, CharT* end)
+CharT* single_line_base64_pm_input<CharT>::write_indentation(CharT* begin, CharT* end)
 {
     BOOST_ASSERT(m_column < m_fmt.indentation());
 
@@ -375,17 +375,17 @@ CharT* single_line_base64_pm_writer<CharT>::write_indentation(CharT* begin, Char
 //]
 
 template <typename CharT>
-class multiline_base64_pm_writer
-    : public strf::piecemeal_writer<CharT>
+class multiline_base64_pm_input
+    : public strf::piecemeal_input<CharT>
     , private base64_common_impl
 {
 public:
 
-    multiline_base64_pm_writer
+    multiline_base64_pm_input
         ( base64_facet facet
         , const fmt_base64& fmt );
 
-    CharT* write(CharT* begin, CharT* end) override;
+    CharT* get_some(CharT* begin, CharT* end) override;
 
 private:
 
@@ -405,7 +405,7 @@ private:
 
 
 template <typename CharT>
-multiline_base64_pm_writer<CharT>::multiline_base64_pm_writer
+multiline_base64_pm_input<CharT>::multiline_base64_pm_input
     ( base64_facet facet
     , const fmt_base64& fmt )
     : base64_common_impl(facet)
@@ -415,9 +415,9 @@ multiline_base64_pm_writer<CharT>::multiline_base64_pm_writer
     BOOST_ASSERT( ! facet.single_line());
 }
 
-//[ multiline_base64_pm_writer__write
+//[ multiline_base64_pm_input__get_some
 template <typename CharT>
-CharT* multiline_base64_pm_writer<CharT>::write(CharT* begin, CharT* end)
+CharT* multiline_base64_pm_input<CharT>::get_some(CharT* begin, CharT* end)
 {
     auto it = begin;
     while(m_index < m_fmt.size())
@@ -470,7 +470,7 @@ CharT* multiline_base64_pm_writer<CharT>::write(CharT* begin, CharT* end)
 //]
 
 template <typename CharT>
-CharT* multiline_base64_pm_writer<CharT>::write_indentation
+CharT* multiline_base64_pm_input<CharT>::write_indentation
     ( CharT* begin, CharT* end )
 {
     BOOST_ASSERT(m_column < m_fmt.indentation());
@@ -484,7 +484,7 @@ CharT* multiline_base64_pm_writer<CharT>::write_indentation
 }
 
 template <typename CharT>
-CharT* multiline_base64_pm_writer<CharT>::write_whole_block_in_this_line(CharT* it)
+CharT* multiline_base64_pm_input<CharT>::write_whole_block_in_this_line(CharT* it)
 {
     BOOST_ASSERT(m_block_sub_index == 0);
     BOOST_ASSERT(m_column >= m_fmt.indentation());
@@ -502,7 +502,7 @@ CharT* multiline_base64_pm_writer<CharT>::write_whole_block_in_this_line(CharT* 
 }
 
 template <typename CharT>
-CharT* multiline_base64_pm_writer<CharT>::begin_partial_block(CharT* it)
+CharT* multiline_base64_pm_input<CharT>::begin_partial_block(CharT* it)
 {
     BOOST_ASSERT(m_block_sub_index == 0);
 
@@ -511,7 +511,7 @@ CharT* multiline_base64_pm_writer<CharT>::begin_partial_block(CharT* it)
 }
 
 template <typename CharT>
-CharT* multiline_base64_pm_writer<CharT>::continue_partial_block(CharT* it)
+CharT* multiline_base64_pm_input<CharT>::continue_partial_block(CharT* it)
 {
     BOOST_ASSERT(m_column >= m_fmt.indentation());
     BOOST_ASSERT(m_column < m_total_line_length);
@@ -542,7 +542,7 @@ CharT* multiline_base64_pm_writer<CharT>::continue_partial_block(CharT* it)
 }
 
 template <typename CharT>
-CharT* multiline_base64_pm_writer<CharT>::write_eol(CharT* it)
+CharT* multiline_base64_pm_input<CharT>::write_eol(CharT* it)
 {
     * it = facet().eol[0];
     if(facet().eol[1] != '\0')
@@ -607,13 +607,13 @@ void base64_printer<CharT>::write() const
 {
     if(m_facet.single_line())
     {
-        single_line_base64_pm_writer<CharT> pm_writer{m_facet, m_fmt};
-        m_out.put(pm_writer);
+        single_line_base64_pm_input<CharT> pm_input{m_facet, m_fmt};
+        m_out.put(pm_input);
     }
     else
     {
-        multiline_base64_pm_writer<CharT> pm_writer{m_facet, m_fmt};
-        m_out.put(pm_writer);
+        multiline_base64_pm_input<CharT> pm_input{m_facet, m_fmt};
+        m_out.put(pm_input);
     }
 }
 //]
