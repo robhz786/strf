@@ -1,4 +1,4 @@
-#include <fmt/format.h>
+#include <fmt/core.h>
 #include "args.hpp"
 
 void FUNCTION_NAME (std::FILE* out)

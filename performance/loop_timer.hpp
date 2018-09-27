@@ -19,11 +19,12 @@ public:
     typedef clock_type::duration duration;
     typedef clock_type::time_point time_point;
     typedef clock_type::rep rep;
+    typedef unsigned long long count_type;
 
     struct result
     {
         duration total_duration;
-        std::size_t iterations_count;
+        count_type iterations_count;
     };
 
 
@@ -41,12 +42,6 @@ public:
                 << std::setprecision(2)
                 << std::fixed
                 << std::setw(15)
-                // << total_ms.count()
-                // << " ms (total) | "
-                // << std::setw(10)
-                // << r.iterations_count
-                // << " iterations | "
-                // << std::setw(10)
                 << total_ns.count() / (double)r.iterations_count
                 << " ns  "
                 << m_label
@@ -64,11 +59,13 @@ public:
     loop_timer
         ( const std::function<void(result)>& report
         , duration expected_duration = std::chrono::seconds{1}
+        , unsigned quantity = 1
         )
         : m_report(report)
         , m_expected_duration(expected_duration)
         , m_it_count(0)
         , m_it_count_stop(1000)
+        , m_quantity(quantity)
     {
         start();
     }
@@ -76,15 +73,16 @@ public:
     loop_timer
         ( const std::string& label
         , duration expected_duration = std::chrono::seconds{1}
+        , unsigned quantity = 1
         )
-        : loop_timer(default_reporter(label), expected_duration)
+        : loop_timer(default_reporter(label), expected_duration, quantity)
     {
     }
 
 
     ~loop_timer()
     {
-        result r = {(m_stop_time - m_start_time), m_it_count};
+        result r = {(m_stop_time - m_start_time) / m_quantity, m_it_count};
         m_report(r);
     }
 
@@ -114,7 +112,7 @@ private:
     void calibrate()
     {
         decltype(m_expected_duration) dur = m_stop_time - m_start_time;
-        if (dur < std::chrono::milliseconds{1})
+        if (dur < std::chrono::milliseconds{10})
         {
             // duration too small even for calibration.
             // So calibrate next (or further) time
@@ -122,43 +120,45 @@ private:
         }
         else
         {
-            m_it_count_stop = (std::size_t) std::ceil
+            auto new_loop_size_f = std::ceil
                 ( 1.2
                 * static_cast<double>(m_it_count_stop)
                 * (m_expected_duration / dur)
                 );
+            auto new_loop_size = static_cast<count_type>(new_loop_size_f);
+            if (new_loop_size < 2 * m_it_count_stop)
+            {
+                new_loop_size = 2 * m_it_count_stop;
+            }
+            m_it_count_stop = new_loop_size;
         }
     }
 
     void start()
     {
         m_it_count = 0;
-        std::cout << std::flush;
-        std::cout << std::flush;
-        fflush(stdout);
-        fflush(stdout);
-        (void)clock_type::now();
-        (void)clock_type::now();
-        (void)clock_type::now();
-        (void)clock_type::now();
-        (void)clock_type::now();
-
         m_start_time = clock_type::now();
     }
 
     std::function<void(result)> m_report;
     std::chrono::duration<double, std::nano> m_expected_duration;
-    std::size_t m_it_count = 0;
-    std::size_t m_it_count_stop = 1000;
+    count_type m_it_count = 0;
+    count_type m_it_count_stop = 1000;
     time_point m_stop_time;
     time_point m_start_time;
+    unsigned m_quantity = 1;
 };
 
 #define LOOP_TIMER(LABEL, TIME)      \
-    for(loop_timer loop_timer_obj{LABEL, TIME};  loop_timer_obj.shall_continue(); )
+    for(loop_timer loop_timer_obj((LABEL), (TIME));  loop_timer_obj.shall_continue(); )
+
+#define LOOP_TIMER_N(N, LABEL, TIME)                                     \
+    for(loop_timer loop_timer_obj((LABEL), (TIME), (N));  loop_timer_obj.shall_continue(); )
 
 
-#define PRINT_BENCHMARK(LABEL) LOOP_TIMER(LABEL, std::chrono::seconds{10})
+#define PRINT_BENCHMARK(LABEL) LOOP_TIMER((LABEL), std::chrono::seconds{10})
+
+#define PRINT_BENCHMARK_N(N, LABEL) LOOP_TIMER_N((N), (LABEL), std::chrono::seconds{10})
 
 
 #endif

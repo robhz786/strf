@@ -34,9 +34,18 @@ int main()
     {
         fmt::format_to(dest, "{}", "Hello World!");
     }
-    PRINT_BENCHMARK("std::strcpy(dest, \"Hello World!\")")
+    PRINT_BENCHMARK_N(10, "std::strcpy(dest, \"Hello World!\")")
     {
         std::strcpy(dest, "Hello World!");
+        std::strcpy(dest + 12, "Hallo world!");
+        std::strcpy(dest + 24, "Hellooooooo!");
+        std::strcpy(dest + 36, "Hello!!!!!!!");
+        std::strcpy(dest + 48, "ASDFSADFrld!");
+        std::strcpy(dest + 60, "Heasdfsdfsad");
+        std::strcpy(dest + 72, "Helasdfasf!!");
+        std::strcpy(dest + 84, "Hallo asdfg!");
+        std::strcpy(dest + 96, "abcdefghijkl");
+        std::strcpy(dest + 108, "012345678901");
     }
 
     std::cout << "\n";
@@ -110,12 +119,47 @@ int main()
     {
         fmt::format_to(dest, "{}", 25);
     }
+    PRINT_BENCHMARK_N(10, "strcpy(dest, fmt::format_int{25}.c_str())")
+    {
+        strcpy(dest, fmt::format_int{20}.c_str());
+        strcpy(dest + 2, fmt::format_int{21}.c_str());
+        strcpy(dest + 4, fmt::format_int{22}.c_str());
+        strcpy(dest + 6, fmt::format_int{23}.c_str());
+        strcpy(dest + 8, fmt::format_int{24}.c_str());
+        strcpy(dest + 10, fmt::format_int{25}.c_str());
+        strcpy(dest + 12, fmt::format_int{26}.c_str());
+        strcpy(dest + 14, fmt::format_int{27}.c_str());
+        strcpy(dest + 16, fmt::format_int{28}.c_str());
+        strcpy(dest + 18, fmt::format_int{29}.c_str());
+    }
+    PRINT_BENCHMARK_N(10, "fmt::format_int{25}.c_str()")
+    {
+        fmt::format_int{20}.c_str();
+        fmt::format_int{21}.c_str();
+        fmt::format_int{22}.c_str();
+        fmt::format_int{23}.c_str();
+        fmt::format_int{24}.c_str();
+        fmt::format_int{25}.c_str();
+        fmt::format_int{26}.c_str();
+        fmt::format_int{27}.c_str();
+        fmt::format_int{28}.c_str();
+        fmt::format_int{29}.c_str();
+    }
 
 #ifdef BOOST_STRINGIFY_HAS_STD_CHARCONV
 
-    PRINT_BENCHMARK("std::to_chars(dest, dest_end, 25)")
+    PRINT_BENCHMARK_N(10, "std::to_chars(dest, dest_end, 25)")
     {
+        std::to_chars(dest, dest_end, 20);
+        std::to_chars(dest, dest_end, 21);
+        std::to_chars(dest, dest_end, 21);
+        std::to_chars(dest, dest_end, 23);
+        std::to_chars(dest, dest_end, 24);
         std::to_chars(dest, dest_end, 25);
+        std::to_chars(dest, dest_end, 26);
+        std::to_chars(dest, dest_end, 27);
+        std::to_chars(dest, dest_end, 28);
+        std::to_chars(dest, dest_end, 29);
     }
 
 #endif
@@ -134,12 +178,48 @@ int main()
     {
         fmt::format_to(dest, "{}", LLONG_MAX);
     }
+    PRINT_BENCHMARK_N(10, "strcpy(dest, fmt::format_int{LLONG_MAX}.c_str())")
+    {
+        strcpy(dest, fmt::format_int{LLONG_MAX}.c_str());
+        strcpy(dest + 100, fmt::format_int{LLONG_MAX - 1}.c_str());
+        strcpy(dest + 200, fmt::format_int{LLONG_MAX - 2}.c_str());
+        strcpy(dest + 300, fmt::format_int{LLONG_MAX - 3}.c_str());
+        strcpy(dest + 400, fmt::format_int{LLONG_MAX - 4}.c_str());
+        strcpy(dest + 500, fmt::format_int{LLONG_MAX - 5}.c_str());
+        strcpy(dest + 600, fmt::format_int{LLONG_MAX - 6}.c_str());
+        strcpy(dest + 700, fmt::format_int{LLONG_MAX - 7}.c_str());
+        strcpy(dest + 800, fmt::format_int{LLONG_MAX - 8}.c_str());
+        strcpy(dest + 900, fmt::format_int{LLONG_MAX - 9}.c_str());
+
+    }
+    PRINT_BENCHMARK_N(10, "fmt::format_int{LLONG_MAX}.c_str()")
+    {
+        fmt::format_int{LLONG_MAX}.c_str();
+        fmt::format_int{LLONG_MAX - 1}.c_str();
+        fmt::format_int{LLONG_MAX - 2}.c_str();
+        fmt::format_int{LLONG_MAX - 3}.c_str();
+        fmt::format_int{LLONG_MAX - 4}.c_str();
+        fmt::format_int{LLONG_MAX - 5}.c_str();
+        fmt::format_int{LLONG_MAX - 6}.c_str();
+        fmt::format_int{LLONG_MAX - 7}.c_str();
+        fmt::format_int{LLONG_MAX - 8}.c_str();
+        fmt::format_int{LLONG_MAX - 9}.c_str();
+    }
 
 #ifdef BOOST_STRINGIFY_HAS_STD_CHARCONV
 
-    PRINT_BENCHMARK("std::to_chars(dest, dest_end, LONG_MAX)")
+    PRINT_BENCHMARK_N(10, "std::to_chars(dest, dest_end, LONG_MAX)")
     {
         std::to_chars(dest, dest_end, LONG_MAX);
+        std::to_chars(dest, dest_end, LONG_MAX - 1);
+        std::to_chars(dest, dest_end, LONG_MAX - 2);
+        std::to_chars(dest, dest_end, LONG_MAX - 3);
+        std::to_chars(dest, dest_end, LONG_MAX - 4);
+        std::to_chars(dest, dest_end, LONG_MAX - 5);
+        std::to_chars(dest, dest_end, LONG_MAX - 6);
+        std::to_chars(dest, dest_end, LONG_MAX - 7);
+        std::to_chars(dest, dest_end, LONG_MAX - 8);
+        std::to_chars(dest, dest_end, LONG_MAX - 9);
     }
 
 #endif

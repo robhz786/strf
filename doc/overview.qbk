@@ -203,43 +203,66 @@ you may first want to see more reasons of why to choose it over others.
   [[br]]
 ]
 
-[
-  [Safety]
-  [ You may not like the verbosity of [link format_functions format
-    functions], which is a legitime dislike.
-    However, you should also dislike the error-proneness of format strings.
-    Although mistakes in the formatting string can be
-    caught at compile-time in some cases \u2014
-    as warnings when using `printf` in some compilers, and
-    as compilation errors notably in [@http://fmtlib.net {fmt}]
-    \u2014 this doesn't work if the format string is returned by a
-    function like [@https://en.wikipedia.org/wiki/Gettext gettext].
-    Then `printf` has undefined behaviour,
-    and other libraries throw an exception which is still not an
-    adequate solution. A run-time error is only acceptable
-    when it's not the program's fault; otherwise it's a bug.
-    Format functions, on the other hand, always give you a compilation error.
+[ [Internationalization]
+  [ It is not because this is a locale-independent library that
+    you cannot use numeric punctuation. You can do this with [link
+    numpunct facets]. And actually, it's a good thing that
+    you don't need to change the global locale to achieve that.    
+    
+    Also, Boost.Stringify is probably the most suitable library to be used
+    with translation tools like [@https://en.wikipedia.org/wiki/Gettext gettext]
+    , for the following reasons:
 
-    It's true that mistakes can also happen in the [link assembly_string
-    assembly string], but the probability is much lower.
-    Besides, a future version of the library will enable you to customise the
-    error handling there just [link encoding_error as in encoding conversion].
-    So that you can choose one that makes it easier to identify such bugs.
-    For example: to replace the erroneous part by a character like
-    [@https://en.wiktionary.org/wiki/%EF%BF%BC U+FFFD] when `NDEBUG`
-    is defined and to terminate the program otherwise.
+    [variablelist
+
+    [ [Assembly string translation hints]
+      [ [/Usually it is not the programmer who do the translations.]
+        The [link assembly_string assembly string syntax] allows you to
+        insert comments intended to help the person who translates it.        
+      ]
+    ]
+
+    [ [Formatting decoupled from translation]
+      [ Because formatting is not in the assembly string, but in the
+        format functions, you can change the formatting without
+        changing each translation of the assembly string.
+      ]
+    ]
+
+    [ [Safety]
+      [ You may not like the verbosity of [link format_functions format
+        functions], which is a legitime dislike.
+        However, you should also dislike the error-proneness of format strings.
+        Although mistakes in the formatting string can be
+        caught at compile-time in some cases \u2014
+        as warnings when using `printf` in some compilers, and
+        as compilation errors notably in [@http://fmtlib.net {fmt}]
+        \u2014 this doesn't work if the format string is returned by a
+        function like [@https://en.wikipedia.org/wiki/Gettext gettext].
+        Then `printf` has undefined behaviour,
+        and other libraries throw an exception which is still not an
+        adequate solution. A run-time error is only acceptable
+        when it's not the program's fault; otherwise it's a bug.
+        Format functions, on the other hand, always give you a compilation error.
+    
+        It's true that mistakes can also happen in the [link assembly_string
+        assembly string], but the probability is much lower.
+        Besides, a future version of the library will enable you to customise the
+        error handling there just [link encoding_error as in encoding conversion].
+        So that you can choose one that makes it easier to identify such bugs.
+        For example: to replace the erroneous part by a character like
+        [@https://en.wiktionary.org/wiki/%EF%BF%BC U+FFFD] when `NDEBUG`
+        is defined and to terminate the program otherwise.
+      ]
+    ]
+    ]
   ]
   [[br]]
 ]
 
-[
-  [Formatting decoupled from translation]
-  [ Another advantage of format functions is that when you are using
-    [@https://en.wikipedia.org/wiki/Gettext gettext] or some equivalent, you can
-    change the formatting without changing each translation of the assembly string.
-  ]
-  [[br]]
-]
+
+
+
 
 [
   [Some capabilities not present in most of the other formatting libraries]

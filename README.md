@@ -1,17 +1,25 @@
 # Boost.Stringify
-Boost.Stringify is a C++ locale-independent format library. It is fast, highly extensible and provides some unique features.
 
-It does not make part of the [Boost libraries](www.boost.org), but the plan is to propose there some day. At this moment it is still in the initial stage of development and not ready for production use.
+Boost.Stringify is not currently part of the [Boost libraries](www.boost.org), but the plan is to propose there some day. At this moment it is still in the initial stage of development and not ready for production use.
 
-- Documentation: http://robhz786.github.io/stringify/doc/html/
-- Version: 0.7.1
+This is a C++ locale-independent format library that:
 
-Build status:
+* supports encoding conversion and sanitization
+* supports [input ranges](https://robhz786.github.io/stringify/doc/html/special_input_types/special_input_types.html#ranges)
+* is able to align many arguments as they were one ( see [joins](https://robhz786.github.io/stringify/doc/html/special_input_types/special_input_types.html#special_input_types.special_input_types.joins) )
+* is highly extensible, both for input and output types. For example, you can easily extend the library to write into QString (from Qt).  
+* supports char, wchar_t, char32_t and char16_t
+* is suitable to be used together with translation tools like [gettext](https://en.wikipedia.org/wiki/Gettext).
+* has good performance ( not the best in all scenarios, but still good )
+
+**Documentation:** http://robhz786.github.io/stringify/doc/html/
+
+**Version:** 0.7.2
 
 Branch   | Travis | Appveyor
 ---------|--------|---------
-Develop  | [![Build Status](https://travis-ci.org/robhz786/stringify.svg?branch=develop)](https://travis-ci.org/robhz786/stringify) | [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/stringify?branch=develop&svg=true)](https://ci.appveyor.com/project/robhz786/stringify)
-Master   | [![Build Status](https://travis-ci.org/robhz786/stringify.svg?branch=master)](https://travis-ci.org/robhz786/stringify) | [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/stringify?branch=master&svg=true)](https://ci.appveyor.com/project/robhz786/stringify)
+develop  | [![Build Status](https://travis-ci.org/robhz786/stringify.svg?branch=develop)](https://travis-ci.org/robhz786/stringify) | [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/stringify?branch=develop&svg=true)](https://ci.appveyor.com/project/robhz786/stringify/branch/develop)
+master   | [![Build Status](https://travis-ci.org/robhz786/stringify.svg?branch=master)](https://travis-ci.org/robhz786/stringify) | [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/stringify?branch=master&svg=true)](https://ci.appveyor.com/project/robhz786/stringify/branch/master)
 
 # Installation
 You can either use it as a header-only library or as a static library. In any case, you first need to have the Boost installed. It's enough to simply download and unpack the [tarball](https://www.boost.org/users/download/). After this, in the command line interface, inside the unpacked directory &#x2014; which is commonly referead as the _boost root directory_ &#x2014; run the following commands according to your operating system:
