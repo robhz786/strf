@@ -10,14 +10,14 @@ namespace strf = boost::stringify::v0;
 
 namespace xxx {
 
-//[ ipv6_address
-struct ipv6_address
+//[ ipv6address
+struct ipv6address
 {
     std::uint16_t hextets[8];
 };
 //]
 
-static int abbreviation(ipv6_address addr)
+static int abbreviation(ipv6address addr)
 {
     const auto* const begin  = & addr.hextets[0];
     const auto* const end    = & addr.hextets[8];
@@ -45,98 +45,69 @@ static int abbreviation(ipv6_address addr)
                      (0xFF << (greatest_zgroup_idx + greatest_zgroup_size))));
 }
 
-//[ ipv6_formatting
-enum class ipv6_formatting_style{small, average, big};
+//[ ipv6_format
+enum class ipv6_format_style{small, average, big};
 
-template <class T>
-class ipv6_formatting: public strf::align_formatting<T>
+struct ipv6_format
 {
-  /*<< `fmt_derived<This, Derived>` is an alias to `This` when `Derived`
-        is `void`, otherwise it is an alias to `Derived`
->>*/using derived_type = strf::fmt_derived<ipv6_formatting<T>, T>;
-
-public:
-
-  /*<< This template alias is required by [link ranges `fmt_range`]
->>*/template <typename U>
-    using fmt_other = ipv6_formatting<U>;
-
-  /*<< The default constructor is also required by [link ranges `fmt_range`]
->>*/constexpr ipv6_formatting() = default;
-
-    constexpr ipv6_formatting(const ipv6_formatting&) = default;
-
-  /*<< This kind of copy constructor template is also required by [link ranges `fmt_range`]
-       ( it has to be a template like this )
->>*/template <typename U>
-    constexpr ipv6_formatting(const ipv6_formatting<U>& u)
-        : strf::align_formatting<T>(u)
-        , m_style(u.m_style)
+    template <class T>
+    class fn
     {
-    }
+    public:
 
-    // formatting functions
+        constexpr fn() = default;
 
-    constexpr derived_type&& big() &&
-    {
-        m_style = ipv6_formatting_style::big;
-        return static_cast<derived_type&&>(*this);
-    }
+        template <typename U>
+        constexpr fn(const fn<U>& u) : m_style(u.m_style)
+        {
+        }
 
-    constexpr derived_type&& small() &&
-    {
-        m_style = ipv6_formatting_style::small;
-        return static_cast<derived_type&&>(*this);
-    }
+        // format functions
 
-    void operator%(int) const = delete;
+        constexpr T&& big() &&
+        {
+            m_style = ipv6_format_style::big;
+            return static_cast<T&&>(*this);
+        }
 
-    // observers
+        constexpr T&& small() &&
+        {
+            m_style = ipv6_format_style::small;
+            return static_cast<T&&>(*this);
+        }
 
-    constexpr bool is_small() const
-    {
-        return m_style == ipv6_formatting_style::small;
-    }
+        // observers
 
-    constexpr bool is_big() const
-    {
-        return m_style == ipv6_formatting_style::big;
-    }
+        constexpr bool is_small() const
+        {
+            return m_style == ipv6_format_style::small;
+        }
 
-private:
+        constexpr bool is_big() const
+        {
+            return m_style == ipv6_format_style::big;
+        }
 
-    template <typename>
-    friend class ipv6_formatting;
+    private:
 
-    ipv6_formatting_style m_style = ipv6_formatting_style::average;
-};
+        template <typename> friend class fn;
+
+        ipv6_format_style m_style = ipv6_format_style::average;
+
+    }; // ipv6_format::template fn
+
+}; // ipv6_format
+
 //]
 
-//[ fmt_ipv6
-class fmt_ipv6: public ipv6_formatting<fmt_ipv6>
+//[ ipv6addr_with_format
+using ipv6addr_with_format = strf::value_with_format< ipv6address
+                                                    , ipv6_format
+                                                    , strf::alignment_format >;
+
+inline auto make_fmt(strf::tag, const ipv6address& addr)
 {
-public:
-
-    fmt_ipv6(const fmt_ipv6&) = default;
-
-    fmt_ipv6(ipv6_address a) : addr(a) {}
-
- /*<< This constructor template is required by [link ranges fmt_range].
-    The first argument will be `*it`, where `it` is an iterator of the range.
->>*/template <typename U>
-    fmt_ipv6(ipv6_address a, const ipv6_formatting<U>& fmt)
-        : ipv6_formatting<fmt_ipv6>(fmt)
-        , addr(a)
-    {
-    }
-
-    ipv6_address addr;
-};
-
-
-inline fmt_ipv6 make_fmt(strf::tag, const ipv6_address& addr)
-{
-    return {addr};
+    return ipv6addr_with_format{addr};
 }
 //]
 
@@ -146,7 +117,7 @@ class ipv6_printer: public strf::dynamic_join_printer<CharT>
 {
 public:
 
-    ipv6_printer(strf::output_writer<CharT>& out, fmt_ipv6 fmt)
+    ipv6_printer(strf::output_writer<CharT>& out, ipv6addr_with_format fmt)
         : ipv6_printer(out, fmt, fmt.is_big() ? 4 : 0, strf::pack())
     {
     }
@@ -156,47 +127,56 @@ public:
 protected:
 
     void compose(strf::printers_receiver<CharT>& out) const override;
-    strf::align_formatting<void> formatting() const override;
+    strf::alignment_format::fn<void> formatting() const override;
 
 private:
 
     ipv6_printer( strf::output_writer<CharT>& out
-                , fmt_ipv6 fmt
+                , ipv6addr_with_format fmt
                 , int precision
                 , strf::facets_pack<> fp );
 
     void compose_non_abbreviated(strf::printers_receiver<CharT>& out) const;
     void compose_abbreviated(strf::printers_receiver<CharT>& out) const;
 
-    fmt_ipv6 m_fmt;
-    strf::printer_impl<CharT, strf::facets_pack<>, std::uint16_t> m_hextets[8];
-  /*<< The `printer_impl` is a template alias.
-     `printer_impl<CharT, FPack, Arg>` is equivalent to
+    ipv6addr_with_format m_fmt;
+
+  /*<< `printer_impl<CharT, FPack, Arg>` is equivalent to
      `decltype(make_printer(ow, fp, std::declval<Arg>())`
       where the type of `ow` is `output_writer<CharT>&`,
-      and the type of `fp` is `const Fpack&`
+      and the type of `fp` is `const Fpack&`.
+      Hence the type of `m_colon` derives from `printer<CharT>`,
+      and so do the elements of `m_hextets`.
  >>*/strf::printer_impl<CharT, strf::facets_pack<>, CharT> m_colon;
+
+    using fmt_hextet = decltype(strf::fmt(ipv6address{}.hextets[0]).hex().p(0));
+
+    strf::printer_impl<CharT, strf::facets_pack<>, fmt_hextet> m_hextets[8];
 };
 //]
 
 //[ipv6_printer__contructor
 template <typename CharT>
 ipv6_printer<CharT>::ipv6_printer( strf::output_writer<CharT>& out
-                                 , fmt_ipv6 fmt
+                                 , ipv6addr_with_format fmt
                                  , int precision
                                  , strf::facets_pack<> fp )
     : strf::dynamic_join_printer<CharT>{out}
     , m_fmt(fmt)
+    , m_colon{make_printer(out, fp, static_cast<CharT>(':'))}
     , m_hextets
-        { { strf::make_printer(out, fp, strf::hex(fmt.addr.hextets[0]).p(precision)) }
-        , { strf::make_printer(out, fp, strf::hex(fmt.addr.hextets[1]).p(precision)) }
-        , { strf::make_printer(out, fp, strf::hex(fmt.addr.hextets[2]).p(precision)) }
-        , { strf::make_printer(out, fp, strf::hex(fmt.addr.hextets[3]).p(precision)) }
-        , { strf::make_printer(out, fp, strf::hex(fmt.addr.hextets[4]).p(precision)) }
-        , { strf::make_printer(out, fp, strf::hex(fmt.addr.hextets[5]).p(precision)) }
-        , { strf::make_printer(out, fp, strf::hex(fmt.addr.hextets[6]).p(precision)) }
-        , { strf::make_printer(out, fp, strf::hex(fmt.addr.hextets[7]).p(precision)) } }
-    , m_colon{strf::make_printer(out, fp, static_cast<CharT>(':'))}
+        { { make_printer(out, /*<<
+        It is not a problem that `fp` is a temporary object. It won't lead to
+        dangling references because, by convention, a printer class don't
+        store any reference to the facets_pack that it is been constructed with.
+                          >>*/fp, strf::hex(fmt.value().hextets[0]).p(precision)) }
+        , { make_printer(out, fp, strf::hex(fmt.value().hextets[1]).p(precision)) }
+        , { make_printer(out, fp, strf::hex(fmt.value().hextets[2]).p(precision)) }
+        , { make_printer(out, fp, strf::hex(fmt.value().hextets[3]).p(precision)) }
+        , { make_printer(out, fp, strf::hex(fmt.value().hextets[4]).p(precision)) }
+        , { make_printer(out, fp, strf::hex(fmt.value().hextets[5]).p(precision)) }
+        , { make_printer(out, fp, strf::hex(fmt.value().hextets[6]).p(precision)) }
+        , { make_printer(out, fp, strf::hex(fmt.value().hextets[7]).p(precision)) } }
 {
 }
 
@@ -205,9 +185,13 @@ ipv6_printer<CharT>::ipv6_printer( strf::output_writer<CharT>& out
 
 //[ ipv6_printer__formatting
 template <typename CharT>
-strf::align_formatting<void> ipv6_printer<CharT>::formatting() const
+strf::alignment_format::fn<void> ipv6_printer<CharT>::formatting() const
 {
-    return m_fmt;
+ /*<< That works because the `alignment_format::fn<void>` can be implicitly
+         converted from `alignment_format::fn<`[~AnyType]`>`,
+         and `ipv6addr_with_format` derives from
+         `alignment_format::fn<`ipv6addr_with_format`>`
+ >>*/return m_fmt;
 }
 //]
 
@@ -251,7 +235,7 @@ void ipv6_printer<CharT>::compose_abbreviated
     Each of the eight rightmost bits of the returned value tells
     whether the corresponding hextext shall be displayed or
     omitted in the abbreviated IPv6 representation
-    >>*/ abbreviation(m_fmt.addr);
+    >>*/ abbreviation(m_fmt.value());
     bool prev_show = true;
     bool good = true;
     for (int i = 0; good && i < 8; ++i)
@@ -284,16 +268,16 @@ void ipv6_printer<CharT>::compose_abbreviated
 template <typename CharT, typename FPack>
 inline ipv6_printer<CharT> make_printer( strf::output_writer<CharT>& ow
                                        , const FPack& fp
-                                       , const ipv6_address& addr )
+                                       , const ipv6address& addr )
 {
     (void)fp;
-    return ipv6_printer<CharT>{ow, addr};
+    return ipv6_printer<CharT>{ow, ipv6addr_with_format{addr}};
 }
 
 template <typename CharT, typename FPack>
 inline ipv6_printer<CharT> make_printer( strf::output_writer<CharT>& ow
                                        , const FPack& fp
-                                       , const fmt_ipv6& addr )
+                                       , const ipv6addr_with_format& addr )
 {
     (void)fp;
     return ipv6_printer<CharT>{ow, addr};
@@ -305,13 +289,18 @@ inline ipv6_printer<CharT> make_printer( strf::output_writer<CharT>& ow
 int main()
 {
     //[ ipv6_samples
-    xxx::ipv6_address addr{{0xaa, 0, 0, 0, 0xbb, 0, 0, 0xcc}};
+    xxx::ipv6address addr{{0xaa, 0, 0, 0, 0xbb, 0, 0, 0xcc}};
+
     auto s = strf::to_string(addr).value();
     BOOST_ASSERT(s == "aa:0:0:0:bb:0:0:cc");
 
     s = strf::to_string(strf::fmt(addr).big()).value();
     BOOST_ASSERT(s == "00aa:0000:0000:0000:00bb:0000:0000:00cc");
 
+    s = strf::to_string(strf::right(addr, 20, U'.').small()) .value();
+    BOOST_ASSERT(s == ".......aa::bb:0:0:cc");
+    //]
+    
     s = strf::to_string(strf::right(addr, 20)).value();
     BOOST_ASSERT(s == "  aa:0:0:0:bb:0:0:cc");
 
@@ -321,10 +310,7 @@ int main()
     s = strf::to_string(strf::center(addr, 20)).value();
     BOOST_ASSERT(s == " aa:0:0:0:bb:0:0:cc ");
 
-    s = strf::to_string(strf::fmt(addr).small()) .value();
-    BOOST_ASSERT(s == "aa::bb:0:0:cc");
-
-    std::vector<xxx::ipv6_address> vec =
+    std::vector<xxx::ipv6address> vec =
         { {{0, 0, 0, 0, 0, 0}}
         , {{0, 0, 0, 1, 2, 3}}
         , {{1, 2, 3, 0, 0, 0}}
@@ -343,7 +329,7 @@ int main()
         "~~~~~~~~~~~0:0:0:1::\n";
 
     BOOST_ASSERT(s == expected_result);
-    //]
+
     (void)expected_result;
     return 0;
 }

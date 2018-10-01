@@ -18,198 +18,174 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-template <class T>
-class int_formatting: public stringify::v0::align_formatting<T>
+struct int_format
 {
+    template <class T>
+    class fn
+    {
+    public:
 
-    using child_type = T;
+        constexpr fn() = default;
 
-public:
+        template <typename U>
+        constexpr fn(const fn<U> & u)
+            : m_base(u.base())
+            , m_showbase(u.showbase())
+            , m_showpos(u.showpos())
+            , m_uppercase(u.uppercase())
+        {
+        }
 
-    template <typename U>
-    using fmt_other = stringify::v0::int_formatting<U>;
+        constexpr T&& p(unsigned _) &&
+        {
+            m_precision = _;
+            return static_cast<T&&>(*this);
+        }
+        constexpr T& p(unsigned _) &
+        {
+            m_precision = _;
+            return *this;
+        }
+        constexpr T&& uphex() &&
+        {
+            m_base = 16;
+            m_uppercase = true;
+            return static_cast<T&&>(*this);
+        }
+        constexpr T& uphex() &
+        {
+            m_base = 16;
+            m_uppercase = true;
+            return static_cast<T&>(*this);
+        }
+        constexpr T&& hex() &&
+        {
+            m_base = 16;
+            m_uppercase = false;
+            return static_cast<T&&>(*this);
+        }
+        constexpr T& hex() &
+        {
+            m_base = 16;
+            m_uppercase = false;
+            return static_cast<T&>(*this);
+        }
+        constexpr T&& dec() &&
+        {
+            m_base = 10;
+            return static_cast<T&&>(*this);
+        }
+        constexpr T& dec() &
+        {
+            m_base = 10;
+            return static_cast<T&>(*this);
+        }
+        constexpr T&& oct() &&
+        {
+            m_base = 8;
+            return static_cast<T&&>(*this);
+        }
+        constexpr T& oct() &
+        {
+            m_base = 8;
+            return static_cast<T&>(*this);
+        }
+        constexpr T&& operator+() &&
+        {
+            m_showpos = true;
+            return static_cast<T&&>(*this);
+        }
+        constexpr T& operator+() &
+        {
+            m_showpos = true;
+            return static_cast<T&&>(*this);
+        }
+        constexpr T&& operator~() &&
+        {
+            m_showbase = true;
+            return static_cast<T&&>(*this);
+        }
+        constexpr T& operator~() &
+        {
+            m_showbase = true;
+            return static_cast<T&>(*this);
+        }
+        constexpr T&& uppercase(bool u) &&
+        {
+            m_uppercase = u;
+            return static_cast<T&&>(*this);
+        }
+        constexpr T& uppercase(bool u) &
+        {
+            m_uppercase = u;
+            return static_cast<T&>(*this);
+        }
+        constexpr T&& showbase(bool s) &&
+        {
+            m_showbase = s;
+            return static_cast<T&&>(*this);
+        }
+        constexpr T& showbase(bool s) &
+        {
+            m_showbase = s;
+            return static_cast<T&>(*this);
+        }
+        constexpr T&& showpos(bool s) &&
+        {
+            m_showpos = s;
+            return static_cast<T&&>(*this);
+        }
+        constexpr T& showpos(bool s) &
+        {
+            m_showpos = s;
+            return static_cast<T&>(*this);
+        }
+        constexpr unsigned precision() const
+        {
+            return m_precision;
+        }
+        constexpr unsigned short base() const
+        {
+            return m_base;
+        }
+        constexpr bool showbase() const
+        {
+            return m_showbase;
+        }
+        constexpr bool showpos() const
+        {
+            return m_showpos;
+        }
+        constexpr bool uppercase() const
+        {
+            return m_uppercase;
+        }
 
-    constexpr int_formatting() = default;
+    private:
 
-    constexpr int_formatting(const int_formatting&) = default;
-
-    ~int_formatting() = default;
-
-    template <typename U>
-    constexpr int_formatting(const int_formatting<U> & u)
-        : stringify::v0::align_formatting<T>(u)
-        , m_base(u.base())
-        , m_showbase(u.showbase())
-        , m_showpos(u.showpos())
-        , m_uppercase(u.uppercase())
-    {
-    }
-
-    constexpr child_type&& p(unsigned _) &&
-    {
-        m_precision = _;
-        return static_cast<child_type&&>(*this);
-    }
-    constexpr child_type& p(unsigned _) &
-    {
-        m_precision = _;
-        return *this;
-    }
-    constexpr child_type&& uphex() &&
-    {
-        m_base = 16;
-        m_uppercase = true;
-        return static_cast<child_type&&>(*this);
-    }
-    constexpr child_type& uphex() &
-    {
-        m_base = 16;
-        m_uppercase = true;
-        return static_cast<child_type&>(*this);
-    }
-    constexpr child_type&& hex() &&
-    {
-        m_base = 16;
-        m_uppercase = false;
-        return static_cast<child_type&&>(*this);
-    }
-    constexpr child_type& hex() &
-    {
-        m_base = 16;
-        m_uppercase = false;
-        return static_cast<child_type&>(*this);
-    }
-    constexpr child_type&& dec() &&
-    {
-        m_base = 10;
-        return static_cast<child_type&&>(*this);
-    }
-    constexpr child_type& dec() &
-    {
-        m_base = 10;
-        return static_cast<child_type&>(*this);
-    }
-    constexpr child_type&& oct() &&
-    {
-        m_base = 8;
-        return static_cast<child_type&&>(*this);
-    }
-    constexpr child_type& oct() &
-    {
-        m_base = 8;
-        return static_cast<child_type&>(*this);
-    }
-    constexpr child_type&& operator+() &&
-    {
-        m_showpos = true;
-        return static_cast<child_type&&>(*this);
-    }
-    constexpr child_type& operator+() &
-    {
-        m_showpos = true;
-        return static_cast<child_type&&>(*this);
-    }
-    constexpr child_type&& operator~() &&
-    {
-        m_showbase = true;
-        return static_cast<child_type&&>(*this);
-    }
-    constexpr child_type& operator~() &
-    {
-        m_showbase = true;
-        return static_cast<child_type&>(*this);
-    }
-    constexpr child_type&& uppercase(bool u) &&
-    {
-        m_uppercase = u;
-        return static_cast<child_type&&>(*this);
-    }
-    constexpr child_type& uppercase(bool u) &
-    {
-        m_uppercase = u;
-        return static_cast<child_type&>(*this);
-    }
-    constexpr child_type&& showbase(bool s) &&
-    {
-        m_showbase = s;
-        return static_cast<child_type&&>(*this);
-    }
-    constexpr child_type& showbase(bool s) &
-    {
-        m_showbase = s;
-        return static_cast<child_type&>(*this);
-    }
-    constexpr child_type&& showpos(bool s) &&
-    {
-        m_showpos = s;
-        return static_cast<child_type&&>(*this);
-    }
-    constexpr child_type& showpos(bool s) &
-    {
-        m_showpos = s;
-        return static_cast<child_type&>(*this);
-    }
-    constexpr unsigned precision() const
-    {
-        return m_precision;
-    }
-    constexpr unsigned short base() const
-    {
-        return m_base;
-    }
-    constexpr bool showbase() const
-    {
-        return m_showbase;
-    }
-    constexpr bool showpos() const
-    {
-        return m_showpos;
-    }
-    constexpr bool uppercase() const
-    {
-        return m_uppercase;
-    }
-
-private:
-
-    unsigned m_precision = 0;
-    unsigned short m_base = 10;
-    bool m_showbase = false;
-    bool m_showpos = false;
-    bool m_uppercase = false;
-
+        unsigned m_precision = 0;
+        unsigned short m_base = 10;
+        bool m_showbase = false;
+        bool m_showpos = false;
+        bool m_uppercase = false;
+    };
 };
+
+namespace detail
+{
+template <typename IntT>
+struct int_value
+{
+    IntT value;
+};
+}
+
 
 template <typename IntT>
-class int_with_formatting: public int_formatting<int_with_formatting<IntT> >
-{
-
-public:
-
-    int_with_formatting(IntT value)
-        : m_value(value)
-    {
-    }
-
-    int_with_formatting(const int_with_formatting&) = default;
-
-
-    template <typename U>
-    int_with_formatting(IntT value, const int_formatting<U>& u)
-        : int_formatting<int_with_formatting>(u)
-        , m_value(value)
-    {
-    }
-
-    constexpr IntT value() const
-    {
-        return m_value;
-    }
-
-private:
-
-    IntT m_value = 0;
-};
+using int_with_format = stringify::v0::value_with_format
+    < stringify::v0::detail::int_value<IntT>
+    , stringify::v0::int_format
+    , stringify::v0::alignment_format >;
 
 
 template <typename IntT, typename CharT>
@@ -229,7 +205,7 @@ public:
     int_printer
         ( stringify::v0::output_writer<CharT>& out
         , const FPack& fp
-        , const stringify::v0::int_with_formatting<IntT>& value
+        , const stringify::v0::int_with_format<IntT>& value
         ) noexcept
         : int_printer
             ( out
@@ -241,10 +217,24 @@ public:
     {
     }
 
-
+    template <typename FPack>
     int_printer
         ( stringify::v0::output_writer<CharT>& out
-        , const stringify::v0::int_with_formatting<IntT>& value
+        , const FPack& fp
+        , IntT value
+        ) noexcept
+        : int_printer
+            ( out
+            , stringify::v0::int_with_format<IntT>({value})
+            , get_numpunct<8>(fp)
+            , get_numpunct<10>(fp)
+            , get_numpunct<16>(fp)
+            )
+    {
+    }
+    int_printer
+        ( stringify::v0::output_writer<CharT>& out
+        , const stringify::v0::int_with_format<IntT>& value
         , const stringify::v0::numpunct<8>& numpunct_oct
         , const stringify::v0::numpunct<10>& numpunct_dec
         , const stringify::v0::numpunct<16>& numpunct_hex
@@ -262,7 +252,7 @@ private:
 
     const stringify::v0::numpunct_base* m_punct;
     stringify::v0::output_writer<CharT>& m_out;
-    boost::stringify::v0::int_with_formatting<IntT> m_fmt;
+    boost::stringify::v0::int_with_format<IntT> m_fmt;
     unsigned short m_digcount;
     unsigned short m_sepcount;
     unsigned m_fillcount;
@@ -276,16 +266,16 @@ private:
 
     bool showsign() const
     {
-        return is_signed && (m_fmt.showpos() || m_fmt.value() < 0);
+        return is_signed && (m_fmt.showpos() || m_fmt.value().value < 0);
     }
 
     unsigned_type unsigned_value() const noexcept
     {
         if(m_fmt.base() == 10)
         {
-            return stringify::v0::detail::unsigned_abs(m_fmt.value());
+            return stringify::v0::detail::unsigned_abs(m_fmt.value().value);
         }
-        return static_cast<unsigned_type>(m_fmt.value());
+        return static_cast<unsigned_type>(m_fmt.value().value);
     }
 
     std::size_t length_fill() const
@@ -367,7 +357,7 @@ private:
         {
             if(is_signed)
             {
-                if(m_fmt.value() < 0)
+                if(m_fmt.value().value < 0)
                 {
                     m_out.put(CharT('-'));
                 }
@@ -407,7 +397,7 @@ private:
     {
         CharT dig_buff[max_digcount];
         CharT* dig_it = stringify::v0::detail::write_int_txtdigits_backwards
-            ( m_fmt.value()
+            ( m_fmt.value().value
             , m_fmt.base()
             , m_fmt.uppercase()
             , dig_buff + max_digcount );
@@ -431,7 +421,7 @@ private:
 
         char dig_buff[max_digcount];
         char* dig_it = stringify::v0::detail::write_int_txtdigits_backwards
-            ( m_fmt.value()
+            ( m_fmt.value().value
             , m_fmt.base()
             , m_fmt.uppercase()
             , dig_buff + max_digcount );
@@ -507,7 +497,7 @@ private:
 template <typename IntT, typename CharT>
 int_printer<IntT, CharT>::int_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const stringify::v0::int_with_formatting<IntT>& fmt
+    , const stringify::v0::int_with_format<IntT>& fmt
     , const stringify::v0::numpunct<8>& numpunct_oct
     , const stringify::v0::numpunct<10>& numpunct_dec
     , const stringify::v0::numpunct<16>& numpunct_hex
@@ -519,7 +509,7 @@ int_printer<IntT, CharT>::int_printer
     if (fmt.base() == 10)
     {
         m_punct = & numpunct_dec;
-        m_digcount = stringify::v0::detail::count_digits<10>(fmt.value());
+        m_digcount = stringify::v0::detail::count_digits<10>(fmt.value().value);
         m_sepcount = m_punct->thousands_sep_count(m_digcount);
         if(showsign())
         {
@@ -529,7 +519,7 @@ int_printer<IntT, CharT>::int_printer
     else if (fmt.base() == 16)
     {
         m_punct = & numpunct_hex;
-        m_digcount = stringify::v0::detail::count_digits<16>(fmt.value());
+        m_digcount = stringify::v0::detail::count_digits<16>(fmt.value().value);
         if(fmt.showbase())
         {
             extra_chars_count = 2;
@@ -538,7 +528,7 @@ int_printer<IntT, CharT>::int_printer
     else
     {
         BOOST_ASSERT(fmt.base() == 8);
-        m_digcount = stringify::v0::detail::count_digits<8>(fmt.value());
+        m_digcount = stringify::v0::detail::count_digits<8>(fmt.value().value);
         m_punct = & numpunct_oct;
         if(fmt.showbase())
         {
@@ -677,51 +667,43 @@ inline stringify::v0::int_printer<IntT, CharT>
 make_printer
     ( stringify::v0::output_writer<CharT>& out
     , const FPack& fp
-    , const stringify::v0::int_with_formatting<IntT>& x
+    , const stringify::v0::int_with_format<IntT>& x
     )
 {
     return {out, fp, x};
 }
 
-inline stringify::v0::int_with_formatting<short>
-make_fmt(stringify::v0::tag, short x)
+inline auto make_fmt(stringify::v0::tag, short x)
 {
-    return {x};
+    return stringify::v0::int_with_format<short>{{x}};
 }
-inline stringify::v0::int_with_formatting<int>
-make_fmt(stringify::v0::tag, int x)
+inline auto make_fmt(stringify::v0::tag, int x)
 {
-    return {x};
+    return stringify::v0::int_with_format<int>{{x}};
 }
-inline stringify::v0::int_with_formatting<long>
-make_fmt(stringify::v0::tag, long x)
+inline auto make_fmt(stringify::v0::tag, long x)
 {
-    return {x};
+    return stringify::v0::int_with_format<long>{{x}};
 }
-inline stringify::v0::int_with_formatting<long long>
-make_fmt(stringify::v0::tag, long long x)
+inline auto make_fmt(stringify::v0::tag, long long x)
 {
-    return {x};
+    return stringify::v0::int_with_format<long long>{{x}};
 }
-inline stringify::v0::int_with_formatting<unsigned short>
-make_fmt(stringify::v0::tag, unsigned short x)
+inline auto make_fmt(stringify::v0::tag, unsigned short x)
 {
-    return {x};
+    return stringify::v0::int_with_format<unsigned short>{{x}};
 }
-inline stringify::v0::int_with_formatting<unsigned>
-make_fmt(stringify::v0::tag, unsigned x)
+inline auto make_fmt(stringify::v0::tag, unsigned x)
 {
-    return {x};
+    return  stringify::v0::int_with_format<unsigned>{{x}};
 }
-inline stringify::v0::int_with_formatting<unsigned long>
-make_fmt(stringify::v0::tag, unsigned long x)
+inline auto make_fmt(stringify::v0::tag, unsigned long x)
 {
-    return {x};
+    return stringify::v0::int_with_format<unsigned long>{{x}};
 }
-inline stringify::v0::int_with_formatting<unsigned long long>
-make_fmt(stringify::v0::tag, unsigned long long x)
+inline auto make_fmt(stringify::v0::tag, unsigned long long x)
 {
-    return {x};
+    return stringify::v0::int_with_format<unsigned long long>{{x}};
 }
 
 template <typename> struct is_int_number: public std::false_type {};

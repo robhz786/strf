@@ -9,18 +9,18 @@ foreach(
     to_string
 )
 
-  add_executable(perfomance_${x}_ho   ${x}.cpp)
-  target_link_libraries(perfomance_${x}_ho boost_stringify-header-only fmt::fmt-header-only)
-  set_target_properties(perfomance_${x}_ho PROPERTIES OUTPUT_NAME ${x}_ho)
+  add_executable(performance_${x}_ho   ${x}.cpp)
+  target_link_libraries(performance_${x}_ho boost_stringify-header-only fmt::fmt-header-only)
+  set_target_properties(performance_${x}_ho PROPERTIES OUTPUT_NAME ${x}_ho)
   install(
-    TARGETS perfomance_${x}_ho
+    TARGETS performance_${x}_ho
     DESTINATION "${BOOST_INSTALL_SUBDIR}/$<CONFIG>/benchmarks" )
 
-  add_executable(perfomance_${x} ${x}.cpp)
-  target_link_libraries(perfomance_${x} fmt::fmt boost_stringify)
-  set_target_properties(perfomance_${x} PROPERTIES OUTPUT_NAME ${x})
+  add_executable(performance_${x} ${x}.cpp)
+  target_link_libraries(performance_${x} fmt::fmt boost_stringify)
+  set_target_properties(performance_${x} PROPERTIES OUTPUT_NAME ${x})
   install(
-    TARGETS perfomance_${x}
+    TARGETS performance_${x}
     DESTINATION "${BOOST_INSTALL_SUBDIR}/$<CONFIG>/benchmarks")
   
 endforeach(x)
@@ -36,18 +36,18 @@ foreach(
     utf16_to_utf8
 )
 
-  add_executable(perfomance_${x}_ho    ${x}.cpp)
-  target_link_libraries(perfomance_${x}_ho boost_stringify-header-only)
-  set_target_properties(perfomance_${x}_ho PROPERTIES OUTPUT_NAME ${x}_ho)
+  add_executable(performance_${x}_ho    ${x}.cpp)
+  target_link_libraries(performance_${x}_ho boost_stringify-header-only)
+  set_target_properties(performance_${x}_ho PROPERTIES OUTPUT_NAME ${x}_ho)
   install(
-    TARGETS perfomance_${x}_ho
+    TARGETS performance_${x}_ho
     DESTINATION "${BOOST_INSTALL_SUBDIR}/$<CONFIG>/benchmarks")
 
-  add_executable(perfomance_${x} ${x}.cpp)
-  target_link_libraries(perfomance_${x} boost_stringify)
-  set_target_properties(perfomance_${x} PROPERTIES OUTPUT_NAME ${x})
+  add_executable(performance_${x} ${x}.cpp)
+  target_link_libraries(performance_${x} boost_stringify)
+  set_target_properties(performance_${x} PROPERTIES OUTPUT_NAME ${x})
   install(
-    TARGETS perfomance_${x}
+    TARGETS performance_${x}
     DESTINATION "${BOOST_INSTALL_SUBDIR}/$<CONFIG>/benchmarks")
   
 endforeach(x)
