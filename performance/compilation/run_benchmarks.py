@@ -5,15 +5,32 @@ import os
 import subprocess
 import tempfile
 import shutil
+import string
 
 cxx = os.environ.get('CXX')
-if not cxx or not os.path.isfile(cxx) :
+if cxx is None or not os.path.isfile(cxx) :
     print("set CXX environment variable to a valid compiler")
     quit(1)
-cc = os.environ.get('CC')
-if not cc or not os.path.isfile(cc) :
-    print("set CC environment variable to a valid compiler")
-    quit(1)
+
+cxx_standard='14'
+
+cxxflags = ['-std=c++' + cxx_standard]
+cxxflags_str = os.environ.get('CXXFLAGS')
+if cxxflags_str is not None:
+    cxxflags = cxxflags_str.split()
+    idx = string.find(cxxflags_str, '-std=')
+    if idx == -1:
+        cxxflags.append('-std=c++' + cxx_standard)
+    else:
+        cxx_standard = cxxflags_str[idx + 8: idx + 10]
+del cxxflags_str
+
+
+ldflags = []
+ldflags_str = os.environ.get('LDFLAGS')
+if ldflags_str is not None:
+    ldflags = ldflags_str.split()
+del ldflags_str
 
 
 pwd = os.path.dirname(os.path.realpath(__file__))
@@ -110,10 +127,10 @@ def compile_unit(release, flags, basename, obj_id):
 def compile_unit_cmd(release, flags, basename, obj_id) :
     cmd = [ cxx,
             "-O3" if release else "-g",
-            "-std=c++14",
             "-DSRC_ID=" + obj_id,
             "-DFUNCTION_NAME=function" + obj_id]
     cmd.extend(flags)
+    cmd.extend(cxxflags)
     cmd.extend(["-c",  basename + ".cpp",
                 "-o",  obj_filename(release, basename, obj_id)])
     return cmd
@@ -152,9 +169,9 @@ def write_auxiliary_src_files(num_objs) :
 def build_program_command(release, main_src, basename, num_objs, libs) :
     cmd = [cxx]
     cmd.append("-O3" if release else "-g")
-    cmd.append("-std=c++14")
     cmd.append(main_src)
-#   cmd.append(boost_incl)
+    cmd.extend(cxxflags)
+    cmd.extend(ldflags)
     cmd.extend(obj_files(release, basename, num_objs))
     cmd.extend(libs + ["-o", program_name(basename, num_objs)])
     return cmd
@@ -172,7 +189,8 @@ def cmake_generate_stringify(buildtype):
     build_dir = tmp_dir + "/stringify-" + buildtype
     src_dir = os.path.normpath(pwd + "/../..")
     os.makedirs(build_dir)
-    gen_args = ["cmake", "-G", "Unix Makefiles", "-DCMAKE_BUILD_TYPE=" + buildtype, src_dir]
+    gen_args = ["cmake", "-G", "Unix Makefiles", "-DCMAKE_BUILD_TYPE=" + buildtype,
+                "-DCMAKE_CXX_STANDARD=" + cxx_standard, src_dir]
     gen_p = subprocess.Popen(gen_args, cwd=build_dir)
     gen_p.wait()
     if gen_p.returncode != 0:
@@ -183,7 +201,7 @@ def cmake_generate_fmt(buildtype):
     build_dir = tmp_dir + "/fmt-" + buildtype
     os.makedirs(build_dir)
     gen_args = ["cmake", "-G", "Unix Makefiles", "-DCMAKE_BUILD_TYPE=" + buildtype,
-            "-DFMT_DOC=OFF", "-DFMT_TEST=OFF", fmt_dir]
+            "-DFMT_DOC=OFF", "-DFMT_TEST=OFF", "-DCMAKE_CXX_STANDARD=" + cxx_standard, fmt_dir]
     gen_p = subprocess.Popen(gen_args, cwd=build_dir)
     gen_p.wait()
     if gen_p.returncode != 0:

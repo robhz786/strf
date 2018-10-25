@@ -374,7 +374,8 @@ string_printer<CharIn, CharOut>::~string_printer()
 template<typename CharIn, typename CharOut>
 std::size_t string_printer<CharIn, CharOut>::necessary_size() const
 {
-    std::size_t len = m_sw.necessary_size(m_fmt.value().begin(), m_fmt.value().end());
+    std::size_t len = m_sw.necessary_size( m_fmt.value().begin()
+                                         , m_fmt.value().end() );
 
     if (m_fillcount > 0)
     {
@@ -479,14 +480,12 @@ template
     , typename FPack
     , typename CharIn
     , typename Traits
-    , typename Allocator
-    >
+    , typename Allocator >
 inline stringify::v0::simple_string_printer<CharIn, CharOut>
 make_printer
    ( stringify::v0::output_writer<CharOut>& out
    , const FPack& fp
-   , const std::basic_string<CharIn, Traits, Allocator>& str
-   )
+   , const std::basic_string<CharIn, Traits, Allocator>& str )
 {
     return {out, fp, str.data(), str.size()};
 }
@@ -495,14 +494,12 @@ template
     < typename CharOut
     , typename FPack
     , typename CharIn
-    , typename Traits
-    >
+    , typename Traits >
 inline stringify::v0::simple_string_printer<CharIn, CharOut>
 make_printer
    ( stringify::v0::output_writer<CharOut>& out
    , const FPack& fp
-   , const boost::basic_string_view<CharIn, Traits>& str
-   )
+   , const boost::basic_string_view<CharIn, Traits>& str )
 {
     return {out, fp, str.data(), str.size()};
 }
@@ -512,8 +509,7 @@ inline stringify::v0::simple_string_printer<char, CharOut>
 make_printer
    ( stringify::v0::output_writer<CharOut>& out
    , const FPack& fp
-   , const char* str
-   )
+   , const char* str )
 {
     return {out, fp, str, std::char_traits<char>::length(str)};
 }
@@ -523,8 +519,7 @@ inline stringify::v0::simple_string_printer<wchar_t, CharOut>
 make_printer
    ( stringify::v0::output_writer<CharOut>& out
    , const FPack& fp
-   , const wchar_t* str
-   )
+   , const wchar_t* str )
 {
     return {out, fp, str, std::char_traits<wchar_t>::length(str)};
 }
@@ -534,8 +529,7 @@ inline stringify::v0::simple_string_printer<char16_t, CharOut>
 make_printer
    ( stringify::v0::output_writer<CharOut>& out
    , const FPack& fp
-   , const char16_t* str
-   )
+   , const char16_t* str )
 {
     return {out, fp, str, std::char_traits<char16_t>::length(str)};
 }
@@ -545,8 +539,7 @@ inline stringify::v0::simple_string_printer<char32_t, CharOut>
 make_printer
    ( stringify::v0::output_writer<CharOut>& out
    , const FPack& fp
-   , const char32_t* str
-   )
+   , const char32_t* str )
 {
     return {out, fp, str, std::char_traits<char32_t>::length(str)};
 }
@@ -613,8 +606,7 @@ inline stringify::v0::string_printer<CharIn, CharOut>
 make_printer
     ( stringify::v0::output_writer<CharOut>& out
     , const FPack& fp
-    , const stringify::v0::string_with_format<CharIn>& ch
-    )
+    , const stringify::v0::string_with_format<CharIn>& ch )
 {
     return {out, fp, ch};
 }

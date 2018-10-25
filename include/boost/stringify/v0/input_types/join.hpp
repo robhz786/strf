@@ -212,7 +212,8 @@ struct join_t
     int num_leading_args = 1;
 
     template <typename ... Args>
-    stringify::v0::detail::joined_args<Args...> operator()(const Args& ... args) const
+    stringify::v0::detail::joined_args<Args...> operator()
+        (const Args& ... args) const
     {
         return {*this, {args...}};
     }

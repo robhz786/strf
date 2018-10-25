@@ -104,29 +104,34 @@ private:
 };
 
 
-template <typename CharT, typename ParentFPack, typename ChildFPack, typename ... Args>
+template
+    < typename CharT
+    , typename ParentFPack
+    , typename ChildFPack
+    , typename ... Args >
 class facets_pack_printer
     : private stringify::v0::facets_pack<ParentFPack, ChildFPack>
     , private stringify::v0::detail::printers_group
-          < CharT
-          , stringify::v0::facets_pack<ParentFPack, ChildFPack>
-          , Args...
-          >
+        < CharT
+        , stringify::v0::facets_pack<ParentFPack, ChildFPack>
+        , Args... >
     , public stringify::v0::detail::pp_range_printer<CharT>
 {
     using fmt_group
     = stringify::v0::detail::printers_group
-          < CharT
-          , stringify::v0::facets_pack<ParentFPack, ChildFPack>
-          , Args...
-          >;
+        < CharT
+        , stringify::v0::facets_pack<ParentFPack, ChildFPack>
+        , Args... >;
+
+    using inner_args
+    = stringify::v0::detail::inner_pack_with_args<ChildFPack, Args...>;
 
 public:
 
     facets_pack_printer
         ( stringify::v0::output_writer<CharT>& out
         , const ParentFPack& parent_fp
-        , const stringify::v0::detail::inner_pack_with_args<ChildFPack, Args...>& args
+        , const inner_args& args
         )
         : stringify::v0::facets_pack<ParentFPack, ChildFPack>{parent_fp, args.fp}
         , fmt_group{out, *this, args.args}
@@ -138,31 +143,6 @@ public:
     {
     }
 };
-
-// struct facets_pack_input_traits
-// {
-//     template
-//         < typename CharT
-//         , typename ParentFPack
-//         , typename ChildFPack
-//         , typename ... Args
-//         >
-//     static inline stringify::v0::detail::facets_pack_printer
-//         < CharT
-//         , ParentFPack
-//         , ChildFPack
-//         , Args...
-//         >
-//     make_printer
-//         ( const ParentFPack& fp
-//         , const detail::inner_pack_with_args<ChildFPack, Args...>& x
-//         )
-//     {
-//         return {fp, x};
-//     }
-// };
-
-
 
 template <typename F>
 struct is_constrainable
@@ -238,17 +218,19 @@ facets(const stringify::v0::facets_pack<Facets...>& fp)
 }
 
 template
-   < typename CharT
-   , typename FPack
-   , typename ChildFPack
-   , typename ... Args
-   >
-inline stringify::v0::detail::facets_pack_printer<CharT, FPack, ChildFPack, Args...>
+    < typename CharT
+    , typename FPack
+    , typename ChildFPack
+    , typename ... Args >
+inline stringify::v0::detail::facets_pack_printer
+    < CharT
+    , FPack, ChildFPack
+    , Args... >
 make_printer
-   ( stringify::v0::output_writer<CharT>& out
-   , const FPack& fp
-   , const stringify::v0::detail::inner_pack_with_args<ChildFPack, Args...>& fmt
-   )
+    ( stringify::v0::output_writer<CharT>& out
+    , const FPack& fp
+    , const stringify::v0::detail::inner_pack_with_args
+        <ChildFPack, Args...>& fmt )
 {
     return {out, fp, fmt};
 }
