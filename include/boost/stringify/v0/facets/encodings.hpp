@@ -49,7 +49,11 @@ constexpr unsigned utf8_decode(unsigned ch0, unsigned ch1, unsigned ch2)
             ((ch1 & 0x3F) <<  6) |
             ((ch2 & 0x3F) <<  0));
 }
-constexpr unsigned utf8_decode(unsigned ch0, unsigned ch1, unsigned ch2, unsigned ch3)
+constexpr unsigned utf8_decode
+    ( unsigned ch0
+    , unsigned ch1
+    , unsigned ch2
+    , unsigned ch3 )
 {
     return (((ch0 & 0x07) << 18) |
             ((ch1 & 0x3F) << 12) |

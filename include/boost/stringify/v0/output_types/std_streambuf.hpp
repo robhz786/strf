@@ -25,8 +25,7 @@ public:
     std_streambuf_writer
         ( stringify::v0::output_writer_init<CharT> init
         , std::basic_streambuf<CharT, Traits>& out
-        , std::size_t* count
-        )
+        , std::size_t* count )
         : stringify::v0::buffered_writer<CharT>{init, buffer, buffer_size}
         , m_out(out)
         , m_count(count)
@@ -66,170 +65,6 @@ protected:
 };
 
 
-// template <typename CharT, typename Traits>
-// class std_streambuf_writer: public output_writer<CharT>
-// {
-// public:
-
-//     using char_type = CharT;
-
-//     explicit std_streambuf_writer
-//         ( stringify::v0::output_writer_init<CharT> init
-//         , std::basic_streambuf<CharT, Traits>& out
-//         , std::size_t* count
-//         )
-//         : stringify::v0::output_writer<CharT>{init}
-//         , m_out(out)
-//         , m_count(count)
-//     {
-//         if(m_count)
-//         {
-//             *m_count = 0;
-//         }
-//     }
-
-//     bool good() const override
-//     {
-//         return ! m_err;
-//     }
-
-//     void set_error(std::error_code err) override
-//     {
-//         if (err && ! m_err)
-//         {
-//             m_err = err;
-//         }
-//     }
-
-//     bool put(const CharT* str, std::size_t ucount) override
-//     {
-//         if( ! m_err)
-//         {
-//             std::streamsize count = ucount;
-//             auto count_inc = m_out.sputn(str, count);
-//             if(m_count != nullptr && count_inc > 0)
-//             {
-//                 *m_count += static_cast<std::size_t>(count_inc);
-//             }
-//             if (count_inc != count)
-//             {
-//                 m_err = std::make_error_code(std::errc::io_error);
-//             }
-//         }
-//         return false;
-//     }
-
-//     bool put(CharT ch) override
-//     {
-//         return ! m_err && do_put(ch);
-//     }
-
-//     bool repeat(std::size_t count, CharT ch) override
-//     {
-//         if( ! m_err)
-//         {
-//             for(; count > 0; --count)
-//             {
-//                 if(!do_put(ch))
-//                 {
-//                     return false;
-//                 }
-//             }
-//             return true;
-//         }
-//         return false;
-//     }
-
-//     bool repeat(std::size_t count, CharT ch1, CharT ch2) override
-//     {
-//         if( ! m_err)
-//         {
-//             for(; count > 0; --count)
-//             {
-//                 if(!do_put(ch1) || !do_put(ch2))
-//                 {
-//                     return false;
-//                 }
-//             }
-//             return true;
-//         }
-//         return false;
-//     }
-
-//     bool repeat(std::size_t count, CharT ch1, CharT ch2, CharT ch3) override
-//     {
-//         if( ! m_err)
-//         {
-//             for(; count > 0; --count)
-//             {
-//                 if(!do_put(ch1) || !do_put(ch2) || !do_put(ch3))
-//                 {
-//                     return false;
-//                 }
-//             }
-//             return true;
-//         }
-//         return false;
-//     }
-
-//     bool repeat
-//         ( std::size_t count
-//         , CharT ch1
-//         , CharT ch2
-//         , CharT ch3
-//         , CharT ch4
-//         ) override
-//     {
-//         if( ! m_err)
-//         {
-//             for(; count > 0; --count)
-//             {
-//                 if(!do_put(ch1) || !do_put(ch2) || !do_put(ch3) || !do_put(ch4))
-//                 {
-//                     return false;
-//                 }
-//             }
-//             return true;
-//         }
-//         return false;
-//     }
-
-//     std::error_code finish() noexcept
-//     {
-//         return m_err;
-//     }
-
-//     void finish_exception()
-//     {
-//         if(m_err)
-//         {
-//             throw std::system_error(m_err);
-//         }
-//     }
-
-// private:
-
-//     bool do_put(CharT character)
-//     {
-//         if(Traits::eq_int_type(m_out.sputc(character), Traits::eof()))
-//         {
-//             m_err = std::make_error_code(std::errc::io_error);
-//             return false;
-//         }
-//         if(m_count != nullptr)
-//         {
-//             ++ *m_count;
-//         }
-//         return true;
-//     }
-
-
-//     std::basic_streambuf<CharT, Traits>& m_out;
-//     std::size_t * m_count = 0;
-//     std::error_code m_err;
-
-// };
-
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
@@ -252,8 +87,7 @@ class std_streambuf_writer<wchar_t, std::char_traits<wchar_t>>;
 template<typename CharT, typename Traits = std::char_traits<CharT> >
 auto write
     ( std::basic_streambuf<CharT, Traits>& dest
-    , std::size_t* count = nullptr
-    )
+    , std::size_t* count = nullptr )
 {
     using intput_type = std::basic_streambuf<CharT, Traits>&;
     using writer = stringify::v0::detail::std_streambuf_writer<CharT, Traits>;
@@ -264,8 +98,7 @@ auto write
 template<typename CharT, typename Traits = std::char_traits<CharT> >
 auto write
     ( std::basic_streambuf<CharT, Traits>* dest
-    , std::size_t* count = nullptr
-    )
+    , std::size_t* count = nullptr )
 {
     using intput_type = std::basic_streambuf<CharT, Traits>&;
     using writer = stringify::v0::detail::std_streambuf_writer<CharT, Traits>;

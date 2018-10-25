@@ -11,8 +11,7 @@ namespace detail {
 
 template
     < typename IntT
-    , typename unsigned_IntT = typename std::make_unsigned<IntT>::type
-    >
+    , typename unsigned_IntT = typename std::make_unsigned<IntT>::type >
 typename std::enable_if<std::is_signed<IntT>::value, unsigned_IntT>::type
 unsigned_abs(IntT value)
 {
@@ -376,7 +375,8 @@ CharT* write_int_dec_txtdigits_backwards(IntT value, CharT* it) noexcept
 }
 
 template <typename IntT, typename CharT>
-CharT* write_int_hex_txtdigits_backwards(IntT value, bool uppercase, CharT* it) noexcept
+CharT* write_int_hex_txtdigits_backwards
+    (IntT value, bool uppercase, CharT* it) noexcept
 {
     using uIntT = typename std::make_unsigned<IntT>::type;
     uIntT uvalue = value;
@@ -404,7 +404,8 @@ CharT* write_int_oct_txtdigits_backwards(IntT value, CharT* it) noexcept
 }
 
 template <typename IntT, typename CharT>
-CharT* write_int_txtdigits_backwards(IntT value, int base, bool uppercase, CharT* it) noexcept
+CharT* write_int_txtdigits_backwards
+    (IntT value, int base, bool uppercase, CharT* it) noexcept
 {
     if (base == 10)
     {
@@ -508,37 +509,8 @@ CharT* intdigits_writer<IntT, CharT>::write_grp(unsigned grp_size, CharT* it)
     return it;
 }
 
-// template <typename IntT, typename CharT>
-// CharT* intdigits_writer<IntT, CharT>::write_first_sep(CharT* begin, CharT* end)
-// {
-//     auto r = this->encode_char( m_encoder, m_err_sig, m_sepchar
-//                               , begin, end, m_allow_surr );
-//     BOOST_ASSERT(r.it != end + 1);
-//     if (r.it == nullptr)
-//     {
-//         return nullptr;
-//     }
-//     m_sepchar = r.ch;
-//     m_sepchar_size = r.it - begin;
-//     return r.it;
-// }
-
-// template <typename IntT, typename CharT>
-// CharT* intdigits_writer<IntT, CharT>::write_sep(CharT* begin, CharT* end)
-// {
-//     if(m_sepchar_size > 0)
-//     {
-//         auto r = this->encode_char( m_encoder, m_err_sig, m_sepchar
-//                                   , begin, end, m_allow_surr );
-//         BOOST_ASSERT(r.it != nullptr);
-//         BOOST_ASSERT(r.it <= end);
-//         return r.it;
-//     }
-//     return begin;
-// }
-
-
 } // namespace detail
+
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_DETAIL_NUMBER_OF_DIGITS_HPP

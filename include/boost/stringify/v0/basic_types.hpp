@@ -1764,7 +1764,8 @@ public:
         , const stringify::v0::value_with_format<OtherValueType, Fmts...>& f )
         : Fmts::template fn<value_with_format<ValueType, Fmts...>>
             ( static_cast
-              < const typename Fmts::template fn<value_with_format<OtherValueType, Fmts...>>& >(f) )
+              < const typename Fmts
+             :: template fn<value_with_format<OtherValueType, Fmts...>>& >(f) )
         ...
         , m_value(v)
     {
@@ -1776,7 +1777,8 @@ public:
         , const stringify::v0::value_with_format<OtherValueType, Fmts...>&& f )
         : Fmts::template fn<value_with_format<ValueType, Fmts...>>
             ( static_cast
-              < typename Fmts::template fn<value_with_format<OtherValueType, Fmts...>> &&>(f) )
+              < typename Fmts
+             :: template fn<value_with_format<OtherValueType, Fmts...>> &&>(f) )
         ...
         , m_value(static_cast<ValueType&&>(v))
     {
@@ -1787,7 +1789,8 @@ public:
         ( const stringify::v0::value_with_format<ValueType, OtherFmts...>& f )
         : Fmts::template fn<value_with_format<ValueType, Fmts...>>
             ( static_cast
-              < const typename OtherFmts::template fn<value_with_format<ValueType, OtherFmts ...>>& >(f) )
+              < const typename OtherFmts
+             :: template fn<value_with_format<ValueType, OtherFmts ...>>& >(f) )
         ...
         , m_value(f.value())
     {
@@ -1798,7 +1801,8 @@ public:
         ( const stringify::v0::value_with_format<ValueType, OtherFmts...>&& f )
         : Fmts::template fn<value_with_format<ValueType, Fmts...>>
             ( static_cast
-              < typename OtherFmts::template fn<value_with_format<ValueType, OtherFmts ...>>&& >(f) )
+              < typename OtherFmts
+             :: template fn<value_with_format<ValueType, OtherFmts ...>>&& >(f) )
         ...
         , m_value(static_cast<ValueType&&>(f.value()))
     {
@@ -1825,12 +1829,14 @@ namespace detail
 
 struct alignment_format
 {
-    template <class T> using fn = stringify::v0::detail::alignment_format_impl<T>;
+    template <class T>
+    using fn = stringify::v0::detail::alignment_format_impl<T>;
 };
 
 struct empty_alignment_format
 {
-    template <class T> using fn = stringify::v0::detail::empty_alignment_format_impl<T>;
+    template <class T>
+    using fn = stringify::v0::detail::empty_alignment_format_impl<T>;
 };
 
 namespace detail {
@@ -1844,7 +1850,9 @@ public:
 
     constexpr alignment_format_impl()
     {
-        static_assert(std::is_base_of<alignment_format_impl, derived_type>::value, "");
+        static_assert
+            ( std::is_base_of<alignment_format_impl, derived_type>::value
+            , "T must be void or derive from alignment_format_impl<T>" );
     }
 
     constexpr alignment_format_impl(const alignment_format_impl&) = default;
@@ -1975,7 +1983,8 @@ public:
     {
     }
 
-    constexpr empty_alignment_format_impl(const empty_alignment_format_impl&) = default;
+    constexpr empty_alignment_format_impl(const empty_alignment_format_impl&)
+        = default;
 
     template <typename U>
     constexpr empty_alignment_format_impl(const empty_alignment_format_impl<U>&)

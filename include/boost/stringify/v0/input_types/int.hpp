@@ -538,7 +538,9 @@ int_printer<IntT, CharT>::int_printer
     m_sepcount = m_punct->thousands_sep_count(m_digcount);
     m_fillcount = 0;
     int content_width
-        = static_cast<int>(fmt.precision() > m_digcount ? fmt.precision() : m_digcount)
+        = static_cast<int>( fmt.precision() > m_digcount
+                            ? fmt.precision()
+                            : m_digcount )
         + static_cast<int>(m_sepcount)
         + extra_chars_count;
 

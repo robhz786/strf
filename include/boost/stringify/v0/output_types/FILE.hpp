@@ -125,7 +125,8 @@ BOOST_STRINGIFY_INLINE wide_file_writer::~wide_file_writer()
     this->flush();
 }
 
-BOOST_STRINGIFY_INLINE bool wide_file_writer::do_put(const wchar_t* str, std::size_t count)
+BOOST_STRINGIFY_INLINE bool wide_file_writer::do_put
+    ( const wchar_t* str, std::size_t count )
 {
     std::size_t i = 0;
     bool good = true;
