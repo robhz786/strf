@@ -1694,10 +1694,7 @@ template
 struct mp_replace_fmt
 {
     template <class QF>
-    using f = std::conditional_t
-        < std::is_same<QFromFmt, QF>::value
-        , QToFmt
-        , QF >;
+    using f = std::conditional_t< std::is_same<QFromFmt, QF>::value, QToFmt, QF >;
 
     using type = ValueWithFmt< ValueType, f<QFmts> ... >;
 };

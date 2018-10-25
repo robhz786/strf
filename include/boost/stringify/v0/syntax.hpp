@@ -457,8 +457,8 @@ public:
     }
 
     template <typename CharIn, typename Traits, typename Allocator>
-    asm_string<CharIn>
-    as(const std::basic_string<CharIn, Traits, Allocator>& str) const
+    asm_string<CharIn> as
+        (const std::basic_string<CharIn, Traits, Allocator>& str) const
     {
         return asm_str(str.data(), str.data() + str.size());
     }
@@ -466,8 +466,7 @@ public:
 #if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
 
     template <typename CharIn, typename Traits>
-    asm_string<CharIn> operator()
-        (const std::basic_string_view<CharIn, Traits>& str) const
+    asm_string<CharIn> as(const std::basic_string_view<CharIn, Traits>& str) const
     {
         return asm_str(&*str.begin(), &*str.end());
     }
