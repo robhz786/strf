@@ -7,8 +7,6 @@
 #include <array>
 #include <vector>
 
-#define USE_COMPLETE_VERSION_FMT_BASE64
-
 namespace strf = boost::stringify::v0;
 
 auto write_out = strf::write(stdout);
@@ -21,7 +19,7 @@ struct base64_facet_category;
 
 struct base64_facet
 {
-    typedef base64_facet_category category;
+    using category = base64_facet_category;
 
     unsigned line_length = 64;
     char eol[2] = {'\r', '\n'};
@@ -48,10 +46,7 @@ struct base64_facet_category
 } // namespace xxx
 
 
-
-#if defined(USE_COMPLETE_VERSION_FMT_BASE64)
-
-//[ fmt_base64_complete_version__input
+//[ fmt_base64_input
 
 namespace xxx {
 
@@ -65,167 +60,69 @@ struct base64_input
 
 //]
 
-
-//[ fmt_base64_complete_version__formatting
+//[ base64_format
 
 namespace xxx {
 
-template <typename Derived>
-class base64_formatting
+struct base64_format
 {
-  /*<< `fmt_derived<This, Derived>` is an alias to `This` when `Derived`
-        is `void`, otherwise it is an alias to `Derived`
->>*/using derived_type = strf::fmt_derived<base64_formatting<Derived>, Derived>;
-
-public:
-
-  /*<< This template alias is a required by [link ranges `fmt_range`]
->>*/template <typename U>
-    using fmt_other = base64_formatting<U>;
-
-  /*<< Default constructor is also a required by [link ranges `fmt_range`]
->>*/base64_formatting() = default;
-
-  /*<< This kind of copy constructor template is also required by [link ranges `fmt_range`]
-       ( it has to be a template like this )
->>*/template <typename U>
-    base64_formatting(const base64_formatting<U>& other)
-        : m_indentation(other.indentation())
+    template <typename T>
+    class fn
     {
-    }
-    derived_type&& indentation(unsigned _) &&
-    {
-        m_indentation = _;
-        return static_cast<derived_type&&>(*this);
-    }
-    unsigned indentation() const
-    {
-        return m_indentation;
-    }
+    public:
 
-private:
+        fn() = default;
 
-    unsigned m_indentation = 0;
+        template <typename U>
+        fn(const fn<U>& other) : m_indentation(other.indentation())
+        {
+        }
+
+        T&& indentation(unsigned _) &&
+        {
+            m_indentation = _;
+            return static_cast<T&&>(*this);
+        }
+
+        unsigned indentation() const
+        {
+            return m_indentation;
+        }
+
+    private:
+
+        unsigned m_indentation = 0;
+    };
 };
 
 } //namespace xxx
 //]
 
-//[ fmt_base64_complete_version__fmt
+//[ base64_input_with_format
 
 namespace xxx {
 
-struct fmt_base64: public base64_formatting<fmt_base64>
+using base64_input_with_format = strf::value_with_format< base64_input
+                                                        , base64_format >;
+    
+inline auto base64(const void* bytes, std::size_t num_bytes)
 {
-    fmt_base64(const base64_input& value)
-        : m_value(value)
-    {
-    }
-  /*<< This constructor template is required by [link ranges fmt_range].
-    The first argument will be `*it`, where `it` is an iterator of the range.
->>*/template <typename U>
-    fmt_base64(const base64_input& value, const base64_formatting<U>& fmt)
-        : base64_formatting<fmt_base64>(fmt)
-        , m_value(value)
-    {
-    }
-    const unsigned char* data() const
-    {
-        return reinterpret_cast<const unsigned char*>(m_value.bytes);
-    }
-    std::size_t size() const
-    {
-        return m_value.num_bytes;
-    }
-
-private:
-
-    base64_input m_value;
-};
-
-} // namespace xxx
-//]
-
-
-//[ fmt_base64_complete_version__functions
-namespace xxx{
-
-inline fmt_base64 base64(const void* bytes, std::size_t num_bytes)
-{
-    return base64_input{reinterpret_cast<const unsigned char*>(bytes), num_bytes};
+    base64_input data{reinterpret_cast<const unsigned char*>(bytes), num_bytes};
+    return base64_input_with_format{data};
 }
 
-/*<< make_fmt is required by [link ranges fmt_range] >>*/
-inline fmt_base64 make_fmt(strf::tag, const base64_input& d)
+/*<< Although `strf::fmt` is not needed to work with `base64_input` since the
+`base64` function already instantiates `base64_input_with_format`, we still
+ need to overload `make_fmt` if we want `base64_input` to work in
+ [link ranges fmt_range]
+ >>*/inline auto make_fmt(strf::tag, const base64_input& d)
 {
-    return d;
+    return base64_input_with_format{d};
 } // namespace xxx
 
 }
 //]
 
-#else
-
-namespace xxx {
-
-//[ fmt_base64_simple_version
-
-class fmt_base64
-{
-public:
-
-    // constructors
-
-    fmt_base64(const fmt_base64& cp) = default;
-
-    fmt_base64(const void* data, std::size_t size)
-        : m_data(data)
-        , m_size(size)
-    {
-    }
-
-    // formatting functions
-
-    fmt_base64&& indentation(unsigned i) &&
-    {
-        m_indentation = i;
-        return static_cast<fmt_base64&&>(*this);
-    }
-
-    // observers
-
-    unsigned indentation() const
-    {
-        return m_indentation;
-    }
-    const unsigned char* data() const
-    {
-        return reinterpret_cast<const unsigned char*>(m_data);
-    }
-    std::size_t size() const
-    {
-        return m_size;
-    }
-
-private:
-
-    unsigned m_indentation = 0;
-    const void* m_data;
-    std::size_t m_size;
-};
-
-inline fmt_base64 base64(const void* bytes, std::size_t num_bytes)
-{
-    return {bytes, num_bytes};
-}
-
-//] fmt_base64_simple_version
-
-struct base64_input {};
-
-}
-
-#endif
 
 
 namespace xxx {
@@ -305,7 +202,7 @@ public:
 
     single_line_base64_pm_input
         ( base64_facet facet
-        , const fmt_base64& fmt )
+        , const base64_input_with_format& fmt )
         : base64_common_impl(facet)
         , m_fmt(fmt)
     {
@@ -318,8 +215,16 @@ private:
 
     CharT* write_indentation(CharT* begin, CharT* end);
     CharT* write_block(CharT* it);
+    const unsigned char* bytes() const
+    {
+        return reinterpret_cast<const unsigned char*>(m_fmt.value().bytes);
+    }
+    auto num_bytes() const
+    {
+        return m_fmt.value().num_bytes;
+    }
 
-    const fmt_base64 m_fmt;
+    const base64_input_with_format m_fmt;
     std::size_t m_index = 0;
     unsigned m_column = 0;
 };
@@ -334,11 +239,11 @@ CharT* single_line_base64_pm_input<CharT>::get_some(CharT* begin, CharT* end)
     {
         it = write_indentation(it, end);
     }
-    while(it < end - 4 && m_index < m_fmt.size())
+    while(it < end - 4 && m_index < num_bytes())
     {
         it = write_block(it);
     }
-    if (m_index >= m_fmt.size())
+    if (m_index >= num_bytes())
     {
         this->report_success();
     }
@@ -349,8 +254,8 @@ CharT* single_line_base64_pm_input<CharT>::get_some(CharT* begin, CharT* end)
 template <typename CharT>
 CharT* single_line_base64_pm_input<CharT>::write_block(CharT* it)
 {
-    std::array<char, 4> arr = encode( m_fmt.data() + m_index
-                                    , m_fmt.size() - m_index );
+    std::array<char, 4> arr = encode( bytes() + m_index
+                                    , num_bytes() - m_index );
     it[0] = arr[0];
     it[1] = arr[1];
     it[2] = arr[2];
@@ -383,7 +288,7 @@ public:
 
     multiline_base64_pm_input
         ( base64_facet facet
-        , const fmt_base64& fmt );
+        , const base64_input_with_format& fmt );
 
     CharT* get_some(CharT* begin, CharT* end) override;
 
@@ -394,8 +299,16 @@ private:
     CharT* begin_partial_block(CharT* it);
     CharT* continue_partial_block(CharT* it);
     CharT* write_eol(CharT* it);
+    const unsigned char* bytes() const
+    {
+        return reinterpret_cast<const unsigned char*>(m_fmt.value().bytes);
+    }
+    auto num_bytes() const
+    {
+        return m_fmt.value().num_bytes;
+    }
 
-    const fmt_base64 m_fmt;
+    const base64_input_with_format m_fmt;
     std::size_t m_index = 0;
     unsigned m_column = 0;
     unsigned m_block_sub_index = 0;
@@ -407,7 +320,7 @@ private:
 template <typename CharT>
 multiline_base64_pm_input<CharT>::multiline_base64_pm_input
     ( base64_facet facet
-    , const fmt_base64& fmt )
+    , const base64_input_with_format& fmt )
     : base64_common_impl(facet)
     , m_fmt(fmt)
     , m_total_line_length(facet.line_length + fmt.indentation())
@@ -420,7 +333,7 @@ template <typename CharT>
 CharT* multiline_base64_pm_input<CharT>::get_some(CharT* begin, CharT* end)
 {
     auto it = begin;
-    while(m_index < m_fmt.size())
+    while(m_index < num_bytes())
     {
         if(m_column < m_fmt.indentation())
         {
@@ -489,9 +402,9 @@ CharT* multiline_base64_pm_input<CharT>::write_whole_block_in_this_line(CharT* i
     BOOST_ASSERT(m_block_sub_index == 0);
     BOOST_ASSERT(m_column >= m_fmt.indentation());
     BOOST_ASSERT(m_column + 4 < m_total_line_length);
-    BOOST_ASSERT(m_index < m_fmt.size());
+    BOOST_ASSERT(m_index < num_bytes());
 
-    auto arr = encode(m_fmt.data() + m_index, m_fmt.size() - m_index);
+    auto arr = encode(bytes() + m_index, num_bytes() - m_index);
     it[0] = arr[0];
     it[1] = arr[1];
     it[2] = arr[2];
@@ -506,7 +419,8 @@ CharT* multiline_base64_pm_input<CharT>::begin_partial_block(CharT* it)
 {
     BOOST_ASSERT(m_block_sub_index == 0);
 
-    m_split_block = encode(m_fmt.data() + m_index, m_fmt.size() - m_index);
+    m_split_block = encode( bytes() + m_index
+                          , num_bytes() - m_index);
     return continue_partial_block(it);
 }
 
@@ -561,7 +475,7 @@ public:
     base64_printer
         ( strf::output_writer<CharT>& out
         , base64_facet facet
-        , const fmt_base64& fmt );
+        , const base64_input_with_format& fmt );
 
     int remaining_width(int w) const override;
 
@@ -573,14 +487,14 @@ private:
 
     strf::output_writer<CharT>& m_out;
     const base64_facet m_facet;
-    const fmt_base64 m_fmt;
+    const base64_input_with_format m_fmt;
 };
 
 template <typename CharT>
 base64_printer<CharT>::base64_printer
     ( strf::output_writer<CharT>& out
     , base64_facet facet
-    , const fmt_base64& fmt )
+    , const base64_input_with_format& fmt )
     : m_out(out)
     , m_facet(facet)
     , m_fmt(fmt)
@@ -598,7 +512,7 @@ template <typename CharT>
 std::size_t base64_printer<CharT>::necessary_size() const
 {
     base64_common_impl impl{m_facet};
-    return impl.necessary_size(m_fmt.size(), m_fmt.indentation());
+    return impl.necessary_size(m_fmt.value().num_bytes, m_fmt.indentation());
 }
 
 //[ base64_printer__write
@@ -627,7 +541,7 @@ namespace xxx {
 template <typename CharT, typename FPack>
 inline base64_printer<CharT> make_printer( strf::output_writer<CharT>& out
                                          , const FPack& fp
-                                         , const fmt_base64& fmt )
+                                         , const base64_input_with_format& fmt )
 {
   /*<< see [link facets_pack get_facet.]
 >>*/auto facet = strf::get_facet<base64_facet_category, base64_input>(fp);
@@ -640,7 +554,7 @@ inline base64_printer<CharT> make_printer( strf::output_writer<CharT>& out
                                          , const FPack& fp
                                          , const base64_input& input )
 {
-    return make_printer(out, fp, fmt_base64{input});
+    return make_printer(out, fp, base64_input_with_format{input});
 }
 
 } // namespace xxx
@@ -752,9 +666,6 @@ void tests()
             .value();
         BOOST_TEST(result == "    ICA+ICA/");
     }
-
-#if defined(USE_COMPLETE_VERSION_FMT_BASE64)
-
     {
         //test in ranges
 
@@ -780,8 +691,6 @@ void tests()
 
         BOOST_TEST(result == expected);
     }
-
-#endif //  defined(USE_COMPLETE_VERSION_FMT_BASE64)
 
 }
 

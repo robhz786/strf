@@ -14,6 +14,10 @@ int main()
 
     {
         std::vector<int> vec_int = {11, 22, 33, 44};
+        TEST("---11223344---")
+            ( "---"
+            , strf::range(vec_int)
+            , "---" );
 
         TEST("---+11+22+33+44---")
             ( "---"
@@ -75,7 +79,6 @@ int main()
         TEST("..aa..bb..cc")
             (strf::join_left(11, '-')(strf::right(strf::range(vec), 4, '.')));
     }
-
     {
         std::string vec = "abcd";
         TEST("abcd") (strf::range(vec));
@@ -89,9 +92,6 @@ int main()
         TEST("--aaabbbcccddd--")
             ( strf::join_right(15)("--", strf::fmt_range(vec).multi(3), "--") );
     }
-
-
-
     {   // with separator
         int vec [3] = {11, 22, 33};
 

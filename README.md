@@ -14,7 +14,7 @@ This is a C++ locale-independent format library that:
 
 **Documentation:** http://robhz786.github.io/stringify/doc/html/
 
-**Version:** 0.7.2
+**Version:** 0.7.4
 
 Branch   | Travis | Appveyor
 ---------|--------|---------

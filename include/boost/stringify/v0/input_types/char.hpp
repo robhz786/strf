@@ -12,82 +12,49 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-template <class T>
-class char_formatting: public stringify::v0::align_formatting<T>
+struct char_formatting
 {
-
-    using child_type = T;
-
-public:
-
-    template <typename U>
-    using fmt_other = stringify::v0::char_formatting<U>;
-
-    constexpr char_formatting() = default;
-
-    constexpr char_formatting(const char_formatting&) = default;
-
-    template <typename U>
-    constexpr char_formatting(const char_formatting<U>& u)
-        : stringify::v0::align_formatting<T>(u)
-        , m_count(u.count())
+    template <class T>
+    class fn
     {
-    }
-    
-    ~char_formatting() = default;
+    public:
 
-    void operator%(int) const = delete;
-    
-    constexpr child_type&& multi(int count) &&
-    {
-        m_count = count;
-        return static_cast<child_type&&>(*this);
-    }
-    constexpr child_type& multi(int count) &
-    {
-        m_count = count;
-        return static_cast<child_type&>(*this);
-    }
-    constexpr int count() const
-    {
-        return m_count;
-    }
+        constexpr fn() = default;
 
-private:
+        constexpr fn(const fn&) = default;
 
-    int m_count = 1;
+        template <typename U>
+        constexpr fn(const fn<U>& u)
+            : m_count(u.count())
+        {
+        }
+
+        constexpr T&& multi(int count) &&
+        {
+            m_count = count;
+            return static_cast<T&&>(*this);
+        }
+        constexpr T& multi(int count) &
+        {
+            m_count = count;
+            return static_cast<T&>(*this);
+        }
+        constexpr int count() const
+        {
+            return m_count;
+        }
+
+    private:
+
+        int m_count = 1;
+    };
 };
-
 
 template <typename CharT>
-class char_with_formatting
-    : public stringify::v0::char_formatting<char_with_formatting<CharT> >
-{
-public:
-
-    constexpr char_with_formatting(CharT value)
-        : m_value(value)
-    {
-    }
-
-    template <typename U>
-    constexpr char_with_formatting(CharT value, const char_formatting<U>& u)
-        : stringify::v0::char_formatting<char_with_formatting>(u)
-        , m_value(value)
-    {
-    }
-
-    constexpr char_with_formatting(const char_with_formatting&) = default;
-
-    constexpr CharT value() const
-    {
-        return m_value;
-    }
-
-private:
-
-    CharT m_value = 0;
-};
+using char_with_format = stringify::v0::value_with_format
+    < CharT
+    , stringify::v0::char_formatting
+    , stringify::v0::alignment_format >;
 
 template <typename CharT>
 class char32_printer: public printer<CharT>
@@ -101,7 +68,7 @@ public:
     char32_printer
         ( stringify::v0::output_writer<CharT>& out
         , const FPack& fp
-        , const stringify::v0::char_with_formatting<char32_t>& input
+        , const stringify::v0::char_with_format<char32_t>& input
         ) noexcept
         : char32_printer(out, input, get_width_calculator(fp))
     {
@@ -109,7 +76,7 @@ public:
 
     char32_printer
         ( stringify::v0::output_writer<CharT>& out
-        , const stringify::v0::char_with_formatting<char32_t>& input
+        , const stringify::v0::char_with_format<char32_t>& input
         , const stringify::v0::width_calculator& wcalc
         ) noexcept;
 
@@ -124,7 +91,7 @@ public:
 private:
 
     stringify::v0::output_writer<CharT>& m_out;
-    stringify::v0::char_with_formatting<char32_t> m_fmt;
+    stringify::v0::char_with_format<char32_t> m_fmt;
     int m_fillcount = 0;
 
     template <typename FPack>
@@ -173,7 +140,7 @@ private:
 template <typename CharT>
 char32_printer<CharT>::char32_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const stringify::v0::char_with_formatting<char32_t>& input
+    , const stringify::v0::char_with_format<char32_t>& input
     , const stringify::v0::width_calculator& wcalc
     ) noexcept
     : m_out(out)
@@ -271,7 +238,7 @@ public:
     char_printer
         ( stringify::v0::output_writer<CharT>& out
         , const FPack& fp
-        , const stringify::v0::char_with_formatting<CharT>& input
+        , const stringify::v0::char_with_format<CharT>& input
         ) noexcept
         : char_printer(out, input, get_width_calculator(fp))
     {
@@ -279,7 +246,7 @@ public:
 
     char_printer
         ( stringify::v0::output_writer<CharT>& out
-        , const stringify::v0::char_with_formatting<CharT>& input
+        , const stringify::v0::char_with_format<CharT>& input
         , const stringify::v0::width_calculator& wcalc
         ) noexcept;
 
@@ -294,7 +261,7 @@ public:
 private:
 
     stringify::v0::output_writer<CharT>& m_out;
-    stringify::v0::char_with_formatting<CharT> m_fmt;
+    stringify::v0::char_with_format<CharT> m_fmt;
     int m_fillcount = 0;
 
     template <typename FPack>
@@ -344,7 +311,7 @@ private:
 template <typename CharT>
 char_printer<CharT>::char_printer
     ( stringify::v0::output_writer<CharT>& out
-    , const stringify::v0::char_with_formatting<CharT>& input
+    , const stringify::v0::char_with_format<CharT>& input
     , const stringify::v0::width_calculator& wcalc
     ) noexcept
     : m_out(out)
@@ -425,65 +392,6 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<wchar_t>;
 
 #endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
-// namespace detail {
-
-// template <typename CharOut, typename CharIn> struct char_input_traits_helper;
-
-// template <typename CharT> struct char_input_traits_helper<CharT, CharT>
-// {
-//     using type = stringify::v0::char_printer<CharT>;
-// };
-// template <> struct char_input_traits_helper<char, char32_t>
-// {
-//     using type = stringify::v0::char32_printer<char>;
-// };
-// template <> struct char_input_traits_helper<wchar_t, char32_t>
-// {
-//     using type = stringify::v0::char32_printer<wchar_t>;
-// };
-// template <> struct char_input_traits_helper<char16_t, char32_t>
-// {
-//     using type = stringify::v0::char32_printer<char16_t>;
-// };
-
-// struct char_input_traits
-// {
-//     template <typename CharOut, typename CharIn>
-//     using printer_type
-//     = typename stringify::v0::detail::char_input_traits_helper<CharOut, CharIn>::type;
-
-//     template <typename CharOut, typename FPack, typename CharIn>
-//     static inline printer_type<CharOut, CharIn> make_printer
-//         ( const FPack& fp, CharIn ch )
-//     {
-//         return {fp, ch};
-//     }
-//     template <typename CharOut, typename FPack, typename CharIn>
-//     static inline printer_type<CharOut, CharIn> make_printer
-//         ( const FPack& fp
-//         , const stringify::v0::char_with_formatting<CharIn>& ch
-//         )
-//     {
-//         return {fp, ch};
-//     }
-//     template <typename CharIn>
-//     static inline stringify::v0::char_with_formatting<CharIn> fmt(CharIn ch)
-//     {
-//         return {ch};
-//     }
-// };
-
-// }
-
-// stringify::v0::detail::char_input_traits stringify_get_input_traits(char);
-// stringify::v0::detail::char_input_traits stringify_get_input_traits(wchar_t);
-// stringify::v0::detail::char_input_traits stringify_get_input_traits(char16_t);
-// stringify::v0::detail::char_input_traits stringify_get_input_traits(char32_t);
-// stringify::v0::detail::char_input_traits stringify_get_input_traits( stringify::v0::char_with_formatting<char> );
-// stringify::v0::detail::char_input_traits stringify_get_input_traits( stringify::v0::char_with_formatting<wchar_t> );
-// stringify::v0::detail::char_input_traits stringify_get_input_traits( stringify::v0::char_with_formatting<char16_t> );
-// stringify::v0::detail::char_input_traits stringify_get_input_traits( stringify::v0::char_with_formatting<char32_t> );
-
 template
     < typename CharOut
     , typename FPack
@@ -493,7 +401,7 @@ inline stringify::v0::char32_printer<CharOut>
 make_printer
     ( stringify::v0::output_writer<CharOut>& out
     , const FPack& fp
-    , const stringify::v0::char_with_formatting<char32_t>& ch )
+    , const stringify::v0::char_with_format<char32_t>& ch )
 {
     return {out, fp, ch};
 }
@@ -507,7 +415,7 @@ make_printer
 {
     static_assert( std::is_same<CharOut, char>::value
                  , "encoding convertion for single char not supported yet" );
-    return {out, fp, ch};
+    return {out, fp, stringify::v0::char_with_format<char>{ch}};
 }
 
 template <typename CharOut, typename FPack>
@@ -519,7 +427,7 @@ make_printer
 {
     static_assert( std::is_same<CharOut, wchar_t>::value
                  , "encoding convertion for single char not supported yet" );
-    return {out, fp, ch};
+    return {out, fp, stringify::v0::char_with_format<wchar_t>{ch}};
 }
 
 template <typename CharOut, typename FPack>
@@ -531,7 +439,7 @@ make_printer
 {
     static_assert( std::is_same<CharOut, char16_t>::value
                  , "encoding convertion for single char not supported yet" );
-    return {out, fp, ch};
+    return {out, fp, stringify::v0::char_with_format<char16_t>{ch}};
 }
 
 template< typename CharOut, typename FPack >
@@ -545,7 +453,7 @@ make_printer
     , char32_t ch
     )
 {
-    return {out, fp, ch};
+    return {out, fp, stringify::v0::char_with_format<char32_t>{ch}};
 }
 
 template <typename CharOut, typename FPack>
@@ -553,30 +461,26 @@ inline stringify::v0::char_printer<CharOut>
 make_printer
     ( stringify::v0::output_writer<CharOut>& out
     , const FPack& fp
-    , const stringify::v0::char_with_formatting<CharOut>& ch )
+    , const stringify::v0::char_with_format<CharOut>& ch )
 {
     return {out, fp, ch};
 }
 
-inline stringify::v0::char_with_formatting<char>
-make_fmt(stringify::v0::tag, char ch)
+inline auto make_fmt(stringify::v0::tag, char ch)
 {
-    return {ch};
+    return stringify::v0::char_with_format<char>{ch};
 }
-inline stringify::v0::char_with_formatting<wchar_t>
-make_fmt(stringify::v0::tag, wchar_t ch)
+inline auto make_fmt(stringify::v0::tag, wchar_t ch)
 {
-    return {ch};
+    return stringify::v0::char_with_format<wchar_t>{ch};
 }
-inline stringify::v0::char_with_formatting<char16_t>
-make_fmt(stringify::v0::tag, char16_t ch)
+inline auto make_fmt(stringify::v0::tag, char16_t ch)
 {
-    return {ch};
+    return stringify::v0::char_with_format<char16_t>{ch};
 }
-inline stringify::v0::char_with_formatting<char32_t>
-make_fmt(stringify::v0::tag, char32_t ch)
+inline auto make_fmt(stringify::v0::tag, char32_t ch)
 {
-    return {ch};
+    return stringify::v0::char_with_format<char32_t>{ch};
 }
 
 template <typename> struct is_char: public std::false_type {};

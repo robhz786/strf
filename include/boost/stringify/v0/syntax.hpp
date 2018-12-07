@@ -289,7 +289,8 @@ class syntax_after_leading_expr
 public:
 
     using char_type = typename OutputWriter::char_type;
-    using arglist_type = std::initializer_list<const stringify::v0::printer<char_type>*>;
+    using arglist_type
+        = std::initializer_list<const stringify::v0::printer<char_type>*>;
     using output_writer_wrapper
         = stringify::v0::detail::output_writer_from_tuple<OutputWriter>;
 
@@ -299,19 +300,24 @@ public:
 
 public:
 
-    constexpr syntax_after_leading_expr(FPack&& fp, OutputWriterInitArgsTuple&& args)
+    constexpr syntax_after_leading_expr
+        ( FPack&& fp
+        , OutputWriterInitArgsTuple&& args)
         : m_fpack(std::move(fp))
         , m_owinit(std::move(args))
     {
     }
 
-    constexpr syntax_after_leading_expr(const FPack& fp, const OutputWriterInitArgsTuple& args)
+    constexpr syntax_after_leading_expr
+        ( const FPack& fp
+        , const OutputWriterInitArgsTuple& args )
         : m_fpack(fp)
         , m_owinit(args)
     {
     }
 
-    constexpr syntax_after_leading_expr(const syntax_after_leading_expr&) = default;
+    constexpr syntax_after_leading_expr(const syntax_after_leading_expr&)
+        = default;
 
     constexpr syntax_after_leading_expr(syntax_after_leading_expr&&) = default;
 
@@ -457,8 +463,8 @@ public:
     }
 
     template <typename CharIn, typename Traits, typename Allocator>
-    asm_string<CharIn>
-    as(const std::basic_string<CharIn, Traits, Allocator>& str) const
+    asm_string<CharIn> as
+        (const std::basic_string<CharIn, Traits, Allocator>& str) const
     {
         return asm_str(str.data(), str.data() + str.size());
     }
@@ -466,7 +472,7 @@ public:
 #if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
 
     template <typename CharIn, typename Traits>
-    asm_string<CharIn> operator()
+    asm_string<CharIn> as
         (const std::basic_string_view<CharIn, Traits>& str) const
     {
         return asm_str(&*str.begin(), &*str.end());
@@ -490,7 +496,8 @@ public:
     {
         output_writer_wrapper writer{m_fpack, m_owinit};
         auto& ow = writer.get();
-        write(writer.get(), {as_pointer(make_printer<char_type, FPack>(ow, m_fpack, args)) ...});
+        write( writer.get()
+             , {as_pointer(make_printer<char_type, FPack>(ow, m_fpack, args)) ...} );
         return writer.get().finish_exception();
     }
 

@@ -11,8 +11,6 @@
 Probably you only need to read the first example to know how to add most the input types you desire. There, we a print a IPv4 address, which is very simple since it is always four integer numbers separated by dots. Of course, there is no need to determinate each digit of the each of these numbers, since we use the library to print the numbers.
 ]
 
-The procedure boils down:
-
 [variablelist
   [ [ Step 1]
     [ Overload `make_printer` function template like this:
@@ -36,19 +34,24 @@ The procedure boils down:
     ]
   ] [/end step 1]
   [ [Step 2]
-    [ [_If] you want to provide formatting options for this new type, then create a class
-      ( let's name it here as `your_fmt_type` ) that contains the formatting information and
-      the value (or reference) of `your_input_type`. Then overload the `make_fmt` function like this:
+    [ [_If] you want to provide formatting options for this new type,
+      then use the [link value_with_format `value_with_format`] class template to define
+      another input type that contains both the input value and the format functions.
       ``
-      your_fmt_type make_fmt(boost::stringify::tag, your_input_type);
+      using your_input_type_with_format = boost::stringify::value_with_format< your_input_type
+                                                                             , format_classes ... >;
+      ``
+      Then overload the `make_fmt` function like this:
+      ``
+      your_input_type_with_format make_fmt(boost::stringify::tag, your_input_type);
       ``
     ]
-    [ [br] And define another overload of `make_printer` that takes formatting object as input:
+    [ [br] And define another overload of `make_printer` that takes `your_input_type_with_format`
       ``
       template <typename CharT, typename FacetsPack>
-      printer_type make_printer( boost::stringify::output_writer<CharT>&
-                               , const FacetsPack fp&
-                               , your_fmt_type );
+      printer_type_2 make_printer( boost::stringify::output_writer<CharT>&
+                                 , const FacetsPack fp&
+                                 , your_input_type_with_format );
       ``
     ]
   ] [/ end step 2]
@@ -91,25 +94,79 @@ public:
 ] [/itemized_list]
 
 
+[#value_with_format]
+[h3 The `value_with_format` class template]
+
+``
+namespace boost { namespace stringify { inline namespace v0 {
+
+template <typename ValueType, class ... Fmts>
+class value_with_format
+    : public Fmts::template fn<value_with_format< ValueType, Fmts ...>> ...
+{
+public:
+
+    constexpr value_with_format(const value_with_format&);
+    constexpr value_with_format(value_with_format&&);
+    constexpr value_with_format(const ValueType&);
+
+
+    template <typename OtherValueType>
+    constexpr value_with_format
+        ( const ValueType&
+        , const value_with_format<OtherValueType, Fmts...>& );
+
+    template <typename OtherValueType>
+    constexpr value_with_format
+        ( const ValueType&
+        , value_with_format<OtherValueType, Fmts...>&& );
+
+
+    template <typename ... OtherFmts>
+    constexpr value_with_format
+        ( const value_with_format<ValueType, OtherFmts...>& );
+
+    template <typename ... OtherFmts>
+    constexpr value_with_format
+        ( value_with_format<ValueType, OtherFmts...>&& );
+
+
+    constexpr const ValueType& value() const;
+};
+
+}}}
+``
+[itemized_list
+  [`ValueType` must be copy constructible ]
+  [Each type `Fmt` in the `Fmts...` pack has a member `fn` that is a template
+    with one template type parameter such that, given the types `T` and `U`:
+    [itemized_list
+      [`Fmt::fn<T>` is well formed if `T` is `value_with_format<ValueType, Fmts ...>`
+        . In this case, note that `T` derives from `Fmt::fn<T>`. ]
+      [`Fmt::fn<T>` is default constructible, assuming it is well formed.]
+      [`Fmt::fn<T>` can be constructed from `const Fmt::fn<U>&`
+       , assuming both are well formed. ] ] ] ]    
+
 
 
 [#ipv4_example]
 [section:ipv4_example Example 1: IPv4 address]
 [import ../example/extend_input_ipv4.cpp]
 
-Suppose `ipv4_addr` below is the input type:
+Suppose `ipv4address` below is the input type:
 
-[ipv4_addr_type]
+[ipv4address_type]
 
-[/
-Since it's representation is just its numbers separated by dots, there is no need to define a new class that inherits from `printer<CharT>`. /]
+Here, we can simply create a [link joins join] and return the result of calling
+`make_printer` over it:
 
-Here, we can simply create a [link joins join] and return the result of calling `make_printer` over it:
+[make_printer_ipv4address]
 
-[make_printer_ipv4_addr]
-
-[warning Watch out for dangling references: the expression `join(/*...*/) (arg1, arg2, arg3)` instantiates an object that holds [_references] to `arg1`, `arg2` and `arg3`, which are commonly temporaries.
-A code like this has undefined behavior:
+[warning Watch out for dangling references: the expression
+`join(/*...*/) (arg1, arg2, arg3)` instantiates an object
+that holds [_references] to `arg1`, `arg2` and `arg3`,
+which are commonly temporaries.
+The following code like has undefined behavior:
 ``
   j = strf::join()(123); // a temporary int created here
   return make_printer(out, fp, j); // j holds a dangling reference
@@ -122,26 +179,18 @@ And it's done:
 
 [h4 Adding alignment formatting options]
 
-Now let's go further and enable alignment, /a.k.a./ justification, like this:
-[ipv4_fmt_sample]
+Now let's go further and enable alignment, /a.k.a./ justification.
+First, we use the [link value_with_format `value_with_format`] class template to define another input type that contains both an `ipv4address` value as well as the formatting stuff:
 
-The first sub-step is to define the class that contains the formatting information. Inheriting from `align_formatting` already gives us almost all we need:
+[ipv4address_with_format]
 
-[fmt_ipv4_addr]
-
-The `align_formatting` class template contains the [link format_functions formatting functions] related to alignment ( the `fill` function and the operators `>`, `<`, `^`, `%` ). Note that we need to pass the type `fmt_ipv4_addr` as the template parameter of `align_formatting`. This is because the return type of these formatting functions needs be `fmt_ipv4_addr &&`.
-
-Now, we need to implement `make_fmt`, which is trivial:
-
-[make_fmt_ipv4]
-
-And to implement the other overload of `make_printer`, the one that takes an `fmt_ipv4_addr`.
+Now we define an overload of `make_printer` for `ipv4address_with_format`.
 
 [make_printer_fmt_ipv4]
 
 And it's done:
 
-[formatted_ipv4_addr]
+[formatted_ipv4address]
 
 [endsect]
 
@@ -150,7 +199,10 @@ And it's done:
 
 Now our input type represents an [@https://en.wikipedia.org/wiki/IPv6_address IPv6 address]:
 
-[ipv6_address]
+[ipv6address]
+
+
+[h4 Creating new format functions]
 
 An IPv6 address can be represented in different ways. For example the three
 representations below are equivalent:
@@ -159,20 +211,38 @@ representations below are equivalent:
 * 2001:db8:0:0:0:0:0:1
 * 2001:db8::1
 
-So let's create the formatting functions named `big` and `small` that makes the longest
-and shortest representation, respectively, to be used, and let the intermediate
-be the default.
+So let's create the format functions named `big()` and `small()`
+to select the longest and shortest representation respectively,
+leaving the intermediate one as the default.
 
-We can not simply use a [link joins join] as we did in the
-[link ipv4_example IPv4 example], because that
-is only possible when we know at compilation time all the
-elements that composes the [link joins join].
-So we create a class template that derives from
-the [link dynamic_join_printer dynamic_join_printer]
-that in turn derives from [link printer `printer`].
+[ipv6_format]
+
+[/
+[note Notice that `big()` and `small()` are declared with the rvalue ref-qualifier
+( the token '&&' after the parameter list ) and return `*this` as `derived_type &&`.
+This is the convention for format functions. It is what allows constructions
+like `hex(200).uppercase().showbase().fill(U'.') > 20`]
+]
+
+Now we define a class that gathers the IPv6 address value
+with the formatting information and then we define the `make_fmt` function.
+In addition to the formatting option that enables the abbreviated
+representation, let's add support to alignment formatting, just
+as we did in the [link ipv4_example IPv4 example].
+
+[ipv6addr_with_format]
 
 [#dynamic_join_printer]
 [h4 The `dynamic_join_printer` class template]
+
+It is not possible to simply use a [link joins join] as we did in the
+[link ipv4_example IPv4 example] when the elements that composes the
+[link joins join] are not known at compilation time.
+
+Fortunately, the library provides an alternative solution
+for cases like that: the `dynamic_join_printer`
+class template.
+
 ``
 template <typename CharOut>
 class dynamic_join_printer: public stringify::v0::printer<CharOut>
@@ -189,7 +259,7 @@ protected:
 
     virtual void compose(stringify::v0::printers_receiver<CharOut>& out) const = 0;
 
-    virtual stringify::v0::align_formatting<void> formatting() const
+    virtual stringify::v0::alignment_format<void> formatting() const
     {
         return {}; // by default the width is zero
     }
@@ -217,54 +287,21 @@ creates a `printer_receivers` whose `put` function
 returns false when the remaining width is already zero.
 ]
 
-[h4 The formatting class]
-
-
-[Note Notice that `big` and `small` are declared with the rvalue ref-qualifier
-( the token '&&' after the parameter list ) and return `*this` as `derived_type &&`.
-This is the convention for format functions. It is what allows constructions
-like `hex(200).uppercase().showbase().fill(U'.') > 20`]
-
-
-In addition to the formatting option that enables the abbreviated
-representation, let's add support to alignment formatting, just
-as we did in the [link ipv4_example IPv4 example].
-If we want to enable this input type be used in [link ranges fmt_range],
-we first need to create a class template that handles
-exclusively formatting and satisfies certain requirements:
-
-[ipv6_formatting]
-
-Now we define a class that gathers the IPv6 address value
-with the formatting information, and overload `make_fmt`:
-
-[fmt_ipv6]
-
 [h4 The printer]
 
-Now we define the class template the derives from
+We create a class template the derives from
 [link dynamic_join_printer dynamic_join_printer]
 
 [ipv6_printer]
 
-First, let's take a look at the member variables.
-The `printer_impl` template alias gives us the concrete class that derives
-from [link printer `printer`] that handles the given input type.
-Hence the type of `m_colon` derives from `printer<CharT>`, and the same
-applies to the elements of `m_hextets`.
-
+The constructor:
 [ipv6_printer__contructor]
-
-Note that `fp` is a temporary object. May this lead to dangling references
-stored in internal printers that are constructed with it? The answer is no
-because, by convention, a printer class shall not store a reference
-to the facets_pack with which it is constructed.
 
 [caution The `facets_pack` object that is passed in the constructor of a
 printer class may be a temporary object. Hence don't store a reference
 to it as a member variable of the printer class. It may became dangling. ]
 
-The parameter of the `compose` function shall receive these printers objects:
+And the `compose` function:
 
 [ipv6_printer__compose]
 
@@ -272,11 +309,7 @@ And we need to override the `formatting()` function:
 
 [ipv6_printer__formatting]
 
-That works because the `align_formatting<void>` can be implicitly converted from
-`align_formatting<`[~AnyType]`>`, as long as `align_formatting<`[~AnyType]`>`
-is not a template specialisation.
-
-Now we overload `make_printer`
+Now we just need to overload `make_printer`
 
 [ipv6__make_printer]
 
@@ -301,61 +334,36 @@ taking thus advantage of the wide range of output types supported by the library
 Because otherwise we would need a create one function for each output type.
 ]
 
-
-
-In this example we don't want exactly to add support to a certain input type,
+This is an example of when the intention is not exactly to add support to a certain input type,
 but rather to create a function \u2014 let's name `base64` \u2014 that takes an array of
-bytes to shall be encoded in [@https://en.wikipedia.org/wiki/Base64 Base64]:
+bytes to be encoded in [@https://en.wikipedia.org/wiki/Base64 Base64]:
 ``
 boost::stringify::write(destination) (xxx::base64(bytes_array, num_bytes));
 ``
+But since we need an input type to overload `make_printer`, we create one:
 
-However we need an input type to overload `make_printer`. So let's create one.
-Also, let's add some formatting option to make the example more complete.
-This requires a class/struct that holds the formatting stuff in addition
-to the data to be printed.
-Does this imply two new input types? Maybe we only need the later for now.
-
-[h4 Formatting class - the simplified version]
-
-Since Base64 content is commonly printed in multiple lines,
-alignment formatting doesn't make much sense here.
-Let's then add indentation, which could be useful when the
-content is printed into XML or YAML files:
-
-[fmt_base64_simple_version]
-
-The title says that this is the simplified version. That's
-because it doesn't work in [link ranges `fmt_range`].
-If that is not necessary we can leave it like that,
-otherwise ...
-
-[#base64_complete_formatting_class]
-[h4 Formatting class - the complete version ( that works with `fmt_range` ) ]
-
-... otherwise there are some extra steps:
-
-The elements of the range need to have a type. So this time we define
-an input type that is decoupled from the formatting stuff:
-
-[fmt_base64_complete_version__input]
-
-Then we need to create a class template that deals only with formatting.
-It does not contain the data to be printed:
-
-[fmt_base64_complete_version__formatting]
-
-Finally, we define a class that gathers formatting with the input value:
-
-[fmt_base64_complete_version__fmt]
-
-Then we define `base64` and `make_fmt` function:
-
-[fmt_base64_complete_version__functions]
+[fmt_base64_input]
 
 [h4 Creating a new facet category]
 
+Wikipedia told me that there are different
+[@https://en.wikipedia.org/wiki/Base64#Variants_summary_table variants]
+of Base64. So let's define a new facet category to handle them:
+
 [base64_facet]
+
+[h4 Format function]
+
+Let's add indentation as a format function, which could be useful when the
+content is printed into XML or YAML files:
+
+[base64_format]
+
+Since Base64 content is commonly printed in multiple lines,
+alignment formatting doesn't make much sense here. So let's only use
+`base64_format` in [link value_with_format `value_with_format`] this time:
+
+[base64_input_with_format]
 
 [h4 Implementing the printer]
 
@@ -391,14 +399,14 @@ private:
 passed in the constructor. You can see that [link output_writer `output_writer`]
 provides different functions (named `put` and `put32`) to do that.
 One option is to this call `put(CharT)` for every single character
-of the base64 content. That's not very efficient.
+of the base64 content. That's not very efficient though.
 Another option is to use `put(`[link piecemeal_input `piecemeal_input`]`<CharT>&)`.
 This implies to create a class template that inherits from `piecemeal_input`
-and overrides the it `get_some` function which writes directly into a raw string,
-which is usually the internal buffer of the `output_writer` instance.
+and overrides the `get_some` function that writes directly into a raw string.
+This raw string is usually the internal buffer of the `output_writer` instance.
 
-Actually I created two of such class templates. One for single line mode and
-another for multiline. So that `base64_printer::write` is:
+Actually It makes sense to  created two of such class templates. One for single
+line mode and another for multiline, so that `base64_printer::write` is:
 
 [base64_printer__write]
 
@@ -409,8 +417,8 @@ Let's see the implementation of `single_line_base64_pm_input`:
 Each time `get_some(`[~begin], [~end]`)` is invoked it shall
 write the continuation of the part written in the previous call.
 That's why we need member variables like `m_column` \u2014
-which keep track of how many the indentation characters have been written \u2014
-and `m_index` \u2014 that records how many bytes have been encoded.
+which keep track of how many of the indentation characters have been written
+\u2014 and `m_index` \u2014 that records how many bytes have been encoded.
 In the end, `report_success()` is called to signal that there
 is nothing else to write.
 You can see that `get_some(begin, end)` is not required to return `end` when
@@ -418,21 +426,19 @@ there is not enough space in the range \[`begin, end`). But the distance
 from the returned position to `end` shall not be greater than
 [link min_buff_size min_buff_size].
 
-
 The implementation of `multiline_base64_pm_input` is more
 complex. After all, some blocks may need to be split by an end of line
 followed by indentation. Hence there is a larger number of
 situations where the content may need to be interrupted to be
 later continued in the next call of `get_some(`[~begin], [~end]`)`.
-I will just show here the `get_some` function:
-
-[multiline_base64_pm_input__get_some]
+You can see its full implementation in
+[@ ../../example/extend_input_base64.cpp source file].
 
 After we define `base64_printer`, we can finally overload `make_printer`:
 
 [make_printer_base64]
 
-And it's done.
+And it's done:
 
 [base64_sample]
 

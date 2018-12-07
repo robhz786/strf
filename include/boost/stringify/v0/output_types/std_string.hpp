@@ -199,8 +199,7 @@ auto assign(std::basic_string<CharT, Traits, Allocator>& str)
 template
     < typename CharT
     , typename Traits = std::char_traits<CharT>
-    , typename Allocator = std::allocator<CharT>
-    >
+    , typename Allocator = std::allocator<CharT> >
 constexpr auto to_basic_string
 = boost::stringify::v0::make_destination
     <boost::stringify::v0::detail::string_maker
