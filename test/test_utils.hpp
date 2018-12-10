@@ -9,152 +9,69 @@
 #include <boost/stringify.hpp>
 #include <cctype>
 
+// template <typename CharT>
+// struct to_upper_char_traits : public std::char_traits<CharT>
+// {
+//     static CharT*
+//     copy(CharT* to, const CharT* from, std::size_t n)
+//     {
+//         CharT* it = to;
+//         while(n--)
+//             *it++ = std::toupper(*from++);
+//         return to;
+//     }
 
-template <typename W>
-decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::string& expected)
-{
-    namespace strf = boost::stringify::v0;
+//     static void
+//     assign(CharT& c1, const CharT& c2)
+//     {
+//         c1 = std::toupper(c2);
+//     }
 
-    expected =
-        u8" abcd xyyabb\u00a1\u00a2\u00a2\u2080\u2081\u2081"
-        u8"\U00010000\U00010001\U00010001";
-
-    return w
-        (
-            " abcd ", 'x', strf::multi('y', 2), strf::multi('z', 0),
-            U'a', strf::multi(U'b', 2), strf::multi(U'c', 0),
-            U'\u00a1', strf::multi(U'\u00a2', 2), strf::multi(U'\u00a3', 0),
-            U'\u2080', strf::multi(U'\u2081', 2), strf::multi(U'\u2082', 0),
-            U'\U00010000', strf::multi(U'\U00010001', 2), strf::multi(U'\U00010002', 0)
-        );
-}
-
-template <typename W>
-decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::u16string& expected)
-{
-    namespace strf = boost::stringify::v0;
-
-    expected =
-        u" abcd xyyabb\u0080\u0081\u0081\u0800\u0801\u0801"
-        u"\U00010000\U00010001\U00010001";
-
-    return w
-        (
-            u" abcd ", u'x', strf::multi(u'y', 2), strf::multi(u'z', 0),
-            U'a', strf::multi(U'b', 2), strf::multi(U'c', 0),
-            U'\u0080', strf::multi(U'\u0081', 2), strf::multi(U'\u0082', 0),
-            U'\u0800', strf::multi(U'\u0801', 2), strf::multi(U'\u0802', 0),
-            U'\U00010000', strf::multi(U'\U00010001', 2), strf::multi(U'\U00010002', 0)
-        );
-
-}
-
-template <typename W>
-decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::u32string& expected)
-{
-    namespace strf = boost::stringify::v0;
-
-    expected =
-        U" abcd xyyabb\u0080\u0081\u0081\u0800\u0801\u0801"
-        U"\U00010000\U00010001\U00010001";
-
-    return w
-        (
-            U" abcd ", U'x', strf::multi(U'y', 2), strf::multi(U'z', 0),
-            U'a', strf::multi(U'b', 2), strf::multi(U'c', 0),
-            U'\u0080', strf::multi(U'\u0081', 2), strf::multi(U'\u0082', 0),
-            U'\u0800', strf::multi(U'\u0801', 2), strf::multi(U'\u0802', 0),
-            U'\U00010000', strf::multi(U'\U00010001', 2), strf::multi(U'\U00010002', 0)
-        );
-
-}
+//     static CharT*
+//     assign(CharT* dest, std::size_t n, CharT a)
+//     {
+//         std::fill_n(dest, n, std::toupper(a));
+//         return dest;
+//     }
+// };
 
 
-template <typename W>
-decltype(auto) use_all_writing_function_of_output_writer(W&& w, std::wstring& expected)
-{
-    namespace strf = boost::stringify::v0;
+// template <typename CharT>
+// struct weird_char_traits : public std::char_traits<CharT>
+// {
+//     static CharT*
+//     copy(CharT* to, const CharT* from, std::size_t n)
+//     {
+//         CharT* it = to;
+//         while(n--)
+//         {
+//             assign(*it++, *from++);
+//         }
+//         return to;
+//     }
 
-    expected =
-        L" abcd xyyabb\u00a1\u00a2\u00a2\u0800\u0801\u0801"
-        L"\U00010000\U00010001\U00010001";
+//     static void
+//     assign(CharT& c1, const CharT& c2)
+//     {
+//         if (c2 == CharT())
+//         {
+//             c1 = c2;
+//         }
+//         else
+//         {
+//             c1 = c2 | ( 1 << (sizeof(CharT) * 8 - 1));
+//         }
+//     }
 
-    return w
-        (
-            L" abcd ", L'x', strf::multi(L'y', 2), strf::multi(L'z', 0),
-            U'a', strf::multi(U'b', 2), strf::multi(U'c', 0),
-            L'\u00a1', strf::multi(L'\u00a2', 2), strf::multi(L'\u00a3', 0),
-            L'\u0800', strf::multi(L'\u0801', 2), strf::multi(L'\u0802', 0),
-            U'\U00010000', strf::multi(U'\U00010001', 2), strf::multi(U'\U00010002', 0)
-        );
-
-}
-
-template <typename CharT>
-struct to_upper_char_traits : public std::char_traits<CharT>
-{
-    static CharT*
-    copy(CharT* to, const CharT* from, std::size_t n)
-    {
-        CharT* it = to;
-        while(n--)
-            *it++ = std::toupper(*from++);
-        return to;
-    }
-
-    static void
-    assign(CharT& c1, const CharT& c2)
-    {
-        c1 = std::toupper(c2);
-    }
-
-    static CharT*
-    assign(CharT* dest, std::size_t n, CharT a)
-    {
-        std::fill_n(dest, n, std::toupper(a));
-        return dest;
-    }
-};
-
-
-template <typename CharT>
-struct weird_char_traits : public std::char_traits<CharT>
-{
-    static CharT*
-    copy(CharT* to, const CharT* from, std::size_t n)
-    {
-        CharT* it = to;
-        while(n--)
-        {
-            assign(*it++, *from++);
-        }
-        return to;
-    }
-
-    static void
-    assign(CharT& c1, const CharT& c2)
-    {
-        if (c2 == CharT())
-        {
-            c1 = c2;
-        }
-        else
-        {
-            c1 = c2 | ( 1 << (sizeof(CharT) * 8 - 1));
-        }
-    }
-
-    static CharT*
-    assign(CharT* dest, std::size_t n, CharT a)
-    {
-        CharT b;
-        assign(b, a);
-        std::fill_n(dest, n, b);
-        return dest;
-    }
-};
-
-
+//     static CharT*
+//     assign(CharT* dest, std::size_t n, CharT a)
+//     {
+//         CharT b;
+//         assign(b, a);
+//         std::fill_n(dest, n, b);
+//         return dest;
+//     }
+// };
 
 static int global_errors_count = 0;
 
@@ -218,29 +135,23 @@ struct input_tester_buffer
 };
 
 
-template <typename CharT>
+template <typename CharOut>
 class input_tester
-    : private input_tester_buffer<CharT>
-    , public boost::stringify::v0::buffered_writer<CharT>
+    : private input_tester_buffer<CharOut>
+    , public boost::stringify::v0::buffer_recycler<CharOut>
 {
-    using parent = boost::stringify::v0::buffered_writer<CharT>;
-    using  input_tester_buffer<CharT>::buffer;
+    using  input_tester_buffer<CharOut>::buffer;
 public:
 
     input_tester
-        ( boost::stringify::v0::output_writer_init<CharT> init
-        , std::basic_string<CharT> expected
+        ( std::basic_string<CharOut> expected
         , std::error_code expected_error
         , std::string src_filename
         , int src_line
         , double reserve_factor
         , std::size_t buffer_size = boost::stringify::v0::min_buff_size
         )
-        : input_tester_buffer<CharT>{buffer_size}
-        , boost::stringify::v0::buffered_writer<CharT>
-            { init
-            , &buffer.front()
-            , buffer.size() }
+        : input_tester_buffer<CharOut>{buffer_size}
         , m_expected(std::move(expected))
         , m_expected_error(expected_error)
         , m_reserved_size(0)
@@ -252,53 +163,43 @@ public:
 
     ~input_tester()
     {
-        this->flush();
     }
 
-    using char_type = CharT;
+    using char_type = CharOut;
 
-    boost::stringify::v0::expected<void, std::error_code> finish()
+    boost::stringify::v0::expected_buff_it<CharOut> start()
     {
-        auto x = parent::finish();
-        std::error_code obtained_error = x ? std::error_code{} : x.error();
-
-        if ( m_expected_error != obtained_error
-          || m_expected != m_result
-          || (obtained_error == std::error_code{} && wrongly_reserved()))
-        {
-            std::cout << m_src_filename << ":" << m_src_line << ":" << " error: \n";
-            ++global_errors_count;
-        }
-        if (m_expected_error != obtained_error)
-        {
-            print("expected error_code", m_expected_error.message());
-            print("obtained error_code", obtained_error.message());
-        }
+        return { boost::stringify::v0::in_place_t{}
+               , boost::stringify::v0::buff_it<CharOut>{m_buff, m_buff_end}};            
+    }
+    boost::stringify::v0::expected_buff_it<CharOut> recycle(CharOut* it)
+    {
+        m_result.append(m_buff_begin, it);
+        return { boost::stringify::v0::in_place_t{}
+               , boost::stringify::v0::buff_it<CharOut>{m_buff, m_buff_end}};
+    }
+    boost::stringify::v0::expected<void, std::error_code> finish(CharOut* it)
+    {
+        m_result.append(m_buff_begin, it);
         if (m_expected != m_result)
         {
             print("expected", m_expected);
             print("obtained", m_result);
+            ++global_errors_count;
         }
-        if(obtained_error == std::error_code{} && wrongly_reserved())
+        if(wrongly_reserved())
         {
             std::cout << "reserved size  :" <<  m_reserved_size << "\n";
             std::cout << "necessary size :" <<  m_result.length() << "\n";
+            ++global_errors_count;
         }
-        return x;
+        return {};        
     }
 
     void reserve(std::size_t size)
     {
         m_reserved_size = size;
         m_result.reserve(size);
-    }
-
-protected:
-
-    bool do_put(const CharT* str, std::size_t count) override
-    {
-        m_result.append(str, count);
-        return true;            
     }
 
 private:
@@ -316,14 +217,17 @@ private:
             > m_reserve_factor;
     }
 
-
-    std::basic_string<CharT> m_result;
-    std::basic_string<CharT> m_expected;
+    std::basic_string<CharOut> m_result;
+    std::basic_string<CharOut> m_expected;
     std::error_code m_expected_error;
     std::size_t m_reserved_size;
     std::string m_src_filename;
     int m_src_line;
     double m_reserve_factor;
+
+    CharOut m_buff[200];
+    CharOut* m_buff_begin = m_buff;
+    CharOut* m_buff_end = m_buff_begin + sizeof(m_buff) / sizeof(m_buff[0]);
 };
 
 
@@ -386,21 +290,6 @@ auto make_tester
         <writer, const std::basic_string<CharT>&, std::error_code, const char*, int, double, std::size_t>
         (expected, err, filename, line, reserve_factor, buffer_size);
 }
-
-//template<typename CharT>
-//auto make_tester
-//    ( const std::basic_string<CharT>& expected
-//    , const char* filename
-//    , int line
-//    , double reserve_factor
-//    , std::size_t buffer_size = 60 )
-//{
-//    using writer = input_tester<CharT>;
-//    return boost::stringify::v0::make_destination
-//        <writer, const std::basic_string<CharT>&, std::error_code, const char*, int, std::size_t >
-//        (expected, {}, filename, line, reserve_factor, buffer_size);
-//}
-
 
 #define TEST(EXPECTED) (void)make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), 1.0, 60)
 

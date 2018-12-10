@@ -5,8 +5,8 @@ project (boost_stringify_performance)
 foreach(
     x
     to_char_ptr
-    to_FILE
-    to_string
+#    to_FILE
+#    to_string
 )
 
   add_executable(performance_${x}_ho   ${x}.cpp)
@@ -29,11 +29,11 @@ endforeach(x)
 
 foreach(
     x
-    width_calculation
-    from_utf32
-    to_utf32
-    utf8_to_utf16
-    utf16_to_utf8
+#    width_calculation
+#    from_utf32
+#    to_utf32
+#    utf8_to_utf16
+#    utf16_to_utf8
 )
 
   add_executable(performance_${x}_ho    ${x}.cpp)

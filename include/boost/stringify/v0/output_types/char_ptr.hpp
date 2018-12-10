@@ -13,205 +13,53 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 namespace detail{
 
-template<typename CharT>
-class char_ptr_writer: public output_writer<CharT>
+template<typename CharOut>
+class char_ptr_writer: public buffer_recycler<CharOut>
 {
-    using Traits = std::char_traits<CharT>;
+    using Traits = std::char_traits<CharOut>;
 
 public:
 
-    using char_type = CharT;
+    using char_type = CharOut;
 
     char_ptr_writer() = delete;
 
-    char_ptr_writer
-        ( stringify::v0::output_writer_init<CharT> init
-        , CharT* destination
-        , CharT* end
-        )
-        : stringify::v0::output_writer<CharT>{init}
-        , m_begin{destination}
-        , m_it{destination}
+    char_ptr_writer(CharOut* destination, CharOut* end )
+        : m_begin{destination}
         , m_end{end}
     {
-        if(m_end < m_begin)
-        {
-            set_overflow_error();
-        }
+        BOOST_ASSERT(m_begin <= m_end);
     }
 
     ~char_ptr_writer()
     {
-        if (! m_finished) // means that an exception has been thrown
-        {
-            if(m_begin != m_end)
-            {
-                Traits::assign(*m_begin, CharT());
-            }
-        }
     }
 
-    void set_error(std::error_code err) override
+    stringify::v0::expected_buff_it<CharOut> start() noexcept
     {
-        if (m_good)
-        {
-            m_err = err;
-            m_good = false;
-            if (m_begin != m_end)
-            {
-                Traits::assign(*m_begin, CharT());
-            }
-            // prevent any further writting:
-            m_end = m_begin;
-            m_it = m_begin;
-        }
+        return { boost::stringify::v0::in_place_t{}
+               , stringify::v0::buff_it<CharOut>{m_begin, m_end - 1} };
+    }
+   
+    stringify::v0::expected_buff_it<CharOut> recycle(CharOut* it) override
+    {
+        BOOST_ASSERT(it < m_end);
+        (void) it;
+        return { stringify::v0::unexpect_t{}
+               , std::make_error_code(std::errc::result_out_of_range) };
     }
 
-    bool good() const override
+    stringify::v0::expected<void, std::error_code> finish(CharOut *it) noexcept
     {
-        return ! m_err;
+        BOOST_ASSERT(it < m_end);
+        *it = 0;
+        return {};
     }
-
-
-    bool put(stringify::v0::piecemeal_input<char_type>& src) override
-    {
-        m_it = src.get_some(m_it, m_end);
-        if(src.more())
-        {
-            set_overflow_error();
-            return false;
-        }
-        if(src.success())
-        {
-            return true;
-        }
-        set_error(src.get_error());
-        return false;
-    };
-
-    
-    // bool put32(char32_t ch) override
-    // {
-    //     auto it = this->encode(m_it, m_end, ch);
-    //     if(it != nullptr && it != m_end + 1)
-    //     {
-    //         m_it = it;
-    //         return true;
-    //     }
-    //     if (it == m_end + 1)
-    //     {
-    //         set_overflow_error();
-    //         return false;
-    //     }
-    //     return this->signal_encoding_error();
-    // }
-
-    // bool put32(std::size_t count, char32_t ch) override
-    // {
-    //     auto res = this->encode(m_it, m_end, count, ch);
-    //     if (res.dest_it == nullptr)
-    //     {
-    //         return this->signal_encoding_error();
-    //     }
-    //     if(res.count == count)
-    //     {
-    //         m_it = res.dest_it;
-    //         return true;
-    //     }
-    //     set_overflow_error();
-    //     return false;
-    // }
-
-    bool put(const CharT* str, std::size_t count) override
-    {
-        if (m_it + count >= m_end)
-        {
-            set_overflow_error();
-            return false;
-        }
-        Traits::copy(m_it, str, count);
-        m_it += count;
-        return true;
-    }
-
-    bool put(CharT ch) override
-    {
-        if (m_it + 1 == m_end)
-        {
-            set_overflow_error();
-            return false;
-        }
-        Traits::assign(*m_it, ch);
-        ++m_it;
-        return true;
-     }
-
-    bool put(std::size_t count, CharT ch) override
-    {
-        if (m_it + count >= m_end)
-        {
-            set_overflow_error();
-            return false;
-        }
-        Traits::assign(m_it, count, ch);
-        m_it += count;
-        return true;
-    }
-
-    stringify::v0::expected<std::size_t, std::error_code>
-    finish() noexcept
-    {
-        do_finish();
-        if (m_good)
-        {
-            return {boost::stringify::v0::in_place_t{}, m_it - m_begin};
-        }
-        else
-        {
-            return {boost::stringify::v0::unexpect_t{}, m_err};
-        }
-    }
-
-    void finish_exception()
-    {
-        do_finish();
-        if(m_err != std::error_code{})
-        {
-            throw std::system_error(m_err);
-        }
-    }
-
+ 
 private:
 
-    void do_finish() noexcept
-    {
-        if ( ! m_finished)
-        {
-            if(m_begin != m_end)
-            {
-                if(m_it == m_end)
-                {
-                    m_err = std::make_error_code(std::errc::result_out_of_range);
-                    m_good = false;
-                    m_it = m_begin;
-                }
-                Traits::assign(*m_it, CharT());
-            }
-        }
-        m_finished = true;
-    }
-
-    void set_overflow_error()
-    {
-        set_error(std::make_error_code(std::errc::result_out_of_range));
-    }
-
-    CharT* m_begin;
-    CharT* m_it;
-    CharT* m_end;
-    std::error_code m_err;
-    bool m_good = true;
-    bool m_finished = false;
+    CharOut* m_begin;
+    CharOut* m_end;
 };
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)

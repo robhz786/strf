@@ -9,6 +9,7 @@
 // A minimalist placeholder to std::expected
 
 #include <type_traits>
+#include <boost/assert.hpp>
 #include <boost/stringify/v0/config.hpp>
 
 
@@ -717,6 +718,9 @@ private:
         }
     }
 };
+
+#define BOOST_STRINGIFY_RETURN_ON_ERROR(x)  if ( ! x) \
+    { return {boost::stringify::v0::unexpect_t{}, x.error()}; }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
