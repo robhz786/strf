@@ -16,7 +16,7 @@ int main()
         // TEST("abc...")   ( strf::left    ("abc", 6, '.') );
         // TEST("...abc")   ( strf::right   ("abc", 6, '.') );
         // TEST(".abc..")   ( strf::center  ("abc", 6, '.') );
-        // TEST("     abc")   ( strf::join_right(8)("abc") );
+        TEST("     abc")   ( strf::join_right(8)("abc") );
         // TEST("...abc~~")   ( strf::join_right(8, '.')(strf::left("abc", 5, U'~')) );
         // TEST(".....abc")   ( strf::join_right(8, '.')(strf::left("abc", 3, U'~')) );
         // TEST(".....abc")   ( strf::join_right(8, '.')(strf::left("abc", 2, U'~')) );

@@ -16,35 +16,6 @@ constexpr std::size_t min_buff_size = 60;
 
 struct tag {};
 
-template <typename CharOut>
-struct buff_it
-{
-    buff_it& operator=(const buff_it& other)
-    {
-        it = other.it;
-        end = other.end;
-        return *this;
-    }
-
-    CharOut* it;
-    CharOut* end;
-};
-
-template <typename It>
-using expected_buff_it = stringify::v0::expected
-    < stringify::v0::buff_it<It>
-    , std::error_code >;
-
-template <typename CharOut>
-class buffer_recycler
-{
-public:
-
-    using char_type = CharOut;
-
-    virtual stringify::v0::expected_buff_it<CharOut> recycle(CharOut* it) = 0;
-};
-
 namespace detail{
 
 template
@@ -399,6 +370,35 @@ public:
 } // namespace detail
 
 template <typename CharOut>
+struct buff_it
+{
+    buff_it& operator=(const buff_it& other)
+    {
+        it = other.it;
+        end = other.end;
+        return *this;
+    }
+
+    CharOut* it;
+    CharOut* end;
+};
+
+template <typename It>
+using expected_buff_it = stringify::v0::expected
+    < stringify::v0::buff_it<It>
+    , std::error_code >;
+
+template <typename CharOut>
+class buffer_recycler
+{
+public:
+
+    using char_type = CharOut;
+
+    virtual stringify::v0::expected_buff_it<CharOut> recycle(CharOut* it) = 0;
+};
+
+template <typename CharOut>
 class printer
 {
 public:
@@ -408,7 +408,7 @@ public:
     }
 
     virtual stringify::v0::expected_buff_it<CharOut> write
-        ( stringify::v0::buff_it<CharOut> r
+        ( stringify::v0::buff_it<CharOut> buff
         , stringify::buffer_recycler<CharOut>& recycler ) const = 0;
 
     virtual std::size_t necessary_size() const = 0;
@@ -428,6 +428,11 @@ public:
 
     virtual bool put(const stringify::v0::printer<CharOut>& ) = 0;
 };
+
+inline std::error_code encoding_error()
+{
+    return std::make_error_code(std::errc::illegal_byte_sequence);
+}
 
 namespace detail {
 

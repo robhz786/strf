@@ -171,6 +171,18 @@ struct encoding
 
     validate_func_ref validate;
     encode_char_func_ref encode_char;
+
+    std::size_t char_size(char32_t ch, stringify::v0::error_handling err_hdl) const
+    {
+        auto s = validate(ch);
+        return s != (std::size_t)-1
+            ? s
+            : err_hdl == stringify::v0::error_handling::replace
+            ? replacement_char_size
+            : 0 ;       
+    }
+
+        
     encode_fill_func_ref encode_fill;
     codepoints_count_func_ref codepoints_count;
     write_replacement_char_func_ref write_replacement_char;

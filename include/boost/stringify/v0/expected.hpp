@@ -363,11 +363,11 @@ public:
     {
         if (other.m_has_value)
         {
-            init_value(assume_value());
+            init_value(other.assume_value());
         }
         else
         {
-            init_error(assume_error());
+            init_error(other.assume_error());
         }
     }
 
@@ -376,11 +376,11 @@ public:
     {
         if (other.m_has_value)
         {
-            init_value(std::move(assume_value()));
+            init_value(std::move(other.assume_value()));
         }
         else
         {
-            init_error(std::move(assume_error()));
+            init_error(std::move(other.assume_error()));
         }
     }
 
