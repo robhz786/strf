@@ -341,7 +341,8 @@ private:
 
 template <int Base> struct numpunct_category
 {
-    static constexpr bool constrainable = true;
+    constexpr static bool constrainable = true;
+    constexpr static bool by_value = true;
 
     constexpr static int base = Base;
 

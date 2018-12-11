@@ -22,8 +22,6 @@ public:
 
     using char_type = CharOut;
 
-    char_ptr_writer() = delete;
-
     char_ptr_writer(CharOut* destination, CharOut* end )
         : m_begin{destination}
         , m_end{end}

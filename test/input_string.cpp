@@ -11,7 +11,7 @@ int main()
     namespace strf = boost::stringify::v0;
 
     {
-        TEST("abc")      ( "abc" );
+        TEST("abc") .facets(strf::width_as_codepoints_count(), strf::utf8()) ( "abc" );
         // TEST("   abc")   ( strf::right("abc", 6) );
         // TEST("abc...")   ( strf::left    ("abc", 6, '.') );
         // TEST("...abc")   ( strf::right   ("abc", 6, '.') );

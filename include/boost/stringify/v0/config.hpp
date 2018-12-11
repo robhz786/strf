@@ -22,18 +22,19 @@ inline namespace v0 {                              \
 #define BOOST_STRINGIFY_OMIT_IMPL
 #endif
 
-#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
-#define BOOST_STRINGIFY_INLINE
-#else
-#define BOOST_STRINGIFY_INLINE inline
-#endif
-
 #if defined(BOOST_STRINGIFY_SOURCE)
 #define BOOST_STRINGIFY_EXPLICIT_TEMPLATE template
-#else
+#elif defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 #define BOOST_STRINGIFY_EXPLICIT_TEMPLATE extern template
 #endif
 
+#if defined(BOOST_STRINGIFY_SOURCE)
+#define BOOST_STRINGIFY_STATIC_LINKAGE static
+#define BOOST_STRINGIFY_INLINE
+#elif !defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#define BOOST_STRINGIFY_INLINE inline
+#define BOOST_STRINGIFY_STATIC_LINKAGE inline
+#endif
 
 #if defined(_MSC_VER)
 #if _MSC_VER < 1911

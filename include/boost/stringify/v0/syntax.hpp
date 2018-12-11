@@ -606,72 +606,51 @@ constexpr auto multi(const T& value, I count)
     return fmt(value).multi(count);
 }
 
-template <typename T>
-inline auto ascii(const T& x)
-{
-    return fmt(x).encoding(stringify::v0::ascii());
-}
-template <typename T>
-inline auto iso_8859_1(const T& x)
-{
-    return fmt(x).encoding(stringify::v0::iso_8859_1());
-}
-template <typename T>
-inline auto iso_8859_15(const T& x)
-{
-    return fmt(x).encoding(stringify::v0::iso_8859_15());
-}
-template <typename T>
-inline auto windows_1252(const T& x)
-{
-    return fmt(x).encoding(stringify::v0::windows_1252());
-}
+// template <typename T>
+// inline auto ascii(const T& x)
+// {
+//     return fmt(x).encoding(stringify::v0::ascii());
+// }
+// template <typename T>
+// inline auto iso_8859_1(const T& x)
+// {
+//     return fmt(x).encoding(stringify::v0::iso_8859_1());
+// }
+// template <typename T>
+// inline auto iso_8859_15(const T& x)
+// {
+//     return fmt(x).encoding(stringify::v0::iso_8859_15());
+// }
+// template <typename T>
+// inline auto windows_1252(const T& x)
+// {
+//     return fmt(x).encoding(stringify::v0::windows_1252());
+// }
 template <typename T>
 inline auto utf8(const T& x)
 {
     return fmt(x).encoding(stringify::v0::utf8());
 }
-template <typename T>
-inline auto mutf8(const T& x)
-{
-    return fmt(x).encoding(stringify::v0::mutf8());
-}
-template <typename T>
-inline auto utfw(const T& x)
-{
-    return fmt(x).encoding(stringify::v0::utfw());
-}
-
-namespace detail{
-
-char     first_char(char);
-char16_t first_char(char16_t);
-char32_t first_char(char32_t);
-wchar_t  first_char(wchar_t);
-
-template
-    < typename String
-    , typename char_type
-      = std::remove_cv_t
-        < std::remove_reference_t<decltype(std::declval<String>()[0]) > > >
-char_type first_char(const String& str)
-{
-    return str[0];
-}
-
-}
+// template <typename T>
+// inline auto mutf8(const T& x)
+// {
+//     return fmt(x).encoding(stringify::v0::mutf8());
+// }
+// template <typename T>
+// inline auto utfw(const T& x)
+// {
+//     return fmt(x).encoding(stringify::v0::utfw());
+// }
 
 template <typename T>
 inline auto utf16(const T& x)
 {
-    using char_type = decltype(stringify::v0::detail::first_char(x));
-    return fmt(x).encoding(stringify::v0::utf16<char_type>());
+    return fmt(x).encoding(stringify::v0::utf16());
 }
 template <typename T>
 inline auto utf32(const T& x)
 {
-    using char_type = decltype(stringify::v0::detail::first_char(x));
-    return fmt(x).encoding(stringify::v0::utf32<char_type>());
+    return fmt(x).encoding(stringify::v0::utf32());
 }
 
 

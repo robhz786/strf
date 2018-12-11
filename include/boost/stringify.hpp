@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 // #include <boost/stringify/v0/input_types/int.hpp>
-#include <boost/stringify/v0/input_types/char.hpp>
+//#include <boost/stringify/v0/input_types/char.hpp>
 #include <boost/stringify/v0/input_types/string.hpp>
 // #include <boost/stringify/v0/input_types/join.hpp>
 // #include <boost/stringify/v0/input_types/facets_pack.hpp>

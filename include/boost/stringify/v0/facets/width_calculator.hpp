@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/stringify/v0/facets_pack.hpp>
-#include <boost/stringify/v0/facets/encodings.hpp>
+#include <boost/stringify/v0/facets/encoding.hpp>
 #include <boost/assert.hpp>
 #include <string>
 #include <limits>
@@ -17,55 +17,13 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 struct width_calculator_category;
 class width_calculator;
 
-
 typedef int (*char_width_calculator)(char32_t);
-
-namespace detail{
-
-class width_decrementer: public stringify::v0::u32output
-{
-public:
-
-    width_decrementer
-        ( int initial_width
-        , const stringify::v0::char_width_calculator wc
-        , const stringify::v0::error_signal& err_sig
-        )
-        : m_wcalc(wc)
-        , m_err_sig(err_sig)
-        , m_width(initial_width)
-    {
-    }
-
-    ~width_decrementer()
-    {
-    }
-
-    stringify::v0::cv_result put32(char32_t ch) override;
-
-    bool signalize_error() override;
-
-    int get_remaining_width() const
-    {
-        return m_width > 0 ? m_width : 0;
-    }
-
-private:
-
-    const stringify::v0::char_width_calculator m_wcalc;
-    const stringify::v0::error_signal& m_err_sig;
-    int m_width = 0;
-
-};
-
-} // namespaced detail
 
 enum class width_calculation_type : std::size_t
 {
     as_length,
     as_codepoints_count
 };
-
 
 class width_calculator
 {
@@ -92,21 +50,19 @@ public:
 
     int width_of(char32_t ch) const;
 
-    int remaining_width
-        ( int width
-        , const char32_t* begin
-        , const char32_t* end
-        ) const;
+    // int remaining_width
+    //     ( int width
+    //     , const char32_t* begin
+    //     , const char32_t* end
+    //     ) const;
 
     template <typename CharIn>
     int remaining_width
         ( int width
         , const CharIn* begin
         , const CharIn* end
-        , const stringify::v0::decoder<CharIn>& conv
-        , const stringify::v0::error_signal& err_sig
-        , bool allow_surrogates
-        ) const
+        , const stringify::v0::encoding<CharIn>& enc
+        , const stringify::v0::encoding_policy epoli ) const
     {
         if (m_type == stringify::width_calculation_type::as_length)
         {
@@ -117,14 +73,30 @@ public:
         }
         else if(m_type == stringify::width_calculation_type::as_codepoints_count)
         {
-            return static_cast<int>
-                (conv.remaining_codepoints_count(width, begin, end));
+            auto count = enc.codepoints_count(begin, end, width);
+            BOOST_ASSERT((std::ptrdiff_t)width >= (std::ptrdiff_t)count);
+            return width - (int) count;
         }
         else
         {
-            detail::width_decrementer decrementer{width, *m_ch_wcalc, err_sig};
-            (void) conv.decode(decrementer, begin, end, allow_surrogates);
-            return decrementer.get_remaining_width();
+            static char32_t buff[16];
+            auto* const buff_end = &buff[0] + sizeof(buff) / sizeof(buff[0]);
+
+            stringify::v0::cv_result res;
+            do
+            {
+                auto buff_it = &buff[0];
+                auto src_it = begin;
+                res = enc.to_u32.transcode( &src_it, end
+                                          , &buff_it, buff_end
+                                          , epoli.err_hdl()
+                                          , epoli.allow_surr() );
+                for (auto it = &buff[0]; width > 0 && it < buff_it; ++it)
+                {
+                    width -= m_ch_wcalc(*it);
+                }
+            } while (res == stringify::v0::cv_result::insufficient_space);
+            return width;
         }
     }
 
@@ -150,6 +122,7 @@ private:
 struct width_calculator_category
 {
     static constexpr bool constrainable = true;
+    constexpr static bool by_value = true;
 
     static const stringify::v0::width_calculator& get_default()
     {
@@ -165,66 +138,39 @@ int width_calculator::remaining_width<char>
     ( int width
     , const char* begin
     , const char* end
-    , const stringify::v0::decoder<char>& conv
-    , const stringify::v0::error_signal& err_sig
-    , bool allow_surrogates
-    ) const;
+    , const stringify::v0::encoding<char>& conv
+    , stringify::v0::encoding_policy epoli ) const;
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 int width_calculator::remaining_width<char16_t>
     ( int width
     , const char16_t* begin
     , const char16_t* end
-    , const stringify::v0::decoder<char16_t>& conv
-    , const stringify::v0::error_signal& err_sig
-    , bool allow_surrogates
-    ) const;
+    , const stringify::v0::encoding<char16_t>& conv
+    , stringify::v0::encoding_policy epoli ) const;
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 int width_calculator::remaining_width<char32_t>
     ( int width
     , const char32_t* begin
     , const char32_t* end
-    , const stringify::v0::decoder<char32_t>& conv
-    , const stringify::v0::error_signal& err_sig
-    , bool allow_surrogates
-    ) const;
+    , const stringify::v0::encoding<char32_t>& conv
+    , stringify::v0::encoding_policy epoli ) const;
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 int width_calculator::remaining_width<wchar_t>
     ( int width
     , const wchar_t* str
     , const wchar_t* end
-    , const stringify::v0::decoder<wchar_t>& conv
-    , const stringify::v0::error_signal& err_sig
-    , bool allow_surrogates
-    ) const;
+    , const stringify::v0::encoding<wchar_t>& conv
+    , stringify::v0::encoding_policy epoli ) const;
 
 #endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
 
 #if ! defined(BOOST_STRINGIFY_OMIT_IMPL)
 
-namespace detail {
 
-BOOST_STRINGIFY_INLINE stringify::v0::cv_result width_decrementer::put32(char32_t ch)
-{
-    m_width -= m_wcalc(ch);
-    return m_width > 0
-        ? stringify::v0::cv_result::success
-        : stringify::v0::cv_result::insufficient_space;
-}
-
-BOOST_STRINGIFY_INLINE bool width_decrementer::signalize_error()
-{
-    if (m_err_sig.has_char())
-    {
-        return put32(m_err_sig.get_char()) == stringify::v0::cv_result::success;
-    }
-    return true; 
-}
-
-} // namespace detail
 
 BOOST_STRINGIFY_INLINE int width_calculator::width_of(char32_t ch) const
 {
@@ -240,31 +186,31 @@ BOOST_STRINGIFY_INLINE int width_calculator::width_of(char32_t ch) const
 }
 
 
-BOOST_STRINGIFY_INLINE int width_calculator::remaining_width
-    ( int width
-    , const char32_t* begin
-    , const char32_t* end
-    ) const
-{
-    if ( m_type == stringify::width_calculation_type::as_length
-      || m_type == stringify::width_calculation_type::as_codepoints_count )
-    {
-        std::size_t str_len = end - begin;
-        if(str_len >= (std::size_t)(width))
-        {
-            return 0;
-        }
-        return width - static_cast<int>(str_len);
-    }
-    else
-    {
-        for(auto it = begin; it < end && width > 0; ++it)
-        {
-            width -= m_ch_wcalc(*it);
-        }
-        return width > 0 ? width : 0;
-    }
-}
+// BOOST_STRINGIFY_INLINE int width_calculator::remaining_width
+//     ( int width
+//     , const char32_t* begin
+//     , const char32_t* end
+//     ) const
+// {
+//     if ( m_type == stringify::width_calculation_type::as_length
+//       || m_type == stringify::width_calculation_type::as_codepoints_count )
+//     {
+//         std::size_t str_len = end - begin;
+//         if(str_len >= (std::size_t)(width))
+//         {
+//             return 0;
+//         }
+//         return width - static_cast<int>(str_len);
+//     }
+//     else
+//     {
+//         for(auto it = begin; it < end && width > 0; ++it)
+//         {
+//             width -= m_ch_wcalc(*it);
+//         }
+//         return width > 0 ? width : 0;
+//     }
+// }
 
 #endif // ! defined(BOOST_STRINGIFY_OMIT_IMPL)
 

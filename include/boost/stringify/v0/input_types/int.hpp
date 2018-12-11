@@ -7,7 +7,7 @@
 
 #include <boost/stringify/v0/basic_types.hpp>
 #include <boost/stringify/v0/facets_pack.hpp>
-#include <boost/stringify/v0/facets/encodings.hpp>
+#include <boost/stringify/v0/facets/encoding.hpp>
 #include <boost/stringify/v0/facets/numpunct.hpp>
 #include <boost/stringify/v0/detail/int_digits.hpp>
 #include <boost/assert.hpp>

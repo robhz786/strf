@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <initializer_list>
-#include <boost/stringify/v0/facets/encodings.hpp>
+#include <boost/stringify/v0/facets/encoding.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {

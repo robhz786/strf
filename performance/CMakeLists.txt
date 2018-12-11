@@ -32,8 +32,8 @@ foreach(
 #    width_calculation
 #    from_utf32
 #    to_utf32
-#    utf8_to_utf16
-#    utf16_to_utf8
+    utf8_to_utf16
+    utf16_to_utf8
 )
 
   add_executable(performance_${x}_ho    ${x}.cpp)
