@@ -8,6 +8,7 @@
 // #include <boost/stringify/v0/input_types/int.hpp>
 //#include <boost/stringify/v0/input_types/char.hpp>
 #include <boost/stringify/v0/input_types/string.hpp>
+#include <boost/stringify/v0/input_types/cv_string.hpp>
 #include <boost/stringify/v0/input_types/join.hpp>
 // #include <boost/stringify/v0/input_types/facets_pack.hpp>
 // #include <boost/stringify/v0/input_types/range.hpp>

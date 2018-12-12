@@ -73,6 +73,7 @@ inline namespace v0 {                              \
 
 #if __has_include(<string_view>)
 #define BOOST_STRINGIFY_HAS_STD_STRING_VIEW
+#define BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS constexpr
 #include <string_view>
 #endif
 
@@ -88,12 +89,15 @@ BOOST_STRINGIFY_V0_NAMESPACE_END;
 
 #endif // __cplusplus >= 201703L || ( defined(_MSV_VER) && defined(_HAS_CXX17))
 
+#ifndef BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+#define BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS inline
+#endif
+
 #if defined(BOOST_STRINGIFY_HAS_NODISCARD)
 #define BOOST_STRINGIFY_NODISCARD [[nodiscard]]
 #else
 #define BOOST_STRINGIFY_NODISCARD
 #endif //defined(BOOST_STRINGIFY_HAS_NODISCARD)
-
 
 #if ! defined(BOOST_STRINGIFY_HAS_STD_OPTIONAL)
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN;

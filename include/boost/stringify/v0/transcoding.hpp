@@ -296,6 +296,25 @@ struct get_transcoder_impl<CharT, CharT>
     }
 };
 
+template <>
+struct get_transcoder_impl<char32_t, char32_t>
+{
+    using CharT = char32_t;
+    static const transcoder<CharT, CharT>* get
+        ( const encoding<CharT>& src_encoding
+        , const encoding<CharT>& dest_encoding )
+    {
+        if (src_encoding.id == dest_encoding.id)
+        {
+            return & src_encoding.sanitizer;
+        }
+        const transcoder<CharT, CharT>* t
+            = stringify::v0::detail::from_tmp(dest_encoding, src_encoding);
+        return t != nullptr ? t
+            : stringify::v0::detail::to_tmp(src_encoding, dest_encoding);
+    }
+};
+
 template <typename CharOut>
 struct get_transcoder_impl<char32_t, CharOut >
 {

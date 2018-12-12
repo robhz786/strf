@@ -5,12 +5,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/facets_pack.hpp>
 #include <boost/stringify/v0/facets/encoding.hpp>
 #include <boost/assert.hpp>
-#include <string>
-#include <limits>
-#include <algorithm>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -59,21 +55,20 @@ public:
     template <typename CharIn>
     int remaining_width
         ( int width
-        , const CharIn* begin
-        , const CharIn* end
+        , const CharIn* str
+        , std::size_t str_len
         , const stringify::v0::encoding<CharIn>& enc
         , const stringify::v0::encoding_policy epoli ) const
     {
         if (m_type == stringify::width_calculation_type::as_length)
         {
-            std::size_t str_len = end - begin;
             return str_len > static_cast<std::size_t>(width)
                 ? 0
                 : width - static_cast<int>(str_len);
         }
         else if(m_type == stringify::width_calculation_type::as_codepoints_count)
         {
-            auto count = enc.codepoints_count(begin, end, width);
+            auto count = enc.codepoints_count(str, str + str_len, width);
             BOOST_ASSERT((std::ptrdiff_t)width >= (std::ptrdiff_t)count);
             return width - (int) count;
         }
@@ -83,11 +78,12 @@ public:
             auto* const buff_end = &buff[0] + sizeof(buff) / sizeof(buff[0]);
 
             stringify::v0::cv_result res;
+            auto const src_end = str + str_len;
             do
             {
                 auto buff_it = &buff[0];
-                auto src_it = begin;
-                res = enc.to_u32.transcode( &src_it, end
+                auto src_it = str;
+                res = enc.to_u32.transcode( &src_it, src_end
                                           , &buff_it, buff_end
                                           , epoli.err_hdl()
                                           , epoli.allow_surr() );
@@ -136,24 +132,24 @@ struct width_calculator_category
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 int width_calculator::remaining_width<char>
     ( int width
-    , const char* begin
-    , const char* end
+    , const char* str
+    , std::size_t str_len
     , const stringify::v0::encoding<char>& conv
     , stringify::v0::encoding_policy epoli ) const;
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 int width_calculator::remaining_width<char16_t>
     ( int width
-    , const char16_t* begin
-    , const char16_t* end
+    , const char16_t* str
+    , std::size_t str_len
     , const stringify::v0::encoding<char16_t>& conv
     , stringify::v0::encoding_policy epoli ) const;
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 int width_calculator::remaining_width<char32_t>
     ( int width
-    , const char32_t* begin
-    , const char32_t* end
+    , const char32_t* str
+    , std::size_t str_len
     , const stringify::v0::encoding<char32_t>& conv
     , stringify::v0::encoding_policy epoli ) const;
 
@@ -161,7 +157,7 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 int width_calculator::remaining_width<wchar_t>
     ( int width
     , const wchar_t* str
-    , const wchar_t* end
+    , std::size_t str_len
     , const stringify::v0::encoding<wchar_t>& conv
     , stringify::v0::encoding_policy epoli ) const;
 
@@ -213,15 +209,6 @@ BOOST_STRINGIFY_INLINE int width_calculator::width_of(char32_t ch) const
 // }
 
 #endif // ! defined(BOOST_STRINGIFY_OMIT_IMPL)
-
-namespace detail{
-
-inline int char_width_aways_one(char32_t)
-{
-    return 1;
-}
-
-}
 
 inline stringify::v0::width_calculator width_as_length()
 {

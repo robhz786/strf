@@ -80,6 +80,11 @@ public:
 
     using category = stringify::v0::encoding_policy_category;
 
+    constexpr encoding_policy()
+        : encoding_policy(stringify::v0::error_handling::replace, true)
+    {
+    }
+    
     constexpr encoding_policy
         ( stringify::v0::error_handling err_hdl
         , bool allow_surr )
@@ -122,9 +127,7 @@ struct encoding_policy_category
 
     static const stringify::v0::encoding_policy& get_default()
     {
-        static const stringify::v0::encoding_policy obj
-            { stringify::v0::error_handling::replace
-            , true };
+        static const stringify::v0::encoding_policy obj {};
         return obj;
     }
 };

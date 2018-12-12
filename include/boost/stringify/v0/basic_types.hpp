@@ -8,6 +8,7 @@
 #include <system_error>
 #include <boost/stringify/v0/expected.hpp>
 #include <boost/stringify/v0/facets_pack.hpp>
+#include <boost/stringify/v0/facets/encoding.hpp>
 #include <boost/assert.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -146,6 +147,11 @@ public:
         return m_value;
     }
 
+    constexpr ValueType& value()
+    {
+        return m_value;
+    }
+
 private:
 
     ValueType m_value;
@@ -203,10 +209,6 @@ public:
     {
     }
 
-    ~alignment_format_impl()
-    {
-    }
-
     constexpr derived_type&& operator<(int width) &&
     {
         m_alignment = stringify::v0::alignment::left;
@@ -251,6 +253,110 @@ public:
     }
     constexpr derived_type& operator%(int width) &
     {
+        m_alignment = stringify::v0::alignment::internal;
+        m_width = width;
+        return static_cast<derived_type&>(*this);
+    }
+    constexpr derived_type&& left(int width) &&
+    {
+        m_alignment = stringify::v0::alignment::left;
+        m_width = width;
+        return static_cast<derived_type&&>(*this);
+    }
+    constexpr derived_type& left(int width) &
+    {
+        m_alignment = stringify::v0::alignment::left;
+        m_width = width;
+        return static_cast<derived_type&>(*this);
+    }
+    constexpr derived_type&& right(int width) &&
+    {
+        m_alignment = stringify::v0::alignment::right;
+        m_width = width;
+        return static_cast<derived_type&&>(*this);
+    }
+    constexpr derived_type& right(int width) &
+    {
+        m_alignment = stringify::v0::alignment::right;
+        m_width = width;
+        return static_cast<derived_type&>(*this);
+    }
+    constexpr derived_type&& center(int width) &&
+    {
+        m_alignment = stringify::v0::alignment::center;
+        m_width = width;
+        return static_cast<derived_type&&>(*this);
+    }
+    constexpr derived_type& center(int width) &
+    {
+        m_alignment = stringify::v0::alignment::center;
+        m_width = width;
+        return static_cast<derived_type&>(*this);
+    }
+    constexpr derived_type&& internal(int width) &&
+    {
+        m_alignment = stringify::v0::alignment::internal;
+        m_width = width;
+        return static_cast<derived_type&&>(*this);
+    }
+    constexpr derived_type& internal(int width) &
+    {
+        m_alignment = stringify::v0::alignment::internal;
+        m_width = width;
+        return static_cast<derived_type&>(*this);
+    }
+    constexpr derived_type&& left(int width, char32_t fill_char) &&
+    {
+        m_fill = fill_char;
+        m_alignment = stringify::v0::alignment::left;
+        m_width = width;
+        return static_cast<derived_type&&>(*this);
+    }
+    constexpr derived_type& left(int width, char32_t fill_char) &
+    {
+        m_fill = fill_char;
+        m_alignment = stringify::v0::alignment::left;
+        m_width = width;
+        return static_cast<derived_type&>(*this);
+    }
+    constexpr derived_type&& right(int width, char32_t fill_char) &&
+    {
+        m_fill = fill_char;
+        m_alignment = stringify::v0::alignment::right;
+        m_width = width;
+        return static_cast<derived_type&&>(*this);
+    }
+    constexpr derived_type& right(int width, char32_t fill_char) &
+    {
+        m_fill = fill_char;
+        m_alignment = stringify::v0::alignment::right;
+        m_width = width;
+        return static_cast<derived_type&>(*this);
+    }
+    constexpr derived_type&& center(int width, char32_t fill_char) &&
+    {
+        m_fill = fill_char;
+        m_alignment = stringify::v0::alignment::center;
+        m_width = width;
+        return static_cast<derived_type&&>(*this);
+    }
+    constexpr derived_type& center(int width, char32_t fill_char) &
+    {
+        m_fill = fill_char;
+        m_alignment = stringify::v0::alignment::center;
+        m_width = width;
+        return static_cast<derived_type&>(*this);
+    }
+    constexpr derived_type&& internal(int width, char32_t fill_char) &&
+    {
+        m_fill = fill_char;
+        m_alignment = stringify::v0::alignment::internal;
+        m_width = width;
+        return static_cast<derived_type&&>(*this);
+    }
+    constexpr derived_type& internal(int width, char32_t fill_char) &
+    {
+        m_fill = fill_char;
         m_alignment = stringify::v0::alignment::internal;
         m_width = width;
         return static_cast<derived_type&>(*this);
@@ -416,6 +522,178 @@ public:
     virtual int remaining_width(int w) const = 0;
 };
 
+inline std::error_code encoding_error()
+{
+    return std::make_error_code(std::errc::illegal_byte_sequence);
+}
+
+namespace detail {
+
+inline const buff_it<char32_t> global_mini_buffer32()
+{
+    thread_local static char32_t buff[16];
+    return {buff, buff + sizeof(buff) / sizeof(buff[0])};
+}
+
+
+template<typename CharIn, typename CharOut>
+stringify::v0::expected_buff_it<CharOut> transcode
+    ( stringify::v0::buff_it<CharOut> buff
+    , stringify::buffer_recycler<CharOut>& recycler
+    , const CharIn* src
+    , const CharIn* src_end
+    , const stringify::v0::transcoder<CharIn, CharOut>& tr
+    , stringify::v0::encoding_policy epoli )
+{
+    auto err_hdl = epoli.err_hdl();
+    bool allow_surr = epoli.allow_surr();
+    stringify::v0::cv_result res;
+    while(true)
+    {
+        res = tr.transcode(&src, src_end, &buff.it, buff.end, err_hdl, allow_surr);
+        if (res == stringify::v0::cv_result::success)
+        {
+            return { stringify::v0::in_place_t{}, buff };
+        }
+        if (res == stringify::v0::cv_result::invalid_char)
+        {
+            return { stringify::v0::unexpect_t{}
+                   , std::make_error_code(std::errc::result_out_of_range) };
+        }
+        BOOST_ASSERT(res == stringify::v0::cv_result::insufficient_space);
+    }
+}
+
+template<typename CharIn, typename CharOut>
+stringify::v0::expected_buff_it<CharOut> decode_encode
+    ( stringify::v0::buff_it<CharOut> buff
+    , stringify::buffer_recycler<CharOut>& recycler
+    , const CharIn* src
+    , const CharIn* src_end
+    , const stringify::v0::encoding<CharIn> src_encoding
+    , const stringify::v0::encoding<CharOut> dest_encoding
+    , stringify::v0::encoding_policy epoli )
+{
+    auto err_hdl = epoli.err_hdl();
+    bool allow_surr = epoli.allow_surr();
+    auto buff32 = global_mini_buffer32();
+    char32_t* const buff32_begin = buff32.it;
+    stringify::v0::cv_result res1;
+    do
+    {
+        res1 = src_encoding.to_u32.transcode( &src, src_end
+                                            , &buff32.it, buff32.end
+                                            , err_hdl, allow_surr );
+        if (res1 == stringify::v0::cv_result::invalid_char)
+        {
+            return { stringify::v0::unexpect_t{}
+                   , std::make_error_code(std::errc::result_out_of_range) };
+        }
+        const char32_t* buff32_it2 = buff32_begin;
+        auto res2 = dest_encoding.from_u32.transcode( &buff32_it2, buff32.it
+                                                    , &buff.it, buff.end
+                                                    , err_hdl, allow_surr );
+        while (res2 == stringify::v0::cv_result::insufficient_space)
+        {
+            auto x = recycler.recycle(buff.it);
+            BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+            buff = *x;
+            res2 = dest_encoding.from_u32.transcode( &buff32_it2, buff32.it
+                                                   , &buff.it, buff.end
+                                                   , err_hdl, allow_surr );
+        }
+        if (res2 == stringify::v0::cv_result::invalid_char)
+        {
+            return { stringify::v0::unexpect_t{}
+                   , std::make_error_code(std::errc::result_out_of_range) };
+        }
+    } while (res1 == stringify::v0::cv_result::insufficient_space);
+
+    return { stringify::v0::in_place_t{}, buff };
+}
+
+template<typename CharIn, typename CharOut>
+inline std::size_t decode_encode_size
+    ( const CharIn* src
+    , const CharIn* src_end
+    , const stringify::v0::encoding<CharIn> src_encoding
+    , const stringify::v0::encoding<CharOut> dest_encoding
+    , stringify::v0::encoding_policy epoli )
+{
+    auto err_hdl = epoli.err_hdl();
+    bool allow_surr = epoli.allow_surr();
+    auto buff32 = global_mini_buffer32();
+    char32_t* const buff32_begin = buff32.it;
+    std::size_t count = 0;
+    stringify::v0::cv_result res_dec;
+    do
+    {
+        buff32.it = buff32_begin;
+        res_dec = src_encoding.to_u32.transcode( &src, src_end
+                                               , &buff32.it, buff32.end
+                                               , err_hdl, allow_surr );
+        count += dest_encoding.from_u32.necessary_size( buff32_begin, buff32.it
+                                                      , err_hdl, allow_surr );
+    } while(res_dec == stringify::v0::cv_result::insufficient_space);
+
+    return count;
+}
+
+template<typename CharT>
+inline stringify::v0::expected_buff_it<CharT> write_str
+    ( stringify::v0::buff_it<CharT> buff
+    , stringify::buffer_recycler<CharT>& recycler
+    , const CharT* str
+    , std::size_t len )
+{
+    using traits = std::char_traits<CharT>;
+    while (true)
+    {
+        std::size_t space = buff.end - buff.it;
+        if (len <= space)
+        {
+            traits::copy(buff.it, str, len);
+            return { stringify::v0::in_place_t{}
+                   , stringify::v0::buff_it<CharT>{buff.it + len, buff.end} };
+        }
+        traits::copy(buff.it, str, space);
+        len -= space;
+        str += space;
+        auto x = recycler.recycle(buff.it + space);
+        BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+        buff = *x;
+    }
+}
+
+template<typename CharT>
+inline stringify::v0::expected_buff_it<CharT> write_fill
+    ( const stringify::v0::encoding<CharT>& encoding
+    , stringify::v0::buff_it<CharT> buff
+    , stringify::buffer_recycler<CharT>& recycler
+    , std::size_t count
+    , char32_t ch
+    , stringify::v0::error_handling err_hdl )
+{
+    while(true)
+    {
+        auto res = encoding.encode_fill(&buff.it, buff.end, count, ch, err_hdl);
+        if (res == stringify::v0::cv_result::success)
+        {
+            return { stringify::v0::in_place_t{}, buff };
+        }
+        if (res == stringify::v0::cv_result::invalid_char)
+        {
+            return { stringify::v0::unexpect_t{}
+                   , stringify::v0::encoding_error() };
+        }
+        BOOST_ASSERT(res == stringify::v0::cv_result::insufficient_space);
+        auto x = recycler.recycle(buff.it);
+        BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+        buff = *x;
+    }
+}
+
+} // namespace detail
 
 template <typename CharOut>
 class printers_receiver
@@ -428,11 +706,6 @@ public:
 
     virtual bool put(const stringify::v0::printer<CharOut>& ) = 0;
 };
-
-inline std::error_code encoding_error()
-{
-    return std::make_error_code(std::errc::illegal_byte_sequence);
-}
 
 namespace detail {
 
@@ -655,6 +928,16 @@ struct string_input_tag: string_input_tag_base
 {
 };
 
+template <typename CharT>
+struct is_string_of
+{
+    template <typename T>
+    using fn = std::is_base_of<string_input_tag<CharT>, T>;
+};
+
+template <typename T>
+using is_string = std::is_base_of<string_input_tag_base, T>;
+
 template <typename CharIn>
 struct asm_string_input_tag: stringify::v0::string_input_tag<CharIn>
 {
@@ -682,9 +965,6 @@ struct is_asm_string<stringify::v0::is_asm_string_of<CharIn>> : std::true_type
 {
 };
 
-#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
-
-#endif
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

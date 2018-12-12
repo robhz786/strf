@@ -2037,7 +2037,7 @@ stringify::v0::cv_result utf16_encode_fill
     {
         do_write:
 
-        if(count >= capacity)
+        if(count <= capacity)
         {
             *dest = std::fill_n(dest_it, count, static_cast<CharT>(ch));
             count = 0;
@@ -2056,7 +2056,7 @@ stringify::v0::cv_result utf16_encode_fill
             , static_cast<CharT>(0xDC00 +  (sub_codepoint &  0x3FF)) };
         auto it2 = reinterpret_cast<decltype(obj)*>(dest_it);
 
-        if(count >= capacity_2)
+        if(count <= capacity_2)
         {
             *dest = reinterpret_cast<CharT*>(std::fill_n(it2, count, obj));
             count = 0;
@@ -2360,15 +2360,15 @@ stringify::v0::cv_result utf32_encode_fill
 
     auto dest_it = *dest;
     std::size_t available_size = dest_end - dest_it;
-    if (count >= available_size)
+    if (count <= available_size)
     {
         std::fill_n(dest_it, count, ch);
-        dest += count;
+        *dest = dest_it + count;
         count = 0;
         return stringify::v0::cv_result::success;
     }
     std::fill_n(dest_it, available_size, ch);
-    dest += available_size;
+    *dest = dest_it + available_size;
     count -= available_size;
     return stringify::v0::cv_result::insufficient_space;
 }

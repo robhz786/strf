@@ -145,7 +145,6 @@ public:
 
     input_tester
         ( std::basic_string<CharOut> expected
-        , std::error_code expected_error
         , std::string src_filename
         , int src_line
         , double reserve_factor
@@ -153,7 +152,6 @@ public:
         )
         : input_tester_buffer<CharOut>{buffer_size}
         , m_expected(std::move(expected))
-        , m_expected_error(expected_error)
         , m_reserved_size(0)
         , m_src_filename(std::move(src_filename))
         , m_src_line(src_line)
@@ -181,14 +179,17 @@ public:
     boost::stringify::v0::expected<void, std::error_code> finish(CharOut* it)
     {
         m_result.append(m_buff_begin, it);
+        
         if (m_expected != m_result)
         {
+            print_source_location(); 
             print("expected", m_expected);
             print("obtained", m_result);
             ++global_errors_count;
         }
         if(wrongly_reserved())
         {
+            print_source_location();
             std::cout << "reserved size  :" <<  m_reserved_size << "\n";
             std::cout << "necessary size :" <<  m_result.length() << "\n";
             ++global_errors_count;
@@ -203,6 +204,15 @@ public:
     }
 
 private:
+ 
+    void print_source_location() 
+    { 
+        if ( ! m_source_location_printed) 
+        { 
+            std::cout << m_src_filename << ":" << m_src_line << ":" << " error: \n"; 
+            m_source_location_printed = true; 
+        } 
+    }
 
     bool wrongly_reserved() const
     {
@@ -219,7 +229,6 @@ private:
 
     std::basic_string<CharOut> m_result;
     std::basic_string<CharOut> m_expected;
-    std::error_code m_expected_error;
     std::size_t m_reserved_size;
     std::string m_src_filename;
     int m_src_line;
@@ -228,6 +237,7 @@ private:
     CharOut m_buff[200];
     CharOut* m_buff_begin = m_buff;
     CharOut* m_buff_end = m_buff_begin + sizeof(m_buff) / sizeof(m_buff[0]);
+    mutable bool m_source_location_printed = false;
 };
 
 
@@ -266,14 +276,13 @@ auto make_tester
     ( const CharT* expected
     , const char* filename
     , int line
-    , std::error_code err
     , double reserve_factor
     , std::size_t buffer_size)
 {
     using writer = input_tester<CharT>;
     return boost::stringify::v0::make_destination
-        <writer, const CharT*, std::error_code, const char*, int, double, std::size_t>
-        (expected, err, filename, line, reserve_factor, buffer_size);
+        <writer, const CharT*, const char*, int, double, std::size_t>
+        (expected, filename, line, reserve_factor, buffer_size);
 }
 
 template<typename CharT>
@@ -281,31 +290,106 @@ auto make_tester
     ( const std::basic_string<CharT>& expected
     , const char* filename
     , int line
-    , std::error_code err
     , double reserve_factor
     , std::size_t buffer_size )
 {
     using writer = input_tester<CharT>;
     return boost::stringify::v0::make_destination
         <writer, const std::basic_string<CharT>&, std::error_code, const char*, int, double, std::size_t>
-        (expected, err, filename, line, reserve_factor, buffer_size);
+        (expected, filename, line, reserve_factor, buffer_size);
 }
 
-#define TEST(EXPECTED) (void)make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), 1.0, 60)
+class error_code_tester
+{
+public:
 
-#define TEST_RF(EXPECTED, RF) (void)make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), (RF), 60)
+    error_code_tester(std::string src_filename, int line)
+        : _src_filename(src_filename)
+        , _src_line(line)
+    {
+    }
 
-#define TEST_ERR(EXPECTED, ERR) (void)make_tester((EXPECTED), __FILE__, __LINE__, (ERR), 1.0, 60)
+    error_code_tester(std::string src_filename, int line, std::error_code ec)
+        : _src_filename(src_filename)
+        , _src_line(line)
+        , _expected_error(ec)
+        , _expect_error(true)
+    {
+    }
+    
+    template <typename V>
+    boost::stringify::v0::expected<V, std::error_code>
+    operator << (boost::stringify::v0::expected<V, std::error_code> x) &&
+    {
+        if (!_expect_error && x.has_error())
+        {
+            print_source_location();
+            print("Obtained error_code", x.error().message()); 
+        }
+        else if (_expect_error && ! x.has_error())
+        {
+            print_source_location();
+            print("Not obtained any error_code. Was expecting:", x.error().message());
+        }
+        else if ( _expect_error && x.has_error() && _expected_error != x.error() )
+        {
+            print("expected error_code", _expected_error.message());  
+            print("obtained error_code", x.error().message()); 
+        }
+        return x;    
+    }
 
-#define TEST_ERR_RF(EXPECTED, ERR, RF) (void)make_tester((EXPECTED), __FILE__, __LINE__, (ERR), (RF), 60)
+private:
 
-#define BUFFERED_TEST(SIZE, EXPECTED) (void)make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), 1.0, (SIZE))
+    void print_source_location() 
+    { 
+        if ( ! _source_location_printed) 
+        { 
+            std::cout << _src_filename << ":" << _src_line << ":" << " error: \n"; 
+            _source_location_printed = true; 
+        } 
+    }
 
-#define BUFFERED_TEST_RF(SIZE, EXPECTED, RF) (void)make_tester((EXPECTED), __FILE__, __LINE__, std::error_code(), (RF), (SIZE))
+    std::string _src_filename;
+    int _src_line;
+    std::error_code _expected_error;
+    bool _expect_error = false;
+    mutable bool _source_location_printed = false;
+};
 
-#define BUFFERED_TEST_ERR(SIZE, EXPECTED, ERR) (void)make_tester((EXPECTED), __FILE__, __LINE__, (ERR), 1.0, (SIZE))
 
-#define BUFFERED_TEST_ERR_RF(SIZE, EXPECTED, ERR, RF) (void)make_tester((EXPECTED), __FILE__, __LINE__, (ERR), (RF), (SIZE))
+
+#define TEST(EXPECTED)                                        \
+    error_code_tester(__FILE__, __LINE__)  <<                 \
+        make_tester((EXPECTED), __FILE__, __LINE__, 1.0, 60)
+
+#define TEST_RF(EXPECTED, RF)                                 \
+    error_code_tester(__FILE__, __LINE__)  <<                 \
+        make_tester((EXPECTED), __FILE__, __LINE__, (RF), 60)
+
+#define TEST_ERR(EXPECTED, ERR)                               \
+    error_code_tester(__FILE__, __LINE__, (ERR))  <<          \
+        make_tester((EXPECTED), __FILE__, __LINE__, 1.0, 60)
+
+#define TEST_ERR_RF(EXPECTED, ERR, RF)                        \
+    error_code_tester(__FILE__, __LINE__, (ERR))  <<          \
+        make_tester((EXPECTED), __FILE__, __LINE__, (RF), 60)
+
+#define BUFFERED_TEST(SIZE, EXPECTED)                             \
+    error_code_tester(__FILE__, __LINE__)  <<                     \
+        make_tester((EXPECTED), __FILE__, __LINE__, 1.0, (SIZE))
+
+#define BUFFERED_TEST_RF(SIZE, EXPECTED, RF)                      \
+    error_code_tester(__FILE__, __LINE__)  <<                     \
+        make_tester((EXPECTED), __FILE__, __LINE__, (RF), (SIZE))
+
+#define BUFFERED_TEST_ERR(SIZE, EXPECTED, ERR)                    \
+    error_code_tester(__FILE__, __LINE__, (ERR))  <<              \
+        make_tester((EXPECTED), __FILE__, __LINE__, 1.0, (SIZE))
+
+#define BUFFERED_TEST_ERR_RF(SIZE, EXPECTED, ERR, RF)             \
+    error_code_tester(__FILE__, __LINE__, (ERR))  <<              \
+        make_tester((EXPECTED), __FILE__, __LINE__, (RF), (SIZE))
 
 
 #endif
