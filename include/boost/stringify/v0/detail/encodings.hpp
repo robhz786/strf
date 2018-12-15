@@ -1360,6 +1360,12 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_write_replacement_char
     return false;
 }
 
+BOOST_STRINGIFY_STATIC_LINKAGE char32_t utf8_decode_single_char(char ch)
+{
+    const unsigned char uch = ch;
+    return uch < 0x80 ? static_cast<char32_t>(uch) : static_cast<char32_t>(-1);
+}
+
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_validate(char32_t ch)
 {
     return ( ch < 0x80     ? 1 :
@@ -2388,6 +2394,12 @@ bool utf32_write_replacement_char
     return false;
 }
 
+template <typename CharIn>
+char32_t utf32_decode_single_char(CharIn ch)
+{
+    return static_cast<char32_t>(ch);
+}
+
 template <typename CharT>
 stringify::v0::cv_result utf8_to_utf16_transcode
     ( const char** src
@@ -2881,6 +2893,7 @@ BOOST_STRINGIFY_INLINE const stringify::v0::encoding<char>& utf8()
          , stringify::v0::detail::utf8_encode_fill
          , stringify::v0::detail::utf8_codepoints_count
          , stringify::v0::detail::utf8_write_replacement_char
+         , stringify::v0::detail::utf8_decode_single_char
          , nullptr
          , nullptr
          , stringify::v0::detail::utf8_utfx<char16_t>::utf8_from_utfx
@@ -2910,6 +2923,7 @@ BOOST_STRINGIFY_INLINE const stringify::v0::encoding<char16_t>& utf16()
         , stringify::v0::detail::utf16_encode_fill<char16_t>
         , stringify::v0::detail::utf16_codepoints_count<char16_t>
         , stringify::v0::detail::utf16_write_replacement_char<char16_t>
+        , stringify::v0::detail::utf32_decode_single_char<char16_t>
         , nullptr
         , nullptr
         , nullptr
@@ -2939,6 +2953,7 @@ BOOST_STRINGIFY_INLINE const stringify::v0::encoding<char32_t>& utf32()
         , stringify::v0::detail::utf32_encode_fill<char32_t>
         , stringify::v0::detail::utf32_codepoints_count<char32_t>
         , stringify::v0::detail::utf32_write_replacement_char<char32_t>
+        , stringify::v0::detail::utf32_decode_single_char<char32_t>
         , nullptr
         , nullptr
         , nullptr
@@ -2972,6 +2987,7 @@ const stringify::v0::encoding<WChar16>& utfw_impl(std::integral_constant<std::si
         , stringify::v0::detail::utf16_encode_fill<WChar16>
         , stringify::v0::detail::utf16_codepoints_count<WChar16>
         , stringify::v0::detail::utf16_write_replacement_char<WChar16>
+        , stringify::v0::detail::utf32_decode_single_char<WChar16>
         , nullptr
         , nullptr
         , nullptr
@@ -3003,6 +3019,7 @@ inline const stringify::v0::encoding<WChar32>& utfw_impl
         , stringify::v0::detail::utf32_encode_fill<WChar32>
         , stringify::v0::detail::utf32_codepoints_count<WChar32>
         , stringify::v0::detail::utf32_write_replacement_char<WChar32>
+        , stringify::v0::detail::utf32_decode_single_char<WChar32>
         , nullptr
         , nullptr
         , nullptr

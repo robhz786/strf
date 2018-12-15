@@ -16,6 +16,7 @@ int main()
     namespace strf = boost::stringify::v0;
 
     TEST("a")    ( 'a' );
+    TEST("a")    ( strf::fmt('a') );
     TEST("aaaa") ( strf::multi('a', 4) );
     TEST("  aa") ( strf::multi('a', 2) > 4 );
 
@@ -36,6 +37,7 @@ int main()
     TEST(".....") ( strf::center('a', 5, '.').multi(0) );
 
     TEST("a")      ( strf::join_left(0, '.')('a') );
+    TEST("a")      ( strf::join_left(0, '.')(strf::fmt('a')) );
     TEST("   a")   ( strf::join_left(1, '.')(strf::right('a', 4)) );
     TEST("   a..") ( strf::join_left(6, '.')(strf::right('a', 4)) );
 
@@ -51,6 +53,8 @@ int main()
     TEST("aaaa")   ( strf::join_left(2, '.')(strf::multi('a', 4) > 4) );
     TEST("aaaa")   ( strf::join_left(4, '.')(strf::multi('a', 4) > 4) );
     TEST("aaaa..") ( strf::join_left(6, '.')(strf::multi('a', 4) > 4) );
+
+    // todo: test with alternative width calculators
 
     return report_errors() || boost::report_errors();
 }

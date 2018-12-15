@@ -46,11 +46,21 @@ public:
 
     int width_of(char32_t ch) const;
 
-    // int remaining_width
-    //     ( int width
-    //     , const char32_t* begin
-    //     , const char32_t* end
-    //     ) const;
+    template <typename CharT>
+    int width_of(CharT ch, const stringify::v0::encoding<CharT>& enc) const
+    {
+        if ( m_type == stringify::width_calculation_type::as_length
+          || m_type == stringify::width_calculation_type::as_codepoints_count )
+        {
+            return 1;
+        }
+        if ( std::is_same<CharT, char32_t>::value
+          && enc.id == stringify::v0::encoding_id::eid_utf32 )
+        {
+            return m_ch_wcalc(ch);
+        }
+        return m_ch_wcalc(enc.decode_single_char(ch));
+    }
 
     template <typename CharIn>
     int remaining_width

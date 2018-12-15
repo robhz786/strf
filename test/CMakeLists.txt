@@ -13,7 +13,7 @@ foreach(
   t
 #  assembly_string
    input_string
-#  input_char
+   input_char
 #  input_int
 #  input_char32
 #  input_facets_pack

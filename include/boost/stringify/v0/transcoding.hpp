@@ -144,10 +144,10 @@ struct encoding
         ( const CharT* begin
         , const CharT* end
         , std::size_t max_count );
-    typedef std::size_t (&replacement_char_size_func_ref) ();
     typedef bool (&write_replacement_char_func_ref)
         ( CharT** dest
         , CharT* dest_end );
+    typedef char32_t (&decode_char_func_ref)(CharT ch);
     typedef const stringify::v0::transcoder<CharT, char>* (*to8_func_ptr)
         ( const stringify::v0::encoding<char>& enc );
     typedef const stringify::v0::transcoder<char, CharT>* (*from8_func_ptr)
@@ -171,21 +171,10 @@ struct encoding
 
     validate_func_ref validate;
     encode_char_func_ref encode_char;
-
-    std::size_t char_size(char32_t ch, stringify::v0::error_handling err_hdl) const
-    {
-        auto s = validate(ch);
-        return s != (std::size_t)-1
-            ? s
-            : err_hdl == stringify::v0::error_handling::replace
-            ? replacement_char_size
-            : 0 ;       
-    }
-
-        
     encode_fill_func_ref encode_fill;
     codepoints_count_func_ref codepoints_count;
     write_replacement_char_func_ref write_replacement_char;
+    decode_char_func_ref decode_single_char;
 
     from8_func_ptr from8;
     to8_func_ptr to8;
@@ -202,6 +191,17 @@ struct encoding
     // char32_t max_char;
     // unsigned max_char_size;
     // bool monotonic_size;
+
+    std::size_t char_size(char32_t ch, stringify::v0::error_handling err_hdl) const
+    {
+        auto s = validate(ch);
+        return s != (std::size_t)-1
+            ? s
+            : err_hdl == stringify::v0::error_handling::replace
+            ? replacement_char_size
+            : 0 ;
+    }
+
 };
 
 
