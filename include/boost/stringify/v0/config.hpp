@@ -64,20 +64,20 @@ inline namespace v0 {                              \
 #define BOOST_STRINGIFY_HAS_NODISCARD
 #endif
 
-#if defined(__has_include)
+#if defined(__has_cpp_feature)
 
-#if __has_include(<charconv>)
+#if __has_cpp_feature(__cpp_lib_to_chars)
 #include <charconv>
 #define BOOST_STRINGIFY_HAS_STD_CHARCONV
 #endif
 
-#if __has_include(<string_view>)
+#if __has_cpp_feature(__cpp_lib_string_view_)
 #define BOOST_STRINGIFY_HAS_STD_STRING_VIEW
 #define BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS constexpr
 #include <string_view>
 #endif
 
-#if __has_include(<optional>)
+#if __has_cpp_feature(__cpp_lib_optional)
 #define BOOST_STRINGIFY_HAS_STD_OPTIONAL
 #include <optional>
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN;
@@ -85,7 +85,7 @@ using in_place_t = ::std::in_place_t;
 BOOST_STRINGIFY_V0_NAMESPACE_END;
 #endif
 
-#endif // defined(__has_include)
+#endif // defined(__has_cpp_feature)
 
 #endif // __cplusplus >= 201703L || ( defined(_MSV_VER) && defined(_HAS_CXX17))
 

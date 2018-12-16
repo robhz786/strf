@@ -33,8 +33,6 @@ public:
     {
     }
 
-    ~string_printer() = default;
-
     std::size_t necessary_size() const override;
 
     stringify::v0::expected_buff_it<CharT> write
@@ -97,17 +95,11 @@ public:
         , _wcalc(get_facet<stringify::v0::width_calculator_category>(fp))
         , _encoding(get_facet<stringify::v0::encoding_category<CharT>>(fp))
         , _epoli(get_facet<stringify::v0::encoding_policy_category>(fp))
-        , _fillcount
-            ( input.width() > 0
-            ? _wcalc.remaining_width
-                ( input.width()
-                , input.value().begin()
-                , input.value().length()
-                , _encoding
-                , _epoli )
-            : 0 )
     {
+        init();
     }
+
+    ~fmt_string_printer();
 
     std::size_t necessary_size() const override;
 
@@ -131,6 +123,8 @@ private:
         return fp.template get_facet<Category, input_tag>();
     }
 
+    void init();
+
     stringify::v0::expected_buff_it<CharT> write_str
         ( stringify::v0::buff_it<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const;
@@ -140,6 +134,24 @@ private:
         , stringify::buffer_recycler<CharT>& recycler
         , unsigned count ) const;
 };
+
+template<typename CharT>
+fmt_string_printer<CharT>::~fmt_string_printer()
+{
+}
+
+template<typename CharT>
+void fmt_string_printer<CharT>::init()
+{
+    _fillcount = ( _fmt.width() > 0
+                 ? _wcalc.remaining_width
+                     ( _fmt.width()
+                     , _fmt.value().begin()
+                     , _fmt.value().length()
+                     , _encoding
+                     , _epoli )
+                 : 0 );
+}
 
 template<typename CharT>
 std::size_t fmt_string_printer<CharT>::necessary_size() const

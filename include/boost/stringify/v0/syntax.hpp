@@ -486,7 +486,7 @@ private:
 
     static stringify::v0::expected_buff_it<char_type> write_args
         ( stringify::v0::buff_it<char_type> b
-        , OutputWriter& writer )
+        , OutputWriter& )
     {
         return { stringify::v0::in_place_t{}, b};
     }

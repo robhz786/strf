@@ -269,7 +269,7 @@ public:
 
     stringify::v0::expected_buff_it<CharT> write
         ( stringify::v0::buff_it<CharT> buff
-        , stringify::buffer_recycler<CharT>& recycler ) const
+        , stringify::buffer_recycler<CharT>& recycler ) const override
     {
         if (m_fillcount <= 0)
         {

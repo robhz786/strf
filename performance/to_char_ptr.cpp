@@ -34,10 +34,10 @@ int main()
     // {
     //     (void)strf::write(dest) .as("{}")("Hello World!");
     // }
-    // PRINT_BENCHMARK("fmt::format_to(dest, \"{}\", \"Hello World!\")")
-    // {
-    //     fmt::format_to(dest, "{}", "Hello World!");
-    // }
+    PRINT_BENCHMARK("fmt::format_to(dest, \"{}\", \"Hello World!\")")
+    {
+        fmt::format_to(dest, "{}", "Hello World!");
+    }
     PRINT_BENCHMARK_N(10, "std::strcpy(dest, \"Hello World!\")")
     {
         std::strcpy(dest, "Hello World!");
@@ -245,52 +245,51 @@ int main()
 
 #endif
 
-//     PRINT_BENCHMARK("std::sprintf(dest, \"%lld\", LLONG_MAX)")
-//     {
-//         std::sprintf(dest, "%lld", LLONG_MAX);
-//     }
+    PRINT_BENCHMARK("std::sprintf(dest, \"%lld\", LLONG_MAX)")
+    {
+        std::sprintf(dest, "%lld", LLONG_MAX);
+    }
 
-//     std::cout << std::endl;
-//     std::setlocale(LC_ALL, "en_US.UTF-8");
-//     strf::monotonic_grouping<10> numpunct_3(3);
-//     PRINT_BENCHMARK("strf::write(dest) .facets(numpunct_3) (*strf::fmt(LLONG_MAX))")
-//     {
-//         (void)strf::write(dest).facets(numpunct_3)(*strf::fmt(LLONG_MAX));
-//     }
-//     PRINT_BENCHMARK("fmt::format_to(dest, \"{:n}\", LLONG_MAX)")
-//     {
-//         fmt::format_to(dest, "{:n}", LLONG_MAX);
-//     }
+    std::cout << std::endl;
+    std::setlocale(LC_ALL, "en_US.UTF-8");
+    strf::monotonic_grouping<10> numpunct_3(3);
+    PRINT_BENCHMARK("strf::write(dest) .facets(numpunct_3) (*strf::fmt(LLONG_MAX))")
+    {
+        (void)strf::write(dest).facets(numpunct_3)(*strf::fmt(LLONG_MAX));
+    }
+    PRINT_BENCHMARK("fmt::format_to(dest, \"{:n}\", LLONG_MAX)")
+    {
+        fmt::format_to(dest, "{:n}", LLONG_MAX);
+    }
 
-// #if defined(__GNU_LIBRARY__)
-//     PRINT_BENCHMARK("std::sprintf(dest, \"%'lld\", LLONG_MAX)")
-//     {
-//         std::sprintf(dest, "%'lld", LLONG_MAX);
-//     }
-// #else
-//     std::cout << "\n";
-// #endif
+#if defined(__GNU_LIBRARY__)
+    PRINT_BENCHMARK("std::sprintf(dest, \"%'lld\", LLONG_MAX)")
+    {
+        std::sprintf(dest, "%'lld", LLONG_MAX);
+    }
+#else
+    std::cout << "\n";
+#endif
 
-//     /*
-//     std::cout << std::endl;
+/*
+    std::cout << std::endl;
     PRINT_BENCHMARK("strf::write(dest) (25, 25, 25)")
     {
         (void)strf::write(dest) (25, 25, 25);
     }
-//     PRINT_BENCHMARK("strf::write(dest) .as(\"{}{}{}\") (25, 25, 25)")
-//     {
-//         (void)strf::write(dest) .as("{}{}{}") (25, 25, 25);
-//     }
+    PRINT_BENCHMARK("strf::write(dest) .as(\"{}{}{}\") (25, 25, 25)")
+    {
+        (void)strf::write(dest) .as("{}{}{}") (25, 25, 25);
+    }
     PRINT_BENCHMARK("fmt::format_to(dest, \"{}{}{}\", 25, 25, 25)")
     {
         fmt::format_to(dest, "{}{}{}", 25, 25, 25);
     }
-//     PRINT_BENCHMARK("std::sprintf(dest, \"%d%d%d\", 25, 25, 25)")
-//     {
-//         std::sprintf(dest, "%d%d%d", 25, 25, 25);
-//     }
-// */
-
+    PRINT_BENCHMARK("std::sprintf(dest, \"%d%d%d\", 25, 25, 25)")
+    {
+        std::sprintf(dest, "%d%d%d", 25, 25, 25);
+    }
+*/
 //     std::cout << std::endl;
     PRINT_BENCHMARK("strf::write(dest) (LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
@@ -322,10 +321,10 @@ int main()
     {
         fmt::format_to(dest, "{}{:<8}{:#x}", 55555, 55555, 55555);
     }
-//     PRINT_BENCHMARK("std::sprintf(dest, \"%d%-+8d%#x\", 55555, 55555, 55555)")
-//     {
-//         std::sprintf(dest, "%d%-+8d%#x", 55555, 55555, 55555);
-//     }
+    PRINT_BENCHMARK("std::sprintf(dest, \"%d%-+8d%#x\", 55555, 55555, 55555)")
+    {
+        std::sprintf(dest, "%d%-+8d%#x", 55555, 55555, 55555);
+    }
 
     std::cout << "\n Strings and integers mixed: \n";
 

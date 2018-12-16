@@ -16,7 +16,7 @@ namespace detail
 {
 
 template <typename F, typename = typename F::category>
-constexpr bool has_category_member_type(F* f)
+constexpr bool has_category_member_type(F*)
 {
     return true;
 }

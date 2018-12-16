@@ -18,14 +18,14 @@ foreach(
 #  input_char32
 #  input_facets_pack
 #  input_range
-#  numpunct
+  numpunct
 #  join
 #  output_string
 #  output_char_ptr
 #  output_streambuf
 #  output_FILE
-#  facets_pack_merge
-#  facets_pack
+  facets_pack_merge
+  facets_pack
 #  reserve
 #  width_calculator
 #  transcoding

@@ -364,7 +364,7 @@ private:
                 BOOST_STRINGIFY_RETURN_ON_ERROR(x);
                 buff = *x;
             }
-            BOOST_ASSERT (buff.it + 1 >= buff.end);
+            BOOST_ASSERT (buff.it + 1 < buff.end);
             if(_fmt.base() == 16)
             {
                 buff.it[0] = '0';
@@ -440,7 +440,7 @@ private:
 
         BOOST_ASSERT(it + _digcount == tmp_end);
         std::size_t space = buff.end - buff.it;
-        BOOST_ASSERT(space < digcount);
+        BOOST_ASSERT(space < _digcount);
         std::copy_n(it, space, buff.it);
         it += space;
         unsigned count = _digcount - space;
@@ -465,94 +465,122 @@ private:
         ( stringify::v0::buff_it<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const
     {
+        char dig_buff[max_digcount];
+        char* dig_it = stringify::v0::detail::write_int_txtdigits_backwards
+            ( _fmt.value().value
+            , _fmt.base()
+            , _fmt.uppercase()
+            , dig_buff + max_digcount );
 
-        // todo
-        return { stringify::v0::in_place_t{}, buff };
-        // const auto& encoder = _out.encoder();
-        // auto sep = _out.validate(_punct->thousands_sep());
-        // if(sep.error_emitted)
-        // {
-        //     return;
-        // }
-        // if(sep.size == 0)
-        // {
-        //     write_digits_nosep();
-        //     return;
-        // }
+        unsigned char grp_buff[max_digcount];
+        auto* grp_it = _punct->groups(_digcount, grp_buff);
 
-        // char dig_buff[max_digcount];
-        // char* dig_it = stringify::v0::detail::write_int_txtdigits_backwards
-        //     ( _fmt.value().value
-        //     , _fmt.base()
-        //     , _fmt.uppercase()
-        //     , dig_buff + max_digcount );
-
-        // unsigned char grp_buff[max_digcount];
-        // auto* grp_it = _punct->groups(_digcount, grp_buff);
-
-        // if (sep.size == 1)
-        // {
-        //     CharT sep_ch;
-        //     auto t = encoder.encode
-        //         ( sep.ch, &sep_ch, &sep_ch + 1, _out.allow_surrogates() );
-        //     BOOST_ASSERT(t != &sep_ch + 2);
-        //     BOOST_ASSERT(t != nullptr);
-        //     (void) t;
-        //     write_digits_littlesep(dig_it, grp_buff, grp_it, sep_ch);
-        // }
-        // else
-        // {
-        //     write_digits_bigsep
-        //         ( dig_it
-        //         , grp_buff
-        //         , grp_it
-        //         , sep.ch
-        //         , static_cast<unsigned>(sep.size) );
-        // }
+        char32_t sep_char32 = _punct->thousands_sep();
+        if (sep_char32 <= _encoding.max_corresponding_u32char)
+        {
+            return write_digits_littlesep( buff, recycler, dig_it
+                                         , grp_buff, grp_it
+                                         , (CharT)sep_char32 );
+        }
+        auto sep_char32_size = _encoding.validate(sep_char32);
+        if (sep_char32_size == (std::size_t)-1)
+        {
+            return write_digits_nosep(buff, recycler);
+        }
+        if (sep_char32_size == 1)
+        {
+            CharT sep_ch;
+            CharT* sep_char_ptr = & sep_ch;
+            auto res = _encoding.encode_char( &sep_char_ptr, sep_char_ptr + 1
+                                            , sep_char32
+                                            , stringify::v0::error_handling::stop );
+            BOOST_ASSERT(res == stringify::v0::cv_result::success);
+            return write_digits_littlesep( buff, recycler, dig_it
+                                         , grp_buff, grp_it, sep_ch);
+        }
+        return write_digits_bigsep( buff, recycler, dig_it
+                                  , grp_buff, grp_it
+                                  , sep_char32, sep_char32_size );
     }
 
-    // void write_digits_littlesep
-    //     ( char* dig_it
-    //     , unsigned char* grp
-    //     , unsigned char* grp_it
-    //     , CharT sep ) const
-    // {
-    //     CharT buff[max_digcount * 2];
-    //     CharT* it = buff;
-    //     for(unsigned i = *grp_it; i != 0; --i)
-    //     {
-    //         *it++ = *dig_it++;
-    //     }
-    //     do
-    //     {
-    //         *it++ = sep;
-    //         for(unsigned i = *--grp_it; i != 0; --i)
-    //         {
-    //             *it++ = *dig_it++;
-    //         }
-    //     }
-    //     while(grp_it > grp);
-    //     BOOST_ASSERT(buff + _digcount + _sepcount == it);
-    //     _out.put(buff, _digcount + _sepcount);
-    // }
+    stringify::v0::expected_buff_it<CharT> write_digits_littlesep
+        ( stringify::v0::buff_it<CharT> buff
+        , stringify::buffer_recycler<CharT>& recycler
+        , const char* dig_it
+        , unsigned char* grp
+        , unsigned char* grp_it
+        , CharT sep_char ) const
+    {
+        std::size_t necessary_size = (grp_it - grp) + 1 + _digcount;
+        if (buff.it + necessary_size > buff.end)
+        {
+            auto x = recycler.recycle(buff.it);
+            BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+            buff = *x;
+            BOOST_ASSERT(buff.it + necessary_size <= buff.end);
+        }
 
-    // void write_digits_bigsep
-    //     ( char* dig_it
-    //     , unsigned char* grp
-    //     , unsigned char* grp_it
-    //     , char32_t sep_char
-    //     , unsigned sep_char_size ) const
-    // {
-    //     stringify::v0::detail::intdigits_writer<IntT, CharT> writer
-    //         { dig_it
-    //         , grp
-    //         , grp_it
-    //         , _out.encoder()
-    //         , sep_char
-    //         , sep_char_size };
+        for(unsigned i = *grp_it; i != 0; --i)
+        {
+            *buff.it++ = *dig_it++;
+        }
 
-    //     _out.put(writer);
-    // }
+        do
+        {
+            *buff.it++ = sep_char;
+            for(unsigned i = *--grp_it; i != 0; --i)
+            {
+                *buff.it++ = *dig_it++;
+            }
+        }
+        while(grp_it > grp);
+
+        return { stringify::v0::in_place_t{}, buff };
+    }
+
+    stringify::v0::expected_buff_it<CharT> write_digits_bigsep
+        ( stringify::v0::buff_it<CharT> buff
+        , stringify::buffer_recycler<CharT>& recycler
+        , char* dig_it
+        , unsigned char* grp
+        , unsigned char* grp_it
+        , char32_t sep_char
+        , unsigned sep_char_size ) const
+    {
+        {
+            unsigned i = *grp_it;
+            if (buff.it + i > buff.end)
+            {
+                auto x = recycler.recycle(buff.it);
+                BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+                buff = *x;
+            }
+            for( ; i != 0; --i)
+            {
+                *buff.it++ = *dig_it++;
+            }
+        }
+        do
+        {
+            unsigned i = *--grp_it;
+            if (buff.it + i + sep_char_size > buff.end)
+            {
+                auto x = recycler.recycle(buff.it);
+                BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+                buff = *x;
+            }
+            auto res = _encoding.encode_char( &buff.it, buff.end, sep_char
+                                            , stringify::v0::error_handling::stop );
+            (void)res;
+            BOOST_ASSERT(res == stringify::v0::cv_result::success);
+            for(; i != 0; --i)
+            {
+                *buff.it++ = *dig_it++;
+            }
+        }
+        while(grp_it > grp);
+        return { stringify::v0::in_place_t{}, buff };
+    }
 };
 
 template <typename IntT, typename CharT>
@@ -606,8 +634,8 @@ void fmt_int_printer<IntT, CharT>::init
     _fillcount = 0;
     int content_width
         = static_cast<int>( _fmt.precision() > _digcount
-                            ? _fmt.precision()
-                            : _digcount )
+                          ? _fmt.precision()
+                          : _digcount )
         + static_cast<int>(_sepcount)
         + extra_chars_count;
 

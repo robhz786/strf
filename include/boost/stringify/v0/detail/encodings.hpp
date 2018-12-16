@@ -944,7 +944,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_sanitize_size
     , bool allow_surr )
 {
     using stringify::v0::detail::utf8_decode;
-    unsigned char ch0, ch1, ch2, ch3;
+    unsigned char ch1, ch2, ch3;
     const char* src_it = src;
     std::size_t count = 0;
     for(;src_it != src_end; ++src_it)
@@ -1339,11 +1339,6 @@ std::size_t utf32_to_utf8_size
     return count;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_replacement_char_size()
-{
-    return 3;
-}
-
 BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_write_replacement_char
     ( char** dest
     , char* dest_end )
@@ -1374,352 +1369,352 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_validate(char32_t ch)
              ch < 0x110000 ? 4 : (std::size_t)-1 );
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result mutf8_encode_char
-    ( char** dest
-    , char* end
-    , char32_t ch
-    , stringify::v0::error_handling err_hdl )
-{
-    if (ch != 0)
-    {
-        return stringify::v0::detail::utf8_encode_char(dest, end, ch, err_hdl);
-    }
-    auto dest_it = *dest;
-    if (dest_it + 1 < end)
-    {
-        dest_it[0] = '\xC0';
-        dest_it[1] = '\x80';
-        *dest = dest_it + 2;
-        return stringify::v0::cv_result::success;
-    }
-    return stringify::v0::cv_result::insufficient_space;
-}
+// BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result mutf8_encode_char
+//     ( char** dest
+//     , char* end
+//     , char32_t ch
+//     , stringify::v0::error_handling err_hdl )
+// {
+//     if (ch != 0)
+//     {
+//         return stringify::v0::detail::utf8_encode_char(dest, end, ch, err_hdl);
+//     }
+//     auto dest_it = *dest;
+//     if (dest_it + 1 < end)
+//     {
+//         dest_it[0] = '\xC0';
+//         dest_it[1] = '\x80';
+//         *dest = dest_it + 2;
+//         return stringify::v0::cv_result::success;
+//     }
+//     return stringify::v0::cv_result::insufficient_space;
+// }
 
-BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result mutf8_encode
-    ( const char32_t** src
-    , const char32_t* src_end
-    , char** dest
-    , char* dest_end
-    , stringify::v0::error_handling err_hdl
-    , bool allow_surr )
-{
-    auto src_it = *src;
-    auto dest_it = *dest;
-    std::size_t available_space = dest_end - dest_it;
-    for(;src_it != src_end; ++src_it)
-    {
-        auto ch = *src_it;
-        if(ch == 0)
-        {
-            if(available_space >= 2)
-            {
-                dest_it[0] = '\xC0';
-                dest_it[1] = '\x80';
-                dest_it += 2;
-                available_space -= 2;
-            }
-            else goto insufficient_space;
-        }
-        else if(ch < 0x80)
-        {
-            if(available_space != 0)
-            {
-                *dest_it = static_cast<char>(ch);
-                ++dest_it;
-                --available_space;
-            }
-            else goto insufficient_space;
-        }
-        else if (ch < 0x800)
-        {
-            if(available_space >= 2)
-            {
-                dest_it[0] = static_cast<char>(0xC0 | ((ch & 0x7C0) >> 6));
-                dest_it[1] = static_cast<char>(0x80 |  (ch &  0x3F));
-                dest_it += 2;
-                available_space -= 2;
-            }
-            else goto insufficient_space;
-        }
-        else if (ch < 0x10000)
-        {
-            if(available_space >= 3)
-            {
-                if(allow_surr || stringify::v0::detail::not_surrogate(ch))
-                {
-                    dest_it[0] =  static_cast<char>(0xE0 | ((ch & 0xF000) >> 12));
-                    dest_it[1] =  static_cast<char>(0x80 | ((ch &  0xFC0) >> 6));
-                    dest_it[2] =  static_cast<char>(0x80 |  (ch &   0x3F));
-                    dest_it += 3;
-                    available_space -= 3;
-                }
-                else goto invalid_char;
-            }
-            else goto insufficient_space;
-        }
-        else if (ch < 0x110000)
-        {
-            if(available_space >= 4)
-            {
-                dest_it[0] = static_cast<char>(0xF0 | ((ch & 0x1C0000) >> 18));
-                dest_it[1] = static_cast<char>(0x80 | ((ch &  0x3F000) >> 12));
-                dest_it[2] = static_cast<char>(0x80 | ((ch &    0xFC0) >> 6));
-                dest_it[3] = static_cast<char>(0x80 |  (ch &     0x3F));
-                dest_it += 4;
-                available_space -= 4;
-            }
-            else goto insufficient_space;
-        }
-        else
-        {
-            invalid_char:
-            switch (err_hdl)
-            {
-                case stringify::v0::error_handling::stop:
-                    *dest = dest_it;
-                    *src = src_it;
-                    return stringify::v0::cv_result::invalid_char;
+// BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result mutf8_encode
+//     ( const char32_t** src
+//     , const char32_t* src_end
+//     , char** dest
+//     , char* dest_end
+//     , stringify::v0::error_handling err_hdl
+//     , bool allow_surr )
+// {
+//     auto src_it = *src;
+//     auto dest_it = *dest;
+//     std::size_t available_space = dest_end - dest_it;
+//     for(;src_it != src_end; ++src_it)
+//     {
+//         auto ch = *src_it;
+//         if(ch == 0)
+//         {
+//             if(available_space >= 2)
+//             {
+//                 dest_it[0] = '\xC0';
+//                 dest_it[1] = '\x80';
+//                 dest_it += 2;
+//                 available_space -= 2;
+//             }
+//             else goto insufficient_space;
+//         }
+//         else if(ch < 0x80)
+//         {
+//             if(available_space != 0)
+//             {
+//                 *dest_it = static_cast<char>(ch);
+//                 ++dest_it;
+//                 --available_space;
+//             }
+//             else goto insufficient_space;
+//         }
+//         else if (ch < 0x800)
+//         {
+//             if(available_space >= 2)
+//             {
+//                 dest_it[0] = static_cast<char>(0xC0 | ((ch & 0x7C0) >> 6));
+//                 dest_it[1] = static_cast<char>(0x80 |  (ch &  0x3F));
+//                 dest_it += 2;
+//                 available_space -= 2;
+//             }
+//             else goto insufficient_space;
+//         }
+//         else if (ch < 0x10000)
+//         {
+//             if(available_space >= 3)
+//             {
+//                 if(allow_surr || stringify::v0::detail::not_surrogate(ch))
+//                 {
+//                     dest_it[0] =  static_cast<char>(0xE0 | ((ch & 0xF000) >> 12));
+//                     dest_it[1] =  static_cast<char>(0x80 | ((ch &  0xFC0) >> 6));
+//                     dest_it[2] =  static_cast<char>(0x80 |  (ch &   0x3F));
+//                     dest_it += 3;
+//                     available_space -= 3;
+//                 }
+//                 else goto invalid_char;
+//             }
+//             else goto insufficient_space;
+//         }
+//         else if (ch < 0x110000)
+//         {
+//             if(available_space >= 4)
+//             {
+//                 dest_it[0] = static_cast<char>(0xF0 | ((ch & 0x1C0000) >> 18));
+//                 dest_it[1] = static_cast<char>(0x80 | ((ch &  0x3F000) >> 12));
+//                 dest_it[2] = static_cast<char>(0x80 | ((ch &    0xFC0) >> 6));
+//                 dest_it[3] = static_cast<char>(0x80 |  (ch &     0x3F));
+//                 dest_it += 4;
+//                 available_space -= 4;
+//             }
+//             else goto insufficient_space;
+//         }
+//         else
+//         {
+//             invalid_char:
+//             switch (err_hdl)
+//             {
+//                 case stringify::v0::error_handling::stop:
+//                     *dest = dest_it;
+//                     *src = src_it;
+//                     return stringify::v0::cv_result::invalid_char;
 
-                case stringify::v0::error_handling::replace:
-                    dest_it[0] = 0xEF;
-                    dest_it[1] = 0xBF;
-                    dest_it[2] = 0xBD;
-                    dest_it += 3;
-                    available_space -=3;
-                    break;
+//                 case stringify::v0::error_handling::replace:
+//                     dest_it[0] = 0xEF;
+//                     dest_it[1] = 0xBF;
+//                     dest_it[2] = 0xBD;
+//                     dest_it += 3;
+//                     available_space -=3;
+//                     break;
 
-                default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
-                    break;
-            }
-        }
-    }
-    *dest = dest_it;
-    *src = src_it;
-    return stringify::v0::cv_result::success;
+//                 default:
+//                     BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+//                     break;
+//             }
+//         }
+//     }
+//     *dest = dest_it;
+//     *src = src_it;
+//     return stringify::v0::cv_result::success;
 
-    insufficient_space:
-    *dest = dest_it;
-    *src = src_it;
-    return stringify::v0::cv_result::insufficient_space;
-}
+//     insufficient_space:
+//     *dest = dest_it;
+//     *src = src_it;
+//     return stringify::v0::cv_result::insufficient_space;
+// }
 
-BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result mutf8_sanitize
-    ( const char** src
-    , const char* src_end
-    , char** dest
-    , char* dest_end
-    , stringify::v0::error_handling err_hdl
-    , bool allow_surr )
-{
-    using stringify::v0::detail::utf8_decode;
+// BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result mutf8_sanitize
+//     ( const char** src
+//     , const char* src_end
+//     , char** dest
+//     , char* dest_end
+//     , stringify::v0::error_handling err_hdl
+//     , bool allow_surr )
+// {
+//     using stringify::v0::detail::utf8_decode;
 
-    unsigned char ch0, ch1, ch2, ch3;
-    auto dest_it = *dest;
-    auto src_it = *src;
-    const char* previous_src_it;
+//     unsigned char ch0, ch1, ch2, ch3;
+//     auto dest_it = *dest;
+//     auto src_it = *src;
+//     const char* previous_src_it;
 
-    for(;src_it != src_end; ++src_it)
-    {
-        previous_src_it = src_it;
-        ch0 = (*src_it);
-        if (ch0 == 0)
-        {
-            if(dest_it + 1 < dest_end)
-            {
-                dest_it[0] = 0xC0;
-                dest_it[1] = 0x80;
-                dest_it += 2;
-            } else goto insufficient_space;
-        }
-        else if(ch0 < 0x80)
-        {
-            if(dest_it != dest_end)
-            {
-                *dest_it = ch0;
-                ++dest_it;
-            } else goto insufficient_space;
-        }
-        else if(0xC0 == (ch0 & 0xE0))
-        {
-            if(++src_it != src_end && is_utf8_continuation(ch1 = * src_it))
-            {
-                auto x = utf8_decode(ch0, ch1);
-                if (x >= 0x80 || x == 0)
-                {
-                    if (dest_it + 1 < dest_end)
-                    {
-                        dest_it[0] = ch0;
-                        dest_it[1] = ch1;
-                        dest_it += 2;
-                    } else goto insufficient_space;
-                }
-                else if (dest_it != dest_end)
-                {
-                    *dest_it = x;
-                    ++dest_it;
-                } else goto insufficient_space;
-            } else goto invalid_char;
-        }
-        else if (0xE0 == (ch0 & 0xF0))
-        {
-            if ( ++src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
-            {
-                unsigned x = utf8_decode(ch0, ch1, ch2);
-                if (x >= 0x800)
-                {
-                    if( allow_surr || detail::not_surrogate(x) )
-                    {
-                        if (dest_it + 2 < dest_end)
-                        {
-                            dest_it[0] = ch0;
-                            dest_it[1] = ch1;
-                            dest_it[2] = ch2;
-                            dest_it += 3;
-                        } else goto insufficient_space;
-                    } else goto invalid_char_with_continuations_chars;
-                }
-                else if (x >= 0x80 || x == 0)
-                {
-                    if (dest_it + 1 < dest_end)
-                    {
-                        dest_it[0] = 0xC0 | ((x & 0x7C0) >> 6);
-                        dest_it[1] = 0x80 |  (x &  0x3F);
-                        dest_it += 2;
-                    } else goto insufficient_space;
-                }
-                else if (dest_it != dest_end)
-                {
-                    *dest_it = x;
-                    ++dest_it;
-                } else goto insufficient_space;
-            } else goto invalid_char;
-        }
-        else if (0xF0 == (ch0 & 0xF8))
-        {
-            if ( ++src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
-              && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
-            {
-                unsigned x = utf8_decode(ch0, ch1, ch2, ch3) - 0x10000;
-                if (x <= 0x10FFFF)
-                {
-                    if (x > 0x10000)
-                    {
-                        if (dest_it + 4 < dest_end)
-                        {
-                            dest_it[0] = ch0;
-                            dest_it[1] = ch1;
-                            dest_it[2] = ch2;
-                            dest_it[3] = ch3;
-                            dest_it += 4;
-                        } else goto insufficient_space;
-                    }
-                    else if (x > 0x800)
-                    {
-                        if (dest_it + 4 < dest_end)
-                        {
-                            dest_it[0] = 0xE0 | ((x & 0xF000) >> 12);
-                            dest_it[1] = 0x80 | ((x &  0xFC0) >> 6);
-                            dest_it[2] = 0x80 |  (x &   0x3F);
-                            dest_it += 3;
-                        } else goto insufficient_space;
-                    }
-                    else if (x > 0x80 || x == 0)
-                    {
-                        if (dest_it + 4 < dest_end)
-                        {
-                            dest_it[0] = 0xC0 | ((x & 0x7C0) >> 6);
-                            dest_it[1] = 0x80 |  (x &  0x3F);
-                            dest_it += 2;
-                        } else goto insufficient_space;
-                    }
-                    else if (dest_it != dest_end)
-                    {
-                        *dest_it = ch0;
-                        ++dest_it;
-                    } else goto insufficient_space;
-                } else goto invalid_char_with_continuations_chars;
-            } else goto invalid_char;
-        }
-        else
-        {
-            invalid_char_with_continuations_chars:
-            {
-                auto next_src_it = src_it + 1;
-                while(next_src_it != src_end && is_utf8_continuation(*next_src_it))
-                {
-                    ++next_src_it;
-                }
-                src_it = next_src_it;
-            }
-            invalid_char:
-            switch (err_hdl)
-            {
-                case stringify::v0::error_handling::stop:
-                    *dest = dest_it;
-                    *src = src_it;
-                    return stringify::v0::cv_result::invalid_char;
+//     for(;src_it != src_end; ++src_it)
+//     {
+//         previous_src_it = src_it;
+//         ch0 = (*src_it);
+//         if (ch0 == 0)
+//         {
+//             if(dest_it + 1 < dest_end)
+//             {
+//                 dest_it[0] = 0xC0;
+//                 dest_it[1] = 0x80;
+//                 dest_it += 2;
+//             } else goto insufficient_space;
+//         }
+//         else if(ch0 < 0x80)
+//         {
+//             if(dest_it != dest_end)
+//             {
+//                 *dest_it = ch0;
+//                 ++dest_it;
+//             } else goto insufficient_space;
+//         }
+//         else if(0xC0 == (ch0 & 0xE0))
+//         {
+//             if(++src_it != src_end && is_utf8_continuation(ch1 = * src_it))
+//             {
+//                 auto x = utf8_decode(ch0, ch1);
+//                 if (x >= 0x80 || x == 0)
+//                 {
+//                     if (dest_it + 1 < dest_end)
+//                     {
+//                         dest_it[0] = ch0;
+//                         dest_it[1] = ch1;
+//                         dest_it += 2;
+//                     } else goto insufficient_space;
+//                 }
+//                 else if (dest_it != dest_end)
+//                 {
+//                     *dest_it = x;
+//                     ++dest_it;
+//                 } else goto insufficient_space;
+//             } else goto invalid_char;
+//         }
+//         else if (0xE0 == (ch0 & 0xF0))
+//         {
+//             if ( ++src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+//               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
+//             {
+//                 unsigned x = utf8_decode(ch0, ch1, ch2);
+//                 if (x >= 0x800)
+//                 {
+//                     if( allow_surr || detail::not_surrogate(x) )
+//                     {
+//                         if (dest_it + 2 < dest_end)
+//                         {
+//                             dest_it[0] = ch0;
+//                             dest_it[1] = ch1;
+//                             dest_it[2] = ch2;
+//                             dest_it += 3;
+//                         } else goto insufficient_space;
+//                     } else goto invalid_char_with_continuations_chars;
+//                 }
+//                 else if (x >= 0x80 || x == 0)
+//                 {
+//                     if (dest_it + 1 < dest_end)
+//                     {
+//                         dest_it[0] = 0xC0 | ((x & 0x7C0) >> 6);
+//                         dest_it[1] = 0x80 |  (x &  0x3F);
+//                         dest_it += 2;
+//                     } else goto insufficient_space;
+//                 }
+//                 else if (dest_it != dest_end)
+//                 {
+//                     *dest_it = x;
+//                     ++dest_it;
+//                 } else goto insufficient_space;
+//             } else goto invalid_char;
+//         }
+//         else if (0xF0 == (ch0 & 0xF8))
+//         {
+//             if ( ++src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+//               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
+//               && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
+//             {
+//                 unsigned x = utf8_decode(ch0, ch1, ch2, ch3) - 0x10000;
+//                 if (x <= 0x10FFFF)
+//                 {
+//                     if (x > 0x10000)
+//                     {
+//                         if (dest_it + 4 < dest_end)
+//                         {
+//                             dest_it[0] = ch0;
+//                             dest_it[1] = ch1;
+//                             dest_it[2] = ch2;
+//                             dest_it[3] = ch3;
+//                             dest_it += 4;
+//                         } else goto insufficient_space;
+//                     }
+//                     else if (x > 0x800)
+//                     {
+//                         if (dest_it + 4 < dest_end)
+//                         {
+//                             dest_it[0] = 0xE0 | ((x & 0xF000) >> 12);
+//                             dest_it[1] = 0x80 | ((x &  0xFC0) >> 6);
+//                             dest_it[2] = 0x80 |  (x &   0x3F);
+//                             dest_it += 3;
+//                         } else goto insufficient_space;
+//                     }
+//                     else if (x > 0x80 || x == 0)
+//                     {
+//                         if (dest_it + 4 < dest_end)
+//                         {
+//                             dest_it[0] = 0xC0 | ((x & 0x7C0) >> 6);
+//                             dest_it[1] = 0x80 |  (x &  0x3F);
+//                             dest_it += 2;
+//                         } else goto insufficient_space;
+//                     }
+//                     else if (dest_it != dest_end)
+//                     {
+//                         *dest_it = ch0;
+//                         ++dest_it;
+//                     } else goto insufficient_space;
+//                 } else goto invalid_char_with_continuations_chars;
+//             } else goto invalid_char;
+//         }
+//         else
+//         {
+//             invalid_char_with_continuations_chars:
+//             {
+//                 auto next_src_it = src_it + 1;
+//                 while(next_src_it != src_end && is_utf8_continuation(*next_src_it))
+//                 {
+//                     ++next_src_it;
+//                 }
+//                 src_it = next_src_it;
+//             }
+//             invalid_char:
+//             switch (err_hdl)
+//             {
+//                 case stringify::v0::error_handling::stop:
+//                     *dest = dest_it;
+//                     *src = src_it;
+//                     return stringify::v0::cv_result::invalid_char;
 
-                case stringify::v0::error_handling::replace:
-                    if (dest_it + 2 < dest_end)
-                    {
-                        dest_it[0] = 0xEF;
-                        dest_it[1] = 0xBF;
-                        dest_it[2] = 0xBD;
-                        dest_it += 3;
-                        break;
-                    } else goto insufficient_space;
+//                 case stringify::v0::error_handling::replace:
+//                     if (dest_it + 2 < dest_end)
+//                     {
+//                         dest_it[0] = 0xEF;
+//                         dest_it[1] = 0xBF;
+//                         dest_it[2] = 0xBD;
+//                         dest_it += 3;
+//                         break;
+//                     } else goto insufficient_space;
 
-                default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
-                    break;
-            }
-        }
-    }
-    *dest = dest_it;
-    *src = src_it;
-    return stringify::v0::cv_result::success;
+//                 default:
+//                     BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+//                     break;
+//             }
+//         }
+//     }
+//     *dest = dest_it;
+//     *src = src_it;
+//     return stringify::v0::cv_result::success;
 
-    insufficient_space:
-    *dest = dest_it;
-    *src = previous_src_it;
-    return stringify::v0::cv_result::insufficient_space;
-}
+//     insufficient_space:
+//     *dest = dest_it;
+//     *src = previous_src_it;
+//     return stringify::v0::cv_result::insufficient_space;
+// }
 
 
-BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result mutf8_encode_fill
-    ( char** dest
-    , char* end
-    , std::size_t& count
-    , char32_t ch
-    , stringify::v0::error_handling err_hdl )
-{
-    if (ch != 0)
-    {
-        return stringify::v0::detail::utf8_encode_fill(dest, end, count, ch, err_hdl);
-    }
-    auto dest_it = *dest;
-    std::size_t available = (end - dest_it) / 2;
-    std::size_t c = count;
-    std::size_t minc = std::min(count, available);
-    auto it = std::fill_n( reinterpret_cast<std::pair<char, char>*>(dest_it)
-                         , minc
-                         , std::pair<char, char>{'\xC0', '\x80'});
-    *dest = reinterpret_cast<char*>(it);
-    count = c - minc;
-    return stringify::v0::cv_result::insufficient_space;
-}
+// BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result mutf8_encode_fill
+//     ( char** dest
+//     , char* end
+//     , std::size_t& count
+//     , char32_t ch
+//     , stringify::v0::error_handling err_hdl )
+// {
+//     if (ch != 0)
+//     {
+//         return stringify::v0::detail::utf8_encode_fill(dest, end, count, ch, err_hdl);
+//     }
+//     auto dest_it = *dest;
+//     std::size_t available = (end - dest_it) / 2;
+//     std::size_t c = count;
+//     std::size_t minc = std::min(count, available);
+//     auto it = std::fill_n( reinterpret_cast<std::pair<char, char>*>(dest_it)
+//                          , minc
+//                          , std::pair<char, char>{'\xC0', '\x80'});
+//     *dest = reinterpret_cast<char*>(it);
+//     count = c - minc;
+//     return stringify::v0::cv_result::insufficient_space;
+// }
 
-BOOST_STRINGIFY_STATIC_LINKAGE std::size_t mutf8_validate(char32_t ch)
-{
-    return (ch ==  0 ? 2 :
-            ch < 0x80 ? 1 :
-            ch < 0x800 ? 2 :
-            ch < 0x10000 ? 3 :
-            ch < 0x110000 ? 4 : (std::size_t)-1);
-}
+// BOOST_STRINGIFY_STATIC_LINKAGE std::size_t mutf8_validate(char32_t ch)
+// {
+//     return (ch ==  0 ? 2 :
+//             ch < 0x80 ? 1 :
+//             ch < 0x800 ? 2 :
+//             ch < 0x10000 ? 3 :
+//             ch < 0x110000 ? 4 : (std::size_t)-1);
+// }
 
 
 template <typename CharIn, typename CharOut>
@@ -2039,17 +2034,20 @@ stringify::v0::cv_result utf16_encode_fill
 {
     auto dest_it = *dest;
     const std::size_t capacity = dest_end - dest_it;
+    using traits = std::char_traits<CharT>;
     if (ch < 0x10000)
     {
         do_write:
 
         if(count <= capacity)
         {
-            *dest = std::fill_n(dest_it, count, static_cast<CharT>(ch));
+            traits::assign(dest_it, count, static_cast<CharT>(ch));
+            *dest = dest_it + count;
             count = 0;
             return stringify::v0::cv_result::success;
         }
-        *dest = std::fill_n(dest_it, capacity, static_cast<CharT>(ch));
+        traits::assign(dest_it, capacity, static_cast<CharT>(ch));
+        *dest = dest_it + capacity;
         count -= capacity;
         return stringify::v0::cv_result::insufficient_space;
     }
@@ -2166,6 +2164,7 @@ std::size_t utf32_to_utf16_size
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
+    (void) allow_surr;
     std::size_t count = 0;
     const CharIn* src_it = src;
     for ( ; src_it != src_end; ++src_it)
@@ -2217,6 +2216,8 @@ std::size_t utf32_sanitize_size
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
+    (void) err_hdl;
+    (void) allow_surr;
     return src_end - src;
     // todo err_hdl
 }
@@ -2349,6 +2350,7 @@ stringify::v0::cv_result utf32_encode_fill
     , stringify::v0::error_handling err_hdl )
 {
     (void) err_hdl;
+    using traits = std::char_traits<CharOut>;
     if (ch >= 0x110000)
     {
         switch (err_hdl)
@@ -2368,12 +2370,12 @@ stringify::v0::cv_result utf32_encode_fill
     std::size_t available_size = dest_end - dest_it;
     if (count <= available_size)
     {
-        std::fill_n(dest_it, count, ch);
+        traits::assign(dest_it, count, ch);
         *dest = dest_it + count;
         count = 0;
         return stringify::v0::cv_result::success;
     }
-    std::fill_n(dest_it, available_size, ch);
+    traits::assign(dest_it, available_size, ch);
     *dest = dest_it + available_size;
     count -= available_size;
     return stringify::v0::cv_result::insufficient_space;

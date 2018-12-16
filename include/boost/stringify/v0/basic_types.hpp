@@ -561,6 +561,9 @@ stringify::v0::expected_buff_it<CharOut> transcode
                    , std::make_error_code(std::errc::result_out_of_range) };
         }
         BOOST_ASSERT(res == stringify::v0::cv_result::insufficient_space);
+        auto x = recycler.recycle(buff.it);
+        BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+        buff = *x;
     }
 }
 
@@ -677,11 +680,11 @@ inline stringify::v0::expected_buff_it<CharT> write_fill
         std::size_t space = buff.end - buff.it;
         if (count <= space)
         {
-            std::fill_n(buff.it, count, ch);
+            std::char_traits<CharT>::assign(buff.it, count, ch);
             return { stringify::v0::in_place_t{}
                    , stringify::v0::buff_it<CharT>{ buff.it + count, buff.end } };
         }
-        std::fill_n(buff.it, space, ch);
+        std::char_traits<CharT>::assign(buff.it, space, ch);
         count -= space;
         auto x = recycler.recycle(buff.it + space);
         BOOST_STRINGIFY_RETURN_ON_ERROR(x);

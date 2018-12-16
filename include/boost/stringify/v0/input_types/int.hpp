@@ -9,6 +9,7 @@
 #include <boost/stringify/v0/facets_pack.hpp>
 #include <boost/stringify/v0/detail/int_digits.hpp>
 #include <boost/assert.hpp>
+#include <algorithm>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
@@ -19,8 +20,7 @@ class int_printer: public printer<CharT>
 
 public:
 
-    template <typename FPack>
-    int_printer(const FPack& fp, IntT value)
+    int_printer (IntT value)
         : _value(value)
         , _digcount(stringify::v0::detail::count_digits<10>(value))
     {
@@ -183,49 +183,57 @@ template <typename CharT, typename FPack>
 inline stringify::v0::detail::int_printer<short, CharT>
 make_printer(const FPack& fp, short x)
 {
-    return {fp, x};
+    (void)fp;
+    return {x};
 }
 template <typename CharT, typename FPack>
 inline stringify::v0::detail::int_printer<int, CharT>
 make_printer(const FPack& fp, int x)
 {
-    return {fp, x};
+    (void)fp;
+    return {x};
 }
 template <typename CharT, typename FPack>
 inline stringify::v0::detail::int_printer<long, CharT>
 make_printer(const FPack& fp, long x)
 {
-    return {fp, x};
+    (void)fp;
+    return {x};
 }
 template <typename CharT, typename FPack>
 inline stringify::v0::detail::int_printer<long long, CharT>
 make_printer(const FPack& fp, long long x)
 {
-    return {fp, x};
+    (void)fp;
+    return {x};
 }
 template <typename CharT, typename FPack>
 inline stringify::v0::detail::int_printer<unsigned short, CharT>
 make_printer(const FPack& fp, unsigned short x)
 {
-    return {fp, x};
+    (void)fp;
+    return {x};
 }
 template <typename CharT, typename FPack>
 inline stringify::v0::detail::int_printer<unsigned int, CharT>
 make_printer(const FPack& fp, unsigned int x)
 {
-    return {fp, x};
+    (void)fp;
+    return {x};
 }
 template <typename CharT, typename FPack>
 inline stringify::v0::detail::int_printer<unsigned long, CharT>
 make_printer(const FPack& fp, unsigned long x)
 {
-    return {fp, x};
+    (void)fp;
+    return {x};
 }
 template <typename CharT, typename FPack>
 inline stringify::v0::detail::int_printer<unsigned long long, CharT>
 make_printer(const FPack& fp, unsigned long long x)
 {
-    return {fp, x};
+    (void)fp;
+    return {x};
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

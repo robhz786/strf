@@ -257,42 +257,43 @@ int main()
     TEST("00123~~")  ( strf::join_right(7, '.')(strf::left(123, 7, U'~').p(5)) );
     TEST("00123")    ( strf::join_right(5, '.')(strf::left(123, 5, U'~').p(5)) );
     TEST("00123")    ( strf::join_right(5, '.')(strf::left(123, 3, U'~').p(5)) );
-/*
+
     {
         auto punct = strf::monotonic_grouping<10>{3};
 
-        TEST("       0").facets(punct) (strf::right(0, 8));
-        TEST("     100").facets(punct) (strf::right(100, 8));
-        TEST("   1,000").facets(punct) (strf::right(1000, 8));
-        TEST("   00000000001,000").facets(punct) (strf::right(1000,18).p(14));
-        TEST("    1000").facets(punct) (strf::hex(0x1000) > 8);
+        TEST("       0").facets(punct) (*strf::right(0, 8));
+        TEST("     100").facets(punct) (*strf::right(100, 8));
+        TEST("   1,000").facets(punct) (*strf::right(1000, 8));
+        TEST("    1000").facets(punct) ( strf::right(1000, 8));
+        TEST("   00000000001,000").facets(punct) (*strf::right(1000,18).p(14));
+        TEST("    1000").facets(punct) (*strf::hex(0x1000) > 8);
 
-        TEST("       0").facets(punct) ( strf::join_right(8)(0) );
-        TEST("     100").facets(punct) ( strf::join_right(8)(100) );
-        TEST("   1,000").facets(punct) ( strf::join_right(8)(1000) );
-        TEST("    1000").facets(punct) ( strf::join_right(8)(strf::hex(0x1000)) );
+        TEST("       0").facets(punct) ( strf::join_right(8)(*strf::fmt(0)) );
+        TEST("     100").facets(punct) ( strf::join_right(8)(*strf::fmt(100)) );
+        TEST("   1,000").facets(punct) ( strf::join_right(8)(*strf::fmt(1000)) );
+        TEST("    1000").facets(punct) ( strf::join_right(8)(*strf::hex(0x1000)) );
     }
 
     {
         auto punct = strf::monotonic_grouping<16>{3}.thousands_sep('\'');
 
-        TEST("     0x0").facets(punct) (~strf::hex(0x0) > 8);
-        TEST("   0x100").facets(punct) (~strf::hex(0x100) > 8);
-        TEST(" 0x1'000").facets(punct) (~strf::hex(0x1000) > 8);
-        TEST("   1'000").facets(punct) ( strf::hex(0x1000) > 8);
+        TEST("     0x0").facets(punct) (~*strf::hex(0x0) > 8);
+        TEST("   0x100").facets(punct) (~*strf::hex(0x100) > 8);
+        TEST(" 0x1'000").facets(punct) (~*strf::hex(0x1000) > 8);
+        TEST("   1'000").facets(punct) ( *strf::hex(0x1000) > 8);
 
-        TEST("     0x0").facets(punct) ( strf::join_right(8)(~strf::hex(0x0)) );
-        TEST("   0x100").facets(punct) ( strf::join_right(8)(~strf::hex(0x100)) );
-        TEST(" 0x1'000").facets(punct) ( strf::join_right(8)(~strf::hex(0x1000)) );
+        TEST("     0x0").facets(punct) ( strf::join_right(8)(~*strf::hex(0x0)) );
+        TEST("   0x100").facets(punct) ( strf::join_right(8)(~*strf::hex(0x100)) );
+        TEST(" 0x1'000").facets(punct) ( strf::join_right(8)(~*strf::hex(0x1000)) );
 
-        TEST("     0x0").facets(punct) ( strf::join_right(8)(~strf::hex(0x0)) );
-        TEST("   0x100").facets(punct) ( strf::join_right(8)(~strf::hex(0x100)) );
-        TEST(" 0x1'000").facets(punct) ( strf::join_right(8)(~strf::hex(0x1000)) );
+        TEST("     0x0").facets(punct) ( strf::join_right(8)(~*strf::hex(0x0)) );
+        TEST("   0x100").facets(punct) ( strf::join_right(8)(~*strf::hex(0x100)) );
+        TEST(" 0x1'000").facets(punct) ( strf::join_right(8)(~*strf::hex(0x1000)) );
     }
     {
         TEST("1'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7")
             .facets(strf::monotonic_grouping<8>{1}.thousands_sep('\''))
-            ( strf::oct(01777777777777777777777LL) );
+            ( *strf::oct(01777777777777777777777LL) );
     }
     {
         const char* expected =
@@ -305,8 +306,9 @@ int main()
 
         TEST(expected)
             .facets(strf::monotonic_grouping<8>{1}.thousands_sep(0x10FFFF))
-            (strf::oct(01777777777777777777777LL));
+            ( *strf::oct(01777777777777777777777LL) );
     }
+    /*
     {
         // invalid punctuation char
         auto punct = strf::monotonic_grouping<10>{3}.thousands_sep(0xD800);
@@ -339,30 +341,6 @@ int main()
             .facets(strf::allow_surrogates(false))
             .facets(strf::encoding_error(ec))
             (100000000);
-
-        {
-            class my_exception: public std::exception
-            {
-            };
-
-            bool my_exception_thrown = false;
-
-            try
-            {
-                auto thrower_func = [](){throw my_exception{};};
-
-                auto s = strf::to_string
-                    .facets(punct)
-                    .facets(strf::allow_surrogates(false))
-                    .facets(strf::encoding_error(thrower_func))
-                    (100000000);
-            }
-            catch (const my_exception&)
-            {
-                my_exception_thrown = true;
-            }
-            BOOST_TEST(my_exception_thrown);
-        }
     }
 */
     int rc = report_errors() || boost::report_errors();

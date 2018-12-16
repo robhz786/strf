@@ -47,11 +47,11 @@ public:
                , std::make_error_code(std::errc::result_out_of_range) };
     }
 
-    stringify::v0::expected<void, std::error_code> finish(CharOut *it) noexcept
+    stringify::v0::expected<std::size_t, std::error_code> finish(CharOut *it) noexcept
     {
         BOOST_ASSERT(it < m_end);
         *it = 0;
-        return {};
+        return { boost::stringify::v0::in_place_t{}, it - m_begin };
     }
  
 private:

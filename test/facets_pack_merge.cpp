@@ -19,6 +19,8 @@ struct facet_type
 
 struct facet_category
 {
+    constexpr static bool by_value = true;
+    constexpr static bool constrainable = true;
     static const auto& get_default() noexcept
     {
         static const facet_type f {};

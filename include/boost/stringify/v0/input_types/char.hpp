@@ -233,34 +233,40 @@ class char_printer: public printer<CharT>
 
     template <typename FPack>
     char_printer (const FPack& fp, CharT ch)
-        : _ch(ch)
+        : _encoding(get_facet<stringify::v0::encoding_category<CharT>>(fp))
+        , _wcalc(get_facet<stringify::v0::width_calculator_category>(fp))
+        , _ch(ch)
     {
-        const auto& encoding = get_facet<stringify::v0::encoding_category<CharT>>(fp);
-        auto wcalc = get_facet<stringify::v0::width_calculator_category>(fp);
-        _char_width = wcalc.width_of(ch, encoding);
     }
 
 public:
 
-    std::size_t necessary_size() const override
-    {
-        return 1;
-    }
+    std::size_t necessary_size() const override;
 
     stringify::v0::expected_buff_it<CharT> write
         ( stringify::v0::buff_it<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const override;
 
-    int remaining_width(int w) const override
-    {
-        return w > _char_width ? w - _char_width : 0;
-    }
+    int remaining_width(int w) const override;
 
 private:
-
-    int _char_width;
+    const stringify::v0::encoding<CharT>& _encoding;
+    stringify::v0::width_calculator _wcalc;
     CharT _ch;
 };
+
+template <typename CharT>
+std::size_t char_printer<CharT>::necessary_size() const
+{
+    return 1;
+}
+
+template <typename CharT>
+int char_printer<CharT>::remaining_width(int w) const
+{
+    auto char_width = _wcalc.width_of(_ch, _encoding);
+    return w > char_width ? w - char_width : 0;
+}
 
 template <typename CharT>
 stringify::v0::expected_buff_it<CharT> stringify::v0::char_printer<CharT>::write
@@ -299,9 +305,7 @@ public:
         , _epoli(get_facet<stringify::v0::encoding_policy_category>(fp))
         , _fmt(input)
     {
-        auto wcalc = get_facet<stringify::v0::width_calculator_category>(fp);
-        auto char_width = wcalc.width_of(_fmt.value(), _encoding);
-        _content_width = input.count() * char_width;
+        init(get_facet<stringify::v0::width_calculator_category>(fp));
     }
 
     std::size_t necessary_size() const override;
@@ -317,13 +321,15 @@ private:
     const stringify::v0::encoding<CharT> _encoding;
     const stringify::v0::encoding_policy  _epoli;
     const stringify::v0::char_with_format<CharT> _fmt;
-    unsigned _content_width = 0;
+    int _content_width = 0;
 
     template <typename Category, typename FPack>
     const auto& get_facet(const FPack& fp) const
     {
         return fp.template get_facet<Category, input_type>();
     }
+
+    void init(stringify::v0::width_calculator wcalc);
 
     stringify::v0::expected_buff_it<CharT> write_body
         ( stringify::v0::buff_it<CharT> buff
@@ -334,6 +340,13 @@ private:
         , stringify::buffer_recycler<CharT>& recycler
         , unsigned count ) const;
 };
+
+template <typename CharT>
+void fmt_char_printer<CharT>::init(stringify::v0::width_calculator wcalc)
+{
+    auto char_width = wcalc.width_of(_fmt.value(), _encoding);
+    _content_width = _fmt.count() * char_width;
+}
 
 template <typename CharT>
 std::size_t fmt_char_printer<CharT>::necessary_size() const
@@ -401,7 +414,7 @@ stringify::v0::expected_buff_it<CharT> fmt_char_printer<CharT>::write_body
     std::size_t count = _fmt.count();
     while (true)
     {
-        auto space = buff.end - buff.it;
+        std::size_t space = buff.end - buff.it;
         if (count <= space)
         {
             std::fill_n(buff.it, count, _fmt.value());

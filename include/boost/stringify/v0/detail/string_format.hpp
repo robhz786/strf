@@ -354,7 +354,7 @@ stringify::v0::detail::cv_string_with_format<CharIn> fmt_cv
     ( const CharIn* str
     , const stringify::v0::encoding<CharIn>& enc )
 {
-    stringify::v0::detail::cv_string cv_str{str, enc};
+    stringify::v0::detail::cv_string<CharIn> cv_str{str, enc};
     return stringify::v0::detail::cv_string_with_format<CharIn>{cv_str};
 }
 
