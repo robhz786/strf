@@ -397,24 +397,8 @@ private:
         , stringify::buffer_recycler<CharT>& recycler
         , int count ) const
     {
-        std::size_t count2 = count;
-        while(true)
-        {
-            auto res = m_encoding.encode_fill( &buff.it, buff.end
-                                             , count2, m_join.fillchar, m_err_hdl );
-            if (res == stringify::v0::cv_result::success)
-            {
-                return {stringify::v0::in_place_t{}, buff};
-            }
-            if (res == stringify::v0::cv_result::invalid_char)
-            {
-                return {stringify::v0::unexpect_t{}, stringify::v0::encoding_error()};
-            }
-            BOOST_ASSERT(res == stringify::v0::cv_result::insufficient_space);
-            auto x = recycler.recycle(buff.it);
-            BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-            buff = *x;
-        }
+        return stringify::v0::detail::write_fill
+            ( m_encoding, buff, recycler, count, m_join.fillchar, m_err_hdl );
     }
 };
 

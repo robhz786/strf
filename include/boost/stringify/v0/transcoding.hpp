@@ -188,7 +188,7 @@ struct encoding
     const char* name;
     stringify::v0::encoding_id id;
     std::size_t replacement_char_size;
-    // char32_t max_char;
+    char32_t max_corresponding_u32char;
     // unsigned max_char_size;
     // bool monotonic_size;
 

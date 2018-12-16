@@ -666,7 +666,7 @@ inline stringify::v0::expected_buff_it<CharT> write_str
 }
 
 template<typename CharT>
-stringify::v0::expected_buff_it<CharT> write_fill
+inline stringify::v0::expected_buff_it<CharT> write_fill
     ( stringify::v0::buff_it<CharT> buff
     , stringify::buffer_recycler<CharT>& recycler
     , std::size_t count
@@ -690,7 +690,7 @@ stringify::v0::expected_buff_it<CharT> write_fill
 }
 
 template<typename CharT>
-inline stringify::v0::expected_buff_it<CharT> write_fill
+stringify::v0::expected_buff_it<CharT> do_write_fill
     ( const stringify::v0::encoding<CharT>& encoding
     , stringify::v0::buff_it<CharT> buff
     , stringify::buffer_recycler<CharT>& recycler
@@ -715,6 +715,28 @@ inline stringify::v0::expected_buff_it<CharT> write_fill
         BOOST_STRINGIFY_RETURN_ON_ERROR(x);
         buff = *x;
     }
+}
+
+template<typename CharT>
+inline stringify::v0::expected_buff_it<CharT> write_fill
+    ( const stringify::v0::encoding<CharT>& encoding
+    , stringify::v0::buff_it<CharT> buff
+    , stringify::buffer_recycler<CharT>& recycler
+    , std::size_t count
+    , char32_t ch
+    , stringify::v0::error_handling err_hdl )
+{
+    return  ( ch <= encoding.max_corresponding_u32char
+            ? stringify::v0::detail::write_fill( buff
+                                               , recycler
+                                               , count
+                                               , (CharT)ch )
+            : stringify::v0::detail::do_write_fill( encoding
+                                                  , buff
+                                                  , recycler
+                                                  , count
+                                                  , ch
+                                                  , err_hdl ) );
 }
 
 } // namespace detail

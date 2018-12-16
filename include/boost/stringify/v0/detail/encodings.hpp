@@ -2894,17 +2894,15 @@ BOOST_STRINGIFY_INLINE const stringify::v0::encoding<char>& utf8()
          , stringify::v0::detail::utf8_codepoints_count
          , stringify::v0::detail::utf8_write_replacement_char
          , stringify::v0::detail::utf8_decode_single_char
-         , nullptr
-         , nullptr
+         , nullptr, nullptr
          , stringify::v0::detail::utf8_utfx<char16_t>::utf8_from_utfx
          , stringify::v0::detail::utf8_utfx<char16_t>::utf8_to_utfx
-         , nullptr
-         , nullptr
+         , nullptr, nullptr
          , stringify::v0::detail::utf8_utfx<wchar_t>::utf8_from_utfx
          , stringify::v0::detail::utf8_utfx<wchar_t>::utf8_to_utfx
          , "UTF-8"
          , stringify::v0::encoding_id::eid_utf8
-         , 3 };
+         , 3, 0x7F };
 
     return encoding_obj;
 }
@@ -2924,17 +2922,14 @@ BOOST_STRINGIFY_INLINE const stringify::v0::encoding<char16_t>& utf16()
         , stringify::v0::detail::utf16_codepoints_count<char16_t>
         , stringify::v0::detail::utf16_write_replacement_char<char16_t>
         , stringify::v0::detail::utf32_decode_single_char<char16_t>
-        , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
+        , nullptr, nullptr
+        , nullptr, nullptr
+        , nullptr, nullptr
         , stringify::v0::detail::utf16_utfx<char16_t, wchar_t>::utf16_from_utfx
         , stringify::v0::detail::utf16_utfx<char16_t, wchar_t>::utf16_to_utfx
         , "UTF-16"
         , stringify::v0::encoding_id::eid_utf16
-        , 1 };
+        , 1, 0xFFFF };
 
     return encoding_obj;
 }
@@ -2954,17 +2949,11 @@ BOOST_STRINGIFY_INLINE const stringify::v0::encoding<char32_t>& utf32()
         , stringify::v0::detail::utf32_codepoints_count<char32_t>
         , stringify::v0::detail::utf32_write_replacement_char<char32_t>
         , stringify::v0::detail::utf32_decode_single_char<char32_t>
-        , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
+        , nullptr, nullptr, nullptr, nullptr
+        , nullptr, nullptr, nullptr, nullptr
         , "UTF-32"
         , stringify::v0::encoding_id::eid_utf32
-        , 1 };
+        , 1, 0x10FFFF };
 
     return encoding_obj;
 }
@@ -2988,17 +2977,11 @@ const stringify::v0::encoding<WChar16>& utfw_impl(std::integral_constant<std::si
         , stringify::v0::detail::utf16_codepoints_count<WChar16>
         , stringify::v0::detail::utf16_write_replacement_char<WChar16>
         , stringify::v0::detail::utf32_decode_single_char<WChar16>
-        , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
+        , nullptr, nullptr, nullptr, nullptr
+        , nullptr, nullptr, nullptr, nullptr
         , "UTF-16"
         , stringify::v0::encoding_id::eid_utf16
-        , 1 };
+        , 1, 0xFFFF };
 
     return encoding_obj;
 }
@@ -3020,17 +3003,12 @@ inline const stringify::v0::encoding<WChar32>& utfw_impl
         , stringify::v0::detail::utf32_codepoints_count<WChar32>
         , stringify::v0::detail::utf32_write_replacement_char<WChar32>
         , stringify::v0::detail::utf32_decode_single_char<WChar32>
-        , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
+        , nullptr, nullptr, nullptr, nullptr
+        , nullptr, nullptr, nullptr, nullptr
         , "UTF-32"
         , stringify::v0::encoding_id::eid_utf32
-        , 1 };
+        , 1
+        , 0x10FFFF };
 
     return encoding_obj;
 }
