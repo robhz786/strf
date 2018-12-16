@@ -16,21 +16,35 @@ int main()
     TEST (u"0") ( 0 );
     TEST (U"0") ( 0 );
     TEST (L"0") ( 0 );
-
     TEST ( "0") ( (unsigned)0 );
     TEST (u"0") ( (unsigned)0 );
     TEST (U"0") ( (unsigned)0 );
     TEST (L"0") ( (unsigned)0 );
-
     TEST ( "123") ( 123 );
     TEST (u"123") ( 123 );
     TEST (U"123") ( 123 );
     TEST (L"123") ( 123 );
-
     TEST ( "-123") ( -123 );
     TEST (u"-123") ( -123 );
     TEST (U"-123") ( -123 );
     TEST (L"-123") ( -123 );
+
+    TEST ( "0") ( strf::fmt(0) );
+    TEST (u"0") ( strf::fmt(0) );
+    TEST (U"0") ( strf::fmt(0) );
+    TEST (L"0") ( strf::fmt(0) );
+    TEST ( "0") ( strf::fmt((unsigned)0) );
+    TEST (u"0") ( strf::fmt((unsigned)0) );
+    TEST (U"0") ( strf::fmt((unsigned)0) );
+    TEST (L"0") ( strf::fmt((unsigned)0) );
+    TEST ( "123") ( strf::fmt(123) );
+    TEST (u"123") ( strf::fmt(123) );
+    TEST (U"123") ( strf::fmt(123) );
+    TEST (L"123") ( strf::fmt(123) );
+    TEST ( "-123") ( strf::fmt(-123) );
+    TEST (u"-123") ( strf::fmt(-123) );
+    TEST (U"-123") ( strf::fmt(-123) );
+    TEST (L"-123") ( strf::fmt(-123) );
 
     TEST ( std::to_string(INT32_MAX).c_str()) ( INT32_MAX );
     TEST (std::to_wstring(INT32_MAX).c_str()) ( INT32_MAX );
@@ -40,6 +54,15 @@ int main()
 
     TEST ( std::to_string(UINT32_MAX).c_str()) ( UINT32_MAX );
     TEST (std::to_wstring(UINT32_MAX).c_str()) ( UINT32_MAX );
+
+    TEST ( std::to_string(INT32_MAX).c_str()) ( strf::fmt(INT32_MAX) );
+    TEST (std::to_wstring(INT32_MAX).c_str()) ( strf::fmt(INT32_MAX) );
+
+    TEST ( std::to_string(INT32_MIN).c_str()) ( strf::fmt(INT32_MIN) );
+    TEST (std::to_wstring(INT32_MIN).c_str()) ( strf::fmt(INT32_MIN) );
+
+    TEST ( std::to_string(UINT32_MAX).c_str()) ( strf::fmt(UINT32_MAX) );
+    TEST (std::to_wstring(UINT32_MAX).c_str()) ( strf::fmt(UINT32_MAX) );
 
     TEST("f")                        ( strf::hex(0xf) );
     TEST("ff")                       ( strf::hex(0xff) );
@@ -234,7 +257,7 @@ int main()
     TEST("00123~~")  ( strf::join_right(7, '.')(strf::left(123, 7, U'~').p(5)) );
     TEST("00123")    ( strf::join_right(5, '.')(strf::left(123, 5, U'~').p(5)) );
     TEST("00123")    ( strf::join_right(5, '.')(strf::left(123, 3, U'~').p(5)) );
-
+/*
     {
         auto punct = strf::monotonic_grouping<10>{3};
 
@@ -341,8 +364,7 @@ int main()
             BOOST_TEST(my_exception_thrown);
         }
     }
-
-
+*/
     int rc = report_errors() || boost::report_errors();
     return rc;
 }

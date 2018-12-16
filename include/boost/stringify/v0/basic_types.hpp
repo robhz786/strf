@@ -666,6 +666,30 @@ inline stringify::v0::expected_buff_it<CharT> write_str
 }
 
 template<typename CharT>
+stringify::v0::expected_buff_it<CharT> write_fill
+    ( stringify::v0::buff_it<CharT> buff
+    , stringify::buffer_recycler<CharT>& recycler
+    , std::size_t count
+    , CharT ch )
+{
+    while(true)
+    {
+        std::size_t space = buff.end - buff.it;
+        if (count <= space)
+        {
+            std::fill_n(buff.it, count, ch);
+            return { stringify::v0::in_place_t{}
+                   , stringify::v0::buff_it<CharT>{ buff.it + count, buff.end } };
+        }
+        std::fill_n(buff.it, space, ch);
+        count -= space;
+        auto x = recycler.recycle(buff.it + space);
+        BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+        buff = *x;
+    }
+}
+
+template<typename CharT>
 inline stringify::v0::expected_buff_it<CharT> write_fill
     ( const stringify::v0::encoding<CharT>& encoding
     , stringify::v0::buff_it<CharT> buff
