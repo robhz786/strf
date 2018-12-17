@@ -232,8 +232,8 @@ public:
 
     std::size_t necessary_size() const override;
 
-    stringify::v0::expected_buff_it<CharT> write
-        ( stringify::v0::buff_it<CharT> buff
+    stringify::v0::expected_output_buffer<CharT> write
+        ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const override;
 
     int remaining_width(int w) const override;
@@ -316,8 +316,8 @@ private:
         return total_digcount;
     }
 
-    stringify::v0::expected_buff_it<CharT> write_fill
-        ( stringify::v0::buff_it<CharT> buff
+    stringify::v0::expected_output_buffer<CharT> write_fill
+        ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler
         , std::size_t count ) const
     {
@@ -330,8 +330,8 @@ private:
     }
 
 
-    stringify::v0::expected_buff_it<CharT> write_complement
-        ( stringify::v0::buff_it<CharT> buff
+    stringify::v0::expected_output_buffer<CharT> write_complement
+        ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const
     {
         if (_fmt.base() == 10)
@@ -380,8 +380,8 @@ private:
         return { stringify::v0::in_place_t{}, buff };
     }
 
-    stringify::v0::expected_buff_it<CharT> write_digits
-        ( stringify::v0::buff_it<CharT> buff
+    stringify::v0::expected_output_buffer<CharT> write_digits
+        ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const
     {
         if(_fmt.precision() > _digcount)
@@ -401,8 +401,8 @@ private:
         return write_digits_sep(buff, recycler);
     }
 
-    stringify::v0::expected_buff_it<CharT> write_digits_nosep
-        ( stringify::v0::buff_it<CharT> buff
+    stringify::v0::expected_output_buffer<CharT> write_digits_nosep
+        ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const
     {
         if (buff.it + _digcount > buff.end)
@@ -423,11 +423,11 @@ private:
             , end );
         BOOST_ASSERT(it == buff.it);
         return { stringify::v0::in_place_t{}
-               , stringify::v0::buff_it<CharT>{end, buff.end} };
+               , stringify::v0::output_buffer<CharT>{end, buff.end} };
     }
 
-    stringify::v0::expected_buff_it<CharT> write_digits_nosep_buff
-        ( stringify::v0::buff_it<CharT> buff
+    stringify::v0::expected_output_buffer<CharT> write_digits_nosep_buff
+        ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const
     {
         char tmp[3*sizeof(CharT)];
@@ -461,8 +461,8 @@ private:
         return x;
     }
 
-    stringify::v0::expected_buff_it<CharT> write_digits_sep
-        ( stringify::v0::buff_it<CharT> buff
+    stringify::v0::expected_output_buffer<CharT> write_digits_sep
+        ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const
     {
         char dig_buff[max_digcount];
@@ -503,8 +503,8 @@ private:
                                   , sep_char32, sep_char32_size );
     }
 
-    stringify::v0::expected_buff_it<CharT> write_digits_littlesep
-        ( stringify::v0::buff_it<CharT> buff
+    stringify::v0::expected_output_buffer<CharT> write_digits_littlesep
+        ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler
         , const char* dig_it
         , unsigned char* grp
@@ -538,8 +538,8 @@ private:
         return { stringify::v0::in_place_t{}, buff };
     }
 
-    stringify::v0::expected_buff_it<CharT> write_digits_bigsep
-        ( stringify::v0::buff_it<CharT> buff
+    stringify::v0::expected_output_buffer<CharT> write_digits_bigsep
+        ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler
         , char* dig_it
         , unsigned char* grp
@@ -672,8 +672,8 @@ int fmt_int_printer<IntT, CharT>::remaining_width(int w) const
 
 
 template <typename IntT, typename CharT>
-stringify::v0::expected_buff_it<CharT> fmt_int_printer<IntT, CharT>::write
-        ( stringify::v0::buff_it<CharT> buff
+stringify::v0::expected_output_buffer<CharT> fmt_int_printer<IntT, CharT>::write
+        ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const
 {
     if (_fillcount == 0)

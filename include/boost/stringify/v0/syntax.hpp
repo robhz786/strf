@@ -465,8 +465,8 @@ private:
     }
 
     template <typename Arg>
-    static stringify::v0::expected_buff_it<char_type> write_args
-        ( stringify::v0::buff_it<char_type> b
+    static stringify::v0::expected_output_buffer<char_type> write_args
+        ( stringify::v0::output_buffer<char_type> b
         , OutputWriter& writer
         , const Arg& arg )
     {
@@ -474,8 +474,8 @@ private:
     }
 
     template <typename Arg, typename ... Args>
-    static stringify::v0::expected_buff_it<char_type> write_args
-        ( stringify::v0::buff_it<char_type> b
+    static stringify::v0::expected_output_buffer<char_type> write_args
+        ( stringify::v0::output_buffer<char_type> b
         , OutputWriter& writer
         , const Arg& arg
         , const Args& ... args )
@@ -484,8 +484,8 @@ private:
         return x ? write_args(*x, writer, args ...) : x;
     }
 
-    static stringify::v0::expected_buff_it<char_type> write_args
-        ( stringify::v0::buff_it<char_type> b
+    static stringify::v0::expected_output_buffer<char_type> write_args
+        ( stringify::v0::output_buffer<char_type> b
         , OutputWriter& )
     {
         return { stringify::v0::in_place_t{}, b};

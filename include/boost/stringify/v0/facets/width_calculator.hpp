@@ -91,13 +91,13 @@ public:
             auto const src_end = str + str_len;
             do
             {
-                auto buff_it = &buff[0];
+                auto output_buffer = &buff[0];
                 auto src_it = str;
                 res = enc.to_u32.transcode( &src_it, src_end
-                                          , &buff_it, buff_end
+                                          , &output_buffer, buff_end
                                           , epoli.err_hdl()
                                           , epoli.allow_surr() );
-                for (auto it = &buff[0]; width > 0 && it < buff_it; ++it)
+                for (auto it = &buff[0]; width > 0 && it < output_buffer; ++it)
                 {
                     width -= m_ch_wcalc(*it);
                 }

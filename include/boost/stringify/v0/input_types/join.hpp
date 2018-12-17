@@ -267,8 +267,8 @@ public:
         return args_length() + fill_length();
     }
 
-    stringify::v0::expected_buff_it<CharT> write
-        ( stringify::v0::buff_it<CharT> buff
+    stringify::v0::expected_output_buffer<CharT> write
+        ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const override
     {
         if (m_fillcount <= 0)
@@ -354,11 +354,11 @@ private:
         return w;
     }
 
-    stringify::v0::expected_buff_it<CharT> write_splitted
-        ( stringify::v0::buff_it<CharT> buff
+    stringify::v0::expected_output_buffer<CharT> write_splitted
+        ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const
     {
-        stringify::v0::expected_buff_it<CharT> x { stringify::v0::in_place_t{}
+        stringify::v0::expected_output_buffer<CharT> x { stringify::v0::in_place_t{}
                                                    , buff };
         auto it = m_args.begin();
         for ( int count = m_join.num_leading_args
@@ -378,11 +378,11 @@ private:
         return x;
     }
 
-    stringify::v0::expected_buff_it<CharT> write_args
-        ( stringify::v0::buff_it<CharT> buff
+    stringify::v0::expected_output_buffer<CharT> write_args
+        ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const
     {
-        stringify::v0::expected_buff_it<CharT> x { stringify::v0::in_place_t{}
+        stringify::v0::expected_output_buffer<CharT> x { stringify::v0::in_place_t{}
                                                  , buff };
         for(const auto& arg : m_args)
         {
@@ -392,8 +392,8 @@ private:
         return x;
     }
 
-    stringify::v0::expected_buff_it<CharT> write_fill
-        ( stringify::v0::buff_it<CharT> buff
+    stringify::v0::expected_output_buffer<CharT> write_fill
+        ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler
         , int count ) const
     {

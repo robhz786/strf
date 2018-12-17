@@ -165,16 +165,16 @@ public:
 
     using char_type = CharOut;
 
-    boost::stringify::v0::expected_buff_it<CharOut> start()
+    boost::stringify::v0::expected_output_buffer<CharOut> start()
     {
         return { boost::stringify::v0::in_place_t{}
-               , boost::stringify::v0::buff_it<CharOut>{m_buff, m_buff_end}};            
+               , boost::stringify::v0::output_buffer<CharOut>{m_buff, m_buff_end}};            
     }
-    boost::stringify::v0::expected_buff_it<CharOut> recycle(CharOut* it)
+    boost::stringify::v0::expected_output_buffer<CharOut> recycle(CharOut* it)
     {
         m_result.append(m_buff_begin, it);
         return { boost::stringify::v0::in_place_t{}
-               , boost::stringify::v0::buff_it<CharOut>{m_buff, m_buff_end}};
+               , boost::stringify::v0::output_buffer<CharOut>{m_buff, m_buff_end}};
     }
     boost::stringify::v0::expected<void, std::error_code> finish(CharOut* it)
     {

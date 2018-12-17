@@ -30,8 +30,8 @@ public:
 
     int remaining_width(int w) const override;
 
-    stringify::v0::expected_buff_it<CharT> write
-        ( stringify::v0::buff_it<CharT> buff
+    stringify::v0::expected_output_buffer<CharT> write
+        ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const override;
 
 private:
@@ -41,8 +41,8 @@ private:
 
     CharT* write(CharT* it) const noexcept;
 
-    stringify::v0::expected_buff_it<CharT> buff_write
-        ( stringify::v0::buff_it<CharT> buff
+    stringify::v0::expected_output_buffer<CharT> buff_write
+        ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const;
 };
 
@@ -60,8 +60,8 @@ int int_printer<IntT, CharT>::remaining_width(int w) const
 }
 
 template <typename IntT, typename CharT>
-stringify::v0::expected_buff_it<CharT> int_printer<IntT, CharT>::write
-    ( stringify::v0::buff_it<CharT> buff
+stringify::v0::expected_output_buffer<CharT> int_printer<IntT, CharT>::write
+    ( stringify::v0::output_buffer<CharT> buff
     , stringify::buffer_recycler<CharT>& recycler ) const
 {
     std::size_t space = buff.end - buff.it;
@@ -95,8 +95,8 @@ CharT* int_printer<IntT, CharT>::write(CharT* it) const noexcept
 
 
 template <typename IntT, typename CharT>
-stringify::v0::expected_buff_it<CharT> int_printer<IntT, CharT>::buff_write
-    ( stringify::v0::buff_it<CharT> buff
+stringify::v0::expected_output_buffer<CharT> int_printer<IntT, CharT>::buff_write
+    ( stringify::v0::output_buffer<CharT> buff
     , stringify::buffer_recycler<CharT>& recycler ) const
 {
     char tmp[sizeof(CharT) * 3];

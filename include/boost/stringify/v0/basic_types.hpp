@@ -476,9 +476,9 @@ public:
 } // namespace detail
 
 template <typename CharOut>
-struct buff_it
+struct output_buffer
 {
-    buff_it& operator=(const buff_it& other)
+    output_buffer& operator=(const output_buffer& other)
     {
         it = other.it;
         end = other.end;
@@ -490,8 +490,8 @@ struct buff_it
 };
 
 template <typename It>
-using expected_buff_it = stringify::v0::expected
-    < stringify::v0::buff_it<It>
+using expected_output_buffer = stringify::v0::expected
+    < stringify::v0::output_buffer<It>
     , std::error_code >;
 
 template <typename CharOut>
@@ -501,7 +501,7 @@ public:
 
     using char_type = CharOut;
 
-    virtual stringify::v0::expected_buff_it<CharOut> recycle(CharOut* it) = 0;
+    virtual stringify::v0::expected_output_buffer<CharOut> recycle(CharOut* it) = 0;
 };
 
 template <typename CharOut>
@@ -513,8 +513,8 @@ public:
     {
     }
 
-    virtual stringify::v0::expected_buff_it<CharOut> write
-        ( stringify::v0::buff_it<CharOut> buff
+    virtual stringify::v0::expected_output_buffer<CharOut> write
+        ( stringify::v0::output_buffer<CharOut> buff
         , stringify::buffer_recycler<CharOut>& recycler ) const = 0;
 
     virtual std::size_t necessary_size() const = 0;
@@ -529,7 +529,7 @@ inline std::error_code encoding_error()
 
 namespace detail {
 
-inline const buff_it<char32_t> global_mini_buffer32()
+inline const output_buffer<char32_t> global_mini_buffer32()
 {
     thread_local static char32_t buff[16];
     return {buff, buff + sizeof(buff) / sizeof(buff[0])};
@@ -537,8 +537,8 @@ inline const buff_it<char32_t> global_mini_buffer32()
 
 
 template<typename CharIn, typename CharOut>
-stringify::v0::expected_buff_it<CharOut> transcode
-    ( stringify::v0::buff_it<CharOut> buff
+stringify::v0::expected_output_buffer<CharOut> transcode
+    ( stringify::v0::output_buffer<CharOut> buff
     , stringify::buffer_recycler<CharOut>& recycler
     , const CharIn* src
     , const CharIn* src_end
@@ -568,8 +568,8 @@ stringify::v0::expected_buff_it<CharOut> transcode
 }
 
 template<typename CharIn, typename CharOut>
-stringify::v0::expected_buff_it<CharOut> decode_encode
-    ( stringify::v0::buff_it<CharOut> buff
+stringify::v0::expected_output_buffer<CharOut> decode_encode
+    ( stringify::v0::output_buffer<CharOut> buff
     , stringify::buffer_recycler<CharOut>& recycler
     , const CharIn* src
     , const CharIn* src_end
@@ -643,8 +643,8 @@ inline std::size_t decode_encode_size
 }
 
 template<typename CharT>
-inline stringify::v0::expected_buff_it<CharT> write_str
-    ( stringify::v0::buff_it<CharT> buff
+inline stringify::v0::expected_output_buffer<CharT> write_str
+    ( stringify::v0::output_buffer<CharT> buff
     , stringify::buffer_recycler<CharT>& recycler
     , const CharT* str
     , std::size_t len )
@@ -657,7 +657,7 @@ inline stringify::v0::expected_buff_it<CharT> write_str
         {
             traits::copy(buff.it, str, len);
             return { stringify::v0::in_place_t{}
-                   , stringify::v0::buff_it<CharT>{buff.it + len, buff.end} };
+                   , stringify::v0::output_buffer<CharT>{buff.it + len, buff.end} };
         }
         traits::copy(buff.it, str, space);
         len -= space;
@@ -669,8 +669,8 @@ inline stringify::v0::expected_buff_it<CharT> write_str
 }
 
 template<typename CharT>
-inline stringify::v0::expected_buff_it<CharT> write_fill
-    ( stringify::v0::buff_it<CharT> buff
+inline stringify::v0::expected_output_buffer<CharT> write_fill
+    ( stringify::v0::output_buffer<CharT> buff
     , stringify::buffer_recycler<CharT>& recycler
     , std::size_t count
     , CharT ch )
@@ -682,7 +682,7 @@ inline stringify::v0::expected_buff_it<CharT> write_fill
         {
             std::char_traits<CharT>::assign(buff.it, count, ch);
             return { stringify::v0::in_place_t{}
-                   , stringify::v0::buff_it<CharT>{ buff.it + count, buff.end } };
+                   , stringify::v0::output_buffer<CharT>{ buff.it + count, buff.end } };
         }
         std::char_traits<CharT>::assign(buff.it, space, ch);
         count -= space;
@@ -693,9 +693,9 @@ inline stringify::v0::expected_buff_it<CharT> write_fill
 }
 
 template<typename CharT>
-stringify::v0::expected_buff_it<CharT> do_write_fill
+stringify::v0::expected_output_buffer<CharT> do_write_fill
     ( const stringify::v0::encoding<CharT>& encoding
-    , stringify::v0::buff_it<CharT> buff
+    , stringify::v0::output_buffer<CharT> buff
     , stringify::buffer_recycler<CharT>& recycler
     , std::size_t count
     , char32_t ch
@@ -721,9 +721,9 @@ stringify::v0::expected_buff_it<CharT> do_write_fill
 }
 
 template<typename CharT>
-inline stringify::v0::expected_buff_it<CharT> write_fill
+inline stringify::v0::expected_output_buffer<CharT> write_fill
     ( const stringify::v0::encoding<CharT>& encoding
-    , stringify::v0::buff_it<CharT> buff
+    , stringify::v0::output_buffer<CharT> buff
     , stringify::buffer_recycler<CharT>& recycler
     , std::size_t count
     , char32_t ch

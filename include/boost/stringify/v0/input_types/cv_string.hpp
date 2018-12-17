@@ -52,8 +52,8 @@ public:
 
     std::size_t necessary_size() const override;
 
-    stringify::v0::expected_buff_it<CharOut> write
-        ( stringify::v0::buff_it<CharOut> buff
+    stringify::v0::expected_output_buffer<CharOut> write
+        ( stringify::v0::output_buffer<CharOut> buff
         , stringify::buffer_recycler<CharOut>& recycler ) const override;
 
     int remaining_width(int w) const override;
@@ -90,9 +90,9 @@ std::size_t cv_string_printer<CharIn, CharOut>::necessary_size() const
 }
 
 template<typename CharIn, typename CharOut>
-stringify::v0::expected_buff_it<CharOut>
+stringify::v0::expected_output_buffer<CharOut>
 cv_string_printer<CharIn, CharOut>::write
-    ( stringify::v0::buff_it<CharOut> buff
+    ( stringify::v0::output_buffer<CharOut> buff
     , stringify::buffer_recycler<CharOut>& recycler ) const
 {
     if (_transcoder)
@@ -136,8 +136,8 @@ public:
 
     std::size_t necessary_size() const override;
 
-    stringify::v0::expected_buff_it<CharOut> write
-        ( stringify::v0::buff_it<CharOut> buff
+    stringify::v0::expected_output_buffer<CharOut> write
+        ( stringify::v0::output_buffer<CharOut> buff
         , stringify::buffer_recycler<CharOut>& recycler ) const override;
 
     int remaining_width(int w) const override;
@@ -159,12 +159,12 @@ private:
         return fp.template get_facet<Category, input_tag>();
     }
 
-    stringify::v0::expected_buff_it<CharOut> write_str
-        ( stringify::v0::buff_it<CharOut> buff
+    stringify::v0::expected_output_buffer<CharOut> write_str
+        ( stringify::v0::output_buffer<CharOut> buff
         , stringify::buffer_recycler<CharOut>& recycler ) const;
 
-    stringify::v0::expected_buff_it<CharOut> write_fill
-        ( stringify::v0::buff_it<CharOut> buff
+    stringify::v0::expected_output_buffer<CharOut> write_fill
+        ( stringify::v0::output_buffer<CharOut> buff
         , stringify::buffer_recycler<CharOut>& recycler
         , unsigned count ) const;
 };
@@ -211,9 +211,9 @@ std::size_t fmt_cv_string_printer<CharIn, CharOut>::necessary_size() const
 
 
 template<typename CharIn, typename CharOut>
-stringify::v0::expected_buff_it<CharOut>
+stringify::v0::expected_output_buffer<CharOut>
 fmt_cv_string_printer<CharIn, CharOut>::write
-    ( stringify::v0::buff_it<CharOut> buff
+    ( stringify::v0::output_buffer<CharOut> buff
     , stringify::buffer_recycler<CharOut>& recycler ) const
 {
     if (_fillcount > 0)
@@ -244,9 +244,9 @@ fmt_cv_string_printer<CharIn, CharOut>::write
 
 
 template<typename CharIn, typename CharOut>
-stringify::v0::expected_buff_it<CharOut>
+stringify::v0::expected_output_buffer<CharOut>
 fmt_cv_string_printer<CharIn, CharOut>::write_str
-    ( stringify::v0::buff_it<CharOut> buff
+    ( stringify::v0::output_buffer<CharOut> buff
     , stringify::buffer_recycler<CharOut>& recycler ) const
 {
     if (_transcoder)
@@ -266,9 +266,9 @@ fmt_cv_string_printer<CharIn, CharOut>::write_str
 }
 
 template<typename CharIn, typename CharOut>
-stringify::v0::expected_buff_it<CharOut>
+stringify::v0::expected_output_buffer<CharOut>
 fmt_cv_string_printer<CharIn, CharOut>::write_fill
-    ( stringify::v0::buff_it<CharOut> buff
+    ( stringify::v0::output_buffer<CharOut> buff
     , stringify::buffer_recycler<CharOut>& recycler
     , unsigned count ) const
 {

@@ -33,13 +33,13 @@ public:
     {
     }
 
-    stringify::v0::expected_buff_it<CharOut> start() noexcept
+    stringify::v0::expected_output_buffer<CharOut> start() noexcept
     {
         return { boost::stringify::v0::in_place_t{}
-               , stringify::v0::buff_it<CharOut>{m_begin, m_end - 1} };
+               , stringify::v0::output_buffer<CharOut>{m_begin, m_end - 1} };
     }
    
-    stringify::v0::expected_buff_it<CharOut> recycle(CharOut* it) override
+    stringify::v0::expected_output_buffer<CharOut> recycle(CharOut* it) override
     {
         BOOST_ASSERT(it < m_end);
         (void) it;
