@@ -6,28 +6,26 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <streambuf>
-#include <boost/stringify/v0/output_types/buffered_writer.hpp>
+#include <boost/stringify/v0/basic_types.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 namespace detail {
 
 template <typename CharT, typename Traits>
-class std_streambuf_writer: public buffered_writer<CharT>
+class std_streambuf_writer final: public stringify::v0::buffer_recycler<CharT>
 {
-    constexpr static std::size_t buffer_size = stringify::v0::min_buff_size;
-    CharT buffer[40];
+    constexpr static std::size_t _buff_size = stringify::v0::min_buff_size;
+    CharT _buff[_buff_size];
 
 public:
 
     using char_type = CharT;
 
     std_streambuf_writer
-        ( stringify::v0::output_writer_init<CharT> init
-        , std::basic_streambuf<CharT, Traits>& out
+        ( std::basic_streambuf<CharT, Traits>& out
         , std::size_t* count )
-        : stringify::v0::buffered_writer<CharT>{init, buffer, buffer_size}
-        , m_out(out)
+        : m_out(out)
         , m_count(count)
     {
         if (m_count != nullptr)
@@ -36,33 +34,59 @@ public:
         }
     }
 
-    ~std_streambuf_writer()
+    stringify::v0::expected_output_buffer<CharT> start() noexcept
     {
-        this->flush();
+        return { stringify::v0::in_place_t{}
+               , stringify::v0::output_buffer<CharT>
+                   { _buff, _buff + _buff_size } };
     }
 
-protected:
+    stringify::v0::expected_output_buffer<CharT> recycle(CharT* it) override;
 
-    bool do_put(const CharT* str, std::size_t count) override
+    stringify::v0::expected<void, std::error_code> finish(CharT* it)
     {
-        auto count_inc = m_out.sputn(str, count);
-
-        if (m_count != nullptr && count_inc > 0)
+        if (!do_put(it))
         {
-            *m_count += static_cast<std::size_t>(count_inc);
+            return { stringify::v0::unexpect_t{}
+                   , std::make_error_code(std::errc::io_error) };
         }
-        if (static_cast<std::streamsize>(count) != count_inc)
-        {
-            this->set_error(std::make_error_code(std::errc::io_error));
-            return false;
-        }
-        return true;
+        return {};
     }
+
+private:
+
+    bool do_put(const CharT* end);
 
     std::basic_streambuf<CharT, Traits>& m_out;
     std::size_t* m_count = nullptr;
 
 };
+
+template <typename CharT, typename Traits>
+stringify::v0::expected_output_buffer<CharT>
+std_streambuf_writer<CharT, Traits>::recycle(CharT* it)
+{
+    if (!do_put(it))
+    {
+        return { stringify::v0::unexpect_t{}
+               , std::make_error_code(std::errc::io_error) };
+    }
+    return start();
+}
+
+
+template <typename CharT, typename Traits>
+bool std_streambuf_writer<CharT, Traits>::do_put(const CharT* end)
+{
+    std::size_t count = end - _buff;
+    auto count_inc = m_out.sputn(_buff, count);
+
+    if (m_count != nullptr && count_inc > 0)
+    {
+        *m_count += static_cast<std::size_t>(count_inc);
+    }
+    return static_cast<std::streamsize>(count) == count_inc;
+}
 
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)

@@ -7,110 +7,85 @@
 
 #include <string>
 #include <system_error>
-#include <boost/stringify/v0/output_types/buffered_writer.hpp>
+#include <boost/stringify/v0/basic_types.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 namespace detail {
 
 template <typename StringType>
-class string_appender: public buffered_writer<typename StringType::value_type>
+class string_appender final
+    : public stringify::v0::buffer_recycler<typename StringType::value_type>
 {
-    constexpr static std::size_t buffer_size = stringify::v0::min_buff_size;
-    typename StringType::value_type buffer[buffer_size];
-
-    using buff_writter = buffered_writer<typename StringType::value_type>;
+    constexpr static std::size_t _buffer_size = stringify::v0::min_buff_size;
+    typename StringType::value_type _buffer[_buffer_size];
 
 public:
 
     typedef typename StringType::value_type char_type;
 
-    string_appender
-        ( stringify::v0::output_writer_init<char_type> init
-        , StringType& out
-        )
-        : stringify::v0::buffered_writer<char_type>{init, buffer, buffer_size}
-        , m_out(&out)
-        , m_initial_length(out.length())
+    string_appender ( StringType& out )
+        : _out(out)
+        , _initial_length(out.length())
     {
     }
 
     ~string_appender()
     {
-        if(m_out != nullptr)
+        if( ! _finished)
         {
-            m_out->resize(m_initial_length);
+            _out.resize(_initial_length);
         }
-        m_out = nullptr;
-        buff_writter::discard();
     }
 
     void reserve(std::size_t size)
     {
-        if(m_out != nullptr)
-        {
-            m_out->reserve(m_out->length() + size);
-        }
+        _out.reserve(_out.length() + size);
     }
 
-    void set_error(std::error_code ec) override
+    stringify::v0::expected_output_buffer<char_type> start() noexcept
     {
-        if(m_out != nullptr)
-        {
-            m_out->resize(m_initial_length);
-            m_out = nullptr;
-        }
-        buff_writter::set_error(ec);
+        return { stringify::v0::in_place_t{}
+               , stringify::v0::output_buffer<char_type>
+                   { _buffer, _buffer + _buffer_size } };
     }
 
-    auto finish()
+    stringify::v0::expected_output_buffer<char_type> recycle(char_type* it) override
     {
-        buff_writter::flush();
-        m_out = nullptr;
-        return buff_writter::finish();
+        BOOST_ASSERT(_buffer <= it && it <= _buffer + _buffer_size);
+        _out.append(_buffer, it);
+        return start();
     }
 
-    void finish_exception()
+    stringify::v0::expected<std::size_t, std::error_code> finish(char_type *it)
     {
-        buff_writter::flush();
-        m_out = nullptr;
-        buff_writter::finish_exception();
+        BOOST_ASSERT(_buffer <= it && it <= _buffer + _buffer_size);
+        _finished = true;
+        _out.append(_buffer, it);
+        return { boost::stringify::v0::in_place_t{}, _out.size() - _initial_length };
     }
 
-protected:
-
-    bool do_put(const char_type* str, std::size_t count) override
-    {
-        if (m_out != nullptr)
-        {
-            m_out->append(str, count);
-        }
-        return true;
-    }
 
 private:
 
-    StringType* m_out = nullptr;
-    std::size_t m_initial_length = 0;
-    std::error_code m_err;
-    bool m_finished = false;
+    StringType& _out;
+    std::size_t _initial_length = 0;
+    bool _finished = false;
 };
 
 
 template <typename StringType>
-class string_maker: public buffered_writer<typename StringType::value_type>
+class string_maker final
+    : public stringify::v0::buffer_recycler<typename StringType::value_type>
 {
-    constexpr static std::size_t buffer_size = stringify::v0::min_buff_size;
-    typename StringType::value_type buffer[buffer_size];
-
-    using buff_writter = buffered_writer<typename StringType::value_type>;
+    constexpr static std::size_t _buffer_size = stringify::v0::min_buff_size;
+    typename StringType::value_type _buffer[_buffer_size];
 
 public:
 
     using char_type = typename StringType::value_type;
 
-    string_maker(stringify::v0::output_writer_init<char_type> init)
-        : buff_writter{init, buffer, buffer_size}
+    string_maker()
     {
     }
 
@@ -118,39 +93,35 @@ public:
     {
     }
 
-    stringify::v0::expected<StringType, std::error_code> finish()
+    stringify::v0::expected_output_buffer<char_type> start() noexcept
     {
-        buff_writter::flush();
-        auto x = buff_writter::finish();
-        if (x)
-        {
-            return {boost::stringify::v0::in_place_t{}, std::move(m_out)};
-        }
-        return {boost::stringify::v0::unexpect_t{}, x.error()};
+        return { stringify::v0::in_place_t{}
+               , stringify::v0::output_buffer<char_type>
+                   { _buffer, _buffer + _buffer_size } };
     }
 
-    StringType finish_exception()
+    stringify::v0::expected_output_buffer<char_type> recycle(char_type* it) override
     {
-        buff_writter::finish_exception();
-        return std::move(m_out);
+        BOOST_ASSERT(_buffer <= it && it <= _buffer + _buffer_size);
+        _out.append(_buffer, it);
+        return start();
+    }
+
+    stringify::v0::expected<StringType, std::error_code> finish(char_type *it)
+    {
+        BOOST_ASSERT(_buffer <= it && it <= _buffer + _buffer_size);
+        _out.append(_buffer, it);
+        return {boost::stringify::v0::in_place_t{}, std::move(_out)};
     }
 
     void reserve(std::size_t size)
     {
-        m_out.reserve(m_out.size() + size);
-    }
-
-protected:
-
-    bool do_put(const char_type* str, std::size_t count) override
-    {
-        m_out.append(str, count);
-        return true;
+        _out.reserve(_out.size() + size);
     }
 
 private:
 
-    StringType m_out;
+    StringType _out;
 };
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)

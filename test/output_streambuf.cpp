@@ -19,11 +19,9 @@ void basic_test()
 {
     std::basic_ostringstream<CharT> result;
     std::size_t result_length = 1000;
-    std::basic_string<CharT> expected;
+    std::basic_string<CharT> expected(50, CharT{'*'});
 
-    auto x = use_all_writing_function_of_output_writer
-        ( strf::write(result.rdbuf(), &result_length)
-        , expected );
+    auto x = strf::write(result.rdbuf(), &result_length)(strf::multi(CharT{'*'}, 50));
 
     BOOST_TEST(x);
     BOOST_TEST(expected.length() == result_length);
@@ -39,12 +37,12 @@ int main()
     basic_test<wchar_t>();
 
     {   // When count is nullptr
-        std::basic_ostringstream<char> result;
-        std::basic_string<char> expected;
+        using CharT = char;
 
-        auto x = use_all_writing_function_of_output_writer
-            ( strf::write(result.rdbuf(), nullptr)
-            , expected );
+        std::basic_ostringstream<char> result;
+        std::basic_string<char> expected(50, CharT{'*'});
+
+        auto x = strf::write(result.rdbuf(), nullptr)(strf::multi(CharT{'*'}, 50));
 
         BOOST_TEST(x);
         BOOST_TEST(expected == result.str());

@@ -23,25 +23,31 @@ public:
     using char_type = CharOut;
 
     char_ptr_writer(CharOut* destination, CharOut* end )
-        : m_begin{destination}
-        , m_end{end}
+        : _begin{destination}
+        , _end{end}
     {
-        BOOST_ASSERT(m_begin <= m_end);
+        BOOST_ASSERT(_begin <= _end);
     }
 
     ~char_ptr_writer()
     {
+        if ( ! finished && _begin != _end)
+        {
+            *_begin = 0;
+        }
     }
 
     stringify::v0::expected_output_buffer<CharOut> start() noexcept
     {
+        CharOut* end =  _end != _begin ? _end -1 : _end;
+
         return { boost::stringify::v0::in_place_t{}
-               , stringify::v0::output_buffer<CharOut>{m_begin, m_end - 1} };
+               , stringify::v0::output_buffer<CharOut>{_begin, end} };
     }
    
     stringify::v0::expected_output_buffer<CharOut> recycle(CharOut* it) override
     {
-        BOOST_ASSERT(it < m_end);
+        BOOST_ASSERT(it < _end);
         (void) it;
         return { stringify::v0::unexpect_t{}
                , std::make_error_code(std::errc::result_out_of_range) };
@@ -49,15 +55,20 @@ public:
 
     stringify::v0::expected<std::size_t, std::error_code> finish(CharOut *it) noexcept
     {
-        BOOST_ASSERT(it < m_end);
-        *it = 0;
-        return { boost::stringify::v0::in_place_t{}, it - m_begin };
+        finished = true;
+        if (_begin != _end)
+        {
+            BOOST_ASSERT(_begin <= it && it < _end);
+            *it = 0;
+        }
+        return { boost::stringify::v0::in_place_t{}, it - _begin };
     }
  
 private:
 
-    CharOut* m_begin;
-    CharOut* m_end;
+    CharOut* _begin;
+    CharOut* _end;
+    bool finished = false;
 };
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)

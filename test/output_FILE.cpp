@@ -76,7 +76,7 @@ template <typename CharT>
 void basic_test__narrow()
 {
     std::size_t result_length = 1000;
-    std::basic_string<CharT> expected;
+    std::basic_string<CharT> expected(50, CharT{'*'});
     std::basic_string<CharT> result;
     strf::expected<void, std::error_code> x;
     std::FILE* file = nullptr;
@@ -84,9 +84,7 @@ void basic_test__narrow()
     try
     {
         file = std::tmpfile();
-        x = use_all_writing_function_of_output_writer
-            ( strf::write<CharT>(file, &result_length)
-            , expected );
+        x = strf::write<CharT>(file, &result_length)(strf::multi(CharT{'*'}, 50));
 
         std::rewind(file);
         result = read_file<CharT>(file);
@@ -123,7 +121,9 @@ void error_code_test__narrow()
     {
         file = std::tmpfile();
         x = strf::write<CharT>(file, &result_length)
-            (U'a', U'b', U'c', error_code_emitter_arg, U'x', U'y', U'z');
+            ( CharT{'a'}, CharT{'b'}, CharT{'c'}
+            , error_code_emitter_arg
+            , CharT{'x'}, CharT{'y'}, CharT{'z'} );
 
         std::rewind(file);
         result = read_file<CharT>(file);
@@ -159,7 +159,9 @@ void exception_thrown_test__narrow()
         try
         {
             (void) strf::write<CharT>(file, &result_length)
-                (U'a', U'b', U'c', exception_thrower_arg, U'x', U'y', U'z');
+                ( CharT{'a'}, CharT{'b'}, CharT{'c'}
+                , exception_thrower_arg
+                , CharT{'x'}, CharT{'y'}, CharT{'z'} );
 
         }
         catch(...)
@@ -280,65 +282,6 @@ int main()
     exception_thrown_test__narrow<char32_t>();
     exception_thrown_test__narrow<wchar_t>();
     exception_thrown_test__wide();
-
-
-    const std::size_t buff_size = strf::detail::narrow_file_writer<char>::buff_size;
-    BOOST_ASSERT(buff_size <= (INT_MAX));
-    const int buff_size_int = static_cast<int>(buff_size);
-
-    {   // testing narrow_file_writer::put(char_type)
-
-        std::string result;
-        std::string str(buff_size - 2, 'x');
-
-        {
-            FILE* file = std::tmpfile();
-            (void)strf::write(file) ( str, 'a', 'b', 'c', 'd', 'e', 'f');
-            std::rewind(file);
-            result = read_file<char>(file);
-        }
-
-        BOOST_TEST(result == str + "abcdef");
-
-    }
-
-    {   // testing narrow_file_writer::put(const char_type* str, std::size count)
-
-        std::string str_a(buff_size / 3, 'a');
-        std::string str_b(buff_size / 3, 'b');
-        std::string str_c(buff_size / 2, 'c');
-        std::string str_d(buff_size * 2, 'd');
-        std::string expected = str_a + str_b + str_c + str_d;
-
-        std::string result;
-        {
-            FILE* file = std::tmpfile();
-            (void)strf::write(file) (str_a, str_b, str_c, str_d);
-            std::rewind(file);
-            result = read_file<char>(file);
-        }
-
-        BOOST_TEST(expected == result);
-    }
-
-
-    {   // testing narrow_file_writer::put
-
-        std::string result;
-        {
-            FILE* file = std::tmpfile();
-            (void)strf::write(file) (strf::multi(U'\u0800', buff_size_int * 2));
-            std::rewind(file);
-            result = read_file<char>(file);
-            std::fclose(file);
-        }
-
-        std::string expected
-            = strf::to_string(strf::multi(U'\u0800', buff_size_int * 2))
-            .value();
-        BOOST_TEST(expected == result);
-    }
-
 
     return report_errors() || boost::report_errors();
 }

@@ -24,14 +24,8 @@ class erroneous_printer: public boost::stringify::v0::printer<CharT>
 
 public:
 
-    template <typename FPack>
-    erroneous_printer
-        ( boost::stringify::v0::output_writer<CharT>& out
-        , const FPack&
-        , error_tag t )
-        noexcept
-        : m_out(out)
-        , m_err(t.ec)
+    erroneous_printer ( error_tag t ) noexcept
+        : m_err(t.ec)
     {
     }
 
@@ -40,9 +34,12 @@ public:
         return 0;
     }
 
-    void write() const override
+    boost::stringify::v0::expected_output_buffer<CharT> write
+        ( boost::stringify::v0::output_buffer<CharT> ob
+        , boost::stringify::v0::buffer_recycler<CharT>& rec ) const override
     {
-        m_out.set_error(m_err);
+        auto x = rec.recycle(ob.it);
+        return { boost::stringify::v0::unexpect_t{}, m_err };
     }
 
     int remaining_width(int w) const override
@@ -51,38 +48,18 @@ public:
     }
 
 private:
-    boost::stringify::v0::output_writer<CharT>& m_out;
+
     std::error_code m_err;
 };
 
-// struct error_tag_input_traits
-// {
-//     template <typename CharT, typename FPack>
-//     static inline detail::erroneous_printer<CharT> make_printer
-//         ( const boost::stringify::v0::output_writer<CharT>& ow
-//         , const FPack& fp
-//         , error_tag x )
-//     {
-//         return {fp, x};
-//     }
-// };
 
 } // namespace detail
 
-//detail::error_tag_input_traits stringify_get_input_traits(error_tag x);
-
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <typename CharT, typename FPack>
-inline ::detail::erroneous_printer<CharT>
-make_printer
-    ( boost::stringify::v0::output_writer<CharT>& ow
-    , const FPack& fp
-    , error_tag x )
+inline ::detail::erroneous_printer<CharT> make_printer(const FPack&, error_tag x)
 {
-    return {ow, fp, x};
+    return {x};
 }
-
-BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif

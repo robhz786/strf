@@ -10,57 +10,53 @@
 #include "exception_thrower_arg.hpp"
 #include <boost/stringify.hpp>
 
+#include <iostream>
+
 namespace strf = boost::stringify::v0;
 
 
 template <typename CharT>
 void basic_assign_test()
 {
-    std::basic_string<CharT> result('a', 10);;
-    std::basic_string<CharT> expected;
+    std::basic_string<CharT> output(CharT{'-'}, 10);
+    std::basic_string<CharT> expected(50, CharT{'*'});
 
-    auto x = use_all_writing_function_of_output_writer
-        ( strf::assign(result)
-        , expected );
+    auto x = strf::assign(output) (strf::multi(CharT{'*'}, 50));
 
     BOOST_TEST(x);
-    BOOST_TEST(expected == result);
+    BOOST_TEST(*x == 50);
+    BOOST_TEST(expected == output);
 }
 
 
 template <typename CharT>
 void basic_append_test()
 {
-    std::basic_string<CharT> result('a', 10);;
-    std::basic_string<CharT> expected = result;
-    std::basic_string<CharT> expected_append;
+    std::basic_string<CharT> output(CharT{'-'}, 10);
+    std::basic_string<CharT> expected
+        = output
+        + std::basic_string<CharT>(50, CharT{'*'});
 
-    auto x = use_all_writing_function_of_output_writer
-        ( strf::append(result)
-        , expected_append );
-
-    expected += expected_append;
+    auto x = strf::append(output) (strf::multi(CharT{'*'}, 50));
 
     BOOST_TEST(x);
-    BOOST_TEST(expected == result);
+    BOOST_TEST(*x == 50);
+    BOOST_TEST(expected == output);
 }
 
 template <typename CharT>
 void basic_make_test()
 {
-    std::basic_string<CharT> expected;
+    std::basic_string<CharT> expected(50, CharT{'*'});
 
-    auto result = use_all_writing_function_of_output_writer
-        ( strf::to_basic_string<CharT>
-        , expected );
+    auto x = strf::to_basic_string<CharT> (strf::multi(CharT{'*'}, 50));
 
-    BOOST_TEST(result);
-    BOOST_TEST(result && expected == result.value());
+    BOOST_TEST(x);
+    BOOST_TEST(*x == expected);
 }
 
 int main()
 {
-
     basic_assign_test<char>();
     basic_assign_test<char16_t>();
     basic_assign_test<char32_t>();

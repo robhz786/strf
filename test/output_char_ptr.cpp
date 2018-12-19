@@ -15,17 +15,14 @@ namespace strf = boost::stringify::v0;
 template <typename CharT>
 void basic_test()
 {
-    CharT result[100];
-    std::fill(result, result + 100, CharT('-'));
-    std::basic_string<CharT> expected;
-
-    auto x = use_all_writing_function_of_output_writer
-        ( strf::write(result)
-        , expected );
+    CharT output[100];
+    std::fill(output, output + 100, CharT{'-'});
+    std::basic_string<CharT> expected(50, CharT{'*'});
+    auto x = strf::write(output) (strf::multi(CharT{'*'}, 50));
 
     BOOST_TEST(x);
     BOOST_TEST(expected.length() == x.value());
-    BOOST_TEST(expected == result);
+    BOOST_TEST(expected == output);
 }
 
 
@@ -112,68 +109,6 @@ int main()
     test_informed_end_too_close<char32_t>();
     test_informed_end_too_close<wchar_t>();
    
-    {   // When overflow happens in char_ptr_writer::put(str, count)
-
-        char16_t result[200] = u"--------------------------------------------------";
-
-        auto x = strf::write(result, 3) ( u"abc" );
-
-        BOOST_TEST(result[0] == u'\0');
-        BOOST_TEST(! x);    
-        BOOST_TEST(x.error() == std::errc::result_out_of_range);
-    }
-
-    {   // When overflow happens in char_ptr_writer::put(ch)
-
-        char16_t result[200] = u"--------------------------------------------------";
-
-        auto x = strf::write(result, 3) ( u'a', u'b', u'c' );
-
-        BOOST_TEST(result[0] == u'\0');
-        BOOST_TEST(! x);
-        BOOST_TEST(x.error() == std::errc::result_out_of_range);
-    }
-
-    
-   {   // When overflow happens in char_ptr_writer::put(ch, count)
-
-       char result[200] = "--------------------------------------------------";
-       auto x = strf::write(result, 2) (strf::multi('x', 10));
-       BOOST_TEST(result[0] == '\0');
-       BOOST_TEST(! x);
-       BOOST_TEST(x.error() == std::errc::result_out_of_range);
-   }
-   // {   // When overflow happens in char_ptr_writer::put(ch, ch, count)
-
-   //     char result[3] = "";
-   //     auto x = strf::write(result, 3)
-   //         (strf::multi(U'\u0080', 2));
-
-   //     BOOST_TEST(result[0] == '\0');
-   //     BOOST_TEST(! x);
-   //     BOOST_TEST(x.error() == std::errc::result_out_of_range);
-   // }
-   // {   // When overflow happens in char_ptr_writer::put(ch, ch, ch, count)
-
-   //     char result[200] = "--------------------------------------------------";
-   //     auto x = strf::write(result, 5)
-   //         (strf::multi(U'\u0800', 2));
-
-   //     BOOST_TEST(result[0] == '\0');
-   //     BOOST_TEST(! x);
-   //     BOOST_TEST(x.error() == std::errc::result_out_of_range);
-   // }
-   // {   // When overflow happens in char_ptr_writer::put(ch, ch, ch, ch, count)
-
-   //     char result[200] = "--------------------------------------------------";
-   //     auto x = strf::write(result, 7)
-   //         (strf::multi(U'\U00010000', 2));
-
-   //     BOOST_TEST(result[0] == '\0');
-   //     BOOST_TEST(! x);
-   //     BOOST_TEST(x.error() == std::errc::result_out_of_range);
-   // }
-
     int rc = report_errors() || boost::report_errors();
     return rc;
 }
