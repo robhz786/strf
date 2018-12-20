@@ -6,8 +6,9 @@ namespace strf = boost::stringify;
 
 void FUNCTION_NAME (std::string& out)
 {
-    out += strf::to_string .as("blah blah blah {} {} {} blah {} {} {}\n")
-        ( strf::right(arg_a0, 10)
+    out += strf::to_string .as
+        ( "blah blah blah {} {} {} blah {} {} {}\n"
+        , strf::right(arg_a0, 10)
         , arg_a1
         , +strf::fmt(arg_a2) > 5
         , ~strf::oct(arg_a3) > 6
@@ -15,8 +16,9 @@ void FUNCTION_NAME (std::string& out)
         , arg_a5 )
         .value();
 
-    out += strf::to_string .as("blah blah {} {}{} {} {} blah {} {} {}\n")
-        ( arg_b0
+    out += strf::to_string .as
+        ( "blah blah {} {}{} {} {} blah {} {} {}\n"
+        , arg_b0
         , strf::right(arg_b1, 9)
         , arg_b2
         , arg_b3
@@ -26,8 +28,9 @@ void FUNCTION_NAME (std::string& out)
         , arg_b7)
         .value();
 
-    out += strf::to_string .as("blah blah {} {} {} {} {} {} {} {}\n")
-        ( arg_c0
+    out += strf::to_string .as
+        ( "blah blah {} {} {} {} {} {} {} {}\n"
+        , arg_c0
         , strf::right(arg_c1, 10)
         , arg_c2
         , +strf::fmt(arg_c3) > 5

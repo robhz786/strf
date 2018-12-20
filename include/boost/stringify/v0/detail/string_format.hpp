@@ -383,11 +383,19 @@ constexpr stringify::v0::detail::cv_string_with_format<CharIn> fmt_cv
 template <typename CharIn, typename Traits>
 BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
 stringify::v0::detail::cv_string_with_format<CharIn> fmt_cv
-    ( const CharIn* str
+    ( const std::basic_string<CharIn, Traits>& str )
+{
+    stringify::v0::detail::cv_string<CharIn> cv_str{str.data(), str.length()};
+    return stringify::v0::detail::cv_string_with_format<CharIn>{cv_str};
+}
+
+template <typename CharIn, typename Traits>
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+stringify::v0::detail::cv_string_with_format<CharIn> fmt_cv
+    ( const std::basic_string<CharIn, Traits>& str
     , const stringify::v0::encoding<CharIn>& enc )
 {
-    stringify::v0::detail::cv_string<CharIn> cv_str
-        { str, std::char_traits<CharIn>::length(str), &enc};
+    stringify::v0::detail::cv_string<CharIn> cv_str{str.data(), str.length(), &enc};
     return stringify::v0::detail::cv_string_with_format<CharIn>{cv_str};
 }
 

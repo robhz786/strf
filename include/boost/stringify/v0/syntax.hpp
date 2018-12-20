@@ -14,6 +14,265 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 namespace detail {
 
+template <typename CharT>
+struct read_uint_result
+{
+    std::size_t value;
+    const CharT* it;
+};
+
+
+template <typename CharT>
+read_uint_result<CharT> read_uint(const CharT* it, const CharT* end)
+{
+    std::size_t value = *it -  static_cast<CharT>('0');
+    constexpr long limit = std::numeric_limits<long>::max() / 10 - 9;
+    ++it;
+    while (it != end)
+    {
+        CharT ch = *it;
+        if (ch < static_cast<CharT>('0') || static_cast<CharT>('9') < ch)
+        {
+            break;
+        }
+        if(value > limit)
+        {
+            value = std::numeric_limits<std::size_t>::max();
+            break;
+        }
+        value *= 10;
+        value += ch - static_cast<CharT>('0');
+        ++it;
+    }
+    return {value, it};
+}
+
+
+template <typename CharT>
+std::size_t asm_string_size
+    ( const CharT* it
+    , const CharT* end
+    , std::initializer_list<const stringify::v0::printer<CharT>*> args )
+{
+    using traits = std::char_traits<CharT>;
+
+    std::size_t count = 0;
+    std::size_t arg_idx = 0;
+    const std::size_t num_args = args.size();
+
+    while (it != end)
+    {
+        const CharT* prev = it;
+        it = traits::find(it, (end - it), '{');
+        if (it == nullptr)
+        {
+            count += (end - prev);
+            break;
+        }
+        count += (it - prev);
+        ++it;
+
+        after_the_brace:
+        if (it == end)
+        {
+            if (arg_idx < num_args)
+            {
+                count += args.begin()[arg_idx]->necessary_size();
+            }
+            // todo handle invalid arg index
+            break;
+        }
+
+        auto ch = *it;
+        if (ch == '}')
+        {
+            if (arg_idx < num_args)
+            {
+                count += args.begin()[arg_idx]->necessary_size();
+                ++arg_idx;
+            }
+            else
+            {
+                // todo handle invalid arg index
+            }
+            ++it;
+        }
+        else if (CharT('0') <= ch && ch <= CharT('9'))
+        {
+            auto result = stringify::v0::detail::read_uint(it, end);
+
+            if (result.value < num_args)
+            {
+                count += args.begin()[result.value]->necessary_size();
+            }
+            else
+            {
+                // todo handle invalid arg index
+            }
+
+            it = traits::find(result.it, end - result.it, '}');
+            if (it == nullptr)
+            {
+                break;
+            }
+            ++it;
+        }
+        else if(ch == '{')
+        {
+            auto it2 = it + 1;
+            it2 = traits::find(it2, end - it2, '{');
+            if (it2 == nullptr)
+            {
+                return count += end - it;
+            }
+            count += (it2 - it);
+            it = it2 + 1;
+            goto after_the_brace;
+        }
+        else
+        {
+            if (ch != '-')
+            {
+                if (arg_idx < num_args)
+                {
+                    count += args.begin()[arg_idx]->necessary_size();
+                    ++arg_idx;
+                }
+                else
+                {
+                    // todo handle invalid arg index
+                }
+            }
+            auto it2 = it + 1;
+            it = traits::find(it2, (end - it2), '}');
+            if (it == nullptr)
+            {
+                break;
+            }
+            ++it;
+        }
+    }
+    return count;
+}
+
+template <typename CharT>
+stringify::v0::expected_output_buffer<CharT> asm_string_write
+    ( const CharT* it
+    , const CharT* end
+    , std::initializer_list<const stringify::v0::printer<CharT>*> args
+    , stringify::v0::output_buffer<CharT> ob
+    , stringify::v0::buffer_recycler<CharT>& rec )
+{
+    using traits = std::char_traits<CharT>;
+    std::size_t arg_idx = 0;
+    const std::size_t num_args = args.size();
+
+    while (it != end)
+    {
+        const CharT* prev = it;
+        it = traits::find(it, (end - it), '{');
+        if (it == nullptr)
+        {
+            return stringify::v0::detail::write_str(ob, rec, prev, end - prev);
+        }
+
+        auto x = stringify::v0::detail::write_str(ob, rec, prev, it - prev);
+        BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+        ob = *x;
+        ++it;
+
+        after_the_brace:
+        if (it == end)
+        {
+            if (arg_idx < num_args)
+            {
+                return args.begin()[arg_idx]->write(ob, rec);
+            }
+            // todo handle invalid arg index
+            break;
+        }
+
+        auto ch = *it;
+        if (ch == '}')
+        {
+            if (arg_idx < num_args)
+            {
+                auto x = args.begin()[arg_idx]->write(ob, rec);
+                BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+                ob = *x;
+                ++arg_idx;
+            }
+            else
+            {
+                // todo handle invalid arg index
+            }
+            ++it;
+        }
+        else if (CharT('0') <= ch && ch <= CharT('9'))
+        {
+            auto result = stringify::v0::detail::read_uint(it, end);
+
+            if (result.value < num_args)
+            {
+                auto x = args.begin()[result.value]->write(ob, rec);
+                BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+                ob = *x;
+            }
+            else
+            {
+                // todo handle invalid arg index
+            }
+
+            it = traits::find(result.it, end - result.it, '}');
+            if (it == nullptr)
+            {
+                break;
+            }
+            ++it;
+        }
+        else if(ch == '{')
+        {
+            auto it2 = it + 1;
+            it2 = traits::find(it2, end - it2, '{');
+            if (it2 == nullptr)
+            {
+                return stringify::v0::detail::write_str(ob, rec, it, end - it);
+            }
+            auto x = stringify::v0::detail::write_str(ob, rec, it, (it2 - it));
+            BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+            ob = *x;
+            it = it2 + 1;
+            goto after_the_brace;
+        }
+        else
+        {
+            if (ch != '-')
+            {
+                if (arg_idx < num_args)
+                {
+                    auto x = args.begin()[arg_idx]->write(ob, rec);
+                    BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+                    ob = *x;
+                    ++arg_idx;
+                }
+                else
+                {
+                    // todo handle invalid arg index
+                }
+            }
+            auto it2 = it + 1;
+            it = traits::find(it2, (end - it2), '}');
+            if (it == nullptr)
+            {
+                break;
+            }
+            ++it;
+        }
+    }
+    return {stringify::v0::in_place_t{}, ob};
+}
+
+
 template <typename W>
 static auto has_reserve_impl(W&& ow)
     -> decltype(ow.reserve(std::size_t{}), std::true_type{});
@@ -35,11 +294,6 @@ public:
     constexpr output_size_reservation_dummy(const output_size_reservation_dummy&)
     = default;
 
-    template <typename ... Args>
-    constexpr void reserve(Args&& ...) const
-    {
-    }
-
     constexpr void set_reserve_size(std::size_t)
     {
     }
@@ -50,6 +304,11 @@ public:
 
     constexpr void set_no_reserve()
     {
+    }
+
+    constexpr std::false_type has_reserve() const
+    {
+        return {};
     }
 };
 
@@ -65,21 +324,6 @@ public:
 
     constexpr output_size_reservation_real(const output_size_reservation_real&)
     = default;
-
-    template <typename SizeCalculator, typename OutputWriter, typename ... ArgList>
-    void reserve
-        ( SizeCalculator& calc
-        , OutputWriter& writer
-        , const ArgList& ... args ) const
-    {
-        if (m_flag != no_reserve)
-        {
-            writer.reserve
-                ( m_flag == calculate_size
-                ? calc.calculate_size(args...)
-                : m_size );
-        }
-    }
 
     constexpr void set_reserve_size(std::size_t size)
     {
@@ -97,19 +341,19 @@ public:
         m_flag = no_reserve;
     }
 
-private:
-
-    static std::size_t do_calculate_size()
+    constexpr bool must_calculate_size() const
     {
-        return 0;
+        return m_flag == calculate_size;
+    }
+    constexpr std::size_t get_size_to_reserve() const
+    {
+        return m_size;
     }
 
-    template <typename Arg0, typename ... Args>
-    static std::size_t do_calculate_size(const Arg0& arg, const Args ... args)
+    constexpr std::true_type has_reserve() const
     {
-        return arg.necessary_size() + do_calculate_size(args...);
+        return {};
     }
-
 };
 
 
@@ -120,6 +364,7 @@ using output_size_reservation
     , output_size_reservation_real
     , output_size_reservation_dummy
     > :: type;
+
 
 
 template <typename OutputWriter>
@@ -154,124 +399,41 @@ private:
 
 };
 
-// template
-//     < typename CharIn
-//     , typename FPack
-//     , typename OutputWriter
-//     , typename OutputWriterInitArgsTuple
-//     >
-// class syntax_after_assembly_string
-// {
-//     using CharOut = typename OutputWriter::char_type;
-//     using arglist_type = std::initializer_list<const stringify::v0::printer<CharOut>*>;
-
-//     using reservation_type
-//         = stringify::v0::detail::output_size_reservation<OutputWriter>;
-//     using output_writer_wrapper
-//         = stringify::v0::detail::output_writer_from_tuple<OutputWriter>;
-
-//     using input_tag = stringify::v0::asm_string_input_tag<CharIn>;
-
-// public:
-
-//     syntax_after_assembly_string
-//         ( const FPack& fp
-//         , const OutputWriterInitArgsTuple& owinit
-//         , const CharIn* str
-//         , const CharIn* str_end
-//         , const reservation_type& res
-//         , bool sanitise = false
-//         )
-//         : m_fpack(fp)
-//         , m_owinit(owinit)
-//         , m_str(str)
-//         , m_end(str_end)
-//         , m_reservation(res)
-//         , m_sanitise(sanitise)
-//     {
-//     }
-
-//     template <typename ... Args>
-//     BOOST_STRINGIFY_NODISCARD
-//     decltype(auto) operator()(const Args& ... args) const
-//     {
-//         output_writer_wrapper dest{m_fpack, m_owinit};
-//         return write(dest.get(), {as_pointer(make_printer<CharOut, FPack>(m_fpack, args)) ...});
-//     }
-
-//     std::size_t calculate_size(OutputWriter& dest, arglist_type args) const
-//     {
-//         stringify::v0::detail::asm_string_measurer<CharIn, CharOut> measurer
-//         { dest, m_fpack, args, m_sanitise };
-//         stringify::v0::detail::parse_asm_string(m_str, m_end, measurer);
-//         return measurer.result();
-//     }
-
-// private:
-
-//     template <typename FCategory>
-//     const auto& get_facet(const FPack& fp) const
-//     {
-//         return fp.template get_facet<FCategory, input_tag>();
-//     }
-
-//     static const stringify::v0::printer<CharOut>*
-//     as_pointer(const stringify::v0::printer<CharOut>& p)
-//     {
-//         return &p;
-//     }
-
-//     void write(OutputWriter& owriter, const arglist_type& args) const
-//     {
-//         m_reservation.reserve(*this, owriter, args);
-//         stringify::v0::detail::asm_string_writer<CharIn, CharOut> asm_writer
-//         { owriter, m_fpack, args, m_sanitise };
-
-//         stringify::v0::detail::parse_asm_string(m_str, m_end, asm_writer);
-//     }
-
-//     const FPack& m_fpack;
-//     const OutputWriterInitArgsTuple& m_owinit;
-//     const CharIn* const m_str;
-//     const CharIn* const m_end;
-//     reservation_type m_reservation;
-//     bool m_sanitise;
-// };
-
 template
     < typename FPack
     , typename OutputWriter
     , typename OutputWriterInitArgsTuple
     >
 class syntax_after_leading_expr
-{
-public:
+    : private stringify::v0::detail::output_size_reservation<OutputWriter>
 
-    using char_type = typename OutputWriter::char_type;
-    using arglist_type
-        = std::initializer_list<const stringify::v0::printer<char_type>*>;
-    using output_writer_wrapper
+{
+    using _char_type = typename OutputWriter::char_type;
+
+    using _output_writer_wrapper
         = stringify::v0::detail::output_writer_from_tuple<OutputWriter>;
 
-    // template <typename CharIn>
-    // using asm_string = stringify::v0::detail::syntax_after_assembly_string
-    //     <CharIn, FPack, OutputWriter, OutputWriterInitArgsTuple>;
+    using _return_type
+        = decltype(std::declval<OutputWriter>().finish((_char_type*)(0)));
+
+    using _arglist_type
+        = std::initializer_list<const stringify::v0::printer<_char_type>*>;
 
 public:
 
     constexpr syntax_after_leading_expr
         ( FPack&& fp
-        , OutputWriterInitArgsTuple&& args)
-        : m_fpack(std::move(fp))
-        , m_owinit(std::move(args))
+        , OutputWriterInitArgsTuple&& args )
+        : _fpack(std::move(fp))
+        , _owinit(std::move(args))
     {
     }
 
     constexpr syntax_after_leading_expr
         ( const FPack& fp
         , const OutputWriterInitArgsTuple& args )
-        : m_fpack(fp)
-        , m_owinit(args)
+        : _fpack(fp)
+        , _owinit(args)
     {
     }
 
@@ -284,22 +446,22 @@ public:
     constexpr auto facets(const Facets& ... facets) const
     {
         return syntax_after_leading_expr
-            < decltype(stringify::v0::pack(m_fpack, facets ...))
+            < decltype(stringify::v0::pack(_fpack, facets ...))
             , OutputWriter
             , OutputWriterInitArgsTuple >
-            ( stringify::v0::pack(m_fpack, facets ...)
-            , m_owinit );
+            ( stringify::v0::pack(_fpack, facets ...)
+            , _owinit );
     }
 
     template <typename ... Facets>
     constexpr auto facets(const stringify::v0::facets_pack<Facets...>& fp) const
     {
         return syntax_after_leading_expr
-            < decltype(stringify::v0::pack(m_fpack, fp))
+            < decltype(stringify::v0::pack(_fpack, fp))
             , OutputWriter
             , OutputWriterInitArgsTuple >
-            ( stringify::v0::pack(m_fpack, fp)
-            , m_owinit );
+            ( stringify::v0::pack(_fpack, fp)
+            , _owinit );
     }
 
     constexpr syntax_after_leading_expr facets() const &
@@ -335,69 +497,69 @@ public:
     constexpr syntax_after_leading_expr no_reserve() const &
     {
         syntax_after_leading_expr copy = *this;
-        copy.m_reservation.set_no_reserve();
+        copy.set_no_reserve();
         return copy;
     }
     constexpr syntax_after_leading_expr no_reserve() const &&
     {
         syntax_after_leading_expr copy = *this;
-        copy.m_reservation.set_no_reserve();
+        copy.set_no_reserve();
         return copy;
     }
     constexpr syntax_after_leading_expr no_reserve() &
     {
-        m_reservation.set_no_reserve();
+        this->set_no_reserve();
         return *this;
     }
     constexpr syntax_after_leading_expr no_reserve() &&
     {
-        m_reservation.set_no_reserve();
+        this->set_no_reserve();
         return *this;
     }
 
     constexpr syntax_after_leading_expr reserve_auto() const &
     {
         syntax_after_leading_expr copy = *this;
-        copy.m_reservation.set_reserve_auto();
+        copy.set_reserve_auto();
         return copy;
     }
     constexpr syntax_after_leading_expr reserve_auto() const &&
     {
         syntax_after_leading_expr copy = *this;
-        copy.m_reservation.set_reserve_auto();
+        copy.set_reserve_auto();
         return copy;
     }
     constexpr syntax_after_leading_expr reserve_auto() &
     {
-        m_reservation.set_reserve_auto();
+        this->set_reserve_auto();
         return *this;
     }
     constexpr syntax_after_leading_expr reserve_auto() &&
     {
-        m_reservation.set_reserve_auto();
+        this->set_reserve_auto();
         return *this;
     }
 
     constexpr syntax_after_leading_expr reserve(std::size_t size) const &
     {
         syntax_after_leading_expr copy = *this;
-        copy.m_reservation.set_reserve_size(size);
+        copy.set_reserve_size(size);
         return copy;
     }
     constexpr syntax_after_leading_expr reserve(std::size_t size) const &&
     {
         syntax_after_leading_expr copy = *this;
-        copy.m_reservation.set_reserve_size(size);
+        copy.set_reserve_size(size);
         return copy;
     }
     constexpr syntax_after_leading_expr reserve(std::size_t size) &
     {
-        m_reservation.set_reserve_size(size);
+        this->set_reserve_size(size);
         return *this;
     }
     constexpr syntax_after_leading_expr reserve(std::size_t size) &&
     {
-        m_reservation.set_reserve_size(size);
+        this->set_reserve_size(size);
         return *this;
     }
 
@@ -412,46 +574,146 @@ public:
         return arg.necessary_size() + calculate_size(args...);
     }
 
-//     template <typename CharIn>
-//     asm_string<CharIn> as(const CharIn* str) const
-//     {
-//         return asm_str(str, str + std::char_traits<CharIn>::length(str));
-//     }
+#if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
 
-//     template <typename CharIn, typename Traits, typename Allocator>
-//     asm_string<CharIn> as
-//         (const std::basic_string<CharIn, Traits, Allocator>& str) const
-//     {
-//         return asm_str(str.data(), str.data() + str.size());
-//     }
+    template <typename ... Args>
+    _return_type as
+        ( const std::basic_string_view<_char_type>& str
+        , const Args& ... args ) const
+    {
+        return asm_write
+            ( this->has_reserve()
+            , str.begin()
+            , str.end()
+            , {as_pointer(make_printer<_char_type, FPack>(_fpack, args))... } );
+    }
 
-// #if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
+#else
 
-//     template <typename CharIn, typename Traits>
-//     asm_string<CharIn> as
-//         (const std::basic_string_view<CharIn, Traits>& str) const
-//     {
-//         return asm_str(&*str.begin(), &*str.end());
-//     }
+    template <typename ... Args>
+    _return_type as(const _char_type* str, const Args& ... args) const
+    {
+        return asm_write
+            ( this->has_reserve()
+            , str
+            , str + std::char_traits<_char_type>::length(str)
+            , {as_pointer(make_printer<_char_type, FPack>(_fpack, args))... } );
+    }
 
-// #endif
+    template <typename Traits, typename ... Args>
+    _return_type as
+        ( const std::basic_string<_char_type, Traits>& str
+        , const Args& ... args ) const
+    {
+        return asm_write
+            ( this->has_reserve()
+            , str.data()
+            , str.data() + str.size()
+            , {as_pointer(make_printer<_char_type, FPack>(_fpack, args))... } );
+    }
+
+#endif
 
     template <typename ... Args>
     BOOST_STRINGIFY_NODISCARD
     decltype(auto) operator()(const Args& ... args) const
     {
-        return write(make_printer<char_type, FPack>(m_fpack, args) ...);
+        return write
+            ( this->has_reserve()
+            , make_printer<_char_type, FPack>(_fpack, args) ... );
     }
 
 private:
 
-    template <typename ... Args>
-    auto write(Args ... args) const
-        -> decltype(std::declval<OutputWriter>().finish((char_type*)(0)))
+    static const stringify::v0::printer<_char_type>*
+    as_pointer(const stringify::v0::printer<_char_type>& p)
     {
-        output_writer_wrapper writer{m_owinit};
+        return &p;
+    }
 
-        m_reservation.reserve(*this, writer.get(), args...);
+    _return_type asm_write
+        ( std::true_type
+        , const _char_type* str
+        , const _char_type* str_end
+        , _arglist_type args) const
+    {
+        _output_writer_wrapper writer{_owinit};
+
+        auto res_size = this->must_calculate_size()
+            ? stringify::v0::detail::asm_string_size(str, str_end, args)
+            : this->get_size_to_reserve();
+
+        if (res_size != 0)
+        {
+            writer.get().reserve(res_size);
+        }
+
+        auto x = writer.get().start();
+        if (x)
+        {
+            x = stringify::v0::detail::asm_string_write
+                ( str, str_end, args, *x, writer.get() );
+            if (x)
+            {
+                return writer.get().finish((*x).it);
+            }
+        }
+        return {stringify::v0::unexpect_t{}, x.error()};
+    }
+
+    _return_type asm_write
+        ( std::false_type
+        , const _char_type* str
+        , const _char_type* str_end
+        , _arglist_type args) const
+    {
+        _output_writer_wrapper writer{_owinit};
+        auto x = writer.get().start();
+        if (x)
+        {
+            x = stringify::v0::detail::asm_string_write
+                ( str, str_end, args, *x, writer.get() );
+            if (x)
+            {
+                return writer.get().finish((*x).it);
+            }
+        }
+        return {stringify::v0::unexpect_t{}, x.error()};
+    }
+
+
+    template <typename ... Args>
+    _return_type write(std::true_type, const Args& ... args) const
+    {
+        _output_writer_wrapper writer{_owinit};
+
+        auto res_size = this->must_calculate_size()
+            ? this->calculate_size(args ...)
+            : this->get_size_to_reserve();
+
+        if (res_size != 0)
+        {
+            writer.get().reserve(res_size);
+        }
+
+        auto x = writer.get().start();
+        if (x)
+        {
+            x = write_args(*x, writer.get(), args...);
+            if (x)
+            {
+                return writer.get().finish((*x).it);
+            }
+        }
+        return { stringify::v0::unexpect_t{}, x.error() };
+    }
+
+
+    template <typename ... Args>
+    _return_type write(std::false_type, const Args& ... args) const
+    {
+        _output_writer_wrapper writer{_owinit};
+
         auto x = writer.get().start();
         if (x)
         {
@@ -465,8 +727,8 @@ private:
     }
 
     template <typename Arg>
-    static stringify::v0::expected_output_buffer<char_type> write_args
-        ( stringify::v0::output_buffer<char_type> b
+    static stringify::v0::expected_output_buffer<_char_type> write_args
+        ( stringify::v0::output_buffer<_char_type> b
         , OutputWriter& writer
         , const Arg& arg )
     {
@@ -474,8 +736,8 @@ private:
     }
 
     template <typename Arg, typename ... Args>
-    static stringify::v0::expected_output_buffer<char_type> write_args
-        ( stringify::v0::output_buffer<char_type> b
+    static stringify::v0::expected_output_buffer<_char_type> write_args
+        ( stringify::v0::output_buffer<_char_type> b
         , OutputWriter& writer
         , const Arg& arg
         , const Args& ... args )
@@ -484,17 +746,15 @@ private:
         return x ? write_args(*x, writer, args ...) : x;
     }
 
-    static stringify::v0::expected_output_buffer<char_type> write_args
-        ( stringify::v0::output_buffer<char_type> b
+    static stringify::v0::expected_output_buffer<_char_type> write_args
+        ( stringify::v0::output_buffer<_char_type> b
         , OutputWriter& )
     {
         return { stringify::v0::in_place_t{}, b};
     }
 
-    FPack m_fpack;
-    OutputWriterInitArgsTuple m_owinit;
-    stringify::v0::detail::output_size_reservation<OutputWriter>
-    m_reservation;
+    FPack _fpack;
+    OutputWriterInitArgsTuple _owinit;
 };
 
 } // namespace detail

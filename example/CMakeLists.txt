@@ -13,23 +13,24 @@ project (boost_stringify_example)
 remove_definitions(-DNDEBUG)
 
 foreach(x
-    overview
+    # overview
     syntax_samples
     trivial_sample
     assembly_string
-    encoding_conversion
+    # encoding_conversion
     format_functions
     custom_width_calculation
     facets
-    facets_pack_as_input
+    # facets_pack_as_input
     numpunct_facets
     width_calculation_in_encoding_conversion
     joins
-    range_input
-    extend_input_ipv4
-    extend_input_ipv6
-    extend_input_base64
-    extend_input_template ) 
+    # range_input
+    # extend_input_ipv4
+    # extend_input_ipv6
+    # extend_input_base64
+    # extend_input_template
+    ) 
 
   Add_executable(${x} ${x}.cpp)
   target_link_libraries(${x} boost_stringify)

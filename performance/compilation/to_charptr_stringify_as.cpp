@@ -12,8 +12,9 @@ void FUNCTION_NAME (int)
     char* out = buff;
     std::size_t len = 0;
 
-    auto x = strf::write(out, end) .as("blah blah blah {} {} {} blah {} {} {}\n")
-        ( strf::right(arg_a0, 10)
+    auto x = strf::write(out, end) .as
+        ( "blah blah blah {} {} {} blah {} {} {}\n"
+        , strf::right(arg_a0, 10)
         , arg_a1
         , +strf::fmt(arg_a2) > 5
         , ~strf::oct(arg_a3) > 6
@@ -22,8 +23,9 @@ void FUNCTION_NAME (int)
         );
 
     out += x.value();
-    x = strf::write(out, end) .as("blah blah {} {}{} {} {} blah {} {} {}\n")
-        ( arg_b0
+    x = strf::write(out, end) .as
+        ( "blah blah {} {}{} {} {} blah {} {} {}\n"
+        , arg_b0
           , strf::right(arg_b1, 9)
           , arg_b2
           , arg_b3
@@ -34,8 +36,9 @@ void FUNCTION_NAME (int)
         );
 
     out += x.value();
-    (void)strf::write(out, end) .as("blah blah {} {:>10} {} {} {} {} {} {}\n")
-        ( arg_c0
+    (void)strf::write(out, end) .as
+        ( "blah blah {} {:>10} {} {} {} {} {} {}\n"
+        , arg_c0
           , strf::right(arg_c1, 10)
           , arg_c2
           , +strf::fmt(arg_c3) > 5

@@ -18,7 +18,7 @@ void reserve()
     auto append_to_str = strf::append(str.value()).no_reserve();
 
     (void) append_to_str("_bleh", "_bleh");
-    (void) append_to_str.as("--{}--{}--")("blih", "blih");
+    (void) append_to_str.as("--{}--{}--", "blih", "blih");
     (void) append_to_str("bloh", "bloh");
     (void) append_to_str.reserve_auto()("bluh", "bluh");
 

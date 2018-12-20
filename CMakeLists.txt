@@ -85,7 +85,7 @@ if (BOOST_STRINGIFY_BUILD_TESTS)
 endif(BOOST_STRINGIFY_BUILD_TESTS)
 
 if (BOOST_STRINGIFY_BUILD_EXAMPLES)
-  # add_subdirectory(example example)
+  add_subdirectory(example example)
 endif (BOOST_STRINGIFY_BUILD_EXAMPLES)
 
 if (BOOST_STRINGIFY_BUILD_BENCHMARKS)

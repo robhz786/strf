@@ -245,7 +245,7 @@ public:
         , const stringify::v0::detail::printer_ptr_range<CharT>& args )
         : m_join{cp.m_join}
         , m_args{args}
-        , m_encoding(cp.encoder)
+        , m_encoding(cp.m_encoding)
     {
     }
 

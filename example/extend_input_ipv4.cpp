@@ -25,12 +25,11 @@ namespace strf = boost::stringify::v0;
 namespace xxx {
 
 template <typename CharT, typename FPack>
-auto make_printer(strf::output_writer<CharT>& out, const FPack& fp, ipv4address addr)
+auto make_printer(const FPack& fp, ipv4address addr)
 {
     (void)fp;
-    return make_printer
-        ( out
-        , /*<< Note we are not forwarding `fp` but instead passing an empty
+    return make_printer<CharT>
+        ( /*<< Note we are not forwarding `fp` but instead passing an empty
 facets pack, after all we don't want numeric punctuation to be applied.
 But depending on the input type you may want to propagate some or all of the
 facets. >>*/strf::pack()
@@ -75,15 +74,13 @@ inline ipv4address_with_format make_fmt( /*<< The `tag` paramenter is not used.
 namespace xxx {
 
 template <typename CharT, typename FPack>
-auto make_printer( strf::output_writer<CharT>& out
-                 , const FPack& fp
+auto make_printer( const FPack& fp
                  , ipv4address_with_format fmt_addr )
 {
     (void)fp;
     xxx::ipv4address addr = fmt_addr.value();
-    return strf::make_printer
-        ( out
-        , strf::pack()
+    return strf::make_printer<CharT>
+        ( strf::pack()
         , strf::join(fmt_addr.width(), fmt_addr.alignment(), fmt_addr.fill())
             ( addr.bytes[0], CharT{'.'}
             , addr.bytes[1], CharT{'.'}

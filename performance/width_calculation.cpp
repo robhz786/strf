@@ -32,8 +32,8 @@ int main()
 
     const std::string u8str5 {5, 'x'};
     const std::string u8str50 {50, 'x'};
-    const std::string u16str5 {5, u'x'};
-    const std::string u16str50 {50, u'x'};
+    const std::u16string u16str5 {5, u'x'};
+    const std::u16string u16str50 {50, u'x'};
 
     (void)strf::write(stdout)("UTF-8:\n");
 
@@ -73,9 +73,9 @@ int main()
 
     (void)strf::write(stdout)("\nUTF-16:\n");
 
-    PRINT_BENCHMARK("strf::write(u16dest) (strf::right(u16str5, 5))")
+    PRINT_BENCHMARK("strf::write(u16dest) (strf::fmt_cv(u16str5) > 5)")
     {
-        (void)strf::write(u16dest) (strf::right(u16str5, 5));
+        (void)strf::write(u16dest) (strf::fmt_cv(u16str5) > 5);
     }
     PRINT_BENCHMARK("strf::write(u16dest) .facets(strf::width_as_codepoints_count()) (strf::right(u16str5, 5))")
     {

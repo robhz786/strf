@@ -108,7 +108,7 @@ public:
     template <typename OtherValueType>
     constexpr value_with_format
         ( const ValueType& v
-        , const stringify::v0::value_with_format<OtherValueType, Fmts...>&& f )
+        , stringify::v0::value_with_format<OtherValueType, Fmts...>&& f )
         : Fmts::template fn<value_with_format<ValueType, Fmts...>>
             ( static_cast
               < typename Fmts
@@ -132,7 +132,7 @@ public:
 
     template <typename ... OtherFmts>
     constexpr value_with_format
-        ( const stringify::v0::value_with_format<ValueType, OtherFmts...>&& f )
+        ( stringify::v0::value_with_format<ValueType, OtherFmts...>&& f )
         : Fmts::template fn<value_with_format<ValueType, Fmts...>>
             ( static_cast
               < typename OtherFmts

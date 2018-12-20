@@ -20,7 +20,7 @@ int main()
     BOOST_ASSERT(x2.value() == "Anna is 22 years old.");
 
     // with assembly string:
-    auto x1 = strf::to_string .as("{} is {} years old.") (name, age);
+    auto x1 = strf::to_string .as("{} is {} years old.", name, age);
     BOOST_ASSERT(x2.value() == "Anna is 22 years old.");
 
     return 0;

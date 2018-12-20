@@ -21,19 +21,15 @@ int main()
     constexpr std::size_t dest_size = sizeof(dest);
     char* dest_end = dest + dest_size;
 
-    (void) strf::write(dest)("Hello World!aaaaaaaa\n\n");
-    std::cout << dest;
-
-    
     std::cout << "\n small strings \n";
     PRINT_BENCHMARK("strf::write(dest) (\"Hello World!\")")
     {
         (void)strf::write(dest)("Hello World!");
     }
-    // PRINT_BENCHMARK("strf::write(dest) .as(\"{}\") (\"Hello World!\")")
-    // {
-    //     (void)strf::write(dest) .as("{}")("Hello World!");
-    // }
+    PRINT_BENCHMARK("strf::write(dest) .as(\"{}\", \"Hello World!\")")
+    {
+        (void)strf::write(dest) .as("{}", "Hello World!");
+    }
     PRINT_BENCHMARK("fmt::format_to(dest, \"{}\", \"Hello World!\")")
     {
         fmt::format_to(dest, "{}", "Hello World!");
@@ -61,10 +57,10 @@ int main()
     {
         (void)strf::write(dest)("Hello ", "World", '!');
     }
-    // PRINT_BENCHMARK("strf::write(dest) .as(\"Hello {}!\") (\"World\")")
-    // {
-    //     (void)strf::write(dest) .as("Hello {}!")("World");
-    // }
+    PRINT_BENCHMARK("strf::write(dest) .as(\"Hello {}!\", \"World\")")
+    {
+        (void)strf::write(dest) .as("Hello {}!", "World");
+    }
     PRINT_BENCHMARK("fmt::format_to(dest, \"Hello {}!\", \"World\")")
     {
         fmt::format_to(dest, "Hello {}!", "World");
@@ -84,10 +80,10 @@ int main()
         {
             (void)strf::write(dest)("Hello ", long_string, "!");
         }
-        // PRINT_BENCHMARK("strf::write(dest) .as(\"Hello {}!\") (long_string)")
-        // {
-        //     (void)strf::write(dest) .as("Hello {}!")(long_string);
-        // }
+        PRINT_BENCHMARK("strf::write(dest) .as(\"Hello {}!\", long_string)")
+        {
+            (void)strf::write(dest) .as("Hello {}!", long_string);
+        }
         PRINT_BENCHMARK("fmt::format_to(dest, \"Hello {}!\", long_string)")
         {
             fmt::format_to(dest, "Hello {}!", long_string);
@@ -277,9 +273,9 @@ int main()
     {
         (void)strf::write(dest) (25, 25, 25);
     }
-    PRINT_BENCHMARK("strf::write(dest) .as(\"{}{}{}\") (25, 25, 25)")
+    PRINT_BENCHMARK("strf::write(dest) .as(\"{}{}{}\", 25, 25, 25)")
     {
-        (void)strf::write(dest) .as("{}{}{}") (25, 25, 25);
+        (void)strf::write(dest) .as("{}{}{}", 25, 25, 25);
     }
     PRINT_BENCHMARK("fmt::format_to(dest, \"{}{}{}\", 25, 25, 25)")
     {
@@ -295,28 +291,28 @@ int main()
     {
         (void)strf::write(dest) (LLONG_MAX, LLONG_MAX, LLONG_MAX);
     }
-//     PRINT_BENCHMARK("strf::write(dest) .as(\"{}{}{}\") (LLONG_MAX, LLONG_MAX, LLONG_MAX)")
-//     {
-//         (void)strf::write(dest) .as("{}{}{}") (LLONG_MAX, LLONG_MAX, LLONG_MAX);
-//     }
+    PRINT_BENCHMARK("strf::write(dest) .as(\"{}{}{}\", LLONG_MAX, LLONG_MAX, LLONG_MAX)")
+    {
+        (void)strf::write(dest) .as("{}{}{}", LLONG_MAX, LLONG_MAX, LLONG_MAX);
+    }
     PRINT_BENCHMARK("fmt::format_to(dest, \"{}{}{}\", LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
         fmt::format_to(dest, "{}{}{}", LLONG_MAX, LLONG_MAX, LLONG_MAX);
     }
-//     PRINT_BENCHMARK("std::sprintf(dest, \"%d%d%d\", LLONG_MAX, LLONG_MAX, LLONG_MAX)")
-//     {
-//         std::sprintf(dest, "%lld%lld%lld", LLONG_MAX, LLONG_MAX, LLONG_MAX);
-//     }
+    PRINT_BENCHMARK("std::sprintf(dest, \"%d%d%d\", LLONG_MAX, LLONG_MAX, LLONG_MAX)")
+    {
+        std::sprintf(dest, "%lld%lld%lld", LLONG_MAX, LLONG_MAX, LLONG_MAX);
+    }
 
     std::cout << "\n formatted integers \n";
     PRINT_BENCHMARK("strf::write(dest) (55555, +strf::left(55555, 8) , ~strf::hex(55555))")
     {
         (void)strf::write(dest) (55555, +strf::left(55555, 8) , ~strf::hex(55555));
     }
-//     PRINT_BENCHMARK("strf::write(dest) .as(\"{}{}{}\") (55555, +strf::left(55555, 8) , ~strf::hex(55555))")
-//     {
-//         (void)strf::write(dest) .as("{}{}{}") (55555, +strf::left(55555, 8) , ~strf::hex(55555));
-//     }
+    PRINT_BENCHMARK("strf::write(dest) .as(\"{}{}{}\", 55555, +strf::left(55555, 8) , ~strf::hex(55555))")
+    {
+        (void)strf::write(dest) .as("{}{}{}", 55555, +strf::left(55555, 8) , ~strf::hex(55555));
+    }
     PRINT_BENCHMARK("fmt::format_to(dest, \"{}{:<8}{:#x}\", 55555, 55555, 55555)")
     {
         fmt::format_to(dest, "{}{:<8}{:#x}", 55555, 55555, 55555);
@@ -333,28 +329,28 @@ int main()
         (void)strf::write(dest)("blah blah ", INT_MAX, " blah ", ~strf::hex(1234)<8, " blah ", "abcdef");
     }
 
-//     PRINT_BENCHMARK("strf::write(dest) .as(\"blah blah {} blah {} blah {}\") (INT_MAX, ~strf::hex(1234)<8, \"abcdef\")")
-//     {
-//         (void)strf::write(dest).as("blah blah {} blah {} blah {}")(INT_MAX, ~strf::hex(1234)<8, "abcdef");
-//     }
+    PRINT_BENCHMARK("strf::write(dest) .as(\"blah blah {} blah {} blah {}\", INT_MAX, ~strf::hex(1234)<8, \"abcdef\")")
+    {
+        (void)strf::write(dest).as("blah blah {} blah {} blah {}", INT_MAX, ~strf::hex(1234)<8, "abcdef");
+    }
     PRINT_BENCHMARK("fmt::format_to(dest, \"blah blah {} blah {:<#8x} blah {}\", INT_MAX, 1234, \"abcdef\")")
     {
         fmt::format_to(dest, "blah blah {} blah {:<#8x} blah {}", INT_MAX, 1234, "abcdef");
     }
-//     PRINT_BENCHMARK("std::sprintf(dest, \"blah blah %d blah %#-8x blah %s\", INT_MAX, 1234, \"abcdef\")")
-//     {
-//         std::sprintf(dest, "blah blah %d blah %#-8x blah %s", INT_MAX, 1234, "abcdef");
-//     }
+    PRINT_BENCHMARK("std::sprintf(dest, \"blah blah %d blah %#-8x blah %s\", INT_MAX, 1234, \"abcdef\")")
+    {
+        std::sprintf(dest, "blah blah %d blah %#-8x blah %s", INT_MAX, 1234, "abcdef");
+    }
 
     std::cout << std::endl;
     PRINT_BENCHMARK("strf::write(dest) (\"ten =  \", 10, \", twenty = \", 20)")
     {
         (void)strf::write(dest)("ten =  ", 10, ", twenty = ", 20);
     }
-//     PRINT_BENCHMARK("strf::write(dest) .as(\"ten = {}, twenty = {}\") (10, 20)")
-//     {
-//         (void)strf::write(dest).as("ten = {}, twenty = {}")(10, 20);
-//     }
+    PRINT_BENCHMARK("strf::write(dest) .as(\"ten = {}, twenty = {}\", 10, 20)")
+    {
+        (void)strf::write(dest).as("ten = {}, twenty = {}", 10, 20);
+    }
     PRINT_BENCHMARK("fmt::format_to(dest, \"ten = {}, twenty = {}\", 10, 20)")
     {
         fmt::format_to(dest, "ten = {}, twenty = {}", 10, 20);

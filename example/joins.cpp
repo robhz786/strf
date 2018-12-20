@@ -83,11 +83,11 @@ void sample()
     std::string host_name = "boost.org";
     unsigned char ip_addr [4] = {146, 20, 110, 251};
     
-    auto str = strf::to_string .as(msg_the_ip_address_of_X_is_X())
-        ( host_name
+    auto str = strf::to_string .as
+        ( msg_the_ip_address_of_X_is_X()
+        , host_name
         , strf::join_left(0)
-            (ip_addr[0], '.', ip_addr[1], '.', ip_addr[2], '.', ip_addr[3])
-        );
+            (ip_addr[0], '.', ip_addr[1], '.', ip_addr[2], '.', ip_addr[3]) );
 
     if (get_current_language() == language::English)
     {
