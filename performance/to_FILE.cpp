@@ -114,9 +114,9 @@ int main()
 
     std::cout << std::endl;
     strf::monotonic_grouping<10> numpunct_3(3);
-    PRINT_BENCHMARK("strf::write(dest) .facets(numpunct_3) (LLONG_MAX)")
+    PRINT_BENCHMARK("strf::write(dest) .facets(numpunct_3) (*strf::fmt(LLONG_MAX))")
     {
-        (void)strf::write(dest) .facets(numpunct_3) (LLONG_MAX);
+        (void)strf::write(dest) .facets(numpunct_3) (*strf::fmt(LLONG_MAX));
     }
 
     std::cout << std::endl;
