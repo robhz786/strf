@@ -82,7 +82,7 @@ void sample()
 
     std::string host_name = "boost.org";
     unsigned char ip_addr [4] = {146, 20, 110, 251};
-    
+
     auto str = strf::to_string .as
         ( msg_the_ip_address_of_X_is_X()
         , host_name

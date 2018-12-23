@@ -168,7 +168,7 @@ public:
     boost::stringify::v0::expected_output_buffer<CharOut> start()
     {
         return { boost::stringify::v0::in_place_t{}
-               , boost::stringify::v0::output_buffer<CharOut>{m_buff, m_buff_end}};            
+               , boost::stringify::v0::output_buffer<CharOut>{m_buff, m_buff_end}};
     }
     boost::stringify::v0::expected_output_buffer<CharOut> recycle(CharOut* it)
     {
@@ -179,10 +179,10 @@ public:
     boost::stringify::v0::expected<void, std::error_code> finish(CharOut* it)
     {
         m_result.append(m_buff_begin, it);
-        
+
         if (m_expected != m_result)
         {
-            print_source_location(); 
+            print_source_location();
             print("expected", m_expected);
             print("obtained", m_result);
             ++global_errors_count;
@@ -194,7 +194,7 @@ public:
             std::cout << "necessary size :" <<  m_result.length() << "\n";
             ++global_errors_count;
         }
-        return {};        
+        return {};
     }
 
     void reserve(std::size_t size)
@@ -204,14 +204,14 @@ public:
     }
 
 private:
- 
-    void print_source_location() 
-    { 
-        if ( ! m_source_location_printed) 
-        { 
-            std::cout << m_src_filename << ":" << m_src_line << ":" << " error: \n"; 
-            m_source_location_printed = true; 
-        } 
+
+    void print_source_location()
+    {
+        if ( ! m_source_location_printed)
+        {
+            std::cout << m_src_filename << ":" << m_src_line << ":" << " error: \n";
+            m_source_location_printed = true;
+        }
     }
 
     bool wrongly_reserved() const
@@ -316,7 +316,7 @@ public:
         , _expect_error(true)
     {
     }
-    
+
     template <typename V>
     boost::stringify::v0::expected<V, std::error_code>
     operator << (boost::stringify::v0::expected<V, std::error_code> x) &&
@@ -324,7 +324,7 @@ public:
         if (!_expect_error && x.has_error())
         {
             print_source_location();
-            print("Obtained error_code", x.error().message()); 
+            print("Obtained error_code", x.error().message());
         }
         else if (_expect_error && ! x.has_error())
         {
@@ -333,21 +333,21 @@ public:
         }
         else if ( _expect_error && x.has_error() && _expected_error != x.error() )
         {
-            print("expected error_code", _expected_error.message());  
-            print("obtained error_code", x.error().message()); 
+            print("expected error_code", _expected_error.message());
+            print("obtained error_code", x.error().message());
         }
-        return x;    
+        return x;
     }
 
 private:
 
-    void print_source_location() 
-    { 
-        if ( ! _source_location_printed) 
-        { 
-            std::cout << _src_filename << ":" << _src_line << ":" << " error: \n"; 
-            _source_location_printed = true; 
-        } 
+    void print_source_location()
+    {
+        if ( ! _source_location_printed)
+        {
+            std::cout << _src_filename << ":" << _src_line << ":" << " error: \n";
+            _source_location_printed = true;
+        }
     }
 
     std::string _src_filename;

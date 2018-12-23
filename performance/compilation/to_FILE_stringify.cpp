@@ -14,7 +14,7 @@ void FUNCTION_NAME (std::FILE* out)
 
     (void) strf::write(out)
         ( "blah blah ", arg_b0, ' ', strf::right(arg_b1, 9), arg_b2, ' ', arg_b3, ' '
-        , +strf::fmt(arg_b4) > 5, " blah ", ~strf::oct(arg_b5) > 6, ' ' 
+        , +strf::fmt(arg_b4) > 5, " blah ", ~strf::oct(arg_b5) > 6, ' '
         , strf::hex(arg_b6), ' ', arg_b7, '\n' );
 
     (void) strf::write(out)

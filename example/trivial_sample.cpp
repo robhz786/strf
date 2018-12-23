@@ -14,7 +14,7 @@ int main()
 
     const auto name = "Anna";
     const auto age  = 22;
-    
+
     // without assembly string:
     auto x2 = strf::to_string(name, " is ", age, " years old.");
     BOOST_ASSERT(x2.value() == "Anna is 22 years old.");

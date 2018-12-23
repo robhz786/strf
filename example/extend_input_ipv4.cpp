@@ -58,10 +58,10 @@ void basic_sample()
 //[ipv4address_with_format
 namespace xxx {
 
-using ipv4address_with_format = strf::value_with_format<ipv4address, /*<< 
+using ipv4address_with_format = strf::value_with_format<ipv4address, /*<<
     The `alignment_format` class template provides the [link format_functions
     formatting functions] related to alignment. >>*/strf::alignment_format>;
-    
+
 inline ipv4address_with_format make_fmt( /*<< The `tag` paramenter is not used.
      Its only purpose is to ensure there is no other `make_fmt` function
      around there with the same signature. >>*/ strf::tag, ipv4address x) { return ipv4address_with_format{x}; }

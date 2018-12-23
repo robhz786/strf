@@ -197,7 +197,7 @@ int main()
         std::u16string u16sample2(500, u'\u0100');
         std::u16string u16sample3(500, u'\u0800');
         char buff[100000];
-    
+
         PRINT_BENCHMARK("strf::write(buff) (strf::cv(u16sample1)); strf::write(dest) (buff)")
         {
             (void)strf::write(buff) (strf::cv(u16sample1));
@@ -228,7 +228,7 @@ int main()
             (void)strf::write(dest) (strf::cv(u16sample3));
         }
     }
-    
+
     fclose(dest);
     return 1;
 }

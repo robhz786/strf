@@ -25,7 +25,7 @@ int main()
         //]
     }
 
-    
+
     {
         //[ asmstr_positional_arg
         auto str = strf::to_string.as("{1 person} likes {0 food}.", "sandwich", "Paul");
@@ -40,5 +40,5 @@ int main()
         //]
     }
 
-    return 0;    
+    return 0;
 };

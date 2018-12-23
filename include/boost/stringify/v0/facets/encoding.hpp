@@ -5,13 +5,15 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/facets_pack.hpp>
 #include <boost/stringify/v0/transcoding.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <typename CharT>
 struct encoding_category;
+
+template <typename Facet>
+class facet_trait;
 
 template <typename CharT>
 class facet_trait<stringify::v0::encoding<CharT> >

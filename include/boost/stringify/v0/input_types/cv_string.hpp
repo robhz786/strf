@@ -152,9 +152,9 @@ private:
         using input_tag = stringify::v0::string_input_tag<CharIn>;
         return fp.template get_facet<Category, input_tag>();
     }
-    
+
     void _init(const stringify::v0::encoding<CharIn>& src_enc);
-    
+
     stringify::v0::expected_output_buffer<CharOut> _write_str
         ( stringify::v0::output_buffer<CharOut> buff
         , stringify::buffer_recycler<CharOut>& recycler ) const;

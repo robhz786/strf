@@ -69,7 +69,7 @@ int main()
     {   // Test char_ptr_writer::set_error
         //
         // When set_error(some_err) is called, some_err is returned at the end
-        
+
         char16_t result[200] = u"-----------------------------";
 
         auto x = strf::write(result)
@@ -80,7 +80,7 @@ int main()
         BOOST_TEST(x.error() == std::errc::invalid_argument);
     }
 
-    {  // When exception is thrown 
+    {  // When exception is thrown
 
         char16_t result[200] = u"-----------------------------";
         try
@@ -93,7 +93,7 @@ int main()
 
         BOOST_TEST(result[0] == u'\0');
     }
-    
+
     test_array_too_small<char>();
     test_array_too_small<char16_t>();
     test_array_too_small<char32_t>();
@@ -108,7 +108,7 @@ int main()
     test_informed_end_too_close<char16_t>();
     test_informed_end_too_close<char32_t>();
     test_informed_end_too_close<wchar_t>();
-   
+
     int rc = report_errors() || boost::report_errors();
     return rc;
 }

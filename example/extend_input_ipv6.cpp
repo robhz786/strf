@@ -300,7 +300,7 @@ int main()
     s = strf::to_string(strf::right(addr, 20, U'.').small()) .value();
     BOOST_ASSERT(s == ".......aa::bb:0:0:cc");
     //]
-    
+
     s = strf::to_string(strf::right(addr, 20)).value();
     BOOST_ASSERT(s == "  aa:0:0:0:bb:0:0:cc");
 

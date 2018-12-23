@@ -491,7 +491,7 @@ private:
     {
         using fpack_type
             = stringify::v0::detail::single_facet_pack<base_tag, Facet>;
-        return reinterpret_cast<const fpack_type&>(f);            
+        return reinterpret_cast<const fpack_type&>(f);
     }
 
 
@@ -504,7 +504,7 @@ private:
     }
 
 public:
-    
+
     template < typename Facet
              , typename category = stringify::v0::facet_category_t<Facet>
              , typename = std::enable_if_t< ! std::is_void<category>::value> >

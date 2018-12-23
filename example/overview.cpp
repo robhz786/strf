@@ -37,7 +37,7 @@ void sample_numpunct()
     auto x = strf::to_string
         .facets(punct)
         ("one hundred billions = ", 100000000000ll);
-    
+
     BOOST_ASSERT(x.value() == "one hundred billions = 1.00.00.000.0000");
 //]
 }
@@ -67,7 +67,7 @@ void windows_1252_to_utf8()
     auto x = strf::to_string( strf::iso_8859_1(" [ \x80 \xA4 ] ")
                             , strf::iso_8859_15(" [ \x80 \xA4 ] ")
                             , strf::windows_1252(" [ \x80 \xA4 ] ") );
-  
+
     // the output is in UTF-8, unless you specify otherwise
     BOOST_ASSERT(x.value() == u8" [ \uFFFD \u00A4 ]  [ \uFFFD \u20AC ]  [ \u20AC \u00A4 ] ");
     //]

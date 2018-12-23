@@ -226,7 +226,7 @@ public:
     {
         _enc = &enc;
     }
-    
+
     stringify::v0::detail::simple_string_view<CharIn> _str;
     const stringify::v0::encoding<CharIn>* _enc = nullptr;
 };

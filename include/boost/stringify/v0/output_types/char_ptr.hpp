@@ -44,7 +44,7 @@ public:
         return { boost::stringify::v0::in_place_t{}
                , stringify::v0::output_buffer<CharOut>{_begin, end} };
     }
-   
+
     stringify::v0::expected_output_buffer<CharOut> recycle(CharOut* it) override
     {
         BOOST_ASSERT(it < _end);
@@ -63,7 +63,7 @@ public:
         }
         return { boost::stringify::v0::in_place_t{}, it - _begin };
     }
- 
+
 private:
 
     CharOut* _begin;

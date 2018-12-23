@@ -25,7 +25,7 @@ int main()
     }
 
     std::cout << "\n";
-    
+
     PRINT_BENCHMARK("strf::to_string(25)")
     {
         (void)strf::to_string(25);
@@ -85,14 +85,14 @@ int main()
     {
         fmt::format("{:20}", "aa");
     }
-    
+
     std::cout << "\n";
 
     PRINT_BENCHMARK("strf::to_string .no_reserve() (\"ten = \", 10, \"twenty = \", 20)")
     {
         (void)strf::to_string.no_reserve()("ten = ", 10, "twenty = ", 20);
     }
-    
+
     PRINT_BENCHMARK("strf::to_string .as(\"ten = {}, twenty = {}\", 10, 20)")
     {
         (void)strf::to_string.as("ten = {}, twenty = {}", 10, 20);
@@ -191,6 +191,6 @@ int main()
         }
 
     }
-    
+
     return 0;
 }

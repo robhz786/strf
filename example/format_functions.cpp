@@ -7,7 +7,7 @@
 void sample_hex()
 {
     //[ trivial_hex_sample
-    
+
     namespace strf = boost::stringify::v0;
 
     auto str = strf::to_string(255, "  ", strf::hex(255));
@@ -29,7 +29,7 @@ void samples()
         , '/', strf::multi('a', 3) ^ 7
         , '/', +strf::fmt(255)
         );
-    
+
     BOOST_ASSERT(str.value() == "   ff/..ff.../0X   FF/  aaa  /+255");
     //]
 }

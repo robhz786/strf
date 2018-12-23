@@ -470,7 +470,7 @@ fmt_sep_range_printer<CharOut, CharIn, FPack, ForwardIt, Fmts ...>
 ::write() const
 {
     bool not_first = false;
-    auto r = m_fmt.value();    
+    auto r = m_fmt.value();
     for(auto it = r.begin; it != r.end; ++it)
     {
         if (not_first)

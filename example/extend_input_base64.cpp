@@ -104,7 +104,7 @@ namespace xxx {
 
 using base64_input_with_format = strf::value_with_format< base64_input
                                                         , base64_format >;
-    
+
 inline auto base64(const void* bytes, std::size_t num_bytes)
 {
     base64_input data{reinterpret_cast<const unsigned char*>(bytes), num_bytes};

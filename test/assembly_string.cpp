@@ -17,7 +17,7 @@ int main()
 
     // auto xstr = strf::to_string.as("{ } {2} {} {} {} {}", 0, 1, 2, 3);
     // BOOST_TEST(xstr);
-    
+
     // escape "{" when is followed by another "{"
     TEST("} } { {a } {abc}")
         .as("} } {{ {{a } {{abc}", "ignored");
@@ -58,7 +58,7 @@ int main()
     // escape "{" when is followed by '{'
     TEST(u"} } { {/ } {abc}")
         .as(u"} } {{ {{/ } {{abc}", u"ignored");
-    
+
     // arguments with comments
     TEST(u"0 2 0 1 2 3")
         .as(u"{ arg0} {2xxx} {0  yyy} {} { arg2} {    }", 0, 1, 2, 3, 4);
@@ -72,7 +72,7 @@ int main()
     //
     // TEST_ERR("0 2 1 2 3 ", std::make_error_code(std::errc::value_too_large))
     //     .as("{ } {2} {} {} {} {}") (0, 1, 2, 3);
-    
+
     // TEST_ERR("0 1 ", std::make_error_code(std::errc::value_too_large))
     //     .as("{ } {} {10} {} {}") (0, 1, 2, 3);
 
@@ -80,7 +80,7 @@ int main()
 
     // TODO test contrained facets
 
-    
+
     return report_errors() || boost::report_errors();
 
 }
