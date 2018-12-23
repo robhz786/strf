@@ -361,35 +361,43 @@ private:
 
 #define TEST(EXPECTED)                                        \
     error_code_tester(__FILE__, __LINE__)  <<                 \
-        make_tester((EXPECTED), __FILE__, __LINE__, 1.0, 60)
+        make_tester((EXPECTED), __FILE__, __LINE__, 1.0, 60)  \
+        .reserve_calc()
 
 #define TEST_RF(EXPECTED, RF)                                 \
     error_code_tester(__FILE__, __LINE__)  <<                 \
-        make_tester((EXPECTED), __FILE__, __LINE__, (RF), 60)
+        make_tester((EXPECTED), __FILE__, __LINE__, (RF), 60)\
+        .reserve_calc()
 
 #define TEST_ERR(EXPECTED, ERR)                               \
     error_code_tester(__FILE__, __LINE__, (ERR))  <<          \
-        make_tester((EXPECTED), __FILE__, __LINE__, 1.0, 60)
+        make_tester((EXPECTED), __FILE__, __LINE__, 1.0, 60)  \
+        .reserve_calc()
 
 #define TEST_ERR_RF(EXPECTED, ERR, RF)                        \
     error_code_tester(__FILE__, __LINE__, (ERR))  <<          \
-        make_tester((EXPECTED), __FILE__, __LINE__, (RF), 60)
+        make_tester((EXPECTED), __FILE__, __LINE__, (RF), 60) \
+        .reserve_calc()
 
 #define BUFFERED_TEST(SIZE, EXPECTED)                             \
     error_code_tester(__FILE__, __LINE__)  <<                     \
-        make_tester((EXPECTED), __FILE__, __LINE__, 1.0, (SIZE))
+        make_tester((EXPECTED), __FILE__, __LINE__, 1.0, (SIZE))  \
+        .reserve_calc()
 
 #define BUFFERED_TEST_RF(SIZE, EXPECTED, RF)                      \
     error_code_tester(__FILE__, __LINE__)  <<                     \
-        make_tester((EXPECTED), __FILE__, __LINE__, (RF), (SIZE))
+        make_tester((EXPECTED), __FILE__, __LINE__, (RF), (SIZE)) \
+        .reserve_calc()
 
 #define BUFFERED_TEST_ERR(SIZE, EXPECTED, ERR)                    \
     error_code_tester(__FILE__, __LINE__, (ERR))  <<              \
-        make_tester((EXPECTED), __FILE__, __LINE__, 1.0, (SIZE))
+        make_tester((EXPECTED), __FILE__, __LINE__, 1.0, (SIZE))  \
+        .reserve_calc()
 
 #define BUFFERED_TEST_ERR_RF(SIZE, EXPECTED, ERR, RF)             \
     error_code_tester(__FILE__, __LINE__, (ERR))  <<              \
-        make_tester((EXPECTED), __FILE__, __LINE__, (RF), (SIZE))
+        make_tester((EXPECTED), __FILE__, __LINE__, (RF), (SIZE)) \
+        .reserve_calc()
 
 
 #endif

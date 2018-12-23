@@ -20,7 +20,7 @@ void reserve()
     (void) append_to_str("_bleh", "_bleh");
     (void) append_to_str.as("--{}--{}--", "blih", "blih");
     (void) append_to_str("bloh", "bloh");
-    (void) append_to_str.reserve_auto()("bluh", "bluh");
+    (void) append_to_str.reserve_calc()("bluh", "bluh");
 
     BOOST_ASSERT(str.value() == "blahblah_bleh_bleh--blih--blih--blohblohbluhbluh");
     //]

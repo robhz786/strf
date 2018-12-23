@@ -36,9 +36,9 @@ where:
 
 The following member functions only have effect in some output types ( cases 1 to 7 in [link output_types this table], or when you create the [link OutputWriterConcept reserve] method when defining your own output type ). 
 
-* [*`reserve_auto()`] : The necessary amount of characters is calculated and reserved in the destination object. This is the default.
-* [*`reserve(std::size_t size)`] : The calculation is skipped and the specified `size` is used instead.
-* [*`no_reserve()`] : No reservation is done.
+* [*`reserve_calc()`] : The necessary amount of characters is calculated and reserved in the destination object.
+* [*`reserve(std::size_t size)`] : Reserve `size` characters.
+* [*`no_reserve()`] : No reservation is done. This is the default.
 
 [syntax_reserve]
 [endsect]

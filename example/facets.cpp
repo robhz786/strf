@@ -14,7 +14,7 @@ void basic_facet_sample()
     // str_grouping<10> facet belongs to numpunct_category<10> category
     strf::str_grouping<10> facet_obj{"\2\2\3"};
 
-    auto x = strf::to_string.facets(facet_obj)(10000000000000LL);
+    auto x = strf::to_string.facets(facet_obj)(*strf::fmt(10000000000000LL));
 
     BOOST_ASSERT(x && x.value() == "1,000,000,000,00,00");
     //]
@@ -29,7 +29,7 @@ void constrained_facet()
 
     auto facet_obj = strf::constrain<std::is_signed>(strf::monotonic_grouping<10>{3});
 
-    auto x = strf::to_string.facets(facet_obj)(100000u, "  ", 100000 );
+    auto x = strf::to_string.facets(facet_obj)(*strf::fmt(100000u), "  ", *strf::fmt(100000));
 
     BOOST_ASSERT(x && x.value() == "100000  100,000");
     //]
@@ -60,7 +60,8 @@ void overriding_sample()
             , punct_dec_2
             , strf::constrain<std::is_signed>(punct_dec_3)
             )
-        (100000, "  ", 100000u, "  ", strf::hex(100000), "  ", strf::oct(100000));
+        ( *strf::fmt(100000), "  ", *strf::fmt(100000u), "  "
+        , *strf::hex(100000), "  ", *strf::oct(100000)) ;
 
     BOOST_ASSERT(x && x.value() == "100^000  10.00.00  1'86a0  303_240");
     //]

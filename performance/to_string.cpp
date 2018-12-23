@@ -15,9 +15,9 @@ int main()
 {
     namespace strf = boost::stringify;
 
-    PRINT_BENCHMARK("strf::to_string .no_reserve() (\"Hello \", \"World\", \"!\")")
+    PRINT_BENCHMARK("strf::to_string (\"Hello \", \"World\", \"!\")")
     {
-        (void)strf::to_string.no_reserve()("Hello ", "World", "!");
+        (void)strf::to_string("Hello ", "World", "!");
     }
     PRINT_BENCHMARK("fmt::format(\"Hello {}!\", \"World\")")
     {
@@ -29,14 +29,6 @@ int main()
     PRINT_BENCHMARK("strf::to_string(25)")
     {
         (void)strf::to_string(25);
-    }
-    PRINT_BENCHMARK("strf::to_string .reserve(2) (25)")
-    {
-        (void)strf::to_string.reserve(2)(25);
-    }
-    PRINT_BENCHMARK("strf::to_string .no_reserve() (25)")
-    {
-        auto x = strf::to_string.no_reserve()(25);
     }
     PRINT_BENCHMARK("fmt::format(\"{}\", 25)")
     {
@@ -53,9 +45,9 @@ int main()
     {
         (void)strf::to_string(LLONG_MAX);
     }
-    PRINT_BENCHMARK("strf::to_string .no_reserve() (LLONG_MAX)")
+    PRINT_BENCHMARK("strf::to_string .reserve_calc() (LLONG_MAX)")
     {
-        (void)strf::to_string.no_reserve()(LLONG_MAX);
+        (void)strf::to_string.reserve_calc()(LLONG_MAX);
     }
     PRINT_BENCHMARK("strf::to_string .reserve(100) (LLONG_MAX)")
     {
@@ -88,11 +80,10 @@ int main()
 
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::to_string .no_reserve() (\"ten = \", 10, \"twenty = \", 20)")
+    PRINT_BENCHMARK("strf::to_string (\"ten = \", 10, \"twenty = \", 20)")
     {
-        (void)strf::to_string.no_reserve()("ten = ", 10, "twenty = ", 20);
+        (void)strf::to_string ("ten = ", 10, "twenty = ", 20);
     }
-
     PRINT_BENCHMARK("strf::to_string .as(\"ten = {}, twenty = {}\", 10, 20)")
     {
         (void)strf::to_string.as("ten = {}, twenty = {}", 10, 20);
@@ -105,6 +96,11 @@ int main()
     {
         (void)strf::to_string.as("ten = {}, twenty = {}", 10, 20);
     }
+    PRINT_BENCHMARK("strf::to_string .reserve_calc() .as(\"ten = {}, twenty = {}\", 10, 20)")
+    {
+        (void)strf::to_string.reserve_calc().as("ten = {}, twenty = {}", 10, 20);
+    }
+
     PRINT_BENCHMARK("fmt::format(\"ten = {}, twenty = {}\", 10, 20)")
     {
         (void)fmt::format("ten = {}, twenty = {}", 10, 20);
@@ -145,18 +141,18 @@ int main()
         // for(int i = 0; i < 500; ++i) u8sample3.append(u8"\u0800");
         // for(int i = 0; i < 500; ++i) u8sample4.append(u8"\U00010000");
 
-        PRINT_BENCHMARK("strf::to_u16string.no_reserve() (strf::cv(u8sample1))")
-        {
-            (void)strf::to_u16string.no_reserve()(strf::cv(u8sample1));
-        }
-        PRINT_BENCHMARK("strf::write(buff) (strf::cv(u8sample1)); strf::to_u16string(buff)")
-        {
-            (void)strf::write(buff)(strf::cv(u8sample1));
-            (void)strf::to_u16string(buff);
-        }
         PRINT_BENCHMARK("strf::to_u16string (strf::cv(u8sample1))")
         {
             (void)strf::to_u16string(strf::cv(u8sample1));
+        }
+        PRINT_BENCHMARK("strf::write(buff) (strf::cv(u8sample1)); strf::to_u16string.reserve_calc() (buff)")
+        {
+            (void)strf::write(buff)(strf::cv(u8sample1));
+            (void)strf::to_u16string.reserve_calc() (buff);
+        }
+        PRINT_BENCHMARK("strf::to_u16string.reserve_calc() (strf::cv(u8sample1))")
+        {
+            (void)strf::to_u16string.reserve_calc()(strf::cv(u8sample1));
         }
         PRINT_BENCHMARK("strf::to_u16string .reserve(510) (strf::cv(u8sample1))")
         {
@@ -172,18 +168,18 @@ int main()
         // std::u16string u16sample2(500, u'\u0100');
         // std::u16string u16sample3(500, u'\u0800');
 
-        PRINT_BENCHMARK("strf::to_string.no_reserve() (strf::cv(u16sample1))")
-        {
-            (void)strf::to_string.no_reserve()(strf::cv(u16sample1));
-        }
-        PRINT_BENCHMARK("strf::write(buff) (strf::cv(u16sample1)); strf::to_string(buff)")
-        {
-            (void)strf::write(buff)(strf::cv(u16sample1));
-            (void)strf::to_string(buff);
-        }
         PRINT_BENCHMARK("strf::to_string (strf::cv(u16sample1))")
         {
             (void)strf::to_string(strf::cv(u16sample1));
+        }
+        PRINT_BENCHMARK("strf::write(buff) (strf::cv(u16sample1)); strf::to_string.reserve_calc()(buff)")
+        {
+            (void)strf::write(buff)(strf::cv(u16sample1));
+            (void)strf::to_string.reserve_calc()(buff);
+        }
+        PRINT_BENCHMARK("strf::to_string.reserve_calc() (strf::cv(u16sample1))")
+        {
+            (void)strf::to_string.reserve_calc()(strf::cv(u16sample1));
         }
         PRINT_BENCHMARK("strf::to_string.reserve(510) (strf::cv(u16sample1))")
         {

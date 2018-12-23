@@ -297,7 +297,7 @@ public:
     {
     }
 
-    constexpr void set_reserve_auto()
+    constexpr void set_reserve_calc()
     {
     }
 
@@ -315,7 +315,7 @@ public:
 class output_size_reservation_real
 {
     std::size_t _size = 0;
-    enum {calculate_size, predefined_size, no_reserve} _flag = calculate_size;
+    enum {calculate_size, predefined_size, no_reserve} _flag = no_reserve;
 
 public:
 
@@ -330,7 +330,7 @@ public:
         _size = size;
     }
 
-    constexpr void set_reserve_auto()
+    constexpr void set_reserve_calc()
     {
         _flag = calculate_size;
     }
@@ -415,6 +415,9 @@ class syntax_after_leading_expr
     using _arglist_type
         = std::initializer_list<const stringify::v0::printer<_char_type>*>;
 
+    using _reservation
+        = stringify::v0::detail::output_size_reservation<OutputWriter>;
+
 public:
 
     constexpr syntax_after_leading_expr
@@ -445,7 +448,8 @@ public:
             < decltype(stringify::v0::pack(_fpack, facets ...))
             , OutputWriter
             , OutputWriterInitArgsTuple >
-            ( stringify::v0::pack(_fpack, facets ...)
+            ( *this
+            , stringify::v0::pack(_fpack, facets ...)
             , _owinit );
     }
 
@@ -456,7 +460,8 @@ public:
             < decltype(stringify::v0::pack(_fpack, fp))
             , OutputWriter
             , OutputWriterInitArgsTuple >
-            ( stringify::v0::pack(_fpack, fp)
+            ( *this
+            , stringify::v0::pack(_fpack, fp)
             , _owinit );
     }
 
@@ -513,26 +518,26 @@ public:
         return *this;
     }
 
-    constexpr syntax_after_leading_expr reserve_auto() const &
+    constexpr syntax_after_leading_expr reserve_calc() const &
     {
         syntax_after_leading_expr copy = *this;
-        copy.set_reserve_auto();
+        copy.set_reserve_calc();
         return copy;
     }
-    constexpr syntax_after_leading_expr reserve_auto() const &&
+    constexpr syntax_after_leading_expr reserve_calc() const &&
     {
         syntax_after_leading_expr copy = *this;
-        copy.set_reserve_auto();
+        copy.set_reserve_calc();
         return copy;
     }
-    constexpr syntax_after_leading_expr reserve_auto() &
+    constexpr syntax_after_leading_expr reserve_calc() &
     {
-        this->set_reserve_auto();
+        this->set_reserve_calc();
         return *this;
     }
-    constexpr syntax_after_leading_expr reserve_auto() &&
+    constexpr syntax_after_leading_expr reserve_calc() &&
     {
-        this->set_reserve_auto();
+        this->set_reserve_calc();
         return *this;
     }
 
@@ -577,6 +582,7 @@ public:
         ( const std::basic_string_view<_char_type>& str
         , const Args& ... args ) const
     {
+
         return asm_write
             ( this->has_reserve()
             , str.begin()
@@ -621,6 +627,29 @@ public:
 
 private:
 
+    template <class, class, class>
+    friend class syntax_after_leading_expr;
+    
+    constexpr syntax_after_leading_expr
+        ( const _reservation& r
+        , FPack&& fp
+        , OutputWriterInitArgsTuple&& args )
+        : _reservation(r)
+        , _fpack(std::move(fp))
+        , _owinit(std::move(args))
+    {
+    }
+
+    constexpr syntax_after_leading_expr
+        ( const _reservation& r
+        , const FPack& fp
+        , const OutputWriterInitArgsTuple& args )
+        : _reservation(r)
+        , _fpack(fp)
+        , _owinit(args)
+    {
+    }
+    
     static const stringify::v0::printer<_char_type>*
     _as_pointer(const stringify::v0::printer<_char_type>& p)
     {
