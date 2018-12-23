@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_TRANSCODING_HPP
-#define BOOST_STRINGIFY_V0_TRANSCODING_HPP
+#ifndef BOOST_STRINGIFY_V0_DETAIL_TRANSCODING_HPP
+#define BOOST_STRINGIFY_V0_DETAIL_TRANSCODING_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -372,7 +372,6 @@ const stringify::v0::encoding<wchar_t>& wchar_encoding();
 #endif // defined(BOOST_STRINGIFY_OMIT_IMPL)
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
-
 
 #if ! defined(BOOST_STRINGIFY_OMIT_IMPL)
 

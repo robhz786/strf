@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <system_error>
-#include <boost/stringify/v0/basic_types.hpp>
+#include <boost/stringify/v0/printer.hpp>
 
 struct error_tag
 {

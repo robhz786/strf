@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_OUTPUT_TYPES_FILE_HPP
-#define BOOST_STRINGIFY_V0_OUTPUT_TYPES_FILE_HPP
+#ifndef BOOST_STRINGIFY_V0_DETAIL_OUTPUT_TYPES_FILE_HPP
+#define BOOST_STRINGIFY_V0_DETAIL_OUTPUT_TYPES_FILE_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -7,7 +7,7 @@
 
 #include <cstdio>
 #include <cstring>
-#include <boost/stringify/v0/basic_types.hpp>
+#include <boost/stringify/v0/make_destination.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -206,5 +206,5 @@ inline auto wwrite(std::FILE* destination, std::size_t* count = nullptr)
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_OUTPUT_TYPES_FILE_HPP
+#endif  // BOOST_STRINGIFY_V0_DETAIL_OUTPUT_TYPES_FILE_HPP
 

@@ -1,12 +1,12 @@
-#ifndef BOOST_STRINGIFY_V0_OUTPUT_TYPES_CHAR_PTR_HPP
-#define BOOST_STRINGIFY_V0_OUTPUT_TYPES_CHAR_PTR_HPP
+#ifndef BOOST_STRINGIFY_V0_DETAIL_OUTPUT_TYPES_CHAR_PTR_HPP
+#define BOOST_STRINGIFY_V0_DETAIL_OUTPUT_TYPES_CHAR_PTR_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <string>
-#include <boost/stringify/v0/syntax.hpp>
+#include <boost/stringify/v0/make_destination.hpp>
 #include <boost/stringify/v0/expected.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -174,5 +174,5 @@ inline auto write(wchar_t* destination, std::size_t count)
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif  /* BOOST_STRINGIFY_V0_OUTPUT_TYPES_CHAR_PTR_HPP */
+#endif  /* BOOST_STRINGIFY_V0_DETAIL_OUTPUT_TYPES_CHAR_PTR_HPP */
 

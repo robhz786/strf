@@ -1,14 +1,14 @@
-#ifndef BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR_HPP_INCLUDED
-#define BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
+#define BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <type_traits>
-#include <boost/stringify/v0/basic_types.hpp>
+#include <boost/stringify/v0/printer.hpp>
 #include <boost/stringify/v0/facets_pack.hpp>
-#include <boost/stringify/v0/facets/width_calculator.hpp>
+#include <boost/stringify/v0/detail/facets/width_calculator.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -567,7 +567,7 @@ template <> struct is_char<wchar_t>: public std::true_type {};
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif // BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR_HPP_INCLUDED
+#endif // BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
 
 
 

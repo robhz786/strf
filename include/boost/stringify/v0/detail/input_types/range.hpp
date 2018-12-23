@@ -1,12 +1,12 @@
-#ifndef BOOST_STRINGIFY_V0_INPUT_TYPES_RANGE_HPP
-#define BOOST_STRINGIFY_V0_INPUT_TYPES_RANGE_HPP
+#ifndef BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_RANGE_HPP
+#define BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_RANGE_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <initializer_list>
-#include <boost/stringify/v0/facets/encoding.hpp>
+#include <boost/stringify/v0/detail/facets/encoding.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
@@ -664,5 +664,5 @@ inline auto fmt_range(T (&array)[N], const CharIn* sep)
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_INPUT_TYPES_RANGE_HPP
+#endif  // BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_RANGE_HPP
 

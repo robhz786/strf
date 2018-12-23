@@ -1,12 +1,11 @@
-#ifndef BOOST_STRINGIFY_V0_ARGS_HANDLER_HPP
-#define BOOST_STRINGIFY_V0_ARGS_HANDLER_HPP
+#ifndef BOOST_STRINGIFY_V0_MAKE_DESTINATION_HPP
+#define BOOST_STRINGIFY_V0_MAKE_DESTINATION_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/basic_types.hpp>
-//#include <boost/stringify/v0/detail/assembly_string.hpp>
+#include <boost/stringify/v0/printer.hpp>
 #include <boost/stringify/v0/facets_pack.hpp>
 #include <tuple>
 
@@ -758,159 +757,19 @@ private:
 
 template <typename CharOut, typename FPack, typename Arg>
 using printer_impl
-= decltype(make_printer<CharOut, FPack>
-             ( std::declval<FPack>()
-             , std::declval<Arg>() ) );
+= decltype(make_printer<CharOut, FPack>( std::declval<FPack>()
+                                       , std::declval<Arg>() ) );
 
 template <typename OutputWriter, typename ... Args>
 constexpr auto make_destination(Args ... args)
     -> stringify::v0::detail::syntax_after_leading_expr
         < stringify::v0::facets_pack<>
         , OutputWriter
-        , std::tuple<Args ...>
-        >
+        , std::tuple<Args ...> >
 {
     return {stringify::v0::facets_pack<>{}, std::tuple<Args ...>{args ...}};
 }
 
-template <typename T>
-constexpr auto fmt(const T& value)
-{
-    return make_fmt(stringify::v0::tag{}, value);
-}
-
-template <typename T, typename ... Args>
-constexpr auto sani(const T& value, const Args& ... args)
-{
-    return make_fmt(stringify::v0::tag{}, value).sani(args...);
-}
-
-template <typename T>
-constexpr auto uphex(const T& value)
-{
-    return fmt(value).uphex();
-}
-
-template <typename T>
-constexpr auto hex(const T& value)
-{
-    return fmt(value).hex();
-}
-
-template <typename T>
-constexpr auto dec(const T& value)
-{
-    return fmt(value).dec();
-}
-
-template <typename T>
-constexpr auto oct(const T& value)
-{
-    return fmt(value).oct();
-}
-
-template <typename T>
-constexpr auto left(const T& value, int width)
-{
-    return fmt(value) < width;
-}
-
-template <typename T>
-constexpr auto right(const T& value, int width)
-{
-    return fmt(value) > width;
-}
-
-template <typename T>
-constexpr auto internal(const T& value, int width)
-{
-    return fmt(value) % width;
-}
-
-template <typename T>
-constexpr auto center(const T& value, int width)
-{
-    return fmt(value) ^ width;
-}
-
-template <typename T>
-constexpr auto left(const T& value, int width, char32_t fill)
-{
-    return fmt(value).fill(fill) < width;
-}
-
-template <typename T>
-constexpr auto right(const T& value, int width, char32_t fill)
-{
-    return fmt(value).fill(fill) > width;
-}
-
-template <typename T>
-constexpr auto internal(const T& value, int width, char32_t fill)
-{
-    return fmt(value).fill(fill) % width;
-}
-
-template <typename T>
-constexpr auto center(const T& value, int width, char32_t fill)
-{
-    return fmt(value).fill(fill) ^ width;
-}
-
-template <typename T, typename I>
-constexpr auto multi(const T& value, I count)
-{
-    return fmt(value).multi(count);
-}
-
-// template <typename T>
-// inline auto ascii(const T& x)
-// {
-//     return fmt(x).encoding(stringify::v0::ascii());
-// }
-// template <typename T>
-// inline auto iso_8859_1(const T& x)
-// {
-//     return fmt(x).encoding(stringify::v0::iso_8859_1());
-// }
-// template <typename T>
-// inline auto iso_8859_15(const T& x)
-// {
-//     return fmt(x).encoding(stringify::v0::iso_8859_15());
-// }
-// template <typename T>
-// inline auto windows_1252(const T& x)
-// {
-//     return fmt(x).encoding(stringify::v0::windows_1252());
-// }
-template <typename T>
-inline auto utf8(const T& x)
-{
-    return fmt(x).encoding(stringify::v0::utf8());
-}
-// template <typename T>
-// inline auto mutf8(const T& x)
-// {
-//     return fmt(x).encoding(stringify::v0::mutf8());
-// }
-// template <typename T>
-// inline auto utfw(const T& x)
-// {
-//     return fmt(x).encoding(stringify::v0::utfw());
-// }
-
-template <typename T>
-inline auto utf16(const T& x)
-{
-    return fmt(x).encoding(stringify::v0::utf16());
-}
-template <typename T>
-inline auto utf32(const T& x)
-{
-    return fmt(x).encoding(stringify::v0::utf32());
-}
-
-
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_ARGS_HANDLER_HPP
+#endif  // BOOST_STRINGIFY_V0_MAKE_DESTINATION_HPP

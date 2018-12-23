@@ -1,10 +1,10 @@
-#ifndef BOOST_STRINGIFY_V0_INPUT_TYPES_STRING
-#define BOOST_STRINGIFY_V0_INPUT_TYPES_STRING
+#ifndef BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_STRING
+#define BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_STRING
 
 #include <algorithm>
 #include <limits>
 #include <boost/stringify/v0/detail/string_format.hpp>
-#include <boost/stringify/v0/facets/width_calculator.hpp>
+#include <boost/stringify/v0/detail/facets/width_calculator.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -341,5 +341,5 @@ make_printer
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif  /* BOOST_STRINGIFY_V0_INPUT_TYPES_CHAR_PTR */
+#endif  /* BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_CHAR_PTR */
 

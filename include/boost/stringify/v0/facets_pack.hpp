@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_FACETS_PACK_HPP
-#define BOOST_STRINGIFY_V0_FACETS_PACK_HPP
+#ifndef BOOST_STRINGIFY_V0_DETAIL_FACETS_PACK_HPP
+#define BOOST_STRINGIFY_V0_DETAIL_FACETS_PACK_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -588,5 +588,5 @@ constexpr const auto& get_facet(const stringify::v0::facets_pack<Facets...>& fp)
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_FACETS_PACK_HPP
+#endif  // BOOST_STRINGIFY_V0_DETAIL_FACETS_PACK_HPP
 

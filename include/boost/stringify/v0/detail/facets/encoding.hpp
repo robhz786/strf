@@ -1,11 +1,11 @@
-#ifndef BOOST_STRINGIFY_V0_FACETS_ENCODINGS_HPP
-#define BOOST_STRINGIFY_V0_FACETS_ENCODINGS_HPP
+#ifndef BOOST_STRINGIFY_V0_DETAIL_FACETS_ENCODINGS_HPP
+#define BOOST_STRINGIFY_V0_DETAIL_FACETS_ENCODINGS_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/transcoding.hpp>
+#include <boost/stringify/v0/detail/transcoding.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -86,7 +86,7 @@ public:
         : encoding_policy(stringify::v0::error_handling::replace, true)
     {
     }
-    
+
     constexpr encoding_policy
         ( stringify::v0::error_handling err_hdl
         , bool allow_surr )
@@ -136,5 +136,5 @@ struct encoding_policy_category
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_FACETS_ENCODINGS_HPP
+#endif  // BOOST_STRINGIFY_V0_DETAIL_FACETS_ENCODINGS_HPP
 

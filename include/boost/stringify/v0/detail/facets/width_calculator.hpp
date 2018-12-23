@@ -1,11 +1,11 @@
-#ifndef BOOST_STRINGIFY_V0_FACETS_WIDTH_CALCULATOR_HPP
-#define BOOST_STRINGIFY_V0_FACETS_WIDTH_CALCULATOR_HPP
+#ifndef BOOST_STRINGIFY_V0_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
+#define BOOST_STRINGIFY_V0_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/facets/encoding.hpp>
+#include <boost/stringify/v0/detail/facets/encoding.hpp>
 #include <boost/assert.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -236,5 +236,5 @@ inline stringify::v0::width_calculator width_as
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_FACETS_WIDTH_CALCULATOR_HPP
+#endif  // BOOST_STRINGIFY_V0_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
 

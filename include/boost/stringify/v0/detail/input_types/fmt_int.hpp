@@ -1,14 +1,15 @@
-#ifndef BOOST_STRINGIFY_V0_INPUT_TYPES_FMT_INT_HPP_INCLUDED
-#define BOOST_STRINGIFY_V0_INPUT_TYPES_FMT_INT_HPP_INCLUDED
+#ifndef BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_FMT_INT_HPP_INCLUDED
+#define BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_FMT_INT_HPP_INCLUDED
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/basic_types.hpp>
+#include <boost/stringify/v0/printer.hpp>
 #include <boost/stringify/v0/facets_pack.hpp>
-#include <boost/stringify/v0/facets/encoding.hpp>
-#include <boost/stringify/v0/facets/numpunct.hpp>
+#include <boost/stringify/v0/detail/format_functions.hpp>
+#include <boost/stringify/v0/detail/facets/encoding.hpp>
+#include <boost/stringify/v0/detail/facets/numpunct.hpp>
 #include <boost/stringify/v0/detail/int_digits.hpp>
 #include <boost/assert.hpp>
 #include <cstdint>
@@ -444,7 +445,6 @@ int fmt_int_printer<IntT, CharT>::remaining_width(int w) const
     return w > _fmt.width() ? (w - _fmt.width()) : 0;
 }
 
-
 template <typename IntT, typename CharT>
 stringify::v0::expected_output_buffer<CharT> fmt_int_printer<IntT, CharT>::write
         ( stringify::v0::output_buffer<CharT> buff
@@ -486,8 +486,6 @@ stringify::v0::expected_output_buffer<CharT> fmt_int_printer<IntT, CharT>::write
         }
     }
 }
-
-
 
 template <typename IntT, typename CharT>
 stringify::v0::expected_output_buffer<CharT>
@@ -841,4 +839,4 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<unsigned long long, wcha
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif // BOOST_STRINGIFY_V0_INPUT_TYPES_FMT_INT_HPP_INCLUDED
+#endif // BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_FMT_INT_HPP_INCLUDED

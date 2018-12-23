@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_FACETS_NUMPUNCT_HPP
-#define BOOST_STRINGIFY_V0_FACETS_NUMPUNCT_HPP
+#ifndef BOOST_STRINGIFY_V0_DETAIL_FACETS_NUMPUNCT_HPP
+#define BOOST_STRINGIFY_V0_DETAIL_FACETS_NUMPUNCT_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -355,5 +355,5 @@ template <int Base> struct numpunct_category
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_FACETS_NUMPUNCT_HPP
+#endif  // BOOST_STRINGIFY_V0_DETAIL_FACETS_NUMPUNCT_HPP
 

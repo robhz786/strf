@@ -1,11 +1,11 @@
-#ifndef BOOST_STRINGIFY_V0_INPUT_TYPES_INT_HPP
-#define BOOST_STRINGIFY_V0_INPUT_TYPES_INT_HPP
+#ifndef BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_INT_HPP
+#define BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_INT_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/basic_types.hpp>
+#include <boost/stringify/v0/printer.hpp>
 #include <boost/stringify/v0/facets_pack.hpp>
 #include <boost/stringify/v0/detail/int_digits.hpp>
 #include <boost/assert.hpp>
@@ -230,5 +230,5 @@ make_printer(const FPack& fp, unsigned long long x)
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_INPUT_TYPES_INT_HPP
+#endif  // BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_INT_HPP
 

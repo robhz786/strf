@@ -5,8 +5,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/basic_types.hpp>
-#include <boost/stringify/v0/facets/encoding.hpp>
+#include <boost/stringify/v0/detail/format_functions.hpp>
+#include <boost/stringify/v0/detail/facets/encoding.hpp>
 #include <boost/utility/string_view.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -398,6 +398,54 @@ stringify::v0::detail::cv_string_with_format<CharIn> fmt_cv
     stringify::v0::detail::cv_string<CharIn> cv_str{str.data(), str.length(), &enc};
     return stringify::v0::detail::cv_string_with_format<CharIn>{cv_str};
 }
+
+// template <typename T>
+// inline auto ascii(const T& x)
+// {
+//     return stringify::v0::cv(x, stringify::v0::ascii());
+// }
+// template <typename T>
+// inline auto iso_8859_1(const T& x)
+// {
+//     return stringify::v0::cv(x, stringify::v0::iso_8859_1());
+// }
+// template <typename T>
+// inline auto iso_8859_15(const T& x)
+// {
+//     return stringify::v0::cv(x, stringify::v0::iso_8859_15());
+// }
+// template <typename T>
+// inline auto windows_1252(const T& x)
+// {
+//     return stringify::v0::cv(x, stringify::v0::windows_1252());
+// }
+template <typename T>
+inline auto utf8(const T& x)
+{
+    return stringify::v0::cv(x, stringify::v0::utf8());
+}
+// template <typename T>
+// inline auto mutf8(const T& x)
+// {
+//     return stringify::v0::cv(x, stringify::v0::mutf8());
+// }
+// template <typename T>
+// inline auto utfw(const T& x)
+// {
+//     return stringify::v0::cv(x, stringify::v0::utfw());
+// }
+
+template <typename T>
+inline auto utf16(const T& x)
+{
+    return stringify::v0::cv(x, stringify::v0::utf16());
+}
+template <typename T>
+inline auto utf32(const T& x)
+{
+    return stringify::v0::cv(x, stringify::v0::utf32());
+}
+
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
