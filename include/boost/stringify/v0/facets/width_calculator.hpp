@@ -31,14 +31,14 @@ public:
     explicit width_calculator
     ( const stringify::v0::width_calculation_type calc_type
     )
-        : m_type(calc_type)
+        : _type(calc_type)
     {
     }
 
     explicit width_calculator
     ( const stringify::v0::char_width_calculator calc_function
     )
-        : m_ch_wcalc(calc_function)
+        : _ch_wcalc(calc_function)
     {
     }
 
@@ -49,17 +49,17 @@ public:
     template <typename CharT>
     int width_of(CharT ch, const stringify::v0::encoding<CharT>& enc) const
     {
-        if ( m_type == stringify::width_calculation_type::as_length
-          || m_type == stringify::width_calculation_type::as_codepoints_count )
+        if ( _type == stringify::width_calculation_type::as_length
+          || _type == stringify::width_calculation_type::as_codepoints_count )
         {
             return 1;
         }
         if ( std::is_same<CharT, char32_t>::value
           && enc.id == stringify::v0::encoding_id::eid_utf32 )
         {
-            return m_ch_wcalc(ch);
+            return _ch_wcalc(ch);
         }
-        return m_ch_wcalc(enc.decode_single_char(ch));
+        return _ch_wcalc(enc.decode_single_char(ch));
     }
 
     template <typename CharIn>
@@ -70,13 +70,13 @@ public:
         , const stringify::v0::encoding<CharIn>& enc
         , const stringify::v0::encoding_policy epoli ) const
     {
-        if (m_type == stringify::width_calculation_type::as_length)
+        if (_type == stringify::width_calculation_type::as_length)
         {
             return str_len > static_cast<std::size_t>(width)
                 ? 0
                 : width - static_cast<int>(str_len);
         }
-        else if(m_type == stringify::width_calculation_type::as_codepoints_count)
+        else if(_type == stringify::width_calculation_type::as_codepoints_count)
         {
             auto count = enc.codepoints_count(str, str + str_len, width);
             BOOST_ASSERT((std::ptrdiff_t)width >= (std::ptrdiff_t)count);
@@ -99,7 +99,7 @@ public:
                                           , epoli.allow_surr() );
                 for (auto it = &buff[0]; width > 0 && it < output_buffer; ++it)
                 {
-                    width -= m_ch_wcalc(*it);
+                    width -= _ch_wcalc(*it);
                 }
             } while (res == stringify::v0::cv_result::insufficient_space);
             return width;
@@ -108,15 +108,10 @@ public:
 
 private:
 
-    static int unique_char_width(char32_t)
-    {
-        return 1;
-    }
-
     union
     {
-        stringify::v0::width_calculation_type m_type;
-        stringify::v0::char_width_calculator m_ch_wcalc;
+        stringify::v0::width_calculation_type _type;
+        stringify::v0::char_width_calculator _ch_wcalc;
     };
 
     static_assert( sizeof(stringify::v0::width_calculation_type) >=
@@ -180,14 +175,14 @@ int width_calculator::remaining_width<wchar_t>
 
 BOOST_STRINGIFY_INLINE int width_calculator::width_of(char32_t ch) const
 {
-    if ( m_type == stringify::width_calculation_type::as_length
-      || m_type == stringify::width_calculation_type::as_codepoints_count )
+    if ( _type == stringify::width_calculation_type::as_length
+      || _type == stringify::width_calculation_type::as_codepoints_count )
     {
         return 1;
     }
     else
     {
-        return m_ch_wcalc(ch);
+        return _ch_wcalc(ch);
     }
 }
 
@@ -198,8 +193,8 @@ BOOST_STRINGIFY_INLINE int width_calculator::width_of(char32_t ch) const
 //     , const char32_t* end
 //     ) const
 // {
-//     if ( m_type == stringify::width_calculation_type::as_length
-//       || m_type == stringify::width_calculation_type::as_codepoints_count )
+//     if ( _type == stringify::width_calculation_type::as_length
+//       || _type == stringify::width_calculation_type::as_codepoints_count )
 //     {
 //         std::size_t str_len = end - begin;
 //         if(str_len >= (std::size_t)(width))
@@ -212,7 +207,7 @@ BOOST_STRINGIFY_INLINE int width_calculator::width_of(char32_t ch) const
 //     {
 //         for(auto it = begin; it < end && width > 0; ++it)
 //         {
-//             width -= m_ch_wcalc(*it);
+//             width -= _ch_wcalc(*it);
 //         }
 //         return width > 0 ? width : 0;
 //     }

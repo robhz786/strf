@@ -51,9 +51,11 @@ using category_member_type_or_void
 template <typename F>
 class facet_trait
 {
-    using helper = stringify::v0::detail::category_member_type_or_void<F>;
+    using _helper = stringify::v0::detail::category_member_type_or_void<F>;
+
 public:
-    using category = typename helper::type;
+
+    using category = typename _helper::type;
 };
 
 template <typename F>
@@ -109,12 +111,10 @@ struct constrained_facet_helper<ParentFilter, std::reference_wrapper<F>>
 template
     < template <class> class ParentFilter
     , template <class> class Filter
-    , typename F
-    >
+    , typename F >
 struct constrained_facet_helper
     < ParentFilter
-    , stringify::v0::constrained_facet<Filter, F>
-    >
+    , stringify::v0::constrained_facet<Filter, F> >
 {
     using constrained_f = stringify::v0::constrained_facet<Filter, F>;
     using helper
@@ -122,7 +122,7 @@ struct constrained_facet_helper
 
     constexpr static const auto& get(const constrained_f& f)
     {
-        return helper::get(f.m_facet);
+        return helper::get(f._facet);
     }
 
     template <typename T>
@@ -141,15 +141,15 @@ struct constrained_facet_helper
 template <template <class> class Filter, typename Facet>
 class constrained_facet
 {
-    using helper =
+    using _helper =
         stringify::v0::detail::constrained_facet_helper<Filter, Facet>;
 
 public:
 
     template <typename InputType>
-    using matches = typename helper::template matches<InputType>;
+    using matches = typename _helper::template matches<InputType>;
 
-    using category = typename helper::category;
+    using category = typename _helper::category;
 
     constrained_facet() = default;
 
@@ -158,13 +158,13 @@ public:
     constrained_facet(constrained_facet&&) = default;
 
     constrained_facet(const Facet& f)
-        : m_facet(f)
+        : _facet(f)
     {
     }
 
     constexpr const auto& get_facet() const
     {
-        return helper::get(m_facet);
+        return _helper::get(_facet);
     }
 
 private:
@@ -172,7 +172,7 @@ private:
     template <template <class> class, class>
     friend struct stringify::v0::detail::constrained_facet_helper;
 
-    Facet m_facet;
+    Facet _facet;
 };
 
 template <template <class> class Filter, typename Facet>
@@ -242,7 +242,7 @@ class single_facet_pack: public facets_pack_end<LowestTag>
 {
 public:
 
-    constexpr single_facet_pack(const Facet& f) : m_facet(f) {}
+    constexpr single_facet_pack(const Facet& f) : _facet(f) {}
 
     constexpr single_facet_pack(const single_facet_pack& r) = default;
 
@@ -258,20 +258,19 @@ public:
     constexpr const Facet& do_get_facet
         (const highest_tag&, stringify::v0::facet_category_t<Facet>) const
     {
-        return m_facet;
+        return _facet;
     }
 
 private:
 
-    Facet m_facet;
+    Facet _facet;
 };
 
 
 template
     < typename LowestTag
     , template <class> class Filter
-    , typename Facet
-    >
+    , typename Facet >
 class single_facet_pack
         < LowestTag
         , boost::stringify::v0::constrained_facet<Filter, Facet>
@@ -285,7 +284,7 @@ class single_facet_pack
 public:
 
     constexpr single_facet_pack
-        (const ConstrainedFacet& f) : m_constrained_facet(f) {};
+        (const ConstrainedFacet& f) : _constrained_facet(f) {};
 
     constexpr single_facet_pack
         (const single_facet_pack& r) = default;
@@ -309,12 +308,12 @@ public:
         , typename ConstrainedFacet::category
         ) const
     {
-        return m_constrained_facet.get_facet();
+        return _constrained_facet.get_facet();
     }
 
 private:
 
-    ConstrainedFacet m_constrained_facet;
+    ConstrainedFacet _constrained_facet;
 };
 
 
@@ -324,7 +323,7 @@ class ref_facet_pack: public facets_pack_end<LowestTag>
 public:
 
     constexpr ref_facet_pack(std::reference_wrapper<Facet> facet_ref)
-        : m_facet_ref(facet_ref)
+        : _facet_ref(facet_ref)
     {
     }
 
@@ -342,20 +341,19 @@ public:
     constexpr const Facet& do_get_facet
         (const highest_tag&, stringify::v0::facet_category_t<Facet>) const
     {
-        return m_facet_ref.get();
+        return _facet_ref.get();
     }
 
 private:
 
-    std::reference_wrapper<const Facet> m_facet_ref;
+    std::reference_wrapper<const Facet> _facet_ref;
 };
 
 
 template
     < typename LowestTag
     , template <class> class Filter
-    , typename Facet
-    >
+    , typename Facet >
 class ref_facet_pack
         < LowestTag
         , const boost::stringify::v0::constrained_facet<Filter, Facet > >
@@ -369,7 +367,7 @@ class ref_facet_pack
 public:
 
     constexpr ref_facet_pack(RefConstrainedFacet facet_ref)
-        : m_facet_ref(facet_ref)
+        : _facet_ref(facet_ref)
     {
     }
 
@@ -393,12 +391,12 @@ public:
         , typename ConstrainedFacet::category
         ) const
     {
-        return m_facet_ref.get().get_facet();
+        return _facet_ref.get().get_facet();
     }
 
 private:
 
-    RefConstrainedFacet m_facet_ref;
+    RefConstrainedFacet _facet_ref;
 };
 
 
@@ -446,8 +444,9 @@ public:
 
 };
 
-struct facets_pack_helper
+class facets_pack_helper
 {
+public:
 
     template <typename LowestTag>
     static constexpr empty_fpack<LowestTag> join_multi_fpacks()
@@ -528,7 +527,7 @@ public:
         return f;
     }
 
-}; // struct facets_pack_helper
+}; // class facets_pack_helper
 
 template <typename ... F>
 static constexpr auto pack_impl(const F& ... f)
@@ -548,7 +547,7 @@ using facets_pack_impl
 template <typename ... Facets>
 class facets_pack: private stringify::v0::detail::facets_pack_impl<Facets...>
 {
-    using impl = stringify::v0::detail::facets_pack_impl<Facets...>;
+    using _impl = stringify::v0::detail::facets_pack_impl<Facets...>;
 
     friend struct stringify::v0::detail::facets_pack_helper;
 
@@ -558,7 +557,7 @@ class facets_pack: private stringify::v0::detail::facets_pack_impl<Facets...>
 public:
 
     constexpr facets_pack(const Facets& ... f)
-        : impl(stringify::v0::detail::pack_impl(f...))
+        : _impl(stringify::v0::detail::pack_impl(f...))
     {
     }
 
@@ -566,7 +565,7 @@ public:
     constexpr const auto& get_facet() const
     {
         return this->template do_get_facet<InputType>
-            (typename impl::highest_tag(), FacetCategory());
+            (typename _impl::highest_tag(), FacetCategory());
     }
 };
 
@@ -581,8 +580,7 @@ auto pack(const Facets& ... f)
 template
     < typename FacetCategory
     , typename InputType
-    , typename ... Facets
-    >
+    , typename ... Facets >
 constexpr const auto& get_facet(const stringify::v0::facets_pack<Facets...>& fp)
 {
     return fp.template get_facet<FacetCategory, InputType>();

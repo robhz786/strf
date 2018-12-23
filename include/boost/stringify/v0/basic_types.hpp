@@ -88,7 +88,7 @@ public:
     constexpr value_with_format(value_with_format&&) = default;
 
     explicit constexpr value_with_format(const ValueType& v)
-        : m_value(v)
+        : _value(v)
     {
     }
 
@@ -101,7 +101,7 @@ public:
               < const typename Fmts
              :: template fn<value_with_format<OtherValueType, Fmts...>>& >(f) )
         ...
-        , m_value(v)
+        , _value(v)
     {
     }
 
@@ -114,7 +114,7 @@ public:
               < typename Fmts
              :: template fn<value_with_format<OtherValueType, Fmts...>> &&>(f) )
         ...
-        , m_value(static_cast<ValueType&&>(v))
+        , _value(static_cast<ValueType&&>(v))
     {
     }
 
@@ -126,7 +126,7 @@ public:
               < const typename OtherFmts
              :: template fn<value_with_format<ValueType, OtherFmts ...>>& >(f) )
         ...
-        , m_value(f.value())
+        , _value(f.value())
     {
     }
 
@@ -138,23 +138,23 @@ public:
               < typename OtherFmts
              :: template fn<value_with_format<ValueType, OtherFmts ...>>&& >(f) )
         ...
-        , m_value(static_cast<ValueType&&>(f.value()))
+        , _value(static_cast<ValueType&&>(f.value()))
     {
     }
 
     constexpr const ValueType& value() const
     {
-        return m_value;
+        return _value;
     }
 
     constexpr ValueType& value()
     {
-        return m_value;
+        return _value;
     }
 
 private:
 
-    ValueType m_value;
+    ValueType _value;
 };
 
 
@@ -198,9 +198,9 @@ public:
 
     template <typename U>
     constexpr alignment_format_impl(const alignment_format_impl<U>& u)
-        : m_fill(u.fill())
-        , m_width(u.width())
-        , m_alignment(u.alignment())
+        : _fill(u.fill())
+        , _width(u.width())
+        , _alignment(u.alignment())
     {
     }
 
@@ -211,187 +211,187 @@ public:
 
     constexpr derived_type&& operator<(int width) &&
     {
-        m_alignment = stringify::v0::alignment::left;
-        m_width = width;
+        _alignment = stringify::v0::alignment::left;
+        _width = width;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& operator<(int width) &
     {
-        m_alignment = stringify::v0::alignment::left;
-        m_width = width;
+        _alignment = stringify::v0::alignment::left;
+        _width = width;
         return static_cast<derived_type&>(*this);
     }
     constexpr derived_type&& operator>(int width) &&
     {
-        m_alignment = stringify::v0::alignment::right;
-        m_width = width;
+        _alignment = stringify::v0::alignment::right;
+        _width = width;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& operator>(int width) &
     {
-        m_alignment = stringify::v0::alignment::right;
-        m_width = width;
+        _alignment = stringify::v0::alignment::right;
+        _width = width;
         return static_cast<derived_type&>(*this);
     }
     constexpr derived_type&& operator^(int width) &&
     {
-        m_alignment = stringify::v0::alignment::center;
-        m_width = width;
+        _alignment = stringify::v0::alignment::center;
+        _width = width;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& operator^(int width) &
     {
-        m_alignment = stringify::v0::alignment::center;
-        m_width = width;
+        _alignment = stringify::v0::alignment::center;
+        _width = width;
         return static_cast<derived_type&>(*this);
     }
     constexpr derived_type&& operator%(int width) &&
     {
-        m_alignment = stringify::v0::alignment::internal;
-        m_width = width;
+        _alignment = stringify::v0::alignment::internal;
+        _width = width;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& operator%(int width) &
     {
-        m_alignment = stringify::v0::alignment::internal;
-        m_width = width;
+        _alignment = stringify::v0::alignment::internal;
+        _width = width;
         return static_cast<derived_type&>(*this);
     }
     constexpr derived_type&& left(int width) &&
     {
-        m_alignment = stringify::v0::alignment::left;
-        m_width = width;
+        _alignment = stringify::v0::alignment::left;
+        _width = width;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& left(int width) &
     {
-        m_alignment = stringify::v0::alignment::left;
-        m_width = width;
+        _alignment = stringify::v0::alignment::left;
+        _width = width;
         return static_cast<derived_type&>(*this);
     }
     constexpr derived_type&& right(int width) &&
     {
-        m_alignment = stringify::v0::alignment::right;
-        m_width = width;
+        _alignment = stringify::v0::alignment::right;
+        _width = width;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& right(int width) &
     {
-        m_alignment = stringify::v0::alignment::right;
-        m_width = width;
+        _alignment = stringify::v0::alignment::right;
+        _width = width;
         return static_cast<derived_type&>(*this);
     }
     constexpr derived_type&& center(int width) &&
     {
-        m_alignment = stringify::v0::alignment::center;
-        m_width = width;
+        _alignment = stringify::v0::alignment::center;
+        _width = width;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& center(int width) &
     {
-        m_alignment = stringify::v0::alignment::center;
-        m_width = width;
+        _alignment = stringify::v0::alignment::center;
+        _width = width;
         return static_cast<derived_type&>(*this);
     }
     constexpr derived_type&& internal(int width) &&
     {
-        m_alignment = stringify::v0::alignment::internal;
-        m_width = width;
+        _alignment = stringify::v0::alignment::internal;
+        _width = width;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& internal(int width) &
     {
-        m_alignment = stringify::v0::alignment::internal;
-        m_width = width;
+        _alignment = stringify::v0::alignment::internal;
+        _width = width;
         return static_cast<derived_type&>(*this);
     }
     constexpr derived_type&& left(int width, char32_t fill_char) &&
     {
-        m_fill = fill_char;
-        m_alignment = stringify::v0::alignment::left;
-        m_width = width;
+        _fill = fill_char;
+        _alignment = stringify::v0::alignment::left;
+        _width = width;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& left(int width, char32_t fill_char) &
     {
-        m_fill = fill_char;
-        m_alignment = stringify::v0::alignment::left;
-        m_width = width;
+        _fill = fill_char;
+        _alignment = stringify::v0::alignment::left;
+        _width = width;
         return static_cast<derived_type&>(*this);
     }
     constexpr derived_type&& right(int width, char32_t fill_char) &&
     {
-        m_fill = fill_char;
-        m_alignment = stringify::v0::alignment::right;
-        m_width = width;
+        _fill = fill_char;
+        _alignment = stringify::v0::alignment::right;
+        _width = width;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& right(int width, char32_t fill_char) &
     {
-        m_fill = fill_char;
-        m_alignment = stringify::v0::alignment::right;
-        m_width = width;
+        _fill = fill_char;
+        _alignment = stringify::v0::alignment::right;
+        _width = width;
         return static_cast<derived_type&>(*this);
     }
     constexpr derived_type&& center(int width, char32_t fill_char) &&
     {
-        m_fill = fill_char;
-        m_alignment = stringify::v0::alignment::center;
-        m_width = width;
+        _fill = fill_char;
+        _alignment = stringify::v0::alignment::center;
+        _width = width;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& center(int width, char32_t fill_char) &
     {
-        m_fill = fill_char;
-        m_alignment = stringify::v0::alignment::center;
-        m_width = width;
+        _fill = fill_char;
+        _alignment = stringify::v0::alignment::center;
+        _width = width;
         return static_cast<derived_type&>(*this);
     }
     constexpr derived_type&& internal(int width, char32_t fill_char) &&
     {
-        m_fill = fill_char;
-        m_alignment = stringify::v0::alignment::internal;
-        m_width = width;
+        _fill = fill_char;
+        _alignment = stringify::v0::alignment::internal;
+        _width = width;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& internal(int width, char32_t fill_char) &
     {
-        m_fill = fill_char;
-        m_alignment = stringify::v0::alignment::internal;
-        m_width = width;
+        _fill = fill_char;
+        _alignment = stringify::v0::alignment::internal;
+        _width = width;
         return static_cast<derived_type&>(*this);
     }
     constexpr derived_type&& fill(char32_t ch) &&
     {
-        m_fill = ch;
+        _fill = ch;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& fill(char32_t ch) &
     {
-        m_fill = ch;
+        _fill = ch;
         return static_cast<derived_type&>(*this);
     }
     constexpr derived_type&& width(int w) &&
     {
-        m_width = w;
+        _width = w;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& width(int w) &
     {
-        m_width = w;
+        _width = w;
         return static_cast<derived_type&>(*this);
     }
     constexpr int width() const
     {
-        return m_width;
+        return _width;
     }
     constexpr stringify::v0::alignment alignment() const
     {
-        return m_alignment;
+        return _alignment;
     }
     constexpr char32_t fill() const
     {
-        return m_fill;
+        return _fill;
     }
 
 private:
@@ -399,9 +399,9 @@ private:
     template <typename>
     friend class alignment_format_impl;
 
-    char32_t m_fill = U' ';
-    int m_width = 0;
-    stringify::v0::alignment m_alignment = stringify::v0::alignment::right;
+    char32_t _fill = U' ';
+    int _width = 0;
+    stringify::v0::alignment _alignment = stringify::v0::alignment::right;
 };
 
 template <class T>
@@ -764,7 +764,7 @@ class width_subtracter: public printers_receiver<CharOut>
 public:
 
     width_subtracter(int w)
-        : m_width(w)
+        : _width(w)
     {
     }
 
@@ -772,19 +772,19 @@ public:
 
     int remaining_width() const
     {
-        return m_width;
+        return _width;
     }
 
 private:
 
-    int m_width;
+    int _width;
 };
 
 template <typename CharOut>
 bool width_subtracter<CharOut>::put(const stringify::v0::printer<CharOut>& p)
 {
-    m_width = p.remaining_width(m_width);
-    return m_width > 0;
+    _width = p.remaining_width(_width);
+    return _width > 0;
 }
 
 template <typename CharOut>
@@ -798,18 +798,18 @@ public:
 
     std::size_t accumulated_length() const
     {
-        return m_len;
+        return _len;
     }
 
 private:
 
-    std::size_t m_len = 0;
+    std::size_t _len = 0;
 };
 
 template <typename CharOut>
 bool necessary_size_sum<CharOut>::put(const stringify::v0::printer<CharOut>& p)
 {
-    m_len += p.necessary_size();
+    _len += p.necessary_size();
     return true;
 }
 

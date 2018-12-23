@@ -22,38 +22,38 @@ public:
     unexpected() = delete;
 
     constexpr explicit unexpected(const E& val)
-        : m_val(val)
+        : _val(val)
     {
     }
 
     constexpr explicit unexpected(E&& val)
-        : m_val(std::move(val))
+        : _val(std::move(val))
     {
     }
 
     constexpr const E& value() const &
     {
-        return m_val;
+        return _val;
     }
 
     constexpr E& value() &
     {
-        return m_val;
+        return _val;
     }
 
     constexpr E&& value() &&
     {
-        return std::move(m_val);
+        return std::move(_val);
     }
 
     constexpr E const&& value() const&&
     {
-        return std::move(m_val);
+        return std::move(_val);
     }
 
 private:
 
-    E m_val;
+    E _val;
 };
 
 template <class E>
@@ -86,7 +86,7 @@ class bad_expected_access: public bad_expected_access<void>
 public:
 
     explicit bad_expected_access(E val)
-        : m_val(val)
+        : _val(val)
     {
     }
 
@@ -97,26 +97,26 @@ public:
 
     E& error() &
     {
-        return m_val;
+        return _val;
     }
 
     const E& error() const&
     {
-        return m_val;
+        return _val;
     }
     E&& error() &&
     {
-        return std::move(m_val);
+        return std::move(_val);
     }
 
     const E&&  error() const&&
     {
-        return std::move(m_val);
+        return std::move(_val);
     }
 
 private:
 
-    E m_val;
+    E _val;
 };
 
 
@@ -135,43 +135,43 @@ public:
     using value_type = void;
     using unexpected_type = boost::stringify::v0::unexpected<ErrorType>;
 
-    constexpr expected() : m_has_value(true)
+    constexpr expected() : _has_value(true)
     {
     }
 
     constexpr expected(const expected& other)
-        : m_has_value(other.m_has_value)
+        : _has_value(other._has_value)
     {
-        if (other.m_has_value)
+        if (other._has_value)
         {
             init_error(assume_error());
         }
     }
 
     constexpr expected(expected&& other)
-        : m_has_value(other.m_has_value)
+        : _has_value(other._has_value)
     {
-        if (!other.m_has_value)
+        if (!other._has_value)
         {
             init_error(std::move(assume_error()));
         }
     }
 
     constexpr expected(const unexpected_type& unex)
-        : m_has_value(false)
+        : _has_value(false)
     {
         init_error(unex.value());
     }
 
     constexpr expected(unexpected_type&& unex)
-        : m_has_value(false)
+        : _has_value(false)
     {
         init_error(std::move(unex.value()));
     }
 
     template <typename ... Args>
     constexpr expected(boost::stringify::v0::unexpect_t, Args&& ... args)
-        : m_has_value(true)
+        : _has_value(true)
     {
         init_error(std::forward<Args>(args)...);
     }
@@ -183,13 +183,13 @@ public:
 
     constexpr expected& operator=(const expected& other)
     {
-        if(other.m_has_value)
+        if(other._has_value)
         {
             destroy_data();
         }
         else // other has error
         {
-            if(this->m_has_value)
+            if(this->_has_value)
             {
                 emplace_error(other.assume_error());
             }
@@ -203,13 +203,13 @@ public:
 
     constexpr expected& operator=(expected&& other)
     {
-        if(other.m_has_value)
+        if(other._has_value)
         {
             destroy_data();
         }
         else // other has error
         {
-            if(this->m_has_value)
+            if(this->_has_value)
             {
                 emplace_error(std::move(other.assume_error()));
             }
@@ -223,7 +223,7 @@ public:
 
     constexpr expected& operator=(const unexpected_type& other)
     {
-        if(this->m_has_value)
+        if(this->_has_value)
         {
             emplace_error(other.value());
         }
@@ -236,7 +236,7 @@ public:
 
     constexpr expected& operator=(unexpected_type&& other)
     {
-        if(this->m_has_value)
+        if(this->_has_value)
         {
             emplace_error(std::move(other.value()));
         }
@@ -249,25 +249,25 @@ public:
 
     constexpr bool operator==(const expected& other) const
     {
-        return m_has_value == other.m_has_value
-            && (m_has_value || assume_error() == other.assume_error());
+        return _has_value == other._has_value
+            && (_has_value || assume_error() == other.assume_error());
     }
 
     constexpr explicit operator bool() const
     {
-        return m_has_value;
+        return _has_value;
     }
     constexpr bool operator!() const
     {
-        return ! m_has_value;
+        return ! _has_value;
     }
     constexpr bool has_value() const noexcept
     {
-        return m_has_value;
+        return _has_value;
     }
     constexpr bool has_error() const noexcept
     {
-        return ! m_has_value;
+        return ! _has_value;
     }
 
     constexpr void value() const
@@ -276,22 +276,22 @@ public:
 
     constexpr const error_type& error() const &
     {
-        BOOST_ASSERT(!m_has_value);
+        BOOST_ASSERT(!_has_value);
         return assume_error();
     }
     constexpr error_type& error() &
     {
-        BOOST_ASSERT(!m_has_value);
+        BOOST_ASSERT(!_has_value);
         return assume_error();
     }
     constexpr const error_type&& error() const &&
     {
-        BOOST_ASSERT(!m_has_value);
+        BOOST_ASSERT(!_has_value);
         return std::move(assume_error());
     }
     constexpr error_type&& error() &&
     {
-        BOOST_ASSERT(!m_has_value);
+        BOOST_ASSERT(!_has_value);
         return std::move(assume_error());
     }
 private:
@@ -302,8 +302,8 @@ private:
     using storage_type
     = typename std::aligned_storage<storage_size, storage_align>::type;
 
-    storage_type m_storage;
-    bool m_has_value=false;
+    storage_type _storage;
+    bool _has_value=false;
 
     template <typename ... Args>
     constexpr void emplace_error(Args&& ... args)
@@ -314,21 +314,21 @@ private:
 
      constexpr error_type& assume_error() noexcept
     {
-        auto *unex = reinterpret_cast<unexpected_type*>(&m_storage);
+        auto *unex = reinterpret_cast<unexpected_type*>(&_storage);
         return unex->value();
     }
 
     constexpr const error_type& assume_error() const noexcept
     {
-        auto *unex = reinterpret_cast<const unexpected_type*>(&m_storage);
+        auto *unex = reinterpret_cast<const unexpected_type*>(&_storage);
         return unex->value();
     }
 
     template <typename ... Args>
     constexpr void init_error(Args &&... args)
     {
-        new (&m_storage) unexpected_type(std::forward<Args>(args)...);
-        m_has_value = false;
+        new (&_storage) unexpected_type(std::forward<Args>(args)...);
+        _has_value = false;
     }
     constexpr void destroy_error()
     {
@@ -336,7 +336,7 @@ private:
     }
     constexpr void destroy_data()
     {
-        if (! m_has_value)
+        if (! _has_value)
         {
             destroy_error();
         }
@@ -359,9 +359,9 @@ public:
     }
 
     constexpr expected(const expected& other)
-        : m_has_value(other.m_has_value)
+        : _has_value(other._has_value)
     {
-        if (other.m_has_value)
+        if (other._has_value)
         {
             init_value(other.assume_value());
         }
@@ -372,9 +372,9 @@ public:
     }
 
     constexpr expected(expected&& other)
-        : m_has_value(other.m_has_value)
+        : _has_value(other._has_value)
     {
-        if (other.m_has_value)
+        if (other._has_value)
         {
             init_value(std::move(other.assume_value()));
         }
@@ -385,27 +385,27 @@ public:
     }
 
     constexpr expected(const unexpected_type& unex)
-        : m_has_value(false)
+        : _has_value(false)
     {
         init_error(unex.value());
     }
 
     constexpr expected(unexpected_type&& unex)
-        : m_has_value(false)
+        : _has_value(false)
     {
         init_error(std::move(unex.value()));
     }
 
     template <typename ... Args>
     constexpr expected(boost::stringify::v0::in_place_t, Args&& ... args)
-        : m_has_value(true)
+        : _has_value(true)
     {
         init_value(std::forward<Args>(args)...);
     }
 
     template <typename ... Args>
     constexpr expected(boost::stringify::v0::unexpect_t, Args&& ... args)
-        : m_has_value(true)
+        : _has_value(true)
     {
         init_error(std::forward<Args>(args)...);
     }
@@ -417,9 +417,9 @@ public:
 
     expected& operator=(const expected& other)
     {
-        if(other.m_has_value)
+        if(other._has_value)
         {
-            if(this->m_has_value)
+            if(this->_has_value)
             {
                 assume_value() = other.assume_value();
             }
@@ -431,7 +431,7 @@ public:
         }
         else // other has error
         {
-            if(this->m_has_value)
+            if(this->_has_value)
             {
                 destroy_value();
                 emplace_error(other.assume_error());
@@ -446,9 +446,9 @@ public:
 
     constexpr expected& operator=(expected&& other)
     {
-        if(other.m_has_value)
+        if(other._has_value)
         {
-            if(this->m_has_value)
+            if(this->_has_value)
             {
                 assume_value() = std::move(other.assume_value());
             }
@@ -460,7 +460,7 @@ public:
         }
         else // other has error
         {
-            if(this->m_has_value)
+            if(this->_has_value)
             {
                 destroy_value();
                 emplace_error(std::move(other.assume_error()));
@@ -476,7 +476,7 @@ public:
     template <typename U>
     constexpr expected& operator=(U&& other)
     {
-        if(this->m_has_value)
+        if(this->_has_value)
         {
             assume_value() = std::forward<U>(other);
         }
@@ -490,7 +490,7 @@ public:
 
     constexpr expected& operator=(const unexpected_type& other)
     {
-        if(this->m_has_value)
+        if(this->_has_value)
         {
             destroy_value();
             emplace_error(other.value());
@@ -504,7 +504,7 @@ public:
 
     constexpr expected& operator=(unexpected_type&& other)
     {
-        if(this->m_has_value)
+        if(this->_has_value)
         {
             destroy_value();
             emplace_error(std::move(other.value()));
@@ -518,13 +518,13 @@ public:
 
     constexpr bool operator==(const expected& other) const
     {
-        if (m_has_value)
+        if (_has_value)
         {
-            return other.m_has_value && assume_value() == other.assume_value();
+            return other._has_value && assume_value() == other.assume_value();
         }
         else
         {
-            return ! other.m_has_value && assume_error() == other.assume_error();
+            return ! other._has_value && assume_error() == other.assume_error();
         }
     }
 
@@ -567,18 +567,18 @@ public:
 
     constexpr bool has_value() const noexcept
     {
-        return m_has_value;
+        return _has_value;
     }
 
     constexpr bool has_error() const noexcept
     {
-        return ! m_has_value;
+        return ! _has_value;
     }
 
 
     constexpr value_type& value() &
     {
-        if ( ! m_has_value)
+        if ( ! _has_value)
         {
             throw bad_expected_access<error_type>(assume_error());
         }
@@ -586,7 +586,7 @@ public:
     }
     constexpr const value_type& value() const &
     {
-        if ( ! m_has_value)
+        if ( ! _has_value)
         {
             throw bad_expected_access<error_type>(assume_error());
         }
@@ -594,7 +594,7 @@ public:
     }
     constexpr value_type&& value() &&
     {
-        if ( ! m_has_value)
+        if ( ! _has_value)
         {
             throw bad_expected_access<error_type>(assume_error());
         }
@@ -602,7 +602,7 @@ public:
     }
     constexpr const value_type&& value() const &&
     {
-        if ( ! m_has_value)
+        if ( ! _has_value)
         {
             throw bad_expected_access<error_type>(assume_error());
         }
@@ -612,22 +612,22 @@ public:
 
     constexpr const error_type& error() const &
     {
-        BOOST_ASSERT(!m_has_value);
+        BOOST_ASSERT(!_has_value);
         return assume_error();
     }
     constexpr error_type& error() &
     {
-        BOOST_ASSERT(!m_has_value);
+        BOOST_ASSERT(!_has_value);
         return assume_error();
     }
     constexpr const error_type&& error() const &&
     {
-        BOOST_ASSERT(!m_has_value);
+        BOOST_ASSERT(!_has_value);
         return std::move(assume_error());
     }
     constexpr error_type&& error() &&
     {
-        BOOST_ASSERT(!m_has_value);
+        BOOST_ASSERT(!_has_value);
         return std::move(assume_error());
     }
 
@@ -648,8 +648,8 @@ private:
     using storage_type
     = typename std::aligned_storage<storage_size, storage_align>::type;
 
-    storage_type m_storage;
-    bool m_has_value=false;
+    storage_type _storage;
+    bool _has_value=false;
 
     template <typename ... Args>
     constexpr void emplace_error(Args&& ... args)
@@ -660,40 +660,40 @@ private:
 
     constexpr value_type& assume_value() noexcept
     {
-        auto * value = reinterpret_cast<value_type*>(&m_storage);
+        auto * value = reinterpret_cast<value_type*>(&_storage);
         return * value;
     }
 
     constexpr error_type& assume_error() noexcept
     {
-        auto *unex = reinterpret_cast<unexpected_type*>(&m_storage);
+        auto *unex = reinterpret_cast<unexpected_type*>(&_storage);
         return unex->value();
     }
 
     constexpr const value_type& assume_value() const noexcept
     {
-        const auto * value = reinterpret_cast<const value_type*>(&m_storage);
+        const auto * value = reinterpret_cast<const value_type*>(&_storage);
         return *value;
     }
 
     constexpr const error_type& assume_error() const noexcept
     {
-        auto *unex = reinterpret_cast<const unexpected_type*>(&m_storage);
+        auto *unex = reinterpret_cast<const unexpected_type*>(&_storage);
         return unex->value();
     }
 
     template <typename ... Args>
     constexpr void init_error(Args &&... args)
     {
-        new (&m_storage) unexpected_type(std::forward<Args>(args)...);
-        m_has_value = false;
+        new (&_storage) unexpected_type(std::forward<Args>(args)...);
+        _has_value = false;
     }
 
     template <typename ... Args>
     constexpr void init_value(Args &&... args)
     {
-        new (&m_storage) value_type(std::forward<Args>(args)...);
-        m_has_value = true;
+        new (&_storage) value_type(std::forward<Args>(args)...);
+        _has_value = true;
     }
 
     constexpr void destroy_error()
@@ -708,7 +708,7 @@ private:
 
     constexpr void destroy_data()
     {
-        if (m_has_value)
+        if (_has_value)
         {
             destroy_value();
         }

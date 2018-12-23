@@ -53,19 +53,19 @@ struct printer_ptr_range
 
     const fmt_ptr* begin() const
     {
-        return m_begin;
+        return _begin;
     }
     const fmt_ptr* end() const
     {
-        return m_end;
+        return _end;
     }
     virtual std::size_t size() const
     {
-        return m_end - m_begin;
+        return _end - _begin;
     }
 
-    fmt_ptr* m_begin = nullptr;
-    fmt_ptr* m_end = nullptr;
+    fmt_ptr* _begin = nullptr;
+    fmt_ptr* _end = nullptr;
 };
 
 
@@ -111,16 +111,16 @@ public:
     printers_tuple(const printers_tuple&) = default;
 
     printers_tuple(const printers_tuple&& rval)
-        : m_printer(std::move(rval.m_printer))
-        , m_rest(std::move(rval.m_rest))
+        : _printer(std::move(rval._printer))
+        , _rest(std::move(rval._rest))
     {
     }
 
     printers_tuple
         ( const FPack& fp
         , const stringify::v0::detail::args_tuple<Arg, Args...>& args )
-        : m_printer(make_printer<CharT, FPack>(fp, args.first_arg))
-        , m_rest(fp, args.remove_first())
+        : _printer(make_printer<CharT, FPack>(fp, args.first_arg))
+        , _rest(fp, args.remove_first())
     {
     }
 
@@ -128,14 +128,14 @@ public:
 
     fmt_ptr* fill(fmt_ptr* out_it) const
     {
-        *out_it = &m_printer;
-        return m_rest.fill(++out_it);
+        *out_it = &_printer;
+        return _rest.fill(++out_it);
     }
 
 private:
 
-    printer_type m_printer;
-    printers_tuple<CharT, FPack, Args...> m_rest;
+    printer_type _printer;
+    printers_tuple<CharT, FPack, Args...> _rest;
 };
 
 
@@ -148,24 +148,24 @@ public:
     printers_group
         ( const FPack& fp
         , const stringify::v0::detail::args_tuple<Args...>& args )
-        : m_impl(fp, args)
+        : _impl(fp, args)
     {
-        m_range.m_end = m_impl.fill(m_array);
-        m_range.m_begin = m_array;
+        _range._end = _impl.fill(_array);
+        _range._begin = _array;
     }
 
     printers_group(const printers_group& cp)
-        : m_impl(cp.m_impl)
+        : _impl(cp._impl)
     {
-        m_range.m_end = m_impl.fill(m_array);
-        m_range.m_begin = m_array;
+        _range._end = _impl.fill(_array);
+        _range._begin = _array;
     }
 
     printers_group(printers_group&& rval)
-        : m_impl(std::move(rval.m_impl))
+        : _impl(std::move(rval._impl))
     {
-        m_range.m_end = m_impl.fill(m_array);
-        m_range.m_begin = m_array;
+        _range._end = _impl.fill(_array);
+        _range._begin = _array;
     }
 
 
@@ -175,16 +175,16 @@ public:
 
     const auto& range() const
     {
-        return m_range;
+        return _range;
     }
 
 private:
 
-    stringify::v0::detail::printers_tuple<CharT, FPack, Args...> m_impl;
+    stringify::v0::detail::printers_tuple<CharT, FPack, Args...> _impl;
 
-    using printer_ptr = const stringify::v0::printer<CharT>*;
-    printer_ptr m_array[sizeof...(Args)];
-    stringify::v0::detail::printer_ptr_range<CharT> m_range;
+    using _printer_ptr = const stringify::v0::printer<CharT>*;
+    _printer_ptr _array[sizeof...(Args)];
+    stringify::v0::detail::printer_ptr_range<CharT> _range;
 };
 
 
@@ -230,12 +230,12 @@ public:
         , const stringify::v0::detail::join_t& j
         , const stringify::v0::encoding<CharT>& encoding
         , stringify::v0::error_handling err_hdl )
-        : m_join{j}
-        , m_args{args}
-        , m_encoding(encoding)
-        , m_err_hdl(err_hdl)
+        : _join{j}
+        , _args{args}
+        , _encoding(encoding)
+        , _err_hdl(err_hdl)
     {
-        m_fillcount = remaining_width_from_arglist(m_join.width);
+        _fillcount = _remaining_width_from_arglist(_join.width);
     }
 
     join_printer_impl( const join_printer_impl& cp ) = delete;
@@ -243,18 +243,18 @@ public:
     join_printer_impl
         ( const join_printer_impl& cp
         , const stringify::v0::detail::printer_ptr_range<CharT>& args )
-        : m_join{cp.m_join}
-        , m_args{args}
-        , m_encoding(cp.m_encoding)
+        : _join{cp._join}
+        , _args{args}
+        , _encoding(cp._encoding)
     {
     }
 
     join_printer_impl
         ( join_printer_impl&& tmp
         , const stringify::v0::detail::printer_ptr_range<CharT>& args )
-        : m_join{std::move(tmp.m_join)}
-        , m_args{std::move(args)}
-        , m_encoding(tmp.m_encoding)
+        : _join{std::move(tmp._join)}
+        , _args{std::move(args)}
+        , _encoding(tmp._encoding)
     {
     }
 
@@ -264,45 +264,45 @@ public:
 
     std::size_t necessary_size() const override
     {
-        return args_length() + fill_length();
+        return _args_length() + _fill_length();
     }
 
     stringify::v0::expected_output_buffer<CharT> write
         ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const override
     {
-        if (m_fillcount <= 0)
+        if (_fillcount <= 0)
         {
-            return write_args(buff, recycler);
+            return _write_args(buff, recycler);
         }
         else
         {
-            switch(m_join.align)
+            switch(_join.align)
             {
                 case stringify::v0::alignment::left:
                 {
-                    auto x = write_args(buff, recycler);
-                    return x ? write_fill(*x, recycler, m_fillcount): x;
+                    auto x = _write_args(buff, recycler);
+                    return x ? _write_fill(*x, recycler, _fillcount): x;
                 }
                 case stringify::v0::alignment::right:
                 {
-                    auto x = write_fill(buff, recycler, m_fillcount);
-                    return x ? write_args(*x, recycler) : x;
+                    auto x = _write_fill(buff, recycler, _fillcount);
+                    return x ? _write_args(*x, recycler) : x;
                 }
                 case stringify::v0::alignment::internal:
                 {
-                    return write_splitted(buff, recycler);
+                    return _write_splitted(buff, recycler);
                 }
                 default:
                 {
-                    BOOST_ASSERT(m_join.align == stringify::v0::alignment::center);
-                    auto half_fillcount = m_fillcount / 2;
-                    auto x = write_fill(buff, recycler, half_fillcount);
+                    BOOST_ASSERT(_join.align == stringify::v0::alignment::center);
+                    auto half_fillcount = _fillcount / 2;
+                    auto x = _write_fill(buff, recycler, half_fillcount);
                     if(x)
                     {
-                        x = write_args(*x, recycler);
+                        x = _write_args(*x, recycler);
                     };
-                    return x ? write_fill(*x, recycler, m_fillcount - half_fillcount) : x;
+                    return x ? _write_fill(*x, recycler, _fillcount - half_fillcount) : x;
                 }
             }
         }
@@ -310,66 +310,66 @@ public:
 
     int remaining_width(int w) const override
     {
-        if (m_fillcount > 0)
+        if (_fillcount > 0)
         {
-            return (std::max)(0, w - m_join.width);
+            return (std::max)(0, w - _join.width);
         }
-        return remaining_width_from_arglist(w);
+        return _remaining_width_from_arglist(w);
     }
 
 
 private:
 
-    input_type m_join;
-    int m_fillcount = 0;
-    pp_range m_args = nullptr;
-    const stringify::v0::encoding<CharT>& m_encoding;
-    stringify::v0::error_handling m_err_hdl;
+    input_type _join;
+    int _fillcount = 0;
+    pp_range _args = nullptr;
+    const stringify::v0::encoding<CharT>& _encoding;
+    stringify::v0::error_handling _err_hdl;
 
-    std::size_t args_length() const
+    std::size_t _args_length() const
     {
         std::size_t sum = 0;
-        for(const auto* arg : m_args)
+        for(const auto* arg : _args)
         {
             sum += arg->necessary_size();
         }
         return sum;
     }
 
-    std::size_t fill_length() const
+    std::size_t _fill_length() const
     {
-        if(m_fillcount > 0)
+        if(_fillcount > 0)
         {
-            return m_fillcount * m_encoding.char_size(m_join.fillchar, m_err_hdl);
+            return _fillcount * _encoding.char_size(_join.fillchar, _err_hdl);
         }
         return 0;
     }
 
-    int remaining_width_from_arglist(int w) const
+    int _remaining_width_from_arglist(int w) const
     {
-        for(auto it = m_args.begin(); w > 0 && it != m_args.end(); ++it)
+        for(auto it = _args.begin(); w > 0 && it != _args.end(); ++it)
         {
             w = (*it) -> remaining_width(w);
         }
         return w;
     }
 
-    stringify::v0::expected_output_buffer<CharT> write_splitted
+    stringify::v0::expected_output_buffer<CharT> _write_splitted
         ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const
     {
         stringify::v0::expected_output_buffer<CharT> x { stringify::v0::in_place_t{}
-                                                   , buff };
-        auto it = m_args.begin();
-        for ( int count = m_join.num_leading_args
-            ; count > 0 && it != m_args.end()
+                                                       , buff };
+        auto it = _args.begin();
+        for ( int count = _join.num_leading_args
+            ; count > 0 && it != _args.end()
             ; --count, ++it)
         {
             x = (*it)->write(*x, recycler);
             BOOST_STRINGIFY_RETURN_ON_ERROR(x);
         }
-        x = write_fill(*x, recycler, m_fillcount);
-        while(it != m_args.end())
+        x = _write_fill(*x, recycler, _fillcount);
+        while(it != _args.end())
         {
             BOOST_STRINGIFY_RETURN_ON_ERROR(x);
             x = (*it)->write(*x, recycler);
@@ -378,13 +378,13 @@ private:
         return x;
     }
 
-    stringify::v0::expected_output_buffer<CharT> write_args
+    stringify::v0::expected_output_buffer<CharT> _write_args
         ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const
     {
         stringify::v0::expected_output_buffer<CharT> x { stringify::v0::in_place_t{}
-                                                 , buff };
-        for(const auto& arg : m_args)
+                                                        , buff };
+        for(const auto& arg : _args)
         {
             x = arg->write(*x, recycler);
             BOOST_STRINGIFY_RETURN_ON_ERROR(x);
@@ -392,13 +392,13 @@ private:
         return x;
     }
 
-    stringify::v0::expected_output_buffer<CharT> write_fill
+    stringify::v0::expected_output_buffer<CharT> _write_fill
         ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler
         , int count ) const
     {
         return stringify::v0::detail::write_fill
-            ( m_encoding, buff, recycler, count, m_join.fillchar, m_err_hdl );
+            ( _encoding, buff, recycler, count, _join.fillchar, _err_hdl );
     }
 };
 
@@ -408,10 +408,10 @@ class join_printer
     : private stringify::v0::detail::printers_group<CharT, FPack, Args...>
     , public stringify::v0::detail::join_printer_impl<CharT>
 {
-    using fmt_group
+    using _fmt_group
     = stringify::v0::detail::printers_group<CharT, FPack, Args...>;
 
-    using join_impl
+    using _join_impl
     = stringify::v0::detail::join_printer_impl<CharT>;
 
 
@@ -422,20 +422,20 @@ public:
     join_printer
         ( const FPack& fp
         , const stringify::v0::detail::joined_args<Args...>& ja )
-        : fmt_group(fp, ja.args)
-        , join_impl{ fmt_group::range()
-                   , ja.join
-                   , stringify::v0::get_facet
-                       < stringify::v0::encoding_category<CharT>, void > (fp)
-                   , stringify::v0::get_facet
-                       < stringify::v0::encoding_policy_category, void > (fp)
-                       .err_hdl() }
+        : _fmt_group(fp, ja.args)
+        , _join_impl{ _fmt_group::range()
+                    , ja.join
+                    , stringify::v0::get_facet
+                        < stringify::v0::encoding_category<CharT>, void > (fp)
+                    , stringify::v0::get_facet
+                        < stringify::v0::encoding_policy_category, void > (fp)
+                        .err_hdl() }
     {
     }
 
     join_printer(const join_printer& cp)
-        : fmt_group(cp)
-        , join_impl(cp, fmt_group::range())
+        : _fmt_group(cp)
+        , _join_impl(cp, _fmt_group::range())
     {
     }
 

@@ -39,9 +39,9 @@ private:
     IntT _value;
     unsigned _digcount;
 
-    CharT* write(CharT* it) const noexcept;
+    CharT* _write(CharT* it) const noexcept;
 
-    stringify::v0::expected_output_buffer<CharT> buff_write
+    stringify::v0::expected_output_buffer<CharT> _buff_write
         ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const;
 };
@@ -68,17 +68,17 @@ stringify::v0::expected_output_buffer<CharT> int_printer<IntT, CharT>::write
     unsigned necessary_space = _value >= 0 ? _digcount : _digcount + 1;
     if (space >= necessary_space)
     {
-        buff.it = write(buff.it);
+        buff.it = _write(buff.it);
         return { stringify::v0::in_place_t{}, buff };
     }
     else
     {
-        return buff_write(buff, recycler);
+        return _buff_write(buff, recycler);
     }
 }
 
 template <typename IntT, typename CharT>
-CharT* int_printer<IntT, CharT>::write(CharT* it) const noexcept
+CharT* int_printer<IntT, CharT>::_write(CharT* it) const noexcept
 {
     if(_value < 0)
     {
@@ -95,7 +95,7 @@ CharT* int_printer<IntT, CharT>::write(CharT* it) const noexcept
 
 
 template <typename IntT, typename CharT>
-stringify::v0::expected_output_buffer<CharT> int_printer<IntT, CharT>::buff_write
+stringify::v0::expected_output_buffer<CharT> int_printer<IntT, CharT>::_buff_write
     ( stringify::v0::output_buffer<CharT> buff
     , stringify::buffer_recycler<CharT>& recycler ) const
 {
@@ -141,10 +141,6 @@ stringify::v0::expected_output_buffer<CharT> int_printer<IntT, CharT>::buff_writ
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<short, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<short, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<short, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<short, wchar_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<int, char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<int, char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<int, char32_t>;
@@ -157,10 +153,6 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<long long, char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<long long, char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<long long, char32_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<long long, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned short, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned short, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned short, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned short, wchar_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned int, char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned int, char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<unsigned int, char32_t>;

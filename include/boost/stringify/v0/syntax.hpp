@@ -315,8 +315,8 @@ public:
 
 class output_size_reservation_real
 {
-    std::size_t m_size = 0;
-    enum {calculate_size, predefined_size, no_reserve} m_flag = calculate_size;
+    std::size_t _size = 0;
+    enum {calculate_size, predefined_size, no_reserve} _flag = calculate_size;
 
 public:
 
@@ -327,27 +327,27 @@ public:
 
     constexpr void set_reserve_size(std::size_t size)
     {
-        m_flag = predefined_size;
-        m_size = size;
+        _flag = predefined_size;
+        _size = size;
     }
 
     constexpr void set_reserve_auto()
     {
-        m_flag = calculate_size;
+        _flag = calculate_size;
     }
 
     constexpr void set_no_reserve()
     {
-        m_flag = no_reserve;
+        _flag = no_reserve;
     }
 
     constexpr bool must_calculate_size() const
     {
-        return m_flag == calculate_size;
+        return _flag == calculate_size;
     }
     constexpr std::size_t get_size_to_reserve() const
     {
-        return m_size;
+        return _size;
     }
 
     constexpr std::true_type has_reserve() const
@@ -380,23 +380,20 @@ public:
 
     OutputWriter& get()
     {
-        return m_out;
+        return _out;
     }
 
 private:
 
-    OutputWriter m_out;
-
-    using CharOut = typename OutputWriter::char_type;
+    OutputWriter _out;
 
     template <typename ArgsTuple, std::size_t ... I>
     output_writer_from_tuple
         ( const ArgsTuple& args
         , std::index_sequence<I...>)
-        : m_out(std::get<I>(args)...)
+        : _out(std::get<I>(args)...)
     {
     }
-
 };
 
 template
@@ -585,7 +582,7 @@ public:
             ( this->has_reserve()
             , str.begin()
             , str.end()
-            , {as_pointer(make_printer<_char_type, FPack>(_fpack, args))... } );
+            , {_as_pointer(make_printer<_char_type, FPack>(_fpack, args))... } );
     }
 
 #else
@@ -593,11 +590,11 @@ public:
     template <typename ... Args>
     _return_type as(const _char_type* str, const Args& ... args) const
     {
-        return asm_write
+        return _asm_write
             ( this->has_reserve()
             , str
             , str + std::char_traits<_char_type>::length(str)
-            , {as_pointer(make_printer<_char_type, FPack>(_fpack, args))... } );
+            , {_as_pointer(make_printer<_char_type, FPack>(_fpack, args))... } );
     }
 
     template <typename Traits, typename ... Args>
@@ -605,11 +602,11 @@ public:
         ( const std::basic_string<_char_type, Traits>& str
         , const Args& ... args ) const
     {
-        return asm_write
+        return _asm_write
             ( this->has_reserve()
             , str.data()
             , str.data() + str.size()
-            , {as_pointer(make_printer<_char_type, FPack>(_fpack, args))... } );
+            , {_as_pointer(make_printer<_char_type, FPack>(_fpack, args))... } );
     }
 
 #endif
@@ -618,7 +615,7 @@ public:
     BOOST_STRINGIFY_NODISCARD
     decltype(auto) operator()(const Args& ... args) const
     {
-        return write
+        return _write
             ( this->has_reserve()
             , make_printer<_char_type, FPack>(_fpack, args) ... );
     }
@@ -626,12 +623,12 @@ public:
 private:
 
     static const stringify::v0::printer<_char_type>*
-    as_pointer(const stringify::v0::printer<_char_type>& p)
+    _as_pointer(const stringify::v0::printer<_char_type>& p)
     {
         return &p;
     }
 
-    _return_type asm_write
+    _return_type _asm_write
         ( std::true_type
         , const _char_type* str
         , const _char_type* str_end
@@ -661,7 +658,7 @@ private:
         return {stringify::v0::unexpect_t{}, x.error()};
     }
 
-    _return_type asm_write
+    _return_type _asm_write
         ( std::false_type
         , const _char_type* str
         , const _char_type* str_end
@@ -683,7 +680,7 @@ private:
 
 
     template <typename ... Args>
-    _return_type write(std::true_type, const Args& ... args) const
+    _return_type _write(std::true_type, const Args& ... args) const
     {
         _output_writer_wrapper writer{_owinit};
 
@@ -699,7 +696,7 @@ private:
         auto x = writer.get().start();
         if (x)
         {
-            x = write_args(*x, writer.get(), args...);
+            x = _write_args(*x, writer.get(), args...);
             if (x)
             {
                 return writer.get().finish((*x).it);
@@ -710,14 +707,14 @@ private:
 
 
     template <typename ... Args>
-    _return_type write(std::false_type, const Args& ... args) const
+    _return_type _write(std::false_type, const Args& ... args) const
     {
         _output_writer_wrapper writer{_owinit};
 
         auto x = writer.get().start();
         if (x)
         {
-            x = write_args(*x, writer.get(), args...);
+            x = _write_args(*x, writer.get(), args...);
             if (x)
             {
                 return writer.get().finish((*x).it);
@@ -727,7 +724,7 @@ private:
     }
 
     template <typename Arg>
-    static stringify::v0::expected_output_buffer<_char_type> write_args
+    static stringify::v0::expected_output_buffer<_char_type> _write_args
         ( stringify::v0::output_buffer<_char_type> b
         , OutputWriter& writer
         , const Arg& arg )
@@ -736,17 +733,17 @@ private:
     }
 
     template <typename Arg, typename ... Args>
-    static stringify::v0::expected_output_buffer<_char_type> write_args
+    static stringify::v0::expected_output_buffer<_char_type> _write_args
         ( stringify::v0::output_buffer<_char_type> b
         , OutputWriter& writer
         , const Arg& arg
         , const Args& ... args )
     {
         auto x = arg.write(b, writer);
-        return x ? write_args(*x, writer, args ...) : x;
+        return x ? _write_args(*x, writer, args ...) : x;
     }
 
-    static stringify::v0::expected_output_buffer<_char_type> write_args
+    static stringify::v0::expected_output_buffer<_char_type> _write_args
         ( stringify::v0::output_buffer<_char_type> b
         , OutputWriter& )
     {

@@ -206,9 +206,8 @@ using int_with_format = stringify::v0::value_with_format
 template <typename IntT, typename CharT>
 class fmt_int_printer: public printer<CharT>
 {
-    using unsigned_type = typename std::make_unsigned<IntT>::type;
-    static constexpr bool is_signed = std::is_signed<IntT>::value;
-    constexpr static unsigned max_digcount = (sizeof(IntT) * 8 + 2) / 3;
+    static constexpr bool _is_signed = std::is_signed<IntT>::value;
+    constexpr static unsigned _max_digcount = (sizeof(IntT) * 8 + 2) / 3;
 
 public:
 
@@ -219,13 +218,13 @@ public:
     fmt_int_printer
         ( const FPack& fp
         , const stringify::v0::int_with_format<IntT>& value ) noexcept
-        : _encoding(get_facet<stringify::v0::encoding_category<CharT>>(fp))
-        , _err_hdl(get_facet<stringify::v0::encoding_policy_category>(fp).err_hdl())
+        : _encoding(_get_facet<stringify::v0::encoding_category<CharT>>(fp))
+        , _err_hdl(_get_facet<stringify::v0::encoding_policy_category>(fp).err_hdl())
         , _fmt(value)
     {
-        init( get_facet<stringify::v0::numpunct_category<8>>(fp)
-            , get_facet<stringify::v0::numpunct_category<10>>(fp)
-            , get_facet<stringify::v0::numpunct_category<16>>(fp) );
+        _init( _get_facet<stringify::v0::numpunct_category<8>>(fp)
+             , _get_facet<stringify::v0::numpunct_category<10>>(fp)
+             , _get_facet<stringify::v0::numpunct_category<16>>(fp) );
     }
 
     ~fmt_int_printer();
@@ -250,31 +249,22 @@ private:
     unsigned _fillcount;
 
     template <typename Category, typename FPack>
-    const auto& get_facet(const FPack& fp) const
+    const auto& _get_facet(const FPack& fp) const
     {
         return fp.template get_facet<Category, IntT>();
     }
 
-    void init
+    void _init
         ( const stringify::v0::numpunct<8>& numpunct_oct
         , const stringify::v0::numpunct<10>& numpunct_dec
         , const stringify::v0::numpunct<16>& numpunct_hex ) noexcept;
 
-    bool showsign() const
+    bool _showsign() const
     {
-        return is_signed && (_fmt.showpos() || _fmt.value().value < 0);
+        return _is_signed && (_fmt.showpos() || _fmt.value().value < 0);
     }
 
-    unsigned_type unsigned_value() const noexcept
-    {
-        if(_fmt.base() == 10)
-        {
-            return stringify::v0::detail::unsigned_abs(_fmt.value().value);
-        }
-        return static_cast<unsigned_type>(_fmt.value().value);
-    }
-
-    std::size_t length_fill() const
+    std::size_t _length_fill() const
     {
         if (_fillcount > 0)
         {
@@ -283,16 +273,16 @@ private:
         return 0;
     }
 
-    std::size_t length_body() const
+    std::size_t _length_body() const
     {
-        return length_complement() + length_digits();
+        return _length_complement() + _length_digits();
     }
 
-    std::size_t length_complement() const noexcept
+    std::size_t _length_complement() const noexcept
     {
         if (_fmt.base() == 10)
         {
-            return showsign() ? 1 : 0;
+            return _showsign() ? 1 : 0;
         }
         else if (_fmt.base() == 16)
         {
@@ -302,7 +292,7 @@ private:
         return _fmt.showbase() ? 1 : 0;
     }
 
-    std::size_t length_digits() const noexcept
+    std::size_t _length_digits() const noexcept
     {
         auto total_digcount
             = _fmt.precision() > _digcount
@@ -316,7 +306,7 @@ private:
         return total_digcount;
     }
 
-    stringify::v0::expected_output_buffer<CharT> write_fill
+    stringify::v0::expected_output_buffer<CharT> _write_fill
         ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler
         , std::size_t count ) const
@@ -329,262 +319,46 @@ private:
                                                 , _err_hdl );
     }
 
-
-    stringify::v0::expected_output_buffer<CharT> write_complement
+    stringify::v0::expected_output_buffer<CharT> _write_complement
         ( stringify::v0::output_buffer<CharT> buff
-        , stringify::buffer_recycler<CharT>& recycler ) const
-    {
-        if (_fmt.base() == 10)
-        {
-            if(is_signed)
-            {
-                if (buff.it == buff.end)
-                {
-                    auto x = recycler.recycle(buff.it);
-                    BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-                    buff = *x;
-                }
-                if(_fmt.value().value < 0)
-                {
-                    *buff.it = '-';
-                    ++buff.it;
-                }
-                else if( _fmt.showpos())
-                {
-                    *buff.it = '+';
-                    ++buff.it;
-                }
-            }
-        }
-        else if (_fmt.showbase())
-        {
-            if (buff.it + 1 >= buff.end)
-            {
-                auto x = recycler.recycle(buff.it);
-                BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-                buff = *x;
-            }
-            BOOST_ASSERT (buff.it + 1 < buff.end);
-            if(_fmt.base() == 16)
-            {
-                buff.it[0] = '0';
-                buff.it[1] = _fmt.uppercase() ? CharT('X'): CharT('x');
-                buff.it += 2;
-            }
-            else
-            {
-                buff.it[0] = '0';
-                ++buff.it;
-            }
-        }
-        return { stringify::v0::in_place_t{}, buff };
-    }
+        , stringify::buffer_recycler<CharT>& recycler ) const;
 
-    stringify::v0::expected_output_buffer<CharT> write_digits
+    stringify::v0::expected_output_buffer<CharT> _write_digits
         ( stringify::v0::output_buffer<CharT> buff
-        , stringify::buffer_recycler<CharT>& recycler ) const
-    {
-        if(_fmt.precision() > _digcount)
-        {
-            auto x = stringify::v0::detail::write_fill
-                ( buff
-                , recycler
-                , _fmt.precision() - _digcount
-                , CharT('0') );
-            BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-            buff = *x;
-        }
-        if (_sepcount == 0)
-        {
-            return write_digits_nosep(buff, recycler);
-        }
-        return write_digits_sep(buff, recycler);
-    }
+        , stringify::buffer_recycler<CharT>& recycler ) const;
 
-    stringify::v0::expected_output_buffer<CharT> write_digits_nosep
+    stringify::v0::expected_output_buffer<CharT> _write_digits_nosep
         ( stringify::v0::output_buffer<CharT> buff
-        , stringify::buffer_recycler<CharT>& recycler ) const
-    {
-        if (buff.it + _digcount > buff.end)
-        {
-            auto x = recycler.recycle(buff.it);
-            BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-            if ((*x).it + _digcount > (*x).end)
-            {
-                return write_digits_nosep_buff(*x, recycler);
-            }
-            buff = *x;
-        }
-        auto end = buff.it + _digcount;
-        CharT* it = stringify::v0::detail::write_int_txtdigits_backwards
-            ( _fmt.value().value
-            , _fmt.base()
-            , _fmt.uppercase()
-            , end );
-        BOOST_ASSERT(it == buff.it);
-        return { stringify::v0::in_place_t{}
-               , stringify::v0::output_buffer<CharT>{end, buff.end} };
-    }
+        , stringify::buffer_recycler<CharT>& recycler ) const;
 
-    stringify::v0::expected_output_buffer<CharT> write_digits_nosep_buff
+    stringify::v0::expected_output_buffer<CharT> _write_digits_nosep_buff
         ( stringify::v0::output_buffer<CharT> buff
-        , stringify::buffer_recycler<CharT>& recycler ) const
-    {
-        char tmp[3*sizeof(CharT)];
-        char* tmp_end = tmp + sizeof(tmp) / sizeof(tmp[0]);
-        char* it = stringify::v0::detail::write_int_txtdigits_backwards
-            ( _fmt.value().value
-            , _fmt.base()
-            , _fmt.uppercase()
-            , tmp_end );
+        , stringify::buffer_recycler<CharT>& recycler ) const;
 
-        BOOST_ASSERT(it + _digcount == tmp_end);
-        std::size_t space = buff.end - buff.it;
-        BOOST_ASSERT(space < _digcount);
-        std::copy_n(it, space, buff.it);
-        it += space;
-        unsigned count = _digcount - space;
-        auto x = recycler.recycle(buff.it);
-        while (x)
-        {
-            std::size_t space = (*x).end - (*x).it;
-            if (count <= space)
-            {
-                std::copy_n(it, count, (*x).it);
-                (*x).it += count;
-                break;
-            }
-            std::copy_n(it, space, (*x).it);
-            it += space;
-            x = recycler.recycle((*x).it + space) ;
-        }
-        return x;
-    }
-
-    stringify::v0::expected_output_buffer<CharT> write_digits_sep
+    stringify::v0::expected_output_buffer<CharT> _write_digits_sep
         ( stringify::v0::output_buffer<CharT> buff
-        , stringify::buffer_recycler<CharT>& recycler ) const
-    {
-        char dig_buff[max_digcount];
-        char* dig_it = stringify::v0::detail::write_int_txtdigits_backwards
-            ( _fmt.value().value
-            , _fmt.base()
-            , _fmt.uppercase()
-            , dig_buff + max_digcount );
+        , stringify::buffer_recycler<CharT>& recycler ) const;
 
-        unsigned char grp_buff[max_digcount];
-        auto* grp_it = _punct->groups(_digcount, grp_buff);
-
-        char32_t sep_char32 = _punct->thousands_sep();
-        if (sep_char32 <= _encoding.max_corresponding_u32char)
-        {
-            return write_digits_littlesep( buff, recycler, dig_it
-                                         , grp_buff, grp_it
-                                         , (CharT)sep_char32 );
-        }
-        auto sep_char32_size = _encoding.validate(sep_char32);
-        if (sep_char32_size == (std::size_t)-1)
-        {
-            return write_digits_nosep(buff, recycler);
-        }
-        if (sep_char32_size == 1)
-        {
-            CharT sep_ch;
-            CharT* sep_char_ptr = & sep_ch;
-            auto res = _encoding.encode_char( &sep_char_ptr, sep_char_ptr + 1
-                                            , sep_char32
-                                            , stringify::v0::error_handling::stop );
-            BOOST_ASSERT(res == stringify::v0::cv_result::success);
-            return write_digits_littlesep( buff, recycler, dig_it
-                                         , grp_buff, grp_it, sep_ch);
-        }
-        return write_digits_bigsep( buff, recycler, dig_it
-                                  , grp_buff, grp_it
-                                  , sep_char32, sep_char32_size );
-    }
-
-    stringify::v0::expected_output_buffer<CharT> write_digits_littlesep
+    stringify::v0::expected_output_buffer<CharT> _write_digits_littlesep
         ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler
         , const char* dig_it
         , unsigned char* grp
         , unsigned char* grp_it
-        , CharT sep_char ) const
-    {
-        std::size_t necessary_size = (grp_it - grp) + 1 + _digcount;
-        if (buff.it + necessary_size > buff.end)
-        {
-            auto x = recycler.recycle(buff.it);
-            BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-            buff = *x;
-            BOOST_ASSERT(buff.it + necessary_size <= buff.end);
-        }
+        , CharT sep_char ) const;
 
-        for(unsigned i = *grp_it; i != 0; --i)
-        {
-            *buff.it++ = *dig_it++;
-        }
-
-        do
-        {
-            *buff.it++ = sep_char;
-            for(unsigned i = *--grp_it; i != 0; --i)
-            {
-                *buff.it++ = *dig_it++;
-            }
-        }
-        while(grp_it > grp);
-
-        return { stringify::v0::in_place_t{}, buff };
-    }
-
-    stringify::v0::expected_output_buffer<CharT> write_digits_bigsep
+    stringify::v0::expected_output_buffer<CharT> _write_digits_bigsep
         ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler
         , char* dig_it
         , unsigned char* grp
         , unsigned char* grp_it
         , char32_t sep_char
-        , unsigned sep_char_size ) const
-    {
-        {
-            unsigned i = *grp_it;
-            if (buff.it + i > buff.end)
-            {
-                auto x = recycler.recycle(buff.it);
-                BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-                buff = *x;
-            }
-            for( ; i != 0; --i)
-            {
-                *buff.it++ = *dig_it++;
-            }
-        }
-        do
-        {
-            unsigned i = *--grp_it;
-            if (buff.it + i + sep_char_size > buff.end)
-            {
-                auto x = recycler.recycle(buff.it);
-                BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-                buff = *x;
-            }
-            auto res = _encoding.encode_char( &buff.it, buff.end, sep_char
-                                            , stringify::v0::error_handling::stop );
-            (void)res;
-            BOOST_ASSERT(res == stringify::v0::cv_result::success);
-            for(; i != 0; --i)
-            {
-                *buff.it++ = *dig_it++;
-            }
-        }
-        while(grp_it > grp);
-        return { stringify::v0::in_place_t{}, buff };
-    }
+        , unsigned sep_char_size ) const;
 };
 
 template <typename IntT, typename CharT>
-void fmt_int_printer<IntT, CharT>::init
+void fmt_int_printer<IntT, CharT>::_init
     ( const stringify::v0::numpunct<8>& numpunct_oct
     , const stringify::v0::numpunct<10>& numpunct_dec
     , const stringify::v0::numpunct<16>& numpunct_hex ) noexcept
@@ -593,7 +367,7 @@ void fmt_int_printer<IntT, CharT>::init
     if (_fmt.base() == 10)
     {
         _digcount = stringify::v0::detail::count_digits<10>(_fmt.value().value);
-        if(showsign())
+        if(_showsign())
         {
             extra_chars_count = 1;
         }
@@ -649,8 +423,8 @@ void fmt_int_printer<IntT, CharT>::init
         _fillcount = 0;
     }
 
-    BOOST_ASSERT(_digcount <= max_digcount);
-    BOOST_ASSERT(_sepcount <= max_digcount);
+    BOOST_ASSERT(_digcount <= _max_digcount);
+    BOOST_ASSERT(_sepcount <= _max_digcount);
 }
 
 template <typename IntT, typename CharT>
@@ -661,7 +435,7 @@ fmt_int_printer<IntT, CharT>::~fmt_int_printer()
 template <typename IntT, typename CharT>
 std::size_t fmt_int_printer<IntT, CharT>::necessary_size() const
 {
-    return length_body() + length_fill();
+    return _length_body() + _length_fill();
 }
 
 template <typename IntT, typename CharT>
@@ -678,39 +452,307 @@ stringify::v0::expected_output_buffer<CharT> fmt_int_printer<IntT, CharT>::write
 {
     if (_fillcount == 0)
     {
-        auto x = write_complement(buff, recycler);
-        return x ? write_digits(*x, recycler) : x;
+        auto x = _write_complement(buff, recycler);
+        return x ? _write_digits(*x, recycler) : x;
     }
 
     switch(_fmt.alignment())
     {
         case stringify::v0::alignment::left:
         {
-            auto x = write_complement(buff, recycler);
-            if(x) x = write_digits(*x, recycler);
-            return x ? write_fill(*x, recycler, _fillcount) : x;
+            auto x = _write_complement(buff, recycler);
+            if(x) x = _write_digits(*x, recycler);
+            return x ? _write_fill(*x, recycler, _fillcount) : x;
         }
         case stringify::v0::alignment::internal:
         {
-            auto x = write_complement(buff, recycler);
-            if(x) x = write_fill(*x, recycler, _fillcount);
-            return x ? write_digits(*x, recycler) : x;
+            auto x = _write_complement(buff, recycler);
+            if(x) x = _write_fill(*x, recycler, _fillcount);
+            return x ? _write_digits(*x, recycler) : x;
         }
         case stringify::v0::alignment::center:
         {
             auto halfcount = _fillcount / 2;
-            auto x = write_fill(buff, recycler, halfcount);
-            if(x) x = write_complement(*x, recycler);
-            if(x) x = write_digits(*x, recycler);
-            return x ? write_fill(*x, recycler, _fillcount - halfcount) : x;
+            auto x = _write_fill(buff, recycler, halfcount);
+            if(x) x = _write_complement(*x, recycler);
+            if(x) x = _write_digits(*x, recycler);
+            return x ? _write_fill(*x, recycler, _fillcount - halfcount) : x;
         }
         default:
         {
-            auto x = write_fill(buff, recycler, _fillcount);
-            if(x) x = write_complement(*x, recycler);
-            return x ? write_digits(*x, recycler) : x;
+            auto x = _write_fill(buff, recycler, _fillcount);
+            if(x) x = _write_complement(*x, recycler);
+            return x ? _write_digits(*x, recycler) : x;
         }
     }
+}
+
+
+
+template <typename IntT, typename CharT>
+stringify::v0::expected_output_buffer<CharT>
+fmt_int_printer<IntT, CharT>::_write_complement
+    ( stringify::v0::output_buffer<CharT> buff
+    , stringify::buffer_recycler<CharT>& recycler ) const
+{
+    if (_fmt.base() == 10)
+    {
+        if(_is_signed)
+        {
+            if (buff.it == buff.end)
+            {
+                auto x = recycler.recycle(buff.it);
+                BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+                buff = *x;
+            }
+            if(_fmt.value().value < 0)
+            {
+                *buff.it = '-';
+                ++buff.it;
+            }
+            else if( _fmt.showpos())
+            {
+                *buff.it = '+';
+                ++buff.it;
+            }
+        }
+    }
+    else if (_fmt.showbase())
+    {
+        if (buff.it + 1 >= buff.end)
+        {
+            auto x = recycler.recycle(buff.it);
+            BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+            buff = *x;
+        }
+        BOOST_ASSERT (buff.it + 1 < buff.end);
+        if(_fmt.base() == 16)
+        {
+            buff.it[0] = '0';
+            buff.it[1] = _fmt.uppercase() ? CharT('X'): CharT('x');
+            buff.it += 2;
+        }
+        else
+        {
+            buff.it[0] = '0';
+            ++buff.it;
+        }
+    }
+    return { stringify::v0::in_place_t{}, buff };
+}
+
+template <typename IntT, typename CharT>
+stringify::v0::expected_output_buffer<CharT>
+fmt_int_printer<IntT, CharT>::_write_digits
+    ( stringify::v0::output_buffer<CharT> buff
+    , stringify::buffer_recycler<CharT>& recycler ) const
+{
+    if(_fmt.precision() > _digcount)
+    {
+        auto x = stringify::v0::detail::write_fill
+            ( buff
+            , recycler
+            , _fmt.precision() - _digcount
+            , CharT('0') );
+        BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+        buff = *x;
+    }
+    if (_sepcount == 0)
+    {
+        return _write_digits_nosep(buff, recycler);
+    }
+    return _write_digits_sep(buff, recycler);
+}
+
+template <typename IntT, typename CharT>
+stringify::v0::expected_output_buffer<CharT>
+fmt_int_printer<IntT, CharT>::_write_digits_nosep
+    ( stringify::v0::output_buffer<CharT> buff
+    , stringify::buffer_recycler<CharT>& recycler ) const
+{
+    if (buff.it + _digcount > buff.end)
+    {
+        auto x = recycler.recycle(buff.it);
+        BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+        if ((*x).it + _digcount > (*x).end)
+        {
+            return _write_digits_nosep_buff(*x, recycler);
+        }
+        buff = *x;
+    }
+    auto end = buff.it + _digcount;
+    CharT* it = stringify::v0::detail::write_int_txtdigits_backwards
+        ( _fmt.value().value
+        , _fmt.base()
+        , _fmt.uppercase()
+        , end );
+    BOOST_ASSERT(it == buff.it);
+    return { stringify::v0::in_place_t{}
+           , stringify::v0::output_buffer<CharT>{end, buff.end} };
+}
+
+template <typename IntT, typename CharT>
+stringify::v0::expected_output_buffer<CharT>
+fmt_int_printer<IntT, CharT>::_write_digits_nosep_buff
+    ( stringify::v0::output_buffer<CharT> buff
+    , stringify::buffer_recycler<CharT>& recycler ) const
+{
+    char tmp[3*sizeof(CharT)];
+    char* tmp_end = tmp + sizeof(tmp) / sizeof(tmp[0]);
+    char* it = stringify::v0::detail::write_int_txtdigits_backwards
+        ( _fmt.value().value
+        , _fmt.base()
+        , _fmt.uppercase()
+        , tmp_end );
+
+    BOOST_ASSERT(it + _digcount == tmp_end);
+    std::size_t space = buff.end - buff.it;
+    BOOST_ASSERT(space < _digcount);
+    std::copy_n(it, space, buff.it);
+    it += space;
+    unsigned count = _digcount - space;
+    auto x = recycler.recycle(buff.it);
+    while (x)
+    {
+        std::size_t space = (*x).end - (*x).it;
+        if (count <= space)
+        {
+            std::copy_n(it, count, (*x).it);
+            (*x).it += count;
+            break;
+        }
+        std::copy_n(it, space, (*x).it);
+        it += space;
+        x = recycler.recycle((*x).it + space) ;
+    }
+    return x;
+}
+
+template <typename IntT, typename CharT>
+stringify::v0::expected_output_buffer<CharT>
+fmt_int_printer<IntT, CharT>::_write_digits_sep
+    ( stringify::v0::output_buffer<CharT> buff
+    , stringify::buffer_recycler<CharT>& recycler ) const
+{
+    char dig_buff[_max_digcount];
+    char* dig_it = stringify::v0::detail::write_int_txtdigits_backwards
+        ( _fmt.value().value
+        , _fmt.base()
+        , _fmt.uppercase()
+        , dig_buff + _max_digcount );
+
+    unsigned char grp_buff[_max_digcount];
+    auto* grp_it = _punct->groups(_digcount, grp_buff);
+
+    char32_t sep_char32 = _punct->thousands_sep();
+    if (sep_char32 <= _encoding.max_corresponding_u32char)
+    {
+        return _write_digits_littlesep( buff, recycler, dig_it
+                                      , grp_buff, grp_it
+                                      , (CharT)sep_char32 );
+    }
+    auto sep_char32_size = _encoding.validate(sep_char32);
+    if (sep_char32_size == (std::size_t)-1)
+    {
+        return _write_digits_nosep(buff, recycler);
+    }
+    if (sep_char32_size == 1)
+    {
+        CharT sep_ch;
+        CharT* sep_char_ptr = & sep_ch;
+        auto res = _encoding.encode_char( &sep_char_ptr, sep_char_ptr + 1
+                                        , sep_char32
+                                        , stringify::v0::error_handling::stop );
+        BOOST_ASSERT(res == stringify::v0::cv_result::success);
+        return _write_digits_littlesep( buff, recycler, dig_it
+                                      , grp_buff, grp_it, sep_ch);
+    }
+    return _write_digits_bigsep( buff, recycler, dig_it
+                               , grp_buff, grp_it
+                               , sep_char32, sep_char32_size );
+}
+
+template <typename IntT, typename CharT>
+stringify::v0::expected_output_buffer<CharT>
+fmt_int_printer<IntT, CharT>::_write_digits_littlesep
+    ( stringify::v0::output_buffer<CharT> buff
+    , stringify::buffer_recycler<CharT>& recycler
+    , const char* dig_it
+    , unsigned char* grp
+    , unsigned char* grp_it
+    , CharT sep_char ) const
+{
+    std::size_t necessary_size = (grp_it - grp) + 1 + _digcount;
+    if (buff.it + necessary_size > buff.end)
+    {
+        auto x = recycler.recycle(buff.it);
+        BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+        buff = *x;
+        BOOST_ASSERT(buff.it + necessary_size <= buff.end);
+    }
+
+    for(unsigned i = *grp_it; i != 0; --i)
+    {
+        *buff.it++ = *dig_it++;
+    }
+
+    do
+    {
+        *buff.it++ = sep_char;
+        for(unsigned i = *--grp_it; i != 0; --i)
+        {
+            *buff.it++ = *dig_it++;
+        }
+    }
+    while(grp_it > grp);
+
+    return { stringify::v0::in_place_t{}, buff };
+}
+
+template <typename IntT, typename CharT>
+stringify::v0::expected_output_buffer<CharT>
+fmt_int_printer<IntT, CharT>::_write_digits_bigsep
+    ( stringify::v0::output_buffer<CharT> buff
+    , stringify::buffer_recycler<CharT>& recycler
+    , char* dig_it
+    , unsigned char* grp
+    , unsigned char* grp_it
+    , char32_t sep_char
+    , unsigned sep_char_size ) const
+{
+    {
+        unsigned i = *grp_it;
+        if (buff.it + i > buff.end)
+        {
+            auto x = recycler.recycle(buff.it);
+            BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+            buff = *x;
+        }
+        for( ; i != 0; --i)
+        {
+            *buff.it++ = *dig_it++;
+        }
+    }
+    do
+    {
+        unsigned i = *--grp_it;
+        if (buff.it + i + sep_char_size > buff.end)
+        {
+            auto x = recycler.recycle(buff.it);
+            BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+            buff = *x;
+        }
+        auto res = _encoding.encode_char( &buff.it, buff.end, sep_char
+                                        , stringify::v0::error_handling::stop );
+        (void)res;
+        BOOST_ASSERT(res == stringify::v0::cv_result::success);
+        for(; i != 0; --i)
+        {
+            *buff.it++ = *dig_it++;
+        }
+    }
+    while(grp_it > grp);
+    return { stringify::v0::in_place_t{}, buff };
 }
 
 
@@ -770,10 +812,6 @@ template <> struct is_int_number<unsigned long long>: public std::true_type {};
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<short, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<short, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<short, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<short, wchar_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<int, char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<int, char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<int, char32_t>;
@@ -786,10 +824,6 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<long long, char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<long long, char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<long long, char32_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<long long, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<unsigned short, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<unsigned short, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<unsigned short, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<unsigned short, wchar_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<unsigned int, char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<unsigned int, char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<unsigned int, char32_t>;

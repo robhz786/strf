@@ -12,8 +12,6 @@ namespace detail {
 template<typename CharIn, typename CharOut>
 class cv_string_printer: public stringify::v0::printer<CharOut>
 {
-    using input_tag = stringify::v0::string_input_tag<CharIn>;
-
 public:
 
     template <typename FPack>
@@ -24,10 +22,10 @@ public:
         : cv_string_printer
             ( str
             , len
-            , get_facet<stringify::v0::width_calculator_category>(fp)
-            , get_facet<stringify::v0::encoding_category<CharIn>>(fp)
-            , get_facet<stringify::v0::encoding_category<CharOut>>(fp)
-            , get_facet<stringify::v0::encoding_policy_category>(fp) )
+            , _get_facet<stringify::v0::width_calculator_category>(fp)
+            , _get_facet<stringify::v0::encoding_category<CharIn>>(fp)
+            , _get_facet<stringify::v0::encoding_category<CharOut>>(fp)
+            , _get_facet<stringify::v0::encoding_policy_category>(fp) )
     {
     }
 
@@ -69,8 +67,9 @@ private:
     const stringify::v0::encoding_policy _epoli;
 
     template <typename Category, typename FPack>
-    const auto& get_facet(const FPack& fp) const
+    const auto& _get_facet(const FPack& fp) const
     {
+        using input_tag = stringify::v0::string_input_tag<CharIn>;
         return fp.template get_facet<Category, input_tag>();
     }
 };
@@ -116,10 +115,6 @@ int cv_string_printer<CharIn, CharOut>::remaining_width(int w) const
 template<typename CharIn, typename CharOut>
 class fmt_cv_string_printer: public printer<CharOut>
 {
-private:
-
-    using input_tag = stringify::v0::string_input_tag<CharIn>;
-
 public:
 
     template <typename FPack>
@@ -127,11 +122,11 @@ public:
         ( const FPack& fp
         , const stringify::v0::detail::cv_string_with_format<CharIn>& input ) noexcept
         : _fmt(input)
-        , _dest_encoding(get_facet<stringify::v0::encoding_category<CharOut>>(fp))
-        , _wcalc(get_facet<stringify::v0::width_calculator_category>(fp))
-        , _epoli(get_facet<stringify::v0::encoding_policy_category>(fp))
+        , _dest_encoding(_get_facet<stringify::v0::encoding_category<CharOut>>(fp))
+        , _wcalc(_get_facet<stringify::v0::width_calculator_category>(fp))
+        , _epoli(_get_facet<stringify::v0::encoding_policy_category>(fp))
     {
-        init(get_facet<stringify::v0::encoding_category<CharIn>>(fp));
+        _init(_get_facet<stringify::v0::encoding_category<CharIn>>(fp));
     }
 
     std::size_t necessary_size() const override;
@@ -141,8 +136,6 @@ public:
         , stringify::buffer_recycler<CharOut>& recycler ) const override;
 
     int remaining_width(int w) const override;
-
-    void init(const stringify::v0::encoding<CharIn>& src_enc);
 
 private:
 
@@ -154,23 +147,26 @@ private:
     int _fillcount = 0;
 
     template <typename Category, typename FPack>
-    const auto& get_facet(const FPack& fp) const
+    const auto& _get_facet(const FPack& fp) const
     {
+        using input_tag = stringify::v0::string_input_tag<CharIn>;
         return fp.template get_facet<Category, input_tag>();
     }
-
-    stringify::v0::expected_output_buffer<CharOut> write_str
+    
+    void _init(const stringify::v0::encoding<CharIn>& src_enc);
+    
+    stringify::v0::expected_output_buffer<CharOut> _write_str
         ( stringify::v0::output_buffer<CharOut> buff
         , stringify::buffer_recycler<CharOut>& recycler ) const;
 
-    stringify::v0::expected_output_buffer<CharOut> write_fill
+    stringify::v0::expected_output_buffer<CharOut> _write_fill
         ( stringify::v0::output_buffer<CharOut> buff
         , stringify::buffer_recycler<CharOut>& recycler
         , unsigned count ) const;
 };
 
 template<typename CharIn, typename CharOut>
-void fmt_cv_string_printer<CharIn, CharOut>::init
+void fmt_cv_string_printer<CharIn, CharOut>::_init
     ( const stringify::v0::encoding<CharIn>& src_enc )
 {
     if( ! _fmt.has_encoding())
@@ -222,30 +218,30 @@ fmt_cv_string_printer<CharIn, CharOut>::write
         {
             case stringify::v0::alignment::left:
             {
-                auto x = write_str(buff, recycler);
-                return x ? write_fill(*x, recycler, _fillcount) : x;
+                auto x = _write_str(buff, recycler);
+                return x ? _write_fill(*x, recycler, _fillcount) : x;
             }
             case stringify::v0::alignment::center:
             {
                 int halfcount = _fillcount / 2;
-                auto x = write_fill(buff, recycler, halfcount);
-                if(x) x = write_str(*x, recycler);
-                return x ? write_fill(*x, recycler, _fillcount - halfcount) : x;
+                auto x = _write_fill(buff, recycler, halfcount);
+                if(x) x = _write_str(*x, recycler);
+                return x ? _write_fill(*x, recycler, _fillcount - halfcount) : x;
             }
             default:
             {
-                auto x = write_fill(buff, recycler, _fillcount);
-                return x ? write_str(*x, recycler) : x;
+                auto x = _write_fill(buff, recycler, _fillcount);
+                return x ? _write_str(*x, recycler) : x;
             }
         }
     }
-    return write_str(buff, recycler);
+    return _write_str(buff, recycler);
 }
 
 
 template<typename CharIn, typename CharOut>
 stringify::v0::expected_output_buffer<CharOut>
-fmt_cv_string_printer<CharIn, CharOut>::write_str
+fmt_cv_string_printer<CharIn, CharOut>::_write_str
     ( stringify::v0::output_buffer<CharOut> buff
     , stringify::buffer_recycler<CharOut>& recycler ) const
 {
@@ -267,7 +263,7 @@ fmt_cv_string_printer<CharIn, CharOut>::write_str
 
 template<typename CharIn, typename CharOut>
 stringify::v0::expected_output_buffer<CharOut>
-fmt_cv_string_printer<CharIn, CharOut>::write_fill
+fmt_cv_string_printer<CharIn, CharOut>::_write_fill
     ( stringify::v0::output_buffer<CharOut> buff
     , stringify::buffer_recycler<CharOut>& recycler
     , unsigned count ) const

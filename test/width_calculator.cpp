@@ -38,7 +38,7 @@ int main()
     TEST( u"  \u2E3A\u2E3A\u2014") .facets(wtable)
         (strf::fmt_cv(u8"\u2E3A\u2E3A\u2014") > 12);
 
-    
+
     TEST(u8"         \u2E3A\u2E3A\u2014") .facets(cp_count)
         (strf::right(u8"\u2E3A\u2E3A\u2014", 12));
 
@@ -57,7 +57,7 @@ int main()
     TEST( u"         \u2E3A\u2E3A\u2014") .facets(cp_count)
         (strf::fmt_cv(u"\u2E3A\u2E3A\u2014") > 12);
 
-    
+
     TEST(u8"   \u2E3A\u2E3A\u2014")
         (strf::fmt(u8"\u2E3A\u2E3A\u2014") > 12);
 

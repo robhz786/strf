@@ -18,7 +18,7 @@ class monotonic_grouping_impl
 public:
 
     constexpr monotonic_grouping_impl(unsigned char groups_size)
-        : m_groups_size(groups_size)
+        : _groups_size(groups_size)
     {
     }
 
@@ -26,9 +26,9 @@ public:
 
     unsigned get_thousands_sep_count(unsigned num_digits) const
     {
-        return (m_groups_size == 0 || num_digits == 0)
+        return (_groups_size == 0 || num_digits == 0)
             ? 0
-            : (num_digits - 1) / m_groups_size;
+            : (num_digits - 1) / _groups_size;
     }
 
     unsigned char* get_groups
@@ -38,7 +38,7 @@ public:
 
 private:
 
-    const unsigned m_groups_size;
+    const unsigned _groups_size;
 };
 
 
@@ -47,7 +47,7 @@ class str_grouping_impl
 public:
 
     str_grouping_impl(std::string grouping)
-        : m_grouping(std::move(grouping))
+        : _grouping(std::move(grouping))
     {
     }
 
@@ -64,7 +64,7 @@ public:
 
 private:
 
-    std::string m_grouping;
+    std::string _grouping;
 };
 
 
@@ -76,16 +76,16 @@ unsigned char* monotonic_grouping_impl::get_groups
     , unsigned char* groups_array
     ) const
 {
-    if (m_groups_size == 0)
+    if (_groups_size == 0)
     {
         * groups_array = num_digits;
         return groups_array;
     }
-    while(num_digits > m_groups_size)
+    while(num_digits > _groups_size)
     {
-        *groups_array = static_cast<unsigned char>(m_groups_size);
+        *groups_array = static_cast<unsigned char>(_groups_size);
         ++ groups_array;
-        num_digits -= m_groups_size;
+        num_digits -= _groups_size;
     }
     *groups_array = static_cast<unsigned char>(num_digits);
     return groups_array;
@@ -95,12 +95,12 @@ unsigned char* monotonic_grouping_impl::get_groups
 BOOST_STRINGIFY_INLINE
 unsigned str_grouping_impl::get_thousands_sep_count(unsigned num_digits) const
 {
-    if (m_grouping.empty())
+    if (_grouping.empty())
     {
         return 0;
     }
     unsigned count = 0;
-    for(auto ch : m_grouping)
+    for(auto ch : _grouping)
     {
         auto grp = static_cast<unsigned>(ch);
         if(grp == 0 || grp >= num_digits)
@@ -114,7 +114,7 @@ unsigned str_grouping_impl::get_thousands_sep_count(unsigned num_digits) const
         }
     }
 
-    return count + (num_digits - 1) / m_grouping.back();
+    return count + (num_digits - 1) / _grouping.back();
 }
 
 
@@ -123,12 +123,12 @@ BOOST_STRINGIFY_INLINE unsigned char* str_grouping_impl::get_groups
     , unsigned char* groups_array
     ) const
 {
-    if (m_grouping.empty())
+    if (_grouping.empty())
     {
         *groups_array = static_cast<unsigned char>(num_digits);
         return groups_array;
     }
-    for(auto ch : m_grouping)
+    for(auto ch : _grouping)
     {
         auto group_size = static_cast<unsigned>(ch);
         if (group_size == 0)
@@ -148,7 +148,7 @@ BOOST_STRINGIFY_INLINE unsigned char* str_grouping_impl::get_groups
             return groups_array;
         }
     }
-    const unsigned last_group_size = m_grouping.back();
+    const unsigned last_group_size = _grouping.back();
     while(num_digits > last_group_size)
     {
         *groups_array = static_cast<unsigned char>(last_group_size);
@@ -230,43 +230,43 @@ public:
 
     char32_t thousands_sep() const override
     {
-        return m_thousands_sep;
+        return _thousands_sep;
     }
 
     char32_t decimal_point() const override
     {
-        return m_decimal_point;
+        return _decimal_point;
     }
 
     monotonic_grouping &  thousands_sep(char32_t ch) &
     {
-        m_thousands_sep = ch;
+        _thousands_sep = ch;
         return *this;
     }
 
     monotonic_grouping && thousands_sep(char32_t ch) &&
     {
-        m_thousands_sep = ch;
+        _thousands_sep = ch;
         return std::move(*this);
     }
 
     monotonic_grouping &  decimal_point(char32_t ch) &
     {
-        m_decimal_point = ch;
+        _decimal_point = ch;
         return *this;
     }
 
     monotonic_grouping && decimal_point(char32_t ch) &&
     {
-        m_decimal_point = ch;
+        _decimal_point = ch;
         return std::move(*this);
     }
 
 private:
 
     stringify::v0::detail::monotonic_grouping_impl impl;
-    char32_t m_thousands_sep = U',';
-    char32_t m_decimal_point = U'.';
+    char32_t _thousands_sep = U',';
+    char32_t _decimal_point = U'.';
 };
 
 
@@ -276,7 +276,7 @@ class str_grouping: public stringify::v0::numpunct<Base>
 public:
 
     str_grouping(std::string grouping)
-        : impl(grouping)
+        : _impl(grouping)
     {
     }
 
@@ -289,53 +289,53 @@ public:
         , unsigned char* groups_array
         ) const override
     {
-        return impl.get_groups(num_digits, groups_array);
+        return _impl.get_groups(num_digits, groups_array);
     }
 
     unsigned thousands_sep_count(unsigned num_digits) const override
     {
-        return impl.get_thousands_sep_count(num_digits);
+        return _impl.get_thousands_sep_count(num_digits);
     }
 
     char32_t thousands_sep() const override
     {
-        return m_thousands_sep;
+        return _thousands_sep;
     }
 
     char32_t decimal_point() const override
     {
-        return m_decimal_point;
+        return _decimal_point;
     }
 
     str_grouping &  thousands_sep(char32_t ch) &
     {
-        m_thousands_sep = ch;
+        _thousands_sep = ch;
         return *this;
     }
 
     str_grouping && thousands_sep(char32_t ch) &&
     {
-        m_thousands_sep = ch;
+        _thousands_sep = ch;
         return std::move(*this);
     }
 
     str_grouping &  decimal_point(char32_t ch) &
     {
-        m_decimal_point = ch;
+        _decimal_point = ch;
         return *this;
     }
 
     str_grouping && decimal_point(char32_t ch) &&
     {
-        m_decimal_point = ch;
+        _decimal_point = ch;
         return std::move(*this);
     }
 
 private:
 
-    stringify::v0::detail::str_grouping_impl impl;
-    char32_t m_thousands_sep = U',';
-    char32_t m_decimal_point = U'.';
+    stringify::v0::detail::str_grouping_impl _impl;
+    char32_t _thousands_sep = U',';
+    char32_t _decimal_point = U'.';
 };
 
 

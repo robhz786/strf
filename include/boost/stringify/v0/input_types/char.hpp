@@ -250,6 +250,7 @@ public:
     int remaining_width(int w) const override;
 
 private:
+
     const stringify::v0::encoding<CharT>& _encoding;
     stringify::v0::width_calculator _wcalc;
     CharT _ch;
@@ -301,11 +302,11 @@ public:
     fmt_char_printer
         ( const FPack& fp
         , const stringify::v0::char_with_format<CharT>& input ) noexcept
-        : _encoding(get_facet<stringify::v0::encoding_category<CharT>>(fp))
-        , _epoli(get_facet<stringify::v0::encoding_policy_category>(fp))
+        : _encoding(_get_facet<stringify::v0::encoding_category<CharT>>(fp))
+        , _epoli(_get_facet<stringify::v0::encoding_policy_category>(fp))
         , _fmt(input)
     {
-        init(get_facet<stringify::v0::width_calculator_category>(fp));
+        _init(_get_facet<stringify::v0::width_calculator_category>(fp));
     }
 
     std::size_t necessary_size() const override;
@@ -324,25 +325,25 @@ private:
     int _content_width = 0;
 
     template <typename Category, typename FPack>
-    const auto& get_facet(const FPack& fp) const
+    const auto& _get_facet(const FPack& fp) const
     {
         return fp.template get_facet<Category, input_type>();
     }
 
-    void init(stringify::v0::width_calculator wcalc);
+    void _init(stringify::v0::width_calculator wcalc);
 
-    stringify::v0::expected_output_buffer<CharT> write_body
+    stringify::v0::expected_output_buffer<CharT> _write_body
         ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler ) const;
 
-    stringify::v0::expected_output_buffer<CharT> write_fill
+    stringify::v0::expected_output_buffer<CharT> _write_fill
         ( stringify::v0::output_buffer<CharT> buff
         , stringify::buffer_recycler<CharT>& recycler
         , unsigned count ) const;
 };
 
 template <typename CharT>
-void fmt_char_printer<CharT>::init(stringify::v0::width_calculator wcalc)
+void fmt_char_printer<CharT>::_init(stringify::v0::width_calculator wcalc)
 {
     auto char_width = wcalc.width_of(_fmt.value(), _encoding);
     _content_width = _fmt.count() * char_width;
@@ -365,7 +366,7 @@ stringify::v0::expected_output_buffer<CharT> fmt_char_printer<CharT>::write
 {
     if (_content_width >= _fmt.width())
     {
-        return write_body(buff, recycler);
+        return _write_body(buff, recycler);
     }
     else
     {
@@ -374,20 +375,20 @@ stringify::v0::expected_output_buffer<CharT> fmt_char_printer<CharT>::write
         {
             case stringify::v0::alignment::left:
             {
-                auto x = write_body(buff, recycler);
-                return x ? write_fill(*x, recycler, fillcount) : x;
+                auto x = _write_body(buff, recycler);
+                return x ? _write_fill(*x, recycler, fillcount) : x;
             }
             case stringify::v0::alignment::center:
             {
                 auto halfcount = fillcount / 2;
-                auto x = write_fill(buff, recycler, halfcount);
-                if(x) x = write_body(*x, recycler);
-                return x ? write_fill(*x, recycler, fillcount - halfcount) : x;
+                auto x = _write_fill(buff, recycler, halfcount);
+                if(x) x = _write_body(*x, recycler);
+                return x ? _write_fill(*x, recycler, fillcount - halfcount) : x;
             }
             default:
             {
-                auto x = write_fill(buff, recycler, fillcount);
-                return x ? write_body(*x, recycler) : x;
+                auto x = _write_fill(buff, recycler, fillcount);
+                return x ? _write_body(*x, recycler) : x;
             }
         }
     }
@@ -395,7 +396,7 @@ stringify::v0::expected_output_buffer<CharT> fmt_char_printer<CharT>::write
 
 
 template <typename CharT>
-stringify::v0::expected_output_buffer<CharT> fmt_char_printer<CharT>::write_body
+stringify::v0::expected_output_buffer<CharT> fmt_char_printer<CharT>::_write_body
     ( stringify::v0::output_buffer<CharT> buff
     , stringify::buffer_recycler<CharT>& recycler ) const
 {
@@ -430,7 +431,7 @@ stringify::v0::expected_output_buffer<CharT> fmt_char_printer<CharT>::write_body
 }
 
 template <typename CharT>
-stringify::v0::expected_output_buffer<CharT> fmt_char_printer<CharT>::write_fill
+stringify::v0::expected_output_buffer<CharT> fmt_char_printer<CharT>::_write_fill
     ( stringify::v0::output_buffer<CharT> buff
     , stringify::buffer_recycler<CharT>& recycler
     , unsigned count ) const
