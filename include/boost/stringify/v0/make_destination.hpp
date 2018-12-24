@@ -7,270 +7,12 @@
 
 #include <boost/stringify/v0/printer.hpp>
 #include <boost/stringify/v0/facets_pack.hpp>
+#include <boost/stringify/v0/detail/asm_string.hpp>
 #include <tuple>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 namespace detail {
-
-template <typename CharT>
-struct read_uint_result
-{
-    std::size_t value;
-    const CharT* it;
-};
-
-
-template <typename CharT>
-read_uint_result<CharT> read_uint(const CharT* it, const CharT* end)
-{
-    std::size_t value = *it -  static_cast<CharT>('0');
-    constexpr long limit = std::numeric_limits<long>::max() / 10 - 9;
-    ++it;
-    while (it != end)
-    {
-        CharT ch = *it;
-        if (ch < static_cast<CharT>('0') || static_cast<CharT>('9') < ch)
-        {
-            break;
-        }
-        if(value > limit)
-        {
-            value = std::numeric_limits<std::size_t>::max();
-            break;
-        }
-        value *= 10;
-        value += ch - static_cast<CharT>('0');
-        ++it;
-    }
-    return {value, it};
-}
-
-
-template <typename CharT>
-std::size_t asm_string_size
-    ( const CharT* it
-    , const CharT* end
-    , std::initializer_list<const stringify::v0::printer<CharT>*> args )
-{
-    using traits = std::char_traits<CharT>;
-
-    std::size_t count = 0;
-    std::size_t arg_idx = 0;
-    const std::size_t num_args = args.size();
-
-    while (it != end)
-    {
-        const CharT* prev = it;
-        it = traits::find(it, (end - it), '{');
-        if (it == nullptr)
-        {
-            count += (end - prev);
-            break;
-        }
-        count += (it - prev);
-        ++it;
-
-        after_the_brace:
-        if (it == end)
-        {
-            if (arg_idx < num_args)
-            {
-                count += args.begin()[arg_idx]->necessary_size();
-            }
-            // todo handle invalid arg index
-            break;
-        }
-
-        auto ch = *it;
-        if (ch == '}')
-        {
-            if (arg_idx < num_args)
-            {
-                count += args.begin()[arg_idx]->necessary_size();
-                ++arg_idx;
-            }
-            else
-            {
-                // todo handle invalid arg index
-            }
-            ++it;
-        }
-        else if (CharT('0') <= ch && ch <= CharT('9'))
-        {
-            auto result = stringify::v0::detail::read_uint(it, end);
-
-            if (result.value < num_args)
-            {
-                count += args.begin()[result.value]->necessary_size();
-            }
-            else
-            {
-                // todo handle invalid arg index
-            }
-
-            it = traits::find(result.it, end - result.it, '}');
-            if (it == nullptr)
-            {
-                break;
-            }
-            ++it;
-        }
-        else if(ch == '{')
-        {
-            auto it2 = it + 1;
-            it2 = traits::find(it2, end - it2, '{');
-            if (it2 == nullptr)
-            {
-                return count += end - it;
-            }
-            count += (it2 - it);
-            it = it2 + 1;
-            goto after_the_brace;
-        }
-        else
-        {
-            if (ch != '-')
-            {
-                if (arg_idx < num_args)
-                {
-                    count += args.begin()[arg_idx]->necessary_size();
-                    ++arg_idx;
-                }
-                else
-                {
-                    // todo handle invalid arg index
-                }
-            }
-            auto it2 = it + 1;
-            it = traits::find(it2, (end - it2), '}');
-            if (it == nullptr)
-            {
-                break;
-            }
-            ++it;
-        }
-    }
-    return count;
-}
-
-template <typename CharT>
-stringify::v0::expected_output_buffer<CharT> asm_string_write
-    ( const CharT* it
-    , const CharT* end
-    , std::initializer_list<const stringify::v0::printer<CharT>*> args
-    , stringify::v0::output_buffer<CharT> ob
-    , stringify::v0::buffer_recycler<CharT>& rec )
-{
-    using traits = std::char_traits<CharT>;
-    std::size_t arg_idx = 0;
-    const std::size_t num_args = args.size();
-
-    while (it != end)
-    {
-        const CharT* prev = it;
-        it = traits::find(it, (end - it), '{');
-        if (it == nullptr)
-        {
-            return stringify::v0::detail::write_str(ob, rec, prev, end - prev);
-        }
-
-        auto x = stringify::v0::detail::write_str(ob, rec, prev, it - prev);
-        BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-        ob = *x;
-        ++it;
-
-        after_the_brace:
-        if (it == end)
-        {
-            if (arg_idx < num_args)
-            {
-                return args.begin()[arg_idx]->write(ob, rec);
-            }
-            // todo handle invalid arg index
-            break;
-        }
-
-        auto ch = *it;
-        if (ch == '}')
-        {
-            if (arg_idx < num_args)
-            {
-                auto x = args.begin()[arg_idx]->write(ob, rec);
-                BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-                ob = *x;
-                ++arg_idx;
-            }
-            else
-            {
-                // todo handle invalid arg index
-            }
-            ++it;
-        }
-        else if (CharT('0') <= ch && ch <= CharT('9'))
-        {
-            auto result = stringify::v0::detail::read_uint(it, end);
-
-            if (result.value < num_args)
-            {
-                auto x = args.begin()[result.value]->write(ob, rec);
-                BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-                ob = *x;
-            }
-            else
-            {
-                // todo handle invalid arg index
-            }
-
-            it = traits::find(result.it, end - result.it, '}');
-            if (it == nullptr)
-            {
-                break;
-            }
-            ++it;
-        }
-        else if(ch == '{')
-        {
-            auto it2 = it + 1;
-            it2 = traits::find(it2, end - it2, '{');
-            if (it2 == nullptr)
-            {
-                return stringify::v0::detail::write_str(ob, rec, it, end - it);
-            }
-            auto x = stringify::v0::detail::write_str(ob, rec, it, (it2 - it));
-            BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-            ob = *x;
-            it = it2 + 1;
-            goto after_the_brace;
-        }
-        else
-        {
-            if (ch != '-')
-            {
-                if (arg_idx < num_args)
-                {
-                    auto x = args.begin()[arg_idx]->write(ob, rec);
-                    BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-                    ob = *x;
-                    ++arg_idx;
-                }
-                else
-                {
-                    // todo handle invalid arg index
-                }
-            }
-            auto it2 = it + 1;
-            it = traits::find(it2, (end - it2), '}');
-            if (it == nullptr)
-            {
-                break;
-            }
-            ++it;
-        }
-    }
-    return {stringify::v0::in_place_t{}, ob};
-}
-
 
 template <typename W>
 static auto has_reserve_impl(W&& ow)
@@ -629,7 +371,7 @@ private:
 
     template <class, class, class>
     friend class syntax_after_leading_expr;
-    
+
     constexpr syntax_after_leading_expr
         ( const _reservation& r
         , FPack&& fp
@@ -649,7 +391,7 @@ private:
         , _owinit(args)
     {
     }
-    
+
     static const stringify::v0::printer<_char_type>*
     _as_pointer(const stringify::v0::printer<_char_type>& p)
     {
@@ -662,12 +404,19 @@ private:
         , const _char_type* str_end
         , _arglist_type args) const
     {
+        const auto& enc
+            = get_facet<stringify::v0::encoding_category<_char_type>, void>(_fpack);
+        const auto policy
+            = get_facet<stringify::v0::asm_invalid_arg_category, void>(_fpack);
+
         _output_writer_wrapper writer{_owinit};
 
-        auto res_size = this->must_calculate_size()
-            ? stringify::v0::detail::asm_string_size(str, str_end, args)
-            : this->get_size_to_reserve();
-
+        std::size_t res_size = this->get_size_to_reserve();
+        if (this->must_calculate_size())
+        {
+            auto invs = stringify::v0::detail::invalid_arg_size(enc, policy);
+            res_size = stringify::v0::detail::asm_string_size(str, str_end, args, invs);
+        }
         if (res_size != 0)
         {
             writer.get().reserve(res_size);
@@ -677,7 +426,8 @@ private:
         if (x)
         {
             x = stringify::v0::detail::asm_string_write
-                ( str, str_end, args, *x, writer.get() );
+                ( str, str_end, args, *x, writer.get(), enc, policy );
+
             if (x)
             {
                 return writer.get().finish((*x).it);
@@ -696,8 +446,13 @@ private:
         auto x = writer.get().start();
         if (x)
         {
+            const auto& enc
+            = get_facet<stringify::v0::encoding_category<_char_type>, void>(_fpack);
+            const auto policy
+            = get_facet<stringify::v0::asm_invalid_arg_category, void>(_fpack);
+
             x = stringify::v0::detail::asm_string_write
-                ( str, str_end, args, *x, writer.get() );
+                ( str, str_end, args, *x, writer.get(), enc, policy );
             if (x)
             {
                 return writer.get().finish((*x).it);

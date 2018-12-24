@@ -70,15 +70,30 @@ int main()
     //
     // errors
     //
-    // TEST_ERR("0 2 1 2 3 ", std::make_error_code(std::errc::value_too_large))
-    //     .as("{ } {2} {} {} {} {}") (0, 1, 2, 3);
 
-    // TEST_ERR("0 1 ", std::make_error_code(std::errc::value_too_large))
-    //     .as("{ } {} {10} {} {}") (0, 1, 2, 3);
+    auto ec_invalid_arg = std::make_error_code(std::errc::invalid_argument);
 
+    TEST_ERR("0__2--1==2..3::", ec_invalid_arg)
+        .facets(strf::asm_invalid_arg::stop)
+        .as("{ }__{2}--{}=={}..{}::{}~~", 0, 1, 2, 3);
 
+    TEST(u8"0__2--1==2..3::\uFFFD~~")
+        .as("{ }__{2}--{}=={}..{}::{}~~", 0, 1, 2, 3);
 
-    // TODO test contrained facets
+    TEST(u8"0__2--1==2..3::~~")
+        .facets(strf::asm_invalid_arg::ignore)
+        .as("{ }__{2}--{}=={}..{}::{}~~", 0, 1, 2, 3);
+
+    TEST_ERR("0__", ec_invalid_arg)
+        .facets(strf::asm_invalid_arg::stop)
+        .as("{ }__{10}--{}=={}..{}::{}~~", 0, 1, 2, 3);
+
+    TEST(u8"0__\uFFFD--1==2..3::\uFFFD~~")
+        .as("{ }__{10}--{}=={}..{}::{}~~", 0, 1, 2, 3);
+
+    TEST(u8"0__--1==2..3::~~")
+        .facets(strf::asm_invalid_arg::ignore)
+        .as("{ }__{10}--{}=={}..{}::{}~~", 0, 1, 2, 3);
 
 
     return report_errors() || boost::report_errors();
