@@ -28,7 +28,8 @@ foreach(
   facets_pack
 #  reserve
   width_calculator
-#  transcoding
+  #  transcoding
+  utf_to_utf
   )
 
   add_executable(test-${t}-header-only   ${t}.cpp)

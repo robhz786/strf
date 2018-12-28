@@ -35,6 +35,7 @@ test-suite stringify :
 #   [ run reserve.cpp           : : : : test-reserve-ho ]
    [ run width_calculator.cpp  : : : : test-width_calculator-ho ]
 #   [ run transcoding.cpp       : : : : test-transcoding-ho ]
+   [ run utf_to_utf.cpp  : : : : test-utf_to_utf-ho ]
 
    # as static library:
 
@@ -56,6 +57,7 @@ test-suite stringify :
 #   [ run reserve.cpp           $(slib) : : : $(nho) : test-reserve-nho ]
    [ run width_calculator.cpp  $(slib) : : : $(nho) : test-width_calculator-nho ]
 #   [ run transcoding.cpp       $(slib) : : : $(nho) : test-transcoding-nho ]
+   [ run utf_to_utf.cpp        $(slib) : : : $(nho) : test-utf_to_utf-nho ]
 ;
 
 # Satisfy the Boost library requirements

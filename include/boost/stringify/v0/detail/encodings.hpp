@@ -627,11 +627,10 @@ stringify::v0::cv_result utf8_to_utf32_transcode
                  && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
                  && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
                {
-                   unsigned x = utf8_decode(ch0, ch1, ch2, ch3) - 0x10000;
+                   unsigned x = utf8_decode(ch0, ch1, ch2, ch3);
                    if(x <= 0x10FFFF)
                    {
                        *dest_it = x;
-                       ++dest_it;
                    }
                    else goto invalid_char_with_continuations_chars;
                }
@@ -689,22 +688,24 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf32_size
     unsigned char ch0, ch1, ch2, ch3;
     const char* src_it = src;
     std::size_t count = 0;
-    for(;src_it != src_end; ++src_it)
+    while (src_it != src_end)
     {
         ch0 = (*src_it);
         if(ch0 < 0x80)
         {
             ++count;
+            ++src_it;
         }
         else if (0xC0 == (ch0 & 0xE0))
         {
             if(++src_it != src_end && is_utf8_continuation(ch1 = * src_it))
             {
                 ++count;
+                ++src_it;
             }
             else goto invalid_char;
         }
-        else if(0xE0 == (ch0 & 0xF0))
+        else if (0xE0 == (ch0 & 0xF0))
         {
             if ( ++src_it != src_end && is_utf8_continuation(ch1 = * src_it)
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
@@ -712,21 +713,23 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf32_size
                 unsigned x = utf8_decode(ch0, ch1, ch2);
                 if (allow_surr || stringify::v0::detail::not_surrogate(x))
                 {
+                    ++src_it;
                     ++count;
                 }
                 else goto invalid_char_with_continuations_chars;
             }
             else goto invalid_char;
         }
-        else if(0xF0 == (ch0 & 0xF8))
+        else if (0xF0 == (ch0 & 0xF8))
         {
             if ( ++src_it != src_end && is_utf8_continuation(ch1 = * src_it)
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
               && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
             {
-                unsigned x = utf8_decode(ch0, ch1, ch2, ch3) - 0x10000;
-                if(x <= 0x10FFFF)
+                unsigned x = utf8_decode(ch0, ch1, ch2, ch3);
+                if (x <= 0x10FFFF)
                 {
+                    ++src_it;
                     ++count;
                 }
                 else goto invalid_char_with_continuations_chars;
@@ -745,7 +748,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf32_size
                 src_it = next_src_it;
             }
             invalid_char:
-            switch(err_hdl)
+            switch (err_hdl)
             {
                 case stringify::v0::error_handling::stop:
                     return count;
@@ -777,12 +780,13 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_sanitize
     auto src_it = *src;
     const char* previous_src_it;
 
-    for(;src_it != src_end; ++src_it)
+    while(src_it != src_end)
     {
         previous_src_it = src_it;
         ch0 = (*src_it);
         if(ch0 < 0x80)
         {
+            ++src_it;
             if(dest_it != dest_end)
             {
                 *dest_it = ch0;
@@ -793,6 +797,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_sanitize
         {
             if(++src_it != src_end && is_utf8_continuation(ch1 = * src_it))
             {
+                ++src_it;
                 auto x = utf8_decode(ch0, ch1);
                 if (x >= 0x80)
                 {
@@ -820,6 +825,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_sanitize
                 {
                     if( allow_surr || detail::not_surrogate(x) )
                     {
+                        ++src_it;
                         if (dest_it + 2 < dest_end)
                         {
                             dest_it[0] = ch0;
@@ -831,6 +837,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_sanitize
                 }
                 else if (x >= 0x80)
                 {
+                    ++src_it;
                     if (dest_it + 1 < dest_end)
                     {
                         dest_it[0] = 0xC0 | ((x & 0x7C0) >> 6);
@@ -842,6 +849,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_sanitize
                 {
                     *dest_it = x;
                     ++dest_it;
+                    ++src_it;
                 } else goto insufficient_space;
             } else goto invalid_char;
         }
@@ -851,11 +859,12 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_sanitize
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
               && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
             {
-                unsigned x = utf8_decode(ch0, ch1, ch2, ch3) - 0x10000;
+                unsigned x = utf8_decode(ch0, ch1, ch2, ch3);
                 if (x <= 0x10FFFF)
                 {
                     if (x >= 0x10000)
                     {
+                        ++src_it;
                         if (dest_it + 4 < dest_end)
                         {
                             dest_it[0] = ch0;
@@ -867,16 +876,21 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_sanitize
                     }
                     else if (x >= 0x800)
                     {
-                        if (dest_it + 4 < dest_end)
+                        if (allow_surr || detail::not_surrogate(x))
                         {
-                            dest_it[0] = 0xE0 | ((x & 0xF000) >> 12);
-                            dest_it[1] = 0x80 | ((x &  0xFC0) >> 6);
-                            dest_it[2] = 0x80 |  (x &   0x3F);
-                            dest_it += 3;
-                        } else goto insufficient_space;
+                            ++src_it;
+                            if (dest_it + 4 < dest_end)
+                            {
+                                dest_it[0] = 0xE0 | ((x & 0xF000) >> 12);
+                                dest_it[1] = 0x80 | ((x &  0xFC0) >> 6);
+                                dest_it[2] = 0x80 |  (x &   0x3F);
+                                dest_it += 3;
+                            } else goto insufficient_space;
+                        } else goto invalid_char_with_continuations_chars;
                     }
                     else if (x >= 0x80)
                     {
+                        ++src_it;
                         if (dest_it + 4 < dest_end)
                         {
                             dest_it[0] = 0xC0 | ((x & 0x7C0) >> 6);
@@ -887,6 +901,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_sanitize
                     else if (dest_it != dest_end)
                     {
                         *dest_it = ch0;
+                        ++src_it;
                         ++dest_it;
                     } else goto insufficient_space;
                 } else goto invalid_char_with_continuations_chars;
@@ -947,18 +962,20 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_sanitize_size
     unsigned char ch1, ch2, ch3;
     const char* src_it = src;
     std::size_t count = 0;
-    for(;src_it != src_end; ++src_it)
+    while(src_it != src_end)
     {
         unsigned ch0 = *src_it;
         if(ch0 < 0x80)
         {
             ++count;
+            ++src_it;
         }
         else if (0xC0 == (ch0 & 0xE0))
         {
             if(++src_it != src_end && is_utf8_continuation(ch1 = * src_it))
             {
-                count += utf8_decode(ch0, ch1) >= 0x80 ? 2 : 1;
+                count += (utf8_decode(ch0, ch1) >= 0x80 ? 2 : 1);
+                ++src_it;
             } else goto invalid_char;
         }
         else if (0xE0 == (ch0 & 0xF0))
@@ -969,7 +986,8 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_sanitize_size
                 unsigned x = utf8_decode(ch0, ch1, ch2);
                 if( allow_surr || detail::not_surrogate(x) )
                 {
-                    count += x >= 0x800 ? 3 : x >= 0x80 ? 2 : 1;
+                    ++src_it;
+                    count += (x >= 0x800 ? 3 : x >= 0x80 ? 2 : 1);
                 } else goto invalid_char_with_continuations_chars;
             } else goto invalid_char;
         }
@@ -979,9 +997,10 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_sanitize_size
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
               && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
             {
-                unsigned x = utf8_decode(ch0, ch1, ch2, ch3) - 0x10000;
-                if (x <= 0x10FFFF)
+                unsigned x = utf8_decode(ch0, ch1, ch2, ch3);
+                if (x <= 0x10FFFF && (allow_surr || detail::not_surrogate(x)))
                 {
+                    ++src_it;
                     count += ( x >= 0x10000 ? 4
                              : x >= 0x800   ? 3
                              : x >= 0x80    ? 2
@@ -1225,19 +1244,18 @@ stringify::v0::cv_result utf32_to_utf8_transcode
         }
         else if (ch < 0x10000)
         {
-            if(available_space >= 3)
+            if(allow_surr || stringify::v0::detail::not_surrogate(ch))
             {
-                if(allow_surr || stringify::v0::detail::not_surrogate(ch))
+                if (available_space >= 3)
                 {
                     dest_it[0] =  static_cast<char>(0xE0 | ((ch & 0xF000) >> 12));
                     dest_it[1] =  static_cast<char>(0x80 | ((ch &  0xFC0) >> 6));
                     dest_it[2] =  static_cast<char>(0x80 |  (ch &   0x3F));
                     dest_it += 3;
                     available_space -= 3;
-                }
-                else goto invalid_char;
+                } else goto insufficient_space;
             }
-            else goto insufficient_space;
+            else goto invalid_char;
         }
         else if (ch < 0x110000)
         {
@@ -1259,16 +1277,19 @@ stringify::v0::cv_result utf32_to_utf8_transcode
             {
                 case stringify::v0::error_handling::stop:
                     *dest = dest_it;
-                    *src = src_it;
+                    *src = src_it + 1;
                     return stringify::v0::cv_result::invalid_char;
 
                 case stringify::v0::error_handling::replace:
-                    dest_it[0] = 0xEF;
-                    dest_it[1] = 0xBF;
-                    dest_it[2] = 0xBD;
-                    dest_it += 3;
-                    available_space -=3;
-                    break;
+                    if (available_space >= 3)
+                    {
+                        dest_it[0] = 0xEF;
+                        dest_it[1] = 0xBF;
+                        dest_it[2] = 0xBD;
+                        dest_it += 3;
+                        available_space -=3;
+                        break;
+                    } else goto insufficient_space;
 
                 default:
                     BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
@@ -1597,7 +1618,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_validate(char32_t ch)
 //               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
 //               && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
 //             {
-//                 unsigned x = utf8_decode(ch0, ch1, ch2, ch3) - 0x10000;
+//                 unsigned x = utf8_decode(ch0, ch1, ch2, ch3);
 //                 if (x <= 0x10FFFF)
 //                 {
 //                     if (x > 0x10000)
@@ -1933,7 +1954,7 @@ std::size_t utf16_sanitize_size
                && is_low_surrogate(ch2 = static_cast<CharT>(*src_it_next)))
         {
             ++ src_it_next;
-            ++ count;
+            count += 2 ;
         }
         else if (allow_surr)
         {
@@ -2102,17 +2123,16 @@ stringify::v0::cv_result utf32_to_utf16_transcode
         auto ch = *src_it;
         if (ch < 0x10000)
         {
-            if (available_space != 0)
+            if (allow_surr || stringify::v0::detail::not_surrogate(ch))
             {
-                if (allow_surr || stringify::v0::detail::not_surrogate(ch))
+                if (available_space != 0)
                 {
                     *dest_it = ch;
                     ++dest_it;
                     --available_space;
-                }
-                else goto invalid_char;
+                } else goto insufficient_space;
             }
-            else goto insufficient_space;
+            else goto invalid_char;
         }
         else if (ch < 0x110000)
         {
@@ -2131,15 +2151,19 @@ stringify::v0::cv_result utf32_to_utf16_transcode
             switch(err_hdl)
             {
                 case stringify::v0::error_handling::stop:
-                    *src = src_it;
+                    *src = src_it + 1;
                     *dest = dest_it;
                     return stringify::v0::cv_result::invalid_char;
 
                 case stringify::v0::error_handling::replace:
-                    *dest_it = 0xFFFD;
-                    ++dest_it;
-                    --available_space;
-                    break;
+                    if (available_space != 0)
+                    {
+                        *dest_it = 0xFFFD;
+                        ++dest_it;
+                        --available_space;
+                        break;
+                    }
+                    else goto insufficient_space;
 
                 default:
                     BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
@@ -2459,12 +2483,19 @@ stringify::v0::cv_result utf8_to_utf16_transcode
                  && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
                  && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
                {
-                   unsigned x = utf8_decode(ch0, ch1, ch2, ch3) - 0x10000;
+                   unsigned x = utf8_decode(ch0, ch1, ch2, ch3);
                    if(x <= 0x10FFFF)
                    {
-                       dest_it[0] = 0xD800 + ((x & 0xFFC00) >> 10);
-                       dest_it[1] = 0xDC00 + (x & 0x3FF);
-                       ++dest_it;
+                       if (x >= 0x10000)
+                       {
+                           dest_it[0] = 0xD800 + (((x - 0x10000) & 0xFFC00) >> 10);
+                           dest_it[1] = 0xDC00 +  ((x - 0x10000) & 0x3FF);
+                           ++dest_it;
+                       }
+                       else
+                       {
+                           *dest_it = x;
+                       }
                    }
                    else goto invalid_char_with_continuations_chars;
                }
@@ -2563,7 +2594,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf16_size
               && ++src_it != src_end && is_utf8_continuation(ch2 = *src_it)
               && ++src_it != src_end && is_utf8_continuation(ch3 = *src_it) )
             {
-                unsigned x = utf8_decode(ch0, ch1, ch2, ch3) - 0x10000;
+                unsigned x = utf8_decode(ch0, ch1, ch2, ch3);
                 if(x <= 0x10FFFF)
                 {
                     ++src_it;
@@ -2735,9 +2766,10 @@ std::size_t utf16_to_utf8_size
         }
         else if ( stringify::v0::detail::is_high_surrogate(ch)
                && it + 1 != src_end
-               && stringify::v0::detail::is_low_surrogate(*++it) )
+               && stringify::v0::detail::is_low_surrogate(*(it + 1)) )
         {
             size += 4;
+            ++it;
         }
         else
         {
