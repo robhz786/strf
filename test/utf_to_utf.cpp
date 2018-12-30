@@ -147,19 +147,19 @@ constexpr std::size_t buff_size = 10000;
 
 basic_string_view<char> valid_input_sample(const strf::encoding<char>&)
 {
-    return {u8"abc\0def\u0080ghi\u0800jkl\U00010000", 22};
+    return {u8"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", 19};
 }
 basic_string_view<char16_t> valid_input_sample(const strf::encoding<char16_t>&)
 {
-    return {u"abc\0def\u0080ghi\u0800jkl\U00010000", 17};
+    return {u"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", 10};
 }
 basic_string_view<char32_t> valid_input_sample(const strf::encoding<char32_t>&)
 {
-    return {U"abc\0def\u0080ghi\u0800jkl\U00010000", 16};
+    return {U"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", 8};
 }
 basic_string_view<wchar_t> valid_input_sample(const strf::encoding<wchar_t>&)
 {
-    return {L"abc\0def\u0080ghi\u0800jkl\U00010000", (sizeof(wchar_t) == 2 ? 17 : 16)};
+    return {L"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", (sizeof(wchar_t) == 2 ? 10 : 8)};
 }
 
 
@@ -197,13 +197,13 @@ void test_valid_input
                                 , input.end()
                                 , &dest_it
                                 , buff_end
-                                , strf::error_handling::replace, false);
+                                , strf::error_handling::replace
+                                , false);
 
         BOOST_TEST_EQ(res, strf::cv_result::success);
         BOOST_TEST_EQ(src_it, input.end());
-        BOOST_TEST_EQ((dest_it - buff), as_signed(expected.size()));
-        BOOST_TEST((expected == std::basic_string<CharOut>(buff, expected.size())));
-        BOOST_TEST_EQ(buff[expected.size()], 'x');
+        BOOST_TEST((expected == std::basic_string<CharOut>(buff, dest_it)));
+        BOOST_TEST_EQ(*dest_it, 'x');
     }
 
 
@@ -332,20 +332,26 @@ void test_allowed_surrogates
 
 const auto& invalid_sequences(const strf::encoding<char>&)
 {
-    static std::vector<std::string> seqs =
-        { "\xDF"                    // not enough continuation bytes
-        , "\xEF\x80"                // not enough continuation bytes
-        , "\xF3\x80\x80"            // not enough continuation bytes
-        , "\xff"                    // invalid byte
-        , "\xff\x80\x80"            // invalid byte with continuation bytes
-        , "\x80\x80"                // continuation bytes without leading byte
-        , "\xED\xA0\x80"            // surrogate
-        , "\xED\xAF\xBF"            // surrogate
-        , "\xED\xB0\x80"            // surrogate
-        , "\xED\xBF\xBF"            // surrogate
-        , "\xED\xBF\xBF\x80\x80"    // surrogate with extra continuation bytes
-        , "\xF5\x90\x80\x80"        // codepoint too big
-        , "\xF5\x90\x80\x80\x80\x80"// codepoint too big with extra continuation bytes
+    // based on https://www.unicode.org/versions/Unicode10.0.0/ch03.pdf
+    // "Best Practices for Using U+FFFD"
+    static std::vector<std::pair<int, std::string>> seqs =
+        { {3, "\xF1\x80\x80\xE1\x80\xC0"} // sample from Tabble 3-8 of Unicode standard
+        , {2, "\xC1\xBF"}                 // overlong sequence
+        , {3, "\xE0\x9F\x80"}             // overlong sequence
+        , {3, "\xC1\xBF\x80"}             // overlong sequence with extra continuation bytes
+        , {4, "\xE0\x9F\x80\x80"}         // overlong sequence with extra continuation bytes
+        , {1, "\xC2"}                     // missing continuation
+        , {1, "\xE0\xA0"}                 // missing continuation
+        , {3, "\xED\xA0\x80"}             // surrogate
+        , {3, "\xED\xAF\xBF"}             // surrogate
+        , {3, "\xED\xB0\x80"}             // surrogate
+        , {3, "\xED\xBF\xBF"}             // surrogate
+        , {5, "\xED\xBF\xBF\x80\x80"}     // surrogate with extra continuation bytes
+        , {4, "\xF0\x8F\xBF\xBF" }        // overlong sequence
+        , {5, "\xF0\x8F\xBF\xBF\x80" }    // overlong sequence with extra continuation bytes
+        , {1, "\xF0\x90\xBF" }            // missing continuation
+        , {4, "\xF4\xBF\xBF\xBF"}         // codepoint too big
+        , {6, "\xF5\x90\x80\x80\x80\x80"} // codepoint too big with extra continuation bytes
         };
 
     return seqs;
@@ -353,35 +359,35 @@ const auto& invalid_sequences(const strf::encoding<char>&)
 
 const auto& invalid_sequences(const strf::encoding<char16_t>&)
 {
-    static const std::vector<std::u16string> seqs =
-        { {(char16_t)0xD800}
-        , {(char16_t)0xDBFF}
-        , {(char16_t)0xDC00}
-        , {(char16_t)0xDFFF} };
+    static const std::vector<std::pair<int, std::u16string>> seqs =
+        { {1, {(char16_t)0xD800}}
+        , {1, {(char16_t)0xDBFF}}
+        , {1, {(char16_t)0xDC00}}
+        , {1, {(char16_t)0xDFFF}} };
 
     return seqs;
 }
 
 const auto& invalid_sequences(const strf::encoding<char32_t>&)
 {
-    static const std::vector<std::u32string> seqs =
-        { {(char32_t)0xD800}
-        , {(char32_t)0xDBFF}
-        , {(char32_t)0xDC00}
-        , {(char32_t)0xDFFF}
-        , {(char32_t)0x110000} };
+    static const std::vector<std::pair<int, std::u32string>> seqs =
+        { {1, {(char32_t)0xD800}}
+        , {1, {(char32_t)0xDBFF}}
+        , {1, {(char32_t)0xDC00}}
+        , {1, {(char32_t)0xDFFF}}
+        , {1, {(char32_t)0x110000}} };
 
     return seqs;
 }
 
 const auto& invalid_sequences(const strf::encoding<wchar_t>&)
 {
-    static const std::vector<std::wstring> seqs =
-        { {(wchar_t)0xD800}
-        , {(wchar_t)0xDBFF}
-        , {(wchar_t)0xDC00}
-        , {(wchar_t)0xDFFF}
-        , {wchar_t(sizeof(wchar_t) == 4 ? 0x110000 : 0xDFFF)} };
+    static const std::vector<std::pair<int, std::wstring>> seqs =
+        { {1, {(wchar_t)0xD800}}
+        , {1, {(wchar_t)0xDBFF}}
+        , {1, {(wchar_t)0xDC00}}
+        , {1, {(wchar_t)0xDFFF}}
+        , {1, {wchar_t(sizeof(wchar_t) == 4 ? 0x110000 : 0xDFFF)}} };
 
     return seqs;
 }
@@ -428,8 +434,11 @@ void test_invalid_input
     ChOut buff[buff_size];
     ChOut* const buff_end = buff + buff_size;
 
-    for(const auto& seq : invalid_sequences(ein))
+    for(const auto& s : invalid_sequences(ein))
     {
+        const auto& seq = s.second;
+        int err_count = s.first;
+
         BOOST_TEST_LABEL(invalid_input_test_label(ein, seq, eout));
 
         const std::basic_string<ChIn> input = prefix_in + seq + suffix_in;
@@ -461,7 +470,7 @@ void test_invalid_input
                                                      , false );
             auto expected_size = ( prefix_out.size()
                                  + suffix_out.size()
-                                 + eout.replacement_char_size );
+                                 + eout.replacement_char_size * err_count);
 
             BOOST_TEST_GE(calculated_size, expected_size);
         }
@@ -488,51 +497,40 @@ void test_invalid_input
         }
 
         {   // convert stopping on invalid sequence
-            const auto expected = prefix_out;
             std::fill(buff, buff_end, 'x');
 
             auto src_it = &*input.begin();
             auto dest_it = buff;
-            auto res = cv->transcode( &src_it
-                                    , &*input.end()
-                                    , &dest_it
-                                    , buff_end
-                                    , strf::error_handling::stop
-                                    , false );
+            strf::cv_result res;
+            int calls_count = 0;
+            do
+            {
+                ++calls_count;
+                res = cv->transcode( &src_it
+                                   , &*input.end()
+                                   , &dest_it
+                                   , buff_end
+                                   , strf::error_handling::stop
+                                   , false );
+            } while(res == strf::cv_result::invalid_char && calls_count < 10);
 
-            BOOST_TEST_EQ(res, strf::cv_result::invalid_char);
-            BOOST_TEST_EQ((src_it - &*input.begin())
-                         , as_signed(prefix_in.size() + seq.size()));
-            BOOST_TEST_EQ((dest_it - buff), as_signed(expected.size()));
-            BOOST_TEST(std::equal( expected.begin()
-                                 , expected.end()
-                                 , buff ));
-            BOOST_TEST_EQ(buff[expected.size()], 'x');
+            const auto expected = prefix_out + suffix_out;
 
-            // convert remaining input
-
-            auto src_it2 = src_it;
-            auto dest_it2 = dest_it;
-            auto res2 = cv->transcode( &src_it2
-                                     , &*input.end()
-                                     , &dest_it2
-                                     , buff_end
-                                     , strf::error_handling::stop
-                                     , false );
-
-            const auto expected2 = prefix_out + suffix_out;
-
-            BOOST_TEST_EQ(res2, strf::cv_result::success);
-            BOOST_TEST_EQ(src_it2, &*input.end());
-            BOOST_TEST_EQ((dest_it2 - buff), as_signed(expected2.size()));
-            BOOST_TEST(std::equal( expected2.begin()
-                                 , expected2.end()
-                                 , buff ));
-
+            BOOST_TEST_EQ(calls_count, err_count + 1);
+            BOOST_TEST_EQ(src_it, &*input.end());
+            BOOST_TEST(std::basic_string<ChOut>(buff, dest_it) == expected);
+            BOOST_TEST_EQ(*dest_it, 'x');
         }
 
         {   // convert replacing invalid sequence
-            const auto expected = prefix_out + replacement_char(eout) + suffix_out;
+            auto expected = prefix_out;
+            for(int i = 0; i < err_count; ++i)
+            {
+                expected.append(replacement_char(eout));
+            }
+            expected.append(suffix_out);
+
+
             std::fill(buff, buff_end, 'x');
             auto src_it = &*input.begin();
             auto dest_it = buff;
@@ -551,8 +549,6 @@ void test_invalid_input
                                  , buff ));
             BOOST_TEST_EQ(buff[expected.size()], 'x');
         }
-
-
 
         {   // insufficent space after ignoring invalid seq
 
@@ -626,7 +622,13 @@ void test_invalid_input
                                      , buff_end
                                      , strf::error_handling::replace
                                      , false );
-            const auto expected2 = prefix_out + replacement_char(eout) + suffix_out;
+
+            auto expected2 = prefix_out;
+            for(int i = 0; i < err_count; ++i)
+            {
+                expected2.append(replacement_char(eout));
+            }
+            expected2.append(suffix_out);
 
             BOOST_TEST_EQ(res2, strf::cv_result::success);
             BOOST_TEST_EQ((dest_it2 - buff), as_signed(expected2.size()));
@@ -634,15 +636,14 @@ void test_invalid_input
                                  , expected2.end()
                                  , buff ));
         }
-
     }
 }
 
 
 int main()
 {
-    auto encodings = hana::make_tuple( strf::utf8(), strf::utf16()
-                                     , strf::utf32(), strf::wchar_encoding());
+    auto encodings = hana::make_tuple
+        ( strf::utf8(), strf::utf16(), strf::utf32(), strf::wchar_encoding());
 
     hana::for_each(encodings, [&](const auto& ein){
             hana::for_each(encodings, [&](const auto& eout) {
@@ -661,9 +662,6 @@ int main()
                     test_invalid_input(ein, eout);
                 });
         });
-
-
-    // TODO: test utf8 input with overlong sequences
 
     return boost::report_errors();
 }
