@@ -18,12 +18,13 @@ public:
     cv_string_printer
         ( const FPack& fp
         , const CharIn* str
-        , std::size_t len ) noexcept
+        , std::size_t len
+        , const stringify::v0::encoding<CharIn>& src_enc ) noexcept
         : cv_string_printer
             ( str
             , len
             , _get_facet<stringify::v0::width_calculator_category>(fp)
-            , _get_facet<stringify::v0::encoding_category<CharIn>>(fp)
+            , src_enc
             , _get_facet<stringify::v0::encoding_category<CharOut>>(fp)
             , _get_facet<stringify::v0::encoding_policy_category>(fp) )
     {
@@ -120,13 +121,15 @@ public:
     template <typename FPack>
     fmt_cv_string_printer
         ( const FPack& fp
-        , const stringify::v0::detail::cv_string_with_format<CharIn>& input ) noexcept
+        , const stringify::v0::detail::cv_string_with_format<CharIn>& input
+        , const stringify::v0::encoding<CharIn>& src_enc ) noexcept
         : _fmt(input)
+        , _src_encoding(src_enc)
         , _dest_encoding(_get_facet<stringify::v0::encoding_category<CharOut>>(fp))
         , _wcalc(_get_facet<stringify::v0::width_calculator_category>(fp))
         , _epoli(_get_facet<stringify::v0::encoding_policy_category>(fp))
     {
-        _init(_get_facet<stringify::v0::encoding_category<CharIn>>(fp));
+        _init();
     }
 
     std::size_t necessary_size() const override;
@@ -141,6 +144,7 @@ private:
 
     stringify::v0::detail::cv_string_with_format<CharIn> _fmt;
     const stringify::v0::transcoder<CharIn, CharOut>* _transcoder;
+    const stringify::v0::encoding<CharIn>& _src_encoding;
     const stringify::v0::encoding<CharOut>& _dest_encoding;
     const stringify::v0::width_calculator _wcalc;
     const stringify::v0::encoding_policy  _epoli;
@@ -153,7 +157,7 @@ private:
         return fp.template get_facet<Category, input_tag>();
     }
 
-    void _init(const stringify::v0::encoding<CharIn>& src_enc);
+    void _init();
 
     stringify::v0::expected_output_buffer<CharOut> _write_str
         ( stringify::v0::output_buffer<CharOut> buff
@@ -166,22 +170,17 @@ private:
 };
 
 template<typename CharIn, typename CharOut>
-void fmt_cv_string_printer<CharIn, CharOut>::_init
-    ( const stringify::v0::encoding<CharIn>& src_enc )
+void fmt_cv_string_printer<CharIn, CharOut>::_init()
 {
-    if( ! _fmt.has_encoding())
-    {
-        _fmt.value().set_encoding(src_enc);
-    }
     _fillcount = ( _fmt.width() > 0
                  ? _wcalc.remaining_width
                      ( _fmt.width()
                      , _fmt.value().begin()
                      , _fmt.value().length()
-                     , src_enc
+                     , _src_encoding
                      , _epoli )
                  : 0 );
-    _transcoder = stringify::v0::get_transcoder(src_enc, _dest_encoding);
+    _transcoder = stringify::v0::get_transcoder(_src_encoding, _dest_encoding);
 }
 
 template<typename CharIn, typename CharOut>
@@ -193,7 +192,7 @@ std::size_t fmt_cv_string_printer<CharIn, CharOut>::necessary_size() const
                                     , _epoli.err_hdl(), _epoli.allow_surr() )
         : stringify::v0::detail::decode_encode_size
             ( _fmt.value().begin(), _fmt.value().end()
-            , _fmt.value().encoding(), _dest_encoding
+            , _src_encoding, _dest_encoding
             , _epoli );
 
     if (_fillcount > 0)
@@ -256,7 +255,7 @@ fmt_cv_string_printer<CharIn, CharOut>::_write_str
     return stringify::v0::detail::decode_encode( buff, recycler
                                                , _fmt.value().begin()
                                                , _fmt.value().end()
-                                               , _fmt.value().encoding()
+                                               , _src_encoding
                                                , _dest_encoding
                                                , _epoli );
 }
@@ -283,7 +282,7 @@ int fmt_cv_string_printer<CharIn, CharOut>::remaining_width(int w) const
         ( w
         , _fmt.value().begin()
         , _fmt.value().length()
-        , _fmt.value().encoding()
+        , _src_encoding
         , _epoli );
 }
 
@@ -331,15 +330,40 @@ inline stringify::v0::detail::cv_string_printer<CharIn, CharOut>
 make_printer( const FPack& fp
             , stringify::v0::detail::cv_string<CharIn> str )
 {
-    return {fp, str.begin(), str.size()};
+    using enc_cat = stringify::v0::encoding_category<CharIn>;
+    using input_tag = stringify::v0::string_input_tag<CharIn>;
+    return { fp
+           , str.begin()
+           , str.size()
+           , stringify::v0::get_facet<enc_cat, input_tag>(fp) };
+}
+
+template <typename CharOut, typename FPack, typename CharIn>
+inline stringify::v0::detail::cv_string_printer<CharIn, CharOut>
+make_printer( const FPack& fp
+            , stringify::v0::detail::cv_string_with_encoding<CharIn> str )
+{
+    return {fp, str.begin(), str.size(), str.get_ecoding()};
 }
 
 template <typename CharOut, typename FPack, typename CharIn>
 inline stringify::v0::detail::fmt_cv_string_printer<CharIn, CharOut>
-make_printer( const FPack& fp
-            , stringify::v0::detail::cv_string_with_format<CharIn> str )
+make_printer
+    ( const FPack& fp
+    , stringify::v0::detail::cv_string_with_format<CharIn> str )
 {
-    return {fp, str};
+    using enc_cat = stringify::v0::encoding_category<CharIn>;
+    using input_tag = stringify::v0::string_input_tag<CharIn>;
+    return {fp, str, stringify::v0::get_facet<enc_cat, input_tag>(fp) };
+}
+
+template <typename CharOut, typename FPack, typename CharIn>
+inline stringify::v0::detail::fmt_cv_string_printer<CharIn, CharOut>
+make_printer
+    ( const FPack& fp
+    , stringify::v0::detail::cv_string_with_format_and_encoding<CharIn> str )
+{
+    return {fp, str, str.get_encoding()};
 }
 
 } // namespace detail

@@ -13,7 +13,7 @@ project (boost_stringify_example)
 remove_definitions(-DNDEBUG)
 
 foreach(x
-    # overview
+    overview
     syntax_samples
     trivial_sample
     assembly_string

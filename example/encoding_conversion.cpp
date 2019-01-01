@@ -12,10 +12,14 @@ void input_ouput_different_char_types()
     //[input_output_different_char_types
     namespace strf = boost::stringify::v0;
 
-    auto str   = strf::to_string    ("aaa-", u"bbb-", U"ccc-", L"ddd");
-    auto str16 = strf::to_u16string ("aaa-", u"bbb-", U"ccc-", L"ddd");
-    auto str32 = strf::to_u32string ("aaa-", u"bbb-", U"ccc-", L"ddd");
-    auto wstr  = strf::to_wstring   ("aaa-", u"bbb-", U"ccc-", L"ddd");
+    auto str   = strf::to_string
+        ("aaa-", strf::cv(u"bbb-"), strf::cv(U"ccc-"), strf::cv(L"ddd"));
+    auto str16 = strf::to_u16string
+        (strf::cv("aaa-"), u"bbb-", strf::cv(U"ccc-"), strf::cv(L"ddd"));
+    auto str32 = strf::to_u32string
+        (strf::cv("aaa-"), strf::cv(u"bbb-"), U"ccc-", strf::cv(L"ddd"));
+    auto wstr  = strf::to_wstring
+        (strf::cv("aaa-"), strf::cv(u"bbb-"), strf::cv(U"ccc-"), L"ddd");
 
     BOOST_ASSERT(str.value()   ==  "aaa-bbb-ccc-ddd");
     BOOST_ASSERT(str16.value() == u"aaa-bbb-ccc-ddd");
@@ -29,17 +33,17 @@ void mutf8 ()
 {
 
     //[ mutf8_sample
-    namespace strf = boost::stringify::v0;
+    // namespace strf = boost::stringify::v0;
 
-    // from UTF-16 to  Modified UTF-8 (MTF-8)
-    std::u16string str_utf16 {u"---\0---", 7};
-    auto str_mutf8 = strf::to_string.facets(strf::mutf8()) (str_utf16);
+    // // from UTF-16 to  Modified UTF-8 (MTF-8)
+    // std::u16string str_utf16 {strf::cv(u"---\0---"), 7};
+    // auto str_mutf8 = strf::to_string.facets(strf::mutf8()) (str_utf16);
 
-    BOOST_ASSERT(str_mutf8.value() == "---\xC0\x80---");
+    // BOOST_ASSERT(str_mutf8.value() == "---\xC0\x80---");
 
-    // from Modified UTF-8 (MTF-8) back to UTF-16
-    auto str_utf16_2 = strf::to_u16string.facets(strf::mutf8()) (str_mutf8.value());
-    BOOST_ASSERT(str_utf16 == str_utf16_2.value());
+    // // from Modified UTF-8 (MTF-8) back to UTF-16
+    // auto str_utf16_2 = strf::to_u16string.facets(strf::mutf8()) (str_mutf8.value());
+    // BOOST_ASSERT(str_utf16 == str_utf16_2.value());
     //]
 }
 
@@ -49,8 +53,8 @@ void arg()
     namespace strf = boost::stringify::v0;
 
     auto str_utf8 = strf::to_string
-        ( strf::fmt("--\xA4--").encoding(strf::iso_8859_1())
-        , strf::fmt("--\xA4--").encoding(strf::iso_8859_15()));
+        ( strf::cv("--\xA4--", strf::iso_8859_1())
+        , strf::cv("--\xA4--", strf::iso_8859_15()));
 
     BOOST_ASSERT(str_utf8.value() == u8"--\u00A4----\u20AC--");
     //]
@@ -60,29 +64,29 @@ void arg()
 void arg_abbreviated()
 {
     //[ arg_encoding_abbreviated
-    namespace strf = boost::stringify::v0;
+    // namespace strf = boost::stringify::v0;
 
-    auto str_utf8 = strf::to_string
-        ( strf::iso_8859_1("--\xA4--")
-        , strf::iso_8859_15("--\xA4--") );
+    // auto str_utf8 = strf::to_string
+    //     ( strf::iso_8859_1("--\xA4--")
+    //     , strf::iso_8859_15("--\xA4--") );
 
-    BOOST_ASSERT(str_utf8.value() == u8"--\u00A4----\u20AC--");
+    // BOOST_ASSERT(str_utf8.value() == u8"--\u00A4----\u20AC--");
     //]
 }
 
 void not_sanitized_inputs()
 {
     //[ not_sanitized_inputs
-    namespace strf = boost::stringify::v0;
+    // namespace strf = boost::stringify::v0;
 
-    auto str_utf8 = strf::to_string
-        ( "--\xbf\xbf--"                  // non-conformant UTF-8
-        , strf::ascii("--\x80--")         // non-conformant ASCII
-        , strf::iso_8859_1("--\x80--") ); // non-conformant ISO 8859-1
+    // auto str_utf8 = strf::to_string
+    //     ( "--\xbf\xbf--"                  // non-conformant UTF-8
+    //     , strf::ascii("--\x80--")         // non-conformant ASCII
+    //     , strf::iso_8859_1("--\x80--") ); // non-conformant ISO 8859-1
 
-    // The result is an invalid UTF-8 output.
-    // Only the string in ISO 8859-1 is sanitized:
-    BOOST_ASSERT(str_utf8.value() == std::string{"--\xbf\xbf----\x80----"} + u8"\uFFFD--");
+    // // The result is an invalid UTF-8 output.
+    // // Only the string in ISO 8859-1 is sanitized:
+    // BOOST_ASSERT(str_utf8.value() == std::string{"--\xbf\xbf----\x80----"} + u8"\uFFFD--");
     //]
 }
 

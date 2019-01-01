@@ -398,10 +398,10 @@ std::u32string replacement_char(const strf::encoding<char32_t>&){ return U"\uFFF
 std::wstring   replacement_char(const strf::encoding<wchar_t>&){ return L"\uFFFD";}
 
 
-template <typename CharIn, typename CharOut>
+template <typename CharIn, typename CharOut, typename StrType>
 std::string invalid_input_test_label
     ( const strf::encoding<CharIn>& ein
-    , const auto& seq
+    , const StrType& seq
     , const strf::encoding<CharOut>& eout )
 {
     char buff[1000];

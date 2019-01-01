@@ -194,7 +194,6 @@ public:
         , std::size_t len
         , const stringify::v0::encoding<CharIn>& enc ) noexcept
         : _str(str, len)
-        , _enc(&enc)
     {
     }
 
@@ -214,10 +213,25 @@ public:
     {
         return _str.size();
     }
-    constexpr bool has_encoding() const
+
+private:
+
+    stringify::v0::detail::simple_string_view<CharIn> _str;
+};
+
+
+template <typename CharIn>
+class cv_string_with_encoding: public stringify::v0::detail::cv_string<CharIn>
+{
+    cv_string_with_encoding
+        ( const CharIn* str
+        , std::size_t len
+        , const stringify::v0::encoding<CharIn>& enc ) noexcept
+        : stringify::v0::detail::cv_string<CharIn>(str, len)
+        , _enc(&enc)
     {
-        return _enc != nullptr;
     }
+
     constexpr const stringify::v0::encoding<CharIn>& encoding() const
     {
         return *_enc;
@@ -227,9 +241,11 @@ public:
         _enc = &enc;
     }
 
-    stringify::v0::detail::simple_string_view<CharIn> _str;
+private:
+
     const stringify::v0::encoding<CharIn>* _enc = nullptr;
 };
+
 
 } // namespace detail
 
@@ -305,6 +321,12 @@ namespace detail {
 template <typename CharIn>
 using cv_string_with_format = stringify::v0::value_with_format
     < stringify::v0::detail::cv_string<CharIn>
+    , stringify::v0::string_format<CharIn>
+    , stringify::v0::alignment_format >;
+
+template <typename CharIn>
+using cv_string_with_format_and_encoding = stringify::v0::value_with_format
+    < stringify::v0::detail::cv_string_with_encoding<CharIn>
     , stringify::v0::string_format<CharIn>
     , stringify::v0::alignment_format >;
 

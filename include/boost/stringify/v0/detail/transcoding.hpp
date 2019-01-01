@@ -371,6 +371,10 @@ const stringify::v0::encoding<char16_t>& utf16();
 const stringify::v0::encoding<char32_t>& utf32();
 const stringify::v0::encoding<wchar_t>& wchar_encoding();
 
+const stringify::v0::encoding<char>& windows_1252();
+const stringify::v0::encoding<char>& iso_8859_1();
+const stringify::v0::encoding<char>& iso_8859_15();
+
 #endif // defined(BOOST_STRINGIFY_OMIT_IMPL)
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
@@ -378,6 +382,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_END
 #if ! defined(BOOST_STRINGIFY_OMIT_IMPL)
 
 #include <boost/stringify/v0/detail/encodings.hpp>
+#include <boost/stringify/v0/detail/single_byte_encodings.hpp>
 
 #endif // defined(BOOST_STRINGIFY_OMIT_IMPL)
 
