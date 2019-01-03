@@ -2,118 +2,14 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/core/lightweight_test.hpp>
-
-namespace boost {
-namespace detail {
-
-
-class test_identifier
-{
-public:
-
-    test_identifier(std::string x)
-    {
-        _current_test_id = std::move(x);
-    }
-
-    ~test_identifier()
-    {
-        _current_test_id.clear();
-    }
-
-    static void write_current_id(std::ostream& out)
-    {
-        if( ! _current_test_id.empty())
-        {
-            out << " [ " << _current_test_id << " ] ";
-        }
-    }
-
-private:
-
-    static std::string _current_test_id;
-};
-
-std::string test_identifier::_current_test_id {};
-
-inline void test_failed_impl_v2
-    ( char const * expr
-    , char const * file
-    , int line
-    , char const * function )
-{
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM
-        << file << "(" << line << "): test '" << expr << "' failed in function '"
-        << function << "'";
-    test_identifier::write_current_id(BOOST_LIGHTWEIGHT_TEST_OSTREAM);
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << std::endl << std::endl;
-    ++test_errors();
-}
-
-
-template<class BinaryPredicate, class T, class U>
-inline void test_with_impl_v2(BinaryPredicate pred, char const * expr1, char const * expr2,
-                           char const * file, int line, char const * function,
-                           T const & t, U const & u)
-{
-    if( pred(t, u) )
-    {
-        report_errors_remind();
-    }
-    else
-    {
-        BOOST_LIGHTWEIGHT_TEST_OSTREAM
-            << file << "(" << line << "): test '" << expr1 << " " << pred.op() << " " << expr2
-            << "' ('" << test_output_impl(t) << "' " << pred.op() << " '" << test_output_impl(u)
-            << "') failed in function '" << function << "'";
-        test_identifier::write_current_id(BOOST_LIGHTWEIGHT_TEST_OSTREAM);
-        BOOST_LIGHTWEIGHT_TEST_OSTREAM << std::endl << std::endl;
-        ++test_errors();
-    }
-}
-
-
-
-} // namespace detail
-} // namespace boost
-
-#define STR_CONCAT(str1, str2) str1 ## str2
-
-#define BOOST_TEST_LABEL(str) \
-::boost::detail::test_identifier STR_CONCAT(test_identifier_, __LINE__) {(str)};
-
-
-#undef BOOST_TEST
-#define BOOST_TEST(expr)                                                \
-    ( (expr)                                                            \
-    ? (void)0                                                           \
-    : ::boost::detail::test_failed_impl_v2(#expr, __FILE__, __LINE__, BOOST_CURRENT_FUNCTION))
-
-#undef BOOST_TEST_EQ
-#undef BOOST_TEST_NE
-#undef BOOST_TEST_LT
-#undef BOOST_TEST_LE
-#undef BOOST_TEST_GT
-#undef BOOST_TEST_GE
-
-#define BOOST_TEST_EQ(expr1,expr2) ( ::boost::detail::test_with_impl_v2(::boost::detail::lw_test_eq(), #expr1, #expr2, __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, expr1, expr2) )
-#define BOOST_TEST_NE(expr1,expr2) ( ::boost::detail::test_with_impl_v2(::boost::detail::lw_test_ne(), #expr1, #expr2, __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, expr1, expr2) )
-
-#define BOOST_TEST_LT(expr1,expr2) ( ::boost::detail::test_with_impl_v2(::boost::detail::lw_test_lt(), #expr1, #expr2, __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, expr1, expr2) )
-#define BOOST_TEST_LE(expr1,expr2) ( ::boost::detail::test_with_impl_v2(::boost::detail::lw_test_le(), #expr1, #expr2, __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, expr1, expr2) )
-#define BOOST_TEST_GT(expr1,expr2) ( ::boost::detail::test_with_impl_v2(::boost::detail::lw_test_gt(), #expr1, #expr2, __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, expr1, expr2) )
-#define BOOST_TEST_GE(expr1,expr2) ( ::boost::detail::test_with_impl_v2(::boost::detail::lw_test_ge(), #expr1, #expr2, __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, expr1, expr2) )
-
-
-
+#include "lightweight_test_label.hpp"
 
 #include <boost/utility/string_view.hpp>
-#include <boost/stringify.hpp>
+#include <boost/stringify/v0/detail/transcoding.hpp>
 
 #include <boost/hana/for_each.hpp>
 #include <boost/hana/tuple.hpp>
-#include <iostream>
+#include <vector>
 
 namespace strf = boost::stringify::v0;
 namespace hana = boost::hana;
@@ -248,8 +144,7 @@ void test_valid_input
     ( const strf::encoding<CharIn>& ein
     , const strf::encoding<CharOut>& eout )
 {
-    auto test_id = strf::to_string("from ", ein.name, " to ", eout.name).value();
-    BOOST_TEST_LABEL(test_id);
+    BOOST_TEST_LABEL << "from " << ein.name << " to " << eout.name;
 
     test_valid_input( strf::get_transcoder(ein, eout)
                     , valid_input_sample(ein)
@@ -262,9 +157,7 @@ void test_overlong_sequence
     ( const strf::encoding<char>& ein
     , const strf::encoding<CharOut>& eout )
 {
-    auto test_id = strf::to_string("from ", ein.name, " to ", eout.name).value();
-    BOOST_TEST_LABEL(test_id);
-
+    BOOST_TEST_LABEL << "from " << ein.name << " to " << eout.name;
 }
 
 
@@ -293,8 +186,7 @@ void test_allowed_surrogates
     ( const strf::encoding<CharIn>& ein
     , const strf::encoding<CharOut>& eout )
 {
-    auto test_id = strf::to_string("from ", ein.name, " to ", eout.name).value();
-    BOOST_TEST_LABEL(test_id);
+    BOOST_TEST_LABEL << "from " << ein.name << " to " << eout.name;
 
     const auto input    = sample_with_surrogates(ein);
     const auto expected = sample_with_surrogates(eout);
@@ -398,15 +290,11 @@ std::u32string replacement_char(const strf::encoding<char32_t>&){ return U"\uFFF
 std::wstring   replacement_char(const strf::encoding<wchar_t>&){ return L"\uFFFD";}
 
 
-template <typename CharIn, typename CharOut, typename StrType>
-std::string invalid_input_test_label
-    ( const strf::encoding<CharIn>& ein
-    , const StrType& seq
-    , const strf::encoding<CharOut>& eout )
+template <typename StrType, typename CharIn = typename StrType::value_type>
+std::string stringify_invalid_char_sequence(const StrType& seq)
 {
     char buff[1000];
     char* it = buff;
-    it += sprintf(it, "from %s to %s, when sequence is: ", ein.name, eout.name);
     for (auto ch : seq)
     {
         typename std::make_unsigned<CharIn>::type uch = ch;
@@ -420,6 +308,8 @@ void test_invalid_input
     ( const strf::encoding<ChIn>& ein
     , const strf::encoding<ChOut>& eout )
 {
+    BOOST_TEST_LABEL << "From invalid " << ein.name << " to " << eout.name;
+
     const strf::transcoder<ChIn, ChOut>* cv = strf::get_transcoder(ein, eout);
 
     if (cv == nullptr)
@@ -436,10 +326,10 @@ void test_invalid_input
 
     for(const auto& s : invalid_sequences(ein))
     {
-        const auto& seq = s.second;
         int err_count = s.first;
+        const auto& seq = s.second;
 
-        BOOST_TEST_LABEL(invalid_input_test_label(ein, seq, eout));
+        BOOST_TEST_LABEL << "Sequence = " << stringify_invalid_char_sequence(seq);
 
         const std::basic_string<ChIn> input = prefix_in + seq + suffix_in;
 

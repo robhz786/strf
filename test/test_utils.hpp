@@ -9,69 +9,6 @@
 #include <boost/stringify.hpp>
 #include <cctype>
 
-// template <typename CharT>
-// struct to_upper_char_traits : public std::char_traits<CharT>
-// {
-//     static CharT*
-//     copy(CharT* to, const CharT* from, std::size_t n)
-//     {
-//         CharT* it = to;
-//         while(n--)
-//             *it++ = std::toupper(*from++);
-//         return to;
-//     }
-
-//     static void
-//     assign(CharT& c1, const CharT& c2)
-//     {
-//         c1 = std::toupper(c2);
-//     }
-
-//     static CharT*
-//     assign(CharT* dest, std::size_t n, CharT a)
-//     {
-//         std::fill_n(dest, n, std::toupper(a));
-//         return dest;
-//     }
-// };
-
-
-// template <typename CharT>
-// struct weird_char_traits : public std::char_traits<CharT>
-// {
-//     static CharT*
-//     copy(CharT* to, const CharT* from, std::size_t n)
-//     {
-//         CharT* it = to;
-//         while(n--)
-//         {
-//             assign(*it++, *from++);
-//         }
-//         return to;
-//     }
-
-//     static void
-//     assign(CharT& c1, const CharT& c2)
-//     {
-//         if (c2 == CharT())
-//         {
-//             c1 = c2;
-//         }
-//         else
-//         {
-//             c1 = c2 | ( 1 << (sizeof(CharT) * 8 - 1));
-//         }
-//     }
-
-//     static CharT*
-//     assign(CharT* dest, std::size_t n, CharT a)
-//     {
-//         CharT b;
-//         assign(b, a);
-//         std::fill_n(dest, n, b);
-//         return dest;
-//     }
-// };
 
 static int global_errors_count = 0;
 

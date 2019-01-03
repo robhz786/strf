@@ -30,6 +30,7 @@ foreach(
   width_calculator
   #  transcoding
   utf_to_utf
+  single_byte_encodings
   )
 
   add_executable(test-${t}-header-only   ${t}.cpp)

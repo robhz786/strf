@@ -8,6 +8,25 @@
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
+template<size_t SIZE, class T>
+constexpr size_t array_size(T (&)[SIZE]) {
+    return SIZE;
+}
+
+struct ch32_to_char
+{
+    char32_t key;
+    unsigned value;
+};
+
+struct cmp_ch32_to_char
+{
+    bool operator()(ch32_to_char a, ch32_to_char b) const
+    {
+        return a.key < b.key;
+    }
+};
+
 template <typename CharIn>
 static std::size_t same_size
     ( const CharIn* src
@@ -19,7 +38,6 @@ static std::size_t same_size
     (void) err_hdl;
     return src_end - src;
 }
-
 
 
 template <class Impl>
@@ -64,7 +82,7 @@ struct single_byte_encoding
 
     static char32_t decode_single_char(char ch)
     {
-        return Impl::encode(ch);
+        return Impl::decode(ch);
     }
 
     static std::size_t codepoints_count
@@ -158,32 +176,35 @@ stringify::v0::cv_result single_byte_encoding<Impl>::sanitize
     {
         if(dest_it != dest_end)
         {
-            *src = src_it;
-            *dest = dest_end;
-            return stringify::v0::cv_result::insufficient_space;
-        }
-        unsigned char ch = *src_it;
-        if (Impl::is_valid(ch))
-        {
-            *dest_it = ch;
-            ++dest_it;
+            unsigned char ch = *src_it;
+            if (Impl::is_valid(ch))
+            {
+                *dest_it = ch;
+                ++dest_it;
+            }
+            else
+            {
+                switch(err_hdl)
+                {
+                    case stringify::v0::error_handling::stop:
+                        *src = src_it + 1;
+                        *dest = dest_it;
+                        return stringify::v0::cv_result::invalid_char;
+                    case stringify::v0::error_handling::replace:
+                        *dest_it = '?';
+                        ++dest_it;
+                        break;
+                    default:
+                        BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                        break;
+                }
+            }
         }
         else
         {
-            switch(err_hdl)
-            {
-                case stringify::v0::error_handling::stop:
-                    *src = src_it + 1;
-                    *dest = dest_it;
-                    return stringify::v0::cv_result::invalid_char;
-                case stringify::v0::error_handling::replace:
-                    *dest_it = '?';
-                    ++dest_it;
-                    break;
-                default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
-                    break;
-            }
+            *src = src_it;
+            *dest = dest_end;
+            return stringify::v0::cv_result::insufficient_space;
         }
     }
     *src = src_end;
@@ -371,9 +392,9 @@ struct strict_ascii_impl
 
 struct iso8859_1_impl
 {
-    static bool is_valid(unsigned char ch)
+    static bool is_valid(unsigned char)
     {
-        return true; //ch < 0x80 || 0x9F < ch;
+        return true;
     }
 
     static char32_t decode(char ch)
@@ -384,18 +405,106 @@ struct iso8859_1_impl
     static unsigned encode(char32_t ch)
     {
         return ch;
-        //return (ch < 0x80 || (0x9F < ch && ch < 0x100)) ? ch : 0x100;
     }
 };
+
+
+
+struct iso8859_3_impl
+{
+    static bool is_valid(char ch)
+    {
+        unsigned char uch = ch;
+        return uch != 0xA5
+            && uch != 0xAE
+            && uch != 0xBE
+            && uch != 0xC3
+            && uch != 0xD0
+            && uch != 0xE3
+            && uch != 0xF0;
+    }
+
+    static unsigned encode(char32_t ch);
+
+    static char32_t decode(char ch);
+};
+
+
+unsigned iso8859_3_impl::encode(char32_t ch)
+{
+    if (ch < 0xA1)
+    {
+        return ch;
+    }
+    static const ch32_to_char enc_map[] =
+        { {0x00A3, 0xA3}, {0x00A4, 0xA4}, {0x00A7, 0xA7}, {0x00A8, 0xA8}
+        , {0x00AD, 0xAD}, {0x00B0, 0xB0}, {0x00B2, 0xB2}, {0x00B3, 0xB3}
+        , {0x00B4, 0xB4}, {0x00B5, 0xB5}, {0x00B7, 0xB7}, {0x00B8, 0xB8}
+        , {0x00BD, 0xBD}, {0x00C0, 0xC0}, {0x00C1, 0xC1}, {0x00C2, 0xC2}
+        , {0x00C4, 0xC4}, {0x00C7, 0xC7}, {0x00C8, 0xC8}, {0x00C9, 0xC9}
+        , {0x00CA, 0xCA}, {0x00CB, 0xCB}, {0x00CC, 0xCC}, {0x00CD, 0xCD}
+        , {0x00CE, 0xCE}, {0x00CF, 0xCF}, {0x00D1, 0xD1}, {0x00D2, 0xD2}
+        , {0x00D3, 0xD3}, {0x00D4, 0xD4}, {0x00D6, 0xD6}, {0x00D7, 0xD7}
+        , {0x00D9, 0xD9}, {0x00DA, 0xDA}, {0x00DB, 0xDB}, {0x00DC, 0xDC}
+        , {0x00DF, 0xDF}, {0x00E0, 0xE0}, {0x00E1, 0xE1}, {0x00E2, 0xE2}
+        , {0x00E4, 0xE4}, {0x00E7, 0xE7}, {0x00E8, 0xE8}, {0x00E9, 0xE9}
+        , {0x00EA, 0xEA}, {0x00EB, 0xEB}, {0x00EC, 0xEC}, {0x00ED, 0xED}
+        , {0x00EE, 0xEE}, {0x00EF, 0xEF}, {0x00F1, 0xF1}, {0x00F2, 0xF2}
+        , {0x00F3, 0xF3}, {0x00F4, 0xF4}, {0x00F6, 0xF6}, {0x00F7, 0xF7}
+        , {0x00F9, 0xF9}, {0x00FA, 0xFA}, {0x00FB, 0xFB}, {0x00FC, 0xFC}
+        , {0x0108, 0xC6}, {0x0109, 0xE6}, {0x010A, 0xC5}, {0x010B, 0xE5}
+        , {0x011C, 0xD8}, {0x011D, 0xF8}, {0x011E, 0xAB}, {0x011F, 0xBB}
+        , {0x0120, 0xD5}, {0x0121, 0xF5}, {0x0124, 0xA6}, {0x0125, 0xB6}
+        , {0x0126, 0xA1}, {0x0127, 0xB1}, {0x0130, 0xA9}, {0x0131, 0xB9}
+        , {0x0134, 0xAC}, {0x0135, 0xBC}, {0x015C, 0xDE}, {0x015D, 0xFE}
+        , {0x015E, 0xAA}, {0x015F, 0xBA}, {0x016C, 0xDD}, {0x016D, 0xFD}
+        , {0x017B, 0xAF}, {0x017C, 0xBF}, {0x02D8, 0xA2}, {0x02D9, 0xFF} };
+
+    const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
+    auto it = std::lower_bound( enc_map
+                              , enc_map_end
+                              , ch32_to_char{ch, 0}
+                              , cmp_ch32_to_char{} );
+    return it != enc_map_end && it->key == ch ? it->value : 0x100;
+}
+
+char32_t iso8859_3_impl::decode(char ch)
+{
+    unsigned char uch = ch;
+    if (uch < 0xA1)
+    {
+        return uch;
+    }
+    else
+    {
+        constexpr short undef = -1;
+        static const short ext[] =
+            { /* A0*/ 0x0126, 0x02D8, 0x00A3, 0x00A4,  undef, 0x0124, 0x00A7
+            , 0x00A8, 0x0130, 0x015E, 0x011E, 0x0134, 0x00AD,  undef, 0x017B
+            , 0x00B0, 0x0127, 0x00B2, 0x00B3, 0x00B4, 0x00B5, 0x0125, 0x00B7
+            , 0x00B8, 0x0131, 0x015F, 0x011F, 0x0135, 0x00BD,  undef, 0x017C
+            , 0x00C0, 0x00C1, 0x00C2,  undef, 0x00C4, 0x010A, 0x0108, 0x00C7
+            , 0x00C8, 0x00C9, 0x00CA, 0x00CB, 0x00CC, 0x00CD, 0x00CE, 0x00CF
+            ,  undef, 0x00D1, 0x00D2, 0x00D3, 0x00D4, 0x0120, 0x00D6, 0x00D7
+            , 0x011C, 0x00D9, 0x00DA, 0x00DB, 0x00DC, 0x016C, 0x015C, 0x00DF
+            , 0x00E0, 0x00E1, 0x00E2,  undef, 0x00E4, 0x010B, 0x0109, 0x00E7
+            , 0x00E8, 0x00E9, 0x00EA, 0x00EB, 0x00EC, 0x00ED, 0x00EE, 0x00EF
+            ,  undef, 0x00F1, 0x00F2, 0x00F3, 0x00F4, 0x0121, 0x00F6, 0x00F7
+            , 0x011D, 0x00F9, 0x00FA, 0x00FB, 0x00FC, 0x016D, 0x015D, 0x02D9 };
+
+        return (int) ext[uch - 0xA1];
+    }
+}
+
 
 
 class iso8859_15_impl
 {
 public:
 
-    static bool is_valid(unsigned char ch)
+    static bool is_valid(unsigned char)
     {
-        return true; //ch < 0x80 || 0x9F < ch;
+        return true;
     }
 
     static char32_t decode(char ch)
@@ -411,7 +520,7 @@ public:
         if (ch2 <= 0xA3 || 0xBF <= ch2)
             return ch2;
 
-        return ext[ch2 - 0xA3];
+        return ext[ch2 - 0xA4];
     }
 
     static unsigned encode(char32_t ch)
@@ -452,49 +561,39 @@ BOOST_STRINGIFY_INLINE unsigned iso8859_15_impl::encode_ext(char32_t ch)
 class windows_1252_impl
 {
 public:
+    // https://www.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WindowsBestFit/bestfit1252.txt
 
     constexpr static unsigned short decode_fail = 0xFFFF;
 
-    static bool is_valid(unsigned char ch)
+    static bool is_valid(unsigned char)
     {
-        return ( ch != 0x81 && ch != 0x8D &&
-                 ch != 0xA0 && ch != 0x9D );
+        return true;
     }
 
     static char32_t decode(char ch)
     {
-        unsigned char ch2 = ch;
-        constexpr short undef = -1;
-
-        static const short ext[] = {
-            0x20AC,  undef, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021,
-            0x02C6, 0x2030, 0x0160, 0x2039, 0x0152,  undef, 0x017D,  undef,
-             undef, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014,
-            0x02DC, 0x2122, 0x0161, 0x203A, 0x0153,  undef, 0x017E, 0x0178,
-            0x00A0, 0x00A1, 0x00A2, 0x00A3, 0x00A4, 0x00A5, 0x00A6, 0x00A7,
-            0x00A8, 0x00A9, 0x00AA, 0x00AB, 0x00AC, 0x00AD, 0x00AE, 0x00AF,
-            0x00B0, 0x00B1, 0x00B2, 0x00B3, 0x00B4, 0x00B5, 0x00B6, 0x00B7,
-            0x00B8, 0x00B9, 0x00BA, 0x00BB, 0x00BC, 0x00BD, 0x00BE, 0x00BF,
-            0x00C0, 0x00C1, 0x00C2, 0x00C3, 0x00C4, 0x00C5, 0x00C6, 0x00C7,
-            0x00C8, 0x00C9, 0x00CA, 0x00CB, 0x00CC, 0x00CD, 0x00CE, 0x00CF,
-            0x00D0, 0x00D1, 0x00D2, 0x00D3, 0x00D4, 0x00D5, 0x00D6, 0x00D7,
-            0x00D8, 0x00D9, 0x00DA, 0x00DB, 0x00DC, 0x00DD, 0x00DE, 0x00DF,
-            0x00E0, 0x00E1, 0x00E2, 0x00E3, 0x00E4, 0x00E5, 0x00E6, 0x00E7,
-            0x00E8, 0x00E9, 0x00EA, 0x00EB, 0x00EC, 0x00ED, 0x00EE, 0x00EF,
-            0x00F0, 0x00F1, 0x00F2, 0x00F3, 0x00F4, 0x00F5, 0x00F6, 0x00F7,
-            0x00F8, 0x00F9, 0x00FA, 0x00FB, 0x00FC, 0x00FD, 0x00FE, 0x00FF
-        };
-
-        if (ch2 < 0x80)
-            return ch2;
-
-        return (int) ext[ch2 - 0x80];
+        unsigned char uch = ch;
+        if (uch < 0x80 || 0x9F < uch)
+        {
+            return uch;
+        }
+        else
+        {
+            static const unsigned short ext[] = {
+                0x20AC, 0x0081, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021,
+                0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, 0x008D, 0x017D, 0x008F,
+                0X0090, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014,
+                0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0x009D, 0x017E, 0x0178,
+            };
+            return ext[uch - 0x80];
+        }
     }
 
     static unsigned encode(char32_t ch)
     {
         return (ch < 0x80 || (0x9F < ch && ch < 0x100)) ? ch : encode_ext(ch);
     }
+
 private:
 
     static unsigned encode_ext(char32_t ch);
@@ -504,6 +603,11 @@ BOOST_STRINGIFY_INLINE unsigned windows_1252_impl::encode_ext(char32_t ch)
 {
     switch(ch)
     {
+        case 0x81: return 0x81;
+        case 0x8D: return 0x8D;
+        case 0x8F: return 0x8F;
+        case 0x90: return 0x90;
+        case 0x9D: return 0x9D;
         case 0x20AC: return 0x80;
         case 0x201A: return 0x82;
         case 0x0192: return 0x83;
@@ -562,9 +666,9 @@ BOOST_STRINGIFY_INLINE const stringify::v0::encoding<char>& iso_8859_1()
 {
     using impl = detail::single_byte_encoding<detail::iso8859_1_impl>;
     static const stringify::v0::encoding<char> info =
-         { { impl::from_utf32         , detail::same_size<char32_t> }
-         , { impl::to_utf32 , detail::same_size<char> }
-         , { impl::sanitize           , detail::same_size<char> }
+         { { impl::from_utf32, detail::same_size<char32_t> }
+         , { impl::to_utf32,   detail::same_size<char> }
+         , { impl::sanitize,   detail::same_size<char> }
          , impl::validate
          , impl::encode_char
          , impl::encode_fill
@@ -574,18 +678,41 @@ BOOST_STRINGIFY_INLINE const stringify::v0::encoding<char>& iso_8859_1()
          , nullptr, nullptr, nullptr, nullptr
          , nullptr, nullptr, nullptr, nullptr
          , "ISO-8859-1"
-         , stringify::v0::encoding_id::eid_windows_1252
-         , 1, 0x7F };
+         , stringify::v0::encoding_id::eid_iso_8859_1
+         , 1, 0xFF };
     return info;
 }
+
+BOOST_STRINGIFY_INLINE const stringify::v0::encoding<char>& iso_8859_3()
+{
+    using impl = detail::single_byte_encoding<detail::iso8859_3_impl>;
+    static const stringify::v0::encoding<char> info =
+         { { impl::from_utf32, detail::same_size<char32_t> }
+         , { impl::to_utf32,   detail::same_size<char> }
+         , { impl::sanitize,   detail::same_size<char> }
+         , impl::validate
+         , impl::encode_char
+         , impl::encode_fill
+         , impl::codepoints_count
+         , impl::write_replacement_char
+         , impl::decode_single_char
+         , nullptr, nullptr, nullptr, nullptr
+         , nullptr, nullptr, nullptr, nullptr
+         , "ISO-8859-3"
+         , stringify::v0::encoding_id::eid_iso_8859_3
+         , 1, 0xA0 };
+    return info;
+}
+
+
 
 BOOST_STRINGIFY_INLINE const stringify::v0::encoding<char>& iso_8859_15()
 {
     using impl = detail::single_byte_encoding<detail::iso8859_15_impl>;
     static const stringify::v0::encoding<char> info =
-         { { impl::from_utf32         , detail::same_size<char32_t> }
-         , { impl::to_utf32 , detail::same_size<char> }
-         , { impl::sanitize           , detail::same_size<char> }
+         { { impl::from_utf32, detail::same_size<char32_t> }
+         , { impl::to_utf32, detail::same_size<char> }
+         , { impl::sanitize, detail::same_size<char> }
          , impl::validate
          , impl::encode_char
          , impl::encode_fill
@@ -595,8 +722,8 @@ BOOST_STRINGIFY_INLINE const stringify::v0::encoding<char>& iso_8859_15()
          , nullptr, nullptr, nullptr, nullptr
          , nullptr, nullptr, nullptr, nullptr
          , "ISO-8859-15"
-         , stringify::v0::encoding_id::eid_windows_1252
-         , 1, 0x7F };
+         , stringify::v0::encoding_id::eid_iso_8859_15
+         , 1, 0xA3 };
     return info;
 }
 

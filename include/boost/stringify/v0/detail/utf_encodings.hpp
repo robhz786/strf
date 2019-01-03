@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_ENCODINGS_HPP
-#define BOOST_STRINGIFY_V0_DETAIL_ENCODINGS_HPP
+#ifndef BOOST_STRINGIFY_V0_DETAIL_UTF_ENCODINGS_HPP
+#define BOOST_STRINGIFY_V0_DETAIL_UTF_ENCODINGS_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -410,7 +410,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_sanitize_size
     , bool allow_surr )
 {
     using stringify::v0::detail::utf8_decode;
-    unsigned char ch0, ch1, ch2;
+    unsigned char ch0, ch1;
     const char* src_it = src;
     std::size_t size = 0;
     while(src_it != src_end)
@@ -2187,5 +2187,5 @@ BOOST_STRINGIFY_INLINE const stringify::v0::encoding<wchar_t>& wchar_encoding()
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_DETAIL_ENCODINGS_HPP
+#endif  // BOOST_STRINGIFY_V0_DETAIL_UTF_ENCODINGS_HPP
 
