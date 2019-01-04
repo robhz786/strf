@@ -251,7 +251,7 @@ public:
 
 private:
 
-    const stringify::v0::encoding<CharT>& _encoding;
+    stringify::v0::encoding<CharT> _encoding;
     stringify::v0::width_calculator _wcalc;
     CharT _ch;
 };

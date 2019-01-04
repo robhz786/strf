@@ -228,7 +228,7 @@ public:
     join_printer_impl
         ( const stringify::v0::detail::printer_ptr_range<CharT>& args
         , const stringify::v0::detail::join_t& j
-        , const stringify::v0::encoding<CharT>& encoding
+        , stringify::v0::encoding<CharT> encoding
         , stringify::v0::error_handling err_hdl )
         : _join{j}
         , _args{args}
@@ -323,7 +323,7 @@ private:
     input_type _join;
     int _fillcount = 0;
     pp_range _args = nullptr;
-    const stringify::v0::encoding<CharT>& _encoding;
+    const stringify::v0::encoding<CharT> _encoding;
     stringify::v0::error_handling _err_hdl;
 
     std::size_t _args_length() const

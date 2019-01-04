@@ -41,7 +41,7 @@ private:
     const CharT* _str;
     const std::size_t _len;
     const stringify::v0::width_calculator _wcalc;
-    const stringify::v0::encoding<CharT>& _encoding;
+    const stringify::v0::encoding<CharT> _encoding;
     const stringify::v0::encoding_policy  _epoli;
 
     template <typename Category, typename FPack>
@@ -104,7 +104,7 @@ private:
 
     const stringify::v0::string_with_format<CharT> _fmt;
     const stringify::v0::width_calculator _wcalc;
-    const stringify::v0::encoding<CharT>& _encoding;
+    const stringify::v0::encoding<CharT> _encoding;
     const stringify::v0::encoding_policy  _epoli;
     unsigned _fillcount = 0;
 

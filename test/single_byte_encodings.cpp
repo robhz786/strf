@@ -108,7 +108,7 @@ typedef void (*fill_table_func)(char32_t*);
 
 void test(const strf::encoding<char>& enc, fill_table_func fill_table)
 {
-    BOOST_TEST_LABEL << enc.name;
+    BOOST_TEST_LABEL << enc.name();
 
     char32_t u32table [0x101] = {0};
     u32table [0x100] = 0x100;
@@ -136,18 +136,18 @@ void test(const strf::encoding<char>& enc, fill_table_func fill_table)
 
         const auto* src = char_0_to_0xff;
         auto* dest = result;
-        auto res = enc.to_u32.transcode( &src, char_0_to_0xff_end
-                                       , &dest, result_end
-                                       , strf::error_handling::replace, false );
+        auto res = enc.to_u32().transcode( &src, char_0_to_0xff_end
+                                         , &dest, result_end
+                                         , strf::error_handling::replace, false );
 
         BOOST_TEST_EQ(res, strf::cv_result::success);
         BOOST_TEST_EQ(src, char_0_to_0xff_end);
         BOOST_TEST_EQ(dest, result_end);
         BOOST_TEST(str_equal(result, u32table, 0x100));
 
-        auto size = enc.to_u32.necessary_size( char_0_to_0xff, char_0_to_0xff_end
-                                             , strf::error_handling::replace
-                                             , false );
+        auto size = enc.to_u32().necessary_size( char_0_to_0xff, char_0_to_0xff_end
+                                               , strf::error_handling::replace
+                                               , false );
         BOOST_TEST_EQ(size, 0x100);
     }
 
@@ -157,9 +157,9 @@ void test(const strf::encoding<char>& enc, fill_table_func fill_table)
 
         const auto* src = u32table;
         auto* dest = result;
-        auto res = enc.from_u32.transcode( &src, u32table + 0x101
-                                         , &dest, result_end
-                                         , strf::error_handling::replace, false );
+        auto res = enc.from_u32().transcode( &src, u32table + 0x101
+                                           , &dest, result_end
+                                           , strf::error_handling::replace, false );
 
         BOOST_TEST_EQ(res, strf::cv_result::success);
         BOOST_TEST_EQ(src, u32table + 0x101);
@@ -167,9 +167,9 @@ void test(const strf::encoding<char>& enc, fill_table_func fill_table)
         BOOST_TEST(str_equal(result, char_0_to_0xff_sanitized, 0x100));
         BOOST_TEST_EQ(result[0x100], '?');
 
-        auto size = enc.from_u32.necessary_size( u32table, u32table_end
-                                               , strf::error_handling::replace
-                                               , false );
+        auto size = enc.from_u32().necessary_size( u32table, u32table_end
+                                                 , strf::error_handling::replace
+                                                 , false );
         BOOST_TEST_EQ(size, 0x100);
     }
 
@@ -179,19 +179,19 @@ void test(const strf::encoding<char>& enc, fill_table_func fill_table)
 
         const auto* src = char_0_to_0xff;
         auto* dest = result;
-        auto res = enc.sanitizer.transcode( &src, char_0_to_0xff_end
-                                          , &dest, result_end
-                                          , strf::error_handling::replace
-                                          , false );
+        auto res = enc.sanitizer().transcode( &src, char_0_to_0xff_end
+                                            , &dest, result_end
+                                            , strf::error_handling::replace
+                                            , false );
         BOOST_TEST_EQ(res, strf::cv_result::success);
 
         BOOST_TEST(str_equal(result, char_0_to_0xff_sanitized, 0x100));
         BOOST_TEST_EQ(src, char_0_to_0xff_end);
         BOOST_TEST_EQ(dest, result_end);
 
-        auto size = enc.sanitizer.necessary_size( char_0_to_0xff, char_0_to_0xff_end
-                                                , strf::error_handling::replace
-                                                , false );
+        auto size = enc.sanitizer().necessary_size( char_0_to_0xff, char_0_to_0xff_end
+                                                  , strf::error_handling::replace
+                                                  , false );
         BOOST_TEST_EQ(size, 0x100);
     }
 }

@@ -19,7 +19,7 @@ public:
         ( const FPack& fp
         , const CharIn* str
         , std::size_t len
-        , const stringify::v0::encoding<CharIn>& src_enc ) noexcept
+        , stringify::v0::encoding<CharIn> src_enc ) noexcept
         : cv_string_printer
             ( str
             , len
@@ -34,15 +34,15 @@ public:
         ( const CharIn* str
         , std::size_t len
         , const stringify::v0::width_calculator& wcalc
-        , const stringify::v0::encoding<CharIn>& src_enc
-        , const stringify::v0::encoding<CharOut>& dest_enc
+        , stringify::v0::encoding<CharIn> src_enc
+        , stringify::v0::encoding<CharOut> dest_enc
         , const stringify::v0::encoding_policy epoli ) noexcept
         : _str(str)
         , _len(len)
         , _wcalc(wcalc)
         , _src_encoding(src_enc)
         , _dest_encoding(dest_enc)
-        , _transcoder(stringify::v0::get_transcoder(src_enc, dest_enc))
+        , _transcoder_impl(stringify::v0::get_transcoder_impl(src_enc, dest_enc))
         , _epoli(epoli)
     {
     }
@@ -64,7 +64,7 @@ private:
     const stringify::v0::width_calculator _wcalc;
     const stringify::v0::encoding<CharIn>&  _src_encoding;
     const stringify::v0::encoding<CharOut>& _dest_encoding;
-    const stringify::v0::transcoder<CharIn, CharOut>* _transcoder;
+    const stringify::v0::transcoder_impl_type<CharIn, CharOut>* _transcoder_impl;
     const stringify::v0::encoding_policy _epoli;
 
     template <typename Category, typename FPack>
@@ -78,9 +78,10 @@ private:
 template<typename CharIn, typename CharOut>
 std::size_t cv_string_printer<CharIn, CharOut>::necessary_size() const
 {
-    if (_transcoder != nullptr)
+    if (_transcoder_impl)
     {
-        return _transcoder->necessary_size
+        stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_impl);
+        return transcoder.necessary_size
             ( _str, _str + _len, _epoli.err_hdl(), _epoli.allow_surr() );
     }
     return stringify::v0::detail::decode_encode_size
@@ -95,11 +96,12 @@ cv_string_printer<CharIn, CharOut>::write
     ( stringify::v0::output_buffer<CharOut> buff
     , stringify::buffer_recycler<CharOut>& recycler ) const
 {
-    if (_transcoder)
+    if (_transcoder_impl)
     {
+        stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_impl);
         return stringify::v0::detail::transcode( buff, recycler
                                                , _str, _str + _len
-                                               , *_transcoder, _epoli);
+                                               , transcoder, _epoli);
     }
     return stringify::v0::detail::decode_encode( buff, recycler
                                                , _str, _str + _len
@@ -143,9 +145,9 @@ public:
 private:
 
     stringify::v0::detail::cv_string_with_format<CharIn> _fmt;
-    const stringify::v0::transcoder<CharIn, CharOut>* _transcoder;
-    const stringify::v0::encoding<CharIn>& _src_encoding;
-    const stringify::v0::encoding<CharOut>& _dest_encoding;
+    const stringify::v0::transcoder_impl_type<CharIn, CharOut>* _transcoder_impl;
+    const stringify::v0::encoding<CharIn> _src_encoding;
+    const stringify::v0::encoding<CharOut> _dest_encoding;
     const stringify::v0::width_calculator _wcalc;
     const stringify::v0::encoding_policy  _epoli;
     int _fillcount = 0;
@@ -180,20 +182,26 @@ void fmt_cv_string_printer<CharIn, CharOut>::_init()
                      , _src_encoding
                      , _epoli )
                  : 0 );
-    _transcoder = stringify::v0::get_transcoder(_src_encoding, _dest_encoding);
+    _transcoder_impl = stringify::v0::get_transcoder_impl(_src_encoding, _dest_encoding);
 }
 
 template<typename CharIn, typename CharOut>
 std::size_t fmt_cv_string_printer<CharIn, CharOut>::necessary_size() const
 {
-    std::size_t size
-        = _transcoder != nullptr
-        ? _transcoder->necessary_size( _fmt.value().begin(), _fmt.value().end()
-                                    , _epoli.err_hdl(), _epoli.allow_surr() )
-        : stringify::v0::detail::decode_encode_size
+    std::size_t size;
+    if(_transcoder_impl)
+    {
+        stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_impl);
+        size = transcoder.necessary_size( _fmt.value().begin(), _fmt.value().end()
+                                        , _epoli.err_hdl(), _epoli.allow_surr() );
+    }
+    else
+    {
+        size = stringify::v0::detail::decode_encode_size
             ( _fmt.value().begin(), _fmt.value().end()
             , _src_encoding, _dest_encoding
             , _epoli );
+    }
 
     if (_fillcount > 0)
     {
@@ -244,12 +252,13 @@ fmt_cv_string_printer<CharIn, CharOut>::_write_str
     ( stringify::v0::output_buffer<CharOut> buff
     , stringify::buffer_recycler<CharOut>& recycler ) const
 {
-    if (_transcoder)
+    if (_transcoder_impl)
     {
+        stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_impl);
         return stringify::v0::detail::transcode( buff, recycler
                                                , _fmt.value().begin()
                                                , _fmt.value().end()
-                                               , *_transcoder
+                                               , transcoder
                                                , _epoli);
     }
     return stringify::v0::detail::decode_encode( buff, recycler

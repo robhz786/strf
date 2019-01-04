@@ -240,7 +240,7 @@ public:
 
 private:
 
-    const stringify::v0::encoding<CharT>& _encoding;
+    const stringify::v0::encoding<CharT> _encoding;
     const stringify::v0::numpunct_base* _punct;
     stringify::v0::error_handling _err_hdl;
     stringify::v0::int_with_format<IntT> _fmt;
@@ -643,8 +643,8 @@ fmt_int_printer<IntT, CharT>::_write_digits_sep
     auto* grp_it = _punct->groups(_digcount, grp_buff);
 
     char32_t sep_char32 = _punct->thousands_sep();
-    if ( _encoding.u32equivalence_begin <= sep_char32
-      && _encoding.u32equivalence_end > sep_char32 )
+    if ( _encoding.u32equivalence_begin() <= sep_char32
+      && _encoding.u32equivalence_end() > sep_char32 )
     {
         return _write_digits_littlesep( buff, recycler, dig_it
                                       , grp_buff, grp_it

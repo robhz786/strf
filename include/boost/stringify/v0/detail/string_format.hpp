@@ -26,7 +26,7 @@ struct string_format
 
         template <typename U>
         fn(const fn<U>& u)
-            : _encoding(u._encoding)
+            : _encoding_impl(u._encoding_impl)
             , _sani(u._sani)
         {
         }
@@ -41,14 +41,14 @@ struct string_format
             _sani = s;
             return static_cast<T&&>(*this);
         }
-        constexpr T& encoding(const stringify::v0::encoding<CharIn>& e) &
+        constexpr T& encoding(stringify::v0::encoding<CharIn> e) &
         {
-            _encoding = & e;
+            _encoding_impl = e._impl;
             return *this;
         }
-        constexpr T&& encoding(const stringify::v0::encoding<CharIn>& e) &&
+        constexpr T&& encoding(stringify::v0::encoding<CharIn> e) &&
         {
-            _encoding = & e;
+            _encoding_impl = e._impl;
             return static_cast<T&&>(*this);
         }
         constexpr bool get_sani() const
@@ -57,17 +57,17 @@ struct string_format
         }
         bool has_encoding() const
         {
-            return  _encoding != nullptr;
+            return  _encoding_impl != nullptr;
         }
-        const stringify::v0::encoding<CharIn>& encoding() const
+        stringify::v0::encoding<CharIn> encoding() const
         {
             BOOST_ASSERT(has_encoding());
-            return *_encoding;
+            return {*_encoding_impl};
         }
 
     private:
 
-        const stringify::v0::encoding<CharIn>* _encoding = nullptr;
+        const stringify::v0::encoding_impl_type<CharIn>* _encoding_impl = nullptr;
         bool _sani = false;
     };
 };
@@ -192,7 +192,7 @@ public:
     constexpr cv_string
         ( const CharIn* str
         , std::size_t len
-        , const stringify::v0::encoding<CharIn>& enc ) noexcept
+        , stringify::v0::encoding<CharIn> enc ) noexcept
         : _str(str, len)
     {
     }
@@ -226,24 +226,24 @@ class cv_string_with_encoding: public stringify::v0::detail::cv_string<CharIn>
     cv_string_with_encoding
         ( const CharIn* str
         , std::size_t len
-        , const stringify::v0::encoding<CharIn>& enc ) noexcept
+        , stringify::v0::encoding<CharIn> enc ) noexcept
         : stringify::v0::detail::cv_string<CharIn>(str, len)
-        , _enc(&enc)
+        , _enc(enc)
     {
     }
 
-    constexpr const stringify::v0::encoding<CharIn>& encoding() const
+    constexpr stringify::v0::encoding<CharIn> encoding() const
     {
-        return *_enc;
+        return _enc;
     }
-    constexpr void set_encoding(const stringify::v0::encoding<CharIn>& enc)
+    constexpr void set_encoding(stringify::v0::encoding<CharIn> enc)
     {
-        _enc = &enc;
+        _enc = enc;
     }
 
 private:
 
-    const stringify::v0::encoding<CharIn>* _enc = nullptr;
+    stringify::v0::encoding<CharIn> _enc;
 };
 
 
@@ -275,7 +275,7 @@ template <typename CharIn>
 BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
 stringify::v0::detail::cv_string<CharIn> cv
     ( const CharIn* str
-    , const stringify::v0::encoding<CharIn>& enc )
+    , stringify::v0::encoding<CharIn> enc )
 {
     return {str, std::char_traits<CharIn>::length(str), enc};
 }
@@ -292,7 +292,7 @@ template <typename CharIn, typename Traits>
 BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
 stringify::v0::detail::cv_string<CharIn> cv
     ( const std::basic_string<CharIn, Traits>& str
-    , const stringify::v0::encoding<CharIn>& enc )
+    , stringify::v0::encoding<CharIn> enc )
 {
     return {str.data(), str.size(), enc};
 }
@@ -309,7 +309,7 @@ constexpr stringify::v0::detail::cv_string<CharIn> cv
 template <typename CharIn, typename Traits>
 constexpr stringify::v0::detail::cv_string<CharIn> cv
     ( const std::basic_string_view<CharIn, Traits>& str
-    , const stringify::v0::encoding<CharIn>& enc )
+    , stringify::v0::encoding<CharIn> enc )
 {
     return { str.data(), str.size(), &enc };
 }
@@ -374,7 +374,7 @@ template <typename CharIn>
 BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
 stringify::v0::detail::cv_string_with_format<CharIn> fmt_cv
     ( const CharIn* str
-    , const stringify::v0::encoding<CharIn>& enc )
+    , stringify::v0::encoding<CharIn> enc )
 {
     stringify::v0::detail::cv_string<CharIn> cv_str{str, enc};
     return stringify::v0::detail::cv_string_with_format<CharIn>{cv_str};
@@ -393,7 +393,7 @@ constexpr stringify::v0::detail::cv_string_with_format<CharIn> fmt_cv
 template <typename CharIn, typename Traits>
 constexpr stringify::v0::detail::cv_string_with_format<CharIn> fmt_cv
     ( const std::basic_string_view<CharIn, Traits>& str
-    , const stringify::v0::encoding<CharIn>& enc )
+    , stringify::v0::encoding<CharIn> enc )
 {
     stringify::v0::detail::cv_string<CharIn> cv_str
         { str.data(), str.size(), &enc };
@@ -415,7 +415,7 @@ template <typename CharIn, typename Traits>
 BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
 stringify::v0::detail::cv_string_with_format<CharIn> fmt_cv
     ( const std::basic_string<CharIn, Traits>& str
-    , const stringify::v0::encoding<CharIn>& enc )
+    , stringify::v0::encoding<CharIn> enc )
 {
     stringify::v0::detail::cv_string<CharIn> cv_str{str.data(), str.length(), &enc};
     return stringify::v0::detail::cv_string_with_format<CharIn>{cv_str};

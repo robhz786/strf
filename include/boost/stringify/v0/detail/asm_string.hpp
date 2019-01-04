@@ -74,13 +74,13 @@ constexpr unsigned asmstr_invalid_arg_size_when_stop = (unsigned)-1;
 
 template <typename CharT>
 unsigned invalid_arg_size
-    ( const stringify::v0::encoding<CharT>& enc
+    ( stringify::v0::encoding<CharT> enc
     , asm_invalid_arg policy )
 {
     switch(policy)
     {
         case asm_invalid_arg::replace:
-            return enc.replacement_char_size;
+            return enc.replacement_char_size();
         case asm_invalid_arg::stop:
             return stringify::v0::detail::asmstr_invalid_arg_size_when_stop;
         default:
@@ -217,7 +217,7 @@ stringify::v0::expected_output_buffer<CharT> asm_string_write
     , std::initializer_list<const stringify::v0::printer<CharT>*> args
     , stringify::v0::output_buffer<CharT> ob
     , stringify::v0::buffer_recycler<CharT>& rec
-    , const stringify::v0::encoding<CharT>& enc
+    , stringify::v0::encoding<CharT> enc
     , stringify::v0::asm_invalid_arg policy )
 {
     using traits = std::char_traits<CharT>;

@@ -114,8 +114,8 @@ stringify::v0::expected_output_buffer<CharOut> decode_encode
     , stringify::buffer_recycler<CharOut>& recycler
     , const CharIn* src
     , const CharIn* src_end
-    , const stringify::v0::encoding<CharIn> src_encoding
-    , const stringify::v0::encoding<CharOut> dest_encoding
+    , stringify::v0::encoding<CharIn> src_encoding
+    , stringify::v0::encoding<CharOut> dest_encoding
     , stringify::v0::encoding_policy epoli )
 {
     auto err_hdl = epoli.err_hdl();
@@ -125,26 +125,26 @@ stringify::v0::expected_output_buffer<CharOut> decode_encode
     stringify::v0::cv_result res1;
     do
     {
-        res1 = src_encoding.to_u32.transcode( &src, src_end
-                                            , &buff32.it, buff32.end
-                                            , err_hdl, allow_surr );
+        res1 = src_encoding.to_u32().transcode( &src, src_end
+                                              , &buff32.it, buff32.end
+                                              , err_hdl, allow_surr );
         if (res1 == stringify::v0::cv_result::invalid_char)
         {
             return { stringify::v0::unexpect_t{}
                    , std::make_error_code(std::errc::result_out_of_range) };
         }
         const char32_t* buff32_it2 = buff32_begin;
-        auto res2 = dest_encoding.from_u32.transcode( &buff32_it2, buff32.it
-                                                    , &buff.it, buff.end
-                                                    , err_hdl, allow_surr );
+        auto res2 = dest_encoding.from_u32().transcode( &buff32_it2, buff32.it
+                                                      , &buff.it, buff.end
+                                                      , err_hdl, allow_surr );
         while (res2 == stringify::v0::cv_result::insufficient_space)
         {
             auto x = recycler.recycle(buff.it);
             BOOST_STRINGIFY_RETURN_ON_ERROR(x);
             buff = *x;
-            res2 = dest_encoding.from_u32.transcode( &buff32_it2, buff32.it
-                                                   , &buff.it, buff.end
-                                                   , err_hdl, allow_surr );
+            res2 = dest_encoding.from_u32().transcode( &buff32_it2, buff32.it
+                                                     , &buff.it, buff.end
+                                                     , err_hdl, allow_surr );
         }
         if (res2 == stringify::v0::cv_result::invalid_char)
         {
@@ -160,8 +160,8 @@ template<typename CharIn, typename CharOut>
 inline std::size_t decode_encode_size
     ( const CharIn* src
     , const CharIn* src_end
-    , const stringify::v0::encoding<CharIn> src_encoding
-    , const stringify::v0::encoding<CharOut> dest_encoding
+    , stringify::v0::encoding<CharIn> src_encoding
+    , stringify::v0::encoding<CharOut> dest_encoding
     , stringify::v0::encoding_policy epoli )
 {
     auto err_hdl = epoli.err_hdl();
@@ -173,11 +173,11 @@ inline std::size_t decode_encode_size
     do
     {
         buff32.it = buff32_begin;
-        res_dec = src_encoding.to_u32.transcode( &src, src_end
-                                               , &buff32.it, buff32.end
-                                               , err_hdl, allow_surr );
-        count += dest_encoding.from_u32.necessary_size( buff32_begin, buff32.it
-                                                      , err_hdl, allow_surr );
+        res_dec = src_encoding.to_u32().transcode( &src, src_end
+                                                 , &buff32.it, buff32.end
+                                                 , err_hdl, allow_surr );
+        count += dest_encoding.from_u32().necessary_size( buff32_begin, buff32.it
+                                                        , err_hdl, allow_surr );
     } while(res_dec == stringify::v0::cv_result::insufficient_space);
 
     return count;
@@ -235,7 +235,7 @@ inline stringify::v0::expected_output_buffer<CharT> write_fill
 
 template<typename CharT>
 stringify::v0::expected_output_buffer<CharT> do_write_fill
-    ( const stringify::v0::encoding<CharT>& encoding
+    ( stringify::v0::encoding<CharT> encoding
     , stringify::v0::output_buffer<CharT> buff
     , stringify::buffer_recycler<CharT>& recycler
     , std::size_t count
@@ -263,15 +263,15 @@ stringify::v0::expected_output_buffer<CharT> do_write_fill
 
 template<typename CharT>
 inline stringify::v0::expected_output_buffer<CharT> write_fill
-    ( const stringify::v0::encoding<CharT>& encoding
+    ( stringify::v0::encoding<CharT> encoding
     , stringify::v0::output_buffer<CharT> buff
     , stringify::buffer_recycler<CharT>& recycler
     , std::size_t count
     , char32_t ch
     , stringify::v0::error_handling err_hdl )
 {
-    return  ( ch >= encoding.u32equivalence_begin
-           && ch < encoding.u32equivalence_end
+    return  ( ch >= encoding.u32equivalence_begin()
+           && ch < encoding.u32equivalence_end()
             ? stringify::v0::detail::write_fill( buff
                                                , recycler
                                                , count

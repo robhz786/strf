@@ -26,7 +26,7 @@ template <>
 struct encoding_category<char>
 {
     static constexpr bool constrainable = false;
-    static constexpr bool by_value = false;
+    static constexpr bool by_value = true;
 
     static const encoding<char>& get_default()
     {
@@ -39,11 +39,12 @@ template <>
 struct encoding_category<char16_t>
 {
     static constexpr bool constrainable = false;
-    static constexpr bool by_value = false;
+    static constexpr bool by_value = true;
 
     static const encoding<char16_t>& get_default()
     {
-        return stringify::v0::utf16();
+        static const auto obj = stringify::v0::utf16();
+        return obj;
     }
 };
 
@@ -51,11 +52,12 @@ template <>
 struct encoding_category<char32_t>
 {
     static constexpr bool constrainable = false;
-    static constexpr bool by_value = false;
+    static constexpr bool by_value = true;
 
     static const encoding<char32_t>& get_default()
     {
-        return stringify::v0::utf32();
+        static const auto obj = stringify::v0::utf32();
+        return obj;
     }
 };
 
@@ -63,11 +65,12 @@ template <>
 struct encoding_category<wchar_t>
 {
     static constexpr bool constrainable = false;
-    static constexpr bool by_value = false;
+    static constexpr bool by_value = true;
 
     static const encoding<wchar_t>& get_default()
     {
-        return stringify::v0::wchar_encoding();;
+        static const auto obj = stringify::v0::wchar_encoding();
+        return obj;
     }
 };
 

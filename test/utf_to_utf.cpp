@@ -61,22 +61,16 @@ basic_string_view<wchar_t> valid_input_sample(const strf::encoding<wchar_t>&)
 
 template <typename CharIn, typename CharOut>
 void test_valid_input
-    ( const strf::transcoder<CharIn, CharOut>* cv
+    ( strf::transcoder<CharIn, CharOut> cv
     , const basic_string_view<CharIn> input
     , const basic_string_view<CharOut> expected )
 {
     CharOut buff[buff_size];
     CharOut* const buff_end = buff + buff_size;
 
-    BOOST_TEST(cv != nullptr);
-    if (cv == nullptr)
-    {
-        return;
-    }
-
     {   // calculate size
 
-        auto calculated_size = cv->necessary_size
+        auto calculated_size = cv.necessary_size
             ( input.begin(), input.end()
             , strf::error_handling::replace, false );
 
@@ -89,7 +83,7 @@ void test_valid_input
         buff[expected.size()] = 'x';
         auto src_it = input.begin();
         auto dest_it = buff;
-        auto res = cv->transcode( &src_it
+        auto res = cv.transcode( &src_it
                                 , input.end()
                                 , &dest_it
                                 , buff_end
@@ -109,7 +103,7 @@ void test_valid_input
 
         auto src_it = input.begin();
         auto dest_it = buff;
-        auto res = cv->transcode( &src_it
+        auto res = cv.transcode( &src_it
                                 , input.end()
                                 , &dest_it
                                 , buff + expected.size() - 1
@@ -124,7 +118,7 @@ void test_valid_input
 
         auto src_it2 = src_it;
         auto dest_it2 = dest_it;
-        auto res2 = cv->transcode( &src_it2
+        auto res2 = cv.transcode( &src_it2
                                  , input.end()
                                  , &dest_it2
                                  , buff_end
@@ -144,11 +138,16 @@ void test_valid_input
     ( const strf::encoding<CharIn>& ein
     , const strf::encoding<CharOut>& eout )
 {
-    BOOST_TEST_LABEL << "from " << ein.name << " to " << eout.name;
+    BOOST_TEST_LABEL << "from " << ein.name() << " to " << eout.name();
 
-    test_valid_input( strf::get_transcoder(ein, eout)
-                    , valid_input_sample(ein)
-                    , valid_input_sample(eout) );
+    const auto * impl = strf::get_transcoder_impl(ein, eout);
+    BOOST_TEST(impl);
+    if (impl)
+    {
+        test_valid_input( strf::transcoder<CharIn, CharOut>(*impl)
+                        , valid_input_sample(ein)
+                        , valid_input_sample(eout) );
+    }
 
 }
 
@@ -157,7 +156,7 @@ void test_overlong_sequence
     ( const strf::encoding<char>& ein
     , const strf::encoding<CharOut>& eout )
 {
-    BOOST_TEST_LABEL << "from " << ein.name << " to " << eout.name;
+    BOOST_TEST_LABEL << "from " << ein.name() << " to " << eout.name();
 }
 
 
@@ -186,20 +185,26 @@ void test_allowed_surrogates
     ( const strf::encoding<CharIn>& ein
     , const strf::encoding<CharOut>& eout )
 {
-    BOOST_TEST_LABEL << "from " << ein.name << " to " << eout.name;
+    BOOST_TEST_LABEL << "from " << ein.name() << " to " << eout.name();
 
     const auto input    = sample_with_surrogates(ein);
     const auto expected = sample_with_surrogates(eout);
-    const strf::transcoder<CharIn, CharOut>* cv = strf::get_transcoder(ein, eout);
+    auto impl = strf::get_transcoder_impl(ein, eout);
+    BOOST_TEST(impl);
+    if (!impl)
+    {
+        return;
+    }
+    strf::transcoder<CharIn, CharOut> cv(*impl);
 
     CharOut buff[buff_size];
     CharOut* const buff_end = buff + buff_size;
 
     {   // calculate size
-        auto s = cv->necessary_size( input.begin()
-                                   , input.end()
-                                   , strf::error_handling::stop
-                                   , true );
+        auto s = cv.necessary_size( input.begin()
+                                  , input.end()
+                                  , strf::error_handling::stop
+                                  , true );
         BOOST_TEST_EQ(s, expected.size());
     }
 
@@ -207,7 +212,7 @@ void test_allowed_surrogates
 
         auto src_it = input.begin();
         auto dest_it = buff;
-        auto res = cv->transcode( &src_it
+        auto res = cv.transcode( &src_it
                                 , input.end()
                                 , &dest_it
                                 , buff_end
@@ -308,14 +313,12 @@ void test_invalid_input
     ( const strf::encoding<ChIn>& ein
     , const strf::encoding<ChOut>& eout )
 {
-    BOOST_TEST_LABEL << "From invalid " << ein.name << " to " << eout.name;
+    BOOST_TEST_LABEL << "From invalid " << ein.name() << " to " << eout.name();
 
-    const strf::transcoder<ChIn, ChOut>* cv = strf::get_transcoder(ein, eout);
+    const auto* impl = strf::get_transcoder_impl(ein, eout);
 
-    if (cv == nullptr)
-    {
-        return;
-    }
+    BOOST_TEST(impl != nullptr);
+    strf::transcoder<ChIn, ChOut> cv{*impl};
 
     const std::basic_string<ChIn>  prefix_in { (ChIn)'a', (ChIn)'b', (ChIn)'c' };
     const std::basic_string<ChIn>  suffix_in { (ChIn)'d', (ChIn)'e', (ChIn)'f' };
@@ -335,7 +338,7 @@ void test_invalid_input
 
         {   // calculate size when ignoring invalid seq
             const auto expected_size = prefix_out.size() + suffix_out.size();
-            auto calculated_size = cv->necessary_size
+            auto calculated_size = cv.necessary_size
                 ( &*input.begin()
                 , &*input.end()
                 , strf::error_handling::ignore
@@ -345,22 +348,22 @@ void test_invalid_input
         }
 
         {   // calculate size when stopping in invalid seq
-            auto calculated_size = cv->necessary_size( &*input.begin()
-                                                     , &*input.end()
-                                                     , strf::error_handling::stop
-                                                     , false );
+            auto calculated_size = cv.necessary_size( &*input.begin()
+                                                    , &*input.end()
+                                                    , strf::error_handling::stop
+                                                    , false );
 
             BOOST_TEST_GE(calculated_size, prefix_out.size());
         }
 
         {   // calculate size when replacing invalid seq
-            auto calculated_size = cv->necessary_size( &*input.begin()
-                                                     , &*input.end()
-                                                     , strf::error_handling::replace
-                                                     , false );
+            auto calculated_size = cv.necessary_size( &*input.begin()
+                                                    , &*input.end()
+                                                    , strf::error_handling::replace
+                                                    , false );
             auto expected_size = ( prefix_out.size()
                                  + suffix_out.size()
-                                 + eout.replacement_char_size * err_count);
+                                 + eout.replacement_char_size() * err_count);
 
             BOOST_TEST_GE(calculated_size, expected_size);
         }
@@ -371,12 +374,12 @@ void test_invalid_input
 
             auto src_it = &*input.begin();
             auto dest_it = buff;
-            auto res = cv->transcode( &src_it
-                                    , &*input.end()
-                                    , &dest_it
-                                    , buff_end
-                                    , strf::error_handling::ignore
-                                    , false );
+            auto res = cv.transcode( &src_it
+                                   , &*input.end()
+                                   , &dest_it
+                                   , buff_end
+                                   , strf::error_handling::ignore
+                                   , false );
             BOOST_TEST_EQ(res, strf::cv_result::success);
             BOOST_TEST_EQ(&*input.end() - src_it, 0);
             BOOST_TEST_EQ((dest_it - buff), as_signed(expected.size()));
@@ -396,12 +399,12 @@ void test_invalid_input
             do
             {
                 ++calls_count;
-                res = cv->transcode( &src_it
-                                   , &*input.end()
-                                   , &dest_it
-                                   , buff_end
-                                   , strf::error_handling::stop
-                                   , false );
+                res = cv.transcode( &src_it
+                                  , &*input.end()
+                                  , &dest_it
+                                  , buff_end
+                                  , strf::error_handling::stop
+                                  , false );
             } while(res == strf::cv_result::invalid_char && calls_count < 10);
 
             const auto expected = prefix_out + suffix_out;
@@ -424,7 +427,7 @@ void test_invalid_input
             std::fill(buff, buff_end, 'x');
             auto src_it = &*input.begin();
             auto dest_it = buff;
-            auto res = cv->transcode( &src_it
+            auto res = cv.transcode( &src_it
                                     , &*input.end()
                                     , &dest_it
                                     , buff_end
@@ -447,12 +450,12 @@ void test_invalid_input
 
             auto src_it = &*input.begin();
             auto dest_it = buff;
-            auto res = cv->transcode( &src_it
-                                    , &*input.end()
-                                    , &dest_it
-                                    , buff + prefix_out.size()
-                                    , strf::error_handling::ignore
-                                    , false );
+            auto res = cv.transcode( &src_it
+                                   , &*input.end()
+                                   , &dest_it
+                                   , buff + prefix_out.size()
+                                   , strf::error_handling::ignore
+                                   , false );
 
             BOOST_TEST_EQ(res, strf::cv_result::insufficient_space);
             BOOST_TEST_EQ((dest_it - buff), as_signed(expected.size()));
@@ -465,12 +468,12 @@ void test_invalid_input
 
             auto src_it2 = src_it;
             auto dest_it2 = dest_it;
-            auto res2 = cv->transcode( &src_it2
-                                     , &*input.end()
-                                     , &dest_it2
-                                     , buff_end
-                                     , strf::error_handling::ignore
-                                     , false );
+            auto res2 = cv.transcode( &src_it2
+                                    , &*input.end()
+                                    , &dest_it2
+                                    , buff_end
+                                    , strf::error_handling::ignore
+                                    , false );
             const auto expected2 = prefix_out + suffix_out;
 
             BOOST_TEST_EQ(res2, strf::cv_result::success);
@@ -487,12 +490,12 @@ void test_invalid_input
 
             auto src_it = &*input.begin();
             auto dest_it = buff;
-            auto res = cv->transcode( &src_it
-                                    , &*input.end()
-                                    , &dest_it
-                                    , buff + prefix_out.size()
-                                    , strf::error_handling::replace
-                                    , false );
+            auto res = cv.transcode( &src_it
+                                   , &*input.end()
+                                   , &dest_it
+                                   , buff + prefix_out.size()
+                                   , strf::error_handling::replace
+                                   , false );
 
             BOOST_TEST_EQ(res, strf::cv_result::insufficient_space);
             BOOST_TEST_EQ((src_it - &*input.begin()), as_signed(prefix_in.size()));
@@ -506,12 +509,12 @@ void test_invalid_input
 
             auto src_it2 = src_it;
             auto dest_it2 = dest_it;
-            auto res2 = cv->transcode( &src_it2
-                                     , &*input.end()
-                                     , &dest_it2
-                                     , buff_end
-                                     , strf::error_handling::replace
-                                     , false );
+            auto res2 = cv.transcode( &src_it2
+                                    , &*input.end()
+                                    , &dest_it2
+                                    , buff_end
+                                    , strf::error_handling::replace
+                                    , false );
 
             auto expected2 = prefix_out;
             for(int i = 0; i < err_count; ++i)
