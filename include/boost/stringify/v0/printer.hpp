@@ -270,7 +270,8 @@ inline stringify::v0::expected_output_buffer<CharT> write_fill
     , char32_t ch
     , stringify::v0::error_handling err_hdl )
 {
-    return  ( ch <= encoding.max_corresponding_u32char
+    return  ( ch >= encoding.u32equivalence_begin
+           && ch < encoding.u32equivalence_end
             ? stringify::v0::detail::write_fill( buff
                                                , recycler
                                                , count

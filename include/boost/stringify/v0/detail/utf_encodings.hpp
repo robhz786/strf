@@ -2065,7 +2065,7 @@ BOOST_STRINGIFY_INLINE const stringify::v0::encoding<char>& utf8()
          , stringify::v0::detail::utf8_utfx<wchar_t>::utf8_to_utfx
          , "UTF-8"
          , stringify::v0::encoding_id::eid_utf8
-         , 3, 0x7F };
+         , 3, 0, 0x80 };
 
     return encoding_obj;
 }
@@ -2092,7 +2092,7 @@ BOOST_STRINGIFY_INLINE const stringify::v0::encoding<char16_t>& utf16()
         , stringify::v0::detail::utf16_utfx<char16_t, wchar_t>::utf16_to_utfx
         , "UTF-16"
         , stringify::v0::encoding_id::eid_utf16
-        , 1, 0xFFFF };
+        , 1, 0, 0xFFFF };
 
     return encoding_obj;
 }
@@ -2116,7 +2116,7 @@ BOOST_STRINGIFY_INLINE const stringify::v0::encoding<char32_t>& utf32()
         , nullptr, nullptr, nullptr, nullptr
         , "UTF-32"
         , stringify::v0::encoding_id::eid_utf32
-        , 1, 0x10FFFF };
+        , 1, 0, 0x10FFFF };
 
     return encoding_obj;
 }
@@ -2144,7 +2144,7 @@ const stringify::v0::encoding<WChar16>& utfw_impl(std::integral_constant<std::si
         , nullptr, nullptr, nullptr, nullptr
         , "UTF-16"
         , stringify::v0::encoding_id::eid_utf16
-        , 1, 0xFFFF };
+        , 1, 0, 0xFFFF };
 
     return encoding_obj;
 }
@@ -2171,7 +2171,7 @@ inline const stringify::v0::encoding<WChar32>& utfw_impl
         , "UTF-32"
         , stringify::v0::encoding_id::eid_utf32
         , 1
-        , 0x10FFFF };
+        , 0, 0x10FFFF };
 
     return encoding_obj;
 }

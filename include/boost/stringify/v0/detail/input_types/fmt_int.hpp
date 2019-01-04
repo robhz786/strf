@@ -643,7 +643,8 @@ fmt_int_printer<IntT, CharT>::_write_digits_sep
     auto* grp_it = _punct->groups(_digcount, grp_buff);
 
     char32_t sep_char32 = _punct->thousands_sep();
-    if (sep_char32 <= _encoding.max_corresponding_u32char)
+    if ( _encoding.u32equivalence_begin <= sep_char32
+      && _encoding.u32equivalence_end > sep_char32 )
     {
         return _write_digits_littlesep( buff, recycler, dig_it
                                       , grp_buff, grp_it
