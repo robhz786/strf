@@ -43,28 +43,15 @@ public:
         _out.reserve(_out.length() + size);
     }
 
-    stringify::v0::expected_output_buffer<char_type> start() noexcept
+    stringify::v0::output_buffer<char_type> start() noexcept
     {
-        return { stringify::v0::in_place_t{}
-               , stringify::v0::output_buffer<char_type>
-                   { _buffer, _buffer + _buffer_size } };
+        return { _buffer, _buffer + _buffer_size };
     }
 
-    stringify::v0::expected_output_buffer<char_type> recycle(char_type* it) override
-    {
-        BOOST_ASSERT(_buffer <= it && it <= _buffer + _buffer_size);
-        _out.append(_buffer, it);
-        return start();
-    }
+    bool recycle(stringify::v0::output_buffer<char_type>& buff) override;
 
-    stringify::v0::expected<std::size_t, std::error_code> finish(char_type *it)
-    {
-        BOOST_ASSERT(_buffer <= it && it <= _buffer + _buffer_size);
-        _finished = true;
-        _out.append(_buffer, it);
-        return { boost::stringify::v0::in_place_t{}, _out.size() - _initial_length };
-    }
-
+    stringify::v0::expected<std::size_t, std::error_code>
+    finish(char_type *it);
 
 private:
 
@@ -72,6 +59,31 @@ private:
     std::size_t _initial_length = 0;
     bool _finished = false;
 };
+
+template <typename StringType>
+bool string_appender<StringType>::recycle(stringify::v0::output_buffer<char_type>& buff)
+{
+    BOOST_ASSERT(_buffer <= buff.it && buff.it <= _buffer + _buffer_size);
+    _out.append(_buffer, buff.it);
+    buff = start();
+    return true;
+}
+
+template <typename StringType>
+stringify::v0::expected<std::size_t, std::error_code>
+string_appender<StringType>::finish(char_type *it)
+{
+    BOOST_ASSERT(_buffer <= it && it <= _buffer + _buffer_size);
+    _finished = true;
+    _out.append(_buffer, it);
+    if ( ! this->has_error() )
+    {
+        return { boost::stringify::v0::in_place_t{}
+               , _out.size() - _initial_length };
+    }
+    _out.resize(_initial_length);
+    return { boost::stringify::v0::unexpect_t{}, this->get_error() };
+}
 
 
 template <typename StringType>
@@ -93,26 +105,14 @@ public:
     {
     }
 
-    stringify::v0::expected_output_buffer<char_type> start() noexcept
+    stringify::v0::output_buffer<char_type> start() noexcept
     {
-        return { stringify::v0::in_place_t{}
-               , stringify::v0::output_buffer<char_type>
-                   { _buffer, _buffer + _buffer_size } };
+        return { _buffer, _buffer + _buffer_size };
     }
 
-    stringify::v0::expected_output_buffer<char_type> recycle(char_type* it) override
-    {
-        BOOST_ASSERT(_buffer <= it && it <= _buffer + _buffer_size);
-        _out.append(_buffer, it);
-        return start();
-    }
+    bool recycle(stringify::v0::output_buffer<char_type>& buff) override;
 
-    stringify::v0::expected<StringType, std::error_code> finish(char_type *it)
-    {
-        BOOST_ASSERT(_buffer <= it && it <= _buffer + _buffer_size);
-        _out.append(_buffer, it);
-        return {boost::stringify::v0::in_place_t{}, std::move(_out)};
-    }
+    stringify::v0::expected<StringType, std::error_code> finish(char_type *it);
 
     void reserve(std::size_t size)
     {
@@ -123,6 +123,29 @@ private:
 
     StringType _out;
 };
+
+template <typename StringType>
+bool string_maker<StringType>::recycle(stringify::v0::output_buffer<char_type>& buff)
+{
+    BOOST_ASSERT(_buffer <= buff.it && buff.it <= _buffer + _buffer_size);
+    _out.append(_buffer, buff.it);
+    buff = start();
+    return true;
+}
+
+template <typename StringType>
+stringify::v0::expected<StringType, std::error_code>
+inline string_maker<StringType>::finish(char_type *it)
+{
+    BOOST_ASSERT(_buffer <= it && it <= _buffer + _buffer_size);
+    if ( ! this->has_error())
+    {
+        _out.append(_buffer, it);
+        return {boost::stringify::v0::in_place_t{}, std::move(_out)};
+    }
+    return { stringify::v0::unexpect_t{}, this->get_error() };
+}
+
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 

@@ -28,7 +28,6 @@ foreach(
   facets_pack
 #  reserve
   width_calculator
-  #  transcoding
   utf_to_utf
   single_byte_encodings
   )

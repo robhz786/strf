@@ -45,13 +45,10 @@ public:
     using value_type = typename std::iterator_traits<ForwardIt>::value_type;
 
     range_printer
-        ( writer_type& ow
-        , const FPack& fp
+        ( const FPack& fp
         , iterator begin
-        , iterator end
-        )
-        : m_out(ow)
-        , m_fp(fp)
+        , iterator end )
+        : m_fp(fp)
         , m_begin(begin)
         , m_end(end)
     {
@@ -77,17 +74,22 @@ public:
         return w;
     }
 
-    void write() const override
+    bool write
+        ( stringify::v0::output_buffer<CharT>& buff
+        , stringify::v0::buffer_recycler<CharT>& recycler ) const override
     {
         for(auto it = m_begin; it != m_end; ++it)
         {
-            make_printer<CharT, FPack>(m_out, m_fp, *it).write();
+            if ( ! make_printer<CharT, FPack>(m_out, m_fp, *it).write(buff, recycler))
+            {
+                return false;
+            }
         }
+        return true;
     }
 
 private:
 
-    stringify::v0::output_writer<CharT>& m_out;
     const FPack& m_fp;
     iterator m_begin;
     iterator m_end;
@@ -106,15 +108,12 @@ public:
     using value_type = typename std::iterator_traits<ForwardIt>::value_type;
 
     sep_range_printer
-        ( writer_type& ow
-        , const FPack& fp
+        ( const FPack& fp
         , iterator begin
         , iterator end
         , const CharIn* sep
-        , const CharIn* sep_end
-        )
-        : m_out(ow)
-        , m_fp(fp)
+        , const CharIn* sep_end )
+        : m_fp(fp)
         , m_begin(begin)
         , m_end(end)
         , m_sep_begin(sep)
@@ -129,7 +128,9 @@ public:
 
     int remaining_width(int w) const override;
 
-    void write() const override;
+    bool write
+        ( stringify::v0::output_buffer<CharOut>& buff
+        , stringify::v0::buffer_recycler<CharOut>& recycler ) const override;
 
 private:
 

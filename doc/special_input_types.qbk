@@ -61,8 +61,8 @@ You can apply some facet objects to only a subset of the arguments using the fol
 
 [facets_pack_input]
 
-Notice that the arguments in the sub list can be of any type that is possible in the outer list.
-You can you, for instance, another facets_pack:
+Notice that an argument in the sub list can be of any type that is possible in the outer list.
+It could be, for instance, another facets_pack:
 
 [facets_pack_input_2]
 

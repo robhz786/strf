@@ -30,11 +30,6 @@ struct output_buffer
     CharOut* end;
 };
 
-template <typename It>
-using expected_output_buffer = stringify::v0::expected
-    < stringify::v0::output_buffer<It>
-    , std::error_code >;
-
 template <typename CharOut>
 class buffer_recycler
 {
@@ -42,7 +37,45 @@ public:
 
     using char_type = CharOut;
 
-    virtual stringify::v0::expected_output_buffer<CharOut> recycle(CharOut* it) = 0;
+    virtual ~buffer_recycler()
+    {
+    }
+
+    virtual bool recycle(stringify::v0::output_buffer<CharOut>&) = 0;
+
+    void set_error(std::error_code ec)
+    {
+        if ( ! _has_error )
+        {
+            _ec = ec;
+            _has_error = true;
+        }
+    }
+
+    void set_error(std::errc e)
+    {
+        set_error(std::make_error_code(e));
+    }
+
+    void set_encoding_error()
+    {
+        set_error(std::errc::illegal_byte_sequence);
+    }
+
+    std::error_code get_error() const
+    {
+        return _ec;
+    }
+
+    bool has_error() const
+    {
+        return _has_error;
+    }
+
+private:
+
+    std::error_code _ec;
+    bool _has_error = false;
 };
 
 template <typename CharOut>
@@ -54,19 +87,19 @@ public:
     {
     }
 
-    virtual stringify::v0::expected_output_buffer<CharOut> write
-        ( stringify::v0::output_buffer<CharOut> buff
-        , stringify::buffer_recycler<CharOut>& recycler ) const = 0;
+    virtual bool write
+        ( stringify::v0::output_buffer<CharOut>& buff
+        , stringify::v0::buffer_recycler<CharOut>& recycler ) const = 0;
 
     virtual std::size_t necessary_size() const = 0;
 
     virtual int remaining_width(int w) const = 0;
 };
 
-inline std::error_code encoding_error()
-{
-    return std::make_error_code(std::errc::illegal_byte_sequence);
-}
+// inline std::error_code encoding_error()
+// {
+//     return std::make_error_code(std::errc::illegal_byte_sequence);
+// }
 
 namespace detail {
 
@@ -78,9 +111,9 @@ inline const output_buffer<char32_t> global_mini_buffer32()
 
 
 template<typename CharIn, typename CharOut>
-stringify::v0::expected_output_buffer<CharOut> transcode
-    ( stringify::v0::output_buffer<CharOut> buff
-    , stringify::buffer_recycler<CharOut>& recycler
+bool transcode
+    ( stringify::v0::output_buffer<CharOut>& buff
+    , stringify::v0::buffer_recycler<CharOut>& recycler
     , const CharIn* src
     , const CharIn* src_end
     , const stringify::v0::transcoder<CharIn, CharOut>& tr
@@ -89,29 +122,26 @@ stringify::v0::expected_output_buffer<CharOut> transcode
     auto err_hdl = epoli.err_hdl();
     bool allow_surr = epoli.allow_surr();
     stringify::v0::cv_result res;
-    while(true)
+    do
     {
         res = tr.transcode(&src, src_end, &buff.it, buff.end, err_hdl, allow_surr);
         if (res == stringify::v0::cv_result::success)
         {
-            return { stringify::v0::in_place_t{}, buff };
+            return true;
         }
         if (res == stringify::v0::cv_result::invalid_char)
         {
-            return { stringify::v0::unexpect_t{}
-                   , std::make_error_code(std::errc::result_out_of_range) };
+            recycler.set_encoding_error();
+            return false;
         }
-        BOOST_ASSERT(res == stringify::v0::cv_result::insufficient_space);
-        auto x = recycler.recycle(buff.it);
-        BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-        buff = *x;
-    }
+    } while(recycler.recycle(buff));
+    return false;
 }
 
 template<typename CharIn, typename CharOut>
-stringify::v0::expected_output_buffer<CharOut> decode_encode
-    ( stringify::v0::output_buffer<CharOut> buff
-    , stringify::buffer_recycler<CharOut>& recycler
+bool decode_encode
+    ( stringify::v0::output_buffer<CharOut>& buff
+    , stringify::v0::buffer_recycler<CharOut>& recycler
     , const CharIn* src
     , const CharIn* src_end
     , stringify::v0::encoding<CharIn> src_encoding
@@ -130,8 +160,8 @@ stringify::v0::expected_output_buffer<CharOut> decode_encode
                                               , err_hdl, allow_surr );
         if (res1 == stringify::v0::cv_result::invalid_char)
         {
-            return { stringify::v0::unexpect_t{}
-                   , std::make_error_code(std::errc::result_out_of_range) };
+            recycler.set_error(std::make_error_code(std::errc::result_out_of_range));
+            return false;
         }
         const char32_t* buff32_it2 = buff32_begin;
         auto res2 = dest_encoding.from_u32().transcode( &buff32_it2, buff32.it
@@ -139,21 +169,22 @@ stringify::v0::expected_output_buffer<CharOut> decode_encode
                                                       , err_hdl, allow_surr );
         while (res2 == stringify::v0::cv_result::insufficient_space)
         {
-            auto x = recycler.recycle(buff.it);
-            BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-            buff = *x;
+            if ( ! recycler.recycle(buff))
+            {
+                return false;
+            }
             res2 = dest_encoding.from_u32().transcode( &buff32_it2, buff32.it
                                                      , &buff.it, buff.end
                                                      , err_hdl, allow_surr );
         }
         if (res2 == stringify::v0::cv_result::invalid_char)
         {
-            return { stringify::v0::unexpect_t{}
-                   , std::make_error_code(std::errc::result_out_of_range) };
+            recycler.set_encoding_error();
+            return false;
         }
     } while (res1 == stringify::v0::cv_result::insufficient_space);
 
-    return { stringify::v0::in_place_t{}, buff };
+    return true;
 }
 
 template<typename CharIn, typename CharOut>
@@ -184,88 +215,94 @@ inline std::size_t decode_encode_size
 }
 
 template<typename CharT>
-inline stringify::v0::expected_output_buffer<CharT> write_str
-    ( stringify::v0::output_buffer<CharT> buff
-    , stringify::buffer_recycler<CharT>& recycler
+inline bool write_str
+    ( stringify::v0::output_buffer<CharT>& ob
+    , stringify::v0::buffer_recycler<CharT>& recycler
     , const CharT* str
     , std::size_t len )
 {
+    auto ob_ = ob;
     using traits = std::char_traits<CharT>;
-    while (true)
+    do
     {
-        std::size_t space = buff.end - buff.it;
+        std::size_t space = ob_.end - ob_.it;
         if (len <= space)
         {
-            traits::copy(buff.it, str, len);
-            return { stringify::v0::in_place_t{}
-                   , stringify::v0::output_buffer<CharT>{buff.it + len, buff.end} };
+            traits::copy(ob_.it, str, len);
+            ob.it = ob_.it + len;
+            ob.end = ob_.end;
+            return true;
         }
-        traits::copy(buff.it, str, space);
+        traits::copy(ob_.it, str, space);
         len -= space;
         str += space;
-        auto x = recycler.recycle(buff.it + space);
-        BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-        buff = *x;
-    }
+        ob_.it += space;
+    } while (recycler.recycle(ob_));
+    ob = ob_;
+    return false;
 }
 
 template<typename CharT>
-inline stringify::v0::expected_output_buffer<CharT> write_fill
-    ( stringify::v0::output_buffer<CharT> buff
-    , stringify::buffer_recycler<CharT>& recycler
+inline bool write_fill
+    ( stringify::v0::output_buffer<CharT>& buff
+    , stringify::v0::buffer_recycler<CharT>& recycler
     , std::size_t count
     , CharT ch )
 {
-    while(true)
+    auto ob = buff;
+    do
     {
         std::size_t space = buff.end - buff.it;
         if (count <= space)
         {
             std::char_traits<CharT>::assign(buff.it, count, ch);
-            return { stringify::v0::in_place_t{}
-                   , stringify::v0::output_buffer<CharT>{ buff.it + count, buff.end } };
+            buff.it = ob.it + count;
+            buff.end = ob.end;
+            return true;
         }
         std::char_traits<CharT>::assign(buff.it, space, ch);
         count -= space;
-        auto x = recycler.recycle(buff.it + space);
-        BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-        buff = *x;
-    }
+        ob.it += space;
+    } while (recycler.recycle(ob));
+    buff = ob;
+    return false;
 }
 
 template<typename CharT>
-stringify::v0::expected_output_buffer<CharT> do_write_fill
+bool do_write_fill
     ( stringify::v0::encoding<CharT> encoding
-    , stringify::v0::output_buffer<CharT> buff
-    , stringify::buffer_recycler<CharT>& recycler
+    , stringify::v0::output_buffer<CharT>& out_buff
+    , stringify::v0::buffer_recycler<CharT>& recycler
     , std::size_t count
     , char32_t ch
     , stringify::v0::error_handling err_hdl )
 {
-    while(true)
+    auto ob = out_buff;
+    do
     {
-        auto res = encoding.encode_fill(&buff.it, buff.end, count, ch, err_hdl);
+        auto res = encoding.encode_fill(&ob.it, ob.end, count, ch, err_hdl);
         if (res == stringify::v0::cv_result::success)
         {
-            return { stringify::v0::in_place_t{}, buff };
+            out_buff.it = ob.it;
+            out_buff.end = ob.end;
+            return true;
         }
         if (res == stringify::v0::cv_result::invalid_char)
         {
-            return { stringify::v0::unexpect_t{}
-                   , stringify::v0::encoding_error() };
+            recycler.set_encoding_error();
+            return false;
         }
         BOOST_ASSERT(res == stringify::v0::cv_result::insufficient_space);
-        auto x = recycler.recycle(buff.it);
-        BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-        buff = *x;
-    }
+    } while (recycler.recycle(ob));
+    out_buff = ob;
+    return false;
 }
 
 template<typename CharT>
-inline stringify::v0::expected_output_buffer<CharT> write_fill
+inline bool write_fill
     ( stringify::v0::encoding<CharT> encoding
-    , stringify::v0::output_buffer<CharT> buff
-    , stringify::buffer_recycler<CharT>& recycler
+    , stringify::v0::output_buffer<CharT>& buff
+    , stringify::v0::buffer_recycler<CharT>& recycler
     , std::size_t count
     , char32_t ch
     , stringify::v0::error_handling err_hdl )

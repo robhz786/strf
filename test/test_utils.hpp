@@ -9,25 +9,28 @@
 #include <boost/stringify.hpp>
 #include <cctype>
 
-
-static int global_errors_count = 0;
-
-int report_errors()
+inline int& global_errors_count()
 {
-    if (global_errors_count)
+    static int x = 0;
+    return x;
+}
+
+inline int report_errors()
+{
+    if (global_errors_count())
     {
-        std::cout << global_errors_count << " tests failed\n";
+        std::cout << global_errors_count() << " tests failed\n";
     }
     else
     {
         std::cout << "No errors found\n";
     }
 
-    return global_errors_count;
+    return global_errors_count();
 }
 
 
-void print(const char* label, const std::u16string& str)
+inline void print(const char* label, const std::u16string& str)
 {
     std::cout << label << "\n";
     for(auto it = str.begin(); it != str.end(); ++it)
@@ -37,7 +40,7 @@ void print(const char* label, const std::u16string& str)
     std::cout << "\n";
 }
 
-void print(const char* label, const std::u32string& str)
+inline void print(const char* label, const std::u32string& str)
 {
     std::cout << label << "\n";
     for(auto it = str.begin(); it != str.end(); ++it)
@@ -47,52 +50,52 @@ void print(const char* label, const std::u32string& str)
     std::cout << "\n";
 }
 
-
-void print(const char* label, const std::string& str)
+inline void print(const char* label, const std::string& str)
 {
     std::cout << label << ": \"" << str << "\"\n";
 }
 
-void print(const char* label, const std::wstring& str)
+inline void print(const char* label, const std::wstring& str)
 {
     std::cout << label << ": \"";
     std::wcout << str;
     std::cout  << "\"\n";
 }
 
-template <typename CharT>
-struct input_tester_buffer
-{
-    input_tester_buffer(typename std::basic_string<CharT>::size_type size)
-        : buffer(size, static_cast<CharT>('#'))
-    {
-    }
-
-    std::basic_string<CharT> buffer;
-};
-
 
 template <typename CharOut>
 class input_tester
-    : private input_tester_buffer<CharOut>
-    , public boost::stringify::v0::buffer_recycler<CharOut>
+    : public boost::stringify::v0::buffer_recycler<CharOut>
 {
-    using  input_tester_buffer<CharOut>::buffer;
+
 public:
 
     input_tester
         ( std::basic_string<CharOut> expected
         , std::string src_filename
         , int src_line
-        , double reserve_factor
-        , std::size_t buffer_size = boost::stringify::v0::min_buff_size
-        )
-        : input_tester_buffer<CharOut>{buffer_size}
-        , m_expected(std::move(expected))
-        , m_reserved_size(0)
-        , m_src_filename(std::move(src_filename))
-        , m_src_line(src_line)
-        , m_reserve_factor(reserve_factor)
+        , double reserve_factor )
+        : _expected(std::move(expected))
+        , _reserved_size(0)
+        , _src_filename(std::move(src_filename))
+        , _src_line(src_line)
+        , _reserve_factor(reserve_factor)
+    {
+    }
+
+    input_tester
+        ( std::basic_string<CharOut> expected
+        , std::string src_filename
+        , int src_line
+        , std::error_code err
+        , double reserve_factor )
+        : _expected(std::move(expected))
+        , _reserved_size(0)
+        , _src_filename(std::move(src_filename))
+        , _src_line(src_line)
+        , _reserve_factor(reserve_factor)
+        , _expected_error(err)
+        , _expect_error(true)
     {
     }
 
@@ -102,241 +105,204 @@ public:
 
     using char_type = CharOut;
 
-    boost::stringify::v0::expected_output_buffer<CharOut> start()
-    {
-        return { boost::stringify::v0::in_place_t{}
-               , boost::stringify::v0::output_buffer<CharOut>{m_buff, m_buff_end}};
-    }
-    boost::stringify::v0::expected_output_buffer<CharOut> recycle(CharOut* it)
-    {
-        m_result.append(m_buff_begin, it);
-        return { boost::stringify::v0::in_place_t{}
-               , boost::stringify::v0::output_buffer<CharOut>{m_buff, m_buff_end}};
-    }
-    boost::stringify::v0::expected<void, std::error_code> finish(CharOut* it)
-    {
-        m_result.append(m_buff_begin, it);
+    boost::stringify::v0::output_buffer<CharOut> start();
 
-        if (m_expected != m_result)
-        {
-            print_source_location();
-            print("expected", m_expected);
-            print("obtained", m_result);
-            ++global_errors_count;
-        }
-        if(wrongly_reserved())
-        {
-            print_source_location();
-            std::cout << "reserved size  :" <<  m_reserved_size << "\n";
-            std::cout << "necessary size :" <<  m_result.length() << "\n";
-            ++global_errors_count;
-        }
-        return {};
-    }
+    bool recycle(boost::stringify::v0::output_buffer<CharOut>& ob) override;
 
-    void reserve(std::size_t size)
-    {
-        m_reserved_size = size;
-        m_result.reserve(size);
-    }
+    boost::stringify::v0::expected<void, std::error_code>
+    finish(CharOut* it);
+
+    void reserve(std::size_t size);
 
 private:
 
-    void print_source_location()
-    {
-        if ( ! m_source_location_printed)
-        {
-            std::cout << m_src_filename << ":" << m_src_line << ":" << " error: \n";
-            m_source_location_printed = true;
-        }
-    }
+    void test_failed();
 
-    bool wrongly_reserved() const
-    {
-        return (m_reserved_size < m_result.length() || too_much_reserved());
-    }
+    bool wrongly_reserved() const;
 
-    bool too_much_reserved() const
-    {
-        return
-            static_cast<double>(m_reserved_size) /
-            static_cast<double>(m_result.length())
-            > m_reserve_factor;
-    }
+    bool too_much_reserved() const;
 
-    std::basic_string<CharOut> m_result;
-    std::basic_string<CharOut> m_expected;
-    std::size_t m_reserved_size;
-    std::string m_src_filename;
-    int m_src_line;
-    double m_reserve_factor;
-
-    CharOut m_buff[200];
-    CharOut* m_buff_begin = m_buff;
-    CharOut* m_buff_end = m_buff_begin + sizeof(m_buff) / sizeof(m_buff[0]);
-    mutable bool m_source_location_printed = false;
-};
-
-
-//template<typename CharT>
-//auto make_tester
-//    ( const CharT* expected
-//    , const char* filename
-//    , int line
-//    , std::error_code err = {}
-//    , double reserve_factor = 1.0
-//    )
-//{
-//    using writer = input_tester<CharT>;
-//    return boost::stringify::v0::make_destination
-//        <writer, const CharT*, std::error_code, const char*, int>
-//        (expected, err, filename, line, reserve_factor);
-//}
-
-//template<typename CharT>
-//auto make_tester
-//    ( const CharT* expected
-//    , const char* filename
-//    , int line
-//    , double reserve_factor
-//    )
-//{
-//    using writer = input_tester<CharT>;
-//    return boost::stringify::v0::make_destination
-//        <writer, const CharT*, std::error_code, const char*, int, double, std::size_t>
-//        (expected, {}, filename, line, reserve_factor, buffer_size);
-//}
-
-
-template<typename CharT>
-auto make_tester
-    ( const CharT* expected
-    , const char* filename
-    , int line
-    , double reserve_factor
-    , std::size_t buffer_size)
-{
-    using writer = input_tester<CharT>;
-    return boost::stringify::v0::make_destination
-        <writer, const CharT*, const char*, int, double, std::size_t>
-        (expected, filename, line, reserve_factor, buffer_size);
-}
-
-template<typename CharT>
-auto make_tester
-    ( const std::basic_string<CharT>& expected
-    , const char* filename
-    , int line
-    , double reserve_factor
-    , std::size_t buffer_size )
-{
-    using writer = input_tester<CharT>;
-    return boost::stringify::v0::make_destination
-        <writer, const std::basic_string<CharT>&, std::error_code, const char*, int, double, std::size_t>
-        (expected, filename, line, reserve_factor, buffer_size);
-}
-
-class error_code_tester
-{
-public:
-
-    error_code_tester(std::string src_filename, int line)
-        : _src_filename(src_filename)
-        , _src_line(line)
-    {
-    }
-
-    error_code_tester(std::string src_filename, int line, std::error_code ec)
-        : _src_filename(src_filename)
-        , _src_line(line)
-        , _expected_error(ec)
-        , _expect_error(true)
-    {
-    }
-
-    template <typename V>
-    boost::stringify::v0::expected<V, std::error_code>
-    operator << (boost::stringify::v0::expected<V, std::error_code> x) &&
-    {
-        if (!_expect_error && x.has_error())
-        {
-            print_source_location();
-            print("Obtained error_code", x.error().message());
-        }
-        else if (_expect_error && ! x.has_error())
-        {
-            print_source_location();
-            print("Not obtained any error_code. Was expecting:", x.error().message());
-        }
-        else if ( _expect_error && x.has_error() && _expected_error != x.error() )
-        {
-            print("expected error_code", _expected_error.message());
-            print("obtained error_code", x.error().message());
-        }
-        return x;
-    }
-
-private:
-
-    void print_source_location()
-    {
-        if ( ! _source_location_printed)
-        {
-            std::cout << _src_filename << ":" << _src_line << ":" << " error: \n";
-            _source_location_printed = true;
-        }
-    }
-
+    std::basic_string<CharOut> _result;
+    std::basic_string<CharOut> _expected;
+    boost::stringify::v0::output_buffer<CharOut> _ob;
+    std::size_t _reserved_size;
     std::string _src_filename;
     int _src_line;
+    double _reserve_factor;
+
     std::error_code _expected_error;
     bool _expect_error = false;
-    mutable bool _source_location_printed = false;
+    bool _recycle_called = false;
+    bool _source_location_printed = false;
 };
 
+template <typename CharOut>
+boost::stringify::v0::output_buffer<CharOut> input_tester<CharOut>::start()
+{
+    _ob.it  = _result.data();
+    _ob.end = _ob.it + _result.size();
+    return _ob;
+}
 
+template <typename CharOut>
+void input_tester<CharOut>::reserve(std::size_t size)
+{
+    _reserved_size = size;
+    _result.resize(size, CharOut{'#'});
+}
 
-#define TEST(EXPECTED)                                        \
-    error_code_tester(__FILE__, __LINE__)  <<                 \
-        make_tester((EXPECTED), __FILE__, __LINE__, 1.0, 60)  \
-        .reserve_calc()
+template <typename CharOut>
+bool input_tester<CharOut>::recycle
+    ( boost::stringify::v0::output_buffer<CharOut>& ob )
+{
+    test_failed();
+
+    std::cout << " buffer_recycler::recycle() called "
+        "( return of printer::necessary_size() too small ).\n";
+    if (ob.it < _ob.it)
+        std::cout << "  Also, output_buffer::it is less than original\n";
+    if (ob.it > _ob.end)
+        std::cout << "  Also, output_buffer::it is greater than original end\n";
+    if (ob.end != _ob.end)
+        std::cout << "  Also, output_buffer::end has been chagend\n";
+
+    if (_ob.it > ob.it || ob.it > _ob.end)
+    {
+        this->set_error(std::errc::bad_address);
+        return false;
+    }
+
+    std::size_t previous_size = ob.it - _result.data();
+    _result.resize(previous_size);
+    _result.append(boost::stringify::v0::min_buff_size, CharOut{'#'});
+    _ob.it = _result.data() + previous_size;
+    _ob.end = _result.data() + _result.size();
+    ob = _ob;
+    return true;
+}
+
+template <typename CharOut>
+boost::stringify::v0::expected<void, std::error_code>
+input_tester<CharOut>::finish(CharOut* it)
+{
+    if (it < _ob.it || it > _ob.end)
+    {
+        test_failed();
+        std::cout << "Finished in invalid memory position too small\n";
+    }
+    else
+    {
+        _result.resize(it - _result.data());
+    }
+    if (_expected != _result)
+    {
+        test_failed();
+        print("Expected", _expected);
+        print("Obtained", _result);
+    }
+    if(wrongly_reserved())
+    {
+        test_failed();
+        std::cout << "Reserved size  :" <<  _reserved_size << "\n";
+        std::cout << "Necessary size :" <<  _result.length() << "\n";
+    }
+
+    if (_expect_error != this->has_error())
+    {
+        test_failed();
+        if ( ! _expect_error)
+        {
+            print( "Obtained error_code: "
+                 , this->get_error().message());
+        }
+        else
+        {
+            print( "Not obtained any error_code. Was expecting: "
+                 , _expected_error.message());
+        }
+
+    }
+    else if (_expected_error != this->get_error())
+    {
+        test_failed();
+        print("Expected error_code: ", _expected_error.message());
+        print("Obtained error_code: ", this->get_error().message());
+    }
+
+    if (this->has_error())
+    {
+        return {boost::stringify::v0::unexpect_t{}, std::error_code{}};
+    }
+    return {};
+}
+
+template <typename CharOut>
+void input_tester<CharOut>::test_failed()
+{
+    if ( ! _source_location_printed)
+    {
+        std::cout << _src_filename << ":" << _src_line << ":" << " error: \n";
+        _source_location_printed = true;
+    }
+    ++global_errors_count();
+}
+
+template <typename CharOut>
+bool input_tester<CharOut>::wrongly_reserved() const
+{
+    return (_reserved_size < _result.length() || too_much_reserved());
+}
+
+template <typename CharOut>
+bool input_tester<CharOut>::too_much_reserved() const
+{
+    return
+        static_cast<double>(_reserved_size) /
+        static_cast<double>(_result.length())
+        > _reserve_factor;
+}
+
+template<typename CharT>
+auto make_tester
+   ( const CharT* expected
+   , const char* filename
+   , int line
+   , std::error_code err
+   , double reserve_factor = 1.0 )
+{
+   using writer = input_tester<CharT>;
+   return boost::stringify::v0::make_destination
+       <writer, const CharT*, const char*, int, std::error_code, double>
+       (expected, filename, line, err, reserve_factor);
+}
+
+template<typename CharT>
+auto make_tester
+   ( const CharT* expected
+   , const char* filename
+   , int line
+   , double reserve_factor = 1.0 )
+{
+   using writer = input_tester<CharT>;
+   return boost::stringify::v0::make_destination
+       <writer, const CharT*, const char*, int, double>
+       (expected, filename, line, reserve_factor);
+}
+
+#define TEST(EXPECTED)                                  \
+    (void) make_tester((EXPECTED), __FILE__, __LINE__)  \
+    .reserve_calc()
 
 #define TEST_RF(EXPECTED, RF)                                 \
-    error_code_tester(__FILE__, __LINE__)  <<                 \
-        make_tester((EXPECTED), __FILE__, __LINE__, (RF), 60)\
-        .reserve_calc()
+    (void) make_tester((EXPECTED), __FILE__, __LINE__, (RF))  \
+    .reserve_calc()
 
-#define TEST_ERR(EXPECTED, ERR)                               \
-    error_code_tester(__FILE__, __LINE__, (ERR))  <<          \
-        make_tester((EXPECTED), __FILE__, __LINE__, 1.0, 60)  \
-        .reserve_calc()
+#define TEST_ERR(EXPECTED, ERR)                                 \
+    (void) make_tester((EXPECTED), __FILE__, __LINE__, (ERR)  ) \
+    .reserve_calc()
 
-#define TEST_ERR_RF(EXPECTED, ERR, RF)                        \
-    error_code_tester(__FILE__, __LINE__, (ERR))  <<          \
-        make_tester((EXPECTED), __FILE__, __LINE__, (RF), 60) \
-        .reserve_calc()
-
-#define BUFFERED_TEST(SIZE, EXPECTED)                             \
-    error_code_tester(__FILE__, __LINE__)  <<                     \
-        make_tester((EXPECTED), __FILE__, __LINE__, 1.0, (SIZE))  \
-        .reserve_calc()
-
-#define BUFFERED_TEST_RF(SIZE, EXPECTED, RF)                      \
-    error_code_tester(__FILE__, __LINE__)  <<                     \
-        make_tester((EXPECTED), __FILE__, __LINE__, (RF), (SIZE)) \
-        .reserve_calc()
-
-#define BUFFERED_TEST_ERR(SIZE, EXPECTED, ERR)                    \
-    error_code_tester(__FILE__, __LINE__, (ERR))  <<              \
-        make_tester((EXPECTED), __FILE__, __LINE__, 1.0, (SIZE))  \
-        .reserve_calc()
-
-#define BUFFERED_TEST_ERR_RF(SIZE, EXPECTED, ERR, RF)             \
-    error_code_tester(__FILE__, __LINE__, (ERR))  <<              \
-        make_tester((EXPECTED), __FILE__, __LINE__, (RF), (SIZE)) \
-        .reserve_calc()
-
+#define TEST_ERR_RF(EXPECTED, ERR, RF)                              \
+    (void) make_tester((EXPECTED), __FILE__, __LINE__, (ERR), (RF)) \
+    .reserve_calc()
 
 #endif
-
-

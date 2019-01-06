@@ -30,9 +30,9 @@ public:
 
     int remaining_width(int w) const override;
 
-    stringify::v0::expected_output_buffer<CharT> write
-        ( stringify::v0::output_buffer<CharT> buff
-        , stringify::buffer_recycler<CharT>& recycler ) const override;
+    bool write
+        ( stringify::v0::output_buffer<CharT>& buff
+        , stringify::v0::buffer_recycler<CharT>& recycler ) const override;
 
 private:
 
@@ -41,9 +41,9 @@ private:
 
     CharT* _write(CharT* it) const noexcept;
 
-    stringify::v0::expected_output_buffer<CharT> _buff_write
-        ( stringify::v0::output_buffer<CharT> buff
-        , stringify::buffer_recycler<CharT>& recycler ) const;
+    bool _buff_write
+        ( stringify::v0::output_buffer<CharT>& buff
+        , stringify::v0::buffer_recycler<CharT>& recycler ) const;
 };
 
 template <typename IntT, typename CharT>
@@ -60,21 +60,19 @@ int int_printer<IntT, CharT>::remaining_width(int w) const
 }
 
 template <typename IntT, typename CharT>
-stringify::v0::expected_output_buffer<CharT> int_printer<IntT, CharT>::write
-    ( stringify::v0::output_buffer<CharT> buff
-    , stringify::buffer_recycler<CharT>& recycler ) const
+bool int_printer<IntT, CharT>::write
+    ( stringify::v0::output_buffer<CharT>& buff
+    , stringify::v0::buffer_recycler<CharT>& recycler ) const
 {
-    std::size_t space = buff.end - buff.it;
+    auto ob = buff;
+    std::size_t space = ob.end - ob.it;
     unsigned necessary_space = _value >= 0 ? _digcount : _digcount + 1;
     if (space >= necessary_space)
     {
-        buff.it = _write(buff.it);
-        return { stringify::v0::in_place_t{}, buff };
+        buff.it = _write(ob.it);
+        return true;
     }
-    else
-    {
-        return _buff_write(buff, recycler);
-    }
+    return _buff_write(buff, recycler);
 }
 
 template <typename IntT, typename CharT>
@@ -95,48 +93,44 @@ CharT* int_printer<IntT, CharT>::_write(CharT* it) const noexcept
 
 
 template <typename IntT, typename CharT>
-stringify::v0::expected_output_buffer<CharT> int_printer<IntT, CharT>::_buff_write
-    ( stringify::v0::output_buffer<CharT> buff
-    , stringify::buffer_recycler<CharT>& recycler ) const
+bool int_printer<IntT, CharT>::_buff_write
+    ( stringify::v0::output_buffer<CharT>& buff
+    , stringify::v0::buffer_recycler<CharT>& recycler ) const
 {
     char tmp[sizeof(CharT) * 3];
     char* tmp_end = tmp + sizeof(tmp) / sizeof(tmp[0]);
+    auto ob = buff;
     auto it =
         stringify::v0::detail::write_int_dec_txtdigits_backwards<IntT, char>
         (_value, tmp_end);
 
     if (_value < 0)
     {
-        if (buff.it != buff.end)
+        if (ob.it != ob.end && !recycler.recycle(ob))
         {
-            auto x = recycler.recycle(buff.it);
-            BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-            buff = * x;
+            return false;
         }
-        *buff.it = '-';
-        ++buff.it;
+        *ob.it = '-';
+        ++ob.it;
     }
 
     auto count = _digcount;
-    while(true)
+    do
     {
-        std::size_t space = buff.end - buff.it;
-        if (space < count)
+        std::size_t space = ob.end - ob.it;
+        if (space >= count)
         {
-            std::copy_n(it, space, buff.it);
-            it += space;
-            count -= space;
-            auto x = recycler.recycle(buff.it + space);
-            BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-            buff = * x;
+            std::copy_n(it, count, ob.it);
+            buff.it = ob.it + count;
+            buff.end = ob.end;
+            return true;
         }
-        else
-        {
-            std::copy_n(it, count, buff.it);
-            buff.it += count;
-            return { stringify::v0::in_place_t{}, buff };
-        }
-    }
+        std::copy_n(it, space, ob.it);
+        it += space;
+        ob.it += space;
+        count -= space;
+    } while (recycler.recycle(ob));
+    return false;
 }
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)

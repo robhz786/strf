@@ -34,12 +34,13 @@ public:
         return 0;
     }
 
-    boost::stringify::v0::expected_output_buffer<CharT> write
-        ( boost::stringify::v0::output_buffer<CharT> ob
+    bool write
+        ( boost::stringify::v0::output_buffer<CharT>& ob
         , boost::stringify::v0::buffer_recycler<CharT>& rec ) const override
     {
-        auto x = rec.recycle(ob.it);
-        return { boost::stringify::v0::unexpect_t{}, m_err };
+        rec.set_error(m_err);
+        rec.recycle(ob);
+        return false;
     }
 
     int remaining_width(int w) const override

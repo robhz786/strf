@@ -96,32 +96,20 @@ int main()
         int vec [3] = {11, 22, 33};
 
         TEST( "11, 22, 33") (strf::range(vec,  ", "));
-        TEST( "11, 22, 33") (strf::range(vec, u", "));
-        TEST( "11, 22, 33") (strf::range(vec, L", "));
-        TEST( "11, 22, 33") (strf::range(vec, U", "));
-        TEST(u"11, 22, 33") (strf::range(vec,  ", "));
-        TEST(u"+11, +22, +33") (+strf::fmt_range(vec,  ", "));
+        // TEST(u"+11, +22, +33") (+strf::fmt_range(vec,  ", "));
 
-        TEST( "0xb, 0x16, 0x21") (~strf::hex(strf::range(vec,   ", ")));
-        TEST( "0xb, 0x16, 0x21") (~strf::hex(strf::range(vec,  u", ")));
-        TEST( "0xb, 0x16, 0x21") (~strf::hex(strf::range(vec,  U", ")));
-        TEST( "0xb, 0x16, 0x21") (~strf::hex(strf::range(vec,  L", ")));
-        TEST(u"0xb, 0x16, 0x21") (~strf::hex(strf::range(vec,   ", ")));
+        // TEST( "0xb, 0x16, 0x21") (~strf::hex(strf::range(vec,   ", ")));
+        // TEST(u"0xb, 0x16, 0x21") (~strf::hex(strf::range(vec,   ", ")));
 
         TEST( "  11, 22, 33")
             (strf::join_right(12)(strf::range(vec,  ", ")));
         TEST( "  --11, 22, 33--")
             (strf::join_right(16)("--", strf::range(vec,  ", "), "--"));
-        TEST( "  --11, 22, 33--")
-            (strf::join_right(16)("--", strf::range(vec,  u", "), "--"));
 
-        TEST( "   0xb, 0x16, 0x21")
-            (strf::join_right(18)(~strf::hex(strf::range(vec, ", "))));
-        TEST( "   --0xb, 0x16, 0x21--")
-            (strf::join_right(22)("--", ~strf::hex(strf::range(vec, ", ")), "--"));
-        TEST( "   --0xb, 0x16, 0x21--")
-            (strf::join_right(22)("--", ~strf::hex(strf::range(vec, u", ")), "--"));
-
+        // TEST( "   0xb, 0x16, 0x21")
+        //     (strf::join_right(18)(~strf::hex(strf::range(vec, ", "))));
+        // TEST( "   --0xb, 0x16, 0x21--")
+        //     (strf::join_right(22)("--", ~strf::hex(strf::range(vec, ", ")), "--"));
     }
 
 

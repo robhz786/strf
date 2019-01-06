@@ -211,11 +211,11 @@ std::size_t asm_string_size
 }
 
 template <typename CharT>
-stringify::v0::expected_output_buffer<CharT> asm_string_write
+bool asm_string_write
     ( const CharT* it
     , const CharT* end
     , std::initializer_list<const stringify::v0::printer<CharT>*> args
-    , stringify::v0::output_buffer<CharT> ob
+    , stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::buffer_recycler<CharT>& rec
     , stringify::v0::encoding<CharT> enc
     , stringify::v0::asm_invalid_arg policy )
@@ -233,9 +233,10 @@ stringify::v0::expected_output_buffer<CharT> asm_string_write
             return stringify::v0::detail::write_str(ob, rec, prev, end - prev);
         }
 
-        auto x = stringify::v0::detail::write_str(ob, rec, prev, it - prev);
-        BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-        ob = *x;
+        if ( ! stringify::v0::detail::write_str(ob, rec, prev, it - prev))
+        {
+            return false;
+        }
         ++it;
 
         after_the_brace:
@@ -249,15 +250,14 @@ stringify::v0::expected_output_buffer<CharT> asm_string_write
             {
                 while( ! enc.write_replacement_char(&ob.it, ob.end))
                 {
-                    auto x = rec.recycle(ob.it);
-                    BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-                    ob = *x;
+                    if (! rec.recycle(ob))
+                        return false;
                 }
             }
             else if (policy == stringify::v0::asm_invalid_arg::stop)
             {
-                return { stringify::v0::unexpect_t{}
-                       , std::make_error_code(std::errc::invalid_argument) };
+                rec.set_error(std::errc::invalid_argument);
+                return false;
             }
 
             break;
@@ -268,24 +268,26 @@ stringify::v0::expected_output_buffer<CharT> asm_string_write
         {
             if (arg_idx < num_args)
             {
-                auto x = args.begin()[arg_idx]->write(ob, rec);
-                BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-                ob = *x;
+                if (! args.begin()[arg_idx]->write(ob, rec))
+                {
+                    return false;
+                }
                 ++arg_idx;
             }
             else if (policy == stringify::v0::asm_invalid_arg::replace)
             {
-                while(!enc.write_replacement_char(&ob.it, ob.end))
+                while( ! enc.write_replacement_char(&ob.it, ob.end))
                 {
-                    auto x = rec.recycle(ob.it);
-                    BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-                    ob = *x;
+                    if (! rec.recycle(ob))
+                    {
+                        return false;
+                    }
                 }
             }
             else if (policy == stringify::v0::asm_invalid_arg::stop)
             {
-                return { stringify::v0::unexpect_t{}
-                       , std::make_error_code(std::errc::invalid_argument) };
+                rec.set_error(std::errc::invalid_argument);
+                return false;
             }
             ++it;
         }
@@ -295,23 +297,25 @@ stringify::v0::expected_output_buffer<CharT> asm_string_write
 
             if (result.value < num_args)
             {
-                auto x = args.begin()[result.value]->write(ob, rec);
-                BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-                ob = *x;
+                if (! args.begin()[result.value]->write(ob, rec))
+                {
+                    return false;
+                }
             }
             else if (policy == stringify::v0::asm_invalid_arg::replace)
             {
                 while(!enc.write_replacement_char(&ob.it, ob.end))
                 {
-                    auto x = rec.recycle(ob.it);
-                    BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-                    ob = *x;
+                    if ( ! rec.recycle(ob))
+                    {
+                        return false;
+                    }
                 }
             }
             else if (policy == stringify::v0::asm_invalid_arg::stop)
             {
-                return { stringify::v0::unexpect_t{}
-                       , std::make_error_code(std::errc::invalid_argument) };
+                rec.set_error(std::errc::invalid_argument);
+                return false;
             }
 
             it = traits::find(result.it, end - result.it, '}');
@@ -329,9 +333,10 @@ stringify::v0::expected_output_buffer<CharT> asm_string_write
             {
                 return stringify::v0::detail::write_str(ob, rec, it, end - it);
             }
-            auto x = stringify::v0::detail::write_str(ob, rec, it, (it2 - it));
-            BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-            ob = *x;
+            if (!stringify::v0::detail::write_str(ob, rec, it, (it2 - it)))
+            {
+                return false;
+            }
             it = it2 + 1;
             goto after_the_brace;
         }
@@ -341,24 +346,26 @@ stringify::v0::expected_output_buffer<CharT> asm_string_write
             {
                 if (arg_idx < num_args)
                 {
-                    auto x = args.begin()[arg_idx]->write(ob, rec);
-                    BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-                    ob = *x;
+                    if (! args.begin()[arg_idx]->write(ob, rec))
+                    {
+                        return false;
+                    }
                     ++arg_idx;
                 }
                 else if (policy == stringify::v0::asm_invalid_arg::replace)
                 {
                     while(!enc.write_replacement_char(&ob.it, ob.end))
                     {
-                        auto x = rec.recycle(ob.it);
-                        BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-                        ob = *x;
+                        if (!rec.recycle(ob))
+                        {
+                            return false;
+                        }
                     }
                 }
                 else if (policy == stringify::v0::asm_invalid_arg::stop)
                 {
-                    return { stringify::v0::unexpect_t{}
-                           , std::make_error_code(std::errc::invalid_argument) };
+                    rec.set_error(std::errc::invalid_argument);
+                    return false;
                 }
             }
             auto it2 = it + 1;
@@ -370,7 +377,7 @@ stringify::v0::expected_output_buffer<CharT> asm_string_write
             ++it;
         }
     }
-    return {stringify::v0::in_place_t{}, ob};
+    return true;
 }
 
 

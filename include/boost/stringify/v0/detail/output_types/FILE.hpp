@@ -28,11 +28,11 @@ public:
 
     narrow_file_writer(std::FILE* file, std::size_t* count)
         : _file(file)
-        , _count(count)
+        , _count_ptr(count)
     {
-        if (_count != nullptr)
+        if (_count_ptr != nullptr)
         {
-            *_count = 0;
+            *_count_ptr = 0;
         }
     }
 
@@ -40,14 +40,12 @@ public:
     {
     }
 
-    stringify::v0::expected_output_buffer<CharT> start() noexcept
+    stringify::v0::output_buffer<CharT> start() noexcept
     {
-        return { stringify::v0::in_place_t{}
-               , stringify::v0::output_buffer<CharT>
-                   { _buff, _buff + _buff_size } };
+        return { _buff, _buff + _buff_size };
     }
 
-    stringify::v0::expected_output_buffer<CharT> recycle(CharT* it) override;
+    bool recycle(stringify::v0::output_buffer<CharT>& buff) override;
 
     stringify::v0::expected<void, std::error_code> finish(CharT* it);
 
@@ -56,33 +54,33 @@ protected:
     bool do_put(const CharT* it);
 
     std::FILE* _file;
-    std::size_t* _count = nullptr;
+    std::size_t* _count_ptr = nullptr;
 };
 
 
 template <typename CharT>
-stringify::v0::expected_output_buffer<CharT>
-narrow_file_writer<CharT>::recycle(CharT* it)
+bool narrow_file_writer<CharT>::recycle(stringify::v0::output_buffer<CharT>& buff)
 {
-    if (!do_put(it))
+    if (do_put(buff.it))
     {
-        return { stringify::v0::unexpect_t{}
-               , std::error_code{errno, std::generic_category() } };
+        BOOST_ASSERT(buff.end <= _buff + _buff_size);
+        buff.it = _buff;
+        buff.end = _buff + _buff_size;
+        return true;
     }
-    return start();
+    return false;
 }
 
 
 template <typename CharT>
 stringify::v0::expected<void, std::error_code>
-narrow_file_writer<CharT>::finish(CharT* it)
+inline narrow_file_writer<CharT>::finish(CharT* it)
 {
-    if (!do_put(it))
+    if (! this->has_error() && do_put(it))
     {
-        return { stringify::v0::unexpect_t{}
-               , std::error_code{errno, std::generic_category() } };
+        return {};
     }
-    return {};
+    return { stringify::v0::unexpect_t{}, this->get_error() };
 }
 
 template <typename CharT>
@@ -92,9 +90,9 @@ bool narrow_file_writer<CharT>::do_put(const CharT* it)
     std::size_t count = it - _buff;
     auto count_inc = std::fwrite(_buff, sizeof(CharT), count, _file);
 
-    if (_count != nullptr)
+    if (_count_ptr != nullptr)
     {
-        *_count += count_inc;
+        *_count_ptr += count_inc;
     }
     return count == count_inc;
 }
@@ -119,40 +117,28 @@ public:
 
     wide_file_writer(std::FILE* file, std::size_t* count)
         : _file(file)
-        , _count(count)
+        , _count_ptr(count)
     {
-        if (_count != nullptr)
+        if (_count_ptr != nullptr)
         {
-            *_count = 0;
+            *_count_ptr = 0;
         }
     }
 
-    stringify::v0::expected_output_buffer<char_type> start() noexcept
+    stringify::v0::output_buffer<char_type> start() noexcept
     {
-        return { stringify::v0::in_place_t{}
-               , stringify::v0::output_buffer<char_type>
-                   { _buff, _buff + _buff_size } };
+        return { _buff, _buff + _buff_size };
     }
 
-    stringify::v0::expected_output_buffer<char_type> recycle(char_type* it) override
-    {
-        if (do_put(it))
-        {
-            return start();
-        }
-        return { stringify::v0::unexpect_t{}
-               , std::error_code{errno, std::generic_category() } };
-
-    }
+    bool recycle(stringify::v0::output_buffer<char_type>& buff) override;
 
     stringify::v0::expected<void, std::error_code> finish(char_type* it)
     {
-        if (do_put(it))
+        if ( ! this->has_error() && do_put(it))
         {
             return {};
         }
-        return { stringify::v0::unexpect_t{}
-               , std::error_code{errno, std::generic_category() } };
+        return { stringify::v0::unexpect_t{}, this->get_error() };
     }
 
 private:
@@ -160,10 +146,23 @@ private:
     bool do_put(const wchar_t* it);
 
     std::FILE* _file;
-    std::size_t* _count = nullptr;
+    std::size_t* _count_ptr = nullptr;
 };
 
 #if ! defined(BOOST_STRINGIFY_OMIT_IMPL)
+
+BOOST_STRINGIFY_INLINE
+bool wide_file_writer::recycle(stringify::v0::output_buffer<char_type>& buff)
+{
+    if (do_put(buff.it))
+    {
+        buff.it = _buff;
+        buff.end = _buff + _buff_size;
+        return true;
+
+    }
+    return false;
+}
 
 BOOST_STRINGIFY_INLINE bool wide_file_writer::do_put(const wchar_t* end)
 {
@@ -177,12 +176,13 @@ BOOST_STRINGIFY_INLINE bool wide_file_writer::do_put(const wchar_t* end)
         if(ret == WEOF)
         {
             good = false;
+            this->set_error(std::error_code{errno, std::generic_category()});
             break;
         }
     }
-    if (_count != nullptr)
+    if (_count_ptr != nullptr)
     {
-        *_count += count;
+        *_count_ptr += count;
     }
     return good;
 }

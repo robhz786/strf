@@ -30,9 +30,9 @@ public:
 
     std::size_t necessary_size() const override;
 
-    stringify::v0::expected_output_buffer<CharT> write
-        ( stringify::v0::output_buffer<CharT> buff
-        , stringify::buffer_recycler<CharT>& recycler ) const override;
+    bool write
+        ( stringify::v0::output_buffer<CharT>& buff
+        , stringify::v0::buffer_recycler<CharT>& recycler ) const override;
 
     int remaining_width(int w) const override;
 
@@ -59,10 +59,9 @@ std::size_t string_printer<CharT>::necessary_size() const
 }
 
 template<typename CharT>
-stringify::v0::expected_output_buffer<CharT>
-string_printer<CharT>::write
-    ( stringify::v0::output_buffer<CharT> buff
-    , stringify::buffer_recycler<CharT>& recycler ) const
+bool string_printer<CharT>::write
+    ( stringify::v0::output_buffer<CharT>& buff
+    , stringify::v0::buffer_recycler<CharT>& recycler ) const
 {
     return stringify::v0::detail::write_str(buff, recycler, _str, _len);
 }
@@ -94,9 +93,8 @@ public:
 
     std::size_t necessary_size() const override;
 
-    stringify::v0::expected_output_buffer<CharT> write
-        ( stringify::v0::output_buffer<CharT> buff
-        , stringify::buffer_recycler<CharT>& recycler ) const override;
+    bool write( stringify::v0::output_buffer<CharT>& buff
+              , stringify::v0::buffer_recycler<CharT>& recycler ) const override;
 
     int remaining_width(int w) const override;
 
@@ -117,14 +115,12 @@ private:
 
     void _init();
 
-    stringify::v0::expected_output_buffer<CharT> _write_str
-        ( stringify::v0::output_buffer<CharT> buff
-        , stringify::buffer_recycler<CharT>& recycler ) const;
+    bool _write_str( stringify::v0::output_buffer<CharT>& buff
+                   , stringify::v0::buffer_recycler<CharT>& recycler ) const;
 
-    stringify::v0::expected_output_buffer<CharT> _write_fill
-        ( stringify::v0::output_buffer<CharT> buff
-        , stringify::buffer_recycler<CharT>& recycler
-        , unsigned count ) const;
+    bool _write_fill( stringify::v0::output_buffer<CharT>& buff
+                    , stringify::v0::buffer_recycler<CharT>& recycler
+                    , unsigned count ) const;
 };
 
 template<typename CharT>
@@ -168,10 +164,9 @@ int fmt_string_printer<CharT>::remaining_width(int w) const
 }
 
 template<typename CharT>
-stringify::v0::expected_output_buffer<CharT>
-fmt_string_printer<CharT>::write
-    ( stringify::v0::output_buffer<CharT> buff
-    , stringify::buffer_recycler<CharT>& recycler ) const
+bool fmt_string_printer<CharT>::write
+    ( stringify::v0::output_buffer<CharT>& buff
+    , stringify::v0::buffer_recycler<CharT>& recycler ) const
 {
     if (_fillcount > 0)
     {
@@ -179,20 +174,20 @@ fmt_string_printer<CharT>::write
         {
             case stringify::v0::alignment::left:
             {
-                auto x = _write_str(buff, recycler);
-                return x ? _write_fill(*x, recycler, _fillcount) : x;
+                return _write_str(buff, recycler)
+                    && _write_fill(buff, recycler, _fillcount);
             }
             case stringify::v0::alignment::center:
             {
                 auto halfcount = _fillcount / 2;
-                auto x = _write_fill(buff, recycler, halfcount);
-                if(x) x = _write_str(*x, recycler);
-                return x ? _write_fill(*x, recycler, _fillcount - halfcount) : x;
+                return _write_fill(buff, recycler, halfcount)
+                    && _write_str(buff, recycler)
+                    && _write_fill(buff, recycler, _fillcount - halfcount);
             }
             default:
             {
-                auto x = _write_fill(buff, recycler, _fillcount);
-                return x ? _write_str(*x, recycler) : x;
+                return _write_fill(buff, recycler, _fillcount)
+                    && _write_str(buff, recycler);
             }
         }
     }
@@ -200,18 +195,18 @@ fmt_string_printer<CharT>::write
 }
 
 template <typename CharT>
-stringify::v0::expected_output_buffer<CharT> fmt_string_printer<CharT>::_write_str
-    ( stringify::v0::output_buffer<CharT> buff
-    , stringify::buffer_recycler<CharT>& recycler ) const
+bool fmt_string_printer<CharT>::_write_str
+    ( stringify::v0::output_buffer<CharT>& buff
+    , stringify::v0::buffer_recycler<CharT>& recycler ) const
 {
     return stringify::v0::detail::write_str
         ( buff, recycler, _fmt.value().begin(), _fmt.value().length() );
 }
 
 template <typename CharT>
-stringify::v0::expected_output_buffer<CharT> fmt_string_printer<CharT>::_write_fill
-    ( stringify::v0::output_buffer<CharT> buff
-    , stringify::buffer_recycler<CharT>& recycler
+bool fmt_string_printer<CharT>::_write_fill
+    ( stringify::v0::output_buffer<CharT>& buff
+    , stringify::v0::buffer_recycler<CharT>& recycler
     , unsigned count ) const
 {
     return stringify::v0::detail::write_fill

@@ -422,43 +422,33 @@ private:
             writer.get().reserve(res_size);
         }
 
-        auto x = writer.get().start();
-        if (x)
-        {
-            x = stringify::v0::detail::asm_string_write
-                ( str, str_end, args, *x, writer.get(), enc, policy );
-
-            if (x)
-            {
-                return writer.get().finish((*x).it);
-            }
-        }
-        return {stringify::v0::unexpect_t{}, x.error()};
+        auto buff = writer.get().start();
+        bool no_error = stringify::v0::detail::asm_string_write
+            ( str, str_end, args, buff, writer.get(), enc, policy );
+        BOOST_ASSERT(no_error == ! writer.get().has_error());
+        (void) no_error;
+        return writer.get().finish(buff.it);
     }
 
     _return_type _asm_write
         ( std::false_type
         , const _char_type* str
         , const _char_type* str_end
-        , _arglist_type args) const
+        , _arglist_type args ) const
     {
         _output_writer_wrapper writer{_owinit};
-        auto x = writer.get().start();
-        if (x)
-        {
-            const auto& enc
+        auto buff = writer.get().start();
+
+        const auto& enc
             = get_facet<stringify::v0::encoding_category<_char_type>, void>(_fpack);
-            const auto policy
+        const auto policy
             = get_facet<stringify::v0::asm_invalid_arg_category, void>(_fpack);
 
-            x = stringify::v0::detail::asm_string_write
-                ( str, str_end, args, *x, writer.get(), enc, policy );
-            if (x)
-            {
-                return writer.get().finish((*x).it);
-            }
-        }
-        return {stringify::v0::unexpect_t{}, x.error()};
+        bool no_error = stringify::v0::detail::asm_string_write
+            ( str, str_end, args, buff, writer.get(), enc, policy );
+        BOOST_ASSERT(no_error == ! writer.get().has_error());
+        (void) no_error;
+        return writer.get().finish(buff.it);
     }
 
 
@@ -475,17 +465,11 @@ private:
         {
             writer.get().reserve(res_size);
         }
-
-        auto x = writer.get().start();
-        if (x)
-        {
-            x = _write_args(*x, writer.get(), args...);
-            if (x)
-            {
-                return writer.get().finish((*x).it);
-            }
-        }
-        return { stringify::v0::unexpect_t{}, x.error() };
+        auto buff = writer.get().start();
+        bool no_error = _write_args(buff, writer.get(), args...);
+        BOOST_ASSERT(no_error == ! writer.get().has_error());
+        (void) no_error;
+        return writer.get().finish(buff.it);
     }
 
 
@@ -494,21 +478,16 @@ private:
     {
         _output_writer_wrapper writer{_owinit};
 
-        auto x = writer.get().start();
-        if (x)
-        {
-            x = _write_args(*x, writer.get(), args...);
-            if (x)
-            {
-                return writer.get().finish((*x).it);
-            }
-        }
-        return { stringify::v0::unexpect_t{}, x.error() };
+        auto buff = writer.get().start();
+        bool no_error = _write_args(buff, writer.get(), args...);
+        BOOST_ASSERT(no_error == ! writer.get().has_error());
+        (void) no_error;
+        return writer.get().finish(buff.it);
     }
 
     template <typename Arg>
-    static stringify::v0::expected_output_buffer<_char_type> _write_args
-        ( stringify::v0::output_buffer<_char_type> b
+    static bool _write_args
+        ( stringify::v0::output_buffer<_char_type>& b
         , OutputWriter& writer
         , const Arg& arg )
     {
@@ -516,21 +495,20 @@ private:
     }
 
     template <typename Arg, typename ... Args>
-    static stringify::v0::expected_output_buffer<_char_type> _write_args
-        ( stringify::v0::output_buffer<_char_type> b
+    static bool _write_args
+        ( stringify::v0::output_buffer<_char_type>& b
         , OutputWriter& writer
         , const Arg& arg
         , const Args& ... args )
     {
-        auto x = arg.write(b, writer);
-        return x ? _write_args(*x, writer, args ...) : x;
+        return arg.write(b, writer) && _write_args(b, writer, args ...);
     }
 
-    static stringify::v0::expected_output_buffer<_char_type> _write_args
-        ( stringify::v0::output_buffer<_char_type> b
+    static bool _write_args
+        ( stringify::v0::output_buffer<_char_type>& b
         , OutputWriter& )
     {
-        return { stringify::v0::in_place_t{}, b};
+        return true;
     }
 
     FPack _fpack;

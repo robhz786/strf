@@ -31,31 +31,47 @@ public:
 
     ~char_ptr_writer()
     {
-        if ( ! finished && _begin != _end)
+        if (! _finish_called && _begin != _end)
         {
             *_begin = 0;
         }
     }
 
-    stringify::v0::expected_output_buffer<CharOut> start() noexcept
+    output_buffer<CharOut> start() noexcept
     {
         CharOut* end =  _end != _begin ? _end -1 : _end;
 
-        return { boost::stringify::v0::in_place_t{}
-               , stringify::v0::output_buffer<CharOut>{_begin, end} };
+        return {_begin, end};
     }
 
-    stringify::v0::expected_output_buffer<CharOut> recycle(CharOut* it) override
-    {
-        BOOST_ASSERT(it < _end);
-        (void) it;
-        return { stringify::v0::unexpect_t{}
-               , std::make_error_code(std::errc::result_out_of_range) };
-    }
+    bool recycle(stringify::v0::output_buffer<CharOut>& ob) override;
 
-    stringify::v0::expected<std::size_t, std::error_code> finish(CharOut *it) noexcept
+    stringify::v0::expected<std::size_t, std::error_code>
+    finish(CharOut *it) noexcept;
+
+private:
+
+    CharOut* _begin;
+    CharOut* _end;
+    bool  _finish_called = false;
+};
+
+template<typename CharOut>
+bool char_ptr_writer<CharOut>::recycle(stringify::v0::output_buffer<CharOut>& ob)
+{
+    BOOST_ASSERT(ob.it <= _end);
+    (void) ob;
+    this->set_error(std::make_error_code(std::errc::result_out_of_range));
+    return false;
+}
+
+template<typename CharOut>
+inline stringify::v0::expected<std::size_t, std::error_code>
+char_ptr_writer<CharOut>::finish(CharOut *it) noexcept
+{
+    _finish_called = true;
+    if ( ! this->has_error() )
     {
-        finished = true;
         if (_begin != _end)
         {
             BOOST_ASSERT(_begin <= it && it < _end);
@@ -63,13 +79,12 @@ public:
         }
         return { boost::stringify::v0::in_place_t{}, it - _begin };
     }
-
-private:
-
-    CharOut* _begin;
-    CharOut* _end;
-    bool finished = false;
-};
+    if (_begin != _end)
+    {
+        *_begin = 0;
+    }
+    return { boost::stringify::v0::unexpect_t{}, this->get_error() };
+}
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 

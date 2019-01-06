@@ -34,23 +34,20 @@ public:
         }
     }
 
-    stringify::v0::expected_output_buffer<CharT> start() noexcept
+    stringify::v0::output_buffer<CharT> start() noexcept
     {
-        return { stringify::v0::in_place_t{}
-               , stringify::v0::output_buffer<CharT>
-                   { _buff, _buff + _buff_size } };
+        return  { _buff, _buff + _buff_size };
     }
 
-    stringify::v0::expected_output_buffer<CharT> recycle(CharT* it) override;
+    bool recycle(stringify::v0::output_buffer<CharT>& buff) override;
 
     stringify::v0::expected<void, std::error_code> finish(CharT* it)
     {
-        if (!do_put(it))
+        if ( ! this->has_error() && do_put(it))
         {
-            return { stringify::v0::unexpect_t{}
-                   , std::make_error_code(std::errc::io_error) };
+            return {};
         }
-        return {};
+        return { stringify::v0::unexpect_t{}, this->get_error() };
     }
 
 private:
@@ -63,15 +60,15 @@ private:
 };
 
 template <typename CharT, typename Traits>
-stringify::v0::expected_output_buffer<CharT>
-std_streambuf_writer<CharT, Traits>::recycle(CharT* it)
+bool std_streambuf_writer<CharT, Traits>::recycle
+    ( stringify::v0::output_buffer<CharT>& buff )
 {
-    if (!do_put(it))
+    if (do_put(buff.it))
     {
-        return { stringify::v0::unexpect_t{}
-               , std::make_error_code(std::errc::io_error) };
+        buff = start();
+        return true;
     }
-    return start();
+    return false;
 }
 
 
@@ -85,7 +82,12 @@ bool std_streambuf_writer<CharT, Traits>::do_put(const CharT* end)
     {
         *m_count += static_cast<std::size_t>(count_inc);
     }
-    return static_cast<std::streamsize>(count) == count_inc;
+    if (static_cast<std::streamsize>(count) == count_inc)
+    {
+        return true;
+    }
+    this->set_error(std::make_error_code(std::errc::io_error));
+    return false;
 }
 
 

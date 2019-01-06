@@ -34,7 +34,6 @@ test-suite stringify :
 #   [ run facets_pack.cpp       : : : : test-facets_pack-ho ]
 #   [ run reserve.cpp           : : : : test-reserve-ho ]
    [ run width_calculator.cpp  : : : : test-width_calculator-ho ]
-#   [ run transcoding.cpp       : : : : test-transcoding-ho ]
    [ run utf_to_utf.cpp  : : : : test-utf_to_utf-ho ]
    [ run single_byte_encodings.cpp  : : : : test-single_byte_encodings-ho ]
 
@@ -57,7 +56,6 @@ test-suite stringify :
 #   [ run facets_pack.cpp       $(slib) : : : $(nho) : test-facets_pack-nho ]
 #   [ run reserve.cpp           $(slib) : : : $(nho) : test-reserve-nho ]
    [ run width_calculator.cpp  $(slib) : : : $(nho) : test-width_calculator-nho ]
-#   [ run transcoding.cpp       $(slib) : : : $(nho) : test-transcoding-nho ]
    [ run utf_to_utf.cpp        $(slib) : : : $(nho) : test-utf_to_utf-nho ]
    [ run single_byte_encodings.cpp  $(slib) : : : $(nho) : test-single_byte_encodings-nho ]
 ;

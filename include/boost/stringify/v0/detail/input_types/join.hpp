@@ -267,9 +267,9 @@ public:
         return _args_length() + _fill_length();
     }
 
-    stringify::v0::expected_output_buffer<CharT> write
-        ( stringify::v0::output_buffer<CharT> buff
-        , stringify::buffer_recycler<CharT>& recycler ) const override
+    bool write
+        ( stringify::v0::output_buffer<CharT>& buff
+        , stringify::v0::buffer_recycler<CharT>& recycler ) const override
     {
         if (_fillcount <= 0)
         {
@@ -281,13 +281,13 @@ public:
             {
                 case stringify::v0::alignment::left:
                 {
-                    auto x = _write_args(buff, recycler);
-                    return x ? _write_fill(*x, recycler, _fillcount): x;
+                    return _write_args(buff, recycler)
+                        && _write_fill(buff, recycler, _fillcount);
                 }
                 case stringify::v0::alignment::right:
                 {
-                    auto x = _write_fill(buff, recycler, _fillcount);
-                    return x ? _write_args(*x, recycler) : x;
+                    return _write_fill(buff, recycler, _fillcount)
+                        && _write_args(buff, recycler);
                 }
                 case stringify::v0::alignment::internal:
                 {
@@ -297,12 +297,9 @@ public:
                 {
                     BOOST_ASSERT(_join.align == stringify::v0::alignment::center);
                     auto half_fillcount = _fillcount / 2;
-                    auto x = _write_fill(buff, recycler, half_fillcount);
-                    if(x)
-                    {
-                        x = _write_args(*x, recycler);
-                    };
-                    return x ? _write_fill(*x, recycler, _fillcount - half_fillcount) : x;
+                    return _write_fill(buff, recycler, half_fillcount)
+                        && _write_args(buff, recycler)
+                        && _write_fill(buff, recycler, _fillcount - half_fillcount);
                 }
             }
         }
@@ -354,47 +351,52 @@ private:
         return w;
     }
 
-    stringify::v0::expected_output_buffer<CharT> _write_splitted
-        ( stringify::v0::output_buffer<CharT> buff
-        , stringify::buffer_recycler<CharT>& recycler ) const
+    bool _write_splitted
+        ( stringify::v0::output_buffer<CharT>& buff
+        , stringify::v0::buffer_recycler<CharT>& recycler ) const
     {
-        stringify::v0::expected_output_buffer<CharT> x { stringify::v0::in_place_t{}
-                                                       , buff };
         auto it = _args.begin();
         for ( int count = _join.num_leading_args
             ; count > 0 && it != _args.end()
             ; --count, ++it)
         {
-            x = (*it)->write(*x, recycler);
-            BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+            if (! (*it)->write(buff, recycler))
+            {
+                return false;
+            }
         }
-        x = _write_fill(*x, recycler, _fillcount);
+        if (! _write_fill(buff, recycler, _fillcount))
+        {
+            return false;
+        }
         while(it != _args.end())
         {
-            BOOST_STRINGIFY_RETURN_ON_ERROR(x);
-            x = (*it)->write(*x, recycler);
+            if (! (*it)->write(buff, recycler))
+            {
+                return false;
+            }
             ++it;
         }
-        return x;
+        return true;
     }
 
-    stringify::v0::expected_output_buffer<CharT> _write_args
-        ( stringify::v0::output_buffer<CharT> buff
-        , stringify::buffer_recycler<CharT>& recycler ) const
+    bool _write_args
+        ( stringify::v0::output_buffer<CharT>& buff
+        , stringify::v0::buffer_recycler<CharT>& recycler ) const
     {
-        stringify::v0::expected_output_buffer<CharT> x { stringify::v0::in_place_t{}
-                                                        , buff };
         for(const auto& arg : _args)
         {
-            x = arg->write(*x, recycler);
-            BOOST_STRINGIFY_RETURN_ON_ERROR(x);
+            if (! arg->write(buff, recycler))
+            {
+                return false;
+            }
         }
-        return x;
+        return true;;
     }
 
-    stringify::v0::expected_output_buffer<CharT> _write_fill
-        ( stringify::v0::output_buffer<CharT> buff
-        , stringify::buffer_recycler<CharT>& recycler
+    bool _write_fill
+        ( stringify::v0::output_buffer<CharT>& buff
+        , stringify::v0::buffer_recycler<CharT>& recycler
         , int count ) const
     {
         return stringify::v0::detail::write_fill
