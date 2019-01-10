@@ -246,6 +246,8 @@ public:
         : _join{cp._join}
         , _args{args}
         , _encoding(cp._encoding)
+        , _err_hdl(cp._err_hdl)
+        , _fillcount(cp._fillcount)
     {
     }
 
@@ -255,6 +257,8 @@ public:
         : _join{std::move(tmp._join)}
         , _args{std::move(args)}
         , _encoding(tmp._encoding)
+        , _err_hdl(tmp._err_hdl)
+        , _fillcount(tmp._fillcount)
     {
     }
 

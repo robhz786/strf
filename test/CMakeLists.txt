@@ -17,7 +17,7 @@ foreach(
   input_int
 #  input_char32
 #  input_facets_pack
-#  input_range
+  input_range
   numpunct
   join
   output_string

@@ -20,11 +20,10 @@ struct base
 
 template <typename CharOut, typename FPack, typename T>
 inline auto make_printer
-    ( strf::output_writer<CharOut>& out
-    , const FPack& fp
+    ( const FPack& fp
     , const base<T> b )
 {
-    return make_printer<CharOut, FPack>(out, fp, b.value);
+    return make_printer<CharOut, FPack>(fp, b.value);
 }
 
 
