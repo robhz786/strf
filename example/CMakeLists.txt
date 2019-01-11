@@ -27,7 +27,7 @@ foreach(x
     range_input
     extend_input_ipv4
     extend_input_ipv6
-    # extend_input_base64
+    extend_input_base64
     extend_input_template
     ) 
 
