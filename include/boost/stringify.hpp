@@ -5,6 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <boost/stringify/v0/dynamic_join_printer.hpp>
 #include <boost/stringify/v0/detail/input_types/int.hpp>
 #include <boost/stringify/v0/detail/input_types/fmt_int.hpp>
 #include <boost/stringify/v0/detail/input_types/char.hpp>

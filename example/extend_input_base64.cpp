@@ -193,278 +193,278 @@ char base64_common_impl::encode(unsigned hextet) const
 
 
 //[single_line_base64_pm_input
-template <typename CharT>
-class single_line_base64_pm_input
-    : public strf::piecemeal_input<CharT>
-    , private base64_common_impl
-{
-public:
+// template <typename CharT>
+// class single_line_base64_pm_input
+//     : public strf::piecemeal_input<CharT>
+//     , private base64_common_impl
+// {
+// public:
 
-    single_line_base64_pm_input
-        ( base64_facet facet
-        , const base64_input_with_format& fmt )
-        : base64_common_impl(facet)
-        , m_fmt(fmt)
-    {
-        BOOST_ASSERT(facet.single_line());
-    }
+//     single_line_base64_pm_input
+//         ( base64_facet facet
+//         , const base64_input_with_format& fmt )
+//         : base64_common_impl(facet)
+//         , m_fmt(fmt)
+//     {
+//         BOOST_ASSERT(facet.single_line());
+//     }
 
-    CharT* get_some(CharT* begin, CharT* end) override;
+//     CharT* get_some(CharT* begin, CharT* end) override;
 
-private:
+// private:
 
-    CharT* write_indentation(CharT* begin, CharT* end);
-    CharT* write_block(CharT* it);
-    const unsigned char* bytes() const
-    {
-        return reinterpret_cast<const unsigned char*>(m_fmt.value().bytes);
-    }
-    auto num_bytes() const
-    {
-        return m_fmt.value().num_bytes;
-    }
+//     CharT* write_indentation(CharT* begin, CharT* end);
+//     CharT* write_block(CharT* it);
+//     const unsigned char* bytes() const
+//     {
+//         return reinterpret_cast<const unsigned char*>(m_fmt.value().bytes);
+//     }
+//     auto num_bytes() const
+//     {
+//         return m_fmt.value().num_bytes;
+//     }
 
-    const base64_input_with_format m_fmt;
-    std::size_t m_index = 0;
-    unsigned m_column = 0;
-};
-
-
-template <typename CharT>
-CharT* single_line_base64_pm_input<CharT>::get_some(CharT* begin, CharT* end)
-{
-    CharT* it =  begin;
-
-    if (m_column < m_fmt.indentation())
-    {
-        it = write_indentation(it, end);
-    }
-    while(it < end - 4 && m_index < num_bytes())
-    {
-        it = write_block(it);
-    }
-    if (m_index >= num_bytes())
-    {
-        this->report_success();
-    }
-    return it;
-}
+//     const base64_input_with_format m_fmt;
+//     std::size_t m_index = 0;
+//     unsigned m_column = 0;
+// };
 
 
-template <typename CharT>
-CharT* single_line_base64_pm_input<CharT>::write_block(CharT* it)
-{
-    std::array<char, 4> arr = encode( bytes() + m_index
-                                    , num_bytes() - m_index );
-    it[0] = arr[0];
-    it[1] = arr[1];
-    it[2] = arr[2];
-    it[3] = arr[3];
-    m_index += 3;
-    return it + 4;
-}
+// template <typename CharT>
+// CharT* single_line_base64_pm_input<CharT>::get_some(CharT* begin, CharT* end)
+// {
+//     CharT* it =  begin;
+
+//     if (m_column < m_fmt.indentation())
+//     {
+//         it = write_indentation(it, end);
+//     }
+//     while(it < end - 4 && m_index < num_bytes())
+//     {
+//         it = write_block(it);
+//     }
+//     if (m_index >= num_bytes())
+//     {
+//         this->report_success();
+//     }
+//     return it;
+// }
 
 
-template <typename CharT>
-CharT* single_line_base64_pm_input<CharT>::write_indentation(CharT* begin, CharT* end)
-{
-    BOOST_ASSERT(m_column < m_fmt.indentation());
+// template <typename CharT>
+// CharT* single_line_base64_pm_input<CharT>::write_block(CharT* it)
+// {
+//     std::array<char, 4> arr = encode( bytes() + m_index
+//                                     , num_bytes() - m_index );
+//     it[0] = arr[0];
+//     it[1] = arr[1];
+//     it[2] = arr[2];
+//     it[3] = arr[3];
+//     m_index += 3;
+//     return it + 4;
+// }
 
-    std::size_t availabe_space = end - begin;
-    std::size_t remaining_indentation_size = m_fmt.indentation() - m_column;
-    auto count = (std::min) (availabe_space, remaining_indentation_size);
-    std::fill(begin, begin + count, static_cast<CharT>(' '));
-    m_column += static_cast<unsigned>(count);
-    return begin + count;
-}
+
+// template <typename CharT>
+// CharT* single_line_base64_pm_input<CharT>::write_indentation(CharT* begin, CharT* end)
+// {
+//     BOOST_ASSERT(m_column < m_fmt.indentation());
+
+//     std::size_t availabe_space = end - begin;
+//     std::size_t remaining_indentation_size = m_fmt.indentation() - m_column;
+//     auto count = (std::min) (availabe_space, remaining_indentation_size);
+//     std::fill(begin, begin + count, static_cast<CharT>(' '));
+//     m_column += static_cast<unsigned>(count);
+//     return begin + count;
+// }
 //]
 
-template <typename CharT>
-class multiline_base64_pm_input
-    : public strf::piecemeal_input<CharT>
-    , private base64_common_impl
-{
-public:
+// template <typename CharT>
+// class multiline_base64_pm_input
+//     : public strf::piecemeal_input<CharT>
+//     , private base64_common_impl
+// {
+// public:
 
-    multiline_base64_pm_input
-        ( base64_facet facet
-        , const base64_input_with_format& fmt );
+//     multiline_base64_pm_input
+//         ( base64_facet facet
+//         , const base64_input_with_format& fmt );
 
-    CharT* get_some(CharT* begin, CharT* end) override;
+//     CharT* get_some(CharT* begin, CharT* end) override;
 
-private:
+// private:
 
-    CharT* write_indentation(CharT* begin, CharT* end);
-    CharT* write_whole_block_in_this_line(CharT* it);
-    CharT* begin_partial_block(CharT* it);
-    CharT* continue_partial_block(CharT* it);
-    CharT* write_eol(CharT* it);
-    const unsigned char* bytes() const
-    {
-        return reinterpret_cast<const unsigned char*>(m_fmt.value().bytes);
-    }
-    auto num_bytes() const
-    {
-        return m_fmt.value().num_bytes;
-    }
+//     CharT* write_indentation(CharT* begin, CharT* end);
+//     CharT* write_whole_block_in_this_line(CharT* it);
+//     CharT* begin_partial_block(CharT* it);
+//     CharT* continue_partial_block(CharT* it);
+//     CharT* write_eol(CharT* it);
+//     const unsigned char* bytes() const
+//     {
+//         return reinterpret_cast<const unsigned char*>(m_fmt.value().bytes);
+//     }
+//     auto num_bytes() const
+//     {
+//         return m_fmt.value().num_bytes;
+//     }
 
-    const base64_input_with_format m_fmt;
-    std::size_t m_index = 0;
-    unsigned m_column = 0;
-    unsigned m_block_sub_index = 0;
-    std::array<char, 4> m_split_block;
-    const unsigned m_total_line_length;
-};
+//     const base64_input_with_format m_fmt;
+//     std::size_t m_index = 0;
+//     unsigned m_column = 0;
+//     unsigned m_block_sub_index = 0;
+//     std::array<char, 4> m_split_block;
+//     const unsigned m_total_line_length;
+// };
 
 
-template <typename CharT>
-multiline_base64_pm_input<CharT>::multiline_base64_pm_input
-    ( base64_facet facet
-    , const base64_input_with_format& fmt )
-    : base64_common_impl(facet)
-    , m_fmt(fmt)
-    , m_total_line_length(facet.line_length + fmt.indentation())
-{
-    BOOST_ASSERT( ! facet.single_line());
-}
+// template <typename CharT>
+// multiline_base64_pm_input<CharT>::multiline_base64_pm_input
+//     ( base64_facet facet
+//     , const base64_input_with_format& fmt )
+//     : base64_common_impl(facet)
+//     , m_fmt(fmt)
+//     , m_total_line_length(facet.line_length + fmt.indentation())
+// {
+//     BOOST_ASSERT( ! facet.single_line());
+// }
 
-//[ multiline_base64_pm_input__get_some
-template <typename CharT>
-CharT* multiline_base64_pm_input<CharT>::get_some(CharT* begin, CharT* end)
-{
-    auto it = begin;
-    while(m_index < num_bytes())
-    {
-        if(m_column < m_fmt.indentation())
-        {
-            it = write_indentation(it, end);
-            if (it == end)
-            {
-                return it;
-            }
-        }
-        else if(m_block_sub_index != 0)
-        {
-            if(it + 9 > end)
-            {
-                return it;
-            }
-            it = continue_partial_block(it);
-        }
-        else if(m_column + 4 >= m_total_line_length)
-        {
-            if(it + 12 > end)
-            {
-                return it;
-            }
-            it = begin_partial_block(it);
-        }
-        else
-        {
-            if(it + 4 > end)
-            {
-                return it;
-            }
-            it = write_whole_block_in_this_line(it);
-        }
-    }
-    if(m_column != 0)
-    {
-        if(it + 2 > end)
-        {
-            return it;
-        }
-        it = write_eol(it);
-        m_column = 0;
-    }
-    this->report_success();
-    return it;
-}
+// //[ multiline_base64_pm_input__get_some
+// template <typename CharT>
+// CharT* multiline_base64_pm_input<CharT>::get_some(CharT* begin, CharT* end)
+// {
+//     auto it = begin;
+//     while(m_index < num_bytes())
+//     {
+//         if(m_column < m_fmt.indentation())
+//         {
+//             it = write_indentation(it, end);
+//             if (it == end)
+//             {
+//                 return it;
+//             }
+//         }
+//         else if(m_block_sub_index != 0)
+//         {
+//             if(it + 9 > end)
+//             {
+//                 return it;
+//             }
+//             it = continue_partial_block(it);
+//         }
+//         else if(m_column + 4 >= m_total_line_length)
+//         {
+//             if(it + 12 > end)
+//             {
+//                 return it;
+//             }
+//             it = begin_partial_block(it);
+//         }
+//         else
+//         {
+//             if(it + 4 > end)
+//             {
+//                 return it;
+//             }
+//             it = write_whole_block_in_this_line(it);
+//         }
+//     }
+//     if(m_column != 0)
+//     {
+//         if(it + 2 > end)
+//         {
+//             return it;
+//         }
+//         it = write_eol(it);
+//         m_column = 0;
+//     }
+//     this->report_success();
+//     return it;
+// }
 //]
 
-template <typename CharT>
-CharT* multiline_base64_pm_input<CharT>::write_indentation
-    ( CharT* begin, CharT* end )
-{
-    BOOST_ASSERT(m_column < m_fmt.indentation());
+// template <typename CharT>
+// CharT* multiline_base64_pm_input<CharT>::write_indentation
+//     ( CharT* begin, CharT* end )
+// {
+//     BOOST_ASSERT(m_column < m_fmt.indentation());
 
-    std::size_t availabe_space = end - begin;
-    std::size_t remaining_indentation_size = m_fmt.indentation() - m_column;
-    auto count = (std::min) (availabe_space, remaining_indentation_size);
-    std::fill(begin, begin + count, static_cast<CharT>(' '));
-    m_column += static_cast<unsigned>(count);
-    return begin + count;
-}
+//     std::size_t availabe_space = end - begin;
+//     std::size_t remaining_indentation_size = m_fmt.indentation() - m_column;
+//     auto count = (std::min) (availabe_space, remaining_indentation_size);
+//     std::fill(begin, begin + count, static_cast<CharT>(' '));
+//     m_column += static_cast<unsigned>(count);
+//     return begin + count;
+// }
 
-template <typename CharT>
-CharT* multiline_base64_pm_input<CharT>::write_whole_block_in_this_line(CharT* it)
-{
-    BOOST_ASSERT(m_block_sub_index == 0);
-    BOOST_ASSERT(m_column >= m_fmt.indentation());
-    BOOST_ASSERT(m_column + 4 < m_total_line_length);
-    BOOST_ASSERT(m_index < num_bytes());
+// template <typename CharT>
+// CharT* multiline_base64_pm_input<CharT>::write_whole_block_in_this_line(CharT* it)
+// {
+//     BOOST_ASSERT(m_block_sub_index == 0);
+//     BOOST_ASSERT(m_column >= m_fmt.indentation());
+//     BOOST_ASSERT(m_column + 4 < m_total_line_length);
+//     BOOST_ASSERT(m_index < num_bytes());
 
-    auto arr = encode(bytes() + m_index, num_bytes() - m_index);
-    it[0] = arr[0];
-    it[1] = arr[1];
-    it[2] = arr[2];
-    it[3] = arr[3];
-    m_column += 4;
-    m_index += 3;
-    return it + 4;
-}
+//     auto arr = encode(bytes() + m_index, num_bytes() - m_index);
+//     it[0] = arr[0];
+//     it[1] = arr[1];
+//     it[2] = arr[2];
+//     it[3] = arr[3];
+//     m_column += 4;
+//     m_index += 3;
+//     return it + 4;
+// }
 
-template <typename CharT>
-CharT* multiline_base64_pm_input<CharT>::begin_partial_block(CharT* it)
-{
-    BOOST_ASSERT(m_block_sub_index == 0);
+// template <typename CharT>
+// CharT* multiline_base64_pm_input<CharT>::begin_partial_block(CharT* it)
+// {
+//     BOOST_ASSERT(m_block_sub_index == 0);
 
-    m_split_block = encode( bytes() + m_index
-                          , num_bytes() - m_index);
-    return continue_partial_block(it);
-}
+//     m_split_block = encode( bytes() + m_index
+//                           , num_bytes() - m_index);
+//     return continue_partial_block(it);
+// }
 
-template <typename CharT>
-CharT* multiline_base64_pm_input<CharT>::continue_partial_block(CharT* it)
-{
-    BOOST_ASSERT(m_column >= m_fmt.indentation());
-    BOOST_ASSERT(m_column < m_total_line_length);
+// template <typename CharT>
+// CharT* multiline_base64_pm_input<CharT>::continue_partial_block(CharT* it)
+// {
+//     BOOST_ASSERT(m_column >= m_fmt.indentation());
+//     BOOST_ASSERT(m_column < m_total_line_length);
 
-    while(m_block_sub_index != 4)
-    {
-        *it = m_split_block[m_block_sub_index];
-        ++ it;
-        ++ m_column;
-        ++ m_block_sub_index;
-        if(m_column == m_total_line_length)
-        {
-            it = write_eol(it);
-            m_column = 0;
-            if(m_fmt.indentation() > 0)
-            {
-                break;
-            }
-        }
-    }
-    if(m_block_sub_index == 4)
-    {
-        m_block_sub_index = 0;
-        m_index += 3;
-    }
-    return it;
+//     while(m_block_sub_index != 4)
+//     {
+//         *it = m_split_block[m_block_sub_index];
+//         ++ it;
+//         ++ m_column;
+//         ++ m_block_sub_index;
+//         if(m_column == m_total_line_length)
+//         {
+//             it = write_eol(it);
+//             m_column = 0;
+//             if(m_fmt.indentation() > 0)
+//             {
+//                 break;
+//             }
+//         }
+//     }
+//     if(m_block_sub_index == 4)
+//     {
+//         m_block_sub_index = 0;
+//         m_index += 3;
+//     }
+//     return it;
 
-}
+// }
 
-template <typename CharT>
-CharT* multiline_base64_pm_input<CharT>::write_eol(CharT* it)
-{
-    * it = facet().eol[0];
-    if(facet().eol[1] != '\0')
-    {
-        * ++it = facet().eol[1];
-    }
-    return it + 1;
-}
+// template <typename CharT>
+// CharT* multiline_base64_pm_input<CharT>::write_eol(CharT* it)
+// {
+//     * it = facet().eol[0];
+//     if(facet().eol[1] != '\0')
+//     {
+//         * ++it = facet().eol[1];
+//     }
+//     return it + 1;
+// }
 
 
 template <typename CharT>
@@ -473,19 +473,19 @@ class base64_printer: public strf::printer<CharT>
 public:
 
     base64_printer
-        ( strf::output_writer<CharT>& out
-        , base64_facet facet
+        ( base64_facet facet
         , const base64_input_with_format& fmt );
 
     int remaining_width(int w) const override;
 
     std::size_t necessary_size() const override;
 
-    void write() const override;
+    bool write
+        ( stringify::v0::output_buffer<CharOut>& buff
+        , stringify::v0::buffer_recycler<CharOut>& recycler ) const override;
 
 private:
 
-    strf::output_writer<CharT>& m_out;
     const base64_facet m_facet;
     const base64_input_with_format m_fmt;
 };
@@ -495,8 +495,7 @@ base64_printer<CharT>::base64_printer
     ( strf::output_writer<CharT>& out
     , base64_facet facet
     , const base64_input_with_format& fmt )
-    : m_out(out)
-    , m_facet(facet)
+    : m_facet(facet)
     , m_fmt(fmt)
 {
 }
@@ -517,18 +516,20 @@ std::size_t base64_printer<CharT>::necessary_size() const
 
 //[ base64_printer__write
 template <typename CharT>
-void base64_printer<CharT>::write() const
+bool base64_printer<CharT>::write
+    ( stringify::v0::output_buffer<CharOut>& buff
+    , stringify::v0::buffer_recycler<CharOut>& recycler ) const
 {
-    if(m_facet.single_line())
-    {
-        single_line_base64_pm_input<CharT> pm_input{m_facet, m_fmt};
-        m_out.put(pm_input);
-    }
-    else
-    {
-        multiline_base64_pm_input<CharT> pm_input{m_facet, m_fmt};
-        m_out.put(pm_input);
-    }
+    // if(m_facet.single_line())
+    // {
+    //     single_line_base64_pm_input<CharT> pm_input{m_facet, m_fmt};
+    //     m_out.put(pm_input);
+    // }
+    // else
+    // {
+    //     multiline_base64_pm_input<CharT> pm_input{m_facet, m_fmt};
+    //     m_out.put(pm_input);
+    // }
 }
 //]
 
