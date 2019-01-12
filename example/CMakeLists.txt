@@ -20,7 +20,7 @@ foreach(x
     format_functions
     custom_width_calculation
     facets
-    # facets_pack_as_input
+    facets_pack_as_input
     numpunct_facets
     width_calculation_in_encoding_conversion
     joins

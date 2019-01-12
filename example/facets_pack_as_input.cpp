@@ -11,17 +11,17 @@ void sample1()
     namespace strf = boost::stringify::v0;
 
     auto str = strf::to_string.facets(strf::monotonic_grouping<10>(1))
-        ( 10000
+        ( * strf::fmt(10000)
         , "  "
-        , strf::hex(0x10000)
+        , * strf::hex(0x10000)
         , strf::facets
             ( strf::monotonic_grouping<10>(3)
             , strf::monotonic_grouping<16>(4).thousands_sep('\'')
             )
             ( "  { "
-            , 10000
+            , * strf::fmt(10000)
             , "  "
-            , strf::hex(0x10000)
+            , * strf::hex(0x10000)
             , " }"
             )
         );
@@ -42,17 +42,17 @@ void sample2()
         );
 
     auto str = strf::to_string.facets(strf::monotonic_grouping<10>(1))
-        ( 10000
+        ( * strf::fmt(10000)
         , "  "
-        , strf::hex(0x10000)
+        , * strf::hex(0x10000)
         , strf::facets(fp)
             ( "  { "
-            , 10000
+            , * strf::fmt(10000)
             , "  "
-            , strf::hex(0x10000)
+            , * strf::hex(0x10000)
             , strf::facets
                 (strf::monotonic_grouping<10>(2).thousands_sep('.'))
-                ("  { ", 10000, " }")
+                  ("  { ", * strf::fmt(10000), " }")
             , " }"
             )
         );
@@ -64,11 +64,11 @@ void sample3()
 {
     //[ facets_pack_input_in_assembly_string
     namespace strf = boost::stringify::v0;
-    auto str = strf::to_string.as("{} -- {} -- {}")
-        ( "aaa"
-        , strf::facets()("bbb", "ccc", "ddd")
-        , "eee"
-        );
+    auto str = strf::to_string
+        .as( "{} -- {} -- {}"
+           , "aaa"
+           , strf::facets()("bbb", "ccc", "ddd")
+           , "eee" );
 
     BOOST_ASSERT(str.value() == "aaa -- bbbcccddd -- eee");
     //]

@@ -151,6 +151,8 @@ public:
 
     using category = typename _helper::category;
 
+    static_assert(category::constrainable, "This facet is not constrainable");
+
     constrained_facet() = default;
 
     constrained_facet(const constrained_facet&) = default;

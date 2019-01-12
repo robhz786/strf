@@ -81,12 +81,18 @@ public:
         return sum;
     }
 
-    void write() const override
+    bool write
+        ( stringify::v0::output_buffer<CharT>& buff
+        , stringify::v0::buffer_recycler<CharT>& recycler ) const override
     {
         for(const auto& arg : m_args)
         {
-            arg->write();
+            if ( ! arg->write(buff, recycler))
+            {
+                return false;
+            }
         }
+        return true;
     }
 
     int remaining_width(int w) const override
@@ -129,12 +135,11 @@ class facets_pack_printer
 public:
 
     facets_pack_printer
-        ( stringify::v0::output_writer<CharT>& out
-        , const ParentFPack& parent_fp
+        ( const ParentFPack& parent_fp
         , const inner_args& args
         )
         : stringify::v0::facets_pack<ParentFPack, ChildFPack>{parent_fp, args.fp}
-        , fmt_group{out, *this, args.args}
+        , fmt_group{*this, args.args}
         , stringify::v0::detail::pp_range_printer<CharT>{fmt_group::range()}
     {
     }
@@ -147,7 +152,7 @@ public:
 template <typename F>
 struct is_constrainable
 {
-    using category = typename F::category;
+    using category = typename stringify::v0::facet_trait<F>::category;
     constexpr static bool value = category::constrainable;
 };
 
@@ -227,12 +232,11 @@ inline stringify::v0::detail::facets_pack_printer
     , FPack, ChildFPack
     , Args... >
 make_printer
-    ( stringify::v0::output_writer<CharT>& out
-    , const FPack& fp
+    ( const FPack& fp
     , const stringify::v0::detail::inner_pack_with_args
         <ChildFPack, Args...>& fmt )
 {
-    return {out, fp, fmt};
+    return {fp, fmt};
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

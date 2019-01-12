@@ -12,7 +12,7 @@
 #include <boost/stringify/v0/detail/input_types/string.hpp>
 #include <boost/stringify/v0/detail/input_types/cv_string.hpp>
 #include <boost/stringify/v0/detail/input_types/join.hpp>
-// #include <boost/stringify/v0/detail/input_types/facets_pack.hpp>
+#include <boost/stringify/v0/detail/input_types/facets_pack.hpp>
 #include <boost/stringify/v0/detail/input_types/range.hpp>
 
 #include <boost/stringify/v0/detail/output_types/char_ptr.hpp>
