@@ -45,7 +45,7 @@ private:
     const stringify::v0::encoding_policy  _epoli;
 
     template <typename Category, typename FPack>
-    const auto& _get_facet(const FPack& fp) const
+    decltype(auto) _get_facet(const FPack& fp) const
     {
         using input_tag = stringify::v0::string_input_tag<CharT>;
         return fp.template get_facet<Category, input_tag>();
@@ -107,7 +107,7 @@ private:
     unsigned _fillcount = 0;
 
     template <typename Category, typename FPack>
-    const auto& _get_facet(const FPack& fp) const
+    decltype(auto) _get_facet(const FPack& fp) const
     {
         using input_tag = stringify::v0::string_input_tag<CharT>;
         return fp.template get_facet<Category, input_tag>();

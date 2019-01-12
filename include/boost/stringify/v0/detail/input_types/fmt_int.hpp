@@ -249,7 +249,7 @@ private:
     unsigned _fillcount;
 
     template <typename Category, typename FPack>
-    const auto& _get_facet(const FPack& fp) const
+    decltype(auto) _get_facet(const FPack& fp) const
     {
         return fp.template get_facet<Category, IntT>();
     }

@@ -94,14 +94,14 @@ using char_with_format = stringify::v0::value_with_format
 //     int m_fillcount = 0;
 
 //     template <typename FPack>
-//     static const auto& get_out_encoding(const FPack& fp)
+//     static decltype(auto) get_out_encoding(const FPack& fp)
 //     {
 //         using category = stringify::v0::encoding_category<CharT>;
 //         return fp.template get_facet<category, input_type>();
 //     }
 
 //     template <typename FPack>
-//     static const auto& get_width_calculator(const FPack& fp)
+//     static decltype(auto) get_width_calculator(const FPack& fp)
 //     {
 //         using category = stringify::v0::width_calculator_category;
 //         return fp.template get_facet<category, input_type>();
@@ -319,7 +319,7 @@ private:
     int _content_width = 0;
 
     template <typename Category, typename FPack>
-    const auto& _get_facet(const FPack& fp) const
+    decltype(auto) _get_facet(const FPack& fp) const
     {
         return fp.template get_facet<Category, input_type>();
     }

@@ -17,10 +17,9 @@ struct asm_invalid_arg_category
     static constexpr bool constrainable = false;
     static constexpr bool by_value = true;
 
-    static const asm_invalid_arg& get_default()
+    static asm_invalid_arg get_default()
     {
-        static const asm_invalid_arg obj = asm_invalid_arg::replace;
-        return obj;
+        return asm_invalid_arg::replace;
     }
 };
 

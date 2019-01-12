@@ -143,7 +143,7 @@ private:
     std::size_t _sep_len;
 
     template <typename Category>
-    const auto& get_facet(const FPack& fp) const
+    decltype(auto) get_facet(const FPack& fp) const
     {
         return fp.template get_facet<Category, sep_tag>();
     }
@@ -161,11 +161,11 @@ sep_range_printer<CharT, FPack, ForwardIt>::remaining_width(int w) const
     }
     if (count > 1 && w > 0)
     {
-        const auto& wcalc
+        decltype(auto) wcalc
             = get_facet<stringify::v0::width_calculator_category>(_fp);
-        const auto encoding
+        decltype(auto) encoding
             = get_facet<stringify::v0::encoding_category<CharT>>(_fp);
-        const auto epoli
+        decltype(auto) epoli
             = get_facet<stringify::v0::encoding_policy_category>(_fp);
 
         int w2 = wcalc.remaining_width(w, _sep_begin, _sep_len, encoding, epoli);
@@ -382,7 +382,7 @@ private:
     fmt_type_adapted _fmt;
 
     template <typename Category>
-    const auto& get_facet(const FPack& fp) const
+    decltype(auto) get_facet(const FPack& fp) const
     {
         return fp.template get_facet<Category, sep_tag>();
     }
@@ -432,11 +432,11 @@ int fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>
     }
     if (count > 1 && w > 0)
     {
-        const auto& wcalc
+        decltype(auto) wcalc
             = get_facet<stringify::v0::width_calculator_category>(_fp);
-        const auto encoding
+        decltype(auto) encoding
             = get_facet<stringify::v0::encoding_category<CharT>>(_fp);
-        const auto epoli
+        decltype(auto) epoli
             = get_facet<stringify::v0::encoding_policy_category>(_fp);
 
         int w2 = wcalc.remaining_width(w, r.sep_begin, r.sep_len, encoding, epoli);

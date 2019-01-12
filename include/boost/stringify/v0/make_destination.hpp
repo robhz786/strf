@@ -404,9 +404,9 @@ private:
         , const _char_type* str_end
         , _arglist_type args) const
     {
-        const auto& enc
+        decltype(auto) enc
             = get_facet<stringify::v0::encoding_category<_char_type>, void>(_fpack);
-        const auto policy
+        decltype(auto) policy
             = get_facet<stringify::v0::asm_invalid_arg_category, void>(_fpack);
 
         _output_writer_wrapper writer{_owinit};
@@ -439,9 +439,9 @@ private:
         _output_writer_wrapper writer{_owinit};
         auto buff = writer.get().start();
 
-        const auto& enc
+        decltype(auto) enc
             = get_facet<stringify::v0::encoding_category<_char_type>, void>(_fpack);
-        const auto policy
+        decltype(auto) policy
             = get_facet<stringify::v0::asm_invalid_arg_category, void>(_fpack);
 
         bool no_error = stringify::v0::detail::asm_string_write

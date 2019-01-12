@@ -212,7 +212,7 @@ template <>
 struct facets_pack_end<base_tag>
 {
     template <typename, typename FacetCategory>
-    constexpr const auto&
+    constexpr decltype(auto)
     do_get_facet (const absolute_lowest_tag&, FacetCategory) const
     {
         return FacetCategory::get_default();
@@ -564,7 +564,7 @@ public:
     }
 
     template <typename FacetCategory, typename InputType>
-    constexpr const auto& get_facet() const
+    constexpr decltype(auto) get_facet() const
     {
         return this->template do_get_facet<InputType>
             (typename _impl::highest_tag(), FacetCategory());
@@ -583,7 +583,7 @@ template
     < typename FacetCategory
     , typename InputType
     , typename ... Facets >
-constexpr const auto& get_facet(const stringify::v0::facets_pack<Facets...>& fp)
+constexpr decltype(auto) get_facet(const stringify::v0::facets_pack<Facets...>& fp)
 {
     return fp.template get_facet<FacetCategory, InputType>();
 }

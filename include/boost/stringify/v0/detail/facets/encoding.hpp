@@ -28,10 +28,9 @@ struct encoding_category<char>
     static constexpr bool constrainable = false;
     static constexpr bool by_value = true;
 
-    static const encoding<char>& get_default()
+    static encoding<char> get_default()
     {
-        static const encoding<char> obj{ stringify::v0::utf8() };
-        return obj;
+        return stringify::v0::utf8();
     }
 };
 
@@ -41,10 +40,9 @@ struct encoding_category<char16_t>
     static constexpr bool constrainable = false;
     static constexpr bool by_value = true;
 
-    static const encoding<char16_t>& get_default()
+    static encoding<char16_t> get_default()
     {
-        static const auto obj = stringify::v0::utf16();
-        return obj;
+        return stringify::v0::utf16();
     }
 };
 
@@ -54,10 +52,9 @@ struct encoding_category<char32_t>
     static constexpr bool constrainable = false;
     static constexpr bool by_value = true;
 
-    static const encoding<char32_t>& get_default()
+    static encoding<char32_t> get_default()
     {
-        static const auto obj = stringify::v0::utf32();
-        return obj;
+        return stringify::v0::utf32();
     }
 };
 
@@ -67,10 +64,9 @@ struct encoding_category<wchar_t>
     static constexpr bool constrainable = false;
     static constexpr bool by_value = true;
 
-    static const encoding<wchar_t>& get_default()
+    static encoding<wchar_t> get_default()
     {
-        static const auto obj = stringify::v0::wchar_encoding();
-        return obj;
+        return stringify::v0::wchar_encoding();
     }
 };
 
@@ -130,10 +126,9 @@ struct encoding_policy_category
     constexpr static bool constrainable = false;
     constexpr static bool by_value = true;
 
-    static const stringify::v0::encoding_policy& get_default()
+    static stringify::v0::encoding_policy get_default()
     {
-        static const stringify::v0::encoding_policy obj {};
-        return obj;
+        return {};
     }
 };
 

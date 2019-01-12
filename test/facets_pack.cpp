@@ -19,10 +19,9 @@ template <int N> struct facet_category
     constexpr static bool by_value = true;
     constexpr static bool constrainable = true;
 
-    static const auto& get_default() noexcept
+    static facet_type<N> get_default() noexcept
     {
-        static const facet_type<N> f {};
-        return f;
+        return facet_type<N>{};
     }
 };
 

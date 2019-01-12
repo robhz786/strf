@@ -37,10 +37,9 @@ struct base64_facet_category
     static constexpr bool by_value = true;
     static constexpr bool constrainable = true;
 
-    static const base64_facet& get_default()
+    static base64_facet get_default()
     {
-        static const base64_facet obj{};
-        return obj;
+        return {};
     }
 };
 
