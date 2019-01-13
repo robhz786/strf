@@ -322,10 +322,10 @@ public:
 private:
 
     input_type _join;
-    int _fillcount = 0;
     pp_range _args = nullptr;
     const stringify::v0::encoding<CharT> _encoding;
     stringify::v0::error_handling _err_hdl;
+    int _fillcount = 0;
 
     std::size_t _args_length() const
     {

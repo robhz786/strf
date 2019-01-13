@@ -88,6 +88,7 @@ CharT* int_printer<IntT, CharT>::_write(CharT* it) const noexcept
         = stringify::v0::detail::write_int_dec_txtdigits_backwards<IntT, CharT>
         (_value, end);
     BOOST_ASSERT(it == it2);
+    (void) it2;
     return end;
 }
 

@@ -214,6 +214,37 @@ inline std::size_t decode_encode_size
     return count;
 }
 
+
+
+template<typename CharT>
+bool write_str_continuation
+    ( stringify::v0::output_buffer<CharT>& ob
+    , stringify::v0::buffer_recycler<CharT>& recycler
+    , const CharT* str
+    , std::size_t len
+    , std::size_t space )
+{
+    using traits = std::char_traits<CharT>;
+    traits::copy(ob.it, str, space);
+    ob.it += space;
+    str += space;
+    len -= space;
+    while (recycler.recycle(ob))
+    {
+        space = ob.end - ob.it;
+        if (len <= space)
+        {
+            traits::copy(ob.it, str, len);
+            return true;
+        }
+        traits::copy(ob.it, str, space);
+        len -= space;
+        str += space;
+        ob.it += space;
+    }
+    return false;
+}
+
 template<typename CharT>
 inline bool write_str
     ( stringify::v0::output_buffer<CharT>& ob
@@ -221,51 +252,59 @@ inline bool write_str
     , const CharT* str
     , std::size_t len )
 {
-    auto ob_ = ob;
     using traits = std::char_traits<CharT>;
-    do
+    std::size_t space = ob.end - ob.it;
+    if (len <= space) // the common case
     {
-        std::size_t space = ob_.end - ob_.it;
-        if (len <= space)
+        traits::copy(ob.it, str, len);
+        ob.it += len;
+        return true;
+    }
+    return write_str_continuation(ob, recycler, str, len, space);
+}
+
+template<typename CharT>
+bool write_fill_continuation
+    ( stringify::v0::output_buffer<CharT>& ob
+    , stringify::v0::buffer_recycler<CharT>& recycler
+    , std::size_t count
+    , std::size_t space
+    , CharT ch )
+{
+    std::char_traits<CharT>::assign(ob.it, space, ch);
+    ob.it += space;
+    count -= space;
+    while (recycler.recycle(ob))
+    {
+        space = ob.end - ob.it;
+        if (count <= space)
         {
-            traits::copy(ob_.it, str, len);
-            ob.it = ob_.it + len;
-            ob.end = ob_.end;
+            std::char_traits<CharT>::assign(ob.it, count, ch);
+            ob.it += space;
             return true;
         }
-        traits::copy(ob_.it, str, space);
-        len -= space;
-        str += space;
-        ob_.it += space;
-    } while (recycler.recycle(ob_));
-    ob = ob_;
+        std::char_traits<CharT>::assign(ob.it, space, ch);
+        count -= space;
+        ob.it += space;
+    }
     return false;
 }
 
 template<typename CharT>
 inline bool write_fill
-    ( stringify::v0::output_buffer<CharT>& buff
+    ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::buffer_recycler<CharT>& recycler
     , std::size_t count
     , CharT ch )
 {
-    auto ob = buff;
-    do
+    std::size_t space = ob.end - ob.it;
+    if (count <= space) // the common case
     {
-        std::size_t space = buff.end - buff.it;
-        if (count <= space)
-        {
-            std::char_traits<CharT>::assign(buff.it, count, ch);
-            buff.it = ob.it + count;
-            buff.end = ob.end;
-            return true;
-        }
-        std::char_traits<CharT>::assign(buff.it, space, ch);
-        count -= space;
-        ob.it += space;
-    } while (recycler.recycle(ob));
-    buff = ob;
-    return false;
+        std::char_traits<CharT>::assign(ob.it, count, ch);
+        ob.it += count;
+        return true;
+    }
+    return write_fill_continuation(ob, recycler, count, space, ch);
 }
 
 template<typename CharT>
@@ -307,18 +346,18 @@ inline bool write_fill
     , char32_t ch
     , stringify::v0::error_handling err_hdl )
 {
-    return  ( ch >= encoding.u32equivalence_begin()
-           && ch < encoding.u32equivalence_end()
-            ? stringify::v0::detail::write_fill( buff
-                                               , recycler
-                                               , count
-                                               , (CharT)ch )
-            : stringify::v0::detail::do_write_fill( encoding
-                                                  , buff
-                                                  , recycler
-                                                  , count
-                                                  , ch
-                                                  , err_hdl ) );
+    return ( ch >= encoding.u32equivalence_begin()
+          && ch < encoding.u32equivalence_end() )
+        ? stringify::v0::detail::write_fill( buff
+                                           , recycler
+                                           , count
+                                           , (CharT)ch )
+        : stringify::v0::detail::do_write_fill( encoding
+                                              , buff
+                                              , recycler
+                                              , count
+                                              , ch
+                                              , err_hdl );
 }
 
 } // namespace detail

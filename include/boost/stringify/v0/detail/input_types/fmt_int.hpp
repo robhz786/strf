@@ -664,6 +664,7 @@ bool fmt_int_printer<IntT, CharT>::_write_digits_sep
                                         , sep_char32
                                         , stringify::v0::error_handling::stop );
         BOOST_ASSERT(res == stringify::v0::cv_result::success);
+        (void) res;
         return _write_digits_littlesep( buff, recycler, dig_it
                                       , grp_buff, grp_it, sep_ch);
     }
