@@ -229,17 +229,15 @@ using char_with_format = stringify::v0::value_with_format
 template <typename CharT>
 class char_printer: public printer<CharT>
 {
-    using input_type = CharT;
+public:
 
     template <typename FPack>
     char_printer (const FPack& fp, CharT ch)
-        : _encoding(get_facet<stringify::v0::encoding_category<CharT>>(fp))
-        , _wcalc(get_facet<stringify::v0::width_calculator_category>(fp))
+        : _encoding(get_facet<stringify::v0::encoding_category<CharT>, CharT>(fp))
+        , _wcalc(get_facet<stringify::v0::width_calculator_category, CharT>(fp))
         , _ch(ch)
     {
     }
-
-public:
 
     std::size_t necessary_size() const override;
 
@@ -458,75 +456,49 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_char_printer<wchar_t>;
 
 #endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
-// template
-//     < typename CharOut
-//     , typename FPack
-//     , typename = typename std::enable_if<!std::is_same<CharOut, char32_t>::value>::type
-//     >
-// inline stringify::v0::char32_printer<CharOut>
-// make_printer
-//     ( const FPack& fp
-//     , const stringify::v0::char_with_format<char32_t>& ch )
-// {
-//     return {fp, ch};
-// }
-
 template <typename CharOut, typename FPack>
-inline stringify::v0::fmt_char_printer<CharOut>
+inline stringify::v0::char_printer<CharOut>
 make_printer
     ( const FPack& fp
     , char ch )
 {
     static_assert( std::is_same<CharOut, char>::value
                  , "Character type mismatch." );
-    return {fp, stringify::v0::char_with_format<char>{ch}};
+    return {fp, ch};
 }
 
 template <typename CharOut, typename FPack>
-inline stringify::v0::fmt_char_printer<CharOut>
+inline stringify::v0::char_printer<CharOut>
 make_printer
     ( const FPack& fp
     , wchar_t ch )
 {
     static_assert( std::is_same<CharOut, wchar_t>::value
                  , "Character type mismatch." );
-    return {fp, stringify::v0::char_with_format<wchar_t>{ch}};
+    return {fp, ch};
 }
 
 template <typename CharOut, typename FPack>
-inline stringify::v0::fmt_char_printer<CharOut>
+inline stringify::v0::char_printer<CharOut>
 make_printer
     ( const FPack& fp
     , char16_t ch )
 {
     static_assert( std::is_same<CharOut, char16_t>::value
                  , "Character type mismatch." );
-    return {fp, stringify::v0::char_with_format<char16_t>{ch}};
+    return {fp, ch};
 }
 
 template <typename CharOut, typename FPack>
-inline stringify::v0::fmt_char_printer<CharOut>
+inline stringify::v0::char_printer<CharOut>
 make_printer
     ( const FPack& fp
     , char32_t ch )
 {
     static_assert( std::is_same<CharOut, char32_t>::value
                  , "Character type mismatch." );
-    return {fp, stringify::v0::char_with_format<char32_t>{ch}};
+    return {fp, ch};
 }
-
-// template< typename CharOut, typename FPack >
-// std::conditional_t
-//     < std::is_same<CharOut, char32_t>::value
-//     , stringify::v0::fmt_char_printer<char32_t>
-//     , stringify::v0::char32_printer<CharOut> >
-// make_printer
-//     ( const FPack& fp
-//     , char32_t ch
-//     )
-// {
-//     return {fp, stringify::v0::char_with_format<char32_t>{ch}};
-// }
 
 template <typename CharOut, typename FPack>
 inline stringify::v0::fmt_char_printer<CharOut>
