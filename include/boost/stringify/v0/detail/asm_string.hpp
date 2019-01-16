@@ -215,7 +215,6 @@ bool asm_string_write
     , const CharT* end
     , std::initializer_list<const stringify::v0::printer<CharT>*> args
     , stringify::v0::output_buffer<CharT>& ob
-    , stringify::v0::buffer_recycler<CharT>& rec
     , stringify::v0::encoding<CharT> enc
     , stringify::v0::asm_invalid_arg policy )
 {
@@ -229,10 +228,10 @@ bool asm_string_write
         it = traits::find(it, (end - it), '{');
         if (it == nullptr)
         {
-            return stringify::v0::detail::write_str(ob, rec, prev, end - prev);
+            return stringify::v0::detail::write_str(ob, prev, end - prev);
         }
 
-        if ( ! stringify::v0::detail::write_str(ob, rec, prev, it - prev))
+        if ( ! stringify::v0::detail::write_str(ob, prev, it - prev))
         {
             return false;
         }
@@ -243,19 +242,22 @@ bool asm_string_write
         {
             if (arg_idx < num_args)
             {
-                return args.begin()[arg_idx]->write(ob, rec);
+                return args.begin()[arg_idx]->write(ob);
             }
             else if (policy == stringify::v0::asm_invalid_arg::replace)
             {
-                while( ! enc.write_replacement_char(&ob.it, ob.end))
+                auto pos = ob.pos();
+                while( ! enc.write_replacement_char(&pos, ob.end()))
                 {
-                    if (! rec.recycle(ob))
+                    if (! ob.recycle(pos))
                         return false;
+                    pos = ob.pos();
                 }
+                ob.set_pos(pos);
             }
             else if (policy == stringify::v0::asm_invalid_arg::stop)
             {
-                rec.set_error(std::errc::invalid_argument);
+                ob.set_error(std::errc::invalid_argument);
                 return false;
             }
 
@@ -267,7 +269,7 @@ bool asm_string_write
         {
             if (arg_idx < num_args)
             {
-                if (! args.begin()[arg_idx]->write(ob, rec))
+                if (! args.begin()[arg_idx]->write(ob))
                 {
                     return false;
                 }
@@ -275,17 +277,20 @@ bool asm_string_write
             }
             else if (policy == stringify::v0::asm_invalid_arg::replace)
             {
-                while( ! enc.write_replacement_char(&ob.it, ob.end))
+                auto pos = ob.pos();
+                while( ! enc.write_replacement_char(&pos, ob.end()))
                 {
-                    if (! rec.recycle(ob))
+                    if (! ob.recycle(pos))
                     {
                         return false;
                     }
+                    pos = ob.pos();
                 }
+                ob.set_pos(pos);
             }
             else if (policy == stringify::v0::asm_invalid_arg::stop)
             {
-                rec.set_error(std::errc::invalid_argument);
+                ob.set_error(std::errc::invalid_argument);
                 return false;
             }
             ++it;
@@ -296,24 +301,27 @@ bool asm_string_write
 
             if (result.value < num_args)
             {
-                if (! args.begin()[result.value]->write(ob, rec))
+                if (! args.begin()[result.value]->write(ob))
                 {
                     return false;
                 }
             }
             else if (policy == stringify::v0::asm_invalid_arg::replace)
             {
-                while(!enc.write_replacement_char(&ob.it, ob.end))
+                auto pos = ob.pos();
+                while(!enc.write_replacement_char(&pos, ob.end()))
                 {
-                    if ( ! rec.recycle(ob))
+                    if ( ! ob.recycle(pos))
                     {
                         return false;
                     }
+                    pos = ob.pos();
                 }
+                ob.set_pos(pos);
             }
             else if (policy == stringify::v0::asm_invalid_arg::stop)
             {
-                rec.set_error(std::errc::invalid_argument);
+                ob.set_error(std::errc::invalid_argument);
                 return false;
             }
 
@@ -330,9 +338,9 @@ bool asm_string_write
             it2 = traits::find(it2, end - it2, '{');
             if (it2 == nullptr)
             {
-                return stringify::v0::detail::write_str(ob, rec, it, end - it);
+                return stringify::v0::detail::write_str(ob, it, end - it);
             }
-            if (!stringify::v0::detail::write_str(ob, rec, it, (it2 - it)))
+            if (!stringify::v0::detail::write_str(ob, it, (it2 - it)))
             {
                 return false;
             }
@@ -345,7 +353,7 @@ bool asm_string_write
             {
                 if (arg_idx < num_args)
                 {
-                    if (! args.begin()[arg_idx]->write(ob, rec))
+                    if (! args.begin()[arg_idx]->write(ob))
                     {
                         return false;
                     }
@@ -353,17 +361,20 @@ bool asm_string_write
                 }
                 else if (policy == stringify::v0::asm_invalid_arg::replace)
                 {
-                    while(!enc.write_replacement_char(&ob.it, ob.end))
+                    auto pos = ob.pos();
+                    while(!enc.write_replacement_char(&pos, ob.end()))
                     {
-                        if (!rec.recycle(ob))
+                        if ( ! ob.recycle())
                         {
                             return false;
                         }
+                        pos = ob.pos();
                     }
+                    ob.set_pos(pos);
                 }
                 else if (policy == stringify::v0::asm_invalid_arg::stop)
                 {
-                    rec.set_error(std::errc::invalid_argument);
+                    ob.set_error(std::errc::invalid_argument);
                     return false;
                 }
             }

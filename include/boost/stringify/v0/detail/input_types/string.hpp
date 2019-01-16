@@ -30,9 +30,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    bool write
-        ( stringify::v0::output_buffer<CharT>& buff
-        , stringify::v0::buffer_recycler<CharT>& recycler ) const override;
+    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
 
     int remaining_width(int w) const override;
 
@@ -59,11 +57,9 @@ std::size_t string_printer<CharT>::necessary_size() const
 }
 
 template<typename CharT>
-bool string_printer<CharT>::write
-    ( stringify::v0::output_buffer<CharT>& buff
-    , stringify::v0::buffer_recycler<CharT>& recycler ) const
+bool string_printer<CharT>::write(stringify::v0::output_buffer<CharT>& ob) const
 {
-    return stringify::v0::detail::write_str(buff, recycler, _str, _len);
+    return stringify::v0::detail::write_str(ob, _str, _len);
 }
 
 template<typename CharT>
@@ -93,8 +89,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    bool write( stringify::v0::output_buffer<CharT>& buff
-              , stringify::v0::buffer_recycler<CharT>& recycler ) const override;
+    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
 
     int remaining_width(int w) const override;
 
@@ -115,11 +110,9 @@ private:
 
     void _init();
 
-    bool _write_str( stringify::v0::output_buffer<CharT>& buff
-                   , stringify::v0::buffer_recycler<CharT>& recycler ) const;
+    bool _write_str(stringify::v0::output_buffer<CharT>& ob) const;
 
-    bool _write_fill( stringify::v0::output_buffer<CharT>& buff
-                    , stringify::v0::buffer_recycler<CharT>& recycler
+    bool _write_fill( stringify::v0::output_buffer<CharT>& ob
                     , unsigned count ) const;
 };
 
@@ -165,8 +158,7 @@ int fmt_string_printer<CharT>::remaining_width(int w) const
 
 template<typename CharT>
 bool fmt_string_printer<CharT>::write
-    ( stringify::v0::output_buffer<CharT>& buff
-    , stringify::v0::buffer_recycler<CharT>& recycler ) const
+    ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     if (_fillcount > 0)
     {
@@ -174,43 +166,41 @@ bool fmt_string_printer<CharT>::write
         {
             case stringify::v0::alignment::left:
             {
-                return _write_str(buff, recycler)
-                    && _write_fill(buff, recycler, _fillcount);
+                return _write_str(ob)
+                    && _write_fill(ob, _fillcount);
             }
             case stringify::v0::alignment::center:
             {
                 auto halfcount = _fillcount / 2;
-                return _write_fill(buff, recycler, halfcount)
-                    && _write_str(buff, recycler)
-                    && _write_fill(buff, recycler, _fillcount - halfcount);
+                return _write_fill(ob, halfcount)
+                    && _write_str(ob)
+                    && _write_fill(ob, _fillcount - halfcount);
             }
             default:
             {
-                return _write_fill(buff, recycler, _fillcount)
-                    && _write_str(buff, recycler);
+                return _write_fill(ob, _fillcount)
+                    && _write_str(ob);
             }
         }
     }
-    return _write_str(buff, recycler);
+    return _write_str(ob);
 }
 
 template <typename CharT>
 bool fmt_string_printer<CharT>::_write_str
-    ( stringify::v0::output_buffer<CharT>& buff
-    , stringify::v0::buffer_recycler<CharT>& recycler ) const
+    ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     return stringify::v0::detail::write_str
-        ( buff, recycler, _fmt.value().begin(), _fmt.value().length() );
+        ( ob, _fmt.value().begin(), _fmt.value().length() );
 }
 
 template <typename CharT>
 bool fmt_string_printer<CharT>::_write_fill
-    ( stringify::v0::output_buffer<CharT>& buff
-    , stringify::v0::buffer_recycler<CharT>& recycler
+    ( stringify::v0::output_buffer<CharT>& ob
     , unsigned count ) const
 {
     return stringify::v0::detail::write_fill
-        ( _encoding, buff, recycler, count, _fmt.fill(), _epoli.err_hdl() );
+        ( _encoding, ob, count, _fmt.fill(), _epoli.err_hdl() );
 }
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)

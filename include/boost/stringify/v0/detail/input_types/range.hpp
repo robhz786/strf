@@ -55,9 +55,7 @@ public:
 
     int remaining_width(int w) const override;
 
-    bool write
-        ( stringify::v0::output_buffer<CharT>& buff
-        , stringify::v0::buffer_recycler<CharT>& recycler ) const override;
+    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
 
 private:
 
@@ -89,12 +87,11 @@ int range_printer<CharT, FPack, ForwardIt>::remaining_width(int w) const
 
 template <typename CharT, typename FPack, typename ForwardIt>
 bool range_printer<CharT, FPack, ForwardIt>::write
-    ( stringify::v0::output_buffer<CharT>& buff
-    , stringify::v0::buffer_recycler<CharT>& recycler ) const
+    ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     for(auto it = _begin; it != _end; ++it)
     {
-        if ( ! make_printer<CharT, FPack>(_fp, *it).write(buff, recycler))
+        if ( ! make_printer<CharT, FPack>(_fp, *it).write(ob))
         {
             return false;
         }
@@ -130,9 +127,7 @@ public:
 
     int remaining_width(int w) const override;
 
-    bool write
-        ( stringify::v0::output_buffer<CharT>& buff
-        , stringify::v0::buffer_recycler<CharT>& recycler ) const override;
+    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
 
 private:
 
@@ -198,22 +193,21 @@ std::size_t sep_range_printer<CharT, FPack, ForwardIt>::necessary_size() const
 
 template <typename CharT, typename FPack, typename ForwardIt>
 bool sep_range_printer<CharT, FPack, ForwardIt>::write
-    ( stringify::v0::output_buffer<CharT>& buff
-    , stringify::v0::buffer_recycler<CharT>& recycler ) const
+    ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     auto it = _begin;
     if (it == _end)
     {
         return true;
     }
-    if ( ! make_printer<CharT, FPack>(_fp, *it).write(buff, recycler))
+    if ( ! make_printer<CharT, FPack>(_fp, *it).write(ob))
     {
         return false;
     }
     while (++it != _end)
     {
-        if ( ! detail::write_str( buff, recycler, _sep_begin, _sep_len )
-          || ! make_printer<CharT, FPack>(_fp, *it).write(buff, recycler) )
+        if ( ! detail::write_str( ob, _sep_begin, _sep_len )
+          || ! make_printer<CharT, FPack>(_fp, *it).write(ob) )
         {
             return false;
         }
@@ -271,9 +265,7 @@ public:
 
     int remaining_width(int w) const override;
 
-    bool write
-        ( stringify::v0::output_buffer<CharOut>& buff
-        , stringify::v0::buffer_recycler<CharOut>& recycler ) const override;
+    bool write(stringify::v0::output_buffer<CharOut>& ob) const override;
 
 private:
 
@@ -325,15 +317,14 @@ template
     , typename ForwardIt
     , typename ... Fmts >
 bool fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::write
-    ( stringify::v0::output_buffer<CharOut>& buff
-    , stringify::v0::buffer_recycler<CharOut>& recycler ) const
+    ( stringify::v0::output_buffer<CharOut>& ob ) const
 {
     auto r = _fmt.value();
     for(auto it = r.begin; it != r.end; ++it)
     {
         if ( ! make_printer<CharOut, FPack>
              ( _fp, value_fmt_type_adapted{{*it}, _fmt} )
-             .write(buff, recycler) )
+             .write(ob) )
         {
             return false;
         }
@@ -372,9 +363,7 @@ public:
 
     int remaining_width(int w) const override;
 
-    bool write
-        ( stringify::v0::output_buffer<CharT>& buff
-        , stringify::v0::buffer_recycler<CharT>& recycler ) const override;
+    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
 
 private:
 
@@ -456,8 +445,7 @@ template
     , typename ForwardIt
     , typename ... Fmts >
 bool fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>
-::write( stringify::v0::output_buffer<CharT>& buff
-       , stringify::v0::buffer_recycler<CharT>& recycler ) const
+::write( stringify::v0::output_buffer<CharT>& ob ) const
 {
     auto r = _fmt.value();
     auto it = r.begin;
@@ -465,14 +453,14 @@ bool fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>
     {
         if ( make_printer<CharT, FPack>
                (_fp, value_fmt_type_adapted{{*it}, _fmt})
-               .write(buff, recycler) )
+               .write(ob) )
         {
             while(++it != r.end)
             {
-                if ( ! detail::write_str(buff, recycler, r.sep_begin, r.sep_len)
+                if ( ! detail::write_str(ob, r.sep_begin, r.sep_len)
                   || ! make_printer<CharT, FPack>
                          ( _fp, value_fmt_type_adapted{{*it}, _fmt} )
-                         .write(buff, recycler) )
+                         .write(ob) )
                 {
                     return false;
                 }

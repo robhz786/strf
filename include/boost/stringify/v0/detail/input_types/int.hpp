@@ -30,9 +30,7 @@ public:
 
     int remaining_width(int w) const override;
 
-    bool write
-        ( stringify::v0::output_buffer<CharT>& buff
-        , stringify::v0::buffer_recycler<CharT>& recycler ) const override;
+    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
 
 private:
 
@@ -41,9 +39,7 @@ private:
 
     CharT* _write(CharT* it) const noexcept;
 
-    bool _buff_write
-        ( stringify::v0::output_buffer<CharT>& buff
-        , stringify::v0::buffer_recycler<CharT>& recycler ) const;
+    bool _buff_write(stringify::v0::output_buffer<CharT>& ob) const;
 };
 
 template <typename IntT, typename CharT>
@@ -60,19 +56,16 @@ int int_printer<IntT, CharT>::remaining_width(int w) const
 }
 
 template <typename IntT, typename CharT>
-bool int_printer<IntT, CharT>::write
-    ( stringify::v0::output_buffer<CharT>& buff
-    , stringify::v0::buffer_recycler<CharT>& recycler ) const
+bool int_printer<IntT, CharT>::write(stringify::v0::output_buffer<CharT>& ob) const
 {
-    auto ob = buff;
-    std::size_t space = ob.end - ob.it;
+    std::size_t space = ob.size();
     unsigned necessary_space = _value >= 0 ? _digcount : _digcount + 1;
     if (space >= necessary_space)
     {
-        buff.it = _write(ob.it);
+        ob.set_pos(_write(ob.pos()));
         return true;
     }
-    return _buff_write(buff, recycler);
+    return _buff_write(ob);
 }
 
 template <typename IntT, typename CharT>
@@ -95,42 +88,39 @@ CharT* int_printer<IntT, CharT>::_write(CharT* it) const noexcept
 
 template <typename IntT, typename CharT>
 bool int_printer<IntT, CharT>::_buff_write
-    ( stringify::v0::output_buffer<CharT>& buff
-    , stringify::v0::buffer_recycler<CharT>& recycler ) const
+    ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     char tmp[sizeof(CharT) * 3];
     char* tmp_end = tmp + sizeof(tmp) / sizeof(tmp[0]);
-    auto ob = buff;
     auto it =
         stringify::v0::detail::write_int_dec_txtdigits_backwards<IntT, char>
         (_value, tmp_end);
 
     if (_value < 0)
     {
-        if (ob.it != ob.end && !recycler.recycle(ob))
+        if (ob.size() == 0 && ! ob.recycle())
         {
             return false;
         }
-        *ob.it = '-';
-        ++ob.it;
+        *ob.pos() = '-';
+        ob.advance(1);
     }
 
     auto count = _digcount;
     do
     {
-        std::size_t space = ob.end - ob.it;
+        std::size_t space = ob.size();
         if (space >= count)
         {
-            std::copy_n(it, count, ob.it);
-            buff.it = ob.it + count;
-            buff.end = ob.end;
+            std::copy_n(it, count, ob.pos());
+            ob.advance(count);
             return true;
         }
-        std::copy_n(it, space, ob.it);
+        std::copy_n(it, space, ob.pos());
         it += space;
-        ob.it += space;
         count -= space;
-    } while (recycler.recycle(ob));
+        ob.advance(space);
+    } while (ob.recycle());
     return false;
 }
 

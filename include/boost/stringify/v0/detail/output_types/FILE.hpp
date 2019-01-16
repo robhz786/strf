@@ -14,7 +14,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 template <typename CharT>
-class narrow_file_writer final: public stringify::v0::buffer_recycler<CharT>
+class narrow_file_writer final: public stringify::v0::output_buffer<CharT>
 {
 public:
     constexpr static std::size_t _buff_size = stringify::v0::min_buff_size;
@@ -27,7 +27,8 @@ public:
     using char_type = CharT;
 
     narrow_file_writer(std::FILE* file, std::size_t* count)
-        : _file(file)
+        : output_buffer<CharT>{ _buff, _buff + _buff_size }
+        , _file(file)
         , _count_ptr(count)
     {
         if (_count_ptr != nullptr)
@@ -40,18 +41,11 @@ public:
     {
     }
 
-    stringify::v0::output_buffer<CharT> start() noexcept
-    {
-        return { _buff, _buff + _buff_size };
-    }
+    bool recycle() override;
 
-    bool recycle(stringify::v0::output_buffer<CharT>& buff) override;
-
-    stringify::v0::expected<void, std::error_code> finish(CharT* it);
+    stringify::v0::expected<void, std::error_code> finish();
 
 protected:
-
-    bool do_put(const CharT* it);
 
     std::FILE* _file;
     std::size_t* _count_ptr = nullptr;
@@ -59,33 +53,9 @@ protected:
 
 
 template <typename CharT>
-bool narrow_file_writer<CharT>::recycle(stringify::v0::output_buffer<CharT>& buff)
+bool narrow_file_writer<CharT>::recycle()
 {
-    if (do_put(buff.it))
-    {
-        BOOST_ASSERT(buff.end <= _buff + _buff_size);
-        buff.it = _buff;
-        buff.end = _buff + _buff_size;
-        return true;
-    }
-    return false;
-}
-
-
-template <typename CharT>
-stringify::v0::expected<void, std::error_code>
-inline narrow_file_writer<CharT>::finish(CharT* it)
-{
-    if (! this->has_error() && do_put(it))
-    {
-        return {};
-    }
-    return { stringify::v0::unexpect_t{}, this->get_error() };
-}
-
-template <typename CharT>
-bool narrow_file_writer<CharT>::do_put(const CharT* it)
-{
+    auto it = this->pos();
     BOOST_ASSERT(_buff <= it && it <= _buff + _buff_size);
     std::size_t count = it - _buff;
     auto count_inc = std::fwrite(_buff, sizeof(CharT), count, _file);
@@ -94,7 +64,20 @@ bool narrow_file_writer<CharT>::do_put(const CharT* it)
     {
         *_count_ptr += count_inc;
     }
+    this->reset(_buff, _buff + _buff_size);
     return count == count_inc;
+}
+
+
+template <typename CharT>
+stringify::v0::expected<void, std::error_code>
+inline narrow_file_writer<CharT>::finish()
+{
+    if (! this->has_error() && recycle())
+    {
+        return {};
+    }
+    return { stringify::v0::unexpect_t{}, this->get_error() };
 }
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
@@ -106,7 +89,7 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class narrow_file_writer<wchar_t>;
 
 #endif
 
-class wide_file_writer final: public stringify::v0::buffer_recycler<wchar_t>
+class wide_file_writer final: public stringify::v0::output_buffer<wchar_t>
 {
     constexpr static std::size_t _buff_size = stringify::v0::min_buff_size;
     wchar_t _buff[_buff_size];
@@ -116,7 +99,8 @@ public:
     using char_type = wchar_t;
 
     wide_file_writer(std::FILE* file, std::size_t* count)
-        : _file(file)
+        : output_buffer<wchar_t>{ _buff, _buff + _buff_size }
+        , _file(file)
         , _count_ptr(count)
     {
         if (_count_ptr != nullptr)
@@ -125,16 +109,11 @@ public:
         }
     }
 
-    stringify::v0::output_buffer<char_type> start() noexcept
-    {
-        return { _buff, _buff + _buff_size };
-    }
+    bool recycle() override;
 
-    bool recycle(stringify::v0::output_buffer<char_type>& buff) override;
-
-    stringify::v0::expected<void, std::error_code> finish(char_type* it)
+    stringify::v0::expected<void, std::error_code> finish()
     {
-        if ( ! this->has_error() && do_put(it))
+        if ( ! this->has_error() && recycle())
         {
             return {};
         }
@@ -143,8 +122,6 @@ public:
 
 private:
 
-    bool do_put(const wchar_t* it);
-
     std::FILE* _file;
     std::size_t* _count_ptr = nullptr;
 };
@@ -152,20 +129,9 @@ private:
 #if ! defined(BOOST_STRINGIFY_OMIT_IMPL)
 
 BOOST_STRINGIFY_INLINE
-bool wide_file_writer::recycle(stringify::v0::output_buffer<char_type>& buff)
+bool wide_file_writer::recycle()
 {
-    if (do_put(buff.it))
-    {
-        buff.it = _buff;
-        buff.end = _buff + _buff_size;
-        return true;
-
-    }
-    return false;
-}
-
-BOOST_STRINGIFY_INLINE bool wide_file_writer::do_put(const wchar_t* end)
-{
+    auto end = this->pos();
     BOOST_ASSERT(_buff <= end && end <= _buff + _buff_size);
 
     std::size_t count = 0;
@@ -184,6 +150,8 @@ BOOST_STRINGIFY_INLINE bool wide_file_writer::do_put(const wchar_t* end)
     {
         *_count_ptr += count;
     }
+
+    this->reset(_buff, _buff + _buff_size);
     return good;
 }
 

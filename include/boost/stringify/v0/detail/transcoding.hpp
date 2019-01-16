@@ -252,7 +252,7 @@ public:
         return *this;
     }
 
-    bool operator==(const transcoder* cmp) const
+    bool operator==(const transcoder& cmp) const
     {
         return _impl = cmp._impl;
     }

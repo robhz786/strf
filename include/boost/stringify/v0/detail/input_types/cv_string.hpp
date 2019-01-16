@@ -51,9 +51,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    bool write
-        ( stringify::v0::output_buffer<CharOut>& buff
-        , stringify::v0::buffer_recycler<CharOut>& recycler ) const override;
+    bool write(stringify::v0::output_buffer<CharOut>& ob) const override;
 
     int remaining_width(int w) const override;
 
@@ -92,17 +90,16 @@ std::size_t cv_string_printer<CharIn, CharOut>::necessary_size() const
 
 template<typename CharIn, typename CharOut>
 bool cv_string_printer<CharIn, CharOut>::write
-    ( stringify::v0::output_buffer<CharOut>& buff
-    , stringify::v0::buffer_recycler<CharOut>& recycler ) const
+    ( stringify::v0::output_buffer<CharOut>& ob ) const
 {
     if (_transcoder_impl)
     {
         stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_impl);
-        return stringify::v0::detail::transcode( buff, recycler
+        return stringify::v0::detail::transcode( ob
                                                , _str, _str + _len
                                                , transcoder, _epoli);
     }
-    return stringify::v0::detail::decode_encode( buff, recycler
+    return stringify::v0::detail::decode_encode( ob
                                                , _str, _str + _len
                                                , _src_encoding, _dest_encoding
                                                , _epoli );
@@ -135,9 +132,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    bool write
-        ( stringify::v0::output_buffer<CharOut>& buff
-        , stringify::v0::buffer_recycler<CharOut>& recycler ) const override;
+    bool write(stringify::v0::output_buffer<CharOut>& ob) const override;
 
     int remaining_width(int w) const override;
 
@@ -160,13 +155,10 @@ private:
 
     void _init();
 
-    bool _write_str
-        ( stringify::v0::output_buffer<CharOut>& buff
-        , stringify::v0::buffer_recycler<CharOut>& recycler ) const;
+    bool _write_str(stringify::v0::output_buffer<CharOut>& ob) const;
 
     bool _write_fill
-        ( stringify::v0::output_buffer<CharOut>& buff
-        , stringify::v0::buffer_recycler<CharOut>& recycler
+        ( stringify::v0::output_buffer<CharOut>& ob
         , unsigned count ) const;
 };
 
@@ -214,8 +206,7 @@ std::size_t fmt_cv_string_printer<CharIn, CharOut>::necessary_size() const
 
 template<typename CharIn, typename CharOut>
 bool fmt_cv_string_printer<CharIn, CharOut>::write
-    ( stringify::v0::output_buffer<CharOut>& buff
-    , stringify::v0::buffer_recycler<CharOut>& recycler ) const
+    ( stringify::v0::output_buffer<CharOut>& ob ) const
 {
     if (_fillcount > 0)
     {
@@ -223,42 +214,41 @@ bool fmt_cv_string_printer<CharIn, CharOut>::write
         {
             case stringify::v0::alignment::left:
             {
-                return _write_str(buff, recycler)
-                    && _write_fill(buff, recycler, _fillcount);
+                return _write_str(ob)
+                    && _write_fill(ob, _fillcount);
             }
             case stringify::v0::alignment::center:
             {
                 int halfcount = _fillcount / 2;
-                return _write_fill(buff, recycler, halfcount)
-                    && _write_str(buff, recycler)
-                    && _write_fill(buff, recycler, _fillcount - halfcount);
+                return _write_fill(ob, halfcount)
+                    && _write_str(ob)
+                    && _write_fill(ob, _fillcount - halfcount);
             }
             default:
             {
-                return _write_fill(buff, recycler, _fillcount)
-                    && _write_str(buff, recycler);
+                return _write_fill(ob, _fillcount)
+                    && _write_str(ob);
             }
         }
     }
-    return _write_str(buff, recycler);
+    return _write_str(ob);
 }
 
 
 template<typename CharIn, typename CharOut>
 bool fmt_cv_string_printer<CharIn, CharOut>::_write_str
-    ( stringify::v0::output_buffer<CharOut>& buff
-    , stringify::v0::buffer_recycler<CharOut>& recycler ) const
+    ( stringify::v0::output_buffer<CharOut>& ob ) const
 {
     if (_transcoder_impl)
     {
         stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_impl);
-        return stringify::v0::detail::transcode( buff, recycler
+        return stringify::v0::detail::transcode( ob
                                                , _fmt.value().begin()
                                                , _fmt.value().end()
                                                , transcoder
                                                , _epoli);
     }
-    return stringify::v0::detail::decode_encode( buff, recycler
+    return stringify::v0::detail::decode_encode( ob
                                                , _fmt.value().begin()
                                                , _fmt.value().end()
                                                , _src_encoding
@@ -268,12 +258,11 @@ bool fmt_cv_string_printer<CharIn, CharOut>::_write_str
 
 template<typename CharIn, typename CharOut>
 bool fmt_cv_string_printer<CharIn, CharOut>::_write_fill
-    ( stringify::v0::output_buffer<CharOut>& buff
-    , stringify::v0::buffer_recycler<CharOut>& recycler
+    ( stringify::v0::output_buffer<CharOut>& ob
     , unsigned count ) const
 {
     return stringify::v0::detail::write_fill
-        ( _dest_encoding, buff, recycler, count, _fmt.fill(), _epoli.err_hdl() );
+        ( _dest_encoding, ob, count, _fmt.fill(), _epoli.err_hdl() );
 }
 
 template<typename CharIn, typename CharOut>

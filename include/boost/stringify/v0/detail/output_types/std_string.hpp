@@ -15,17 +15,18 @@ namespace detail {
 
 template <typename StringType>
 class string_appender final
-    : public stringify::v0::buffer_recycler<typename StringType::value_type>
+    : public stringify::v0::output_buffer<typename StringType::value_type>
 {
-    constexpr static std::size_t _buffer_size = stringify::v0::min_buff_size;
-    typename StringType::value_type _buffer[_buffer_size];
+    constexpr static std::size_t _buff_size = stringify::v0::min_buff_size;
+    typename StringType::value_type _buff[_buff_size];
 
 public:
 
     typedef typename StringType::value_type char_type;
 
     string_appender ( StringType& out )
-        : _out(out)
+        : output_buffer<char_type>{_buff, _buff + _buff_size}
+        , _out(out)
         , _initial_length(out.length())
     {
     }
@@ -43,15 +44,9 @@ public:
         _out.reserve(_out.length() + size);
     }
 
-    stringify::v0::output_buffer<char_type> start() noexcept
-    {
-        return { _buffer, _buffer + _buffer_size };
-    }
+    bool recycle() override;
 
-    bool recycle(stringify::v0::output_buffer<char_type>& buff) override;
-
-    stringify::v0::expected<std::size_t, std::error_code>
-    finish(char_type *it);
+    stringify::v0::expected<std::size_t, std::error_code> finish();
 
 private:
 
@@ -61,23 +56,24 @@ private:
 };
 
 template <typename StringType>
-bool string_appender<StringType>::recycle(stringify::v0::output_buffer<char_type>& buff)
+bool string_appender<StringType>::recycle()
 {
-    BOOST_ASSERT(_buffer <= buff.it && buff.it <= _buffer + _buffer_size);
-    _out.append(_buffer, buff.it);
-    buff = start();
+    auto pos = this->pos();
+    BOOST_ASSERT(_buff <= pos && pos <= _buff + _buff_size);
+    _out.append(_buff, pos);
+    this->reset(_buff, _buff + _buff_size);
     return true;
 }
 
 template <typename StringType>
 stringify::v0::expected<std::size_t, std::error_code>
-string_appender<StringType>::finish(char_type *it)
+string_appender<StringType>::finish()
 {
-    BOOST_ASSERT(_buffer <= it && it <= _buffer + _buffer_size);
+    auto pos = this->pos();
     _finished = true;
-    _out.append(_buffer, it);
     if ( ! this->has_error() )
     {
+        _out.append(_buff, pos);
         return { boost::stringify::v0::in_place_t{}
                , _out.size() - _initial_length };
     }
@@ -88,16 +84,17 @@ string_appender<StringType>::finish(char_type *it)
 
 template <typename StringType>
 class string_maker final
-    : public stringify::v0::buffer_recycler<typename StringType::value_type>
+    : public stringify::v0::output_buffer<typename StringType::value_type>
 {
-    constexpr static std::size_t _buffer_size = stringify::v0::min_buff_size;
-    typename StringType::value_type _buffer[_buffer_size];
+    constexpr static std::size_t _buff_size = stringify::v0::min_buff_size;
+    typename StringType::value_type _buff[_buff_size];
 
 public:
 
     using char_type = typename StringType::value_type;
 
     string_maker()
+        : output_buffer<char_type>{_buff, _buff + _buff_size}
     {
     }
 
@@ -105,14 +102,9 @@ public:
     {
     }
 
-    stringify::v0::output_buffer<char_type> start() noexcept
-    {
-        return { _buffer, _buffer + _buffer_size };
-    }
+    bool recycle() override;
 
-    bool recycle(stringify::v0::output_buffer<char_type>& buff) override;
-
-    stringify::v0::expected<StringType, std::error_code> finish(char_type *it);
+    stringify::v0::expected<StringType, std::error_code> finish();
 
     void reserve(std::size_t size)
     {
@@ -125,22 +117,24 @@ private:
 };
 
 template <typename StringType>
-bool string_maker<StringType>::recycle(stringify::v0::output_buffer<char_type>& buff)
+bool string_maker<StringType>::recycle()
 {
-    BOOST_ASSERT(_buffer <= buff.it && buff.it <= _buffer + _buffer_size);
-    _out.append(_buffer, buff.it);
-    buff = start();
+    auto pos = this->pos();
+    BOOST_ASSERT(_buff <= pos && pos <= _buff + _buff_size);
+    _out.append(_buff, pos);
+    this->reset(_buff, _buff + _buff_size);
     return true;
 }
 
 template <typename StringType>
 stringify::v0::expected<StringType, std::error_code>
-inline string_maker<StringType>::finish(char_type *it)
+inline string_maker<StringType>::finish()
 {
-    BOOST_ASSERT(_buffer <= it && it <= _buffer + _buffer_size);
+    auto pos = this->pos();
+    BOOST_ASSERT(_buff <= pos && pos <= _buff + _buff_size);
     if ( ! this->has_error())
     {
-        _out.append(_buffer, it);
+        _out.append(_buff, pos);
         return {boost::stringify::v0::in_place_t{}, std::move(_out)};
     }
     return { stringify::v0::unexpect_t{}, this->get_error() };

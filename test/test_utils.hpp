@@ -65,7 +65,7 @@ inline void print(const char* label, const std::wstring& str)
 
 template <typename CharOut>
 class input_tester
-    : public boost::stringify::v0::buffer_recycler<CharOut>
+    : public boost::stringify::v0::output_buffer<CharOut>
 {
 
 public:
@@ -75,7 +75,8 @@ public:
         , std::string src_filename
         , int src_line
         , double reserve_factor )
-        : _expected(std::move(expected))
+        : boost::stringify::v0::output_buffer<CharOut>{nullptr, nullptr}
+        , _expected(std::move(expected))
         , _reserved_size(0)
         , _src_filename(std::move(src_filename))
         , _src_line(src_line)
@@ -89,7 +90,8 @@ public:
         , int src_line
         , std::error_code err
         , double reserve_factor )
-        : _expected(std::move(expected))
+        : boost::stringify::v0::output_buffer<CharOut>{nullptr, nullptr}
+        , _expected(std::move(expected))
         , _reserved_size(0)
         , _src_filename(std::move(src_filename))
         , _src_line(src_line)
@@ -105,12 +107,9 @@ public:
 
     using char_type = CharOut;
 
-    boost::stringify::v0::output_buffer<CharOut> start();
+    bool recycle() override;
 
-    bool recycle(boost::stringify::v0::output_buffer<CharOut>& ob) override;
-
-    boost::stringify::v0::expected<void, std::error_code>
-    finish(CharOut* it);
+    boost::stringify::v0::expected<void, std::error_code> finish();
 
     void reserve(std::size_t size);
 
@@ -124,7 +123,6 @@ private:
 
     std::basic_string<CharOut> _result;
     std::basic_string<CharOut> _expected;
-    boost::stringify::v0::output_buffer<CharOut> _ob;
     std::size_t _reserved_size;
     std::string _src_filename;
     int _src_line;
@@ -136,64 +134,37 @@ private:
     bool _source_location_printed = false;
 };
 
-template <typename CharOut>
-boost::stringify::v0::output_buffer<CharOut> input_tester<CharOut>::start()
-{
-    _ob.it  = _result.data();
-    _ob.end = _ob.it + _result.size();
-    return _ob;
-}
 
 template <typename CharOut>
 void input_tester<CharOut>::reserve(std::size_t size)
 {
     _reserved_size = size;
     _result.resize(size, CharOut{'#'});
+    this->reset(_result.data(), _result.data() + size);
 }
 
 template <typename CharOut>
-bool input_tester<CharOut>::recycle
-    ( boost::stringify::v0::output_buffer<CharOut>& ob )
+bool input_tester<CharOut>::recycle()
 {
     test_failed();
 
-    std::cout << " buffer_recycler::recycle() called "
+    std::cout << " output_buffer::recycle() called "
         "( return of printer::necessary_size() too small ).\n";
-    if (ob.it < _ob.it)
-        std::cout << "  Also, output_buffer::it is less than original\n";
-    if (ob.it > _ob.end)
-        std::cout << "  Also, output_buffer::it is greater than original end\n";
-    if (ob.end != _ob.end)
-        std::cout << "  Also, output_buffer::end has been chagend\n";
 
-    if (_ob.it > ob.it || ob.it > _ob.end)
-    {
-        this->set_error(std::errc::bad_address);
-        return false;
-    }
-
-    std::size_t previous_size = ob.it - _result.data();
+    std::size_t previous_size = this->pos() - _result.data();
     _result.resize(previous_size);
     _result.append(boost::stringify::v0::min_buff_size, CharOut{'#'});
-    _ob.it = _result.data() + previous_size;
-    _ob.end = _result.data() + _result.size();
-    ob = _ob;
+    this->reset( _result.data() + previous_size
+               , _result.data() + _result.size() );
     return true;
 }
 
 template <typename CharOut>
 boost::stringify::v0::expected<void, std::error_code>
-input_tester<CharOut>::finish(CharOut* it)
+input_tester<CharOut>::finish()
 {
-    if (it < _ob.it || it > _ob.end)
-    {
-        test_failed();
-        std::cout << "Finished in invalid memory position too small\n";
-    }
-    else
-    {
-        _result.resize(it - _result.data());
-    }
+    _result.resize(this->pos() - _result.data());
+
     if (_expected != _result)
     {
         test_failed();

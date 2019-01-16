@@ -152,7 +152,7 @@ class syntax_after_leading_expr
         = stringify::v0::detail::output_writer_from_tuple<OutputWriter>;
 
     using _return_type
-        = decltype(std::declval<OutputWriter>().finish((_char_type*)(0)));
+        = decltype(std::declval<OutputWriter>().finish());
 
     using _arglist_type
         = std::initializer_list<const stringify::v0::printer<_char_type>*>;
@@ -422,12 +422,11 @@ private:
             writer.get().reserve(res_size);
         }
 
-        auto buff = writer.get().start();
         bool no_error = stringify::v0::detail::asm_string_write
-            ( str, str_end, args, buff, writer.get(), enc, policy );
+            ( str, str_end, args, writer.get(), enc, policy );
         BOOST_ASSERT(no_error == ! writer.get().has_error());
         (void) no_error;
-        return writer.get().finish(buff.it);
+        return writer.get().finish();
     }
 
     _return_type _asm_write
@@ -437,7 +436,6 @@ private:
         , _arglist_type args ) const
     {
         _output_writer_wrapper writer{_owinit};
-        auto buff = writer.get().start();
 
         decltype(auto) enc
             = get_facet<stringify::v0::encoding_category<_char_type>, void>(_fpack);
@@ -445,10 +443,10 @@ private:
             = get_facet<stringify::v0::asm_invalid_arg_category, void>(_fpack);
 
         bool no_error = stringify::v0::detail::asm_string_write
-            ( str, str_end, args, buff, writer.get(), enc, policy );
+            ( str, str_end, args, writer.get(), enc, policy );
         BOOST_ASSERT(no_error == ! writer.get().has_error());
         (void) no_error;
-        return writer.get().finish(buff.it);
+        return writer.get().finish();
     }
 
 
@@ -465,11 +463,10 @@ private:
         {
             writer.get().reserve(res_size);
         }
-        auto buff = writer.get().start();
-        bool no_error = _write_args(buff, writer.get(), args...);
+        bool no_error = _write_args(writer.get(), args...);
         BOOST_ASSERT(no_error == ! writer.get().has_error());
         (void) no_error;
-        return writer.get().finish(buff.it);
+        return writer.get().finish();
     }
 
 
@@ -478,35 +475,31 @@ private:
     {
         _output_writer_wrapper writer{_owinit};
 
-        auto buff = writer.get().start();
-        bool no_error = _write_args(buff, writer.get(), args...);
+        bool no_error = _write_args(writer.get(), args...);
         BOOST_ASSERT(no_error == ! writer.get().has_error());
         (void) no_error;
-        return writer.get().finish(buff.it);
+        return writer.get().finish();
     }
 
     template <typename Arg>
     static bool _write_args
         ( stringify::v0::output_buffer<_char_type>& b
-        , OutputWriter& writer
         , const Arg& arg )
     {
-        return arg.write(b, writer);
+        return arg.write(b);
     }
 
     template <typename Arg, typename ... Args>
     static bool _write_args
         ( stringify::v0::output_buffer<_char_type>& b
-        , OutputWriter& writer
         , const Arg& arg
         , const Args& ... args )
     {
-        return arg.write(b, writer) && _write_args(b, writer, args ...);
+        return arg.write(b) && _write_args(b, args ...);
     }
 
     static bool _write_args
-        ( stringify::v0::output_buffer<_char_type>& b
-        , OutputWriter& )
+        ( stringify::v0::output_buffer<_char_type>& b )
     {
         return true;
     }

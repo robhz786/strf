@@ -139,31 +139,19 @@ public:
 
     std::size_t necessary_size() const override;
 
-    bool write
-        ( strf::output_buffer<CharT>& buff
-        , strf::buffer_recycler<CharT>& recycler ) const override;
+    bool write(strf::output_buffer<CharT>& ob) const override;
 
 private:
 
-    bool _write_single_line
-        ( strf::output_buffer<CharT>& buff
-        , strf::buffer_recycler<CharT>& recycler ) const;
+    bool _write_single_line(strf::output_buffer<CharT>& ob) const;
 
-    bool _encode_all_data_in_this_line
-        ( strf::output_buffer<CharT>& buff
-        , strf::buffer_recycler<CharT>& recycler ) const;
+    bool _encode_all_data_in_this_line(strf::output_buffer<CharT>& ob) const;
 
-    bool _write_multiline
-        ( strf::output_buffer<CharT>& buff
-        , strf::buffer_recycler<CharT>& recycler ) const;
+    bool _write_multiline(strf::output_buffer<CharT>& ob) const;
 
-    bool _write_identation
-        ( strf::output_buffer<CharT>& buff
-        , strf::buffer_recycler<CharT>& recycler ) const;
+    bool _write_identation(strf::output_buffer<CharT>& ob) const;
 
-    bool _write_end_of_line
-        ( strf::output_buffer<CharT>& buff
-        , strf::buffer_recycler<CharT>& recycler ) const;
+    bool _write_end_of_line(strf::output_buffer<CharT>& ob) const;
 
     void _encode_3bytes
         ( CharT* dest
@@ -210,40 +198,34 @@ std::size_t base64_printer<CharT>::necessary_size() const
 //[ base64_printer__write
 
 template <typename CharT>
-bool base64_printer<CharT>::write
-    ( strf::output_buffer<CharT>& buff
-    , strf::buffer_recycler<CharT>& recycler ) const
+bool base64_printer<CharT>::write(strf::output_buffer<CharT>& ob) const
 {
     return _facet.single_line()
-        ? _write_single_line(buff, recycler)
-        : _write_multiline(buff, recycler);
+        ? _write_single_line(ob)
+        : _write_multiline(ob);
 }
 
 template <typename CharT>
-bool base64_printer<CharT>::_write_single_line
-    ( strf::output_buffer<CharT>& buff
-    , strf::buffer_recycler<CharT>& recycler ) const
+bool base64_printer<CharT>::_write_single_line(strf::output_buffer<CharT>& ob) const
 {
-    return _write_identation(buff, recycler)
-        && _encode_all_data_in_this_line(buff, recycler);
+    return _write_identation(ob)
+        && _encode_all_data_in_this_line(ob);
 }
 
 template <typename CharT>
-bool base64_printer<CharT>::_encode_all_data_in_this_line
-    ( strf::output_buffer<CharT>& buff
-    , strf::buffer_recycler<CharT>& recycler ) const
+bool base64_printer<CharT>::_encode_all_data_in_this_line(strf::output_buffer<CharT>& ob) const
 {
     auto data_it = static_cast<const std::uint8_t*>(_fmt.value().bytes);
     for ( std::ptrdiff_t count = _fmt.value().num_bytes
         ; count > 0
         ; count -= 3 )
     {
-        if (buff.end - buff.it < 4 && ! recycler.recycle(buff))
+        if (ob.size() < 4 && ! ob.recycle())
         {
             return false;
         }
-        _encode_3bytes(buff.it, data_it, count);
-        buff.it += 4;
+        _encode_3bytes(ob.pos(), data_it, count);
+        ob.advance(4);
         data_it += 3;
     }
     return true;
@@ -252,11 +234,9 @@ bool base64_printer<CharT>::_encode_all_data_in_this_line
 //]
 
 template <typename CharT>
-bool base64_printer<CharT>::_write_multiline
-    ( strf::output_buffer<CharT>& buff
-    , strf::buffer_recycler<CharT>& recycler ) const
+bool base64_printer<CharT>::_write_multiline(strf::output_buffer<CharT>& ob) const
 {
-    if ( ! _write_identation(buff, recycler))
+    if ( ! _write_identation(ob))
     {
         return false;
     }
@@ -269,12 +249,12 @@ bool base64_printer<CharT>::_write_multiline
     {
         if (cursor_pos + 4 < _facet.line_length)
         {
-            if (buff.end - buff.it < 4 && ! recycler.recycle(buff))
+            if (ob.size() < 4 && ! ob.recycle())
             {
                 return false;
             }
-            _encode_3bytes(buff.it, data_it, remaining_bytes);
-            buff.it += 4;
+            _encode_3bytes(ob.pos(), data_it, remaining_bytes);
+            ob.advance(4);
             cursor_pos += 4;
         }
         else
@@ -286,18 +266,18 @@ bool base64_printer<CharT>::_write_multiline
                 if (cursor_pos == _facet.line_length)
                 {
                     cursor_pos = 0;
-                    if ( ! _write_end_of_line(buff, recycler)
-                      || ! _write_identation(buff, recycler) )
+                    if ( ! _write_end_of_line(ob)
+                      || ! _write_identation(ob) )
                     {
                         return false;
                     }
                 }
-                if (buff.it == buff.end && ! recycler.recycle(buff))
+                if (ob.size() == 0 && ! ob.recycle())
                 {
                     return false;
                 }
-                * buff.it = tmp[i];
-                ++buff.it;
+                * ob.pos() = tmp[i];
+                ob.advance(1);
                 ++cursor_pos;
             }
         }
@@ -306,46 +286,42 @@ bool base64_printer<CharT>::_write_multiline
     }
     if (cursor_pos != 0)
     {
-        return _write_end_of_line(buff, recycler);
+        return _write_end_of_line(ob);
     }
     return true; // success
 }
 
 template <typename CharT>
-bool base64_printer<CharT>::_write_identation
-    ( strf::output_buffer<CharT>& buff
-    , strf::buffer_recycler<CharT>& recycler ) const
+bool base64_printer<CharT>::_write_identation(strf::output_buffer<CharT>& ob) const
 {
     using traits = std::char_traits<CharT>;
     std::size_t count = _fmt.indentation();
     do
     {
-        std::size_t buff_size = buff.end - buff.it;
+        std::size_t buff_size = ob.size();
         if (buff_size >= count)
         {
-            traits::assign(buff.it, count, CharT(' '));
-            buff.it += count;
+            traits::assign(ob.pos(), count, CharT(' '));
+            ob.advance(count);
             return true;
         }
-        traits::assign(buff.it, buff_size, CharT(' '));
-        buff.it = buff.end;
+        traits::assign(ob.pos(), buff_size, CharT(' '));
         count -= buff_size;
-    } while(recycler.recycle(buff));
+        ob.set_pos(ob.end());
+    } while(ob.recycle());
     return true;
 }
 
 template <typename CharT>
-bool base64_printer<CharT>::_write_end_of_line
-    ( strf::output_buffer<CharT>& buff
-    , strf::buffer_recycler<CharT>& recycler ) const
+bool base64_printer<CharT>::_write_end_of_line(strf::output_buffer<CharT>& ob) const
 {
-    if (buff.it + 2 > buff.end && ! recycler.recycle(buff))
+    if (ob.size() < 2 && ! ob.recycle())
     {
         return false;
     }
-    buff.it[0] = _facet.eol[0];
-    buff.it[1] = _facet.eol[1];
-    buff.it += _facet.eol[1] == '\0' ? 1 : 2;
+    ob.pos()[0] = _facet.eol[0];
+    ob.pos()[1] = _facet.eol[1];
+    ob.advance(_facet.eol[1] == '\0' ? 1 : 2);
     return true;
 }
 

@@ -24,7 +24,7 @@ class erroneous_printer: public boost::stringify::v0::printer<CharT>
 
 public:
 
-    erroneous_printer ( error_tag t ) noexcept
+    erroneous_printer(error_tag t) noexcept
         : m_err(t.ec)
     {
     }
@@ -34,12 +34,10 @@ public:
         return 0;
     }
 
-    bool write
-        ( boost::stringify::v0::output_buffer<CharT>& ob
-        , boost::stringify::v0::buffer_recycler<CharT>& rec ) const override
+    bool write(boost::stringify::v0::output_buffer<CharT>& ob) const override
     {
-        rec.set_error(m_err);
-        rec.recycle(ob);
+        ob.set_error(m_err);
+        ob.recycle();
         return false;
     }
 

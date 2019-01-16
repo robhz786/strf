@@ -13,7 +13,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
 template <typename CharT, typename Traits>
-class std_streambuf_writer final: public stringify::v0::buffer_recycler<CharT>
+class std_streambuf_writer final: public stringify::v0::output_buffer<CharT>
 {
     constexpr static std::size_t _buff_size = stringify::v0::min_buff_size;
     CharT _buff[_buff_size];
@@ -25,25 +25,21 @@ public:
     std_streambuf_writer
         ( std::basic_streambuf<CharT, Traits>& out
         , std::size_t* count )
-        : m_out(out)
-        , m_count(count)
+        : stringify::v0::output_buffer<CharT>{_buff, _buff + _buff_size}
+        , _out(out)
+        , _count(count)
     {
-        if (m_count != nullptr)
+        if (_count != nullptr)
         {
-            *m_count = 0;
+            *_count = 0;
         }
     }
 
-    stringify::v0::output_buffer<CharT> start() noexcept
-    {
-        return  { _buff, _buff + _buff_size };
-    }
+    bool recycle() override;
 
-    bool recycle(stringify::v0::output_buffer<CharT>& buff) override;
-
-    stringify::v0::expected<void, std::error_code> finish(CharT* it)
+    stringify::v0::expected<void, std::error_code> finish()
     {
-        if ( ! this->has_error() && do_put(it))
+        if ( ! this->has_error() && recycle())
         {
             return {};
         }
@@ -52,38 +48,24 @@ public:
 
 private:
 
-    bool do_put(const CharT* end);
-
-    std::basic_streambuf<CharT, Traits>& m_out;
-    std::size_t* m_count = nullptr;
-
+    std::basic_streambuf<CharT, Traits>& _out;
+    std::size_t* _count = nullptr;
 };
 
 template <typename CharT, typename Traits>
-bool std_streambuf_writer<CharT, Traits>::recycle
-    ( stringify::v0::output_buffer<CharT>& buff )
+bool std_streambuf_writer<CharT, Traits>::recycle()
 {
-    if (do_put(buff.it))
-    {
-        buff = start();
-        return true;
-    }
-    return false;
-}
-
-
-template <typename CharT, typename Traits>
-bool std_streambuf_writer<CharT, Traits>::do_put(const CharT* end)
-{
+    auto end = this->pos();
     std::size_t count = end - _buff;
-    auto count_inc = m_out.sputn(_buff, count);
+    auto count_inc = _out.sputn(_buff, count);
 
-    if (m_count != nullptr && count_inc > 0)
+    if (_count != nullptr && count_inc > 0)
     {
-        *m_count += static_cast<std::size_t>(count_inc);
+        *_count += static_cast<std::size_t>(count_inc);
     }
     if (static_cast<std::streamsize>(count) == count_inc)
     {
+        this->reset(_buff, _buff + _buff_size);
         return true;
     }
     this->set_error(std::make_error_code(std::errc::io_error));

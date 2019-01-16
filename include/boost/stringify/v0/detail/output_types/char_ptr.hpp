@@ -14,7 +14,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail{
 
 template<typename CharOut>
-class char_ptr_writer: public buffer_recycler<CharOut>
+class char_ptr_writer: public output_buffer<CharOut>
 {
     using Traits = std::char_traits<CharOut>;
 
@@ -23,66 +23,48 @@ public:
     using char_type = CharOut;
 
     char_ptr_writer(CharOut* destination, CharOut* end )
-        : _begin{destination}
-        , _end{end}
+        : output_buffer<CharOut>{destination, end - 1}
+        , _begin(destination)
     {
-        BOOST_ASSERT(_begin <= _end);
+        BOOST_ASSERT(destination < end);
     }
 
     ~char_ptr_writer()
     {
-        if (! _finish_called && _begin != _end)
+        if ( ! _finish_called)
         {
-            *_begin = 0;
+            * _begin = 0;
         }
     }
 
-    output_buffer<CharOut> start() noexcept
-    {
-        CharOut* end =  _end != _begin ? _end -1 : _end;
+    bool recycle() override;
 
-        return {_begin, end};
-    }
-
-    bool recycle(stringify::v0::output_buffer<CharOut>& ob) override;
-
-    stringify::v0::expected<std::size_t, std::error_code>
-    finish(CharOut *it) noexcept;
+    stringify::v0::expected<std::size_t, std::error_code> finish() noexcept;
 
 private:
 
     CharOut* _begin;
-    CharOut* _end;
-    bool  _finish_called = false;
+    bool _finish_called = false;
 };
 
 template<typename CharOut>
-bool char_ptr_writer<CharOut>::recycle(stringify::v0::output_buffer<CharOut>& ob)
+bool char_ptr_writer<CharOut>::recycle()
 {
-    BOOST_ASSERT(ob.it <= _end);
-    (void) ob;
     this->set_error(std::make_error_code(std::errc::result_out_of_range));
     return false;
 }
 
 template<typename CharOut>
 inline stringify::v0::expected<std::size_t, std::error_code>
-char_ptr_writer<CharOut>::finish(CharOut *it) noexcept
+char_ptr_writer<CharOut>::finish() noexcept
 {
     _finish_called = true;
     if ( ! this->has_error() )
     {
-        if (_begin != _end)
-        {
-            BOOST_ASSERT(_begin <= it && it < _end);
-            *it = 0;
-        }
-        return { boost::stringify::v0::in_place_t{}, it - _begin };
+        * this->pos() = 0;
+        return { boost::stringify::v0::in_place_t{}, this->pos() - _begin };
     }
-    if (_begin != _end)
-    {
-        *_begin = 0;
-    }
+    * _begin = 0;
     return { boost::stringify::v0::unexpect_t{}, this->get_error() };
 }
 

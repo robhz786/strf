@@ -84,31 +84,22 @@ class serial_writer: public printers_receiver<CharOut>
 {
 public:
 
-    serial_writer
-        ( stringify::v0::output_buffer<CharOut>& _buffer
-        , stringify::v0::buffer_recycler<CharOut>& _recycler ) noexcept;
+    serial_writer(stringify::v0::output_buffer<CharOut>& ob) noexcept
+        : _ob(ob)
+    {
+    }
 
     bool put(const stringify::v0::printer<CharOut>& p) override;
 
 private:
 
-    stringify::v0::output_buffer<CharOut>& _buffer;
-    stringify::v0::buffer_recycler<CharOut>& _recycler;
+    stringify::v0::output_buffer<CharOut>& _ob;
 };
-
-template <typename CharOut>
-serial_writer<CharOut>::serial_writer
-    ( stringify::v0::output_buffer<CharOut>& buffer
-    , stringify::v0::buffer_recycler<CharOut>& recycler ) noexcept
-    : _buffer(buffer)
-    , _recycler(recycler)
-{
-}
 
 template <typename CharOut>
 bool serial_writer<CharOut>::put(const stringify::v0::printer<CharOut>& p)
 {
-    return p.write(_buffer, _recycler);
+    return p.write(_ob);
 }
 
 } // namespace detail
@@ -128,9 +119,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    bool write
-        ( stringify::v0::output_buffer<CharOut>& buff
-        , stringify::v0::buffer_recycler<CharOut>& recycler ) const;
+    bool write(stringify::v0::output_buffer<CharOut>& ob) const override;
 
     int remaining_width(int w) const override;
 
@@ -144,18 +133,15 @@ private:
 
     bool write_with_fill
         ( int fillcount
-        , stringify::v0::output_buffer<CharOut>& buff
-        , stringify::v0::buffer_recycler<CharOut>& recycler ) const;
+        , stringify::v0::output_buffer<CharOut>& ob ) const;
 
     bool write_without_fill
-        ( stringify::v0::output_buffer<CharOut>& buff
-        , stringify::v0::buffer_recycler<CharOut>& recycler ) const;
+        ( stringify::v0::output_buffer<CharOut>& ob ) const;
 
     bool write_fill
         ( int count
         , char32_t ch
-        , stringify::v0::output_buffer<CharOut>& buff
-        , stringify::v0::buffer_recycler<CharOut>& recycler ) const;
+        , stringify::v0::output_buffer<CharOut>& ob ) const;
 
     stringify::v0::encoding<CharOut> _encoding;
     stringify::v0::encoding_policy _epoli;
@@ -203,8 +189,7 @@ int dynamic_join_printer<CharOut>::remaining_width(int w) const
 
 template <typename CharOut>
 bool dynamic_join_printer<CharOut>::write
-    ( stringify::v0::output_buffer<CharOut>& buff
-    , stringify::v0::buffer_recycler<CharOut>& recycler ) const
+    ( stringify::v0::output_buffer<CharOut>& ob ) const
 {
     auto fmt = formatting();
     auto fillcount = fmt.width();
@@ -216,28 +201,26 @@ bool dynamic_join_printer<CharOut>::write
     }
     if(fillcount > 0)
     {
-        return write_with_fill(fillcount, buff, recycler);
+        return write_with_fill(fillcount, ob);
     }
     else
     {
-        return write_without_fill(buff, recycler);
+        return write_without_fill(ob);
     }
 }
 
 template <typename CharOut>
 bool dynamic_join_printer<CharOut>::write_without_fill
-    ( stringify::v0::output_buffer<CharOut>& buff
-    , stringify::v0::buffer_recycler<CharOut>& recycler ) const
+    ( stringify::v0::output_buffer<CharOut>& ob ) const
 {
-    stringify::v0::detail::serial_writer<CharOut> s(buff, recycler);
+    stringify::v0::detail::serial_writer<CharOut> s(ob);
     return compose(s);
 }
 
 template <typename CharOut>
 bool dynamic_join_printer<CharOut>::write_with_fill
     ( int fillcount
-    , stringify::v0::output_buffer<CharOut>& buff
-    , stringify::v0::buffer_recycler<CharOut>& recycler ) const
+    , stringify::v0::output_buffer<CharOut>& ob ) const
 {
     auto fmt = formatting();
     char32_t fill_char = fmt.fill();
@@ -245,22 +228,22 @@ bool dynamic_join_printer<CharOut>::write_with_fill
     {
         case stringify::v0::alignment::left:
         {
-            return write_without_fill(buff, recycler)
-                && write_fill(fillcount, fill_char, buff, recycler);
+            return write_without_fill(ob)
+                && write_fill(fillcount, fill_char, ob);
         }
         case stringify::v0::alignment::center:
         {
             auto halfcount = fillcount >> 1;
-            return write_fill(halfcount, fill_char, buff, recycler)
-                && write_without_fill(buff, recycler)
-                && write_fill(fillcount - halfcount, fill_char, buff, recycler);
+            return write_fill(halfcount, fill_char, ob)
+                && write_without_fill(ob)
+                && write_fill(fillcount - halfcount, fill_char, ob);
         }
         //case stringify::v0::alignment::internal:
         //case stringify::v0::alignment::right:
         default:
         {
-            return write_fill(fillcount, fill_char, buff, recycler)
-                && write_without_fill(buff, recycler);
+            return write_fill(fillcount, fill_char, ob)
+                && write_without_fill(ob);
         }
     }
 }
@@ -269,11 +252,10 @@ template <typename CharOut>
 bool dynamic_join_printer<CharOut>::write_fill
     ( int count
     , char32_t ch
-    , stringify::v0::output_buffer<CharOut>& buff
-    , stringify::v0::buffer_recycler<CharOut>& recycler ) const
+    , stringify::v0::output_buffer<CharOut>& ob ) const
 {
     return stringify::v0::detail::write_fill
-        ( _encoding, buff, recycler, count, ch, _epoli.err_hdl() );
+        ( _encoding, ob, count, ch, _epoli.err_hdl() );
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

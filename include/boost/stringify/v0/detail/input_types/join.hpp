@@ -271,13 +271,11 @@ public:
         return _args_length() + _fill_length();
     }
 
-    bool write
-        ( stringify::v0::output_buffer<CharT>& buff
-        , stringify::v0::buffer_recycler<CharT>& recycler ) const override
+    bool write(stringify::v0::output_buffer<CharT>& ob) const override
     {
         if (_fillcount <= 0)
         {
-            return _write_args(buff, recycler);
+            return _write_args(ob);
         }
         else
         {
@@ -285,25 +283,25 @@ public:
             {
                 case stringify::v0::alignment::left:
                 {
-                    return _write_args(buff, recycler)
-                        && _write_fill(buff, recycler, _fillcount);
+                    return _write_args(ob)
+                        && _write_fill(ob, _fillcount);
                 }
                 case stringify::v0::alignment::right:
                 {
-                    return _write_fill(buff, recycler, _fillcount)
-                        && _write_args(buff, recycler);
+                    return _write_fill(ob, _fillcount)
+                        && _write_args(ob);
                 }
                 case stringify::v0::alignment::internal:
                 {
-                    return _write_splitted(buff, recycler);
+                    return _write_splitted(ob);
                 }
                 default:
                 {
                     BOOST_ASSERT(_join.align == stringify::v0::alignment::center);
                     auto half_fillcount = _fillcount / 2;
-                    return _write_fill(buff, recycler, half_fillcount)
-                        && _write_args(buff, recycler)
-                        && _write_fill(buff, recycler, _fillcount - half_fillcount);
+                    return _write_fill(ob, half_fillcount)
+                        && _write_args(ob)
+                        && _write_fill(ob, _fillcount - half_fillcount);
                 }
             }
         }
@@ -355,27 +353,25 @@ private:
         return w;
     }
 
-    bool _write_splitted
-        ( stringify::v0::output_buffer<CharT>& buff
-        , stringify::v0::buffer_recycler<CharT>& recycler ) const
+    bool _write_splitted(stringify::v0::output_buffer<CharT>& ob) const
     {
         auto it = _args.begin();
         for ( int count = _join.num_leading_args
             ; count > 0 && it != _args.end()
             ; --count, ++it)
         {
-            if (! (*it)->write(buff, recycler))
+            if (! (*it)->write(ob))
             {
                 return false;
             }
         }
-        if (! _write_fill(buff, recycler, _fillcount))
+        if (! _write_fill(ob, _fillcount))
         {
             return false;
         }
         while(it != _args.end())
         {
-            if (! (*it)->write(buff, recycler))
+            if (! (*it)->write(ob))
             {
                 return false;
             }
@@ -384,13 +380,11 @@ private:
         return true;
     }
 
-    bool _write_args
-        ( stringify::v0::output_buffer<CharT>& buff
-        , stringify::v0::buffer_recycler<CharT>& recycler ) const
+    bool _write_args(stringify::v0::output_buffer<CharT>& ob) const
     {
         for(const auto& arg : _args)
         {
-            if (! arg->write(buff, recycler))
+            if (! arg->write(ob))
             {
                 return false;
             }
@@ -399,12 +393,11 @@ private:
     }
 
     bool _write_fill
-        ( stringify::v0::output_buffer<CharT>& buff
-        , stringify::v0::buffer_recycler<CharT>& recycler
+        ( stringify::v0::output_buffer<CharT>& ob
         , int count ) const
     {
         return stringify::v0::detail::write_fill
-            ( _encoding, buff, recycler, count, _join.fillchar, _err_hdl );
+            ( _encoding, ob, count, _join.fillchar, _err_hdl );
     }
 };
 

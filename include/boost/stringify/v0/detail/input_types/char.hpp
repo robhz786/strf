@@ -241,9 +241,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    bool write
-        ( stringify::v0::output_buffer<CharT>& buff
-        , stringify::v0::buffer_recycler<CharT>& recycler ) const override;
+    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
 
     int remaining_width(int w) const override;
 
@@ -269,13 +267,12 @@ int char_printer<CharT>::remaining_width(int w) const
 
 template <typename CharT>
 bool stringify::v0::char_printer<CharT>::write
-    ( stringify::v0::output_buffer<CharT>& buff
-    , stringify::v0::buffer_recycler<CharT>& recycler ) const
+    ( stringify::v0::output_buffer<CharT>& ob ) const
 {
-    if (buff.it != buff.end || recycler.recycle(buff))
+    if (ob.size() != 0 || ob.recycle())
     {
-        *buff.it = _ch;
-        ++buff.it;
+        *ob.pos() = _ch;
+        ob.advance(1);
         return true;
     }
     return false;
@@ -303,9 +300,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    bool write
-        ( stringify::v0::output_buffer<CharT>& buff
-        , stringify::v0::buffer_recycler<CharT>& recycler ) const override;
+    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
 
     int remaining_width(int w) const override;
 
@@ -324,13 +319,10 @@ private:
 
     void _init(stringify::v0::width_calculator wcalc);
 
-    bool _write_body
-        ( stringify::v0::output_buffer<CharT>& buff
-        , stringify::v0::buffer_recycler<CharT>& recycler ) const;
+    bool _write_body(stringify::v0::output_buffer<CharT>& ob) const;
 
     bool _write_fill
-        ( stringify::v0::output_buffer<CharT>& buff
-        , stringify::v0::buffer_recycler<CharT>& recycler
+        ( stringify::v0::output_buffer<CharT>& ob
         , unsigned count ) const;
 };
 
@@ -353,12 +345,11 @@ std::size_t fmt_char_printer<CharT>::necessary_size() const
 
 template <typename CharT>
 bool fmt_char_printer<CharT>::write
-    ( stringify::v0::output_buffer<CharT>& buff
-    , stringify::v0::buffer_recycler<CharT>& recycler ) const
+    ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     if (_content_width >= _fmt.width())
     {
-        return _write_body(buff, recycler);
+        return _write_body(ob);
     }
     else
     {
@@ -367,70 +358,62 @@ bool fmt_char_printer<CharT>::write
         {
             case stringify::v0::alignment::left:
             {
-                return _write_body(buff, recycler)
-                    && _write_fill(buff, recycler, fillcount);
+                return _write_body(ob)
+                    && _write_fill(ob, fillcount);
             }
             case stringify::v0::alignment::center:
             {
                 auto halfcount = fillcount / 2;
-                return _write_fill(buff, recycler, halfcount)
-                    && _write_body(buff, recycler)
-                    && _write_fill(buff, recycler, fillcount - halfcount);
+                return _write_fill(ob, halfcount)
+                    && _write_body(ob)
+                    && _write_fill(ob, fillcount - halfcount);
             }
             default:
             {
-                return _write_fill(buff, recycler, fillcount)
-                    && _write_body(buff, recycler);
+                return _write_fill(ob, fillcount)
+                    && _write_body(ob);
             }
         }
     }
 }
 
-
 template <typename CharT>
 bool fmt_char_printer<CharT>::_write_body
-    ( stringify::v0::output_buffer<CharT>& buff
-    , stringify::v0::buffer_recycler<CharT>& recycler ) const
+    ( stringify::v0::output_buffer<CharT>& ob ) const
 {
-    auto ob = buff;
     if (_fmt.count() == 1)
     {
-        if(ob.it == ob.end && ! recycler.recycle(ob))
+        if(ob.size() != 0 || ob.recycle())
         {
-            buff = ob;
-            return false;
+            * ob.pos() = _fmt.value();
+            ob.advance(1);
+            return true;
         }
-        * ob.it = _fmt.value();
-        buff.it = ob.it + 1;
-        return true;
+        return false;
     }
     std::size_t count = _fmt.count();
     do
     {
-        std::size_t space = ob.end - ob.it;
+        std::size_t space = ob.size();
         if (count <= space)
         {
-            std::fill_n(ob.it, count, _fmt.value());
-            buff.it = ob.it + count;
-            buff.end = ob.end;
+            std::fill_n(ob.pos(), count, _fmt.value());
+            ob.advance(count);
             return true;
         }
-        std::fill_n(ob.it, space, _fmt.value());
+        std::fill_n(ob.pos(), space, _fmt.value());
         count -= space;
-        ob.it += space;
-    } while (recycler.recycle(ob));
-    buff = ob;
+    } while (ob.recycle(ob.end()));
     return false;
 }
 
 template <typename CharT>
 bool fmt_char_printer<CharT>::_write_fill
-    ( stringify::v0::output_buffer<CharT>& buff
-    , stringify::v0::buffer_recycler<CharT>& recycler
+    ( stringify::v0::output_buffer<CharT>& ob
     , unsigned count ) const
 {
     return stringify::v0::detail::write_fill
-        ( _encoding, buff, recycler, count, _fmt.fill(), _epoli.err_hdl() );
+        ( _encoding, ob, count, _fmt.fill(), _epoli.err_hdl() );
 }
 
 template <typename CharT>

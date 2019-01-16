@@ -28,11 +28,9 @@ public:
         return 0;
     }
 
-    bool write
-        ( boost::stringify::v0::output_buffer<CharT>& ob
-        , boost::stringify::v0::buffer_recycler<CharT>& rec ) const override
+    bool write(boost::stringify::v0::output_buffer<CharT>& ob) const override
     {
-        rec.recycle(ob);
+        ob.recycle();
         throw std::invalid_argument("invalid printer");
     }
 

@@ -81,13 +81,11 @@ public:
         return sum;
     }
 
-    bool write
-        ( stringify::v0::output_buffer<CharT>& buff
-        , stringify::v0::buffer_recycler<CharT>& recycler ) const override
+    bool write(stringify::v0::output_buffer<CharT>& ob) const override
     {
         for(const auto& arg : m_args)
         {
-            if ( ! arg->write(buff, recycler))
+            if ( ! arg->write(ob))
             {
                 return false;
             }
