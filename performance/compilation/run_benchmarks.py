@@ -12,7 +12,7 @@ if cxx is None or not os.path.isfile(cxx) :
     print("set CXX environment variable to a valid compiler")
     quit(1)
 
-cxx_standard='14'
+cxx_standard='17'
 
 cxxflags = ['-std=c++' + cxx_standard]
 cxxflags_str = os.environ.get('CXXFLAGS')
@@ -42,10 +42,10 @@ stringify_cpp = os.path.normpath(pwd + "/../../build/stringify.cpp")
 
 files_per_program = [1, 21, 41]
 
-def clean_abort(msg):
-    print(msg)
-    shutil.rmtree(tmp_dir, ignore_errors=True)
-    return(1)
+#def clean_abort(msg):
+#    print(msg)
+#    shutil.rmtree(tmp_dir, ignore_errors=True)
+#    return(1)
 
 def empty_row() :
     part1 = '[[{:^28}][{:^24}][{:^9}]'.format(' ', ' ', ' ', ' ')
@@ -109,7 +109,7 @@ def compile_unit(build_type, flags, basename, obj_id):
     if rc != 0:
         print("failed to compile " + basename + ".cpp")
         print(" ".join(compile_cmd))
-        clean_abort("")
+        return(1)
     obj_size = os.path.getsize(obj_filename(build_type, basename, obj_id))
     return { 'wall time'   : float(compilation_times[0]),
              'user time'   : float(compilation_times[1]),
@@ -146,7 +146,7 @@ def build_program(build_type, main_src, basename, libs, num_objs) :
     if 0 != subprocess.call(cmd):
         print("failed to build " + exe_name)
         print(" ".join(cmd))
-        clean_abort("")
+        return(1)
     return os.path.getsize(exe_name)
 
 
@@ -187,7 +187,8 @@ def cmake_generate_stringify(buildtype):
     gen_p = subprocess.Popen(gen_args, cwd=build_dir)
     gen_p.wait()
     if gen_p.returncode != 0:
-        clean_abort("Failed generation CMake build project for Boost.Stringify")
+        print("Failed generation CMake build project for Boost.Stringify")
+        return 1
     return build_dir
 
 def cmake_generate_fmt(buildtype):
@@ -198,7 +199,8 @@ def cmake_generate_fmt(buildtype):
     gen_p = subprocess.Popen(gen_args, cwd=build_dir)
     gen_p.wait()
     if gen_p.returncode != 0:
-        clean_abort("Failed generation CMake build project for {fmt}")
+        print("Failed generation CMake build project for {fmt}")
+        return 1
     return build_dir
 
 def cmake_build(build_dir):
@@ -206,7 +208,8 @@ def cmake_build(build_dir):
     build_p = subprocess.Popen(build_args, cwd=build_dir)
     build_p.wait()
     if build_p.returncode != 0:
-         clean_abort("Failed to build")
+         print("Failed to build")
+         return 1
 
 def build_libstringify(buildtype):
     print("building Stringify " + buildtype)
@@ -261,97 +264,128 @@ libfmt_db = build_libfmt(build_type_debug())
 samples_O3 = \
 [ ('to_string',         [ ([lib_boost_stringify_O3], [boost_incl], '_stringify'   )
                         , ([lib_boost_stringify_O3], [boost_incl], '_stringify_as')
-                        , ([libfmt_O3],              [fmt_incl],   '_fmtlib'      ) ] )
+#                        , ([libfmt_O3],              [fmt_incl],   '_fmtlib'      )
+] )
 , ('to_charptr',        [ ([lib_boost_stringify_O3], [boost_incl], '_stringify'   )
                         , ([lib_boost_stringify_O3], [boost_incl], '_stringify_as')
-                        , ([libfmt_O3],              [fmt_incl],   '_fmtlib'      )
-                        , ([],                       [],           '_sprintf'     ) ] )
+#                        , ([libfmt_O3],              [fmt_incl],   '_fmtlib'      )
+#                        , ([],                       [],           '_sprintf'     )
+] )
 , ('to_FILE',           [ ([lib_boost_stringify_O3], [boost_incl], '_stringify'   )
                         , ([lib_boost_stringify_O3], [boost_incl], '_stringify_as')
-                        , ([libfmt_O3],              [fmt_incl],   '_fmtlib'      )
-                        , ([],                       [],           '_fprintf'     ) ] )
+#                        , ([libfmt_O3],              [fmt_incl],   '_fmtlib'      )
+#                        , ([],                       [],           '_fprintf'     )
+] )
 , ('to_ostream',        [ ([lib_boost_stringify_O3], [boost_incl], '_stringify'   )
-                        , ([lib_boost_stringify_O3], [boost_incl], '_stringify_as')
-                        , ([libfmt_O3],              [fmt_incl],   '_fmtlib'      )
-                        , ([],                       [],           '_itself'      ) ] ) ]
+#                        , ([lib_boost_stringify_O3], [boost_incl], '_stringify_as')
+#                        , ([libfmt_O3],              [fmt_incl],   '_fmtlib'      )
+#                        , ([],                       [],           '_itself'      )
+] )
+]
+
 samples_Os = \
 [ ('to_string',         [ ([lib_boost_stringify_Os], [boost_incl], '_stringify'   )
                         , ([lib_boost_stringify_Os], [boost_incl], '_stringify_as')
-                        , ([libfmt_Os],              [fmt_incl],   '_fmtlib'      ) ] )
+#                        , ([libfmt_Os],              [fmt_incl],   '_fmtlib'      )
+] )
 , ('to_charptr',        [ ([lib_boost_stringify_Os], [boost_incl], '_stringify'   )
                         , ([lib_boost_stringify_Os], [boost_incl], '_stringify_as')
-                        , ([libfmt_Os],              [fmt_incl],   '_fmtlib'      )
-                        , ([],                       [],           '_sprintf'     ) ] )
+#                        , ([libfmt_Os],              [fmt_incl],   '_fmtlib'      )
+#                        , ([],                       [],           '_sprintf'     )
+] )
 , ('to_FILE',           [ ([lib_boost_stringify_Os], [boost_incl], '_stringify'   )
                         , ([lib_boost_stringify_Os], [boost_incl], '_stringify_as')
-                        , ([libfmt_Os],              [fmt_incl],   '_fmtlib'      )
-                        , ([],                       [],           '_fprintf'     ) ] )
+#                        , ([libfmt_Os],              [fmt_incl],   '_fmtlib'      )
+#                        , ([],                       [],           '_fprintf'     )
+] )
 , ('to_ostream',        [ ([lib_boost_stringify_Os], [boost_incl], '_stringify'   )
                         , ([lib_boost_stringify_Os], [boost_incl], '_stringify_as')
-                        , ([libfmt_Os],              [fmt_incl],   '_fmtlib'      )
-                        , ([],                       [],           '_itself'      ) ] ) ]
+#                        , ([libfmt_Os],              [fmt_incl],   '_fmtlib'      )
+#                        , ([],                       [],           '_itself'      )
+] )
+]
+
 samples_debug = \
 [ ('to_string',         [ ([lib_boost_stringify_db], [boost_incl], '_stringify'   )
                         , ([lib_boost_stringify_db], [boost_incl], '_stringify_as')
-                        , ([libfmt_db],              [fmt_incl],   '_fmtlib'      ) ] )
+#                        , ([libfmt_db],              [fmt_incl],   '_fmtlib'      )
+] )
 , ('to_charptr',        [ ([lib_boost_stringify_db], [boost_incl], '_stringify'   )
                         , ([lib_boost_stringify_db], [boost_incl], '_stringify_as')
-                        , ([libfmt_db],              [fmt_incl],   '_fmtlib'      )
-                        , ([],                       [],           '_sprintf'     ) ] )
+#                        , ([libfmt_db],              [fmt_incl],   '_fmtlib'      )
+#                        , ([],                       [],           '_sprintf'     )
+] )
 , ('to_FILE',           [ ([lib_boost_stringify_db], [boost_incl], '_stringify'   )
                         , ([lib_boost_stringify_db], [boost_incl], '_stringify_as')
-                        , ([libfmt_db],              [fmt_incl],   '_fmtlib'      )
-                        , ([],                       [],           '_fprintf'     ) ] )
+#                        , ([libfmt_db],              [fmt_incl],   '_fmtlib'      )
+#                        , ([],                       [],           '_fprintf'     )
+] )
 , ('to_ostream',        [ ([lib_boost_stringify_db], [boost_incl], '_stringify'   )
                         , ([lib_boost_stringify_db], [boost_incl], '_stringify_as')
-                        , ([libfmt_db],              [fmt_incl],   '_fmtlib'      )
-                        , ([],                       [],           '_itself'      ) ] ) ]
+#                        , ([libfmt_db],              [fmt_incl],   '_fmtlib'      )
+#                        , ([],                       [],           '_itself'      )
+] ) ]
 
 samples_O3_header_only = \
 [ ('to_string',         [ ([], [boost_incl], '_stringify_ho'        )
                         , ([], [boost_incl], '_stringify_as_ho'     )
-                        , ([], [fmt_incl],   '_fmtlib_ho'           ) ] )
+#                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+] )
 , ('to_charptr',        [ ([], [boost_incl], '_stringify_ho'        )
                         , ([], [boost_incl], '_stringify_as_ho'     )
-                        , ([], [fmt_incl],   '_fmtlib_ho'           )
-                        , ([], [],           '_sprintf'             ) ] )
+#                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+#                        , ([], [],           '_sprintf'             )
+] )
 , ('to_FILE',           [ ([], [boost_incl], '_stringify_ho'        )
                         , ([], [boost_incl], '_stringify_as_ho'     )
-                        , ([], [fmt_incl],   '_fmtlib_ho'           ) ] )
+#                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+] )
 , ('to_ostream',        [ ([], [boost_incl], '_stringify_ho'        )
                         , ([], [boost_incl], '_stringify_as_ho'     )
-                        , ([], [fmt_incl],   '_fmtlib_ho'           )
-                        , ([], [boost_incl], '_BoostFormat'         ) ] ) ]
+#                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+#                        , ([], [boost_incl], '_BoostFormat'         )
+] ) ]
+
 samples_Os_header_only = \
 [ ('to_string',         [ ([], [boost_incl], '_stringify_ho'        )
                         , ([], [boost_incl], '_stringify_as_ho'     )
-                        , ([], [fmt_incl],   '_fmtlib_ho'           ) ] )
+#                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+] )
 , ('to_charptr',        [ ([], [boost_incl], '_stringify_ho'        )
                         , ([], [boost_incl], '_stringify_as_ho'     )
-                        , ([], [fmt_incl],   '_fmtlib_ho'           )
-                        , ([], [],           '_sprintf'             ) ] )
+#                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+#                        , ([], [],           '_sprintf'             )
+] )
 , ('to_FILE',           [ ([], [boost_incl], '_stringify_ho'        )
                         , ([], [boost_incl], '_stringify_as_ho'     )
-                        , ([], [fmt_incl],   '_fmtlib_ho'           ) ] )
+#                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+] )
 , ('to_ostream',        [ ([], [boost_incl], '_stringify_ho'        )
                         , ([], [boost_incl], '_stringify_as_ho'     )
-                        , ([], [fmt_incl],   '_fmtlib_ho'           )
-                        , ([], [boost_incl], '_BoostFormat'         ) ] ) ]
+#                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+#                        , ([], [boost_incl], '_BoostFormat'         )
+] )
+]
 samples_debug_header_only = \
 [ ('to_string',         [ ([], [boost_incl], '_stringify_ho'        )
                         , ([], [boost_incl], '_stringify_as_ho'     )
-                        , ([], [fmt_incl],   '_fmtlib_ho'           ) ] )
+#                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+] )
 , ('to_charptr',        [ ([], [boost_incl], '_stringify_ho'        )
                         , ([], [boost_incl], '_stringify_as_ho'     )
-                        , ([], [fmt_incl],   '_fmtlib_ho'           )
-                        , ([], [],           '_sprintf'             ) ] )
+#                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+#                        , ([], [],           '_sprintf'             )
+] )
 , ('to_FILE',           [ ([], [boost_incl], '_stringify_ho'        )
                         , ([], [boost_incl], '_stringify_as_ho'     )
-                        , ([], [fmt_incl],   '_fmtlib_ho'           ) ] )
+#                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+] )
 , ('to_ostream',        [ ([], [boost_incl], '_stringify_ho'        )
                         , ([], [boost_incl], '_stringify_as_ho'     )
-                        , ([], [fmt_incl],   '_fmtlib_ho'           )
-                        , ([], [boost_incl], '_BoostFormat'         ) ] ) ]
+#                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+#                        , ([], [boost_incl], '_BoostFormat'         )
+] )
+]
 
 print('\n[table Release mode with -Os flag / linked libraries \n')
 print(table_header())

@@ -137,6 +137,118 @@ private:
     }
 };
 
+#ifdef __cpp_fold_expressions
+
+template <typename ... Printers>
+inline std::size_t sum_necessary_size(const Printers& ... printers)
+{
+    return (... + printers.necessary_size());
+}
+
+template <typename CharT, typename ... Printers>
+inline bool write_args( stringify::v0::output_buffer<CharT>& ob
+               , const Printers& ... printers )
+{
+    return (... && printers.write(ob));
+}
+
+#else
+
+inline std::size_t sum_necessary_size()
+{
+    return 0;
+}
+
+template <typename Printer, typename ... Printers>
+inline std::size_t sum_necessary_size(const Printer& printer, const Printers& ... printers)
+{
+    return printer.necessary_size()
+        + stringify::v0::detail::sum_necessary_size(printers...);
+}
+
+
+template <typename CharT>
+inline bool write_args(stringify::v0::output_buffer<CharT>& ob)
+{
+    return true;
+}
+
+template <typename CharT, typename Printer, typename ... Printers>
+inline bool write_args( stringify::v0::output_buffer<CharT>& ob
+               , const Printer& ... printer
+               , const Printers& ... printers )
+{
+    return return printer.write(ob) && write_args(ob, printers);
+}
+
+#endif
+
+
+template < typename OutputBuffImpl
+         , typename OutputWriterInitArgsTuple
+         , typename ... Printers >
+inline decltype(std::declval<OutputBuffImpl>().finish()) do_create_ob_and_write
+    ( stringify::v0::detail::output_size_reservation_real reser
+    , OutputWriterInitArgsTuple ob_args
+    , const Printers& ... printers )
+{
+    stringify::v0::detail::output_writer_from_tuple<OutputBuffImpl> ob_wrapper(ob_args);
+    using char_type = typename OutputBuffImpl::char_type;
+
+
+    std::size_t s = ( reser.must_calculate_size()
+                    ? stringify::v0::detail::sum_necessary_size(printers...)
+                    : reser.get_size_to_reserve() );
+    if (s != 0)
+    {
+        ob_wrapper.get().reserve(s);
+    }
+
+    stringify::v0::detail::write_args(ob_wrapper.get(), printers...);
+    return ob_wrapper.get().finish();
+}
+
+template < typename OutputBuffImpl
+         , typename OutputWriterInitArgsTuple
+         , typename ... Printers >
+inline decltype(std::declval<OutputBuffImpl>().finish()) do_create_ob_and_write
+    ( stringify::v0::detail::output_size_reservation_dummy
+    , OutputWriterInitArgsTuple ob_args
+    , const Printers& ... printers )
+{
+    stringify::v0::detail::output_writer_from_tuple<OutputBuffImpl> ob_wrapper(ob_args);
+    using char_type = typename OutputBuffImpl::char_type;
+
+    stringify::v0::detail::write_args(ob_wrapper.get(), printers...);
+    return ob_wrapper.get().finish();
+}
+
+template <typename CharT>
+inline const stringify::v0::printer<CharT>&
+as_printer_cref(const stringify::v0::printer<CharT>& p)
+{
+    return p;
+}
+
+template < typename OutputBuffImpl
+         , typename ReservationType
+         , typename OutputWriterInitArgsTuple
+         , typename FPack
+         , typename ... Args >
+inline decltype(std::declval<OutputBuffImpl>().finish()) create_ob_and_write
+    ( ReservationType reser
+    , OutputWriterInitArgsTuple ob_args
+    , const FPack& fp
+    , const Args& ... args )
+{
+    using char_type = typename OutputBuffImpl::char_type;
+    return stringify::v0::detail::do_create_ob_and_write<OutputBuffImpl>
+        ( reser, ob_args
+        , stringify::v0::detail::as_printer_cref
+          ( make_printer<char_type, FPack>(fp, args) )... );
+}
+
+
 template
     < typename FPack
     , typename OutputWriter
@@ -329,7 +441,7 @@ public:
             ( this->has_reserve()
             , str.begin()
             , str.end()
-            , {_as_pointer(make_printer<_char_type, FPack>(_fpack, args))... } );
+            , {_as_printer_cptr(make_printer<_char_type, FPack>(_fpack, args))... } );
     }
 
 #else
@@ -341,7 +453,7 @@ public:
             ( this->has_reserve()
             , str
             , str + std::char_traits<_char_type>::length(str)
-            , {_as_pointer(make_printer<_char_type, FPack>(_fpack, args))... } );
+            , {_as_printer_cptr(make_printer<_char_type, FPack>(_fpack, args))... } );
     }
 
     template <typename Traits, typename ... Args>
@@ -353,21 +465,29 @@ public:
             ( this->has_reserve()
             , str.data()
             , str.data() + str.size()
-            , {_as_pointer(make_printer<_char_type, FPack>(_fpack, args))... } );
+            , {_as_printer_cptr(make_printer<_char_type, FPack>(_fpack, args))... } );
     }
 
 #endif
 
     template <typename ... Args>
     BOOST_STRINGIFY_NODISCARD
-    decltype(auto) operator()(const Args& ... args) const
+    _return_type operator()(const Args& ... args) const
     {
-        return _write
-            ( this->has_reserve()
-            , make_printer<_char_type, FPack>(_fpack, args) ... );
+        return stringify::v0::detail::create_ob_and_write<OutputWriter>
+            ( static_cast<const _reservation&>(*this)
+            , _owinit
+            , _fpack
+            , args... );
     }
 
 private:
+
+    static const stringify::v0::printer<_char_type>*
+    _as_printer_cptr(const stringify::v0::printer<_char_type>& p)
+    {
+        return &p;
+    }
 
     template <class, class, class>
     friend class syntax_after_leading_expr;
@@ -390,12 +510,6 @@ private:
         , _fpack(fp)
         , _owinit(args)
     {
-    }
-
-    static const stringify::v0::printer<_char_type>*
-    _as_pointer(const stringify::v0::printer<_char_type>& p)
-    {
-        return &p;
     }
 
     _return_type _asm_write
@@ -447,61 +561,6 @@ private:
         BOOST_ASSERT(no_error == ! writer.get().has_error());
         (void) no_error;
         return writer.get().finish();
-    }
-
-
-    template <typename ... Args>
-    _return_type _write(std::true_type, const Args& ... args) const
-    {
-        _output_writer_wrapper writer{_owinit};
-
-        auto res_size = this->must_calculate_size()
-            ? this->calculate_size(args ...)
-            : this->get_size_to_reserve();
-
-        if (res_size != 0)
-        {
-            writer.get().reserve(res_size);
-        }
-        bool no_error = _write_args(writer.get(), args...);
-        BOOST_ASSERT(no_error == ! writer.get().has_error());
-        (void) no_error;
-        return writer.get().finish();
-    }
-
-
-    template <typename ... Args>
-    _return_type _write(std::false_type, const Args& ... args) const
-    {
-        _output_writer_wrapper writer{_owinit};
-
-        bool no_error = _write_args(writer.get(), args...);
-        BOOST_ASSERT(no_error == ! writer.get().has_error());
-        (void) no_error;
-        return writer.get().finish();
-    }
-
-    template <typename Arg>
-    static bool _write_args
-        ( stringify::v0::output_buffer<_char_type>& b
-        , const Arg& arg )
-    {
-        return arg.write(b);
-    }
-
-    template <typename Arg, typename ... Args>
-    static bool _write_args
-        ( stringify::v0::output_buffer<_char_type>& b
-        , const Arg& arg
-        , const Args& ... args )
-    {
-        return arg.write(b) && _write_args(b, args ...);
-    }
-
-    static bool _write_args
-        ( stringify::v0::output_buffer<_char_type>& b )
-    {
-        return true;
     }
 
     FPack _fpack;

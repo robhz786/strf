@@ -93,14 +93,9 @@ public:
 
     using char_type = typename StringType::value_type;
 
-    string_maker()
-        : output_buffer<char_type>{_buff, _buff + _buff_size}
-    {
-    }
+    string_maker();
 
-    ~string_maker()
-    {
-    }
+    ~string_maker();
 
     bool recycle() override;
 
@@ -115,6 +110,17 @@ private:
 
     StringType _out;
 };
+
+template <typename StringType>
+inline string_maker<StringType>::string_maker()
+    : output_buffer<char_type>{_buff, _buff + _buff_size}
+{
+}
+
+template <typename StringType>
+inline string_maker<StringType>::~string_maker()
+{
+}
 
 template <typename StringType>
 bool string_maker<StringType>::recycle()
