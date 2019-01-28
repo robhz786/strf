@@ -50,14 +50,6 @@ int main()
           :: value
         , "encoding shall not be constrainable");
 
-    static_assert
-        ( ! strf::detail::all_are_constrainable
-          < strf::width_calculator
-          , strf::numpunct<10>
-          , strf::encoding_policy >
-          :: value
-        , "encoding_policy shall not be constrainable");
-
     int rc = report_errors() || boost::report_errors();
     return rc;
 }

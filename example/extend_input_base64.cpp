@@ -43,21 +43,18 @@ struct base64_facet_category
     }
 };
 
-//]
-
 } // namespace xxx
+//]
 
 //[ fmt_base64_input
 
 namespace xxx {
-
 struct base64_input
 {
     const void* bytes = nullptr;
     std::size_t num_bytes = 0;
 };
-
-}
+} // namespace xxx
 
 //]
 
@@ -213,6 +210,27 @@ bool base64_printer<CharT>::_write_single_line(strf::output_buffer<CharT>& ob) c
 }
 
 template <typename CharT>
+bool base64_printer<CharT>::_write_identation(strf::output_buffer<CharT>& ob) const
+{
+    using traits = std::char_traits<CharT>;
+    std::size_t count = _fmt.indentation();
+    do
+    {
+        std::size_t buff_size = ob.size();
+        if (buff_size >= count)
+        {
+            traits::assign(ob.pos(), count, CharT(' '));
+            ob.advance(count);
+            return true;
+        }
+        traits::assign(ob.pos(), buff_size, CharT(' '));
+        count -= buff_size;
+        ob.advance_to(ob.end());
+    } while(ob.recycle());
+    return true;
+}
+
+template <typename CharT>
 bool base64_printer<CharT>::_encode_all_data_in_this_line(strf::output_buffer<CharT>& ob) const
 {
     auto data_it = static_cast<const std::uint8_t*>(_fmt.value().bytes);
@@ -231,6 +249,35 @@ bool base64_printer<CharT>::_encode_all_data_in_this_line(strf::output_buffer<Ch
     return true;
 }
 
+template <typename CharT>
+void base64_printer<CharT>::_encode_3bytes
+    ( CharT* dest
+    , const std::uint8_t* data
+    , std::size_t data_size ) const
+{
+    dest[0] = _encode(data[0] >> 2);
+    dest[1] = _encode(((data[0] & 0x03) << 4) |
+                      (data_size < 2 ? 0 : ((data[1] & 0xF0) >> 4)));
+    dest[2] = (data_size < 2)
+        ? '='
+        : _encode(((data[1] & 0x0F) << 2) |
+                 (data_size < 3 ? 0 : ((data[2] & 0xC0) >> 6)));
+    dest[3] = data_size < 3 ? '=' : _encode(data[2] & 0x3F);
+}
+
+template <typename CharT>
+CharT base64_printer<CharT>::_encode(std::uint8_t hextet) const
+{
+    BOOST_ASSERT(hextet <= 63);
+    std::uint8_t ch =
+        hextet < 26 ?  static_cast<std::uint8_t>('A') + hextet :
+        hextet < 52 ?  static_cast<std::uint8_t>('a') + hextet - 26 :
+        hextet < 62 ?  static_cast<std::uint8_t>('0') + hextet - 52 :
+        hextet == 62 ? static_cast<std::uint8_t>(_facet.char62) :
+      /*hextet == 63*/ static_cast<std::uint8_t>(_facet.char63) ;
+
+    return ch;
+}
 //]
 
 template <typename CharT>
@@ -292,27 +339,6 @@ bool base64_printer<CharT>::_write_multiline(strf::output_buffer<CharT>& ob) con
 }
 
 template <typename CharT>
-bool base64_printer<CharT>::_write_identation(strf::output_buffer<CharT>& ob) const
-{
-    using traits = std::char_traits<CharT>;
-    std::size_t count = _fmt.indentation();
-    do
-    {
-        std::size_t buff_size = ob.size();
-        if (buff_size >= count)
-        {
-            traits::assign(ob.pos(), count, CharT(' '));
-            ob.advance(count);
-            return true;
-        }
-        traits::assign(ob.pos(), buff_size, CharT(' '));
-        count -= buff_size;
-        ob.set_pos(ob.end());
-    } while(ob.recycle());
-    return true;
-}
-
-template <typename CharT>
 bool base64_printer<CharT>::_write_end_of_line(strf::output_buffer<CharT>& ob) const
 {
     if (ob.size() < 2 && ! ob.recycle())
@@ -323,36 +349,6 @@ bool base64_printer<CharT>::_write_end_of_line(strf::output_buffer<CharT>& ob) c
     ob.pos()[1] = _facet.eol[1];
     ob.advance(_facet.eol[1] == '\0' ? 1 : 2);
     return true;
-}
-
-template <typename CharT>
-void base64_printer<CharT>::_encode_3bytes
-    ( CharT* dest
-    , const std::uint8_t* data
-    , std::size_t data_size ) const
-{
-    dest[0] = _encode(data[0] >> 2);
-    dest[1] = _encode(((data[0] & 0x03) << 4) |
-                      (data_size < 2 ? 0 : ((data[1] & 0xF0) >> 4)));
-    dest[2] = (data_size < 2)
-        ? '='
-        : _encode(((data[1] & 0x0F) << 2) |
-                 (data_size < 3 ? 0 : ((data[2] & 0xC0) >> 6)));
-    dest[3] = data_size < 3 ? '=' : _encode(data[2] & 0x3F);
-}
-
-template <typename CharT>
-CharT base64_printer<CharT>::_encode(std::uint8_t hextet) const
-{
-    BOOST_ASSERT(hextet <= 63);
-    std::uint8_t ch =
-        hextet < 26 ?  static_cast<std::uint8_t>('A') + hextet :
-        hextet < 52 ?  static_cast<std::uint8_t>('a') + hextet - 26 :
-        hextet < 62 ?  static_cast<std::uint8_t>('0') + hextet - 52 :
-        hextet == 62 ? static_cast<std::uint8_t>(_facet.char62) :
-      /*hextet == 63*/ static_cast<std::uint8_t>(_facet.char63) ;
-
-    return ch;
 }
 
 

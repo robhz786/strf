@@ -30,9 +30,9 @@ auto make_printer(const FPack& fp, ipv4address addr)
     (void)fp;
     return make_printer<CharT>
         ( /*<< Note we are not forwarding `fp` but instead passing an empty
-facets pack, after all we don't want numeric punctuation to be applied.
-But depending on the input type you may want to propagate some or all of the
-facets. >>*/strf::pack()
+facets pack. In others cases, however, you may want to propagate some or
+all of the facets.
+ >>*/strf::pack()
         , strf::join()
             ( addr.bytes[0], CharT{'.'}
             , addr.bytes[1], CharT{'.'}
@@ -48,7 +48,7 @@ void basic_sample()
 {
 //[ ipv4_basic_sample
     xxx::ipv4address addr {{146, 20, 110, 251}};
-    auto s = strf::to_string("The IP address of boost.org is ", addr);//.value();
+    auto s = strf::to_string("The IP address of boost.org is ", addr);
     BOOST_TEST(s);
     BOOST_TEST(s.value() == "The IP address of boost.org is 146.20.110.251");
 //]
@@ -99,16 +99,16 @@ void sample_fmt_sample()
 
     auto s = strf::to_string("boost.org: ", strf::right(addr, 20, U'.')) .value();
     BOOST_ASSERT(s == "boost.org: ......146.20.110.251");
+//]
 
-    // also in ranges:
 
+//[formatted_ipv4address_in_ranges
     std::vector<xxx::ipv4address> vec = { {{127, 0, 0, 1}}
-                                      , {{146, 20, 110, 251}}
-                                      , {{110, 110, 110, 110}} };
+                                        , {{146, 20, 110, 251}}
+                                        , {{110, 110, 110, 110}} };
     auto s2 = strf::to_string("[", strf::fmt_range(vec, " ;") > 16, "]").value();
     BOOST_ASSERT(s2 == "[       127.0.0.1 ;  146.20.110.251 ; 110.110.110.110]");
 //]
-
     // auto s3 = strf::to_string("[", strf::range(vec, " ; "), "]").value();
     // BOOST_ASSERT(s3 == "[127.0.0.1 ; 146.20.110.251 ; 110.110.110.110]");
 }

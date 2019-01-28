@@ -61,7 +61,7 @@ bool string_appender<StringType>::recycle()
     auto pos = this->pos();
     BOOST_ASSERT(_buff <= pos && pos <= _buff + _buff_size);
     _out.append(_buff, pos);
-    this->reset(_buff, _buff + _buff_size);
+    this->set_pos(_buff);
     return true;
 }
 
@@ -128,7 +128,7 @@ bool string_maker<StringType>::recycle()
     auto pos = this->pos();
     BOOST_ASSERT(_buff <= pos && pos <= _buff + _buff_size);
     _out.append(_buff, pos);
-    this->reset(_buff, _buff + _buff_size);
+    this->set_pos(_buff);
     return true;
 }
 

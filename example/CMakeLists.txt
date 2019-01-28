@@ -16,7 +16,7 @@ foreach(x
     syntax_samples
     trivial_sample
     assembly_string
-    # encoding_conversion
+    encoding_conversion
     format_functions
     custom_width_calculation
     facets

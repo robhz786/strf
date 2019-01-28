@@ -172,10 +172,10 @@ ipv6_printer<CharT>::ipv6_printer
     , _fmt(fmt)
     , _colon{strf::make_printer<CharT>(fp, static_cast<CharT>(':'))}
     , _hextets
-        { { strf::make_printer<CharT>(/*<<
-        It is not a problem if `fp` is a temporary object. It won't lead to
-        dangling references because, by convention, a printer class don't
-        store any reference to the facets_pack that it is been constructed with.
+        { { strf::make_printer<CharT>( /*<< It is not a problem if `fp`
+        is a temporary object. It won't lead to dangling references because, 
+        by convention, a printer class don't store any reference to the
+        facets_pack that it is been constructed with.
                      >>*/fp, strf::hex(fmt.value().hextets[0]).p(precision)) }
         , { strf::make_printer<CharT>(fp, strf::hex(fmt.value().hextets[1]).p(precision)) }
         , { strf::make_printer<CharT>(fp, strf::hex(fmt.value().hextets[2]).p(precision)) }

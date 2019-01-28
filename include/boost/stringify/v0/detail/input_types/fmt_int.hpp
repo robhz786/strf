@@ -577,7 +577,8 @@ bool fmt_int_printer<IntT, CharT>::_write_digits_nosep_buff
     BOOST_ASSERT(space < _digcount);
     std::copy_n(it, space, ob.pos());
     unsigned count = _digcount - space;
-    while (ob.recycle(ob.end()))
+    ob.advance_to(ob.end());
+    while (ob.recycle())
     {
         std::size_t space = ob.size();
         if (count <= space)
@@ -588,6 +589,7 @@ bool fmt_int_printer<IntT, CharT>::_write_digits_nosep_buff
         }
         std::copy_n(it, space, ob.pos());
         it += space;
+        ob.advance_to(ob.end());
     }
     return false;
 }
@@ -667,7 +669,7 @@ bool fmt_int_printer<IntT, CharT>::_write_digits_littlesep
         }
     }
     while(grp_it > grp);
-    ob.set_pos(it);
+    ob.advance_to(it);
     return true;
 }
 
@@ -692,7 +694,7 @@ bool fmt_int_printer<IntT, CharT>::_write_digits_bigsep
         {
             *it++ = *dig_it++;
         }
-        ob.set_pos(it);
+        ob.advance_to(it);
     }
     do
     {
@@ -711,7 +713,7 @@ bool fmt_int_printer<IntT, CharT>::_write_digits_bigsep
         {
             *it++ = *dig_it++;
         }
-        ob.set_pos(it);
+        ob.advance_to(it);
     }
     while(grp_it > grp);
     return true;

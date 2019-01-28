@@ -29,13 +29,7 @@ public:
 
     virtual bool recycle() = 0;
 
-    bool recycle(CharOut* pos)
-    {
-        _pos = pos;
-        return recycle();
-    }
-
-    void set_error(std::error_code ec)
+    void set_error(std::error_code ec) noexcept
     {
         if ( ! _has_error )
         {
@@ -44,51 +38,51 @@ public:
         }
     }
 
-    void set_error(std::errc e)
+    void set_error(std::errc e) noexcept
     {
         set_error(std::make_error_code(e));
     }
 
-    void set_encoding_error()
+    void set_encoding_error() noexcept
     {
         set_error(std::errc::illegal_byte_sequence);
     }
 
-    std::error_code get_error() const
+    std::error_code get_error() const noexcept
     {
         return _ec;
     }
 
-    bool has_error() const
+    bool has_error() const noexcept
     {
         return _has_error;
     }
 
-    CharOut* pos() const
+    CharOut* pos() const noexcept
     {
         return _pos;
     }
 
-    void set_pos(CharOut* p)
-    {
-        BOOST_ASSERT(_pos <= p && p <= _end);
-        _pos = p;
-    }
 
-    CharOut* end() const
+    CharOut* end() const noexcept
     {
         return _end;
     }
 
-    std::size_t size() const
+    std::size_t size() const noexcept
     {
         return _end - _pos;
     }
 
-    void advance(std::size_t n)
+    void advance(std::size_t n) noexcept
     {
         BOOST_ASSERT(n <= size());
         _pos += n;
+    }
+    void advance_to(CharOut* p) noexcept
+    {
+        BOOST_ASSERT(_pos <= p && p <= _end);
+        _pos = p;
     }
 
 protected:
@@ -113,18 +107,14 @@ protected:
         , _end(buff_begin + buff_size)
     {
     }
-
-    void reset(CharOut* begin, CharOut* end)
+    void set_pos(CharOut* p)
     {
-        BOOST_ASSERT(begin <= end);
-        _pos = begin;
-        _end = end;
+        _pos = p;
     }
 
-    void reset(CharOut* begin, std::size_t size)
+    void set_end(CharOut* e)
     {
-        _pos = begin;
-        _end = begin + size;
+        _end = e;
     }
 
 private:
@@ -174,7 +164,7 @@ bool transcode
     {
         auto pos = ob.pos();
         res = tr.transcode(&src, src_end, &pos, ob.end(), err_hdl, allow_surr);
-        ob.set_pos(pos);
+        ob.advance_to(pos);
         if (res == stringify::v0::cv_result::success)
         {
             return true;
@@ -217,7 +207,7 @@ bool decode_encode
         auto res2 = dest_encoding.from_u32().transcode( &buff32_it2, buff32.first
                                                       , &pos, ob.end()
                                                       , err_hdl, allow_surr );
-        ob.set_pos(pos);
+        ob.advance_to(pos);
         while (res2 == stringify::v0::cv_result::insufficient_space)
         {
             if ( ! ob.recycle())
@@ -228,7 +218,7 @@ bool decode_encode
             res2 = dest_encoding.from_u32().transcode( &buff32_it2, buff32.first
                                                      , &pos, ob.end()
                                                      , err_hdl, allow_surr );
-            ob.set_pos(pos);
+            ob.advance_to(pos);
         }
         if (res2 == stringify::v0::cv_result::invalid_char)
         {
@@ -279,7 +269,8 @@ bool write_str_continuation
     traits::copy(ob.pos(), str, space);
     str += space;
     len -= space;
-    while (ob.recycle(ob.end()))
+    ob.advance_to(ob.end());
+    while (ob.recycle())
     {
         space = ob.size();
         if (len <= space)
@@ -291,6 +282,7 @@ bool write_str_continuation
         traits::copy(ob.pos(), str, space);
         len -= space;
         str += space;
+        ob.advance_to(ob.end());
     }
     return false;
 }
@@ -322,7 +314,8 @@ bool write_fill_continuation
     BOOST_ASSERT(space < count);
     std::char_traits<CharT>::assign(ob.pos(), space, ch);
     count -= space;
-    while (ob.recycle(ob.end()))
+    ob.advance_to(ob.end());
+    while (ob.recycle())
     {
         space = ob.size();
         if (count <= space)
@@ -333,6 +326,7 @@ bool write_fill_continuation
         }
         std::char_traits<CharT>::assign(ob.pos(), space, ch);
         count -= space;
+        ob.advance_to(ob.end());
     }
     return false;
 }
@@ -366,7 +360,7 @@ bool do_write_fill
         auto res = encoding.encode_fill(&pos, ob.end(), count, ch, err_hdl);
         if (res == stringify::v0::cv_result::success)
         {
-            ob.set_pos(pos);
+            ob.advance_to(pos);
             return true;
         }
         if (res == stringify::v0::cv_result::invalid_char)
@@ -375,7 +369,7 @@ bool do_write_fill
             return false;
         }
         BOOST_ASSERT(res == stringify::v0::cv_result::insufficient_space);
-        ob.set_pos(pos);
+        ob.advance_to(pos);
     } while (ob.recycle());
     return false;
 }

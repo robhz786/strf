@@ -65,7 +65,7 @@ bool std_streambuf_writer<CharT, Traits>::recycle()
     }
     if (static_cast<std::streamsize>(count) == count_inc)
     {
-        this->reset(_buff, _buff + _buff_size);
+        this->set_pos(_buff);
         return true;
     }
     this->set_error(std::make_error_code(std::errc::io_error));

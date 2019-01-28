@@ -64,7 +64,7 @@ bool narrow_file_writer<CharT>::recycle()
     {
         *_count_ptr += count_inc;
     }
-    this->reset(_buff, _buff + _buff_size);
+    this->set_pos(_buff);
     return count == count_inc;
 }
 
@@ -151,7 +151,7 @@ bool wide_file_writer::recycle()
         *_count_ptr += count;
     }
 
-    this->reset(_buff, _buff + _buff_size);
+    this->set_pos(_buff);
     return good;
 }
 

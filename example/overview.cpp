@@ -5,6 +5,7 @@
 //[ first_example
 #include <boost/stringify.hpp> // This is the only header you need to include.
 #include <iostream>
+#include <numeric>
 
 namespace strf = boost::stringify::v0; // Everything is inside this namespace.
                                        // v0 is an inline namespace.
@@ -44,6 +45,24 @@ void sample_numpunct()
 }
 
 
+void sample_numpunct_with_alternative_charset()
+{
+//[ numpuct__with_alternative_encoding
+    namespace strf = boost::stringify::v0;
+
+    // Writting in Windows-1252
+    auto x = strf::to_string
+        .facets(strf::windows_1252())
+        .facets(strf::str_grouping<10>{"\4\3\2"}.thousands_sep(0x2022))
+        ("one hundred billions = ", *strf::fmt(100000000000ll));
+
+    // The character U+2022 is encoded as '\225' in Windows-1252
+    BOOST_ASSERT(x.value() == "one hundred billions = 1\2250000\225000\2250000");
+//]
+}
+
+
+
 void output_FILE()
 {
 //[ output_FILE
@@ -57,23 +76,23 @@ void input_ouput_different_char_types()
 {
     //[input_output_different_char_types
     namespace strf = boost::stringify::v0;
-    auto str16 = strf::to_u16string( strf::cv("aaa-")
-                                   , u"bbb-"
-                                   , strf::cv(U"ccc-")
-                                   , strf::cv(L"ddd"));
-    BOOST_ASSERT(str16.value() == u"aaa-bbb-ccc-ddd");
+    auto str = strf::to_string( strf::cv(u"aaa-")
+                              , strf::cv(U"bbb-")
+                              , strf::cv(L"ccc") );
+    BOOST_ASSERT(str.value() ==  "aaa-bbb-ccc");
     //]
 }
 
-void windows_1252_to_utf8()
+void input_string_encoding()
 {
-    //[windows_1252_to_utf8
+    //[input_string_encoding
+    // Three input string. Each one in its own character set
     namespace strf = boost::stringify::v0;
     auto x = strf::to_string( strf::cv("\x80\xA4 -- ", strf::iso_8859_1())
                             , strf::cv("\x80\xA4 -- ", strf::iso_8859_15())
                             , strf::cv("\x80\xA4", strf::windows_1252()) );
 
-    // the output is in UTF-8, unless you specify otherwise
+    // The output by default is in UTF-8
     BOOST_ASSERT(x.value() == u8"\u0080\u00A4 -- \u0080\u20AC -- \u20AC\u00A4");
     //]
 }
@@ -88,6 +107,37 @@ void sani()
     //]
 }
 
+void input_ranges()
+{
+    //[input_range
+    namespace strf = boost::stringify::v0;
+    std::vector<int> v = {1, 10, 100};
+
+    auto x = strf::to_string(strf::range(v, ", ")).value();
+    BOOST_ASSERT(x == "1, 10, 100");
+
+    // now with formatting:
+    x = strf::to_string(~strf::hex(strf::range(v, " "))).value();
+    BOOST_ASSERT(x == "0x1 0xa 0x64");
+    //]
+}
+
+
+void join()
+{
+    //[join_basic_sample
+    namespace strf = boost::stringify::v0;
+    std::vector<int> v = {1, 10, 100};
+
+    auto x = strf::to_string
+        ( strf::join_center(30, U'_')( '('
+                                     , strf::range(v, " + ")
+                                     , ") == "
+                                     , std::accumulate(v.begin(), v.end(), 0) ));
+
+    BOOST_ASSERT(x.value() == "____(1 + 10 + 100) == 111_____");
+    //]
+}
 
 int main()
 {
@@ -96,8 +146,10 @@ int main()
     sample_numpunct();
     output_FILE();
     input_ouput_different_char_types();
-    windows_1252_to_utf8();
+    input_string_encoding();
     sani();
+    input_ranges();
+    join();
 
     return 0;
 }

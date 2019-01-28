@@ -62,7 +62,7 @@ bool int_printer<IntT, CharT>::write(stringify::v0::output_buffer<CharT>& ob) co
     unsigned necessary_space = _value >= 0 ? _digcount : _digcount + 1;
     if (space >= necessary_space)
     {
-        ob.set_pos(_write(ob.pos()));
+        ob.advance_to(_write(ob.pos()));
         return true;
     }
     return _buff_write(ob);

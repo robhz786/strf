@@ -140,7 +140,8 @@ void input_tester<CharOut>::reserve(std::size_t size)
 {
     _reserved_size = size;
     _result.resize(size, CharOut{'#'});
-    this->reset(_result.data(), _result.data() + size);
+    this->set_pos(_result.data());
+    this->set_end(_result.data() + size);
 }
 
 template <typename CharOut>
@@ -154,8 +155,8 @@ bool input_tester<CharOut>::recycle()
     std::size_t previous_size = this->pos() - _result.data();
     _result.resize(previous_size);
     _result.append(boost::stringify::v0::min_buff_size, CharOut{'#'});
-    this->reset( _result.data() + previous_size
-               , _result.data() + _result.size() );
+    this->set_pos(_result.data() + previous_size);
+    this->set_end(_result.data() + _result.size());
     return true;
 }
 

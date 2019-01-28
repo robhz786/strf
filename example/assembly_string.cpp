@@ -28,17 +28,45 @@ int main()
 
     {
         //[ asmstr_positional_arg
-        auto str = strf::to_string.as("{1 person} likes {0 food}.", "sandwich", "Paul");
+        auto str = strf::to_string.as("{1 a person} likes {0 a food type}.", "sandwich", "Paul");
         BOOST_ASSERT(str.value() == "Paul likes sandwich.");
         //]
     }
 
     {
         //[ asmstr_non_positional_arg
-        auto str = strf::to_string.as("{person} likes {food}.", "Paul", "sandwich");
+        auto str = strf::to_string.as("{a person} likes {a food type}.", "Paul", "sandwich");
         BOOST_ASSERT(str.value() == "Paul likes sandwich.");
         //]
     }
 
-    return 0;
+    {
+        //[ asmstr_replace
+        auto str = strf::to_string
+            .as("{} are {}. {} are {}.")
+            ("Roses", "red", "Violets");
+        BOOST_ASSERT(str.value() == u8"Roses are red. Violets are �.");
+        //]
+   }
+   {
+       //[ asmstr_omit
+       auto str = strf::to_string
+           .facets(strf::asm_invalid_arg::ignore)
+           .as("{} are {}. {} are {}.")
+           ("Roses", "red", "Violets");
+       BOOST_ASSERT(str.value() == u8"Roses are red. Violets are .");
+       //]
+   }
+   {
+       //[ asmstr_stop
+       auto str = strf::to_string
+           .facets(strf::asm_invalid_arg::stop)
+           .as("{} are {}. {} are {}.")
+           ("Roses", "red", "Violets");
+       BOOST_ASSERT(!str);
+       BOOST_ASSERT(str.error() == std::make_error_code(std::errc::invalid_argument));
+       //]
+   }
+
+   return 0;
 };

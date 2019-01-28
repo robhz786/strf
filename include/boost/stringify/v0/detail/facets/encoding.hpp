@@ -81,14 +81,9 @@ public:
 
     using category = stringify::v0::encoding_policy_category;
 
-    constexpr encoding_policy()
-        : encoding_policy(stringify::v0::error_handling::replace, true)
-    {
-    }
-
     constexpr encoding_policy
         ( stringify::v0::error_handling err_hdl
-        , bool allow_surr )
+        , bool allow_surr = false )
         : _bits(((_bits_type)err_hdl << 1) | allow_surr)
     {
     }
@@ -123,12 +118,12 @@ private:
 
 struct encoding_policy_category
 {
-    constexpr static bool constrainable = false;
+    constexpr static bool constrainable = true;
     constexpr static bool by_value = true;
 
     static stringify::v0::encoding_policy get_default()
     {
-        return {};
+        return {stringify::v0::error_handling::replace};
     }
 };
 

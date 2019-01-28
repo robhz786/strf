@@ -194,8 +194,6 @@ inline decltype(std::declval<OutputBuffImpl>().finish()) do_create_ob_and_write
     , const Printers& ... printers )
 {
     stringify::v0::detail::output_writer_from_tuple<OutputBuffImpl> ob_wrapper(ob_args);
-    using char_type = typename OutputBuffImpl::char_type;
-
 
     std::size_t s = ( reser.must_calculate_size()
                     ? stringify::v0::detail::sum_necessary_size(printers...)
@@ -218,7 +216,6 @@ inline decltype(std::declval<OutputBuffImpl>().finish()) do_create_ob_and_write
     , const Printers& ... printers )
 {
     stringify::v0::detail::output_writer_from_tuple<OutputBuffImpl> ob_wrapper(ob_args);
-    using char_type = typename OutputBuffImpl::char_type;
 
     stringify::v0::detail::write_args(ob_wrapper.get(), printers...);
     return ob_wrapper.get().finish();

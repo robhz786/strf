@@ -108,18 +108,18 @@ The expression `fmt_range(`[~args]`...)` is equivalent to `fmt(range(`[~args]...
 
 [endsect]
 
+
+[/
 [section Assembly string ['(to do)]]
 [import ../example/assembly_string_input.cpp]
-
 [note It is not decided yet whether this will ever be implemented]
-
 syntax:
-
 * `as(`[~assembly_string]`) (`[~arguments]...`)`
-
 [assembly_string_as_input]
-
 [endsect]
+]
+
+
 
 [endsect]
 

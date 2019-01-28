@@ -9,7 +9,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 enum class asm_invalid_arg
 {
-    stop, ignore, replace
+    replace, stop, ignore
 };
 
 struct asm_invalid_arg_category
@@ -249,11 +249,12 @@ bool asm_string_write
                 auto pos = ob.pos();
                 while( ! enc.write_replacement_char(&pos, ob.end()))
                 {
-                    if (! ob.recycle(pos))
+                    ob.advance_to(pos);
+                    if (! ob.recycle())
                         return false;
                     pos = ob.pos();
                 }
-                ob.set_pos(pos);
+                ob.advance_to(pos);
             }
             else if (policy == stringify::v0::asm_invalid_arg::stop)
             {
@@ -280,13 +281,14 @@ bool asm_string_write
                 auto pos = ob.pos();
                 while( ! enc.write_replacement_char(&pos, ob.end()))
                 {
-                    if (! ob.recycle(pos))
+                    ob.advance_to(pos);
+                    if (! ob.recycle())
                     {
                         return false;
                     }
                     pos = ob.pos();
                 }
-                ob.set_pos(pos);
+                ob.advance_to(pos);
             }
             else if (policy == stringify::v0::asm_invalid_arg::stop)
             {
@@ -311,13 +313,14 @@ bool asm_string_write
                 auto pos = ob.pos();
                 while(!enc.write_replacement_char(&pos, ob.end()))
                 {
-                    if ( ! ob.recycle(pos))
+                    ob.advance_to(pos);
+                    if ( ! ob.recycle())
                     {
                         return false;
                     }
                     pos = ob.pos();
                 }
-                ob.set_pos(pos);
+                ob.advance_to(pos);
             }
             else if (policy == stringify::v0::asm_invalid_arg::stop)
             {
@@ -370,7 +373,7 @@ bool asm_string_write
                         }
                         pos = ob.pos();
                     }
-                    ob.set_pos(pos);
+                    ob.advance_to(pos);
                 }
                 else if (policy == stringify::v0::asm_invalid_arg::stop)
                 {

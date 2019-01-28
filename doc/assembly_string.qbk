@@ -22,8 +22,8 @@ As shown in the diagram, the assembly string is optional. When not used, the arg
 [[A `'{'` followed by]  [until]                           [means]]
 [[`'-'`]                [the next `'}'` or end of string] [a comment]]
 [[a digit]              [the next `'}'` or end of string] [a positional argument reference]]
-[[any other character]  [the next `'}'` or end of string] [a non positional argument reference]]
 [[another `'{'`]        [the second `'{'`]                [an escaped `'{'`]]
+[[any other character]  [the next `'}'` or end of string] [a non positional argument reference]]
 ]
 
 [variablelist
@@ -53,6 +53,27 @@ As shown in the diagram, the assembly string is optional. When not used, the arg
 ]
 ]
 
-Currently, in case of an invalid argument reference, the library emits an error code created from `std::errc::value_too_large`. However, this policy is expected to change in the next release.
+[#asm_string_error]
+[h4 Assembly string errors]
+
+The enumeration `asm_invalid_arg` is a facet that specifies what happens when a non existing argument is referenced
+``
+enum class asm_invalid_arg
+{
+    replace, stop, ignore
+};
+``
+[*`asm_invalid_arg::replace`] causes the invalid reference to be replaced by the [@https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character
+replacement character "\uFFFD"]. This is the default:
+
+[asmstr_replace]
+
+[*`asm_invalid_arg::ignore`] causes the invalid reference to be ignored:
+
+[asmstr_omit]
+
+[*`asm_invalid_arg::stop`] emits an error code:
+
+[asmstr_stop]
 
 [endsect]

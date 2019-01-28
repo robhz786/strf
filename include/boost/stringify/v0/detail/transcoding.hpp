@@ -11,7 +11,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 enum class error_handling
 {
-    stop, replace, ignore
+    replace, stop, ignore
 };
 
 enum class cv_result

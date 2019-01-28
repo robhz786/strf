@@ -403,7 +403,8 @@ bool fmt_char_printer<CharT>::_write_body
         }
         std::fill_n(ob.pos(), space, _fmt.value());
         count -= space;
-    } while (ob.recycle(ob.end()));
+        ob.advance_to(ob.end());
+    } while (ob.recycle());
     return false;
 }
 
