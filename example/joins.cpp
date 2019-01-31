@@ -25,16 +25,14 @@ void samples()
     str = strf::to_string
         ( "---"
         , strf::join_left(15, U'.') ("abc", strf::right("def", 5), 123)
-        , "---"
-        );
+        , "---" );
 
     BOOST_ASSERT(str.value() == "---abc  def123....---");
 
     str = strf::to_string
         ( "---"
         , strf::join_internal(15, '.', 1) (strf::left("abc", 5), "def", 123)
-        , "---"
-        );
+        , "---" );
     BOOST_ASSERT(str.value() == "---abc  ....def123---");
     //]
 }

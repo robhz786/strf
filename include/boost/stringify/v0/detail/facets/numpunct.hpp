@@ -33,8 +33,7 @@ public:
 
     unsigned char* get_groups
         ( unsigned num_digits
-        , unsigned char* groups_array
-        ) const;
+        , unsigned char* groups_array ) const;
 
 private:
 
@@ -78,6 +77,8 @@ unsigned char* monotonic_grouping_impl::get_groups
 {
     if (_groups_size == 0)
     {
+        // this branch actually should never be executed
+        BOOST_ASSERT(num_digits <= 0xFF);
         * groups_array = num_digits;
         return groups_array;
     }
@@ -125,6 +126,8 @@ BOOST_STRINGIFY_INLINE unsigned char* str_grouping_impl::get_groups
 {
     if (_grouping.empty())
     {
+        // this branch actually should never be executed
+        BOOST_ASSERT(num_digits <= 0xFF);
         *groups_array = static_cast<unsigned char>(num_digits);
         return groups_array;
     }
@@ -180,8 +183,7 @@ public:
      */
     virtual unsigned char* groups
         ( unsigned num_digits
-        , unsigned char* groups_array
-        ) const = 0;
+        , unsigned char* groups_array ) const = 0;
 
     /**
       return the number of thousands separators for such number of digits
@@ -191,8 +193,12 @@ public:
     virtual char32_t thousands_sep() const = 0;
 
     virtual char32_t decimal_point() const = 0;
-};
 
+    // int char_width() const
+    // {
+    //     return _char_width; // todo
+    // }
+};
 
 template <int Base>
 class numpunct: public stringify::v0::numpunct_base
@@ -200,6 +206,42 @@ class numpunct: public stringify::v0::numpunct_base
 public:
 
     using category = stringify::v0::numpunct_category<Base>;
+};
+
+
+template <int Base>
+// made final to enable the implementation of has_i18n
+class no_grouping final: public stringify::v0::numpunct<Base>
+{
+public:
+
+    no_grouping() = default;
+
+    unsigned char* groups
+        ( unsigned num_digits
+        , unsigned char* groups_array ) const override
+    {
+        // this function actually should never be called
+        BOOST_ASSERT(num_digits <= 0xFF);
+        *groups_array = static_cast<unsigned char>(num_digits);
+        return groups_array;
+    }
+
+    unsigned thousands_sep_count(unsigned num_digits) const override
+    {
+        (void)num_digits;
+        return 0;
+    }
+
+    char32_t thousands_sep() const override
+    {
+        return ',';
+    }
+
+    char32_t decimal_point() const override
+    {
+        return '.';
+    }
 };
 
 
@@ -286,8 +328,7 @@ public:
 
     unsigned char* groups
         ( unsigned num_digits
-        , unsigned char* groups_array
-        ) const override
+        , unsigned char* groups_array ) const override
     {
         return _impl.get_groups(num_digits, groups_array);
     }
@@ -346,9 +387,9 @@ template <int Base> struct numpunct_category
 
     constexpr static int base = Base;
 
-    static const stringify::v0::monotonic_grouping<base>& get_default()
+    static const stringify::v0::no_grouping<base>& get_default()
     {
-        static const stringify::v0::monotonic_grouping<base> x {0};
+        static const stringify::v0::no_grouping<base> x;
         return x;
     }
 };

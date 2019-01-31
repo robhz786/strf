@@ -9,6 +9,25 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 namespace detail {
 
+template <typename IntT, unsigned Base> struct max_num_digits_impl;
+template <typename IntT> struct max_num_digits_impl<IntT, 10>
+{
+    static constexpr unsigned value = (240824 * sizeof(IntT) + 99999) / 100000;
+};
+template <typename IntT> struct max_num_digits_impl<IntT, 16>
+{
+    static constexpr unsigned value = sizeof(IntT) * 2;
+};
+template <typename IntT> struct max_num_digits_impl<IntT, 8>
+{
+    static constexpr unsigned value = (sizeof(IntT) * 8 + 2) / 3;
+};
+
+template<class IntT, unsigned Base>
+constexpr unsigned max_num_digits =
+    stringify::v0::detail::max_num_digits_impl<IntT, Base>::value;
+
+
 template
     < typename IntT
     , typename unsigned_IntT = typename std::make_unsigned<IntT>::type >
@@ -315,19 +334,14 @@ unsigned count_digits(intT value, int base)
     return count_digits<8>(value);
 }
 
-inline char to_xdigit(unsigned digit, bool uppercase)
+inline char to_xdigit(unsigned digit)
 {
     if (digit < 10)
     {
         return '0' + digit;
     }
-    const char char_a = uppercase ? 'A' : 'a';
-    return  char_a + digit - 10;
-}
-
-inline char to_digit(unsigned digit)
-{
-    return '0' + digit;
+    constexpr char offset = 'a' - 10;
+    return offset + digit;
 }
 
 inline const char* chars_00_to_99()
@@ -362,7 +376,7 @@ CharT* write_int_dec_txtdigits_backwards(IntT value, CharT* it) noexcept
     }
     if (uvalue < 10)
     {
-        *--it = to_digit(static_cast<unsigned>(uvalue));
+        *--it = '0' + uvalue;
         return it;
     }
     else
@@ -376,16 +390,16 @@ CharT* write_int_dec_txtdigits_backwards(IntT value, CharT* it) noexcept
 
 template <typename IntT, typename CharT>
 CharT* write_int_hex_txtdigits_backwards
-    (IntT value, bool uppercase, CharT* it) noexcept
+    (IntT value, CharT* it) noexcept
 {
     using uIntT = typename std::make_unsigned<IntT>::type;
     uIntT uvalue = value;
-    do
+    while(uvalue > 0xF)
     {
-        *--it = stringify::v0::detail::to_xdigit(uvalue & 0xF, uppercase);
+        *--it = stringify::v0::detail::to_xdigit(uvalue & 0xF);
         uvalue >>= 4;
     }
-    while(uvalue != 0);
+    *--it = stringify::v0::detail::to_xdigit(uvalue);
     return it;
 }
 
@@ -394,12 +408,12 @@ CharT* write_int_oct_txtdigits_backwards(IntT value, CharT* it) noexcept
 {
     using uIntT = typename std::make_unsigned<IntT>::type;
     uIntT uvalue = value;
-    do
+    while (uvalue > 7)
     {
-        *--it = stringify::v0::detail::to_digit(uvalue & 7);
+        *--it = '0' + (uvalue & 7);
         uvalue >>= 3;
     }
-    while(uvalue != 0);
+    *--it = '0' + uvalue;
     return it;
 }
 

@@ -38,7 +38,7 @@ void sample_numpunct()
     auto punct = strf::str_grouping<base>{"\4\3\2"}.thousands_sep(U'.');
     auto x = strf::to_string
         .facets(punct)
-        ("one hundred billions = ", *strf::fmt(100000000000ll));
+        ("one hundred billions = ", 100000000000ll);
 
     BOOST_ASSERT(x.value() == "one hundred billions = 1.00.00.000.0000");
 //]
@@ -54,7 +54,7 @@ void sample_numpunct_with_alternative_charset()
     auto x = strf::to_string
         .facets(strf::windows_1252())
         .facets(strf::str_grouping<10>{"\4\3\2"}.thousands_sep(0x2022))
-        ("one hundred billions = ", *strf::fmt(100000000000ll));
+        ("one hundred billions = ", 100000000000ll);
 
     // The character U+2022 is encoded as '\225' in Windows-1252
     BOOST_ASSERT(x.value() == "one hundred billions = 1\2250000\225000\2250000");
@@ -106,6 +106,8 @@ void sani()
     BOOST_ASSERT(x == u8"a b c \uFFFD d e");
     //]
 }
+
+#include <vector>
 
 void input_ranges()
 {

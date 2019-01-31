@@ -475,12 +475,6 @@ constexpr auto fmt(const T& value)
 }
 
 template <typename T>
-constexpr auto uphex(const T& value)
-{
-    return fmt(value).uphex();
-}
-
-template <typename T>
 constexpr auto hex(const T& value)
 {
     return fmt(value).hex();

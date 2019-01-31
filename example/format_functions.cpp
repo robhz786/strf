@@ -25,12 +25,11 @@ void samples()
     auto str = strf::to_string
         ( strf::hex(255) > 5
         , '/', strf::center(255, 7, '.').hex()
-        , '/', ~strf::uphex(255) % 7
+        , '/', ~strf::hex(255) % 7
         , '/', strf::multi('a', 3) ^ 7
-        , '/', +strf::fmt(255)
-        );
+        , '/', +strf::fmt(255) );
 
-    BOOST_ASSERT(str.value() == "   ff/..ff.../0X   FF/  aaa  /+255");
+    BOOST_ASSERT(str.value() == "   ff/..ff.../0x   ff/  aaa  /+255");
     //]
 }
 

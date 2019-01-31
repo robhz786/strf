@@ -11,20 +11,16 @@ void sample1()
     namespace strf = boost::stringify::v0;
 
     auto str = strf::to_string.facets(strf::monotonic_grouping<10>(1))
-        ( * strf::fmt(10000)
+        ( 10000
         , "  "
-        , * strf::hex(0x10000)
-        , strf::facets
-            ( strf::monotonic_grouping<10>(3)
-            , strf::monotonic_grouping<16>(4).thousands_sep('\'')
-            )
+        , strf::hex(0x10000)
+        , strf::facets( strf::monotonic_grouping<10>(3)
+                      , strf::monotonic_grouping<16>(4).thousands_sep('\'') )
             ( "  { "
-            , * strf::fmt(10000)
+            , 10000
             , "  "
-            , * strf::hex(0x10000)
-            , " }"
-            )
-        );
+            , strf::hex(0x10000)
+            , " }" ) );
 
     BOOST_ASSERT(str.value() == "1,0,0,0,0  10000  { 10,000  1'0000 }");
     //]
@@ -38,24 +34,22 @@ void sample2()
 
     auto fp = strf::pack
         ( strf::monotonic_grouping<10>(3)
-        , strf::monotonic_grouping<16>(4).thousands_sep('\'')
-        );
+        , strf::monotonic_grouping<16>(4).thousands_sep('\'') );
 
     auto str = strf::to_string.facets(strf::monotonic_grouping<10>(1))
-        ( * strf::fmt(10000)
+        ( 10000
         , "  "
-        , * strf::hex(0x10000)
+        , strf::hex(0x10000)
         , strf::facets(fp)
             ( "  { "
-            , * strf::fmt(10000)
+            , 10000
             , "  "
-            , * strf::hex(0x10000)
+            , strf::hex(0x10000)
             , strf::facets
                 (strf::monotonic_grouping<10>(2).thousands_sep('.'))
-                  ("  { ", * strf::fmt(10000), " }")
-            , " }"
-            )
-        );
+                  ("  { ", 10000, " }")
+            , " }" ) );
+
     BOOST_ASSERT(str.value() == "1,0,0,0,0  10000  { 10,000  1'0000  { 1.00.00 } }");
     //]
 }

@@ -68,7 +68,7 @@ void error_signal_skip()
 {
     //[ error_handling_ignore
     namespace strf = boost::stringify::v0;
-    
+
     auto str = strf::to_string
         .facets(strf::encoding_policy{strf::error_handling::ignore})
         (strf::cv("--\x99--"));
@@ -103,7 +103,7 @@ void allow_surrogates ()
     constexpr auto allow_surrogates = strf::encoding_policy
         ( strf::error_handling::replace
         , true );
-    
+
     auto str1 = strf::to_string(strf::cv(input_utf16));
 
     auto str2 = strf::to_string .facets(allow_surrogates) (strf::cv(input_utf16));

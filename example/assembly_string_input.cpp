@@ -11,8 +11,7 @@ void sample()
     auto result = strf::to_string.as("{} --- {} --- {}")
         ( "aaa"
         , strf::as("( {} {} )")("bbb", "ccc")
-        , "ddd"
-        );
+        , "ddd" );
 
     BOOST_ASSERT(result.value() == "aaa --- ( bbb ccc ) --- ddd");
     //]

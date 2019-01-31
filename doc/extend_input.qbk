@@ -228,7 +228,7 @@ leaving the intermediate one as the default.
 [note Notice that `big()` and `small()` are declared with the rvalue ref-qualifier
 ( the token '&&' after the parameter list ) and return `*this` as `derived_type &&`.
 This is the convention for format functions. It is what allows constructions
-like `hex(200).uppercase().showbase().fill(U'.') > 20`]
+like `hex(200).showbase().fill(U'.') > 20`]
 ]
 
 Now we define a class that gathers the IPv6 address value

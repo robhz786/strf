@@ -551,7 +551,7 @@ class facets_pack: private stringify::v0::detail::facets_pack_impl<Facets...>
 {
     using _impl = stringify::v0::detail::facets_pack_impl<Facets...>;
 
-    friend struct stringify::v0::detail::facets_pack_helper;
+    friend class stringify::v0::detail::facets_pack_helper;
 
     template <typename, typename>
     friend class stringify::v0::detail::facets_pack_join;

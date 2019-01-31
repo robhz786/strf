@@ -79,6 +79,11 @@ public:
         BOOST_ASSERT(n <= size());
         _pos += n;
     }
+    void advance() noexcept
+    {
+        BOOST_ASSERT(_pos != _end);
+        ++ _pos;
+    }
     void advance_to(CharOut* p) noexcept
     {
         BOOST_ASSERT(_pos <= p && p <= _end);
