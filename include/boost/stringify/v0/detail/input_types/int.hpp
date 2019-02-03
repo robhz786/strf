@@ -32,8 +32,7 @@ public:
     {
         if (value < 0)
         {
-            using unsigned_IntT = typename std::make_unsigned<IntT>::type;
-            _uvalue = 1 + static_cast<unsigned_IntT>(-(value + 1));
+            _uvalue = stringify::v0::detail::unsigned_abs(value);
             _negative = true;
         }
         else
@@ -107,7 +106,7 @@ bool i18n_int_printer<CharT>::_write_with_punct
         = stringify::v0::detail::max_num_digits<decltype(_uvalue), 10>;
     unsigned char groups[max_digits];
     auto g = _punct.groups(_digcount, groups);
-    unsigned num_groups = (g - groups) + 1;
+    unsigned num_groups = static_cast<unsigned>((g - groups) + 1);
     return _chars.print_digits( ob, _encoding, _uvalue, groups
                               , _punct.thousands_sep()
                               , _digcount, num_groups );
@@ -125,7 +124,7 @@ public:
         using unsigned_IntT = typename std::make_unsigned<IntT>::type;
         if (value < 0)
         {
-            unsigned_IntT uvalue = 1 + static_cast<unsigned_IntT>(-(value + 1));
+            unsigned_IntT uvalue = stringify::v0::detail::unsigned_abs(value);
             _digcount = stringify::v0::detail::count_digits<10>(uvalue);
             _uvalue = uvalue;
             _negative = true;
@@ -225,8 +224,8 @@ public:
 template <typename CharT, typename FPack, typename IntT, unsigned Base>
 constexpr bool has_i18n = has_i18n_impl<CharT, FPack, IntT, Base>::has_i18n;
 
-static_assert(has_i18n<char, decltype(pack()), int, 10> == false);
-static_assert(has_i18n<char, decltype(pack(monotonic_grouping<10>(3))), int, 10> == true);
+static_assert(has_i18n<char, decltype(pack()), int, 10> == false, "");
+static_assert(has_i18n<char, decltype(pack(monotonic_grouping<10>(3))), int, 10> == true, "");
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 

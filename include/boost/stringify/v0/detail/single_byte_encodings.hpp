@@ -253,7 +253,7 @@ stringify::v0::cv_result single_byte_encoding<Impl>::encode_char
         auto ch2 = Impl::encode(ch);
         if(ch2 < 0x100)
         {
-            *dest_it = ch2;
+            *dest_it = static_cast<std::uint8_t>(ch2);
             *dest = dest_it + 1;
             return stringify::v0::cv_result::success;
         }
@@ -341,7 +341,7 @@ stringify::v0::cv_result single_byte_encoding<Impl>::from_utf32
         auto ch2 = Impl::encode(*src_it);
         if(ch2 < 0x100)
         {
-            *dest_it = ch2;
+            *dest_it = static_cast<std::uint8_t>(ch2);
             ++dest_it;
         }
         else
@@ -380,7 +380,7 @@ struct impl_strict_ascii
     {
         if (ch < 0x80)
             return ch;
-        return -1;
+        return (char32_t)-1;
     }
 
     static unsigned encode(char32_t ch)
@@ -488,7 +488,7 @@ BOOST_STRINGIFY_INLINE char32_t impl_iso8859_3::decode(std::uint8_t ch)
             ,  undef, 0x00F1, 0x00F2, 0x00F3, 0x00F4, 0x0121, 0x00F6, 0x00F7
             , 0x011D, 0x00F9, 0x00FA, 0x00FB, 0x00FC, 0x016D, 0x015D, 0x02D9 };
 
-        return (int) ext[ch - 0xA1];
+        return (std::int32_t) ext[ch - 0xA1];
     }
 }
 

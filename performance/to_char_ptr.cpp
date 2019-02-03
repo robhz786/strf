@@ -19,7 +19,7 @@ int main()
     namespace strf = boost::stringify;
     char dest[1000000];
     constexpr std::size_t dest_size = sizeof(dest);
-    char* dest_end = dest + dest_size;
+    //char* dest_end = dest + dest_size;
 
     std::cout << "\n small strings \n";
     PRINT_BENCHMARK("strf::write(dest) (\"Hello World!\")")

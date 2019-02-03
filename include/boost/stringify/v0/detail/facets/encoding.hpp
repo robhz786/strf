@@ -84,7 +84,7 @@ public:
     constexpr encoding_policy
         ( stringify::v0::error_handling err_hdl
         , bool allow_surr = false )
-        : _bits(((_bits_type)err_hdl << 1) | allow_surr)
+        : _bits(((_bits_type)err_hdl << 1) | (_bits_type)allow_surr)
     {
     }
 

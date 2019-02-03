@@ -406,7 +406,7 @@ bool default_numchars<CharT, 10>::print_digits
     }
     if (uvalue < 10)
     {
-        it[-1] = '0' + uvalue;
+        it[-1] = static_cast<CharT>('0' + uvalue);
         BOOST_ASSERT(it + num_digits - 1 == ob.pos());
     }
     else
@@ -443,7 +443,8 @@ bool default_numchars<CharT, 10>::print_digits
 
     constexpr auto max_digits
         = stringify::v0::detail::max_num_digits<decltype(digits), 10>;
-    static_assert(max_digits * 2 - 1 <= stringify::v0::min_buff_size);
+    static_assert( max_digits * 2 - 1 <= stringify::v0::min_buff_size
+                 , "too many possible digits" );
 
     auto necessary_size = num_digits + num_groups - 1;
     if (ob.size() < necessary_size && !ob.recycle())
@@ -456,7 +457,7 @@ bool default_numchars<CharT, 10>::print_digits
 
     const char* arr = stringify::v0::detail::chars_00_to_99();
     auto n = *groups;
-    CharT sep = separator;
+    CharT sep = static_cast<CharT>(separator);
     auto uvalue = digits;
     while (uvalue > 99)
     {
@@ -499,7 +500,7 @@ bool default_numchars<CharT, 10>::print_digits
     BOOST_ASSERT(n != 0);
     if (uvalue < 10)
     {
-        it[-1] = '0' + uvalue;
+        it[-1] = static_cast<CharT>('0' + uvalue);
         BOOST_ASSERT(it + necessary_size - 1 == ob.pos());
     }
     else
@@ -667,28 +668,29 @@ bool default_numchars<CharT, 16>::print_digits
     ob.advance(num_digits);
     CharT* it = ob.pos();
     auto value = digits;
+    constexpr char offset_a = 'a' - 10;
     while (value > 0xF)
     {
-        unsigned d = value & 0xF;
+        std::uint8_t d = value & 0xF;
         --it;
         if (d < 10)
         {
-            *it = '0' + d;
+            *it = static_cast<CharT>('0' + d);
         }
         else
         {
-            *it = 'a' + (d - 10);
+            *it = static_cast<CharT>(offset_a + d);
         }
         value = value >> 4;
     }
     --it;
     if (value < 10)
     {
-        *it = '0' + value;
+        *it = static_cast<CharT>('0' + value);
     }
     else
     {
-        *it = 'a' + (value - 10);
+        *it = static_cast<CharT>(offset_a + value);
     }
 
     BOOST_ASSERT(it + num_digits == ob.pos());
@@ -738,7 +740,8 @@ bool default_numchars<CharT, 16>::print_digits
 
     constexpr auto max_digits
         = stringify::v0::detail::max_num_digits<decltype(digits), 16>;
-    static_assert(max_digits * 2 - 1 <= stringify::v0::min_buff_size);
+    static_assert( max_digits * 2 - 1 <= stringify::v0::min_buff_size
+                 , "too many possible digits" );
 
     auto necessary_size = num_digits + num_groups - 1;
     if (ob.size() < necessary_size && !ob.recycle())
@@ -749,18 +752,19 @@ bool default_numchars<CharT, 16>::print_digits
     CharT* it = ob.pos();
     auto n = *groups;
     auto value = digits;
-    CharT sep = separator;
+    CharT sep = static_cast<CharT>(separator);
+    constexpr char offset_digit_a = 'a' - 10;
     while (value > 0xF)
     {
         unsigned d = value & 0xF;
         --it;
         if (d < 10)
         {
-            *it = '0' + d;
+            *it = static_cast<CharT>('0' + d);
         }
         else
         {
-            *it = 'a' + (d - 10);
+            *it = static_cast<CharT>(offset_digit_a + d);
         }
         if (--n == 0)
         {
@@ -772,11 +776,11 @@ bool default_numchars<CharT, 16>::print_digits
     --it;
     if (value < 10)
     {
-        *it = '0' + value;
+        *it = static_cast<CharT>('0' + value);
     }
     else
     {
-        *it = 'a' + (value - 10);
+        *it = static_cast<CharT>(offset_digit_a + value);
     }
     BOOST_ASSERT(it + necessary_size == ob.pos());
     return true;
@@ -906,7 +910,7 @@ bool default_numchars<CharT, 8>::print_digits
         *--it = '0' + (value & 0x7);
         value = value >> 3;
     }
-    *--it = '0' + value;
+    *--it = static_cast<CharT>('0' + value);
     BOOST_ASSERT(it + num_digits == ob.pos());
 
     return true;
@@ -936,7 +940,8 @@ bool default_numchars<CharT, 8>::print_digits
 
     constexpr auto max_digits
         = stringify::v0::detail::max_num_digits<decltype(digits), 8>;
-    static_assert(max_digits * 2 - 1 <= stringify::v0::min_buff_size);
+    static_assert( max_digits * 2 - 1 <= stringify::v0::min_buff_size
+                 , "too many possible digits" );
 
     auto necessary_size = num_digits + num_groups - 1;
     if (ob.size() < necessary_size && !ob.recycle())
@@ -947,7 +952,7 @@ bool default_numchars<CharT, 8>::print_digits
     auto it = ob.pos();
     auto value = digits;
     auto n = *groups;
-    CharT sep = separator;
+    CharT sep = static_cast<CharT>(separator);
     while (value > 0x7)
     {
         *--it = '0' + (value & 0x7);
@@ -958,7 +963,7 @@ bool default_numchars<CharT, 8>::print_digits
             n = *++groups;
         }
     }
-    *--it = '0' + value;
+    *--it = static_cast<CharT>('0' + value);
     BOOST_ASSERT(it + necessary_size == ob.pos());
 
     return true;

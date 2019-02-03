@@ -188,8 +188,8 @@ private:
     const stringify::v0::numpunct_base& _punct;
     const stringify::v0::encoding<CharT> _encoding;
     stringify::v0::error_handling _err_hdl;
-    unsigned short _digcount;
-    unsigned short _sepcount;
+    unsigned _digcount;
+    unsigned _sepcount;
     unsigned _fillcount;
     unsigned _precision;
     stringify::v0::alignment_format::fn<void> _afmt;
@@ -242,11 +242,11 @@ void fmt_int_printer<CharT>::_init(stringify::v0::int_with_format<IntT> value)
     _precision = value.precision();
 
     int complement_width;
-    if (Base == 10)
+    BOOST_STRINGIFY_IF_CONSTEXPR (Base == 10)
     {
         if (value.value().value < 0)
         {
-            _uvalue = 1 + unsigned_type(-(value.value().value + 1));
+            _uvalue = stringify::v0::detail::unsigned_abs(value.value().value);
             _showneg = true;
             _showpos = false;
             _showbase = false;

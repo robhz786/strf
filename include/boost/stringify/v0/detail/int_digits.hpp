@@ -338,10 +338,10 @@ inline char to_xdigit(unsigned digit)
 {
     if (digit < 10)
     {
-        return '0' + digit;
+        return static_cast<char>('0' + digit);
     }
     constexpr char offset = 'a' - 10;
-    return offset + digit;
+    return static_cast<char>(offset + digit);
 }
 
 inline const char* chars_00_to_99()
@@ -376,7 +376,7 @@ CharT* write_int_dec_txtdigits_backwards(IntT value, CharT* it) noexcept
     }
     if (uvalue < 10)
     {
-        *--it = '0' + uvalue;
+        *--it = static_cast<CharT>('0' + uvalue);
         return it;
     }
     else
@@ -399,7 +399,7 @@ CharT* write_int_hex_txtdigits_backwards
         *--it = stringify::v0::detail::to_xdigit(uvalue & 0xF);
         uvalue >>= 4;
     }
-    *--it = stringify::v0::detail::to_xdigit(uvalue);
+    *--it = stringify::v0::detail::to_xdigit(static_cast<unsigned>(uvalue));
     return it;
 }
 
@@ -410,10 +410,10 @@ CharT* write_int_oct_txtdigits_backwards(IntT value, CharT* it) noexcept
     uIntT uvalue = value;
     while (uvalue > 7)
     {
-        *--it = '0' + (uvalue & 7);
+        *--it = static_cast<CharT>('0' + (uvalue & 7));
         uvalue >>= 3;
     }
-    *--it = '0' + uvalue;
+    *--it = static_cast<CharT>('0' + uvalue);
     return it;
 }
 

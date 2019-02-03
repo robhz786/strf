@@ -119,13 +119,15 @@ void test(const strf::encoding<char>& enc, fill_table_func fill_table)
     char* char_0_to_0xff_end = char_0_to_0xff + 0x100;
     for(unsigned  i = 0; i < 0x100; ++i)
     {
-        char_0_to_0xff[i] = i;
+        char_0_to_0xff[i] = static_cast<char>(i);
     }
 
     char char_0_to_0xff_sanitized[0x100] = {0};
     for(unsigned i = 0; i < 0x100; ++i)
     {
-        unsigned char ch = enc.decode_single_char(i) == (char32_t)-1 ? '?': i;
+        unsigned char ch = enc.decode_single_char(static_cast<std::uint8_t>(i)) == (char32_t)-1
+            ? static_cast<unsigned char>('?')
+            : static_cast<unsigned char>(i);
         char_0_to_0xff_sanitized[i] = ch;
     }
 

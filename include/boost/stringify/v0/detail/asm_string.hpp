@@ -69,10 +69,10 @@ read_uint_result<CharT> read_uint(const CharT* it, const CharT* end)
     return {value, it};
 }
 
-constexpr unsigned asmstr_invalid_arg_size_when_stop = (unsigned)-1;
+constexpr std::size_t asmstr_invalid_arg_size_when_stop = (std::size_t)-1;
 
 template <typename CharT>
-unsigned invalid_arg_size
+std::size_t invalid_arg_size
     ( stringify::v0::encoding<CharT> enc
     , asm_invalid_arg policy )
 {
@@ -92,7 +92,7 @@ std::size_t asm_string_size
     ( const CharT* it
     , const CharT* end
     , std::initializer_list<const stringify::v0::printer<CharT>*> args
-    , unsigned inv_arg_size )
+    , std::size_t inv_arg_size )
 {
     using traits = std::char_traits<CharT>;
 

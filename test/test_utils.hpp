@@ -140,8 +140,8 @@ void input_tester<CharOut>::reserve(std::size_t size)
 {
     _reserved_size = size;
     _result.resize(size, CharOut{'#'});
-    this->set_pos(_result.data());
-    this->set_end(_result.data() + size);
+    this->set_pos(&*_result.begin());
+    this->set_end(&*_result.begin() + size);
 }
 
 template <typename CharOut>
@@ -152,11 +152,11 @@ bool input_tester<CharOut>::recycle()
     std::cout << " output_buffer::recycle() called "
         "( return of printer::necessary_size() too small ).\n";
 
-    std::size_t previous_size = this->pos() - _result.data();
+    std::size_t previous_size = this->pos() - &*_result.begin();
     _result.resize(previous_size);
     _result.append(boost::stringify::v0::min_buff_size, CharOut{'#'});
-    this->set_pos(_result.data() + previous_size);
-    this->set_end(_result.data() + _result.size());
+    this->set_pos(&*_result.begin() + previous_size);
+    this->set_end(&*_result.begin() + _result.size());
     return true;
 }
 
@@ -164,7 +164,7 @@ template <typename CharOut>
 boost::stringify::v0::expected<void, std::error_code>
 input_tester<CharOut>::finish()
 {
-    _result.resize(this->pos() - _result.data());
+    _result.resize(this->pos() - &*_result.begin());
 
     if (_expected != _result)
     {

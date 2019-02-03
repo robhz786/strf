@@ -168,7 +168,7 @@ inline std::size_t sum_necessary_size(const Printer& printer, const Printers& ..
 
 
 template <typename CharT>
-inline bool write_args(stringify::v0::output_buffer<CharT>& ob)
+inline bool write_args(stringify::v0::output_buffer<CharT>&)
 {
     return true;
 }
@@ -176,10 +176,10 @@ inline bool write_args(stringify::v0::output_buffer<CharT>& ob)
 template <typename CharT, typename Printer, typename ... Printers>
 inline bool write_args
     ( stringify::v0::output_buffer<CharT>& ob
-    , const Printer& ... printer
+    , const Printer& printer
     , const Printers& ... printers )
 {
-    return return printer.write(ob) && write_args(ob, printers);
+    return printer.write(ob) && write_args(ob, printers ...);
 }
 
 #endif
@@ -310,9 +310,9 @@ private:
         , _arglist_type args) const
     {
         decltype(auto) enc
-            = get_facet<stringify::v0::encoding_category<_char_type>, void>(*this);
+            = stringify::v0::get_facet<stringify::v0::encoding_category<_char_type>, void>(*this);
         decltype(auto) policy
-            = get_facet<stringify::v0::asm_invalid_arg_category, void>(*this);
+            = stringify::v0::get_facet<stringify::v0::asm_invalid_arg_category, void>(*this);
 
         _output_writer_wrapper writer{*this};
 
@@ -343,9 +343,9 @@ private:
         _output_writer_wrapper writer{*this};
 
         decltype(auto) enc
-            = get_facet<stringify::v0::encoding_category<_char_type>, void>(*this);
+            = stringify::v0::get_facet<stringify::v0::encoding_category<_char_type>, void>(*this);
         decltype(auto) policy
-            = get_facet<stringify::v0::asm_invalid_arg_category, void>(*this);
+            = stringify::v0::get_facet<stringify::v0::asm_invalid_arg_category, void>(*this);
 
         bool no_error = stringify::v0::detail::asm_string_write
             ( str, str_end, args, writer.get(), enc, policy );
@@ -354,11 +354,8 @@ private:
         return writer.get().finish();
     }
 
-
     const _char_type* _asm_str;
     const _char_type* _asm_str_end;
-    // OutputBuffInitArgsTuple _ob_args;
-    // FPack _fpack;
 };
 
 

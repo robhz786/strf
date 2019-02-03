@@ -79,7 +79,7 @@ unsigned char* monotonic_grouping_impl::get_groups
     {
         // this branch actually should never be executed
         BOOST_ASSERT(num_digits <= 0xFF);
-        * groups_array = num_digits;
+        * groups_array = static_cast<std::uint8_t>(num_digits);
         return groups_array;
     }
     while(num_digits > _groups_size)

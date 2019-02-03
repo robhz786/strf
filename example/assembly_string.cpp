@@ -45,7 +45,7 @@ int main()
         auto str = strf::to_string
             .as("{} are {}. {} are {}.")
             ("Roses", "red", "Violets");
-        BOOST_ASSERT(str.value() == u8"Roses are red. Violets are �.");
+        BOOST_ASSERT(str.value() == u8"Roses are red. Violets are \uFFFD.");
         //]
    }
    {

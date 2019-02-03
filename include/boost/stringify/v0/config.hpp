@@ -35,7 +35,7 @@ inline namespace v0 {                              \
 #define BOOST_STRINGIFY_INLINE inline
 #define BOOST_STRINGIFY_STATIC_LINKAGE inline
 #endif
-
+/*
 #if defined(_MSC_VER)
 #if _MSC_VER < 1911
 #define BOOST_STRINGIFY_NO_NODISCARD
@@ -55,39 +55,41 @@ inline namespace v0 {                              \
 #elif __cplusplus < 201703L
 #define BOOST_STRINGIFY_NO_NODISCARD
 #endif
+*/
+// #if __cplusplus >= 201703L || ( defined(_MSC_VER) && defined(_HAS_CXX17) && _HAS_CXX17)
+// #define BOOST_STRINGIFY_HAS_CXX17
 
-#if __cplusplus >= 201703L || ( defined(_MSC_VER) && defined(_HAS_CXX17) && _HAS_CXX17)
-
-#define BOOST_STRINGIFY_HAS_CXX17
-
-#if ! defined(BOOST_STRINGIFY_NO_NODISCARD)
-#define BOOST_STRINGIFY_HAS_NODISCARD
-#endif
-
-#if defined(__has_cpp_feature)
-
-#if __has_cpp_feature(__cpp_lib_to_chars)
+#if defined(__cpp_lib_to_chars)
 #include <charconv>
 #define BOOST_STRINGIFY_HAS_STD_CHARCONV
-#endif
+#endif //defined(__cpp_lib_to_chars)
 
-#if __has_cpp_feature(__cpp_lib_string_view_)
+
+#if defined(__cpp_lib_string_view_)
 #define BOOST_STRINGIFY_HAS_STD_STRING_VIEW
 #define BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS constexpr
 #include <string_view>
-#endif
+#endif // defined(__cpp_lib_string_view_)
 
-#if __has_cpp_feature(__cpp_lib_optional)
+#if defined(__cpp_lib_optional)
 #define BOOST_STRINGIFY_HAS_STD_OPTIONAL
 #include <optional>
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN;
 using in_place_t = ::std::in_place_t;
 BOOST_STRINGIFY_V0_NAMESPACE_END;
-#endif
+#else
+BOOST_STRINGIFY_V0_NAMESPACE_BEGIN;
+struct in_place_t {};
+BOOST_STRINGIFY_V0_NAMESPACE_END;
+#endif //defined(__cpp_lib_optional)
 
-#endif // defined(__has_cpp_feature)
+#if defined(__has_cpp_attribute)
+#if __has_cpp_attribute(nodiscard)
+#define BOOST_STRINGIFY_HAS_NODISCARD
+#endif //__has_cpp_attribute(nodiscard)
+#endif // defined(__has_cpp_attribute) 
 
-#endif // __cplusplus >= 201703L || ( defined(_MSV_VER) && defined(_HAS_CXX17))
+// #endif // __cplusplus >= 201703L || ( defined(_MSV_VER) && defined(_HAS_CXX17))
 
 #ifndef BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
 #define BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS inline
@@ -99,24 +101,26 @@ BOOST_STRINGIFY_V0_NAMESPACE_END;
 #define BOOST_STRINGIFY_NODISCARD
 #endif //defined(BOOST_STRINGIFY_HAS_NODISCARD)
 
-#if ! defined(BOOST_STRINGIFY_HAS_STD_OPTIONAL)
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN;
-struct in_place_t {};
-BOOST_STRINGIFY_V0_NAMESPACE_END;
-#endif //! defined(BOOST_STRINGIFY_HAS_STD_OPTIONAL)
+
+#if defined(__cpp_if_constexpr)
+#define BOOST_STRINGIFY_IF_CONSTEXPR if constexpr
+#else
+#define BOOST_STRINGIFY_IF_CONSTEXPR if
+#endif
 
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
-namespace detail
-{
 
-constexpr std::integral_constant<bool, sizeof(wchar_t) == 2> wchar_is_16 {};
-constexpr std::integral_constant<bool, sizeof(wchar_t) == 4> wchar_is_32 {};
-using wchar_equivalent =
-    typename std::conditional<sizeof(wchar_t) == 4, char32_t, char16_t>::type;
+// BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+// namespace detail
+// {
 
-}
-BOOST_STRINGIFY_V0_NAMESPACE_END
+// constexpr std::integral_constant<bool, sizeof(wchar_t) == 2> wchar_is_16 {};
+// constexpr std::integral_constant<bool, sizeof(wchar_t) == 4> wchar_is_32 {};
+// using wchar_equivalent =
+//     typename std::conditional<sizeof(wchar_t) == 4, char32_t, char16_t>::type;
+
+// }
+// BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_CONFIG_HPP
 

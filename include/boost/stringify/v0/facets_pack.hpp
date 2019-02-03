@@ -43,7 +43,7 @@ struct category_member_type_or_void_2<F, false>
 template <typename F>
 using category_member_type_or_void
 = stringify::v0::detail::category_member_type_or_void_2
-    < F, stringify::v0::detail::has_category_member_type((F*){}) >;
+    < F, stringify::v0::detail::has_category_member_type((F*)0) >;
 
 } // namespace detail
 

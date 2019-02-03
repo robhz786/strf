@@ -54,10 +54,12 @@ public:
         {
             return 1;
         }
-        if ( std::is_same<CharT, char32_t>::value
-             && enc.id() == stringify::v0::encoding_id::eid_utf32 )
+        BOOST_STRINGIFY_IF_CONSTEXPR(std::is_same<CharT, char32_t>::value)
         {
-            return _ch_wcalc(ch);
+            if (enc.id() == stringify::v0::encoding_id::eid_utf32)
+            {
+                return _ch_wcalc(ch);
+            }
         }
         return _ch_wcalc(enc.decode_single_char(ch));
     }
