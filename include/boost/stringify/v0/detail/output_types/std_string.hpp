@@ -51,7 +51,7 @@ public:
 
     bool recycle() override;
 
-    BOOST_STRINGIFY_NODISCARD std::error_code finish();
+    stringify::v0::nodiscard_error_code finish();
 
 private:
 
@@ -72,8 +72,8 @@ bool ec_string_appender<StringType>::recycle()
 }
 
 template <typename StringType>
-BOOST_STRINGIFY_NODISCARD
-std::error_code ec_string_appender<StringType>::finish()
+inline
+stringify::v0::nodiscard_error_code ec_string_appender<StringType>::finish()
 {
     _finished = true;
     if ( ! this->has_error())

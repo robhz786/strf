@@ -43,7 +43,7 @@ public:
 
     bool recycle() override;
 
-    std::error_code finish() noexcept;
+    stringify::v0::nodiscard_error_code finish() noexcept;
 
 private:
 
@@ -59,7 +59,8 @@ bool ec_char_ptr_writer<CharOut>::recycle()
 }
 
 template<typename CharOut>
-inline std::error_code ec_char_ptr_writer<CharOut>::finish() noexcept
+inline stringify::v0::nodiscard_error_code
+ec_char_ptr_writer<CharOut>::finish() noexcept
 {
 
     * this->pos() = 0;

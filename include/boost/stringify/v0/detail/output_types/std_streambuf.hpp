@@ -42,7 +42,7 @@ public:
 
     bool recycle() override;
 
-    std::error_code finish()
+    stringify::v0::nodiscard_error_code finish()
     {
         if ( ! this->has_error() && this->size() != 0)
         {

@@ -111,11 +111,43 @@ where:
 * 1 - 5)  The genererated `std::basic_string<`[~CharT]`, `[~Traits]`>`
 * 6 - 12) Number of characters written, in `std::size_t`.
 * 13)     Number of characters written, in `std::streamsize`.
-* 14 - 21) `std::error_code`
+* 14 - 21) `nodiscard_error_code`
+``
+namespace boost{
+namespace stringify{
+inline namespace v0 {
+
+class [[nodiscard]] nodiscard_error_code: public std::error_code
+{
+public:
+    using std::error_code::error_code;
+
+    nodiscard_error_code(const std::error_code& ec) noexcept
+        : std::error_code(ec)
+    {}
+};
+
+}}}
+``
 
 [h4 On error]
-* 1 to 13) Throws and exception of type [link stringify_error stringify_error].
-* 14 to 21) Returns a value different of `std::error_code{}`
+* 1 to 13) Throws and exception of type `stringify_error`.
+[#stringify_error]
+``
+namespace boost{
+namespace stringify{
+inline namespace v0 {
+
+class stringify_error: public std::system_error
+{
+public:
+    using std::system_error::system_error;
+};
+
+}}}
+``
+
+* 14 to 21) Returns a value different of `std::nodiscard_error_code{}`
 
 Also:
 

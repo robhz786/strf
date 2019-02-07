@@ -43,7 +43,14 @@ public:
 
     bool recycle() override;
 
-    std::error_code finish();
+    stringify::v0::nodiscard_error_code finish()
+    {
+        if (! this->has_error())
+        {
+            recycle();
+        }
+        return this->get_error();
+    }
 
 protected:
 
@@ -69,17 +76,6 @@ bool ec_narrow_file_writer<CharT>::recycle()
         return false;
     }
     return true;
-}
-
-
-template <typename CharT>
-inline std::error_code ec_narrow_file_writer<CharT>::finish()
-{
-    if (! this->has_error())
-    {
-        recycle();
-    }
-    return this->get_error();
 }
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
@@ -117,7 +113,7 @@ public:
 
     bool recycle() override;
 
-    std::error_code finish()
+    stringify::v0::nodiscard_error_code finish()
     {
         if( ! this->has_error() )
         {

@@ -69,6 +69,8 @@ inline namespace v0 {                              \
 #define BOOST_STRINGIFY_HAS_STD_STRING_VIEW
 #define BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS constexpr
 #include <string_view>
+#else
+#include <string> // char_traits
 #endif // defined(__cpp_lib_string_view_)
 
 #if defined(__cpp_lib_optional)

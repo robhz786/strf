@@ -651,49 +651,22 @@ constexpr auto make_destination(Args ... args)
     return {stringify::v0::facets_pack<>{}, std::tuple<Args ...>{args ...}};
 }
 
-
 class stringify_error: public std::system_error
 {
 public:
-    stringify_error( std::error_code ec )
-        : std::system_error(ec)
-    {
-    }
+    using std::system_error::system_error;
+};
 
-    stringify_error( std::error_code ec
-                   , const std::string& what_arg )
-        : std::system_error(ec, what_arg)
+class BOOST_STRINGIFY_NODISCARD nodiscard_error_code: public std::error_code
+{
+public:
+    using std::error_code::error_code;
 
-    {
-    }
-
-    stringify_error( std::error_code ec
-                   , const char* what_arg )
-        : std::system_error(ec, what_arg)
-    {
-    }
-
-    stringify_error( int ev
-                   , const std::error_category& ecat )
-        : std::system_error(ev, ecat)
-    {
-    }
-
-    stringify_error( int ev
-                   , const std::error_category& ecat
-                   , const std::string& what_arg )
-        : std::system_error(ev, ecat, what_arg)
-    {
-    }
-
-    stringify_error( int ev
-                   , const std::error_category& ecat
-                   , const char* what_arg)
-        : std::system_error(ev, ecat, what_arg)
+    nodiscard_error_code(const std::error_code& ec) noexcept
+        : std::error_code(ec)
     {
     }
 };
-
 
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
