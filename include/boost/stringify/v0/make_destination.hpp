@@ -596,7 +596,6 @@ public:
 #endif
 
     template <typename ... Args>
-    BOOST_STRINGIFY_NODISCARD
     _return_type operator()(const Args& ... args) const
     {
         return stringify::v0::detail::create_ob_and_write<OutputBuff>
@@ -651,6 +650,51 @@ constexpr auto make_destination(Args ... args)
 {
     return {stringify::v0::facets_pack<>{}, std::tuple<Args ...>{args ...}};
 }
+
+
+class stringify_error: public std::system_error
+{
+public:
+    stringify_error( std::error_code ec )
+        : std::system_error(ec)
+    {
+    }
+
+    stringify_error( std::error_code ec
+                   , const std::string& what_arg )
+        : std::system_error(ec, what_arg)
+
+    {
+    }
+
+    stringify_error( std::error_code ec
+                   , const char* what_arg )
+        : std::system_error(ec, what_arg)
+    {
+    }
+
+    stringify_error( int ev
+                   , const std::error_category& ecat )
+        : std::system_error(ev, ecat)
+    {
+    }
+
+    stringify_error( int ev
+                   , const std::error_category& ecat
+                   , const std::string& what_arg )
+        : std::system_error(ev, ecat, what_arg)
+    {
+    }
+
+    stringify_error( int ev
+                   , const std::error_category& ecat
+                   , const char* what_arg)
+        : std::system_error(ev, ecat, what_arg)
+    {
+    }
+};
+
+
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

@@ -18,10 +18,12 @@ int main()
 {
     namespace strf = boost::stringify;
     char dest[1000000];
-    constexpr std::size_t dest_size = sizeof(dest);
-    //char* dest_end = dest + dest_size;
 
     std::cout << "\n small strings \n";
+    PRINT_BENCHMARK("strf::ec_write(dest) (\"Hello World!\")")
+    {
+        (void)strf::ec_write(dest)("Hello World!");
+    }
     PRINT_BENCHMARK("strf::write(dest) (\"Hello World!\")")
     {
         (void)strf::write(dest)("Hello World!");
@@ -49,13 +51,17 @@ int main()
     }
 
     std::cout << "\n";
-    PRINT_BENCHMARK("strf::write(dest) (\"Hello \", \"World\", \"!\")")
+    PRINT_BENCHMARK("strf::ec_write(dest) (\"Hello \", \"World\", '!')")
     {
-        (void)strf::write(dest)("Hello ", "World", "!");
+        (void)strf::ec_write(dest)("Hello ", "World", '!');
     }
     PRINT_BENCHMARK("strf::write(dest) (\"Hello \", \"World\", '!')")
     {
         (void)strf::write(dest)("Hello ", "World", '!');
+    }
+    PRINT_BENCHMARK("strf::write(dest) (\"Hello \", \"World\", \"!\")")
+    {
+        (void)strf::write(dest)("Hello ", "World", "!");
     }
     PRINT_BENCHMARK("strf::write(dest) .as(\"Hello {}!\", \"World\")")
     {
@@ -115,6 +121,19 @@ int main()
 
     std::cout << "\n integers \n";
 
+    PRINT_BENCHMARK_N(10, "strf::ec_write(dest) (25)")
+    {
+        (void)strf::ec_write(dest)(20);
+        (void)strf::ec_write(dest)(21);
+        (void)strf::ec_write(dest)(22);
+        (void)strf::ec_write(dest)(23);
+        (void)strf::ec_write(dest)(24);
+        (void)strf::ec_write(dest)(25);
+        (void)strf::ec_write(dest)(26);
+        (void)strf::ec_write(dest)(27);
+        (void)strf::ec_write(dest)(28);
+        (void)strf::ec_write(dest)(29);
+    }
     PRINT_BENCHMARK_N(10, "strf::write(dest) (25)")
     {
         (void)strf::write(dest)(20);

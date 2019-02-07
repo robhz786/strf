@@ -88,10 +88,6 @@ int main()
     {
         (void)strf::to_string.as("ten = {}, twenty = {}", 10, 20);
     }
-    PRINT_BENCHMARK("strf::to_string .as(\"ten = {}, twenty = {}\", 10, 20)")
-    {
-        (void)strf::to_string.as("ten = {}, twenty = {}", 10, 20);
-    }
     PRINT_BENCHMARK("strf::to_string .reserve(30) .as(\"ten = {}, twenty = {}\", 10, 20)")
     {
         (void)strf::to_string.as("ten = {}, twenty = {}", 10, 20);

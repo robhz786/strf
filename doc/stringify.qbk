@@ -14,12 +14,6 @@
     [source-mode c++]
 ]
 
-[def
-__STD_EXPECTED__
-  [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0323r7.html `std::expected`]
-]
-
-
 [include overview.qbk]
 [include:syntax syntax.qbk]
 [include:special_input_types special_input_types.qbk]

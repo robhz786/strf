@@ -296,23 +296,23 @@ int main()
     //[ ipv6_samples
     xxx::ipv6address addr{{0xaa, 0, 0, 0, 0xbb, 0, 0, 0xcc}};
 
-    auto s = strf::to_string(addr).value();
+    auto s = strf::to_string(addr);
     BOOST_ASSERT(s == "aa:0:0:0:bb:0:0:cc");
 
-    s = strf::to_string(strf::fmt(addr).big()).value();
+    s = strf::to_string(strf::fmt(addr).big());
     BOOST_ASSERT(s == "00aa:0000:0000:0000:00bb:0000:0000:00cc");
 
-    s = strf::to_string(strf::right(addr, 20, U'.').small()) .value();
+    s = strf::to_string(strf::right(addr, 20, U'.').small());
     BOOST_ASSERT(s == ".......aa::bb:0:0:cc");
     //]
 
-    s = strf::to_string(strf::right(addr, 20)).value();
+    s = strf::to_string(strf::right(addr, 20));
     BOOST_ASSERT(s == "  aa:0:0:0:bb:0:0:cc");
 
-    s = strf::to_string(strf::join_right(22, U'.')(strf::left(addr, 20))).value();
+    s = strf::to_string(strf::join_right(22, U'.')(strf::left(addr, 20)));
     BOOST_ASSERT(s == "..aa:0:0:0:bb:0:0:cc  ");
 
-    s = strf::to_string(strf::center(addr, 20)).value();
+    s = strf::to_string(strf::center(addr, 20));
     BOOST_ASSERT(s == " aa:0:0:0:bb:0:0:cc ");
 
     std::vector<xxx::ipv6address> vec =
@@ -323,8 +323,8 @@ int main()
         , {{0, 0, 0, 1, 0, 0}} };
 
     s = strf::to_string
-        ( strf::fmt_range(vec, "\n").small().fill(U'~') > 20, "\n" )
-        .value();
+        ( strf::fmt_range(vec, "\n").small().fill(U'~') > 20
+        , "\n" );
 
     const char* expected_result =
         "~~~~~~~~~~~~~~~~~~::\n"

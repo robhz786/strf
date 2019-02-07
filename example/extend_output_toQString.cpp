@@ -24,15 +24,7 @@ public:
 
     bool recycle() override;
 
-    strf::expected<QString, std::error_code> finish()
-    {
-        if (this->has_error())
-        {
-            return {strf::unexpect_t{}, this->get_error()};
-        }
-        recycle();
-        return {boost::stringify::v0::in_place_t{}, std::move(_str)};
-    }
+    QString finish();
 
 private:
 
@@ -51,12 +43,23 @@ bool QStringCreator::recycle()
     return true;
 }
 
+QString QStringCreator::finish()
+{
+    if (this->has_error())
+    {
+        throw strf::stringify_error(this->get_error());
+    }
+
+    recycle();
+    return std::move(_str);
+}
+
 constexpr auto toQString = strf::make_destination<QStringCreator>();
 
 int main()
 {
     int x = 255;
-    QString str = toQString(x, u" in hexadecimal is ", ~strf::hex(x)).value();
+    QString str = toQString(x, u" in hexadecimal is ", ~strf::hex(x));
     BOOST_ASSERT(str == "255 in hexadecimal is 0xff");
 
     return 0;

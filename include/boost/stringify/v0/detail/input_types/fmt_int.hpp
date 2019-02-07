@@ -242,7 +242,18 @@ void fmt_int_printer<CharT>::_init(stringify::v0::int_with_format<IntT> value)
     _precision = value.precision();
 
     int complement_width;
+
+#if defined(_MSC_VER)
+#pragma warning ( push )
+#pragma warning ( disable : 4127 )
+#endif // defined(_MSC_VER)
+
     BOOST_STRINGIFY_IF_CONSTEXPR (Base == 10)
+
+#if defined(_MSC_VER)
+#pragma warning ( pop )
+#endif // defined(_MSC_VER)
+
     {
         if (value.value().value < 0)
         {

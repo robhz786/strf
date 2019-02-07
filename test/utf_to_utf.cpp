@@ -299,7 +299,7 @@ template <typename StrType, typename CharIn = typename StrType::value_type>
 std::string stringify_invalid_char_sequence(const StrType& seq)
 {
     std::vector<unsigned> vec(seq.begin(), seq.end());
-    return strf::to_string(' ', ~strf::fmt_range(vec, " ").hex()).value();
+    return strf::to_string(' ', ~strf::fmt_range(vec, " ").hex());
 }
 
 template <typename ChIn, typename ChOut>

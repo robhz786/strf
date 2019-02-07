@@ -49,8 +49,7 @@ void basic_sample()
 //[ ipv4_basic_sample
     xxx::ipv4address addr {{146, 20, 110, 251}};
     auto s = strf::to_string("The IP address of boost.org is ", addr);
-    BOOST_TEST(s);
-    BOOST_TEST(s.value() == "The IP address of boost.org is 146.20.110.251");
+    BOOST_TEST(s == "The IP address of boost.org is 146.20.110.251");
 //]
 }
 
@@ -97,7 +96,7 @@ void sample_fmt_sample()
 //[formatted_ipv4address
     xxx::ipv4address addr {{146, 20, 110, 251}};
 
-    auto s = strf::to_string("boost.org: ", strf::right(addr, 20, U'.')) .value();
+    auto s = strf::to_string("boost.org: ", strf::right(addr, 20, U'.'));
     BOOST_ASSERT(s == "boost.org: ......146.20.110.251");
 //]
 
@@ -106,10 +105,10 @@ void sample_fmt_sample()
     std::vector<xxx::ipv4address> vec = { {{127, 0, 0, 1}}
                                         , {{146, 20, 110, 251}}
                                         , {{110, 110, 110, 110}} };
-    auto s2 = strf::to_string("[", strf::fmt_range(vec, " ;") > 16, "]").value();
+    auto s2 = strf::to_string("[", strf::fmt_range(vec, " ;") > 16, "]");
     BOOST_ASSERT(s2 == "[       127.0.0.1 ;  146.20.110.251 ; 110.110.110.110]");
 //]
-    // auto s3 = strf::to_string("[", strf::range(vec, " ; "), "]").value();
+    // auto s3 = strf::to_string("[", strf::range(vec, " ; "), "]");
     // BOOST_ASSERT(s3 == "[127.0.0.1 ; 146.20.110.251 ; 110.110.110.110]");
 }
 

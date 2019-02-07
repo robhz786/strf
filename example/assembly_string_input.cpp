@@ -13,7 +13,7 @@ void sample()
         , strf::as("( {} {} )")("bbb", "ccc")
         , "ddd" );
 
-    BOOST_ASSERT(result.value() == "aaa --- ( bbb ccc ) --- ddd");
+    BOOST_ASSERT(result == "aaa --- ( bbb ccc ) --- ddd");
     //]
 }
 

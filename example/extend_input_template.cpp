@@ -44,7 +44,7 @@ struct derived: xxx::base<T>
 int main()
 {
     yyy::derived<int> b{55};
-    auto s = strf::to_string(b).value();
+    auto s = strf::to_string(b);
     BOOST_ASSERT(s == "55");
 
     return 0;

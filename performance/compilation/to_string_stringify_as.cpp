@@ -13,8 +13,7 @@ void FUNCTION_NAME (std::string& out)
         , +strf::fmt(arg_a2) > 5
         , ~strf::oct(arg_a3) > 6
         , strf::hex(arg_a4)
-        , arg_a5 )
-        .value();
+        , arg_a5 );
 
     out += strf::to_string .as
         ( "blah blah {} {}{} {} {} blah {} {} {}\n" )
@@ -25,8 +24,7 @@ void FUNCTION_NAME (std::string& out)
         , +strf::fmt(arg_b4) > 5
         , ~strf::oct(arg_b5) > 6
         , strf::hex(arg_b6)
-        , arg_b7)
-        .value();
+        , arg_b7);
 
     out += strf::to_string .as
         ( "blah blah {} {} {} {} {} {} {} {}\n" )

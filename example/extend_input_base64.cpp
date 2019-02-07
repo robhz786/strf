@@ -386,7 +386,7 @@ void tests()
     auto data_size = strlen(data);
 
     {
-        auto result = strf::to_string(xxx::base64(data, data_size)) .value();
+        auto result = strf::to_string(xxx::base64(data, data_size)) ;
         BOOST_TEST(result == "VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYXp5IGRvZy4=\r\n");
     }
 
@@ -394,8 +394,7 @@ void tests()
         // customizing line length, end of line and identation
         auto result = strf::to_string
             .facets(xxx::base64_facet{50, {'\n', '\0'}})
-            (xxx::base64(data, data_size).indentation(4))
-            .value();
+            (xxx::base64(data, data_size).indentation(4));
 
         auto expected =
             "    VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYX\n"
@@ -407,8 +406,7 @@ void tests()
         // When the length of last line is exactly as base64_facet::line_length,
         auto result = strf::to_string
             .facets(xxx::base64_facet{30})
-            (xxx::base64(data, data_size).indentation(4))
-            .value();
+            (xxx::base64(data, data_size).indentation(4));
 
         auto expected =
             "    VGhlIHF1aWNrIGJyb3duIGZveCBqdW\r\n"
@@ -420,8 +418,7 @@ void tests()
         // When base64_facet::line_length == 1
         auto result = strf::to_string
             .facets(xxx::base64_facet{1, {'\n', '\0'}})
-            (xxx::base64("  >  ?", 6).indentation(2))
-            .value();
+            (xxx::base64("  >  ?", 6).indentation(2));
 
         BOOST_TEST(result == "  I\n  C\n  A\n  +\n  I\n  C\n  A\n  /\n");
     }
@@ -429,22 +426,22 @@ void tests()
         // When base64_facet::line_length == 3
         auto result = strf::to_string
             .facets(xxx::base64_facet{3, {'\n', '\0'}})
-            (xxx::base64("  >  ?", 6).indentation(2))
-            .value();
+            (xxx::base64("  >  ?", 6).indentation(2));
+
         BOOST_TEST(result == "  ICA\n  +IC\n  A/\n");
     }
     {
         // When base64_facet::line_length == 4
         auto result = strf::to_string
             .facets(xxx::base64_facet{4, {'\n', '\0'}})
-            (xxx::base64("  >  ?", 6).indentation(2))
-            .value();
+            (xxx::base64("  >  ?", 6).indentation(2));
+
         BOOST_TEST(result == "  ICA+\n  ICA/\n");
     }
     {
         // The default character for index 62 is '+'
         // and for index 63 is '/'
-        auto result = strf::to_string(xxx::base64("  >  ?", 6)).value();
+        auto result = strf::to_string(xxx::base64("  >  ?", 6));
         BOOST_TEST(result == "ICA+ICA/\r\n");
     }
 
@@ -452,8 +449,8 @@ void tests()
         // customizing characters for index 62 and 63
         auto result = strf::to_string
             .facets(xxx::base64_facet{50, {'\r', '\n'}, '-', '_'})
-            (xxx::base64("  >  ?", 6))
-            .value();
+            (xxx::base64("  >  ?", 6));
+
         BOOST_TEST(result == "ICA-ICA_\r\n");
     }
 
@@ -462,8 +459,7 @@ void tests()
         // then the result has no end of line
         auto result = strf::to_string
             .facets(xxx::base64_facet{0, {'\r', '\n'}})
-            (xxx::base64("  >  ?", 6))
-            .value();
+            (xxx::base64("  >  ?", 6));
 
         BOOST_TEST(result == "ICA+ICA/");
     }
@@ -472,16 +468,16 @@ void tests()
         // then the result has no end of line
         auto result = strf::to_string
             .facets(xxx::base64_facet{50, {'\0', '\n'}, '-', '_'})
-            (xxx::base64("  >  ?", 6))
-            .value();
+            (xxx::base64("  >  ?", 6));
+
         BOOST_TEST(result == "ICA-ICA_");
     }
     {
         // test indentation on single line mode
         auto result = strf::to_string
             .facets(xxx::base64_facet{0})
-            (xxx::base64("  >  ?", 6).indentation(4))
-            .value();
+            (xxx::base64("  >  ?", 6).indentation(4));
+
         BOOST_TEST(result == "    ICA+ICA/");
     }
     {
@@ -497,8 +493,7 @@ void tests()
 
         auto result = strf::to_string
             .facets(xxx::base64_facet{50, {'\n', '\0'}})
-            (strf::fmt_range(vec, "------------\n").indentation(4))
-            .value();
+            (strf::fmt_range(vec, "------------\n").indentation(4));
 
         auto expected =
             "    YWJj\n"
@@ -520,8 +515,7 @@ void sample()
 
     auto obtained = strf::to_string
         .facets(xxx::base64_facet{50, {'\n', '\0'}})
-        ( xxx::base64(msg, strlen(msg)).indentation(4) )
-        .value();
+        ( xxx::base64(msg, strlen(msg)).indentation(4) );
 
     auto expected =
         "    VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYX\n"

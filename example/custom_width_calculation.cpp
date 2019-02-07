@@ -29,9 +29,9 @@ int main()
     auto s_cpc = strf::to_string.facets(width_as_cpc) (strf::right(str, 12, U'.'));
     auto s_my  = strf::to_string.facets(width_my)     (strf::right(str, 12, U'.'));
 
-    BOOST_ASSERT(s_len.value() == u8"...\u2E3A\u2E3A\u2014");       // width == strlen(str) == 9
-    BOOST_ASSERT(s_cpc.value() == u8".........\u2E3A\u2E3A\u2014"); // width == 3
-    BOOST_ASSERT(s_my.value()  == u8"..\u2E3A\u2E3A\u2014");        // width == 4 + 4 + 2 == 10
+    BOOST_ASSERT(s_len == u8"...\u2E3A\u2E3A\u2014");       // width == strlen(str) == 9
+    BOOST_ASSERT(s_cpc == u8".........\u2E3A\u2E3A\u2014"); // width == 3
+    BOOST_ASSERT(s_my  == u8"..\u2E3A\u2E3A\u2014");        // width == 4 + 4 + 2 == 10
 
     // in UTF-16
 
@@ -41,9 +41,9 @@ int main()
     auto s16_cpc = strf::to_u16string.facets(width_as_cpc) (strf::right(str16, 12, U'.'));
     auto s16_my  = strf::to_u16string.facets(width_my)     (strf::right(str16, 12, U'.'));
 
-    BOOST_ASSERT(s16_len.value() == u".........\u2E3A\u2E3A\u2014"); // width == 3
-    BOOST_ASSERT(s16_cpc.value() == u".........\u2E3A\u2E3A\u2014"); // width == 3
-    BOOST_ASSERT(s16_my.value()  == u"..\u2E3A\u2E3A\u2014");        // width == 4 + 4 + 2 == 10
+    BOOST_ASSERT(s16_len == u".........\u2E3A\u2E3A\u2014"); // width == 3
+    BOOST_ASSERT(s16_cpc == u".........\u2E3A\u2E3A\u2014"); // width == 3
+    BOOST_ASSERT(s16_my  == u"..\u2E3A\u2E3A\u2014");        // width == 4 + 4 + 2 == 10
 
     return 0;
 }

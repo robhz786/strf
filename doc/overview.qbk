@@ -17,17 +17,9 @@ preserving backwards compatibility.
 
 [section A tour of the library]
 
-
 Most of the code snippets in this documentation use [link output_types `to_string`].
 Not the std::to_string from the standard library, but one that you can think
-as a generalization.
-A notable difference is that this `to_string` can take multiple arguments.
-Another is that it returns `expected<std::string, std::error_code>` instead of
-simply `std::string`. This is also not the same __STD_EXPECTED__ that's under
-a proposal to the standard, but it is very close to, and it will eventually be
-replaced by it in future releases. Or perhaps by Boost.Outcome, or perhaps by
-another approach. Error handling is very prone to debate, you know.
-
+as a generalization with variadic arguments.
 For example:
 
 [first_example]
@@ -47,13 +39,13 @@ There is no format string like in `printf`,
 or [@http://fmtlib.net {fmt}].
 But in case you need to use a translation tool like
 [@https://en.wikipedia.org/wiki/Gettext gettext],
-the library provides an alternative syntax with 
+the library provides an alternative syntax with
 what is called here as the [link assembly_string assembly string],
-which is like these format strings, but without any formatting.
+which is like format string, but without any formatting.
 ``
 auto s = strf::to_string.as("{} in hexadecimal is {}") (x, strf::hex(x));
 ``
-Now can you see another difference of `to_string`: it is not a function
+Now can you see that `to_string` is not a function
 like `std::to_string`, but a function object ( actually it's a constexpr ).
 It has member functions that are invoked as in the
 [@https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Named_Parameter
@@ -61,7 +53,7 @@ named parameter idiom].
 One of these functions has remarkable purpose: to receive
 [link facets facet objects].
 These are not the same as the facets handled by `std::locale`,
-though they are, again, analogous.
+but they are analogous.
 Keep in mind that this is a locale-independent library.
 So things are always printed as in the C-locale, unless
 you explicitly specify otherwise, which you do with facets.
@@ -78,7 +70,7 @@ But others character sets are available:
 
 [numpuct__with_alternative_encoding]
 
-It is also possible to specify the character of each input
+It is also possible to specify the encoding of each input
 string individually:
 
 [input_string_encoding]
@@ -102,7 +94,7 @@ The second possible handling is to omit the invalid sequence,
 and the third is to return an error code. You can also choose
 whether surrogates are treated as errors or not.
 
-Another cool thing you can do here is to print ranges:
+Another cool thing you can do is to print ranges:
 
 [input_range]
 
@@ -117,7 +109,7 @@ like the width calculation method, and encoding error handling.
 ]
 
 
-Also, this library is not limited to `to_string`. You can, for instance,
+Of course, this library is not limited to `to_string`. You can, for instance,
 append to string, instead of creating one. Or, to write to a `FILE*`,
 or to a `std::streambuf&`, or to a `char*`, or to your own output type.
 All you need is to replace the `to_string` expression ( which is
@@ -234,9 +226,17 @@ you may first want to see more reasons of why to choose it over others.
 
 [
   [Fits in your error handling policy]
-  [ Some code bases use error code, while others use exceptions.
-    Boost.Stringify uses ( an own implementation of ) __STD_EXPECTED__ to
-    suit both worlds. Also, the user can customise how the library handles
+  [
+    Some code bases use error codes, while others use exceptions.
+    To suits both worlds, the library provides [link output_types
+    /leading expressions/] that use error codes ( and
+    are prefixed with "`ec_`") and others that use exceptions.
+
+    [/ To suits both worlds, part of the [link output_types
+    /leading expressions/] is based on error code, and
+    the other part is based on exceptions.]
+
+    Also, the user can customise how the library handles
     [link encoding_policy encoding errors] and
     [link asm_string_error assembly string errors].
   ]
@@ -245,10 +245,10 @@ you may first want to see more reasons of why to choose it over others.
 
 [ [Internationalization]
   [ It is not because this is a locale-independent library that
-    you cannot use numeric punctuation. You can do this with [link
-    numpunct facets]. And actually, it's a good thing that
-    you don't need to change the global locale to achieve that.    
-    
+    you cannot customize numeric punctuation, since you can do that
+    with [link numpunct facets]. And it is actually a good thing
+    that don't need to change the global locale to achieve that.
+
     Also, Boost.Stringify is probably the most suitable library to be used
     with translation tools like [@https://en.wikipedia.org/wiki/Gettext gettext]
     , for the following reasons:
@@ -258,7 +258,7 @@ you may first want to see more reasons of why to choose it over others.
     [ [Assembly string translation hints]
       [ [/Usually it is not the programmer who do the translations.]
         The [link assembly_string assembly string syntax] allows you to
-        insert comments intended to help the person who translates it.        
+        insert comments intended to help the person who translates it.
       ]
     ]
 
@@ -284,11 +284,11 @@ you may first want to see more reasons of why to choose it over others.
         adequate solution. A run-time error is only acceptable
         when it's not the program's fault; otherwise it's a bug.
         Format functions, on the other hand, always give you a compilation error.
-    
+
         It's true that mistakes can also happen in the [link assembly_string
         assembly string], but the probability is much lower.
         Besides, you can [link asm_string_error customize how such errors are handled].
-[/        
+[/
         Besides, a future version of the library will enable you to customise the
         error handling there just [link encoding_error as in encoding conversion].
         So that you can choose one that makes it easier to identify such bugs.
@@ -302,9 +302,6 @@ you may first want to see more reasons of why to choose it over others.
   ]
   [[br]]
 ]
-
-
-
 
 
 [

@@ -87,9 +87,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_END;
 #if __has_cpp_attribute(nodiscard)
 #define BOOST_STRINGIFY_HAS_NODISCARD
 #endif //__has_cpp_attribute(nodiscard)
-#endif // defined(__has_cpp_attribute) 
-
-// #endif // __cplusplus >= 201703L || ( defined(_MSV_VER) && defined(_HAS_CXX17))
+#endif // defined(__has_cpp_attribute)
 
 #ifndef BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
 #define BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS inline
@@ -101,26 +99,11 @@ BOOST_STRINGIFY_V0_NAMESPACE_END;
 #define BOOST_STRINGIFY_NODISCARD
 #endif //defined(BOOST_STRINGIFY_HAS_NODISCARD)
 
-
 #if defined(__cpp_if_constexpr)
 #define BOOST_STRINGIFY_IF_CONSTEXPR if constexpr
 #else
 #define BOOST_STRINGIFY_IF_CONSTEXPR if
 #endif
-
-
-
-// BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
-// namespace detail
-// {
-
-// constexpr std::integral_constant<bool, sizeof(wchar_t) == 2> wchar_is_16 {};
-// constexpr std::integral_constant<bool, sizeof(wchar_t) == 4> wchar_is_32 {};
-// using wchar_equivalent =
-//     typename std::conditional<sizeof(wchar_t) == 4, char32_t, char16_t>::type;
-
-// }
-// BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif  // BOOST_STRINGIFY_V0_CONFIG_HPP
 

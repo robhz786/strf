@@ -18,7 +18,7 @@ As shown in the diagram, the assembly string is optional. When not used, the arg
 
 [h4 Assembly string syntax]
 
-[table 
+[table
 [[A `'{'` followed by]  [until]                           [means]]
 [[`'-'`]                [the next `'}'` or end of string] [a comment]]
 [[a digit]              [the next `'}'` or end of string] [a positional argument reference]]

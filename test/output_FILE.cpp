@@ -73,19 +73,210 @@ std::basic_string<CharT> read_file(const char* filename)
 
 
 template <typename CharT>
-void basic_test__narrow()
+void ec_basic_test__narrow()
 {
     std::size_t result_length = 1000;
     std::basic_string<CharT> expected(50, CharT{'*'});
     std::basic_string<CharT> result;
-    strf::expected<void, std::error_code> x;
+    std::FILE* file = nullptr;
+    std::error_code ec;
+
+    try
+    {
+        file = std::tmpfile();
+        ec = strf::ec_write<CharT>(file, &result_length)(strf::multi(CharT{'*'}, 50));
+        std::fflush(file);
+        std::rewind(file);
+        result = read_file<CharT>(file);
+    }
+    catch(...)
+    {
+    }
+    if(file != nullptr)
+    {
+        std::fclose(file);
+    }
+
+    BOOST_TEST(ec == std::error_code{});
+    BOOST_TEST(expected.length() == result_length);
+    BOOST_TEST(expected == result);
+}
+
+
+template <typename CharT>
+void ec_error_code_test__narrow()
+{
+    std::size_t result_length = 1000;
+    std::basic_string<CharT> expected;
+    expected.push_back('a');
+    expected.push_back('b');
+    expected.push_back('c');
+
+    std::basic_string<CharT> result;
+    std::error_code ec;
     std::FILE* file = nullptr;
 
     try
     {
         file = std::tmpfile();
-        x = strf::write<CharT>(file, &result_length)(strf::multi(CharT{'*'}, 50));
+        ec = strf::ec_write<CharT>(file, &result_length)
+            ( CharT{'a'}, CharT{'b'}, CharT{'c'}
+            , error_code_emitter_arg
+            , CharT{'x'}, CharT{'y'}, CharT{'z'} );
 
+        std::fflush(file);
+        std::rewind(file);
+        result = read_file<CharT>(file);
+    }
+    catch(...)
+    {
+    }
+    if(file != nullptr)
+    {
+        std::fclose(file);
+    }
+
+    BOOST_TEST(ec == std::errc::invalid_argument);
+    BOOST_TEST(expected.length() == result_length);
+    BOOST_TEST(expected == result);
+}
+
+
+template <typename CharT>
+void ec_exception_thrown_test__narrow()
+{
+    std::size_t result_length = 1000;
+    std::basic_string<CharT> expected;
+    expected.push_back('a');
+    expected.push_back('b');
+    expected.push_back('c');
+
+    std::basic_string<CharT> result;
+    if(std::FILE* file = std::tmpfile())
+    {
+        try
+        {
+            (void) strf::ec_write<CharT>(file, &result_length)
+                ( CharT{'a'}, CharT{'b'}, CharT{'c'}
+                , exception_thrower_arg
+                , CharT{'x'}, CharT{'y'}, CharT{'z'} );
+
+        }
+        catch(...)
+        {
+        }
+        std::fflush(file);
+        std::rewind(file);
+        result = read_file<CharT>(file);
+        std::fclose(file);
+    }
+    BOOST_TEST(expected.length() == result_length);
+    BOOST_TEST(expected == result);
+}
+
+void ec_basic_test__wide()
+{
+    std::size_t result_length = 1000;
+    std::wstring expected = L"abcdyyyyz";
+    std::wstring result;
+    std::FILE* file = nullptr;
+    std::error_code ec;
+
+    try
+    {
+        file = std::tmpfile();
+        ec = strf::ec_wwrite(file, &result_length)
+            (L"abcd", strf::multi(L'x', 0), strf::multi(L'y', 4), L'z');
+        std::fflush(file);
+        std::rewind(file);
+        result = read_wfile(file);
+    }
+    catch(...)
+    {
+    }
+    if(file != nullptr)
+    {
+        std::fclose(file);
+    }
+
+    BOOST_TEST(ec == std::error_code{});
+    BOOST_TEST(expected.length() == result_length);
+    BOOST_TEST(expected == result);
+}
+
+
+void ec_error_code_test__wide()
+{
+    std::size_t result_length = 1000;
+    std::wstring expected = L"abc";
+    std::wstring result;
+    std::error_code ec;
+    std::FILE* file = nullptr;
+
+    try
+    {
+        file = std::tmpfile();
+        ec = strf::ec_wwrite(file, &result_length)
+            (L"abc", error_code_emitter_arg, L"xyz");
+        std::fflush(file);
+        std::rewind(file);
+        result = read_wfile(file);
+    }
+    catch(...)
+    {
+    }
+    if(file != nullptr)
+    {
+        std::fclose(file);
+    }
+
+    BOOST_TEST(ec == std::errc::invalid_argument);
+    BOOST_TEST(expected.length() == result_length);
+    BOOST_TEST(expected == result);
+}
+
+void ec_exception_thrown_test__wide()
+{
+    std::size_t result_length = 1000;
+    std::wstring expected = L"abc";
+    std::wstring result;
+    if (std::FILE* file = std::tmpfile())
+    {
+        try
+        {
+            (void)strf::ec_wwrite(file, &result_length)
+                (L"abc", exception_thrower_arg, L"xyz");
+
+        }
+        catch(...)
+        {
+        }
+        std::fflush(file);
+        std::rewind(file);
+        result = read_wfile(file);
+    }
+    BOOST_TEST(expected.length() == result_length);
+    BOOST_TEST(expected == result);
+}
+
+
+
+#if ! defined(BOOST_NO_EXCEPTION)
+
+template <typename CharT>
+void basic_test__narrow()
+{
+    std::size_t result_length = 1000;
+    std::basic_string<CharT> expected(50, CharT{'*'});
+    std::basic_string<CharT> result;
+    std::FILE* file = nullptr;
+
+    try
+    {
+        file = std::tmpfile();
+        strf::write<CharT>(file, &result_length)(strf::multi(CharT{'*'}, 50));
+
+        std::fflush(file);
         std::rewind(file);
         result = read_file<CharT>(file);
     }
@@ -98,7 +289,6 @@ void basic_test__narrow()
         std::fclose(file);
     }
 
-    BOOST_TEST(x);
     BOOST_TEST(expected.length() == result_length);
     BOOST_TEST(expected == result);
 }
@@ -114,32 +304,37 @@ void error_code_test__narrow()
     expected.push_back('c');
 
     std::basic_string<CharT> result;
-    strf::expected<void, std::error_code> x;
     std::FILE* file = nullptr;
+    std::error_code ec;
 
     try
     {
         file = std::tmpfile();
-        x = strf::write<CharT>(file, &result_length)
-            ( CharT{'a'}, CharT{'b'}, CharT{'c'}
-            , error_code_emitter_arg
-            , CharT{'x'}, CharT{'y'}, CharT{'z'} );
-
+        try
+        {
+            strf::write<CharT>(file, &result_length)
+                ( CharT{'a'}, CharT{'b'}, CharT{'c'}
+                , error_code_emitter_arg
+                , CharT{'x'}, CharT{'y'}, CharT{'z'} );
+        }
+        catch(strf::stringify_error& x)
+        {
+            ec = x.code();
+        }
+        std::fflush(file);
         std::rewind(file);
         result = read_file<CharT>(file);
     }
     catch(...)
     {
     }
-
     if(file != nullptr)
     {
         std::fclose(file);
     }
 
-    BOOST_TEST(!x);
-    BOOST_TEST(x.error() == std::errc::invalid_argument);
-    BOOST_TEST(expected.length() == result_length);
+    BOOST_TEST(ec == std::errc::invalid_argument);
+    BOOST_TEST(result.length() == result_length);
     BOOST_TEST(expected == result);
 }
 
@@ -158,7 +353,7 @@ void exception_thrown_test__narrow()
     {
         try
         {
-            (void) strf::write<CharT>(file, &result_length)
+            strf::write<CharT>(file, &result_length)
                 ( CharT{'a'}, CharT{'b'}, CharT{'c'}
                 , exception_thrower_arg
                 , CharT{'x'}, CharT{'y'}, CharT{'z'} );
@@ -167,6 +362,7 @@ void exception_thrown_test__narrow()
         catch(...)
         {
         }
+        std::fflush(file);
         std::rewind(file);
         result = read_file<CharT>(file);
         std::fclose(file);
@@ -181,16 +377,21 @@ void basic_test__wide()
     std::size_t result_length = 1000;
     std::wstring expected = L"abcdyyyyz";
     std::wstring result;
-    strf::expected<void, std::error_code> x;
+    std::error_code ec;
     std::FILE* file = nullptr;
 
     try
     {
         file = std::tmpfile();
-        x = strf::wwrite(file, &result_length)
+        strf::wwrite(file, &result_length)
             (L"abcd", strf::multi(L'x', 0), strf::multi(L'y', 4), L'z');
+        std::fflush(file);
         std::rewind(file);
         result = read_wfile(file);
+    }
+    catch(strf::stringify_error& x)
+    {
+        ec = x.code();
     }
     catch(...)
     {
@@ -201,7 +402,7 @@ void basic_test__wide()
         std::fclose(file);
     }
 
-    BOOST_TEST(x);
+    BOOST_TEST(ec == std::error_code{});
     BOOST_TEST(expected.length() == result_length);
     BOOST_TEST(expected == result);
 }
@@ -212,14 +413,23 @@ void error_code_test__wide()
     std::size_t result_length = 1000;
     std::wstring expected = L"abc";
     std::wstring result;
-    strf::expected<void, std::error_code> x;
+    std::error_code ec;
     std::FILE* file = nullptr;
 
     try
     {
         file = std::tmpfile();
-        x = strf::wwrite(file, &result_length)(L"abc", error_code_emitter_arg, L"xyz");
+        try
+        {
+            strf::wwrite(file, &result_length)
+                (L"abc", error_code_emitter_arg, L"xyz");
+        }
+        catch(strf::stringify_error& x)
+        {
+            ec = x.code();
+        }
 
+        std::fflush(file);
         std::rewind(file);
         result = read_wfile(file);
     }
@@ -232,9 +442,8 @@ void error_code_test__wide()
         std::fclose(file);
     }
 
-    BOOST_TEST(!x);
-    BOOST_TEST(x.error() == std::errc::invalid_argument);
-    BOOST_TEST(expected.length() == result_length);
+    BOOST_TEST(ec == std::errc::invalid_argument);
+    BOOST_TEST(result.length() == result_length);
     BOOST_TEST(expected == result);
 }
 
@@ -247,13 +456,14 @@ void exception_thrown_test__wide()
     {
         try
         {
-            (void)strf::wwrite(file, &result_length)
+            strf::wwrite(file, &result_length)
                 (L"abc", exception_thrower_arg, L"xyz");
 
         }
         catch(...)
         {
         }
+        std::fflush(file);
         std::rewind(file);
         result = read_wfile(file);
     }
@@ -261,10 +471,13 @@ void exception_thrown_test__wide()
     BOOST_TEST(expected == result);
 }
 
-
+#endif // ! defined(BOOST_NO_EXCEPTION)
 
 int main()
 {
+
+#if ! defined(BOOST_NO_EXCEPTION)
+
     basic_test__narrow<char>();
     basic_test__narrow<char16_t>();
     basic_test__narrow<char32_t>();
@@ -282,6 +495,8 @@ int main()
     exception_thrown_test__narrow<char32_t>();
     exception_thrown_test__narrow<wchar_t>();
     exception_thrown_test__wide();
+
+#endif // ! defined(BOOST_NO_EXCEPTION)
 
     return report_errors() || boost::report_errors();
 }

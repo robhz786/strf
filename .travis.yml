@@ -177,6 +177,7 @@ install:
   - git submodule init libs/config
   - git submodule init libs/core
   - git submodule init libs/detail
+  - git submodule init libs/hana            # required in test/utf_to_utf.cpp
   - git submodule init libs/optional
   - git submodule init libs/utility         # boost::string_view
   - git submodule init libs/exception       # required by boost::string_view

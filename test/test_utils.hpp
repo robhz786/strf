@@ -109,7 +109,7 @@ public:
 
     bool recycle() override;
 
-    boost::stringify::v0::expected<void, std::error_code> finish();
+    void finish();
 
     void reserve(std::size_t size);
 
@@ -161,8 +161,7 @@ bool input_tester<CharOut>::recycle()
 }
 
 template <typename CharOut>
-boost::stringify::v0::expected<void, std::error_code>
-input_tester<CharOut>::finish()
+void input_tester<CharOut>::finish()
 {
     _result.resize(this->pos() - &*_result.begin());
 
@@ -200,12 +199,6 @@ input_tester<CharOut>::finish()
         print("Expected error_code: ", _expected_error.message());
         print("Obtained error_code: ", this->get_error().message());
     }
-
-    if (this->has_error())
-    {
-        return {boost::stringify::v0::unexpect_t{}, std::error_code{}};
-    }
-    return {};
 }
 
 template <typename CharOut>
@@ -262,19 +255,19 @@ auto make_tester
 }
 
 #define TEST(EXPECTED)                                  \
-    (void) make_tester((EXPECTED), __FILE__, __LINE__)  \
+    make_tester((EXPECTED), __FILE__, __LINE__)  \
     .reserve_calc()
 
 #define TEST_RF(EXPECTED, RF)                                 \
-    (void) make_tester((EXPECTED), __FILE__, __LINE__, (RF))  \
+    make_tester((EXPECTED), __FILE__, __LINE__, (RF))  \
     .reserve_calc()
 
 #define TEST_ERR(EXPECTED, ERR)                                 \
-    (void) make_tester((EXPECTED), __FILE__, __LINE__, (ERR)  ) \
+    make_tester((EXPECTED), __FILE__, __LINE__, (ERR)  ) \
     .reserve_calc()
 
 #define TEST_ERR_RF(EXPECTED, ERR, RF)                              \
-    (void) make_tester((EXPECTED), __FILE__, __LINE__, (ERR), (RF)) \
+    make_tester((EXPECTED), __FILE__, __LINE__, (ERR), (RF)) \
     .reserve_calc()
 
 #endif

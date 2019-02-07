@@ -15,14 +15,14 @@ void reserve()
 
     // by the way, note that in order to avoid repetition
     // you can store part of the syntax in a variable:
-    auto append_to_str = strf::append(str.value()).no_reserve();
+    auto append_to_str = strf::append(str).no_reserve();
 
     (void) append_to_str("_bleh", "_bleh");
     (void) append_to_str.as("--{}--{}--", "blih", "blih");
     (void) append_to_str("bloh", "bloh");
     (void) append_to_str.reserve_calc()("bluh", "bluh");
 
-    BOOST_ASSERT(str.value() == "blahblah_bleh_bleh--blih--blih--blohblohbluhbluh");
+    BOOST_ASSERT(str == "blahblah_bleh_bleh--blih--blih--blohblohbluhbluh");
     //]
 }
 

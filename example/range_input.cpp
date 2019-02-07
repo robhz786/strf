@@ -14,7 +14,7 @@ void sample()
 
     auto str = strf::to_string("[", strf::range(array, ", "), "]");
 
-    BOOST_ASSERT(str.value() == "[11, 22, 33]");
+    BOOST_ASSERT(str == "[11, 22, 33]");
     //]
 }
 
@@ -28,7 +28,7 @@ void sample2()
 
     auto str = strf::to_string("[", ~strf::hex(strf::range(array, ", ")), "]");
 
-    BOOST_ASSERT(str.value() == "[0xfa, 0xfb, 0xfc]");
+    BOOST_ASSERT(str == "[0xfa, 0xfb, 0xfc]");
     //]
 }
 
@@ -41,7 +41,7 @@ void sample3()
 
     auto str = strf::to_string("[", +strf::fmt_range(array, " ;") > 4, "]");
 
-    BOOST_ASSERT(str.value() == "[ +11 ; +22 ; +33]");
+    BOOST_ASSERT(str == "[ +11 ; +22 ; +33]");
     //]
 }
 

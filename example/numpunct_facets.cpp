@@ -14,13 +14,13 @@ void sample1()
         constexpr int base = 10;
         auto punct = strf::str_grouping<base>{"\4\3\2"};
         auto str = strf::to_string.facets(punct)(100000000000ll);
-        BOOST_ASSERT(str.value() == "1,00,00,000,0000");
+        BOOST_ASSERT(str == "1,00,00,000,0000");
     }
 
     {
         auto punct = strf::str_grouping<10>{std::string{"\3\2\0", 3}};
         auto str = strf::to_string.facets(punct)(100000000000ll);
-        BOOST_ASSERT(str.value() == "1000000,00,000");
+        BOOST_ASSERT(str == "1000000,00,000");
     }
     //]
 }
@@ -41,7 +41,7 @@ void sample2()
         , strf::hex(value), " / "
         , strf::oct(value) );
 
-    BOOST_ASSERT(str.value() == "68.719.476.735 / f'ffff'ffff / 777777:777777");
+    BOOST_ASSERT(str == "68.719.476.735 / f'ffff'ffff / 777777:777777");
     //]
 }
 

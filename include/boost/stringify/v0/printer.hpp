@@ -6,7 +6,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <system_error>
-#include <boost/stringify/v0/expected.hpp>
 #include <boost/stringify/v0/detail/facets/encoding.hpp>
 #include <boost/assert.hpp>
 
@@ -177,6 +176,7 @@ bool transcode
         if (res == stringify::v0::cv_result::invalid_char)
         {
             ob.set_encoding_error();
+            ob.recycle();
             return false;
         }
     } while(ob.recycle());
@@ -204,7 +204,7 @@ bool decode_encode
                                               , err_hdl, allow_surr );
         if (res1 == stringify::v0::cv_result::invalid_char)
         {
-            ob.set_error(std::make_error_code(std::errc::result_out_of_range));
+            ob.set_error(std::errc::result_out_of_range);
             return false;
         }
         auto pos = ob.pos();
@@ -228,6 +228,7 @@ bool decode_encode
         if (res2 == stringify::v0::cv_result::invalid_char)
         {
             ob.set_encoding_error();
+            ob.recycle();
             return false;
         }
     } while (res1 == stringify::v0::cv_result::insufficient_space);
@@ -368,13 +369,14 @@ bool do_write_fill
             ob.advance_to(pos);
             return true;
         }
+        ob.advance_to(pos);
         if (res == stringify::v0::cv_result::invalid_char)
         {
             ob.set_encoding_error();
+            ob.recycle();
             return false;
         }
         BOOST_ASSERT(res == stringify::v0::cv_result::insufficient_space);
-        ob.advance_to(pos);
     } while (ob.recycle());
     return false;
 }
