@@ -35,6 +35,5 @@ void FUNCTION_NAME (std::string& out)
         , arg_c4
         , ~strf::oct(arg_c5) > 6
         , strf::hex(arg_c6)
-        , arg_c7 )
-        . value();
+        , arg_c7 );
 }

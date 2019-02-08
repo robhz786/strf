@@ -662,6 +662,8 @@ class BOOST_STRINGIFY_NODISCARD nodiscard_error_code: public std::error_code
 public:
     using std::error_code::error_code;
 
+    nodiscard_error_code() = default;
+
     nodiscard_error_code(const std::error_code& ec) noexcept
         : std::error_code(ec)
     {
