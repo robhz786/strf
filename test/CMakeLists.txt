@@ -13,9 +13,9 @@ foreach(
   t
   assembly_string
   input_string
-  input_int
   input_char
-  input_char32
+  input_int
+#  input_char32
   input_facets_pack
   input_range
   numpunct
@@ -26,9 +26,10 @@ foreach(
   output_FILE
   facets_pack_merge
   facets_pack
-  reserve
+#  reserve
   width_calculator
-  transcoding
+  utf_to_utf
+  single_byte_encodings
   )
 
   add_executable(test-${t}-header-only   ${t}.cpp)

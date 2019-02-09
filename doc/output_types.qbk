@@ -6,30 +6,33 @@
 
 [section:output_types Output types]
 [#output_types]
+
+The "`ec_`" prefix means that an `std::error_code` is returned.
+While the other expressions use exceptions.
+
 [table
 [ []  [Destination type] [Leading expression]]
 
-[ [1]
-  [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Allocator]`>`]
-  [ [*`append (`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
-
-[ [2] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Allocator]`>`]
-  [ [*`assign (`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
-
-[ [3] [`std::string`]
+[ [1] [`std::string`]
   [ [*`to_string `] [*\u00b7\u00b7\u00b7]]]
 
-[ [4] [`std::u16string`]
+[ [2] [`std::u16string`]
   [ [*`to_u16string `] [*\u00b7\u00b7\u00b7]]]
 
-[ [5] [`std::u32string`]
+[ [3] [`std::u32string`]
   [ [*`to_u32string `] [*\u00b7\u00b7\u00b7]]]
 
-[ [6] [`std::wstring`]
+[ [4] [`std::wstring`]
   [ [*`to_wstring `] [*\u00b7\u00b7\u00b7]]]
 
-[ [7] [`std::basic_string<`[~CharT]`, `[~Traits]`, `[~Allocator]`>`]
+[ [5] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Allocator]`>`]
   [ [*`to_basic_string <`][~CharT]`, `[~Traits]`, `[~Allocator][*`>`] [*\u00b7\u00b7\u00b7]]]
+
+[ [6] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Allocator]`>&`]
+  [ [*`append (`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
+
+[ [7] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Allocator]`>&`]
+  [ [*`assign (`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
 
 [ [8]  [[~CharT]`*`]
   [ [*`write(`][~destination]`, `[~limit][*`) `] [*\u00b7\u00b7\u00b7]]]
@@ -40,63 +43,99 @@
 [ [10] [[~CharT[size]]]
   [ [*`write(`][~destination][*`) `] [*\u00b7\u00b7\u00b7]]]
 
-[ [11] [ `std::basic_streambuf <`[~CharT]`, `[~Traits]`>`]
-  [ [*`write (`][~destination]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+[ [11] [ `FILE*` ( using narrow functions) ]
+  [ [*`write <`][~CharT][*`> (`][~destination]`,` [~count_ptr] [*`) `] [*\u00b7\u00b7\u00b7]]]
 
-[ [12] [ `FILE*` ( using narrow functions) ]
-  [ [*`write <`][~CharT][*`> (`][~destination]`,` [~countptr] [*`) `] [*\u00b7\u00b7\u00b7]]]
+[ [12]  [ `FILE*` ( using wide functions) ]
+  [ [*`wwrite (`][~destination]`, `[~count_ptr][*`) `] [*\u00b7\u00b7\u00b7]]]
 
-[ [13]  [ `FILE*` ( using wide functions) ]
-  [ [*`wwrite (`][~destination]`, `[~countptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+[ [13] [ `std::basic_streambuf <`[~CharT]`, `[~Traits]`>&`]
+  [ [*`write (`][~destination]`, `[~count_ptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+
+[ [14]
+  [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Allocator]`>&`]
+  [ [*`ec_append (`][~destination]`, `[~count_ptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+
+[ [15] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Allocator]`>&`]
+  [ [*`ec_assign (`][~destination]`, `[~count_ptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+
+[ [16]  [[~CharT]`*`]
+  [ [*`ec_write(`][~destination]`, `[~limit]`, `[~count_ptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+
+[ [17] [[~CharT]`*`]
+  [ [*`ec_write(`][~destination]`, `[~end]`, `[~count_ptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+
+[ [18] [[~CharT[size]]]
+  [ [*`ec_write(`][~destination]`, `[~count_ptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+
+[ [19] [ `FILE*` ( using narrow functions) ]
+  [ [*`ec_write <`][~CharT][*`> (`][~destination]`,` [~count_ptr] [*`) `] [*\u00b7\u00b7\u00b7]]]
+
+[ [20]  [ `FILE*` ( using wide functions) ]
+  [ [*`ec_wwrite (`][~destination]`, `[~count_ptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+
+[ [21] [ `std::basic_streambuf <`[~CharT]`, `[~Traits]`>&`]
+  [ [*`ec_write (`][~destination]`, `[~count_ptr][*`) `] [*\u00b7\u00b7\u00b7]]]
+
 ]
 
 where:
 
-* [~limit] is `std::size_t`. It determines the maximum number of characters that can be written, including the termination character.
-* [~countptr] is `std::size_t*` and is optional. The number of successfully written characters will be assigned to [~*countptr].
-* [~end] is [~CharT]*
 * [~CharT] can be `char`, `char16_t`, `char32_t` or `wchar_t`
+* [~end] is [~CharT]*
+* [~limit] is `std::size_t`. It determines the maximum number of characters that can be written, including the termination character.
+* [~count_ptr] is and is optional. The number of successfully written characters will be assigned to [~*count_ptr]. Its type is `std::streamsize*` when [~destination] is `std::basic_streambuf <`[~CharT]`, `[~Traits]`>` and `std::size_t*` otherwise.
 * " [*\u00b7\u00b7\u00b7] " is the remaining part of the expression ( it's anything that comes after the /leading expression/ )
+
+[h4 Preconditions]
+* 8 and 16) [~limit]` > 0 && `[~destination]` != nullptr`
+* 9 and 17) [~destination]` < `[~end]` && `[~destination]` != nullptr`
+* 11, 12, 19 and 20) [~destination]` != nullptr`
+
 
 [h4 Effect]
 
-* 1) Append to string.
-* 2) Assign to string.
-* 3-7) Generate string.
-* 8) Write raw string. Write at most [~limit] characters, including the terminating null character, which is always written, except if [~limit]` == 0`.
-* 9) Same as `write(`[~destination]`, `[~end]` - `[~destination]`, `[~countptr]`)`.
-* 10) Same as `write(`[~destination]`, `[~size]`, `[~countptr]`)`.
-* 11) Write content to `std::basic_streambuf`.
-* 12) Write content to `FILE*` using narrow orientated functions.
-* 13) Write content to `FILE*` using wide orientated functions.
+* 6 and 14) Append to string.
+* 7 and 15) Assign to string.
+* 1 to 5) Generate a string.
+* 8 and 16) Write raw string. Write at most [~limit] characters, including the terminating null character, which is always written.
+* 9 and 17) Same as `write(`[~destination]`, `[~end]` - `[~destination]`, `[~count_ptr]`)`.
+* 10 and 18) Same as `write(`[~destination]`, `[~size]`, `[~count_ptr]`)`.
+* 11 and 19) Write content to `FILE*` using narrow orientated functions.
+* 12 and 20) Write content to `FILE*` using wide orientated functions.
+* 13 and 21) Write content to `std::basic_streambuf`.
 
 [#ReturnTypes]
-[h4 Return type]
+[h4 Return]
 
-* 1 - 2) `expected<void, std::error_code>`
-* 3 - 7) `expected<std::basic_string<`[~CharT]`, `[~Traits]`>, std::error_code>`
-* 8 - 10 `expected<std::size_t, std::error_code>`, where the `std::size_t` value is the number of written characters, not counting the termination character
-* 11 - 13) `expected<void, std::error_code>`
+* 1 - 5)  The genererated `std::basic_string<`[~CharT]`, `[~Traits]`>`
+* 6 - 12) Number of characters written, in `std::size_t`.
+* 13)     Number of characters written, in `std::streamsize`.
+* 14 - 21) [link nodiscard_error_code_class `nodiscard_error_code`]
 
-( where the `expected` class template is a bare implementation of the proposed __STD_EXPECTED__ )
-
-[/
-This does not mean that others types of exception may not be thrown. For example, the use of `to_string` may throw and 
-]
 
 [h4 On error]
-* 1) Nothing is appended.
-* 2) [~destination] becomes empty.
-* 8 - 10) [~destination]`[0]` is set to `'\0'`, unless [~limit] is `0`. 
+* 1 to 13) Throws and exception of type [link stringify_error `stringify_error`].
+
+* 14 to 21) Returns a value different of `std::nodiscard_error_code{}`
+
+Also:
+
+* 6) [~destination] is restored to its original size.
+* 7) [~destination] becomes empty.
+* 8 to 10) [~destination]`[0]` is set to `'\0'`.
+* 14, 15, 19, 20 and 21) [~destination] keeps with the all content written until the last call to [link output_buffer `recyle()`] before the error.
+* 16 to 18) [~destination] keeps with the all content written before the error.
 
 [h4 Notes]
 
-* 1-7) An adequate capacity is reserved before writing any character so that at most only one memory allocation happens inside the destination string.
 * 7) [~Allocator] is optional. If omitted, it is `std::allocator<`[~CharT]`>`
 * 7-10) [~Traits] is optional. If omitted, it is `std::char_traits<`[~CharT]`>`
-* 12) [~CharT] is optional. If omitted, it is `char`
-* 12-13) `std::fflush` is [_not] called
+* 11 and 20) [~CharT] is optional. If omitted, it is `char`
+* 11, 12, 20 and 21) `std::fflush` is [_not] called
+* 14 to 21) Although the error policy is to return `std::error_code`, there is no guarantee that no exception is thrown.
 
-[caution In (12) the output should be in binary mode, unless [~CharT] is `char`.]
+
+[caution In (11) and (20) the output should be in binary mode, unless [~CharT] is `char`.]
 
 [endsect]

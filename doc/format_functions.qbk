@@ -68,11 +68,6 @@ does not compile, since hexadecimal formatting does not apply to strings.
 [[`dec()`] [decimal base] [integer and floating point]]
 [[`hex()`] [hexadecimal base] [integer and floating point]]
 [[`oct()`] [octal base] [integer]]
-[
-[`uppercase(bool b)`]
-[if [~b] is `true`, convert some characters to uppercase (as in [@http://en.cppreference.com/w/cpp/io/manip/uppercase `std::uppercase`])]
-[integer and floating point]
-]
 
 [
 [`showpos(bool b)`]
@@ -89,20 +84,6 @@ does not compile, since hexadecimal formatting does not apply to strings.
 [[`operator~()`][same as `showbase(true)`][integer]]
 [[`multi(int count)`][print the character [~count] times][character]]
 
-[
-[`encoding(encoding<CharT>)`]
-[specify the encoding of the input string (see [link encoding_conversion.encoding_conversion encoding] ) ]
-[string and (to do) character]
-]
-
-[
-[`sani()`]
-[sanitizes the input string according to its encoding
- (see [link encoding_conversion.encoding_conversion.sanitization sanitization] )
-]
-[string and (to do) character]
-]
-
 ]
 
 [h4 Syntactic sugars]
@@ -110,28 +91,20 @@ does not compile, since hexadecimal formatting does not apply to strings.
 [table Syntactic sugars
 [[expression] [equivalent to]]
 [[`hex(x)`][`fmt(x).hex()`]]
-[[`uphex(x)`][`fmt(x).hex().uppercase(true)`]]
 [[`dec(x)`][`fmt(x).dec()`]]
 [[`oct(x)`][`fmt(x).oct()`]]
+[[][]]
 [[`right(x, width)`][`fmt(x) > width`]]
 [[`left(x, width)`][`fmt(x) < width`]]
 [[`center(x, width)`][`fmt(x) ^ width`]]
 [[`internal(x, width)`][`fmt(x) % width`]]
+[[][]]
 [[`right(x, width, fill)`]   [`fmt(x).fill(fill) > width`]]
 [[`left(x, width, fill)`]    [`fmt(x).fill(fill) < width`]]
 [[`center(x, width, fill)`]  [`fmt(x).fill(fill) ^ width`]]
 [[`internal(x, width, fill)`][`fmt(x).fill(fill) % width`]]
+[[][]]
 [[`multi(x, count)`] [`fmt(x).multi(count)`]]
-[[`sani(x)`] [`fmt(x).sani()`]]
-[[`ascii(x)`][`fmt(x).encoding(ascii())`]]
-[[`iso_8859_1(x)`  ][`fmt(x).encoding(iso_8859_1())`]]
-[[`iso_8859_15(x)` ][`fmt(x).encoding(iso_8859_15())`]]
-[[`windows_1252(x)`][`fmt(x).encoding(windows_1252())`]]
-[[`utf8(x)`        ][`fmt(x).encoding(utf8())`]]
-[[`mutf8(x)`       ][`fmt(x).encoding(mutf8())`]]
-[[`utf16(x)`       ][`fmt(x).encoding(utf16<std::remove_cvref_t>(decltype(x[0]))>()`]]
-[[`utf32(x)`       ][`fmt(x).encoding(utf32<std::remove_cvref_t>(decltype(x[0]))>()`]]
-[[`utfw(x)`        ][`fmt(x).encoding(utfw())`]]
 ]
 
 [h4 Example]

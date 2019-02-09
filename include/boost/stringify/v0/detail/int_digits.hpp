@@ -9,6 +9,25 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 namespace detail {
 
+template <typename IntT, unsigned Base> struct max_num_digits_impl;
+template <typename IntT> struct max_num_digits_impl<IntT, 10>
+{
+    static constexpr unsigned value = (240824 * sizeof(IntT) + 99999) / 100000;
+};
+template <typename IntT> struct max_num_digits_impl<IntT, 16>
+{
+    static constexpr unsigned value = sizeof(IntT) * 2;
+};
+template <typename IntT> struct max_num_digits_impl<IntT, 8>
+{
+    static constexpr unsigned value = (sizeof(IntT) * 8 + 2) / 3;
+};
+
+template<class IntT, unsigned Base>
+constexpr unsigned max_num_digits =
+    stringify::v0::detail::max_num_digits_impl<IntT, Base>::value;
+
+
 template
     < typename IntT
     , typename unsigned_IntT = typename std::make_unsigned<IntT>::type >
@@ -315,19 +334,14 @@ unsigned count_digits(intT value, int base)
     return count_digits<8>(value);
 }
 
-inline char to_xdigit(unsigned digit, bool uppercase)
+inline char to_xdigit(unsigned digit)
 {
     if (digit < 10)
     {
-        return '0' + digit;
+        return static_cast<char>('0' + digit);
     }
-    const char char_a = uppercase ? 'A' : 'a';
-    return  char_a + digit - 10;
-}
-
-inline char to_digit(unsigned digit)
-{
-    return '0' + digit;
+    constexpr char offset = 'a' - 10;
+    return static_cast<char>(offset + digit);
 }
 
 inline const char* chars_00_to_99()
@@ -362,7 +376,7 @@ CharT* write_int_dec_txtdigits_backwards(IntT value, CharT* it) noexcept
     }
     if (uvalue < 10)
     {
-        *--it = to_digit(static_cast<unsigned>(uvalue));
+        *--it = static_cast<CharT>('0' + uvalue);
         return it;
     }
     else
@@ -376,16 +390,16 @@ CharT* write_int_dec_txtdigits_backwards(IntT value, CharT* it) noexcept
 
 template <typename IntT, typename CharT>
 CharT* write_int_hex_txtdigits_backwards
-    (IntT value, bool uppercase, CharT* it) noexcept
+    (IntT value, CharT* it) noexcept
 {
     using uIntT = typename std::make_unsigned<IntT>::type;
     uIntT uvalue = value;
-    do
+    while(uvalue > 0xF)
     {
-        *--it = stringify::v0::detail::to_xdigit(uvalue & 0xF, uppercase);
+        *--it = stringify::v0::detail::to_xdigit(uvalue & 0xF);
         uvalue >>= 4;
     }
-    while(uvalue != 0);
+    *--it = stringify::v0::detail::to_xdigit(static_cast<unsigned>(uvalue));
     return it;
 }
 
@@ -394,12 +408,12 @@ CharT* write_int_oct_txtdigits_backwards(IntT value, CharT* it) noexcept
 {
     using uIntT = typename std::make_unsigned<IntT>::type;
     uIntT uvalue = value;
-    do
+    while (uvalue > 7)
     {
-        *--it = stringify::v0::detail::to_digit(uvalue & 7);
+        *--it = static_cast<CharT>('0' + (uvalue & 7));
         uvalue >>= 3;
     }
-    while(uvalue != 0);
+    *--it = static_cast<CharT>('0' + uvalue);
     return it;
 }
 
@@ -419,95 +433,95 @@ CharT* write_int_txtdigits_backwards
     return write_int_oct_txtdigits_backwards(value, it);
 }
 
-template <typename IntT, typename CharT>
-class intdigits_writer: public stringify::v0::piecemeal_input<CharT>
-{
-public:
+// template <typename IntT, typename CharT>
+// class intdigits_writer: public stringify::v0::piecemeal_input<CharT>
+// {
+// public:
 
-    intdigits_writer
-        ( const char* dig_it
-        , const unsigned char* grp
-        , const unsigned char* grp_it
-        , const stringify::v0::encoder<CharT>& encoder
-        , char32_t sepchar
-        , unsigned sepchar_size )
-        : m_dig_it{dig_it}
-        , m_grp{grp}
-        , m_grp_it{grp_it}
-        , m_encoder{encoder}
-        , m_sepchar{sepchar}
-        , m_sepchar_size{sepchar_size}
-    {
-    }
+//     intdigits_writer
+//         ( const char* dig_it
+//         , const unsigned char* grp
+//         , const unsigned char* grp_it
+//         , const stringify::v0::encoder<CharT>& encoder
+//         , char32_t sepchar
+//         , unsigned sepchar_size )
+//         : m_dig_it{dig_it}
+//         , m_grp{grp}
+//         , m_grp_it{grp_it}
+//         , m_encoder{encoder}
+//         , m_sepchar{sepchar}
+//         , m_sepchar_size{sepchar_size}
+//     {
+//     }
 
-    CharT* get_some(CharT* begin, CharT* end) override;
+//     CharT* get_some(CharT* begin, CharT* end) override;
 
-private:
+// private:
 
-    CharT* write_sep(CharT* begin, CharT* end)
-    {
-        auto it = m_encoder.encode(m_sepchar, begin, end, true);
-        BOOST_ASSERT(it != nullptr);
-        BOOST_ASSERT(it != end + 1);
-        return it;
-    }
+//     CharT* write_sep(CharT* begin, CharT* end)
+//     {
+//         auto it = m_encoder.encode(m_sepchar, begin, end, true);
+//         BOOST_ASSERT(it != nullptr);
+//         BOOST_ASSERT(it != end + 1);
+//         return it;
+//     }
 
-    CharT* write_grp(unsigned grp_size, CharT* it);
+//     CharT* write_grp(unsigned grp_size, CharT* it);
 
-    const char* m_dig_it;
-    const unsigned char* const m_grp;
-    const unsigned char* m_grp_it;
-    const stringify::v0::encoder<CharT>& m_encoder;
-    char32_t m_sepchar;
-    unsigned m_sepchar_size;
-    bool m_first_grp = true;
-};
+//     const char* m_dig_it;
+//     const unsigned char* const m_grp;
+//     const unsigned char* m_grp_it;
+//     const stringify::v0::encoder<CharT>& m_encoder;
+//     char32_t m_sepchar;
+//     unsigned m_sepchar_size;
+//     bool m_first_grp = true;
+// };
 
 
-template <typename IntT, typename CharT>
-CharT* intdigits_writer<IntT, CharT>::get_some(CharT* begin, CharT* end)
-{
-    auto it = begin;
-    if(m_first_grp)
-    {
-        auto grp_size = *m_grp_it;
-        if (begin + grp_size > end)
-        {
-            return begin;
-        }
-        it = write_grp(grp_size, it);
-        -- m_grp_it;
-        m_first_grp = false;
-    }
-    BOOST_ASSERT(m_grp_it >= m_grp);
-    do
-    {
-        auto grp_size = *m_grp_it;
-        if (it + grp_size + m_sepchar_size > end)
-        {
-            return it;
-        }
-        it = write_sep(it, end);
-        it = write_grp(grp_size, it);
-        -- m_grp_it;
-    }
-    while(m_grp_it >= m_grp);
+// template <typename IntT, typename CharT>
+// CharT* intdigits_writer<IntT, CharT>::get_some(CharT* begin, CharT* end)
+// {
+//     auto it = begin;
+//     if(m_first_grp)
+//     {
+//         auto grp_size = *m_grp_it;
+//         if (begin + grp_size > end)
+//         {
+//             return begin;
+//         }
+//         it = write_grp(grp_size, it);
+//         -- m_grp_it;
+//         m_first_grp = false;
+//     }
+//     BOOST_ASSERT(m_grp_it >= m_grp);
+//     do
+//     {
+//         auto grp_size = *m_grp_it;
+//         if (it + grp_size + m_sepchar_size > end)
+//         {
+//             return it;
+//         }
+//         it = write_sep(it, end);
+//         it = write_grp(grp_size, it);
+//         -- m_grp_it;
+//     }
+//     while(m_grp_it >= m_grp);
 
-    this->report_success();
-    return it;
-}
+//     this->report_success();
+//     return it;
+// }
 
-template <typename IntT, typename CharT>
-CharT* intdigits_writer<IntT, CharT>::write_grp(unsigned grp_size, CharT* it)
-{
-    BOOST_ASSERT(grp_size != 0);
-    do
-    {
-        *it++ = *m_dig_it++;
-    }
-    while(--grp_size > 0);
-    return it;
-}
+// template <typename IntT, typename CharT>
+// CharT* intdigits_writer<IntT, CharT>::write_grp(unsigned grp_size, CharT* it)
+// {
+//     BOOST_ASSERT(grp_size != 0);
+//     do
+//     {
+//         *it++ = *m_dig_it++;
+//     }
+//     while(--grp_size > 0);
+//     return it;
+// }
 
 } // namespace detail
 

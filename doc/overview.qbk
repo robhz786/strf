@@ -15,20 +15,12 @@ preserving backwards compatibility.
 ]
 
 
-[section A brief tutorial]
-
+[section A tour of the library]
 
 Most of the code snippets in this documentation use [link output_types `to_string`].
-Not the std::to_string from the standard library, but an own `to_string`
-which you can consider as a generalisation.
-One notable difference is that this `to_string` can take multiple arguments.
-Another is that it returns `expected<std::string, std::error_code>` instead of
-simply `std::string`. This is also not the same __STD_EXPECTED__ that's under
-a proposal to the standard, but it is very close to, and it will eventually be
-replaced by it in future releases. Or perhaps by Boost.Outcome, or perhaps by
-another approach. Error handling is very prone to debate, you know.
-
-Anyway, let's code:
+Not the std::to_string from the standard library, but one that you can think
+as a generalization with variadic arguments.
+For example:
 
 [first_example]
 
@@ -38,42 +30,93 @@ Among them, operator overload commonly is used
  to make the expression less verbose.
 For example, `operator~()` is used to print the base indication,
 ( the "0x" prefix ) and `operator>(int)` to align to the right
-and to set the width. For example:
+and to set the width.
 
 [format_functions_example]
 
-This library does not use a format string like printf,
+There is no format string like in `printf`,
 [@https://www.boost.org/doc/libs/release/libs/format/ Boost.Format]
-and [@http://fmtlib.net {fmt}].
-But if you need to apply a translation tool like
-[@https://en.wikipedia.org/wiki/Gettext gettext], you can use
+or [@http://fmtlib.net {fmt}].
+But in case you need to use a translation tool like
+[@https://en.wikipedia.org/wiki/Gettext gettext],
+the library provides an alternative syntax with
 what is called here as the [link assembly_string assembly string],
-which is very similar, but does not specify formatting:
-:
+which is like format string, but without any formatting.
 ``
 auto s = strf::to_string.as("{} in hexadecimal is {}") (x, strf::hex(x));
 ``
-Now you see can another difference of `to_string`: it is not a function
+Now can you see that `to_string` is not a function
 like `std::to_string`, but a function object ( actually it's a constexpr ).
 It has member functions that are invoked as in the
 [@https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Named_Parameter
 named parameter idiom].
 One of these functions has remarkable purpose: to receive
-[link facets facets objects].
+[link facets facet objects].
 These are not the same as the facets handled by `std::locale`,
-though they are, again, analogous.
-Remember that this is a locale-independent library.
-Things are always printed as in the C-locale, unless
+but they are analogous.
+Keep in mind that this is a locale-independent library.
+So things are always printed as in the C-locale, unless
 you explicitly specify otherwise, which you do with facets.
 For example, to customise numeric punctuation:
 
 [basic_numpuct_example]
 
+[#tour_encoding_conversion]
+By the way, did you notice that the thousand separator is
+a `char32_t` instead of `char`? This means you can use any
+Unicode code point, as long as it is supported by the
+output encoding, which by default is UTF-8 for `char`.
+But others character sets are available:
+
+[numpuct__with_alternative_encoding]
+
+It is also possible to specify the encoding of each input
+string individually:
+
+[input_string_encoding]
+
+As well as converting string of different character types:
+
+[input_output_different_char_types]
+
+You can also use `cv` function if you just want to sanitize
+the input string, when its encoding and character type are the
+same of the output:
+
+[sani_utf8]
+
+Of course, errors can happen when you convert encodings.
+The library provides three options of how they can be handled.
+The default one is to replace any invalid input sequence by the
+[@https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character
+replacement character "\uFFFD"] (U+FFFD). When the input is UTF-8,
+the library follows the practice recommended by the Unicode
+Standard.
+[footnote
+  Search for ['"Best Practices for Using U+FFFD"] in
+  [@https://www.unicode.org/versions/Unicode10.0.0/ch03.pdf Chapter 3]
+  of Unicode Standard. ]
+The second option is to [link encoding_error_ignore omit]
+the invalid sequence, and the [link encoding_error_stop third one]
+is to emit an error. You can also choose whether surrogates are
+treated as errors or not (as explained [link allow_surrogates here]).
+
+Another cool thing you can do is to print ranges:
+
+[input_range]
+
+And another is to align a group of argument as one:
+
+[join_basic_sample]
+
+[/
 However, facets here are not limited to localisation.
 They have been conceived to customise all sort of things,
 like the width calculation method, and encoding error handling.
+]
 
-Also, this library is not limited to `to_string`. You can, for instance,
+
+Of course, this library is not limited to `to_string`. You can, for instance,
 append to string, instead of creating one. Or, to write to a `FILE*`,
 or to a `std::streambuf&`, or to a `char*`, or to your own output type.
 All you need is to replace the `to_string` expression ( which is
@@ -81,10 +124,10 @@ referred here as a [link output_types /leading expression/] )
 by some other. For example:
 
 [output_FILE]
-
+[/
 But before learning further how to use this library,
 you may first want to see more reasons of why to choose it over others.
-
+]
 [endsect]
 
 [section Why to use Boost.Stringify]
@@ -103,70 +146,21 @@ you may first want to see more reasons of why to choose it over others.
   [[br]]
 ]
 
-[
-  [Easy encoding conversion and sanitization]
-  [
-    Input and output character types don't need to be the same in Boost.Stringify:
-      [input_output_different_char_types][br]
-
-    And even if the character types are same, the encodings don't have to be:
-      [windows_1252_to_utf8][br]
-
-    And even if the encodings are the same, you may be interested in just
-    sanitizing the input:
-      [sani_utf8][br]
-
-    As you can see, the codepoint U+FFFD ( or '\uFFFD' ) is used to signalise
-    erroneous input. This is the default behaviour; you can [link
-    encoding_error choose another].
-  ]
-  [[br]]
-]
-
-
-[ [More accurate width calculation]
-  [ All formatting libraries provide width and alignment formatting.
-    But they assume that the width of a string is always its size.
-    That is not adequate when it is in UTF-8 and contains non-ASCII characters.
-    The exception is Boost.Stringify that allows you to choose, via facets,
-    how the width is calculated. Three options are available:
-
-    [itemized_list
-      [ Assume that width is equal to size: This it's how is done in
-        the other libraries and is the default option and naturally
-        has the best performance]
-
-      [ Width is number of codepoints]
-
-      [ You provide a function tells the width of each codepoint.
-        After all, there are codepoints whose width is equal to 1 ( the
-        [@https://en.wikipedia.org/wiki/En_(typography) /en/ width],
-        or /halfwidth/ characters ), others have width  2
-        ([@https://en.wikipedia.org/wiki/Em_(typography) /em/ width],
-        or /fullwidth/ ) and some have width zero ( like non-printable
-        and combining characters ).]]
-
-    [link width_calculation This section] explains how to choose.
-    The differences in performance are shown in the
-    [link width_calculation_benchmarks here].
-  ]
-  [[br]]
-]
-
 [ [ Extensibility]
   [ Boost.Stringify allows you not only to add input types but also output types.
     Qt users, for instance, might be interested in a `to_string`-equivalent that
     creates a `QString` instead of an `std::string`. Take a look at
     [@../../example/extend_output_toQString.cpp this implementation] to see how
     easy this is. Or perhaps you might want to implement an alternative way
-    to write to files based on lower level functions instead of `fprintf` in order
-    to get better performance.
+    to write to files based on lower level system functions instead of `fprintf`
+    in order to get better performance.
 
     On the other hand, if your interest is to add a new input type, know that you can
     also provide formatting options for this new type.
     There is at least one that is probably desirable,
-    which is alignment (a.k.a. justification). This one is particularly easy in
-    Boost.Stringify. See the [link ipv4_example examples].
+    which is alignment (a.k.a. justification). This one is particularly easy to
+    implement in Boost.Stringify ( and difficult in others ).
+    See the [link ipv4_example examples].
 
     And sometimes what you want is not exactly adding an input type,
     but to implement some kind of solution that generates textual content,
@@ -195,20 +189,29 @@ you may first want to see more reasons of why to choose it over others.
 
 [
   [Fits in your error handling policy]
-  [ Some code bases use error code, while others use exceptions.
-    Boost.Stringify uses ( an own implementation of ) __STD_EXPECTED__ to
-    suit both worlds. Also, the user can customise how the library handles
-    [link encoding_error encoding errors] and (to-do) assembly string errors.
+  [
+    Some code bases use error codes, while others use exceptions.
+    To suits both worlds, the library provides [link output_types
+    /leading expressions/] that use error codes ( and
+    are prefixed with "`ec_`") and others that use exceptions.
+
+    [/ To suits both worlds, part of the [link output_types
+    /leading expressions/] is based on error code, and
+    the other part is based on exceptions.]
+
+    Also, the user can customise how the library handles
+    [link encoding_policy encoding errors] and
+    [link asm_string_error assembly string errors].
   ]
   [[br]]
 ]
 
 [ [Internationalization]
   [ It is not because this is a locale-independent library that
-    you cannot use numeric punctuation. You can do this with [link
-    numpunct facets]. And actually, it's a good thing that
-    you don't need to change the global locale to achieve that.    
-    
+    you cannot customize numeric punctuation, since you can do that
+    with [link numpunct facets]. And it is actually a good thing
+    that don't need to change the global locale to achieve that.
+
     Also, Boost.Stringify is probably the most suitable library to be used
     with translation tools like [@https://en.wikipedia.org/wiki/Gettext gettext]
     , for the following reasons:
@@ -218,7 +221,7 @@ you may first want to see more reasons of why to choose it over others.
     [ [Assembly string translation hints]
       [ [/Usually it is not the programmer who do the translations.]
         The [link assembly_string assembly string syntax] allows you to
-        insert comments intended to help the person who translates it.        
+        insert comments intended to help the person who translates it.
       ]
     ]
 
@@ -240,19 +243,22 @@ you may first want to see more reasons of why to choose it over others.
         \u2014 this doesn't work if the format string is returned by a
         function like [@https://en.wikipedia.org/wiki/Gettext gettext].
         Then `printf` has undefined behaviour,
-        and other libraries throw an exception which is still not an
+        and other libraries may throw exceptions which is still not an
         adequate solution. A run-time error is only acceptable
         when it's not the program's fault; otherwise it's a bug.
         Format functions, on the other hand, always give you a compilation error.
-    
+
         It's true that mistakes can also happen in the [link assembly_string
         assembly string], but the probability is much lower.
+        Besides, you can [link asm_string_error customize how such errors are handled].
+[/
         Besides, a future version of the library will enable you to customise the
         error handling there just [link encoding_error as in encoding conversion].
         So that you can choose one that makes it easier to identify such bugs.
         For example: to replace the erroneous part by a character like
         [@https://en.wiktionary.org/wiki/%EF%BF%BC U+FFFD] when `NDEBUG`
         is defined and to terminate the program otherwise.
+        ]
       ]
     ]
     ]
@@ -260,8 +266,35 @@ you may first want to see more reasons of why to choose it over others.
   [[br]]
 ]
 
+[ [More accurate width calculation]
+  [ All formatting libraries provide width and alignment formatting.
+    But they assume that the width of a string is always its size.
+``
+    // Prints with three pading spaces less than you'd like
+    printf("Full name: %80s\n", u8"Frédéric François Chopin");
+``
+[br]
+    [/ That is not adequate when it is in UTF-8 and contains non-ASCII characters.]
+    But in Boost.Stringify you can customize, via [link width_calculation facets],
+    how the width is calculated. Three options are available:
 
+    [itemized_list
+      [ Assume that width is equal to size: This it's how is done in
+        the other libraries and is the default option and naturally
+        has the best performance]
 
+      [ Width is the number of codepoints]
+
+      [ You provide a function that tells the width of each codepoint.
+        After all, there are codepoints whose width is equal to 1 ( the
+        [@https://en.wikipedia.org/wiki/En_(typography) /en/ width],
+        or /halfwidth/ characters ), others have width  2
+        ([@https://en.wikipedia.org/wiki/Em_(typography) /em/ width],
+        or /fullwidth/ ) and some have width zero ( like non-printable
+        and combining characters ).]]
+  ]
+  [[br]]
+]
 
 
 [
@@ -273,6 +306,7 @@ you may first want to see more reasons of why to choose it over others.
     [[link joins Joined input arguments]]
     [[link ranges Range input argument]]
     [[link numpunct Numeric punctuation for octal and hexadecimal]]
+    [Easy [link encoding_facets encoding conversion and sanitization]]
     [Support for all character types: `char`, `wchar_t`, `char32_t` and `char16_t`.]
   ]
 ]

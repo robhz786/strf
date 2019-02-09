@@ -1,13 +1,13 @@
-#ifndef BOOST_STRINGIFY_V0_INPUT_TYPES_FACETS_PACK_HPP
-#define BOOST_STRINGIFY_V0_INPUT_TYPES_FACETS_PACK_HPP
+#ifndef BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
+#define BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/basic_types.hpp>
+#include <boost/stringify/v0/printer.hpp>
 #include <boost/stringify/v0/facets_pack.hpp>
-#include <boost/stringify/v0/input_types/join.hpp>
+#include <boost/stringify/v0/detail/input_types/join.hpp>
 #include <initializer_list>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -81,12 +81,16 @@ public:
         return sum;
     }
 
-    void write() const override
+    bool write(stringify::v0::output_buffer<CharT>& ob) const override
     {
         for(const auto& arg : m_args)
         {
-            arg->write();
+            if ( ! arg->write(ob))
+            {
+                return false;
+            }
         }
+        return true;
     }
 
     int remaining_width(int w) const override
@@ -129,12 +133,11 @@ class facets_pack_printer
 public:
 
     facets_pack_printer
-        ( stringify::v0::output_writer<CharT>& out
-        , const ParentFPack& parent_fp
+        ( const ParentFPack& parent_fp
         , const inner_args& args
         )
         : stringify::v0::facets_pack<ParentFPack, ChildFPack>{parent_fp, args.fp}
-        , fmt_group{out, *this, args.args}
+        , fmt_group{*this, args.args}
         , stringify::v0::detail::pp_range_printer<CharT>{fmt_group::range()}
     {
     }
@@ -147,7 +150,7 @@ public:
 template <typename F>
 struct is_constrainable
 {
-    using category = typename F::category;
+    using category = typename stringify::v0::facet_trait<F>::category;
     constexpr static bool value = category::constrainable;
 };
 
@@ -227,15 +230,14 @@ inline stringify::v0::detail::facets_pack_printer
     , FPack, ChildFPack
     , Args... >
 make_printer
-    ( stringify::v0::output_writer<CharT>& out
-    , const FPack& fp
+    ( const FPack& fp
     , const stringify::v0::detail::inner_pack_with_args
         <ChildFPack, Args...>& fmt )
 {
-    return {out, fp, fmt};
+    return {fp, fmt};
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_INPUT_TYPES_FACETS_PACK_HPP
+#endif  // BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
 

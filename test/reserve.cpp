@@ -23,7 +23,7 @@ public:
         , m_reserve_size(reserve_size)
     {
     }
-    
+
     virtual void set_error(std::error_code) override
     {
     }
@@ -66,7 +66,7 @@ public:
     void finish_exception()
     {
     }
-    
+
 private:
 
     std::size_t & m_reserve_size;
@@ -84,53 +84,53 @@ int main()
     constexpr std::size_t initial_value = std::numeric_limits<std::size_t>::max();
 
     // on non-const rval ref
-   
+
     {
         std::size_t size{initial_value};
         (void)reservation_test(size) .no_reserve() ("abcd");
-        BOOST_TEST(size == initial_value); 
+        BOOST_TEST(size == initial_value);
     }
     {
         std::size_t size{initial_value};
         (void)reservation_test(size) .reserve(5555) ("abcd");
-        BOOST_TEST(size == 5555); 
+        BOOST_TEST(size == 5555);
     }
     {
         std::size_t size{initial_value};
         (void)reservation_test(size) ("abcd");
-        BOOST_TEST(size == 4); 
+        BOOST_TEST(size == 4);
     }
     {
         std::size_t size{initial_value};
         (void)reservation_test(size) .reserve(5555) .reserve_auto() ("abcd");
-        BOOST_TEST(size == 4); 
+        BOOST_TEST(size == 4);
     }
 
     // on non-const ref
-    
+
     {
         std::size_t size{initial_value};
         auto tester = reservation_test(size);
         (void)tester.no_reserve() ("abcd");
-        BOOST_TEST(size == initial_value); 
+        BOOST_TEST(size == initial_value);
     }
     {
         std::size_t size{initial_value};
         auto tester = reservation_test(size);
         (void)tester.reserve(5555) ("abcd");
-        BOOST_TEST(size == 5555); 
+        BOOST_TEST(size == 5555);
     }
     {
         std::size_t size{initial_value};
         auto tester = reservation_test(size);
         (void)tester ("abcd");
-        BOOST_TEST(size == 4); 
+        BOOST_TEST(size == 4);
     }
     {
         std::size_t size{initial_value};
         auto tester = reservation_test(size) .reserve(5555);
         (void)tester.reserve_auto() ("abcd");
-        BOOST_TEST(size == 4); 
+        BOOST_TEST(size == 4);
     }
 
     // on const ref
@@ -139,43 +139,43 @@ int main()
         std::size_t size{initial_value};
         const auto tester = reservation_test(size);
         (void)tester.no_reserve() ("abcd");
-        BOOST_TEST(size == initial_value); 
+        BOOST_TEST(size == initial_value);
     }
     {
         std::size_t size{initial_value};
         const auto tester = reservation_test(size);
         (void)tester.reserve(5555) ("abcd");
-        BOOST_TEST(size == 5555); 
+        BOOST_TEST(size == 5555);
     }
     {
         std::size_t size{initial_value};
         const auto tester = reservation_test(size) .reserve(5555);
         (void)tester.reserve_auto() ("abcd");
-        BOOST_TEST(size == 4); 
+        BOOST_TEST(size == 4);
     }
 
     // on const rval ref
-    
+
     {
         std::size_t size{initial_value};
         const auto tester = reservation_test(size);
         (void)std::move(tester).no_reserve() ("abcd");
-        BOOST_TEST(size == initial_value); 
+        BOOST_TEST(size == initial_value);
     }
     {
         std::size_t size{initial_value};
         const auto tester = reservation_test(size);
         (void)std::move(tester).reserve(5555) ("abcd");
-        BOOST_TEST(size == 5555); 
+        BOOST_TEST(size == 5555);
     }
     {
         std::size_t size{initial_value};
         const auto tester = reservation_test(size) .reserve(5555);
         (void)std::move(tester).reserve_auto() ("abcd");
-        BOOST_TEST(size == 4); 
+        BOOST_TEST(size == 4);
     }
 
 
-    
+
     return report_errors() || boost::report_errors();
 }

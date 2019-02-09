@@ -12,7 +12,7 @@ if cxx is None or not os.path.isfile(cxx) :
     print("set CXX environment variable to a valid compiler")
     quit(1)
 
-cxx_standard='14'
+cxx_standard='17'
 
 cxxflags = ['-std=c++' + cxx_standard]
 cxxflags_str = os.environ.get('CXXFLAGS')
@@ -39,15 +39,13 @@ boost_incl = "-I" + os.path.normpath(pwd + "/../../../../")
 fmt_dir = os.path.normpath(pwd + "/../fmt-5.2.0")
 fmt_incl = "-I" + fmt_dir + "/include"
 stringify_cpp = os.path.normpath(pwd + "/../../build/stringify.cpp")
-lib_boost_stringify_release = tmp_dir + "/boost_stringify.a"
-lib_boost_stringify_debug = tmp_dir + "/boost_stringify.g"
 
 files_per_program = [1, 21, 41]
 
-def clean_abort(msg):
-    print(msg)
-    shutil.rmtree(tmp_dir, ignore_errors=True)
-    return(1)
+#def clean_abort(msg):
+#    print(msg)
+#    shutil.rmtree(tmp_dir, ignore_errors=True)
+#    return(1)
 
 def empty_row() :
     part1 = '[[{:^28}][{:^24}][{:^9}]'.format(' ', ' ', ' ', ' ')
@@ -64,16 +62,10 @@ def table_header() :
         hdr = hdr + '[{:>3} files]'.format(n)
     return hdr + '[diff per file]]'
 
-def benchmark_release(basename, main_src, flags, libs):
-    benchmark(True, flags, basename, main_src, libs)
-
-def benchmark_debug(basename, main_src, flags, libs):
-    benchmark(False, flags, basename, main_src, libs)
-
-def benchmark(release, flags, basename, main_src, libs):
+def benchmark(build_type, flags, basename, main_src, libs):
     num_sourcefiles = max(files_per_program)
-    compile_stats = create_obj_files(release, flags, basename, num_sourcefiles)
-    programs_size = build_programs(release, main_src, basename,
+    compile_stats = create_obj_files(build_type, flags, basename, num_sourcefiles)
+    programs_size = build_programs(build_type, main_src, basename,
                                    libs, files_per_program)
     result = '[[{:<28}][{:>4.2f} `,  `{:>4.2f} `,  `{:>4.2f}][{:>9.1f}]'.format(
         basename,
@@ -89,14 +81,14 @@ def benchmark(release, flags, basename, main_src, libs):
         / 1000.0
     print(result + '[{:>9.3f}]]'.format(avr_increment))
 
-def create_obj_files(release, flags, basename, num_objs) :
+def create_obj_files(build_type, flags, basename, num_objs) :
     wtime = 0.0
     utime = 0.0
     stime = 0.0
     osize = 0L
     for i in range(num_objs) :
         obj_id = str(i)
-        stat = compile_unit(release, flags, basename, obj_id)
+        stat = compile_unit(build_type, flags, basename, obj_id)
         wtime = wtime + stat['wall time']
         utime = utime + stat['user time']
         stime = stime + stat['system time']
@@ -106,8 +98,8 @@ def create_obj_files(release, flags, basename, num_objs) :
              'system time' : stime / float(num_objs),
              'output size' : osize / num_objs}
 
-def compile_unit(release, flags, basename, obj_id):
-    compile_cmd = compile_unit_cmd(release, flags, basename, obj_id)
+def compile_unit(build_type, flags, basename, obj_id):
+    compile_cmd = compile_unit_cmd(build_type, flags, basename, obj_id)
     cmd = ["time",  "-f", "%e %U %S"] + compile_cmd
     compilation_times = []
     with tempfile.SpooledTemporaryFile() as tmpfile:
@@ -117,43 +109,44 @@ def compile_unit(release, flags, basename, obj_id):
     if rc != 0:
         print("failed to compile " + basename + ".cpp")
         print(" ".join(compile_cmd))
-        clean_abort("")
-    obj_size = os.path.getsize(obj_filename(release, basename, obj_id))
+        return(1)
+    obj_size = os.path.getsize(obj_filename(build_type, basename, obj_id))
     return { 'wall time'   : float(compilation_times[0]),
              'user time'   : float(compilation_times[1]),
              'system time' : float(compilation_times[2]),
              'output size' : obj_size }
 
-def compile_unit_cmd(release, flags, basename, obj_id) :
+def compile_unit_cmd(build_type, flags, basename, obj_id) :
     cmd = [ cxx,
-            "-O3" if release else "-g",
+            build_type_get_cflag(build_type),
             "-DSRC_ID=" + obj_id,
             "-DFUNCTION_NAME=function" + obj_id]
     cmd.extend(flags)
     cmd.extend(cxxflags)
     cmd.extend(["-c",  basename + ".cpp",
-                "-o",  obj_filename(release, basename, obj_id)])
+                "-o",  obj_filename(build_type, basename, obj_id)])
     return cmd
 
-def obj_filename(release, basename, obj_id) :
-    ext = ".rel.o" if release else ".debug.o"
+def obj_filename(build_type, basename, obj_id) :
+    ext = "." + build_type_get_strid(build_type) + ".o"
     return tmp_dir + "/" + basename + "." + obj_id + ext
 
-def build_programs(release, main_src, basename, libs, num_objs_list) :
+
+def build_programs(build_type, main_src, basename, libs, num_objs_list) :
     programs_size = []
     for num_objs in num_objs_list :
-        size = build_program(release, main_src, basename, libs, num_objs)
+        size = build_program(build_type, main_src, basename, libs, num_objs)
         programs_size.append(size)
     return programs_size
 
-def build_program(release, main_src, basename, libs, num_objs) :
+def build_program(build_type, main_src, basename, libs, num_objs) :
     write_auxiliary_src_files(num_objs)
-    cmd = build_program_command(release, main_src, basename, num_objs, libs)
+    cmd = build_program_command(build_type, main_src, basename, num_objs, libs)
     exe_name = program_name(basename, num_objs)
     if 0 != subprocess.call(cmd):
         print("failed to build " + exe_name)
         print(" ".join(cmd))
-        clean_abort("")
+        return(1)
     return os.path.getsize(exe_name)
 
 
@@ -166,23 +159,23 @@ def write_auxiliary_src_files(num_objs) :
     header_file.close()
     sub_cpp_file.close()
 
-def build_program_command(release, main_src, basename, num_objs, libs) :
+def build_program_command(build_type, main_src, basename, num_objs, libs) :
     cmd = [cxx]
-    cmd.append("-O3" if release else "-g")
+    cmd.append(build_type_get_cflag(build_type))
     cmd.append(main_src)
     cmd.extend(cxxflags)
     cmd.extend(ldflags)
-    cmd.extend(obj_files(release, basename, num_objs))
+    cmd.extend(obj_files(build_type, basename, num_objs))
     cmd.extend(libs + ["-o", program_name(basename, num_objs)])
     return cmd
 
 def program_name(basename, num_objs):
     return tmp_dir + "/" + basename + '.' + str(num_objs) + '.exe'
 
-def obj_files(release, basename, num_objs):
+def obj_files(build_type, basename, num_objs):
     filenames = []
     for i in range(num_objs) :
-        filenames.append(obj_filename(release, basename, str(i)))
+        filenames.append(obj_filename(build_type, basename, str(i)))
     return filenames
 
 def cmake_generate_stringify(buildtype):
@@ -194,7 +187,8 @@ def cmake_generate_stringify(buildtype):
     gen_p = subprocess.Popen(gen_args, cwd=build_dir)
     gen_p.wait()
     if gen_p.returncode != 0:
-        clean_abort("Failed generation CMake build project for Boost.Stringify")
+        print("Failed generation CMake build project for Boost.Stringify")
+        return 1
     return build_dir
 
 def cmake_generate_fmt(buildtype):
@@ -205,7 +199,8 @@ def cmake_generate_fmt(buildtype):
     gen_p = subprocess.Popen(gen_args, cwd=build_dir)
     gen_p.wait()
     if gen_p.returncode != 0:
-        clean_abort("Failed generation CMake build project for {fmt}")
+        print("Failed generation CMake build project for {fmt}")
+        return 1
     return build_dir
 
 def cmake_build(build_dir):
@@ -213,337 +208,211 @@ def cmake_build(build_dir):
     build_p = subprocess.Popen(build_args, cwd=build_dir)
     build_p.wait()
     if build_p.returncode != 0:
-         clean_abort("Failed to build")
+         print("Failed to build")
+         return 1
 
-def build_libstringify(buildtype, libfilename):
+def build_libstringify(buildtype):
     print("building Stringify " + buildtype)
     build_dir = cmake_generate_stringify(buildtype)
     cmake_build(build_dir)
-    return build_dir + "/" + libfilename
+    return build_dir + "/" + "libboost_stringify.a"
 
-def build_libfmt(buildtype, libfilename):
+def build_libfmt(buildtype):
     print("building {fmt} " + buildtype)
     build_dir = cmake_generate_fmt(buildtype)
     cmake_build(build_dir)
-    return build_dir + "/" + libfilename
+    #libname = "libfmtd.a" if buildtype == build_type_debug() else "libfmt.a"
+    return build_dir + "/" + "libfmt.a"
 
-def build_libfmt_release():
-    return build_libfmt("Release", "libfmt.a")
+def build_type_O3():
+    return "O3"
+def build_type_Os():
+    return "Os"
+def build_type_debug():
+    return "g"
 
-def build_libfmt_debug():
-    return build_libfmt("Debug", "libfmtd.a")
+def build_type_get_cflag(build_type):
+    return "-" + build_type
 
-def build_libstringify_release():
-    return build_libstringify("Release", "libboost_stringify.a")
+def build_type_get_strid(build_type):
+    return build_type
 
-def build_libstringify_debug():
-    return build_libstringify("Debug", "libboost_stringify.a")
-
-only_boost_stringify = False
+def benchmark_list(build_type, samples):
+    for s in samples:
+        prefix = s[0]
+        main_src = prefix + "_main.cpp"
+        for sub_s in s[1]:
+            lib_list = sub_s[0]
+            flags = sub_s[1]
+            basename = prefix + sub_s[2];
+            benchmark(build_type, flags, basename, main_src, lib_list)
 
 shutil.rmtree(tmp_dir, ignore_errors=True)
 os.makedirs(tmp_dir)
 
-lib_boost_stringify_release = build_libstringify_release()
-lib_boost_stringify_debug = build_libstringify_debug()
-libfmt_release = build_libfmt_release()
-libfmt_debug = build_libfmt_debug()
+lib_boost_stringify_Os = build_libstringify(build_type_Os())
+lib_boost_stringify_O3 = build_libstringify(build_type_O3())
+lib_boost_stringify_db = build_libstringify(build_type_debug())
+#
+libfmt_Os = build_libfmt(build_type_Os())
+libfmt_O3 = build_libfmt(build_type_O3())
+libfmt_db = build_libfmt(build_type_debug())
 
-print('\n[table Release mode / linked libraries \n')
+
+samples_O3 = \
+[ ('to_string',         [ ([lib_boost_stringify_O3], [boost_incl], '_stringify'   )
+                        , ([lib_boost_stringify_O3], [boost_incl], '_stringify_as')
+                        , ([libfmt_O3],              [fmt_incl],   '_fmtlib'      )
+] )
+, ('to_charptr',        [ ([lib_boost_stringify_O3], [boost_incl], '_stringify'   )
+                        , ([lib_boost_stringify_O3], [boost_incl], '_stringify_as')
+                        , ([libfmt_O3],              [fmt_incl],   '_fmtlib'      )
+                        , ([],                       [],           '_sprintf'     )
+] )
+, ('to_FILE',           [ ([lib_boost_stringify_O3], [boost_incl], '_stringify'   )
+                        , ([lib_boost_stringify_O3], [boost_incl], '_stringify_as')
+                        , ([libfmt_O3],              [fmt_incl],   '_fmtlib'      )
+                        , ([],                       [],           '_fprintf'     )
+] )
+, ('to_ostream',        [ ([lib_boost_stringify_O3], [boost_incl], '_stringify'   )
+                        , ([lib_boost_stringify_O3], [boost_incl], '_stringify_as')
+                        , ([libfmt_O3],              [fmt_incl],   '_fmtlib'      )
+                        , ([],                       [],           '_itself'      )
+] )
+]
+
+samples_Os = \
+[ ('to_string',         [ ([lib_boost_stringify_Os], [boost_incl], '_stringify'   )
+                        , ([lib_boost_stringify_Os], [boost_incl], '_stringify_as')
+                        , ([libfmt_Os],              [fmt_incl],   '_fmtlib'      )
+] )
+, ('to_charptr',        [ ([lib_boost_stringify_Os], [boost_incl], '_stringify'   )
+                        , ([lib_boost_stringify_Os], [boost_incl], '_stringify_as')
+                        , ([libfmt_Os],              [fmt_incl],   '_fmtlib'      )
+                        , ([],                       [],           '_sprintf'     )
+] )
+, ('to_FILE',           [ ([lib_boost_stringify_Os], [boost_incl], '_stringify'   )
+                        , ([lib_boost_stringify_Os], [boost_incl], '_stringify_as')
+                        , ([libfmt_Os],              [fmt_incl],   '_fmtlib'      )
+                        , ([],                       [],           '_fprintf'     )
+] )
+, ('to_ostream',        [ ([lib_boost_stringify_Os], [boost_incl], '_stringify'   )
+                        , ([lib_boost_stringify_Os], [boost_incl], '_stringify_as')
+                        , ([libfmt_Os],              [fmt_incl],   '_fmtlib'      )
+                        , ([],                       [],           '_itself'      )
+] )
+]
+
+samples_debug = \
+[ ('to_string',         [ ([lib_boost_stringify_db], [boost_incl], '_stringify'   )
+                        , ([lib_boost_stringify_db], [boost_incl], '_stringify_as')
+                        , ([libfmt_db],              [fmt_incl],   '_fmtlib'      )
+] )
+, ('to_charptr',        [ ([lib_boost_stringify_db], [boost_incl], '_stringify'   )
+                        , ([lib_boost_stringify_db], [boost_incl], '_stringify_as')
+                        , ([libfmt_db],              [fmt_incl],   '_fmtlib'      )
+                        , ([],                       [],           '_sprintf'     )
+] )
+, ('to_FILE',           [ ([lib_boost_stringify_db], [boost_incl], '_stringify'   )
+                        , ([lib_boost_stringify_db], [boost_incl], '_stringify_as')
+                        , ([libfmt_db],              [fmt_incl],   '_fmtlib'      )
+                        , ([],                       [],           '_fprintf'     )
+] )
+, ('to_ostream',        [ ([lib_boost_stringify_db], [boost_incl], '_stringify'   )
+                        , ([lib_boost_stringify_db], [boost_incl], '_stringify_as')
+                        , ([libfmt_db],              [fmt_incl],   '_fmtlib'      )
+                        , ([],                       [],           '_itself'      )
+] ) ]
+
+samples_O3_header_only = \
+[ ('to_string',         [ ([], [boost_incl], '_stringify_ho'        )
+                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+] )
+, ('to_charptr',        [ ([], [boost_incl], '_stringify_ho'        )
+                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+                        , ([], [],           '_sprintf'             )
+] )
+, ('to_FILE',           [ ([], [boost_incl], '_stringify_ho'        )
+                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+] )
+, ('to_ostream',        [ ([], [boost_incl], '_stringify_ho'        )
+                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+                        , ([], [boost_incl], '_BoostFormat'         )
+] ) ]
+
+samples_Os_header_only = \
+[ ('to_string',         [ ([], [boost_incl], '_stringify_ho'        )
+                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+] )
+, ('to_charptr',        [ ([], [boost_incl], '_stringify_ho'        )
+                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+                        , ([], [],           '_sprintf'             )
+] )
+, ('to_FILE',           [ ([], [boost_incl], '_stringify_ho'        )
+                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+] )
+, ('to_ostream',        [ ([], [boost_incl], '_stringify_ho'        )
+                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+                        , ([], [boost_incl], '_BoostFormat'         )
+] )
+]
+samples_debug_header_only = \
+[ ('to_string',         [ ([], [boost_incl], '_stringify_ho'        )
+                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+] )
+, ('to_charptr',        [ ([], [boost_incl], '_stringify_ho'        )
+                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+                        , ([], [],           '_sprintf'             )
+] )
+, ('to_FILE',           [ ([], [boost_incl], '_stringify_ho'        )
+                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+] )
+, ('to_ostream',        [ ([], [boost_incl], '_stringify_ho'        )
+                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [fmt_incl],   '_fmtlib_ho'           )
+                        , ([], [boost_incl], '_BoostFormat'         )
+] )
+]
+
+print('\n[table Release mode with -Os flag / linked libraries \n')
 print(table_header())
-
-benchmark_release(basename = 'to_string_stringify',
-                  main_src = 'to_string_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [lib_boost_stringify_release])
-benchmark_release(basename = 'to_string_stringify_as',
-                  main_src = 'to_string_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [lib_boost_stringify_release])
-
-if not only_boost_stringify :
-    benchmark_release(basename = 'to_string_fmtlib',
-                      main_src = 'to_string_main.cpp',
-                      flags    = [fmt_incl],
-                      libs     = [libfmt_release])
-
-print(empty_row())
-
-benchmark_release(basename = 'to_charptr_stringify',
-                  main_src = 'to_charptr_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [lib_boost_stringify_release])
-
-benchmark_release(basename = 'to_charptr_stringify_as',
-                  main_src = 'to_charptr_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [lib_boost_stringify_release])
-
-if not only_boost_stringify :
-    benchmark_release(basename = 'to_charptr_fmtlib',
-                      main_src = 'to_charptr_main.cpp',
-                      flags    = [fmt_incl],
-                      libs     = [libfmt_release])
-    benchmark_release(basename = 'to_charptr_sprintf',
-                      main_src = 'to_charptr_main.cpp',
-                      flags    = [],
-                      libs     = [])
-print(empty_row())
-
-benchmark_release(basename = 'to_FILE_stringify',
-                  main_src = 'to_FILE_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [lib_boost_stringify_release])
-benchmark_release(basename = 'to_FILE_stringify_as',
-                  main_src = 'to_FILE_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [lib_boost_stringify_release])
-
-if not only_boost_stringify :
-    benchmark_release(basename = 'to_FILE_fmtlib',
-                      main_src = 'to_FILE_main.cpp',
-                      flags    = [fmt_incl],
-                      libs     = [libfmt_release])
-    benchmark_release(basename = 'to_FILE_fprintf',
-                      main_src = 'to_FILE_main.cpp',
-                      flags    = [],
-                      libs     = [])
-print(empty_row())
-
-benchmark_release(basename = 'to_ostream_stringify',
-                  main_src = 'to_ostream_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [lib_boost_stringify_release])
-benchmark_release(basename = 'to_ostream_stringify_as',
-                  main_src = 'to_ostream_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [lib_boost_stringify_release])
-
-if not only_boost_stringify :
-    benchmark_release(basename = 'to_ostream_fmtlib',
-                      main_src = 'to_ostream_main.cpp',
-                      flags    = [fmt_incl],
-                      libs     = [libfmt_release])
-    benchmark_release(basename = 'to_ostream_itself',
-                      main_src = 'to_ostream_main.cpp',
-                      flags    = [],
-                      libs     = [])
+benchmark_list(build_type_Os(), samples_Os)
 print(']\n')
 
+print('\n[table Release mode with -O3 flag / linked libraries \n')
+print(table_header())
+benchmark_list(build_type_O3(), samples_O3)
+print(']\n')
 
 print('\n[table Debug mode / linked libraries \n')
 print(table_header())
-benchmark_debug(basename = 'to_string_stringify',
-                  main_src = 'to_string_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [lib_boost_stringify_debug])
-benchmark_debug(basename = 'to_string_stringify_as',
-                  main_src = 'to_string_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [lib_boost_stringify_debug])
-
-if not only_boost_stringify :
-    benchmark_debug(basename = 'to_string_fmtlib',
-                    main_src = 'to_string_main.cpp',
-                    flags    = [fmt_incl],
-                    libs     = [libfmt_debug])
-print(empty_row())
-
-benchmark_debug(basename = 'to_charptr_stringify',
-                  main_src = 'to_charptr_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [lib_boost_stringify_debug])
-benchmark_debug(basename = 'to_charptr_stringify_as',
-                  main_src = 'to_charptr_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [lib_boost_stringify_debug])
-
-if not only_boost_stringify :
-    benchmark_debug(basename = 'to_charptr_fmtlib',
-                    main_src = 'to_charptr_main.cpp',
-                    flags    = [fmt_incl],
-                    libs     = [libfmt_debug])
-    benchmark_debug(basename = 'to_charptr_sprintf',
-                    main_src = 'to_charptr_main.cpp',
-                    flags    = [],
-                    libs     = [])
-print(empty_row())
-
-benchmark_debug(basename = 'to_FILE_stringify',
-                  main_src = 'to_FILE_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [lib_boost_stringify_debug])
-benchmark_debug(basename = 'to_FILE_stringify_as',
-                  main_src = 'to_FILE_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [lib_boost_stringify_debug])
-
-if not only_boost_stringify :
-    benchmark_debug(basename = 'to_FILE_fmtlib',
-                    main_src = 'to_FILE_main.cpp',
-                    flags    = [fmt_incl],
-                    libs     = [libfmt_debug])
-    benchmark_debug(basename = 'to_FILE_fprintf',
-                    main_src = 'to_FILE_main.cpp',
-                    flags    = [],
-                    libs     = [])
-print(empty_row())
-
-benchmark_debug(basename = 'to_ostream_stringify',
-                  main_src = 'to_ostream_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [lib_boost_stringify_debug])
-benchmark_debug(basename = 'to_ostream_stringify_as',
-                  main_src = 'to_ostream_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [lib_boost_stringify_debug])
-
-if not only_boost_stringify :
-    benchmark_debug(basename = 'to_ostream_fmtlib',
-                    main_src = 'to_ostream_main.cpp',
-                    flags    = [fmt_incl],
-                    libs     = [libfmt_debug])
-    benchmark_debug(basename = 'to_ostream_itself',
-                    main_src = 'to_ostream_main.cpp',
-                    flags    = [],
-                    libs     = [])
+benchmark_list(build_type_debug(), samples_debug)
 print(']\n')
 
-print('\n[table Release mode / header-only libraries \n')
+print('\n[table Release mode with -Os flag / header only libraries \n')
 print(table_header())
-benchmark_release(basename = 'to_string_stringify_ho',
-                  main_src = 'to_string_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [])
-benchmark_release(basename = 'to_string_stringify_as_ho',
-                  main_src = 'to_string_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [])
-if not only_boost_stringify :
-    benchmark_release(basename = 'to_string_fmtlib_ho',
-                      main_src = 'to_string_main.cpp',
-                      flags    = [fmt_incl],
-                      libs     = [])
-print(empty_row())
-
-benchmark_release(basename = 'to_charptr_stringify_ho',
-                  main_src = 'to_charptr_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [])
-benchmark_release(basename = 'to_charptr_stringify_as_ho',
-                  main_src = 'to_charptr_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [])
-if not only_boost_stringify :
-    benchmark_release(basename = 'to_charptr_fmtlib_ho',
-                      main_src = 'to_charptr_main.cpp',
-                      flags    = [fmt_incl],
-                      libs     = [])
-print(empty_row())
-
-
-benchmark_release(basename = 'to_FILE_stringify_ho',
-                  main_src = 'to_FILE_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [])
-benchmark_release(basename = 'to_FILE_stringify_as_ho',
-                  main_src = 'to_FILE_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [])
-
-if not only_boost_stringify :
-    benchmark_release(basename = 'to_FILE_fmtlib_ho',
-                      main_src = 'to_FILE_main.cpp',
-                      flags    = [fmt_incl],
-                      libs     = [])
-print(empty_row())
-
-benchmark_release(basename = 'to_ostream_stringify_ho',
-                  main_src = 'to_ostream_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [])
-benchmark_release(basename = 'to_ostream_stringify_as_ho',
-                  main_src = 'to_ostream_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [])
-
-if not only_boost_stringify :
-    benchmark_release(basename = 'to_ostream_fmtlib_ho',
-                      main_src = 'to_ostream_main.cpp',
-                      flags    = [fmt_incl],
-                      libs     = [])
-    benchmark_release(basename = 'to_ostream_BoostFormat',
-                      main_src = 'to_ostream_main.cpp',
-                      flags    = [boost_incl],
-                      libs     = [])
-
+benchmark_list(build_type_Os(), samples_Os_header_only)
 print(']\n')
 
-
-print('\n[table Debug mode / header-only libraries \n')
+print('\n[table Release mode with -O3 flag / header only libraries \n')
 print(table_header())
-benchmark_debug(basename = 'to_string_stringify_ho',
-                  main_src = 'to_string_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [])
-benchmark_debug(basename = 'to_string_stringify_as_ho',
-                  main_src = 'to_string_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [])
+benchmark_list(build_type_O3(), samples_O3_header_only)
+print(']\n')
 
-if not only_boost_stringify :
-    benchmark_debug(basename = 'to_string_fmtlib_ho',
-                    main_src = 'to_string_main.cpp',
-                    flags    = [fmt_incl],
-                    libs     = [])
-print(empty_row())
-
-benchmark_debug(basename = 'to_charptr_stringify_ho',
-                  main_src = 'to_charptr_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [])
-benchmark_debug(basename = 'to_charptr_stringify_as_ho',
-                  main_src = 'to_charptr_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [])
-
-if not only_boost_stringify :
-    benchmark_debug(basename = 'to_charptr_fmtlib_ho',
-                    main_src = 'to_charptr_main.cpp',
-                    flags    = [fmt_incl],
-                    libs     = [])
-print(empty_row())
-
-benchmark_debug(basename = 'to_FILE_stringify_ho',
-                  main_src = 'to_FILE_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [])
-
-if not only_boost_stringify :
-    benchmark_debug(basename = 'to_FILE_fmtlib_ho',
-                    main_src = 'to_FILE_main.cpp',
-                    flags    = [fmt_incl],
-                    libs     = [])
-print(empty_row())
-
-benchmark_debug(basename = 'to_ostream_stringify_ho',
-                  main_src = 'to_ostream_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [])
-benchmark_debug(basename = 'to_ostream_stringify_as_ho',
-                  main_src = 'to_ostream_main.cpp',
-                  flags    = [boost_incl],
-                  libs     = [])
-
-if not only_boost_stringify :
-    benchmark_debug(basename = 'to_ostream_fmtlib_ho',
-                    main_src = 'to_ostream_main.cpp',
-                    flags    = [fmt_incl],
-                    libs     = [])
-    benchmark_debug(basename = 'to_ostream_BoostFormat',
-                    main_src = 'to_ostream_main.cpp',
-                    flags    = [boost_incl],
-                    libs     = [])
+print('\n[table Debug mode / header only libraries \n')
+print(table_header())
+benchmark_list(build_type_debug(), samples_debug_header_only)
 print(']\n')
 
 shutil.rmtree(tmp_dir, ignore_errors=True)

@@ -172,14 +172,18 @@ install:
   - cd ..
   - git clone -b develop https://github.com/boostorg/boost.git boost-root
   - cd boost-root
+  - git submodule init libs/headers
   - git submodule init libs/assert
   - git submodule init libs/config
   - git submodule init libs/core
   - git submodule init libs/detail
+  - git submodule init libs/hana            # required in test/utf_to_utf.cpp
+  - git submodule init libs/optional
   - git submodule init libs/utility         # boost::string_view
   - git submodule init libs/exception       # required by boost::string_view
   - git submodule init libs/throw_exception # required by boost::string_view
   - git submodule init libs/container_hash  # required by boost::string_view
+  - git submodule init tools/boost_install
   - git submodule init tools/build
   - git submodule init tools/inspect
   - git submodule update

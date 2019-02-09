@@ -51,19 +51,11 @@ Every /facet/ belongs to some /facet category/.
 ]
 
 [
-[[link encoding_error encoding_error]]
-[encoding error handling]
-[no]
+[[link encoding_policy encoding_policy]]
+[encoding error handling and surrogates allowance]
+[yes]
 []
 ]
-
-[
-[[link encoding_conversion.encoding_conversion.allow_surrogates allow_surrogates]]
-[tells whether surrogate code points are allowed]
-[no]
-[]
-]
-
 
 ]
 

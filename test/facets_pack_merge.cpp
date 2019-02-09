@@ -19,10 +19,11 @@ struct facet_type
 
 struct facet_category
 {
-    static const auto& get_default() noexcept
+    constexpr static bool by_value = true;
+    constexpr static bool constrainable = true;
+    static auto get_default() noexcept
     {
-        static const facet_type f {};
-        return f;
+        return facet_type {};
     }
 };
 

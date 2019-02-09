@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/basic_types.hpp>
+#include <boost/stringify/v0/printer.hpp>
 
 struct exception_tag {};
 
@@ -28,8 +28,9 @@ public:
         return 0;
     }
 
-    void write() const override
+    bool write(boost::stringify::v0::output_buffer<CharT>& ob) const override
     {
+        ob.recycle();
         throw std::invalid_argument("invalid printer");
     }
 
@@ -39,33 +40,18 @@ public:
     }
 };
 
-// struct exception_tag_input_traits
-// {
-//     template <typename CharT, typename FPack>
-//     static inline detail::exceptional_printer<CharT>
-//     make_printer(const FPack& ft, exception_tag x)
-//     {
-//         return {ft, x};
-//     }
-// };
-
 } // namespace detail
 
-//detail::exception_tag_input_traits stringify_get_input_traits(exception_tag x);
 
-
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+//BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <typename CharT, typename FPack>
 inline ::detail::exceptional_printer<CharT>
-make_printer
-    ( const stringify::v0::output_writer<CharT>&
-    , const FPack&
-    , exception_tag x )
+make_printer( const FPack&, exception_tag x )
 {
     return {x};
 }
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+//BOOST_STRINGIFY_V0_NAMESPACE_END
 
 #endif

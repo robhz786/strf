@@ -4,7 +4,6 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 
-
 cmake_minimum_required (VERSION 3.0)
 enable_testing()
 
@@ -29,7 +28,8 @@ foreach(x
     extend_input_ipv4
     extend_input_ipv6
     extend_input_base64
-    extend_input_template ) 
+    extend_input_template
+    ) 
 
   Add_executable(${x} ${x}.cpp)
   target_link_libraries(${x} boost_stringify)

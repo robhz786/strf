@@ -5,6 +5,6 @@
 import testing ;
 import regex ;
 
-build-project example ;
+#  build-project example ;
 build-project test ;
 build-project build ;

@@ -32,22 +32,22 @@ int main()
 
     PRINT_BENCHMARK("boost::stringify::write(u8dest)(u16sample1)")
     {
-        auto err = strf::write(u8dest)(u16sample1);
+        auto err = strf::write(u8dest)(strf::cv(u16sample1));
         (void)err;
     }
     PRINT_BENCHMARK("boost::stringify::write(u8dest)(u16sample2)")
     {
-        auto err = strf::write(u8dest)(u16sample2);
+        auto err = strf::write(u8dest)(strf::cv(u16sample2));
         (void)err;
     }
     PRINT_BENCHMARK("boost::stringify::write(u8dest)(u16sample3)")
     {
-        auto err = strf::write(u8dest)(u16sample3);
+        auto err = strf::write(u8dest)(strf::cv(u16sample3));
         (void)err;
     }
     PRINT_BENCHMARK("boost::stringify::write(u8dest)(u16sample4)")
     {
-        auto err = strf::write(u8dest)(u16sample4);
+        auto err = strf::write(u8dest)(strf::cv(u16sample4));
         (void)err;
     }
 
