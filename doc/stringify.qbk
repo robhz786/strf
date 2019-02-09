@@ -22,8 +22,5 @@
 [include:facet_width_calculation facet_width_calculation.qbk]
 [include:extend_output extend_output.qbk]
 [include:extend_input extend_input.qbk]
-
-[section Reference (to-do)]
-[endsect]
-
+[include:reference reference.qbk]
 [include:benchmarks benchmarks.qbk]

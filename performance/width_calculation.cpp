@@ -41,10 +41,10 @@ int main()
     {
         (void)strf::write(u8dest) (strf::right(u8str5, 5));
     }
-    PRINT_BENCHMARK("strf::write(u8dest) .facets(strf::width_as_codepoints_count()) (strf::right(u8str5, 5))")
+    PRINT_BENCHMARK("strf::write(u8dest) .facets(strf::width_as_u32len()) (strf::right(u8str5, 5))")
     {
         (void)strf::write(u8dest)
-            .facets(strf::width_as_codepoints_count())
+            .facets(strf::width_as_u32len())
             (strf::right(u8str5, 5));
     }
     PRINT_BENCHMARK("strf::write(u8dest) .facets(strf::width_as(wfunc)) (strf::right(u8str5, 5))")
@@ -58,10 +58,10 @@ int main()
     {
         (void)strf::write(u8dest) (strf::right(u8str50, 50));
     }
-    PRINT_BENCHMARK("strf::write(u8dest) .facets(strf::width_as_codepoints_count()) (strf::right(u8str50, 50))")
+    PRINT_BENCHMARK("strf::write(u8dest) .facets(strf::width_as_u32len()) (strf::right(u8str50, 50))")
     {
         (void)strf::write(u8dest)
-            .facets(strf::width_as_codepoints_count())
+            .facets(strf::width_as_u32len())
             (strf::right(u8str50, 50));
     }
     PRINT_BENCHMARK("strf::write(u8dest) .facets(strf::width_as(wfunc)) (strf::right(u8str50, 50))")
@@ -77,10 +77,10 @@ int main()
     {
         (void)strf::write(u16dest) (strf::fmt_cv(u16str5) > 5);
     }
-    PRINT_BENCHMARK("strf::write(u16dest) .facets(strf::width_as_codepoints_count()) (strf::right(u16str5, 5))")
+    PRINT_BENCHMARK("strf::write(u16dest) .facets(strf::width_as_u32len()) (strf::right(u16str5, 5))")
     {
         (void)strf::write(u16dest)
-            .facets(strf::width_as_codepoints_count())
+            .facets(strf::width_as_u32len())
             (strf::right(u16str5, 5));
     }
     PRINT_BENCHMARK("strf::write(u16dest) .facets(strf::width_as(wfunc)) (strf::right(u16str5, 5))")
@@ -94,10 +94,10 @@ int main()
     {
         (void)strf::write(u16dest) (strf::right(u16str50, 50));
     }
-    PRINT_BENCHMARK("strf::write(u16dest) .facets(strf::width_as_codepoints_count()) (strf::right(u16str50, 50))")
+    PRINT_BENCHMARK("strf::write(u16dest) .facets(strf::width_as_u32len()) (strf::right(u16str50, 50))")
     {
         (void)strf::write(u16dest)
-            .facets(strf::width_as_codepoints_count())
+            .facets(strf::width_as_u32len())
             (strf::right(u16str50, 50));
     }
     PRINT_BENCHMARK("strf::write(u16dest) .facets(strf::width_as(wfunc)) (strf::right(u16str50, 50))")

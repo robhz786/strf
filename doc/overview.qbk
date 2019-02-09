@@ -79,6 +79,12 @@ As well as converting string of different character types:
 
 [input_output_different_char_types]
 
+You can also use `cv` function if you just want to sanitize
+the input string, when its encoding and character type are the
+same of the output:
+
+[sani_utf8]
+
 Of course, errors can happen when you convert encodings.
 The library provides three options of how they can be handled.
 The default one is to replace any invalid input sequence by the
@@ -90,9 +96,10 @@ Standard.
   Search for ['"Best Practices for Using U+FFFD"] in
   [@https://www.unicode.org/versions/Unicode10.0.0/ch03.pdf Chapter 3]
   of Unicode Standard. ]
-The second possible handling is to omit the invalid sequence,
-and the third is to return an error code. You can also choose
-whether surrogates are treated as errors or not.
+The second option is to [link encoding_error_ignore omit]
+the invalid sequence, and the [link encoding_error_stop third one]
+is to emit an error. You can also choose whether surrogates are
+treated as errors or not (as explained [link allow_surrogates here]).
 
 Another cool thing you can do is to print ranges:
 
@@ -135,50 +142,6 @@ you may first want to see more reasons of why to choose it over others.
     and there is probably some room for optimizations.
 
     See the [link run_time_benchmarks benchmarks].
-  ]
-  [[br]]
-]
-
-[
-  [Easy encoding conversion and sanitization]
-  [
-    As show in the [link tour_encoding_conversion tour], you can use the library
-    to translate from one encoding to another. But even if the input and output
-    encodings are the same, you may consider the `cv` function to sanitize the
-    input string.
-
-      [sani_utf8][br]
-
-  ]
-  [[br]]
-]
-
-
-[ [More accurate width calculation]
-  [ All formatting libraries provide width and alignment formatting.
-    But they assume that the width of a string is always its size.
-    That is not adequate when it is in UTF-8 and contains non-ASCII characters.
-    Boost.Stringify allows you to choose, via facets,
-    how the width is calculated. Three options are available:
-
-    [itemized_list
-      [ Assume that width is equal to size: This it's how is done in
-        the other libraries and is the default option and naturally
-        has the best performance]
-
-      [ Width is the number of codepoints]
-
-      [ You provide a function that tells the width of each codepoint.
-        After all, there are codepoints whose width is equal to 1 ( the
-        [@https://en.wikipedia.org/wiki/En_(typography) /en/ width],
-        or /halfwidth/ characters ), others have width  2
-        ([@https://en.wikipedia.org/wiki/Em_(typography) /em/ width],
-        or /fullwidth/ ) and some have width zero ( like non-printable
-        and combining characters ).]]
-
-    [link width_calculation This section] explains how to choose.
-    The differences in performance are shown
-    [link width_calculation_benchmarks here].
   ]
   [[br]]
 ]
@@ -303,6 +266,36 @@ you may first want to see more reasons of why to choose it over others.
   [[br]]
 ]
 
+[ [More accurate width calculation]
+  [ All formatting libraries provide width and alignment formatting.
+    But they assume that the width of a string is always its size.
+``
+    // Prints with three pading spaces less than you'd like
+    printf("Full name: %80s\n", u8"Frédéric François Chopin");
+``
+[br]
+    [/ That is not adequate when it is in UTF-8 and contains non-ASCII characters.]
+    But in Boost.Stringify you can customize, via [link width_calculation facets],
+    how the width is calculated. Three options are available:
+
+    [itemized_list
+      [ Assume that width is equal to size: This it's how is done in
+        the other libraries and is the default option and naturally
+        has the best performance]
+
+      [ Width is the number of codepoints]
+
+      [ You provide a function that tells the width of each codepoint.
+        After all, there are codepoints whose width is equal to 1 ( the
+        [@https://en.wikipedia.org/wiki/En_(typography) /en/ width],
+        or /halfwidth/ characters ), others have width  2
+        ([@https://en.wikipedia.org/wiki/Em_(typography) /em/ width],
+        or /fullwidth/ ) and some have width zero ( like non-printable
+        and combining characters ).]]
+  ]
+  [[br]]
+]
+
 
 [
   [Some capabilities not present in most of the other formatting libraries]
@@ -313,6 +306,7 @@ you may first want to see more reasons of why to choose it over others.
     [[link joins Joined input arguments]]
     [[link ranges Range input argument]]
     [[link numpunct Numeric punctuation for octal and hexadecimal]]
+    [Easy [link encoding_facets encoding conversion and sanitization]]
     [Support for all character types: `char`, `wchar_t`, `char32_t` and `char16_t`.]
   ]
 ]

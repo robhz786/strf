@@ -13,11 +13,19 @@
 #include "loop_timer.hpp"
 #include "fmt/format.h"
 
+#if defined(__has_include)
+#if __has_include(<charconv>)
+#define HAS_CHARCONV
+#include <charconv>
+#endif
+#endif
 
 int main()
 {
     namespace strf = boost::stringify;
     char dest[1000000];
+    char* dest_end = dest + sizeof(dest);
+    (void) dest_end;
 
     std::cout << "\n small strings \n";
     PRINT_BENCHMARK("strf::ec_write(dest) (\"Hello World!\")")
@@ -182,7 +190,7 @@ int main()
         fmt::format_int{29}.c_str();
     }
 
-#ifdef BOOST_STRINGIFY_HAS_STD_CHARCONV
+#if defined(HAS_CHARCONV)
 
     PRINT_BENCHMARK_N(10, "std::to_chars(dest, dest_end, 25)")
     {
@@ -198,7 +206,7 @@ int main()
         std::to_chars(dest, dest_end, 29);
     }
 
-#endif
+#endif// ! defined(HAS_CHARCONV)
 
     PRINT_BENCHMARK("std::sprintf(dest, \"%d\", 25)")
     {
@@ -242,7 +250,7 @@ int main()
         fmt::format_int{LLONG_MAX - 9}.c_str();
     }
 
-#ifdef BOOST_STRINGIFY_HAS_STD_CHARCONV
+#if defined(HAS_CHARCONV)
 
     PRINT_BENCHMARK_N(10, "std::to_chars(dest, dest_end, LONG_MAX)")
     {
@@ -258,7 +266,7 @@ int main()
         std::to_chars(dest, dest_end, LONG_MAX - 9);
     }
 
-#endif
+#endif // defined(HAS_CHARCONV)
 
     PRINT_BENCHMARK("std::sprintf(dest, \"%lld\", LLONG_MAX)")
     {

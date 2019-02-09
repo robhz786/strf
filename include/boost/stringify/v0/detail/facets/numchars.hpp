@@ -816,6 +816,10 @@ class default_numchars<CharT, 8> final
 {
 public:
 
+    default_numchars()
+    {
+    }
+
     using category = numchars_category<CharT, 8>;
 
     using stringify::v0::numchars_default_common<CharT>::print_digits;
@@ -1036,7 +1040,7 @@ struct numchars_category
 {
     static const default_numchars<CharT, Base>& get_default()
     {
-        static const stringify::v0::default_numchars<CharT, Base> x;
+        static const stringify::v0::default_numchars<CharT, Base> x{};
         return x;
     }
 };

@@ -17,7 +17,7 @@ int custom_width_calculator_function(char32_t ch)
 
 int main()
 {
-    auto cp_count = strf::width_as_codepoints_count();
+    auto cp_count = strf::width_as_u32len();
     auto wtable = strf::width_as(custom_width_calculator_function);
 
     TEST(u8"  \u2E3A\u2E3A\u2014") .facets(wtable)

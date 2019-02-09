@@ -215,7 +215,9 @@ class no_grouping final: public stringify::v0::numpunct<Base>
 {
 public:
 
-    no_grouping() = default;
+    no_grouping()
+    {
+    }
 
     unsigned char* groups
         ( unsigned num_digits
@@ -389,7 +391,7 @@ template <int Base> struct numpunct_category
 
     static const stringify::v0::no_grouping<base>& get_default()
     {
-        static const stringify::v0::no_grouping<base> x;
+        static const stringify::v0::no_grouping<base> x{};
         return x;
     }
 };
