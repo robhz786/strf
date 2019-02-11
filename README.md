@@ -16,10 +16,14 @@ This is a C++ locale-independent format library that:
 
 **Version:** 0.8.0
 
-Branch   | Travis | Appveyor
----------|--------|---------
-develop  | [![Build Status](https://travis-ci.org/robhz786/stringify.svg?branch=develop)](https://travis-ci.org/robhz786/stringify) | [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/stringify?branch=develop&svg=true)](https://ci.appveyor.com/project/robhz786/stringify/branch/develop)
-master   | [![Build Status](https://travis-ci.org/robhz786/stringify.svg?branch=master)](https://travis-ci.org/robhz786/stringify) | [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/stringify?branch=master&svg=true)](https://ci.appveyor.com/project/robhz786/stringify/branch/master)
+Branch   | Travis | Appveyor | Coverity Scan | codecov.io
+---------|--------|----------|---------------|----------- 
+release-0.8  | [![Build Status](https://travis-ci.org/robhz786/stringify.svg?branch=release-0.8)](https://travis-ci.org/robhz786/stringify)| [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/stringify?branch=release-0.8&svg=true)](https://ci.appveyor.com/project/robhz786/stringify/branch/release-0.8)| [![Coverity Scan Build Status](https://scan.coverity.com/projects/17668/badge.svg)](https://scan.coverity.com/projects/robhz786-stringify)| [![codecov](https://codecov.io/gh/robhz786/robhz786/branch/release-0.8/graph/badge.svg)](https://codecov.io/gh/robhz786/stringify/branch/release-0.8)
+develop  | [![Build Status](https://travis-ci.org/robhz786/stringify.svg?branch=develop)](https://travis-ci.org/robhz786/stringify)| [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/stringify?branch=develop&svg=true)](https://ci.appveyor.com/project/robhz786/stringify/branch/develop)| [![Coverity Scan Build Status](https://scan.coverity.com/projects/17668/badge.svg)](https://scan.coverity.com/projects/robhz786-stringify)| [![codecov](https://codecov.io/gh/robhz786/robhz786/branch/develop/graph/badge.svg)](https://codecov.io/gh/robhz786/stringify/branch/develop)
+master   | [![Build Status](https://travis-ci.org/robhz786/stringify.svg?branch=master)](https://travis-ci.org/robhz786/stringify)| [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/stringify?branch=master&svg=true)](https://ci.appveyor.com/project/robhz786/stringify/branch/master)| [![Coverity Scan Build Status](https://scan.coverity.com/projects/17668/badge.svg)](https://scan.coverity.com/projects/robhz786-stringify)| [![codecov](https://codecov.io/gh/robhz786/robhz786/branch/master/graph/badge.svg)](https://codecov.io/gh/robhz786/stringify/branch/master)
+
+
+
 
 # Installation
 You can either use it as a header-only library or as a static library. In any case, you first need to have the Boost installed. It's enough to simply download and unpack the [tarball](https://www.boost.org/users/download/). After this, in the command line interface, inside the unpacked directory &#x2014; which is commonly referead as the _boost root directory_ &#x2014; run the following commands according to your operating system:
