@@ -5,7 +5,299 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <boost/stringify/v0/detail/format_functions.hpp>
+#include <boost/stringify/v0/detail/facets/encoding.hpp>
+#include <boost/utility/string_view.hpp>
+
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+
+namespace detail {
+
+template <typename CharIn>
+class cv_string
+{
+public:
+
+    constexpr cv_string(const CharIn* str, std::size_t len) noexcept
+       : _str(str, len)
+    {
+    }
+
+    constexpr const CharIn* begin() const
+    {
+        return _str.begin();
+    }
+    constexpr const CharIn* end() const
+    {
+        return _str.end();
+    }
+    constexpr std::size_t length() const
+    {
+        return _str.size();
+    }
+    constexpr std::size_t size() const
+    {
+        return _str.size();
+    }
+
+private:
+
+    stringify::v0::detail::simple_string_view<CharIn> _str;
+};
+
+
+template <typename CharIn>
+class cv_string_with_encoding: public stringify::v0::detail::cv_string<CharIn>
+{
+public:
+
+    cv_string_with_encoding
+        ( const CharIn* str
+        , std::size_t len
+        , stringify::v0::encoding<CharIn> enc ) noexcept
+        : stringify::v0::detail::cv_string<CharIn>(str, len)
+        , _enc(enc)
+    {
+    }
+
+    constexpr stringify::v0::encoding<CharIn> encoding() const
+    {
+        return _enc;
+    }
+    constexpr void set_encoding(stringify::v0::encoding<CharIn> enc)
+    {
+        _enc = enc;
+    }
+
+    constexpr stringify::v0::encoding<CharIn> get_encoding() const
+    {
+        return _enc;
+    }
+
+private:
+
+    stringify::v0::encoding<CharIn> _enc;
+};
+
+
+} // namespace detail
+
+
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+stringify::v0::detail::cv_string<char> cv(const char* str)
+{
+    return {str, std::char_traits<char>::length(str)};
+}
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+stringify::v0::detail::cv_string<char16_t> cv(const char16_t* str)
+{
+    return {str, std::char_traits<char16_t>::length(str)};
+}
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+stringify::v0::detail::cv_string<char32_t> cv(const char32_t* str)
+{
+    return {str, std::char_traits<char32_t>::length(str)};
+}
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+stringify::v0::detail::cv_string<wchar_t> cv(const wchar_t* str)
+{
+    return {str, std::char_traits<wchar_t>::length(str)};
+}
+
+template <typename CharIn>
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+stringify::v0::detail::cv_string_with_encoding<CharIn> cv
+    ( const CharIn* str
+    , stringify::v0::encoding<CharIn> enc )
+{
+    return {str, std::char_traits<CharIn>::length(str), enc};
+}
+
+template <typename CharIn, typename Traits>
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+stringify::v0::detail::cv_string<CharIn> cv
+    ( const std::basic_string<CharIn, Traits>& str )
+{
+    return {str.data(), str.size()};
+}
+
+template <typename CharIn, typename Traits>
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+stringify::v0::detail::cv_string_with_encoding<CharIn> cv
+    ( const std::basic_string<CharIn, Traits>& str
+    , stringify::v0::encoding<CharIn> enc )
+{
+    return {str.data(), str.size(), enc};
+}
+
+#if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
+
+template <typename CharIn, typename Traits>
+constexpr stringify::v0::detail::cv_string<CharIn> cv
+    ( const std::basic_string_view<CharIn, Traits>& str )
+{
+    return {str.data(), str.size()};
+}
+
+template <typename CharIn, typename Traits>
+constexpr stringify::v0::detail::cv_string_with_encoding<CharIn> cv
+    ( const std::basic_string_view<CharIn, Traits>& str
+    , stringify::v0::encoding<CharIn> enc )
+{
+    return { str.data(), str.size(), &enc };
+}
+
+#endif
+
+namespace detail {
+
+template <typename CharIn>
+using cv_string_with_format = stringify::v0::value_with_format
+    < stringify::v0::detail::cv_string<CharIn>
+    , stringify::v0::alignment_format >;
+
+template <typename CharIn>
+using cv_string_with_format_and_encoding = stringify::v0::value_with_format
+    < stringify::v0::detail::cv_string_with_encoding<CharIn>
+    , stringify::v0::alignment_format >;
+
+template <typename CharIn>
+constexpr auto make_fmt
+    ( stringify::v0::tag
+    , const stringify::v0::detail::cv_string<CharIn>& cv_str )
+{
+    return stringify::v0::detail::cv_string_with_format<char>{cv_str};
+}
+
+} // namespace detail
+
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+stringify::v0::detail::cv_string_with_format<char> fmt_cv(const char* str)
+{
+    stringify::v0::detail::cv_string<char> cv_str
+        { str, std::char_traits<char>::length(str) };
+    return stringify::v0::detail::cv_string_with_format<char>{cv_str};
+}
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+stringify::v0::detail::cv_string_with_format<char16_t> fmt_cv(const char16_t* str)
+{
+    stringify::v0::detail::cv_string<char16_t> cv_str
+        { str, std::char_traits<char16_t>::length(str) };
+    return stringify::v0::detail::cv_string_with_format<char16_t>{cv_str};
+}
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+stringify::v0::detail::cv_string_with_format<char32_t> fmt_cv(const char32_t* str)
+{
+    stringify::v0::detail::cv_string<char32_t> cv_str
+        { str, std::char_traits<char32_t>::length(str) };
+    return stringify::v0::detail::cv_string_with_format<char32_t>{cv_str};
+}
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+stringify::v0::detail::cv_string_with_format<wchar_t> fmt_cv(const wchar_t* str)
+{
+    stringify::v0::detail::cv_string<wchar_t> cv_str
+        { str, std::char_traits<wchar_t>::length(str) };
+    return stringify::v0::detail::cv_string_with_format<wchar_t>{cv_str};
+
+}
+
+template <typename CharIn>
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+stringify::v0::detail::cv_string_with_format<CharIn> fmt_cv
+    ( const CharIn* str
+    , stringify::v0::encoding<CharIn> enc )
+{
+    stringify::v0::detail::cv_string<CharIn> cv_str{str, enc};
+    return stringify::v0::detail::cv_string_with_format<CharIn>{cv_str};
+}
+
+#if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
+
+template <typename CharIn, typename Traits>
+constexpr stringify::v0::detail::cv_string_with_format<CharIn> fmt_cv
+    ( const std::basic_string_view<CharIn, Traits>& str )
+{
+    stringify::v0::detail::cv_string<CharIn> cv_str{str.data(), str.size()};
+    return stringify::v0::detail::cv_string_with_format<CharIn>{cv_str};
+}
+
+template <typename CharIn, typename Traits>
+constexpr stringify::v0::detail::cv_string_with_format<CharIn> fmt_cv
+    ( const std::basic_string_view<CharIn, Traits>& str
+    , stringify::v0::encoding<CharIn> enc )
+{
+    stringify::v0::detail::cv_string<CharIn> cv_str
+        { str.data(), str.size(), &enc };
+    return stringify::v0::detail::cv_string_with_format<CharIn>{cv_str};
+}
+
+#endif
+
+template <typename CharIn, typename Traits>
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+stringify::v0::detail::cv_string_with_format<CharIn> fmt_cv
+    ( const std::basic_string<CharIn, Traits>& str )
+{
+    stringify::v0::detail::cv_string<CharIn> cv_str{str.data(), str.length()};
+    return stringify::v0::detail::cv_string_with_format<CharIn>{cv_str};
+}
+
+template <typename CharIn, typename Traits>
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+stringify::v0::detail::cv_string_with_format<CharIn> fmt_cv
+    ( const std::basic_string<CharIn, Traits>& str
+    , stringify::v0::encoding<CharIn> enc )
+{
+    stringify::v0::detail::cv_string<CharIn> cv_str{str.data(), str.length(), &enc};
+    return stringify::v0::detail::cv_string_with_format<CharIn>{cv_str};
+}
+
+// template <typename T>
+// inline auto ascii(const T& x)
+// {
+//     return stringify::v0::cv(x, stringify::v0::ascii());
+// }
+// template <typename T>
+// inline auto iso_8859_1(const T& x)
+// {
+//     return stringify::v0::cv(x, stringify::v0::iso_8859_1());
+// }
+// template <typename T>
+// inline auto iso_8859_15(const T& x)
+// {
+//     return stringify::v0::cv(x, stringify::v0::iso_8859_15());
+// }
+// template <typename T>
+// inline auto windows_1252(const T& x)
+// {
+//     return stringify::v0::cv(x, stringify::v0::windows_1252());
+// }
+template <typename T>
+inline auto utf8(const T& x)
+{
+    return stringify::v0::cv(x, stringify::v0::utf8());
+}
+// template <typename T>
+// inline auto mutf8(const T& x)
+// {
+//     return stringify::v0::cv(x, stringify::v0::mutf8());
+// }
+// template <typename T>
+// inline auto utfw(const T& x)
+// {
+//     return stringify::v0::cv(x, stringify::v0::utfw());
+// }
+
+template <typename T>
+inline auto utf16(const T& x)
+{
+    return stringify::v0::cv(x, stringify::v0::utf16());
+}
+template <typename T>
+inline auto utf32(const T& x)
+{
+    return stringify::v0::cv(x, stringify::v0::utf32());
+}
 
 namespace detail {
 
@@ -36,16 +328,7 @@ public:
         , const stringify::v0::width_calculator& wcalc
         , stringify::v0::encoding<CharIn> src_enc
         , stringify::v0::encoding<CharOut> dest_enc
-        , const stringify::v0::encoding_policy epoli ) noexcept
-        : _str(str)
-        , _len(len)
-        , _wcalc(wcalc)
-        , _src_encoding(src_enc)
-        , _dest_encoding(dest_enc)
-        , _transcoder_impl(stringify::v0::get_transcoder_impl(src_enc, dest_enc))
-        , _epoli(epoli)
-    {
-    }
+        , const stringify::v0::encoding_policy epoli ) noexcept;
 
     ~cv_string_printer() = default;
 
@@ -66,12 +349,30 @@ private:
     const stringify::v0::encoding_policy _epoli;
 
     template <typename Category, typename FPack>
-    decltype(auto) _get_facet(const FPack& fp) const
+    static decltype(auto) _get_facet(const FPack& fp)
     {
         using input_tag = stringify::v0::string_input_tag<CharIn>;
         return fp.template get_facet<Category, input_tag>();
     }
 };
+
+template<typename CharIn, typename CharOut>
+cv_string_printer<CharIn, CharOut>::cv_string_printer
+    ( const CharIn* str
+    , std::size_t len
+    , const stringify::v0::width_calculator& wcalc
+    , stringify::v0::encoding<CharIn> src_enc
+    , stringify::v0::encoding<CharOut> dest_enc
+    , const stringify::v0::encoding_policy epoli ) noexcept
+    : _str(str)
+    , _len(len)
+    , _wcalc(wcalc)
+    , _src_encoding(src_enc)
+    , _dest_encoding(dest_enc)
+    , _transcoder_impl(stringify::v0::get_transcoder_impl(src_enc, dest_enc))
+    , _epoli(epoli)
+{
+}
 
 template<typename CharIn, typename CharOut>
 std::size_t cv_string_printer<CharIn, CharOut>::necessary_size() const
@@ -147,7 +448,7 @@ private:
     int _fillcount = 0;
 
     template <typename Category, typename FPack>
-    decltype(auto) _get_facet(const FPack& fp) const
+    static decltype(auto) _get_facet(const FPack& fp)
     {
         using input_tag = stringify::v0::string_input_tag<CharIn>;
         return fp.template get_facet<Category, input_tag>();

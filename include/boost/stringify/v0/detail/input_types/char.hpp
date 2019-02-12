@@ -312,7 +312,7 @@ private:
     int _content_width = 0;
 
     template <typename Category, typename FPack>
-    decltype(auto) _get_facet(const FPack& fp) const
+    static decltype(auto) _get_facet(const FPack& fp)
     {
         return fp.template get_facet<Category, input_type>();
     }
