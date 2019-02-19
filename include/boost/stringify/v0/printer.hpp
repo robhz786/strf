@@ -34,6 +34,7 @@ public:
         {
             _ec = ec;
             _has_error = true;
+            on_error();
         }
     }
 
@@ -121,6 +122,10 @@ protected:
         _end = e;
     }
 
+    virtual void on_error()
+    {
+    }
+
 private:
 
     CharOut* _pos;
@@ -176,7 +181,6 @@ bool transcode
         if (res == stringify::v0::cv_result::invalid_char)
         {
             ob.set_encoding_error();
-            ob.recycle();
             return false;
         }
     } while(ob.recycle());
@@ -194,22 +198,24 @@ bool decode_encode
 {
     auto err_hdl = epoli.err_hdl();
     bool allow_surr = epoli.allow_surr();
-    auto buff32 = global_mini_buffer32();
+    const auto buff32 = global_mini_buffer32();
     char32_t* const buff32_begin = buff32.first;
+    char32_t* const buff32_end = buff32.second;
     stringify::v0::cv_result res1;
     do
     {
+        char32_t* buff32_it = buff32_begin;
         res1 = src_encoding.to_u32().transcode( &src, src_end
-                                              , &buff32.first, buff32.second
+                                              , &buff32_it, buff32_end
                                               , err_hdl, allow_surr );
         if (res1 == stringify::v0::cv_result::invalid_char)
         {
-            ob.set_error(std::errc::result_out_of_range);
+            ob.set_encoding_error();
             return false;
         }
         auto pos = ob.pos();
         const char32_t* buff32_it2 = buff32_begin;
-        auto res2 = dest_encoding.from_u32().transcode( &buff32_it2, buff32.first
+        auto res2 = dest_encoding.from_u32().transcode( &buff32_it2, buff32_it
                                                       , &pos, ob.end()
                                                       , err_hdl, allow_surr );
         ob.advance_to(pos);
@@ -220,7 +226,7 @@ bool decode_encode
                 return false;
             }
             pos = ob.pos();
-            res2 = dest_encoding.from_u32().transcode( &buff32_it2, buff32.first
+            res2 = dest_encoding.from_u32().transcode( &buff32_it2, buff32_it
                                                      , &pos, ob.end()
                                                      , err_hdl, allow_surr );
             ob.advance_to(pos);
@@ -228,7 +234,6 @@ bool decode_encode
         if (res2 == stringify::v0::cv_result::invalid_char)
         {
             ob.set_encoding_error();
-            ob.recycle();
             return false;
         }
     } while (res1 == stringify::v0::cv_result::insufficient_space);
@@ -358,12 +363,15 @@ bool do_write_fill
     , stringify::v0::output_buffer<CharT>& ob
     , std::size_t count
     , char32_t ch
-    , stringify::v0::error_handling err_hdl )
+    , stringify::v0::encoding_policy epoli )
 {
+    auto err_hdl = epoli.err_hdl();
+    bool allow_surr = epoli.allow_surr();
     do
     {
         auto pos = ob.pos();
-        auto res = encoding.encode_fill(&pos, ob.end(), count, ch, err_hdl);
+        auto res = encoding.encode_fill
+            (&pos, ob.end(), count, ch, err_hdl, allow_surr);
         if (res == stringify::v0::cv_result::success)
         {
             ob.advance_to(pos);
@@ -373,7 +381,6 @@ bool do_write_fill
         if (res == stringify::v0::cv_result::invalid_char)
         {
             ob.set_encoding_error();
-            ob.recycle();
             return false;
         }
         BOOST_ASSERT(res == stringify::v0::cv_result::insufficient_space);
@@ -387,10 +394,11 @@ inline bool write_fill
     , stringify::v0::output_buffer<CharT>& buff
     , std::size_t count
     , char32_t ch
-    , stringify::v0::error_handling err_hdl )
+    , stringify::v0::encoding_policy epoli )
 {
     return ( ch >= encoding.u32equivalence_begin()
-          && ch < encoding.u32equivalence_end() )
+          && ch < encoding.u32equivalence_end()
+          && (epoli.allow_surr() || (ch >> 11 != 0x1B)) )
         ? stringify::v0::detail::write_fill( buff
                                            , count
                                            , (CharT)ch )
@@ -398,7 +406,7 @@ inline bool write_fill
                                               , buff
                                               , count
                                               , ch
-                                              , err_hdl );
+                                              , epoli );
 }
 
 } // namespace detail

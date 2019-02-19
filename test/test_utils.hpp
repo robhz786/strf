@@ -9,59 +9,7 @@
 #include <boost/stringify.hpp>
 #include <cctype>
 
-inline int& global_errors_count()
-{
-    static int x = 0;
-    return x;
-}
-
-inline int report_errors()
-{
-    if (global_errors_count())
-    {
-        std::cout << global_errors_count() << " tests failed\n";
-    }
-    else
-    {
-        std::cout << "No errors found\n";
-    }
-
-    return global_errors_count();
-}
-
-
-inline void print(const char* label, const std::u16string& str)
-{
-    std::cout << label << "\n";
-    for(auto it = str.begin(); it != str.end(); ++it)
-    {
-        printf("%4x ", (unsigned)*it);
-    }
-    std::cout << "\n";
-}
-
-inline void print(const char* label, const std::u32string& str)
-{
-    std::cout << label << "\n";
-    for(auto it = str.begin(); it != str.end(); ++it)
-    {
-        printf("%8x ", (unsigned)*it);
-    }
-    std::cout << "\n";
-}
-
-inline void print(const char* label, const std::string& str)
-{
-    std::cout << label << ": \"" << str << "\"\n";
-}
-
-inline void print(const char* label, const std::wstring& str)
-{
-    std::cout << label << ": \"";
-    std::wcout << str;
-    std::cout  << "\"\n";
-}
-
+#include "lightweight_test_label.hpp"
 
 template <typename CharOut>
 class input_tester
@@ -72,38 +20,20 @@ public:
 
     input_tester
         ( std::basic_string<CharOut> expected
-        , std::string src_filename
+        , const char* src_filename
         , int src_line
-        , double reserve_factor )
-        : boost::stringify::v0::output_buffer<CharOut>{nullptr, nullptr}
-        , _expected(std::move(expected))
-        , _reserved_size(0)
-        , _src_filename(std::move(src_filename))
-        , _src_line(src_line)
-        , _reserve_factor(reserve_factor)
-    {
-    }
+        , const char* function
+        , double reserve_factor );
 
     input_tester
         ( std::basic_string<CharOut> expected
-        , std::string src_filename
+        , const char* src_filename
         , int src_line
+        , const char* function
         , std::error_code err
-        , double reserve_factor )
-        : boost::stringify::v0::output_buffer<CharOut>{nullptr, nullptr}
-        , _expected(std::move(expected))
-        , _reserved_size(0)
-        , _src_filename(std::move(src_filename))
-        , _src_line(src_line)
-        , _reserve_factor(reserve_factor)
-        , _expected_error(err)
-        , _expect_error(true)
-    {
-    }
+        , double reserve_factor );
 
-    ~input_tester()
-    {
-    }
+    ~input_tester();
 
     using char_type = CharOut;
 
@@ -115,16 +45,23 @@ public:
 
 private:
 
-    void test_failed();
+    template <typename ... MsgArgs>
+    void _test_failure(const MsgArgs&... msg_args)
+    {
+        _test_failed = true;
+        boost::stringify::v0::append(_failure_msg)(msg_args...);
+    }
 
-    bool wrongly_reserved() const;
+    bool _wrongly_reserved() const;
 
-    bool too_much_reserved() const;
+    bool _too_much_reserved() const;
 
     std::basic_string<CharOut> _result;
     std::basic_string<CharOut> _expected;
+    std::string _failure_msg;
     std::size_t _reserved_size;
-    std::string _src_filename;
+    const char* _src_filename;
+    const char* _function;
     int _src_line;
     double _reserve_factor;
 
@@ -132,8 +69,52 @@ private:
     bool _expect_error = false;
     bool _recycle_called = false;
     bool _source_location_printed = false;
+    bool _test_failed = false;
 };
 
+
+template <typename CharOut>
+input_tester<CharOut>::input_tester
+    ( std::basic_string<CharOut> expected
+    , const char* src_filename
+    , int src_line
+    , const char* function
+    , double reserve_factor )
+    : boost::stringify::v0::output_buffer<CharOut>{nullptr, nullptr}
+    , _expected(std::move(expected))
+    , _reserved_size(0)
+    , _src_filename(std::move(src_filename))
+    , _function(function)
+    , _src_line(src_line)
+    , _reserve_factor(reserve_factor)
+{
+}
+
+template <typename CharOut>
+input_tester<CharOut>::input_tester
+    ( std::basic_string<CharOut> expected
+    , const char* src_filename
+    , int src_line
+    , const char* function
+    , std::error_code err
+    , double reserve_factor )
+    : boost::stringify::v0::output_buffer<CharOut>{nullptr, nullptr}
+    , _expected(std::move(expected))
+    , _reserved_size(0)
+    , _src_filename(std::move(src_filename))
+    , _function(function)
+    , _src_line(src_line)
+    , _reserve_factor(reserve_factor)
+    , _expected_error(err)
+    , _expect_error(true)
+{
+}
+
+
+template <typename CharOut>
+input_tester<CharOut>::~input_tester()
+{
+}
 
 template <typename CharOut>
 void input_tester<CharOut>::reserve(std::size_t size)
@@ -147,10 +128,8 @@ void input_tester<CharOut>::reserve(std::size_t size)
 template <typename CharOut>
 bool input_tester<CharOut>::recycle()
 {
-    test_failed();
-
-    std::cout << " output_buffer::recycle() called "
-        "( return of printer::necessary_size() too small ).\n";
+    _test_failure(" output_buffer::recycle() called "
+                  "( return of printer::necessary_size() too small ).\n");
 
     std::size_t previous_size = this->pos() - &*_result.begin();
     _result.resize(previous_size);
@@ -167,59 +146,51 @@ void input_tester<CharOut>::finish()
 
     if (_expected != _result)
     {
-        test_failed();
-        print("Expected", _expected);
-        print("Obtained", _result);
+        namespace strf = boost::stringify::v0;
+
+        _test_failure( "Expected: \"", strf::cv(_expected), "\"\n"
+                     , "Obtained: \"", strf::cv(_result), "\"\n" );
+
     }
-    if(wrongly_reserved())
+    if(_wrongly_reserved())
     {
-        test_failed();
-        std::cout << "Reserved size  :" <<  _reserved_size << "\n";
-        std::cout << "Necessary size :" <<  _result.length() << "\n";
+        _test_failure( "Reserved size  : ", _reserved_size, '\n'
+                     , "Necessary size : ", _result.length(), '\n' );
     }
 
     if (_expect_error != this->has_error())
     {
-        test_failed();
         if ( ! _expect_error)
         {
-            print( "Obtained error_code: "
-                 , this->get_error().message());
+            _test_failure("Obtained error_code: ", this->get_error().message());
         }
         else
         {
-            print( "Not obtained any error_code. Was expecting: "
-                 , _expected_error.message());
+            _test_failure( "Not obtained any error_code. Was expecting: "
+                         , _expected_error.message());
         }
 
     }
     else if (_expected_error != this->get_error())
     {
-        test_failed();
-        print("Expected error_code: ", _expected_error.message());
-        print("Obtained error_code: ", this->get_error().message());
+        _test_failure( "Expected error_code: ", _expected_error.message(), '\n'
+                     , "Obtained error_code: ", this->get_error().message(), '\n' );
     }
-}
-
-template <typename CharOut>
-void input_tester<CharOut>::test_failed()
-{
-    if ( ! _source_location_printed)
+    if (_test_failed)
     {
-        std::cout << _src_filename << ":" << _src_line << ":" << " error: \n";
-        _source_location_printed = true;
+        ::boost::detail::error_impl( _failure_msg.c_str(), _src_filename
+                                   , _src_line, _function);
     }
-    ++global_errors_count();
 }
 
 template <typename CharOut>
-bool input_tester<CharOut>::wrongly_reserved() const
+bool input_tester<CharOut>::_wrongly_reserved() const
 {
-    return (_reserved_size < _result.length() || too_much_reserved());
+    return (_reserved_size < _result.length() || _too_much_reserved());
 }
 
 template <typename CharOut>
-bool input_tester<CharOut>::too_much_reserved() const
+bool input_tester<CharOut>::_too_much_reserved() const
 {
     return
         static_cast<double>(_reserved_size) /
@@ -232,13 +203,15 @@ auto make_tester
    ( const CharT* expected
    , const char* filename
    , int line
+   , const char* function
    , std::error_code err
    , double reserve_factor = 1.0 )
 {
    using writer = input_tester<CharT>;
    return boost::stringify::v0::make_destination
-       <writer, const CharT*, const char*, int, std::error_code, double>
-       (expected, filename, line, err, reserve_factor);
+       < writer, const CharT*, const char*, int
+       , const char*, std::error_code, double>
+       (expected, filename, line, function, err, reserve_factor);
 }
 
 template<typename CharT>
@@ -246,28 +219,62 @@ auto make_tester
    ( const CharT* expected
    , const char* filename
    , int line
+   , const char* function
    , double reserve_factor = 1.0 )
 {
    using writer = input_tester<CharT>;
    return boost::stringify::v0::make_destination
-       <writer, const CharT*, const char*, int, double>
-       (expected, filename, line, reserve_factor);
+       <writer, const CharT*, const char*, int, const char*, double>
+       (expected, filename, line, function, reserve_factor);
 }
 
-#define TEST(EXPECTED)                                  \
-    make_tester((EXPECTED), __FILE__, __LINE__)  \
+template<typename CharT>
+auto make_tester
+   ( std::basic_string<CharT> expected
+   , const char* filename
+   , int line
+   , const char* function
+   , std::error_code err
+   , double reserve_factor = 1.0 )
+{
+   using writer = input_tester<CharT>;
+   return boost::stringify::v0::make_destination
+       < writer, const std::basic_string<CharT>&, const char*
+       , int, const char*, std::error_code, double>
+       (std::move(expected), filename, line, function, err, reserve_factor);
+}
+
+template<typename CharT>
+auto make_tester
+   ( std::basic_string<CharT> expected
+   , const char* filename
+   , int line
+   , const char* function
+   , double reserve_factor = 1.0 )
+{
+   using writer = input_tester<CharT>;
+   return boost::stringify::v0::make_destination
+       < writer, std::basic_string<CharT>&&, const char*
+       , int, const char*, double >
+       (std::move(expected), filename, line, function, reserve_factor);
+}
+
+
+
+#define TEST(EXPECTED)                                                  \
+    make_tester((EXPECTED), __FILE__, __LINE__, BOOST_CURRENT_FUNCTION) \
     .reserve_calc()
 
-#define TEST_RF(EXPECTED, RF)                                 \
-    make_tester((EXPECTED), __FILE__, __LINE__, (RF))  \
+#define TEST_RF(EXPECTED, RF)                                           \
+    make_tester((EXPECTED), __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, (RF)) \
     .reserve_calc()
 
-#define TEST_ERR(EXPECTED, ERR)                                 \
-    make_tester((EXPECTED), __FILE__, __LINE__, (ERR)  ) \
+#define TEST_ERR(EXPECTED, ERR)                                         \
+    make_tester((EXPECTED), __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, (ERR)  ) \
     .reserve_calc()
 
-#define TEST_ERR_RF(EXPECTED, ERR, RF)                              \
-    make_tester((EXPECTED), __FILE__, __LINE__, (ERR), (RF)) \
+#define TEST_ERR_RF(EXPECTED, ERR, RF)                                  \
+    make_tester((EXPECTED), __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, (ERR), (RF)) \
     .reserve_calc()
 
 #endif

@@ -12,6 +12,7 @@ include_directories("../../../")
 foreach(
   t
   assembly_string
+  encode_fill
   input_string
   input_char
   input_int

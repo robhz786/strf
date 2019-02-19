@@ -4,7 +4,6 @@
 
 #define  _CRT_SECURE_NO_WARNINGS
 
-#include <boost/detail/lightweight_test.hpp>
 #include "test_utils.hpp"
 #include "error_code_emitter_arg.hpp"
 #include "exception_thrower_arg.hpp"
@@ -174,5 +173,5 @@ int main()
 
 #endif // ! defined(BOOST_NO_EXCEPTION)
 
-    return report_errors() || boost::report_errors();
+    return boost::report_errors();
 }

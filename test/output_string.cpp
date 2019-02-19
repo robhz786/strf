@@ -4,7 +4,6 @@
 
 #define  _CRT_SECURE_NO_WARNINGS
 
-#include <boost/detail/lightweight_test.hpp>
 #include "test_utils.hpp"
 #include "error_code_emitter_arg.hpp"
 #include "exception_thrower_arg.hpp"
@@ -106,6 +105,12 @@ int main()
     basic_to_string_test<char16_t>();
     basic_to_string_test<char32_t>();
     basic_to_string_test<wchar_t>();
+
+    {
+        std::string big_string(500, 'x');
+        auto str = strf::to_string(big_string);
+        BOOST_TEST(str == big_string);
+    }
 
     {   // When set_error is called during to_string
 
@@ -217,5 +222,5 @@ int main()
         }
         BOOST_TEST(result == "bla");
     }
-    return report_errors() || boost::report_errors();
+    return boost::report_errors();
 }

@@ -237,7 +237,8 @@ bool numchars_default_common<CharT>::print_digits
         if (n == 0)
         {
             auto res = enc.encode_char( &pos, end, separator
-                                      , stringify::v0::error_handling::ignore );
+                                      , stringify::v0::error_handling::ignore
+                                      , false );
             (void)res;
             BOOST_ASSERT(res == stringify::v0::cv_result::success);
             n = *--grp_it;

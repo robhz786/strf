@@ -2,7 +2,6 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/detail/lightweight_test.hpp>
 #include <boost/stringify.hpp>
 #include "test_utils.hpp"
 
@@ -78,7 +77,7 @@ int main()
     TEST("aaaa")   ( strf::join_left(4, '.')(strf::multi(U'a', 4) > 4) );
     TEST("aaaa..") ( strf::join_left(6, '.')(strf::multi(U'a', 4) > 4) );
 
-    return report_errors() || boost::report_errors();
+    return boost::report_errors();
 }
 
 

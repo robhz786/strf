@@ -2,7 +2,6 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/detail/lightweight_test.hpp>
 #include <boost/stringify.hpp>
 #include "test_utils.hpp"
 
@@ -50,7 +49,7 @@ int main()
           :: value
         , "encoding shall not be constrainable");
 
-    int rc = report_errors() || boost::report_errors();
+    int rc = boost::report_errors();
     return rc;
 }
 

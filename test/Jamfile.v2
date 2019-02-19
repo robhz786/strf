@@ -18,6 +18,7 @@ test-suite stringify :
    # as header-only library:
 
    [ run assembly_string.cpp   : : : : test-assembly_string-ho ]
+   [ run encode_fill.cpp         : : : : test-encode_fill-ho ]
    [ run input_string.cpp      : : : : test-input_string-ho ]
    [ run input_int.cpp         : : : : test-input_int-ho ]
    [ run input_char.cpp        : : : : test-input_char-ho ]
@@ -39,7 +40,8 @@ test-suite stringify :
 
    # as static library:
 
-#   [ run assembly_string.cpp   $(slib) : : : $(nho) : test-assembly_string-nho ]
+   [ run assembly_string.cpp   $(slib) : : : $(nho) : test-assembly_string-nho ]
+   [ run encode_fill.cpp         $(slib) : : : $(nho) : test-encode_fill-nho ]
    [ run input_string.cpp      $(slib) : : : $(nho) : test-input_string-nho ]
    [ run input_int.cpp         $(slib) : : : $(nho) : test-input_int-nho ]
    [ run input_char.cpp        $(slib) : : : $(nho) : test-input_char-nho ]

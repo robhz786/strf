@@ -54,6 +54,10 @@ public:
 
 protected:
 
+    void on_error() override;
+
+private:
+
     std::FILE* _file;
     std::size_t _count = 0;
     std::size_t* _count_ptr = nullptr;
@@ -76,6 +80,12 @@ bool ec_narrow_file_writer<CharT>::recycle()
         return false;
     }
     return true;
+}
+
+template <typename CharT>
+void ec_narrow_file_writer<CharT>::on_error()
+{
+    this->recycle();
 }
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
@@ -122,6 +132,10 @@ public:
         return this->get_error();
     }
 
+protected:
+
+    void on_error() override;
+
 private:
 
     std::FILE* _file;
@@ -148,6 +162,12 @@ bool ec_wide_file_writer::recycle()
         }
     }
     return true;
+}
+
+BOOST_STRINGIFY_INLINE
+void ec_wide_file_writer::on_error()
+{
+    this->recycle();
 }
 
 #endif //! defined(BOOST_STRINGIFY_OMIT_IMPL)
@@ -205,6 +225,8 @@ public:
 
 protected:
 
+    void on_error() override;
+
     std::FILE* _file;
     std::size_t _count = 0;
     std::size_t* _count_ptr = nullptr;
@@ -238,6 +260,12 @@ inline std::size_t narrow_file_writer<CharT>::finish()
         throw stringify::v0::stringify_error{this->get_error()};
     }
     return _count;
+}
+
+template <typename CharT>
+void narrow_file_writer<CharT>::on_error()
+{
+    recycle();
 }
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
@@ -286,6 +314,8 @@ public:
 
 private:
 
+    void on_error() override;
+
     std::FILE* _file;
     std::size_t _count = 0;
     std::size_t* _count_ptr = nullptr;
@@ -310,6 +340,12 @@ bool wide_file_writer::recycle()
         }
     }
     return true;
+}
+
+BOOST_STRINGIFY_INLINE
+void wide_file_writer::on_error()
+{
+    recycle();
 }
 
 #endif //! defined(BOOST_STRINGIFY_OMIT_IMPL)

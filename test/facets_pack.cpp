@@ -3,7 +3,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <boost/detail/lightweight_test.hpp>
 #include <boost/stringify.hpp>
 
 template <int N> struct facet_category;

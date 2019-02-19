@@ -2,10 +2,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/detail/lightweight_test.hpp>
 #include <boost/stringify.hpp>
-#include "test_utils.hpp"
 #include <limits>
+#include "test_utils.hpp"
 
 namespace strf = boost::stringify::v0;
 
@@ -342,7 +341,6 @@ int main()
             (100000000);
     }
 */
-    int rc = report_errors() || boost::report_errors();
-    return rc;
+    return boost::report_errors();
 }
 

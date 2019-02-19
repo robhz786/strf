@@ -37,7 +37,6 @@ public:
     bool write(boost::stringify::v0::output_buffer<CharT>& ob) const override
     {
         ob.set_error(m_err);
-        ob.recycle();
         return false;
     }
 

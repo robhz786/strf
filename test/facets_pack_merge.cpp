@@ -3,7 +3,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <boost/detail/lightweight_test.hpp>
 #include <boost/stringify.hpp>
 #include <vector>
 
@@ -175,7 +174,7 @@ int main()
     }
 
 
-    return report_errors() || boost::report_errors();
+    return boost::report_errors();
 }
 
 

@@ -255,7 +255,7 @@ bool dynamic_join_printer<CharOut>::write_fill
     , stringify::v0::output_buffer<CharOut>& ob ) const
 {
     return stringify::v0::detail::write_fill
-        ( _encoding, ob, count, ch, _epoli.err_hdl() );
+        ( _encoding, ob, count, ch, _epoli );
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

@@ -550,6 +550,5 @@ int main()
                 });
         });
 
-    auto res = boost::report_errors();
-    return res;
+    return boost::report_errors();
 }

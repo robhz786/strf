@@ -563,7 +563,7 @@ bool fmt_cv_string_printer<CharIn, CharOut>::_write_fill
     , unsigned count ) const
 {
     return stringify::v0::detail::write_fill
-        ( _dest_encoding, ob, count, _fmt.fill(), _epoli.err_hdl() );
+        ( _dest_encoding, ob, count, _fmt.fill(), _epoli );
 }
 
 template<typename CharIn, typename CharOut>

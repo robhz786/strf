@@ -498,7 +498,8 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_encode_fill
     , std::uint8_t* end
     , std::size_t& count
     , char32_t ch
-    , stringify::v0::error_handling err_hdl )
+    , stringify::v0::error_handling err_hdl
+    , bool allow_surr )
 {
     std::uint8_t* dest_it = *dest;
     const std::size_t count_ = count;
@@ -524,6 +525,10 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_encode_fill
     }
     else if (ch <  0x10000)
     {
+        if ( ! allow_surr && detail::is_surrogate(ch))
+        {
+            goto invalid_char;
+        }
         minc = (std::min)(count_, available / 3);
         std::uint8_t ch0 = static_cast<std::uint8_t>(0xE0 | ((ch & 0xF000) >> 12));
         std::uint8_t ch1 = static_cast<std::uint8_t>(0x80 | ((ch &  0xFC0) >> 6));
@@ -554,6 +559,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_encode_fill
     }
     else
     {
+        invalid_char:
         switch(err_hdl)
         {
             case stringify::v0::error_handling::stop:
@@ -570,7 +576,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_encode_fill
                 {
                     dest_it[0] = 0xEF;
                     dest_it[1] = 0xBF;
-                    dest_it[1] = 0xBD;
+                    dest_it[2] = 0xBD;
                     dest_it += 3;
                 }
         }
@@ -589,7 +595,8 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_encode_char
     ( std::uint8_t** dest
     , std::uint8_t* end
     , char32_t ch
-    , stringify::v0::error_handling err_hdl )
+    , stringify::v0::error_handling err_hdl
+    , bool allow_surr )
 {
     std::uint8_t* dest_it = *dest;
     if (ch < 0x80 && dest_it != end)
@@ -608,6 +615,10 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_encode_char
     }
     if (ch <  0x10000 && 3 <= dest_size)
     {
+        if ( ! allow_surr && detail::is_surrogate(ch))
+        {
+            goto invalid_char;
+        }
         dest_it[0] = static_cast<std::uint8_t>(0xE0 | ((ch & 0xF000) >> 12));
         dest_it[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0xFC0) >> 6));
         dest_it[2] = static_cast<std::uint8_t>(0x80 |  (ch &   0x3F));
@@ -627,6 +638,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_encode_char
         }
         return stringify::v0::cv_result::insufficient_space;
     }
+    invalid_char:
     switch (err_hdl)
     {
         case stringify::v0::error_handling::replace:
@@ -1145,11 +1157,16 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf16_encode_char
     ( char16_t** dest
     , char16_t* end
     , char32_t ch
-    , stringify::v0::error_handling err_hdl )
+    , stringify::v0::error_handling err_hdl
+    , bool allow_surr )
 {
     auto dest_it = *dest;
     if (ch < 0x10000 && dest_it != end)
     {
+        if (!allow_surr && detail::is_surrogate(ch))
+        {
+            goto invalid_char;
+        }
         *dest_it = static_cast<char16_t>(ch);
         *dest = dest_it + 1;
         return stringify::v0::cv_result::success;
@@ -1166,6 +1183,8 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf16_encode_char
         }
         return stringify::v0::cv_result::insufficient_space;
     }
+
+    invalid_char:
     switch (err_hdl)
     {
         case stringify::v0::error_handling::replace:
@@ -1189,13 +1208,19 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf16_encode_fill
     , char16_t* dest_end
     , std::size_t& count
     , char32_t ch
-    , stringify::v0::error_handling err_hdl )
+    , stringify::v0::error_handling err_hdl
+    , bool allow_surr )
 {
     auto dest_it = *dest;
     const std::size_t capacity = dest_end - dest_it;
     using traits = std::char_traits<char16_t>;
     if (ch < 0x10000)
     {
+        if (!allow_surr && detail::is_surrogate(ch))
+        {
+            goto invalid_char;
+        }
+
         do_write:
 
         if(count <= capacity)
@@ -1230,6 +1255,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf16_encode_fill
         return stringify::v0::cv_result::insufficient_space;
     }
 
+    invalid_char:
     switch (err_hdl)
     {
         case stringify::v0::error_handling::replace:
@@ -1483,10 +1509,25 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf32_encode_char
     ( char32_t** dest
     , char32_t* end
     , char32_t ch
-    , stringify::v0::error_handling err_hdl )
+    , stringify::v0::error_handling err_hdl
+    , bool allow_surr )
 {
     (void)err_hdl;
     auto dest_it = *dest;
+    if (ch > 0x10FFFF || (!allow_surr && detail::is_surrogate(ch)))
+    {
+        switch(err_hdl)
+        {
+            case stringify::v0::error_handling::stop:
+                return stringify::v0::cv_result::invalid_char;
+            case stringify::v0::error_handling::ignore:
+                return stringify::v0::cv_result::success;
+            default:
+                BOOST_ASSERT(err_hdl == stringify::v0::error_handling::replace);
+                ch = 0xFFFD;
+        }
+    }
+
     if (dest_it != end)
     {
         *dest_it = ch;
@@ -1501,11 +1542,12 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf32_encode_fill
     , char32_t* dest_end
     , std::size_t& count
     , char32_t ch
-    , stringify::v0::error_handling err_hdl )
+    , stringify::v0::error_handling err_hdl
+    , bool allow_surr )
 {
     (void) err_hdl;
     using traits = std::char_traits<char32_t>;
-    if (ch >= 0x110000)
+    if (ch > 0x10FFFF || (!allow_surr && detail::is_surrogate(ch)))
     {
         switch (err_hdl)
         {

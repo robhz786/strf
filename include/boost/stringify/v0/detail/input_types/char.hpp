@@ -414,7 +414,7 @@ bool fmt_char_printer<CharT>::_write_fill
     , unsigned count ) const
 {
     return stringify::v0::detail::write_fill
-        ( _encoding, ob, count, _fmt.fill(), _epoli.err_hdl() );
+        ( _encoding, ob, count, _fmt.fill(), _epoli );
 }
 
 template <typename CharT>

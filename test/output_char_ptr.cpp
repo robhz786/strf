@@ -4,7 +4,6 @@
 
 #define  _CRT_SECURE_NO_WARNINGS
 
-#include <boost/detail/lightweight_test.hpp>
 #include "test_utils.hpp"
 #include "error_code_emitter_arg.hpp"
 #include "exception_thrower_arg.hpp"
@@ -198,6 +197,19 @@ int main()
     test_informed_end_too_close<char32_t>();
     test_informed_end_too_close<wchar_t>();
 
+    {
+        char buff[10];
+        auto ec = strf::ec_write(buff) ("01234567890123456789");
+        BOOST_TEST(ec == std::errc::result_out_of_range);
+        BOOST_TEST_CSTR_EQ(buff, "012345678");
+    }
+    {
+        char buff[10];
+        auto ec = strf::ec_write(buff) (strf::left(0, 20, '.'));
+        BOOST_TEST(ec == std::errc::result_out_of_range);
+        BOOST_TEST_CSTR_EQ(buff, "0........");
+    }
+
     {   // Test char_ptr_writer::set_error
 
         char16_t result[200] = u"-----------------------------";
@@ -233,6 +245,5 @@ int main()
 
 #endif // defined(BOOST_NO_EXCEPTION)
 
-    int rc = report_errors() || boost::report_errors();
-    return rc;
+    return boost::report_errors();
 }

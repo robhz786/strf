@@ -229,11 +229,11 @@ public:
         ( const stringify::v0::detail::printer_ptr_range<CharT>& args
         , const stringify::v0::detail::join_t& j
         , stringify::v0::encoding<CharT> encoding
-        , stringify::v0::error_handling err_hdl )
+        , stringify::v0::encoding_policy epoli )
         : _join{j}
         , _args{args}
         , _encoding(encoding)
-        , _err_hdl(err_hdl)
+        , _epoli(epoli)
     {
         _fillcount = _remaining_width_from_arglist(_join.width);
     }
@@ -246,7 +246,7 @@ public:
         : _join{cp._join}
         , _args{args}
         , _encoding(cp._encoding)
-        , _err_hdl(cp._err_hdl)
+        , _epoli(cp._epoli)
         , _fillcount(cp._fillcount)
     {
     }
@@ -257,7 +257,7 @@ public:
         : _join{std::move(tmp._join)}
         , _args{std::move(args)}
         , _encoding(tmp._encoding)
-        , _err_hdl(tmp._err_hdl)
+        , _epoli(tmp._epoli)
         , _fillcount(tmp._fillcount)
     {
     }
@@ -322,7 +322,7 @@ private:
     input_type _join;
     pp_range _args = nullptr;
     const stringify::v0::encoding<CharT> _encoding;
-    stringify::v0::error_handling _err_hdl;
+    stringify::v0::encoding_policy _epoli;
     int _fillcount = 0;
 
     std::size_t _args_length() const
@@ -339,7 +339,8 @@ private:
     {
         if(_fillcount > 0)
         {
-            return _fillcount * _encoding.char_size(_join.fillchar, _err_hdl);
+            return _fillcount * _encoding.char_size( _join.fillchar
+                                                   , _epoli.err_hdl());
         }
         return 0;
     }
@@ -397,7 +398,7 @@ private:
         , int count ) const
     {
         return stringify::v0::detail::write_fill
-            ( _encoding, ob, count, _join.fillchar, _err_hdl );
+            ( _encoding, ob, count, _join.fillchar, _epoli.err_hdl() );
     }
 };
 
@@ -427,8 +428,7 @@ public:
                     , stringify::v0::get_facet
                         < stringify::v0::encoding_category<CharT>, void > (fp)
                     , stringify::v0::get_facet
-                        < stringify::v0::encoding_policy_category, void > (fp)
-                        .err_hdl() }
+                        < stringify::v0::encoding_policy_category, void > (fp) }
     {
     }
 
