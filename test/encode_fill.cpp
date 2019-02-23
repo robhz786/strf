@@ -44,7 +44,7 @@ void test_fill
         , allow_surrogates };
 
     {
-        std::size_t count = 10;
+        int count = 10;
         auto result = strf::to_basic_string<CharT>
             .facets(enc, epoli)
             (strf::right(CharT('x'), count + 1, fill_char));
@@ -52,7 +52,7 @@ void test_fill
         BOOST_TEST(result == repeat(count, encoded_char));
     }
     {
-        std::size_t count = 200;
+        int count = 200;
         auto result = strf::to_basic_string<CharT>
             .facets(enc, epoli)
             (strf::right(CharT('x'), count + 1, fill_char));
@@ -94,7 +94,7 @@ void test_invalid_fill_stop
     std::basic_string<CharT> expected(5, CharT('-'));
 
     {
-        std::size_t count = 10;
+        int count = 10;
         std::basic_string<CharT> result;
         auto ec = strf::ec_assign(result)
             .facets(enc, epoli)
@@ -128,7 +128,7 @@ void test_invalid_fill_ignore
     }
 
     {
-        std::size_t count = 10;
+        int count = 10;
         auto result = strf::to_basic_string<CharT>
             .facets(enc, epoli)
             ( strf::multi(CharT('-'), 5)

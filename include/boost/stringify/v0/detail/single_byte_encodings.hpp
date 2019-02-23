@@ -303,7 +303,9 @@ stringify::v0::cv_result single_byte_encoding<Impl>::encode_fill
             *dest = dest_it + count_;
             return stringify::v0::cv_result::success;
         }
-        std::char_traits<char>::assign((char*)dest_it, available, ch2);
+        std::char_traits<char>::assign( (char*)dest_it
+                                      , available
+                                      , static_cast<char>(ch2) );
         count = count_ - available;
         *dest = end;
         return stringify::v0::cv_result::insufficient_space;

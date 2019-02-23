@@ -230,7 +230,7 @@ auto make_tester
 
 template<typename CharT>
 auto make_tester
-   ( std::basic_string<CharT> expected
+   ( const std::basic_string<CharT>& expected
    , const char* filename
    , int line
    , const char* function
@@ -241,12 +241,12 @@ auto make_tester
    return boost::stringify::v0::make_destination
        < writer, const std::basic_string<CharT>&, const char*
        , int, const char*, std::error_code, double>
-       (std::move(expected), filename, line, function, err, reserve_factor);
+       (expected, filename, line, function, err, reserve_factor);
 }
 
 template<typename CharT>
 auto make_tester
-   ( std::basic_string<CharT> expected
+   ( const std::basic_string<CharT>& expected
    , const char* filename
    , int line
    , const char* function
@@ -254,9 +254,9 @@ auto make_tester
 {
    using writer = input_tester<CharT>;
    return boost::stringify::v0::make_destination
-       < writer, std::basic_string<CharT>&&, const char*
+       < writer, const std::basic_string<CharT>&, const char*
        , int, const char*, double >
-       (std::move(expected), filename, line, function, reserve_factor);
+       (expected, filename, line, function, reserve_factor);
 }
 
 

@@ -14,7 +14,7 @@ std::string make_str_0_to_xff()
 {
     std::string str(0x100, '\0');
     for(unsigned i = 0; i < 0x100; ++i)
-        str[i] = i;
+        str[i] = static_cast<char>(i);
     return std::move(str);
 }
 
