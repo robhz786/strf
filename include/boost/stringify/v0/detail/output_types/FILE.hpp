@@ -85,7 +85,12 @@ bool ec_narrow_file_writer<CharT>::recycle()
 template <typename CharT>
 void ec_narrow_file_writer<CharT>::on_error()
 {
-    this->recycle();
+    auto it = this->pos();
+    BOOST_ASSERT(_buff <= it && it <= _buff + _buff_size);
+    this->set_pos(_buff);
+
+    std::size_t count = it - _buff;
+    _count += std::fwrite(_buff, sizeof(CharT), count, _file);
 }
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
@@ -167,7 +172,17 @@ bool ec_wide_file_writer::recycle()
 BOOST_STRINGIFY_INLINE
 void ec_wide_file_writer::on_error()
 {
-    this->recycle();
+    auto end = this->pos();
+    BOOST_ASSERT(_buff <= end && end <= _buff + _buff_size);
+    this->set_pos(_buff);
+
+    for(auto it = _buff ; it != end; ++it, ++_count)
+    {
+        if (std::fputwc(*it, _file) == WEOF)
+        {
+            break;
+        }
+    }
 }
 
 #endif //! defined(BOOST_STRINGIFY_OMIT_IMPL)
@@ -265,7 +280,12 @@ inline std::size_t narrow_file_writer<CharT>::finish()
 template <typename CharT>
 void narrow_file_writer<CharT>::on_error()
 {
-    recycle();
+    auto it = this->pos();
+    BOOST_ASSERT(_buff <= it && it <= _buff + _buff_size);
+    this->set_pos(_buff);
+
+    std::size_t count = it - _buff;
+    _count += std::fwrite(_buff, sizeof(CharT), count, _file);
 }
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
@@ -345,7 +365,17 @@ bool wide_file_writer::recycle()
 BOOST_STRINGIFY_INLINE
 void wide_file_writer::on_error()
 {
-    recycle();
+    auto end = this->pos();
+    BOOST_ASSERT(_buff <= end && end <= _buff + _buff_size);
+    this->set_pos(_buff);
+
+    for(auto it = _buff ; it != end; ++it, ++_count)
+    {
+        if (std::fputwc(*it, _file) == WEOF)
+        {
+            break;
+        }
+    }
 }
 
 #endif //! defined(BOOST_STRINGIFY_OMIT_IMPL)

@@ -28,22 +28,14 @@ public:
 
     virtual bool recycle() = 0;
 
-    void set_error(std::error_code ec) noexcept
-    {
-        if ( ! _has_error )
-        {
-            _ec = ec;
-            _has_error = true;
-            on_error();
-        }
-    }
+    void set_error(std::error_code ec);
 
-    void set_error(std::errc e) noexcept
+    void set_error(std::errc e)
     {
         set_error(std::make_error_code(e));
     }
 
-    void set_encoding_error() noexcept
+    void set_encoding_error()
     {
         set_error(std::errc::illegal_byte_sequence);
     }
@@ -133,6 +125,17 @@ private:
     std::error_code _ec;
     bool _has_error = false;
 };
+
+template <typename CharOut>
+void output_buffer<CharOut>::set_error(std::error_code ec)
+{
+    if ( ! _has_error )
+    {
+        _ec = ec;
+        _has_error = true;
+        on_error();
+    }
+}
 
 template <typename CharOut>
 class printer

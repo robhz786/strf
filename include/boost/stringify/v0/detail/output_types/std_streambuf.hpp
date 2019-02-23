@@ -81,7 +81,9 @@ bool ec_std_streambuf_writer<CharT, Traits>::recycle()
 template <typename CharT, typename Traits>
 void ec_std_streambuf_writer<CharT, Traits>::on_error()
 {
-    recycle();
+    std::streamsize count = this->pos() - _buff;
+    this->set_pos(_buff);
+    _count += _out.sputn(_buff, count);
 }
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
@@ -198,7 +200,9 @@ bool std_streambuf_writer<CharT, Traits>::recycle()
 template <typename CharT, typename Traits>
 void std_streambuf_writer<CharT, Traits>::on_error()
 {
-    recycle();
+    std::streamsize count = this->pos() - _buff;
+    this->set_pos(_buff);
+    _count += _out.sputn(_buff, count);
 }
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
