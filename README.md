@@ -14,14 +14,12 @@ This is a C++ locale-independent format library that:
 
 **Documentation:** http://robhz786.github.io/stringify/doc/html/
 
-**Version:** 0.8.0
+**Version:** 0.8.1
 
-Branch   | Travis | Appveyor | Coverity Scan | codecov.io
----------|--------|----------|---------------|----------- 
-release-0.8.1  | [![Build Status](https://travis-ci.org/robhz786/stringify.svg?branch=release-0.8.1)](https://travis-ci.org/robhz786/stringify)| [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/stringify?branch=release-0.8.1&svg=true)](https://ci.appveyor.com/project/robhz786/stringify/branch/release-0.8.1)| [![Coverity Scan Build Status](https://scan.coverity.com/projects/17668/badge.svg)](https://scan.coverity.com/projects/robhz786-stringify)| [![codecov](https://codecov.io/gh/robhz786/robhz786/branch/release-0.8.1/graph/badge.svg)](https://codecov.io/gh/robhz786/stringify/branch/release-0.8.1)
-develop  | [![Build Status](https://travis-ci.org/robhz786/stringify.svg?branch=develop)](https://travis-ci.org/robhz786/stringify)| [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/stringify?branch=develop&svg=true)](https://ci.appveyor.com/project/robhz786/stringify/branch/develop)| [![Coverity Scan Build Status](https://scan.coverity.com/projects/17668/badge.svg)](https://scan.coverity.com/projects/robhz786-stringify)| [![codecov](https://codecov.io/gh/robhz786/robhz786/branch/develop/graph/badge.svg)](https://codecov.io/gh/robhz786/stringify/branch/develop)
-master   | [![Build Status](https://travis-ci.org/robhz786/stringify.svg?branch=master)](https://travis-ci.org/robhz786/stringify)| [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/stringify?branch=master&svg=true)](https://ci.appveyor.com/project/robhz786/stringify/branch/master)| [![Coverity Scan Build Status](https://scan.coverity.com/projects/17668/badge.svg)](https://scan.coverity.com/projects/robhz786-stringify)| [![codecov](https://codecov.io/gh/robhz786/robhz786/branch/master/graph/badge.svg)](https://codecov.io/gh/robhz786/stringify/branch/master)
-
+Branch   | Travis | Appveyor | codecov.io
+---------|--------|----------|----------- 
+develop  | [![Build Status](https://travis-ci.org/robhz786/stringify.svg?branch=develop)](https://travis-ci.org/robhz786/stringify)| [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/stringify?branch=develop&svg=true)](https://ci.appveyor.com/project/robhz786/stringify/branch/develop)| [![codecov](https://codecov.io/gh/robhz786/robhz786/branch/develop/graph/badge.svg)](https://codecov.io/gh/robhz786/stringify/branch/develop)
+master   | [![Build Status](https://travis-ci.org/robhz786/stringify.svg?branch=master)](https://travis-ci.org/robhz786/stringify)| [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/stringify?branch=master&svg=true)](https://ci.appveyor.com/project/robhz786/stringify/branch/master)| [![codecov](https://codecov.io/gh/robhz786/robhz786/branch/master/graph/badge.svg)](https://codecov.io/gh/robhz786/stringify/branch/master)
 
 
 

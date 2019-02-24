@@ -160,17 +160,21 @@ jobs:
 
     #################### Jobs to run on pushes to master, develop ###################
 
-    # Coverity Scan
-    - os: linux
-      if: (env(COVERITY_SCAN_NOTIFICATION_EMAIL) IS present) AND (branch IN (develop, master, release-0.8.1)) AND (type IN (cron, push))
-      env:
-        - COMMENT="Coverity Scan"
-        - TOOLSET=gcc-7
-      addons: *gcc-7
-      script:
-        - cd $BOOST_ROOT/libs/$SELF
-        - ci/travis/coverity.sh
-
+#    # Coverity Scan
+#    - os: linux
+#      if: (env(COVERITY_SCAN_NOTIFICATION_EMAIL) IS present) AND (branch IN (develop, master, release-0.8.1)) AND (type IN (cron, push))
+#      env:
+#        - COMMENT="Coverity Scan"
+#        - TOOLSET=gcc-7
+#        - SELF=stringify
+#      addons: *gcc-7
+#      script:
+#        - cd $BOOST_ROOT/libs/$SELF
+#        - rm -rf coverity_tool.tgz cov-analysis*
+#        - wget -q https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_SCAN_TOKEN&project=boostorg/$SELF" -O coverity_tool.tgz
+#        - tar xzf coverity_tool.tgz
+#        - ci/travis/coverity.sh --skipdownload
+                                    
 notifications:
   email:
     false
