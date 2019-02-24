@@ -483,17 +483,35 @@ int main()
     basic_test__narrow<wchar_t>();
     basic_test__wide();
 
+    ec_basic_test__narrow<char>();
+    ec_basic_test__narrow<char16_t>();
+    ec_basic_test__narrow<char32_t>();
+    ec_basic_test__narrow<wchar_t>();
+    ec_basic_test__wide();
+
     error_code_test__narrow<char>();
     error_code_test__narrow<char16_t>();
     error_code_test__narrow<char32_t>();
     error_code_test__narrow<wchar_t>();
     error_code_test__wide();
 
+    ec_error_code_test__narrow<char>();
+    ec_error_code_test__narrow<char16_t>();
+    ec_error_code_test__narrow<char32_t>();
+    ec_error_code_test__narrow<wchar_t>();
+    ec_error_code_test__wide();
+
     exception_thrown_test__narrow<char>();
     exception_thrown_test__narrow<char16_t>();
     exception_thrown_test__narrow<char32_t>();
     exception_thrown_test__narrow<wchar_t>();
     exception_thrown_test__wide();
+
+    ec_exception_thrown_test__narrow<char>();
+    ec_exception_thrown_test__narrow<char16_t>();
+    ec_exception_thrown_test__narrow<char32_t>();
+    ec_exception_thrown_test__narrow<wchar_t>();
+    ec_exception_thrown_test__wide();
 
 #endif // ! defined(BOOST_NO_EXCEPTION)
 

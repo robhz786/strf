@@ -371,7 +371,7 @@ private:
     fmt_type_adapted _fmt;
 
     template <typename Category>
-    decltype(auto) get_facet(const FPack& fp) const
+    static decltype(auto) get_facet(const FPack& fp)
     {
         return fp.template get_facet<Category, sep_tag>();
     }

@@ -117,7 +117,7 @@ jobs:
       env: 
         - COMMENT=codecov.io
         - TOOLSET=gcc-7
-        - DEFINES="define=BOOST_NO_STRESS_TEST=1"
+        - DEFINES="define=BOOST_NO_STRESS_TEST=1 define=BOOST_DISABLE_ASSERTS"
         - CXXSTD=14
       addons: *gcc-7
       script:

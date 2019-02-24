@@ -841,61 +841,6 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_validate(char32_t ch)
              ch < 0x110000 ? 4 : (std::size_t)-1 );
 }
 
-// BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result mutf8_encode_char
-//     ( std::uint8_t** dest
-//     , std::uint8_t* end
-//     , char32_t ch
-//     , stringify::v0::error_handling err_hdl )
-// {
-//     if (ch != 0)
-//     {
-//         return stringify::v0::detail::utf8_encode_char(dest, end, ch, err_hdl);
-//     }
-//     auto dest_it = *dest;
-//     if (dest_it + 1 < end)
-//     {
-//         dest_it[0] = '\xC0';
-//         dest_it[1] = '\x80';
-//         *dest = dest_it + 2;
-//         return stringify::v0::cv_result::success;
-//     }
-//     return stringify::v0::cv_result::insufficient_space;
-// }
-
-
-// BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result mutf8_encode_fill
-//     ( std::uint8_t** dest
-//     , std::uint8_t* end
-//     , std::size_t& count
-//     , char32_t ch
-//     , stringify::v0::error_handling err_hdl )
-// {
-//     if (ch != 0)
-//     {
-//         return stringify::v0::detail::utf8_encode_fill(dest, end, count, ch, err_hdl);
-//     }
-//     auto dest_it = *dest;
-//     std::size_t available = (end - dest_it) / 2;
-//     std::size_t c = count;
-//     std::size_t minc = std::min(count, available);
-//     auto it = std::fill_n( reinterpret_cast<std::pair<std::uint8_t, std::uint8_t>*>(dest_it)
-//                          , minc
-//                          , std::pair<std::uint8_t, std::uint8_t>{'\xC0', '\x80'});
-//     *dest = reinterpret_cast<std::uint8_t*>(it);
-//     count = c - minc;
-//     return stringify::v0::cv_result::insufficient_space;
-// }
-
-// BOOST_STRINGIFY_STATIC_LINKAGE std::size_t mutf8_validate(char32_t ch)
-// {
-//     return (ch ==  0 ? 2 :
-//             ch < 0x80 ? 1 :
-//             ch < 0x800 ? 2 :
-//             ch < 0x10000 ? 3 :
-//             ch < 0x110000 ? 4 : (std::size_t)-1);
-// }
-
-
 BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf16_to_utf32_transcode
     ( const char16_t** src
     , const char16_t* src_end
