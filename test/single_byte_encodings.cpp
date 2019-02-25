@@ -2,84 +2,129 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include "lightweight_test_label.hpp"
+#include "test_utils.hpp"
 
-#include <boost/utility/string_view.hpp>
-#include <boost/stringify/v0/detail/transcoding.hpp>
-#include <boost/hana/for_each.hpp>
-#include <boost/hana/tuple.hpp>
+#include <string>
 #include <algorithm>
+#include <boost/stringify.hpp>
 
 namespace strf = boost::stringify::v0;
-namespace hana = boost::hana;
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN;
-
-inline std::ostream& operator<<(std::ostream& dest, strf::cv_result r)
+std::string make_str_0_to_xff()
 {
-    return dest << ( r == strf::cv_result::success ? "success"
-                   : r == strf::cv_result::insufficient_space ? "insufficient_space"
-                   : r == strf::cv_result::invalid_char ? "invalid_char"
-                   : "???" );
+    std::string str(0x100, '\0');
+    for(unsigned i = 0; i < 0x100; ++i)
+        str[i] = static_cast<char>(i);
+    return std::move(str);
 }
 
-BOOST_STRINGIFY_V0_NAMESPACE_END;
+const std::string str_0_to_xff = make_str_0_to_xff();
 
-template <typename CharT>
-bool str_equal(const CharT* a, const CharT* b, std::size_t count)
+std::string char_0_to_0xff_sanitized(strf::encoding<char> enc)
 {
-    for (std::size_t i = 0; i < count; ++i)
-    {
-        if(a[i] != b[i])
-        {
-            return false;
-        }
-    }
-    return true;
-    //return std::char_traits<CharT>::compare(a, b, count) == 0;
-}
-
-
-void fill_iso_8859_1_table(char32_t* table)
-{
+    std::string str;
     for(unsigned i = 0; i < 0x100; ++i)
     {
-        table[i] = i;
+        char32_t ch32 = enc.decode_single_char(static_cast<std::uint8_t>(i));
+        unsigned char ch = ( ch32 == (char32_t)-1
+                           ? static_cast<unsigned char>('?')
+                           : static_cast<unsigned char>(i) );
+        str.push_back(ch);
+    }
+    return std::move(str);
+}
+
+void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
+{
+    BOOST_TEST_LABEL << enc.name();
+
+    {
+        // to UTF-32
+        TEST(decoded_0_to_0x100) (strf::cv(str_0_to_xff, enc));
+    }
+
+    std::u32string valid_u32input = decoded_0_to_0x100;
+    valid_u32input.erase( std::remove( valid_u32input.begin()
+                                     , valid_u32input.end()
+                                     , U'\uFFFD' )
+                        , valid_u32input.end() );
+    {
+        // from and back to UTF-32
+        auto enc_str = strf::to_string.facets(enc) (strf::cv(valid_u32input));
+        auto u32str = strf::to_u32string (strf::cv(enc_str, enc));
+        BOOST_TEST(u32str == valid_u32input);
+    }
+    {
+        // from UTF-8
+        auto u8str = strf::to_string (strf::cv(valid_u32input));
+        auto enc_str = strf::to_string.facets(enc) (strf::cv(u8str, strf::utf8()));
+        auto u32str = strf::to_u32string (strf::cv(enc_str, enc));
+        BOOST_TEST(u32str == valid_u32input);
+
+    }
+    {   // from UTF-8
+        auto u8str = strf::to_string(strf::cv(decoded_0_to_0x100));
+        TEST(char_0_to_0xff_sanitized(enc))
+            .facets(enc)
+            (strf::cv(u8str, strf::utf8()));
+    }
+
+    TEST(char_0_to_0xff_sanitized(enc)).facets(enc) (strf::cv(str_0_to_xff));
+    TEST("---?+++")
+        .facets(enc, strf::encoding_policy(strf::error_handling::replace))
+        (strf::cv(u"---\U0010FFFF+++"));
+    TEST_RF("---+++", 7.1 / 6.0)
+        .facets(enc, strf::encoding_policy(strf::error_handling::ignore))
+        (strf::cv(u"---\U0010FFFF+++"));
+
+    {
+        std::string str;
+        auto ec = strf::ec_assign(str)
+            .facets(enc, strf::encoding_policy(strf::error_handling::stop))
+            (strf::cv(u"---\U0010FFFF++"));
+        BOOST_TEST(ec == std::errc::illegal_byte_sequence);
+        BOOST_TEST(str == "---");
     }
 }
 
-void fill_iso_8859_3_table(char32_t* table)
+
+std::u32string decoded_0_to_xff_iso_8859_1()
 {
+    std::u32string table(0x100, u'\0');
+    unsigned i = 0;
+    for (char32_t& ch : table)
+    {
+        ch = i++;
+    }
+    return std::move(table);
+}
+
+std::u32string decoded_0_to_xff_iso_8859_3()
+{
+    std::u32string table;
     for(unsigned i = 0; i < 0xA1; ++i)
     {
-        table[i] = i;
+        table.push_back(i);
     }
+    table.append(U"\u0126\u02D8\u00A3\u00A4\uFFFD\u0124\u00A7"
+                 U"\u00A8\u0130\u015E\u011E\u0134\u00AD\uFFFD\u017B"
+                 U"\u00B0\u0127\u00B2\u00B3\u00B4\u00B5\u0125\u00B7"
+                 U"\u00B8\u0131\u015F\u011F\u0135\u00BD\uFFFD\u017C"
+                 U"\u00C0\u00C1\u00C2\uFFFD\u00C4\u010A\u0108\u00C7"
+                 U"\u00C8\u00C9\u00CA\u00CB\u00CC\u00CD\u00CE\u00CF"
+                 U"\uFFFD\u00D1\u00D2\u00D3\u00D4\u0120\u00D6\u00D7"
+                 U"\u011C\u00D9\u00DA\u00DB\u00DC\u016C\u015C\u00DF"
+                 U"\u00E0\u00E1\u00E2\uFFFD\u00E4\u010B\u0109\u00E7"
+                 U"\u00E8\u00E9\u00EA\u00EB\u00EC\u00ED\u00EE\u00EF"
+                 U"\uFFFD\u00F1\u00F2\u00F3\u00F4\u0121\u00F6\u00F7"
+                 U"\u011D\u00F9\u00FA\u00FB\u00FC\u016D\u015D\u02D9");
 
-    char32_t undef = 0xFFFD;
-
-    char32_t table2[] =
-        {/*    */ 0x0126, 0x02D8, 0x00A3, 0x00A4, undef,  0x0124, 0x00A7
-        , 0x00A8, 0x0130, 0x015E, 0x011E, 0x0134, 0x00AD,  undef, 0x017B
-        , 0x00B0, 0x0127, 0x00B2, 0x00B3, 0x00B4, 0x00B5, 0x0125, 0x00B7
-        , 0x00B8, 0x0131, 0x015F, 0x011F, 0x0135, 0x00BD,  undef, 0x017C
-        , 0x00C0, 0x00C1, 0x00C2,  undef, 0x00C4, 0x010A, 0x0108, 0x00C7
-        , 0x00C8, 0x00C9, 0x00CA, 0x00CB, 0x00CC, 0x00CD, 0x00CE, 0x00CF
-        ,  undef, 0x00D1, 0x00D2, 0x00D3, 0x00D4, 0x0120, 0x00D6, 0x00D7
-        , 0x011C, 0x00D9, 0x00DA, 0x00DB, 0x00DC, 0x016C, 0x015C, 0x00DF
-        , 0x00E0, 0x00E1, 0x00E2,  undef, 0x00E4, 0x010B, 0x0109, 0x00E7
-        , 0x00E8, 0x00E9, 0x00EA, 0x00EB, 0x00EC, 0x00ED, 0x00EE, 0x00EF
-        ,  undef, 0x00F1, 0x00F2, 0x00F3, 0x00F4, 0x0121, 0x00F6, 0x00F7
-        , 0x011D, 0x00F9, 0x00FA, 0x00FB, 0x00FC, 0x016D, 0x015D, 0x02D9 };
-
-    for(unsigned i = 0xA1; i < 0x100; ++i)
-    {
-        table[i] = table2[i - 0xA1];
-    }
+    return std::move(table);
 }
 
-void fill_iso_8859_15_table(char32_t* table)
+std::u32string decoded_0_to_xff_iso_8859_15()
 {
-    fill_iso_8859_1_table(table);
+    auto table =  decoded_0_to_xff_iso_8859_1();
     table[0xA4] = 0x20AC;
     table[0xA6] = 0x0160;
     table[0xA8] = 0x0161;
@@ -88,128 +133,26 @@ void fill_iso_8859_15_table(char32_t* table)
     table[0xBC] = 0x0152;
     table[0xBD] = 0x0153;
     table[0xBE] = 0x0178;
+    return std::move(table);
 }
 
-void fill_windows_1252_table(char32_t* table)
+std::u32string decoded_0_to_xff_windows_1252()
 {
-    fill_iso_8859_1_table(table);
-
+    auto table = decoded_0_to_xff_iso_8859_1();
     const char32_t r80_to_9F[] =
         { 0x20AC, 0x0081, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021
         , 0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, 0x008D, 0x017D, 0x008F
         , 0x0090, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014
         , 0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0x009D, 0x017E, 0x0178 };
-
-    std::copy(r80_to_9F, r80_to_9F + 0x20, table + 0x80);
+    std::copy(r80_to_9F, r80_to_9F + 0x20, table.begin() + 0x80);
+    return std::move(table);
 }
-
-
-typedef void (*fill_table_func)(char32_t*);
-
-void test(const strf::encoding<char>& enc, fill_table_func fill_table)
-{
-    BOOST_TEST_LABEL << enc.name();
-
-    char32_t u32table [0x101] = {0};
-    u32table [0x100] = 0x100;
-    char32_t* u32table_end = u32table + 0x100;
-    fill_table(const_cast<char32_t*>(u32table));
-
-    char  char_0_to_0xff[0x100] = {0};
-    char* char_0_to_0xff_end = char_0_to_0xff + 0x100;
-    for(unsigned  i = 0; i < 0x100; ++i)
-    {
-        char_0_to_0xff[i] = static_cast<char>(i);
-    }
-
-    char char_0_to_0xff_sanitized[0x100] = {0};
-    for(unsigned i = 0; i < 0x100; ++i)
-    {
-        unsigned char ch = enc.decode_single_char(static_cast<std::uint8_t>(i)) == (char32_t)-1
-            ? static_cast<unsigned char>('?')
-            : static_cast<unsigned char>(i);
-        char_0_to_0xff_sanitized[i] = ch;
-    }
-
-
-    {   // convert to UTF-32
-        char32_t result [0x100];
-        char32_t* result_end = result + 0x100;
-
-        const auto* src = char_0_to_0xff;
-        auto* dest = result;
-        auto res = enc.to_u32().transcode( &src, char_0_to_0xff_end
-                                         , &dest, result_end
-                                         , strf::error_handling::replace, false );
-
-        BOOST_TEST_EQ(res, strf::cv_result::success);
-        BOOST_TEST_EQ(src, char_0_to_0xff_end);
-        BOOST_TEST_EQ(dest, result_end);
-        BOOST_TEST(str_equal(result, u32table, 0x100));
-
-        auto size = enc.to_u32().necessary_size( char_0_to_0xff, char_0_to_0xff_end
-                                               , strf::error_handling::replace
-                                               , false );
-        BOOST_TEST_EQ(size, 0x100);
-    }
-
-    {   // convert from UTF-32
-        char result [0x101];
-        char* result_end = result + 0x101;
-
-        const auto* src = u32table;
-        auto* dest = result;
-        auto res = enc.from_u32().transcode( &src, u32table + 0x101
-                                           , &dest, result_end
-                                           , strf::error_handling::replace, false );
-
-        BOOST_TEST_EQ(res, strf::cv_result::success);
-        BOOST_TEST_EQ(src, u32table + 0x101);
-        BOOST_TEST_EQ(dest, result + 0x101);
-        BOOST_TEST(str_equal(result, char_0_to_0xff_sanitized, 0x100));
-        BOOST_TEST_EQ(result[0x100], '?');
-
-        auto size = enc.from_u32().necessary_size( u32table, u32table_end
-                                                 , strf::error_handling::replace
-                                                 , false );
-        BOOST_TEST_EQ(size, 0x100);
-    }
-
-    {   // sanitize
-        char result [0x100];
-        char* result_end = result + 0x100;
-
-        const auto* src = char_0_to_0xff;
-        auto* dest = result;
-        auto res = enc.sanitizer().transcode( &src, char_0_to_0xff_end
-                                            , &dest, result_end
-                                            , strf::error_handling::replace
-                                            , false );
-        BOOST_TEST_EQ(res, strf::cv_result::success);
-
-        BOOST_TEST(str_equal(result, char_0_to_0xff_sanitized, 0x100));
-        BOOST_TEST_EQ(src, char_0_to_0xff_end);
-        BOOST_TEST_EQ(dest, result_end);
-
-        auto size = enc.sanitizer().necessary_size( char_0_to_0xff, char_0_to_0xff_end
-                                                  , strf::error_handling::replace
-                                                  , false );
-        BOOST_TEST_EQ(size, 0x100);
-    }
-}
-
 
 int main()
 {
-    auto encodings = hana::make_tuple
-        ( std::make_pair(strf::iso_8859_1(), fill_iso_8859_1_table)
-        , std::make_pair(strf::iso_8859_3(), fill_iso_8859_3_table)
-        , std::make_pair(strf::iso_8859_15(), fill_iso_8859_15_table)
-        , std::make_pair(strf::windows_1252(), fill_windows_1252_table) );
-
-    hana::for_each(encodings, [](const auto p){
-            test(p.first, p.second);
-        });
-
+    test(strf::iso_8859_1(), decoded_0_to_xff_iso_8859_1());
+    test(strf::iso_8859_3(), decoded_0_to_xff_iso_8859_3());
+    test(strf::iso_8859_15(), decoded_0_to_xff_iso_8859_15());
+    test(strf::windows_1252(), decoded_0_to_xff_windows_1252() );
     return boost::report_errors();
 }

@@ -237,7 +237,8 @@ bool numchars_default_common<CharT>::print_digits
         if (n == 0)
         {
             auto res = enc.encode_char( &pos, end, separator
-                                      , stringify::v0::error_handling::ignore );
+                                      , stringify::v0::error_handling::ignore
+                                      , false );
             (void)res;
             BOOST_ASSERT(res == stringify::v0::cv_result::success);
             n = *--grp_it;
@@ -274,12 +275,6 @@ public:
     using stringify::v0::numchars_default_common<CharT>::print_digits;
 
     virtual bool print_base_indication
-        ( stringify::v0::output_buffer<CharT>& ob
-        , stringify::v0::encoding<CharT> enc ) const override;
-    virtual bool print_pos_sign
-        ( stringify::v0::output_buffer<CharT>& ob
-        , stringify::v0::encoding<CharT> enc ) const override;
-    virtual bool print_neg_sign
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const override;
     virtual bool print_exp_base
@@ -329,36 +324,6 @@ bool default_numchars<CharT, 10>::print_base_indication
 {
     (void)ob;
     (void)enc;
-    return true;
-}
-
-template <typename CharT>
-bool default_numchars<CharT, 10>::print_pos_sign
-    ( stringify::v0::output_buffer<CharT>& ob
-    , stringify::v0::encoding<CharT> enc ) const
-{
-    (void)enc;
-    if (ob.size() == 0 && !ob.recycle())
-    {
-        return false;
-    }
-    *ob.pos() = '+';
-    ob.advance();
-    return true;
-}
-
-template <typename CharT>
-bool default_numchars<CharT, 10>::print_neg_sign
-    ( stringify::v0::output_buffer<CharT>& ob
-    , stringify::v0::encoding<CharT> enc ) const
-{
-    (void)enc;
-    if (ob.size() == 0 && !ob.recycle())
-    {
-        return false;
-    }
-    *ob.pos() = '-';
-    ob.advance();
     return true;
 }
 

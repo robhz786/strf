@@ -1,176 +1,28 @@
+# Copyright 2016 Peter Dimov
+# Copyright 2017, 2018 James E. King III
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
 
+# This file is a customization of the template located in
+# https://github.com/boostorg/boost-ci
+
+dist: xenial
 language: cpp
 
-sudo: false
-
-branches:
-  only:
-    - master
-    - develop
-    - /feature\/.*/
-    - /release-.*/
-
-matrix:
-  include:
-
-    - os: linux
-      compiler: gcc
-      addons: 
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gcc-6
-      env: TOOLSET=gcc COMPILER=g++-6 CXXSTD=c++14
-
-    - os: linux
-      compiler: gcc
-      addons: 
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gcc-6
-      env: TOOLSET=gcc COMPILER=g++-6 CXXSTD=c++1z
-
-    - os: linux
-      dist: trusty
-      compiler: gcc
-      addons: 
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - gcc-7
-      env: TOOLSET=gcc COMPILER=g++-7 CXXSTD=c++14
-
-    - os: linux
-      dist: trusty
-      compiler: gcc
-      addons: 
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - gcc-7
-      env: TOOLSET=gcc COMPILER=g++-7 CXXSTD=c++1z
-
-
-#    - os: linux
-#      compiler: clang++-3.6
-#      env: TOOLSET=clang COMPILER=clang++-3.6 CXXSTD=c++14
-#      addons:
-#        apt:
-#          packages:
-#            - clang-3.6
-#          sources:
-#            - ubuntu-toolchain-r-test
-#            - llvm-toolchain-precise-3.6
-#    - os: linux
-#      compiler: clang++-3.6
-#      env: TOOLSET=clang LLVM_VERSION=3.6.2 COMPILER=clang++-3.6 CXXSTD=c++1z
-#      addons:
-#        apt:
-#          packages:
-#            - clang-3.6
-#          sources:
-#            - ubuntu-toolchain-r-test
-#            - llvm-toolchain-precise-3.6
-#
-#    - os: linux
-#      compiler: clang++-3.7
-#      env: TOOLSET=clang LLVM_VERSION=3.7.1 COMPILER=clang++-3.7 CXXSTD=c++14
-#      addons:
-#        apt:
-#          packages:
-#            - clang-3.7
-#          sources:
-#            - ubuntu-toolchain-r-test
-#            - llvm-toolchain-precise-3.7
-#
-#    - os: linux
-#      compiler: clang++-3.8
-#      env: TOOLSET=clang LLVM_VERSION=3.8.0 COMPILER=clang++-3.8 CXXSTD=c++14
-#      addons:
-#        apt:
-#          packages:
-#            - clang-3.8
-#          sources:
-#            - ubuntu-toolchain-r-test
-#            - llvm-toolchain-precise-3.8
-#
-#    - os: linux
-#      compiler: clang++-3.8
-#      env: TOOLSET=clang LLVM_VERSION=3.8.0 COMPILER=clang++-3.8 CXXSTD=c++1z
-#      addons:
-#        apt:
-#          packages:
-#            - clang-3.8
-#          sources:
-#            - ubuntu-toolchain-r-test
-#            - llvm-toolchain-precise-3.8
-#
-#
-#    - os: linux
-#      compiler: clang++-3.9
-#      env: TOOLSET=clang LLVM_VERSION=3.9.0 COMPILER=clang++-3.9 CXXSTD=c++14
-#      addons:
-#        apt:
-#          packages:
-#            - clang-3.9
-#          sources:
-#            - ubuntu-toolchain-r-test
-#            - llvm-toolchain-precise-3.9
-#
-#    - os: linux
-#      compiler: clang++-3.9
-#      env: TOOLSET=clang LLVM_VERSION=3.9.0 COMPILER=clang++-3.9 CXXSTD=c++1z
-#      addons:
-#        apt:
-#          packages:
-#            - clang-3.9
-#          sources:
-#            - ubuntu-toolchain-r-test
-#            - llvm-toolchain-precise-3.9
-#
-#    - os: linux
-#      compiler: clang++-4.0
-#      env: TOOLSET=clang COMPILER=clang++-4.0 CXXSTD=c++14
-#      addons:
-#        apt:
-#          packages:
-#            - clang-4.0
-#          sources:
-#            - ubuntu-toolchain-r-test
-#            - llvm-toolchain-trusty-4.0
-#
-#    - os: linux
-#      compiler: clang++-4.0
-#      env: TOOLSET=clang COMPILER=clang++-4.0 CXXSTD=c++1z
-#      addons:
-#        apt:
-#          packages:
-#            - clang-4.0
-#          sources:
-#            - ubuntu-toolchain-r-test
-#            - llvm-toolchain-trusty-4.0
-
-    - os: osx
-      env: TOOLSET=clang COMPILER=clang++ CXXSTD=c++14
-
-    - os: osx
-      env: TOOLSET=clang COMPILER=clang++ CXXSTD=c++1z
-
+env:
+  global:
+  # see: http://www.boost.org/build/doc/html/bbv2/overview/invocation.html#bbv2.overview.invocation.properties
+  # to use the default for a given environment, comment it out; recommend you build debug and release however..
+  # - B2_ADDRESS_MODEL=address-model=64,32
+  # - B2_LINK=link=shared,static
+  # - B2_THREADING=threading=multi,single
+    - B2_VARIANT=variant=release,debug
 
 install:
+  - git clone https://github.com/boostorg/boost-ci.git boost-ci
+  - cp -pr boost-ci/ci boost-ci/.codecov.yml .
   - cd ..
-  - git clone -b develop https://github.com/boostorg/boost.git boost-root
+  - git clone -b develop --depth 1 https://github.com/boostorg/boost.git boost-root
   - cd boost-root
   - git submodule init libs/headers
   - git submodule init libs/assert
@@ -187,17 +39,142 @@ install:
   - git submodule init tools/build
   - git submodule init tools/inspect
   - git submodule update
+  - export SELF=stringify
+  - export BOOST_ROOT="`pwd`"
+  - export PATH="`pwd`":$PATH
   - mkdir -p libs/stringify
   - cp -r $TRAVIS_BUILD_DIR/* libs/stringify
   - ./bootstrap.sh
   - ./b2 headers
+ 
 
+addons:
+  apt:
+    packages:
+      - binutils-gold
+      - gdb
+      - libc6-dbg
+        
+branches:
+  only:
+    - develop
+    - master
+    - /release-.*/
+    
 script:
-  - |-
-    echo "using $TOOLSET : : $COMPILER : <cxxflags>-std=$CXXSTD ;" > ~/user-config.jam
-  - ./b2 libs/stringify toolset=$TOOLSET
+  - cd $BOOST_ROOT/libs/stringify
+  - $BOOST_ROOT/b2 . toolset=$TOOLSET cxxstd=$CXXSTD $CXXFLAGS $DEFINES $LINKFLAGS $TESTFLAGS $B2_ADDRESS_MODEL $B2_LINK $B2_THREADING $B2_VARIANT -j3 $*
 
+#
+# Default toolsets in Ubuntu
+#
+#       trusty xenial bionic
+#        14.04  16.04  18.04
+#       ------ ------ ------
+# clang    3.4    3.8    6.0
+#   gcc  4.8.2  5.3.1  7.3.0
+#
+
+anchors:
+  clang-38: &clang-38 { apt: { packages: [ "clang-3.8",
+                                           "libstdc++-6-dev" ], sources: [ "llvm-toolchain-xenial-3.8",
+                                                                           "ubuntu-toolchain-r-test"   ] } }
+  clang-4:  &clang-4  { apt: { packages: [ "clang-4.0",
+                                           "libstdc++-6-dev" ], sources: [ "llvm-toolchain-xenial-4.0",
+                                                                           "ubuntu-toolchain-r-test"   ] } }
+  clang-5:  &clang-5  { apt: { packages: [ "clang-5.0",
+                                           "libstdc++-7-dev" ], sources: [ "llvm-toolchain-xenial-5.0",
+                                                                           "ubuntu-toolchain-r-test"   ] } }
+  clang-6:  &clang-6  { apt: { packages: [ "clang-6.0",
+                                           "libc6-dbg",
+                                           "libc++-dev",
+                                           "libstdc++-8-dev" ], sources: [ "llvm-toolchain-xenial-6.0",
+                                                                           "ubuntu-toolchain-r-test"   ] } }
+  gcc-6:    &gcc-6    { apt: { packages: [ "g++-6"           ], sources: [ "ubuntu-toolchain-r-test"   ] } }
+  gcc-7:    &gcc-7    { apt: { packages: [ "g++-7"           ], sources: [ "ubuntu-toolchain-r-test"   ] } }
+  gcc-8:    &gcc-8    { apt: { packages: [ "g++-8"           ], sources: [ "ubuntu-toolchain-r-test"   ] } }
+
+jobs:
+  allow_failures:
+    - env:
+      - COPY="all the environment settings from your job"
+
+  include:
+    # libstdc++
+    - { os: "linux", env: [ "TOOLSET=gcc-6",       "CXXSTD=14"       ], addons: *gcc-6     }
+    - { os: "linux", env: [ "TOOLSET=gcc-7",       "CXXSTD=14,17"    ], addons: *gcc-7     }
+    - { os: "linux", env: [ "TOOLSET=gcc-8",       "CXXSTD=14,17,2a" ], addons: *gcc-8     }
+    - { os: "linux", env: [ "TOOLSET=clang-3.8",   "CXXSTD=14"       ], addons: *clang-38  }
+    - { os: "linux", env: [ "TOOLSET=clang-4.0",   "CXXSTD=14"       ], addons: *clang-4   }
+    - { os: "linux", env: [ "TOOLSET=clang-5.0",   "CXXSTD=14,17"    ], addons: *clang-5   }
+    - { os: "linux", env: [ "TOOLSET=clang-6.0",   "CXXSTD=14,17,2a" ], addons: *clang-6   }
+
+    # libc++
+    - { os: "linux", env: [ "TOOLSET=clang-6.0",   "CXXSTD=14,17,2a",
+                            "CXXFLAGS=-stdlib=libc++"                      ], addons: *clang-6   }
+
+    - os: linux
+      env: 
+        - COMMENT=codecov.io
+        - TOOLSET=gcc-7
+        - DEFINES="define=BOOST_NO_STRESS_TEST=1 define=BOOST_DISABLE_ASSERTS"
+        - CXXSTD=14
+      addons: *gcc-7
+      script:
+        - pushd /tmp && git clone https://github.com/linux-test-project/lcov.git && export PATH=/tmp/lcov/bin:$PATH && which lcov && lcov --version && popd
+        - cd $BOOST_ROOT/libs/$SELF
+        - ci/travis/codecov.sh
+
+#    - os: linux
+#      env:
+#        - COMMENT=cppcheck
+#      script:
+#        - cd $BOOST_ROOT/libs/$SELF
+#        - ci/travis/cppcheck.sh
+
+    - os: linux
+      env:
+        - COMMENT=ubsan
+        - B2_VARIANT=variant=debug
+        - TOOLSET=gcc-8
+        - CXXSTD=14,17,2a
+        - DEFINES="define=BOOST_NO_STRESS_TEST=1"
+        - CXXFLAGS="cxxflags=-fno-omit-frame-pointer cxxflags=-fsanitize=undefined cxxflags=-fno-sanitize-recover=undefined"
+        - LINKFLAGS="linkflags=-fsanitize=undefined linkflags=-fno-sanitize-recover=undefined linkflags=-fuse-ld=gold"
+        - UBSAN_OPTIONS=print_stacktrace=1
+      addons: *gcc-8
+
+    - os: linux
+      env:
+        - COMMENT=valgrind
+        - TOOLSET=clang-6.0
+        - CXXSTD=14,17,2a
+        - DEFINES="define=BOOST_NO_STRESS_TEST=1"
+        - B2_VARIANT=variant=debug
+        - TESTFLAGS=testing.launcher=valgrind
+        - VALGRIND_OPTS=--error-exitcode=1
+      addons: *clang-6
+      script:
+        - cd $BOOST_ROOT/libs/$SELF
+        - ci/travis/valgrind.sh
+
+    #################### Jobs to run on pushes to master, develop ###################
+
+#    # Coverity Scan
+#    - os: linux
+#      if: (env(COVERITY_SCAN_NOTIFICATION_EMAIL) IS present) AND (branch IN (develop, master, release-0.8.1)) AND (type IN (cron, push))
+#      env:
+#        - COMMENT="Coverity Scan"
+#        - TOOLSET=gcc-7
+#        - SELF=stringify
+#      addons: *gcc-7
+#      script:
+#        - cd $BOOST_ROOT/libs/$SELF
+#        - rm -rf coverity_tool.tgz cov-analysis*
+#        - wget -q https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_SCAN_TOKEN&project=boostorg/$SELF" -O coverity_tool.tgz
+#        - tar xzf coverity_tool.tgz
+#        - ci/travis/coverity.sh --skipdownload
+                                    
 notifications:
   email:
-    on_success: always
-
+    false

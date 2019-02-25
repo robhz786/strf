@@ -4,7 +4,6 @@
 
 #define  _CRT_SECURE_NO_WARNINGS
 
-#include <boost/detail/lightweight_test.hpp>
 #include <boost/stringify.hpp>
 #include <boost/config.hpp>
 #include "test_utils.hpp"
@@ -484,11 +483,23 @@ int main()
     basic_test__narrow<wchar_t>();
     basic_test__wide();
 
+    ec_basic_test__narrow<char>();
+    ec_basic_test__narrow<char16_t>();
+    ec_basic_test__narrow<char32_t>();
+    ec_basic_test__narrow<wchar_t>();
+    ec_basic_test__wide();
+
     error_code_test__narrow<char>();
     error_code_test__narrow<char16_t>();
     error_code_test__narrow<char32_t>();
     error_code_test__narrow<wchar_t>();
     error_code_test__wide();
+
+    ec_error_code_test__narrow<char>();
+    ec_error_code_test__narrow<char16_t>();
+    ec_error_code_test__narrow<char32_t>();
+    ec_error_code_test__narrow<wchar_t>();
+    ec_error_code_test__wide();
 
     exception_thrown_test__narrow<char>();
     exception_thrown_test__narrow<char16_t>();
@@ -496,7 +507,13 @@ int main()
     exception_thrown_test__narrow<wchar_t>();
     exception_thrown_test__wide();
 
+    ec_exception_thrown_test__narrow<char>();
+    ec_exception_thrown_test__narrow<char16_t>();
+    ec_exception_thrown_test__narrow<char32_t>();
+    ec_exception_thrown_test__narrow<wchar_t>();
+    ec_exception_thrown_test__wide();
+
 #endif // ! defined(BOOST_NO_EXCEPTION)
 
-    return report_errors() || boost::report_errors();
+    return boost::report_errors();
 }

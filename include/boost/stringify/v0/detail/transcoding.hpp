@@ -138,13 +138,15 @@ struct encoding_impl
         ( CharT** dest
         , CharT* dest_end
         , char32_t ch
-        , stringify::v0::error_handling err_hdl );
+        , stringify::v0::error_handling err_hdl
+        , bool allow_surr );
     typedef stringify::v0::cv_result (&encode_fill_func_ref)
         ( CharT** dest
         , CharT* dest_end
         , std::size_t& count
         , char32_t ch
-        , stringify::v0::error_handling err_hdl );
+        , stringify::v0::error_handling err_hdl
+        , bool allow_surr );
     typedef std::size_t (&codepoints_count_func_ref)
         ( const CharT* begin
         , const CharT* end
@@ -347,24 +349,26 @@ public:
         ( CharT** dest
         , CharT* dest_end
         , char32_t ch
-        , stringify::v0::error_handling err_hdl ) const
+        , stringify::v0::error_handling err_hdl
+        , bool allow_surr ) const
     {
         return _impl->encode_char
             ( reinterpret_cast<_impl_char_type**>(dest)
             , reinterpret_cast<_impl_char_type*>(dest_end)
-            , ch, err_hdl );
+            , ch, err_hdl, allow_surr );
     }
     stringify::v0::cv_result encode_fill
         ( CharT** dest
         , CharT* dest_end
         , std::size_t& count
         , char32_t ch
-        , stringify::v0::error_handling err_hdl ) const
+        , stringify::v0::error_handling err_hdl
+        , bool allow_surr ) const
     {
         return _impl->encode_fill
             ( reinterpret_cast<_impl_char_type**>(dest)
             , reinterpret_cast<_impl_char_type*>(dest_end)
-            , count, ch, err_hdl );
+            , count, ch, err_hdl, allow_surr );
     }
     std::size_t codepoints_count
         ( const CharT* src_begin

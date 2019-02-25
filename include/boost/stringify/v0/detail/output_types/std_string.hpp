@@ -53,6 +53,10 @@ public:
 
     stringify::v0::nodiscard_error_code finish();
 
+protected:
+
+    void on_error() override;
+
 private:
 
     StringType& _out;
@@ -69,6 +73,12 @@ bool ec_string_appender<StringType>::recycle()
     _out.append(_buff, pos);
     this->set_pos(_buff);
     return true;
+}
+
+template <typename StringType>
+void ec_string_appender<StringType>::on_error()
+{
+    recycle();
 }
 
 template <typename StringType>

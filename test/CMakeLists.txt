@@ -12,6 +12,8 @@ include_directories("../../../")
 foreach(
   t
   assembly_string
+  encode_char
+  encode_fill
   input_string
   input_char
   input_int
@@ -26,7 +28,7 @@ foreach(
   output_FILE
   facets_pack_merge
   facets_pack
-#  reserve
+  reserve
   width_calculator
   utf_to_utf
   single_byte_encodings

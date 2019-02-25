@@ -71,14 +71,16 @@ struct single_byte_encoding
         ( std::uint8_t** dest
         , std::uint8_t* end
         , char32_t ch
-        , stringify::v0::error_handling err_hdl );
+        , stringify::v0::error_handling err_hdl
+        , bool );
 
     static stringify::v0::cv_result encode_fill
         ( std::uint8_t** dest
         , std::uint8_t* end
         , std::size_t& count
         , char32_t ch
-        , stringify::v0::error_handling err_hdl );
+        , stringify::v0::error_handling err_hdl
+        , bool );
 
     static char32_t decode_single_char(std::uint8_t ch)
     {
@@ -245,7 +247,8 @@ stringify::v0::cv_result single_byte_encoding<Impl>::encode_char
     ( std::uint8_t** dest
     , std::uint8_t* end
     , char32_t ch
-    , stringify::v0::error_handling err_hdl )
+    , stringify::v0::error_handling err_hdl
+    , bool )
 {
     std::uint8_t* dest_it = *dest;
     if(dest_it != end)
@@ -280,7 +283,8 @@ stringify::v0::cv_result single_byte_encoding<Impl>::encode_fill
     , std::uint8_t* end
     , std::size_t& count
     , char32_t ch
-    , stringify::v0::error_handling err_hdl )
+    , stringify::v0::error_handling err_hdl
+    , bool )
 {
     unsigned ch2 = Impl::encode(ch);
 
@@ -294,12 +298,14 @@ stringify::v0::cv_result single_byte_encoding<Impl>::encode_fill
 
         if (count_ <= available)
         {
-            std::memset(dest, ch2, count_);
+            std::memset(dest_it, ch2, count_);
             count = 0;
             *dest = dest_it + count_;
             return stringify::v0::cv_result::success;
         }
-        std::memset(dest, ch2, available);
+        std::char_traits<char>::assign( (char*)dest_it
+                                      , available
+                                      , static_cast<char>(ch2) );
         count = count_ - available;
         *dest = end;
         return stringify::v0::cv_result::insufficient_space;

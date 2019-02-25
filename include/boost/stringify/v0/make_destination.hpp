@@ -190,7 +190,7 @@ template < typename OutputBuffImpl
          , typename ... Printers >
 inline decltype(std::declval<OutputBuffImpl>().finish()) do_create_ob_and_write
     ( stringify::v0::detail::output_size_reservation_real reser
-    , OutputBuffInitArgsTuple ob_args
+    , const OutputBuffInitArgsTuple& ob_args
     , const Printers& ... printers )
 {
     stringify::v0::detail::output_writer_from_tuple<OutputBuffImpl> ob_wrapper(ob_args);
@@ -212,7 +212,7 @@ template < typename OutputBuffImpl
          , typename ... Printers >
 inline decltype(std::declval<OutputBuffImpl>().finish()) do_create_ob_and_write
     ( stringify::v0::detail::output_size_reservation_dummy
-    , OutputBuffInitArgsTuple ob_args
+    , const OutputBuffInitArgsTuple& ob_args
     , const Printers& ... printers )
 {
     stringify::v0::detail::output_writer_from_tuple<OutputBuffImpl> ob_wrapper(ob_args);
@@ -235,7 +235,7 @@ template < typename OutputBuffImpl
          , typename ... Args >
 inline decltype(std::declval<OutputBuffImpl>().finish()) create_ob_and_write
     ( ReservationType reser
-    , OutputBuffInitArgsTuple ob_args
+    , const OutputBuffInitArgsTuple& ob_args
     , const FPack& fp
     , const Args& ... args )
 {
@@ -410,7 +410,7 @@ public:
     constexpr syntax_after_leading_expr(syntax_after_leading_expr&&) = default;
 
     template <typename ... Facets>
-    constexpr auto facets(const Facets& ... facets) const
+    constexpr auto facets(const Facets& ... facets) const &
     {
         return syntax_after_leading_expr
             < decltype(stringify::v0::pack(_fpack, facets ...))
@@ -422,7 +422,56 @@ public:
     }
 
     template <typename ... Facets>
-    constexpr auto facets(const stringify::v0::facets_pack<Facets...>& fp) const
+    constexpr auto facets(const stringify::v0::facets_pack<Facets...>& fp) const &
+    {
+        return syntax_after_leading_expr
+            < decltype(stringify::v0::pack(_fpack, fp))
+            , OutputBuff
+            , OutputBuffInitArgsTuple >
+            ( *this
+            , stringify::v0::pack(_fpack, fp)
+            , _ob_args );
+    }
+
+
+    template <typename ... Facets>
+    constexpr auto facets(const Facets& ... facets) &&
+    {
+        return syntax_after_leading_expr
+            < decltype(stringify::v0::pack(_fpack, facets ...))
+            , OutputBuff
+            , OutputBuffInitArgsTuple >
+            ( std::move(*this)
+            , stringify::v0::pack(_fpack, facets ...)
+            , std::move(_ob_args) );
+    }
+
+    template <typename ... Facets>
+    constexpr auto facets(const stringify::v0::facets_pack<Facets...>& fp) &&
+    {
+        return syntax_after_leading_expr
+            < decltype(stringify::v0::pack(_fpack, fp))
+            , OutputBuff
+            , OutputBuffInitArgsTuple >
+            ( std::move(*this)
+            , stringify::v0::pack(std::move(_fpack), fp)
+            , std::move(_ob_args) );
+    }
+
+    template <typename ... Facets>
+    constexpr auto facets(const Facets& ... facets) &
+    {
+        return syntax_after_leading_expr
+            < decltype(stringify::v0::pack(_fpack, facets ...))
+            , OutputBuff
+            , OutputBuffInitArgsTuple >
+            ( *this
+            , stringify::v0::pack(_fpack, facets ...)
+            , _ob_args );
+    }
+
+    template <typename ... Facets>
+    constexpr auto facets(const stringify::v0::facets_pack<Facets...>& fp) &
     {
         return syntax_after_leading_expr
             < decltype(stringify::v0::pack(_fpack, fp))
@@ -503,10 +552,10 @@ public:
         this->set_reserve_calc();
         return *this;
     }
-    constexpr syntax_after_leading_expr reserve_calc() &&
+    constexpr syntax_after_leading_expr&& reserve_calc() &&
     {
         this->set_reserve_calc();
-        return *this;
+        return std::move(*this);
     }
 
     constexpr syntax_after_leading_expr reserve(std::size_t size) const &
@@ -648,7 +697,8 @@ constexpr auto make_destination(Args ... args)
         , OutputBuff
         , std::tuple<Args ...> >
 {
-    return {stringify::v0::facets_pack<>{}, std::tuple<Args ...>{args ...}};
+    return { stringify::v0::facets_pack<>{}
+           , std::tuple<Args ...>{std::forward<Args>(args) ...} };
 }
 
 class stringify_error: public std::system_error

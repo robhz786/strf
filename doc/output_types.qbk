@@ -84,7 +84,7 @@ where:
 * [~CharT] can be `char`, `char16_t`, `char32_t` or `wchar_t`
 * [~end] is [~CharT]*
 * [~limit] is `std::size_t`. It determines the maximum number of characters that can be written, including the termination character.
-* [~count_ptr] is and is optional. The number of successfully written characters will be assigned to [~*count_ptr]. Its type is `std::streamsize*` when [~destination] is `std::basic_streambuf <`[~CharT]`, `[~Traits]`>` and `std::size_t*` otherwise.
+* [~count_ptr] is optional. The number of successfully written characters will be assigned to [~*count_ptr]. Its type is `std::streamsize*` when [~destination] is `std::basic_streambuf <`[~CharT]`, `[~Traits]`>` and `std::size_t*` otherwise.
 * " [*\u00b7\u00b7\u00b7] " is the remaining part of the expression ( it's anything that comes after the /leading expression/ )
 
 [h4 Preconditions]

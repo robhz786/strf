@@ -305,19 +305,40 @@ std::string stringify_invalid_char_sequence(const StrType& seq)
 template <typename ChIn, typename ChOut>
 void test_invalid_input
     ( const strf::encoding<ChIn>& ein
+    , const strf::encoding<ChOut>& eout
+    , std::basic_string<ChIn>  suffix_in
+    , std::basic_string<ChOut> suffix_out );
+
+template <typename ChIn, typename ChOut>
+void test_invalid_input
+    ( const strf::encoding<ChIn>& ein
     , const strf::encoding<ChOut>& eout )
 {
+    test_invalid_input(ein, eout, {}, {});
+
+    const std::basic_string<ChIn>  suffix_in { (ChIn)'d', (ChIn)'e', (ChIn)'f' };
+    const std::basic_string<ChOut> suffix_out{ (ChOut)'d', (ChOut)'e', (ChOut)'f' };
+    test_invalid_input(ein, eout, std::move(suffix_in), std::move(suffix_out));
+}
+
+template <typename ChIn, typename ChOut>
+void test_invalid_input
+    ( const strf::encoding<ChIn>& ein
+    , const strf::encoding<ChOut>& eout
+    , std::basic_string<ChIn>  suffix_in
+    , std::basic_string<ChOut> suffix_out )
+{
     BOOST_TEST_LABEL << "From invalid " << ein.name() << " to " << eout.name();
+    BOOST_TEST_LABEL << (suffix_in.empty() ? "no suffix" : "with suffix");
+
+    const std::basic_string<ChIn>  prefix_in { (ChIn)'a', (ChIn)'b', (ChIn)'c' };
+    const std::basic_string<ChOut> prefix_out{ (ChOut)'a', (ChOut)'b', (ChOut)'c' };
 
     const auto* impl = strf::get_transcoder_impl(ein, eout);
 
     BOOST_TEST(impl != nullptr);
     strf::transcoder<ChIn, ChOut> cv{*impl};
 
-    const std::basic_string<ChIn>  prefix_in { (ChIn)'a', (ChIn)'b', (ChIn)'c' };
-    const std::basic_string<ChIn>  suffix_in { (ChIn)'d', (ChIn)'e', (ChIn)'f' };
-    const std::basic_string<ChOut> prefix_out{ (ChOut)'a', (ChOut)'b', (ChOut)'c' };
-    const std::basic_string<ChOut> suffix_out{ (ChOut)'d', (ChOut)'e', (ChOut)'f' };
     ChOut buff[buff_size];
     ChOut* const buff_end = buff + buff_size;
 
@@ -450,8 +471,10 @@ void test_invalid_input
                                    , buff + prefix_out.size()
                                    , strf::error_handling::ignore
                                    , false );
-
-            BOOST_TEST_EQ(res, strf::cv_result::insufficient_space);
+            if (! suffix_in.empty())
+            {
+                BOOST_TEST_EQ(res, strf::cv_result::insufficient_space);
+            }
             BOOST_TEST_EQ((dest_it - buff), as_signed(expected.size()));
             BOOST_TEST(std::equal( expected.begin()
                                  , expected.end()
@@ -550,6 +573,5 @@ int main()
                 });
         });
 
-    auto res = boost::report_errors();
-    return res;
+    return boost::report_errors();
 }

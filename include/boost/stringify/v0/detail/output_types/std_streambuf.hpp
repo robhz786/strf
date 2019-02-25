@@ -51,6 +51,10 @@ public:
         return this->get_error();
     }
 
+protected:
+
+    void on_error() override;
+
 private:
 
     std::basic_streambuf<CharT, Traits>& _out;
@@ -74,6 +78,13 @@ bool ec_std_streambuf_writer<CharT, Traits>::recycle()
     return false;
 }
 
+template <typename CharT, typename Traits>
+void ec_std_streambuf_writer<CharT, Traits>::on_error()
+{
+    std::streamsize count = this->pos() - _buff;
+    this->set_pos(_buff);
+    _count += _out.sputn(_buff, count);
+}
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 
@@ -159,6 +170,10 @@ public:
         return _count;
     }
 
+protected:
+
+    void on_error() override;
+
 private:
 
     std::basic_streambuf<CharT, Traits>& _out;
@@ -182,6 +197,13 @@ bool std_streambuf_writer<CharT, Traits>::recycle()
     return false;
 }
 
+template <typename CharT, typename Traits>
+void std_streambuf_writer<CharT, Traits>::on_error()
+{
+    std::streamsize count = this->pos() - _buff;
+    this->set_pos(_buff);
+    _count += _out.sputn(_buff, count);
+}
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 

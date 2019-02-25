@@ -27,6 +27,5 @@ int main()
     TEST("abcdef123") (strf::join_left(8)("abc", "def", 123));
     TEST("abcdef123") (strf::join_right(8)("abc", "def", 123));
 
-    int rc = report_errors();
-    return rc;
+    return boost::report_errors();
 }

@@ -312,7 +312,7 @@ private:
     int _content_width = 0;
 
     template <typename Category, typename FPack>
-    decltype(auto) _get_facet(const FPack& fp) const
+    static decltype(auto) _get_facet(const FPack& fp)
     {
         return fp.template get_facet<Category, input_type>();
     }
@@ -414,7 +414,7 @@ bool fmt_char_printer<CharT>::_write_fill
     , unsigned count ) const
 {
     return stringify::v0::detail::write_fill
-        ( _encoding, ob, count, _fmt.fill(), _epoli.err_hdl() );
+        ( _encoding, ob, count, _fmt.fill(), _epoli );
 }
 
 template <typename CharT>

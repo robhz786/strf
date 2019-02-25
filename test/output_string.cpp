@@ -4,7 +4,6 @@
 
 #define  _CRT_SECURE_NO_WARNINGS
 
-#include <boost/detail/lightweight_test.hpp>
 #include "test_utils.hpp"
 #include "error_code_emitter_arg.hpp"
 #include "exception_thrower_arg.hpp"
@@ -22,9 +21,10 @@ void basic_assign_test()
     std::basic_string<CharT> output(CharT{'-'}, 10);
     std::basic_string<CharT> expected(50, CharT{'*'});
 
-    strf::assign(output) (strf::multi(CharT{'*'}, 50));
+    auto size = strf::assign(output) (strf::multi(CharT{'*'}, 50));
 
     BOOST_TEST(expected == output);
+    BOOST_TEST(size == expected.size());
 }
 
 template <typename CharT>
@@ -35,9 +35,10 @@ void basic_append_test()
         = output
         + std::basic_string<CharT>(50, CharT{'*'});
 
-    strf::append(output) (strf::multi(CharT{'*'}, 50));
+    auto size = strf::append(output) (strf::multi(CharT{'*'}, 50));
 
     BOOST_TEST(expected == output);
+    BOOST_TEST(size == 50);
 }
 
 template <typename CharT>
@@ -57,11 +58,13 @@ void basic_ec_assign_test()
 {
     std::basic_string<CharT> output(CharT{'-'}, 10);
     std::basic_string<CharT> expected(50, CharT{'*'});
+    std::size_t size = 0;
 
-    auto ec = strf::ec_assign(output) (strf::multi(CharT{'*'}, 50));
+    auto ec = strf::ec_assign(output, &size) (strf::multi(CharT{'*'}, 50));
 
     BOOST_TEST(std::error_code{} == ec);
     BOOST_TEST(expected == output);
+    BOOST_TEST(size == 50);
 }
 
 template <typename CharT>
@@ -71,11 +74,13 @@ void basic_ec_append_test()
     std::basic_string<CharT> expected
         = output
         + std::basic_string<CharT>(50, CharT{'*'});
+    std::size_t size = 0;
 
-    auto ec = strf::ec_append(output) (strf::multi(CharT{'*'}, 50));
+    auto ec = strf::ec_append(output, &size) (strf::multi(CharT{'*'}, 50));
 
     BOOST_TEST(std::error_code{} == ec);
     BOOST_TEST(expected == output);
+    BOOST_TEST(size == 50);
 }
 
 int main()
@@ -89,6 +94,19 @@ int main()
     basic_ec_append_test<char16_t>();
     basic_ec_append_test<char32_t>();
     basic_ec_append_test<wchar_t>();
+
+    {   // assign reserve
+        std::string result;
+        auto ec = strf::ec_assign(result).reserve(2000) ("aaa");
+        BOOST_ASSERT(ec == std::error_code{});
+        BOOST_ASSERT(result.capacity() >= 2000);
+    }
+    {   // append reserve
+        std::string result(500, 'x');
+        auto ec = strf::ec_append(result).reserve(1000) ("aaa");
+        BOOST_ASSERT(ec == std::error_code{});
+        BOOST_ASSERT(result.capacity() >= 1500);
+    }
 
 #if !defined(BOOST_NO_EXCEPTIONS)
 
@@ -106,6 +124,29 @@ int main()
     basic_to_string_test<char16_t>();
     basic_to_string_test<char32_t>();
     basic_to_string_test<wchar_t>();
+
+    {   // to_string reserve
+        auto result = strf::to_string.reserve(2000) ("aaa");
+        BOOST_ASSERT(result.capacity() >= 2000);
+    }
+    {   // assign reserve
+        std::string result;
+        auto size = strf::assign(result).reserve(2000) ("aaa");
+        BOOST_ASSERT(result.capacity() >= 2000);
+        BOOST_ASSERT(size == 3);
+    }
+    {   // append reserve
+        std::string result(500, 'x');
+        auto size = strf::append(result).reserve(1000) ("aaa");
+        BOOST_ASSERT(result.capacity() >= 1500);
+        BOOST_ASSERT(size == 3);
+    }
+
+    {
+        std::string big_string(500, 'x');
+        auto str = strf::to_string(big_string);
+        BOOST_TEST(str == big_string);
+    }
 
     {   // When set_error is called during to_string
 
@@ -217,5 +258,5 @@ int main()
         }
         BOOST_TEST(result == "bla");
     }
-    return report_errors() || boost::report_errors();
+    return boost::report_errors();
 }

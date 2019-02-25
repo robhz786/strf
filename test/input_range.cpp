@@ -2,7 +2,6 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/detail/lightweight_test.hpp>
 #include <boost/stringify.hpp>
 #include "test_utils.hpp"
 #include <vector>
@@ -27,6 +26,16 @@ int main()
         TEST("--- +11 +22 +33 +44---")
             ( "---"
             , +strf::fmt(strf::range(vec_int)) > 4
+            , "---" );
+
+        TEST("---  11223344---")
+            ( "---"
+            , strf::join_right(10)(strf::range(vec_int))
+            , "---" );
+
+        TEST("---11223344---")
+            ( "---"
+            , strf::join_right(1)(strf::range(vec_int))
             , "---" );
 
         TEST("---  +11+22+33+44---")
@@ -91,27 +100,33 @@ int main()
 
         TEST("--aaabbbcccddd--")
             ( strf::join_right(15)("--", strf::fmt_range(vec).multi(3), "--") );
+
+        TEST("--aaabbbcccddd--")
+            ( strf::join_right(2)("--", strf::fmt_range(vec).multi(3), "--") );
     }
     {   // with separator
         int vec [3] = {11, 22, 33};
 
         TEST( "11, 22, 33") (strf::range(vec,  ", "));
-        // TEST(u"+11, +22, +33") (+strf::fmt_range(vec,  ", "));
+        TEST(u"+11, +22, +33") (+strf::fmt_range(vec,  u", "));
 
-        // TEST( "0xb, 0x16, 0x21") (~strf::hex(strf::range(vec,   ", ")));
-        // TEST(u"0xb, 0x16, 0x21") (~strf::hex(strf::range(vec,   ", ")));
+        TEST( "0xb, 0x16, 0x21") (~strf::hex(strf::range(vec,   ", ")));
+        TEST(u"0xb, 0x16, 0x21") (~strf::hex(strf::range(vec,   u", ")));
 
         TEST( "  11, 22, 33")
             (strf::join_right(12)(strf::range(vec,  ", ")));
         TEST( "  --11, 22, 33--")
             (strf::join_right(16)("--", strf::range(vec,  ", "), "--"));
 
-        // TEST( "   0xb, 0x16, 0x21")
-        //     (strf::join_right(18)(~strf::hex(strf::range(vec, ", "))));
-        // TEST( "   --0xb, 0x16, 0x21--")
-        //     (strf::join_right(22)("--", ~strf::hex(strf::range(vec, ", ")), "--"));
+        TEST( "   0xb, 0x16, 0x21")
+             (strf::join_right(18)(~strf::hex(strf::range(vec, ", "))));
+        TEST( "--0xb, 0x16, 0x21--")
+             (strf::join_right(2)("--", ~strf::hex(strf::range(vec, ", ")), "--"));
+        TEST( "--0xb, 0x16, 0x21--")
+             (strf::join_right(4)("--", ~strf::hex(strf::range(vec, ", ")), "--"));
+
     }
 
 
-    return report_errors() || boost::report_errors();
+    return boost::report_errors();
 }

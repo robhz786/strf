@@ -3,7 +3,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <boost/detail/lightweight_test.hpp>
 #include <boost/stringify.hpp>
 
 int main()
@@ -96,8 +95,8 @@ int main()
         TEST("abcdefghi")    ( strf::fmt_cv(U"") > 0, strf::fmt_cv(abc)>0, strf::fmt_cv(def)<0, strf::fmt_cv(ghi)^0 );
 
     }
-    int rc = report_errors() || boost::report_errors();
-    return rc;
+
+    return boost::report_errors();
 }
 
 
