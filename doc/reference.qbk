@@ -6,84 +6,267 @@
 
 [section API Reference /(todo)/]
 
+[#facet_traits]
+[h3 Class template `facet_traits`]
 
-[h3 The `nodiscard_error_code` class]
-[#nodiscard_error_code_class]
+The purpose of this class template is to be specialized when
+a new facet is to be added to the library but it is not
+possible to add the members `category` or `store_by_value`
+in it.
+
 ``
-namespace boost{
-namespace stringify{
-inline namespace v0 {
-
-class [[nodiscard]] nodiscard_error_code: public std::error_code
+template <typename F>
+class facet_trait
 {
 public:
-    using std::error_code::error_code;
-
-    nodiscard_error_code(const std::error_code& ec) noexcept
-        : std::error_code(ec)
-    {}
+    using category = /* Facet::category or void */;
+    constexpr static bool store_by_value = /* Facet::store_by_value or true */;
 };
-
-}}}
-``
-
-[#stringify_error]
-[h3 The `stringify_error` class]
-``
-namespace boost{
-namespace stringify{
-inline namespace v0 {
-
-class stringify_error: public std::system_error
-{
-public:
-    using std::system_error::system_error;
-};
-
-}}}
-``
-
-[#printer]
-[h3 The `printer` class template]
-
-``
-namespace boost { namespace stringify { inline namespace v0 {
-
-template <typename CharT>
-class printer
-{
-public:
-
-    virtual ~printer() { }
-
-    virtual bool write(output_buffer<CharT>& ob) const = 0;
-    virtual std::size_t necessary_size() const = 0;
-    virtual int remaining_width( int w ) const = 0;
-};
-
-}}}
-
 ``
 [itemized_list
-  [ [*write()] shall write the content into the [link output_buffer `output_buffer<CharT>`]
-        argument and return `true` on success. Otherwise, it shall call
-        `ob.set_error(`[~some_error_code]`)` and return `false`. ]
-  [ [*necessary_size()] shall return the amount of characters written
-        by `write()`, or a little more if the exact calculation is difficult,
-        but never less. It is called when the output type needs to preallocate
-        memory ( see [link syntax_reserve `reserve_auto()`] function ).]
-  [ [*remaining_width(w)] shall return the same as `std::max(0, w - this_width)`,
-        where `this_width` is the width of the content written by `write()`.
-        This function is used in [link joins `joins`]. The implementation
-        may have to use the [link width_calculation facets for width calculation]
-        ( /to do/: this needs to be better documented ) ]
-] [/itemized_list]
+ [`facet_trait<`[~F]`>::store_by_value` is equal to [~F]`::store_by_value`
+  is such expression is well formed and implicitly convetible to `bool`,
+  otherwise it is `false`.]
+ [`facet_trait<`[~F]`>::category` is a type alias to
+  `F::category` if such member exist is a type, otherwise it is `void`.]]
+
+[h4 Specialization]
+
+``
+template <typename F>
+class facet_trait<const F>
+{
+public:
+    using category = typename facet_trait<F>::category;
+    constexpr static bool store_by_value = facet_trait<F>::store_by_value;
+};
+``
+
+[#facet_category]
+[h3 Type alias template `facet_category`]
+
+`facet_category` is just a syntatic sugar:
+
+``
+template <typename F>
+using facet_category = facet_traits<F>::typename category;
+``
+
+[#facet_stored_by_value]
+[h3 Variable template `facet_stored_by_value`]
+
+`facet_stored_by_value` is just a syntatic sugar:
+
+``
+template <typename F>
+constexpr bool facet_stored_by_value = facet_traits<F>::store_by_value;
+``
+[#constrained_facet]
+[h3 Class template `constrained_facet`]
+
+/TO-DO/
+
+[#constrain]
+[h3 Function template `constrain`]
+`constrain` is just a syntatic sugar to construct instances of
+[link constrained_facet `constrained_facet`]
 
 
+[table
+[[
+`template <template <typename> class Filter, typename F>`[br]
+`constexpr constrained_facet<Filter, F> constrain(const F& f);`
+]]
+[[
+]]
+]
 
+
+/TO-DO/
+
+
+[#FacetCategoryRequirements]
+[h3 Concept `FacetCategory`]
+
+A given a type [~FCat] is a `FacetCategory` only if [~FCat] has a static
+member function named `get_default` that takes no argument and whose return
+type is either [~F] or `const `[~F]`&`, where [~F] is a type such that
+`std::is_same_v<`[~FCat]`, `[link facet_category `facet_category`]`<`[~F]`>>`
+is `true`.
+
+
+[#FacetRequirements]
+[h3 Concept `Facet`]
+
+A given a type [~F] is a `Facet` only if all the following conditions are met:
+
+* If [~F] is abstract or not CopyConstructible, then
+  [link facet_stored_by_value `facet_stored_by_value`]`<`[~F]`>`
+  must be `false`.
+* [link facet_category `facet_category`]`<`[~F]`>`
+  satisfies the [link FacetCategoryRequirements `FacetCategory`]
+  requirements
+
+[#FacetPackElementRequirement]
+[h3 Concept `FacetPackElement`]
+
+A given a type [~F] is a `FacetPackElement`, if any of the following conditions is met:
+
+* [~F] satisfies the [link FacetRequirements `Facet`] requirements.
+* or [~F] is [link constrained_facet `constrained_facet`]`<`[~F2]`, `[~Filter]`>`,
+  where [~F2] satisfies the
+  [link FacetPackElementRequirement `FacetPackElement`] requirements.
+* or [~F] is `std::reference_wrapper<`[~F2]`>` or
+ `std::reference_wrapper<const `[~F2]`>`, where [~F2] satisfies the
+  [link FacetPackElementRequirement `FacetPackElement`] requirements.
+
+
+[h3 Class template `facets_pack`]
+
+``
+template <typename ... Facets>
+class facets_pack;
+``
+For each [~F] in [~Facets]`...` there is either a value of [~F] or a
+reference to `const `[~F] in an object of type `facets_pack<Facets...>`.
+It is a reference only if [~F] satisfies the [link FacetRequirements Facet]
+requirements and [link facet_stored_by_value `facet_stored_by_value`]`<`[~F]`>`
+is `false`, otherwise it is a value of [~F]. In any case, [~F] must satisfy
+the [link FacetPackElementRequirement `FacetPackElement`] requirements.
+
+[h4 Constructors]
+
+
+[table
+[[`constexpr facets_pack(const Facets& ... facets)`]]
+[[[variablelist
+    [[Effect]
+     [Construct each element of `facets_pack<Facets...>` from a
+      const reference of the corresponding argument `facets...`]]]]]]
+      
+[table
+[[`constexpr facets_pack(const facets_pack& cp)`]]
+[[[variablelist
+    [[Effect]
+     [Construct each element of `facets_pack<Facets...>` from the
+      a const reference of the corresponding element in `cp`]]]]]]
+
+[/
+[table
+[[`facets_pack(facets_pack&& cp)`]]
+[[
+[variablelist
+    [[Effect]
+     [Construct each element of `facets_pack<Facets...>` from the
+      a rvalue reference of the corresponding element in `cp`]]]]]]
+]
+
+
+[h3 Function template `pack`]
+
+[table
+[[
+`template <typename ... Facets>`[br]
+`constexpr facets_pack<Facets...>  pack(const Facets& ... facets)`
+]]
+[[
+[variablelist
+     [[ Effect]
+      [return `facets_pack<Facets...>{facets ...}`]]]
+]]]
+
+
+[#strip_facet]
+[h3 Function template `strip_facet` (/to-do/)]
+
+[table
+[[
+`template <typename FPE>`[br]
+`constexpr const auto& strip_facet(const FPE& elm)`
+]]
+[[
+  [variablelist
+  [[Compile time requirements]
+   [[itemized_list
+     [`FPE` satisfies [link FacetPackElementRequirement `FacetPackElement`] requirements]]]]
+  [[Effect]
+   [[itemized_list
+     [If `FPE` is [link constrained_facet `constrained_facet`]`<FPE2, Filter>`,
+      then return `strip_facet(elm.get())`.]
+     [If `FPE` is `std::reference_wrapper<FPE2>`
+      then return `strip_facet(elm.get())`.]
+     [Otherwise return `elm`]]]]
+   [[Note]
+    [This function template is not used anywhere in the library.
+    It has been defined only to help to document the [link get_facet
+    `get_facet`] function template.]]
+   ]
+]]
+]
+
+[#facet_matches]
+[h3 Function template `facet_matches` (/to-do/)]
+
+[table
+[[
+`template <typename FCat, typename Tag, typename FPE>`[br]
+`constexpr bool facet_matches(const FPE& elm)`
+]]
+[[
+  [variablelist
+  [[Compile time requirements]
+   [[itemized_list
+     [`FPE` satisfies [link FacetPackElementRequirement `FacetPackElement`] requirements]
+     [`FCat` satisfes [link FacetCategoryRequirements `FacetCategory`] requirements]]]]
+  [[Effect]
+   [[itemized_list
+     [If `FPE` is [link constrained_facet `constrained_facet`]`<FPE2, Filter>`,
+      then return `Filter<Tag>::value && facet_matches(elm.get_facet())`.]
+     [If `FPE` is `std::reference_wrapper<FPE2>`
+      then return `facet_matches(elm.get())`.]
+     [Otherwise return `std::is_same_v<FCat, `[link facet_category
+     `facet_category`]`<FPE>>`]]]]
+   [[Note]
+    [This function template is not used anywhere in the library.
+    It has been defined only to help to document the [link get_facet
+    `get_facet`] function template.]]
+   ]
+]]
+]
+
+[#get_facet]
+[h3 Function template `get_facet`]
+[table
+[[
+`template <typename FCat, typename Tag, typename ... F>`[br]
+`constexpr decltype(auto) get_facet(const facets_pack<F...>& fp);`
+]]
+
+[[
+[variablelist
+     [[ Effect]
+     [
+       Return [link strip_facet `strip_facet`]`(elm)` where [~elm] is the last
+       element in `fp` such that
+       [link facet_matches `facet_matches`]`<FCat, Tag>(elm)` is `true`.
+       
+       If there is not such element in `fp`, then return `FCat::get_default()`.
+     ]]
+
+     [[Return type]
+     [
+       Same as [link strip_facet `strip_facet`]`(elm)` or `FCat::get_default()`
+       depending on whether `fp` contains an element [~elm] such that
+       [link facet_matches `facet_matches`]`<FCat, Tag>(elm)` is `true`.
+
+       Note: while [link strip_facet `strip_facet`] aways return
+       a const reference, `FCat::get_default()` may return by value.
+     ]]]
+]]
+]
 
 [#value_with_format]
-[h3 The `value_with_format` class template]
+[h3 Class template `value_with_format`]
 
 ``
 namespace boost { namespace stringify { inline namespace v0 {
@@ -137,15 +320,46 @@ public:
 
 
 
+[#printer]
+[h3 Class template `printer`]
 
+``
+namespace boost { namespace stringify { inline namespace v0 {
 
+template <typename CharT>
+class printer
+{
+public:
 
+    virtual ~printer() { }
 
+    virtual bool write(output_buffer<CharT>& ob) const = 0;
+    virtual std::size_t necessary_size() const = 0;
+    virtual int remaining_width( int w ) const = 0;
+};
+
+}}}
+
+``
+[itemized_list
+  [ [*write()] shall write the content into the [link output_buffer `output_buffer<CharT>`]
+        argument and return `true` on success. Otherwise, it shall call
+        `ob.set_error(`[~some_error_code]`)` and return `false`. ]
+  [ [*necessary_size()] shall return the amount of characters written
+        by `write()`, or a little more if the exact calculation is difficult,
+        but never less. It is called when the output type needs to preallocate
+        memory ( see [link syntax_reserve `reserve_auto()`] function ).]
+  [ [*remaining_width(w)] shall return the same as `std::max(0, w - this_width)`,
+        where `this_width` is the width of the content written by `write()`.
+        This function is used in [link joins `joins`]. The implementation
+        may have to use the [link width_calculation facets for width calculation]
+        ( /to do/: this needs to be better documented ) ]
+] [/itemized_list]
 
 
 
 [#output_buffer]
-[h3 The `output_buffer` class template]
+[h3 Class template `output_buffer`]
 
 [#min_buff_size]
 ``
@@ -192,10 +406,10 @@ protected:
 [[`public: virtual bool recycle() = 0;`]]
 [[[variablelist
      [[ Effects]
-      [ Consumes the content in the range \u005B ['initial_pos],
-       `pos()` \u0029 , where ['initial_pos] is value returned by `pos()`
-        before any call to `advance()`  and `advance_to(p)` and after
-        the previous call to `recycle()`.]
+      [ Consumes the content in the range \u005B ['initial_pos], `pos()` \u0029,
+        where ['initial_pos] is the value returned by `pos()` after the previous
+        call to `recycle()` and before any call to `advance()`
+        and `advance_to(p)`.]
       [ On success, calls `set_pos(`[~new_pos]`)` and optionally
         `set_end(`[~new_end]`)`.
         On failure, calls `set_error(`[~some_error]`)`.  ]]
@@ -302,6 +516,42 @@ protected:
 
 
 
+
+[#nodiscard_error_code_class]
+[h3 Class `nodiscard_error_code`]
+``
+namespace boost{
+namespace stringify{
+inline namespace v0 {
+
+class [[nodiscard]] nodiscard_error_code: public std::error_code
+{
+public:
+    using std::error_code::error_code;
+
+    nodiscard_error_code(const std::error_code& ec) noexcept
+        : std::error_code(ec)
+    {}
+};
+
+}}}
+``
+
+[#stringify_error]
+[h3 Class `stringify_error`]
+``
+namespace boost{
+namespace stringify{
+inline namespace v0 {
+
+class stringify_error: public std::system_error
+{
+public:
+    using std::system_error::system_error;
+};
+
+}}}
+``
 
 
 

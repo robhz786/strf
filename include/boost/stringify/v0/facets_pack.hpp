@@ -12,6 +12,8 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
+template <typename ... F> class facets_pack;
+
 namespace detail
 {
 
@@ -45,8 +47,29 @@ using category_member_type_or_void
 = stringify::v0::detail::category_member_type_or_void_2
     < F, stringify::v0::detail::has_category_member_type((F*)0) >;
 
-} // namespace detail
+template <typename T, bool v = T::by_value>
+static constexpr bool by_value_getter(T*)
+{
+    return v;
+}
 
+static constexpr bool by_value_getter(...)
+{
+    return true;
+}
+
+template <typename T, bool v = T::constrainable>
+static constexpr bool get_constrainable(T*)
+{
+    return v;
+}
+
+static constexpr bool get_constrainable(...)
+{
+    return true;
+}
+
+} // namespace detail
 
 template <typename F>
 class facet_trait
@@ -56,18 +79,32 @@ class facet_trait
 public:
 
     using category = typename _helper::type;
+    constexpr static bool store_by_value
+    = stringify::v0::detail::by_value_getter((F*)0);
 };
+
+template <typename F>
+constexpr bool facet_stored_by_value
+//= stringify::v0::facet_trait<F>::store_by_value
+= stringify::v0::detail::by_value_getter((stringify::v0::facet_trait<F>*)0);
 
 template <typename F>
 class facet_trait<const F>
 {
 public:
-    using category = typename facet_trait<F>::category;
+    using category = typename stringify::v0::facet_trait<F>::category;
+    const static bool store_by_value = stringify::v0::facet_trait<F>::store_by_value;
+    //= stringify::v0::facet_stored_by_value<F>;
 };
 
 template <typename F>
-using facet_category_t
+using facet_category
 = typename stringify::v0::facet_trait<F>::category;
+
+template <typename F>
+constexpr bool facet_constrainable
+= stringify::v0::detail::get_constrainable
+    ((stringify::v0::facet_category<F>*)0);
 
 template <template <class> class Filter, typename Facet>
 class constrained_facet;
@@ -86,7 +123,7 @@ struct constrained_facet_helper
     template <typename InputType>
     using matches = ParentFilter<InputType>;
 
-    using category = stringify::v0::facet_category_t<F>;
+    using category = stringify::v0::facet_category<F>;
 };
 
 
@@ -164,7 +201,7 @@ public:
     {
     }
 
-    constexpr const auto& get_facet() const
+    constexpr const auto& get() const
     {
         return _helper::get(_facet);
     }
@@ -183,8 +220,6 @@ auto constrain(const Facet& facet)
     return constrained_facet<Filter, Facet>(facet);
 }
 
-template <typename ... F> class facets_pack;
-
 namespace detail {
 
 template <typename Tag>
@@ -196,7 +231,6 @@ struct increment_tag: Tag
 struct absolute_lowest_tag
 {
 };
-
 
 using base_tag = increment_tag<absolute_lowest_tag>;
 
@@ -258,7 +292,7 @@ public:
 
     template <typename>
     constexpr const Facet& do_get_facet
-        (const highest_tag&, stringify::v0::facet_category_t<Facet>) const
+        (const highest_tag&, stringify::v0::facet_category<Facet>) const
     {
         return _facet;
     }
@@ -275,8 +309,7 @@ template
     , typename Facet >
 class single_facet_pack
         < LowestTag
-        , boost::stringify::v0::constrained_facet<Filter, Facet>
-        >
+        , boost::stringify::v0::constrained_facet<Filter, Facet> >
     : public facets_pack_end<LowestTag>
 {
 
@@ -310,7 +343,7 @@ public:
         , typename ConstrainedFacet::category
         ) const
     {
-        return _constrained_facet.get_facet();
+        return _constrained_facet.get();
     }
 
 private:
@@ -341,7 +374,7 @@ public:
 
     template <typename>
     constexpr const Facet& do_get_facet
-        (const highest_tag&, stringify::v0::facet_category_t<Facet>) const
+        (const highest_tag&, stringify::v0::facet_category<Facet>) const
     {
         return _facet_ref.get();
     }
@@ -393,7 +426,7 @@ public:
         , typename ConstrainedFacet::category
         ) const
     {
-        return _facet_ref.get().get_facet();
+        return _facet_ref.get().get();
     }
 
 private:
@@ -508,11 +541,13 @@ private:
 public:
 
     template < typename Facet
-             , typename category = stringify::v0::facet_category_t<Facet>
+             , typename FTrait = stringify::v0::facet_trait<Facet>
+             , typename category = typename FTrait::category
              , typename = std::enable_if_t< ! std::is_void<category>::value> >
     static constexpr decltype(auto) as_pack(const Facet& f)
     {
-        return _as_pack<Facet>(f, std::integral_constant<bool, category::by_value>{});
+        constexpr bool by_value = stringify::v0::facet_stored_by_value<Facet>;
+        return _as_pack<Facet>(f, std::integral_constant<bool, by_value>{});
     }
 
      template <typename Facet>
@@ -557,6 +592,8 @@ class facets_pack: private stringify::v0::detail::facets_pack_impl<Facets...>
     friend class stringify::v0::detail::facets_pack_join;
 
 public:
+
+    constexpr facets_pack(const facets_pack&) = default;
 
     constexpr facets_pack(const Facets& ... f)
         : _impl(stringify::v0::detail::pack_impl(f...))

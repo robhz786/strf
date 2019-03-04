@@ -35,6 +35,30 @@ Paragraphs
 Program listings
 =============================================================================*/
 
+    code
+    {
+        background-color: #F4F4F4;
+
+        line-height: 13pt;
+        border-top: 1px solid #E4E4E4;
+        border-bottom: 1px solid #E4E4E4;
+        border-left: none;
+        border-right: none;
+    }
+
+    div.informaltable table tr th code,
+    div.table table tr th code
+    {
+        padding: inherit;
+        background-color: inherit;
+        line-height: inherit;
+        border-style: inherit;
+        border-width: inherit;
+        border-radius: inherit;
+        border-color: inherit;
+    }
+
+    
     /* Code on paragraphs */
     p tt.computeroutput
     {

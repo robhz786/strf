@@ -125,7 +125,6 @@ private:
 struct width_calculator_category
 {
     static constexpr bool constrainable = true;
-    constexpr static bool by_value = true;
 
     static stringify::v0::width_calculator get_default()
     {

@@ -150,8 +150,7 @@ public:
 template <typename F>
 struct is_constrainable
 {
-    using category = typename stringify::v0::facet_trait<F>::category;
-    constexpr static bool value = category::constrainable;
+    constexpr static bool value = stringify::v0::facet_constrainable<F>;
 };
 
 template <typename ... F>
