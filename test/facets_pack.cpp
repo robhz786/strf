@@ -7,9 +7,10 @@
 
 template <int N> struct fcategory;
 
-template <int N> struct facet
+template <int N, bool BV = true> struct facet
 {
     using category = fcategory<N>;
+    static constexpr bool store_by_value = BV;
     int value = 0;
 };
 
@@ -32,6 +33,9 @@ class class_c {};
 template <typename T>
 using derives_from_x = std::is_base_of<class_x, T>;
 
+template <typename T>
+using is_64 = std::integral_constant<bool, sizeof(T) == 8>;
+
 namespace strf = boost::stringify;
 
 int main()
@@ -42,18 +46,6 @@ int main()
     auto f2_22 = facet<2>{22};
     auto f3_30 = facet<3>{30};
     struct dummy_type{};
-
-
-    {   // strip_facet
-        // auto cf2_22 = strf::constrain<std::is_integral>(f2_22);
-        // auto ccf2_22 = strf::constrain<std::is_signed>(cf2_22);
-        // auto rccf2_22 = std::cref(ccf2_22);
-        
-        // const auto& stripped = strf::strip_facet(rccf2_22);
-        // int x = stripped;
-        // static_assert( std::is_same<decltype(stripped), const facet<2>&>::value
-        //              , "strip_facet failed");
-    }
 
     {
         auto fp = strf::pack(
@@ -74,14 +66,14 @@ int main()
         static_assert(std::is_same<decltype(f2i), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(f3i), const facet<3>&>::value, "wrong type");
 
-        BOOST_TEST(f1i.value == 10);
-        BOOST_TEST(f2d.value == 21);
-        BOOST_TEST(f2i.value == 22);
-        BOOST_TEST(f3i.value == 30);
+        BOOST_TEST_EQ(f1i.value, 10);
+        BOOST_TEST_EQ(f2d.value, 21);
+        BOOST_TEST_EQ(f2i.value, 22);
+        BOOST_TEST_EQ(f3i.value, 30);
     }
 
-    {   // using std::reference_wrapper<Facet>
-        // and constrained_faced<Filter, std::reference_wrapper<F>>
+    {   // store Facet by reference
+        // and constrained_fpe<Filter, const F&>>
 
         auto fp = strf::pack(
             std::ref(f1_10),
@@ -103,19 +95,19 @@ int main()
         static_assert(std::is_same<decltype(f2i), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(f3i), const facet<3>&>::value, "wrong type");
 
-        BOOST_TEST(f1i.value == 10);
-        BOOST_TEST(f2t.value == 20);
-        BOOST_TEST(f2d.value == 21);
-        BOOST_TEST(f2i.value == 22);
-        BOOST_TEST(f3i.value == 30);
+        BOOST_TEST_EQ(f1i.value, 10);
+        BOOST_TEST_EQ(f2t.value, 20);
+        BOOST_TEST_EQ(f2d.value, 21);
+        BOOST_TEST_EQ(f2i.value, 22);
+        BOOST_TEST_EQ(f3i.value, 30);
 
-        BOOST_TEST(&f1i == &f1_10);
-        BOOST_TEST(&f2t == &f2_20);
-        BOOST_TEST(&f2d == &f2_21);
-        BOOST_TEST(&f2i == &f2_22);
+        BOOST_TEST_EQ(&f1i, &f1_10);
+        BOOST_TEST_EQ(&f2t, &f2_20);
+        BOOST_TEST_EQ(&f2d, &f2_21);
+        BOOST_TEST_EQ(&f2i, &f2_22);
     }
 
-    {   // std::reference_wrapper< constrained_faced<Filter, Facet> >
+    {   // std::reference_wrapper< constrained_fpe<Filter, Facet> >
 
         auto constrained_f2_21 = strf::constrain<std::is_arithmetic>(f2_21);
         auto constrained_f2_22 = strf::constrain<std::is_integral>(f2_22);
@@ -140,18 +132,18 @@ int main()
         static_assert(std::is_same<decltype(f2i), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(f3i), const facet<3>&>::value, "wrong type");
 
-        BOOST_TEST(f1i.value == 10);
-        BOOST_TEST(f2t.value == 20);
-        BOOST_TEST(f2d.value == 21);
-        BOOST_TEST(f2i.value == 22);
-        BOOST_TEST(f3i.value == 30);
+        BOOST_TEST_EQ(f1i.value, 10);
+        BOOST_TEST_EQ(f2t.value, 20);
+        BOOST_TEST_EQ(f2d.value, 21);
+        BOOST_TEST_EQ(f2i.value, 22);
+        BOOST_TEST_EQ(f3i.value, 30);
 
-        BOOST_TEST(&f1i == &f1_10);
-        BOOST_TEST(&f2t == &f2_20);
+        BOOST_TEST_EQ(&f1i, &f1_10);
+        BOOST_TEST_EQ(&f2t, &f2_20);
     }
 
     {  //std::reference_wrapper
-        //    < constrained_faced
+        //    < constrained_fpe
         //        < Filter
         //        , std::reference_wrapper<Facet> > >
 
@@ -178,16 +170,16 @@ int main()
         static_assert(std::is_same<decltype(f2i), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(f3i), const facet<3>&>::value, "wrong type");
 
-        BOOST_TEST(f1i.value == 10);
-        BOOST_TEST(f2t.value == 20);
-        BOOST_TEST(f2d.value == 21);
-        BOOST_TEST(f2i.value == 22);
-        BOOST_TEST(f3i.value == 30);
+        BOOST_TEST_EQ(f1i.value, 10);
+        BOOST_TEST_EQ(f2t.value, 20);
+        BOOST_TEST_EQ(f2d.value, 21);
+        BOOST_TEST_EQ(f2i.value, 22);
+        BOOST_TEST_EQ(f3i.value, 30);
 
-        BOOST_TEST(&f1i == &f1_10);
-        BOOST_TEST(&f2t == &f2_20);
-        BOOST_TEST(&f2d == &f2_21);
-        BOOST_TEST(&f2i == &f2_22);
+        BOOST_TEST_EQ(&f1i, &f1_10);
+        BOOST_TEST_EQ(&f2t, &f2_20);
+        BOOST_TEST_EQ(&f2d, &f2_21);
+        BOOST_TEST_EQ(&f2i, &f2_22);
     }
 
     {   // constrain<Filter1>(constrain<Filter2>(facet))
@@ -209,9 +201,9 @@ int main()
         static_assert(std::is_same<decltype(xf2_20), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_21), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_22), const facet<2>&>::value, "wrong type");
-        BOOST_TEST(xf2_20.value == 20);
-        BOOST_TEST(xf2_21.value == 21);
-        BOOST_TEST(xf2_22.value == 22);
+        BOOST_TEST_EQ(xf2_20.value, 20);
+        BOOST_TEST_EQ(xf2_21.value, 21);
+        BOOST_TEST_EQ(xf2_22.value, 22);
     }
 
     {   // constrain<Filter1>(std::ref(a_contrained_facet))
@@ -229,15 +221,15 @@ int main()
         decltype(auto) xf2_20 = strf::get_facet<fcategory<2>, class_xa>(fp);
         decltype(auto) xf2_22 = strf::get_facet<fcategory<2>, class_xb>(fp);
         decltype(auto) xf2_21 = strf::get_facet<fcategory<2>, class_c>(fp);
+
         static_assert(std::is_same<decltype(xf2_20), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_21), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_22), const facet<2>&>::value, "wrong type");
-        BOOST_TEST(&xf2_20 == &f2_20);
-        BOOST_TEST(&xf2_21 == &f2_21);
-        BOOST_TEST(&xf2_22 == &f2_22);
+        BOOST_TEST_EQ(&xf2_20, &f2_20);
+        BOOST_TEST_EQ(&xf2_21, &f2_21);
+        BOOST_TEST_EQ(&xf2_22, &f2_22);
 
     }
-
 
     return boost::report_errors();
 }

@@ -12,6 +12,7 @@ include_directories("../../../")
 foreach(
   t
   assembly_string
+  constrained_fpe
   encode_char
   encode_fill
   input_string

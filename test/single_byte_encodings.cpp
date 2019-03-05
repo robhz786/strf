@@ -15,7 +15,7 @@ std::string make_str_0_to_xff()
     std::string str(0x100, '\0');
     for(unsigned i = 0; i < 0x100; ++i)
         str[i] = static_cast<char>(i);
-    return std::move(str);
+    return str;
 }
 
 const std::string str_0_to_xff = make_str_0_to_xff();
@@ -31,7 +31,7 @@ std::string char_0_to_0xff_sanitized(strf::encoding<char> enc)
                            : static_cast<unsigned char>(i) );
         str.push_back(ch);
     }
-    return std::move(str);
+    return str;
 }
 
 void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
@@ -96,7 +96,7 @@ std::u32string decoded_0_to_xff_iso_8859_1()
     {
         ch = i++;
     }
-    return std::move(table);
+    return table;
 }
 
 std::u32string decoded_0_to_xff_iso_8859_3()
@@ -119,7 +119,7 @@ std::u32string decoded_0_to_xff_iso_8859_3()
                  U"\uFFFD\u00F1\u00F2\u00F3\u00F4\u0121\u00F6\u00F7"
                  U"\u011D\u00F9\u00FA\u00FB\u00FC\u016D\u015D\u02D9");
 
-    return std::move(table);
+    return table;
 }
 
 std::u32string decoded_0_to_xff_iso_8859_15()
@@ -133,7 +133,7 @@ std::u32string decoded_0_to_xff_iso_8859_15()
     table[0xBC] = 0x0152;
     table[0xBD] = 0x0153;
     table[0xBE] = 0x0178;
-    return std::move(table);
+    return table;
 }
 
 std::u32string decoded_0_to_xff_windows_1252()
@@ -145,7 +145,7 @@ std::u32string decoded_0_to_xff_windows_1252()
         , 0x0090, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014
         , 0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0x009D, 0x017E, 0x0178 };
     std::copy(r80_to_9F, r80_to_9F + 0x20, table.begin() + 0x80);
-    return std::move(table);
+    return table;
 }
 
 int main()
