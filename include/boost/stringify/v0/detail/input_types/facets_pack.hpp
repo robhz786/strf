@@ -24,6 +24,12 @@ struct inner_pack_with_args
 template <typename FPack>
 struct inner_pack
 {
+    template <typename ... T>
+    constexpr inner_pack(T&& ... args)
+        : fp{std::forward<T>(args)...}
+    {
+    }
+
     FPack fp;
 
     template <typename ... Args>
@@ -32,8 +38,7 @@ struct inner_pack
     {
         return stringify::v0::detail::inner_pack_with_args<FPack, Args...>
             { fp
-            , stringify::v0::detail::args_tuple<Args...>{args ...}
-            };
+            , stringify::v0::detail::args_tuple<Args...>{args ...} };
     }
 };
 
@@ -48,8 +53,7 @@ struct inner_pack_ref
     {
         return stringify::v0::detail::inner_pack_with_args<FPack, Args...>
             { fp
-            , stringify::v0::detail::args_tuple<Args...>{args ...}
-            };
+            , stringify::v0::detail::args_tuple<Args...>{args ...} };
     }
 };
 
@@ -186,14 +190,16 @@ struct all_are_constrainable
 // stringify_get_input_traits
 // ( const stringify::v0::detail::inner_pack_with_args<ChildFPack, Args...>& fmt );
 
-template <typename ... Facets>
-stringify::v0::detail::inner_pack<stringify::v0::facets_pack<Facets ...>>
-facets(const Facets& ... facets)
+template <typename ... T>
+auto facets(T&& ... args)
+    -> stringify::v0::detail::inner_pack
+           < decltype(stringify::v0::pack(std::forward<T>(args)...)) >
 {
     static_assert
-        ( stringify::v0::detail::all_are_constrainable<Facets...>::value
+        ( stringify::v0::is_constrainable_v
+            < decltype(stringify::v0::pack(std::forward<T>(args)...)) >
         , "All facet categories must be constrainable" );
-    return {stringify::v0::pack(facets ...)};
+    return {std::forward<T>(args)...};
 }
 
 template <typename ... Facets>
@@ -201,7 +207,7 @@ stringify::v0::detail::inner_pack_ref<stringify::v0::facets_pack<Facets ...>>
 facets(const stringify::v0::facets_pack<Facets...>& fp)
 {
     static_assert
-        ( stringify::v0::detail::all_are_constrainable<Facets...>::value
+        ( stringify::v0::is_constrainable_v<stringify::v0::facets_pack<Facets...>>
         , "All facet categories must be constrainable" );
     return {fp};
 }

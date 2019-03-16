@@ -18,7 +18,6 @@ test-suite stringify :
    # as header-only library:
 
    [ run assembly_string.cpp   : : : : test-assembly_string-ho ]
-   [ run constrained_fpe.cpp   : : : : test-constrained_fpe-ho ]
    [ run encode_char.cpp       : : : : test-encode_char-ho ]
    [ run encode_fill.cpp       : : : : test-encode_fill-ho ]
    [ run input_string.cpp      : : : : test-input_string-ho ]
@@ -43,7 +42,6 @@ test-suite stringify :
    # as static library:
 
    [ run assembly_string.cpp   $(slib) : : : $(nho) : test-assembly_string-nho ]
-   [ run constrained_fpe.cpp   $(slib) : : : $(nho) : test-constrained_fpe-nho ]
    [ run encode_char.cpp       $(slib) : : : $(nho) : test-encode_char-nho ]
    [ run encode_fill.cpp       $(slib) : : : $(nho) : test-encode_fill-nho ]
    [ run input_string.cpp      $(slib) : : : $(nho) : test-input_string-nho ]
