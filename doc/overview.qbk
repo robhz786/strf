@@ -41,7 +41,7 @@ But in case you need to use a translation tool like
 [@https://en.wikipedia.org/wiki/Gettext gettext],
 the library provides an alternative syntax with
 what is called here as the [link assembly_string assembly string],
-which is like format string, but without any formatting.
+which is like a format string, but without any formatting.
 ``
 auto s = strf::to_string.as("{} in hexadecimal is {}") (x, strf::hex(x));
 ``
@@ -79,14 +79,14 @@ As well as converting string of different character types:
 
 [input_output_different_char_types]
 
-You can also use `cv` function if you just want to sanitize
-the input string, when its encoding and character type are the
-same of the output:
+Or maybe you don't want to convert any encoding but just
+to sanitize an input string, since `cv` function aways
+imply sanitization, even when the input and output
+encodings are the same:
 
 [sani_utf8]
 
-Of course, errors can happen when you convert encodings.
-The library provides three options of how they can be handled.
+The library provides three options of how handle encoding errors.
 The default one is to replace any invalid input sequence by the
 [@https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character
 replacement character "\uFFFD"] (U+FFFD). When the input is UTF-8,
@@ -97,8 +97,10 @@ Standard.
   [@https://www.unicode.org/versions/Unicode10.0.0/ch03.pdf Chapter 3]
   of Unicode Standard. ]
 The second option is to [link encoding_error_ignore omit]
-the invalid sequence, and the [link encoding_error_stop third one]
-is to emit an error. You can also choose whether surrogates are
+the invalid sequence, and the third one is to [link encoding_error_stop
+stop everything] and emit an error, /i.e./, to return an error code
+or throw an exception.
+You can also choose whether surrogates are
 treated as errors or not (as explained [link allow_surrogates here]).
 
 Another cool thing you can do is to print ranges:
@@ -192,15 +194,10 @@ you may first want to see more reasons of why to choose it over others.
   [
     Some code bases use error codes, while others use exceptions.
     To suits both worlds, the library provides [link output_types
-    /leading expressions/] that use error codes ( and
-    are prefixed with "`ec_`") and others that use exceptions.
-
-    [/ To suits both worlds, part of the [link output_types
-    /leading expressions/] is based on error code, and
-    the other part is based on exceptions.]
+    /leading expressions/] for each kind.
 
     Also, the user can customise how the library handles
-    [link encoding_policy encoding errors] and
+    [link encoding_policy encoding errors] as well as
     [link asm_string_error assembly string errors].
   ]
   [[br]]
