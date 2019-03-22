@@ -7,7 +7,7 @@
 
 #include <cstdio>
 #include <cstring>
-#include <boost/stringify/v0/make_destination.hpp>
+#include <boost/stringify/v0/dispatcher.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -193,13 +193,17 @@ template <typename CharT = char>
 inline auto ec_write(std::FILE* destination, std::size_t* count = nullptr)
 {
     using writer = stringify::v0::detail::ec_narrow_file_writer<CharT>;
-    return stringify::v0::make_destination<writer>(destination, count);
+    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
+                                    , writer,  FILE*, std::size_t*>
+        (stringify::v0::pack(), destination, count);
 }
 
 inline auto ec_wwrite(std::FILE* destination, std::size_t* count = nullptr)
 {
     using writer = boost::stringify::v0::detail::ec_wide_file_writer;
-    return stringify::v0::make_destination<writer>(destination, count);
+    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
+                                    , writer, FILE*, std::size_t*>
+        (stringify::v0::pack(), destination, count);
 }
 
 #if ! defined(BOOST_NO_EXCEPTION)
@@ -386,13 +390,17 @@ template <typename CharT = char>
 inline auto write(std::FILE* destination, std::size_t* count = nullptr)
 {
     using writer = stringify::v0::detail::narrow_file_writer<CharT>;
-    return stringify::v0::make_destination<writer>(destination, count);
+    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
+                                    , writer, FILE*, std::size_t* >
+        (stringify::v0::pack(), destination, count);
 }
 
 inline auto wwrite(std::FILE* destination, std::size_t* count = nullptr)
 {
     using writer = boost::stringify::v0::detail::wide_file_writer;
-    return stringify::v0::make_destination<writer>(destination, count);
+    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
+                                    , writer, FILE*, std::size_t* >
+        (stringify::v0::pack(), destination, count);
 }
 
 #endif // ! defined(BOOST_NO_EXCEPTION)

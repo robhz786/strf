@@ -7,7 +7,7 @@
 
 #include <string>
 #include <system_error>
-#include <boost/stringify/v0/make_destination.hpp>
+#include <boost/stringify/v0/dispatcher.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -114,8 +114,9 @@ inline auto ec_append
 {
     using str_type = std::basic_string<CharT, Traits, Allocator>;
     using writer = boost::stringify::v0::detail::ec_string_appender<str_type>;
-    return boost::stringify::v0::make_destination<writer, str_type&>
-        (str, count_ptr);
+    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
+                                    , writer, str_type&, std::size_t* >
+        (stringify::v0::pack(), str, count_ptr);
 }
 
 
@@ -124,11 +125,8 @@ inline auto ec_assign
     ( std::basic_string<CharT, Traits, Allocator>& str
     , std::size_t* count_ptr = nullptr )
 {
-    using str_type = std::basic_string<CharT, Traits, Allocator>;
     str.clear();
-    using writer = boost::stringify::v0::detail::ec_string_appender<str_type>;
-    return boost::stringify::v0::make_destination<writer, str_type&>
-        (str, count_ptr);
+    return ec_append(str, count_ptr);
 }
 
 #if !defined(BOOST_NO_EXCEPTIONS)
@@ -292,43 +290,48 @@ auto append(std::basic_string<CharT, Traits, Allocator>& str)
 {
     using str_type = std::basic_string<CharT, Traits, Allocator>;
     using writer = boost::stringify::v0::detail::string_appender<str_type>;
-    return boost::stringify::v0::make_destination<writer, str_type&>(str);
+    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
+                                    , writer
+                                    , str_type& >
+        (stringify::v0::pack(), str);
 }
 
 
 template <typename CharT, typename Traits, typename Allocator>
 auto assign(std::basic_string<CharT, Traits, Allocator>& str)
 {
-    using str_type = std::basic_string<CharT, Traits, Allocator>;
     str.clear();
-    using writer = boost::stringify::v0::detail::string_appender<str_type>;
-    return boost::stringify::v0::make_destination<writer, str_type&>(str);
+    return append(str);
 }
 
-template
-    < typename CharT
-    , typename Traits = std::char_traits<CharT>
-    , typename Allocator = std::allocator<CharT> >
-constexpr auto to_basic_string
-= boost::stringify::v0::make_destination
-    <boost::stringify::v0::detail::string_maker
-         <std::basic_string<CharT, Traits, Allocator>>>();
+template< typename CharT
+        , typename Traits = std::char_traits<CharT>
+        , typename Allocator = std::allocator<CharT> >
+constexpr boost::stringify::v0::dispatcher
+    < stringify::v0::facets_pack<>
+    , stringify::v0::detail::string_maker
+          < std::basic_string<CharT, Traits, Allocator >>>
+    to_basic_string{stringify::v0::pack()};
 
-constexpr auto to_string
-= boost::stringify::v0::make_destination
-    <boost::stringify::v0::detail::string_maker<std::string>>();
+constexpr boost::stringify::v0::dispatcher
+    < stringify::v0::facets_pack<>
+    , stringify::v0::detail::string_maker<std::string> >
+    to_string{stringify::v0::pack()};
 
-constexpr auto to_u16string
-= boost::stringify::v0::make_destination
-    <boost::stringify::v0::detail::string_maker<std::u16string>>();
+constexpr boost::stringify::v0::dispatcher
+    < stringify::v0::facets_pack<>
+    , stringify::v0::detail::string_maker<std::u16string> >
+    to_u16string{stringify::v0::pack()};
 
-constexpr auto to_u32string
-= boost::stringify::v0::make_destination
-    <boost::stringify::v0::detail::string_maker<std::u32string>>();
+constexpr boost::stringify::v0::dispatcher
+    < stringify::v0::facets_pack<>
+    , stringify::v0::detail::string_maker<std::u32string> >
+    to_u32string{stringify::v0::pack()};
 
-constexpr auto to_wstring
-= boost::stringify::v0::make_destination
-    <boost::stringify::v0::detail::string_maker<std::wstring>>();
+constexpr boost::stringify::v0::dispatcher
+    < stringify::v0::facets_pack<>
+    , stringify::v0::detail::string_maker<std::wstring> >
+    to_wstring{stringify::v0::pack()};
 
 #endif // !defined(BOOST_NO_EXCEPTIONS)
 

@@ -6,80 +6,102 @@
 
 [section:extend_output How to add a new destination type]
 
+You can extend the library so that it writes content into a destination other than
+[link output_types those] currently supported. That envolves two steps:
 
-Suppose there is a type `foobar` and we want to create a function named `write` that takes a `foobar&` as a parameter and that can be used in the same way as the others [link output_types leading expressions]
+[ordered_list
+ [Create a class that satisfies the [link OutputBuffer OutputBuffer] requirements]
+ [Define an expression (usually a function call) that creates a [link dispatcher dispather]
+  based on that class]]
 
-[#OutputBufferConcept]
+[h3 Example: append to a QString]
+[import ../example/appendQString.cpp]
 
-[variablelist
-  [ [Step1]
-    [ Create a class - let's call it `foobar_writer` - that satisfies the following requirements:
-      [itemized_list
-        [ It is a concrete class that derives from the abstract class
-          [link output_buffer `output_buffer<`[~CharT]`>`], where [~CharT]
-          is `char`, `char16_t`, `char32_t` or `wchar_t`
-          ( or rather, make `foobar_writer` a class template ).
-        ]
-        [ [#OutputBuffer_reserve] [_Optionally], it may contain a
-          [*`reserve(std::size_t size)`] public member function. If present,
-          this function is called no more than once, and just after the
-          constructor,
-          and according to the use of [link syntax_reserve `reserve_auto()`,
-          `reserve()` or `no_reserve()`] in the [link syntax_diagram basic
-          invocation syntax]. The parameter tells how many characters will
-          be written before `finish()` is called.
-        ]
-        [ It has a [*`finish()`] public member function. This function is called
-          just before `foobar_writer` is destroyed. Its returned value is what
-          the expression [~leading_expression]` ... (` [~args]` ...)` returns.
-        ]
-      ] [/itemized_list]
-    ]
-  ]
+The library provides the [link output_types `append`] function template that enables
+you append the output to a `std::string`. Suppose we want to append
+instead to a `QString` (from the Qt Framework).
+As mentioned, the first thing to do is to create a class that satisfies the
+[link OutputBuffer OutputBuffer] concept. Let's name it `QStringAppender`.
 
-  [ [Step2]
-    [ Define the [link syntax_diagram [~leading_expression]]. So we can define
-      our function `write` ( or use whatever name you prefer ) like this:
-      ```
-        auto write(foobar& destination)
-        {
-           return boost::stringify::make_destination<foobar_writer, foobar&>(destination);
-        }
-      ```
-      The `make_destination` function template is declared as:
-      
-      ```
-      namespace boost{ namespace stringify{ inline namespace v0{
-      
-      template <typename OutputBuffer, typename ... Args>
-      constexpr auto make_destination(Args ... args) -> /* implementation_defined */;
-      
-      }}}
-      ```
-      The `make_destination` parameters are later forwarded to the constructor
-      of `OutputBuffer` constructor
-    
-      [important Note that the parameters list of `make_destination`
-        is `(Args ... arg)` and [_not] `(Args `[*`&&`]` ... args)`.
-        Hence, if you want to pass a parameter by reference,
-        then template type deduction won't do what you want.
-        You must to explicitly specify the type of each argument,
-        as done in the example above ]
-    ]
-  ]
-]
+The first requirement is that it has to derive from [link output_buffer
+`output_buffer`]`<CharT>`, where `CharT` can't be `QChar`,
+which is the character type `QString`. It has to be one of the
+C++ characters types. So `char16_t` will do the job.
 
+[QStringAppender_def]
 
-[h3 Examples]
+The `output_buffer` is initialized with a buffer where the library will
+write the content.
 
-* [@../../example/extend_output_toQString.cpp extend_output_toQString.cpp]: This file implements `toQString`, which is an equivalent to `to_string` that creates an QString ( from Qt framework ) instead.
+[QStringAppender_ctor]
+
+Each time the buffer becomes full, the library calls `recycle`,
+that shall consume the content and provide a new buffer ( using
+[link output_buffer_set_pos `set_pos`] and
+[link output_buffer_set_end `set_end`] ), whose available
+space must be at least `strf::`[link min_buff_size `min_buff_size`].
+
+[QStringAppender_recycle]
+
+If any error happens in `recycle()`, it shall call
+`output_buffer::`[link output_buffer_set_error `set_error`] and return `false`.
+Or it can just throw an exception if you know that your extension
+will only be used in code bases where exceptions are allowed.
+
+After there is no more content to write, the library calls `finish()`
+which must check whether there is anything in the buffer to consume.
+It is not necessary for `finish` to return anything. But we will
+return the number of characters written.
+
+[QStringAppender_finish]
+
+The last member function that needs to be explained is `reserve`.
+Differently from the other three, this one is optional and the library only
+calls it once and before the any call to `recycle` in this object, and only
+when [link syntax_reserve reserve_calc] or [link syntax_reserve reserve]
+is called in the main [link usage_syntax usage syntax].
+The parameter of `reserve` tells how many characters will be written,
+so that you can pre-allocate enough memory.
+Its value may actually be bigger than necessary, but should never be smaller.
+
+[QStringAppender_reserve]
+
+Now that we have our [link OutputBuffer OutputBuffer],
+the next step is to define our `append` function.
+This is where we use the [link dispatcher dispatcher] class template,
+whose purpose is to basically to conceive the
+[link usage_syntax basic usage syntax] of the library.
+Our dispatcher object is [link dispatcher_ctor constructed] with an initial
+[link facets_pack facet_pack], which is usually empty, and with the arguments
+that it stores to further construct our `QStringAppender` class, when one of the
+[link dispatcher_strf stringification functions] ( that takes the input
+argument ) is called.
+
+[QStringAppender_dispatcher]
+
+And it's done:
+
+[QStringAppender_use]
+
+[h3 Other examples]
+
+* [@../../example/toQString.cpp toQString.cpp]: This file implements `toQString`, which is an equivalent to `to_string` that creates an QString instead.
 
 You can also see how the [link output_types output types] currently supported by the library are implemented:
 
-* [@../../include/boost/stringify/v0/output_types/std_string.hpp    std_string.hpp] : This is the source file that implements [*`append`],  [*`assign`] [*`to_string`], [*`to_u16string`], [*`to_u32string`], [*`to_wstring`] and [*`to_basic_string`].
-* [@../../include/boost/stringify/v0/output_types/char_ptr.hpp char_ptr.hpp] : This is the source file implements the [*`format`] function templates that write to raw strings.
-* [@../../include/boost/stringify/v0/output_types/std_streambuf.hpp std_streambuf.hpp] : This is the source file that implements the [*`format`] function template that writes to `std::streambuff`.
-* [@../../include/boost/stringify/v0/output_types/FILE.hpp FILE.hpp] : This is the source file that implements the [*`format`] and [*`wformat`] function templates that writes to `FILE*`.
-
+[itemized_list
+  [ [@../../include/boost/stringify/v0/detail/output_types/std_string.hpp
+    std_string.hpp] : This is the source file that implements `append`,
+    `assign`, `to_string`, `to_u16string`, `to_u32string`,
+    `to_wstring` and `to_basic_string`.]
+  [ [@../../include/boost/stringify/v0/detail/output_types/char_ptr.hpp
+    char_ptr.hpp] : This is the source file implements the `write` and
+    `ec_write` function templates that write to raw strings.]
+  [ [@../../include/boost/stringify/v0/detail/output_types/std_streambuf.hpp
+    std_streambuf.hpp] : This is the source file that implements the `write`
+    and `ec_write` function templates that writes to `std::streambuff`.]
+  [ [@../../include/boost/stringify/v0/detail/output_types/FILE.hpp FILE.hpp]
+    : This is the source file that implements the `write`, `wwrite`, `ec_write`
+    and  `ec_wwrite` function templates that writes to `FILE*`.]]
 
 [endsect]

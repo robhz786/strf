@@ -46,7 +46,7 @@ private:
 
 auto reservation_test()
 {
-    return strf::make_destination<reservation_tester>();
+    return strf::dispatcher<strf::facets_pack<>, reservation_tester>(strf::pack());
 }
 
 

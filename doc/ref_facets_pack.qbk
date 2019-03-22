@@ -4,8 +4,10 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
+[#facets_pack]
+[section Class template `facets_pack`]
 
-[h3 Class template `facets_pack`]
+[section Class template `facets_pack`]
 
 [table
 [[
@@ -97,9 +99,9 @@ For each [~F] in `FPE...`, there is a value of [~F] in `facets_pack<FPE...>`.
 ]]
 ]
 
-[h4 Non member functions]
-
-[h5 Function template `pack`]
+[endsect]
+[#pack]
+[section Function template `pack`]
 
 [table
 [[ 
@@ -120,9 +122,9 @@ For each [~F] in `FPE...`, there is a value of [~F] in `facets_pack<FPE...>`.
 ]]
 ]
 
-
+[endsect]
 [#get_facet]
-[h5 Function template `get_facet`]
+[section Function template `get_facet`]
 
 [table
 [[
@@ -222,8 +224,9 @@ For each [~F] in `FPE...`, there is a value of [~F] in `facets_pack<FPE...>`.
 ]]
 ]
 
+[endsect]
 [#constrained_fpe]
-[h3 Class template `constrained_fpe`]
+[section Class template `constrained_fpe`]
 
 [table
 [[
@@ -330,8 +333,9 @@ private:
 ]]
 ]
 
+[endsect]
 [#constrain]
-[h3 Function template `constrain`]
+[section Function template `constrain`]
 
 [table
 [[
@@ -358,11 +362,11 @@ private:
 ]]
 ]
 
-
+[endsect]
 [#FacetsPackElementRequirements]
-[h3 Concept `FacetsPackElement`]
+[section Concept ['FacetsPackElement]]
 
-A given a type [~F] is a `FacetsPackElement`, if [_any of] the following conditions is true:
+A given type [~F] is a `FacetsPackElement`, if [_any of] the following conditions is true:
 
 * [~F] satisfies the [link FacetRequirements `Facet`] requirements
   and [link facet_stored_by_value `facet_stored_by_value`]`<F>` is `true`
@@ -375,8 +379,9 @@ A given a type [~F] is a `FacetsPackElement`, if [_any of] the following conditi
 * [~F] is `const `[~F2]`&`, where [~F2] satisfies [link FacetRequirements `Facet`]
   requirements, and `facet_stored_by_value<F2>` is `false`.
 
+[endsect]
 [#ConstrainableFacetsPackElementRequirements]
-[h3 Concept `ConstrainableFacetsPackElement`]
+[section Concept ['ConstrainableFacetsPackElement]]
 
 A given a type [~F] is a `ConstrainableFacetsPackElement`, if it satisfies the
 [link FacetsPackElementRequirements `FacetsPackElement`] and the following rules:
@@ -389,9 +394,9 @@ A given a type [~F] is a `ConstrainableFacetsPackElement`, if it satisfies the
   then it satifies the [link FacetRequirements `Facet`] requirements and
   `facet_category<FPE>::constrainable` is `true`.
 
-
+[endsect]
 [#FacetRequirements]
-[h3 Concept `Facet`]
+[section Concept ['Facet]]
 
 A given a type [~F] is a `Facet` only if [_all] the following conditions are met:
 
@@ -404,9 +409,9 @@ A given a type [~F] is a `Facet` only if [_all] the following conditions are met
 * [~F] satisfies the specific requirements associated to
   [link facet_category `facet_category`]`<`[~F]`>`.
 
-
+[endsect]
 [#FacetCategoryRequirements]
-[h3 Concept `FacetCategory`]
+[section Concept ['FacetCategory]]
 
 A given a type [~FCat] is a `FacetCategory` only if:
 
@@ -421,9 +426,9 @@ A given a type [~FCat] is a `FacetCategory` only if:
   the facets associated [~FCat] can not be [link constrained_fpe
   constrained] ).
   
-
+[endsect]
 [#facet_traits]
-[h3 Class template `facet_traits`]
+[section Class template `facet_traits`]
 
 This class template provides the [link FacetRequirements Facets] informations.
 If you create a new facet, you can either define such informations as
@@ -483,6 +488,5 @@ using facet_category = facet_traits<Facet>::typename category;
        otherwise the value is `true`.]]]
 ]]
 ]
-
-
-
+[endsect]
+[endsect]

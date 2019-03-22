@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <streambuf>
-#include <boost/stringify/v0/make_destination.hpp>
+#include <boost/stringify/v0/dispatcher.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -106,24 +106,25 @@ class ec_std_streambuf_writer<wchar_t, std::char_traits<wchar_t>>;
 
 
 template<typename CharT, typename Traits = std::char_traits<CharT> >
-auto ec_write
+inline auto ec_write
     ( std::basic_streambuf<CharT, Traits>& dest
     , std::streamsize* count = nullptr )
 {
-    using intput_type = std::basic_streambuf<CharT, Traits>&;
     using writer = stringify::v0::detail::ec_std_streambuf_writer<CharT, Traits>;
-    return stringify::v0::make_destination<writer, intput_type>(dest, count);
+    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
+                                    , writer
+                                    , std::basic_streambuf<CharT, Traits>&
+                                    , std::streamsize* >
+        (stringify::v0::pack(), dest, count);
 }
 
 
 template<typename CharT, typename Traits = std::char_traits<CharT> >
-auto ec_write
+inline auto ec_write
     ( std::basic_streambuf<CharT, Traits>* dest
     , std::streamsize* count = nullptr )
 {
-    using intput_type = std::basic_streambuf<CharT, Traits>&;
-    using writer = stringify::v0::detail::ec_std_streambuf_writer<CharT, Traits>;
-    return stringify::v0::make_destination<writer, intput_type>(*dest, count);
+    return stringify::v0::ec_write(*dest, count);
 }
 
 
@@ -225,24 +226,25 @@ class std_streambuf_writer<wchar_t, std::char_traits<wchar_t>>;
 
 
 template<typename CharT, typename Traits = std::char_traits<CharT> >
-auto write
+inline auto write
     ( std::basic_streambuf<CharT, Traits>& dest
     , std::streamsize* count = nullptr )
 {
-    using intput_type = std::basic_streambuf<CharT, Traits>&;
     using writer = stringify::v0::detail::std_streambuf_writer<CharT, Traits>;
-    return stringify::v0::make_destination<writer, intput_type>(dest, count);
+    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
+                                    , writer
+                                    , std::basic_streambuf<CharT, Traits>&
+                                    , std::streamsize* >
+        ( stringify::v0::pack(), dest, count );
 }
 
 
 template<typename CharT, typename Traits = std::char_traits<CharT> >
-auto write
+inline auto write
     ( std::basic_streambuf<CharT, Traits>* dest
     , std::streamsize* count = nullptr )
 {
-    using intput_type = std::basic_streambuf<CharT, Traits>&;
-    using writer = stringify::v0::detail::std_streambuf_writer<CharT, Traits>;
-    return stringify::v0::make_destination<writer, intput_type>(*dest, count);
+    return stringify::v0::write(*dest, count);
 }
 
 #endif // ! defined(BOOST_NO_EXCEPTION)

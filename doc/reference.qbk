@@ -4,10 +4,75 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[section API Reference /(todo)/]
+[section API Reference /(todo)/ ]
 
-[include facets_pack_ref.qbk]
-[include output_ref.qbk]
-[include input_ref.qbk]
+
+[include ref_output_buffer.qbk]
+[include ref_printer.qbk]
+[include ref_value_with_format.qbk]
+[include ref_dispatcher.qbk]
+[include ref_asm_string.qbk]
+
+[include ref_error_types.qbk]
+[include ref_output_types.qbk]
+
+[include ref_facets_pack.qbk]
+[include ref_facets.qbk]
+
 
 [endsect]
+
+
+[/
+- Library's core
+  - facet_pack
+    - ...
+  - output_buffer
+  - printer
+  - value_with_format
+  - Formatter
+
+- Syntax
+  - dispatcher
+  - OutputBuffer
+  - Formatter classes
+  - fmt overloads
+   
+- Output Types
+   - error types
+     - nodiscard_error_code
+     - stringify_error
+   - to_string
+   - to_basic_string
+   - ...
+
+- Input Types
+  - make_printer
+    - join_t
+    - integer types
+    - string types
+    - char types
+    - inner_pack_with_args
+    - value_with_format...
+  - joins
+    - join_t
+    - join
+    - join_center
+    - join_left
+    - join_right
+    - join_internal
+  - ranges
+    - range
+    - fmt_range
+    -
+    -
+  - facets
+    - facets
+    - inner_pack    
+    - inner_pack_with_args
+
+- Facets
+
+]
+
+

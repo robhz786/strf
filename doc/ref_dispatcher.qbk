@@ -1,0 +1,200 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+[#dispatcher]
+[section Class template `dispatcher`]
+
+[table
+[[
+  `template <typename FPack, typename OutBuff, typename ... OBArgs>`[br]
+  `class dispatcher;`
+]]
+[[
+  [variablelist
+    [[Compile time requirements]
+     [[itemized_list
+      [`FPack` is an instance of [link facets_pack `facets_pack`]]
+      [`OutBuff` satisfies the [link OutputBuffer `OutputBuffer`] requirements.]
+      [`std::is_constructible<OutputBuffer, OBArgs...>::value` is `true`]]]]]
+]]
+]
+
+This class template defines the basic usage syntax of the library.
+
+[h4 Member types]
+
+[table
+[[`using char_type = typename OutBuff::char_type;`]]
+[[The character type]]
+]
+
+[h4 Public member functions]
+
+[#dispatcher_ctor]
+[h5 Constructor]
+
+[table
+[[
+  `dispatcher(const FPack fp, OBArgs... args);`
+]]
+[[
+  [variablelist
+   [[Effect]
+    [Construct a dispatcher that will internally store a copy of `fp` and
+     of each of the argumers in `args...`]]]
+]]
+]
+
+[#dispatcher_facets]
+[h5 Facets]
+
+[table
+[[
+  `template <typename ... F>`[br]
+  `dispatcher<FPack2, OutBuff, OBArgs...> facets(F&& ...f) const &;`
+]]
+[[
+  [variablelist
+    [[Effect]
+     [Creates a `dispatcher` object identical to this, except that its
+      internal `facet_pack` object is equivalent ( in the sense that
+       passing it to [link get_facet `get_facet`]  always produces
+       the same effect ) to [link pack `pack`]
+       `(_fp, std::forward<F>(f)...)`, where `_fp` is the internal
+      `facet_pack` object of this `dispatcher`.]]]
+]]
+]
+
+[#dispatcher_reserve]
+[h5 Reserve]
+[table
+[[
+  `dispatcher<FPack, OutBuff, OBArgs...>&& reserve(std::size_t s) &&;`
+]]
+[[
+  [variablelist
+   [[Effect]
+    [Causes [link dispatcher_call_op `operator()`] or the [link
+     dispatcher_as `as`] function to call `ob.reserve(s)`
+     before writing any content to `ob`, 
+     where `ob` is an instance of `OutBuff`.]]
+   [[Compile time requirements]
+    [The expression `std::declval<OutBuff&>().declval(s)` is well formed.]]]
+]]
+]
+
+[#dispatcher_reserve_calc]
+[table
+[[
+  `dispatcher<FPack, OutBuff, OBArgs...>&& reserve_calc() &&;`
+]]
+[[
+  [variablelist
+   [[Effect]
+    [Causes [link dispatcher_call_op `operator()`] or [link
+     dispatcher_as `as` function] to call `ob.reserve(s)`
+     before writing any content to `ob`, 
+     where `ob` is an instance of `OutBuff` and the value `s`,
+     whose type is `std::size_t`, is the calculated number
+     of character that will be written to `ob`.]]
+   [[Compile time requirements]
+    [The expression `std::declval<OutBuff&>().declval(std::size_t{})`
+     is well formed.]]]
+]]
+]
+
+[#dispatcher_strf]
+[h5 Stringification functions]
+
+[#dispatcher_call_op]
+[table
+[[
+  `template <typename... Args>`[br]
+  `decltype(auto) operator()(const Args&... args) const;`
+]]
+[[
+  [variablelist
+    [[Effect]
+     [[ordered_list
+      [For each `arg` in `args...`, creates a corresponding
+       [link printer `printer`] object by calling [link make_printer
+       `make_printer`]`<char_type>(_fp, arg)` where `_fp` is the
+       internal `facets_pack` object.]
+      [Create an object `ob` of type `OutBuff` initializing it with the
+       arguments that have been passed to `dispatcher` constructor]
+      [If [link dispatcher_reserve `reserve`] or [link dispatcher_reserve_calc
+       `reserve_calc`] was called, then call `ob.reserve(size)` where
+       `size` is value passed to [link dispatcher_reserve `reserve`] or
+       the sum of `p.necessary_size()` for all printers `p` created
+       in (1).]
+      [For each printer `p` created in (1), do `p.write(ob)` until
+       one these calls evetually returns `false`.]
+      [return `ob.finish()`]]]]]
+]]
+]
+
+[#dispatcher_as]
+[table
+[/
+
+  `template <typename... Args>`[br]
+  `decltype(auto) as(const char_type* str, const Args&... args) const;`[br]
+  [br]
+  `template <typename Traits, typename... Args>`[br]
+  `decltype(auto) as(const std::basic_string<char_type, Traits>& str, const Args&... args) const;`[br]
+  [br]
+  `template <typename... Args>`[br]
+  `decltype(auto) as(const std::basic_string_view<char_type>* str, const Args&... args) const;`
+
+
+]
+[[
+  [table
+  [[C++14]
+   [
+   `template <typename... Args>`[br]
+    `decltype(auto) as(const char_type* str, const Args&... args) const;`[br]
+    [br]
+    `template <typename Traits, typename... Args>`[br]
+    `decltype(auto) as(const std::basic_string<char_type, Traits>& str,`
+                      `const Args&... args) const;`
+  ]]] 
+
+  [table
+  [[C++17]
+   [
+    `template <typename... Args>`[br]
+    `decltype(auto) as(const std::basic_string_view<char_type>* str,`
+                      `const Args&... args) const;`
+  ]]]
+]]
+[[
+ [variablelist
+    [[Effect]
+     [ 
+      
+      
+      [ordered_list
+      [For each `arg` in `args...`, creates a corresponding
+       [link printer `printer`] object by calling [link make_printer
+       `make_printer`]`<char_type>(_fp, arg)` where `_fp` is the
+       internal `facets_pack` object.]
+      [Create an object `ob` of type `OutBuff` initializing it with the
+       arguments that have been passed to `dispatcher` constructor]
+      [If [link dispatcher_reserve `reserve`] or [link dispatcher_reserve_calc
+       `reserve_calc`] was called, then call `ob.reserve(size)` where
+       `size` is value passed to [link dispatcher_reserve `reserve`] or
+        the calculated number of character that will be written in (4).]
+      [Proccess `str` according the [link assembly_string_syntax
+       assembly string syntax] and write the result into `ob`.]
+      [return `ob.finish()`]]]]]
+]]
+]
+
+
+[endsect]
+
+

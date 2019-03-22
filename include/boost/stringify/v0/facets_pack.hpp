@@ -87,27 +87,6 @@ struct rank<0>: absolute_lowest_rank
 {
 };
 
-template <std::size_t N>
-struct make_ascending_ranks
-{
-    using _prev_type = typename make_ascending_ranks<N - 1>::type;
-    using type = typename _prev_type
-        ::template push_back<stringify::v0::detail::rank<N - 1>>;
-};
-
-template <>
-struct make_ascending_ranks<0>
-{
-    using type = stringify::v0::detail::tmp_list<>;
-};
-
-
-template <std::size_t N>
-using ascending_ranks_list
-= typename stringify::v0::detail::make_ascending_ranks<N>::type;
-
-
-
 template <typename F, typename = typename F::category>
 constexpr bool has_category_member_type(F*)
 {
@@ -526,22 +505,25 @@ public:
     using FPEWrappers::do_get_facet ...;
 };
 
-template <typename RankList, typename ... FPE>
+template <typename RankNumSeq, typename ... FPE>
 struct facets_pack_base_trait;
 
-template <typename ... Rank, typename ... FPE>
-struct facets_pack_base_trait<stringify::v0::detail::tmp_list<Rank...>, FPE...>
+template <std::size_t ... RankNum, typename ... FPE>
+struct facets_pack_base_trait<std::index_sequence<RankNum...>, FPE...>
 {
     using type = facets_pack_base
         < stringify::v0::detail::tmp_list
-            < stringify::v0::detail::fpe_wrapper<Rank, FPE> ... >
+            < stringify::v0::detail::fpe_wrapper
+                 < stringify::v0::detail::rank<RankNum>
+                 , FPE >
+            ... >
         , FPE ... >;
 };
 
 template <typename ... FPE>
 using facets_pack_base_t
  = typename stringify::v0::detail::facets_pack_base_trait
-    < stringify::v0::detail::ascending_ranks_list<sizeof...(FPE)>
+    < std::make_index_sequence<sizeof...(FPE)>
     , FPE ... >
    :: type;
 

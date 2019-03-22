@@ -50,6 +50,7 @@ Program listings
 
     div.informaltable table tr th code,
     div.table table tr th code
+    /*div.toc  code */
     {
         padding: inherit;
         background-color: inherit;
@@ -250,7 +251,7 @@ Table of contents
     }
 
     /* Code on toc */
-    .toc .computeroutput { font-size: 120% }
+    .toc .computeroutput { font-size: 105% }
 
     /* No margin on nested menus */
 

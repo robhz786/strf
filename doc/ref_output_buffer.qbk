@@ -4,10 +4,10 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-
 [#output_buffer]
-[h3 Class template `output_buffer`]
+[section Class template `output_buffer`]
 
+[h4 Synopsis]
 [#min_buff_size]
 ``
 namespace boost { namespace stringify { inline namespace v0 {
@@ -56,7 +56,7 @@ protected:
 ``
 [h4 Protected constructors]
 
-[h4 Destructor]
+[h5 Destructor]
 
 [table
 [[`public: virtual ~output_buffer() = default;`]]
@@ -64,8 +64,9 @@ protected:
 ]]
 ]
 
-[h4 Public pure virtual member functions ]
+[h5 Public pure virtual member functions ]
 
+[#output_buffer_recycler]
 [table
 [[`virtual bool recycle() = 0;`]]
 [[[variablelist
@@ -82,26 +83,30 @@ protected:
      [[ Postcondition]
       [ on sucess: size() >= min_buff_size]]]]]]
 
-[h4 Public non-virtual member functions ]
+[h5 Public non-virtual member functions ]
 
+[#output_buffer_size]
 [table
 [[`std::size_t size() const noexcept;`]]
 [[[variablelist
    [[Return value]
     [`end() - pos()`]]]]]]
 
+[#output_buffer_size]
 [table
 [[`char_type* pos() const noexcept;`]]
 [[[variablelist
    [[Returns]
     [The memory position where the content shall be written]]]]]]
 
+[#output_buffer_end]
 [table
 [[`char_type* end() const noexcept;`]]
 [[[variablelist
    [[Returns]
     [The end of memory position where the content shall be written]]]]]]
 
+[#output_buffer_advance_to]
 [table
 [[`void advance_to(char_type* p) noexcept;`]]
 [[[variablelist
@@ -112,6 +117,7 @@ protected:
    [[Postcondition]
       [`pos() == p`]]]]]]
 
+[#output_buffer_advance]
 [table
 [[`void advance(std::size_t n) noexcept;`]]
 [[[variablelist
@@ -120,6 +126,7 @@ protected:
   [[Effect]
      [same as `advance(pos() + n)`]]]]]]
 
+[#output_buffer_set_error]
 [table
 [[`void set_error(std::error_code ec) noexcept;`]]
 [[[variablelist
@@ -138,29 +145,22 @@ protected:
   [[Effect]
      [Calls `set_error(std::errc::illegal_byte_sequence)`]]]]]]
 
+[#output_buffer_get_error]
 [table
 [[`std::error_code get_error() const noexcept;`]]
 [[[variablelist
   [[Return value]
      [The value passed to `set_error` the first time it was called]]]]]]
 
+[#output_buffer_has_error]
 [table
 [[`bool has_error() const noexcept;`]]
 [[[variablelist
   [[Return value]
      [Whether `set_error` has been called ]]]]]]
 
-[table
-[[`protected: void set_pos(char_type* p) noexcept;`]]
-[[[variablelist
-  [[Postcondition]
-     [`pos() == p`]]]]]]
-
-[table
-[[`protected: void set_end(char_type* e) noexcept;`]]
-[[[variablelist
-  [[Postcondition]
-     [`end() == e`]]]]]]
+[h5 Protected member functions]
+[h5 Constructors]
 
 [table
 [[`protected: output_buffer(char_type* buff_begin, char_type* buff_end) noexcept;`]]
@@ -178,44 +178,55 @@ protected:
 [[[variablelist
   [[Effect]
      [Calls `output_buffer(buff_begin, buff_begin + buff_size)` ]]]]]]
-     
+
+[#output_buffer_set_pos]
+[#output_buffer_set_end]
+[h5 Buffer reset]
+
+[table
+[[`protected: void set_pos(char_type* p) noexcept;`]]
+[[[variablelist
+  [[Postcondition]
+     [`pos() == p`]]]]]]
+
+[table
+[[`protected: void set_end(char_type* e) noexcept;`]]
+[[[variablelist
+  [[Postcondition]
+     [`end() == e`]]]]]]
+
+[endsect]
+
+[#OutputBuffer]
+[section Concept ['OutputBuffer]]
+
+A given type [~T] is an `OuputBuffer`, if it satisfies the following conditions:
+
+[itemized_list
+        [ [~T] a is concrete class that derives from the abstract class
+          [link output_buffer `output_buffer`]`<`[~CharT]`>`, where [~CharT]
+          is `char`, `char16_t`, `char32_t` or `wchar_t`.]
+        [ It has a `finish()` public member function. ]
+
+        [ [#OutputBuffer_reserve] [_Optionally], it contains a
+          public member function `reserve(std::size_t)`.]
+]
+
+[/
+ If present,
+          this function is called no more than once, and just after the
+          constructor,
+          and according to the use of [link syntax_reserve `reserve_auto()`,
+          `reserve()` or `no_reserve()`] in the [link usage_syntax basic
+          invocation syntax]. The parameter tells how many characters will
+          be written before `finish()` is called.
+
+This function is called
+          just before `foobar_writer` is destroyed. Its returned value is what
+          the expression [~leading_expression]` ... (` [~args]` ...)` returns.
 
 
+]
 
-
-[#nodiscard_error_code_class]
-[h3 Class `nodiscard_error_code`]
-``
-namespace boost{
-namespace stringify{
-inline namespace v0 {
-
-class [[nodiscard]] nodiscard_error_code: public std::error_code
-{
-public:
-    using std::error_code::error_code;
-
-    nodiscard_error_code(const std::error_code& ec) noexcept
-        : std::error_code(ec)
-    {}
-};
-
-}}}
-``
-
-[#stringify_error]
-[h3 Class `stringify_error`]
-``
-namespace boost{
-namespace stringify{
-inline namespace v0 {
-
-class stringify_error: public std::system_error
-{
-public:
-    using std::system_error::system_error;
-};
-
-}}}
-``
+[endsect]
 

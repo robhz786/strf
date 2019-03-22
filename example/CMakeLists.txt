@@ -13,8 +13,6 @@ remove_definitions(-DNDEBUG)
 
 foreach(x
     overview
-    syntax_samples
-    trivial_sample
     assembly_string
     encoding_conversion
     format_functions
@@ -42,8 +40,14 @@ find_package(Qt5Core QUIET)
 
 if (Qt5Core_FOUND)
 
-  add_executable(extend_ouput_toQString extend_output_toQString.cpp)
-  target_link_libraries(extend_ouput_toQString Qt5::Core boost_stringify)
-  add_test(NAME run_extend_ouput_toQString COMMAND extend_ouput_toQString)
+  add_executable(toQString toQString.cpp)
+  target_link_libraries(toQString Qt5::Core boost_stringify)
+  add_test(NAME run_toQString COMMAND toQString)
+
+  add_executable(appendQString appendQString.cpp)
+  target_link_libraries(appendQString Qt5::Core boost_stringify)
+  add_test(NAME run_appendQString COMMAND appendQString)
+
+
   
 endif(Qt5Core_FOUND)

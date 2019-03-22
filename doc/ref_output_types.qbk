@@ -1,0 +1,729 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+[section Output Types]
+
+[section `std::basic_string`]
+
+[h5 String creation]
+
+[#to_basic_string]
+[table
+[[
+  `template< typename CharT`[br]
+  [^\u2000\u2000\u2000\u2000\u2000\u2000\u2000\u2000]`, typename Traits = std::char_traits<CharT>`[br]
+  [^\u2001\u2001\u2001\u2001\u2000\u2000\u2000\u2000]`, typename Allocator = std::allocator<CharT> >`[br]
+  `constexpr `[link dispatcher `dispatcher`]`<`[link
+   facets_pack `facets_pack`]`<>, `['`/* implementation-defined */`]`> to_basic_string;`
+]]
+[[
+  [variablelist
+    [[ Return type of [link dispatcher_strf stringification functions]]
+     [ `std::basic_string<CharT, Traits, Allocator>`]]
+     
+    [[ Effect of [link dispatcher_strf stringification functions]]
+     [ Return the stringification result if `ob.`[link
+       output_buffer_has_error `has_error()`] returns `false`,
+       where `ob` is the internally created [link output_buffer
+       `output_buffer`]. Otherwise throws a [link stringify_error
+       `stringify_error`] object initialized with `ob.`[link
+       output_buffer_get_error `get_error()`].]]
+
+    [[ Note ]
+     [ This dispatcher support the [link dispatcher_reserve reserve]
+       functions. ]]]
+]]
+]
+
+[br]
+[#to_string]
+[table
+[[
+  `constexpr `[link dispatcher `dispatcher`]`<`[link facets_pack `facets_pack`]`<>, `
+  ['`/* implementation-defined */`]`> to_string;`
+]]
+[[
+  [variablelist
+   [[Value]
+    [Same as `to_basic_string<char>`.]]]
+]]
+]
+
+[br]
+[#to_u16string]
+[table
+[[
+  `constexpr `[link dispatcher `dispatcher`]`<`[link facets_pack `facets_pack`]`<>, `
+  ['`/* implementation-defined */`]`> to_u16string;`
+]]
+[[
+  [variablelist
+   [[Value]
+    [Same as `to_basic_string<char16_t>`.]]]
+]]
+]
+
+[br]
+[#to_u32string]
+[table
+[[
+  `constexpr `[link dispatcher `dispatcher`]`<`[link facets_pack `facets_pack`]`<>, `
+  ['`/* implementation-defined */`]`> to_32string;`
+]]
+[[
+  [variablelist
+   [[Value]
+    [Same as `to_basic_string<char32_t>`.]]]
+]]
+]
+
+[br]
+[#to_wstring]
+[table
+[[
+  `constexpr `[link dispatcher `dispatcher`]`<`[link facets_pack `facets_pack`]`<>, `
+  ['`/* implementation-defined */`]`> to_wstring;`
+]]
+[[
+  [variablelist
+   [[Value]
+    [Same as `to_basic_string<wchar_t>`.]]]
+]]
+]
+
+[h5 Append]
+
+[#append]
+[table
+[[
+  `template <typename CharT, typename Traits, typename A>`[br]
+  `constexpr `[link dispatcher `dispatcher`]`< `[link facets_pack
+  `facets_pack`]`<>, `['`/* implementataion-defined */`]` >`[br]
+  `append(std::basic_string<CharT, Traits, A>& str);`
+]]
+[[
+  [variablelist
+    [[ Return type of [link dispatcher_strf stringification functions]]
+     [ `std::size_t`]]
+    [[ Effect of [link dispatcher_strf stringification functions]]
+     [ Append into `str` the stringification result and return
+       the number of appended characters if `ob.`[link
+       output_buffer_has_error `has_error()`] returns `false`,
+       where `ob` is the internally created [link OutputBuffer
+       `OutputBuffer`].
+       Otherwise, throws a [link stringify_error
+       `stringify_error`] object initialized with `ob.`[link
+       output_buffer_get_error `get_error()`].]]
+    [[ Note ]
+     [ This dispatcher support the [link dispatcher_reserve reserve]
+       functions. ]]]
+]]
+]
+
+[br]
+[#ec_append]
+[table
+[[
+  `template <typename CharT, typename Traits, typename A>`[br]
+  `constexpr `[link dispatcher `dispatcher`]`< `[link facets_pack
+  `facets_pack`]`<>, `['`/* implementation-defined... */`]`>`[br]
+  `ec_append(std::basic_string<CharT, Traits, A>& str, std::size_t* count_ptr = nullptr)`[br]
+]]
+[[
+  [variablelist
+    [[ Return type of [link dispatcher_strf stringification functions]]
+     [ [link nodiscard_error_code `stringify::v0::nodiscard_error_code`]]]
+     
+    [[ Effect of [link dispatcher_strf stringification functions]]
+     [ Append into `str` the stringification result and return
+       `ob.`[link output_buffer_get_error `get_error()`], where `ob` is the
+       internally created [link output_buffer `output_buffer`].
+       In case an exception is thrown,
+       `str` is resized to its original size. If `count_ptr`
+       it not null, then `*count_ptr` is assigned to the number
+       of appended characters.]]
+    [[ Note ]
+     [ This dispatcher support the [link dispatcher_reserve reserve]
+       functions. ]]]
+]]
+]
+
+[h5 Assign]
+
+[#assign]
+[table
+[[
+  `template <typename CharT, typename Traits, typename A>`[br]
+  `constexpr `[link dispatcher `dispatcher`]`< `[link facets_pack
+  `facets_pack`]`<>, `['`/* implementataion-defined */`]` >`[br]
+  `assign(std::basic_string<CharT, Traits, A>& str);`
+]]
+[[
+  [variablelist
+    [[Effect]
+     [Same as `{ str.clear(); return append(str); }`]]]
+]]
+]
+
+[br]
+[#ec_assign]
+[table
+[[
+  `template <typename CharT, typename Traits, typename A>`[br]
+  `constexpr `[link dispatcher `dispatcher`]`< `[link facets_pack
+  `facets_pack`]`<>, `['`/* implementation-defined... */`]`>`[br]
+  `ec_assign(std::basic_string<CharT, Traits, A>& str, std::size_t* count_ptr = nullptr)`[br]
+]]
+[[
+  [variablelist
+    [[Effect]
+     [ Same as `{str.clear(); return ec_append(str, count_ptr);}` ]]]
+]]
+]
+
+[endsect]
+[section Raw strings]
+
+[#write_char_ptr_count]
+[table
+[[
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > write(char* dest, std::size_t count);`[br]
+
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > write(char16_t* dest, std::size_t count);`[br]
+
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > write(char32_t* dest, std::size_t count);`[br]
+
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > write(wchar_t* dest, std::size_t count);`[br]
+
+]]
+[[
+  [variablelist
+    [[ Requirements]
+     [ `count != 0`]]
+
+    [[ Return type of [link dispatcher_strf stringification functions]]
+     [ `std::size_t`]]
+     
+    [[ Effect of [link dispatcher_strf stringification functions]]
+     [ On success, copy to `dest` the stringification result plus
+       the termination character and return the length of such
+       result.
+
+       On Failure, assign `*dest` to `'\0'` and throws a [link
+       stringify_error `stringify_error`] object. A failure happens if:
+       [itemized_list
+         [The number of characters to be written including the
+          termination character is less than `count`. In this
+          case the exception object is initialized with
+          `std::make_error_code(std::errc::result_out_of_range)`.]
+         [`ob.`[link output_buffer_set_error `set_error`] is called,
+          where `ob` is the internally created [link OutputBuffer
+          `OutputBuffer`] object.
+          In this case the exception object is initialized with
+          `ob.`[link output_buffer_get_error `get_error()`].]
+         [Any exception is thrown for whatever other reason.]]]]
+
+
+    [[ Notes ]
+     [[itemized_list
+       [ A termination character `'\0'` is aways written]
+       [ This dispatcher does not support the [link dispatcher_reserve reserve]
+         functions. ]]]]]
+
+]]
+]
+
+[br]
+[#write_char_arr]
+[table
+[[
+`template<std::size_t N>`[br]
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > write(char (&dest)[N]);`[br]
+
+
+`template<std::size_t N>`[br]
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > write(char16_t (&dest)[N]);`[br]
+
+
+`template<std::size_t N>`[br]
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > write(char32_t (&dest)[N]);`[br]
+
+
+`template<std::size_t N>`[br]
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > write(wchar_t (&dest)[N]);`[br]
+
+]]
+[[
+  [variablelist
+    [[Effect]
+     [Same as `write(dest, N, count_ptr)`]]]
+]]
+]
+
+
+[br]
+[#write_char_ptr_range]
+[table
+[[
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > write(char* dest, char* end);`[br]
+
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > write(char16_t* dest, char16_t* end);`[br]
+
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > write(char32_t* dest, char32_t* end);`[br]
+
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > write(wchar_t* dest, wchar_t* end);`[br]
+
+]]
+[[
+  [variablelist
+    [[Effect]
+     [Same as `write(dest, (end - dest), count_ptr)`]]]
+]]
+]
+
+
+[br]
+[#ec_write_char_ptr_count]
+[table
+[[
+  `inline dispatcher< stringify::v0::facets_pack<>, `
+  ['`/* implementation-defined... */`]` > ec_write`[br]
+  [^\u2000\u2000\u2000\u2000]`( char* dest`[br]
+  [^\u2000\u2000\u2000\u2000]`, std::size_t count`[br]
+  [^\u2000\u2000\u2000\u2000]`, std::size_t* count_ptr = nullptr );`[br]
+
+
+  `inline dispatcher< stringify::v0::facets_pack<>, `
+  ['`/* implementation-defined... */`]` > ec_write`[br]
+  [^\u2000\u2000\u2000\u2000]`( char16_t* dest`[br]
+  [^\u2000\u2000\u2000\u2000]`, std::size_t count`[br]
+  [^\u2000\u2000\u2000\u2000]`, std::size_t* count_ptr = nullptr );`[br]
+
+  `inline dispatcher< stringify::v0::facets_pack<>, `
+  ['`/* implementation-defined... */`]` > ec_write`[br]
+  [^\u2000\u2000\u2000\u2000]`( char32_t* dest`[br]
+  [^\u2000\u2000\u2000\u2000]`, std::size_t count`[br]
+  [^\u2000\u2000\u2000\u2000]`, std::size_t* count_ptr = nullptr );`[br]
+
+  `inline dispatcher< stringify::v0::facets_pack<>, `
+  ['`/* implementation-defined... */`]` > ec_write`[br]
+  [^\u2000\u2000\u2000\u2000]`( wchar_t* dest`[br]
+  [^\u2000\u2000\u2000\u2000]`, std::size_t count`[br]
+  [^\u2000\u2000\u2000\u2000]`, std::size_t* count_ptr = nullptr );`[br]
+
+]]
+[[
+  [variablelist
+    [[ Requirements]
+     [ `count != 0`]]
+
+    [[ Return type of [link dispatcher_strf stringification functions]]
+     [ [link nodiscard_error_code `nodiscard_error_code`]]]
+
+    [[ Effect of [link dispatcher_strf stringification functions]]
+     [ 
+       On success, copy to `dest` the stringification result plus
+       the termination character and, if `count_ptr` is not null,
+       assign `*count_ptr` to the length of such result, and
+       return `std::error_code{}`.
+
+       On Failure, assign `*dest` to `'\0'`. A failure happens if:
+       [itemized_list
+         [The number of characters to be written including the
+          termination character is less than `count`. In this
+          case the return value is
+          `std::make_error_code(std::errc::result_out_of_range)`.]
+         [`ob.`[link output_buffer_set_error `set_error`] is called,
+          where `ob` is the internally created [link OutputBuffer
+          `OutputBuffer`] object.
+          In this case, the return value is
+          `ob.`[link output_buffer_get_error `get_error()`].]
+         [Any exception is thrown for whatever reason.]]]]
+
+   [[ Notes ]
+     [[itemized_list
+       [ A termination character `'\0'` is aways written]
+       [ This dispatcher does not support the [link dispatcher_reserve reserve]
+         functions.]]]]]
+]]
+]
+
+
+[br]
+[#ec_write_char_arr]
+[table
+[[
+`template<std::size_t N>`[br]
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > ec_write`[br]
+  [^\u2000\u2000\u2000\u2000]`( char (&dest)[N]`[br]
+  [^\u2000\u2000\u2000\u2000]`, std::size_t* count_ptr = nullptr );`[br]
+
+
+
+`template<std::size_t N>`[br]
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > ec_write`[br]
+  [^\u2000\u2000\u2000\u2000]`( char16_t (&dest)[N]`[br]
+  [^\u2000\u2000\u2000\u2000]`, std::size_t* count_ptr = nullptr );`[br]
+
+
+`template<std::size_t N>`[br]
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > ec_write`[br]
+  [^\u2000\u2000\u2000\u2000]`( char32_t (&dest)[N]`[br]
+  [^\u2000\u2000\u2000\u2000]`, std::size_t* count_ptr = nullptr );`[br]
+
+
+`template<std::size_t N>`[br]
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > ec_write`[br]
+  [^\u2000\u2000\u2000\u2000]`( wchar_t (&dest)[N]`[br]
+  [^\u2000\u2000\u2000\u2000]`, std::size_t* count_ptr = nullptr );`[br]
+]]
+[[
+  [variablelist
+    [[Effect]
+     [Same as `ec_write(dest, N, count_ptr)`]]]
+]]
+]
+
+[br]
+[#ec_write_char_ptr_range]
+[table
+[[
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > ec_write`[br]
+  [^\u2000\u2000\u2000\u2000]`( char* dest`[br]
+  [^\u2000\u2000\u2000\u2000]`, char* end`[br]
+  [^\u2000\u2000\u2000\u2000]`, std::size_t* count_ptr = nullptr );`[br]
+
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > ec_write`[br]
+  [^\u2000\u2000\u2000\u2000]`( char16_t* dest`[br]
+  [^\u2000\u2000\u2000\u2000]`, char16_t* end`[br]
+  [^\u2000\u2000\u2000\u2000]`, std::size_t* count_ptr = nullptr );`[br]
+
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > ec_write`[br]
+  [^\u2000\u2000\u2000\u2000]`( char32_t* dest`[br]
+  [^\u2000\u2000\u2000\u2000]`, char32_t* end`[br]
+  [^\u2000\u2000\u2000\u2000]`, std::size_t* count_ptr = nullptr );`[br]
+
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > ec_write`[br]
+  [^\u2000\u2000\u2000\u2000]`( wchar_t* dest`[br]
+  [^\u2000\u2000\u2000\u2000]`, wchar_t* end`[br]
+  [^\u2000\u2000\u2000\u2000]`, std::size_t* count_ptr = nullptr );`[br]
+
+]]
+[[
+  [variablelist
+    [[Effect]
+     [Same as `ec_write(dest, (end - dest), count_ptr)`]]]
+]]
+]
+
+[endsect]
+[section `std::FILE*`]
+
+[#write_FILE]
+[table
+[[
+
+`template <typename CharT = char>`[br]
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > write`[br]
+[^\u2000\u2000\u2000\u2000]`( std::FILE* dest`[br]
+[^\u2000\u2000\u2000\u2000]`, std::size_t* count_ptr = nullptr );`
+
+]]
+[[
+  [variablelist
+    [[Requirements]
+     [[itemized_list
+       [`dest` must opened]
+       [`dest` must be narrow-orientated (even if `CharT` is `wchar_t`).]
+       [If `sizeof(char)` is greater than one, `dest` must be opened
+        in binary mode.]]]]
+
+     [[ Return type of [link dispatcher_strf stringification functions]]
+      [ `std::size_t`]]
+     
+    [[ Effects of [link dispatcher_strf stringification functions]]
+     [ [itemized_list
+        [ Write the stringification result to `dest` by sucessively calling
+          `std::fwrite` using an itermediate buffer of `CharT` casted as
+          `char*`. ] 
+        [ If `count_ptr` is not null, assigns `*count_ptr` to the number
+          of successfully written characters. ]
+        [ If an error happens on `std::fwrite`, throws a [link
+          stringify_error `stringify_error`] object initialized with 
+          `std::error_code{errno, std::generic_category()}`. ]
+        [ If `ob.`[link output_buffer_set_error `set_error`] is called,
+          throws a [link stringify_error
+          `stringify_error`] object initialized with `ob.`[link
+          output_buffer_get_error `get_error()`], where `ob` is the
+          internally created [link OutputBuffer `OutputBuffer`] object. ]
+        [ On success, returns the number of written characters. ]]]]
+
+  [[ Notes ]
+     [[itemized_list
+       [ `std::fflush` is not called.]
+       [ This dispatcher does not support the [link dispatcher_reserve reserve]
+         functions. ]]]]]
+]]
+]
+
+[br]
+[#wwrite_FILE]
+[table
+[[
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > wwrite`[br]
+[^\u2000\u2000\u2000\u2000]`( std::FILE* dest`[br]
+[^\u2000\u2000\u2000\u2000]`, std::size_t* count_ptr = nullptr );`
+]]
+[[
+  [variablelist
+   [[Requirements]
+     [[itemized_list
+       [`dest` must opened]
+       [`dest` must be wide-orientated (even if `CharT` is `wchar_t`).]]]]
+    
+   [[Return type of [link dispatcher_strf stringification functions]]
+      [ `std::size_t`]]
+   
+   [[ Effects of [link dispatcher_strf stringification functions]]
+     [ [itemized_list
+        [ Write the stringification result to `dest` by sucessively calling
+          `std::fputwc`. ] 
+        [ If `count_ptr` is not null, assigns `*count_ptr` to the number
+          of successfully written characters. ]
+        [ If an error happens on `std::fputwc`, throws a [link
+          stringify_error `stringify_error`] object initialized with 
+          `std::error_code{errno, std::generic_category()}`. ]
+        [ If `ob.`[link output_buffer_set_error `set_error`] is called,
+          throws a [link stringify_error
+          `stringify_error`] object initialized with `ob.`[link
+          output_buffer_get_error `get_error()`], where `ob` is the
+          internally created [link OutputBuffer `OutputBuffer`] object. ]
+        [ On success, returns the number of written characters. ]]]]
+
+
+   [[ Notes ]
+     [[itemized_list
+       [ `std::fflush` is not called.]
+       [ This dispatcher does not support the [link dispatcher_reserve reserve]
+         functions. ]]]]]
+]]
+]
+
+
+
+
+[br]
+[#ec_write_FILE]
+[table
+[[
+`template <typename CharT = char>`[br]
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > ec_write`[br]
+[^\u2000\u2000\u2000\u2000]`( std::FILE* dest`[br]
+[^\u2000\u2000\u2000\u2000]`, std::size_t* count_ptr = nullptr );`
+]]
+[[
+  [variablelist
+    [[Requirements]
+     [[itemized_list
+       [`dest` must opened]
+       [`dest` must be narrow-orientated (even if `CharT` is `wchar_t`).]
+       [If `sizeof(char)` is greater than one, `dest` must be opened
+        in binary mode.]]]]
+
+    [[ Return type of [link dispatcher_strf stringification functions]]
+      [link nodiscard_error_code `nodiscard_error_code`]]
+     
+    [[ Effects of [link dispatcher_strf stringification functions]]
+     [ [itemized_list
+        [ Write the stringification result to `dest` by sucessively calling
+          `std::fwrite` using an itermediate buffer of `CharT` array casted as
+          `char*`, until an error happens or all the result is written. ] 
+        [ If `count_ptr` is not null, assigns `*count_ptr` to the number
+          of successfully written characters. ]
+        [ On success, returns `std::error_code{}`] 
+        [ If an error happens on `std::fwrite`, returns 
+          `std::error_code{errno, std::generic_category()}`. ]
+        [ If `ob.`[link output_buffer_set_error `set_error`] is called, returns
+          `ob.`[link output_buffer_get_error `get_error()`], where `ob` is the
+          internally created [link OutputBuffer `OutputBuffer`] object. ]]]]
+
+    [[ Notes ]
+     [[itemized_list
+       [ `std::fflush` is not called.]
+       [ This dispatcher does not support the [link dispatcher_reserve reserve]
+         functions. ]]]]]
+]]
+]
+
+[br]
+[#ec_wwrite_FILE]
+[table
+[[
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > ec_wwrite`[br]
+[^\u2000\u2000\u2000\u2000]`( std::FILE* dest`[br]
+[^\u2000\u2000\u2000\u2000]`, std::size_t* count_ptr = nullptr );`
+]]
+[[
+  [variablelist
+   [[Requirements]
+    [[itemized_list
+      [`dest` must opened]
+      [`dest` must be wide-orientated (even if `CharT` is `wchar_t`).]]]]
+    
+    [[ Return type of [link dispatcher_strf stringification functions]]
+     [link nodiscard_error_code `nodiscard_error_code`]]
+     
+    [[ Effects of [link dispatcher_strf stringification functions]]     
+     [ Write the stringification result to `dest` by sucessively calling
+       `std::fputwc`, until an error happens or all the result is written. ] 
+     [ If `count_ptr` is not null, assigns `*count_ptr` to the number
+       of successfully written characters. ]
+     [ If an error happens on `std::fputwc`, returns 
+       `std::error_code{errno, std::generic_category()}`. ]
+     [ If `ob.`[link output_buffer_set_error `set_error`] is called, returns
+       `ob.`[link output_buffer_get_error `get_error()`], where `ob` is the
+       internally created [link OutputBuffer `OutputBuffer`] object. ]
+     [ On success, returns `std::error_code{}`.]]
+
+    [[ Notes ]
+     [[itemized_list
+       [ `std::fflush` is not called.]
+       [ This dispatcher does not support the [link dispatcher_reserve reserve]
+         functions. ]]]]]
+]]
+]
+
+[endsect]
+
+[#write_std_streambuf]
+[section `std::streambuf`]
+
+[table
+[[
+`template<typename CharT, typename Traits = std::char_traits<CharT> >`[br]
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > write`[br]
+[^\u2000\u2000\u2000\u2000]`( std::basic_streambuf<CharT, Traits>& dest`[br]
+[^\u2000\u2000\u2000\u2000]`, std::streamsize* count_ptr = nullptr );`
+]]
+[[
+  [variablelist
+   [[ Return type of [link dispatcher_strf stringification functions]]
+    [std::streamsize]]
+     
+    [[ Effects of [link dispatcher_strf stringification functions]]
+     [ Write the stringification result to `dest` by sucessively calling
+       `std::basic_streambuf<CharT, Traits>::sputn` using an itermediate buffer.]
+     [ If `count_ptr` is not null, assigns `*count_ptr` to the number
+       of successfully written characters. ]
+     [ If an error happens on `std::basic_streambuf<CharT, Traits>::sputn`,
+       throws a [link stringify_error `stringify_error`] object initialized
+       with `std::error_code{std::errc::io_error}`. ]
+     [ If `ob.`[link output_buffer_set_error `set_error`] is called,
+       throws a [link stringify_error
+       `stringify_error`] object initialized with `ob.`[link
+       output_buffer_get_error `get_error()`], where `ob` is the
+       internally created [link OutputBuffer `OutputBuffer`] object. ]
+     [ On success, returns the number of written characters. ]]
+   
+   [[ Note ]
+    [ This dispatcher does not support the [link dispatcher_reserve reserve]
+      functions. ]]]
+]]
+]
+
+[table
+[[
+`template<typename CharT, typename Traits = std::char_traits<CharT> >`[br]
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > write`[br]
+[^\u2000\u2000\u2000\u2000]`( std::basic_streambuf<CharT, Traits>* dest`[br]
+[^\u2000\u2000\u2000\u2000]`, std::streamsize* count_ptr = nullptr );`
+]]
+[[
+  [variablelist
+    [[ Effects ]
+     [ Same as `write(&dest, count_ptr)`]]]
+]]
+]
+
+[br]
+[#ec_write_std_streambuf]
+
+[table
+[[
+`template<typename CharT, typename Traits = std::char_traits<CharT> >`[br]
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > ec_write`[br]
+[^\u2000\u2000\u2000\u2000]`( std::basic_streambuf<CharT, Traits>& dest`[br]
+[^\u2000\u2000\u2000\u2000]`, std::streamsize* count_ptr = nullptr );`
+]]
+[[
+  [variablelist
+   [[ Return type of [link dispatcher_strf stringification functions]]
+    [ [link nodiscard_error_code `nodiscard_error_code`]]]
+     
+    [[ Effects of [link dispatcher_strf stringification functions]]
+     [ Write the stringification result to `dest` by sucessively calling
+       `std::basic_streambuf<CharT, Traits>::sputn` using an itermediate buffer
+       as argument.]
+     [ If `count_ptr` is not null, assigns `*count_ptr` to the number
+       of successfully written characters. ]
+     [ If an error happens on `std::basic_streambuf<CharT, Traits>::sputn`,
+       returns `std::error_code{std::errc::io_error}`. ]
+     [ If `ob.`[link output_buffer_set_error `set_error`] is called,
+       returns `ob.`[link output_buffer_get_error `get_error()`],
+       where `ob` is the internally created
+       [link OutputBuffer `OutputBuffer`] object. ]
+     [ On success, returns `std::error_code{}`. ]]
+   
+   [[ Note ]
+    [ This dispatcher does not support the [link dispatcher_reserve reserve]
+      functions. ]]]
+]]
+]
+
+[table
+[[
+`template<typename CharT, typename Traits = std::char_traits<CharT> >`[br]
+`inline dispatcher< stringify::v0::facets_pack<>, `
+['`/* implementation-defined... */`]` > ec_write`[br]
+[^\u2000\u2000\u2000\u2000]`( std::basic_streambuf<CharT, Traits>* dest`[br]
+[^\u2000\u2000\u2000\u2000]`, std::streamsize* count_ptr = nullptr );`
+]]
+[[
+  [variablelist
+    [[ Effects ]
+     [ Same as `ec_write(&dest, count_ptr)`]]]
+]]
+]
+
+[endsect]
+[endsect]

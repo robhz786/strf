@@ -5,7 +5,7 @@
 ===============================================================================/]
 
 [#width_calculation]
-[section:width_calculation Facets for width calculation]
+[section Width calculation]
 
 [import ../example/custom_width_calculation.cpp]
 [import ../example/width_calculation_in_encoding_conversion.cpp]
@@ -20,8 +20,5 @@ This facet category enables you to customise how the width is calculated. You ma
 
 Note: this facet applies to the input encoding:
 [width_calculation_in_encoding_conversion_sample]
-
-
-
 
 [endsect]
