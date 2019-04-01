@@ -20,13 +20,13 @@ class facet_trait<stringify::v0::encoding<CharT> >
 {
 public:
     using category = stringify::v0::encoding_category<CharT>;
+    static constexpr bool store_by_value = true;
 };
 
 template <>
 struct encoding_category<char>
 {
     static constexpr bool constrainable = false;
-    static constexpr bool by_value = true;
 
     static encoding<char> get_default()
     {
@@ -38,7 +38,6 @@ template <>
 struct encoding_category<char16_t>
 {
     static constexpr bool constrainable = false;
-    static constexpr bool by_value = true;
 
     static encoding<char16_t> get_default()
     {
@@ -50,7 +49,6 @@ template <>
 struct encoding_category<char32_t>
 {
     static constexpr bool constrainable = false;
-    static constexpr bool by_value = true;
 
     static encoding<char32_t> get_default()
     {
@@ -62,7 +60,6 @@ template <>
 struct encoding_category<wchar_t>
 {
     static constexpr bool constrainable = false;
-    static constexpr bool by_value = true;
 
     static encoding<wchar_t> get_default()
     {
@@ -79,6 +76,7 @@ class encoding_policy
 
 public:
 
+    static constexpr bool store_by_value = true;
     using category = stringify::v0::encoding_policy_category;
 
     constexpr encoding_policy
@@ -119,7 +117,6 @@ private:
 struct encoding_policy_category
 {
     constexpr static bool constrainable = true;
-    constexpr static bool by_value = true;
 
     static stringify::v0::encoding_policy get_default()
     {

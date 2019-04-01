@@ -5,6 +5,7 @@ http://spirit.sourceforge.net/
 
 Copyright 2013 Niall Douglas additions for colors and alignment.
 Copyright 2013 Paul A. Bristow additions for more colors and alignments.
+Copyright 2017 Tom Westerhout font fixes to support Sphinx
 
 Distributed under the Boost Software License, Version 1.0. (See accompany-
 ing file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -17,6 +18,7 @@ Body defaults
     body
     {
         margin: 1em;
+        font-size: 16px;
         font-family: sans-serif;
     }
 
@@ -24,7 +26,7 @@ Body defaults
 Paragraphs
 =============================================================================*/
 
-    p
+    p, div.document, div.footer
     {
         text-align: left;
         font-size: 10pt;
@@ -34,6 +36,30 @@ Paragraphs
 /*=============================================================================
 Program listings
 =============================================================================*/
+
+    code
+    {
+        background-color: #F4F4F4;
+
+        line-height: 14pt;
+        border-top: 1px solid #EAEAEA;
+        border-bottom: 1px solid #EAEAEA;
+        border-left: none;
+        border-right: none;
+    }
+
+    div.informaltable table tr th code,
+    div.table table tr th code
+    /*div.toc  code */
+    {
+        padding: inherit;
+        background-color: inherit;
+        line-height: inherit;
+        border-style: inherit;
+        border-width: inherit;
+        border-radius: inherit;
+        border-color: inherit;
+    }
 
     /* Code on paragraphs */
     p tt.computeroutput
@@ -48,6 +74,7 @@ Program listings
         padding: 0.5pc 0.5pc 0.5pc 0.5pc;
     }
 
+    div.highlight,
     .programlisting,
     .screen
     {
@@ -224,7 +251,7 @@ Table of contents
     }
 
     /* Code on toc */
-    .toc .computeroutput { font-size: 120% }
+    .toc .computeroutput { font-size: 105% }
 
     /* No margin on nested menus */
 
@@ -314,6 +341,7 @@ Blurbs
     div.important,
     div.caution,
     div.warning,
+    div.blurb,
     p.blurb
     {
         font-size: 9pt; /* A little bit smaller than the main text */
@@ -323,6 +351,7 @@ Blurbs
         padding: 0.5pc 0.5pc 0.5pc 0.5pc;
     }
 
+    div.blurb img,
     p.blurb img
     {
         padding: 1pt;
@@ -411,15 +440,80 @@ Colors
         }
 
     /* Syntax Highlighting */
+        .property,
+        .highlight .k,
+        .highlight .kc,
+        .highlight .kd,
+        .highlight .kn,
+        .highlight .kp,
+        .highlight .kr,
+        .highlight .kt,
         .keyword { color: #0000AA; }
+
+        .highlight .n,
+        .highlight .na,
+        .highlight .nb,
+        .highlight .bp,
+        .highlight .nc,
+        .highlight .no,
+        .highlight .nd,
+        .highlight .ni,
+        .highlight .ne,
+        .highlight .nf,
+        .highlight .py,
+        .highlight .nl,
+        .highlight .nn,
+        .highlight .nx,
+        .highlight .nt,
+        .highlight .nv,
+        .highlight .vc,
+        .highlight .vg,
+        .highlight .vi,
         .identifier { color: #000000; }
+
         .special { color: #707070; }
+
+        .highlight .cp,
         .preprocessor { color: #402080; }
+
+        .highlight .sc
         .char { color: teal; }
+
+        .highlight .c,
+        .highlight .ch,
+        .highlight .cm,
+        .highlight .cp,
+        .highlight .cpf,
+        .highlight .c1,
+        .highlight .cs,
+        .highlight .sd,
+        .highlight .sh,
         .comment { color: #800000; }
+
+        .highlight .s,
+        .highlight .sa,
+        .highlight .sb,
+        .highlight .dl,
+        .highlight .s2,
+        .highlight .se,
+        .highlight .si,
+        .highlight .sx,
+        .highlight .sr,
+        .highlight .s1,
+        .highlight .ss,
         .string { color: teal; }
+
+        .highlight .m,
+        .highlight .mf,
+        .highlight .mh,
+        .highlight .mi,
+        .highlight .mo,
         .number { color: teal; }
+
+        .highlight,
         .white_bkd { background-color: #FFFFFF; }
+
+        .highlight .hll,
         .dk_grey_bkd { background-color: #999999; }
 
     /* Links */
@@ -462,6 +556,7 @@ Colors
             border: 1px solid #DCDCDC;
         }
 
+        div.highlight,
         .programlisting,
         .screen
         {
@@ -480,6 +575,7 @@ Colors
         div.important,
         div.caution,
         div.warning,
+        div.blurb,
         p.blurb
         {
             border: 1px solid #DCDCDC;
@@ -541,6 +637,7 @@ Colors
             border: 1px solid gray;
         }
 
+        div.highlight,
         .programlisting,
         .screen
         {

@@ -1,0 +1,492 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+[#facets_pack]
+[section Class template `facets_pack`]
+
+[section Class template `facets_pack`]
+
+[table
+[[
+  `template <typename ... FPE>`[br]
+  `class facets_pack;`
+]]
+[[
+Class template facets_pack is used to store facets object.
+For each [~F] in `FPE...`, there is a value of [~F] in `facets_pack<FPE...>`.
+[variablelist
+   [[Compile time requirements]
+    [All types in `FPE...` must satisfy the
+    [link FacetsPackElementRequirements `FacetsPackElement`] requiremets]]]
+]]
+]
+
+[h4 Member functions]
+[h5 Constructors]
+
+[table
+[[`constexpr facets_pack(const facets_pack& other)`]]
+[[[variablelist
+    [[Effect]
+     [Initializes each element with the
+      const reference of the corresponding element in `other`]]
+    [[Compile time requirements]
+     [`std::is_copy_constructible_v<FPE> && ...`, otherwise this
+      constructor does not participate in overload resolution.]]]]]]
+
+[table
+[[`constexpr facets_pack(facets_pack&& other)`]]
+[[[variablelist
+    [[Effect]
+     [Initializes each element from the
+      rvalue reference of the corresponding element in `other`]]
+    [[Compile time requirements]
+     [`std::is_move_constructible_v<FPE> && ...`, otherwise this
+      constructor does not participate in overload resolution.]]]]]]
+
+[table
+[[`constexpr explicit facets_pack(const FPE& ... fpe)`]]
+[[[variablelist
+    [[Effect]
+     [Initializes the elements with
+      the correspondig paramenter in `fpe...`]]
+    [[Compile time requirements]
+     [`std::is_copy_constructible_v<FPE> && ...`, otherwise this
+      constructor does not participate in overload resolution.]]]]]]
+
+[table
+[[
+  `template <typename... U>`[br]
+  `constexpr explicit facets_pack(U&&... u)`
+]]
+[[
+  [variablelist
+    [[Effect]
+     [Initializes the elements with the corresponding values
+      in `std::forward<U>(u)...`]]
+    [[Compile time requirements]
+     [This constructor does not participate in overload resolution, unless
+      [itemized_list
+       [`sizeof...(U) == sizeof...(FPE)` , and]
+       [`sizeof...(U) != 0` , and]  
+       [`std::is_constructible_v<FPE, U&&> && ...`]]]]]     
+]]
+]         
+
+
+[/
+  [if `sizeof...(U) == 1` , then
+         [itemized_list
+           [`is_same_v<U..., FPE...>` is `false`, and]
+           [`is_convertible_v<facets_pack<U...>, FPE...>` is `false`, and]
+           [`is_constructible_v<FPE..., facets_pack<U...>>` is `false`.]]]
+]
+
+[h5 Assignmet operators]
+
+[table
+[[
+   `facets_pack& operator=(const facets_pack&) = delete;`[br]
+   `facets_pack& operator=(facets_pack&&) = delete;`
+]]
+[[
+   Assignments are deleted because they seem unecessary and it's unclear
+   what would be the best
+   implementation in the case there is any reference type in `FPE...`.
+]]
+]
+
+[endsect]
+[#pack]
+[section Function template `pack`]
+
+[table
+[[ 
+   `template <typename ... Types>`[br]
+   `constexpr facets_pack<VTypes...>  pack(const Types& ... args)`
+]]
+[[ 
+  [variablelist
+    [[Effect]
+     [Creates a `facets_pack` object from `args`.]]
+    [[Return Type]
+     [`facets_pack<VTypes...>`, where for each `Ti` in `Types...`,
+      the corresponding `Vi` in `VTypes...` is:
+      [itemized_list
+        [`const F&` , if `Vi` is `std::reference_wrapper<F>`]
+        [`const Vi` , if `Vi` `facet_stored_by_value<Vi>` is `false`]
+        [`Ti` , otherwise]]]]]
+]]
+]
+
+[endsect]
+[#get_facet]
+[section Function template `get_facet`]
+
+[table
+[[
+  `template <typename FCat, typename Tag, typename ... T>`[br]
+  `constexpr decltype(auto) get_facet(const facets_pack<T...>& fp);`
+]]
+
+[[
+  [variablelist
+   [[Compile time requiments]
+    [`FCat` satisfes [link FacetCategoryRequirements `FacetCategory`]
+        requirements]]
+   [[Effect]
+    [If [link has_facet `has_facet`]`<FCat, Tag>(fp)` then return
+     [link do_get_facet `do_get_facet`]`<FCat, Tag>(fp)`
+     otherwise return `FCat::get_default()`.]]
+   ]
+]]      
+]
+
+
+[#has_facet]
+[h5 Hypothetical function template `has_facet`]
+
+[table
+[[
+`template <typename FCat, typename Tag, typename FPE>`[br]
+`constexpr bool has_facet(const FPE& fpe)`
+]]
+[[
+  [variablelist
+    [[Note]
+     [This function template is not part of the library.
+      It is only document to help to explain
+      the [link get_facet `get_facet`] function template]]
+
+  [[Compile time requirements]
+   [[itemized_list
+     [`FCat` satisfes [link FacetCategoryRequirements `FacetCategory`]
+      requirements]
+     [`FPE` satisfies the [link FacetsPackElementRequirements `FacetsPackElement`]
+      requirements]]]]
+     
+  [[Effect]
+   [[itemized_list
+     [If `FPE` is a [link facets_pack `facets_pack`] then return whether there
+      is any element `elm` in `fpe` such that `has_facet<FCat, Tag>(elm)`
+      is `true`.]
+     [If `FPE` is [link constrained_fpe `constrained_fpe`]`<FPE, Filter>`,
+      then return `Filter<Tag>::value && has_facet<FCat, Tag>(fpe.get())`.]
+     [If `FPE` satisfies the [link FacetRequirements `Facet`] requirements,
+      return `std::is_same_v<FCat, `[link facet_category `facet_category`]
+      `<FPE>>`]]]] 
+   ]
+]]
+]
+
+[#do_get_facet]
+[h5 Hypothetical function template `do_get_facet`]
+[table
+[[
+`template <typename FCat, typename Tag, typename FPE>`[br]
+`constexpr decltype(auto) do_get_facet(const FPE& fpe);`
+]]
+
+[[
+[variablelist
+
+    [[Note]
+     [This function template is not part of the library.
+      It only is documented to help to explaine the
+      [link get_facet `get_facet`] function template]]
+      
+    [[Compile time requiments]
+     [[itemized_list
+      [`FCat` satisfes [link FacetCategoryRequirements `FacetCategory`]
+       requirements.]
+      [`FPE` satisfies the [link FacetsPackElementRequirements `FacetsPackElement`]
+       requirements.]
+      [`has_facet<FCat, Tag>(fpe)` is `true`.]]]]
+
+    [[ Effect]
+     [[itemized_list
+      [If `FPE` is a [link facets_pack `facets_pack`], then return
+       `do_get_facet<FCat, Tag>(elm)` where [~elm] is the last
+       element in `fpe` such that `has_facet<FCat, Tag>(elm)` is `true`.]
+      [If `FPE` is a [link constrained_fpe `constrained_fpe`], then
+       return `do_get_facet(fpe.get())`]
+      [Otherwise return `fpe`]]]]
+
+    [[Return type]
+     [`const F&` where F is a type that satisfies the [link
+      FacetRequirements `Facet`] requirements]]
+
+ 
+   ]
+]]
+]
+
+[endsect]
+[#constrained_fpe]
+[section Class template `constrained_fpe`]
+
+[table
+[[
+  `template <template <typename> class Filter, typename FPE>`[br]
+  `class constrained_fpe;`
+]]
+[[
+  The class template `constrained_fpe` is designed to be used in
+  [link facets_pack `facets_pack`].
+  `constrained_fpe<Filter, FPE>` holds a value of `FPE` that will
+  only be returned by [link get_facet `get_facet`]`<Category, Tag>`
+  if `Filter<Tag>::value` is `true`.
+
+  [variablelist
+
+[/
+   [[Template parameters]
+    [[* `FPE`] The type of the element that `constrained_fpe<Filter, FPE>` stores]
+    [[* `Filter`] A class template that indicated whether a type `T` ]]
+]
+
+   [[Compile time requirements]
+    [[itemized_list
+     [For any type [~T], `Filter<T>` has a member variable `value` that is a
+      static constexpr value whose type is implicitly convertible to `bool`.]     
+     [`FPE` satisfies [link ConstrainableFacetsPackElementRequirements
+     `ConstrainableFacetsPackElement`] requirements.]]]]]
+]]
+]
+
+[h4 Synopsys]
+
+``
+namespace boost{
+namespace stringify{
+inline namespace v0 {
+
+template <template <class> class Filter, typename FPE>
+class constrained_fpe
+{
+public:
+    constexpr constrained_fpe(const constrained_fpe&) = default;
+    constexpr constrained_fpe(constrained_fpe&& other) = default;
+    constexpr constrained_fpe(const FPE& f);
+
+    constexpr const FPE& get() const;
+
+private:
+    FPE element; // exposition only;
+};
+
+}}}
+``
+
+[h4 Member functions]
+
+[h5 Constructors]
+
+[table
+[[`constexpr explicit constrained_fpe(const FPE& fpe)`]]
+[[
+  [variablelist
+   [[Effect]
+    [Initializes the element of the `constrained_fpe` with `fpe`.]]]
+    
+]]
+]
+
+[table
+[[`constexpr constrained_fpe(const constrained_fpe& other)`]]
+[[
+  Defaulted copy constructor.
+  [variablelist
+   [[Effect]
+    [Initializes the element of the `constrained_fpe` from
+     the const reference of the element of `other`]]
+   [[Compile time requirement]
+    [`std::is_copy_constructible<FPE>::value`]]]
+    
+]]
+]
+
+[table
+[[`constexpr constrained_fpe(constrained_fpe&& other)`]]
+[[
+  Defaulted move constructor.
+  [variablelist
+   [[Effect]
+    [Initializes the element of the `constrained_fpe` from
+     the rvalue reference of element of `other`]]
+   [[Compile time requirement]
+    [`std::is_move_constructible<FPE>::value`]]]
+]]
+]
+
+[h5 Element access]
+
+[table
+[[`constexpr const FPE& get() const`]]
+[[
+  [variablelist
+   [[Effect]
+    [returns the stored element.]]]
+]]
+]
+
+[endsect]
+[#constrain]
+[section Function template `constrain`]
+
+[table
+[[
+  `template <template <typename> class Filter, typename T>`[br]
+  `constexpr constrained_fpe<Filter, U> constrain(const T& arg);`
+]]
+[[
+  `constrain` is just a syntatic sugar to construct instances of
+  [link constrained_fpe `constrained_fpe`]
+
+  [variablelist
+    [[Effect]
+     [Create [link constrained_fpe `constrained_fpe`] object from `arg`]]
+    [[Return type]
+     [ `constrained_fpe<Filter, U>`, where `U` is
+       [itemized_list
+         [`const F&`, if `T` is `std::reference_wrapper<F>`]
+         [`const T&`, if `facet_stored_by_value<T>` is `false`]
+         [`T`, otherwise]]]]
+    [[Compile type requirements]
+     [`T` is a type such that `U` satisfies the
+      [link FacetsPackElementRequirements `FacetsPackElement`]
+      requirements.]]]
+]]
+]
+
+[endsect]
+[#FacetsPackElementRequirements]
+[section Concept ['FacetsPackElement]]
+
+A given type [~F] is a `FacetsPackElement`, if [_any of] the following conditions is true:
+
+* [~F] satisfies the [link FacetRequirements `Facet`] requirements
+  and [link facet_stored_by_value `facet_stored_by_value`]`<F>` is `true`
+* [~F] is an instance of [link facets_pack `facets_pack`].
+* [~F] is an instance of [link constrained_fpe `constrained_fpe`].
+  [/`<`[~F2]`, `[~Filter]`>`,
+  where [~F2] satisfies the
+  [link FacetsPackElementRequirements `FacetsPackElement`] requirements.]
+* [~F] is `const `[~F2]`&`, where [~F2] satisfies one of the previous requirements.
+* [~F] is `const `[~F2]`&`, where [~F2] satisfies [link FacetRequirements `Facet`]
+  requirements, and `facet_stored_by_value<F2>` is `false`.
+
+[endsect]
+[#ConstrainableFacetsPackElementRequirements]
+[section Concept ['ConstrainableFacetsPackElement]]
+
+A given a type [~F] is a `ConstrainableFacetsPackElement`, if it satisfies the
+[link FacetsPackElementRequirements `FacetsPackElement`] and the following rules:
+
+* If [~F] is `const F2&`, then `F2` satifies the `ConstrainableFacetsPackElement`
+  requirements.
+* If [~F] is `facets_pack<F2...>`, then all types in `F2...` satisfy the
+  `ConstrainableFacetsPackElement` requirements.
+* If [~F] is not an instance of [link constrained_fpe `constrained_fpe`],
+  then it satifies the [link FacetRequirements `Facet`] requirements and
+  `facet_category<FPE>::constrainable` is `true`.
+
+[endsect]
+[#FacetRequirements]
+[section Concept ['Facet]]
+
+A given a type [~F] is a `Facet` only if [_all] the following conditions are met:
+
+* If [~F] is abstract or not CopyConstructible, then
+  [link facet_stored_by_value `facet_stored_by_value`]`<`[~F]`>`
+  must be `false`.
+* [link facet_category `facet_category`]`<`[~F]`>`
+  satisfies the [link FacetCategoryRequirements `FacetCategory`]
+  requirements.
+* [~F] satisfies the specific requirements associated to
+  [link facet_category `facet_category`]`<`[~F]`>`.
+
+[endsect]
+[#FacetCategoryRequirements]
+[section Concept ['FacetCategory]]
+
+A given a type [~FCat] is a `FacetCategory` only if:
+
+* There is a list of requirements, /i.e./ a Concept,
+  associated ( even if only informally ) to [~FCat].
+* [~FCat] has a static member function named `get_default` that takes
+  no argument and whose return type is either [~F] or `const `[~F]`&`,
+  where [~F] is a type that satisfies the requirements associated to
+  [~FCat].
+* [~FCat] has a member named `constrainable` that is a static constexpr
+  value convertible to `bool`. ( If this value is `false` then
+  the facets associated [~FCat] can not be [link constrained_fpe
+  constrained] ).
+  
+[endsect]
+[#facet_traits]
+[section Class template `facet_traits`]
+
+This class template provides the [link FacetRequirements Facets] informations.
+If you create a new facet, you can either define such informations as
+members of the facet, or specialize `facet_traits`.
+
+``
+template <typename Facet>
+class facet_trait
+{
+public:
+    using category = /* Facet::category or void */;
+    constexpr static bool store_by_value = /* Facet::store_by_value or true */;
+};
+``
+[itemized_list
+ [`facet_trait<`[~Facet]`>::store_by_value` is equal to [~Facet]`::store_by_value`
+  is such expression is well formed and implicitly convetible to `bool`,
+  otherwise it is `false`.]
+ [`facet_trait<`[~Facet]`>::category` is a type alias to
+  `Facet::category` if such member exist and is a type, otherwise it is `void`.]]
+
+[h4 Specialization]
+
+``
+template <typename F>
+class facet_trait<const F>
+{
+public:
+    using category = typename facet_trait<F>::category;
+    constexpr static bool store_by_value = facet_stored_by_value<F>::store_by_value;
+};
+``
+
+[#facet_category]
+[h3 Type alias template `facet_category`]
+
+`facet_category` is just a syntatic sugar:
+
+``
+template <typename Facet>
+using facet_category = facet_traits<Facet>::typename category;
+``
+
+[#facet_stored_by_value]
+[h3 Variable template `facet_stored_by_value`]
+
+[table
+[[
+  `template <typename T>`[br]
+  `constexpr bool facet_stored_by_value;`
+]]
+[[
+  [variablelist
+    [[Value]
+     [`facet_traits<T>::store_by_value` if such expression
+       is well formed and implicitly convertible to `bool`,
+       otherwise the value is `true`.]]]
+]]
+]
+[endsect]
+[endsect]

@@ -15,7 +15,6 @@ enum class asm_invalid_arg
 struct asm_invalid_arg_category
 {
     static constexpr bool constrainable = false;
-    static constexpr bool by_value = true;
 
     static asm_invalid_arg get_default()
     {
@@ -31,6 +30,7 @@ class facet_trait<stringify::v0::asm_invalid_arg>
 {
 public:
     using category = stringify::v0::asm_invalid_arg_category;
+    static constexpr bool store_by_value = true;
 };
 
 

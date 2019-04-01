@@ -19,24 +19,41 @@ void format_functions()
 {
     //[ format_functions_example
     namespace strf = boost::stringify::v0;
-    auto s = strf::to_string("---", ~strf::hex(255) > 8, "---");
-    BOOST_ASSERT(s == "---    0xff---");
+    auto s = strf::to_string
+        ( "---"
+        , ~strf::hex(255).p(4).fill(U'.') > 10
+        , "---" );
+
+    BOOST_ASSERT(s == "---....0x00ff---");
     //]
 }
 
-
-void sample_numpunct()
+void format_functions_2()
 {
-//[ basic_numpuct_example
+    //[ formatting_samples
     namespace strf = boost::stringify::v0;
-    constexpr int base = 10;
-    auto punct = strf::str_grouping<base>{"\4\3\2"}.thousands_sep(U'.');
-    auto s = strf::to_string
-        .facets(punct)
-        ("one hundred billions = ", 100000000000ll);
 
-    BOOST_ASSERT(s == "one hundred billions = 1.00.00.000.0000");
-//]
+    auto str = strf::to_string
+        ( strf::hex(255) > 5
+        , '/', strf::center(255, 7, '.').hex()
+        , '/', ~strf::hex(255) % 7
+        , '/', strf::multi('a', 3) ^ 7
+        , '/', +strf::fmt(255) );
+
+    BOOST_ASSERT(str == "   ff/..ff.../0x   ff/  aaa  /+255");
+    //]
+}
+
+void reserve()
+{
+    //[ syntax_reserve
+    namespace strf = boost::stringify::v0;  // v0 is an inline namespace
+
+    auto str = strf::to_string.reserve(5000)("blah", "blah");
+
+    BOOST_ASSERT(str == "blahblah");
+    BOOST_ASSERT(str.capacity() >= 5000);
+    //]
 }
 
 
@@ -140,7 +157,8 @@ int main()
 {
     sample();
     format_functions();
-    sample_numpunct();
+    format_functions_2();
+    reserve();
     output_FILE();
     input_ouput_different_char_types();
     input_string_encoding();

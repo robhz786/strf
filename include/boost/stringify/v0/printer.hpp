@@ -13,7 +13,10 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 constexpr std::size_t min_buff_size = 60;
 
-struct tag {};
+struct tag
+{
+    explicit tag() = default;
+};
 
 template <typename CharOut>
 class output_buffer
@@ -22,9 +25,13 @@ public:
 
     using char_type = CharOut;
 
-    virtual ~output_buffer()
-    {
-    }
+    output_buffer(const output_buffer&) = delete;
+    output_buffer(output_buffer&&) = delete;
+
+    output_buffer& operator=(const output_buffer&) = delete;
+    output_buffer& operator=(output_buffer&&) = delete;
+
+    virtual ~output_buffer() = default;
 
     virtual bool recycle() = 0;
 
@@ -89,8 +96,6 @@ protected:
         , _end(nullptr)
     {
     }
-
-    output_buffer(const output_buffer&) = default;
 
     output_buffer(CharOut* buff_begin, CharOut* buff_end)
         : _pos(buff_begin)

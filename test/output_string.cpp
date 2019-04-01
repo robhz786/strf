@@ -98,14 +98,14 @@ int main()
     {   // assign reserve
         std::string result;
         auto ec = strf::ec_assign(result).reserve(2000) ("aaa");
-        BOOST_ASSERT(ec == std::error_code{});
-        BOOST_ASSERT(result.capacity() >= 2000);
+        BOOST_TEST(ec == std::error_code{});
+        BOOST_TEST(result.capacity() >= 2000);
     }
     {   // append reserve
         std::string result(500, 'x');
         auto ec = strf::ec_append(result).reserve(1000) ("aaa");
-        BOOST_ASSERT(ec == std::error_code{});
-        BOOST_ASSERT(result.capacity() >= 1500);
+        BOOST_TEST(ec == std::error_code{});
+        BOOST_TEST(result.capacity() >= 1500);
     }
 
 #if !defined(BOOST_NO_EXCEPTIONS)
@@ -127,19 +127,19 @@ int main()
 
     {   // to_string reserve
         auto result = strf::to_string.reserve(2000) ("aaa");
-        BOOST_ASSERT(result.capacity() >= 2000);
+        BOOST_TEST(result.capacity() >= 2000);
     }
     {   // assign reserve
         std::string result;
         auto size = strf::assign(result).reserve(2000) ("aaa");
-        BOOST_ASSERT(result.capacity() >= 2000);
-        BOOST_ASSERT(size == 3);
+        BOOST_TEST(result.capacity() >= 2000);
+        BOOST_TEST(size == 3);
     }
     {   // append reserve
         std::string result(500, 'x');
         auto size = strf::append(result).reserve(1000) ("aaa");
-        BOOST_ASSERT(result.capacity() >= 1500);
-        BOOST_ASSERT(size == 3);
+        BOOST_TEST(result.capacity() >= 1500);
+        BOOST_TEST(size == 3);
     }
 
     {

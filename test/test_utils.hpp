@@ -208,10 +208,12 @@ auto make_tester
    , double reserve_factor = 1.0 )
 {
    using writer = input_tester<CharT>;
-   return boost::stringify::v0::make_destination
-       < writer, const CharT*, const char*, int
-       , const char*, std::error_code, double>
-       (expected, filename, line, function, err, reserve_factor);
+   return boost::stringify::v0::dispatcher
+       < boost::stringify::v0::facets_pack<>
+       , writer, const CharT*, const char*, int
+       , const char*, std::error_code, double >
+       ( boost::stringify::v0::pack(), expected, filename
+       , line, function, err, reserve_factor);
 }
 
 template<typename CharT>
@@ -223,9 +225,11 @@ auto make_tester
    , double reserve_factor = 1.0 )
 {
    using writer = input_tester<CharT>;
-   return boost::stringify::v0::make_destination
-       <writer, const CharT*, const char*, int, const char*, double>
-       (expected, filename, line, function, reserve_factor);
+   return boost::stringify::v0::dispatcher
+       < boost::stringify::v0::facets_pack<>
+       , writer, const CharT*, const char*, int, const char*, double>
+       ( boost::stringify::v0::pack()
+       , expected, filename, line, function, reserve_factor);
 }
 
 template<typename CharT>
@@ -238,10 +242,12 @@ auto make_tester
    , double reserve_factor = 1.0 )
 {
    using writer = input_tester<CharT>;
-   return boost::stringify::v0::make_destination
-       < writer, const std::basic_string<CharT>&, const char*
+   return boost::stringify::v0::dispatcher
+       < boost::stringify::v0::facets_pack<>
+       , writer, const std::basic_string<CharT>&, const char*
        , int, const char*, std::error_code, double>
-       (expected, filename, line, function, err, reserve_factor);
+       ( boost::stringify::v0::pack()
+       , expected, filename, line, function, err, reserve_factor);
 }
 
 template<typename CharT>
@@ -253,13 +259,13 @@ auto make_tester
    , double reserve_factor = 1.0 )
 {
    using writer = input_tester<CharT>;
-   return boost::stringify::v0::make_destination
-       < writer, const std::basic_string<CharT>&, const char*
+   return boost::stringify::v0::dispatcher
+       < boost::stringify::v0::facets_pack<>
+       , writer, const std::basic_string<CharT>&, const char*
        , int, const char*, double >
-       (expected, filename, line, function, reserve_factor);
+       ( boost::stringify::v0::pack()
+       , expected, filename, line, function, reserve_factor);
 }
-
-
 
 #define TEST(EXPECTED)                                                  \
     make_tester((EXPECTED), __FILE__, __LINE__, BOOST_CURRENT_FUNCTION) \

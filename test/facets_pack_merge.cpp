@@ -8,17 +8,16 @@
 
 namespace strf = boost::stringify::v0;
 
-struct facet_category;
+struct fcategory;
 
 struct facet_type
 {
-    using category = facet_category;
+    using category = fcategory;
     int value = 0;
 };
 
-struct facet_category
+struct fcategory
 {
-    constexpr static bool by_value = true;
     constexpr static bool constrainable = true;
     static auto get_default() noexcept
     {
@@ -72,13 +71,13 @@ std::vector<int> digest(const FPack& fp)
 {
     return std::vector<int>
     {
-        strf::get_facet< facet_category, input_type<1> >(fp).value,
-        strf::get_facet< facet_category, input_type<2> >(fp).value,
-        strf::get_facet< facet_category, input_type<3> >(fp).value,
-        strf::get_facet< facet_category, input_type<4> >(fp).value,
-        strf::get_facet< facet_category, input_type<5> >(fp).value,
-        strf::get_facet< facet_category, input_type<6> >(fp).value,
-        strf::get_facet< facet_category, input_type<7> >(fp).value
+        strf::get_facet< fcategory, input_type<1> >(fp).value,
+        strf::get_facet< fcategory, input_type<2> >(fp).value,
+        strf::get_facet< fcategory, input_type<3> >(fp).value,
+        strf::get_facet< fcategory, input_type<4> >(fp).value,
+        strf::get_facet< fcategory, input_type<5> >(fp).value,
+        strf::get_facet< fcategory, input_type<6> >(fp).value,
+        strf::get_facet< fcategory, input_type<7> >(fp).value
     };
 }
 

@@ -1,0 +1,44 @@
+[# assembly_string_syntax]
+[section Assembly string syntax]
+[import ../example/assembly_string.cpp]
+
+Characters that don't belong to any /special sequence/ are written unchanged.
+/Special sequences/ are characters sequences whose first character is "{",
+and are of four kind:
+
+[table
+[[A `'{'` followed by]  [until]                           [means]]
+[[`'-'`]                [the next `'}'` or end of string] [a comment]]
+[[a digit]              [the next `'}'` or end of string] [a positional argument reference]]
+[[another `'{'`]        [the second `'{'`]                [an escaped `'{'`]]
+[[any other character]  [the next `'}'` or end of string] [a non positional argument reference]]
+]
+
+[variablelist Examples:
+
+[[Comments]
+
+
+[When the assembly string has to be translated to other languages, the translation may be in charge of someone else than you. So you can add comments intended to help such person.
+]
+[[asmstr_comment_sample]]
+]
+
+[[Positional argument reference]
+[Position zero refers to the first input argument.]
+[The characters the after the digits are ignored by the parser. So they can also be seen as comments.]
+[[asmstr_positional_arg]]
+]
+
+[[Non positional argument reference]
+[The characters the after the `'{'` are ignored as well]
+[[asmstr_non_positional_arg]]
+]
+
+[[Escapes]
+[ There is no way to escape the `'}'` character. There is no need to, since the `'}'` has special meaning only if it corresponds to a previous `'{'`]
+[[asmstr_escape_sample]]
+]
+]
+
+[endsect]

@@ -1,0 +1,25 @@
+[#asm_string_error]
+[section Assembly string error handling: `asm_invalid_arg` enumeration]
+[import ../example/assembly_string.cpp]
+
+The enumeration `asm_invalid_arg` is a facet that specifies what happens when a non existing argument is referenced
+``
+enum class asm_invalid_arg
+{
+    replace, stop, ignore
+};
+``
+[*`asm_invalid_arg::replace`] causes the invalid reference to be replaced by the [@https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character
+replacement character "\uFFFD"]. This is the default:
+
+[asmstr_replace]
+
+[*`asm_invalid_arg::ignore`] causes the invalid reference to be ignored:
+
+[asmstr_omit]
+
+[*`asm_invalid_arg::stop`] emits an error code:
+
+[asmstr_stop]
+
+[endsect]

@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_MAKE_DESTINATION_HPP
-#define BOOST_STRINGIFY_V0_MAKE_DESTINATION_HPP
+#ifndef BOOST_STRINGIFY_V0_DISPATCHER_HPP
+#define BOOST_STRINGIFY_V0_DISPATCHER_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -250,13 +250,17 @@ template
     < typename FPack
     , typename OutputBuff
     , typename OutputBuffInitArgsTuple >
-class syntax_after_asm_string
+class asm_dispatcher
     : private stringify::v0::detail::output_size_reservation<OutputBuff>
     , private OutputBuffInitArgsTuple
     , private FPack
 {
-    using _char_type = typename OutputBuff::char_type;
+public:    
 
+    using char_type = typename OutputBuff::char_type;
+
+private:
+    
     using _output_writer_wrapper
         = stringify::v0::detail::output_writer_from_tuple<OutputBuff>;
 
@@ -264,17 +268,17 @@ class syntax_after_asm_string
         = decltype(std::declval<OutputBuff>().finish());
 
     using _arglist_type
-        = std::initializer_list<const stringify::v0::printer<_char_type>*>;
+        = std::initializer_list<const stringify::v0::printer<char_type>*>;
 
     using _reservation_type
         = stringify::v0::detail::output_size_reservation<OutputBuff>;
 
 public:
 
-    syntax_after_asm_string
+    asm_dispatcher
         ( _reservation_type reservation
-        , const _char_type* asm_str
-        , const _char_type* asm_str_end
+        , const char_type* asm_str
+        , const char_type* asm_str_end
         , OutputBuffInitArgsTuple ob_args
         , const FPack& fp )
         : _reservation_type(reservation)
@@ -292,25 +296,25 @@ public:
             ( this->has_reserve()
             , _asm_str
             , _asm_str_end
-            , {_as_printer_cptr(make_printer<_char_type, FPack>(*this, args))... } );
+            , {_as_printer_cptr(make_printer<char_type, FPack>(*this, args))... } );
     }
 
 private:
 
-    static const stringify::v0::printer<_char_type>*
-    _as_printer_cptr(const stringify::v0::printer<_char_type>& p)
+    static const stringify::v0::printer<char_type>*
+    _as_printer_cptr(const stringify::v0::printer<char_type>& p)
     {
         return &p;
     }
 
     _return_type _asm_write
         ( std::true_type
-        , const _char_type* str
-        , const _char_type* str_end
+        , const char_type* str
+        , const char_type* str_end
         , _arglist_type args) const
     {
         decltype(auto) enc
-            = stringify::v0::get_facet<stringify::v0::encoding_category<_char_type>, void>(*this);
+            = stringify::v0::get_facet<stringify::v0::encoding_category<char_type>, void>(*this);
         decltype(auto) policy
             = stringify::v0::get_facet<stringify::v0::asm_invalid_arg_category, void>(*this);
 
@@ -336,14 +340,14 @@ private:
 
     _return_type _asm_write
         ( std::false_type
-        , const _char_type* str
-        , const _char_type* str_end
+        , const char_type* str
+        , const char_type* str_end
         , _arglist_type args ) const
     {
         _output_writer_wrapper writer{*this};
 
         decltype(auto) enc
-            = stringify::v0::get_facet<stringify::v0::encoding_category<_char_type>, void>(*this);
+            = stringify::v0::get_facet<stringify::v0::encoding_category<char_type>, void>(*this);
         decltype(auto) policy
             = stringify::v0::get_facet<stringify::v0::asm_invalid_arg_category, void>(*this);
 
@@ -354,20 +358,21 @@ private:
         return writer.get().finish();
     }
 
-    const _char_type* _asm_str;
-    const _char_type* _asm_str_end;
+    const char_type* _asm_str;
+    const char_type* _asm_str_end;
 };
 
 
-template
-    < typename FPack
-    , typename OutputBuff
-    , typename OutputBuffInitArgsTuple >
-class syntax_after_leading_expr
-    : private stringify::v0::detail::output_size_reservation<OutputBuff>
+} // namespace detail
 
+template<typename FPack, typename OutputBuff, typename ... OBInitArgs >
+class dispatcher
+    : private stringify::v0::detail::output_size_reservation<OutputBuff>
 {
-    using _char_type = typename OutputBuff::char_type;
+    static_assert
+        ( std::is_constructible<OutputBuff, OBInitArgs...>::value
+       && detail::fold_and<std::is_copy_constructible<OBInitArgs>::value...>  
+        , "Invalid template parameters" );
 
     using _output_writer_wrapper
         = stringify::v0::detail::output_writer_from_tuple<OutputBuff>;
@@ -375,72 +380,69 @@ class syntax_after_leading_expr
     using _return_type
         = decltype(std::declval<OutputBuff>().finish());
 
-    // using _arglist_type
-    //     = std::initializer_list<const stringify::v0::printer<_char_type>*>;
-
     using _reservation
         = stringify::v0::detail::output_size_reservation<OutputBuff>;
 
-    using _syntax_after_asm_string
-        = stringify::v0::detail::syntax_after_asm_string
-            < FPack
-            , OutputBuff
-            , OutputBuffInitArgsTuple>;
+    using _obargs_tuple = std::tuple<OBInitArgs...>;
+
+    using _asm_dispatcher
+        = stringify::v0::detail::asm_dispatcher< FPack
+                                               , OutputBuff
+                                               , _obargs_tuple>;
 public:
 
-    constexpr syntax_after_leading_expr
-        ( FPack&& fp
-        , OutputBuffInitArgsTuple&& args )
+    using char_type = typename OutputBuff::char_type;
+    
+    // template
+    //     < typename ... OBArgs
+    //     , typename = std::enable_if_t
+    //           < sizeof...(OBArgs) != 0
+    //          && sizeof...(OBArgs) == sizeof...(OBInitArgs) 
+    //          && detail::fold_and
+    //                 < std::is_constructible<OBInitArgs, OBArgs&&>::value... >>>
+    constexpr explicit dispatcher(FPack&& fp, OBInitArgs... args)
         : _fpack(std::move(fp))
-        , _ob_args(std::move(args))
+        , _ob_args(args...)
     {
     }
 
-    constexpr syntax_after_leading_expr
-        ( const FPack& fp
-        , const OutputBuffInitArgsTuple& args )
+    template< typename T = _obargs_tuple
+            , typename = std::enable_if_t
+                  < std::is_constructible<T, const OBInitArgs&...>::value >>
+    constexpr explicit dispatcher(const FPack& fp, const OBInitArgs& ... args)
         : _fpack(fp)
-        , _ob_args(args)
+        , _ob_args(args...)
     {
     }
 
-    constexpr syntax_after_leading_expr(const syntax_after_leading_expr&)
-        = default;
+    constexpr dispatcher(const dispatcher&) = default;
 
-    constexpr syntax_after_leading_expr(syntax_after_leading_expr&&) = default;
+    constexpr dispatcher(dispatcher&&) = default;
 
     template <typename ... Facets>
     constexpr auto facets(const Facets& ... facets) const &
     {
-        return syntax_after_leading_expr
-            < decltype(stringify::v0::pack(_fpack, facets ...))
-            , OutputBuff
-            , OutputBuffInitArgsTuple >
-            ( *this
-            , stringify::v0::pack(_fpack, facets ...)
-            , _ob_args );
+        return dispatcher< decltype(stringify::v0::pack(_fpack, facets ...))
+                         , OutputBuff
+                         , OBInitArgs... >
+            ( *this, stringify::v0::pack(_fpack, facets ...), _ob_args );
     }
 
     template <typename ... Facets>
     constexpr auto facets(const stringify::v0::facets_pack<Facets...>& fp) const &
     {
-        return syntax_after_leading_expr
-            < decltype(stringify::v0::pack(_fpack, fp))
-            , OutputBuff
-            , OutputBuffInitArgsTuple >
-            ( *this
-            , stringify::v0::pack(_fpack, fp)
-            , _ob_args );
+        return dispatcher< decltype(stringify::v0::pack(_fpack, fp))
+                         , OutputBuff
+                         , OBInitArgs... >
+            ( *this, stringify::v0::pack(_fpack, fp), _ob_args );
     }
-
 
     template <typename ... Facets>
     constexpr auto facets(const Facets& ... facets) &&
     {
-        return syntax_after_leading_expr
-            < decltype(stringify::v0::pack(_fpack, facets ...))
-            , OutputBuff
-            , OutputBuffInitArgsTuple >
+        return dispatcher< decltype(stringify::v0::pack(_fpack, facets ...))
+                         , OutputBuff
+                         , OBInitArgs... >
             ( std::move(*this)
             , stringify::v0::pack(_fpack, facets ...)
             , std::move(_ob_args) );
@@ -449,10 +451,9 @@ public:
     template <typename ... Facets>
     constexpr auto facets(const stringify::v0::facets_pack<Facets...>& fp) &&
     {
-        return syntax_after_leading_expr
-            < decltype(stringify::v0::pack(_fpack, fp))
-            , OutputBuff
-            , OutputBuffInitArgsTuple >
+        return dispatcher< decltype(stringify::v0::pack(_fpack, fp))
+                         , OutputBuff
+                         , OBInitArgs... >
             ( std::move(*this)
             , stringify::v0::pack(std::move(_fpack), fp)
             , std::move(_ob_args) );
@@ -461,121 +462,115 @@ public:
     template <typename ... Facets>
     constexpr auto facets(const Facets& ... facets) &
     {
-        return syntax_after_leading_expr
-            < decltype(stringify::v0::pack(_fpack, facets ...))
-            , OutputBuff
-            , OutputBuffInitArgsTuple >
-            ( *this
-            , stringify::v0::pack(_fpack, facets ...)
-            , _ob_args );
+        return dispatcher< decltype(stringify::v0::pack(_fpack, facets ...))
+                         , OutputBuff
+                         , OBInitArgs... >
+            ( *this, stringify::v0::pack(_fpack, facets ...), _ob_args );
     }
 
     template <typename ... Facets>
     constexpr auto facets(const stringify::v0::facets_pack<Facets...>& fp) &
     {
-        return syntax_after_leading_expr
-            < decltype(stringify::v0::pack(_fpack, fp))
-            , OutputBuff
-            , OutputBuffInitArgsTuple >
-            ( *this
-            , stringify::v0::pack(_fpack, fp)
-            , _ob_args );
+        return dispatcher< decltype(stringify::v0::pack(_fpack, fp))
+                         , OutputBuff
+                         , OBInitArgs... >
+            ( *this, stringify::v0::pack(_fpack, fp), _ob_args );
     }
 
-    constexpr syntax_after_leading_expr facets() const &
+    constexpr dispatcher facets() const &
     {
         return *this;
     }
 
-    constexpr syntax_after_leading_expr& facets() &
+    constexpr dispatcher& facets() &
     {
         return *this;
     }
 
-    constexpr syntax_after_leading_expr&& facets() &&
+    constexpr dispatcher&& facets() &&
     {
         return std::move(*this);
     }
 
-    constexpr syntax_after_leading_expr facets(stringify::v0::facets_pack<>) const &
+    constexpr dispatcher facets(stringify::v0::facets_pack<>) const &
     {
         return *this;
     }
 
-    constexpr syntax_after_leading_expr& facets(stringify::v0::facets_pack<>) &
+    constexpr dispatcher& facets(stringify::v0::facets_pack<>) &
     {
         return *this;
     }
 
-    constexpr syntax_after_leading_expr&& facets(stringify::v0::facets_pack<>) &&
+    constexpr dispatcher&& facets(stringify::v0::facets_pack<>) &&
     {
         return std::move(*this);
     }
 
-    constexpr syntax_after_leading_expr no_reserve() const &
+    constexpr dispatcher no_reserve() const &
     {
-        syntax_after_leading_expr copy = *this;
+        dispatcher copy = *this;
         copy.set_no_reserve();
         return copy;
     }
-    constexpr syntax_after_leading_expr no_reserve() const &&
+    constexpr dispatcher no_reserve() const &&
     {
-        syntax_after_leading_expr copy = *this;
+        dispatcher copy = *this;
         copy.set_no_reserve();
         return copy;
     }
-    constexpr syntax_after_leading_expr no_reserve() &
+    constexpr dispatcher no_reserve() &
     {
         this->set_no_reserve();
         return *this;
     }
-    constexpr syntax_after_leading_expr no_reserve() &&
+    constexpr dispatcher no_reserve() &&
     {
         this->set_no_reserve();
         return *this;
     }
 
-    constexpr syntax_after_leading_expr reserve_calc() const &
+    constexpr dispatcher reserve_calc() const &
     {
-        syntax_after_leading_expr copy = *this;
+        dispatcher copy = *this;
         copy.set_reserve_calc();
         return copy;
     }
-    constexpr syntax_after_leading_expr reserve_calc() const &&
+    constexpr dispatcher reserve_calc() const &&
     {
-        syntax_after_leading_expr copy = *this;
+        dispatcher copy = *this;
         copy.set_reserve_calc();
         return copy;
     }
-    constexpr syntax_after_leading_expr reserve_calc() &
+    constexpr dispatcher reserve_calc() &
     {
         this->set_reserve_calc();
         return *this;
     }
-    constexpr syntax_after_leading_expr&& reserve_calc() &&
+    constexpr dispatcher&& reserve_calc() &&
     {
         this->set_reserve_calc();
         return std::move(*this);
     }
 
-    constexpr syntax_after_leading_expr reserve(std::size_t size) const &
+    constexpr dispatcher reserve(std::size_t size) const &
     {
-        syntax_after_leading_expr copy = *this;
+        dispatcher copy = *this;
         copy.set_reserve_size(size);
         return copy;
     }
-    constexpr syntax_after_leading_expr reserve(std::size_t size) const &&
+    constexpr dispatcher reserve(std::size_t size) const &&
     {
-        syntax_after_leading_expr copy = *this;
+        dispatcher copy = *this;
         copy.set_reserve_size(size);
         return copy;
     }
-    constexpr syntax_after_leading_expr reserve(std::size_t size) &
+    constexpr dispatcher reserve(std::size_t size) &
     {
         this->set_reserve_size(size);
         return *this;
     }
-    constexpr syntax_after_leading_expr reserve(std::size_t size) &&
+    constexpr dispatcher reserve(std::size_t size) &&
     {
         this->set_reserve_size(size);
         return *this;
@@ -596,14 +591,14 @@ public:
 
     template <typename Arg, typename ... Args>
     _return_type as
-        ( const std::basic_string_view<_char_type>& str
+        ( const std::basic_string_view<char_type>& str
         , const Arg& ... arg
         , const Args& ... args ) const
     {
         return as(str)(arg, args...);
     }
 
-    _syntax_after_asm_string as(const std::basic_string_view<_char_type>& str) const
+    _asm_dispatcher as(const std::basic_string_view<char_type>& str) const
     {
         return {*this, str.begin(), str.end(), _ob_args, _fpack};
     }
@@ -612,7 +607,7 @@ public:
 
     template <typename Arg, typename ... Args>
     _return_type as
-        ( const _char_type* str
+        ( const char_type* str
         , const Arg& arg
         , const Args& ... args) const
     {
@@ -621,23 +616,23 @@ public:
 
     template <typename Arg, typename Traits, typename ... Args>
     _return_type as
-        ( const std::basic_string<_char_type, Traits>& str
+        ( const std::basic_string<char_type, Traits>& str
         , const Arg& arg
         , const Args& ... args ) const
     {
         return as(str)(arg, args...);
     }
 
-    _syntax_after_asm_string as(const _char_type* str) const
+    _asm_dispatcher as(const char_type* str) const
     {
         return { *this
                , str
-               , str + std::char_traits<_char_type>::length(str)
+               , str + std::char_traits<char_type>::length(str)
                , _ob_args
                , _fpack };
     }
 
-    _syntax_after_asm_string as(const std::basic_string<_char_type>& str) const
+    _asm_dispatcher as(const std::basic_string<char_type>& str) const
     {
         return {*this, str.data(), str.data() + str.size(), _ob_args, _fpack};
     }
@@ -656,23 +651,23 @@ public:
 
 private:
 
-    template <class, class, class>
-    friend class syntax_after_leading_expr;
+    template <class, class, class...>
+    friend class dispatcher;
 
-    constexpr syntax_after_leading_expr
+    constexpr dispatcher
         ( const _reservation& r
         , FPack&& fp
-        , OutputBuffInitArgsTuple&& args )
+        , _obargs_tuple&& args )
         : _reservation(r)
         , _fpack(std::move(fp))
         , _ob_args(std::move(args))
     {
     }
 
-    constexpr syntax_after_leading_expr
+    constexpr dispatcher
         ( const _reservation& r
         , const FPack& fp
-        , const OutputBuffInitArgsTuple& args )
+        , const _obargs_tuple& args )
         : _reservation(r)
         , _fpack(fp)
         , _ob_args(args)
@@ -680,26 +675,24 @@ private:
     }
 
     FPack _fpack;
-    OutputBuffInitArgsTuple _ob_args;
+    std::tuple<OBInitArgs ...> _ob_args;
 };
 
-} // namespace detail
 
 template <typename CharOut, typename FPack, typename Arg>
 using printer_impl
 = decltype(make_printer<CharOut, FPack>( std::declval<FPack>()
                                        , std::declval<Arg>() ) );
 
-template <typename OutputBuff, typename ... Args>
-constexpr auto make_destination(Args ... args)
-    -> stringify::v0::detail::syntax_after_leading_expr
-        < stringify::v0::facets_pack<>
-        , OutputBuff
-        , std::tuple<Args ...> >
-{
-    return { stringify::v0::facets_pack<>{}
-           , std::tuple<Args ...>{std::forward<Args>(args) ...} };
-}
+// template <typename OutputBuff, typename ... Args>
+// constexpr auto make_dispatcher(Args ... args)
+// {
+//     return stringify::v0::dispatcher< stringify::v0::facets_pack<>
+//                                     , OutputBuff
+//                                     , Args ... >
+//         { stringify::v0::facets_pack<>{}
+//         , std::forward<Args>(args)... };
+// }
 
 class stringify_error: public std::system_error
 {
@@ -723,4 +716,4 @@ public:
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_MAKE_DESTINATION_HPP
+#endif  // BOOST_STRINGIFY_V0_DISPATCHER_HPP

@@ -18,55 +18,260 @@ preserving backwards compatibility.
 [section A tour of the library]
 
 Most of the code snippets in this documentation use [link output_types `to_string`].
-Not the std::to_string from the standard library, but one that you can think
+Not the `std::to_string` from the standard library, but one that you can think
 as a generalization with variadic arguments.
 For example:
 
 [first_example]
 
-You can see that [link format_functions format functions] \u2014
-like `hex` \u2014 are used to format the arguments.
-Among them, operator overload commonly is used
- to make the expression less verbose.
-For example, `operator~()` is used to print the base indication,
-( the "0x" prefix ) and `operator>(int)` to align to the right
-and to set the width.
+The "conventional" input types that are ( or will be ) supported are:
+
+* an integer ( `int`, `long`, `long long`, `unsigned int`, `unsigned long` or `unsigned long long`)
+* a string ( a raw string, a `std::basic_string`, `std::basic_string_view` or `boost::basic_string_view`)
+* a single character ( with the same type as the output character type, otherwise compilation fails )
+* a `bool` ['( to do )]
+* a `void*` ['( to do )] 
+* a floating point ['( to do )]
+
+There are also the some [link special_input_types.special_input_types "special" input types], wich include [link ranges ranges] and [link joins joins]. But they are covered in another section.
+
+And at last there are the input types that are returned from format functions, which carry format information in addition to the value to be printed.
+
+[#format_functions]
+[section Format Functions]
+
+You can see in the previous snippet that this library uses format
+functions \u2014 like `hex` \u2014 to specify formatting.
+Actually `hex` is just a syntatic sugar. `hex(value)` simply returns
+`fmt(value).hex()`. And the return type of `fmt(value)` have format
+member functions as those in the table below: 
+
+[table
+[[member function] [effect] [input types]]
+
+[
+[`operator>(int width)`]
+[right adjustment]
+[all ( integer, floating point, character, string, `void*`, `bool`) ]
+]
+
+[[`operator<(int width)`] [left adjustment] [all]]
+[[`operator^(int width)`] [centered adjustment] [all]]
+[
+[`operator%(int width)`]
+[internal adjustment (as in [@http://en.cppreference.com/w/cpp/io/manip/left `std::internal`])]
+[integer and floating point]
+]
+[[`fill(char32_t ch)`][sets the fill character to [~ch]] [all]]
+[[`p(int precision)`][sets the precision] [integer and floating point]]
+[[`dec()`] [decimal base] [integer and floating point]]
+[[`hex()`] [hexadecimal base] [integer and floating point]]
+[[`oct()`] [octal base] [integer]]
+
+[
+[`showpos(bool b)`]
+[if [~b] is `true`, print the positive sign for non-negative numbers (as in [@http://en.cppreference.com/w/cpp/io/manip/showpos `std::showpos`])]
+[integer and floating point]
+]
+
+[
+[`showbase(bool b)`]
+[if [~b] is `true`, print the numeric base indication (as in [@http://en.cppreference.com/w/cpp/io/manip/showbase `std::showbase`])]
+[integer and floating point]
+]
+[[`operator+()`][same as `showpos(true)`][integer and floating point]]
+[[`operator~()`][same as `showbase(true)`][integer]]
+[[`multi(int count)`][print the character [~count] times][character]]
+
+]
+
+The return type of these format member functions
+also have some these of format member functions,
+so that you can call them in a row. For example:
 
 [format_functions_example]
 
-There is no format string like in `printf`,
-[@https://www.boost.org/doc/libs/release/libs/format/ Boost.Format]
-or [@http://fmtlib.net {fmt}].
-But in case you need to use a translation tool like
-[@https://en.wikipedia.org/wiki/Gettext gettext],
-the library provides an alternative syntax with
-what is called here as the [link assembly_string assembly string],
-which is like format string, but without any formatting.
-``
-auto s = strf::to_string.as("{} in hexadecimal is {}") (x, strf::hex(x));
-``
-Now can you see that `to_string` is not a function
-like `std::to_string`, but a function object ( actually it's a constexpr ).
+The additional syntatic sugars are:
+
+[table
+[[expression] [equivalent to]]
+[[`hex(x)`][`fmt(x).hex()`]]
+[[`dec(x)`][`fmt(x).dec()`]]
+[[`oct(x)`][`fmt(x).oct()`]]
+[[][]]
+[[`right(x, width)`][`fmt(x) > width`]]
+[[`left(x, width)`][`fmt(x) < width`]]
+[[`center(x, width)`][`fmt(x) ^ width`]]
+[[`internal(x, width)`][`fmt(x) % width`]]
+[[][]]
+[[`right(x, width, fill)`]   [`fmt(x).fill(fill) > width`]]
+[[`left(x, width, fill)`]    [`fmt(x).fill(fill) < width`]]
+[[`center(x, width, fill)`]  [`fmt(x).fill(fill) ^ width`]]
+[[`internal(x, width, fill)`][`fmt(x).fill(fill) % width`]]
+[[][]]
+[[`multi(x, count)`] [`fmt(x).multi(count)`]]
+]
+
+[/
+[h4 Example]
+[formatting_samples]
+]
+[endsect]
+[#usage_syntax]
+[section Main usage syntax]
+
+Here is another difference of `to_string` from `std::to_string`:
+it's not a function, but an object ( actually a constexpr ).
 It has member functions that are invoked as in the
 [@https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Named_Parameter
 named parameter idiom].
-One of these functions has remarkable purpose: to receive
-[link facets facet objects].
-These are not the same as the facets handled by `std::locale`,
-but they are analogous.
-Keep in mind that this is a locale-independent library.
-So things are always printed as in the C-locale, unless
-you explicitly specify otherwise, which you do with facets.
-For example, to customise numeric punctuation:
 
-[basic_numpuct_example]
+And the same applies the all others /"leading expressions"/:
+
+[$../syntax.png]
+[footnote This railroad diagram was generated on [@http://bottlecaps.de/rr bottlecaps.de/rr]]
+
+[section Leading expression]
+
+The [*leading expression] is the part of the syntax that varies according to
+the output type.
+
+[#output_types]
+
+[/
+The "`ec_`" prefix means that an `std::error_code` is returned.
+While the other expressions use exceptions.
+]
+
+[table
+[ []  [Destination type] [Leading expression]]
+
+[ [1] [`std::string`]
+  [ [link to_string [*`to_string `]]]]
+
+[ [2] [`std::u16string`]
+  [ [link to_u16string [*`to_u16string `]]]]
+
+[ [3] [`std::u32string`]
+  [ [link to_u32string [*`to_u32string `]]]]
+
+[ [4] [`std::wstring`]
+  [ [link to_wstring [*`to_wstring `]]]]
+
+[ [5] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Alloc]`>`]
+  [ [link to_basic_string [*`to_basic_string`]]`<`[~CharT]`, `[~Traits]`, `[~Alloc]`>`]]
+
+[ [6] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Alloc]`>&`]
+  [ [link append [*`append`]]`(`[~destination]`)`]]
+
+[ [7] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Alloc]`>&`]
+  [ [link assign [*`assign`]]`(`[~destination]`)`]]
+
+[ [8]  [[~CharT]`*`]
+  [ [link write_char_ptr_count [*`write`]]`(`[~destination]`, `[~limit]`)`]]
+
+[ [9] [[~CharT]`*`]
+  [ [link write_char_ptr_range [*`write`]]`(`[~destination]`, `[~end]`)`]]
+
+[ [10] [[~CharT[size]]]
+  [ [link write_char_arr [*`write`]]`(`[~destination]`)`]]
+
+[ [11] [ `FILE*` ( using narrow functions) ]
+  [ [link write_FILE [*`write`]]`<`[~CharT]`>(`[~destination]`, `[~count_ptr]`)`]]
+
+[ [12]  [ `FILE*` ( using wide functions) ]
+  [ [link wwrite_FILE [*`wwrite`]]`(`[~destination]`, `[~count_ptr]`)`]]
+
+[ [13] [ `std::basic_streambuf <`[~CharT]`, `[~Traits]`>&`]
+  [ [link write_std_streambuf [*`write`]]`(`[~destination]`, `[~count_ptr]`)`]]
+
+[ [14]
+  [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Alloc]`>&`]
+  [ [link ec_append [*`ec_append`]]`(`[~destination]`, `[~count_ptr]`)`]]
+
+[ [15] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Alloc]`>&`]
+  [ [link ec_assign [*`ec_assign`]]`(`[~destination]`, `[~count_ptr]`)`]]
+
+[ [16]  [[~CharT]`*`]
+  [ [link ec_write_char_ptr_count [*`ec_write`]]`(`[~destination]`, `[~limit]`, `[~count_ptr]`)`]]
+
+[ [17] [[~CharT]`*`]
+  [ [link ec_write_char_ptr_range [*`ec_write`]]`(`[~destination]`, `[~end]`, `[~count_ptr]`)`]]
+
+[ [18] [[~CharT[size]]]
+  [ [link ec_write_char_arr [*`ec_write`]]`(`[~destination]`, `[~count_ptr]`)`]]
+
+[ [19] [ `FILE*` ( using narrow functions) ]
+  [ [link ec_write_FILE [*`ec_write`]]`<`[~CharT]`>(`[~destination]`, `[~count_ptr]`)`]]
+
+[ [20]  [ `FILE*` ( using wide functions) ]
+  [ [link ec_wwrite_FILE [*`ec_wwrite`]]`(`[~destination]`, `[~count_ptr]`)`]]
+
+[ [21] [ `std::basic_streambuf <`[~CharT]`, `[~Traits]`>&`]
+  [ [link ec_write_std_streambuf [*`ec_write`]]`(`[~destination]`, `[~count_ptr]`)`]]
+
+]
+
+where:
+
+* [~CharT] can be `char`, `char16_t`, `char32_t` or `wchar_t`
+* [~end] is [~CharT]*
+* [~limit] is `std::size_t`. It determines the maximum number of characters that can be written, including the termination character.
+* [~count_ptr] is optional. The number of successfully written characters will be assigned to [~*count_ptr]. Its type is `std::streamsize*` when [~destination] is `std::basic_streambuf <`[~CharT]`, `[~Traits]`>` and `std::size_t*` otherwise.
+* 7) [~Alloc] is optional. If omitted, it is `std::allocator<`[~CharT]`>`
+* 7-10) [~Traits] is optional. If omitted, it is `std::char_traits<`[~CharT]`>`
+* 11 and 20) [~CharT] is optional. If omitted, it is `char`
+* 11, 12, 20 and 21) `std::fflush` is [_not] called
+* 14 to 21) Although the error policy is to return `std::error_code`, there is no guarantee that no exception is thrown.
+
+[endsect]
+
+[#syntax_reserve]
+[section Reserve]
+The following member functions only have effect in some output types ( /leading expressions/ 1 to 7 in [link output_types previous table], or when you create the [link OutputBuffer reserve] method when defining your own output type ). 
+
+* [link dispatcher_reserve `reserve_calc()`] : The necessary amount of characters is calculated and reserved in the destination object.
+* [link dispatcher_reserve `reserve(std::size_t size)`] : Reserve `size` characters.
+
+If none of these function is called, then no reservation is done.
+
+[syntax_reserve]
+
+[endsect]
+[#assembly_string]
+[section Assembly string]
+
+The [link assembly_string_syntax assembly string] is optional
+and is what in other formatting libraries would be called as
+the /format string/, with the difference that here it does
+not specify any formatting:
+``
+auto s = strf::to_string.as("{} in hexadecimal is {}") (x, strf::hex(x));
+``
+Its main purpose is to enable the use of translation tools like
+[@https://en.wikipedia.org/wiki/Gettext gettext]. You can customize
+how the library handles parsing errors in the with the
+[link asm_string_error `asm_invalid_arg`] enumeration.
+
+[endsect]
+
+
+[/===========================================]
+
+[include facets.qbk]
+
+[/===========================================]
+
+[endsect] [/syntax]
+
+[section Encoding conversion]
 
 [#tour_encoding_conversion]
-By the way, did you notice that the thousand separator is
-a `char32_t` instead of `char`? This means you can use any
+Did you notice that the thousand separator is specified as
+a `char32_t` instead of `char`? That means you can use any
 Unicode code point, as long as it is supported by the
 output encoding, which by default is UTF-8 for `char`.
-But others character sets are available:
+However others character sets are available:
 
 [numpuct__with_alternative_encoding]
 
@@ -79,14 +284,14 @@ As well as converting string of different character types:
 
 [input_output_different_char_types]
 
-You can also use `cv` function if you just want to sanitize
-the input string, when its encoding and character type are the
-same of the output:
+And If you don't want to convert any encoding but just
+to sanitize an input string, you can use still the `cv` function,
+since it aways imply sanitization, even when the input and output
+encodings are the same:
 
 [sani_utf8]
 
-Of course, errors can happen when you convert encodings.
-The library provides three options of how they can be handled.
+The library provides three options of how handle encoding errors.
 The default one is to replace any invalid input sequence by the
 [@https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character
 replacement character "\uFFFD"] (U+FFFD). When the input is UTF-8,
@@ -97,10 +302,13 @@ Standard.
   [@https://www.unicode.org/versions/Unicode10.0.0/ch03.pdf Chapter 3]
   of Unicode Standard. ]
 The second option is to [link encoding_error_ignore omit]
-the invalid sequence, and the [link encoding_error_stop third one]
-is to emit an error. You can also choose whether surrogates are
+the invalid sequence, and the third one is to [link encoding_error_stop
+stop everything] and emit an error, /i.e./, to return an error code
+or throw an exception.
+You can also choose whether surrogates are
 treated as errors or not (as explained [link allow_surrogates here]).
 
+[/
 Another cool thing you can do is to print ranges:
 
 [input_range]
@@ -108,27 +316,15 @@ Another cool thing you can do is to print ranges:
 And another is to align a group of argument as one:
 
 [join_basic_sample]
-
+]
 [/
 However, facets here are not limited to localisation.
 They have been conceived to customise all sort of things,
 like the width calculation method, and encoding error handling.
 ]
 
-
-Of course, this library is not limited to `to_string`. You can, for instance,
-append to string, instead of creating one. Or, to write to a `FILE*`,
-or to a `std::streambuf&`, or to a `char*`, or to your own output type.
-All you need is to replace the `to_string` expression ( which is
-referred here as a [link output_types /leading expression/] )
-by some other. For example:
-
-[output_FILE]
-[/
-But before learning further how to use this library,
-you may first want to see more reasons of why to choose it over others.
-]
-[endsect]
+[endsect] [/encoding]
+[endsect] [/tour of the library]
 
 [section Why to use Boost.Stringify]
 
@@ -192,15 +388,10 @@ you may first want to see more reasons of why to choose it over others.
   [
     Some code bases use error codes, while others use exceptions.
     To suits both worlds, the library provides [link output_types
-    /leading expressions/] that use error codes ( and
-    are prefixed with "`ec_`") and others that use exceptions.
-
-    [/ To suits both worlds, part of the [link output_types
-    /leading expressions/] is based on error code, and
-    the other part is based on exceptions.]
+    /leading expressions/] for each kind.
 
     Also, the user can customise how the library handles
-    [link encoding_policy encoding errors] and
+    [link encoding_policy encoding errors] as well as
     [link asm_string_error assembly string errors].
   ]
   [[br]]
@@ -220,8 +411,8 @@ you may first want to see more reasons of why to choose it over others.
 
     [ [Assembly string translation hints]
       [ [/Usually it is not the programmer who do the translations.]
-        The [link assembly_string assembly string syntax] allows you to
-        insert comments intended to help the person who translates it.
+        The [link assembly_string_syntax assembly string syntax] allows you
+        to insert comments intended to help the person who translates it.
       ]
     ]
 
@@ -248,9 +439,9 @@ you may first want to see more reasons of why to choose it over others.
         when it's not the program's fault; otherwise it's a bug.
         Format functions, on the other hand, always give you a compilation error.
 
-        It's true that mistakes can also happen in the [link assembly_string
-        assembly string], but the probability is much lower.
-        Besides, you can [link asm_string_error customize how such errors are handled].
+        It's true that mistakes can also happen in the assembly string
+        but the probability is much lower. Besides, you can
+        [link asm_string_error customize] how such errors are handled.
 [/
         Besides, a future version of the library will enable you to customise the
         error handling there just [link encoding_error as in encoding conversion].

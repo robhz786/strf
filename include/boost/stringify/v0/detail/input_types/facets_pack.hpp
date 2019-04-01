@@ -24,6 +24,12 @@ struct inner_pack_with_args
 template <typename FPack>
 struct inner_pack
 {
+    template <typename ... T>
+    constexpr inner_pack(T&& ... args)
+        : fp{std::forward<T>(args)...}
+    {
+    }
+
     FPack fp;
 
     template <typename ... Args>
@@ -32,8 +38,7 @@ struct inner_pack
     {
         return stringify::v0::detail::inner_pack_with_args<FPack, Args...>
             { fp
-            , stringify::v0::detail::args_tuple<Args...>{args ...}
-            };
+            , stringify::v0::detail::args_tuple<Args...>{args ...} };
     }
 };
 
@@ -48,8 +53,7 @@ struct inner_pack_ref
     {
         return stringify::v0::detail::inner_pack_with_args<FPack, Args...>
             { fp
-            , stringify::v0::detail::args_tuple<Args...>{args ...}
-            };
+            , stringify::v0::detail::args_tuple<Args...>{args ...} };
     }
 };
 
@@ -147,19 +151,12 @@ public:
     }
 };
 
-template <typename F>
-struct is_constrainable
-{
-    using category = typename stringify::v0::facet_trait<F>::category;
-    constexpr static bool value = category::constrainable;
-};
-
 template <typename ... F>
 constexpr bool are_constrainable_impl()
 {
     constexpr std::size_t N = sizeof...(F);
     constexpr bool values[N]
-        = {stringify::v0::detail::is_constrainable<F>::value ...};
+        = {stringify::v0::is_constrainable_v<F> ...};
 
     for (std::size_t i = 0; i < N; ++i)
     {
@@ -178,13 +175,6 @@ constexpr bool are_constrainable_impl<>()
 }
 
 template <typename ... F>
-struct is_constrainable<stringify::v0::facets_pack<F...>>
-{
-    constexpr static bool value
-        = stringify::v0::detail::are_constrainable_impl<F...>();
-};
-
-template <typename ... F>
 struct all_are_constrainable
 {
     constexpr static bool value
@@ -200,14 +190,16 @@ struct all_are_constrainable
 // stringify_get_input_traits
 // ( const stringify::v0::detail::inner_pack_with_args<ChildFPack, Args...>& fmt );
 
-template <typename ... Facets>
-stringify::v0::detail::inner_pack<stringify::v0::facets_pack<Facets ...>>
-facets(const Facets& ... facets)
+template <typename ... T>
+auto facets(T&& ... args)
+    -> stringify::v0::detail::inner_pack
+           < decltype(stringify::v0::pack(std::forward<T>(args)...)) >
 {
     static_assert
-        ( stringify::v0::detail::all_are_constrainable<Facets...>::value
+        ( stringify::v0::is_constrainable_v
+            < decltype(stringify::v0::pack(std::forward<T>(args)...)) >
         , "All facet categories must be constrainable" );
-    return {stringify::v0::pack(facets ...)};
+    return {std::forward<T>(args)...};
 }
 
 template <typename ... Facets>
@@ -215,7 +207,7 @@ stringify::v0::detail::inner_pack_ref<stringify::v0::facets_pack<Facets ...>>
 facets(const stringify::v0::facets_pack<Facets...>& fp)
 {
     static_assert
-        ( stringify::v0::detail::all_are_constrainable<Facets...>::value
+        ( stringify::v0::is_constrainable_v<stringify::v0::facets_pack<Facets...>>
         , "All facet categories must be constrainable" );
     return {fp};
 }

@@ -464,8 +464,7 @@ inline stringify::v0::detail::join_t
 join( int width = 0
     , stringify::v0::alignment align = stringify::v0::alignment::right
     , char32_t fillchar = U' '
-    , int num_leading_args = 0
-    )
+    , int num_leading_args = 0 )
 {
     return {width, align, fillchar, num_leading_args};
 }

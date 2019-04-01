@@ -293,6 +293,7 @@ int main()
 #else
     std::cout << "\n";
 #endif
+    std::cout << "\n";
 
 /*
     std::cout << std::endl;

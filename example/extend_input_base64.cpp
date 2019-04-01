@@ -20,6 +20,7 @@ struct base64_facet_category;
 struct base64_facet
 {
     using category = base64_facet_category;
+    static constexpr bool store_by_value = true;
 
     unsigned line_length = 64;
     char eol[2] = {'\r', '\n'};
@@ -34,7 +35,6 @@ struct base64_facet
 
 struct base64_facet_category
 {
-    static constexpr bool by_value = true;
     static constexpr bool constrainable = true;
 
     static base64_facet get_default()

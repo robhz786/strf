@@ -122,8 +122,9 @@ public:
         : ipv6_printer
           ( fmt
           , fmt.is_big() ? 4 : 0
-          , { strf::get_facet<strf::encoding_category<CharT>, ipv6_printer>(fp)
-            , strf::get_facet<strf::encoding_policy_category, ipv6_printer>(fp) } )
+          , strf::facets_pack<strf::encoding<CharT>, strf::encoding_policy>
+              { strf::get_facet<strf::encoding_category<CharT>, ipv6_printer>(fp)
+              , strf::get_facet<strf::encoding_policy_category, ipv6_printer>(fp) } )
     {
     }
 
