@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <climits>
+#include <clocale>
 #include <stdio.h>
 #include <boost/stringify.hpp>
 #include "loop_timer.hpp"
@@ -113,11 +114,25 @@ int main()
     }
 
     std::cout << std::endl;
+    std::setlocale(LC_ALL, "en_US.UTF-8");
     strf::monotonic_grouping<10> numpunct_3(3);
     PRINT_BENCHMARK("strf::write(dest) .facets(numpunct_3) (LLONG_MAX)")
     {
         (void)strf::write(dest) .facets(numpunct_3) (LLONG_MAX);
     }
+    PRINT_BENCHMARK("fmt::format_to(dest, \"{:n}\", LLONG_MAX)")
+    {
+        fmt::print(dest, "{:n}", LLONG_MAX);
+    }
+
+#if defined(__GNU_LIBRARY__)
+    PRINT_BENCHMARK("std::sprintf(dest, \"%'lld\", LLONG_MAX)")
+    {
+        std::fprintf(dest, "%'lld", LLONG_MAX);
+    }
+#else
+    std::cout << "\n";
+#endif
 
     std::cout << std::endl;
     PRINT_BENCHMARK("strf::write(dest) (LLONG_MAX, LLONG_MAX, LLONG_MAX)")
