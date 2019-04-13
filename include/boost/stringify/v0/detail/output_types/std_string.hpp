@@ -221,6 +221,16 @@ public:
 
     ~string_maker();
 
+#if defined(__GNUC__) && (__GNUC__ < 7) 
+    
+    string_maker(const string_maker&)
+        : output_buffer<char_type>{_buff, _buff + _buff_size}
+    {
+        BOOST_ASSERT(false);
+    }
+
+#endif    
+
     bool recycle() override;
 
     StringType finish();

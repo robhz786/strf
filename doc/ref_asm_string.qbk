@@ -26,7 +26,7 @@ and are of four kind:
 
 [[Positional argument reference]
 [Position zero refers to the first input argument.]
-[The characters the after the digits are ignored by the parser. So they can also be seen as comments.]
+[The characters the after the digits are ignored. So they can also be used as comments.]
 [[asmstr_positional_arg]]
 ]
 

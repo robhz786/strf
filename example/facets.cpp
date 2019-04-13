@@ -51,7 +51,7 @@ void overriding_sample()
     // hence the presence of punt_dec_1 bellow has no effect.
 
     auto s = strf::to_string
-        .facets( punct_dec_1 
+        .facets( punct_dec_1
                , punct_dec_2
                , strf::constrain<std::is_signed>(punct_dec_3) )
         ( 100000, "  ", 100000u ) ;

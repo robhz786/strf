@@ -67,7 +67,7 @@ def benchmark(build_type, flags, basename, main_src, libs):
     compile_stats = create_obj_files(build_type, flags, basename, num_sourcefiles)
     programs_size = build_programs(build_type, main_src, basename,
                                    libs, files_per_program)
-    result = '[[{:<28}][{:>4.2f} `,  `{:>4.2f} `,  `{:>4.2f}][{:>9.1f}]'.format(
+    result = '[[{:<28}][{:>4.2f} , {:>4.2f} , {:>4.2f}][{:>9.1f}]'.format(
         basename,
         compile_stats['wall time'],
         compile_stats['user time'],

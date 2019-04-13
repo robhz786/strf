@@ -4,7 +4,7 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[section Facets (/To-Do/)]
+[section Facets (/to-do/)]
 
 [include ref_facets_encoding.qbk]
 [include ref_facets_encoding_policy.qbk]

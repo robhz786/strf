@@ -1,5 +1,5 @@
 [#value_with_format]
-[section Class template `value_with_format`]
+[section Class template `value_with_format` /(to-do)/]
 
 [table
 [[
@@ -9,13 +9,13 @@
 [[
   [variablelist
     [[Compile time requirements]
-     [itemized_list
+     [[itemized_list
        [`Value` is ... (/To-do/) ]
        [All types in `Fmt...` satisfy the [link FormatterRequirements
-        Formatter] requirements.]]]]    
+        Formatter] requirements.]]]]]
 ]]
 ]
-
+[h4 Synopsis]
 ``
 namespace boost { namespace stringify { inline namespace v0 {
 

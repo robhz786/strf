@@ -8,10 +8,10 @@ void sample()
     //[ assembly_string_as_input
     namespace strf = boost::stringify::v0;
 
-    auto result = strf::to_string.as("{} --- {} --- {}")
-        ( "aaa"
-        , strf::as("( {} {} )")("bbb", "ccc")
-        , "ddd" );
+    auto result = strf::to_string.as( "{} --- {} --- {}"
+                                    , "aaa"
+                                    , strf::as("( {} {} )", "bbb", "ccc")
+                                    , "ddd" );
 
     BOOST_ASSERT(result == "aaa --- ( bbb ccc ) --- ddd");
     //]

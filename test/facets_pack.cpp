@@ -353,8 +353,8 @@ void test_constrained_fpe()
         constexpr decltype(fp) fp2{fp};
         constexpr decltype(fp) fp3{std::move(fp2)};
 
-        static_assert(strf::get_facet<fcategory<0>, double>(fp).value == 10, " ");
-        static_assert(strf::get_facet<fcategory<0>, float>(fp).value == -1, " ");
+        static_assert(strf::get_facet<fcategory<0>, double>(fp3).value == 10, " ");
+        static_assert(strf::get_facet<fcategory<0>, float>(fp3).value == -1, " ");
 
     }
     {   // constrain a facet copy

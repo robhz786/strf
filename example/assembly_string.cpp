@@ -43,8 +43,7 @@ int main()
     {
         //[ asmstr_replace
         auto str = strf::to_string
-            .as("{} are {}. {} are {}.")
-            ("Roses", "red", "Violets");
+            .as("{} are {}. {} are {}.", "Roses", "red", "Violets");
         BOOST_ASSERT(str == u8"Roses are red. Violets are \uFFFD.");
         //]
    }
@@ -52,8 +51,7 @@ int main()
        //[ asmstr_omit
        auto str = strf::to_string
            .facets(strf::asm_invalid_arg::ignore)
-           .as("{} are {}. {} are {}.")
-           ("Roses", "red", "Violets");
+           .as("{} are {}. {} are {}.", "Roses", "red", "Violets");
        BOOST_ASSERT(str == u8"Roses are red. Violets are .");
        //]
    }
@@ -65,8 +63,7 @@ int main()
        {
            auto str = strf::to_string
                .facets(strf::asm_invalid_arg::stop)
-               .as("{} are {}. {} are {}.")
-               ("Roses", "red", "Violets");
+               .as("{} are {}. {} are {}.", "Roses", "red", "Violets");
        }
        catch(strf::stringify_error& x)
        {

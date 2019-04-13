@@ -128,6 +128,15 @@ named parameter idiom].
 
 And the same applies the all others /"leading expressions"/:
 
+[/ Railroad diagram generated from the EBNF below, in online generator bottlecaps.de/rr 
+ 
+ syntax ::= 'leading_expression' 
+  ( '.reserve( size )' | '.reserve_calc()' | '.facets( facets... )' ) * 
+  ( '.as(  assembly_string ) ( arguments... ) ' 
+  | '.as(  assembly_string, arguments... ) ' 
+  | '( arguments... ) ' ) 
+] 
+
 [$../syntax.png]
 [footnote This railroad diagram was generated on [@http://bottlecaps.de/rr bottlecaps.de/rr]]
 
@@ -241,12 +250,11 @@ If none of these function is called, then no reservation is done.
 [#assembly_string]
 [section Assembly string]
 
-The [link assembly_string_syntax assembly string] is optional
-and is what in other formatting libraries would be called as
-the /format string/, with the difference that here it does
-not specify any formatting:
+The [link assembly_string_syntax assembly string] is what in other formatting
+libraries would be called as the /format string/,
+with the difference that it does not specify any formatting:
 ``
-auto s = strf::to_string.as("{} in hexadecimal is {}") (x, strf::hex(x));
+auto s = strf::to_string.as("{} in hexadecimal is {}", x, strf::hex(x));
 ``
 Its main purpose is to enable the use of translation tools like
 [@https://en.wikipedia.org/wiki/Gettext gettext]. You can customize
