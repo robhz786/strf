@@ -5,18 +5,15 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/config.hpp>
+#include <boost/stringify/v0/printer.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+
+template <typename CharT> class output_buffer;
 
 enum class error_handling
 {
     replace, stop, ignore
-};
-
-enum class cv_result
-{
-    success, invalid_char, insufficient_space
 };
 
 enum class encoding_id : unsigned
@@ -110,11 +107,10 @@ namespace detail {
 template <typename CharIn, typename CharOut>
 struct transcoder_impl
 {
-    typedef stringify::v0::cv_result (&transcode_func_ref)
-        ( const CharIn** src
+    typedef bool (&transcode_func_ref)
+        ( stringify::v0::output_buffer<CharOut>&
+        , const CharIn* src
         , const CharIn* src_end
-        , CharOut** dest
-        , CharOut* dest_end
         , stringify::v0::error_handling err_hdl
         , bool allow_surr );
 
@@ -134,16 +130,10 @@ struct encoding_impl
     using char_type = CharT;
 
     typedef std::size_t (&validate_func_ref)(char32_t ch);
-    typedef stringify::v0::cv_result (&encode_char_func_ref)
-        ( CharT** dest
-        , CharT* dest_end
-        , char32_t ch
-        , stringify::v0::error_handling err_hdl
-        , bool allow_surr );
-    typedef stringify::v0::cv_result (&encode_fill_func_ref)
-        ( CharT** dest
-        , CharT* dest_end
-        , std::size_t& count
+    typedef CharT* (&encode_char_func_ref)(CharT* dest, char32_t ch);
+    typedef bool (&encode_fill_func_ref)
+        ( stringify::v0::output_buffer<CharT>&
+        , std::size_t count
         , char32_t ch
         , stringify::v0::error_handling err_hdl
         , bool allow_surr );
@@ -152,8 +142,7 @@ struct encoding_impl
         , const CharT* end
         , std::size_t max_count );
     typedef bool (&write_replacement_char_func_ref)
-        ( CharT** dest
-        , CharT* dest_end );
+        ( stringify::v0::output_buffer<CharT>& );
     typedef char32_t (&decode_char_func_ref)(CharT ch);
     typedef const stringify::v0::detail::transcoder_impl<CharT, std::uint8_t>* (*to8_func_ptr)
         ( const stringify::v0::detail::encoding_impl<std::uint8_t>& enc );
@@ -234,6 +223,7 @@ class transcoder
 {
     using _inner_char_type_in = stringify::v0::detail::info_char_type<CharIn>;
     using _inner_char_type_out = stringify::v0::detail::info_char_type<CharOut>;
+    using _impl_ob_type = stringify::v0::output_buffer<_inner_char_type_out>;
 
 public:
 
@@ -259,19 +249,17 @@ public:
         return _impl = cmp._impl;
     }
 
-    stringify::v0::cv_result transcode
-        ( const CharIn** src
+    bool transcode
+        ( stringify::v0::output_buffer<CharOut>& ob
+        , const CharIn* src
         , const CharIn* src_end
-        , CharOut** dest
-        , CharOut* dest_end
         , stringify::v0::error_handling err_hdl
         , bool allow_surr ) const
     {
         return _impl->transcode
-            ( reinterpret_cast<const _inner_char_type_in**>(src)
+            ( reinterpret_cast<_impl_ob_type&>(ob)
+            , reinterpret_cast<const _inner_char_type_in*>(src)
             , reinterpret_cast<const _inner_char_type_in*>(src_end)
-            , reinterpret_cast<_inner_char_type_out**>(dest)
-            , reinterpret_cast<_inner_char_type_out*>(dest_end)
             , err_hdl
             , allow_surr );
     }
@@ -304,6 +292,7 @@ template <typename CharT>
 class encoding
 {
     using _impl_char_type = stringify::v0::detail::info_char_type<CharT>;
+    using _impl_ob_type = stringify::v0::output_buffer<_impl_char_type>;
 
     template <typename>
     friend class stringify::v0::encoding;
@@ -345,29 +334,20 @@ public:
     {
         return _impl->validate(ch);
     }
-    stringify::v0::cv_result encode_char
-        ( CharT** dest
-        , CharT* dest_end
-        , char32_t ch
-        , stringify::v0::error_handling err_hdl
-        , bool allow_surr ) const
+    CharT* encode_char(CharT* dest, char32_t ch) const
     {
-        return _impl->encode_char
-            ( reinterpret_cast<_impl_char_type**>(dest)
-            , reinterpret_cast<_impl_char_type*>(dest_end)
-            , ch, err_hdl, allow_surr );
+        auto rdest = reinterpret_cast<_impl_char_type*>(dest);
+        return reinterpret_cast<CharT*>(_impl->encode_char(rdest, ch));
     }
-    stringify::v0::cv_result encode_fill
-        ( CharT** dest
-        , CharT* dest_end
-        , std::size_t& count
+    bool encode_fill
+        ( stringify::v0::output_buffer<CharT>& ob
+        , std::size_t count
         , char32_t ch
         , stringify::v0::error_handling err_hdl
         , bool allow_surr ) const
     {
         return _impl->encode_fill
-            ( reinterpret_cast<_impl_char_type**>(dest)
-            , reinterpret_cast<_impl_char_type*>(dest_end)
+            ( reinterpret_cast<_impl_ob_type&>(ob)
             , count, ch, err_hdl, allow_surr );
     }
     std::size_t codepoints_count
@@ -381,12 +361,10 @@ public:
             , max_count );
     }
     bool write_replacement_char
-        ( CharT** dest
-        , CharT* dest_end ) const
+        ( stringify::v0::output_buffer<CharT>& ob ) const
     {
         return _impl->write_replacement_char
-            ( reinterpret_cast<_impl_char_type**>(dest)
-            , reinterpret_cast<_impl_char_type*>(dest_end) );
+            ( reinterpret_cast<_impl_ob_type&>(ob) );
     }
     char32_t decode_single_char(CharT ch) const
     {
@@ -592,6 +570,152 @@ get_transcoder_impl
     return src_encoding.transcoder_impl_to(dest_encoding);
 }
 
+namespace detail {
+
+constexpr std::size_t global_mini_buffer32_size = 16;
+
+#if defined(BOOST_STRINGIFY_OMIT_IMPL)
+
+const std::pair<char32_t*, char32_t*> global_mini_buffer32();
+
+#else // defined(BOOST_STRINGIFY_OMIT_IMPL)
+
+BOOST_STRINGIFY_INLINE char32_t* global_mini_buffer32()
+{
+    thread_local static char32_t buff[global_mini_buffer32_size];
+    return buff;
+}
+
+#endif // defined(BOOST_STRINGIFY_OMIT_IMPL)
+
+template <typename CharOut>
+class buffered_encoder: public stringify::v0::output_buffer<char32_t>
+{
+public:
+
+    buffered_encoder
+        ( stringify::v0::encoding<CharOut>& enc
+        , stringify::v0::output_buffer<CharOut>& ob
+        , stringify::v0::error_handling err_hdl
+        , bool allow_surr )
+        : stringify::v0::output_buffer<char32_t>
+            ( stringify::v0::detail::global_mini_buffer32()
+            , stringify::v0::detail::global_mini_buffer32_size )
+        , _enc(enc)
+        , _ob(ob)
+        , _err_hdl(err_hdl)
+        , _allow_surr(allow_surr)
+    {
+        _begin = this->pos();
+    }
+
+    bool recycle() override;
+
+private:
+
+    stringify::v0::encoding<CharOut> _enc;
+    stringify::v0::output_buffer<CharOut>& _ob;
+    char32_t* _begin;
+    stringify::v0::error_handling _err_hdl;
+    bool _allow_surr;
+};
+
+template <typename CharOut>
+bool buffered_encoder<CharOut>::recycle()
+{
+    auto end = this->pos();
+    if (end != _begin)
+    {
+        this->set_pos(_begin);
+        return _enc.from_u32().transcode(_ob, _begin, end, _err_hdl, _allow_surr);
+    }
+    return true;
+}
+
+template<typename CharIn, typename CharOut>
+inline bool decode_encode
+    ( stringify::v0::output_buffer<CharOut>& ob
+    , const CharIn* src
+    , const CharIn* src_end
+    , stringify::v0::encoding<CharIn> src_encoding
+    , stringify::v0::encoding<CharOut> dest_encoding
+    , stringify::v0::error_handling err_hdl
+    , bool allow_surr )
+{
+    stringify::v0::detail::buffered_encoder dest
+        { dest_encoding, ob, err_hdl, allow_surr };
+
+    return src_encoding.to_u32().transcode(dest, src, src_end, err_hdl, allow_surr)
+        && dest.recycle();
+}
+
+template <typename CharOut>
+class buffered_size_calculator: public stringify::v0::output_buffer<char32_t>
+{
+public:
+
+    buffered_size_calculator
+        ( stringify::v0::encoding<CharOut>& enc
+        , stringify::v0::error_handling err_hdl
+        , bool allow_surr )
+        : stringify::v0::output_buffer<char32_t>
+            ( stringify::v0::detail::global_mini_buffer32()
+            , stringify::v0::detail::global_mini_buffer32_size )
+        , _enc(enc)
+        , _err_hdl(err_hdl)
+        , _allow_surr(allow_surr)
+    {
+        _begin = this->pos();
+    }
+
+    bool recycle() override;
+
+    std::size_t get_sum()
+    {
+        recycle();
+        return _sum;
+    }
+
+private:
+
+    stringify::v0::encoding<CharOut> _enc;
+    char32_t* _begin;
+    std::size_t _sum = 0;
+    stringify::v0::error_handling _err_hdl;
+    bool _allow_surr;
+};
+
+template <typename CharOut>
+bool buffered_size_calculator<CharOut>::recycle()
+{
+    auto end = this->pos();
+    if (end != _begin)
+    {
+        this->set_pos(_begin);
+        _sum += _enc.from_u32().necessary_size(_begin, end, _err_hdl, _allow_surr);
+    }
+    return true;
+}
+
+template<typename CharIn, typename CharOut>
+inline std::size_t decode_encode_size
+    ( const CharIn* src
+    , const CharIn* src_end
+    , stringify::v0::encoding<CharIn> src_encoding
+    , stringify::v0::encoding<CharOut> dest_encoding
+    , stringify::v0::error_handling err_hdl
+    , bool allow_surr )
+{
+    stringify::v0::detail::buffered_size_calculator calc
+        { dest_encoding, err_hdl, allow_surr };
+
+    src_encoding.to_u32().transcode(calc, src, src_end, err_hdl, allow_surr);
+
+    return calc.get_sum();
+}
+
+} // namespace detail
+
 #if defined(BOOST_STRINGIFY_OMIT_IMPL)
 
 namespace detail {
@@ -678,7 +802,7 @@ inline stringify::v0::encoding<char> iso_8859_15()
     return stringify::v0::encoding<char>{stringify::v0::detail::iso_8859_15_impl()};
 }
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+BOOST_STRINGIFY_V0_NAMESPACE_END;
 
 #endif  // BOOST_STRINGIFY_V0_TRANSCODING_HPP
 

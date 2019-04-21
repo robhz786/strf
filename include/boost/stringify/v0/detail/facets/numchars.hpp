@@ -236,11 +236,7 @@ bool numchars_default_common<CharT>::print_digits
         }
         if (n == 0)
         {
-            auto res = enc.encode_char( &pos, end, separator
-                                      , stringify::v0::error_handling::ignore
-                                      , false );
-            (void)res;
-            BOOST_ASSERT(res == stringify::v0::cv_result::success);
+            pos = enc.encode_char(pos, separator);
             n = *--grp_it;
         }
     }
@@ -256,8 +252,7 @@ bool numchars_default_common<CharT>::print_zeros
     , unsigned count ) const
 {
     (void) enc;
-    constexpr CharT ch = '0';
-    return stringify::v0::detail::write_fill(ob, count, ch);
+    return stringify::v0::detail::write_fill(ob, count, CharT('0'));
 }
 
 template <typename CharT, unsigned Base>

@@ -5,7 +5,21 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <boost/stringify/v0/printer.hpp>
+#include <boost/assert.hpp>
+
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+
+#define BOOST_STRINGIFY_CHECK_DEST     \
+    if (dest_it == dest_end) {         \
+        ob.advance_to(dest_it);        \
+        if (! ob.recycle()) {          \
+            return false;              \
+        }                              \
+        dest_it = ob.pos();            \
+        dest_end = ob.end();           \
+    }
+
 namespace detail {
 
 template<size_t SIZE, class T>
@@ -43,41 +57,32 @@ static std::size_t same_size
 template <class Impl>
 struct single_byte_encoding
 {
-    static stringify::v0::cv_result to_utf32
-        ( const std::uint8_t** src
+    static bool to_utf32
+        ( stringify::v0::output_buffer<char32_t>& ob
+        , const std::uint8_t* src
         , const std::uint8_t* src_end
-        , char32_t** dest
-        , char32_t* dest_end
         , stringify::v0::error_handling err_hdl
         , bool allow_surr );
 
-    static stringify::v0::cv_result from_utf32
-        ( const char32_t** src
+    static bool from_utf32
+        ( stringify::v0::output_buffer<std::uint8_t>& ob
+        , const char32_t* src
         , const char32_t* src_end
-        , std::uint8_t** dest
-        , std::uint8_t* dest_end
         , stringify::v0::error_handling err_hdl
         , bool allow_surr );
 
-    static stringify::v0::cv_result sanitize
-        ( const std::uint8_t** src
+    static bool sanitize
+        ( stringify::v0::output_buffer<std::uint8_t>& ob
+        , const std::uint8_t* src
         , const std::uint8_t* src_end
-        , std::uint8_t** dest
-        , std::uint8_t* dest_end
         , stringify::v0::error_handling err_hdl
         , bool allow_surr );
 
-    static stringify::v0::cv_result encode_char
-        ( std::uint8_t** dest
-        , std::uint8_t* end
-        , char32_t ch
-        , stringify::v0::error_handling err_hdl
-        , bool );
+    static std::uint8_t* encode_char(std::uint8_t* dest, char32_t ch);
 
-    static stringify::v0::cv_result encode_fill
-        ( std::uint8_t** dest
-        , std::uint8_t* end
-        , std::size_t& count
+    static bool encode_fill
+        ( stringify::v0::output_buffer<std::uint8_t>& ob
+        , std::size_t count
         , char32_t ch
         , stringify::v0::error_handling err_hdl
         , bool );
@@ -95,8 +100,7 @@ struct single_byte_encoding
     static std::size_t replacement_char_size();
 
     static bool write_replacement_char
-        ( std::uint8_t** dest
-        , std::uint8_t* dest_end );
+        ( stringify::v0::output_buffer<std::uint8_t>& ob );
 
     static std::size_t validate(char32_t ch);
 };
@@ -113,118 +117,99 @@ std::size_t single_byte_encoding<Impl>::codepoints_count
 }
 
 template <class Impl>
-stringify::v0::cv_result single_byte_encoding<Impl>::to_utf32
-    ( const std::uint8_t** src
+bool single_byte_encoding<Impl>::to_utf32
+    ( stringify::v0::output_buffer<char32_t>& ob
+    , const std::uint8_t* src
     , const std::uint8_t* src_end
-    , char32_t** dest
-    , char32_t* dest_end
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
     (void) allow_surr;
-    auto dest_it = *dest;
-    for (auto src_it = *src; src_it < src_end; ++src_it)
+    auto dest_it = ob.pos();
+    auto dest_end = ob.end();
+    for (auto src_it = src; src_it < src_end; ++src_it)
     {
-        if(dest_it != dest_end)
+        if (ob.size() == 0 && !ob.recycle())
         {
-            char32_t ch32 = Impl::decode(*src_it);
-            if(ch32 != (char32_t)-1)
+            return false;
+        }
+        char32_t ch32 = Impl::decode(*src_it);
+        if(ch32 == (char32_t)-1)
+        {
+            switch(err_hdl)
             {
-                *dest_it = ch32;
-                ++dest_it;
-            }
-            else
-            {
-                switch(err_hdl)
-                {
-                    case stringify::v0::error_handling::stop:
-                        *src = src_it + 1;
-                        *dest = dest_it;
-                        return stringify::v0::cv_result::invalid_char;
-                    case stringify::v0::error_handling::replace:
-                        *dest_it = 0xFFFD;
-                        ++dest_it;
-                        break;
-                    default:
-                        BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
-                        break;
-                }
+                case stringify::v0::error_handling::stop:
+                    ob.advance_to(dest_it);
+                    ob.set_encoding_error();
+                    return false;
+                case stringify::v0::error_handling::replace:
+                    ch32 = 0xFFFD;
+                    break;
+                default:
+                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                    continue;
             }
         }
-        else
-        {
-            *src = src_it;
-            *dest = dest_end;
-            return stringify::v0::cv_result::insufficient_space;
-        }
+        BOOST_STRINGIFY_CHECK_DEST;
+        *dest_it = ch32;
+        ++dest_it;
     }
-    *src = src_end;
-    *dest = dest_it;
-    return stringify::v0::cv_result::success;
+    ob.advance_to(dest_it);
+    return true;
 }
 
 template <class Impl>
-stringify::v0::cv_result single_byte_encoding<Impl>::sanitize
-    ( const std::uint8_t** src
+bool single_byte_encoding<Impl>::sanitize
+    ( stringify::v0::output_buffer<std::uint8_t>& ob
+    , const std::uint8_t* src
     , const std::uint8_t* src_end
-    , std::uint8_t** dest
-    , std::uint8_t* dest_end
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
     (void) allow_surr;
-    auto dest_it = *dest;
-    for (auto src_it = *src; src_it < src_end; ++src_it)
+    auto dest_it = ob.pos();
+    auto dest_end = ob.end();
+    std::uint8_t ch_out;
+    for (auto src_it = src; src_it < src_end; ++src_it)
     {
-        if(dest_it != dest_end)
+        std::uint8_t ch = *src_it;
+        if (Impl::is_valid(ch))
         {
-            std::uint8_t ch = *src_it;
-            if (Impl::is_valid(ch))
-            {
-                *dest_it = ch;
-                ++dest_it;
-            }
-            else
-            {
-                switch(err_hdl)
-                {
-                    case stringify::v0::error_handling::stop:
-                        *src = src_it + 1;
-                        *dest = dest_it;
-                        return stringify::v0::cv_result::invalid_char;
-                    case stringify::v0::error_handling::replace:
-                        *dest_it = '?';
-                        ++dest_it;
-                        break;
-                    default:
-                        BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
-                        break;
-                }
-            }
+            ch_out = ch;
         }
         else
         {
-            *src = src_it;
-            *dest = dest_end;
-            return stringify::v0::cv_result::insufficient_space;
+            switch(err_hdl)
+            {
+                case stringify::v0::error_handling::stop:
+                    ob.advance_to(dest_it);
+                    ob.set_encoding_error();
+                    return false;
+                case stringify::v0::error_handling::replace:
+                    ch_out = '?';
+                    break;
+                default:
+                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                    continue;
+            }
         }
+        BOOST_STRINGIFY_CHECK_DEST;
+        *dest_it = ch_out;
+        ++dest_it;
     }
-    *src = src_end;
-    *dest = dest_it;
-    return stringify::v0::cv_result::success;
+    ob.advance_to(dest_it);
+    return true;
 }
 
 
 template <class Impl>
 bool single_byte_encoding<Impl>::write_replacement_char
-    ( std::uint8_t** dest
-    , std::uint8_t* dest_end )
+    ( stringify::v0::output_buffer<std::uint8_t>& ob )
 {
-    auto dest_it = *dest;
-    if (dest_it != dest_end)
+    if (ob.size() != 0 || ob.recycle())
     {
-        *dest_it = '?';
-        *dest = dest_it + 1;
+        *ob.pos() = '?';
+        ob.advance();
         return true;
     }
     return false;
@@ -243,136 +228,98 @@ std::size_t single_byte_encoding<Impl>::validate(char32_t ch)
 }
 
 template <class Impl>
-stringify::v0::cv_result single_byte_encoding<Impl>::encode_char
-    ( std::uint8_t** dest
-    , std::uint8_t* end
-    , char32_t ch
-    , stringify::v0::error_handling err_hdl
-    , bool )
+std::uint8_t* single_byte_encoding<Impl>::encode_char
+    ( std::uint8_t* dest
+    , char32_t ch )
 {
-    std::uint8_t* dest_it = *dest;
-    if(dest_it != end)
+    auto ch2 = Impl::encode(ch);
+    if(ch2 < 0x100)
     {
-        auto ch2 = Impl::encode(ch);
-        if(ch2 < 0x100)
-        {
-            *dest_it = static_cast<std::uint8_t>(ch2);
-            *dest = dest_it + 1;
-            return stringify::v0::cv_result::success;
-        }
-        switch(err_hdl)
-        {
-            case stringify::v0::error_handling::stop:
-                return stringify::v0::cv_result::invalid_char;
-            case stringify::v0::error_handling::replace:
-                *dest_it = '?';
-                *dest = dest_it + 1;
-                break;
-            default:
-                BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
-                break;
-        }
-        return stringify::v0::cv_result::success;
+        *dest = Impl::encode(ch);
+        return dest + 1;
     }
-    return stringify::v0::cv_result::insufficient_space;
+    return dest;
 }
 
 template <class Impl>
-stringify::v0::cv_result single_byte_encoding<Impl>::encode_fill
-    ( std::uint8_t** dest
-    , std::uint8_t* end
-    , std::size_t& count
+bool single_byte_encoding<Impl>::encode_fill
+    ( stringify::v0::output_buffer<std::uint8_t>& ob
+    , std::size_t count
     , char32_t ch
     , stringify::v0::error_handling err_hdl
     , bool )
 {
     unsigned ch2 = Impl::encode(ch);
-
-    if (ch2 < 0x100)
+    if (ch2 >= 0x100)
     {
-        do_write:
-
-        std::uint8_t* dest_it = *dest;
-        std::size_t count_ = count;
-        std::size_t available = end - dest_it;
-
-        if (count_ <= available)
+        switch(err_hdl)
         {
-            std::memset(dest_it, ch2, count_);
-            count = 0;
-            *dest = dest_it + count_;
-            return stringify::v0::cv_result::success;
+            case stringify::v0::error_handling::stop:
+                ob.set_encoding_error();
+                return false;
+            case stringify::v0::error_handling::replace:
+                ch2 = '?';
+                break;
+            default:
+                BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                return true;
         }
-        std::char_traits<char>::assign( (char*)dest_it
-                                      , available
-                                      , static_cast<char>(ch2) );
-        count = count_ - available;
-        *dest = end;
-        return stringify::v0::cv_result::insufficient_space;
     }
-    switch(err_hdl)
+    do
     {
-        case stringify::v0::error_handling::stop:
-            return stringify::v0::cv_result::invalid_char;
-        case stringify::v0::error_handling::replace:
-            ch2 = '?';
-            goto do_write;
-        default:
-            BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
-            break;
+        std::size_t available = ob.size();
+        if (count <= available)
+        {
+            std::memset(ob.pos(), ch2, count);
+            ob.advance(count);
+            return true;
+        }
+        std::memset(ob.pos(), ch2, available);
+        ob.advance_to(ob.end());
+        count -= available;
     }
-    return stringify::v0::cv_result::success;
+    while(ob.recycle());
+    return false;
 }
 
 template <class Impl>
-stringify::v0::cv_result single_byte_encoding<Impl>::from_utf32
-    ( const char32_t** src
+bool single_byte_encoding<Impl>::from_utf32
+    ( stringify::v0::output_buffer<std::uint8_t>& ob
+    , const char32_t* src
     , const char32_t* src_end
-    , std::uint8_t** dest
-    , std::uint8_t* dest_end
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
     (void)allow_surr;
-    auto dest_it = *dest;
-    auto src_it = *src;
-    for(; src_it != src_end; ++src_it)
+    auto dest_it = ob.pos();
+    auto dest_end = ob.end();
+    for(; src != src_end; ++src)
     {
-        if(dest_it == dest_end)
-        {
-            *dest = dest_end;
-            *src = src_it;
-            return stringify::v0::cv_result::insufficient_space;
-        }
-        auto ch2 = Impl::encode(*src_it);
-        if(ch2 < 0x100)
-        {
-            *dest_it = static_cast<std::uint8_t>(ch2);
-            ++dest_it;
-        }
-        else
+        auto ch2 = Impl::encode(*src);
+        if(ch2 >= 0x100)
         {
             switch(err_hdl)
             {
                 case stringify::v0::error_handling::stop:
-                    *src = src_it + 1;
-                    *dest = dest_it;
-                    return stringify::v0::cv_result::invalid_char;
+                    ob.advance_to(dest_it);
+                    ob.set_encoding_error();
+                    return false;
 
                 case stringify::v0::error_handling::replace:
-                    *dest_it = '?';
-                    ++dest_it;
+                    ch2 = '?';
                     break;
 
                 default:
                     BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
-                    break;
+                    continue;
             }
         }
+        BOOST_STRINGIFY_CHECK_DEST;
+        *dest_it = ch2;
+        ++dest_it;
     }
-    *src = src_end;
-    *dest = dest_it;
-    return stringify::v0::cv_result::success;
+    ob.advance_to(dest_it);
+    return true;
 }
 
 struct impl_strict_ascii

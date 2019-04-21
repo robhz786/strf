@@ -21,9 +21,53 @@ enum class width_calculation_type : std::size_t
     as_u32len
 };
 
+namespace detail {
+
+class width_decrementer: public stringify::v0::output_buffer<char32_t>
+{
+public:
+
+    width_decrementer(char_width_calculator func, int width)
+        : stringify::v0::output_buffer<char32_t>(_buff, _buff + _buff_size)
+        , _func(func)
+        , _remaining_width(width)
+    {
+    }
+
+    bool recycle() override;
+
+    std::size_t get_result()
+    {
+        recycle();
+        return _remaining_width > 0 ? _remaining_width : 0;
+    }
+
+private:
+
+    constexpr static std::size_t _buff_size = stringify::v0::min_buff_size;
+    char32_t _buff[_buff_size];
+    char_width_calculator _func;
+    int _remaining_width = 0;
+};
+
+#if ! defined(BOOST_STRINGIFY_OMIT_IMPL)
+
+BOOST_STRINGIFY_INLINE bool width_decrementer::recycle()
+{
+    for(auto it = _buff; it < this->pos() && _remaining_width > 0; ++it)
+    {
+       _remaining_width -= _func(*it);
+    }
+    this->set_pos(_buff);
+    return _remaining_width > 0;
+}
+
+#endif // ! defined(BOOST_STRINGIFY_OMIT_IMPL)
+
+} // namespace detail
+
 class width_calculator
 {
-
 public:
 
     using category = stringify::v0::width_calculator_category;
@@ -86,25 +130,10 @@ public:
         }
         else
         {
-            static char32_t buff[16];
-            auto* const buff_end = &buff[0] + sizeof(buff) / sizeof(buff[0]);
-
-            stringify::v0::cv_result res;
-            auto const src_end = str + str_len;
-            do
-            {
-                auto output_buffer = &buff[0];
-                auto src_it = str;
-                res = enc.to_u32().transcode( &src_it, src_end
-                                            , &output_buffer, buff_end
-                                            , epoli.err_hdl()
-                                            , epoli.allow_surr() );
-                for (auto it = &buff[0]; width > 0 && it < output_buffer; ++it)
-                {
-                    width -= _ch_wcalc(*it);
-                }
-            } while (res == stringify::v0::cv_result::insufficient_space);
-            return width;
+            stringify::v0::detail::width_decrementer acc(_ch_wcalc, width);
+            enc.to_u32().transcode( acc, str, str + str_len
+                                  , epoli.err_hdl(), epoli.allow_surr() );
+            return acc.get_result();
         }
     }
 

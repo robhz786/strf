@@ -349,9 +349,9 @@ public:
     template
         < typename ... OBArgs
         , typename = std::enable_if_t
-            < sizeof...(OBArgs) == sizeof...(OutBuffArgs)
-           && stringify::v0::detail::fold_and
-                < std::is_constructible<OutBuffArgs, OBArgs>::value... > > >
+          < sizeof...(OBArgs) == sizeof...(OutBuffArgs) > >
+           // && stringify::v0::detail::fold_and
+           //      < std::is_constructible<OutBuffArgs, OBArgs>::value... > > >
     constexpr explicit dispatcher(FPack&& fp, OBArgs&&... args)
         : _obargs_tuple(std::forward<OBArgs>(args)...)
         , _fpack(std::move(fp))
@@ -361,9 +361,9 @@ public:
     template
         < typename ... OBArgs
         , typename = std::enable_if_t
-            < sizeof...(OBArgs) == sizeof...(OutBuffArgs)
-           && stringify::v0::detail::fold_and
-                < std::is_constructible<OutBuffArgs, OBArgs>::value... > > >
+          < sizeof...(OBArgs) == sizeof...(OutBuffArgs) > >
+           // && stringify::v0::detail::fold_and
+           //      < std::is_constructible<OutBuffArgs, OBArgs>::value... > > >
     constexpr explicit dispatcher(const FPack& fp, OBArgs&&... args)
         : _obargs_tuple(std::forward<OBArgs>(args)...)
         , _fpack(fp)

@@ -397,8 +397,8 @@ private:
         ( stringify::v0::output_buffer<CharT>& ob
         , int count ) const
     {
-        return stringify::v0::detail::write_fill
-            ( _encoding, ob, count, _join.fillchar, _epoli.err_hdl() );
+        return _encoding.encode_fill
+            ( ob, count, _join.fillchar, _epoli.err_hdl(), _epoli.allow_surr() );
     }
 };
 

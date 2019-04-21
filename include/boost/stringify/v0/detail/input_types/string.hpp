@@ -302,8 +302,8 @@ bool fmt_string_printer<CharT>::_write_fill
     ( stringify::v0::output_buffer<CharT>& ob
     , unsigned count ) const
 {
-    return stringify::v0::detail::write_fill
-        ( _encoding, ob, count, _fmt.fill(), _epoli );
+    return _encoding.encode_fill
+        ( ob, count, _fmt.fill(), _epoli.err_hdl(), _epoli.allow_surr() );
 }
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)

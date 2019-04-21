@@ -6,7 +6,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <system_error>
-#include <boost/stringify/v0/detail/facets/encoding.hpp>
+#include <algorithm>
+#include <boost/stringify/v0/config.hpp>
 #include <boost/assert.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -160,122 +161,6 @@ public:
 
 namespace detail {
 
-inline const std::pair<char32_t*, char32_t*> global_mini_buffer32()
-{
-    thread_local static char32_t buff[16];
-    return {buff, buff + sizeof(buff) / sizeof(buff[0])};
-}
-
-template<typename CharIn, typename CharOut>
-bool transcode
-    ( stringify::v0::output_buffer<CharOut>& ob
-    , const CharIn* src
-    , const CharIn* src_end
-    , const stringify::v0::transcoder<CharIn, CharOut>& tr
-    , stringify::v0::encoding_policy epoli )
-{
-    auto err_hdl = epoli.err_hdl();
-    bool allow_surr = epoli.allow_surr();
-    stringify::v0::cv_result res;
-    do
-    {
-        auto pos = ob.pos();
-        res = tr.transcode(&src, src_end, &pos, ob.end(), err_hdl, allow_surr);
-        ob.advance_to(pos);
-        if (res == stringify::v0::cv_result::success)
-        {
-            return true;
-        }
-        if (res == stringify::v0::cv_result::invalid_char)
-        {
-            ob.set_encoding_error();
-            return false;
-        }
-    } while(ob.recycle());
-    return false;
-}
-
-template<typename CharIn, typename CharOut>
-bool decode_encode
-    ( stringify::v0::output_buffer<CharOut>& ob
-    , const CharIn* src
-    , const CharIn* src_end
-    , stringify::v0::encoding<CharIn> src_encoding
-    , stringify::v0::encoding<CharOut> dest_encoding
-    , stringify::v0::encoding_policy epoli )
-{
-    auto err_hdl = epoli.err_hdl();
-    bool allow_surr = epoli.allow_surr();
-    const auto buff32 = global_mini_buffer32();
-    char32_t* const buff32_begin = buff32.first;
-    char32_t* const buff32_end = buff32.second;
-    stringify::v0::cv_result res1;
-    do
-    {
-        char32_t* buff32_it = buff32_begin;
-        res1 = src_encoding.to_u32().transcode( &src, src_end
-                                              , &buff32_it, buff32_end
-                                              , err_hdl, allow_surr );
-        if (res1 == stringify::v0::cv_result::invalid_char)
-        {
-            ob.set_encoding_error();
-            return false;
-        }
-        auto pos = ob.pos();
-        const char32_t* buff32_it2 = buff32_begin;
-        auto res2 = dest_encoding.from_u32().transcode( &buff32_it2, buff32_it
-                                                      , &pos, ob.end()
-                                                      , err_hdl, allow_surr );
-        ob.advance_to(pos);
-        while (res2 == stringify::v0::cv_result::insufficient_space)
-        {
-            if ( ! ob.recycle())
-            {
-                return false;
-            }
-            pos = ob.pos();
-            res2 = dest_encoding.from_u32().transcode( &buff32_it2, buff32_it
-                                                     , &pos, ob.end()
-                                                     , err_hdl, allow_surr );
-            ob.advance_to(pos);
-        }
-        if (res2 == stringify::v0::cv_result::invalid_char)
-        {
-            ob.set_encoding_error();
-            return false;
-        }
-    } while (res1 == stringify::v0::cv_result::insufficient_space);
-
-    return true;
-}
-
-template<typename CharIn, typename CharOut>
-inline std::size_t decode_encode_size
-    ( const CharIn* src
-    , const CharIn* src_end
-    , stringify::v0::encoding<CharIn> src_encoding
-    , stringify::v0::encoding<CharOut> dest_encoding
-    , stringify::v0::encoding_policy epoli )
-{
-    auto err_hdl = epoli.err_hdl();
-    bool allow_surr = epoli.allow_surr();
-    auto buff32 = global_mini_buffer32();
-    char32_t* const buff32_begin = buff32.first;
-    std::size_t count = 0;
-    stringify::v0::cv_result res_dec;
-    do
-    {
-        buff32.first = buff32_begin;
-        res_dec = src_encoding.to_u32().transcode( &src, src_end
-                                                 , &buff32.first, buff32.second
-                                                 , err_hdl, allow_surr );
-        count += dest_encoding.from_u32().necessary_size( buff32_begin, buff32.first
-                                                        , err_hdl, allow_surr );
-    } while(res_dec == stringify::v0::cv_result::insufficient_space);
-
-    return count;
-}
-
 template<typename CharT>
 bool write_str_continuation
     ( stringify::v0::output_buffer<CharT>& ob
@@ -365,56 +250,69 @@ inline bool write_fill
     return write_fill_continuation(ob, count, ch);
 }
 
-template<typename CharT>
-bool do_write_fill
-    ( stringify::v0::encoding<CharT> encoding
-    , stringify::v0::output_buffer<CharT>& ob
+template <typename T, std::size_t N>
+struct simple_array;
+template <typename T>
+struct simple_array<T,1> { T obj0; };
+template <typename T>
+struct simple_array<T,2> { T obj0;  T obj1; };
+template <typename T>
+struct simple_array<T,3> { T obj0;  T obj1; T obj2; };
+template <typename T>
+struct simple_array<T,4> { T obj0;  T obj1; T obj2; T obj3; };
+
+
+template <typename CharT, std::size_t N>
+inline void do_repeat_sequence
+    ( CharT* dest
     , std::size_t count
-    , char32_t ch
-    , stringify::v0::encoding_policy epoli )
+    , simple_array<CharT, N> seq )
 {
-    auto err_hdl = epoli.err_hdl();
-    bool allow_surr = epoli.allow_surr();
-    do
+    std::fill_n(reinterpret_cast<simple_array<CharT, N>*>(dest), count, seq);
+}
+
+template <typename CharT, std::size_t N>
+bool repeat_sequence_continuation
+    ( stringify::v0::output_buffer<CharT>& ob
+    , std::size_t count
+    , simple_array<CharT, N> seq )
+{
+    std::size_t space = ob.size() / N;
+    BOOST_ASSERT(space < count);
+
+    stringify::v0::detail::do_repeat_sequence(ob.pos(), space, seq);
+    count -= space;
+    ob.advance_to(ob.end());
+    while (ob.recycle())
     {
-        auto pos = ob.pos();
-        auto res = encoding.encode_fill
-            (&pos, ob.end(), count, ch, err_hdl, allow_surr);
-        if (res == stringify::v0::cv_result::success)
+        std::size_t space = ob.size() / N;
+        if (count <= space)
         {
-            ob.advance_to(pos);
+            stringify::v0::detail::do_repeat_sequence(ob.pos(), count, seq);
+            ob.advance(count * N);
             return true;
         }
-        ob.advance_to(pos);
-        if (res == stringify::v0::cv_result::invalid_char)
-        {
-            ob.set_encoding_error();
-            return false;
-        }
-        BOOST_ASSERT(res == stringify::v0::cv_result::insufficient_space);
-    } while (ob.recycle());
+        stringify::v0::detail::do_repeat_sequence(ob.pos(), space, seq);
+        count -= space;
+        ob.advance_to(ob.end());
+    }
     return false;
 }
 
-template<typename CharT>
-inline bool write_fill
-    ( stringify::v0::encoding<CharT> encoding
-    , stringify::v0::output_buffer<CharT>& buff
+
+template <typename CharT, std::size_t N>
+inline bool repeat_sequence
+    ( stringify::v0::output_buffer<CharT>& ob
     , std::size_t count
-    , char32_t ch
-    , stringify::v0::encoding_policy epoli )
+    , simple_array<CharT, N> seq )
 {
-    return ( ch >= encoding.u32equivalence_begin()
-          && ch < encoding.u32equivalence_end()
-          && (epoli.allow_surr() || (ch >> 11 != 0x1B)) )
-        ? stringify::v0::detail::write_fill( buff
-                                           , count
-                                           , (CharT)ch )
-        : stringify::v0::detail::do_write_fill( encoding
-                                              , buff
-                                              , count
-                                              , ch
-                                              , epoli );
+    if (count * N <= ob.size())
+    {
+        stringify::v0::detail::do_repeat_sequence(ob.pos(), count, seq);
+        ob.advance(count * N);
+        return true;
+    }
+    return stringify::v0::detail::repeat_sequence_continuation(ob, count, seq);
 }
 
 } // namespace detail

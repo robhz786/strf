@@ -65,7 +65,7 @@ using char_with_format = stringify::v0::value_with_format
 
 //     template <typename FPack>
 //     char32_printer
-//         ( stringify::v0::output_writer<CharT>& out
+//         ( stringify::v0::output_buffer<CharT>& out
 //         , const FPack& fp
 //         , const stringify::v0::char_with_format<char32_t>& input
 //         ) noexcept
@@ -74,7 +74,7 @@ using char_with_format = stringify::v0::value_with_format
 //     }
 
 //     char32_printer
-//         ( stringify::v0::output_writer<CharT>& out
+//         ( stringify::v0::output_buffer<CharT>& out
 //         , const stringify::v0::char_with_format<char32_t>& input
 //         , const stringify::v0::width_calculator& wcalc
 //         ) noexcept;
@@ -89,7 +89,7 @@ using char_with_format = stringify::v0::value_with_format
 
 // private:
 
-//     stringify::v0::output_writer<CharT>& m_out;
+//     stringify::v0::output_buffer<CharT>& m_out;
 //     stringify::v0::char_with_format<char32_t> m_fmt;
 //     int m_fillcount = 0;
 
@@ -138,7 +138,7 @@ using char_with_format = stringify::v0::value_with_format
 
 // template <typename CharT>
 // char32_printer<CharT>::char32_printer
-//     ( stringify::v0::output_writer<CharT>& out
+//     ( stringify::v0::output_buffer<CharT>& out
 //     , const stringify::v0::char_with_format<char32_t>& input
 //     , const stringify::v0::width_calculator& wcalc
 //     ) noexcept
@@ -413,8 +413,8 @@ bool fmt_char_printer<CharT>::_write_fill
     ( stringify::v0::output_buffer<CharT>& ob
     , unsigned count ) const
 {
-    return stringify::v0::detail::write_fill
-        ( _encoding, ob, count, _fmt.fill(), _epoli );
+    return _encoding.encode_fill
+        ( ob, count, _fmt.fill(), _epoli.err_hdl(), _epoli.allow_surr() );
 }
 
 template <typename CharT>

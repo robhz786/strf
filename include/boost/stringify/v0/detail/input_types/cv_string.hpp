@@ -386,7 +386,7 @@ std::size_t cv_string_printer<CharIn, CharOut>::necessary_size() const
     return stringify::v0::detail::decode_encode_size
         ( _str, _str + _len
         , _src_encoding, _dest_encoding
-        , _epoli );
+        , _epoli.err_hdl(), _epoli.allow_surr() );
 }
 
 template<typename CharIn, typename CharOut>
@@ -396,14 +396,14 @@ bool cv_string_printer<CharIn, CharOut>::write
     if (_transcoder_impl)
     {
         stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_impl);
-        return stringify::v0::detail::transcode( ob
-                                               , _str, _str + _len
-                                               , transcoder, _epoli);
+        return transcoder.transcode( ob, _str, _str + _len
+                                   , _epoli.err_hdl(), _epoli.allow_surr() );
     }
     return stringify::v0::detail::decode_encode( ob
                                                , _str, _str + _len
                                                , _src_encoding, _dest_encoding
-                                               , _epoli );
+                                               , _epoli.err_hdl()
+                                               , _epoli.allow_surr() );
 }
 
 template<typename CharIn, typename CharOut>
@@ -492,7 +492,7 @@ std::size_t fmt_cv_string_printer<CharIn, CharOut>::necessary_size() const
         size = stringify::v0::detail::decode_encode_size
             ( _fmt.value().begin(), _fmt.value().end()
             , _src_encoding, _dest_encoding
-            , _epoli );
+            , _epoli.err_hdl(), _epoli.allow_surr() );
     }
 
     if (_fillcount > 0)
@@ -543,18 +543,19 @@ bool fmt_cv_string_printer<CharIn, CharOut>::_write_str
     if (_transcoder_impl)
     {
         stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_impl);
-        return stringify::v0::detail::transcode( ob
-                                               , _fmt.value().begin()
-                                               , _fmt.value().end()
-                                               , transcoder
-                                               , _epoli);
+        return transcoder.transcode( ob
+                                   , _fmt.value().begin()
+                                   , _fmt.value().end()
+                                   , _epoli.err_hdl()
+                                   , _epoli.allow_surr() );
     }
     return stringify::v0::detail::decode_encode( ob
                                                , _fmt.value().begin()
                                                , _fmt.value().end()
                                                , _src_encoding
                                                , _dest_encoding
-                                               , _epoli );
+                                               , _epoli.err_hdl()
+                                               , _epoli.allow_surr() );
 }
 
 template<typename CharIn, typename CharOut>
@@ -562,8 +563,8 @@ bool fmt_cv_string_printer<CharIn, CharOut>::_write_fill
     ( stringify::v0::output_buffer<CharOut>& ob
     , unsigned count ) const
 {
-    return stringify::v0::detail::write_fill
-        ( _dest_encoding, ob, count, _fmt.fill(), _epoli );
+    return _dest_encoding.encode_fill
+        ( ob, count, _fmt.fill(), _epoli.err_hdl(), _epoli.allow_surr() );
 }
 
 template<typename CharIn, typename CharOut>

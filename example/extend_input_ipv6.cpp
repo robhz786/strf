@@ -148,8 +148,8 @@ private:
     ipv6addr_with_format _fmt;
 
   /*<< `printer_impl<CharT, FPack, Arg>` is equivalent to
-     `decltype(make_printer(ow, fp, std::declval<Arg>())`
-      where the type of `ow` is `output_writer<CharT>&`,
+     `decltype(make_printer(ob, fp, std::declval<Arg>())`
+      where the type of `ob` is `output_buffer<CharT>&`,
       and the type of `fp` is `const Fpack&`.
       Hence the type of `_colon` derives from `printer<CharT>`,
       and so do the elements of `_hextets`.

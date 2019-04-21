@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/printer.hpp>
+#include <boost/stringify/v0/detail/facets/encoding.hpp>
 #include <boost/stringify/v0/detail/format_functions.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -254,8 +254,8 @@ bool dynamic_join_printer<CharOut>::write_fill
     , char32_t ch
     , stringify::v0::output_buffer<CharOut>& ob ) const
 {
-    return stringify::v0::detail::write_fill
-        ( _encoding, ob, count, ch, _epoli );
+    return _encoding.encode_fill
+        ( ob, count, ch, _epoli.err_hdl(), _epoli.allow_surr() );
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

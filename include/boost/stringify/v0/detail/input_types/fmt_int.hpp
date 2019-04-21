@@ -204,11 +204,8 @@ private:
         ( stringify::v0::output_buffer<CharT>& ob
         , std::size_t count ) const
     {
-        return stringify::v0::detail::write_fill( _encoding
-                                                , ob
-                                                , count
-                                                , _afmt.fill()
-                                                , _epoli );
+        return _encoding.encode_fill
+            ( ob, count, _afmt.fill(), _epoli.err_hdl(), _epoli.allow_surr() );
     }
 
     bool _write_complement(stringify::v0::output_buffer<CharT>& ob) const;

@@ -35,7 +35,7 @@ void test_fill
     , std::basic_string<CharT> encoded_char
     , bool allow_surrogates = false )
 {
-    BOOST_TEST_LABEL << "test_fill_char: U+"
+    BOOST_TEST_LABEL << enc.name() << ", test_fill_char: U+"
                      << std::hex << (unsigned)fill_char
                      << std::dec;
 
@@ -48,16 +48,22 @@ void test_fill
         auto result = strf::to_basic_string<CharT>
             .facets(enc, epoli)
             (strf::right(CharT('x'), count + 1, fill_char));
-        result.pop_back(); // remove the 'x'
-        BOOST_TEST(result == repeat(count, encoded_char));
+
+        auto expected = repeat(count, encoded_char);
+        expected.push_back(CharT('x'));
+
+        BOOST_TEST(result == expected);
     }
     {
         int count = 200;
         auto result = strf::to_basic_string<CharT>
             .facets(enc, epoli)
             (strf::right(CharT('x'), count + 1, fill_char));
-        result.pop_back(); // remove the 'x'
-        BOOST_TEST(result == repeat(count, encoded_char));
+
+        auto expected = repeat(count, encoded_char);
+        expected.push_back(CharT('x'));
+
+        BOOST_TEST(result == expected);
     }
 }
 

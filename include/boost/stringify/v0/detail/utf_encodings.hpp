@@ -5,12 +5,32 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/detail/transcoding.hpp>
+#include <boost/stringify/v0/printer.hpp>
 #include <boost/assert.hpp>
 #include <algorithm>
 #include <cstring>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+
+#define BOOST_STRINGIFY_CHECK_DEST     \
+    if (dest_it == dest_end) {         \
+        ob.advance_to(dest_it);        \
+        if (! ob.recycle()) {          \
+            return false;              \
+        }                              \
+        dest_it = ob.pos();            \
+        dest_end = ob.end();           \
+    }
+
+#define BOOST_STRINGIFY_CHECK_DEST_SIZE(SIZE)     \
+    if (dest_it + SIZE > dest_end) {              \
+        ob.advance_to(dest_it);                   \
+        if (! ob.recycle()) {                     \
+            return false;                         \
+        }                                         \
+        dest_it = ob.pos();                       \
+        dest_end = ob.end();                      \
+    }
 
 namespace detail {
 
@@ -105,11 +125,10 @@ inline bool first_2_of_4_are_valid(std::uint8_t ch0, std::uint8_t ch1)
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE
-stringify::v0::cv_result utf8_to_utf32_transcode
-    ( const std::uint8_t** src
+bool utf8_to_utf32_transcode
+    ( stringify::v0::output_buffer<char32_t>& ob
+    , const std::uint8_t* src
     , const std::uint8_t* src_end
-    , char32_t** dest
-    , char32_t* dest_end
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
@@ -118,27 +137,26 @@ stringify::v0::cv_result utf8_to_utf32_transcode
 
     std::uint8_t ch0, ch1, ch2, ch3;
     unsigned long x;
-    auto dest_it = *dest;
-    auto src_it = *src;
+    auto src_it = src;
+    auto dest_it = ob.pos();
+    auto dest_end = ob.end();
+    char32_t ch32;
 
-    for(;src_it != src_end; ++dest_it)
+    while(src_it != src_end)
     {
-        if(dest_it == dest_end)
-        {
-            goto insufficient_space;
-        }
-
         ch0 = (*src_it);
         ++src_it;
         if (ch0 < 0x80)
         {
-            *dest_it = ch0;
+            BOOST_STRINGIFY_CHECK_DEST;
+            ch32 = ch0;
         }
         else if (0xC0 == (ch0 & 0xE0))
         {
             if(ch0 > 0xC1 && src_it != src_end && is_utf8_continuation(ch1 = * src_it))
             {
-                *dest_it = utf8_decode(ch0, ch1);
+                BOOST_STRINGIFY_CHECK_DEST;
+                ch32 = utf8_decode(ch0, ch1);
                 ++src_it;
             } else goto invalid_sequence;
         }
@@ -147,7 +165,8 @@ stringify::v0::cv_result utf8_to_utf32_transcode
             if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
-                *dest_it = ((ch1 & 0x3F) << 6) | (ch2 & 0x3F);
+                BOOST_STRINGIFY_CHECK_DEST;
+                ch32 = ((ch1 & 0x3F) << 6) | (ch2 & 0x3F);
                 ++src_it;
             } else goto invalid_sequence;
         }
@@ -158,7 +177,8 @@ stringify::v0::cv_result utf8_to_utf32_transcode
                                        , allow_surr )
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
-                *dest_it = (x << 6) | (ch2 & 0x3F);
+                BOOST_STRINGIFY_CHECK_DEST;
+                ch32 = (x << 6) | (ch2 & 0x3F);
                 ++src_it;
             } else goto invalid_sequence;
         }
@@ -169,7 +189,8 @@ stringify::v0::cv_result utf8_to_utf32_transcode
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
               && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
             {
-                *dest_it = utf8_decode_last_2_of_4(x, ch2, ch3);
+                BOOST_STRINGIFY_CHECK_DEST;
+                ch32 = utf8_decode_last_2_of_4(x, ch2, ch3);
                 ++src_it;
             } else goto invalid_sequence;
         }
@@ -179,27 +200,25 @@ stringify::v0::cv_result utf8_to_utf32_transcode
             switch (err_hdl)
             {
                 case stringify::v0::error_handling::stop:
-                    *src = src_it;
-                    *dest = dest_it;
-                    return stringify::v0::cv_result::invalid_char;
+                    ob.advance_to(dest_it);
+                    ob.set_encoding_error();
+                    return false;
                 case stringify::v0::error_handling::replace:
-                    *dest_it = 0xFFFD;
+                    BOOST_STRINGIFY_CHECK_DEST;
+                    ch32 = 0xFFFD;
                     break;
                 default:
                     BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
-                    --dest_it;
-                    break;
+                    continue;
             }
         }
-    }
-    *src = src_it;
-    *dest = dest_it;
-    return stringify::v0::cv_result::success;
 
-    insufficient_space:
-    *src = src_it;
-    *dest = dest_it;
-    return stringify::v0::cv_result::insufficient_space;
+        BOOST_STRINGIFY_CHECK_DEST;
+        *dest_it = ch32;
+        ++dest_it;
+    }
+    ob.advance_to(dest_it);
+    return true;
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf32_size
@@ -276,45 +295,38 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf32_size
     return size;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_sanitize
-    ( const std::uint8_t** src
+BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_sanitize
+    ( stringify::v0::output_buffer<std::uint8_t>& ob
+    , const std::uint8_t* src
     , const std::uint8_t* src_end
-    , std::uint8_t** dest
-    , std::uint8_t* dest_end
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
     using stringify::v0::detail::utf8_decode;
 
     std::uint8_t ch0, ch1, ch2, ch3;
-    auto dest_it = *dest;
-    auto src_it = *src;
-    const std::uint8_t* previous_src_it;
-
+    auto src_it = src;
+    auto dest_it = ob.pos();
+    auto dest_end = ob.end();
     while(src_it != src_end)
     {
-        previous_src_it = src_it;
         ch0 = (*src_it);
         ++src_it;
         if(ch0 < 0x80)
         {
-            if(dest_it != dest_end)
-            {
-                *dest_it = ch0;
-                ++dest_it;
-            } else goto insufficient_space;
+            BOOST_STRINGIFY_CHECK_DEST;
+            *dest_it = ch0;
+            ++dest_it;
         }
         else if(0xC0 == (ch0 & 0xE0))
         {
             if(ch0 > 0xC1 && src_it != src_end && is_utf8_continuation(ch1 = * src_it))
             {
-                if (dest_it + 1 < dest_end)
-                {
-                    ++src_it;
-                    dest_it[0] = ch0;
-                    dest_it[1] = ch1;
-                    dest_it += 2;
-                } else goto insufficient_space;
+                BOOST_STRINGIFY_CHECK_DEST_SIZE(2);
+                ++src_it;
+                dest_it[0] = ch0;
+                dest_it[1] = ch1;
+                dest_it += 2;
             } else goto invalid_sequence;
         }
         else if (0xE0 == ch0)
@@ -322,14 +334,12 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_sanitize
             if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
-                if (dest_it + 2 < dest_end)
-                {
-                    ++src_it;
-                    dest_it[0] = ch0;
-                    dest_it[1] = ch1;
-                    dest_it[2] = ch2;
-                    dest_it += 3;
-                }
+                BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
+                ++src_it;
+                dest_it[0] = ch0;
+                dest_it[1] = ch1;
+                dest_it[2] = ch2;
+                dest_it += 3;
             } else goto invalid_sequence;
         }
         else if (0xE0 == (ch0 & 0xF0))
@@ -338,14 +348,12 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_sanitize
               && first_2_of_3_are_valid(ch0, ch1, allow_surr)
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
-                if (dest_it + 2 < dest_end)
-                {
-                    ++src_it;
-                    dest_it[0] = ch0;
-                    dest_it[1] = ch1;
-                    dest_it[2] = ch2;
-                    dest_it += 3;
-                } else goto insufficient_space;
+                BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
+                ++src_it;
+                dest_it[0] = ch0;
+                dest_it[1] = ch1;
+                dest_it[2] = ch2;
+                dest_it += 3;
             } else goto invalid_sequence;
         }
         else if (0xF0 == (ch0 & 0xF8))
@@ -355,15 +363,13 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_sanitize
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
               && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
             {
-                if (dest_it + 4 < dest_end)
-                {
-                    ++src_it;
-                    dest_it[0] = ch0;
-                    dest_it[1] = ch1;
-                    dest_it[2] = ch2;
-                    dest_it[3] = ch3;
-                    dest_it += 4;
-                } else goto insufficient_space;
+                BOOST_STRINGIFY_CHECK_DEST_SIZE(4);
+                ++src_it;
+                dest_it[0] = ch0;
+                dest_it[1] = ch1;
+                dest_it[2] = ch2;
+                dest_it[3] = ch3;
+                dest_it += 4;
             } else goto invalid_sequence;
         }
         else
@@ -372,19 +378,17 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_sanitize
             switch (err_hdl)
             {
                 case stringify::v0::error_handling::stop:
-                    *dest = dest_it;
-                    *src = src_it;
-                    return stringify::v0::cv_result::invalid_char;
+                    ob.advance_to(dest_it);
+                    ob.set_encoding_error();
+                    return false;
 
                 case stringify::v0::error_handling::replace:
-                    if (dest_it + 2 < dest_end)
-                    {
-                        dest_it[0] = 0xEF;
-                        dest_it[1] = 0xBF;
-                        dest_it[2] = 0xBD;
-                        dest_it += 3;
-                        break;
-                    } else goto insufficient_space;
+                    BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
+                    dest_it[0] = 0xEF;
+                    dest_it[1] = 0xBF;
+                    dest_it[2] = 0xBD;
+                    dest_it += 3;
+                    break;
 
                 default:
                     BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
@@ -392,14 +396,8 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_sanitize
             }
         }
     }
-    *dest = dest_it;
-    *src = src_it;
-    return stringify::v0::cv_result::success;
-
-    insufficient_space:
-    *dest = dest_it;
-    *src = previous_src_it;
-    return stringify::v0::cv_result::insufficient_space;
+    ob.advance_to(dest_it);
+    return true;
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_sanitize_size
@@ -493,234 +491,150 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_codepoints_count
     return count;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_encode_fill
-    ( std::uint8_t** dest
-    , std::uint8_t* end
-    , std::size_t& count
+BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_encode_fill
+    ( stringify::v0::output_buffer<std::uint8_t>& ob
+    , std::size_t count
     , char32_t ch
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
-    std::uint8_t* dest_it = *dest;
-    const std::size_t count_ = count;
-    const std::size_t available = end - dest_it;
-    std::size_t minc;
     if (ch < 0x80)
     {
-        minc = (std::min)(count_, available);
-        std::memset(dest_it, static_cast<std::uint8_t>(ch), minc);
-        dest_it += minc;
+        return stringify::v0::detail::write_fill
+            ( ob, count, static_cast<std::uint8_t>(ch) );
     }
-    else if (ch < 0x800)
+    if (ch < 0x800)
     {
-        minc = (std::min)(count_, available / 2);
-        std::uint8_t ch0 = static_cast<std::uint8_t>(0xC0 | ((ch & 0x7C0) >> 6));
-        std::uint8_t ch1 = static_cast<std::uint8_t>(0x80 |  (ch &  0x3F));
-        for(std::size_t i = 0; i < minc; ++i)
-        {
-            dest_it[0] = ch0;
-            dest_it[1] = ch1;
-            dest_it += 2;
-        }
+        stringify::v0::detail::simple_array<std::uint8_t, 2> seq = {
+            static_cast<std::uint8_t>(0xC0 | ((ch & 0x7C0) >> 6)),
+            static_cast<std::uint8_t>(0x80 |  (ch &  0x3F))
+        };
+        return stringify::v0::detail::repeat_sequence(ob, count, seq);
     }
-    else if (ch <  0x10000)
+    if (ch <  0x10000)
     {
         if ( ! allow_surr && detail::is_surrogate(ch))
         {
             goto invalid_char;
         }
-        minc = (std::min)(count_, available / 3);
-        std::uint8_t ch0 = static_cast<std::uint8_t>(0xE0 | ((ch & 0xF000) >> 12));
-        std::uint8_t ch1 = static_cast<std::uint8_t>(0x80 | ((ch &  0xFC0) >> 6));
-        std::uint8_t ch2 = static_cast<std::uint8_t>(0x80 |  (ch &   0x3F));
-        for(std::size_t i = 0; i < minc; ++i)
-        {
-            dest_it[0] = ch0;
-            dest_it[1] = ch1;
-            dest_it[2] = ch2;
-            dest_it += 3;
-        }
-    }
-    else if (ch < 0x110000)
-    {
-        minc = (std::min)(count_, available / 4);
-        std::uint8_t ch0 = static_cast<std::uint8_t>(0xF0 | ((ch & 0x1C0000) >> 18));
-        std::uint8_t ch1 = static_cast<std::uint8_t>(0x80 | ((ch &  0x3F000) >> 12));
-        std::uint8_t ch2 = static_cast<std::uint8_t>(0x80 | ((ch &    0xFC0) >> 6));
-        std::uint8_t ch3 = static_cast<std::uint8_t>(0x80 |  (ch &     0x3F));
-        for(std::size_t i = 0; i < minc; ++i)
-        {
-            dest_it[0] = ch0;
-            dest_it[1] = ch1;
-            dest_it[2] = ch2;
-            dest_it[3] = ch3;
-            dest_it += 4;
-        }
-    }
-    else
-    {
-        invalid_char:
-        switch(err_hdl)
-        {
-            case stringify::v0::error_handling::stop:
-                return stringify::v0::cv_result::invalid_char;
-
-            case stringify::v0::error_handling::ignore:
-                count = 0;
-                return stringify::v0::cv_result::success;
-
-            default:
-                BOOST_ASSERT(err_hdl == stringify::v0::error_handling::replace);
-                minc = (std::min)(count_, available / 3);
-                for(std::size_t i = 0; i < minc; ++i)
-                {
-                    dest_it[0] = 0xEF;
-                    dest_it[1] = 0xBF;
-                    dest_it[2] = 0xBD;
-                    dest_it += 3;
-                }
-        }
-    }
-    *dest = dest_it;
-    if(minc == count_)
-    {
-        count = 0;
-        return stringify::v0::cv_result::success;
-    }
-    count = count_ - minc;
-    return stringify::v0::cv_result::insufficient_space;
-}
-
-BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_encode_char
-    ( std::uint8_t** dest
-    , std::uint8_t* end
-    , char32_t ch
-    , stringify::v0::error_handling err_hdl
-    , bool allow_surr )
-{
-    std::uint8_t* dest_it = *dest;
-    if (ch < 0x80 && dest_it != end)
-    {
-        *dest_it = static_cast<std::uint8_t>(ch);
-        *dest = dest_it + 1;
-        return stringify::v0::cv_result::success;
-    }
-    std::size_t dest_size = end - dest_it;
-    if (ch < 0x800 && 2 <= dest_size)
-    {
-        dest_it[0] = static_cast<std::uint8_t>(0xC0 | ((ch & 0x7C0) >> 6));
-        dest_it[1] = static_cast<std::uint8_t>(0x80 |  (ch &  0x3F));
-        *dest = dest_it + 2;
-        return stringify::v0::cv_result::success;
-    }
-    if (ch <  0x10000 && 3 <= dest_size)
-    {
-        if ( ! allow_surr && detail::is_surrogate(ch))
-        {
-            goto invalid_char;
-        }
-        dest_it[0] = static_cast<std::uint8_t>(0xE0 | ((ch & 0xF000) >> 12));
-        dest_it[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0xFC0) >> 6));
-        dest_it[2] = static_cast<std::uint8_t>(0x80 |  (ch &   0x3F));
-        *dest = dest_it + 3;
-        return stringify::v0::cv_result::success;
+        stringify::v0::detail::simple_array<std::uint8_t, 3> seq = {
+            static_cast<std::uint8_t>(0xE0 | ((ch & 0xF000) >> 12)),
+            static_cast<std::uint8_t>(0x80 | ((ch &  0xFC0) >> 6)),
+            static_cast<std::uint8_t>(0x80 |  (ch &   0x3F)),
+        };
+        return stringify::v0::detail::repeat_sequence(ob, count, seq);
     }
     if (ch < 0x110000)
     {
-        if (4 <= dest_size)
-        {
-            dest_it[0] = static_cast<std::uint8_t>(0xF0 | ((ch & 0x1C0000) >> 18));
-            dest_it[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0x3F000) >> 12));
-            dest_it[2] = static_cast<std::uint8_t>(0x80 | ((ch &    0xFC0) >> 6));
-            dest_it[3] = static_cast<std::uint8_t>(0x80 |  (ch &     0x3F));
-            *dest = dest_it + 4;
-            return stringify::v0::cv_result::success;
-        }
-        return stringify::v0::cv_result::insufficient_space;
+        stringify::v0::detail::simple_array<std::uint8_t, 4> seq = {
+            static_cast<std::uint8_t>(0xF0 | ((ch & 0x1C0000) >> 18)),
+            static_cast<std::uint8_t>(0x80 | ((ch &  0x3F000) >> 12)),
+            static_cast<std::uint8_t>(0x80 | ((ch &    0xFC0) >> 6)),
+            static_cast<std::uint8_t>(0x80 |  (ch &     0x3F))
+        };
+        return stringify::v0::detail::repeat_sequence(ob, count, seq);
     }
+
     invalid_char:
-    switch (err_hdl)
+    switch(err_hdl)
     {
-        case stringify::v0::error_handling::replace:
-            if (3 <= dest_size)
-            {
-                dest_it[0] = 0xEF;
-                dest_it[1] = 0xBF;
-                dest_it[2] = 0xBD;
-                *dest = dest_it + 3;
-                return stringify::v0::cv_result::success;
-            }
-            return stringify::v0::cv_result::insufficient_space;
+        case stringify::v0::error_handling::stop:
+            ob.set_encoding_error();
+            return false;
+
         case stringify::v0::error_handling::ignore:
-            return stringify::v0::cv_result::success;
+            return true;
+
         default:
-            BOOST_ASSERT(err_hdl == stringify::v0::error_handling::stop);
-            return stringify::v0::cv_result::invalid_char;
+        {
+            BOOST_ASSERT(err_hdl == stringify::v0::error_handling::replace);
+            stringify::v0::detail::simple_array<std::uint8_t, 3> seq
+                { 0xEF, 0xBF, 0xBD };
+            return stringify::v0::detail::repeat_sequence(ob, count, seq);
+        }
     }
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf32_to_utf8_transcode
-    ( const char32_t** src
+
+BOOST_STRINGIFY_STATIC_LINKAGE std::uint8_t* utf8_encode_char
+    ( std::uint8_t* dest
+    , char32_t ch )
+{
+    if (ch < 0x80)
+    {
+        *dest = static_cast<std::uint8_t>(ch);
+        return dest + 1;
+    }
+    if (ch < 0x800)
+    {
+        dest[0] = static_cast<std::uint8_t>(0xC0 | ((ch & 0x7C0) >> 6));
+        dest[1] = static_cast<std::uint8_t>(0x80 |  (ch &  0x3F));
+        return dest + 2;
+    }
+    if (ch <  0x10000)
+    {
+        dest[0] = static_cast<std::uint8_t>(0xE0 | ((ch & 0xF000) >> 12));
+        dest[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0xFC0) >> 6));
+        dest[2] = static_cast<std::uint8_t>(0x80 |  (ch &   0x3F));
+        return dest + 3;
+    }
+    if (ch < 0x110000)
+    {
+        dest[0] = static_cast<std::uint8_t>(0xF0 | ((ch & 0x1C0000) >> 18));
+        dest[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0x3F000) >> 12));
+        dest[2] = static_cast<std::uint8_t>(0x80 | ((ch &    0xFC0) >> 6));
+        dest[3] = static_cast<std::uint8_t>(0x80 |  (ch &     0x3F));
+        return dest + 4;
+    }
+    return dest;
+}
+
+BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_to_utf8_transcode
+    ( stringify::v0::output_buffer<std::uint8_t>& ob
+    , const char32_t* src
     , const char32_t* src_end
-    , std::uint8_t** dest
-    , std::uint8_t* dest_end
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
-    auto src_it = *src;
-    auto dest_it = *dest;
-    std::size_t available_space = dest_end - dest_it;
+    auto src_it = src;
+    auto dest_it = ob.pos();
+    auto dest_end = ob.end();
     for(;src_it != src_end; ++src_it)
     {
         auto ch = *src_it;
         if(ch < 0x80)
         {
-            if(available_space != 0)
-            {
-                *dest_it = static_cast<std::uint8_t>(ch);
-                ++dest_it;
-                --available_space;
-            }
-            else goto insufficient_space;
+            BOOST_STRINGIFY_CHECK_DEST;
+            *dest_it = static_cast<std::uint8_t>(ch);
+            ++dest_it;
         }
         else if (ch < 0x800)
         {
-            if(available_space >= 2)
-            {
-                dest_it[0] = static_cast<std::uint8_t>(0xC0 | ((ch & 0x7C0) >> 6));
-                dest_it[1] = static_cast<std::uint8_t>(0x80 |  (ch &  0x3F));
-                dest_it += 2;
-                available_space -= 2;
-            }
-            else goto insufficient_space;
+            BOOST_STRINGIFY_CHECK_DEST_SIZE(2);
+            dest_it[0] = static_cast<std::uint8_t>(0xC0 | ((ch & 0x7C0) >> 6));
+            dest_it[1] = static_cast<std::uint8_t>(0x80 |  (ch &  0x3F));
+            dest_it += 2;
         }
         else if (ch < 0x10000)
         {
             if(allow_surr || stringify::v0::detail::not_surrogate(ch))
             {
-                if (available_space >= 3)
-                {
-                    dest_it[0] = static_cast<std::uint8_t>(0xE0 | ((ch & 0xF000) >> 12));
-                    dest_it[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0xFC0) >> 6));
-                    dest_it[2] = static_cast<std::uint8_t>(0x80 |  (ch &   0x3F));
-                    dest_it += 3;
-                    available_space -= 3;
-                } else goto insufficient_space;
+                BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
+                dest_it[0] = static_cast<std::uint8_t>(0xE0 | ((ch & 0xF000) >> 12));
+                dest_it[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0xFC0) >> 6));
+                dest_it[2] = static_cast<std::uint8_t>(0x80 |  (ch &   0x3F));
+                dest_it += 3;
             }
             else goto invalid_sequence;
         }
         else if (ch < 0x110000)
         {
-            if(available_space >= 4)
-            {
-                dest_it[0] = static_cast<std::uint8_t>(0xF0 | ((ch & 0x1C0000) >> 18));
-                dest_it[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0x3F000) >> 12));
-                dest_it[2] = static_cast<std::uint8_t>(0x80 | ((ch &    0xFC0) >> 6));
-                dest_it[3] = static_cast<std::uint8_t>(0x80 |  (ch &     0x3F));
-                dest_it += 4;
-                available_space -= 4;
-            }
-            else goto insufficient_space;
+            BOOST_STRINGIFY_CHECK_DEST_SIZE(4);
+            dest_it[0] = static_cast<std::uint8_t>(0xF0 | ((ch & 0x1C0000) >> 18));
+            dest_it[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0x3F000) >> 12));
+            dest_it[2] = static_cast<std::uint8_t>(0x80 | ((ch &    0xFC0) >> 6));
+            dest_it[3] = static_cast<std::uint8_t>(0x80 |  (ch &     0x3F));
+            dest_it += 4;
         }
         else
         {
@@ -728,20 +642,17 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf32_to_utf8_transcode
             switch (err_hdl)
             {
                 case stringify::v0::error_handling::stop:
-                    *dest = dest_it;
-                    *src = src_it + 1;
-                    return stringify::v0::cv_result::invalid_char;
+                    ob.advance_to(dest_it);
+                    ob.set_encoding_error();
+                    return false;
 
                 case stringify::v0::error_handling::replace:
-                    if (available_space >= 3)
-                    {
-                        dest_it[0] = 0xEF;
-                        dest_it[1] = 0xBF;
-                        dest_it[2] = 0xBD;
-                        dest_it += 3;
-                        available_space -=3;
-                        break;
-                    } else goto insufficient_space;
+                    BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
+                    dest_it[0] = 0xEF;
+                    dest_it[1] = 0xBF;
+                    dest_it[2] = 0xBD;
+                    dest_it += 3;
+                    break;
 
                 default:
                     BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
@@ -749,14 +660,8 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf32_to_utf8_transcode
             }
         }
     }
-    *dest = dest_it;
-    *src = src_it;
-    return stringify::v0::cv_result::success;
-
-    insufficient_space:
-    *dest = dest_it;
-    *src = src_it;
-    return stringify::v0::cv_result::insufficient_space;
+    ob.advance_to(dest_it);
+    return true;
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf8_size
@@ -812,19 +717,17 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf8_size
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_write_replacement_char
-    ( std::uint8_t** dest
-    , std::uint8_t* dest_end )
+    ( stringify::v0::output_buffer<std::uint8_t>& ob )
 {
-    auto dest_it = *dest;
-    if (dest_it + 2 < dest_end)
-    {
-        dest_it[0] = 0xEF;
-        dest_it[1] = 0xBF;
-        dest_it[2] = 0xBD;
-        *dest = dest_it + 3;
-        return true;
-    }
-    return false;
+    auto dest_it = ob.pos();
+    auto dest_end = ob.end();
+    BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
+    dest_it[0] = 0xEF;
+    dest_it[1] = 0xBF;
+    dest_it[2] = 0xBD;
+    dest_it += 3;
+    ob.advance_to(dest_it);
+    return true;
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE char32_t utf8_decode_single_char(std::uint8_t ch)
@@ -841,67 +744,62 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_validate(char32_t ch)
              ch < 0x110000 ? 4 : (std::size_t)-1 );
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf16_to_utf32_transcode
-    ( const char16_t** src
+BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_to_utf32_transcode
+    ( stringify::v0::output_buffer<char32_t>& ob
+    , const char16_t* src
     , const char16_t* src_end
-    , char32_t** dest
-    , char32_t* dest_end
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
     unsigned long ch, ch2;
-    auto dest_it = *dest;
+    char32_t ch32;
     const char16_t* src_it_next;
-    for(auto src_it = *src; src_it != src_end; src_it = src_it_next)
+    auto dest_it = ob.pos();
+    auto dest_end = ob.end();
+    for(auto src_it = src; src_it != src_end; src_it = src_it_next)
     {
         src_it_next = src_it + 1;
         ch = *src_it;
         src_it_next = src_it + 1;
-        if (dest_it == dest_end)
-        {
-            *src = src_it;
-            *dest = dest_it;
-            return stringify::v0::cv_result::insufficient_space;
-        }
+
         if (not_surrogate(ch))
         {
-            *dest_it = ch;
-            ++dest_it;
+            ch32 = ch;
         }
         else if ( is_high_surrogate(ch)
                && src_it_next != src_end
                && is_low_surrogate(ch2 = *src_it_next))
         {
-            *dest_it = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
-            ++dest_it;
+            ch32 = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
             ++src_it_next;
         }
         else if(allow_surr)
         {
-            *dest_it = ch;
-            ++dest_it;
+            ch32 = ch;
         }
         else
         {
             switch(err_hdl)
             {
                 case stringify::v0::error_handling::stop:
-                    *src = src_it_next;
-                    *dest = dest_it;
-                    return stringify::v0::cv_result::invalid_char;
+                    ob.advance_to(dest_it);
+                    ob.set_encoding_error();
+                    return false;
                 case stringify::v0::error_handling::replace:
-                    *dest_it = 0xFFFD;
-                    ++dest_it;
+                    ch32 = 0xFFFD;
                     break;
                 default:
                     BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
-                    break;
+                    continue;
             }
         }
+
+        BOOST_STRINGIFY_CHECK_DEST;
+        *dest_it = ch32;
+        ++dest_it;
     }
-    *src = src_end;
-    *dest = dest_it;
-    return stringify::v0::cv_result::success;
+    ob.advance_to(dest_it);
+    return true;
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_to_utf32_size
@@ -953,18 +851,18 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_to_utf32_size
     return count;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf16_sanitize
-    ( const char16_t** src
+BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_sanitize
+    ( stringify::v0::output_buffer<char16_t>& ob
+    , const char16_t* src
     , const char16_t* src_end
-    , char16_t** dest
-    , char16_t* dest_end
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
     unsigned long ch, ch2;
-    auto src_it = *src;
+    auto src_it = src;
     const char16_t* src_it_next;
-    auto dest_it = *dest;
+    auto dest_it = ob.pos();
+    auto dest_end = ob.end();
     for( ; src_it != src_end; src_it = src_it_next)
     {
         ch = *src_it;
@@ -972,61 +870,49 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf16_sanitize
 
         if (not_surrogate(ch))
         {
-            if (dest_it != dest_end)
-            {
-                *dest_it = static_cast<char16_t>(ch);
-                ++dest_it;
-            } else goto insufficient_space;
+            BOOST_STRINGIFY_CHECK_DEST;
+            *dest_it = static_cast<char16_t>(ch);
+            ++dest_it;
         }
         else if ( is_high_surrogate(ch)
                && src_it_next != src_end
                && is_low_surrogate(ch2 = *src_it_next))
         {
             ++src_it_next;
-            if (dest_it +1 < dest_end)
-            {
-                dest_it[0] = static_cast<char16_t>(ch);
-                dest_it[1] = static_cast<char16_t>(ch2);
-                dest_it += 2;
-            } else goto insufficient_space;
+            BOOST_STRINGIFY_CHECK_DEST_SIZE(2);
+            dest_it[0] = static_cast<char16_t>(ch);
+            dest_it[1] = static_cast<char16_t>(ch2);
+            dest_it += 2;
         }
         else if(allow_surr)
         {
-            if (dest_it != dest_end)
-            {
-                *dest_it = static_cast<char16_t>(ch);
-                ++dest_it;
-            } else goto insufficient_space;
+            BOOST_STRINGIFY_CHECK_DEST;
+            *dest_it = static_cast<char16_t>(ch);
+            ++dest_it;
         }
         else
         {
             switch(err_hdl)
             {
                 case stringify::v0::error_handling::stop:
-                    *src = src_it_next;
-                    *dest = dest_it;
-                    return stringify::v0::cv_result::invalid_char;
+                    ob.advance_to(dest_it);
+                    ob.set_encoding_error();
+                    return false;
+
                 case stringify::v0::error_handling::replace:
-                    if (dest_it != dest_end)
-                    {
-                        *dest_it = 0xFFFD;
-                        ++dest_it;
-                        break;
-                    } else goto insufficient_space;
+                    BOOST_STRINGIFY_CHECK_DEST;
+                    *dest_it = 0xFFFD;
+                    ++dest_it;
+                    break;
+
                 default:
                     BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
                     break;
             }
         }
     }
-    *src = src_end;
-    *dest = dest_it;
-    return stringify::v0::cv_result::success;
-
-    insufficient_space:
-    *src = src_it;
-    *dest = dest_it;
-    return stringify::v0::cv_result::insufficient_space;
+    ob.advance_to(dest_it);
+    return true;
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_sanitize_size
@@ -1098,133 +984,76 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_validate(char32_t ch)
     return ch < 0x10000 ? 1 : ch < 0x110000 ? 2 : (std::size_t)-1;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf16_encode_char
-    ( char16_t** dest
-    , char16_t* end
-    , char32_t ch
-    , stringify::v0::error_handling err_hdl
-    , bool allow_surr )
+BOOST_STRINGIFY_STATIC_LINKAGE char16_t* utf16_encode_char
+    ( char16_t* dest
+    , char32_t ch )
 {
-    auto dest_it = *dest;
-    if (ch < 0x10000 && dest_it != end)
+    if (ch < 0x10000)
     {
-        if (!allow_surr && detail::is_surrogate(ch))
-        {
-            goto invalid_char;
-        }
-        *dest_it = static_cast<char16_t>(ch);
-        *dest = dest_it + 1;
-        return stringify::v0::cv_result::success;
+        *dest = static_cast<char16_t>(ch);
+        return dest + 1;
     }
     if (ch < 0x110000)
     {
-        if ((end - dest_it) > 1)
-        {
-            char32_t sub_codepoint = ch - 0x10000;
-            dest_it[0] = static_cast<char16_t>(0xD800 + ((sub_codepoint & 0xFFC00) >> 10));
-            dest_it[1] = static_cast<char16_t>(0xDC00 +  (sub_codepoint &  0x3FF));
-            *dest = dest_it + 2;
-            return stringify::v0::cv_result::success;
-        }
-        return stringify::v0::cv_result::insufficient_space;
+        char32_t sub_codepoint = ch - 0x10000;
+        dest[0] = static_cast<char16_t>(0xD800 + ((sub_codepoint & 0xFFC00) >> 10));
+        dest[1] = static_cast<char16_t>(0xDC00 +  (sub_codepoint &  0x3FF));
+        return dest + 2;
     }
-
-    invalid_char:
-    switch (err_hdl)
-    {
-        case stringify::v0::error_handling::replace:
-            if (dest_it != end)
-            {
-                *dest_it = 0xFFFD;
-                *dest = dest_it + 1;
-                return stringify::v0::cv_result::success;
-            }
-            return stringify::v0::cv_result::insufficient_space;
-        case stringify::v0::error_handling::ignore:
-            return stringify::v0::cv_result::success;
-        default:
-            BOOST_ASSERT(err_hdl == stringify::v0::error_handling::stop);
-            return stringify::v0::cv_result::invalid_char;
-    }
+    return dest;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf16_encode_fill
-    ( char16_t** dest
-    , char16_t* dest_end
-    , std::size_t& count
+BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_encode_fill
+    ( stringify::v0::output_buffer<char16_t>& ob
+    , std::size_t count
     , char32_t ch
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
-    auto dest_it = *dest;
-    const std::size_t capacity = dest_end - dest_it;
-    using traits = std::char_traits<char16_t>;
     if (ch < 0x10000)
     {
         if (!allow_surr && detail::is_surrogate(ch))
         {
             goto invalid_char;
         }
-
-        do_write:
-
-        if(count <= capacity)
-        {
-            traits::assign(dest_it, count, static_cast<char16_t>(ch));
-            *dest = dest_it + count;
-            count = 0;
-            return stringify::v0::cv_result::success;
-        }
-        traits::assign(dest_it, capacity, static_cast<char16_t>(ch));
-        *dest = dest_it + capacity;
-        count -= capacity;
-        return stringify::v0::cv_result::insufficient_space;
+        return stringify::v0::detail::write_fill
+            ( ob, count, static_cast<char16_t>(ch) );
     }
     if (ch < 0x110000)
     {
-        const std::size_t capacity_2 = capacity / 2;
         char32_t sub_codepoint = ch - 0x10000;
-        std::pair<char16_t, char16_t> obj =
-            { static_cast<char16_t>(0xD800 + ((sub_codepoint & 0xFFC00) >> 10))
-            , static_cast<char16_t>(0xDC00 +  (sub_codepoint &  0x3FF)) };
-        auto it2 = reinterpret_cast<decltype(obj)*>(dest_it);
-
-        if(count <= capacity_2)
-        {
-            *dest = reinterpret_cast<char16_t*>(std::fill_n(it2, count, obj));
-            count = 0;
-            return stringify::v0::cv_result::success;
-        }
-        *dest = reinterpret_cast<char16_t*>(std::fill_n(it2, capacity_2, obj));
-        count -= capacity_2;
-        return stringify::v0::cv_result::insufficient_space;
+        stringify::v0::detail::simple_array<char16_t, 2> seq = {
+            static_cast<char16_t>(0xD800 + ((sub_codepoint & 0xFFC00) >> 10)),
+            static_cast<char16_t>(0xDC00 +  (sub_codepoint &  0x3FF))
+        };
+        return stringify::v0::detail::repeat_sequence(ob, count, seq);
     }
 
     invalid_char:
     switch (err_hdl)
     {
         case stringify::v0::error_handling::replace:
-            ch = 0xFFFD;
-            goto do_write;
+            return stringify::v0::detail::write_fill(ob, count, u'\uFFFD');
+
         case stringify::v0::error_handling::ignore:
-            return stringify::v0::cv_result::success;
+            return true;
         default:
             BOOST_ASSERT(err_hdl == stringify::v0::error_handling::stop);
-            return stringify::v0::cv_result::invalid_char;
+            ob.set_encoding_error();
+            return false;
     }
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf32_to_utf16_transcode
-    ( const char32_t** src
+BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_to_utf16_transcode
+    ( stringify::v0::output_buffer<char16_t>& ob
+    , const char32_t* src
     , const char32_t* src_end
-    , char16_t** dest
-    , char16_t* dest_end
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
-    auto src_it = *src;
-    auto dest_it = *dest;
-    std::size_t available_space = dest_end - dest_it;
+    auto src_it = src;
+    auto dest_it = ob.pos();
+    auto dest_end = ob.end();
     for ( ; src_it != src_end; ++src_it)
     {
         auto ch = *src_it;
@@ -1232,26 +1061,19 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf32_to_utf16_transcode
         {
             if (allow_surr || stringify::v0::detail::not_surrogate(ch))
             {
-                if (available_space != 0)
-                {
-                    *dest_it = static_cast<char16_t>(ch);
-                    ++dest_it;
-                    --available_space;
-                } else goto insufficient_space;
+                BOOST_STRINGIFY_CHECK_DEST;
+                *dest_it = static_cast<char16_t>(ch);
+                ++dest_it;
             }
             else goto invalid_char;
         }
         else if (ch < 0x110000)
         {
-            if(available_space >= 2)
-            {
-                char32_t sub_codepoint = ch - 0x10000;
-                dest_it[0] = static_cast<char16_t>(0xD800 + ((sub_codepoint & 0xFFC00) >> 10));
-                dest_it[1] = static_cast<char16_t>(0xDC00 +  (sub_codepoint &  0x3FF));
-                available_space -= 2;
-                dest_it += 2;
-            }
-            else goto insufficient_space;
+            BOOST_STRINGIFY_CHECK_DEST_SIZE(2);
+            char32_t sub_codepoint = ch - 0x10000;
+            dest_it[0] = static_cast<char16_t>(0xD800 + ((sub_codepoint & 0xFFC00) >> 10));
+            dest_it[1] = static_cast<char16_t>(0xDC00 +  (sub_codepoint &  0x3FF));
+            dest_it += 2;
         }
         else
         {
@@ -1259,19 +1081,15 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf32_to_utf16_transcode
             switch(err_hdl)
             {
                 case stringify::v0::error_handling::stop:
-                    *src = src_it + 1;
-                    *dest = dest_it;
-                    return stringify::v0::cv_result::invalid_char;
+                    ob.advance_to(dest_it);
+                    ob.set_encoding_error();
+                    return false;
 
                 case stringify::v0::error_handling::replace:
-                    if (available_space != 0)
-                    {
-                        *dest_it = 0xFFFD;
-                        ++dest_it;
-                        --available_space;
-                        break;
-                    }
-                    else goto insufficient_space;
+                    BOOST_STRINGIFY_CHECK_DEST;
+                    *dest_it = 0xFFFD;
+                    ++dest_it;
+                    break;
 
                 default:
                     BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
@@ -1279,14 +1097,8 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf32_to_utf16_transcode
             }
         }
     }
-    *src = src_end;
-    *dest = dest_it;
-    return stringify::v0::cv_result::success;
-
-    insufficient_space:
-    *src = src_it;
-    *dest = dest_it;
-    return stringify::v0::cv_result::insufficient_space;
+    ob.advance_to(dest_it);
+    return true;
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf16_size
@@ -1326,17 +1138,15 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf16_size
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_write_replacement_char
-    ( char16_t** dest
-    , char16_t* dest_end )
+    ( stringify::v0::output_buffer<char16_t>& ob )
 {
-    auto dest_it = *dest;
-    if (dest_it != dest_end)
+    if(ob.size() == 0 && ! ob.recycle())
     {
-        *dest_it = 0xFFFD;
-        *dest = dest_it + 1;
-        return true;
+        return false;
     }
-    return false;
+    *ob.pos() = 0xFFFD;
+    ob.advance();
+    return true;
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_sanitize_size
@@ -1351,88 +1161,79 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_sanitize_size
     // todo err_hdl
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf32_sanitize
-    ( const char32_t** src
+BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_sanitize
+    ( stringify::v0::output_buffer<char32_t>& ob
+    , const char32_t* src
     , const char32_t* src_end
-    , char32_t** dest
-    , char32_t* dest_end
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
-    auto dest_it = *dest;
+    auto dest_it = ob.pos();
+    auto dest_end = ob.end();
     if(allow_surr)
     {
-        for (auto src_it = *src; src_it < src_end; ++src_it)
+        for (auto src_it = src; src_it < src_end; ++src_it)
         {
-            if (dest_it == dest_end)
-            {
-                *dest = dest_end;
-                *src = src_it;
-                return stringify::v0::cv_result::insufficient_space;
-            }
             auto ch = *src_it;
+            char32_t ch_out;
             if (ch < 0x110000)
             {
-                *dest_it = ch;
-                ++dest_it;
+                ch_out = ch;
             }
             else
             {
                 switch(err_hdl)
                 {
                     case stringify::v0::error_handling::stop:
-                        *src = src_it + 1;
-                        *dest = dest_it;
-                        return stringify::v0::cv_result::invalid_char;
+                        ob.advance_to(dest_it);
+                        ob.set_encoding_error();
+                        return false;
                     case stringify::v0::error_handling::replace:
-                        *dest_it = 0xFFFD;
-                        ++dest_it;
+                        ch_out = 0xFFFD;
                         break;
                     default:
                         BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
-                        break;
+                        continue;
                 }
             }
+            BOOST_STRINGIFY_CHECK_DEST;
+            *dest_it = ch_out;
+            ++dest_it;
         }
     }
     else
     {
-        for(auto src_it = *src; src_it < src_end; ++src_it)
+        for(auto src_it = src; src_it < src_end; ++src_it)
         {
             char32_t ch = *src_it;
-            if (dest_it == dest_end)
-            {
-                *dest = dest_end;
-                *src = src_it;
-                return stringify::v0::cv_result::insufficient_space;
-            }
+            char32_t ch_out;
             if (ch < 0x110000 && stringify::v0::detail::not_surrogate(ch))
             {
-                *dest_it = ch;
-                ++dest_it;
+                ch_out = ch;
             }
             else
             {
                 switch(err_hdl)
                 {
                     case stringify::v0::error_handling::stop:
-                        *src = src_it + 1;
-                        *dest = dest_it;
-                        return stringify::v0::cv_result::invalid_char;
+                        ob.advance_to(dest_it);
+                        ob.set_encoding_error();
+                        return false;
                     case stringify::v0::error_handling::replace:
-                        *dest_it = 0xFFFD;
-                        ++dest_it;
+                        ch_out = 0xFFFD;
                         break;
                     default:
                         BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
-                        break;
+                        continue;
                 }
             }
+            BOOST_STRINGIFY_CHECK_DEST;
+            *dest_it = ch_out;
+            ++dest_it;
         }
     }
-    *src = src_end;
-    *dest = dest_it;
-    return stringify::v0::cv_result::success;
+    ob.advance_to(dest_it);
+    return true;
 }
 
 inline std::size_t utf32_codepoints_count
@@ -1450,90 +1251,48 @@ inline std::size_t utf32_validate(char32_t ch)
     return 1;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf32_encode_char
-    ( char32_t** dest
-    , char32_t* end
-    , char32_t ch
-    , stringify::v0::error_handling err_hdl
-    , bool allow_surr )
+BOOST_STRINGIFY_STATIC_LINKAGE char32_t* utf32_encode_char
+    ( char32_t* dest
+    , char32_t ch )
 {
-    (void)err_hdl;
-    auto dest_it = *dest;
-    if (ch > 0x10FFFF || (!allow_surr && detail::is_surrogate(ch)))
-    {
-        switch(err_hdl)
-        {
-            case stringify::v0::error_handling::stop:
-                return stringify::v0::cv_result::invalid_char;
-            case stringify::v0::error_handling::ignore:
-                return stringify::v0::cv_result::success;
-            default:
-                BOOST_ASSERT(err_hdl == stringify::v0::error_handling::replace);
-                ch = 0xFFFD;
-        }
-    }
-
-    if (dest_it != end)
-    {
-        *dest_it = ch;
-        *dest = dest_it + 1;
-        return stringify::v0::cv_result::success;
-    }
-    return stringify::v0::cv_result::insufficient_space;;
+    *dest = ch;
+    return dest + 1;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf32_encode_fill
-    ( char32_t** dest
-    , char32_t* dest_end
-    , std::size_t& count
+BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_encode_fill
+    ( stringify::v0::output_buffer<char32_t>& ob
+    , std::size_t count
     , char32_t ch
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
-    (void) err_hdl;
-    using traits = std::char_traits<char32_t>;
     if (ch > 0x10FFFF || (!allow_surr && detail::is_surrogate(ch)))
     {
         switch (err_hdl)
         {
             case stringify::v0::error_handling::stop:
-                return stringify::v0::cv_result::invalid_char;
+                ob.set_encoding_error();
+                return false;
             case stringify::v0::error_handling::ignore:
-                count = 0;
-                return stringify::v0::cv_result::success;
+                return true;
             default:
                 BOOST_ASSERT(err_hdl == stringify::v0::error_handling::replace);
                 ch = 0xFFFD;
         }
     }
-
-    auto dest_it = *dest;
-    std::size_t available_size = dest_end - dest_it;
-    if (count <= available_size)
-    {
-        traits::assign(dest_it, count, ch);
-        *dest = dest_it + count;
-        count = 0;
-        return stringify::v0::cv_result::success;
-    }
-    traits::assign(dest_it, available_size, ch);
-    *dest = dest_it + available_size;
-    count -= available_size;
-    return stringify::v0::cv_result::insufficient_space;
+    return stringify::v0::detail::write_fill(ob, count, ch);
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_write_replacement_char
-    ( char32_t** dest
-    , char32_t* dest_end )
+    ( stringify::v0::output_buffer<char32_t>& ob )
 {
-    auto dest_it = *dest;
-    if (dest_it != dest_end)
+    if(ob.size() == 0 && ! ob.recycle())
     {
-        *dest_it = 0xFFFD;
-        *dest = dest_it + 1;
-        return true;
+        return false;
     }
-    return false;
+    *ob.pos() = 0xFFFD;
+    ob.advance();
+    return true;
 }
 
 inline char32_t utf16_decode_single_char(char16_t ch)
@@ -1546,11 +1305,10 @@ inline char32_t utf32_decode_single_char(char32_t ch)
     return ch;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_to_utf16_transcode
-    ( const std::uint8_t** src
+BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_to_utf16_transcode
+    ( stringify::v0::output_buffer<char16_t>& ob
+    , const std::uint8_t* src
     , const std::uint8_t* src_end
-    , char16_t** dest
-    , char16_t* dest_end
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
@@ -1558,20 +1316,17 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_to_utf16_transcode
 
     std::uint8_t ch0, ch1, ch2, ch3;
     unsigned long x;
-    auto dest_it = *dest;
-    auto src_it = *src;
-    const std::uint8_t* previous_src_it;
-    for(;src_it != src_end; ++dest_it)
+    auto src_it = src;
+    auto dest_it = ob.pos();
+    auto dest_end = ob.end();
+
+    for (;src_it != src_end; ++dest_it)
     {
-        previous_src_it = src_it;
-        if (dest_it == dest_end)
-        {
-            goto insufficient_space;
-        }
         ch0 = (*src_it);
         ++src_it;
         if (ch0 < 0x80)
         {
+            BOOST_STRINGIFY_CHECK_DEST;
             *dest_it = ch0;
         }
         else if (0xC0 == (ch0 & 0xE0))
@@ -1579,6 +1334,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_to_utf16_transcode
             if ( ch0 > 0xC1
               && src_it != src_end && is_utf8_continuation(ch1 = * src_it))
             {
+                BOOST_STRINGIFY_CHECK_DEST;
                 *dest_it = utf8_decode(ch0, ch1);
                 ++src_it;
             } else goto invalid_sequence;
@@ -1588,6 +1344,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_to_utf16_transcode
             if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
+                BOOST_STRINGIFY_CHECK_DEST;
                 *dest_it = ((ch1 & 0x3F) << 6) | (ch2 & 0x3F);
                 ++src_it;
             } else goto invalid_sequence;
@@ -1599,26 +1356,25 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_to_utf16_transcode
                                        , allow_surr )
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
+                BOOST_STRINGIFY_CHECK_DEST;
                 *dest_it = static_cast<char16_t>((x << 6) | (ch2 & 0x3F));
                 ++src_it;
             } else goto invalid_sequence;
         }
         else if (0xEF < ch0)
         {
-            if (dest_it + 1 != dest_end)
+            if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+                 && first_2_of_4_are_valid(x = utf8_decode_first_2_of_4(ch0, ch1))
+                 && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
+                 && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
             {
-                if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-                  && first_2_of_4_are_valid(x = utf8_decode_first_2_of_4(ch0, ch1))
-                  && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
-                  && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
-                {
-                    x = utf8_decode_last_2_of_4(x, ch2, ch3) - 0x10000;
-                    dest_it[0] = static_cast<char16_t>(0xD800 + ((x & 0xFFC00) >> 10));
-                    dest_it[1] = static_cast<char16_t>(0xDC00 +  (x & 0x3FF));
-                    ++dest_it;
-                    ++src_it;
-                } else goto invalid_sequence;
-            } else goto insufficient_space;
+                BOOST_STRINGIFY_CHECK_DEST_SIZE(2);
+                x = utf8_decode_last_2_of_4(x, ch2, ch3) - 0x10000;
+                dest_it[0] = static_cast<char16_t>(0xD800 + ((x & 0xFFC00) >> 10));
+                dest_it[1] = static_cast<char16_t>(0xDC00 +  (x & 0x3FF));
+                ++dest_it;
+                ++src_it;
+            } else goto invalid_sequence;
         }
         else
         {
@@ -1626,10 +1382,11 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_to_utf16_transcode
             switch(err_hdl)
             {
                 case stringify::v0::error_handling::stop:
-                    *dest = dest_it;
-                    *src = src_it;
-                    return stringify::v0::cv_result::invalid_char;
+                    ob.advance_to(dest_it);
+                    ob.set_encoding_error();
+                    return false;
                 case stringify::v0::error_handling::replace:
+                    BOOST_STRINGIFY_CHECK_DEST;
                     *dest_it = 0xFFFD;
                     break;
                 default:
@@ -1639,14 +1396,8 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf8_to_utf16_transcode
             }
         }
     }
-    *dest = dest_it;
-    *src = src_it;
-    return stringify::v0::cv_result::success;
-
-    insufficient_space:
-    *dest = dest_it;
-    *src = previous_src_it;
-    return stringify::v0::cv_result::insufficient_space;
+    ob.advance_to(dest_it);
+    return true;
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf16_size
@@ -1724,77 +1475,55 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf16_size
     return size;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf16_to_utf8_transcode
-    ( const char16_t** src
+BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_to_utf8_transcode
+    ( stringify::v0::output_buffer<std::uint8_t>& ob
+    , const char16_t* src
     , const char16_t* src_end
-    , std::uint8_t** dest
-    , std::uint8_t* dest_end
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
     (void) err_hdl;
-    std::uint8_t* dest_it = *dest;
-    auto src_it = *src;
+    auto src_it = src;
+    auto dest_it = ob.pos();
+    auto dest_end = ob.end();
+
     for( ; src_it < src_end; ++src_it)
     {
         auto ch = *src_it;
         if (ch < 0x80)
         {
-            if(dest_it != dest_end)
-            {
-                *dest_it = static_cast<std::uint8_t>(ch);
-                ++dest_it;
-            }
-            else
-            {
-                goto insufficient_space;
-            }
+            BOOST_STRINGIFY_CHECK_DEST;
+            *dest_it = static_cast<std::uint8_t>(ch);
+            ++dest_it;
         }
         else if (ch < 0x800)
         {
-            if(dest_it + 1 < dest_end)
-            {
-                dest_it[0] = static_cast<std::uint8_t>(0xC0 | ((ch & 0x7C0) >> 6));
-                dest_it[1] = static_cast<std::uint8_t>(0x80 |  (ch &  0x3F));
-                dest_it += 2;
-            }
-            else
-            {
-                goto insufficient_space;
-            }
+            BOOST_STRINGIFY_CHECK_DEST_SIZE(2);
+            dest_it[0] = static_cast<std::uint8_t>(0xC0 | ((ch & 0x7C0) >> 6));
+            dest_it[1] = static_cast<std::uint8_t>(0x80 |  (ch &  0x3F));
+            dest_it += 2;
         }
         else if (not_surrogate(ch))
         {
             three_bytes:
-            if(dest_it + 2 < dest_end)
-            {
-                dest_it[0] = static_cast<std::uint8_t>(0xE0 | ((ch & 0xF000) >> 12));
-                dest_it[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0xFC0) >> 6));
-                dest_it[2] = static_cast<std::uint8_t>(0x80 |  (ch &   0x3F));
-                dest_it += 3;
-                continue;
-            }
-            goto insufficient_space;
+            BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
+            dest_it[0] = static_cast<std::uint8_t>(0xE0 | ((ch & 0xF000) >> 12));
+            dest_it[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0xFC0) >> 6));
+            dest_it[2] = static_cast<std::uint8_t>(0x80 |  (ch &   0x3F));
+            dest_it += 3;
         }
         else if ( stringify::v0::detail::is_high_surrogate(ch)
                && src_it != src_end
                && stringify::v0::detail::is_low_surrogate(*(src_it + 1)))
         {
-            if(dest_it + 3 < dest_end)
-            {
-                unsigned long ch2 = *++src_it;
-                unsigned long codepoint = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
-
-                dest_it[0] = static_cast<std::uint8_t>(0xF0 | ((codepoint & 0x1C0000) >> 18));
-                dest_it[1] = static_cast<std::uint8_t>(0x80 | ((codepoint &  0x3F000) >> 12));
-                dest_it[2] = static_cast<std::uint8_t>(0x80 | ((codepoint &    0xFC0) >> 6));
-                dest_it[3] = static_cast<std::uint8_t>(0x80 |  (codepoint &     0x3F));
-                dest_it += 4;
-            }
-            else
-            {
-                goto insufficient_space;
-            }
+            BOOST_STRINGIFY_CHECK_DEST_SIZE(4);
+            unsigned long ch2 = *++src_it;
+            unsigned long codepoint = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
+            dest_it[0] = static_cast<std::uint8_t>(0xF0 | ((codepoint & 0x1C0000) >> 18));
+            dest_it[1] = static_cast<std::uint8_t>(0x80 | ((codepoint &  0x3F000) >> 12));
+            dest_it[2] = static_cast<std::uint8_t>(0x80 | ((codepoint &    0xFC0) >> 6));
+            dest_it[3] = static_cast<std::uint8_t>(0x80 |  (codepoint &     0x3F));
+            dest_it += 4;
         }
         else if(allow_surr)
         {
@@ -1805,23 +1534,17 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf16_to_utf8_transcode
              switch(err_hdl)
              {
                  case stringify::v0::error_handling::stop:
-                     *src = src_it + 1;
-                     *dest = dest_it;
-                     return stringify::v0::cv_result::invalid_char;
+                     ob.advance_to(dest_it);
+                     ob.set_encoding_error();
+                     return false;
 
                  case stringify::v0::error_handling::replace:
                  {
-                     if(dest_it + 2 < dest_end)
-                     {
-                         dest_it[0] = 0xEF;
-                         dest_it[1] = 0xBF;
-                         dest_it[2] = 0xBD;
-                         dest_it += 3;
-                     }
-                     else
-                     {
-                         goto insufficient_space;
-                     }
+                     BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
+                     dest_it[0] = 0xEF;
+                     dest_it[1] = 0xBF;
+                     dest_it[2] = 0xBD;
+                     dest_it += 3;
                      break;
                  }
 
@@ -1831,14 +1554,8 @@ BOOST_STRINGIFY_STATIC_LINKAGE stringify::v0::cv_result utf16_to_utf8_transcode
              }
         }
     }
-    *src = src_it;
-    *dest = dest_it;
-    return stringify::v0::cv_result::success;
-
-    insufficient_space:
-    *src = src_it;
-    *dest = dest_it;
-    return stringify::v0::cv_result::insufficient_space;
+    ob.advance_to(dest_it);
+    return true;
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_to_utf8_size

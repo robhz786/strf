@@ -246,15 +246,10 @@ bool asm_string_write
             }
             else if (policy == stringify::v0::asm_invalid_arg::replace)
             {
-                auto pos = ob.pos();
-                while( ! enc.write_replacement_char(&pos, ob.end()))
+                if (! enc.write_replacement_char(ob))
                 {
-                    ob.advance_to(pos);
-                    if (! ob.recycle())
-                        return false;
-                    pos = ob.pos();
+                    return false;
                 }
-                ob.advance_to(pos);
             }
             else if (policy == stringify::v0::asm_invalid_arg::stop)
             {
@@ -278,17 +273,10 @@ bool asm_string_write
             }
             else if (policy == stringify::v0::asm_invalid_arg::replace)
             {
-                auto pos = ob.pos();
-                while( ! enc.write_replacement_char(&pos, ob.end()))
+                if (! enc.write_replacement_char(ob))
                 {
-                    ob.advance_to(pos);
-                    if (! ob.recycle())
-                    {
-                        return false;
-                    }
-                    pos = ob.pos();
+                    return false;
                 }
-                ob.advance_to(pos);
             }
             else if (policy == stringify::v0::asm_invalid_arg::stop)
             {
@@ -310,17 +298,10 @@ bool asm_string_write
             }
             else if (policy == stringify::v0::asm_invalid_arg::replace)
             {
-                auto pos = ob.pos();
-                while(!enc.write_replacement_char(&pos, ob.end()))
+                if (! enc.write_replacement_char(ob))
                 {
-                    ob.advance_to(pos);
-                    if ( ! ob.recycle())
-                    {
-                        return false;
-                    }
-                    pos = ob.pos();
+                    return false;
                 }
-                ob.advance_to(pos);
             }
             else if (policy == stringify::v0::asm_invalid_arg::stop)
             {
@@ -364,16 +345,10 @@ bool asm_string_write
                 }
                 else if (policy == stringify::v0::asm_invalid_arg::replace)
                 {
-                    auto pos = ob.pos();
-                    while(!enc.write_replacement_char(&pos, ob.end()))
+                    if (! enc.write_replacement_char(ob))
                     {
-                        if ( ! ob.recycle())
-                        {
-                            return false;
-                        }
-                        pos = ob.pos();
+                        return false;
                     }
-                    ob.advance_to(pos);
                 }
                 else if (policy == stringify::v0::asm_invalid_arg::stop)
                 {
