@@ -19,8 +19,6 @@ constexpr auto as_signed(const T& value)
     return static_cast<typename std::make_signed<T>::type>(value);
 }
 
-constexpr std::size_t buff_size = 10000;
-
 std::string valid_input_sample(const strf::encoding<char>&)
 {
     return {u8"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", 19};

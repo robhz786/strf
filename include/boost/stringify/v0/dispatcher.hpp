@@ -271,6 +271,9 @@ struct indexed_wrapper
 template <typename ISequence, typename ... T>
 class simple_tuple_impl;
 
+template <typename T, typename... U>
+constexpr bool is_constructible_v = std::is_constructible<T, U...>::value;
+
 template <std::size_t ... I, typename ... T>
 class simple_tuple_impl<std::index_sequence<I...>, T...>
     : private indexed_wrapper<I, T> ...
@@ -287,9 +290,7 @@ class simple_tuple_impl<std::index_sequence<I...>, T...>
 public:
 
     template < typename ... U
-             , typename = std::enable_if_t
-                 < sizeof...(U) == sizeof...(T)
-                && detail::fold_and<std::is_constructible<T, U>::value...> > >
+             , typename = std::enable_if_t<sizeof...(U) == sizeof...(T)> >
     constexpr explicit simple_tuple_impl(U&&...args)
         : indexed_wrapper<I, T>(std::forward<U>(args))...
     {
@@ -323,10 +324,7 @@ class dispatcher
     : private stringify::v0::detail::output_size_reservation<OutputBuff>
     , private stringify::v0::detail::simple_tuple<OutBuffArgs...>
 {
-    static_assert
-        ( std::is_constructible<OutputBuff, OutBuffArgs...>::value
-       && detail::fold_and<std::is_move_constructible<OutBuffArgs>::value...>
-        , "Invalid template parameters" );
+
 
     using _reservation
         = stringify::v0::detail::output_size_reservation<OutputBuff>;
@@ -348,10 +346,9 @@ public:
 
     template
         < typename ... OBArgs
-        , typename = std::enable_if_t
-          < sizeof...(OBArgs) == sizeof...(OutBuffArgs) > >
+        , typename = std::enable_if_t<sizeof...(OBArgs) == sizeof...(OutBuffArgs)> >
            // && stringify::v0::detail::fold_and
-           //      < std::is_constructible<OutBuffArgs, OBArgs>::value... > > >
+           //      < detail::is_constructible_v<OutBuffArgs, OBArgs&&>... > > >
     constexpr explicit dispatcher(FPack&& fp, OBArgs&&... args)
         : _obargs_tuple(std::forward<OBArgs>(args)...)
         , _fpack(std::move(fp))
@@ -360,10 +357,9 @@ public:
 
     template
         < typename ... OBArgs
-        , typename = std::enable_if_t
-          < sizeof...(OBArgs) == sizeof...(OutBuffArgs) > >
+        , typename = std::enable_if_t<sizeof...(OBArgs) == sizeof...(OutBuffArgs)> >
            // && stringify::v0::detail::fold_and
-           //      < std::is_constructible<OutBuffArgs, OBArgs>::value... > > >
+           //      < detail::is_constructible_v<OutBuffArgs, OBArgs&&>... > > >
     constexpr explicit dispatcher(const FPack& fp, OBArgs&&... args)
         : _obargs_tuple(std::forward<OBArgs>(args)...)
         , _fpack(fp)

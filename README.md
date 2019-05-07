@@ -105,7 +105,7 @@ Using the build tool of your choice, simply generate a static library from the s
 In its current state, Boost.Stringify is known to work with the following compilers:
 
 * Clang 3.8 (with `--std=c++14` option )
-* GCC 6 (with `--std=c++14` option ) and 7
+* GCC 7
 * Visual Studio 2017 15.8
 
 However, more recent compilers may be necessary as the library evolves.

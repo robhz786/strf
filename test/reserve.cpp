@@ -19,12 +19,17 @@ public:
 
     reservation_tester()
         : output_buffer<char>{ _buff, _buff + _buff_size }
+        , _buff{0}
     {
     }
 
+    reservation_tester(const reservation_tester&) = delete;
+
+    reservation_tester(reservation_tester&&) = delete;
+
     void reserve(std::size_t s)
     {
-        m_reserve_size = s;
+        _reserve_size = s;
     }
 
     bool recycle() override
@@ -35,16 +40,16 @@ public:
 
     std::size_t finish()
     {
-        return m_reserve_size;
+        return _reserve_size;
     }
 
 private:
 
-    std::size_t m_reserve_size = std::numeric_limits<std::size_t>::max();
+    std::size_t _reserve_size = std::numeric_limits<std::size_t>::max();
 };
 
 
-auto reservation_test()
+constexpr auto reservation_test()
 {
     return strf::dispatcher<strf::facets_pack<>, reservation_tester>(strf::pack());
 }

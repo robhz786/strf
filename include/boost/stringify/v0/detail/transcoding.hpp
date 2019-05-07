@@ -574,19 +574,11 @@ namespace detail {
 
 constexpr std::size_t global_mini_buffer32_size = 16;
 
-#if defined(BOOST_STRINGIFY_OMIT_IMPL)
-
-const std::pair<char32_t*, char32_t*> global_mini_buffer32();
-
-#else // defined(BOOST_STRINGIFY_OMIT_IMPL)
-
-BOOST_STRINGIFY_INLINE char32_t* global_mini_buffer32()
+inline char32_t* global_mini_buffer32()
 {
     thread_local static char32_t buff[global_mini_buffer32_size];
     return buff;
 }
-
-#endif // defined(BOOST_STRINGIFY_OMIT_IMPL)
 
 template <typename CharOut>
 class buffered_encoder: public stringify::v0::output_buffer<char32_t>
@@ -642,7 +634,7 @@ inline bool decode_encode
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
-    stringify::v0::detail::buffered_encoder dest
+    stringify::v0::detail::buffered_encoder<CharOut> dest
         { dest_encoding, ob, err_hdl, allow_surr };
 
     return src_encoding.to_u32().transcode(dest, src, src_end, err_hdl, allow_surr)
@@ -706,7 +698,7 @@ inline std::size_t decode_encode_size
     , stringify::v0::error_handling err_hdl
     , bool allow_surr )
 {
-    stringify::v0::detail::buffered_size_calculator calc
+    stringify::v0::detail::buffered_size_calculator<CharOut> calc
         { dest_encoding, err_hdl, allow_surr };
 
     src_encoding.to_u32().transcode(calc, src, src_end, err_hdl, allow_surr);
