@@ -53,9 +53,9 @@ def empty_row() :
     return part1 + part2 + ']'
 
 def table_header() :
-    hdr = '[[{:^28}][{:^24}][{:^9}]'.format(
+    hdr = '[[{:^28}][{:^19}][{:^9}]'.format(
         'source file',
-        'compilation times(w,u,s)',
+        'comp. times(w,u,s)',
         'obj. file')
 
     for n in files_per_program:

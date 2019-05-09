@@ -58,21 +58,21 @@ template <class Impl>
 struct single_byte_encoding
 {
     static bool to_utf32
-        ( stringify::v0::output_buffer<char32_t>& ob
+        ( stringify::v0::output_buffer_base<char32_t>& ob
         , const std::uint8_t* src
         , const std::uint8_t* src_end
         , stringify::v0::error_handling err_hdl
         , bool allow_surr );
 
     static bool from_utf32
-        ( stringify::v0::output_buffer<std::uint8_t>& ob
+        ( stringify::v0::output_buffer_base<std::uint8_t>& ob
         , const char32_t* src
         , const char32_t* src_end
         , stringify::v0::error_handling err_hdl
         , bool allow_surr );
 
     static bool sanitize
-        ( stringify::v0::output_buffer<std::uint8_t>& ob
+        ( stringify::v0::output_buffer_base<std::uint8_t>& ob
         , const std::uint8_t* src
         , const std::uint8_t* src_end
         , stringify::v0::error_handling err_hdl
@@ -81,7 +81,7 @@ struct single_byte_encoding
     static std::uint8_t* encode_char(std::uint8_t* dest, char32_t ch);
 
     static bool encode_fill
-        ( stringify::v0::output_buffer<std::uint8_t>& ob
+        ( stringify::v0::output_buffer_base<std::uint8_t>& ob
         , std::size_t count
         , char32_t ch
         , stringify::v0::error_handling err_hdl
@@ -100,7 +100,7 @@ struct single_byte_encoding
     static std::size_t replacement_char_size();
 
     static bool write_replacement_char
-        ( stringify::v0::output_buffer<std::uint8_t>& ob );
+        ( stringify::v0::output_buffer_base<std::uint8_t>& ob );
 
     static std::size_t validate(char32_t ch);
 };
@@ -118,7 +118,7 @@ std::size_t single_byte_encoding<Impl>::codepoints_count
 
 template <class Impl>
 bool single_byte_encoding<Impl>::to_utf32
-    ( stringify::v0::output_buffer<char32_t>& ob
+    ( stringify::v0::output_buffer_base<char32_t>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::error_handling err_hdl
@@ -160,7 +160,7 @@ bool single_byte_encoding<Impl>::to_utf32
 
 template <class Impl>
 bool single_byte_encoding<Impl>::sanitize
-    ( stringify::v0::output_buffer<std::uint8_t>& ob
+    ( stringify::v0::output_buffer_base<std::uint8_t>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::error_handling err_hdl
@@ -204,7 +204,7 @@ bool single_byte_encoding<Impl>::sanitize
 
 template <class Impl>
 bool single_byte_encoding<Impl>::write_replacement_char
-    ( stringify::v0::output_buffer<std::uint8_t>& ob )
+    ( stringify::v0::output_buffer_base<std::uint8_t>& ob )
 {
     if (ob.size() != 0 || ob.recycle())
     {
@@ -243,7 +243,7 @@ std::uint8_t* single_byte_encoding<Impl>::encode_char
 
 template <class Impl>
 bool single_byte_encoding<Impl>::encode_fill
-    ( stringify::v0::output_buffer<std::uint8_t>& ob
+    ( stringify::v0::output_buffer_base<std::uint8_t>& ob
     , std::size_t count
     , char32_t ch
     , stringify::v0::error_handling err_hdl
@@ -284,7 +284,7 @@ bool single_byte_encoding<Impl>::encode_fill
 
 template <class Impl>
 bool single_byte_encoding<Impl>::from_utf32
-    ( stringify::v0::output_buffer<std::uint8_t>& ob
+    ( stringify::v0::output_buffer_base<std::uint8_t>& ob
     , const char32_t* src
     , const char32_t* src_end
     , stringify::v0::error_handling err_hdl

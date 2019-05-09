@@ -34,6 +34,66 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 namespace detail {
 
+template <typename T, std::size_t N>
+struct simple_array;
+
+template <typename T> struct simple_array<T,1> { T obj0; };
+template <typename T> struct simple_array<T,2> { T obj0;  T obj1; };
+template <typename T> struct simple_array<T,3> { T obj0;  T obj1; T obj2; };
+template <typename T> struct simple_array<T,4> { T obj0;  T obj1; T obj2; T obj3; };
+
+template <typename CharT, std::size_t N>
+inline void do_repeat_sequence
+    ( CharT* dest
+    , std::size_t count
+    , simple_array<CharT, N> seq )
+{
+    std::fill_n(reinterpret_cast<simple_array<CharT, N>*>(dest), count, seq);
+}
+
+template <typename CharT, std::size_t N>
+bool repeat_sequence_continuation
+    ( stringify::v0::output_buffer_base<CharT>& ob
+    , std::size_t count
+    , simple_array<CharT, N> seq )
+{
+    std::size_t space = ob.size() / N;
+    BOOST_ASSERT(space < count);
+
+    stringify::v0::detail::do_repeat_sequence(ob.pos(), space, seq);
+    count -= space;
+    ob.advance_to(ob.end());
+    while (ob.recycle())
+    {
+        std::size_t space = ob.size() / N;
+        if (count <= space)
+        {
+            stringify::v0::detail::do_repeat_sequence(ob.pos(), count, seq);
+            ob.advance(count * N);
+            return true;
+        }
+        stringify::v0::detail::do_repeat_sequence(ob.pos(), space, seq);
+        count -= space;
+        ob.advance_to(ob.end());
+    }
+    return false;
+}
+
+template <typename CharT, std::size_t N>
+inline bool repeat_sequence
+    ( stringify::v0::output_buffer_base<CharT>& ob
+    , std::size_t count
+    , simple_array<CharT, N> seq )
+{
+    if (count * N <= ob.size())
+    {
+        stringify::v0::detail::do_repeat_sequence(ob.pos(), count, seq);
+        ob.advance(count * N);
+        return true;
+    }
+    return stringify::v0::detail::repeat_sequence_continuation(ob, count, seq);
+}
+
 constexpr bool is_surrogate(std::uint32_t codepoint)
 {
     return codepoint >> 11 == 0x1B;
@@ -126,7 +186,7 @@ inline bool first_2_of_4_are_valid(std::uint8_t ch0, std::uint8_t ch1)
 
 BOOST_STRINGIFY_STATIC_LINKAGE
 bool utf8_to_utf32_transcode
-    ( stringify::v0::output_buffer<char32_t>& ob
+    ( stringify::v0::output_buffer_base<char32_t>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::error_handling err_hdl
@@ -296,7 +356,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf32_size
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_sanitize
-    ( stringify::v0::output_buffer<std::uint8_t>& ob
+    ( stringify::v0::output_buffer_base<std::uint8_t>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::error_handling err_hdl
@@ -492,7 +552,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_codepoints_count
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_encode_fill
-    ( stringify::v0::output_buffer<std::uint8_t>& ob
+    ( stringify::v0::output_buffer_base<std::uint8_t>& ob
     , std::size_t count
     , char32_t ch
     , stringify::v0::error_handling err_hdl
@@ -590,7 +650,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::uint8_t* utf8_encode_char
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_to_utf8_transcode
-    ( stringify::v0::output_buffer<std::uint8_t>& ob
+    ( stringify::v0::output_buffer_base<std::uint8_t>& ob
     , const char32_t* src
     , const char32_t* src_end
     , stringify::v0::error_handling err_hdl
@@ -717,7 +777,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf8_size
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_write_replacement_char
-    ( stringify::v0::output_buffer<std::uint8_t>& ob )
+    ( stringify::v0::output_buffer_base<std::uint8_t>& ob )
 {
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
@@ -745,7 +805,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_validate(char32_t ch)
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_to_utf32_transcode
-    ( stringify::v0::output_buffer<char32_t>& ob
+    ( stringify::v0::output_buffer_base<char32_t>& ob
     , const char16_t* src
     , const char16_t* src_end
     , stringify::v0::error_handling err_hdl
@@ -852,7 +912,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_to_utf32_size
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_sanitize
-    ( stringify::v0::output_buffer<char16_t>& ob
+    ( stringify::v0::output_buffer_base<char16_t>& ob
     , const char16_t* src
     , const char16_t* src_end
     , stringify::v0::error_handling err_hdl
@@ -1004,7 +1064,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE char16_t* utf16_encode_char
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_encode_fill
-    ( stringify::v0::output_buffer<char16_t>& ob
+    ( stringify::v0::output_buffer_base<char16_t>& ob
     , std::size_t count
     , char32_t ch
     , stringify::v0::error_handling err_hdl
@@ -1045,7 +1105,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_encode_fill
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_to_utf16_transcode
-    ( stringify::v0::output_buffer<char16_t>& ob
+    ( stringify::v0::output_buffer_base<char16_t>& ob
     , const char32_t* src
     , const char32_t* src_end
     , stringify::v0::error_handling err_hdl
@@ -1138,7 +1198,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf16_size
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_write_replacement_char
-    ( stringify::v0::output_buffer<char16_t>& ob )
+    ( stringify::v0::output_buffer_base<char16_t>& ob )
 {
     if(ob.size() == 0 && ! ob.recycle())
     {
@@ -1162,7 +1222,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_sanitize_size
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_sanitize
-    ( stringify::v0::output_buffer<char32_t>& ob
+    ( stringify::v0::output_buffer_base<char32_t>& ob
     , const char32_t* src
     , const char32_t* src_end
     , stringify::v0::error_handling err_hdl
@@ -1260,7 +1320,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE char32_t* utf32_encode_char
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_encode_fill
-    ( stringify::v0::output_buffer<char32_t>& ob
+    ( stringify::v0::output_buffer_base<char32_t>& ob
     , std::size_t count
     , char32_t ch
     , stringify::v0::error_handling err_hdl
@@ -1284,7 +1344,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_encode_fill
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_write_replacement_char
-    ( stringify::v0::output_buffer<char32_t>& ob )
+    ( stringify::v0::output_buffer_base<char32_t>& ob )
 {
     if(ob.size() == 0 && ! ob.recycle())
     {
@@ -1306,7 +1366,7 @@ inline char32_t utf32_decode_single_char(char32_t ch)
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_to_utf16_transcode
-    ( stringify::v0::output_buffer<char16_t>& ob
+    ( stringify::v0::output_buffer_base<char16_t>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::error_handling err_hdl
@@ -1476,7 +1536,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf16_size
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_to_utf8_transcode
-    ( stringify::v0::output_buffer<std::uint8_t>& ob
+    ( stringify::v0::output_buffer_base<std::uint8_t>& ob
     , const char16_t* src
     , const char16_t* src_end
     , stringify::v0::error_handling err_hdl

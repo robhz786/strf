@@ -20,19 +20,18 @@ struct tag
 };
 
 template <typename CharOut>
-class output_buffer
+class output_buffer_base
 {
 public:
 
-    using char_type = CharOut;
 
-    output_buffer(const output_buffer&) = delete;
-    output_buffer(output_buffer&&) = delete;
+    output_buffer_base(const output_buffer_base&) = delete;
+    output_buffer_base(output_buffer_base&&) = delete;
 
-    output_buffer& operator=(const output_buffer&) = delete;
-    output_buffer& operator=(output_buffer&&) = delete;
+    output_buffer_base& operator=(const output_buffer_base&) = delete;
+    output_buffer_base& operator=(output_buffer_base&&) = delete;
 
-    virtual ~output_buffer() = default;
+    virtual ~output_buffer_base() = default;
 
     virtual bool recycle() = 0;
 
@@ -92,20 +91,20 @@ public:
 
 protected:
 
-    output_buffer()
+    output_buffer_base()
         : _pos(nullptr)
         , _end(nullptr)
     {
     }
 
-    output_buffer(CharOut* buff_begin, CharOut* buff_end)
+    output_buffer_base(CharOut* buff_begin, CharOut* buff_end)
         : _pos(buff_begin)
         , _end(buff_end)
     {
         BOOST_ASSERT(buff_begin <= buff_end);
     }
 
-    output_buffer(CharOut* buff_begin, std::size_t buff_size)
+    output_buffer_base(CharOut* buff_begin, std::size_t buff_size)
         : _pos(buff_begin)
         , _end(buff_begin + buff_size)
     {
@@ -133,7 +132,7 @@ private:
 };
 
 template <typename CharOut>
-void output_buffer<CharOut>::set_error(std::error_code ec)
+void output_buffer_base<CharOut>::set_error(std::error_code ec)
 {
     if ( ! _has_error )
     {
@@ -142,6 +141,80 @@ void output_buffer<CharOut>::set_error(std::error_code ec)
         on_error();
     }
 }
+
+namespace detail {
+
+template <std::size_t CharSize>
+struct underlying_char_type_impl;
+
+template <> struct underlying_char_type_impl<1>{using type = std::uint8_t;};
+template <> struct underlying_char_type_impl<2>{using type = char16_t;};
+template <> struct underlying_char_type_impl<4>{using type = char32_t;};
+
+} // namespace detail
+
+template <typename CharT>
+using underlying_char_type
+= typename detail::underlying_char_type_impl<sizeof(CharT)>::type;
+
+
+template <typename CharOut>
+class output_buffer
+    : public stringify::v0::output_buffer_base
+        < stringify::v0::underlying_char_type<CharOut> >
+{
+    using underlying_char_type = stringify::v0::underlying_char_type<CharOut>;
+    using base_type = stringify::v0::output_buffer_base<underlying_char_type>;
+
+public:
+
+    using char_type = CharOut;
+
+    CharOut* pos() const noexcept
+    {
+        return reinterpret_cast<CharOut*>(base_type::pos());
+    }
+
+    CharOut* end() const noexcept
+    {
+        return reinterpret_cast<CharOut*>(base_type::end());
+    }
+
+    void advance_to(CharOut* p) noexcept
+    {
+        base_type::advance_to(reinterpret_cast<underlying_char_type*>(p));
+    }
+
+    base_type& base()
+    {
+        return *this;
+    }
+    
+protected:
+
+    output_buffer() = default;
+
+    output_buffer(CharOut* buff_begin, CharOut* buff_end)
+        : base_type( reinterpret_cast<underlying_char_type*>(buff_begin)
+                   , reinterpret_cast<underlying_char_type*>(buff_end) )
+    {
+    }
+
+    output_buffer(CharOut* buff_begin, std::size_t count)
+        : base_type(reinterpret_cast<underlying_char_type*>(buff_begin), count)
+    {
+    }
+
+    void set_pos(CharOut* p)
+    {
+        base_type::set_pos(reinterpret_cast<underlying_char_type*>(p));
+    }
+
+    void set_end(CharOut* e)
+    {
+        base_type::set_end(reinterpret_cast<underlying_char_type*>(e));
+    }
+};
 
 template <typename CharOut>
 class printer
@@ -210,7 +283,7 @@ inline bool write_str
 
 template<typename CharT>
 bool write_fill_continuation
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( stringify::v0::output_buffer_base<CharT>& ob
     , std::size_t count
     , CharT ch )
 {
@@ -237,7 +310,7 @@ bool write_fill_continuation
 
 template<typename CharT>
 inline bool write_fill
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( stringify::v0::output_buffer_base<CharT>& ob
     , std::size_t count
     , CharT ch )
 {
@@ -250,73 +323,17 @@ inline bool write_fill
     return write_fill_continuation(ob, count, ch);
 }
 
-template <typename T, std::size_t N>
-struct simple_array;
-template <typename T>
-struct simple_array<T,1> { T obj0; };
-template <typename T>
-struct simple_array<T,2> { T obj0;  T obj1; };
-template <typename T>
-struct simple_array<T,3> { T obj0;  T obj1; T obj2; };
-template <typename T>
-struct simple_array<T,4> { T obj0;  T obj1; T obj2; T obj3; };
-
-
-template <typename CharT, std::size_t N>
-inline void do_repeat_sequence
-    ( CharT* dest
-    , std::size_t count
-    , simple_array<CharT, N> seq )
-{
-    std::fill_n(reinterpret_cast<simple_array<CharT, N>*>(dest), count, seq);
-}
-
-template <typename CharT, std::size_t N>
-bool repeat_sequence_continuation
+template<typename CharT>
+inline bool write_fill
     ( stringify::v0::output_buffer<CharT>& ob
     , std::size_t count
-    , simple_array<CharT, N> seq )
+    , CharT ch )
 {
-    std::size_t space = ob.size() / N;
-    BOOST_ASSERT(space < count);
-
-    stringify::v0::detail::do_repeat_sequence(ob.pos(), space, seq);
-    count -= space;
-    ob.advance_to(ob.end());
-    while (ob.recycle())
-    {
-        std::size_t space = ob.size() / N;
-        if (count <= space)
-        {
-            stringify::v0::detail::do_repeat_sequence(ob.pos(), count, seq);
-            ob.advance(count * N);
-            return true;
-        }
-        stringify::v0::detail::do_repeat_sequence(ob.pos(), space, seq);
-        count -= space;
-        ob.advance_to(ob.end());
-    }
-    return false;
-}
-
-
-template <typename CharT, std::size_t N>
-inline bool repeat_sequence
-    ( stringify::v0::output_buffer<CharT>& ob
-    , std::size_t count
-    , simple_array<CharT, N> seq )
-{
-    if (count * N <= ob.size())
-    {
-        stringify::v0::detail::do_repeat_sequence(ob.pos(), count, seq);
-        ob.advance(count * N);
-        return true;
-    }
-    return stringify::v0::detail::repeat_sequence_continuation(ob, count, seq);
+    using u_char_type = stringify::v0::underlying_char_type<CharT>;
+    return write_fill(ob.base(), count, static_cast<u_char_type>(ch));
 }
 
 } // namespace detail
-
 
 template <typename T>
 struct identity

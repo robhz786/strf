@@ -108,7 +108,7 @@ template <typename CharIn, typename CharOut>
 struct transcoder_impl
 {
     typedef bool (&transcode_func_ref)
-        ( stringify::v0::output_buffer<CharOut>&
+        ( stringify::v0::output_buffer_base<CharOut>&
         , const CharIn* src
         , const CharIn* src_end
         , stringify::v0::error_handling err_hdl
@@ -132,7 +132,7 @@ struct encoding_impl
     typedef std::size_t (&validate_func_ref)(char32_t ch);
     typedef CharT* (&encode_char_func_ref)(CharT* dest, char32_t ch);
     typedef bool (&encode_fill_func_ref)
-        ( stringify::v0::output_buffer<CharT>&
+        ( stringify::v0::output_buffer_base<CharT>&
         , std::size_t count
         , char32_t ch
         , stringify::v0::error_handling err_hdl
@@ -142,7 +142,7 @@ struct encoding_impl
         , const CharT* end
         , std::size_t max_count );
     typedef bool (&write_replacement_char_func_ref)
-        ( stringify::v0::output_buffer<CharT>& );
+        ( stringify::v0::output_buffer_base<CharT>& );
     typedef char32_t (&decode_char_func_ref)(CharT ch);
     typedef const stringify::v0::detail::transcoder_impl<CharT, std::uint8_t>* (*to8_func_ptr)
         ( const stringify::v0::detail::encoding_impl<std::uint8_t>& enc );
@@ -193,37 +193,27 @@ struct encoding_impl
 
 };
 
-
-template <std::size_t N>
-struct char_type_of_size_impl;
-
-template <> struct char_type_of_size_impl<1>{using type = std::uint8_t;};
-template <> struct char_type_of_size_impl<2>{using type = char16_t;};
-template <> struct char_type_of_size_impl<4>{using type = char32_t;};
-
-template <typename CharT>
-using info_char_type = typename char_type_of_size_impl<sizeof(CharT)>::type;
-
 } // namespace detail
 
 template <typename CharIn, typename CharOut>
 using transcoder_impl_type
     = stringify::v0::detail::transcoder_impl
-        < stringify::v0::detail::info_char_type<CharIn>
-        , stringify::v0::detail::info_char_type<CharOut> >;
+        < stringify::v0::underlying_char_type<CharIn>
+        , stringify::v0::underlying_char_type<CharOut> >;
 
 template <typename CharT>
 using encoding_impl_type
     = stringify::v0::detail::encoding_impl
-        < stringify::v0::detail::info_char_type<CharT> >;
+        < stringify::v0::underlying_char_type<CharT> >;
 
 
 template <typename CharIn, typename CharOut>
 class transcoder
 {
-    using _inner_char_type_in = stringify::v0::detail::info_char_type<CharIn>;
-    using _inner_char_type_out = stringify::v0::detail::info_char_type<CharOut>;
-    using _impl_ob_type = stringify::v0::output_buffer<_inner_char_type_out>;
+    using _inner_char_type_in = stringify::v0::underlying_char_type<CharIn>;
+    using _inner_char_type_out = stringify::v0::underlying_char_type<CharOut>;
+    using _impl_ob_type =
+        stringify::v0::output_buffer_base<_inner_char_type_out>;
 
 public:
 
@@ -257,7 +247,7 @@ public:
         , bool allow_surr ) const
     {
         return _impl->transcode
-            ( reinterpret_cast<_impl_ob_type&>(ob)
+            ( static_cast<_impl_ob_type&>(ob)
             , reinterpret_cast<const _inner_char_type_in*>(src)
             , reinterpret_cast<const _inner_char_type_in*>(src_end)
             , err_hdl
@@ -291,8 +281,8 @@ private:
 template <typename CharT>
 class encoding
 {
-    using _impl_char_type = stringify::v0::detail::info_char_type<CharT>;
-    using _impl_ob_type = stringify::v0::output_buffer<_impl_char_type>;
+    using _impl_char_type = stringify::v0::underlying_char_type<CharT>;
+    using _impl_ob_type = stringify::v0::output_buffer_base<_impl_char_type>;
 
     template <typename>
     friend class stringify::v0::encoding;
@@ -346,9 +336,8 @@ public:
         , stringify::v0::error_handling err_hdl
         , bool allow_surr ) const
     {
-        return _impl->encode_fill
-            ( reinterpret_cast<_impl_ob_type&>(ob)
-            , count, ch, err_hdl, allow_surr );
+        return _impl->encode_fill( static_cast<_impl_ob_type&>(ob)
+                                 , count, ch, err_hdl, allow_surr );
     }
     std::size_t codepoints_count
         ( const CharT* src_begin
@@ -363,8 +352,7 @@ public:
     bool write_replacement_char
         ( stringify::v0::output_buffer<CharT>& ob ) const
     {
-        return _impl->write_replacement_char
-            ( reinterpret_cast<_impl_ob_type&>(ob) );
+        return _impl->write_replacement_char(static_cast<_impl_ob_type&>(ob));
     }
     char32_t decode_single_char(CharT ch) const
     {
