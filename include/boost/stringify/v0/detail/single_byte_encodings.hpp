@@ -235,7 +235,7 @@ std::uint8_t* single_byte_encoding<Impl>::encode_char
     auto ch2 = Impl::encode(ch);
     if(ch2 < 0x100)
     {
-        *dest = Impl::encode(ch);
+        *dest = static_cast<std::uint8_t>(Impl::encode(ch));
         return dest + 1;
     }
     return dest;
@@ -315,7 +315,7 @@ bool single_byte_encoding<Impl>::from_utf32
             }
         }
         BOOST_STRINGIFY_CHECK_DEST;
-        *dest_it = ch2;
+        *dest_it = static_cast<std::uint8_t>(ch2);
         ++dest_it;
     }
     ob.advance_to(dest_it);

@@ -68,11 +68,10 @@ environment:
       B2_ADDRESS_MODEL: address-model=64,32
       B2_TOOLSET: msvc-14.1
 
-    - FLAVOR: Visual Studio 2015 C++14 (Default)
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-      B2_ADDRESS_MODEL: address-model=64,32
-      B2_TOOLSET: msvc-14.0
-
+#    - FLAVOR: Visual Studio 2015 C++14 (Default)
+#      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+#      B2_ADDRESS_MODEL: address-model=64,32
+#      B2_TOOLSET: msvc-14.0
 
     - FLAVOR: cygwin (32-bit)
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017

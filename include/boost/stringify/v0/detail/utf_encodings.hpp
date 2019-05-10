@@ -65,7 +65,7 @@ bool repeat_sequence_continuation
     ob.advance_to(ob.end());
     while (ob.recycle())
     {
-        std::size_t space = ob.size() / N;
+        space = ob.size() / N;
         if (count <= space)
         {
             stringify::v0::detail::do_repeat_sequence(ob.pos(), count, seq);

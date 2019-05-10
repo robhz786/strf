@@ -36,7 +36,7 @@ public:
 
     bool recycle() override;
 
-    std::size_t get_result()
+    int get_result()
     {
         recycle();
         return _remaining_width > 0 ? _remaining_width : 0;
