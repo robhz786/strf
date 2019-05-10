@@ -8,11 +8,19 @@
 
 namespace strf = boost::stringify::v0;
 
-int my_width_calculator(char32_t ch)
+int my_width_calculator( int limit
+                       , const char32_t* it
+                       , const char32_t* end )
 {
-    if(ch == U'\u2014') return 2; // the em-dash
-    if(ch == U'\u2E3A') return 4; // the two-em-dash
-    return 1;
+    int w = 0;
+    for (; w < limit && it != end; ++it)
+    {
+        auto ch = *it;
+        w += ( ch == U'\u2E3A' ? 4
+             : ch == U'\u2014' ? 2
+             : 1 );
+    }
+    return w;
 }
 
 int main()

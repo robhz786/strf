@@ -14,7 +14,7 @@ This facet category enables you to customise how the width is calculated. You ma
 
 # Width equals the length. This is the default and is also what is usually ( if not always ) used in the other formatting libraries. It is the fastest.
 # Width equals the number of code points. This considers as if all code points have the same width.
-# Each code point may have a different width. Here, you use a function of your own that returns the width of each `char32_t`. The width of a code point may be zero ( like combining or control characters ), one ( the usual ), two ( for "em" characters ) or maybe even more, but is always an integer value. The customisation of the width calculation is not intended to possibly support non-monospace fonts. The aim is only to allow you to chose a more accurate algorithm ( in the sacrifice of performance ), but always assuming the font to be monospace.
+# Each code point may have a different width. Here, you use a function of your own that calculates the width of a string of `char32_t`. The width of each code point may be zero ( like combining or control characters ), one ( the usual ), two ( for "em" characters ) or maybe even more, but is always an integer value. The customisation of the width calculation is not intended to possibly support non-monospace fonts. The aim is only to allow you to chose a more accurate algorithm ( in the sacrifice of performance ), but always assuming the font to be monospace. The function doesn't need the to sum the width of all characters once it knows that the total is greater or equal to the value of the first parameter.
 
 [custom_width_calculation_sample]
 

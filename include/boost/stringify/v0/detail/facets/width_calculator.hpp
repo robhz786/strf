@@ -13,7 +13,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 struct width_calculator_category;
 class width_calculator;
 
-typedef int (*char_width_calculator)(char32_t);
+typedef int (*width_calc_func)(int limit, const char32_t* begin, const char32_t* end);
 
 enum class width_calculation_type : std::size_t
 {
@@ -27,7 +27,7 @@ class width_decrementer: public stringify::v0::output_buffer<char32_t>
 {
 public:
 
-    width_decrementer(char_width_calculator func, int width)
+    width_decrementer(width_calc_func func, int width)
         : stringify::v0::output_buffer<char32_t>(_buff, _buff + _buff_size)
         , _func(func)
         , _remaining_width(width)
@@ -44,9 +44,9 @@ public:
 
 private:
 
-    constexpr static std::size_t _buff_size = stringify::v0::min_buff_size;
+    constexpr static std::size_t _buff_size = 16;
     char32_t _buff[_buff_size];
-    char_width_calculator _func;
+    width_calc_func _func;
     int _remaining_width = 0;
 };
 
@@ -54,12 +54,10 @@ private:
 
 BOOST_STRINGIFY_INLINE bool width_decrementer::recycle()
 {
-    for(auto it = _buff; it < this->pos() && _remaining_width > 0; ++it)
-    {
-       _remaining_width -= _func(*it);
-    }
+    int w = _func(_remaining_width, _buff, this->pos());    
     this->set_pos(_buff);
-    return _remaining_width > 0;
+    _remaining_width -= w;
+    return w < _remaining_width;
 }
 
 #endif // ! defined(BOOST_STRINGIFY_OMIT_IMPL)
@@ -73,15 +71,13 @@ public:
     using category = stringify::v0::width_calculator_category;
 
     explicit width_calculator
-    ( const stringify::v0::width_calculation_type calc_type
-    )
+        ( const stringify::v0::width_calculation_type calc_type )
         : _type(calc_type)
     {
     }
 
     explicit width_calculator
-    ( const stringify::v0::char_width_calculator calc_function
-    )
+        ( const stringify::v0::width_calc_func calc_function )
         : _ch_wcalc(calc_function)
     {
     }
@@ -102,19 +98,21 @@ public:
         {
             if (enc.id() == stringify::v0::encoding_id::eid_utf32)
             {
-                return _ch_wcalc(ch);
+                int rw = _ch_wcalc(std::numeric_limits<int>::max(), &ch, &ch + 1);
+                return std::numeric_limits<int>::max() - rw;
             }
         }
-        return _ch_wcalc(enc.decode_single_char(ch));
+        char32_t ch32 = enc.decode_single_char(ch);
+        int rw = _ch_wcalc(std::numeric_limits<int>::max(), &ch32, &ch32 + 1);
+        return std::numeric_limits<int>::max() - rw;
     }
 
     template <typename CharIn>
-    int remaining_width
-        ( int width
-        , const CharIn* str
-        , std::size_t str_len
-        , stringify::v0::encoding<CharIn> enc
-        , const stringify::v0::encoding_policy epoli ) const
+    int remaining_width( int width
+                       , const CharIn* str
+                       , std::size_t str_len
+                       , stringify::v0::encoding<CharIn> enc
+                       , const stringify::v0::encoding_policy epoli ) const
     {
         if (_type == stringify::width_calculation_type::as_len)
         {
@@ -142,11 +140,11 @@ private:
     union
     {
         stringify::v0::width_calculation_type _type;
-        stringify::v0::char_width_calculator _ch_wcalc;
+        stringify::v0::width_calc_func _ch_wcalc;
     };
 
     static_assert( sizeof(stringify::v0::width_calculation_type) >=
-                   sizeof(stringify::v0::char_width_calculator)
+                   sizeof(stringify::v0::width_calc_func)
                  , "");
 };
 
@@ -211,36 +209,10 @@ BOOST_STRINGIFY_INLINE int width_calculator::width_of(char32_t ch) const
     }
     else
     {
-        return _ch_wcalc(ch);
+        int rw = _ch_wcalc(std::numeric_limits<int>::max(), &ch, &ch + 1);
+        return std::numeric_limits<int>::max() - rw;
     }
 }
-
-
-// BOOST_STRINGIFY_INLINE int width_calculator::remaining_width
-//     ( int width
-//     , const char32_t* begin
-//     , const char32_t* end
-//     ) const
-// {
-//     if ( _type == stringify::width_calculation_type::as_len
-//       || _type == stringify::width_calculation_type::as_u32len )
-//     {
-//         std::size_t str_len = end - begin;
-//         if(str_len >= (std::size_t)(width))
-//         {
-//             return 0;
-//         }
-//         return width - static_cast<int>(str_len);
-//     }
-//     else
-//     {
-//         for(auto it = begin; it < end && width > 0; ++it)
-//         {
-//             width -= _ch_wcalc(*it);
-//         }
-//         return width > 0 ? width : 0;
-//     }
-// }
 
 #endif // ! defined(BOOST_STRINGIFY_OMIT_IMPL)
 
@@ -257,7 +229,7 @@ inline stringify::v0::width_calculator width_as_u32len()
 }
 
 inline stringify::v0::width_calculator width_as
-    (stringify::v0::char_width_calculator func)
+    (stringify::v0::width_calc_func func)
 {
     return stringify::v0::width_calculator {func};
 }
