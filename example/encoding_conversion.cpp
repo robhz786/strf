@@ -39,8 +39,6 @@ void input_ouput_different_char_types()
     //]
 }
 
-
-
 void arg()
 {
     //[ arg_encoding
@@ -54,10 +52,9 @@ void arg()
     //]
 }
 
-
-void error_handling_replace()
+void encoding_error_replace()
 {
-    //[ error_handling_replace
+    //[ encoding_error_replace
     namespace strf = boost::stringify::v0;
     auto str = strf::to_string (strf::cv("--\x99--"));
     BOOST_ASSERT(str == u8"--\uFFFD--");
@@ -66,11 +63,11 @@ void error_handling_replace()
 
 void error_signal_skip()
 {
-    //[ error_handling_ignore
+    //[ encoding_error_ignore
     namespace strf = boost::stringify::v0;
 
     auto str = strf::to_string
-        .facets(strf::encoding_policy{strf::error_handling::ignore})
+        .facets(strf::encoding_policy{strf::encoding_error::ignore})
         (strf::cv("--\x99--"));
 
     BOOST_ASSERT(str == "----");
@@ -78,16 +75,16 @@ void error_signal_skip()
 }
 
 
-void error_handling_stop()
+void encoding_error_stop()
 {
-    //[error_handling_stop
+    //[encoding_error_stop
     namespace strf = boost::stringify::v0;
 
     std::error_code ec;
     try
     {
     auto str = strf::to_string
-        .facets(strf::encoding_policy{strf::error_handling::stop})
+        .facets(strf::encoding_policy{strf::encoding_error::stop})
         (strf::cv("--\x99--"));
     }
     catch(strf::stringify_error& x)
@@ -108,7 +105,7 @@ void allow_surrogates ()
     input_utf16[1] = 0xD800; // a surrogate character alone
 
     constexpr auto allow_surrogates = strf::encoding_policy
-        ( strf::error_handling::replace
+        ( strf::encoding_error::replace
         , true );
 
     auto str1 = strf::to_string(strf::cv(input_utf16));
@@ -137,9 +134,9 @@ int main()
 {
     input_ouput_different_char_types();
     arg();
-    error_handling_replace();
+    encoding_error_replace();
     error_signal_skip();
-    error_handling_stop();
+    encoding_error_stop();
     allow_surrogates();
 
     return 0;

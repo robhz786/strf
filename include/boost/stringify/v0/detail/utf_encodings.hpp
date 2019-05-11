@@ -189,7 +189,7 @@ bool utf8_to_utf32_transcode
     ( stringify::v0::output_buffer_base<char32_t>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     using stringify::v0::detail::utf8_decode;
@@ -259,16 +259,16 @@ bool utf8_to_utf32_transcode
             invalid_sequence:
             switch (err_hdl)
             {
-                case stringify::v0::error_handling::stop:
+                case stringify::v0::encoding_error::stop:
                     ob.advance_to(dest_it);
                     ob.set_encoding_error();
                     return false;
-                case stringify::v0::error_handling::replace:
+                case stringify::v0::encoding_error::replace:
                     BOOST_STRINGIFY_CHECK_DEST;
                     ch32 = 0xFFFD;
                     break;
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     continue;
             }
         }
@@ -284,7 +284,7 @@ bool utf8_to_utf32_transcode
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf32_size
     ( const std::uint8_t* src
     , const std::uint8_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     std::uint8_t ch0, ch1, ch2;
@@ -341,13 +341,13 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf32_size
             invalid_sequence:
             switch (err_hdl)
             {
-                case stringify::v0::error_handling::stop:
+                case stringify::v0::encoding_error::stop:
                     return size;
-                case stringify::v0::error_handling::replace:
+                case stringify::v0::encoding_error::replace:
                     ++size;
                     break;
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -359,7 +359,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_sanitize
     ( stringify::v0::output_buffer_base<std::uint8_t>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     using stringify::v0::detail::utf8_decode;
@@ -437,12 +437,12 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_sanitize
             invalid_sequence:
             switch (err_hdl)
             {
-                case stringify::v0::error_handling::stop:
+                case stringify::v0::encoding_error::stop:
                     ob.advance_to(dest_it);
                     ob.set_encoding_error();
                     return false;
 
-                case stringify::v0::error_handling::replace:
+                case stringify::v0::encoding_error::replace:
                     BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
                     dest_it[0] = 0xEF;
                     dest_it[1] = 0xBF;
@@ -451,7 +451,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_sanitize
                     break;
 
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -463,7 +463,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_sanitize
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_sanitize_size
     ( const std::uint8_t* src
     , const std::uint8_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     using stringify::v0::detail::utf8_decode;
@@ -521,13 +521,13 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_sanitize_size
             invalid_sequence:
             switch (err_hdl)
             {
-                case stringify::v0::error_handling::stop:
+                case stringify::v0::encoding_error::stop:
                     return size;
-                case stringify::v0::error_handling::replace:
+                case stringify::v0::encoding_error::replace:
                     size += 3;
                     break;
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -555,7 +555,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_encode_fill
     ( stringify::v0::output_buffer_base<std::uint8_t>& ob
     , std::size_t count
     , char32_t ch
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     if (ch < 0x80)
@@ -598,16 +598,16 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_encode_fill
     invalid_char:
     switch(err_hdl)
     {
-        case stringify::v0::error_handling::stop:
+        case stringify::v0::encoding_error::stop:
             ob.set_encoding_error();
             return false;
 
-        case stringify::v0::error_handling::ignore:
+        case stringify::v0::encoding_error::ignore:
             return true;
 
         default:
         {
-            BOOST_ASSERT(err_hdl == stringify::v0::error_handling::replace);
+            BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::replace);
             stringify::v0::detail::simple_array<std::uint8_t, 3> seq
                 { 0xEF, 0xBF, 0xBD };
             return stringify::v0::detail::repeat_sequence(ob, count, seq);
@@ -653,7 +653,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_to_utf8_transcode
     ( stringify::v0::output_buffer_base<std::uint8_t>& ob
     , const char32_t* src
     , const char32_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     auto src_it = src;
@@ -701,12 +701,12 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_to_utf8_transcode
             invalid_sequence:
             switch (err_hdl)
             {
-                case stringify::v0::error_handling::stop:
+                case stringify::v0::encoding_error::stop:
                     ob.advance_to(dest_it);
                     ob.set_encoding_error();
                     return false;
 
-                case stringify::v0::error_handling::replace:
+                case stringify::v0::encoding_error::replace:
                     BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
                     dest_it[0] = 0xEF;
                     dest_it[1] = 0xBF;
@@ -715,7 +715,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_to_utf8_transcode
                     break;
 
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -727,7 +727,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_to_utf8_transcode
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf8_size
     ( const char32_t* src
     , const char32_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     auto src_it = src;
@@ -760,15 +760,15 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf8_size
             invalid_char:
             switch (err_hdl)
             {
-                case stringify::v0::error_handling::stop:
+                case stringify::v0::encoding_error::stop:
                     return count;
 
-                case stringify::v0::error_handling::replace:
+                case stringify::v0::encoding_error::replace:
                     count += 3;
                     break;
 
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -808,7 +808,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_to_utf32_transcode
     ( stringify::v0::output_buffer_base<char32_t>& ob
     , const char16_t* src
     , const char16_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     unsigned long ch, ch2;
@@ -841,15 +841,15 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_to_utf32_transcode
         {
             switch(err_hdl)
             {
-                case stringify::v0::error_handling::stop:
+                case stringify::v0::encoding_error::stop:
                     ob.advance_to(dest_it);
                     ob.set_encoding_error();
                     return false;
-                case stringify::v0::error_handling::replace:
+                case stringify::v0::encoding_error::replace:
                     ch32 = 0xFFFD;
                     break;
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     continue;
             }
         }
@@ -865,7 +865,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_to_utf32_transcode
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_to_utf32_size
     ( const char16_t* src
     , const char16_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     unsigned long ch, ch2;
@@ -897,13 +897,13 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_to_utf32_size
         {
             switch(err_hdl)
             {
-                case stringify::v0::error_handling::stop:
+                case stringify::v0::encoding_error::stop:
                     return count;
-                case stringify::v0::error_handling::replace:
+                case stringify::v0::encoding_error::replace:
                     ++count;
                     break;
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -915,7 +915,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_sanitize
     ( stringify::v0::output_buffer_base<char16_t>& ob
     , const char16_t* src
     , const char16_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     unsigned long ch, ch2;
@@ -954,19 +954,19 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_sanitize
         {
             switch(err_hdl)
             {
-                case stringify::v0::error_handling::stop:
+                case stringify::v0::encoding_error::stop:
                     ob.advance_to(dest_it);
                     ob.set_encoding_error();
                     return false;
 
-                case stringify::v0::error_handling::replace:
+                case stringify::v0::encoding_error::replace:
                     BOOST_STRINGIFY_CHECK_DEST;
                     *dest_it = 0xFFFD;
                     ++dest_it;
                     break;
 
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -978,7 +978,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_sanitize
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_sanitize_size
     ( const char16_t* src
     , const char16_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     std::size_t count = 0;
@@ -1009,13 +1009,13 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_sanitize_size
         {
             switch(err_hdl)
             {
-                case stringify::v0::error_handling::stop:
+                case stringify::v0::encoding_error::stop:
                     return count;
-                case stringify::v0::error_handling::replace:
+                case stringify::v0::encoding_error::replace:
                     ++count;
                     break;
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -1067,7 +1067,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_encode_fill
     ( stringify::v0::output_buffer_base<char16_t>& ob
     , std::size_t count
     , char32_t ch
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     if (ch < 0x10000)
@@ -1092,13 +1092,13 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_encode_fill
     invalid_char:
     switch (err_hdl)
     {
-        case stringify::v0::error_handling::replace:
+        case stringify::v0::encoding_error::replace:
             return stringify::v0::detail::write_fill(ob, count, u'\uFFFD');
 
-        case stringify::v0::error_handling::ignore:
+        case stringify::v0::encoding_error::ignore:
             return true;
         default:
-            BOOST_ASSERT(err_hdl == stringify::v0::error_handling::stop);
+            BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::stop);
             ob.set_encoding_error();
             return false;
     }
@@ -1108,7 +1108,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_to_utf16_transcode
     ( stringify::v0::output_buffer_base<char16_t>& ob
     , const char32_t* src
     , const char32_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     auto src_it = src;
@@ -1140,19 +1140,19 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_to_utf16_transcode
             invalid_char:
             switch(err_hdl)
             {
-                case stringify::v0::error_handling::stop:
+                case stringify::v0::encoding_error::stop:
                     ob.advance_to(dest_it);
                     ob.set_encoding_error();
                     return false;
 
-                case stringify::v0::error_handling::replace:
+                case stringify::v0::encoding_error::replace:
                     BOOST_STRINGIFY_CHECK_DEST;
                     *dest_it = 0xFFFD;
                     ++dest_it;
                     break;
 
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -1164,7 +1164,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_to_utf16_transcode
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf16_size
     ( const char32_t* src
     , const char32_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     (void) allow_surr;
@@ -1181,15 +1181,15 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf16_size
         {
             switch(err_hdl)
             {
-                case stringify::v0::error_handling::stop:
+                case stringify::v0::encoding_error::stop:
                     return count;
 
-                case stringify::v0::error_handling::replace:
+                case stringify::v0::encoding_error::replace:
                     ++count;
                     break;
 
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -1212,7 +1212,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_write_replacement_char
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_sanitize_size
     ( const char32_t* src
     , const char32_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     (void) err_hdl;
@@ -1225,7 +1225,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_sanitize
     ( stringify::v0::output_buffer_base<char32_t>& ob
     , const char32_t* src
     , const char32_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     auto dest_it = ob.pos();
@@ -1244,15 +1244,15 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_sanitize
             {
                 switch(err_hdl)
                 {
-                    case stringify::v0::error_handling::stop:
+                    case stringify::v0::encoding_error::stop:
                         ob.advance_to(dest_it);
                         ob.set_encoding_error();
                         return false;
-                    case stringify::v0::error_handling::replace:
+                    case stringify::v0::encoding_error::replace:
                         ch_out = 0xFFFD;
                         break;
                     default:
-                        BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                        BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                         continue;
                 }
             }
@@ -1275,15 +1275,15 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_sanitize
             {
                 switch(err_hdl)
                 {
-                    case stringify::v0::error_handling::stop:
+                    case stringify::v0::encoding_error::stop:
                         ob.advance_to(dest_it);
                         ob.set_encoding_error();
                         return false;
-                    case stringify::v0::error_handling::replace:
+                    case stringify::v0::encoding_error::replace:
                         ch_out = 0xFFFD;
                         break;
                     default:
-                        BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                        BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                         continue;
                 }
             }
@@ -1323,20 +1323,20 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_encode_fill
     ( stringify::v0::output_buffer_base<char32_t>& ob
     , std::size_t count
     , char32_t ch
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     if (ch > 0x10FFFF || (!allow_surr && detail::is_surrogate(ch)))
     {
         switch (err_hdl)
         {
-            case stringify::v0::error_handling::stop:
+            case stringify::v0::encoding_error::stop:
                 ob.set_encoding_error();
                 return false;
-            case stringify::v0::error_handling::ignore:
+            case stringify::v0::encoding_error::ignore:
                 return true;
             default:
-                BOOST_ASSERT(err_hdl == stringify::v0::error_handling::replace);
+                BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::replace);
                 ch = 0xFFFD;
         }
     }
@@ -1369,7 +1369,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_to_utf16_transcode
     ( stringify::v0::output_buffer_base<char16_t>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     using stringify::v0::detail::utf8_decode;
@@ -1441,16 +1441,16 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_to_utf16_transcode
             invalid_sequence:
             switch(err_hdl)
             {
-                case stringify::v0::error_handling::stop:
+                case stringify::v0::encoding_error::stop:
                     ob.advance_to(dest_it);
                     ob.set_encoding_error();
                     return false;
-                case stringify::v0::error_handling::replace:
+                case stringify::v0::encoding_error::replace:
                     BOOST_STRINGIFY_CHECK_DEST;
                     *dest_it = 0xFFFD;
                     break;
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     --dest_it;
                     break;
             }
@@ -1463,7 +1463,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_to_utf16_transcode
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf16_size
     ( const std::uint8_t* src_begin
     , const std::uint8_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     (void) err_hdl;
@@ -1522,11 +1522,11 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf16_size
         else
         {
             invalid_sequence:
-            if (err_hdl == stringify::v0::error_handling::stop)
+            if (err_hdl == stringify::v0::encoding_error::stop)
             {
                 return size;
             }
-            if (err_hdl == stringify::v0::error_handling::replace)
+            if (err_hdl == stringify::v0::encoding_error::replace)
             {
                 ++size;
             }
@@ -1539,7 +1539,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_to_utf8_transcode
     ( stringify::v0::output_buffer_base<std::uint8_t>& ob
     , const char16_t* src
     , const char16_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     (void) err_hdl;
@@ -1593,12 +1593,12 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_to_utf8_transcode
         {
              switch(err_hdl)
              {
-                 case stringify::v0::error_handling::stop:
+                 case stringify::v0::encoding_error::stop:
                      ob.advance_to(dest_it);
                      ob.set_encoding_error();
                      return false;
 
-                 case stringify::v0::error_handling::replace:
+                 case stringify::v0::encoding_error::replace:
                  {
                      BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
                      dest_it[0] = 0xEF;
@@ -1609,7 +1609,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_to_utf8_transcode
                  }
 
                  default:
-                     BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                     BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                      break;
              }
         }
@@ -1621,7 +1621,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_to_utf8_transcode
 BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_to_utf8_size
     ( const char16_t* src_begin
     , const char16_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     (void) err_hdl;

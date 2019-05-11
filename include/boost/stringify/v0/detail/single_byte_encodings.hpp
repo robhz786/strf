@@ -45,7 +45,7 @@ template <typename CharIn>
 static std::size_t same_size
     ( const CharIn* src
     , const CharIn* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     (void) allow_surr;
@@ -61,21 +61,21 @@ struct single_byte_encoding
         ( stringify::v0::output_buffer_base<char32_t>& ob
         , const std::uint8_t* src
         , const std::uint8_t* src_end
-        , stringify::v0::error_handling err_hdl
+        , stringify::v0::encoding_error err_hdl
         , bool allow_surr );
 
     static bool from_utf32
         ( stringify::v0::output_buffer_base<std::uint8_t>& ob
         , const char32_t* src
         , const char32_t* src_end
-        , stringify::v0::error_handling err_hdl
+        , stringify::v0::encoding_error err_hdl
         , bool allow_surr );
 
     static bool sanitize
         ( stringify::v0::output_buffer_base<std::uint8_t>& ob
         , const std::uint8_t* src
         , const std::uint8_t* src_end
-        , stringify::v0::error_handling err_hdl
+        , stringify::v0::encoding_error err_hdl
         , bool allow_surr );
 
     static std::uint8_t* encode_char(std::uint8_t* dest, char32_t ch);
@@ -84,7 +84,7 @@ struct single_byte_encoding
         ( stringify::v0::output_buffer_base<std::uint8_t>& ob
         , std::size_t count
         , char32_t ch
-        , stringify::v0::error_handling err_hdl
+        , stringify::v0::encoding_error err_hdl
         , bool );
 
     static char32_t decode_single_char(std::uint8_t ch)
@@ -121,7 +121,7 @@ bool single_byte_encoding<Impl>::to_utf32
     ( stringify::v0::output_buffer_base<char32_t>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     (void) allow_surr;
@@ -138,15 +138,15 @@ bool single_byte_encoding<Impl>::to_utf32
         {
             switch(err_hdl)
             {
-                case stringify::v0::error_handling::stop:
+                case stringify::v0::encoding_error::stop:
                     ob.advance_to(dest_it);
                     ob.set_encoding_error();
                     return false;
-                case stringify::v0::error_handling::replace:
+                case stringify::v0::encoding_error::replace:
                     ch32 = 0xFFFD;
                     break;
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     continue;
             }
         }
@@ -163,7 +163,7 @@ bool single_byte_encoding<Impl>::sanitize
     ( stringify::v0::output_buffer_base<std::uint8_t>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     (void) allow_surr;
@@ -181,15 +181,15 @@ bool single_byte_encoding<Impl>::sanitize
         {
             switch(err_hdl)
             {
-                case stringify::v0::error_handling::stop:
+                case stringify::v0::encoding_error::stop:
                     ob.advance_to(dest_it);
                     ob.set_encoding_error();
                     return false;
-                case stringify::v0::error_handling::replace:
+                case stringify::v0::encoding_error::replace:
                     ch_out = '?';
                     break;
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     continue;
             }
         }
@@ -246,7 +246,7 @@ bool single_byte_encoding<Impl>::encode_fill
     ( stringify::v0::output_buffer_base<std::uint8_t>& ob
     , std::size_t count
     , char32_t ch
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool )
 {
     unsigned ch2 = Impl::encode(ch);
@@ -254,14 +254,14 @@ bool single_byte_encoding<Impl>::encode_fill
     {
         switch(err_hdl)
         {
-            case stringify::v0::error_handling::stop:
+            case stringify::v0::encoding_error::stop:
                 ob.set_encoding_error();
                 return false;
-            case stringify::v0::error_handling::replace:
+            case stringify::v0::encoding_error::replace:
                 ch2 = '?';
                 break;
             default:
-                BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                 return true;
         }
     }
@@ -287,7 +287,7 @@ bool single_byte_encoding<Impl>::from_utf32
     ( stringify::v0::output_buffer_base<std::uint8_t>& ob
     , const char32_t* src
     , const char32_t* src_end
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     (void)allow_surr;
@@ -300,17 +300,17 @@ bool single_byte_encoding<Impl>::from_utf32
         {
             switch(err_hdl)
             {
-                case stringify::v0::error_handling::stop:
+                case stringify::v0::encoding_error::stop:
                     ob.advance_to(dest_it);
                     ob.set_encoding_error();
                     return false;
 
-                case stringify::v0::error_handling::replace:
+                case stringify::v0::encoding_error::replace:
                     ch2 = '?';
                     break;
 
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::error_handling::ignore);
+                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     continue;
             }
         }

@@ -11,7 +11,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <typename CharT> class output_buffer;
 
-enum class error_handling
+enum class encoding_error
 {
     replace, stop, ignore
 };
@@ -111,13 +111,13 @@ struct transcoder_impl
         ( stringify::v0::output_buffer_base<CharOut>&
         , const CharIn* src
         , const CharIn* src_end
-        , stringify::v0::error_handling err_hdl
+        , stringify::v0::encoding_error err_hdl
         , bool allow_surr );
 
     typedef std::size_t (&size_func_ref)
         ( const CharIn* src
         , const CharIn* src_end
-        , stringify::v0::error_handling err_hdl
+        , stringify::v0::encoding_error err_hdl
         , bool allow_surr );
 
     transcode_func_ref transcode;
@@ -135,7 +135,7 @@ struct encoding_impl
         ( stringify::v0::output_buffer_base<CharT>&
         , std::size_t count
         , char32_t ch
-        , stringify::v0::error_handling err_hdl
+        , stringify::v0::encoding_error err_hdl
         , bool allow_surr );
     typedef std::size_t (&codepoints_count_func_ref)
         ( const CharT* begin
@@ -181,12 +181,12 @@ struct encoding_impl
     char32_t u32equivalence_begin;
     char32_t u32equivalence_end;
 
-    std::size_t char_size(char32_t ch, stringify::v0::error_handling err_hdl) const
+    std::size_t char_size(char32_t ch, stringify::v0::encoding_error err_hdl) const
     {
         auto s = validate(ch);
         return s != (std::size_t)-1
             ? s
-            : err_hdl == stringify::v0::error_handling::replace
+            : err_hdl == stringify::v0::encoding_error::replace
             ? replacement_char_size
             : 0 ;
     }
@@ -243,7 +243,7 @@ public:
         ( stringify::v0::output_buffer<CharOut>& ob
         , const CharIn* src
         , const CharIn* src_end
-        , stringify::v0::error_handling err_hdl
+        , stringify::v0::encoding_error err_hdl
         , bool allow_surr ) const
     {
         return _impl->transcode
@@ -257,7 +257,7 @@ public:
     std::size_t necessary_size
         ( const CharIn* src
         , const CharIn* src_end
-        , stringify::v0::error_handling err_hdl
+        , stringify::v0::encoding_error err_hdl
         , bool allow_surr ) const
     {
         return _impl->necessary_size
@@ -333,7 +333,7 @@ public:
         ( stringify::v0::output_buffer<CharT>& ob
         , std::size_t count
         , char32_t ch
-        , stringify::v0::error_handling err_hdl
+        , stringify::v0::encoding_error err_hdl
         , bool allow_surr ) const
     {
         return _impl->encode_fill( static_cast<_impl_ob_type&>(ob)
@@ -378,12 +378,12 @@ public:
     {
         return _impl->u32equivalence_end;
     }
-    std::size_t char_size(char32_t ch, stringify::v0::error_handling err_hdl) const
+    std::size_t char_size(char32_t ch, stringify::v0::encoding_error err_hdl) const
     {
         auto s = _impl->validate(ch);
         return s != (std::size_t)-1
             ? s
-            : err_hdl == stringify::v0::error_handling::replace
+            : err_hdl == stringify::v0::encoding_error::replace
             ? _impl->replacement_char_size
             : 0 ;
     }
@@ -576,7 +576,7 @@ public:
     buffered_encoder
         ( stringify::v0::encoding<CharOut>& enc
         , stringify::v0::output_buffer<CharOut>& ob
-        , stringify::v0::error_handling err_hdl
+        , stringify::v0::encoding_error err_hdl
         , bool allow_surr )
         : stringify::v0::output_buffer<char32_t>
             ( stringify::v0::detail::global_mini_buffer32()
@@ -596,7 +596,7 @@ private:
     stringify::v0::encoding<CharOut> _enc;
     stringify::v0::output_buffer<CharOut>& _ob;
     char32_t* _begin;
-    stringify::v0::error_handling _err_hdl;
+    stringify::v0::encoding_error _err_hdl;
     bool _allow_surr;
 };
 
@@ -619,7 +619,7 @@ inline bool decode_encode
     , const CharIn* src_end
     , stringify::v0::encoding<CharIn> src_encoding
     , stringify::v0::encoding<CharOut> dest_encoding
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     stringify::v0::detail::buffered_encoder<CharOut> dest
@@ -636,7 +636,7 @@ public:
 
     buffered_size_calculator
         ( stringify::v0::encoding<CharOut>& enc
-        , stringify::v0::error_handling err_hdl
+        , stringify::v0::encoding_error err_hdl
         , bool allow_surr )
         : stringify::v0::output_buffer<char32_t>
             ( stringify::v0::detail::global_mini_buffer32()
@@ -661,7 +661,7 @@ private:
     stringify::v0::encoding<CharOut> _enc;
     char32_t* _begin;
     std::size_t _sum = 0;
-    stringify::v0::error_handling _err_hdl;
+    stringify::v0::encoding_error _err_hdl;
     bool _allow_surr;
 };
 
@@ -683,7 +683,7 @@ inline std::size_t decode_encode_size
     , const CharIn* src_end
     , stringify::v0::encoding<CharIn> src_encoding
     , stringify::v0::encoding<CharOut> dest_encoding
-    , stringify::v0::error_handling err_hdl
+    , stringify::v0::encoding_error err_hdl
     , bool allow_surr )
 {
     stringify::v0::detail::buffered_size_calculator<CharOut> calc
@@ -845,7 +845,7 @@ struct encoding_policy_category;
 class encoding_policy
 {
     using _bits_type
-    = typename std::underlying_type<stringify::v0::error_handling>::type;
+    = typename std::underlying_type<stringify::v0::encoding_error>::type;
 
 public:
 
@@ -853,7 +853,7 @@ public:
     using category = stringify::v0::encoding_policy_category;
 
     constexpr encoding_policy
-        ( stringify::v0::error_handling err_hdl
+        ( stringify::v0::encoding_error err_hdl
         , bool allow_surr = false )
         : _bits(((_bits_type)err_hdl << 1) | (_bits_type)allow_surr)
     {
@@ -877,9 +877,9 @@ public:
         return _bits & 1;
     }
 
-    constexpr stringify::v0::error_handling err_hdl() const
+    constexpr stringify::v0::encoding_error err_hdl() const
     {
-        return (stringify::v0::error_handling)(_bits >> 1);
+        return (stringify::v0::encoding_error)(_bits >> 1);
     }
 
 private:
@@ -893,7 +893,7 @@ struct encoding_policy_category
 
     static stringify::v0::encoding_policy get_default()
     {
-        return {stringify::v0::error_handling::replace};
+        return {stringify::v0::encoding_error::replace};
     }
 };
 

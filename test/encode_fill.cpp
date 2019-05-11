@@ -40,7 +40,7 @@ void test_fill
                      << std::dec;
 
     strf::encoding_policy epoli
-        { strf::error_handling::replace
+        { strf::encoding_error::replace
         , allow_surrogates };
 
     {
@@ -94,7 +94,7 @@ void test_invalid_fill_stop
                      << std::dec;
 
     strf::encoding_policy epoli
-        { strf::error_handling::stop
+        { strf::encoding_error::stop
         , allow_surrogates };
 
     std::basic_string<CharT> expected(5, CharT('-'));
@@ -123,7 +123,7 @@ void test_invalid_fill_ignore
                      << std::dec;
 
     strf::encoding_policy epoli
-        { strf::error_handling::ignore
+        { strf::encoding_error::ignore
         , allow_surrogates };
 
     std::basic_string<CharT> expected(5, CharT('-'));

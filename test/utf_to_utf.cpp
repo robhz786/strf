@@ -80,7 +80,7 @@ void test_allowed_surrogates
 
     TEST(expected)
         .facets(eout)
-        .facets(strf::encoding_policy{strf::error_handling::stop, true})
+        .facets(strf::encoding_policy{strf::encoding_error::stop, true})
         (strf::cv(input, ein));
 }
 
@@ -188,7 +188,7 @@ void test_invalid_input
 
             TEST(expected)
                 .facets(eout)
-                .facets(strf::encoding_policy{strf::error_handling::replace, false})
+                .facets(strf::encoding_policy{strf::encoding_error::replace, false})
                 (strf::cv(input, ein));
         }
 
@@ -196,14 +196,14 @@ void test_invalid_input
         TEST(prefix_out + suffix_out)
             .reserve(6)
             .facets(eout)
-            .facets(strf::encoding_policy{strf::error_handling::ignore, false})
+            .facets(strf::encoding_policy{strf::encoding_error::ignore, false})
             (strf::cv(input, ein));
 
         // stop
         TEST_ERR(prefix_out, std::make_error_code(std::errc::illegal_byte_sequence))
             .reserve(3)
             .facets(eout)
-            .facets(strf::encoding_policy{strf::error_handling::stop, false})
+            .facets(strf::encoding_policy{strf::encoding_error::stop, false})
             (strf::cv(input, ein));
     }
 }
