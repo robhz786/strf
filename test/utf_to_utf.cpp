@@ -79,8 +79,9 @@ void test_allowed_surrogates
     const auto expected = sample_with_surrogates(eout);
 
     TEST(expected)
-        .facets(eout)
-        .facets(strf::encoding_policy{strf::encoding_error::stop, true})
+        .facets( eout
+               , strf::encoding_error::stop
+               , strf::surrogate_policy::lax )
         (strf::cv(input, ein));
 }
 
@@ -188,7 +189,7 @@ void test_invalid_input
 
             TEST(expected)
                 .facets(eout)
-                .facets(strf::encoding_policy{strf::encoding_error::replace, false})
+                .facets(strf::encoding_error::replace)
                 (strf::cv(input, ein));
         }
 
@@ -196,14 +197,14 @@ void test_invalid_input
         TEST(prefix_out + suffix_out)
             .reserve(6)
             .facets(eout)
-            .facets(strf::encoding_policy{strf::encoding_error::ignore, false})
+            .facets(strf::encoding_error::ignore)
             (strf::cv(input, ein));
 
         // stop
         TEST_ERR(prefix_out, std::make_error_code(std::errc::illegal_byte_sequence))
             .reserve(3)
             .facets(eout)
-            .facets(strf::encoding_policy{strf::encoding_error::stop, false})
+            .facets(strf::encoding_error::stop)
             (strf::cv(input, ein));
     }
 }

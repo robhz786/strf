@@ -71,11 +71,19 @@ Both has the same purpose: to customize numeric punctuation, however
 ]
 
 [
-[[link encoding_policy encoding_policy_category]]
-[encoding error handling and surrogates allowance]
+[[link encoding_error encoding_error_category]]
+[encoding error handling]
 [yes]
 []
 ]
+
+[
+[[link surrogate_policy surrogate_policy_category]]
+[surrogates allowance]
+[yes]
+[]
+]
+
 
 [
 [[link asm_string_error asm_string_error_category]]

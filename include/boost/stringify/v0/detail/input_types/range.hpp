@@ -160,10 +160,13 @@ sep_range_printer<CharT, FPack, ForwardIt>::remaining_width(int w) const
             = get_facet<stringify::v0::width_calculator_category>(_fp);
         decltype(auto) encoding
             = get_facet<stringify::v0::encoding_category<CharT>>(_fp);
-        decltype(auto) epoli
-            = get_facet<stringify::v0::encoding_policy_category>(_fp);
+        auto enc_err
+            = get_facet<stringify::v0::encoding_error_category>(_fp);
+        auto allow_surr
+            = get_facet<stringify::v0::surrogate_policy_category>(_fp);
 
-        int w2 = wcalc.remaining_width(w, _sep_begin, _sep_len, encoding, epoli);
+        int w2 = wcalc.remaining_width( w, _sep_begin, _sep_len
+                                      , encoding, enc_err, allow_surr );
         auto diff = (w - w2) * (count - 1);
         if ((std::size_t)w <= diff)
         {
@@ -425,10 +428,13 @@ int fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>
             = get_facet<stringify::v0::width_calculator_category>(_fp);
         decltype(auto) encoding
             = get_facet<stringify::v0::encoding_category<CharT>>(_fp);
-        decltype(auto) epoli
-            = get_facet<stringify::v0::encoding_policy_category>(_fp);
+        auto enc_err
+            = get_facet<stringify::v0::encoding_error_category>(_fp);
+        auto allow_surr
+            = get_facet<stringify::v0::surrogate_policy_category>(_fp);
 
-        int w2 = wcalc.remaining_width(w, r.sep_begin, r.sep_len, encoding, epoli);
+        int w2 = wcalc.remaining_width( w, r.sep_begin, r.sep_len
+                                      , encoding, enc_err, allow_surr );
         auto diff = (w - w2) * (count - 1);
         if ((std::size_t)w <= diff)
         {

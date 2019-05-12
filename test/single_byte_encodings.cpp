@@ -71,16 +71,16 @@ void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
 
     TEST(char_0_to_0xff_sanitized(enc)).facets(enc) (strf::cv(str_0_to_xff));
     TEST("---?+++")
-        .facets(enc, strf::encoding_policy(strf::encoding_error::replace))
+        .facets(enc, strf::encoding_error::replace)
         (strf::cv(u"---\U0010FFFF+++"));
     TEST_RF("---+++", 7.1 / 6.0)
-        .facets(enc, strf::encoding_policy(strf::encoding_error::ignore))
+        .facets(enc, strf::encoding_error::ignore)
         (strf::cv(u"---\U0010FFFF+++"));
 
     {
         std::string str;
         auto ec = strf::ec_assign(str)
-            .facets(enc, strf::encoding_policy(strf::encoding_error::stop))
+            .facets(enc, strf::encoding_error::stop)
             (strf::cv(u"---\U0010FFFF++"));
         BOOST_TEST(ec == std::errc::illegal_byte_sequence);
         BOOST_TEST(str == "---");

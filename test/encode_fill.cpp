@@ -33,20 +33,16 @@ void test_fill
     ( strf::encoding<CharT> enc
     , char32_t fill_char
     , std::basic_string<CharT> encoded_char
-    , bool allow_surrogates = false )
+    , strf::surrogate_policy allow_surr = strf::surrogate_policy::strict )
 {
     BOOST_TEST_LABEL << enc.name() << ", test_fill_char: U+"
                      << std::hex << (unsigned)fill_char
                      << std::dec;
 
-    strf::encoding_policy epoli
-        { strf::encoding_error::replace
-        , allow_surrogates };
-
     {
         int count = 10;
         auto result = strf::to_basic_string<CharT>
-            .facets(enc, epoli)
+            .facets(enc, strf::encoding_error::replace, allow_surr)
             (strf::right(CharT('x'), count + 1, fill_char));
 
         auto expected = repeat(count, encoded_char);
@@ -57,7 +53,7 @@ void test_fill
     {
         int count = 200;
         auto result = strf::to_basic_string<CharT>
-            .facets(enc, epoli)
+            .facets(enc, strf::encoding_error::replace, allow_surr)
             (strf::right(CharT('x'), count + 1, fill_char));
 
         auto expected = repeat(count, encoded_char);
@@ -72,13 +68,13 @@ inline void test_fill
     ( strf::encoding<CharT> enc
     , char32_t fill_char
     , const CharT* encoded_char
-    , bool allow_surrogates = false )
+    , strf::surrogate_policy allow_surr = strf::surrogate_policy::strict )
 {
     return test_fill
         ( enc
         , fill_char
         , std::basic_string<CharT>{encoded_char}
-        , allow_surrogates );
+        , allow_surr );
 }
 
 
@@ -86,16 +82,12 @@ template <typename CharT>
 void test_invalid_fill_stop
     ( strf::encoding<CharT> enc
     , char32_t fill_char
-    , bool allow_surrogates = false )
+    , strf::surrogate_policy allow_surr = strf::surrogate_policy::strict )
 {
     BOOST_TEST_LABEL << "encoding: " << enc.name()
                      << "; test_fill_char: \\u'"
                      << std::hex << (unsigned)fill_char << '\''
                      << std::dec;
-
-    strf::encoding_policy epoli
-        { strf::encoding_error::stop
-        , allow_surrogates };
 
     std::basic_string<CharT> expected(5, CharT('-'));
 
@@ -103,7 +95,7 @@ void test_invalid_fill_stop
         int count = 10;
         std::basic_string<CharT> result;
         auto ec = strf::ec_assign(result)
-            .facets(enc, epoli)
+            .facets(enc, strf::encoding_error::stop, allow_surr)
             ( strf::multi(CharT('-'), 5)
             , strf::right(CharT('x'), count + 1, fill_char)
             , strf::multi(CharT('+'), 5) );
@@ -116,15 +108,11 @@ template <typename CharT>
 void test_invalid_fill_ignore
     ( strf::encoding<CharT> enc
     , char32_t fill_char
-    , bool allow_surrogates = false )
+    , strf::surrogate_policy allow_surr = strf::surrogate_policy::strict )
 {
     BOOST_TEST_LABEL << "test_fill_char: \\u'"
                      << std::hex << (unsigned)fill_char << '\''
                      << std::dec;
-
-    strf::encoding_policy epoli
-        { strf::encoding_error::ignore
-        , allow_surrogates };
 
     std::basic_string<CharT> expected(5, CharT('-'));
     expected.push_back(CharT('x'));
@@ -136,7 +124,7 @@ void test_invalid_fill_ignore
     {
         int count = 10;
         auto result = strf::to_basic_string<CharT>
-            .facets(enc, epoli)
+            .facets(enc, strf::encoding_error::ignore, allow_surr)
             ( strf::multi(CharT('-'), 5)
             , strf::right(CharT('x'), count + 1, fill_char)
             , strf::multi(CharT('+'), 5) );
@@ -153,10 +141,10 @@ int main()
         test_fill(strf::utf8(), 0x7F, "\x7F");
         test_fill(strf::utf8(), 0x80, "\xC2\x80");
         test_fill(strf::utf8(), 0x800, "\xE0\xA0\x80");
-        test_fill(strf::utf8(), 0xD800, "\xED\xA0\x80", true);
-        test_fill(strf::utf8(), 0xDBFF, "\xED\xAF\xBF", true);
-        test_fill(strf::utf8(), 0xDC00, "\xED\xB0\x80", true);
-        test_fill(strf::utf8(), 0xDFFF, "\xED\xBF\xBF", true);
+        test_fill(strf::utf8(), 0xD800, "\xED\xA0\x80", strf::surrogate_policy::lax);
+        test_fill(strf::utf8(), 0xDBFF, "\xED\xAF\xBF", strf::surrogate_policy::lax);
+        test_fill(strf::utf8(), 0xDC00, "\xED\xB0\x80", strf::surrogate_policy::lax);
+        test_fill(strf::utf8(), 0xDFFF, "\xED\xBF\xBF", strf::surrogate_policy::lax);
         test_fill(strf::utf8(), 0xFFFF, "\xEF\xBF\xBF");
         test_fill(strf::utf8(), 0x10000, "\xF0\x90\x80\x80");
         test_fill(strf::utf8(), 0x10FFFF, "\xF4\x8F\xBF\xBF");
@@ -174,10 +162,10 @@ int main()
     {
         // UTF-16;
         test_fill(strf::utf16(), U'a', u"a");
-        test_fill(strf::utf16(), 0xD800, {0xD800}, true);
-        test_fill(strf::utf16(), 0xDBFF, {0xDBFF}, true);
-        test_fill(strf::utf16(), 0xDC00, {0xDC00}, true);
-        test_fill(strf::utf16(), 0xDFFF, {0xDFFF}, true);
+        test_fill(strf::utf16(), 0xD800, {0xD800}, strf::surrogate_policy::lax);
+        test_fill(strf::utf16(), 0xDBFF, {0xDBFF}, strf::surrogate_policy::lax);
+        test_fill(strf::utf16(), 0xDC00, {0xDC00}, strf::surrogate_policy::lax);
+        test_fill(strf::utf16(), 0xDFFF, {0xDFFF}, strf::surrogate_policy::lax);
         test_fill(strf::utf16(), 0x10000,  u"\U00010000");
         test_fill(strf::utf16(), 0x10FFFF, u"\U0010FFFF");
 
@@ -193,10 +181,10 @@ int main()
     {
         // UTF-32;
         test_fill(strf::utf32(), U'a', U"a");
-        test_fill(strf::utf32(), 0xD800, {0xD800}, true);
-        test_fill(strf::utf32(), 0xDBFF, {0xDBFF}, true);
-        test_fill(strf::utf32(), 0xDC00, {0xDC00}, true);
-        test_fill(strf::utf32(), 0xDFFF, {0xDFFF}, true);
+        test_fill(strf::utf32(), 0xD800, {0xD800}, strf::surrogate_policy::lax);
+        test_fill(strf::utf32(), 0xDBFF, {0xDBFF}, strf::surrogate_policy::lax);
+        test_fill(strf::utf32(), 0xDC00, {0xDC00}, strf::surrogate_policy::lax);
+        test_fill(strf::utf32(), 0xDFFF, {0xDFFF}, strf::surrogate_policy::lax);
         test_fill(strf::utf32(), 0x10000,  U"\U00010000");
         test_fill(strf::utf32(), 0x10FFFF, U"\U0010FFFF");
 

@@ -127,7 +127,8 @@ public:
         , _len(len)
         , _wcalc(_get_facet<stringify::v0::width_calculator_category>(fp))
         , _encoding(_get_facet<stringify::v0::encoding_category<CharT>>(fp))
-        , _epoli(_get_facet<stringify::v0::encoding_policy_category>(fp))
+        , _enc_err(_get_facet<stringify::v0::encoding_error_category>(fp))
+        , _allow_surr(_get_facet<stringify::v0::surrogate_policy_category>(fp))
     {
     }
 
@@ -143,7 +144,8 @@ private:
     const std::size_t _len;
     const stringify::v0::width_calculator _wcalc;
     const stringify::v0::encoding<CharT> _encoding;
-    const stringify::v0::encoding_policy  _epoli;
+    const stringify::v0::encoding_error  _enc_err;
+    const stringify::v0::surrogate_policy  _allow_surr;
 
     template <typename Category, typename FPack>
     static decltype(auto) _get_facet(const FPack& fp)
@@ -168,7 +170,8 @@ bool string_printer<CharT>::write(stringify::v0::output_buffer<CharT>& ob) const
 template<typename CharT>
 int string_printer<CharT>::remaining_width(int w) const
 {
-    return _wcalc.remaining_width(w, _str, _len, _encoding, _epoli);
+    return _wcalc.remaining_width( w, _str, _len, _encoding
+                                 , _enc_err, _allow_surr );
 }
 
 template <typename CharT>
@@ -183,7 +186,8 @@ public:
         : _fmt(input)
         , _wcalc(_get_facet<stringify::v0::width_calculator_category>(fp))
         , _encoding(_get_facet<stringify::v0::encoding_category<CharT>>(fp))
-        , _epoli(_get_facet<stringify::v0::encoding_policy_category>(fp))
+        , _enc_err(_get_facet<stringify::v0::encoding_error_category>(fp))
+        , _allow_surr(_get_facet<stringify::v0::surrogate_policy_category>(fp))
     {
         _init();
     }
@@ -201,8 +205,9 @@ private:
     const stringify::v0::string_with_format<CharT> _fmt;
     const stringify::v0::width_calculator _wcalc;
     const stringify::v0::encoding<CharT> _encoding;
-    const stringify::v0::encoding_policy  _epoli;
     unsigned _fillcount = 0;
+    const stringify::v0::encoding_error _enc_err;
+    const stringify::v0::surrogate_policy _allow_surr;
 
     template <typename Category, typename FPack>
     static decltype(auto) _get_facet(const FPack& fp)
@@ -228,12 +233,12 @@ template<typename CharT>
 void fmt_string_printer<CharT>::_init()
 {
     _fillcount = ( _fmt.width() > 0
-                 ? _wcalc.remaining_width
-                     ( _fmt.width()
-                     , _fmt.value().begin()
-                     , _fmt.value().length()
-                     , _encoding
-                     , _epoli )
+                 ? _wcalc.remaining_width( _fmt.width()
+                                         , _fmt.value().begin()
+                                         , _fmt.value().length()
+                                         , _encoding
+                                         , _enc_err
+                                         , _allow_surr )
                  : 0 );
 }
 
@@ -242,7 +247,7 @@ std::size_t fmt_string_printer<CharT>::necessary_size() const
 {
     if (_fillcount > 0)
     {
-        return _fillcount * _encoding.char_size(_fmt.fill(), _epoli.err_hdl())
+        return _fillcount * _encoding.char_size(_fmt.fill(), _enc_err)
             + _fmt.value().length();
     }
     return _fmt.value().length();
@@ -256,7 +261,7 @@ int fmt_string_printer<CharT>::remaining_width(int w) const
         return w > _fmt.width() ? w - _fmt.width() : 0;
     }
     return _wcalc.remaining_width( w, _fmt.value().begin(), _fmt.value().length()
-                                 , _encoding, _epoli );
+                                 , _encoding, _enc_err, _allow_surr );
 }
 
 template<typename CharT>
@@ -293,8 +298,8 @@ template <typename CharT>
 bool fmt_string_printer<CharT>::_write_str
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
-    return stringify::v0::detail::write_str
-        ( ob, _fmt.value().begin(), _fmt.value().length() );
+    return stringify::v0::detail::write_str( ob, _fmt.value().begin()
+                                           , _fmt.value().length() );
 }
 
 template <typename CharT>
@@ -302,8 +307,8 @@ bool fmt_string_printer<CharT>::_write_fill
     ( stringify::v0::output_buffer<CharT>& ob
     , unsigned count ) const
 {
-    return _encoding.encode_fill
-        ( ob, count, _fmt.fill(), _epoli.err_hdl(), _epoli.allow_surr() );
+    return _encoding.encode_fill( ob, count, _fmt.fill()
+                                , _enc_err, _allow_surr );
 }
 
 #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)

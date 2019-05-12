@@ -314,7 +314,7 @@ the invalid sequence, and the third one is to [link encoding_error_stop
 stop everything] and emit an error, /i.e./, to return an error code
 or throw an exception.
 You can also choose whether surrogates are
-treated as errors or not (as explained [link allow_surrogates here]).
+treated as errors or not (as explained [link surrogate_policy here]).
 
 [/
 Another cool thing you can do is to print ranges:
@@ -399,7 +399,7 @@ like the width calculation method, and encoding error handling.
     /leading expressions/] for each kind.
 
     Also, the user can customise how the library handles
-    [link encoding_policy encoding errors] as well as
+    [link encoding_error encoding errors] as well as
     [link asm_string_error assembly string errors].
   ]
   [[br]]

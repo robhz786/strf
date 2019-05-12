@@ -4,39 +4,20 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[#encoding_policy]
-[section The `encoding_policy` facet]
+[#encoding_error]
+[section Enumeration `encoding_error`]
 [import ../example/encoding_conversion.cpp]
-```
-namespace boost {
-namespace stringify {
-inline namespace v0 {
 
-enum class encoding_error
-{
-    replace, stop, ignore
-};
+[table
+[[`enum class encoding_error { replace, stop, ignore };`
+]]
+[[
+Default facet value: `encoding_error::replace`.
+]]
+]
 
-class encoding_policy
-{
-public:
-
-    constexpr encoding_policy
-        ( encoding_error err_hdl
-        , bool allow_surr = false );
-        
-    constexpr encoding_policy(const encoding_policy&);
-    constexpr encoding_policy& operator=(const encoding_policy& other);
-    constexpr bool operator==(const encoding_policy& other) const;
-
-    constexpr bool allow_surr() const;
-    constexpr stringify::v0::encoding_error err_hdl() const;
-};
-
-} } } // namespace boost::stringify::v0
-```
-The `encoding_error` enumeration specifies how invalid sequences are
-handled:
+The `encoding_error` enumeration is a facet that specifies how the
+encoding conversion algorithms shall handle invalid sequences:
 
 [itemized_list
 
@@ -66,11 +47,5 @@ from the transcoding.
 ]
 
 ]
-
-[#allow_surrogates]
-The flag `allow_surr` specifies wheter the surrogates are allowed.
-In UTF-16 this means to allow unpaired surrogates (high surrogate not followed by a low surrogate, or a low surrogate not proceeded by a high surrogate). In ASCII and ASCII extensions this facets has no effect.
-
-[allow_surrogates]
 
 [endsect]

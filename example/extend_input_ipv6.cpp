@@ -122,9 +122,12 @@ public:
         : ipv6_printer
           ( fmt
           , fmt.is_big() ? 4 : 0
-          , strf::facets_pack<strf::encoding<CharT>, strf::encoding_policy>
+          , strf::facets_pack< strf::encoding<CharT>
+                             , strf::encoding_error
+                             , strf::surrogate_policy >
               { strf::get_facet<strf::encoding_category<CharT>, ipv6_printer>(fp)
-              , strf::get_facet<strf::encoding_policy_category, ipv6_printer>(fp) } )
+              , strf::get_facet<strf::encoding_error_category, ipv6_printer>(fp)
+              , strf::get_facet<strf::surrogate_policy_category, ipv6_printer>(fp) } )
     {
     }
 
@@ -140,7 +143,9 @@ private:
 
     ipv6_printer( ipv6addr_with_format fmt
                 , int precision
-                , strf::facets_pack<strf::encoding<CharT>, strf::encoding_policy> fp );
+                , strf::facets_pack< strf::encoding<CharT>
+                                   , strf::encoding_error
+                                   , strf::surrogate_policy > fp );
 
     bool compose_non_abbreviated(strf::printers_receiver<CharT>& out) const;
     bool compose_abbreviated(strf::printers_receiver<CharT>& out) const;
@@ -166,10 +171,13 @@ template <typename CharT>
 ipv6_printer<CharT>::ipv6_printer
     ( ipv6addr_with_format fmt
     , int precision
-    , strf::facets_pack<strf::encoding<CharT>, strf::encoding_policy> fp )
+    , strf::facets_pack< strf::encoding<CharT>
+                       , strf::encoding_error
+                       , strf::surrogate_policy > fp )
     : strf::dynamic_join_printer<CharT>
         { strf::get_facet<strf::encoding_category<CharT>, void>(fp)
-        , strf::get_facet<strf::encoding_policy_category, void>(fp) }
+        , strf::get_facet<strf::encoding_error_category, void>(fp)
+        , strf::get_facet<strf::surrogate_policy_category, void>(fp) }
     , _fmt(fmt)
     , _colon{strf::make_printer<CharT>(fp, static_cast<CharT>(':'))}
     , _hextets

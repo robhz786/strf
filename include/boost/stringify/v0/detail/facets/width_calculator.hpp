@@ -54,7 +54,7 @@ private:
 
 BOOST_STRINGIFY_INLINE bool width_decrementer::recycle()
 {
-    int w = _func(_remaining_width, _buff, this->pos());    
+    int w = _func(_remaining_width, _buff, this->pos());
     this->set_pos(_buff);
     _remaining_width -= w;
     return w < _remaining_width;
@@ -94,15 +94,13 @@ public:
         {
             return 1;
         }
-        BOOST_STRINGIFY_IF_CONSTEXPR(std::is_same<CharT, char32_t>::value)
+
+        char32_t ch32 = ch;
+        if ( ! std::is_same<CharT, char32_t>::value
+          || enc.id() != stringify::v0::encoding_id::eid_utf32 )
         {
-            if (enc.id() == stringify::v0::encoding_id::eid_utf32)
-            {
-                int rw = _ch_wcalc(std::numeric_limits<int>::max(), &ch, &ch + 1);
-                return std::numeric_limits<int>::max() - rw;
-            }
+            ch32 = enc.decode_single_char(ch);
         }
-        char32_t ch32 = enc.decode_single_char(ch);
         int rw = _ch_wcalc(std::numeric_limits<int>::max(), &ch32, &ch32 + 1);
         return std::numeric_limits<int>::max() - rw;
     }
@@ -112,7 +110,8 @@ public:
                        , const CharIn* str
                        , std::size_t str_len
                        , stringify::v0::encoding<CharIn> enc
-                       , const stringify::v0::encoding_policy epoli ) const
+                       , stringify::v0::encoding_error enc_err
+                       , stringify::v0::surrogate_policy allow_surr ) const
     {
         if (_type == stringify::width_calculation_type::as_len)
         {
@@ -130,7 +129,7 @@ public:
         {
             stringify::v0::detail::width_decrementer acc(_ch_wcalc, width);
             enc.to_u32().transcode( acc, str, str + str_len
-                                  , epoli.err_hdl(), epoli.allow_surr() );
+                                  , enc_err, allow_surr );
             return acc.get_result();
         }
     }
@@ -167,7 +166,8 @@ int width_calculator::remaining_width<char>
     , const char* str
     , std::size_t str_len
     , stringify::v0::encoding<char> conv
-    , stringify::v0::encoding_policy epoli ) const;
+    , stringify::v0::encoding_error enc_err
+    , stringify::v0::surrogate_policy allow_surr ) const;
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 int width_calculator::remaining_width<char16_t>
@@ -175,7 +175,8 @@ int width_calculator::remaining_width<char16_t>
     , const char16_t* str
     , std::size_t str_len
     , stringify::v0::encoding<char16_t> conv
-    , stringify::v0::encoding_policy epoli ) const;
+    , stringify::v0::encoding_error enc_err
+    , stringify::v0::surrogate_policy allow_surr ) const;
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 int width_calculator::remaining_width<char32_t>
@@ -183,7 +184,8 @@ int width_calculator::remaining_width<char32_t>
     , const char32_t* str
     , std::size_t str_len
     , stringify::v0::encoding<char32_t> conv
-    , stringify::v0::encoding_policy epoli ) const;
+    , stringify::v0::encoding_error enc_err
+    , stringify::v0::surrogate_policy allow_surr ) const;
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 int width_calculator::remaining_width<wchar_t>
@@ -191,7 +193,8 @@ int width_calculator::remaining_width<wchar_t>
     , const wchar_t* str
     , std::size_t str_len
     , stringify::v0::encoding<wchar_t> conv
-    , stringify::v0::encoding_policy epoli ) const;
+    , stringify::v0::encoding_error enc_err
+    , stringify::v0::surrogate_policy allow_surr ) const;
 
 #endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
 

@@ -229,11 +229,13 @@ public:
         ( const stringify::v0::detail::printer_ptr_range<CharT>& args
         , const stringify::v0::detail::join_t& j
         , stringify::v0::encoding<CharT> encoding
-        , stringify::v0::encoding_policy epoli )
+        , stringify::v0::encoding_error enc_err
+        , stringify::v0::surrogate_policy allow_surr )
         : _join{j}
         , _args{args}
         , _encoding(encoding)
-        , _epoli(epoli)
+        , _enc_err(enc_err)
+        , _allow_surr(allow_surr)
     {
         _fillcount = _remaining_width_from_arglist(_join.width);
     }
@@ -246,8 +248,9 @@ public:
         : _join{cp._join}
         , _args{args}
         , _encoding(cp._encoding)
-        , _epoli(cp._epoli)
         , _fillcount(cp._fillcount)
+        , _enc_err(cp._enc_err)
+        , _allow_surr(cp._allow_surr)
     {
     }
 
@@ -257,8 +260,9 @@ public:
         : _join{std::move(tmp._join)}
         , _args{std::move(args)}
         , _encoding(tmp._encoding)
-        , _epoli(tmp._epoli)
         , _fillcount(tmp._fillcount)
+        , _enc_err(tmp._enc_err)
+        , _allow_surr(tmp._allow_surr)
     {
     }
 
@@ -322,8 +326,9 @@ private:
     input_type _join;
     pp_range _args = nullptr;
     const stringify::v0::encoding<CharT> _encoding;
-    stringify::v0::encoding_policy _epoli;
     int _fillcount = 0;
+    stringify::v0::encoding_error _enc_err;
+    stringify::v0::surrogate_policy _allow_surr;
 
     std::size_t _args_length() const
     {
@@ -340,7 +345,7 @@ private:
         if(_fillcount > 0)
         {
             return _fillcount * _encoding.char_size( _join.fillchar
-                                                   , _epoli.err_hdl());
+                                                   , _enc_err);
         }
         return 0;
     }
@@ -397,8 +402,8 @@ private:
         ( stringify::v0::output_buffer<CharT>& ob
         , int count ) const
     {
-        return _encoding.encode_fill
-            ( ob, count, _join.fillchar, _epoli.err_hdl(), _epoli.allow_surr() );
+        return _encoding.encode_fill( ob, count, _join.fillchar
+                                    , _enc_err, _allow_surr );
     }
 };
 
@@ -414,6 +419,11 @@ class join_printer
     using _join_impl
     = stringify::v0::detail::join_printer_impl<CharT>;
 
+    template <typename Category>
+    static decltype(auto) _get_facet(const FPack& fp)
+    {
+        return fp.template get_facet<Category, void>();
+    }
 
 public:
 
@@ -423,12 +433,11 @@ public:
         ( const FPack& fp
         , const stringify::v0::detail::joined_args<Args...>& ja )
         : _fmt_group(fp, ja.args)
-        , _join_impl{ _fmt_group::range()
+        , _join_impl( _fmt_group::range()
                     , ja.join
-                    , stringify::v0::get_facet
-                        < stringify::v0::encoding_category<CharT>, void > (fp)
-                    , stringify::v0::get_facet
-                        < stringify::v0::encoding_policy_category, void > (fp) }
+                    , _get_facet<stringify::v0::encoding_category<CharT>> (fp)
+                    , _get_facet<stringify::v0::encoding_error_category>(fp)
+                    , _get_facet<stringify::v0::surrogate_policy_category>(fp))
     {
     }
 
@@ -437,12 +446,6 @@ public:
         , _join_impl(cp, _fmt_group::range())
     {
     }
-
-    // join_printer(join_printer&& tmp)
-    //     : fmt_group(std::move(tmp))
-    //     , join_impl(std::move(tmp), fmt_group::range())
-    // {
-    // }
 
     virtual ~join_printer()
     {

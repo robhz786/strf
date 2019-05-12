@@ -318,7 +318,8 @@ public:
             , _get_facet<stringify::v0::width_calculator_category>(fp)
             , src_enc
             , _get_facet<stringify::v0::encoding_category<CharOut>>(fp)
-            , _get_facet<stringify::v0::encoding_policy_category>(fp) )
+            , _get_facet<stringify::v0::encoding_error_category>(fp)
+            , _get_facet<stringify::v0::surrogate_policy_category>(fp) )
     {
     }
 
@@ -328,7 +329,8 @@ public:
         , const stringify::v0::width_calculator& wcalc
         , stringify::v0::encoding<CharIn> src_enc
         , stringify::v0::encoding<CharOut> dest_enc
-        , const stringify::v0::encoding_policy epoli ) noexcept;
+        , stringify::v0::encoding_error enc_err
+        , stringify::v0::surrogate_policy allow_surr ) noexcept;
 
     ~cv_string_printer() = default;
 
@@ -346,7 +348,8 @@ private:
     const stringify::v0::encoding<CharIn>  _src_encoding;
     const stringify::v0::encoding<CharOut> _dest_encoding;
     const stringify::v0::transcoder_impl_type<CharIn, CharOut>* _transcoder_impl;
-    const stringify::v0::encoding_policy _epoli;
+    const stringify::v0::encoding_error _enc_err;
+    const stringify::v0::surrogate_policy _allow_surr;
 
     template <typename Category, typename FPack>
     static decltype(auto) _get_facet(const FPack& fp)
@@ -363,14 +366,16 @@ cv_string_printer<CharIn, CharOut>::cv_string_printer
     , const stringify::v0::width_calculator& wcalc
     , stringify::v0::encoding<CharIn> src_enc
     , stringify::v0::encoding<CharOut> dest_enc
-    , const stringify::v0::encoding_policy epoli ) noexcept
+    , stringify::v0::encoding_error enc_err
+    , stringify::v0::surrogate_policy allow_surr ) noexcept
     : _str(str)
     , _len(len)
     , _wcalc(wcalc)
     , _src_encoding(src_enc)
     , _dest_encoding(dest_enc)
     , _transcoder_impl(stringify::v0::get_transcoder_impl(src_enc, dest_enc))
-    , _epoli(epoli)
+    , _enc_err(enc_err)
+    , _allow_surr(allow_surr)
 {
 }
 
@@ -381,12 +386,12 @@ std::size_t cv_string_printer<CharIn, CharOut>::necessary_size() const
     {
         stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_impl);
         return transcoder.necessary_size
-            ( _str, _str + _len, _epoli.err_hdl(), _epoli.allow_surr() );
+            ( _str, _str + _len, _enc_err, _allow_surr );
     }
     return stringify::v0::detail::decode_encode_size
         ( _str, _str + _len
         , _src_encoding, _dest_encoding
-        , _epoli.err_hdl(), _epoli.allow_surr() );
+        , _enc_err, _allow_surr );
 }
 
 template<typename CharIn, typename CharOut>
@@ -397,19 +402,19 @@ bool cv_string_printer<CharIn, CharOut>::write
     {
         stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_impl);
         return transcoder.transcode( ob, _str, _str + _len
-                                   , _epoli.err_hdl(), _epoli.allow_surr() );
+                                   , _enc_err, _allow_surr );
     }
     return stringify::v0::detail::decode_encode( ob
                                                , _str, _str + _len
                                                , _src_encoding, _dest_encoding
-                                               , _epoli.err_hdl()
-                                               , _epoli.allow_surr() );
+                                               , _enc_err
+                                               , _allow_surr );
 }
 
 template<typename CharIn, typename CharOut>
 int cv_string_printer<CharIn, CharOut>::remaining_width(int w) const
 {
-    return _wcalc.remaining_width(w, _str, _len, _src_encoding, _epoli);
+    return _wcalc.remaining_width(w, _str, _len, _src_encoding, _enc_err, _allow_surr);
 }
 
 template<typename CharIn, typename CharOut>
@@ -426,7 +431,8 @@ public:
         , _src_encoding(src_enc)
         , _dest_encoding(_get_facet<stringify::v0::encoding_category<CharOut>>(fp))
         , _wcalc(_get_facet<stringify::v0::width_calculator_category>(fp))
-        , _epoli(_get_facet<stringify::v0::encoding_policy_category>(fp))
+        , _enc_err(_get_facet<stringify::v0::encoding_error_category>(fp))
+        , _allow_surr(_get_facet<stringify::v0::surrogate_policy_category>(fp))
     {
         _init();
     }
@@ -444,7 +450,8 @@ private:
     const stringify::v0::encoding<CharIn> _src_encoding;
     const stringify::v0::encoding<CharOut> _dest_encoding;
     const stringify::v0::width_calculator _wcalc;
-    const stringify::v0::encoding_policy  _epoli;
+    const stringify::v0::encoding_error _enc_err;
+    const stringify::v0::surrogate_policy  _allow_surr;
     int _fillcount = 0;
 
     template <typename Category, typename FPack>
@@ -467,12 +474,12 @@ template<typename CharIn, typename CharOut>
 void fmt_cv_string_printer<CharIn, CharOut>::_init()
 {
     _fillcount = ( _fmt.width() > 0
-                 ? _wcalc.remaining_width
-                     ( _fmt.width()
-                     , _fmt.value().begin()
-                     , _fmt.value().length()
-                     , _src_encoding
-                     , _epoli )
+                 ? _wcalc.remaining_width( _fmt.width()
+                                         , _fmt.value().begin()
+                                         , _fmt.value().length()
+                                         , _src_encoding
+                                         , _enc_err
+                                         , _allow_surr )
                  : 0 );
     _transcoder_impl = stringify::v0::get_transcoder_impl(_src_encoding, _dest_encoding);
 }
@@ -485,20 +492,20 @@ std::size_t fmt_cv_string_printer<CharIn, CharOut>::necessary_size() const
     {
         stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_impl);
         size = transcoder.necessary_size( _fmt.value().begin(), _fmt.value().end()
-                                        , _epoli.err_hdl(), _epoli.allow_surr() );
+                                        , _enc_err, _allow_surr );
     }
     else
     {
         size = stringify::v0::detail::decode_encode_size
             ( _fmt.value().begin(), _fmt.value().end()
             , _src_encoding, _dest_encoding
-            , _epoli.err_hdl(), _epoli.allow_surr() );
+            , _enc_err, _allow_surr );
     }
 
     if (_fillcount > 0)
     {
         size += _fillcount * _dest_encoding.char_size( _fmt.fill()
-                                                     , _epoli.err_hdl() );
+                                                     , _enc_err );
     }
 
     return size;
@@ -546,16 +553,16 @@ bool fmt_cv_string_printer<CharIn, CharOut>::_write_str
         return transcoder.transcode( ob
                                    , _fmt.value().begin()
                                    , _fmt.value().end()
-                                   , _epoli.err_hdl()
-                                   , _epoli.allow_surr() );
+                                   , _enc_err
+                                   , _allow_surr );
     }
     return stringify::v0::detail::decode_encode( ob
                                                , _fmt.value().begin()
                                                , _fmt.value().end()
                                                , _src_encoding
                                                , _dest_encoding
-                                               , _epoli.err_hdl()
-                                               , _epoli.allow_surr() );
+                                               , _enc_err
+                                               , _allow_surr );
 }
 
 template<typename CharIn, typename CharOut>
@@ -564,7 +571,7 @@ bool fmt_cv_string_printer<CharIn, CharOut>::_write_fill
     , unsigned count ) const
 {
     return _dest_encoding.encode_fill
-        ( ob, count, _fmt.fill(), _epoli.err_hdl(), _epoli.allow_surr() );
+        ( ob, count, _fmt.fill(), _enc_err, _allow_surr );
 }
 
 template<typename CharIn, typename CharOut>
@@ -574,12 +581,12 @@ int fmt_cv_string_printer<CharIn, CharOut>::remaining_width(int w) const
     {
         return w > _fmt.width() ? w - _fmt.width() : 0;
     }
-    return _wcalc.remaining_width
-        ( w
-        , _fmt.value().begin()
-        , _fmt.value().length()
-        , _src_encoding
-        , _epoli );
+    return _wcalc.remaining_width( w
+                                 , _fmt.value().begin()
+                                 , _fmt.value().length()
+                                 , _src_encoding
+                                 , _enc_err
+                                 , _allow_surr );
 }
 
 

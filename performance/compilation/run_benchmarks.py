@@ -53,7 +53,7 @@ def empty_row() :
     return part1 + part2 + ']'
 
 def table_header() :
-    hdr = '[[{:^28}][{:^19}][{:^9}]'.format(
+    hdr = '[[{:^28}][{:^18}][{:^9}]'.format(
         'source file',
         'comp. times(w,u,s)',
         'obj. file')

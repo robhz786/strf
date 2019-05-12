@@ -187,12 +187,13 @@ private:
     const stringify::v0::numchars<CharT>& _chars;
     const stringify::v0::numpunct_base& _punct;
     const stringify::v0::encoding<CharT> _encoding;
-    stringify::v0::encoding_policy _epoli;
     unsigned _digcount;
     unsigned _sepcount;
     unsigned _fillcount;
     unsigned _precision;
+    stringify::v0::encoding_error _enc_err;
     stringify::v0::alignment_format::fn<void> _afmt;
+    stringify::v0::surrogate_policy _allow_surr;
     bool _showneg;
     bool _showpos;
     bool _showbase;
@@ -205,7 +206,7 @@ private:
         , std::size_t count ) const
     {
         return _encoding.encode_fill
-            ( ob, count, _afmt.fill(), _epoli.err_hdl(), _epoli.allow_surr() );
+            ( ob, count, _afmt.fill(), _enc_err, _allow_surr );
     }
 
     bool _write_complement(stringify::v0::output_buffer<CharT>& ob) const;
@@ -222,8 +223,9 @@ fmt_int_printer<CharT>::fmt_int_printer
     : _chars(get_facet<stringify::v0::numchars_category<CharT, Base>, IntT>(fp))
     , _punct(get_facet<stringify::v0::numpunct_category<Base>, IntT>(fp))
     , _encoding(get_facet<stringify::v0::encoding_category<CharT>, IntT>(fp))
-    , _epoli(get_facet<stringify::v0::encoding_policy_category, IntT>(fp))
+    , _enc_err(get_facet<stringify::v0::encoding_error_category, IntT>(fp))
     , _afmt(value)
+    , _allow_surr(get_facet<stringify::v0::surrogate_policy_category, IntT>(fp))
 {
     _init<IntT, Base>(value);
 }
@@ -327,7 +329,7 @@ std::size_t fmt_int_printer<CharT>::necessary_size() const
     }
     if (_fillcount > 0)
     {
-        s += _fillcount * _encoding.char_size(_afmt.fill(), _epoli.err_hdl());
+        s += _fillcount * _encoding.char_size(_afmt.fill(), _enc_err);
     }
     return s;
 }

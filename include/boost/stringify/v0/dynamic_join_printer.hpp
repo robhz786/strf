@@ -111,9 +111,11 @@ public:
 
     dynamic_join_printer
         ( stringify::v0::encoding<CharOut> enc
-        , stringify::v0::encoding_policy epoli )
+        , stringify::v0::encoding_error enc_err
+        , stringify::v0::surrogate_policy allow_surr )
         : _encoding(enc)
-        , _epoli(epoli)
+        , _enc_err(enc_err)
+        , _allow_surr(allow_surr)
     {
     }
 
@@ -144,7 +146,8 @@ private:
         , stringify::v0::output_buffer<CharOut>& ob ) const;
 
     stringify::v0::encoding<CharOut> _encoding;
-    stringify::v0::encoding_policy _epoli;
+    const stringify::v0::encoding_error _enc_err;
+    const stringify::v0::surrogate_policy _allow_surr;
 };
 
 template <typename CharOut>
@@ -164,7 +167,7 @@ std::size_t dynamic_join_printer<CharOut>::necessary_size() const
         stringify::v0::detail::width_subtracter<CharOut> wds{fmt.width()};
         compose(wds);
         std::size_t fillcount = wds.remaining_width();
-        fill_len = _encoding.char_size(fmt.fill(), _epoli.err_hdl()) * fillcount;
+        fill_len = _encoding.char_size(fmt.fill(), _enc_err) * fillcount;
     }
 
     stringify::v0::detail::necessary_size_sum<CharOut> s;
@@ -254,8 +257,7 @@ bool dynamic_join_printer<CharOut>::write_fill
     , char32_t ch
     , stringify::v0::output_buffer<CharOut>& ob ) const
 {
-    return _encoding.encode_fill
-        ( ob, count, ch, _epoli.err_hdl(), _epoli.allow_surr() );
+    return _encoding.encode_fill(ob, count, ch, _enc_err, _allow_surr);
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

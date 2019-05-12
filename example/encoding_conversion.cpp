@@ -67,7 +67,7 @@ void error_signal_skip()
     namespace strf = boost::stringify::v0;
 
     auto str = strf::to_string
-        .facets(strf::encoding_policy{strf::encoding_error::ignore})
+        .facets(strf::encoding_error::ignore)
         (strf::cv("--\x99--"));
 
     BOOST_ASSERT(str == "----");
@@ -84,7 +84,7 @@ void encoding_error_stop()
     try
     {
     auto str = strf::to_string
-        .facets(strf::encoding_policy{strf::encoding_error::stop})
+        .facets(strf::encoding_error::stop)
         (strf::cv("--\x99--"));
     }
     catch(strf::stringify_error& x)
@@ -104,27 +104,22 @@ void allow_surrogates ()
     std::u16string input_utf16 {u"-----"};
     input_utf16[1] = 0xD800; // a surrogate character alone
 
-    constexpr auto allow_surrogates = strf::encoding_policy
-        ( strf::encoding_error::replace
-        , true );
-
     auto str1 = strf::to_string(strf::cv(input_utf16));
 
-    auto str2 = strf::to_string .facets(allow_surrogates) (strf::cv(input_utf16));
+    auto str2 = strf::to_string .facets(strf::surrogate_policy::lax) (strf::cv(input_utf16));
 
-
-    BOOST_ASSERT(str1 == u8"-\uFFFD---");
-    BOOST_ASSERT(str2 ==   "-\xED\xA0\x80---");
+    BOOST_ASSERT(str1 == u8"-\uFFFD---");       // surrogate sanitized
+    BOOST_ASSERT(str2 ==   "-\xED\xA0\x80---"); // surrogate allowed
 
     // now back to UTF-16
     auto utf16_no_surr = strf::to_u16string(strf::cv(str2));
 
     auto utf16_with_surr = strf::to_u16string
-        .facets(allow_surrogates)
+        .facets(strf::surrogate_policy::lax)
         (strf::cv(str2));
 
-    BOOST_ASSERT(utf16_no_surr == u"-\uFFFD\uFFFD\uFFFD---");
-    BOOST_ASSERT(utf16_with_surr[1] == 0xD800);
+    BOOST_ASSERT(utf16_no_surr == u"-\uFFFD\uFFFD\uFFFD---"); // surrogate sanitized
+    BOOST_ASSERT(utf16_with_surr[1] == 0xD800);               // surrogate recovered
     //]
 
 }

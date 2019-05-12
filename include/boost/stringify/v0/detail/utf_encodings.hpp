@@ -144,10 +144,11 @@ constexpr bool is_utf8_continuation(std::uint8_t ch)
 constexpr bool valid_start_3bytes
     ( std::uint8_t ch0
     , std::uint8_t ch1
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     return ( (ch0 != 0xE0 || ch1 != 0x80)
-          && (allow_surr || (0x1B != (((ch0 & 0xF) << 1) | ((ch1 >> 5) & 1)))) );
+          && ( allow_surr == stringify::v0::surrogate_policy::lax
+            || (0x1B != (((ch0 & 0xF) << 1) | ((ch1 >> 5) & 1)))) );
 }
 
 inline unsigned utf8_decode_first_2_of_3(std::uint8_t ch0, std::uint8_t ch1)
@@ -155,11 +156,15 @@ inline unsigned utf8_decode_first_2_of_3(std::uint8_t ch0, std::uint8_t ch1)
     return ((ch0 & 0x0F) << 6) | (ch1 & 0x3F);
 }
 
-inline bool first_2_of_3_are_valid(unsigned x, bool allow_surr)
+inline bool first_2_of_3_are_valid( unsigned x
+                                  , stringify::v0::surrogate_policy allow_surr )
 {
-    return /*0x1F < x && */(allow_surr || (x >> 5) != 0x1B);
+    return ( allow_surr == stringify::v0::surrogate_policy::lax
+          || (x >> 5) != 0x1B );
 }
-inline bool first_2_of_3_are_valid(std::uint8_t ch0,  std::uint8_t ch1, bool allow_surr)
+inline bool first_2_of_3_are_valid( std::uint8_t ch0
+                                  , std::uint8_t ch1
+                                  , stringify::v0::surrogate_policy allow_surr )
 {
     return first_2_of_3_are_valid(utf8_decode_first_2_of_3(ch0, ch1), allow_surr);
 }
@@ -190,7 +195,7 @@ bool utf8_to_utf32_transcode
     , const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     using stringify::v0::detail::utf8_decode;
     using stringify::v0::detail::is_utf8_continuation;
@@ -285,7 +290,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf32_size
     ( const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     std::uint8_t ch0, ch1, ch2;
     const std::uint8_t* src_it = src;
@@ -360,7 +365,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_sanitize
     , const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     using stringify::v0::detail::utf8_decode;
 
@@ -464,7 +469,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_sanitize_size
     ( const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     using stringify::v0::detail::utf8_decode;
     std::uint8_t ch0, ch1;
@@ -556,7 +561,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_encode_fill
     , std::size_t count
     , char32_t ch
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     if (ch < 0x80)
     {
@@ -573,7 +578,8 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_encode_fill
     }
     if (ch <  0x10000)
     {
-        if ( ! allow_surr && detail::is_surrogate(ch))
+        if ( allow_surr == stringify::v0::surrogate_policy::strict
+          && detail::is_surrogate(ch) )
         {
             goto invalid_char;
         }
@@ -654,7 +660,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_to_utf8_transcode
     , const char32_t* src
     , const char32_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     auto src_it = src;
     auto dest_it = ob.pos();
@@ -677,7 +683,8 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_to_utf8_transcode
         }
         else if (ch < 0x10000)
         {
-            if(allow_surr || stringify::v0::detail::not_surrogate(ch))
+            if ( allow_surr == stringify::v0::surrogate_policy::lax
+              || stringify::v0::detail::not_surrogate(ch))
             {
                 BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
                 dest_it[0] = static_cast<std::uint8_t>(0xE0 | ((ch & 0xF000) >> 12));
@@ -728,7 +735,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf8_size
     ( const char32_t* src
     , const char32_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     auto src_it = src;
     std::size_t count = 0;
@@ -745,7 +752,8 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf8_size
         }
         else if (ch < 0x10000)
         {
-            if(allow_surr || stringify::v0::detail::not_surrogate(ch))
+            if ( allow_surr == stringify::v0::surrogate_policy::lax
+              || stringify::v0::detail::not_surrogate(ch) )
             {
                 count += 3;
             }
@@ -809,7 +817,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_to_utf32_transcode
     , const char16_t* src
     , const char16_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     unsigned long ch, ch2;
     char32_t ch32;
@@ -833,7 +841,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_to_utf32_transcode
             ch32 = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
             ++src_it_next;
         }
-        else if(allow_surr)
+        else if (allow_surr == stringify::v0::surrogate_policy::lax)
         {
             ch32 = ch;
         }
@@ -866,7 +874,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_to_utf32_size
     ( const char16_t* src
     , const char16_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     unsigned long ch, ch2;
     std::size_t count = 0;
@@ -889,7 +897,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_to_utf32_size
             ++count;
             ++src_it_next;
         }
-        else if(allow_surr)
+        else if(allow_surr == stringify::v0::surrogate_policy::lax)
         {
             ++count;
         }
@@ -916,7 +924,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_sanitize
     , const char16_t* src
     , const char16_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     unsigned long ch, ch2;
     auto src_it = src;
@@ -944,7 +952,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_sanitize
             dest_it[1] = static_cast<char16_t>(ch2);
             dest_it += 2;
         }
-        else if(allow_surr)
+        else if (allow_surr == stringify::v0::surrogate_policy::lax)
         {
             BOOST_STRINGIFY_CHECK_DEST;
             *dest_it = static_cast<char16_t>(ch);
@@ -979,7 +987,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_sanitize_size
     ( const char16_t* src
     , const char16_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     std::size_t count = 0;
     const char16_t* src_it = src;
@@ -1001,7 +1009,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_sanitize_size
             ++ src_it_next;
             count += 2 ;
         }
-        else if (allow_surr)
+        else if (allow_surr == stringify::v0::surrogate_policy::lax)
         {
             ++ count;
         }
@@ -1068,11 +1076,12 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_encode_fill
     , std::size_t count
     , char32_t ch
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     if (ch < 0x10000)
     {
-        if (!allow_surr && detail::is_surrogate(ch))
+        if ( allow_surr  == stringify::v0::surrogate_policy::strict
+          && detail::is_surrogate(ch) )
         {
             goto invalid_char;
         }
@@ -1109,7 +1118,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_to_utf16_transcode
     , const char32_t* src
     , const char32_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     auto src_it = src;
     auto dest_it = ob.pos();
@@ -1119,7 +1128,8 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_to_utf16_transcode
         auto ch = *src_it;
         if (ch < 0x10000)
         {
-            if (allow_surr || stringify::v0::detail::not_surrogate(ch))
+            if ( allow_surr == stringify::v0::surrogate_policy::lax
+              || stringify::v0::detail::not_surrogate(ch) )
             {
                 BOOST_STRINGIFY_CHECK_DEST;
                 *dest_it = static_cast<char16_t>(ch);
@@ -1165,7 +1175,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf16_size
     ( const char32_t* src
     , const char32_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     (void) allow_surr;
     std::size_t count = 0;
@@ -1213,7 +1223,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_sanitize_size
     ( const char32_t* src
     , const char32_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     (void) err_hdl;
     (void) allow_surr;
@@ -1226,11 +1236,11 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_sanitize
     , const char32_t* src
     , const char32_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
-    if(allow_surr)
+    if (allow_surr == stringify::v0::surrogate_policy::lax)
     {
         for (auto src_it = src; src_it < src_end; ++src_it)
         {
@@ -1324,9 +1334,10 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf32_encode_fill
     , std::size_t count
     , char32_t ch
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
-    if (ch > 0x10FFFF || (!allow_surr && detail::is_surrogate(ch)))
+    if (ch > 0x10FFFF || ( allow_surr == stringify::v0::surrogate_policy::strict
+                        && detail::is_surrogate(ch) ))
     {
         switch (err_hdl)
         {
@@ -1370,7 +1381,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf8_to_utf16_transcode
     , const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     using stringify::v0::detail::utf8_decode;
 
@@ -1464,7 +1475,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf16_size
     ( const std::uint8_t* src_begin
     , const std::uint8_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     (void) err_hdl;
     using stringify::v0::detail::utf8_decode;
@@ -1540,7 +1551,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_to_utf8_transcode
     , const char16_t* src
     , const char16_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     (void) err_hdl;
     auto src_it = src;
@@ -1585,7 +1596,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE bool utf16_to_utf8_transcode
             dest_it[3] = static_cast<std::uint8_t>(0x80 |  (codepoint &     0x3F));
             dest_it += 4;
         }
-        else if(allow_surr)
+        else if (allow_surr == stringify::v0::surrogate_policy::lax)
         {
             goto three_bytes;
         }
@@ -1622,7 +1633,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_to_utf8_size
     ( const char16_t* src_begin
     , const char16_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     (void) err_hdl;
     (void) allow_surr;

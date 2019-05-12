@@ -46,7 +46,7 @@ static std::size_t same_size
     ( const CharIn* src
     , const CharIn* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     (void) allow_surr;
     (void) err_hdl;
@@ -62,21 +62,21 @@ struct single_byte_encoding
         , const std::uint8_t* src
         , const std::uint8_t* src_end
         , stringify::v0::encoding_error err_hdl
-        , bool allow_surr );
+        , stringify::v0::surrogate_policy allow_surr );
 
     static bool from_utf32
         ( stringify::v0::output_buffer_base<std::uint8_t>& ob
         , const char32_t* src
         , const char32_t* src_end
         , stringify::v0::encoding_error err_hdl
-        , bool allow_surr );
+        , stringify::v0::surrogate_policy allow_surr );
 
     static bool sanitize
         ( stringify::v0::output_buffer_base<std::uint8_t>& ob
         , const std::uint8_t* src
         , const std::uint8_t* src_end
         , stringify::v0::encoding_error err_hdl
-        , bool allow_surr );
+        , stringify::v0::surrogate_policy allow_surr );
 
     static std::uint8_t* encode_char(std::uint8_t* dest, char32_t ch);
 
@@ -85,7 +85,7 @@ struct single_byte_encoding
         , std::size_t count
         , char32_t ch
         , stringify::v0::encoding_error err_hdl
-        , bool );
+        , stringify::v0::surrogate_policy );
 
     static char32_t decode_single_char(std::uint8_t ch)
     {
@@ -122,7 +122,7 @@ bool single_byte_encoding<Impl>::to_utf32
     , const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     (void) allow_surr;
     auto dest_it = ob.pos();
@@ -164,7 +164,7 @@ bool single_byte_encoding<Impl>::sanitize
     , const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     (void) allow_surr;
     auto dest_it = ob.pos();
@@ -247,7 +247,7 @@ bool single_byte_encoding<Impl>::encode_fill
     , std::size_t count
     , char32_t ch
     , stringify::v0::encoding_error err_hdl
-    , bool )
+    , stringify::v0::surrogate_policy )
 {
     unsigned ch2 = Impl::encode(ch);
     if (ch2 >= 0x100)
@@ -288,7 +288,7 @@ bool single_byte_encoding<Impl>::from_utf32
     , const char32_t* src
     , const char32_t* src_end
     , stringify::v0::encoding_error err_hdl
-    , bool allow_surr )
+    , stringify::v0::surrogate_policy allow_surr )
 {
     (void)allow_surr;
     auto dest_it = ob.pos();

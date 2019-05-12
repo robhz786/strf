@@ -292,8 +292,9 @@ public:
         ( const FPack& fp
         , const stringify::v0::char_with_format<CharT>& input ) noexcept
         : _encoding(_get_facet<stringify::v0::encoding_category<CharT>>(fp))
-        , _epoli(_get_facet<stringify::v0::encoding_policy_category>(fp))
+        , _enc_err(_get_facet<stringify::v0::encoding_error_category>(fp))
         , _fmt(input)
+        , _allow_surr(_get_facet<stringify::v0::surrogate_policy_category>(fp))
     {
         _init(_get_facet<stringify::v0::width_calculator_category>(fp));
     }
@@ -307,8 +308,9 @@ public:
 private:
 
     const stringify::v0::encoding<CharT> _encoding;
-    const stringify::v0::encoding_policy  _epoli;
+    const stringify::v0::encoding_error  _enc_err;
     const stringify::v0::char_with_format<CharT> _fmt;
+    const stringify::v0::surrogate_policy  _allow_surr;
     int _content_width = 0;
 
     template <typename Category, typename FPack>
@@ -414,7 +416,7 @@ bool fmt_char_printer<CharT>::_write_fill
     , unsigned count ) const
 {
     return _encoding.encode_fill
-        ( ob, count, _fmt.fill(), _epoli.err_hdl(), _epoli.allow_surr() );
+        ( ob, count, _fmt.fill(), _enc_err, _allow_surr );
 }
 
 template <typename CharT>

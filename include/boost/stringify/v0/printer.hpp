@@ -189,7 +189,7 @@ public:
     {
         return *this;
     }
-    
+
 protected:
 
     output_buffer() = default;
