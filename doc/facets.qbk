@@ -20,7 +20,7 @@ For example, to customise numeric punctuation:
 [basic_facet_sample]
 
 Every /facet/ belongs to a /facet category/. 
-Each facet category corresponds to a concept, /i.e./ a set of requirements that a class must satisfy. A class that satisfies such requirements is a facet of such facet category. Hence, facets are policy classes. Also, for each facet category, there is a representative class, which is not a facet and whose name, by convention, is the name of the category.
+Each facet category corresponds to a concept, /i.e./ a set of requirements that a class must satisfy. A class that satisfies such requirements is a facet of such facet category. And for each facet category there is class with the same name.
 [/
 This class always have a static member function named `get_default` which has no parameter and returns a reference to a constant object, whose type is a facet of this category. Also, a facet must have member type named `category` which is an alias to the representative class of its category.
 ]
@@ -84,15 +84,12 @@ Both has the same purpose: to customize numeric punctuation, however
 []
 ]
 
-
 [
-[[link asm_string_error asm_string_error_category]]
-[Assembly string parsing error handling]
+[[link tr_string_error tr_string_error_category]]
+[/Tr-string/ parsing error handling]
 [no]
 []
 ]
-
-
 
 ]
 
@@ -100,7 +97,7 @@ Both has the same purpose: to customize numeric punctuation, however
 [#constrained_facets]
 [h4 Constrained facets]
 
-With the [link constrain `constrain`] function template you can instantiate /constrained facet/, which is a facet that only applies to certain input types. Its template parameter is a template type that contain a `value` member constexpr convertible to bool that tells whether a given input type is under the influence of the given facet:
+With the [link constrain `constrain`] function template you can create /constrained facet/, which is a facet that only applies to certain input types. Its template parameter is a template type that contain a `value` member constexpr convertible to bool that tells whether a given input type is under the influence of the given facet:
 
 [constrained_facet_sample]
 

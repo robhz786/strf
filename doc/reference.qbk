@@ -11,7 +11,7 @@
 [include ref_printer.qbk]
 [include ref_value_with_format.qbk]
 [include ref_dispatcher.qbk]
-[include ref_asm_string.qbk]
+[include ref_tr_string.qbk]
 
 [include ref_error_types.qbk]
 [include ref_output_types.qbk]

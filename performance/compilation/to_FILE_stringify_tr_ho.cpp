@@ -1,14 +1,12 @@
 #include <boost/stringify.hpp>
-#include <ostream>
+#include <cstdio>
 #include "args.hpp"
 
 namespace strf = boost::stringify;
 
-void FUNCTION_NAME (std::ostream& out_)
+void FUNCTION_NAME (std::FILE* out)
 {
-    auto* out = out_.rdbuf();
-
-    strf::write(out) .as
+    strf::write(out) .tr
            ( "blah blah blah {} {} {} blah {} {} {}\n"
            , strf::right(arg_a0, 10)
            , arg_a1
@@ -17,7 +15,7 @@ void FUNCTION_NAME (std::ostream& out_)
            , strf::hex(arg_a4)
            , arg_a5 );
 
-    strf::write(out) .as
+    strf::write(out) .tr
            ( "blah blah {} {}{} {} {} blah {} {} {}\n"
            , arg_b0
            , strf::right(arg_b1, 9)
@@ -28,7 +26,7 @@ void FUNCTION_NAME (std::ostream& out_)
            , strf::hex(arg_b6)
            , arg_b7 );
 
-    strf::write(out) .as
+    strf::write(out) .tr
            ( "blah blah {} {:>10} {} {} {} {} {} {}\n"
            , arg_c0
            , strf::right(arg_c1, 10)

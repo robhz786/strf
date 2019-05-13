@@ -1,0 +1,79 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+[import ../example/tr_string.cpp]
+[import ../example/trivial_sample.cpp]
+
+[#tr_string]
+[section The tr-string]
+
+The ['tr-string] is analogous to what in others formatting libraries is called as the /format string/, except that it doesn't format any of the arguments. Formatting is specified instead with [link format_functions format functions].
+
+As shown in the diagram, the tr-string is optional. When not used, the arguments are just printed sequentially. The main reason it exists is to enable the creation of multilingual programs, with the use of translation tools like [@https://en.wikipedia.org/wiki/Gettext gettext].
+
+[trivial_sample]
+
+[h4 Tr-string syntax]
+
+[table
+[[A `'{'` followed by]  [until]                           [means]]
+[[`'-'`]                [the next `'}'` or end of string] [a comment]]
+[[a digit]              [the next `'}'` or end of string] [a positional argument reference]]
+[[another `'{'`]        [the second `'{'`]                [an escaped `'{'`]]
+[[any other character]  [the next `'}'` or end of string] [a non positional argument reference]]
+]
+
+[variablelist
+
+[[Comments]
+
+
+[When the tr-string has to be translated to other languages, the translation may be in charge of someone else than you. So you can add comments intended to help such person.
+]
+[[trstr_comment_sample]]
+]
+
+[[Positional argument reference]
+[Position zero refers to the first input argument.]
+[The characters the after the digits are ignored by the parser. So they can also be seen as comments.]
+[[trstr_positional_arg]]
+]
+
+[[Non positional argument reference]
+[The characters the after the `'{'` are ignored as well]
+[[trstr_non_positional_arg]]
+]
+
+[[Escapes]
+[ There is no way to escape the `'}'` character. There is no need to, since the `'}'` has special meaning only if it corresponds to a previous `'{'`]
+[[trstr_escape_sample]]
+]
+]
+
+[#tr_string_error]
+[h4 Tr-string errors]
+
+The enumeration `tr_invalid_arg` is a facet that specifies what happens when a non existing argument is referenced
+``
+enum class tr_invalid_arg
+{
+    replace, stop, ignore
+};
+``
+[*`tr_invalid_arg::replace`] causes the invalid reference to be replaced by the [@https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character
+replacement character "\uFFFD"]. This is the default:
+
+[trstr_replace]
+
+[*`tr_invalid_arg::ignore`] causes the invalid reference to be ignored:
+
+[trstr_omit]
+
+[*`tr_invalid_arg::stop`] emits an error code:
+
+[trstr_stop]
+
+[endsect]

@@ -124,21 +124,9 @@ Here is another difference of `to_string` from `std::to_string`:
 it's not a function, but an object ( actually a constexpr ).
 It has member functions that are invoked as in the
 [@https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Named_Parameter
-named parameter idiom].
+named parameter idiom]. And the same applies to all others /"leading expressions"/:
 
-And the same applies the all others /"leading expressions"/:
-
-[/ Railroad diagram generated from the EBNF below, in online generator bottlecaps.de/rr 
- 
- syntax ::= 'leading_expression' 
-  ( '.reserve( size )' | '.reserve_calc()' | '.facets( facets... )' ) * 
-  ( '.as(  assembly_string ) ( arguments... ) ' 
-  | '.as(  assembly_string, arguments... ) ' 
-  | '( arguments... ) ' ) 
-] 
-
-[$../syntax.png]
-[footnote This railroad diagram was generated on [@http://bottlecaps.de/rr bottlecaps.de/rr]]
+[$../syntax.svg]
 
 [section Leading expression]
 
@@ -247,19 +235,19 @@ If none of these function is called, then no reservation is done.
 [syntax_reserve]
 
 [endsect]
-[#assembly_string]
-[section Assembly string]
+[#tr_string]
+[section Tr-string]
 
-The [link assembly_string_syntax assembly string] is what in other formatting
+The [link tr_string_syntax /tr-string/] is what in other formatting
 libraries would be called as the /format string/,
-with the difference that it does not specify any formatting:
+with the difference that it does not specify any formatting.
+Its purpose is to enable the use of translation tools like
+[@https://en.wikipedia.org/wiki/Gettext gettext].
 ``
-auto s = strf::to_string.as("{} in hexadecimal is {}", x, strf::hex(x));
+auto s = strf::to_string.tr("{} in hexadecimal is {}", x, strf::hex(x));
 ``
-Its main purpose is to enable the use of translation tools like
-[@https://en.wikipedia.org/wiki/Gettext gettext]. You can customize
-how the library handles parsing errors in the with the
-[link asm_string_error `asm_invalid_arg`] enumeration.
+You can customize how the library handles parsing errors in the with the
+[link tr_string_error `tr_invalid_arg`] enumeration.
 
 [endsect]
 
@@ -400,7 +388,7 @@ like the width calculation method, and encoding error handling.
 
     Also, the user can customise how the library handles
     [link encoding_error encoding errors] as well as
-    [link asm_string_error assembly string errors].
+    [link tr_string_error tr-string errors].
   ]
   [[br]]
 ]
@@ -417,17 +405,17 @@ like the width calculation method, and encoding error handling.
 
     [variablelist
 
-    [ [Assembly string translation hints]
+    [ [Tr-string translation hints]
       [ [/Usually it is not the programmer who do the translations.]
-        The [link assembly_string_syntax assembly string syntax] allows you
+        The [link tr_string_syntax tr-string syntax] allows you
         to insert comments intended to help the person who translates it.
       ]
     ]
 
     [ [Formatting decoupled from translation]
-      [ Because formatting is not in the assembly string, but in the
+      [ Because formatting is not in the tr-string, but in the
         format functions, you can change the formatting without
-        changing each translation of the assembly string.
+        changing each translation of the tr-string.
       ]
     ]
 
@@ -447,9 +435,9 @@ like the width calculation method, and encoding error handling.
         when it's not the program's fault; otherwise it's a bug.
         Format functions, on the other hand, always give you a compilation error.
 
-        It's true that mistakes can also happen in the assembly string
+        It's true that mistakes can also happen in the tr-string
         but the probability is much lower. Besides, you can
-        [link asm_string_error customize] how such errors are handled.
+        [link tr_string_error customize] how such errors are handled.
 [/
         Besides, a future version of the library will enable you to customise the
         error handling there just [link encoding_error as in encoding conversion].

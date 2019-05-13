@@ -17,7 +17,7 @@ test-suite stringify :
 
    # as header-only library:
 
-   [ run assembly_string.cpp   : : : : test-assembly_string-ho ]
+   [ run tr_string.cpp         : : : : test-tr_string-ho ]
    [ run dispatcher_with_move_only_arg.cpp : : : : test-dispatcher_with_move_only_arg-ho ]
    [ run encode_char.cpp       : : : : test-encode_char-ho ]
    [ run encode_fill.cpp       : : : : test-encode_fill-ho ]
@@ -42,7 +42,7 @@ test-suite stringify :
 
    # as static library:
 
-   [ run assembly_string.cpp   $(slib) : : : $(nho) : test-assembly_string-nho ]
+   [ run tr_string.cpp         $(slib) : : : $(nho) : test-tr_string-nho ]
    [ run dispatcher_with_move_only_arg.cpp $(slib) : : : $(nho) :
                                         test-dispatcher_with_move_only_arg-nho ]
    [ run encode_char.cpp       $(slib) : : : $(nho) : test-encode_char-nho ]

@@ -11,7 +11,7 @@
 [import ../example/encoding_conversion.cpp]
 
 [table
-[[`enum surrogate_policy { strict, lax };`]]
+[[`enum class surrogate_policy : bool { strict, lax };`]]
 [[Default facet value: `surrogate_policy::strict`.]]
 ]
 

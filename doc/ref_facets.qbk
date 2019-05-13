@@ -9,7 +9,7 @@
 [include ref_facets_encoding.qbk]
 [include ref_facets_encoding_error.qbk]
 [include ref_facets_surrogate_policy.qbk]
-[include ref_facets_asm_string_error.qbk]
+[include ref_facets_tr_string_error.qbk]
 [include ref_facets_width_calc.qbk]
 [include ref_facets_numpunct.qbk]
 

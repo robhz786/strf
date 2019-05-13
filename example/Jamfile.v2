@@ -13,7 +13,7 @@ test-suite strigify-example :
     [ run extend_input_ipv6.cpp ]
     [ run extend_input_base64.cpp ]
     [ run extend_input_template.cpp ]
-    [ run assembly_string.cpp ]
+    [ run tr_string.cpp ]
     [ run encoding_conversion.cpp ]
     [ run facets.cpp ]
     [ run facets_pack_as_input.cpp ]

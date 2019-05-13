@@ -13,7 +13,7 @@ remove_definitions(-DNDEBUG)
 
 foreach(x
     overview
-    assembly_string
+    tr_string
     encoding_conversion
     format_functions
     custom_width_calculation

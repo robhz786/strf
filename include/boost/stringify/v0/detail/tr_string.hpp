@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_ASM_STRING_HPP
-#define BOOST_STRINGIFY_V0_DETAIL_ASM_STRING_HPP
+#ifndef BOOST_STRINGIFY_V0_DETAIL_TR_STRING_HPP
+#define BOOST_STRINGIFY_V0_DETAIL_TR_STRING_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -7,18 +7,18 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-enum class asm_invalid_arg
+enum class tr_invalid_arg
 {
     replace, stop, ignore
 };
 
-struct asm_invalid_arg_category
+struct tr_invalid_arg_category
 {
     static constexpr bool constrainable = false;
 
-    static asm_invalid_arg get_default()
+    static tr_invalid_arg get_default()
     {
-        return asm_invalid_arg::replace;
+        return tr_invalid_arg::replace;
     }
 };
 
@@ -26,10 +26,10 @@ template <typename Facet>
 class facet_trait;
 
 template <>
-class facet_trait<stringify::v0::asm_invalid_arg>
+class facet_trait<stringify::v0::tr_invalid_arg>
 {
 public:
-    using category = stringify::v0::asm_invalid_arg_category;
+    using category = stringify::v0::tr_invalid_arg_category;
     static constexpr bool store_by_value = true;
 };
 
@@ -69,26 +69,26 @@ read_uint_result<CharT> read_uint(const CharT* it, const CharT* end)
     return {value, it};
 }
 
-constexpr std::size_t asmstr_invalid_arg_size_when_stop = (std::size_t)-1;
+constexpr std::size_t trstr_invalid_arg_size_when_stop = (std::size_t)-1;
 
 template <typename CharT>
 std::size_t invalid_arg_size
     ( stringify::v0::encoding<CharT> enc
-    , asm_invalid_arg policy )
+    , tr_invalid_arg policy )
 {
     switch(policy)
     {
-        case asm_invalid_arg::replace:
+        case tr_invalid_arg::replace:
             return enc.replacement_char_size();
-        case asm_invalid_arg::stop:
-            return stringify::v0::detail::asmstr_invalid_arg_size_when_stop;
+        case tr_invalid_arg::stop:
+            return stringify::v0::detail::trstr_invalid_arg_size_when_stop;
         default:
             return 0;
     }
 }
 
 template <typename CharT>
-std::size_t asm_string_size
+std::size_t tr_string_size
     ( const CharT* it
     , const CharT* end
     , std::initializer_list<const stringify::v0::printer<CharT>*> args
@@ -119,7 +119,7 @@ std::size_t asm_string_size
             {
                 count += args.begin()[arg_idx]->necessary_size();
             }
-            else if (inv_arg_size != asmstr_invalid_arg_size_when_stop)
+            else if (inv_arg_size != trstr_invalid_arg_size_when_stop)
             {
                 count += inv_arg_size;
             }
@@ -134,7 +134,7 @@ std::size_t asm_string_size
                 count += args.begin()[arg_idx]->necessary_size();
                 ++arg_idx;
             }
-            else if(inv_arg_size == asmstr_invalid_arg_size_when_stop)
+            else if(inv_arg_size == trstr_invalid_arg_size_when_stop)
             {
                 break;
             }
@@ -152,7 +152,7 @@ std::size_t asm_string_size
             {
                 count += args.begin()[result.value]->necessary_size();
             }
-            else if(inv_arg_size == asmstr_invalid_arg_size_when_stop)
+            else if(inv_arg_size == trstr_invalid_arg_size_when_stop)
             {
                 break;
             }
@@ -188,7 +188,7 @@ std::size_t asm_string_size
                     count += args.begin()[arg_idx]->necessary_size();
                     ++arg_idx;
                 }
-                else if(inv_arg_size == asmstr_invalid_arg_size_when_stop)
+                else if(inv_arg_size == trstr_invalid_arg_size_when_stop)
                 {
                     break;
                 }
@@ -210,13 +210,13 @@ std::size_t asm_string_size
 }
 
 template <typename CharT>
-bool asm_string_write
+bool tr_string_write
     ( const CharT* it
     , const CharT* end
     , std::initializer_list<const stringify::v0::printer<CharT>*> args
     , stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc
-    , stringify::v0::asm_invalid_arg policy )
+    , stringify::v0::tr_invalid_arg policy )
 {
     using traits = std::char_traits<CharT>;
     std::size_t arg_idx = 0;
@@ -244,14 +244,14 @@ bool asm_string_write
             {
                 return args.begin()[arg_idx]->write(ob);
             }
-            else if (policy == stringify::v0::asm_invalid_arg::replace)
+            else if (policy == stringify::v0::tr_invalid_arg::replace)
             {
                 if (! enc.write_replacement_char(ob))
                 {
                     return false;
                 }
             }
-            else if (policy == stringify::v0::asm_invalid_arg::stop)
+            else if (policy == stringify::v0::tr_invalid_arg::stop)
             {
                 ob.set_error(std::errc::invalid_argument);
                 return false;
@@ -271,14 +271,14 @@ bool asm_string_write
                 }
                 ++arg_idx;
             }
-            else if (policy == stringify::v0::asm_invalid_arg::replace)
+            else if (policy == stringify::v0::tr_invalid_arg::replace)
             {
                 if (! enc.write_replacement_char(ob))
                 {
                     return false;
                 }
             }
-            else if (policy == stringify::v0::asm_invalid_arg::stop)
+            else if (policy == stringify::v0::tr_invalid_arg::stop)
             {
                 ob.set_error(std::errc::invalid_argument);
                 return false;
@@ -296,14 +296,14 @@ bool asm_string_write
                     return false;
                 }
             }
-            else if (policy == stringify::v0::asm_invalid_arg::replace)
+            else if (policy == stringify::v0::tr_invalid_arg::replace)
             {
                 if (! enc.write_replacement_char(ob))
                 {
                     return false;
                 }
             }
-            else if (policy == stringify::v0::asm_invalid_arg::stop)
+            else if (policy == stringify::v0::tr_invalid_arg::stop)
             {
                 ob.set_error(std::errc::invalid_argument);
                 return false;
@@ -343,14 +343,14 @@ bool asm_string_write
                     }
                     ++arg_idx;
                 }
-                else if (policy == stringify::v0::asm_invalid_arg::replace)
+                else if (policy == stringify::v0::tr_invalid_arg::replace)
                 {
                     if (! enc.write_replacement_char(ob))
                     {
                         return false;
                     }
                 }
-                else if (policy == stringify::v0::asm_invalid_arg::stop)
+                else if (policy == stringify::v0::tr_invalid_arg::stop)
                 {
                     ob.set_error(std::errc::invalid_argument);
                     return false;
@@ -373,5 +373,5 @@ bool asm_string_write
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_DETAIL_ASM_STRING_HPP
+#endif  // BOOST_STRINGIFY_V0_DETAIL_TR_STRING_HPP
 

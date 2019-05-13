@@ -7,7 +7,7 @@
 
 #include <boost/stringify/v0/printer.hpp>
 #include <boost/stringify/v0/facets_pack.hpp>
-#include <boost/stringify/v0/detail/asm_string.hpp>
+#include <boost/stringify/v0/detail/tr_string.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -202,20 +202,20 @@ as_printer_cref(const stringify::v0::printer<CharT>& p)
 }
 
 template <typename OutputBuff, typename CharT>
-inline decltype(std::declval<OutputBuff>().finish()) reserve_and_asm_write
+inline decltype(std::declval<OutputBuff>().finish()) reserve_and_tr_write
     ( stringify::v0::detail::output_size_reservation_real reser
     , OutputBuff& ob
-    , const CharT* asm_str
-    , const CharT* asm_str_end
+    , const CharT* tr_str
+    , const CharT* tr_str_end
     , std::initializer_list<const stringify::v0::printer<CharT>*> args
     , stringify::v0::encoding<CharT> enc
-    , stringify::v0::asm_invalid_arg policy )
+    , stringify::v0::tr_invalid_arg policy )
 {
     if(reser.must_calculate_size())
     {
         auto invs = stringify::v0::detail::invalid_arg_size(enc, policy);
-        auto size = stringify::v0::detail::asm_string_size
-            (asm_str, asm_str_end, args, invs);
+        auto size = stringify::v0::detail::tr_string_size( tr_str, tr_str_end
+                                                         , args, invs );
         ob.reserve(size);
     }
     else if(reser.get_size_to_reserve() != 0)
@@ -223,8 +223,8 @@ inline decltype(std::declval<OutputBuff>().finish()) reserve_and_asm_write
         ob.reserve(reser.get_size_to_reserve());
     }
 
-    bool no_error = stringify::v0::detail::asm_string_write
-        ( asm_str, asm_str_end, args, ob, enc, policy );
+    bool no_error = stringify::v0::detail::tr_string_write
+        ( tr_str, tr_str_end, args, ob, enc, policy );
 
     BOOST_ASSERT(no_error == ! ob.has_error());
     (void) no_error;
@@ -233,17 +233,17 @@ inline decltype(std::declval<OutputBuff>().finish()) reserve_and_asm_write
 }
 
 template <typename OutputBuff, typename CharT>
-inline decltype(std::declval<OutputBuff>().finish()) reserve_and_asm_write
+inline decltype(std::declval<OutputBuff>().finish()) reserve_and_tr_write
     ( stringify::v0::detail::output_size_reservation_dummy
     , OutputBuff& ob
-    , const CharT* asm_str
-    , const CharT* asm_str_end
+    , const CharT* tr_str
+    , const CharT* tr_str_end
     , std::initializer_list<const stringify::v0::printer<CharT>*> args
     , stringify::v0::encoding<CharT> enc
-    , stringify::v0::asm_invalid_arg policy )
+    , stringify::v0::tr_invalid_arg policy )
 {
-    bool no_error = stringify::v0::detail::asm_string_write
-        ( asm_str, asm_str_end, args, ob, enc, policy );
+    bool no_error = stringify::v0::detail::tr_string_write
+        ( tr_str, tr_str_end, args, ob, enc, policy );
 
     BOOST_ASSERT(no_error == ! ob.has_error());
     (void) no_error;
@@ -484,23 +484,22 @@ public:
 #if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
 
     template <typename ... Args>
-    return_type as
+    return_type tr
         ( const std::basic_string_view<char_type>& str
         , const Args& ... args ) const &
     {
-        return _create_ob_and_asm_write
-            ( _obargs_index_sequence()
-            , str.begin()
-            , str.end()
-            , args ... );
+        return _create_ob_and_tr_write( _obargs_index_sequence()
+                                      , str.begin()
+                                      , str.end()
+                                      , args ... );
     }
 
     template <typename ... Args>
-    return_type as
+    return_type tr
         ( const std::basic_string_view<char_type>& str
         , const Args& ... args ) &&
     {
-        return static_cast<dispatcher&&>(*this)._create_ob_and_asm_write
+        return static_cast<dispatcher&&>(*this)._create_ob_and_tr_write
             ( _obargs_index_sequence()
             , str.begin()
             , str.end()
@@ -510,9 +509,9 @@ public:
 #else
 
     template <typename ... Args>
-    return_type as(const char_type* str, const Args& ... args) const &
+    return_type tr(const char_type* str, const Args& ... args) const &
     {
-        return _create_ob_and_asm_write
+        return _create_ob_and_tr_write
             ( _obargs_index_sequence()
             , str
             , str + std::char_traits<char_type>::length(str)
@@ -520,9 +519,9 @@ public:
     }
 
     template <typename ... Args>
-    return_type as(const char_type* str, const Args& ... args ) &&
+    return_type tr(const char_type* str, const Args& ... args ) &&
     {
-        return std::move(*this)._create_ob_and_asm_write
+        return std::move(*this)._create_ob_and_tr_write
             ( _obargs_index_sequence()
             , str
             , str + std::char_traits<char_type>::length(str)
@@ -530,11 +529,11 @@ public:
     }
 
     template <typename Traits, typename A, typename ... Args>
-    return_type as
+    return_type tr
         ( const std::basic_string<char_type, Traits, A>& str
         , const Args& ... args ) const &
     {
-        return _create_ob_and_asm_write
+        return _create_ob_and_tr_write
             ( _obargs_index_sequence()
             , str.data()
             , str.data() + str.size()
@@ -542,11 +541,11 @@ public:
     }
 
     template <typename Traits, typename A, typename ... Args>
-    return_type as
+    return_type tr
     ( const std::basic_string<char_type, Traits, A>& str
         , const Args& ... args ) &&
     {
-        return std::move(*this)._create_ob_and_asm_write
+        return std::move(*this)._create_ob_and_tr_write
             ( _obargs_index_sequence()
             , str.begin()
             , str.end()
@@ -591,25 +590,25 @@ private:
     }
 
     template <std::size_t ... I, typename ... Args>
-    return_type _create_ob_and_asm_write
+    return_type _create_ob_and_tr_write
         ( std::index_sequence<I...>
-        , const char_type* asm_str
-        , const char_type* asm_str_end
+        , const char_type* tr_str
+        , const char_type* tr_str_end
         , const Args& ... args ) const &
     {
         OutputBuff ob(this->template get<I>()...);
-        return _do_asm_write(ob, asm_str, asm_str_end, args...);
+        return _do_tr_write(ob, tr_str, tr_str_end, args...);
     }
 
     template <std::size_t ... I, typename ... Args>
-    return_type _create_ob_and_asm_write
+    return_type _create_ob_and_tr_write
         ( std::index_sequence<I...>
-        , const char_type* asm_str
-        , const char_type* asm_str_end
+        , const char_type* tr_str
+        , const char_type* tr_str_end
         , const Args& ... args ) &&
     {
         OutputBuff ob(std::move(*this).template forward<I>()...);
-        return _do_asm_write(ob, asm_str, asm_str_end, args...);
+        return _do_tr_write(ob, tr_str, tr_str_end, args...);
     }
 
     static inline const stringify::v0::printer<char_type>*
@@ -619,20 +618,20 @@ private:
     }
 
     template <typename ... Args>
-    return_type _do_asm_write
+    return_type _do_tr_write
         ( OutputBuff& ob
-        , const char_type* asm_str
-        , const char_type* asm_str_end
+        , const char_type* tr_str
+        , const char_type* tr_str_end
         , const Args& ... args ) const
     {
         using cat1 = stringify::v0::encoding_category<char_type>;
-        using cat2 = stringify::v0::asm_invalid_arg_category;
+        using cat2 = stringify::v0::tr_invalid_arg_category;
 
-        return stringify::v0::detail::reserve_and_asm_write
+        return stringify::v0::detail::reserve_and_tr_write
             ( static_cast<const _reservation&>(*this)
             , ob
-            , asm_str
-            , asm_str_end
+            , tr_str
+            , tr_str_end
             , { _as_printer_cptr(make_printer<char_type, FPack>(_fpack, args))... }
             , stringify::v0::get_facet<cat1, void>(_fpack)
             , stringify::v0::get_facet<cat2, void>(_fpack) );

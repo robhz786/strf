@@ -361,7 +361,7 @@ template <typename T>
 using is_string = std::is_base_of<string_input_tag_base, T>;
 
 template <typename CharIn>
-struct asm_string_input_tag: stringify::v0::string_input_tag<CharIn>
+struct tr_string_input_tag: stringify::v0::string_input_tag<CharIn>
 {
 };
 
@@ -371,19 +371,19 @@ struct range_separator_input_tag: stringify::v0::string_input_tag<CharIn>
 };
 
 template <typename CharIn>
-struct is_asm_string_of
+struct is_tr_string_of
 {
     template <typename T>
-    using fn = std::is_same<stringify::v0::asm_string_input_tag<CharIn>, T>;
+    using fn = std::is_same<stringify::v0::tr_string_input_tag<CharIn>, T>;
 };
 
 template <typename T>
-struct is_asm_string: std::false_type
+struct is_tr_string: std::false_type
 {
 };
 
 template <typename CharIn>
-struct is_asm_string<stringify::v0::is_asm_string_of<CharIn>> : std::true_type
+struct is_tr_string<stringify::v0::is_tr_string_of<CharIn>> : std::true_type
 {
 };
 

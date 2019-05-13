@@ -37,7 +37,7 @@ void samples()
     //]
 }
 
-//[ join_with_assembly_string_part1
+//[ join_with_tr_string_part1
 
 // in some header file
 
@@ -49,7 +49,7 @@ const char* msg_the_ip_address_of_X_is_X();
 
 //]
 
-//[ join_with_assembly_string_part2
+//[ join_with_tr_string_part2
 
 // in some source file you shall not edit
 
@@ -72,7 +72,7 @@ const char* msg_the_ip_address_of_X_is_X()
 
 void sample()
 {
-//[ join_with_assembly_string_part3
+//[ join_with_tr_string_part3
 
     // in your code:
 
@@ -81,7 +81,7 @@ void sample()
     std::string host_name = "boost.org";
     unsigned char ip_addr [4] = {146, 20, 110, 251};
 
-    auto str = strf::to_string .as
+    auto str = strf::to_string .tr
         ( msg_the_ip_address_of_X_is_X()
         , host_name
         , strf::join_left(0)

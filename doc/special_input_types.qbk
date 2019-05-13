@@ -44,11 +44,11 @@ where:
 [joins_example]
 
 You may want to use joins without the purpose of alignment, but solely to treat a whole sub-list of arguments as one.
-This is something you way need to do in case you are using an [link assembly_string assembly string], especially if you can not edit it.
+This is something you way need to do in case you are using an [link tr_string tr-string], especially if you can not edit it.
 
-[join_with_assembly_string_part1]
-[join_with_assembly_string_part2]
-[join_with_assembly_string_part3]
+[join_with_tr_string_part1]
+[join_with_tr_string_part2]
+[join_with_tr_string_part3]
 
 [endsect]
 
@@ -66,9 +66,9 @@ It could be, for instance, another facets_pack:
 
 [facets_pack_input_2]
 
-When using an assembly string, be aware that the sub-list of argument is treated as it where just one argument:
+When using an tr-string, be aware that the sub-list of argument is treated as it where just one argument:
 
-[facets_pack_input_in_assembly_string]
+[facets_pack_input_in_tr_string]
 
 [endsect]
 
@@ -107,18 +107,6 @@ The expression `fmt_range(`[~args]`...)` is equivalent to `fmt(range(`[~args]...
 [range_sample_3]
 
 [endsect]
-
-
-[/
-[section Assembly string ['(to do)]]
-[import ../example/assembly_string_input.cpp]
-[note It is not decided yet whether this will ever be implemented]
-syntax:
-* `as(`[~assembly_string]`) (`[~arguments]...`)`
-[assembly_string_as_input]
-[endsect]
-]
-
 
 
 [endsect]

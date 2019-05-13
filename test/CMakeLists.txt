@@ -11,7 +11,7 @@ include_directories("../../../")
 
 foreach(
   t
-  assembly_string
+  tr_string
   dispatcher_with_move_only_arg
   encode_char
   encode_fill

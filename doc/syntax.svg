@@ -1,0 +1,113 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+
+<!--
+see https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
+-->
+<svg
+   width="700px"
+   height="190px"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg">
+
+  <style>
+    /* <![CDATA[ */
+    .code {
+    font-style:normal;
+    font-family:"Courier New";
+    font-size:95%;
+    }
+    .repl {
+    font-style:italic;
+    font-family:Arial;
+    font-size:95%;
+    }
+    rect{
+    fill:#d7e3f4;
+    stroke:black;
+    stroke-width:1.5;
+    }
+    path{
+    stroke:black;
+    stroke-width:1.5;
+    fill:white;
+    }
+    path.arrow{
+    fill:black;
+    stroke-width:0;
+    }
+    /* ]]> */
+  </style>
+  
+  <rect width="170" height="28" rx="10" ry="10" x="240" y="5"/>
+  <text x="250" y="24" >
+    <tspan class="code">.facets(</tspan>
+    <tspan class="repl">facets...</tspan>
+    <tspan class="code">)</tspan>       
+  </text>     
+
+  <rect width="170" height="28" rx="10" ry="10" x="240" y="49"/>
+  <text x="250" y="68" >
+    <tspan class="code">.reserve(</tspan>
+    <tspan class="repl">size</tspan>
+    <tspan class="code">)</tspan>       
+  </text>     
+  
+  <rect width="170" height="28" rx="10" ry="10" x="240" y="93"/>
+  <text x="250" y="112" class="code">.reserve_calc()</text>
+
+  <rect width="168" height="28" rx="10" ry="10" x="2" y="137"/>
+  <text x="17" y="156" class="repl">leading expression</text>
+
+  <path d="M170 151 H450"/>
+  <path d="M229 30 V140"/>
+  <path d="M421 30 V140"/>
+  
+  <path d="M240 19 A11 11 0 0 0 229 30"/>
+  <path d="M410 19 A11 11 0 0 1 421 30"/>
+
+  <path d="M240 63 A11 11 0 0 0 229 74"/>
+  <path d="M410 63 A11 11 0 0 1 421 74"/>
+
+  <path d="M240 107 A11 11 0 0 0 229 118"/>
+  <path d="M410 107 A11 11 0 0 1 421 118"/>
+
+  <path d="M240 151 A11 11 0 0 1 229 140"/>
+  <path d="M410 151 A11 11 0 0 0 421 140"/>
+
+  <path d="M450 151 A11 11 0 0 0 461 140"/>
+  <path d="M461 140 A11 11 0 0 1 472 129"/>
+  
+  <path d="M450 151 A11 11 0 0 1 461 162"/>
+  <path d="M461 162 A11 11 0 0 0 472 173"/>
+
+  <rect width="195" height="28" rx="10" ry="10" x="472" y="115"/>
+  <text x="482" y="134">
+    <tspan class="code">(</tspan>
+    <tspan class="repl">args...</tspan>
+    <tspan class="code">)</tspan>
+  </text>
+  <rect width="195" height="28" rx="10" ry="10" x="472" y="159"/>
+  <text x="482" y="178">
+    <tspan class="code">.tr(</tspan>
+    <tspan class="repl">tr-string</tspan>
+    <tspan class="code">,</tspan>
+    <tspan class="repl">args...</tspan>
+    <tspan class="code">)</tspan>
+  </text>
+
+  <!--   
+  <path d="M218 151 A11 11 0 0 0 229 140"/>
+  <path d="M218 151 A11 11 0 0 0 218 173"/>
+
+  <path d="M432 151 A11 11 0 0 1 421 140"/>
+  <path d="M432 151 A11 11 0 0 1 432 173"/>
+
+  <path d="M218 173 H432"/>
+  <path class="arrow" d="M332 151 l -17 -4 v 8"/>
+  <path class="arrow" d="M318 173 l  17 -4 v 8"/>
+  -->
+
+  <path class="arrow" d="M210 151 l -17 -4 v 8"/>
+  
+</svg>

@@ -294,40 +294,40 @@ write their textual representation.
 `template <typename... Args>`[br]
 [role index_mark][role version_mark ]
 [link dispatcher_member_types `return_type`]
-`as(const char_type* str, const Args&... args) const &;`[br]
+`tr(const char_type* str, const Args&... args) const &;`[br]
 
 [role index_mark (1)][role version_mark (C++14)]
 `template <typename Traits, typename... Args>`[br]
 [role index_mark][role version_mark ]
 [link dispatcher_member_types `return_type`]
-`as(const std::basic_string<char_type, Traits>& str,`
+`tr(const std::basic_string<char_type, Traits>& str,`
                       `const Args&... args) const &;`
 
 [role index_mark (1)][role version_mark (C++17)]
 `template <typename... Args>`[br]
 [role index_mark][role version_mark ]
 [link dispatcher_member_types `return_type`]
-`as(const std::basic_string_view<char_type>* str,`
+`tr(const std::basic_string_view<char_type>* str,`
                       `const Args&... args) const &;`
                       
 [role index_mark (2)][role version_mark (C++14)]
 `template <typename... Args>`[br]
 [role index_mark][role version_mark ]
 [link dispatcher_member_types `return_type`]
-`as(const char_type* str, const Args&... args) &&;`[br]
+`tr(const char_type* str, const Args&... args) &&;`[br]
 
 [role index_mark (2)][role version_mark (C++14)]
 `template <typename Traits, typename... Args>`[br]
 [role index_mark][role version_mark ]
 [link dispatcher_member_types `return_type`]
-`as(const std::basic_string<char_type, Traits>& str,`
+`tr(const std::basic_string<char_type, Traits>& str,`
                       `const Args&... args) &&;`
 
 [role index_mark (2)][role version_mark (C++17)]
 `template <typename... Args>`[br]
 [role index_mark][role version_mark ]
 [link dispatcher_member_types `return_type`]
-`as(const std::basic_string_view<char_type>* str,`
+`tr(const std::basic_string_view<char_type>* str,`
                       `const Args&... args) &&;`
 ]]
 [[
@@ -351,8 +351,8 @@ write their textual representation.
        `reserve_calc`] was called, then call `ob.reserve(size)`, where
        `size` is value passed to [link dispatcher_reserve `reserve`] or
         the calculated number of character that will be written in (4).]
-      [Proccess `str` according the [link assembly_string_syntax
-       assembly string syntax] and write the result into `ob`.]
+      [Proccess `str` according the [link tr_string_syntax
+       tr-string syntax] and write the result into `ob`.]
       [return `ob.finish()`]]]]]
 ]]
 ]

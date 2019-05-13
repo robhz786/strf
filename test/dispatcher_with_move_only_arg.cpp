@@ -72,7 +72,7 @@ int main()
 
     BOOST_TEST_CSTR_EQ("abcd1234", buff);
 
-    write(foo(buff, buff + sizeof(buff))).as("--{}--{}--", "abcd", 1234);
+    write(foo(buff, buff + sizeof(buff))).tr("--{}--{}--", "abcd", 1234);
 
     BOOST_TEST_CSTR_EQ("--abcd--1234--", buff);
 
