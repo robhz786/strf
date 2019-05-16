@@ -46,7 +46,7 @@ cd ..
 
 Now just specify the _boost root directory_ as an include path to your compiler, and you are ready to use Stringify as a header only library.
 
-But if you want to use it as a static library instead &#x2014; which is a good idea since it dramatically reduces the code bloat &#x2014; the code that uses the library must have the macro `BOOST_STRINGIFY_NOT_HEADER_ONLY` defined. And in order to build the library, there are three ways:
+But if you want to use it as a static library instead &#x2014; which is a good idea since it dramatically reduces the code bloat &#x2014; the code that uses the library must have the macro `BOOST_STRINGIFY_SEPARATE_COMPILATION` defined. And in order to build the library, there are three ways:
 
 ##### Option 1: Using Boost.Build system
 In the command line interface, in the _boost root directory_, run the command:

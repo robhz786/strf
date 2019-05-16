@@ -978,7 +978,7 @@ int default_numchars<CharT, 8>::width
     return num_digits + has_base_indication;
 }
 
-#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class default_numchars<char, 10>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class default_numchars<char, 16>;
@@ -993,7 +993,7 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class default_numchars<wchar_t, 10>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class default_numchars<wchar_t, 16>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class default_numchars<wchar_t, 8>;
 
-#endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 template <typename CharT, unsigned Base>
 struct numchars_category

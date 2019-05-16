@@ -67,7 +67,7 @@ ec_char_ptr_writer<CharOut>::finish() noexcept
     return this->get_error();
 }
 
-#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_char_ptr_writer<char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_char_ptr_writer<char16_t>;
@@ -236,7 +236,7 @@ inline std::size_t char_ptr_writer<CharOut>::finish()
     return this->pos() - _begin;
 }
 
-#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_ptr_writer<char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_ptr_writer<char16_t>;

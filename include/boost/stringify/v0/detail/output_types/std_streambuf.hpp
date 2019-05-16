@@ -86,7 +86,7 @@ void ec_std_streambuf_writer<CharT, Traits>::on_error()
     _count += _out.sputn(_buff, count);
 }
 
-#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 class ec_std_streambuf_writer<char, std::char_traits<char>>;
@@ -206,7 +206,7 @@ void std_streambuf_writer<CharT, Traits>::on_error()
     _count += _out.sputn(_buff, count);
 }
 
-#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 class std_streambuf_writer<char, std::char_traits<char>>;

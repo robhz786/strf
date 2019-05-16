@@ -96,14 +96,14 @@ stringify::v0::nodiscard_error_code ec_string_appender<StringType>::finish()
     return this->get_error();
 }
 
-#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_string_appender<std::string>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_string_appender<std::u16string>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_string_appender<std::u32string>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_string_appender<std::wstring>;
 
-#endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 } // namespace detail
 
@@ -279,7 +279,7 @@ inline StringType string_maker<StringType>::finish()
     return std::move(_out);
 }
 
-#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_appender<std::string>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_appender<std::u16string>;

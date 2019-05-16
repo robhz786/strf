@@ -216,14 +216,14 @@ using char_with_format = stringify::v0::value_with_format
 //     return 0;
 // }
 
-// #if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+// #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 // BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_printer<char>;
 // BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_printer<char16_t>;
 // BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_printer<char32_t>;
 // BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_printer<wchar_t>;
 
-// #endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+// #endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 
 template <typename CharT>
@@ -429,7 +429,7 @@ int fmt_char_printer<CharT>::remaining_width(int w) const
     return w > _content_width? w - _content_width : 0;
 }
 
-#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<char16_t>;
@@ -440,7 +440,7 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_char_printer<char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_char_printer<char32_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_char_printer<wchar_t>;
 
-#endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 template <typename CharOut, typename FPack>
 inline stringify::v0::char_printer<CharOut>

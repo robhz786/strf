@@ -311,7 +311,7 @@ bool fmt_string_printer<CharT>::_write_fill
                                 , _enc_err, _allow_surr );
 }
 
-#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_printer<char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_printer<char16_t>;
@@ -323,7 +323,7 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_string_printer<char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_string_printer<char32_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_string_printer<wchar_t>;
 
-#endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 } // namespace detail
 

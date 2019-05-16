@@ -36,7 +36,7 @@ add_library(boost_stringify STATIC build/stringify.cpp)
 
 target_compile_definitions(
   boost_stringify
-  PUBLIC BOOST_STRINGIFY_NOT_HEADER_ONLY )
+  PUBLIC BOOST_STRINGIFY_SEPARATE_COMPILATION )
 
 target_include_directories(
   boost_stringify-header-only

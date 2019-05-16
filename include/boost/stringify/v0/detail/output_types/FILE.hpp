@@ -93,7 +93,7 @@ void ec_narrow_file_writer<CharT>::on_error()
     _count += std::fwrite(_buff, sizeof(CharT), count, _file);
 }
 
-#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_narrow_file_writer<char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_narrow_file_writer<char16_t>;
@@ -292,7 +292,7 @@ void narrow_file_writer<CharT>::on_error()
     _count += std::fwrite(_buff, sizeof(CharT), count, _file);
 }
 
-#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class narrow_file_writer<char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class narrow_file_writer<char16_t>;

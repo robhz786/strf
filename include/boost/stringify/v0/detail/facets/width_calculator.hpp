@@ -158,7 +158,7 @@ struct width_calculator_category
     }
 };
 
-#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 int width_calculator::remaining_width<char>
@@ -196,7 +196,7 @@ int width_calculator::remaining_width<wchar_t>
     , stringify::v0::encoding_error enc_err
     , stringify::v0::surrogate_policy allow_surr ) const;
 
-#endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 
 #if ! defined(BOOST_STRINGIFY_OMIT_IMPL)

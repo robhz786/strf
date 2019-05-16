@@ -67,7 +67,7 @@ private:
 };
 
 
-#if defined(BOOST_STRINGIFY_SOURCE) || ! defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#if defined(BOOST_STRINGIFY_SOURCE) || ! defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 BOOST_STRINGIFY_INLINE
 unsigned char* monotonic_grouping_impl::get_groups
@@ -163,7 +163,7 @@ BOOST_STRINGIFY_INLINE unsigned char* str_grouping_impl::get_groups
 }
 
 
-#endif //defined(BOOST_STRINGIFY_SOURCE) || ! defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#endif //defined(BOOST_STRINGIFY_SOURCE) || ! defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 } // namespace detail
 

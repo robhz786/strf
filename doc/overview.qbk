@@ -433,7 +433,7 @@ Boost.Stringify is prepared to be used as a header-only library by default. But 
 [/
 And to build the library, since there is only one source file ( __STRINGIFY_CPP__ ), probably the best way it to just copy this file to your own project, and configure the use the build system of your choice to generate the library file from it.
 ]
-Probably the best way to build the library is to create a project in the build system of your own choice. This should be easy since there is only one source file ( __STRINGIFY_CPP__ ) to compile. The code that uses it as a static library must have the macro `BOOST_STRINGIFY_NOT_HEADER_ONLY` defined.
+Probably the best way to build the library is to create a project in the build system of your own choice. This should be easy since there is only one source file ( __STRINGIFY_CPP__ ) to compile. The code that uses it as a static library must have the macro `BOOST_STRINGIFY_SEPARATE_COMPILATION` defined.
 
 
 [endsect]

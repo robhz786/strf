@@ -227,7 +227,7 @@ constexpr bool has_i18n = has_i18n_impl<CharT, FPack, IntT, Base>::has_i18n;
 static_assert(has_i18n<char, decltype(pack()), int, 10> == false, "");
 static_assert(has_i18n<char, decltype(pack(monotonic_grouping<10>(3))), int, 10> == true, "");
 
-#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class i18n_int_printer<char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class i18n_int_printer<char16_t>;
@@ -239,7 +239,7 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_int_printer<char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_int_printer<char32_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_int_printer<wchar_t>;
 
-#endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 } // namespace detail
 

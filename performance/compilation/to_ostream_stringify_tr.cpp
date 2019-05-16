@@ -1,4 +1,4 @@
-#define BOOST_STRINGIFY_NOT_HEADER_ONLY
+#define BOOST_STRINGIFY_SEPARATE_COMPILATION
 #include <boost/stringify.hpp>
 #include <ostream>
 #include "args.hpp"
