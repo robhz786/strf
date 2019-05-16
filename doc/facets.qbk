@@ -6,7 +6,7 @@
 
 [import ../example/facets.cpp]
 
-[#facets]
+[#overview_facets]
 [section:facets Facets]
 
 These are not the same as the facets handled by `std::locale`,
@@ -48,7 +48,6 @@ Both has the same purpose: to customize numeric punctuation, however
 [integers and floating points numbers]
 ]
 
-
 [
 [[link numpunct `numpunct_category<16>`]]
 [numeric punctuation for hexadecimal base]
@@ -86,9 +85,9 @@ Both has the same purpose: to customize numeric punctuation, however
 
 [
 [[link tr_string_error tr_string_error_category]]
-[/Tr-string/ parsing error handling]
+[ /Tr-string/ parsing error handling]
 [no]
-[]
+[In /tr-strings/]
 ]
 
 ]
@@ -101,7 +100,7 @@ With the [link constrain `constrain`] function template you can create /constrai
 
 [constrained_facet_sample]
 
-The library provides some type trait of this kind:
+The library provides some type traits of this kind:
 
 [table
 [[trait] [description]]

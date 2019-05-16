@@ -1,4 +1,4 @@
-[# tr_string_syntax]
+[# ref_tr_string_syntax]
 [section Tr-string syntax]
 [import ../example/tr_string.cpp]
 
@@ -14,10 +14,9 @@ and are of four kind:
 [[any other character]  [the next `'}'` or end of string] [a non positional argument reference]]
 ]
 
-[variablelist Examples:
+[variablelist
 
 [[Comments]
-
 
 [When the tr-string has to be translated to other languages, the translation may be in charge of someone else than you. So you can add comments intended to help such person.
 ]

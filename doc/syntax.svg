@@ -38,31 +38,36 @@ see https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
     }
     /* ]]> */
   </style>
-  
-  <rect width="170" height="28" rx="10" ry="10" x="240" y="5"/>
-  <text x="250" y="24" >
-    <tspan class="code">.facets(</tspan>
-    <tspan class="repl">facets...</tspan>
-    <tspan class="code">)</tspan>       
-  </text>     
+  <a href="html/index.html#overview_facets" target="_parent">
+      <rect width="170" height="28" rx="10" ry="10" x="240" y="5"/>
 
-  <rect width="170" height="28" rx="10" ry="10" x="240" y="49"/>
-  <text x="250" y="68" >
-    <tspan class="code">.reserve(</tspan>
-    <tspan class="repl">size</tspan>
-    <tspan class="code">)</tspan>       
-  </text>     
-  
-  <rect width="170" height="28" rx="10" ry="10" x="240" y="93"/>
-  <text x="250" y="112" class="code">.reserve_calc()</text>
+      <text x="250" y="24" >
+        <tspan class="code">.facets(</tspan>
+        <tspan class="repl">facets...</tspan>
+        <tspan class="code">)</tspan>
+      </text>
+  </a>
+  <a href="html/index.html#overview_reserve" target="_parent">
+    <rect width="170" height="28" rx="10" ry="10" x="240" y="49"/>
+    <text x="250" y="68" >
+      <tspan class="code">.reserve(</tspan>
+      <tspan class="repl">size</tspan>
+      <tspan class="code">)</tspan>
+    </text>
 
-  <rect width="168" height="28" rx="10" ry="10" x="2" y="137"/>
-  <text x="17" y="156" class="repl">leading expression</text>
+    <rect width="170" height="28" rx="10" ry="10" x="240" y="93"/>
+    <text x="250" y="112" class="code">.reserve_calc()</text>
+  </a>
+
+  <a href="html/index.html#output_types" target="_parent">
+    <rect width="168" height="28" rx="10" ry="10" x="2" y="137"/>
+    <text x="17" y="156" class="repl">leading expression</text>
+  </a>
 
   <path d="M170 151 H450"/>
   <path d="M229 30 V140"/>
   <path d="M421 30 V140"/>
-  
+
   <path d="M240 19 A11 11 0 0 0 229 30"/>
   <path d="M410 19 A11 11 0 0 1 421 30"/>
 
@@ -77,26 +82,30 @@ see https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
 
   <path d="M450 151 A11 11 0 0 0 461 140"/>
   <path d="M461 140 A11 11 0 0 1 472 129"/>
-  
+
   <path d="M450 151 A11 11 0 0 1 461 162"/>
   <path d="M461 162 A11 11 0 0 0 472 173"/>
 
-  <rect width="195" height="28" rx="10" ry="10" x="472" y="115"/>
-  <text x="482" y="134">
-    <tspan class="code">(</tspan>
-    <tspan class="repl">args...</tspan>
-    <tspan class="code">)</tspan>
-  </text>
-  <rect width="195" height="28" rx="10" ry="10" x="472" y="159"/>
-  <text x="482" y="178">
-    <tspan class="code">.tr(</tspan>
-    <tspan class="repl">tr-string</tspan>
-    <tspan class="code">,</tspan>
-    <tspan class="repl">args...</tspan>
-    <tspan class="code">)</tspan>
-  </text>
+  <a href="html/boost_stringify/input_types.html" target="_parent">
+    <rect width="195" height="28" rx="10" ry="10" x="472" y="115"/>
+    <text x="482" y="134">
+      <tspan class="code">(</tspan>
+      <tspan class="repl">args...</tspan>
+      <tspan class="code">)</tspan>
+    </text>
+  </a>
+  <a href="html/index.html#overview_tr_string" target="_parent">
+    <rect width="195" height="28" rx="10" ry="10" x="472" y="159"/>
+    <text x="482" y="178">
+      <tspan class="code">.tr(</tspan>
+      <tspan class="repl">tr-string</tspan>
+      <tspan class="code">,</tspan>
+      <tspan class="repl">args...</tspan>
+      <tspan class="code">)</tspan>
+    </text>
+  </a>
 
-  <!--   
+  <!--
   <path d="M218 151 A11 11 0 0 0 229 140"/>
   <path d="M218 151 A11 11 0 0 0 218 173"/>
 
@@ -109,5 +118,5 @@ see https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
   -->
 
   <path class="arrow" d="M210 151 l -17 -4 v 8"/>
-  
+
 </svg>

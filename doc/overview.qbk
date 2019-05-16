@@ -8,12 +8,13 @@
 
 [section Overview]
 
+
+
 [warning
 This library is not part of the Boost C++ Libraries yet.
 It is still in an early stage of development and subject to change without
 preserving backwards compatibility.
 ]
-
 
 [section A tour of the library]
 
@@ -24,116 +25,35 @@ For example:
 
 [first_example]
 
-The "conventional" input types that are ( or will be ) supported are:
+You can see that this library uses format functions \u2014 like `hex`
+\u2014 to specify formatting.
+Actually `hex` is just a syntatic sugar. `hex(x)` simply returns
+`fmt(x).hex()`. And the return of `__fmt__(x)` is an object that contains
+the value `x` as well as member functions that change formatting.
+These [link format_functions format functions] can be called in a row
+like this: `strf::hex(255).p(4).fill(U'.') > 10`.
+To aliviate the verbosity, operator overloads are common among them.
 
-* an integer ( `int`, `long`, `long long`, `unsigned int`, `unsigned long` or `unsigned long long`)
-* a string ( a raw string, a `std::basic_string`, `std::basic_string_view` or `boost::basic_string_view`)
-* a single character ( with the same type as the output character type, otherwise compilation fails )
-* a `bool` ['( to do )]
-* a `void*` ['( to do )] 
-* a floating point ['( to do )]
+Now, some other examples:
 
-There are also the some [link special_input_types.special_input_types "special" input types], wich include [link ranges ranges] and [link joins joins]. But they are covered in another section.
+[second_example]
 
-And at last there are the input types that are returned from format functions, which carry format information in addition to the value to be printed.
-
-[#format_functions]
-[section Format Functions]
-
-You can see in the previous snippet that this library uses format
-functions \u2014 like `hex` \u2014 to specify formatting.
-Actually `hex` is just a syntatic sugar. `hex(value)` simply returns
-`fmt(value).hex()`. And the return type of `fmt(value)` have format
-member functions as those in the table below: 
-
-[table
-[[member function] [effect] [input types]]
-
-[
-[`operator>(int width)`]
-[right adjustment]
-[all ( integer, floating point, character, string, `void*`, `bool`) ]
-]
-
-[[`operator<(int width)`] [left adjustment] [all]]
-[[`operator^(int width)`] [centered adjustment] [all]]
-[
-[`operator%(int width)`]
-[internal adjustment (as in [@http://en.cppreference.com/w/cpp/io/manip/left `std::internal`])]
-[integer and floating point]
-]
-[[`fill(char32_t ch)`][sets the fill character to [~ch]] [all]]
-[[`p(int precision)`][sets the precision] [integer and floating point]]
-[[`dec()`] [decimal base] [integer and floating point]]
-[[`hex()`] [hexadecimal base] [integer and floating point]]
-[[`oct()`] [octal base] [integer]]
-
-[
-[`showpos(bool b)`]
-[if [~b] is `true`, print the positive sign for non-negative numbers (as in [@http://en.cppreference.com/w/cpp/io/manip/showpos `std::showpos`])]
-[integer and floating point]
-]
-
-[
-[`showbase(bool b)`]
-[if [~b] is `true`, print the numeric base indication (as in [@http://en.cppreference.com/w/cpp/io/manip/showbase `std::showbase`])]
-[integer and floating point]
-]
-[[`operator+()`][same as `showpos(true)`][integer and floating point]]
-[[`operator~()`][same as `showbase(true)`][integer]]
-[[`multi(int count)`][print the character [~count] times][character]]
-
-]
-
-The return type of these format member functions
-also have some these of format member functions,
-so that you can call them in a row. For example:
-
-[format_functions_example]
-
-The additional syntatic sugars are:
-
-[table
-[[expression] [equivalent to]]
-[[`hex(x)`][`fmt(x).hex()`]]
-[[`dec(x)`][`fmt(x).dec()`]]
-[[`oct(x)`][`fmt(x).oct()`]]
-[[][]]
-[[`right(x, width)`][`fmt(x) > width`]]
-[[`left(x, width)`][`fmt(x) < width`]]
-[[`center(x, width)`][`fmt(x) ^ width`]]
-[[`internal(x, width)`][`fmt(x) % width`]]
-[[][]]
-[[`right(x, width, fill)`]   [`fmt(x).fill(fill) > width`]]
-[[`left(x, width, fill)`]    [`fmt(x).fill(fill) < width`]]
-[[`center(x, width, fill)`]  [`fmt(x).fill(fill) ^ width`]]
-[[`internal(x, width, fill)`][`fmt(x).fill(fill) % width`]]
-[[][]]
-[[`multi(x, count)`] [`fmt(x).multi(count)`]]
-]
-
-[/
-[h4 Example]
-[formatting_samples]
-]
-[endsect]
 [#usage_syntax]
-[section Main usage syntax]
 
-Here is another difference of `to_string` from `std::to_string`:
+Another difference of `to_string` from `std::to_string` is that
 it's not a function, but an object ( actually a constexpr ).
 It has member functions that are invoked as in the
 [@https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Named_Parameter
-named parameter idiom]. And the same applies to all others /"leading expressions"/:
+named parameter idiom] following this syntax:
 
-[$../syntax.svg]
+[:[$../syntax.svg]]
 
-[section Leading expression]
-
-The [*leading expression] is the part of the syntax that varies according to
-the output type.
+The /leading expression/ is the part of the syntax that varies
+according to the destination type. Hence, `to_string` is a
+/leading expression/.
 
 [#output_types]
+[section Output types]
 
 [/
 The "`ec_`" prefix means that an `std::error_code` is returned.
@@ -223,7 +143,7 @@ where:
 
 [endsect]
 
-[#syntax_reserve]
+[#overview_reserve]
 [section Reserve]
 The following member functions only have effect in some output types ( /leading expressions/ 1 to 7 in [link output_types previous table], or when you create the [link OutputBuffer reserve] method when defining your own output type ). 
 
@@ -235,10 +155,10 @@ If none of these function is called, then no reservation is done.
 [syntax_reserve]
 
 [endsect]
-[#tr_string]
+[#overview_tr_string]
 [section Tr-string]
 
-The [link tr_string_syntax /tr-string/] is what in other formatting
+The [link ref_tr_string_syntax /tr-string/] is what in other formatting
 libraries would be called as the /format string/,
 with the difference that it does not specify any formatting.
 Its purpose is to enable the use of translation tools like
@@ -257,8 +177,6 @@ You can customize how the library handles parsing errors in the with the
 [include facets.qbk]
 
 [/===========================================]
-
-[endsect] [/syntax]
 
 [section Encoding conversion]
 
@@ -407,7 +325,7 @@ like the width calculation method, and encoding error handling.
 
     [ [Tr-string translation hints]
       [ [/Usually it is not the programmer who do the translations.]
-        The [link tr_string_syntax tr-string syntax] allows you
+        The [link ref_tr_string_syntax tr-string syntax] allows you
         to insert comments intended to help the person who translates it.
       ]
     ]
@@ -489,7 +407,7 @@ like the width calculation method, and encoding error handling.
   [
   [itemized_list
     [[link output_types Append to string]]
-    [[link syntax_reserve Reserve string capacity]]
+    [[link overview_reserve Reserve string capacity]]
     [[link joins Joined input arguments]]
     [[link ranges Range input argument]]
     [[link numpunct Numeric punctuation for octal and hexadecimal]]

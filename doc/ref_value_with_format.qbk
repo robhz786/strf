@@ -82,3 +82,8 @@ with one template type parameter such that, given any types `T` and `U`:
        , assuming both are well formed. ] ]
 
 [endsect]
+
+[#fmt]
+[section Customization point: function template `fmt`]
+/To-do/
+[endsect]

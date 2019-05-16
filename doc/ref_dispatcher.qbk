@@ -351,7 +351,7 @@ write their textual representation.
        `reserve_calc`] was called, then call `ob.reserve(size)`, where
        `size` is value passed to [link dispatcher_reserve `reserve`] or
         the calculated number of character that will be written in (4).]
-      [Proccess `str` according the [link tr_string_syntax
+      [Proccess `str` according the [link ref_tr_string_syntax
        tr-string syntax] and write the result into `ob`.]
       [return `ob.finish()`]]]]]
 ]]

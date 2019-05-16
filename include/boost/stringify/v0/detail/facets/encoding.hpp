@@ -263,14 +263,14 @@ public:
         < _inner_char_type_in
         , _inner_char_type_out >;
 
-    constexpr transcoder(const impl_type& info)
+    constexpr transcoder(const impl_type& info) noexcept
         : _impl(&info)
     {
     }
 
-    constexpr transcoder(const transcoder&) = default;
+    constexpr transcoder(const transcoder&) noexcept = default;
 
-    transcoder& operator=(const transcoder& cp)
+    transcoder& operator=(const transcoder& cp) noexcept
     {
         _impl = cp._impl;
         return *this;

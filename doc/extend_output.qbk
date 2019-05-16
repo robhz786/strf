@@ -58,7 +58,7 @@ return the number of characters written.
 The last member function that needs to be explained is `reserve`.
 Differently from the other three, this one is optional and the library only
 calls it once and before the any call to `recycle` in this object, and only
-when [link syntax_reserve reserve_calc] or [link syntax_reserve reserve]
+when [link overview_reserve reserve_calc] or [link overview_reserve reserve]
 is called in the main [link usage_syntax usage syntax].
 The parameter of `reserve` tells how many characters will be written,
 so that you can pre-allocate enough memory.

@@ -216,7 +216,7 @@ A given type [~T] is an `OuputBuffer`, if it satisfies the following conditions:
  If present,
           this function is called no more than once, and just after the
           constructor,
-          and according to the use of [link syntax_reserve `reserve_auto()`,
+          and according to the use of [link overview_reserve `reserve_auto()`,
           `reserve()` or `no_reserve()`] in the [link usage_syntax basic
           invocation syntax]. The parameter tells how many characters will
           be written before `finish()` is called.

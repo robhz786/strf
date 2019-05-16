@@ -19,7 +19,7 @@ std::basic_string<CharT> repeat
     {
         x.append(str);
     }
-    return std::move(x);
+    return x;
 }
 
 template <typename CharT>

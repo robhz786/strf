@@ -15,6 +15,67 @@ void sample()
 }
 //]
 
+void second_example()
+{
+    //[second_example
+
+    namespace strf = boost::stringify::v0;
+
+    // more formatting:  operator>(int width) : align to rigth
+    //                   operator~()          : show base
+    //                   p(int)               : set precision           
+    auto s = strf::to_string( "---"
+                            , ~strf::hex(255).p(4).fill(U'.') > 10
+                            , "---" );
+    BOOST_ASSERT(s == "---....0x00ff---");
+
+    //
+    // ranges
+    //
+    int array[] = {20, 30, 40};
+    const char* separator = " / ";
+    s = strf::to_string( "--[", strf::range(array, separator), "]--");
+    BOOST_ASSERT(s == "--[20 / 30 / 40]--");
+
+    //
+    // range with formatting
+    //
+    s = strf::to_string( "--["
+                       , ~strf::hex(strf::range(array, separator)).p(4)
+                       , "]--");
+    BOOST_ASSERT(s == "--[0x0014 / 0x001e / 0x0028]--");
+
+    // or
+
+    s = strf::to_string( "--["
+                       , ~strf::fmt_range(array, separator).hex().p(4)
+                       , "]--");
+    BOOST_ASSERT(s == "--[0x0014 / 0x001e / 0x0028]--");
+
+    //
+    // join: align a group of argument as one:
+    //
+    int value = 255;
+    s = strf::to_string( "---"
+                       , strf::join_center(30, U'.')( value
+                                                    , " in hexadecimal is "
+                                                    , strf::hex(value) )
+                       , "---" );
+    BOOST_ASSERT(s == "---...255 in hexadecimal is ff...---");
+
+
+    // joins can contain any type of argument, including ranges and other joins
+    s = strf::to_string( strf::join_right(30, U'.')
+                           ( "{"
+                           , strf::join_center(20)( "["
+                                                  , strf::range(array, ", ")
+                                                  , "]" )
+                           , "}" ));
+    BOOST_ASSERT(s == "........{    [10, 20, 30]    }");
+//]
+}
+
+
 void format_functions()
 {
     //[ format_functions_example
