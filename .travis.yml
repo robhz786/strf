@@ -179,6 +179,7 @@ jobs:
       env:
         - COMMENT="Coverity Scan"
         - B2_TOOLSET=clang
+        - B2_CXXSTD=14
       script:
         - cd $BOOST_ROOT/libs/$SELF
         - ci/travis/coverity.sh
