@@ -36,7 +36,7 @@ del ldflags_str
 pwd = os.path.dirname(os.path.realpath(__file__))
 tmp_dir = pwd + "/tmp"
 boost_incl = "-I" + os.path.normpath(pwd + "/../../../../")
-fmt_dir = os.path.normpath(pwd + "/../fmt-5.2.0")
+fmt_dir = os.path.normpath(pwd + "/../../externals/fmt")
 fmt_incl = "-I" + fmt_dir + "/include"
 stringify_cpp = os.path.normpath(pwd + "/../../build/stringify.cpp")
 

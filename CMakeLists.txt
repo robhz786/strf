@@ -90,5 +90,5 @@ endif (BOOST_STRINGIFY_BUILD_EXAMPLES)
 
 if (BOOST_STRINGIFY_BUILD_BENCHMARKS)
   add_subdirectory(performance performance)
-  add_subdirectory(performance/fmt-5.2.0 fmt)
+  add_subdirectory(externals/fmt fmt)
 endif (BOOST_STRINGIFY_BUILD_BENCHMARKS)

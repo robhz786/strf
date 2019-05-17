@@ -5,7 +5,7 @@
 project
     : requirements 
       <include>../include
-      <include>./fmt-5.2.0
+      <include>../performance/fmt
       <define>FMT_HEADER_ONLY=1
     : default-build release
     ;
