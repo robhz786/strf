@@ -12,7 +12,7 @@ enum class tr_invalid_arg
     replace, stop, ignore
 };
 
-struct tr_invalid_arg_category
+struct tr_invalid_arg_c
 {
     static constexpr bool constrainable = false;
 
@@ -29,7 +29,7 @@ template <>
 class facet_trait<stringify::v0::tr_invalid_arg>
 {
 public:
-    using category = stringify::v0::tr_invalid_arg_category;
+    using category = stringify::v0::tr_invalid_arg_c;
     static constexpr bool store_by_value = true;
 };
 

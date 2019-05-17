@@ -73,14 +73,14 @@ void get_facet_sample()
         ( std::ref(punct_hex) // note the use of std::ref here
         , strf::constrain<strf::is_int_number>(std::ref(punct_dec)) );//and here
 
-    decltype(auto) f1 = strf::get_facet<strf::numpunct_category<16>, int>(fp);
+    decltype(auto) f1 = strf::get_facet<strf::numpunct_c<16>, int>(fp);
     BOOST_ASSERT(&f1 == &punct_hex);
 
-    decltype(auto) f2 = strf::get_facet<strf::numpunct_category<10>, int>(fp);
+    decltype(auto) f2 = strf::get_facet<strf::numpunct_c<10>, int>(fp);
     BOOST_ASSERT(&f2 == &punct_dec);
 
-    decltype(auto) f3 = strf::get_facet<strf::numpunct_category<10>, double>(fp);
-    BOOST_ASSERT(&f3 == &strf::numpunct_category<10>::get_default());
+    decltype(auto) f3 = strf::get_facet<strf::numpunct_c<10>, double>(fp);
+    BOOST_ASSERT(&f3 == &strf::numpunct_c<10>::get_default());
     //]
     (void)f1;
     (void)f2;

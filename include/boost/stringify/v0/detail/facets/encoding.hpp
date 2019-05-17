@@ -17,7 +17,7 @@ enum class encoding_error
     replace, stop, ignore
 };
 
-struct encoding_error_category
+struct encoding_error_c
 {
     static constexpr bool constrainable = false;
 
@@ -31,7 +31,7 @@ template <>
 class facet_trait<stringify::v0::encoding_error>
 {
 public:
-    using category = stringify::v0::encoding_error_category;
+    using category = stringify::v0::encoding_error_c;
     static constexpr bool store_by_value = true;
 };
 
@@ -40,7 +40,7 @@ enum class surrogate_policy : bool
     strict = false, lax = true
 };
 
-struct surrogate_policy_category
+struct surrogate_policy_c
 {
     static constexpr bool constrainable = false;
 
@@ -54,7 +54,7 @@ template <>
 class facet_trait<stringify::v0::surrogate_policy>
 {
 public:
-    using category = stringify::v0::surrogate_policy_category;
+    using category = stringify::v0::surrogate_policy_c;
     static constexpr bool store_by_value = true;
 };
 
@@ -825,7 +825,7 @@ inline stringify::v0::encoding<char> iso_8859_15()
 }
 
 template <typename CharT>
-struct encoding_category;
+struct encoding_c;
 
 template <typename Facet>
 class facet_trait;
@@ -834,12 +834,12 @@ template <typename CharT>
 class facet_trait<stringify::v0::encoding<CharT> >
 {
 public:
-    using category = stringify::v0::encoding_category<CharT>;
+    using category = stringify::v0::encoding_c<CharT>;
     static constexpr bool store_by_value = true;
 };
 
 template <>
-struct encoding_category<char>
+struct encoding_c<char>
 {
     static constexpr bool constrainable = false;
 
@@ -850,7 +850,7 @@ struct encoding_category<char>
 };
 
 template <>
-struct encoding_category<char16_t>
+struct encoding_c<char16_t>
 {
     static constexpr bool constrainable = false;
 
@@ -861,7 +861,7 @@ struct encoding_category<char16_t>
 };
 
 template <>
-struct encoding_category<char32_t>
+struct encoding_c<char32_t>
 {
     static constexpr bool constrainable = false;
 
@@ -872,7 +872,7 @@ struct encoding_category<char32_t>
 };
 
 template <>
-struct encoding_category<wchar_t>
+struct encoding_c<wchar_t>
 {
     static constexpr bool constrainable = false;
 

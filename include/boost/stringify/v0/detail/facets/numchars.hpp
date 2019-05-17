@@ -15,7 +15,7 @@
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 template <typename CharT, unsigned Base>
-struct numchars_category;
+struct numchars_c;
 
 template <typename CharT>
 class numchars
@@ -265,7 +265,7 @@ class default_numchars<CharT, 10> final
 {
 public:
 
-    using category = numchars_category<CharT, 10>;
+    using category = numchars_c<CharT, 10>;
 
     using stringify::v0::numchars_default_common<CharT>::print_digits;
 
@@ -532,7 +532,7 @@ class default_numchars<CharT, 16> final
 {
 public:
 
-    using category = numchars_category<CharT, 16>;
+    using category = numchars_c<CharT, 16>;
 
     using stringify::v0::numchars_default_common<CharT>::print_digits;
 
@@ -780,7 +780,7 @@ public:
     {
     }
 
-    using category = numchars_category<CharT, 8>;
+    using category = numchars_c<CharT, 8>;
 
     using stringify::v0::numchars_default_common<CharT>::print_digits;
 
@@ -996,7 +996,7 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class default_numchars<wchar_t, 8>;
 #endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 template <typename CharT, unsigned Base>
-struct numchars_category
+struct numchars_c
 {
     static const default_numchars<CharT, Base>& get_default()
     {

@@ -125,10 +125,10 @@ public:
         , std::size_t len ) noexcept
         : _str(str)
         , _len(len)
-        , _wcalc(_get_facet<stringify::v0::width_calculator_category>(fp))
-        , _encoding(_get_facet<stringify::v0::encoding_category<CharT>>(fp))
-        , _enc_err(_get_facet<stringify::v0::encoding_error_category>(fp))
-        , _allow_surr(_get_facet<stringify::v0::surrogate_policy_category>(fp))
+        , _wcalc(_get_facet<stringify::v0::width_calculator_c>(fp))
+        , _encoding(_get_facet<stringify::v0::encoding_c<CharT>>(fp))
+        , _enc_err(_get_facet<stringify::v0::encoding_error_c>(fp))
+        , _allow_surr(_get_facet<stringify::v0::surrogate_policy_c>(fp))
     {
     }
 
@@ -184,10 +184,10 @@ public:
         ( const FPack& fp
         , const stringify::v0::string_with_format<CharT>& input )
         : _fmt(input)
-        , _wcalc(_get_facet<stringify::v0::width_calculator_category>(fp))
-        , _encoding(_get_facet<stringify::v0::encoding_category<CharT>>(fp))
-        , _enc_err(_get_facet<stringify::v0::encoding_error_category>(fp))
-        , _allow_surr(_get_facet<stringify::v0::surrogate_policy_category>(fp))
+        , _wcalc(_get_facet<stringify::v0::width_calculator_c>(fp))
+        , _encoding(_get_facet<stringify::v0::encoding_c<CharT>>(fp))
+        , _enc_err(_get_facet<stringify::v0::encoding_error_c>(fp))
+        , _allow_surr(_get_facet<stringify::v0::surrogate_policy_c>(fp))
     {
         _init();
     }

@@ -20,13 +20,13 @@ For example, to customise numeric punctuation:
 [basic_facet_sample]
 
 Every /facet/ belongs to a /facet category/. 
-Each facet category corresponds to a concept, /i.e./ a set of requirements that a class must satisfy. A class that satisfies such requirements is a facet of such facet category. And for each facet category there is class with the same name.
+Each facet category corresponds to a concept, /i.e./ a set of requirements that a class must satisfy. A class that satisfies such requirements is a facet of such facet category. And for each facet category there is class whose name, by convention, has a "_c" suffix and is the name of the category.
 [/
-This class always have a static member function named `get_default` which has no parameter and returns a reference to a constant object, whose type is a facet of this category. Also, a facet must have member type named `category` which is an alias to the representative class of its category.
+That class always have a static member function named `get_default` which has no parameter and returns an object whose type is a facet of this category. Also, a facet must have member type named `category` which is an alias to the representative class of its category.
 ]
 
 For example, [link monotonic_grouping `monotonic_grouping`]`<10>` and [link str_grouping
-`str_grouping`]`<10>` are both facets of the category `numpunct_category<10>`.
+`str_grouping`]`<10>` are both facets of the category `numpunct_c<10>`.
 Both has the same purpose: to customize numeric punctuation, however
 `monotonic_grouping` is much faster.
 
@@ -35,56 +35,56 @@ Both has the same purpose: to customize numeric punctuation, however
 [[facet category][what it controls][constrainable][where is used]]
 
 [
-[[link width_calculation `width_calculation_category`]]
+[[link width_calculation `width_calculation_c`]]
 [how the width is calculated]
 [yes]
 [[link joins joins] and all conventional types]
 ]
 
 [
-[[link numpunct `numpunct_category<10>`]]
+[[link numpunct `numpunct_c<10>`]]
 [numeric punctuation for decimal base]
 [yes]
 [integers and floating points numbers]
 ]
 
 [
-[[link numpunct `numpunct_category<16>`]]
+[[link numpunct `numpunct_c<16>`]]
 [numeric punctuation for hexadecimal base]
 [yes]
 [integers and floating points numbers]
 ]
 
 [
-[[link numpunct `numpunct_category<8>`]]
+[[link numpunct `numpunct_c<8>`]]
 [numeric punctuation for octal base]
 [yes]
 [integers numbers]
 ]
 
 [
-[[link encoding_facets encoding_category]]
+[[link encoding_facets encoding_c]]
 [encoding]
 [no]
 []
 ]
 
 [
-[[link encoding_error encoding_error_category]]
+[[link encoding_error encoding_error_c]]
 [encoding error handling]
 [yes]
 []
 ]
 
 [
-[[link surrogate_policy surrogate_policy_category]]
+[[link surrogate_policy surrogate_policy_c]]
 [surrogates allowance]
 [yes]
 []
 ]
 
 [
-[[link tr_string_error tr_string_error_category]]
+[[link tr_string_error tr_string_error_c]]
 [ /Tr-string/ parsing error handling]
 [no]
 [In /tr-strings/]

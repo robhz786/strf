@@ -220,12 +220,12 @@ fmt_int_printer<CharT>::fmt_int_printer
     ( const FPack& fp
     , stringify::v0::int_with_format<IntT> value
     , std::integral_constant<int, Base> ) noexcept
-    : _chars(get_facet<stringify::v0::numchars_category<CharT, Base>, IntT>(fp))
-    , _punct(get_facet<stringify::v0::numpunct_category<Base>, IntT>(fp))
-    , _encoding(get_facet<stringify::v0::encoding_category<CharT>, IntT>(fp))
-    , _enc_err(get_facet<stringify::v0::encoding_error_category, IntT>(fp))
+    : _chars(get_facet<stringify::v0::numchars_c<CharT, Base>, IntT>(fp))
+    , _punct(get_facet<stringify::v0::numpunct_c<Base>, IntT>(fp))
+    , _encoding(get_facet<stringify::v0::encoding_c<CharT>, IntT>(fp))
+    , _enc_err(get_facet<stringify::v0::encoding_error_c, IntT>(fp))
     , _afmt(value)
-    , _allow_surr(get_facet<stringify::v0::surrogate_policy_category, IntT>(fp))
+    , _allow_surr(get_facet<stringify::v0::surrogate_policy_c, IntT>(fp))
 {
     _init<IntT, Base>(value);
 }

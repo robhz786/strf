@@ -15,11 +15,11 @@ auto write_out = strf::write(stdout);
 
 namespace xxx {
 
-struct base64_facet_category;
+struct base64_facet_c;
 
 struct base64_facet
 {
-    using category = base64_facet_category;
+    using category = base64_facet_c;
     static constexpr bool store_by_value = true;
 
     unsigned line_length = 64;
@@ -33,7 +33,7 @@ struct base64_facet
     }
 };
 
-struct base64_facet_category
+struct base64_facet_c
 {
     static constexpr bool constrainable = true;
 
@@ -363,7 +363,7 @@ inline base64_printer<CharT> make_printer( const FPack& fp
                                          , const base64_input_with_format& fmt )
 {
   /*<< see [link facets_pack get_facet.]
->>*/auto facet = strf::get_facet<base64_facet_category, base64_input>(fp);
+>>*/auto facet = strf::get_facet<base64_facet_c, base64_input>(fp);
     return {facet, fmt};
 }
 

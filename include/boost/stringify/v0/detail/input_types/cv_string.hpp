@@ -315,11 +315,11 @@ public:
         : cv_string_printer
             ( str
             , len
-            , _get_facet<stringify::v0::width_calculator_category>(fp)
+            , _get_facet<stringify::v0::width_calculator_c>(fp)
             , src_enc
-            , _get_facet<stringify::v0::encoding_category<CharOut>>(fp)
-            , _get_facet<stringify::v0::encoding_error_category>(fp)
-            , _get_facet<stringify::v0::surrogate_policy_category>(fp) )
+            , _get_facet<stringify::v0::encoding_c<CharOut>>(fp)
+            , _get_facet<stringify::v0::encoding_error_c>(fp)
+            , _get_facet<stringify::v0::surrogate_policy_c>(fp) )
     {
     }
 
@@ -429,10 +429,10 @@ public:
         , const stringify::v0::encoding<CharIn>& src_enc ) noexcept
         : _fmt(input)
         , _src_encoding(src_enc)
-        , _dest_encoding(_get_facet<stringify::v0::encoding_category<CharOut>>(fp))
-        , _wcalc(_get_facet<stringify::v0::width_calculator_category>(fp))
-        , _enc_err(_get_facet<stringify::v0::encoding_error_category>(fp))
-        , _allow_surr(_get_facet<stringify::v0::surrogate_policy_category>(fp))
+        , _dest_encoding(_get_facet<stringify::v0::encoding_c<CharOut>>(fp))
+        , _wcalc(_get_facet<stringify::v0::width_calculator_c>(fp))
+        , _enc_err(_get_facet<stringify::v0::encoding_error_c>(fp))
+        , _allow_surr(_get_facet<stringify::v0::surrogate_policy_c>(fp))
     {
         _init();
     }
@@ -633,7 +633,7 @@ inline stringify::v0::detail::cv_string_printer<CharIn, CharOut>
 make_printer( const FPack& fp
             , stringify::v0::detail::cv_string<CharIn> str )
 {
-    using enc_cat = stringify::v0::encoding_category<CharIn>;
+    using enc_cat = stringify::v0::encoding_c<CharIn>;
     using input_tag = stringify::v0::string_input_tag<CharIn>;
     return { fp
            , str.begin()
@@ -655,7 +655,7 @@ make_printer
     ( const FPack& fp
     , stringify::v0::detail::cv_string_with_format<CharIn> str )
 {
-    using enc_cat = stringify::v0::encoding_category<CharIn>;
+    using enc_cat = stringify::v0::encoding_c<CharIn>;
     using input_tag = stringify::v0::string_input_tag<CharIn>;
     return {fp, str, stringify::v0::get_facet<enc_cat, input_tag>(fp) };
 }

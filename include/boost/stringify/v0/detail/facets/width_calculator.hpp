@@ -10,7 +10,7 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-struct width_calculator_category;
+struct width_calculator_c;
 class width_calculator;
 
 typedef int (*width_calc_func)(int limit, const char32_t* begin, const char32_t* end);
@@ -68,7 +68,7 @@ class width_calculator
 {
 public:
 
-    using category = stringify::v0::width_calculator_category;
+    using category = stringify::v0::width_calculator_c;
 
     explicit width_calculator
         ( const stringify::v0::width_calculation_type calc_type )
@@ -148,7 +148,7 @@ private:
 };
 
 
-struct width_calculator_category
+struct width_calculator_c
 {
     static constexpr bool constrainable = true;
 

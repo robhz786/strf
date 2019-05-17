@@ -96,14 +96,14 @@ using char_with_format = stringify::v0::value_with_format
 //     template <typename FPack>
 //     static decltype(auto) get_out_encoding(const FPack& fp)
 //     {
-//         using category = stringify::v0::encoding_category<CharT>;
+//         using category = stringify::v0::encoding_c<CharT>;
 //         return fp.template get_facet<category, input_type>();
 //     }
 
 //     template <typename FPack>
 //     static decltype(auto) get_width_calculator(const FPack& fp)
 //     {
-//         using category = stringify::v0::width_calculator_category;
+//         using category = stringify::v0::width_calculator_c;
 //         return fp.template get_facet<category, input_type>();
 //     }
 
@@ -233,8 +233,8 @@ public:
 
     template <typename FPack>
     char_printer (const FPack& fp, CharT ch)
-        : _encoding(get_facet<stringify::v0::encoding_category<CharT>, CharT>(fp))
-        , _wcalc(get_facet<stringify::v0::width_calculator_category, CharT>(fp))
+        : _encoding(get_facet<stringify::v0::encoding_c<CharT>, CharT>(fp))
+        , _wcalc(get_facet<stringify::v0::width_calculator_c, CharT>(fp))
         , _ch(ch)
     {
     }
@@ -291,12 +291,12 @@ public:
     fmt_char_printer
         ( const FPack& fp
         , const stringify::v0::char_with_format<CharT>& input ) noexcept
-        : _encoding(_get_facet<stringify::v0::encoding_category<CharT>>(fp))
-        , _enc_err(_get_facet<stringify::v0::encoding_error_category>(fp))
+        : _encoding(_get_facet<stringify::v0::encoding_c<CharT>>(fp))
+        , _enc_err(_get_facet<stringify::v0::encoding_error_c>(fp))
         , _fmt(input)
-        , _allow_surr(_get_facet<stringify::v0::surrogate_policy_category>(fp))
+        , _allow_surr(_get_facet<stringify::v0::surrogate_policy_c>(fp))
     {
-        _init(_get_facet<stringify::v0::width_calculator_category>(fp));
+        _init(_get_facet<stringify::v0::width_calculator_c>(fp));
     }
 
     std::size_t necessary_size() const override;

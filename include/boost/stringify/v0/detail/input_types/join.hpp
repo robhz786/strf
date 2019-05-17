@@ -435,9 +435,9 @@ public:
         : _fmt_group(fp, ja.args)
         , _join_impl( _fmt_group::range()
                     , ja.join
-                    , _get_facet<stringify::v0::encoding_category<CharT>> (fp)
-                    , _get_facet<stringify::v0::encoding_error_category>(fp)
-                    , _get_facet<stringify::v0::surrogate_policy_category>(fp))
+                    , _get_facet<stringify::v0::encoding_c<CharT>> (fp)
+                    , _get_facet<stringify::v0::encoding_error_c>(fp)
+                    , _get_facet<stringify::v0::surrogate_policy_c>(fp))
     {
     }
 

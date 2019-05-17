@@ -25,9 +25,9 @@ public:
     i18n_int_printer
         ( const FPack& fp
         , IntT value ) noexcept
-        : _chars(get_facet<stringify::v0::numchars_category<CharT, 10>, IntT>(fp))
-        , _punct(get_facet<stringify::v0::numpunct_category<10>, IntT>(fp))
-        , _encoding(get_facet<stringify::v0::encoding_category<CharT>, IntT>(fp))
+        : _chars(get_facet<stringify::v0::numchars_c<CharT, 10>, IntT>(fp))
+        , _punct(get_facet<stringify::v0::numpunct_c<10>, IntT>(fp))
+        , _encoding(get_facet<stringify::v0::encoding_c<CharT>, IntT>(fp))
         , _digcount(stringify::v0::detail::count_digits<10>(value))
     {
         if (value < 0)
@@ -205,15 +205,11 @@ public:
 
     using has_numchars_type = decltype
         ( test_numchars
-            ( get_facet
-                < stringify::v0::numchars_category<CharT, Base>, IntT >
-                    (fp()) ) );
+            ( get_facet<stringify::v0::numchars_c<CharT, Base>, IntT>(fp())) );
 
     using has_numpunct_type = decltype
         ( test_numpunct
-            ( get_facet
-                < stringify::v0::numpunct_category<Base>, IntT >
-                    (fp())) );
+            ( get_facet< stringify::v0::numpunct_c<Base>, IntT >(fp())) );
 
 public:
 

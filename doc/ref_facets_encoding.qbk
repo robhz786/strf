@@ -12,12 +12,12 @@ namespace boost {
 namespace stringify {
 inline namespace v0 {
 
-template <typename CharT> struct encoding_category;
+template <typename CharT> struct encoding_c;
 
 template <typename CharT> class encoding {
 public:
 
-    using category = encoding_category<CharT>;
+    using category = encoding_c<CharT>;
 
     constexpr encoding(const encoding&);
     constexpr encoding& operator=(const encoding&);

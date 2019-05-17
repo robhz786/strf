@@ -168,7 +168,7 @@ BOOST_STRINGIFY_INLINE unsigned char* str_grouping_impl::get_groups
 } // namespace detail
 
 
-template <int Base> struct numpunct_category;
+template <int Base> struct numpunct_c;
 
 class numpunct_base
 {
@@ -205,7 +205,7 @@ class numpunct: public stringify::v0::numpunct_base
 {
 public:
 
-    using category = stringify::v0::numpunct_category<Base>;
+    using category = stringify::v0::numpunct_c<Base>;
 };
 
 
@@ -382,7 +382,7 @@ private:
 };
 
 
-template <int Base> struct numpunct_category
+template <int Base> struct numpunct_c
 {
     constexpr static bool constrainable = true;
 

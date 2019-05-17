@@ -624,8 +624,8 @@ private:
         , const char_type* tr_str_end
         , const Args& ... args ) const
     {
-        using cat1 = stringify::v0::encoding_category<char_type>;
-        using cat2 = stringify::v0::tr_invalid_arg_category;
+        using cat1 = stringify::v0::encoding_c<char_type>;
+        using cat2 = stringify::v0::tr_invalid_arg_c;
 
         return stringify::v0::detail::reserve_and_tr_write
             ( static_cast<const _reservation&>(*this)

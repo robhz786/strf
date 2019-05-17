@@ -125,9 +125,9 @@ public:
           , strf::facets_pack< strf::encoding<CharT>
                              , strf::encoding_error
                              , strf::surrogate_policy >
-              { strf::get_facet<strf::encoding_category<CharT>, ipv6_printer>(fp)
-              , strf::get_facet<strf::encoding_error_category, ipv6_printer>(fp)
-              , strf::get_facet<strf::surrogate_policy_category, ipv6_printer>(fp) } )
+              { strf::get_facet<strf::encoding_c<CharT>, ipv6_printer>(fp)
+              , strf::get_facet<strf::encoding_error_c, ipv6_printer>(fp)
+              , strf::get_facet<strf::surrogate_policy_c, ipv6_printer>(fp) } )
     {
     }
 
@@ -175,9 +175,9 @@ ipv6_printer<CharT>::ipv6_printer
                        , strf::encoding_error
                        , strf::surrogate_policy > fp )
     : strf::dynamic_join_printer<CharT>
-        { strf::get_facet<strf::encoding_category<CharT>, void>(fp)
-        , strf::get_facet<strf::encoding_error_category, void>(fp)
-        , strf::get_facet<strf::surrogate_policy_category, void>(fp) }
+        { strf::get_facet<strf::encoding_c<CharT>, void>(fp)
+        , strf::get_facet<strf::encoding_error_c, void>(fp)
+        , strf::get_facet<strf::surrogate_policy_c, void>(fp) }
     , _fmt(fmt)
     , _colon{strf::make_printer<CharT>(fp, static_cast<CharT>(':'))}
     , _hextets
