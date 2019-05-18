@@ -94,13 +94,9 @@ public:
         {
             return 1;
         }
-
-        char32_t ch32 = ch;
-        if ( ! std::is_same<CharT, char32_t>::value
-          || enc.id() != stringify::v0::encoding_id::eid_utf32 )
-        {
-            ch32 = enc.decode_single_char(ch);
-        }
+		char32_t ch32 = ( enc.id() == stringify::v0::encoding_id::eid_utf32
+			            ? static_cast<char32_t>(ch)
+			            : enc.decode_single_char(ch) );
         int rw = _ch_wcalc(std::numeric_limits<int>::max(), &ch32, &ch32 + 1);
         return std::numeric_limits<int>::max() - rw;
     }

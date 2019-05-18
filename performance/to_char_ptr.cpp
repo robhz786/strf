@@ -15,8 +15,10 @@
 
 #if defined(__has_include)
 #if __has_include(<charconv>)
+#if (__cplusplus >= 201402L) || (defined(_HAS_CXX17) && _HAS_CXX17)
 #define HAS_CHARCONV
 #include <charconv>
+#endif
 #endif
 #endif
 
