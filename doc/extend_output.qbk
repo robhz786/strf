@@ -4,7 +4,8 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[section:extend_output How to add a new destination type]
+[#extend_output]
+[section How to add a new destination type]
 
 You can extend the library so that it writes content into a destination other than
 [link output_types those] currently supported. That envolves two steps:

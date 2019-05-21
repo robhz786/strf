@@ -4,18 +4,9 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[import ../example/numpunct_facets.cpp]
 
 [#numpunct]
 [section Numeric punctuation]
-
-You can specify the grouping with a string using the `str_grouping` class template:
-
-[str_grouping]
-
-If all groups have the same size, then you can use the `monotonic_grouping` class template, which is optimized for this situation.
-
-[monotonic_grouping]
 
 [#str_grouping]
 [h4 The `str_grouping` class template]

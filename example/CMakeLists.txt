@@ -16,11 +16,7 @@ foreach(x
     tr_string
     encoding_conversion
     format_functions
-    custom_width_calculation
-    facets
     facets_pack_as_input
-    numpunct_facets
-    width_calculation_in_encoding_conversion
     joins
     range_input
     extend_input_ipv4

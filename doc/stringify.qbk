@@ -22,14 +22,18 @@
 [template SPC32[][SPC16][SPC16]]
 
 
+[def __fmt__ [link fmt `fmt`]]
 [def __output_buffer__ [link output_buffer `output_buffer`]]
 [def __encoding_error__ [link encoding_error `encoding_error`]]
 [def __surrogate_policy__ [link surrogate_policy `surrogate_policy`]]
 [def __transcoder__ [link transcoder `transcoder`]]
+[def __nodiscard_error_code__ [link nodiscard_error_code `nodiscard_error_code`]]
+[def __stringify_error__ [link stringify_error `stringify_error`]]
 
-
-[def __fmt__ [link fmt `fmt`]]
+[def __monotonic_grouping__ [link monotonic_grouping `monotonic_grouping`]]
+[def __str_grouping__ [link str_grouping `str_grouping`]]
 [/
+[def ____ [link  ]]
 [def ____ [link  ]]
 [def ____ [link  ]]
 [def ____ [link  ]]

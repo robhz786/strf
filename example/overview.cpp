@@ -75,6 +75,40 @@ void second_example()
 //]
 }
 
+void leading_expression_exception()
+{
+    //[leading_expression_error_handling
+    namespace strf = boost::stringify::v0;
+    char small_buff[15];
+
+    // success
+    auto ec = strf::ec_write(small_buff) ("twenty = ", 20);
+    BOOST_ASSERT(ec == std::error_code{});
+
+    // success
+    strf::write(small_buff) ("ten = ", 10);
+    BOOST_ASSERT(0 == strcmp(small_buff, "ten = 10"));
+
+    // failure
+    ec = strf::ec_write(small_buff) ("ten = ", 10, ", twenty = ", 20);
+    BOOST_ASSERT(ec == std::errc::result_out_of_range);
+
+    // failure
+    ec = std::error_code{};
+    try
+    {
+        strf::write(small_buff) ("ten = ", 10, ", twenty = ", 20);
+    }
+    catch(strf::stringify_error& e)
+    {
+        ec = e.code();
+    }
+    BOOST_ASSERT(ec == std::errc::result_out_of_range);
+    //]
+}
+
+
+
 
 void format_functions()
 {
@@ -117,6 +151,87 @@ void reserve()
     //]
 }
 
+void basic_facet_sample()
+{
+
+//[ basic_facet_sample
+    namespace strf = boost::stringify::v0;
+    constexpr int base = 10;
+    auto punct = strf::str_grouping<base>{"\4\3\2"}.thousands_sep(U'.');
+    auto s = strf::to_string
+        .facets(punct)
+        ("one hundred billions = ", 100000000000ll);
+
+    BOOST_ASSERT(s == "one hundred billions = 1.00.00.000.0000");
+//]
+}
+
+
+void constrained_facet()
+{
+    //[ constrained_facet_sample
+
+    namespace strf = boost::stringify::v0;
+
+    auto facet_obj = strf::constrain<std::is_signed>(strf::monotonic_grouping<10>{3});
+
+    auto s = strf::to_string.facets(facet_obj)(100000u, "  ", 100000);
+
+    BOOST_ASSERT(s == "100000  100,000");
+    //]
+}
+
+
+void overriding_sample()
+{
+    //[ facets_overriding
+    namespace strf = boost::stringify::v0;
+
+    auto punct_dec_1 = strf::monotonic_grouping<10>{1};
+    auto punct_dec_2 = strf::monotonic_grouping<10>{2}.thousands_sep('.');
+    auto punct_dec_3 = strf::monotonic_grouping<10>{3}.thousands_sep('^');;
+
+    // Below, punct_dec_3 overrides punct_dec_2, but only for signed types.
+    // punct_dec_2 overrides punct_dec_1 for all input types,
+    // hence the presence of punt_dec_1 bellow has no effect.
+
+    auto s = strf::to_string
+        .facets( punct_dec_1
+               , punct_dec_2
+               , strf::constrain<std::is_signed>(punct_dec_3) )
+        ( 100000, "  ", 100000u ) ;
+
+    BOOST_ASSERT(s == "100^000  10.00.00");
+    //]
+}
+
+
+void get_facet_sample()
+{
+    //[ get_facet_sample
+    namespace strf = boost::stringify::v0;
+
+    auto punct_hex  = strf::monotonic_grouping<16>{4}.thousands_sep('\'');
+    auto punct_dec  = strf::monotonic_grouping<10>{3}.thousands_sep('.');
+
+    auto fp = strf::pack
+        ( std::ref(punct_hex) // note the use of std::ref here
+        , strf::constrain<strf::is_int_number>(std::ref(punct_dec)) );//and here
+
+    decltype(auto) f1 = strf::get_facet<strf::numpunct_c<16>, int>(fp);
+    BOOST_ASSERT(&f1 == &punct_hex);
+
+    decltype(auto) f2 = strf::get_facet<strf::numpunct_c<10>, int>(fp);
+    BOOST_ASSERT(&f2 == &punct_dec);
+
+    decltype(auto) f3 = strf::get_facet<strf::numpunct_c<10>, double>(fp);
+    BOOST_ASSERT(&f3 == &strf::numpunct_c<10>::get_default());
+    //]
+    (void)f1;
+    (void)f2;
+    (void)f3;
+}
+
 
 void sample_numpunct_with_alternative_charset()
 {
@@ -133,7 +248,6 @@ void sample_numpunct_with_alternative_charset()
     BOOST_ASSERT(s == "one hundred billions = 1\2250000\225000\2250000");
 //]
 }
-
 
 
 void output_FILE()
@@ -180,52 +294,164 @@ void sani()
     //]
 }
 
-#include <vector>
-
-void input_ranges()
+void monotonic_grouping()
 {
-    //[input_range
+    //[monotonic_grouping
     namespace strf = boost::stringify::v0;
-    std::vector<int> v = {1, 10, 100};
+    constexpr int base = 10;
 
-    auto s = strf::to_string(strf::range(v, ", "));
-    BOOST_ASSERT(s == "1, 10, 100");
+    auto str = strf::to_string
+        .facets(strf::monotonic_grouping<base>{3}.thousands_sep(U'.'))
+        (100000000000ll);
 
-    // now with formatting:
-    s = strf::to_string(~strf::hex(strf::range(v, " ")));
-    BOOST_ASSERT(s == "0x1 0xa 0x64");
+    BOOST_ASSERT(str == "100.000.000.000");
     //]
 }
 
-
-void join()
+void str_grouping()
 {
-    //[join_basic_sample
+    //[str_grouping
     namespace strf = boost::stringify::v0;
-    std::vector<int> v = {1, 10, 100};
+    constexpr int base = 10;
 
-    auto s = strf::to_string
-        ( strf::join_center(30, U'_')( '('
-                                     , strf::range(v, " + ")
-                                     , ") == "
-                                     , std::accumulate(v.begin(), v.end(), 0) ));
-
-    BOOST_ASSERT(s == "____(1 + 10 + 100) == 111_____");
+    auto punct = strf::str_grouping<base>{"\4\3\2"};
+    auto str = strf::to_string.facets(punct)(100000000000ll);
+    BOOST_ASSERT(str == "1,00,00,000,0000");
     //]
 }
+
+void punct_non_decimal()
+{
+    //[punct_non_decimal
+    namespace strf = boost::stringify::v0;
+    auto str = strf::to_string
+        .facets(strf::monotonic_grouping<16>{4}.thousands_sep(U'\''))
+        (strf::hex(0xffffffffffLL));
+
+    BOOST_ASSERT(str == "ff'ffff'ffff");
+    //]        
+}
+void width_as_len()
+{
+    //[width_as_len
+    namespace strf = boost::stringify::v0;
+
+    auto str = strf::to_string
+        .facets(strf::width_as_len())
+        (strf::right(u8"áéíóú", 12, U'.'));
+
+    BOOST_ASSERT(str == "..áéíóú");    
+    //]
+}
+void width_as_u32len()
+{
+    //[width_as_u32len
+    namespace strf = boost::stringify::v0;
+
+    auto str = strf::to_string
+        .facets(strf::width_as_u32len())
+        (strf::right(u8"áéíóú", 12, U'.'));
+
+    BOOST_ASSERT(str == ".......áéíóú");
+    //]
+}
+
+void width_func()
+{
+    //[width_func
+    auto my_width_calculator =
+        [] (int limit, const char32_t* it, const char32_t* end)
+    {
+        int sum = 0;
+        for (; sum < limit && it != end; ++it)
+        {
+            auto ch = *it;
+            sum += ((0x2E80 <= ch && ch <= 0x9FFF) ? 2 : 1);
+        }
+        return sum;
+    };
+
+    auto str = strf::to_string
+        .facets(strf::width_as(my_width_calculator))
+        (strf::right(u8"今晩は", 10, U'.'));
+ 
+    BOOST_ASSERT(str == u8"....今晩は");
+    //]
+}
+
+//[avoid_repetitions
+
+namespace my { // my customizations
+
+namespace strf = boost::stringify::v0;
+
+const auto my_default_facets = strf::pack
+    ( strf::monotonic_grouping<10>(3)
+    , strf::monotonic_grouping<16>(4).thousands_sep(U'\'')
+    , strf::width_as_u32len()
+    , strf::surrogate_policy::lax
+    , strf::encoding_error::stop );
+
+const auto to_string = strf::to_string.facets(my_default_facets);
+
+template <typename Str>
+inline auto append(Str& str)
+{
+    return strf::append(str).facets(my_default_facets);
+}
+
+template <typename ... Args>
+inline decltype(auto) write(Args&& ... args)
+{
+    return strf::write(std::forward<Args>(args)...);
+}
+
+} // namespace my
+
+// void using_my_customizations()
+// {
+//     namespace strf = boost::stringify::v0;
+    
+//     int x = 100000000;
+//     auto str = my::to_string(x);
+//     BOOST_ASSERT(str == "100,000,000");
+
+//     my::append(str) (" in hexadecimal is ", ~strf::hex(x));
+//     char buff[500];
+//     BOOST_ASSERT(str == "100,000,0000 in hexadecimal is 0x5f5'e100");    
+
+//     my::write(buff)(x, " in hexadecimal is ", ~strf::hex(x));
+//     BOOST_ASSERT(str == buff);
+
+//     // Overriding numpunct_c<16> back to default:
+//     str = my::to_string
+//         .facets(strf::no_grouping<16>())
+//         (x, " in hexadecimal is ", ~strf::hex(x));
+//     BOOST_ASSERT(str == "100,000,0000 in hexadecimal is 0x5f5e100");
+// }
+//]
 
 int main()
 {
     sample();
     format_functions();
     format_functions_2();
+    leading_expression_exception();
     reserve();
+    basic_facet_sample();
+    constrained_facet();
+    overriding_sample();
+    get_facet_sample();
     output_FILE();
     input_ouput_different_char_types();
     input_string_encoding();
     sani();
-    input_ranges();
-    join();
-
+    monotonic_grouping();
+    str_grouping();
+    punct_non_decimal();
+    width_as_len();
+    width_as_u32len();
+    width_func();
+    // using_my_customizations();
     return 0;
 }
