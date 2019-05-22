@@ -89,7 +89,7 @@ inline auto append(QString& str)
     using dispatcher_type = strf::dispatcher< strf::facets_pack<>
                                             , QStringAppender
                                             , QString& >;
-    return dispatcher_type(strf::pack(), str);
+    return dispatcher_type(str);
 }
 //]
 

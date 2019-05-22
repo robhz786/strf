@@ -51,7 +51,7 @@ private:
 
 constexpr auto reservation_test()
 {
-    return strf::dispatcher<strf::facets_pack<>, reservation_tester>(strf::pack());
+    return strf::dispatcher<strf::facets_pack<>, reservation_tester>();
 }
 
 

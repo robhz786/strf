@@ -70,6 +70,26 @@ Move constructor.
 
 [table
 [[
+`template <typename... OBArgs>`[br]
+`constexpr explicit dispatcher(OBArgs&&... args);`
+]]
+[[
+  [variablelist
+   [[Compile time requirements]
+    [[itemized_list
+       [`std::is_default_constructible_v<FPack>`]
+       [`std::is_constructible_v<OutBuffArgs, OBArgs&&> && ...` is `true`]]]]
+
+   [[Effect]
+    [[itemized_list
+      [For each `T` in `OutBuffArgs...`, initializes the internally object
+       of type `T` with the correspoding value in
+       `std::forward<OBArgs>(args)...`]]]]]
+]]
+]
+
+[table
+[[
 [role index_mark (1)]
 `template <typename... OBArgs>`[br]
 [role index_mark]

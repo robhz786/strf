@@ -115,7 +115,7 @@ inline auto ec_write
                                     , writer
                                     , std::basic_streambuf<CharT, Traits>&
                                     , std::streamsize* >
-        (stringify::v0::pack(), dest, count);
+        (dest, count);
 }
 
 
@@ -235,7 +235,7 @@ inline auto write
                                     , writer
                                     , std::basic_streambuf<CharT, Traits>&
                                     , std::streamsize* >
-        ( stringify::v0::pack(), dest, count );
+        (dest, count );
 }
 
 

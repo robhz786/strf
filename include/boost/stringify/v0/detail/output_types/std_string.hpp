@@ -116,7 +116,7 @@ inline auto ec_append
     using writer = boost::stringify::v0::detail::ec_string_appender<str_type>;
     return stringify::v0::dispatcher< stringify::v0::facets_pack<>
                                     , writer, str_type&, std::size_t* >
-        (stringify::v0::pack(), str, count_ptr);
+        (str, count_ptr);
 }
 
 
@@ -303,7 +303,7 @@ auto append(std::basic_string<CharT, Traits, Allocator>& str)
     return stringify::v0::dispatcher< stringify::v0::facets_pack<>
                                     , writer
                                     , str_type& >
-        (stringify::v0::pack(), str);
+        (str);
 }
 
 
@@ -321,27 +321,27 @@ constexpr boost::stringify::v0::dispatcher
     < stringify::v0::facets_pack<>
     , stringify::v0::detail::string_maker
           < std::basic_string<CharT, Traits, Allocator >>>
-    to_basic_string{stringify::v0::pack()};
+    to_basic_string{};
 
 constexpr boost::stringify::v0::dispatcher
     < stringify::v0::facets_pack<>
     , stringify::v0::detail::string_maker<std::string> >
-    to_string{stringify::v0::pack()};
+    to_string{};
 
 constexpr boost::stringify::v0::dispatcher
     < stringify::v0::facets_pack<>
     , stringify::v0::detail::string_maker<std::u16string> >
-    to_u16string{stringify::v0::pack()};
+    to_u16string{};
 
 constexpr boost::stringify::v0::dispatcher
     < stringify::v0::facets_pack<>
     , stringify::v0::detail::string_maker<std::u32string> >
-    to_u32string{stringify::v0::pack()};
+    to_u32string{};
 
 constexpr boost::stringify::v0::dispatcher
     < stringify::v0::facets_pack<>
     , stringify::v0::detail::string_maker<std::wstring> >
-    to_wstring{stringify::v0::pack()};
+    to_wstring{};
 
 #endif // !defined(BOOST_NO_EXCEPTIONS)
 

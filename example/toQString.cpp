@@ -54,7 +54,7 @@ QString QStringCreator::finish()
     return std::move(_str);
 }
 
-constexpr strf::dispatcher<strf::facets_pack<>, QStringCreator> toQString{strf::pack()};
+constexpr strf::dispatcher<strf::facets_pack<>, QStringCreator> toQString{};
 
 int main()
 {

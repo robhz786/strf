@@ -212,8 +212,7 @@ auto make_tester
        < boost::stringify::v0::facets_pack<>
        , writer, const CharT*, const char*, int
        , const char*, std::error_code, double >
-       ( boost::stringify::v0::pack(), expected, filename
-       , line, function, err, reserve_factor);
+       ( expected, filename, line, function, err, reserve_factor);
 }
 
 template<typename CharT>
@@ -228,8 +227,7 @@ auto make_tester
    return boost::stringify::v0::dispatcher
        < boost::stringify::v0::facets_pack<>
        , writer, const CharT*, const char*, int, const char*, double>
-       ( boost::stringify::v0::pack()
-       , expected, filename, line, function, reserve_factor);
+       ( expected, filename, line, function, reserve_factor);
 }
 
 template<typename CharT>
@@ -246,8 +244,7 @@ auto make_tester
        < boost::stringify::v0::facets_pack<>
        , writer, const std::basic_string<CharT>&, const char*
        , int, const char*, std::error_code, double>
-       ( boost::stringify::v0::pack()
-       , expected, filename, line, function, err, reserve_factor);
+       ( expected, filename, line, function, err, reserve_factor);
 }
 
 template<typename CharT>
@@ -263,8 +260,7 @@ auto make_tester
        < boost::stringify::v0::facets_pack<>
        , writer, const std::basic_string<CharT>&, const char*
        , int, const char*, double >
-       ( boost::stringify::v0::pack()
-       , expected, filename, line, function, reserve_factor);
+       ( expected, filename, line, function, reserve_factor);
 }
 
 #define TEST(EXPECTED)                                                  \

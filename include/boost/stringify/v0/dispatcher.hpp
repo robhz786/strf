@@ -11,6 +11,9 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
+template<typename FPack, typename OutputBuff, typename ... OutBuffArgs>
+class dispatcher;
+
 namespace detail {
 
 template <typename W>
@@ -331,18 +334,38 @@ public:
     }
 };
 
-template <typename ... T>
+template <typename... T>
 using simple_tuple = simple_tuple_impl<std::index_sequence_for<T...>, T...>;
+
+template <typename...T>
+struct output_buff_args_impl
+{
+    using type = void;
+};
+
+template <typename...Y>
+struct output_buff_args_impl<const dispatcher<Y...>&>
+{
+};
+
+template <typename X, typename...Y>
+struct output_buff_args_impl<const dispatcher<Y...>&, const X&>
+{
+};
+
+template <typename...T>
+using dispatcher_output_buff_args_ctor =
+    typename detail::output_buff_args_impl<const T&...>::type;
+
+struct fpack_tag {};
 
 } // namespace detail
 
-template<typename FPack, typename OutputBuff, typename ... OutBuffArgs >
+template<typename FPack, typename OutputBuff, typename ... OutBuffArgs>
 class dispatcher
     : private stringify::v0::detail::output_size_reservation<OutputBuff>
     , private stringify::v0::detail::simple_tuple<OutBuffArgs...>
 {
-
-
     using _reservation
         = stringify::v0::detail::output_size_reservation<OutputBuff>;
 
@@ -358,22 +381,26 @@ public:
     using char_type = typename OutputBuff::char_type;
 
     constexpr dispatcher(const dispatcher& d) = default;
-    /*    : _reservation(d)
-        , _obargs_tuple(static_cast<const _obargs_tuple&>(d))
-        , _fpack(static_cast<const FPack&>(d._fpack))
-    {
-    }*/
 
     constexpr dispatcher(dispatcher&& d) = default;
-    /*   : _reservation(d)
-        , _obargs_tuple(static_cast<_obargs_tuple&&>(d))
-        , _fpack(static_cast<FPack&&>(d._fpack))
-    {
-    }*/
 
     template
         < typename ... OBArgs
-        , typename = std::enable_if_t<sizeof...(OBArgs) == sizeof...(OutBuffArgs)> >
+        , typename FP = FPack
+        , typename = detail::dispatcher_output_buff_args_ctor<OBArgs...>
+        , typename = std::enable_if_t< sizeof...(OBArgs) == sizeof...(OutBuffArgs)
+                                    && std::is_default_constructible<FP>::value > > 
+           // && stringify::v0::detail::fold_and
+           //      < detail::is_constructible_v<OutBuffArgs, OBArgs&&>... > > >
+    constexpr explicit dispatcher(OBArgs&&... args)
+        : _obargs_tuple(std::forward<OBArgs>(args)...)
+    {
+    }
+
+    template
+        < typename ... OBArgs
+        , typename = std::enable_if_t<sizeof...(OBArgs) == sizeof...(OutBuffArgs)>
+        , typename = detail::dispatcher_output_buff_args_ctor<OBArgs...> >
            // && stringify::v0::detail::fold_and
            //      < detail::is_constructible_v<OutBuffArgs, OBArgs&&>... > > >
     constexpr explicit dispatcher(FPack&& fp, OBArgs&&... args)
@@ -384,7 +411,8 @@ public:
 
     template
         < typename ... OBArgs
-        , typename = std::enable_if_t<sizeof...(OBArgs) == sizeof...(OutBuffArgs)> >
+        , typename = std::enable_if_t<sizeof...(OBArgs) == sizeof...(OutBuffArgs)>
+        , typename = detail::dispatcher_output_buff_args_ctor<OBArgs...> >
            // && stringify::v0::detail::fold_and
            //      < detail::is_constructible_v<OutBuffArgs, OBArgs&&>... > > >
     constexpr explicit dispatcher(const FPack& fp, OBArgs&&... args)
@@ -405,8 +433,7 @@ public:
             ( stringify::v0::pack(_fpack, std::forward<Fpe>(fpe) ...) );
 
         return dispatcher<NewFPack, OutputBuff, OutBuffArgs...>
-            ( *this
-            , stringify::v0::pack(_fpack, std::forward<Fpe>(fpe) ...) );
+            ( *this, detail::fpack_tag{}, _fpack, std::forward<Fpe>(fpe)... );
     }
 
     template <typename ... Fpe>
@@ -418,20 +445,21 @@ public:
             , "OutBuffArgs... must be move constructible" );
 
         using NewFPack = decltype
-            ( stringify::v0::pack(_fpack, std::forward<Fpe>(fpe) ...) );
+            ( stringify::v0::pack( std::move(_fpack)
+                                 , std::forward<Fpe>(fpe) ...) );
 
         return dispatcher<NewFPack, OutputBuff, OutBuffArgs...>
             ( std::move(*this)
-            , stringify::v0::pack(_fpack, std::forward<Fpe>(fpe) ...) );
+            , detail::fpack_tag{}, std::move(_fpack), std::forward<Fpe>(fpe)... );
     }
 
     BOOST_STRINGIFY_NODISCARD constexpr dispatcher no_reserve() const &
     {
-        return dispatcher(_reservation(), *this);
+        return dispatcher(*this, _reservation());
     }
     BOOST_STRINGIFY_NODISCARD constexpr dispatcher no_reserve() const &&
     {
-        return dispatcher(_reservation(), *this);
+        return dispatcher(*this, _reservation());
     }
     constexpr dispatcher& no_reserve() &
     {
@@ -446,11 +474,11 @@ public:
 
     BOOST_STRINGIFY_NODISCARD constexpr dispatcher reserve_calc() const &
     {
-        return dispatcher(_reservation(detail::reserve_calc_tag{}), *this);
+        return dispatcher(*this, _reservation(detail::reserve_calc_tag{}));
     }
     BOOST_STRINGIFY_NODISCARD constexpr dispatcher reserve_calc() const &&
     {
-        return dispatcher(_reservation(detail::reserve_calc_tag{}), *this);
+        return dispatcher(*this, _reservation(detail::reserve_calc_tag{}));
     }
     constexpr dispatcher& reserve_calc() &
     {
@@ -466,12 +494,12 @@ public:
     BOOST_STRINGIFY_NODISCARD
     constexpr dispatcher reserve(std::size_t size) const &
     {
-        return dispatcher(_reservation(size), *this);
+        return dispatcher(*this, _reservation(size));
     }
     BOOST_STRINGIFY_NODISCARD
     constexpr dispatcher reserve(std::size_t size) const &&
     {
-        return dispatcher(_reservation(size), *this);
+        return dispatcher(*this, _reservation(size));
     }
     constexpr dispatcher& reserve(std::size_t size) &
     {
@@ -667,27 +695,29 @@ private:
     template <class, class, class...>
     friend class dispatcher;
 
-    template <class FP2>
+    template <typename FP2, typename... FPArgs>
     constexpr dispatcher
         ( const dispatcher<FP2, OutputBuff, OutBuffArgs...>& d
-        , FPack&& fp )
+        , detail::fpack_tag  
+        , FPArgs&&... fpargs )
         : _reservation(d)
         , _obargs_tuple(static_cast<const _obargs_tuple&>(d))
-        , _fpack(static_cast<FPack&&>(fp))
+        , _fpack(std::forward<FPArgs>(fpargs)...)
     {
     }
 
-    template <class FP2>
+    template <class FP2, typename... FPArgs>
     constexpr dispatcher
         ( dispatcher<FP2, OutputBuff, OutBuffArgs...>&& d
-        , FPack&& fp )
+        , detail::fpack_tag  
+        , FPArgs&&... fpargs )
         : _reservation(d)
         , _obargs_tuple(static_cast<_obargs_tuple&&>(d))
-        , _fpack(static_cast<FPack&&>(fp))
+        , _fpack(std::forward<FPArgs>(fpargs)...)
     {
     }
 
-    constexpr dispatcher(const _reservation& r, const dispatcher& d)
+    constexpr dispatcher(const dispatcher& d, const _reservation& r)
         : _reservation(r)
         , _obargs_tuple(static_cast<const _obargs_tuple&>(d))
         , _fpack(d._fpack)
