@@ -410,7 +410,6 @@ for width calculation, if you want,
 
 [endsect]
 
-[/
 [section Avoid repeating yourself]
 
 If you have two or more facet values that you use often,
@@ -461,7 +460,6 @@ expressions based on the existing ones:
 [avoid_repetitions]
 
 [endsect]
-/]
 
 [endsect] [/tour of the library]
 
@@ -469,7 +467,6 @@ expressions based on the existing ones:
 
 
 [variablelist
-
 
 [
   [Performance]

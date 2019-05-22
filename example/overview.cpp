@@ -329,7 +329,7 @@ void punct_non_decimal()
         (strf::hex(0xffffffffffLL));
 
     BOOST_ASSERT(str == "ff'ffff'ffff");
-    //]        
+    //]
 }
 void width_as_len()
 {
@@ -340,7 +340,7 @@ void width_as_len()
         .facets(strf::width_as_len())
         (strf::right(u8"áéíóú", 12, U'.'));
 
-    BOOST_ASSERT(str == "..áéíóú");    
+    BOOST_ASSERT(str == "..áéíóú");
     //]
 }
 void width_as_u32len()
@@ -374,7 +374,7 @@ void width_func()
     auto str = strf::to_string
         .facets(strf::width_as(my_width_calculator))
         (strf::right(u8"今晩は", 10, U'.'));
- 
+
     BOOST_ASSERT(str == u8"....今晩は");
     //]
 }
@@ -403,32 +403,32 @@ inline auto append(Str& str)
 template <typename ... Args>
 inline decltype(auto) write(Args&& ... args)
 {
-    return strf::write(std::forward<Args>(args)...);
+    return strf::write(std::forward<Args>(args)...).facets(my_default_facets);
 }
 
 } // namespace my
 
-// void using_my_customizations()
-// {
-//     namespace strf = boost::stringify::v0;
-    
-//     int x = 100000000;
-//     auto str = my::to_string(x);
-//     BOOST_ASSERT(str == "100,000,000");
+void using_my_customizations()
+{
+    namespace strf = boost::stringify::v0;
 
-//     my::append(str) (" in hexadecimal is ", ~strf::hex(x));
-//     char buff[500];
-//     BOOST_ASSERT(str == "100,000,0000 in hexadecimal is 0x5f5'e100");    
+    int x = 100000000;
+    auto str = my::to_string(x);
+    BOOST_ASSERT(str == "100,000,000");
 
-//     my::write(buff)(x, " in hexadecimal is ", ~strf::hex(x));
-//     BOOST_ASSERT(str == buff);
+    my::append(str) (" in hexadecimal is ", ~strf::hex(x));
+    BOOST_ASSERT(str == "100,000,000 in hexadecimal is 0x5f5'e100");
 
-//     // Overriding numpunct_c<16> back to default:
-//     str = my::to_string
-//         .facets(strf::no_grouping<16>())
-//         (x, " in hexadecimal is ", ~strf::hex(x));
-//     BOOST_ASSERT(str == "100,000,0000 in hexadecimal is 0x5f5e100");
-// }
+    char buff[500];
+    my::write(buff)(x, " in hexadecimal is ", ~strf::hex(x));
+    BOOST_ASSERT(str == buff);
+
+    // Overriding numpunct_c<16> back to default:
+    str = my::to_string
+        .facets(strf::no_grouping<16>())
+        (x, " in hexadecimal is ", ~strf::hex(x));
+    BOOST_ASSERT(str == "100,000,000 in hexadecimal is 0x5f5e100");
+}
 //]
 
 int main()
@@ -452,6 +452,6 @@ int main()
     width_as_len();
     width_as_u32len();
     width_func();
-    // using_my_customizations();
+    using_my_customizations();
     return 0;
 }

@@ -274,6 +274,23 @@ class simple_tuple_impl;
 template <typename T, typename... U>
 constexpr bool is_constructible_v = std::is_constructible<T, U...>::value;
 
+template <typename ... T>
+struct not_a_simple_tuple_impl_impl
+{
+    using type = void;
+};
+
+template <typename ... T>
+struct not_a_simple_tuple_impl_impl<const simple_tuple_impl<T...>&>
+{
+};
+
+template <typename ... T>
+using not_a_simple_tuple_impl =
+    typename detail::not_a_simple_tuple_impl_impl<const T&...>::type;
+
+
+
 template <std::size_t ... I, typename ... T>
 class simple_tuple_impl<std::index_sequence<I...>, T...>
     : private indexed_wrapper<I, T> ...
@@ -290,7 +307,7 @@ class simple_tuple_impl<std::index_sequence<I...>, T...>
 public:
 
     template < typename ... U
-             , typename = std::enable_if_t<sizeof...(U) == sizeof...(T)> >
+             , typename = detail::not_a_simple_tuple_impl<U...> >
     constexpr explicit simple_tuple_impl(U&&...args)
         : indexed_wrapper<I, T>(std::forward<U>(args))...
     {
@@ -340,9 +357,19 @@ public:
 
     using char_type = typename OutputBuff::char_type;
 
-    constexpr dispatcher(const dispatcher&) = default;
+    constexpr dispatcher(const dispatcher& d) = default;
+    /*    : _reservation(d)
+        , _obargs_tuple(static_cast<const _obargs_tuple&>(d))
+        , _fpack(static_cast<const FPack&>(d._fpack))
+    {
+    }*/
 
-    constexpr dispatcher(dispatcher&&) = default;
+    constexpr dispatcher(dispatcher&& d) = default;
+    /*   : _reservation(d)
+        , _obargs_tuple(static_cast<_obargs_tuple&&>(d))
+        , _fpack(static_cast<FPack&&>(d._fpack))
+    {
+    }*/
 
     template
         < typename ... OBArgs
@@ -645,7 +672,7 @@ private:
         ( const dispatcher<FP2, OutputBuff, OutBuffArgs...>& d
         , FPack&& fp )
         : _reservation(d)
-        , _obargs_tuple(d)
+        , _obargs_tuple(static_cast<const _obargs_tuple&>(d))
         , _fpack(static_cast<FPack&&>(fp))
     {
     }
@@ -655,14 +682,14 @@ private:
         ( dispatcher<FP2, OutputBuff, OutBuffArgs...>&& d
         , FPack&& fp )
         : _reservation(d)
-        , _obargs_tuple(std::move(d))
+        , _obargs_tuple(static_cast<_obargs_tuple&&>(d))
         , _fpack(static_cast<FPack&&>(fp))
     {
     }
 
     constexpr dispatcher(const _reservation& r, const dispatcher& d)
         : _reservation(r)
-        , _obargs_tuple(d)
+        , _obargs_tuple(static_cast<const _obargs_tuple&>(d))
         , _fpack(d._fpack)
     {
     }
