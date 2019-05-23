@@ -224,6 +224,7 @@ public:
         , unsigned char* groups_array ) const override
     {
         // this function actually should never be called
+        // since thousands_sep_count(num_digits) aways returns 0.
         BOOST_ASSERT(num_digits <= 0xFF);
         *groups_array = static_cast<unsigned char>(num_digits);
         return groups_array;
@@ -235,15 +236,31 @@ public:
         return 0;
     }
 
+    no_grouping &  decimal_point(char32_t ch) &
+    {
+        _decimal_point = ch;
+        return *this;
+    }
+
+    no_grouping && decimal_point(char32_t ch) &&
+    {
+        _decimal_point = ch;
+        return std::move(*this);
+    }
+    
+    char32_t decimal_point() const override
+    {
+        return _decimal_point;
+    }
+
     char32_t thousands_sep() const override
     {
         return ',';
     }
 
-    char32_t decimal_point() const override
-    {
-        return '.';
-    }
+private:
+
+    char32_t _decimal_point = U'.';
 };
 
 

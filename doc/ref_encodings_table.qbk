@@ -1,0 +1,61 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+
+[table:encodings
+[ [function] [description] ]
+
+[
+[`encoding<char> utf8();`]
+[UTF-8 encoding. Default for `char`.]
+]
+
+[/
+[`encoding<char> mutf8();`]
+[[@https://en.wikipedia.org/wiki/UTF-8#Modified_UTF-8 Modified UTF-8] encoding]
+]
+
+[/
+[`encoding<char> cesu8(); // TODO `]
+[[@https://en.wikipedia.org/wiki/CESU-8 CESU-8] encoding. /(not implemented yet)/]
+]
+
+[
+[`encoding<char> iso_8859_1();`]
+[[@https://en.wikipedia.org/wiki/ISO/IEC_8859-1 ISO/IEC 8859-1] encoding]
+]
+
+[
+[`encoding<char> iso_8859_15();`]
+[[@https://en.wikipedia.org/wiki/ISO/IEC_8859-15 ISO/IEC 8859-15] encoding]
+]
+
+[
+[`encoding<char> windows_1252();`]
+[[@https://en.wikipedia.org/wiki/Windows-1252 Windows-1252] encoding]
+]
+
+[/
+[`encoding<char> ascii();`]
+[Pure ASCII. Any character greater than `0xf9` is treated as error]
+]
+
+
+[
+[`encoding<char16_t> utf16();`]
+[The UTF-16 encoding. Default for `char16_t`.]
+]
+
+[
+[`encoding<char32_t> utf32();`]
+[UTF-32 encoding. Default for `char32_t`.]
+]
+
+[
+[`encoding<wchar_t> utfw();`]
+[ UTF-16 if `sizeof(wchar_t) == 2` and UTF-32 if `sizeof(wchar_t) == 4`. Default for `wchar_t`.]
+]
+]

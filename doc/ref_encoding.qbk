@@ -1,0 +1,266 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+
+[section Encoding conversion (/To-do/)]
+
+[section Global functions]
+
+[h4 Encodings]
+
+[include ref_encodings_table.qbk]
+
+[h4 Encoding conversion]
+
+
+[table
+[[
+`template <typename CharIn, typename CharOut>`[br]
+`const __transcoder_engine__<CharIn, CharOut>* get_transcoder`[br]
+[SPC4]`( __encoding__<CharIn> src_encoding`[br]
+[SPC4]`, __encoding__<CharOut> dest_encoding );`
+]]
+[[
+]]
+]
+
+[table
+[[
+`template<typename CharIn, typename CharOut>`[br]
+`bool decode_encode( __output_buffer__<CharOut>& ob`[br]
+[SPC8][SPC8][SPC2]`, const CharIn* src`[br]
+[SPC8][SPC8][SPC2]`, const CharIn* src_end`[br]
+[SPC8][SPC8][SPC2]`, __encoding__<CharIn> src_encoding`[br]
+[SPC8][SPC8][SPC2]`, __encoding__<CharOut> dest_encoding`[br]
+[SPC8][SPC8][SPC2]`, __encoding_error__ err_hdl`[br]
+[SPC8][SPC8][SPC2]`, __surrogate_policy__ allow_surr );`[br]
+]]
+[[
+]]
+]
+
+[table
+[[
+`template<typename CharIn, typename CharOut>`[br]
+`std::size_t decode_encode_size( const CharIn* src`[br]
+[SPC16][SPC8][SPC4][SPC2]`, const CharIn* src_end`[br]
+[SPC16][SPC8][SPC4][SPC2]`, __encoding__<CharIn> src_encoding`[br]
+[SPC16][SPC8][SPC4][SPC2]`, __encoding__<CharOut> dest_encoding`[br]
+[SPC16][SPC8][SPC4][SPC2]`, __encoding_error__ err_hdl`[br]
+[SPC16][SPC8][SPC4][SPC2]`, __surrogate_policy__ allow_surr );`
+]]
+[[
+]]
+]
+
+
+[endsect]
+
+[#transcoder]
+[section Class template transcoder (/To-do/)]
+
+[table
+[[
+`template <typename CharIn, typename CharOut>`[br]
+`class transcoder`
+]]
+[[
+]]
+]
+
+[h4 Public member functions]
+
+[table
+[[`transcoder(const __transcoder_engine__<CharIn, CharOut>&) noexcept`]]
+[[]]
+]
+
+[table
+[[`transcoder(const transcoder&) noexcept`]]
+[[]]
+]
+
+[table
+[[`transcoder& operator=(const transcoder&) noexcept`]]
+[[]]
+]
+
+[table
+[[`bool operator==(const transcoder&) const noexcept`]]
+[[]]
+]
+
+[table
+[[
+`bool transcode( __output_buffer__<CharOut>& ob`[br]
+[SPC8][SPC4][SPC2]`, const CharIn* src`[br]
+[SPC8][SPC4][SPC2]`, const CharIn* src_end`[br]
+[SPC8][SPC4][SPC2]`, __encoding_error__ err_hdl`[br]
+[SPC8][SPC4][SPC2]`, __surrogate_policy__ surr_poli ) const;`
+]]
+[[
+]]
+]
+[table
+[[
+`std::size_t necessary_size( const CharIn* src`[br]
+[SPC16][SPC8][SPC2][/    ]`, const CharIn* src_end`[br]
+[SPC16][SPC8][SPC2][/    ]`, __encoding_error__ err_hdl`[br]
+[SPC16][SPC8][SPC2][/    ]`, __surrogate_policy__ surr_poli ) const;`
+]]
+[[
+]]
+]
+
+[h4 Non-member types]
+
+[#transcoder_engine]
+[table
+[[
+`template <typename CharIn, typename CharOut>`[br]
+`using transcoder_engine = /*implementation-defined*/;`
+]]
+[[
+Used to initialize a __transcoder__ object.
+]]
+]
+
+[endsect]
+
+
+[#encoding]
+[section Class template `encoding` (/To-do/)]
+
+[table
+[[
+`template <typename CharT>`[br]
+`class encoding`
+]]
+[[
+]]
+]
+The `encoding<`[~CharT]`>` is a facet that specify the encoding associated to character type [~CharT], both for input and output. Its objects are small and fast to copy and to compare.
+
+[h4 Public member functions]
+[table
+[[`encoding(const encoding&) noexcept;`]]
+[[]]
+]
+
+[table
+[[`encoding& operator=(const encoding&) noexcept;`]]
+[[]]
+]
+
+[table
+[[`bool operator==(const encoding&) const noexcept;`]]
+[[]]
+]
+
+
+[table
+[[`transcoder<char_type, char32_t> to_u32() const;`]]
+[[]]
+]
+
+[table
+[[`transcoder<char32_t, char_type> from_u32() const;`]]
+[[]]
+]
+
+
+[table
+[[`transcoder<char_type, char_type> sanitizer() const;`]]
+[[]]
+]
+
+[table
+[[`const char* name() const;`]]
+[[]]
+]
+
+[table
+[[`encoding_id id() const;`]]
+[[]]
+]
+
+[table
+[[`std::size_t validate(char32_t ch) const;`]]
+[[]]
+]
+
+[table
+[[`char_type* encode_char(char_type* dest, char_type ch) const;`]]
+[[]]
+]
+
+[table
+[[`char32_t decode_single_char(char_type ch) const;`]]
+[[]]
+]
+
+[table
+[[`bool write_replacement_char(output_buffer<char_type>& ob) const;`]]
+[[]]
+]
+
+[table
+[[`std::size_t replacement_char_size() const;`]]
+[[]]
+]
+
+[table
+[[`bool encode_fill( output_buffer<char_type>& ob`[br]
+[SPC16]`, std::size_t count`[br]
+[SPC16]`, char32_t ch`[br]
+[SPC16]`, encoding_error err_hdl`[br]
+[SPC16]`, surrogate_policy allow_surr ) const;`
+]]
+[[]]
+]
+
+[table
+[[`std::size_t codepoints_count( const char_type* src_begin`[br]
+[SPC16][SPC8][SPC4]`, const char_type* src_end`[br]
+[SPC16][SPC8][SPC4]`, std::size_t max_count ) const;`[br]
+]]
+[[]]
+]
+
+[table
+[[`char32_t u32equivalence_begin() const;`]]
+[[]]
+]
+
+[table
+[[`char32_t u32equivalence_end() const;`]]
+[[]]
+]
+
+[table
+[[`std::size_t char_size(char32_t ch, encoding_error err_hdl) const;`]]
+[[]]
+]
+
+[/ table
+[[
+`template <typename CharT2>`[br]
+`const __transcoder_engine__<char_type, CharT2>*`[br]
+[SPC4]`transcoder_engine_to(encoding<CharT2> e) const;`
+]]
+[[]]
+]
+
+[/ table
+[[`const __encoding_engine__& get_engine() const;`]]
+[[]]
+]
+
+[endsect]
+
+[include ref_facets_encoding_error.qbk]
+[include ref_facets_surrogate_policy.qbk]
+[endsect]

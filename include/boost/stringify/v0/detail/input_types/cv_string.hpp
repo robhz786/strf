@@ -347,7 +347,7 @@ private:
     const stringify::v0::width_calculator _wcalc;
     const stringify::v0::encoding<CharIn>  _src_encoding;
     const stringify::v0::encoding<CharOut> _dest_encoding;
-    const stringify::v0::transcoder_impl_type<CharIn, CharOut>* _transcoder_impl;
+    const stringify::v0::transcoder_engine<CharIn, CharOut>* _transcoder_eng;
     const stringify::v0::encoding_error _enc_err;
     const stringify::v0::surrogate_policy _allow_surr;
 
@@ -373,7 +373,7 @@ cv_string_printer<CharIn, CharOut>::cv_string_printer
     , _wcalc(wcalc)
     , _src_encoding(src_enc)
     , _dest_encoding(dest_enc)
-    , _transcoder_impl(stringify::v0::get_transcoder_impl(src_enc, dest_enc))
+    , _transcoder_eng(stringify::v0::get_transcoder(src_enc, dest_enc))
     , _enc_err(enc_err)
     , _allow_surr(allow_surr)
 {
@@ -382,33 +382,30 @@ cv_string_printer<CharIn, CharOut>::cv_string_printer
 template<typename CharIn, typename CharOut>
 std::size_t cv_string_printer<CharIn, CharOut>::necessary_size() const
 {
-    if (_transcoder_impl)
+    if (_transcoder_eng)
     {
-        stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_impl);
+        stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_eng);
         return transcoder.necessary_size
             ( _str, _str + _len, _enc_err, _allow_surr );
     }
-    return stringify::v0::detail::decode_encode_size
-        ( _str, _str + _len
-        , _src_encoding, _dest_encoding
-        , _enc_err, _allow_surr );
+    return stringify::v0::decode_encode_size( _str, _str + _len
+                                            , _src_encoding, _dest_encoding
+                                            , _enc_err, _allow_surr );
 }
 
 template<typename CharIn, typename CharOut>
 bool cv_string_printer<CharIn, CharOut>::write
     ( stringify::v0::output_buffer<CharOut>& ob ) const
 {
-    if (_transcoder_impl)
+    if (_transcoder_eng)
     {
-        stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_impl);
+        stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_eng);
         return transcoder.transcode( ob, _str, _str + _len
                                    , _enc_err, _allow_surr );
     }
-    return stringify::v0::detail::decode_encode( ob
-                                               , _str, _str + _len
-                                               , _src_encoding, _dest_encoding
-                                               , _enc_err
-                                               , _allow_surr );
+    return stringify::v0::decode_encode( ob, _str, _str + _len
+                                       , _src_encoding, _dest_encoding
+                                       , _enc_err, _allow_surr );
 }
 
 template<typename CharIn, typename CharOut>
@@ -446,7 +443,7 @@ public:
 private:
 
     stringify::v0::detail::cv_string_with_format<CharIn> _fmt;
-    const stringify::v0::transcoder_impl_type<CharIn, CharOut>* _transcoder_impl;
+    const stringify::v0::transcoder_engine<CharIn, CharOut>* _transcoder_eng;
     const stringify::v0::encoding<CharIn> _src_encoding;
     const stringify::v0::encoding<CharOut> _dest_encoding;
     const stringify::v0::width_calculator _wcalc;
@@ -481,22 +478,24 @@ void fmt_cv_string_printer<CharIn, CharOut>::_init()
                                          , _enc_err
                                          , _allow_surr )
                  : 0 );
-    _transcoder_impl = stringify::v0::get_transcoder_impl(_src_encoding, _dest_encoding);
+    _transcoder_eng =
+        stringify::v0::get_transcoder(_src_encoding, _dest_encoding);
 }
 
 template<typename CharIn, typename CharOut>
 std::size_t fmt_cv_string_printer<CharIn, CharOut>::necessary_size() const
 {
     std::size_t size;
-    if(_transcoder_impl)
+    if(_transcoder_eng)
     {
-        stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_impl);
-        size = transcoder.necessary_size( _fmt.value().begin(), _fmt.value().end()
+        stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_eng);
+        size = transcoder.necessary_size( _fmt.value().begin()
+                                        , _fmt.value().end()
                                         , _enc_err, _allow_surr );
     }
     else
     {
-        size = stringify::v0::detail::decode_encode_size
+        size = stringify::v0::decode_encode_size
             ( _fmt.value().begin(), _fmt.value().end()
             , _src_encoding, _dest_encoding
             , _enc_err, _allow_surr );
@@ -547,22 +546,17 @@ template<typename CharIn, typename CharOut>
 bool fmt_cv_string_printer<CharIn, CharOut>::_write_str
     ( stringify::v0::output_buffer<CharOut>& ob ) const
 {
-    if (_transcoder_impl)
+    if (_transcoder_eng)
     {
-        stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_impl);
+        stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_eng);
         return transcoder.transcode( ob
-                                   , _fmt.value().begin()
-                                   , _fmt.value().end()
-                                   , _enc_err
-                                   , _allow_surr );
+                                   , _fmt.value().begin(), _fmt.value().end()
+                                   , _enc_err, _allow_surr );
     }
-    return stringify::v0::detail::decode_encode( ob
-                                               , _fmt.value().begin()
-                                               , _fmt.value().end()
-                                               , _src_encoding
-                                               , _dest_encoding
-                                               , _enc_err
-                                               , _allow_surr );
+    return stringify::v0::decode_encode( ob
+                                       , _fmt.value().begin(), _fmt.value().end()
+                                       , _src_encoding, _dest_encoding
+                                       , _enc_err, _allow_surr );
 }
 
 template<typename CharIn, typename CharOut>

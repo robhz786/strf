@@ -29,14 +29,25 @@
 [def __transcoder__ [link transcoder `transcoder`]]
 [def __nodiscard_error_code__ [link nodiscard_error_code `nodiscard_error_code`]]
 [def __stringify_error__ [link stringify_error `stringify_error`]]
-
 [def __monotonic_grouping__ [link monotonic_grouping `monotonic_grouping`]]
 [def __str_grouping__ [link str_grouping `str_grouping`]]
+[def __encoding__ [link encoding `encoding`]]
+[def __transcoder__ [link transcoder `transcoder`]]
+[def __transcoder_engine__ [link transcoder_engine `transcoder_engine`]]
+
+[def __facets_pack__ [link facets_pack `facets_pack`]]
+
 [/
 [def ____ [link  ]]
 [def ____ [link  ]]
 [def ____ [link  ]]
 [def ____ [link  ]]
+[def ____ [link  ]]
+[def ____ [link  ]]
+[def ____ [link  ]]
+[def ____ [link  ]]
+[def ____ [link  ]]
+
 ]
 
 [include overview.qbk]

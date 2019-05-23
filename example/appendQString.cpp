@@ -86,10 +86,7 @@ std::size_t QStringAppender::finish()
 //[QStringAppender_dispatcher
 inline auto append(QString& str)
 {
-    using dispatcher_type = strf::dispatcher< strf::facets_pack<>
-                                            , QStringAppender
-                                            , QString& >;
-    return dispatcher_type(str);
+    return strf::dispatcher<strf::facets_pack<>, QStringAppender, QString&> {str};
 }
 //]
 

@@ -244,7 +244,7 @@ Both has the same purpose: to customize numeric punctuation.
 ]
 
 [
-[[link encoding_facets encoding_c]]
+[[link encoding encoding_c]]
 [encoding]
 [no]
 []
@@ -301,12 +301,12 @@ If there are two or more facets object passed to the `facets` function of the sa
 
 [section Encoding conversion]
 
-[#tour_encoding_conversion]
+[#overview_encoding_conversion]
 Did you notice that the thousand separator is specified as
 a `char32_t` instead of `char`? That means you can use any
 Unicode code point, as long as it is supported by the
-output encoding, which by default is UTF-8 for `char`
-but can be another if you specify so with a facet:
+output encoding, which by default is UTF-8 for `char`.
+But you can specify other encodings with facets.
 
 [numpuct__with_alternative_encoding]
 
@@ -342,6 +342,10 @@ stop everything] and emit an error, /i.e./, to return an error code
 or throw an exception.
 You can also choose whether surrogates are
 treated as errors or not (as explained [link surrogate_policy here]).
+
+The current list of supported encodings is small, but is expected grow:
+
+[include ref_encodings_table.qbk]
 
 [endsect] [/encoding]
 
@@ -599,7 +603,7 @@ expressions based on the existing ones:
     [[link joins Joined input arguments]]
     [[link ranges Range input argument]]
     [[link numpunct Numeric punctuation for octal and hexadecimal]]
-    [Easy [link encoding_facets encoding conversion and sanitization]]
+    [Easy [link overview_encoding_conversion conversion and sanitization]]
     [Support for all character types: `char`, `wchar_t`, `char32_t` and `char16_t`.]
   ]
 ]
