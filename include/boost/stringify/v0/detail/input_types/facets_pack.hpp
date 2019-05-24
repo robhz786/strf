@@ -97,13 +97,14 @@ public:
         return true;
     }
 
-    int remaining_width(int w) const override
+    int width(int limit) const override
     {
-        for(auto it = m_args.begin(); w > 0 && it != m_args.end(); ++it)
+        int sum = 0;
+        for(auto it = m_args.begin(); sum < limit && it != m_args.end(); ++it)
         {
-            w = (*it) -> remaining_width(w);
+            sum += (*it) -> width(limit - sum);
         }
-        return w;
+        return sum;
     }
 
 private:

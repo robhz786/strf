@@ -45,7 +45,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    int remaining_width(int w) const override;
+    int width(int) const override;
 
     bool write(stringify::v0::output_buffer<CharT>& ob) const override;
 
@@ -78,10 +78,9 @@ std::size_t i18n_int_printer<CharT>::necessary_size() const
 }
 
 template <typename CharT>
-int i18n_int_printer<CharT>::remaining_width(int w) const
+int i18n_int_printer<CharT>::width(int) const
 {
-    int width = _sepcount + (_digcount + _negative) * _chars.char_width();
-    return w > width ? w - width : 0;
+    return _sepcount + (_digcount + _negative) * _chars.char_width();
 }
 
 template <typename CharT>
@@ -145,7 +144,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    int remaining_width(int w) const override;
+    int width(int) const override;
 
     bool write(stringify::v0::output_buffer<CharT>& ob) const override;
 
@@ -163,10 +162,9 @@ std::size_t fast_int_printer<CharT>::necessary_size() const
 }
 
 template <typename CharT>
-int fast_int_printer<CharT>::remaining_width(int w) const
+int fast_int_printer<CharT>::width(int) const
 {
-    int width = _digcount + _negative;
-    return w > width ? w - width : 0;
+    return _digcount + _negative;
 }
 
 template <typename CharT>

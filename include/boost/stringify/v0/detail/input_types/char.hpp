@@ -85,7 +85,7 @@ using char_with_format = stringify::v0::value_with_format
 
 //     void write() const override;
 
-//     int remaining_width(int w) const override;
+//     int width(int) const override;
 
 // private:
 
@@ -207,13 +207,9 @@ using char_with_format = stringify::v0::value_with_format
 
 
 // template <typename CharT>
-// int char32_printer<CharT>::remaining_width(int w) const
+// int char32_printer<CharT>::width(int) const
 // {
-//     if (w > m_fmt.width())
-//     {
-//         return w - m_fmt.width();
-//     }
-//     return 0;
+//     return m_fmt.width();
 // }
 
 // #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
@@ -243,7 +239,7 @@ public:
 
     bool write(stringify::v0::output_buffer<CharT>& ob) const override;
 
-    int remaining_width(int w) const override;
+    int width(int) const override;
 
 private:
 
@@ -259,10 +255,9 @@ std::size_t char_printer<CharT>::necessary_size() const
 }
 
 template <typename CharT>
-int char_printer<CharT>::remaining_width(int w) const
+int char_printer<CharT>::width(int) const
 {
-    auto char_width = _wcalc.width_of(_ch, _encoding);
-    return w > char_width ? w - char_width : 0;
+    return _wcalc.width_of(_ch, _encoding);
 }
 
 template <typename CharT>
@@ -303,7 +298,7 @@ public:
 
     bool write(stringify::v0::output_buffer<CharT>& ob) const override;
 
-    int remaining_width(int w) const override;
+    int width(int) const override;
 
 private:
 
@@ -420,13 +415,9 @@ bool fmt_char_printer<CharT>::_write_fill
 }
 
 template <typename CharT>
-int fmt_char_printer<CharT>::remaining_width(int w) const
+int fmt_char_printer<CharT>::width(int) const
 {
-    if (_fmt.width() > _content_width)
-    {
-        return w > _fmt.width() ? w - _fmt.width() : 0;
-    }
-    return w > _content_width? w - _content_width : 0;
+    return std::max(_fmt.width(), _content_width);
 }
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
@@ -444,9 +435,7 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_char_printer<wchar_t>;
 
 template <typename CharOut, typename FPack>
 inline stringify::v0::char_printer<CharOut>
-make_printer
-    ( const FPack& fp
-    , char ch )
+make_printer(const FPack& fp, char ch)
 {
     static_assert( std::is_same<CharOut, char>::value
                  , "Character type mismatch." );
@@ -455,9 +444,7 @@ make_printer
 
 template <typename CharOut, typename FPack>
 inline stringify::v0::char_printer<CharOut>
-make_printer
-    ( const FPack& fp
-    , wchar_t ch )
+make_printer(const FPack& fp, wchar_t ch)
 {
     static_assert( std::is_same<CharOut, wchar_t>::value
                  , "Character type mismatch." );
@@ -466,9 +453,7 @@ make_printer
 
 template <typename CharOut, typename FPack>
 inline stringify::v0::char_printer<CharOut>
-make_printer
-    ( const FPack& fp
-    , char16_t ch )
+make_printer(const FPack& fp, char16_t ch)
 {
     static_assert( std::is_same<CharOut, char16_t>::value
                  , "Character type mismatch." );
@@ -477,9 +462,7 @@ make_printer
 
 template <typename CharOut, typename FPack>
 inline stringify::v0::char_printer<CharOut>
-make_printer
-    ( const FPack& fp
-    , char32_t ch )
+make_printer(const FPack& fp, char32_t ch )
 {
     static_assert( std::is_same<CharOut, char32_t>::value
                  , "Character type mismatch." );
@@ -488,9 +471,7 @@ make_printer
 
 template <typename CharOut, typename FPack>
 inline stringify::v0::fmt_char_printer<CharOut>
-make_printer
-    ( const FPack& fp
-    , const stringify::v0::char_with_format<CharOut>& ch )
+make_printer(const FPack& fp, const stringify::v0::char_with_format<CharOut>& ch)
 {
     return {fp, ch};
 }

@@ -136,7 +136,7 @@ public:
 
     bool write(stringify::v0::output_buffer<CharT>& ob) const override;
 
-    int remaining_width(int w) const override;
+    int width(int limit) const override;
 
 private:
 
@@ -168,10 +168,9 @@ bool string_printer<CharT>::write(stringify::v0::output_buffer<CharT>& ob) const
 }
 
 template<typename CharT>
-int string_printer<CharT>::remaining_width(int w) const
+int string_printer<CharT>::width(int limit) const
 {
-    return _wcalc.remaining_width( w, _str, _len, _encoding
-                                 , _enc_err, _allow_surr );
+    return _wcalc.width(limit, _str, _len, _encoding, _enc_err, _allow_surr);
 }
 
 template <typename CharT>
@@ -198,7 +197,7 @@ public:
 
     bool write(stringify::v0::output_buffer<CharT>& ob) const override;
 
-    int remaining_width(int w) const override;
+    int width(int limit) const override;
 
 private:
 
@@ -232,14 +231,13 @@ fmt_string_printer<CharT>::~fmt_string_printer()
 template<typename CharT>
 void fmt_string_printer<CharT>::_init()
 {
-    _fillcount = ( _fmt.width() > 0
-                 ? _wcalc.remaining_width( _fmt.width()
-                                         , _fmt.value().begin()
-                                         , _fmt.value().length()
-                                         , _encoding
-                                         , _enc_err
-                                         , _allow_surr )
-                 : 0 );
+    if (_fmt.width() > 0)
+    {
+        auto wstr = _wcalc.width( _fmt.width()
+                                , _fmt.value().begin(), _fmt.value().length()
+                                , _encoding, _enc_err, _allow_surr );
+        _fillcount = _fmt.width() > wstr ? _fmt.width() - wstr : 0;
+    }
 }
 
 template<typename CharT>
@@ -254,14 +252,14 @@ std::size_t fmt_string_printer<CharT>::necessary_size() const
 }
 
 template<typename CharT>
-int fmt_string_printer<CharT>::remaining_width(int w) const
+int fmt_string_printer<CharT>::width(int limit) const
 {
     if (_fillcount > 0)
     {
-        return w > _fmt.width() ? w - _fmt.width() : 0;
+        return _fmt.width();
     }
-    return _wcalc.remaining_width( w, _fmt.value().begin(), _fmt.value().length()
-                                 , _encoding, _enc_err, _allow_surr );
+    return _wcalc.width( limit, _fmt.value().begin(), _fmt.value().length()
+                       , _encoding, _enc_err, _allow_surr );
 }
 
 template<typename CharT>

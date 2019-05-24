@@ -179,7 +179,7 @@ public:
 
     bool write( stringify::v0::output_buffer<CharT>& ob ) const override;
 
-    int remaining_width(int w) const override;
+    int width(int) const override;
 
 private:
 
@@ -335,9 +335,9 @@ std::size_t fmt_int_printer<CharT>::necessary_size() const
 }
 
 template <typename CharT>
-int fmt_int_printer<CharT>::remaining_width(int w) const
+int fmt_int_printer<CharT>::width(int) const
 {
-    return w > _afmt.width() ? (w - _afmt.width()) : 0;
+    return _afmt.width();
 }
 
 template <typename CharT>

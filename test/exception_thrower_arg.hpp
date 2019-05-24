@@ -34,9 +34,9 @@ public:
         throw std::invalid_argument("invalid printer");
     }
 
-    int remaining_width(int w) const override
+    int width(int) const override
     {
-        return w;
+        return 0;
     }
 };
 

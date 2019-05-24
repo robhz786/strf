@@ -23,7 +23,7 @@ void second_example()
 
     // more formatting:  operator>(int width) : align to rigth
     //                   operator~()          : show base
-    //                   p(int)               : set precision           
+    //                   p(int)               : set precision
     auto s = strf::to_string( "---"
                             , ~strf::hex(255).p(4).fill(U'.') > 10
                             , "---" );

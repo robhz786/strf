@@ -338,7 +338,7 @@ public:
 
     bool write(stringify::v0::output_buffer<CharOut>& ob) const override;
 
-    int remaining_width(int w) const override;
+    int width(int limit) const override;
 
 private:
 
@@ -409,9 +409,9 @@ bool cv_string_printer<CharIn, CharOut>::write
 }
 
 template<typename CharIn, typename CharOut>
-int cv_string_printer<CharIn, CharOut>::remaining_width(int w) const
+int cv_string_printer<CharIn, CharOut>::width(int limit) const
 {
-    return _wcalc.remaining_width(w, _str, _len, _src_encoding, _enc_err, _allow_surr);
+    return _wcalc.width(limit, _str, _len, _src_encoding, _enc_err, _allow_surr);
 }
 
 template<typename CharIn, typename CharOut>
@@ -438,7 +438,7 @@ public:
 
     bool write(stringify::v0::output_buffer<CharOut>& ob) const override;
 
-    int remaining_width(int w) const override;
+    int width(int limit) const override;
 
 private:
 
@@ -470,14 +470,13 @@ private:
 template<typename CharIn, typename CharOut>
 void fmt_cv_string_printer<CharIn, CharOut>::_init()
 {
-    _fillcount = ( _fmt.width() > 0
-                 ? _wcalc.remaining_width( _fmt.width()
-                                         , _fmt.value().begin()
-                                         , _fmt.value().length()
-                                         , _src_encoding
-                                         , _enc_err
-                                         , _allow_surr )
-                 : 0 );
+    if (_fmt.width() > 0)
+    {
+        auto wstr = _wcalc.width( _fmt.width()
+                                , _fmt.value().begin(), _fmt.value().length()
+                                , _src_encoding, _enc_err, _allow_surr );
+        _fillcount = _fmt.width() > wstr ? _fmt.width() - wstr : 0;
+    }
     _transcoder_eng =
         stringify::v0::get_transcoder(_src_encoding, _dest_encoding);
 }
@@ -569,18 +568,16 @@ bool fmt_cv_string_printer<CharIn, CharOut>::_write_fill
 }
 
 template<typename CharIn, typename CharOut>
-int fmt_cv_string_printer<CharIn, CharOut>::remaining_width(int w) const
+int fmt_cv_string_printer<CharIn, CharOut>::width(int limit) const
 {
-    if (_fillcount > 0)
-    {
-        return w > _fmt.width() ? w - _fmt.width() : 0;
-    }
-    return _wcalc.remaining_width( w
-                                 , _fmt.value().begin()
-                                 , _fmt.value().length()
-                                 , _src_encoding
-                                 , _enc_err
-                                 , _allow_surr );
+    return ( _fillcount > 0
+           ? _fmt.width()
+           : _wcalc.width( limit
+                         , _fmt.value().begin()
+                         , _fmt.value().length()
+                         , _src_encoding
+                         , _enc_err
+                         , _allow_surr ) );
 }
 
 

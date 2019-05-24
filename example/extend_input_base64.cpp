@@ -132,7 +132,7 @@ public:
         ( base64_facet facet
         , const base64_input_with_format& fmt );
 
-    int remaining_width(int w) const override;
+    int width(int) const override;
 
     std::size_t necessary_size() const override;
 
@@ -171,9 +171,8 @@ base64_printer<CharT>::base64_printer
 }
 
 template <typename CharT>
-int base64_printer<CharT>::remaining_width(int w) const
+int base64_printer<CharT>::width(int) const
 {
-    (void)w;
     return 0;
 }
 

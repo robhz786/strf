@@ -229,7 +229,7 @@ public:
 
     virtual std::size_t necessary_size() const = 0;
 
-    virtual int remaining_width(int w) const = 0;
+    virtual int width(int limit) const = 0;
 };
 
 namespace detail {

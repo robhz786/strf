@@ -389,7 +389,7 @@ public:
         , typename FP = FPack
         , typename = detail::dispatcher_output_buff_args_ctor<OBArgs...>
         , typename = std::enable_if_t< sizeof...(OBArgs) == sizeof...(OutBuffArgs)
-                                    && std::is_default_constructible<FP>::value > > 
+                                    && std::is_default_constructible<FP>::value > >
            // && stringify::v0::detail::fold_and
            //      < detail::is_constructible_v<OutBuffArgs, OBArgs&&>... > > >
     constexpr explicit dispatcher(OBArgs&&... args)
@@ -698,7 +698,7 @@ private:
     template <typename FP2, typename... FPArgs>
     constexpr dispatcher
         ( const dispatcher<FP2, OutputBuff, OutBuffArgs...>& d
-        , detail::fpack_tag  
+        , detail::fpack_tag
         , FPArgs&&... fpargs )
         : _reservation(d)
         , _obargs_tuple(static_cast<const _obargs_tuple&>(d))
@@ -709,7 +709,7 @@ private:
     template <class FP2, typename... FPArgs>
     constexpr dispatcher
         ( dispatcher<FP2, OutputBuff, OutBuffArgs...>&& d
-        , detail::fpack_tag  
+        , detail::fpack_tag
         , FPArgs&&... fpargs )
         : _reservation(d)
         , _obargs_tuple(static_cast<_obargs_tuple&&>(d))

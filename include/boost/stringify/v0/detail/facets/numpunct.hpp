@@ -247,7 +247,7 @@ public:
         _decimal_point = ch;
         return std::move(*this);
     }
-    
+
     char32_t decimal_point() const override
     {
         return _decimal_point;

@@ -23,14 +23,14 @@ enum class width_calculation_type : std::size_t
 
 namespace detail {
 
-class width_decrementer: public stringify::v0::output_buffer<char32_t>
+class width_accumulator: public stringify::v0::output_buffer<char32_t>
 {
 public:
 
-    width_decrementer(width_calc_func func, int width)
+    width_accumulator(width_calc_func func, int limit)
         : stringify::v0::output_buffer<char32_t>(_buff, _buff + _buff_size)
         , _func(func)
-        , _remaining_width(width)
+        , _limit(limit)
     {
     }
 
@@ -38,8 +38,12 @@ public:
 
     int get_result()
     {
-        recycle();
-        return _remaining_width > 0 ? _remaining_width : 0;
+        if (_limit > 0)
+        {
+            _sum += _func(_limit, _buff, this->pos());
+            this->set_pos(_buff);
+        }
+        return _sum;
     }
 
 private:
@@ -47,17 +51,17 @@ private:
     constexpr static std::size_t _buff_size = 16;
     char32_t _buff[_buff_size];
     width_calc_func _func;
-    int _remaining_width = 0;
+    const int _limit;
+    int _sum = 0;
 };
 
 #if ! defined(BOOST_STRINGIFY_OMIT_IMPL)
 
-BOOST_STRINGIFY_INLINE bool width_decrementer::recycle()
+BOOST_STRINGIFY_INLINE bool width_accumulator::recycle()
 {
-    int w = _func(_remaining_width, _buff, this->pos());
+    _sum += _func(_limit - _sum, _buff, this->pos());
     this->set_pos(_buff);
-    _remaining_width -= w;
-    return w < _remaining_width;
+    return _sum < _limit;
 }
 
 #endif // ! defined(BOOST_STRINGIFY_OMIT_IMPL)
@@ -102,28 +106,26 @@ public:
     }
 
     template <typename CharIn>
-    int remaining_width( int width
-                       , const CharIn* str
-                       , std::size_t str_len
-                       , stringify::v0::encoding<CharIn> enc
-                       , stringify::v0::encoding_error enc_err
-                       , stringify::v0::surrogate_policy allow_surr ) const
+    int width( int limit
+             , const CharIn* str
+             , std::size_t str_len
+             , stringify::v0::encoding<CharIn> enc
+             , stringify::v0::encoding_error enc_err
+             , stringify::v0::surrogate_policy allow_surr ) const
     {
         if (_type == stringify::width_calculation_type::as_len)
         {
-            return str_len > static_cast<std::size_t>(width)
-                ? 0
-                : width - static_cast<int>(str_len);
+            return str_len;
         }
         else if(_type == stringify::width_calculation_type::as_u32len)
         {
-            auto count = enc.codepoints_count(str, str + str_len, width);
-            BOOST_ASSERT((std::ptrdiff_t)width >= (std::ptrdiff_t)count);
-            return width - (int) count;
+            return static_cast<int>(enc.codepoints_count( str
+                                                        , str + str_len
+                                                        , limit ));
         }
         else
         {
-            stringify::v0::detail::width_decrementer acc(_ch_wcalc, width);
+            stringify::v0::detail::width_accumulator acc(_ch_wcalc, limit);
             enc.to_u32().transcode( acc, str, str + str_len
                                   , enc_err, allow_surr );
             return acc.get_result();
@@ -157,8 +159,8 @@ struct width_calculator_c
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
-int width_calculator::remaining_width<char>
-    ( int width
+int width_calculator::width<char>
+    ( int limit
     , const char* str
     , std::size_t str_len
     , stringify::v0::encoding<char> conv
@@ -166,8 +168,8 @@ int width_calculator::remaining_width<char>
     , stringify::v0::surrogate_policy allow_surr ) const;
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
-int width_calculator::remaining_width<char16_t>
-    ( int width
+int width_calculator::width<char16_t>
+    ( int limit
     , const char16_t* str
     , std::size_t str_len
     , stringify::v0::encoding<char16_t> conv
@@ -175,8 +177,8 @@ int width_calculator::remaining_width<char16_t>
     , stringify::v0::surrogate_policy allow_surr ) const;
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
-int width_calculator::remaining_width<char32_t>
-    ( int width
+int width_calculator::width<char32_t>
+    ( int limit
     , const char32_t* str
     , std::size_t str_len
     , stringify::v0::encoding<char32_t> conv
@@ -184,8 +186,8 @@ int width_calculator::remaining_width<char32_t>
     , stringify::v0::surrogate_policy allow_surr ) const;
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
-int width_calculator::remaining_width<wchar_t>
-    ( int width
+int width_calculator::width<wchar_t>
+    ( int limit
     , const wchar_t* str
     , std::size_t str_len
     , stringify::v0::encoding<wchar_t> conv

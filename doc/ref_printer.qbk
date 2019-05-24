@@ -19,7 +19,7 @@ public:
 
     virtual bool write(output_buffer<CharT>& ob) const = 0;
     virtual std::size_t necessary_size() const = 0;
-    virtual int remaining_width( int w ) const = 0;
+    virtual int width(int limit) const = 0;
 };
 
 }}}
@@ -66,16 +66,16 @@ public:
 [#printer_remaining_width]
 [table
 [[
-  `virtual int remaining_width( int w ) const = 0;`
+  `virtual int width(int limit) const = 0;`
 ]]
 [[
    [variablelist
     [[Effect]
-     [ /To-do/ ]]]
-     [/Returns the same as `std::max(0, w - this_width)`,
-      where `this_width` is the width of the content written by `write()`.
+     [Returns the the width of the content written by `write()`.
+      If that value is greater or equal than `limit`, then function is
+      may return any value greater or equal than `limit`.      
       This function is used in [link joins `joins`]. The implementation
-      may have to use the [link width_calculation facets for width calculation]]
+      may have to use the [link width_calculation facets for width calculation]]]]
 ]]
 ]
 

@@ -167,7 +167,7 @@ public:
 
     void write() const override;
     std::size_t necessary_size() const override;
-    int remaining_width(int w) const override;
+    int width(int limit) const override;
 
 protected:
 
@@ -196,9 +196,9 @@ When the `put` member function returns `false` there is no point
 in calling it again with the remaining printers. This does not
 necessarily mean that an error happened.
 [/
-For example, the implementation of `remaining_width`
+For example, the implementation of `width`
 creates a `printer_receivers` whose `put` function
-returns false when the remaining width is already zero.
+returns false when the width is greater or equal to `limit`.
 ]
 
 [h4 The printer]
@@ -311,7 +311,7 @@ public:
 
     bool write(strf::output_buffer<CharT>& ob) const override;
     std::size_t necessary_size() const override;
-    int remaining_width(int w) const override;
+    int width(int) const override;
 
 private:
 

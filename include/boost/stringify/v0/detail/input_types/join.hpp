@@ -237,7 +237,10 @@ public:
         , _enc_err(enc_err)
         , _allow_surr(allow_surr)
     {
-        _fillcount = _remaining_width_from_arglist(_join.width);
+        auto w = _arglist_width(_join.width);
+        _fillcount = ( _join.width > w
+                     ? _join.width - w
+                     : 0 );
     }
 
     join_printer_impl( const join_printer_impl& cp ) = delete;
@@ -311,16 +314,14 @@ public:
         }
     }
 
-    int remaining_width(int w) const override
+    int width(int limit) const override
     {
         if (_fillcount > 0)
         {
-            return (std::max)(0, w - _join.width);
+            return _join.width;
         }
-        return _remaining_width_from_arglist(w);
+        return _arglist_width(limit);
     }
-
-
 private:
 
     input_type _join;
@@ -350,13 +351,14 @@ private:
         return 0;
     }
 
-    int _remaining_width_from_arglist(int w) const
+    int _arglist_width(int limit) const
     {
-        for(auto it = _args.begin(); w > 0 && it != _args.end(); ++it)
+        int sum = 0;
+        for(auto it = _args.begin(); sum < limit && it != _args.end(); ++it)
         {
-            w = (*it) -> remaining_width(w);
+            sum += (*it) -> width(limit - sum);
         }
-        return w;
+        return sum;
     }
 
     bool _write_splitted(stringify::v0::output_buffer<CharT>& ob) const

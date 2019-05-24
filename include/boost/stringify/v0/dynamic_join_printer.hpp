@@ -25,33 +25,35 @@ public:
 namespace detail {
 
 template <typename CharOut>
-class width_subtracter: public printers_receiver<CharOut>
+class width_sum: public printers_receiver<CharOut>
 {
 public:
 
-    width_subtracter(int w)
-        : _width(w)
+    width_sum(int limit)
+        : _limit(limit)
     {
     }
 
     bool put(const stringify::v0::printer<CharOut>& p) override;
 
-    int remaining_width() const
+    int result() const
     {
-        return _width;
+        return _sum;
     }
 
 private:
 
-    int _width;
+    int _limit;
+    int _sum = 0;
 };
 
 template <typename CharOut>
-bool width_subtracter<CharOut>::put(const stringify::v0::printer<CharOut>& p)
+bool width_sum<CharOut>::put(const stringify::v0::printer<CharOut>& p)
 {
-    _width = p.remaining_width(_width);
-    return _width > 0;
+    _sum += p.width(_limit - _sum);
+    return _sum < _limit;
 }
+
 
 template <typename CharOut>
 class necessary_size_sum: public printers_receiver<CharOut>
@@ -123,7 +125,7 @@ public:
 
     bool write(stringify::v0::output_buffer<CharOut>& ob) const override;
 
-    int remaining_width(int w) const override;
+    int width(int limit) const override;
 
 protected:
 
@@ -164,9 +166,11 @@ std::size_t dynamic_join_printer<CharOut>::necessary_size() const
     const auto fmt = formatting();
     if(fmt.width() > 0)
     {
-        stringify::v0::detail::width_subtracter<CharOut> wds{fmt.width()};
-        compose(wds);
-        std::size_t fillcount = wds.remaining_width();
+        stringify::v0::detail::width_sum<CharOut> wsum{fmt.width()};
+        compose(wsum);
+        auto fillcount = ( fmt.width() > wsum.result()
+                         ? fmt.width() - wsum.result()
+                         : 0 );
         fill_len = _encoding.char_size(fmt.fill(), _enc_err) * fillcount;
     }
 
@@ -176,40 +180,34 @@ std::size_t dynamic_join_printer<CharOut>::necessary_size() const
 }
 
 template <typename CharOut>
-int dynamic_join_printer<CharOut>::remaining_width(int w) const
+int dynamic_join_printer<CharOut>::width(int limit) const
 {
     const auto fmt_width = formatting().width();
-    if (fmt_width > w)
+    if (fmt_width > limit)
     {
-        return 0;
+        return limit;
     }
-
-    stringify::v0::detail::width_subtracter<CharOut> s{w};
-    compose(s);
-    int rw = s.remaining_width();
-    return (w - rw < fmt_width) ? (w - fmt_width) : rw;
+    stringify::v0::detail::width_sum<CharOut> acc{limit};
+    compose(acc);
+    return std::max(acc.result(), fmt_width);
 }
 
 template <typename CharOut>
 bool dynamic_join_printer<CharOut>::write
     ( stringify::v0::output_buffer<CharOut>& ob ) const
 {
-    auto fmt = formatting();
-    auto fillcount = fmt.width();
-    if(fillcount > 0)
+    auto fmt_width = formatting().width();
+    if(fmt_width > 0)
     {
-        stringify::v0::detail::width_subtracter<CharOut> wds{fillcount};
-        compose(wds);
-        fillcount = wds.remaining_width();
+        stringify::v0::detail::width_sum<CharOut> ws{fmt_width};
+        compose(ws);
+        if (fmt_width > ws.result())
+        {
+            auto fillcount = fmt_width - ws.result();
+            return write_with_fill(fillcount, ob);
+        }
     }
-    if(fillcount > 0)
-    {
-        return write_with_fill(fillcount, ob);
-    }
-    else
-    {
-        return write_without_fill(ob);
-    }
+    return write_without_fill(ob);
 }
 
 template <typename CharOut>

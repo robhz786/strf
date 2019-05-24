@@ -40,9 +40,9 @@ public:
         return false;
     }
 
-    int remaining_width(int w) const override
+    int width(int) const override
     {
-        return w;
+        return 0;
     }
 
 private:
