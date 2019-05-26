@@ -167,6 +167,19 @@ int width_calculator::width<char>
     , stringify::v0::encoding_error enc_err
     , stringify::v0::surrogate_policy allow_surr ) const;
 
+#if defined(__cpp_char8_t)
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+int width_calculator::width<char8_t>
+    ( int limit
+    , const char8_t* str
+    , std::size_t str_len
+    , stringify::v0::encoding<char8_t> conv
+    , stringify::v0::encoding_error enc_err
+    , stringify::v0::surrogate_policy allow_surr ) const;
+
+#endif
+
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 int width_calculator::width<char16_t>
     ( int limit

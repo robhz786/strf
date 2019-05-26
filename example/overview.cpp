@@ -1,6 +1,15 @@
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
+#include <boost/stringify.hpp>
+
+#if ! defined(__cpp_char8_t)
+
+namespace boost{ namespace stringify{ inline namespace v0{
+constexpr auto to_u8string = to_string;
+}}}
+
+#endif
 
 //[ first_example
 #include <boost/stringify.hpp> // This is the only header you need to include.
@@ -240,7 +249,7 @@ void sample_numpunct_with_alternative_charset()
 
     // Writting in Windows-1252
     auto s = strf::to_string
-        .facets(strf::windows_1252())
+        .facets(strf::windows_1252<char>())
         .facets(strf::str_grouping<10>{"\4\3\2"}.thousands_sep(0x2022))
         ("one hundred billions = ", 100000000000ll);
 
@@ -275,9 +284,9 @@ void input_string_encoding()
     //[input_string_encoding
     // Three input string. Each one in its own character set
     namespace strf = boost::stringify::v0;
-    auto s = strf::to_string( strf::cv("\x80\xA4 -- ", strf::iso_8859_1())
-                            , strf::cv("\x80\xA4 -- ", strf::iso_8859_15())
-                            , strf::cv("\x80\xA4", strf::windows_1252()) );
+    auto s = strf::to_u8string( strf::cv("\x80\xA4 -- ", strf::iso_8859_1<char>())
+                              , strf::cv("\x80\xA4 -- ", strf::iso_8859_15<char>())
+                              , strf::cv("\x80\xA4", strf::windows_1252<char>()) );
 
     // The output by default is in UTF-8
     BOOST_ASSERT(s == u8"\u0080\u00A4 -- \u0080\u20AC -- \u20AC\u00A4");
@@ -289,7 +298,7 @@ void sani()
     //[sani_utf8
     // sanitize UTF-8 input
     namespace strf = boost::stringify::v0;
-    auto s = strf::to_string(strf::cv("a b c \xFF d e"));
+    auto s = strf::to_u8string(strf::cv("a b c \xFF d e"));
     BOOST_ASSERT(s == u8"a b c \uFFFD d e");
     //]
 }
@@ -336,11 +345,11 @@ void width_as_len()
     //[width_as_len
     namespace strf = boost::stringify::v0;
 
-    auto str = strf::to_string
+    auto str = strf::to_u8string
         .facets(strf::width_as_len())
         (strf::right(u8"áéíóú", 12, U'.'));
 
-    BOOST_ASSERT(str == "..áéíóú");
+    BOOST_ASSERT(str == u8"..áéíóú");
     //]
 }
 void width_as_u32len()
@@ -348,11 +357,11 @@ void width_as_u32len()
     //[width_as_u32len
     namespace strf = boost::stringify::v0;
 
-    auto str = strf::to_string
+    auto str = strf::to_u8string
         .facets(strf::width_as_u32len())
         (strf::right(u8"áéíóú", 12, U'.'));
 
-    BOOST_ASSERT(str == ".......áéíóú");
+    BOOST_ASSERT(str == u8".......áéíóú");
     //]
 }
 
@@ -371,7 +380,7 @@ void width_func()
         return sum;
     };
 
-    auto str = strf::to_string
+    auto str = strf::to_u8string
         .facets(strf::width_as(my_width_calculator))
         (strf::right(u8"今晩は", 10, U'.'));
 

@@ -223,6 +223,11 @@ static_assert(has_i18n<char, decltype(pack(monotonic_grouping<10>(3))), int, 10>
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
+#if defined(__cpp_char8_t)
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class i18n_int_printer<char8_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_int_printer<char8_t>;
+#endif
+
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class i18n_int_printer<char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class i18n_int_printer<char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class i18n_int_printer<char32_t>;

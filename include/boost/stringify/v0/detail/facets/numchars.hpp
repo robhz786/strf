@@ -980,6 +980,11 @@ int default_numchars<CharT, 8>::width
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
+#if defined(__cpp_char8_t)
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class default_numchars<char8_t, 10>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class default_numchars<char8_t, 16>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class default_numchars<char8_t, 8>;
+#endif
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class default_numchars<char, 10>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class default_numchars<char, 16>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class default_numchars<char, 8>;

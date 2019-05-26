@@ -7,6 +7,15 @@
 
 #include <iostream>
 
+#if ! defined(__cpp_char8_t)
+
+namespace boost{ namespace stringify{ inline namespace v0{
+constexpr auto to_u8string = to_string;
+}}}
+
+#endif
+
+
 void input_ouput_different_char_types()
 {
     //[input_output_different_char_types
@@ -44,9 +53,9 @@ void arg()
     //[ arg_encoding
     namespace strf = boost::stringify::v0;
 
-    auto str_utf8 = strf::to_string
-        ( strf::cv("--\xA4--", strf::iso_8859_1())
-        , strf::cv("--\xA4--", strf::iso_8859_15()));
+    auto str_utf8 = strf::to_u8string
+        ( strf::cv("--\xA4--", strf::iso_8859_1<char>())
+        , strf::cv("--\xA4--", strf::iso_8859_15<char>()));
 
     BOOST_ASSERT(str_utf8 == u8"--\u00A4----\u20AC--");
     //]
@@ -56,7 +65,7 @@ void encoding_error_replace()
 {
     //[ encoding_error_replace
     namespace strf = boost::stringify::v0;
-    auto str = strf::to_string (strf::cv("--\x99--"));
+    auto str = strf::to_u8string (strf::cv("--\x99--"));
     BOOST_ASSERT(str == u8"--\uFFFD--");
     //]
 }
@@ -104,12 +113,12 @@ void allow_surrogates ()
     std::u16string input_utf16 {u"-----"};
     input_utf16[1] = 0xD800; // a surrogate character alone
 
-    auto str1 = strf::to_string(strf::cv(input_utf16));
+    auto str1 = strf::to_u8string(strf::cv(input_utf16));
 
-    auto str2 = strf::to_string .facets(strf::surrogate_policy::lax) (strf::cv(input_utf16));
+    auto str2 = strf::to_u8string .facets(strf::surrogate_policy::lax) (strf::cv(input_utf16));
 
     BOOST_ASSERT(str1 == u8"-\uFFFD---");       // surrogate sanitized
-    BOOST_ASSERT(str2 ==   "-\xED\xA0\x80---"); // surrogate allowed
+    BOOST_ASSERT(str2 == u8"-\xED\xA0\x80---"); // surrogate allowed
 
     // now back to UTF-16
     auto utf16_no_surr = strf::to_u16string(strf::cv(str2));

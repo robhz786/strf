@@ -88,6 +88,11 @@ void ec_std_streambuf_writer<CharT, Traits>::on_error()
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
+#if defined(__cpp_char8_t)
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class ec_std_streambuf_writer<char8_t, std::char_traits<char8_t>>;
+#endif
+
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 class ec_std_streambuf_writer<char, std::char_traits<char>>;
 
@@ -207,6 +212,11 @@ void std_streambuf_writer<CharT, Traits>::on_error()
 }
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+
+#if defined(__cpp_char8_t)
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE
+class std_streambuf_writer<char8_t, std::char_traits<char8_t>>;
+#endif
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE
 class std_streambuf_writer<char, std::char_traits<char>>;

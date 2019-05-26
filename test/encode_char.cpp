@@ -52,42 +52,42 @@ int main()
 {
     {   // UTF-8
 
-        test_valid_char<char>(strf::utf8(), 0x7F, "\x7F");
-        test_valid_char<char>(strf::utf8(), 0x80, "\xC2\x80");
-        test_valid_char<char>(strf::utf8(), 0x800, "\xE0\xA0\x80");
-        test_valid_char<char>(strf::utf8(), 0xFFFF, "\xEF\xBF\xBF");
-        test_valid_char<char>(strf::utf8(), 0x10000, "\xF0\x90\x80\x80");
-        test_valid_char<char>(strf::utf8(), 0x10FFFF, "\xF4\x8F\xBF\xBF");
+        test_valid_char<char>(strf::utf8<char>(), 0x7F, "\x7F");
+        test_valid_char<char>(strf::utf8<char>(), 0x80, "\xC2\x80");
+        test_valid_char<char>(strf::utf8<char>(), 0x800, "\xE0\xA0\x80");
+        test_valid_char<char>(strf::utf8<char>(), 0xFFFF, "\xEF\xBF\xBF");
+        test_valid_char<char>(strf::utf8<char>(), 0x10000, "\xF0\x90\x80\x80");
+        test_valid_char<char>(strf::utf8<char>(), 0x10FFFF, "\xF4\x8F\xBF\xBF");
 
-        test_invalid_char(strf::utf8(), 0x110000);
+        test_invalid_char(strf::utf8<char>(), 0x110000);
     }
     {   // UTF-16
 
-        test_valid_char<char16_t>(strf::utf16(), U'a', u"a");
-        test_valid_char<char16_t>(strf::utf16(), 0xFFFF, u"\uFFFF");
-        test_valid_char<char16_t>(strf::utf16(), 0x10000, u"\U00010000");
-        test_valid_char<char16_t>(strf::utf16(), 0x10FFFF, u"\U0010FFFF");
+        test_valid_char<char16_t>(strf::utf16<char16_t>(), U'a', u"a");
+        test_valid_char<char16_t>(strf::utf16<char16_t>(), 0xFFFF, u"\uFFFF");
+        test_valid_char<char16_t>(strf::utf16<char16_t>(), 0x10000, u"\U00010000");
+        test_valid_char<char16_t>(strf::utf16<char16_t>(), 0x10FFFF, u"\U0010FFFF");
 
-           test_invalid_char(strf::utf16(), 0x110000);
+           test_invalid_char(strf::utf16<char16_t>(), 0x110000);
     }
     {   // UTF-32
 
-        test_valid_char<char32_t>(strf::utf32(), U'a', U"a");
-        test_valid_char<char32_t>(strf::utf32(), 0xFFFF, U"\uFFFF");
-        test_valid_char<char32_t>(strf::utf32(), 0x10000, U"\U00010000");
-        test_valid_char<char32_t>(strf::utf32(), 0x10FFFF, U"\U0010FFFF");
+        test_valid_char<char32_t>(strf::utf32<char32_t>(), U'a', U"a");
+        test_valid_char<char32_t>(strf::utf32<char32_t>(), 0xFFFF, U"\uFFFF");
+        test_valid_char<char32_t>(strf::utf32<char32_t>(), 0x10000, U"\U00010000");
+        test_valid_char<char32_t>(strf::utf32<char32_t>(), 0x10FFFF, U"\U0010FFFF");
     }
     {
         // single byte encodings
-        test_valid_char<char>(strf::windows_1252(), 0x201A, "\x82");
-        test_valid_char<char>(strf::iso_8859_1(), 0x82, "\x82");
-        test_valid_char<char>(strf::iso_8859_3(), 0x02D8, "\xA2");
-        test_valid_char<char>(strf::iso_8859_15(), 0x20AC, "\xA4");
+        test_valid_char<char>(strf::windows_1252<char>(), 0x201A, "\x82");
+        test_valid_char<char>(strf::iso_8859_1<char>(), 0x82, "\x82");
+        test_valid_char<char>(strf::iso_8859_3<char>(), 0x02D8, "\xA2");
+        test_valid_char<char>(strf::iso_8859_15<char>(), 0x20AC, "\xA4");
 
-        for (auto enc : { strf::windows_1252()
-                        , strf::iso_8859_1()
-                        , strf::iso_8859_3()
-                        , strf::iso_8859_15() } )
+        for (auto enc : { strf::windows_1252<char>()
+                        , strf::iso_8859_1<char>()
+                        , strf::iso_8859_3<char>()
+                        , strf::iso_8859_15<char>() } )
         {
             test_valid_char<char>(enc, 'a' , "a");
             test_invalid_char(enc, 0x800);

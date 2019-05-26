@@ -138,76 +138,76 @@ int main()
     {
         // UTF-8
 
-        test_fill(strf::utf8(), 0x7F, "\x7F");
-        test_fill(strf::utf8(), 0x80, "\xC2\x80");
-        test_fill(strf::utf8(), 0x800, "\xE0\xA0\x80");
-        test_fill(strf::utf8(), 0xD800, "\xED\xA0\x80", strf::surrogate_policy::lax);
-        test_fill(strf::utf8(), 0xDBFF, "\xED\xAF\xBF", strf::surrogate_policy::lax);
-        test_fill(strf::utf8(), 0xDC00, "\xED\xB0\x80", strf::surrogate_policy::lax);
-        test_fill(strf::utf8(), 0xDFFF, "\xED\xBF\xBF", strf::surrogate_policy::lax);
-        test_fill(strf::utf8(), 0xFFFF, "\xEF\xBF\xBF");
-        test_fill(strf::utf8(), 0x10000, "\xF0\x90\x80\x80");
-        test_fill(strf::utf8(), 0x10FFFF, "\xF4\x8F\xBF\xBF");
+        test_fill(strf::utf8<char>(), 0x7F, "\x7F");
+        test_fill(strf::utf8<char>(), 0x80, "\xC2\x80");
+        test_fill(strf::utf8<char>(), 0x800, "\xE0\xA0\x80");
+        test_fill(strf::utf8<char>(), 0xD800, "\xED\xA0\x80", strf::surrogate_policy::lax);
+        test_fill(strf::utf8<char>(), 0xDBFF, "\xED\xAF\xBF", strf::surrogate_policy::lax);
+        test_fill(strf::utf8<char>(), 0xDC00, "\xED\xB0\x80", strf::surrogate_policy::lax);
+        test_fill(strf::utf8<char>(), 0xDFFF, "\xED\xBF\xBF", strf::surrogate_policy::lax);
+        test_fill(strf::utf8<char>(), 0xFFFF, "\xEF\xBF\xBF");
+        test_fill(strf::utf8<char>(), 0x10000, "\xF0\x90\x80\x80");
+        test_fill(strf::utf8<char>(), 0x10FFFF, "\xF4\x8F\xBF\xBF");
 
 
-        test_fill(strf::utf8(), 0xD800, "\xEF\xBF\xBD");
-        test_fill(strf::utf8(), 0xDBFF, "\xEF\xBF\xBD");
-        test_fill(strf::utf8(), 0xDC00, "\xEF\xBF\xBD");
-        test_fill(strf::utf8(), 0xDFFF, "\xEF\xBF\xBD");
-        test_fill(strf::utf8(), 0x110000, "\xEF\xBF\xBD");
-        test_invalid_fill_stop(strf::utf8(), 0x110000);
-        test_invalid_fill_ignore(strf::utf8(), 0x110000);
+        test_fill(strf::utf8<char>(), 0xD800, "\xEF\xBF\xBD");
+        test_fill(strf::utf8<char>(), 0xDBFF, "\xEF\xBF\xBD");
+        test_fill(strf::utf8<char>(), 0xDC00, "\xEF\xBF\xBD");
+        test_fill(strf::utf8<char>(), 0xDFFF, "\xEF\xBF\xBD");
+        test_fill(strf::utf8<char>(), 0x110000, "\xEF\xBF\xBD");
+        test_invalid_fill_stop(strf::utf8<char>(), 0x110000);
+        test_invalid_fill_ignore(strf::utf8<char>(), 0x110000);
     }
 
     {
         // UTF-16;
-        test_fill(strf::utf16(), U'a', u"a");
-        test_fill(strf::utf16(), 0xD800, {0xD800}, strf::surrogate_policy::lax);
-        test_fill(strf::utf16(), 0xDBFF, {0xDBFF}, strf::surrogate_policy::lax);
-        test_fill(strf::utf16(), 0xDC00, {0xDC00}, strf::surrogate_policy::lax);
-        test_fill(strf::utf16(), 0xDFFF, {0xDFFF}, strf::surrogate_policy::lax);
-        test_fill(strf::utf16(), 0x10000,  u"\U00010000");
-        test_fill(strf::utf16(), 0x10FFFF, u"\U0010FFFF");
+        test_fill(strf::utf16<char16_t>(), U'a', u"a");
+        test_fill(strf::utf16<char16_t>(), 0xD800, {0xD800}, strf::surrogate_policy::lax);
+        test_fill(strf::utf16<char16_t>(), 0xDBFF, {0xDBFF}, strf::surrogate_policy::lax);
+        test_fill(strf::utf16<char16_t>(), 0xDC00, {0xDC00}, strf::surrogate_policy::lax);
+        test_fill(strf::utf16<char16_t>(), 0xDFFF, {0xDFFF}, strf::surrogate_policy::lax);
+        test_fill(strf::utf16<char16_t>(), 0x10000,  u"\U00010000");
+        test_fill(strf::utf16<char16_t>(), 0x10FFFF, u"\U0010FFFF");
 
-        test_fill(strf::utf16(), 0xD800, u"\uFFFD");
-        test_fill(strf::utf16(), 0xDBFF, u"\uFFFD");
-        test_fill(strf::utf16(), 0xDC00, u"\uFFFD");
-        test_fill(strf::utf16(), 0xDFFF, u"\uFFFD");
-        test_fill(strf::utf16(), 0x110000, u"\uFFFD");
-        test_invalid_fill_stop(strf::utf16(), 0x110000);
-        test_invalid_fill_ignore(strf::utf16(), 0x110000);
+        test_fill(strf::utf16<char16_t>(), 0xD800, u"\uFFFD");
+        test_fill(strf::utf16<char16_t>(), 0xDBFF, u"\uFFFD");
+        test_fill(strf::utf16<char16_t>(), 0xDC00, u"\uFFFD");
+        test_fill(strf::utf16<char16_t>(), 0xDFFF, u"\uFFFD");
+        test_fill(strf::utf16<char16_t>(), 0x110000, u"\uFFFD");
+        test_invalid_fill_stop(strf::utf16<char16_t>(), 0x110000);
+        test_invalid_fill_ignore(strf::utf16<char16_t>(), 0x110000);
     }
 
     {
         // UTF-32;
-        test_fill(strf::utf32(), U'a', U"a");
-        test_fill(strf::utf32(), 0xD800, {0xD800}, strf::surrogate_policy::lax);
-        test_fill(strf::utf32(), 0xDBFF, {0xDBFF}, strf::surrogate_policy::lax);
-        test_fill(strf::utf32(), 0xDC00, {0xDC00}, strf::surrogate_policy::lax);
-        test_fill(strf::utf32(), 0xDFFF, {0xDFFF}, strf::surrogate_policy::lax);
-        test_fill(strf::utf32(), 0x10000,  U"\U00010000");
-        test_fill(strf::utf32(), 0x10FFFF, U"\U0010FFFF");
+        test_fill(strf::utf32<char32_t>(), U'a', U"a");
+        test_fill(strf::utf32<char32_t>(), 0xD800, {0xD800}, strf::surrogate_policy::lax);
+        test_fill(strf::utf32<char32_t>(), 0xDBFF, {0xDBFF}, strf::surrogate_policy::lax);
+        test_fill(strf::utf32<char32_t>(), 0xDC00, {0xDC00}, strf::surrogate_policy::lax);
+        test_fill(strf::utf32<char32_t>(), 0xDFFF, {0xDFFF}, strf::surrogate_policy::lax);
+        test_fill(strf::utf32<char32_t>(), 0x10000,  U"\U00010000");
+        test_fill(strf::utf32<char32_t>(), 0x10FFFF, U"\U0010FFFF");
 
-        test_fill(strf::utf32(), 0xD800, U"\uFFFD");
-        test_fill(strf::utf32(), 0xDBFF, U"\uFFFD");
-        test_fill(strf::utf32(), 0xDC00, U"\uFFFD");
-        test_fill(strf::utf32(), 0xDFFF, U"\uFFFD");
-        test_fill(strf::utf32(), 0x110000, U"\uFFFD");
-        test_invalid_fill_stop(strf::utf32(), 0x110000);
-        test_invalid_fill_ignore(strf::utf32(), 0x110000);
+        test_fill(strf::utf32<char32_t>(), 0xD800, U"\uFFFD");
+        test_fill(strf::utf32<char32_t>(), 0xDBFF, U"\uFFFD");
+        test_fill(strf::utf32<char32_t>(), 0xDC00, U"\uFFFD");
+        test_fill(strf::utf32<char32_t>(), 0xDFFF, U"\uFFFD");
+        test_fill(strf::utf32<char32_t>(), 0x110000, U"\uFFFD");
+        test_invalid_fill_stop(strf::utf32<char32_t>(), 0x110000);
+        test_invalid_fill_ignore(strf::utf32<char32_t>(), 0x110000);
     }
 
     {
         // single byte encodings
-        test_fill(strf::windows_1252(), 0x201A, "\x82");
-        test_fill(strf::iso_8859_1(), 0x82, "\x82");
-        test_fill(strf::iso_8859_3(), 0x02D8, "\xA2");
-        test_fill(strf::iso_8859_15(), 0x20AC, "\xA4");
+        test_fill(strf::windows_1252<char>(), 0x201A, "\x82");
+        test_fill(strf::iso_8859_1<char>(), 0x82, "\x82");
+        test_fill(strf::iso_8859_3<char>(), 0x02D8, "\xA2");
+        test_fill(strf::iso_8859_15<char>(), 0x20AC, "\xA4");
 
-        std::vector<strf::encoding<char>> vec = { strf::windows_1252()
-                                                , strf::iso_8859_1()
-                                                , strf::iso_8859_3()
-                                                , strf::iso_8859_15() };
+        std::vector<strf::encoding<char>> vec = { strf::windows_1252<char>()
+                                                , strf::iso_8859_1<char>()
+                                                , strf::iso_8859_3<char>()
+                                                , strf::iso_8859_15<char>() };
         for (auto enc : vec)
         {
             test_fill(enc, 'a' , "a");

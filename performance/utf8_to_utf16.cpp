@@ -22,9 +22,9 @@ int main()
     std::string u8sample2;
     std::string u8sample3;
     std::string u8sample4;
-    for(int i = 0; i < 500; ++i) u8sample2.append(u8"\u0100");
-    for(int i = 0; i < 500; ++i) u8sample3.append(u8"\u0800");
-    for(int i = 0; i < 500; ++i) u8sample4.append(u8"\U00010000");
+    for(int i = 0; i < 500; ++i) u8sample2.append((const char*)u8"\u0100");
+    for(int i = 0; i < 500; ++i) u8sample3.append((const char*)u8"\u0800");
+    for(int i = 0; i < 500; ++i) u8sample4.append((const char*)u8"\U00010000");
 
 
     char16_t u16dest[100000];

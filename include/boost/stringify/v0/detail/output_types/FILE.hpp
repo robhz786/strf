@@ -94,7 +94,9 @@ void ec_narrow_file_writer<CharT>::on_error()
 }
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
-
+#if defined(__cpp_char8_t)
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_narrow_file_writer<char8_t>;
+#endif
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_narrow_file_writer<char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_narrow_file_writer<char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_narrow_file_writer<char32_t>;
@@ -293,7 +295,9 @@ void narrow_file_writer<CharT>::on_error()
 }
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
-
+#if defined(__cpp_char8_t)
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class narrow_file_writer<char8_t>;
+#endif
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class narrow_file_writer<char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class narrow_file_writer<char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class narrow_file_writer<char32_t>;

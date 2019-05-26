@@ -422,16 +422,34 @@ int fmt_char_printer<CharT>::width(int) const
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
+#if defined(__cpp_char8_t)
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<char8_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_char_printer<char8_t>;
+#endif
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<char32_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<wchar_t>;
+
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_char_printer<char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_char_printer<char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_char_printer<char32_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_char_printer<wchar_t>;
 
 #endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+
+#if defined(__cpp_char8_t)
+
+template <typename CharOut, typename FPack>
+inline stringify::v0::char_printer<CharOut>
+make_printer(const FPack& fp, char8_t ch)
+{
+    static_assert( std::is_same<CharOut, char8_t>::value
+                 , "Character type mismatch." );
+    return {fp, ch};
+}
+
+#endif
 
 template <typename CharOut, typename FPack>
 inline stringify::v0::char_printer<CharOut>
@@ -476,6 +494,15 @@ make_printer(const FPack& fp, const stringify::v0::char_with_format<CharOut>& ch
     return {fp, ch};
 }
 
+#if defined(__cpp_char8_t)
+
+inline auto make_fmt(stringify::v0::tag, char8_t ch)
+{
+    return stringify::v0::char_with_format<char8_t>{ch};
+}
+
+#endif
+
 inline auto make_fmt(stringify::v0::tag, char ch)
 {
     return stringify::v0::char_with_format<char>{ch};
@@ -494,6 +521,10 @@ inline auto make_fmt(stringify::v0::tag, char32_t ch)
 }
 
 template <typename> struct is_char: public std::false_type {};
+
+#if defined(__cpp_char8_t)
+template <> struct is_char<char8_t>: public std::true_type {};
+#endif
 template <> struct is_char<char>: public std::true_type {};
 template <> struct is_char<char16_t>: public std::true_type {};
 template <> struct is_char<char32_t>: public std::true_type {};

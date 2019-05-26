@@ -9,48 +9,48 @@
 [ [function] [description] ]
 
 [
-[`encoding<char> utf8();`]
-[UTF-8 encoding. Default for `char`.]
+[`template<typename CharT> encoding<CharT> utf8();`]
+[UTF-8 encoding. Default for `char` and `char8_t`.]
 ]
 
 [/
-[`encoding<char> mutf8();`]
+[`template<typename CharT> encoding<CharT> mutf8();`]
 [[@https://en.wikipedia.org/wiki/UTF-8#Modified_UTF-8 Modified UTF-8] encoding]
 ]
 
 [/
-[`encoding<char> cesu8(); // TODO `]
+[`template<typename CharT> encoding<CharT> cesu8(); // TODO `]
 [[@https://en.wikipedia.org/wiki/CESU-8 CESU-8] encoding. /(not implemented yet)/]
 ]
 
 [
-[`encoding<char> iso_8859_1();`]
+[`template<typename CharT> encoding<CharT> iso_8859_1();`]
 [[@https://en.wikipedia.org/wiki/ISO/IEC_8859-1 ISO/IEC 8859-1] encoding]
 ]
 
 [
-[`encoding<char> iso_8859_15();`]
+[`template<typename CharT> encoding<CharT> iso_8859_15();`]
 [[@https://en.wikipedia.org/wiki/ISO/IEC_8859-15 ISO/IEC 8859-15] encoding]
 ]
 
 [
-[`encoding<char> windows_1252();`]
+[`template<typename CharT> encoding<CharT> windows_1252();`]
 [[@https://en.wikipedia.org/wiki/Windows-1252 Windows-1252] encoding]
 ]
 
 [/
-[`encoding<char> ascii();`]
+[`template<typename CharT> encoding<CharT> ascii();`]
 [Pure ASCII. Any character greater than `0xf9` is treated as error]
 ]
 
 
 [
-[`encoding<char16_t> utf16();`]
+[`template<typename CharT> encoding<CharT> utf16();`]
 [The UTF-16 encoding. Default for `char16_t`.]
 ]
 
 [
-[`encoding<char32_t> utf32();`]
+[`template<typename CharT> encoding<CharT> utf32();`]
 [UTF-32 encoding. Default for `char32_t`.]
 ]
 

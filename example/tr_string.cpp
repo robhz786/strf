@@ -5,6 +5,14 @@
 #include <boost/assert.hpp>
 #include <boost/stringify.hpp>
 
+#if ! defined(__cpp_char8_t)
+
+namespace boost{ namespace stringify{ inline namespace v0{
+constexpr auto to_u8string = to_string;
+}}}
+
+#endif
+
 namespace strf = boost::stringify::v0;
 
 int main()
@@ -42,8 +50,8 @@ int main()
 
     {
         //[ trstr_replace
-        auto str = strf::to_string
-            .tr("{} are {}. {} are {}.", "Roses", "red", "Violets");
+        auto str = strf::to_u8string
+            .tr(u8"{} are {}. {} are {}.", u8"Roses", u8"red", u8"Violets");
         BOOST_ASSERT(str == u8"Roses are red. Violets are \uFFFD.");
         //]
    }
@@ -52,7 +60,7 @@ int main()
        auto str = strf::to_string
            .facets(strf::tr_invalid_arg::ignore)
            .tr("{} are {}. {} are {}.", "Roses", "red", "Violets");
-       BOOST_ASSERT(str == u8"Roses are red. Violets are .");
+       BOOST_ASSERT(str == "Roses are red. Violets are .");
        //]
    }
    {

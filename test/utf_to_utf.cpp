@@ -21,7 +21,7 @@ constexpr auto as_signed(const T& value)
 
 std::string valid_input_sample(const strf::encoding<char>&)
 {
-    return {u8"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", 19};
+    return {(const char*)u8"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", 19};
 }
 std::u16string valid_input_sample(const strf::encoding<char16_t>&)
 {
@@ -147,7 +147,7 @@ const auto& invalid_sequences(const strf::encoding<wchar_t>&)
     return seqs;
 }
 
-std::string    replacement_char(const strf::encoding<char>&){ return u8"\uFFFD";}
+std::string    replacement_char(const strf::encoding<char>&){ return (const char*)u8"\uFFFD";}
 std::u16string replacement_char(const strf::encoding<char16_t>&){ return u"\uFFFD";}
 std::u32string replacement_char(const strf::encoding<char32_t>&){ return U"\uFFFD";}
 std::wstring   replacement_char(const strf::encoding<wchar_t>&){ return L"\uFFFD";}
@@ -212,7 +212,8 @@ void test_invalid_input
 int main()
 {
     auto encodings = hana::make_tuple
-        ( strf::utf8(), strf::utf16(), strf::utf32(), strf::wchar_encoding());
+        ( strf::utf8<char>(), strf::utf16<char16_t>()
+        , strf::utf32<char32_t>(), strf::wchar_encoding());
 
     hana::for_each(encodings, [&](const auto& ein){
             hana::for_each(encodings, [&](const auto& eout) {

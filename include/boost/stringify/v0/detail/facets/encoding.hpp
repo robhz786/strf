@@ -762,20 +762,19 @@ BOOST_STRINGIFY_V0_NAMESPACE_END
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-inline stringify::v0::encoding<char> utf8()
+template <typename CharT>
+inline stringify::v0::encoding<CharT> utf16()
 {
-    return stringify::v0::encoding<char>{stringify::v0::detail::utf8_impl()};
+    static_assert(sizeof(CharT) >= 2, "incompatible character type for UTF-16");
+    return stringify::v0::encoding<CharT>{stringify::v0::detail::utf16_impl()};
 }
 
-inline stringify::v0::encoding<char16_t> utf16()
+template <typename CharT>
+inline stringify::v0::encoding<CharT> utf32()
 {
-    return stringify::v0::encoding<char16_t>{stringify::v0::detail::utf16_impl()};
-}
-
-inline stringify::v0::encoding<char32_t> utf32()
-{
+    static_assert(sizeof(CharT) >= 4, "incompatible character type for UTF-32");
     const auto& info = stringify::v0::detail::utf32_impl();
-    return stringify::v0::encoding<char32_t>{info};
+    return stringify::v0::encoding<CharT>{info};
 }
 
 namespace detail {
@@ -801,24 +800,39 @@ inline stringify::v0::encoding<wchar_t> wchar_encoding()
     return stringify::v0::encoding<wchar_t>{info};
 }
 
-inline stringify::v0::encoding<char> windows_1252()
+template <typename CharT>
+inline stringify::v0::encoding<CharT> utf8()
 {
-    return stringify::v0::encoding<char>{stringify::v0::detail::windows_1252_impl()};
+    static_assert(sizeof(CharT) == 1, "incompatible character type for UTF-8");
+    return stringify::v0::encoding<CharT>{stringify::v0::detail::utf8_impl()};
 }
 
-inline stringify::v0::encoding<char> iso_8859_1()
+template <typename CharT>
+inline stringify::v0::encoding<CharT> windows_1252()
 {
-    return stringify::v0::encoding<char>{stringify::v0::detail::iso_8859_1_impl()};
+    static_assert(sizeof(CharT) == 1, "incompatible character type for UTF-8");
+    return stringify::v0::encoding<CharT>{stringify::v0::detail::windows_1252_impl()};
 }
 
-inline stringify::v0::encoding<char> iso_8859_3()
+template <typename CharT>
+inline stringify::v0::encoding<CharT> iso_8859_1()
 {
-    return stringify::v0::encoding<char>{stringify::v0::detail::iso_8859_3_impl()};
+    static_assert(sizeof(CharT) == 1, "incompatible character type for UTF-8");
+    return stringify::v0::encoding<CharT>{stringify::v0::detail::iso_8859_1_impl()};
 }
 
-inline stringify::v0::encoding<char> iso_8859_15()
+template <typename CharT>
+inline stringify::v0::encoding<CharT> iso_8859_3()
 {
-    return stringify::v0::encoding<char>{stringify::v0::detail::iso_8859_15_impl()};
+    static_assert(sizeof(CharT) == 1, "incompatible character type for UTF-8");
+    return stringify::v0::encoding<CharT>{stringify::v0::detail::iso_8859_3_impl()};
+}
+
+template <typename CharT>
+inline stringify::v0::encoding<CharT> iso_8859_15()
+{
+    static_assert(sizeof(CharT) == 1, "incompatible character type for UTF-8");
+    return stringify::v0::encoding<CharT>{stringify::v0::detail::iso_8859_15_impl()};
 }
 
 template <typename CharT>
@@ -842,9 +856,24 @@ struct encoding_c<char>
 
     static encoding<char> get_default()
     {
-        return stringify::v0::utf8();
+        return stringify::v0::utf8<char>();
     }
 };
+
+#if defined(__cpp_char8_t)
+
+template <>
+struct encoding_c<char8_t>
+{
+    static constexpr bool constrainable = false;
+
+    static encoding<char8_t> get_default()
+    {
+        return stringify::v0::utf8<char8_t>();
+    }
+};
+
+#endif
 
 template <>
 struct encoding_c<char16_t>
@@ -853,7 +882,7 @@ struct encoding_c<char16_t>
 
     static encoding<char16_t> get_default()
     {
-        return stringify::v0::utf16();
+        return stringify::v0::utf16<char16_t>();
     }
 };
 
@@ -864,7 +893,7 @@ struct encoding_c<char32_t>
 
     static encoding<char32_t> get_default()
     {
-        return stringify::v0::utf32();
+        return stringify::v0::utf32<char32_t>();
     }
 };
 

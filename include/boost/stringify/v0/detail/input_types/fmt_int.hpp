@@ -490,7 +490,9 @@ template <> struct is_int_number<unsigned long long>: public std::true_type {};
 
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
-
+#if defined(__cpp_char8_t)
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char8_t>;
+#endif
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char32_t>;

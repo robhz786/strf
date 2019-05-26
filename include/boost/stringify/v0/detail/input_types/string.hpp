@@ -83,6 +83,17 @@ make_fmt(stringify::v0::tag, const std::basic_string_view<CharIn, Traits>& str)
 
 #endif // defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
 
+#if defined(__cpp_char8_t)
+
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+auto make_fmt(stringify::v0::tag, const char8_t* str)
+{
+    auto len = std::char_traits<char8_t>::length(str);
+    return stringify::v0::string_with_format<char8_t>{{str, len}};
+}
+
+#endif
+
 BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
 auto make_fmt(stringify::v0::tag, const char* str)
 {
@@ -311,6 +322,11 @@ bool fmt_string_printer<CharT>::_write_fill
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
+#if defined(__cpp_char8_t)
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_printer<char8_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_string_printer<char8_t>;
+#endif
+
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_printer<char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_printer<char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_printer<char32_t>;
@@ -325,11 +341,22 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_string_printer<wchar_t>;
 
 } // namespace detail
 
+#if defined(__cpp_char8_t)
+
 template <typename CharOut, typename FPack>
 inline stringify::v0::detail::string_printer<CharOut>
-make_printer
-   ( const FPack& fp
-   , const char* str )
+make_printer(const FPack& fp, const char8_t* str)
+{
+    static_assert( std::is_same<char8_t, CharOut>::value
+                 , "Character type mismatch. Use cv function." );
+    return {fp, str, std::char_traits<char8_t>::length(str)};
+}
+
+#endif
+
+template <typename CharOut, typename FPack>
+inline stringify::v0::detail::string_printer<CharOut>
+make_printer(const FPack& fp, const char* str)
 {
     static_assert( std::is_same<char, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -338,9 +365,7 @@ make_printer
 
 template <typename CharOut, typename FPack>
 inline stringify::v0::detail::string_printer<CharOut>
-make_printer
-   ( const FPack& fp
-   , const char16_t* str )
+make_printer(const FPack& fp, const char16_t* str)
 {
     static_assert( std::is_same<char16_t, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -349,9 +374,7 @@ make_printer
 
 template <typename CharOut, typename FPack>
 inline stringify::v0::detail::string_printer<CharOut>
-make_printer
-   ( const FPack& fp
-   , const char32_t* str )
+make_printer(const FPack& fp, const char32_t* str)
 {
     static_assert( std::is_same<char32_t, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -360,9 +383,7 @@ make_printer
 
 template <typename CharOut, typename FPack>
 inline stringify::v0::detail::string_printer<CharOut>
-make_printer
-   ( const FPack& fp
-   , const wchar_t* str )
+make_printer(const FPack& fp, const wchar_t* str)
 {
     static_assert( std::is_same<wchar_t, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -376,9 +397,7 @@ template
     , typename Traits
     , typename Allocator >
 inline stringify::v0::detail::string_printer<CharOut>
-make_printer
-   ( const FPack& fp
-   , const std::basic_string<CharIn, Traits, Allocator>& str )
+make_printer(const FPack& fp, const std::basic_string<CharIn, Traits, Allocator>& str)
 {
     static_assert( std::is_same<CharIn, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -391,9 +410,7 @@ template
     , typename CharIn
     , typename Traits >
 inline stringify::v0::detail::string_printer<CharOut>
-make_printer
-   ( const FPack& fp
-   , const boost::basic_string_view<CharOut, Traits>& str )
+make_printer(const FPack& fp, const boost::basic_string_view<CharOut, Traits>& str)
 {
     static_assert( std::is_same<CharIn, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -408,9 +425,7 @@ template
     , typename CharIn
     , typename Traits >
 inline stringify::v0::detail::string_printer<CharOut>
-make_printer
-   ( const FPack& fp
-   , const std::basic_string_view<CharIn, Traits>& str )
+make_printer(const FPack& fp, const std::basic_string_view<CharIn, Traits>& str)
 {
     static_assert( std::is_same<CharIn, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -421,9 +436,7 @@ make_printer
 
 template <typename CharOut, typename FPack, typename CharIn>
 inline stringify::v0::detail::fmt_string_printer<CharOut>
-make_printer
-   ( const FPack& fp
-   , const stringify::v0::string_with_format<CharIn>& input)
+make_printer(const FPack& fp, const stringify::v0::string_with_format<CharIn>& input)
 {
     static_assert( std::is_same<CharIn, CharOut>::value
                  , "Character type mismatch. Use fmt_cv function." );

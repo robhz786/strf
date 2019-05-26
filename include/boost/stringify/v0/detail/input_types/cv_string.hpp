@@ -82,6 +82,15 @@ private:
 
 } // namespace detail
 
+#if defined(__cpp_char8_t)
+
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+stringify::v0::detail::cv_string<char8_t> cv(const char8_t* str)
+{
+    return {str, std::char_traits<char8_t>::length(str)};
+}
+
+#endif
 
 BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
 stringify::v0::detail::cv_string<char> cv(const char* str)
@@ -171,6 +180,18 @@ constexpr auto make_fmt
 
 } // namespace detail
 
+#if defined(__cpp_char8_t)
+
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+stringify::v0::detail::cv_string_with_format<char8_t> fmt_cv(const char8_t* str)
+{
+    stringify::v0::detail::cv_string<char8_t> cv_str
+        { str, std::char_traits<char8_t>::length(str) };
+    return stringify::v0::detail::cv_string_with_format<char8_t>{cv_str};
+}
+
+#endif
+
 BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
 stringify::v0::detail::cv_string_with_format<char> fmt_cv(const char* str)
 {
@@ -250,53 +271,6 @@ stringify::v0::detail::cv_string_with_format<CharIn> fmt_cv
 {
     stringify::v0::detail::cv_string<CharIn> cv_str{str.data(), str.length(), &enc};
     return stringify::v0::detail::cv_string_with_format<CharIn>{cv_str};
-}
-
-// template <typename T>
-// inline auto ascii(const T& x)
-// {
-//     return stringify::v0::cv(x, stringify::v0::ascii());
-// }
-// template <typename T>
-// inline auto iso_8859_1(const T& x)
-// {
-//     return stringify::v0::cv(x, stringify::v0::iso_8859_1());
-// }
-// template <typename T>
-// inline auto iso_8859_15(const T& x)
-// {
-//     return stringify::v0::cv(x, stringify::v0::iso_8859_15());
-// }
-// template <typename T>
-// inline auto windows_1252(const T& x)
-// {
-//     return stringify::v0::cv(x, stringify::v0::windows_1252());
-// }
-template <typename T>
-inline auto utf8(const T& x)
-{
-    return stringify::v0::cv(x, stringify::v0::utf8());
-}
-// template <typename T>
-// inline auto mutf8(const T& x)
-// {
-//     return stringify::v0::cv(x, stringify::v0::mutf8());
-// }
-// template <typename T>
-// inline auto utfw(const T& x)
-// {
-//     return stringify::v0::cv(x, stringify::v0::utfw());
-// }
-
-template <typename T>
-inline auto utf16(const T& x)
-{
-    return stringify::v0::cv(x, stringify::v0::utf16());
-}
-template <typename T>
-inline auto utf32(const T& x)
-{
-    return stringify::v0::cv(x, stringify::v0::utf32());
 }
 
 namespace detail {
@@ -582,6 +556,32 @@ int fmt_cv_string_printer<CharIn, CharOut>::width(int limit) const
 
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+
+#if defined(__cpp_char8_t)
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, char8_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, wchar_t>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char, char8_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char16_t, char8_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char32_t, char8_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<wchar_t, char8_t>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, char8_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, wchar_t>;
+
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char, char8_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char16_t, char8_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char32_t, char8_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<wchar_t, char8_t>;
+
+#endif
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char, char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char, char16_t>;

@@ -98,6 +98,9 @@ stringify::v0::nodiscard_error_code ec_string_appender<StringType>::finish()
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
+#if defined(__cpp_char8_t)
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_string_appender<std::basic_string<char8_t>>;
+#endif
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_string_appender<std::string>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_string_appender<std::u16string>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_string_appender<std::u32string>;
@@ -281,6 +284,11 @@ inline StringType string_maker<StringType>::finish()
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
+#if defined(__cpp_char8_t)
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_appender<std::basic_string<char8_t>>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_maker<std::basic_string<char8_t>>;
+#endif
+
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_appender<std::string>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_appender<std::u16string>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_appender<std::u32string>;
@@ -322,6 +330,15 @@ constexpr boost::stringify::v0::dispatcher
     , stringify::v0::detail::string_maker
           < std::basic_string<CharT, Traits, Allocator >>>
     to_basic_string{};
+
+#if defined(__cpp_char8_t)
+
+constexpr boost::stringify::v0::dispatcher
+    < stringify::v0::facets_pack<>
+    , stringify::v0::detail::string_maker<std::basic_string<char8_t>> >
+    to_u8string{};
+
+#endif
 
 constexpr boost::stringify::v0::dispatcher
     < stringify::v0::facets_pack<>

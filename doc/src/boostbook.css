@@ -18,11 +18,14 @@ ing file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
         min-width: 60px;
         display: inline-block;
         font-weight: normal;
-        font-size: 85%;
+        font-size: 85%;;
+        min-width: 60px;
+        padding-left: 10px;
     }
     span.index_mark
     {
         /*color: #404040;*/
+        padding-right: 5px;
         color: DarkSlateBlue;
         min-width: 25px;
         display: inline-block;

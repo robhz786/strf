@@ -57,7 +57,7 @@ void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
     {
         // from UTF-8
         auto u8str = strf::to_string (strf::cv(valid_u32input));
-        auto enc_str = strf::to_string.facets(enc) (strf::cv(u8str, strf::utf8()));
+        auto enc_str = strf::to_string.facets(enc) (strf::cv(u8str, strf::utf8<char>()));
         auto u32str = strf::to_u32string (strf::cv(enc_str, enc));
         BOOST_TEST(u32str == valid_u32input);
 
@@ -66,7 +66,7 @@ void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
         auto u8str = strf::to_string(strf::cv(decoded_0_to_0x100));
         TEST(char_0_to_0xff_sanitized(enc))
             .facets(enc)
-            (strf::cv(u8str, strf::utf8()));
+            (strf::cv(u8str, strf::utf8<char>()));
     }
 
     TEST(char_0_to_0xff_sanitized(enc)).facets(enc) (strf::cv(str_0_to_xff));
@@ -150,9 +150,9 @@ std::u32string decoded_0_to_xff_windows_1252()
 
 int main()
 {
-    test(strf::iso_8859_1(), decoded_0_to_xff_iso_8859_1());
-    test(strf::iso_8859_3(), decoded_0_to_xff_iso_8859_3());
-    test(strf::iso_8859_15(), decoded_0_to_xff_iso_8859_15());
-    test(strf::windows_1252(), decoded_0_to_xff_windows_1252() );
+    test(strf::iso_8859_1<char>(), decoded_0_to_xff_iso_8859_1());
+    test(strf::iso_8859_3<char>(), decoded_0_to_xff_iso_8859_3());
+    test(strf::iso_8859_15<char>(), decoded_0_to_xff_iso_8859_15());
+    test(strf::windows_1252<char>(), decoded_0_to_xff_windows_1252() );
     return boost::report_errors();
 }
