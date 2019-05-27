@@ -115,7 +115,7 @@ public:
     {
         if (_type == stringify::width_calculation_type::as_len)
         {
-            return str_len;
+            return static_cast<int>(str_len);
         }
         else if(_type == stringify::width_calculation_type::as_u32len)
         {

@@ -148,7 +148,7 @@ private:
 template <typename CharT, typename FPack, typename ForwardIt>
 int sep_range_printer<CharT, FPack, ForwardIt>::width(int limit) const
 {
-    std::size_t count = 0;
+    int count = 0;
     int sum = 0;
     for(auto it = _begin; it != _end && sum < limit; ++it)
     {
@@ -402,7 +402,7 @@ int fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>::width
     (int limit) const
 {
     auto r = _fmt.value();
-    std::size_t count = 0;
+    int count = 0;
     int sum = 0;
     for(auto it = r.begin; it != r.end && sum < limit; ++it)
     {
