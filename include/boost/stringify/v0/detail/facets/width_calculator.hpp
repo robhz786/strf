@@ -88,8 +88,6 @@ public:
 
     width_calculator(const width_calculator& cp) = default;
 
-    int width_of(char32_t ch) const;
-
     template <typename CharT>
     int width_of(CharT ch, stringify::v0::encoding<CharT> enc) const
     {
@@ -98,9 +96,9 @@ public:
         {
             return 1;
         }
-		char32_t ch32 = ( enc.id() == stringify::v0::encoding_id::eid_utf32
-			            ? static_cast<char32_t>(ch)
-			            : enc.decode_single_char(ch) );
+        char32_t ch32 = ( enc.id() == stringify::v0::encoding_id::eid_utf32
+                        ? static_cast<char32_t>(ch)
+                        : enc.decode_single_char(ch) );
         int rw = _ch_wcalc(std::numeric_limits<int>::max(), &ch32, &ch32 + 1);
         return std::numeric_limits<int>::max() - rw;
     }
@@ -208,27 +206,6 @@ int width_calculator::width<wchar_t>
     , stringify::v0::surrogate_policy allow_surr ) const;
 
 #endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
-
-
-#if ! defined(BOOST_STRINGIFY_OMIT_IMPL)
-
-
-
-BOOST_STRINGIFY_INLINE int width_calculator::width_of(char32_t ch) const
-{
-    if ( _type == stringify::width_calculation_type::as_len
-      || _type == stringify::width_calculation_type::as_u32len )
-    {
-        return 1;
-    }
-    else
-    {
-        int rw = _ch_wcalc(std::numeric_limits<int>::max(), &ch, &ch + 1);
-        return std::numeric_limits<int>::max() - rw;
-    }
-}
-
-#endif // ! defined(BOOST_STRINGIFY_OMIT_IMPL)
 
 inline stringify::v0::width_calculator width_as_len()
 {
