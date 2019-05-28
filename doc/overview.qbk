@@ -15,7 +15,7 @@ This library is not part of the Boost C++ Libraries yet,
 and is still subject to change without preserving backwards compatibility.
 ]
 
-[section A tour of the library]
+[section:tour A tour of the library]
 
 Most of the code snippets in this documentation use [link output_types `to_string`].
 Not the `std::to_string` from the standard library, but one that you can think
@@ -26,12 +26,12 @@ For example:
 
 You can see that this library uses format functions \u2014 like `hex`
 above \u2014 to specify formatting.
-Actually `hex` is just a syntatic sugar. `hex(x)` simply returns
-`fmt(x).hex()`. And the return of `__fmt__(x)` is an object that contains
-the value of `x` as well as member functions that change formatting.
+Actually, `hex` is just a syntatic sugar. `hex(x)` simply returns
+`fmt(x).hex()`, and the return of `__fmt__(x)` is an object that contains
+the value of `x` as well as member functions that change the formatting.
 These [link format_functions format functions] can be called in a row
 like this: `strf::hex(255).p(4).fill(U'.') > 10`.
-To aliviate the verbosity, operator overloads are common among them.
+[/To alleviate the verbosity operator overloads are common among them.]
 
 Now, some other examples:
 
@@ -128,12 +128,12 @@ according to the destination type. Hence, `to_string` is a
 
 ]
 
-where:
+Where:
 
 * [~CharT] can be `char`, `char16_t`, `char32_t` or `wchar_t`
 * [~end] is [~CharT]*
 * [~limit] is `std::size_t`. It determines the maximum number of characters that can be written, including the termination character.
-* [~count_ptr] is optional. The number of successfully written characters will be assigned to [~*count_ptr]. Its type is `std::streamsize*` when [~destination] is `std::basic_streambuf <`[~CharT]`, `[~Traits]`>` and `std::size_t*` otherwise.
+* [~count_ptr] is optional. The number of successfully written characters is assigned to [~*count_ptr]. Its type is `std::streamsize*` when [~destination] is `std::basic_streambuf <`[~CharT]`, `[~Traits]`>` and `std::size_t*` otherwise.
 * 8) [~Alloc] is optional. If omitted, it is `std::allocator<`[~CharT]`>`
 * 8-11) [~Traits] is optional. If omitted, it is `std::char_traits<`[~CharT]`>`
 * 12 and 21) [~CharT] is optional. If omitted, it is `char`
@@ -146,11 +146,11 @@ where:
 
 Some code bases use error codes, while others use exceptions.
 To suits both worlds, the library provides [link output_types
-/leading expressions/] for each kind.When it has the "ec_"
+/leading expressions/] for each kind. When it has the "ec_"
 prefix, the whole expression ( containing the input
 arguments ) returns a  __nodiscard_error_code__ ( which is just
 wrapper over `std::error_code` with the `[[nodiscard]]` attibute ).
-Otherwise it throws a __stringify_error__ ( a thin wrapper over
+Otherwise, it throws a __stringify_error__ ( a thin wrapper over
 `std::system_error` ).
 
 [leading_expression_error_handling]
@@ -166,7 +166,7 @@ Hence, the "ec_" prefix does [_not] guarantee that no excetion is thrown.
 
 [#overview_reserve]
 [section Reserve]
-The following member functions only have effect in some output types ( /leading expressions/ 1 to 8 and 15 and 16 ) in [link output_types previous table], or when you create the [link OutputBuffer reserve] method when [link extend_output defining your own output type] ). 
+The following member functions only affect some output types ( /leading expressions/ 1 to 8 and 15 and 16 ) in [link output_types the previous table], or when you create the [link OutputBuffer reserve] method when [link extend_output defining your own output type] ). 
 
 * [link dispatcher_reserve `reserve_calc()`] : The necessary amount of characters is calculated and reserved in the destination object.
 * [link dispatcher_reserve `reserve(std::size_t size)`] : Reserve `size` characters.
@@ -201,19 +201,19 @@ Keep in mind that this is a locale-independent library.
 So things are always printed as in the C-locale, unless
 you explicitly specify otherwise, which you do by passing /facet
 objects/ to the [link dispatcher_facets facets] function.
-For example, to customise numeric punctuation:
+For example, to customize numeric punctuation:
 
 [basic_facet_sample]
 
 Every /facet/ belongs to a /facet category/. 
-Each facet category corresponds to a concept, /i.e./ a set of requirements that a class must satisfy. A class that satisfies such requirements is a facet of such facet category. And for each facet category there is class whose name, by convention, has a "_c" suffix and is the name of the category.
+Each facet category corresponds to a concept, /i.e./ a set of requirements that a class must satisfy. A class that satisfies such requirements is a facet of such facet category. Moreover, for each facet category there is class whose name, by convention, has a "_c" suffix and is the name of the category.
 [/
 That class always have a static member function named `get_default` which has no parameter and returns an object whose type is a facet of this category. Also, a facet must have member type named `category` which is an alias to the representative class of its category.
 ]
 
 For example, [link monotonic_grouping `monotonic_grouping`]`<10>` and [link str_grouping
 `str_grouping`]`<10>` are both facets of the category `numpunct_c<10>`.
-Both has the same purpose: to customize numeric punctuation.
+Both have the same purpose: to customize numeric punctuation.
 
 [table
 [[facet category][what it controls][constrainable][where is used]]
@@ -280,7 +280,7 @@ Both has the same purpose: to customize numeric punctuation.
 [#constrained_facets]
 [h4 Constrained facets]
 
-With the [link constrain `constrain`] function template you can create /constrained facets/, which are facet that only apply to certain input types. Its template parameter is a template type that contain a `value` member constexpr convertible to bool that tells whether a given input type is under the influence of the given facet:
+With the [link constrain `constrain`] function template you can create /constrained facets/, which are facets that only apply to certain input types. Its template parameter is a template type that contains a `value` member constexpr convertible to bool that tells whether a given input type is under the influence of the given facet:
 
 [constrained_facet_sample]
 
@@ -295,7 +295,7 @@ The library provides some type traits of this kind:
 
 [h4 Overriding facets]
 
-If there are two or more facets object passed to the `facets` function of the same category and that apply to the same input type, then the last one wins:
+If there are two or more facets object passed to the `facets` function of the same category, and that apply to the same input type, then the last one wins:
 
 [facets_overriding]
 
@@ -318,18 +318,18 @@ string individually:
 
 [input_string_encoding]
 
-As well as converting string of different character types:
+As well as converting a string of different character types:
 
 [input_output_different_char_types]
 
-And If you don't want to convert any encoding but just
+Furthermore, if you don't want to convert any encoding but just
 to sanitize an input string, you can use still the `cv` function,
-since it aways imply sanitization, even when the input and output
+since it always implies sanitization, even when the input and output
 encodings are the same:
 
 [sani_utf8]
 
-The library provides three options of how handle encoding errors.
+The library provides three options of how to handle encoding errors.
 The default one is to replace any invalid input sequence by the
 [@https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character
 replacement character "\uFFFD"] (U+FFFD). When the input is UTF-8,
@@ -346,7 +346,7 @@ or throw an exception.
 You can also choose whether surrogates are
 treated as errors or not (as explained [link surrogate_policy here]).
 
-The current list of supported encodings is small, but is expected grow:
+The current list of supported encodings is small, but is expected to grow:
 
 [include ref_encodings_table.qbk]
 
@@ -355,12 +355,12 @@ The current list of supported encodings is small, but is expected grow:
 [section Numeric punctuation]
 
 The facets of the [link numpunct `numpunct_c<Base>`] category specify
-the decimal point, the group separator caracter, and the groups'
+the decimal point, the group separator character, and the groups'
 size when printing numbers in the numeric base `Base`.
 The library currently provides two
 facets belonging to this category for you to choose.
 If all groups have the same size, then you should choose the
-__monotonic_grouping__`<Base>` facet, since it is optimized for this situation:
+__monotonic_grouping__`<Base>` facet since it is optimized for this situation:
 
 [monotonic_grouping]
 
@@ -407,11 +407,11 @@ for width calculation, if you want,
 
   [Width as the number of codepoints:  [width_as_u32len]]
 
-  [You implement a function that calculates and sum the width of each
-   codepoint: [width_func]
+  [You implement a function that calculates and sum the width of the
+   codepoints: [width_func]
    Unfortunately, you can't be 100% accurate. Even assuming the output
    is displayed in a monospace font, such font is unlikely to support
-   wider caracters so they are displayed instead in another font,
+   wider characters so they are displayed instead in another font,
    with a width that you usually can't predict.]
 ]
 
@@ -421,9 +421,9 @@ for width calculation, if you want,
 
 If you have two or more facet values that you use often,
 you may consider storing them into [link facets_pack `facets_pack`]
-object and reuse it instead of retyping them evety time.
+object and reuse it instead of retyping them every time.
 The `facets_pack` has some similarities to `std::tuple`, and
-there is the `pack` fuction template that create `facets_pack`,
+there is the `pack` function template that create `facets_pack`,
 analogous as to how `std::make_tuple` creates `std::tuples`;
 
 ``
@@ -434,8 +434,8 @@ facets_pack<Facets> pack(const Facets& ... facets);
 Passing a `facets_pack` object to the `facets` member function
 is equivalent to pass all the facet objects it contains. For example,
 `to_string.facets(f1, pack(f2, f3), f4)(args ...)` is equivalent to
-`to_string.facets(f1, f2, f3, f4)`. And `f1`, `f2`, `f3` and `f4`
-don't have to be facet objects. Actually [link FacetsPackElementRequirements
+`to_string.facets(f1, f2, f3, f4)`. Moreover, `f1`, `f2`, `f3` and `f4`
+don't have to be facet objects. Actually, [link FacetsPackElementRequirements
 anything] that can be passed to `facets` member function can
 be stored in a `facets_pack`, and vice-versa.
 
@@ -461,7 +461,7 @@ be stored in a `facets_pack`, and vice-versa.
 Facets are usually stored by copy in `facets_pack`. You can avoid this with [@http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper `std::reference_wrapper`]. However all facets are designed to provide a fast copy, with the exception perhaps of [link numpunct str_grouping] that contains internally a `std::string`.
 ]
 
-Another thing you can do is to create your own leading
+Another thing you can do is to create new leading
 expressions based on the existing ones:
 
 [avoid_repetitions]
@@ -523,14 +523,14 @@ expressions based on the existing ones:
   [[br]]
 ]
 
-[
+[/
   [Fits in your error handling policy]
   [
     Some code bases use error codes, while others use exceptions.
     To suits both worlds, the library provides [link output_types
     /leading expressions/] for each kind.
 
-    Also, the user can customise how the library handles
+    Also, the user can customize how the library handles
     [link encoding_error encoding errors] as well as
     [link tr_string_error tr-string errors].
   ]
@@ -563,7 +563,7 @@ expressions based on the existing ones:
       ]
     ]
 
-    [ [Safety]
+    [ [Catch formatting errors at compile-time]
       [ You may not like the verbosity of [link format_functions format
         functions], which is a legitime dislike.
         However, you should also dislike the error-proneness of format strings.
@@ -578,12 +578,11 @@ expressions based on the existing ones:
         adequate solution. A run-time error is only acceptable
         when it's not the program's fault; otherwise it's a bug.
         Format functions, on the other hand, always give you a compilation error.
-
         It's true that mistakes can also happen in the tr-string
         but the probability is much lower. Besides, you can
         [link tr_string_error customize] how such errors are handled.
 [/
-        Besides, a future version of the library will enable you to customise the
+        Besides, a future version of the library will enable you to customize the
         error handling there just [link encoding_error as in encoding conversion].
         So that you can choose one that makes it easier to identify such bugs.
         For example: to replace the erroneous part by a character like

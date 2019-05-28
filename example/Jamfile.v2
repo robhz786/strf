@@ -9,6 +9,7 @@ project libs/stringify/example
 
 test-suite strigify-example :
     [ run overview.cpp ]
+    [ run readme_md.cpp ]
     [ run extend_input_ipv4.cpp ]
     [ run extend_input_ipv6.cpp ]
     [ run extend_input_base64.cpp ]

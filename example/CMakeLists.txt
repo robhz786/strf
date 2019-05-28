@@ -13,6 +13,7 @@ remove_definitions(-DNDEBUG)
 
 foreach(x
     overview
+    readme_md
     tr_string
     encoding_conversion
     format_functions
