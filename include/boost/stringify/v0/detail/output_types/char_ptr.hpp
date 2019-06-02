@@ -13,207 +13,6 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail{
 
 template<typename CharOut>
-class ec_char_ptr_writer: public output_buffer<CharOut>
-{
-    using Traits = std::char_traits<CharOut>;
-
-public:
-
-    using char_type = CharOut;
-
-    ec_char_ptr_writer
-        ( CharOut* dest
-        , CharOut* dest_end
-        , std::size_t* count )
-        : output_buffer<CharOut>{dest, dest_end - 1}
-        , _begin(dest)
-        , _count_ptr{count}
-    {
-        BOOST_ASSERT(dest < dest_end);
-    }
-
-    ~ec_char_ptr_writer()
-    {
-        * this->pos() = 0;
-        if (_count_ptr != nullptr)
-        {
-            *_count_ptr = this->pos() - _begin;
-        }
-    }
-
-    bool recycle() override;
-
-    stringify::v0::nodiscard_error_code finish() noexcept;
-
-private:
-
-    CharOut* _begin;
-    std::size_t* _count_ptr = nullptr;
-};
-
-template<typename CharOut>
-bool ec_char_ptr_writer<CharOut>::recycle()
-{
-    this->set_error(std::errc::result_out_of_range);
-    return false;
-}
-
-template<typename CharOut>
-inline stringify::v0::nodiscard_error_code
-ec_char_ptr_writer<CharOut>::finish() noexcept
-{
-
-    * this->pos() = 0;
-    return this->get_error();
-}
-
-#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
-#if defined(__cpp_char8_t)
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_char_ptr_writer<char8_t>;
-#endif
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_char_ptr_writer<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_char_ptr_writer<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_char_ptr_writer<char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_char_ptr_writer<wchar_t>;
-
-#endif
-
-} // namespace detail
-
-#if defined(__cpp_char8_t)
-
-template<std::size_t N>
-inline auto ec_write(char8_t (&dest)[N], std::size_t* count_ptr = nullptr)
-{
-    using writer = stringify::v0::detail::ec_char_ptr_writer<char8_t>;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                    , writer, char8_t*, char8_t*, std::size_t*>
-        (dest, dest + N, count_ptr);
-}
-
-inline auto ec_write(char8_t* dest, char8_t* end, std::size_t* count_ptr = nullptr)
-{
-    using writer = stringify::v0::detail::ec_char_ptr_writer<char8_t>;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                    , writer, char8_t*, char8_t*, std::size_t* >
-        (dest, end, count_ptr);
-}
-
-inline auto ec_write(char8_t* dest, std::size_t count, std::size_t* count_ptr = nullptr)
-{
-    using writer = stringify::v0::detail::ec_char_ptr_writer<char8_t>;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                    , writer, char8_t*, char8_t*, std::size_t*>
-        (dest, dest + count, count_ptr);
-}
-
-#endif
-
-template<std::size_t N>
-inline auto ec_write(char (&dest)[N], std::size_t* count_ptr = nullptr)
-{
-    using writer = stringify::v0::detail::ec_char_ptr_writer<char>;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                    , writer, char*, char*, std::size_t*>
-        (dest, dest + N, count_ptr);
-}
-
-inline auto ec_write(char* dest, char* end, std::size_t* count_ptr = nullptr)
-{
-    using writer = stringify::v0::detail::ec_char_ptr_writer<char>;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                    , writer, char*, char*, std::size_t* >
-        (dest, end, count_ptr);
-}
-
-inline auto ec_write(char* dest, std::size_t count, std::size_t* count_ptr = nullptr)
-{
-    using writer = stringify::v0::detail::ec_char_ptr_writer<char>;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                    , writer, char*, char*, std::size_t*>
-        (dest, dest + count, count_ptr);
-}
-
-template<std::size_t N>
-inline auto ec_write(char16_t (&dest)[N], std::size_t* count_ptr = nullptr)
-{
-    using writer = stringify::v0::detail::ec_char_ptr_writer<char16_t>;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                    , writer, char16_t*, char16_t*, std::size_t*>
-        (dest, dest + N, count_ptr);
-}
-
-inline auto ec_write(char16_t* dest, char16_t* end, std::size_t* count_ptr = nullptr)
-{
-    using writer = stringify::v0::detail::ec_char_ptr_writer<char16_t>;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                    , writer, char16_t*, char16_t*, std::size_t*>
-        (dest, end, count_ptr);
-}
-
-inline auto ec_write(char16_t* dest, std::size_t count, std::size_t* count_ptr = nullptr)
-{
-    using writer = stringify::v0::detail::ec_char_ptr_writer<char16_t>;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                     , writer, char16_t*, char16_t*, std::size_t* >
-        (dest, dest + count, count_ptr);
-}
-
-template<std::size_t N>
-inline auto ec_write(char32_t (&dest)[N], std::size_t* count_ptr = nullptr)
-{
-    using writer = stringify::v0::detail::ec_char_ptr_writer<char32_t>;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                    , writer, char32_t*, char32_t*, std::size_t*>
-        (dest, dest + N, count_ptr);
-}
-
-inline auto ec_write(char32_t* dest, char32_t* end, std::size_t* count_ptr = nullptr)
-{
-    using writer = stringify::v0::detail::ec_char_ptr_writer<char32_t>;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                    , writer, char32_t*, char32_t*, std::size_t*>
-        (dest, end, count_ptr);
-}
-
-inline auto ec_write(char32_t* dest, std::size_t count, std::size_t* count_ptr = nullptr)
-{
-    using writer = stringify::v0::detail::ec_char_ptr_writer<char32_t>;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                    , writer, char32_t*, char32_t*, std::size_t* >
-        (dest, dest + count, count_ptr);
-}
-
-template<std::size_t N>
-inline auto ec_write(wchar_t (&dest)[N], std::size_t* count_ptr = nullptr)
-{
-    using writer = stringify::v0::detail::ec_char_ptr_writer<wchar_t>;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                    , writer, wchar_t*, wchar_t*, std::size_t*>
-        (dest, dest + N, count_ptr);
-}
-
-inline auto ec_write(wchar_t* dest, wchar_t* end, std::size_t* count_ptr = nullptr)
-{
-    using writer = stringify::v0::detail::ec_char_ptr_writer<wchar_t>;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                     , writer, wchar_t*, wchar_t*, std::size_t*>
-        (dest, end, count_ptr);
-}
-
-inline auto ec_write(wchar_t* dest, std::size_t count, std::size_t* count_ptr = nullptr)
-{
-    using writer = stringify::v0::detail::ec_char_ptr_writer<wchar_t>;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                    , writer, wchar_t*, wchar_t*, std::size_t* >
-        (dest, dest + count, count_ptr);
-}
-
-#if ! defined(BOOST_NO_EXCEPTION)
-
-namespace detail{
-
-template<typename CharOut>
 class char_ptr_writer: public output_buffer<CharOut>
 {
     using Traits = std::char_traits<CharOut>;
@@ -231,40 +30,25 @@ public:
 
     ~char_ptr_writer()
     {
-        if ( ! _finish_called)
-        {
-            * _begin = 0;
-        }
+       * this->pos() = char_type{};
     }
 
-    bool recycle() override;
+    void recycle() override;
 
-    std::size_t finish();
+    std::size_t finish()
+    {
+        return this->pos() - _begin;
+    }
 
 private:
 
-    CharOut* _begin;
-    bool _finish_called = false;
+    char_type* _begin;
 };
 
 template<typename CharOut>
-bool char_ptr_writer<CharOut>::recycle()
+void char_ptr_writer<CharOut>::recycle()
 {
-    this->set_error(std::errc::result_out_of_range);
-    return false;
-}
-
-template<typename CharOut>
-inline std::size_t char_ptr_writer<CharOut>::finish()
-{
-    _finish_called = true;
-    if ( this->has_error() )
-    {
-        *_begin = 0;
-        throw stringify::v0::stringify_error{this->get_error()};
-    }
-    * this->pos() = 0;
-    return this->pos() - _begin;
+    throw std::out_of_range("boost::stringify::write: destination string too small."); 
 }
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
@@ -395,8 +179,6 @@ inline auto write(wchar_t* dest, std::size_t count)
                                     , writer, wchar_t*, wchar_t* >
         (dest, dest + count);
 }
-
-#endif // ! defined(BOOST_NO_EXCEPTION)
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

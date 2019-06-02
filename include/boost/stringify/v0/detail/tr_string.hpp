@@ -210,7 +210,7 @@ std::size_t tr_string_size
 }
 
 template <typename CharT>
-bool tr_string_write
+void tr_string_write
     ( const CharT* it
     , const CharT* end
     , std::initializer_list<const stringify::v0::printer<CharT>*> args
@@ -228,13 +228,11 @@ bool tr_string_write
         it = traits::find(it, (end - it), '{');
         if (it == nullptr)
         {
-            return stringify::v0::detail::write_str(ob, prev, end - prev);
+            stringify::v0::detail::write_str(ob, prev, end - prev);
+            return;
         }
 
-        if ( ! stringify::v0::detail::write_str(ob, prev, it - prev))
-        {
-            return false;
-        }
+        stringify::v0::detail::write_str(ob, prev, it - prev);
         ++it;
 
         after_the_brace:
@@ -242,21 +240,16 @@ bool tr_string_write
         {
             if (arg_idx < num_args)
             {
-                return args.begin()[arg_idx]->write(ob);
+                args.begin()[arg_idx]->write(ob);
             }
             else if (policy == stringify::v0::tr_invalid_arg::replace)
             {
-                if (! enc.write_replacement_char(ob))
-                {
-                    return false;
-                }
+                enc.write_replacement_char(ob);
             }
             else if (policy == stringify::v0::tr_invalid_arg::stop)
             {
-                ob.set_error(std::errc::invalid_argument);
-                return false;
+                throw boost::stringify::v0::tr_string_syntax_error();
             }
-
             break;
         }
 
@@ -265,23 +258,16 @@ bool tr_string_write
         {
             if (arg_idx < num_args)
             {
-                if (! args.begin()[arg_idx]->write(ob))
-                {
-                    return false;
-                }
+                args.begin()[arg_idx]->write(ob);
                 ++arg_idx;
             }
             else if (policy == stringify::v0::tr_invalid_arg::replace)
             {
-                if (! enc.write_replacement_char(ob))
-                {
-                    return false;
-                }
+                enc.write_replacement_char(ob);
             }
             else if (policy == stringify::v0::tr_invalid_arg::stop)
             {
-                ob.set_error(std::errc::invalid_argument);
-                return false;
+                throw boost::stringify::v0::tr_string_syntax_error();
             }
             ++it;
         }
@@ -291,22 +277,14 @@ bool tr_string_write
 
             if (result.value < num_args)
             {
-                if (! args.begin()[result.value]->write(ob))
-                {
-                    return false;
-                }
-            }
+                args.begin()[result.value]->write(ob);            }
             else if (policy == stringify::v0::tr_invalid_arg::replace)
             {
-                if (! enc.write_replacement_char(ob))
-                {
-                    return false;
-                }
+                enc.write_replacement_char(ob);
             }
             else if (policy == stringify::v0::tr_invalid_arg::stop)
             {
-                ob.set_error(std::errc::invalid_argument);
-                return false;
+                throw boost::stringify::v0::tr_string_syntax_error();
             }
 
             it = traits::find(result.it, end - result.it, '}');
@@ -322,12 +300,10 @@ bool tr_string_write
             it2 = traits::find(it2, end - it2, '{');
             if (it2 == nullptr)
             {
-                return stringify::v0::detail::write_str(ob, it, end - it);
+                stringify::v0::detail::write_str(ob, it, end - it);
+                return;
             }
-            if (!stringify::v0::detail::write_str(ob, it, (it2 - it)))
-            {
-                return false;
-            }
+            stringify::v0::detail::write_str(ob, it, (it2 - it));
             it = it2 + 1;
             goto after_the_brace;
         }
@@ -337,23 +313,16 @@ bool tr_string_write
             {
                 if (arg_idx < num_args)
                 {
-                    if (! args.begin()[arg_idx]->write(ob))
-                    {
-                        return false;
-                    }
+                    args.begin()[arg_idx]->write(ob);
                     ++arg_idx;
                 }
                 else if (policy == stringify::v0::tr_invalid_arg::replace)
                 {
-                    if (! enc.write_replacement_char(ob))
-                    {
-                        return false;
-                    }
+                    enc.write_replacement_char(ob);
                 }
                 else if (policy == stringify::v0::tr_invalid_arg::stop)
                 {
-                    ob.set_error(std::errc::invalid_argument);
-                    return false;
+                    throw boost::stringify::v0::tr_string_syntax_error();
                 }
             }
             auto it2 = it + 1;
@@ -365,7 +334,6 @@ bool tr_string_write
             ++it;
         }
     }
-    return true;
 }
 
 

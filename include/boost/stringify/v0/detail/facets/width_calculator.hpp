@@ -34,7 +34,7 @@ public:
     {
     }
 
-    bool recycle() override;
+    void recycle() override;
 
     int get_result()
     {
@@ -57,11 +57,17 @@ private:
 
 #if ! defined(BOOST_STRINGIFY_OMIT_IMPL)
 
-BOOST_STRINGIFY_INLINE bool width_accumulator::recycle()
+BOOST_STRINGIFY_INLINE void width_accumulator::recycle()
 {
-    _sum += _func(_limit - _sum, _buff, this->pos());
-    this->set_pos(_buff);
-    return _sum < _limit;
+    if (_sum < _limit)
+    {
+        _sum += _func(_limit - _sum, _buff, this->pos());
+        this->set_pos(_buff);
+    }
+
+    // todo: when P0709 ( zero overhead exception )
+    // is on, throw if _sum == _limit and catch
+    // in width_calculator::witdh
 }
 
 #endif // ! defined(BOOST_STRINGIFY_OMIT_IMPL)

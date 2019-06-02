@@ -89,19 +89,19 @@ void encoding_error_stop()
     //[encoding_error_stop
     namespace strf = boost::stringify::v0;
 
-    std::error_code ec;
+    bool transcoding_failed = false;
     try
     {
-    auto str = strf::to_string
-        .facets(strf::encoding_error::stop)
-        (strf::cv("--\x99--"));
+        auto str = strf::to_string
+            .facets(strf::encoding_error::stop)
+            (strf::cv("--\x99--"));
     }
-    catch(strf::stringify_error& x)
+    catch(strf::encoding_failure& x)
     {
-        ec = x.code();
+        transcoding_failed = true;
     }
 
-    BOOST_ASSERT(ec == std::errc::illegal_byte_sequence);
+    BOOST_ASSERT(transcoding_failed);
     //]
 }
 

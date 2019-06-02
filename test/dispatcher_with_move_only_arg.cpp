@@ -40,9 +40,8 @@ public:
         this->set_end(_foo.dest_end - 1);
     }
 
-    bool recycle() override
+    void recycle() override
     {
-        return false;
     }
 
     void finish()

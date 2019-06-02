@@ -30,10 +30,6 @@ int main()
     (void) dest_end;
 
     std::cout << "\n small strings \n";
-    PRINT_BENCHMARK("strf::ec_write(dest) (\"Hello World!\")")
-    {
-        (void)strf::ec_write(dest)("Hello World!");
-    }
     PRINT_BENCHMARK("strf::write(dest) (\"Hello World!\")")
     {
         (void)strf::write(dest)("Hello World!");
@@ -61,10 +57,6 @@ int main()
     }
 
     std::cout << "\n";
-    PRINT_BENCHMARK("strf::ec_write(dest) (\"Hello \", \"World\", '!')")
-    {
-        (void)strf::ec_write(dest)("Hello ", "World", '!');
-    }
     PRINT_BENCHMARK("strf::write(dest) (\"Hello \", \"World\", '!')")
     {
         (void)strf::write(dest)("Hello ", "World", '!');
@@ -84,6 +76,10 @@ int main()
     PRINT_BENCHMARK("std::sprintf(dest, \"Hello %s!\", \"World\")")
     {
         std::sprintf(dest, "Hello %s!", "World");
+    }
+    PRINT_BENCHMARK("std::strcat(std::strcat(std::strcpy(dest, \"Hello \"), \" World\"), \"!\"")
+    {
+        std::strcat(std::strcat(std::strcpy(dest, "Hello "), " World"), "!");
     }
 
     std::cout << "\n long string ( 1000 characters ): \n";
@@ -131,19 +127,6 @@ int main()
 
     std::cout << "\n integers \n";
 
-    PRINT_BENCHMARK_N(10, "strf::ec_write(dest) (25)")
-    {
-        (void)strf::ec_write(dest)(20);
-        (void)strf::ec_write(dest)(21);
-        (void)strf::ec_write(dest)(22);
-        (void)strf::ec_write(dest)(23);
-        (void)strf::ec_write(dest)(24);
-        (void)strf::ec_write(dest)(25);
-        (void)strf::ec_write(dest)(26);
-        (void)strf::ec_write(dest)(27);
-        (void)strf::ec_write(dest)(28);
-        (void)strf::ec_write(dest)(29);
-    }
     PRINT_BENCHMARK_N(10, "strf::write(dest) (25)")
     {
         (void)strf::write(dest)(20);

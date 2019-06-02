@@ -310,7 +310,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    bool write(stringify::v0::output_buffer<CharOut>& ob) const override;
+    void write(stringify::v0::output_buffer<CharOut>& ob) const override;
 
     int width(int limit) const override;
 
@@ -368,18 +368,19 @@ std::size_t cv_string_printer<CharIn, CharOut>::necessary_size() const
 }
 
 template<typename CharIn, typename CharOut>
-bool cv_string_printer<CharIn, CharOut>::write
+void cv_string_printer<CharIn, CharOut>::write
     ( stringify::v0::output_buffer<CharOut>& ob ) const
 {
-    if (_transcoder_eng)
+    if (_transcoder_eng != nullptr)
     {
         stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_eng);
-        return transcoder.transcode( ob, _str, _str + _len
-                                   , _enc_err, _allow_surr );
+        transcoder.transcode(ob, _str, _str + _len, _enc_err, _allow_surr );
     }
-    return stringify::v0::decode_encode( ob, _str, _str + _len
-                                       , _src_encoding, _dest_encoding
-                                       , _enc_err, _allow_surr );
+    else
+    {
+        stringify::v0::decode_encode( ob, _str, _str + _len, _src_encoding
+                                    , _dest_encoding, _enc_err, _allow_surr );
+    }
 }
 
 template<typename CharIn, typename CharOut>
@@ -410,7 +411,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    bool write(stringify::v0::output_buffer<CharOut>& ob) const override;
+    void write(stringify::v0::output_buffer<CharOut>& ob) const override;
 
     int width(int limit) const override;
 
@@ -434,9 +435,9 @@ private:
 
     void _init();
 
-    bool _write_str(stringify::v0::output_buffer<CharOut>& ob) const;
+    void _write_str(stringify::v0::output_buffer<CharOut>& ob) const;
 
-    bool _write_fill
+    void _write_fill
         ( stringify::v0::output_buffer<CharOut>& ob
         , unsigned count ) const;
 };
@@ -473,19 +474,16 @@ std::size_t fmt_cv_string_printer<CharIn, CharOut>::necessary_size() const
             , _src_encoding, _dest_encoding
             , _enc_err, _allow_surr );
     }
-
     if (_fillcount > 0)
     {
-        size += _fillcount * _dest_encoding.char_size( _fmt.fill()
-                                                     , _enc_err );
+        size += _fillcount * _dest_encoding.char_size(_fmt.fill(), _enc_err);
     }
-
     return size;
 }
 
 
 template<typename CharIn, typename CharOut>
-bool fmt_cv_string_printer<CharIn, CharOut>::write
+void fmt_cv_string_printer<CharIn, CharOut>::write
     ( stringify::v0::output_buffer<CharOut>& ob ) const
 {
     if (_fillcount > 0)
@@ -494,51 +492,57 @@ bool fmt_cv_string_printer<CharIn, CharOut>::write
         {
             case stringify::v0::alignment::left:
             {
-                return _write_str(ob)
-                    && _write_fill(ob, _fillcount);
+                _write_str(ob);
+                _write_fill(ob, _fillcount);
+                break;
             }
             case stringify::v0::alignment::center:
             {
                 int halfcount = _fillcount / 2;
-                return _write_fill(ob, halfcount)
-                    && _write_str(ob)
-                    && _write_fill(ob, _fillcount - halfcount);
+                _write_fill(ob, halfcount);
+                _write_str(ob);
+                _write_fill(ob, _fillcount - halfcount);;
+                break;
             }
             default:
             {
-                return _write_fill(ob, _fillcount)
-                    && _write_str(ob);
+                _write_fill(ob, _fillcount);
+                _write_str(ob);
             }
         }
     }
-    return _write_str(ob);
+    else
+    {
+        _write_str(ob);
+    }
 }
 
 
 template<typename CharIn, typename CharOut>
-bool fmt_cv_string_printer<CharIn, CharOut>::_write_str
+void fmt_cv_string_printer<CharIn, CharOut>::_write_str
     ( stringify::v0::output_buffer<CharOut>& ob ) const
 {
     if (_transcoder_eng)
     {
         stringify::v0::transcoder<CharIn, CharOut> transcoder(*_transcoder_eng);
-        return transcoder.transcode( ob
-                                   , _fmt.value().begin(), _fmt.value().end()
-                                   , _enc_err, _allow_surr );
+        transcoder.transcode( ob, _fmt.value().begin(), _fmt.value().end()
+                            , _enc_err, _allow_surr );
     }
-    return stringify::v0::decode_encode( ob
-                                       , _fmt.value().begin(), _fmt.value().end()
-                                       , _src_encoding, _dest_encoding
-                                       , _enc_err, _allow_surr );
+    else
+    {
+        stringify::v0::decode_encode( ob
+                                    , _fmt.value().begin(), _fmt.value().end()
+                                    , _src_encoding, _dest_encoding
+                                    , _enc_err, _allow_surr );
+    }
 }
 
 template<typename CharIn, typename CharOut>
-bool fmt_cv_string_printer<CharIn, CharOut>::_write_fill
+void fmt_cv_string_printer<CharIn, CharOut>::_write_fill
     ( stringify::v0::output_buffer<CharOut>& ob
     , unsigned count ) const
 {
-    return _dest_encoding.encode_fill
-        ( ob, count, _fmt.fill(), _enc_err, _allow_surr );
+    _dest_encoding.encode_fill(ob, count, _fmt.fill(), _enc_err, _allow_surr);
 }
 
 template<typename CharIn, typename CharOut>

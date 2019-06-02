@@ -149,7 +149,7 @@ namespace detail {
 template <typename CharIn, typename CharOut>
 struct transcoder_impl
 {
-    typedef bool (&transcode_func_ref)
+    typedef void (&transcode_func_ref)
         ( stringify::v0::output_buffer_base<CharOut>&
         , const CharIn* src
         , const CharIn* src_end
@@ -173,7 +173,7 @@ struct encoding_impl
 
     typedef std::size_t (&validate_func_ref)(char32_t ch);
     typedef CharT* (&encode_char_func_ref)(CharT* dest, char32_t ch);
-    typedef bool (&encode_fill_func_ref)
+    typedef void (&encode_fill_func_ref)
         ( stringify::v0::output_buffer_base<CharT>&
         , std::size_t count
         , char32_t ch
@@ -183,7 +183,7 @@ struct encoding_impl
         ( const CharT* begin
         , const CharT* end
         , std::size_t max_count );
-    typedef bool (&write_replacement_char_func_ref)
+    typedef void (&write_replacement_char_func_ref)
         ( stringify::v0::output_buffer_base<CharT>& );
     typedef char32_t (&decode_char_func_ref)(CharT ch);
     typedef const stringify::v0::detail::transcoder_impl<CharT, std::uint8_t>* (*to8_func_ptr)
@@ -279,19 +279,18 @@ public:
         return _impl = cmp._impl;
     }
 
-    bool transcode
+    void transcode
         ( stringify::v0::output_buffer<CharOut>& ob
         , const CharIn* src
         , const CharIn* src_end
         , stringify::v0::encoding_error err_hdl
         , stringify::v0::surrogate_policy allow_surr ) const
     {
-        return _impl->transcode
-            ( static_cast<_impl_ob_type&>(ob)
-            , reinterpret_cast<const _inner_char_type_in*>(src)
-            , reinterpret_cast<const _inner_char_type_in*>(src_end)
-            , err_hdl
-            , allow_surr );
+        _impl->transcode( static_cast<_impl_ob_type&>(ob)
+                        , reinterpret_cast<const _inner_char_type_in*>(src)
+                        , reinterpret_cast<const _inner_char_type_in*>(src_end)
+                        , err_hdl
+                        , allow_surr );
     }
 
     std::size_t necessary_size
@@ -368,15 +367,15 @@ public:
         auto rdest = reinterpret_cast<_impl_char_type*>(dest);
         return reinterpret_cast<char_type*>(_impl->encode_char(rdest, ch));
     }
-    bool encode_fill
+    void encode_fill
         ( stringify::v0::output_buffer<char_type>& ob
         , std::size_t count
         , char32_t ch
         , stringify::v0::encoding_error err_hdl
         , stringify::v0::surrogate_policy allow_surr ) const
     {
-        return _impl->encode_fill( static_cast<_impl_ob_type&>(ob)
-                                 , count, ch, err_hdl, allow_surr );
+        _impl->encode_fill( static_cast<_impl_ob_type&>(ob)
+                          , count, ch, err_hdl, allow_surr );
     }
     std::size_t codepoints_count( const char_type* src_begin
                                 , const char_type* src_end
@@ -387,10 +386,10 @@ public:
             , reinterpret_cast<const _impl_char_type*>(src_end)
             , max_count );
     }
-    bool write_replacement_char
+    void write_replacement_char
         ( stringify::v0::output_buffer<char_type>& ob ) const
     {
-        return _impl->write_replacement_char(static_cast<_impl_ob_type&>(ob));
+        _impl->write_replacement_char(static_cast<_impl_ob_type&>(ob));
     }
     char32_t decode_single_char(char_type ch) const
     {
@@ -626,7 +625,7 @@ public:
         _begin = this->pos();
     }
 
-    bool recycle() override;
+    void recycle() override;
 
 private:
 
@@ -638,15 +637,14 @@ private:
 };
 
 template <typename CharOut>
-bool buffered_encoder<CharOut>::recycle()
+void buffered_encoder<CharOut>::recycle()
 {
     auto end = this->pos();
     if (end != _begin)
     {
         this->set_pos(_begin);
-        return _enc.from_u32().transcode(_ob, _begin, end, _err_hdl, _allow_surr);
+        _enc.from_u32().transcode(_ob, _begin, end, _err_hdl, _allow_surr);
     }
-    return true;
 }
 
 template <typename CharOut>
@@ -668,7 +666,7 @@ public:
         _begin = this->pos();
     }
 
-    bool recycle() override;
+    void recycle() override;
 
     std::size_t get_sum()
     {
@@ -686,7 +684,7 @@ private:
 };
 
 template <typename CharOut>
-bool buffered_size_calculator<CharOut>::recycle()
+void buffered_size_calculator<CharOut>::recycle()
 {
     auto end = this->pos();
     if (end != _begin)
@@ -694,14 +692,13 @@ bool buffered_size_calculator<CharOut>::recycle()
         this->set_pos(_begin);
         _sum += _enc.from_u32().necessary_size(_begin, end, _err_hdl, _allow_surr);
     }
-    return true;
 }
 
 } // namespace detail
 
 
 template<typename CharIn, typename CharOut>
-inline bool decode_encode
+inline void decode_encode
     ( stringify::v0::output_buffer<CharOut>& ob
     , const CharIn* src
     , const CharIn* src_end
@@ -713,8 +710,8 @@ inline bool decode_encode
     stringify::v0::detail::buffered_encoder<CharOut> dest
         { dest_encoding, ob, err_hdl, allow_surr };
 
-    return src_encoding.to_u32().transcode(dest, src, src_end, err_hdl, allow_surr)
-        && dest.recycle();
+    src_encoding.to_u32().transcode(dest, src, src_end, err_hdl, allow_surr);
+    dest.recycle();
 }
 
 template<typename CharIn, typename CharOut>

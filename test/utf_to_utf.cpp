@@ -201,11 +201,10 @@ void test_invalid_input
             (strf::cv(input, ein));
 
         // stop
-        TEST_ERR(prefix_out, std::make_error_code(std::errc::illegal_byte_sequence))
-            .reserve(3)
-            .facets(eout)
-            .facets(strf::encoding_error::stop)
-            (strf::cv(input, ein));
+        BOOST_TEST_THROWS( (strf::to_string.facets(eout)
+                                           .facets(strf::encoding_error::stop)
+                                            (strf::cv(input, ein)) )
+                          , strf::encoding_failure );
     }
 }
 

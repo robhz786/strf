@@ -85,16 +85,12 @@ public:
         return sum;
     }
 
-    bool write(stringify::v0::output_buffer<CharT>& ob) const override
+    void write(stringify::v0::output_buffer<CharT>& ob) const override
     {
         for(const auto& arg : m_args)
         {
-            if ( ! arg->write(ob))
-            {
-                return false;
-            }
+            arg->write(ob);
         }
-        return true;
     }
 
     int width(int limit) const override

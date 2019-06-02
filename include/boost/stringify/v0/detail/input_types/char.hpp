@@ -237,7 +237,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(stringify::v0::output_buffer<CharT>& ob) const override;
 
     int width(int) const override;
 
@@ -261,16 +261,12 @@ int char_printer<CharT>::width(int) const
 }
 
 template <typename CharT>
-bool stringify::v0::char_printer<CharT>::write
+void stringify::v0::char_printer<CharT>::write
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
-    if (ob.size() != 0 || ob.recycle())
-    {
-        *ob.pos() = _ch;
-        ob.advance(1);
-        return true;
-    }
-    return false;
+    ob.ensure(1);
+    *ob.pos() = _ch;
+    ob.advance();
 }
 
 
@@ -296,7 +292,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(stringify::v0::output_buffer<CharT>& ob) const override;
 
     int width(int) const override;
 
@@ -316,9 +312,9 @@ private:
 
     void _init(stringify::v0::width_calculator wcalc);
 
-    bool _write_body(stringify::v0::output_buffer<CharT>& ob) const;
+    void _write_body(stringify::v0::output_buffer<CharT>& ob) const;
 
-    bool _write_fill
+    void _write_fill
         ( stringify::v0::output_buffer<CharT>& ob
         , unsigned count ) const;
 };
@@ -341,7 +337,7 @@ std::size_t fmt_char_printer<CharT>::necessary_size() const
 }
 
 template <typename CharT>
-bool fmt_char_printer<CharT>::write
+void fmt_char_printer<CharT>::write
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     if (_content_width >= _fmt.width())
@@ -355,63 +351,64 @@ bool fmt_char_printer<CharT>::write
         {
             case stringify::v0::alignment::left:
             {
-                return _write_body(ob)
-                    && _write_fill(ob, fillcount);
+                _write_body(ob);
+                _write_fill(ob, fillcount);
+                break;
             }
             case stringify::v0::alignment::center:
             {
                 auto halfcount = fillcount / 2;
-                return _write_fill(ob, halfcount)
-                    && _write_body(ob)
-                    && _write_fill(ob, fillcount - halfcount);
+                _write_fill(ob, halfcount);
+                _write_body(ob);
+                _write_fill(ob, fillcount - halfcount);
+                break;
             }
             default:
             {
-                return _write_fill(ob, fillcount)
-                    && _write_body(ob);
+                _write_fill(ob, fillcount);
+                _write_body(ob);
             }
         }
     }
 }
 
 template <typename CharT>
-bool fmt_char_printer<CharT>::_write_body
+void fmt_char_printer<CharT>::_write_body
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     if (_fmt.count() == 1)
     {
-        if(ob.size() != 0 || ob.recycle())
-        {
-            * ob.pos() = _fmt.value();
-            ob.advance(1);
-            return true;
-        }
-        return false;
+        ob.ensure(1);
+        * ob.pos() = _fmt.value();
+        ob.advance();
     }
-    std::size_t count = _fmt.count();
-    do
+    else
     {
-        std::size_t space = ob.size();
-        if (count <= space)
+        std::size_t count = _fmt.count();
+        while(true)
         {
-            std::fill_n(ob.pos(), count, _fmt.value());
-            ob.advance(count);
-            return true;
+            std::size_t space = ob.size();
+            if (count <= space)
+            {
+                std::fill_n(ob.pos(), count, _fmt.value());
+                ob.advance(count);
+                break;
+            }
+            std::fill_n(ob.pos(), space, _fmt.value());
+            count -= space;
+            ob.advance_to(ob.end());
+            ob.recycle();
         }
-        std::fill_n(ob.pos(), space, _fmt.value());
-        count -= space;
-        ob.advance_to(ob.end());
-    } while (ob.recycle());
-    return false;
+    }
+
 }
 
 template <typename CharT>
-bool fmt_char_printer<CharT>::_write_fill
+void fmt_char_printer<CharT>::_write_fill
     ( stringify::v0::output_buffer<CharT>& ob
     , unsigned count ) const
 {
-    return _encoding.encode_fill
-        ( ob, count, _fmt.fill(), _enc_err, _allow_surr );
+    _encoding.encode_fill(ob, count, _fmt.fill(), _enc_err, _allow_surr);
 }
 
 template <typename CharT>

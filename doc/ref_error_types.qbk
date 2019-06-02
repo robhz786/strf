@@ -4,37 +4,7 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[#nodiscard_error_code]
-[section Class `nodiscard_error_code`]
-
-This class is just a wrapper on `std::error_code` type with
-the `[[nodiscard]]` attibute.
-It is the return type of the `finish()`
-member function in some of the internal classes of this library that
-implement the [link OutputBuffer OutputBuffer] concept.
-
-``
-namespace boost{
-namespace stringify{
-inline namespace v0 {
-
-class [[nodiscard]] nodiscard_error_code: public std::error_code
-{
-public:
-    using std::error_code::error_code;
-
-    nodiscard_error_code(const std::error_code& ec) noexcept
-        : std::error_code(ec)
-    {}
-};
-
-}}}
-``
-This class is just a dummy subclass of `std::system_error`.
-Its only purpose is to enable a `catch()` clause to differenciate
-exceptions thrown by this library.
-
-[endsect]
+[section Exception types]
 [#stringify_error]
 [section Class `stringify_error`]
 ``
@@ -50,7 +20,42 @@ public:
 
 }}}
 ``
-
 [endsect]
 
 
+[#encoding_failue]
+[section Class `encoding_failure`]
+``
+namespace boost{
+namespace stringify{
+inline namespace v0 {
+
+class encoding_failure: public stringify_error
+{
+    using stringify_error::stringify_error;
+
+    const char* what() const noexcept override;
+};
+
+}}}
+``
+[endsect]
+
+[#tr_string_syntax_error]
+[section Class `tr_string_syntax_error`]
+``
+namespace boost{
+namespace stringify{
+inline namespace v0 {
+
+class tr_string_syntax_error: public stringify_error
+{
+    using stringify_error::stringify_error;
+
+    const char* what() const noexcept override;
+};
+
+}}}
+``
+[endsect]
+[endsect]

@@ -47,11 +47,11 @@ public:
 
     int width(int) const override;
 
-    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(stringify::v0::output_buffer<CharT>& ob) const override;
 
 private:
 
-    bool _write_with_punct(stringify::v0::output_buffer<CharT>& ob) const;
+    void _write_with_punct(stringify::v0::output_buffer<CharT>& ob) const;
 
     const stringify::v0::numchars<CharT>& _chars;
     const stringify::v0::numpunct_base& _punct;
@@ -84,21 +84,24 @@ int i18n_int_printer<CharT>::width(int) const
 }
 
 template <typename CharT>
-bool i18n_int_printer<CharT>::write(stringify::v0::output_buffer<CharT>& ob) const
+void i18n_int_printer<CharT>::write(stringify::v0::output_buffer<CharT>& ob) const
 {
-    if (_negative && ! _chars.print_neg_sign(ob, _encoding))
+    if (_negative)
     {
-        return false;
+        _chars.print_neg_sign(ob, _encoding);
     }
     if (_sepcount != 0)
     {
-        return _write_with_punct(ob);
+        _write_with_punct(ob);
     }
-    return _chars.print_digits(ob, _encoding, _uvalue, _digcount);
+    else
+    {
+        _chars.print_digits(ob, _encoding, _uvalue, _digcount);
+    }
 }
 
 template <typename CharT>
-bool i18n_int_printer<CharT>::_write_with_punct
+void i18n_int_printer<CharT>::_write_with_punct
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     constexpr unsigned max_digits
@@ -106,9 +109,9 @@ bool i18n_int_printer<CharT>::_write_with_punct
     unsigned char groups[max_digits];
     auto g = _punct.groups(_digcount, groups);
     unsigned num_groups = static_cast<unsigned>((g - groups) + 1);
-    return _chars.print_digits( ob, _encoding, _uvalue, groups
-                              , _punct.thousands_sep()
-                              , _digcount, num_groups );
+    _chars.print_digits( ob, _encoding, _uvalue, groups
+                       , _punct.thousands_sep()
+                       , _digcount, num_groups );
 }
 
 
@@ -146,7 +149,7 @@ public:
 
     int width(int) const override;
 
-    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(stringify::v0::output_buffer<CharT>& ob) const override;
 
 private:
 
@@ -168,21 +171,17 @@ int fast_int_printer<CharT>::width(int) const
 }
 
 template <typename CharT>
-bool fast_int_printer<CharT>::write
+void fast_int_printer<CharT>::write
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     unsigned size = _digcount + _negative;
-    if (ob.size() < size && ! ob.recycle())
-    {
-        return false;
-    }
+    ob.ensure(size);
     ob.advance(size);
     CharT* it = write_int_dec_txtdigits_backwards(_uvalue, ob.pos());
     if (_negative)
     {
         it[-1] = '-';
     }
-    return true;
 }
 
 

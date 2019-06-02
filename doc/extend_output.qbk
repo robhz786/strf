@@ -44,11 +44,6 @@ space must be at least `strf::`[link min_buff_size `min_buff_size`].
 
 [QStringAppender_recycle]
 
-If any error happens in `recycle()`, it shall call
-`output_buffer::`[link output_buffer_set_error `set_error`] and return `false`.
-Or it can just throw an exception if you know that your extension
-will only be used in code bases where exceptions are allowed.
-
 After there is no more content to write, the library calls `finish()`
 which must check whether there is anything in the buffer to consume.
 It is not necessary for `finish` to return anything. But we will

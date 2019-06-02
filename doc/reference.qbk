@@ -49,8 +49,9 @@
    
 - Output Types
    - error types
-     - nodiscard_error_code
      - stringify_error
+     -
+     -
    - to_string
    - to_basic_string
    - ...

@@ -12,6 +12,31 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
+class stringify_error: public std::exception
+{
+    using std::exception::exception;
+};
+
+class encoding_failure: public boost::stringify::stringify_error
+{
+    using boost::stringify::v0::stringify_error::stringify_error;
+
+    const char* what() const noexcept override
+    {
+        return "Boost.Stringify: encoding conversion error";
+    }
+};
+
+class tr_string_syntax_error: public boost::stringify::stringify_error
+{
+    using boost::stringify::v0::stringify_error::stringify_error;
+
+    const char* what() const noexcept override
+    {
+        return "Boost.Stringify: Tr-string syntax error";
+    }
+};
+
 constexpr std::size_t min_buff_size = 60;
 
 struct tag
@@ -33,35 +58,33 @@ public:
 
     virtual ~output_buffer_base() = default;
 
-    virtual bool recycle() = 0;
+    virtual void recycle() = 0;
 
-    void set_error(std::error_code ec);
-
-    void set_error(std::errc e)
+    constexpr std::size_t buffer_size() const // todo
+    // [[ ensures s: s > 0 ]]
     {
-        set_error(std::make_error_code(e));
+        return min_buff_size;
     }
-
+    
+    void ensure(std::size_t size_)
+    {
+        BOOST_ASSERT(size_ <= buffer_size());
+        if (size_ > size())
+        {
+            this->recycle();
+        }
+        BOOST_ASSERT(size_ <= size());
+    }
+    
     void set_encoding_error()
     {
-        set_error(std::errc::illegal_byte_sequence);
-    }
-
-    std::error_code get_error() const noexcept
-    {
-        return _ec;
-    }
-
-    bool has_error() const noexcept
-    {
-        return _has_error;
+        throw stringify::v0::encoding_failure();
     }
 
     CharOut* pos() const noexcept
     {
         return _pos;
     }
-
 
     CharOut* end() const noexcept
     {
@@ -127,20 +150,8 @@ private:
 
     CharOut* _pos;
     CharOut* _end;
-    std::error_code _ec;
-    bool _has_error = false;
 };
 
-template <typename CharOut>
-void output_buffer_base<CharOut>::set_error(std::error_code ec)
-{
-    if ( ! _has_error )
-    {
-        _ec = ec;
-        _has_error = true;
-        on_error();
-    }
-}
 
 namespace detail {
 
@@ -225,7 +236,7 @@ public:
     {
     }
 
-    virtual bool write(stringify::v0::output_buffer<CharOut>& ob) const = 0;
+    virtual void write(stringify::v0::output_buffer<CharOut>& ob) const = 0;
 
     virtual std::size_t necessary_size() const = 0;
 
@@ -235,7 +246,7 @@ public:
 namespace detail {
 
 template<typename CharT>
-bool write_str_continuation
+void write_str_continuation
     ( stringify::v0::output_buffer<CharT>& ob
     , const CharT* str
     , std::size_t len)
@@ -247,28 +258,27 @@ bool write_str_continuation
     str += space;
     len -= space;
     ob.advance_to(ob.end());
-    while (ob.recycle())
+    while (true)
     {
+        ob.recycle();
         space = ob.size();
         if (len <= space)
         {
             traits::copy(ob.pos(), str, len);
             ob.advance(len);
-            return true;
+            break;
         }
         traits::copy(ob.pos(), str, space);
         len -= space;
         str += space;
         ob.advance_to(ob.end());
     }
-    return false;
 }
 
 template<typename CharT>
-inline bool write_str
-    ( stringify::v0::output_buffer<CharT>& ob
-    , const CharT* str
-    , std::size_t len )
+inline void write_str( stringify::v0::output_buffer<CharT>& ob
+                     , const CharT* str
+                     , std::size_t len )
 {
     using traits = std::char_traits<CharT>;
 
@@ -276,61 +286,63 @@ inline bool write_str
     {
         traits::copy(ob.pos(), str, len);
         ob.advance(len);
-        return true;
     }
-    return write_str_continuation(ob, str, len);
+    else
+    {
+        write_str_continuation(ob, str, len);
+    }
 }
 
 template<typename CharT>
-bool write_fill_continuation
-    ( stringify::v0::output_buffer_base<CharT>& ob
-    , std::size_t count
-    , CharT ch )
+void write_fill_continuation( stringify::v0::output_buffer_base<CharT>& ob
+                            , std::size_t count
+                            , CharT ch )
 {
     std::size_t space = ob.size();
     BOOST_ASSERT(space < count);
     std::char_traits<CharT>::assign(ob.pos(), space, ch);
     count -= space;
     ob.advance_to(ob.end());
-    while (ob.recycle())
+    while (true)
     {
+        ob.recycle();
         space = ob.size();
         if (count <= space)
         {
             std::char_traits<CharT>::assign(ob.pos(), count, ch);
             ob.advance(count);
-            return true;
+            break;
         }
         std::char_traits<CharT>::assign(ob.pos(), space, ch);
         count -= space;
         ob.advance_to(ob.end());
     }
-    return false;
 }
 
 template<typename CharT>
-inline bool write_fill
-    ( stringify::v0::output_buffer_base<CharT>& ob
-    , std::size_t count
-    , CharT ch )
+inline void write_fill( stringify::v0::output_buffer_base<CharT>& ob
+                      , std::size_t count
+                      , CharT ch )
 {
     if (count <= ob.size()) // the common case
     {
         std::char_traits<CharT>::assign(ob.pos(), count, ch);
         ob.advance(count);
-        return true;
     }
-    return write_fill_continuation(ob, count, ch);
+    else
+    {
+        write_fill_continuation(ob, count, ch);
+    }
 }
 
 template<typename CharT>
-inline bool write_fill
+inline void write_fill
     ( stringify::v0::output_buffer<CharT>& ob
     , std::size_t count
     , CharT ch )
 {
     using u_char_type = stringify::v0::underlying_char_type<CharT>;
-    return write_fill(ob.base(), count, static_cast<u_char_type>(ch));
+    write_fill(ob.base(), count, static_cast<u_char_type>(ch));
 }
 
 } // namespace detail

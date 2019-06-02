@@ -145,7 +145,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(stringify::v0::output_buffer<CharT>& ob) const override;
 
     int width(int limit) const override;
 
@@ -173,9 +173,9 @@ std::size_t string_printer<CharT>::necessary_size() const
 }
 
 template<typename CharT>
-bool string_printer<CharT>::write(stringify::v0::output_buffer<CharT>& ob) const
+void string_printer<CharT>::write(stringify::v0::output_buffer<CharT>& ob) const
 {
-    return stringify::v0::detail::write_str(ob, _str, _len);
+    stringify::v0::detail::write_str(ob, _str, _len);
 }
 
 template<typename CharT>
@@ -206,7 +206,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(stringify::v0::output_buffer<CharT>& ob) const override;
 
     int width(int limit) const override;
 
@@ -228,9 +228,9 @@ private:
 
     void _init();
 
-    bool _write_str(stringify::v0::output_buffer<CharT>& ob) const;
+    void _write_str(stringify::v0::output_buffer<CharT>& ob) const;
 
-    bool _write_fill( stringify::v0::output_buffer<CharT>& ob
+    void _write_fill( stringify::v0::output_buffer<CharT>& ob
                     , unsigned count ) const;
 };
 
@@ -274,7 +274,7 @@ int fmt_string_printer<CharT>::width(int limit) const
 }
 
 template<typename CharT>
-bool fmt_string_printer<CharT>::write
+void fmt_string_printer<CharT>::write
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     if (_fillcount > 0)
@@ -283,41 +283,45 @@ bool fmt_string_printer<CharT>::write
         {
             case stringify::v0::alignment::left:
             {
-                return _write_str(ob)
-                    && _write_fill(ob, _fillcount);
+                _write_str(ob);
+                _write_fill(ob, _fillcount);
+                break;
             }
             case stringify::v0::alignment::center:
             {
                 auto halfcount = _fillcount / 2;
-                return _write_fill(ob, halfcount)
-                    && _write_str(ob)
-                    && _write_fill(ob, _fillcount - halfcount);
+                _write_fill(ob, halfcount);
+                _write_str(ob);
+                _write_fill(ob, _fillcount - halfcount);
+                break;
             }
             default:
             {
-                return _write_fill(ob, _fillcount)
-                    && _write_str(ob);
+                _write_fill(ob, _fillcount);
+                _write_str(ob);
             }
         }
     }
-    return _write_str(ob);
+    else
+    {
+        _write_str(ob);
+    }
 }
 
 template <typename CharT>
-bool fmt_string_printer<CharT>::_write_str
+void fmt_string_printer<CharT>::_write_str
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
-    return stringify::v0::detail::write_str( ob, _fmt.value().begin()
-                                           , _fmt.value().length() );
+    stringify::v0::detail::write_str( ob, _fmt.value().begin()
+                                    , _fmt.value().length());
 }
 
 template <typename CharT>
-bool fmt_string_printer<CharT>::_write_fill
+void fmt_string_printer<CharT>::_write_fill
     ( stringify::v0::output_buffer<CharT>& ob
     , unsigned count ) const
 {
-    return _encoding.encode_fill( ob, count, _fmt.fill()
-                                , _enc_err, _allow_surr );
+    _encoding.encode_fill( ob, count, _fmt.fill(), _enc_err, _allow_surr );
 }
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)

@@ -55,7 +55,7 @@ public:
 
     int width(int limit) const override;
 
-    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(stringify::v0::output_buffer<CharT>& ob) const override;
 
 private:
 
@@ -87,17 +87,13 @@ int range_printer<CharT, FPack, ForwardIt>::width(int limit) const
 }
 
 template <typename CharT, typename FPack, typename ForwardIt>
-bool range_printer<CharT, FPack, ForwardIt>::write
+void range_printer<CharT, FPack, ForwardIt>::write
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     for(auto it = _begin; it != _end; ++it)
     {
-        if ( ! make_printer<CharT, FPack>(_fp, *it).write(ob))
-        {
-            return false;
-        }
+        make_printer<CharT, FPack>(_fp, *it).write(ob);
     }
-    return true;
 }
 
 template <typename CharT, typename FPack, typename ForwardIt>
@@ -128,7 +124,7 @@ public:
 
     int width(int limit) const override;
 
-    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(stringify::v0::output_buffer<CharT>& ob) const override;
 
 private:
 
@@ -189,27 +185,19 @@ std::size_t sep_range_printer<CharT, FPack, ForwardIt>::necessary_size() const
 }
 
 template <typename CharT, typename FPack, typename ForwardIt>
-bool sep_range_printer<CharT, FPack, ForwardIt>::write
+void sep_range_printer<CharT, FPack, ForwardIt>::write
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     auto it = _begin;
-    if (it == _end)
+    if (it != _end)
     {
-        return true;
-    }
-    if ( ! make_printer<CharT, FPack>(_fp, *it).write(ob))
-    {
-        return false;
-    }
-    while (++it != _end)
-    {
-        if ( ! detail::write_str( ob, _sep_begin, _sep_len )
-          || ! make_printer<CharT, FPack>(_fp, *it).write(ob) )
+        make_printer<CharT, FPack>(_fp, *it).write(ob);
+        while (++it != _end)
         {
-            return false;
+            stringify::v0::detail::write_str(ob, _sep_begin, _sep_len);
+            make_printer<CharT, FPack>(_fp, *it).write(ob);
         }
     }
-    return true;
 }
 
 template <typename ForwardIt>
@@ -262,7 +250,7 @@ public:
 
     int width(int lim) const override;
 
-    bool write(stringify::v0::output_buffer<CharOut>& ob) const override;
+    void write(stringify::v0::output_buffer<CharOut>& ob) const override;
 
 private:
 
@@ -310,20 +298,16 @@ template< typename CharOut
         , typename FPack
         , typename ForwardIt
         , typename ... Fmts >
-bool fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::write
+void fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::write
     ( stringify::v0::output_buffer<CharOut>& ob ) const
 {
     auto r = _fmt.value();
     for(auto it = r.begin; it != r.end; ++it)
     {
-        if ( ! make_printer<CharOut, FPack>
-             ( _fp, value_fmt_type_adapted{{*it}, _fmt} )
-             .write(ob) )
-        {
-            return false;
-        }
+        make_printer<CharOut, FPack>
+            ( _fp, value_fmt_type_adapted{{*it}, _fmt} )
+            .write(ob);
     }
-    return true;
 }
 
 template< typename CharT
@@ -356,7 +340,7 @@ public:
 
     int width(int limit) const override;
 
-    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(stringify::v0::output_buffer<CharT>& ob) const override;
 
 private:
 
@@ -432,32 +416,24 @@ template< typename CharT
         , typename FPack
         , typename ForwardIt
         , typename ... Fmts >
-bool fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>
+void fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>
 ::write( stringify::v0::output_buffer<CharT>& ob ) const
 {
     auto r = _fmt.value();
     auto it = r.begin;
     if (it != r.end)
     {
-        if ( make_printer<CharT, FPack>
-               (_fp, value_fmt_type_adapted{{*it}, _fmt})
-               .write(ob) )
+        make_printer<CharT, FPack>
+            ( _fp, value_fmt_type_adapted{{*it}, _fmt} )
+            .write(ob);
+        while(++it != r.end)
         {
-            while(++it != r.end)
-            {
-                if ( ! detail::write_str(ob, r.sep_begin, r.sep_len)
-                  || ! make_printer<CharT, FPack>
-                         ( _fp, value_fmt_type_adapted{{*it}, _fmt} )
-                         .write(ob) )
-                {
-                    return false;
-                }
-            }
-            return true;
+            detail::write_str(ob, r.sep_begin, r.sep_len);
+            make_printer<CharT, FPack>
+                ( _fp, value_fmt_type_adapted{{*it}, _fmt} )
+                .write(ob);
         }
-        return false;
     }
-    return true;
 }
 
 

@@ -132,10 +132,10 @@ inline std::size_t sum_necessary_size(const Printers& ... printers)
 }
 
 template <typename CharT, typename ... Printers>
-inline bool write_args( stringify::v0::output_buffer<CharT>& ob
+inline void write_args( stringify::v0::output_buffer<CharT>& ob
                , const Printers& ... printers )
 {
-    return (... && printers.write(ob));
+    (... , printers.write(ob));
 }
 
 #else
@@ -154,18 +154,18 @@ inline std::size_t sum_necessary_size(const Printer& printer, const Printers& ..
 
 
 template <typename CharT>
-inline bool write_args(stringify::v0::output_buffer<CharT>&)
+inline void write_args(stringify::v0::output_buffer<CharT>&)
 {
-    return true;
 }
 
 template <typename CharT, typename Printer, typename ... Printers>
-inline bool write_args
+inline void write_args
     ( stringify::v0::output_buffer<CharT>& ob
     , const Printer& printer
     , const Printers& ... printers )
 {
-    return printer.write(ob) && write_args(ob, printers ...);
+    printer.write(ob);
+    write_args(ob, printers ...);
 }
 
 #endif
@@ -226,11 +226,8 @@ inline decltype(std::declval<OutputBuff>().finish()) reserve_and_tr_write
         ob.reserve(reser.get_size_to_reserve());
     }
 
-    bool no_error = stringify::v0::detail::tr_string_write
+    stringify::v0::detail::tr_string_write
         ( tr_str, tr_str_end, args, ob, enc, policy );
-
-    BOOST_ASSERT(no_error == ! ob.has_error());
-    (void) no_error;
 
     return ob.finish();
 }
@@ -245,11 +242,8 @@ inline decltype(std::declval<OutputBuff>().finish()) reserve_and_tr_write
     , stringify::v0::encoding<CharT> enc
     , stringify::v0::tr_invalid_arg policy )
 {
-    bool no_error = stringify::v0::detail::tr_string_write
+    stringify::v0::detail::tr_string_write
         ( tr_str, tr_str_end, args, ob, enc, policy );
-
-    BOOST_ASSERT(no_error == ! ob.has_error());
-    (void) no_error;
 
     return ob.finish();
 }
@@ -732,25 +726,6 @@ template <typename CharOut, typename FPack, typename Arg>
 using printer_impl
 = decltype(make_printer<CharOut, FPack>( std::declval<FPack>()
                                        , std::declval<Arg>() ) );
-
-class stringify_error: public std::system_error
-{
-public:
-    using std::system_error::system_error;
-};
-
-class BOOST_STRINGIFY_NODISCARD nodiscard_error_code: public std::error_code
-{
-public:
-    using std::error_code::error_code;
-
-    nodiscard_error_code() = default;
-
-    nodiscard_error_code(const std::error_code& ec) noexcept
-        : std::error_code(ec)
-    {
-    }
-};
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

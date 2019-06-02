@@ -5,7 +5,6 @@
 #define  _CRT_SECURE_NO_WARNINGS
 
 #include "test_utils.hpp"
-#include "error_code_emitter_arg.hpp"
 #include <boost/stringify.hpp>
 
 namespace strf = boost::stringify::v0;
@@ -32,10 +31,9 @@ public:
         _reserve_size = s;
     }
 
-    bool recycle() override
+    void recycle() override
     {
         this->set_pos(_buff);
-        return true;
     }
 
     std::size_t finish()

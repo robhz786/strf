@@ -89,18 +89,10 @@ void test_invalid_fill_stop
                      << std::hex << (unsigned)fill_char << '\''
                      << std::dec;
 
-    std::basic_string<CharT> expected(5, CharT('-'));
-
     {
-        int count = 10;
-        std::basic_string<CharT> result;
-        auto ec = strf::ec_assign(result)
-            .facets(enc, strf::encoding_error::stop, allow_surr)
-            ( strf::multi(CharT('-'), 5)
-            , strf::right(CharT('x'), count + 1, fill_char)
-            , strf::multi(CharT('+'), 5) );
-        BOOST_TEST(result == expected);
-        BOOST_TEST(ec == std::errc::illegal_byte_sequence);
+        auto facets = strf::pack(enc, strf::encoding_error::stop, allow_surr);
+        BOOST_TEST_THROWS( (strf::to_string.facets(facets)(strf::right(0, 10, fill_char)))
+                         , strf::encoding_failure );
     }
 }
 

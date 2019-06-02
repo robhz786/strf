@@ -135,7 +135,7 @@ public:
 
 protected:
 
-    bool compose(strf::printers_receiver<CharT>& out) const override;
+    void compose(strf::printers_receiver<CharT>& out) const override;
 
     strf::alignment_format::fn<void> formatting() const override;
 
@@ -147,8 +147,8 @@ private:
                                    , strf::encoding_error
                                    , strf::surrogate_policy > fp );
 
-    bool compose_non_abbreviated(strf::printers_receiver<CharT>& out) const;
-    bool compose_abbreviated(strf::printers_receiver<CharT>& out) const;
+    void compose_non_abbreviated(strf::printers_receiver<CharT>& out) const;
+    void compose_abbreviated(strf::printers_receiver<CharT>& out) const;
 
     ipv6addr_with_format _fmt;
 
@@ -214,36 +214,34 @@ strf::alignment_format::fn<void> ipv6_printer<CharT>::formatting() const
 
 //[ ipv6_printer__compose
 template <typename CharT>
-bool ipv6_printer<CharT>::compose(strf::printers_receiver<CharT>& out) const
+void ipv6_printer<CharT>::compose(strf::printers_receiver<CharT>& out) const
 {
     if(_fmt.is_small())
     {
-        return compose_abbreviated(out);
+        compose_abbreviated(out);
     }
     else
     {
-        return compose_non_abbreviated(out);
+        compose_non_abbreviated(out);
     }
 }
 
 
 template <typename CharT>
-bool ipv6_printer<CharT>::compose_non_abbreviated
+void ipv6_printer<CharT>::compose_non_abbreviated
     ( strf::printers_receiver<CharT>& out ) const
 {
-    bool good = out.put(_hextets[0]);
-    for(int i = 1; good && i < 8; ++i)
+    out.put(_hextets[0]);
+    for(int i = 1; i < 8; ++i)
     {
-        good = good
-            && out.put(_colon)
-            && out.put(_hextets[i]);
+        out.put(_colon);
+        out.put(_hextets[i]);
     }
-    return good;
 }
 
 
 template <typename CharT>
-bool ipv6_printer<CharT>::compose_abbreviated
+void ipv6_printer<CharT>::compose_abbreviated
     ( strf::printers_receiver<CharT>& out ) const
 {
     int abbr_bits = /*<<
@@ -254,8 +252,7 @@ bool ipv6_printer<CharT>::compose_abbreviated
     omitted in the abbreviated IPv6 representation
     >>*/ abbreviation(_fmt.value());
     bool prev_show = true;
-    bool good = true;
-    for (int i = 0; good && i < 8; ++i)
+    for (int i = 0; i < 8; ++i)
     {
         bool show_hextet = abbr_bits & 1;
         abbr_bits >>= 1;
@@ -264,21 +261,20 @@ bool ipv6_printer<CharT>::compose_abbreviated
         {
             if(i > 0)
             {
-                good = good && out.put(_colon);
+                out.put(_colon);
             }
-            good = good && out.put(_hextets[i]);
+            out.put(_hextets[i]);
         }
         else if(prev_show)
         {
-            good = good && out.put(_colon);
+            out.put(_colon);
         }
         prev_show = show_hextet;
     }
-    if (!prev_show && good)
+    if (!prev_show)
     {
         return out.put(_colon);
     }
-    return good;
 }
 //]
 

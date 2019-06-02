@@ -28,7 +28,7 @@ public:
         return 0;
     }
 
-    bool write(boost::stringify::v0::output_buffer<CharT>& ob) const override
+    void write(boost::stringify::v0::output_buffer<CharT>& ob) const override
     {
         ob.recycle();
         throw std::invalid_argument("invalid printer");

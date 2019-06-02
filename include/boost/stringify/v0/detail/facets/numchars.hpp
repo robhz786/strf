@@ -29,24 +29,24 @@ public:
 
     virtual ~numchars() {}
 
-    virtual bool print_base_indication
+    virtual void print_base_indication
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const = 0;
-    virtual bool print_pos_sign
+    virtual void print_pos_sign
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const = 0;
-    virtual bool print_neg_sign
+    virtual void print_neg_sign
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const = 0;
-    virtual bool print_exp_base
+    virtual void print_exp_base
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const = 0;
-    virtual bool print_digits
+    virtual void print_digits
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits ) const = 0;
-    virtual bool print_digits
+    virtual void print_digits
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
@@ -54,12 +54,12 @@ public:
         , char32_t separator
         , unsigned num_digits
         , unsigned num_groups ) const = 0;
-    virtual bool print_digits
+    virtual void print_digits
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , const char* digits
         , unsigned num_digits ) const = 0;
-    virtual bool print_digits
+    virtual void print_digits
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , const char* digits
@@ -67,7 +67,7 @@ public:
         , char32_t separator
         , unsigned num_digits
         , unsigned num_groups ) const = 0;
-    virtual bool print_zeros
+    virtual void print_zeros
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned count ) const = 0;
@@ -98,21 +98,21 @@ class numchars_default_common: public stringify::v0::numchars<CharT>
 {
 public:
 
-    virtual bool print_pos_sign
+    virtual void print_pos_sign
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const override;
 
-    virtual bool print_neg_sign
+    virtual void print_neg_sign
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const override;
 
-    virtual bool print_digits
+    virtual void print_digits
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , const char* digits
         , unsigned num_digits ) const override;
 
-    virtual bool print_digits
+    virtual void print_digits
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , const char* digits
@@ -121,44 +121,36 @@ public:
         , unsigned num_digits
         , unsigned num_groups ) const override;
 
-    virtual bool print_zeros
+    virtual void print_zeros
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned count ) const override;
 };
 
 template <typename CharT>
-bool numchars_default_common<CharT>::print_pos_sign
+void numchars_default_common<CharT>::print_pos_sign
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc ) const
 {
     (void)enc;
-    if (ob.size() == 0 && !ob.recycle())
-    {
-        return false;
-    }
+    ob.ensure(1);
     *ob.pos() = '+';
     ob.advance();
-    return true;
 }
 
 template <typename CharT>
-bool numchars_default_common<CharT>::print_neg_sign
+void numchars_default_common<CharT>::print_neg_sign
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc ) const
 {
     (void)enc;
-    if (ob.size() == 0 && !ob.recycle())
-    {
-        return false;
-    }
+    ob.ensure(1);
     *ob.pos() = '-';
     ob.advance();
-    return true;
 }
 
 template <typename CharT>
-bool numchars_default_common<CharT>::print_digits
+void numchars_default_common<CharT>::print_digits
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , const char* digits
@@ -172,10 +164,7 @@ bool numchars_default_common<CharT>::print_digits
         if (pos == end)
         {
             ob.advance_to(pos);
-            if ( ! ob.recycle())
-            {
-                return false;
-            }
+            ob.recycle();
             pos = ob.pos();
             end = ob.end();
         }
@@ -185,11 +174,10 @@ bool numchars_default_common<CharT>::print_digits
         --num_digits;
     }
     ob.advance_to(pos);
-    return true;
 }
 
 template <typename CharT>
-bool numchars_default_common<CharT>::print_digits
+void numchars_default_common<CharT>::print_digits
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , const char* digits
@@ -201,13 +189,11 @@ bool numchars_default_common<CharT>::print_digits
     auto sep_size = enc.validate(separator);
     if (sep_size == (std::size_t)-1)
     {
-        return print_digits(ob, enc, digits, num_digits);
+        print_digits(ob, enc, digits, num_digits);
+        return;
     }
 
-    if (ob.size() == 0 && ! ob.recycle())
-    {
-        return false;
-    }
+    ob.ensure(1);
 
     auto pos = ob.pos();
     auto end = ob.end();
@@ -227,10 +213,7 @@ bool numchars_default_common<CharT>::print_digits
         if (pos == end || (n == 0 && pos + sep_size >= end))
         {
             ob.advance_to(pos);
-            if ( ! ob.recycle())
-            {
-                return false;
-            }
+            ob.recycle();
             pos = ob.pos();
             end = ob.end();
         }
@@ -240,19 +223,17 @@ bool numchars_default_common<CharT>::print_digits
             n = *--grp_it;
         }
     }
-
     ob.advance_to(pos);
-    return true;
 }
 
 template <typename CharT>
-bool numchars_default_common<CharT>::print_zeros
+void numchars_default_common<CharT>::print_zeros
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned count ) const
 {
     (void) enc;
-    return stringify::v0::detail::write_fill(ob, count, CharT('0'));
+    stringify::v0::detail::write_fill(ob, count, CharT('0'));
 }
 
 template <typename CharT, unsigned Base>
@@ -269,18 +250,18 @@ public:
 
     using stringify::v0::numchars_default_common<CharT>::print_digits;
 
-    virtual bool print_base_indication
+    virtual void print_base_indication
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const override;
-    virtual bool print_exp_base
+    virtual void print_exp_base
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const override;
-    virtual bool print_digits
+    virtual void print_digits
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits ) const override;
-    virtual bool print_digits
+    virtual void print_digits
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
@@ -302,7 +283,7 @@ public:
 
 private:
 
-    bool _print_digits_big_sep
+    void _print_digits_big_sep
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
@@ -313,32 +294,27 @@ private:
 };
 
 template <typename CharT>
-bool default_numchars<CharT, 10>::print_base_indication
+void default_numchars<CharT, 10>::print_base_indication
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc ) const
 {
     (void)ob;
     (void)enc;
-    return true;
 }
 
 template <typename CharT>
-bool default_numchars<CharT, 10>::print_exp_base
+void default_numchars<CharT, 10>::print_exp_base
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc ) const
 {
     (void)enc;
-    if (ob.size() == 0 && !ob.recycle())
-    {
-        return false;
-    }
+    ob.ensure(1);
     *ob.pos() = 'e';
     ob.advance();
-    return true;
 }
 
 template <typename CharT>
-bool default_numchars<CharT, 10>::print_digits
+void default_numchars<CharT, 10>::print_digits
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
@@ -346,15 +322,11 @@ bool default_numchars<CharT, 10>::print_digits
 {
     (void)enc;
     BOOST_ASSERT(num_digits <= (detail::max_num_digits<decltype(digits), 10>));
-    if (ob.size() < num_digits && !ob.recycle())
-    {
-        return false;
-    }
-    BOOST_ASSERT(num_digits <= ob.size());
-
-    const char* arr = stringify::v0::detail::chars_00_to_99();
+    ob.ensure(num_digits);
     ob.advance(num_digits);
     CharT* it = ob.pos();
+    const char* arr = stringify::v0::detail::chars_00_to_99();
+
     auto uvalue = digits;
     while (uvalue > 99)
     {
@@ -376,11 +348,10 @@ bool default_numchars<CharT, 10>::print_digits
         it[-1] = arr[index + 1];
         BOOST_ASSERT(it + num_digits - 2 == ob.pos());
     }
-    return true;
 }
 
 template <typename CharT>
-bool default_numchars<CharT, 10>::print_digits
+void default_numchars<CharT, 10>::print_digits
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
@@ -397,8 +368,9 @@ bool default_numchars<CharT, 10>::print_digits
     if ( separator < enc.u32equivalence_begin()
       || separator >= enc.u32equivalence_end() )
     {
-        return _print_digits_big_sep( ob, enc, digits, groups
-                                    , separator, num_digits, num_groups );
+        _print_digits_big_sep( ob, enc, digits, groups
+                             , separator, num_digits, num_groups );
+        return;
     }
 
     constexpr auto max_digits
@@ -407,11 +379,7 @@ bool default_numchars<CharT, 10>::print_digits
                  , "too many possible digits" );
 
     auto necessary_size = num_digits + num_groups - 1;
-    if (ob.size() < necessary_size && !ob.recycle())
-    {
-        return false;
-    }
-    BOOST_ASSERT(necessary_size <= ob.size());
+    ob.ensure(necessary_size);
     ob.advance(necessary_size);
     CharT* it = ob.pos();
 
@@ -480,11 +448,10 @@ bool default_numchars<CharT, 10>::print_digits
             BOOST_ASSERT(it + necessary_size - 2 == ob.pos());
         }
     }
-    return true;
 }
 
 template <typename CharT>
-bool default_numchars<CharT, 10>::_print_digits_big_sep
+void default_numchars<CharT, 10>::_print_digits_big_sep
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
@@ -498,7 +465,7 @@ bool default_numchars<CharT, 10>::_print_digits_big_sep
     char buff[max_digits];
     auto digarr = stringify::v0::detail::write_int_dec_txtdigits_backwards
         (digits, buff + max_digits);
-    return numchars_default_common<CharT>::print_digits
+    numchars_default_common<CharT>::print_digits
         ( ob, enc, digarr, groups, separator, num_digits, num_groups );
 }
 
@@ -536,18 +503,18 @@ public:
 
     using stringify::v0::numchars_default_common<CharT>::print_digits;
 
-    virtual bool print_base_indication
+    virtual void print_base_indication
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const override;
-    virtual bool print_exp_base
+    virtual void print_exp_base
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const override;
-    virtual bool print_digits
+    virtual void print_digits
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits ) const override;
-    virtual bool print_digits
+    virtual void print_digits
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
@@ -569,7 +536,7 @@ public:
 
 private:
 
-    bool _print_digits_big_sep
+    void _print_digits_big_sep
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
@@ -580,38 +547,30 @@ private:
 };
 
 template <typename CharT>
-bool default_numchars<CharT, 16>::print_base_indication
+void default_numchars<CharT, 16>::print_base_indication
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc ) const
 {
     (void)enc;
-    if (ob.size() < 2 && !ob.recycle())
-    {
-        return false;
-    }
+    ob.ensure(2);
     ob.pos()[0] = '0';
     ob.pos()[1] = 'x';
     ob.advance(2);
-    return true;
 }
 
 template <typename CharT>
-bool default_numchars<CharT, 16>::print_exp_base
+void default_numchars<CharT, 16>::print_exp_base
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc ) const
 {
     (void)enc;
-    if (ob.size() == 0 && !ob.recycle())
-    {
-        return false;
-    }
+    ob.ensure(1);
     *ob.pos() = 'p';
     ob.advance();
-    return true;
 }
 
 template <typename CharT>
-bool default_numchars<CharT, 16>::print_digits
+void default_numchars<CharT, 16>::print_digits
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
@@ -619,12 +578,7 @@ bool default_numchars<CharT, 16>::print_digits
 {
     (void)enc;
     BOOST_ASSERT(num_digits <= sizeof(digits) * 2);
-    if (ob.size() < num_digits && !ob.recycle())
-    {
-        return false;
-    }
-    BOOST_ASSERT(num_digits <= ob.size());
-
+    ob.ensure(num_digits);
     ob.advance(num_digits);
     CharT* it = ob.pos();
     auto value = digits;
@@ -654,11 +608,10 @@ bool default_numchars<CharT, 16>::print_digits
     }
 
     BOOST_ASSERT(it + num_digits == ob.pos());
-    return true;
 }
 
 template <typename CharT>
-bool default_numchars<CharT, 16>::_print_digits_big_sep
+void default_numchars<CharT, 16>::_print_digits_big_sep
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
@@ -672,12 +625,12 @@ bool default_numchars<CharT, 16>::_print_digits_big_sep
     char buff[max_digits];
     auto digarr = stringify::v0::detail::write_int_hex_txtdigits_backwards
         (digits, buff + max_digits);
-    return numchars_default_common<CharT>::print_digits
+    numchars_default_common<CharT>::print_digits
         ( ob, enc, digarr, groups, separator, num_digits, num_groups );
 }
 
 template <typename CharT>
-bool default_numchars<CharT, 16>::print_digits
+void default_numchars<CharT, 16>::print_digits
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
@@ -694,8 +647,9 @@ bool default_numchars<CharT, 16>::print_digits
     if ( separator < enc.u32equivalence_begin()
       || separator >= enc.u32equivalence_end() )
     {
-        return _print_digits_big_sep( ob, enc, digits, groups
-                                    , separator, num_digits, num_groups );
+        _print_digits_big_sep( ob, enc, digits, groups
+                             , separator, num_digits, num_groups );
+        return;                     
     }
 
     constexpr auto max_digits
@@ -704,10 +658,7 @@ bool default_numchars<CharT, 16>::print_digits
                  , "too many possible digits" );
 
     auto necessary_size = num_digits + num_groups - 1;
-    if (ob.size() < necessary_size && !ob.recycle())
-    {
-        return false;
-    }
+    ob.ensure(necessary_size);
     ob.advance(necessary_size);
     CharT* it = ob.pos();
     auto n = *groups;
@@ -743,7 +694,6 @@ bool default_numchars<CharT, 16>::print_digits
         *it = static_cast<CharT>(offset_digit_a + value);
     }
     BOOST_ASSERT(it + necessary_size == ob.pos());
-    return true;
 }
 
 template <typename CharT>
@@ -784,18 +734,18 @@ public:
 
     using stringify::v0::numchars_default_common<CharT>::print_digits;
 
-    virtual bool print_base_indication
+    virtual void print_base_indication
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const override;
-    virtual bool print_exp_base
+    virtual void print_exp_base
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const override;
-    virtual bool print_digits
+    virtual void print_digits
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits ) const override;
-    virtual bool print_digits
+    virtual void print_digits
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
@@ -816,7 +766,7 @@ public:
         , bool has_exponent ) const override;
 private:
 
-    bool _print_digits_big_sep
+    void _print_digits_big_sep
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
@@ -827,32 +777,27 @@ private:
 };
 
 template <typename CharT>
-bool default_numchars<CharT, 8>::print_base_indication
+void default_numchars<CharT, 8>::print_base_indication
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc ) const
 {
     (void)enc;
-    if (ob.size() == 0 && !ob.recycle())
-    {
-        return false;
-    }
+    ob.ensure(1);
     *ob.pos() = '0';
     ob.advance();
-    return true;
 }
 
 template <typename CharT>
-bool default_numchars<CharT, 8>::print_exp_base
+void default_numchars<CharT, 8>::print_exp_base
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc ) const
 {
+    (void)ob;
     (void)enc;
-    ob.set_error(std::errc::not_supported);
-    return false;
 }
 
 template <typename CharT>
-bool default_numchars<CharT, 8>::print_digits
+void default_numchars<CharT, 8>::print_digits
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
@@ -860,12 +805,7 @@ bool default_numchars<CharT, 8>::print_digits
 {
     (void)enc;
     BOOST_ASSERT(num_digits <= (detail::max_num_digits<decltype(digits), 8>));
-    if (ob.size() < num_digits && !ob.recycle())
-    {
-        return false;
-    }
-    BOOST_ASSERT(num_digits <= ob.size());
-
+    ob.ensure(num_digits);
     ob.advance(num_digits);
     CharT* it = ob.pos();
     auto value = digits;
@@ -876,12 +816,10 @@ bool default_numchars<CharT, 8>::print_digits
     }
     *--it = static_cast<CharT>('0' + value);
     BOOST_ASSERT(it + num_digits == ob.pos());
-
-    return true;
 }
 
 template <typename CharT>
-bool default_numchars<CharT, 8>::print_digits
+void default_numchars<CharT, 8>::print_digits
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
@@ -908,10 +846,7 @@ bool default_numchars<CharT, 8>::print_digits
                  , "too many possible digits" );
 
     auto necessary_size = num_digits + num_groups - 1;
-    if (ob.size() < necessary_size && !ob.recycle())
-    {
-        return false;
-    }
+    ob.ensure(necessary_size);
     ob.advance(necessary_size);
     auto it = ob.pos();
     auto value = digits;
@@ -929,12 +864,10 @@ bool default_numchars<CharT, 8>::print_digits
     }
     *--it = static_cast<CharT>('0' + value);
     BOOST_ASSERT(it + necessary_size == ob.pos());
-
-    return true;
 }
 
 template <typename CharT>
-bool default_numchars<CharT, 8>::_print_digits_big_sep
+void default_numchars<CharT, 8>::_print_digits_big_sep
     ( stringify::v0::output_buffer<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
@@ -948,7 +881,7 @@ bool default_numchars<CharT, 8>::_print_digits_big_sep
     char buff[max_digits];
     auto digarr = stringify::v0::detail::write_int_oct_txtdigits_backwards
         (digits, buff + max_digits);
-    return numchars_default_common<CharT>::print_digits
+    numchars_default_common<CharT>::print_digits
         ( ob, enc, digarr, groups, separator, num_digits, num_groups );
 }
 

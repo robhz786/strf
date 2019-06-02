@@ -65,20 +65,19 @@ int main()
    }
    {
        //[ trstr_stop
-       std::error_code ec;
-
+       bool exception_thrown = false;
        try
        {
            auto str = strf::to_string
                .facets(strf::tr_invalid_arg::stop)
                .tr("{} are {}. {} are {}.", "Roses", "red", "Violets");
        }
-       catch(strf::stringify_error& x)
+       catch(strf::tr_string_syntax_error& x)
        {
-           ec = x.code();
+            exception_thrown = true;
        }
 
-       BOOST_ASSERT(ec == std::errc::invalid_argument);
+       BOOST_ASSERT(exception_thrown);
        //]
    }
 

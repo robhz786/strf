@@ -69,15 +69,10 @@ int main()
     //
     // errors
     //
-
-    auto ec_invalid_arg = std::make_error_code(std::errc::invalid_argument);
-
-    
-
-    
-    TEST_ERR("0__2--1==2..3::", ec_invalid_arg)
-        .facets(strf::tr_invalid_arg::stop)
-        .tr("{ }__{2}--{}=={}..{}::{}~~", 0, 1, 2, 3);
+    BOOST_TEST_THROWS( (strf::to_string
+                            .facets(strf::tr_invalid_arg::stop)
+                            .tr("{ }__{2}--{}=={}..{}::{}~~", 0, 1, 2, 3))
+                      , strf::tr_string_syntax_error );
 
     TEST(u8"0__2--1==2..3::\uFFFD~~")
         .tr(u8"{ }__{2}--{}=={}..{}::{}~~", 0, 1, 2, 3);
@@ -86,9 +81,10 @@ int main()
         .facets(strf::tr_invalid_arg::ignore)
         .tr("{ }__{2}--{}=={}..{}::{}~~", 0, 1, 2, 3);
 
-    TEST_ERR("0__", ec_invalid_arg)
-        .facets(strf::tr_invalid_arg::stop)
-        .tr("{ }__{10}--{}=={}..{}::{}~~", 0, 1, 2, 3);
+    BOOST_TEST_THROWS( (strf::to_string
+                            .facets(strf::tr_invalid_arg::stop)
+                            .tr("{ }__{10}--{}=={}..{}::{}~~", 0, 1, 2, 3))
+                      , strf::tr_string_syntax_error );
 
     TEST(u8"0__\uFFFD--1==2..3::\uFFFD~~")
         .tr(u8"{ }__{10}--{}=={}..{}::{}~~", 0, 1, 2, 3);

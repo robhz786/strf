@@ -11,127 +11,6 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-namespace detail {
-
-template <typename StringType>
-class ec_string_appender final
-    : public stringify::v0::output_buffer<typename StringType::value_type>
-{
-    constexpr static std::size_t _buff_size = stringify::v0::min_buff_size;
-    typename StringType::value_type _buff[_buff_size];
-
-public:
-
-    typedef typename StringType::value_type char_type;
-
-    ec_string_appender(StringType& out, std::size_t* count_ptr)
-        : output_buffer<char_type>{_buff, _buff + _buff_size}
-        , _out(out)
-        , _initial_length(out.length())
-        , _count_ptr(count_ptr)
-    {
-    }
-
-    ~ec_string_appender()
-    {
-        if( ! _finished)
-        {
-            _out.resize(_initial_length);
-        }
-        else if (_count_ptr != nullptr)
-        {
-            * _count_ptr = _out.size() - _initial_length;
-        }
-    }
-
-    void reserve(std::size_t size)
-    {
-        _out.reserve(_out.length() + size);
-    }
-
-    bool recycle() override;
-
-    stringify::v0::nodiscard_error_code finish();
-
-protected:
-
-    void on_error() override;
-
-private:
-
-    StringType& _out;
-    std::size_t _initial_length = 0;
-    std::size_t* _count_ptr;
-    bool _finished = false;
-};
-
-template <typename StringType>
-bool ec_string_appender<StringType>::recycle()
-{
-    auto pos = this->pos();
-    BOOST_ASSERT(_buff <= pos && pos <= _buff + _buff_size);
-    _out.append(_buff, pos);
-    this->set_pos(_buff);
-    return true;
-}
-
-template <typename StringType>
-void ec_string_appender<StringType>::on_error()
-{
-    recycle();
-}
-
-template <typename StringType>
-inline
-stringify::v0::nodiscard_error_code ec_string_appender<StringType>::finish()
-{
-    _finished = true;
-    if ( ! this->has_error())
-    {
-        auto pos = this->pos();
-        BOOST_ASSERT(_buff <= pos && pos <= _buff + _buff_size);
-        _out.append(_buff, pos);
-        return {};
-    }
-    return this->get_error();
-}
-
-#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
-
-#if defined(__cpp_char8_t)
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_string_appender<std::basic_string<char8_t>>;
-#endif
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_string_appender<std::string>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_string_appender<std::u16string>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_string_appender<std::u32string>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class ec_string_appender<std::wstring>;
-
-#endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
-
-} // namespace detail
-
-template <typename CharT, typename Traits, typename Allocator>
-inline auto ec_append
-    ( std::basic_string<CharT, Traits, Allocator>& str
-    , std::size_t* count_ptr = nullptr )
-{
-    using str_type = std::basic_string<CharT, Traits, Allocator>;
-    using writer = boost::stringify::v0::detail::ec_string_appender<str_type>;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                    , writer, str_type&, std::size_t* >
-        (str, count_ptr);
-}
-
-
-template <typename CharT, typename Traits, typename Allocator>
-inline auto ec_assign
-    ( std::basic_string<CharT, Traits, Allocator>& str
-    , std::size_t* count_ptr = nullptr )
-{
-    str.clear();
-    return ec_append(str, count_ptr);
-}
-
 #if !defined(BOOST_NO_EXCEPTIONS)
 
 namespace detail {
@@ -156,10 +35,6 @@ public:
 
     ~string_appender()
     {
-        if( ! _finished)
-        {
-            _out.resize(_initial_length);
-        }
     }
 
     void reserve(std::size_t size)
@@ -167,7 +42,7 @@ public:
         _out.reserve(_out.length() + size);
     }
 
-    bool recycle() override;
+    void recycle() override;
 
     std::size_t finish();
 
@@ -175,38 +50,27 @@ private:
 
     StringType& _out;
     std::size_t _initial_length = 0;
-    bool _finished = false;
 };
 
 template <typename StringType>
-bool string_appender<StringType>::recycle()
+void string_appender<StringType>::recycle()
 {
     auto pos = this->pos();
     BOOST_ASSERT(_buff <= pos && pos <= _buff + _buff_size);
     _out.append(_buff, pos);
     this->set_pos(_buff);
-    return true;
 }
 
 template <typename StringType>
 std::size_t string_appender<StringType>::finish()
 {
-    if ( ! this->has_error() )
+    auto pos = this->pos();
+    BOOST_ASSERT(_buff <= pos && pos <= _buff + _buff_size);
+    if (pos != _buff)
     {
-        auto pos = this->pos();
-        BOOST_ASSERT(_buff <= pos && pos <= _buff + _buff_size);
-        if (pos != _buff)
-        {
-            _out.append(_buff, pos);
-        }
-        _finished = true;
-        return _out.size() - _initial_length;
+        _out.append(_buff, pos);
     }
-    else
-    {
-        _out.resize(_initial_length);
-        throw stringify::v0::stringify_error(this->get_error());
-    }
+    return _out.size() - _initial_length;
 }
 
 template <typename StringType>
@@ -234,7 +98,7 @@ public:
 
 #endif
 
-    bool recycle() override;
+    void recycle() override;
 
     StringType finish();
 
@@ -260,22 +124,17 @@ inline string_maker<StringType>::~string_maker()
 }
 
 template <typename StringType>
-bool string_maker<StringType>::recycle()
+void string_maker<StringType>::recycle()
 {
     auto pos = this->pos();
     BOOST_ASSERT(_buff <= pos && pos <= _buff + _buff_size);
     _out.append(_buff, pos);
     this->set_pos(_buff);
-    return true;
 }
 
 template <typename StringType>
 inline StringType string_maker<StringType>::finish()
 {
-    if (this->has_error())
-    {
-        throw stringify::v0::stringify_error(this->get_error());
-    }
     auto pos = this->pos();
     BOOST_ASSERT(_buff <= pos && pos <= _buff + _buff_size);
     _out.append(_buff, pos);

@@ -22,7 +22,7 @@ public:
         _str.reserve(static_cast<int>(size));
     }
 
-    bool recycle() override;
+    void recycle() override;
 
     QString finish();
 
@@ -33,23 +33,16 @@ private:
     char16_t _buffer[_buffer_size];
 };
 
-bool QStringCreator::recycle()
+void QStringCreator::recycle()
 {
     const QChar * qchar_buffer = reinterpret_cast<QChar*>(_buffer);
     std::size_t count = this->pos() - _buffer;
     _str.append(qchar_buffer, count);
     this->set_pos(_buffer);
-
-    return true;
 }
 
 QString QStringCreator::finish()
 {
-    if (this->has_error())
-    {
-        throw strf::stringify_error(this->get_error());
-    }
-
     recycle();
     return std::move(_str);
 }

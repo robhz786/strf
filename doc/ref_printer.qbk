@@ -30,15 +30,12 @@ public:
 [#printer_write]
 [table
 [[
-  `virtual bool write(`[link output_buffer `output_buffer`]`<CharT>& ob) const = 0;`
+  `virtual void write(`[link output_buffer `output_buffer`]`<CharT>& ob) const = 0;`
 ]]
 [[
   [variablelist
     [[Effect]
      [Writes text into `ob`]]
-    [[Return]
-     [`true` on success, `false` otherwise. On failure, this function shall also
-      call `ob.`[link output_buffer_set_error `set_error`]`(`[~some_error_code]`)`.]]
     [[Post condition]
      [If `ob.size() <= necessary_size()` then this function must not call
       `ob.recycle()`]]]

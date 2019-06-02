@@ -84,38 +84,6 @@ void second_example()
 //]
 }
 
-void leading_expression_exception()
-{
-    //[leading_expression_error_handling
-    namespace strf = boost::stringify::v0;
-    char small_buff[15];
-
-    // success
-    auto ec = strf::ec_write(small_buff) ("twenty = ", 20);
-    BOOST_ASSERT(ec == std::error_code{});
-
-    // success
-    strf::write(small_buff) ("ten = ", 10);
-    BOOST_ASSERT(0 == strcmp(small_buff, "ten = 10"));
-
-    // failure
-    ec = strf::ec_write(small_buff) ("ten = ", 10, ", twenty = ", 20);
-    BOOST_ASSERT(ec == std::errc::result_out_of_range);
-
-    // failure
-    ec = std::error_code{};
-    try
-    {
-        strf::write(small_buff) ("ten = ", 10, ", twenty = ", 20);
-    }
-    catch(strf::stringify_error& e)
-    {
-        ec = e.code();
-    }
-    BOOST_ASSERT(ec == std::errc::result_out_of_range);
-    //]
-}
-
 
 
 
@@ -445,7 +413,6 @@ int main()
     sample();
     format_functions();
     format_functions_2();
-    leading_expression_exception();
     reserve();
     basic_facet_sample();
     constrained_facet();

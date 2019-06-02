@@ -78,12 +78,10 @@ void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
         (strf::cv(u"---\U0010FFFF+++"));
 
     {
-        std::string str;
-        auto ec = strf::ec_assign(str)
-            .facets(enc, strf::encoding_error::stop)
-            (strf::cv(u"---\U0010FFFF++"));
-        BOOST_TEST(ec == std::errc::illegal_byte_sequence);
-        BOOST_TEST(str == "---");
+        auto facets = strf::pack(enc, strf::encoding_error::stop);
+        BOOST_TEST_THROWS(
+            ( (strf::to_string.facets(facets)(strf::cv(u"---\U0010FFFF++"))))
+            , strf::encoding_failure )
     }
 }
 

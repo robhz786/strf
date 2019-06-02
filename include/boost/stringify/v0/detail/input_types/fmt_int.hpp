@@ -177,7 +177,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    bool write( stringify::v0::output_buffer<CharT>& ob ) const override;
+    void write( stringify::v0::output_buffer<CharT>& ob ) const override;
 
     int width(int) const override;
 
@@ -201,7 +201,7 @@ private:
     template <typename IntT, int Base>
     void _init(stringify::v0::int_with_format<IntT> value);
 
-    bool _write_fill
+    void _write_fill
         ( stringify::v0::output_buffer<CharT>& ob
         , std::size_t count ) const
     {
@@ -209,9 +209,9 @@ private:
             ( ob, count, _afmt.fill(), _enc_err, _allow_surr );
     }
 
-    bool _write_complement(stringify::v0::output_buffer<CharT>& ob) const;
-    bool _write_digits(stringify::v0::output_buffer<CharT>& ob) const;
-    bool _write_digits_sep(stringify::v0::output_buffer<CharT>& ob) const;
+    void _write_complement(stringify::v0::output_buffer<CharT>& ob) const;
+    void _write_digits(stringify::v0::output_buffer<CharT>& ob) const;
+    void _write_digits_sep(stringify::v0::output_buffer<CharT>& ob) const;
 };
 
 template <typename CharT>
@@ -341,83 +341,89 @@ int fmt_int_printer<CharT>::width(int) const
 }
 
 template <typename CharT>
-bool fmt_int_printer<CharT>::write
+void fmt_int_printer<CharT>::write
         ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     if (_fillcount == 0)
     {
-        return _write_complement(ob)
-            && _write_digits(ob);
+        _write_complement(ob);
+        _write_digits(ob);
     }
-
-    switch(_afmt.alignment())
+    else
     {
-        case stringify::v0::alignment::left:
+        switch(_afmt.alignment())
         {
-            return _write_complement(ob)
-                && _write_digits(ob)
-                && _write_fill(ob, _fillcount);
-        }
-        case stringify::v0::alignment::internal:
-        {
-            return _write_complement(ob)
-                && _write_fill(ob, _fillcount)
-                && _write_digits(ob);
-        }
-        case stringify::v0::alignment::center:
-        {
-            auto halfcount = _fillcount / 2;
-            return _write_fill(ob, halfcount)
-                && _write_complement(ob)
-                && _write_digits(ob)
-                && _write_fill(ob, _fillcount - halfcount);
-        }
-        default:
-        {
-            return _write_fill(ob, _fillcount)
-                && _write_complement(ob)
-                && _write_digits(ob);
+            case stringify::v0::alignment::left:
+            {
+                _write_complement(ob);
+                _write_digits(ob);
+                _write_fill(ob, _fillcount);
+                break;
+            }
+            case stringify::v0::alignment::internal:
+            {
+                _write_complement(ob);
+                _write_fill(ob, _fillcount);
+                _write_digits(ob);
+                break;
+            }
+            case stringify::v0::alignment::center:
+            {
+                auto halfcount = _fillcount / 2;
+                _write_fill(ob, halfcount);
+                _write_complement(ob);
+                _write_digits(ob);
+                _write_fill(ob, _fillcount - halfcount);
+                break;
+            }
+            default:
+            {
+                _write_fill(ob, _fillcount);
+                _write_complement(ob);
+                _write_digits(ob);
+            }
         }
     }
 }
 
 template <typename CharT>
-inline bool fmt_int_printer<CharT>::_write_complement
+inline void fmt_int_printer<CharT>::_write_complement
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     if(_showneg)
     {
-        return _chars.print_neg_sign(ob, _encoding);
+        _chars.print_neg_sign(ob, _encoding);
     }
     else if(_showpos)
     {
-        return _chars.print_pos_sign(ob, _encoding);
+        _chars.print_pos_sign(ob, _encoding);
     }
     else if (_showbase)
     {
-        return _chars.print_base_indication(ob, _encoding);
+        _chars.print_base_indication(ob, _encoding);
     }
-    return true;
 }
 
 template <typename CharT>
-inline bool fmt_int_printer<CharT>::_write_digits
+inline void fmt_int_printer<CharT>::_write_digits
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
-    if ( _precision > _digcount
-      && ! _chars.print_zeros(ob, _encoding, _precision - _digcount) )
+    if ( _precision > _digcount)
     {
-        return false;
+        _chars.print_zeros(ob, _encoding, _precision - _digcount);
     }
     if (_sepcount == 0)
     {
-        return _chars.print_digits(ob, _encoding, _uvalue, _digcount);
+        _chars.print_digits(ob, _encoding, _uvalue, _digcount);
     }
-    return _write_digits_sep(ob);
+    else
+    {
+        _write_digits_sep(ob);
+    }
 }
 
 template <typename CharT>
-bool fmt_int_printer<CharT>::_write_digits_sep
+void fmt_int_printer<CharT>::_write_digits_sep
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     unsigned char grp_buff
@@ -425,10 +431,10 @@ bool fmt_int_printer<CharT>::_write_digits_sep
     auto* grp_it = _punct.groups(_digcount, grp_buff);
     (void)grp_it;
     BOOST_ASSERT((grp_it - grp_buff) == _sepcount);
-    return _chars.print_digits( ob, _encoding, _uvalue, grp_buff
-                              , _punct.thousands_sep()
-                              , _digcount
-                              , _sepcount + 1 );
+    _chars.print_digits( ob, _encoding, _uvalue, grp_buff
+                       , _punct.thousands_sep()
+                       , _digcount
+                       , _sepcount + 1 );
 }
 
 

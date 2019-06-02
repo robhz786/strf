@@ -13,9 +13,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 #define BOOST_STRINGIFY_CHECK_DEST     \
     if (dest_it == dest_end) {         \
         ob.advance_to(dest_it);        \
-        if (! ob.recycle()) {          \
-            return false;              \
-        }                              \
+        ob.recycle();                  \
         dest_it = ob.pos();            \
         dest_end = ob.end();           \
     }
@@ -57,21 +55,21 @@ static std::size_t same_size
 template <class Impl>
 struct single_byte_encoding
 {
-    static bool to_utf32
+    static void to_utf32
         ( stringify::v0::output_buffer_base<char32_t>& ob
         , const std::uint8_t* src
         , const std::uint8_t* src_end
         , stringify::v0::encoding_error err_hdl
         , stringify::v0::surrogate_policy allow_surr );
 
-    static bool from_utf32
+    static void from_utf32
         ( stringify::v0::output_buffer_base<std::uint8_t>& ob
         , const char32_t* src
         , const char32_t* src_end
         , stringify::v0::encoding_error err_hdl
         , stringify::v0::surrogate_policy allow_surr );
 
-    static bool sanitize
+    static void sanitize
         ( stringify::v0::output_buffer_base<std::uint8_t>& ob
         , const std::uint8_t* src
         , const std::uint8_t* src_end
@@ -80,7 +78,7 @@ struct single_byte_encoding
 
     static std::uint8_t* encode_char(std::uint8_t* dest, char32_t ch);
 
-    static bool encode_fill
+    static void encode_fill
         ( stringify::v0::output_buffer_base<std::uint8_t>& ob
         , std::size_t count
         , char32_t ch
@@ -99,7 +97,7 @@ struct single_byte_encoding
 
     static std::size_t replacement_char_size();
 
-    static bool write_replacement_char
+    static void write_replacement_char
         ( stringify::v0::output_buffer_base<std::uint8_t>& ob );
 
     static std::size_t validate(char32_t ch);
@@ -117,7 +115,7 @@ std::size_t single_byte_encoding<Impl>::codepoints_count
 }
 
 template <class Impl>
-bool single_byte_encoding<Impl>::to_utf32
+void single_byte_encoding<Impl>::to_utf32
     ( stringify::v0::output_buffer_base<char32_t>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
@@ -129,10 +127,7 @@ bool single_byte_encoding<Impl>::to_utf32
     auto dest_end = ob.end();
     for (auto src_it = src; src_it < src_end; ++src_it)
     {
-        if (ob.size() == 0 && !ob.recycle())
-        {
-            return false;
-        }
+        ob.ensure(1);
         char32_t ch32 = Impl::decode(*src_it);
         if(ch32 == (char32_t)-1)
         {
@@ -141,7 +136,7 @@ bool single_byte_encoding<Impl>::to_utf32
                 case stringify::v0::encoding_error::stop:
                     ob.advance_to(dest_it);
                     ob.set_encoding_error();
-                    return false;
+                    break;
                 case stringify::v0::encoding_error::replace:
                     ch32 = 0xFFFD;
                     break;
@@ -155,11 +150,10 @@ bool single_byte_encoding<Impl>::to_utf32
         ++dest_it;
     }
     ob.advance_to(dest_it);
-    return true;
 }
 
 template <class Impl>
-bool single_byte_encoding<Impl>::sanitize
+void single_byte_encoding<Impl>::sanitize
     ( stringify::v0::output_buffer_base<std::uint8_t>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
@@ -184,7 +178,7 @@ bool single_byte_encoding<Impl>::sanitize
                 case stringify::v0::encoding_error::stop:
                     ob.advance_to(dest_it);
                     ob.set_encoding_error();
-                    return false;
+                    break;
                 case stringify::v0::encoding_error::replace:
                     ch_out = '?';
                     break;
@@ -198,21 +192,16 @@ bool single_byte_encoding<Impl>::sanitize
         ++dest_it;
     }
     ob.advance_to(dest_it);
-    return true;
 }
 
 
 template <class Impl>
-bool single_byte_encoding<Impl>::write_replacement_char
+void single_byte_encoding<Impl>::write_replacement_char
     ( stringify::v0::output_buffer_base<std::uint8_t>& ob )
 {
-    if (ob.size() != 0 || ob.recycle())
-    {
-        *ob.pos() = '?';
-        ob.advance();
-        return true;
-    }
-    return false;
+    ob.ensure(1);
+    *ob.pos() = '?';
+    ob.advance();
 }
 
 template <class Impl>
@@ -242,7 +231,7 @@ std::uint8_t* single_byte_encoding<Impl>::encode_char
 }
 
 template <class Impl>
-bool single_byte_encoding<Impl>::encode_fill
+void single_byte_encoding<Impl>::encode_fill
     ( stringify::v0::output_buffer_base<std::uint8_t>& ob
     , std::size_t count
     , char32_t ch
@@ -254,36 +243,35 @@ bool single_byte_encoding<Impl>::encode_fill
     {
         switch(err_hdl)
         {
-            case stringify::v0::encoding_error::stop:
-                ob.set_encoding_error();
-                return false;
             case stringify::v0::encoding_error::replace:
                 ch2 = '?';
                 break;
+            case stringify::v0::encoding_error::stop:
+                ob.set_encoding_error();
+                return;
             default:
                 BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
-                return true;
+                return;
         }
     }
-    do
+    while(true)
     {
         std::size_t available = ob.size();
         if (count <= available)
         {
             std::memset(ob.pos(), ch2, count);
             ob.advance(count);
-            return true;
+            return;
         }
         std::memset(ob.pos(), ch2, available);
         ob.advance_to(ob.end());
         count -= available;
+        ob.recycle();
     }
-    while(ob.recycle());
-    return false;
 }
 
 template <class Impl>
-bool single_byte_encoding<Impl>::from_utf32
+void single_byte_encoding<Impl>::from_utf32
     ( stringify::v0::output_buffer_base<std::uint8_t>& ob
     , const char32_t* src
     , const char32_t* src_end
@@ -303,7 +291,7 @@ bool single_byte_encoding<Impl>::from_utf32
                 case stringify::v0::encoding_error::stop:
                     ob.advance_to(dest_it);
                     ob.set_encoding_error();
-                    return false;
+                    return;
 
                 case stringify::v0::encoding_error::replace:
                     ch2 = '?';
@@ -319,7 +307,6 @@ bool single_byte_encoding<Impl>::from_utf32
         ++dest_it;
     }
     ob.advance_to(dest_it);
-    return true;
 }
 
 struct impl_strict_ascii

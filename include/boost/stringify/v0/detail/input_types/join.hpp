@@ -278,7 +278,7 @@ public:
         return _args_length() + _fill_length();
     }
 
-    bool write(stringify::v0::output_buffer<CharT>& ob) const override
+    void write(stringify::v0::output_buffer<CharT>& ob) const override
     {
         if (_fillcount <= 0)
         {
@@ -290,25 +290,29 @@ public:
             {
                 case stringify::v0::alignment::left:
                 {
-                    return _write_args(ob)
-                        && _write_fill(ob, _fillcount);
+                    _write_args(ob);
+                    _write_fill(ob, _fillcount);
+                    break;
                 }
                 case stringify::v0::alignment::right:
                 {
-                    return _write_fill(ob, _fillcount)
-                        && _write_args(ob);
+                    _write_fill(ob, _fillcount);
+                    _write_args(ob);
+                    break;
                 }
                 case stringify::v0::alignment::internal:
                 {
-                    return _write_splitted(ob);
+                    _write_splitted(ob);
+                    break;
                 }
                 default:
                 {
                     BOOST_ASSERT(_join.align == stringify::v0::alignment::center);
                     auto half_fillcount = _fillcount / 2;
-                    return _write_fill(ob, half_fillcount)
-                        && _write_args(ob)
-                        && _write_fill(ob, _fillcount - half_fillcount);
+                    _write_fill(ob, half_fillcount);
+                    _write_args(ob);
+                    _write_fill(ob, _fillcount - half_fillcount);
+                    break;
                 }
             }
         }
@@ -361,51 +365,36 @@ private:
         return sum;
     }
 
-    bool _write_splitted(stringify::v0::output_buffer<CharT>& ob) const
+    void _write_splitted(stringify::v0::output_buffer<CharT>& ob) const
     {
         auto it = _args.begin();
         for ( int count = _join.num_leading_args
             ; count > 0 && it != _args.end()
             ; --count, ++it)
         {
-            if (! (*it)->write(ob))
-            {
-                return false;
-            }
+            (*it)->write(ob);
         }
-        if (! _write_fill(ob, _fillcount))
-        {
-            return false;
-        }
+        _write_fill(ob, _fillcount);
         while(it != _args.end())
         {
-            if (! (*it)->write(ob))
-            {
-                return false;
-            }
+            (*it)->write(ob);
             ++it;
         }
-        return true;
     }
 
-    bool _write_args(stringify::v0::output_buffer<CharT>& ob) const
+    void _write_args(stringify::v0::output_buffer<CharT>& ob) const
     {
         for(const auto& arg : _args)
         {
-            if (! arg->write(ob))
-            {
-                return false;
-            }
+            arg->write(ob);
         }
-        return true;;
     }
 
-    bool _write_fill
-        ( stringify::v0::output_buffer<CharT>& ob
-        , int count ) const
+    void _write_fill( stringify::v0::output_buffer<CharT>& ob
+                    , int count ) const
     {
-        return _encoding.encode_fill( ob, count, _join.fillchar
-                                    , _enc_err, _allow_surr );
+        _encoding.encode_fill( ob, count, _join.fillchar
+                             , _enc_err, _allow_surr );
     }
 };
 
