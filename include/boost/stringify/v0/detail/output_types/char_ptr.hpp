@@ -10,7 +10,21 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
+template <typename CharOut>
+struct BOOST_STRINGIFY_NODISCARD write_char_ptr_result
+{
+    CharOut* ptr;
+    bool truncated;
+};
+
 namespace detail{
+
+inline char32_t* garbage_buffer()
+{
+    static char32_t buff[stringify::v0::min_buff_size];
+    return buff;
+}
+
 
 template<typename CharOut>
 class char_ptr_writer: public output_buffer<CharOut>
@@ -23,7 +37,7 @@ public:
 
     char_ptr_writer(CharOut* dest, CharOut* end )
         : output_buffer<CharOut>{dest, end - 1}
-        , _begin(dest)
+        , _dest(dest)
     {
         BOOST_ASSERT(dest < end);
     }
@@ -35,20 +49,32 @@ public:
 
     void recycle() override;
 
-    std::size_t finish()
+    stringify::v0::write_char_ptr_result<CharOut> finish()
     {
-        return this->pos() - _begin;
+        if (_good)
+        {
+            return { this->pos(), false };
+        }
+        return { _dest, true };
     }
 
 private:
-
-    char_type* _begin;
+    char_type* _dest;
+    bool _good = true;
 };
 
 template<typename CharOut>
 void char_ptr_writer<CharOut>::recycle()
 {
-    throw std::out_of_range("boost::stringify::write: destination string too small."); 
+    if (_good)
+    {
+        _dest = this->pos();
+        * this->pos() = char_type{};
+        _good = false;
+    }
+    auto p = reinterpret_cast<CharOut*>(garbage_buffer());
+    this->set_pos(p);
+    this->set_end(p + stringify::v0::min_buff_size);
 }
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)

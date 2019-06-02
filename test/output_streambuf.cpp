@@ -62,7 +62,7 @@ int main()
             strf::write(result, &result_length)
                 (strf::multi('a', 6), "ABCDEF", 'b');
         }
-        catch(std::runtime_error& x)
+        catch(std::runtime_error&)
         {
             failed = true;
         }

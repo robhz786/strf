@@ -134,7 +134,7 @@ Move constructor.
 [role index_mark (2)]
 `template <typename... F>`[br]
 [role index_mark]
-`[[nodiscard]] constexpr dispatcher<FPack2, OutBuff, OutBuffArgs...>`
+`[[nodiscard]] constexpr dispatcher<FPack2, OutBuff, OutBuffArgs...>&&`
 `facets(F&& ...f) &&;`
 ]]
 [[
@@ -307,7 +307,7 @@ write their textual representation.
 ]
 
 
-[#dispatcher_as]
+[#dispatcher_tr]
 [table
 [[
 [role index_mark (1)][role version_mark (C++14)]

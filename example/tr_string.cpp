@@ -72,7 +72,7 @@ int main()
                .facets(strf::tr_invalid_arg::stop)
                .tr("{} are {}. {} are {}.", "Roses", "red", "Violets");
        }
-       catch(strf::tr_string_syntax_error& x)
+       catch(strf::tr_string_syntax_error&)
        {
             exception_thrown = true;
        }

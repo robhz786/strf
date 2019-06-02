@@ -23,7 +23,7 @@
   [variablelist
     [[ Return type of [link dispatcher_strf stringification functions]]
      [ `std::basic_string<CharT, Traits, Allocator>`]]
-     
+
     [[ Effect of [link dispatcher_strf stringification functions]]
      [ Returns the stringification result ]]
 
@@ -155,22 +155,24 @@
      [ `count != 0`]]
 
     [[ Return type of [link dispatcher_strf stringification functions]]
-     [ `std::size_t`]]
-     
+     [ [link write_char_ptr_result `write_char_ptr_result`]`<std::remove_pointer_t<decltype(dest)>>`]]
+
     [[ Effect of [link dispatcher_strf stringification functions]]
-     [ On success, copy the stringification result plus the termination
-       character to `dest` and return the length of such result.
-
-       Throws `std::out_of_range`
-       if the number of characters to be written, including the
-       termination character, is greater than `count`.]]
-
-    [[ Notes ]
-     [[itemized_list
-       [ A termination character `'\0'` is aways written]
-       [ This dispatcher does not support the [link dispatcher_reserve reserve]
-         functions. ]]]]]
-
+     [ Write to `dest` up to `count - 1` characters of the the
+       stringification result plus the termination character and
+       returns a [link write_char_ptr_result `write_char_ptr_result`]
+       value containing the pointer to the termination character
+       and a `bool` value that is `false` if the whole content was
+       successfully written or `true` if it was truncated for
+       `count` being to small. ]]
+     [[Notes]
+      [[itemized_list
+         [ No more than `count` chararcter ( including the termination character )
+           are written. ]
+         [ A termination character `'\0'` is aways written]
+         [ The behaviour is undefined if `count` is 0]
+         [ This dispatcher does not support the [link dispatcher_reserve reserve]
+           functions. ]]]]]
 ]]
 ]
 
@@ -224,10 +226,25 @@
 [[
   [variablelist
     [[Effect]
-     [Same as `write(dest, (end - dest), count_ptr)`]]]
+     [Same as `write(dest, (end - dest))`]]]
 ]]
 ]
 
+[#write_char_ptr_result]
+[h4 Struct template `write_char_ptr_result`]
+
+[table
+[[
+`template <typename CharT>`[br]
+`struct [[no_discard]] write_char_ptr_result`[br]
+`{`[br]
+[SPC4]`CharT* ptr;`[br]
+[SPC4]`bool truncated;`[br]
+`};`
+]]
+[[
+]]
+]
 
 [endsect]
 [section `std::FILE*`]
@@ -254,12 +271,12 @@
 
      [[ Return type of [link dispatcher_strf stringification functions]]
       [ `std::size_t`]]
-     
+
     [[ Effects of [link dispatcher_strf stringification functions]]
      [ [itemized_list
         [ Write the stringification result to `dest` by sucessively calling
           `std::fwrite` using an itermediate buffer of `CharT` casted as
-          `char*`. ] 
+          `char*`. ]
         [ If `count_ptr` is not null, assigns to `*count_ptr` the number
           of successfully written characters. ]
         [ If an error happens on `std::fwrite`, throws a `std::system_error`
@@ -289,20 +306,20 @@
      [[itemized_list
        [`dest` must opened]
        [`dest` must be wide-orientated (even if `CharT` is `wchar_t`).]]]]
-    
+
    [[Return type of [link dispatcher_strf stringification functions]]
       [ `std::size_t`]]
-   
+
    [[ Effects of [link dispatcher_strf stringification functions]]
      [ [itemized_list
         [ Write the stringification result to `dest` by sucessively calling
-          `std::fputwc`. ] 
+          `std::fputwc`. ]
         [ If `count_ptr` is not null, assigns `*count_ptr` to the number
           of successfully written characters. ]
         [ If an error happens on `std::fputwc`, throws a `std::system_error`
-          object initialized with 
+          object initialized with
           `std::error_code{errno, std::generic_category()}`. ]
-    
+
         [ On success, returns the number of written characters. ]]]]
 
 
@@ -331,7 +348,7 @@
   [variablelist
    [[ Return type of [link dispatcher_strf stringification functions]]
     [std::streamsize]]
-     
+
     [[ Effects of [link dispatcher_strf stringification functions]]
      [ Write the stringification result to `dest` by sucessively calling
        `std::basic_streambuf<CharT, Traits>::sputn` using an itermediate buffer.]
@@ -340,7 +357,7 @@
      [ If an error happens on `std::basic_streambuf<CharT, Traits>::sputn`,
        throws `std::runtime_error`. ]
      [ On success, returns the number of written characters. ]]
-   
+
    [[ Note ]
     [ This dispatcher does not support the [link dispatcher_reserve reserve]
       functions. ]]]
