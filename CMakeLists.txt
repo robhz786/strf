@@ -36,7 +36,7 @@ add_library(boost_stringify STATIC build/stringify.cpp)
 
 target_compile_definitions(
   boost_stringify
-  PUBLIC BOOST_STRINGIFY_NOT_HEADER_ONLY )
+  PUBLIC BOOST_STRINGIFY_SEPARATE_COMPILATION )
 
 target_include_directories(
   boost_stringify-header-only
@@ -90,5 +90,5 @@ endif (BOOST_STRINGIFY_BUILD_EXAMPLES)
 
 if (BOOST_STRINGIFY_BUILD_BENCHMARKS)
   add_subdirectory(performance performance)
-  add_subdirectory(performance/fmt-5.2.0 fmt)
+  add_subdirectory(externals/fmt fmt)
 endif (BOOST_STRINGIFY_BUILD_BENCHMARKS)

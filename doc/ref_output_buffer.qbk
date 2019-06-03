@@ -28,7 +28,7 @@ public:
 
     virtual ~output_buffer() = default;
 
-    virtual bool recycle() = 0;
+    virtual void recycle() = 0;
 
     CharT* pos() const noexcept;
     CharT* end() const noexcept;
@@ -36,12 +36,6 @@ public:
 
     void advance_to(CharT* p) noexcept;
     void advance(std::size_t n) noexcept;
-
-    void set_error(std::error_code ec) noexcept;
-    void set_error(std::errc e) noexcept;
-    void set_encoding_error() noexcept;
-    std::error_code get_error() const noexcept;
-    bool has_error() const noexcept;
 
 protected:
 
@@ -68,7 +62,7 @@ protected:
 
 [#output_buffer_recycler]
 [table
-[[`virtual bool recycle() = 0;`]]
+[[`virtual void recycle() = 0;`]]
 [[[variablelist
      [[ Effects]
       [ Consumes the content in the range \u005B ['initial_pos], `pos()` \u0029,
@@ -76,12 +70,10 @@ protected:
         call to `recycle()` and before any call to `advance()`
         and `advance_to(p)`.]
       [ On success, calls `set_pos(`[~new_pos]`)` and optionally
-        `set_end(`[~new_end]`)`.
-        On failure, calls `set_error(`[~some_error]`)`.  ]]
-     [[ Return value]
-      [ `true` on success and `false` otherwise.]]
+        `set_end(`[~new_end]`)`.]
      [[ Postcondition]
       [ on sucess: size() >= min_buff_size]]]]]]
+]
 
 [h5 Public non-virtual member functions ]
 
@@ -125,39 +117,6 @@ protected:
      [`pos() + n <= end()`] ]
   [[Effect]
      [same as `advance(pos() + n)`]]]]]]
-
-[#output_buffer_set_error]
-[table
-[[`void set_error(std::error_code ec) noexcept;`]]
-[[[variablelist
-  [[Postcondition]
-     [`has_error() == true`]]]]]]
-     
-[table
-[[`void set_error(std::errc e) noexcept;`]]
-[[[variablelist
-  [[Effect]
-     [Calls `set_error(std::make_error_code(e))`]]]]]]
-    
-[table
-[[`void set_encoding_error() noexcept;`]]
-[[[variablelist
-  [[Effect]
-     [Calls `set_error(std::errc::illegal_byte_sequence)`]]]]]]
-
-[#output_buffer_get_error]
-[table
-[[`std::error_code get_error() const noexcept;`]]
-[[[variablelist
-  [[Return value]
-     [The value passed to `set_error` the first time it was called]]]]]]
-
-[#output_buffer_has_error]
-[table
-[[`bool has_error() const noexcept;`]]
-[[[variablelist
-  [[Return value]
-     [Whether `set_error` has been called ]]]]]]
 
 [h5 Protected member functions]
 [h5 Constructors]
@@ -216,7 +175,7 @@ A given type [~T] is an `OuputBuffer`, if it satisfies the following conditions:
  If present,
           this function is called no more than once, and just after the
           constructor,
-          and according to the use of [link syntax_reserve `reserve_auto()`,
+          and according to the use of [link overview_reserve `reserve_auto()`,
           `reserve()` or `no_reserve()`] in the [link usage_syntax basic
           invocation syntax]. The parameter tells how many characters will
           be written before `finish()` is called.

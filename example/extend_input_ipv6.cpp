@@ -122,9 +122,12 @@ public:
         : ipv6_printer
           ( fmt
           , fmt.is_big() ? 4 : 0
-          , strf::facets_pack<strf::encoding<CharT>, strf::encoding_policy>
-              { strf::get_facet<strf::encoding_category<CharT>, ipv6_printer>(fp)
-              , strf::get_facet<strf::encoding_policy_category, ipv6_printer>(fp) } )
+          , strf::facets_pack< strf::encoding<CharT>
+                             , strf::encoding_error
+                             , strf::surrogate_policy >
+              { strf::get_facet<strf::encoding_c<CharT>, ipv6_printer>(fp)
+              , strf::get_facet<strf::encoding_error_c, ipv6_printer>(fp)
+              , strf::get_facet<strf::surrogate_policy_c, ipv6_printer>(fp) } )
     {
     }
 
@@ -132,7 +135,7 @@ public:
 
 protected:
 
-    bool compose(strf::printers_receiver<CharT>& out) const override;
+    void compose(strf::printers_receiver<CharT>& out) const override;
 
     strf::alignment_format::fn<void> formatting() const override;
 
@@ -140,16 +143,18 @@ private:
 
     ipv6_printer( ipv6addr_with_format fmt
                 , int precision
-                , strf::facets_pack<strf::encoding<CharT>, strf::encoding_policy> fp );
+                , strf::facets_pack< strf::encoding<CharT>
+                                   , strf::encoding_error
+                                   , strf::surrogate_policy > fp );
 
-    bool compose_non_abbreviated(strf::printers_receiver<CharT>& out) const;
-    bool compose_abbreviated(strf::printers_receiver<CharT>& out) const;
+    void compose_non_abbreviated(strf::printers_receiver<CharT>& out) const;
+    void compose_abbreviated(strf::printers_receiver<CharT>& out) const;
 
     ipv6addr_with_format _fmt;
 
   /*<< `printer_impl<CharT, FPack, Arg>` is equivalent to
-     `decltype(make_printer(ow, fp, std::declval<Arg>())`
-      where the type of `ow` is `output_writer<CharT>&`,
+     `decltype(make_printer(ob, fp, std::declval<Arg>())`
+      where the type of `ob` is `output_buffer<CharT>&`,
       and the type of `fp` is `const Fpack&`.
       Hence the type of `_colon` derives from `printer<CharT>`,
       and so do the elements of `_hextets`.
@@ -166,10 +171,13 @@ template <typename CharT>
 ipv6_printer<CharT>::ipv6_printer
     ( ipv6addr_with_format fmt
     , int precision
-    , strf::facets_pack<strf::encoding<CharT>, strf::encoding_policy> fp )
+    , strf::facets_pack< strf::encoding<CharT>
+                       , strf::encoding_error
+                       , strf::surrogate_policy > fp )
     : strf::dynamic_join_printer<CharT>
-        { strf::get_facet<strf::encoding_category<CharT>, void>(fp)
-        , strf::get_facet<strf::encoding_policy_category, void>(fp) }
+        { strf::get_facet<strf::encoding_c<CharT>, void>(fp)
+        , strf::get_facet<strf::encoding_error_c, void>(fp)
+        , strf::get_facet<strf::surrogate_policy_c, void>(fp) }
     , _fmt(fmt)
     , _colon{strf::make_printer<CharT>(fp, static_cast<CharT>(':'))}
     , _hextets
@@ -206,36 +214,34 @@ strf::alignment_format::fn<void> ipv6_printer<CharT>::formatting() const
 
 //[ ipv6_printer__compose
 template <typename CharT>
-bool ipv6_printer<CharT>::compose(strf::printers_receiver<CharT>& out) const
+void ipv6_printer<CharT>::compose(strf::printers_receiver<CharT>& out) const
 {
     if(_fmt.is_small())
     {
-        return compose_abbreviated(out);
+        compose_abbreviated(out);
     }
     else
     {
-        return compose_non_abbreviated(out);
+        compose_non_abbreviated(out);
     }
 }
 
 
 template <typename CharT>
-bool ipv6_printer<CharT>::compose_non_abbreviated
+void ipv6_printer<CharT>::compose_non_abbreviated
     ( strf::printers_receiver<CharT>& out ) const
 {
-    bool good = out.put(_hextets[0]);
-    for(int i = 1; good && i < 8; ++i)
+    out.put(_hextets[0]);
+    for(int i = 1; i < 8; ++i)
     {
-        good = good
-            && out.put(_colon)
-            && out.put(_hextets[i]);
+        out.put(_colon);
+        out.put(_hextets[i]);
     }
-    return good;
 }
 
 
 template <typename CharT>
-bool ipv6_printer<CharT>::compose_abbreviated
+void ipv6_printer<CharT>::compose_abbreviated
     ( strf::printers_receiver<CharT>& out ) const
 {
     int abbr_bits = /*<<
@@ -246,8 +252,7 @@ bool ipv6_printer<CharT>::compose_abbreviated
     omitted in the abbreviated IPv6 representation
     >>*/ abbreviation(_fmt.value());
     bool prev_show = true;
-    bool good = true;
-    for (int i = 0; good && i < 8; ++i)
+    for (int i = 0; i < 8; ++i)
     {
         bool show_hextet = abbr_bits & 1;
         abbr_bits >>= 1;
@@ -256,21 +261,20 @@ bool ipv6_printer<CharT>::compose_abbreviated
         {
             if(i > 0)
             {
-                good = good && out.put(_colon);
+                out.put(_colon);
             }
-            good = good && out.put(_hextets[i]);
+            out.put(_hextets[i]);
         }
         else if(prev_show)
         {
-            good = good && out.put(_colon);
+            out.put(_colon);
         }
         prev_show = show_hextet;
     }
-    if (!prev_show && good)
+    if (!prev_show)
     {
         return out.put(_colon);
     }
-    return good;
 }
 //]
 

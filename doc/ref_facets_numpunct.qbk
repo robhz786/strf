@@ -4,21 +4,12 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[import ../example/numpunct_facets.cpp]
 
 [#numpunct]
 [section Numeric punctuation]
 
-You can specify the grouping with a string using the `str_grouping` class template:
-
-[str_grouping]
-
-If all groups have the same size, then you can use the `monotonic_grouping` class template, which is optimized for this situation.
-
-[monotonic_grouping]
-
 [#str_grouping]
-[h4 The `str_grouping` class template]
+[h4  Class template `str_grouping` class template]
 
 ``
 template <int Base>
@@ -50,7 +41,7 @@ public:
 ``
 
 [#monotonic_grouping]
-[h4 The `monotonic_grouping` class template]
+[h4 Class template `monotonic_grouping`]
 
 ``
 template <int Base>
@@ -70,15 +61,38 @@ public:
     char32_t thousands_sep() const override;
     char32_t decimal_point() const override;
 
-    unsigned char* groups
-        ( unsigned num_digits
-        , unsigned char* groups_array
-        ) const override;
+    unsigned char* groups( unsigned num_digits
+                         , unsigned char* groups_array ) const override;
 
     unsigned thousands_sep_count(unsigned num_digits) const override;
 };
 ``
-[h4 The `numpunct` class template]
+
+[h4 Class template no_grouping]
+
+
+``
+template <int Base>
+class no_grouping: public numpunct<Base>
+{
+public:
+
+    constexpr no_grouping();
+
+    no_grouping &  decimal_point(char32_t ch) &;
+    no_grouping && decimal_point(char32_t ch) &&;
+
+    char32_t thousands_sep() const override;
+    char32_t decimal_point() const override;
+
+    unsigned char* groups( unsigned num_digits
+                         , unsigned char* groups_array ) const override;
+
+    unsigned thousands_sep_count(unsigned num_digits) const override;
+};
+``
+
+[h4 Class template `numpunct`]
 
 ``
 template <int Base>
@@ -99,10 +113,8 @@ public:
 
     virtual ~numpunct_base();
 
-    virtual unsigned char* groups
-        ( unsigned num_digits
-        , unsigned char* groups_array
-        ) const = 0;
+    virtual unsigned char* groups( unsigned num_digits
+                                 , unsigned char* groups_array ) const = 0;
 
     virtual unsigned thousands_sep_count(unsigned num_digits) const = 0;
 

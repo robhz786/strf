@@ -37,7 +37,7 @@ public:
 
     using char_type = CharOut;
 
-    bool recycle() override;
+    void recycle() override;
 
     void finish();
 
@@ -91,27 +91,6 @@ input_tester<CharOut>::input_tester
 }
 
 template <typename CharOut>
-input_tester<CharOut>::input_tester
-    ( std::basic_string<CharOut> expected
-    , const char* src_filename
-    , int src_line
-    , const char* function
-    , std::error_code err
-    , double reserve_factor )
-    : boost::stringify::v0::output_buffer<CharOut>{nullptr, nullptr}
-    , _expected(std::move(expected))
-    , _reserved_size(0)
-    , _src_filename(std::move(src_filename))
-    , _function(function)
-    , _src_line(src_line)
-    , _reserve_factor(reserve_factor)
-    , _expected_error(err)
-    , _expect_error(true)
-{
-}
-
-
-template <typename CharOut>
 input_tester<CharOut>::~input_tester()
 {
 }
@@ -126,7 +105,7 @@ void input_tester<CharOut>::reserve(std::size_t size)
 }
 
 template <typename CharOut>
-bool input_tester<CharOut>::recycle()
+void input_tester<CharOut>::recycle()
 {
     _test_failure(" output_buffer::recycle() called "
                   "( return of printer::necessary_size() too small ).\n");
@@ -136,7 +115,6 @@ bool input_tester<CharOut>::recycle()
     _result.append(boost::stringify::v0::min_buff_size, CharOut{'#'});
     this->set_pos(&*_result.begin() + previous_size);
     this->set_end(&*_result.begin() + _result.size());
-    return true;
 }
 
 template <typename CharOut>
@@ -158,24 +136,6 @@ void input_tester<CharOut>::finish()
                      , "Necessary size : ", _result.length(), '\n' );
     }
 
-    if (_expect_error != this->has_error())
-    {
-        if ( ! _expect_error)
-        {
-            _test_failure("Obtained error_code: ", this->get_error().message());
-        }
-        else
-        {
-            _test_failure( "Not obtained any error_code. Was expecting: "
-                         , _expected_error.message());
-        }
-
-    }
-    else if (_expected_error != this->get_error())
-    {
-        _test_failure( "Expected error_code: ", _expected_error.message(), '\n'
-                     , "Obtained error_code: ", this->get_error().message(), '\n' );
-    }
     if (_test_failed)
     {
         ::boost::detail::error_impl( _failure_msg.c_str(), _src_filename
@@ -204,50 +164,14 @@ auto make_tester
    , const char* filename
    , int line
    , const char* function
-   , std::error_code err
    , double reserve_factor = 1.0 )
 {
    using writer = input_tester<CharT>;
    return boost::stringify::v0::dispatcher
        < boost::stringify::v0::facets_pack<>
        , writer, const CharT*, const char*, int
-       , const char*, std::error_code, double >
-       ( boost::stringify::v0::pack(), expected, filename
-       , line, function, err, reserve_factor);
-}
-
-template<typename CharT>
-auto make_tester
-   ( const CharT* expected
-   , const char* filename
-   , int line
-   , const char* function
-   , double reserve_factor = 1.0 )
-{
-   using writer = input_tester<CharT>;
-   return boost::stringify::v0::dispatcher
-       < boost::stringify::v0::facets_pack<>
-       , writer, const CharT*, const char*, int, const char*, double>
-       ( boost::stringify::v0::pack()
-       , expected, filename, line, function, reserve_factor);
-}
-
-template<typename CharT>
-auto make_tester
-   ( const std::basic_string<CharT>& expected
-   , const char* filename
-   , int line
-   , const char* function
-   , std::error_code err
-   , double reserve_factor = 1.0 )
-{
-   using writer = input_tester<CharT>;
-   return boost::stringify::v0::dispatcher
-       < boost::stringify::v0::facets_pack<>
-       , writer, const std::basic_string<CharT>&, const char*
-       , int, const char*, std::error_code, double>
-       ( boost::stringify::v0::pack()
-       , expected, filename, line, function, err, reserve_factor);
+       , const char*, double >
+       ( expected, filename, line, function, reserve_factor);
 }
 
 template<typename CharT>
@@ -262,9 +186,8 @@ auto make_tester
    return boost::stringify::v0::dispatcher
        < boost::stringify::v0::facets_pack<>
        , writer, const std::basic_string<CharT>&, const char*
-       , int, const char*, double >
-       ( boost::stringify::v0::pack()
-       , expected, filename, line, function, reserve_factor);
+       , int, const char*, double>
+       ( expected, filename, line, function, reserve_factor);
 }
 
 #define TEST(EXPECTED)                                                  \
@@ -273,14 +196,6 @@ auto make_tester
 
 #define TEST_RF(EXPECTED, RF)                                           \
     make_tester((EXPECTED), __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, (RF)) \
-    .reserve_calc()
-
-#define TEST_ERR(EXPECTED, ERR)                                         \
-    make_tester((EXPECTED), __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, (ERR)  ) \
-    .reserve_calc()
-
-#define TEST_ERR_RF(EXPECTED, ERR, RF)                                  \
-    make_tester((EXPECTED), __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, (ERR), (RF)) \
     .reserve_calc()
 
 #endif

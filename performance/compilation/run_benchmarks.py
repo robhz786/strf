@@ -36,7 +36,7 @@ del ldflags_str
 pwd = os.path.dirname(os.path.realpath(__file__))
 tmp_dir = pwd + "/tmp"
 boost_incl = "-I" + os.path.normpath(pwd + "/../../../../")
-fmt_dir = os.path.normpath(pwd + "/../fmt-5.2.0")
+fmt_dir = os.path.normpath(pwd + "/../../externals/fmt")
 fmt_incl = "-I" + fmt_dir + "/include"
 stringify_cpp = os.path.normpath(pwd + "/../../build/stringify.cpp")
 
@@ -53,9 +53,9 @@ def empty_row() :
     return part1 + part2 + ']'
 
 def table_header() :
-    hdr = '[[{:^28}][{:^24}][{:^9}]'.format(
+    hdr = '[[{:^28}][{:^18}][{:^9}]'.format(
         'source file',
-        'compilation times(w,u,s)',
+        'comp. times(w,u,s)',
         'obj. file')
 
     for n in files_per_program:
@@ -67,7 +67,7 @@ def benchmark(build_type, flags, basename, main_src, libs):
     compile_stats = create_obj_files(build_type, flags, basename, num_sourcefiles)
     programs_size = build_programs(build_type, main_src, basename,
                                    libs, files_per_program)
-    result = '[[{:<28}][{:>4.2f} `,  `{:>4.2f} `,  `{:>4.2f}][{:>9.1f}]'.format(
+    result = '[[{:<28}][{:>4.2f} , {:>4.2f} , {:>4.2f}][{:>9.1f}]'.format(
         basename,
         compile_stats['wall time'],
         compile_stats['user time'],
@@ -261,21 +261,21 @@ libfmt_db = build_libfmt(build_type_debug())
 
 samples_O3 = \
 [ ('to_string',         [ ([lib_boost_stringify_O3], [boost_incl], '_stringify'   )
-                        , ([lib_boost_stringify_O3], [boost_incl], '_stringify_as')
+                        , ([lib_boost_stringify_O3], [boost_incl], '_stringify_tr')
                         , ([libfmt_O3],              [fmt_incl],   '_fmtlib'      )
 ] )
 , ('to_charptr',        [ ([lib_boost_stringify_O3], [boost_incl], '_stringify'   )
-                        , ([lib_boost_stringify_O3], [boost_incl], '_stringify_as')
+                        , ([lib_boost_stringify_O3], [boost_incl], '_stringify_tr')
                         , ([libfmt_O3],              [fmt_incl],   '_fmtlib'      )
                         , ([],                       [],           '_sprintf'     )
 ] )
 , ('to_FILE',           [ ([lib_boost_stringify_O3], [boost_incl], '_stringify'   )
-                        , ([lib_boost_stringify_O3], [boost_incl], '_stringify_as')
+                        , ([lib_boost_stringify_O3], [boost_incl], '_stringify_tr')
                         , ([libfmt_O3],              [fmt_incl],   '_fmtlib'      )
                         , ([],                       [],           '_fprintf'     )
 ] )
 , ('to_ostream',        [ ([lib_boost_stringify_O3], [boost_incl], '_stringify'   )
-                        , ([lib_boost_stringify_O3], [boost_incl], '_stringify_as')
+                        , ([lib_boost_stringify_O3], [boost_incl], '_stringify_tr')
                         , ([libfmt_O3],              [fmt_incl],   '_fmtlib'      )
                         , ([],                       [],           '_itself'      )
 ] )
@@ -283,21 +283,21 @@ samples_O3 = \
 
 samples_Os = \
 [ ('to_string',         [ ([lib_boost_stringify_Os], [boost_incl], '_stringify'   )
-                        , ([lib_boost_stringify_Os], [boost_incl], '_stringify_as')
+                        , ([lib_boost_stringify_Os], [boost_incl], '_stringify_tr')
                         , ([libfmt_Os],              [fmt_incl],   '_fmtlib'      )
 ] )
 , ('to_charptr',        [ ([lib_boost_stringify_Os], [boost_incl], '_stringify'   )
-                        , ([lib_boost_stringify_Os], [boost_incl], '_stringify_as')
+                        , ([lib_boost_stringify_Os], [boost_incl], '_stringify_tr')
                         , ([libfmt_Os],              [fmt_incl],   '_fmtlib'      )
                         , ([],                       [],           '_sprintf'     )
 ] )
 , ('to_FILE',           [ ([lib_boost_stringify_Os], [boost_incl], '_stringify'   )
-                        , ([lib_boost_stringify_Os], [boost_incl], '_stringify_as')
+                        , ([lib_boost_stringify_Os], [boost_incl], '_stringify_tr')
                         , ([libfmt_Os],              [fmt_incl],   '_fmtlib'      )
                         , ([],                       [],           '_fprintf'     )
 ] )
 , ('to_ostream',        [ ([lib_boost_stringify_Os], [boost_incl], '_stringify'   )
-                        , ([lib_boost_stringify_Os], [boost_incl], '_stringify_as')
+                        , ([lib_boost_stringify_Os], [boost_incl], '_stringify_tr')
                         , ([libfmt_Os],              [fmt_incl],   '_fmtlib'      )
                         , ([],                       [],           '_itself'      )
 ] )
@@ -305,81 +305,81 @@ samples_Os = \
 
 samples_debug = \
 [ ('to_string',         [ ([lib_boost_stringify_db], [boost_incl], '_stringify'   )
-                        , ([lib_boost_stringify_db], [boost_incl], '_stringify_as')
+                        , ([lib_boost_stringify_db], [boost_incl], '_stringify_tr')
                         , ([libfmt_db],              [fmt_incl],   '_fmtlib'      )
 ] )
 , ('to_charptr',        [ ([lib_boost_stringify_db], [boost_incl], '_stringify'   )
-                        , ([lib_boost_stringify_db], [boost_incl], '_stringify_as')
+                        , ([lib_boost_stringify_db], [boost_incl], '_stringify_tr')
                         , ([libfmt_db],              [fmt_incl],   '_fmtlib'      )
                         , ([],                       [],           '_sprintf'     )
 ] )
 , ('to_FILE',           [ ([lib_boost_stringify_db], [boost_incl], '_stringify'   )
-                        , ([lib_boost_stringify_db], [boost_incl], '_stringify_as')
+                        , ([lib_boost_stringify_db], [boost_incl], '_stringify_tr')
                         , ([libfmt_db],              [fmt_incl],   '_fmtlib'      )
                         , ([],                       [],           '_fprintf'     )
 ] )
 , ('to_ostream',        [ ([lib_boost_stringify_db], [boost_incl], '_stringify'   )
-                        , ([lib_boost_stringify_db], [boost_incl], '_stringify_as')
+                        , ([lib_boost_stringify_db], [boost_incl], '_stringify_tr')
                         , ([libfmt_db],              [fmt_incl],   '_fmtlib'      )
                         , ([],                       [],           '_itself'      )
 ] ) ]
 
 samples_O3_header_only = \
 [ ('to_string',         [ ([], [boost_incl], '_stringify_ho'        )
-                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [boost_incl], '_stringify_tr_ho'     )
                         , ([], [fmt_incl],   '_fmtlib_ho'           )
 ] )
 , ('to_charptr',        [ ([], [boost_incl], '_stringify_ho'        )
-                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [boost_incl], '_stringify_tr_ho'     )
                         , ([], [fmt_incl],   '_fmtlib_ho'           )
                         , ([], [],           '_sprintf'             )
 ] )
 , ('to_FILE',           [ ([], [boost_incl], '_stringify_ho'        )
-                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [boost_incl], '_stringify_tr_ho'     )
                         , ([], [fmt_incl],   '_fmtlib_ho'           )
 ] )
 , ('to_ostream',        [ ([], [boost_incl], '_stringify_ho'        )
-                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [boost_incl], '_stringify_tr_ho'     )
                         , ([], [fmt_incl],   '_fmtlib_ho'           )
                         , ([], [boost_incl], '_BoostFormat'         )
 ] ) ]
 
 samples_Os_header_only = \
 [ ('to_string',         [ ([], [boost_incl], '_stringify_ho'        )
-                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [boost_incl], '_stringify_tr_ho'     )
                         , ([], [fmt_incl],   '_fmtlib_ho'           )
 ] )
 , ('to_charptr',        [ ([], [boost_incl], '_stringify_ho'        )
-                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [boost_incl], '_stringify_tr_ho'     )
                         , ([], [fmt_incl],   '_fmtlib_ho'           )
                         , ([], [],           '_sprintf'             )
 ] )
 , ('to_FILE',           [ ([], [boost_incl], '_stringify_ho'        )
-                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [boost_incl], '_stringify_tr_ho'     )
                         , ([], [fmt_incl],   '_fmtlib_ho'           )
 ] )
 , ('to_ostream',        [ ([], [boost_incl], '_stringify_ho'        )
-                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [boost_incl], '_stringify_tr_ho'     )
                         , ([], [fmt_incl],   '_fmtlib_ho'           )
                         , ([], [boost_incl], '_BoostFormat'         )
 ] )
 ]
 samples_debug_header_only = \
 [ ('to_string',         [ ([], [boost_incl], '_stringify_ho'        )
-                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [boost_incl], '_stringify_tr_ho'     )
                         , ([], [fmt_incl],   '_fmtlib_ho'           )
 ] )
 , ('to_charptr',        [ ([], [boost_incl], '_stringify_ho'        )
-                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [boost_incl], '_stringify_tr_ho'     )
                         , ([], [fmt_incl],   '_fmtlib_ho'           )
                         , ([], [],           '_sprintf'             )
 ] )
 , ('to_FILE',           [ ([], [boost_incl], '_stringify_ho'        )
-                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [boost_incl], '_stringify_tr_ho'     )
                         , ([], [fmt_incl],   '_fmtlib_ho'           )
 ] )
 , ('to_ostream',        [ ([], [boost_incl], '_stringify_ho'        )
-                        , ([], [boost_incl], '_stringify_as_ho'     )
+                        , ([], [boost_incl], '_stringify_tr_ho'     )
                         , ([], [fmt_incl],   '_fmtlib_ho'           )
                         , ([], [boost_incl], '_BoostFormat'         )
 ] )

@@ -229,13 +229,18 @@ public:
         ( const stringify::v0::detail::printer_ptr_range<CharT>& args
         , const stringify::v0::detail::join_t& j
         , stringify::v0::encoding<CharT> encoding
-        , stringify::v0::encoding_policy epoli )
+        , stringify::v0::encoding_error enc_err
+        , stringify::v0::surrogate_policy allow_surr )
         : _join{j}
         , _args{args}
         , _encoding(encoding)
-        , _epoli(epoli)
+        , _enc_err(enc_err)
+        , _allow_surr(allow_surr)
     {
-        _fillcount = _remaining_width_from_arglist(_join.width);
+        auto w = _arglist_width(_join.width);
+        _fillcount = ( _join.width > w
+                     ? _join.width - w
+                     : 0 );
     }
 
     join_printer_impl( const join_printer_impl& cp ) = delete;
@@ -246,8 +251,9 @@ public:
         : _join{cp._join}
         , _args{args}
         , _encoding(cp._encoding)
-        , _epoli(cp._epoli)
         , _fillcount(cp._fillcount)
+        , _enc_err(cp._enc_err)
+        , _allow_surr(cp._allow_surr)
     {
     }
 
@@ -257,8 +263,9 @@ public:
         : _join{std::move(tmp._join)}
         , _args{std::move(args)}
         , _encoding(tmp._encoding)
-        , _epoli(tmp._epoli)
         , _fillcount(tmp._fillcount)
+        , _enc_err(tmp._enc_err)
+        , _allow_surr(tmp._allow_surr)
     {
     }
 
@@ -271,7 +278,7 @@ public:
         return _args_length() + _fill_length();
     }
 
-    bool write(stringify::v0::output_buffer<CharT>& ob) const override
+    void write(stringify::v0::output_buffer<CharT>& ob) const override
     {
         if (_fillcount <= 0)
         {
@@ -283,47 +290,50 @@ public:
             {
                 case stringify::v0::alignment::left:
                 {
-                    return _write_args(ob)
-                        && _write_fill(ob, _fillcount);
+                    _write_args(ob);
+                    _write_fill(ob, _fillcount);
+                    break;
                 }
                 case stringify::v0::alignment::right:
                 {
-                    return _write_fill(ob, _fillcount)
-                        && _write_args(ob);
+                    _write_fill(ob, _fillcount);
+                    _write_args(ob);
+                    break;
                 }
                 case stringify::v0::alignment::internal:
                 {
-                    return _write_splitted(ob);
+                    _write_splitted(ob);
+                    break;
                 }
                 default:
                 {
                     BOOST_ASSERT(_join.align == stringify::v0::alignment::center);
                     auto half_fillcount = _fillcount / 2;
-                    return _write_fill(ob, half_fillcount)
-                        && _write_args(ob)
-                        && _write_fill(ob, _fillcount - half_fillcount);
+                    _write_fill(ob, half_fillcount);
+                    _write_args(ob);
+                    _write_fill(ob, _fillcount - half_fillcount);
+                    break;
                 }
             }
         }
     }
 
-    int remaining_width(int w) const override
+    int width(int limit) const override
     {
         if (_fillcount > 0)
         {
-            return (std::max)(0, w - _join.width);
+            return _join.width;
         }
-        return _remaining_width_from_arglist(w);
+        return _arglist_width(limit);
     }
-
-
 private:
 
     input_type _join;
     pp_range _args = nullptr;
     const stringify::v0::encoding<CharT> _encoding;
-    stringify::v0::encoding_policy _epoli;
     int _fillcount = 0;
+    stringify::v0::encoding_error _enc_err;
+    stringify::v0::surrogate_policy _allow_surr;
 
     std::size_t _args_length() const
     {
@@ -340,65 +350,51 @@ private:
         if(_fillcount > 0)
         {
             return _fillcount * _encoding.char_size( _join.fillchar
-                                                   , _epoli.err_hdl());
+                                                   , _enc_err);
         }
         return 0;
     }
 
-    int _remaining_width_from_arglist(int w) const
+    int _arglist_width(int limit) const
     {
-        for(auto it = _args.begin(); w > 0 && it != _args.end(); ++it)
+        int sum = 0;
+        for(auto it = _args.begin(); sum < limit && it != _args.end(); ++it)
         {
-            w = (*it) -> remaining_width(w);
+            sum += (*it) -> width(limit - sum);
         }
-        return w;
+        return sum;
     }
 
-    bool _write_splitted(stringify::v0::output_buffer<CharT>& ob) const
+    void _write_splitted(stringify::v0::output_buffer<CharT>& ob) const
     {
         auto it = _args.begin();
         for ( int count = _join.num_leading_args
             ; count > 0 && it != _args.end()
             ; --count, ++it)
         {
-            if (! (*it)->write(ob))
-            {
-                return false;
-            }
+            (*it)->write(ob);
         }
-        if (! _write_fill(ob, _fillcount))
-        {
-            return false;
-        }
+        _write_fill(ob, _fillcount);
         while(it != _args.end())
         {
-            if (! (*it)->write(ob))
-            {
-                return false;
-            }
+            (*it)->write(ob);
             ++it;
         }
-        return true;
     }
 
-    bool _write_args(stringify::v0::output_buffer<CharT>& ob) const
+    void _write_args(stringify::v0::output_buffer<CharT>& ob) const
     {
         for(const auto& arg : _args)
         {
-            if (! arg->write(ob))
-            {
-                return false;
-            }
+            arg->write(ob);
         }
-        return true;;
     }
 
-    bool _write_fill
-        ( stringify::v0::output_buffer<CharT>& ob
-        , int count ) const
+    void _write_fill( stringify::v0::output_buffer<CharT>& ob
+                    , int count ) const
     {
-        return stringify::v0::detail::write_fill
-            ( _encoding, ob, count, _join.fillchar, _epoli.err_hdl() );
+        _encoding.encode_fill( ob, count, _join.fillchar
+                             , _enc_err, _allow_surr );
     }
 };
 
@@ -414,6 +410,11 @@ class join_printer
     using _join_impl
     = stringify::v0::detail::join_printer_impl<CharT>;
 
+    template <typename Category>
+    static decltype(auto) _get_facet(const FPack& fp)
+    {
+        return fp.template get_facet<Category, void>();
+    }
 
 public:
 
@@ -423,12 +424,11 @@ public:
         ( const FPack& fp
         , const stringify::v0::detail::joined_args<Args...>& ja )
         : _fmt_group(fp, ja.args)
-        , _join_impl{ _fmt_group::range()
+        , _join_impl( _fmt_group::range()
                     , ja.join
-                    , stringify::v0::get_facet
-                        < stringify::v0::encoding_category<CharT>, void > (fp)
-                    , stringify::v0::get_facet
-                        < stringify::v0::encoding_policy_category, void > (fp) }
+                    , _get_facet<stringify::v0::encoding_c<CharT>> (fp)
+                    , _get_facet<stringify::v0::encoding_error_c>(fp)
+                    , _get_facet<stringify::v0::surrogate_policy_c>(fp))
     {
     }
 
@@ -437,12 +437,6 @@ public:
         , _join_impl(cp, _fmt_group::range())
     {
     }
-
-    // join_printer(join_printer&& tmp)
-    //     : fmt_group(std::move(tmp))
-    //     , join_impl(std::move(tmp), fmt_group::range())
-    // {
-    // }
 
     virtual ~join_printer()
     {

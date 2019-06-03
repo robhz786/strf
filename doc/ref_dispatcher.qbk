@@ -9,7 +9,7 @@
 
 [table
 [[
-  `template <typename FPack, typename OutBuff, typename ... OBArgs>`[br]
+  `template <typename FPack, typename OutBuff, typename ... OutBuffArgs>`[br]
   `class dispatcher;`
 ]]
 [[
@@ -17,13 +17,18 @@
     [[Compile time requirements]
      [[itemized_list
       [`FPack` is an instance of [link facets_pack `facets_pack`]]
-      [`OutBuff` satisfies the [link OutputBuffer `OutputBuffer`] requirements.]
-      [`std::is_constructible<OutputBuffer, OBArgs...>::value` is `true`]]]]]
+      [`OutBuff` satisfies the [link OutputBuffer `OutputBuffer`] requirements.]]]]
+    [[Note]
+     [This class template defines the basic usage syntax of the library.]
+     [A dispatcher object internally contains an object of type `FPack`
+      and an object of each of the types in `OutBuffArgs...`.]]]
+
+[/`std::is_constructible<OutputBuffer, OutBuffArgs...>::value` is `true`]
 ]]
 ]
 
-This class template defines the basic usage syntax of the library.
 
+[#dispatcher_member_types]
 [h4 Member types]
 
 [table
@@ -31,165 +36,343 @@ This class template defines the basic usage syntax of the library.
 [[The character type]]
 ]
 
+[table
+[[`using return_type = decltype(std::declval<OutputBuff&>().finish());`]]
+[[The return type of [link dispatcher_strf stringification functions].]]
+]
+
+
 [h4 Public member functions]
 
 [#dispatcher_ctor]
-[h5 Constructor]
+[h5 Constructors]
+
+[table
+[[ `constexpr dispatcher(const dispatcher&) = default;`]]
+[[
+Copy constructor.
+[variablelist
+   [[Compile time requirements]
+    [`std::is_copy_constructible<OutBuffArgs>::value && ...` is `true`]]]
+]]
+]
+
+[table
+[[ `constexpr dispatcher(dispatcher&&) = default;`]]
+[[
+Move constructor.
+[variablelist
+   [[Compile time requirements]
+    [`std::is_move_constructible<OutBuffArgs>::value && ...` is `true`]]]
+]]
+
+]
 
 [table
 [[
-  `dispatcher(const FPack fp, OBArgs... args);`
+`template <typename... OBArgs>`[br]
+`constexpr explicit dispatcher(OBArgs&&... args);`
 ]]
 [[
   [variablelist
+   [[Compile time requirements]
+    [[itemized_list
+       [`std::is_default_constructible_v<FPack>`]
+       [`std::is_constructible_v<OutBuffArgs, OBArgs&&> && ...` is `true`]]]]
+
    [[Effect]
-    [Construct a dispatcher that will internally store a copy of `fp` and
-     of each of the argumers in `args...`]]]
+    [[itemized_list
+      [For each `T` in `OutBuffArgs...`, initializes the internally object
+       of type `T` with the correspoding value in
+       `std::forward<OBArgs>(args)...`]]]]]
+]]
+]
+
+[table
+[[
+[role index_mark (1)]
+`template <typename... OBArgs>`[br]
+[role index_mark]
+`constexpr explicit dispatcher(const FPack& fp, OBArgs&&... args);`
+
+[role index_mark (2)]
+`template <typename... OBArgs>`[br]
+[role index_mark]
+`constexpr explicit dispatcher(FPack&& fp, OBArgs&&... args);`
+]]
+[[
+  [variablelist
+   [[Compile time requirements]
+    [[itemized_list
+       [`sizeof...(OBArgs) == sizeof...(OutBuffArgs)` is `true`, and]
+       [`std::is_constructible<OutBuffArgs, OBArgs&&> && ...` is `true`]]
+    , otherwise it does not participates in overload resolution.]]
+
+   [[Effect]
+    [[itemized_list
+      [Initializes the internal `FPack` object with `fp`
+       [role index_mark (case 1)], or `std::move(fp)` [role index_mark (case 2)].]
+      [For each `T` in `OutBuffArgs...`, initializes the internally object
+       of type `T` with the correspoding value in
+       `std::forward<OBArgs>(args)...`]]]]]
 ]]
 ]
 
 [#dispatcher_facets]
 [h5 Facets]
 
+
+
 [table
 [[
-  `template <typename ... F>`[br]
-  `dispatcher<FPack2, OutBuff, OBArgs...> facets(F&& ...f) const &;`
+[role index_mark (1)]
+`template <typename... F>`[br]
+[role index_mark]
+`[[nodiscard]] constexpr dispatcher<FPack2, OutBuff, OutBuffArgs...>`
+`facets(F&& ...f) const &;`
+
+[role index_mark (2)]
+`template <typename... F>`[br]
+[role index_mark]
+`[[nodiscard]] constexpr dispatcher<FPack2, OutBuff, OutBuffArgs...>&&`
+`facets(F&& ...f) &&;`
 ]]
 [[
   [variablelist
+    [[Compile time requirements]
+     [[itemized_list
+      [All types in `F...` satisfy the [link FacetsPackElementRequirements
+       `FacetsPackElement`] requirements.]
+      [[role index_mark (case 1)]
+       `std::is_copy_constructible<OutBuffArgs>::value && ...` is `true`]
+      [[role index_mark (case 2)]
+       `std::is_move_constructible<OutBuffArgs>::value && ...` is `true`]]
+        , otherwise calling this function causes a compilation error.]]
+
+    [[Return type]
+     [`FPack2` is `decltype(`[link pack
+      `pack`]`(std::declval<const FPack&>(), std::forward<F>(f)...))`]]
     [[Effect]
-     [Creates a `dispatcher` object identical to this, except that its
-      internal `facet_pack` object is equivalent ( in the sense that
-       passing it to [link get_facet `get_facet`]  always produces
-       the same effect ) to [link pack `pack`]
-       `(_fp, std::forward<F>(f)...)`, where `_fp` is the internal
-      `facet_pack` object of this `dispatcher`.]]]
+     [Creates new dispatcher object
+      that is identical to this, except that it contains others facet
+      objects. More specifically:
+      [itemized_list
+       [For each `T` in `OutBuffArgs...`, initializes an object of type `T`
+        inside the new dispatcher with `ob_arg` [role index_mark (case 1)]
+        or `std::forward<T>(ob_arg)` [role index_mark (case 2)], where
+        `ob_arg` is the corresponding `T` object contained
+        in this dispatcher.]
+        
+       [Initializes an object of type `FPack2` inside the new dispatcher
+        with [link pack `pack`]`(fp, std::forward<F>(f)...)`
+        [role index_mark (case 1)]
+        or [link pack `pack`]`(std::move(fp), std::forward<F>(f)...)`
+        [role index_mark (case 2)],        
+        where `fp` is the `FPack` object contained in this dispatcher.]
+
+       [Copies all the information regarding [link dispatcher_reserve
+        reservation] to the new dispatcher object.]]]]]
 ]]
 ]
 
 [#dispatcher_reserve]
 [h5 Reserve]
+
+
 [table
 [[
-  `dispatcher<FPack, OutBuff, OBArgs...>&& reserve(std::size_t s) &&;`
+  `constexpr dispatcher<FPack, OutBuff, OutBuffArgs...>&& reserve(std::size_t s) &&;`[br]
 ]]
 [[
   [variablelist
-   [[Effect]
-    [Causes [link dispatcher_call_op `operator()`] or the [link
-     dispatcher_as `as`] function to call `ob.reserve(s)`
-     before writing any content to `ob`, 
-     where `ob` is an instance of `OutBuff`.]]
    [[Compile time requirements]
-    [The expression `std::declval<OutBuff&>().declval(s)` is well formed.]]]
+    [The expression `std::declval<OutBuff&>().reserve(s)` is well formed]]
+   [[Effect]
+    [Changes the state of this dispatcher in a way to influence the
+     actions taken by the [link dispatcher_strf stringification functions].
+     More specifically, it causes them to call `ob.reserve(s)`
+     before writing anything to `ob`, where `ob` is the `OutBuff`
+     object they create.]]
+   [[Return Value]
+    [`std::move(*this)`]]]
+]]
+]
+
+
+
+[table
+[[
+  `[[nodiscard]] constexpr dispatcher<FPack, OutBuff, OutBuffArgs...> reserve(std::size_t s) const &;`
+]]
+[[
+  [variablelist
+   [[Compile time requirements]
+    [[itemized_list
+     [The expression `std::declval<OutBuff&>().reserve(s)` is well formed.]
+     [`std::is_copy_constructible<OutBuffArgs>::value && ...` is `true`.]]]]
+   [[Effect]
+    [Same as returning `dispatcher(*this).reserve(s)`.]]]
+
 ]]
 ]
 
 [#dispatcher_reserve_calc]
 [table
 [[
-  `dispatcher<FPack, OutBuff, OBArgs...>&& reserve_calc() &&;`
+  `dispatcher<FPack, OutBuff, OutBuffArgs...>&& constexpr reserve_calc() &&;`
 ]]
 [[
   [variablelist
-   [[Effect]
-    [Causes [link dispatcher_call_op `operator()`] or [link
-     dispatcher_as `as` function] to call `ob.reserve(s)`
-     before writing any content to `ob`, 
-     where `ob` is an instance of `OutBuff` and the value `s`,
-     whose type is `std::size_t`, is the calculated number
-     of character that will be written to `ob`.]]
    [[Compile time requirements]
-    [The expression `std::declval<OutBuff&>().declval(std::size_t{})`
-     is well formed.]]]
+    [The expression `std::declval<OutBuff&>().reserve(std::size_t())`
+     is well formed.]]
+   [[Effect]
+    [Changes the state of this dispatcher in a way to influence the
+     actions taken by the [link dispatcher_strf stringification functions].
+     More specifically, it causes them to call `ob.reserve(s)`
+     before writing anything to `ob`, where `ob` is the `OutBuff`
+     object they create, and `s`, whose type is `std::size_t`,
+     is the number of character that will be written to `ob`.]]
+   [[Return Value]
+    [`std::move(*this)`]]]
 ]]
 ]
+
+
+[#dispatcher_reserve_calc]
+[table
+[[
+  `[[nodiscard]] constexpr dispatcher<FPack, OutBuff, OutBuffArgs...>&& reserve_calc() const &;`
+]]
+[[
+  [variablelist
+   [[Compile time requirements]
+    [itemized_list
+     [The expression `std::declval<OutBuff&>().reserve(std::size_t())`
+     is well formed.]
+     [`std::is_copy_constructible<OutBuffArgs>::value && ...` is `true`.]]]
+  [[Effect]
+    [Same as returning `dispatcher(*this).reserve_calc()`]]]
+
+]]
+]
+
+
 
 [#dispatcher_strf]
 [h5 Stringification functions]
 
+These are the functions that actually take the input arguments and
+write their textual representation.
+
 [#dispatcher_call_op]
+
 [table
 [[
-  `template <typename... Args>`[br]
-  `decltype(auto) operator()(const Args&... args) const;`
+[role index_mark (1)]  `template <typename... Args>`[br]
+[role index_mark] [link dispatcher_member_types `return_type`]
+                  `operator()(const Args&... args) const &;`
+
+[role index_mark (2)]  `template <typename... Args>`[br]
+[role index_mark] [link dispatcher_member_types `return_type`]
+                  `operator()(const Args&... args) &&;`
+
 ]]
 [[
   [variablelist
+    [[Compile time requirements]
+     [[role index_mark(case 1)] `std::is_constructible<OutBuff, const OutBuffArgs&...>::value` is `true`]
+     [[role index_mark(case 2)] `std::is_constructible<OutBuff, OutBuffArgs...>::value` is `true`]]
+
     [[Effect]
      [[ordered_list
       [For each `arg` in `args...`, creates a corresponding
        [link printer `printer`] object by calling [link make_printer
-       `make_printer`]`<char_type>(_fp, arg)` where `_fp` is the
+       `make_printer`]`<char_type>(fp, arg)` where `fp` is the
        internal `facets_pack` object.]
-      [Create an object `ob` of type `OutBuff` initializing it with the
-       arguments that have been passed to `dispatcher` constructor]
+      [Create an object `ob` of type `OutBuff` initializing it with
+       `obargs...` [role index_mark (case 1)] or
+       with `std::forward<OutBuffArgs>(obargs)...`
+       [role index_mark (case 2)], where `obargs...` are the
+       internal `OutBuffArgs...` objects.]
       [If [link dispatcher_reserve `reserve`] or [link dispatcher_reserve_calc
        `reserve_calc`] was called, then call `ob.reserve(size)` where
-       `size` is value passed to [link dispatcher_reserve `reserve`] or
+       `size` is the value passed to [link dispatcher_reserve `reserve`] or
        the sum of `p.necessary_size()` for all printers `p` created
-       in (1).]
-      [For each printer `p` created in (1), do `p.write(ob)` until
+       in step 1.]
+      [For each printer `p` created in step 1, do `p.write(ob)` until
        one these calls evetually returns `false`.]
-      [return `ob.finish()`]]]]]
+      [Return `ob.finish()`]]]]]
 ]]
 ]
 
-[#dispatcher_as]
+
+[#dispatcher_tr]
 [table
-[/
-
-  `template <typename... Args>`[br]
-  `decltype(auto) as(const char_type* str, const Args&... args) const;`[br]
-  [br]
-  `template <typename Traits, typename... Args>`[br]
-  `decltype(auto) as(const std::basic_string<char_type, Traits>& str, const Args&... args) const;`[br]
-  [br]
-  `template <typename... Args>`[br]
-  `decltype(auto) as(const std::basic_string_view<char_type>* str, const Args&... args) const;`
-
-
-]
 [[
-  [table
-  [[C++14]
-   [
-   `template <typename... Args>`[br]
-    `decltype(auto) as(const char_type* str, const Args&... args) const;`[br]
-    [br]
-    `template <typename Traits, typename... Args>`[br]
-    `decltype(auto) as(const std::basic_string<char_type, Traits>& str,`
-                      `const Args&... args) const;`
-  ]]] 
+[role index_mark (1)][role version_mark (C++14)]
+`template <typename... Args>`[br]
+[role index_mark][role version_mark ]
+[link dispatcher_member_types `return_type`]
+`tr(const char_type* str, const Args&... args) const &;`[br]
 
-  [table
-  [[C++17]
-   [
-    `template <typename... Args>`[br]
-    `decltype(auto) as(const std::basic_string_view<char_type>* str,`
-                      `const Args&... args) const;`
-  ]]]
+[role index_mark (1)][role version_mark (C++14)]
+`template <typename Traits, typename... Args>`[br]
+[role index_mark][role version_mark ]
+[link dispatcher_member_types `return_type`]
+`tr(const std::basic_string<char_type, Traits>& str,`
+                      `const Args&... args) const &;`
+
+[role index_mark (1)][role version_mark (C++17)]
+`template <typename... Args>`[br]
+[role index_mark][role version_mark ]
+[link dispatcher_member_types `return_type`]
+`tr(const std::basic_string_view<char_type>* str,`
+                      `const Args&... args) const &;`
+                      
+[role index_mark (2)][role version_mark (C++14)]
+`template <typename... Args>`[br]
+[role index_mark][role version_mark ]
+[link dispatcher_member_types `return_type`]
+`tr(const char_type* str, const Args&... args) &&;`[br]
+
+[role index_mark (2)][role version_mark (C++14)]
+`template <typename Traits, typename... Args>`[br]
+[role index_mark][role version_mark ]
+[link dispatcher_member_types `return_type`]
+`tr(const std::basic_string<char_type, Traits>& str,`
+                      `const Args&... args) &&;`
+
+[role index_mark (2)][role version_mark (C++17)]
+`template <typename... Args>`[br]
+[role index_mark][role version_mark ]
+[link dispatcher_member_types `return_type`]
+`tr(const std::basic_string_view<char_type>* str,`
+                      `const Args&... args) &&;`
 ]]
 [[
  [variablelist
-    [[Effect]
-     [ 
-      
-      
-      [ordered_list
+    [[Compile time requirements]
+     [[role index_mark(case 1)] `std::is_constructible<OutBuff, const OutBuffArgs&...>::value` is `true`]
+     [[role index_mark(case 2)] `std::is_constructible<OutBuff, OutBuffArgs...>::value` is `true`]]
+
+   [[Effect]
+     [[ordered_list
       [For each `arg` in `args...`, creates a corresponding
        [link printer `printer`] object by calling [link make_printer
-       `make_printer`]`<char_type>(_fp, arg)` where `_fp` is the
+       `make_printer`]`<char_type>(fp, arg)` where `fp` is the
        internal `facets_pack` object.]
-      [Create an object `ob` of type `OutBuff` initializing it with the
-       arguments that have been passed to `dispatcher` constructor]
+       [Create an object `ob` of type `OutBuff` initializing it with
+       `obargs...` [role index_mark (case 1)] or
+       with `std::forward<OutBuffArgs>(obargs)...`
+       [role index_mark (case 2)], where `obargs...` are the
+       internal `OutBuffArgs...` objects.]
       [If [link dispatcher_reserve `reserve`] or [link dispatcher_reserve_calc
-       `reserve_calc`] was called, then call `ob.reserve(size)` where
+       `reserve_calc`] was called, then call `ob.reserve(size)`, where
        `size` is value passed to [link dispatcher_reserve `reserve`] or
         the calculated number of character that will be written in (4).]
-      [Proccess `str` according the [link assembly_string_syntax
-       assembly string syntax] and write the result into `ob`.]
+      [Proccess `str` according the [link ref_tr_string_syntax
+       tr-string syntax] and write the result into `ob`.]
       [return `ob.finish()`]]]]]
 ]]
 ]

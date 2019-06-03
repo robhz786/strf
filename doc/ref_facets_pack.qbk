@@ -20,7 +20,7 @@ For each [~F] in `FPE...`, there is a value of [~F] in `facets_pack<FPE...>`.
 [variablelist
    [[Compile time requirements]
     [All types in `FPE...` must satisfy the
-    [link FacetsPackElementRequirements `FacetsPackElement`] requiremets]]]
+    [link FacetsPackElementRequirements `FacetsPackElement`] requirements]]]
 ]]
 ]
 

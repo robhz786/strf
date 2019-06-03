@@ -1,0 +1,22 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+
+[#surrogate_policy]
+[section Enumeration `surrogate_policy`]
+
+[import ../example/encoding_conversion.cpp]
+
+[table
+[[`enum class surrogate_policy : bool { strict, lax };`]]
+[[Default facet value: `surrogate_policy::strict`.]]
+]
+
+This enumeration is a facet that specifies whether the encoding conversion algorithms shall tolerate surrogates. In UTF-16 this means to allow unpaired surrogates (high surrogate not followed by a low surrogate, or a low surrogate not proceeded by a high surrogate). In ASCII and ASCII extensions this facets has no effect.
+
+[allow_surrogates]
+
+[endsect]

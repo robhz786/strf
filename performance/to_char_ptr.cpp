@@ -15,8 +15,10 @@
 
 #if defined(__has_include)
 #if __has_include(<charconv>)
+#if (__cplusplus >= 201402L) || (defined(_HAS_CXX17) && _HAS_CXX17)
 #define HAS_CHARCONV
 #include <charconv>
+#endif
 #endif
 #endif
 
@@ -28,17 +30,13 @@ int main()
     (void) dest_end;
 
     std::cout << "\n small strings \n";
-    PRINT_BENCHMARK("strf::ec_write(dest) (\"Hello World!\")")
-    {
-        (void)strf::ec_write(dest)("Hello World!");
-    }
     PRINT_BENCHMARK("strf::write(dest) (\"Hello World!\")")
     {
         (void)strf::write(dest)("Hello World!");
     }
-    PRINT_BENCHMARK("strf::write(dest) .as(\"{}\", \"Hello World!\")")
+    PRINT_BENCHMARK("strf::write(dest) .tr(\"{}\", \"Hello World!\")")
     {
-        (void)strf::write(dest) .as("{}", "Hello World!");
+        (void)strf::write(dest) .tr("{}", "Hello World!");
     }
     PRINT_BENCHMARK("fmt::format_to(dest, \"{}\", \"Hello World!\")")
     {
@@ -59,10 +57,6 @@ int main()
     }
 
     std::cout << "\n";
-    PRINT_BENCHMARK("strf::ec_write(dest) (\"Hello \", \"World\", '!')")
-    {
-        (void)strf::ec_write(dest)("Hello ", "World", '!');
-    }
     PRINT_BENCHMARK("strf::write(dest) (\"Hello \", \"World\", '!')")
     {
         (void)strf::write(dest)("Hello ", "World", '!');
@@ -71,9 +65,9 @@ int main()
     {
         (void)strf::write(dest)("Hello ", "World", "!");
     }
-    PRINT_BENCHMARK("strf::write(dest) .as(\"Hello {}!\", \"World\")")
+    PRINT_BENCHMARK("strf::write(dest) .tr(\"Hello {}!\", \"World\")")
     {
-        (void)strf::write(dest) .as("Hello {}!", "World");
+        (void)strf::write(dest) .tr("Hello {}!", "World");
     }
     PRINT_BENCHMARK("fmt::format_to(dest, \"Hello {}!\", \"World\")")
     {
@@ -82,6 +76,10 @@ int main()
     PRINT_BENCHMARK("std::sprintf(dest, \"Hello %s!\", \"World\")")
     {
         std::sprintf(dest, "Hello %s!", "World");
+    }
+    PRINT_BENCHMARK("std::strcat(std::strcat(std::strcpy(dest, \"Hello \"), \" World\"), \"!\"")
+    {
+        std::strcat(std::strcat(std::strcpy(dest, "Hello "), " World"), "!");
     }
 
     std::cout << "\n long string ( 1000 characters ): \n";
@@ -94,9 +92,9 @@ int main()
         {
             (void)strf::write(dest)("Hello ", long_string, "!");
         }
-        PRINT_BENCHMARK("strf::write(dest) .as(\"Hello {}!\", long_string)")
+        PRINT_BENCHMARK("strf::write(dest) .tr(\"Hello {}!\", long_string)")
         {
-            (void)strf::write(dest) .as("Hello {}!", long_string);
+            (void)strf::write(dest) .tr("Hello {}!", long_string);
         }
         PRINT_BENCHMARK("fmt::format_to(dest, \"Hello {}!\", long_string)")
         {
@@ -129,19 +127,6 @@ int main()
 
     std::cout << "\n integers \n";
 
-    PRINT_BENCHMARK_N(10, "strf::ec_write(dest) (25)")
-    {
-        (void)strf::ec_write(dest)(20);
-        (void)strf::ec_write(dest)(21);
-        (void)strf::ec_write(dest)(22);
-        (void)strf::ec_write(dest)(23);
-        (void)strf::ec_write(dest)(24);
-        (void)strf::ec_write(dest)(25);
-        (void)strf::ec_write(dest)(26);
-        (void)strf::ec_write(dest)(27);
-        (void)strf::ec_write(dest)(28);
-        (void)strf::ec_write(dest)(29);
-    }
     PRINT_BENCHMARK_N(10, "strf::write(dest) (25)")
     {
         (void)strf::write(dest)(20);
@@ -301,9 +286,9 @@ int main()
     {
         (void)strf::write(dest) (25, 25, 25);
     }
-    PRINT_BENCHMARK("strf::write(dest) .as(\"{}{}{}\", 25, 25, 25)")
+    PRINT_BENCHMARK("strf::write(dest) .tr(\"{}{}{}\", 25, 25, 25)")
     {
-        (void)strf::write(dest) .as("{}{}{}", 25, 25, 25);
+        (void)strf::write(dest) .tr("{}{}{}", 25, 25, 25);
     }
     PRINT_BENCHMARK("fmt::format_to(dest, \"{}{}{}\", 25, 25, 25)")
     {
@@ -319,9 +304,9 @@ int main()
     {
         (void)strf::write(dest) (LLONG_MAX, LLONG_MAX, LLONG_MAX);
     }
-    PRINT_BENCHMARK("strf::write(dest) .as(\"{}{}{}\", LLONG_MAX, LLONG_MAX, LLONG_MAX)")
+    PRINT_BENCHMARK("strf::write(dest) .tr(\"{}{}{}\", LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
-        (void)strf::write(dest) .as("{}{}{}", LLONG_MAX, LLONG_MAX, LLONG_MAX);
+        (void)strf::write(dest) .tr("{}{}{}", LLONG_MAX, LLONG_MAX, LLONG_MAX);
     }
     PRINT_BENCHMARK("fmt::format_to(dest, \"{}{}{}\", LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
@@ -337,9 +322,9 @@ int main()
     {
         (void)strf::write(dest) (55555, +strf::left(55555, 8) , ~strf::hex(55555));
     }
-    PRINT_BENCHMARK("strf::write(dest) .as(\"{}{}{}\", 55555, +strf::left(55555, 8) , ~strf::hex(55555))")
+    PRINT_BENCHMARK("strf::write(dest) .tr(\"{}{}{}\", 55555, +strf::left(55555, 8) , ~strf::hex(55555))")
     {
-        (void)strf::write(dest) .as("{}{}{}", 55555, +strf::left(55555, 8) , ~strf::hex(55555));
+        (void)strf::write(dest) .tr("{}{}{}", 55555, +strf::left(55555, 8) , ~strf::hex(55555));
     }
     PRINT_BENCHMARK("fmt::format_to(dest, \"{}{:<8}{:#x}\", 55555, 55555, 55555)")
     {
@@ -357,9 +342,9 @@ int main()
         (void)strf::write(dest)("blah blah ", INT_MAX, " blah ", ~strf::hex(1234)<8, " blah ", "abcdef");
     }
 
-    PRINT_BENCHMARK("strf::write(dest) .as(\"blah blah {} blah {} blah {}\", INT_MAX, ~strf::hex(1234)<8, \"abcdef\")")
+    PRINT_BENCHMARK("strf::write(dest) .tr(\"blah blah {} blah {} blah {}\", INT_MAX, ~strf::hex(1234)<8, \"abcdef\")")
     {
-        (void)strf::write(dest).as("blah blah {} blah {} blah {}", INT_MAX, ~strf::hex(1234)<8, "abcdef");
+        (void)strf::write(dest).tr("blah blah {} blah {} blah {}", INT_MAX, ~strf::hex(1234)<8, "abcdef");
     }
     PRINT_BENCHMARK("fmt::format_to(dest, \"blah blah {} blah {:<#8x} blah {}\", INT_MAX, 1234, \"abcdef\")")
     {
@@ -375,9 +360,9 @@ int main()
     {
         (void)strf::write(dest)("ten =  ", 10, ", twenty = ", 20);
     }
-    PRINT_BENCHMARK("strf::write(dest) .as(\"ten = {}, twenty = {}\", 10, 20)")
+    PRINT_BENCHMARK("strf::write(dest) .tr(\"ten = {}, twenty = {}\", 10, 20)")
     {
-        (void)strf::write(dest).as("ten = {}, twenty = {}", 10, 20);
+        (void)strf::write(dest).tr("ten = {}, twenty = {}", 10, 20);
     }
     PRINT_BENCHMARK("fmt::format_to(dest, \"ten = {}, twenty = {}\", 10, 20)")
     {

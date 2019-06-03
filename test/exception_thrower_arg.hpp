@@ -28,15 +28,15 @@ public:
         return 0;
     }
 
-    bool write(boost::stringify::v0::output_buffer<CharT>& ob) const override
+    void write(boost::stringify::v0::output_buffer<CharT>& ob) const override
     {
         ob.recycle();
         throw std::invalid_argument("invalid printer");
     }
 
-    int remaining_width(int w) const override
+    int width(int) const override
     {
-        return w;
+        return 0;
     }
 };
 

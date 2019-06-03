@@ -18,7 +18,7 @@ public:
 
     void reserve(std::size_t size);
 
-    bool recycle() override;
+    void recycle() override;
 
     std::size_t finish();
 
@@ -42,7 +42,7 @@ QStringAppender::QStringAppender(QString& str)
 //]
 
 //[QStringAppender_recycle
-bool QStringAppender::recycle()
+void QStringAppender::recycle()
 {
     // Flush the content:
     std::size_t count = /*<<ouput_buffer::pos() returns the immediate position
@@ -56,8 +56,6 @@ bool QStringAppender::recycle()
 
     // Not necessary to set the buffer's end since it's the same as before:
     // this->set_end(_buffer + _buffer_size);
-
-    return true;
 }
 //]
 
@@ -73,11 +71,6 @@ void QStringAppender::reserve(std::size_t size)
 //[QStringAppender_finish
 std::size_t QStringAppender::finish()
 {
-    if (this->has_error())
-    {
-        throw strf::stringify_error(this->get_error());
-    }
-
     recycle();
     return _count;
 }
@@ -86,10 +79,7 @@ std::size_t QStringAppender::finish()
 //[QStringAppender_dispatcher
 inline auto append(QString& str)
 {
-    using dispatcher_type = strf::dispatcher< strf::facets_pack<>
-                                            , QStringAppender
-                                            , QString& >;
-    return dispatcher_type(strf::pack(), str);
+    return strf::dispatcher<strf::facets_pack<>, QStringAppender, QString&> {str};
 }
 //]
 

@@ -167,7 +167,7 @@ public:
 
     void write() const override;
     std::size_t necessary_size() const override;
-    int remaining_width(int w) const override;
+    int width(int limit) const override;
 
 protected:
 
@@ -189,16 +189,18 @@ public:
 
     virtual ~printers_receiver();
 
-    virtual bool put(const stringify::v0::printer<CharOut>& ) = 0;
+    virtual void put(const stringify::v0::printer<CharOut>& ) = 0;
 };
 ``
+[/
 When the `put` member function returns `false` there is no point
 in calling it again with the remaining printers. This does not
 necessarily mean that an error happened.
+]
 [/
-For example, the implementation of `remaining_width`
+For example, the implementation of `width`
 creates a `printer_receivers` whose `put` function
-returns false when the remaining width is already zero.
+returns false when the width is greater or equal to `limit`.
 ]
 
 [h4 The printer]
@@ -311,7 +313,7 @@ public:
 
     bool write(strf::output_buffer<CharT>& ob) const override;
     std::size_t necessary_size() const override;
-    int remaining_width(int w) const override;
+    int width(int) const override;
 
 private:
 
@@ -334,14 +336,11 @@ is naturally bigger.
 The implementation of `_write_multiline` is omitted for being too large.
 You can check it out [@ ../../example/extend_input_base64.cpp here].
 But the snippet above convey the idea: you write things in
-`output_buffer<CharT>::pos()`, but doing before that, you check how much
-available space is there. If it is not sufficient you call `recycle`
+`output_buffer<CharT>::pos()`, but before that, you check how much
+available space is there. If it is not sufficient, then you call `recycle`
 which resets `pos()` and `end()` providing an a space of at least
 [linke min_buff_size min_buff_size]. You call `recycle` how many times
-it is necessary to put all the content, or until it returns `false`
-which indicates a failure. When `recycle` returns `false` there is no
-need to call `set_error` because `recycle` is responsible for that.
-But you should call `set_error` if your code fails for any reason.
+it is necessary to put all the content.
 
 Now, after defining `base64_printer`, we can finally overload `make_printer`:
 

@@ -1,0 +1,51 @@
+[/==============================================================================
+    Use, modification and distribution is subject to the Boost Software License,
+    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+===============================================================================/]
+
+[#encoding_error]
+[section Enumeration `encoding_error`]
+[import ../example/encoding_conversion.cpp]
+
+[table
+[[`enum class encoding_error { replace, stop, ignore };`
+]]
+[[
+Default facet value: `encoding_error::replace`.
+]]
+]
+
+The `encoding_error` enumeration is a facet that specifies how the
+encoding conversion algorithms shall handle invalid sequences:
+
+[itemized_list
+
+[[#encoding_error_replace] [*`encoding_error::replace`:] This is the default.
+Each invalid sequence is replace by the
+[@https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character
+replacement character "\uFFFD"] (U+FFFD). When the input is UTF-8,
+the library follows the practice recommended by the Unicode
+Standard.
+[footnote
+  Search for ['"Best Practices for Using U+FFFD"] in
+  [@https://www.unicode.org/versions/Unicode10.0.0/ch03.pdf Chapter 3]
+  of Unicode Standard. ]
+[encoding_error_ignore]
+]
+
+
+[[#encoding_error_stop] [*`encoding_error::stop`:] Stop the transcoding and emit
+`std::make_error_code(std::errc::illegal_byte_sequence)`.
+[encoding_error_stop]
+]
+
+
+[[#encoding_error_ignore] [*`encoding_error::ignore`:] The illegal byte sequence is removed
+from the transcoding.
+[encoding_error_ignore]
+]
+
+]
+
+[endsect]

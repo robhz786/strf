@@ -25,9 +25,9 @@ public:
     i18n_int_printer
         ( const FPack& fp
         , IntT value ) noexcept
-        : _chars(get_facet<stringify::v0::numchars_category<CharT, 10>, IntT>(fp))
-        , _punct(get_facet<stringify::v0::numpunct_category<10>, IntT>(fp))
-        , _encoding(get_facet<stringify::v0::encoding_category<CharT>, IntT>(fp))
+        : _chars(get_facet<stringify::v0::numchars_c<CharT, 10>, IntT>(fp))
+        , _punct(get_facet<stringify::v0::numpunct_c<10>, IntT>(fp))
+        , _encoding(get_facet<stringify::v0::encoding_c<CharT>, IntT>(fp))
         , _digcount(stringify::v0::detail::count_digits<10>(value))
     {
         if (value < 0)
@@ -45,13 +45,13 @@ public:
 
     std::size_t necessary_size() const override;
 
-    int remaining_width(int w) const override;
+    int width(int) const override;
 
-    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(stringify::v0::output_buffer<CharT>& ob) const override;
 
 private:
 
-    bool _write_with_punct(stringify::v0::output_buffer<CharT>& ob) const;
+    void _write_with_punct(stringify::v0::output_buffer<CharT>& ob) const;
 
     const stringify::v0::numchars<CharT>& _chars;
     const stringify::v0::numpunct_base& _punct;
@@ -78,28 +78,30 @@ std::size_t i18n_int_printer<CharT>::necessary_size() const
 }
 
 template <typename CharT>
-int i18n_int_printer<CharT>::remaining_width(int w) const
+int i18n_int_printer<CharT>::width(int) const
 {
-    int width = _sepcount + (_digcount + _negative) * _chars.char_width();
-    return w > width ? w - width : 0;
+    return _sepcount + (_digcount + _negative) * _chars.char_width();
 }
 
 template <typename CharT>
-bool i18n_int_printer<CharT>::write(stringify::v0::output_buffer<CharT>& ob) const
+void i18n_int_printer<CharT>::write(stringify::v0::output_buffer<CharT>& ob) const
 {
-    if (_negative && ! _chars.print_neg_sign(ob, _encoding))
+    if (_negative)
     {
-        return false;
+        _chars.print_neg_sign(ob, _encoding);
     }
     if (_sepcount != 0)
     {
-        return _write_with_punct(ob);
+        _write_with_punct(ob);
     }
-    return _chars.print_digits(ob, _encoding, _uvalue, _digcount);
+    else
+    {
+        _chars.print_digits(ob, _encoding, _uvalue, _digcount);
+    }
 }
 
 template <typename CharT>
-bool i18n_int_printer<CharT>::_write_with_punct
+void i18n_int_printer<CharT>::_write_with_punct
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     constexpr unsigned max_digits
@@ -107,9 +109,9 @@ bool i18n_int_printer<CharT>::_write_with_punct
     unsigned char groups[max_digits];
     auto g = _punct.groups(_digcount, groups);
     unsigned num_groups = static_cast<unsigned>((g - groups) + 1);
-    return _chars.print_digits( ob, _encoding, _uvalue, groups
-                              , _punct.thousands_sep()
-                              , _digcount, num_groups );
+    _chars.print_digits( ob, _encoding, _uvalue, groups
+                       , _punct.thousands_sep()
+                       , _digcount, num_groups );
 }
 
 
@@ -145,9 +147,9 @@ public:
 
     std::size_t necessary_size() const override;
 
-    int remaining_width(int w) const override;
+    int width(int) const override;
 
-    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(stringify::v0::output_buffer<CharT>& ob) const override;
 
 private:
 
@@ -163,28 +165,23 @@ std::size_t fast_int_printer<CharT>::necessary_size() const
 }
 
 template <typename CharT>
-int fast_int_printer<CharT>::remaining_width(int w) const
+int fast_int_printer<CharT>::width(int) const
 {
-    int width = _digcount + _negative;
-    return w > width ? w - width : 0;
+    return _digcount + _negative;
 }
 
 template <typename CharT>
-bool fast_int_printer<CharT>::write
+void fast_int_printer<CharT>::write
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     unsigned size = _digcount + _negative;
-    if (ob.size() < size && ! ob.recycle())
-    {
-        return false;
-    }
+    ob.ensure(size);
     ob.advance(size);
     CharT* it = write_int_dec_txtdigits_backwards(_uvalue, ob.pos());
     if (_negative)
     {
         it[-1] = '-';
     }
-    return true;
 }
 
 
@@ -205,15 +202,11 @@ public:
 
     using has_numchars_type = decltype
         ( test_numchars
-            ( get_facet
-                < stringify::v0::numchars_category<CharT, Base>, IntT >
-                    (fp()) ) );
+            ( get_facet<stringify::v0::numchars_c<CharT, Base>, IntT>(fp())) );
 
     using has_numpunct_type = decltype
         ( test_numpunct
-            ( get_facet
-                < stringify::v0::numpunct_category<Base>, IntT >
-                    (fp())) );
+            ( get_facet< stringify::v0::numpunct_c<Base>, IntT >(fp())) );
 
 public:
 
@@ -227,7 +220,12 @@ constexpr bool has_i18n = has_i18n_impl<CharT, FPack, IntT, Base>::has_i18n;
 static_assert(has_i18n<char, decltype(pack()), int, 10> == false, "");
 static_assert(has_i18n<char, decltype(pack(monotonic_grouping<10>(3))), int, 10> == true, "");
 
-#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+
+#if defined(__cpp_char8_t)
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class i18n_int_printer<char8_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_int_printer<char8_t>;
+#endif
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class i18n_int_printer<char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class i18n_int_printer<char16_t>;
@@ -239,7 +237,7 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_int_printer<char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_int_printer<char32_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_int_printer<wchar_t>;
 
-#endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 } // namespace detail
 

@@ -1,0 +1,70 @@
+[import ../example/tr_string.cpp]
+
+[# ref_tr_string_syntax]
+[section Tr-string]
+
+[h3 Syntax]
+
+Characters that don't belong to any /special sequence/ are written unchanged.
+/Special sequences/ are characters sequences whose first character is "{",
+and are of four kind:
+
+[table
+[[A `'{'` followed by]  [until]                           [means]]
+[[`'-'`]                [the next `'}'` or end of string] [a comment]]
+[[a digit]              [the next `'}'` or end of string] [a positional argument reference]]
+[[another `'{'`]        [the second `'{'`]                [an escaped `'{'`]]
+[[any other character]  [the next `'}'` or end of string] [a non positional argument reference]]
+]
+
+[variablelist
+
+[[Comments]
+
+[When the tr-string has to be translated to other languages, the translation may be in charge of someone else than you. So you can add comments intended to help such person.
+]
+[[trstr_comment_sample]]
+]
+
+[[Positional argument reference]
+[Position zero refers to the first input argument.]
+[The characters the after the digits are ignored. So they can also be used as comments.]
+[[trstr_positional_arg]]
+]
+
+[[Non positional argument reference]
+[The characters the after the `'{'` are ignored as well]
+[[trstr_non_positional_arg]]
+]
+
+[[Escapes]
+[ There is no way to escape the `'}'` character. There is no need to, since the `'}'` has special meaning only if it corresponds to a previous `'{'`]
+[[trstr_escape_sample]]
+]
+]
+
+
+[#tr_string_error]
+[h3 Tr-string error handling: `tr_invalid_arg` enumeration]
+
+The enumeration `tr_invalid_arg` is a facet that specifies what happens when a non existing argument is referenced
+``
+enum class tr_invalid_arg
+{
+    replace, stop, ignore
+};
+``
+[*`tr_invalid_arg::replace`] causes the invalid reference to be replaced by the [@https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character
+replacement character "\uFFFD"]. This is the default:
+
+[trstr_replace]
+
+[*`tr_invalid_arg::ignore`] causes the invalid reference to be ignored:
+
+[trstr_omit]
+
+[*`tr_invalid_arg::stop`] emits an error code:
+
+[trstr_stop]
+
+[endsect]

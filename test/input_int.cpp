@@ -281,7 +281,7 @@ int main()
         auto punct = strf::monotonic_grouping<10>{3}.thousands_sep(0x10FFFF);
         TEST(u8"  +1\U0010FFFF000").facets(punct) (+strf::right(1000, 8));
         TEST(u8"  +1\U0010FFFF000").facets(punct) (strf::join(8)(+strf::dec(1000)));
-        TEST(u8"----+1\U0010FFFF000").facets(punct) (strf::join(8)("----", +strf::dec(1000)));
+        TEST(u8"----+1\U0010FFFF000").facets(punct) (strf::join(8)(u8"----", +strf::dec(1000)));
     }
 
     {
@@ -306,7 +306,7 @@ int main()
         TEST(u8" 0x1\U0010FFFF000").facets(punct) (~strf::hex(0x1000) > 8);
         TEST(u8" 0x1\U0010FFFF000").facets(punct) (strf::join_right(8)(~strf::hex(0x1000) > 8));
         TEST(u8"---0x1\U0010FFFF000").facets(punct)
-            (strf::join_right(8)("---", ~strf::hex(0x1000)));
+            (strf::join_right(8)(u8"---", ~strf::hex(0x1000)));
     }
 
     {
@@ -315,7 +315,7 @@ int main()
             ( strf::oct(01777777777777777777777LL) );
     }
     {
-        const char* expected =
+        const auto* expected =
             u8"1\U0010FFFF" u8"7\U0010FFFF" u8"7\U0010FFFF" u8"7\U0010FFFF"
             u8"7\U0010FFFF" u8"7\U0010FFFF" u8"7\U0010FFFF" u8"7\U0010FFFF"
             u8"7\U0010FFFF" u8"7\U0010FFFF" u8"7\U0010FFFF" u8"7\U0010FFFF"
@@ -331,7 +331,7 @@ int main()
         auto punct = strf::monotonic_grouping<8>{3}.thousands_sep(0x10FFFF);
         TEST(u8"  01\U0010FFFF000").facets(punct) (~strf::oct(01000) > 8);
         TEST(u8"  01\U0010FFFF000").facets(punct) (strf::join(8)(~strf::oct(01000)));
-        TEST(u8"----01\U0010FFFF000").facets(punct) (strf::join(8)("----", ~strf::oct(01000)));
+        TEST(u8"----01\U0010FFFF000").facets(punct) (strf::join(8)(u8"----", ~strf::oct(01000)));
     }
 
 

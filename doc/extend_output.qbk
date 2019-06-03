@@ -4,7 +4,8 @@
     http://www.boost.org/LICENSE_1_0.txt)
 ===============================================================================/]
 
-[section:extend_output How to add a new destination type]
+[#extend_output]
+[section How to add a new destination type]
 
 You can extend the library so that it writes content into a destination other than
 [link output_types those] currently supported. That envolves two steps:
@@ -43,11 +44,6 @@ space must be at least `strf::`[link min_buff_size `min_buff_size`].
 
 [QStringAppender_recycle]
 
-If any error happens in `recycle()`, it shall call
-`output_buffer::`[link output_buffer_set_error `set_error`] and return `false`.
-Or it can just throw an exception if you know that your extension
-will only be used in code bases where exceptions are allowed.
-
 After there is no more content to write, the library calls `finish()`
 which must check whether there is anything in the buffer to consume.
 It is not necessary for `finish` to return anything. But we will
@@ -58,7 +54,7 @@ return the number of characters written.
 The last member function that needs to be explained is `reserve`.
 Differently from the other three, this one is optional and the library only
 calls it once and before the any call to `recycle` in this object, and only
-when [link syntax_reserve reserve_calc] or [link syntax_reserve reserve]
+when [link overview_reserve reserve_calc] or [link overview_reserve reserve]
 is called in the main [link usage_syntax usage syntax].
 The parameter of `reserve` tells how many characters will be written,
 so that you can pre-allocate enough memory.
@@ -67,15 +63,20 @@ Its value may actually be bigger than necessary, but should never be smaller.
 [QStringAppender_reserve]
 
 Now that we have our [link OutputBuffer OutputBuffer],
-the next step is to define our `append` function.
+the next step is to define our global `append` function.
 This is where we use the [link dispatcher dispatcher] class template,
 whose purpose is to basically to conceive the
 [link usage_syntax basic usage syntax] of the library.
-Our dispatcher object is [link dispatcher_ctor constructed] with an initial
-[link facets_pack facet_pack], which is usually empty, and with the arguments
-that it stores to further construct our `QStringAppender` class, when one of the
-[link dispatcher_strf stringification functions] ( that takes the input
-argument ) is called.
+Its first template parameter must be an instance of the __facets_pack__
+template, and almost aways is __facets_pack__`<>`.
+The sencond parameter is our [link OutputBuffer OutputBuffer]:
+the `QStringAppender` class. The remaining template parameters
+are the types of the elements that are stored inside the dispatcher
+object and are used by the [link dispatcher_strf stringification functions]
+to initialize the [link OutputBuffer OutputBuffer] (`QStringAppender`) object.
+The `dispatcher` constructor initializes such elements with the arguments
+it receives:
+
 
 [QStringAppender_dispatcher]
 

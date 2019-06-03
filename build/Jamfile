@@ -5,7 +5,9 @@ project libs/stringify
  
 lib boost_stringify 
     : stringify.cpp 
-    : <link>static 
+    : <link>static
+    :
+    : <define>BOOST_STRINGIFY_SEPARATE_COMPILATION
     ; 
  
 boost-install boost_stringify ; 

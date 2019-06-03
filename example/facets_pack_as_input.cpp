@@ -56,10 +56,10 @@ void sample2()
 
 void sample3()
 {
-    //[ facets_pack_input_in_assembly_string
+    //[ facets_pack_input_in_tr_string
     namespace strf = boost::stringify::v0;
     auto str = strf::to_string
-        .as( "{} -- {} -- {}"
+        .tr( "{} -- {} -- {}"
            , "aaa"
            , strf::facets()("bbb", "ccc", "ddd")
            , "eee" );

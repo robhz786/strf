@@ -8,14 +8,14 @@
 
 [section Overview]
 
+Boost.Stringify is a fast, highly extensible, locale-independent formatting library.
+
 [warning
-This library is not part of the Boost C++ Libraries yet.
-It is still in an early stage of development and subject to change without
-preserving backwards compatibility.
+This library is not part of the Boost C++ Libraries yet,
+and is still subject to change without preserving backwards compatibility.
 ]
 
-
-[section A tour of the library]
+[section:tour A tour of the library]
 
 Most of the code snippets in this documentation use [link output_types `to_string`].
 Not the `std::to_string` from the standard library, but one that you can think
@@ -24,211 +24,99 @@ For example:
 
 [first_example]
 
-The "conventional" input types that are ( or will be ) supported are:
+You can see that this library uses format functions \u2014 like `hex`
+above \u2014 to specify formatting.
+Actually, `hex` is just a syntatic sugar. `hex(x)` simply returns
+`fmt(x).hex()`, and the return of `__fmt__(x)` is an object that contains
+the value of `x` as well as member functions that change the formatting.
+These [link format_functions format functions] can be called in a row
+like this: `strf::hex(255).p(4).fill(U'.') > 10`.
+[/To alleviate the verbosity operator overloads are common among them.]
 
-* an integer ( `int`, `long`, `long long`, `unsigned int`, `unsigned long` or `unsigned long long`)
-* a string ( a raw string, a `std::basic_string`, `std::basic_string_view` or `boost::basic_string_view`)
-* a single character ( with the same type as the output character type, otherwise compilation fails )
-* a `bool` ['( to do )]
-* a `void*` ['( to do )] 
-* a floating point ['( to do )]
+Now, some other examples:
 
-There are also the some [link special_input_types.special_input_types "special" input types], wich include [link ranges ranges] and [link joins joins]. But they are covered in another section.
+[second_example]
 
-And at last there are the input types that are returned from format functions, which carry format information in addition to the value to be printed.
-
-[#format_functions]
-[section Format Functions]
-
-You can see in the previous snippet that this library uses format
-functions \u2014 like `hex` \u2014 to specify formatting.
-Actually `hex` is just a syntatic sugar. `hex(value)` simply returns
-`fmt(value).hex()`. And the return type of `fmt(value)` have format
-member functions as those in the table below: 
-
-[table
-[[member function] [effect] [input types]]
-
-[
-[`operator>(int width)`]
-[right adjustment]
-[all ( integer, floating point, character, string, `void*`, `bool`) ]
-]
-
-[[`operator<(int width)`] [left adjustment] [all]]
-[[`operator^(int width)`] [centered adjustment] [all]]
-[
-[`operator%(int width)`]
-[internal adjustment (as in [@http://en.cppreference.com/w/cpp/io/manip/left `std::internal`])]
-[integer and floating point]
-]
-[[`fill(char32_t ch)`][sets the fill character to [~ch]] [all]]
-[[`p(int precision)`][sets the precision] [integer and floating point]]
-[[`dec()`] [decimal base] [integer and floating point]]
-[[`hex()`] [hexadecimal base] [integer and floating point]]
-[[`oct()`] [octal base] [integer]]
-
-[
-[`showpos(bool b)`]
-[if [~b] is `true`, print the positive sign for non-negative numbers (as in [@http://en.cppreference.com/w/cpp/io/manip/showpos `std::showpos`])]
-[integer and floating point]
-]
-
-[
-[`showbase(bool b)`]
-[if [~b] is `true`, print the numeric base indication (as in [@http://en.cppreference.com/w/cpp/io/manip/showbase `std::showbase`])]
-[integer and floating point]
-]
-[[`operator+()`][same as `showpos(true)`][integer and floating point]]
-[[`operator~()`][same as `showbase(true)`][integer]]
-[[`multi(int count)`][print the character [~count] times][character]]
-
-]
-
-The return type of these format member functions
-also have some these of format member functions,
-so that you can call them in a row. For example:
-
-[format_functions_example]
-
-The additional syntatic sugars are:
-
-[table
-[[expression] [equivalent to]]
-[[`hex(x)`][`fmt(x).hex()`]]
-[[`dec(x)`][`fmt(x).dec()`]]
-[[`oct(x)`][`fmt(x).oct()`]]
-[[][]]
-[[`right(x, width)`][`fmt(x) > width`]]
-[[`left(x, width)`][`fmt(x) < width`]]
-[[`center(x, width)`][`fmt(x) ^ width`]]
-[[`internal(x, width)`][`fmt(x) % width`]]
-[[][]]
-[[`right(x, width, fill)`]   [`fmt(x).fill(fill) > width`]]
-[[`left(x, width, fill)`]    [`fmt(x).fill(fill) < width`]]
-[[`center(x, width, fill)`]  [`fmt(x).fill(fill) ^ width`]]
-[[`internal(x, width, fill)`][`fmt(x).fill(fill) % width`]]
-[[][]]
-[[`multi(x, count)`] [`fmt(x).multi(count)`]]
-]
-
-[/
-[h4 Example]
-[formatting_samples]
-]
-[endsect]
 [#usage_syntax]
-[section Main usage syntax]
 
-Here is another difference of `to_string` from `std::to_string`:
+Another difference of this `to_string` from `std::to_string` is that
 it's not a function, but an object ( actually a constexpr ).
 It has member functions that are invoked as in the
 [@https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Named_Parameter
-named parameter idiom].
+named parameter idiom] following this syntax:
 
-And the same applies the all others /"leading expressions"/:
+[:[$../syntax.svg]]
 
-[$../syntax.png]
-[footnote This railroad diagram was generated on [@http://bottlecaps.de/rr bottlecaps.de/rr]]
-
-[section Leading expression]
-
-The [*leading expression] is the part of the syntax that varies according to
-the output type.
+The /leading expression/ is the part of the syntax that varies
+according to the destination type. Hence, `to_string` is a
+/leading expression/.
 
 [#output_types]
-
-[/
-The "`ec_`" prefix means that an `std::error_code` is returned.
-While the other expressions use exceptions.
-]
+[section Output types]
 
 [table
 [ []  [Destination type] [Leading expression]]
-
 [ [1] [`std::string`]
   [ [link to_string [*`to_string `]]]]
 
-[ [2] [`std::u16string`]
+[ [2] [`std::u8string`[role version_mark (C++20)]]
+  [ [link to_u16string [*`to_u8string`]][role version_mark (C++20)]]]
+
+[ [3] [`std::u16string`]
   [ [link to_u16string [*`to_u16string `]]]]
 
-[ [3] [`std::u32string`]
+[ [4] [`std::u32string`]
   [ [link to_u32string [*`to_u32string `]]]]
 
-[ [4] [`std::wstring`]
+[ [5] [`std::wstring`]
   [ [link to_wstring [*`to_wstring `]]]]
 
-[ [5] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Alloc]`>`]
+[ [6] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Alloc]`>`]
   [ [link to_basic_string [*`to_basic_string`]]`<`[~CharT]`, `[~Traits]`, `[~Alloc]`>`]]
 
-[ [6] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Alloc]`>&`]
+[ [7] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Alloc]`>&`]
   [ [link append [*`append`]]`(`[~destination]`)`]]
 
-[ [7] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Alloc]`>&`]
+[ [8] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Alloc]`>&`]
   [ [link assign [*`assign`]]`(`[~destination]`)`]]
 
-[ [8]  [[~CharT]`*`]
+[ [9]  [[~CharT]`*`]
   [ [link write_char_ptr_count [*`write`]]`(`[~destination]`, `[~limit]`)`]]
 
-[ [9] [[~CharT]`*`]
+[ [10] [[~CharT]`*`]
   [ [link write_char_ptr_range [*`write`]]`(`[~destination]`, `[~end]`)`]]
 
-[ [10] [[~CharT[size]]]
+[ [11] [[~CharT[size]]]
   [ [link write_char_arr [*`write`]]`(`[~destination]`)`]]
 
-[ [11] [ `FILE*` ( using narrow functions) ]
+[ [12] [ `FILE*` ( using narrow functions) ]
   [ [link write_FILE [*`write`]]`<`[~CharT]`>(`[~destination]`, `[~count_ptr]`)`]]
 
-[ [12]  [ `FILE*` ( using wide functions) ]
+[ [13]  [ `FILE*` ( using wide functions) ]
   [ [link wwrite_FILE [*`wwrite`]]`(`[~destination]`, `[~count_ptr]`)`]]
 
-[ [13] [ `std::basic_streambuf <`[~CharT]`, `[~Traits]`>&`]
+[ [14] [ `std::basic_streambuf <`[~CharT]`, `[~Traits]`>&`]
   [ [link write_std_streambuf [*`write`]]`(`[~destination]`, `[~count_ptr]`)`]]
-
-[ [14]
-  [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Alloc]`>&`]
-  [ [link ec_append [*`ec_append`]]`(`[~destination]`, `[~count_ptr]`)`]]
-
-[ [15] [`std::basic_string <`[~CharT]`, `[~Traits]`, `[~Alloc]`>&`]
-  [ [link ec_assign [*`ec_assign`]]`(`[~destination]`, `[~count_ptr]`)`]]
-
-[ [16]  [[~CharT]`*`]
-  [ [link ec_write_char_ptr_count [*`ec_write`]]`(`[~destination]`, `[~limit]`, `[~count_ptr]`)`]]
-
-[ [17] [[~CharT]`*`]
-  [ [link ec_write_char_ptr_range [*`ec_write`]]`(`[~destination]`, `[~end]`, `[~count_ptr]`)`]]
-
-[ [18] [[~CharT[size]]]
-  [ [link ec_write_char_arr [*`ec_write`]]`(`[~destination]`, `[~count_ptr]`)`]]
-
-[ [19] [ `FILE*` ( using narrow functions) ]
-  [ [link ec_write_FILE [*`ec_write`]]`<`[~CharT]`>(`[~destination]`, `[~count_ptr]`)`]]
-
-[ [20]  [ `FILE*` ( using wide functions) ]
-  [ [link ec_wwrite_FILE [*`ec_wwrite`]]`(`[~destination]`, `[~count_ptr]`)`]]
-
-[ [21] [ `std::basic_streambuf <`[~CharT]`, `[~Traits]`>&`]
-  [ [link ec_write_std_streambuf [*`ec_write`]]`(`[~destination]`, `[~count_ptr]`)`]]
-
 ]
 
-where:
+
+Where:
 
 * [~CharT] can be `char`, `char16_t`, `char32_t` or `wchar_t`
 * [~end] is [~CharT]*
 * [~limit] is `std::size_t`. It determines the maximum number of characters that can be written, including the termination character.
-* [~count_ptr] is optional. The number of successfully written characters will be assigned to [~*count_ptr]. Its type is `std::streamsize*` when [~destination] is `std::basic_streambuf <`[~CharT]`, `[~Traits]`>` and `std::size_t*` otherwise.
-* 7) [~Alloc] is optional. If omitted, it is `std::allocator<`[~CharT]`>`
-* 7-10) [~Traits] is optional. If omitted, it is `std::char_traits<`[~CharT]`>`
-* 11 and 20) [~CharT] is optional. If omitted, it is `char`
-* 11, 12, 20 and 21) `std::fflush` is [_not] called
-* 14 to 21) Although the error policy is to return `std::error_code`, there is no guarantee that no exception is thrown.
+* [~count_ptr] is optional. The number of successfully written characters is assigned to [~*count_ptr]. Its type is `std::streamsize*` when [~destination] is `std::basic_streambuf <`[~CharT]`, `[~Traits]`>` and `std::size_t*` otherwise.
+* 8) [~Alloc] is optional. If omitted, it is `std::allocator<`[~CharT]`>`
+* 8-11) [~Traits] is optional. If omitted, it is `std::char_traits<`[~CharT]`>`
+* 12) [~CharT] is optional. If omitted, it is `char`
+* 12 and 13) `std::fflush` is [_not] called
+
 
 [endsect]
 
-[#syntax_reserve]
+[#overview_reserve]
 [section Reserve]
-The following member functions only have effect in some output types ( /leading expressions/ 1 to 7 in [link output_types previous table], or when you create the [link OutputBuffer reserve] method when defining your own output type ). 
+The following member functions only affect some output types ( /leading expressions/ 1 to 8 and 15 and 16 ) in [link output_types the previous table], or when you create the [link OutputBuffer reserve] method when [link extend_output defining your own output type] ). 
 
 * [link dispatcher_reserve `reserve_calc()`] : The necessary amount of characters is calculated and reserved in the destination object.
 * [link dispatcher_reserve `reserve(std::size_t size)`] : Reserve `size` characters.
@@ -238,40 +126,140 @@ If none of these function is called, then no reservation is done.
 [syntax_reserve]
 
 [endsect]
-[#assembly_string]
-[section Assembly string]
+[#overview_tr_string]
+[section Tr-string]
 
-The [link assembly_string_syntax assembly string] is optional
-and is what in other formatting libraries would be called as
-the /format string/, with the difference that here it does
-not specify any formatting:
+The [link ref_tr_string_syntax /tr-string/] is what in other formatting
+libraries would be called as the /format string/,
+with the difference that it does not specify any formatting.
+Its purpose is to enable the use of translation tools like
+[@https://en.wikipedia.org/wiki/Gettext gettext].
 ``
-auto s = strf::to_string.as("{} in hexadecimal is {}") (x, strf::hex(x));
+auto s = strf::to_string.tr("{} in hexadecimal is {}", x, strf::hex(x));
 ``
-Its main purpose is to enable the use of translation tools like
-[@https://en.wikipedia.org/wiki/Gettext gettext]. You can customize
-how the library handles parsing errors in the with the
-[link asm_string_error `asm_invalid_arg`] enumeration.
+You can customize how the library handles parsing errors in the with the
+[link tr_string_error `tr_invalid_arg`] enumeration.
 
 [endsect]
 
+[#overview_facets]
+[section:facets Facets]
 
-[/===========================================]
+These are not the same as the facets handled by `std::locale`,
+but they are analogous.
+Keep in mind that this is a locale-independent library.
+So things are always printed as in the C-locale, unless
+you explicitly specify otherwise, which you do by passing /facet
+objects/ to the [link dispatcher_facets facets] function.
+For example, to customize numeric punctuation:
 
-[include facets.qbk]
+[basic_facet_sample]
 
-[/===========================================]
+Every /facet/ belongs to a /facet category/. 
+Each facet category corresponds to a concept, /i.e./ a set of requirements that a class must satisfy. A class that satisfies such requirements is a facet of such facet category. Moreover, for each facet category there is class whose name, by convention, has a "_c" suffix and is the name of the category.
+[/
+That class always have a static member function named `get_default` which has no parameter and returns an object whose type is a facet of this category. Also, a facet must have member type named `category` which is an alias to the representative class of its category.
+]
 
-[endsect] [/syntax]
+For example, [link monotonic_grouping `monotonic_grouping`]`<10>` and [link str_grouping
+`str_grouping`]`<10>` are both facets of the category `numpunct_c<10>`.
+Both have the same purpose: to customize numeric punctuation.
+
+[table
+[[facet category][constrainable][what it controls][where it is used]]
+
+[
+[[link width_calculation `width_calculation_c`]]
+[yes]
+[how the width is calculated]
+[[link joins joins] and all conventional types]
+]
+
+[
+[[link numpunct `numpunct_c<10>`]]
+[yes]
+[numeric punctuation for decimal base]
+[integers and floating points numbers]
+]
+
+[
+[[link numpunct `numpunct_c<16>`]]
+[yes]
+[numeric punctuation for hexadecimal base]
+[integers and floating points numbers]
+]
+
+[
+[[link numpunct `numpunct_c<8>`]]
+[yes]
+[numeric punctuation for octal base]
+[integers numbers]
+]
+
+[
+[[link encoding encoding_c]]
+[no]
+[encoding]
+[]
+]
+
+[
+[[link encoding_error encoding_error_c]]
+[yes]
+[encoding error handling]
+[]
+]
+
+[
+[[link surrogate_policy surrogate_policy_c]]
+[yes]
+[surrogates allowance]
+[]
+]
+
+[
+[[link tr_string_error tr_string_error_c]]
+[no]
+[ /Tr-string/ parsing error handling]
+[In /tr-strings/]
+]
+
+]
+
+
+[#constrained_facets]
+[h4 Constrained facets]
+
+With the [link constrain `constrain`] function template you can create /constrained facets/, which are facets that only apply to certain input types. Its template parameter is a template type that contains a `value` member constexpr convertible to bool that tells whether a given input type is under the influence of the given facet:
+
+[constrained_facet_sample]
+
+The library provides some type traits of this kind:
+
+[table
+[[trait] [description]]
+[[`is_int_number`] [matches `short`, `int`, `long`, `long long` and the corresponding unsigned types]]
+[[`is_char`]       [matches `char`, `char8_t`, `wchar_t`, `char16_t`, and `char32_t`]]
+[[`is_string`]     [matches strings inputs]]
+]
+
+[h4 Overriding facets]
+
+If there are two or more facets object passed to the `facets` function of the same category, and that apply to the same input type, then the last one wins:
+
+[facets_overriding]
+
+
+[endsect]
 
 [section Encoding conversion]
 
-[#tour_encoding_conversion]
+[#overview_encoding_conversion]
 Did you notice that the thousand separator is specified as
 a `char32_t` instead of `char`? That means you can use any
 Unicode code point, as long as it is supported by the
 output encoding, which by default is UTF-8 for `char`.
-However others character sets are available:
+But you can specify other encodings with facets.
 
 [numpuct__with_alternative_encoding]
 
@@ -280,18 +268,18 @@ string individually:
 
 [input_string_encoding]
 
-As well as converting string of different character types:
+As well as converting a string of different character types:
 
 [input_output_different_char_types]
 
-And If you don't want to convert any encoding but just
+Furthermore, if you don't want to convert any encoding but just
 to sanitize an input string, you can use still the `cv` function,
-since it aways imply sanitization, even when the input and output
+since it always implies sanitization, even when the input and output
 encodings are the same:
 
 [sani_utf8]
 
-The library provides three options of how handle encoding errors.
+The library provides three options of how to handle encoding errors.
 The default one is to replace any invalid input sequence by the
 [@https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character
 replacement character "\uFFFD"] (U+FFFD). When the input is UTF-8,
@@ -306,24 +294,130 @@ the invalid sequence, and the third one is to [link encoding_error_stop
 stop everything] and emit an error, /i.e./, to return an error code
 or throw an exception.
 You can also choose whether surrogates are
-treated as errors or not (as explained [link allow_surrogates here]).
+treated as errors or not (as explained [link surrogate_policy here]).
 
-[/
-Another cool thing you can do is to print ranges:
+The current list of supported encodings is small, but is expected to grow:
 
-[input_range]
-
-And another is to align a group of argument as one:
-
-[join_basic_sample]
-]
-[/
-However, facets here are not limited to localisation.
-They have been conceived to customise all sort of things,
-like the width calculation method, and encoding error handling.
-]
+[include ref_encodings_table.qbk]
 
 [endsect] [/encoding]
+
+[section Numeric punctuation]
+
+The facets of the [link numpunct `numpunct_c<Base>`] category specify
+the decimal point, the group separator character, and the groups'
+size when printing numbers in the numeric base `Base`.
+The library currently provides two
+facets belonging to this category for you to choose.
+If all groups have the same size, then you should choose the
+__monotonic_grouping__`<Base>` facet since it is optimized for this situation:
+
+[monotonic_grouping]
+
+Otherwise, you can use the __str_grouping__`<Base>`:
+
+[str_grouping]
+
+[/
+There is a third option which is to implement your own facet,
+as described [link numpunct here].
+]
+
+[endsect]
+
+[section Numeric digits]
+
+/To-do/
+
+[endsect]
+
+[section Width calculation]
+
+Almost all formatting libraries provide a way to specify width and alignment.
+But they assume that the width of a string equals its size:
+``
+    // Prints three pading spaces less than you'd like
+    printf("Full name: %80s\n", u8"Frédéric François Chopin");
+``
+Now, Boost.Stringify provides a facet
+( [link width_calculation width_calculator] )
+that enables you to choose more accurate algorithms.
+Three options are available:
+
+[/
+But in Boost.Stringify you can customize, via [link width_calculation facets],
+how the width is calculated. Three options are available:
+
+Now, in Boost.Stringify you are able to choose a more accurate algorithm
+for width calculation, if you want, 
+]
+
+[itemized_list
+  [Width as string size. This is the default: [width_as_len]]
+
+  [Width as the number of codepoints:  [width_as_u32len]]
+
+  [You implement a function that calculates and sum the width of the
+   codepoints: [width_func]
+   Unfortunately, you can't be 100% accurate. Even assuming the output
+   is displayed in a monospace font, such font is unlikely to support
+   wider characters so they are displayed instead in another font,
+   with a width that you usually can't predict.]
+]
+
+[endsect]
+
+[section Avoid repeating yourself]
+
+If you have two or more facet values that you use often,
+you may consider storing them into [link facets_pack `facets_pack`]
+object and reuse it instead of retyping them every time.
+The `facets_pack` has some similarities to `std::tuple`, and
+there is the `pack` function template that create `facets_pack`,
+analogous as to how `std::make_tuple` creates `std::tuples`;
+
+``
+template <typename ... Facets>
+facets_pack<Facets> pack(const Facets& ... facets);
+``
+
+Passing a `facets_pack` object to the `facets` member function
+is equivalent to pass all the facet objects it contains. For example,
+`to_string.facets(f1, pack(f2, f3), f4)(args ...)` is equivalent to
+`to_string.facets(f1, f2, f3, f4)`. Moreover, `f1`, `f2`, `f3` and `f4`
+don't have to be facet objects. Actually, [link FacetsPackElementRequirements
+anything] that can be passed to `facets` member function can
+be stored in a `facets_pack`, and vice-versa.
+
+[/
+[table Equivalences
+[ [expression] [equivalent expression] ]
+[
+[`pack(a1, a2, ... , pack(b1, b2, ...), c1, c2, ...)`]
+[`pack(a1, a2, ... , b1, b2, ... , c1, c2, ...)`]
+]
+[
+[[~leading_expression]` .facets(pack(a1, a2, ...))` ]
+[[~leading_expression]` .facets(a1, a2, ...) ` ]
+]
+[
+[[~leading_expression]` .facets(a1, a2, ... , b1, b2, ...)` ]
+[[~leading_expression]` .facets(a1, a2, ...) .facets(b1, b2, ...) ` ]
+]
+]
+]
+
+[note 
+Facets are usually stored by copy in `facets_pack`. You can avoid this with [@http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper `std::reference_wrapper`]. However all facets are designed to provide a fast copy, with the exception perhaps of [link numpunct str_grouping] that contains internally a `std::string`.
+]
+
+Another thing you can do is to create new leading
+expressions based on the existing ones:
+
+[avoid_repetitions]
+
+[endsect]
+
 [endsect] [/tour of the library]
 
 [section Why to use Boost.Stringify]
@@ -331,13 +425,9 @@ like the width calculation method, and encoding error handling.
 
 [variablelist
 
-
-[/
-  [Good performance]
-  [ It may not be best in all scenarios, but it is good,
-    and there is probably some room for optimizations.
-
-    See the [link run_time_benchmarks benchmarks].
+[
+  [Performance]
+  [ See the [link run_time_benchmarks benchmarks].
   ]
   [[br]]
 ]
@@ -346,7 +436,7 @@ like the width calculation method, and encoding error handling.
   [ Boost.Stringify allows you not only to add input types but also output types.
     Qt users, for instance, might be interested in a `to_string`-equivalent that
     creates a `QString` instead of an `std::string`. Take a look at
-    [@../../example/extend_output_toQString.cpp this implementation] to see how
+    [@../../example/toQString.cpp this implementation] to see how
     easy this is. Or perhaps you might want to implement an alternative way
     to write to files based on lower level system functions instead of `fprintf`
     in order to get better performance.
@@ -383,20 +473,6 @@ like the width calculation method, and encoding error handling.
   [[br]]
 ]
 
-[
-  [Fits in your error handling policy]
-  [
-    Some code bases use error codes, while others use exceptions.
-    To suits both worlds, the library provides [link output_types
-    /leading expressions/] for each kind.
-
-    Also, the user can customise how the library handles
-    [link encoding_policy encoding errors] as well as
-    [link asm_string_error assembly string errors].
-  ]
-  [[br]]
-]
-
 [ [Internationalization]
   [ It is not because this is a locale-independent library that
     you cannot customize numeric punctuation, since you can do that
@@ -409,21 +485,21 @@ like the width calculation method, and encoding error handling.
 
     [variablelist
 
-    [ [Assembly string translation hints]
+    [ [Tr-string translation hints]
       [ [/Usually it is not the programmer who do the translations.]
-        The [link assembly_string_syntax assembly string syntax] allows you
+        The [link ref_tr_string_syntax tr-string syntax] allows you
         to insert comments intended to help the person who translates it.
       ]
     ]
 
     [ [Formatting decoupled from translation]
-      [ Because formatting is not in the assembly string, but in the
+      [ Because formatting is not in the tr-string, but in the
         format functions, you can change the formatting without
-        changing each translation of the assembly string.
+        changing each translation of the tr-string.
       ]
     ]
 
-    [ [Safety]
+    [ [Catch formatting errors at compile-time]
       [ You may not like the verbosity of [link format_functions format
         functions], which is a legitime dislike.
         However, you should also dislike the error-proneness of format strings.
@@ -438,12 +514,11 @@ like the width calculation method, and encoding error handling.
         adequate solution. A run-time error is only acceptable
         when it's not the program's fault; otherwise it's a bug.
         Format functions, on the other hand, always give you a compilation error.
-
-        It's true that mistakes can also happen in the assembly string
+        It's true that mistakes can also happen in the tr-string
         but the probability is much lower. Besides, you can
-        [link asm_string_error customize] how such errors are handled.
+        [link tr_string_error customize] how such errors are handled.
 [/
-        Besides, a future version of the library will enable you to customise the
+        Besides, a future version of the library will enable you to customize the
         error handling there just [link encoding_error as in encoding conversion].
         So that you can choose one that makes it easier to identify such bugs.
         For example: to replace the erroneous part by a character like
@@ -457,55 +532,22 @@ like the width calculation method, and encoding error handling.
   [[br]]
 ]
 
-[ [More accurate width calculation]
-  [ All formatting libraries provide width and alignment formatting.
-    But they assume that the width of a string is always its size.
-``
-    // Prints with three pading spaces less than you'd like
-    printf("Full name: %80s\n", u8"Frédéric François Chopin");
-``
-[br]
-    [/ That is not adequate when it is in UTF-8 and contains non-ASCII characters.]
-    But in Boost.Stringify you can customize, via [link width_calculation facets],
-    how the width is calculated. Three options are available:
-
-    [itemized_list
-      [ Assume that width is equal to size: This it's how is done in
-        the other libraries and is the default option and naturally
-        has the best performance]
-
-      [ Width is the number of codepoints]
-
-      [ You provide a function that tells the width of each codepoint.
-        After all, there are codepoints whose width is equal to 1 ( the
-        [@https://en.wikipedia.org/wiki/En_(typography) /en/ width],
-        or /halfwidth/ characters ), others have width  2
-        ([@https://en.wikipedia.org/wiki/Em_(typography) /em/ width],
-        or /fullwidth/ ) and some have width zero ( like non-printable
-        and combining characters ).]]
-  ]
-  [[br]]
-]
-
-
 [
   [Some capabilities not present in most of the other formatting libraries]
   [
   [itemized_list
     [[link output_types Append to string]]
-    [[link syntax_reserve Reserve string capacity]]
+    [[link overview_reserve Reserve string capacity]]
     [[link joins Joined input arguments]]
     [[link ranges Range input argument]]
     [[link numpunct Numeric punctuation for octal and hexadecimal]]
-    [Easy [link encoding_facets encoding conversion and sanitization]]
-    [Support for all character types: `char`, `wchar_t`, `char32_t` and `char16_t`.]
+    [Easy [link overview_encoding_conversion conversion and sanitization]]
+    [Support for all character types: `char`, `char8_t`, `wchar_t`, `char32_t` and `char16_t`.]
   ]
 ]
 [[br]]
 ]
 ]
-
-
 
 [endsect]
 
@@ -515,11 +557,13 @@ like the width calculation method, and encoding error handling.
 [@../../build/stringify.cpp build/stringify.cpp]
 ]
 
-Boost.Stringify is prepared to be used as a header-only library by default. But it can also be used as a static library. That reduces the [link compilation_benchmarks code bloat].
+Boost.Stringify is prepared to be used as a header-only library by default. But it can also be used as a static library, in that case the source that use the library must define the macro `BOOST_STRINGIFY_SEPARATE_COMPILATION`.
 [/
 And to build the library, since there is only one source file ( __STRINGIFY_CPP__ ), probably the best way it to just copy this file to your own project, and configure the use the build system of your choice to generate the library file from it.
 ]
-Probably the best way to build the library is to create a project in the build system of your own choice. This should be easy since there is only one source file ( __STRINGIFY_CPP__ ) to compile. The code that uses it as a static library must have the macro `BOOST_STRINGIFY_NOT_HEADER_ONLY` defined.
+In case you don't want to use the included Boost.Build or CMake project,
+it will problably be easy for you to find some other way build the library since
+there is only one source file ( __STRINGIFY_CPP__ ) to compile.
 
 
 [endsect]

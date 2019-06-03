@@ -39,11 +39,12 @@ public:
         {
             std::chrono::duration<double, std::nano>  total_ns = r.total_duration;
             std::cout
+                << "["
                 << std::setprecision(2)
                 << std::fixed
-                << std::setw(15)
+                << std::setw(8)
                 << total_ns.count() / (double)r.iterations_count
-                << " ns  "
+                << " ns ] "
                 << m_label
                 << std::endl;
         }

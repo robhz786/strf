@@ -83,6 +83,17 @@ make_fmt(stringify::v0::tag, const std::basic_string_view<CharIn, Traits>& str)
 
 #endif // defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
 
+#if defined(__cpp_char8_t)
+
+BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+auto make_fmt(stringify::v0::tag, const char8_t* str)
+{
+    auto len = std::char_traits<char8_t>::length(str);
+    return stringify::v0::string_with_format<char8_t>{{str, len}};
+}
+
+#endif
+
 BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
 auto make_fmt(stringify::v0::tag, const char* str)
 {
@@ -125,17 +136,18 @@ public:
         , std::size_t len ) noexcept
         : _str(str)
         , _len(len)
-        , _wcalc(_get_facet<stringify::v0::width_calculator_category>(fp))
-        , _encoding(_get_facet<stringify::v0::encoding_category<CharT>>(fp))
-        , _epoli(_get_facet<stringify::v0::encoding_policy_category>(fp))
+        , _wcalc(_get_facet<stringify::v0::width_calculator_c>(fp))
+        , _encoding(_get_facet<stringify::v0::encoding_c<CharT>>(fp))
+        , _enc_err(_get_facet<stringify::v0::encoding_error_c>(fp))
+        , _allow_surr(_get_facet<stringify::v0::surrogate_policy_c>(fp))
     {
     }
 
     std::size_t necessary_size() const override;
 
-    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(stringify::v0::output_buffer<CharT>& ob) const override;
 
-    int remaining_width(int w) const override;
+    int width(int limit) const override;
 
 private:
 
@@ -143,7 +155,8 @@ private:
     const std::size_t _len;
     const stringify::v0::width_calculator _wcalc;
     const stringify::v0::encoding<CharT> _encoding;
-    const stringify::v0::encoding_policy  _epoli;
+    const stringify::v0::encoding_error  _enc_err;
+    const stringify::v0::surrogate_policy  _allow_surr;
 
     template <typename Category, typename FPack>
     static decltype(auto) _get_facet(const FPack& fp)
@@ -160,15 +173,15 @@ std::size_t string_printer<CharT>::necessary_size() const
 }
 
 template<typename CharT>
-bool string_printer<CharT>::write(stringify::v0::output_buffer<CharT>& ob) const
+void string_printer<CharT>::write(stringify::v0::output_buffer<CharT>& ob) const
 {
-    return stringify::v0::detail::write_str(ob, _str, _len);
+    stringify::v0::detail::write_str(ob, _str, _len);
 }
 
 template<typename CharT>
-int string_printer<CharT>::remaining_width(int w) const
+int string_printer<CharT>::width(int limit) const
 {
-    return _wcalc.remaining_width(w, _str, _len, _encoding, _epoli);
+    return _wcalc.width(limit, _str, _len, _encoding, _enc_err, _allow_surr);
 }
 
 template <typename CharT>
@@ -181,9 +194,10 @@ public:
         ( const FPack& fp
         , const stringify::v0::string_with_format<CharT>& input )
         : _fmt(input)
-        , _wcalc(_get_facet<stringify::v0::width_calculator_category>(fp))
-        , _encoding(_get_facet<stringify::v0::encoding_category<CharT>>(fp))
-        , _epoli(_get_facet<stringify::v0::encoding_policy_category>(fp))
+        , _wcalc(_get_facet<stringify::v0::width_calculator_c>(fp))
+        , _encoding(_get_facet<stringify::v0::encoding_c<CharT>>(fp))
+        , _enc_err(_get_facet<stringify::v0::encoding_error_c>(fp))
+        , _allow_surr(_get_facet<stringify::v0::surrogate_policy_c>(fp))
     {
         _init();
     }
@@ -192,17 +206,18 @@ public:
 
     std::size_t necessary_size() const override;
 
-    bool write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(stringify::v0::output_buffer<CharT>& ob) const override;
 
-    int remaining_width(int w) const override;
+    int width(int limit) const override;
 
 private:
 
     const stringify::v0::string_with_format<CharT> _fmt;
     const stringify::v0::width_calculator _wcalc;
     const stringify::v0::encoding<CharT> _encoding;
-    const stringify::v0::encoding_policy  _epoli;
     unsigned _fillcount = 0;
+    const stringify::v0::encoding_error _enc_err;
+    const stringify::v0::surrogate_policy _allow_surr;
 
     template <typename Category, typename FPack>
     static decltype(auto) _get_facet(const FPack& fp)
@@ -213,9 +228,9 @@ private:
 
     void _init();
 
-    bool _write_str(stringify::v0::output_buffer<CharT>& ob) const;
+    void _write_str(stringify::v0::output_buffer<CharT>& ob) const;
 
-    bool _write_fill( stringify::v0::output_buffer<CharT>& ob
+    void _write_fill( stringify::v0::output_buffer<CharT>& ob
                     , unsigned count ) const;
 };
 
@@ -227,14 +242,13 @@ fmt_string_printer<CharT>::~fmt_string_printer()
 template<typename CharT>
 void fmt_string_printer<CharT>::_init()
 {
-    _fillcount = ( _fmt.width() > 0
-                 ? _wcalc.remaining_width
-                     ( _fmt.width()
-                     , _fmt.value().begin()
-                     , _fmt.value().length()
-                     , _encoding
-                     , _epoli )
-                 : 0 );
+    if (_fmt.width() > 0)
+    {
+        auto wstr = _wcalc.width( _fmt.width()
+                                , _fmt.value().begin(), _fmt.value().length()
+                                , _encoding, _enc_err, _allow_surr );
+        _fillcount = _fmt.width() > wstr ? _fmt.width() - wstr : 0;
+    }
 }
 
 template<typename CharT>
@@ -242,25 +256,25 @@ std::size_t fmt_string_printer<CharT>::necessary_size() const
 {
     if (_fillcount > 0)
     {
-        return _fillcount * _encoding.char_size(_fmt.fill(), _epoli.err_hdl())
+        return _fillcount * _encoding.char_size(_fmt.fill(), _enc_err)
             + _fmt.value().length();
     }
     return _fmt.value().length();
 }
 
 template<typename CharT>
-int fmt_string_printer<CharT>::remaining_width(int w) const
+int fmt_string_printer<CharT>::width(int limit) const
 {
     if (_fillcount > 0)
     {
-        return w > _fmt.width() ? w - _fmt.width() : 0;
+        return _fmt.width();
     }
-    return _wcalc.remaining_width( w, _fmt.value().begin(), _fmt.value().length()
-                                 , _encoding, _epoli );
+    return _wcalc.width( limit, _fmt.value().begin(), _fmt.value().length()
+                       , _encoding, _enc_err, _allow_surr );
 }
 
 template<typename CharT>
-bool fmt_string_printer<CharT>::write
+void fmt_string_printer<CharT>::write
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
     if (_fillcount > 0)
@@ -269,44 +283,53 @@ bool fmt_string_printer<CharT>::write
         {
             case stringify::v0::alignment::left:
             {
-                return _write_str(ob)
-                    && _write_fill(ob, _fillcount);
+                _write_str(ob);
+                _write_fill(ob, _fillcount);
+                break;
             }
             case stringify::v0::alignment::center:
             {
                 auto halfcount = _fillcount / 2;
-                return _write_fill(ob, halfcount)
-                    && _write_str(ob)
-                    && _write_fill(ob, _fillcount - halfcount);
+                _write_fill(ob, halfcount);
+                _write_str(ob);
+                _write_fill(ob, _fillcount - halfcount);
+                break;
             }
             default:
             {
-                return _write_fill(ob, _fillcount)
-                    && _write_str(ob);
+                _write_fill(ob, _fillcount);
+                _write_str(ob);
             }
         }
     }
-    return _write_str(ob);
+    else
+    {
+        _write_str(ob);
+    }
 }
 
 template <typename CharT>
-bool fmt_string_printer<CharT>::_write_str
+void fmt_string_printer<CharT>::_write_str
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
-    return stringify::v0::detail::write_str
-        ( ob, _fmt.value().begin(), _fmt.value().length() );
+    stringify::v0::detail::write_str( ob, _fmt.value().begin()
+                                    , _fmt.value().length());
 }
 
 template <typename CharT>
-bool fmt_string_printer<CharT>::_write_fill
+void fmt_string_printer<CharT>::_write_fill
     ( stringify::v0::output_buffer<CharT>& ob
     , unsigned count ) const
 {
-    return stringify::v0::detail::write_fill
-        ( _encoding, ob, count, _fmt.fill(), _epoli );
+    _encoding.encode_fill( ob, count, _fmt.fill(), _enc_err, _allow_surr );
 }
 
-#if defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+
+#if defined(__cpp_char8_t)
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_printer<char8_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_string_printer<char8_t>;
+#endif
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_printer<char>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_printer<char16_t>;
@@ -318,15 +341,26 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_string_printer<char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_string_printer<char32_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_string_printer<wchar_t>;
 
-#endif // defined(BOOST_STRINGIFY_NOT_HEADER_ONLY)
+#endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 } // namespace detail
 
+#if defined(__cpp_char8_t)
+
 template <typename CharOut, typename FPack>
 inline stringify::v0::detail::string_printer<CharOut>
-make_printer
-   ( const FPack& fp
-   , const char* str )
+make_printer(const FPack& fp, const char8_t* str)
+{
+    static_assert( std::is_same<char8_t, CharOut>::value
+                 , "Character type mismatch. Use cv function." );
+    return {fp, str, std::char_traits<char8_t>::length(str)};
+}
+
+#endif
+
+template <typename CharOut, typename FPack>
+inline stringify::v0::detail::string_printer<CharOut>
+make_printer(const FPack& fp, const char* str)
 {
     static_assert( std::is_same<char, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -335,9 +369,7 @@ make_printer
 
 template <typename CharOut, typename FPack>
 inline stringify::v0::detail::string_printer<CharOut>
-make_printer
-   ( const FPack& fp
-   , const char16_t* str )
+make_printer(const FPack& fp, const char16_t* str)
 {
     static_assert( std::is_same<char16_t, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -346,9 +378,7 @@ make_printer
 
 template <typename CharOut, typename FPack>
 inline stringify::v0::detail::string_printer<CharOut>
-make_printer
-   ( const FPack& fp
-   , const char32_t* str )
+make_printer(const FPack& fp, const char32_t* str)
 {
     static_assert( std::is_same<char32_t, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -357,9 +387,7 @@ make_printer
 
 template <typename CharOut, typename FPack>
 inline stringify::v0::detail::string_printer<CharOut>
-make_printer
-   ( const FPack& fp
-   , const wchar_t* str )
+make_printer(const FPack& fp, const wchar_t* str)
 {
     static_assert( std::is_same<wchar_t, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -373,9 +401,7 @@ template
     , typename Traits
     , typename Allocator >
 inline stringify::v0::detail::string_printer<CharOut>
-make_printer
-   ( const FPack& fp
-   , const std::basic_string<CharIn, Traits, Allocator>& str )
+make_printer(const FPack& fp, const std::basic_string<CharIn, Traits, Allocator>& str)
 {
     static_assert( std::is_same<CharIn, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -388,9 +414,7 @@ template
     , typename CharIn
     , typename Traits >
 inline stringify::v0::detail::string_printer<CharOut>
-make_printer
-   ( const FPack& fp
-   , const boost::basic_string_view<CharOut, Traits>& str )
+make_printer(const FPack& fp, const boost::basic_string_view<CharOut, Traits>& str)
 {
     static_assert( std::is_same<CharIn, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -405,9 +429,7 @@ template
     , typename CharIn
     , typename Traits >
 inline stringify::v0::detail::string_printer<CharOut>
-make_printer
-   ( const FPack& fp
-   , const std::basic_string_view<CharIn, Traits>& str )
+make_printer(const FPack& fp, const std::basic_string_view<CharIn, Traits>& str)
 {
     static_assert( std::is_same<CharIn, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -418,9 +440,7 @@ make_printer
 
 template <typename CharOut, typename FPack, typename CharIn>
 inline stringify::v0::detail::fmt_string_printer<CharOut>
-make_printer
-   ( const FPack& fp
-   , const stringify::v0::string_with_format<CharIn>& input)
+make_printer(const FPack& fp, const stringify::v0::string_with_format<CharIn>& input)
 {
     static_assert( std::is_same<CharIn, CharOut>::value
                  , "Character type mismatch. Use fmt_cv function." );

@@ -15,11 +15,11 @@ auto write_out = strf::write(stdout);
 
 namespace xxx {
 
-struct base64_facet_category;
+struct base64_facet_c;
 
 struct base64_facet
 {
-    using category = base64_facet_category;
+    using category = base64_facet_c;
     static constexpr bool store_by_value = true;
 
     unsigned line_length = 64;
@@ -33,7 +33,7 @@ struct base64_facet
     }
 };
 
-struct base64_facet_category
+struct base64_facet_c
 {
     static constexpr bool constrainable = true;
 
@@ -132,23 +132,23 @@ public:
         ( base64_facet facet
         , const base64_input_with_format& fmt );
 
-    int remaining_width(int w) const override;
+    int width(int) const override;
 
     std::size_t necessary_size() const override;
 
-    bool write(strf::output_buffer<CharT>& ob) const override;
+    void write(strf::output_buffer<CharT>& ob) const override;
 
 private:
 
-    bool _write_single_line(strf::output_buffer<CharT>& ob) const;
+    void _write_single_line(strf::output_buffer<CharT>& ob) const;
 
-    bool _encode_all_data_in_this_line(strf::output_buffer<CharT>& ob) const;
+    void _encode_all_data_in_this_line(strf::output_buffer<CharT>& ob) const;
 
-    bool _write_multiline(strf::output_buffer<CharT>& ob) const;
+    void _write_multiline(strf::output_buffer<CharT>& ob) const;
 
-    bool _write_identation(strf::output_buffer<CharT>& ob) const;
+    void _write_identation(strf::output_buffer<CharT>& ob) const;
 
-    bool _write_end_of_line(strf::output_buffer<CharT>& ob) const;
+    void _write_end_of_line(strf::output_buffer<CharT>& ob) const;
 
     void _encode_3bytes
         ( CharT* dest
@@ -171,9 +171,8 @@ base64_printer<CharT>::base64_printer
 }
 
 template <typename CharT>
-int base64_printer<CharT>::remaining_width(int w) const
+int base64_printer<CharT>::width(int) const
 {
-    (void)w;
     return 0;
 }
 
@@ -195,58 +194,59 @@ std::size_t base64_printer<CharT>::necessary_size() const
 //[ base64_printer__write
 
 template <typename CharT>
-bool base64_printer<CharT>::write(strf::output_buffer<CharT>& ob) const
+void base64_printer<CharT>::write(strf::output_buffer<CharT>& ob) const
 {
-    return _facet.single_line()
-        ? _write_single_line(ob)
-        : _write_multiline(ob);
+    if (_facet.single_line())
+    {
+        _write_single_line(ob);
+    }
+    else
+    {
+        _write_multiline(ob);
+    }
 }
 
 template <typename CharT>
-bool base64_printer<CharT>::_write_single_line(strf::output_buffer<CharT>& ob) const
+void base64_printer<CharT>::_write_single_line(strf::output_buffer<CharT>& ob) const
 {
-    return _write_identation(ob)
-        && _encode_all_data_in_this_line(ob);
+    _write_identation(ob);
+    _encode_all_data_in_this_line(ob);
 }
 
 template <typename CharT>
-bool base64_printer<CharT>::_write_identation(strf::output_buffer<CharT>& ob) const
+void base64_printer<CharT>::_write_identation(strf::output_buffer<CharT>& ob) const
 {
     using traits = std::char_traits<CharT>;
     std::size_t count = _fmt.indentation();
-    do
+    while(true)
     {
         std::size_t buff_size = ob.size();
         if (buff_size >= count)
         {
             traits::assign(ob.pos(), count, CharT(' '));
             ob.advance(count);
-            return true;
+            return;
         }
         traits::assign(ob.pos(), buff_size, CharT(' '));
         count -= buff_size;
         ob.advance_to(ob.end());
-    } while(ob.recycle());
-    return true;
+        ob.recycle();
+    };
 }
 
 template <typename CharT>
-bool base64_printer<CharT>::_encode_all_data_in_this_line(strf::output_buffer<CharT>& ob) const
+void base64_printer<CharT>::_encode_all_data_in_this_line(strf::output_buffer<CharT>& ob) const
 {
     auto data_it = static_cast<const std::uint8_t*>(_fmt.value().bytes);
     for ( std::ptrdiff_t count = _fmt.value().num_bytes
         ; count > 0
         ; count -= 3 )
     {
-        if (ob.size() < 4 && ! ob.recycle())
-        {
-            return false;
-        }
+        ob.ensure(4);
         _encode_3bytes(ob.pos(), data_it, count);
         ob.advance(4);
         data_it += 3;
     }
-    return true;
 }
 
 template <typename CharT>
@@ -281,12 +281,9 @@ CharT base64_printer<CharT>::_encode(std::uint8_t hextet) const
 //]
 
 template <typename CharT>
-bool base64_printer<CharT>::_write_multiline(strf::output_buffer<CharT>& ob) const
+void base64_printer<CharT>::_write_multiline(strf::output_buffer<CharT>& ob) const
 {
-    if ( ! _write_identation(ob))
-    {
-        return false;
-    }
+    _write_identation(ob);
 
     auto data_it = static_cast<const std::uint8_t*>(_fmt.value().bytes);
     std::ptrdiff_t remaining_bytes = _fmt.value().num_bytes;
@@ -296,10 +293,7 @@ bool base64_printer<CharT>::_write_multiline(strf::output_buffer<CharT>& ob) con
     {
         if (cursor_pos + 4 < _facet.line_length)
         {
-            if (ob.size() < 4 && ! ob.recycle())
-            {
-                return false;
-            }
+            ob.ensure(4);
             _encode_3bytes(ob.pos(), data_it, remaining_bytes);
             ob.advance(4);
             cursor_pos += 4;
@@ -313,16 +307,10 @@ bool base64_printer<CharT>::_write_multiline(strf::output_buffer<CharT>& ob) con
                 if (cursor_pos == _facet.line_length)
                 {
                     cursor_pos = 0;
-                    if ( ! _write_end_of_line(ob)
-                      || ! _write_identation(ob) )
-                    {
-                        return false;
-                    }
+                    _write_end_of_line(ob);
+                    _write_identation(ob);
                 }
-                if (ob.size() == 0 && ! ob.recycle())
-                {
-                    return false;
-                }
+                ob.ensure(1);
                 * ob.pos() = tmp[i];
                 ob.advance(1);
                 ++cursor_pos;
@@ -333,22 +321,17 @@ bool base64_printer<CharT>::_write_multiline(strf::output_buffer<CharT>& ob) con
     }
     if (cursor_pos != 0)
     {
-        return _write_end_of_line(ob);
+        _write_end_of_line(ob);
     }
-    return true; // success
 }
 
 template <typename CharT>
-bool base64_printer<CharT>::_write_end_of_line(strf::output_buffer<CharT>& ob) const
+void base64_printer<CharT>::_write_end_of_line(strf::output_buffer<CharT>& ob) const
 {
-    if (ob.size() < 2 && ! ob.recycle())
-    {
-        return false;
-    }
+    ob.ensure(2);
     ob.pos()[0] = _facet.eol[0];
     ob.pos()[1] = _facet.eol[1];
     ob.advance(_facet.eol[1] == '\0' ? 1 : 2);
-    return true;
 }
 
 
@@ -363,7 +346,7 @@ inline base64_printer<CharT> make_printer( const FPack& fp
                                          , const base64_input_with_format& fmt )
 {
   /*<< see [link facets_pack get_facet.]
->>*/auto facet = strf::get_facet<base64_facet_category, base64_input>(fp);
+>>*/auto facet = strf::get_facet<base64_facet_c, base64_input>(fp);
     return {facet, fmt};
 }
 

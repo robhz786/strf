@@ -84,17 +84,17 @@ int main()
     {
         (void)strf::to_string ("ten = ", 10, "twenty = ", 20);
     }
-    PRINT_BENCHMARK("strf::to_string .as(\"ten = {}, twenty = {}\", 10, 20)")
+    PRINT_BENCHMARK("strf::to_string .tr(\"ten = {}, twenty = {}\", 10, 20)")
     {
-        (void)strf::to_string.as("ten = {}, twenty = {}", 10, 20);
+        (void)strf::to_string.tr("ten = {}, twenty = {}", 10, 20);
     }
-    PRINT_BENCHMARK("strf::to_string .reserve(30) .as(\"ten = {}, twenty = {}\", 10, 20)")
+    PRINT_BENCHMARK("strf::to_string .reserve(30) .tr(\"ten = {}, twenty = {}\", 10, 20)")
     {
-        (void)strf::to_string.as("ten = {}, twenty = {}", 10, 20);
+        (void)strf::to_string.tr("ten = {}, twenty = {}", 10, 20);
     }
-    PRINT_BENCHMARK("strf::to_string .reserve_calc() .as(\"ten = {}, twenty = {}\", 10, 20)")
+    PRINT_BENCHMARK("strf::to_string .reserve_calc() .tr(\"ten = {}, twenty = {}\", 10, 20)")
     {
-        (void)strf::to_string.reserve_calc().as("ten = {}, twenty = {}", 10, 20);
+        (void)strf::to_string.reserve_calc().tr("ten = {}, twenty = {}", 10, 20);
     }
 
     PRINT_BENCHMARK("fmt::format(\"ten = {}, twenty = {}\", 10, 20)")

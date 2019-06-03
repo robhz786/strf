@@ -28,9 +28,9 @@ int main()
     {
         (void)strf::write(dest)("Hello ", "World", "!");
     }
-    PRINT_BENCHMARK("strf::write(dest) .as(\"Hello {}!\", \"World\")")
+    PRINT_BENCHMARK("strf::write(dest) .tr(\"Hello {}!\", \"World\")")
     {
-        (void)strf::write(dest) .as("Hello {}!", "World");
+        (void)strf::write(dest) .tr("Hello {}!", "World");
     }
     PRINT_BENCHMARK("fmt::print(dest, \"Hello {}!\", \"World\")")
     {
@@ -51,9 +51,9 @@ int main()
         {
             (void)strf::write(dest)("Hello ", long_string, "!");
         }
-        PRINT_BENCHMARK("strf::write(dest) .as(\"Hello {}!\", long_string)")
+        PRINT_BENCHMARK("strf::write(dest) .tr(\"Hello {}!\", long_string)")
         {
-            (void)strf::write(dest) .as("Hello {}!", long_string);
+            (void)strf::write(dest) .tr("Hello {}!", long_string);
         }
         PRINT_BENCHMARK("fmt::print(dest, \"Hello {}!\", long_string)")
         {
@@ -139,9 +139,9 @@ int main()
     {
         (void)strf::write(dest)(LLONG_MAX, LLONG_MAX, LLONG_MAX);
     }
-    PRINT_BENCHMARK("strf::write(dest) .as(\"{}{}{}\", LLONG_MAX, LLONG_MAX, LLONG_MAX)")
+    PRINT_BENCHMARK("strf::write(dest) .tr(\"{}{}{}\", LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
-        (void)strf::write(dest) .as("{}{}{}", LLONG_MAX, LLONG_MAX, LLONG_MAX);
+        (void)strf::write(dest) .tr("{}{}{}", LLONG_MAX, LLONG_MAX, LLONG_MAX);
     }
     PRINT_BENCHMARK("fmt::print(dest, \"{}{}{}\", LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
@@ -154,9 +154,9 @@ int main()
 
     std::cout << "\n formatted integers \n";
 
-    PRINT_BENCHMARK("strf::write(dest) .as(\"{}{}{}\", 55555, +strf::fmt(55555)<8 , +strf::hex(55555))")
+    PRINT_BENCHMARK("strf::write(dest) .tr(\"{}{}{}\", 55555, +strf::fmt(55555)<8 , +strf::hex(55555))")
     {
-        (void)strf::write(dest) .as("{}{}{}", 55555, +strf::fmt(55555)<8 , +strf::hex(55555));
+        (void)strf::write(dest) .tr("{}{}{}", 55555, +strf::fmt(55555)<8 , +strf::hex(55555));
     }
     PRINT_BENCHMARK("strf::write(dest) (55555, +strf::fmt(55555)<8 , +strf::hex(55555))")
     {
@@ -174,9 +174,9 @@ int main()
 
     std::cout << "\n Strings and integers mixed: \n";
 
-    PRINT_BENCHMARK("strf::write(dest) .as(\"blah blah {} blah {} blah {}\", INT_MAX, ~strf::hex(1234)<8, \"abcdef\")")
+    PRINT_BENCHMARK("strf::write(dest) .tr(\"blah blah {} blah {} blah {}\", INT_MAX, ~strf::hex(1234)<8, \"abcdef\")")
     {
-        (void)strf::write(dest) .as("blah blah {} blah {} blah {}", INT_MAX, ~strf::hex(1234)<8, "abcdef");
+        (void)strf::write(dest) .tr("blah blah {} blah {} blah {}", INT_MAX, ~strf::hex(1234)<8, "abcdef");
     }
     PRINT_BENCHMARK("fmt::print(dest, \"blah blah {} blah {:<#8x} blah {}\", INT_MAX, 1234, \"abcdef\")")
     {
@@ -189,9 +189,9 @@ int main()
 
     std::cout << std::endl;
 
-    PRINT_BENCHMARK("strf::write(dest) .as(\"ten = {}, twenty = {}\", 10, 20)")
+    PRINT_BENCHMARK("strf::write(dest) .tr(\"ten = {}, twenty = {}\", 10, 20)")
     {
-        (void)strf::write(dest) .as("ten = {}, twenty = {}", 10, 20);
+        (void)strf::write(dest) .tr("ten = {}, twenty = {}", 10, 20);
     }
     PRINT_BENCHMARK("strf::write(dest) (\"ten =  \", 10, \", twenty = \", 20)")
     {

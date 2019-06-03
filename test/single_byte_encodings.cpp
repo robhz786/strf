@@ -57,7 +57,7 @@ void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
     {
         // from UTF-8
         auto u8str = strf::to_string (strf::cv(valid_u32input));
-        auto enc_str = strf::to_string.facets(enc) (strf::cv(u8str, strf::utf8()));
+        auto enc_str = strf::to_string.facets(enc) (strf::cv(u8str, strf::utf8<char>()));
         auto u32str = strf::to_u32string (strf::cv(enc_str, enc));
         BOOST_TEST(u32str == valid_u32input);
 
@@ -66,24 +66,22 @@ void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
         auto u8str = strf::to_string(strf::cv(decoded_0_to_0x100));
         TEST(char_0_to_0xff_sanitized(enc))
             .facets(enc)
-            (strf::cv(u8str, strf::utf8()));
+            (strf::cv(u8str, strf::utf8<char>()));
     }
 
     TEST(char_0_to_0xff_sanitized(enc)).facets(enc) (strf::cv(str_0_to_xff));
     TEST("---?+++")
-        .facets(enc, strf::encoding_policy(strf::error_handling::replace))
+        .facets(enc, strf::encoding_error::replace)
         (strf::cv(u"---\U0010FFFF+++"));
     TEST_RF("---+++", 7.1 / 6.0)
-        .facets(enc, strf::encoding_policy(strf::error_handling::ignore))
+        .facets(enc, strf::encoding_error::ignore)
         (strf::cv(u"---\U0010FFFF+++"));
 
     {
-        std::string str;
-        auto ec = strf::ec_assign(str)
-            .facets(enc, strf::encoding_policy(strf::error_handling::stop))
-            (strf::cv(u"---\U0010FFFF++"));
-        BOOST_TEST(ec == std::errc::illegal_byte_sequence);
-        BOOST_TEST(str == "---");
+        auto facets = strf::pack(enc, strf::encoding_error::stop);
+        BOOST_TEST_THROWS(
+            ( (strf::to_string.facets(facets)(strf::cv(u"---\U0010FFFF++"))))
+            , strf::encoding_failure )
     }
 }
 
@@ -150,9 +148,9 @@ std::u32string decoded_0_to_xff_windows_1252()
 
 int main()
 {
-    test(strf::iso_8859_1(), decoded_0_to_xff_iso_8859_1());
-    test(strf::iso_8859_3(), decoded_0_to_xff_iso_8859_3());
-    test(strf::iso_8859_15(), decoded_0_to_xff_iso_8859_15());
-    test(strf::windows_1252(), decoded_0_to_xff_windows_1252() );
+    test(strf::iso_8859_1<char>(), decoded_0_to_xff_iso_8859_1());
+    test(strf::iso_8859_3<char>(), decoded_0_to_xff_iso_8859_3());
+    test(strf::iso_8859_15<char>(), decoded_0_to_xff_iso_8859_15());
+    test(strf::windows_1252<char>(), decoded_0_to_xff_windows_1252() );
     return boost::report_errors();
 }
