@@ -54,6 +54,30 @@ public:
         , char32_t separator
         , unsigned num_digits
         , unsigned num_groups ) const = 0;
+    // virtual void print_fraction
+    //     ( stringify::v0::output_buffer<CharT>& ob
+    //     , stringify::v0::encoding<CharT> enc
+    //     , unsigned long long integral_part
+    //     , unsigned long long fractional_part
+    //     , char32_t decimal_point
+    //     , unsigned num_digits_integral_part
+    //     , unsigned num_digits_fractional_part ) const = 0;
+    // virtual void print_fraction
+    //     ( stringify::v0::output_buffer<CharT>& ob
+    //     , stringify::v0::encoding<CharT> enc
+    //     , unsigned long long integral_part
+    //     , unsigned long long fractional_part
+    //     , const std::uint8_t* groups
+    //     , unsigned num_groups
+    //     , char32_t thousands_sep
+    //     , char32_t decimal_point
+    //     , unsigned num_digits_integral_part
+    //     , unsigned num_digits_fractional_part
+    //     , unsigned trailing_zeros ) const = 0;
+    // virtual void print_exponent
+    //     ( stringify::v0::output_buffer<CharT>& ob
+    //     , stringify::v0::encoding<CharT> enc
+    //     , int exponent ) const = 0;
     virtual void print_digits
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
@@ -71,6 +95,12 @@ public:
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned count ) const = 0;
+    virtual void print_zeros
+        ( stringify::v0::output_buffer<CharT>& ob
+        , stringify::v0::encoding<CharT> enc
+        , const std::uint8_t* groups
+        , char32_t separator
+        , unsigned num_groups ) const = 0;
     virtual std::size_t size
         ( stringify::v0::encoding<CharT> enc
         , unsigned num_digits
@@ -125,6 +155,13 @@ public:
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned count ) const override;
+
+    virtual void print_zeros
+        ( stringify::v0::output_buffer<CharT>& ob
+        , stringify::v0::encoding<CharT> enc
+        , const std::uint8_t* groups
+        , char32_t separator
+        , unsigned num_groups ) const override;
 };
 
 template <typename CharT>
@@ -234,6 +271,69 @@ void numchars_default_common<CharT>::print_zeros
 {
     (void) enc;
     stringify::v0::detail::write_fill(ob, count, CharT('0'));
+}
+
+template <typename CharT>
+void numchars_default_common<CharT>::print_zeros
+    ( stringify::v0::output_buffer<CharT>& ob
+    , stringify::v0::encoding<CharT> enc
+    , const std::uint8_t* groups
+    , char32_t separator
+    , unsigned num_groups ) const
+{
+    if (num_groups == 0)
+    {
+        return;
+    }
+    {
+        unsigned grp_size = *groups;
+        BOOST_ASSERT(grp_size <= stringify::v0::min_buff_size);
+        ob.ensure(grp_size);
+        std::char_traits<CharT>::assign(ob.pos(), grp_size, '0');
+        ob.advance(grp_size);
+        ++groups;
+    }
+    if (separator < enc.u32equivalence_end())
+    {
+        CharT sep = static_cast<CharT>(separator);
+        for(unsigned i = 1; i < num_groups; ++i)
+        {
+            unsigned grp_size = *groups;
+            BOOST_ASSERT(grp_size + 1 <= stringify::v0::min_buff_size);
+            ob.ensure(1 + grp_size);
+            auto it = ob.pos();
+            *it = sep;
+            std::char_traits<CharT>::assign(it, grp_size, '0');
+            ob.advance(1 + grp_size);
+            ++ groups;                
+        }
+    }
+    else
+    {
+        auto sep_size = enc.validate(separator);
+        if (sep_size == (std::size_t)-1)
+        {
+            if (num_groups > 1)
+            {
+                auto sum = std::accumulate(groups + 1, groups + num_groups, 0);
+                print_zeros(ob, enc, sum);
+            }
+        }
+        else
+        {
+            for(unsigned i = 1; i < num_groups; ++i)
+            {
+                unsigned grp_size = *groups;
+                ob.ensure(1 + grp_size);
+                BOOST_ASSERT(grp_size + 1 <= stringify::v0::min_buff_size);
+                auto it = ob.pos();
+                it = enc.encode_char(it, separator);
+                std::char_traits<CharT>::assign(it, grp_size, '0');
+                ob.advance_to(it + grp_size);
+                ++ groups;
+            }
+        }
+    }
 }
 
 template <typename CharT, unsigned Base>
@@ -649,7 +749,7 @@ void default_numchars<CharT, 16>::print_digits
     {
         _print_digits_big_sep( ob, enc, digits, groups
                              , separator, num_digits, num_groups );
-        return;                     
+        return;
     }
 
     constexpr auto max_digits

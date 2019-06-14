@@ -61,6 +61,10 @@ template <typename QFmt, typename Der>
 using fmt_derived
 = typename stringify::v0::fmt_helper<QFmt, Der>::derived_type;
 
+template <typename Der, typename QFmtFrom, typename QFmtTo>
+using fmt_replace = typename stringify::v0::fmt_helper<QFmtFrom, Der>
+    ::template adapted_derived_type<QFmtTo>;
+
 template <typename ValueType, class ... Fmts>
 class value_with_format;
 
@@ -407,6 +411,7 @@ class empty_alignment_format_impl
     {
         return adapted_derived_type{static_cast<const derived_type&>(*this)};
     }
+
 public:
 
     constexpr empty_alignment_format_impl()
@@ -545,6 +550,31 @@ constexpr auto multi(const T& value, I count)
 {
     return fmt(value).multi(count);
 }
+
+template <typename T>
+constexpr auto fixed(const T& value)
+{
+    return fmt(value).fixed();
+}
+
+template <typename T>
+constexpr auto sci(const T& value)
+{
+    return fmt(value).sci();
+}
+
+template <typename T, typename P>
+constexpr auto fixed(const T& value, P precision)
+{
+    return fmt(value).fixed().p(precision);
+}
+
+template <typename T, typename P>
+constexpr auto sci(const T& value, P precision)
+{
+    return fmt(value).sci().p(precision);
+}
+
 
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

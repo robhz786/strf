@@ -126,14 +126,14 @@ void input_tester<CharOut>::finish()
     {
         namespace strf = boost::stringify::v0;
 
-        _test_failure( "Expected: \"", strf::cv(_expected), "\"\n"
-                     , "Obtained: \"", strf::cv(_result), "\"\n" );
+        _test_failure( "\n expected: \"", strf::cv(_expected), '\"'
+                     , "\n obtained: \"", strf::cv(_result), "\"\n" );
 
     }
     if(_wrongly_reserved())
     {
-        _test_failure( "Reserved size  : ", _reserved_size, '\n'
-                     , "Necessary size : ", _result.length(), '\n' );
+        _test_failure( "\n reserved size  : ", _reserved_size
+                     , "\n necessary size : ", _result.length(), '\n' );
     }
 
     if (_test_failed)

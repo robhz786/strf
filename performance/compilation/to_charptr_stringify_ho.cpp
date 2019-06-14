@@ -15,7 +15,6 @@ void FUNCTION_NAME (int)
         , +strf::fmt(arg_a2) > 5, " blah", ~strf::oct(arg_a3) > 6, ' '
         , strf::hex(arg_a4), ' ', arg_a5 )
         .ptr;
-    
 
     out = strf::write(out, end)
         ( "blah blah ", arg_b0, ' ', strf::right(arg_b1, 9), arg_b2, ' ', arg_b3, ' '

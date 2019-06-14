@@ -9,6 +9,7 @@
 #include <boost/stringify/v0/detail/input_types/int.hpp>
 #include <boost/stringify/v0/detail/input_types/fmt_int.hpp>
 #include <boost/stringify/v0/detail/input_types/char.hpp>
+#include <boost/stringify/v0/detail/input_types/float.hpp>
 #include <boost/stringify/v0/detail/input_types/string.hpp>
 #include <boost/stringify/v0/detail/input_types/cv_string.hpp>
 #include <boost/stringify/v0/detail/input_types/join.hpp>
