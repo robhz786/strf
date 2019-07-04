@@ -107,8 +107,7 @@ void i18n_int_printer<CharT>::_write_with_punct
     constexpr unsigned max_digits
         = stringify::v0::detail::max_num_digits<decltype(_uvalue), 10>;
     unsigned char groups[max_digits];
-    auto g = _punct.groups(_digcount, groups);
-    unsigned num_groups = static_cast<unsigned>((g - groups) + 1);
+    auto num_groups = _punct.groups(_digcount, groups);
     _chars.print_digits( ob, _encoding, _uvalue, groups
                        , _punct.thousands_sep()
                        , _digcount, num_groups );

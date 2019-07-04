@@ -428,13 +428,12 @@ void fmt_int_printer<CharT>::_write_digits_sep
 {
     unsigned char grp_buff
         [stringify::v0::detail::max_num_digits< unsigned long long, 8>];
-    auto* grp_it = _punct.groups(_digcount, grp_buff);
-    (void)grp_it;
-    BOOST_ASSERT((grp_it - grp_buff) == _sepcount);
+    auto num_groups = _punct.groups(_digcount, grp_buff);
+    BOOST_ASSERT(num_groups == _sepcount + 1);
     _chars.print_digits( ob, _encoding, _uvalue, grp_buff
                        , _punct.thousands_sep()
                        , _digcount
-                       , _sepcount + 1 );
+                       , num_groups );
 }
 
 

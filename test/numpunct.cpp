@@ -34,24 +34,24 @@ int main()
 
         std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
         {
-            auto last = grouper.groups(3, groups);
-            BOOST_TEST(last == groups);
+            auto num_groups = grouper.groups(3, groups);
+            BOOST_TEST(num_groups == 1);
             BOOST_TEST(groups[0] == 3);
             BOOST_TEST(groups[1] == 0xff);
         }
 
         std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
         {
-            auto last = grouper.groups(4, groups);
-            BOOST_TEST(last == groups);
+            auto num_groups = grouper.groups(4, groups);
+            BOOST_TEST(num_groups == 1);
             BOOST_TEST(groups[0] == 4);
             BOOST_TEST(groups[1] == 0xff);
         }
 
         std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
         {
-            auto last = grouper.groups(5, groups);
-            BOOST_TEST(last == groups + 1);
+            auto num_groups = grouper.groups(5, groups);
+            BOOST_TEST(num_groups == 2);
             BOOST_TEST(groups[0] == 4);
             BOOST_TEST(groups[1] == 1);
             BOOST_TEST(groups[2] == 0xff);
@@ -59,8 +59,8 @@ int main()
 
         std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
         {
-            auto last = grouper.groups(8, groups);
-            BOOST_TEST(last == groups + 1);
+            auto num_groups = grouper.groups(8, groups);
+            BOOST_TEST(num_groups == 2);
             BOOST_TEST(groups[0] == 4);
             BOOST_TEST(groups[1] == 4);
             BOOST_TEST(groups[2] == 0xff);
@@ -68,8 +68,8 @@ int main()
 
         std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
         {
-            auto last = grouper.groups(9, groups);
-            BOOST_TEST(last == groups + 2);
+            auto num_groups = grouper.groups(9, groups);
+            BOOST_TEST(num_groups == 1 + 2);
             BOOST_TEST(groups[0] == 4);
             BOOST_TEST(groups[1] == 4);
             BOOST_TEST(groups[2] == 1);
@@ -159,15 +159,15 @@ int main()
 
         {
             std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
-            auto last = grouper.groups(15, groups);
-            BOOST_TEST(last == groups);
+            auto num_groups = grouper.groups(15, groups);
+            BOOST_TEST(num_groups == 1);
             BOOST_TEST(groups[0] == 15);
             BOOST_TEST(groups[1] == 0xff);
         }
         {
             std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
-            auto last = grouper.groups(16, groups);
-            BOOST_TEST(last == groups + 1);
+            auto num_groups = grouper.groups(16, groups);
+            BOOST_TEST(num_groups == 2);
             BOOST_TEST(groups[0] == 15);
             BOOST_TEST(groups[1] == 1);
             BOOST_TEST(groups[2] == 0xff);
