@@ -40,7 +40,9 @@ public:
             _uvalue = value;
             _negative = false;
         }
-        _sepcount = _punct.thousands_sep_count(_digcount);
+        _sepcount = ( _punct.no_group_separation(_digcount)
+                    ? 0
+                    : _punct.thousands_sep_count(_digcount) );
     }
 
     std::size_t necessary_size() const override;
@@ -65,7 +67,8 @@ private:
 template <typename CharT>
 std::size_t i18n_int_printer<CharT>::necessary_size() const
 {
-    auto size = _chars.size(_encoding, _digcount, _negative, false, false);
+    auto size = _chars.integer_printsize
+        ( _encoding, _digcount, _negative, false );
     if (_sepcount != 0)
     {
         auto sepsize = _encoding.validate(_punct.thousands_sep());
@@ -80,7 +83,7 @@ std::size_t i18n_int_printer<CharT>::necessary_size() const
 template <typename CharT>
 int i18n_int_printer<CharT>::width(int) const
 {
-    return _sepcount + (_digcount + _negative) * _chars.char_width();
+    return _sepcount + _chars.integer_printwidth(_digcount, _negative, false);
 }
 
 template <typename CharT>
@@ -96,7 +99,7 @@ void i18n_int_printer<CharT>::write(stringify::v0::output_buffer<CharT>& ob) con
     }
     else
     {
-        _chars.print_digits(ob, _encoding, _uvalue, _digcount);
+        _chars.print_integer(ob, _encoding, _uvalue, _digcount);
     }
 }
 
@@ -107,10 +110,8 @@ void i18n_int_printer<CharT>::_write_with_punct
     constexpr unsigned max_digits
         = stringify::v0::detail::max_num_digits<decltype(_uvalue), 10>;
     unsigned char groups[max_digits];
-    auto num_groups = _punct.groups(_digcount, groups);
-    _chars.print_digits( ob, _encoding, _uvalue, groups
-                       , _punct.thousands_sep()
-                       , _digcount, num_groups );
+    _chars.print_integer( ob, _encoding, _punct, groups
+                        , _uvalue, _digcount );
 }
 
 
@@ -182,42 +183,6 @@ void fast_int_printer<CharT>::write
         it[-1] = '-';
     }
 }
-
-
-template <typename CharT, typename FPack, typename IntT, unsigned Base>
-class has_i18n_impl
-{
-public:
-
-    static std::true_type  test_numchars
-        ( const stringify::v0::numchars<CharT>& );
-    static std::false_type test_numchars
-        ( const stringify::v0::default_numchars<CharT, Base>& );
-
-    static std::true_type  test_numpunct(const stringify::v0::numpunct_base&);
-    static std::false_type test_numpunct(const stringify::v0::no_grouping<Base>&);
-
-    static const FPack& fp();
-
-    using has_numchars_type = decltype
-        ( test_numchars
-            ( get_facet<stringify::v0::numchars_c<CharT, Base>, IntT>(fp())) );
-
-    using has_numpunct_type = decltype
-        ( test_numpunct
-            ( get_facet< stringify::v0::numpunct_c<Base>, IntT >(fp())) );
-
-public:
-
-    static constexpr bool has_i18n
-        = has_numchars_type::value || has_numpunct_type::value;
-};
-
-template <typename CharT, typename FPack, typename IntT, unsigned Base>
-constexpr bool has_i18n = has_i18n_impl<CharT, FPack, IntT, Base>::has_i18n;
-
-static_assert(has_i18n<char, decltype(pack()), int, 10> == false, "");
-static_assert(has_i18n<char, decltype(pack(monotonic_grouping<10>(3))), int, 10> == true, "");
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 

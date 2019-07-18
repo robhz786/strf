@@ -387,7 +387,7 @@ public:
     {
         return _impl->decode_single_char(ch);
     }
-        char_type* encode_char(char_type* dest, char32_t ch) const
+    char_type* encode_char(char_type* dest, char32_t ch) const
     {
         auto rdest = reinterpret_cast<_impl_char_type*>(dest);
         return reinterpret_cast<char_type*>(_impl->encode_char(rdest, ch));
@@ -409,7 +409,7 @@ public:
             if(s != (std::size_t)-1)
             {
                 ob.ensure(s);
-                ob.advance_to(this->encode_char(ch, ob.pos()));
+                ob.advance_to(this->encode_char(ob.pos(), ch));
             }
             else if(err_hdl == stringify::v0::encoding_error::replace)
             {

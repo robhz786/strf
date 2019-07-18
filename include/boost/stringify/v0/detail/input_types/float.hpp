@@ -695,6 +695,13 @@ class fast_double_printer: public stringify::v0::printer<CharT>
 {
 public:
 
+    template <typename FPack>
+    fast_double_printer(const FPack, double d)
+        : fast_double_printer(d)
+    {
+    }
+
+    
     explicit fast_double_printer(double d)
         : _value(decode(d))
         , _m10_digcount(stringify::v0::detail::count_digits<10>(_value.m10))
@@ -929,257 +936,226 @@ void fast_double_printer<CharT>::write
 }
 
 
-// template <typename CharT>
-// class fast_i18n_double_printer: public stringify::v0::printer<CharT>
-// {
-// public:
+template <typename CharT>
+class fast_i18n_double_printer: public stringify::v0::printer<CharT>
+{
+public:
 
-//     template <typename FPack, typename FloatT>
-//     fast_i18n_double_printer(const FPack& fp, FloatT d)
-//         : _chars(get_facet<stringify::v0::numchars_c<CharT, 10>, FloatT>(fp))
-//         , _punct(get_facet<stringify::v0::numpunct_c<10>, FloatT>(fp))
-//         , _encoding(get_facet<stringify::v0::encoding_c<CharT>, FloatT>(fp))
-//         , _value(decode(d))
-//         , _m10_digcount(stringify::v0::detail::count_digits<10>(_value.m10))
-//         , _sci_notation( _value.e10 < - static_cast<int>(_m10_digcount) - 3
-//                       || _value.e10 > static_cast<int>(4 + (_m10_digcount > 1)) )
-//     {
-//     }
+    template <typename FPack, typename FloatT>
+    fast_i18n_double_printer(const FPack& fp, FloatT d)
+        : _chars(get_facet<stringify::v0::numchars_c<CharT, 10>, FloatT>(fp))
+        , _punct(get_facet<stringify::v0::numpunct_c<10>, FloatT>(fp))
+        , _encoding(get_facet<stringify::v0::encoding_c<CharT>, FloatT>(fp))
+        , _value(decode(d))
+        , _m10_digcount(stringify::v0::detail::count_digits<10>(_value.m10))
+        , _sci_notation( _value.e10 < - static_cast<int>(_m10_digcount) - 3
+                      || _value.e10 > static_cast<int>(4 + (_m10_digcount > 1)) )
+    {
+    }
 
-//     int width(int) const override;
+    int width(int) const override;
 
-//     void write(stringify::v0::output_buffer<CharT>&) const override;
+    void write(stringify::v0::output_buffer<CharT>&) const override;
 
-//     std::size_t necessary_size() const override;
+    std::size_t necessary_size() const override;
 
-// private:
+private:
 
-//     unsigned _size_sci() const
-//     {
-//         return _value.negative + _m10_digcount + (_m10_digcount != 1) + 4
-//             + (_value.e10 > 99 || _value.e10 < -99);
+    unsigned _size_sci() const
+    {
+        return _value.negative + _m10_digcount + (_m10_digcount != 1) + 4
+            + (_value.e10 > 99 || _value.e10 < -99);
 
-//     }
+    }
 
-//     const stringify::v0::numchars<CharT>& _chars;
-//     const stringify::v0::numpunct_base& _punct;
-//     stringify::v0::encoding<CharT> _encoding;
-//     const detail::double_dec _value;
-//     bool _sci_notation ;
-//     const unsigned _m10_digcount;
+    const stringify::v0::numchars<CharT>& _chars;
+    const stringify::v0::numpunct_base& _punct;
+    stringify::v0::encoding<CharT> _encoding;
+    const detail::double_dec _value;
+    const unsigned _m10_digcount;
+    bool _sci_notation ;
 
-// };
+};
 
-// template <typename CharT>
-// std::size_t fast_i18n_double_printer<CharT>::necessary_size() const
-// {
-//     if (_value.infinity || _value.nan)
-//     {
-//         return 3 + (_value.negative && _value.infinity);
-//     }
-//     if (_sci_notation)
-//     {
-//         return _chars.size
-//             ( _encoding
-//             , _m10_digcount + 2 + (_value.e10 > 99 || _value.e10 < -99)
-//             , _value.negative, false, true )
-//             + _encoding.char_size(_punct.decimal_point());
-//     }
-//     unsigned total_dig_count
-//         = _m10_digcount
-//         + (_value.e10 > 0) * _value.e10
-//         + (_value.e10 <= -(int)_m10_digcount)
-//         * (1 -_value.e10 - (int)_m10_digcount);
-//     auto s = _char.size( _encoding, total_dig_count
-//                        , _value.negative, false, false );
-//     if (_value.e10 < 0)
-//     {
-//         s += _encoding.char_size(_punct.decimal_point())
-//     }
-//     bool value_ge_one = (_value.e10 > -(int)_m10_digcount);
-//     unsigned idigits_count = ( value_ge_one
-//                              * ((int)_m10_digcount + _value.e10)
-//                              + ! value_ge_one );
-//     unsigned sep_count = _punct.thousands_sep_count(idigits_count);
-//     if (sep_count > 0)
-//     {
-//         s += sep_count * _encoding.char_size(_punct.thounsad_sep());
-//     }
-// }
+template <typename CharT>
+std::size_t fast_i18n_double_printer<CharT>::necessary_size() const
+{
+    if (_value.infinity || _value.nan)
+    {
+        return 3 + (_value.negative && _value.infinity);
+    }
+    if (_sci_notation)
+    {
+        return _chars.scientific_notation_printsize
+            ( _encoding
+            , _m10_digcount
+            , _punct.decimal_point()
+            , _value.e10 + (int)_m10_digcount - 1
+            , _value.negative, true );
+    }
+    std::size_t seps_size = 0;
+    std::size_t decpoint_size = 0;
+    auto idigcount = (int)_m10_digcount + _value.e10;
+    if (idigcount > 1 && ! _punct.no_group_separation(idigcount))
+    {
+        auto s = _encoding.validate(_punct.thousands_sep());
+        if (s != (std::size_t)-1)
+        {
+            seps_size = s * _punct.thousands_sep_count(idigcount);
+        }
+    }
+    if (_value.e10 < 0)
+    {
+        bool idig = _value.e10 > -(int)_m10_digcount;
+        auto idigcount = !idig + idig * ((int)_m10_digcount + _value.e10);
+        auto isize = _chars.integer_printsize( _encoding
+                                             , idigcount
+                                             , _value.negative
+                                             , false );
+        auto fsize = _chars.fractional_digits_printsize( _encoding
+                                                       , _punct.decimal_point()
+                                                       , -_value.e10 );
+        return isize + fsize + seps_size;
+    }
+    return _chars.integer_printsize( _encoding
+                                   , _m10_digcount
+                                   , _value.negative
+                                   , false )
+        + seps_size + decpoint_size;
+}
 
-// template <typename CharT>
-// int fast_i18n_double_printer<CharT>::width(int) const
-// {
-//     return ( _value.nan * 3
-//            + (_value.infinity * 3)
-//            + (_value.negative && !_value.nan)
-//            + !(_value.infinity | _value.nan)
-//            * ( ( _sci_notation
-//                * ( 3
-//                  + (_m10_digcount != 1)
-//                  + _m10_digcount
-//                  + ((_value.e10 > 99) || (_value.e10 < -99))) )
-//              + ( !_sci_notation
-//                * ( (int)_m10_digcount
-//                  + (_value.e10 > 0) * _value.e10
-//                  + (_value.e10 <= -(int)_m10_digcount) * (1 -_value.e10 - (int)_m10_digcount)
-//                  + (-(int)_m10_digcount < _value.e10 && _value.e10 < 0)
-//                  + (_value.e10 == -(int)_m10_digcount) ))));
-// }
+template <typename CharT>
+int fast_i18n_double_printer<CharT>::width(int) const
+{
+    if (_value.infinity || _value.nan)
+    {
+        return 3 + (_value.negative && _value.infinity);
+    }
+    if (_sci_notation)
+    {
+        return _chars.scientific_notation_printwidth( _m10_digcount
+                                                    , _value.e10
+                                                    , _value.negative );
+    }    
+    constexpr unsigned decpoint_width = 1;
+    if (_value.e10 < 0)
+    {
+        bool idig = _value.e10 > -(int)_m10_digcount;
+        auto idigcount = !idig + idig * ((int)_m10_digcount + _value.e10);
+        auto fdigcount = - _value.e10;
+        auto iwidth = _chars.integer_printwidth(idigcount, _value.negative, false);
+        auto fwidth = _chars.fractional_digits_printwidth(fdigcount);
+        unsigned seps_width = _punct.thousands_sep_count((idigcount > 0) * idigcount);
+        return iwidth + fwidth + decpoint_width + seps_width;
+    }
+    return _chars.integer_printwidth( _m10_digcount + _value.e10
+                                    , _value.negative
+                                    , false );
+}
 
-// template <typename CharT>
-// void fast_i18n_double_printer<CharT>::write
-//     ( stringify::v0::output_buffer<CharT>& ob ) const
-// {
-//     if (_value.nan)
-//     {
-//         ob.ensure(3);
-//         ob.pos()[0] = 'n';
-//         ob.pos()[1] = 'a';
-//         ob.pos()[2] = 'n';
-//         ob.advance(3);
-//     }
-//     else if (_value.infinity)
-//     {
-//         if (_value.negative)
-//         {
-//             ob.ensure(4);
-//             ob.pos()[0] = '-';
-//             ob.pos()[1] = 'i';
-//             ob.pos()[2] = 'n';
-//             ob.pos()[3] = 'f';
-//             ob.advance(4);
-//         }
-//         else
-//         {
-//             ob.ensure(3);
-//             ob.pos()[0] = 'i';
-//             ob.pos()[1] = 'n';
-//             ob.pos()[2] = 'f';
-//             ob.advance(3);
-//         }
-//     }
-//     else if (_sci_notation)
-//     {
-//         if (_value.negative)
-//         {
-//             _chars.print_neg_sign(ob, _encoding);
-//         }
-//         if (_m10_digcount == 1)
-//         {
-//             _chars.print_digits(ob, _encoding, _value.m10, 1);
-//         }
-//         else
-//         {
-//             std::uint8_t groups [] =
-//                 { static_cast<std::uint8_t>(_m10_digcount - 1), 1 };
-//             _chars.print_digits( ob, _encoding, _value.m10, groups,
-//                                , _punct.decimal_point(), _m10_digcount, 2 );
-//         }
-//         _chars.print_exp_base();
-//         if (e10 < 0)
-//         {
-//             _chars.print_neg_sign(ob, _encoding);
-//         }
-//         else
-//         {
-//             _chars.print.pos_sign(ob, _encoding);
-//         }
-//         _chars.print_digits(ob, _encoding, std::abs(e10), 2 + (e10u >= 100));
-//     }
-//     else
-//     {
-//         if (_value.negative)
-//         {
-//             _chars.print_neg_sign(ob, _encoding);
-//         }
-//         if (_value.e10 >= 0)
-//         {
-//             unsigned idig_count = _value.m10_digcount + _value.e10;
-//             std::uint8_t grps[1 + std::numeric_limits<double>::max_exponent10];
-//             BOOST_ASSERT(1 + std::numeric_limits<double>::max_exponent10 >= idig_count);
-//             auto last_grp = _punc.groups(idig_count, grps);
-//             if (last_grp == grps)
-//             {
-//                 _chars.print_digits(ob, _encoding, _value.m10 ,_value.m10_digcount);
-//             }
-//             else
-//             {
-//                 auto g = grps;
-//                 unsigned acc = 0;
-//                 unsigned groups_zeros = 0
-//                 do
-//                 {
-//                     acc += *g;
-//                     ++ groups_zeros;
-//                     ++ g;
-//                 }
-//                 while(g <= last_grp && acc <= (unsigned)_value.e10);
-//                 if (acc == _value.e10)
-//                 {
-//                     _chars.print_zeros(ob, _encoding, grps, (g - grps));
-//                     _chars.print_digits( ob, _encoding, _value.m10, g
-//                                        , _punct.thousands_sep(), _value.m10_digcount,
-//                                        , (last_grp - g) + 1 );
-//                 }
-//                 else
-//                 {
-//                     --g;
-//                     unsigned transitions_group_size = *g;
-//                     unsigned zeros = acc - (unsigned)_value.e10;
-//                     unsgined non_zeros = transitions_group_size - non_zeros;
-//                     *g = zeros;
-//                      _chars.print_zeros( ob, _encoding, grps, _punct.thousands_sep()
-//                                        , (g - grps) + 1);
-//                     *g = non_zeros;
-//                     _chars.print_digits( ob, _encoding, _value.m10, g
-//                                        , _punct.thousands_sep()
-//                                        , _value.m10_digcount
-//                                        , (last_grp - g) + 1 );
-//                 }
-//             }
-//         }
-//         else
-//         {
-//             unsigned e10u = - _value.e10;
-//             if (e10u >= _m10_digcount)
-//             {
-//                 std::uint8_t grps_zeros[] =
-//                     { static_cast<std::uint8_t>(e10u - _m10_digcount), 1};
-//                 _chars.print_zeros( ob, _encoding, grps_zeros
-//                                   , _punct.decimal_point(), 2);
-//                 _chars.print_digits(ob, _encoding, _value.m10, _m10_digcount);
-//             }
-//             else
-//             {
-//                 //auto v = std::lldiv(_value.m10, detail::pow10(e10u)); // todo test this
-//                 auto p10 = stringify::v0::detail::pow10(e10u);
-//                 auto integral_part = _value.m10 / p10;
-//                 auto fractional_part = _value.m10 % p10;
-//                 auto idigcount
-//                     = stringify::v0::detail::count_digits<10>(integral_part);
-//                 auto fdigcount = _value.m10_digcount - idigcount;
-//                 BOOST_ASSERT(fdigcount == detail::count_digits<10>(fractional_part));
-//                 std::uint8_t grps[detail::max_num_digits<unsigned long long, 10>];
-//                 auto last_grp = _punct.groups(idigcount, grps);
-//                 if (last_grp == grps)
-//                 {
-//                     _chars.print_digits(ob, _encoding, integral_part, idigcount);
-//                 }
-//                 else
-//                 {
-//                     _chars.print_digits( ob, _encoding, integral_part, grps
-//                                        , _punct.thousands_sep(), idigcount
-//                                        , (last_grp - grps) + 1 );
-//                 }
-//                 _encoding.encode_char( ob
-//                                      , _punct.decimal_point()
-//                                      ,  stringify::v0::encoding_error::ignore );
-//                 _char.print_digits(ob, _encoding, fractional_part, fdigcount);
-//             }
-//         }
-//     }
-// }
+template <typename CharT>
+void fast_i18n_double_printer<CharT>::write
+    ( stringify::v0::output_buffer<CharT>& ob ) const
+{
+    if (_value.nan)
+    {
+        ob.ensure(3);
+        ob.pos()[0] = 'n';
+        ob.pos()[1] = 'a';
+        ob.pos()[2] = 'n';
+        ob.advance(3);
+    }
+    else if (_value.infinity)
+    {
+        if (_value.negative)
+        {
+            ob.ensure(4);
+            ob.pos()[0] = '-';
+            ob.pos()[1] = 'i';
+            ob.pos()[2] = 'n';
+            ob.pos()[3] = 'f';
+            ob.advance(4);
+        }
+        else
+        {
+            ob.ensure(3);
+            ob.pos()[0] = 'i';
+            ob.pos()[1] = 'n';
+            ob.pos()[2] = 'f';
+            ob.advance(3);
+        }
+    }
+    else if (_sci_notation)
+    {
+        if (_value.negative)
+        {
+            _chars.print_neg_sign(ob, _encoding);
+        }
+        _chars.print_scientific_notation
+            ( ob, _encoding, _value.m10, _m10_digcount, _punct.decimal_point()
+            , _value.e10 + static_cast<int>(_m10_digcount) - 1
+            , false );
+    }
+    else
+    {
+        if (_value.negative)
+        {
+            _chars.print_neg_sign(ob, _encoding);
+        }
+        std::uint8_t grps_pool[std::numeric_limits<double>::max_exponent10 + 1];
+        if (_value.e10 >= 0)
+        {
+            if (_punct.no_group_separation(_value.m10))
+            {
+                _chars.print_amplified_integer( ob, _encoding, _value.m10
+                                              , _m10_digcount, _value.e10 );
+            }
+            else
+            {
+                char buff[std::numeric_limits<double>::max_exponent10 + 1];
+                auto digits = detail::write_int_dec_txtdigits_backwards
+                    ( _value.m10, buff + sizeof(buff) );
+                _chars.print_amplified_integer
+                    ( ob, _encoding, _punct, grps_pool, digits
+                    , _m10_digcount, _value.e10 );
+            }
+        }
+        else
+        {
+            unsigned e10u = - _value.e10;
+            if (e10u >= _m10_digcount)
+            {
+                _chars.print_single_digit(ob, _encoding, 0);
+                _chars.print_fractional_digits
+                    ( ob, _encoding, _value.m10, _m10_digcount
+                    , _punct.decimal_point(), e10u - _m10_digcount);
+            }
+            else
+            {
+                //auto v = std::lldiv(_value.m10, detail::pow10(e10u)); // todo test this
+                auto p10 = stringify::v0::detail::pow10(e10u);
+                auto integral_part = _value.m10 / p10;
+                auto fractional_part = _value.m10 % p10;
+                auto idigcount = _m10_digcount - e10u;
+                BOOST_ASSERT(idigcount == detail::count_digits<10>(integral_part));
+
+                if (_punct.no_group_separation(_value.m10))
+                {
+                    _chars.print_integer( ob, _encoding
+                                        , integral_part, idigcount );
+                }
+                else
+                {
+                    _chars.print_integer( ob, _encoding, _punct, grps_pool
+                                        , integral_part, idigcount );
+                }
+                _chars.print_fractional_digits
+                    ( ob, _encoding, fractional_part, e10u
+                    , _punct.decimal_point(), 0 );
+            }
+        }
+    }
+}
 
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
@@ -1187,7 +1163,7 @@ void fast_double_printer<CharT>::write
 #if defined(__cpp_char8_t)
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class double_printer<char8_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_double_printer<char8_t>;
-// BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_i18n_double_printer<char8_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_i18n_double_printer<char8_t>;
 #endif
 
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class double_printer<char>;
@@ -1200,19 +1176,23 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_double_printer<char16_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_double_printer<char32_t>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_double_printer<wchar_t>;
 
-// BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_i18n_double_printer<char>;
-// BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_i18n_double_printer<char16_t>;
-// BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_i18n_double_printer<char32_t>;
-// BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_i18n_double_printer<wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_i18n_double_printer<char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_i18n_double_printer<char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_i18n_double_printer<char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_i18n_double_printer<wchar_t>;
 
 #endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 } // namespace detail
 
 template <typename CharT, typename FPack>
-inline detail::fast_double_printer<CharT> make_printer(const FPack&, double d)
+inline typename std::conditional
+    < stringify::v0::detail::has_i18n<CharT, FPack, double, 10>
+    , stringify::v0::detail::fast_i18n_double_printer<CharT>
+    , stringify::v0::detail::fast_double_printer<CharT> >::type
+make_printer(const FPack& fp, double d)
 {
-    return detail::fast_double_printer<CharT>{d};
+    return {fp, d};
 }
 
 template <typename CharT, typename FPack>
@@ -1225,8 +1205,6 @@ inline detail::double_printer<CharT> make_printer
 {
     return detail::double_printer<CharT>{x};
 }
-
-
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

@@ -43,6 +43,17 @@ int main()
     TEST("1.5")    (1.5);
     TEST("6.103515625e-05") (6.103515625e-05);
     TEST("0.00048828125")   (0.00048828125);
+    TEST("2048.001953125")  (2048.001953125);
+
+    auto punct = strf::monotonic_grouping<10>{3}.decimal_point('~').thousands_sep('^');
+    TEST("0").facets(punct)      (0.0);
+    TEST("-0").facets(punct)    (-0.0);
+    TEST("1").facets(punct)      (1.0);
+    TEST("-1").facets(punct)    (-1.0);
+    TEST("1~5").facets(punct)    (1.5);
+    TEST("6~103515625e-05").facets(punct) (6.103515625e-05);
+    TEST("0~00048828125").facets(punct)   (0.00048828125);
+    TEST("2^048~001953125").facets(punct) (2048.001953125);
 
     TEST("0")      (strf::fmt(0.0));
     TEST("-0")     (strf::fmt(-0.0));

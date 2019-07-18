@@ -211,7 +211,6 @@ private:
 
     void _write_complement(stringify::v0::output_buffer<CharT>& ob) const;
     void _write_digits(stringify::v0::output_buffer<CharT>& ob) const;
-    void _write_digits_sep(stringify::v0::output_buffer<CharT>& ob) const;
 };
 
 template <typename CharT>
@@ -240,8 +239,6 @@ void fmt_int_printer<CharT>::_init(stringify::v0::int_with_format<IntT> value)
     _sepcount = _punct.thousands_sep_count(_digcount);
     _precision = value.precision();
 
-    int complement_width;
-
 #if defined(_MSC_VER)
 #pragma warning ( push )
 #pragma warning ( disable : 4127 )
@@ -260,7 +257,6 @@ void fmt_int_printer<CharT>::_init(stringify::v0::int_with_format<IntT> value)
             _showneg = true;
             _showpos = false;
             _showbase = false;
-            complement_width = 1;
         }
         else
         {
@@ -268,7 +264,6 @@ void fmt_int_printer<CharT>::_init(stringify::v0::int_with_format<IntT> value)
             _showneg = false;
             _showpos = value.showpos();
             _showbase = false;
-            complement_width = value.showpos();
         }
     }
     else
@@ -277,25 +272,13 @@ void fmt_int_printer<CharT>::_init(stringify::v0::int_with_format<IntT> value)
         _showneg = false;
         _showpos = false;
         _showbase = value.showbase();
-        complement_width = ( Base == 8
-                           ? value.showbase()
-                           : (value.showbase() << 1) );
     }
 
-    int  content_width;
-    if (_precision > _digcount)
-    {
-        content_width
-            = _chars.char_width()
-            * (_precision + complement_width + _sepcount);
-    }
-    else
-    {
-        content_width
-            = _chars.char_width()
-            * (_digcount + complement_width + _sepcount);
-    }
-
+    auto content_width = _chars.integer_printwidth
+        ( std::max(_precision, _digcount)
+        , _showneg || _showpos
+        , _showbase )
+        + static_cast<int>(_sepcount);
     if (_afmt.width() > content_width)
     {
         _fillcount = _afmt.width() - content_width;
@@ -315,10 +298,9 @@ fmt_int_printer<CharT>::~fmt_int_printer()
 template <typename CharT>
 std::size_t fmt_int_printer<CharT>::necessary_size() const
 {
-    std::size_t s = _chars.size( _encoding
-                               , std::max((unsigned)_digcount, _precision)
-                               , _showneg || _showpos
-                               , _showbase, false );
+    std::size_t s = _chars.integer_printsize
+        ( _encoding, std::max((unsigned)_digcount, _precision)
+        , _showneg || _showpos, _showbase );
     if (_sepcount > 0)
     {
         auto sepsize = _encoding.validate(_punct.thousands_sep());
@@ -408,34 +390,19 @@ template <typename CharT>
 inline void fmt_int_printer<CharT>::_write_digits
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
-    if ( _precision > _digcount)
-    {
-        _chars.print_zeros(ob, _encoding, _precision - _digcount);
-    }
+    unsigned zeros = (_precision > _digcount) * (_precision - _digcount);
     if (_sepcount == 0)
     {
-        _chars.print_digits(ob, _encoding, _uvalue, _digcount);
+        _chars.print_integer(ob, _encoding, _uvalue, _digcount, zeros);
     }
     else
     {
-        _write_digits_sep(ob);
+        unsigned char grp_buff
+        [stringify::v0::detail::max_num_digits< unsigned long long, 8>];
+        _chars.print_integer( ob, _encoding, _punct, grp_buff
+                            , _uvalue, _digcount, zeros );
     }
 }
-
-template <typename CharT>
-void fmt_int_printer<CharT>::_write_digits_sep
-    ( stringify::v0::output_buffer<CharT>& ob ) const
-{
-    unsigned char grp_buff
-        [stringify::v0::detail::max_num_digits< unsigned long long, 8>];
-    auto num_groups = _punct.groups(_digcount, grp_buff);
-    BOOST_ASSERT(num_groups == _sepcount + 1);
-    _chars.print_digits( ob, _encoding, _uvalue, grp_buff
-                       , _punct.thousands_sep()
-                       , _digcount
-                       , num_groups );
-}
-
 
 template <typename CharT, typename FPack, typename IntT>
 inline stringify::v0::fmt_int_printer<CharT>

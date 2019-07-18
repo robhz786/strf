@@ -18,12 +18,17 @@ int main()
     char dest[1000000];
     char* dest_end = dest + sizeof(dest);
     (void) dest_end;
+    auto dummy_punct = strf::no_grouping<10>().decimal_point(':');
 
-    strf::write(stdout)("\n ---- 12345.0 ---- \n");
+    strf::write(stdout)("\n ---- 6.103515625e-05 ---- \n");
     
     PRINT_BENCHMARK("strf::write(dest)(6.103515625e-05)")
     {
         (void) strf::write(dest)(6.103515625e-05);
+    }
+    PRINT_BENCHMARK("strf::write(dest).facets(dummy_punct)(6.103515625e-05)")
+    {
+        (void) strf::write(dest).facets(dummy_punct)(6.103515625e-05);
     }
     PRINT_BENCHMARK("strf::write(dest).tr(\"{}\", 6.103515625e-05)")
     {
@@ -62,11 +67,15 @@ int main()
     //     std::sprintf(dest, "%g", 6.103515625e-05);
     // }
 
-    strf::write(stdout)("\n ---- 1234567890.0 ---- \n");
+    strf::write(stdout)("\n ---- 1234567890 ---- \n");
     
     PRINT_BENCHMARK("strf::write(dest)(1234567890.0)")
     {
         (void) strf::write(dest)(1234567890.0);
+    }    
+    PRINT_BENCHMARK("strf::write(dest).facets(dummy_punct)(1234567890.0)")
+    {
+        (void) strf::write(dest).facets(dummy_punct)(1234567890.0);
     }
     PRINT_BENCHMARK("strf::write(dest).tr(\"{}\", 1234567890.0)")
     {
@@ -103,6 +112,10 @@ int main()
     {
         (void) strf::write(dest)(1234567.12890625);
     }
+    PRINT_BENCHMARK("strf::write(dest).facets(dummy_punc)(1234567.12890625)")
+    {
+        (void) strf::write(dest).facets(dummy_punct)(1234567.12890625);
+    }
     PRINT_BENCHMARK("strf::write(dest).tr(\"{}\", 1234567.12890625)")
     {
         (void) strf::write(dest).tr("{}", 1234567.12890625);
@@ -137,6 +150,10 @@ int main()
     PRINT_BENCHMARK("strf::write(dest)(12.625)")
     {
         (void) strf::write(dest)(12.625);
+    }   
+    PRINT_BENCHMARK("strf::write(dest).facets(dummy_punct)(12.625)")
+    {
+        (void) strf::write(dest).facets(dummy_punct)(12.625);
     }
     PRINT_BENCHMARK("strf::write(dest).tr(\"{}\", 12.625)")
     {
