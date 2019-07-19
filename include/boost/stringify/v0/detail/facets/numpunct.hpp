@@ -216,6 +216,9 @@ public:
     // {
     //     return _char_width; // todo
     // }
+
+    using no_group_sep = std::false_type;
+
 protected:
 
     numpunct_base(const numpunct_base&) = default;
@@ -275,6 +278,8 @@ public:
         numpunct_base::decimal_point(ch);
         return std::move(*this);
     }
+
+    using no_group_sep = std::true_type;
 };
 
 template <int Base>
@@ -407,11 +412,11 @@ public:
     {
         return U',';
     }
-
     char32_t decimal_point() const
     {
         return U'.';
     }
+    using no_group_sep = std::true_type;
 };
 
 template <int Base> struct numpunct_c
@@ -426,6 +431,19 @@ template <int Base> struct numpunct_c
         return x;
     }
 };
+
+namespace detail {
+
+template <int Base>
+std::true_type has_no_grouping(const stringify::v0::no_grouping<Base>&);
+
+template <int Base>
+std::true_type has_no_grouping(const stringify::v0::default_numpunct<Base>&);
+
+template <int Base>
+std::false_type has_no_grouping(const stringify::v0::numpunct<Base>&);
+
+} // namespace detail
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

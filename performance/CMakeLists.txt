@@ -8,6 +8,7 @@ foreach(
     to_FILE
     to_string
     input_float
+    input_int
 )
 
   add_executable(performance-${x}-header-only   ${x}.cpp)

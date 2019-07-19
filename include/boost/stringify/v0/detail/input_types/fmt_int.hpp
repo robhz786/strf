@@ -144,14 +144,13 @@ struct int_format
     };
 };
 
-namespace detail
-{
+namespace detail {
 template <typename IntT>
 struct int_value
 {
     IntT value;
 };
-}
+} // namespace detail
 
 
 template <typename IntT>
@@ -160,6 +159,7 @@ using int_with_format = stringify::v0::value_with_format
     , stringify::v0::int_format
     , stringify::v0::alignment_format >;
 
+namespace detail {
 
 template <typename CharT>
 class fmt_int_printer: public printer<CharT>
@@ -194,12 +194,14 @@ private:
     stringify::v0::encoding_error _enc_err;
     stringify::v0::alignment_format::fn<void> _afmt;
     stringify::v0::surrogate_policy _allow_surr;
-    bool _showneg;
-    bool _showpos;
+    bool _negative;
+    bool _showsign;
     bool _showbase;
 
-    template <typename IntT, int Base>
-    void _init(stringify::v0::int_with_format<IntT> value);
+    template <typename IntT, int Base, bool NoGroupSep, bool DefaultChars>
+    void _init( stringify::v0::int_with_format<IntT> value
+              , std::integral_constant<bool, NoGroupSep>
+              , std::integral_constant<bool, DefaultChars> );
 
     void _write_fill
         ( stringify::v0::output_buffer<CharT>& ob
@@ -215,7 +217,7 @@ private:
 
 template <typename CharT>
 template <typename FPack, typename IntT, int Base>
-fmt_int_printer<CharT>::fmt_int_printer
+inline fmt_int_printer<CharT>::fmt_int_printer
     ( const FPack& fp
     , stringify::v0::int_with_format<IntT> value
     , std::integral_constant<int, Base> ) noexcept
@@ -226,59 +228,75 @@ fmt_int_printer<CharT>::fmt_int_printer
     , _afmt(value)
     , _allow_surr(get_facet<stringify::v0::surrogate_policy_c, IntT>(fp))
 {
-    _init<IntT, Base>(value);
+    using no_group_sep =
+        decltype(detail::has_no_grouping
+                 (get_facet<stringify::v0::numpunct_c<Base>, IntT>(fp)));
+    using numchars_type =
+        decltype(get_facet<stringify::v0::numchars_c<CharT, Base>, IntT>(fp));
+    using numchars_default =
+        std::is_same< const numchars_type&
+                    , const stringify::v0::default_numchars<CharT, Base>& >;
+    _init<IntT, Base>(value, no_group_sep{}, numchars_default{});
 }
-
-template <typename CharT>
-template <typename IntT, int Base>
-void fmt_int_printer<CharT>::_init(stringify::v0::int_with_format<IntT> value)
-{
-    using unsigned_type = typename std::make_unsigned<IntT>::type;
-
-    _digcount = stringify::v0::detail::count_digits<Base>(value.value().value);
-    _sepcount = _punct.thousands_sep_count(_digcount);
-    _precision = value.precision();
 
 #if defined(_MSC_VER)
 #pragma warning ( push )
 #pragma warning ( disable : 4127 )
 #endif // defined(_MSC_VER)
 
+template <typename CharT>
+template <typename IntT, int Base, bool NoGroupSep, bool DefaultChars>
+void fmt_int_printer<CharT>::_init
+    ( stringify::v0::int_with_format<IntT> value
+    , std::integral_constant<bool, NoGroupSep>
+    , std::integral_constant<bool, DefaultChars> )
+{
+    using unsigned_type = typename std::make_unsigned<IntT>::type;
+
     BOOST_STRINGIFY_IF_CONSTEXPR (Base == 10)
-
-#if defined(_MSC_VER)
-#pragma warning ( pop )
-#endif // defined(_MSC_VER)
-
     {
-        if (value.value().value < 0)
-        {
-            _uvalue = stringify::v0::detail::unsigned_abs(value.value().value);
-            _showneg = true;
-            _showpos = false;
-            _showbase = false;
-        }
-        else
-        {
-            _uvalue = value.value().value;
-            _showneg = false;
-            _showpos = value.showpos();
-            _showbase = false;
-        }
+        using unsigned_IntT = typename std::make_unsigned<IntT>::type;
+        unsigned_IntT uvalue = 1 + unsigned_IntT(-(value.value().value + 1));
+        _negative = value.value().value < 0;
+        _showsign = _negative || value.showpos();
+        _uvalue = _negative * uvalue + (!_negative) * value.value().value;
+        _showbase = false;
     }
     else
     {
         _uvalue = unsigned_type(value.value().value);
-        _showneg = false;
-        _showpos = false;
+        _negative = false;
+        _showsign = false;
         _showbase = value.showbase();
     }
+    _digcount = stringify::v0::detail::count_digits<Base>(_uvalue);
+    _precision = value.precision();
 
-    auto content_width = _chars.integer_printwidth
-        ( std::max(_precision, _digcount)
-        , _showneg || _showpos
-        , _showbase )
-        + static_cast<int>(_sepcount);
+    BOOST_STRINGIFY_IF_CONSTEXPR (NoGroupSep)
+    {
+        _sepcount = 0;
+    }
+    else
+    {
+        _sepcount = _punct.thousands_sep_count(_digcount);
+    }
+
+    int content_width = 0;
+    BOOST_STRINGIFY_IF_CONSTEXPR (DefaultChars)
+    {
+        content_width = std::max(_precision, _digcount)
+            + _showsign
+            + (_showbase << (Base == 16))
+            + static_cast<int>(_sepcount);
+    }
+    else
+    {
+         content_width = _chars.integer_printwidth
+             ( std::max(_precision, _digcount)
+             , _showsign
+             , _showbase )
+             + static_cast<int>(_sepcount);
+    }
     if (_afmt.width() > content_width)
     {
         _fillcount = _afmt.width() - content_width;
@@ -290,6 +308,10 @@ void fmt_int_printer<CharT>::_init(stringify::v0::int_with_format<IntT> value)
     }
 }
 
+#if defined(_MSC_VER)
+#pragma warning ( pop )
+#endif // defined(_MSC_VER)
+
 template <typename CharT>
 fmt_int_printer<CharT>::~fmt_int_printer()
 {
@@ -300,7 +322,7 @@ std::size_t fmt_int_printer<CharT>::necessary_size() const
 {
     std::size_t s = _chars.integer_printsize
         ( _encoding, std::max((unsigned)_digcount, _precision)
-        , _showneg || _showpos, _showbase );
+        , _showsign, _showbase );
     if (_sepcount > 0)
     {
         auto sepsize = _encoding.validate(_punct.thousands_sep());
@@ -372,13 +394,9 @@ template <typename CharT>
 inline void fmt_int_printer<CharT>::_write_complement
     ( stringify::v0::output_buffer<CharT>& ob ) const
 {
-    if(_showneg)
+    if(_showsign)
     {
-        _chars.print_neg_sign(ob, _encoding);
-    }
-    else if(_showpos)
-    {
-        _chars.print_pos_sign(ob, _encoding);
+        _chars.print_sign(ob, _encoding, _negative);
     }
     else if (_showbase)
     {
@@ -404,8 +422,21 @@ inline void fmt_int_printer<CharT>::_write_digits
     }
 }
 
+#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+#if defined(__cpp_char8_t)
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char8_t>;
+#endif
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char16_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char32_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<wchar_t>;
+
+#endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+
+} // namespace detail
+
 template <typename CharT, typename FPack, typename IntT>
-inline stringify::v0::fmt_int_printer<CharT>
+inline stringify::v0::detail::fmt_int_printer<CharT>
 make_printer( const FPack& fp
             , const stringify::v0::int_with_format<IntT>& x )
 {
@@ -459,18 +490,6 @@ template <> struct is_int_number<unsigned short>: public std::true_type {};
 template <> struct is_int_number<unsigned int>: public std::true_type {};
 template <> struct is_int_number<unsigned long>: public std::true_type {};
 template <> struct is_int_number<unsigned long long>: public std::true_type {};
-
-
-#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
-#if defined(__cpp_char8_t)
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char8_t>;
-#endif
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<wchar_t>;
-
-#endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 
