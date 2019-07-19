@@ -13,16 +13,6 @@ int main()
     auto * groups_end = groups + sizeof(groups);
 
     {
-        strf::monotonic_grouping<10> grouper(0);
-
-        TEST("100000000000000") .facets(grouper) (100000000000000);
-        BOOST_TEST(grouper.thousands_sep_count(0) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(1) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(2) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(50) == 0);
-    }
-
-    {
         strf::monotonic_grouping<10> grouper(4);
         BOOST_TEST(grouper.thousands_sep_count(0) == 0);
         BOOST_TEST(grouper.thousands_sep_count(1) == 0);
@@ -78,16 +68,6 @@ int main()
     }
 
     auto big_value = 10000000000000000000ull;
-    {
-        strf::str_grouping<10> grouper{std::string{}};
-        TEST("1000") .facets(grouper) (1000);
-        TEST("0") .facets(grouper) (0);
-
-        BOOST_TEST(grouper.thousands_sep_count(0) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(1) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(2) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(3) == 0);
-    }
     {
         strf::str_grouping<10> grouper{std::string("\0", 1)};
         TEST("1000") .facets(grouper) (1000);
