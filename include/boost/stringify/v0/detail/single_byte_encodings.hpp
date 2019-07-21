@@ -222,12 +222,9 @@ std::uint8_t* single_byte_encoding<Impl>::encode_char
     , char32_t ch )
 {
     auto ch2 = Impl::encode(ch);
-    if(ch2 < 0x100)
-    {
-        *dest = static_cast<std::uint8_t>(Impl::encode(ch));
-        return dest + 1;
-    }
-    return dest;
+    bool valid = (ch2 < 0x100);
+    *dest = valid * ch2 + (!valid) * '?';
+    return dest + 1;
 }
 
 template <class Impl>
