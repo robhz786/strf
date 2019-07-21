@@ -8,97 +8,95 @@
 
 namespace strf = boost::stringify::v0;
 
-int main()
+
+template <typename FPack>
+void basic_tests(const FPack& fp)
 {
-    TEST("nan")    (std::numeric_limits<double>::quiet_NaN());
-    TEST("nan")    (std::numeric_limits<double>::signaling_NaN());
-    TEST("inf")    (1.0/0.0);
-    TEST("-inf")   (-1.0/0.0);
+    constexpr auto j = strf::join_right(20, '_');
+    auto quiet_nan = std::numeric_limits<double>::quiet_NaN();
+    auto signaling_nan = std::numeric_limits<double>::signaling_NaN();
+    
+    TEST("_________________nan").facets(fp)  (j(quiet_nan));
+    TEST("_________________nan").facets(fp)  (j(signaling_nan));
+    TEST("_________________inf").facets(fp)  (j(1.0/0.0));
+    TEST("________________-inf").facets(fp)  (j(-1.0/0.0));
 
-    TEST("nan")    (strf::fmt(std::numeric_limits<double>::quiet_NaN()));
-    TEST("nan")    (strf::fmt(std::numeric_limits<double>::signaling_NaN()));
-    TEST("inf")    (strf::fmt(1.0/0.0));
-    TEST("+inf")  (+strf::fmt(1.0/0.0));
-    TEST("-inf")   (strf::fmt(-1.0/0.0));
-    TEST("-inf")  (+strf::fmt(-1.0/0.0));
+    TEST("_________________nan").facets(fp)  (j(strf::fmt(quiet_nan)));
+    TEST("_________________nan").facets(fp)  (j(strf::fmt(signaling_nan)));
+    TEST("_________________inf").facets(fp)  (j(strf::fmt(1.0/0.0)));
+    TEST("________________+inf").facets(fp) (j(+strf::fmt(1.0/0.0)));
+    TEST("________________-inf").facets(fp)  (j(strf::fmt(-1.0/0.0)));
+    TEST("________________-inf").facets(fp) (j(+strf::fmt(-1.0/0.0)));
 
-    TEST("nan")    (strf::fixed(std::numeric_limits<double>::quiet_NaN()));
-    TEST("nan")    (strf::fixed(std::numeric_limits<double>::signaling_NaN()));
-    TEST("inf")    (strf::fixed(1.0/0.0));
-    TEST("+inf")  (+strf::fixed(1.0/0.0));
-    TEST("-inf")   (strf::fixed(-1.0/0.0));
-    TEST("-inf")  (+strf::fixed(-1.0/0.0));
+    TEST("_________________nan").facets(fp)  (j(strf::fixed(quiet_nan)));
+    TEST("_________________nan").facets(fp)  (j(strf::fixed(signaling_nan)));
+    TEST("_________________inf").facets(fp)  (j(strf::fixed(1.0/0.0)));
+    TEST("________________+inf").facets(fp) (j(+strf::fixed(1.0/0.0)));
+    TEST("________________-inf").facets(fp)  (j(strf::fixed(-1.0/0.0)));
+    TEST("________________-inf").facets(fp) (j(+strf::fixed(-1.0/0.0)));
 
-    TEST("nan")    (strf::sci(std::numeric_limits<double>::quiet_NaN()));
-    TEST("nan")    (strf::sci(std::numeric_limits<double>::signaling_NaN()));
-    TEST("inf")    (strf::sci(1.0/0.0));
-    TEST("+inf")  (+strf::sci(1.0/0.0));
-    TEST("-inf")   (strf::sci(-1.0/0.0));
-    TEST("-inf")  (+strf::sci(-1.0/0.0));
+    TEST("_________________nan").facets(fp)  (j(strf::sci(quiet_nan)));
+    TEST("_________________nan").facets(fp)  (j(strf::sci(signaling_nan)));
+    TEST("_________________inf").facets(fp)  (j(strf::sci(1.0/0.0)));
+    TEST("________________+inf").facets(fp) (j(+strf::sci(1.0/0.0)));
+    TEST("________________-inf").facets(fp)  (j(strf::sci(-1.0/0.0)));
+    TEST("________________-inf").facets(fp) (j(+strf::sci(-1.0/0.0)));
 
-    TEST("0")      (0.0);
-    TEST("-0")    (-0.0);
-    TEST("1")      (1.0);
-    TEST("-1")    (-1.0);
-    TEST("1.5")    (1.5);
-    TEST("6.103515625e-05") (6.103515625e-05);
-    TEST("0.00048828125")   (0.00048828125);
-    TEST("2048.001953125")  (2048.001953125);
+    TEST("___________________0").facets(fp)  (j(0.0));
+    TEST("__________________-0").facets(fp)  (j(-0.0));
+    TEST("___________________1").facets(fp)  (j(1.0));
+    TEST("__________________-1").facets(fp)  (j(-1.0));
+    TEST("_________________1.5").facets(fp)  (j(1.5));
+    TEST("_____6.103515625e-05").facets(fp)  (j(6.103515625e-05));
+    TEST("_______0.00048828125").facets(fp)  (j(0.00048828125));
+    TEST("______2048.001953125").facets(fp)  (j(2048.001953125));
 
-    auto punct = strf::monotonic_grouping<10>{3}.decimal_point('~').thousands_sep('^');
-    TEST("0").facets(punct)      (0.0);
-    TEST("-0").facets(punct)    (-0.0);
-    TEST("1").facets(punct)      (1.0);
-    TEST("-1").facets(punct)    (-1.0);
-    TEST("1~5").facets(punct)    (1.5);
-    TEST("6~103515625e-05").facets(punct) (6.103515625e-05);
-    TEST("0~00048828125").facets(punct)   (0.00048828125);
-    TEST("2^048~001953125").facets(punct) (2048.001953125);
 
-    TEST("0")      (strf::fmt(0.0));
-    TEST("-0")     (strf::fmt(-0.0));
-    TEST("1")      (strf::fmt(1.0));
-    TEST("-1")     (strf::fmt(-1.0));
-    TEST("1.5")    (strf::fmt(1.5));
+    TEST("___________________0").facets(fp) (j(strf::fmt(0.0)));
+    TEST("__________________-0").facets(fp) (j(strf::fmt(-0.0)));
+    TEST("___________________1").facets(fp) (j(strf::fmt(1.0)));
+    TEST("__________________-1").facets(fp) (j(strf::fmt(-1.0)));
+    TEST("_________________1.5").facets(fp) (j(strf::fmt(1.5)));
 
-    TEST("+1")    (+strf::fmt(1.0));
-    TEST("-1")    (+strf::fmt(-1.0));
-    TEST("1.")    (~strf::fmt(1.0));
-    TEST("-1.")   (~strf::fmt(-1.0));
-    TEST("+1.")  (~+strf::fmt(1.0));
-    TEST("-1.")  (+~strf::fmt(-1.0));
+    TEST("__________________+1").facets(fp) (j(+strf::fmt(1.0)));
+    TEST("__________________-1").facets(fp) (j(+strf::fmt(-1.0)));
+    TEST("__________________1.").facets(fp) (j(~strf::fmt(1.0)));
+    TEST("_________________-1.").facets(fp) (j(~strf::fmt(-1.0)));
+    TEST("_________________+1.").facets(fp)(j(~+strf::fmt(1.0)));
+    TEST("_________________-1.").facets(fp)(j(+~strf::fmt(-1.0)));
 
     //----------------------------------------------------------------
     // when precision is not specified, the general format selects the
     // scientific notation if it is shorter than the decimal notation:
-    TEST("10000")     (1e+4);
-    TEST("1e+05")     (1e+5);
-    TEST("1200000" )  (1.2e+6);
-    //TEST("1.2e+06" )  (1.2e+6);
-    //TEST("0.001")    (1e-03);
-    //TEST("1e-04")    (1e-04);
-    //TEST("0.00012")  (1.2e-04);
-    //TEST("1.2e-05")  (1.2e-05);
-    //TEST("0.000123") (1.23e-04);
-    //TEST("1.23e-05") (1.23e-05);
-    TEST("10000")     (strf::fmt(1e+4));
-    TEST("10000.")   (~strf::fmt(1e+4));
-    TEST("1e+05")     (strf::fmt(1e+5));
-    TEST("1.e+05")   (~strf::fmt(1e+5));
-    TEST("1200000" )  (strf::fmt(1.2e+6));
-    TEST("1.2e+06")  (~strf::fmt(1.2e+6));
-    //TEST("0.001")     (strf::fmt(1e-03));
-    //TEST("1e-04")     (strf::fmt(1e-04));
-    //TEST("0.0001")   (~strf::fmt(1e-04));
-    //TEST("1.e-05")   (~strf::fmt(1e-05));
-    //TEST("0.00012")  (strf::fmt(1.2e-04));
-    //TEST("0.00012") (~strf::fmt(1.2e-04));
-    //TEST("1.2e-05")  (strf::fmt(1.2e-05));
-    //TEST("1.2e-05") (~strf::fmt(1.2e-05));
-    //TEST("0.000123") (strf::fmt(1.23e-04));
-    //TEST("1.23e-05") (strf::fmt(1.23e-05));
-    TEST("6.103515625e-05") (strf::fmt(6.103515625e-05));
-    TEST("0.00048828125") (strf::fmt(0.00048828125));
+    TEST("_______________10000").facets(fp)  (j(1e+4));
+    TEST("_______________1e+05").facets(fp)  (j(1e+5));
+    TEST("_____________1200000").facets(fp)  (j(1.2e+6));
+    //TEST("_____________1.2e+06").facets(fp)  (j(1.2e+6));
+    //TEST("_______________0.001").facets(fp)  (j(1e-03));
+    //TEST("_______________1e-04").facets(fp)  (j(1e-04));
+    //TEST("_____________0.00012").facets(fp)  (j(1.2e-04));
+    //TEST("_____________1.2e-05").facets(fp)  (j(1.2e-05));
+    //TEST("____________0.000123").facets(fp)  (j(1.23e-04));
+    //TEST("____________1.23e-05").facets(fp)  (j(1.23e-05));
+    TEST("_______________10000").facets(fp)  (j(strf::fmt(1e+4)));
+    TEST("______________10000.").facets(fp) (j(~strf::fmt(1e+4)));
+    TEST("_______________1e+05").facets(fp)  (j(strf::fmt(1e+5)));
+    TEST("______________1.e+05").facets(fp) (j(~strf::fmt(1e+5)));
+    TEST("_____________1200000").facets(fp)  (j(strf::fmt(1.2e+6)));
+    TEST("_____________1.2e+06").facets(fp) (j(~strf::fmt(1.2e+6)));
+    //TEST("_______________0.001").facets(fp)   (j(strf::fmt(1e-03)));
+    //TEST("_______________1e-04").facets(fp)   (j(strf::fmt(1e-04)));
+    //TEST("______________0.0001").facets(fp)  (j(~strf::fmt(1e-04)));
+    //TEST("______________1.e-05").facets(fp)  (j(~strf::fmt(1e-05)));
+    //TEST("_____________0.00012").facets(fp)   (j(strf::fmt(1.2e-04)));
+    //TEST("_____________0.00012").facets(fp) (j(~strf::fmt(1.2e-04)));
+    //TEST("_____________1.2e-05").facets(fp)  (j(strf::fmt(1.2e-05)));
+    //TEST("_____________1.2e-05").facets(fp) (j(~strf::fmt(1.2e-05)));
+    //TEST("____________0.000123").facets(fp)  (j(strf::fmt(1.23e-04)));
+    //TEST("____________1.23e-05").facets(fp)  (j(strf::fmt(1.23e-05)));
+    TEST("_____6.103515625e-05").facets(fp)    (j(strf::fmt(6.103515625e-05)));
+    TEST("_______0.00048828125").facets(fp)    (j(strf::fmt(0.00048828125)));
+
     //----------------------------------------------------------------
 
 
@@ -108,120 +106,147 @@ int main()
     // - The precision specifies the number of significant digits.
     // - scientific notation is used if the resulting exponent is
     //   less than -4 or greater than or equal to the precision.
-    //TEST("0.0001")    (strf::fmt(1e-4).p();
-    //TEST("1e-05")     (strf::fmt(1e-5));
-    TEST("1e+01")   (strf::fmt(12.0).p(1));
-    TEST("1.2e+02")   (strf::fmt(123.0).p(2));
-    TEST("123")       (strf::fmt(123.0).p(4));
-    TEST("1e+04")     (strf::fmt(10000.0).p(4));
-    TEST("10000")     (strf::fmt(10000.0).p(5));
-
+    //TEST("______________0.0001").facets(fp)  (j(strf::fmt(1e-4).p());
+    //TEST("_______________1e-05").facets(fp)  (j(strf::fmt(1e-5)));
+    TEST("_______________1e+01").facets(fp) (j(strf::fmt(12.0).p(1)));
+    TEST("_____________1.2e+02").facets(fp) (j(strf::fmt(123.0).p(2)));
+    TEST("_________________123").facets(fp) (j(strf::fmt(123.0).p(4)));
+    TEST("_______________1e+04").facets(fp) (j(strf::fmt(10000.0).p(4)));
+    TEST("_______________10000").facets(fp) (j(strf::fmt(10000.0).p(5)));
+    TEST("__________6.1035e-05").facets(fp) (j(strf::fmt(6.103515625e-05).p(5)));
+    
     // and if precision is zero, it treated as 1.
-    TEST("1e+01")   (strf::fmt(12.0).p(0));
-    TEST("2e+01")   (strf::fmt(15.125).p(0));
+    TEST("_______________1e+01").facets(fp)  (j(strf::fmt(12.0).p(0)));
+    TEST("_______________2e+01").facets(fp)  (j(strf::fmt(15.125).p(0)));
 
     // and when removing digits, the last digit is rounded.
-    TEST("1.1e+05") (strf::fmt(114999.0).p(2));
-    TEST("1.2e+05") (strf::fmt(115000.0).p(2));
-    TEST("1.2e+05") (strf::fmt(125000.0).p(2));
-    TEST("1.3e+05") (strf::fmt(125001.0).p(2));
+    TEST("_____________1.1e+05").facets(fp) (j(strf::fmt(114999.0).p(2)));
+    TEST("_____________1.2e+05").facets(fp) (j(strf::fmt(115000.0).p(2)));
+    TEST("_____________1.2e+05").facets(fp) (j(strf::fmt(125000.0).p(2)));
+    TEST("_____________1.3e+05").facets(fp) (j(strf::fmt(125001.0).p(2)));
 
     // and the decimal point appears only if followed by
     // a digit, or if operator~() is used.
-    TEST("1e+04")     (strf::fmt(10000.0).p(3));
-    TEST("1.e+04")   (~strf::fmt(10000.0).p(1));
-    TEST("123.")      (~strf::fmt(123.0).p(3));
+    TEST("_______________1e+04").facets(fp)   (j(strf::fmt(10000.0).p(3)));
+    TEST("______________1.e+04").facets(fp)  (j(~strf::fmt(10000.0).p(1)));
+    TEST("________________123.").facets(fp)  (j(~strf::fmt(123.0).p(3)));
 
     // and trailing zeros are removed, unless operator~() is used.
-    TEST("1.5e+04")    (strf::fmt(15000.0).p(3));
-    TEST("1.50e+04")  (~strf::fmt(15000.0).p(3));
-    TEST("123")       (strf::fmt(123.0).p(5));
-    TEST("123.00")    (~strf::fmt(123.0).p(5));
+    TEST("_____________1.5e+04").facets(fp)   (j(strf::fmt(15000.0).p(3)));
+    TEST("____________1.50e+04").facets(fp)  (j(~strf::fmt(15000.0).p(3)));
+    TEST("_________________123").facets(fp)   (j(strf::fmt(123.0).p(5)));
+    TEST("______________123.00").facets(fp)  (j(~strf::fmt(123.0).p(5)));
     //----------------------------------------------------------------
 
-/*
-    TEST("")    (strf::fmt());
-    TEST("")    (strf::fmt());
-    TEST("")    (strf::fmt());
-    TEST("")    (strf::fmt());
-    TEST("")    (strf::fmt());
-    TEST("")    (strf::fmt());
-    TEST("")    (strf::fmt());
-    TEST("")    (strf::fmt());
-    TEST("")    (strf::fmt());
-    TEST("")    (strf::fmt());
-    TEST("")    (strf::fmt());
-    TEST("")    (strf::fmt());
-    TEST("")    (strf::fmt());
-    TEST("")    (strf::fmt());
-    TEST("")    (strf::fmt());
-    TEST("")    (strf::fmt());
-    TEST("")    (strf::fmt());
-    TEST("")    (strf::fmt());
-*/
     // force decimal notation
 
-    TEST("1.")    (~strf::fixed(1.0));
-    TEST("1")      (strf::fixed(1.0));
-    TEST("+1")    (+strf::fixed(1.0));
-    TEST("-1")     (strf::fixed(-1.0));
-    TEST("-1")    (+strf::fixed(-1.0));
+    TEST("__________________1.").facets(fp)  (j(~strf::fixed(1.0)));
+    TEST("___________________1").facets(fp)   (j(strf::fixed(1.0)));
+    TEST("__________________+1").facets(fp)  (j(+strf::fixed(1.0)));
+    TEST("__________________-1").facets(fp)   (j(strf::fixed(-1.0)));
+    TEST("__________________-1").facets(fp)  (j(+strf::fixed(-1.0)));
 
-    TEST("1")      (strf::fixed(1.0).p(0));
-    TEST("1.")    (~strf::fixed(1.0).p(0));
-    TEST("1.0")    (strf::fixed(1.0).p(1));
-    TEST("1.00")   (strf::fixed(1.0).p(2));
-    TEST("1.0000") (strf::fixed(1.0).p(4));
-    TEST("0.125")  (strf::fixed(0.125));
+    TEST("___________________1").facets(fp)  (j(strf::fixed(1.0).p(0)));
+    TEST("__________________1.").facets(fp) (j(~strf::fixed(1.0).p(0)));
+    TEST("_________________1.0").facets(fp)  (j(strf::fixed(1.0).p(1)));
+    TEST("________________1.00").facets(fp)  (j(strf::fixed(1.0).p(2)));
+    TEST("______________1.0000").facets(fp)  (j(strf::fixed(1.0).p(4)));
+    TEST("_______________0.125").facets(fp)  (j(strf::fixed(0.125)));
 
     // round when forcing fixed notation
-    TEST("1.250")  (strf::fixed(1.25).p(3));
-    TEST("1.25")   (strf::fixed(1.25).p(2));
-    TEST("1.2")    (strf::fixed(1.25).p(1));
-    TEST("1.8")    (strf::fixed(1.75).p(1));
-    TEST("1.3")    (strf::fixed(1.25048828125).p(1));
-    TEST("1.2505") (strf::fixed(1.25048828125).p(4));
-
+    TEST("_______________1.250").facets(fp) (j(strf::fixed(1.25).p(3)));
+    TEST("________________1.25").facets(fp) (j(strf::fixed(1.25).p(2)));
+    TEST("_________________1.2").facets(fp) (j(strf::fixed(1.25).p(1)));
+    TEST("_________________1.8").facets(fp) (j(strf::fixed(1.75).p(1)));
+    TEST("_________________1.3").facets(fp) (j(strf::fixed(1.25048828125).p(1)));
+    TEST("______________1.2505").facets(fp) (j(strf::fixed(1.25048828125).p(4)));
 
     // force scientific notation
 
-    TEST("0e+00")     (strf::sci(0.0));
-    TEST("0.e+00")   (~strf::sci(0.0));
-    TEST("+0e+00")   (+strf::sci(0.0));
-    TEST("+0.e+00") (+~strf::sci(0.0));
+    TEST("_______________0e+00").facets(fp)   (j(strf::sci(0.0)));
+    TEST("______________0.e+00").facets(fp)  (j(~strf::sci(0.0)));
+    TEST("______________+0e+00").facets(fp)  (j(+strf::sci(0.0)));
+    TEST("_____________+0.e+00").facets(fp) (j(+~strf::sci(0.0)));
 
-    TEST("1e+04")     (strf::sci(1e+4));
-    TEST("+1e+04")   (+strf::sci(1e+4));
-    TEST("1.e+04")   (~strf::sci(1e+4));
-    TEST("+1.e+04") (~+strf::sci(1e+4));
-    TEST("-1e+04")    (strf::sci(-1e+4));
-    TEST("-1e+04")   (+strf::sci(-1e+4));
-    TEST("-1.e+04")  (~strf::sci(-1e+4));
+    TEST("_______________1e+04").facets(fp)   (j(strf::sci(1e+4)));
+    TEST("______________+1e+04").facets(fp)  (j(+strf::sci(1e+4)));
+    TEST("______________1.e+04").facets(fp)  (j(~strf::sci(1e+4)));
+    TEST("_____________+1.e+04").facets(fp) (j(~+strf::sci(1e+4)));
+    TEST("______________-1e+04").facets(fp)   (j(strf::sci(-1e+4)));
+    TEST("______________-1e+04").facets(fp)  (j(+strf::sci(-1e+4)));
+    TEST("_____________-1.e+04").facets(fp) (j(~strf::sci(-1e+4)));
 
-    TEST("1.0e+04")    (strf::sci(1e+4).p(1));
-    TEST("1.0e+04")    (strf::sci(1e+4).p(1));
-    TEST("+1.00e+04") (+strf::sci(1e+4).p(2));
-    TEST("1.e+04")    (~strf::sci(1e+4).p(0));
-    TEST("+1.e+04")  (~+strf::sci(1e+4).p(0));
-    TEST("-1e+04")    (+strf::sci(-1e+4).p(0));
-    TEST("-1.e+04")   (~strf::sci(-1e+4).p(0));
+    TEST("_____________1.0e+04").facets(fp)   (j(strf::sci(1e+4).p(1)));
+    TEST("_____________1.0e+04").facets(fp)   (j(strf::sci(1e+4).p(1)));
+    TEST("___________+1.00e+04").facets(fp)  (j(+strf::sci(1e+4).p(2)));
+    TEST("______________1.e+04").facets(fp)  (j(~strf::sci(1e+4).p(0)));
+    TEST("_____________+1.e+04").facets(fp) (j(~+strf::sci(1e+4).p(0)));
+    TEST("______________-1e+04").facets(fp)  (j(+strf::sci(-1e+4).p(0)));
+    TEST("_____________-1.e+04").facets(fp)  (j(~strf::sci(-1e+4).p(0)));
 
     // rounding when forcing scientific notation
-    TEST("1.25e+02")   (strf::sci(125.0).p(2));
-    TEST("1.2e+02")    (strf::sci(125.0).p(1));
-    TEST("1.2e+02")    (strf::sci(115.0).p(1));
-    TEST("1.3e+06")    (strf::sci(1250001.0).p(1));
-    TEST("8.1928e+03") (strf::sci(8192.75).p(4));
-    TEST("8.1922e+03") (strf::sci(8192.25).p(4));
-    TEST("1.0242e+03") (strf::sci(1024.25).p(4));
-    TEST("1.7e+01")    (strf::sci(16.50006103515625).p(1));
+    TEST("____________1.25e+02").facets(fp) (j(strf::sci(125.0).p(2)));
+    TEST("_____________1.2e+02").facets(fp) (j(strf::sci(125.0).p(1)));
+    TEST("_____________1.2e+02").facets(fp) (j(strf::sci(115.0).p(1)));
+    TEST("_____________1.3e+06").facets(fp) (j(strf::sci(1250001.0).p(1)));
+    TEST("__________8.1928e+03").facets(fp) (j(strf::sci(8192.75).p(4)));
+    TEST("__________8.1922e+03").facets(fp) (j(strf::sci(8192.25).p(4)));
+    TEST("__________1.0242e+03").facets(fp) (j(strf::sci(1024.25).p(4)));
+    TEST("_____________1.7e+01").facets(fp) (j(strf::sci(16.50006103515625).p(1)));
 
     // add trailing zeros if precision requires
-    TEST("1.250e+02")    (strf::sci(125.0).p(3));
-    TEST("6.25000e-02")  (strf::sci(0.0625).p(5));
-    TEST("8.192750e+03") (strf::sci(8192.75).p(6));
+    TEST("___________1.250e+02").facets(fp) (j(strf::sci(125.0).p(3)));
+    TEST("_________6.25000e-02").facets(fp) (j(strf::sci(0.0625).p(5)));
+    TEST("________8.192750e+03").facets(fp) (j(strf::sci(8192.75).p(6)));
 
+/*
+    TEST("____________________").facets(fp)    (j(strf::fmt()));
+    TEST("____________________").facets(fp)    (j(strf::fmt()));
+    TEST("____________________").facets(fp)    (j(strf::fmt()));
+    TEST("____________________").facets(fp)    (j(strf::fmt()));
+    TEST("____________________").facets(fp)    (j(strf::fmt()));
+    TEST("____________________").facets(fp)    (j(strf::fmt()));
+    TEST("____________________").facets(fp)    (j(strf::fmt()));
+    TEST("____________________").facets(fp)    (j(strf::fmt()));
+    TEST("____________________").facets(fp)    (j(strf::fmt()));
+    TEST("____________________").facets(fp)    (j(strf::fmt()));
+    TEST("____________________").facets(fp)    (j(strf::fmt()));
+    TEST("____________________").facets(fp)    (j(strf::fmt()));
+    TEST("____________________").facets(fp)    (j(strf::fmt()));
+    TEST("____________________").facets(fp)    (j(strf::fmt()));
+    TEST("____________________").facets(fp)    (j(strf::fmt()));
+    TEST("____________________").facets(fp)    (j(strf::fmt()));
+    TEST("____________________").facets(fp)    (j(strf::fmt()));
+    TEST("____________________").facets(fp)    (j(strf::fmt()));
+*/
+}
 
+int main()
+{
+    {
+        BOOST_TEST_LABEL << "default facets";
+        basic_tests(strf::pack());
+    }
+
+    {
+        BOOST_TEST_LABEL << "with punctuation";
+        basic_tests(strf::no_grouping<10>{});
+    }
+
+    auto p = strf::monotonic_grouping<10>{3}.decimal_point(',').thousands_sep(':');
+    constexpr auto j = strf::join_right(20, '_');
+    
+    TEST("_________________1,5").facets(p) (j(1.5));
+    TEST("_____6,103515625e-05").facets(p) (j(6.103515625e-05));
+    TEST("__________6,1035e-05").facets(p) (j(strf::fmt(6.103515625e-05).p(5)));
+    TEST("_________6,10352e-05").facets(p) (j(strf::sci(6.103515625e-05).p(5)));
+    TEST("_______0,00048828125").facets(p) (j(0.00048828125));
+    TEST("_____2:048,001953125").facets(p) (j(2048.001953125));
+    TEST("___________2:048,002").facets(p) (j(strf::fixed(2048.001953125).p(3)));
+    TEST("___________1:000:000").facets(p) (j(strf::fixed(1000000.0)));
+    TEST("_________+1:000:000,").facets(p) (j(~+strf::fixed(1000000.0)));
+    TEST("_____+1:000:000,0000").facets(p) (j(~+strf::fixed(1000000.0).p(4)));
+    
 
 
 

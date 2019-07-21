@@ -81,25 +81,30 @@ public:
         , unsigned num_digits
         , char32_t decimal_point
         , int exponent
-        , bool always_print_point = false) const = 0;
+        , bool print_point = false
+        , unsigned trailing_zeros = 0 ) const = 0;
     virtual std::size_t scientific_notation_printsize
         ( stringify::v0::encoding<CharT> enc
         , unsigned num_digits
         , char32_t decimal_point
         , int exponent
         , bool has_sign
-        , bool always_print_point ) const = 0;
+        , bool print_point ) const = 0;
     virtual int scientific_notation_printwidth
         ( unsigned num_digits
         , int exponent
         , bool has_sign ) const = 0;
+    /**
+    @note `num_digits` is allowed to be greater than the number of digits in
+          `digits`. In this case, the function writes leading zeros.
+     */
     virtual void print_fractional_digits
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits
         , char32_t decimal_point
-        , unsigned fractional_leading_zeros ) const = 0;
+        , unsigned trailing_zeros = 0 ) const = 0;
     virtual std::size_t fractional_digits_printsize
         ( stringify::v0::encoding<CharT> enc
         , char32_t decimal_point
@@ -136,19 +141,19 @@ void print_amplified_integer_small_separator
         auto digits_2 = digits + grp_size;
         std::copy(digits, digits_2, it);
         it[grp_size] = separator;
-        digits = digits_2;        
+        digits = digits_2;
         ob.advance(grp_size + 1);
         num_digits -= grp_size;
         BOOST_ASSERT(grp_it != groups);
         grp_size = *--grp_it;
-    } 
+    }
     if (num_digits != 0)
     {
         BOOST_ASSERT(num_digits <= stringify::v0::min_buff_size);
-        ob.ensure(num_digits);        
+        ob.ensure(num_digits);
         std::copy(digits, digits + num_digits, ob.pos());
         ob.advance(num_digits);
-    } 
+    }
     if (grp_size > num_digits)
     {
         BOOST_ASSERT(num_digits <= stringify::v0::min_buff_size);
@@ -199,7 +204,7 @@ void print_amplified_integer_big_separator
     if (num_digits != 0)
     {
         BOOST_ASSERT(num_digits <= stringify::v0::min_buff_size);
-        ob.ensure(num_digits);        
+        ob.ensure(num_digits);
         std::copy(digits, digits + num_digits, ob.pos());
         ob.advance(num_digits);
     }
@@ -219,7 +224,7 @@ void print_amplified_integer_big_separator
         auto it = enc.encode_char(ob.pos(), separator);
         std::char_traits<CharT>::assign(it, grp_size, '0');
         ob.advance_to(it + separator_size);
-    }    
+    }
 }
 
 template <typename CharT>
@@ -245,13 +250,6 @@ public:
         , const char* digits
         , unsigned num_digits
         , unsigned num_trailing_zeros ) const override;
-    virtual void print_fractional_digits
-        ( stringify::v0::output_buffer<CharT>& ob
-        , stringify::v0::encoding<CharT> enc
-        , unsigned long long digits
-        , unsigned num_digits
-        , char32_t decimal_point
-        , unsigned fractional_leading_zeros ) const override;
     virtual std::size_t fractional_digits_printsize
         ( stringify::v0::encoding<CharT> enc
         , char32_t decimal_point
@@ -264,7 +262,7 @@ public:
         , char32_t decimal_point
         , int exponent
         , bool has_sign
-        , bool always_print_point ) const override;
+        , bool print_point ) const override;
     virtual int scientific_notation_printwidth
         ( unsigned num_digits
         , int exponent
@@ -414,7 +412,7 @@ void numchars_default_common<CharT>::print_amplified_integer
     auto sep32 = punct.thousands_sep();
     CharT sep = static_cast<CharT>(sep32);;
     //char buff[detail::max_num_digits<decltype(digits), 8>];
-    
+
     if (sep32 >= enc.u32equivalence_end() || sep32 < enc.u32equivalence_begin())
     {
         auto sep_size = enc.validate(sep32);
@@ -443,31 +441,6 @@ void numchars_default_common<CharT>::print_amplified_integer
 }
 
 template <typename CharT>
-void numchars_default_common<CharT>::print_fractional_digits
-    ( stringify::v0::output_buffer<CharT>& ob
-    , stringify::v0::encoding<CharT> enc
-    , unsigned long long digits
-    , unsigned num_digits
-    , char32_t decimal_point
-    , unsigned fractional_leading_zeros ) const
-{
-    enc.encode_char(ob, decimal_point, stringify::v0::encoding_error::replace);
-    if (fractional_leading_zeros != 0)
-    {
-        detail::write_fill(ob, fractional_leading_zeros, CharT('0'));
-    }    
-    ob.ensure(num_digits);
-    const auto end = ob.pos() + num_digits;
-    auto it = detail::write_int_dec_txtdigits_backwards(digits, end);
-    auto itz = end - num_digits;
-    if (itz < it)
-    {
-        std::char_traits<CharT>::assign(itz, it - itz, '0');
-    }
-    ob.advance_to(end);
-}
-
-template <typename CharT>
 std::size_t numchars_default_common<CharT>::fractional_digits_printsize
     ( stringify::v0::encoding<CharT> enc
     , char32_t decimal_point
@@ -488,10 +461,11 @@ std::size_t numchars_default_common<CharT>::scientific_notation_printsize
     , char32_t decimal_point
     , int exponent
     , bool has_sign
-    , bool always_print_point ) const
+    , bool print_point ) const
 {
-    std::size_t psize = 1;
-    if (always_print_point || num_digits > 1)
+    std::size_t psize = 0;
+    print_point = print_point || num_digits > 1;
+    if (print_point)
     {
         psize = enc.validate(decimal_point);
         if (psize == (size_t)-1)
@@ -537,6 +511,7 @@ public:
     using category = numchars_c<CharT, 10>;
 
     using stringify::v0::detail::numchars_default_common<CharT>::print_integer;
+    using stringify::v0::detail::numchars_default_common<CharT>::print_amplified_integer;
 
     virtual void print_base_indication
         ( stringify::v0::output_buffer<CharT>& ob
@@ -568,7 +543,15 @@ public:
         , unsigned num_digits
         , char32_t decimal_point
         , int exponent
-        , bool always_print_point ) const override;
+        , bool print_point
+        , unsigned trailing_zeros ) const override;
+    virtual void print_fractional_digits
+        ( stringify::v0::output_buffer<CharT>& ob
+        , stringify::v0::encoding<CharT> enc
+        , unsigned long long digits
+        , unsigned num_digits
+        , char32_t decimal_point
+        , unsigned trailing_zeros ) const override;
     virtual void print_single_digit
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
@@ -583,14 +566,10 @@ public:
         , bool has_sign
         , bool has_base_indication ) const override;
 
-
-    using stringify::v0::detail::numchars_default_common<CharT>
-        ::print_amplified_integer;
-
 protected:
 
     using stringify::v0::detail::numchars_default_common<CharT>::_print_digits;
-    
+
 private:
 
     void _print_digits_big_sep
@@ -624,7 +603,7 @@ void default_numchars<CharT, 10>::print_integer
     if (num_leading_zeros != 0)
     {
         stringify::v0::detail::write_fill(ob, num_leading_zeros, CharT('0'));
-    }    
+    }
     BOOST_ASSERT(num_digits <= (detail::max_num_digits<decltype(digits), 10>));
     ob.ensure(num_digits);
     ob.advance(num_digits);
@@ -803,21 +782,22 @@ void default_numchars<CharT, 10>::print_scientific_notation
     , unsigned num_digits
     , char32_t decimal_point
     , int exponent
-    , bool always_print_point ) const
+    , bool print_point
+    , unsigned trailing_zeros ) const
 {
     BOOST_ASSERT(num_digits == detail::count_digits<10>(digits));
 
     CharT small_decimal_point = static_cast<CharT>(decimal_point);
-    std::size_t psize = 1;        
-    if ( (always_print_point || num_digits > 1)
+    std::size_t psize = 1;
+    print_point = print_point || num_digits > 1|| trailing_zeros != 0;
+    if ( print_point
       && ( decimal_point >= enc.u32equivalence_end()
         || decimal_point < enc.u32equivalence_begin() ) )
     {
         psize = enc.validate(decimal_point);
         if (psize == (std::size_t)-1)
         {
-           decimal_point = '.';
-           psize = 1;
+            psize = enc.replacement_char_size();
         }
         else if (psize == 1)
         {
@@ -826,10 +806,10 @@ void default_numchars<CharT, 10>::print_scientific_notation
     }
     if (num_digits == 1)
     {
-        ob.ensure(num_digits + always_print_point * psize);
+        ob.ensure(num_digits + print_point * psize);
         auto it = ob.pos();
         *it = '0' + digits;
-        if (always_print_point)
+        if (print_point)
         {
             if (psize == 1)
             {
@@ -840,6 +820,10 @@ void default_numchars<CharT, 10>::print_scientific_notation
             {
                 ob.advance_to(enc.encode_char(it + 1, decimal_point));
             }
+        }
+        else
+        {
+            ob.advance(1);
         }
     }
     else
@@ -880,12 +864,16 @@ void default_numchars<CharT, 10>::print_scientific_notation
         BOOST_ASSERT(it == ob.pos());
         ob.advance(num_digits + psize);
     }
+    if (trailing_zeros != 0)
+    {
+        stringify::v0::detail::write_fill(ob, trailing_zeros, CharT('0'));
+    }
 
     unsigned adv = 4;
     CharT* it;
     unsigned e10u = std::abs(exponent);
     BOOST_ASSERT(e10u < 1000);
-    
+
     if (e10u >= 100)
     {
         ob.ensure(5);
@@ -925,7 +913,35 @@ void default_numchars<CharT, 10>::print_single_digit
     BOOST_ASSERT(digit < 10);
     ob.ensure(1);
     *ob.pos() = (CharT)'0' + digit;
-    ob.advance(1);    
+    ob.advance(1);
+}
+
+template <typename CharT>
+void default_numchars<CharT, 10>::print_fractional_digits
+    ( stringify::v0::output_buffer<CharT>& ob
+    , stringify::v0::encoding<CharT> enc
+    , unsigned long long digits
+    , unsigned num_digits
+    , char32_t decimal_point
+    , unsigned trailing_zeros ) const
+{
+    enc.encode_char(ob, decimal_point, stringify::v0::encoding_error::replace);
+    if (num_digits != 0)
+    {
+        ob.ensure(num_digits);
+        const auto end = ob.pos() + num_digits;
+        auto it = detail::write_int_dec_txtdigits_backwards(digits, end);
+        auto itz = end - num_digits;
+        if (itz < it)
+        {
+            std::char_traits<CharT>::assign(itz, it - itz, '0');
+        }
+        ob.advance_to(end);
+    }
+    if (trailing_zeros != 0)
+    {
+        detail::write_fill(ob, trailing_zeros, CharT('0'));
+    }
 }
 
 template <typename CharT>
@@ -959,6 +975,7 @@ public:
     using category = numchars_c<CharT, 16>;
 
     using stringify::v0::detail::numchars_default_common<CharT>::print_integer;
+    using stringify::v0::detail::numchars_default_common<CharT>::print_amplified_integer;
 
     virtual void print_base_indication
         ( stringify::v0::output_buffer<CharT>& ob
@@ -990,14 +1007,22 @@ public:
         , unsigned num_digits
         , char32_t decimal_point
         , int exponent
-        , bool always_print_point ) const override;
-    virtual std::size_t scientific_notation_printsize
-        ( stringify::v0::encoding<CharT> enc
+        , bool print_point
+        , unsigned trailing_zeros ) const override;
+    // virtual std::size_t scientific_notation_printsize
+    //     ( stringify::v0::encoding<CharT> enc
+    //     , unsigned num_digits
+    //     , char32_t decimal_point
+    //     , int exponent
+    //     , bool has_sign
+    //     , bool print_point ) const override;
+    virtual void print_fractional_digits
+        ( stringify::v0::output_buffer<CharT>& ob
+        , stringify::v0::encoding<CharT> enc
+        , unsigned long long digits
         , unsigned num_digits
         , char32_t decimal_point
-        , int exponent
-        , bool has_sign
-        , bool always_print_point ) const override;
+        , unsigned trailing_zeros ) const override;
     virtual void print_single_digit
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
@@ -1052,7 +1077,7 @@ void default_numchars<CharT, 16>::print_integer
     if (num_leading_zeros != 0)
     {
         stringify::v0::detail::write_fill(ob, num_leading_zeros, CharT('0'));
-    }    
+    }
     BOOST_ASSERT(num_digits <= sizeof(digits) * 2);
     ob.ensure(num_digits);
     ob.advance(num_digits);
@@ -1123,7 +1148,7 @@ void default_numchars<CharT, 16>::print_integer
     }
     const auto num_groups = punct.groups(num_digits, mem);
     const auto * groups = mem;
-    const auto separator = punct.thousands_sep();    
+    const auto separator = punct.thousands_sep();
     if ( separator < enc.u32equivalence_begin()
       || separator >= enc.u32equivalence_end() )
     {
@@ -1201,34 +1226,54 @@ void default_numchars<CharT, 16>::print_scientific_notation
     , unsigned num_digits
     , char32_t decimal_point
     , int exponent
-    , bool always_print_point ) const
+    , bool print_point
+    , unsigned trailing_zeros ) const
 {
+    // todo
     (void) ob;
     (void) enc;
     (void) digits;
     (void) num_digits;
     (void) decimal_point;
     (void) exponent;
-    (void) always_print_point;
+    (void) print_point;
+    (void) trailing_zeros;
 }
 
+// template <typename CharT>
+// std::size_t default_numchars<CharT, 16>::scientific_notation_printsize
+//     ( stringify::v0::encoding<CharT> enc
+//     , unsigned num_digits
+//     , char32_t decimal_point
+//     , int exponent
+//     , bool has_sign
+//     , bool print_point ) const
+// {
+//     (void) enc;
+//     (void) num_digits;
+//     (void) decimal_point;
+//     (void) exponent;
+//     (void) has_sign;
+//     (void) print_point;
+
+//     return 0;
+// }
+
 template <typename CharT>
-std::size_t default_numchars<CharT, 16>::scientific_notation_printsize
-    ( stringify::v0::encoding<CharT> enc
+void default_numchars<CharT, 16>::print_fractional_digits
+    ( stringify::v0::output_buffer<CharT>& ob
+    , stringify::v0::encoding<CharT> enc
+    , unsigned long long digits
     , unsigned num_digits
     , char32_t decimal_point
-    , int exponent
-    , bool has_sign
-    , bool always_print_point ) const
+    , unsigned trailing_zeros ) const
 {
+    (void) ob;
     (void) enc;
+    (void) digits;
     (void) num_digits;
     (void) decimal_point;
-    (void) exponent;
-    (void) has_sign;
-    (void) always_print_point;
-
-    return 0;
+    (void) trailing_zeros;
 }
 
 template <typename CharT>
@@ -1240,8 +1285,8 @@ void default_numchars<CharT, 16>::print_single_digit
     (void)enc;
     BOOST_ASSERT(digit < 16);
     ob.ensure(1);
-    *ob.pos() = (digit < 10) ? ((CharT)'0' + digit) : (CharT)'a' + (digit - 10);    
-    ob.advance(1);    
+    *ob.pos() = (digit < 10) ? ((CharT)'0' + digit) : (CharT)'a' + (digit - 10);
+    ob.advance(1);
 }
 
 template <typename CharT>
@@ -1277,6 +1322,7 @@ public:
     using category = numchars_c<CharT, 8>;
 
     using stringify::v0::detail::numchars_default_common<CharT>::print_integer;
+    using stringify::v0::detail::numchars_default_common<CharT>::print_amplified_integer;
 
     virtual void print_base_indication
         ( stringify::v0::output_buffer<CharT>& ob
@@ -1317,14 +1363,22 @@ public:
         , unsigned num_digits
         , char32_t decimal_point
         , int exponent
-        , bool always_print_point ) const override;
-    virtual std::size_t scientific_notation_printsize
-        ( stringify::v0::encoding<CharT> enc
+        , bool print_point
+        , unsigned trailing_zeros ) const override;
+    // virtual std::size_t scientific_notation_printsize
+    //     ( stringify::v0::encoding<CharT> enc
+    //     , unsigned num_digits
+    //     , char32_t decimal_point
+    //     , int exponent
+    //     , bool has_sign
+    //     , bool print_point ) const override;
+    virtual void print_fractional_digits
+        ( stringify::v0::output_buffer<CharT>& ob
+        , stringify::v0::encoding<CharT> enc
+        , unsigned long long digits
         , unsigned num_digits
         , char32_t decimal_point
-        , int exponent
-        , bool has_sign
-        , bool always_print_point ) const override;
+        , unsigned trailing_zeros ) const override;
     virtual void print_single_digit
         ( stringify::v0::output_buffer<CharT>& ob
         , stringify::v0::encoding<CharT> enc
@@ -1370,7 +1424,7 @@ void default_numchars<CharT, 8>::print_integer
     if (num_leading_zeros != 0)
     {
         stringify::v0::detail::write_fill(ob, num_leading_zeros, CharT('0'));
-    }    
+    }
     ob.ensure(num_digits);
     ob.advance(num_digits);
     CharT* it = ob.pos();
@@ -1480,7 +1534,8 @@ void default_numchars<CharT, 8>::print_scientific_notation
     , unsigned num_digits
     , char32_t decimal_point
     , int exponent
-    , bool always_print_point ) const
+    , bool print_point
+    , unsigned trailing_zeros ) const
 {
     // this function should never be called
     (void) ob;
@@ -1489,26 +1544,43 @@ void default_numchars<CharT, 8>::print_scientific_notation
     (void) num_digits;
     (void) decimal_point;
     (void) exponent;
-    (void) always_print_point;
+    (void) print_point;
+    (void) trailing_zeros;
 }
 
+// template <typename CharT>
+// std::size_t default_numchars<CharT, 8>::scientific_notation_printsize
+//     ( stringify::v0::encoding<CharT> enc
+//     , unsigned num_digits
+//     , char32_t decimal_point
+//     , int exponent
+//     , bool has_sign
+//     , bool print_point ) const
+// {
+//     (void) enc;
+//     (void) num_digits;
+//     (void) decimal_point;
+//     (void) exponent;
+//     (void) has_sign;
+//     (void) print_point;
+//     return 0;
+// }
+
 template <typename CharT>
-std::size_t default_numchars<CharT, 8>::scientific_notation_printsize
-    ( stringify::v0::encoding<CharT> enc
+void default_numchars<CharT, 8>::print_fractional_digits
+    ( stringify::v0::output_buffer<CharT>& ob
+    , stringify::v0::encoding<CharT> enc
+    , unsigned long long digits
     , unsigned num_digits
     , char32_t decimal_point
-    , int exponent
-    , bool has_sign
-    , bool always_print_point ) const
+    , unsigned trailing_zeros ) const
 {
+    (void) ob;
     (void) enc;
+    (void) digits;
     (void) num_digits;
     (void) decimal_point;
-    (void) exponent;
-    (void) has_sign;
-    (void) always_print_point;
-
-    return 0;
+    (void) trailing_zeros;
 }
 
 template <typename CharT>
@@ -1521,7 +1593,7 @@ void default_numchars<CharT, 8>::print_single_digit
     BOOST_ASSERT(digit < 8);
     ob.ensure(1);
     *ob.pos() = (CharT)'0' + digit;
-    ob.advance(1);    
+    ob.advance(1);
 }
 
 template <typename CharT>
