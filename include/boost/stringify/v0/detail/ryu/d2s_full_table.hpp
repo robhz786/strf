@@ -14,8 +14,9 @@
 // Unless required by applicable law or agreed to in writing, this software
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
-#ifndef RYU_D2S_FULL_TABLE_H
-#define RYU_D2S_FULL_TABLE_H
+
+#ifndef BOOST_STRINGIFY_V0_DETAIL_RYU_D2S_FULL_TABLE_HPP_INCLUDED
+#define BOOST_STRINGIFY_V0_DETAIL_RYU_D2S_FULL_TABLE_HPP_INCLUDED
 
 #include <stdint.h>
 
@@ -335,4 +336,4 @@ static const uint64_t DOUBLE_POW5_SPLIT[326][2] = {
   {  5969538097335305869u,  89002954340288055u }, {  2850236603241744433u, 111253692925360069u }
 };
 
-#endif // RYU_D2S_FULL_TABLE_H
+#endif // BOOST_STRINGIFY_V0_DETAIL_RYU_D2S_FULL_TABLE_HPP_INCLUDED

@@ -14,23 +14,24 @@
 // Unless required by applicable law or agreed to in writing, this software
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
-#ifndef RYU_D2S_H
-#define RYU_D2S_H
+
+#ifndef BOOST_STRINGIFY_V0_DETAIL_RYU_D2S_HPP_INCLUDED
+#define BOOST_STRINGIFY_V0_DETAIL_RYU_D2S_HPP_INCLUDED
 
 #include <assert.h>
 #include <stdint.h>
 
-#include "ryu/common.h"
+#include <boost/stringify/v0/detail/ryu/common.hpp>
 
 // Only include the full table if we're not optimizing for size.
 #if !defined(RYU_OPTIMIZE_SIZE)
-#include "ryu/d2s_full_table.h"
+#include <boost/stringify/v0/detail/ryu/d2s_full_table.hpp>
 #endif
 
 #if defined(HAS_UINT128)
 typedef __uint128_t uint128_t;
 #else
-#include "ryu/d2s_intrinsics.h"
+#include <boost/stringify/v0/detail/ryu/d2s_intrinsics.hpp>
 #endif
 
 #define DOUBLE_MANTISSA_BITS 52
@@ -199,4 +200,4 @@ static inline void double_computeInvPow5(const uint32_t i, uint64_t* const resul
 
 #endif // defined(RYU_OPTIMIZE_SIZE)
 
-#endif // RYU_D2S_H
+#endif // BOOST_STRINGIFY_V0_DETAIL_RYU_D2S_HPP_INCLUDED

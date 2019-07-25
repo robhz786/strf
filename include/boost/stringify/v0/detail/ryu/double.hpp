@@ -27,7 +27,8 @@
 //     size by about 10x (only one case, and only double) at the cost of some
 //     performance. Currently requires MSVC intrinsics.
 
-#include "ryu/ryu.h"
+#ifndef BOOST_STRINGIFY_V0_DETAIL_RYU_DOUBLE_HPP_INCLUDED
+#define BOOST_STRINGIFY_V0_DETAIL_RYU_DOUBLE_HPP_INCLUDED
 
 #include <assert.h>
 #include <stdbool.h>
@@ -48,10 +49,9 @@
 #define HAS_64_BIT_INTRINSICS
 #endif
 
-#include "ryu/common.h"
-#include "ryu/digit_table.h"
-#include "ryu/d2s.h"
-#include "ryu/d2s_intrinsics.h"
+#include <boost/stringify/v0/detail/ryu/common.hpp>
+#include <boost/stringify/v0/detail/ryu/d2s.hpp>
+#include <boost/stringify/v0/detail/ryu/d2s_intrinsics.hpp>
 
 // We need a 64x128-bit multiplication and a subsequent 128-bit shift.
 // Multiplication:
@@ -629,3 +629,5 @@ char* d2s(double f) {
   d2s_buffered(f, result);
   return result;
 }
+
+#endif // BOOST_STRINGIFY_V0_DETAIL_RYU_DOUBLE_HPP_INCLUDED

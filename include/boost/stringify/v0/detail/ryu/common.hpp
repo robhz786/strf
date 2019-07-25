@@ -14,8 +14,9 @@
 // Unless required by applicable law or agreed to in writing, this software
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
-#ifndef RYU_COMMON_H
-#define RYU_COMMON_H
+
+#ifndef BOOST_STRINGIFY_V0_DETAIL_RYU_COMMON_HPP_INCLUDED
+#define BOOST_STRINGIFY_V0_DETAIL_RYU_COMMON_HPP_INCLUDED
 
 #include <assert.h>
 #include <stdint.h>
@@ -95,4 +96,4 @@ static inline uint64_t double_to_bits(const double d) {
   return bits;
 }
 
-#endif // RYU_COMMON_H
+#endif // BOOST_STRINGIFY_V0_DETAIL_RYU_COMMON_HPP_INCLUDED

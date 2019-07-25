@@ -18,7 +18,8 @@
 // Runtime compiler options:
 // -DRYU_DEBUG Generate verbose debugging output to stdout.
 
-#include "ryu/ryu.h"
+#ifndef BOOST_STRINGIFY_V0_DETAIL_RYU_FLOAT_HPP_INCLUDED
+#define BOOST_STRINGIFY_V0_DETAIL_RYU_FLOAT_HPP_INCLUDED
 
 #include <assert.h>
 #include <stdbool.h>
@@ -31,8 +32,8 @@
 #include <stdio.h>
 #endif
 
-#include "ryu/common.h"
-#include "ryu/digit_table.h"
+#include <boost/stringify/v0/detail/ryu/common.hpp>
+#include <boost/stringify/v0/detail/ryu/digit_table.hpp>
 
 #define FLOAT_MANTISSA_BITS 23
 #define FLOAT_EXPONENT_BITS 8
@@ -434,3 +435,5 @@ char* f2s(float f) {
   f2s_buffered(f, result);
   return result;
 }
+
+#endif // BOOST_STRINGIFY_V0_DETAIL_RYU_FLOAT_HPP_INCLUDED

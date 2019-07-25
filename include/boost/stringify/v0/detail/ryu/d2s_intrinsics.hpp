@@ -14,14 +14,15 @@
 // Unless required by applicable law or agreed to in writing, this software
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
-#ifndef RYU_D2S_INTRINSICS_H
-#define RYU_D2S_INTRINSICS_H
+
+#ifndef BOOST_STRINGIFY_V0_DETAIL_RYU_D2S_INTRINSICS_HPP_INCLUDED
+#define BOOST_STRINGIFY_V0_DETAIL_RYU_D2S_INTRINSICS_HPP_INCLUDED
 
 #include <assert.h>
 #include <stdint.h>
 
 // This sets RYU_32_BIT_PLATFORM as a side effect if applicable.
-#include "ryu/common.h"
+#include <boost/stringify/v0/detail/ryu/common.hpp>
 
 #if defined(HAS_64_BIT_INTRINSICS)
 
@@ -207,4 +208,4 @@ static inline bool multipleOfPowerOf2(const uint64_t value, const uint32_t p) {
   return (value & ((1ull << p) - 1)) == 0;
 }
 
-#endif // RYU_D2S_INTRINSICS_H
+#endif // BOOST_STRINGIFY_V0_DETAIL_RYU_D2S_INTRINSICS_HPP_INCLUDED
