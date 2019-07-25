@@ -255,7 +255,7 @@ inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_t ieeeE
     double_computeInvPow5(q, pow5);
     vr = mulShiftAll(m2, pow5, i, &vp, &vm, mmShift);
 #else
-    vr = mulShiftAll(m2, DOUBLE_POW5_INV_SPLIT[q], i, &vp, &vm, mmShift);
+    vr = mulShiftAll(m2, DOUBLE_POW5_INV_SPLIT(q), i, &vp, &vm, mmShift);
 #endif
 #ifdef BOOST_STRINGIFY_V0_RYU_DEBUG
     printf("%" PRIu64 " * 2^%d / 10^%u\n", mv, e2, q);
@@ -290,7 +290,7 @@ inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_t ieeeE
     double_computePow5(i, pow5);
     vr = mulShiftAll(m2, pow5, j, &vp, &vm, mmShift);
 #else
-    vr = mulShiftAll(m2, DOUBLE_POW5_SPLIT[i], j, &vp, &vm, mmShift);
+    vr = mulShiftAll(m2, DOUBLE_POW5_SPLIT(i), j, &vp, &vm, mmShift);
 #endif
 #ifdef BOOST_STRINGIFY_V0_RYU_DEBUG
     printf("%" PRIu64 " * 5^%d / 10^%u\n", mv, -e2, q);
@@ -506,8 +506,8 @@ inline int to_chars(const floating_decimal_64 v, const bool sign, char* const re
   if (output2 >= 10) {
     const uint32_t c = output2 << 1;
     // We can't use memcpy here: the decimal dot goes between these two digits.
-    result[index + olength - i] = DIGIT_TABLE[c + 1];
-    result[index] = DIGIT_TABLE[c];
+    result[index + olength - i] = DIGIT_TABLE(c + 1);
+    result[index] = DIGIT_TABLE(c);
   } else {
     result[index] = (char) ('0' + output2);
   }
