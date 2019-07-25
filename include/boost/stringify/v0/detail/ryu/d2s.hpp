@@ -24,27 +24,27 @@
 #include <boost/stringify/v0/detail/ryu/common.hpp>
 
 // Only include the full table if we're not optimizing for size.
-#if !defined(RYU_OPTIMIZE_SIZE)
+#if !defined(BOOST_STRINGIFY_V0_RYU_OPTIMIZE_SIZE)
 #include <boost/stringify/v0/detail/ryu/d2s_full_table.hpp>
 #endif
 
-#if defined(HAS_UINT128)
+#if defined(BOOST_STRINGIFY_V0_RYU_HAS_UINT128)
 typedef __uint128_t uint128_t;
 #else
 #include <boost/stringify/v0/detail/ryu/d2s_intrinsics.hpp>
 #endif
 
-#define DOUBLE_MANTISSA_BITS 52
-#define DOUBLE_EXPONENT_BITS 11
-#define DOUBLE_BIAS 1023
+#define BOOST_STRINGIFY_V0_RYU_DOUBLE_MANTISSA_BITS 52
+#define BOOST_STRINGIFY_V0_RYU_DOUBLE_EXPONENT_BITS 11
+#define BOOST_STRINGIFY_V0_RYU_DOUBLE_BIAS 1023
 
-#define DOUBLE_POW5_INV_BITCOUNT 122
-#define DOUBLE_POW5_BITCOUNT 121
+#define BOOST_STRINGIFY_V0_RYU_DOUBLE_POW5_INV_BITCOUNT 122
+#define BOOST_STRINGIFY_V0_RYU_DOUBLE_POW5_BITCOUNT 121
 
-#if defined(RYU_OPTIMIZE_SIZE)
+#if defined(BOOST_STRINGIFY_V0_RYU_OPTIMIZE_SIZE)
 
-#define POW5_TABLE_SIZE 26
-static const uint64_t DOUBLE_POW5_TABLE[POW5_TABLE_SIZE] = {
+#define BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE 26
+static const uint64_t DOUBLE_POW5_TABLE[BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE] = {
 1ull, 5ull, 25ull, 125ull, 625ull, 3125ull, 15625ull, 78125ull, 390625ull,
 1953125ull, 9765625ull, 48828125ull, 244140625ull, 1220703125ull, 6103515625ull,
 30517578125ull, 152587890625ull, 762939453125ull, 3814697265625ull,
@@ -99,12 +99,12 @@ static const uint32_t POW5_INV_OFFSETS[20] = {
 0x00000014, 0x00000000,
 };
 
-#if defined(HAS_UINT128)
+#if defined(BOOST_STRINGIFY_V0_RYU_HAS_UINT128)
 
 // Computes 5^i in the form required by Ryu, and stores it in the given pointer.
 static inline void double_computePow5(const uint32_t i, uint64_t* const result) {
-  const uint32_t base = i / POW5_TABLE_SIZE;
-  const uint32_t base2 = base * POW5_TABLE_SIZE;
+  const uint32_t base = i / BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE;
+  const uint32_t base2 = base * BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE;
   const uint32_t offset = i - base2;
   const uint64_t* const mul = DOUBLE_POW5_SPLIT2[base];
   if (offset == 0) {
@@ -123,8 +123,8 @@ static inline void double_computePow5(const uint32_t i, uint64_t* const result) 
 
 // Computes 5^-i in the form required by Ryu, and stores it in the given pointer.
 static inline void double_computeInvPow5(const uint32_t i, uint64_t* const result) {
-  const uint32_t base = (i + POW5_TABLE_SIZE - 1) / POW5_TABLE_SIZE;
-  const uint32_t base2 = base * POW5_TABLE_SIZE;
+  const uint32_t base = (i + BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE - 1) / BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE;
+  const uint32_t base2 = base * BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE;
   const uint32_t offset = base2 - i;
   const uint64_t* const mul = DOUBLE_POW5_INV_SPLIT2[base]; // 1/5^base2
   if (offset == 0) {
@@ -142,12 +142,12 @@ static inline void double_computeInvPow5(const uint32_t i, uint64_t* const resul
   result[1] = (uint64_t) (shiftedSum >> 64);
 }
 
-#else // defined(HAS_UINT128)
+#else // defined(BOOST_STRINGIFY_V0_RYU_HAS_UINT128)
 
 // Computes 5^i in the form required by Ryu, and stores it in the given pointer.
 static inline void double_computePow5(const uint32_t i, uint64_t* const result) {
-  const uint32_t base = i / POW5_TABLE_SIZE;
-  const uint32_t base2 = base * POW5_TABLE_SIZE;
+  const uint32_t base = i / BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE;
+  const uint32_t base2 = base * BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE;
   const uint32_t offset = i - base2;
   const uint64_t* const mul = DOUBLE_POW5_SPLIT2[base];
   if (offset == 0) {
@@ -172,8 +172,8 @@ static inline void double_computePow5(const uint32_t i, uint64_t* const result) 
 
 // Computes 5^-i in the form required by Ryu, and stores it in the given pointer.
 static inline void double_computeInvPow5(const uint32_t i, uint64_t* const result) {
-  const uint32_t base = (i + POW5_TABLE_SIZE - 1) / POW5_TABLE_SIZE;
-  const uint32_t base2 = base * POW5_TABLE_SIZE;
+  const uint32_t base = (i + BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE - 1) / BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE;
+  const uint32_t base2 = base * BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE;
   const uint32_t offset = base2 - i;
   const uint64_t* const mul = DOUBLE_POW5_INV_SPLIT2[base]; // 1/5^base2
   if (offset == 0) {
@@ -196,8 +196,8 @@ static inline void double_computeInvPow5(const uint32_t i, uint64_t* const resul
   result[1] = shiftright128(sum, high1, delta);
 }
 
-#endif // defined(HAS_UINT128)
+#endif // defined(BOOST_STRINGIFY_V0_RYU_HAS_UINT128)
 
-#endif // defined(RYU_OPTIMIZE_SIZE)
+#endif // defined(BOOST_STRINGIFY_V0_RYU_OPTIMIZE_SIZE)
 
 #endif // BOOST_STRINGIFY_V0_DETAIL_RYU_D2S_HPP_INCLUDED

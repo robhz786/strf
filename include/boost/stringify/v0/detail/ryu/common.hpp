@@ -23,7 +23,7 @@
 #include <string.h>
 
 #if defined(_M_IX86) || defined(_M_ARM)
-#define RYU_32_BIT_PLATFORM
+#define BOOST_STRINGIFY_V0_RYU_32_BIT_PLATFORM
 #endif
 
 static inline uint32_t decimalLength9(const uint32_t v) {

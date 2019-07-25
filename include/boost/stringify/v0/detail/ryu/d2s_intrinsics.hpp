@@ -21,10 +21,10 @@
 #include <assert.h>
 #include <stdint.h>
 
-// This sets RYU_32_BIT_PLATFORM as a side effect if applicable.
+// This sets BOOST_STRINGIFY_V0_RYU_32_BIT_PLATFORM as a side effect if applicable.
 #include <boost/stringify/v0/detail/ryu/common.hpp>
 
-#if defined(HAS_64_BIT_INTRINSICS)
+#if defined(BOOST_STRINGIFY_V0_RYU_HAS_64_BIT_INTRINSICS)
 
 #include <intrin.h>
 
@@ -37,7 +37,7 @@ static inline uint64_t shiftright128(const uint64_t lo, const uint64_t hi, const
   // modulo 64.
   // In the current implementation of the double-precision version
   // of Ryu, the shift value is always < 64. (In the case
-  // RYU_OPTIMIZE_SIZE == 0, the shift value is in the range [49, 58].
+  // BOOST_STRINGIFY_V0_RYU_OPTIMIZE_SIZE == 0, the shift value is in the range [49, 58].
   // Otherwise in the range [2, 59].)
   // Check this here in case a future change requires larger shift
   // values. In this case this function needs to be adjusted.
@@ -45,7 +45,7 @@ static inline uint64_t shiftright128(const uint64_t lo, const uint64_t hi, const
   return __shiftright128(lo, hi, (unsigned char) dist);
 }
 
-#else // defined(HAS_64_BIT_INTRINSICS)
+#else // defined(BOOST_STRINGIFY_V0_RYU_HAS_64_BIT_INTRINSICS)
 
 static inline uint64_t umul128(const uint64_t a, const uint64_t b, uint64_t* const productHi) {
   // The casts here help MSVC to avoid calls to the __allmul library function.
@@ -80,7 +80,7 @@ static inline uint64_t umul128(const uint64_t a, const uint64_t b, uint64_t* con
 static inline uint64_t shiftright128(const uint64_t lo, const uint64_t hi, const uint32_t dist) {
   // We don't need to handle the case dist >= 64 here (see above).
   assert(dist < 64);
-#if defined(RYU_OPTIMIZE_SIZE) || !defined(RYU_32_BIT_PLATFORM)
+#if defined(BOOST_STRINGIFY_V0_RYU_OPTIMIZE_SIZE) || !defined(BOOST_STRINGIFY_V0_RYU_32_BIT_PLATFORM)
   assert(dist > 0);
   return (hi << (64 - dist)) | (lo >> dist);
 #else
@@ -90,9 +90,9 @@ static inline uint64_t shiftright128(const uint64_t lo, const uint64_t hi, const
 #endif
 }
 
-#endif // defined(HAS_64_BIT_INTRINSICS)
+#endif // defined(BOOST_STRINGIFY_V0_RYU_HAS_64_BIT_INTRINSICS)
 
-#ifdef RYU_32_BIT_PLATFORM
+#ifdef BOOST_STRINGIFY_V0_RYU_32_BIT_PLATFORM
 
 // Returns the high 64 bits of the 128-bit product of a and b.
 static inline uint64_t umulh(const uint64_t a, const uint64_t b) {
@@ -152,7 +152,7 @@ static inline uint32_t mod1e9(const uint64_t x) {
   return ((uint32_t) x) - 1000000000 * ((uint32_t) div1e9(x));
 }
 
-#else // RYU_32_BIT_PLATFORM
+#else // BOOST_STRINGIFY_V0_RYU_32_BIT_PLATFORM
 
 static inline uint64_t div5(const uint64_t x) {
   return x / 5;
@@ -178,7 +178,7 @@ static inline uint32_t mod1e9(const uint64_t x) {
   return (uint32_t) (x - 1000000000 * div1e9(x));
 }
 
-#endif // RYU_32_BIT_PLATFORM
+#endif // BOOST_STRINGIFY_V0_RYU_32_BIT_PLATFORM
 
 static inline uint32_t pow5Factor(uint64_t value) {
   uint32_t count = 0;
