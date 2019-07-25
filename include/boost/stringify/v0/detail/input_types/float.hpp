@@ -33,12 +33,73 @@ struct double_dec_base
 
 #if ! defined(BOOST_STRINGIFY_OMIT_IMPL)
 
+BOOST_STRINGIFY_INLINE double_dec_base trivial_float_dec(
+    std::uint32_t ieee_mantissa,
+    std::int32_t biased_exponent,
+    std::uint32_t k )
+{
+    constexpr int m_size = 23;
+
+    BOOST_ASSERT(-8 <= biased_exponent && biased_exponent <= m_size);
+    BOOST_ASSERT((std::int32_t)k == (biased_exponent * 179 + 1850) >> 8);
+    BOOST_ASSERT(0 == (ieee_mantissa & (0x7FFFFF >> k)));
+
+    BOOST_ASSERT(k <= m_size);
+    BOOST_ASSERT(biased_exponent <= (int)k);
+
+    std::int32_t e10 = biased_exponent - k;
+    std::uint32_t m = (1ul << k) | (ieee_mantissa >> (m_size - k));
+    int p5 = k - biased_exponent;
+    BOOST_ASSERT(p5 <= 10);
+    if (p5 >= 8 && (0 == (m & 0xFF))) {
+        p5 -= 8;
+        e10 += 8;
+        m = m >> 8;
+    }
+    if (p5 >= 4 && (0 == (m & 0xF))) {
+        p5 -= 4;
+        e10 += 4;
+        m = m >> 4;
+    }
+    if (p5 >= 2 && (0 == (m & 0x3))) {
+        p5 -= 2;
+        e10 += 2;
+        m = m >> 2;
+    }
+    if (p5 != 0 && (0 == (m & 1))) {
+        -- p5;
+        ++ e10;
+        m = m >> 1;
+    }
+    while ((m % 10) == 0){
+        m /= 10;
+        ++e10;
+    }
+    if (p5 >= 8) {
+        m *= 390625ul; // (m << 18) + (m << 16) + (m << 15) + (m << 14) + ...
+        p5 -= 8;
+    }
+    if (p5 >= 4) {
+        m *= 625;  // = (m << 9) + (m << 6) + (m << 5) + (m << 4) + m
+        p5 -= 4;
+    }
+    if (p5 >= 2) {
+        m *= 25; // = (m << 4) + (m << 3) + m
+        p5 -= 2;
+    }
+    if (p5 >= 1) {
+        m = (m << 2) + m; // m *= 5
+    }
+    BOOST_ASSERT((m % 10) != 0);
+    return {m, e10};
+}
+
 BOOST_STRINGIFY_INLINE double_dec_base trivial_double_dec(
     std::uint64_t ieee_mantissa,
     std::int32_t biased_exponent,
     std::uint32_t k )
 {
-    BOOST_ASSERT(-21 <= biased_exponent && biased_exponent <= 52);
+    BOOST_ASSERT(-22 <= biased_exponent && biased_exponent <= 52);
     BOOST_ASSERT((std::int32_t)k == (biased_exponent * 179 + 4084) >> 8);
     BOOST_ASSERT(0 == (ieee_mantissa & (0xFFFFFFFFFFFFFull >> k)));
 
@@ -100,21 +161,58 @@ BOOST_STRINGIFY_INLINE double_dec_base trivial_double_dec(
     BOOST_ASSERT((m % 10) != 0);
     return {m, e10};
 }
-
-BOOST_STRINGIFY_INLINE detail::double_dec decode(double d)
+BOOST_STRINGIFY_INLINE detail::double_dec decode(float f)
 {
-    //constexpr int ieee_mantissa_size = 52;
-    constexpr int ieee_bias = 1023;
-    std::uint64_t bits;
-    std::memcpy(&bits, &d, 8);
-    const std::uint64_t mantissa = bits & 0xFFFFFFFFFFFFFull;
-    const std::uint32_t exponent = static_cast<std::uint32_t>((bits << 1) >> 53);
-    const bool sign = (bits >> 63);
+    constexpr int bias = 127;
+    constexpr int e_size = 8;
+    constexpr int m_size = 23;
+
+    std::uint32_t bits;
+    std::memcpy(&bits, &f, 4);
+    const std::uint32_t exponent
+        = static_cast<std::uint32_t>((bits << 1) >> (m_size + 1));
+    const bool sign = (bits >> (m_size + e_size));
+    const std::uint64_t mantissa = bits & 0x7FFFFF;
 
     if (exponent == 0 && mantissa == 0) {
         return {0, 0, sign, false, false};
-    } else if (ieee_bias - 21 <= exponent && exponent <= ieee_bias + 52) {
-        const int e = exponent - ieee_bias;
+    } else if (bias - 10 <= exponent && exponent <= bias + m_size) {
+        const int e = exponent - bias;
+        const unsigned k = (179 * e + 1850) >> 8;
+        if (0 == (mantissa & (0x7FFFFF >> k))) {
+            auto res = trivial_float_dec(mantissa, e, k);
+            return {res.m10, res.e10, sign, false, false};
+        }
+    } else if (exponent == 0xFF) {
+        if (mantissa == 0) {
+            return {0, 0, sign, true, false};
+        } else {
+            return {0, 0, sign, false, true};
+        }
+    }
+
+    // TODO use the non trivial algorithm
+    return {0, 0, sign, false, false};
+}
+
+
+BOOST_STRINGIFY_INLINE detail::double_dec decode(double d)
+{
+    constexpr int bias = 1023;
+    constexpr int e_size = 11; // bits in exponent
+    constexpr int m_size = 52; // bits in matissa
+
+    std::uint64_t bits;
+    std::memcpy(&bits, &d, 8);
+    const std::uint32_t exponent
+        = static_cast<std::uint32_t>((bits << 1) >> (m_size + 1));
+    const bool sign = (bits >> (m_size + e_size));
+    const std::uint64_t mantissa = bits & 0xFFFFFFFFFFFFFull;
+
+    if (exponent == 0 && mantissa == 0) {
+        return {0, 0, sign, false, false};
+    } else if (bias - 22 <= exponent && exponent <= bias + 52) {
+        const int e = exponent - bias;
         const unsigned k = (e * 179 + 4084) >> 8;
         if (0 == (mantissa & (0xFFFFFFFFFFFFFull >> k))) {
             auto res = trivial_double_dec(mantissa, e, k);
@@ -135,6 +233,7 @@ BOOST_STRINGIFY_INLINE detail::double_dec decode(double d)
 #else  // ! defined(BOOST_STRINGIFY_OMIT_IMPL)
 
 detail::double_dec decode(double d);
+detail::double_dec decode(float f);
 
 #endif // ! defined(BOOST_STRINGIFY_OMIT_IMPL)
 
@@ -273,8 +372,24 @@ struct double_printer_data: detail::double_dec
 {
     constexpr double_printer_data(const double_printer_data&) = default;
 
-    double_printer_data(double d);
-    double_printer_data(double d, decimal_float_format_data fmt);
+    double_printer_data(float d)
+        : double_printer_data(detail::decode(d))
+    {
+    }
+    double_printer_data(float d, decimal_float_format_data fmt)
+        :  double_printer_data(detail::decode(d), fmt)
+    {
+    }
+    double_printer_data(double d)
+        : double_printer_data(detail::decode(d))
+    {
+    }
+    double_printer_data(double d, decimal_float_format_data fmt)
+        :  double_printer_data(detail::decode(d), fmt)
+    {
+    }
+    double_printer_data(detail::double_dec d);
+    double_printer_data(detail::double_dec d, decimal_float_format_data fmt);
 
     bool showpoint;
     bool showsign;
@@ -285,8 +400,8 @@ struct double_printer_data: detail::double_dec
 
 #if !defined(BOOST_STRINGIFY_OMIT_IMPL)
 
-BOOST_STRINGIFY_INLINE double_printer_data::double_printer_data(double x)
-    : detail::double_dec(decode(x))
+BOOST_STRINGIFY_INLINE double_printer_data::double_printer_data(detail::double_dec d)
+    : detail::double_dec(d)
     , showsign(negative)
     , extra_zeros(0)
 {
@@ -308,8 +423,8 @@ BOOST_STRINGIFY_INLINE double_printer_data::double_printer_data(double x)
 }
 
 BOOST_STRINGIFY_INLINE double_printer_data::double_printer_data
-    ( double d, decimal_float_format_data fmt)
-    : stringify::v0::detail::double_dec(decode(d))
+    ( detail::double_dec d, decimal_float_format_data fmt)
+    : stringify::v0::detail::double_dec(d)
     , showsign(fmt.showpos || negative)
 {
     if (nan || infinity)
@@ -1430,12 +1545,37 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_i18n_double_printer<wchar_t>;
 
 template <typename CharT, typename FPack>
 inline typename std::conditional
+    < stringify::v0::detail::has_i18n<CharT, FPack, float, 10>
+    , stringify::v0::detail::fast_i18n_double_printer<CharT>
+    , stringify::v0::detail::fast_double_printer<CharT> >::type
+make_printer(const FPack& fp, float d)
+{
+    return {fp, d};
+}
+
+template <typename CharT, typename FPack>
+inline typename std::conditional
     < stringify::v0::detail::has_i18n<CharT, FPack, double, 10>
     , stringify::v0::detail::fast_i18n_double_printer<CharT>
     , stringify::v0::detail::fast_double_printer<CharT> >::type
 make_printer(const FPack& fp, double d)
 {
     return {fp, d};
+}
+
+template <typename CharT, typename FPack>
+inline typename std::conditional
+    < stringify::v0::detail::has_i18n<CharT, FPack, float, 10>
+    , stringify::v0::detail::i18n_double_printer<CharT>
+    , stringify::v0::detail::double_printer<CharT> >::type
+make_printer
+    ( const FPack& fp
+    , const stringify::v0::value_with_format
+            < float
+            , stringify::v0::decimal_float_format
+            , stringify::v0::empty_alignment_format >& x )
+{
+    return {fp, x};
 }
 
 template <typename CharT, typename FPack>
@@ -1466,6 +1606,7 @@ inline stringify::v0::detail::fast_double_printer<CharT> make_printer
         , "Alignment formatting for floating points not supported yet. Sorry." );
     return {x.value()};
 }
+
 template <typename CharT, typename FPack>
 inline stringify::v0::detail::fast_double_printer<CharT> make_printer
     ( const FPack&

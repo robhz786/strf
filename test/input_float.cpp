@@ -15,7 +15,7 @@ void basic_tests(const FPack& fp)
     constexpr auto j = strf::join_right(20, '_');
     auto quiet_nan = std::numeric_limits<double>::quiet_NaN();
     auto signaling_nan = std::numeric_limits<double>::signaling_NaN();
-    
+
     TEST("_________________nan").facets(fp)  (j(quiet_nan));
     TEST("_________________nan").facets(fp)  (j(signaling_nan));
     TEST("_________________inf").facets(fp)  (j(1.0/0.0));
@@ -114,7 +114,7 @@ void basic_tests(const FPack& fp)
     TEST("_______________1e+04").facets(fp) (j(strf::fmt(10000.0).p(4)));
     TEST("_______________10000").facets(fp) (j(strf::fmt(10000.0).p(5)));
     TEST("__________6.1035e-05").facets(fp) (j(strf::fmt(6.103515625e-05).p(5)));
-    
+
     // and if precision is zero, it treated as 1.
     TEST("_______________1e+01").facets(fp)  (j(strf::fmt(12.0).p(0)));
     TEST("_______________2e+01").facets(fp)  (j(strf::fmt(15.125).p(0)));
@@ -235,7 +235,7 @@ int main()
 
     auto p = strf::monotonic_grouping<10>{3}.decimal_point(',').thousands_sep(':');
     constexpr auto j = strf::join_right(20, '_');
-    
+
     TEST("_________________1,5").facets(p) (j(1.5));
     TEST("_____6,103515625e-05").facets(p) (j(6.103515625e-05));
     TEST("__________6,1035e-05").facets(p) (j(strf::fmt(6.103515625e-05).p(5)));
@@ -246,8 +246,9 @@ int main()
     TEST("___________1:000:000").facets(p) (j(strf::fixed(1000000.0)));
     TEST("_________+1:000:000,").facets(p) (j(~+strf::fixed(1000000.0)));
     TEST("_____+1:000:000,0000").facets(p) (j(~+strf::fixed(1000000.0).p(4)));
-    
 
+    TEST("___________1:024,125").facets(p) (j(1024.125f));
+    TEST("_______+1,024125e+03").facets(p) (j(+strf::sci(1024.125f)));
 
 
     // precision:
