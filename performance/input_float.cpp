@@ -20,6 +20,52 @@ int main()
     (void) dest_end;
     auto dummy_punct = strf::no_grouping<10>().decimal_point(':');
 
+    PRINT_BENCHMARK("strf::write(dest)(0.111)")
+    {
+        (void) strf::write(dest)(0.111);
+    }
+    PRINT_BENCHMARK("strf::write(dest).facets(dummy_punct)(0.111)")
+    {
+        (void) strf::write(dest).facets(dummy_punct)(0.111);
+    }
+    PRINT_BENCHMARK("strf::write(dest).tr(\"{}\", 0.111)")
+    {
+        (void) strf::write(dest).tr("{}", 0.111);
+    }
+    PRINT_BENCHMARK("strf::write(dest)(strf::fmt(0.111))")
+    {
+        (void) strf::write(dest)(strf::fmt(0.111));
+    }
+    PRINT_BENCHMARK("strf::write(dest)(strf::sci(0.111))")
+    {
+        (void) strf::write(dest)(strf::sci(0.111));
+    }
+    PRINT_BENCHMARK("strf::write(dest)(strf::fixed(0.111))")
+    {
+        (void) strf::write(dest)(strf::fixed(0.111));
+    }
+    PRINT_BENCHMARK("strf::write(dest)(strf::fmt(0.111).p(6))")
+    {
+        (void) strf::write(dest)(strf::fmt(0.111).p(6));
+    }
+    PRINT_BENCHMARK("strf::write(dest)(strf::sci(0.111).p(6))")
+    {
+        (void) strf::write(dest)(strf::sci(0.111).p(6));
+    }
+    PRINT_BENCHMARK("strf::write(dest)(strf::fixed(0.111).p(6))")
+    {
+        (void) strf::write(dest)(strf::fixed(0.111).p(6));
+    }
+    PRINT_BENCHMARK("fmt::format_to(dest, \"{}\", 0.111)")
+    {
+        fmt::format_to(dest, "{}", 0.111);
+    }
+    PRINT_BENCHMARK("std::sprintf(dest, \"%g\" 0.111)")
+    {
+        std::sprintf(dest, "%g", 0.111);
+    }
+
+    
     strf::write(stdout)("\n ---- 6.103515625e-05 ---- \n");
     
     PRINT_BENCHMARK("strf::write(dest)(6.103515625e-05)")

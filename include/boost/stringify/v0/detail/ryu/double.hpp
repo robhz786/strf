@@ -435,6 +435,8 @@ inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_t ieeeE
   return fd;
 }
 
+#if 0
+
 inline int to_chars(const floating_decimal_64 v, const bool sign, char* const result) {
   // Step 5: Print the decimal representation.
   int index = 0;
@@ -631,6 +633,8 @@ char* d2s(double f) {
   d2s_buffered(f, result);
   return result;
 }
+
+#endif // 0
 
 BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_END;
 

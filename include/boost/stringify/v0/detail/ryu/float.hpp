@@ -33,7 +33,6 @@
 #endif
 
 #include <boost/stringify/v0/detail/ryu/common.hpp>
-#include <boost/stringify/v0/detail/ryu/digit_table.hpp>
 
 BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_BEGIN;
 
@@ -329,6 +328,8 @@ inline floating_decimal_32 f2d(const uint32_t ieeeMantissa, const uint32_t ieeeE
   return fd;
 }
 
+#if 0
+
 inline int to_chars(const floating_decimal_32 v, const bool sign, char* const result) {
   // Step 5: Print the decimal representation.
   int index = 0;
@@ -445,6 +446,8 @@ char* f2s(float f) {
   f2s_buffered(f, result);
   return result;
 }
+
+#endif // 0
 
 BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_END;
 
