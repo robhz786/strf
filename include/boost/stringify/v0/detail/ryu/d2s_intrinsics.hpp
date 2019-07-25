@@ -24,6 +24,8 @@
 // This sets BOOST_STRINGIFY_V0_RYU_32_BIT_PLATFORM as a side effect if applicable.
 #include <boost/stringify/v0/detail/ryu/common.hpp>
 
+BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_BEGIN;
+
 #if defined(BOOST_STRINGIFY_V0_RYU_HAS_64_BIT_INTRINSICS)
 
 #include <intrin.h>
@@ -207,5 +209,7 @@ static inline bool multipleOfPowerOf2(const uint64_t value, const uint32_t p) {
   // return __builtin_ctzll(value) >= p;
   return (value & ((1ull << p) - 1)) == 0;
 }
+
+BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_END;
 
 #endif // BOOST_STRINGIFY_V0_DETAIL_RYU_D2S_INTRINSICS_HPP_INCLUDED

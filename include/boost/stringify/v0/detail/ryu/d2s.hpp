@@ -34,6 +34,8 @@ typedef __uint128_t uint128_t;
 #include <boost/stringify/v0/detail/ryu/d2s_intrinsics.hpp>
 #endif
 
+BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_BEGIN;
+
 #define BOOST_STRINGIFY_V0_RYU_DOUBLE_MANTISSA_BITS 52
 #define BOOST_STRINGIFY_V0_RYU_DOUBLE_EXPONENT_BITS 11
 #define BOOST_STRINGIFY_V0_RYU_DOUBLE_BIAS 1023
@@ -199,5 +201,7 @@ static inline void double_computeInvPow5(const uint32_t i, uint64_t* const resul
 #endif // defined(BOOST_STRINGIFY_V0_RYU_HAS_UINT128)
 
 #endif // defined(BOOST_STRINGIFY_V0_RYU_OPTIMIZE_SIZE)
+
+BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_END;
 
 #endif // BOOST_STRINGIFY_V0_DETAIL_RYU_D2S_HPP_INCLUDED

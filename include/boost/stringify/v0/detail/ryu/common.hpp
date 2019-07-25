@@ -26,6 +26,17 @@
 #define BOOST_STRINGIFY_V0_RYU_32_BIT_PLATFORM
 #endif
 
+#define BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_BEGIN \
+    namespace boost { \
+    namespace stringify { \
+    inline namespace v0 { \
+    namespace detail { \
+    namespace ryu { \
+
+#define BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_END }}}}}
+
+BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_BEGIN;
+
 static inline uint32_t decimalLength9(const uint32_t v) {
   // Function precondition: v is not a 10-digit number.
   // (f2s: 9 digits are sufficient for round-tripping.)
@@ -95,5 +106,7 @@ static inline uint64_t double_to_bits(const double d) {
   memcpy(&bits, &d, sizeof(double));
   return bits;
 }
+
+BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_END;
 
 #endif // BOOST_STRINGIFY_V0_DETAIL_RYU_COMMON_HPP_INCLUDED

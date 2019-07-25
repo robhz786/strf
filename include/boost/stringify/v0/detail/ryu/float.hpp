@@ -35,6 +35,8 @@
 #include <boost/stringify/v0/detail/ryu/common.hpp>
 #include <boost/stringify/v0/detail/ryu/digit_table.hpp>
 
+BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_BEGIN;
+
 #define BOOST_STRINGIFY_V0_FLOAT_MANTISSA_BITS 23
 #define BOOST_STRINGIFY_V0_FLOAT_EXPONENT_BITS 8
 #define BOOST_STRINGIFY_V0_FLOAT_BIAS 127
@@ -435,5 +437,7 @@ char* f2s(float f) {
   f2s_buffered(f, result);
   return result;
 }
+
+BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_END;
 
 #endif // BOOST_STRINGIFY_V0_DETAIL_RYU_FLOAT_HPP_INCLUDED

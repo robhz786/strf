@@ -53,6 +53,8 @@
 #include <boost/stringify/v0/detail/ryu/d2s.hpp>
 #include <boost/stringify/v0/detail/ryu/d2s_intrinsics.hpp>
 
+BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_BEGIN;
+
 // We need a 64x128-bit multiplication and a subsequent 128-bit shift.
 // Multiplication:
 //   The 64-bit factor is variable and passed in, the 128-bit factor comes
@@ -629,5 +631,7 @@ char* d2s(double f) {
   d2s_buffered(f, result);
   return result;
 }
+
+BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_END;
 
 #endif // BOOST_STRINGIFY_V0_DETAIL_RYU_DOUBLE_HPP_INCLUDED
