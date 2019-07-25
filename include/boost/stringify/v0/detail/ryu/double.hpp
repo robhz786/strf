@@ -95,13 +95,13 @@ BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_BEGIN;
 #if defined(BOOST_STRINGIFY_V0_RYU_HAS_UINT128)
 
 // Best case: use 128-bit type.
-static inline uint64_t mulShift(const uint64_t m, const uint64_t* const mul, const int32_t j) {
+inline uint64_t mulShift(const uint64_t m, const uint64_t* const mul, const int32_t j) {
   const uint128_t b0 = ((uint128_t) m) * mul[0];
   const uint128_t b2 = ((uint128_t) m) * mul[1];
   return (uint64_t) (((b0 >> 64) + b2) >> (j - 64));
 }
 
-static inline uint64_t mulShiftAll(const uint64_t m, const uint64_t* const mul, const int32_t j,
+inline uint64_t mulShiftAll(const uint64_t m, const uint64_t* const mul, const int32_t j,
   uint64_t* const vp, uint64_t* const vm, const uint32_t mmShift) {
 //  m <<= 2;
 //  uint128_t b0 = ((uint128_t) m) * mul[0]; // 0
@@ -122,7 +122,7 @@ static inline uint64_t mulShiftAll(const uint64_t m, const uint64_t* const mul, 
 
 #elif defined(BOOST_STRINGIFY_V0_RYU_HAS_64_BIT_INTRINSICS)
 
-static inline uint64_t mulShift(const uint64_t m, const uint64_t* const mul, const int32_t j) {
+inline uint64_t mulShift(const uint64_t m, const uint64_t* const mul, const int32_t j) {
   // m is maximum 55 bits
   uint64_t high1;                                   // 128
   const uint64_t low1 = umul128(m, mul[1], &high1); // 64
@@ -135,7 +135,7 @@ static inline uint64_t mulShift(const uint64_t m, const uint64_t* const mul, con
   return shiftright128(sum, high1, j - 64);
 }
 
-static inline uint64_t mulShiftAll(const uint64_t m, const uint64_t* const mul, const int32_t j,
+inline uint64_t mulShiftAll(const uint64_t m, const uint64_t* const mul, const int32_t j,
   uint64_t* const vp, uint64_t* const vm, const uint32_t mmShift) {
   *vp = mulShift(4 * m + 2, mul, j);
   *vm = mulShift(4 * m - 1 - mmShift, mul, j);
@@ -144,7 +144,7 @@ static inline uint64_t mulShiftAll(const uint64_t m, const uint64_t* const mul, 
 
 #else // !defined(BOOST_STRINGIFY_V0_RYU_HAS_UINT128) && !defined(BOOST_STRINGIFY_V0_RYU_HAS_64_BIT_INTRINSICS)
 
-static inline uint64_t mulShiftAll(uint64_t m, const uint64_t* const mul, const int32_t j,
+inline uint64_t mulShiftAll(uint64_t m, const uint64_t* const mul, const int32_t j,
   uint64_t* const vp, uint64_t* const vm, const uint32_t mmShift) {
   m <<= 1;
   // m is maximum 55 bits
@@ -179,7 +179,7 @@ static inline uint64_t mulShiftAll(uint64_t m, const uint64_t* const mul, const 
 
 #endif // BOOST_STRINGIFY_V0_RYU_HAS_64_BIT_INTRINSICS
 
-static inline uint32_t decimalLength17(const uint64_t v) {
+inline uint32_t decimalLength17(const uint64_t v) {
   // This is slightly faster than a loop.
   // The average output length is 16.38 digits, so we check high-to-low.
   // Function precondition: v is not an 18, 19, or 20-digit number.
@@ -212,7 +212,7 @@ typedef struct floating_decimal_64 {
   int32_t exponent;
 } floating_decimal_64;
 
-static inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_t ieeeExponent) {
+inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_t ieeeExponent) {
   int32_t e2;
   uint64_t m2;
   if (ieeeExponent == 0) {
@@ -435,7 +435,7 @@ static inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_
   return fd;
 }
 
-static inline int to_chars(const floating_decimal_64 v, const bool sign, char* const result) {
+inline int to_chars(const floating_decimal_64 v, const bool sign, char* const result) {
   // Step 5: Print the decimal representation.
   int index = 0;
   if (sign) {
@@ -543,7 +543,7 @@ static inline int to_chars(const floating_decimal_64 v, const bool sign, char* c
   return index;
 }
 
-static inline bool d2d_small_int(const uint64_t ieeeMantissa, const uint32_t ieeeExponent,
+inline bool d2d_small_int(const uint64_t ieeeMantissa, const uint32_t ieeeExponent,
   floating_decimal_64* const v) {
   const uint64_t m2 = (1ull << BOOST_STRINGIFY_V0_RYU_DOUBLE_MANTISSA_BITS) | ieeeMantissa;
   const int32_t e2 = (int32_t) ieeeExponent - BOOST_STRINGIFY_V0_RYU_DOUBLE_BIAS - BOOST_STRINGIFY_V0_RYU_DOUBLE_MANTISSA_BITS;

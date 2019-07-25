@@ -104,7 +104,7 @@ static const uint32_t POW5_INV_OFFSETS[20] = {
 #if defined(BOOST_STRINGIFY_V0_RYU_HAS_UINT128)
 
 // Computes 5^i in the form required by Ryu, and stores it in the given pointer.
-static inline void double_computePow5(const uint32_t i, uint64_t* const result) {
+inline void double_computePow5(const uint32_t i, uint64_t* const result) {
   const uint32_t base = i / BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE;
   const uint32_t base2 = base * BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE;
   const uint32_t offset = i - base2;
@@ -124,7 +124,7 @@ static inline void double_computePow5(const uint32_t i, uint64_t* const result) 
 }
 
 // Computes 5^-i in the form required by Ryu, and stores it in the given pointer.
-static inline void double_computeInvPow5(const uint32_t i, uint64_t* const result) {
+inline void double_computeInvPow5(const uint32_t i, uint64_t* const result) {
   const uint32_t base = (i + BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE - 1) / BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE;
   const uint32_t base2 = base * BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE;
   const uint32_t offset = base2 - i;
@@ -147,7 +147,7 @@ static inline void double_computeInvPow5(const uint32_t i, uint64_t* const resul
 #else // defined(BOOST_STRINGIFY_V0_RYU_HAS_UINT128)
 
 // Computes 5^i in the form required by Ryu, and stores it in the given pointer.
-static inline void double_computePow5(const uint32_t i, uint64_t* const result) {
+inline void double_computePow5(const uint32_t i, uint64_t* const result) {
   const uint32_t base = i / BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE;
   const uint32_t base2 = base * BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE;
   const uint32_t offset = i - base2;
@@ -173,7 +173,7 @@ static inline void double_computePow5(const uint32_t i, uint64_t* const result) 
 }
 
 // Computes 5^-i in the form required by Ryu, and stores it in the given pointer.
-static inline void double_computeInvPow5(const uint32_t i, uint64_t* const result) {
+inline void double_computeInvPow5(const uint32_t i, uint64_t* const result) {
   const uint32_t base = (i + BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE - 1) / BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE;
   const uint32_t base2 = base * BOOST_STRINGIFY_V0_RYU_POW5_TABLE_SIZE;
   const uint32_t offset = base2 - i;
