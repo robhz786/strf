@@ -9,6 +9,8 @@
 #include <boost/stringify/v0/facets_pack.hpp>
 #include <boost/stringify/v0/detail/facets/numchars.hpp>
 #include <boost/stringify/v0/detail/facets/numpunct.hpp>
+#include <boost/stringify/v0/detail/ryu/double.hpp>
+#include <boost/stringify/v0/detail/ryu/float.hpp>
 #include <boost/assert.hpp>
 #include <algorithm>
 #include <cstring>
@@ -191,8 +193,8 @@ BOOST_STRINGIFY_INLINE detail::double_dec decode(float f)
         }
     }
 
-    // TODO use the non trivial algorithm
-    return {0, 0, sign, false, false};
+    auto fdec = detail::ryu::f2d(mantissa, exponent);
+    return {fdec.mantissa, fdec.exponent, sign, false, false};
 }
 
 
@@ -225,9 +227,8 @@ BOOST_STRINGIFY_INLINE detail::double_dec decode(double d)
             return {0, 0, sign, false, true};
         }
     }
-
-    // TODO use the non trivial algorithm
-    return {0, 0, sign, false, false};
+    auto ddec = detail::ryu::d2d(mantissa, exponent);
+    return {ddec.mantissa, ddec.exponent, sign, false, false};
 }
 
 #else  // ! defined(BOOST_STRINGIFY_OMIT_IMPL)
