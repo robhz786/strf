@@ -42,7 +42,7 @@ BOOST_STRINGIFY_INLINE double_dec_base trivial_float_dec(
 {
     constexpr int m_size = 23;
 
-    BOOST_ASSERT(-8 <= biased_exponent && biased_exponent <= m_size);
+    BOOST_ASSERT(-10 <= biased_exponent && biased_exponent <= m_size);
     BOOST_ASSERT((std::int32_t)k == (biased_exponent * 179 + 1850) >> 8);
     BOOST_ASSERT(0 == (ieee_mantissa & (0x7FFFFF >> k)));
 
@@ -359,6 +359,14 @@ struct decimal_float_format
 //     };
 // };
 
+inline auto make_fmt(stringify::v0::tag, float x)
+{
+    return stringify::v0::value_with_format
+        < float
+        , stringify::v0::decimal_float_format
+        , stringify::v0::empty_alignment_format >{x};
+}
+
 inline auto make_fmt(stringify::v0::tag, double x)
 {
     return stringify::v0::value_with_format
@@ -373,24 +381,18 @@ struct double_printer_data: detail::double_dec
 {
     constexpr double_printer_data(const double_printer_data&) = default;
 
-    double_printer_data(float d)
-        : double_printer_data(detail::decode(d))
+    template <typename FloatT>
+    double_printer_data
+        ( FloatT f
+        , decimal_float_format_data fmt
+        , const stringify::v0::numpunct_base* punct = nullptr )
+        :  double_printer_data(detail::decode(f), fmt, punct)
     {
     }
-    double_printer_data(float d, decimal_float_format_data fmt)
-        :  double_printer_data(detail::decode(d), fmt)
-    {
-    }
-    double_printer_data(double d)
-        : double_printer_data(detail::decode(d))
-    {
-    }
-    double_printer_data(double d, decimal_float_format_data fmt)
-        :  double_printer_data(detail::decode(d), fmt)
-    {
-    }
-    double_printer_data(detail::double_dec d);
-    double_printer_data(detail::double_dec d, decimal_float_format_data fmt);
+    double_printer_data
+        ( detail::double_dec d
+        , decimal_float_format_data fmt
+        , const stringify::v0::numpunct_base* punct = nullptr );
 
     bool showpoint;
     bool showsign;
@@ -401,30 +403,10 @@ struct double_printer_data: detail::double_dec
 
 #if !defined(BOOST_STRINGIFY_OMIT_IMPL)
 
-BOOST_STRINGIFY_INLINE double_printer_data::double_printer_data(detail::double_dec d)
-    : detail::double_dec(d)
-    , showsign(negative)
-    , extra_zeros(0)
-{
-    BOOST_ASSERT(!nan || !infinity);
-    if (nan || infinity)
-    {
-        showpoint = false;
-        sci_notation = false;
-        m10_digcount = 0;
-    }
-    else
-    {
-        m10_digcount = stringify::v0::detail::count_digits<10>(m10);
-        sci_notation = ( e10 < - static_cast<int>(m10_digcount) - 3
-                      || e10 > static_cast<int>(4 + (m10_digcount > 1)) );
-        showpoint = (sci_notation && m10_digcount > 1)
-                 || (!sci_notation && e10 < 0);
-    }
-}
-
 BOOST_STRINGIFY_INLINE double_printer_data::double_printer_data
-    ( detail::double_dec d, decimal_float_format_data fmt)
+    ( detail::double_dec d
+    , decimal_float_format_data fmt
+    , const stringify::v0::numpunct_base* punct )
     : stringify::v0::detail::double_dec(d)
     , showsign(fmt.showpos || negative)
 {
@@ -443,11 +425,28 @@ BOOST_STRINGIFY_INLINE double_printer_data::double_printer_data
         {
             case float_notation::general:
             {
-                sci_notation = (e10 > 4 + (!fmt.showpoint && m10_digcount > 1))
-                    || (e10 < -(int)m10_digcount - 2 - (fmt.showpoint || m10_digcount > 1));
+                if (punct == nullptr)
+                {
+                    sci_notation = (e10 > 4 + (!fmt.showpoint && m10_digcount > 1))
+                        || (e10 < -(int)m10_digcount - 2 - (fmt.showpoint || m10_digcount > 1));
+                }
+                else if (e10 > - (int)m10_digcount)
+                {
+                    auto sep_count = punct->thousands_sep_count(m10_digcount + e10);
+                    bool e10neg = e10 < 0;
+                    int fw = e10 * !e10neg + (fmt.showpoint || e10neg) + (int)sep_count;
+                    int sw = 4 + (e10 > 99) + (m10_digcount > 1 || fmt.showpoint);
+                    sci_notation = sw < fw;
+                }
+                else
+                {
+                    int tmp = m10_digcount + 2 + (e10 < -99)
+                        + (m10_digcount > 1 || fmt.showpoint);
+                    sci_notation = -e10 > tmp;
+                }
                 showpoint = fmt.showpoint
-                    || (sci_notation && m10_digcount > 1)
-                    || (!sci_notation && e10 < 0);
+                        || (sci_notation && m10_digcount > 1)
+                        || (!sci_notation && e10 < 0);
                 break;
             }
             case float_notation::fixed:
@@ -479,41 +478,23 @@ BOOST_STRINGIFY_INLINE double_printer_data::double_printer_data
                                           || (!sci_notation && e10 < 0);
                 xz = ((unsigned)p < m10_digcount || fmt.showpoint)
                    * (p - (int)m10_digcount);
-
-                // unsigned p = has_p * fmt.precision
-                //     + (fmt.precision == 0)
-                //     + (!has_p) * m10_digcount;
-                // extra_zeros = 0;
-                // sci_notation = ((int)m10_digcount + e10 < -4)
-                //     || (e10 - (int)m10_digcount >= p);
-                // showpoint = fmt.showpoint
-                //     || (sci_notation && p > 1)
-                //     || ( !sci_notation
-                //       && (e10 < 0 || (p > ((unsigned)e10 + m10_digcount))) );
                 break;
             }
             case float_notation::fixed:
             {
                 const int frac_digits = (e10 < 0) * -e10;
-                //bool has_p = (fmt.precision != (unsigned)-1);
-                xz = /*has_p * */ (fmt.precision - frac_digits);
+                xz = (fmt.precision - frac_digits);
                 sci_notation = false;
                 showpoint = fmt.showpoint || (fmt.precision != 0);
-                // showpoint = fmt.showpoint
-                //     || (has_p * fmt.precision != 0)
-                //     || (!has_p * frac_digits != 0)
                 break;
             }
             default:
             {
                 BOOST_ASSERT(fmt.notation == float_notation::scientific);
                 const unsigned frac_digits = m10_digcount - 1;
-                //bool has_p = (fmt.precision != (unsigned)-1);
-                xz = /*has_p * */ (fmt.precision - frac_digits);
+                xz = (fmt.precision - frac_digits);
                 sci_notation = true;
                 showpoint = fmt.showpoint || (fmt.precision != 0);
-                    // || (has_p * fmt.precision != 0)
-                    // || (!has_p * frac_digits != 0);
                 break;
             }
         }
@@ -593,7 +574,6 @@ i18n_double_printer<CharT>::i18n_double_printer
     , _chars(get_facet<stringify::v0::numchars_c<CharT, 10>, FloatT>(fp))
     , _punct(get_facet<stringify::v0::numpunct_c<10>, FloatT>(fp))
 {
-
 }
 
 template <typename CharT>
@@ -628,8 +608,8 @@ int i18n_double_printer<CharT>::width(int) const
     {
         w += _chars.fractional_digits_printwidth(_data.extra_zeros);
     }
-    unsigned seps_width = _punct.thousands_sep_count(idigcount);
-    return w + seps_width + decpoint_width;
+    unsigned seps_count = _punct.thousands_sep_count(idigcount);
+    return w + seps_count + decpoint_width;
 }
 
 template <typename CharT>
@@ -776,7 +756,7 @@ void i18n_double_printer<CharT>::write(stringify::v0::output_buffer<CharT>& ob) 
                 std::uint8_t grps_pool[std::numeric_limits<double>::max_exponent10 + 1];
                 BOOST_ASSERT(idigcount == detail::count_digits<10>(integral_part));
 
-                if (_punct.no_group_separation(_data.m10))
+                if (_punct.no_group_separation(idigcount))
                 {
                     _chars.print_integer( ob, _encoding
                                         , integral_part, idigcount );
@@ -799,11 +779,11 @@ class double_printer: public stringify::v0::printer<CharT>
 {
 public:
 
-    template <typename Fp>
+    template <typename Fpack, typename FloatT>
     double_printer
-        ( const Fp&
+        ( const Fpack&
         , stringify::v0::value_with_format
-            < double
+            < FloatT
             , stringify::v0::decimal_float_format
             , stringify::v0::empty_alignment_format > x )
             : _data(x.value(), x)
@@ -1052,19 +1032,35 @@ class fast_double_printer: public stringify::v0::printer<CharT>
 public:
 
     template <typename FPack>
+    fast_double_printer(const FPack, float f)
+        : fast_double_printer(f)
+    {
+    }
+
+    template <typename FPack>
     fast_double_printer(const FPack, double d)
         : fast_double_printer(d)
     {
     }
 
+    explicit fast_double_printer(float f)
+        : _value(decode(f))
+        , _m10_digcount(stringify::v0::detail::count_digits<10>(_value.m10))
+
+    {
+        BOOST_ASSERT(!_value.nan || !_value.infinity);
+        _sci_notation = (_value.e10 > 4 + (_m10_digcount > 1))
+            || (_value.e10 < -(int)_m10_digcount - 2 - (_m10_digcount > 1));
+    }
+ 
     explicit fast_double_printer(double d)
         : _value(decode(d))
         , _m10_digcount(stringify::v0::detail::count_digits<10>(_value.m10))
 
     {
         BOOST_ASSERT(!_value.nan || !_value.infinity);
-        _sci_notation = ( _value.e10 < - static_cast<int>(_m10_digcount) - 3
-                       || _value.e10 > static_cast<int>(4 + (_m10_digcount > 1)) );
+        _sci_notation = (_value.e10 > 4 + (_m10_digcount > 1))
+            || (_value.e10 < -(int)_m10_digcount - 2 - (_m10_digcount > 1));
     }
 
     int width(int) const override;
@@ -1303,9 +1299,23 @@ public:
         , _encoding(get_facet<stringify::v0::encoding_c<CharT>, FloatT>(fp))
         , _value(decode(d))
         , _m10_digcount(stringify::v0::detail::count_digits<10>(_value.m10))
-        , _sci_notation( _value.e10 < - static_cast<int>(_m10_digcount) - 3
-                      || _value.e10 > static_cast<int>(4 + (_m10_digcount > 1)) )
     {
+        constexpr bool showpoint = false;
+        if (_value.e10 > -(int)_m10_digcount)
+        {
+            _sep_count = _punct.thousands_sep_count((int)_m10_digcount + _value.e10);
+            bool e10neg = _value.e10 < 0;
+            int fw = _value.e10 * !e10neg  + (showpoint || e10neg) + (int)_sep_count;
+            int sw = 4 + (_value.e10 > 99) + (_m10_digcount > 1 || showpoint);
+            _sci_notation = sw < fw;
+        }
+        else
+        {
+            _sep_count = 0;
+            int tmp = _m10_digcount + 2 + (_value.e10 < -99)
+                    + (_m10_digcount > 1 || showpoint);
+            _sci_notation = -_value.e10 > tmp;
+        }
     }
 
     int width(int) const override;
@@ -1328,6 +1338,7 @@ private:
     stringify::v0::encoding<CharT> _encoding;
     const detail::double_dec _value;
     const unsigned _m10_digcount;
+    unsigned _sep_count;
     bool _sci_notation ;
 
 };
@@ -1355,7 +1366,7 @@ std::size_t fast_i18n_double_printer<CharT>::necessary_size() const
         auto s = _encoding.validate(_punct.thousands_sep());
         if (s != (std::size_t)-1)
         {
-            seps_size = s * _punct.thousands_sep_count(idigcount);
+            seps_size = s * _sep_count;
         }
     }
     if (_value.e10 < 0)
@@ -1386,6 +1397,7 @@ int fast_i18n_double_printer<CharT>::width(int) const
         return 3 + (_value.negative && _value.infinity);
     }
     constexpr unsigned decpoint_width = 1;
+    constexpr unsigned sep_width = 1;
     if (_sci_notation)
     {
         return _chars.scientific_notation_printwidth( _m10_digcount
@@ -1400,12 +1412,11 @@ int fast_i18n_double_printer<CharT>::width(int) const
         auto fdigcount = - _value.e10;
         auto iwidth = _chars.integer_printwidth(idigcount, _value.negative, false);
         auto fwidth = _chars.fractional_digits_printwidth(fdigcount);
-        unsigned seps_width = _punct.thousands_sep_count((idigcount > 0) * idigcount);
-        return iwidth + fwidth + decpoint_width + seps_width;
+        return iwidth + fwidth + decpoint_width + _sep_count * sep_width;
     }
     return _chars.integer_printwidth( _m10_digcount + _value.e10
                                     , _value.negative
-                                    , false );
+                                    , false ) + _sep_count * sep_width;
 }
 
 template <typename CharT>
@@ -1459,7 +1470,7 @@ void fast_i18n_double_printer<CharT>::write
         std::uint8_t grps_pool[std::numeric_limits<double>::max_exponent10 + 1];
         if (_value.e10 >= 0)
         {
-            if (_punct.no_group_separation(_value.m10))
+            if (_punct.no_group_separation(_m10_digcount + _value.e10))
             {
                 _chars.print_amplified_integer( ob, _encoding, _value.m10
                                               , _m10_digcount, _value.e10 );
@@ -1492,7 +1503,7 @@ void fast_i18n_double_printer<CharT>::write
                 auto idigcount = _m10_digcount - e10u;
                 BOOST_ASSERT(idigcount == detail::count_digits<10>(integral_part));
 
-                if (_punct.no_group_separation(_value.m10))
+                if (_punct.no_group_separation(_m10_digcount - e10u))
                 {
                     _chars.print_integer( ob, _encoding
                                         , integral_part, idigcount );
@@ -1564,41 +1575,26 @@ make_printer(const FPack& fp, double d)
     return {fp, d};
 }
 
-template <typename CharT, typename FPack>
+template <typename CharT, typename FPack, typename FloatT>
 inline typename std::conditional
-    < stringify::v0::detail::has_i18n<CharT, FPack, float, 10>
+    < stringify::v0::detail::has_i18n<CharT, FPack, FloatT, 10>
     , stringify::v0::detail::i18n_double_printer<CharT>
     , stringify::v0::detail::double_printer<CharT> >::type
 make_printer
     ( const FPack& fp
     , const stringify::v0::value_with_format
-            < float
+            < FloatT
             , stringify::v0::decimal_float_format
             , stringify::v0::empty_alignment_format >& x )
 {
     return {fp, x};
 }
 
-template <typename CharT, typename FPack>
-inline typename std::conditional
-    < stringify::v0::detail::has_i18n<CharT, FPack, double, 10>
-    , stringify::v0::detail::i18n_double_printer<CharT>
-    , stringify::v0::detail::double_printer<CharT> >::type
-make_printer
-    ( const FPack& fp
-    , const stringify::v0::value_with_format
-            < double
-            , stringify::v0::decimal_float_format
-            , stringify::v0::empty_alignment_format >& x )
-{
-    return {fp, x};
-}
-
-template <typename CharT, typename FPack>
+template <typename CharT, typename FPack, typename FloatT>
 inline stringify::v0::detail::fast_double_printer<CharT> make_printer
     ( const FPack&
     , const stringify::v0::value_with_format
-            < float
+            < FloatT
             , stringify::v0::decimal_float_format
             , stringify::v0::alignment_format >& x )
 {
@@ -1607,21 +1603,6 @@ inline stringify::v0::detail::fast_double_printer<CharT> make_printer
         , "Alignment formatting for floating points not supported yet. Sorry." );
     return {x.value()};
 }
-
-template <typename CharT, typename FPack>
-inline stringify::v0::detail::fast_double_printer<CharT> make_printer
-    ( const FPack&
-    , const stringify::v0::value_with_format
-            < double
-            , stringify::v0::decimal_float_format
-            , stringify::v0::alignment_format >& x )
-{
-    static_assert
-        ( ! std::is_void<FPack>::value // aways true
-        , "Alignment formatting for floating points not supported yet. Sorry." );
-    return {x.value()};
-}
-
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

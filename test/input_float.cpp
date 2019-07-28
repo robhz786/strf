@@ -2,12 +2,13 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify.hpp>
 #include <limits>
+#include <vector>
 #include "test_utils.hpp"
+#include <cstdlib>
+
 
 namespace strf = boost::stringify::v0;
-
 
 template <typename FPack>
 void basic_tests(const FPack& fp)
@@ -227,7 +228,7 @@ std::vector<double> generate_double_samples()
         for(unsigned i = 2; i <= ieee_m_size; ++i) {
             unsigned s = ieee_m_size - i;
             samples.push_back(make_double(e, 0xFFFFFFFFFFFFFull << s));
-            samples.push_back(make_double(e, 1 << s));
+            samples.push_back(make_double(e, 1ull << s));
         }
         samples.push_back(make_double(e, 1ull << (ieee_m_size - 1)));
         samples.push_back(make_double(e, 0));
@@ -245,7 +246,7 @@ std::vector<float> generate_float_samples()
     for(unsigned e = 0; e < max_normal_exp; ++e) {
         for(unsigned i = 2; i <= ieee_m_size; ++i) {
             unsigned s = ieee_m_size - i;
-            samples.push_back(make_float(e, 0x7FFFFF << s));
+            samples.push_back(make_float(e, 0x7FFFFFul << s));
             samples.push_back(make_float(e, 1 << s));
         }
         samples.push_back(make_float(e, 1 << (ieee_m_size - 1)));
@@ -269,11 +270,10 @@ int main()
     {
         auto vec = generate_double_samples();
         char buff[64];
-        double parsed;
         for (const auto d: vec)
         {
             (void) strf::write(buff) (d);
-            std::sscanf(buff, "%le", &parsed);
+            auto parsed = std::strtod(buff, nullptr);
             BOOST_TEST_EQ(parsed, d);
         }
     }
@@ -281,28 +281,18 @@ int main()
     {
         auto vec = generate_float_samples();
         char buff[64];
-        double parsed;
-        for (const auto d: vec)
+        for (const float f: vec)
         {
-            (void) strf::write(buff) (d);
-            std::sscanf(buff, "%le", &parsed);
-            BOOST_TEST_EQ(parsed, static_cast<double>(d));
+            (void) strf::write(buff) (f);
+            auto parsed = std::strtof(buff, nullptr);
+            BOOST_TEST_EQ(parsed, f);
         }
     }
     constexpr auto j = strf::join_right(20, '_');
     {
         // check whether it correctly selects the shortest representation
-/*
-1.0005e+03
-1,0,0,0.5
-
-1.00005e+04
-1,0,0,0,0.5
-
-1.000005e+05
-1,0,0,0,0,0.5
- */
         auto p = strf::monotonic_grouping<10>{1}.thousands_sep(',');
+        TEST("_______________1,0,0").facets(p) (j(100.0));
         TEST("_______________1e+03").facets(p) (j(1000.0));
         TEST("_____________1,0,0,0").facets(p) (j(strf::fixed(1000.0)));
         TEST("________1.000005e+05").facets(p) (j(100000.5));
