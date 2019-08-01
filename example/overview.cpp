@@ -402,7 +402,7 @@ void using_my_customizations()
 
     // Overriding numpunct_c<16> back to default:
     str = my::to_string
-        .facets(strf::no_grouping<16>())
+        .facets(strf::default_numpunct<16>())
         (x, " in hexadecimal is ", ~strf::hex(x));
     BOOST_ASSERT(str == "100,000,000 in hexadecimal is 0x5f5e100");
 }

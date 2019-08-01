@@ -12,7 +12,8 @@
      [[itemized_list
        [`Value` is ... (/To-do/) ]
        [All types in `Fmt...` satisfy the [link FormatterRequirements
-        Formatter] requirements.]]]]]
+        Formatter] requirements.]
+       [All types in `Fmt...` are different.]]]]]
 ]]
 ]
 [h4 Synopsis]
@@ -25,10 +26,9 @@ class value_with_format
 {
 public:
 
-    constexpr value_with_format(const value_with_format&);
-    constexpr value_with_format(value_with_format&&);
+    constexpr value_with_format(const value_with_format&) = default;
+    constexpr value_with_format(value_with_format&&) = default;
     constexpr value_with_format(const ValueType&);
-
 
     template <typename OtherValueType>
     constexpr value_with_format
@@ -55,17 +55,6 @@ public:
 
 }}}
 ``
-[itemized_list
-  [`ValueType` must be copy constructible ]
-  [Each type `Fmt` in the `Fmts...` pack has a member `fn` that is a template
-    with one template type parameter such that, given the types `T` and `U`:
-    [itemized_list
-      [`Fmt::template fn<T>` is well formed if `T` is `value_with_format<ValueType, Fmts ...>`
-        . In this case, note that `T` derives from `Fmt::template fn<T>`. ]
-      [`Fmt::template fn<T>` is default constructible, assuming it is well formed.]
-      [`Fmt::template fn<T>` can be constructed from `const Fmt::template fn<U>&`
-       , assuming both are well formed. ] ] ] ]    
-
 
 [endsect]
 

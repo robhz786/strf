@@ -65,7 +65,7 @@ public:
     {
         return min_buff_size;
     }
-    
+
     void ensure(std::size_t size_)
     {
         BOOST_ASSERT(size_ <= buffer_size());
@@ -75,7 +75,7 @@ public:
         }
         BOOST_ASSERT(size_ <= size());
     }
-    
+
     void set_encoding_error()
     {
         throw stringify::v0::encoding_failure();

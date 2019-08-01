@@ -237,18 +237,18 @@ int main()
 
 #if defined(HAS_CHARCONV)
 
-    PRINT_BENCHMARK_N(10, "std::to_chars(dest, dest_end, LONG_MAX)")
+    PRINT_BENCHMARK_N(10, "std::to_chars(dest, dest_end, LLONG_MAX)")
     {
-        std::to_chars(dest, dest_end, LONG_MAX);
-        std::to_chars(dest, dest_end, LONG_MAX - 1);
-        std::to_chars(dest, dest_end, LONG_MAX - 2);
-        std::to_chars(dest, dest_end, LONG_MAX - 3);
-        std::to_chars(dest, dest_end, LONG_MAX - 4);
-        std::to_chars(dest, dest_end, LONG_MAX - 5);
-        std::to_chars(dest, dest_end, LONG_MAX - 6);
-        std::to_chars(dest, dest_end, LONG_MAX - 7);
-        std::to_chars(dest, dest_end, LONG_MAX - 8);
-        std::to_chars(dest, dest_end, LONG_MAX - 9);
+        std::to_chars(dest, dest_end, LLONG_MAX);
+        std::to_chars(dest, dest_end, LLONG_MAX - 1);
+        std::to_chars(dest, dest_end, LLONG_MAX - 2);
+        std::to_chars(dest, dest_end, LLONG_MAX - 3);
+        std::to_chars(dest, dest_end, LLONG_MAX - 4);
+        std::to_chars(dest, dest_end, LLONG_MAX - 5);
+        std::to_chars(dest, dest_end, LLONG_MAX - 6);
+        std::to_chars(dest, dest_end, LLONG_MAX - 7);
+        std::to_chars(dest, dest_end, LLONG_MAX - 8);
+        std::to_chars(dest, dest_end, LLONG_MAX - 9);
     }
 
 #endif // defined(HAS_CHARCONV)

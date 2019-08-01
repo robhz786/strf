@@ -9,6 +9,28 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 namespace detail {
 
+inline unsigned long long pow10(unsigned n)
+{
+    static const unsigned long long p10[] =
+        { 1, 10, 100, 1000, 10000, 100000, 1000000
+        , 10000000ull
+        , 100000000ull
+        , 1000000000ull
+        , 10000000000ull
+        , 100000000000ull
+        , 1000000000000ull
+        , 10000000000000ull
+        , 100000000000000ull
+        , 1000000000000000ull
+        , 10000000000000000ull
+        , 100000000000000000ull
+        , 1000000000000000000ull
+        , 10000000000000000000ull };
+    BOOST_ASSERT(n <= 19);
+
+    return p10[n];
+};
+
 template <typename IntT, unsigned Base> struct max_num_digits_impl;
 template <typename IntT> struct max_num_digits_impl<IntT, 10>
 {

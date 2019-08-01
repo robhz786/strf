@@ -222,17 +222,6 @@ struct encoding_impl
     std::size_t replacement_char_size;
     char32_t u32equivalence_begin;
     char32_t u32equivalence_end;
-
-    std::size_t char_size(char32_t ch, stringify::v0::encoding_error err_hdl) const
-    {
-        auto s = validate(ch);
-        return s != (std::size_t)-1
-            ? s
-            : err_hdl == stringify::v0::encoding_error::replace
-            ? replacement_char_size
-            : 0 ;
-    }
-
 };
 
 } // namespace detail
@@ -362,10 +351,13 @@ public:
     {
         return _impl->validate(ch);
     }
-    char_type* encode_char(char_type* dest, char32_t ch) const
+    std::size_t char_size(char32_t ch, stringify::v0::encoding_error err_hdl) const
     {
-        auto rdest = reinterpret_cast<_impl_char_type*>(dest);
-        return reinterpret_cast<char_type*>(_impl->encode_char(rdest, ch));
+        auto size = _impl->validate(ch);
+        bool is_valid = (size != (std::size_t)-1);
+        bool shall_replace = (err_hdl == stringify::v0::encoding_error::replace);
+        return is_valid * size
+             + (!is_valid && shall_replace) * replacement_char_size();
     }
     void encode_fill
         ( stringify::v0::output_buffer<char_type>& ob
@@ -395,6 +387,40 @@ public:
     {
         return _impl->decode_single_char(ch);
     }
+    char_type* encode_char(char_type* dest, char32_t ch) const
+    {
+        auto rdest = reinterpret_cast<_impl_char_type*>(dest);
+        return reinterpret_cast<char_type*>(_impl->encode_char(rdest, ch));
+    }
+    void encode_char
+        ( stringify::v0::output_buffer<char_type>& ob
+        , char32_t ch
+        , stringify::v0::encoding_error err_hdl ) const
+    {
+        if (u32equivalence_begin() <= ch && ch < u32equivalence_end())
+        {
+            ob.ensure(1);
+            *ob.pos() = static_cast<CharT>(ch);
+            ob.advance();
+        }
+        else
+        {
+            auto s = validate(ch);
+            if(s != (std::size_t)-1)
+            {
+                ob.ensure(s);
+                ob.advance_to(this->encode_char(ob.pos(), ch));
+            }
+            else if(err_hdl == stringify::v0::encoding_error::replace)
+            {
+                this->write_replacement_char(ob);
+            }
+            else if(err_hdl == stringify::v0::encoding_error::stop)
+            {
+                ob.set_encoding_error();
+            }
+        }
+    }
     const char* name() const
     {
         return _impl->name;
@@ -414,15 +440,6 @@ public:
     char32_t u32equivalence_end() const
     {
         return _impl->u32equivalence_end;
-    }
-    std::size_t char_size(char32_t ch, stringify::v0::encoding_error err_hdl) const
-    {
-        auto s = _impl->validate(ch);
-        return s != (std::size_t)-1
-            ? s
-            : err_hdl == stringify::v0::encoding_error::replace
-            ? _impl->replacement_char_size
-            : 0 ;
     }
 
     template <typename CharT2>

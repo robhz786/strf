@@ -18,6 +18,7 @@ foreach(
   input_string
   input_char
   input_int
+  input_float
 #  input_char32
   input_facets_pack
   input_range

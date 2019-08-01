@@ -64,7 +64,7 @@ void std_streambuf_writer<CharT, Traits>::recycle()
     this->set_pos(_buff);
     auto count_inc = _out.sputn(_buff, count);
     _count += count_inc;
-    
+
     if (count != count_inc)
     {
         throw std::runtime_error("Boost.Stringify: std::basic_streambuf::sputn failed");

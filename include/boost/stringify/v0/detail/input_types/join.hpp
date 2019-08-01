@@ -454,7 +454,7 @@ make_printer
     return {fp, x};
 }
 
-inline stringify::v0::detail::join_t
+constexpr stringify::v0::detail::join_t
 join( int width = 0
     , stringify::v0::alignment align = stringify::v0::alignment::right
     , char32_t fillchar = U' '
@@ -463,32 +463,32 @@ join( int width = 0
     return {width, align, fillchar, num_leading_args};
 }
 
-inline stringify::v0::detail::join_t
+constexpr stringify::v0::detail::join_t
 join_center(int width, char32_t fillchar = U' ')
 {
     return {width, stringify::v0::alignment::center, fillchar, 0};
 }
 
-inline stringify::v0::detail::join_t
+constexpr stringify::v0::detail::join_t
 join_left(int width, char32_t fillchar = U' ')
 {
     return {width, stringify::v0::alignment::left, fillchar, 0};
 }
 
 
-inline stringify::v0::detail::join_t
+constexpr stringify::v0::detail::join_t
 join_right(int width, char32_t fillchar = U' ')
 {
     return {width, stringify::v0::alignment::right, fillchar, 0};
 }
 
-inline stringify::v0::detail::join_t
+constexpr stringify::v0::detail::join_t
 join_internal(int width, char32_t fillchar, int num_leading_args)
 {
     return {width, stringify::v0::alignment::internal, fillchar, num_leading_args};
 }
 
-inline stringify::v0::detail::join_t
+constexpr stringify::v0::detail::join_t
 join_internal(int width, int num_leading_args)
 {
     return {width, stringify::v0::alignment::internal, U' ', num_leading_args};

@@ -12,14 +12,14 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
 namespace detail {
 
-
 class monotonic_grouping_impl
 {
 public:
 
-    constexpr monotonic_grouping_impl(unsigned char groups_size)
+    constexpr monotonic_grouping_impl(std::uint8_t groups_size)
         : _groups_size(groups_size)
     {
+        BOOST_ASSERT(_groups_size != 0);
     }
 
     constexpr monotonic_grouping_impl(const monotonic_grouping_impl&) = default;
@@ -31,9 +31,9 @@ public:
             : (num_digits - 1) / _groups_size;
     }
 
-    unsigned char* get_groups
+    std::uint8_t* get_groups
         ( unsigned num_digits
-        , unsigned char* groups_array ) const;
+        , std::uint8_t* groups_array ) const;
 
 private:
 
@@ -48,6 +48,7 @@ public:
     str_grouping_impl(std::string grouping)
         : _grouping(std::move(grouping))
     {
+        BOOST_ASSERT(!_grouping.empty());
     }
 
     str_grouping_impl(const str_grouping_impl&) = default;
@@ -56,10 +57,8 @@ public:
 
     unsigned get_thousands_sep_count(unsigned num_digits) const;
 
-    unsigned char* get_groups
-        ( unsigned num_digits
-        , unsigned char* groups_array
-        ) const;
+    std::uint8_t* get_groups( unsigned num_digits
+                            , std::uint8_t* groups_array ) const;
 
 private:
 
@@ -70,36 +69,25 @@ private:
 #if defined(BOOST_STRINGIFY_SOURCE) || ! defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 BOOST_STRINGIFY_INLINE
-unsigned char* monotonic_grouping_impl::get_groups
+std::uint8_t* monotonic_grouping_impl::get_groups
     ( unsigned num_digits
-    , unsigned char* groups_array
-    ) const
+    , std::uint8_t* groups_array ) const
 {
-    if (_groups_size == 0)
-    {
-        // this branch actually should never be executed
-        BOOST_ASSERT(num_digits <= 0xFF);
-        * groups_array = static_cast<std::uint8_t>(num_digits);
-        return groups_array;
-    }
+    BOOST_ASSERT(_groups_size != 0);
     while(num_digits > _groups_size)
     {
-        *groups_array = static_cast<unsigned char>(_groups_size);
+        *groups_array = static_cast<std::uint8_t>(_groups_size);
         ++ groups_array;
         num_digits -= _groups_size;
     }
-    *groups_array = static_cast<unsigned char>(num_digits);
+    *groups_array = static_cast<std::uint8_t>(num_digits);
     return groups_array;
 }
-
 
 BOOST_STRINGIFY_INLINE
 unsigned str_grouping_impl::get_thousands_sep_count(unsigned num_digits) const
 {
-    if (_grouping.empty())
-    {
-        return 0;
-    }
+    BOOST_ASSERT(!_grouping.empty());
     unsigned count = 0;
     for(auto ch : _grouping)
     {
@@ -119,49 +107,41 @@ unsigned str_grouping_impl::get_thousands_sep_count(unsigned num_digits) const
 }
 
 
-BOOST_STRINGIFY_INLINE unsigned char* str_grouping_impl::get_groups
+BOOST_STRINGIFY_INLINE std::uint8_t* str_grouping_impl::get_groups
     ( unsigned num_digits
-    , unsigned char* groups_array
-    ) const
+    , std::uint8_t* groups_array ) const
 {
-    if (_grouping.empty())
-    {
-        // this branch actually should never be executed
-        BOOST_ASSERT(num_digits <= 0xFF);
-        *groups_array = static_cast<unsigned char>(num_digits);
-        return groups_array;
-    }
+    BOOST_ASSERT(!_grouping.empty());
     for(auto ch : _grouping)
     {
         auto group_size = static_cast<unsigned>(ch);
         if (group_size == 0)
         {
-            *groups_array = static_cast<unsigned char>(num_digits);
+            *groups_array = static_cast<std::uint8_t>(num_digits);
             return groups_array;
         }
         if (group_size < num_digits)
         {
-            *groups_array = static_cast<unsigned char>(group_size);
+            *groups_array = static_cast<std::uint8_t>(group_size);
             num_digits -= group_size;
             ++ groups_array;
         }
         else
         {
-            *groups_array = static_cast<unsigned char>(num_digits);
+            *groups_array = static_cast<std::uint8_t>(num_digits);
             return groups_array;
         }
     }
     const unsigned last_group_size = _grouping.back();
     while(num_digits > last_group_size)
     {
-        *groups_array = static_cast<unsigned char>(last_group_size);
+        *groups_array = static_cast<std::uint8_t>(last_group_size);
         ++ groups_array;
         num_digits -= last_group_size;
     }
-    *groups_array = static_cast<unsigned char>(num_digits);
+    *groups_array = static_cast<std::uint8_t>(num_digits);
     return groups_array;
 }
-
 
 #endif //defined(BOOST_STRINGIFY_SOURCE) || ! defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
@@ -174,30 +154,80 @@ class numpunct_base
 {
 public:
 
+    numpunct_base( unsigned first_group_size
+                 , char32_t dec_point = U'.'
+                 , char32_t sep = U',' )
+        : _first_group_size(first_group_size)
+        , _decimal_point(dec_point)
+        , _thousands_sep(sep)
+    {
+    }
+
     virtual ~numpunct_base()
     {
+    }
+
+    bool no_group_separation(unsigned num_digits) const
+    {
+        return num_digits <= _first_group_size;
     }
 
     /**
     Caller must ensure that groups_array has at least num_digits elements
      */
-    virtual unsigned char* groups
+    virtual unsigned groups
         ( unsigned num_digits
-        , unsigned char* groups_array ) const = 0;
+        , std::uint8_t* groups_array ) const = 0;
 
     /**
       return the number of thousands separators for such number of digits
      */
     virtual unsigned thousands_sep_count(unsigned num_digits) const = 0;
 
-    virtual char32_t thousands_sep() const = 0;
-
-    virtual char32_t decimal_point() const = 0;
-
+    char32_t thousands_sep() const
+    {
+        return _thousands_sep;
+    }
+    numpunct_base &  thousands_sep(char32_t ch) &
+    {
+        _thousands_sep = ch;
+        return *this;
+    }
+    numpunct_base && thousands_sep(char32_t ch) &&
+    {
+        _thousands_sep = ch;
+        return std::move(*this);
+    }
+    char32_t decimal_point() const
+    {
+        return _decimal_point;
+    }
+    numpunct_base &  decimal_point(char32_t ch) &
+    {
+        _decimal_point = ch;
+        return *this;
+    }
+    numpunct_base && decimal_point(char32_t ch) &&
+    {
+        _decimal_point = ch;
+        return std::move(*this);
+    }
     // int char_width() const
     // {
     //     return _char_width; // todo
     // }
+
+    using no_group_sep = std::false_type;
+
+protected:
+
+    numpunct_base(const numpunct_base&) = default;
+
+private:
+
+    unsigned _first_group_size;
+    char32_t _decimal_point;
+    char32_t _thousands_sep;
 };
 
 template <int Base>
@@ -205,129 +235,100 @@ class numpunct: public stringify::v0::numpunct_base
 {
 public:
 
+    numpunct(unsigned first_group_size)
+        : stringify::v0::numpunct_base(first_group_size)
+    {}
+
     using category = stringify::v0::numpunct_c<Base>;
+
+protected:
+
+    numpunct(const numpunct&) = default;
 };
 
-
 template <int Base>
-// made final to enable the implementation of has_i18n
 class no_grouping final: public stringify::v0::numpunct<Base>
 {
 public:
 
     no_grouping()
+        : stringify::v0::numpunct<Base>((unsigned)-1)
     {
     }
 
-    unsigned char* groups
-        ( unsigned num_digits
-        , unsigned char* groups_array ) const override
+    unsigned groups( unsigned num_digits
+                   , std::uint8_t* groups_array ) const override
     {
-        // this function actually should never be called
-        // since thousands_sep_count(num_digits) aways returns 0.
         BOOST_ASSERT(num_digits <= 0xFF);
-        *groups_array = static_cast<unsigned char>(num_digits);
-        return groups_array;
+        *groups_array = static_cast<std::uint8_t>(num_digits);
+        return 1;
     }
-
     unsigned thousands_sep_count(unsigned num_digits) const override
     {
         (void)num_digits;
         return 0;
     }
-
     no_grouping &  decimal_point(char32_t ch) &
     {
-        _decimal_point = ch;
+        numpunct_base::decimal_point(ch);
         return *this;
     }
-
     no_grouping && decimal_point(char32_t ch) &&
     {
-        _decimal_point = ch;
+        numpunct_base::decimal_point(ch);
         return std::move(*this);
     }
 
-    char32_t decimal_point() const override
-    {
-        return _decimal_point;
-    }
-
-    char32_t thousands_sep() const override
-    {
-        return ',';
-    }
-
-private:
-
-    char32_t _decimal_point = U'.';
+    using no_group_sep = std::true_type;
 };
-
 
 template <int Base>
 class monotonic_grouping: public stringify::v0::numpunct<Base>
 {
 public:
 
-    constexpr monotonic_grouping(unsigned char groups_size)
-        : impl(groups_size)
+    constexpr monotonic_grouping(std::uint8_t groups_size)
+        : stringify::v0::numpunct<Base>(groups_size)
+        , _impl(groups_size)
     {
     }
 
     constexpr monotonic_grouping(const monotonic_grouping&) = default;
 
-    unsigned char* groups
-        ( unsigned num_digits
-        , unsigned char* groups_array
-        ) const override
+    unsigned groups( unsigned num_digits
+                   , std::uint8_t* groups_array ) const override
     {
-        return impl.get_groups(num_digits, groups_array);
+        auto s = _impl.get_groups(num_digits, groups_array) - groups_array;
+        return 1 + static_cast<unsigned>(s);
     }
-
     unsigned thousands_sep_count(unsigned num_digits) const override
     {
-        return impl.get_thousands_sep_count(num_digits);
+        return _impl.get_thousands_sep_count(num_digits);
     }
-
-    char32_t thousands_sep() const override
-    {
-        return _thousands_sep;
-    }
-
-    char32_t decimal_point() const override
-    {
-        return _decimal_point;
-    }
-
     monotonic_grouping &  thousands_sep(char32_t ch) &
     {
-        _thousands_sep = ch;
+        numpunct_base::thousands_sep(ch);
         return *this;
     }
-
     monotonic_grouping && thousands_sep(char32_t ch) &&
     {
-        _thousands_sep = ch;
+        numpunct_base::thousands_sep(ch);
         return std::move(*this);
     }
-
     monotonic_grouping &  decimal_point(char32_t ch) &
     {
-        _decimal_point = ch;
+        numpunct_base::decimal_point(ch);
         return *this;
     }
-
     monotonic_grouping && decimal_point(char32_t ch) &&
     {
-        _decimal_point = ch;
+        numpunct_base::decimal_point(ch);
         return std::move(*this);
     }
 
 private:
 
-    stringify::v0::detail::monotonic_grouping_impl impl;
-    char32_t _thousands_sep = U',';
-    char32_t _decimal_point = U'.';
+    stringify::v0::detail::monotonic_grouping_impl _impl;
 };
 
 
@@ -337,7 +338,11 @@ class str_grouping: public stringify::v0::numpunct<Base>
 public:
 
     str_grouping(std::string grouping)
-        : _impl(grouping)
+        : stringify::v0::numpunct<Base>
+            ( grouping.empty() || grouping.front() == '\0'
+            ? (unsigned)-1
+            : grouping.front() )
+        , _impl(grouping)
     {
     }
 
@@ -345,59 +350,74 @@ public:
 
     str_grouping(str_grouping&& other) = default;
 
-    unsigned char* groups
-        ( unsigned num_digits
-        , unsigned char* groups_array ) const override
+    unsigned groups( unsigned num_digits
+                   , std::uint8_t* groups_array ) const override
     {
-        return _impl.get_groups(num_digits, groups_array);
+        auto s = _impl.get_groups(num_digits, groups_array) - groups_array;
+        return 1 + static_cast<unsigned>(s);
     }
-
     unsigned thousands_sep_count(unsigned num_digits) const override
     {
         return _impl.get_thousands_sep_count(num_digits);
     }
-
-    char32_t thousands_sep() const override
-    {
-        return _thousands_sep;
-    }
-
-    char32_t decimal_point() const override
-    {
-        return _decimal_point;
-    }
-
     str_grouping &  thousands_sep(char32_t ch) &
     {
-        _thousands_sep = ch;
+        numpunct_base::thousands_sep(ch);
         return *this;
     }
-
     str_grouping && thousands_sep(char32_t ch) &&
     {
-        _thousands_sep = ch;
+        numpunct_base::thousands_sep(ch);
         return std::move(*this);
     }
-
     str_grouping &  decimal_point(char32_t ch) &
     {
-        _decimal_point = ch;
+        numpunct_base::decimal_point(ch);
         return *this;
     }
-
     str_grouping && decimal_point(char32_t ch) &&
     {
-        _decimal_point = ch;
+        numpunct_base::decimal_point(ch);
         return std::move(*this);
     }
 
 private:
 
     stringify::v0::detail::str_grouping_impl _impl;
-    char32_t _thousands_sep = U',';
-    char32_t _decimal_point = U'.';
 };
 
+template <int Base>
+// made final to enable the implementation of has_i18n
+class default_numpunct final: public stringify::v0::numpunct<Base>
+{
+public:
+
+    default_numpunct()
+        : stringify::v0::numpunct<Base>((unsigned)-1)
+    {}
+
+    unsigned groups( unsigned num_digits
+                   , std::uint8_t* groups_array ) const override
+    {
+        BOOST_ASSERT(num_digits <= 0xFF);
+        *groups_array = static_cast<std::uint8_t>(num_digits);
+        return 1;
+    }
+    unsigned thousands_sep_count(unsigned num_digits) const override
+    {
+        (void)num_digits;
+        return 0;
+    }
+    char32_t thousands_sep() const
+    {
+        return U',';
+    }
+    char32_t decimal_point() const
+    {
+        return U'.';
+    }
+    using no_group_sep = std::true_type;
+};
 
 template <int Base> struct numpunct_c
 {
@@ -405,12 +425,25 @@ template <int Base> struct numpunct_c
 
     constexpr static int base = Base;
 
-    static const stringify::v0::no_grouping<base>& get_default()
+    static const stringify::v0::default_numpunct<base>& get_default()
     {
-        static const stringify::v0::no_grouping<base> x{};
+        static const stringify::v0::default_numpunct<base> x{};
         return x;
     }
 };
+
+namespace detail {
+
+template <int Base>
+std::true_type has_no_grouping(const stringify::v0::no_grouping<Base>&);
+
+template <int Base>
+std::true_type has_no_grouping(const stringify::v0::default_numpunct<Base>&);
+
+template <int Base>
+std::false_type has_no_grouping(const stringify::v0::numpunct<Base>&);
+
+} // namespace detail
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

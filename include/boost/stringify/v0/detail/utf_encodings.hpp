@@ -650,7 +650,10 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::uint8_t* utf8_encode_char
         dest[3] = static_cast<std::uint8_t>(0x80 |  (ch &     0x3F));
         return dest + 4;
     }
-    return dest;
+    dest[0] = 0xEF;
+    dest[1] = 0xBF;
+    dest[2] = 0xBD;
+    return dest + 3;
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE void utf32_to_utf8_transcode
@@ -1062,7 +1065,8 @@ BOOST_STRINGIFY_STATIC_LINKAGE char16_t* utf16_encode_char
         dest[1] = static_cast<char16_t>(0xDC00 +  (sub_codepoint &  0x3FF));
         return dest + 2;
     }
-    return dest;
+    *dest = 0xFFFD;
+    return dest + 1;
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE void utf16_encode_fill

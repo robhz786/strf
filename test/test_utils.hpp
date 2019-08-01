@@ -99,9 +99,12 @@ template <typename CharOut>
 void input_tester<CharOut>::reserve(std::size_t size)
 {
     _reserved_size = size;
-    _result.resize(size, CharOut{'#'});
-    this->set_pos(&*_result.begin());
-    this->set_end(&*_result.begin() + size);
+    if (size != 0)
+    {
+        _result.resize(size, CharOut{'#'});
+        this->set_pos(&*_result.begin());
+        this->set_end(&*_result.begin() + size);
+    }
 }
 
 template <typename CharOut>
@@ -110,8 +113,12 @@ void input_tester<CharOut>::recycle()
     _test_failure(" output_buffer::recycle() called "
                   "( return of printer::necessary_size() too small ).\n");
 
-    std::size_t previous_size = this->pos() - &*_result.begin();
-    _result.resize(previous_size);
+    std::size_t previous_size = 0;
+    if (this->pos() != nullptr)
+    {
+       previous_size = this->pos() - &*_result.begin();
+       _result.resize(previous_size);
+    }
     _result.append(boost::stringify::v0::min_buff_size, CharOut{'#'});
     this->set_pos(&*_result.begin() + previous_size);
     this->set_end(&*_result.begin() + _result.size());
@@ -126,14 +133,14 @@ void input_tester<CharOut>::finish()
     {
         namespace strf = boost::stringify::v0;
 
-        _test_failure( "Expected: \"", strf::cv(_expected), "\"\n"
-                     , "Obtained: \"", strf::cv(_result), "\"\n" );
+        _test_failure( "\n expected: \"", strf::cv(_expected), '\"'
+                     , "\n obtained: \"", strf::cv(_result), "\"\n" );
 
     }
     if(_wrongly_reserved())
     {
-        _test_failure( "Reserved size  : ", _reserved_size, '\n'
-                     , "Necessary size : ", _result.length(), '\n' );
+        _test_failure( "\n reserved size  : ", _reserved_size
+                     , "\n necessary size : ", _result.length(), '\n' );
     }
 
     if (_test_failed)

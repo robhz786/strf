@@ -28,19 +28,15 @@ public:
         : _chars(get_facet<stringify::v0::numchars_c<CharT, 10>, IntT>(fp))
         , _punct(get_facet<stringify::v0::numpunct_c<10>, IntT>(fp))
         , _encoding(get_facet<stringify::v0::encoding_c<CharT>, IntT>(fp))
-        , _digcount(stringify::v0::detail::count_digits<10>(value))
     {
-        if (value < 0)
-        {
-            _uvalue = stringify::v0::detail::unsigned_abs(value);
-            _negative = true;
-        }
-        else
-        {
-            _uvalue = value;
-            _negative = false;
-        }
-        _sepcount = _punct.thousands_sep_count(_digcount);
+        using unsigned_IntT = typename std::make_unsigned<IntT>::type;
+        unsigned_IntT uvalue = 1 + unsigned_IntT(-(value +1));
+        _negative = value < 0;
+        _uvalue = _negative * uvalue + ! _negative * value;
+        _digcount = stringify::v0::detail::count_digits<10>(_uvalue);
+        _sepcount = ( _punct.no_group_separation(_digcount)
+                    ? 0
+                    : _punct.thousands_sep_count(_digcount) );
     }
 
     std::size_t necessary_size() const override;
@@ -65,7 +61,8 @@ private:
 template <typename CharT>
 std::size_t i18n_int_printer<CharT>::necessary_size() const
 {
-    auto size = _chars.size(_encoding, _digcount, _negative, false, false);
+    auto size = _chars.integer_printsize
+        ( _encoding, _digcount, _negative, false );
     if (_sepcount != 0)
     {
         auto sepsize = _encoding.validate(_punct.thousands_sep());
@@ -80,7 +77,7 @@ std::size_t i18n_int_printer<CharT>::necessary_size() const
 template <typename CharT>
 int i18n_int_printer<CharT>::width(int) const
 {
-    return _sepcount + (_digcount + _negative) * _chars.char_width();
+    return _sepcount + _chars.integer_printwidth(_digcount, _negative, false);
 }
 
 template <typename CharT>
@@ -96,7 +93,7 @@ void i18n_int_printer<CharT>::write(stringify::v0::output_buffer<CharT>& ob) con
     }
     else
     {
-        _chars.print_digits(ob, _encoding, _uvalue, _digcount);
+        _chars.print_integer(ob, _encoding, _uvalue, _digcount);
     }
 }
 
@@ -107,11 +104,8 @@ void i18n_int_printer<CharT>::_write_with_punct
     constexpr unsigned max_digits
         = stringify::v0::detail::max_num_digits<decltype(_uvalue), 10>;
     unsigned char groups[max_digits];
-    auto g = _punct.groups(_digcount, groups);
-    unsigned num_groups = static_cast<unsigned>((g - groups) + 1);
-    _chars.print_digits( ob, _encoding, _uvalue, groups
-                       , _punct.thousands_sep()
-                       , _digcount, num_groups );
+    _chars.print_integer( ob, _encoding, _punct, groups
+                        , _uvalue, _digcount );
 }
 
 
@@ -123,20 +117,11 @@ public:
     template <typename IntT>
     fast_int_printer(IntT value)
     {
+        _negative = value < 0;
         using unsigned_IntT = typename std::make_unsigned<IntT>::type;
-        if (value < 0)
-        {
-            unsigned_IntT uvalue = stringify::v0::detail::unsigned_abs(value);
-            _digcount = stringify::v0::detail::count_digits<10>(uvalue);
-            _uvalue = uvalue;
-            _negative = true;
-        }
-        else
-        {
-            _digcount = stringify::v0::detail::count_digits<10>(value);
-            _uvalue = value;
-            _negative = false;
-        }
+        unsigned_IntT uvalue = 1 + unsigned_IntT(-(value +1));
+        _uvalue = _negative * uvalue + ! _negative * value;
+        _digcount = stringify::v0::detail::count_digits<10>(_uvalue);
     }
 
     template <typename FP, typename IntT>
@@ -176,49 +161,13 @@ void fast_int_printer<CharT>::write
 {
     unsigned size = _digcount + _negative;
     ob.ensure(size);
-    ob.advance(size);
-    CharT* it = write_int_dec_txtdigits_backwards(_uvalue, ob.pos());
+    CharT* it = write_int_dec_txtdigits_backwards(_uvalue, ob.pos() + size);
     if (_negative)
     {
         it[-1] = '-';
     }
+    ob.advance(size);
 }
-
-
-template <typename CharT, typename FPack, typename IntT, unsigned Base>
-class has_i18n_impl
-{
-public:
-
-    static std::true_type  test_numchars
-        ( const stringify::v0::numchars<CharT>& );
-    static std::false_type test_numchars
-        ( const stringify::v0::default_numchars<CharT, Base>& );
-
-    static std::true_type  test_numpunct(const stringify::v0::numpunct_base&);
-    static std::false_type test_numpunct(const stringify::v0::no_grouping<Base>&);
-
-    static const FPack& fp();
-
-    using has_numchars_type = decltype
-        ( test_numchars
-            ( get_facet<stringify::v0::numchars_c<CharT, Base>, IntT>(fp())) );
-
-    using has_numpunct_type = decltype
-        ( test_numpunct
-            ( get_facet< stringify::v0::numpunct_c<Base>, IntT >(fp())) );
-
-public:
-
-    static constexpr bool has_i18n
-        = has_numchars_type::value || has_numpunct_type::value;
-};
-
-template <typename CharT, typename FPack, typename IntT, unsigned Base>
-constexpr bool has_i18n = has_i18n_impl<CharT, FPack, IntT, Base>::has_i18n;
-
-static_assert(has_i18n<char, decltype(pack()), int, 10> == false, "");
-static_assert(has_i18n<char, decltype(pack(monotonic_grouping<10>(3))), int, 10> == true, "");
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
@@ -239,11 +188,45 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_int_printer<wchar_t>;
 
 #endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
+template <typename CharT, typename FPack, typename IntT, unsigned Base>
+class has_i18n_int_impl
+{
+public:
+
+    static std::true_type  test_numchars
+        ( const stringify::v0::numchars<CharT>& );
+    static std::false_type test_numchars
+        ( const stringify::v0::default_numchars<CharT, Base>& );
+
+    static std::true_type  test_numpunct(const stringify::v0::numpunct_base&);
+    static std::false_type test_numpunct(const stringify::v0::default_numpunct<Base>&);
+    static std::false_type test_numpunct(const stringify::v0::no_grouping<Base>&);
+
+    static const FPack& fp();
+
+    using has_numchars_type = decltype
+        ( test_numchars
+            ( get_facet<stringify::v0::numchars_c<CharT, Base>, IntT>(fp())) );
+
+    using has_numpunct_type = decltype
+        ( test_numpunct
+            ( get_facet< stringify::v0::numpunct_c<Base>, IntT >(fp())) );
+
+public:
+
+    static constexpr bool has_i18n
+        = has_numchars_type::value || has_numpunct_type::value;
+};
+
+template <typename CharT, typename FPack, typename IntT, unsigned Base>
+constexpr bool has_i18n_int = has_i18n_int_impl<CharT, FPack, IntT, Base>::has_i18n;
+
+
 } // namespace detail
 
 template <typename CharT, typename FPack>
 inline typename std::conditional
-    < stringify::v0::detail::has_i18n<CharT, FPack, short, 10>
+    < stringify::v0::detail::has_i18n_int<CharT, FPack, short, 10>
     , stringify::v0::detail::i18n_int_printer<CharT>
     , stringify::v0::detail::fast_int_printer<CharT> >::type
 make_printer(const FPack& fp, short x)
@@ -253,7 +236,7 @@ make_printer(const FPack& fp, short x)
 
 template <typename CharT, typename FPack>
 inline typename std::conditional
-    < stringify::v0::detail::has_i18n<CharT, FPack, int, 10>
+    < stringify::v0::detail::has_i18n_int<CharT, FPack, int, 10>
     , stringify::v0::detail::i18n_int_printer<CharT>
     , stringify::v0::detail::fast_int_printer<CharT> >::type
 make_printer(const FPack& fp, int x)
@@ -263,7 +246,7 @@ make_printer(const FPack& fp, int x)
 
 template <typename CharT, typename FPack>
 inline typename std::conditional
-    < stringify::v0::detail::has_i18n<CharT, FPack, long, 10>
+    < stringify::v0::detail::has_i18n_int<CharT, FPack, long, 10>
     , stringify::v0::detail::i18n_int_printer<CharT>
     , stringify::v0::detail::fast_int_printer<CharT> >::type
 make_printer(const FPack& fp, long x)
@@ -273,7 +256,7 @@ make_printer(const FPack& fp, long x)
 
 template <typename CharT, typename FPack>
 inline typename std::conditional
-    < stringify::v0::detail::has_i18n<CharT, FPack, long long, 10>
+    < stringify::v0::detail::has_i18n_int<CharT, FPack, long long, 10>
     , stringify::v0::detail::i18n_int_printer<CharT>
     , stringify::v0::detail::fast_int_printer<CharT> >::type
 make_printer(const FPack& fp, long long x)
@@ -283,7 +266,7 @@ make_printer(const FPack& fp, long long x)
 
 template <typename CharT, typename FPack>
 inline typename std::conditional
-    < stringify::v0::detail::has_i18n<CharT, FPack, unsigned short, 10>
+    < stringify::v0::detail::has_i18n_int<CharT, FPack, unsigned short, 10>
     , stringify::v0::detail::i18n_int_printer<CharT>
     , stringify::v0::detail::fast_int_printer<CharT> >::type
 make_printer(const FPack& fp, unsigned short x)
@@ -293,7 +276,7 @@ make_printer(const FPack& fp, unsigned short x)
 
 template <typename CharT, typename FPack>
 inline typename std::conditional
-    < stringify::v0::detail::has_i18n<CharT, FPack, unsigned int, 10>
+    < stringify::v0::detail::has_i18n_int<CharT, FPack, unsigned int, 10>
     , stringify::v0::detail::i18n_int_printer<CharT>
     , stringify::v0::detail::fast_int_printer<CharT> >::type
 make_printer(const FPack& fp, unsigned int x)
@@ -303,7 +286,7 @@ make_printer(const FPack& fp, unsigned int x)
 
 template <typename CharT, typename FPack>
 inline typename std::conditional
-    < stringify::v0::detail::has_i18n<CharT, FPack, unsigned long, 10>
+    < stringify::v0::detail::has_i18n_int<CharT, FPack, unsigned long, 10>
     , stringify::v0::detail::i18n_int_printer<CharT>
     , stringify::v0::detail::fast_int_printer<CharT> >::type
 make_printer(const FPack& fp, unsigned long x)
@@ -313,7 +296,7 @@ make_printer(const FPack& fp, unsigned long x)
 
 template <typename CharT, typename FPack>
 inline typename std::conditional
-    < stringify::v0::detail::has_i18n<CharT, FPack, unsigned long long, 10>
+    < stringify::v0::detail::has_i18n_int<CharT, FPack, unsigned long long, 10>
     , stringify::v0::detail::i18n_int_printer<CharT>
     , stringify::v0::detail::fast_int_printer<CharT> >::type
 make_printer(const FPack& fp, unsigned long long x)
