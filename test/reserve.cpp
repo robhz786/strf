@@ -9,15 +9,15 @@
 
 namespace strf = boost::stringify::v0;
 
-class reservation_tester : public strf::output_buffer<char>
+class reservation_tester : public boost::basic_outbuf<char>
 {
-    constexpr static std::size_t _buff_size = strf::min_buff_size;
+    constexpr static std::size_t _buff_size = boost::min_size_after_recycle<char>();
     char _buff[_buff_size];
 
 public:
 
     reservation_tester()
-        : output_buffer<char>{ _buff, _buff + _buff_size }
+        : boost::basic_outbuf<char>{ _buff, _buff + _buff_size }
         , _buff{0}
     {
     }

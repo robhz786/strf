@@ -90,11 +90,15 @@ void samples()
 ```
 
 # Installation
-You can either use it as a header-only library or as a static library. In any case, you first need to have the Boost installed. It's enough to simply download and unpack the [tarball](https://www.boost.org/users/download/). After this, in the command line interface, inside the unpacked directory &#x2014; which is commonly referead as the _boost root directory_ &#x2014; run the following commands according to your operating system:
+
+Stringify depends on [Boost](https://www.boost.org) and on [Outbuf](https://github.com/robhz786/outbuf/) libraries.
+In order to install Boost, it's enough to simply download and unpack the [tarball](https://www.boost.org/users/download/).
+After this, in the command line interface, inside the unpacked directory &#x2014; which is commonly referead as the _boost root directory_ &#x2014; run the following commands according to your operating system:
 
 On Windows:
 ```
 cd libs
+git clone https://github.com/robhz786/outbuf/
 git clone https://github.com/robhz786/stringify/
 cd ..
 .\bootstrap
@@ -104,15 +108,15 @@ cd ..
 On POSIX-like operating system:
 ```
 cd libs
+git clone https://github.com/robhz786/outbuf/
 git clone https://github.com/robhz786/stringify/
 cd ..
 ./bootstrap.sh
 ./b2 headers
 ```
-
 Now just specify the _boost root directory_ as an include path to your compiler, and you are ready to use Stringify as a header only library.
 
-But if you want to use it as a static library instead &#x2014; which is a good idea since it dramatically reduces the code bloat &#x2014; the code that uses the library must have the macro `BOOST_STRINGIFY_SEPARATE_COMPILATION` defined. And in order to build the library, there are three ways:
+If you want to use it as a static library the code that uses the library must have the macro `BOOST_STRINGIFY_SEPARATE_COMPILATION` defined. And in order to build the library, there are three ways:
 
 ##### Option 1: Using Boost.Build system
 In the command line interface, in the _boost root directory_, run the command:

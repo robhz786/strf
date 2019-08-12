@@ -24,10 +24,6 @@ foreach(
   input_range
   numpunct
   join
-  output_string
-  output_char_ptr
-  output_streambuf
-  output_FILE
   facets_pack_merge
   facets_pack
   reserve

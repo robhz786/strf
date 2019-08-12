@@ -136,19 +136,19 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(strf::output_buffer<CharT>& ob) const override;
+    void write(boost::basic_outbuf<CharT>& ob) const override;
 
 private:
 
-    void _write_single_line(strf::output_buffer<CharT>& ob) const;
+    void _write_single_line(boost::basic_outbuf<CharT>& ob) const;
 
-    void _encode_all_data_in_this_line(strf::output_buffer<CharT>& ob) const;
+    void _encode_all_data_in_this_line(boost::basic_outbuf<CharT>& ob) const;
 
-    void _write_multiline(strf::output_buffer<CharT>& ob) const;
+    void _write_multiline(boost::basic_outbuf<CharT>& ob) const;
 
-    void _write_identation(strf::output_buffer<CharT>& ob) const;
+    void _write_identation(boost::basic_outbuf<CharT>& ob) const;
 
-    void _write_end_of_line(strf::output_buffer<CharT>& ob) const;
+    void _write_end_of_line(boost::basic_outbuf<CharT>& ob) const;
 
     void _encode_3bytes
         ( CharT* dest
@@ -194,7 +194,7 @@ std::size_t base64_printer<CharT>::necessary_size() const
 //[ base64_printer__write
 
 template <typename CharT>
-void base64_printer<CharT>::write(strf::output_buffer<CharT>& ob) const
+void base64_printer<CharT>::write(boost::basic_outbuf<CharT>& ob) const
 {
     if (_facet.single_line())
     {
@@ -207,14 +207,14 @@ void base64_printer<CharT>::write(strf::output_buffer<CharT>& ob) const
 }
 
 template <typename CharT>
-void base64_printer<CharT>::_write_single_line(strf::output_buffer<CharT>& ob) const
+void base64_printer<CharT>::_write_single_line(boost::basic_outbuf<CharT>& ob) const
 {
     _write_identation(ob);
     _encode_all_data_in_this_line(ob);
 }
 
 template <typename CharT>
-void base64_printer<CharT>::_write_identation(strf::output_buffer<CharT>& ob) const
+void base64_printer<CharT>::_write_identation(boost::basic_outbuf<CharT>& ob) const
 {
     using traits = std::char_traits<CharT>;
     std::size_t count = _fmt.indentation();
@@ -235,7 +235,7 @@ void base64_printer<CharT>::_write_identation(strf::output_buffer<CharT>& ob) co
 }
 
 template <typename CharT>
-void base64_printer<CharT>::_encode_all_data_in_this_line(strf::output_buffer<CharT>& ob) const
+void base64_printer<CharT>::_encode_all_data_in_this_line(boost::basic_outbuf<CharT>& ob) const
 {
     auto data_it = static_cast<const std::uint8_t*>(_fmt.value().bytes);
     for ( std::ptrdiff_t count = _fmt.value().num_bytes
@@ -281,7 +281,7 @@ CharT base64_printer<CharT>::_encode(std::uint8_t hextet) const
 //]
 
 template <typename CharT>
-void base64_printer<CharT>::_write_multiline(strf::output_buffer<CharT>& ob) const
+void base64_printer<CharT>::_write_multiline(boost::basic_outbuf<CharT>& ob) const
 {
     _write_identation(ob);
 
@@ -326,7 +326,7 @@ void base64_printer<CharT>::_write_multiline(strf::output_buffer<CharT>& ob) con
 }
 
 template <typename CharT>
-void base64_printer<CharT>::_write_end_of_line(strf::output_buffer<CharT>& ob) const
+void base64_printer<CharT>::_write_end_of_line(boost::basic_outbuf<CharT>& ob) const
 {
     ob.ensure(2);
     ob.pos()[0] = _facet.eol[0];

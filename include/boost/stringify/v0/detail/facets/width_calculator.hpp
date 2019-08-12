@@ -23,12 +23,12 @@ enum class width_calculation_type : std::size_t
 
 namespace detail {
 
-class width_accumulator: public stringify::v0::output_buffer<char32_t>
+class width_accumulator: public boost::basic_outbuf<char32_t>
 {
 public:
 
     width_accumulator(width_calc_func func, int limit)
-        : stringify::v0::output_buffer<char32_t>(_buff, _buff + _buff_size)
+        : boost::basic_outbuf<char32_t>(_buff, _buff + _buff_size)
         , _func(func)
         , _limit(limit)
     {
@@ -59,15 +59,20 @@ private:
 
 BOOST_STRINGIFY_INLINE void width_accumulator::recycle()
 {
-    if (_sum < _limit)
+    auto p = this->pos();
+    this->set_pos(_buff);
+    if (this->good())
     {
-        _sum += _func(_limit - _sum, _buff, this->pos());
-        this->set_pos(_buff);
+        try
+        {
+            _sum += _func(_limit - _sum, _buff, p);
+            this->set_good(_sum < _limit);
+        }
+        catch(...)
+        {
+            this->set_good(false);
+        }
     }
-
-    // todo: when P0709 ( zero overhead exception )
-    // is on, throw if _sum == _limit and catch
-    // in width_calculator::witdh
 }
 
 #endif // ! defined(BOOST_STRINGIFY_OMIT_IMPL)

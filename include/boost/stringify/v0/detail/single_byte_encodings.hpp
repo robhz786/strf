@@ -10,14 +10,6 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-#define BOOST_STRINGIFY_CHECK_DEST     \
-    if (dest_it == dest_end) {         \
-        ob.advance_to(dest_it);        \
-        ob.recycle();                  \
-        dest_it = ob.pos();            \
-        dest_end = ob.end();           \
-    }
-
 namespace detail {
 
 template<size_t SIZE, class T>
@@ -56,21 +48,21 @@ template <class Impl>
 struct single_byte_encoding
 {
     static void to_utf32
-        ( stringify::v0::output_buffer_base<char32_t>& ob
+        ( boost::underlying_outbuf<4>& ob
         , const std::uint8_t* src
         , const std::uint8_t* src_end
         , stringify::v0::encoding_error err_hdl
         , stringify::v0::surrogate_policy allow_surr );
 
     static void from_utf32
-        ( stringify::v0::output_buffer_base<std::uint8_t>& ob
+        ( boost::underlying_outbuf<1>& ob
         , const char32_t* src
         , const char32_t* src_end
         , stringify::v0::encoding_error err_hdl
         , stringify::v0::surrogate_policy allow_surr );
 
     static void sanitize
-        ( stringify::v0::output_buffer_base<std::uint8_t>& ob
+        ( boost::underlying_outbuf<1>& ob
         , const std::uint8_t* src
         , const std::uint8_t* src_end
         , stringify::v0::encoding_error err_hdl
@@ -79,7 +71,7 @@ struct single_byte_encoding
     static std::uint8_t* encode_char(std::uint8_t* dest, char32_t ch);
 
     static void encode_fill
-        ( stringify::v0::output_buffer_base<std::uint8_t>& ob
+        ( boost::underlying_outbuf<1>& ob
         , std::size_t count
         , char32_t ch
         , stringify::v0::encoding_error err_hdl
@@ -98,7 +90,7 @@ struct single_byte_encoding
     static std::size_t replacement_char_size();
 
     static void write_replacement_char
-        ( stringify::v0::output_buffer_base<std::uint8_t>& ob );
+        ( boost::underlying_outbuf<1>& ob );
 
     static std::size_t validate(char32_t ch);
 };
@@ -116,7 +108,7 @@ std::size_t single_byte_encoding<Impl>::codepoints_count
 
 template <class Impl>
 void single_byte_encoding<Impl>::to_utf32
-    ( stringify::v0::output_buffer_base<char32_t>& ob
+    ( boost::underlying_outbuf<4>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -135,7 +127,7 @@ void single_byte_encoding<Impl>::to_utf32
             {
                 case stringify::v0::encoding_error::stop:
                     ob.advance_to(dest_it);
-                    ob.set_encoding_error();
+                    throw_encoding_failure();
                     break;
                 case stringify::v0::encoding_error::replace:
                     ch32 = 0xFFFD;
@@ -154,7 +146,7 @@ void single_byte_encoding<Impl>::to_utf32
 
 template <class Impl>
 void single_byte_encoding<Impl>::sanitize
-    ( stringify::v0::output_buffer_base<std::uint8_t>& ob
+    ( boost::underlying_outbuf<1>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -177,7 +169,7 @@ void single_byte_encoding<Impl>::sanitize
             {
                 case stringify::v0::encoding_error::stop:
                     ob.advance_to(dest_it);
-                    ob.set_encoding_error();
+                    throw_encoding_failure();
                     break;
                 case stringify::v0::encoding_error::replace:
                     ch_out = '?';
@@ -197,7 +189,7 @@ void single_byte_encoding<Impl>::sanitize
 
 template <class Impl>
 void single_byte_encoding<Impl>::write_replacement_char
-    ( stringify::v0::output_buffer_base<std::uint8_t>& ob )
+    ( boost::underlying_outbuf<1>& ob )
 {
     ob.ensure(1);
     *ob.pos() = '?';
@@ -229,7 +221,7 @@ std::uint8_t* single_byte_encoding<Impl>::encode_char
 
 template <class Impl>
 void single_byte_encoding<Impl>::encode_fill
-    ( stringify::v0::output_buffer_base<std::uint8_t>& ob
+    ( boost::underlying_outbuf<1>& ob
     , std::size_t count
     , char32_t ch
     , stringify::v0::encoding_error err_hdl
@@ -244,7 +236,7 @@ void single_byte_encoding<Impl>::encode_fill
                 ch2 = '?';
                 break;
             case stringify::v0::encoding_error::stop:
-                ob.set_encoding_error();
+                throw_encoding_failure();
                 return;
             default:
                 BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
@@ -269,7 +261,7 @@ void single_byte_encoding<Impl>::encode_fill
 
 template <class Impl>
 void single_byte_encoding<Impl>::from_utf32
-    ( stringify::v0::output_buffer_base<std::uint8_t>& ob
+    ( boost::underlying_outbuf<1>& ob
     , const char32_t* src
     , const char32_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -287,7 +279,7 @@ void single_byte_encoding<Impl>::from_utf32
             {
                 case stringify::v0::encoding_error::stop:
                     ob.advance_to(dest_it);
-                    ob.set_encoding_error();
+                    throw_encoding_failure();
                     return;
 
                 case stringify::v0::encoding_error::replace:

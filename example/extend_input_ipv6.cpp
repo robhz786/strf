@@ -154,7 +154,7 @@ private:
 
   /*<< `printer_impl<CharT, FPack, Arg>` is equivalent to
      `decltype(make_printer(ob, fp, std::declval<Arg>())`
-      where the type of `ob` is `output_buffer<CharT>&`,
+      where the type of `ob` is `boost::basic_outbuf<CharT>&`,
       and the type of `fp` is `const Fpack&`.
       Hence the type of `_colon` derives from `printer<CharT>`,
       and so do the elements of `_hextets`.

@@ -65,7 +65,7 @@ using char_with_format = stringify::v0::value_with_format
 
 //     template <typename FPack>
 //     char32_printer
-//         ( stringify::v0::output_buffer<CharT>& out
+//         ( boost::basic_outbuf<CharT>& out
 //         , const FPack& fp
 //         , const stringify::v0::char_with_format<char32_t>& input
 //         ) noexcept
@@ -74,7 +74,7 @@ using char_with_format = stringify::v0::value_with_format
 //     }
 
 //     char32_printer
-//         ( stringify::v0::output_buffer<CharT>& out
+//         ( boost::basic_outbuf<CharT>& out
 //         , const stringify::v0::char_with_format<char32_t>& input
 //         , const stringify::v0::width_calculator& wcalc
 //         ) noexcept;
@@ -89,7 +89,7 @@ using char_with_format = stringify::v0::value_with_format
 
 // private:
 
-//     stringify::v0::output_buffer<CharT>& m_out;
+//     boost::basic_outbuf<CharT>& m_out;
 //     stringify::v0::char_with_format<char32_t> m_fmt;
 //     int m_fillcount = 0;
 
@@ -138,7 +138,7 @@ using char_with_format = stringify::v0::value_with_format
 
 // template <typename CharT>
 // char32_printer<CharT>::char32_printer
-//     ( stringify::v0::output_buffer<CharT>& out
+//     ( boost::basic_outbuf<CharT>& out
 //     , const stringify::v0::char_with_format<char32_t>& input
 //     , const stringify::v0::width_calculator& wcalc
 //     ) noexcept
@@ -237,7 +237,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(boost::basic_outbuf<CharT>& ob) const override;
 
     int width(int) const override;
 
@@ -262,7 +262,7 @@ int char_printer<CharT>::width(int) const
 
 template <typename CharT>
 void stringify::v0::char_printer<CharT>::write
-    ( stringify::v0::output_buffer<CharT>& ob ) const
+    ( boost::basic_outbuf<CharT>& ob ) const
 {
     ob.ensure(1);
     *ob.pos() = _ch;
@@ -292,7 +292,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(boost::basic_outbuf<CharT>& ob) const override;
 
     int width(int) const override;
 
@@ -312,10 +312,10 @@ private:
 
     void _init(stringify::v0::width_calculator wcalc);
 
-    void _write_body(stringify::v0::output_buffer<CharT>& ob) const;
+    void _write_body(boost::basic_outbuf<CharT>& ob) const;
 
     void _write_fill
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , unsigned count ) const;
 };
 
@@ -338,7 +338,7 @@ std::size_t fmt_char_printer<CharT>::necessary_size() const
 
 template <typename CharT>
 void fmt_char_printer<CharT>::write
-    ( stringify::v0::output_buffer<CharT>& ob ) const
+    ( boost::basic_outbuf<CharT>& ob ) const
 {
     if (_content_width >= _fmt.width())
     {
@@ -374,7 +374,7 @@ void fmt_char_printer<CharT>::write
 
 template <typename CharT>
 void fmt_char_printer<CharT>::_write_body
-    ( stringify::v0::output_buffer<CharT>& ob ) const
+    ( boost::basic_outbuf<CharT>& ob ) const
 {
     if (_fmt.count() == 1)
     {
@@ -405,7 +405,7 @@ void fmt_char_printer<CharT>::_write_body
 
 template <typename CharT>
 void fmt_char_printer<CharT>::_write_fill
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , unsigned count ) const
 {
     _encoding.encode_fill(ob, count, _fmt.fill(), _enc_err, _allow_surr);

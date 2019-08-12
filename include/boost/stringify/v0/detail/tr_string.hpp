@@ -214,7 +214,7 @@ void tr_string_write
     ( const CharT* it
     , const CharT* end
     , std::initializer_list<const stringify::v0::printer<CharT>*> args
-    , stringify::v0::output_buffer<CharT>& ob
+    , boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , stringify::v0::tr_invalid_arg policy )
 {
@@ -228,11 +228,11 @@ void tr_string_write
         it = traits::find(it, (end - it), '{');
         if (it == nullptr)
         {
-            stringify::v0::detail::write_str(ob, prev, end - prev);
+            boost::write(ob, prev, end - prev);
             return;
         }
 
-        stringify::v0::detail::write_str(ob, prev, it - prev);
+        boost::write(ob, prev, it - prev);
         ++it;
 
         after_the_brace:
@@ -300,10 +300,10 @@ void tr_string_write
             it2 = traits::find(it2, end - it2, '{');
             if (it2 == nullptr)
             {
-                stringify::v0::detail::write_str(ob, it, end - it);
+                boost::write(ob, it, end - it);
                 return;
             }
-            stringify::v0::detail::write_str(ob, it, (it2 - it));
+            boost::write(ob, it, (it2 - it));
             it = it2 + 1;
             goto after_the_brace;
         }

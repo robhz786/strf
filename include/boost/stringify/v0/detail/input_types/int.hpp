@@ -43,11 +43,11 @@ public:
 
     int width(int) const override;
 
-    void write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(boost::basic_outbuf<CharT>& ob) const override;
 
 private:
 
-    void _write_with_punct(stringify::v0::output_buffer<CharT>& ob) const;
+    void _write_with_punct(boost::basic_outbuf<CharT>& ob) const;
 
     const stringify::v0::numchars<CharT>& _chars;
     const stringify::v0::numpunct_base& _punct;
@@ -81,7 +81,7 @@ int i18n_int_printer<CharT>::width(int) const
 }
 
 template <typename CharT>
-void i18n_int_printer<CharT>::write(stringify::v0::output_buffer<CharT>& ob) const
+void i18n_int_printer<CharT>::write(boost::basic_outbuf<CharT>& ob) const
 {
     if (_negative)
     {
@@ -99,7 +99,7 @@ void i18n_int_printer<CharT>::write(stringify::v0::output_buffer<CharT>& ob) con
 
 template <typename CharT>
 void i18n_int_printer<CharT>::_write_with_punct
-    ( stringify::v0::output_buffer<CharT>& ob ) const
+    ( boost::basic_outbuf<CharT>& ob ) const
 {
     constexpr unsigned max_digits
         = stringify::v0::detail::max_num_digits<decltype(_uvalue), 10>;
@@ -134,7 +134,7 @@ public:
 
     int width(int) const override;
 
-    void write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(boost::basic_outbuf<CharT>& ob) const override;
 
 private:
 
@@ -157,7 +157,7 @@ int fast_int_printer<CharT>::width(int) const
 
 template <typename CharT>
 void fast_int_printer<CharT>::write
-    ( stringify::v0::output_buffer<CharT>& ob ) const
+    ( boost::basic_outbuf<CharT>& ob ) const
 {
     unsigned size = _digcount + _negative;
     ob.ensure(size);

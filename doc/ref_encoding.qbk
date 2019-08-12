@@ -30,7 +30,7 @@
 [table
 [[
 `template<typename CharIn, typename CharOut>`[br]
-`bool decode_encode( __output_buffer__<CharOut>& ob`[br]
+`bool decode_encode( __boost_basic_outbuf__<CharOut>& ob`[br]
 [SPC8][SPC8][SPC2]`, const CharIn* src`[br]
 [SPC8][SPC8][SPC2]`, const CharIn* src_end`[br]
 [SPC8][SPC8][SPC2]`, __encoding__<CharIn> src_encoding`[br]
@@ -95,7 +95,7 @@
 
 [table
 [[
-`bool transcode( __output_buffer__<CharOut>& ob`[br]
+`bool transcode( __boost_basic_outbuf__<CharOut>& ob`[br]
 [SPC8][SPC4][SPC2]`, const CharIn* src`[br]
 [SPC8][SPC4][SPC2]`, const CharIn* src_end`[br]
 [SPC8][SPC4][SPC2]`, __encoding_error__ err_hdl`[br]
@@ -203,7 +203,7 @@ The `encoding<`[~CharT]`>` is a facet that specify the encoding associated to ch
 ]
 
 [table
-[[`bool write_replacement_char(output_buffer<char_type>& ob) const;`]]
+[[`bool write_replacement_char(__boost_basic_outbuf__<char_type>& ob) const;`]]
 [[]]
 ]
 
@@ -213,7 +213,7 @@ The `encoding<`[~CharT]`>` is a facet that specify the encoding associated to ch
 ]
 
 [table
-[[`bool encode_fill( output_buffer<char_type>& ob`[br]
+[[`bool encode_fill( __boost_basic_outbuf__<char_type>& ob`[br]
 [SPC16]`, std::size_t count`[br]
 [SPC16]`, char32_t ch`[br]
 [SPC16]`, encoding_error err_hdl`[br]

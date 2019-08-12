@@ -13,7 +13,7 @@
 
 template <typename CharOut>
 class input_tester
-    : public boost::stringify::v0::output_buffer<CharOut>
+    : public boost::basic_outbuf<CharOut>
 {
 
 public:
@@ -80,7 +80,7 @@ input_tester<CharOut>::input_tester
     , int src_line
     , const char* function
     , double reserve_factor )
-    : boost::stringify::v0::output_buffer<CharOut>{nullptr, nullptr}
+    : boost::basic_outbuf<CharOut>{nullptr, nullptr}
     , _expected(std::move(expected))
     , _reserved_size(0)
     , _src_filename(std::move(src_filename))
@@ -110,7 +110,7 @@ void input_tester<CharOut>::reserve(std::size_t size)
 template <typename CharOut>
 void input_tester<CharOut>::recycle()
 {
-    _test_failure(" output_buffer::recycle() called "
+    _test_failure(" basic_outbuf::recycle() called "
                   "( return of printer::necessary_size() too small ).\n");
 
     std::size_t previous_size = 0;
@@ -119,7 +119,7 @@ void input_tester<CharOut>::recycle()
        previous_size = this->pos() - &*_result.begin();
        _result.resize(previous_size);
     }
-    _result.append(boost::stringify::v0::min_buff_size, CharOut{'#'});
+    _result.append(boost::min_size_after_recycle<CharOut>(), CharOut{'#'});
     this->set_pos(&*_result.begin() + previous_size);
     this->set_end(&*_result.begin() + _result.size());
 }

@@ -81,7 +81,7 @@ void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
         auto facets = strf::pack(enc, strf::encoding_error::stop);
         BOOST_TEST_THROWS(
             ( (strf::to_string.facets(facets)(strf::cv(u"---\U0010FFFF++"))))
-            , strf::encoding_failure )
+            , strf::encoding_failure );
     }
 }
 

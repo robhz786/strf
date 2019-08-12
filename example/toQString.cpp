@@ -8,11 +8,11 @@
 
 namespace strf = boost::stringify::v0;
 
-class QStringCreator: public strf::output_buffer<char16_t>
+class QStringCreator: public boost::basic_outbuf<char16_t>
 {
 public:
 
-    QStringCreator() : strf::output_buffer<char16_t>(_buffer, _buffer_size)
+    QStringCreator() : boost::basic_outbuf<char16_t>(_buffer, _buffer_size)
     {
     }
 
@@ -29,21 +29,38 @@ public:
 private:
 
     QString _str;
-    constexpr static std::size_t _buffer_size = strf::min_buff_size;
+    std::exception_ptr _eptr = nullptr;
+    constexpr static std::size_t _buffer_size = boost::min_size_after_recycle<char16_t>();
     char16_t _buffer[_buffer_size];
 };
 
 void QStringCreator::recycle()
 {
-    const QChar * qchar_buffer = reinterpret_cast<QChar*>(_buffer);
-    std::size_t count = this->pos() - _buffer;
-    _str.append(qchar_buffer, count);
+    if (this->good())
+    {
+        const QChar * qchar_buffer = reinterpret_cast<QChar*>(_buffer);
+        std::size_t count = this->pos() - _buffer;
+        try
+        {
+            _str.append(qchar_buffer, count);
+        }
+        catch(...)
+        {
+            _eptr = std::current_exception();
+            this->set_good(false);
+        }
+    }
     this->set_pos(_buffer);
 }
 
 QString QStringCreator::finish()
 {
     recycle();
+    this->set_good(false);
+    if (_eptr != nullptr)
+    {
+        std::rethrow_exception(_eptr);
+    }
     return std::move(_str);
 }
 

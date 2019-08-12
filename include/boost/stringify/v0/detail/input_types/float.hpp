@@ -548,7 +548,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(stringify::v0::output_buffer<CharT>&) const override;
+    void write(boost::basic_outbuf<CharT>&) const override;
 
 private:
 
@@ -663,7 +663,7 @@ std::size_t i18n_double_printer<CharT>::necessary_size() const
 }
 
 template <typename CharT>
-void i18n_double_printer<CharT>::write(stringify::v0::output_buffer<CharT>& ob) const
+void i18n_double_printer<CharT>::write(boost::basic_outbuf<CharT>& ob) const
 {
     if (_data.nan)
     {
@@ -792,7 +792,7 @@ public:
 
     int width(int) const override;
 
-    void write(stringify::v0::output_buffer<CharT>&) const override;
+    void write(boost::basic_outbuf<CharT>&) const override;
 
     std::size_t necessary_size() const override;
 
@@ -841,7 +841,7 @@ int double_printer<CharT>::width(int) const
 
 template <typename CharT>
 void double_printer<CharT>::write
-    ( stringify::v0::output_buffer<CharT>& ob ) const
+    ( boost::basic_outbuf<CharT>& ob ) const
 {
     if (_data.nan)
     {
@@ -1052,7 +1052,7 @@ public:
         _sci_notation = (_value.e10 > 4 + (_m10_digcount > 1))
             || (_value.e10 < -(int)_m10_digcount - 2 - (_m10_digcount > 1));
     }
- 
+
     explicit fast_double_printer(double d)
         : _value(decode(d))
         , _m10_digcount(stringify::v0::detail::count_digits<10>(_value.m10))
@@ -1065,7 +1065,7 @@ public:
 
     int width(int) const override;
 
-    void write(stringify::v0::output_buffer<CharT>&) const override;
+    void write(boost::basic_outbuf<CharT>&) const override;
 
     std::size_t necessary_size() const override;
 
@@ -1124,7 +1124,7 @@ int fast_double_printer<CharT>::width(int) const
 
 template <typename CharT>
 void fast_double_printer<CharT>::write
-    ( stringify::v0::output_buffer<CharT>& ob ) const
+    ( boost::basic_outbuf<CharT>& ob ) const
 {
     if (_value.nan)
     {
@@ -1320,7 +1320,7 @@ public:
 
     int width(int) const override;
 
-    void write(stringify::v0::output_buffer<CharT>&) const override;
+    void write(boost::basic_outbuf<CharT>&) const override;
 
     std::size_t necessary_size() const override;
 
@@ -1421,7 +1421,7 @@ int fast_i18n_double_printer<CharT>::width(int) const
 
 template <typename CharT>
 void fast_i18n_double_printer<CharT>::write
-    ( stringify::v0::output_buffer<CharT>& ob ) const
+    ( boost::basic_outbuf<CharT>& ob ) const
 {
     if (_value.nan)
     {

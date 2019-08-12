@@ -17,7 +17,7 @@ public:
 
     virtual ~printer() { }
 
-    virtual bool write(output_buffer<CharT>& ob) const = 0;
+    virtual bool write(boost::basic_outbuf<CharT>& ob) const = 0;
     virtual std::size_t necessary_size() const = 0;
     virtual int width(int limit) const = 0;
 };
@@ -30,7 +30,7 @@ public:
 [#printer_write]
 [table
 [[
-  `virtual void write(`[link output_buffer `output_buffer`]`<CharT>& ob) const = 0;`
+  `virtual void write(__boost_basic_outbuf__<CharT>& ob) const = 0;`
 ]]
 [[
   [variablelist

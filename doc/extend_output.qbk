@@ -24,14 +24,14 @@ instead to a `QString` (from the Qt Framework).
 As mentioned, the first thing to do is to create a class that satisfies the
 [link OutputBuffer OutputBuffer] concept. Let's name it `QStringAppender`.
 
-The first requirement is that it has to derive from [link output_buffer
-`output_buffer`]`<CharT>`, where `CharT` can't be `QChar`,
+The first requirement is that it has to derive from __basic_outbuf__`<CharT>`,
+where `CharT` can't be `QChar`,
 which is the character type `QString`. It has to be one of the
 C++ characters types. So `char16_t` will do the job.
 
 [QStringAppender_def]
 
-The `output_buffer` is initialized with a buffer where the library will
+The __basic_outbuf__ is initialized with a buffer where the library will
 write the content.
 
 [QStringAppender_ctor]
@@ -40,7 +40,7 @@ Each time the buffer becomes full, the library calls `recycle`,
 that shall consume the content and provide a new buffer ( using
 [link output_buffer_set_pos `set_pos`] and
 [link output_buffer_set_end `set_end`] ), whose available
-space must be at least `strf::`[link min_buff_size `min_buff_size`].
+space must be at least __boost_min_size_after_recycle__`<char16_t>`.
 
 [QStringAppender_recycle]
 

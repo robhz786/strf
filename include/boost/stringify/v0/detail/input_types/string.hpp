@@ -145,7 +145,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(boost::basic_outbuf<CharT>& ob) const override;
 
     int width(int limit) const override;
 
@@ -173,9 +173,9 @@ std::size_t string_printer<CharT>::necessary_size() const
 }
 
 template<typename CharT>
-void string_printer<CharT>::write(stringify::v0::output_buffer<CharT>& ob) const
+void string_printer<CharT>::write(boost::basic_outbuf<CharT>& ob) const
 {
-    stringify::v0::detail::write_str(ob, _str, _len);
+    boost::write(ob, _str, _len);
 }
 
 template<typename CharT>
@@ -206,7 +206,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(boost::basic_outbuf<CharT>& ob) const override;
 
     int width(int limit) const override;
 
@@ -228,9 +228,9 @@ private:
 
     void _init();
 
-    void _write_str(stringify::v0::output_buffer<CharT>& ob) const;
+    void _write_str(boost::basic_outbuf<CharT>& ob) const;
 
-    void _write_fill( stringify::v0::output_buffer<CharT>& ob
+    void _write_fill( boost::basic_outbuf<CharT>& ob
                     , unsigned count ) const;
 };
 
@@ -275,7 +275,7 @@ int fmt_string_printer<CharT>::width(int limit) const
 
 template<typename CharT>
 void fmt_string_printer<CharT>::write
-    ( stringify::v0::output_buffer<CharT>& ob ) const
+    ( boost::basic_outbuf<CharT>& ob ) const
 {
     if (_fillcount > 0)
     {
@@ -310,15 +310,14 @@ void fmt_string_printer<CharT>::write
 
 template <typename CharT>
 void fmt_string_printer<CharT>::_write_str
-    ( stringify::v0::output_buffer<CharT>& ob ) const
+    ( boost::basic_outbuf<CharT>& ob ) const
 {
-    stringify::v0::detail::write_str( ob, _fmt.value().begin()
-                                    , _fmt.value().length());
+    boost::write(ob, _fmt.value().begin(), _fmt.value().length());
 }
 
 template <typename CharT>
 void fmt_string_printer<CharT>::_write_fill
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , unsigned count ) const
 {
     _encoding.encode_fill( ob, count, _fmt.fill(), _enc_err, _allow_surr );

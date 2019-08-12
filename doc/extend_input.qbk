@@ -311,7 +311,7 @@ public:
     {
     }
 
-    bool write(strf::output_buffer<CharT>& ob) const override;
+    bool write(boost::basic_outbuf<CharT>& ob) const override;
     std::size_t necessary_size() const override;
     int width(int) const override;
 
@@ -328,7 +328,7 @@ private:
 This is an example of a low level implementation.
 Differently from the previous ones, here we 
 write each individual character directly into
-`output_buffer<CharT>::pos()`. So the code
+`basic_outbuf<CharT>::pos()`. So the code
 is naturally bigger.
 
 [base64_printer__write]
@@ -336,11 +336,11 @@ is naturally bigger.
 The implementation of `_write_multiline` is omitted for being too large.
 You can check it out [@ ../../example/extend_input_base64.cpp here].
 But the snippet above convey the idea: you write things in
-`output_buffer<CharT>::pos()`, but before that, you check how much
+`basic_outbuf<CharT>::pos()`, but before that, you check how much
 available space is there. If it is not sufficient, then you call `recycle`
 which resets `pos()` and `end()` providing an a space of at least
-[linke min_buff_size min_buff_size]. You call `recycle` how many times
-it is necessary to put all the content.
+__boost_min_size_after_recycle__`<CharT>()`. You can call `recycle`
+how many times it is necessary to put all the content.
 
 Now, after defining `base64_printer`, we can finally overload `make_printer`:
 

@@ -21,9 +21,13 @@
 [template SPC16[][SPC8][SPC8]]
 [template SPC32[][SPC16][SPC16]]
 
+[def __basic_outbuf__ [@../../../outbuf/ascii-doc/outbuf.html `basic_outbuf`]]
+[def __boost_basic_outbuf__ [@../../../outbuf/ascii-doc/outbuf.html `boost::basic_outbuf`]]
+[def __boost_min_size_after_recycle__ 
+    [@../../../outbuf/ascii-doc/outbuf.html#__code_min_size_after_recycle_code
+    `boost::min_size_after_recyle`] ]
 
 [def __fmt__ [link fmt `fmt`]]
-[def __output_buffer__ [link output_buffer `output_buffer`]]
 [def __encoding_error__ [link encoding_error `encoding_error`]]
 [def __surrogate_policy__ [link surrogate_policy `surrogate_policy`]]
 [def __transcoder__ [link transcoder `transcoder`]]

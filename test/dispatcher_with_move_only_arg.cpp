@@ -29,19 +29,19 @@ struct foo // note: foo is not copiable
     char* dest_end;
 };
 
-class foo_writer: public strf::output_buffer<char>
+class foo_writer: public boost::basic_outbuf<char>
 {
 public:
 
     foo_writer(foo&& foo_)
-        : _foo(std::move(foo_))
+        : boost::basic_outbuf<char>{foo_.dest, foo_.dest_end - 1}
+        , _foo(std::move(foo_))
     {
-        this->set_pos(_foo.dest);
-        this->set_end(_foo.dest_end - 1);
     }
 
     void recycle() override
     {
+        this->set_pos(_foo.dest);
     }
 
     void finish()

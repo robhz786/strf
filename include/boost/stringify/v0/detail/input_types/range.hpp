@@ -55,7 +55,7 @@ public:
 
     int width(int limit) const override;
 
-    void write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(boost::basic_outbuf<CharT>& ob) const override;
 
 private:
 
@@ -88,7 +88,7 @@ int range_printer<CharT, FPack, ForwardIt>::width(int limit) const
 
 template <typename CharT, typename FPack, typename ForwardIt>
 void range_printer<CharT, FPack, ForwardIt>::write
-    ( stringify::v0::output_buffer<CharT>& ob ) const
+    ( boost::basic_outbuf<CharT>& ob ) const
 {
     for(auto it = _begin; it != _end; ++it)
     {
@@ -124,7 +124,7 @@ public:
 
     int width(int limit) const override;
 
-    void write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(boost::basic_outbuf<CharT>& ob) const override;
 
 private:
 
@@ -186,7 +186,7 @@ std::size_t sep_range_printer<CharT, FPack, ForwardIt>::necessary_size() const
 
 template <typename CharT, typename FPack, typename ForwardIt>
 void sep_range_printer<CharT, FPack, ForwardIt>::write
-    ( stringify::v0::output_buffer<CharT>& ob ) const
+    ( boost::basic_outbuf<CharT>& ob ) const
 {
     auto it = _begin;
     if (it != _end)
@@ -194,7 +194,7 @@ void sep_range_printer<CharT, FPack, ForwardIt>::write
         make_printer<CharT, FPack>(_fp, *it).write(ob);
         while (++it != _end)
         {
-            stringify::v0::detail::write_str(ob, _sep_begin, _sep_len);
+            boost::write(ob, _sep_begin, _sep_len);
             make_printer<CharT, FPack>(_fp, *it).write(ob);
         }
     }
@@ -250,7 +250,7 @@ public:
 
     int width(int lim) const override;
 
-    void write(stringify::v0::output_buffer<CharOut>& ob) const override;
+    void write(boost::basic_outbuf<CharOut>& ob) const override;
 
 private:
 
@@ -299,7 +299,7 @@ template< typename CharOut
         , typename ForwardIt
         , typename ... Fmts >
 void fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::write
-    ( stringify::v0::output_buffer<CharOut>& ob ) const
+    ( boost::basic_outbuf<CharOut>& ob ) const
 {
     auto r = _fmt.value();
     for(auto it = r.begin; it != r.end; ++it)
@@ -340,7 +340,7 @@ public:
 
     int width(int limit) const override;
 
-    void write(stringify::v0::output_buffer<CharT>& ob) const override;
+    void write(boost::basic_outbuf<CharT>& ob) const override;
 
 private:
 
@@ -417,7 +417,7 @@ template< typename CharT
         , typename ForwardIt
         , typename ... Fmts >
 void fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>
-::write( stringify::v0::output_buffer<CharT>& ob ) const
+::write( boost::basic_outbuf<CharT>& ob ) const
 {
     auto r = _fmt.value();
     auto it = r.begin;
@@ -428,7 +428,7 @@ void fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>
             .write(ob);
         while(++it != r.end)
         {
-            detail::write_str(ob, r.sep_begin, r.sep_len);
+            boost::write(ob, r.sep_begin, r.sep_len);
             make_printer<CharT, FPack>
                 ( _fp, value_fmt_type_adapted{{*it}, _fmt} )
                 .write(ob);

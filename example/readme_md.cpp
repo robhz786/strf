@@ -66,7 +66,7 @@ void samples()
     strf::assign(s) ("aaa", "bbb");
     strf::append(s) ("ccc", "ddd");
     assert(s == "aaabbbcccddd");
-    
+
     // other output types
     char buff[500];
     strf::write(buff) (value, " in hexadecimal is ", strf::hex(value));
@@ -76,7 +76,7 @@ void samples()
                                            , u" in hexadecimal is "
                                            , strf::hex(value) );
     assert(s16 == u"255 in hexadecimal is ff");
-    
+
     // alternative syntax:
     s = strf::to_string.tr("{} in hexadecimal is {}", value, strf::hex(value));
     assert(s == "255 in hexadecimal is ff");

@@ -79,6 +79,7 @@ int main()
 
        BOOST_ASSERT(exception_thrown);
        //]
+       (void) exception_thrown;
    }
 
    return 0;

@@ -65,9 +65,9 @@ int main()
         std::sprintf(dest, "%g", 0.111);
     }
 
-    
+
     strf::write(stdout)("\n ---- 6.103515625e-05 ---- \n");
-    
+
     PRINT_BENCHMARK("strf::write(dest)(6.103515625e-05)")
     {
         (void) strf::write(dest)(6.103515625e-05);
@@ -114,11 +114,11 @@ int main()
     // }
 
     strf::write(stdout)("\n ---- 1234567890 ---- \n");
-    
+
     PRINT_BENCHMARK("strf::write(dest)(1234567890.0)")
     {
         (void) strf::write(dest)(1234567890.0);
-    }    
+    }
     PRINT_BENCHMARK("strf::write(dest).facets(dummy_punct)(1234567890.0)")
     {
         (void) strf::write(dest).facets(dummy_punct)(1234567890.0);
@@ -153,7 +153,7 @@ int main()
     }
 
     strf::write(stdout)("\n ---- 1234567.12890625 ---- \n");
-    
+
     PRINT_BENCHMARK("strf::write(dest)(1234567.12890625)")
     {
         (void) strf::write(dest)(1234567.12890625);
@@ -192,11 +192,11 @@ int main()
     }
 
     strf::write(stdout)("\n ---- 12.625 ---- \n");
-    
+
     PRINT_BENCHMARK("strf::write(dest)(12.625)")
     {
         (void) strf::write(dest)(12.625);
-    }   
+    }
     PRINT_BENCHMARK("strf::write(dest).facets(dummy_punct)(12.625)")
     {
         (void) strf::write(dest).facets(dummy_punct)(12.625);
@@ -229,6 +229,6 @@ int main()
     {
         (void) strf::write(dest)(strf::fixed(12.625).p(6));
     }
-    
+
     return 0;
 }

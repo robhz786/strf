@@ -48,7 +48,7 @@ public:
     {
     }
 
-    constexpr std::false_type has_reserve() const
+    static constexpr std::false_type has_reserve()
     {
         return {};
     }
@@ -108,7 +108,7 @@ public:
         return _size;
     }
 
-    constexpr std::true_type has_reserve() const
+    static constexpr std::true_type has_reserve()
     {
         return {};
     }
@@ -132,8 +132,8 @@ inline std::size_t sum_necessary_size(const Printers& ... printers)
 }
 
 template <typename CharT, typename ... Printers>
-inline void write_args( stringify::v0::output_buffer<CharT>& ob
-               , const Printers& ... printers )
+inline void write_args( boost::basic_outbuf<CharT>& ob
+                      , const Printers& ... printers )
 {
     (... , printers.write(ob));
 }
@@ -154,18 +154,20 @@ inline std::size_t sum_necessary_size(const Printer& printer, const Printers& ..
 
 
 template <typename CharT>
-inline void write_args(stringify::v0::output_buffer<CharT>&)
+inline void write_args(boost::basic_outbuf<CharT>&)
 {
 }
 
 template <typename CharT, typename Printer, typename ... Printers>
 inline void write_args
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , const Printer& printer
     , const Printers& ... printers )
 {
     printer.write(ob);
-    write_args(ob, printers ...);
+    if (ob.good()) {
+        write_args(ob, printers ...);
+    }
 }
 
 #endif
@@ -225,10 +227,8 @@ inline decltype(std::declval<OutputBuff>().finish()) reserve_and_tr_write
     {
         ob.reserve(reser.get_size_to_reserve());
     }
-
     stringify::v0::detail::tr_string_write
         ( tr_str, tr_str_end, args, ob, enc, policy );
-
     return ob.finish();
 }
 
@@ -468,19 +468,27 @@ public:
 
     BOOST_STRINGIFY_NODISCARD constexpr dispatcher reserve_calc() const &
     {
+        static_assert( _reservation::has_reserve().value
+                     , "This destination does not support reserve" );
         return dispatcher(*this, _reservation(detail::reserve_calc_tag{}));
     }
     BOOST_STRINGIFY_NODISCARD constexpr dispatcher reserve_calc() const &&
     {
+        static_assert( _reservation::has_reserve().value
+                     , "This destination does not support reserve" );
         return dispatcher(*this, _reservation(detail::reserve_calc_tag{}));
     }
     constexpr dispatcher& reserve_calc() &
     {
+        static_assert( _reservation::has_reserve().value
+                     , "This destination does not support reserve" );
         this->set_reserve_calc();
         return *this;
     }
     constexpr dispatcher&& reserve_calc() &&
     {
+        static_assert( _reservation::has_reserve().value
+                     , "This destination does not support reserve" );
         this->set_reserve_calc();
         return static_cast<dispatcher&&>(*this);
     }
@@ -488,20 +496,28 @@ public:
     BOOST_STRINGIFY_NODISCARD
     constexpr dispatcher reserve(std::size_t size) const &
     {
+        static_assert( _reservation::has_reserve().value
+                     , "This destination does not support reserve" );
         return dispatcher(*this, _reservation(size));
     }
     BOOST_STRINGIFY_NODISCARD
     constexpr dispatcher reserve(std::size_t size) const &&
     {
+        static_assert( _reservation::has_reserve().value
+                     , "This destination does not support reserve" );
         return dispatcher(*this, _reservation(size));
     }
     constexpr dispatcher& reserve(std::size_t size) &
     {
+        static_assert( _reservation::has_reserve().value
+                     , "This destination does not support reserve" );
         this->set_reserve_size(size);
         return *this;
     }
     constexpr dispatcher&& reserve(std::size_t size) &&
     {
+        static_assert( _reservation::has_reserve().value
+                     , "This destination does not support reserve" );
         this->set_reserve_size(size);
         return static_cast<dispatcher&&>(*this);
     }

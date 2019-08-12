@@ -177,7 +177,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write( stringify::v0::output_buffer<CharT>& ob ) const override;
+    void write( boost::basic_outbuf<CharT>& ob ) const override;
 
     int width(int) const override;
 
@@ -204,15 +204,15 @@ private:
               , std::integral_constant<bool, DefaultChars> );
 
     void _write_fill
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , std::size_t count ) const
     {
         return _encoding.encode_fill
             ( ob, count, _afmt.fill(), _enc_err, _allow_surr );
     }
 
-    void _write_complement(stringify::v0::output_buffer<CharT>& ob) const;
-    void _write_digits(stringify::v0::output_buffer<CharT>& ob) const;
+    void _write_complement(boost::basic_outbuf<CharT>& ob) const;
+    void _write_digits(boost::basic_outbuf<CharT>& ob) const;
 };
 
 template <typename CharT>
@@ -346,7 +346,7 @@ int fmt_int_printer<CharT>::width(int) const
 
 template <typename CharT>
 void fmt_int_printer<CharT>::write
-        ( stringify::v0::output_buffer<CharT>& ob ) const
+        ( boost::basic_outbuf<CharT>& ob ) const
 {
     if (_fillcount == 0)
     {
@@ -392,7 +392,7 @@ void fmt_int_printer<CharT>::write
 
 template <typename CharT>
 inline void fmt_int_printer<CharT>::_write_complement
-    ( stringify::v0::output_buffer<CharT>& ob ) const
+    ( boost::basic_outbuf<CharT>& ob ) const
 {
     if(_showsign)
     {
@@ -406,7 +406,7 @@ inline void fmt_int_printer<CharT>::_write_complement
 
 template <typename CharT>
 inline void fmt_int_printer<CharT>::_write_digits
-    ( stringify::v0::output_buffer<CharT>& ob ) const
+    ( boost::basic_outbuf<CharT>& ob ) const
 {
     unsigned zeros = (_precision > _digcount) * (_precision - _digcount);
     if (_sepcount == 0)

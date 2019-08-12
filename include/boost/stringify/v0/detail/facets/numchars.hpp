@@ -25,30 +25,30 @@ public:
     virtual ~numchars() {}
 
     virtual void print_base_indication
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const = 0;
     virtual void print_pos_sign
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const = 0;
     virtual void print_neg_sign
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const = 0;
     virtual void print_sign
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , bool negative ) const = 0;
     virtual void print_single_digit
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned digit ) const = 0;
     virtual void print_integer
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits
         , unsigned num_leading_zeros = 0 ) const = 0;
     virtual void print_integer
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , const stringify::v0::numpunct_base& punct
         , std::uint8_t* mem
@@ -56,13 +56,13 @@ public:
         , unsigned num_digits
         , unsigned num_leading_zeros = 0) const = 0;
     virtual void print_amplified_integer
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits
         , unsigned num_trailing_zeros ) const = 0;
     virtual void print_amplified_integer
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , const stringify::v0::numpunct_base& punct
         , std::uint8_t* mem
@@ -75,7 +75,7 @@ public:
         , bool has_sign
         , bool has_base_indication ) const = 0;
     virtual void print_scientific_notation
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits
@@ -99,7 +99,7 @@ public:
           `digits`. In this case, the function writes leading zeros.
      */
     virtual void print_fractional_digits
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits
@@ -121,7 +121,7 @@ namespace detail {
 
 template <typename CharT>
 void print_amplified_integer_small_separator
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , const std::uint8_t* groups
     , unsigned num_groups
@@ -135,7 +135,7 @@ void print_amplified_integer_small_separator
     unsigned grp_size = *grp_it;
     while (num_digits > grp_size)
     {
-        BOOST_ASSERT(grp_size + 1 <= stringify::v0::min_buff_size);
+        BOOST_ASSERT(grp_size + 1 <= boost::min_size_after_recycle<CharT>());
         ob.ensure(grp_size + 1);
         auto it = ob.pos();
         auto digits_2 = digits + grp_size;
@@ -149,14 +149,14 @@ void print_amplified_integer_small_separator
     }
     if (num_digits != 0)
     {
-        BOOST_ASSERT(num_digits <= stringify::v0::min_buff_size);
+        BOOST_ASSERT(num_digits <= boost::min_size_after_recycle<CharT>());
         ob.ensure(num_digits);
         std::copy(digits, digits + num_digits, ob.pos());
         ob.advance(num_digits);
     }
     if (grp_size > num_digits)
     {
-        BOOST_ASSERT(num_digits <= stringify::v0::min_buff_size);
+        BOOST_ASSERT(num_digits <= boost::min_size_after_recycle<CharT>());
         grp_size -= num_digits;
         ob.ensure(grp_size);
         std::char_traits<CharT>::assign(ob.pos(), grp_size, '0');
@@ -165,7 +165,7 @@ void print_amplified_integer_small_separator
     while (grp_it != groups)
     {
         grp_size = *--grp_it;
-        BOOST_ASSERT(grp_size + 1 <= stringify::v0::min_buff_size);
+        BOOST_ASSERT(grp_size + 1 <= boost::min_size_after_recycle<CharT>());
         ob.ensure(grp_size + 1);
         auto it = ob.pos();
         *it = separator;
@@ -176,7 +176,7 @@ void print_amplified_integer_small_separator
 
 template <typename CharT>
 void print_amplified_integer_big_separator
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , const std::uint8_t* groups
     , unsigned num_groups
@@ -190,7 +190,7 @@ void print_amplified_integer_big_separator
     unsigned grp_size = *grp_it;
     while (num_digits > grp_size)
     {
-        BOOST_ASSERT(grp_size + separator_size <= stringify::v0::min_buff_size);
+        BOOST_ASSERT(grp_size + separator_size <= boost::min_size_after_recycle<CharT>());
         ob.ensure(grp_size + separator_size);
         auto it = ob.pos();
         auto digits_2 = digits + grp_size;
@@ -203,14 +203,14 @@ void print_amplified_integer_big_separator
     }
     if (num_digits != 0)
     {
-        BOOST_ASSERT(num_digits <= stringify::v0::min_buff_size);
+        BOOST_ASSERT(num_digits <= boost::min_size_after_recycle<CharT>());
         ob.ensure(num_digits);
         std::copy(digits, digits + num_digits, ob.pos());
         ob.advance(num_digits);
     }
     if (grp_size > num_digits)
     {
-        BOOST_ASSERT(num_digits <= stringify::v0::min_buff_size);
+        BOOST_ASSERT(num_digits <= boost::min_size_after_recycle<CharT>());
         grp_size -= num_digits;
         ob.ensure(grp_size);
         std::char_traits<CharT>::assign(ob.pos(), grp_size, '0');
@@ -219,7 +219,7 @@ void print_amplified_integer_big_separator
     while (grp_it != groups)
     {
         grp_size = *--grp_it;
-        BOOST_ASSERT(grp_size + separator_size <= stringify::v0::min_buff_size);
+        BOOST_ASSERT(grp_size + separator_size <= boost::min_size_after_recycle<CharT>());
         ob.ensure(grp_size + separator_size);
         auto it = enc.encode_char(ob.pos(), separator);
         std::char_traits<CharT>::assign(it, grp_size, '0');
@@ -233,17 +233,17 @@ class numchars_default_common: public stringify::v0::numchars<CharT>
 public:
 
     virtual void print_pos_sign
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const override;
     virtual void print_neg_sign
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const override;
     virtual void print_sign
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , bool negative ) const override;
     virtual void print_amplified_integer
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , const stringify::v0::numpunct_base& punct
         , std::uint8_t* mem
@@ -273,13 +273,13 @@ public:
 protected:
 
     static void _print_digits
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , const char* digits
         , unsigned num_digits );
 
     static void _print_digits
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , const char* digits
         , const std::uint8_t* groups
@@ -290,7 +290,7 @@ protected:
 
 template <typename CharT>
 void numchars_default_common<CharT>::print_pos_sign
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc ) const
 {
     (void)enc;
@@ -301,7 +301,7 @@ void numchars_default_common<CharT>::print_pos_sign
 
 template <typename CharT>
 void numchars_default_common<CharT>::print_neg_sign
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc ) const
 {
     (void)enc;
@@ -312,7 +312,7 @@ void numchars_default_common<CharT>::print_neg_sign
 
 template <typename CharT>
 void numchars_default_common<CharT>::print_sign
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , bool negative ) const
 {
@@ -324,7 +324,7 @@ void numchars_default_common<CharT>::print_sign
 
 template <typename CharT>
 void numchars_default_common<CharT>::_print_digits
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , const char* digits
     , unsigned num_digits )
@@ -351,7 +351,7 @@ void numchars_default_common<CharT>::_print_digits
 
 template <typename CharT>
 void numchars_default_common<CharT>::_print_digits
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , const char* digits
     , const std::uint8_t* groups
@@ -401,7 +401,7 @@ void numchars_default_common<CharT>::_print_digits
 
 template <typename CharT>
 void numchars_default_common<CharT>::print_amplified_integer
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , const stringify::v0::numpunct_base& punct
     , std::uint8_t* mem
@@ -514,16 +514,16 @@ public:
     using stringify::v0::detail::numchars_default_common<CharT>::print_amplified_integer;
 
     virtual void print_base_indication
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const override;
     virtual void print_integer
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits
         , unsigned num_leading_zeros ) const override;
     virtual void print_integer
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , const stringify::v0::numpunct_base& punct
         , std::uint8_t* mem
@@ -531,13 +531,13 @@ public:
         , unsigned num_digits
         , unsigned num_leading_zeros = 0) const override;
     virtual void print_amplified_integer
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits
         , unsigned trailing_zeros ) const override;
     virtual void print_scientific_notation
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits
@@ -546,14 +546,14 @@ public:
         , bool print_point
         , unsigned trailing_zeros ) const override;
     virtual void print_fractional_digits
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits
         , char32_t decimal_point
         , unsigned trailing_zeros ) const override;
     virtual void print_single_digit
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned digit ) const override;
     virtual std::size_t integer_printsize
@@ -573,7 +573,7 @@ protected:
 private:
 
     void _print_digits_big_sep
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , const std::uint8_t* groups
@@ -584,7 +584,7 @@ private:
 
 template <typename CharT>
 void default_numchars<CharT, 10>::print_base_indication
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc ) const
 {
     (void)ob;
@@ -593,7 +593,7 @@ void default_numchars<CharT, 10>::print_base_indication
 
 template <typename CharT>
 void default_numchars<CharT, 10>::print_integer
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
     , unsigned num_digits
@@ -635,7 +635,7 @@ void default_numchars<CharT, 10>::print_integer
 
 template <typename CharT>
 void default_numchars<CharT, 10>::print_integer
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , const stringify::v0::numpunct_base& punct
     , std::uint8_t* mem
@@ -662,7 +662,7 @@ void default_numchars<CharT, 10>::print_integer
 
     constexpr auto max_digits
         = stringify::v0::detail::max_num_digits<decltype(digits), 10>;
-    static_assert( max_digits * 2 - 1 <= stringify::v0::min_buff_size
+    static_assert( max_digits * 2 - 1 <= boost::min_size_after_recycle<CharT>()
                  , "too many possible digits" );
 
     auto necessary_size = num_digits + num_groups - 1;
@@ -739,7 +739,7 @@ void default_numchars<CharT, 10>::print_integer
 
 template <typename CharT>
 void default_numchars<CharT, 10>::_print_digits_big_sep
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
     , const std::uint8_t* groups
@@ -758,7 +758,7 @@ void default_numchars<CharT, 10>::_print_digits_big_sep
 
 template <typename CharT>
 void default_numchars<CharT, 10>::print_amplified_integer
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
     , unsigned num_digits
@@ -776,7 +776,7 @@ void default_numchars<CharT, 10>::print_amplified_integer
 
 template <typename CharT>
 void default_numchars<CharT, 10>::print_scientific_notation
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
     , unsigned num_digits
@@ -905,7 +905,7 @@ void default_numchars<CharT, 10>::print_scientific_notation
 
 template <typename CharT>
 void default_numchars<CharT, 10>::print_single_digit
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned digit ) const
 {
@@ -918,7 +918,7 @@ void default_numchars<CharT, 10>::print_single_digit
 
 template <typename CharT>
 void default_numchars<CharT, 10>::print_fractional_digits
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
     , unsigned num_digits
@@ -978,16 +978,16 @@ public:
     using stringify::v0::detail::numchars_default_common<CharT>::print_amplified_integer;
 
     virtual void print_base_indication
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const override;
     virtual void print_integer
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits
         , unsigned num_leading_zeros ) const override;
     virtual void print_integer
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , const stringify::v0::numpunct_base& punct
         , std::uint8_t* mem
@@ -995,13 +995,13 @@ public:
         , unsigned num_digits
         , unsigned num_leading_zeros = 0) const override;
     virtual void print_amplified_integer
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits
         , unsigned trailing_zeros ) const override;
     virtual void print_scientific_notation
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits
@@ -1017,14 +1017,14 @@ public:
     //     , bool has_sign
     //     , bool print_point ) const override;
     virtual void print_fractional_digits
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits
         , char32_t decimal_point
         , unsigned trailing_zeros ) const override;
     virtual void print_single_digit
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned digit ) const override;
     virtual std::size_t integer_printsize
@@ -1044,7 +1044,7 @@ protected:
 private:
 
     void _print_digits_big_sep
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , const std::uint8_t* groups
@@ -1055,7 +1055,7 @@ private:
 
 template <typename CharT>
 void default_numchars<CharT, 16>::print_base_indication
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc ) const
 {
     (void)enc;
@@ -1067,7 +1067,7 @@ void default_numchars<CharT, 16>::print_base_indication
 
 template <typename CharT>
 void default_numchars<CharT, 16>::print_integer
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
     , unsigned num_digits
@@ -1113,7 +1113,7 @@ void default_numchars<CharT, 16>::print_integer
 
 template <typename CharT>
 void default_numchars<CharT, 16>::_print_digits_big_sep
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
     , const std::uint8_t* groups
@@ -1132,7 +1132,7 @@ void default_numchars<CharT, 16>::_print_digits_big_sep
 
 template <typename CharT>
 void default_numchars<CharT, 16>::print_integer
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , const stringify::v0::numpunct_base& punct
     , std::uint8_t* mem
@@ -1159,7 +1159,7 @@ void default_numchars<CharT, 16>::print_integer
 
     constexpr auto max_digits
         = stringify::v0::detail::max_num_digits<decltype(digits), 16>;
-    static_assert( max_digits * 2 - 1 <= stringify::v0::min_buff_size
+    static_assert( max_digits * 2 - 1 <= boost::min_size_after_recycle<CharT>()
                  , "too many possible digits" );
 
     auto necessary_size = num_digits + num_groups - 1;
@@ -1203,7 +1203,7 @@ void default_numchars<CharT, 16>::print_integer
 
 template <typename CharT>
 void default_numchars<CharT, 16>::print_amplified_integer
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
     , unsigned num_digits
@@ -1220,7 +1220,7 @@ void default_numchars<CharT, 16>::print_amplified_integer
 
 template <typename CharT>
 void default_numchars<CharT, 16>::print_scientific_notation
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
     , unsigned num_digits
@@ -1261,7 +1261,7 @@ void default_numchars<CharT, 16>::print_scientific_notation
 
 template <typename CharT>
 void default_numchars<CharT, 16>::print_fractional_digits
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
     , unsigned num_digits
@@ -1278,7 +1278,7 @@ void default_numchars<CharT, 16>::print_fractional_digits
 
 template <typename CharT>
 void default_numchars<CharT, 16>::print_single_digit
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned digit ) const
 {
@@ -1325,16 +1325,16 @@ public:
     using stringify::v0::detail::numchars_default_common<CharT>::print_amplified_integer;
 
     virtual void print_base_indication
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc ) const override;
     virtual void print_integer
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits
         , unsigned num_leading_zeros ) const override;
     virtual void print_integer
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , const stringify::v0::numpunct_base& punct
         , std::uint8_t* mem
@@ -1342,7 +1342,7 @@ public:
         , unsigned num_digits
         , unsigned num_leading_zeros = 0) const override;
     virtual void print_amplified_integer
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits
@@ -1357,7 +1357,7 @@ public:
         , bool has_sign
         , bool has_base_indication ) const override;
     virtual void print_scientific_notation
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits
@@ -1373,14 +1373,14 @@ public:
     //     , bool has_sign
     //     , bool print_point ) const override;
     virtual void print_fractional_digits
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , unsigned num_digits
         , char32_t decimal_point
         , unsigned trailing_zeros ) const override;
     virtual void print_single_digit
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned digit ) const override;
 
@@ -1391,7 +1391,7 @@ protected:
 private:
 
     void _print_digits_big_sep
-        ( stringify::v0::output_buffer<CharT>& ob
+        ( boost::basic_outbuf<CharT>& ob
         , stringify::v0::encoding<CharT> enc
         , unsigned long long digits
         , const std::uint8_t* groups
@@ -1402,7 +1402,7 @@ private:
 
 template <typename CharT>
 void default_numchars<CharT, 8>::print_base_indication
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc ) const
 {
     (void)enc;
@@ -1413,7 +1413,7 @@ void default_numchars<CharT, 8>::print_base_indication
 
 template <typename CharT>
 void default_numchars<CharT, 8>::print_integer
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
     , unsigned num_digits
@@ -1440,7 +1440,7 @@ void default_numchars<CharT, 8>::print_integer
 
 template <typename CharT>
 void default_numchars<CharT, 8>::print_integer
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , const stringify::v0::numpunct_base& punct
     , std::uint8_t* mem
@@ -1466,7 +1466,7 @@ void default_numchars<CharT, 8>::print_integer
 
     constexpr auto max_digits
         = stringify::v0::detail::max_num_digits<decltype(digits), 8>;
-    static_assert( max_digits * 2 - 1 <= stringify::v0::min_buff_size
+    static_assert( max_digits * 2 - 1 <= boost::min_size_after_recycle<CharT>()
                  , "too many possible digits" );
 
     auto necessary_size = num_digits + num_groups - 1;
@@ -1492,7 +1492,7 @@ void default_numchars<CharT, 8>::print_integer
 
 template <typename CharT>
 void default_numchars<CharT, 8>::_print_digits_big_sep
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
     , const std::uint8_t* groups
@@ -1511,7 +1511,7 @@ void default_numchars<CharT, 8>::_print_digits_big_sep
 
 template <typename CharT>
 void default_numchars<CharT, 8>::print_amplified_integer
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
     , unsigned num_digits
@@ -1528,7 +1528,7 @@ void default_numchars<CharT, 8>::print_amplified_integer
 
 template <typename CharT>
 void default_numchars<CharT, 8>::print_scientific_notation
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
     , unsigned num_digits
@@ -1568,7 +1568,7 @@ void default_numchars<CharT, 8>::print_scientific_notation
 
 template <typename CharT>
 void default_numchars<CharT, 8>::print_fractional_digits
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
     , unsigned num_digits
@@ -1585,7 +1585,7 @@ void default_numchars<CharT, 8>::print_fractional_digits
 
 template <typename CharT>
 void default_numchars<CharT, 8>::print_single_digit
-    ( stringify::v0::output_buffer<CharT>& ob
+    ( boost::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned digit ) const
 {

@@ -36,7 +36,6 @@
 - Library's core
   - facet_pack
     - ...
-  - output_buffer
   - printer
   - value_with_format
   - Formatter

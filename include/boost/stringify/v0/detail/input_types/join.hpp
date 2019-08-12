@@ -278,7 +278,7 @@ public:
         return _args_length() + _fill_length();
     }
 
-    void write(stringify::v0::output_buffer<CharT>& ob) const override
+    void write(boost::basic_outbuf<CharT>& ob) const override
     {
         if (_fillcount <= 0)
         {
@@ -365,7 +365,7 @@ private:
         return sum;
     }
 
-    void _write_splitted(stringify::v0::output_buffer<CharT>& ob) const
+    void _write_splitted(boost::basic_outbuf<CharT>& ob) const
     {
         auto it = _args.begin();
         for ( int count = _join.num_leading_args
@@ -382,7 +382,7 @@ private:
         }
     }
 
-    void _write_args(stringify::v0::output_buffer<CharT>& ob) const
+    void _write_args(boost::basic_outbuf<CharT>& ob) const
     {
         for(const auto& arg : _args)
         {
@@ -390,7 +390,7 @@ private:
         }
     }
 
-    void _write_fill( stringify::v0::output_buffer<CharT>& ob
+    void _write_fill( boost::basic_outbuf<CharT>& ob
                     , int count ) const
     {
         _encoding.encode_fill( ob, count, _join.fillchar

@@ -10,7 +10,7 @@
 
 namespace strf = boost::stringify::v0;
 
-class QStringAppender: public strf::output_buffer<char16_t>
+class QStringAppender: public boost::basic_outbuf<char16_t>
 {
 public:
 
@@ -26,8 +26,9 @@ private:
 
     QString& _str;
     std::size_t _count = 0;
+    std::exception_ptr _eptr = nullptr;
 
-    constexpr static std::size_t _buffer_size = strf::min_buff_size;
+    constexpr static std::size_t _buffer_size = boost::min_size_after_recycle<char16_t>();
     char16_t _buffer[_buffer_size];
 };
 
@@ -35,7 +36,7 @@ private:
 
 //[QStringAppender_ctor
 QStringAppender::QStringAppender(QString& str)
-    : strf::output_buffer<char16_t>(_buffer, _buffer_size)
+    : boost::basic_outbuf<char16_t>(_buffer, _buffer_size)
     , _str(str)
 {
 }
@@ -44,13 +45,23 @@ QStringAppender::QStringAppender(QString& str)
 //[QStringAppender_recycle
 void QStringAppender::recycle()
 {
-    // Flush the content:
-    std::size_t count = /*<<ouput_buffer::pos() returns the immediate position
-    after the last character the library wrote in the buffer>>*/this->pos() - _buffer;
-    const QChar * qchar_buffer = reinterpret_cast<QChar*>(_buffer);
-    _str.append(qchar_buffer, count);
-    _count += count;
-
+    if (this->good())
+    {
+        // Flush the content:
+        std::size_t count = /*<<ouput_buffer::pos() returns the immediate position
+                              after the last character the library wrote in the buffer>>*/this->pos() - _buffer;
+        const QChar * qchar_buffer = reinterpret_cast<QChar*>(_buffer);
+        try
+        {
+            _str.append(qchar_buffer, count);
+            _count += count;
+        }
+        catch(...)
+        {
+            _eptr = std::current_exception();
+            this->set_good(false);
+        }
+    }
     // Reset the buffer position:
     this->set_pos(_buffer);
 
@@ -72,6 +83,10 @@ void QStringAppender::reserve(std::size_t size)
 std::size_t QStringAppender::finish()
 {
     recycle();
+    if (_eptr != nullptr)
+    {
+        std::rethrow_exception(_eptr);
+    }
     return _count;
 }
 //]
