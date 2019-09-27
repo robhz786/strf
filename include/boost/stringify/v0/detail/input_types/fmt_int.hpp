@@ -19,144 +19,199 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-struct int_format
-{
-    template <class T>
-    class fn
-    {
-    public:
-        using derived_type = stringify::v0::fmt_derived<alignment_format, T>;
-
-        constexpr fn() = default;
-
-        template <typename U>
-        constexpr fn(const fn<U> & u)
-            : _precision(u.precision())
-            , _base(u.base())
-            , _showbase(u.showbase())
-            , _showpos(u.showpos())
-        {
-        }
-
-        constexpr derived_type&& p(unsigned _) &&
-        {
-            _precision = _;
-            return static_cast<derived_type&&>(*this);
-        }
-        constexpr derived_type& p(unsigned _) &
-        {
-            _precision = _;
-            return *this;
-        }
-        constexpr derived_type&& hex() &&
-        {
-            _base = 16;
-            return static_cast<derived_type&&>(*this);
-        }
-        constexpr derived_type& hex() &
-        {
-            _base = 16;
-            return static_cast<derived_type&>(*this);
-        }
-        constexpr derived_type&& dec() &&
-        {
-            _base = 10;
-            return static_cast<derived_type&&>(*this);
-        }
-        constexpr derived_type& dec() &
-        {
-            _base = 10;
-            return static_cast<derived_type&>(*this);
-        }
-        constexpr derived_type&& oct() &&
-        {
-            _base = 8;
-            return static_cast<derived_type&&>(*this);
-        }
-        constexpr derived_type& oct() &
-        {
-            _base = 8;
-            return static_cast<derived_type&>(*this);
-        }
-        constexpr derived_type&& operator+() &&
-        {
-            _showpos = true;
-            return static_cast<derived_type&&>(*this);
-        }
-        constexpr derived_type& operator+() &
-        {
-            _showpos = true;
-            return static_cast<derived_type&&>(*this);
-        }
-        constexpr derived_type&& operator~() &&
-        {
-            _showbase = true;
-            return static_cast<derived_type&&>(*this);
-        }
-        constexpr derived_type& operator~() &
-        {
-            _showbase = true;
-            return static_cast<derived_type&>(*this);
-        }
-        constexpr derived_type&& showbase(bool s) &&
-        {
-            _showbase = s;
-            return static_cast<derived_type&&>(*this);
-        }
-        constexpr derived_type& showbase(bool s) &
-        {
-            _showbase = s;
-            return static_cast<derived_type&>(*this);
-        }
-        constexpr derived_type&& showpos(bool s) &&
-        {
-            _showpos = s;
-            return static_cast<derived_type&&>(*this);
-        }
-        constexpr derived_type& showpos(bool s) &
-        {
-            _showpos = s;
-            return static_cast<derived_type&>(*this);
-        }
-        constexpr unsigned precision() const
-        {
-            return _precision;
-        }
-        constexpr unsigned short base() const
-        {
-            return _base;
-        }
-        constexpr bool showbase() const
-        {
-            return _showbase;
-        }
-        constexpr bool showpos() const
-        {
-            return _showpos;
-        }
-
-    private:
-
-        unsigned _precision = 0;
-        unsigned short _base = 10;
-        bool _showbase = false;
-        bool _showpos = false;
-    };
-};
+template <int Base>
+struct int_format;
 
 namespace detail {
+
+template <class T, int Base>
+class int_format_fn
+{
+    using helper = stringify::v0::fmt_helper<int_format<Base>, T>;
+
+public:
+
+    using derived_type = typename helper::derived_type;
+
+private:
+
+    template <int OtherBase>
+    using adapted_derived_type
+    = typename helper::template adapted_derived_type<int_format<OtherBase> >;
+
+    template <int OtherBase>
+    derived_type&& to_base(std::true_type /*same_base*/) &&
+    {
+        return static_cast<derived_type&&>(*this);
+    }
+    template <int OtherBase>
+    const derived_type& to_base(std::true_type /*same_base*/) const &
+    {
+        return static_cast<const derived_type&>(*this);
+    }
+    template <int OtherBase>
+    derived_type& to_base(std::true_type /*same_base*/) &
+    {
+        return static_cast<derived_type&>(*this);
+    }
+    template <int OtherBase>
+    adapted_derived_type<OtherBase> to_base(std::false_type /*same_base*/) const &
+    {
+        return adapted_derived_type<OtherBase>
+            { static_cast<const derived_type&>(*this) };
+    }
+
+    template <int OtherBase>
+    using base_eq = std::integral_constant<bool, Base == OtherBase>;
+
+    template <int OtherBase>
+    decltype(auto) to_base() &&
+    {
+        return static_cast<int_format_fn&&>(*this)
+            .to_base<OtherBase>(base_eq<OtherBase>{});
+    }
+
+    template <int OtherBase>
+    decltype(auto) to_base() &
+    {
+        return to_base<OtherBase>(base_eq<OtherBase>{});
+    }
+
+    template <int OtherBase>
+    decltype(auto) to_base() const &
+    {
+        return to_base<OtherBase>(base_eq<OtherBase>{});
+    }
+
+public:
+
+    constexpr int_format_fn() = default;
+
+    template <typename U, int OtherBase>
+    constexpr int_format_fn(const int_format_fn<U, OtherBase> & u)
+        : _precision(u.precision())
+        , _showbase(u.showbase())
+        , _showpos(u.showpos())
+    {
+    }
+
+    constexpr derived_type&& p(unsigned _) &&
+    {
+        _precision = _;
+        return static_cast<derived_type&&>(*this);
+    }
+    constexpr derived_type& p(unsigned _) &
+    {
+        _precision = _;
+        return *this;
+    }
+    constexpr decltype(auto) hex() &&
+    {
+        return static_cast<int_format_fn&&>(*this).to_base<16>();
+    }
+    constexpr decltype(auto) hex() &
+    {
+        return to_base<16>();
+    }
+    constexpr decltype(auto) dec() &&
+    {
+        return static_cast<int_format_fn&&>(*this).to_base<10>();
+    }
+    constexpr decltype(auto) dec() &
+    {
+        return to_base<10>();
+    }
+    constexpr decltype(auto) oct() &&
+    {
+        return static_cast<int_format_fn&&>(*this).to_base<8>();
+    }
+    constexpr decltype(auto) oct() &
+    {
+        return to_base<8>();
+    }
+    constexpr derived_type&& operator+() &&
+    {
+        _showpos = true;
+        return static_cast<derived_type&&>(*this);
+    }
+    constexpr derived_type& operator+() &
+    {
+        _showpos = true;
+        return static_cast<derived_type&&>(*this);
+    }
+    constexpr derived_type&& operator~() &&
+    {
+        _showbase = true;
+        return static_cast<derived_type&&>(*this);
+    }
+    constexpr derived_type& operator~() &
+    {
+        _showbase = true;
+        return static_cast<derived_type&>(*this);
+    }
+    constexpr derived_type&& showbase(bool s) &&
+    {
+        _showbase = s;
+        return static_cast<derived_type&&>(*this);
+    }
+    constexpr derived_type& showbase(bool s) &
+    {
+        _showbase = s;
+        return static_cast<derived_type&>(*this);
+    }
+    constexpr derived_type&& showpos(bool s) &&
+    {
+        _showpos = s;
+        return static_cast<derived_type&&>(*this);
+    }
+    constexpr derived_type& showpos(bool s) &
+    {
+        _showpos = s;
+        return static_cast<derived_type&>(*this);
+    }
+    constexpr int base() const
+    {
+        return Base;
+    }
+    constexpr unsigned precision() const
+    {
+        return _precision;
+    }
+    constexpr bool showbase() const
+    {
+        return _showbase;
+    }
+    constexpr bool showpos() const
+    {
+        return _showpos;
+    }
+
+private:
+
+    unsigned _precision = 0;
+    bool _showbase = false;
+    bool _showpos = false;
+};
+
 template <typename IntT>
 struct int_value
 {
     IntT value;
 };
+
 } // namespace detail
 
+template <int Base>
+struct int_format
+{
+    template <typename T>
+    using fn = stringify::v0::detail::int_format_fn<T, Base>;
+};
 
-template <typename IntT>
+template <typename IntT, int Base = 10>
 using int_with_format = stringify::v0::value_with_format
     < stringify::v0::detail::int_value<IntT>
-    , stringify::v0::int_format
+    , stringify::v0::int_format<Base>
     , stringify::v0::alignment_format >;
 
 namespace detail {
@@ -164,14 +219,12 @@ namespace detail {
 template <typename CharT>
 class fmt_int_printer: public printer<CharT>
 {
-
 public:
 
     template <typename FPack, typename IntT, int Base>
     fmt_int_printer
         ( const FPack& fp
-        , stringify::v0::int_with_format<IntT> value
-        , std::integral_constant<int, Base> ) noexcept;
+        , stringify::v0::int_with_format<IntT, Base> value ) noexcept;
 
     ~fmt_int_printer();
 
@@ -199,7 +252,7 @@ private:
     bool _showbase;
 
     template <typename IntT, int Base, bool NoGroupSep, bool DefaultChars>
-    void _init( stringify::v0::int_with_format<IntT> value
+    void _init( stringify::v0::int_with_format<IntT, Base> value
               , std::integral_constant<bool, NoGroupSep>
               , std::integral_constant<bool, DefaultChars> );
 
@@ -219,8 +272,7 @@ template <typename CharT>
 template <typename FPack, typename IntT, int Base>
 inline fmt_int_printer<CharT>::fmt_int_printer
     ( const FPack& fp
-    , stringify::v0::int_with_format<IntT> value
-    , std::integral_constant<int, Base> ) noexcept
+    , stringify::v0::int_with_format<IntT, Base> value ) noexcept
     : _chars(get_facet<stringify::v0::numchars_c<CharT, Base>, IntT>(fp))
     , _punct(get_facet<stringify::v0::numpunct_c<Base>, IntT>(fp))
     , _encoding(get_facet<stringify::v0::encoding_c<CharT>, IntT>(fp))
@@ -247,7 +299,7 @@ inline fmt_int_printer<CharT>::fmt_int_printer
 template <typename CharT>
 template <typename IntT, int Base, bool NoGroupSep, bool DefaultChars>
 void fmt_int_printer<CharT>::_init
-    ( stringify::v0::int_with_format<IntT> value
+    ( stringify::v0::int_with_format<IntT, Base> value
     , std::integral_constant<bool, NoGroupSep>
     , std::integral_constant<bool, DefaultChars> )
 {
@@ -435,17 +487,12 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<wchar_t>;
 
 } // namespace detail
 
-template <typename CharT, typename FPack, typename IntT>
+template <typename CharT, typename FPack, typename IntT, int Base>
 inline stringify::v0::detail::fmt_int_printer<CharT>
 make_printer( const FPack& fp
-            , const stringify::v0::int_with_format<IntT>& x )
+            , const stringify::v0::int_with_format<IntT, Base>& x )
 {
-    switch (x.base())
-    {
-        case 10: return {fp, x, std::integral_constant<int, 10>{}};
-        case 16: return {fp, x, std::integral_constant<int, 16>{}};
-        default: return {fp, x, std::integral_constant<int, 8>{}};
-    }
+    return {fp, x};
 }
 
 inline auto make_fmt(stringify::v0::tag, short x)
