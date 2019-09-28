@@ -383,167 +383,262 @@ inline const char* chars_00_to_99()
     return array;
 }
 
-template <typename IntT, typename CharT>
-CharT* write_int_dec_txtdigits_backwards(IntT value, CharT* it) noexcept
+template <int Base>
+class intdigits_writer;
+
+template <>
+class intdigits_writer<10>
 {
-    auto uvalue = stringify::v0::detail::unsigned_abs(value);
-    const char* arr = stringify::v0::detail::chars_00_to_99();
-    while(uvalue > 99)
+public:
+
+    template <typename IntT, typename CharT>
+    static CharT* write_txtdigits_backwards(IntT value, CharT* it) noexcept
     {
-        auto index = (uvalue % 100) << 1;
-        it[-2] = arr[index];
-        it[-1] = arr[index + 1];
-        it -= 2;
-        uvalue /= 100;
+        auto uvalue = stringify::v0::detail::unsigned_abs(value);
+        const char* arr = stringify::v0::detail::chars_00_to_99();
+        while(uvalue > 99)
+        {
+            auto index = (uvalue % 100) << 1;
+            it[-2] = arr[index];
+            it[-1] = arr[index + 1];
+            it -= 2;
+            uvalue /= 100;
+        }
+        if (uvalue < 10)
+        {
+            *--it = static_cast<CharT>('0' + uvalue);
+            return it;
+        }
+        else
+        {
+            auto index = uvalue << 1;
+            it[-2] = arr[index];
+            it[-1] = arr[index + 1];
+            return it - 2;
+        }
     }
-    if (uvalue < 10)
+
+    template <typename IntT, typename CharT>
+    static void write_txtdigits_backwards_little_sep
+        ( IntT value
+        , CharT* it
+        , CharT sep
+        , const std::uint8_t* groups ) noexcept
     {
+        auto uvalue = stringify::v0::detail::unsigned_abs(value);
+        const char* arr = stringify::v0::detail::chars_00_to_99();
+        auto n = *groups;
+        while (uvalue > 99)
+        {
+            auto index = (uvalue % 100) << 1;
+            if (n > 1)
+            {
+                it[-2] = arr[index];
+                it[-1] = arr[index + 1];
+                n -= 2;
+                if (n == 0)
+                {
+                    it[-3] = sep;
+                    n = * ++groups;
+                    it -= 3;
+                }
+                else
+                {
+                    it -= 2;
+                }
+            }
+            else
+            {
+                it[-3] = arr[index];
+                it[-2] = sep;
+                it[-1] = arr[index + 1];
+                n = * ++groups - 1;
+                if (n == 0)
+                {
+                    it[-4] = sep;
+                    it -= 4;
+                    n = * ++groups;
+                }
+                else
+                {
+                    it -= 3;
+                }
+            }
+            uvalue /= 100;
+        }
+        BOOST_ASSERT(n != 0);
+        if (uvalue < 10)
+        {
+            it[-1] = static_cast<CharT>('0' + uvalue);
+        }
+        else
+        {
+            auto index = uvalue << 1;
+            if (n == 1)
+            {
+                it[-3] = arr[index];
+                it[-2] = sep;
+                it[-1] = arr[index + 1];
+            }
+            else
+            {
+                it[-2] = arr[index];
+                it[-1] = arr[index + 1];
+            }
+        }
+    }
+};
+
+template <>
+class intdigits_writer<16>
+{
+public:
+
+    template <typename IntT, typename CharT>
+    static CharT* write_txtdigits_backwards(IntT value, CharT* it) noexcept
+    {
+        using uIntT = typename std::make_unsigned<IntT>::type;
+        uIntT uvalue = value;
+        // constexpr bool lowercase = true;
+        // constexpr char char_a = 'A' | (lowercase << 5);
+        // //constexpr char char_a_offset = char_a - 10;
+        // constexpr char hex_offset = char_a - '0' - 10;
+        while(uvalue > 0xF)
+        {
+            // auto digit = uvalue & 0xF;
+            // *--it = '0' + (digit >= 10) * hex_offset + digit;
+            *--it = to_xdigit(uvalue & 0xF);
+            uvalue >>= 4;
+        }
+        //auto digit = uvalue & 0xF;
+        //*--it = '0' + (digit >= 10) * hex_offset + digit;
+        *--it = to_xdigit(uvalue & 0xF);
+        return it;
+    }
+
+    template <typename IntT, typename CharT>
+    static void write_txtdigits_backwards_little_sep
+        ( IntT value
+        , CharT* it
+        , CharT sep
+        , const std::uint8_t* groups ) noexcept
+    {
+        auto uvalue = stringify::v0::detail::unsigned_abs(value);
+        auto n = *groups;
+        // constexpr bool lowercase = true;
+        // constexpr char char_a = 'A' | (lowercase << 5)
+        // constexpr char hex_offset = char_a - '0' - 10;
+        // *it = '0' + (d >= 10) * (hex_offset) + d;
+
+        constexpr char offset_digit_a = 'a' - 10;
+        while (uvalue > 0xF)
+        {
+            unsigned d = uvalue & 0xF;
+            --it;
+            if (d < 10)
+            {
+                *it = static_cast<CharT>('0' + d);
+            }
+            else
+            {
+                *it = static_cast<CharT>(offset_digit_a + d);
+            }
+            if (--n == 0)
+            {
+                *--it = sep;
+                n = *++groups;
+            }
+            uvalue = uvalue >> 4;
+        }
+        --it;
+        if (uvalue < 10)
+        {
+            *it = static_cast<CharT>('0' + uvalue);
+        }
+        else
+        {
+            *it = static_cast<CharT>(offset_digit_a + uvalue);
+        }
+    }
+};
+
+template <>
+class intdigits_writer<8>
+{
+public:
+
+    template <typename IntT, typename CharT>
+    static CharT* write_txtdigits_backwards(IntT value, CharT* it) noexcept
+    {
+        using uIntT = typename std::make_unsigned<IntT>::type;
+        uIntT uvalue = value;
+        while (uvalue > 7)
+        {
+            *--it = static_cast<CharT>('0' + (uvalue & 7));
+            uvalue >>= 3;
+        }
         *--it = static_cast<CharT>('0' + uvalue);
         return it;
     }
-    else
+
+    template <typename IntT, typename CharT>
+    static void write_txtdigits_backwards_little_sep
+        ( IntT value
+        , CharT* it
+        , CharT sep
+        , const std::uint8_t* groups ) noexcept
     {
-        auto index = uvalue << 1;
-        it[-2] = arr[index];
-        it[-1] = arr[index + 1];
-        return it - 2;
+        auto uvalue = stringify::v0::detail::unsigned_abs(value);
+        auto n = *groups;
+        while (uvalue > 0x7)
+        {
+            *--it = '0' + (uvalue & 0x7);
+            uvalue = uvalue >> 3;
+            if (--n == 0)
+            {
+                *--it = sep;
+                n = *++groups;
+            }
+        }
+        *--it = static_cast<CharT>('0' + uvalue);
     }
+};
+
+
+template <typename IntT, typename CharT>
+inline CharT* write_int_dec_txtdigits_backwards(IntT value, CharT* it) noexcept
+{
+    return intdigits_writer<10>::write_txtdigits_backwards(value, it);
 }
 
 template <typename IntT, typename CharT>
-CharT* write_int_hex_txtdigits_backwards
-    (IntT value, CharT* it) noexcept
+inline CharT* write_int_hex_txtdigits_backwards(IntT value, CharT* it) noexcept
 {
-    using uIntT = typename std::make_unsigned<IntT>::type;
-    uIntT uvalue = value;
-    while(uvalue > 0xF)
-    {
-        *--it = stringify::v0::detail::to_xdigit(uvalue & 0xF);
-        uvalue >>= 4;
-    }
-    *--it = stringify::v0::detail::to_xdigit(static_cast<unsigned>(uvalue));
-    return it;
+    return intdigits_writer<16>::write_txtdigits_backwards(value, it);
 }
 
 template <typename IntT, typename CharT>
-CharT* write_int_oct_txtdigits_backwards(IntT value, CharT* it) noexcept
+inline CharT* write_int_oct_txtdigits_backwards(IntT value, CharT* it) noexcept
 {
-    using uIntT = typename std::make_unsigned<IntT>::type;
-    uIntT uvalue = value;
-    while (uvalue > 7)
-    {
-        *--it = static_cast<CharT>('0' + (uvalue & 7));
-        uvalue >>= 3;
-    }
-    *--it = static_cast<CharT>('0' + uvalue);
-    return it;
+    return intdigits_writer<8>::write_txtdigits_backwards(value, it);
 }
 
-template <typename IntT, typename CharT>
-CharT* write_int_txtdigits_backwards
-    (IntT value, int base, bool uppercase, CharT* it) noexcept
+template <int Base, typename IntT, typename CharT>
+inline CharT* write_int_txtdigits_backwards(IntT value, CharT* it) noexcept
 {
-    if (base == 10)
-    {
-        return write_int_dec_txtdigits_backwards(value, it);
-    }
-    if (base == 16)
-    {
-        return write_int_hex_txtdigits_backwards(value, uppercase, it);
-    }
-    BOOST_ASSERT(base == 8);
-    return write_int_oct_txtdigits_backwards(value, it);
+    return intdigits_writer<Base>::write_txtdigits_backwards(value, it);
 }
 
-// template <typename IntT, typename CharT>
-// class intdigits_writer: public stringify::v0::piecemeal_input<CharT>
-// {
-// public:
-
-//     intdigits_writer
-//         ( const char* dig_it
-//         , const unsigned char* grp
-//         , const unsigned char* grp_it
-//         , const stringify::v0::encoder<CharT>& encoder
-//         , char32_t sepchar
-//         , unsigned sepchar_size )
-//         : m_dig_it{dig_it}
-//         , m_grp{grp}
-//         , m_grp_it{grp_it}
-//         , m_encoder{encoder}
-//         , m_sepchar{sepchar}
-//         , m_sepchar_size{sepchar_size}
-//     {
-//     }
-
-//     CharT* get_some(CharT* begin, CharT* end) override;
-
-// private:
-
-//     CharT* write_sep(CharT* begin, CharT* end)
-//     {
-//         auto it = m_encoder.encode(m_sepchar, begin, end, true);
-//         BOOST_ASSERT(it != nullptr);
-//         BOOST_ASSERT(it != end + 1);
-//         return it;
-//     }
-
-//     CharT* write_grp(unsigned grp_size, CharT* it);
-
-//     const char* m_dig_it;
-//     const unsigned char* const m_grp;
-//     const unsigned char* m_grp_it;
-//     const stringify::v0::encoder<CharT>& m_encoder;
-//     char32_t m_sepchar;
-//     unsigned m_sepchar_size;
-//     bool m_first_grp = true;
-// };
-
-
-// template <typename IntT, typename CharT>
-// CharT* intdigits_writer<IntT, CharT>::get_some(CharT* begin, CharT* end)
-// {
-//     auto it = begin;
-//     if(m_first_grp)
-//     {
-//         auto grp_size = *m_grp_it;
-//         if (begin + grp_size > end)
-//         {
-//             return begin;
-//         }
-//         it = write_grp(grp_size, it);
-//         -- m_grp_it;
-//         m_first_grp = false;
-//     }
-//     BOOST_ASSERT(m_grp_it >= m_grp);
-//     do
-//     {
-//         auto grp_size = *m_grp_it;
-//         if (it + grp_size + m_sepchar_size > end)
-//         {
-//             return it;
-//         }
-//         it = write_sep(it, end);
-//         it = write_grp(grp_size, it);
-//         -- m_grp_it;
-//     }
-//     while(m_grp_it >= m_grp);
-
-//     this->report_success();
-//     return it;
-// }
-
-// template <typename IntT, typename CharT>
-// CharT* intdigits_writer<IntT, CharT>::write_grp(unsigned grp_size, CharT* it)
-// {
-//     BOOST_ASSERT(grp_size != 0);
-//     do
-//     {
-//         *it++ = *m_dig_it++;
-//     }
-//     while(--grp_size > 0);
-//     return it;
-// }
+template <int Base, typename IntT, typename CharT>
+inline void write_int_txtdigits_backwards_little_sep
+    ( IntT value
+    , CharT* it
+    , CharT sep
+    , const std::uint8_t* groups ) noexcept
+{
+    intdigits_writer<Base>::write_txtdigits_backwards_little_sep
+        ( value, it, sep, groups );
+}
 
 } // namespace detail
 

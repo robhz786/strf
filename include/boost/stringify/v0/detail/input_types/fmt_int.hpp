@@ -216,12 +216,12 @@ using int_with_format = stringify::v0::value_with_format
 
 namespace detail {
 
-template <typename CharT>
+template <typename CharT, int Base>
 class fmt_int_printer: public printer<CharT>
 {
 public:
 
-    template <typename FPack, typename IntT, int Base>
+    template <typename FPack, typename IntT>
     fmt_int_printer
         ( const FPack& fp
         , stringify::v0::int_with_format<IntT, Base> value ) noexcept;
@@ -237,7 +237,6 @@ public:
 private:
 
     unsigned long long _uvalue;
-    const stringify::v0::numchars<CharT>& _chars;
     const stringify::v0::numpunct_base& _punct;
     const stringify::v0::encoding<CharT> _encoding;
     unsigned _digcount;
@@ -248,13 +247,11 @@ private:
     stringify::v0::alignment_format::fn<void> _afmt;
     stringify::v0::surrogate_policy _allow_surr;
     bool _negative;
-    bool _showsign;
-    bool _showbase;
+    std::uint8_t _prefixsize;
 
-    template <typename IntT, int Base, bool NoGroupSep, bool DefaultChars>
+    template <typename IntT, bool NoGroupSep>
     void _init( stringify::v0::int_with_format<IntT, Base> value
-              , std::integral_constant<bool, NoGroupSep>
-              , std::integral_constant<bool, DefaultChars> );
+              , std::integral_constant<bool, NoGroupSep> );
 
     void _write_fill
         ( boost::basic_outbuf<CharT>& ob
@@ -266,15 +263,19 @@ private:
 
     void _write_complement(boost::basic_outbuf<CharT>& ob) const;
     void _write_digits(boost::basic_outbuf<CharT>& ob) const;
+    void _write_digits_no_sep(boost::basic_outbuf<CharT>& ob) const;
+    void _write_digits_with_sep(boost::basic_outbuf<CharT>& ob) const;
+    void _write_digits_little_sep(boost::basic_outbuf<CharT>& ob) const;
+    void _write_digits_big_sep( boost::basic_outbuf<CharT>& ob
+                              , std::size_t sep_size ) const;
 };
 
-template <typename CharT>
-template <typename FPack, typename IntT, int Base>
-inline fmt_int_printer<CharT>::fmt_int_printer
+template <typename CharT, int Base>
+template <typename FPack, typename IntT>
+inline fmt_int_printer<CharT, Base>::fmt_int_printer
     ( const FPack& fp
     , stringify::v0::int_with_format<IntT, Base> value ) noexcept
-    : _chars(get_facet<stringify::v0::numchars_c<CharT, Base>, IntT>(fp))
-    , _punct(get_facet<stringify::v0::numpunct_c<Base>, IntT>(fp))
+    : _punct(get_facet<stringify::v0::numpunct_c<Base>, IntT>(fp))
     , _encoding(get_facet<stringify::v0::encoding_c<CharT>, IntT>(fp))
     , _enc_err(get_facet<stringify::v0::encoding_error_c, IntT>(fp))
     , _afmt(value)
@@ -283,12 +284,7 @@ inline fmt_int_printer<CharT>::fmt_int_printer
     using no_group_sep =
         decltype(detail::has_no_grouping
                  (get_facet<stringify::v0::numpunct_c<Base>, IntT>(fp)));
-    using numchars_type =
-        decltype(get_facet<stringify::v0::numchars_c<CharT, Base>, IntT>(fp));
-    using numchars_default =
-        std::is_same< const numchars_type&
-                    , const stringify::v0::default_numchars<CharT, Base>& >;
-    _init<IntT, Base>(value, no_group_sep{}, numchars_default{});
+    _init<IntT>(value, no_group_sep{});
 }
 
 #if defined(_MSC_VER)
@@ -296,12 +292,11 @@ inline fmt_int_printer<CharT>::fmt_int_printer
 #pragma warning ( disable : 4127 )
 #endif // defined(_MSC_VER)
 
-template <typename CharT>
-template <typename IntT, int Base, bool NoGroupSep, bool DefaultChars>
-void fmt_int_printer<CharT>::_init
+template <typename CharT, int Base>
+template <typename IntT, bool NoGroupSep>
+void fmt_int_printer<CharT, Base>::_init
     ( stringify::v0::int_with_format<IntT, Base> value
-    , std::integral_constant<bool, NoGroupSep>
-    , std::integral_constant<bool, DefaultChars> )
+    , std::integral_constant<bool, NoGroupSep> )
 {
     using unsigned_type = typename std::make_unsigned<IntT>::type;
 
@@ -310,16 +305,14 @@ void fmt_int_printer<CharT>::_init
         using unsigned_IntT = typename std::make_unsigned<IntT>::type;
         unsigned_IntT uvalue = 1 + unsigned_IntT(-(value.value().value + 1));
         _negative = value.value().value < 0;
-        _showsign = _negative || value.showpos();
+        _prefixsize = _negative || value.showpos();
         _uvalue = _negative * uvalue + (!_negative) * value.value().value;
-        _showbase = false;
     }
     else
     {
         _uvalue = unsigned_type(value.value().value);
         _negative = false;
-        _showsign = false;
-        _showbase = value.showbase();
+        _prefixsize = value.showbase() << (Base == 16);
     }
     _digcount = stringify::v0::detail::count_digits<Base>(_uvalue);
     _precision = value.precision();
@@ -333,22 +326,10 @@ void fmt_int_printer<CharT>::_init
         _sepcount = _punct.thousands_sep_count(_digcount);
     }
 
-    int content_width = 0;
-    BOOST_STRINGIFY_IF_CONSTEXPR (DefaultChars)
-    {
-        content_width = std::max(_precision, _digcount)
-            + _showsign
-            + (_showbase << (Base == 16))
+    int content_width = std::max(_precision, _digcount)
+            + _prefixsize
             + static_cast<int>(_sepcount);
-    }
-    else
-    {
-         content_width = _chars.integer_printwidth
-             ( std::max(_precision, _digcount)
-             , _showsign
-             , _showbase )
-             + static_cast<int>(_sepcount);
-    }
+
     if (_afmt.width() > content_width)
     {
         _fillcount = _afmt.width() - content_width;
@@ -364,17 +345,16 @@ void fmt_int_printer<CharT>::_init
 #pragma warning ( pop )
 #endif // defined(_MSC_VER)
 
-template <typename CharT>
-fmt_int_printer<CharT>::~fmt_int_printer()
+template <typename CharT, int Base>
+fmt_int_printer<CharT, Base>::~fmt_int_printer()
 {
 }
 
-template <typename CharT>
-std::size_t fmt_int_printer<CharT>::necessary_size() const
+template <typename CharT, int Base>
+std::size_t fmt_int_printer<CharT, Base>::necessary_size() const
 {
-    std::size_t s = _chars.integer_printsize
-        ( _encoding, std::max((unsigned)_digcount, _precision)
-        , _showsign, _showbase );
+    std::size_t s = std::max(_precision, _digcount) + _prefixsize;
+
     if (_sepcount > 0)
     {
         auto sepsize = _encoding.validate(_punct.thousands_sep());
@@ -390,14 +370,14 @@ std::size_t fmt_int_printer<CharT>::necessary_size() const
     return s;
 }
 
-template <typename CharT>
-int fmt_int_printer<CharT>::width(int) const
+template <typename CharT, int Base>
+int fmt_int_printer<CharT, Base>::width(int) const
 {
     return _afmt.width();
 }
 
-template <typename CharT>
-void fmt_int_printer<CharT>::write
+template <typename CharT, int Base>
+void fmt_int_printer<CharT, Base>::write
         ( boost::basic_outbuf<CharT>& ob ) const
 {
     if (_fillcount == 0)
@@ -442,53 +422,201 @@ void fmt_int_printer<CharT>::write
     }
 }
 
-template <typename CharT>
-inline void fmt_int_printer<CharT>::_write_complement
+template <typename CharT, int Base>
+inline void fmt_int_printer<CharT, Base>::_write_complement
     ( boost::basic_outbuf<CharT>& ob ) const
 {
-    if(_showsign)
+    if (_prefixsize != 0)
     {
-        _chars.print_sign(ob, _encoding, _negative);
-    }
-    else if (_showbase)
-    {
-        _chars.print_base_indication(ob, _encoding);
+        ob.ensure(_prefixsize);
+        BOOST_STRINGIFY_IF_CONSTEXPR (Base == 10)
+        {
+            * ob.pos() = static_cast<CharT>('+') + (_negative << 1);
+            ob.advance(1);
+        }
+        else BOOST_STRINGIFY_IF_CONSTEXPR (Base == 8)
+        {
+            * ob.pos() = static_cast<CharT>('0');
+            ob.advance(1);
+        }
+        else
+        {
+            ob.pos()[0] = static_cast<CharT>('0');
+            ob.pos()[1] = static_cast<CharT>('x');
+            ob.advance(2);
+        }
     }
 }
 
-template <typename CharT>
-inline void fmt_int_printer<CharT>::_write_digits
+template <typename CharT, int Base>
+inline void fmt_int_printer<CharT, Base>::_write_digits
     ( boost::basic_outbuf<CharT>& ob ) const
 {
-    unsigned zeros = (_precision > _digcount) * (_precision - _digcount);
+    if (_precision > _digcount)
+    {
+        unsigned zeros = _precision - _digcount;
+        stringify::v0::detail::write_fill(ob, zeros, CharT('0'));
+    }
     if (_sepcount == 0)
     {
-        _chars.print_integer(ob, _encoding, _uvalue, _digcount, zeros);
+        _write_digits_no_sep(ob);
     }
     else
     {
-        unsigned char grp_buff
-        [stringify::v0::detail::max_num_digits< unsigned long long, 8>];
-        _chars.print_integer( ob, _encoding, _punct, grp_buff
-                            , _uvalue, _digcount, zeros );
+        _write_digits_with_sep(ob);
     }
 }
 
+template <typename CharT, int Base>
+inline void fmt_int_printer<CharT, Base>::_write_digits_no_sep
+    ( boost::basic_outbuf<CharT>& ob ) const
+{
+    ob.ensure(_digcount);
+    stringify::v0::detail::write_int_txtdigits_backwards<Base>
+        ( _uvalue, ob.pos() + _digcount );
+    ob.advance(_digcount);
+}
+
+template <typename CharT, int Base>
+void fmt_int_printer<CharT, Base>::_write_digits_with_sep
+    ( boost::basic_outbuf<CharT>& ob ) const
+{
+    auto sep_size = _encoding.validate(_punct.thousands_sep());
+    constexpr auto max_digits = detail::max_num_digits< decltype(_uvalue)
+                                                      , Base >;
+    unsigned char groups_buff[max_digits];
+    const auto num_groups = _punct.groups(_digcount, groups_buff);
+    (void) num_groups;
+    BOOST_ASSERT(num_groups == _sepcount + 1);
+
+    switch(sep_size)
+    {
+        case 1:
+            _write_digits_little_sep(ob);
+            break;
+        case (std::size_t)-1:
+            _write_digits_no_sep(ob);
+            break;
+        default:
+            _write_digits_big_sep(ob, sep_size);
+    }
+}
+
+template <typename CharT, int Base>
+void fmt_int_printer<CharT, Base>::_write_digits_little_sep
+    ( boost::basic_outbuf<CharT>& ob ) const
+{
+    BOOST_ASSERT(1 == _encoding.validate(_punct.thousands_sep()));
+
+    constexpr auto max_digits = detail::max_num_digits<unsigned long long, Base>;
+    std::uint8_t groups_buff[max_digits];
+
+    const auto num_groups = _punct.groups(_digcount, groups_buff);
+    (void) num_groups;
+    BOOST_ASSERT(num_groups == _sepcount + 1);
+
+    CharT sep;
+    _encoding.encode_char(&sep, _punct.thousands_sep());
+
+    auto size = _digcount + _sepcount;
+    detail::write_int_txtdigits_backwards_little_sep<Base>
+        ( _uvalue, ob.pos() + size, sep, groups_buff );
+    ob.advance(size);
+}
+
+template <typename CharT>
+void write_digits_big_sep
+    ( boost::basic_outbuf<CharT>& ob
+    , const stringify::v0::encoding<CharT> encoding
+    , const std::uint8_t* last_grp
+    , unsigned char* digits
+    , unsigned num_digits
+    , char32_t sep
+    , std::size_t sep_size )
+{
+    BOOST_ASSERT(sep_size != (std::size_t)-1);
+    BOOST_ASSERT(sep_size != 1);
+    BOOST_ASSERT(sep_size == encoding.validate(sep));
+
+    ob.ensure(1);
+
+    auto pos = ob.pos();
+    auto end = ob.end();
+    auto grp_it = last_grp;
+    auto n = *grp_it;
+
+    while(true)
+    {
+        *pos = *digits;
+        ++pos;
+        ++digits;
+        if (--num_digits == 0)
+        {
+            break;
+        }
+        --n;
+        if (pos == end || (n == 0 && pos + sep_size >= end))
+        {
+            ob.advance_to(pos);
+            ob.recycle();
+            pos = ob.pos();
+            end = ob.end();
+        }
+        if (n == 0)
+        {
+            pos = encoding.encode_char(pos, sep);
+            n = *--grp_it;
+        }
+    }
+    ob.advance_to(pos);
+}
+
+template <typename CharT, int Base>
+void fmt_int_printer<CharT, Base>::_write_digits_big_sep
+    ( boost::basic_outbuf<CharT>& ob, std::size_t sep_size ) const
+{
+    constexpr auto max_digits = detail::max_num_digits<unsigned long long, Base>;
+    unsigned char digits_buff[max_digits];
+    unsigned char groups_buff[max_digits];
+
+    const auto num_groups = _punct.groups(_digcount, groups_buff);
+    BOOST_ASSERT(num_groups == _sepcount + 1);
+
+    const auto dig_end = digits_buff + max_digits;
+    auto digits = stringify::v0::detail::write_int_txtdigits_backwards<Base>
+        ( _uvalue, dig_end );
+
+    stringify::v0::detail::write_digits_big_sep
+        ( ob, _encoding, groups_buff + num_groups - 1, digits, _digcount
+        , _punct.thousands_sep(), sep_size );
+}
+
+
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 #if defined(__cpp_char8_t)
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char8_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char8_t,  8>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char8_t, 10>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char8_t, 16>;
 #endif
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<wchar_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char,  8>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char, 10>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char, 16>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char16_t,  8>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char16_t, 10>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char16_t, 16>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char32_t,  8>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char32_t, 10>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<char32_t, 16>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<wchar_t,  8>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<wchar_t, 10>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_int_printer<wchar_t, 16>;
 
 #endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 } // namespace detail
 
 template <typename CharT, typename FPack, typename IntT, int Base>
-inline stringify::v0::detail::fmt_int_printer<CharT>
+inline stringify::v0::detail::fmt_int_printer<CharT, Base>
 make_printer( const FPack& fp
             , const stringify::v0::int_with_format<IntT, Base>& x )
 {
