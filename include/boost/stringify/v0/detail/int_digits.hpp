@@ -640,6 +640,134 @@ inline void write_int_txtdigits_backwards_little_sep
         ( value, it, sep, groups );
 }
 
+template <int Base, typename CharT, typename IntT>
+inline void write_int
+    ( boost::basic_outbuf<CharT>& ob
+    , IntT value
+    , unsigned digcount )
+{
+    ob.ensure(digcount);
+    auto p = ob.pos() + digcount;
+    intdigits_writer<Base>::write_txtdigits_backwards(value, p);
+    ob.advance_to(p);
+}
+
+template <typename CharT>
+void write_digits_big_sep
+    ( boost::basic_outbuf<CharT>& ob
+    , const stringify::v0::encoding<CharT> encoding
+    , const std::uint8_t* last_grp
+    , unsigned char* digits
+    , unsigned num_digits
+    , char32_t sep
+    , std::size_t sep_size )
+{
+    BOOST_ASSERT(sep_size != (std::size_t)-1);
+    BOOST_ASSERT(sep_size != 1);
+    BOOST_ASSERT(sep_size == encoding.validate(sep));
+
+    ob.ensure(1);
+
+    auto pos = ob.pos();
+    auto end = ob.end();
+    auto grp_it = last_grp;
+    auto n = *grp_it;
+
+    while(true)
+    {
+        *pos = *digits;
+        ++pos;
+        ++digits;
+        if (--num_digits == 0)
+        {
+            break;
+        }
+        --n;
+        if (pos == end || (n == 0 && pos + sep_size >= end))
+        {
+            ob.advance_to(pos);
+            ob.recycle();
+            pos = ob.pos();
+            end = ob.end();
+        }
+        if (n == 0)
+        {
+            pos = encoding.encode_char(pos, sep);
+            n = *--grp_it;
+        }
+    }
+    ob.advance_to(pos);
+}
+
+template <int Base, typename CharT>
+void _write_digits_big_sep
+      ( boost::basic_outbuf<CharT>& ob
+      , boost::stringify::v0::encoding<CharT> enc
+      , const uint8_t* groups
+      , unsigned long long value
+      , unsigned digcount
+      , unsigned num_groups
+      , char32_t sep
+      , std::size_t sep_size )
+{
+    constexpr auto max_digits = detail::max_num_digits<unsigned long long, Base>;
+    unsigned char digits_buff[max_digits];
+
+    const auto dig_end = digits_buff + max_digits;
+    auto digits = stringify::v0::detail::write_int_txtdigits_backwards<Base>
+        ( value, dig_end );
+
+    stringify::v0::detail::write_digits_big_sep
+        ( ob, enc, groups + num_groups - 1, digits, digcount
+        , sep, sep_size );
+}
+
+
+template <int Base, typename CharT>
+void write_int
+      ( boost::basic_outbuf<CharT>& ob
+      , const boost::stringify::v0::numpunct_base& punct
+      , boost::stringify::v0::encoding<CharT> enc
+      , unsigned long long value
+      , unsigned digcount )
+{
+    constexpr auto max_digits = detail::max_num_digits< decltype(value)
+                                                      , Base >;
+    uint8_t groups[max_digits];
+    const auto num_groups = punct.groups(digcount, groups);
+    (void) num_groups;
+
+    // if (num_groups == 0)
+    // {
+    //     goto no_punct;
+    // }
+
+    auto sep32 = punct.thousands_sep();
+    if (sep32 >= enc.u32equivalence_end() || sep32 < enc.u32equivalence_begin())
+    {
+        auto sep_size = enc.validate(sep32);
+        if (sep_size == (std::size_t)-1)
+        {
+            //no_punct:
+            stringify::v0::detail::write_int<Base>(ob, value, digcount);
+            return;
+        }
+        if (sep_size != 1)
+        {
+            stringify::v0::detail::_write_digits_big_sep<Base>
+                ( ob, enc, groups, value, digcount, num_groups
+                , sep32, sep_size );
+            return;
+        }
+    }
+    std::size_t size = digcount + num_groups - 1;
+    ob.ensure(size);
+    auto next_p = ob.pos() + size;
+    detail::write_int_txtdigits_backwards_little_sep<Base>
+        ( value, next_p, static_cast<CharT>(sep32), groups );
+    ob.advance_to(next_p);
+}
+
 } // namespace detail
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

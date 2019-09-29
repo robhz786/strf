@@ -410,7 +410,7 @@ void numchars_default_common<CharT>::print_amplified_integer
     , unsigned num_trailing_zeros ) const
 {
     auto sep32 = punct.thousands_sep();
-    CharT sep = static_cast<CharT>(sep32);;
+    CharT sep = static_cast<CharT>(sep32);
     //char buff[detail::max_num_digits<decltype(digits), 8>];
 
     if (sep32 >= enc.u32equivalence_end() || sep32 < enc.u32equivalence_begin())
@@ -429,7 +429,7 @@ void numchars_default_common<CharT>::print_amplified_integer
         {
             auto num_groups = punct.groups(num_trailing_zeros + num_digits, mem);
             stringify::v0::detail::print_amplified_integer_big_separator<CharT>
-                ( ob, enc, mem, num_groups, sep, sep_size
+                ( ob, enc, mem, num_groups, sep32, sep_size
                 , digits, num_digits );
             return;
         }
