@@ -11,7 +11,7 @@
 #endif // defined(_MSC_VER)
 
 #include <boost/stringify/v0/dynamic_join_printer.hpp>
-#include <boost/stringify/v0/detail/input_types/fmt_int.hpp>
+#include <boost/stringify/v0/detail/input_types/int.hpp>
 #include <boost/stringify/v0/detail/input_types/char.hpp>
 #include <boost/stringify/v0/detail/input_types/float.hpp>
 #include <boost/stringify/v0/detail/input_types/string.hpp>
