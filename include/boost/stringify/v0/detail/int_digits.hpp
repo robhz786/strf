@@ -652,6 +652,24 @@ inline void write_int
     ob.advance_to(p);
 }
 
+template <int Base, typename CharT, typename IntT>
+inline void write_int_with_leading_zeros
+    ( boost::basic_outbuf<CharT>& ob
+    , IntT value
+    , unsigned digcount )
+{
+    ob.ensure(digcount);
+    auto p = ob.pos();
+    auto end = p + digcount;
+    auto p2 = intdigits_writer<Base>::write_txtdigits_backwards(value, end);
+    if (p != p2)
+    {
+        std::char_traits<CharT>::assign(p, p2 - p, (CharT)'0');
+    }
+    ob.advance_to(end);
+}
+
+
 template <typename CharT>
 void write_digits_big_sep
     ( boost::basic_outbuf<CharT>& ob
