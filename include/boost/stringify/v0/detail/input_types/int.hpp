@@ -759,7 +759,7 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char8_t,  8>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char8_t, 10>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char8_t, 16>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<char8_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class punct_printer<char8_t>;
+BOOST_STRINGIFY_EXPLICIT_TEMPLATE class punct_int_printer<char8_t>;
 #endif
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char,  8>;
 BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char, 10>;
