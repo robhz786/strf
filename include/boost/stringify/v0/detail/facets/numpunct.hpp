@@ -443,6 +443,28 @@ std::true_type has_no_grouping(const stringify::v0::default_numpunct<Base>&);
 template <int Base>
 std::false_type has_no_grouping(const stringify::v0::numpunct<Base>&);
 
+template <typename CharT, typename FPack, typename InputT, unsigned Base>
+class has_punct_impl
+{
+public:
+
+    static std::true_type  test_numpunct(const stringify::v0::numpunct_base&);
+    static std::false_type test_numpunct(const stringify::v0::default_numpunct<Base>&);
+
+    static const FPack& fp();
+
+    using has_numpunct_type = decltype
+        ( test_numpunct
+            ( get_facet< stringify::v0::numpunct_c<Base>, InputT >(fp())) );
+
+public:
+
+    static constexpr bool has_punct = has_numpunct_type::value;
+};
+
+template <typename CharT, typename FPack, typename InputT, unsigned Base>
+constexpr bool has_punct = has_punct_impl<CharT, FPack, InputT, Base>::has_punct;
+
 } // namespace detail
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
