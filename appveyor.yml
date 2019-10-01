@@ -113,6 +113,8 @@ install:
   - git clone https://github.com/boostorg/boost-ci.git C:\boost-ci
   - xcopy /s /e /q /i C:\boost-ci\ci .\ci
   - ci\appveyor\install.bat
+  - git clone https://github.com/robhz786/outbuf boost-root\libs\outbuf
+  - cd boost-root && b2 headers
 
 build: off
 

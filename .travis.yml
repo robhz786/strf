@@ -38,6 +38,8 @@ install:
   - git clone https://github.com/boostorg/boost-ci.git boost-ci
   - cp -pr boost-ci/ci boost-ci/.codecov.yml .
   - source ci/travis/install.sh
+  - git clone https://github.com/robhz786/outbuf $BOOST_ROOT/libs/outbuf
+  - cd $BOOST_ROOT && ./b2 headers
 
 addons:
   apt:
