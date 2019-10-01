@@ -114,7 +114,8 @@ install:
   - xcopy /s /e /q /i C:\boost-ci\ci .\ci
   - ci\appveyor\install.bat
   - git clone https://github.com/robhz786/outbuf boost-root\libs\outbuf
-  - cd boost-root && b2 headers
+  - mklink    boost-root\boost\outbuf.hpp boost-root\libs\outbuf\include\boost\outbuf.hpp
+  - mklink /D boost-root\boost\outbuf     boost-root\libs\outbuf\include\boost\outbuf
 
 build: off
 
