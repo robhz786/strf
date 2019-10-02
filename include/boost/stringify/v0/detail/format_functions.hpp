@@ -180,6 +180,18 @@ class alignment_format_impl
 {
     using derived_type = stringify::v0::fmt_derived<alignment_format, T>;
 
+    derived_type& as_derived_ref()
+    {
+        derived_type* d =  static_cast<derived_type*>(this);
+        return *d;
+    }
+
+    derived_type&& as_derived_rval_ref()
+    {
+        derived_type* d =  static_cast<derived_type*>(this);
+        return static_cast<derived_type&&>(*d);
+    }
+
 public:
 
     constexpr alignment_format_impl()
@@ -208,173 +220,173 @@ public:
     {
         _alignment = stringify::v0::alignment::left;
         _width = width;
-        return static_cast<derived_type&&>(*this);
+        return as_derived_rval_ref();
     }
     constexpr derived_type& operator<(int width) &
     {
         _alignment = stringify::v0::alignment::left;
         _width = width;
-        return static_cast<derived_type&>(*this);
+        return as_derived_ref();
     }
     constexpr derived_type&& operator>(int width) &&
     {
         _alignment = stringify::v0::alignment::right;
         _width = width;
-        return static_cast<derived_type&&>(*this);
+        return as_derived_rval_ref();
     }
     constexpr derived_type& operator>(int width) &
     {
         _alignment = stringify::v0::alignment::right;
         _width = width;
-        return static_cast<derived_type&>(*this);
+        return as_derived_ref();
     }
     constexpr derived_type&& operator^(int width) &&
     {
         _alignment = stringify::v0::alignment::center;
         _width = width;
-        return static_cast<derived_type&&>(*this);
+        return as_derived_rval_ref();
     }
     constexpr derived_type& operator^(int width) &
     {
         _alignment = stringify::v0::alignment::center;
         _width = width;
-        return static_cast<derived_type&>(*this);
+        return as_derived_ref();
     }
     constexpr derived_type&& operator%(int width) &&
     {
         _alignment = stringify::v0::alignment::internal;
         _width = width;
-        return static_cast<derived_type&&>(*this);
+        return as_derived_rval_ref();
     }
     constexpr derived_type& operator%(int width) &
     {
         _alignment = stringify::v0::alignment::internal;
         _width = width;
-        return static_cast<derived_type&>(*this);
+        return as_derived_ref();
     }
     constexpr derived_type&& left(int width) &&
     {
         _alignment = stringify::v0::alignment::left;
         _width = width;
-        return static_cast<derived_type&&>(*this);
+        return as_derived_rval_ref();
     }
     constexpr derived_type& left(int width) &
     {
         _alignment = stringify::v0::alignment::left;
         _width = width;
-        return static_cast<derived_type&>(*this);
+        return as_derived_ref();
     }
     constexpr derived_type&& right(int width) &&
     {
         _alignment = stringify::v0::alignment::right;
         _width = width;
-        return static_cast<derived_type&&>(*this);
+        return as_derived_rval_ref();
     }
     constexpr derived_type& right(int width) &
     {
         _alignment = stringify::v0::alignment::right;
         _width = width;
-        return static_cast<derived_type&>(*this);
+        return as_derived_ref();
     }
     constexpr derived_type&& center(int width) &&
     {
         _alignment = stringify::v0::alignment::center;
         _width = width;
-        return static_cast<derived_type&&>(*this);
+        return as_derived_rval_ref();
     }
     constexpr derived_type& center(int width) &
     {
         _alignment = stringify::v0::alignment::center;
         _width = width;
-        return static_cast<derived_type&>(*this);
+        return as_derived_ref();
     }
     constexpr derived_type&& internal(int width) &&
     {
         _alignment = stringify::v0::alignment::internal;
         _width = width;
-        return static_cast<derived_type&&>(*this);
+        return as_derived_rval_ref();
     }
     constexpr derived_type& internal(int width) &
     {
         _alignment = stringify::v0::alignment::internal;
         _width = width;
-        return static_cast<derived_type&>(*this);
+        return as_derived_ref();
     }
     constexpr derived_type&& left(int width, char32_t fill_char) &&
     {
         _fill = fill_char;
         _alignment = stringify::v0::alignment::left;
         _width = width;
-        return static_cast<derived_type&&>(*this);
+        return as_derived_rval_ref();
     }
     constexpr derived_type& left(int width, char32_t fill_char) &
     {
         _fill = fill_char;
         _alignment = stringify::v0::alignment::left;
         _width = width;
-        return static_cast<derived_type&>(*this);
+        return as_derived_ref();
     }
     constexpr derived_type&& right(int width, char32_t fill_char) &&
     {
         _fill = fill_char;
         _alignment = stringify::v0::alignment::right;
         _width = width;
-        return static_cast<derived_type&&>(*this);
+        return as_derived_rval_ref();
     }
     constexpr derived_type& right(int width, char32_t fill_char) &
     {
         _fill = fill_char;
         _alignment = stringify::v0::alignment::right;
         _width = width;
-        return static_cast<derived_type&>(*this);
+        return as_derived_ref();
     }
     constexpr derived_type&& center(int width, char32_t fill_char) &&
     {
         _fill = fill_char;
         _alignment = stringify::v0::alignment::center;
         _width = width;
-        return static_cast<derived_type&&>(*this);
+        return as_derived_rval_ref();
     }
     constexpr derived_type& center(int width, char32_t fill_char) &
     {
         _fill = fill_char;
         _alignment = stringify::v0::alignment::center;
         _width = width;
-        return static_cast<derived_type&>(*this);
+        return as_derived_ref();
     }
     constexpr derived_type&& internal(int width, char32_t fill_char) &&
     {
         _fill = fill_char;
         _alignment = stringify::v0::alignment::internal;
         _width = width;
-        return static_cast<derived_type&&>(*this);
+        return as_derived_rval_ref();
     }
     constexpr derived_type& internal(int width, char32_t fill_char) &
     {
         _fill = fill_char;
         _alignment = stringify::v0::alignment::internal;
         _width = width;
-        return static_cast<derived_type&>(*this);
+        return as_derived_ref();
     }
     constexpr derived_type&& fill(char32_t ch) &&
     {
         _fill = ch;
-        return static_cast<derived_type&&>(*this);
+        return as_derived_rval_ref();
     }
     constexpr derived_type& fill(char32_t ch) &
     {
         _fill = ch;
-        return static_cast<derived_type&>(*this);
+        return as_derived_ref();
     }
     constexpr derived_type&& width(int w) &&
     {
         _width = w;
-        return static_cast<derived_type&&>(*this);
+        return as_derived_rval_ref();
     }
     constexpr derived_type& width(int w) &
     {
         _width = w;
-        return static_cast<derived_type&>(*this);
+        return as_derived_ref();
     }
     constexpr int width() const
     {
@@ -446,7 +458,7 @@ public:
     {
         return make_adapted() % width;
     }
-    constexpr adapted_derived_type fill(char32_t ch) const
+    constexpr auto fill(char32_t ch) const
     {
         return make_adapted().fill(ch);
     }
