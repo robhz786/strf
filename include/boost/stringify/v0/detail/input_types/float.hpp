@@ -13,7 +13,7 @@
 #include <boost/assert.hpp>
 #include <algorithm>
 #include <cstring>
-
+#include <type_traits>
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
@@ -241,7 +241,7 @@ detail::double_dec decode(float f);
 
 enum class float_notation{fixed, scientific, general};
 
-struct decimal_float_format_data
+struct float_format_data
 {
     unsigned precision = (unsigned)-1;
     stringify::v0::float_notation notation = float_notation::general;
@@ -249,130 +249,60 @@ struct decimal_float_format_data
     bool showpos = false;
 };
 
-struct decimal_float_format
+struct float_format;
+
+template <typename T>
+class float_format_fn: public float_format_data
 {
-    template <typename T>
-    class fn: public decimal_float_format_data
+    using helper = stringify::v0::fmt_helper<float_format, T>;
+
+public:
+
+    using derived_type = typename helper::derived_type;
+
+    constexpr float_format_fn() = default;
+    constexpr float_format_fn(const float_format_fn&) = default;
+    constexpr float_format_fn(float_format_fn&&) = default;
+    constexpr float_format_fn(const float_format_data& data)
+        : float_format_data(data)
     {
-        using derived_type = stringify::v0::fmt_derived<alignment_format, T>;
-        // using as_hex = stringify::v0::fmt_replace
-        //     <T, decimal_float_format, stringify::v0::hex_float_format>;
-
-    public:
-
-        constexpr fn() = default;
-        constexpr fn(const fn&) = default;
-        constexpr fn(fn&&) = default;
-        constexpr fn(const decimal_float_format_data& data)
-            : decimal_float_format_data(data)
-        {
-        }
-        constexpr derived_type&& operator+() &&
-        {
-            this->showpos = true;
-            return static_cast<derived_type&&>(*this);
-        }
-        constexpr derived_type&& operator~() &&
-        {
-            this->showpoint = true;
-            return static_cast<derived_type&&>(*this);
-        }
-        constexpr derived_type&& p(unsigned _) &&
-        {
-            this->precision = _;
-            return static_cast<derived_type&&>(*this);
-        }
-        constexpr derived_type&& sci() &&
-        {
-            this->notation = float_notation::scientific;
-            return static_cast<derived_type&&>(*this);
-        }
-        constexpr derived_type&& fixed() &&
-        {
-            this->notation = float_notation::fixed;
-            return static_cast<derived_type&&>(*this);
-        }
-        constexpr derived_type&& dec() &&
-        {
-            return static_cast<derived_type&&>(*this);
-        }
-        // constexpr as_hex hex() const &
-        // {
-        //     return as_hex{static_cast<const derived_type&>(*this)};
-        // }
-    };
+    }
+    constexpr derived_type&& operator+() &&
+    {
+        this->showpos = true;
+        return static_cast<derived_type&&>(*this);
+    }
+    constexpr derived_type&& operator~() &&
+    {
+        this->showpoint = true;
+        return static_cast<derived_type&&>(*this);
+    }
+    constexpr derived_type&& p(unsigned _) &&
+    {
+        this->precision = _;
+        return static_cast<derived_type&&>(*this);
+    }
+    constexpr derived_type&& sci() &&
+    {
+        this->notation = float_notation::scientific;
+        return static_cast<derived_type&&>(*this);
+    }
+    constexpr derived_type&& fixed() &&
+    {
+        this->notation = float_notation::fixed;
+        return static_cast<derived_type&&>(*this);
+    }
+    // constexpr derived_type&& dec() &&
+    // {
+    //     return static_cast<derived_type&&>(*this);
+    // }
 };
 
-// struct hex_float_format
-// {
-//     template <typename T>
-//     class fn
-//     {
-//         using derived_type = stringify::v0::fmt_derived<alignment_format, T>;
-//         using as_dec = stringify::v0::fmt_replace
-//             <T, decimal_float_format, stringify::v0::hex_float_format>;
-
-//     public:
-
-//         constexpr fn() = default;
-//         constexpr fn(const fn&) = default;
-//         constexpr fn(fn&&) = default;
-
-//         template <typename U>
-//         constexpr fn(const fn<U>& cp)
-//             : _precision(cp._precision)
-//             , _showpoint(cp._showpoint)
-//             , _showpos(cp._showpos)
-//         {
-//         }
-
-//         template <typename U>
-//         explicit constexpr fn(const decimal_float_format::fn<U>& cp)
-//             : _precision(cp._precision)
-//             , _showpoint(cp._showpoint)
-//             , _showpos(cp._showpos)
-//         {
-//         }
-
-//         constexpr derived_type&& operator+() &&
-//         {
-//             _showpos = true;
-//             return static_cast<derived_type&&>(*this);
-//         }
-//         constexpr derived_type&& operator~() &&
-//         {
-//             _showpoint = true;
-//             return static_cast<derived_type&&>(*this);
-//         }
-//         constexpr derived_type&& p(unsigned _) &&
-//         {
-//             _precision = _;
-//             return static_cast<derived_type&&>(*this);
-//         }
-
-//     private:
-
-//         unsigned _precision = static_cast<unsigned>(-1);
-//         bool _showpoint = false;
-//         bool _showpos = false;
-//     };
-// };
-
-inline auto make_fmt(stringify::v0::tag, float x)
+struct float_format
 {
-    return stringify::v0::value_with_format
-        < float
-        , stringify::v0::decimal_float_format
-        , stringify::v0::empty_alignment_format >{x};
-}
-
-inline auto make_fmt(stringify::v0::tag, double x)
-{
-    return stringify::v0::value_with_format
-        < double
-        , stringify::v0::decimal_float_format
-        , stringify::v0::empty_alignment_format >{x};
-}
+    template <typename T>
+    using fn = float_format_fn<T>;
+};
 
 namespace detail {
 
@@ -383,14 +313,14 @@ struct double_printer_data: detail::double_dec
     template <typename FloatT>
     double_printer_data
         ( FloatT f
-        , decimal_float_format_data fmt
+        , float_format_data fmt
         , const stringify::v0::numpunct_base* punct = nullptr )
         :  double_printer_data(detail::decode(f), fmt, punct)
     {
     }
     double_printer_data
         ( detail::double_dec d
-        , decimal_float_format_data fmt
+        , float_format_data fmt
         , const stringify::v0::numpunct_base* punct = nullptr );
 
     bool showpoint;
@@ -404,7 +334,7 @@ struct double_printer_data: detail::double_dec
 
 BOOST_STRINGIFY_INLINE double_printer_data::double_printer_data
     ( detail::double_dec d
-    , decimal_float_format_data fmt
+    , float_format_data fmt
     , const stringify::v0::numpunct_base* punct )
     : stringify::v0::detail::double_dec(d)
     , showsign(fmt.showpos || negative)
@@ -814,10 +744,10 @@ public:
     template <typename FP, typename FloatT>
     punct_double_printer
         ( const FP& fp
-        , stringify::v0::value_with_format
+        , const stringify::v0::value_with_format
             < FloatT
-            , stringify::v0::decimal_float_format
-            , stringify::v0::empty_alignment_format > x )
+            , stringify::v0::float_format
+            , stringify::v0::empty_alignment_format >& x )
          : _data{x.value(), x}
          , _punct(get_facet<stringify::v0::numpunct_c<10>, FloatT>(fp))
          , _encoding(get_facet<stringify::v0::encoding_c<CharT>, FloatT>(fp))
@@ -828,10 +758,10 @@ public:
     template <typename FP, typename FloatT>
     punct_double_printer
         ( const FP& fp
-        , stringify::v0::value_with_format
+        , const stringify::v0::value_with_format
             < FloatT
-            , stringify::v0::decimal_float_format
-            , stringify::v0::alignment_format > x )
+            , stringify::v0::float_format
+            , stringify::v0::alignment_format >& x )
         : _data{x.value(), x}
         , _punct(get_facet<stringify::v0::numpunct_c<10>, FloatT>(fp))
         , _encoding(get_facet<stringify::v0::encoding_c<CharT>, FloatT>(fp))
@@ -839,7 +769,7 @@ public:
         , _enc_err(fp.template get_facet<stringify::v0::encoding_error_c, FloatT>())
         , _allow_surr(fp.template get_facet<stringify::v0::surrogate_policy_c, FloatT>())
     {
-        void init_fill(int w, stringify::v0::alignment a);
+        init_fill(x.width(), x.alignment());
     }
 
     int width(int) const override;
@@ -992,9 +922,19 @@ std::size_t punct_double_printer<CharT>::necessary_size() const
 template <typename CharT>
 void punct_double_printer<CharT>::write(boost::basic_outbuf<CharT>& ob) const
 {
+    if (_left_fillcount != 0)
+    {
+        _encoding.encode_fill( ob, _left_fillcount, _fillchar
+                             , _enc_err, _allow_surr);
+    }
     if (_data.showsign)
     {
         put(ob, static_cast<CharT>('+' + (_data.negative << 1)));
+    }
+    if (_internal_fillcount != 0)
+    {
+        _encoding.encode_fill( ob, _internal_fillcount, _fillchar
+                             , _enc_err, _allow_surr);
     }
     if (_data.nan)
     {
@@ -1094,6 +1034,11 @@ void punct_double_printer<CharT>::write(boost::basic_outbuf<CharT>& ob) const
             }
         }
     }
+    if (_right_fillcount != 0)
+    {
+        _encoding.encode_fill( ob, _right_fillcount, _fillchar
+                             , _enc_err, _allow_surr );
+    }
 }
 
 template <typename CharT>
@@ -1104,10 +1049,10 @@ public:
     template <typename Fpack, typename FloatT>
     double_printer
         ( const Fpack&
-        , stringify::v0::value_with_format
+        , const stringify::v0::value_with_format
             < FloatT
-            , stringify::v0::decimal_float_format
-            , stringify::v0::empty_alignment_format > x )
+            , stringify::v0::float_format
+            , stringify::v0::empty_alignment_format >& x )
             : _data(x.value(), x)
     {
     }
@@ -1115,10 +1060,10 @@ public:
     template <typename Fpack, typename FloatT>
     double_printer
         ( const Fpack& fp
-        , stringify::v0::value_with_format
+        , const stringify::v0::value_with_format
             < FloatT
-            , stringify::v0::decimal_float_format
-            , stringify::v0::alignment_format > x )
+            , stringify::v0::float_format
+            , stringify::v0::alignment_format >& x )
         : _data(x.value(), x)
         , _encoding(fp.template get_facet<stringify::v0::encoding_c<CharT>, FloatT>())
         , _fillchar(x.fill())
@@ -1925,6 +1870,22 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_punct_double_printer<wchar_t>;
 
 } // namespace detail
 
+inline auto make_fmt(stringify::v0::tag, float x)
+{
+    return stringify::v0::value_with_format
+        < float
+        , stringify::v0::float_format
+        , stringify::v0::empty_alignment_format >{x};
+}
+
+inline auto make_fmt(stringify::v0::tag, double x)
+{
+    return stringify::v0::value_with_format
+        < double
+        , stringify::v0::float_format
+        , stringify::v0::empty_alignment_format >{x};
+}
+
 template <typename CharT, typename FPack>
 inline typename std::conditional
     < stringify::v0::detail::has_punct<CharT, FPack, float, 10>
@@ -1954,7 +1915,7 @@ make_printer
     ( const FPack& fp
     , const stringify::v0::value_with_format
             < FloatT
-            , stringify::v0::decimal_float_format
+            , stringify::v0::float_format
             , stringify::v0::empty_alignment_format >& x )
 {
     return {fp, x};
@@ -1969,7 +1930,7 @@ make_printer
     ( const FPack& fp
     , const stringify::v0::value_with_format
             < FloatT
-            , stringify::v0::decimal_float_format
+            , stringify::v0::float_format
             , stringify::v0::alignment_format >& x )
 {
     return {fp, x};
