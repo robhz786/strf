@@ -137,7 +137,7 @@ protected:
 
     void compose(strf::printers_receiver<CharT>& out) const override;
 
-    strf::alignment_format::fn<void> formatting() const override;
+    strf::alignment_format_data formatting() const override;
 
 private:
 
@@ -201,13 +201,9 @@ ipv6_printer<CharT>::ipv6_printer
 
 //[ ipv6_printer__formatting
 template <typename CharT>
-strf::alignment_format::fn<void> ipv6_printer<CharT>::formatting() const
+strf::alignment_format_data ipv6_printer<CharT>::formatting() const
 {
- /*<< That works because the `alignment_format::fn<void>` can be implicitly
-         converted from `alignment_format::fn<`[~AnyType]`>`,
-         and `ipv6addr_with_format` derives from
-         `alignment_format::fn<`ipv6addr_with_format`>`
- >>*/return _fmt;
+    return _fmt.get_alignment_format_data();
 }
 //]
 

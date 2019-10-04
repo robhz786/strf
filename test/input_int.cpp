@@ -208,7 +208,7 @@ int main()
 
 // octadecimal aligment
 
-    TEST("        77")   (  strf::oct(077).width(10) );
+    TEST("        77")   (  strf::oct(077)>10 );
     TEST("       077")   ( ~strf::oct(077)>10 );
     TEST("77        ")   (  strf::oct(077)<10 );
     TEST("077       ")   ( ~strf::oct(077)<10 );
@@ -217,7 +217,7 @@ int main()
     TEST("    77    ")   (  strf::oct(077)^10 );
     TEST("   077    ")   ( ~strf::oct(077)^10 );
 
-    TEST("      0077")   (  strf::oct(077).p(4).width(10) );
+    TEST("      0077")   (  strf::oct(077).p(4)>10 );
     TEST("     00077")   ( ~strf::oct(077).p(4)>10 );
     TEST("0077      ")   (  strf::oct(077).p(4)<10 );
     TEST("00077     ")   ( ~strf::oct(077).p(4)<10 );

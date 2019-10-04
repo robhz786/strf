@@ -24,20 +24,23 @@ struct int_format;
 
 namespace detail {
 
+struct int_format_data
+{
+    unsigned precision = 0;
+    bool showbase = false;
+    bool showpos = false;
+};
+
 template <class T, int Base>
 class int_format_fn
 {
-    using helper = stringify::v0::fmt_helper<int_format<Base>, T>;
-
-public:
-
-    using derived_type = typename helper::derived_type;
+    using derived_type = T;
 
 private:
 
     template <int OtherBase>
     using adapted_derived_type
-    = typename helper::template adapted_derived_type<int_format<OtherBase> >;
+        = stringify::v0::fmt_replace<T, int_format<Base>, int_format<OtherBase> >;
 
     template <int OtherBase>
     derived_type&& to_base(std::true_type /*same_base*/) &&
@@ -89,20 +92,18 @@ public:
 
     template <typename U, int OtherBase>
     constexpr int_format_fn(const int_format_fn<U, OtherBase> & u)
-        : _precision(u.precision())
-        , _showbase(u.showbase())
-        , _showpos(u.showpos())
+        : _data(u.get_int_format_data())
     {
     }
 
     constexpr derived_type&& p(unsigned _) &&
     {
-        _precision = _;
+        _data.precision = _;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& p(unsigned _) &
     {
-        _precision = _;
+        _data.precision = _;
         return *this;
     }
     constexpr decltype(auto) hex() &&
@@ -131,42 +132,42 @@ public:
     }
     constexpr derived_type&& operator+() &&
     {
-        _showpos = true;
+        _data.showpos = true;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& operator+() &
     {
-        _showpos = true;
+        _data.showpos = true;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type&& operator~() &&
     {
-        _showbase = true;
+        _data.showbase = true;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& operator~() &
     {
-        _showbase = true;
+        _data.showbase = true;
         return static_cast<derived_type&>(*this);
     }
     constexpr derived_type&& showbase(bool s) &&
     {
-        _showbase = s;
+        _data.showbase = s;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& showbase(bool s) &
     {
-        _showbase = s;
+        _data.showbase = s;
         return static_cast<derived_type&>(*this);
     }
     constexpr derived_type&& showpos(bool s) &&
     {
-        _showpos = s;
+        _data.showpos = s;
         return static_cast<derived_type&&>(*this);
     }
     constexpr derived_type& showpos(bool s) &
     {
-        _showpos = s;
+        _data.showpos = s;
         return static_cast<derived_type&>(*this);
     }
     constexpr int base() const
@@ -175,22 +176,25 @@ public:
     }
     constexpr unsigned precision() const
     {
-        return _precision;
+        return _data.precision;
     }
     constexpr bool showbase() const
     {
-        return _showbase;
+        return _data.showbase;
     }
     constexpr bool showpos() const
     {
-        return _showpos;
+        return _data.showpos;
+    }
+
+    constexpr stringify::v0::detail::int_format_data get_int_format_data() const
+    {
+        return _data;
     }
 
 private:
 
-    unsigned _precision = 0;
-    bool _showbase = false;
-    bool _showpos = false;
+    stringify::v0::detail::int_format_data _data;
 };
 
 template <typename IntT>
@@ -434,7 +438,7 @@ public:
         , _encoding(get_facet<stringify::v0::encoding_c<CharT>, IntT>(fp))
     {
         _init<IntT, detail::has_intpunct<CharT, FPack, IntT, Base>>
-              (value.value().value, value);
+            ( value.value().value, value.get_int_format_data() );
     }
 
     template <typename FPack, typename IntT>
@@ -445,7 +449,7 @@ public:
         , _encoding(get_facet<stringify::v0::encoding_c<CharT>, IntT>(fp))
     {
         _init<IntT, detail::has_intpunct<CharT, FPack, IntT, Base>>
-              (value.value().value, value);
+            ( value.value().value, value.get_int_format_data() );
     }
 
     int width() const
@@ -482,14 +486,14 @@ private:
     std::uint8_t _prefixsize;
 
     template <typename IntT, bool HasPunct>
-    void _init(IntT value, stringify::v0::detail::int_format_fn<void, Base> fmt);
+    void _init(IntT value, stringify::v0::detail::int_format_data fmt);
 };
 
 template <typename CharT, int Base>
 template <typename IntT, bool HasPunct>
 void partial_fmt_int_printer<CharT, Base>::_init
     ( IntT value
-    , stringify::v0::detail::int_format_fn<void, Base> fmt )
+    , stringify::v0::detail::int_format_data fmt )
 {
     using unsigned_type = typename std::make_unsigned<IntT>::type;
     BOOST_STRINGIFY_IF_CONSTEXPR (Base == 10)
@@ -497,17 +501,17 @@ void partial_fmt_int_printer<CharT, Base>::_init
         using unsigned_IntT = typename std::make_unsigned<IntT>::type;
         unsigned_IntT uvalue = 1 + unsigned_IntT(-(value + 1));
         _negative = value < 0;
-        _prefixsize = _negative || fmt.showpos();
+        _prefixsize = _negative || fmt.showpos;
         _uvalue = _negative * uvalue + (!_negative) * value;
     }
     else
     {
         _uvalue = unsigned_type(value);
         _negative = false;
-        _prefixsize = fmt.showbase() << (Base == 16);
+        _prefixsize = fmt.showbase << (Base == 16);
     }
     _digcount = stringify::v0::detail::count_digits<Base>(_uvalue);
-    _precision = fmt.precision();
+    _precision = fmt.precision;
 
     BOOST_STRINGIFY_IF_CONSTEXPR (HasPunct)
     {
@@ -655,7 +659,7 @@ private:
     stringify::v0::detail::partial_fmt_int_printer<CharT, Base> _ichars;
     unsigned _fillcount = 0;
     stringify::v0::encoding_error _enc_err;
-    stringify::v0::alignment_format::fn<void> _afmt;
+    stringify::v0::alignment_format_data _afmt;
     stringify::v0::surrogate_policy _allow_surr;
 
     void _write_fill
@@ -663,7 +667,7 @@ private:
         , std::size_t count ) const
     {
         return _ichars.encoding().encode_fill
-            ( ob, count, _afmt.fill(), _enc_err, _allow_surr );
+            ( ob, count, _afmt.fill, _enc_err, _allow_surr );
     }
 };
 
@@ -674,17 +678,17 @@ inline full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
     , stringify::v0::int_with_alignment_format<IntT, Base> value ) noexcept
     : _ichars(fp, value)
     , _enc_err(get_facet<stringify::v0::encoding_error_c, IntT>(fp))
-    , _afmt(value)
+    , _afmt(value.get_alignment_format_data())
     , _allow_surr(get_facet<stringify::v0::surrogate_policy_c, IntT>(fp))
 {
     int content_width = _ichars.width();
-    if (_afmt.width() > content_width)
+    if (_afmt.width > content_width)
     {
-        _fillcount = _afmt.width() - content_width;
+        _fillcount = _afmt.width - content_width;
     }
     else
     {
-        _afmt.width(content_width);
+        _afmt.width = content_width;
         _fillcount = 0;
     }
 }
@@ -700,7 +704,7 @@ std::size_t full_fmt_int_printer<CharT, Base>::necessary_size() const
     std::size_t s = _ichars.necessary_size();
     if (_fillcount > 0)
     {
-        s += _fillcount * _ichars.encoding().char_size(_afmt.fill(), _enc_err);
+        s += _fillcount * _ichars.encoding().char_size(_afmt.fill, _enc_err);
     }
     return s;
 }
@@ -708,7 +712,7 @@ std::size_t full_fmt_int_printer<CharT, Base>::necessary_size() const
 template <typename CharT, int Base>
 int full_fmt_int_printer<CharT, Base>::width(int) const
 {
-    return _afmt.width();
+    return _afmt.width;
 }
 
 template <typename CharT, int Base>
@@ -721,7 +725,7 @@ void full_fmt_int_printer<CharT, Base>::write
     }
     else
     {
-        switch(_afmt.alignment())
+        switch(_afmt.alignment)
         {
             case stringify::v0::alignment::left:
             {

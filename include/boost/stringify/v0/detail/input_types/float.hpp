@@ -254,11 +254,9 @@ struct float_format;
 template <typename T>
 class float_format_fn: public float_format_data
 {
-    using helper = stringify::v0::fmt_helper<float_format, T>;
-
 public:
 
-    using derived_type = typename helper::derived_type;
+    using derived_type = T;
 
     constexpr float_format_fn() = default;
     constexpr float_format_fn(const float_format_fn&) = default;

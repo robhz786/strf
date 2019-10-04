@@ -82,13 +82,13 @@ int main()
         char32_t ghi[] = U"ghi";
         TEST("abc")      ( strf::cv(abc) );
         TEST("   abc")   ( strf::fmt_cv(abc) > 6 );
-        TEST("abc...")   ( strf::fmt_cv(abc).left(6, '.') );
-        TEST("...abc")   ( strf::fmt_cv(abc).right(6, '.') );
-        TEST(".abc..")   ( strf::fmt_cv(abc).center(6, '.') );
+        TEST("abc...")   ( strf::fmt_cv(abc).fill('.') < 6 );
+        TEST("...abc")   ( strf::fmt_cv(abc).fill('.') > 6 );
+        TEST(".abc..")   ( strf::fmt_cv(abc).fill('.') ^ 6 );
         TEST("     abc")   ( strf::join_right(8)(strf::cv(abc)) );
-        TEST("...abc~~")   ( strf::join_right(8, '.')( strf::fmt_cv(abc).left(5, U'~') ) );
-        TEST(".....abc")   ( strf::join_right(8, '.')( strf::fmt_cv(abc).left(3, U'~') ) );
-        TEST(".....abc")   ( strf::join_right(8, '.')( strf::fmt_cv(abc).left(2, U'~') ) );
+        TEST("...abc~~")   ( strf::join_right(8, '.')(strf::fmt_cv(abc).fill(U'~') < 5));
+        TEST(".....abc")   ( strf::join_right(8, '.')(strf::fmt_cv(abc).fill(U'~') < 3));
+        TEST(".....abc")   ( strf::join_right(8, '.')(strf::fmt_cv(abc).fill(U'~') < 2));
 
         TEST("   abcdefghi") ( strf::fmt_cv(U"") > 3, strf::fmt_cv(abc)>3, strf::fmt_cv(def)<3, strf::fmt_cv(ghi)^3 );
         TEST("  abcdefghi")  ( strf::fmt_cv(U"") > 2, strf::fmt_cv(abc)>2, strf::fmt_cv(def)<2, strf::fmt_cv(ghi)^2 );

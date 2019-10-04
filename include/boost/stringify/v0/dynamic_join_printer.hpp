@@ -128,7 +128,7 @@ public:
 
 protected:
 
-    virtual stringify::v0::alignment_format::fn<void> formatting() const;
+    virtual stringify::v0::alignment_format_data formatting() const;
 
     virtual void compose(stringify::v0::printers_receiver<CharOut>& out) const = 0;
 
@@ -152,7 +152,7 @@ private:
 };
 
 template <typename CharOut>
-stringify::v0::alignment_format::fn<void>
+stringify::v0::alignment_format_data
 dynamic_join_printer<CharOut>::formatting() const
 {
     return {};
@@ -163,14 +163,14 @@ std::size_t dynamic_join_printer<CharOut>::necessary_size() const
 {
     std::size_t fill_len = 0;
     const auto fmt = formatting();
-    if(fmt.width() > 0)
+    if(fmt.width > 0)
     {
-        stringify::v0::detail::width_sum<CharOut> wsum{fmt.width()};
+        stringify::v0::detail::width_sum<CharOut> wsum{fmt.width};
         compose(wsum);
-        auto fillcount = ( fmt.width() > wsum.result()
-                         ? fmt.width() - wsum.result()
+        auto fillcount = ( fmt.width > wsum.result()
+                         ? fmt.width - wsum.result()
                          : 0 );
-        fill_len = _encoding.char_size(fmt.fill(), _enc_err) * fillcount;
+        fill_len = _encoding.char_size(fmt.fill, _enc_err) * fillcount;
     }
 
     stringify::v0::detail::necessary_size_sum<CharOut> s;
@@ -181,7 +181,7 @@ std::size_t dynamic_join_printer<CharOut>::necessary_size() const
 template <typename CharOut>
 int dynamic_join_printer<CharOut>::width(int limit) const
 {
-    const auto fmt_width = formatting().width();
+    const auto fmt_width = formatting().width;
     if (fmt_width > limit)
     {
         return limit;
@@ -195,7 +195,7 @@ template <typename CharOut>
 void dynamic_join_printer<CharOut>::write
     ( boost::basic_outbuf<CharOut>& ob ) const
 {
-    auto fmt_width = formatting().width();
+    auto fmt_width = formatting().width;
     if(fmt_width > 0)
     {
         stringify::v0::detail::width_sum<CharOut> ws{fmt_width};
@@ -224,8 +224,8 @@ void dynamic_join_printer<CharOut>::write_with_fill
     , boost::basic_outbuf<CharOut>& ob ) const
 {
     auto fmt = formatting();
-    char32_t fill_char = fmt.fill();
-    switch (fmt.alignment())
+    char32_t fill_char = fmt.fill;
+    switch (fmt.alignment)
     {
         case stringify::v0::alignment::left:
         {

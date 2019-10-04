@@ -17,7 +17,7 @@ template
     , template <class, class ...> class ValueWithFmt
     , class ValueType
     , class ... QFmts >
-struct mp_replace_fmt
+struct fmt_replace_impl2
 {
     template <class QF>
     using f = std::conditional_t< std::is_same<QFromFmt, QF>::value, QToFmt, QF >;
@@ -26,44 +26,27 @@ struct mp_replace_fmt
 };
 
 template <class QFmt, class T>
-struct fmt_helper_impl;
+struct fmt_replace_impl;
 
 template
     < class QFmt
     , template <class, class ...> class ValueWithFmt
     , class ValueType
     , class ... QFmts>
-struct fmt_helper_impl<QFmt, ValueWithFmt<ValueType, QFmts ...> >
+struct fmt_replace_impl<QFmt, ValueWithFmt<ValueType, QFmts ...> >
 {
-    using derived_type = ValueWithFmt<ValueType, QFmts ...>;
-
     template <class QToFmt>
-    using adapted_derived_type =
-        typename stringify::v0::detail::mp_replace_fmt
+    using type_tmpl =
+        typename stringify::v0::detail::fmt_replace_impl2
             < QFmt, QToFmt, ValueWithFmt, ValueType, QFmts ...>::type;
-};
-
-template <class QFmt>
-struct fmt_helper_impl<QFmt, void>
-{
-    using derived_type = typename QFmt::template fn<void>;
-
-    template <class QToFmt>
-    using adapted_derived_type = typename QToFmt::template fn<void>;
 };
 
 } // namespace detail
 
-template <typename QFmt, typename Der>
-using fmt_helper = stringify::v0::detail::fmt_helper_impl<QFmt, Der>;
-
-template <typename QFmt, typename Der>
-using fmt_derived
-= typename stringify::v0::fmt_helper<QFmt, Der>::derived_type;
-
 template <typename Der, typename QFmtFrom, typename QFmtTo>
-using fmt_replace = typename stringify::v0::fmt_helper<QFmtFrom, Der>
-    ::template adapted_derived_type<QFmtTo>;
+using fmt_replace
+    = typename stringify::v0::detail::fmt_replace_impl<QFmtFrom, Der>
+    ::template type_tmpl<QFmtTo>;
 
 template <typename ValueType, class ... Fmts>
 class value_with_format;
@@ -155,30 +138,38 @@ private:
 
 enum class alignment {left, right, internal, center};
 
-namespace detail
+struct alignment_format_data
 {
-  template <class T> class alignment_format_impl;
-  template <class T> class empty_alignment_format_impl;
+    char32_t fill = U' ';
+    int width = 0;
+    stringify::v0::alignment alignment = stringify::v0::alignment::right;
+};
+
+constexpr bool operator==( stringify::v0::alignment_format_data d1
+                         , stringify::v0::alignment_format_data d2 )
+{
+    return d1.fill == d2.fill
+        && d1.width == d2.width
+        && d1.alignment == d2.alignment;
 }
 
-struct alignment_format
+template <bool Active, class T>
+class alignment_format_fn;
+
+template <bool Active>
+struct alignment_format_q
 {
     template <class T>
-    using fn = stringify::v0::detail::alignment_format_impl<T>;
+    using fn = stringify::v0::alignment_format_fn<Active, T>;
 };
 
-struct empty_alignment_format
-{
-    template <class T>
-    using fn = stringify::v0::detail::empty_alignment_format_impl<T>;
-};
+using alignment_format = stringify::v0::alignment_format_q<true>;
+using empty_alignment_format = stringify::v0::alignment_format_q<false>;
 
-namespace detail {
-
-template <class T = void>
-class alignment_format_impl
+template <class T>
+class alignment_format_fn<true, T>
 {
-    using derived_type = stringify::v0::fmt_derived<alignment_format, T>;
+    using derived_type = T;
 
     derived_type& as_derived_ref()
     {
@@ -194,230 +185,80 @@ class alignment_format_impl
 
 public:
 
-    constexpr alignment_format_impl()
-    {
-        static_assert
-            ( std::is_base_of<alignment_format_impl, derived_type>::value
-            , "T must be void or derive from alignment_format_impl<T>" );
-    }
+    constexpr alignment_format_fn() = default;
 
-    constexpr alignment_format_impl(const alignment_format_impl&) = default;
-
-    template <typename U>
-    constexpr alignment_format_impl(const alignment_format_impl<U>& u)
-        : _fill(u.fill())
-        , _width(u.width())
-        , _alignment(u.alignment())
+    template <bool B, typename U>
+    constexpr explicit alignment_format_fn
+        ( const stringify::v0::alignment_format_fn<B, U>& u ) noexcept
+        : _data(u.get_alignment_format_data())
     {
     }
 
-    template <typename U>
-    constexpr alignment_format_impl(const empty_alignment_format_impl<U>&)
+    constexpr explicit alignment_format_fn(stringify::v0::alignment_format_data data)
+        : _data(data)
     {
     }
 
-    constexpr derived_type&& operator<(int width) &&
+    constexpr derived_type&& operator<(int width) && noexcept
     {
-        _alignment = stringify::v0::alignment::left;
-        _width = width;
+        _data.alignment = stringify::v0::alignment::left;
+        _data.width = width;
         return as_derived_rval_ref();
     }
-    constexpr derived_type& operator<(int width) &
+    constexpr derived_type&& operator>(int width) && noexcept
     {
-        _alignment = stringify::v0::alignment::left;
-        _width = width;
-        return as_derived_ref();
-    }
-    constexpr derived_type&& operator>(int width) &&
-    {
-        _alignment = stringify::v0::alignment::right;
-        _width = width;
+        _data.alignment = stringify::v0::alignment::right;
+        _data.width = width;
         return as_derived_rval_ref();
     }
-    constexpr derived_type& operator>(int width) &
+    constexpr derived_type&& operator^(int width) && noexcept
     {
-        _alignment = stringify::v0::alignment::right;
-        _width = width;
-        return as_derived_ref();
-    }
-    constexpr derived_type&& operator^(int width) &&
-    {
-        _alignment = stringify::v0::alignment::center;
-        _width = width;
+        _data.alignment = stringify::v0::alignment::center;
+        _data.width = width;
         return as_derived_rval_ref();
     }
-    constexpr derived_type& operator^(int width) &
+    constexpr derived_type&& operator%(int width) && noexcept
     {
-        _alignment = stringify::v0::alignment::center;
-        _width = width;
-        return as_derived_ref();
-    }
-    constexpr derived_type&& operator%(int width) &&
-    {
-        _alignment = stringify::v0::alignment::internal;
-        _width = width;
+        _data.alignment = stringify::v0::alignment::internal;
+        _data.width = width;
         return as_derived_rval_ref();
     }
-    constexpr derived_type& operator%(int width) &
+    constexpr derived_type&& fill(char32_t ch) && noexcept
     {
-        _alignment = stringify::v0::alignment::internal;
-        _width = width;
-        return as_derived_ref();
-    }
-    constexpr derived_type&& left(int width) &&
-    {
-        _alignment = stringify::v0::alignment::left;
-        _width = width;
+        _data.fill = ch;
         return as_derived_rval_ref();
-    }
-    constexpr derived_type& left(int width) &
-    {
-        _alignment = stringify::v0::alignment::left;
-        _width = width;
-        return as_derived_ref();
-    }
-    constexpr derived_type&& right(int width) &&
-    {
-        _alignment = stringify::v0::alignment::right;
-        _width = width;
-        return as_derived_rval_ref();
-    }
-    constexpr derived_type& right(int width) &
-    {
-        _alignment = stringify::v0::alignment::right;
-        _width = width;
-        return as_derived_ref();
-    }
-    constexpr derived_type&& center(int width) &&
-    {
-        _alignment = stringify::v0::alignment::center;
-        _width = width;
-        return as_derived_rval_ref();
-    }
-    constexpr derived_type& center(int width) &
-    {
-        _alignment = stringify::v0::alignment::center;
-        _width = width;
-        return as_derived_ref();
-    }
-    constexpr derived_type&& internal(int width) &&
-    {
-        _alignment = stringify::v0::alignment::internal;
-        _width = width;
-        return as_derived_rval_ref();
-    }
-    constexpr derived_type& internal(int width) &
-    {
-        _alignment = stringify::v0::alignment::internal;
-        _width = width;
-        return as_derived_ref();
-    }
-    constexpr derived_type&& left(int width, char32_t fill_char) &&
-    {
-        _fill = fill_char;
-        _alignment = stringify::v0::alignment::left;
-        _width = width;
-        return as_derived_rval_ref();
-    }
-    constexpr derived_type& left(int width, char32_t fill_char) &
-    {
-        _fill = fill_char;
-        _alignment = stringify::v0::alignment::left;
-        _width = width;
-        return as_derived_ref();
-    }
-    constexpr derived_type&& right(int width, char32_t fill_char) &&
-    {
-        _fill = fill_char;
-        _alignment = stringify::v0::alignment::right;
-        _width = width;
-        return as_derived_rval_ref();
-    }
-    constexpr derived_type& right(int width, char32_t fill_char) &
-    {
-        _fill = fill_char;
-        _alignment = stringify::v0::alignment::right;
-        _width = width;
-        return as_derived_ref();
-    }
-    constexpr derived_type&& center(int width, char32_t fill_char) &&
-    {
-        _fill = fill_char;
-        _alignment = stringify::v0::alignment::center;
-        _width = width;
-        return as_derived_rval_ref();
-    }
-    constexpr derived_type& center(int width, char32_t fill_char) &
-    {
-        _fill = fill_char;
-        _alignment = stringify::v0::alignment::center;
-        _width = width;
-        return as_derived_ref();
-    }
-    constexpr derived_type&& internal(int width, char32_t fill_char) &&
-    {
-        _fill = fill_char;
-        _alignment = stringify::v0::alignment::internal;
-        _width = width;
-        return as_derived_rval_ref();
-    }
-    constexpr derived_type& internal(int width, char32_t fill_char) &
-    {
-        _fill = fill_char;
-        _alignment = stringify::v0::alignment::internal;
-        _width = width;
-        return as_derived_ref();
-    }
-    constexpr derived_type&& fill(char32_t ch) &&
-    {
-        _fill = ch;
-        return as_derived_rval_ref();
-    }
-    constexpr derived_type& fill(char32_t ch) &
-    {
-        _fill = ch;
-        return as_derived_ref();
-    }
-    constexpr derived_type&& width(int w) &&
-    {
-        _width = w;
-        return as_derived_rval_ref();
-    }
-    constexpr derived_type& width(int w) &
-    {
-        _width = w;
-        return as_derived_ref();
     }
     constexpr int width() const
     {
-        return _width;
+        return _data.width;
     }
     constexpr stringify::v0::alignment alignment() const
     {
-        return _alignment;
+        return _data.alignment;
     }
     constexpr char32_t fill() const
     {
-        return _fill;
+        return _data.fill;
+    }
+
+    constexpr alignment_format_data get_alignment_format_data() const noexcept
+    {
+        return _data;
     }
 
 private:
 
-    template <typename>
-    friend class alignment_format_impl;
-
-    char32_t _fill = U' ';
-    int _width = 0;
-    stringify::v0::alignment _alignment = stringify::v0::alignment::right;
+    stringify::v0::alignment_format_data _data;
 };
 
 template <class T>
-class empty_alignment_format_impl
+class alignment_format_fn<false, T>
 {
-    using helper = stringify::v0::fmt_helper<empty_alignment_format, T>;
-    using derived_type = typename helper::derived_type;
-    using adapted_derived_type
-    = typename helper::template adapted_derived_type<stringify::v0::alignment_format>;
+    using derived_type = T;
+    using adapted_derived_type = stringify::v0::fmt_replace
+            < T
+            , stringify::v0::alignment_format_q<false>
+            , stringify::v0::alignment_format_q<true> >;
 
     constexpr adapted_derived_type make_adapted() const
     {
@@ -426,45 +267,36 @@ class empty_alignment_format_impl
 
 public:
 
-    constexpr empty_alignment_format_impl()
-    {
-    }
-
-    constexpr empty_alignment_format_impl(const empty_alignment_format_impl&)
-        = default;
+    constexpr alignment_format_fn() noexcept = default;
 
     template <typename U>
-    constexpr empty_alignment_format_impl(const empty_alignment_format_impl<U>&)
+    constexpr explicit alignment_format_fn(const alignment_format_fn<false, U>&) noexcept
     {
     }
 
-    ~empty_alignment_format_impl()
+    ~alignment_format_fn()
     {
     }
 
-    constexpr adapted_derived_type operator<(int width) const
+    constexpr adapted_derived_type operator<(int width) const noexcept
     {
         return make_adapted() < width;
     }
-    constexpr adapted_derived_type operator>(int width) const
+    constexpr adapted_derived_type operator>(int width) const noexcept
     {
         return make_adapted() > width;
     }
-    constexpr adapted_derived_type operator^(int width) const
+    constexpr adapted_derived_type operator^(int width) const noexcept
     {
         return make_adapted() ^ width;
     }
-    constexpr adapted_derived_type operator%(int width) const
+    constexpr adapted_derived_type operator%(int width) const noexcept
     {
         return make_adapted() % width;
     }
-    constexpr auto fill(char32_t ch) const
+    constexpr auto fill(char32_t ch) const noexcept
     {
         return make_adapted().fill(ch);
-    }
-    constexpr adapted_derived_type width(int w) const
-    {
-        return make_adapted().width(w);
     }
 
     constexpr int width() const
@@ -479,9 +311,11 @@ public:
     {
         return U' ';
     }
+    constexpr alignment_format_data get_alignment_format_data() const noexcept
+    {
+        return {};
+    }
 };
-
-} // namespace detail
 
 
 
