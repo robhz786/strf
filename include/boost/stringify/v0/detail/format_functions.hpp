@@ -12,41 +12,39 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail{
 
 template
-    < class QFromFmt
-    , class QToFmt
-    , template <class, class ...> class ValueWithFmt
-    , class ValueType
-    , class ... QFmts >
+    < class From
+    , class To
+    , template <class ...> class List
+    , class ... T >
 struct fmt_replace_impl2
 {
-    template <class QF>
-    using f = std::conditional_t< std::is_same<QFromFmt, QF>::value, QToFmt, QF >;
+    template <class U>
+    using f = std::conditional_t<std::is_same<From, U>::value, To, U>;
 
-    using type = ValueWithFmt< ValueType, f<QFmts> ... >;
+    using type = List<f<T> ...>;
 };
 
-template <class QFmt, class T>
+template <class From, class List>
 struct fmt_replace_impl;
 
 template
-    < class QFmt
-    , template <class, class ...> class ValueWithFmt
-    , class ValueType
-    , class ... QFmts>
-struct fmt_replace_impl<QFmt, ValueWithFmt<ValueType, QFmts ...> >
+    < class From
+    , template <class ...> class List
+    , class ... T>
+struct fmt_replace_impl<From, List<T ...> >
 {
-    template <class QToFmt>
+    template <class To>
     using type_tmpl =
         typename stringify::v0::detail::fmt_replace_impl2
-            < QFmt, QToFmt, ValueWithFmt, ValueType, QFmts ...>::type;
+            < From, To, List, T...>::type;
 };
 
 } // namespace detail
 
-template <typename Der, typename QFmtFrom, typename QFmtTo>
+template <typename List, typename From, typename To>
 using fmt_replace
-    = typename stringify::v0::detail::fmt_replace_impl<QFmtFrom, Der>
-    ::template type_tmpl<QFmtTo>;
+    = typename stringify::v0::detail::fmt_replace_impl<From, List>
+    ::template type_tmpl<To>;
 
 template <typename ValueType, class ... Fmts>
 class value_with_format;
@@ -136,38 +134,20 @@ private:
     ValueType _value;
 };
 
-enum class alignment {left, right, internal, center};
+template <bool Active>
+struct alignment_format_q;
+
+enum class alignment_e {left, right, internal, center};
 
 struct alignment_format_data
 {
     char32_t fill = U' ';
     int width = 0;
-    stringify::v0::alignment alignment = stringify::v0::alignment::right;
+    stringify::v0::alignment_e alignment = stringify::v0::alignment_e::right;
 };
-
-constexpr bool operator==( stringify::v0::alignment_format_data d1
-                         , stringify::v0::alignment_format_data d2 )
-{
-    return d1.fill == d2.fill
-        && d1.width == d2.width
-        && d1.alignment == d2.alignment;
-}
 
 template <bool Active, class T>
-class alignment_format_fn;
-
-template <bool Active>
-struct alignment_format_q
-{
-    template <class T>
-    using fn = stringify::v0::alignment_format_fn<Active, T>;
-};
-
-using alignment_format = stringify::v0::alignment_format_q<true>;
-using empty_alignment_format = stringify::v0::alignment_format_q<false>;
-
-template <class T>
-class alignment_format_fn<true, T>
+class alignment_format_fn
 {
     using derived_type = T;
 
@@ -201,25 +181,25 @@ public:
 
     constexpr derived_type&& operator<(int width) && noexcept
     {
-        _data.alignment = stringify::v0::alignment::left;
+        _data.alignment = stringify::v0::alignment_e::left;
         _data.width = width;
         return as_derived_rval_ref();
     }
     constexpr derived_type&& operator>(int width) && noexcept
     {
-        _data.alignment = stringify::v0::alignment::right;
+        _data.alignment = stringify::v0::alignment_e::right;
         _data.width = width;
         return as_derived_rval_ref();
     }
     constexpr derived_type&& operator^(int width) && noexcept
     {
-        _data.alignment = stringify::v0::alignment::center;
+        _data.alignment = stringify::v0::alignment_e::center;
         _data.width = width;
         return as_derived_rval_ref();
     }
     constexpr derived_type&& operator%(int width) && noexcept
     {
-        _data.alignment = stringify::v0::alignment::internal;
+        _data.alignment = stringify::v0::alignment_e::internal;
         _data.width = width;
         return as_derived_rval_ref();
     }
@@ -228,15 +208,15 @@ public:
         _data.fill = ch;
         return as_derived_rval_ref();
     }
-    constexpr int width() const
+    constexpr int width() const noexcept
     {
         return _data.width;
     }
-    constexpr stringify::v0::alignment alignment() const
+    constexpr stringify::v0::alignment_e alignment() const noexcept
     {
         return _data.alignment;
     }
-    constexpr char32_t fill() const
+    constexpr char32_t fill() const noexcept
     {
         return _data.fill;
     }
@@ -303,9 +283,9 @@ public:
     {
         return 0;
     }
-    constexpr stringify::v0::alignment alignment() const
+    constexpr stringify::v0::alignment_e alignment() const
     {
-        return stringify::v0::alignment::right;
+        return stringify::v0::alignment_e::right;
     }
     constexpr char32_t fill() const
     {
@@ -317,6 +297,15 @@ public:
     }
 };
 
+template <bool Active>
+struct alignment_format_q
+{
+    template <class T>
+    using fn = stringify::v0::alignment_format_fn<Active, T>;
+};
+
+using alignment_format = stringify::v0::alignment_format_q<true>;
+using empty_alignment_format = stringify::v0::alignment_format_q<false>;
 
 
 template <typename T>

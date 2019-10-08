@@ -227,13 +227,13 @@ void dynamic_join_printer<CharOut>::write_with_fill
     char32_t fill_char = fmt.fill;
     switch (fmt.alignment)
     {
-        case stringify::v0::alignment::left:
+        case stringify::v0::alignment_e::left:
         {
             write_without_fill(ob);
             write_fill(fillcount, fill_char, ob);
             break;
         }
-        case stringify::v0::alignment::center:
+        case stringify::v0::alignment_e::center:
         {
             auto halfcount = fillcount >> 1;
             write_fill(halfcount, fill_char, ob);
@@ -241,8 +241,8 @@ void dynamic_join_printer<CharOut>::write_with_fill
             write_fill(fillcount - halfcount, fill_char, ob);
             break;
         }
-        //case stringify::v0::alignment::internal:
-        //case stringify::v0::alignment::right:
+        //case stringify::v0::alignment_e::internal:
+        //case stringify::v0::alignment_e::right:
         default:
         {
             write_fill(fillcount, fill_char, ob);

@@ -490,13 +490,13 @@ void fmt_cv_string_printer<CharIn, CharOut>::write
     {
         switch(_fmt.alignment())
         {
-            case stringify::v0::alignment::left:
+            case stringify::v0::alignment_e::left:
             {
                 _write_str(ob);
                 _write_fill(ob, _fillcount);
                 break;
             }
-            case stringify::v0::alignment::center:
+            case stringify::v0::alignment_e::center:
             {
                 int halfcount = _fillcount / 2;
                 _write_fill(ob, halfcount);
