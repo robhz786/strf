@@ -29,6 +29,20 @@ struct int_format_data
     bool showpos = false;
 };
 
+constexpr bool operator==( stringify::v0::int_format_data lhs
+                         , stringify::v0::int_format_data rhs) noexcept
+{
+    return lhs.precision == rhs.precision
+        && lhs.showbase == rhs.showbase
+        && lhs.showpos == rhs.showpos;
+}
+
+constexpr bool operator!=( stringify::v0::int_format_data lhs
+                         , stringify::v0::int_format_data rhs) noexcept
+{
+    return ! (lhs == rhs);
+}
+
 template <class T, int Base>
 class int_format_fn
 {

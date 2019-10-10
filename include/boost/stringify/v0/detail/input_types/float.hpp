@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <cstring>
 #include <type_traits>
+
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 namespace detail {
 
@@ -249,51 +250,67 @@ struct float_format_data
     bool showpos = false;
 };
 
+constexpr bool operator==( stringify::v0::float_format_data lhs
+                         , stringify::v0::float_format_data rhs ) noexcept
+{
+    return lhs.precision == rhs.precision
+        && lhs.notation == rhs.notation
+        && lhs.showpoint == rhs.showpoint
+        && lhs.showpos == rhs.showpos ;
+}
+
+constexpr bool operator!=( stringify::v0::float_format_data lhs
+                         , stringify::v0::float_format_data rhs ) noexcept
+{
+    return ! (lhs == rhs);
+}
+
 struct float_format;
 
 template <typename T>
-class float_format_fn: public float_format_data
+class float_format_fn
 {
 public:
+    constexpr float_format_fn() noexcept = default;
 
-    using derived_type = T;
+    template <typename U>
+    constexpr explicit float_format_fn(const float_format_fn<U>& other) noexcept
+        : _data(other.get_float_format_data())
+    {
+    }
+    constexpr T&& operator+() && noexcept
+    {
+        _data.showpos = true;
+        return static_cast<T&&>(*this);
+    }
+    constexpr T&& operator~() && noexcept
+    {
+        _data.showpoint = true;
+        return static_cast<T&&>(*this);
+    }
+    constexpr T&& p(unsigned _) && noexcept
+    {
+        _data.precision = _;
+        return static_cast<T&&>(*this);
+    }
+    constexpr T&& sci() && noexcept
+    {
+        _data.notation = float_notation::scientific;
+        return static_cast<T&&>(*this);
+    }
+    constexpr T&& fixed() && noexcept
+    {
+        _data.notation = float_notation::fixed;
+        return static_cast<T&&>(*this);
+    }
+    constexpr stringify::v0::float_format_data get_float_format_data() const noexcept
+    {
+        return _data;
+    }
 
-    constexpr float_format_fn() = default;
-    constexpr float_format_fn(const float_format_fn&) = default;
-    constexpr float_format_fn(float_format_fn&&) = default;
-    constexpr float_format_fn(const float_format_data& data)
-        : float_format_data(data)
-    {
-    }
-    constexpr derived_type&& operator+() &&
-    {
-        this->showpos = true;
-        return static_cast<derived_type&&>(*this);
-    }
-    constexpr derived_type&& operator~() &&
-    {
-        this->showpoint = true;
-        return static_cast<derived_type&&>(*this);
-    }
-    constexpr derived_type&& p(unsigned _) &&
-    {
-        this->precision = _;
-        return static_cast<derived_type&&>(*this);
-    }
-    constexpr derived_type&& sci() &&
-    {
-        this->notation = float_notation::scientific;
-        return static_cast<derived_type&&>(*this);
-    }
-    constexpr derived_type&& fixed() &&
-    {
-        this->notation = float_notation::fixed;
-        return static_cast<derived_type&&>(*this);
-    }
-    // constexpr derived_type&& dec() &&
-    // {
-    //     return static_cast<derived_type&&>(*this);
-    // }
+private:
+
+    stringify::v0::float_format_data _data;
 };
 
 struct float_format
@@ -746,7 +763,7 @@ public:
             < FloatT
             , stringify::v0::float_format
             , stringify::v0::empty_alignment_format >& x )
-         : _data{x.value(), x}
+         : _data{x.value(), x.get_float_format_data()}
          , _punct(get_facet<stringify::v0::numpunct_c<10>, FloatT>(fp))
          , _encoding(get_facet<stringify::v0::encoding_c<CharT>, FloatT>(fp))
          , _enc_err(get_facet<stringify::v0::encoding_error_c, FloatT>(fp))
@@ -760,7 +777,7 @@ public:
             < FloatT
             , stringify::v0::float_format
             , stringify::v0::alignment_format >& x )
-        : _data{x.value(), x}
+        : _data{x.value(), x.get_float_format_data()}
         , _punct(get_facet<stringify::v0::numpunct_c<10>, FloatT>(fp))
         , _encoding(get_facet<stringify::v0::encoding_c<CharT>, FloatT>(fp))
         , _fillchar(x.fill())
@@ -1051,7 +1068,7 @@ public:
             < FloatT
             , stringify::v0::float_format
             , stringify::v0::empty_alignment_format >& x )
-            : _data(x.value(), x)
+            : _data(x.value(), x.get_float_format_data())
     {
     }
 
@@ -1062,7 +1079,7 @@ public:
             < FloatT
             , stringify::v0::float_format
             , stringify::v0::alignment_format >& x )
-        : _data(x.value(), x)
+        : _data(x.value(), x.get_float_format_data())
         , _encoding(fp.template get_facet<stringify::v0::encoding_c<CharT>, FloatT>())
         , _fillchar(x.fill())
         , _enc_err(fp.template get_facet<stringify::v0::encoding_error_c, FloatT>())

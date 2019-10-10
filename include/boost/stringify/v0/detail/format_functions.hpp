@@ -6,6 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/stringify/v0/config.hpp>
+#include <cstring>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -145,6 +146,20 @@ struct alignment_format_data
     int width = 0;
     stringify::v0::alignment_e alignment = stringify::v0::alignment_e::right;
 };
+
+constexpr bool operator==( stringify::v0::alignment_format_data lhs
+                         , stringify::v0::alignment_format_data rhs ) noexcept
+{
+    return lhs.fill == rhs.fill
+        && lhs.width == rhs.width
+        && lhs.alignment == rhs.alignment ;
+}
+
+constexpr bool operator!=( stringify::v0::alignment_format_data lhs
+                         , stringify::v0::alignment_format_data rhs ) noexcept
+{
+    return ! (lhs == rhs);
+}
 
 template <bool Active, class T>
 class alignment_format_fn
