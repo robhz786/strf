@@ -164,23 +164,21 @@ constexpr bool operator!=( stringify::v0::alignment_format_data lhs
 template <bool Active, class T>
 class alignment_format_fn
 {
-    using derived_type = T;
-
-    derived_type& as_derived_ref()
+    T& as_derived_ref()
     {
-        derived_type* d =  static_cast<derived_type*>(this);
+        T* d =  static_cast<T*>(this);
         return *d;
     }
 
-    derived_type&& as_derived_rval_ref()
+    T&& as_derived_rval_ref()
     {
-        derived_type* d =  static_cast<derived_type*>(this);
-        return static_cast<derived_type&&>(*d);
+        T* d =  static_cast<T*>(this);
+        return static_cast<T&&>(*d);
     }
 
 public:
 
-    constexpr alignment_format_fn() = default;
+    constexpr alignment_format_fn() noexcept = default;
 
     template <bool B, typename U>
     constexpr explicit alignment_format_fn
@@ -189,36 +187,31 @@ public:
     {
     }
 
-    constexpr explicit alignment_format_fn(stringify::v0::alignment_format_data data)
-        : _data(data)
-    {
-    }
-
-    constexpr derived_type&& operator<(int width) && noexcept
+    constexpr T&& operator<(int width) && noexcept
     {
         _data.alignment = stringify::v0::alignment_e::left;
         _data.width = width;
         return as_derived_rval_ref();
     }
-    constexpr derived_type&& operator>(int width) && noexcept
+    constexpr T&& operator>(int width) && noexcept
     {
         _data.alignment = stringify::v0::alignment_e::right;
         _data.width = width;
         return as_derived_rval_ref();
     }
-    constexpr derived_type&& operator^(int width) && noexcept
+    constexpr T&& operator^(int width) && noexcept
     {
         _data.alignment = stringify::v0::alignment_e::center;
         _data.width = width;
         return as_derived_rval_ref();
     }
-    constexpr derived_type&& operator%(int width) && noexcept
+    constexpr T&& operator%(int width) && noexcept
     {
         _data.alignment = stringify::v0::alignment_e::internal;
         _data.width = width;
         return as_derived_rval_ref();
     }
-    constexpr derived_type&& fill(char32_t ch) && noexcept
+    constexpr T&& fill(char32_t ch) && noexcept
     {
         _data.fill = ch;
         return as_derived_rval_ref();
@@ -257,7 +250,7 @@ class alignment_format_fn<false, T>
 
     constexpr adapted_derived_type make_adapted() const
     {
-        return adapted_derived_type{static_cast<const derived_type&>(*this)};
+        return adapted_derived_type{static_cast<const T&>(*this)};
     }
 
 public:
@@ -266,10 +259,6 @@ public:
 
     template <typename U>
     constexpr explicit alignment_format_fn(const alignment_format_fn<false, U>&) noexcept
-    {
-    }
-
-    ~alignment_format_fn()
     {
     }
 
@@ -294,15 +283,15 @@ public:
         return make_adapted().fill(ch);
     }
 
-    constexpr int width() const
+    constexpr int width() const noexcept
     {
         return 0;
     }
-    constexpr stringify::v0::alignment_e alignment() const
+    constexpr stringify::v0::alignment_e alignment() const noexcept
     {
         return stringify::v0::alignment_e::right;
     }
-    constexpr char32_t fill() const
+    constexpr char32_t fill() const noexcept
     {
         return U' ';
     }
@@ -322,6 +311,40 @@ struct alignment_format_q
 using alignment_format = stringify::v0::alignment_format_q<true>;
 using empty_alignment_format = stringify::v0::alignment_format_q<false>;
 
+
+template <class T>
+class quantity_format_fn
+{
+public:
+
+    constexpr quantity_format_fn() noexcept = default;
+
+    template <typename U>
+    constexpr explicit quantity_format_fn(const quantity_format_fn<U>& u) noexcept
+        : _count(u.count())
+    {
+    }
+
+    constexpr T&& multi(int count) && noexcept
+    {
+        _count = count;
+        return static_cast<T&&>(*this);
+    }
+    constexpr int count() const noexcept
+    {
+        return _count;
+    }
+
+private:
+
+    int _count = 1;
+};
+
+struct quantity_format
+{
+    template <class T>
+    using fn = stringify::v0::quantity_format_fn<T>;
+};
 
 template <typename T>
 constexpr auto fmt(const T& value)
@@ -424,8 +447,6 @@ constexpr auto sci(const T& value, P precision)
 {
     return fmt(value).sci().p(precision);
 }
-
-
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

@@ -12,48 +12,16 @@
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-struct char_formatting
+template <typename CharT>
+struct char_tag
 {
-    template <class T>
-    class fn
-    {
-    public:
-
-        constexpr fn() = default;
-
-        constexpr fn(const fn&) = default;
-
-        template <typename U>
-        constexpr fn(const fn<U>& u)
-            : m_count(u.count())
-        {
-        }
-
-        constexpr T&& multi(int count) &&
-        {
-            m_count = count;
-            return static_cast<T&&>(*this);
-        }
-        constexpr T& multi(int count) &
-        {
-            m_count = count;
-            return static_cast<T&>(*this);
-        }
-        constexpr int count() const
-        {
-            return m_count;
-        }
-
-    private:
-
-        int m_count = 1;
-    };
+    CharT ch;
 };
 
 template <typename CharT>
 using char_with_format = stringify::v0::value_with_format
-    < CharT
-    , stringify::v0::char_formatting
+    < char_tag<CharT>
+    , stringify::v0::quantity_format
     , stringify::v0::alignment_format >;
 
 // template <typename CharT>
@@ -121,7 +89,7 @@ using char_with_format = stringify::v0::value_with_format
 //         }
 //         if (m_fmt.count() > 0)
 //         {
-//             content_width = m_fmt.count() * wcalc.width_of(m_fmt.value());
+//             content_width = m_fmt.count() * wcalc.width_of(m_fmt.value().ch);
 //         }
 //         if (content_width >= m_fmt.width())
 //         {
@@ -161,7 +129,7 @@ using char_with_format = stringify::v0::value_with_format
 //     std::size_t len = 0;
 //     if (m_fmt.count() > 0)
 //     {
-//         len = m_fmt.count() * necessary_size(m_fmt.value());
+//         len = m_fmt.count() * necessary_size(m_fmt.value().ch);
 //     }
 //     if (m_fillcount > 0)
 //     {
@@ -176,7 +144,7 @@ using char_with_format = stringify::v0::value_with_format
 // {
 //     if (m_fillcount == 0)
 //     {
-//         m_out.put32(m_fmt.count(), m_fmt.value());
+//         m_out.put32(m_fmt.count(), m_fmt.value().ch);
 //     }
 //     else
 //     {
@@ -184,7 +152,7 @@ using char_with_format = stringify::v0::value_with_format
 //         {
 //             case stringify::v0::alignment_e::left:
 //             {
-//                 m_out.put32(m_fmt.count(), m_fmt.value());
+//                 m_out.put32(m_fmt.count(), m_fmt.value().ch);
 //                 m_out.put32(m_fillcount, m_fmt.fill());
 //                 break;
 //             }
@@ -192,14 +160,14 @@ using char_with_format = stringify::v0::value_with_format
 //             {
 //                 auto halfcount = m_fillcount / 2;
 //                 m_out.put32(halfcount, m_fmt.fill());
-//                 m_out.put32(m_fmt.count(), m_fmt.value());
+//                 m_out.put32(m_fmt.count(), m_fmt.value().ch);
 //                 m_out.put32(m_fillcount - halfcount, m_fmt.fill());
 //                 break;
 //             }
 //             default:
 //             {
 //                 m_out.put32(m_fillcount, m_fmt.fill());
-//                 m_out.put32(m_fmt.count(), m_fmt.value());
+//                 m_out.put32(m_fmt.count(), m_fmt.value().ch);
 //             }
 //         }
 //     }
@@ -322,7 +290,7 @@ private:
 template <typename CharT>
 void fmt_char_printer<CharT>::_init(stringify::v0::width_calculator wcalc)
 {
-    auto char_width = wcalc.width_of(_fmt.value(), _encoding);
+    auto char_width = wcalc.width_of(_fmt.value().ch, _encoding);
     _content_width = _fmt.count() * char_width;
 }
 
@@ -379,7 +347,7 @@ void fmt_char_printer<CharT>::_write_body
     if (_fmt.count() == 1)
     {
         ob.ensure(1);
-        * ob.pos() = _fmt.value();
+        * ob.pos() = _fmt.value().ch;
         ob.advance();
     }
     else
@@ -390,11 +358,11 @@ void fmt_char_printer<CharT>::_write_body
             std::size_t space = ob.size();
             if (count <= space)
             {
-                std::fill_n(ob.pos(), count, _fmt.value());
+                std::fill_n(ob.pos(), count, _fmt.value().ch);
                 ob.advance(count);
                 break;
             }
-            std::fill_n(ob.pos(), space, _fmt.value());
+            std::fill_n(ob.pos(), space, _fmt.value().ch);
             count -= space;
             ob.advance_to(ob.end());
             ob.recycle();
@@ -493,28 +461,28 @@ make_printer(const FPack& fp, const stringify::v0::char_with_format<CharOut>& ch
 
 #if defined(__cpp_char8_t)
 
-inline auto make_fmt(stringify::v0::tag, char8_t ch)
+constexpr auto make_fmt(stringify::v0::tag, char8_t ch) noexcept
 {
-    return stringify::v0::char_with_format<char8_t>{ch};
+    return stringify::v0::char_with_format<char8_t>{{ch}};
 }
 
 #endif
 
-inline auto make_fmt(stringify::v0::tag, char ch)
+constexpr auto make_fmt(stringify::v0::tag, char ch) noexcept
 {
-    return stringify::v0::char_with_format<char>{ch};
+    return stringify::v0::char_with_format<char>{{ch}};
 }
-inline auto make_fmt(stringify::v0::tag, wchar_t ch)
+constexpr auto make_fmt(stringify::v0::tag, wchar_t ch) noexcept
 {
-    return stringify::v0::char_with_format<wchar_t>{ch};
+    return stringify::v0::char_with_format<wchar_t>{{ch}};
 }
-inline auto make_fmt(stringify::v0::tag, char16_t ch)
+constexpr auto make_fmt(stringify::v0::tag, char16_t ch) noexcept
 {
-    return stringify::v0::char_with_format<char16_t>{ch};
+    return stringify::v0::char_with_format<char16_t>{{ch}};
 }
-inline auto make_fmt(stringify::v0::tag, char32_t ch)
+constexpr auto make_fmt(stringify::v0::tag, char32_t ch) noexcept
 {
-    return stringify::v0::char_with_format<char32_t>{ch};
+    return stringify::v0::char_with_format<char32_t>{{ch}};
 }
 
 template <typename> struct is_char: public std::false_type {};
