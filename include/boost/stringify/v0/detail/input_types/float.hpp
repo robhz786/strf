@@ -303,6 +303,11 @@ public:
         _data.notation = float_notation::fixed;
         return static_cast<T&&>(*this);
     }
+    constexpr T&& gen() && noexcept
+    {
+        _data.notation = float_notation::general;
+        return static_cast<T&&>(*this);
+    }
     constexpr stringify::v0::float_format_data get_float_format_data() const noexcept
     {
         return _data;
@@ -318,6 +323,12 @@ struct float_format
     template <typename T>
     using fn = float_format_fn<T>;
 };
+
+template<typename FloatT, bool Align = false>
+using float_with_format = value_with_format
+    < FloatT
+    , stringify::v0::float_format
+    , stringify::v0::alignment_format_q<Align> >;
 
 namespace detail {
 
@@ -759,24 +770,18 @@ public:
     template <typename FP, typename FloatT>
     punct_double_printer
         ( const FP& fp
-        , const stringify::v0::value_with_format
-            < FloatT
-            , stringify::v0::float_format
-            , stringify::v0::empty_alignment_format >& x )
-         : _data{x.value(), x.get_float_format_data()}
-         , _punct(get_facet<stringify::v0::numpunct_c<10>, FloatT>(fp))
-         , _encoding(get_facet<stringify::v0::encoding_c<CharT>, FloatT>(fp))
-         , _enc_err(get_facet<stringify::v0::encoding_error_c, FloatT>(fp))
+        , stringify::v0::float_with_format<FloatT, false> x )
+        : _data{x.value(), x.get_float_format_data()}
+        , _punct(get_facet<stringify::v0::numpunct_c<10>, FloatT>(fp))
+        , _encoding(get_facet<stringify::v0::encoding_c<CharT>, FloatT>(fp))
+        , _enc_err(get_facet<stringify::v0::encoding_error_c, FloatT>(fp))
     {
     }
 
     template <typename FP, typename FloatT>
     punct_double_printer
         ( const FP& fp
-        , const stringify::v0::value_with_format
-            < FloatT
-            , stringify::v0::float_format
-            , stringify::v0::alignment_format >& x )
+        , stringify::v0::float_with_format<FloatT, true> x )
         : _data{x.value(), x.get_float_format_data()}
         , _punct(get_facet<stringify::v0::numpunct_c<10>, FloatT>(fp))
         , _encoding(get_facet<stringify::v0::encoding_c<CharT>, FloatT>(fp))
@@ -1064,21 +1069,15 @@ public:
     template <typename Fpack, typename FloatT>
     double_printer
         ( const Fpack&
-        , const stringify::v0::value_with_format
-            < FloatT
-            , stringify::v0::float_format
-            , stringify::v0::empty_alignment_format >& x )
-            : _data(x.value(), x.get_float_format_data())
+        , stringify::v0::float_with_format<FloatT, false> x )
+        : _data(x.value(), x.get_float_format_data())
     {
     }
 
     template <typename Fpack, typename FloatT>
     double_printer
         ( const Fpack& fp
-        , const stringify::v0::value_with_format
-            < FloatT
-            , stringify::v0::float_format
-            , stringify::v0::alignment_format >& x )
+        , stringify::v0::float_with_format<FloatT, true> x)
         : _data(x.value(), x.get_float_format_data())
         , _encoding(fp.template get_facet<stringify::v0::encoding_c<CharT>, FloatT>())
         , _fillchar(x.fill())
@@ -1887,19 +1886,15 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_punct_double_printer<wchar_t>;
 
 inline auto make_fmt(stringify::v0::tag, float x)
 {
-    return stringify::v0::value_with_format
-        < float
-        , stringify::v0::float_format
-        , stringify::v0::empty_alignment_format >{x};
+    return stringify::v0::float_with_format<float, false>{x};
 }
 
 inline auto make_fmt(stringify::v0::tag, double x)
 {
-    return stringify::v0::value_with_format
-        < double
-        , stringify::v0::float_format
-        , stringify::v0::empty_alignment_format >{x};
+    return stringify::v0::float_with_format<double, false>{x};
 }
+
+inline void make_fmt(stringify::v0::tag, long double x) = delete;
 
 template <typename CharT, typename FPack>
 inline typename std::conditional
@@ -1921,32 +1916,29 @@ make_printer(const FPack& fp, double d)
     return {fp, d};
 }
 
-template <typename CharT, typename FPack, typename FloatT>
+template <typename CharT, typename FPack>
+void make_printer(const FPack& fp, long double d) = delete;
+
+template <typename CharT, typename FPack, bool Align>
 inline typename std::conditional
-    < stringify::v0::detail::has_punct<CharT, FPack, FloatT, 10>
+    < stringify::v0::detail::has_punct<CharT, FPack, float, 10>
     , stringify::v0::detail::punct_double_printer<CharT>
     , stringify::v0::detail::double_printer<CharT> >::type
 make_printer
     ( const FPack& fp
-    , const stringify::v0::value_with_format
-            < FloatT
-            , stringify::v0::float_format
-            , stringify::v0::empty_alignment_format >& x )
+    , stringify::v0::float_with_format<float, Align> x )
 {
     return {fp, x};
 }
 
-template <typename CharT, typename FPack, typename FloatT>
+template <typename CharT, typename FPack, bool Align>
 inline typename std::conditional
-    < stringify::v0::detail::has_punct<CharT, FPack, FloatT, 10>
+    < stringify::v0::detail::has_punct<CharT, FPack, double, 10>
     , stringify::v0::detail::punct_double_printer<CharT>
     , stringify::v0::detail::double_printer<CharT> >::type
 make_printer
     ( const FPack& fp
-    , const stringify::v0::value_with_format
-            < FloatT
-            , stringify::v0::float_format
-            , stringify::v0::alignment_format >& x )
+    , stringify::v0::float_with_format<double, Align> x )
 {
     return {fp, x};
 }

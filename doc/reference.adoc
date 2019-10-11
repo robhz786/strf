@@ -1,0 +1,9 @@
+= Stringify API Reference
+:source-highlighter: prettify
+:sectnums:
+:toc: left
+:toclevels: 2
+
+include::ref_input_types.adoc[]
+include::ref_format_functions.adoc[]
+include::ref_facets_pack.adoc[]

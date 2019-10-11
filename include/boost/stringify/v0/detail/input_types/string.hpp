@@ -21,6 +21,8 @@ public:
     {
     }
 
+    constexpr simple_string_view(const simple_string_view&) noexcept = default;
+
     BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
     simple_string_view(const CharIn* str) noexcept
         : _begin(str)
@@ -336,6 +338,13 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_string_printer<wchar_t>;
 #endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 } // namespace detail
+
+template <typename CharT, typename FPack>
+inline stringify::v0::detail::string_printer<CharT>
+make_printer(const FPack& fp, const CharT* str)
+{
+    return {fp, str, std::char_traits<CharT>::length(str)};
+}
 
 #if defined(__cpp_char8_t)
 

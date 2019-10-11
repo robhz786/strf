@@ -1,0 +1,798 @@
+:boost_mp_replace: https://www.boost.org/doc/libs/develop/libs/mp11/doc/html/mp11.html#mp_replacel_v_w[boost::mp_replace]
+
+:std_conditional_t: https://en.cppreference.com/w/cpp/types/conditional[std::conditional_t]
+:float_format_data: <<float_format_data,float_format_data>>
+:alignment_format_data: <<alignment_format_data,alignment_format_data>>
+
+== Format functions
+
+[[value_with_format]]
+=== Class template `value_with_format`
+[source,cpp]
+----
+template <typename ValueType, class ... Fmts>
+class value_with_format;
+----
+::
+Compile-time requirements:::
+- All types in `Fmt\...` satisfy <<Formatter,Formatter>>.
+- All types in `Fmt\...` are different.
+
+The purpose of the `value_with_format` class template is to aid
+the creation classes that contain format functions.
+The types of expressions like `fmt("Hello")`,
+`fmt(55)`, `~hex(55) > 20`, etc, are all `value_with_format`
+instances. The `ValueType` template parameter holds the input
+type, and the types in `Fmts\...` defines the format functions.
+
+==== Synopsis
+[source,cpp]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <typename ValueType, class ... Fmts>
+class value_with_format
+    : public Fmts::template fn<value_with_format<ValueType, Fmts ...>> ...
+{
+public:
+
+    constexpr value_with_format(const value_with_format&) = default;
+    constexpr value_with_format(value_with_format&&) = default;
+    constexpr value_with_format(const ValueType&);
+
+    template <typename OtherValueType>
+    constexpr value_with_format
+        ( const ValueType&
+        , const value_with_format<OtherValueType, Fmts...>& );
+
+    template <typename OtherValueType>
+    constexpr value_with_format
+        ( const ValueType&
+        , value_with_format<OtherValueType, Fmts...>&& );
+
+
+    template <typename ... OtherFmts>
+    constexpr value_with_format
+        ( const value_with_format<ValueType, OtherFmts...>& );
+
+    template <typename ... OtherFmts>
+    constexpr value_with_format
+        ( value_with_format<ValueType, OtherFmts...>&& );
+
+
+    constexpr const ValueType& value() const;
+};
+
+}}}
+----
+
+[[Formatter]]
+=== Type requirement _Formatter_
+
+// This is the requirement for a type to be a paramenter of the `value_with_format`
+// template.
+A type `Fmt` is a _Formatter_ if it has a member `fn` that is a type template
+with one template type parameter such that, given any types `T` and `U`:
+
+- `Fmt::template fn<T>` is well formed if `T` is `value_with_format<ValueType, Fmts \...>`.
+  In this case, note that `Fmt` is in `Fmts\...` and `T` derives from `Fmt::template fn<T>`.
+- `Fmt::template fn<T>` is default constructible, assuming it is well formed.
+- `Fmt::template fn<T>` can be constructed from `const Fmt::template fn<U>&`,
+  if both are well formed.
+
+// Although it is not a compile-time requirement, it only makes sense to use a type `Fmt`
+// in `value_with_format` if `Fmt::template fn<T>` contains any __format function__.
+// These are member functions and they are of two kinds. In the first one, the return type
+// is `T`, `T&` or `T&&` depending of
+//
+// [source,cpp]
+// ----
+// struct fmt
+// {
+//     template <class T>
+//     class fn
+//     {
+//     public:
+//         // ...
+//
+//         T&   ff1(/*...*/) &
+//         {
+//             // ...
+//             return static_cast<T&>(*this);
+//         }
+//
+//         T&&  ff1(/*...*/) &&
+//         {
+//             // ...
+//             return static_cast<T&&>(*this);
+//         }
+//
+//         T    ff1(/*...*/) const &
+//         {
+//             // ...
+//             return static_cast<const T&>(*this);
+//         }
+//
+//     };
+// };
+// ----
+
+[[alignment_format]]
+=== _Formatter_ `alignment_format`
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <bool Active>
+struct alignment_format_q
+{
+    template <class T>
+    using fn = <<alignment_format_fn,alignment_format_fn>><Active, T>;
+};
+
+using alignment_format       = alignment_format_q<true>;
+using empty_alignment_format = alignment_format_q<false>;
+
+}}}
+----
+
+[[alignment_format_fn]]
+==== `alignment_format_fn`
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <bool Active, class T>
+class alignment_format_fn;
+{
+public:
+    // <<alignment_format_fn_constructors,constructors>>
+    constexpr alignment_format_fn() noexcept;
+
+    template <bool B, typename U>
+    constexpr explitic alignment_format_fn(const alignment_format_fn<B, U>& u) noexcept;
+
+    // <<alignment_format_fn_format_functions,format functions>>
+    constexpr T&& operator<(int width) && noexcept; // left
+    constexpr T&& operator>(int width) && noexcept; // right
+    constexpr T&& operator^(int width) && noexcept; // center
+    constexpr T&& operator%(int width) && noexcept; // internal
+    constexpr T&& fill(char32_t ch) && noexcept;
+
+    // <<alignment_format_fn_observers,observers>>
+    constexpr int width() const noexcept;
+    constexpr alignment_e alignment() const noexcept;
+    constexpr char32_t fill() const noexcept;
+    constexpr {alignment_format_data} get_alignmet_format_data() const noexcept;
+};
+
+// alignment_format_fn<false, T> is an empty class
+template <class T>
+class alignment_format_fn<false, T>
+{
+    using converted_fmt = {boost_mp_replace}< T , alignment_format_q<false>
+                                               , alignment_format_q<true> >;
+public:
+    // <<alignment_format_fn_constructors,constructors>>
+    constexpr alignment_format_fn() noexcept;
+
+    template <typename U>
+    constexpr explicit alignment_format_fn(const alignment_format_fn<false, U>&) noexcept;
+
+    // <<alignment_format_fn_observers,observers>>
+    constexpr int width() const noexcept;
+    constexpr alignment_e alignment() const noexcept;
+    constexpr char32_t fill() const noexcept;
+    constexpr {alignment_format_data} get_alignmet_format_data() const noexcept;
+
+    // <<alignment_format_fn_format_functions,format functions>>
+    constexpr converted_fmt operator<(int width) const noexcept;
+    constexpr converted_fmt operator>(int width) const noexcept;
+    constexpr converted_fmt operator^(int width) const noexcept;
+    constexpr converted_fmt operator%(int width) const noexcept;
+    constexpr converted_fmt fill(char32_t ch) const noexcept;
+};
+
+}}}
+----
+[[alignment_format_fn_constructors]]
+===== Constructors
+[source,cpp,subs=normal]
+----
+constexpr alignment_format_fn() noexcept;
+----
+::
+Postconditions::: `get_alignmet_format_data() == {alignment_format_data}{}`
+
+[source,cpp,subs=normal]
+----
+template <bool B, typename U>
+constexpr explitic alignment_format_fn(const alignment_format_fn<B, U>& u) noexcept;
+----
+::
+Postconditions::: `get_alignmet_format_data() == u.get_alignmet_format_data()`
+Note::: This function only participates in overload resolution if 'Active' is `true`
+        or `B` is `false`
+
+[[alignment_format_fn_observers]]
+===== Observers
+[source,cpp,subs=normal]
+----
+constexpr {alignment_format_data} get_alignmet_format_data() const noexcept;
+----
+::
+Return value:::
+- `alignment_format_data{}`, when `Active` is `false`.
+- The value corresponding to the state of this object, when `Active` is `true`.
+
+[source,cpp]
+----
+constexpr int width() const noexcept;
+----
+::
+Return value::: `get_alignmet_format_data().width`
+
+[source,cpp]
+----
+constexpr alignment_e alignment() const noexcept;
+----
+::
+Return value::: `get_alignmet_format_data().alignment`
+
+[source,cpp]
+----
+constexpr char32_t fill() const noexcept;
+----
+::
+Return value::: `get_alignmet_format_data().fill`
+
+[[alignment_format_fn_format_functions]]
+===== Format functions
+
+// `alignment_format_fn<false, T>` is an empty class. Its format functions
+// return `converted_fmt{*this}.`
+//
+// In `alignment_format_fn<true, T>` the format functions modify
+// the object and return `static_cast<T&&>(this)`.
+
+[source,cpp]
+----
+constexpr /*return type */ operator<(int width) /* qualifier */ noexcept;
+----
+::
+Posconditions::: The return value `r` satisfies:
+- `r.width() == width`
+- `r.alignment == alignment_e::left`
+Return value:::
+- when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)} < width`.
+- when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
+
+[source,cpp]
+----
+constexpr /*return type */ operator>(int width) /* qualifier */ noexcept;
+----
+::
+Posconditions::: The return value `r` satisfies:
+- `r.width() == width`
+- `r.alignment() == alignment_e::right`
+Return value:::
+- when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)} > width`.
+- when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
+
+[source,cpp]
+----
+constexpr /*return type */ operator^(int width) /* qualifier */ noexcept;
+----
+::
+Posconditions::: The return value `r` satisfies:
+- `r.width() == width`
+- `r.alignment() == alignment_e::center`
+Return value:::
+- when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)} ^ width`.
+- when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
+[%hardbreaks]
+
+[source,cpp]
+----
+constexpr /*return type */ operator%(int width) /* qualifier */ noexcept;
+----
+::
+Posconditions::: The return value `r` satisfies:
+- `r.width() == width`
+- `r.alignment() == alignment_e::internal`
+Return value:::
+- when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)} % width`.
+- when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
+
+[source,cpp]
+----
+constexpr /*return type */ fill(char32_t ch) /* qualifier */ noexcept;
+----
+::
+Posconditions::: The return value `r` satisfies:
+- `r.fill() == ch`
+Return value:::
+- when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)}.fill(ch)`.
+- when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
+
+[[alignment_format_data]]
+==== `alignment_format_data`
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+enum class alignment_e {left, right, internal, center};
+
+struct alignment_format_data
+{
+    char32_t fill = U' ';
+    int width = 0;
+    alignment_e alignment = alignment_e::right;
+};
+
+constexpr bool operator==(alignment_format_data lhs, alignment_format_data rhs) noexcept;
+constexpr bool operator!=(alignment_format_data lhs, alignment_format_data rhs) noexcept;
+}}}
+----
+
+[[int_format]]
+=== _Formatter_ `int_format`
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <class T, int Base>
+class int_format_fn;
+
+template <int Base>
+struct int_format
+{
+    template <typename T>
+    using fn = stringify::v0::int_format_fn<T, Base>;
+};
+
+}}}
+----
+
+==== `int_format_fn`
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+struct int_format_data
+{
+    unsigned precision = 0;
+    bool showbase = false;
+    bool showpos = false;
+};
+
+constexpr bool operator==(int_format_data lhs, int_format_data rhs) noexcept;
+constexpr bool operator!=(int_format_data lhs, int_format_data rhs) noexcept;
+
+template <class T, int Base>
+class int_format_fn
+{
+public:
+    constexpr int_format_fn() noexcept;
+
+    template <typename U, int OtherBase>
+    constexpr int_format_fn(const int_format_fn<U, OtherBase> & u) noexcept;
+
+    // <<int_format_fn_observers,observers>>
+    constexpr int_format_data get_int_format_data() const noexcept;
+    constexpr unsigned precision() const noexcept;
+    constexpr bool showbase() const noexcept;
+    constexpr bool showpos() const noexcept;
+    constexpr static int base() noexcept;
+
+    // <<int_format_fn_format_functions, format functions>>
+    constexpr T&& p(unsigned precision) && noexcept; // set precision
+    constexpr T&& operator+() && noexcept;           // show positive sign
+    constexpr T&& operator~() && noexcept;           // show base
+
+    constexpr /* see below {asterisk}/ hex() && noexcept; // hexadecimal base
+    constexpr /* see below {asterisk}/ dec() && noexcept; // decimal base
+    constexpr /* see below {asterisk}/ oct() && noexcept; // octal base
+};
+}}}
+----
+[[int_format_fn_observers]]
+===== Observers
+[source,cpp]
+----
+constexpr int_format_data get_int_format_data() const noexcept;
+----
+::
+Return value::: The value corresponding to the state of this object.
+
+[source,cpp]
+----
+constexpr unsigned precision() const noexcept;
+----
+::
+Return value::: `get_int_format_data().precision`
+
+[source,cpp]
+----
+constexpr showpos() const noexcept;
+----
+::
+Return value::: `get_int_format_data().showpos`
+
+[source,cpp]
+----
+constexpr showbase() const noexcept;
+----
+::
+Return value::: `get_int_format_data().showbase`
+
+[source,cpp]
+----
+constexpr static base() noexcept;
+----
+::
+Return value::: `Base`
+
+[[int_format_fn_format_functions]]
+===== Format functions
+
+[source,cpp]
+----
+constexpr T&& p(unsigned precision) && noexcept;
+----
+::
+Postconditions:::  `precision() == precision`
+Return value::: `std::move(static_cast<T&>(*this))`
+
+[source,cpp]
+----
+constexpr T&& operator+() && noexcept;
+----
+::
+Postconditions:::  `showpos() == true`
+Return value::: `std::move(static_cast<T&>(*this))`
+
+[source,cpp]
+----
+constexpr T&& operator~() && noexcept;
+----
+::
+Postconditions:::  `showbase() == true`
+Return value::: `std::move(static_cast<T&>(*this))`
+
+[source,cpp]
+----
+constexpr /* see below */ hex() &&;     // hexadecimal base
+constexpr /* see below */ dec() &&;     // decimal base
+constexpr /* see below */ oct() &&;     // octal base
+----
+::
+Return type:::
++
+[source,cpp,subs=normal]
+----
+{std_conditional_t}< Base == NewBase
+                  , T&&
+                  , {boost_mp_replace}<T, int_format<Base>, int_format<NewBase> >
+----
+, where `NewBase` is equal to `10` in `dec()`, `16` in `hex()`, and `8` in `oct()`.
+Return value:::
+- `static_cast<ReturnType>(static_cast<T&>(*this))`, where `ReturnType` is the return type;
+
+[[float_format]]
+=== _Formatter_ `float_format`
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <class T, float Base>
+class float_format_fn;
+
+template <float Base>
+struct float_format
+{
+    template <typename T>
+    using fn = float_format_fn<T, Base>;
+};
+
+}}}
+----
+
+==== `float_format_fn`
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <typename T>
+class float_format_fn
+{
+public:
+    constexpr float_format_fn() noexcept;
+
+    template <typename U>
+    constexpr explicit float_format_fn(const float_format_fn<U>& other) noexcept;
+
+    // observers
+    constexpr {float_format_data} get_float_format_data() const noexcept;
+
+    // <<float_format_fn_format_functions, format functions>>
+    constexpr T&& operator+() && noexcept;
+    constexpr T&& operator~() && noexcept;
+    constexpr T&& p(unsigned precision) && noexcept;
+    constexpr T&& gen() && noexcept;
+    constexpr T&& sci() && noexcept;
+    constexpr T&& fixed() && noexcept;
+};
+}}}
+----
+
+[[float_format_fn_constructors]]
+===== Constructors
+[source,cpp,subs=normal]
+----
+constexpr float_format_fn() noexcept;
+----
+::
+Postconditions::: `get_float_format_data() == {float_format_data}{}`
+
+----
+template <typename U>
+constexpr explicit float_format_fn(const float_format_fn<U>& other) noexcept;
+----
+::
+Postconditions::: `get_float_format_data() == other.get_float_format_data()`
+
+[[float_format_fn_format_functions]]
+===== Format functions
+[source,cpp,subs=normal]
+----
+constexpr T&& operator+() && noexcept;
+----
+::
+Postconditions::: `get_float_format_data().<<float_showpos,showpos>> == true`
+Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
+
+[source,cpp,subs=normal]
+----
+constexpr T&& operator~() && noexcept;
+----
+::
+Postconditions::: `get_float_format_data().<<float_showpoint,showpoint>> == true`
+Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
+
+[source,cpp,subs=normal]
+----
+constexpr T&& p(unsigned precision) && noexcept;
+----
+::
+Postconditions::: `get_float_format_data().<<float_precision,precision>> == precision`
+Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
+
+[source,cpp,subs=normal]
+----
+constexpr T&& gen() && noexcept;
+----
+::
+Postconditions::: `get_float_format_data().<<float_notation,notation>> = float_notation::general`
+Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
+
+[source,cpp,subs=normal]
+----
+constexpr T&& sci() && noexcept;
+----
+::
+Postconditions::: `get_float_format_data().<<float_notation,notation>> = float_notation::scientific`
+Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
+
+[source,cpp,subs=normal]
+----
+constexpr T&& fixed() && noexcept;
+----
+::
+Postconditions::: `get_float_format_data().<<float_notation,notation>> = float_notation::fixed`
+Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
+
+[[float_format_data]]
+==== `float_format_data`
+[source,cpp]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+enum class float_notation{fixed, scientific, general};
+
+struct float_format_data
+{
+    unsigned precision = (unsigned)-1;
+    float_notation notation = float_notation::general;
+    bool showpoint = false;
+    bool showpos = false;
+};
+
+constexpr bool operator==(float_format_data lhs, float_format_data rhs) noexcept;
+constexpr bool operator!=(float_format_data lhs, float_format_data rhs) noexcept;
+}}}
+----
+
+[[float_notation]]
+notation::
+- `float_notation::fixed`: Prints like `123.45`
+- `float_notation::scientific`: Prints like `1.2345e+02`
+- `float_notation::general`: When precision is `(unsigned)-1`,
+   prints in the scientfic notation if it is shorter than the fixed notation.
+   When precision is different than `(unsigned)-1`, does like in `std::printf`:
+   uses the scientfic notation if the exponent is less than -4 or greater
+   than or equal to the precision. Trailing fractional zeros are not printed.
+
+[[float_precision]]
+precision:: When `notation == float_notation::general`, the precision is the
+            number of significant digits. Otherwise it is the number of
+            fractional digits. `precision == 0` has the same effect as
+            `precision == 1`.
+
+[[float_showpoint]]
+showpoint:: Prints the decimal point even when there are no fractional digits.
+
+[[float_showpos]]
+showpos:: Prints the positive sign `'+'` when the value is positive.
+
+[[quantity_format]]
+=== _Formatter_ `quantity_format`
+[source,cpp]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+struct quantity_format
+{
+    template <class T>
+    using fn = quantity_format_fn<T>;
+};
+
+}}}
+----
+==== `quantity_format_fn`
+[source,cpp]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <class T>
+class quantity_format_fn
+{
+public:
+    constexpr quantity_format_fn() noexcept;
+
+    template <typename U>
+    constexpr explicit quantity_format_fn(const quantity_format_fn<U>& u) noexcept
+        : _count(u.count())
+    {
+    }
+
+    constexpr T&& multi(int count) && noexcept
+    constexpr int count() const noexcept
+};
+
+}}}
+----
+===== Constructors
+[source,cpp,subs=normal]
+----
+constexpr quantity_format_fn() noexcept;
+----
+::
+Postconditions::: `count() == 1`
+
+[source,cpp,subs=normal]
+----
+template <typename U>
+constexpr explicit quantity_format_fn(const quantity_format_fn<U>& u) noexcept
+    : _count(u.count())
+{
+}
+----
+::
+Postconditions::: `count() == u.count()`
+
+===== Format functions
+[source,cpp,subs=normal]
+----
+constexpr T&& multi(int count) && noexcept
+----
+::
+Postconditions::: `count() == count`
+Return value::: `static_cast<T&&>(*this)`
+
+=== Global format functions
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <typename T>
+constexpr auto fmt(const T& value)
+{
+    return make_fmt(stringify::v0::tag{}, value);
+}
+
+template <typename T>
+constexpr auto hex(const T& value)
+{
+    return fmt(value).hex();
+}
+
+template <typename T>
+constexpr auto dec(const T& value)
+{
+    return fmt(value).dec();
+}
+
+template <typename T>
+constexpr auto oct(const T& value)
+{
+    return fmt(value).oct();
+}
+
+template <typename T>
+constexpr auto left(const T& value, int width)
+{
+    return fmt(value) < width;
+}
+
+template <typename T>
+constexpr auto right(const T& value, int width)
+{
+    return fmt(value) > width;
+}
+
+template <typename T>
+constexpr auto internal(const T& value, int width)
+{
+    return fmt(value) % width;
+}
+
+template <typename T>
+constexpr auto center(const T& value, int width)
+{
+    return fmt(value) ^ width;
+}
+
+template <typename T>
+constexpr auto left(const T& value, int width, char32_t fill)
+{
+    return fmt(value).fill(fill) < width;
+}
+
+template <typename T>
+constexpr auto right(const T& value, int width, char32_t fill)
+{
+    return fmt(value).fill(fill) > width;
+
+}}}
+----

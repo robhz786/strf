@@ -150,18 +150,11 @@ struct int_format
     using fn = stringify::v0::int_format_fn<T, Base>;
 };
 
-template <typename IntT, int Base = 10>
+template <typename IntT, int Base = 10, bool Align = false>
 using int_with_format = stringify::v0::value_with_format
     < stringify::v0::int_tag<IntT>
     , stringify::v0::int_format<Base>
-    , stringify::v0::empty_alignment_format >;
-
-template <typename IntT, int Base>
-using int_with_alignment_format = stringify::v0::value_with_format
-    < stringify::v0::int_tag<IntT>
-    , stringify::v0::int_format<Base>
-    , stringify::v0::alignment_format >;
-
+    , stringify::v0::alignment_format_q<Align> >;
 
 namespace detail {
 
@@ -370,8 +363,9 @@ public:
     }
 
     template <typename FPack, typename IntT>
-    partial_fmt_int_printer( const FPack& fp
-                           , const stringify::v0::int_with_format<IntT, Base>& value )
+    partial_fmt_int_printer
+        ( const FPack& fp
+        , const stringify::v0::int_with_format<IntT, Base, false>& value )
         : _punct(get_facet<stringify::v0::numpunct_c<Base>, IntT>(fp))
         , _encoding(get_facet<stringify::v0::encoding_c<CharT>, IntT>(fp))
     {
@@ -382,7 +376,7 @@ public:
     template <typename FPack, typename IntT>
     partial_fmt_int_printer
         ( const FPack& fp
-        , const stringify::v0::int_with_alignment_format<IntT, Base>& value )
+        , const stringify::v0::int_with_format<IntT, Base, true>& value )
         : _punct(get_facet<stringify::v0::numpunct_c<Base>, IntT>(fp))
         , _encoding(get_facet<stringify::v0::encoding_c<CharT>, IntT>(fp))
     {
@@ -582,7 +576,7 @@ public:
     template <typename FPack, typename IntT>
     full_fmt_int_printer
         ( const FPack& fp
-        , stringify::v0::int_with_alignment_format<IntT, Base> value ) noexcept;
+        , stringify::v0::int_with_format<IntT, Base, true> value ) noexcept;
 
     ~full_fmt_int_printer();
 
@@ -613,7 +607,7 @@ template <typename CharT, int Base>
 template <typename FPack, typename IntT>
 inline full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
     ( const FPack& fp
-    , stringify::v0::int_with_alignment_format<IntT, Base> value ) noexcept
+    , stringify::v0::int_with_format<IntT, Base, true> value ) noexcept
     : _ichars(fp, value)
     , _enc_err(get_facet<stringify::v0::encoding_error_c, IntT>(fp))
     , _afmt(value.get_alignment_format_data())
@@ -813,7 +807,7 @@ make_printer(const FPack& fp, unsigned long long x)
 template <typename CharT, typename FPack, typename IntT, int Base>
 inline stringify::v0::detail::full_fmt_int_printer<CharT, Base>
 make_printer( const FPack& fp
-            , const stringify::v0::int_with_alignment_format<IntT, Base>& x )
+            , const stringify::v0::int_with_format<IntT, Base, true>& x )
 {
     return {fp, x};
 }
@@ -821,7 +815,7 @@ make_printer( const FPack& fp
 template <typename CharT, typename FPack, typename IntT, int Base>
 inline stringify::v0::detail::partial_fmt_int_printer<CharT, Base>
 make_printer( const FPack& fp
-            , const stringify::v0::int_with_format<IntT, Base>& x )
+            , const stringify::v0::int_with_format<IntT, Base, false>& x )
 {
     return {fp, x};
 }

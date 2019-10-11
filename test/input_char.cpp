@@ -14,6 +14,9 @@ int main()
 {
     namespace strf = boost::stringify::v0;
 
+//    strf::to_wstring('a');
+
+    
     TEST("a")    ( 'a' );
     TEST("a")    ( strf::fmt('a') );
     TEST("aaaa") ( strf::multi('a', 4) );

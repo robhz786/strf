@@ -1,0 +1,584 @@
+:alignment_format: <<alignment_format,alignment_format>>
+:alignment_format_q: <<alignment_format,alignment_format_q>>
+:int_format: <<int_format,int_format>>
+:float_format: <<float_format,float_format>>
+:value_with_format: <<value_with_format,value_with_format>>
+:boost_mp_replace_front: https://www.boost.org/doc/libs/develop/libs/mp11/doc/html/mp11.html#mp_replace_frontl_t[boost::mp_replace_front]
+:pack: <<pack,pack>>
+
+
+== Input types
+
+=== String
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <typename CharT, typename FPack>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack& fp, const CharT* str);
+
+template <typename CharT, typename FPack, typename Traits, typename Allocator>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+    ( const FPack& fp
+    , const std::basic_string<CharT, Traits, Allocator>& str );
+
+template <typename CharT, typename FPack, typename Traits>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+    ( const FPack& fp
+    , const std::basic_string_view<CharT, Traits>& str );
+
+}}}
+----
+
+=== Formatted string
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <typename CharT>
+using string_with_format = {value_with_format}< /{asterisk} __implementation-defined__ {asterisk}/
+                                            , {alignment_format} >;
+
+constexpr string_with_format<char>     make_fmt(tag, const char* str);
+constexpr string_with_format<char8_t>  make_fmt(tag, const char8_t* str);
+constexpr string_with_format<char16_t> make_fmt(tag, const char16_t* str);
+constexpr string_with_format<char32_t> make_fmt(tag, const char32_t* str);
+constexpr string_with_format<wchar_t>  make_fmt(tag, const wchar_t* str);
+
+template <typename CharT, typename Traits, typename Allocator>
+auto string_with_format<CharT> make_fmt
+    ( tag
+    , const std::basic_string<CharT, Traits, Allocator>& str ) noexcept;
+
+template <typename CharT, typename Traits>
+auto string_with_format<CharT> make_fmt
+    ( tag
+    , std::basic_string_view<CharT, Traits>& str ) noexcept;
+
+template <typename CharT, typename FPack, typename CharIn>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+    ( const FPack&
+    , const string_with_format<CharT>& );
+
+}}}
+----
+
+=== Encoded String
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <typename CharIn>
+class cv_string;  // __implementation-defined__
+
+template <typename CharIn>
+class cv_string_with_encoding; // __implementation-defined__
+
+cv_string<char>     cv(const char* str);
+cv_string<char8_t>  cv(const char8_t* str);
+cv_string<char16_t> cv(const char16_t* str);
+cv_string<char32_t> cv(const char32_t* str);
+cv_string<wchar_t>  cv(const wchar_t* str);
+
+template <typename CharIn, typename Traits, typename Allocator>
+cv_string<CharIn> cv(const std::basic_string<CharIn, Traits, Allocator>& str);
+
+template <typename CharIn, typename Traits>
+cv_string<CharIn> cv(const std::basic_string_view<CharIn, Traits>& str);
+
+cv_string_with_encoding<CharIn> cv(const CharIn* str, encoding<CharIn> enc);
+
+template <typename CharIn, typename Traits, typename Allocator>
+cv_string_with_encoding<CharIn> cv
+    ( const std::basic_string<CharIn, Traits, Allocator>& str
+    , encoding<CharIn> enc );
+
+template <typename CharIn, typename Traits>
+cv_string_with_encoding<CharIn> cv
+    ( const std::basic_string_view<CharIn, Traits>& str
+    , encoding<CharIn> enc );
+----
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <typename CharOut, typename FPack, typename CharIn>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+    ( const FPack& fp, cv_string<CharIn> str );
+
+template <typename CharOut, typename FPack, typename CharIn>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+    ( const FPack& fp, cv_string_with_encoding<CharIn> str );
+
+}}}
+----
+
+=== Formatted encoded string
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <typename CharIn>
+using cv_string_with_format
+    = {value_with_format}<cv_string<CharIn>, {alignment_format}>;
+
+template <typename CharIn>
+using cv_string_with_format_and_encoding
+    = {value_with_format}<cv_string_with_encoding<CharIn>, {alignment_format}>;
+
+}}}
+----
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <typename CharIn>
+cv_string_with_format<CharIn> make_fmt(tag, cv_string<CharIn> cv_str) noexcept;
+
+}}}
+----
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+cv_string_with_format<char8_t>  fmt_cv(const char* str) noexcept;
+cv_string_with_format<char8_t>  fmt_cv(const char8_t* str) noexcept;
+cv_string_with_format<char16_t> fmt_cv(const char16_t* str) noexcept;
+cv_string_with_format<char32_t> fmt_cv(const char32_t* str) noexcept;
+cv_string_with_format<wchar_t>  fmt_cv(const wchar_t* str) noexcept;
+
+template <typename CharIn, typename Traits>
+cv_string_with_format<CharIn> fmt_cv
+    ( std::basic_string_view<CharIn, Traits> str ) noexcept;
+
+template <typename CharIn, typename Traits, typename Allocator>
+cv_string_with_format<CharIn> fmt_cv
+    ( const std::basic_string<CharIn, Traits, Allocator>& str ) noexcept;
+
+template <typename CharIn>
+cv_string_with_format_and_encoding<CharIn> fmt_cv
+    ( const CharIn* str
+    , encoding<CharIn> enc ) noexcept;
+
+template <typename CharIn, typename Traits>
+cv_string_with_format_and_encoding<CharIn> fmt_cv
+    ( std::basic_string_view<CharIn, Traits> str
+    , encoding<CharIn> enc ) noexcept;
+
+template <typename CharIn, typename Traits, typename Allocator>
+cv_string_with_format_and_encoding<CharIn> fmt_cv
+    ( std::basic_string<CharIn, Traits, Allocator> str
+    , encoding<CharIn> enc ) noexcept;
+
+}}}
+----
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <typename CharOut, typename FPack, typename CharIn>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+    ( const FPack& fp
+    , cv_string_with_format<CharIn> str );
+
+template <typename CharOut, typename FPack, typename CharIn>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+    ( const FPack& fp
+    , cv_string_with_format_and_encoding<CharIn> str );
+
+}}}
+----
+
+=== Single character
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <typename CharT, typename FPack>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack& fp, CharT ch);
+
+template <typename CharT, typename FPack>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack& fp, char ch);
+
+template <typename CharT, typename FPack>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack& fp, char8_t ch);
+
+template <typename CharT, typename FPack>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack& fp, char16_t ch);
+
+template <typename CharT, typename FPack>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack& fp, char32_t ch);
+
+template <typename CharT, typename FPack>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack& fp, wchar_t ch);
+
+}}}
+----
+NOTE: These `make_printer` overloads above emit a compilation error ( through a `static_assert`) if `decltype(ch)` is not `CharT`.
+
+=== Formatted single character
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <typename CharT>
+using char_with_format = {value_with_format}< char_tag<CharT>
+                                          , <<quantity_format,quantity_format>>
+                                          , <<alignment_format,alignment_format>> >;
+
+constexpr char_with_format<char8_t>  make_fmt(tag, char8_t ch) noexcept;
+constexpr char_with_format<char8_t>  make_fmt(tag, char ch) noexcept;
+constexpr char_with_format<char16_t> make_fmt(tag, char16_t ch) noexcept;
+constexpr char_with_format<char32_t> make_fmt(tag, char32_t ch) noexcept;
+constexpr char_with_format<wchar_t>  make_fmt(tag, wchar_t ch) noexcept;
+
+template <typename CharOut, typename FPack, typename CharIn>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer( const FPack& fp
+                                         , char_with_format<CharIn> ch );
+
+}}}
+----
+
+NOTE: This `make_printer` overload emits a compilation error ( through a `static_assert` ) if `CharIn` is different from `CharOut`.
+
+=== Integer
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <typename CharT, typename FPack>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack&, short);
+
+template <typename CharT, typename FPack>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack&, int);
+
+template <typename CharT, typename FPack>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack&, long);
+
+template <typename CharT, typename FPack>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack&, long long);
+
+template <typename CharT, typename FPack>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack&, unsigned short);
+
+template <typename CharT, typename FPack>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack&, unsigned int);
+
+template <typename CharT, typename FPack>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack&, unsigned long);
+
+template <typename CharT, typename FPack>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack&, unsigned long long);
+
+}}}
+----
+
+=== Formatted integer
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <typename IntT>
+struct int_tag
+{
+    IntT value;
+};
+
+template <typename IntT, int Base = 10, bool Align = false>
+using int_with_format = stringify::v0::value_with_format
+    < stringify::v0::int_tag<IntT>
+    , stringify::v0::{int_format}<Base>
+    , stringify::v0::{alignment_format_q}<Align> >;
+
+int_with_format<short>      make_fmt(tag, short);
+int_with_format<int>        make_fmt(tag, int);
+int_with_format<long>       make_fmt(tag, long);
+int_with_format<long long > make_fmt(tag, long long);
+
+int_with_format<unsigned short>      make_fmt(tag, unsigned short);
+int_with_format<unsigned int>        make_fmt(tag, unsigned int);
+int_with_format<unsigned long>       make_fmt(tag, unsigned long);
+int_with_format<unsigned long long > make_fmt(tag, unsigned long long);
+
+template <typename CharT, typename FPack, typename IntT, int Base, bool Align>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer( const FPack&
+                                         , int_with_format<IntT, Base, Align> );
+}}}
+----
+
+=== Floating point
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <typename CharT, typename FPack>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack&, float);
+
+template <typename CharT, typename FPack>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack&, double);
+
+// long double not supported
+template <typename CharT, typename FPack>
+void make_printer(const FPack&, long double) = delete;
+
+}}}
+----
+
+=== Formatted floating point
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template<typename FloatT, bool Align = false>
+using float_with_format = {value_with_format}< FloatT
+                                           , {float_format}
+                                           , {alignment_format_q}<Align> >;
+
+float_with_format<float,  false> make_fmt(tag, float x);
+float_with_format<double, false> make_fmt(tag, double x);
+
+template <typename CharT, typename FPack, bool Align>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer( const FPack&
+                                         , float_with_format<float, Align> );
+
+template <typename CharT, typename FPack, bool Align>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer( const FPack&
+                                         , float_with_format<double, Align> );
+
+// long double not supported
+template <typename CharT, typename FPack, bool Align>
+void make_printer( const FPack&
+                 , float_with_format<long double, Align>) = delete;
+
+}}}
+----
+
+=== Range
+
+==== Without separator
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template <typename Iterator>
+struct range_p { /{asterisk} __implementation-defined__ {asterisk}/ };
+
+// range
+
+template <typename Iterator>
+range_p<Iterator> range(Iterator begin, Iterator end);
+
+template < typename Range
+         , typename Iterator = typename Range::const_iterator>
+range_p<Iterator> range(const Range& range);
+
+template <typename T, std::size_t N>
+range_p<const T*> range(T (&array)[N]);
+
+// make_printer
+
+template <typename CharT, typename FPack, typename Iterator>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer( const FPack&
+                                         , range_p<Iterator> r )
+}}}
+----
+
+==== With separator
+[source,cpp,subs=normal]
+----
+template <typename Iterator, typename CharIn>
+struct sep_range_p { /{asterisk} __implementation-defined__ {asterisk}/ };
+
+// range
+
+template <typename Iterator, typename CharT>
+sep_range_p<Iterator> range( Iterator begin
+                           , Iterator end
+                           , const CharT* separator );
+
+template < typename Range
+         , typename CharT
+         , typename Iterator = typename Range::const_iterator>
+sep_range_p<Iterator> range(const Range& range, const CharT* separator);
+
+template <typename T, std::size_t N, typename CharT>
+sep_range_p<const T*>  range(T (&array)[N], const CharT* separator);
+
+// make_printer
+
+template <typename CharT, typename FPack, typename Iterator>
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer( const FPack&
+                                         , sep_range_p<Iterator, CharT> )
+}}}
+----
+
+=== Formatted range
+
+==== Without separator
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+
+template < typename Iterator
+         , typename V  = typename std::iterator_traits<Iterator>::value_type
+         , typename VF = decltype(make_fmt(tag{}, std::declval<const V&>())) >
+using range_with_format
+    = {boost_mp_replace_front}<VF, range_p<Iterator>>;
+
+// make_fmt
+
+template < typename Iterator >
+range_with_format<Iterator> make_fmt(tag, range_p<Iterator>);
+
+// fmt_range
+
+template < typename Iterator >
+range_with_format<Iterator> fmt_range(Iterator begin, Iterator end)
+
+template < typename Range
+         , typename Iterator = typename Range::const_iterator >
+range_with_format<Iterator>  fmt_range(const Range& range);
+
+template < typename T, std::size_t N >
+range_with_format<const T*>  fmt_range(T (&array)[N]);
+
+// make_printer
+
+template < typename CharT
+         , typename FPack
+         , typename Iterator
+         , typename \... Fmts >
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+    ( const FPack&
+    , const value_with_format< range_p<Iterator>, Fmts\... >& );
+----
+
+[source,cpp,subs=normal]
+----
+namespace boost {
+namespace stringify {
+inline namespace v0 {
+template < typename Iterator
+         , typename CharT
+         , typename V  = typename std::iterator_traits<Iterator>::value_type
+         , typename VF = decltype(make_fmt(tag{}, std::declval<const V&>())) >
+using range_with_format
+    = {boost_mp_replace_front}<VF, sep_range_p<Iterator, CharT>>;
+
+// make_fmt
+
+template < typename Iterator, typename CharT >
+sep_range_with_format<Iterator> make_fmt(tag, sep_range_p<Iterator, CharT>);
+
+// fmt_range
+
+template < typename Iterator, typename CharT >
+sep_range_with_format<Iterator, CharT>
+fmt_range(Iterator begin, Iterator end, const CharT* separator);
+
+template < typename Range
+         , typename CharT
+         , typename Iterator = typename Range::const_iterator >
+sep_range_with_format<Iterator, CharT>
+fmt_range(const Range& range, const CharT* separator);
+
+template < typename T, std::size_t N, typename CharT >
+sep_range_with_format<Iterator, CharT>
+fmt_range(T (&array)[N], const CharT* separator);
+
+// make_printer
+
+template < typename CharT
+         , typename FPack
+         , typename Iterator
+         , typename \... Fmts >
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+    ( const FPack& fp
+    , const value_with_format<sep_range_p<Iterator, CharT>, Fmts\... >& )
+}}}
+----
+
+=== Join
+
+
+__To-do__
+
+
+
+=== Facets pack
+
+[source,cpp,subs=normal]
+----
+template < typename FPack, typename \... Args >
+struct inner_pack_with_args { /{asterisk} __implementation-defined__ {asterisk}/ };
+
+template < typename FPack >
+struct inner_pack
+{
+    template <typename \... Args>
+    constexpr inner_pack_with_args<FPack, Args\...>
+    operator()(const Args& \... args) const;
+
+    // __implementation-defined__ \...
+};
+
+template < typename\... T >
+inner_pack<delctype({pack}(std::forward<T>(args)\...))> facets(T&& \... args);
+
+template < typename CharT
+         , typename FPack
+         , typename InnerFPack
+         , typename \... Args >
+/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+    ( const FPack&
+    , const inner_pack_with_args<InnerFPack, Args\...>& );
+----
+
+

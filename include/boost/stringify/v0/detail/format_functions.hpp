@@ -56,9 +56,6 @@ class value_with_format
 {
 public:
 
-    template <typename U>
-    using replace_value_type = stringify::v0::value_with_format<U, Fmts ...>;
-
     template <typename ... OhterFmts>
     using replace_fmts = stringify::v0::value_with_format<ValueType, OhterFmts ...>;
 

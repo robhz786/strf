@@ -24,6 +24,8 @@ using char_with_format = stringify::v0::value_with_format
     , stringify::v0::quantity_format
     , stringify::v0::alignment_format >;
 
+namespace detail {
+
 // template <typename CharT>
 // class char32_printer: public printer<CharT>
 // {
@@ -229,7 +231,7 @@ int char_printer<CharT>::width(int) const
 }
 
 template <typename CharT>
-void stringify::v0::char_printer<CharT>::write
+void char_printer<CharT>::write
     ( boost::basic_outbuf<CharT>& ob ) const
 {
     ob.ensure(1);
@@ -403,10 +405,33 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_char_printer<wchar_t>;
 
 #endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
+// template <typename A, typename B>
+// struct enable_if_same_impl
+// {
+// };
+
+// template <typename A>
+// struct enable_if_same_impl<A, A>
+// {
+//     using type = void;
+// };
+
+// template <typename A, typename B>
+// using enable_if_same = typename stringify::v0::detail::enable_if_same<A, B>::type;
+
+} // namespace detail
+
+template <typename CharOut, typename FPack>
+inline stringify::v0::detail::char_printer<CharOut>
+make_printer(const FPack& fp, CharOut ch)
+{
+    return {fp, ch};
+}
+
 #if defined(__cpp_char8_t)
 
 template <typename CharOut, typename FPack>
-inline stringify::v0::char_printer<CharOut>
+inline stringify::v0::detail::char_printer<CharOut>
 make_printer(const FPack& fp, char8_t ch)
 {
     static_assert( std::is_same<CharOut, char8_t>::value
@@ -416,8 +441,18 @@ make_printer(const FPack& fp, char8_t ch)
 
 #endif
 
+template < typename CharOut
+         , typename FPack
+         , typename CharIn
+         , std::enable_if_t<std::is_same<CharIn, CharOut>::value, int> = 0>    
+inline stringify::v0::detail::char_printer<CharOut>
+make_printer(const FPack& fp, CharIn ch)
+{
+    return {fp, ch};
+}
+
 template <typename CharOut, typename FPack>
-inline stringify::v0::char_printer<CharOut>
+inline stringify::v0::detail::char_printer<CharOut>
 make_printer(const FPack& fp, char ch)
 {
     static_assert( std::is_same<CharOut, char>::value
@@ -426,7 +461,7 @@ make_printer(const FPack& fp, char ch)
 }
 
 template <typename CharOut, typename FPack>
-inline stringify::v0::char_printer<CharOut>
+inline stringify::v0::detail::char_printer<CharOut>
 make_printer(const FPack& fp, wchar_t ch)
 {
     static_assert( std::is_same<CharOut, wchar_t>::value
@@ -435,7 +470,7 @@ make_printer(const FPack& fp, wchar_t ch)
 }
 
 template <typename CharOut, typename FPack>
-inline stringify::v0::char_printer<CharOut>
+inline stringify::v0::detail::char_printer<CharOut>
 make_printer(const FPack& fp, char16_t ch)
 {
     static_assert( std::is_same<CharOut, char16_t>::value
@@ -444,7 +479,7 @@ make_printer(const FPack& fp, char16_t ch)
 }
 
 template <typename CharOut, typename FPack>
-inline stringify::v0::char_printer<CharOut>
+inline stringify::v0::detail::char_printer<CharOut>
 make_printer(const FPack& fp, char32_t ch )
 {
     static_assert( std::is_same<CharOut, char32_t>::value
@@ -452,10 +487,12 @@ make_printer(const FPack& fp, char32_t ch )
     return {fp, ch};
 }
 
-template <typename CharOut, typename FPack>
-inline stringify::v0::fmt_char_printer<CharOut>
-make_printer(const FPack& fp, const stringify::v0::char_with_format<CharOut>& ch)
+template <typename CharOut, typename FPack, typename CharIn>
+inline stringify::v0::detail::fmt_char_printer<CharOut>
+make_printer(const FPack& fp, char_with_format<CharIn> ch)
 {
+    static_assert( std::is_same<CharOut, CharIn>::value
+                 , "Character type mismatch." );
     return {fp, ch};
 }
 

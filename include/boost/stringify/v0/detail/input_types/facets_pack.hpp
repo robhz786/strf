@@ -8,18 +8,15 @@
 #include <boost/stringify/v0/printer.hpp>
 #include <boost/stringify/v0/facets_pack.hpp>
 #include <boost/stringify/v0/detail/input_types/join.hpp>
-#include <initializer_list>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
-namespace detail {
 
 template <typename FPack, typename ... Args>
 struct inner_pack_with_args
 {
-    const FPack& fp;
+    FPack fp;
     stringify::v0::detail::args_tuple<Args...> args;
 };
-
 
 template <typename FPack>
 struct inner_pack
@@ -33,29 +30,16 @@ struct inner_pack
     FPack fp;
 
     template <typename ... Args>
-    stringify::v0::detail::inner_pack_with_args<FPack, Args...>
-    operator()(const Args& ... args)
+    constexpr stringify::v0::inner_pack_with_args<FPack, Args...>
+    operator()(const Args& ... args) const
     {
-        return stringify::v0::detail::inner_pack_with_args<FPack, Args...>
+        return stringify::v0::inner_pack_with_args<FPack, Args...>
             { fp
             , stringify::v0::detail::args_tuple<Args...>{args ...} };
     }
 };
 
-template <typename FPack>
-struct inner_pack_ref
-{
-    const FPack& fp;
-
-    template <typename ... Args>
-    stringify::v0::detail::inner_pack_with_args<FPack, Args...>
-    operator()(const Args& ... args)
-    {
-        return stringify::v0::detail::inner_pack_with_args<FPack, Args...>
-            { fp
-            , stringify::v0::detail::args_tuple<Args...>{args ...} };
-    }
-};
+namespace detail {
 
 template <typename CharT>
 class pp_range_printer: public stringify::v0::printer<CharT>
@@ -109,11 +93,10 @@ private:
 };
 
 
-template
-    < typename CharT
-    , typename ParentFPack
-    , typename ChildFPack
-    , typename ... Args >
+template < typename CharT
+         , typename ParentFPack
+         , typename ChildFPack
+         , typename ... Args >
 class facets_pack_printer
     : private stringify::v0::facets_pack<ParentFPack, ChildFPack>
     , private stringify::v0::detail::printers_group
@@ -129,14 +112,12 @@ class facets_pack_printer
         , Args... >;
 
     using inner_args
-    = stringify::v0::detail::inner_pack_with_args<ChildFPack, Args...>;
+    = stringify::v0::inner_pack_with_args<ChildFPack, Args...>;
 
 public:
 
-    facets_pack_printer
-        ( const ParentFPack& parent_fp
-        , const inner_args& args
-        )
+    facets_pack_printer( const ParentFPack& parent_fp
+                       , const inner_args& args )
         : stringify::v0::facets_pack<ParentFPack, ChildFPack>{parent_fp, args.fp}
         , fmt_group{*this, args.args}
         , stringify::v0::detail::pp_range_printer<CharT>{fmt_group::range()}
@@ -152,8 +133,7 @@ template <typename ... F>
 constexpr bool are_constrainable_impl()
 {
     constexpr std::size_t N = sizeof...(F);
-    constexpr bool values[N]
-        = {stringify::v0::is_constrainable_v<F> ...};
+    constexpr bool values[N] = {stringify::v0::is_constrainable_v<F> ...};
 
     for (std::size_t i = 0; i < N; ++i)
     {
@@ -178,18 +158,11 @@ struct all_are_constrainable
         = stringify::v0::detail::are_constrainable_impl<F...>();
 };
 
-
-
 } // namespace detail
-
-// template <typename ChildFPack, typename ... Args>
-// stringify::v0::detail::facets_pack_input_traits
-// stringify_get_input_traits
-// ( const stringify::v0::detail::inner_pack_with_args<ChildFPack, Args...>& fmt );
 
 template <typename ... T>
 auto facets(T&& ... args)
-    -> stringify::v0::detail::inner_pack
+    -> stringify::v0::inner_pack
            < decltype(stringify::v0::pack(std::forward<T>(args)...)) >
 {
     static_assert
@@ -199,31 +172,18 @@ auto facets(T&& ... args)
     return {std::forward<T>(args)...};
 }
 
-template <typename ... Facets>
-stringify::v0::detail::inner_pack_ref<stringify::v0::facets_pack<Facets ...>>
-facets(const stringify::v0::facets_pack<Facets...>& fp)
+template < typename CharT
+         , typename FPack
+         , typename InnerFPack
+         , typename ... Args >
+inline stringify::v0::detail::facets_pack_printer< CharT
+                                                 , FPack
+                                                 , InnerFPack
+                                                 , Args... >
+make_printer( const FPack& fp
+            , const stringify::v0::inner_pack_with_args<InnerFPack, Args...>& f )
 {
-    static_assert
-        ( stringify::v0::is_constrainable_v<stringify::v0::facets_pack<Facets...>>
-        , "All facet categories must be constrainable" );
-    return {fp};
-}
-
-template
-    < typename CharT
-    , typename FPack
-    , typename ChildFPack
-    , typename ... Args >
-inline stringify::v0::detail::facets_pack_printer
-    < CharT
-    , FPack, ChildFPack
-    , Args... >
-make_printer
-    ( const FPack& fp
-    , const stringify::v0::detail::inner_pack_with_args
-        <ChildFPack, Args...>& fmt )
-{
-    return {fp, fmt};
+    return {fp, f};
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
