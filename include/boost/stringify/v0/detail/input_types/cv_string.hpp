@@ -7,7 +7,6 @@
 
 #include <boost/stringify/v0/detail/format_functions.hpp>
 #include <boost/stringify/v0/detail/facets/encoding.hpp>
-#include <boost/utility/string_view.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 

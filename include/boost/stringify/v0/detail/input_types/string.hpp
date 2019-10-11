@@ -5,7 +5,6 @@
 #include <limits>
 #include <boost/stringify/v0/detail/facets/width_calculator.hpp>
 #include <boost/stringify/v0/detail/format_functions.hpp>
-#include <boost/utility/string_view.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -58,16 +57,9 @@ using string_with_format = stringify::v0::value_with_format
     < stringify::v0::detail::simple_string_view<CharIn>
     , stringify::v0::alignment_format >;
 
-template <typename CharIn, typename Traits>
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
-auto make_fmt(stringify::v0::tag, const std::basic_string<CharIn, Traits>& str)
-{
-    return stringify::v0::string_with_format<CharIn>{{str.data(), str.size()}};
-}
-
-template <typename CharIn, typename Traits>
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
-auto make_fmt(stringify::v0::tag, const boost::basic_string_view<CharIn, Traits>& str)
+template <typename CharIn, typename Traits, typename Allocator>
+auto make_fmt( stringify::v0::tag
+             , const std::basic_string<CharIn, Traits, Allocator>& str) noexcept
 {
     return stringify::v0::string_with_format<CharIn>{{str.data(), str.size()}};
 }
@@ -76,7 +68,8 @@ auto make_fmt(stringify::v0::tag, const boost::basic_string_view<CharIn, Traits>
 
 template <typename CharIn, typename Traits>
 constexpr auto
-make_fmt(stringify::v0::tag, const std::basic_string_view<CharIn, Traits>& str)
+make_fmt( stringify::v0::tag
+        , const std::basic_string_view<CharIn, Traits>& str) noexcept
 {
     return stringify::v0::string_with_format<CharIn>{{str.data(), str.size()}};
 }
@@ -401,19 +394,6 @@ template
     , typename Allocator >
 inline stringify::v0::detail::string_printer<CharOut>
 make_printer(const FPack& fp, const std::basic_string<CharIn, Traits, Allocator>& str)
-{
-    static_assert( std::is_same<CharIn, CharOut>::value
-                 , "Character type mismatch. Use cv function." );
-    return {fp, str.data(), str.size()};
-}
-
-template
-    < typename CharOut
-    , typename FPack
-    , typename CharIn
-    , typename Traits >
-inline stringify::v0::detail::string_printer<CharOut>
-make_printer(const FPack& fp, const boost::basic_string_view<CharOut, Traits>& str)
 {
     static_assert( std::is_same<CharIn, CharOut>::value
                  , "Character type mismatch. Use cv function." );
