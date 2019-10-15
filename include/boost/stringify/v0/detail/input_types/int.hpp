@@ -659,20 +659,20 @@ void full_fmt_int_printer<CharT, Base>::write
     {
         switch(_afmt.alignment)
         {
-            case stringify::v0::alignment_e::left:
+            case stringify::v0::text_alignment::left:
             {
                 _ichars.write(ob);
                 _write_fill(ob, _fillcount);
                 break;
             }
-            case stringify::v0::alignment_e::internal:
+            case stringify::v0::text_alignment::internal:
             {
                 _ichars.write_complement(ob);
                 _write_fill(ob, _fillcount);
                 _ichars.write_digits(ob);
                 break;
             }
-            case stringify::v0::alignment_e::center:
+            case stringify::v0::text_alignment::center:
             {
                 auto halfcount = _fillcount / 2;
                 _write_fill(ob, halfcount);

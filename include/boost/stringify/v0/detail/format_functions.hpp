@@ -135,13 +135,13 @@ private:
 template <bool Active>
 struct alignment_format_q;
 
-enum class alignment_e {left, right, internal, center};
+enum class text_alignment {left, right, internal, center};
 
 struct alignment_format_data
 {
     char32_t fill = U' ';
     int width = 0;
-    stringify::v0::alignment_e alignment = stringify::v0::alignment_e::right;
+    stringify::v0::text_alignment alignment = stringify::v0::text_alignment::right;
 };
 
 constexpr bool operator==( stringify::v0::alignment_format_data lhs
@@ -186,25 +186,25 @@ public:
 
     constexpr T&& operator<(int width) && noexcept
     {
-        _data.alignment = stringify::v0::alignment_e::left;
+        _data.alignment = stringify::v0::text_alignment::left;
         _data.width = width;
         return as_derived_rval_ref();
     }
     constexpr T&& operator>(int width) && noexcept
     {
-        _data.alignment = stringify::v0::alignment_e::right;
+        _data.alignment = stringify::v0::text_alignment::right;
         _data.width = width;
         return as_derived_rval_ref();
     }
     constexpr T&& operator^(int width) && noexcept
     {
-        _data.alignment = stringify::v0::alignment_e::center;
+        _data.alignment = stringify::v0::text_alignment::center;
         _data.width = width;
         return as_derived_rval_ref();
     }
     constexpr T&& operator%(int width) && noexcept
     {
-        _data.alignment = stringify::v0::alignment_e::internal;
+        _data.alignment = stringify::v0::text_alignment::internal;
         _data.width = width;
         return as_derived_rval_ref();
     }
@@ -217,7 +217,7 @@ public:
     {
         return _data.width;
     }
-    constexpr stringify::v0::alignment_e alignment() const noexcept
+    constexpr stringify::v0::text_alignment alignment() const noexcept
     {
         return _data.alignment;
     }
@@ -284,9 +284,9 @@ public:
     {
         return 0;
     }
-    constexpr stringify::v0::alignment_e alignment() const noexcept
+    constexpr stringify::v0::text_alignment alignment() const noexcept
     {
-        return stringify::v0::alignment_e::right;
+        return stringify::v0::text_alignment::right;
     }
     constexpr char32_t fill() const noexcept
     {

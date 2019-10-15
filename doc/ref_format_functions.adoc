@@ -169,7 +169,7 @@ public:
 
     // <<alignment_format_fn_observers,observers>>
     constexpr int width() const noexcept;
-    constexpr alignment_e alignment() const noexcept;
+    constexpr text_alignment alignment() const noexcept;
     constexpr char32_t fill() const noexcept;
     constexpr {alignment_format_data} get_alignmet_format_data() const noexcept;
 };
@@ -189,7 +189,7 @@ public:
 
     // <<alignment_format_fn_observers,observers>>
     constexpr int width() const noexcept;
-    constexpr alignment_e alignment() const noexcept;
+    constexpr text_alignment alignment() const noexcept;
     constexpr char32_t fill() const noexcept;
     constexpr {alignment_format_data} get_alignmet_format_data() const noexcept;
 
@@ -242,7 +242,7 @@ Return value::: `get_alignmet_format_data().width`
 
 [source,cpp]
 ----
-constexpr alignment_e alignment() const noexcept;
+constexpr text_alignment alignment() const noexcept;
 ----
 ::
 Return value::: `get_alignmet_format_data().alignment`
@@ -270,7 +270,7 @@ constexpr /*return type */ operator<(int width) /* qualifier */ noexcept;
 ::
 Posconditions::: The return value `r` satisfies:
 - `r.width() == width`
-- `r.alignment == alignment_e::left`
+- `r.alignment == text_alignment::left`
 Return value:::
 - when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)} < width`.
 - when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
@@ -282,7 +282,7 @@ constexpr /*return type */ operator>(int width) /* qualifier */ noexcept;
 ::
 Posconditions::: The return value `r` satisfies:
 - `r.width() == width`
-- `r.alignment() == alignment_e::right`
+- `r.alignment() == text_alignment::right`
 Return value:::
 - when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)} > width`.
 - when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
@@ -294,7 +294,7 @@ constexpr /*return type */ operator^(int width) /* qualifier */ noexcept;
 ::
 Posconditions::: The return value `r` satisfies:
 - `r.width() == width`
-- `r.alignment() == alignment_e::center`
+- `r.alignment() == text_alignment::center`
 Return value:::
 - when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)} ^ width`.
 - when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
@@ -307,7 +307,7 @@ constexpr /*return type */ operator%(int width) /* qualifier */ noexcept;
 ::
 Posconditions::: The return value `r` satisfies:
 - `r.width() == width`
-- `r.alignment() == alignment_e::internal`
+- `r.alignment() == text_alignment::internal`
 Return value:::
 - when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)} % width`.
 - when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
@@ -331,13 +331,13 @@ namespace boost {
 namespace stringify {
 inline namespace v0 {
 
-enum class alignment_e {left, right, internal, center};
+enum class text_alignment {left, right, internal, center};
 
 struct alignment_format_data
 {
     char32_t fill = U' ';
     int width = 0;
-    alignment_e alignment = alignment_e::right;
+    text_alignment alignment = text_alignment::right;
 };
 
 constexpr bool operator==(alignment_format_data lhs, alignment_format_data rhs) noexcept;

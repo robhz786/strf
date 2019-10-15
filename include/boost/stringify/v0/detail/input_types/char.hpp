@@ -152,13 +152,13 @@ namespace detail {
 //     {
 //         switch(m_fmt.alignment())
 //         {
-//             case stringify::v0::alignment_e::left:
+//             case stringify::v0::text_alignment::left:
 //             {
 //                 m_out.put32(m_fmt.count(), m_fmt.value().ch);
 //                 m_out.put32(m_fillcount, m_fmt.fill());
 //                 break;
 //             }
-//             case stringify::v0::alignment_e::center:
+//             case stringify::v0::text_alignment::center:
 //             {
 //                 auto halfcount = m_fillcount / 2;
 //                 m_out.put32(halfcount, m_fmt.fill());
@@ -319,13 +319,13 @@ void fmt_char_printer<CharT>::write
         auto fillcount = _fmt.width() - _content_width;
         switch(_fmt.alignment())
         {
-            case stringify::v0::alignment_e::left:
+            case stringify::v0::text_alignment::left:
             {
                 _write_body(ob);
                 _write_fill(ob, fillcount);
                 break;
             }
-            case stringify::v0::alignment_e::center:
+            case stringify::v0::text_alignment::center:
             {
                 auto halfcount = fillcount / 2;
                 _write_fill(ob, halfcount);

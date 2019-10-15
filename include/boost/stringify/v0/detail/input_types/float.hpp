@@ -800,7 +800,7 @@ public:
 
 private:
 
-    void init_fill(int w, stringify::v0::alignment_e a);
+    void init_fill(int w, stringify::v0::text_alignment a);
 
     stringify::v0::detail::double_printer_data _data;
     const stringify::v0::numpunct_base& _punct;
@@ -814,24 +814,24 @@ private:
 };
 
 template <typename CharT>
-void punct_double_printer<CharT>::init_fill(int w, stringify::v0::alignment_e a)
+void punct_double_printer<CharT>::init_fill(int w, stringify::v0::text_alignment a)
 {
     auto fillcount = w - this->width(w);
     if (fillcount > 0)
     {
         switch (a)
         {
-            case stringify::v0::alignment_e::right:
+            case stringify::v0::text_alignment::right:
                 _left_fillcount = fillcount;
                 break;
-            case stringify::v0::alignment_e::left:
+            case stringify::v0::text_alignment::left:
                 _right_fillcount = fillcount;
                 break;
-            case stringify::v0::alignment_e::internal:
+            case stringify::v0::text_alignment::internal:
                 _internal_fillcount = fillcount;
                 break;
             default:
-                BOOST_ASSERT(a == stringify::v0::alignment_e::center);
+                BOOST_ASSERT(a == stringify::v0::text_alignment::center);
                 _left_fillcount = fillcount / 2;
                 _right_fillcount = fillcount - _left_fillcount;
         }
@@ -1095,7 +1095,7 @@ public:
 
 private:
 
-    void init_fill(int w, stringify::v0::alignment_e a);
+    void init_fill(int w, stringify::v0::text_alignment a);
 
     stringify::v0::detail::double_printer_data _data;
     stringify::v0::encoding<CharT> _encoding
@@ -1109,24 +1109,24 @@ private:
 };
 
 template <typename CharT>
-void double_printer<CharT>::init_fill(int w, stringify::v0::alignment_e a)
+void double_printer<CharT>::init_fill(int w, stringify::v0::text_alignment a)
 {
     auto fillcount = w - this->width(w);
     if (fillcount > 0)
     {
         switch (a)
         {
-            case stringify::v0::alignment_e::right:
+            case stringify::v0::text_alignment::right:
                 _left_fillcount = fillcount;
                 break;
-            case stringify::v0::alignment_e::left:
+            case stringify::v0::text_alignment::left:
                 _right_fillcount = fillcount;
                 break;
-            case stringify::v0::alignment_e::internal:
+            case stringify::v0::text_alignment::internal:
                 _internal_fillcount = fillcount;
                 break;
             default:
-                BOOST_ASSERT(a == stringify::v0::alignment_e::center);
+                BOOST_ASSERT(a == stringify::v0::text_alignment::center);
                 _left_fillcount = fillcount / 2;
                 _right_fillcount = fillcount - _left_fillcount;
         }

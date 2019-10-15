@@ -201,7 +201,7 @@ struct joined_args
 struct join_t
 {
     int width = 0;
-    stringify::v0::alignment_e align = stringify::v0::alignment_e::right;
+    stringify::v0::text_alignment align = stringify::v0::text_alignment::right;
     char32_t fillchar = U' ';
     int num_leading_args = 1;
 
@@ -288,26 +288,26 @@ public:
         {
             switch(_join.align)
             {
-                case stringify::v0::alignment_e::left:
+                case stringify::v0::text_alignment::left:
                 {
                     _write_args(ob);
                     _write_fill(ob, _fillcount);
                     break;
                 }
-                case stringify::v0::alignment_e::right:
+                case stringify::v0::text_alignment::right:
                 {
                     _write_fill(ob, _fillcount);
                     _write_args(ob);
                     break;
                 }
-                case stringify::v0::alignment_e::internal:
+                case stringify::v0::text_alignment::internal:
                 {
                     _write_splitted(ob);
                     break;
                 }
                 default:
                 {
-                    BOOST_ASSERT(_join.align == stringify::v0::alignment_e::center);
+                    BOOST_ASSERT(_join.align == stringify::v0::text_alignment::center);
                     auto half_fillcount = _fillcount / 2;
                     _write_fill(ob, half_fillcount);
                     _write_args(ob);
@@ -456,7 +456,7 @@ make_printer
 
 constexpr stringify::v0::detail::join_t
 join( int width = 0
-    , stringify::v0::alignment_e align = stringify::v0::alignment_e::right
+    , stringify::v0::text_alignment align = stringify::v0::text_alignment::right
     , char32_t fillchar = U' '
     , int num_leading_args = 0 )
 {
@@ -466,32 +466,32 @@ join( int width = 0
 constexpr stringify::v0::detail::join_t
 join_center(int width, char32_t fillchar = U' ')
 {
-    return {width, stringify::v0::alignment_e::center, fillchar, 0};
+    return {width, stringify::v0::text_alignment::center, fillchar, 0};
 }
 
 constexpr stringify::v0::detail::join_t
 join_left(int width, char32_t fillchar = U' ')
 {
-    return {width, stringify::v0::alignment_e::left, fillchar, 0};
+    return {width, stringify::v0::text_alignment::left, fillchar, 0};
 }
 
 
 constexpr stringify::v0::detail::join_t
 join_right(int width, char32_t fillchar = U' ')
 {
-    return {width, stringify::v0::alignment_e::right, fillchar, 0};
+    return {width, stringify::v0::text_alignment::right, fillchar, 0};
 }
 
 constexpr stringify::v0::detail::join_t
 join_internal(int width, char32_t fillchar, int num_leading_args)
 {
-    return {width, stringify::v0::alignment_e::internal, fillchar, num_leading_args};
+    return {width, stringify::v0::text_alignment::internal, fillchar, num_leading_args};
 }
 
 constexpr stringify::v0::detail::join_t
 join_internal(int width, int num_leading_args)
 {
-    return {width, stringify::v0::alignment_e::internal, U' ', num_leading_args};
+    return {width, stringify::v0::text_alignment::internal, U' ', num_leading_args};
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
