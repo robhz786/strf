@@ -164,7 +164,7 @@ public:
     constexpr T&& operator<(int width) && noexcept; // left
     constexpr T&& operator>(int width) && noexcept; // right
     constexpr T&& operator^(int width) && noexcept; // center
-    constexpr T&& operator%(int width) && noexcept; // internal
+    constexpr T&& operator%(int width) && noexcept; // split, a.k.a internal
     constexpr T&& fill(char32_t ch) && noexcept;
 
     // <<alignment_format_fn_observers,observers>>
@@ -307,7 +307,7 @@ constexpr /*return type */ operator%(int width) /* qualifier */ noexcept;
 ::
 Posconditions::: The return value `r` satisfies:
 - `r.width() == width`
-- `r.alignment() == text_alignment::internal`
+- `r.alignment() == text_alignment::split`
 Return value:::
 - when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)} % width`.
 - when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
@@ -331,7 +331,7 @@ namespace boost {
 namespace stringify {
 inline namespace v0 {
 
-enum class text_alignment {left, right, internal, center};
+enum class text_alignment {left, right, split, center};
 
 struct alignment_format_data
 {
@@ -772,7 +772,7 @@ constexpr auto right(const T& value, int width)
 }
 
 template <typename T>
-constexpr auto internal(const T& value, int width)
+constexpr auto split(const T& value, int width)
 {
     return fmt(value) % width;
 }

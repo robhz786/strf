@@ -135,7 +135,7 @@ private:
 template <bool Active>
 struct alignment_format_q;
 
-enum class text_alignment {left, right, internal, center};
+enum class text_alignment {left, right, split, center};
 
 struct alignment_format_data
 {
@@ -204,7 +204,7 @@ public:
     }
     constexpr T&& operator%(int width) && noexcept
     {
-        _data.alignment = stringify::v0::text_alignment::internal;
+        _data.alignment = stringify::v0::text_alignment::split;
         _data.width = width;
         return as_derived_rval_ref();
     }
@@ -380,7 +380,7 @@ constexpr auto right(const T& value, int width)
 }
 
 template <typename T>
-constexpr auto internal(const T& value, int width)
+constexpr auto split(const T& value, int width)
 {
     return fmt(value) % width;
 }
@@ -404,7 +404,7 @@ constexpr auto right(const T& value, int width, char32_t fill)
 }
 
 template <typename T>
-constexpr auto internal(const T& value, int width, char32_t fill)
+constexpr auto split(const T& value, int width, char32_t fill)
 {
     return fmt(value).fill(fill) % width;
 }

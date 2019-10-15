@@ -241,7 +241,7 @@ void dynamic_join_printer<CharOut>::write_with_fill
             write_fill(fillcount - halfcount, fill_char, ob);
             break;
         }
-        //case stringify::v0::text_alignment::internal:
+        //case stringify::v0::text_alignment::split:
         //case stringify::v0::text_alignment::right:
         default:
         {

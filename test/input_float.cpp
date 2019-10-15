@@ -57,20 +57,20 @@ void basic_tests(const FPack& fp)
     TEST("_______0.00048828125").facets(fp)  (j(0.00048828125));
     TEST("______2048.001953125").facets(fp)  (j(2048.001953125));
 
-    TEST("___________~~~~~+nan")(j(+strf::right    (quiet_nan, 9, '~')));
-    TEST("___________+nan~~~~~")(j(+strf::left    (quiet_nan, 9, '~')));
-    TEST("___________~~+nan~~~")(j(+strf::center  (quiet_nan, 9, '~')));
-    TEST("___________+~~~~~nan")(j(+strf::internal(quiet_nan, 9, '~')));
+    TEST("___________~~~~~+nan")(j(+strf::right (quiet_nan, 9, '~')));
+    TEST("___________+nan~~~~~")(j(+strf::left  (quiet_nan, 9, '~')));
+    TEST("___________~~+nan~~~")(j(+strf::center(quiet_nan, 9, '~')));
+    TEST("___________+~~~~~nan")(j(+strf::split (quiet_nan, 9, '~')));
 
-    TEST("___________~~~~~+inf")(j(+strf::right   (1.0/0.0, 9, '~')));
-    TEST("___________+inf~~~~~")(j(+strf::left    (1.0/0.0, 9, '~')));
-    TEST("___________~~+inf~~~")(j(+strf::center  (1.0/0.0, 9, '~')));
-    TEST("___________+~~~~~inf")(j(+strf::internal(1.0/0.0, 9, '~')));
+    TEST("___________~~~~~+inf")(j(+strf::right (1.0/0.0, 9, '~')));
+    TEST("___________+inf~~~~~")(j(+strf::left  (1.0/0.0, 9, '~')));
+    TEST("___________~~+inf~~~")(j(+strf::center(1.0/0.0, 9, '~')));
+    TEST("___________+~~~~~inf")(j(+strf::split (1.0/0.0, 9, '~')));
 
-    TEST("___________~~~~~+1.5")(j(+strf::right   (1.5, 9, '~')));
-    TEST("___________+1.5~~~~~")(j(+strf::left    (1.5, 9, '~')));
-    TEST("___________~~+1.5~~~")(j(+strf::center  (1.5, 9, '~')));
-    TEST("___________+~~~~~1.5")(j(+strf::internal(1.5, 9, '~')));
+    TEST("___________~~~~~+1.5")(j(+strf::right (1.5, 9, '~')));
+    TEST("___________+1.5~~~~~")(j(+strf::left  (1.5, 9, '~')));
+    TEST("___________~~+1.5~~~")(j(+strf::center(1.5, 9, '~')));
+    TEST("___________+~~~~~1.5")(j(+strf::split (1.5, 9, '~')));
 
     TEST("___________________0").facets(fp) (j(strf::fmt(0.0)));
     TEST("__________________-0").facets(fp) (j(strf::fmt(-0.0)));

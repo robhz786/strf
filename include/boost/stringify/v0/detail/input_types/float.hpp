@@ -807,7 +807,7 @@ private:
     const stringify::v0::encoding<CharT> _encoding;
     char32_t _fillchar = U' ';
     unsigned _left_fillcount = 0;
-    unsigned _internal_fillcount = 0;
+    unsigned _split_fillcount = 0;
     unsigned _right_fillcount = 0;
     stringify::v0::encoding_error _enc_err;
     stringify::v0::surrogate_policy _allow_surr = surrogate_policy::strict;
@@ -827,8 +827,8 @@ void punct_double_printer<CharT>::init_fill(int w, stringify::v0::text_alignment
             case stringify::v0::text_alignment::left:
                 _right_fillcount = fillcount;
                 break;
-            case stringify::v0::text_alignment::internal:
-                _internal_fillcount = fillcount;
+            case stringify::v0::text_alignment::split:
+                _split_fillcount = fillcount;
                 break;
             default:
                 BOOST_ASSERT(a == stringify::v0::text_alignment::center);
@@ -841,7 +841,7 @@ void punct_double_printer<CharT>::init_fill(int w, stringify::v0::text_alignment
 template <typename CharT>
 int punct_double_printer<CharT>::width(int) const
 {
-    auto fillcount = _left_fillcount + _internal_fillcount + _right_fillcount;
+    auto fillcount = _left_fillcount + _split_fillcount + _right_fillcount;
 
     if (_data.infinity || _data.nan)
     {
@@ -885,7 +885,7 @@ int punct_double_printer<CharT>::width(int) const
 template <typename CharT>
 std::size_t punct_double_printer<CharT>::necessary_size() const
 {
-    auto fillcount = _left_fillcount + _internal_fillcount + _right_fillcount;
+    auto fillcount = _left_fillcount + _split_fillcount + _right_fillcount;
     std::size_t fillsize = 0;
     if (fillcount != 0)
     {
@@ -951,9 +951,9 @@ void punct_double_printer<CharT>::write(boost::basic_outbuf<CharT>& ob) const
     {
         put(ob, static_cast<CharT>('+' + (_data.negative << 1)));
     }
-    if (_internal_fillcount != 0)
+    if (_split_fillcount != 0)
     {
-        _encoding.encode_fill( ob, _internal_fillcount, _fillchar
+        _encoding.encode_fill( ob, _split_fillcount, _fillchar
                              , _enc_err, _allow_surr);
     }
     if (_data.nan)
@@ -1102,7 +1102,7 @@ private:
         = stringify::v0::encoding_c<CharT>::get_default();
     char32_t _fillchar = U' ';
     unsigned _left_fillcount = 0;
-    unsigned _internal_fillcount = 0;
+    unsigned _split_fillcount = 0;
     unsigned _right_fillcount = 0;
     stringify::v0::encoding_error _enc_err = encoding_error::ignore;
     stringify::v0::surrogate_policy _allow_surr = surrogate_policy::strict;
@@ -1122,8 +1122,8 @@ void double_printer<CharT>::init_fill(int w, stringify::v0::text_alignment a)
             case stringify::v0::text_alignment::left:
                 _right_fillcount = fillcount;
                 break;
-            case stringify::v0::text_alignment::internal:
-                _internal_fillcount = fillcount;
+            case stringify::v0::text_alignment::split:
+                _split_fillcount = fillcount;
                 break;
             default:
                 BOOST_ASSERT(a == stringify::v0::text_alignment::center);
@@ -1136,7 +1136,7 @@ void double_printer<CharT>::init_fill(int w, stringify::v0::text_alignment a)
 template <typename CharT>
 std::size_t double_printer<CharT>::necessary_size() const
 {
-    auto fillcount = _left_fillcount + _internal_fillcount + _right_fillcount;
+    auto fillcount = _left_fillcount + _split_fillcount + _right_fillcount;
     std::size_t fillsize = 0;
     if (fillcount != 0)
     {
@@ -1167,7 +1167,7 @@ std::size_t double_printer<CharT>::necessary_size() const
 template <typename CharT>
 int double_printer<CharT>::width(int) const
 {
-    return ( _left_fillcount + _internal_fillcount + _right_fillcount
+    return ( _left_fillcount + _split_fillcount + _right_fillcount
            + _data.nan * 3
            + _data.infinity * 3
            + _data.showsign
@@ -1197,9 +1197,9 @@ void double_printer<CharT>::write
     {
         put<CharT>(ob, '+' + (_data.negative << 1));
     }
-    if (_internal_fillcount != 0)
+    if (_split_fillcount != 0)
     {
-        _encoding.encode_fill( ob, _internal_fillcount, _fillchar
+        _encoding.encode_fill( ob, _split_fillcount, _fillchar
                              , _enc_err, _allow_surr);
     }
     if (_data.nan)

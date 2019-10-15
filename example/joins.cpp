@@ -31,7 +31,7 @@ void samples()
 
     str = strf::to_string
         ( "---"
-        , strf::join_internal(15, '.', 1) (strf::left("abc", 5), "def", 123)
+        , strf::join_split(15, '.', 1) (strf::left("abc", 5), "def", 123)
         , "---" );
     BOOST_ASSERT(str == "---abc  ....def123---");
     //]

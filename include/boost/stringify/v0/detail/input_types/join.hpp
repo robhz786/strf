@@ -300,7 +300,7 @@ public:
                     _write_args(ob);
                     break;
                 }
-                case stringify::v0::text_alignment::internal:
+                case stringify::v0::text_alignment::split:
                 {
                     _write_splitted(ob);
                     break;
@@ -483,15 +483,15 @@ join_right(int width, char32_t fillchar = U' ')
 }
 
 constexpr stringify::v0::detail::join_t
-join_internal(int width, char32_t fillchar, int num_leading_args)
+join_split(int width, char32_t fillchar, int num_leading_args)
 {
-    return {width, stringify::v0::text_alignment::internal, fillchar, num_leading_args};
+    return {width, stringify::v0::text_alignment::split, fillchar, num_leading_args};
 }
 
 constexpr stringify::v0::detail::join_t
-join_internal(int width, int num_leading_args)
+join_split(int width, int num_leading_args)
 {
-    return {width, stringify::v0::text_alignment::internal, U' ', num_leading_args};
+    return {width, stringify::v0::text_alignment::split, U' ', num_leading_args};
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

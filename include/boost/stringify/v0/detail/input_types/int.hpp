@@ -665,7 +665,7 @@ void full_fmt_int_printer<CharT, Base>::write
                 _write_fill(ob, _fillcount);
                 break;
             }
-            case stringify::v0::text_alignment::internal:
+            case stringify::v0::text_alignment::split:
             {
                 _ichars.write_complement(ob);
                 _write_fill(ob, _fillcount);

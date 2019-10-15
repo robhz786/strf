@@ -138,15 +138,15 @@ int main()
     TEST ("........+0")  ( +strf::right(0   , 10, '.') );
     TEST (".......123")  (  strf::right(123u, 10, '.') );
 
-    TEST (".......123")  (  strf::internal(123,  10, '.') );
-    TEST ("+......123")  ( +strf::internal(123,  10, '.') );
-    TEST ("-......123")  ( +strf::internal(-123, 10, '.') );
-    TEST ("+........0")  ( +strf::internal(0,    10, '.') );
-    TEST (".........0")  (  strf::internal(0,    10, '.') );
-    TEST (".......123")  (  strf::internal(123u, 10, '.') );
-    TEST ("+.....0123")  ( +strf::internal(123,  10, '.').p(4) );
-    TEST ("+000000123")  ( +strf::internal(123,  10, '.').p(9) );
-    TEST ("+0000000123") ( +strf::internal(123,  10, '.').p(10) );
+    TEST (".......123")  (  strf::split(123,  10, '.') );
+    TEST ("+......123")  ( +strf::split(123,  10, '.') );
+    TEST ("-......123")  ( +strf::split(-123, 10, '.') );
+    TEST ("+........0")  ( +strf::split(0,    10, '.') );
+    TEST (".........0")  (  strf::split(0,    10, '.') );
+    TEST (".......123")  (  strf::split(123u, 10, '.') );
+    TEST ("+.....0123")  ( +strf::split(123,  10, '.').p(4) );
+    TEST ("+000000123")  ( +strf::split(123,  10, '.').p(9) );
+    TEST ("+0000000123") ( +strf::split(123,  10, '.').p(10) );
 
 
     TEST ("123.......")  (  strf::left(123,  10, '.') );
