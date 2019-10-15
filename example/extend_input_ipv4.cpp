@@ -33,11 +33,10 @@ auto make_printer(const FPack& fp, ipv4address addr)
 facets pack. In others cases, however, you may want to propagate some or
 all of the facets.
  >>*/strf::pack()
-        , strf::join()
-            ( addr.bytes[0], CharT{'.'}
-            , addr.bytes[1], CharT{'.'}
-            , addr.bytes[2], CharT{'.'}
-            , addr.bytes[3] ) );
+ , strf::join( addr.bytes[0], CharT{'.'}
+             , addr.bytes[1], CharT{'.'}
+             , addr.bytes[2], CharT{'.'}
+             , addr.bytes[3] ) );
 }
 
 } // namespace xxx
@@ -80,7 +79,7 @@ auto make_printer( const FPack& fp
     xxx::ipv4address addr = fmt_addr.value();
     return strf::make_printer<CharT>
         ( strf::pack()
-        , strf::join(fmt_addr.width(), fmt_addr.alignment(), fmt_addr.fill())
+        , strf::join_align(fmt_addr.width(), fmt_addr.alignment(), fmt_addr.fill())
             ( addr.bytes[0], CharT{'.'}
             , addr.bytes[1], CharT{'.'}
             , addr.bytes[2], CharT{'.'}

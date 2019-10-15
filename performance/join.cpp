@@ -13,9 +13,9 @@ int main()
     (void) dest_end;
     escape(dest);
 
-    PRINT_BENCHMARK("strf::write(dest) (strf::join()('a', 'b', 'c', 'd'))")
+    PRINT_BENCHMARK("strf::write(dest) (strf::join('a', 'b', 'c', 'd'))")
     {
-        strf::write(dest) (strf::join()('a', 'b', 'c', 'd'));
+        strf::write(dest) (strf::join('a', 'b', 'c', 'd'));
         clobber();
     }
     PRINT_BENCHMARK("strf::write(dest) ('a', 'b', 'c', 'd')")
@@ -23,9 +23,9 @@ int main()
         strf::write(dest) ('a', 'b', 'c', 'd');
         clobber();
     }
-    PRINT_BENCHMARK("strf::write(dest) (strf::join()('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'))")
+    PRINT_BENCHMARK("strf::write(dest) (strf::join('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'))")
     {
-        strf::write(dest) (strf::join()('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'));
+        strf::write(dest) (strf::join('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'));
         clobber();
     }
     PRINT_BENCHMARK("strf::write(dest) ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')")

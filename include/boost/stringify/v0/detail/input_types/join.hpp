@@ -6,7 +6,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/stringify/v0/detail/facets/encoding.hpp>
-#include <initializer_list>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -187,18 +186,26 @@ private:
     stringify::v0::detail::printer_ptr_range<CharT> _range;
 };
 
+} // namespace detail
 
-struct join_t;
 
 template <typename ... Args>
-struct joined_args
+struct join_t
 {
-    const stringify::v0::detail::join_t& join;
+    stringify::v0::detail::args_tuple<Args...> args;
+};
+
+struct aligned_join_t;
+
+template <typename ... Args>
+struct aligned_joined_args
+{
+    const stringify::v0::aligned_join_t& join;
     stringify::v0::detail::args_tuple<Args...> args;
 };
 
 
-struct join_t
+struct aligned_join_t
 {
     int width = 0;
     stringify::v0::text_alignment align = stringify::v0::text_alignment::right;
@@ -206,28 +213,28 @@ struct join_t
     int num_leading_args = 1;
 
     template <typename ... Args>
-    stringify::v0::detail::joined_args<Args...> operator()
+    stringify::v0::aligned_joined_args<Args...> operator()
         (const Args& ... args) const
     {
         return {*this, {args...}};
     }
 };
 
+namespace detail {
 
 template <typename CharT>
-class join_printer_impl: public printer<CharT>
+class aligned_join_printer_impl: public printer<CharT>
 {
     using printer_type = stringify::v0::printer<CharT>;
     using pp_range = stringify::v0::detail::printer_ptr_range<CharT>;
 
 public:
 
-    using char_type   = CharT;
-    using input_type  = stringify::v0::detail::join_t ;
+    using input_type  = stringify::v0::aligned_join_t ;
 
-    join_printer_impl
+    aligned_join_printer_impl
         ( const stringify::v0::detail::printer_ptr_range<CharT>& args
-        , const stringify::v0::detail::join_t& j
+        , const stringify::v0::aligned_join_t& j
         , stringify::v0::encoding<CharT> encoding
         , stringify::v0::encoding_error enc_err
         , stringify::v0::surrogate_policy allow_surr )
@@ -243,10 +250,10 @@ public:
                      : 0 );
     }
 
-    join_printer_impl( const join_printer_impl& cp ) = delete;
+    aligned_join_printer_impl( const aligned_join_printer_impl& cp ) = delete;
 
-    join_printer_impl
-        ( const join_printer_impl& cp
+    aligned_join_printer_impl
+        ( const aligned_join_printer_impl& cp
         , const stringify::v0::detail::printer_ptr_range<CharT>& args )
         : _join{cp._join}
         , _args{args}
@@ -257,8 +264,8 @@ public:
     {
     }
 
-    join_printer_impl
-        ( join_printer_impl&& tmp
+    aligned_join_printer_impl
+        ( aligned_join_printer_impl&& tmp
         , const stringify::v0::detail::printer_ptr_range<CharT>& args )
         : _join{std::move(tmp._join)}
         , _args{std::move(args)}
@@ -269,7 +276,7 @@ public:
     {
     }
 
-    ~join_printer_impl()
+    ~aligned_join_printer_impl()
     {
     }
 
@@ -302,7 +309,7 @@ public:
                 }
                 case stringify::v0::text_alignment::split:
                 {
-                    _write_splitted(ob);
+                    _write_split(ob);
                     break;
                 }
                 default:
@@ -365,7 +372,7 @@ private:
         return sum;
     }
 
-    void _write_splitted(boost::basic_outbuf<CharT>& ob) const
+    void _write_split(boost::basic_outbuf<CharT>& ob) const
     {
         auto it = _args.begin();
         for ( int count = _join.num_leading_args
@@ -400,6 +407,116 @@ private:
 
 
 template <typename CharT, typename FPack, typename ... Args>
+class aligned_join_printer
+    : private stringify::v0::detail::printers_group<CharT, FPack, Args...>
+    , public stringify::v0::detail::aligned_join_printer_impl<CharT>
+{
+    using _fmt_group
+    = stringify::v0::detail::printers_group<CharT, FPack, Args...>;
+
+    using _aligned_join_impl
+    = stringify::v0::detail::aligned_join_printer_impl<CharT>;
+
+    template <typename Category>
+    static decltype(auto) _get_facet(const FPack& fp)
+    {
+        return fp.template get_facet<Category, stringify::v0::aligned_join_t>();
+    }
+
+public:
+
+    aligned_join_printer
+        ( const FPack& fp
+        , const stringify::v0::aligned_joined_args<Args...>& ja )
+        : _fmt_group(fp, ja.args)
+        , _aligned_join_impl
+            ( _fmt_group::range()
+            , ja.join
+            , _get_facet<stringify::v0::encoding_c<CharT>>(fp)
+            , _get_facet<stringify::v0::encoding_error_c>(fp)
+            , _get_facet<stringify::v0::surrogate_policy_c>(fp) )
+    {
+    }
+
+    aligned_join_printer(const aligned_join_printer& cp)
+        : _fmt_group(cp)
+        , _aligned_join_impl(cp, _fmt_group::range())
+    {
+    }
+
+    virtual ~aligned_join_printer()
+    {
+    }
+};
+
+
+template <typename CharT>
+class join_printer_impl: public printer<CharT>
+{
+    using printer_type = stringify::v0::printer<CharT>;
+    using pp_range = stringify::v0::detail::printer_ptr_range<CharT>;
+
+public:
+
+    join_printer_impl
+        ( const stringify::v0::detail::printer_ptr_range<CharT>& args )
+        : _args{args}
+    {
+    }
+
+    ~join_printer_impl()
+    {
+    }
+
+    std::size_t necessary_size() const override
+    {
+        return _args_length();
+    }
+
+    void write(boost::basic_outbuf<CharT>& ob) const override
+    {
+        return _write_args(ob);
+    }
+
+    int width(int limit) const override
+    {
+        return _arglist_width(limit);
+    }
+
+private:
+
+    pp_range _args = nullptr;
+
+    std::size_t _args_length() const
+    {
+        std::size_t sum = 0;
+        for(const auto* arg : _args)
+        {
+            sum += arg->necessary_size();
+        }
+        return sum;
+    }
+
+    int _arglist_width(int limit) const
+    {
+        int sum = 0;
+        for(auto it = _args.begin(); sum < limit && it != _args.end(); ++it)
+        {
+            sum += (*it) -> width(limit - sum);
+        }
+        return sum;
+    }
+
+    void _write_args(boost::basic_outbuf<CharT>& ob) const
+    {
+        for(const auto& arg : _args)
+        {
+            arg->write(ob);
+        }
+    }
+};
+
+template <typename CharT, typename FPack, typename ... Args>
 class join_printer
     : private stringify::v0::detail::printers_group<CharT, FPack, Args...>
     , public stringify::v0::detail::join_printer_impl<CharT>
@@ -410,31 +527,19 @@ class join_printer
     using _join_impl
     = stringify::v0::detail::join_printer_impl<CharT>;
 
-    template <typename Category>
-    static decltype(auto) _get_facet(const FPack& fp)
-    {
-        return fp.template get_facet<Category, void>();
-    }
-
 public:
-
-    using input_type  = stringify::v0::detail::join_t ;
 
     join_printer
         ( const FPack& fp
-        , const stringify::v0::detail::joined_args<Args...>& ja )
-        : _fmt_group(fp, ja.args)
-        , _join_impl( _fmt_group::range()
-                    , ja.join
-                    , _get_facet<stringify::v0::encoding_c<CharT>> (fp)
-                    , _get_facet<stringify::v0::encoding_error_c>(fp)
-                    , _get_facet<stringify::v0::surrogate_policy_c>(fp))
+        , const stringify::v0::join_t<Args...>& j )
+        : _fmt_group(fp, j.args)
+        , _join_impl( _fmt_group::range() )
     {
     }
 
     join_printer(const join_printer& cp)
         : _fmt_group(cp)
-        , _join_impl(cp, _fmt_group::range())
+        , _join_impl(_fmt_group::range())
     {
     }
 
@@ -445,51 +550,65 @@ public:
 
 } // namespace detail
 
-template <typename CharT, typename FPack, typename ... Args>
+template <typename CharT, typename FPack, typename... Args>
 inline stringify::v0::detail::join_printer<CharT, FPack, Args...>
+make_printer( const FPack& fp
+            , const stringify::v0::join_t<Args...>& args )
+{
+    return {fp, args};
+}
+
+template <typename ... Args>
+stringify::v0::join_t<Args...> join(const Args& ... args)
+{
+    return {{args...}};
+}
+
+template <typename CharT, typename FPack, typename ... Args>
+inline stringify::v0::detail::aligned_join_printer<CharT, FPack, Args...>
 make_printer
     ( const FPack& fp
-    , const stringify::v0::detail::joined_args<Args...>& x )
+    , const stringify::v0::aligned_joined_args<Args...>& x )
 {
     return {fp, x};
 }
 
-constexpr stringify::v0::detail::join_t
-join( int width = 0
-    , stringify::v0::text_alignment align = stringify::v0::text_alignment::right
-    , char32_t fillchar = U' '
-    , int num_leading_args = 0 )
+constexpr stringify::v0::aligned_join_t
+join_align( int width
+          , stringify::v0::text_alignment align
+          , char32_t fillchar = U' '
+          , int num_leading_args = 0 )
 {
     return {width, align, fillchar, num_leading_args};
 }
 
-constexpr stringify::v0::detail::join_t
-join_center(int width, char32_t fillchar = U' ')
+constexpr stringify::v0::aligned_join_t
+join_center(int width, char32_t fillchar = U' ') noexcept
 {
     return {width, stringify::v0::text_alignment::center, fillchar, 0};
 }
 
-constexpr stringify::v0::detail::join_t
-join_left(int width, char32_t fillchar = U' ')
+constexpr stringify::v0::aligned_join_t
+join_left(int width, char32_t fillchar = U' ') noexcept
 {
     return {width, stringify::v0::text_alignment::left, fillchar, 0};
 }
 
 
-constexpr stringify::v0::detail::join_t
-join_right(int width, char32_t fillchar = U' ')
+constexpr stringify::v0::aligned_join_t
+join_right(int width, char32_t fillchar = U' ') noexcept
 {
     return {width, stringify::v0::text_alignment::right, fillchar, 0};
 }
 
-constexpr stringify::v0::detail::join_t
-join_split(int width, char32_t fillchar, int num_leading_args)
+constexpr stringify::v0::aligned_join_t
+join_split(int width, char32_t fillchar, int num_leading_args) noexcept
 {
     return {width, stringify::v0::text_alignment::split, fillchar, num_leading_args};
 }
 
-constexpr stringify::v0::detail::join_t
-join_split(int width, int num_leading_args)
+constexpr stringify::v0::aligned_join_t
+join_split(int width, int num_leading_args) noexcept
 {
     return {width, stringify::v0::text_alignment::split, U' ', num_leading_args};
 }

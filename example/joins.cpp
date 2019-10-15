@@ -84,8 +84,7 @@ void sample()
     auto str = strf::to_string .tr
         ( msg_the_ip_address_of_X_is_X()
         , host_name
-        , strf::join_left(0)
-            (ip_addr[0], '.', ip_addr[1], '.', ip_addr[2], '.', ip_addr[3]) );
+        , strf::join(ip_addr[0], '.', ip_addr[1], '.', ip_addr[2], '.', ip_addr[3]));
 
     if (get_current_language() == language::English)
     {

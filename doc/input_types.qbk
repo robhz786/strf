@@ -98,6 +98,7 @@ Joins aligns a sub-list of arguments as if they where one argument.
 
 Syntax:
 
+* `join(`[~arguments]`...)`
 * [~join_expression]` (`[~arguments]`...)`
 
 where, the [~join_expression] is one of the following:
@@ -108,8 +109,8 @@ where, the [~join_expression] is one of the following:
 * `join_right(`[~width]`, `[~fill_character]`)`
 * `join_center(`[~width]`)`
 * `join_center(`[~width]`, `[~fill_character]`)`
-* `join_internal(`[~width]`, `[~num_args_before_fill]`)`
-* `join_internal(`[~width]`, `[~fill_character]`, `[~num_args_before_fill]`)`
+* `join_split(`[~width]`, `[~num_args_before_fill]`)`
+* `join_split(`[~width]`, `[~fill_character]`, `[~num_args_before_fill]`)`
 
 where:
 
