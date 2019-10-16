@@ -10,7 +10,7 @@
 
 namespace strf = boost::stringify::v0;
 
-class QStringAppender: public boost::basic_outbuf<char16_t>
+class QStringAppender: public strf::basic_outbuf<char16_t>
 {
 public:
 
@@ -28,7 +28,7 @@ private:
     std::size_t _count = 0;
     std::exception_ptr _eptr = nullptr;
 
-    constexpr static std::size_t _buffer_size = boost::min_size_after_recycle<char16_t>();
+    constexpr static std::size_t _buffer_size = strf::min_size_after_recycle<char16_t>();
     char16_t _buffer[_buffer_size];
 };
 
@@ -36,7 +36,7 @@ private:
 
 //[QStringAppender_ctor
 QStringAppender::QStringAppender(QString& str)
-    : boost::basic_outbuf<char16_t>(_buffer, _buffer_size)
+    : strf::basic_outbuf<char16_t>(_buffer, _buffer_size)
     , _str(str)
 {
 }

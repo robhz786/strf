@@ -8,11 +8,11 @@
 
 namespace strf = boost::stringify::v0;
 
-class QStringCreator: public boost::basic_outbuf<char16_t>
+class QStringCreator: public strf::basic_outbuf<char16_t>
 {
 public:
 
-    QStringCreator() : boost::basic_outbuf<char16_t>(_buffer, _buffer_size)
+    QStringCreator() : strf::basic_outbuf<char16_t>(_buffer, _buffer_size)
     {
     }
 
@@ -30,7 +30,7 @@ private:
 
     QString _str;
     std::exception_ptr _eptr = nullptr;
-    constexpr static std::size_t _buffer_size = boost::min_size_after_recycle<char16_t>();
+    constexpr static std::size_t _buffer_size = strf::min_size_after_recycle<char16_t>();
     char16_t _buffer[_buffer_size];
 };
 

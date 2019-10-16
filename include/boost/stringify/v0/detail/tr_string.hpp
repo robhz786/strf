@@ -214,7 +214,7 @@ void tr_string_write
     ( const CharT* it
     , const CharT* end
     , std::initializer_list<const stringify::v0::printer<CharT>*> args
-    , boost::basic_outbuf<CharT>& ob
+    , stringify::v0::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , stringify::v0::tr_invalid_arg policy )
 {
@@ -228,11 +228,11 @@ void tr_string_write
         it = traits::find(it, (end - it), '{');
         if (it == nullptr)
         {
-            boost::write(ob, prev, end - prev);
+            stringify::v0::write(ob, prev, end - prev);
             return;
         }
 
-        boost::write(ob, prev, it - prev);
+        stringify::v0::write(ob, prev, it - prev);
         ++it;
 
         after_the_brace:
@@ -248,7 +248,7 @@ void tr_string_write
             }
             else if (policy == stringify::v0::tr_invalid_arg::stop)
             {
-                throw boost::stringify::v0::tr_string_syntax_error();
+                throw stringify::v0::tr_string_syntax_error();
             }
             break;
         }
@@ -267,7 +267,7 @@ void tr_string_write
             }
             else if (policy == stringify::v0::tr_invalid_arg::stop)
             {
-                throw boost::stringify::v0::tr_string_syntax_error();
+                throw stringify::v0::tr_string_syntax_error();
             }
             ++it;
         }
@@ -284,7 +284,7 @@ void tr_string_write
             }
             else if (policy == stringify::v0::tr_invalid_arg::stop)
             {
-                throw boost::stringify::v0::tr_string_syntax_error();
+                throw stringify::v0::tr_string_syntax_error();
             }
 
             it = traits::find(result.it, end - result.it, '}');
@@ -300,10 +300,10 @@ void tr_string_write
             it2 = traits::find(it2, end - it2, '{');
             if (it2 == nullptr)
             {
-                boost::write(ob, it, end - it);
+                stringify::v0::write(ob, it, end - it);
                 return;
             }
-            boost::write(ob, it, (it2 - it));
+            stringify::v0::write(ob, it, (it2 - it));
             it = it2 + 1;
             goto after_the_brace;
         }
@@ -322,7 +322,7 @@ void tr_string_write
                 }
                 else if (policy == stringify::v0::tr_invalid_arg::stop)
                 {
-                    throw boost::stringify::v0::tr_string_syntax_error();
+                    throw stringify::v0::tr_string_syntax_error();
                 }
             }
             auto it2 = it + 1;

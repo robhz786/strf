@@ -7,7 +7,7 @@
 
 #include <system_error>
 #include <algorithm>
-#include <boost/outbuf.hpp>
+#include <boost/stringify/v0/outbuf.hpp>
 #include <boost/stringify/v0/config.hpp>
 #include <boost/assert.hpp>
 
@@ -18,9 +18,9 @@ class stringify_error: public std::exception
     using std::exception::exception;
 };
 
-class encoding_failure: public boost::stringify::stringify_error
+class encoding_failure: public stringify::stringify_error
 {
-    using boost::stringify::v0::stringify_error::stringify_error;
+    using stringify::v0::stringify_error::stringify_error;
 
     const char* what() const noexcept override
     {
@@ -30,12 +30,12 @@ class encoding_failure: public boost::stringify::stringify_error
 
 inline void throw_encoding_failure()
 {
-    throw boost::stringify::encoding_failure();
+    throw stringify::encoding_failure();
 }
 
-class tr_string_syntax_error: public boost::stringify::stringify_error
+class tr_string_syntax_error: public stringify::stringify_error
 {
-    using boost::stringify::v0::stringify_error::stringify_error;
+    using stringify::v0::stringify_error::stringify_error;
 
     const char* what() const noexcept override
     {
@@ -57,7 +57,7 @@ public:
     {
     }
 
-    virtual void write(boost::basic_outbuf<CharOut>& ob) const = 0;
+    virtual void write(stringify::v0::basic_outbuf<CharOut>& ob) const = 0;
 
     virtual std::size_t necessary_size() const = 0;
 
@@ -68,11 +68,11 @@ namespace detail {
 
 template<std::size_t CharSize>
 void write_fill_continuation
-    ( boost::underlying_outbuf<CharSize>& ob
+    ( stringify::v0::underlying_outbuf<CharSize>& ob
     , std::size_t count
-    , typename boost::underlying_outbuf<CharSize>::char_type ch )
+    , typename stringify::v0::underlying_outbuf<CharSize>::char_type ch )
 {
-    using char_type = typename boost::underlying_outbuf<CharSize>::char_type;
+    using char_type = typename stringify::v0::underlying_outbuf<CharSize>::char_type;
 
     std::size_t space = ob.size();
     BOOST_ASSERT(space < count);
@@ -98,11 +98,11 @@ void write_fill_continuation
 
 template <std::size_t CharSize>
 inline void write_fill
-    ( boost::underlying_outbuf<CharSize>& ob
+    ( stringify::v0::underlying_outbuf<CharSize>& ob
     , std::size_t count
-    , typename boost::underlying_outbuf<CharSize>::char_type ch )
+    , typename stringify::v0::underlying_outbuf<CharSize>::char_type ch )
 {
-    using char_type = typename boost::underlying_outbuf<CharSize>::char_type;
+    using char_type = typename stringify::v0::underlying_outbuf<CharSize>::char_type;
     if (count <= ob.size()) // the common case
     {
         std::char_traits<char_type>::assign(ob.pos(), count, ch);
@@ -116,11 +116,11 @@ inline void write_fill
 
 template<typename CharT>
 inline void write_fill
-    ( boost::basic_outbuf<CharT>& ob
+    ( stringify::v0::basic_outbuf<CharT>& ob
     , std::size_t count
     , CharT ch )
 {
-    using u_char_type = typename boost::underlying_outbuf<sizeof(CharT)>::char_type;
+    using u_char_type = typename stringify::v0::underlying_outbuf<sizeof(CharT)>::char_type;
     write_fill(ob.as_underlying(), count, static_cast<u_char_type>(ch));
 }
 

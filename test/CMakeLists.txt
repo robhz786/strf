@@ -30,6 +30,10 @@ foreach(
   width_calculator
   utf_to_utf
   single_byte_encodings
+  cstr_writer
+  cfile_writer
+  streambuf_writer
+  string_writer
   )
 
   add_executable(test-${t}-header-only   ${t}.cpp)

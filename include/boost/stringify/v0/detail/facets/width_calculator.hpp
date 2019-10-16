@@ -23,12 +23,12 @@ enum class width_calculation_type : std::size_t
 
 namespace detail {
 
-class width_accumulator: public boost::basic_outbuf<char32_t>
+class width_accumulator: public stringify::v0::basic_outbuf<char32_t>
 {
 public:
 
     width_accumulator(width_calc_func func, int limit)
-        : boost::basic_outbuf<char32_t>(_buff, _buff + _buff_size)
+        : stringify::v0::basic_outbuf<char32_t>(_buff, _buff + _buff_size)
         , _func(func)
         , _limit(limit)
     {

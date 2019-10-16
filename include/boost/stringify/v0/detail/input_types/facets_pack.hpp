@@ -69,7 +69,7 @@ public:
         return sum;
     }
 
-    void write(boost::basic_outbuf<CharT>& ob) const override
+    void write(stringify::v0::basic_outbuf<CharT>& ob) const override
     {
         for(const auto& arg : m_args)
         {

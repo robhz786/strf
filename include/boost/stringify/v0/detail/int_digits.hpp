@@ -642,7 +642,7 @@ inline void write_int_txtdigits_backwards_little_sep
 
 template <int Base, typename CharT, typename IntT>
 inline void write_int
-    ( boost::basic_outbuf<CharT>& ob
+    ( stringify::v0::basic_outbuf<CharT>& ob
     , IntT value
     , unsigned digcount )
 {
@@ -654,7 +654,7 @@ inline void write_int
 
 template <int Base, typename CharT, typename IntT>
 inline void write_int_with_leading_zeros
-    ( boost::basic_outbuf<CharT>& ob
+    ( stringify::v0::basic_outbuf<CharT>& ob
     , IntT value
     , unsigned digcount )
 {
@@ -672,7 +672,7 @@ inline void write_int_with_leading_zeros
 
 template <typename CharT>
 void write_digits_big_sep
-    ( boost::basic_outbuf<CharT>& ob
+    ( stringify::v0::basic_outbuf<CharT>& ob
     , const stringify::v0::encoding<CharT> encoding
     , const std::uint8_t* last_grp
     , unsigned char* digits
@@ -719,8 +719,8 @@ void write_digits_big_sep
 
 template <int Base, typename CharT>
 void _write_digits_big_sep
-      ( boost::basic_outbuf<CharT>& ob
-      , boost::stringify::v0::encoding<CharT> enc
+      ( stringify::v0::basic_outbuf<CharT>& ob
+      , stringify::v0::encoding<CharT> enc
       , const uint8_t* groups
       , unsigned long long value
       , unsigned digcount
@@ -743,9 +743,9 @@ void _write_digits_big_sep
 
 template <int Base, typename CharT>
 void write_int
-      ( boost::basic_outbuf<CharT>& ob
-      , const boost::stringify::v0::numpunct_base& punct
-      , boost::stringify::v0::encoding<CharT> enc
+      ( stringify::v0::basic_outbuf<CharT>& ob
+      , const stringify::v0::numpunct_base& punct
+      , stringify::v0::encoding<CharT> enc
       , unsigned long long value
       , unsigned digcount )
 {

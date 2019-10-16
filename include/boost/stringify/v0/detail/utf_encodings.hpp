@@ -55,7 +55,7 @@ inline void do_repeat_sequence
 
 template <typename CharT, std::size_t N>
 void repeat_sequence_continuation
-    ( boost::underlying_outbuf<sizeof(CharT)>& ob
+    ( stringify::v0::underlying_outbuf<sizeof(CharT)>& ob
     , std::size_t count
     , simple_array<CharT, N> seq )
 {
@@ -84,7 +84,7 @@ void repeat_sequence_continuation
 
 template <typename CharT, std::size_t N>
 inline void repeat_sequence
-    ( boost::underlying_outbuf<sizeof(CharT)>& ob
+    ( stringify::v0::underlying_outbuf<sizeof(CharT)>& ob
     , std::size_t count
     , simple_array<CharT, N> seq )
 {
@@ -196,7 +196,7 @@ inline bool first_2_of_4_are_valid(std::uint8_t ch0, std::uint8_t ch1)
 
 BOOST_STRINGIFY_STATIC_LINKAGE
 void utf8_to_utf32_transcode
-    ( boost::underlying_outbuf<4>& ob
+    ( stringify::v0::underlying_outbuf<4>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -365,7 +365,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf32_size
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE void utf8_sanitize
-    ( boost::underlying_outbuf<1>& ob
+    ( stringify::v0::underlying_outbuf<1>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -560,7 +560,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_codepoints_count
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE void utf8_encode_fill
-    ( boost::underlying_outbuf<1>& ob
+    ( stringify::v0::underlying_outbuf<1>& ob
     , std::size_t count
     , char32_t ch
     , stringify::v0::encoding_error err_hdl
@@ -664,7 +664,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::uint8_t* utf8_encode_char
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE void utf32_to_utf8_transcode
-    ( boost::underlying_outbuf<1>& ob
+    ( stringify::v0::underlying_outbuf<1>& ob
     , const char32_t* src
     , const char32_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -792,7 +792,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf8_size
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE void utf8_write_replacement_char
-    ( boost::underlying_outbuf<1>& ob )
+    ( stringify::v0::underlying_outbuf<1>& ob )
 {
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
@@ -819,7 +819,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_validate(char32_t ch)
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE void utf16_to_utf32_transcode
-    ( boost::underlying_outbuf<4>& ob
+    ( stringify::v0::underlying_outbuf<4>& ob
     , const char16_t* src
     , const char16_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -925,7 +925,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_to_utf32_size
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE void utf16_sanitize
-    ( boost::underlying_outbuf<2>& ob
+    ( stringify::v0::underlying_outbuf<2>& ob
     , const char16_t* src
     , const char16_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -1077,7 +1077,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE char16_t* utf16_encode_char
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE void utf16_encode_fill
-    ( boost::underlying_outbuf<2>& ob
+    ( stringify::v0::underlying_outbuf<2>& ob
     , std::size_t count
     , char32_t ch
     , stringify::v0::encoding_error err_hdl
@@ -1122,7 +1122,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf16_encode_fill
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE void utf32_to_utf16_transcode
-    ( boost::underlying_outbuf<2>& ob
+    ( stringify::v0::underlying_outbuf<2>& ob
     , const char32_t* src
     , const char32_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -1215,7 +1215,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf16_size
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE void utf16_write_replacement_char
-    ( boost::underlying_outbuf<2>& ob )
+    ( stringify::v0::underlying_outbuf<2>& ob )
 {
     ob.ensure(1);
     *ob.pos() = 0xFFFD;
@@ -1234,7 +1234,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_sanitize_size
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE void utf32_sanitize
-    ( boost::underlying_outbuf<4>& ob
+    ( stringify::v0::underlying_outbuf<4>& ob
     , const char32_t* src
     , const char32_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -1331,7 +1331,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE char32_t* utf32_encode_char
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE void utf32_encode_fill
-    ( boost::underlying_outbuf<4>& ob
+    ( stringify::v0::underlying_outbuf<4>& ob
     , std::size_t count
     , char32_t ch
     , stringify::v0::encoding_error err_hdl
@@ -1357,7 +1357,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf32_encode_fill
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE void utf32_write_replacement_char
-    ( boost::underlying_outbuf<4>& ob )
+    ( stringify::v0::underlying_outbuf<4>& ob )
 {
     ob.ensure(1);
     *ob.pos() = 0xFFFD;
@@ -1375,7 +1375,7 @@ inline char32_t utf32_decode_single_char(char32_t ch)
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE void utf8_to_utf16_transcode
-    ( boost::underlying_outbuf<2>& ob
+    ( stringify::v0::underlying_outbuf<2>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -1544,7 +1544,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf16_size
 }
 
 BOOST_STRINGIFY_STATIC_LINKAGE void utf16_to_utf8_transcode
-    ( boost::underlying_outbuf<1>& ob
+    ( stringify::v0::underlying_outbuf<1>& ob
     , const char16_t* src
     , const char16_t* src_end
     , stringify::v0::encoding_error err_hdl

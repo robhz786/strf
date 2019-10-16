@@ -12,7 +12,7 @@
 The "conventional" input types that are ( or will be ) supported are:
 
 * an integer ( `int`, `long`, `long long`, `unsigned int`, `unsigned long` or `unsigned long long`)
-* a string ( a raw string, a `std::basic_string`, `std::basic_string_view` or `boost::basic_string_view`)
+* a string ( a raw string, a `std::basic_string`, `std::basic_string_view`)
 * a single character ( with the same type as the output character type, otherwise compilation fails )
 * a `bool` ['( to do )]
 * a `void*` ['( to do )] 

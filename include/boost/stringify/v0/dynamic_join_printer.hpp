@@ -85,7 +85,7 @@ class serial_writer: public printers_receiver<CharOut>
 {
 public:
 
-    serial_writer(boost::basic_outbuf<CharOut>& ob) noexcept
+    serial_writer(stringify::v0::basic_outbuf<CharOut>& ob) noexcept
         : _ob(ob)
     {
     }
@@ -94,7 +94,7 @@ public:
 
 private:
 
-    boost::basic_outbuf<CharOut>& _ob;
+    stringify::v0::basic_outbuf<CharOut>& _ob;
 };
 
 template <typename CharOut>
@@ -122,7 +122,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(boost::basic_outbuf<CharOut>& ob) const override;
+    void write(stringify::v0::basic_outbuf<CharOut>& ob) const override;
 
     int width(int limit) const override;
 
@@ -136,15 +136,15 @@ private:
 
     void write_with_fill
         ( int fillcount
-        , boost::basic_outbuf<CharOut>& ob ) const;
+        , stringify::v0::basic_outbuf<CharOut>& ob ) const;
 
     void write_without_fill
-        ( boost::basic_outbuf<CharOut>& ob ) const;
+        ( stringify::v0::basic_outbuf<CharOut>& ob ) const;
 
     void write_fill
         ( int count
         , char32_t ch
-        , boost::basic_outbuf<CharOut>& ob ) const;
+        , stringify::v0::basic_outbuf<CharOut>& ob ) const;
 
     stringify::v0::encoding<CharOut> _encoding;
     const stringify::v0::encoding_error _enc_err;
@@ -193,7 +193,7 @@ int dynamic_join_printer<CharOut>::width(int limit) const
 
 template <typename CharOut>
 void dynamic_join_printer<CharOut>::write
-    ( boost::basic_outbuf<CharOut>& ob ) const
+    ( stringify::v0::basic_outbuf<CharOut>& ob ) const
 {
     auto fmt_width = formatting().width;
     if(fmt_width > 0)
@@ -212,7 +212,7 @@ void dynamic_join_printer<CharOut>::write
 
 template <typename CharOut>
 void dynamic_join_printer<CharOut>::write_without_fill
-    ( boost::basic_outbuf<CharOut>& ob ) const
+    ( stringify::v0::basic_outbuf<CharOut>& ob ) const
 {
     stringify::v0::detail::serial_writer<CharOut> s(ob);
     compose(s);
@@ -221,7 +221,7 @@ void dynamic_join_printer<CharOut>::write_without_fill
 template <typename CharOut>
 void dynamic_join_printer<CharOut>::write_with_fill
     ( int fillcount
-    , boost::basic_outbuf<CharOut>& ob ) const
+    , stringify::v0::basic_outbuf<CharOut>& ob ) const
 {
     auto fmt = formatting();
     char32_t fill_char = fmt.fill;
@@ -255,7 +255,7 @@ template <typename CharOut>
 void dynamic_join_printer<CharOut>::write_fill
     ( int count
     , char32_t ch
-    , boost::basic_outbuf<CharOut>& ob ) const
+    , stringify::v0::basic_outbuf<CharOut>& ob ) const
 {
     _encoding.encode_fill(ob, count, ch, _enc_err, _allow_surr);
 }

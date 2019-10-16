@@ -35,8 +35,12 @@ test-suite stringify :
    [ run width_calculator.cpp  : : : : test-width_calculator-ho ]
    [ run utf_to_utf.cpp  : : : : test-utf_to_utf-ho ]
    [ run single_byte_encodings.cpp  : : : : test-single_byte_encodings-ho ]
+   [ run cstr_writer.cpp       : : : : test-cstr_writer.cpp-ho ]
+   [ run cfile_writer.cpp      : : : : test-cfile_writer.cpp-ho ]
+   [ run streambuf_writer.cpp  : : : : test-streambuf_writer.cpp-ho ]
+   [ run string_writer.cpp     : : : : test-string_writer.cpp-ho ]
 
-   # as static library:
+# as static library:
 
    [ run tr_string.cpp         $(slib) : : : : test-tr_string-nho ]
    [ run dispatcher_with_move_only_arg.cpp $(slib) : : : :
@@ -58,6 +62,10 @@ test-suite stringify :
    [ run width_calculator.cpp  $(slib) : : : : test-width_calculator-nho ]
    [ run utf_to_utf.cpp        $(slib) : : : : test-utf_to_utf-nho ]
    [ run single_byte_encodings.cpp  $(slib) : : : : test-single_byte_encodings-nho ]
+   [ run cstr_writer.cpp       $(slib) : : : : test-cstr_writer.cpp-nho ]
+   [ run cfile_writer.cpp      $(slib) : : : : test-cfile_writer.cpp-nho ]
+   [ run streambuf_writer.cpp  $(slib) : : : : test-streambuf_writer.cpp-nho ]
+   [ run string_writer.cpp     $(slib) : : : : test-string_writer.cpp-nho ]
 ;
 
 # Satisfy the Boost library requirements

@@ -132,7 +132,7 @@ inline std::size_t sum_necessary_size(const Printers& ... printers)
 }
 
 template <typename CharT, typename ... Printers>
-inline void write_args( boost::basic_outbuf<CharT>& ob
+inline void write_args( stringify::v0::basic_outbuf<CharT>& ob
                       , const Printers& ... printers )
 {
     (... , printers.write(ob));
@@ -154,13 +154,13 @@ inline std::size_t sum_necessary_size(const Printer& printer, const Printers& ..
 
 
 template <typename CharT>
-inline void write_args(boost::basic_outbuf<CharT>&)
+inline void write_args(stringify::v0::basic_outbuf<CharT>&)
 {
 }
 
 template <typename CharT, typename Printer, typename ... Printers>
 inline void write_args
-    ( boost::basic_outbuf<CharT>& ob
+    ( stringify::v0::basic_outbuf<CharT>& ob
     , const Printer& printer
     , const Printers& ... printers )
 {

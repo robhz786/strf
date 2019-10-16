@@ -148,9 +148,9 @@ namespace detail {
 template <typename CharIn, typename CharOut>
 struct transcoder_impl
 {
-    using _under_char_in = typename boost::underlying_outbuf<sizeof(CharIn)>
+    using _under_char_in = typename stringify::v0::underlying_outbuf<sizeof(CharIn)>
         ::char_type;
-    using _under_char_out = typename boost::underlying_outbuf<sizeof(CharOut)>
+    using _under_char_out = typename stringify::v0::underlying_outbuf<sizeof(CharOut)>
         ::char_type;
     
     static_assert( std::is_same<CharIn, _under_char_in>::value
@@ -159,7 +159,7 @@ struct transcoder_impl
                  , "Incorrect output char type" );
 
     typedef void (&transcode_func_ref)
-        ( boost::underlying_outbuf<sizeof(CharOut)>&
+        ( stringify::v0::underlying_outbuf<sizeof(CharOut)>&
         , const CharIn* src
         , const CharIn* src_end
         , stringify::v0::encoding_error err_hdl
@@ -180,10 +180,10 @@ struct encoding_impl
 {
     using char_type = CharT;
     using _u_char_type
-        = typename boost::underlying_outbuf<sizeof(CharT)>::char_type;
-    using _char8  = typename boost::underlying_outbuf<1>::char_type;
-    using _char16 = typename boost::underlying_outbuf<2>::char_type;
-    using _char32 = typename boost::underlying_outbuf<4>::char_type;
+        = typename stringify::v0::underlying_outbuf<sizeof(CharT)>::char_type;
+    using _char8  = typename stringify::v0::underlying_outbuf<1>::char_type;
+    using _char16 = typename stringify::v0::underlying_outbuf<2>::char_type;
+    using _char32 = typename stringify::v0::underlying_outbuf<4>::char_type;
     
     
     static_assert( std::is_same<CharT, _u_char_type>::value
@@ -192,7 +192,7 @@ struct encoding_impl
     typedef std::size_t (&validate_func_ref)(char32_t ch);
     typedef CharT* (&encode_char_func_ref)(CharT* dest, char32_t ch);
     typedef void (&encode_fill_func_ref)
-        ( boost::underlying_outbuf<sizeof(CharT)>&
+        ( stringify::v0::underlying_outbuf<sizeof(CharT)>&
         , std::size_t count
         , char32_t ch
         , stringify::v0::encoding_error err_hdl
@@ -202,7 +202,7 @@ struct encoding_impl
         , const CharT* end
         , std::size_t max_count );
     typedef void (&write_replacement_char_func_ref)
-        ( boost::underlying_outbuf<sizeof(CharT)>& );
+        ( stringify::v0::underlying_outbuf<sizeof(CharT)>& );
     typedef char32_t (&decode_char_func_ref)(CharT ch);
     typedef const stringify::v0::detail::transcoder_impl<CharT, _char8>* (*to8_func_ptr)
         ( const stringify::v0::detail::encoding_impl<_char8>& enc );
@@ -252,20 +252,20 @@ struct encoding_impl
 template <typename CharIn, typename CharOut>
 using transcoder_engine
     = stringify::v0::detail::transcoder_impl
-          < typename boost::underlying_outbuf<sizeof(CharIn)>::char_type
-          , typename boost::underlying_outbuf<sizeof(CharOut)>::char_type >;
+          < typename stringify::v0::underlying_outbuf<sizeof(CharIn)>::char_type
+          , typename stringify::v0::underlying_outbuf<sizeof(CharOut)>::char_type >;
 
 template <typename CharT>
 using encoding_engine
     = stringify::v0::detail::encoding_impl
-        < typename boost::underlying_outbuf<sizeof(CharT)>::char_type >;
+        < typename stringify::v0::underlying_outbuf<sizeof(CharT)>::char_type >;
 
 
 template <typename CharIn, typename CharOut>
 class transcoder
 {
     using _inner_char_type_in
-        = typename boost::underlying_outbuf<sizeof(CharIn)>::char_type;
+        = typename stringify::v0::underlying_outbuf<sizeof(CharIn)>::char_type;
 
 public:
 
@@ -290,7 +290,7 @@ public:
     }
 
     void transcode
-        ( boost::basic_outbuf<CharOut>& ob
+        ( stringify::v0::basic_outbuf<CharOut>& ob
         , const CharIn* src
         , const CharIn* src_end
         , stringify::v0::encoding_error err_hdl
@@ -331,7 +331,7 @@ template <typename CharT>
 class encoding
 {
     using _impl_char_type
-        = typename boost::underlying_outbuf<sizeof(CharT)>::char_type;
+        = typename stringify::v0::underlying_outbuf<sizeof(CharT)>::char_type;
 
     template <typename>
     friend class stringify::v0::encoding;
@@ -381,7 +381,7 @@ public:
              + (!is_valid && shall_replace) * replacement_char_size();
     }
     void encode_fill
-        ( boost::basic_outbuf<char_type>& ob
+        ( stringify::v0::basic_outbuf<char_type>& ob
         , std::size_t count
         , char32_t ch
         , stringify::v0::encoding_error err_hdl
@@ -400,7 +400,7 @@ public:
             , max_count );
     }
     void write_replacement_char
-        ( boost::basic_outbuf<char_type>& ob ) const
+        ( stringify::v0::basic_outbuf<char_type>& ob ) const
     {
         _impl->write_replacement_char(ob.as_underlying());
     }
@@ -414,7 +414,7 @@ public:
         return reinterpret_cast<char_type*>(_impl->encode_char(rdest, ch));
     }
     void encode_char
-        ( boost::basic_outbuf<char_type>& ob
+        ( stringify::v0::basic_outbuf<char_type>& ob
         , char32_t ch
         , stringify::v0::encoding_error err_hdl ) const
     {
@@ -643,16 +643,16 @@ inline char32_t* global_mini_buffer32()
 }
 
 template <typename CharOut>
-class buffered_encoder: public boost::basic_outbuf<char32_t>
+class buffered_encoder: public stringify::v0::basic_outbuf<char32_t>
 {
 public:
 
     buffered_encoder
         ( stringify::v0::encoding<CharOut>& enc
-        , boost::basic_outbuf<CharOut>& ob
+        , stringify::v0::basic_outbuf<CharOut>& ob
         , stringify::v0::encoding_error err_hdl
         , stringify::v0::surrogate_policy allow_surr )
-        : boost::basic_outbuf<char32_t>
+        : stringify::v0::basic_outbuf<char32_t>
             ( stringify::v0::detail::global_mini_buffer32()
             , stringify::v0::detail::global_mini_buffer32_size )
         , _enc(enc)
@@ -683,7 +683,7 @@ public:
 private:
 
     stringify::v0::encoding<CharOut> _enc;
-    boost::basic_outbuf<CharOut>& _ob;
+    stringify::v0::basic_outbuf<CharOut>& _ob;
     char32_t* _begin;
     stringify::v0::encoding_error _err_hdl;
     stringify::v0::surrogate_policy _allow_surr;
@@ -710,7 +710,7 @@ void buffered_encoder<CharOut>::recycle()
 }
 
 template <typename CharOut>
-class buffered_size_calculator: public boost::basic_outbuf<char32_t>
+class buffered_size_calculator: public stringify::v0::basic_outbuf<char32_t>
 {
 public:
 
@@ -718,7 +718,7 @@ public:
         ( stringify::v0::encoding<CharOut>& enc
         , stringify::v0::encoding_error err_hdl
         , stringify::v0::surrogate_policy allow_surr )
-        : boost::basic_outbuf<char32_t>
+        : stringify::v0::basic_outbuf<char32_t>
             ( stringify::v0::detail::global_mini_buffer32()
             , stringify::v0::detail::global_mini_buffer32_size )
         , _enc(enc)
@@ -761,7 +761,7 @@ void buffered_size_calculator<CharOut>::recycle()
 
 template<typename CharIn, typename CharOut>
 inline void decode_encode
-    ( boost::basic_outbuf<CharOut>& ob
+    ( stringify::v0::basic_outbuf<CharOut>& ob
     , const CharIn* src
     , const CharIn* src_end
     , stringify::v0::encoding<CharIn> src_encoding

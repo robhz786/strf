@@ -299,7 +299,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(boost::basic_outbuf<CharOut>& ob) const override;
+    void write(stringify::v0::basic_outbuf<CharOut>& ob) const override;
 
     int width(int limit) const override;
 
@@ -358,7 +358,7 @@ std::size_t cv_string_printer<CharIn, CharOut>::necessary_size() const
 
 template<typename CharIn, typename CharOut>
 void cv_string_printer<CharIn, CharOut>::write
-    ( boost::basic_outbuf<CharOut>& ob ) const
+    ( stringify::v0::basic_outbuf<CharOut>& ob ) const
 {
     if (_transcoder_eng != nullptr)
     {
@@ -400,7 +400,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(boost::basic_outbuf<CharOut>& ob) const override;
+    void write(stringify::v0::basic_outbuf<CharOut>& ob) const override;
 
     int width(int limit) const override;
 
@@ -424,10 +424,10 @@ private:
 
     void _init();
 
-    void _write_str(boost::basic_outbuf<CharOut>& ob) const;
+    void _write_str(stringify::v0::basic_outbuf<CharOut>& ob) const;
 
     void _write_fill
-        ( boost::basic_outbuf<CharOut>& ob
+        ( stringify::v0::basic_outbuf<CharOut>& ob
         , unsigned count ) const;
 };
 
@@ -473,7 +473,7 @@ std::size_t fmt_cv_string_printer<CharIn, CharOut>::necessary_size() const
 
 template<typename CharIn, typename CharOut>
 void fmt_cv_string_printer<CharIn, CharOut>::write
-    ( boost::basic_outbuf<CharOut>& ob ) const
+    ( stringify::v0::basic_outbuf<CharOut>& ob ) const
 {
     if (_fillcount > 0)
     {
@@ -509,7 +509,7 @@ void fmt_cv_string_printer<CharIn, CharOut>::write
 
 template<typename CharIn, typename CharOut>
 void fmt_cv_string_printer<CharIn, CharOut>::_write_str
-    ( boost::basic_outbuf<CharOut>& ob ) const
+    ( stringify::v0::basic_outbuf<CharOut>& ob ) const
 {
     if (_transcoder_eng)
     {
@@ -528,7 +528,7 @@ void fmt_cv_string_printer<CharIn, CharOut>::_write_str
 
 template<typename CharIn, typename CharOut>
 void fmt_cv_string_printer<CharIn, CharOut>::_write_fill
-    ( boost::basic_outbuf<CharOut>& ob
+    ( stringify::v0::basic_outbuf<CharOut>& ob
     , unsigned count ) const
 {
     _dest_encoding.encode_fill(ob, count, _fmt.fill(), _enc_err, _allow_surr);

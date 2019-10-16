@@ -1,9 +1,3 @@
-:boost_mp_replace: https://www.boost.org/doc/libs/develop/libs/mp11/doc/html/mp11.html#mp_replacel_v_w[boost::mp_replace]
-
-:std_conditional_t: https://en.cppreference.com/w/cpp/types/conditional[std::conditional_t]
-:float_format_data: <<float_format_data,float_format_data>>
-:alignment_format_data: <<alignment_format_data,alignment_format_data>>
-
 == Format functions
 
 [[value_with_format]]

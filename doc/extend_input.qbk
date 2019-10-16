@@ -311,7 +311,7 @@ public:
     {
     }
 
-    bool write(boost::basic_outbuf<CharT>& ob) const override;
+    bool write(strf::basic_outbuf<CharT>& ob) const override;
     std::size_t necessary_size() const override;
     int width(int) const override;
 

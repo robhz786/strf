@@ -1,12 +1,3 @@
-:alignment_format: <<alignment_format,alignment_format>>
-:alignment_format_q: <<alignment_format,alignment_format_q>>
-:int_format: <<int_format,int_format>>
-:float_format: <<float_format,float_format>>
-:value_with_format: <<value_with_format,value_with_format>>
-:boost_mp_replace_front: https://www.boost.org/doc/libs/develop/libs/mp11/doc/html/mp11.html#mp_replace_frontl_t[boost::mp_replace_front]
-:pack: <<pack,pack>>
-
-
 == Input types
 
 === String

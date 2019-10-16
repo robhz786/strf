@@ -205,7 +205,7 @@ public:
 
     int width(int) const override;
 
-    void write(boost::basic_outbuf<CharT>& ob) const override;
+    void write(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
 private:
 
@@ -228,7 +228,7 @@ int int_printer<CharT>::width(int) const
 
 template <typename CharT>
 void int_printer<CharT>::write
-    ( boost::basic_outbuf<CharT>& ob ) const
+    ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
     unsigned size = _digcount + _negative;
     ob.ensure(size);
@@ -266,7 +266,7 @@ public:
 
     int width(int) const override;
 
-    void write(boost::basic_outbuf<CharT>& ob) const override;
+    void write(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
 private:
 
@@ -300,7 +300,7 @@ int punct_int_printer<CharT>::width(int) const
 }
 
 template <typename CharT>
-void punct_int_printer<CharT>::write(boost::basic_outbuf<CharT>& ob) const
+void punct_int_printer<CharT>::write(stringify::v0::basic_outbuf<CharT>& ob) const
 {
     if (_sepcount == 0)
     {
@@ -396,15 +396,15 @@ public:
         return _encoding;
     }
 
-    void write(boost::basic_outbuf<CharT>& ob) const override;
+    void write(stringify::v0::basic_outbuf<CharT>& ob) const override;
     std::size_t necessary_size() const override;
     int width(int) const override
     {
         return width();
     }
 
-    void write_complement(boost::basic_outbuf<CharT>& ob) const;
-    void write_digits(boost::basic_outbuf<CharT>& ob) const;
+    void write_complement(stringify::v0::basic_outbuf<CharT>& ob) const;
+    void write_digits(stringify::v0::basic_outbuf<CharT>& ob) const;
 
 private:
 
@@ -472,7 +472,7 @@ std::size_t partial_fmt_int_printer<CharT, Base>::necessary_size() const
 
 template <typename CharT, int Base>
 inline void partial_fmt_int_printer<CharT, Base>::write
-    ( boost::basic_outbuf<CharT>& ob ) const
+    ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
     if (_sepcount == 0)
     {
@@ -524,7 +524,7 @@ inline void partial_fmt_int_printer<CharT, Base>::write
 
 template <typename CharT, int Base>
 inline void partial_fmt_int_printer<CharT, Base>::write_complement
-    ( boost::basic_outbuf<CharT>& ob ) const
+    ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
     if (_prefixsize != 0)
     {
@@ -550,7 +550,7 @@ inline void partial_fmt_int_printer<CharT, Base>::write_complement
 
 template <typename CharT, int Base>
 inline void partial_fmt_int_printer<CharT, Base>::write_digits
-    ( boost::basic_outbuf<CharT>& ob ) const
+    ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
     if (_precision > _digcount)
     {
@@ -582,7 +582,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write( boost::basic_outbuf<CharT>& ob ) const override;
+    void write( stringify::v0::basic_outbuf<CharT>& ob ) const override;
 
     int width(int) const override;
 
@@ -595,7 +595,7 @@ private:
     stringify::v0::surrogate_policy _allow_surr;
 
     void _write_fill
-        ( boost::basic_outbuf<CharT>& ob
+        ( stringify::v0::basic_outbuf<CharT>& ob
         , std::size_t count ) const
     {
         return _ichars.encoding().encode_fill
@@ -649,7 +649,7 @@ int full_fmt_int_printer<CharT, Base>::width(int) const
 
 template <typename CharT, int Base>
 void full_fmt_int_printer<CharT, Base>::write
-        ( boost::basic_outbuf<CharT>& ob ) const
+        ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
     if (_fillcount == 0)
     {

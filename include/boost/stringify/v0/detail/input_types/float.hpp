@@ -488,7 +488,7 @@ BOOST_STRINGIFY_INLINE double_printer_data::double_printer_data
 
 template <typename CharT>
 void _print_amplified_integer_small_separator
-    ( boost::basic_outbuf<CharT>& ob
+    ( stringify::v0::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , const std::uint8_t* groups
     , unsigned num_groups
@@ -502,7 +502,7 @@ void _print_amplified_integer_small_separator
     unsigned grp_size = *grp_it;
     while (num_digits > grp_size)
     {
-        BOOST_ASSERT(grp_size + 1 <= boost::min_size_after_recycle<CharT>());
+        BOOST_ASSERT(grp_size + 1 <= stringify::v0::min_size_after_recycle<CharT>());
         ob.ensure(grp_size + 1);
         auto it = ob.pos();
         auto digits_2 = digits + grp_size;
@@ -516,14 +516,14 @@ void _print_amplified_integer_small_separator
     }
     if (num_digits != 0)
     {
-        BOOST_ASSERT(num_digits <= boost::min_size_after_recycle<CharT>());
+        BOOST_ASSERT(num_digits <= stringify::v0::min_size_after_recycle<CharT>());
         ob.ensure(num_digits);
         std::copy(digits, digits + num_digits, ob.pos());
         ob.advance(num_digits);
     }
     if (grp_size > num_digits)
     {
-        BOOST_ASSERT(num_digits <= boost::min_size_after_recycle<CharT>());
+        BOOST_ASSERT(num_digits <= stringify::v0::min_size_after_recycle<CharT>());
         grp_size -= num_digits;
         ob.ensure(grp_size);
         std::char_traits<CharT>::assign(ob.pos(), grp_size, '0');
@@ -532,7 +532,7 @@ void _print_amplified_integer_small_separator
     while (grp_it != groups)
     {
         grp_size = *--grp_it;
-        BOOST_ASSERT(grp_size + 1 <= boost::min_size_after_recycle<CharT>());
+        BOOST_ASSERT(grp_size + 1 <= stringify::v0::min_size_after_recycle<CharT>());
         ob.ensure(grp_size + 1);
         auto it = ob.pos();
         *it = separator;
@@ -543,7 +543,7 @@ void _print_amplified_integer_small_separator
 
 template <typename CharT>
 void _print_amplified_integer_big_separator
-    ( boost::basic_outbuf<CharT>& ob
+    ( stringify::v0::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , const std::uint8_t* groups
     , unsigned num_groups
@@ -557,7 +557,7 @@ void _print_amplified_integer_big_separator
     unsigned grp_size = *grp_it;
     while (num_digits > grp_size)
     {
-        BOOST_ASSERT(grp_size + separator_size <= boost::min_size_after_recycle<CharT>());
+        BOOST_ASSERT(grp_size + separator_size <= stringify::v0::min_size_after_recycle<CharT>());
         ob.ensure(grp_size + separator_size);
         auto it = ob.pos();
         auto digits_2 = digits + grp_size;
@@ -570,14 +570,14 @@ void _print_amplified_integer_big_separator
     }
     if (num_digits != 0)
     {
-        BOOST_ASSERT(num_digits <= boost::min_size_after_recycle<CharT>());
+        BOOST_ASSERT(num_digits <= stringify::v0::min_size_after_recycle<CharT>());
         ob.ensure(num_digits);
         std::copy(digits, digits + num_digits, ob.pos());
         ob.advance(num_digits);
     }
     if (grp_size > num_digits)
     {
-        BOOST_ASSERT(num_digits <= boost::min_size_after_recycle<CharT>());
+        BOOST_ASSERT(num_digits <= stringify::v0::min_size_after_recycle<CharT>());
         grp_size -= num_digits;
         ob.ensure(grp_size);
         std::char_traits<CharT>::assign(ob.pos(), grp_size, '0');
@@ -586,7 +586,7 @@ void _print_amplified_integer_big_separator
     while (grp_it != groups)
     {
         grp_size = *--grp_it;
-        BOOST_ASSERT(grp_size + separator_size <= boost::min_size_after_recycle<CharT>());
+        BOOST_ASSERT(grp_size + separator_size <= stringify::v0::min_size_after_recycle<CharT>());
         ob.ensure(grp_size + separator_size);
         auto it = enc.encode_char(ob.pos(), separator);
         std::char_traits<CharT>::assign(it, grp_size, '0');
@@ -595,7 +595,7 @@ void _print_amplified_integer_big_separator
 }
 
 template <int Base, typename CharT>
-void print_amplified_integer( boost::basic_outbuf<CharT>& ob
+void print_amplified_integer( stringify::v0::basic_outbuf<CharT>& ob
                             , const stringify::v0::numpunct_base& punct
                             , stringify::v0::encoding<CharT> enc
                             , unsigned long long value
@@ -635,7 +635,7 @@ void print_amplified_integer( boost::basic_outbuf<CharT>& ob
 
 template <typename CharT>
 void print_scientific_notation
-    ( boost::basic_outbuf<CharT>& ob
+    ( stringify::v0::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
     , unsigned long long digits
     , unsigned num_digits
@@ -796,7 +796,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(boost::basic_outbuf<CharT>&) const override;
+    void write(stringify::v0::basic_outbuf<CharT>&) const override;
 
 private:
 
@@ -940,7 +940,7 @@ std::size_t punct_double_printer<CharT>::necessary_size() const
 }
 
 template <typename CharT>
-void punct_double_printer<CharT>::write(boost::basic_outbuf<CharT>& ob) const
+void punct_double_printer<CharT>::write(stringify::v0::basic_outbuf<CharT>& ob) const
 {
     if (_left_fillcount != 0)
     {
@@ -1089,7 +1089,7 @@ public:
 
     int width(int) const override;
 
-    void write(boost::basic_outbuf<CharT>&) const override;
+    void write(stringify::v0::basic_outbuf<CharT>&) const override;
 
     std::size_t necessary_size() const override;
 
@@ -1186,7 +1186,7 @@ int double_printer<CharT>::width(int) const
 
 template <typename CharT>
 void double_printer<CharT>::write
-    ( boost::basic_outbuf<CharT>& ob ) const
+    ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
     if (_left_fillcount != 0)
     {
@@ -1405,7 +1405,7 @@ public:
 
     int width(int) const override;
 
-    void write(boost::basic_outbuf<CharT>&) const override;
+    void write(stringify::v0::basic_outbuf<CharT>&) const override;
 
     std::size_t necessary_size() const override;
 
@@ -1464,7 +1464,7 @@ int fast_double_printer<CharT>::width(int) const
 
 template <typename CharT>
 void fast_double_printer<CharT>::write
-    ( boost::basic_outbuf<CharT>& ob ) const
+    ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
     if (_value.nan)
     {
@@ -1659,7 +1659,7 @@ public:
 
     int width(int) const override;
 
-    void write(boost::basic_outbuf<CharT>&) const override;
+    void write(stringify::v0::basic_outbuf<CharT>&) const override;
 
     std::size_t necessary_size() const override;
 
@@ -1764,7 +1764,7 @@ int fast_punct_double_printer<CharT>::width(int) const
 
 template <typename CharT>
 void fast_punct_double_printer<CharT>::write
-    ( boost::basic_outbuf<CharT>& ob ) const
+    ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
     if (_value.negative)
     {
