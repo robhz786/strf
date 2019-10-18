@@ -187,16 +187,24 @@ public:
         , const char* src_filename
         , int src_line
         , const char* function
-        , double reserve_factor );
+        , double reserve_factor
+        , std::size_t size = 0 );
 
-    input_tester
-        ( std::basic_string<CharOut> expected
-        , const char* src_filename
-        , int src_line
-        , const char* function
-        , std::error_code err
-        , double reserve_factor );
+#if defined(BOOST_STRINGIFY_NO_CXX17_COPY_ELISION)
 
+    input_tester(input_tester&& r)
+        : input_tester( r._expected, r._src_filename, r._src_line
+                       , r._function, r._reserve_factor, r._reserved_size )
+    {}
+
+#else
+
+    input_tester(input_tester&& r) = delete;
+
+#endif
+
+    input_tester(const input_tester& r) = delete;
+        
     ~input_tester();
 
     using char_type = CharOut;
@@ -229,7 +237,6 @@ private:
     int _src_line;
     double _reserve_factor;
 
-    std::error_code _expected_error;
     bool _expect_error = false;
     bool _recycle_called = false;
     bool _source_location_printed = false;
@@ -243,15 +250,22 @@ input_tester<CharOut>::input_tester
     , const char* src_filename
     , int src_line
     , const char* function
-    , double reserve_factor )
+    , double reserve_factor
+    , std::size_t size )
     : boost::stringify::v0::basic_outbuf<CharOut>{nullptr, nullptr}
     , _expected(std::move(expected))
-    , _reserved_size(0)
+    , _reserved_size(size)
     , _src_filename(std::move(src_filename))
     , _function(function)
     , _src_line(src_line)
     , _reserve_factor(reserve_factor)
 {
+    if (size != 0)
+    {
+        _result.resize(size, CharOut{'#'});
+        this->set_pos(&*_result.begin());
+        this->set_end(&*_result.begin() + size);
+    }    
 }
 
 template <typename CharOut>
@@ -329,6 +343,48 @@ bool input_tester<CharOut>::_too_much_reserved() const
         > _reserve_factor;
 }
 
+template <typename CharT>
+class input_tester_creator
+{
+public:
+
+    using char_type = CharT;
+    
+    input_tester_creator( std::basic_string<CharT> expected
+                        , const char* filename
+                        , int line
+                        , const char* function
+                        , double reserve_factor )
+        : _expected(std::move(expected))
+        , _filename(filename)
+        , _function(function)
+        , _line(line)
+        , _reserve_factor(reserve_factor)
+    {
+    }
+
+    input_tester_creator(const input_tester_creator& ) = default;
+    input_tester_creator(input_tester_creator&& ) = default;
+
+    template <typename ... Printers>
+    void sized_write(std::size_t size, const Printers& ... printers) const
+    {
+        test_utils::input_tester<CharT> ob
+            { _expected, _filename, _line, _function, _reserve_factor, size };
+        boost::stringify::v0::detail::write_args(ob, printers...);
+        ob.finish();
+    }
+    
+private:
+
+    std::basic_string<CharT> _expected;
+    const char* _filename;
+    const char* _function;
+    int _line;
+    double _reserve_factor = 1.0;
+};
+
+
 template<typename CharT>
 auto make_tester
    ( const CharT* expected
@@ -337,11 +393,8 @@ auto make_tester
    , const char* function
    , double reserve_factor = 1.0 )
 {
-   using writer = test_utils::input_tester<CharT>;
-   return boost::stringify::v0::dispatcher
-       < boost::stringify::v0::facets_pack<>
-       , writer, const CharT*, const char*, int
-       , const char*, double >
+   return boost::stringify::v0::dispatcher_calc_size
+       < test_utils::input_tester_creator<CharT> >
        ( expected, filename, line, function, reserve_factor);
 }
 
@@ -353,22 +406,17 @@ auto make_tester
    , const char* function
    , double reserve_factor = 1.0 )
 {
-   using writer = test_utils::input_tester<CharT>;
-   return boost::stringify::v0::dispatcher
-       < boost::stringify::v0::facets_pack<>
-       , writer, const std::basic_string<CharT>&, const char*
-       , int, const char*, double>
+   return boost::stringify::v0::dispatcher_calc_size
+       < test_utils::input_tester_creator<CharT> >
        ( expected, filename, line, function, reserve_factor);
 }
 
 } // namespace test_utils
 
 #define TEST(EXPECTED)                                                  \
-    test_utils::make_tester((EXPECTED), __FILE__, __LINE__, BOOST_CURRENT_FUNCTION) \
-    .reserve_calc()
+    test_utils::make_tester((EXPECTED), __FILE__, __LINE__, BOOST_CURRENT_FUNCTION) 
 
 #define TEST_RF(EXPECTED, RF)                                           \
-    test_utils::make_tester((EXPECTED), __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, (RF)) \
-    .reserve_calc()
+    test_utils::make_tester((EXPECTED), __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, (RF))
 
 #endif

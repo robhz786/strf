@@ -16,7 +16,7 @@ public:
 
     QStringAppender(QString& str);
 
-    void reserve(std::size_t size);
+    explicit QStringAppender(QString& str, std::size_t size);
 
     void recycle() override;
 
@@ -40,6 +40,16 @@ QStringAppender::QStringAppender(QString& str)
     , _str(str)
 {
 }
+
+QStringAppender::QStringAppender(QString& str, std::size_t size)
+    : strf::basic_outbuf<char16_t>(_buffer, _buffer_size)
+    , _str(str)
+{
+    Q_ASSERT(_str.size() + size < static_cast<std::size_t>(INT_MAX));
+    _str.reserve(_str.size() + static_cast<int>(size));
+}
+
+
 //]
 
 //[QStringAppender_recycle
@@ -70,15 +80,6 @@ void QStringAppender::recycle()
 }
 //]
 
-
-//[QStringAppender_reserve
-void QStringAppender::reserve(std::size_t size)
-{
-    Q_ASSERT(_str.size() + size < static_cast<std::size_t>(INT_MAX));
-    _str.reserve(_str.size() + static_cast<int>(size));
-}
-//]
-
 //[QStringAppender_finish
 std::size_t QStringAppender::finish()
 {
@@ -91,13 +92,53 @@ std::size_t QStringAppender::finish()
 }
 //]
 
-//[QStringAppender_dispatcher
-inline auto append(QString& str)
+//[QStringAppenderCreator
+
+class QStringAppenderCreator
 {
-    return strf::dispatcher<strf::facets_pack<>, QStringAppender, QString&> {str};
-}
+public:
+
+    using char_type = char16_t;
+    using finish_type = std::size_t;
+    
+    QStringAppenderCreator(QString& str)
+        : _str(str)
+    {}
+
+    QStringAppenderCreator(const QStringAppenderCreator& str);
+
+    template <typename ... Printers>
+    finish_type write(const Printers& ... printers) const
+    {
+        QStringAppender ob(_str);
+        strf::detail::write_args(ob, printers...);;
+        return ob.finish();
+    }
+
+    template <typename ... Printers>
+    finish_type sized_write( std::size_t size
+                           , const Printers& ... printers ) const
+    {
+        _str.reserve(_str.size() + size);
+        QStringAppender ob(_str);
+        strf::detail::write_args(ob, printers...);;
+        return ob.finish();
+    }
+
+private:
+    
+    QString& _str;
+};
+
+
 //]
 
+//[QStringAppender_append
+inline auto append(QString& str)
+{
+    return strf::dispatcher_no_reserve<QStringAppenderCreator> {str};
+}
+//]
 
 
 //[QStringAppender_use

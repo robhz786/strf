@@ -537,11 +537,15 @@ public:
     {
     }
 
+#if defined(BOOST_STRINGIFY_NO_CXX17_COPY_ELISION)
+
     join_printer(const join_printer& cp)
         : _fmt_group(cp)
         , _join_impl(_fmt_group::range())
     {
     }
+
+#endif
 
     virtual ~join_printer()
     {

@@ -12,11 +12,13 @@ class QStringCreator: public strf::basic_outbuf<char16_t>
 {
 public:
 
-    QStringCreator() : strf::basic_outbuf<char16_t>(_buffer, _buffer_size)
+    QStringCreator()
+        : strf::basic_outbuf<char16_t>(_buffer, _buffer_size)
     {
     }
 
-    void reserve(std::size_t size)
+    explicit QStringCreator(std::size_t size)
+        : strf::basic_outbuf<char16_t>(_buffer, _buffer_size)
     {
         Q_ASSERT(size < static_cast<std::size_t>(INT_MAX));
         _str.reserve(static_cast<int>(size));
@@ -64,7 +66,32 @@ QString QStringCreator::finish()
     return std::move(_str);
 }
 
-constexpr strf::dispatcher<strf::facets_pack<>, QStringCreator> toQString{};
+class QStringCreatorCreator
+{
+public:
+    using char_type = char16_t;
+    using finish_type = QString;
+
+    template <typename ... Printers>
+    finish_type write(const Printers& ... printers) const
+    {
+        QStringCreator ob;
+        strf::detail::write_args(ob, printers...);;
+        return ob.finish();
+    }
+
+    template <typename ... Printers>
+    finish_type sized_write( std::size_t size
+                           , const Printers& ... printers ) const
+    {
+        QStringCreator ob(size);
+        strf::detail::write_args(ob, printers...);;
+        return ob.finish();
+    }
+};
+
+
+constexpr strf::dispatcher_no_reserve<QStringCreatorCreator> toQString{};
 
 int main()
 {

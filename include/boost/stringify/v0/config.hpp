@@ -107,5 +107,33 @@ BOOST_STRINGIFY_V0_NAMESPACE_END;
 #define BOOST_STRINGIFY_IF_CONSTEXPR if
 #endif
 
+
+// cxx17 guaranteed copy elision
+#if defined(_MSC_VER)
+#  if ((_MSC_VER < 1913) || (_MSVC_LANG < 201703))
+#    define BOOST_STRINGIFY_NO_CXX17_COPY_ELISION
+#  endif
+
+#elif defined(__clang__)
+#  if (__clang_major__ < 4) || (__cplusplus < 201703L)
+#    define BOOST_STRINGIFY_NO_CXX17_COPY_ELISION
+#  endif
+
+#elif defined(__GNUC__)
+#  if (__GNUC__ < 7) || (__cplusplus < 201703)
+#    define BOOST_STRINGIFY_NO_CXX17_COPY_ELISION
+#  endif
+
+#elif (__cplusplus < 201703)
+#  define BOOST_STRINGIFY_NO_CXX17_COPY_ELISION
+
+#elif ! defined(__cpp_deduction_guides) || (__cpp_deduction_guides < 201703)
+   // compilers that dont support Class template argument deductions
+   // usually dont support either guaranteed copy elision
+#  define BOOST_STRINGIFY_NO_CXX17_COPY_ELISION
+#endif
+
+// todo
+
 #endif  // BOOST_STRINGIFY_V0_CONFIG_HPP
 

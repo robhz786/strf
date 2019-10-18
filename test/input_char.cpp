@@ -14,7 +14,6 @@ int main()
 {
     namespace strf = boost::stringify::v0;
 
-//    strf::to_wstring('a');
 
     
     TEST("a")    ( 'a' );

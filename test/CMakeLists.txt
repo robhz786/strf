@@ -12,7 +12,7 @@ include_directories("../../../")
 foreach(
   t
   tr_string
-  dispatcher_with_move_only_arg
+#  dispatcher_with_move_only_arg
   encode_char
   encode_fill
   input_string

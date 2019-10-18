@@ -24,7 +24,18 @@ public:
 
     basic_streambuf_writer() = delete;
     basic_streambuf_writer(const basic_streambuf_writer&) = delete;
+
+#if defined(BOOST_STRINGIFY_NO_CXX17_COPY_ELISION)
+
+    basic_streambuf_writer(basic_streambuf_writer&& r)
+        : basic_streambuf_writer(r._dest)
+    {}
+
+#else
+
     basic_streambuf_writer(basic_streambuf_writer&&) = delete;
+
+#endif
 
     ~basic_streambuf_writer()
     {
@@ -80,13 +91,48 @@ using wstreambuf_writer
     = stringify::v0::basic_streambuf_writer< wchar_t
                                            , std::char_traits<wchar_t> >;
 
+namespace detail {
+
+template <typename CharT, typename Traits>
+class basic_streambuf_writer_creator
+{
+    using _outbuf_type = stringify::v0::basic_streambuf_writer<CharT, Traits>;
+    using _finish_type = typename _outbuf_type::result;
+
+public:
+
+    using char_type = CharT;
+        
+    basic_streambuf_writer_creator
+        ( std::basic_streambuf<CharT, Traits>& dest )
+        : _dest(dest)
+    {
+    }
+
+    basic_streambuf_writer_creator(const basic_streambuf_writer_creator&) = default;
+
+    template <typename ... Printers>
+    _finish_type write(const Printers& ... printers) const
+    {
+        _outbuf_type ob(_dest);
+        stringify::v0::detail::write_args(ob, printers...);;
+        return ob.finish();
+    }
+    
+private:
+
+    std::basic_streambuf<CharT, Traits>& _dest;
+};
+
+
+} // namespace detail
+
+
 template <typename CharT, typename Traits = std::char_traits<CharT> >
 inline auto write( std::basic_streambuf<CharT, Traits>& dest )
 {
-    using writer = stringify::v0::basic_streambuf_writer<CharT, Traits>;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                    , writer
-                                    , std::basic_streambuf<CharT, Traits>& >
+    return stringify::v0::dispatcher_no_reserve
+        < stringify::v0::detail::basic_streambuf_writer_creator<CharT, Traits> >
         (dest);
 }
 

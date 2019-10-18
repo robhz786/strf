@@ -25,7 +25,18 @@ public:
 
     narrow_cfile_writer() = delete;
     narrow_cfile_writer(const narrow_cfile_writer&) = delete;
+
+#if defined(BOOST_STRINGIFY_NO_CXX17_COPY_ELISION)
+
+    narrow_cfile_writer(narrow_cfile_writer&& r)
+        : narrow_cfile_writer(r._dest)
+    {}
+
+#else
+
     narrow_cfile_writer(narrow_cfile_writer&&) = delete;
+
+#endif
 
     ~narrow_cfile_writer()
     {
@@ -86,8 +97,19 @@ public:
 
     wide_cfile_writer() = delete;
     wide_cfile_writer(const wide_cfile_writer&) = delete;
+
+#if defined(BOOST_STRINGIFY_NO_CXX17_COPY_ELISION)
+
+    wide_cfile_writer(wide_cfile_writer&& r)
+        : wide_cfile_writer(r._dest)
+    {}
+
+#else
+
     wide_cfile_writer(wide_cfile_writer&&) = delete;
 
+#endif
+    
     ~wide_cfile_writer()
     {
     }
@@ -132,20 +154,78 @@ public:
     wchar_t _buf[_buf_size];
 };
 
+namespace detail {
+
+template <typename CharT>
+class narrow_cfile_writer_creator
+{
+public:
+
+    using char_type = CharT;
+    using outbuf_type = stringify::v0::narrow_cfile_writer<CharT>;
+    using finish_type = typename outbuf_type::result;
+
+    constexpr narrow_cfile_writer_creator(FILE* file) noexcept
+        : _file(file)
+    {}
+
+    constexpr narrow_cfile_writer_creator
+        (const narrow_cfile_writer_creator&) = default;
+
+    template <typename ... Printers>
+    finish_type write(const Printers& ... printers) const
+    {
+        outbuf_type ob(_file);
+        stringify::v0::detail::write_args(ob, printers...);;
+        return ob.finish();
+    }
+
+private:
+    FILE* _file;
+};
+
+class wide_cfile_writer_creator
+{
+public:
+
+    using char_type = wchar_t;
+    using outbuf_type = stringify::v0::wide_cfile_writer;
+    using finish_type = typename outbuf_type::result;
+
+    constexpr wide_cfile_writer_creator(FILE* file) noexcept
+        : _file(file)
+    {}
+
+    constexpr wide_cfile_writer_creator(const wide_cfile_writer_creator&) = default;
+
+    template <typename ... Printers>
+    finish_type write(const Printers& ... printers) const
+    {
+        outbuf_type ob(_file);
+        stringify::v0::detail::write_args(ob, printers...);;
+        return ob.finish();
+    }
+
+private:
+
+    FILE* _file;
+};
+
+} // namespace detail
+
+
 template <typename CharT = char>
 inline auto write(std::FILE* destination)
 {
-    using writer = stringify::v0::narrow_cfile_writer<CharT>;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                    , writer, FILE* >
+    return stringify::v0::dispatcher_no_reserve
+        < stringify::v0::detail::narrow_cfile_writer_creator<CharT> >
         (destination);
 }
 
 inline auto wwrite(std::FILE* destination)
 {
-    using writer = stringify::v0::wide_cfile_writer;
-    return stringify::v0::dispatcher< stringify::v0::facets_pack<>
-                                    , writer, FILE* >
+    return stringify::v0::dispatcher_no_reserve
+        < stringify::v0::detail::wide_cfile_writer_creator >
         (destination);
 }
 

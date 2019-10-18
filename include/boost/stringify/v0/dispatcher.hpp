@@ -5,123 +5,24 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/printer.hpp>
 #include <boost/stringify/v0/facets_pack.hpp>
 #include <boost/stringify/v0/detail/tr_string.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
-template<typename FPack, typename OutputBuff, typename ... OutBuffArgs>
-class dispatcher;
+template < typename OutbufCreator
+         , typename FPack = stringify::v0::facets_pack<> >
+class dispatcher_with_given_size;
+
+template < typename OutbufCreator
+         , typename FPack = stringify::v0::facets_pack<> >
+class dispatcher_calc_size;
+
+template < typename OutbufCreator
+         , typename FPack = stringify::v0::facets_pack<> >
+class dispatcher_no_reserve;
 
 namespace detail {
-
-template <typename W>
-static auto has_reserve_impl(W&& ow)
-    -> decltype(ow.reserve(std::size_t{}), std::true_type{});
-
-template <typename W>
-static std::false_type has_reserve_impl(...);
-
-template <typename W>
-using has_reserve
-= decltype(stringify::v0::detail::has_reserve_impl<W>(std::declval<W>()));
-
-class output_size_reservation_dummy
-{
-
-public:
-
-    constexpr output_size_reservation_dummy(...)
-    {
-    }
-
-    constexpr void set_reserve_size(std::size_t)
-    {
-    }
-
-    constexpr void set_reserve_calc()
-    {
-    }
-
-    constexpr void set_no_reserve()
-    {
-    }
-
-    static constexpr std::false_type has_reserve()
-    {
-        return {};
-    }
-};
-
-struct reserve_calc_tag{};
-
-
-class output_size_reservation_real
-{
-    std::size_t _size = 0;
-    enum {calculate_size, predefined_size, no_reserve} _flag = no_reserve;
-
-public:
-
-    constexpr output_size_reservation_real(const output_size_reservation_real&)
-    = default;
-
-    constexpr output_size_reservation_real()
-        : _flag(no_reserve)
-    {
-    }
-
-    constexpr explicit output_size_reservation_real(std::size_t size)
-        : _size(size)
-        , _flag(predefined_size)
-    {
-    }
-
-    constexpr explicit output_size_reservation_real(reserve_calc_tag)
-        : _flag(calculate_size)
-    {
-    }
-
-    constexpr void set_reserve_size(std::size_t size)
-    {
-        _flag = predefined_size;
-        _size = size;
-    }
-
-    constexpr void set_reserve_calc()
-    {
-        _flag = calculate_size;
-    }
-
-    constexpr void set_no_reserve()
-    {
-        _flag = no_reserve;
-    }
-
-    constexpr bool must_calculate_size() const
-    {
-        return _flag == calculate_size;
-    }
-    constexpr std::size_t get_size_to_reserve() const
-    {
-        return _size;
-    }
-
-    static constexpr std::true_type has_reserve()
-    {
-        return {};
-    }
-};
-
-
-template <typename OutputBuff>
-using output_size_reservation
-= typename std::conditional
-    < stringify::v0::detail::has_reserve<OutputBuff>::value
-    , output_size_reservation_real
-    , output_size_reservation_dummy
-    > :: type;
 
 #ifdef __cpp_fold_expressions
 
@@ -172,508 +73,166 @@ inline void write_args
 
 #endif
 
-template <typename OutputBuff, typename ... Printers>
-inline decltype(std::declval<OutputBuff>().finish()) reserve_and_write
-    ( stringify::v0::detail::output_size_reservation_real reser
-    , OutputBuff& ob
-    , const Printers& ... printers )
+struct dispatcher_tag {};
+
+template < template <typename, typename> class DispatcherTmpl
+         , class OutbufCreator
+         , class FPack >
+class dispatcher_common
 {
-    std::size_t s = ( reser.must_calculate_size()
-                    ? stringify::v0::detail::sum_necessary_size(printers...)
-                    : reser.get_size_to_reserve() );
-    if (s != 0)
-    {
-        ob.reserve(s);
-    }
-    stringify::v0::detail::write_args(ob, printers...);
-    return ob.finish();
-}
-
-template <typename OutputBuff, typename ... Printers>
-inline decltype(std::declval<OutputBuff>().finish()) reserve_and_write
-    ( stringify::v0::detail::output_size_reservation_dummy
-    , OutputBuff& ob
-    , const Printers& ... printers )
-{
-    stringify::v0::detail::write_args(ob, printers...);
-    return ob.finish();
-}
-
-template <typename CharT>
-inline const stringify::v0::printer<CharT>&
-as_printer_cref(const stringify::v0::printer<CharT>& p)
-{
-    return p;
-}
-
-template <typename OutputBuff, typename CharT>
-inline decltype(std::declval<OutputBuff>().finish()) reserve_and_tr_write
-    ( stringify::v0::detail::output_size_reservation_real reser
-    , OutputBuff& ob
-    , const CharT* tr_str
-    , const CharT* tr_str_end
-    , std::initializer_list<const stringify::v0::printer<CharT>*> args
-    , stringify::v0::encoding<CharT> enc
-    , stringify::v0::tr_invalid_arg policy )
-{
-    if(reser.must_calculate_size())
-    {
-        auto invs = stringify::v0::detail::invalid_arg_size(enc, policy);
-        auto size = stringify::v0::detail::tr_string_size( tr_str, tr_str_end
-                                                         , args, invs );
-        ob.reserve(size);
-    }
-    else if(reser.get_size_to_reserve() != 0)
-    {
-        ob.reserve(reser.get_size_to_reserve());
-    }
-    stringify::v0::detail::tr_string_write
-        ( tr_str, tr_str_end, args, ob, enc, policy );
-    return ob.finish();
-}
-
-template <typename OutputBuff, typename CharT>
-inline decltype(std::declval<OutputBuff>().finish()) reserve_and_tr_write
-    ( stringify::v0::detail::output_size_reservation_dummy
-    , OutputBuff& ob
-    , const CharT* tr_str
-    , const CharT* tr_str_end
-    , std::initializer_list<const stringify::v0::printer<CharT>*> args
-    , stringify::v0::encoding<CharT> enc
-    , stringify::v0::tr_invalid_arg policy )
-{
-    stringify::v0::detail::tr_string_write
-        ( tr_str, tr_str_end, args, ob, enc, policy );
-
-    return ob.finish();
-}
-
-template <std::size_t Index, typename T>
-struct indexed_wrapper
-{
-    using value_type = T;
-
-    template <typename U>
-    constexpr explicit indexed_wrapper(U&& u)
-        : value(std::forward<U>(u))
-    {
-    }
-
-    constexpr indexed_wrapper(const indexed_wrapper&) = default;
-    constexpr indexed_wrapper(indexed_wrapper&&) = default;
-
-    T value;
-};
-
-template <typename ISequence, typename ... T>
-class simple_tuple_impl;
-
-template <typename T, typename... U>
-constexpr bool is_constructible_v = std::is_constructible<T, U...>::value;
-
-template <typename ... T>
-struct not_a_simple_tuple_impl_impl
-{
-    using type = void;
-};
-
-template <typename ... T>
-struct not_a_simple_tuple_impl_impl<const simple_tuple_impl<T...>&>
-{
-};
-
-template <typename ... T>
-using not_a_simple_tuple_impl =
-    typename detail::not_a_simple_tuple_impl_impl<const T&...>::type;
-
-
-
-template <std::size_t ... I, typename ... T>
-class simple_tuple_impl<std::index_sequence<I...>, T...>
-    : private indexed_wrapper<I, T> ...
-{
-    template <std::size_t N, typename U>
-    static indexed_wrapper<N, U> f(indexed_wrapper<N, U>*);
-
-    template <std::size_t N>
-    using _wrapper_type_at = decltype(f<N>((simple_tuple_impl*)0));
-
-    template <std::size_t N>
-    using _value_type_at = typename _wrapper_type_at<N>::value_type;
-
+    using _dispatcher_type = DispatcherTmpl<OutbufCreator, FPack>;
 public:
 
-    template < typename ... U
-             , typename = detail::not_a_simple_tuple_impl<U...> >
-    constexpr explicit simple_tuple_impl(U&&...args)
-        : indexed_wrapper<I, T>(std::forward<U>(args))...
+    using char_type = typename OutbufCreator::char_type;
+
+    template <typename ... FPE>
+    BOOST_STRINGIFY_NODISCARD constexpr auto facets(FPE&& ... fpe) const &
     {
-    }
+        static_assert( std::is_copy_constructible<OutbufCreator>::value
+                     , "OutbufCreator must be copy constructible" );
 
-    constexpr simple_tuple_impl(const simple_tuple_impl& ) = default;
-    constexpr simple_tuple_impl(simple_tuple_impl&& ) = default;
-
-    template <std::size_t N>
-    constexpr const _value_type_at<N>& get() const &
-    {
-        using W = _wrapper_type_at<N>;
-        return static_cast<const W*>(this)->value;
-    }
-
-    template <std::size_t N>
-    constexpr _value_type_at<N>&& forward() &&
-    {
-        using W = _wrapper_type_at<N>;
-        return static_cast<_value_type_at<N>&&>(static_cast<W&>(*this).value);
-    }
-};
-
-template <typename... T>
-using simple_tuple = simple_tuple_impl<std::index_sequence_for<T...>, T...>;
-
-template <typename...T>
-struct output_buff_args_impl
-{
-    using type = void;
-};
-
-template <typename...Y>
-struct output_buff_args_impl<const dispatcher<Y...>&>
-{
-};
-
-template <typename X, typename...Y>
-struct output_buff_args_impl<const dispatcher<Y...>&, const X&>
-{
-};
-
-template <typename...T>
-using dispatcher_output_buff_args_ctor =
-    typename detail::output_buff_args_impl<const T&...>::type;
-
-struct fpack_tag {};
-
-} // namespace detail
-
-template<typename FPack, typename OutputBuff, typename ... OutBuffArgs>
-class dispatcher
-    : private stringify::v0::detail::output_size_reservation<OutputBuff>
-    , private stringify::v0::detail::simple_tuple<OutBuffArgs...>
-{
-    using _reservation
-        = stringify::v0::detail::output_size_reservation<OutputBuff>;
-
-    using _obargs_tuple = stringify::v0::detail::simple_tuple<OutBuffArgs...>;
-
-    using _obargs_index_sequence = std::make_index_sequence<sizeof...(OutBuffArgs)>;
-
-public:
-
-    using return_type
-        = decltype(std::declval<OutputBuff&>().finish());
-
-    using char_type = typename OutputBuff::char_type;
-
-    constexpr dispatcher(const dispatcher& d) = default;
-
-    constexpr dispatcher(dispatcher&& d) = default;
-
-    template
-        < typename ... OBArgs
-        , typename FP = FPack
-        , typename = detail::dispatcher_output_buff_args_ctor<OBArgs...>
-        , typename = std::enable_if_t< sizeof...(OBArgs) == sizeof...(OutBuffArgs)
-                                    && std::is_default_constructible<FP>::value > >
-           // && stringify::v0::detail::fold_and
-           //      < detail::is_constructible_v<OutBuffArgs, OBArgs&&>... > > >
-    constexpr explicit dispatcher(OBArgs&&... args)
-        : _obargs_tuple(std::forward<OBArgs>(args)...)
-    {
-    }
-
-    template
-        < typename ... OBArgs
-        , typename = std::enable_if_t<sizeof...(OBArgs) == sizeof...(OutBuffArgs)>
-        , typename = detail::dispatcher_output_buff_args_ctor<OBArgs...> >
-           // && stringify::v0::detail::fold_and
-           //      < detail::is_constructible_v<OutBuffArgs, OBArgs&&>... > > >
-    constexpr explicit dispatcher(FPack&& fp, OBArgs&&... args)
-        : _obargs_tuple(std::forward<OBArgs>(args)...)
-        , _fpack(std::move(fp))
-    {
-    }
-
-    template
-        < typename ... OBArgs
-        , typename = std::enable_if_t<sizeof...(OBArgs) == sizeof...(OutBuffArgs)>
-        , typename = detail::dispatcher_output_buff_args_ctor<OBArgs...> >
-           // && stringify::v0::detail::fold_and
-           //      < detail::is_constructible_v<OutBuffArgs, OBArgs&&>... > > >
-    constexpr explicit dispatcher(const FPack& fp, OBArgs&&... args)
-        : _obargs_tuple(std::forward<OBArgs>(args)...)
-        , _fpack(fp)
-    {
-    }
-
-    template <typename ... Fpe>
-    BOOST_STRINGIFY_NODISCARD constexpr auto facets(Fpe&& ... fpe) const &
-    {
-        static_assert
-            ( stringify::v0::detail::fold_and
-                  <std::is_copy_constructible<OutBuffArgs>::value ...>
-            , "OutBuffArgs... must all be copy constructible" );
+        const auto& self = static_cast<const _dispatcher_type&>(*this);
 
         using NewFPack = decltype
-            ( stringify::v0::pack(_fpack, std::forward<Fpe>(fpe) ...) );
+            ( stringify::v0::pack( std::declval<const FPack&>()
+                                 , std::forward<FPE>(fpe) ...) );
 
-        return dispatcher<NewFPack, OutputBuff, OutBuffArgs...>
-            ( *this, detail::fpack_tag{}, _fpack, std::forward<Fpe>(fpe)... );
+        return DispatcherTmpl<OutbufCreator, NewFPack>
+        { self, detail::dispatcher_tag{}, std::forward<FPE>(fpe) ...};
     }
 
-    template <typename ... Fpe>
-    BOOST_STRINGIFY_NODISCARD constexpr auto facets(Fpe&& ... fpe) &&
+    template <typename ... FPE>
+    BOOST_STRINGIFY_NODISCARD constexpr auto facets(FPE&& ... fpe) &&
     {
-        static_assert
-            ( stringify::v0::detail::fold_and
-                  <std::is_move_constructible<OutBuffArgs>::value ...>
-            , "OutBuffArgs... must be move constructible" );
+        static_assert( std::is_move_constructible<OutbufCreator>::value
+                     , "OutbufCreator must be move constructible" );
+
+        auto& self = static_cast<const _dispatcher_type&>(*this);
 
         using NewFPack = decltype
-            ( stringify::v0::pack( std::move(_fpack)
-                                 , std::forward<Fpe>(fpe) ...) );
+            ( stringify::v0::pack( std::declval<FPack>()
+                                 , std::forward<FPE>(fpe) ...) );
 
-        return dispatcher<NewFPack, OutputBuff, OutBuffArgs...>
-            ( std::move(*this)
-            , detail::fpack_tag{}, std::move(_fpack), std::forward<Fpe>(fpe)... );
-    }
-
-    BOOST_STRINGIFY_NODISCARD constexpr dispatcher no_reserve() const &
-    {
-        return dispatcher(*this, _reservation());
-    }
-    BOOST_STRINGIFY_NODISCARD constexpr dispatcher no_reserve() const &&
-    {
-        return dispatcher(*this, _reservation());
-    }
-    constexpr dispatcher& no_reserve() &
-    {
-        this->set_no_reserve();
-        return *this;
-    }
-    constexpr dispatcher&& no_reserve() &&
-    {
-        this->set_no_reserve();
-        return static_cast<dispatcher&&>(*this);
+        return DispatcherTmpl<OutbufCreator, NewFPack>
+        { std::move(self), detail::dispatcher_tag{}, std::forward<FPE>(fpe) ...};
     }
 
-    BOOST_STRINGIFY_NODISCARD constexpr dispatcher reserve_calc() const &
+    constexpr stringify::v0::dispatcher_no_reserve<OutbufCreator, FPack>
+    no_reserve() const &
     {
-        static_assert( _reservation::has_reserve().value
-                     , "This destination does not support reserve" );
-        return dispatcher(*this, _reservation(detail::reserve_calc_tag{}));
-    }
-    BOOST_STRINGIFY_NODISCARD constexpr dispatcher reserve_calc() const &&
-    {
-        static_assert( _reservation::has_reserve().value
-                     , "This destination does not support reserve" );
-        return dispatcher(*this, _reservation(detail::reserve_calc_tag{}));
-    }
-    constexpr dispatcher& reserve_calc() &
-    {
-        static_assert( _reservation::has_reserve().value
-                     , "This destination does not support reserve" );
-        this->set_reserve_calc();
-        return *this;
-    }
-    constexpr dispatcher&& reserve_calc() &&
-    {
-        static_assert( _reservation::has_reserve().value
-                     , "This destination does not support reserve" );
-        this->set_reserve_calc();
-        return static_cast<dispatcher&&>(*this);
+        const auto& self = static_cast<const _dispatcher_type&>(*this);
+        return { stringify::v0::detail::dispatcher_tag{}
+               , self._outbuf_creator
+               , self._fpack };
     }
 
-    BOOST_STRINGIFY_NODISCARD
-    constexpr dispatcher reserve(std::size_t size) const &
+    constexpr stringify::v0::dispatcher_no_reserve<OutbufCreator, FPack>
+    no_reserve() &&
     {
-        static_assert( _reservation::has_reserve().value
-                     , "This destination does not support reserve" );
-        return dispatcher(*this, _reservation(size));
-    }
-    BOOST_STRINGIFY_NODISCARD
-    constexpr dispatcher reserve(std::size_t size) const &&
-    {
-        static_assert( _reservation::has_reserve().value
-                     , "This destination does not support reserve" );
-        return dispatcher(*this, _reservation(size));
-    }
-    constexpr dispatcher& reserve(std::size_t size) &
-    {
-        static_assert( _reservation::has_reserve().value
-                     , "This destination does not support reserve" );
-        this->set_reserve_size(size);
-        return *this;
-    }
-    constexpr dispatcher&& reserve(std::size_t size) &&
-    {
-        static_assert( _reservation::has_reserve().value
-                     , "This destination does not support reserve" );
-        this->set_reserve_size(size);
-        return static_cast<dispatcher&&>(*this);
+        auto& self = static_cast<_dispatcher_type&>(*this);
+        return { stringify::v0::detail::dispatcher_tag{}
+               , std::move(self._outbuf_creator)
+               , std::move(self._fpack) };
     }
 
-    static std::size_t calculate_size()
+    constexpr stringify::v0::dispatcher_calc_size<OutbufCreator, FPack>
+    reserve_calc() const &
     {
-        return 0;
+        const auto& self = static_cast<const _dispatcher_type&>(*this);
+        return { stringify::v0::detail::dispatcher_tag{}
+               , self._outbuf_creator
+               , self._fpack };
     }
 
-    template <typename Arg0, typename ... Args>
-    static std::size_t calculate_size(const Arg0& arg, const Args ... args)
+    stringify::v0::dispatcher_calc_size<OutbufCreator, FPack>
+    reserve_calc() &&
     {
-        return arg.necessary_size() + calculate_size(args...);
+        auto& self = static_cast<_dispatcher_type&>(*this);
+        return { stringify::v0::detail::dispatcher_tag{}
+               , std::move(self._outbuf_creator)
+               , std::move(self._fpack) };
+    }
+
+    constexpr stringify::v0::dispatcher_with_given_size<OutbufCreator, FPack>
+    reserve(std::size_t size) const &
+    {
+        const auto& self = static_cast<const _dispatcher_type&>(*this);
+        return { stringify::v0::detail::dispatcher_tag{}
+               , size
+               , self._outbuf_creator
+               , self._fpack };
+    }
+
+    constexpr stringify::v0::dispatcher_with_given_size<OutbufCreator, FPack>
+    reserve(std::size_t size) &&
+    {
+        auto& self = static_cast<_dispatcher_type&>(*this);
+        return { stringify::v0::detail::dispatcher_tag{}
+               , size
+               , std::move(self._outbuf_creator)
+               , std::move(self._fpack) };
     }
 
     template <typename ... Args>
-    return_type operator()(const Args& ... args) const &
+    decltype(auto) operator()(const Args& ... args) const &
     {
-        return _create_ob_and_write(_obargs_index_sequence(), args...);
+        const auto& self = static_cast<const _dispatcher_type&>(*this);
+
+        return self._write
+            (_as_printer_cref(make_printer<char_type, FPack>(self._fpack, args))...);
     }
 
-    template <typename ... Args>
-    return_type operator()(const Args& ... args) &&
-    {
-        return static_cast<dispatcher&&>(*this)._create_ob_and_write
-            ( _obargs_index_sequence(), args... );
-    }
+    // template <typename ... Args>
+    // decltype(auto) operator()(const Args& ... args) &&
+    // {
+    //     const auto& self = static_cast<const _dispatcher_type&>(*this);
+    //     return std::move(self)._write
+    //         (_as_printer_cref(make_printer<char_type, FPack>(self._fpack, args))...);
+    // }
 
 #if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
 
     template <typename ... Args>
-    return_type tr
+    decltype(auto) tr
         ( const std::basic_string_view<char_type>& str
         , const Args& ... args ) const &
     {
-        return _create_ob_and_tr_write( _obargs_index_sequence()
-                                      , str.begin()
-                                      , str.end()
-                                      , args ... );
+
+       _tr_write(str.begin, str.end(), args...);
     }
 
-    template <typename ... Args>
-    return_type tr
-        ( const std::basic_string_view<char_type>& str
-        , const Args& ... args ) &&
-    {
-        return static_cast<dispatcher&&>(*this)._create_ob_and_tr_write
-            ( _obargs_index_sequence()
-            , str.begin()
-            , str.end()
-            , args ... );
-    }
+    // template <typename ... Args>
+    // decltype(auto) tr
+    //     ( const std::basic_string_view<char_type>& str
+    //     , const Args& ... args ) &&
+    // {
+    //     return std::move(*this)._tr_write(str.begin, str.end(), args...);
+    // }
 
 #else
 
     template <typename ... Args>
-    return_type tr(const char_type* str, const Args& ... args) const &
+    decltype(auto) tr(const char_type* str, const Args& ... args) const &
     {
-        return _create_ob_and_tr_write
-            ( _obargs_index_sequence()
-            , str
-            , str + std::char_traits<char_type>::length(str)
-            , args ... );
+        return _tr_write
+            ( str, str + std::char_traits<char_type>::length(str), args... );
     }
 
-    template <typename ... Args>
-    return_type tr(const char_type* str, const Args& ... args ) &&
-    {
-        return std::move(*this)._create_ob_and_tr_write
-            ( _obargs_index_sequence()
-            , str
-            , str + std::char_traits<char_type>::length(str)
-            , args ... );
-    }
-
-    template <typename Traits, typename A, typename ... Args>
-    return_type tr
-        ( const std::basic_string<char_type, Traits, A>& str
-        , const Args& ... args ) const &
-    {
-        return _create_ob_and_tr_write
-            ( _obargs_index_sequence()
-            , str.data()
-            , str.data() + str.size()
-            , args ... );
-    }
-
-    template <typename Traits, typename A, typename ... Args>
-    return_type tr
-    ( const std::basic_string<char_type, Traits, A>& str
-        , const Args& ... args ) &&
-    {
-        return std::move(*this)._create_ob_and_tr_write
-            ( _obargs_index_sequence()
-            , str.begin()
-            , str.end()
-            , args ... );
-    }
+    // template <typename ... Args>
+    // decltype(auto) tr(const char_type* str, const Args& ... args) &&
+    // {
+    //     return std::move(*this)._tr_write
+    //         ( str, str + std::char_traits<char_type>::length(str), args... );
+    // }
 
 #endif
 
 private:
 
-    template <std::size_t ... I, typename ... Args>
-    return_type _create_ob_and_write
-        ( std::index_sequence<I...>
-        , const Args& ... args ) const &
-    {
-        OutputBuff ob(this->template get<I>()...);
-        return _do_write(ob, args...);
-    }
-
-    template <std::size_t ... I, typename ... Args>
-    return_type _create_ob_and_write
-        ( std::index_sequence<I...>
-        , const Args& ... args ) &&
-    {
-        OutputBuff ob(std::move(*this).template forward<I>()...);
-        return _do_write(ob, args...);
-    }
-
     static inline const stringify::v0::printer<char_type>&
     _as_printer_cref(const stringify::v0::printer<char_type>& p)
     {
         return p;
-    }
-
-    template <typename ... Args>
-    return_type _do_write(OutputBuff& ob, const Args& ... args) const
-    {
-        return detail::reserve_and_write
-            ( static_cast<const _reservation&>(*this)
-            , ob
-            , _as_printer_cref(make_printer<char_type, FPack>(_fpack, args))... );
-    }
-
-    template <std::size_t ... I, typename ... Args>
-    return_type _create_ob_and_tr_write
-        ( std::index_sequence<I...>
-        , const char_type* tr_str
-        , const char_type* tr_str_end
-        , const Args& ... args ) const &
-    {
-        OutputBuff ob(this->template get<I>()...);
-        return _do_tr_write(ob, tr_str, tr_str_end, args...);
-    }
-
-    template <std::size_t ... I, typename ... Args>
-    return_type _create_ob_and_tr_write
-        ( std::index_sequence<I...>
-        , const char_type* tr_str
-        , const char_type* tr_str_end
-        , const Args& ... args ) &&
-    {
-        OutputBuff ob(std::move(*this).template forward<I>()...);
-        return _do_tr_write(ob, tr_str, tr_str_end, args...);
     }
 
     static inline const stringify::v0::printer<char_type>*
@@ -682,58 +241,362 @@ private:
          return &p;
     }
 
-    template <typename ... Args>
-    return_type _do_tr_write
-        ( OutputBuff& ob
-        , const char_type* tr_str
-        , const char_type* tr_str_end
-        , const Args& ... args ) const
+    template < typename ... Args >
+    decltype(auto) _tr_write( const char_type* str
+                         , const char_type* str_end
+                         , const Args& ... args) const &
     {
-        using cat1 = stringify::v0::encoding_c<char_type>;
-        using cat2 = stringify::v0::tr_invalid_arg_c;
-
-        return stringify::v0::detail::reserve_and_tr_write
-            ( static_cast<const _reservation&>(*this)
-            , ob
-            , tr_str
-            , tr_str_end
-            , { _as_printer_cptr(make_printer<char_type, FPack>(_fpack, args))... }
-            , stringify::v0::get_facet<cat1, void>(_fpack)
-            , stringify::v0::get_facet<cat2, void>(_fpack) );
+        const auto& self = static_cast<const _dispatcher_type&>(*this);
+        return _tr_write_2
+            ( str
+            , str_end
+            , { _as_printer_cptr( make_printer<char_type, FPack>
+                                     (self._fpack, args))... } );
     }
 
-    template <class, class, class...>
-    friend class dispatcher;
+    template < typename ... Args >
+    decltype(auto) _tr_write_2
+        ( const char_type* str
+        , const char_type* str_end
+        , std::initializer_list<const stringify::v0::printer<char_type>*> p ) const &
+    {
+        const auto& self = static_cast<const _dispatcher_type&>(*this);
 
-    template <typename FP2, typename... FPArgs>
-    constexpr dispatcher
-        ( const dispatcher<FP2, OutputBuff, OutBuffArgs...>& d
-        , detail::fpack_tag
-        , FPArgs&&... fpargs )
-        : _reservation(d)
-        , _obargs_tuple(static_cast<const _obargs_tuple&>(d))
-        , _fpack(std::forward<FPArgs>(fpargs)...)
+        using catenc = stringify::v0::encoding_c<char_type>;
+        using caterr = stringify::v0::tr_invalid_arg_c;
+        decltype(auto) enc = stringify::v0::get_facet<catenc, void>(self._fpack);
+        decltype(auto) arg_err = stringify::v0::get_facet<caterr, void>(self._fpack);
+
+        stringify::v0::detail::tr_string_printer<char_type> tr_printer
+            (p, str, str_end, enc, arg_err);
+
+        return self._write(tr_printer);
+    }
+};
+
+}// namespace detail
+
+template < typename OutbufCreator, typename FPack >
+class dispatcher_no_reserve
+    : private stringify::v0::detail::dispatcher_common
+        < dispatcher_no_reserve, OutbufCreator, FPack>
+{
+    using _common = stringify::v0::detail::dispatcher_common
+        < stringify::v0::dispatcher_no_reserve, OutbufCreator, FPack>;
+
+    template < template <typename, typename> class, class, class>
+    friend class stringify::v0::detail::dispatcher_common;
+
+public:
+
+    using char_type = typename OutbufCreator::char_type;
+
+    template < typename ... Args
+             , std::enable_if_t
+                 < std::is_constructible<OutbufCreator, Args...>::value
+                 , int > = 0 >
+    constexpr dispatcher_no_reserve(Args&&... args)
+        : _outbuf_creator(std::forward<Args>(args)...)
     {
     }
 
-    template <class FP2, typename... FPArgs>
-    constexpr dispatcher
-        ( dispatcher<FP2, OutputBuff, OutBuffArgs...>&& d
-        , detail::fpack_tag
-        , FPArgs&&... fpargs )
-        : _reservation(d)
-        , _obargs_tuple(static_cast<_obargs_tuple&&>(d))
-        , _fpack(std::forward<FPArgs>(fpargs)...)
+    template < std::enable_if_t
+                 < std::is_copy_constructible<OutbufCreator>::value
+                 , int > = 0 >
+    constexpr dispatcher_no_reserve( stringify::v0::detail::dispatcher_tag
+                                   , const OutbufCreator& oc
+                                   , const FPack& fp )
+        : _outbuf_creator(oc)
+        , _fpack(fp)
     {
     }
 
-    constexpr dispatcher(const dispatcher& d, const _reservation& r)
-        : _reservation(r)
-        , _obargs_tuple(static_cast<const _obargs_tuple&>(d))
-        , _fpack(d._fpack)
+    constexpr dispatcher_no_reserve( stringify::v0::detail::dispatcher_tag
+                                   , OutbufCreator&& oc
+                                   , FPack&& fp )
+        : _outbuf_creator(std::move(oc))
+        , _fpack(std::move(fp))
     {
     }
 
+    constexpr dispatcher_no_reserve(const dispatcher_no_reserve&) = default;
+    constexpr dispatcher_no_reserve(dispatcher_no_reserve&&) = default;
+
+    using _common::facets;
+    using _common::operator();
+    using _common::tr;
+    using _common::reserve_calc;
+    using _common::reserve;
+
+    constexpr dispatcher_no_reserve& no_reserve() &
+    {
+        return *this;
+    }
+    constexpr const dispatcher_no_reserve& no_reserve() const &
+    {
+        return *this;
+    }
+    constexpr dispatcher_no_reserve&& no_reserve() &&
+    {
+        return std::move(*this);
+    }
+    constexpr const dispatcher_no_reserve&& no_reserve() const &&
+    {
+        return std::move(*this);
+    }
+
+private:
+
+    template <class, class>
+    friend class dispatcher_no_reserve;
+
+    template < typename OtherFPack
+             , typename ... FPE
+             , typename = std::enable_if_t
+                 < std::is_copy_constructible<OutbufCreator>::value > >
+    constexpr dispatcher_no_reserve
+        ( const dispatcher_no_reserve<OutbufCreator, OtherFPack>& other
+        , detail::dispatcher_tag
+        , FPE&& ... fpe )
+        : _outbuf_creator(other._outbuf_creator)
+        , _fpack(other._fpack, std::forward<FPE>(fpe)...)
+    {
+    }
+
+    template < typename OtherFPack, typename ... FPE >
+    constexpr dispatcher_no_reserve
+        ( dispatcher_no_reserve<OutbufCreator, OtherFPack>&& other
+        , detail::dispatcher_tag
+        , FPE&& ... fpe )
+        : _outbuf_creator(std::move(other._outbuf_creator))
+        , _fpack(std::move(other._fpack), std::forward<FPE>(fpe)...)
+    {
+    }
+
+    template <typename ... Printers>
+    decltype(auto) _write(const Printers& ... printers) const
+    {
+        return _outbuf_creator.write(printers...);
+    }
+
+    OutbufCreator _outbuf_creator;
+    FPack _fpack;
+};
+
+template < typename OutbufCreator, typename FPack >
+class dispatcher_with_given_size
+    : public stringify::v0::detail::dispatcher_common
+        < dispatcher_with_given_size, OutbufCreator, FPack>
+{
+    using _common = stringify::v0::detail::dispatcher_common
+        < stringify::v0::dispatcher_with_given_size, OutbufCreator, FPack>;
+
+    template < template <typename, typename> class, class, class>
+    friend class stringify::v0::detail::dispatcher_common;
+
+public:
+
+    using char_type = typename OutbufCreator::char_type;
+
+    template < typename ... Args
+             , std::enable_if_t
+                 < std::is_constructible<OutbufCreator, Args...>::value
+                 , int > = 0 >
+    constexpr dispatcher_with_given_size(std::size_t size, Args&&... args)
+        : _size(size)
+        , _outbuf_creator(std::forward<Args>(args)...)
+    {
+    }
+
+    template < std::enable_if_t
+                 < std::is_copy_constructible<OutbufCreator>::value
+                 , int > = 0 >
+    constexpr dispatcher_with_given_size( stringify::v0::detail::dispatcher_tag
+                                        , std::size_t size
+                                        , const OutbufCreator& oc
+                                        , const FPack& fp )
+        : _size(size)
+        , _outbuf_creator(oc)
+        , _fpack(fp)
+    {
+    }
+
+    constexpr dispatcher_with_given_size( stringify::v0::detail::dispatcher_tag
+                                        , std::size_t size
+                                        , OutbufCreator&& oc
+                                        , FPack&& fp )
+        : _size(size)
+        , _outbuf_creator(std::move(oc))
+        , _fpack(std::move(fp))
+    {
+    }
+
+    constexpr dispatcher_with_given_size(const dispatcher_with_given_size&) = default;
+    constexpr dispatcher_with_given_size(dispatcher_with_given_size&&) = default;
+
+    using _common::facets;
+    using _common::operator();
+    using _common::tr;
+    using _common::reserve_calc;
+    using _common::no_reserve;
+
+    constexpr dispatcher_with_given_size& reserve(std::size_t size) &
+    {
+        _size = size;
+        return *this;
+    }
+    constexpr dispatcher_with_given_size&& reserve(std::size_t size) &&
+    {
+        _size = size;
+        return std::move(*this);
+    }
+
+private:
+
+    template <class, class>
+    friend class dispatcher_with_given_size;
+
+    template < typename OtherFPack
+             , typename ... FPE
+             , typename = std::enable_if_t
+                 < std::is_copy_constructible<OutbufCreator>::value > >
+    constexpr dispatcher_with_given_size
+        ( const dispatcher_with_given_size<OutbufCreator, OtherFPack>& other
+        , detail::dispatcher_tag
+        , FPE&& ... fpe )
+        : _size(other._size)
+        , _outbuf_creator(other._outbuf_creator)
+        , _fpack(other._fpack, std::forward<FPE>(fpe)...)
+    {
+    }
+
+    template < typename OtherFPack, typename ... FPE >
+    constexpr dispatcher_with_given_size
+        ( dispatcher_with_given_size<OutbufCreator, OtherFPack>&& other
+        , detail::dispatcher_tag
+        , FPE&& ... fpe )
+        : _size(other.size)
+        , _outbuf_creator(std::move(other._outbuf_creator))
+        , _fpack(std::move(other._fpack), std::forward<FPE>(fpe)...)
+    {
+    }
+
+    template <typename ... Printers>
+    decltype(auto) _write(const Printers& ... printers) const
+    {
+        return _outbuf_creator.sized_write(_size, printers...);
+    }
+
+    std::size_t _size;
+    OutbufCreator _outbuf_creator;
+    FPack _fpack;
+};
+
+template < typename OutbufCreator, typename FPack >
+class dispatcher_calc_size
+    : public stringify::v0::detail::dispatcher_common
+        < dispatcher_calc_size, OutbufCreator, FPack>
+{
+    using _common = stringify::v0::detail::dispatcher_common
+        < stringify::v0::dispatcher_calc_size, OutbufCreator, FPack>;
+
+    template < template <typename, typename> class, class, class>
+    friend class stringify::v0::detail::dispatcher_common;
+
+public:
+
+    using char_type = typename OutbufCreator::char_type;
+
+    template < typename ... Args
+             , std::enable_if_t
+                 < std::is_constructible<OutbufCreator, Args...>::value
+                 , int > = 0 >
+    constexpr dispatcher_calc_size(Args&&... args)
+        : _outbuf_creator(std::forward<Args>(args)...)
+    {
+    }
+
+    template < std::enable_if_t
+                 < std::is_copy_constructible<OutbufCreator>::value
+                 , int > = 0 >
+    constexpr dispatcher_calc_size( stringify::v0::detail::dispatcher_tag
+                                  , const OutbufCreator& oc
+                                  , const FPack& fp )
+        : _outbuf_creator(oc)
+        , _fpack(fp)
+    {
+    }
+
+    constexpr dispatcher_calc_size( stringify::v0::detail::dispatcher_tag
+                                  , OutbufCreator&& oc
+                                  , FPack&& fp )
+        : _outbuf_creator(std::move(oc))
+        , _fpack(std::move(fp))
+    {
+    }
+
+    constexpr dispatcher_calc_size(const dispatcher_calc_size&) = default;
+    constexpr dispatcher_calc_size(dispatcher_calc_size&&) = default;
+
+    using _common::facets;
+    using _common::operator();
+    using _common::tr;
+    using _common::no_reserve;
+    using _common::reserve;
+
+    constexpr const dispatcher_calc_size & reserve_calc() const &
+    {
+        return *this;
+    }
+    constexpr dispatcher_calc_size & reserve_calc() &
+    {
+        return *this;
+    }
+    constexpr const dispatcher_calc_size && reserve_calc() const &&
+    {
+        return std::move(*this);
+    }
+    constexpr dispatcher_calc_size && reserve_calc() &&
+    {
+        return std::move(*this);
+    }
+
+private:
+
+    template <typename, typename>
+    friend class dispatcher_calc_size;
+
+    template < typename OtherFPack
+             , typename ... FPE
+             , typename = std::enable_if_t
+                 < std::is_copy_constructible<OutbufCreator>::value > >
+    dispatcher_calc_size
+        ( const dispatcher_calc_size<OutbufCreator, OtherFPack>& other
+        , detail::dispatcher_tag
+        , FPE&& ... fpe )
+        : _outbuf_creator(other._outbuf_creator)
+        , _fpack(other._fpack, std::forward<FPE>(fpe)...)
+    {
+    }
+
+    template < typename OtherFPack, typename ... FPE >
+    dispatcher_calc_size
+        ( dispatcher_calc_size<OutbufCreator, OtherFPack>&& other
+        , detail::dispatcher_tag
+        , FPE&& ... fpe )
+        : _outbuf_creator(std::move(other._outbuf_creator))
+        , _fpack(std::move(other._fpack), std::forward<FPE>(fpe)...)
+    {
+    }
+
+    template <typename ... Printers>
+    decltype(auto) _write(const Printers& ... printers) const
+    {
+        auto size = stringify::v0::detail::sum_necessary_size(printers...);
+        return _outbuf_creator.sized_write(size, printers...);
+    }
+
+    OutbufCreator _outbuf_creator;
     FPack _fpack;
 };
 

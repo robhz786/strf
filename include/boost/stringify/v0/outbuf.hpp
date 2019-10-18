@@ -492,6 +492,10 @@ public:
     {
     }
 
+    basic_cstr_writer(basic_cstr_writer&& r)
+        : basic_cstr_writer(r.pos(), r.end())
+    {}
+
     void recycle() noexcept override
     {
         if (this->good())
