@@ -39,12 +39,11 @@ public:
         {
             std::chrono::duration<double, std::nano>  total_ns = r.total_duration;
             std::cout
-                << "["
                 << std::setprecision(2)
                 << std::fixed
-                << std::setw(8)
+                << std::setw(9)
                 << total_ns.count() / (double)r.iterations_count
-                << " ns ] "
+                << " ns | "
                 << m_label
                 << std::endl;
         }
@@ -161,6 +160,56 @@ private:
 
 #define PRINT_BENCHMARK_N(N, LABEL) LOOP_TIMER_N((N), (LABEL), std::chrono::seconds{10})
 
+
+#if (defined(__GNUC__) || defined(__clang__))    \
+
+inline void escape(const void* p)
+{
+    asm volatile("" : : "r,m"(p) : "memory");
+    asm volatile("" : : : "memory");
+}
+
+inline void escape(void* p)
+{
+#if defined(__clang__)
+    asm volatile("" : "+r,m"(p) : : "memory");
+#else
+    asm volatile("" : "+m,r"(p) : : "memory");
+#endif
+    asm volatile("" : : : "memory");
+}
+
+inline void clobber()
+{
+  asm volatile("" : : : "memory");
+}
+
+#elif defined(_MSC_VER)
+
+#pragma optimize("", off)
+
+inline void escape_hlp(const volatile char*) {}
+
+#pragma optimize("", on)
+
+inline void escape(const void* p)
+{
+    escape_hlp(reinterpret_cast<const volatile char*>(p));
+    _ReadWriteBarrier();
+}
+
+inline  void clobber()
+{
+    _ReadWriteBarrier();
+}
+
+#endif
+
+template <class T>
+inline void escape(T& r)
+{
+    escape(&r);
+}
 
 #endif
 

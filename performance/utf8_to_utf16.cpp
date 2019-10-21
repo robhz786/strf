@@ -30,6 +30,7 @@ int main()
     char16_t u16dest[100000];
     constexpr std::size_t u16dest_size = sizeof(u16dest) / sizeof(u16dest[0]);
     char16_t* u16dest_end = &u16dest[u16dest_size];
+    escape(u16dest);
 
     std::cout << "\nUTF-8 to UTF-16\n";
 
@@ -37,21 +38,25 @@ int main()
     {
         auto err = strf::write(u16dest)(strf::cv(u8sample1));
         (void)err;
+        clobber();
     }
     PRINT_BENCHMARK("boost::stringify::write(u16dest)(u8sample2)")
     {
         auto err = strf::write(u16dest)(strf::cv(u8sample2));
         (void)err;
+        clobber();
     }
     PRINT_BENCHMARK("boost::stringify::write(u16dest)(u8sample3)")
     {
         auto err = strf::write(u16dest)(strf::cv(u8sample3));
         (void)err;
+        clobber();
     }
     PRINT_BENCHMARK("boost::stringify::write(u16dest)(u8sample4)")
     {
         auto err = strf::write(u16dest)(strf::cv(u8sample4));
         (void)err;
+        clobber();
     }
 
 #if defined(_MSC_VER)
@@ -77,6 +82,7 @@ int main()
             , u16dest_end
             , u16to_next);
         *u16to_next = '\0';
+        clobber();
     }
 
     PRINT_BENCHMARK("std::codecvt / u8sample2")
@@ -91,6 +97,7 @@ int main()
             , u16dest_end
             , u16to_next);
         *u16to_next = '\0';
+        clobber();
     }
     PRINT_BENCHMARK("std::codecvt / u8sample3")
     {
@@ -104,6 +111,7 @@ int main()
             , u16dest_end
             , u16to_next);
         *u16to_next = '\0';
+        clobber();
     }
     PRINT_BENCHMARK("std::codecvt / u8sample4")
     {
@@ -117,6 +125,7 @@ int main()
             , u16dest_end
             , u16to_next);
         *u16to_next = '\0';
+        clobber();
     }
 
 }

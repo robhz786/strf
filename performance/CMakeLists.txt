@@ -5,10 +5,10 @@ project (boost_stringify_performance)
 foreach(
     x
     to_char_ptr
-    to_FILE
     to_string
     input_float
     input_int
+    tr_string
 )
 
   add_executable(performance-${x}-header-only   ${x}.cpp)
@@ -37,6 +37,8 @@ endforeach(x)
 
 foreach(
     x
+    range
+    join
     width_calculation
 #    from_utf32
 #    to_utf32

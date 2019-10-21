@@ -15,106 +15,171 @@ int main()
 {
     namespace strf = boost::stringify;
 
-    PRINT_BENCHMARK("strf::to_string (\"Hello \", \"World\", \"!\")")
+    PRINT_BENCHMARK("strf::to_string.reserve_calc() (\"Hello \", \"World\", \"!\")")
     {
-        (void)strf::to_string("Hello ", "World", "!");
+        auto str = strf::to_string.reserve_calc()("Hello ", "World", "!");
+        escape(str.data());
+    }
+    PRINT_BENCHMARK("strf::to_string.reserve(12)    (\"Hello \", \"World\", \"!\")")
+    {
+        auto str = strf::to_string.reserve(12)("Hello ", "World", "!");
+        escape(str.data());
+    }
+    PRINT_BENCHMARK("strf::to_string.no_reserve()   (\"Hello \", \"World\", \"!\")")
+    {
+        auto str = strf::to_string.no_reserve()("Hello ", "World", "!");
+        escape(str.data());
+    }
+    PRINT_BENCHMARK("strf::to_string.reserve_calc() .tr(\"Hello {}!\", \"World\")")
+    {
+        auto str = strf::to_string.reserve_calc().tr("Hello {}!", "World");
+        escape(str.data());
+    }
+    PRINT_BENCHMARK("strf::to_string.reserve(12)    .tr(\"Hello {}!\", \"World\")")
+    {
+        auto str = strf::to_string.reserve(12).tr("Hello {}!", "World");
+        escape(str.data());
+    }
+    PRINT_BENCHMARK("strf::to_string.no_reserve()   .tr(\"Hello {}!\", \"World\")")
+    {
+        auto str = strf::to_string.no_reserve().tr("Hello {}!", "World");
+        escape(str.data());
     }
     PRINT_BENCHMARK("fmt::format(\"Hello {}!\", \"World\")")
     {
-        (void)fmt::format("Hello {}!", "World");
+        auto str = fmt::format("Hello {}!", "World");
+        escape(str.data());
     }
 
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::to_string(25)")
+    PRINT_BENCHMARK("strf::to_string.reserve_calc() (25)")
     {
-        (void)strf::to_string(25);
+        auto str = strf::to_string.reserve_calc()(25);
+        escape(str.data());
+    }
+    PRINT_BENCHMARK("strf::to_string.reserve(2)     (25)")
+    {
+        auto str = strf::to_string.reserve(2)(25);
+        escape(str.data());
+    }
+    PRINT_BENCHMARK("strf::to_string.no_reserve()   (25)")
+    {
+        auto str = strf::to_string.no_reserve()(25);
+        escape(str.data());
     }
     PRINT_BENCHMARK("fmt::format(\"{}\", 25)")
     {
-        std::string s = fmt::format("{}", 25);
+        auto str = fmt::format("{}", 25);
+        escape(str.data());
     }
     PRINT_BENCHMARK("std::to_string(25)")
     {
-        std::string s = std::to_string(25);
+        auto str = std::to_string(25);
+        escape(str.data());
     }
 
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::to_string (LLONG_MAX)")
+    PRINT_BENCHMARK("strf::to_string.reserve_calc() (LLONG_MAX)")
     {
-        (void)strf::to_string(LLONG_MAX);
+        auto str = strf::to_string.reserve_calc()(LLONG_MAX);
+        escape(str.data());
     }
-    PRINT_BENCHMARK("strf::to_string .reserve_calc() (LLONG_MAX)")
+    PRINT_BENCHMARK("strf::to_string.reserve(20)    (LLONG_MAX)")
     {
-        (void)strf::to_string.reserve_calc()(LLONG_MAX);
+        auto str = strf::to_string.reserve(20) (LLONG_MAX);
+        escape(str.data());
     }
-    PRINT_BENCHMARK("strf::to_string .reserve(100) (LLONG_MAX)")
+    PRINT_BENCHMARK("strf::to_string.no_reserve()   (LLONG_MAX)")
     {
-        (void)strf::to_string.reserve(100)(LLONG_MAX);
+        auto str = strf::to_string.no_reserve() (LLONG_MAX);
+        escape(str.data());
     }
     PRINT_BENCHMARK("fmt::format(\"{}\", LLONG_MAX)")
     {
-        (void)fmt::format("{}", LLONG_MAX);
+        auto str = fmt::format("{}", LLONG_MAX);
+        escape(str.data());
     }
     PRINT_BENCHMARK("std::to_string(LLONG_MAX)")
     {
-        (void)std::to_string(LLONG_MAX);
+        auto str = std::to_string(LLONG_MAX);
+        escape(str.data());
     }
 
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::to_string(strf::right(\"aa\", 20))")
+    PRINT_BENCHMARK("strf::to_string .reserve_calc() (strf::right(\"aa\", 20))")
     {
-        (void)strf::to_string(strf::right("aa", 20));
+        auto str = strf::to_string .reserve_calc() (strf::right("aa", 20));
+        escape(str.data());
     }
-    PRINT_BENCHMARK("strf::to_string .reserve(20) (strf::right(\"aa\", 20))")
+    PRINT_BENCHMARK("strf::to_string .reserve(20)    (strf::right(\"aa\", 20))")
     {
-        (void)strf::to_string.reserve(20)(strf::right("aa", 20));
+        auto str = strf::to_string .reserve(20) (strf::right("aa", 20));
+        escape(str.data());
     }
-
+    PRINT_BENCHMARK("strf::to_string .no_reserve()   (strf::right(\"aa\", 20))")
+    {
+        auto str = strf::to_string .no_reserve() (strf::right("aa", 20));
+        escape(str.data());
+    }
     PRINT_BENCHMARK("fmt::format(dest, \"{:20}\", \"aa\")")
     {
-        fmt::format("{:20}", "aa");
+        auto str = fmt::format("{:20}", "aa");
+        escape(str.data());
     }
 
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::to_string (\"ten = \", 10, \"twenty = \", 20)")
+    PRINT_BENCHMARK("strf::to_string .reserve_calc() (\"ten = \", 10, \", twenty = \", 20)")
     {
-        (void)strf::to_string ("ten = ", 10, "twenty = ", 20);
+        auto str = strf::to_string .reserve_calc() ("ten = ", 10, ", twenty = ", 20);
+        escape(str.data());
     }
-    PRINT_BENCHMARK("strf::to_string .tr(\"ten = {}, twenty = {}\", 10, 20)")
+    PRINT_BENCHMARK("strf::to_string .reserve(21)    (\"ten = \", 10, \", twenty = \", 20)")
     {
-        (void)strf::to_string.tr("ten = {}, twenty = {}", 10, 20);
+        auto str = strf::to_string .reserve(21) ("ten = ", 10, ", twenty = ", 20);
+        escape(str.data());
     }
-    PRINT_BENCHMARK("strf::to_string .reserve(30) .tr(\"ten = {}, twenty = {}\", 10, 20)")
+    PRINT_BENCHMARK("strf::to_string .no_reserve()   (\"ten = \", 10, \", twenty = \", 20)")
     {
-        (void)strf::to_string.tr("ten = {}, twenty = {}", 10, 20);
+        auto str = strf::to_string .no_reserve() ("ten = ", 10, ", twenty = ", 20);
+        escape(str.data());
     }
     PRINT_BENCHMARK("strf::to_string .reserve_calc() .tr(\"ten = {}, twenty = {}\", 10, 20)")
     {
-        (void)strf::to_string.reserve_calc().tr("ten = {}, twenty = {}", 10, 20);
+        auto str = strf::to_string .reserve_calc() .tr("ten = {}, twenty = {}", 10, 20);
+        escape(str.data());
     }
-
+    PRINT_BENCHMARK("strf::to_string .reserve(21)    .tr(\"ten = {}, twenty = {}\", 10, 20)")
+    {
+        auto str = strf::to_string .reserve(21).tr("ten = {}, twenty = {}", 10, 20);
+        escape(str.data());
+    }
+    PRINT_BENCHMARK("strf::to_string .no_reserve()   .tr(\"ten = {}, twenty = {}\", 10, 20)")
+    {
+        auto str = strf::to_string .no_reserve() .tr("ten = {}, twenty = {}", 10, 20);
+        escape(str.data());
+    }
     PRINT_BENCHMARK("fmt::format(\"ten = {}, twenty = {}\", 10, 20)")
     {
-        (void)fmt::format("ten = {}, twenty = {}", 10, 20);
+        auto str = fmt::format("ten = {}, twenty = {}", 10, 20);
+        escape(str.data());
     }
 
     PRINT_BENCHMARK("oss << \"ten = \" << 10 << \", twenty = \" << 20")
     {
         std::ostringstream oss;
         oss << "ten = " << 10 << ", twenty = " << 20;
-        (void)oss;
+        escape(oss);
     }
     PRINT_BENCHMARK("oss << \"ten = \" << 10 << \", twenty = \" << 20 ; auto s = oss.str()")
     {
         std::ostringstream oss;
         oss << "ten = " << 10 << ", twenty = " << 20;
-        std::string s = oss.str();
-        (void)oss;
-        (void)s;
+        std::string str = oss.str();
+        escape(str.data());
     }
 
     {
@@ -122,8 +187,8 @@ int main()
         PRINT_BENCHMARK("sprintf(buff, \"ten = %d, twenty = %d\", 10, 20); std::string{buff}")
         {
             sprintf(buff, "ten = %d, twenty = %d", 10, 20);
-            std::string s{buff};
-            (void)s;
+            std::string str{buff};
+            escape(str.data());
         }
     }
     std::cout << "\n Converting UTF-8 to UTF16\n";
@@ -139,20 +204,24 @@ int main()
 
         PRINT_BENCHMARK("strf::to_u16string (strf::cv(u8sample1))")
         {
-            (void)strf::to_u16string(strf::cv(u8sample1));
+            auto str = strf::to_u16string(strf::cv(u8sample1));
+            escape(str.data());
         }
         PRINT_BENCHMARK("strf::write(buff) (strf::cv(u8sample1)); strf::to_u16string.reserve_calc() (buff)")
         {
             (void)strf::write(buff)(strf::cv(u8sample1));
-            (void)strf::to_u16string.reserve_calc() (buff);
+            auto str = strf::to_u16string.reserve_calc() (buff);
+            escape(str.data());
         }
         PRINT_BENCHMARK("strf::to_u16string.reserve_calc() (strf::cv(u8sample1))")
         {
-            (void)strf::to_u16string.reserve_calc()(strf::cv(u8sample1));
+            auto str = strf::to_u16string.reserve_calc()(strf::cv(u8sample1));
+            escape(str.data());
         }
         PRINT_BENCHMARK("strf::to_u16string .reserve(510) (strf::cv(u8sample1))")
         {
-            (void)strf::to_u16string.reserve(510)(strf::cv(u8sample1));
+            auto str = strf::to_u16string.reserve(510)(strf::cv(u8sample1));
+            escape(str.data());
         }
 
     }
@@ -166,22 +235,25 @@ int main()
 
         PRINT_BENCHMARK("strf::to_string (strf::cv(u16sample1))")
         {
-            (void)strf::to_string(strf::cv(u16sample1));
+            auto str = strf::to_string(strf::cv(u16sample1));
+            escape(str.data());
         }
         PRINT_BENCHMARK("strf::write(buff) (strf::cv(u16sample1)); strf::to_string.reserve_calc()(buff)")
         {
             (void)strf::write(buff)(strf::cv(u16sample1));
-            (void)strf::to_string.reserve_calc()(buff);
+            auto str = strf::to_string.reserve_calc()(buff);
+            escape(str.data());
         }
         PRINT_BENCHMARK("strf::to_string.reserve_calc() (strf::cv(u16sample1))")
         {
-            (void)strf::to_string.reserve_calc()(strf::cv(u16sample1));
+            auto str = strf::to_string.reserve_calc()(strf::cv(u16sample1));
+            escape(str.data());
         }
         PRINT_BENCHMARK("strf::to_string.reserve(510) (strf::cv(u16sample1))")
         {
-            (void)strf::to_string.reserve(510)(strf::cv(u16sample1));
+            auto str = strf::to_string.reserve(510)(strf::cv(u16sample1));
+            escape(str.data());
         }
-
     }
 
     return 0;
