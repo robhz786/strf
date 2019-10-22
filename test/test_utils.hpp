@@ -136,24 +136,31 @@ std::basic_string<CharT> make_string(std::size_t size)
 }
 
 template <typename CharT>
+constexpr std::size_t full_string_size
+= boost::stringify::v0::min_size_after_recycle<CharT>();
+
+template <typename CharT>
+constexpr std::size_t half_string_size = full_string_size<CharT> / 2;
+
+template <typename CharT>
+constexpr std::size_t double_string_size = full_string_size<CharT> * 2;
+
+template <typename CharT>
 inline std::basic_string<CharT> make_half_string()
 {
-    constexpr auto bufsize = boost::stringify::v0::min_size_after_recycle<CharT>();
-    return make_string<CharT>(bufsize / 2);
+    return make_string<CharT>(half_string_size<CharT>);
 }
 
 template <typename CharT>
 inline std::basic_string<CharT> make_full_string()
 {
-    constexpr auto bufsize = boost::stringify::v0::min_size_after_recycle<CharT>();
-    return make_string<CharT>(bufsize);
+    return make_string<CharT>(full_string_size<CharT>);
 }
 
 template <typename CharT>
 inline std::basic_string<CharT> make_double_string()
 {
-    constexpr auto bufsize = boost::stringify::v0::min_size_after_recycle<CharT>();
-    return make_string<CharT>(2 * bufsize);
+    return make_string<CharT>(double_string_size<CharT>);
 }
 
 template <typename CharT>
