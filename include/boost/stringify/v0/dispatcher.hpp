@@ -5,8 +5,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/facets_pack.hpp>
 #include <boost/stringify/v0/detail/tr_string.hpp>
+#include <boost/stringify/v0/detail/printers_tuple.hpp>
+#include <boost/stringify/v0/facets_pack.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -23,55 +24,6 @@ template < typename OutbufCreator
 class dispatcher_no_reserve;
 
 namespace detail {
-
-#ifdef __cpp_fold_expressions
-
-template <typename ... Printers>
-inline std::size_t sum_necessary_size(const Printers& ... printers)
-{
-    return (... + printers.necessary_size());
-}
-
-template <typename CharT, typename ... Printers>
-inline void write_args( stringify::v0::basic_outbuf<CharT>& ob
-                      , const Printers& ... printers )
-{
-    (... , printers.write(ob));
-}
-
-#else
-
-inline std::size_t sum_necessary_size()
-{
-    return 0;
-}
-
-template <typename Printer, typename ... Printers>
-inline std::size_t sum_necessary_size(const Printer& printer, const Printers& ... printers)
-{
-    return printer.necessary_size()
-        + stringify::v0::detail::sum_necessary_size(printers...);
-}
-
-
-template <typename CharT>
-inline void write_args(stringify::v0::basic_outbuf<CharT>&)
-{
-}
-
-template <typename CharT, typename Printer, typename ... Printers>
-inline void write_args
-    ( stringify::v0::basic_outbuf<CharT>& ob
-    , const Printer& printer
-    , const Printers& ... printers )
-{
-    printer.write(ob);
-    if (ob.good()) {
-        write_args(ob, printers ...);
-    }
-}
-
-#endif
 
 struct dispatcher_tag {};
 

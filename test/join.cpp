@@ -28,5 +28,23 @@ int main()
     TEST("abcdef123") (strf::join_right(8)("abc", "def", 123));
     TEST("abcdef123") (strf::join("abc", "def", 123));
 
+    // empty joins
+    
+    TEST("        ") (strf::join_split(8, 0)());
+    TEST("        ") (strf::join_split(8, 2)());
+    TEST("        ") (strf::join_center(8)());
+    TEST("        ") (strf::join_left(8)());
+    TEST("        ") (strf::join_right(8)());
+    TEST("") (strf::join());
+
+    // join inside join
+
+    TEST("    --{ abc }--") (strf::join_right(15)( "--{"
+                                                 , strf::join_center(5)('a', 'b', 'c')
+                                                 , "}--" ));
+    TEST("      --{abc}--") (strf::join_right(15)( "--{"
+                                                 , strf::join('a', 'b', 'c')
+                                                 , "}--" ));
+    
     return boost::report_errors();
 }

@@ -7,7 +7,7 @@
 
 #include <boost/stringify/v0/printer.hpp>
 #include <boost/stringify/v0/facets_pack.hpp>
-#include <boost/stringify/v0/detail/input_types/join.hpp>
+#include <boost/stringify/v0/detail/printers_tuple.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -15,7 +15,7 @@ template <typename FPack, typename ... Args>
 struct inner_pack_with_args
 {
     FPack fp;
-    stringify::v0::detail::args_tuple<Args...> args;
+    stringify::v0::detail::simple_tuple<Args...> args;
 };
 
 template <typename FPack>
@@ -30,103 +30,61 @@ struct inner_pack
     FPack fp;
 
     template <typename ... Args>
-    constexpr stringify::v0::inner_pack_with_args<FPack, Args...>
+    constexpr stringify::v0::inner_pack_with_args
+        < FPack
+        , stringify::v0::detail::opt_val_or_cref<Args>... >
     operator()(const Args& ... args) const
     {
-        return stringify::v0::inner_pack_with_args<FPack, Args...>
-            { fp
-            , stringify::v0::detail::args_tuple<Args...>{args ...} };
+        return { fp, stringify::v0::detail::make_simple_tuple(args ...) };
     }
 };
 
 namespace detail {
 
-template <typename CharT>
-class pp_range_printer: public stringify::v0::printer<CharT>
+template < typename CharT
+         , typename ParentFPack
+         , typename ChildFPack
+         , typename ... Args >
+class facets_pack_printer: public stringify::v0::printer<CharT>
 {
-
-    using printer_type = stringify::v0::printer<CharT>;
-    using pp_range = stringify::v0::detail::printer_ptr_range<CharT>;
-
 public:
 
-    pp_range_printer(const pp_range& args)
-        : m_args(args)
-    {
-    }
-
-    virtual ~pp_range_printer()
+    facets_pack_printer
+        ( const ParentFPack& parent_fp
+        , const stringify::v0::inner_pack_with_args<ChildFPack, Args...>& args )
+        : _fp{parent_fp, args.fp}
+        , _printers{_fp, args.args}
     {
     }
 
     std::size_t necessary_size() const override
     {
-        std::size_t sum = 0;
-        for(const auto* arg : m_args)
-        {
-            sum += arg->necessary_size();
-        }
-        return sum;
+        return stringify::v0::detail::necessary_size(_printers);
     }
 
     void write(stringify::v0::basic_outbuf<CharT>& ob) const override
     {
-        for(const auto& arg : m_args)
-        {
-            arg->write(ob);
-        }
+        stringify::v0::detail::write(ob, _printers);
     }
 
     int width(int limit) const override
     {
-        int sum = 0;
-        for(auto it = m_args.begin(); sum < limit && it != m_args.end(); ++it)
-        {
-            sum += (*it) -> width(limit - sum);
-        }
-        return sum;
-    }
-
-private:
-
-    pp_range m_args;
-};
-
-
-template < typename CharT
-         , typename ParentFPack
-         , typename ChildFPack
-         , typename ... Args >
-class facets_pack_printer
-    : private stringify::v0::facets_pack<ParentFPack, ChildFPack>
-    , private stringify::v0::detail::printers_group
-        < CharT
-        , stringify::v0::facets_pack<ParentFPack, ChildFPack>
-        , Args... >
-    , public stringify::v0::detail::pp_range_printer<CharT>
-{
-    using fmt_group
-    = stringify::v0::detail::printers_group
-        < CharT
-        , stringify::v0::facets_pack<ParentFPack, ChildFPack>
-        , Args... >;
-
-    using inner_args
-    = stringify::v0::inner_pack_with_args<ChildFPack, Args...>;
-
-public:
-
-    facets_pack_printer( const ParentFPack& parent_fp
-                       , const inner_args& args )
-        : stringify::v0::facets_pack<ParentFPack, ChildFPack>{parent_fp, args.fp}
-        , fmt_group{*this, args.args}
-        , stringify::v0::detail::pp_range_printer<CharT>{fmt_group::range()}
-    {
+        return stringify::v0::detail::width(_printers, limit);;
     }
 
     virtual ~facets_pack_printer()
     {
     }
+
+private:
+
+    stringify::v0::facets_pack<ParentFPack, ChildFPack> _fp;
+
+    stringify::v0::detail::printers_tuple_from_args
+        < CharT
+        , stringify::v0::facets_pack<ParentFPack, ChildFPack>
+        , Args... >
+    _printers;
 };
 
 template <typename ... F>

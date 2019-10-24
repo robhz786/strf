@@ -253,6 +253,7 @@ input_tester<CharOut>::input_tester
     , double reserve_factor
     , std::size_t size )
     : boost::stringify::v0::basic_outbuf<CharOut>{nullptr, nullptr}
+    , _result(size, CharOut{'#'})
     , _expected(std::move(expected))
     , _reserved_size(size)
     , _src_filename(std::move(src_filename))
@@ -260,12 +261,8 @@ input_tester<CharOut>::input_tester
     , _src_line(src_line)
     , _reserve_factor(reserve_factor)
 {
-    if (size != 0)
-    {
-        _result.resize(size, CharOut{'#'});
-        this->set_pos(&*_result.begin());
-        this->set_end(&*_result.begin() + size);
-    }    
+    this->set_pos(&*_result.begin());
+    this->set_end(&*_result.begin() + size);
 }
 
 template <typename CharOut>

@@ -370,8 +370,8 @@ public:
             , stringify::v0::outbuf_garbage_buf_end<CharT>() )
         , _str(count, (CharT)0)
     {
-        this->set_pos(_str.data());
-        this->set_end(_str.data() + count);
+        this->set_pos(&*_str.begin());
+        this->set_end(&*_str.begin() + count);
     }
 
     void recycle() override
@@ -381,8 +381,8 @@ public:
             ( original_size
             , stringify::v0::min_size_after_recycle<CharT>() );
         _str.append(append_size, (CharT)0);
-        this->set_pos(_str.data() + original_size);
-        this->set_end(_str.data() + original_size + append_size);
+        this->set_pos(&*_str.begin() + original_size);
+        this->set_end(&*_str.begin() + original_size + append_size);
     }
 
     std::basic_string<CharT, Traits, Allocator> finish()
