@@ -53,7 +53,7 @@ namespace detail {
 
 //     std::size_t necessary_size() const override;
 
-//     void write() const override;
+//     void print_to() const override;
 
 //     int width(int) const override;
 
@@ -142,7 +142,7 @@ namespace detail {
 
 
 // template <typename CharT>
-// void char32_printer<CharT>::write() const
+// void char32_printer<CharT>::print_to() const
 // {
 //     if (m_fillcount == 0)
 //     {
@@ -207,7 +207,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(stringify::v0::basic_outbuf<CharT>& ob) const override;
+    void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
     int width(int) const override;
 
@@ -231,7 +231,7 @@ int char_printer<CharT>::width(int) const
 }
 
 template <typename CharT>
-void char_printer<CharT>::write
+void char_printer<CharT>::print_to
     ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
     ob.ensure(1);
@@ -262,7 +262,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(stringify::v0::basic_outbuf<CharT>& ob) const override;
+    void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
     int width(int) const override;
 
@@ -307,7 +307,7 @@ std::size_t fmt_char_printer<CharT>::necessary_size() const
 }
 
 template <typename CharT>
-void fmt_char_printer<CharT>::write
+void fmt_char_printer<CharT>::print_to
     ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
     if (_content_width >= _fmt.width())
@@ -444,7 +444,7 @@ make_printer(const FPack& fp, char8_t ch)
 template < typename CharOut
          , typename FPack
          , typename CharIn
-         , std::enable_if_t<std::is_same<CharIn, CharOut>::value, int> = 0>    
+         , std::enable_if_t<std::is_same<CharIn, CharOut>::value, int> = 0>
 inline stringify::v0::detail::char_printer<CharOut>
 make_printer(const FPack& fp, CharIn ch)
 {

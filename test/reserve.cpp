@@ -43,7 +43,7 @@ public:
     reservation_tester(reservation_tester&&) = delete;
 
 #endif
-    
+
     void recycle() override
     {
         this->set_pos(_buff);

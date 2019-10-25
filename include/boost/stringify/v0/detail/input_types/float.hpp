@@ -796,7 +796,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(stringify::v0::basic_outbuf<CharT>&) const override;
+    void print_to(stringify::v0::basic_outbuf<CharT>&) const override;
 
 private:
 
@@ -940,7 +940,7 @@ std::size_t punct_double_printer<CharT>::necessary_size() const
 }
 
 template <typename CharT>
-void punct_double_printer<CharT>::write(stringify::v0::basic_outbuf<CharT>& ob) const
+void punct_double_printer<CharT>::print_to(stringify::v0::basic_outbuf<CharT>& ob) const
 {
     if (_left_fillcount != 0)
     {
@@ -1089,7 +1089,7 @@ public:
 
     int width(int) const override;
 
-    void write(stringify::v0::basic_outbuf<CharT>&) const override;
+    void print_to(stringify::v0::basic_outbuf<CharT>&) const override;
 
     std::size_t necessary_size() const override;
 
@@ -1185,7 +1185,7 @@ int double_printer<CharT>::width(int) const
 }
 
 template <typename CharT>
-void double_printer<CharT>::write
+void double_printer<CharT>::print_to
     ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
     if (_left_fillcount != 0)
@@ -1405,7 +1405,7 @@ public:
 
     int width(int) const override;
 
-    void write(stringify::v0::basic_outbuf<CharT>&) const override;
+    void print_to(stringify::v0::basic_outbuf<CharT>&) const override;
 
     std::size_t necessary_size() const override;
 
@@ -1463,7 +1463,7 @@ int fast_double_printer<CharT>::width(int) const
 }
 
 template <typename CharT>
-void fast_double_printer<CharT>::write
+void fast_double_printer<CharT>::print_to
     ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
     if (_value.nan)
@@ -1659,7 +1659,7 @@ public:
 
     int width(int) const override;
 
-    void write(stringify::v0::basic_outbuf<CharT>&) const override;
+    void print_to(stringify::v0::basic_outbuf<CharT>&) const override;
 
     std::size_t necessary_size() const override;
 
@@ -1763,7 +1763,7 @@ int fast_punct_double_printer<CharT>::width(int) const
 }
 
 template <typename CharT>
-void fast_punct_double_printer<CharT>::write
+void fast_punct_double_printer<CharT>::print_to
     ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
     if (_value.negative)

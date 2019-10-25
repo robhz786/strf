@@ -243,7 +243,7 @@ void tr_string_write
         {
             if (arg_idx < num_args)
             {
-                args[arg_idx]->write(ob);
+                args[arg_idx]->print_to(ob);
             }
             else if (policy == stringify::v0::tr_invalid_arg::replace)
             {
@@ -261,7 +261,7 @@ void tr_string_write
         {
             if (arg_idx < num_args)
             {
-                args[arg_idx]->write(ob);
+                args[arg_idx]->print_to(ob);
                 ++arg_idx;
             }
             else if (policy == stringify::v0::tr_invalid_arg::replace)
@@ -280,7 +280,7 @@ void tr_string_write
 
             if (result.value < num_args)
             {
-                args[result.value]->write(ob);            }
+                args[result.value]->print_to(ob);            }
             else if (policy == stringify::v0::tr_invalid_arg::replace)
             {
                 enc.write_replacement_char(ob);
@@ -316,7 +316,7 @@ void tr_string_write
             {
                 if (arg_idx < num_args)
                 {
-                    args[arg_idx]->write(ob);
+                    args[arg_idx]->print_to(ob);
                     ++arg_idx;
                 }
                 else if (policy == stringify::v0::tr_invalid_arg::replace)
@@ -410,7 +410,7 @@ public:
             , stringify::v0::detail::invalid_arg_size(_enc, _policy) );
     }
 
-    void write(stringify::v0::basic_outbuf<CharT>& ob) const
+    void print_to(stringify::v0::basic_outbuf<CharT>& ob) const
     {
         stringify::v0::detail::tr_string_write
             ( _tr_string, _tr_string_end

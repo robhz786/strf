@@ -195,8 +195,8 @@ private:
 
     template < typename ... Args >
     decltype(auto) _tr_write( const char_type* str
-                         , const char_type* str_end
-                         , const Args& ... args) const &
+                            , const char_type* str_end
+                            , const Args& ... args) const &
     {
         const auto& self = static_cast<const _dispatcher_type&>(*this);
         return _tr_write_2

@@ -92,7 +92,7 @@ template <typename CharT, typename ... Printers>
 inline void write_args( stringify::v0::basic_outbuf<CharT>& ob
                       , const Printers& ... printers )
 {
-    (... , printers.write(ob));
+    (... , printers.print_to(ob));
 }
 
 #else
@@ -121,7 +121,7 @@ inline void write_args
     , const Printer& printer
     , const Printers& ... printers )
 {
-    printer.write(ob);
+    printer.print_to(ob);
     if (ob.good()) {
         write_args(ob, printers ...);
     }

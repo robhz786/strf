@@ -299,7 +299,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(stringify::v0::basic_outbuf<CharOut>& ob) const override;
+    void print_to(stringify::v0::basic_outbuf<CharOut>& ob) const override;
 
     int width(int limit) const override;
 
@@ -357,7 +357,7 @@ std::size_t cv_string_printer<CharIn, CharOut>::necessary_size() const
 }
 
 template<typename CharIn, typename CharOut>
-void cv_string_printer<CharIn, CharOut>::write
+void cv_string_printer<CharIn, CharOut>::print_to
     ( stringify::v0::basic_outbuf<CharOut>& ob ) const
 {
     if (_transcoder_eng != nullptr)
@@ -400,7 +400,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(stringify::v0::basic_outbuf<CharOut>& ob) const override;
+    void print_to(stringify::v0::basic_outbuf<CharOut>& ob) const override;
 
     int width(int limit) const override;
 
@@ -472,7 +472,7 @@ std::size_t fmt_cv_string_printer<CharIn, CharOut>::necessary_size() const
 
 
 template<typename CharIn, typename CharOut>
-void fmt_cv_string_printer<CharIn, CharOut>::write
+void fmt_cv_string_printer<CharIn, CharOut>::print_to
     ( stringify::v0::basic_outbuf<CharOut>& ob ) const
 {
     if (_fillcount > 0)

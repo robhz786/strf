@@ -127,7 +127,7 @@ public:
     {
         return _data.showpos;
     }
-    constexpr stringify::v0::int_format_data get_int_format_data() const noexcept 
+    constexpr stringify::v0::int_format_data get_int_format_data() const noexcept
     {
         return _data;
     }
@@ -205,7 +205,7 @@ public:
 
     int width(int) const override;
 
-    void write(stringify::v0::basic_outbuf<CharT>& ob) const override;
+    void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
 private:
 
@@ -227,7 +227,7 @@ int int_printer<CharT>::width(int) const
 }
 
 template <typename CharT>
-void int_printer<CharT>::write
+void int_printer<CharT>::print_to
     ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
     unsigned size = _digcount + _negative;
@@ -266,7 +266,7 @@ public:
 
     int width(int) const override;
 
-    void write(stringify::v0::basic_outbuf<CharT>& ob) const override;
+    void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
 private:
 
@@ -300,7 +300,7 @@ int punct_int_printer<CharT>::width(int) const
 }
 
 template <typename CharT>
-void punct_int_printer<CharT>::write(stringify::v0::basic_outbuf<CharT>& ob) const
+void punct_int_printer<CharT>::print_to(stringify::v0::basic_outbuf<CharT>& ob) const
 {
     if (_sepcount == 0)
     {
@@ -396,7 +396,7 @@ public:
         return _encoding;
     }
 
-    void write(stringify::v0::basic_outbuf<CharT>& ob) const override;
+    void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
     std::size_t necessary_size() const override;
     int width(int) const override
     {
@@ -471,7 +471,7 @@ std::size_t partial_fmt_int_printer<CharT, Base>::necessary_size() const
 }
 
 template <typename CharT, int Base>
-inline void partial_fmt_int_printer<CharT, Base>::write
+inline void partial_fmt_int_printer<CharT, Base>::print_to
     ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
     if (_sepcount == 0)
@@ -582,7 +582,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write( stringify::v0::basic_outbuf<CharT>& ob ) const override;
+    void print_to( stringify::v0::basic_outbuf<CharT>& ob ) const override;
 
     int width(int) const override;
 
@@ -648,12 +648,12 @@ int full_fmt_int_printer<CharT, Base>::width(int) const
 }
 
 template <typename CharT, int Base>
-void full_fmt_int_printer<CharT, Base>::write
+void full_fmt_int_printer<CharT, Base>::print_to
         ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
     if (_fillcount == 0)
     {
-        _ichars.write(ob);
+        _ichars.print_to(ob);
     }
     else
     {
@@ -661,7 +661,7 @@ void full_fmt_int_printer<CharT, Base>::write
         {
             case stringify::v0::text_alignment::left:
             {
-                _ichars.write(ob);
+                _ichars.print_to(ob);
                 _write_fill(ob, _fillcount);
                 break;
             }
@@ -676,14 +676,14 @@ void full_fmt_int_printer<CharT, Base>::write
             {
                 auto halfcount = _fillcount / 2;
                 _write_fill(ob, halfcount);
-                _ichars.write(ob);
+                _ichars.print_to(ob);
                 _write_fill(ob, _fillcount - halfcount);
                 break;
             }
             default:
             {
                 _write_fill(ob, _fillcount);
-                _ichars.write(ob);
+                _ichars.print_to(ob);
             }
         }
     }

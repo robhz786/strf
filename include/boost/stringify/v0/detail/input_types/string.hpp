@@ -140,7 +140,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(stringify::v0::basic_outbuf<CharT>& ob) const override;
+    void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
     int width(int limit) const override;
 
@@ -168,7 +168,7 @@ std::size_t string_printer<CharT>::necessary_size() const
 }
 
 template<typename CharT>
-void string_printer<CharT>::write(stringify::v0::basic_outbuf<CharT>& ob) const
+void string_printer<CharT>::print_to(stringify::v0::basic_outbuf<CharT>& ob) const
 {
     stringify::v0::write(ob, _str, _len);
 }
@@ -201,7 +201,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(stringify::v0::basic_outbuf<CharT>& ob) const override;
+    void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
     int width(int limit) const override;
 
@@ -269,7 +269,7 @@ int fmt_string_printer<CharT>::width(int limit) const
 }
 
 template<typename CharT>
-void fmt_string_printer<CharT>::write
+void fmt_string_printer<CharT>::print_to
     ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
     if (_fillcount > 0)

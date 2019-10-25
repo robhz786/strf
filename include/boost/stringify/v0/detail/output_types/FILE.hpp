@@ -109,7 +109,7 @@ public:
     wide_cfile_writer(wide_cfile_writer&&) = delete;
 
 #endif
-    
+
     ~wide_cfile_writer()
     {
     }

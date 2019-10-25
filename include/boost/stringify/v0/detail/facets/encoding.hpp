@@ -152,7 +152,7 @@ struct transcoder_impl
         ::char_type;
     using _under_char_out = typename stringify::v0::underlying_outbuf<sizeof(CharOut)>
         ::char_type;
-    
+
     static_assert( std::is_same<CharIn, _under_char_in>::value
                  , "Incorrect input char type" );
     static_assert( std::is_same<CharOut, _under_char_out>::value
@@ -184,10 +184,10 @@ struct encoding_impl
     using _char8  = typename stringify::v0::underlying_outbuf<1>::char_type;
     using _char16 = typename stringify::v0::underlying_outbuf<2>::char_type;
     using _char32 = typename stringify::v0::underlying_outbuf<4>::char_type;
-    
-    
+
+
     static_assert( std::is_same<CharT, _u_char_type>::value
-                 , "Incorrect char type" );  
+                 , "Incorrect char type" );
 
     typedef std::size_t (&validate_func_ref)(char32_t ch);
     typedef CharT* (&encode_char_func_ref)(CharT* dest, char32_t ch);

@@ -57,7 +57,7 @@ public:
     {
     }
 
-    virtual void write(stringify::v0::basic_outbuf<CharOut>& ob) const = 0;
+    virtual void print_to(stringify::v0::basic_outbuf<CharOut>& ob) const = 0;
 
     virtual std::size_t necessary_size() const = 0;
 

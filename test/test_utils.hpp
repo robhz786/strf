@@ -204,7 +204,7 @@ public:
 #endif
 
     input_tester(const input_tester& r) = delete;
-        
+
     ~input_tester();
 
     using char_type = CharOut;
@@ -346,7 +346,7 @@ class input_tester_creator
 public:
 
     using char_type = CharT;
-    
+
     input_tester_creator( std::basic_string<CharT> expected
                         , const char* filename
                         , int line
@@ -371,7 +371,7 @@ public:
         boost::stringify::v0::detail::write_args(ob, printers...);
         ob.finish();
     }
-    
+
 private:
 
     std::basic_string<CharT> _expected;
@@ -411,7 +411,7 @@ auto make_tester
 } // namespace test_utils
 
 #define TEST(EXPECTED)                                                  \
-    test_utils::make_tester((EXPECTED), __FILE__, __LINE__, BOOST_CURRENT_FUNCTION) 
+    test_utils::make_tester((EXPECTED), __FILE__, __LINE__, BOOST_CURRENT_FUNCTION)
 
 #define TEST_RF(EXPECTED, RF)                                           \
     test_utils::make_tester((EXPECTED), __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, (RF))

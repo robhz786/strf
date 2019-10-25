@@ -136,7 +136,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(strf::basic_outbuf<CharT>& ob) const override;
+    void print_to(strf::basic_outbuf<CharT>& ob) const override;
 
 private:
 
@@ -194,7 +194,7 @@ std::size_t base64_printer<CharT>::necessary_size() const
 //[ base64_printer__write
 
 template <typename CharT>
-void base64_printer<CharT>::write(strf::basic_outbuf<CharT>& ob) const
+void base64_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
 {
     if (_facet.single_line())
     {

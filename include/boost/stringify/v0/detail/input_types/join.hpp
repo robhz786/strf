@@ -72,7 +72,7 @@ void print_split
 {
     if (split_pos > 0)
     {
-        p.write(ob);
+        p.print_to(ob);
         print_split( ob, enc, fillcount, fillchar, split_pos - 1
                    , enc_err, allow_surr, printers... );
     }
@@ -135,7 +135,7 @@ public:
             + _fill_length();
     }
 
-    void write(stringify::v0::basic_outbuf<CharT>& ob) const override
+    void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override
     {
         if (_fillcount <= 0)
         {
@@ -280,7 +280,7 @@ public:
         return stringify::v0::detail::necessary_size(_printers);
     }
 
-    void write(stringify::v0::basic_outbuf<CharT>& ob) const override
+    void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override
     {
         stringify::v0::detail::write(ob, _printers);
     }

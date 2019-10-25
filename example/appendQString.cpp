@@ -100,7 +100,7 @@ public:
 
     using char_type = char16_t;
     using finish_type = std::size_t;
-    
+
     QStringAppenderCreator(QString& str)
         : _str(str)
     {}
@@ -126,7 +126,7 @@ public:
     }
 
 private:
-    
+
     QString& _str;
 };
 

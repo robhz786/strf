@@ -62,7 +62,7 @@ public:
         return stringify::v0::detail::necessary_size(_printers);
     }
 
-    void write(stringify::v0::basic_outbuf<CharT>& ob) const override
+    void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override
     {
         stringify::v0::detail::write(ob, _printers);
     }

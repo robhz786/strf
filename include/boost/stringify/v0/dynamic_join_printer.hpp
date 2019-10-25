@@ -100,7 +100,7 @@ private:
 template <typename CharOut>
 void serial_writer<CharOut>::put(const stringify::v0::printer<CharOut>& p)
 {
-    p.write(_ob);
+    p.print_to(_ob);
 }
 
 } // namespace detail
@@ -122,7 +122,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    void write(stringify::v0::basic_outbuf<CharOut>& ob) const override;
+    void print_to(stringify::v0::basic_outbuf<CharOut>& ob) const override;
 
     int width(int limit) const override;
 
@@ -192,7 +192,7 @@ int dynamic_join_printer<CharOut>::width(int limit) const
 }
 
 template <typename CharOut>
-void dynamic_join_printer<CharOut>::write
+void dynamic_join_printer<CharOut>::print_to
     ( stringify::v0::basic_outbuf<CharOut>& ob ) const
 {
     auto fmt_width = formatting().width;

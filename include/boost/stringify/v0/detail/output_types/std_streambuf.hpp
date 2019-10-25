@@ -102,7 +102,7 @@ class basic_streambuf_writer_creator
 public:
 
     using char_type = CharT;
-        
+
     basic_streambuf_writer_creator
         ( std::basic_streambuf<CharT, Traits>& dest )
         : _dest(dest)
@@ -118,7 +118,7 @@ public:
         stringify::v0::detail::write_args(ob, printers...);;
         return ob.finish();
     }
-    
+
 private:
 
     std::basic_streambuf<CharT, Traits>& _dest;
