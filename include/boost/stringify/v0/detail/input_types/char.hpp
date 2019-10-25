@@ -46,7 +46,7 @@ namespace detail {
 //     char32_printer
 //         ( stringify::v0::basic_outbuf<CharT>& out
 //         , const stringify::v0::char_with_format<char32_t>& input
-//         , const stringify::v0::width_calculator& wcalc
+//         , const stringify::v0::width_calculator<CharT>& wcalc
 //         ) noexcept;
 
 //     virtual ~char32_printer();
@@ -73,7 +73,7 @@ namespace detail {
 //     template <typename FPack>
 //     static decltype(auto) get_width_calculator(const FPack& fp)
 //     {
-//         using category = stringify::v0::width_calculator_c;
+//         using category = stringify::v0::width_calculator_c<CharT>;
 //         return fp.template get_facet<category, input_type>();
 //     }
 
@@ -82,7 +82,7 @@ namespace detail {
 //         return m_out.necessary_size(ch);
 //     }
 
-//     void determinate_fill_and_width(const stringify::v0::width_calculator& wcalc)
+//     void determinate_fill_and_width(const stringify::v0::width_calculator<CharT>& wcalc)
 //     {
 //         int content_width = 0;
 //         if(m_fmt.width() < 0)
@@ -110,7 +110,7 @@ namespace detail {
 // char32_printer<CharT>::char32_printer
 //     ( stringify::v0::basic_outbuf<CharT>& out
 //     , const stringify::v0::char_with_format<char32_t>& input
-//     , const stringify::v0::width_calculator& wcalc
+//     , const stringify::v0::width_calculator<CharT>& wcalc
 //     ) noexcept
 //     : m_out(out)
 //     , m_fmt(input)
@@ -200,9 +200,10 @@ public:
     template <typename FPack>
     char_printer (const FPack& fp, CharT ch)
         : _encoding(get_facet<stringify::v0::encoding_c<CharT>, CharT>(fp))
-        , _wcalc(get_facet<stringify::v0::width_calculator_c, CharT>(fp))
         , _ch(ch)
     {
+        _init_wcalc
+            (get_facet<stringify::v0::width_calculator_c<CharT>, CharT>(fp));
     }
 
     std::size_t necessary_size() const override;
@@ -213,8 +214,21 @@ public:
 
 private:
 
+    void _init_wcalc(const stringify::v0::width_as_len<CharT>&)
+    {
+        _wcalc = nullptr;
+    }
+    void _init_wcalc(const stringify::v0::width_as_u32len<CharT>&)
+    {
+        _wcalc = nullptr;
+    }
+    void _init_wcalc(const stringify::v0::width_calculator<CharT>& wc)
+    {
+        _wcalc = &wc;
+    }
+
     stringify::v0::encoding<CharT> _encoding;
-    stringify::v0::width_calculator _wcalc;
+    const stringify::v0::width_calculator<CharT>* _wcalc;
     CharT _ch;
 };
 
@@ -227,7 +241,7 @@ std::size_t char_printer<CharT>::necessary_size() const
 template <typename CharT>
 int char_printer<CharT>::width(int) const
 {
-    return _wcalc.width_of(_ch, _encoding);
+    return _wcalc == nullptr ? 1 : _wcalc->width_of(_ch, _encoding);
 }
 
 template <typename CharT>
@@ -257,7 +271,7 @@ public:
         , _fmt(input)
         , _allow_surr(_get_facet<stringify::v0::surrogate_policy_c>(fp))
     {
-        _init(_get_facet<stringify::v0::width_calculator_c>(fp));
+        _init(_get_facet<stringify::v0::width_calculator_c<CharT>>(fp));
     }
 
     std::size_t necessary_size() const override;
@@ -279,8 +293,19 @@ private:
     {
         return fp.template get_facet<Category, input_type>();
     }
-
-    void _init(stringify::v0::width_calculator wcalc);
+    void _init(const stringify::v0::width_as_len<CharT>&)
+    {
+        _content_width = _fmt.count();
+    }
+    void _init(const stringify::v0::width_as_u32len<CharT>&)
+    {
+        _content_width = _fmt.count();
+    }
+    void _init(const stringify::v0::width_calculator<CharT>& wc)
+    {
+        auto char_width = wc.width_of(_fmt.value().ch, _encoding);
+        _content_width = _fmt.count() * char_width;
+    }
 
     void _write_body(stringify::v0::basic_outbuf<CharT>& ob) const;
 
@@ -289,12 +314,6 @@ private:
         , unsigned count ) const;
 };
 
-template <typename CharT>
-void fmt_char_printer<CharT>::_init(stringify::v0::width_calculator wcalc)
-{
-    auto char_width = wcalc.width_of(_fmt.value().ch, _encoding);
-    _content_width = _fmt.count() * char_width;
-}
 
 template <typename CharT>
 std::size_t fmt_char_printer<CharT>::necessary_size() const

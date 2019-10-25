@@ -10,7 +10,6 @@ int main()
     namespace strf = boost::stringify::v0;
 
     {
-        TEST("abc") .facets(strf::width_as_u32len(), strf::utf8<char>()) ( strf::cv("abc") );
         TEST("   abc")   ( strf::right("abc", 6) );
         TEST("abc...")   ( strf::left    ("abc", 6, '.') );
         TEST("...abc")   ( strf::right   ("abc", 6, '.') );

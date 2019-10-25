@@ -187,7 +187,7 @@ int sep_range_printer<CharT, FPack, ForwardIt>::width(int limit) const
     if (count > 1 && sum < limit)
     {
         decltype(auto) wcalc
-            = get_facet<stringify::v0::width_calculator_c>(_fp);
+            = get_facet<stringify::v0::width_calculator_c<CharT>>(_fp);
         decltype(auto) encoding
             = get_facet<stringify::v0::encoding_c<CharT>>(_fp);
         auto enc_err = get_facet<stringify::v0::encoding_error_c>(_fp);
@@ -418,7 +418,7 @@ int fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>::width
     if (count > 1 && sum < limit)
     {
         decltype(auto) wcalc
-            = _get_facet<stringify::v0::width_calculator_c>(_fp);
+            = _get_facet<stringify::v0::width_calculator_c<CharT>>(_fp);
         decltype(auto) encoding
             = _get_facet<stringify::v0::encoding_c<CharT>>(_fp);
         auto enc_err = _get_facet<stringify::v0::encoding_error_c>(_fp);

@@ -278,18 +278,17 @@ public:
         : cv_string_printer
             ( str
             , len
-            , _get_facet<stringify::v0::width_calculator_c>(fp)
             , src_enc
             , _get_facet<stringify::v0::encoding_c<CharOut>>(fp)
             , _get_facet<stringify::v0::encoding_error_c>(fp)
             , _get_facet<stringify::v0::surrogate_policy_c>(fp) )
     {
+        _init_wcalc(_get_facet<stringify::v0::width_calculator_c<CharIn>>(fp));
     }
 
     cv_string_printer
         ( const CharIn* str
         , std::size_t len
-        , const stringify::v0::width_calculator& wcalc
         , stringify::v0::encoding<CharIn> src_enc
         , stringify::v0::encoding<CharOut> dest_enc
         , stringify::v0::encoding_error enc_err
@@ -305,9 +304,18 @@ public:
 
 private:
 
+    void _init_wcalc(const stringify::v0::width_as_len<CharIn>&)
+    {
+        _wcalc = nullptr;
+    }
+    void _init_wcalc(const stringify::v0::width_calculator<CharIn>& wc)
+    {
+        _wcalc = &wc;
+    }
+
     const CharIn* const _str;
     const std::size_t _len;
-    const stringify::v0::width_calculator _wcalc;
+    const stringify::v0::width_calculator<CharIn>* _wcalc;
     const stringify::v0::encoding<CharIn>  _src_encoding;
     const stringify::v0::encoding<CharOut> _dest_encoding;
     const stringify::v0::transcoder_engine<CharIn, CharOut>* _transcoder_eng;
@@ -326,14 +334,12 @@ template<typename CharIn, typename CharOut>
 cv_string_printer<CharIn, CharOut>::cv_string_printer
     ( const CharIn* str
     , std::size_t len
-    , const stringify::v0::width_calculator& wcalc
     , stringify::v0::encoding<CharIn> src_enc
     , stringify::v0::encoding<CharOut> dest_enc
     , stringify::v0::encoding_error enc_err
     , stringify::v0::surrogate_policy allow_surr ) noexcept
     : _str(str)
     , _len(len)
-    , _wcalc(wcalc)
     , _src_encoding(src_enc)
     , _dest_encoding(dest_enc)
     , _transcoder_eng(stringify::v0::get_transcoder(src_enc, dest_enc))
@@ -375,7 +381,15 @@ void cv_string_printer<CharIn, CharOut>::print_to
 template<typename CharIn, typename CharOut>
 int cv_string_printer<CharIn, CharOut>::width(int limit) const
 {
-    return _wcalc.width(limit, _str, _len, _src_encoding, _enc_err, _allow_surr);
+    if (_wcalc == nullptr)
+    {
+        if (static_cast<std::ptrdiff_t>(_len) < limit)
+        {
+            return static_cast<int>(_len);
+        }
+        return limit;
+    }
+    return _wcalc->width(limit, _str, _len, _src_encoding, _enc_err, _allow_surr);
 }
 
 template<typename CharIn, typename CharOut>
@@ -391,11 +405,10 @@ public:
         : _fmt(input)
         , _src_encoding(src_enc)
         , _dest_encoding(_get_facet<stringify::v0::encoding_c<CharOut>>(fp))
-        , _wcalc(_get_facet<stringify::v0::width_calculator_c>(fp))
         , _enc_err(_get_facet<stringify::v0::encoding_error_c>(fp))
         , _allow_surr(_get_facet<stringify::v0::surrogate_policy_c>(fp))
     {
-        _init();
+        _init(_get_facet<stringify::v0::width_calculator_c<CharIn>>(fp));
     }
 
     std::size_t necessary_size() const override;
@@ -410,7 +423,7 @@ private:
     const stringify::v0::transcoder_engine<CharIn, CharOut>* _transcoder_eng;
     const stringify::v0::encoding<CharIn> _src_encoding;
     const stringify::v0::encoding<CharOut> _dest_encoding;
-    const stringify::v0::width_calculator _wcalc;
+    const stringify::v0::width_calculator<CharIn>* _wcalc;
     const stringify::v0::encoding_error _enc_err;
     const stringify::v0::surrogate_policy  _allow_surr;
     int _fillcount = 0;
@@ -422,7 +435,9 @@ private:
         return fp.template get_facet<Category, input_tag>();
     }
 
-    void _init();
+    void _init(const stringify::v0::width_as_len<CharIn>&);
+    void _init(const stringify::v0::width_as_u32len<CharIn>&);
+    void _init(const stringify::v0::width_calculator<CharIn>&);
 
     void _write_str(stringify::v0::basic_outbuf<CharOut>& ob) const;
 
@@ -432,15 +447,47 @@ private:
 };
 
 template<typename CharIn, typename CharOut>
-void fmt_cv_string_printer<CharIn, CharOut>::_init()
+inline void fmt_cv_string_printer<CharIn, CharOut>::_init
+    ( const stringify::v0::width_as_len<CharIn>&)
+{
+    auto len = _fmt.value().length();
+    if (_fmt.width() > static_cast<std::ptrdiff_t>(len))
+    {
+        _fillcount = _fmt.width() - static_cast<int>(len);
+    }
+    _wcalc = nullptr;
+    _transcoder_eng =
+        stringify::v0::get_transcoder(_src_encoding, _dest_encoding);
+}
+
+template<typename CharIn, typename CharOut>
+inline void fmt_cv_string_printer<CharIn, CharOut>::_init
+    ( const stringify::v0::width_as_u32len<CharIn>& wc)
+{
+    auto str_width = _src_encoding.codepoints_count( _fmt.value().begin()
+                                                   , _fmt.value().end()
+                                                   , _fmt.width() );
+    if (_fmt.width() > static_cast<std::ptrdiff_t>(str_width))
+    {
+        _fillcount = _fmt.width() - static_cast<int>(str_width);
+    }
+    _wcalc = &wc;
+    _transcoder_eng =
+        stringify::v0::get_transcoder(_src_encoding, _dest_encoding);
+}
+
+template<typename CharIn, typename CharOut>
+void fmt_cv_string_printer<CharIn, CharOut>::_init
+    ( const stringify::v0::width_calculator<CharIn>& wc)
 {
     if (_fmt.width() > 0)
     {
-        auto wstr = _wcalc.width( _fmt.width()
-                                , _fmt.value().begin(), _fmt.value().length()
-                                , _src_encoding, _enc_err, _allow_surr );
+        auto wstr = wc.width( _fmt.width()
+                            , _fmt.value().begin(), _fmt.value().length()
+                            , _src_encoding, _enc_err, _allow_surr );
         _fillcount = _fmt.width() > wstr ? _fmt.width() - wstr : 0;
     }
+    _wcalc = &wc;
     _transcoder_eng =
         stringify::v0::get_transcoder(_src_encoding, _dest_encoding);
 }
@@ -537,14 +584,21 @@ void fmt_cv_string_printer<CharIn, CharOut>::_write_fill
 template<typename CharIn, typename CharOut>
 int fmt_cv_string_printer<CharIn, CharOut>::width(int limit) const
 {
-    return ( _fillcount > 0
-           ? _fmt.width()
-           : _wcalc.width( limit
-                         , _fmt.value().begin()
-                         , _fmt.value().length()
-                         , _src_encoding
-                         , _enc_err
-                         , _allow_surr ) );
+    if (_fillcount > 0 || limit < _fmt.width())
+    {
+        return _fmt.width();
+    }
+    else if(_wcalc == nullptr)
+    {
+        auto len = _fmt.value().length();
+        if (static_cast<std::ptrdiff_t>(len) < limit)
+        {
+            return static_cast<int>(len);
+        }
+        return limit;
+    }
+    return _wcalc->width( limit, _fmt.value().begin(), _fmt.value().length()
+                        , _src_encoding, _enc_err, _allow_surr );
 }
 
 

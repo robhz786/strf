@@ -308,53 +308,54 @@ void punct_non_decimal()
     BOOST_ASSERT(str == "ff'ffff'ffff");
     //]
 }
-void width_as_len()
-{
-    //[width_as_len
-    namespace strf = boost::stringify::v0;
 
-    auto str = strf::to_u8string
-        .facets(strf::width_as_len())
-        (strf::right(u8"áéíóú", 12, U'.'));
+// void width_as_len()
+// {
+//     //[width_as_len
+//     namespace strf = boost::stringify::v0;
 
-    BOOST_ASSERT(str == u8"..áéíóú");
-    //]
-}
-void width_as_u32len()
-{
-    //[width_as_u32len
-    namespace strf = boost::stringify::v0;
+//     auto str = strf::to_u8string
+//         .facets(strf::width_as_len<char8_t>{})
+//         (strf::right(u8"áéíóú", 12, U'.'));
 
-    auto str = strf::to_u8string
-        .facets(strf::width_as_u32len())
-        (strf::right(u8"áéíóú", 12, U'.'));
+//     BOOST_ASSERT(str == u8"..áéíóú");
+//     //]
+// }
+// void width_as_u32len()
+// {
+//     //[width_as_u32len
+//     namespace strf = boost::stringify::v0;
 
-    BOOST_ASSERT(str == u8".......áéíóú");
-    //]
-}
+//     auto str = strf::to_u8string
+//         .facets(strf::width_as_u32len<char8_t>{})
+//         (strf::right(u8"áéíóú", 12, U'.'));
 
-void width_func()
-{
-    //[width_func
-    auto my_width_calculator =
-        [] (int limit, const char32_t* it, const char32_t* end)
-    {
-        int sum = 0;
-        for (; sum < limit && it != end; ++it)
-        {
-            auto ch = *it;
-            sum += ((0x2E80 <= ch && ch <= 0x9FFF) ? 2 : 1);
-        }
-        return sum;
-    };
+//     BOOST_ASSERT(str == u8".......áéíóú");
+//     //]
+// }
 
-    auto str = strf::to_u8string
-        .facets(strf::width_as(my_width_calculator))
-        (strf::right(u8"今晩は", 10, U'.'));
+// void width_func()
+// {
+//     //[width_func
+//     auto my_width_calculator =
+//         [] (int limit, const char32_t* it, const char32_t* end)
+//     {
+//         int sum = 0;
+//         for (; sum < limit && it != end; ++it)
+//         {
+//             auto ch = *it;
+//             sum += ((0x2E80 <= ch && ch <= 0x9FFF) ? 2 : 1);
+//         }
+//         return sum;
+//     };
 
-    BOOST_ASSERT(str == u8"....今晩は");
-    //]
-}
+//     auto str = strf::to_u8string
+//         .facets(strf::width_as(my_width_calculator))
+//         (strf::right(u8"今晩は", 10, U'.'));
+
+//     BOOST_ASSERT(str == u8"....今晩は");
+//     //]
+// }
 
 //[avoid_repetitions
 
@@ -365,9 +366,8 @@ namespace strf = boost::stringify::v0;
 const auto my_default_facets = strf::pack
     ( strf::monotonic_grouping<10>(3)
     , strf::monotonic_grouping<16>(4).thousands_sep(U'\'')
-    , strf::width_as_u32len()
     , strf::surrogate_policy::lax
-    , strf::encoding_error::stop );
+    , strf::encoding_error::ignore );
 
 const auto to_string = strf::to_string.facets(my_default_facets);
 
@@ -425,9 +425,9 @@ int main()
     monotonic_grouping();
     str_grouping();
     punct_non_decimal();
-    width_as_len();
-    width_as_u32len();
-    width_func();
+    // width_as_len();
+    // width_as_u32len();
+    // width_func();
     using_my_customizations();
     return 0;
 }
