@@ -174,7 +174,7 @@ BOOST_STRINGIFY_INLINE detail::double_dec decode(float f)
     const std::uint32_t exponent
         = static_cast<std::uint32_t>((bits << 1) >> (m_size + 1));
     const bool sign = (bits >> (m_size + e_size));
-    const std::uint64_t mantissa = bits & 0x7FFFFF;
+    const std::uint32_t mantissa = bits & 0x7FFFFF;
 
     if (exponent == 0 && mantissa == 0) {
         return {0, 0, sign, false, false};
@@ -792,7 +792,7 @@ public:
         init_fill(x.width(), x.alignment());
     }
 
-    int width(int) const override;
+    stringify::v0::width_t width(stringify::v0::width_t) const override;
 
     std::size_t necessary_size() const override;
 
@@ -800,7 +800,7 @@ public:
 
 private:
 
-    void init_fill(int w, stringify::v0::text_alignment a);
+    void init_fill(std::int16_t w, stringify::v0::text_alignment a);
 
     stringify::v0::detail::double_printer_data _data;
     const stringify::v0::numpunct_base& _punct;
@@ -814,9 +814,12 @@ private:
 };
 
 template <typename CharT>
-void punct_double_printer<CharT>::init_fill(int w, stringify::v0::text_alignment a)
+void punct_double_printer<CharT>::init_fill( std::int16_t fmt_width
+                                           , stringify::v0::text_alignment a)
 {
-    auto fillcount = w - this->width(w);
+    auto w = this->width(fmt_width);
+    BOOST_ASSERT(w.is_integral());
+    auto fillcount = (fmt_width - w).round();
     if (fillcount > 0)
     {
         switch (a)
@@ -839,7 +842,8 @@ void punct_double_printer<CharT>::init_fill(int w, stringify::v0::text_alignment
 }
 
 template <typename CharT>
-int punct_double_printer<CharT>::width(int) const
+stringify::v0::width_t
+punct_double_printer<CharT>::width(stringify::v0::width_t) const
 {
     auto fillcount = _left_fillcount + _split_fillcount + _right_fillcount;
 
@@ -875,11 +879,12 @@ int punct_double_printer<CharT>::width(int) const
         }
     }
     auto idigcount = _data.m10_digcount + _data.e10;
-    return fillcount + _data.showsign
+    auto w = fillcount + _data.showsign
         + idigcount
         + _data.extra_zeros
         + _data.showpoint
         + _punct.thousands_sep_count(idigcount);
+    return static_cast<std::int16_t>(w);
 }
 
 template <typename CharT>
@@ -1087,7 +1092,7 @@ public:
         init_fill(x.width(), x.alignment());
     }
 
-    int width(int) const override;
+    stringify::v0::width_t width(stringify::v0::width_t) const override;
 
     void print_to(stringify::v0::basic_outbuf<CharT>&) const override;
 
@@ -1111,7 +1116,7 @@ private:
 template <typename CharT>
 void double_printer<CharT>::init_fill(int w, stringify::v0::text_alignment a)
 {
-    auto fillcount = w - this->width(w);
+    auto fillcount = (w - this->width(w)).round();
     if (fillcount > 0)
     {
         switch (a)
@@ -1165,23 +1170,29 @@ std::size_t double_printer<CharT>::necessary_size() const
 }
 
 template <typename CharT>
-int double_printer<CharT>::width(int) const
+stringify::v0::width_t double_printer<CharT>::width(stringify::v0::width_t) const
 {
-    return ( _left_fillcount + _split_fillcount + _right_fillcount
-           + _data.nan * 3
-           + _data.infinity * 3
-           + _data.showsign
-           + !(_data.infinity | _data.nan)
-           * ( _data.extra_zeros
-             + _data.showpoint
-             + _data.m10_digcount
-             + ( _data.sci_notation
-               * ( 4 + ((_data.e10 > 99) || (_data.e10 < -99))) )
-             + ( !_data.sci_notation
-               * ( (0 <= _data.e10)
-                 * _data.e10
-                 + (_data.e10 <= -(int)_data.m10_digcount)
-                   * (-_data.e10 + 1 -(int)_data.m10_digcount) ))));
+    auto w =( _left_fillcount + _split_fillcount + _right_fillcount
+            + _data.nan * 3
+            + _data.infinity * 3
+            + _data.showsign
+            + !(_data.infinity | _data.nan)
+            * ( _data.extra_zeros
+              + _data.showpoint
+              + _data.m10_digcount
+              + ( _data.sci_notation
+                * ( 4 + ((_data.e10 > 99) || (_data.e10 < -99))) )
+              + ( !_data.sci_notation
+                * ( (0 <= _data.e10)
+                  * _data.e10
+                  + (_data.e10 <= -(int)_data.m10_digcount)
+                  * (-_data.e10 + 1 -(int)_data.m10_digcount) ))));
+
+    if (w < 0xFFFF)
+    {
+        return static_cast<std::int16_t>(w);
+    }
+    return stringify::v0::width_t_max;
 }
 
 template <typename CharT>
@@ -1403,7 +1414,7 @@ public:
             || (_value.e10 < -(int)_m10_digcount - 2 - (_m10_digcount > 1));
     }
 
-    int width(int) const override;
+    stringify::v0::width_t width(stringify::v0::width_t) const override;
 
     void print_to(stringify::v0::basic_outbuf<CharT>&) const override;
 
@@ -1443,23 +1454,29 @@ std::size_t fast_double_printer<CharT>::necessary_size() const
 }
 
 template <typename CharT>
-int fast_double_printer<CharT>::width(int) const
+stringify::v0::width_t fast_double_printer<CharT>::width(stringify::v0::width_t) const
 {
-    return ( _value.nan * 3
-           + (_value.infinity * 3)
-           + (_value.negative && !_value.nan)
-           + !(_value.infinity | _value.nan)
-           * ( ( _sci_notation
-               * ( 4
-                 + (_m10_digcount != 1)
-                 + _m10_digcount
-                 + ((_value.e10 > 99) || (_value.e10 < -99))) )
-             + ( !_sci_notation
-               * ( (int)_m10_digcount
-                 + (_value.e10 > 0) * _value.e10
-                 + (_value.e10 <= -(int)_m10_digcount) * (2 -_value.e10 - (int)_m10_digcount)
-                 + (-(int)_m10_digcount < _value.e10 && _value.e10 < 0)
-                 + (_value.e10 == -(int)_m10_digcount) ))));
+    auto w = ( _value.nan * 3
+             + (_value.infinity * 3)
+             + (_value.negative && !_value.nan)
+             + !(_value.infinity | _value.nan)
+             * ( ( _sci_notation
+                 * ( 4
+                   + (_m10_digcount != 1)
+                   + _m10_digcount
+                   + ((_value.e10 > 99) || (_value.e10 < -99))) )
+               + ( !_sci_notation
+                 * ( (int)_m10_digcount
+                   + (_value.e10 > 0) * _value.e10
+                   + (_value.e10 <= -(int)_m10_digcount) * (2 -_value.e10 - (int)_m10_digcount)
+                   + (-(int)_m10_digcount < _value.e10 && _value.e10 < 0)
+                   + (_value.e10 == -(int)_m10_digcount) ))));
+
+    if (w < 0xFFFF)
+    {
+        return static_cast<std::int16_t>(w);
+    }
+    return stringify::v0::width_t_max;
 }
 
 template <typename CharT>
@@ -1657,7 +1674,7 @@ public:
         }
     }
 
-    int width(int) const override;
+    stringify::v0::width_t width(stringify::v0::width_t) const override;
 
     void print_to(stringify::v0::basic_outbuf<CharT>&) const override;
 
@@ -1725,41 +1742,45 @@ std::size_t fast_punct_double_printer<CharT>::necessary_size() const
 }
 
 template <typename CharT>
-int fast_punct_double_printer<CharT>::width(int) const
+stringify::v0::width_t fast_punct_double_printer<CharT>::width(stringify::v0::width_t) const
 {
     if (_value.infinity || _value.nan)
     {
-        return 3 + (_value.negative && _value.infinity);
+        return static_cast<std::int16_t>
+            (3 + (_value.negative && _value.infinity));
     }
     constexpr unsigned decpoint_width = 1;
     constexpr unsigned sep_width = 1;
     if (_sci_notation)
     {
         unsigned e10u = std::abs(_value.e10 + (int)_m10_digcount - 1);
-        return _m10_digcount
+        auto w = _m10_digcount
             + _value.negative
             + (e10u < 10) + 2
             + detail::count_digits<10>(e10u)
             + decpoint_width * (_m10_digcount > 1);
+        return static_cast<std::int16_t>(w);
     }
     if (_value.e10 < 0)
     {
         if (_value.e10 <= -(int)_m10_digcount)
         {
-            return _value.negative + 1 - _value.e10 +  decpoint_width;
+            return static_cast<std::int16_t>
+                (_value.negative + 1 - _value.e10 +  decpoint_width);
         }
         else
         {
             auto idigcount = (int)_m10_digcount + _value.e10;
-            return _value.negative
+            auto w = _value.negative
                 + (int)_m10_digcount
                 + decpoint_width
                 + _punct.thousands_sep_count(idigcount) * sep_width;
+            return static_cast<std::int16_t>(w);
         }
     }
     auto idigcount = _m10_digcount + _value.e10;
-    return _value.negative + idigcount
-        + _punct.thousands_sep_count(idigcount);
+    return static_cast<std::int16_t>( _value.negative + idigcount
+                                    + _punct.thousands_sep_count(idigcount) );
 }
 
 template <typename CharT>

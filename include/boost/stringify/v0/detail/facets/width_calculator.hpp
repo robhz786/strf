@@ -13,64 +13,6 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 template <typename CharT> struct width_calculator_c;
 template <typename CharT> class width_calculator;
 
-// namespace detail {
-//
-// class width_accumulator: public stringify::v0::basic_outbuf<char32_t>
-// {
-// public:
-//
-//     width_accumulator(width_calc_func func, int limit)
-//         : stringify::v0::basic_outbuf<char32_t>(_buff, _buff + _buff_size)
-//         , _func(func)
-//         , _limit(limit)
-//     {
-//     }
-//
-//     void recycle() override;
-//
-//     int get_result()
-//     {
-//         if (_limit > 0)
-//         {
-//             _sum += _func(_limit, _buff, this->pos());
-//             this->set_pos(_buff);
-//         }
-//         return _sum;
-//     }
-//
-// private:
-//
-//     constexpr static std::size_t _buff_size = 16;
-//     char32_t _buff[_buff_size];
-//     width_calc_func _func;
-//     const int _limit;
-//     int _sum = 0;
-// };
-//
-// #if ! defined(BOOST_STRINGIFY_OMIT_IMPL)
-//
-// BOOST_STRINGIFY_INLINE void width_accumulator::recycle()
-// {
-//     auto p = this->pos();
-//     this->set_pos(_buff);
-//     if (this->good())
-//     {
-//         try
-//         {
-//             _sum += _func(_limit - _sum, _buff, p);
-//             this->set_good(_sum < _limit);
-//         }
-//         catch(...)
-//         {
-//             this->set_good(false);
-//         }
-//     }
-// }
-//
-// #endif // ! defined(BOOST_STRINGIFY_OMIT_IMPL)
-//
-// } // namespace detail
-
 template <typename CharT>
 class width_calculator
 {
@@ -78,14 +20,17 @@ public:
 
     using category = stringify::v0::width_calculator_c<CharT>;
 
-    virtual int width_of(CharT ch, stringify::v0::encoding<CharT> enc) const = 0;
+    virtual stringify::v0::width_t width_of
+        ( CharT ch
+        , stringify::v0::encoding<CharT> enc ) const = 0;
 
-    virtual int width( int limit
-                     , const CharT* str
-                     , std::size_t str_len
-                     , stringify::v0::encoding<CharT> enc
-                     , stringify::v0::encoding_error enc_err
-                     , stringify::v0::surrogate_policy allow_surr ) const = 0;
+    virtual stringify::v0::width_t width
+        ( stringify::v0::width_t limit
+        , const CharT* str
+        , std::size_t str_len
+        , stringify::v0::encoding<CharT> enc
+        , stringify::v0::encoding_error enc_err
+        , stringify::v0::surrogate_policy allow_surr ) const = 0;
 };
 
 template <typename CharT>
@@ -93,26 +38,33 @@ class width_as_len final: public stringify::v0::width_calculator<CharT>
 {
 public:
 
-    int width_of(CharT ch, stringify::v0::encoding<CharT> enc) const override
+    stringify::v0::width_t width_of
+        ( CharT ch, stringify::v0::encoding<CharT> enc ) const override
     {
         (void)ch;
         (void)enc;
         return 1;
     }
 
-    int width( int limit
-             , const CharT* str
-             , std::size_t str_len
-             , stringify::v0::encoding<CharT> enc
-             , stringify::v0::encoding_error enc_err
-             , stringify::v0::surrogate_policy allow_surr ) const override
+    stringify::v0::width_t width
+        ( stringify::v0::width_t limit
+        , const CharT* str
+        , std::size_t str_len
+        , stringify::v0::encoding<CharT> enc
+        , stringify::v0::encoding_error enc_err
+        , stringify::v0::surrogate_policy allow_surr ) const override
     {
         (void) limit;
         (void) str;
         (void) enc;
         (void) enc_err;
         (void) allow_surr;
-        return str_len;
+
+        if (str_len < INT16_MAX)
+        {
+            return static_cast<std::int16_t>(str_len);
+        }
+        return stringify::v0::width_t_max;
     }
 };
 
@@ -121,7 +73,8 @@ class width_as_u32len final: public stringify::v0::width_calculator<CharT>
 {
 public:
 
-    virtual int width_of(CharT ch, stringify::v0::encoding<CharT> enc) const
+    virtual stringify::v0::width_t width_of
+        ( CharT ch, stringify::v0::encoding<CharT> enc ) const override
     {
         (void)ch;
         (void)enc;
@@ -129,21 +82,26 @@ public:
     }
 
 
-    int width( int limit
-             , const CharT* str
-             , std::size_t str_len
-             , stringify::v0::encoding<CharT> enc
-             , stringify::v0::encoding_error enc_err
-             , stringify::v0::surrogate_policy allow_surr ) const override
+    stringify::v0::width_t width
+        ( stringify::v0::width_t limit
+        , const CharT* str
+        , std::size_t str_len
+        , stringify::v0::encoding<CharT> enc
+        , stringify::v0::encoding_error enc_err
+        , stringify::v0::surrogate_policy allow_surr ) const override
     {
         (void) limit;
         (void) str;
         (void) enc;
         (void) enc_err;
         (void) allow_surr;
-        return static_cast<int>(enc.codepoints_count( str
-                                                    , str + str_len
-                                                    , limit ));
+
+        auto count = enc.codepoints_count(str, str + str_len, limit.ceil());
+        if (count < INT16_MAX)
+        {
+            return static_cast<std::int16_t>(count);
+        }
+        return stringify::v0::width_t_max;
     }
 };
 
@@ -162,25 +120,6 @@ struct width_calculator_c
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 
 #endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
-
-// inline stringify::v0::width_calculator width_as_len()
-// {
-//     return stringify::v0::width_calculator
-//         { stringify::v0::width_calculation_type::as_len };
-// }
-
-// inline stringify::v0::width_calculator width_as_u32len()
-// {
-//     return stringify::v0::width_calculator
-//         { stringify::v0::width_calculation_type::as_u32len };
-// }
-
-// inline stringify::v0::width_calculator width_as
-//     (stringify::v0::width_calc_func func)
-// {
-//     return stringify::v0::width_calculator {func};
-// }
-
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

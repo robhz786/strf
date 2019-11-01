@@ -26,172 +26,6 @@ using char_with_format = stringify::v0::value_with_format
 
 namespace detail {
 
-// template <typename CharT>
-// class char32_printer: public printer<CharT>
-// {
-//     using input_type = char32_t;
-
-// public:
-
-//     template <typename FPack>
-//     char32_printer
-//         ( stringify::v0::basic_outbuf<CharT>& out
-//         , const FPack& fp
-//         , const stringify::v0::char_with_format<char32_t>& input
-//         ) noexcept
-//         : char32_printer(out, input, get_width_calculator(fp))
-//     {
-//     }
-
-//     char32_printer
-//         ( stringify::v0::basic_outbuf<CharT>& out
-//         , const stringify::v0::char_with_format<char32_t>& input
-//         , const stringify::v0::width_calculator<CharT>& wcalc
-//         ) noexcept;
-
-//     virtual ~char32_printer();
-
-//     std::size_t necessary_size() const override;
-
-//     void print_to() const override;
-
-//     int width(int) const override;
-
-// private:
-
-//     stringify::v0::basic_outbuf<CharT>& m_out;
-//     stringify::v0::char_with_format<char32_t> m_fmt;
-//     int m_fillcount = 0;
-
-//     template <typename FPack>
-//     static decltype(auto) get_out_encoding(const FPack& fp)
-//     {
-//         using category = stringify::v0::encoding_c<CharT>;
-//         return fp.template get_facet<category, input_type>();
-//     }
-
-//     template <typename FPack>
-//     static decltype(auto) get_width_calculator(const FPack& fp)
-//     {
-//         using category = stringify::v0::width_calculator_c<CharT>;
-//         return fp.template get_facet<category, input_type>();
-//     }
-
-//     std::size_t necessary_size(char32_t ch) const
-//     {
-//         return m_out.necessary_size(ch);
-//     }
-
-//     void determinate_fill_and_width(const stringify::v0::width_calculator<CharT>& wcalc)
-//     {
-//         int content_width = 0;
-//         if(m_fmt.width() < 0)
-//         {
-//             m_fmt.width(0);
-//         }
-//         if (m_fmt.count() > 0)
-//         {
-//             content_width = m_fmt.count() * wcalc.width_of(m_fmt.value().ch);
-//         }
-//         if (content_width >= m_fmt.width())
-//         {
-//             m_fillcount = 0;
-//             m_fmt.width(content_width);
-//         }
-//         else
-//         {
-//             m_fillcount = m_fmt.width() - content_width;
-//         }
-//     }
-// };
-
-
-// template <typename CharT>
-// char32_printer<CharT>::char32_printer
-//     ( stringify::v0::basic_outbuf<CharT>& out
-//     , const stringify::v0::char_with_format<char32_t>& input
-//     , const stringify::v0::width_calculator<CharT>& wcalc
-//     ) noexcept
-//     : m_out(out)
-//     , m_fmt(input)
-// {
-//     determinate_fill_and_width(wcalc);
-// }
-
-
-// template <typename CharT>
-// char32_printer<CharT>::~char32_printer()
-// {
-// }
-
-
-// template <typename CharT>
-// std::size_t char32_printer<CharT>::necessary_size() const
-// {
-//     std::size_t len = 0;
-//     if (m_fmt.count() > 0)
-//     {
-//         len = m_fmt.count() * necessary_size(m_fmt.value().ch);
-//     }
-//     if (m_fillcount > 0)
-//     {
-//         len += m_fillcount * necessary_size(m_fmt.fill());
-//     }
-//     return len;
-// }
-
-
-// template <typename CharT>
-// void char32_printer<CharT>::print_to() const
-// {
-//     if (m_fillcount == 0)
-//     {
-//         m_out.put32(m_fmt.count(), m_fmt.value().ch);
-//     }
-//     else
-//     {
-//         switch(m_fmt.alignment())
-//         {
-//             case stringify::v0::text_alignment::left:
-//             {
-//                 m_out.put32(m_fmt.count(), m_fmt.value().ch);
-//                 m_out.put32(m_fillcount, m_fmt.fill());
-//                 break;
-//             }
-//             case stringify::v0::text_alignment::center:
-//             {
-//                 auto halfcount = m_fillcount / 2;
-//                 m_out.put32(halfcount, m_fmt.fill());
-//                 m_out.put32(m_fmt.count(), m_fmt.value().ch);
-//                 m_out.put32(m_fillcount - halfcount, m_fmt.fill());
-//                 break;
-//             }
-//             default:
-//             {
-//                 m_out.put32(m_fillcount, m_fmt.fill());
-//                 m_out.put32(m_fmt.count(), m_fmt.value().ch);
-//             }
-//         }
-//     }
-// }
-
-
-// template <typename CharT>
-// int char32_printer<CharT>::width(int) const
-// {
-//     return m_fmt.width();
-// }
-
-// #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
-
-// BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_printer<char>;
-// BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_printer<char16_t>;
-// BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_printer<char32_t>;
-// BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char32_printer<wchar_t>;
-
-// #endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
-
-
 template <typename CharT>
 class char_printer: public printer<CharT>
 {
@@ -210,7 +44,7 @@ public:
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
-    int width(int) const override;
+    stringify::v0::width_t width(stringify::v0::width_t) const override;
 
 private:
 
@@ -239,7 +73,7 @@ std::size_t char_printer<CharT>::necessary_size() const
 }
 
 template <typename CharT>
-int char_printer<CharT>::width(int) const
+stringify::v0::width_t char_printer<CharT>::width(stringify::v0::width_t) const
 {
     return _wcalc == nullptr ? 1 : _wcalc->width_of(_ch, _encoding);
 }
@@ -278,7 +112,7 @@ public:
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
-    int width(int) const override;
+    stringify::v0::width_t width(stringify::v0::width_t) const override;
 
 private:
 
@@ -286,26 +120,23 @@ private:
     const stringify::v0::encoding_error  _enc_err;
     const stringify::v0::char_with_format<CharT> _fmt;
     const stringify::v0::surrogate_policy  _allow_surr;
-    int _content_width = 0;
+    stringify::v0::width_t _content_width = stringify::v0::width_t_max;
 
     template <typename Category, typename FPack>
     static decltype(auto) _get_facet(const FPack& fp)
     {
         return fp.template get_facet<Category, input_type>();
     }
+    void _init();
     void _init(const stringify::v0::width_as_len<CharT>&)
     {
-        _content_width = _fmt.count();
+        _init();
     }
     void _init(const stringify::v0::width_as_u32len<CharT>&)
     {
-        _content_width = _fmt.count();
+        _init();
     }
-    void _init(const stringify::v0::width_calculator<CharT>& wc)
-    {
-        auto char_width = wc.width_of(_fmt.value().ch, _encoding);
-        _content_width = _fmt.count() * char_width;
-    }
+    void _init(const stringify::v0::width_calculator<CharT>& wc);
 
     void _write_body(stringify::v0::basic_outbuf<CharT>& ob) const;
 
@@ -314,15 +145,43 @@ private:
         , unsigned count ) const;
 };
 
+template <typename CharT>
+inline void fmt_char_printer<CharT>::_init()
+{
+    if (_fmt.count() <= INT16_MAX)
+    {
+        _content_width = static_cast<std::int16_t>(_fmt.count());
+    }
+}
+
+template <typename CharT>
+void fmt_char_printer<CharT>::_init(const stringify::v0::width_calculator<CharT>& wc)
+{
+    auto char_width = wc.width_of(_fmt.value().ch, _encoding);
+    _content_width = stringify::v0::checked_mul(char_width, _fmt.count());
+}
+
+template <typename CharT>
+stringify::v0::width_t fmt_char_printer<CharT>::width(stringify::v0::width_t) const
+{
+    if (_content_width.floor() >= _fmt.width())
+    {
+        return _content_width;
+    }
+    return _fmt.width();
+}
 
 template <typename CharT>
 std::size_t fmt_char_printer<CharT>::necessary_size() const
 {
-    if (_fmt.width() > _content_width)
+    auto s = _fmt.count() * _encoding.char_size(_fmt.value().ch, _enc_err);
+    stringify::v0::width_t fmt_width = _fmt.width();
+    auto fillcount = (fmt_width - _content_width).round();
+    if (fillcount > 0)
     {
-        return  _fmt.count() + (_fmt.width() - _content_width);
+        s += fillcount * _encoding.char_size(_fmt.fill(), _enc_err);
     }
-    return _fmt.count();
+    return s;
 }
 
 template <typename CharT>
@@ -335,7 +194,8 @@ void fmt_char_printer<CharT>::print_to
     }
     else
     {
-        auto fillcount = _fmt.width() - _content_width;
+        stringify::v0::width_t fmt_width = _fmt.width();
+        auto fillcount = (fmt_width - _content_width).round();
         switch(_fmt.alignment())
         {
             case stringify::v0::text_alignment::left:
@@ -398,12 +258,6 @@ void fmt_char_printer<CharT>::_write_fill
     , unsigned count ) const
 {
     _encoding.encode_fill(ob, count, _fmt.fill(), _enc_err, _allow_surr);
-}
-
-template <typename CharT>
-int fmt_char_printer<CharT>::width(int) const
-{
-    return std::max(_fmt.width(), _content_width);
 }
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)

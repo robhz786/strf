@@ -19,7 +19,7 @@ class width_accumulator: public strf::basic_outbuf<char32_t>
 {
 public:
 
-    width_accumulator(int limit)
+    width_accumulator(strf::width_t limit)
         : strf::basic_outbuf<char32_t>(_buff, _buff + _buff_size)
         , _limit(limit)
     {
@@ -27,7 +27,7 @@ public:
 
     void recycle() override;
 
-    int get_result()
+    strf::width_t get_result()
     {
         if (_limit > 0)
         {
@@ -39,9 +39,9 @@ public:
 
 private:
 
-    int _wfunc(int limit, const char32_t* it, const char32_t* end )
+    strf::width_t _wfunc(strf::width_t limit, const char32_t* it, const char32_t* end )
     {
-        int w = 0;
+        strf::width_t w = 0;
         for (; w < limit && it != end; ++it)
         {
             auto ch = *it;
@@ -54,8 +54,8 @@ private:
 
     constexpr static std::size_t _buff_size = 16;
     char32_t _buff[_buff_size];
-    const int _limit;
-    int _sum = 0;
+    const strf::width_t _limit;
+    strf::width_t _sum = 0;
 };
 
 void width_accumulator::recycle()
@@ -74,7 +74,7 @@ class custom_wcalc: public strf::width_calculator<CharT>
 {
 public:
 
-    int width_of(CharT ch, strf::encoding<CharT> enc) const override
+    strf::width_t width_of(CharT ch, strf::encoding<CharT> enc) const override
     {
         auto ch32 = enc.decode_single_char(ch);
         return ( ch32 == U'\u2E3A' ? 4
@@ -82,12 +82,12 @@ public:
                : 1 );
     }
 
-    int width( int limit
-             , const CharT* str
-             , std::size_t str_len
-             , strf::encoding<CharT> enc
-             , strf::encoding_error enc_err
-             , strf::surrogate_policy allow_surr ) const override
+    strf::width_t width( strf::width_t limit
+                       , const CharT* str
+                       , std::size_t str_len
+                       , strf::encoding<CharT> enc
+                       , strf::encoding_error enc_err
+                       , strf::surrogate_policy allow_surr ) const override
     {
         width_accumulator acc(limit);
         enc.to_u32().transcode( acc, str, str + str_len

@@ -27,6 +27,7 @@ foreach(
   facets_pack_merge
   facets_pack
   reserve
+  width_t
   width_calculator
   utf_to_utf
   single_byte_encodings

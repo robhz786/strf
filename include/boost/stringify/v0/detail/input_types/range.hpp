@@ -88,7 +88,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    int width(int limit) const override;
+    stringify::v0::width_t width(stringify::v0::width_t limit) const override;
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
@@ -111,9 +111,9 @@ std::size_t range_printer<CharT, FPack, ForwardIt>::necessary_size() const
 }
 
 template <typename CharT, typename FPack, typename ForwardIt>
-int range_printer<CharT, FPack, ForwardIt>::width(int limit) const
+stringify::v0::width_t range_printer<CharT, FPack, ForwardIt>::width(stringify::v0::width_t limit) const
 {
-    int sum = 0;
+    stringify::v0::width_t sum = 0;
     for(auto it = _begin; it != _end && sum < limit; ++it)
     {
         sum += make_printer<CharT, FPack>(_fp, *it).width(limit - sum);
@@ -154,7 +154,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    int width(int limit) const override;
+    stringify::v0::width_t width(stringify::v0::width_t limit) const override;
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
@@ -175,10 +175,11 @@ private:
 };
 
 template <typename CharT, typename FPack, typename ForwardIt>
-int sep_range_printer<CharT, FPack, ForwardIt>::width(int limit) const
+stringify::v0::width_t sep_range_printer<CharT, FPack, ForwardIt>::width
+    ( stringify::v0::width_t limit ) const
 {
-    int count = 0;
-    int sum = 0;
+    std::size_t count = 0;
+    stringify::v0::width_t sum = 0;
     for(auto it = _begin; it != _end && sum < limit; ++it)
     {
         sum += make_printer<CharT, FPack>(_fp, *it).width(limit - sum);
@@ -195,7 +196,15 @@ int sep_range_printer<CharT, FPack, ForwardIt>::width(int limit) const
 
         auto dw = wcalc.width( (limit - sum), _sep_begin, _sep_len
                              , encoding, enc_err, allow_surr );
-        sum += dw * (count - 1);
+        if (dw == 0)
+        {
+            return sum;
+        }
+        if (count > UINT32_MAX)
+        {
+            return stringify::v0::width_t_max;
+        }
+        return checked_add(sum, checked_mul(dw, count - 1));
     }
     return sum;
 }
@@ -264,7 +273,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    int width(int lim) const override;
+    stringify::v0::width_t width(stringify::v0::width_t lim) const override;
 
     void print_to(stringify::v0::basic_outbuf<CharOut>& ob) const override;
 
@@ -297,10 +306,10 @@ template< typename CharOut
         , typename FPack
         , typename ForwardIt
         , typename ... Fmts >
-int fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::width(int lim) const
+stringify::v0::width_t fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::width(stringify::v0::width_t lim) const
 {
     auto r = _fmt.value();
-    int sum = 0;
+    stringify::v0::width_t sum = 0;
     for(auto it = r.begin; it != r.end && sum < lim; ++it)
     {
         sum += make_printer<CharOut, FPack>
@@ -357,7 +366,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    int width(int limit) const override;
+    stringify::v0::width_t width(stringify::v0::width_t limit) const override;
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
@@ -402,12 +411,13 @@ template< typename CharT
         , typename FPack
         , typename ForwardIt
         , typename ... Fmts >
-int fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>::width
-    (int limit) const
+stringify::v0::width_t
+fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>::width
+    (stringify::v0::width_t limit) const
 {
     auto r = _fmt.value();
-    int count = 0;
-    int sum = 0;
+    std::size_t count = 0;
+    stringify::v0::width_t sum = 0;
     for(auto it = r.begin; it != r.end && sum < limit; ++it)
     {
         sum += make_printer<CharT, FPack>
@@ -424,10 +434,18 @@ int fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>::width
         auto enc_err = _get_facet<stringify::v0::encoding_error_c>(_fp);
         auto allow_surr = _get_facet<stringify::v0::surrogate_policy_c>(_fp);
 
-        int dw = wcalc.width( (limit - sum)
-                            , r.sep_begin, r.sep_len
-                            , encoding, enc_err, allow_surr );
-        sum += dw * (count - 1);
+        auto dw = wcalc.width( (limit - sum)
+                             , r.sep_begin, r.sep_len
+                             , encoding, enc_err, allow_surr );
+        if (dw == 0)
+        {
+            return sum;
+        }
+        if (count > UINT32_MAX)
+        {
+            return stringify::v0::width_t_max;
+        }
+        return checked_add(sum, checked_mul(dw, count - 1));
     }
     return sum;
 }

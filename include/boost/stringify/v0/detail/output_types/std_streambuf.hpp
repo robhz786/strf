@@ -24,18 +24,7 @@ public:
 
     basic_streambuf_writer() = delete;
     basic_streambuf_writer(const basic_streambuf_writer&) = delete;
-
-#if defined(BOOST_STRINGIFY_NO_CXX17_COPY_ELISION)
-
-    basic_streambuf_writer(basic_streambuf_writer&& r)
-        : basic_streambuf_writer(r._dest)
-    {}
-
-#else
-
     basic_streambuf_writer(basic_streambuf_writer&&) = delete;
-
-#endif
 
     ~basic_streambuf_writer()
     {

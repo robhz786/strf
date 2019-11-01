@@ -142,7 +142,7 @@ public:
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
-    int width(int limit) const override;
+    stringify::v0::width_t width(stringify::v0::width_t limit) const override;
 
 private:
 
@@ -183,13 +183,13 @@ void string_printer<CharT>::print_to(stringify::v0::basic_outbuf<CharT>& ob) con
 }
 
 template<typename CharT>
-int string_printer<CharT>::width(int limit) const
+stringify::v0::width_t string_printer<CharT>::width(stringify::v0::width_t limit) const
 {
     if (_wcalc == nullptr)
     {
-        if (static_cast<std::ptrdiff_t>(_len) < limit)
+        if (static_cast<std::ptrdiff_t>(_len) <= limit.floor())
         {
-            return static_cast<int>(_len);
+            return static_cast<stringify::v0::width_t>(_len);
         }
         return limit;
     }
@@ -219,16 +219,18 @@ public:
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
-    int width(int limit) const override;
+    stringify::v0::width_t width(stringify::v0::width_t limit) const override;
 
 private:
 
     const stringify::v0::string_with_format<CharT> _fmt;
     const stringify::v0::width_calculator<CharT>* _wcalc;
     const stringify::v0::encoding<CharT> _encoding;
-    unsigned _fillcount = 0;
+    stringify::v0::width_t _str_width;
+    std::int16_t _fillcount = 0;
     const stringify::v0::encoding_error _enc_err;
     const stringify::v0::surrogate_policy _allow_surr;
+    bool _width_from_fmt = false;
 
     template <typename Category, typename FPack>
     static decltype(auto) _get_facet(const FPack& fp)
@@ -255,23 +257,25 @@ inline void fmt_string_printer<CharT>::_init
     ( const stringify::v0::width_as_len<CharT>&)
 {
     auto len = _fmt.value().length();
+    _wcalc = nullptr;
     if (_fmt.width() > static_cast<std::ptrdiff_t>(len))
     {
-        _fillcount = _fmt.width() - static_cast<int>(len);
+        _fillcount = _fmt.width() - static_cast<std::int16_t>(len);
+        _width_from_fmt = true;
     }
-    _wcalc = nullptr;
 }
 
 template<typename CharT>
 inline void fmt_string_printer<CharT>::_init
     ( const stringify::v0::width_as_u32len<CharT>& wc)
 {
-    auto str_width = _encoding.codepoints_count( _fmt.value().begin()
-                                               , _fmt.value().end()
-                                               , _fmt.width() );
-    if (_fmt.width() > static_cast<std::ptrdiff_t>(str_width))
+    auto cp_count = _encoding.codepoints_count( _fmt.value().begin()
+                                              , _fmt.value().end()
+                                              , _fmt.width() );
+    if (_fmt.width() > static_cast<std::ptrdiff_t>(cp_count))
     {
-        _fillcount = _fmt.width() - static_cast<int>(str_width);
+        _fillcount = _fmt.width() - static_cast<std::int16_t>(cp_count);
+        _width_from_fmt = true;
     }
     _wcalc = &wc;
 }
@@ -283,11 +287,34 @@ inline void fmt_string_printer<CharT>::_init
     auto str_width = wc.width( _fmt.width()
                              , _fmt.value().begin(), _fmt.value().length()
                              , _encoding, _enc_err, _allow_surr );
-    if (_fmt.width() > str_width)
+    stringify::v0::width_t fmt_width{_fmt.width()};
+    if (fmt_width > str_width)
     {
-        _fillcount = _fmt.width() - str_width;
+        auto wdiff = (fmt_width - str_width);
+        _fillcount = wdiff.round();
+        _width_from_fmt = wdiff.is_integral();
     }
     _wcalc = &wc;
+}
+
+template<typename CharT>
+stringify::v0::width_t fmt_string_printer<CharT>::width(stringify::v0::width_t limit) const
+{
+    if (_width_from_fmt)
+    {
+        return _fmt.width();
+    }
+    if (_wcalc == nullptr)
+    {
+        auto len = _fmt.value().length();
+        if (static_cast<std::ptrdiff_t>(len) <= limit.floor())
+        {
+            return static_cast<std::int16_t>(len);
+        }
+        return limit;
+    }
+    return _wcalc->width( limit, _fmt.value().begin(), _fmt.value().length()
+                        , _encoding, _enc_err, _allow_surr );
 }
 
 template<typename CharT>
@@ -299,26 +326,6 @@ std::size_t fmt_string_printer<CharT>::necessary_size() const
             + _fmt.value().length();
     }
     return _fmt.value().length();
-}
-
-template<typename CharT>
-int fmt_string_printer<CharT>::width(int limit) const
-{
-    if (_fillcount > 0 || limit < _fmt.width())
-    {
-        return _fmt.width();
-    }
-    else if(_wcalc == nullptr)
-    {
-        auto len = _fmt.value().length();
-        if (static_cast<std::ptrdiff_t>(len) < limit)
-        {
-            return static_cast<int>(len);
-        }
-        return limit;
-    }
-    return _wcalc->width( limit, _fmt.value().begin(), _fmt.value().length()
-                        , _encoding, _enc_err, _allow_surr );
 }
 
 template<typename CharT>
@@ -337,7 +344,7 @@ void fmt_string_printer<CharT>::print_to
             }
             case stringify::v0::text_alignment::center:
             {
-                auto halfcount = _fillcount / 2;
+                auto halfcount = _fillcount >> 1;
                 _write_fill(ob, halfcount);
                 _write_str(ob);
                 _write_fill(ob, _fillcount - halfcount);

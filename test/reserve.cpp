@@ -30,19 +30,7 @@ public:
     }
 
     reservation_tester(const reservation_tester&) = delete;
-
-#if defined(BOOST_STRINGIFY_NO_CXX17_COPY_ELISION)
-
-    reservation_tester(reservation_tester&& r)
-        : reservation_tester(r._reserved_size)
-    {
-    }
-
-#else
-
     reservation_tester(reservation_tester&&) = delete;
-
-#endif
 
     void recycle() override
     {

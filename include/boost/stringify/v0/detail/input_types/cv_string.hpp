@@ -300,7 +300,7 @@ public:
 
     void print_to(stringify::v0::basic_outbuf<CharOut>& ob) const override;
 
-    int width(int limit) const override;
+    stringify::v0::width_t width(stringify::v0::width_t limit) const override;
 
 private:
 
@@ -379,13 +379,13 @@ void cv_string_printer<CharIn, CharOut>::print_to
 }
 
 template<typename CharIn, typename CharOut>
-int cv_string_printer<CharIn, CharOut>::width(int limit) const
+stringify::v0::width_t cv_string_printer<CharIn, CharOut>::width(stringify::v0::width_t limit) const
 {
     if (_wcalc == nullptr)
     {
-        if (static_cast<std::ptrdiff_t>(_len) < limit)
+        if (static_cast<std::ptrdiff_t>(_len) <= limit.floor())
         {
-            return static_cast<int>(_len);
+            return static_cast<std::int16_t>(_len);
         }
         return limit;
     }
@@ -415,7 +415,7 @@ public:
 
     void print_to(stringify::v0::basic_outbuf<CharOut>& ob) const override;
 
-    int width(int limit) const override;
+    stringify::v0::width_t width(stringify::v0::width_t limit) const override;
 
 private:
 
@@ -426,7 +426,8 @@ private:
     const stringify::v0::width_calculator<CharIn>* _wcalc;
     const stringify::v0::encoding_error _enc_err;
     const stringify::v0::surrogate_policy  _allow_surr;
-    int _fillcount = 0;
+    std::uint16_t _fillcount = 0;
+    bool _width_from_fmt = false;
 
     template <typename Category, typename FPack>
     static decltype(auto) _get_facet(const FPack& fp)
@@ -447,13 +448,14 @@ private:
 };
 
 template<typename CharIn, typename CharOut>
-inline void fmt_cv_string_printer<CharIn, CharOut>::_init
+void fmt_cv_string_printer<CharIn, CharOut>::_init
     ( const stringify::v0::width_as_len<CharIn>&)
 {
     auto len = _fmt.value().length();
     if (_fmt.width() > static_cast<std::ptrdiff_t>(len))
     {
-        _fillcount = _fmt.width() - static_cast<int>(len);
+        _fillcount = _fmt.width() - static_cast<std::int16_t>(len);
+        _width_from_fmt = true;
     }
     _wcalc = nullptr;
     _transcoder_eng =
@@ -461,7 +463,7 @@ inline void fmt_cv_string_printer<CharIn, CharOut>::_init
 }
 
 template<typename CharIn, typename CharOut>
-inline void fmt_cv_string_printer<CharIn, CharOut>::_init
+void fmt_cv_string_printer<CharIn, CharOut>::_init
     ( const stringify::v0::width_as_u32len<CharIn>& wc)
 {
     auto str_width = _src_encoding.codepoints_count( _fmt.value().begin()
@@ -469,7 +471,8 @@ inline void fmt_cv_string_printer<CharIn, CharOut>::_init
                                                    , _fmt.width() );
     if (_fmt.width() > static_cast<std::ptrdiff_t>(str_width))
     {
-        _fillcount = _fmt.width() - static_cast<int>(str_width);
+        _fillcount = _fmt.width() - static_cast<std::int16_t>(str_width);
+        _width_from_fmt = true;
     }
     _wcalc = &wc;
     _transcoder_eng =
@@ -480,16 +483,40 @@ template<typename CharIn, typename CharOut>
 void fmt_cv_string_printer<CharIn, CharOut>::_init
     ( const stringify::v0::width_calculator<CharIn>& wc)
 {
-    if (_fmt.width() > 0)
+    auto str_width = wc.width( _fmt.width()
+                             , _fmt.value().begin(), _fmt.value().length()
+                             , _src_encoding, _enc_err, _allow_surr );
+    stringify::v0::width_t fmt_width{_fmt.width()};
+    if (fmt_width > str_width)
     {
-        auto wstr = wc.width( _fmt.width()
-                            , _fmt.value().begin(), _fmt.value().length()
-                            , _src_encoding, _enc_err, _allow_surr );
-        _fillcount = _fmt.width() > wstr ? _fmt.width() - wstr : 0;
+        auto wdiff = (fmt_width - str_width);
+        _fillcount = wdiff.round();
+        _width_from_fmt = wdiff.is_integral();
     }
     _wcalc = &wc;
     _transcoder_eng =
         stringify::v0::get_transcoder(_src_encoding, _dest_encoding);
+}
+
+template<typename CharIn, typename CharOut>
+stringify::v0::width_t fmt_cv_string_printer<CharIn, CharOut>::width
+    ( stringify::v0::width_t limit ) const
+{
+    if (_width_from_fmt)
+    {
+        return _fmt.width();
+    }
+    if (_wcalc == nullptr)
+    {
+        auto len = _fmt.value().length();
+        if (static_cast<std::ptrdiff_t>(len) <= limit.floor())
+        {
+            return static_cast<std::int16_t>(len);
+        }
+        return limit;
+    }
+    return _wcalc->width( limit, _fmt.value().begin(), _fmt.value().length()
+                        , _src_encoding, _enc_err, _allow_surr );
 }
 
 template<typename CharIn, typename CharOut>
@@ -534,7 +561,7 @@ void fmt_cv_string_printer<CharIn, CharOut>::print_to
             }
             case stringify::v0::text_alignment::center:
             {
-                int halfcount = _fillcount / 2;
+                auto halfcount = _fillcount >> 1;
                 _write_fill(ob, halfcount);
                 _write_str(ob);
                 _write_fill(ob, _fillcount - halfcount);;
@@ -580,27 +607,6 @@ void fmt_cv_string_printer<CharIn, CharOut>::_write_fill
 {
     _dest_encoding.encode_fill(ob, count, _fmt.fill(), _enc_err, _allow_surr);
 }
-
-template<typename CharIn, typename CharOut>
-int fmt_cv_string_printer<CharIn, CharOut>::width(int limit) const
-{
-    if (_fillcount > 0 || limit < _fmt.width())
-    {
-        return _fmt.width();
-    }
-    else if(_wcalc == nullptr)
-    {
-        auto len = _fmt.value().length();
-        if (static_cast<std::ptrdiff_t>(len) < limit)
-        {
-            return static_cast<int>(len);
-        }
-        return limit;
-    }
-    return _wcalc->width( limit, _fmt.value().begin(), _fmt.value().length()
-                        , _src_encoding, _enc_err, _allow_surr );
-}
-
 
 #if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
 

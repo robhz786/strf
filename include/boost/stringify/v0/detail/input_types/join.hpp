@@ -28,7 +28,7 @@ struct aligned_joined_args
 
 struct aligned_join_t
 {
-    int width = 0;
+    std::int16_t width = 0;
     stringify::v0::text_alignment align = stringify::v0::text_alignment::right;
     char32_t fillchar = U' ';
     int num_leading_args = 1;
@@ -48,7 +48,7 @@ template <typename CharT>
 void print_split
     ( stringify::v0::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
-    , int fillcount
+    , unsigned fillcount
     , char32_t fillchar
     , int split_pos
     , stringify::v0::encoding_error enc_err
@@ -62,7 +62,7 @@ template <typename CharT, typename Printer, typename ... Printers>
 void print_split
     ( stringify::v0::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
-    , int fillcount
+    , unsigned fillcount
     , char32_t fillchar
     , int split_pos
     , stringify::v0::encoding_error enc_err
@@ -90,7 +90,7 @@ void print_split
         < CharT, std::index_sequence<I...>, Printers... >& printers
     , stringify::v0::basic_outbuf<CharT>& ob
     , stringify::v0::encoding<CharT> enc
-    , int fillcount
+    , unsigned fillcount
     , char32_t fillchar
     , int split_pos
     , stringify::v0::encoding_error enc_err
@@ -118,15 +118,27 @@ public:
         , _allow_surr(_get_facet<stringify::v0::surrogate_policy_c>(fp))
     {
         auto w = stringify::v0::detail::width(_printers, _fmt.width);
-        _fillcount = ( _fmt.width > w
-                     ? _fmt.width - w
-                     : 0 );
+        _width = _fmt.width;
+        if (_width > w)
+        {
+            _fillcount = (_width - w).round();
+            _width = w + _fillcount;
+        }
     }
 
     aligned_join_printer_impl( const aligned_join_printer_impl& cp ) = default;
 
     ~aligned_join_printer_impl()
     {
+    }
+
+    stringify::v0::width_t width(stringify::v0::width_t limit) const override
+    {
+        if (_fillcount > 0)
+        {
+            return _width;
+        }
+        return stringify::v0::detail::width(_printers, limit);;
     }
 
     std::size_t necessary_size() const override
@@ -137,51 +149,35 @@ public:
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override
     {
-        if (_fillcount <= 0)
+        switch(_fmt.align)
         {
-            return stringify::v0::detail::write(ob, _printers);;
-        }
-        else
-        {
-            switch(_fmt.align)
+            case stringify::v0::text_alignment::left:
             {
-                case stringify::v0::text_alignment::left:
-                {
-                    stringify::v0::detail::write(ob, _printers);;
-                    _write_fill(ob, _fillcount);
-                    break;
-                }
-                case stringify::v0::text_alignment::right:
-                {
-                    _write_fill(ob, _fillcount);
-                    stringify::v0::detail::write(ob, _printers);
-                    break;
-                }
-                case stringify::v0::text_alignment::split:
-                {
-                    _print_split(ob);
-                    break;
-                }
-                default:
-                {
-                    BOOST_ASSERT(_fmt.align == stringify::v0::text_alignment::center);
-                    auto half_fillcount = _fillcount / 2;
-                    _write_fill(ob, half_fillcount);
-                    stringify::v0::detail::write(ob, _printers);;
-                    _write_fill(ob, _fillcount - half_fillcount);
-                    break;
-                }
+                stringify::v0::detail::write(ob, _printers);;
+                _write_fill(ob, _fillcount);
+                break;
+            }
+            case stringify::v0::text_alignment::right:
+            {
+                _write_fill(ob, _fillcount);
+                stringify::v0::detail::write(ob, _printers);
+                break;
+            }
+            case stringify::v0::text_alignment::split:
+            {
+                _print_split(ob);
+                break;
+            }
+            default:
+            {
+                BOOST_ASSERT(_fmt.align == stringify::v0::text_alignment::center);
+                auto half_fillcount = _fillcount >> 1;
+                _write_fill(ob, half_fillcount);
+                stringify::v0::detail::write(ob, _printers);;
+                _write_fill(ob, _fillcount - half_fillcount);
+                break;
             }
         }
-    }
-
-    int width(int limit) const override
-    {
-        if (_fillcount > 0)
-        {
-            return _fmt.width;
-        }
-        return stringify::v0::detail::width(_printers, limit);;
     }
 
 private:
@@ -189,7 +185,8 @@ private:
     stringify::v0::detail::printers_tuple<CharT, Printers...> _printers;
     stringify::v0::aligned_join_t _fmt;
     const stringify::v0::encoding<CharT> _encoding;
-    int _fillcount = 0;
+    stringify::v0::width_t _width;
+    std::int16_t _fillcount = 0;
     stringify::v0::encoding_error _enc_err;
     stringify::v0::surrogate_policy _allow_surr;
 
@@ -203,8 +200,7 @@ private:
     {
         if(_fillcount > 0)
         {
-            return _fillcount * _encoding.char_size( _fmt.fillchar
-                                                   , _enc_err);
+            return _fillcount * _encoding.char_size( _fmt.fillchar, _enc_err);
         }
         return 0;
     }
@@ -285,7 +281,7 @@ public:
         stringify::v0::detail::write(ob, _printers);
     }
 
-    int width(int limit) const override
+    stringify::v0::width_t width(stringify::v0::width_t limit) const override
     {
         return stringify::v0::detail::width(_printers, limit);
     }
@@ -347,7 +343,7 @@ make_printer
 }
 
 constexpr stringify::v0::aligned_join_t
-join_align( int width
+join_align( std::int16_t width
           , stringify::v0::text_alignment align
           , char32_t fillchar = U' '
           , int num_leading_args = 1 )
@@ -356,32 +352,32 @@ join_align( int width
 }
 
 constexpr stringify::v0::aligned_join_t
-join_center(int width, char32_t fillchar = U' ') noexcept
+join_center(std::int16_t width, char32_t fillchar = U' ') noexcept
 {
     return {width, stringify::v0::text_alignment::center, fillchar, 0};
 }
 
 constexpr stringify::v0::aligned_join_t
-join_left(int width, char32_t fillchar = U' ') noexcept
+join_left(std::int16_t width, char32_t fillchar = U' ') noexcept
 {
     return {width, stringify::v0::text_alignment::left, fillchar, 0};
 }
 
 
 constexpr stringify::v0::aligned_join_t
-join_right(int width, char32_t fillchar = U' ') noexcept
+join_right(std::int16_t width, char32_t fillchar = U' ') noexcept
 {
     return {width, stringify::v0::text_alignment::right, fillchar, 0};
 }
 
 constexpr stringify::v0::aligned_join_t
-join_split(int width, char32_t fillchar, int num_leading_args) noexcept
+join_split(std::int16_t width, char32_t fillchar, int num_leading_args) noexcept
 {
     return {width, stringify::v0::text_alignment::split, fillchar, num_leading_args};
 }
 
 constexpr stringify::v0::aligned_join_t
-join_split(int width, int num_leading_args) noexcept
+join_split(std::int16_t width, int num_leading_args) noexcept
 {
     return {width, stringify::v0::text_alignment::split, U' ', num_leading_args};
 }

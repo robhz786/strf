@@ -140,7 +140,7 @@ enum class text_alignment {left, right, split, center};
 struct alignment_format_data
 {
     char32_t fill = U' ';
-    int width = 0;
+    std::int16_t width = 0;
     stringify::v0::text_alignment alignment = stringify::v0::text_alignment::right;
 };
 
@@ -184,25 +184,25 @@ public:
     {
     }
 
-    constexpr T&& operator<(int width) && noexcept
+    constexpr T&& operator<(std::int16_t width) && noexcept
     {
         _data.alignment = stringify::v0::text_alignment::left;
         _data.width = width;
         return as_derived_rval_ref();
     }
-    constexpr T&& operator>(int width) && noexcept
+    constexpr T&& operator>(std::int16_t width) && noexcept
     {
         _data.alignment = stringify::v0::text_alignment::right;
         _data.width = width;
         return as_derived_rval_ref();
     }
-    constexpr T&& operator^(int width) && noexcept
+    constexpr T&& operator^(std::int16_t width) && noexcept
     {
         _data.alignment = stringify::v0::text_alignment::center;
         _data.width = width;
         return as_derived_rval_ref();
     }
-    constexpr T&& operator%(int width) && noexcept
+    constexpr T&& operator%(std::int16_t width) && noexcept
     {
         _data.alignment = stringify::v0::text_alignment::split;
         _data.width = width;
@@ -213,7 +213,7 @@ public:
         _data.fill = ch;
         return as_derived_rval_ref();
     }
-    constexpr int width() const noexcept
+    constexpr std::int16_t width() const noexcept
     {
         return _data.width;
     }
@@ -259,19 +259,19 @@ public:
     {
     }
 
-    constexpr adapted_derived_type operator<(int width) const noexcept
+    constexpr adapted_derived_type operator<(std::int16_t width) const noexcept
     {
         return make_adapted() < width;
     }
-    constexpr adapted_derived_type operator>(int width) const noexcept
+    constexpr adapted_derived_type operator>(std::int16_t width) const noexcept
     {
         return make_adapted() > width;
     }
-    constexpr adapted_derived_type operator^(int width) const noexcept
+    constexpr adapted_derived_type operator^(std::int16_t width) const noexcept
     {
         return make_adapted() ^ width;
     }
-    constexpr adapted_derived_type operator%(int width) const noexcept
+    constexpr adapted_derived_type operator%(std::int16_t width) const noexcept
     {
         return make_adapted() % width;
     }
@@ -280,7 +280,7 @@ public:
         return make_adapted().fill(ch);
     }
 
-    constexpr int width() const noexcept
+    constexpr std::int16_t width() const noexcept
     {
         return 0;
     }

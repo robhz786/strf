@@ -8,7 +8,7 @@
 #include <system_error>
 #include <algorithm>
 #include <boost/stringify/v0/outbuf.hpp>
-#include <boost/stringify/v0/config.hpp>
+#include <boost/stringify/v0/width_t.hpp>
 #include <boost/assert.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
@@ -61,7 +61,7 @@ public:
 
     virtual std::size_t necessary_size() const = 0;
 
-    virtual int width(int limit) const = 0;
+    virtual stringify::v0::width_t width(stringify::v0::width_t limit) const = 0;
 };
 
 namespace detail {

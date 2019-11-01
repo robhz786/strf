@@ -67,9 +67,9 @@ public:
         stringify::v0::detail::write(ob, _printers);
     }
 
-    int width(int limit) const override
+    stringify::v0::width_t width(stringify::v0::width_t limit) const override
     {
-        return stringify::v0::detail::width(_printers, limit);;
+        return stringify::v0::detail::width(_printers, limit);
     }
 
     virtual ~facets_pack_printer()

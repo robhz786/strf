@@ -29,22 +29,22 @@ class width_sum: public printers_receiver<CharOut>
 {
 public:
 
-    width_sum(int limit)
+    width_sum(stringify::v0::width_t limit)
         : _limit(limit)
     {
     }
 
     void put(const stringify::v0::printer<CharOut>& p) override;
 
-    int result() const
+    stringify::v0::width_t result() const
     {
         return _sum;
     }
 
 private:
 
-    int _limit;
-    int _sum = 0;
+    stringify::v0::width_t _limit;
+    stringify::v0::width_t _sum = 0;
 };
 
 template <typename CharOut>
@@ -124,7 +124,7 @@ public:
 
     void print_to(stringify::v0::basic_outbuf<CharOut>& ob) const override;
 
-    int width(int limit) const override;
+    stringify::v0::width_t width(stringify::v0::width_t limit) const override;
 
 protected:
 
@@ -167,9 +167,11 @@ std::size_t dynamic_join_printer<CharOut>::necessary_size() const
     {
         stringify::v0::detail::width_sum<CharOut> wsum{fmt.width};
         compose(wsum);
-        auto fillcount = ( fmt.width > wsum.result()
-                         ? fmt.width - wsum.result()
-                         : 0 );
+        unsigned fillcount = 0;
+        if ( fmt.width > wsum.result())
+        {
+            fillcount = (stringify::v0::width_t{fmt.width} - wsum.result()).round();
+        }
         fill_len = _encoding.char_size(fmt.fill, _enc_err) * fillcount;
     }
 
@@ -179,7 +181,7 @@ std::size_t dynamic_join_printer<CharOut>::necessary_size() const
 }
 
 template <typename CharOut>
-int dynamic_join_printer<CharOut>::width(int limit) const
+stringify::v0::width_t dynamic_join_printer<CharOut>::width(stringify::v0::width_t limit) const
 {
     const auto fmt_width = formatting().width;
     if (fmt_width > limit)
@@ -188,7 +190,7 @@ int dynamic_join_printer<CharOut>::width(int limit) const
     }
     stringify::v0::detail::width_sum<CharOut> acc{limit};
     compose(acc);
-    return std::max(acc.result(), fmt_width);
+    return std::max(acc.result(), stringify::v0::width_t{fmt_width});
 }
 
 template <typename CharOut>
@@ -202,7 +204,7 @@ void dynamic_join_printer<CharOut>::print_to
         compose(ws);
         if (fmt_width > ws.result())
         {
-            auto fillcount = fmt_width - ws.result();
+            auto fillcount = (fmt_width - ws.result()).round();
             write_with_fill(fillcount, ob);
             return;
         }

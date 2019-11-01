@@ -129,13 +129,13 @@ inline void write_args
 
 #endif
 
-constexpr int sum_width(int)
+constexpr stringify::v0::width_t sum_width(stringify::v0::width_t)
 {
     return 0;
 }
 
 template <typename CharT, typename ... Printers>
-int sum_width( int limit
+stringify::v0::width_t sum_width( stringify::v0::width_t limit
              , const stringify::v0::printer<CharT>& p
              , const Printers& ... printers )
 {
@@ -200,9 +200,10 @@ std::size_t necessary_size
 }
 
 template< typename CharT, std::size_t ... I, typename ... Printers >
-int width( const stringify::v0::detail::printers_tuple_impl
-             < CharT, std::index_sequence<I...>, Printers... >& printers
-         , int lim )
+stringify::v0::width_t width
+    ( const stringify::v0::detail::printers_tuple_impl
+        < CharT, std::index_sequence<I...>, Printers... >& printers
+    , stringify::v0::width_t lim )
 {
     return stringify::v0::detail::sum_width(lim, printers.template get<I>()...);
 }

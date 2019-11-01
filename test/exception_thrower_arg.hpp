@@ -34,7 +34,7 @@ public:
         throw std::invalid_argument("invalid printer");
     }
 
-    int width(int) const override
+    stringify::v0::width_t width(stringify::v0::width_t) const override
     {
         return 0;
     }

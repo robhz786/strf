@@ -11,6 +11,10 @@
 
 #include "lightweight_test_label.hpp"
 
+#if defined(_WIN32)
+#include <minwindef.h>
+#endif  // defined(_WIN32)
+
 namespace test_utils {
 
 std::string unique_tmp_file_name()
@@ -190,18 +194,7 @@ public:
         , double reserve_factor
         , std::size_t size = 0 );
 
-#if defined(BOOST_STRINGIFY_NO_CXX17_COPY_ELISION)
-
-    input_tester(input_tester&& r)
-        : input_tester( r._expected, r._src_filename, r._src_line
-                       , r._function, r._reserve_factor, r._reserved_size )
-    {}
-
-#else
-
     input_tester(input_tester&& r) = delete;
-
-#endif
 
     input_tester(const input_tester& r) = delete;
 

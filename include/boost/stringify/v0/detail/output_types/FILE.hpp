@@ -25,18 +25,7 @@ public:
 
     narrow_cfile_writer() = delete;
     narrow_cfile_writer(const narrow_cfile_writer&) = delete;
-
-#if defined(BOOST_STRINGIFY_NO_CXX17_COPY_ELISION)
-
-    narrow_cfile_writer(narrow_cfile_writer&& r)
-        : narrow_cfile_writer(r._dest)
-    {}
-
-#else
-
     narrow_cfile_writer(narrow_cfile_writer&&) = delete;
-
-#endif
 
     ~narrow_cfile_writer()
     {
@@ -97,18 +86,7 @@ public:
 
     wide_cfile_writer() = delete;
     wide_cfile_writer(const wide_cfile_writer&) = delete;
-
-#if defined(BOOST_STRINGIFY_NO_CXX17_COPY_ELISION)
-
-    wide_cfile_writer(wide_cfile_writer&& r)
-        : wide_cfile_writer(r._dest)
-    {}
-
-#else
-
     wide_cfile_writer(wide_cfile_writer&&) = delete;
-
-#endif
 
     ~wide_cfile_writer()
     {

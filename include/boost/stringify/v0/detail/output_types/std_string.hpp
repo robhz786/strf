@@ -164,19 +164,7 @@ public:
 
     basic_string_appender_impl() = delete;
     basic_string_appender_impl(const basic_string_appender_impl&) = delete;
-
-#if defined(BOOST_STRINGIFY_NO_CXX17_COPY_ELISION)
-
-    basic_string_appender_impl(basic_string_appender_impl&& r)
-        : basic_string_appender_impl(r._str)
-    {
-    }
-
-#else
-
     basic_string_appender_impl(basic_string_appender_impl&&) = delete;
-
-#endif
 
     ~basic_string_appender_impl() = default;
 
@@ -233,19 +221,7 @@ public:
     }
 
     basic_string_maker_impl(const basic_string_maker_impl&) = delete;
-
-#if defined(BOOST_STRINGIFY_NO_CXX17_COPY_ELISION)
-
-    basic_string_maker_impl(basic_string_maker_impl&& r)
-        : basic_string_maker_impl()
-    {
-    }
-
-#else
-
     basic_string_maker_impl(basic_string_maker_impl&&) = delete;
-
-#endif
 
     ~basic_string_maker_impl() = default;
 
@@ -520,7 +496,7 @@ constexpr stringify::v0::dispatcher_no_reserve
 
 #if defined(__cpp_char8_t)
 
-constexpr stringify::v0::dispatcher
+constexpr stringify::v0::dispatcher_no_reserve
     < stringify::v0::detail::basic_string_maker_creator<char8_t> >
     to_u8string{};
 

@@ -203,7 +203,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    int width(int) const override;
+    stringify::v0::width_t width(stringify::v0::width_t) const override;
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
@@ -221,9 +221,9 @@ std::size_t int_printer<CharT>::necessary_size() const
 }
 
 template <typename CharT>
-int int_printer<CharT>::width(int) const
+stringify::v0::width_t int_printer<CharT>::width(stringify::v0::width_t) const
 {
-    return _digcount + _negative;
+    return static_cast<std::int16_t>(_digcount + _negative);
 }
 
 template <typename CharT>
@@ -264,7 +264,7 @@ public:
 
     std::size_t necessary_size() const override;
 
-    int width(int) const override;
+    stringify::v0::width_t width(stringify::v0::width_t) const override;
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
@@ -294,9 +294,9 @@ std::size_t punct_int_printer<CharT>::necessary_size() const
 }
 
 template <typename CharT>
-int punct_int_printer<CharT>::width(int) const
+stringify::v0::width_t punct_int_printer<CharT>::width(stringify::v0::width_t) const
 {
-    return _sepcount + _digcount + _negative;
+    return static_cast<std::int16_t>(_sepcount + _digcount + _negative);
 }
 
 template <typename CharT>
@@ -384,11 +384,11 @@ public:
             ( value.value().value, value.get_int_format_data() );
     }
 
-    int width() const
+    std::int16_t width() const
     {
-        return std::max(_precision, _digcount)
-            + _prefixsize
-            + static_cast<int>(_sepcount);
+        return static_cast<std::int16_t>( std::max(_precision, _digcount)
+                                        + _prefixsize
+                                        + static_cast<int>(_sepcount) );
     }
 
     auto encoding() const
@@ -398,7 +398,7 @@ public:
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
     std::size_t necessary_size() const override;
-    int width(int) const override
+    stringify::v0::width_t width(stringify::v0::width_t) const override
     {
         return width();
     }
@@ -440,7 +440,7 @@ void partial_fmt_int_printer<CharT, Base>::_init
     {
         _uvalue = unsigned_type(value);
         _negative = false;
-        _prefixsize = fmt.showbase << (Base == 16);
+        _prefixsize = (int)fmt.showbase << (Base == 16);
     }
     _digcount = stringify::v0::detail::count_digits<Base>(_uvalue);
     _precision = fmt.precision;
@@ -584,7 +584,7 @@ public:
 
     void print_to( stringify::v0::basic_outbuf<CharT>& ob ) const override;
 
-    int width(int) const override;
+    stringify::v0::width_t width(stringify::v0::width_t) const override;
 
 private:
 
@@ -613,7 +613,7 @@ inline full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
     , _afmt(value.get_alignment_format_data())
     , _allow_surr(get_facet<stringify::v0::surrogate_policy_c, IntT>(fp))
 {
-    int content_width = _ichars.width();
+    auto content_width = _ichars.width();
     if (_afmt.width > content_width)
     {
         _fillcount = _afmt.width - content_width;
@@ -642,7 +642,7 @@ std::size_t full_fmt_int_printer<CharT, Base>::necessary_size() const
 }
 
 template <typename CharT, int Base>
-int full_fmt_int_printer<CharT, Base>::width(int) const
+stringify::v0::width_t full_fmt_int_printer<CharT, Base>::width(stringify::v0::width_t) const
 {
     return _afmt.width;
 }

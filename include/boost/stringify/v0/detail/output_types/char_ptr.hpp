@@ -60,6 +60,7 @@ inline auto write(char8_t* dest, char8_t* end)
 {
     return stringify::v0::dispatcher_no_reserve
         < stringify::v0::detail::basic_cstr_writer_creator<char8_t> >
+        (dest, end);
 }
 
 inline auto write(char8_t* dest, std::size_t count)

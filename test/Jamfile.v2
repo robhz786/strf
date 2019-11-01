@@ -17,7 +17,7 @@ test-suite stringify :
    # as header-only library:
 
    [ run tr_string.cpp         : : : : test-tr_string-ho ]
-   [ run dispatcher_with_move_only_arg.cpp : : : : test-dispatcher_with_move_only_arg-ho ]
+#   [ run dispatcher_with_move_only_arg.cpp : : : : test-dispatcher_with_move_only_arg-ho ]
    [ run encode_char.cpp       : : : : test-encode_char-ho ]
    [ run encode_fill.cpp       : : : : test-encode_fill-ho ]
    [ run input_string.cpp      : : : : test-input_string-ho ]
@@ -32,6 +32,7 @@ test-suite stringify :
    [ run facets_pack_merge.cpp : : : : test-facets_pack_merge-ho ]
    [ run facets_pack.cpp       : : : : test-facets_pack-ho ]
    [ run reserve.cpp           : : : : test-reserve-ho ]
+   [ run width_t.cpp           : : : : test-width_t-ho ]  
    [ run width_calculator.cpp  : : : : test-width_calculator-ho ]
    [ run utf_to_utf.cpp  : : : : test-utf_to_utf-ho ]
    [ run single_byte_encodings.cpp  : : : : test-single_byte_encodings-ho ]
@@ -43,8 +44,8 @@ test-suite stringify :
 # as static library:
 
    [ run tr_string.cpp         $(slib) : : : : test-tr_string-nho ]
-   [ run dispatcher_with_move_only_arg.cpp $(slib) : : : :
-                                        test-dispatcher_with_move_only_arg-nho ]
+#   [ run dispatcher_with_move_only_arg.cpp $(slib) : : : :
+#                                        test-dispatcher_with_move_only_arg-nho ]
    [ run encode_char.cpp       $(slib) : : : : test-encode_char-nho ]
    [ run encode_fill.cpp       $(slib) : : : : test-encode_fill-nho ]
    [ run input_string.cpp      $(slib) : : : : test-input_string-nho ]
@@ -59,6 +60,7 @@ test-suite stringify :
    [ run facets_pack_merge.cpp $(slib) : : : : test-facets_pack_merge-nho ]
    [ run facets_pack.cpp       $(slib) : : : : test-facets_pack-nho ]
    [ run reserve.cpp           $(slib) : : : : test-reserve-nho ]
+   [ run width_t.cpp           $(slib) : : : : test-width_t-nho ]
    [ run width_calculator.cpp  $(slib) : : : : test-width_calculator-nho ]
    [ run utf_to_utf.cpp        $(slib) : : : : test-utf_to_utf-nho ]
    [ run single_byte_encodings.cpp  $(slib) : : : : test-single_byte_encodings-nho ]
