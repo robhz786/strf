@@ -53,7 +53,7 @@ constexpr unsigned max_num_digits =
 template
     < typename IntT
     , typename unsigned_IntT = typename std::make_unsigned<IntT>::type >
-typename std::enable_if<std::is_signed<IntT>::value, unsigned_IntT>::type
+inline typename std::enable_if<std::is_signed<IntT>::value, unsigned_IntT>::type
 unsigned_abs(IntT value)
 {
     return ( value > 0
@@ -62,7 +62,7 @@ unsigned_abs(IntT value)
 }
 
 template<typename IntT>
-typename std::enable_if<std::is_unsigned<IntT>::value, IntT>::type
+inline typename std::enable_if<std::is_unsigned<IntT>::value, IntT>::type
 unsigned_abs(IntT value)
 {
     return value;

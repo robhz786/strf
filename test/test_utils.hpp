@@ -12,7 +12,7 @@
 #include "lightweight_test_label.hpp"
 
 #if defined(_WIN32)
-#include <minwindef.h>
+#include <windows.h>
 #endif  // defined(_WIN32)
 
 namespace test_utils {
@@ -23,7 +23,7 @@ std::string unique_tmp_file_name()
 #if defined(_WIN32)
 
     char dirname[MAX_PATH];
-    auto dirlen = GetTempPathA(MAX_PATH, dirname);
+    GetTempPathA(MAX_PATH, dirname);
     char fullname[MAX_PATH];
     sprintf_s(fullname, MAX_PATH, "%s\\test_boost_outbuf_%x.txt", dirname, std::rand());
     return fullname;
@@ -254,8 +254,11 @@ input_tester<CharOut>::input_tester
     , _src_line(src_line)
     , _reserve_factor(reserve_factor)
 {
-    this->set_pos(&*_result.begin());
-    this->set_end(&*_result.begin() + size);
+    if ( ! _result.empty())
+    {
+        this->set_pos(&*_result.begin());
+        this->set_end(&*_result.begin() + size);
+    }
 }
 
 template <typename CharOut>
@@ -295,8 +298,10 @@ void input_tester<CharOut>::recycle()
 template <typename CharOut>
 void input_tester<CharOut>::finish()
 {
-    _result.resize(this->pos() - &*_result.begin());
-
+    if (!_result.empty())
+    {
+        _result.resize(this->pos() - &*_result.begin());
+    }
     if (_expected != _result)
     {
         namespace strf = boost::stringify::v0;

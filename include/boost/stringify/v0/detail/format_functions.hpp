@@ -345,102 +345,117 @@ struct quantity_format
 
 template <typename T>
 constexpr auto fmt(const T& value)
+-> std::remove_cv_t<std::remove_reference_t<decltype(make_fmt(stringify::v0::tag{}, value))>>
 {
     return make_fmt(stringify::v0::tag{}, value);
 }
 
 template <typename T>
 constexpr auto hex(const T& value)
+-> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).hex())>>
 {
     return fmt(value).hex();
 }
 
 template <typename T>
 constexpr auto dec(const T& value)
+-> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).dec())>>
 {
     return fmt(value).dec();
 }
 
 template <typename T>
 constexpr auto oct(const T& value)
+-> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).oct())>>
 {
     return fmt(value).oct();
 }
 
 template <typename T>
-constexpr auto left(const T& value, int width)
+constexpr auto left(const T& value, std::int16_t width)
+    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value) < width)>>
 {
     return fmt(value) < width;
 }
 
 template <typename T>
-constexpr auto right(const T& value, int width)
+constexpr auto right(const T& value, std::int16_t width)
+    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value) > width)>>
 {
     return fmt(value) > width;
 }
 
 template <typename T>
-constexpr auto split(const T& value, int width)
+constexpr auto split(const T& value, std::int16_t width)
+    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value) % width)>>
 {
     return fmt(value) % width;
 }
 
 template <typename T>
-constexpr auto center(const T& value, int width)
+constexpr auto center(const T& value, std::int16_t width)
+    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value) ^ width)>>
 {
     return fmt(value) ^ width;
 }
 
 template <typename T>
-constexpr auto left(const T& value, int width, char32_t fill)
+constexpr auto left(const T& value, std::int16_t width, char32_t fill)
+    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).fill(fill) < width)>>
 {
     return fmt(value).fill(fill) < width;
 }
 
 template <typename T>
-constexpr auto right(const T& value, int width, char32_t fill)
+constexpr auto right(const T& value, std::int16_t width, char32_t fill)
+    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).fill(fill) > width)>>
 {
     return fmt(value).fill(fill) > width;
 }
 
 template <typename T>
-constexpr auto split(const T& value, int width, char32_t fill)
+constexpr auto split(const T& value, std::int16_t width, char32_t fill)
+    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).fill(fill) % width)>>
 {
     return fmt(value).fill(fill) % width;
 }
 
 template <typename T>
-constexpr auto center(const T& value, int width, char32_t fill)
+constexpr auto center(const T& value, std::int16_t width, char32_t fill)
+    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).fill(fill) ^ width)>>
 {
     return fmt(value).fill(fill) ^ width;
 }
 
 template <typename T, typename I>
 constexpr auto multi(const T& value, I count)
+    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).multi(count))>>
 {
     return fmt(value).multi(count);
 }
 
 template <typename T>
-constexpr auto fixed(const T& value)
+constexpr auto fixed(const T& value) -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).fixed())>>
 {
     return fmt(value).fixed();
 }
 
 template <typename T>
-constexpr auto sci(const T& value)
+constexpr auto sci(const T& value) -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sci())>>
 {
     return fmt(value).sci();
 }
 
 template <typename T, typename P>
 constexpr auto fixed(const T& value, P precision)
+    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).fixed().p(precision))>>
 {
     return fmt(value).fixed().p(precision);
 }
 
 template <typename T, typename P>
 constexpr auto sci(const T& value, P precision)
+    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sci().p(precision))>>
 {
     return fmt(value).sci().p(precision);
 }

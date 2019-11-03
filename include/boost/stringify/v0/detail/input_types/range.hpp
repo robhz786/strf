@@ -204,7 +204,7 @@ stringify::v0::width_t sep_range_printer<CharT, FPack, ForwardIt>::width
         {
             return stringify::v0::width_t_max;
         }
-        return checked_add(sum, checked_mul(dw, count - 1));
+        return checked_add(sum, checked_mul(dw, static_cast<std::uint32_t>(count - 1)));
     }
     return sum;
 }
@@ -445,7 +445,7 @@ fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>::width
         {
             return stringify::v0::width_t_max;
         }
-        return checked_add(sum, checked_mul(dw, count - 1));
+        return checked_add(sum, checked_mul(dw, static_cast<std::uint32_t>(count - 1)));
     }
     return sum;
 }

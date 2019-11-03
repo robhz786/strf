@@ -157,7 +157,7 @@ private:
 
     const CharT* _str;
     const std::size_t _len;
-    const stringify::v0::width_calculator<CharT>* _wcalc;
+    const stringify::v0::width_calculator<CharT>* _wcalc = nullptr;
     const stringify::v0::encoding<CharT> _encoding;
     const stringify::v0::encoding_error  _enc_err;
     const stringify::v0::surrogate_policy  _allow_surr;
@@ -189,7 +189,7 @@ stringify::v0::width_t string_printer<CharT>::width(stringify::v0::width_t limit
     {
         if (static_cast<std::ptrdiff_t>(_len) <= limit.floor())
         {
-            return static_cast<stringify::v0::width_t>(_len);
+            return static_cast<std::int16_t>(_len);
         }
         return limit;
     }

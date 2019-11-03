@@ -96,7 +96,7 @@ void encoding_error_stop()
             .facets(strf::encoding_error::stop)
             (strf::cv("--\x99--"));
     }
-    catch(strf::encoding_failure& x)
+    catch(strf::encoding_failure&)
     {
         transcoding_failed = true;
     }

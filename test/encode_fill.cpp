@@ -40,10 +40,10 @@ void test_fill
                      << std::dec;
 
     {
-        int count = 10;
+        std::int16_t count = 10;
         auto result = strf::to_basic_string<CharT>
             .facets(enc, strf::encoding_error::replace, allow_surr)
-            (strf::right(CharT('x'), count + 1, fill_char));
+            (strf::right(CharT('x'), 11, fill_char));
 
         auto expected = repeat(count, encoded_char);
         expected.push_back(CharT('x'));
@@ -51,7 +51,7 @@ void test_fill
         BOOST_TEST(result == expected);
     }
     {
-        int count = 200;
+        std::int16_t count = 200;
         auto result = strf::to_basic_string<CharT>
             .facets(enc, strf::encoding_error::replace, allow_surr)
             (strf::right(CharT('x'), count + 1, fill_char));
@@ -114,11 +114,10 @@ void test_invalid_fill_ignore
     }
 
     {
-        int count = 10;
         auto result = strf::to_basic_string<CharT>
             .facets(enc, strf::encoding_error::ignore, allow_surr)
             ( strf::multi(CharT('-'), 5)
-            , strf::right(CharT('x'), count + 1, fill_char)
+            , strf::right(CharT('x'), 11, fill_char)
             , strf::multi(CharT('+'), 5) );
         BOOST_TEST(result == expected);
     }

@@ -14,39 +14,40 @@ template <typename FPack>
 void basic_tests(const FPack& fp)
 {
     constexpr auto j = strf::join_right(20, '_');
-    auto quiet_nan = std::numeric_limits<double>::quiet_NaN();
-    auto signaling_nan = std::numeric_limits<double>::signaling_NaN();
+    constexpr auto quiet_nan = std::numeric_limits<double>::quiet_NaN();
+    constexpr auto signaling_nan = std::numeric_limits<double>::signaling_NaN();
+    constexpr auto infinity = std::numeric_limits<double>::infinity();
 
     TEST("_________________nan").facets(fp)  (j(quiet_nan));
     TEST("_________________nan").facets(fp)  (j(signaling_nan));
-    TEST("_________________inf").facets(fp)  (j(1.0/0.0));
-    TEST("________________-inf").facets(fp)  (j(-1.0/0.0));
+    TEST("_________________inf").facets(fp)  (j(infinity));
+    TEST("________________-inf").facets(fp)  (j(-infinity));
 
     TEST("_________________nan").facets(fp)  (j(strf::fmt(quiet_nan)));
     TEST("_________________nan").facets(fp)  (j(strf::fmt(signaling_nan)));
     TEST("________________+nan").facets(fp)  (j(+strf::fmt(signaling_nan)));
-    TEST("________________+inf").facets(fp)  (j(+strf::fmt(1.0/0.0)));
-    TEST("________________+inf").facets(fp) (j(+strf::fmt(1.0/0.0)));
-    TEST("________________-inf").facets(fp)  (j(strf::fmt(-1.0/0.0)));
-    TEST("________________-inf").facets(fp) (j(+strf::fmt(-1.0/0.0)));
+    TEST("________________+inf").facets(fp)  (j(+strf::fmt(infinity)));
+    TEST("________________+inf").facets(fp) (j(+strf::fmt(infinity)));
+    TEST("________________-inf").facets(fp)  (j(strf::fmt(-infinity)));
+    TEST("________________-inf").facets(fp) (j(+strf::fmt(-infinity)));
 
     TEST("_________________nan").facets(fp)  (j(strf::fixed(quiet_nan)));
     TEST("_________________nan").facets(fp)  (j(strf::fixed(signaling_nan)));
     TEST("________________+nan").facets(fp)  (j(+strf::fixed(quiet_nan)));
     TEST("________________+nan").facets(fp)  (j(+strf::fixed(signaling_nan)));
-    TEST("_________________inf").facets(fp)  (j(strf::fixed(1.0/0.0)));
-    TEST("________________+inf").facets(fp) (j(+strf::fixed(1.0/0.0)));
-    TEST("________________-inf").facets(fp)  (j(strf::fixed(-1.0/0.0)));
-    TEST("________________-inf").facets(fp) (j(+strf::fixed(-1.0/0.0)));
+    TEST("_________________inf").facets(fp)  (j(strf::fixed(infinity)));
+    TEST("________________+inf").facets(fp) (j(+strf::fixed(infinity)));
+    TEST("________________-inf").facets(fp)  (j(strf::fixed(-infinity)));
+    TEST("________________-inf").facets(fp) (j(+strf::fixed(-infinity)));
 
     TEST("_________________nan").facets(fp)  (j(strf::sci(quiet_nan)));
     TEST("_________________nan").facets(fp)  (j(strf::sci(signaling_nan)));
     TEST("________________+nan").facets(fp)  (j(+strf::sci(quiet_nan)));
     TEST("________________+nan").facets(fp)  (j(+strf::sci(signaling_nan)));
-    TEST("_________________inf").facets(fp)  (j(strf::sci(1.0/0.0)));
-    TEST("________________+inf").facets(fp) (j(+strf::sci(1.0/0.0)));
-    TEST("________________-inf").facets(fp)  (j(strf::sci(-1.0/0.0)));
-    TEST("________________-inf").facets(fp) (j(+strf::sci(-1.0/0.0)));
+    TEST("_________________inf").facets(fp)  (j(strf::sci(infinity)));
+    TEST("________________+inf").facets(fp) (j(+strf::sci(infinity)));
+    TEST("________________-inf").facets(fp)  (j(strf::sci(-infinity)));
+    TEST("________________-inf").facets(fp) (j(+strf::sci(-infinity)));
 
     TEST("___________________0").facets(fp)  (j(0.0));
     TEST("__________________-0").facets(fp)  (j(-0.0));
@@ -62,10 +63,10 @@ void basic_tests(const FPack& fp)
     TEST("___________~~+nan~~~")(j(+strf::center(quiet_nan, 9, '~')));
     TEST("___________+~~~~~nan")(j(+strf::split (quiet_nan, 9, '~')));
 
-    TEST("___________~~~~~+inf")(j(+strf::right (1.0/0.0, 9, '~')));
-    TEST("___________+inf~~~~~")(j(+strf::left  (1.0/0.0, 9, '~')));
-    TEST("___________~~+inf~~~")(j(+strf::center(1.0/0.0, 9, '~')));
-    TEST("___________+~~~~~inf")(j(+strf::split (1.0/0.0, 9, '~')));
+    TEST("___________~~~~~+inf")(j(+strf::right (infinity, 9, '~')));
+    TEST("___________+inf~~~~~")(j(+strf::left  (infinity, 9, '~')));
+    TEST("___________~~+inf~~~")(j(+strf::center(infinity, 9, '~')));
+    TEST("___________+~~~~~inf")(j(+strf::split (infinity, 9, '~')));
 
     TEST("___________~~~~~+1.5")(j(+strf::right (1.5, 9, '~')));
     TEST("___________+1.5~~~~~")(j(+strf::left  (1.5, 9, '~')));
@@ -228,7 +229,7 @@ double make_double(std::uint64_t ieee_exponent, std::uint64_t ieee_mantissa)
     std::memcpy(&d, &v, 8);
     return d;
 }
-double make_float(std::uint32_t ieee_exponent, std::uint32_t ieee_mantissa)
+float make_float(std::uint32_t ieee_exponent, std::uint32_t ieee_mantissa)
 {
     std::uint32_t v = (ieee_exponent << 23) | (ieee_mantissa & 0x7FFFFF);
     float f;

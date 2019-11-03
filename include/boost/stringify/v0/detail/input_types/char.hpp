@@ -62,7 +62,7 @@ private:
     }
 
     stringify::v0::encoding<CharT> _encoding;
-    const stringify::v0::width_calculator<CharT>* _wcalc;
+    const stringify::v0::width_calculator<CharT>* _wcalc = nullptr;
     CharT _ch;
 };
 

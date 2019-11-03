@@ -155,7 +155,7 @@ void single_byte_encoding<Impl>::sanitize
     (void) allow_surr;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
-    std::uint8_t ch_out;
+    std::uint8_t ch_out = '?';
     for (auto src_it = src; src_it < src_end; ++src_it)
     {
         std::uint8_t ch = *src_it;
@@ -170,7 +170,7 @@ void single_byte_encoding<Impl>::sanitize
                 case stringify::v0::encoding_error::stop:
                     ob.advance_to(dest_it);
                     throw_encoding_failure();
-                    break;
+                    return;
                 case stringify::v0::encoding_error::replace:
                     ch_out = '?';
                     break;
@@ -215,7 +215,7 @@ std::uint8_t* single_byte_encoding<Impl>::encode_char
 {
     auto ch2 = Impl::encode(ch);
     bool valid = (ch2 < 0x100);
-    *dest = valid * ch2 + (!valid) * '?';
+    *dest = static_cast<std::uint8_t>(valid * ch2 + (!valid) * '?');
     return dest + 1;
 }
 

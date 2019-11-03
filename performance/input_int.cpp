@@ -1,9 +1,12 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <boost/stringify.hpp>
 #include "loop_timer.hpp"
 #include "fmt/format.h"
 #include "fmt/compile.h"
 #include <cstdio>
 #include <climits>
+#include <clocale>
 
 #if defined(__has_include)
 #if __has_include(<charconv>)
@@ -14,10 +17,11 @@
 #endif
 #endif
 
+
 int main()
 {
     namespace strf = boost::stringify;
-    char dest[1000000];
+    char dest[1000];
     char* dest_end = dest + sizeof(dest);
     (void) dest_end;
     escape(dest);

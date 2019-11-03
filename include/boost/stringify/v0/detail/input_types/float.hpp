@@ -606,7 +606,7 @@ void print_amplified_integer( stringify::v0::basic_outbuf<CharT>& ob
     char digits_buff[max_digits];
     auto digits = stringify::v0::detail::write_int_txtdigits_backwards<Base>
         (value, digits_buff + max_digits);
-    BOOST_ASSERT(num_digits == ((digits_buff + max_digits) - digits));
+    BOOST_ASSERT(static_cast<int>(num_digits) == ((digits_buff + max_digits) - digits));
 
     std::uint8_t groups[std::numeric_limits<double>::max_exponent10 + 1];
     auto num_groups = punct.groups(num_trailing_zeros + num_digits, groups);
@@ -667,7 +667,7 @@ void print_scientific_notation
     {
         ob.ensure(num_digits + print_point * psize);
         auto it = ob.pos();
-        *it = '0' + digits;
+        *it = static_cast<CharT>('0' + digits);
         if (print_point)
         {
             if (psize == 1)
@@ -846,45 +846,53 @@ stringify::v0::width_t
 punct_double_printer<CharT>::width(stringify::v0::width_t) const
 {
     auto fillcount = _left_fillcount + _split_fillcount + _right_fillcount;
+    int decpoint_width = _data.showpoint;
+    unsigned w = 0;
 
     if (_data.infinity || _data.nan)
     {
-        return 3 + _data.showsign + fillcount;
+        w = 3 + _data.showsign + fillcount;
     }
-    int decpoint_width = _data.showpoint;
-    if (_data.sci_notation)
+    else if (_data.sci_notation)
     {
         unsigned e10u = std::abs(_data.e10 + (int)_data.m10_digcount - 1);
-        return fillcount + _data.m10_digcount + _data.extra_zeros
+        w = fillcount + _data.m10_digcount + _data.extra_zeros
             + _data.showsign
             + (e10u < 10) + 2
             + detail::count_digits<10>(e10u)
             + decpoint_width;
     }
-    if (_data.e10 < 0)
+    else if (_data.e10 < 0)
     {
         if (_data.e10 <= -(int)_data.m10_digcount)
         {
-            return fillcount + _data.showsign + 1 + decpoint_width
+            w = fillcount + _data.showsign + 1 + decpoint_width
                 - _data.e10 + _data.extra_zeros;
         }
         else
         {
             auto idigcount = (int)_data.m10_digcount + _data.e10;
-            return fillcount + _data.showsign
+            w = fillcount + _data.showsign
                 + (int)_data.m10_digcount
                 + _data.extra_zeros
                 + 1 // decpoint_width
                 + _punct.thousands_sep_count(idigcount);
         }
     }
-    auto idigcount = _data.m10_digcount + _data.e10;
-    auto w = fillcount + _data.showsign
-        + idigcount
-        + _data.extra_zeros
-        + _data.showpoint
-        + _punct.thousands_sep_count(idigcount);
-    return static_cast<std::int16_t>(w);
+    else
+    {
+        auto idigcount = _data.m10_digcount + _data.e10;
+        w = fillcount + _data.showsign
+            + idigcount
+            + _data.extra_zeros
+            + _data.showpoint
+            + _punct.thousands_sep_count(idigcount);
+    }
+    if (w <= INT16_MAX)
+    {
+        return static_cast<std::int16_t>(w);
+    }
+    return stringify::v0::width_t_max;
 }
 
 template <typename CharT>
@@ -1100,7 +1108,7 @@ public:
 
 private:
 
-    void init_fill(int w, stringify::v0::text_alignment a);
+    void init_fill(std::int16_t w, stringify::v0::text_alignment a);
 
     stringify::v0::detail::double_printer_data _data;
     stringify::v0::encoding<CharT> _encoding
@@ -1114,7 +1122,7 @@ private:
 };
 
 template <typename CharT>
-void double_printer<CharT>::init_fill(int w, stringify::v0::text_alignment a)
+void double_printer<CharT>::init_fill(std::int16_t w, stringify::v0::text_alignment a)
 {
     auto fillcount = (w - this->width(w)).round();
     if (fillcount > 0)

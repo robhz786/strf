@@ -160,7 +160,7 @@ private:
       and so do the elements of `_hextets`.
  >>*/strf::printer_impl<CharT, strf::facets_pack<>, CharT> _colon;
 
-    using fmt_hextet = decltype(strf::fmt(ipv6address{}.hextets[0]).hex().p(0));
+    using fmt_hextet = decltype(strf::hex(ipv6address{}.hextets[0]).p(0));
 
     strf::printer_impl<CharT, strf::facets_pack<>, fmt_hextet> _hextets[8];
 };

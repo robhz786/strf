@@ -1,9 +1,14 @@
+#define _USE_MATH_DEFINES
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <boost/stringify.hpp>
 #include "loop_timer.hpp"
 #define FMT_USE_GRISU 1
 #include "fmt/compile.h"
 #include "fmt/format.h"
 #include <cstdio>
+#include <cmath>
+#include <clocale>
 
 #if defined(__has_include)
 #if __has_include(<charconv>)

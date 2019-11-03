@@ -49,30 +49,8 @@ class int_format_fn
 private:
 
     template <int OtherBase>
-    using adapted_derived_type
+    using _adapted_derived_type
         = stringify::v0::fmt_replace<T, int_format<Base>, int_format<OtherBase> >;
-
-    template <int OtherBase>
-    T&& to_base(std::true_type /*same_base*/) &&
-    {
-        return static_cast<T&&>(*this);
-    }
-    template <int OtherBase>
-    adapted_derived_type<OtherBase> to_base(std::false_type /*same_base*/) const &
-    {
-        return adapted_derived_type<OtherBase>
-            { static_cast<const T&>(*this) };
-    }
-
-    template <int OtherBase>
-    using base_eq = std::integral_constant<bool, Base == OtherBase>;
-
-    template <int OtherBase>
-    decltype(auto) to_base() &&
-    {
-        return static_cast<int_format_fn&&>(*this)
-            .to_base<OtherBase>(base_eq<OtherBase>{});
-    }
 
 public:
 
@@ -84,18 +62,48 @@ public:
     {
     }
 
-    constexpr decltype(auto) hex() && noexcept
+    template < int B = 16 >
+    constexpr std::enable_if_t<Base == B && B == 16, T&&>
+    hex() &&
     {
-        return static_cast<int_format_fn&&>(*this).to_base<16>();
+        return static_cast<T&&>(*this);
     }
-    constexpr decltype(auto) dec() && noexcept
+
+    template < int B = 16 >
+    constexpr std::enable_if_t<Base != B && B == 16, _adapted_derived_type<B>>
+    hex() &&
     {
-        return static_cast<int_format_fn&&>(*this).to_base<10>();
+        return _adapted_derived_type<B>{ static_cast<const T&>(*this) };
     }
-    constexpr decltype(auto) oct() && noexcept
+
+    template < int B = 10 >
+    constexpr std::enable_if_t<Base == B && B == 10, T&&>
+    dec() &&
     {
-        return static_cast<int_format_fn&&>(*this).to_base<8>();
+        return static_cast<T&&>(*this);
     }
+
+    template < int B = 10 >
+    constexpr std::enable_if_t<Base != B && B == 10, _adapted_derived_type<B>>
+    dec() &&
+    {
+        return _adapted_derived_type<B>{ static_cast<const T&>(*this) };
+    }
+
+    template < int B = 8 >
+    constexpr std::enable_if_t<Base == B && B == 8, T&&>
+    oct() &&
+    {
+        return static_cast<T&&>(*this);
+    }
+
+    template < int B = 8 >
+    constexpr std::enable_if_t<Base != B && B == 8, _adapted_derived_type<B>>
+    oct() &&
+    {
+        return _adapted_derived_type<B>{ static_cast<const T&>(*this) };
+    }
+
     constexpr T&& p(unsigned _) && noexcept
     {
         _data.precision = _;
@@ -189,9 +197,7 @@ public:
     int_printer(IntT value)
     {
         _negative = value < 0;
-        using unsigned_IntT = typename std::make_unsigned<IntT>::type;
-        unsigned_IntT uvalue = 1 + unsigned_IntT(-(value +1));
-        _uvalue = _negative * uvalue + ! _negative * value;
+        _uvalue = stringify::v0::detail::unsigned_abs(value);
         _digcount = stringify::v0::detail::count_digits<10>(_uvalue);
     }
 
@@ -252,10 +258,8 @@ public:
         : _punct(get_facet<stringify::v0::numpunct_c<10>, IntT>(fp))
         , _encoding(get_facet<stringify::v0::encoding_c<CharT>, IntT>(fp))
     {
-        using unsigned_IntT = typename std::make_unsigned<IntT>::type;
-        unsigned_IntT uvalue = 1 + unsigned_IntT(-(value +1));
         _negative = value < 0;
-        _uvalue = _negative * uvalue + ! _negative * value;
+        _uvalue = stringify::v0::detail::unsigned_abs(value);
         _digcount = stringify::v0::detail::count_digits<10>(_uvalue);
         _sepcount = ( _punct.no_group_separation(_digcount)
                     ? 0
@@ -281,7 +285,7 @@ private:
 template <typename CharT>
 std::size_t punct_int_printer<CharT>::necessary_size() const
 {
-    auto size = _digcount + _negative;
+    std::size_t size = _digcount + _negative;
     if (_sepcount != 0)
     {
         auto sepsize = _encoding.validate(_punct.thousands_sep());
@@ -410,12 +414,12 @@ private:
 
     const stringify::v0::numpunct_base& _punct;
     const stringify::v0::encoding<CharT> _encoding;
-    unsigned long long _uvalue;
-    unsigned _digcount;
-    unsigned _sepcount;
-    unsigned _precision;
-    bool _negative;
-    std::uint8_t _prefixsize;
+    unsigned long long _uvalue = 0;
+    unsigned _digcount = 0;
+    unsigned _sepcount = 0;
+    unsigned _precision = 0;
+    bool _negative = false;
+    std::uint8_t _prefixsize = 0;
 
     template <typename IntT, bool HasPunct>
     void _init(IntT value, stringify::v0::int_format_data fmt);
@@ -430,17 +434,15 @@ void partial_fmt_int_printer<CharT, Base>::_init
     using unsigned_type = typename std::make_unsigned<IntT>::type;
     BOOST_STRINGIFY_IF_CONSTEXPR (Base == 10)
     {
-        using unsigned_IntT = typename std::make_unsigned<IntT>::type;
-        unsigned_IntT uvalue = 1 + unsigned_IntT(-(value + 1));
         _negative = value < 0;
         _prefixsize = _negative || fmt.showpos;
-        _uvalue = _negative * uvalue + (!_negative) * value;
+        _uvalue = stringify::v0::detail::unsigned_abs(value);
     }
     else
     {
         _uvalue = unsigned_type(value);
         _negative = false;
-        _prefixsize = (int)fmt.showbase << (Base == 16);
+        _prefixsize = static_cast<unsigned>(fmt.showbase) << static_cast<unsigned>(Base == 16);
     }
     _digcount = stringify::v0::detail::count_digits<Base>(_uvalue);
     _precision = fmt.precision;
