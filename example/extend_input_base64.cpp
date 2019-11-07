@@ -128,17 +128,21 @@ class base64_printer: public strf::printer<CharT>
 {
 public:
 
+    template <bool PreviewSize>
     base64_printer
         ( base64_facet facet
+        , strf::print_preview<PreviewSize, false>& preview
         , const base64_input_with_format& fmt );
-
-    strf::width_t width(strf::width_t) const override;
-
-    std::size_t necessary_size() const override;
 
     void print_to(strf::basic_outbuf<CharT>& ob) const override;
 
 private:
+
+    void _calc_size(strf::size_preview<false>&) const
+    {
+    }
+
+    void _calc_size(strf::size_preview<true>&) const;
 
     void _write_single_line(strf::basic_outbuf<CharT>& ob) const;
 
@@ -162,33 +166,30 @@ private:
 };
 
 template <typename CharT>
+template <bool PreviewSize>
 base64_printer<CharT>::base64_printer
     ( base64_facet facet
+    , strf::print_preview<PreviewSize, false>& preview
     , const base64_input_with_format& fmt )
     : _facet(facet)
     , _fmt(fmt)
 {
+    _calc_size(preview);
 }
 
 template <typename CharT>
-strf::width_t base64_printer<CharT>::width(strf::width_t) const
-{
-    return 0;
-}
-
-template <typename CharT>
-std::size_t base64_printer<CharT>::necessary_size() const
+void base64_printer<CharT>::_calc_size(strf::size_preview<true>& preview) const
 {
     std::size_t num_digits = 4 * (_fmt.value().num_bytes + 2) / 3;
+    preview.add_size(num_digits);
     if (_facet.line_length > 0 && _facet.eol[0] != '\0')
     {
         std::size_t num_lines
             = (num_digits + _facet.line_length - 1)
             / _facet.line_length;
         std::size_t eol_size = 1 + (_facet.eol[1] != '\0');
-        return num_digits + num_lines * (_fmt.indentation() + eol_size);
+        preview.add_size(num_lines * (_fmt.indentation() + eol_size));
     }
-    return num_digits;
 }
 
 //[ base64_printer__write
@@ -341,21 +342,23 @@ void base64_printer<CharT>::_write_end_of_line(strf::basic_outbuf<CharT>& ob) co
 
 namespace xxx {
 
-template <typename CharT, typename FPack>
+template <typename CharT, typename FPack, typename Preview>
 inline base64_printer<CharT> make_printer( const FPack& fp
+                                         , Preview& preview
                                          , const base64_input_with_format& fmt )
 {
   /*<< see [link facets_pack get_facet.]
 >>*/auto facet = strf::get_facet<base64_facet_c, base64_input>(fp);
-    return {facet, fmt};
+    return {facet, preview, fmt};
 }
 
 
-template <typename CharT, typename FPack>
+template <typename CharT, typename FPack, typename Preview>
 inline base64_printer<CharT> make_printer( const FPack& fp
+                                         , Preview& preview
                                          , const base64_input& input )
 {
-    return make_printer(fp, base64_input_with_format{input});
+    return make_printer(fp, preview, base64_input_with_format{input});
 }
 
 } // namespace xxx

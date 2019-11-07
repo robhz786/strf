@@ -44,6 +44,7 @@ namespace detail {
 template < typename CharT
          , typename ParentFPack
          , typename ChildFPack
+         , typename Preview
          , typename ... Args >
 class facets_pack_printer: public stringify::v0::printer<CharT>
 {
@@ -51,25 +52,16 @@ public:
 
     facets_pack_printer
         ( const ParentFPack& parent_fp
+        , Preview& preview
         , const stringify::v0::inner_pack_with_args<ChildFPack, Args...>& args )
         : _fp{parent_fp, args.fp}
-        , _printers{_fp, args.args}
+        , _printers{_fp, preview, args.args}
     {
-    }
-
-    std::size_t necessary_size() const override
-    {
-        return stringify::v0::detail::necessary_size(_printers);
     }
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override
     {
         stringify::v0::detail::write(ob, _printers);
-    }
-
-    stringify::v0::width_t width(stringify::v0::width_t limit) const override
-    {
-        return stringify::v0::detail::width(_printers, limit);
     }
 
     virtual ~facets_pack_printer()
@@ -83,6 +75,7 @@ private:
     stringify::v0::detail::printers_tuple_from_args
         < CharT
         , stringify::v0::facets_pack<ParentFPack, ChildFPack>
+        , Preview
         , Args... >
     _printers;
 };
@@ -132,16 +125,19 @@ auto facets(T&& ... args)
 
 template < typename CharT
          , typename FPack
+         , typename Preview
          , typename InnerFPack
          , typename ... Args >
 inline stringify::v0::detail::facets_pack_printer< CharT
                                                  , FPack
                                                  , InnerFPack
+                                                 , Preview
                                                  , Args... >
 make_printer( const FPack& fp
+            , Preview& preview
             , const stringify::v0::inner_pack_with_args<InnerFPack, Args...>& f )
 {
-    return {fp, f};
+    return {fp, preview, f};
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

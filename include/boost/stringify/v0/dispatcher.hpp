@@ -129,18 +129,13 @@ public:
     decltype(auto) operator()(const Args& ... args) const &
     {
         const auto& self = static_cast<const _dispatcher_type&>(*this);
-
+        typename _dispatcher_type::_preview_type preview;
         return self._write
-            (_as_printer_cref(make_printer<char_type, FPack>(self._fpack, args))...);
+            ( preview
+            , _as_printer_cref(make_printer<char_type, FPack>( self._fpack
+                                                             , preview
+                                                             , args ))... );
     }
-
-    // template <typename ... Args>
-    // decltype(auto) operator()(const Args& ... args) &&
-    // {
-    //     const auto& self = static_cast<const _dispatcher_type&>(*this);
-    //     return std::move(self)._write
-    //         (_as_printer_cref(make_printer<char_type, FPack>(self._fpack, args))...);
-    // }
 
 #if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
 
@@ -198,19 +193,34 @@ private:
                             , const char_type* str_end
                             , const Args& ... args) const &
     {
-        const auto& self = static_cast<const _dispatcher_type&>(*this);
         return _tr_write_2
-            ( str
-            , str_end
-            , { _as_printer_cptr( make_printer<char_type, FPack>
-                                     (self._fpack, args))... } );
+            (str, str_end, std::make_index_sequence<sizeof...(args)>(), args...);
     }
 
-    template < typename ... Args >
-    decltype(auto) _tr_write_2
+    template < std::size_t ... I, typename ... Args >
+    decltype(auto) _tr_write_2( const char_type* str
+                              , const char_type* str_end
+                              , std::index_sequence<I...>
+                              , const Args& ... args) const &
+    {
+        typename _dispatcher_type::_preview_type preview_arr[sizeof...(args)];
+        const auto& self = static_cast<const _dispatcher_type&>(*this);
+        return _tr_write_3
+            ( str
+            , str_end
+            , preview_arr
+            , { _as_printer_cptr( make_printer<char_type, FPack>( self._fpack
+                                                                , preview_arr[I]
+                                                                , args ))... } );
+    }
+
+
+    template < typename Preview, typename ... Args >
+    decltype(auto) _tr_write_3
         ( const char_type* str
         , const char_type* str_end
-        , std::initializer_list<const stringify::v0::printer<char_type>*> p ) const &
+        , Preview* preview_arr
+        , std::initializer_list<const stringify::v0::printer<char_type>*> args ) const &
     {
         const auto& self = static_cast<const _dispatcher_type&>(*this);
 
@@ -219,10 +229,11 @@ private:
         decltype(auto) enc = stringify::v0::get_facet<catenc, void>(self._fpack);
         decltype(auto) arg_err = stringify::v0::get_facet<caterr, void>(self._fpack);
 
+        typename _dispatcher_type::_preview_type preview;
         stringify::v0::detail::tr_string_printer<char_type> tr_printer
-            (p, str, str_end, enc, arg_err);
+            (preview, preview_arr, args, str, str_end, enc, arg_err);
 
-        return self._write(tr_printer);
+        return self._write(preview, tr_printer);
     }
 };
 
@@ -238,6 +249,8 @@ class dispatcher_no_reserve
 
     template < template <typename, typename> class, class, class>
     friend class stringify::v0::detail::dispatcher_common;
+
+    using _preview_type = stringify::v0::print_preview<false, false>;
 
 public:
 
@@ -302,6 +315,12 @@ private:
     template <class, class>
     friend class dispatcher_no_reserve;
 
+    static inline const stringify::v0::printer<char_type>&
+    _as_printer_cref(const stringify::v0::printer<char_type>& p)
+    {
+        return p;
+    }
+
     template < typename OtherFPack
              , typename ... FPE
              , typename = std::enable_if_t
@@ -326,7 +345,9 @@ private:
     }
 
     template <typename ... Printers>
-    decltype(auto) _write(const Printers& ... printers) const
+    decltype(auto) _write
+        ( const stringify::v0::print_preview<false, false>&
+        , const Printers& ... printers) const
     {
         return _outbuf_creator.write(printers...);
     }
@@ -345,6 +366,8 @@ class dispatcher_with_given_size
 
     template < template <typename, typename> class, class, class>
     friend class stringify::v0::detail::dispatcher_common;
+
+    using _preview_type = stringify::v0::print_preview<false, false>;
 
 public:
 
@@ -407,6 +430,12 @@ private:
 
     template <class, class>
     friend class dispatcher_with_given_size;
+    static inline const stringify::v0::printer<char_type>&
+
+    _as_printer_cref(const stringify::v0::printer<char_type>& p)
+    {
+        return p;
+    }
 
     template < typename OtherFPack
              , typename ... FPE
@@ -434,7 +463,9 @@ private:
     }
 
     template <typename ... Printers>
-    decltype(auto) _write(const Printers& ... printers) const
+    decltype(auto) _write
+        ( const stringify::v0::print_preview<false, false>&
+        , const Printers& ... printers) const
     {
         return _outbuf_creator.sized_write(_size, printers...);
     }
@@ -454,6 +485,8 @@ class dispatcher_calc_size
 
     template < template <typename, typename> class, class, class>
     friend class stringify::v0::detail::dispatcher_common;
+
+    using _preview_type = stringify::v0::print_preview<true, false>;
 
 public:
 
@@ -518,6 +551,12 @@ private:
     template <typename, typename>
     friend class dispatcher_calc_size;
 
+    static inline const stringify::v0::printer<char_type>&
+    _as_printer_cref(const stringify::v0::printer<char_type>& p)
+    {
+        return p;
+    }
+
     template < typename OtherFPack
              , typename ... FPE
              , typename = std::enable_if_t
@@ -542,10 +581,11 @@ private:
     }
 
     template <typename ... Printers>
-    decltype(auto) _write(const Printers& ... printers) const
+    decltype(auto) _write
+        ( const stringify::v0::print_preview<true, false>& preview
+        , const Printers& ... printers ) const
     {
-        auto size = stringify::v0::detail::sum_necessary_size(printers...);
-        return _outbuf_creator.sized_write(size, printers...);
+        return _outbuf_creator.sized_write(preview.get_size(), printers...);
     }
 
     OutbufCreator _outbuf_creator;
@@ -553,10 +593,11 @@ private:
 };
 
 
-template <typename CharOut, typename FPack, typename Arg>
+template <typename CharOut, typename FPack, typename Preview, typename Arg>
 using printer_impl
-= decltype(make_printer<CharOut, FPack>( std::declval<FPack>()
-                                       , std::declval<Arg>() ) );
+= decltype(make_printer<CharOut, FPack>( std::declval<const FPack&>()
+                                       , std::declval<Preview&>()
+                                       , std::declval<const Arg&>() ) );
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

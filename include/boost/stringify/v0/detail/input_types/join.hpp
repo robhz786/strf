@@ -16,15 +16,8 @@ struct join_t
     stringify::v0::detail::simple_tuple<Args...> args;
 };
 
-struct aligned_join_t;
-
 template <typename ... Args>
-struct aligned_joined_args
-{
-    const stringify::v0::aligned_join_t& join;
-    stringify::v0::detail::simple_tuple<Args...> args;
-};
-
+struct aligned_joined_args;
 
 struct aligned_join_t
 {
@@ -36,11 +29,25 @@ struct aligned_join_t
     template <typename ... Args>
     constexpr stringify::v0::aligned_joined_args
         < stringify::v0::detail::opt_val_or_cref<Args>... >
-    operator()(const Args& ... args) const
-    {
-        return {*this, stringify::v0::detail::make_simple_tuple(args ...)};
-    }
+    operator()(const Args& ... args) const;
+
 };
+
+template <typename ... Args>
+struct aligned_joined_args
+{
+    stringify::v0::aligned_join_t join;
+    stringify::v0::detail::simple_tuple<Args...> args;
+};
+
+template <typename ... Args>
+constexpr stringify::v0::aligned_joined_args
+    < stringify::v0::detail::opt_val_or_cref<Args>... >
+aligned_join_t::operator()(const Args& ... args) const
+{
+    return {*this, stringify::v0::detail::make_simple_tuple(args ...)};
+}
+
 
 namespace detail {
 
@@ -105,46 +112,81 @@ void print_split
 template <typename CharT, typename ... Printers>
 class aligned_join_printer_impl: public printer<CharT>
 {
+    using _printers_tuple = stringify::v0::detail::printers_tuple<CharT, Printers...>;
+
 public:
 
-    template <typename FPack, typename ... Args>
+    template <typename FPack, bool ReqSize, typename ... Args>
     aligned_join_printer_impl
         ( const FPack& fp
+        , stringify::v0::print_preview<ReqSize, false>& preview
         , const stringify::v0::aligned_joined_args<Args...>& ja )
-        : _printers{fp, ja.args}
-        , _fmt(ja.join)
+        : _fmt(ja.join)
         , _encoding(_get_facet<stringify::v0::encoding_c<CharT>>(fp))
         , _enc_err(_get_facet<stringify::v0::encoding_error_c>(fp))
         , _allow_surr(_get_facet<stringify::v0::surrogate_policy_c>(fp))
     {
-        auto w = stringify::v0::detail::width(_printers, _fmt.width);
-        _width = _fmt.width;
-        if (_width > w)
+        stringify::v0::print_preview<ReqSize, true> p{ja.join.width};
+        new (_printers_ptr()) _printers_tuple{fp, p, ja.args};
+        if (p.remaining_width() > 0)
         {
-            _fillcount = (_width - w).round();
-            _width = w + _fillcount;
+            _fillcount = p.remaining_width().round();
+        }
+        BOOST_STRINGIFY_IF_CONSTEXPR (ReqSize)
+        {
+            preview.add_size(p.get_size());
+            if (_fillcount > 0)
+            {
+                auto fcharsize = _encoding.char_size( _fmt.fillchar, _enc_err);
+                preview.add_size(_fillcount * fcharsize);
+            }
         }
     }
 
-    aligned_join_printer_impl( const aligned_join_printer_impl& cp ) = default;
+    template <typename FPack, bool ReqSize, typename ... Args>
+    aligned_join_printer_impl
+        ( const FPack& fp
+        , stringify::v0::print_preview<ReqSize, true>& preview
+        , const stringify::v0::aligned_joined_args<Args...>& ja )
+        : _fmt(ja.join)
+        , _encoding(_get_facet<stringify::v0::encoding_c<CharT>>(fp))
+        , _enc_err(_get_facet<stringify::v0::encoding_error_c>(fp))
+        , _allow_surr(_get_facet<stringify::v0::surrogate_policy_c>(fp))
+    {
+        if (_fmt.width < 0)
+        {
+            _fmt.width = 0;
+        }
+        stringify::v0::width_t wmax = _fmt.width;
+        stringify::v0::width_t diff = 0;
+        if (preview.remaining_width() > _fmt.width)
+        {
+            wmax = preview.remaining_width();
+            diff = preview.remaining_width() - _fmt.width;
+        }
+        stringify::v0::print_preview<ReqSize, true> p{wmax};
+        new (_printers_ptr()) _printers_tuple{fp, p, ja.args}; // todo: what if this throws ?
+        if (p.remaining_width() > diff)
+        {
+           _fillcount = (p.remaining_width() - diff).round();
+        }
+        width_t width = _fillcount + wmax - p.remaining_width();
+        preview.subtract_width(width);
+        BOOST_STRINGIFY_IF_CONSTEXPR (ReqSize)
+        {
+            preview.add_size(p.get_size());
+            if (_fillcount > 0)
+            {
+                preview.add_size
+                    ( _fillcount
+                    * _encoding.char_size(_fmt.fillchar, _enc_err) );
+            }
+        }
+    }
 
     ~aligned_join_printer_impl()
     {
-    }
-
-    stringify::v0::width_t width(stringify::v0::width_t limit) const override
-    {
-        if (_fillcount > 0)
-        {
-            return _width;
-        }
-        return stringify::v0::detail::width(_printers, limit);;
-    }
-
-    std::size_t necessary_size() const override
-    {
-        return stringify::v0::detail::necessary_size(_printers)
-            + _fill_length();
+        _printers_ptr()->~_printers_tuple();
     }
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override
@@ -153,14 +195,14 @@ public:
         {
             case stringify::v0::text_alignment::left:
             {
-                stringify::v0::detail::write(ob, _printers);;
+                stringify::v0::detail::write(ob, _printers());
                 _write_fill(ob, _fillcount);
                 break;
             }
             case stringify::v0::text_alignment::right:
             {
                 _write_fill(ob, _fillcount);
-                stringify::v0::detail::write(ob, _printers);
+                stringify::v0::detail::write(ob, _printers());
                 break;
             }
             case stringify::v0::text_alignment::split:
@@ -173,7 +215,7 @@ public:
                 BOOST_ASSERT(_fmt.align == stringify::v0::text_alignment::center);
                 auto half_fillcount = _fillcount >> 1;
                 _write_fill(ob, half_fillcount);
-                stringify::v0::detail::write(ob, _printers);;
+                stringify::v0::detail::write(ob, _printers());;
                 _write_fill(ob, _fillcount - half_fillcount);
                 break;
             }
@@ -182,13 +224,25 @@ public:
 
 private:
 
-    stringify::v0::detail::printers_tuple<CharT, Printers...> _printers;
+    using _printers_tuple_storage = typename std::aligned_storage_t
+        <sizeof(_printers_tuple), alignof(_printers_tuple)>;
+
+    _printers_tuple_storage _pool;
     stringify::v0::aligned_join_t _fmt;
     const stringify::v0::encoding<CharT> _encoding;
     stringify::v0::width_t _width;
     std::int16_t _fillcount = 0;
     stringify::v0::encoding_error _enc_err;
     stringify::v0::surrogate_policy _allow_surr;
+
+    _printers_tuple * _printers_ptr()
+    {
+        return reinterpret_cast<_printers_tuple*>(&_pool);
+    }
+    const _printers_tuple& _printers() const
+    {
+        return *reinterpret_cast<const _printers_tuple*>(&_pool);
+    }
 
     template <typename Category, typename FPack>
     static decltype(auto) _get_facet(const FPack& fp)
@@ -219,32 +273,35 @@ void aligned_join_printer_impl<CharT, Printers...>::_print_split
     ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
     stringify::v0::detail::print_split
-        ( _printers, ob, _encoding, _fillcount, _fmt.fillchar
+        ( _printers(), ob, _encoding, _fillcount, _fmt.fillchar
         , _fmt.num_leading_args, _enc_err, _allow_surr );
 }
 
-template <typename CharT, typename FPack, typename ... Args>
+template <typename CharT, typename FPack, typename Preview, typename ... Args>
 using aligned_join_printer_impl_of
 = aligned_join_printer_impl
     < CharT
-    , decltype(make_printer<CharT>( std::declval<const FPack&>()
-                                  , std::declval<const Args&>() )) ... >;
+    , decltype(make_printer<CharT>
+                  ( std::declval<const FPack&>()
+                  , std::declval<stringify::v0::print_preview<Preview::size_required, true>&>()
+                  , std::declval<const Args&>() )) ... >;
 
-template <typename CharT, typename FPack, typename ... Args>
+template <typename CharT, typename FPack, typename Preview, typename ... Args>
 class aligned_join_printer
     : public stringify::v0::detail::aligned_join_printer_impl_of
-        <CharT, FPack, Args...>
+        <CharT, FPack, Preview, Args...>
 {
     using _aligned_join_impl
     = stringify::v0::detail::aligned_join_printer_impl_of
-        <CharT, FPack, Args...>;
+        <CharT, FPack, Preview, Args...>;
 
 public:
 
     aligned_join_printer
         ( const FPack& fp
+        , Preview& preview
         , const stringify::v0::aligned_joined_args<Args...>& ja )
-        : _aligned_join_impl(fp, ja)
+        : _aligned_join_impl(fp, preview, ja)
     {
     }
 
@@ -261,9 +318,11 @@ class join_printer_impl: public printer<CharT>
 {
 public:
 
-    template <typename FPack, typename ... Args>
-    join_printer_impl(const FPack& fp, const stringify::v0::join_t<Args...>& args)
-        : _printers{fp, args.args}
+    template <typename FPack, typename Preview, typename ... Args>
+    join_printer_impl( const FPack& fp
+                     , Preview& preview
+                     , const stringify::v0::join_t<Args...>& args)
+        : _printers{fp, preview, args.args}
     {
     }
 
@@ -271,19 +330,9 @@ public:
     {
     }
 
-    std::size_t necessary_size() const override
-    {
-        return stringify::v0::detail::necessary_size(_printers);
-    }
-
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override
     {
         stringify::v0::detail::write(ob, _printers);
-    }
-
-    stringify::v0::width_t width(stringify::v0::width_t limit) const override
-    {
-        return stringify::v0::detail::width(_printers, limit);
     }
 
 private:
@@ -291,22 +340,24 @@ private:
     stringify::v0::detail::printers_tuple<CharT, Printers...> _printers;
 };
 
-template <typename CharT, typename FPack, typename ... Args>
+template <typename CharT, typename FPack, typename Preview, typename ... Args>
 class join_printer
     : public stringify::v0::detail::join_printer_impl
         < CharT
         , decltype(make_printer<CharT>( std::declval<const FPack&>()
+                                      , std::declval<Preview&>()
                                       , std::declval<const Args&>() )) ... >
 {
     using _join_impl
     = stringify::v0::detail::join_printer_impl
         < CharT
         , decltype(make_printer<CharT>( std::declval<const FPack&>()
+                                      , std::declval<Preview&>()
                                       , std::declval<const Args&>() )) ... >;
 public:
 
-    join_printer(const FPack& fp, const stringify::v0::join_t<Args...>& j)
-        : _join_impl(fp, j)
+    join_printer(const FPack& fp, Preview& preview, const stringify::v0::join_t<Args...>& j)
+        : _join_impl(fp, preview, j)
     {
     }
 
@@ -318,12 +369,13 @@ public:
 
 } // namespace detail
 
-template <typename CharT, typename FPack, typename... Args>
-inline stringify::v0::detail::join_printer<CharT, FPack, Args...>
+template <typename CharT, typename FPack, typename Preview, typename... Args>
+inline stringify::v0::detail::join_printer<CharT, FPack, Preview, Args...>
 make_printer( const FPack& fp
+            , Preview& preview
             , const stringify::v0::join_t<Args...>& args )
 {
-    return {fp, args};
+    return {fp, preview, args};
 }
 
 template <typename ... Args>
@@ -333,13 +385,14 @@ join(const Args& ... args)
     return {stringify::v0::detail::make_simple_tuple(args...)};
 }
 
-template <typename CharT, typename FPack, typename ... Args>
-inline stringify::v0::detail::aligned_join_printer<CharT, FPack, Args...>
+template <typename CharT, typename FPack, typename Preview, typename ... Args>
+inline stringify::v0::detail::aligned_join_printer<CharT, FPack, Preview, Args...>
 make_printer
     ( const FPack& fp
+    , Preview& preview
     , const stringify::v0::aligned_joined_args<Args...>& x )
 {
-    return {fp, x};
+    return {fp, preview, x};
 }
 
 constexpr stringify::v0::aligned_join_t
@@ -362,7 +415,6 @@ join_left(std::int16_t width, char32_t fillchar = U' ') noexcept
 {
     return {width, stringify::v0::text_alignment::left, fillchar, 0};
 }
-
 
 constexpr stringify::v0::aligned_join_t
 join_right(std::int16_t width, char32_t fillchar = U' ') noexcept

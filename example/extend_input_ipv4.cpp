@@ -24,8 +24,8 @@ namespace strf = boost::stringify::v0;
 
 namespace xxx {
 
-template <typename CharT, typename FPack>
-auto make_printer(const FPack& fp, ipv4address addr)
+template <typename CharT, typename FPack, typename Preview>
+auto make_printer(const FPack& fp, Preview& preview, ipv4address addr)
 {
     (void)fp;
     return make_printer<CharT>
@@ -33,10 +33,11 @@ auto make_printer(const FPack& fp, ipv4address addr)
 facets pack. In others cases, however, you may want to propagate some or
 all of the facets.
  >>*/strf::pack()
- , strf::join( addr.bytes[0], CharT{'.'}
-             , addr.bytes[1], CharT{'.'}
-             , addr.bytes[2], CharT{'.'}
-             , addr.bytes[3] ) );
+        , preview
+        , strf::join( addr.bytes[0], CharT{'.'}
+                    , addr.bytes[1], CharT{'.'}
+                    , addr.bytes[2], CharT{'.'}
+                    , addr.bytes[3] ) );
 }
 
 } // namespace xxx
@@ -71,14 +72,16 @@ inline ipv4address_with_format make_fmt( /*<< The `tag` paramenter is not used.
 //[make_printer_fmt_ipv4
 namespace xxx {
 
-template <typename CharT, typename FPack>
+template <typename CharT, typename FPack, typename Preview>
 auto make_printer( const FPack& fp
+                 , Preview& preview
                  , ipv4address_with_format fmt_addr )
 {
     (void)fp;
     xxx::ipv4address addr = fmt_addr.value();
     return strf::make_printer<CharT>
         ( strf::pack()
+        , preview
         , strf::join_align(fmt_addr.width(), fmt_addr.alignment(), fmt_addr.fill())
             ( addr.bytes[0], CharT{'.'}
             , addr.bytes[1], CharT{'.'}

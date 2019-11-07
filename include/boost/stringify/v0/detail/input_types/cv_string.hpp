@@ -269,9 +269,10 @@ class cv_string_printer: public stringify::v0::printer<CharOut>
 {
 public:
 
-    template <typename FPack>
+    template <typename FPack, typename Preview>
     cv_string_printer
         ( const FPack& fp
+        , Preview& preview
         , const CharIn* str
         , std::size_t len
         , stringify::v0::encoding<CharIn> src_enc ) noexcept
@@ -283,7 +284,15 @@ public:
             , _get_facet<stringify::v0::encoding_error_c>(fp)
             , _get_facet<stringify::v0::surrogate_policy_c>(fp) )
     {
-        _init_wcalc(_get_facet<stringify::v0::width_calculator_c<CharIn>>(fp));
+        BOOST_STRINGIFY_IF_CONSTEXPR (Preview::width_required)
+        {
+            const auto& wc = _get_facet<stringify::v0::width_calculator_c<CharIn>>(fp);
+            _calc_width(preview, wc);
+        }
+        BOOST_STRINGIFY_IF_CONSTEXPR (Preview::size_required)
+        {
+            preview.add_size(necessary_size());
+        }
     }
 
     cv_string_printer
@@ -296,26 +305,78 @@ public:
 
     ~cv_string_printer() = default;
 
-    std::size_t necessary_size() const override;
+    std::size_t necessary_size() const;
 
     void print_to(stringify::v0::basic_outbuf<CharOut>& ob) const override;
 
-    stringify::v0::width_t width(stringify::v0::width_t limit) const override;
-
 private:
 
-    void _init_wcalc(const stringify::v0::width_as_len<CharIn>&)
+    constexpr void _calc_width
+        ( stringify::v0::width_preview<false>&
+        , const stringify::v0::width_calculator<CharIn>& ) noexcept
     {
-        _wcalc = nullptr;
     }
-    void _init_wcalc(const stringify::v0::width_calculator<CharIn>& wc)
+
+    constexpr void _calc_width
+        ( stringify::v0::width_preview<true>& wpreview
+        , const stringify::v0::width_as_len<CharIn>& ) noexcept
     {
-        _wcalc = &wc;
+        auto remaining_width = wpreview.remaining_width().floor();
+        if (static_cast<std::ptrdiff_t>(_len) <= remaining_width)
+        {
+            wpreview.subtract_width(static_cast<std::int16_t>(_len));
+        }
+        else
+        {
+            wpreview.clear_remaining_width();
+        }
+    }
+
+    constexpr void _calc_width
+        ( stringify::v0::width_preview<true>& wpreview
+        , const stringify::v0::width_as_u32len<CharIn>& )
+    {
+        auto limit = wpreview.remaining_width();
+        if (limit > 0)
+        {
+            auto count = _src_encoding.codepoints_count
+                ( _str, _str + _len, limit.ceil() );
+
+            if (static_cast<std::ptrdiff_t>(count) < limit.ceil())
+            {
+                wpreview.subtract_width(static_cast<std::int16_t>(count));
+            }
+            else
+            {
+                wpreview.clear_remaining_width();
+            }
+        }
+    }
+
+    constexpr void _calc_width
+        ( stringify::v0::width_preview<true>& wpreview
+        , const stringify::v0::width_calculator<CharIn>& wcalc )
+    {
+        auto limit = wpreview.remaining_width();
+        if (limit > 0)
+        {
+            auto w = wcalc.width( limit, _str, _len, _src_encoding
+                                , _enc_err, _allow_surr );
+            if (w < limit)
+            {
+                wpreview.subtract_width(w);
+            }
+            else
+            {
+                wpreview.clear_remaining_width();
+            }
+            // wcalc.subtract_width( wpreview, _str, _len
+            //                      , encoding, enc_err, allow_surr );
+        }
     }
 
     const CharIn* const _str;
     const std::size_t _len;
-    const stringify::v0::width_calculator<CharIn>* _wcalc;
     const stringify::v0::encoding<CharIn>  _src_encoding;
     const stringify::v0::encoding<CharOut> _dest_encoding;
     const stringify::v0::transcoder_engine<CharIn, CharOut>* _transcoder_eng;
@@ -379,27 +440,14 @@ void cv_string_printer<CharIn, CharOut>::print_to
 }
 
 template<typename CharIn, typename CharOut>
-stringify::v0::width_t cv_string_printer<CharIn, CharOut>::width(stringify::v0::width_t limit) const
-{
-    if (_wcalc == nullptr)
-    {
-        if (static_cast<std::ptrdiff_t>(_len) <= limit.floor())
-        {
-            return static_cast<std::int16_t>(_len);
-        }
-        return limit;
-    }
-    return _wcalc->width(limit, _str, _len, _src_encoding, _enc_err, _allow_surr);
-}
-
-template<typename CharIn, typename CharOut>
 class fmt_cv_string_printer: public printer<CharOut>
 {
 public:
 
-    template <typename FPack>
+    template <typename FPack, typename Preview>
     fmt_cv_string_printer
         ( const FPack& fp
+        , Preview& preview
         , const stringify::v0::cv_string_with_format<CharIn>& input
         , const stringify::v0::encoding<CharIn>& src_enc ) noexcept
         : _fmt(input)
@@ -408,14 +456,15 @@ public:
         , _enc_err(_get_facet<stringify::v0::encoding_error_c>(fp))
         , _allow_surr(_get_facet<stringify::v0::surrogate_policy_c>(fp))
     {
-        _init(_get_facet<stringify::v0::width_calculator_c<CharIn>>(fp));
+        _init(preview, _get_facet<stringify::v0::width_calculator_c<CharIn>>(fp));
+        _calc_size(preview);
     }
 
-    std::size_t necessary_size() const override;
+    std::size_t necessary_size() const;
 
     void print_to(stringify::v0::basic_outbuf<CharOut>& ob) const override;
 
-    stringify::v0::width_t width(stringify::v0::width_t limit) const override;
+    stringify::v0::width_t width(stringify::v0::width_t limit) const;
 
 private:
 
@@ -436,9 +485,23 @@ private:
         return fp.template get_facet<Category, input_tag>();
     }
 
-    void _init(const stringify::v0::width_as_len<CharIn>&);
-    void _init(const stringify::v0::width_as_u32len<CharIn>&);
-    void _init(const stringify::v0::width_calculator<CharIn>&);
+    template <bool RequiringWidth>
+    void _init( stringify::v0::width_preview<RequiringWidth>& preview
+              , const stringify::v0::width_as_len<CharIn>&);
+
+    template <bool RequiringWidth>
+    void _init( stringify::v0::width_preview<RequiringWidth>& preview
+              , const stringify::v0::width_as_u32len<CharIn>&);
+
+    template <bool RequiringWidth>
+    void _init( stringify::v0::width_preview<RequiringWidth>& preview
+              , const stringify::v0::width_calculator<CharIn>&);
+
+    constexpr void _calc_size(stringify::size_preview<false>&) const
+    {
+    }
+
+    void _calc_size(stringify::size_preview<true>& preview) const;
 
     void _write_str(stringify::v0::basic_outbuf<CharOut>& ob) const;
 
@@ -447,53 +510,76 @@ private:
         , unsigned count ) const;
 };
 
-template<typename CharIn, typename CharOut>
+template <typename CharIn, typename CharOut>
+template <bool RequiringWidth>
 void fmt_cv_string_printer<CharIn, CharOut>::_init
-    ( const stringify::v0::width_as_len<CharIn>&)
+    ( stringify::v0::width_preview<RequiringWidth>& preview
+    , const stringify::v0::width_as_len<CharIn>&)
 {
     auto len = _fmt.value().length();
     if (_fmt.width() > static_cast<std::ptrdiff_t>(len))
     {
         _fillcount = _fmt.width() - static_cast<std::int16_t>(len);
-        _width_from_fmt = true;
+        preview.subtract_width(_fmt.width());
     }
-    _wcalc = nullptr;
-    _transcoder_eng =
-        stringify::v0::get_transcoder(_src_encoding, _dest_encoding);
-}
-
-template<typename CharIn, typename CharOut>
-void fmt_cv_string_printer<CharIn, CharOut>::_init
-    ( const stringify::v0::width_as_u32len<CharIn>& wc)
-{
-    auto str_width = _src_encoding.codepoints_count( _fmt.value().begin()
-                                                   , _fmt.value().end()
-                                                   , _fmt.width() );
-    if (_fmt.width() > static_cast<std::ptrdiff_t>(str_width))
+    else
     {
-        _fillcount = _fmt.width() - static_cast<std::int16_t>(str_width);
-        _width_from_fmt = true;
+        preview.checked_subtract_width(len);
     }
-    _wcalc = &wc;
     _transcoder_eng =
         stringify::v0::get_transcoder(_src_encoding, _dest_encoding);
 }
 
-template<typename CharIn, typename CharOut>
+template <typename CharIn, typename CharOut>
+template <bool RequiringWidth>
 void fmt_cv_string_printer<CharIn, CharOut>::_init
-    ( const stringify::v0::width_calculator<CharIn>& wc)
+    ( stringify::v0::width_preview<RequiringWidth>& preview
+    , const stringify::v0::width_as_u32len<CharIn>&)
 {
-    auto str_width = wc.width( _fmt.width()
+    auto cp_count = _src_encoding.codepoints_count( _fmt.value().begin()
+                                                  , _fmt.value().end()
+                                                  , _fmt.width() );
+    if (_fmt.width() > static_cast<std::ptrdiff_t>(cp_count))
+    {
+        _fillcount = _fmt.width() - static_cast<std::int16_t>(cp_count);
+        preview.subtract_width(_fmt.width());
+    }
+    else
+    {
+        preview.checked_subtract_width(cp_count);
+    }
+    _transcoder_eng =
+        stringify::v0::get_transcoder(_src_encoding, _dest_encoding);
+}
+
+template <typename CharIn, typename CharOut>
+template <bool RequiringWidth>
+void fmt_cv_string_printer<CharIn, CharOut>::_init
+    ( stringify::v0::width_preview<RequiringWidth>& preview
+    , const stringify::v0::width_calculator<CharIn>& wc)
+{
+    stringify::v0::width_t wmax = _fmt.width();
+    stringify::v0::width_t wdiff = 0;
+    if (preview.remaining_width() > _fmt.width())
+    {
+        wmax = preview.remaining_width();
+        wdiff = preview.remaining_width() - _fmt.width();
+    }
+    auto str_width = wc.width( wmax
                              , _fmt.value().begin(), _fmt.value().length()
                              , _src_encoding, _enc_err, _allow_surr );
+
     stringify::v0::width_t fmt_width{_fmt.width()};
     if (fmt_width > str_width)
     {
-        auto wdiff = (fmt_width - str_width);
-        _fillcount = wdiff.round();
-        _width_from_fmt = wdiff.is_integral();
+        auto wfill = (fmt_width - str_width);
+        _fillcount = wfill.round();
+        preview.subtract_width(wfill + _fillcount);
     }
-    _wcalc = &wc;
+    else
+    {
+        preview.subtract_width(str_width);
+    }
     _transcoder_eng =
         stringify::v0::get_transcoder(_src_encoding, _dest_encoding);
 }
@@ -520,7 +606,8 @@ stringify::v0::width_t fmt_cv_string_printer<CharIn, CharOut>::width
 }
 
 template<typename CharIn, typename CharOut>
-std::size_t fmt_cv_string_printer<CharIn, CharOut>::necessary_size() const
+void fmt_cv_string_printer<CharIn, CharOut>::_calc_size
+    ( stringify::size_preview<true>& preview ) const
 {
     std::size_t size;
     if(_transcoder_eng)
@@ -541,7 +628,7 @@ std::size_t fmt_cv_string_printer<CharIn, CharOut>::necessary_size() const
     {
         size += _fillcount * _dest_encoding.char_size(_fmt.fill(), _enc_err);
     }
-    return size;
+    preview.add_size(size);
 }
 
 
@@ -674,43 +761,48 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<wchar_t, wchar_t>;
 
 } // namespace detail
 
-template <typename CharOut, typename FPack, typename CharIn>
+template <typename CharOut, typename FPack, typename Preview, typename CharIn>
 inline stringify::v0::detail::cv_string_printer<CharIn, CharOut>
 make_printer( const FPack& fp
+            , Preview& preview
             , stringify::v0::cv_string<CharIn> str )
 {
     using enc_cat = stringify::v0::encoding_c<CharIn>;
     using input_tag = stringify::v0::string_input_tag<CharIn>;
     return { fp
+           , preview
            , str.begin()
            , str.size()
            , stringify::v0::get_facet<enc_cat, input_tag>(fp) };
 }
 
-template <typename CharOut, typename FPack, typename CharIn>
+template <typename CharOut, typename FPack, typename Preview, typename CharIn>
 inline stringify::v0::detail::cv_string_printer<CharIn, CharOut>
 make_printer( const FPack& fp
+            , Preview& preview
             , stringify::v0::cv_string_with_encoding<CharIn> str )
 {
-    return {fp, str.begin(), str.size(), str.get_encoding()};
+    return {fp, preview, str.begin(), str.size(), str.get_encoding()};
 }
 
-template <typename CharOut, typename FPack, typename CharIn>
+template <typename CharOut, typename FPack, typename Preview, typename CharIn>
 inline stringify::v0::detail::fmt_cv_string_printer<CharIn, CharOut>
 make_printer( const FPack& fp
+            , Preview& preview
             , stringify::v0::cv_string_with_format<CharIn> str )
 {
     using enc_cat = stringify::v0::encoding_c<CharIn>;
     using input_tag = stringify::v0::string_input_tag<CharIn>;
-    return {fp, str, stringify::v0::get_facet<enc_cat, input_tag>(fp) };
+    return {fp, preview, str, stringify::v0::get_facet<enc_cat, input_tag>(fp) };
 }
 
-template <typename CharOut, typename FPack, typename CharIn>
+template <typename CharOut, typename FPack, typename Preview, typename CharIn>
 inline stringify::v0::detail::fmt_cv_string_printer<CharIn, CharOut>
 make_printer( const FPack& fp
+            , Preview& preview
             , stringify::v0::cv_string_with_format_and_encoding<CharIn> str )
 {
-    return {fp, str, str.get_encoding()};
+    return {fp, preview, str, str.get_encoding()};
 }
 
 BOOST_STRINGIFY_V0_NAMESPACE_END

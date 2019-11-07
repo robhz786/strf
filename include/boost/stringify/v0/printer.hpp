@@ -58,10 +58,6 @@ public:
     }
 
     virtual void print_to(stringify::v0::basic_outbuf<CharOut>& ob) const = 0;
-
-    virtual std::size_t necessary_size() const = 0;
-
-    virtual stringify::v0::width_t width(stringify::v0::width_t limit) const = 0;
 };
 
 namespace detail {
@@ -178,6 +174,162 @@ struct is_tr_string<stringify::v0::is_tr_string_of<CharIn>> : std::true_type
 {
 };
 
+template <bool Active>
+class width_preview;
+
+template <>
+class width_preview<true>
+{
+public:
+
+    explicit width_preview(stringify::v0::width_t initial_width) noexcept
+        : _width(initial_width)
+    {}
+
+    width_preview(const width_preview&) = delete;
+
+    constexpr void subtract_width(stringify::v0::width_t w)
+    {
+        _width -= w;
+    }
+
+    constexpr void checked_subtract_width(stringify::v0::width_t w)
+    {
+        if (w < _width)
+        {
+            _width -= w;
+        }
+        else
+        {
+            _width = 0;
+        }
+    }
+
+    constexpr void checked_subtract_width(std::ptrdiff_t w)
+    {
+        if (w < _width.ceil())
+        {
+            _width -= static_cast<std::int16_t>(w);
+        }
+        else
+        {
+            _width = 0;
+        }
+    }
+
+    constexpr void clear_remaining_width()
+    {
+        _width = 0;
+    }
+
+    constexpr stringify::v0::width_t remaining_width() const
+    {
+        return _width;
+    }
+
+private:
+
+    stringify::v0::width_t _width;
+};
+
+template <>
+class width_preview<false>
+{
+public:
+
+    width_preview() noexcept = default;;
+    width_preview(const width_preview&) = delete;
+
+    constexpr void subtract_width(stringify::v0::width_t)
+    {
+    }
+
+    constexpr void checked_subtract_width(stringify::v0::width_t)
+    {
+    }
+
+    constexpr void checked_subtract_width(std::ptrdiff_t)
+    {
+    }
+
+    constexpr void clear_remaining_width()
+    {
+    }
+
+    constexpr stringify::v0::width_t remaining_width() const
+    {
+        return 0;
+    }
+};
+
+template <bool Active>
+class size_preview;
+
+template <>
+class size_preview<true>
+{
+public:
+    explicit size_preview(std::size_t initial_size = 0) noexcept
+        : _size(initial_size)
+    {
+    }
+
+    size_preview(const size_preview&) = delete;
+
+    constexpr void add_size(std::size_t s)
+    {
+        _size += s;
+    }
+
+    constexpr std::size_t get_size() const
+    {
+        return _size;
+    }
+
+private:
+
+    std::size_t _size;
+};
+
+template <>
+class size_preview<false>
+{
+public:
+
+    size_preview() noexcept = default;
+    size_preview(const size_preview&) = delete;
+
+    constexpr void add_size(std::size_t)
+    {
+    }
+
+    constexpr std::size_t get_size() const
+    {
+        return 0;
+    }
+};
+
+template <bool SizeRequired, bool WidthRequired>
+class print_preview
+    : public stringify::v0::size_preview<SizeRequired>
+    , public stringify::v0::width_preview<WidthRequired>
+{
+public:
+
+    static constexpr bool size_required = SizeRequired;
+    static constexpr bool width_required = WidthRequired;
+    static constexpr bool nothing_required = ! SizeRequired && ! WidthRequired;
+
+    template <bool W = WidthRequired>
+    constexpr explicit print_preview
+        ( std::enable_if_t<W, stringify::v0::width_t> initial_width ) noexcept
+        : stringify::v0::width_preview<WidthRequired>{initial_width}
+    {
+    }
+
+    constexpr print_preview() noexcept = default;
+    constexpr print_preview(const print_preview&) = delete;
+};
 
 BOOST_STRINGIFY_V0_NAMESPACE_END
 

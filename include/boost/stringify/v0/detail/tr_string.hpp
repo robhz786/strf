@@ -91,11 +91,22 @@ std::size_t invalid_arg_size
 }
 
 template <typename CharT>
+inline std::size_t tr_string_size
+    ( const stringify::v0::print_preview<false, false>*
+    , std::size_t
+    , const CharT*
+    , const CharT*
+    , std::size_t )
+{
+    return 0;
+}
+
+template <typename CharT>
 std::size_t tr_string_size
-    ( const CharT* it
-    , const CharT* end
-    , const stringify::v0::printer<CharT>* const * args
+    ( const stringify::v0::print_preview<true, false>* args_preview
     , std::size_t num_args
+    , const CharT* it
+    , const CharT* end
     , std::size_t inv_arg_size )
 {
     using traits = std::char_traits<CharT>;
@@ -120,7 +131,7 @@ std::size_t tr_string_size
         {
             if (arg_idx < num_args)
             {
-                count += args[arg_idx]->necessary_size();
+                count += args_preview[arg_idx].get_size();
             }
             else if (inv_arg_size != trstr_invalid_arg_size_when_stop)
             {
@@ -134,7 +145,7 @@ std::size_t tr_string_size
         {
             if (arg_idx < num_args)
             {
-                count += args[arg_idx]->necessary_size();
+                count += args_preview[arg_idx].get_size();
                 ++arg_idx;
             }
             else if(inv_arg_size == trstr_invalid_arg_size_when_stop)
@@ -153,7 +164,7 @@ std::size_t tr_string_size
 
             if (result.value < num_args)
             {
-                count += args[result.value]->necessary_size();
+                count += args_preview[result.value].get_size();
             }
             else if(inv_arg_size == trstr_invalid_arg_size_when_stop)
             {
@@ -188,7 +199,7 @@ std::size_t tr_string_size
             {
                 if (arg_idx < num_args)
                 {
-                    count += args[arg_idx]->necessary_size();
+                    count += args_preview[arg_idx].get_size();
                     ++arg_idx;
                 }
                 else if(inv_arg_size == trstr_invalid_arg_size_when_stop)
@@ -339,56 +350,17 @@ void tr_string_write
     }
 }
 
-// template <typename PrintersTuple>
-// class tr_string_printer
-// {
-// public:
-//     using char_type = typename PrintersTuple::char_type;
-
-//     tr_string_printer( const PrintersTuple& pt
-//                      , const char_type* tr_string
-//                      , const char_type* tr_string_end
-//                      , stringify::v0::encoding<char_type> enc
-//                      , stringify::v0::tr_invalid_arg policy )
-//         : _tr_string(tr_string)
-//         , _tr_string_end(tr_string_end)
-//         , _enc(enc)
-//         , _policy(policy)
-//     {
-//         pt.fill_array(_printers_array);
-//     }
-
-//     std::size_t necessary_size() const
-//     {
-//         return stringify::v0::detail::tr_string_size
-//             ( _tr_string, _tr_string_end
-//             , _printers_array, PrintersTuple::size
-//             , stringify::v0::detail::invalid_arg_size(_enc, _policy) );
-//     }
-
-//     void print_to(stringify::v0::basic_outbuf<char_type>& ob) const
-//     {
-//         stringify::v0::detail::tr_string_write
-//             ( _tr_string, _tr_string_end
-//             , _printers_array, PrintersTuple::size
-//             , ob, _enc, _policy );
-//     }
-
-//     const char_type* _tr_string;
-//     const char_type* _tr_string_end;
-//     stringify::v0::encoding<char_type> _enc;
-//     stringify::v0::tr_invalid_arg _policy;
-//     const stringify::v0::printer<char_type>* _printers_array[PrintersTuple::size];
-// };
-
 template <typename CharT>
 class tr_string_printer
 {
 public:
     using char_type = CharT;
 
+    template <bool SizeRequested>
     tr_string_printer
-        ( std::initializer_list<const stringify::v0::printer<CharT>*> printers
+        ( stringify::v0::print_preview<SizeRequested, false>& preview
+        , const stringify::v0::print_preview<SizeRequested, false>* args_preview
+        , std::initializer_list<const stringify::v0::printer<CharT>*> printers
         , const CharT* tr_string
         , const CharT* tr_string_end
         , stringify::v0::encoding<CharT> enc
@@ -400,21 +372,16 @@ public:
         , _printers_array(printers.begin())
         , _num_printers(printers.size())
     {
-    }
-
-    std::size_t necessary_size() const
-    {
-        return stringify::v0::detail::tr_string_size
-            ( _tr_string, _tr_string_end
-            , _printers_array, _num_printers
-            , stringify::v0::detail::invalid_arg_size(_enc, _policy) );
+        preview.add_size
+            ( stringify::v0::detail::tr_string_size
+                ( args_preview, _num_printers, _tr_string, _tr_string_end
+                , stringify::v0::detail::invalid_arg_size(_enc, _policy) ) );
     }
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const
     {
         stringify::v0::detail::tr_string_write
-            ( _tr_string, _tr_string_end
-            , _printers_array, _num_printers
+            ( _tr_string, _tr_string_end, _printers_array, _num_printers
             , ob, _enc, _policy );
     }
 

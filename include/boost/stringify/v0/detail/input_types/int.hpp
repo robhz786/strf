@@ -193,23 +193,22 @@ class int_printer: public printer<CharT>
 {
 public:
 
-    template <typename IntT>
-    int_printer(IntT value)
+    template <typename Preview, typename IntT>
+    int_printer(Preview& preview, IntT value)
     {
         _negative = value < 0;
         _uvalue = stringify::v0::detail::unsigned_abs(value);
         _digcount = stringify::v0::detail::count_digits<10>(_uvalue);
+        auto _size = _digcount + _negative;
+        preview.subtract_width(static_cast<std::int16_t>(_size));
+        preview.add_size(_size);
     }
 
-    template <typename FP, typename IntT>
-    int_printer(const FP&, IntT value)
-        : int_printer(value)
+    template <typename FP, typename Preview, typename IntT>
+    int_printer(const FP&, Preview& preview, IntT value)
+        : int_printer(preview, value)
     {
     }
-
-    std::size_t necessary_size() const override;
-
-    stringify::v0::width_t width(stringify::v0::width_t) const override;
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
@@ -219,18 +218,6 @@ private:
     unsigned _digcount;
     bool _negative;
 };
-
-template <typename CharT>
-std::size_t int_printer<CharT>::necessary_size() const
-{
-    return _digcount + _negative;
-}
-
-template <typename CharT>
-stringify::v0::width_t int_printer<CharT>::width(stringify::v0::width_t) const
-{
-    return static_cast<std::int16_t>(_digcount + _negative);
-}
 
 template <typename CharT>
 void int_printer<CharT>::print_to
@@ -251,9 +238,10 @@ class punct_int_printer: public printer<CharT>
 {
 public:
 
-    template <typename FPack, typename IntT>
+    template <typename FPack, typename Preview, typename IntT>
     punct_int_printer
         ( const FPack& fp
+        , Preview& preview
         , IntT value ) noexcept
         : _punct(get_facet<stringify::v0::numpunct_c<10>, IntT>(fp))
         , _encoding(get_facet<stringify::v0::encoding_c<CharT>, IntT>(fp))
@@ -264,15 +252,24 @@ public:
         _sepcount = ( _punct.no_group_separation(_digcount)
                     ? 0
                     : _punct.thousands_sep_count(_digcount) );
+
+        preview.subtract_width
+            ( static_cast<std::int16_t>(_sepcount + _digcount + _negative) );
+
+        _calc_size(preview);
     }
 
-    std::size_t necessary_size() const override;
-
-    stringify::v0::width_t width(stringify::v0::width_t) const override;
+    std::size_t necessary_size() const;
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
 private:
+
+    void _calc_size(stringify::v0::size_preview<false>&) const
+    {
+    }
+
+    void _calc_size(stringify::v0::size_preview<true>&) const;
 
     const stringify::v0::numpunct_base& _punct;
     stringify::v0::encoding<CharT> _encoding;
@@ -283,7 +280,8 @@ private:
 };
 
 template <typename CharT>
-std::size_t punct_int_printer<CharT>::necessary_size() const
+void punct_int_printer<CharT>::_calc_size
+    ( stringify::v0::size_preview<true>& preview ) const
 {
     std::size_t size = _digcount + _negative;
     if (_sepcount != 0)
@@ -294,13 +292,7 @@ std::size_t punct_int_printer<CharT>::necessary_size() const
             size += sepsize * _sepcount;
         }
     }
-    return size;
-}
-
-template <typename CharT>
-stringify::v0::width_t punct_int_printer<CharT>::width(stringify::v0::width_t) const
-{
-    return static_cast<std::int16_t>(_sepcount + _digcount + _negative);
+    preview.add_size(size);
 }
 
 template <typename CharT>
@@ -335,57 +327,32 @@ class partial_fmt_int_printer: public stringify::v0::printer<CharT>
 {
 public:
 
-    template <typename FPack, typename IntT>
-    partial_fmt_int_printer( const FPack& fp, IntT value )
-        : _punct(get_facet<stringify::v0::numpunct_c<Base>, IntT>(fp))
-        , _encoding(get_facet<stringify::v0::encoding_c<CharT>, IntT>(fp))
-        , _precision(0)
-    {
-        using unsigned_type = typename std::make_unsigned<IntT>::type;
-        if (Base == 10 && value < 0)
-        {
-            _uvalue = 1 + unsigned_type(-(value + 1));
-            _negative = true;
-            _prefixsize = 1;
-        }
-        else
-        {
-            _uvalue = unsigned_type(value);
-            _negative = false;
-            _prefixsize = 0;
-        }
-        _digcount = stringify::v0::detail::count_digits<Base>(_uvalue);
-
-        BOOST_STRINGIFY_IF_CONSTEXPR (detail::has_intpunct<CharT, FPack, IntT, Base>)
-        {
-            _sepcount = _punct.thousands_sep_count(_digcount);
-        }
-        else
-        {
-            _sepcount = 0;
-        }
-    }
-
-    template <typename FPack, typename IntT>
+    template <typename FPack, typename Preview, typename IntT>
     partial_fmt_int_printer
         ( const FPack& fp
+        , Preview& preview
         , const stringify::v0::int_with_format<IntT, Base, false>& value )
         : _punct(get_facet<stringify::v0::numpunct_c<Base>, IntT>(fp))
         , _encoding(get_facet<stringify::v0::encoding_c<CharT>, IntT>(fp))
     {
         _init<IntT, detail::has_intpunct<CharT, FPack, IntT, Base>>
             ( value.value().value, value.get_int_format_data() );
+        preview.subtract_width(width());
+        calc_size(preview);
     }
 
-    template <typename FPack, typename IntT>
+    template <typename FPack, typename Preview, typename IntT>
     partial_fmt_int_printer
         ( const FPack& fp
+        , Preview& preview
         , const stringify::v0::int_with_format<IntT, Base, true>& value )
         : _punct(get_facet<stringify::v0::numpunct_c<Base>, IntT>(fp))
         , _encoding(get_facet<stringify::v0::encoding_c<CharT>, IntT>(fp))
     {
         _init<IntT, detail::has_intpunct<CharT, FPack, IntT, Base>>
             ( value.value().value, value.get_int_format_data() );
+        preview.subtract_width(width());
+        calc_size(preview);
     }
 
     std::int16_t width() const
@@ -401,11 +368,10 @@ public:
     }
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
-    std::size_t necessary_size() const override;
-    stringify::v0::width_t width(stringify::v0::width_t) const override
+    void calc_size(stringify::v0::size_preview<false>& ) const
     {
-        return width();
     }
+    void calc_size(stringify::v0::size_preview<true>& ) const;
 
     void write_complement(stringify::v0::basic_outbuf<CharT>& ob) const;
     void write_digits(stringify::v0::basic_outbuf<CharT>& ob) const;
@@ -458,7 +424,8 @@ void partial_fmt_int_printer<CharT, Base>::_init
 }
 
 template <typename CharT, int Base>
-std::size_t partial_fmt_int_printer<CharT, Base>::necessary_size() const
+void partial_fmt_int_printer<CharT, Base>::calc_size
+    ( stringify::v0::size_preview<true>& preview ) const
 {
     std::size_t s = std::max(_precision, _digcount) + _prefixsize;
     if (_sepcount > 0)
@@ -469,7 +436,7 @@ std::size_t partial_fmt_int_printer<CharT, Base>::necessary_size() const
             s += _sepcount * sepsize;
         }
     }
-    return s;
+    preview.add_size(s);
 }
 
 template <typename CharT, int Base>
@@ -575,18 +542,15 @@ class full_fmt_int_printer: public printer<CharT>
 {
 public:
 
-    template <typename FPack, typename IntT>
+    template <typename FPack, typename Preview, typename IntT>
     full_fmt_int_printer
         ( const FPack& fp
+        , Preview& preview
         , stringify::v0::int_with_format<IntT, Base, true> value ) noexcept;
 
     ~full_fmt_int_printer();
 
-    std::size_t necessary_size() const override;
-
     void print_to( stringify::v0::basic_outbuf<CharT>& ob ) const override;
-
-    stringify::v0::width_t width(stringify::v0::width_t) const override;
 
 private:
 
@@ -595,6 +559,19 @@ private:
     stringify::v0::encoding_error _enc_err;
     stringify::v0::alignment_format_data _afmt;
     stringify::v0::surrogate_policy _allow_surr;
+
+    void _calc_fill_size(stringify::v0::size_preview<false>&) const
+    {
+    }
+
+    void _calc_fill_size(stringify::v0::size_preview<true>& preview) const
+    {
+        if (_fillcount > 0)
+        {
+            preview.add_size( _fillcount
+                            * _ichars.encoding().char_size(_afmt.fill, _enc_err) );
+        }
+    }
 
     void _write_fill
         ( stringify::v0::basic_outbuf<CharT>& ob
@@ -606,11 +583,12 @@ private:
 };
 
 template <typename CharT, int Base>
-template <typename FPack, typename IntT>
+template <typename FPack, typename Preview, typename IntT>
 inline full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
     ( const FPack& fp
+    , Preview& preview
     , stringify::v0::int_with_format<IntT, Base, true> value ) noexcept
-    : _ichars(fp, value)
+    : _ichars(fp, preview, value)
     , _enc_err(get_facet<stringify::v0::encoding_error_c, IntT>(fp))
     , _afmt(value.get_alignment_format_data())
     , _allow_surr(get_facet<stringify::v0::surrogate_policy_c, IntT>(fp))
@@ -619,34 +597,14 @@ inline full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
     if (_afmt.width > content_width)
     {
         _fillcount = _afmt.width - content_width;
+        preview.subtract_width(_fillcount);
     }
-    else
-    {
-        _afmt.width = content_width;
-        _fillcount = 0;
-    }
+    _calc_fill_size(preview);
 }
 
 template <typename CharT, int Base>
 full_fmt_int_printer<CharT, Base>::~full_fmt_int_printer()
 {
-}
-
-template <typename CharT, int Base>
-std::size_t full_fmt_int_printer<CharT, Base>::necessary_size() const
-{
-    std::size_t s = _ichars.necessary_size();
-    if (_fillcount > 0)
-    {
-        s += _fillcount * _ichars.encoding().char_size(_afmt.fill, _enc_err);
-    }
-    return s;
-}
-
-template <typename CharT, int Base>
-stringify::v0::width_t full_fmt_int_printer<CharT, Base>::width(stringify::v0::width_t) const
-{
-    return _afmt.width;
 }
 
 template <typename CharT, int Base>
@@ -726,100 +684,102 @@ BOOST_STRINGIFY_EXPLICIT_TEMPLATE class punct_int_printer<wchar_t>;
 
 } // namespace detail
 
-template <typename CharT, typename FPack>
+template <typename CharT, typename FPack, typename Preview>
 inline typename std::conditional
     < stringify::v0::detail::has_intpunct<CharT, FPack, short, 10>
     , stringify::v0::detail::punct_int_printer<CharT>
     , stringify::v0::detail::int_printer<CharT> >::type
-make_printer(const FPack& fp, short x)
+make_printer(const FPack& fp, Preview& preview, short x)
 {
-    return {fp, x};
+    return {fp, preview, x};
 }
 
-template <typename CharT, typename FPack>
+template <typename CharT, typename FPack, typename Preview>
 inline typename std::conditional
     < stringify::v0::detail::has_intpunct<CharT, FPack, int, 10>
     , stringify::v0::detail::punct_int_printer<CharT>
     , stringify::v0::detail::int_printer<CharT> >::type
-make_printer(const FPack& fp, int x)
+make_printer(const FPack& fp, Preview& preview, int x)
 {
-    return {fp, x};
+    return {fp, preview, x};
 }
 
-template <typename CharT, typename FPack>
+template <typename CharT, typename FPack, typename Preview>
 inline typename std::conditional
     < stringify::v0::detail::has_intpunct<CharT, FPack, long, 10>
     , stringify::v0::detail::punct_int_printer<CharT>
     , stringify::v0::detail::int_printer<CharT> >::type
-make_printer(const FPack& fp, long x)
+make_printer(const FPack& fp, Preview& preview, long x)
 {
-    return {fp, x};
+    return {fp, preview, x};
 }
 
-template <typename CharT, typename FPack>
+template <typename CharT, typename FPack, typename Preview>
 inline typename std::conditional
     < stringify::v0::detail::has_intpunct<CharT, FPack, long long, 10>
     , stringify::v0::detail::punct_int_printer<CharT>
     , stringify::v0::detail::int_printer<CharT> >::type
-make_printer(const FPack& fp, long long x)
+make_printer(const FPack& fp, Preview& preview, long long x)
 {
-    return {fp, x};
+    return {fp, preview, x};
 }
 
-template <typename CharT, typename FPack>
+template <typename CharT, typename FPack, typename Preview>
 inline typename std::conditional
     < stringify::v0::detail::has_intpunct<CharT, FPack, unsigned short, 10>
     , stringify::v0::detail::punct_int_printer<CharT>
     , stringify::v0::detail::int_printer<CharT> >::type
-make_printer(const FPack& fp, unsigned short x)
+make_printer(const FPack& fp, Preview& preview, unsigned short x)
 {
-    return {fp, x};
+    return {fp, preview, x};
 }
 
-template <typename CharT, typename FPack>
+template <typename CharT, typename FPack, typename Preview>
 inline typename std::conditional
     < stringify::v0::detail::has_intpunct<CharT, FPack, unsigned int, 10>
     , stringify::v0::detail::punct_int_printer<CharT>
     , stringify::v0::detail::int_printer<CharT> >::type
-make_printer(const FPack& fp, unsigned int x)
+make_printer(const FPack& fp, Preview& preview, unsigned int x)
 {
-    return {fp, x};
+    return {fp, preview, x};
 }
 
-template <typename CharT, typename FPack>
+template <typename CharT, typename FPack, typename Preview>
 inline typename std::conditional
     < stringify::v0::detail::has_intpunct<CharT, FPack, unsigned long, 10>
     , stringify::v0::detail::punct_int_printer<CharT>
     , stringify::v0::detail::int_printer<CharT> >::type
-make_printer(const FPack& fp, unsigned long x)
+make_printer(const FPack& fp, Preview& preview, unsigned long x)
 {
-    return {fp, x};
+    return {fp, preview, x};
 }
 
-template <typename CharT, typename FPack>
+template <typename CharT, typename FPack, typename Preview>
 inline typename std::conditional
     < stringify::v0::detail::has_intpunct<CharT, FPack, unsigned long long, 10>
     , stringify::v0::detail::punct_int_printer<CharT>
     , stringify::v0::detail::int_printer<CharT> >::type
-make_printer(const FPack& fp, unsigned long long x)
+make_printer(const FPack& fp, Preview& preview, unsigned long long x)
 {
-    return {fp, x};
+    return {fp, preview, x};
 }
 
-template <typename CharT, typename FPack, typename IntT, int Base>
+template <typename CharT, typename FPack, typename Preview, typename IntT, int Base>
 inline stringify::v0::detail::full_fmt_int_printer<CharT, Base>
 make_printer( const FPack& fp
+            , Preview& preview
             , const stringify::v0::int_with_format<IntT, Base, true>& x )
 {
-    return {fp, x};
+    return {fp, preview, x};
 }
 
-template <typename CharT, typename FPack, typename IntT, int Base>
+template <typename CharT, typename FPack, typename Preview, typename IntT, int Base>
 inline stringify::v0::detail::partial_fmt_int_printer<CharT, Base>
 make_printer( const FPack& fp
+            , Preview& preview
             , const stringify::v0::int_with_format<IntT, Base, false>& x )
 {
-    return {fp, x};
+    return {fp, preview, x};
 }
 
 inline auto make_fmt(stringify::v0::tag, short x)

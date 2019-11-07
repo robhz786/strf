@@ -200,6 +200,28 @@ constexpr stringify::v0::width_t checked_add( stringify::v0::width_t lhs
     return stringify::v0::width_t_min;
 }
 
+constexpr stringify::v0::width_t checked_subtract( stringify::v0::width_t lhs
+                                                 , std::int64_t rhs )
+{
+    std::int64_t ulhs = lhs.underlying_value();
+    std::int64_t tmp = ulhs - rhs;
+    if (INT32_MIN <= tmp && tmp <= INT32_MAX)
+    {
+        return stringify::v0::width_t::from_underlying(static_cast<std::int32_t>(tmp));
+    }
+    if (tmp < INT32_MIN)
+    {
+        return stringify::v0::width_t_min;
+    }
+    return stringify::v0::width_t_max;
+}
+
+constexpr stringify::v0::width_t checked_subtract( stringify::v0::width_t lhs
+                                                 , stringify::v0::width_t rhs )
+{
+    return checked_subtract(lhs, rhs.underlying_value());
+}
+
 constexpr stringify::v0::width_t checked_mul( stringify::v0::width_t w
                                             , std::uint32_t x )
 {

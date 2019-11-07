@@ -158,7 +158,7 @@ private:
       and the type of `fp` is `const Fpack&`.
       Hence the type of `_colon` derives from `printer<CharT>`,
       and so do the elements of `_hextets`.
- >>*/strf::printer_impl<CharT, strf::facets_pack<>, CharT> _colon;
+      >>*/strf::printer_impl<CharT, strf::facets_pack<>, CharT> _colon;
 
     using fmt_hextet = decltype(strf::hex(ipv6address{}.hextets[0]).p(0));
 

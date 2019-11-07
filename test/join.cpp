@@ -43,8 +43,20 @@ int main()
                                                  , strf::join_center(5)('a', 'b', 'c')
                                                  , "}--" ));
     TEST("      --{abc}--") (strf::join_right(15)( "--{"
+                                                 , strf::join_center(2)('a', 'b', 'c')
+                                                 , "}--" ));
+    TEST("--{abc}--") (strf::join_right(8)( "--{"
+                                          , strf::join_center(2)('a', 'b', 'c')
+                                          , "}--" ));
+    TEST("--{ abc }--") (strf::join_right(10)( "--{"
+                                             , strf::join_center(5)('a', 'b', 'c')
+                                             , "}--" ));
+    TEST("      --{abc}--") (strf::join_right(15)( "--{"
                                                  , strf::join('a', 'b', 'c')
                                                  , "}--" ));
+    TEST("--{abc}--") (strf::join_right(8)( "--{"
+                                          , strf::join('a', 'b', 'c')
+                                          , "}--" ));
 
     return boost::report_errors();
 }

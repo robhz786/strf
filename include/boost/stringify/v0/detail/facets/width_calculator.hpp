@@ -96,12 +96,16 @@ public:
         (void) enc_err;
         (void) allow_surr;
 
-        auto count = enc.codepoints_count(str, str + str_len, limit.ceil());
-        if (count < INT16_MAX)
+        if (limit > 0)
         {
-            return static_cast<std::int16_t>(count);
+            auto count = enc.codepoints_count(str, str + str_len, limit.ceil());
+            if (count < INT16_MAX)
+            {
+                return static_cast<std::int16_t>(count);
+            }
+            return stringify::v0::width_t_max;
         }
-        return stringify::v0::width_t_max;
+        return 0;
     }
 };
 

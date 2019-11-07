@@ -82,11 +82,6 @@ make_simple_tuple(const Args& ... args)
 
 #ifdef __cpp_fold_expressions
 
-template <typename ... Printers>
-inline std::size_t sum_necessary_size(const Printers& ... printers)
-{
-    return (0 + ... + printers.necessary_size());
-}
 
 template <typename CharT, typename ... Printers>
 inline void write_args( stringify::v0::basic_outbuf<CharT>& ob
@@ -96,18 +91,6 @@ inline void write_args( stringify::v0::basic_outbuf<CharT>& ob
 }
 
 #else
-
-inline std::size_t sum_necessary_size()
-{
-    return 0;
-}
-
-template <typename Printer, typename ... Printers>
-inline std::size_t sum_necessary_size(const Printer& printer, const Printers& ... printers)
-{
-    return printer.necessary_size()
-        + stringify::v0::detail::sum_necessary_size(printers...);
-}
 
 
 template <typename CharT>
@@ -129,19 +112,6 @@ inline void write_args
 
 #endif
 
-constexpr stringify::v0::width_t sum_width(stringify::v0::width_t)
-{
-    return 0;
-}
-
-template <typename CharT, typename ... Printers>
-stringify::v0::width_t sum_width( stringify::v0::width_t limit
-             , const stringify::v0::printer<CharT>& p
-             , const Printers& ... printers )
-{
-    auto w = p.width(limit);
-    return w < limit ? (w + sum_width(limit - w, printers...)) : limit;
-}
 
 template <std::size_t J, typename ... T>
 constexpr const auto& get(const simple_tuple<T...>& tp)
@@ -171,12 +141,13 @@ public:
     using char_type = CharT;
     static constexpr std::size_t size = sizeof...(Printers);
 
-    template < typename FPack, typename ... Args >
+    template < typename FPack, typename Preview, typename ... Args >
     printers_tuple_impl
         ( const FPack& fp
+        , Preview& p
         , const stringify::v0::detail::simple_tuple<Args...>& args )
         : indexed_obj<I, Printers>
-            { make_printer<CharT>(fp, args.template get<I>()) } ...
+        { make_printer<CharT>(fp, p, args.template get<I>()) } ...
     {
     }
 
@@ -190,23 +161,6 @@ public:
     }
 };
 
-template< typename CharT, std::size_t ... I, typename ... Printers >
-std::size_t necessary_size
-    ( const stringify::v0::detail::printers_tuple_impl
-          < CharT, std::index_sequence<I...>, Printers... >& printers )
-{
-    return stringify::v0::detail::sum_necessary_size
-        ( printers.template get<I>()... );
-}
-
-template< typename CharT, std::size_t ... I, typename ... Printers >
-stringify::v0::width_t width
-    ( const stringify::v0::detail::printers_tuple_impl
-        < CharT, std::index_sequence<I...>, Printers... >& printers
-    , stringify::v0::width_t lim )
-{
-    return stringify::v0::detail::sum_width(lim, printers.template get<I>()...);
-}
 
 template< typename CharT, std::size_t ... I, typename ... Printers >
 void write( stringify::v0::basic_outbuf<CharT>& ob
@@ -222,22 +176,27 @@ using printers_tuple = printers_tuple_impl
         , std::make_index_sequence<sizeof...(Printers)>
         , Printers... >;
 
-template < typename CharT, typename FPack, typename ISeq, typename ... Args >
+template < typename CharT
+         , typename FPack
+         , typename Preview
+         , typename ISeq
+         , typename ... Args >
 class printers_tuple_alias
 {
     template <typename Arg>
     using _printer
     = decltype(make_printer<CharT>( std::declval<const FPack&>()
+                                  , std::declval<Preview&>()
                                   , std::declval<const Arg&>()));
 public:
 
     using type = printers_tuple_impl<CharT, ISeq, _printer<Args>...>;
 };
 
-template < typename CharT, typename FPack, typename ... Args >
+template < typename CharT, typename FPack, typename Preview, typename ... Args >
 using printers_tuple_from_args
 = typename printers_tuple_alias
-    < CharT, FPack, std::make_index_sequence<sizeof...(Args)>, Args... >
+    < CharT, FPack, Preview, std::make_index_sequence<sizeof...(Args)>, Args... >
     :: type;
 
 } // namespace detail

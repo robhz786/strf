@@ -79,20 +79,30 @@ public:
     using iterator = ForwardIt;
     using value_type = typename std::iterator_traits<ForwardIt>::value_type;
 
-    range_printer(const FPack& fp, iterator begin, iterator end)
+    template <typename Preview>
+    range_printer( const FPack& fp
+                 , Preview& preview
+                 , iterator begin
+                 , iterator end )
         : _fp(fp)
         , _begin(begin)
         , _end(end)
     {
+        _preview(preview);
     }
-
-    std::size_t necessary_size() const override;
-
-    stringify::v0::width_t width(stringify::v0::width_t limit) const override;
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
 private:
+
+    void _preview(stringify::print_preview<false, false>&) const
+    {
+    }
+
+    template < typename Preview
+             , typename = std::enable_if_t< Preview::size_required
+                                         || Preview::width_required > >
+    void _preview(Preview& preview) const;
 
     const FPack& _fp;
     iterator _begin;
@@ -100,34 +110,23 @@ private:
 };
 
 template <typename CharT, typename FPack, typename ForwardIt>
-std::size_t range_printer<CharT, FPack, ForwardIt>::necessary_size() const
+template <typename Preview, typename >
+void range_printer<CharT, FPack, ForwardIt>::_preview(Preview& preview) const
 {
-    std::size_t len = 0;
     for(auto it = _begin; it != _end; ++it)
     {
-        len += make_printer<CharT, FPack>(_fp, *it).necessary_size();
+        make_printer<CharT, FPack>(_fp, preview, *it);
     }
-    return len;
-}
-
-template <typename CharT, typename FPack, typename ForwardIt>
-stringify::v0::width_t range_printer<CharT, FPack, ForwardIt>::width(stringify::v0::width_t limit) const
-{
-    stringify::v0::width_t sum = 0;
-    for(auto it = _begin; it != _end && sum < limit; ++it)
-    {
-        sum += make_printer<CharT, FPack>(_fp, *it).width(limit - sum);
-    }
-    return sum;
 }
 
 template <typename CharT, typename FPack, typename ForwardIt>
 void range_printer<CharT, FPack, ForwardIt>::print_to
     ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
+    stringify::print_preview<false, false> no_preview;
     for(auto it = _begin; it != _end; ++it)
     {
-        make_printer<CharT, FPack>(_fp, *it).print_to(ob);
+        make_printer<CharT, FPack>(_fp, no_preview, *it).print_to(ob);
     }
 }
 
@@ -139,7 +138,9 @@ public:
     using iterator = ForwardIt;
     using value_type = typename std::iterator_traits<ForwardIt>::value_type;
 
+    template <typename Preview>
     sep_range_printer( const FPack& fp
+                     , Preview& preview
                      , iterator begin
                      , iterator end
                      , const CharT* sep
@@ -150,15 +151,21 @@ public:
         , _sep_begin(sep)
         , _sep_len(sep_len)
     {
+        _preview(preview);
     }
-
-    std::size_t necessary_size() const override;
-
-    stringify::v0::width_t width(stringify::v0::width_t limit) const override;
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
 private:
+
+    void _preview(stringify::print_preview<false, false>&) const
+    {
+    }
+
+    template < typename Preview
+             , typename = std::enable_if_t< Preview::size_required
+                                         || Preview::width_required > >
+    void _preview(Preview& preview) const;
 
     const FPack& _fp;
     iterator _begin;
@@ -167,77 +174,74 @@ private:
     std::size_t _sep_len;
 
     template <typename Category>
-    decltype(auto) get_facet(const FPack& fp) const
+    decltype(auto) _get_facet(const FPack& fp) const
     {
         using sep_tag = stringify::v0::range_separator_input_tag<CharT>;
         return fp.template get_facet<Category, sep_tag>();
     }
 };
 
-template <typename CharT, typename FPack, typename ForwardIt>
-stringify::v0::width_t sep_range_printer<CharT, FPack, ForwardIt>::width
-    ( stringify::v0::width_t limit ) const
+template <typename CharT, typename FPack, typename It>
+template <typename Preview, typename>
+void sep_range_printer<CharT, FPack, It>::_preview(Preview& preview) const
 {
-    std::size_t count = 0;
-    stringify::v0::width_t sum = 0;
-    for(auto it = _begin; it != _end && sum < limit; ++it)
-    {
-        sum += make_printer<CharT, FPack>(_fp, *it).width(limit - sum);
-        ++ count;
-    }
-    if (count > 1 && sum < limit)
-    {
-        decltype(auto) wcalc
-            = get_facet<stringify::v0::width_calculator_c<CharT>>(_fp);
-        decltype(auto) encoding
-            = get_facet<stringify::v0::encoding_c<CharT>>(_fp);
-        auto enc_err = get_facet<stringify::v0::encoding_error_c>(_fp);
-        auto allow_surr = get_facet<stringify::v0::surrogate_policy_c>(_fp);
-
-        auto dw = wcalc.width( (limit - sum), _sep_begin, _sep_len
-                             , encoding, enc_err, allow_surr );
-        if (dw == 0)
-        {
-            return sum;
-        }
-        if (count > UINT32_MAX)
-        {
-            return stringify::v0::width_t_max;
-        }
-        return checked_add(sum, checked_mul(dw, static_cast<std::uint32_t>(count - 1)));
-    }
-    return sum;
-}
-
-template <typename CharT, typename FPack, typename ForwardIt>
-std::size_t sep_range_printer<CharT, FPack, ForwardIt>::necessary_size() const
-{
-    std::size_t len = 0;
     std::size_t count = 0;
     for(auto it = _begin; it != _end; ++it)
     {
-        len += make_printer<CharT, FPack>(_fp, *it).necessary_size();
-        ++count;
+        make_printer<CharT, FPack>(_fp, preview, *it);
+        ++ count;
+        if ( ! Preview::size_required && preview.remaining_width() <= 0)
+        {
+            return;
+        }
     }
-    if (count > 1)
+    if (count < 2)
     {
-        return len + _sep_len * (count - 1);
+        return;
     }
-    return len;
+    if (Preview::width_required)
+    {
+        decltype(auto) wcalc
+            = _get_facet<stringify::v0::width_calculator_c<CharT>>(_fp);
+        decltype(auto) encoding
+            = _get_facet<stringify::v0::encoding_c<CharT>>(_fp);
+        auto enc_err = _get_facet<stringify::v0::encoding_error_c>(_fp);
+        auto allow_surr = _get_facet<stringify::v0::surrogate_policy_c>(_fp);
+
+        auto dw = wcalc.width( preview.remaining_width(), _sep_begin, _sep_len
+                             , encoding, enc_err, allow_surr );
+        if (dw != 0)
+        {
+            if (count > UINT32_MAX)
+            {
+                preview.clear_remaining_width();
+            }
+            else
+            {
+                preview.checked_subtract_width
+                    ( checked_mul(dw, static_cast<std::uint32_t>(count - 1)) );
+            }
+        }
+    }
+    if (Preview::size_required)
+    {
+        preview.add_size((count - 1) * _sep_len);
+    }
 }
 
 template <typename CharT, typename FPack, typename ForwardIt>
 void sep_range_printer<CharT, FPack, ForwardIt>::print_to
     ( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
+    stringify::print_preview<false, false> no_preview;
     auto it = _begin;
     if (it != _end)
     {
-        make_printer<CharT, FPack>(_fp, *it).print_to(ob);
+        make_printer<CharT, FPack>(_fp, no_preview, *it).print_to(ob);
         while (++it != _end)
         {
             stringify::v0::write(ob, _sep_begin, _sep_len);
-            make_printer<CharT, FPack>(_fp, *it).print_to(ob);
+            make_printer<CharT, FPack>(_fp, no_preview, *it).print_to(ob);
         }
     }
 }
@@ -265,19 +269,28 @@ class fmt_range_printer: public printer<CharOut>
 
 public:
 
-    fmt_range_printer(const FPack& fp, const _fmt_type_adapted& fmt)
+    template <typename Preview>
+    fmt_range_printer( const FPack& fp
+                     , Preview& preview
+                     , const _fmt_type_adapted& fmt)
         : _fp(fp)
         , _fmt(fmt)
     {
+        _preview(preview);
     }
-
-    std::size_t necessary_size() const override;
-
-    stringify::v0::width_t width(stringify::v0::width_t lim) const override;
 
     void print_to(stringify::v0::basic_outbuf<CharOut>& ob) const override;
 
 private:
+
+    void _preview(stringify::print_preview<false, false>&) const
+    {
+    }
+
+    template < typename Preview
+             , typename = std::enable_if_t< Preview::size_required
+                                         || Preview::width_required > >
+    void _preview(Preview& preview) const;
 
     const FPack& _fp;
     _fmt_type_adapted _fmt;
@@ -288,35 +301,17 @@ template < typename CharOut
          , typename FPack
          , typename ForwardIt
          , typename ... Fmts >
-std::size_t
-fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::necessary_size() const
+template <typename Preview, typename >
+void fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::_preview
+    ( Preview& preview ) const
 {
-    std::size_t len = 0;
     auto r = _fmt.value();
     for(auto it = r.begin; it != r.end; ++it)
     {
-        len += make_printer<CharOut, FPack>
-            ( _fp, _value_fmt_type_adapted{{*it}, _fmt} )
-            .necessary_size();
+        make_printer<CharOut, FPack>( _fp
+                                    , preview
+                                    , _value_fmt_type_adapted{{*it}, _fmt} );
     }
-    return len;
-}
-
-template< typename CharOut
-        , typename FPack
-        , typename ForwardIt
-        , typename ... Fmts >
-stringify::v0::width_t fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::width(stringify::v0::width_t lim) const
-{
-    auto r = _fmt.value();
-    stringify::v0::width_t sum = 0;
-    for(auto it = r.begin; it != r.end && sum < lim; ++it)
-    {
-        sum += make_printer<CharOut, FPack>
-            ( _fp, _value_fmt_type_adapted{{*it}, _fmt} )
-            .width(lim - sum);
-    }
-    return sum;
 }
 
 template< typename CharOut
@@ -326,11 +321,13 @@ template< typename CharOut
 void fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::print_to
     ( stringify::v0::basic_outbuf<CharOut>& ob ) const
 {
+    stringify::print_preview<false, false> no_preview;
     auto r = _fmt.value();
     for(auto it = r.begin; it != r.end; ++it)
     {
-        make_printer<CharOut, FPack>
-            ( _fp, _value_fmt_type_adapted{{*it}, _fmt} )
+        make_printer<CharOut, FPack>( _fp
+                                    , no_preview
+                                    , _value_fmt_type_adapted{{*it}, _fmt} )
             .print_to(ob);
     }
 }
@@ -358,19 +355,28 @@ class fmt_sep_range_printer: public printer<CharT>
 
 public:
 
-    fmt_sep_range_printer(const FPack& fp, const _fmt_type_adapted& fmt)
+    template <typename Preview>
+    fmt_sep_range_printer( const FPack& fp
+                         , Preview& preview
+                         , const _fmt_type_adapted& fmt )
         : _fp(fp)
         , _fmt(fmt)
     {
+        _preview(preview);
     }
-
-    std::size_t necessary_size() const override;
-
-    stringify::v0::width_t width(stringify::v0::width_t limit) const override;
 
     void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
 
 private:
+
+    void _preview(stringify::print_preview<false, false>&) const
+    {
+    }
+
+    template < typename Preview
+             , typename = std::enable_if_t< Preview::size_required
+                                         || Preview::width_required > >
+    void _preview(Preview& preview) const;
 
     const FPack& _fp;
     _fmt_type_adapted _fmt;
@@ -386,46 +392,29 @@ private:
 template< typename CharT
         , typename FPack
         , typename ForwardIt
-        , typename ... Fmts  >
-std::size_t fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>
-::necessary_size() const
+        , typename ... Fmts >
+template <typename Preview, typename>
+void fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>::_preview
+    ( Preview& preview ) const
 {
-    std::size_t len = 0;
     auto r = _fmt.value();
     std::size_t count = 0;
     for(auto it = r.begin; it != r.end; ++it)
     {
-        len += make_printer<CharT, FPack>
-            ( _fp, _value_fmt_type_adapted{{*it}, _fmt} )
-            .necessary_size();
+        make_printer<CharT, FPack>( _fp
+                                  , preview
+                                  , _value_fmt_type_adapted{{*it}, _fmt} );
         ++ count;
+        if ( ! Preview::size_required && preview.remaining_width() <= 0)
+        {
+            return;
+        }
     }
-    if (count > 1)
+    if (count < 2)
     {
-        len += (count - 1) * r.sep_len;
+        return;
     }
-    return len;
-}
-
-template< typename CharT
-        , typename FPack
-        , typename ForwardIt
-        , typename ... Fmts >
-stringify::v0::width_t
-fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>::width
-    (stringify::v0::width_t limit) const
-{
-    auto r = _fmt.value();
-    std::size_t count = 0;
-    stringify::v0::width_t sum = 0;
-    for(auto it = r.begin; it != r.end && sum < limit; ++it)
-    {
-        sum += make_printer<CharT, FPack>
-            ( _fp, _value_fmt_type_adapted{{*it}, _fmt} )
-            .width(limit - sum);
-        ++ count;
-    }
-    if (count > 1 && sum < limit)
+    if (Preview::width_required)
     {
         decltype(auto) wcalc
             = _get_facet<stringify::v0::width_calculator_c<CharT>>(_fp);
@@ -434,20 +423,25 @@ fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>::width
         auto enc_err = _get_facet<stringify::v0::encoding_error_c>(_fp);
         auto allow_surr = _get_facet<stringify::v0::surrogate_policy_c>(_fp);
 
-        auto dw = wcalc.width( (limit - sum)
-                             , r.sep_begin, r.sep_len
+        auto dw = wcalc.width( preview.remaining_width(), r.sep_begin, r.sep_len
                              , encoding, enc_err, allow_surr );
-        if (dw == 0)
+        if (dw != 0)
         {
-            return sum;
+            if (count > UINT32_MAX)
+            {
+                preview.clear_remaining_width();
+            }
+            else
+            {
+                preview.checked_subtract_width
+                    ( checked_mul(dw, static_cast<std::uint32_t>(count - 1)) );
+            }
         }
-        if (count > UINT32_MAX)
-        {
-            return stringify::v0::width_t_max;
-        }
-        return checked_add(sum, checked_mul(dw, static_cast<std::uint32_t>(count - 1)));
     }
-    return sum;
+    if (Preview::size_required)
+    {
+        preview.add_size((count - 1) * r.sep_len);
+    }
 }
 
 template< typename CharT
@@ -457,18 +451,19 @@ template< typename CharT
 void fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>
 ::print_to( stringify::v0::basic_outbuf<CharT>& ob ) const
 {
+    stringify::print_preview<false, false> no_preview;
     auto r = _fmt.value();
     auto it = r.begin;
     if (it != r.end)
     {
         make_printer<CharT, FPack>
-            ( _fp, _value_fmt_type_adapted{{*it}, _fmt} )
+            ( _fp, no_preview, _value_fmt_type_adapted{{*it}, _fmt} )
             .print_to(ob);
         while(++it != r.end)
         {
             stringify::v0::write(ob, r.sep_begin, r.sep_len);
             make_printer<CharT, FPack>
-                ( _fp, _value_fmt_type_adapted{{*it}, _fmt} )
+                ( _fp, no_preview, _value_fmt_type_adapted{{*it}, _fmt} )
                 .print_to(ob);
         }
     }
@@ -476,49 +471,60 @@ void fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>
 
 } // namespace detail
 
-template <typename CharOut, typename FPack, typename ForwardIt>
+template < typename CharOut
+         , typename FPack
+         , typename Preview
+         , typename ForwardIt >
 inline stringify::v0::detail::range_printer<CharOut, FPack, ForwardIt>
 make_printer( const FPack& fp
+            , Preview& preview
             , stringify::v0::range_p<ForwardIt> r )
 {
-    return {fp, r.begin, r.end};
-}
-
-template <typename CharOut, typename FPack, typename ForwardIt>
-inline stringify::v0::detail::sep_range_printer<CharOut, FPack, ForwardIt>
-make_printer( const FPack& fp
-            , stringify::v0::sep_range_p<ForwardIt, CharOut> r )
-{
-    return {fp, r.begin, r.end, r.sep_begin, r.sep_len};
+    return {fp, preview, r.begin, r.end};
 }
 
 template < typename CharOut
          , typename FPack
+         , typename Preview
+         , typename ForwardIt >
+inline stringify::v0::detail::sep_range_printer<CharOut, FPack, ForwardIt>
+make_printer( const FPack& fp
+            , Preview& preview
+            , stringify::v0::sep_range_p<ForwardIt, CharOut> r )
+{
+    return {fp, preview, r.begin, r.end, r.sep_begin, r.sep_len};
+}
+
+template < typename CharOut
+         , typename FPack
+         , typename Preview
          , typename ForwardIt
          , typename ... Fmts >
 inline
 stringify::v0::detail::fmt_range_printer<CharOut, FPack, ForwardIt, Fmts...>
 make_printer( const FPack& fp
+            , Preview& preview
             , const stringify::v0::value_with_format
                 < stringify::v0::range_p<ForwardIt>
                 , Fmts ... >& fmt )
 {
-    return {fp, fmt};
+    return {fp, preview, fmt};
 }
 
 template < typename CharOut
          , typename FPack
+         , typename Preview
          , typename ForwardIt
          , typename ... Fmts >
 inline stringify::v0::detail::fmt_sep_range_printer< CharOut, FPack
                                                    , ForwardIt , Fmts... >
-make_printer
-    ( const FPack& fp
-    , const stringify::v0::value_with_format
-        < stringify::v0::sep_range_p<ForwardIt, CharOut>
-        , Fmts ... >& fmt )
+make_printer( const FPack& fp
+            , Preview& preview
+            , const stringify::v0::value_with_format
+                < stringify::v0::sep_range_p<ForwardIt, CharOut>
+                , Fmts ... >& fmt )
 {
-    return {fp, fmt};
+    return {fp, preview, fmt};
 }
 
 template <typename ForwardIt>
