@@ -5,7 +5,7 @@
 #
 
 cmake_minimum_required (VERSION 3.0)
-project (boost_stringify_test)
+project (stringify_test)
 
 include_directories("../../../")
 
@@ -40,8 +40,8 @@ foreach(
   add_executable(test-${t}-header-only   ${t}.cpp)
   add_executable(test-${t}-static-lib    ${t}.cpp)
 
-  target_link_libraries(test-${t}-header-only   boost_stringify-header-only)
-  target_link_libraries(test-${t}-static-lib    boost_stringify)
+  target_link_libraries(test-${t}-header-only   stringify-header-only)
+  target_link_libraries(test-${t}-static-lib    stringify)
 
   add_test(run-test-${t}-header-only   test-${t}-header-only)
   add_test(run-test-${t}-static-lib    test-${t}-static-lib)

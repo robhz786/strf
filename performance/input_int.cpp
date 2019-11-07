@@ -1,6 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <boost/stringify.hpp>
+#include <stringify.hpp>
 #include "loop_timer.hpp"
 #include "fmt/format.h"
 #include "fmt/compile.h"

@@ -22,7 +22,7 @@
 #include <stdint.h>
 
 // This sets STRF_RYU_32_BIT_PLATFORM as a side effect if applicable.
-#include <boost/stringify/v0/detail/ryu/common.hpp>
+#include <strf/detail/ryu/common.hpp>
 
 STRF_DETAIL_RYU_NAMESPACE_BEGIN;
 

@@ -4,7 +4,7 @@
 
 #include "test_utils.hpp"
 
-#include <boost/stringify.hpp>
+#include <stringify.hpp>
 
 #include <boost/hana/for_each.hpp>
 #include <boost/hana/tuple.hpp>

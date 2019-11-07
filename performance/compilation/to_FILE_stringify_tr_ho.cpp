@@ -1,4 +1,4 @@
-#include <boost/stringify.hpp>
+#include <stringify.hpp>
 #include <cstdio>
 #include "args.hpp"
 

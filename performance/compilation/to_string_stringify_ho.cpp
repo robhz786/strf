@@ -1,4 +1,4 @@
-#include <boost/stringify.hpp>
+#include <stringify.hpp>
 #include "args.hpp"
 
 void FUNCTION_NAME (std::string& out)

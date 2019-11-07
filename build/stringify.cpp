@@ -2,5 +2,5 @@
 #define STRF_SOURCE
 #endif
 
-#include <boost/stringify.hpp>
+#include <stringify.hpp>
 

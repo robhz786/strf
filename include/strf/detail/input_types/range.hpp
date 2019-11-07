@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <initializer_list>
-#include <boost/stringify/v0/detail/facets/encoding.hpp>
+#include <strf/detail/facets/encoding.hpp>
 
 STRF_NAMESPACE_BEGIN
 

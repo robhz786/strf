@@ -10,7 +10,7 @@
 #include <fstream>
 #include <codecvt>
 
-#include <boost/stringify.hpp>
+#include <stringify.hpp>
 #include "loop_timer.hpp"
 
 class width_accumulator: public strf::basic_outbuf<char32_t>

@@ -1,5 +1,5 @@
 #define STRF_SEPARATE_COMPILATION
-#include <boost/stringify.hpp>
+#include <stringify.hpp>
 #include "args.hpp"
 
 void FUNCTION_NAME (int)

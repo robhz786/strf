@@ -6,8 +6,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <streambuf>
-#include <boost/stringify/v0/dispatcher.hpp>
-#include <boost/stringify/v0/outbuf.hpp>
+#include <strf/dispatcher.hpp>
+#include <strf/outbuf.hpp>
 
 STRF_NAMESPACE_BEGIN
 

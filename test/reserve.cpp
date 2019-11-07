@@ -5,7 +5,7 @@
 #define  _CRT_SECURE_NO_WARNINGS
 
 #include "test_utils.hpp"
-#include <boost/stringify.hpp>
+#include <stringify.hpp>
 
 class reservation_tester : public strf::basic_outbuf<char>
 {

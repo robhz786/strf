@@ -3,9 +3,9 @@
 
 #include <algorithm>
 #include <limits>
-#include <boost/stringify/v0/detail/facets/width_calculator.hpp>
-#include <boost/stringify/v0/detail/format_functions.hpp>
-#include <boost/stringify/v0/facets_pack.hpp>
+#include <strf/detail/facets/width_calculator.hpp>
+#include <strf/detail/format_functions.hpp>
+#include <strf/facets_pack.hpp>
 
 STRF_NAMESPACE_BEGIN
 

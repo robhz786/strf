@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/printer.hpp>
+#include <strf/printer.hpp>
 
 STRF_NAMESPACE_BEGIN
 
@@ -814,8 +814,8 @@ STRF_NAMESPACE_END
 
 #if ! defined(STRF_OMIT_IMPL)
 
-#include <boost/stringify/v0/detail/utf_encodings.hpp>
-#include <boost/stringify/v0/detail/single_byte_encodings.hpp>
+#include <strf/detail/utf_encodings.hpp>
+#include <strf/detail/single_byte_encodings.hpp>
 
 #endif // defined(STRF_OMIT_IMPL)
 

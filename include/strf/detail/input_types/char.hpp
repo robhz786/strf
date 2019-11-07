@@ -6,9 +6,9 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <type_traits>
-#include <boost/stringify/v0/printer.hpp>
-#include <boost/stringify/v0/facets_pack.hpp>
-#include <boost/stringify/v0/detail/facets/width_calculator.hpp>
+#include <strf/printer.hpp>
+#include <strf/facets_pack.hpp>
+#include <strf/detail/facets/width_calculator.hpp>
 
 STRF_NAMESPACE_BEGIN
 

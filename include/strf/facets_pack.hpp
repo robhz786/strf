@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/config.hpp>
+#include <strf/config.hpp>
 #include <utility>
 #include <type_traits>
 #include <functional>

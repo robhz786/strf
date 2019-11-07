@@ -32,7 +32,7 @@
 #include <stdio.h>
 #endif
 
-#include <boost/stringify/v0/detail/ryu/common.hpp>
+#include <strf/detail/ryu/common.hpp>
 
 STRF_DETAIL_RYU_NAMESPACE_BEGIN;
 

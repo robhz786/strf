@@ -3,7 +3,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <QString>
-#include <boost/stringify.hpp>
+#include <stringify.hpp>
 #include <climits>
 
 class QStringCreator: public strf::basic_outbuf<char16_t>

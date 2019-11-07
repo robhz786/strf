@@ -21,17 +21,17 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include <boost/stringify/v0/detail/ryu/common.hpp>
+#include <strf/detail/ryu/common.hpp>
 
 // Only include the full table if we're not optimizing for size.
 #if !defined(STRF_RYU_OPTIMIZE_SIZE)
-#include <boost/stringify/v0/detail/ryu/d2s_full_table.hpp>
+#include <strf/detail/ryu/d2s_full_table.hpp>
 #endif
 
 #if defined(STRF_RYU_HAS_UINT128)
 typedef __uint128_t uint128_t;
 #else
-#include <boost/stringify/v0/detail/ryu/d2s_intrinsics.hpp>
+#include <strf/detail/ryu/d2s_intrinsics.hpp>
 #endif
 
 STRF_DETAIL_RYU_NAMESPACE_BEGIN;

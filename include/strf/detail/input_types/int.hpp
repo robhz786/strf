@@ -5,12 +5,12 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/printer.hpp>
-#include <boost/stringify/v0/facets_pack.hpp>
-#include <boost/stringify/v0/detail/format_functions.hpp>
-#include <boost/stringify/v0/detail/facets/encoding.hpp>
-#include <boost/stringify/v0/detail/facets/numpunct.hpp>
-#include <boost/stringify/v0/detail/int_digits.hpp>
+#include <strf/printer.hpp>
+#include <strf/facets_pack.hpp>
+#include <strf/detail/format_functions.hpp>
+#include <strf/detail/facets/encoding.hpp>
+#include <strf/detail/facets/numpunct.hpp>
+#include <strf/detail/int_digits.hpp>
 #include <cstdint>
 
 // todo: optimize as in:

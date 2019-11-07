@@ -7,8 +7,8 @@
 
 #include <system_error>
 #include <algorithm>
-#include <boost/stringify/v0/outbuf.hpp>
-#include <boost/stringify/v0/width_t.hpp>
+#include <strf/outbuf.hpp>
+#include <strf/width_t.hpp>
 
 STRF_NAMESPACE_BEGIN
 

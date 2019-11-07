@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <string>
-#include <boost/stringify/v0/config.hpp>
+#include <strf/config.hpp>
 
 STRF_NAMESPACE_BEGIN
 

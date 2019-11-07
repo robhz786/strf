@@ -49,9 +49,9 @@
 #define STRF_RYU_HAS_64_BIT_INTRINSICS
 #endif
 
-#include <boost/stringify/v0/detail/ryu/common.hpp>
-#include <boost/stringify/v0/detail/ryu/d2s.hpp>
-#include <boost/stringify/v0/detail/ryu/d2s_intrinsics.hpp>
+#include <strf/detail/ryu/common.hpp>
+#include <strf/detail/ryu/d2s.hpp>
+#include <strf/detail/ryu/d2s_intrinsics.hpp>
 
 STRF_DETAIL_RYU_NAMESPACE_BEGIN;
 

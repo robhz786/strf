@@ -10,7 +10,7 @@
 #include <locale>
 #include <fstream>
 
-#include <boost/stringify.hpp>
+#include <stringify.hpp>
 #include "loop_timer.hpp"
 
 int main()

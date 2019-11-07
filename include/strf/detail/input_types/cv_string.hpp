@@ -5,8 +5,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/detail/format_functions.hpp>
-#include <boost/stringify/v0/detail/facets/encoding.hpp>
+#include <strf/detail/format_functions.hpp>
+#include <strf/detail/facets/encoding.hpp>
 
 STRF_NAMESPACE_BEGIN
 

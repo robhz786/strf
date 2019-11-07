@@ -6,7 +6,7 @@
 
 #include <string>
 #include <algorithm>
-#include <boost/stringify.hpp>
+#include <stringify.hpp>
 
 std::string make_str_0_to_xff()
 {

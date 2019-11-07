@@ -18,7 +18,7 @@ struct ipv4address
 
 
 //[ make_printer_ipv4address
-#include <boost/stringify.hpp>
+#include <stringify.hpp>
 
 namespace xxx {
 

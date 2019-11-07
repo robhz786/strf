@@ -5,9 +5,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/detail/tr_string.hpp>
-#include <boost/stringify/v0/detail/printers_tuple.hpp>
-#include <boost/stringify/v0/facets_pack.hpp>
+#include <strf/detail/tr_string.hpp>
+#include <strf/detail/printers_tuple.hpp>
+#include <strf/facets_pack.hpp>
 
 STRF_NAMESPACE_BEGIN
 

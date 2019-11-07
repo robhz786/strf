@@ -7,7 +7,7 @@
 
 #include <cstdio>
 #include <cstring>
-#include <boost/stringify/v0/dispatcher.hpp>
+#include <strf/dispatcher.hpp>
 
 STRF_NAMESPACE_BEGIN
 

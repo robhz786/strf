@@ -5,11 +5,11 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify/v0/printer.hpp>
-#include <boost/stringify/v0/facets_pack.hpp>
-#include <boost/stringify/v0/detail/facets/numpunct.hpp>
-#include <boost/stringify/v0/detail/ryu/double.hpp>
-#include <boost/stringify/v0/detail/ryu/float.hpp>
+#include <strf/printer.hpp>
+#include <strf/facets_pack.hpp>
+#include <strf/detail/facets/numpunct.hpp>
+#include <strf/detail/ryu/double.hpp>
+#include <strf/detail/ryu/float.hpp>
 #include <algorithm>
 #include <cstring>
 #include <type_traits>
