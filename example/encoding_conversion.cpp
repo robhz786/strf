@@ -11,6 +11,7 @@
 namespace strf {
 constexpr auto to_u8string = to_string;
 }
+using char8_t = char;
 
 #endif
 
@@ -107,7 +108,7 @@ void allow_surrogates ()
     auto str2 = strf::to_u8string .facets(strf::surrogate_policy::lax) (strf::cv(input_utf16));
 
     assert(str1 == u8"-\uFFFD---");       // surrogate sanitized
-    assert(str2 == u8"-\xED\xA0\x80---"); // surrogate allowed
+    assert(str2 == (const char8_t*)"-\xED\xA0\x80---"); // surrogate allowed
 
     // now back to UTF-16
     auto utf16_no_surr = strf::to_u16string(strf::cv(str2));

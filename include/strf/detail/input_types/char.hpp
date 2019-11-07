@@ -107,8 +107,6 @@ public:
 
     void print_to(strf::basic_outbuf<CharT>& ob) const override;
 
-    strf::width_t width(strf::width_t) const;
-
 private:
 
     const strf::encoding<CharT> _encoding;

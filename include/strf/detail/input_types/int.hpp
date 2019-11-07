@@ -258,8 +258,6 @@ public:
         _calc_size(preview);
     }
 
-    std::size_t necessary_size() const;
-
     void print_to(strf::basic_outbuf<CharT>& ob) const override;
 
 private:
@@ -596,7 +594,7 @@ inline full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
     if (_afmt.width > content_width)
     {
         _fillcount = _afmt.width - content_width;
-        preview.subtract_width(_fillcount);
+        preview.subtract_width(static_cast<std::int16_t>(_fillcount));
     }
     _calc_fill_size(preview);
 }

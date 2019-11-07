@@ -5,7 +5,7 @@
 #
 
 cmake_minimum_required (VERSION 3.5)
-project (strf CXX)
+project (stringify CXX)
 enable_testing()
 
 option(

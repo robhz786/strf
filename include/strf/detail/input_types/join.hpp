@@ -8,6 +8,10 @@
 #include <strf/detail/facets/encoding.hpp>
 #include <strf/detail/printers_tuple.hpp>
 
+#if defined(_MSC_VER)
+#include <tuple>
+#endif
+
 STRF_NAMESPACE_BEGIN
 
 template <typename ... Args>
@@ -141,6 +145,7 @@ public:
                 preview.add_size(_fillcount * fcharsize);
             }
         }
+        (void)preview;
     }
 
     template <typename FPack, bool ReqSize, typename ... Args>
@@ -225,8 +230,11 @@ public:
 private:
 
     using _printers_tuple_storage = typename std::aligned_storage_t
+#if defined(_MSC_VER)
+        <sizeof(std::tuple<Printers...>), alignof(strf::printer<CharT>)>;
+#else
         <sizeof(_printers_tuple), alignof(_printers_tuple)>;
-
+#endif
     _printers_tuple_storage _pool;
     strf::aligned_join_t _fmt;
     const strf::encoding<CharT> _encoding;

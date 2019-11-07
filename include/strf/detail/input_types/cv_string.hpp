@@ -460,11 +460,7 @@ public:
         _calc_size(preview);
     }
 
-    std::size_t necessary_size() const;
-
     void print_to(strf::basic_outbuf<CharOut>& ob) const override;
-
-    strf::width_t width(strf::width_t limit) const;
 
 private:
 
@@ -582,27 +578,6 @@ void fmt_cv_string_printer<CharIn, CharOut>::_init
     }
     _transcoder_eng =
         strf::get_transcoder(_src_encoding, _dest_encoding);
-}
-
-template<typename CharIn, typename CharOut>
-strf::width_t fmt_cv_string_printer<CharIn, CharOut>::width
-    ( strf::width_t limit ) const
-{
-    if (_width_from_fmt)
-    {
-        return _fmt.width();
-    }
-    if (_wcalc == nullptr)
-    {
-        auto len = _fmt.value().length();
-        if (static_cast<std::ptrdiff_t>(len) <= limit.floor())
-        {
-            return static_cast<std::int16_t>(len);
-        }
-        return limit;
-    }
-    return _wcalc->width( limit, _fmt.value().begin(), _fmt.value().length()
-                        , _src_encoding, _enc_err, _allow_surr );
 }
 
 template<typename CharIn, typename CharOut>
