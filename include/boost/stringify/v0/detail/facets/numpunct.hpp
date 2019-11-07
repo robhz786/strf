@@ -1,5 +1,5 @@
-#ifndef STRF_V0_DETAIL_FACETS_NUMPUNCT_HPP
-#define STRF_V0_DETAIL_FACETS_NUMPUNCT_HPP
+#ifndef STRF_DETAIL_FACETS_NUMPUNCT_HPP
+#define STRF_DETAIL_FACETS_NUMPUNCT_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -469,5 +469,5 @@ constexpr bool has_punct = has_punct_impl<CharT, FPack, InputT, Base>::has_punct
 
 STRF_NAMESPACE_END
 
-#endif  // STRF_V0_DETAIL_FACETS_NUMPUNCT_HPP
+#endif  // STRF_DETAIL_FACETS_NUMPUNCT_HPP
 

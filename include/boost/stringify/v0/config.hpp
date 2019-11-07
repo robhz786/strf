@@ -1,5 +1,5 @@
-#ifndef STRF_V0_CONFIG_HPP
-#define STRF_V0_CONFIG_HPP
+#ifndef STRF_CONFIG_HPP
+#define STRF_CONFIG_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -122,5 +122,5 @@
 
 // todo
 
-#endif  // STRF_V0_CONFIG_HPP
+#endif  // STRF_CONFIG_HPP
 

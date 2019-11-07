@@ -1,5 +1,5 @@
-#ifndef STRF_V0_JOIN_HPP
-#define STRF_V0_JOIN_HPP
+#ifndef STRF_JOIN_HPP
+#define STRF_JOIN_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -436,5 +436,5 @@ join_split(std::int16_t width, int num_leading_args) noexcept
 
 STRF_NAMESPACE_END
 
-#endif  // STRF_V0_JOIN_HPP
+#endif  // STRF_JOIN_HPP
 

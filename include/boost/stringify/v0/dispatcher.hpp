@@ -1,5 +1,5 @@
-#ifndef STRF_V0_DISPATCHER_HPP
-#define STRF_V0_DISPATCHER_HPP
+#ifndef STRF_DISPATCHER_HPP
+#define STRF_DISPATCHER_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -601,4 +601,4 @@ using printer_impl
 
 STRF_NAMESPACE_END
 
-#endif  // STRF_V0_DISPATCHER_HPP
+#endif  // STRF_DISPATCHER_HPP

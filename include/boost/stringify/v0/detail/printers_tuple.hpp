@@ -1,5 +1,5 @@
-#ifndef STRF_V0_DETAIL_PRINTERS_TUPLE_HPP
-#define STRF_V0_DETAIL_PRINTERS_TUPLE_HPP
+#ifndef STRF_DETAIL_PRINTERS_TUPLE_HPP
+#define STRF_DETAIL_PRINTERS_TUPLE_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -203,5 +203,5 @@ using printers_tuple_from_args
 
 STRF_NAMESPACE_END
 
-#endif  // STRF_V0_DETAIL_PRINTERS_TUPLE_HPP
+#endif  // STRF_DETAIL_PRINTERS_TUPLE_HPP
 

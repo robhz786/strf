@@ -1,5 +1,5 @@
-#ifndef STRF_V0_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
-#define STRF_V0_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
+#ifndef STRF_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
+#define STRF_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -415,7 +415,7 @@ template <> struct is_char<wchar_t>: public std::true_type {};
 
 STRF_NAMESPACE_END
 
-#endif // STRF_V0_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
+#endif // STRF_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
 
 
 

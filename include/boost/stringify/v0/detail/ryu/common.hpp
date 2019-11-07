@@ -15,25 +15,25 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#ifndef STRF_V0_DETAIL_RYU_COMMON_HPP_INCLUDED
-#define STRF_V0_DETAIL_RYU_COMMON_HPP_INCLUDED
+#ifndef STRF_DETAIL_RYU_COMMON_HPP_INCLUDED
+#define STRF_DETAIL_RYU_COMMON_HPP_INCLUDED
 
 #include <assert.h>
 #include <stdint.h>
 #include <string.h>
 
 #if defined(_M_IX86) || defined(_M_ARM)
-#define STRF_V0_RYU_32_BIT_PLATFORM
+#define STRF_RYU_32_BIT_PLATFORM
 #endif
 
-#define STRF_V0_DETAIL_RYU_NAMESPACE_BEGIN \
+#define STRF_DETAIL_RYU_NAMESPACE_BEGIN \
     namespace strf { \
     namespace detail { \
     namespace ryu { \
 
-#define STRF_V0_DETAIL_RYU_NAMESPACE_END }}}
+#define STRF_DETAIL_RYU_NAMESPACE_END }}}
 
-STRF_V0_DETAIL_RYU_NAMESPACE_BEGIN;
+STRF_DETAIL_RYU_NAMESPACE_BEGIN;
 
 inline uint32_t decimalLength9(const uint32_t v) {
   // Function precondition: v is not a 10-digit number.
@@ -105,6 +105,6 @@ inline uint64_t double_to_bits(const double d) {
   return bits;
 }
 
-STRF_V0_DETAIL_RYU_NAMESPACE_END;
+STRF_DETAIL_RYU_NAMESPACE_END;
 
-#endif // STRF_V0_DETAIL_RYU_COMMON_HPP_INCLUDED
+#endif // STRF_DETAIL_RYU_COMMON_HPP_INCLUDED

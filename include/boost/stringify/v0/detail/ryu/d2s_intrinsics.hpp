@@ -15,18 +15,18 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#ifndef STRF_V0_DETAIL_RYU_D2S_INTRINSICS_HPP_INCLUDED
-#define STRF_V0_DETAIL_RYU_D2S_INTRINSICS_HPP_INCLUDED
+#ifndef STRF_DETAIL_RYU_D2S_INTRINSICS_HPP_INCLUDED
+#define STRF_DETAIL_RYU_D2S_INTRINSICS_HPP_INCLUDED
 
 #include <assert.h>
 #include <stdint.h>
 
-// This sets STRF_V0_RYU_32_BIT_PLATFORM as a side effect if applicable.
+// This sets STRF_RYU_32_BIT_PLATFORM as a side effect if applicable.
 #include <boost/stringify/v0/detail/ryu/common.hpp>
 
-STRF_V0_DETAIL_RYU_NAMESPACE_BEGIN;
+STRF_DETAIL_RYU_NAMESPACE_BEGIN;
 
-#if defined(STRF_V0_RYU_HAS_64_BIT_INTRINSICS)
+#if defined(STRF_RYU_HAS_64_BIT_INTRINSICS)
 
 #include <intrin.h>
 
@@ -39,7 +39,7 @@ inline uint64_t shiftright128(const uint64_t lo, const uint64_t hi, const uint32
   // modulo 64.
   // In the current implementation of the double-precision version
   // of Ryu, the shift value is always < 64. (In the case
-  // STRF_V0_RYU_OPTIMIZE_SIZE == 0, the shift value is in the range [49, 58].
+  // STRF_RYU_OPTIMIZE_SIZE == 0, the shift value is in the range [49, 58].
   // Otherwise in the range [2, 59].)
   // Check this here in case a future change requires larger shift
   // values. In this case this function needs to be adjusted.
@@ -47,7 +47,7 @@ inline uint64_t shiftright128(const uint64_t lo, const uint64_t hi, const uint32
   return __shiftright128(lo, hi, (unsigned char) dist);
 }
 
-#else // defined(STRF_V0_RYU_HAS_64_BIT_INTRINSICS)
+#else // defined(STRF_RYU_HAS_64_BIT_INTRINSICS)
 
 inline uint64_t umul128(const uint64_t a, const uint64_t b, uint64_t* const productHi) {
   // The casts here help MSVC to avoid calls to the __allmul library function.
@@ -82,7 +82,7 @@ inline uint64_t umul128(const uint64_t a, const uint64_t b, uint64_t* const prod
 inline uint64_t shiftright128(const uint64_t lo, const uint64_t hi, const uint32_t dist) {
   // We don't need to handle the case dist >= 64 here (see above).
   assert(dist < 64);
-#if defined(STRF_V0_RYU_OPTIMIZE_SIZE) || !defined(STRF_V0_RYU_32_BIT_PLATFORM)
+#if defined(STRF_RYU_OPTIMIZE_SIZE) || !defined(STRF_RYU_32_BIT_PLATFORM)
   assert(dist > 0);
   return (hi << (64 - dist)) | (lo >> dist);
 #else
@@ -92,9 +92,9 @@ inline uint64_t shiftright128(const uint64_t lo, const uint64_t hi, const uint32
 #endif
 }
 
-#endif // defined(STRF_V0_RYU_HAS_64_BIT_INTRINSICS)
+#endif // defined(STRF_RYU_HAS_64_BIT_INTRINSICS)
 
-#ifdef STRF_V0_RYU_32_BIT_PLATFORM
+#ifdef STRF_RYU_32_BIT_PLATFORM
 
 // Returns the high 64 bits of the 128-bit product of a and b.
 inline uint64_t umulh(const uint64_t a, const uint64_t b) {
@@ -154,7 +154,7 @@ inline uint32_t mod1e9(const uint64_t x) {
   return ((uint32_t) x) - 1000000000 * ((uint32_t) div1e9(x));
 }
 
-#else // STRF_V0_RYU_32_BIT_PLATFORM
+#else // STRF_RYU_32_BIT_PLATFORM
 
 inline uint64_t div5(const uint64_t x) {
   return x / 5;
@@ -180,7 +180,7 @@ inline uint32_t mod1e9(const uint64_t x) {
   return (uint32_t) (x - 1000000000 * div1e9(x));
 }
 
-#endif // STRF_V0_RYU_32_BIT_PLATFORM
+#endif // STRF_RYU_32_BIT_PLATFORM
 
 inline uint32_t pow5Factor(uint64_t value) {
   uint32_t count = 0;
@@ -210,6 +210,6 @@ inline bool multipleOfPowerOf2(const uint64_t value, const uint32_t p) {
   return (value & ((1ull << p) - 1)) == 0;
 }
 
-STRF_V0_DETAIL_RYU_NAMESPACE_END;
+STRF_DETAIL_RYU_NAMESPACE_END;
 
-#endif // STRF_V0_DETAIL_RYU_D2S_INTRINSICS_HPP_INCLUDED
+#endif // STRF_DETAIL_RYU_D2S_INTRINSICS_HPP_INCLUDED

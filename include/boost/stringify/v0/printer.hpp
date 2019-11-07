@@ -1,5 +1,5 @@
-#ifndef STRF_V0_PRINTER_HPP
-#define STRF_V0_PRINTER_HPP
+#ifndef STRF_PRINTER_HPP
+#define STRF_PRINTER_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -332,5 +332,5 @@ public:
 
 STRF_NAMESPACE_END
 
-#endif  // STRF_V0_PRINTER_HPP
+#endif  // STRF_PRINTER_HPP
 

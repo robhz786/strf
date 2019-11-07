@@ -1,5 +1,5 @@
-#ifndef STRF_V0_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
-#define STRF_V0_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
+#ifndef STRF_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
+#define STRF_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -126,5 +126,5 @@ struct width_calculator_c
 
 STRF_NAMESPACE_END
 
-#endif  // STRF_V0_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
+#endif  // STRF_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
 

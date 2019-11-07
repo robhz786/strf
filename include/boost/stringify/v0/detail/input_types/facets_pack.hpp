@@ -1,5 +1,5 @@
-#ifndef STRF_V0_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
-#define STRF_V0_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
+#ifndef STRF_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
+#define STRF_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -142,5 +142,5 @@ make_printer( const FPack& fp
 
 STRF_NAMESPACE_END
 
-#endif  // STRF_V0_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
+#endif  // STRF_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
 

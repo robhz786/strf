@@ -1,5 +1,5 @@
-#ifndef STRF_V0_DETAIL_SINGLE_BYTE_ENCODINGS_HPP
-#define STRF_V0_DETAIL_SINGLE_BYTE_ENCODINGS_HPP
+#ifndef STRF_DETAIL_SINGLE_BYTE_ENCODINGS_HPP
+#define STRF_DETAIL_SINGLE_BYTE_ENCODINGS_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -649,5 +649,5 @@ const strf::detail::encoding_impl<std::uint8_t>& iso_8859_15_impl()
 } // namespace detail
 STRF_NAMESPACE_END
 
-#endif  // STRF_V0_DETAIL_SINGLE_BYTE_ENCODINGS_HPP
+#endif  // STRF_DETAIL_SINGLE_BYTE_ENCODINGS_HPP
 

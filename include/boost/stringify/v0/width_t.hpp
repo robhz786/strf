@@ -1,5 +1,5 @@
-#ifndef STRF_V0_WIDTH_T_HPP
-#define STRF_V0_WIDTH_T_HPP
+#ifndef STRF_WIDTH_T_HPP
+#define STRF_WIDTH_T_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -549,5 +549,5 @@ constexpr strf::width_t operator "" _w()
 
 STRF_NAMESPACE_END
 
-#endif  // STRF_V0_WIDTH_T_HPP
+#endif  // STRF_WIDTH_T_HPP
 

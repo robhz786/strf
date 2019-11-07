@@ -1,5 +1,5 @@
-#ifndef STRF_V0_DETAIL_INPUT_TYPES_STRING
-#define STRF_V0_DETAIL_INPUT_TYPES_STRING
+#ifndef STRF_DETAIL_INPUT_TYPES_STRING
+#define STRF_DETAIL_INPUT_TYPES_STRING
 
 #include <algorithm>
 #include <limits>
@@ -553,5 +553,5 @@ make_printer(const FPack& fp, Preview& preview, const strf::string_with_format<C
 
 STRF_NAMESPACE_END
 
-#endif  /* STRF_V0_DETAIL_INPUT_TYPES_CHAR_PTR */
+#endif  /* STRF_DETAIL_INPUT_TYPES_CHAR_PTR */
 

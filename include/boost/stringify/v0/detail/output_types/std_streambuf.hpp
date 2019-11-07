@@ -1,5 +1,5 @@
-#ifndef STRF_V0_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
-#define STRF_V0_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
+#ifndef STRF_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
+#define STRF_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -134,5 +134,5 @@ inline auto write( std::basic_streambuf<CharT, Traits>* dest )
 
 STRF_NAMESPACE_END
 
-#endif  // STRF_V0_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
+#endif  // STRF_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
 
