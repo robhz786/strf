@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
-#define BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
+#ifndef STRF_V0_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
+#define STRF_V0_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -9,7 +9,7 @@
 #include <boost/stringify/v0/facets_pack.hpp>
 #include <boost/stringify/v0/detail/printers_tuple.hpp>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 template <typename FPack, typename ... Args>
 struct inner_pack_with_args
@@ -140,7 +140,7 @@ make_printer( const FPack& fp
     return {fp, preview, f};
 }
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
+#endif  // STRF_V0_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
 

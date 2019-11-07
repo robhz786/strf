@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_UTF_ENCODINGS_HPP
-#define BOOST_STRINGIFY_V0_DETAIL_UTF_ENCODINGS_HPP
+#ifndef STRF_V0_DETAIL_UTF_ENCODINGS_HPP
+#define STRF_V0_DETAIL_UTF_ENCODINGS_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -9,9 +9,9 @@
 #include <algorithm>
 #include <cstring>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
-#define BOOST_STRINGIFY_CHECK_DEST     \
+#define STRF_CHECK_DEST     \
     if (dest_it == dest_end) {         \
         ob.advance_to(dest_it);        \
         ob.recycle();                  \
@@ -22,7 +22,7 @@ BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
         dest_end = ob.end();           \
     }
 
-#define BOOST_STRINGIFY_CHECK_DEST_SIZE(SIZE)     \
+#define STRF_CHECK_DEST_SIZE(SIZE)     \
     if (dest_it + SIZE > dest_end) {              \
         ob.advance_to(dest_it);                   \
         ob.recycle();                             \
@@ -193,7 +193,7 @@ inline bool first_2_of_4_are_valid(std::uint8_t ch0, std::uint8_t ch1)
     return first_2_of_4_are_valid(utf8_decode_first_2_of_4(ch0, ch1));
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE
+STRF_STATIC_LINKAGE
 void utf8_to_utf32_transcode
     ( stringify::v0::underlying_outbuf<4>& ob
     , const std::uint8_t* src
@@ -217,14 +217,14 @@ void utf8_to_utf32_transcode
         ++src_it;
         if (ch0 < 0x80)
         {
-            //BOOST_STRINGIFY_CHECK_DEST;
+            //STRF_CHECK_DEST;
             ch32 = ch0;
         }
         else if (0xC0 == (ch0 & 0xE0))
         {
             if(ch0 > 0xC1 && src_it != src_end && is_utf8_continuation(ch1 = * src_it))
             {
-                //BOOST_STRINGIFY_CHECK_DEST;
+                //STRF_CHECK_DEST;
                 ch32 = utf8_decode(ch0, ch1);
                 ++src_it;
             } else goto invalid_sequence;
@@ -234,7 +234,7 @@ void utf8_to_utf32_transcode
             if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
-                //BOOST_STRINGIFY_CHECK_DEST;
+                //STRF_CHECK_DEST;
                 ch32 = ((ch1 & 0x3F) << 6) | (ch2 & 0x3F);
                 ++src_it;
             } else goto invalid_sequence;
@@ -246,7 +246,7 @@ void utf8_to_utf32_transcode
                                        , allow_surr )
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
-                //BOOST_STRINGIFY_CHECK_DEST;
+                //STRF_CHECK_DEST;
                 ch32 = (x << 6) | (ch2 & 0x3F);
                 ++src_it;
             } else goto invalid_sequence;
@@ -258,7 +258,7 @@ void utf8_to_utf32_transcode
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
               && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
             {
-                //BOOST_STRINGIFY_CHECK_DEST;
+                //STRF_CHECK_DEST;
                 ch32 = utf8_decode_last_2_of_4(x, ch2, ch3);
                 ++src_it;
             } else goto invalid_sequence;
@@ -273,7 +273,7 @@ void utf8_to_utf32_transcode
                     throw_encoding_failure();
                     return;
                 case stringify::v0::encoding_error::replace:
-                    BOOST_STRINGIFY_CHECK_DEST;
+                    STRF_CHECK_DEST;
                     ch32 = 0xFFFD;
                     break;
                 default:
@@ -282,14 +282,14 @@ void utf8_to_utf32_transcode
             }
         }
 
-        BOOST_STRINGIFY_CHECK_DEST;
+        STRF_CHECK_DEST;
         *dest_it = ch32;
         ++dest_it;
     }
     ob.advance_to(dest_it);
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf32_size
+STRF_STATIC_LINKAGE std::size_t utf8_to_utf32_size
     ( const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -363,7 +363,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf32_size
     return size;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE void utf8_sanitize
+STRF_STATIC_LINKAGE void utf8_sanitize
     ( stringify::v0::underlying_outbuf<1>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
@@ -382,7 +382,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_sanitize
         ++src_it;
         if(ch0 < 0x80)
         {
-            BOOST_STRINGIFY_CHECK_DEST;
+            STRF_CHECK_DEST;
             *dest_it = ch0;
             ++dest_it;
         }
@@ -390,7 +390,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_sanitize
         {
             if(ch0 > 0xC1 && src_it != src_end && is_utf8_continuation(ch1 = * src_it))
             {
-                BOOST_STRINGIFY_CHECK_DEST_SIZE(2);
+                STRF_CHECK_DEST_SIZE(2);
                 ++src_it;
                 dest_it[0] = ch0;
                 dest_it[1] = ch1;
@@ -402,7 +402,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_sanitize
             if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
-                BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
+                STRF_CHECK_DEST_SIZE(3);
                 ++src_it;
                 dest_it[0] = ch0;
                 dest_it[1] = ch1;
@@ -416,7 +416,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_sanitize
               && first_2_of_3_are_valid(ch0, ch1, allow_surr)
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
-                BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
+                STRF_CHECK_DEST_SIZE(3);
                 ++src_it;
                 dest_it[0] = ch0;
                 dest_it[1] = ch1;
@@ -431,7 +431,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_sanitize
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
               && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
             {
-                BOOST_STRINGIFY_CHECK_DEST_SIZE(4);
+                STRF_CHECK_DEST_SIZE(4);
                 ++src_it;
                 dest_it[0] = ch0;
                 dest_it[1] = ch1;
@@ -451,7 +451,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_sanitize
                     return;
 
                 case stringify::v0::encoding_error::replace:
-                    BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
+                    STRF_CHECK_DEST_SIZE(3);
                     dest_it[0] = 0xEF;
                     dest_it[1] = 0xBF;
                     dest_it[2] = 0xBD;
@@ -467,7 +467,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_sanitize
     ob.advance_to(dest_it);
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_sanitize_size
+STRF_STATIC_LINKAGE std::size_t utf8_sanitize_size
     ( const std::uint8_t* src
     , const std::uint8_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -542,7 +542,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_sanitize_size
     return size;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_codepoints_count
+STRF_STATIC_LINKAGE std::size_t utf8_codepoints_count
         ( const std::uint8_t* begin
         , const std::uint8_t* end
         , std::size_t max_count )
@@ -558,7 +558,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_codepoints_count
     return count;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE void utf8_encode_fill
+STRF_STATIC_LINKAGE void utf8_encode_fill
     ( stringify::v0::underlying_outbuf<1>& ob
     , std::size_t count
     , char32_t ch
@@ -626,7 +626,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_encode_fill
 }
 
 
-BOOST_STRINGIFY_STATIC_LINKAGE std::uint8_t* utf8_encode_char
+STRF_STATIC_LINKAGE std::uint8_t* utf8_encode_char
     ( std::uint8_t* dest
     , char32_t ch )
 {
@@ -662,7 +662,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::uint8_t* utf8_encode_char
     return dest + 3;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE void utf32_to_utf8_transcode
+STRF_STATIC_LINKAGE void utf32_to_utf8_transcode
     ( stringify::v0::underlying_outbuf<1>& ob
     , const char32_t* src
     , const char32_t* src_end
@@ -677,13 +677,13 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf32_to_utf8_transcode
         auto ch = *src_it;
         if(ch < 0x80)
         {
-            BOOST_STRINGIFY_CHECK_DEST;
+            STRF_CHECK_DEST;
             *dest_it = static_cast<std::uint8_t>(ch);
             ++dest_it;
         }
         else if (ch < 0x800)
         {
-            BOOST_STRINGIFY_CHECK_DEST_SIZE(2);
+            STRF_CHECK_DEST_SIZE(2);
             dest_it[0] = static_cast<std::uint8_t>(0xC0 | ((ch & 0x7C0) >> 6));
             dest_it[1] = static_cast<std::uint8_t>(0x80 |  (ch &  0x3F));
             dest_it += 2;
@@ -693,7 +693,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf32_to_utf8_transcode
             if ( allow_surr == stringify::v0::surrogate_policy::lax
               || stringify::v0::detail::not_surrogate(ch))
             {
-                BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
+                STRF_CHECK_DEST_SIZE(3);
                 dest_it[0] = static_cast<std::uint8_t>(0xE0 | ((ch & 0xF000) >> 12));
                 dest_it[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0xFC0) >> 6));
                 dest_it[2] = static_cast<std::uint8_t>(0x80 |  (ch &   0x3F));
@@ -703,7 +703,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf32_to_utf8_transcode
         }
         else if (ch < 0x110000)
         {
-            BOOST_STRINGIFY_CHECK_DEST_SIZE(4);
+            STRF_CHECK_DEST_SIZE(4);
             dest_it[0] = static_cast<std::uint8_t>(0xF0 | ((ch & 0x1C0000) >> 18));
             dest_it[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0x3F000) >> 12));
             dest_it[2] = static_cast<std::uint8_t>(0x80 | ((ch &    0xFC0) >> 6));
@@ -721,7 +721,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf32_to_utf8_transcode
                     return;
 
                 case stringify::v0::encoding_error::replace:
-                    BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
+                    STRF_CHECK_DEST_SIZE(3);
                     dest_it[0] = 0xEF;
                     dest_it[1] = 0xBF;
                     dest_it[2] = 0xBD;
@@ -737,7 +737,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf32_to_utf8_transcode
     ob.advance_to(dest_it);
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf8_size
+STRF_STATIC_LINKAGE std::size_t utf32_to_utf8_size
     ( const char32_t* src
     , const char32_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -790,12 +790,12 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf8_size
     return count;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE void utf8_write_replacement_char
+STRF_STATIC_LINKAGE void utf8_write_replacement_char
     ( stringify::v0::underlying_outbuf<1>& ob )
 {
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
-    BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
+    STRF_CHECK_DEST_SIZE(3);
     dest_it[0] = 0xEF;
     dest_it[1] = 0xBF;
     dest_it[2] = 0xBD;
@@ -803,13 +803,13 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_write_replacement_char
     ob.advance_to(dest_it);
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE char32_t utf8_decode_single_char(std::uint8_t ch)
+STRF_STATIC_LINKAGE char32_t utf8_decode_single_char(std::uint8_t ch)
 {
     const std::uint8_t uch = ch;
     return uch < 0x80 ? static_cast<char32_t>(uch) : static_cast<char32_t>(-1);
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_validate(char32_t ch)
+STRF_STATIC_LINKAGE std::size_t utf8_validate(char32_t ch)
 {
     return ( ch < 0x80     ? 1 :
              ch < 0x800    ? 2 :
@@ -817,7 +817,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_validate(char32_t ch)
              ch < 0x110000 ? 4 : (std::size_t)-1 );
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE void utf16_to_utf32_transcode
+STRF_STATIC_LINKAGE void utf16_to_utf32_transcode
     ( stringify::v0::underlying_outbuf<4>& ob
     , const char16_t* src
     , const char16_t* src_end
@@ -867,14 +867,14 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf16_to_utf32_transcode
             }
         }
 
-        BOOST_STRINGIFY_CHECK_DEST;
+        STRF_CHECK_DEST;
         *dest_it = ch32;
         ++dest_it;
     }
     ob.advance_to(dest_it);
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_to_utf32_size
+STRF_STATIC_LINKAGE std::size_t utf16_to_utf32_size
     ( const char16_t* src
     , const char16_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -923,7 +923,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_to_utf32_size
     return count;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE void utf16_sanitize
+STRF_STATIC_LINKAGE void utf16_sanitize
     ( stringify::v0::underlying_outbuf<2>& ob
     , const char16_t* src
     , const char16_t* src_end
@@ -942,7 +942,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf16_sanitize
 
         if (not_surrogate(ch))
         {
-            BOOST_STRINGIFY_CHECK_DEST;
+            STRF_CHECK_DEST;
             *dest_it = static_cast<char16_t>(ch);
             ++dest_it;
         }
@@ -951,14 +951,14 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf16_sanitize
                && is_low_surrogate(ch2 = *src_it_next))
         {
             ++src_it_next;
-            BOOST_STRINGIFY_CHECK_DEST_SIZE(2);
+            STRF_CHECK_DEST_SIZE(2);
             dest_it[0] = static_cast<char16_t>(ch);
             dest_it[1] = static_cast<char16_t>(ch2);
             dest_it += 2;
         }
         else if (allow_surr == stringify::v0::surrogate_policy::lax)
         {
-            BOOST_STRINGIFY_CHECK_DEST;
+            STRF_CHECK_DEST;
             *dest_it = static_cast<char16_t>(ch);
             ++dest_it;
         }
@@ -972,7 +972,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf16_sanitize
                     return;
 
                 case stringify::v0::encoding_error::replace:
-                    BOOST_STRINGIFY_CHECK_DEST;
+                    STRF_CHECK_DEST;
                     *dest_it = 0xFFFD;
                     ++dest_it;
                     break;
@@ -986,7 +986,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf16_sanitize
     ob.advance_to(dest_it);
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_sanitize_size
+STRF_STATIC_LINKAGE std::size_t utf16_sanitize_size
     ( const char16_t* src
     , const char16_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -1034,7 +1034,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_sanitize_size
     return count;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_codepoints_count
+STRF_STATIC_LINKAGE std::size_t utf16_codepoints_count
     ( const char16_t* begin
     , const char16_t* end
     , std::size_t max_count )
@@ -1050,12 +1050,12 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_codepoints_count
     return count;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_validate(char32_t ch)
+STRF_STATIC_LINKAGE std::size_t utf16_validate(char32_t ch)
 {
     return ch < 0x10000 ? 1 : ch < 0x110000 ? 2 : (std::size_t)-1;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE char16_t* utf16_encode_char
+STRF_STATIC_LINKAGE char16_t* utf16_encode_char
     ( char16_t* dest
     , char32_t ch )
 {
@@ -1075,7 +1075,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE char16_t* utf16_encode_char
     return dest + 1;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE void utf16_encode_fill
+STRF_STATIC_LINKAGE void utf16_encode_fill
     ( stringify::v0::underlying_outbuf<2>& ob
     , std::size_t count
     , char32_t ch
@@ -1120,7 +1120,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf16_encode_fill
     }
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE void utf32_to_utf16_transcode
+STRF_STATIC_LINKAGE void utf32_to_utf16_transcode
     ( stringify::v0::underlying_outbuf<2>& ob
     , const char32_t* src
     , const char32_t* src_end
@@ -1138,7 +1138,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf32_to_utf16_transcode
             if ( allow_surr == stringify::v0::surrogate_policy::lax
               || stringify::v0::detail::not_surrogate(ch) )
             {
-                BOOST_STRINGIFY_CHECK_DEST;
+                STRF_CHECK_DEST;
                 *dest_it = static_cast<char16_t>(ch);
                 ++dest_it;
             }
@@ -1146,7 +1146,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf32_to_utf16_transcode
         }
         else if (ch < 0x110000)
         {
-            BOOST_STRINGIFY_CHECK_DEST_SIZE(2);
+            STRF_CHECK_DEST_SIZE(2);
             char32_t sub_codepoint = ch - 0x10000;
             dest_it[0] = static_cast<char16_t>(0xD800 + ((sub_codepoint & 0xFFC00) >> 10));
             dest_it[1] = static_cast<char16_t>(0xDC00 +  (sub_codepoint &  0x3FF));
@@ -1163,7 +1163,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf32_to_utf16_transcode
                     return;
 
                 case stringify::v0::encoding_error::replace:
-                    BOOST_STRINGIFY_CHECK_DEST;
+                    STRF_CHECK_DEST;
                     *dest_it = 0xFFFD;
                     ++dest_it;
                     break;
@@ -1177,7 +1177,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf32_to_utf16_transcode
     ob.advance_to(dest_it);
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf16_size
+STRF_STATIC_LINKAGE std::size_t utf32_to_utf16_size
     ( const char32_t* src
     , const char32_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -1213,7 +1213,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf16_size
     return count;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE void utf16_write_replacement_char
+STRF_STATIC_LINKAGE void utf16_write_replacement_char
     ( stringify::v0::underlying_outbuf<2>& ob )
 {
     ob.ensure(1);
@@ -1221,7 +1221,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf16_write_replacement_char
     ob.advance();
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_sanitize_size
+STRF_STATIC_LINKAGE std::size_t utf32_sanitize_size
     ( const char32_t* src
     , const char32_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -1232,7 +1232,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_sanitize_size
     return src_end - src;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE void utf32_sanitize
+STRF_STATIC_LINKAGE void utf32_sanitize
     ( stringify::v0::underlying_outbuf<4>& ob
     , const char32_t* src
     , const char32_t* src_end
@@ -1267,7 +1267,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf32_sanitize
                         continue;
                 }
             }
-            BOOST_STRINGIFY_CHECK_DEST;
+            STRF_CHECK_DEST;
             *dest_it = ch_out;
             ++dest_it;
         }
@@ -1298,7 +1298,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf32_sanitize
                         continue;
                 }
             }
-            BOOST_STRINGIFY_CHECK_DEST;
+            STRF_CHECK_DEST;
             *dest_it = ch_out;
             ++dest_it;
         }
@@ -1321,7 +1321,7 @@ inline std::size_t utf32_validate(char32_t ch)
     return 1;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE char32_t* utf32_encode_char
+STRF_STATIC_LINKAGE char32_t* utf32_encode_char
     ( char32_t* dest
     , char32_t ch )
 {
@@ -1329,7 +1329,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE char32_t* utf32_encode_char
     return dest + 1;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE void utf32_encode_fill
+STRF_STATIC_LINKAGE void utf32_encode_fill
     ( stringify::v0::underlying_outbuf<4>& ob
     , std::size_t count
     , char32_t ch
@@ -1355,7 +1355,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf32_encode_fill
     stringify::v0::detail::write_fill(ob, count, ch);
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE void utf32_write_replacement_char
+STRF_STATIC_LINKAGE void utf32_write_replacement_char
     ( stringify::v0::underlying_outbuf<4>& ob )
 {
     ob.ensure(1);
@@ -1373,7 +1373,7 @@ inline char32_t utf32_decode_single_char(char32_t ch)
     return ch;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE void utf8_to_utf16_transcode
+STRF_STATIC_LINKAGE void utf8_to_utf16_transcode
     ( stringify::v0::underlying_outbuf<2>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
@@ -1394,7 +1394,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_to_utf16_transcode
         ++src_it;
         if (ch0 < 0x80)
         {
-            BOOST_STRINGIFY_CHECK_DEST;
+            STRF_CHECK_DEST;
             *dest_it = ch0;
         }
         else if (0xC0 == (ch0 & 0xE0))
@@ -1402,7 +1402,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_to_utf16_transcode
             if ( ch0 > 0xC1
               && src_it != src_end && is_utf8_continuation(ch1 = * src_it))
             {
-                BOOST_STRINGIFY_CHECK_DEST;
+                STRF_CHECK_DEST;
                 *dest_it = utf8_decode(ch0, ch1);
                 ++src_it;
             } else goto invalid_sequence;
@@ -1412,7 +1412,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_to_utf16_transcode
             if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
-                BOOST_STRINGIFY_CHECK_DEST;
+                STRF_CHECK_DEST;
                 *dest_it = ((ch1 & 0x3F) << 6) | (ch2 & 0x3F);
                 ++src_it;
             } else goto invalid_sequence;
@@ -1424,7 +1424,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_to_utf16_transcode
                                        , allow_surr )
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
-                BOOST_STRINGIFY_CHECK_DEST;
+                STRF_CHECK_DEST;
                 *dest_it = static_cast<char16_t>((x << 6) | (ch2 & 0x3F));
                 ++src_it;
             } else goto invalid_sequence;
@@ -1436,7 +1436,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_to_utf16_transcode
                  && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
                  && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
             {
-                BOOST_STRINGIFY_CHECK_DEST_SIZE(2);
+                STRF_CHECK_DEST_SIZE(2);
                 x = utf8_decode_last_2_of_4(x, ch2, ch3) - 0x10000;
                 dest_it[0] = static_cast<char16_t>(0xD800 + ((x & 0xFFC00) >> 10));
                 dest_it[1] = static_cast<char16_t>(0xDC00 +  (x & 0x3FF));
@@ -1454,7 +1454,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_to_utf16_transcode
                     throw_encoding_failure();
                     return;
                 case stringify::v0::encoding_error::replace:
-                    BOOST_STRINGIFY_CHECK_DEST;
+                    STRF_CHECK_DEST;
                     *dest_it = 0xFFFD;
                     break;
                 default:
@@ -1467,7 +1467,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_to_utf16_transcode
     ob.advance_to(dest_it);
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf16_size
+STRF_STATIC_LINKAGE std::size_t utf8_to_utf16_size
     ( const std::uint8_t* src_begin
     , const std::uint8_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -1542,7 +1542,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf16_size
     return size;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE void utf16_to_utf8_transcode
+STRF_STATIC_LINKAGE void utf16_to_utf8_transcode
     ( stringify::v0::underlying_outbuf<1>& ob
     , const char16_t* src
     , const char16_t* src_end
@@ -1559,13 +1559,13 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf16_to_utf8_transcode
         auto ch = *src_it;
         if (ch < 0x80)
         {
-            BOOST_STRINGIFY_CHECK_DEST;
+            STRF_CHECK_DEST;
             *dest_it = static_cast<std::uint8_t>(ch);
             ++dest_it;
         }
         else if (ch < 0x800)
         {
-            BOOST_STRINGIFY_CHECK_DEST_SIZE(2);
+            STRF_CHECK_DEST_SIZE(2);
             dest_it[0] = static_cast<std::uint8_t>(0xC0 | ((ch & 0x7C0) >> 6));
             dest_it[1] = static_cast<std::uint8_t>(0x80 |  (ch &  0x3F));
             dest_it += 2;
@@ -1573,7 +1573,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf16_to_utf8_transcode
         else if (not_surrogate(ch))
         {
             three_bytes:
-            BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
+            STRF_CHECK_DEST_SIZE(3);
             dest_it[0] = static_cast<std::uint8_t>(0xE0 | ((ch & 0xF000) >> 12));
             dest_it[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0xFC0) >> 6));
             dest_it[2] = static_cast<std::uint8_t>(0x80 |  (ch &   0x3F));
@@ -1583,7 +1583,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf16_to_utf8_transcode
                && src_it != src_end
                && stringify::v0::detail::is_low_surrogate(*(src_it + 1)))
         {
-            BOOST_STRINGIFY_CHECK_DEST_SIZE(4);
+            STRF_CHECK_DEST_SIZE(4);
             unsigned long ch2 = *++src_it;
             unsigned long codepoint = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
             dest_it[0] = static_cast<std::uint8_t>(0xF0 | ((codepoint & 0x1C0000) >> 18));
@@ -1607,7 +1607,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf16_to_utf8_transcode
 
                  case stringify::v0::encoding_error::replace:
                  {
-                     BOOST_STRINGIFY_CHECK_DEST_SIZE(3);
+                     STRF_CHECK_DEST_SIZE(3);
                      dest_it[0] = 0xEF;
                      dest_it[1] = 0xBF;
                      dest_it[2] = 0xBD;
@@ -1624,7 +1624,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf16_to_utf8_transcode
     ob.advance_to(dest_it);
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_to_utf8_size
+STRF_STATIC_LINKAGE std::size_t utf16_to_utf8_size
     ( const char16_t* src_begin
     , const char16_t* src_end
     , stringify::v0::encoding_error err_hdl
@@ -1659,7 +1659,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_to_utf8_size
     return size;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE
+STRF_STATIC_LINKAGE
 const stringify::v0::detail::transcoder_impl<std::uint8_t, char16_t>* utf8_to_enc16
     ( const stringify::v0::detail::encoding_impl<char16_t>& other )
 {
@@ -1673,7 +1673,7 @@ const stringify::v0::detail::transcoder_impl<std::uint8_t, char16_t>* utf8_to_en
     return nullptr;
 }
 
-BOOST_STRINGIFY_STATIC_LINKAGE
+STRF_STATIC_LINKAGE
 const stringify::v0::detail::transcoder_impl<char16_t, std::uint8_t>* utf8_from_enc16
     ( const stringify::v0::detail::encoding_impl<char16_t>& other )
 {
@@ -1687,7 +1687,7 @@ const stringify::v0::detail::transcoder_impl<char16_t, std::uint8_t>* utf8_from_
     return nullptr;
 }
 
-BOOST_STRINGIFY_INLINE
+STRF_INLINE
 const stringify::v0::detail::encoding_impl<std::uint8_t>& utf8_impl()
 {
     static const stringify::v0::detail::encoding_impl<std::uint8_t> encoding_obj =
@@ -1714,7 +1714,7 @@ const stringify::v0::detail::encoding_impl<std::uint8_t>& utf8_impl()
     return encoding_obj;
 }
 
-BOOST_STRINGIFY_INLINE
+STRF_INLINE
 const stringify::v0::detail::encoding_impl<char16_t>& utf16_impl()
 {
     static const stringify::v0::detail::encoding_impl<char16_t> encoding_obj =
@@ -1738,7 +1738,7 @@ const stringify::v0::detail::encoding_impl<char16_t>& utf16_impl()
     return encoding_obj;
 }
 
-BOOST_STRINGIFY_INLINE
+STRF_INLINE
 const stringify::v0::detail::encoding_impl<char32_t>& utf32_impl()
 {
     static const stringify::v0::detail::encoding_impl<char32_t> encoding_obj =
@@ -1764,7 +1764,7 @@ const stringify::v0::detail::encoding_impl<char32_t>& utf32_impl()
 
 } // namespace detail
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_DETAIL_UTF_ENCODINGS_HPP
+#endif  // STRF_V0_DETAIL_UTF_ENCODINGS_HPP
 

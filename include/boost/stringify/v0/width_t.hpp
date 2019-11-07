@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_WIDTH_T_HPP
-#define BOOST_STRINGIFY_V0_WIDTH_T_HPP
+#ifndef STRF_V0_WIDTH_T_HPP
+#define STRF_V0_WIDTH_T_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <cstdint>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 class width_t
 {
@@ -32,7 +32,7 @@ public:
     //                                      && (sizeof(IntT) >= 4) >>
     // constexpr explicit width_t(IntT x) noexcept
     // {
-    //     BOOST_STRINGIFY_IF_CONSTEXPR ( std::is_unsigned<IntT>::value )
+    //     STRF_IF_CONSTEXPR ( std::is_unsigned<IntT>::value )
     //     {
     //         _value = x < 0x10000 ? static_cast<std::int32_t>(x) : INT_MAX;
     //     }
@@ -547,7 +547,7 @@ constexpr stringify::v0::width_t operator "" _w()
 
 } // namespace width_literal
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_WIDTH_T_HPP
+#endif  // STRF_V0_WIDTH_T_HPP
 

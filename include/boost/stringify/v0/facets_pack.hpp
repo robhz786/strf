@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_FACETS_PACK_HPP
-#define BOOST_STRINGIFY_V0_DETAIL_FACETS_PACK_HPP
+#ifndef STRF_V0_DETAIL_FACETS_PACK_HPP
+#define STRF_V0_DETAIL_FACETS_PACK_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <functional>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 template <typename ... F> class facets_pack;
 
@@ -817,7 +817,7 @@ constexpr decltype(auto) get_facet(const stringify::v0::facets_pack<FPE...>& fp)
     return fp.template get_facet<FacetCategory, Tag>();
 }
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_DETAIL_FACETS_PACK_HPP
+#endif  // STRF_V0_DETAIL_FACETS_PACK_HPP
 

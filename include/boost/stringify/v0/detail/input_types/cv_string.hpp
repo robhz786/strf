@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_CV_STRING_HPP
-#define BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_CV_STRING_HPP
+#ifndef STRF_V0_DETAIL_INPUT_TYPES_CV_STRING_HPP
+#define STRF_V0_DETAIL_INPUT_TYPES_CV_STRING_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -8,7 +8,7 @@
 #include <boost/stringify/v0/detail/format_functions.hpp>
 #include <boost/stringify/v0/detail/facets/encoding.hpp>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 template <typename CharIn>
 class cv_string
@@ -81,7 +81,7 @@ private:
 
 #if defined(__cpp_char8_t)
 
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+STRF_CONSTEXPR_CHAR_TRAITS
 stringify::v0::cv_string<char8_t> cv(const char8_t* str)
 {
     return {str, std::char_traits<char8_t>::length(str)};
@@ -89,29 +89,29 @@ stringify::v0::cv_string<char8_t> cv(const char8_t* str)
 
 #endif
 
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+STRF_CONSTEXPR_CHAR_TRAITS
 stringify::v0::cv_string<char> cv(const char* str)
 {
     return {str, std::char_traits<char>::length(str)};
 }
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+STRF_CONSTEXPR_CHAR_TRAITS
 stringify::v0::cv_string<char16_t> cv(const char16_t* str)
 {
     return {str, std::char_traits<char16_t>::length(str)};
 }
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+STRF_CONSTEXPR_CHAR_TRAITS
 stringify::v0::cv_string<char32_t> cv(const char32_t* str)
 {
     return {str, std::char_traits<char32_t>::length(str)};
 }
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+STRF_CONSTEXPR_CHAR_TRAITS
 stringify::v0::cv_string<wchar_t> cv(const wchar_t* str)
 {
     return {str, std::char_traits<wchar_t>::length(str)};
 }
 
 template <typename CharIn>
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+STRF_CONSTEXPR_CHAR_TRAITS
 stringify::v0::cv_string_with_encoding<CharIn> cv
     ( const CharIn* str
     , stringify::v0::encoding<CharIn> enc )
@@ -120,7 +120,7 @@ stringify::v0::cv_string_with_encoding<CharIn> cv
 }
 
 template <typename CharIn, typename Traits, typename Allocator>
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+STRF_CONSTEXPR_CHAR_TRAITS
 stringify::v0::cv_string<CharIn> cv
     ( const std::basic_string<CharIn, Traits, Allocator>& str )
 {
@@ -135,7 +135,7 @@ stringify::v0::cv_string_with_encoding<CharIn> cv
     return {str.data(), str.size(), enc};
 }
 
-#if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
+#if defined(STRF_HAS_STD_STRING_VIEW)
 
 template <typename CharIn, typename Traits>
 constexpr stringify::v0::cv_string<CharIn> cv
@@ -172,7 +172,7 @@ constexpr auto make_fmt(stringify::v0::tag, stringify::v0::cv_string<CharIn>& cv
 
 #if defined(__cpp_char8_t)
 
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+STRF_CONSTEXPR_CHAR_TRAITS
 stringify::v0::cv_string_with_format<char8_t> fmt_cv(const char8_t* str) noexcept
 {
     stringify::v0::cv_string<char8_t> cv_str
@@ -182,28 +182,28 @@ stringify::v0::cv_string_with_format<char8_t> fmt_cv(const char8_t* str) noexcep
 
 #endif
 
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+STRF_CONSTEXPR_CHAR_TRAITS
 stringify::v0::cv_string_with_format<char> fmt_cv(const char* str) noexcept
 {
     stringify::v0::cv_string<char> cv_str
         { str, std::char_traits<char>::length(str) };
     return stringify::v0::cv_string_with_format<char>{cv_str};
 }
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+STRF_CONSTEXPR_CHAR_TRAITS
 stringify::v0::cv_string_with_format<char16_t> fmt_cv(const char16_t* str) noexcept
 {
     stringify::v0::cv_string<char16_t> cv_str
         { str, std::char_traits<char16_t>::length(str) };
     return stringify::v0::cv_string_with_format<char16_t>{cv_str};
 }
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+STRF_CONSTEXPR_CHAR_TRAITS
 stringify::v0::cv_string_with_format<char32_t> fmt_cv(const char32_t* str) noexcept
 {
     stringify::v0::cv_string<char32_t> cv_str
         { str, std::char_traits<char32_t>::length(str) };
     return stringify::v0::cv_string_with_format<char32_t>{cv_str};
 }
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+STRF_CONSTEXPR_CHAR_TRAITS
 stringify::v0::cv_string_with_format<wchar_t> fmt_cv(const wchar_t* str) noexcept
 {
     stringify::v0::cv_string<wchar_t> cv_str
@@ -213,7 +213,7 @@ stringify::v0::cv_string_with_format<wchar_t> fmt_cv(const wchar_t* str) noexcep
 }
 
 template <typename CharIn>
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+STRF_CONSTEXPR_CHAR_TRAITS
 stringify::v0::cv_string_with_format_and_encoding<CharIn> fmt_cv
     ( const CharIn* str
     , stringify::v0::encoding<CharIn> enc ) noexcept
@@ -222,7 +222,7 @@ stringify::v0::cv_string_with_format_and_encoding<CharIn> fmt_cv
     return stringify::v0::cv_string_with_format_and_encoding<CharIn>{cv_str};
 }
 
-#if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
+#if defined(STRF_HAS_STD_STRING_VIEW)
 
 template <typename CharIn, typename Traits>
 constexpr stringify::v0::cv_string_with_format<CharIn> fmt_cv
@@ -284,12 +284,12 @@ public:
             , _get_facet<stringify::v0::encoding_error_c>(fp)
             , _get_facet<stringify::v0::surrogate_policy_c>(fp) )
     {
-        BOOST_STRINGIFY_IF_CONSTEXPR (Preview::width_required)
+        STRF_IF_CONSTEXPR (Preview::width_required)
         {
             const auto& wc = _get_facet<stringify::v0::width_calculator_c<CharIn>>(fp);
             _calc_width(preview, wc);
         }
-        BOOST_STRINGIFY_IF_CONSTEXPR (Preview::size_required)
+        STRF_IF_CONSTEXPR (Preview::size_required)
         {
             preview.add_size(necessary_size());
         }
@@ -695,69 +695,69 @@ void fmt_cv_string_printer<CharIn, CharOut>::_write_fill
     _dest_encoding.encode_fill(ob, count, _fmt.fill(), _enc_err, _allow_surr);
 }
 
-#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+#if defined(STRF_SEPARATE_COMPILATION)
 
 #if defined(__cpp_char8_t)
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, char8_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, wchar_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, char8_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, char>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, char16_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, char32_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, wchar_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char, char8_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char16_t, char8_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char32_t, char8_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<wchar_t, char8_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char, char8_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char16_t, char8_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char32_t, char8_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<wchar_t, char8_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, char8_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, wchar_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, char8_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, char>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, char16_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, char32_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, wchar_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char, char8_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char16_t, char8_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char32_t, char8_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<wchar_t, char8_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char, char8_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char16_t, char8_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char32_t, char8_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<wchar_t, char8_t>;
 
 #endif
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char16_t, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char16_t, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char16_t, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char16_t, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char32_t, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char32_t, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char32_t, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<char32_t, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<wchar_t, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<wchar_t, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<wchar_t, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class cv_string_printer<wchar_t, wchar_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char, char>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char, char16_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char, char32_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char, wchar_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char16_t, char>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char16_t, char16_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char16_t, char32_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char16_t, wchar_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char32_t, char>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char32_t, char16_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char32_t, char32_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<char32_t, wchar_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<wchar_t, char>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<wchar_t, char16_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<wchar_t, char32_t>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<wchar_t, wchar_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char16_t, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char16_t, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char16_t, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char16_t, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char32_t, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char32_t, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char32_t, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char32_t, wchar_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<wchar_t, char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<wchar_t, char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<wchar_t, char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_cv_string_printer<wchar_t, wchar_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char, char>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char, char16_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char, char32_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char, wchar_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char16_t, char>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char16_t, char16_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char16_t, char32_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char16_t, wchar_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char32_t, char>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char32_t, char16_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char32_t, char32_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char32_t, wchar_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<wchar_t, char>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<wchar_t, char16_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<wchar_t, char32_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<wchar_t, wchar_t>;
 
-#endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+#endif // defined(STRF_SEPARATE_COMPILATION)
 
 } // namespace detail
 
@@ -805,7 +805,7 @@ make_printer( const FPack& fp
     return {fp, preview, str, str.get_encoding()};
 }
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_CV_STRING_HPP
+#endif  // STRF_V0_DETAIL_INPUT_TYPES_CV_STRING_HPP
 

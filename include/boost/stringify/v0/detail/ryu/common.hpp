@@ -15,27 +15,27 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#ifndef BOOST_STRINGIFY_V0_DETAIL_RYU_COMMON_HPP_INCLUDED
-#define BOOST_STRINGIFY_V0_DETAIL_RYU_COMMON_HPP_INCLUDED
+#ifndef STRF_V0_DETAIL_RYU_COMMON_HPP_INCLUDED
+#define STRF_V0_DETAIL_RYU_COMMON_HPP_INCLUDED
 
 #include <assert.h>
 #include <stdint.h>
 #include <string.h>
 
 #if defined(_M_IX86) || defined(_M_ARM)
-#define BOOST_STRINGIFY_V0_RYU_32_BIT_PLATFORM
+#define STRF_V0_RYU_32_BIT_PLATFORM
 #endif
 
-#define BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_BEGIN \
+#define STRF_V0_DETAIL_RYU_NAMESPACE_BEGIN \
     namespace boost { \
     namespace stringify { \
     inline namespace v0 { \
     namespace detail { \
     namespace ryu { \
 
-#define BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_END }}}}}
+#define STRF_V0_DETAIL_RYU_NAMESPACE_END }}}}}
 
-BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_BEGIN;
+STRF_V0_DETAIL_RYU_NAMESPACE_BEGIN;
 
 inline uint32_t decimalLength9(const uint32_t v) {
   // Function precondition: v is not a 10-digit number.
@@ -107,6 +107,6 @@ inline uint64_t double_to_bits(const double d) {
   return bits;
 }
 
-BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_END;
+STRF_V0_DETAIL_RYU_NAMESPACE_END;
 
-#endif // BOOST_STRINGIFY_V0_DETAIL_RYU_COMMON_HPP_INCLUDED
+#endif // STRF_V0_DETAIL_RYU_COMMON_HPP_INCLUDED

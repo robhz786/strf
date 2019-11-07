@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_OUTPUT_TYPES_CHAR_PTR_HPP
-#define BOOST_STRINGIFY_V0_DETAIL_OUTPUT_TYPES_CHAR_PTR_HPP
+#ifndef STRF_V0_DETAIL_OUTPUT_TYPES_CHAR_PTR_HPP
+#define STRF_V0_DETAIL_OUTPUT_TYPES_CHAR_PTR_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -9,7 +9,7 @@
 #include <boost/stringify/v0/dispatcher.hpp>
 #include <boost/stringify/v0/outbuf.hpp>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 namespace detail {
 
@@ -160,7 +160,7 @@ inline auto write(wchar_t* dest, std::size_t count)
         (dest, dest + count);
 }
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif  /* BOOST_STRINGIFY_V0_DETAIL_OUTPUT_TYPES_CHAR_PTR_HPP */
+#endif  /* STRF_V0_DETAIL_OUTPUT_TYPES_CHAR_PTR_HPP */
 

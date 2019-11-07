@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_INT_HPP_INCLUDED
-#define BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_INT_HPP_INCLUDED
+#ifndef STRF_V0_DETAIL_INPUT_TYPES_INT_HPP_INCLUDED
+#define STRF_V0_DETAIL_INPUT_TYPES_INT_HPP_INCLUDED
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -16,7 +16,7 @@
 // todo: optimize as in:
 // https://pvk.ca/Blog/2017/12/22/appnexus-common-framework-its-out-also-how-to-print-integers-faster/
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 template <int Base>
 struct int_format;
@@ -397,7 +397,7 @@ void partial_fmt_int_printer<CharT, Base>::_init
     , stringify::v0::int_format_data fmt )
 {
     using unsigned_type = typename std::make_unsigned<IntT>::type;
-    BOOST_STRINGIFY_IF_CONSTEXPR (Base == 10)
+    STRF_IF_CONSTEXPR (Base == 10)
     {
         _negative = value < 0;
         _prefixsize = _negative || fmt.showpos;
@@ -412,7 +412,7 @@ void partial_fmt_int_printer<CharT, Base>::_init
     _digcount = stringify::v0::detail::count_digits<Base>(_uvalue);
     _precision = fmt.precision;
 
-    BOOST_STRINGIFY_IF_CONSTEXPR (HasPunct)
+    STRF_IF_CONSTEXPR (HasPunct)
     {
         _sepcount = _punct.thousands_sep_count(_digcount);
     }
@@ -448,12 +448,12 @@ inline void partial_fmt_int_printer<CharT, Base>::print_to
         auto it = ob.pos();
         if (_prefixsize != 0)
         {
-            BOOST_STRINGIFY_IF_CONSTEXPR (Base == 10)
+            STRF_IF_CONSTEXPR (Base == 10)
             {
                 * it = static_cast<CharT>('+') + (_negative << 1);
                 ++ it;
             }
-            else BOOST_STRINGIFY_IF_CONSTEXPR (Base == 8)
+            else STRF_IF_CONSTEXPR (Base == 8)
             {
                 * it = static_cast<CharT>('0');
                 ++ it;
@@ -497,12 +497,12 @@ inline void partial_fmt_int_printer<CharT, Base>::write_complement
     if (_prefixsize != 0)
     {
         ob.ensure(_prefixsize);
-        BOOST_STRINGIFY_IF_CONSTEXPR (Base == 10)
+        STRF_IF_CONSTEXPR (Base == 10)
         {
             * ob.pos() = static_cast<CharT>('+') + (_negative << 1);
             ob.advance(1);
         }
-        else BOOST_STRINGIFY_IF_CONSTEXPR (Base == 8)
+        else STRF_IF_CONSTEXPR (Base == 8)
         {
             * ob.pos() = static_cast<CharT>('0');
             ob.advance(1);
@@ -648,38 +648,38 @@ void full_fmt_int_printer<CharT, Base>::print_to
     }
 }
 
-#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+#if defined(STRF_SEPARATE_COMPILATION)
 #if defined(__cpp_char8_t)
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char8_t,  8>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char8_t, 10>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char8_t, 16>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<char8_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class punct_int_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char8_t,  8>;
+STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char8_t, 10>;
+STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char8_t, 16>;
+STRF_EXPLICIT_TEMPLATE class int_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE class punct_int_printer<char8_t>;
 #endif
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char,  8>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char, 10>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char, 16>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char16_t,  8>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char16_t, 10>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char16_t, 16>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char32_t,  8>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char32_t, 10>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char32_t, 16>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<wchar_t,  8>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<wchar_t, 10>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class partial_fmt_int_printer<wchar_t, 16>;
+STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char,  8>;
+STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char, 10>;
+STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char, 16>;
+STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char16_t,  8>;
+STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char16_t, 10>;
+STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char16_t, 16>;
+STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char32_t,  8>;
+STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char32_t, 10>;
+STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<char32_t, 16>;
+STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<wchar_t,  8>;
+STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<wchar_t, 10>;
+STRF_EXPLICIT_TEMPLATE class partial_fmt_int_printer<wchar_t, 16>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class int_printer<wchar_t>;
+STRF_EXPLICIT_TEMPLATE class int_printer<char>;
+STRF_EXPLICIT_TEMPLATE class int_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE class int_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE class int_printer<wchar_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class punct_int_printer<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class punct_int_printer<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class punct_int_printer<char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class punct_int_printer<wchar_t>;
+STRF_EXPLICIT_TEMPLATE class punct_int_printer<char>;
+STRF_EXPLICIT_TEMPLATE class punct_int_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE class punct_int_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE class punct_int_printer<wchar_t>;
 
-#endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+#endif // defined(STRF_SEPARATE_COMPILATION)
 
 } // namespace detail
 
@@ -824,6 +824,6 @@ template <> struct is_int_number<unsigned int>: public std::true_type {};
 template <> struct is_int_number<unsigned long>: public std::true_type {};
 template <> struct is_int_number<unsigned long long>: public std::true_type {};
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif // BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_FMT_INT_HPP_INCLUDED
+#endif // STRF_V0_DETAIL_INPUT_TYPES_FMT_INT_HPP_INCLUDED

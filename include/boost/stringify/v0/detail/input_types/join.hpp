@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_JOIN_HPP
-#define BOOST_STRINGIFY_V0_JOIN_HPP
+#ifndef STRF_V0_JOIN_HPP
+#define STRF_V0_JOIN_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -8,7 +8,7 @@
 #include <boost/stringify/v0/detail/facets/encoding.hpp>
 #include <boost/stringify/v0/detail/printers_tuple.hpp>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 template <typename ... Args>
 struct join_t
@@ -132,7 +132,7 @@ public:
         {
             _fillcount = p.remaining_width().round();
         }
-        BOOST_STRINGIFY_IF_CONSTEXPR (ReqSize)
+        STRF_IF_CONSTEXPR (ReqSize)
         {
             preview.add_size(p.get_size());
             if (_fillcount > 0)
@@ -172,7 +172,7 @@ public:
         }
         width_t width = _fillcount + wmax - p.remaining_width();
         preview.subtract_width(width);
-        BOOST_STRINGIFY_IF_CONSTEXPR (ReqSize)
+        STRF_IF_CONSTEXPR (ReqSize)
         {
             preview.add_size(p.get_size());
             if (_fillcount > 0)
@@ -434,7 +434,7 @@ join_split(std::int16_t width, int num_leading_args) noexcept
     return {width, stringify::v0::text_alignment::split, U' ', num_leading_args};
 }
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_JOIN_HPP
+#endif  // STRF_V0_JOIN_HPP
 

@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_FACETS_ENCODINGS_HPP
-#define BOOST_STRINGIFY_V0_DETAIL_FACETS_ENCODINGS_HPP
+#ifndef STRF_V0_DETAIL_FACETS_ENCODINGS_HPP
+#define STRF_V0_DETAIL_FACETS_ENCODINGS_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -7,7 +7,7 @@
 
 #include <boost/stringify/v0/printer.hpp>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 template <typename> class facet_trait;
 
@@ -794,7 +794,7 @@ inline std::size_t decode_encode_size
 }
 
 
-#if defined(BOOST_STRINGIFY_OMIT_IMPL)
+#if defined(STRF_OMIT_IMPL)
 
 namespace detail {
 
@@ -808,18 +808,18 @@ const stringify::v0::detail::encoding_impl<std::uint8_t>& iso_8859_15_impl();
 
 } // namespace detail
 
-#endif // defined(BOOST_STRINGIFY_OMIT_IMPL)
+#endif // defined(STRF_OMIT_IMPL)
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#if ! defined(BOOST_STRINGIFY_OMIT_IMPL)
+#if ! defined(STRF_OMIT_IMPL)
 
 #include <boost/stringify/v0/detail/utf_encodings.hpp>
 #include <boost/stringify/v0/detail/single_byte_encodings.hpp>
 
-#endif // defined(BOOST_STRINGIFY_OMIT_IMPL)
+#endif // defined(STRF_OMIT_IMPL)
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 template <typename CharT>
 inline stringify::v0::encoding<CharT> utf16()
@@ -967,7 +967,7 @@ struct encoding_c<wchar_t>
     }
 };
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_DETAIL_FACETS_ENCODINGS_HPP
+#endif  // STRF_V0_DETAIL_FACETS_ENCODINGS_HPP
 

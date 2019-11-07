@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_FLOAT_HPP
-#define BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_FLOAT_HPP
+#ifndef STRF_V0_DETAIL_INPUT_TYPES_FLOAT_HPP
+#define STRF_V0_DETAIL_INPUT_TYPES_FLOAT_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -14,7 +14,7 @@
 #include <cstring>
 #include <type_traits>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 namespace detail {
 
 struct double_dec
@@ -32,9 +32,9 @@ struct double_dec_base
     std::int32_t e10;
 };
 
-#if ! defined(BOOST_STRINGIFY_OMIT_IMPL)
+#if ! defined(STRF_OMIT_IMPL)
 
-BOOST_STRINGIFY_INLINE double_dec_base trivial_float_dec(
+STRF_INLINE double_dec_base trivial_float_dec(
     std::uint32_t ieee_mantissa,
     std::int32_t biased_exponent,
     std::uint32_t k )
@@ -95,7 +95,7 @@ BOOST_STRINGIFY_INLINE double_dec_base trivial_float_dec(
     return {m, e10};
 }
 
-BOOST_STRINGIFY_INLINE double_dec_base trivial_double_dec(
+STRF_INLINE double_dec_base trivial_double_dec(
     std::uint64_t ieee_mantissa,
     std::int32_t biased_exponent,
     std::uint32_t k )
@@ -162,7 +162,7 @@ BOOST_STRINGIFY_INLINE double_dec_base trivial_double_dec(
     STRF_ASSERT((m % 10) != 0);
     return {m, e10};
 }
-BOOST_STRINGIFY_INLINE detail::double_dec decode(float f)
+STRF_INLINE detail::double_dec decode(float f)
 {
     constexpr int bias = 127;
     constexpr int e_size = 8;
@@ -197,7 +197,7 @@ BOOST_STRINGIFY_INLINE detail::double_dec decode(float f)
 }
 
 
-BOOST_STRINGIFY_INLINE detail::double_dec decode(double d)
+STRF_INLINE detail::double_dec decode(double d)
 {
     constexpr int bias = 1023;
     constexpr int e_size = 11; // bits in exponent
@@ -230,12 +230,12 @@ BOOST_STRINGIFY_INLINE detail::double_dec decode(double d)
     return {ddec.mantissa, ddec.exponent, sign, false, false};
 }
 
-#else  // ! defined(BOOST_STRINGIFY_OMIT_IMPL)
+#else  // ! defined(STRF_OMIT_IMPL)
 
 detail::double_dec decode(double d);
 detail::double_dec decode(float f);
 
-#endif // ! defined(BOOST_STRINGIFY_OMIT_IMPL)
+#endif // ! defined(STRF_OMIT_IMPL)
 
 } // namespace detail
 
@@ -355,9 +355,9 @@ struct double_printer_data: detail::double_dec
     unsigned extra_zeros;
 };
 
-#if !defined(BOOST_STRINGIFY_OMIT_IMPL)
+#if !defined(STRF_OMIT_IMPL)
 
-BOOST_STRINGIFY_INLINE double_printer_data::double_printer_data
+STRF_INLINE double_printer_data::double_printer_data
     ( detail::double_dec d
     , float_format_data fmt
     , const stringify::v0::numpunct_base* punct )
@@ -483,7 +483,7 @@ BOOST_STRINGIFY_INLINE double_printer_data::double_printer_data
     }
 }
 
-#endif // !defined(BOOST_STRINGIFY_OMIT_IMPL)
+#endif // !defined(STRF_OMIT_IMPL)
 
 template <typename CharT>
 void _print_amplified_integer_small_separator
@@ -776,11 +776,11 @@ public:
         , _encoding(get_facet<stringify::v0::encoding_c<CharT>, FloatT>(fp))
         , _enc_err(get_facet<stringify::v0::encoding_error_c, FloatT>(fp))
     {
-        BOOST_STRINGIFY_IF_CONSTEXPR (Preview::width_required)
+        STRF_IF_CONSTEXPR (Preview::width_required)
         {
             preview.subtract_width(_content_width());
         }
-        BOOST_STRINGIFY_IF_CONSTEXPR (Preview::size_required)
+        STRF_IF_CONSTEXPR (Preview::size_required)
         {
             preview.add_size(_content_size());
         }
@@ -833,7 +833,7 @@ void punct_double_printer<CharT>::init( Preview& preview
     if (content_width > fmt_width)
     {
         preview.subtract_width(content_width);
-        BOOST_STRINGIFY_IF_CONSTEXPR (Preview::size_required)
+        STRF_IF_CONSTEXPR (Preview::size_required)
         {
             preview.add_size(_content_size());
         }
@@ -842,7 +842,7 @@ void punct_double_printer<CharT>::init( Preview& preview
     {
         auto fillcount = fmt_width - content_width;
         preview.subtract_width(fmt_width);
-        BOOST_STRINGIFY_IF_CONSTEXPR (Preview::size_required)
+        STRF_IF_CONSTEXPR (Preview::size_required)
         {
             std::size_t fillsize = _encoding.validate(_fillchar);
             if (fillsize == (size_t)-1)
@@ -1180,7 +1180,7 @@ void double_printer<CharT>::init( Preview& preview
     {
         auto fillcount = (w - static_cast<std::int16_t>(content_width));
         preview.subtract_width(w);
-        BOOST_STRINGIFY_IF_CONSTEXPR(Preview::size_required)
+        STRF_IF_CONSTEXPR(Preview::size_required)
         {
             std::size_t fillchar_size = _encoding.validate(_fillchar);
             if (fillchar_size == (size_t)-1)
@@ -1400,7 +1400,7 @@ public:
         : fast_double_printer(f)
     {
         std::size_t s = 0;
-        BOOST_STRINGIFY_IF_CONSTEXPR (Preview::width_required || Preview::size_required)
+        STRF_IF_CONSTEXPR (Preview::width_required || Preview::size_required)
         {
             s = size();
         }
@@ -1413,7 +1413,7 @@ public:
         : fast_double_printer(d)
     {
         std::size_t s = 0;
-        BOOST_STRINGIFY_IF_CONSTEXPR (Preview::width_required || Preview::size_required)
+        STRF_IF_CONSTEXPR (Preview::width_required || Preview::size_required)
         {
             s = size();
         }
@@ -1671,11 +1671,11 @@ public:
                     + (_m10_digcount > 1 || showpoint);
             _sci_notation = -_value.e10 > tmp;
         }
-        BOOST_STRINGIFY_IF_CONSTEXPR (Preview::width_required)
+        STRF_IF_CONSTEXPR (Preview::width_required)
         {
             preview.subtract_width(width());
         }
-        BOOST_STRINGIFY_IF_CONSTEXPR (Preview::size_required)
+        STRF_IF_CONSTEXPR (Preview::size_required)
         {
             preview.add_size(size());
         }
@@ -1879,36 +1879,36 @@ void fast_punct_double_printer<CharT>::print_to
     }
 }
 
-#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+#if defined(STRF_SEPARATE_COMPILATION)
 
 #if defined(__cpp_char8_t)
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class punct_double_printer<char8_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class double_printer<char8_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_double_printer<char8_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_punct_double_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE class punct_double_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE class double_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE class fast_double_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE class fast_punct_double_printer<char8_t>;
 #endif
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class punct_double_printer<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class punct_double_printer<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class punct_double_printer<char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class punct_double_printer<wchar_t>;
+STRF_EXPLICIT_TEMPLATE class punct_double_printer<char>;
+STRF_EXPLICIT_TEMPLATE class punct_double_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE class punct_double_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE class punct_double_printer<wchar_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class double_printer<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class double_printer<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class double_printer<char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class double_printer<wchar_t>;
+STRF_EXPLICIT_TEMPLATE class double_printer<char>;
+STRF_EXPLICIT_TEMPLATE class double_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE class double_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE class double_printer<wchar_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_double_printer<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_double_printer<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_double_printer<char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_double_printer<wchar_t>;
+STRF_EXPLICIT_TEMPLATE class fast_double_printer<char>;
+STRF_EXPLICIT_TEMPLATE class fast_double_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE class fast_double_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE class fast_double_printer<wchar_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_punct_double_printer<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_punct_double_printer<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_punct_double_printer<char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fast_punct_double_printer<wchar_t>;
+STRF_EXPLICIT_TEMPLATE class fast_punct_double_printer<char>;
+STRF_EXPLICIT_TEMPLATE class fast_punct_double_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE class fast_punct_double_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE class fast_punct_double_printer<wchar_t>;
 
-#endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+#endif // defined(STRF_SEPARATE_COMPILATION)
 
 } // namespace detail
 
@@ -1973,7 +1973,7 @@ make_printer
     return {fp, preview, x};
 }
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_FLOAT_HPP
+#endif  // STRF_V0_DETAIL_INPUT_TYPES_FLOAT_HPP
 

@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
-#define BOOST_STRINGIFY_V0_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
+#ifndef STRF_V0_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
+#define STRF_V0_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -7,7 +7,7 @@
 
 #include <boost/stringify/v0/detail/facets/encoding.hpp>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 template <typename CharT> struct width_calculator_c;
 template <typename CharT> class width_calculator;
@@ -120,11 +120,11 @@ struct width_calculator_c
     }
 };
 
-#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+#if defined(STRF_SEPARATE_COMPILATION)
 
-#endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+#endif // defined(STRF_SEPARATE_COMPILATION)
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
+#endif  // STRF_V0_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
 

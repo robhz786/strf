@@ -16,19 +16,19 @@
 // KIND, either express or implied.
 
 // Runtime compiler options:
-// -DBOOST_STRINGIFY_V0_RYU_DEBUG Generate verbose debugging output to stdout.
+// -DSTRF_V0_RYU_DEBUG Generate verbose debugging output to stdout.
 //
-// -DBOOST_STRINGIFY_V0_RYU_ONLY_64_BIT_OPS Avoid using uint128_t or 64-bit intrinsics. Slower,
+// -DSTRF_V0_RYU_ONLY_64_BIT_OPS Avoid using uint128_t or 64-bit intrinsics. Slower,
 //     depending on your compiler.
 //
-// -DBOOST_STRINGIFY_V0_RYU_OPTIMIZE_SIZE Use smaller lookup tables. Instead of storing every
+// -DSTRF_V0_RYU_OPTIMIZE_SIZE Use smaller lookup tables. Instead of storing every
 //     required power of 5, only store every 26th entry, and compute
 //     intermediate values with a multiplication. This reduces the lookup table
 //     size by about 10x (only one case, and only double) at the cost of some
 //     performance. Currently requires MSVC intrinsics.
 
-#ifndef BOOST_STRINGIFY_V0_DETAIL_RYU_DOUBLE_HPP_INCLUDED
-#define BOOST_STRINGIFY_V0_DETAIL_RYU_DOUBLE_HPP_INCLUDED
+#ifndef STRF_V0_DETAIL_RYU_DOUBLE_HPP_INCLUDED
+#define STRF_V0_DETAIL_RYU_DOUBLE_HPP_INCLUDED
 
 #include <assert.h>
 #include <stdbool.h>
@@ -36,24 +36,24 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef BOOST_STRINGIFY_V0_RYU_DEBUG
+#ifdef STRF_V0_RYU_DEBUG
 #include <inttypes.h>
 #include <stdio.h>
 #endif
 
 // ABSL avoids uint128_t on Win32 even if __SIZEOF_INT128__ is defined.
 // Let's do the same for now.
-#if defined(__SIZEOF_INT128__) && !defined(_MSC_VER) && !defined(BOOST_STRINGIFY_V0_RYU_ONLY_64_BIT_OPS)
-#define BOOST_STRINGIFY_V0_RYU_HAS_UINT128
-#elif defined(_MSC_VER) && !defined(BOOST_STRINGIFY_V0_RYU_ONLY_64_BIT_OPS) && defined(_M_X64)
-#define BOOST_STRINGIFY_V0_RYU_HAS_64_BIT_INTRINSICS
+#if defined(__SIZEOF_INT128__) && !defined(_MSC_VER) && !defined(STRF_V0_RYU_ONLY_64_BIT_OPS)
+#define STRF_V0_RYU_HAS_UINT128
+#elif defined(_MSC_VER) && !defined(STRF_V0_RYU_ONLY_64_BIT_OPS) && defined(_M_X64)
+#define STRF_V0_RYU_HAS_64_BIT_INTRINSICS
 #endif
 
 #include <boost/stringify/v0/detail/ryu/common.hpp>
 #include <boost/stringify/v0/detail/ryu/d2s.hpp>
 #include <boost/stringify/v0/detail/ryu/d2s_intrinsics.hpp>
 
-BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_BEGIN;
+STRF_V0_DETAIL_RYU_NAMESPACE_BEGIN;
 
 // We need a 64x128-bit multiplication and a subsequent 128-bit shift.
 // Multiplication:
@@ -92,7 +92,7 @@ BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_BEGIN;
 //    c. Split only the first factor into 31-bit pieces, which also guarantees
 //       no internal overflow, but requires extra work since the intermediate
 //       results are not perfectly aligned.
-#if defined(BOOST_STRINGIFY_V0_RYU_HAS_UINT128)
+#if defined(STRF_V0_RYU_HAS_UINT128)
 
 // Best case: use 128-bit type.
 inline uint64_t mulShift(const uint64_t m, const uint64_t* const mul, const int32_t j) {
@@ -120,7 +120,7 @@ inline uint64_t mulShiftAll(const uint64_t m, const uint64_t* const mul, const i
   return mulShift(4 * m, mul, j);
 }
 
-#elif defined(BOOST_STRINGIFY_V0_RYU_HAS_64_BIT_INTRINSICS)
+#elif defined(STRF_V0_RYU_HAS_64_BIT_INTRINSICS)
 
 inline uint64_t mulShift(const uint64_t m, const uint64_t* const mul, const int32_t j) {
   // m is maximum 55 bits
@@ -142,7 +142,7 @@ inline uint64_t mulShiftAll(const uint64_t m, const uint64_t* const mul, const i
   return mulShift(4 * m, mul, j);
 }
 
-#else // !defined(BOOST_STRINGIFY_V0_RYU_HAS_UINT128) && !defined(BOOST_STRINGIFY_V0_RYU_HAS_64_BIT_INTRINSICS)
+#else // !defined(STRF_V0_RYU_HAS_UINT128) && !defined(STRF_V0_RYU_HAS_64_BIT_INTRINSICS)
 
 inline uint64_t mulShiftAll(uint64_t m, const uint64_t* const mul, const int32_t j,
   uint64_t* const vp, uint64_t* const vm, const uint32_t mmShift) {
@@ -177,7 +177,7 @@ inline uint64_t mulShiftAll(uint64_t m, const uint64_t* const mul, const int32_t
   return shiftright128(mid, hi, (uint32_t) (j - 64 - 1));
 }
 
-#endif // BOOST_STRINGIFY_V0_RYU_HAS_64_BIT_INTRINSICS
+#endif // STRF_V0_RYU_HAS_64_BIT_INTRINSICS
 
 inline uint32_t decimalLength17(const uint64_t v) {
   // This is slightly faster than a loop.
@@ -217,16 +217,16 @@ inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_t ieeeE
   uint64_t m2;
   if (ieeeExponent == 0) {
     // We subtract 2 so that the bounds computation has 2 additional bits.
-    e2 = 1 - BOOST_STRINGIFY_V0_RYU_DOUBLE_BIAS - BOOST_STRINGIFY_V0_RYU_DOUBLE_MANTISSA_BITS - 2;
+    e2 = 1 - STRF_V0_RYU_DOUBLE_BIAS - STRF_V0_RYU_DOUBLE_MANTISSA_BITS - 2;
     m2 = ieeeMantissa;
   } else {
-    e2 = (int32_t) ieeeExponent - BOOST_STRINGIFY_V0_RYU_DOUBLE_BIAS - BOOST_STRINGIFY_V0_RYU_DOUBLE_MANTISSA_BITS - 2;
-    m2 = (1ull << BOOST_STRINGIFY_V0_RYU_DOUBLE_MANTISSA_BITS) | ieeeMantissa;
+    e2 = (int32_t) ieeeExponent - STRF_V0_RYU_DOUBLE_BIAS - STRF_V0_RYU_DOUBLE_MANTISSA_BITS - 2;
+    m2 = (1ull << STRF_V0_RYU_DOUBLE_MANTISSA_BITS) | ieeeMantissa;
   }
   const bool even = (m2 & 1) == 0;
   const bool acceptBounds = even;
 
-#ifdef BOOST_STRINGIFY_V0_RYU_DEBUG
+#ifdef STRF_V0_RYU_DEBUG
   printf("-> %" PRIu64 " * 2^%d\n", m2, e2 + 2);
 #endif
 
@@ -248,16 +248,16 @@ inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_t ieeeE
     // This expression is slightly faster than max(0, log10Pow2(e2) - 1).
     const uint32_t q = log10Pow2(e2) - (e2 > 3);
     e10 = (int32_t) q;
-    const int32_t k = BOOST_STRINGIFY_V0_RYU_DOUBLE_POW5_INV_BITCOUNT + pow5bits((int32_t) q) - 1;
+    const int32_t k = STRF_V0_RYU_DOUBLE_POW5_INV_BITCOUNT + pow5bits((int32_t) q) - 1;
     const int32_t i = -e2 + (int32_t) q + k;
-#if defined(BOOST_STRINGIFY_V0_RYU_OPTIMIZE_SIZE)
+#if defined(STRF_V0_RYU_OPTIMIZE_SIZE)
     uint64_t pow5[2];
     double_computeInvPow5(q, pow5);
     vr = mulShiftAll(m2, pow5, i, &vp, &vm, mmShift);
 #else
     vr = mulShiftAll(m2, DOUBLE_POW5_INV_SPLIT(q), i, &vp, &vm, mmShift);
 #endif
-#ifdef BOOST_STRINGIFY_V0_RYU_DEBUG
+#ifdef STRF_V0_RYU_DEBUG
     printf("%" PRIu64 " * 2^%d / 10^%u\n", mv, e2, q);
     printf("V+=%" PRIu64 "\nV =%" PRIu64 "\nV-=%" PRIu64 "\n", vp, vr, vm);
 #endif
@@ -283,16 +283,16 @@ inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_t ieeeE
     const uint32_t q = log10Pow5(-e2) - (-e2 > 1);
     e10 = (int32_t) q + e2;
     const int32_t i = -e2 - (int32_t) q;
-    const int32_t k = pow5bits(i) - BOOST_STRINGIFY_V0_RYU_DOUBLE_POW5_BITCOUNT;
+    const int32_t k = pow5bits(i) - STRF_V0_RYU_DOUBLE_POW5_BITCOUNT;
     const int32_t j = (int32_t) q - k;
-#if defined(BOOST_STRINGIFY_V0_RYU_OPTIMIZE_SIZE)
+#if defined(STRF_V0_RYU_OPTIMIZE_SIZE)
     uint64_t pow5[2];
     double_computePow5(i, pow5);
     vr = mulShiftAll(m2, pow5, j, &vp, &vm, mmShift);
 #else
     vr = mulShiftAll(m2, DOUBLE_POW5_SPLIT(i), j, &vp, &vm, mmShift);
 #endif
-#ifdef BOOST_STRINGIFY_V0_RYU_DEBUG
+#ifdef STRF_V0_RYU_DEBUG
     printf("%" PRIu64 " * 5^%d / 10^%u\n", mv, -e2, q);
     printf("%u %d %d %d\n", q, i, k, j);
     printf("V+=%" PRIu64 "\nV =%" PRIu64 "\nV-=%" PRIu64 "\n", vp, vr, vm);
@@ -314,12 +314,12 @@ inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_t ieeeE
       // <=> p2(mv) >= q && p5(mv) - e2 >= q
       // <=> p2(mv) >= q (because -e2 >= q)
       vrIsTrailingZeros = multipleOfPowerOf2(mv, q);
-#ifdef BOOST_STRINGIFY_V0_RYU_DEBUG
+#ifdef STRF_V0_RYU_DEBUG
       printf("vr is trailing zeros=%s\n", vrIsTrailingZeros ? "true" : "false");
 #endif
     }
   }
-#ifdef BOOST_STRINGIFY_V0_RYU_DEBUG
+#ifdef STRF_V0_RYU_DEBUG
   printf("e10=%d\n", e10);
   printf("V+=%" PRIu64 "\nV =%" PRIu64 "\nV-=%" PRIu64 "\n", vp, vr, vm);
   printf("vm is trailing zeros=%s\n", vmIsTrailingZeros ? "true" : "false");
@@ -350,7 +350,7 @@ inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_t ieeeE
       vm = vmDiv10;
       ++removed;
     }
-#ifdef BOOST_STRINGIFY_V0_RYU_DEBUG
+#ifdef STRF_V0_RYU_DEBUG
     printf("V+=%" PRIu64 "\nV =%" PRIu64 "\nV-=%" PRIu64 "\n", vp, vr, vm);
     printf("d-10=%s\n", vmIsTrailingZeros ? "true" : "false");
 #endif
@@ -372,7 +372,7 @@ inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_t ieeeE
         ++removed;
       }
     }
-#ifdef BOOST_STRINGIFY_V0_RYU_DEBUG
+#ifdef STRF_V0_RYU_DEBUG
     printf("%" PRIu64 " %d\n", vr, lastRemovedDigit);
     printf("vr is trailing zeros=%s\n", vrIsTrailingZeros ? "true" : "false");
 #endif
@@ -414,7 +414,7 @@ inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_t ieeeE
       vm = vmDiv10;
       ++removed;
     }
-#ifdef BOOST_STRINGIFY_V0_RYU_DEBUG
+#ifdef STRF_V0_RYU_DEBUG
     printf("%" PRIu64 " roundUp=%s\n", vr, roundUp ? "true" : "false");
     printf("vr is trailing zeros=%s\n", vrIsTrailingZeros ? "true" : "false");
 #endif
@@ -423,7 +423,7 @@ inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_t ieeeE
   }
   const int32_t exp = e10 + removed;
 
-#ifdef BOOST_STRINGIFY_V0_RYU_DEBUG
+#ifdef STRF_V0_RYU_DEBUG
   printf("V+=%" PRIu64 "\nV =%" PRIu64 "\nV-=%" PRIu64 "\n", vp, vr, vm);
   printf("O=%" PRIu64 "\n", output);
   printf("EXP=%d\n", exp);
@@ -447,7 +447,7 @@ inline int to_chars(const floating_decimal_64 v, const bool sign, char* const re
   uint64_t output = v.mantissa;
   const uint32_t olength = decimalLength17(output);
 
-#ifdef BOOST_STRINGIFY_V0_RYU_DEBUG
+#ifdef STRF_V0_RYU_DEBUG
   printf("DIGITS=%" PRIu64 "\n", v.mantissa);
   printf("OLEN=%u\n", olength);
   printf("EXP=%u\n", v.exponent + olength);
@@ -547,8 +547,8 @@ inline int to_chars(const floating_decimal_64 v, const bool sign, char* const re
 
 inline bool d2d_small_int(const uint64_t ieeeMantissa, const uint32_t ieeeExponent,
   floating_decimal_64* const v) {
-  const uint64_t m2 = (1ull << BOOST_STRINGIFY_V0_RYU_DOUBLE_MANTISSA_BITS) | ieeeMantissa;
-  const int32_t e2 = (int32_t) ieeeExponent - BOOST_STRINGIFY_V0_RYU_DOUBLE_BIAS - BOOST_STRINGIFY_V0_RYU_DOUBLE_MANTISSA_BITS;
+  const uint64_t m2 = (1ull << STRF_V0_RYU_DOUBLE_MANTISSA_BITS) | ieeeMantissa;
+  const int32_t e2 = (int32_t) ieeeExponent - STRF_V0_RYU_DOUBLE_BIAS - STRF_V0_RYU_DOUBLE_MANTISSA_BITS;
 
   if (e2 > 0) {
     // f = m2 * 2^e2 >= 2^53 is an integer.
@@ -581,7 +581,7 @@ int d2s_buffered_n(double f, char* result) {
   // Step 1: Decode the floating-point number, and unify normalized and subnormal cases.
   const uint64_t bits = double_to_bits(f);
 
-#ifdef BOOST_STRINGIFY_V0_RYU_DEBUG
+#ifdef STRF_V0_RYU_DEBUG
   printf("IN=");
   for (int32_t bit = 63; bit >= 0; --bit) {
     printf("%d", (int) ((bits >> bit) & 1));
@@ -590,11 +590,11 @@ int d2s_buffered_n(double f, char* result) {
 #endif
 
   // Decode bits into sign, mantissa, and exponent.
-  const bool ieeeSign = ((bits >> (BOOST_STRINGIFY_V0_RYU_DOUBLE_MANTISSA_BITS + BOOST_STRINGIFY_V0_RYU_DOUBLE_EXPONENT_BITS)) & 1) != 0;
-  const uint64_t ieeeMantissa = bits & ((1ull << BOOST_STRINGIFY_V0_RYU_DOUBLE_MANTISSA_BITS) - 1);
-  const uint32_t ieeeExponent = (uint32_t) ((bits >> BOOST_STRINGIFY_V0_RYU_DOUBLE_MANTISSA_BITS) & ((1u << BOOST_STRINGIFY_V0_RYU_DOUBLE_EXPONENT_BITS) - 1));
+  const bool ieeeSign = ((bits >> (STRF_V0_RYU_DOUBLE_MANTISSA_BITS + STRF_V0_RYU_DOUBLE_EXPONENT_BITS)) & 1) != 0;
+  const uint64_t ieeeMantissa = bits & ((1ull << STRF_V0_RYU_DOUBLE_MANTISSA_BITS) - 1);
+  const uint32_t ieeeExponent = (uint32_t) ((bits >> STRF_V0_RYU_DOUBLE_MANTISSA_BITS) & ((1u << STRF_V0_RYU_DOUBLE_EXPONENT_BITS) - 1));
   // Case distinction; exit early for the easy cases.
-  if (ieeeExponent == ((1u << BOOST_STRINGIFY_V0_RYU_DOUBLE_EXPONENT_BITS) - 1u) || (ieeeExponent == 0 && ieeeMantissa == 0)) {
+  if (ieeeExponent == ((1u << STRF_V0_RYU_DOUBLE_EXPONENT_BITS) - 1u) || (ieeeExponent == 0 && ieeeMantissa == 0)) {
     return copy_special_str(result, ieeeSign, ieeeExponent, ieeeMantissa);
   }
 
@@ -636,6 +636,6 @@ char* d2s(double f) {
 
 #endif // 0
 
-BOOST_STRINGIFY_V0_DETAIL_RYU_NAMESPACE_END;
+STRF_V0_DETAIL_RYU_NAMESPACE_END;
 
-#endif // BOOST_STRINGIFY_V0_DETAIL_RYU_DOUBLE_HPP_INCLUDED
+#endif // STRF_V0_DETAIL_RYU_DOUBLE_HPP_INCLUDED

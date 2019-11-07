@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DISPATCHER_HPP
-#define BOOST_STRINGIFY_V0_DISPATCHER_HPP
+#ifndef STRF_V0_DISPATCHER_HPP
+#define STRF_V0_DISPATCHER_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -9,7 +9,7 @@
 #include <boost/stringify/v0/detail/printers_tuple.hpp>
 #include <boost/stringify/v0/facets_pack.hpp>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 template < typename OutbufCreator
          , typename FPack = stringify::v0::facets_pack<> >
@@ -38,7 +38,7 @@ public:
     using char_type = typename OutbufCreator::char_type;
 
     template <typename ... FPE>
-    BOOST_STRINGIFY_NODISCARD constexpr auto facets(FPE&& ... fpe) const &
+    STRF_NODISCARD constexpr auto facets(FPE&& ... fpe) const &
     {
         static_assert( std::is_copy_constructible<OutbufCreator>::value
                      , "OutbufCreator must be copy constructible" );
@@ -54,7 +54,7 @@ public:
     }
 
     template <typename ... FPE>
-    BOOST_STRINGIFY_NODISCARD constexpr auto facets(FPE&& ... fpe) &&
+    STRF_NODISCARD constexpr auto facets(FPE&& ... fpe) &&
     {
         static_assert( std::is_move_constructible<OutbufCreator>::value
                      , "OutbufCreator must be move constructible" );
@@ -137,7 +137,7 @@ public:
                                                              , args ))... );
     }
 
-#if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
+#if defined(STRF_HAS_STD_STRING_VIEW)
 
     template <typename ... Args>
     decltype(auto) tr
@@ -599,6 +599,6 @@ using printer_impl
                                        , std::declval<Preview&>()
                                        , std::declval<const Arg&>() ) );
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_DISPATCHER_HPP
+#endif  // STRF_V0_DISPATCHER_HPP

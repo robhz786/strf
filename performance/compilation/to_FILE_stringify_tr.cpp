@@ -1,4 +1,4 @@
-#define BOOST_STRINGIFY_SEPARATE_COMPILATION
+#define STRF_SEPARATE_COMPILATION
 #include <boost/stringify.hpp>
 #include <cstdio>
 #include "args.hpp"

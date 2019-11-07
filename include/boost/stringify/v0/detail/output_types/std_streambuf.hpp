@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
-#define BOOST_STRINGIFY_V0_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
+#ifndef STRF_V0_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
+#define STRF_V0_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -9,7 +9,7 @@
 #include <boost/stringify/v0/dispatcher.hpp>
 #include <boost/stringify/v0/outbuf.hpp>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 template <typename CharT, typename Traits = std::char_traits<CharT> >
 class basic_streambuf_writer final: public stringify::v0::basic_outbuf<CharT>
@@ -132,7 +132,7 @@ inline auto write( std::basic_streambuf<CharT, Traits>* dest )
     return stringify::v0::write(*dest);
 }
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
+#endif  // STRF_V0_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
 

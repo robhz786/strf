@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_TEST_EXCEPTION_THROWER_HPP
-#define BOOST_STRINGIFY_TEST_EXCEPTION_THROWER_HPP
+#ifndef STRF_TEST_EXCEPTION_THROWER_HPP
+#define STRF_TEST_EXCEPTION_THROWER_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -43,7 +43,7 @@ public:
 } // namespace detail
 
 
-//BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+//STRF_V0_NAMESPACE_BEGIN
 
 template <typename CharT, typename FPack>
 inline ::detail::exceptional_printer<CharT>
@@ -52,6 +52,6 @@ make_printer( const FPack&, exception_tag x )
     return {x};
 }
 
-//BOOST_STRINGIFY_V0_NAMESPACE_END
+//STRF_V0_NAMESPACE_END
 
 #endif

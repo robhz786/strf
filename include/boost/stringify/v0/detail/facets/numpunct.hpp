@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_FACETS_NUMPUNCT_HPP
-#define BOOST_STRINGIFY_V0_DETAIL_FACETS_NUMPUNCT_HPP
+#ifndef STRF_V0_DETAIL_FACETS_NUMPUNCT_HPP
+#define STRF_V0_DETAIL_FACETS_NUMPUNCT_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -8,7 +8,7 @@
 #include <string>
 #include <boost/stringify/v0/config.hpp>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 namespace detail {
 
@@ -66,9 +66,9 @@ private:
 };
 
 
-#if defined(BOOST_STRINGIFY_SOURCE) || ! defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+#if defined(STRF_SOURCE) || ! defined(STRF_SEPARATE_COMPILATION)
 
-BOOST_STRINGIFY_INLINE
+STRF_INLINE
 std::uint8_t* monotonic_grouping_impl::get_groups
     ( unsigned num_digits
     , std::uint8_t* groups_array ) const
@@ -84,7 +84,7 @@ std::uint8_t* monotonic_grouping_impl::get_groups
     return groups_array;
 }
 
-BOOST_STRINGIFY_INLINE
+STRF_INLINE
 unsigned str_grouping_impl::get_thousands_sep_count(unsigned num_digits) const
 {
     STRF_ASSERT(!_grouping.empty());
@@ -107,7 +107,7 @@ unsigned str_grouping_impl::get_thousands_sep_count(unsigned num_digits) const
 }
 
 
-BOOST_STRINGIFY_INLINE std::uint8_t* str_grouping_impl::get_groups
+STRF_INLINE std::uint8_t* str_grouping_impl::get_groups
     ( unsigned num_digits
     , std::uint8_t* groups_array ) const
 {
@@ -143,7 +143,7 @@ BOOST_STRINGIFY_INLINE std::uint8_t* str_grouping_impl::get_groups
     return groups_array;
 }
 
-#endif //defined(BOOST_STRINGIFY_SOURCE) || ! defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+#endif //defined(STRF_SOURCE) || ! defined(STRF_SEPARATE_COMPILATION)
 
 } // namespace detail
 
@@ -467,7 +467,7 @@ constexpr bool has_punct = has_punct_impl<CharT, FPack, InputT, Base>::has_punct
 
 } // namespace detail
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_DETAIL_FACETS_NUMPUNCT_HPP
+#endif  // STRF_V0_DETAIL_FACETS_NUMPUNCT_HPP
 

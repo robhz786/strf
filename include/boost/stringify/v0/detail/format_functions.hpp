@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_FORMAT_FUNCTIONS_HPP
-#define BOOST_STRINGIFY_V0_DETAIL_FORMAT_FUNCTIONS_HPP
+#ifndef STRF_V0_DETAIL_FORMAT_FUNCTIONS_HPP
+#define STRF_V0_DETAIL_FORMAT_FUNCTIONS_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -8,7 +8,7 @@
 #include <boost/stringify/v0/config.hpp>
 #include <cstring>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 namespace detail{
 
@@ -460,7 +460,7 @@ constexpr auto sci(const T& value, P precision)
     return fmt(value).sci().p(precision);
 }
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_DETAIL_FORMAT_FUNCTIONS_HPP
+#endif  // STRF_V0_DETAIL_FORMAT_FUNCTIONS_HPP
 

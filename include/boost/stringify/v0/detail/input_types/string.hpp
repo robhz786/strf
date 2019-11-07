@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_STRING
-#define BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_STRING
+#ifndef STRF_V0_DETAIL_INPUT_TYPES_STRING
+#define STRF_V0_DETAIL_INPUT_TYPES_STRING
 
 #include <algorithm>
 #include <limits>
@@ -7,7 +7,7 @@
 #include <boost/stringify/v0/detail/format_functions.hpp>
 #include <boost/stringify/v0/facets_pack.hpp>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 namespace detail {
 
@@ -24,7 +24,7 @@ public:
 
     constexpr simple_string_view(const simple_string_view&) noexcept = default;
 
-    BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+    STRF_CONSTEXPR_CHAR_TRAITS
     simple_string_view(const CharIn* str) noexcept
         : _begin(str)
         , _len(std::char_traits<CharIn>::length(str))
@@ -67,7 +67,7 @@ auto make_fmt( stringify::v0::tag
     return stringify::v0::string_with_format<CharIn>{{str.data(), str.size()}};
 }
 
-#if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
+#if defined(STRF_HAS_STD_STRING_VIEW)
 
 template <typename CharIn, typename Traits>
 constexpr auto
@@ -77,11 +77,11 @@ make_fmt( stringify::v0::tag
     return stringify::v0::string_with_format<CharIn>{{str.data(), str.size()}};
 }
 
-#endif // defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
+#endif // defined(STRF_HAS_STD_STRING_VIEW)
 
 #if defined(__cpp_char8_t)
 
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+STRF_CONSTEXPR_CHAR_TRAITS
 auto make_fmt(stringify::v0::tag, const char8_t* str)
 {
     auto len = std::char_traits<char8_t>::length(str);
@@ -90,28 +90,28 @@ auto make_fmt(stringify::v0::tag, const char8_t* str)
 
 #endif
 
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+STRF_CONSTEXPR_CHAR_TRAITS
 auto make_fmt(stringify::v0::tag, const char* str)
 {
     auto len = std::char_traits<char>::length(str);
     return stringify::v0::string_with_format<char>{{str, len}};
 }
 
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+STRF_CONSTEXPR_CHAR_TRAITS
 auto make_fmt(stringify::v0::tag, const wchar_t* str)
 {
     auto len = std::char_traits<wchar_t>::length(str);
     return stringify::v0::string_with_format<wchar_t>{{str, len}};
 }
 
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+STRF_CONSTEXPR_CHAR_TRAITS
 auto make_fmt(stringify::v0::tag, const char16_t* str)
 {
     auto len = std::char_traits<char16_t>::length(str);
     return stringify::v0::string_with_format<char16_t>{{str, len}};
 }
 
-BOOST_STRINGIFY_CONSTEXPR_CHAR_TRAITS
+STRF_CONSTEXPR_CHAR_TRAITS
 auto make_fmt(stringify::v0::tag, const char32_t* str)
 {
     auto len = std::char_traits<char32_t>::length(str);
@@ -432,24 +432,24 @@ void fmt_string_printer<CharT>::_write_fill
     _encoding.encode_fill( ob, count, _fmt.fill(), _enc_err, _allow_surr );
 }
 
-#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+#if defined(STRF_SEPARATE_COMPILATION)
 
 #if defined(__cpp_char8_t)
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_printer<char8_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_string_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE class string_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_string_printer<char8_t>;
 #endif
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_printer<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_printer<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_printer<char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class string_printer<wchar_t>;
+STRF_EXPLICIT_TEMPLATE class string_printer<char>;
+STRF_EXPLICIT_TEMPLATE class string_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE class string_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE class string_printer<wchar_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_string_printer<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_string_printer<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_string_printer<char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_string_printer<wchar_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_string_printer<char>;
+STRF_EXPLICIT_TEMPLATE class fmt_string_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_string_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_string_printer<wchar_t>;
 
-#endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+#endif // defined(STRF_SEPARATE_COMPILATION)
 
 } // namespace detail
 
@@ -524,7 +524,7 @@ make_printer(const FPack& fp, Preview& preview, const std::basic_string<CharIn, 
     return {fp, preview, str.data(), str.size()};
 }
 
-#if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
+#if defined(STRF_HAS_STD_STRING_VIEW)
 
 template
     < typename CharOut
@@ -540,7 +540,7 @@ make_printer(const FPack& fp, Preview& preview, const std::basic_string_view<Cha
     return {fp, preview, str.data(), str.size()};
 }
 
-#endif //defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
+#endif //defined(STRF_HAS_STD_STRING_VIEW)
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
 inline stringify::v0::detail::fmt_string_printer<CharOut>
@@ -551,7 +551,7 @@ make_printer(const FPack& fp, Preview& preview, const stringify::v0::string_with
     return {fp, preview, input};
 }
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif  /* BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_CHAR_PTR */
+#endif  /* STRF_V0_DETAIL_INPUT_TYPES_CHAR_PTR */
 

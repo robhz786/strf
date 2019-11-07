@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
-#define BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
+#ifndef STRF_V0_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
+#define STRF_V0_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -10,7 +10,7 @@
 #include <boost/stringify/v0/facets_pack.hpp>
 #include <boost/stringify/v0/detail/facets/width_calculator.hpp>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 template <typename CharT>
 struct char_tag
@@ -267,23 +267,23 @@ void fmt_char_printer<CharT>::_write_fill
     _encoding.encode_fill(ob, count, _fmt.fill(), _enc_err, _allow_surr);
 }
 
-#if defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+#if defined(STRF_SEPARATE_COMPILATION)
 
 #if defined(__cpp_char8_t)
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<char8_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_char_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE class char_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_char_printer<char8_t>;
 #endif
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class char_printer<wchar_t>;
+STRF_EXPLICIT_TEMPLATE class char_printer<char>;
+STRF_EXPLICIT_TEMPLATE class char_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE class char_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE class char_printer<wchar_t>;
 
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_char_printer<char>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_char_printer<char16_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_char_printer<char32_t>;
-BOOST_STRINGIFY_EXPLICIT_TEMPLATE class fmt_char_printer<wchar_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_char_printer<char>;
+STRF_EXPLICIT_TEMPLATE class fmt_char_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_char_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_char_printer<wchar_t>;
 
-#endif // defined(BOOST_STRINGIFY_SEPARATE_COMPILATION)
+#endif // defined(STRF_SEPARATE_COMPILATION)
 
 // template <typename A, typename B>
 // struct enable_if_same_impl
@@ -413,9 +413,9 @@ template <> struct is_char<char16_t>: public std::true_type {};
 template <> struct is_char<char32_t>: public std::true_type {};
 template <> struct is_char<wchar_t>: public std::true_type {};
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif // BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
+#endif // STRF_V0_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
 
 
 

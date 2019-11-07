@@ -57,7 +57,7 @@ int main()
         TEST(L"   abc")  ( strf::right(abc, 6) );
     }
 
-#if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
+#if defined(STRF_HAS_STD_STRING_VIEW)
 
     {
         std::string_view abc{"abcdef", 3};

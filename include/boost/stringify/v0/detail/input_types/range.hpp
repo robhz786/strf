@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_RANGE_HPP
-#define BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_RANGE_HPP
+#ifndef STRF_V0_DETAIL_INPUT_TYPES_RANGE_HPP
+#define STRF_V0_DETAIL_INPUT_TYPES_RANGE_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -8,7 +8,7 @@
 #include <initializer_list>
 #include <boost/stringify/v0/detail/facets/encoding.hpp>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 template <typename ForwardIt>
 struct range_p
@@ -640,7 +640,7 @@ inline auto fmt_range(T (&array)[N], const CharT* sep)
         { {&array[0], &array[0] + N, sep, sep_len} };
 }
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_DETAIL_INPUT_TYPES_RANGE_HPP
+#endif  // STRF_V0_DETAIL_INPUT_TYPES_RANGE_HPP
 

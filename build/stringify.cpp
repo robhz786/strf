@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_SOURCE
-#define BOOST_STRINGIFY_SOURCE
+#ifndef STRF_SOURCE
+#define STRF_SOURCE
 #endif
 
 #include <boost/stringify.hpp>

@@ -1,5 +1,5 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_SINGLE_BYTE_ENCODINGS_HPP
-#define BOOST_STRINGIFY_V0_DETAIL_SINGLE_BYTE_ENCODINGS_HPP
+#ifndef STRF_V0_DETAIL_SINGLE_BYTE_ENCODINGS_HPP
+#define STRF_V0_DETAIL_SINGLE_BYTE_ENCODINGS_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -7,7 +7,7 @@
 
 #include <boost/stringify/v0/printer.hpp>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 namespace detail {
 
@@ -136,7 +136,7 @@ void single_byte_encoding<Impl>::to_utf32
                     continue;
             }
         }
-        BOOST_STRINGIFY_CHECK_DEST;
+        STRF_CHECK_DEST;
         *dest_it = ch32;
         ++dest_it;
     }
@@ -178,7 +178,7 @@ void single_byte_encoding<Impl>::sanitize
                     continue;
             }
         }
-        BOOST_STRINGIFY_CHECK_DEST;
+        STRF_CHECK_DEST;
         *dest_it = ch_out;
         ++dest_it;
     }
@@ -290,7 +290,7 @@ void single_byte_encoding<Impl>::from_utf32
                     continue;
             }
         }
-        BOOST_STRINGIFY_CHECK_DEST;
+        STRF_CHECK_DEST;
         *dest_it = static_cast<std::uint8_t>(ch2);
         ++dest_it;
     }
@@ -355,7 +355,7 @@ struct impl_iso8859_3
     static char32_t decode(std::uint8_t ch);
 };
 
-BOOST_STRINGIFY_INLINE unsigned impl_iso8859_3::encode(char32_t ch)
+STRF_INLINE unsigned impl_iso8859_3::encode(char32_t ch)
 {
     if (ch < 0xA1)
     {
@@ -393,7 +393,7 @@ BOOST_STRINGIFY_INLINE unsigned impl_iso8859_3::encode(char32_t ch)
     return it != enc_map_end && it->key == ch ? it->value : 0x100;
 }
 
-BOOST_STRINGIFY_INLINE char32_t impl_iso8859_3::decode(std::uint8_t ch)
+STRF_INLINE char32_t impl_iso8859_3::decode(std::uint8_t ch)
 {
     if (ch < 0xA1)
     {
@@ -455,7 +455,7 @@ private:
     static unsigned encode_ext(char32_t ch);
 };
 
-BOOST_STRINGIFY_INLINE unsigned impl_iso8859_15::encode_ext(char32_t ch)
+STRF_INLINE unsigned impl_iso8859_15::encode_ext(char32_t ch)
 {
     switch(ch)
     {
@@ -520,7 +520,7 @@ private:
     static unsigned encode_ext(char32_t ch);
 };
 
-BOOST_STRINGIFY_INLINE unsigned impl_windows_1252::encode_ext(char32_t ch)
+STRF_INLINE unsigned impl_windows_1252::encode_ext(char32_t ch)
 {
     switch(ch)
     {
@@ -560,7 +560,7 @@ BOOST_STRINGIFY_INLINE unsigned impl_windows_1252::encode_ext(char32_t ch)
     return 0x100;
 }
 
-BOOST_STRINGIFY_INLINE
+STRF_INLINE
 const stringify::v0::detail::encoding_impl<std::uint8_t>& windows_1252_impl()
 {
     using impl = detail::single_byte_encoding<detail::impl_windows_1252>;
@@ -581,7 +581,7 @@ const stringify::v0::detail::encoding_impl<std::uint8_t>& windows_1252_impl()
     return info;
 }
 
-BOOST_STRINGIFY_INLINE
+STRF_INLINE
 const stringify::v0::detail::encoding_impl<std::uint8_t>& iso_8859_1_impl()
 {
     using impl = detail::single_byte_encoding<detail::impl_iso8859_1>;
@@ -602,7 +602,7 @@ const stringify::v0::detail::encoding_impl<std::uint8_t>& iso_8859_1_impl()
     return info;
 }
 
-BOOST_STRINGIFY_INLINE
+STRF_INLINE
 const stringify::v0::detail::encoding_impl<std::uint8_t>& iso_8859_3_impl()
 {
     using impl = detail::single_byte_encoding<detail::impl_iso8859_3>;
@@ -625,7 +625,7 @@ const stringify::v0::detail::encoding_impl<std::uint8_t>& iso_8859_3_impl()
 
 
 
-BOOST_STRINGIFY_INLINE
+STRF_INLINE
 const stringify::v0::detail::encoding_impl<std::uint8_t>& iso_8859_15_impl()
 {
     using impl = detail::single_byte_encoding<detail::impl_iso8859_15>;
@@ -647,7 +647,7 @@ const stringify::v0::detail::encoding_impl<std::uint8_t>& iso_8859_15_impl()
 }
 
 } // namespace detail
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_DETAIL_SINGLE_BYTE_ENCODINGS_HPP
+#endif  // STRF_V0_DETAIL_SINGLE_BYTE_ENCODINGS_HPP
 

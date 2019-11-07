@@ -1,11 +1,11 @@
-#ifndef BOOST_STRINGIFY_V0_DETAIL_NUMBER_OF_DIGITS_HPP
-#define BOOST_STRINGIFY_V0_DETAIL_NUMBER_OF_DIGITS_HPP
+#ifndef STRF_V0_DETAIL_NUMBER_OF_DIGITS_HPP
+#define STRF_V0_DETAIL_NUMBER_OF_DIGITS_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 namespace detail {
 
@@ -788,7 +788,7 @@ void write_int
 
 } // namespace detail
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
-#endif  // BOOST_STRINGIFY_V0_DETAIL_NUMBER_OF_DIGITS_HPP
+#endif  // STRF_V0_DETAIL_NUMBER_OF_DIGITS_HPP
 

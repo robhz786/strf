@@ -10,7 +10,7 @@
 #include <cwchar>
 #include <cstdint>
 
-BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
+STRF_V0_NAMESPACE_BEGIN
 
 namespace detail {
 
@@ -564,7 +564,7 @@ public:
     }
 };
 
-BOOST_STRINGIFY_V0_NAMESPACE_END
+STRF_V0_NAMESPACE_END
 
 #endif  // BOOST_OUTBUF_HPP
 
