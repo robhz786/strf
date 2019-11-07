@@ -27,13 +27,11 @@
 #endif
 
 #define STRF_V0_DETAIL_RYU_NAMESPACE_BEGIN \
-    namespace boost { \
-    namespace stringify { \
-    inline namespace v0 { \
+    namespace strf { \
     namespace detail { \
     namespace ryu { \
 
-#define STRF_V0_DETAIL_RYU_NAMESPACE_END }}}}}
+#define STRF_V0_DETAIL_RYU_NAMESPACE_END }}}
 
 STRF_V0_DETAIL_RYU_NAMESPACE_BEGIN;
 

@@ -13,8 +13,6 @@
 #include <boost/stringify.hpp>
 #include "loop_timer.hpp"
 
-namespace strf = boost::stringify::v0;
-
 class width_accumulator: public strf::basic_outbuf<char32_t>
 {
 public:

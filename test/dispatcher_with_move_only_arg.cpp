@@ -5,8 +5,6 @@
 #include <boost/stringify.hpp>
 #include "test_utils.hpp"
 
-namespace strf = boost::stringify::v0;
-
 struct foo // note: foo is not copiable
 {
     foo(char* begin, char* end)

@@ -143,8 +143,6 @@ using derives_from_x = std::is_base_of<class_x, T>;
 template <typename T>
 using is_64 = std::integral_constant<bool, sizeof(T) == 8>;
 
-namespace strf = boost::stringify;
-
 void test_facets_pack()
 {
     auto f1_10 = facet<1>{10};

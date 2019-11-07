@@ -15,8 +15,6 @@
 
 int main()
 {
-    namespace strf = boost::stringify::v0;
-
     std::u32string u32sample1(500, U'A');
     std::u32string u32sample2(500, U'\u0100');
     std::u32string u32sample3(500, U'\u0800');

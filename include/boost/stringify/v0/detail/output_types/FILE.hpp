@@ -9,15 +9,15 @@
 #include <cstring>
 #include <boost/stringify/v0/dispatcher.hpp>
 
-STRF_V0_NAMESPACE_BEGIN
+STRF_NAMESPACE_BEGIN
 
 template <typename CharT>
-class narrow_cfile_writer final: public stringify::v0::basic_outbuf_noexcept<CharT>
+class narrow_cfile_writer final: public strf::basic_outbuf_noexcept<CharT>
 {
 public:
 
     explicit narrow_cfile_writer(std::FILE* dest_)
-        : stringify::v0::basic_outbuf_noexcept<CharT>(_buf, _buf_size)
+        : strf::basic_outbuf_noexcept<CharT>(_buf, _buf_size)
         , _dest(dest_)
     {
         STRF_ASSERT(dest_ != nullptr);
@@ -69,16 +69,16 @@ private:
     std::FILE* _dest;
     std::size_t _count = 0;
     static constexpr std::size_t _buf_size
-        = stringify::v0::min_size_after_recycle<CharT>();
+        = strf::min_size_after_recycle<CharT>();
     CharT _buf[_buf_size];
 };
 
-class wide_cfile_writer final: public stringify::v0::basic_outbuf_noexcept<wchar_t>
+class wide_cfile_writer final: public strf::basic_outbuf_noexcept<wchar_t>
 {
 public:
 
     explicit wide_cfile_writer(std::FILE* dest_)
-        : stringify::v0::basic_outbuf_noexcept<wchar_t>(_buf, _buf_size)
+        : strf::basic_outbuf_noexcept<wchar_t>(_buf, _buf_size)
         , _dest(dest_)
     {
         STRF_ASSERT(dest_ != nullptr);
@@ -128,7 +128,7 @@ public:
     std::FILE* _dest;
     std::size_t _count = 0;
     static constexpr std::size_t _buf_size
-        = stringify::v0::min_size_after_recycle<wchar_t>();
+        = strf::min_size_after_recycle<wchar_t>();
     wchar_t _buf[_buf_size];
 };
 
@@ -140,7 +140,7 @@ class narrow_cfile_writer_creator
 public:
 
     using char_type = CharT;
-    using outbuf_type = stringify::v0::narrow_cfile_writer<CharT>;
+    using outbuf_type = strf::narrow_cfile_writer<CharT>;
     using finish_type = typename outbuf_type::result;
 
     constexpr narrow_cfile_writer_creator(FILE* file) noexcept
@@ -154,7 +154,7 @@ public:
     finish_type write(const Printers& ... printers) const
     {
         outbuf_type ob(_file);
-        stringify::v0::detail::write_args(ob, printers...);;
+        strf::detail::write_args(ob, printers...);;
         return ob.finish();
     }
 
@@ -167,7 +167,7 @@ class wide_cfile_writer_creator
 public:
 
     using char_type = wchar_t;
-    using outbuf_type = stringify::v0::wide_cfile_writer;
+    using outbuf_type = strf::wide_cfile_writer;
     using finish_type = typename outbuf_type::result;
 
     constexpr wide_cfile_writer_creator(FILE* file) noexcept
@@ -180,7 +180,7 @@ public:
     finish_type write(const Printers& ... printers) const
     {
         outbuf_type ob(_file);
-        stringify::v0::detail::write_args(ob, printers...);;
+        strf::detail::write_args(ob, printers...);;
         return ob.finish();
     }
 
@@ -195,19 +195,19 @@ private:
 template <typename CharT = char>
 inline auto write(std::FILE* destination)
 {
-    return stringify::v0::dispatcher_no_reserve
-        < stringify::v0::detail::narrow_cfile_writer_creator<CharT> >
+    return strf::dispatcher_no_reserve
+        < strf::detail::narrow_cfile_writer_creator<CharT> >
         (destination);
 }
 
 inline auto wwrite(std::FILE* destination)
 {
-    return stringify::v0::dispatcher_no_reserve
-        < stringify::v0::detail::wide_cfile_writer_creator >
+    return strf::dispatcher_no_reserve
+        < strf::detail::wide_cfile_writer_creator >
         (destination);
 }
 
-STRF_V0_NAMESPACE_END
+STRF_NAMESPACE_END
 
 #endif  // STRF_V0_DETAIL_OUTPUT_TYPES_FILE_HPP
 

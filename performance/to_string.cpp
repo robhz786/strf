@@ -13,8 +13,6 @@
 
 int main()
 {
-    namespace strf = boost::stringify;
-
     PRINT_BENCHMARK("strf::to_string.reserve_calc() (\"Hello \", \"World\", \"!\")")
     {
         auto str = strf::to_string.reserve_calc()("Hello ", "World", "!");

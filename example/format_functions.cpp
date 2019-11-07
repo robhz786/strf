@@ -7,9 +7,6 @@
 void sample_hex()
 {
     //[ trivial_hex_sample
-
-    namespace strf = boost::stringify::v0;
-
     auto str = strf::to_string(255, "  ", strf::hex(255));
 
     assert(str == "255  ff");
@@ -20,8 +17,6 @@ void sample_hex()
 void samples()
 {
     //[ formatting_samples
-    namespace strf = boost::stringify::v0;
-
     auto str = strf::to_string
         ( strf::hex(255) > 5
         , '/', strf::center(255, 7, '.').hex()

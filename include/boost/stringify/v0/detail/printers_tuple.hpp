@@ -7,7 +7,7 @@
 
 #include <boost/stringify/v0/detail/facets/encoding.hpp>
 
-STRF_V0_NAMESPACE_BEGIN
+STRF_NAMESPACE_BEGIN
 namespace detail {
 
 template <typename Arg>
@@ -61,22 +61,22 @@ public:
 
 template <typename ... T>
 class simple_tuple
-    : public stringify::v0::detail::simple_tuple_impl
+    : public strf::detail::simple_tuple_impl
     < std::make_index_sequence<sizeof...(T)>, T...>
 {
-    using stringify::v0::detail::simple_tuple_impl
+    using strf::detail::simple_tuple_impl
         < std::make_index_sequence<sizeof...(T)>, T...>
         ::simple_tuple_impl;
 };
 
 template <typename ... Args>
-constexpr stringify::v0::detail::simple_tuple
-    < stringify::v0::detail::opt_val_or_cref<Args>... >
+constexpr strf::detail::simple_tuple
+    < strf::detail::opt_val_or_cref<Args>... >
 make_simple_tuple(const Args& ... args)
 {
-    return stringify::v0::detail::simple_tuple
-        < stringify::v0::detail::opt_val_or_cref<Args>... >
-    { stringify::v0::detail::simple_tuple_from_args{}, args... };
+    return strf::detail::simple_tuple
+        < strf::detail::opt_val_or_cref<Args>... >
+    { strf::detail::simple_tuple_from_args{}, args... };
 }
 
 
@@ -84,7 +84,7 @@ make_simple_tuple(const Args& ... args)
 
 
 template <typename CharT, typename ... Printers>
-inline void write_args( stringify::v0::basic_outbuf<CharT>& ob
+inline void write_args( strf::basic_outbuf<CharT>& ob
                       , const Printers& ... printers )
 {
     (... , printers.print_to(ob));
@@ -94,13 +94,13 @@ inline void write_args( stringify::v0::basic_outbuf<CharT>& ob
 
 
 template <typename CharT>
-inline void write_args(stringify::v0::basic_outbuf<CharT>&)
+inline void write_args(strf::basic_outbuf<CharT>&)
 {
 }
 
 template <typename CharT, typename Printer, typename ... Printers>
 inline void write_args
-    ( stringify::v0::basic_outbuf<CharT>& ob
+    ( strf::basic_outbuf<CharT>& ob
     , const Printer& printer
     , const Printers& ... printers )
 {
@@ -145,7 +145,7 @@ public:
     printers_tuple_impl
         ( const FPack& fp
         , Preview& p
-        , const stringify::v0::detail::simple_tuple<Args...>& args )
+        , const strf::detail::simple_tuple<Args...>& args )
         : indexed_obj<I, Printers>
         { make_printer<CharT>(fp, p, args.template get<I>()) } ...
     {
@@ -163,11 +163,11 @@ public:
 
 
 template< typename CharT, std::size_t ... I, typename ... Printers >
-void write( stringify::v0::basic_outbuf<CharT>& ob
-          , const stringify::v0::detail::printers_tuple_impl
+void write( strf::basic_outbuf<CharT>& ob
+          , const strf::detail::printers_tuple_impl
              < CharT, std::index_sequence<I...>, Printers... >& printers )
 {
-    stringify::v0::detail::write_args<CharT>(ob, printers.template get<I>()...);
+    strf::detail::write_args<CharT>(ob, printers.template get<I>()...);
 }
 
 template < typename CharT, typename ... Printers >
@@ -201,7 +201,7 @@ using printers_tuple_from_args
 
 } // namespace detail
 
-STRF_V0_NAMESPACE_END
+STRF_NAMESPACE_END
 
 #endif  // STRF_V0_DETAIL_PRINTERS_TUPLE_HPP
 

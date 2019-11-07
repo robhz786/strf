@@ -4,8 +4,6 @@
 
 #include "test_utils.hpp"
 
-namespace strf = boost::stringify::v0;
-
 void test_cstr_writer_destination_too_small()
 {
     char buff[8];

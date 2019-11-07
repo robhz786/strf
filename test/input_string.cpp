@@ -7,8 +7,6 @@
 
 int main()
 {
-    namespace strf = boost::stringify::v0;
-
     {
         TEST("   abc")   ( strf::right("abc", 6) );
         TEST("abc...")   ( strf::left    ("abc", 6, '.') );

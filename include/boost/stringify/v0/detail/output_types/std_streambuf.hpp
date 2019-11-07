@@ -9,15 +9,15 @@
 #include <boost/stringify/v0/dispatcher.hpp>
 #include <boost/stringify/v0/outbuf.hpp>
 
-STRF_V0_NAMESPACE_BEGIN
+STRF_NAMESPACE_BEGIN
 
 template <typename CharT, typename Traits = std::char_traits<CharT> >
-class basic_streambuf_writer final: public stringify::v0::basic_outbuf<CharT>
+class basic_streambuf_writer final: public strf::basic_outbuf<CharT>
 {
 public:
 
     explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>& dest_)
-        : stringify::v0::basic_outbuf<CharT>(_buf, _buf_size)
+        : strf::basic_outbuf<CharT>(_buf, _buf_size)
         , _dest(dest_)
     {
     }
@@ -68,16 +68,16 @@ private:
     std::basic_streambuf<CharT, Traits>& _dest;
     std::streamsize _count = 0;
     static constexpr std::size_t _buf_size
-        = stringify::v0::min_size_after_recycle<CharT>();
+        = strf::min_size_after_recycle<CharT>();
     CharT _buf[_buf_size];
 };
 
 using streambuf_writer
-    = stringify::v0::basic_streambuf_writer< char
+    = strf::basic_streambuf_writer< char
                                            , std::char_traits<char> >;
 
 using wstreambuf_writer
-    = stringify::v0::basic_streambuf_writer< wchar_t
+    = strf::basic_streambuf_writer< wchar_t
                                            , std::char_traits<wchar_t> >;
 
 namespace detail {
@@ -85,7 +85,7 @@ namespace detail {
 template <typename CharT, typename Traits>
 class basic_streambuf_writer_creator
 {
-    using _outbuf_type = stringify::v0::basic_streambuf_writer<CharT, Traits>;
+    using _outbuf_type = strf::basic_streambuf_writer<CharT, Traits>;
     using _finish_type = typename _outbuf_type::result;
 
 public:
@@ -104,7 +104,7 @@ public:
     _finish_type write(const Printers& ... printers) const
     {
         _outbuf_type ob(_dest);
-        stringify::v0::detail::write_args(ob, printers...);;
+        strf::detail::write_args(ob, printers...);;
         return ob.finish();
     }
 
@@ -120,8 +120,8 @@ private:
 template <typename CharT, typename Traits = std::char_traits<CharT> >
 inline auto write( std::basic_streambuf<CharT, Traits>& dest )
 {
-    return stringify::v0::dispatcher_no_reserve
-        < stringify::v0::detail::basic_streambuf_writer_creator<CharT, Traits> >
+    return strf::dispatcher_no_reserve
+        < strf::detail::basic_streambuf_writer_creator<CharT, Traits> >
         (dest);
 }
 
@@ -129,10 +129,10 @@ inline auto write( std::basic_streambuf<CharT, Traits>& dest )
 template<typename CharT, typename Traits = std::char_traits<CharT> >
 inline auto write( std::basic_streambuf<CharT, Traits>* dest )
 {
-    return stringify::v0::write(*dest);
+    return strf::write(*dest);
 }
 
-STRF_V0_NAMESPACE_END
+STRF_NAMESPACE_END
 
 #endif  // STRF_V0_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
 

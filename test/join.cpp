@@ -7,8 +7,6 @@
 
 int main()
 {
-    namespace strf = boost::stringify::v0;
-
     TEST("   abcdef123   ") (strf::join_center(15)("abc", "de", "f", 123));
     TEST("   abcdef123") (strf::join_split(12, -5)("abc", "de", "f", 123));
     TEST("   abcdef123") (strf::join_split(12, 0)("abc", "de", "f", 123));

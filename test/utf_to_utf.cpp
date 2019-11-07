@@ -10,7 +10,6 @@
 #include <boost/hana/tuple.hpp>
 #include <vector>
 
-namespace strf = boost::stringify::v0;
 namespace hana = boost::hana;
 
 template <typename T>

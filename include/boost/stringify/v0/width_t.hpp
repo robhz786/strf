@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <cstdint>
 
-STRF_V0_NAMESPACE_BEGIN
+STRF_NAMESPACE_BEGIN
 
 class width_t
 {
@@ -176,176 +176,176 @@ private:
     std::int32_t _value;
 };
 
-constexpr stringify::v0::width_t width_t_max
-    = stringify::v0::width_t::from_underlying(INT32_MAX);
+constexpr strf::width_t width_t_max
+    = strf::width_t::from_underlying(INT32_MAX);
 
-constexpr stringify::v0::width_t width_t_min
-    = stringify::v0::width_t::from_underlying(INT32_MIN);
+constexpr strf::width_t width_t_min
+    = strf::width_t::from_underlying(INT32_MIN);
 
 
-constexpr stringify::v0::width_t checked_add( stringify::v0::width_t lhs
-                                            , stringify::v0::width_t rhs )
+constexpr strf::width_t checked_add( strf::width_t lhs
+                                            , strf::width_t rhs )
 {
     std::int64_t ulhs = lhs.underlying_value();
     std::int64_t urhs = rhs.underlying_value();
     std::int64_t tmp = ulhs + urhs;
     if (INT32_MIN <= tmp && tmp <= INT32_MAX)
     {
-        return stringify::v0::width_t::from_underlying(static_cast<std::int32_t>(tmp));
+        return strf::width_t::from_underlying(static_cast<std::int32_t>(tmp));
     }
     if (tmp > INT32_MAX)
     {
-        return stringify::v0::width_t_max;
+        return strf::width_t_max;
     }
-    return stringify::v0::width_t_min;
+    return strf::width_t_min;
 }
 
-constexpr stringify::v0::width_t checked_subtract( stringify::v0::width_t lhs
+constexpr strf::width_t checked_subtract( strf::width_t lhs
                                                  , std::int64_t rhs )
 {
     std::int64_t ulhs = lhs.underlying_value();
     std::int64_t tmp = ulhs - rhs;
     if (INT32_MIN <= tmp && tmp <= INT32_MAX)
     {
-        return stringify::v0::width_t::from_underlying(static_cast<std::int32_t>(tmp));
+        return strf::width_t::from_underlying(static_cast<std::int32_t>(tmp));
     }
     if (tmp < INT32_MIN)
     {
-        return stringify::v0::width_t_min;
+        return strf::width_t_min;
     }
-    return stringify::v0::width_t_max;
+    return strf::width_t_max;
 }
 
-constexpr stringify::v0::width_t checked_subtract( stringify::v0::width_t lhs
-                                                 , stringify::v0::width_t rhs )
+constexpr strf::width_t checked_subtract( strf::width_t lhs
+                                                 , strf::width_t rhs )
 {
     return checked_subtract(lhs, rhs.underlying_value());
 }
 
-constexpr stringify::v0::width_t checked_mul( stringify::v0::width_t w
+constexpr strf::width_t checked_mul( strf::width_t w
                                             , std::uint32_t x )
 {
     std::int64_t tmp = x;
     tmp *= w.underlying_value();
     if (INT32_MIN <= tmp && tmp <= INT32_MAX)
     {
-        return stringify::v0::width_t::from_underlying(static_cast<std::int32_t>(tmp));
+        return strf::width_t::from_underlying(static_cast<std::int32_t>(tmp));
     }
     if (tmp > INT32_MAX)
     {
-        return stringify::v0::width_t_max;
+        return strf::width_t_max;
     }
-    return stringify::v0::width_t_min;
+    return strf::width_t_min;
 }
 
-constexpr bool operator==(stringify::v0::width_t lhs, std::int16_t rhs )
+constexpr bool operator==(strf::width_t lhs, std::int16_t rhs )
 {
-    return lhs == stringify::v0::width_t{rhs};
+    return lhs == strf::width_t{rhs};
 }
-constexpr bool operator==(std::int16_t lhs, stringify::v0::width_t rhs )
+constexpr bool operator==(std::int16_t lhs, strf::width_t rhs )
 {
-    return stringify::v0::width_t{lhs} == rhs;
+    return strf::width_t{lhs} == rhs;
 }
-constexpr bool operator!=(stringify::v0::width_t lhs, std::int16_t rhs )
+constexpr bool operator!=(strf::width_t lhs, std::int16_t rhs )
 {
-    return lhs != stringify::v0::width_t{rhs};
+    return lhs != strf::width_t{rhs};
 }
-constexpr bool operator!=(std::int16_t lhs, stringify::v0::width_t rhs )
+constexpr bool operator!=(std::int16_t lhs, strf::width_t rhs )
 {
-    return stringify::v0::width_t{lhs} != rhs;
+    return strf::width_t{lhs} != rhs;
 }
-constexpr bool operator<(stringify::v0::width_t lhs, std::int16_t rhs )
+constexpr bool operator<(strf::width_t lhs, std::int16_t rhs )
 {
-    return lhs < stringify::v0::width_t{rhs};
+    return lhs < strf::width_t{rhs};
 }
-constexpr bool operator<(std::int16_t lhs, stringify::v0::width_t rhs )
+constexpr bool operator<(std::int16_t lhs, strf::width_t rhs )
 {
-    return stringify::v0::width_t{lhs} < rhs;
+    return strf::width_t{lhs} < rhs;
 }
-constexpr bool operator<=(stringify::v0::width_t lhs, std::int16_t rhs )
+constexpr bool operator<=(strf::width_t lhs, std::int16_t rhs )
 {
-    return lhs <= stringify::v0::width_t{rhs};
+    return lhs <= strf::width_t{rhs};
 }
-constexpr bool operator<=(std::int16_t lhs, stringify::v0::width_t rhs )
+constexpr bool operator<=(std::int16_t lhs, strf::width_t rhs )
 {
-    return stringify::v0::width_t{lhs} <= rhs;
+    return strf::width_t{lhs} <= rhs;
 }
-constexpr bool operator>(stringify::v0::width_t lhs, std::int16_t rhs )
+constexpr bool operator>(strf::width_t lhs, std::int16_t rhs )
 {
-    return lhs > stringify::v0::width_t{rhs};
+    return lhs > strf::width_t{rhs};
 }
-constexpr bool operator>(std::int16_t lhs, stringify::v0::width_t rhs )
+constexpr bool operator>(std::int16_t lhs, strf::width_t rhs )
 {
-    return stringify::v0::width_t{lhs} > rhs;
+    return strf::width_t{lhs} > rhs;
 }
-constexpr bool operator>=(stringify::v0::width_t lhs, std::int16_t rhs )
+constexpr bool operator>=(strf::width_t lhs, std::int16_t rhs )
 {
-    return lhs >= stringify::v0::width_t{rhs};
+    return lhs >= strf::width_t{rhs};
 }
-constexpr bool operator>=(std::int16_t lhs, stringify::v0::width_t rhs )
+constexpr bool operator>=(std::int16_t lhs, strf::width_t rhs )
 {
-    return stringify::v0::width_t{lhs} >= rhs;
+    return strf::width_t{lhs} >= rhs;
 }
-constexpr stringify::v0::width_t operator+( stringify::v0::width_t lhs
-                                          , stringify::v0::width_t rhs )
+constexpr strf::width_t operator+( strf::width_t lhs
+                                          , strf::width_t rhs )
 {
     return lhs += rhs;
 }
-constexpr stringify::v0::width_t operator+( std::int16_t lhs
-                                          , stringify::v0::width_t rhs )
+constexpr strf::width_t operator+( std::int16_t lhs
+                                          , strf::width_t rhs )
 {
     return rhs += lhs;
 }
-constexpr stringify::v0::width_t operator+( stringify::v0::width_t lhs
+constexpr strf::width_t operator+( strf::width_t lhs
                                           , std::int16_t rhs )
 {
     return lhs += rhs;
 }
 
-constexpr stringify::v0::width_t operator-( stringify::v0::width_t lhs
-                                          , stringify::v0::width_t rhs )
+constexpr strf::width_t operator-( strf::width_t lhs
+                                          , strf::width_t rhs )
 {
     return lhs -= rhs;
 }
-constexpr stringify::v0::width_t operator-( std::int16_t lhs
-                                          , stringify::v0::width_t rhs )
+constexpr strf::width_t operator-( std::int16_t lhs
+                                          , strf::width_t rhs )
 {
-    return stringify::v0::width_t(lhs) -= rhs;
+    return strf::width_t(lhs) -= rhs;
 }
-constexpr stringify::v0::width_t operator-( stringify::v0::width_t lhs
+constexpr strf::width_t operator-( strf::width_t lhs
                                           , std::int16_t rhs )
 {
     return lhs -= rhs;
 }
 
 
-constexpr stringify::v0::width_t operator*( stringify::v0::width_t lhs
-                                          , stringify::v0::width_t rhs )
+constexpr strf::width_t operator*( strf::width_t lhs
+                                          , strf::width_t rhs )
 {
     return lhs *= rhs;
 }
-constexpr stringify::v0::width_t operator*( std::int16_t lhs
-                                          , stringify::v0::width_t rhs )
+constexpr strf::width_t operator*( std::int16_t lhs
+                                          , strf::width_t rhs )
 {
-    return stringify::v0::width_t(lhs) *= rhs;
+    return strf::width_t(lhs) *= rhs;
 }
-constexpr stringify::v0::width_t operator*( stringify::v0::width_t lhs
+constexpr strf::width_t operator*( strf::width_t lhs
                                           , std::int16_t rhs )
 {
     return lhs *= rhs;
 }
 
-constexpr stringify::v0::width_t operator/( stringify::v0::width_t lhs
-                                          , stringify::v0::width_t rhs )
+constexpr strf::width_t operator/( strf::width_t lhs
+                                          , strf::width_t rhs )
 {
     return lhs /= rhs;
 }
-constexpr stringify::v0::width_t operator/( std::int16_t lhs
-                                          , stringify::v0::width_t rhs )
+constexpr strf::width_t operator/( std::int16_t lhs
+                                          , strf::width_t rhs )
 {
-    return stringify::v0::width_t(lhs) /= rhs;
+    return strf::width_t(lhs) /= rhs;
 }
-constexpr stringify::v0::width_t operator/( stringify::v0::width_t lhs
+constexpr strf::width_t operator/( strf::width_t lhs
                                           , std::int16_t rhs )
 {
     return lhs /= rhs;
@@ -530,7 +530,7 @@ namespace width_literal {
 template <char ... C>
 class mp_width_parser
 {
-    using helper = stringify::v0::detail::mp_fixed_point_parser<16, C...>;
+    using helper = strf::detail::mp_fixed_point_parser<16, C...>;
     static_assert(helper::abs_value < 0x100000000, "width value too big");
 
 public:
@@ -539,15 +539,15 @@ public:
 };
 
 template <char ... C>
-constexpr stringify::v0::width_t operator "" _w()
+constexpr strf::width_t operator "" _w()
 {
-    return stringify::v0::width_t::from_underlying
+    return strf::width_t::from_underlying
         ( static_cast<std::int32_t>(mp_width_parser<C...>::value) );
 }
 
 } // namespace width_literal
 
-STRF_V0_NAMESPACE_END
+STRF_NAMESPACE_END
 
 #endif  // STRF_V0_WIDTH_T_HPP
 

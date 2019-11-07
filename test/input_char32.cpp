@@ -12,8 +12,6 @@ struct is_char32: public std::is_same<T, char32_t>
 
 int main()
 {
-    namespace strf = boost::stringify::v0;
-
     // conversion
 
     TEST (u8"\ud7ff")     (U'\ud7ff');

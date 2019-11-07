@@ -9,8 +9,6 @@
 
 int main()
 {
-    namespace strf = boost::stringify::v0;
-
     {
         std::vector<int> vec_int = {11, 22, 33, 44};
         TEST("---11223344---")

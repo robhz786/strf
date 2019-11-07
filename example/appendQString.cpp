@@ -8,8 +8,6 @@
 #include <boost/stringify.hpp>
 #include <climits>
 
-namespace strf = boost::stringify::v0;
-
 class QStringAppender: public strf::basic_outbuf<char16_t>
 {
 public:

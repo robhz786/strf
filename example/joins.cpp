@@ -8,8 +8,6 @@
 void samples()
 {
     //[joins_example
-    namespace strf = boost::stringify::v0;
-
     auto str = strf::to_string
         ("---", strf::join_right(15) ("abc", "def", 123), "---");
 
@@ -74,9 +72,6 @@ void sample()
 //[ join_with_tr_string_part3
 
     // in your code:
-
-    namespace strf = boost::stringify::v0;
-
     std::string host_name = "boost.org";
     unsigned char ip_addr [4] = {146, 20, 110, 251};
 

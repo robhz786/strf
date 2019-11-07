@@ -141,7 +141,7 @@ std::basic_string<CharT> make_string(std::size_t size)
 
 template <typename CharT>
 constexpr std::size_t full_string_size
-= boost::stringify::v0::min_size_after_recycle<CharT>();
+= strf::min_size_after_recycle<CharT>();
 
 template <typename CharT>
 constexpr std::size_t half_string_size = full_string_size<CharT> / 2;
@@ -174,14 +174,14 @@ std::basic_string<CharT> make_tiny_string()
 }
 
 template <typename CharT>
-inline void turn_into_bad(boost::stringify::v0::basic_outbuf<CharT>& ob)
+inline void turn_into_bad(strf::basic_outbuf<CharT>& ob)
 {
-    boost::stringify::v0::detail::outbuf_test_tool::turn_into_bad(ob.as_underlying());
+    strf::detail::outbuf_test_tool::turn_into_bad(ob.as_underlying());
 }
 
 template <typename CharOut>
 class input_tester
-    : public boost::stringify::v0::basic_outbuf<CharOut>
+    : public strf::basic_outbuf<CharOut>
 {
 
 public:
@@ -214,7 +214,7 @@ private:
     void _test_failure(const MsgArgs&... msg_args)
     {
         _test_failed = true;
-        boost::stringify::v0::append(_failure_msg)(msg_args...);
+        strf::append(_failure_msg)(msg_args...);
     }
 
     bool _wrongly_reserved() const;
@@ -245,7 +245,7 @@ input_tester<CharOut>::input_tester
     , const char* function
     , double reserve_factor
     , std::size_t size )
-    : boost::stringify::v0::basic_outbuf<CharOut>{nullptr, nullptr}
+    : strf::basic_outbuf<CharOut>{nullptr, nullptr}
     , _result(size, CharOut{'#'})
     , _expected(std::move(expected))
     , _reserved_size(size)
@@ -290,7 +290,7 @@ void input_tester<CharOut>::recycle()
        previous_size = this->pos() - &*_result.begin();
        _result.resize(previous_size);
     }
-    _result.append(boost::stringify::v0::min_size_after_recycle<CharOut>(), CharOut{'#'});
+    _result.append(strf::min_size_after_recycle<CharOut>(), CharOut{'#'});
     this->set_pos(&*_result.begin() + previous_size);
     this->set_end(&*_result.begin() + _result.size());
 }
@@ -304,8 +304,6 @@ void input_tester<CharOut>::finish()
     }
     if (_expected != _result)
     {
-        namespace strf = boost::stringify::v0;
-
         _test_failure( "\n expected: \"", strf::cv(_expected), '\"'
                      , "\n obtained: \"", strf::cv(_result), "\"\n" );
 
@@ -366,7 +364,7 @@ public:
     {
         test_utils::input_tester<CharT> ob
             { _expected, _filename, _line, _function, _reserve_factor, size };
-        boost::stringify::v0::detail::write_args(ob, printers...);
+        strf::detail::write_args(ob, printers...);
         ob.finish();
     }
 
@@ -388,7 +386,7 @@ auto make_tester
    , const char* function
    , double reserve_factor = 1.0 )
 {
-   return boost::stringify::v0::dispatcher_calc_size
+   return strf::dispatcher_calc_size
        < test_utils::input_tester_creator<CharT> >
        ( expected, filename, line, function, reserve_factor);
 }
@@ -401,7 +399,7 @@ auto make_tester
    , const char* function
    , double reserve_factor = 1.0 )
 {
-   return boost::stringify::v0::dispatcher_calc_size
+   return strf::dispatcher_calc_size
        < test_utils::input_tester_creator<CharT> >
        ( expected, filename, line, function, reserve_factor);
 }

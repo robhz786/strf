@@ -7,8 +7,6 @@
 
 int main()
 {
-    namespace strf = boost::stringify::v0;
-
     TEST("1,0,0,0,0 10000 1000000 10,000 1'0000 1'000000 10.000 1^00^00 1'000000")
         .facets(strf::monotonic_grouping<10>(1))
         ( strf::fmt(10000), ' '

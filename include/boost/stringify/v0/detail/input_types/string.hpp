@@ -7,7 +7,7 @@
 #include <boost/stringify/v0/detail/format_functions.hpp>
 #include <boost/stringify/v0/facets_pack.hpp>
 
-STRF_V0_NAMESPACE_BEGIN
+STRF_NAMESPACE_BEGIN
 
 namespace detail {
 
@@ -56,25 +56,25 @@ private:
 } // namespace detail
 
 template <typename CharIn>
-using string_with_format = stringify::v0::value_with_format
-    < stringify::v0::detail::simple_string_view<CharIn>
-    , stringify::v0::alignment_format >;
+using string_with_format = strf::value_with_format
+    < strf::detail::simple_string_view<CharIn>
+    , strf::alignment_format >;
 
 template <typename CharIn, typename Traits, typename Allocator>
-auto make_fmt( stringify::v0::tag
+auto make_fmt( strf::tag
              , const std::basic_string<CharIn, Traits, Allocator>& str) noexcept
 {
-    return stringify::v0::string_with_format<CharIn>{{str.data(), str.size()}};
+    return strf::string_with_format<CharIn>{{str.data(), str.size()}};
 }
 
 #if defined(STRF_HAS_STD_STRING_VIEW)
 
 template <typename CharIn, typename Traits>
 constexpr auto
-make_fmt( stringify::v0::tag
+make_fmt( strf::tag
         , const std::basic_string_view<CharIn, Traits>& str) noexcept
 {
-    return stringify::v0::string_with_format<CharIn>{{str.data(), str.size()}};
+    return strf::string_with_format<CharIn>{{str.data(), str.size()}};
 }
 
 #endif // defined(STRF_HAS_STD_STRING_VIEW)
@@ -82,53 +82,53 @@ make_fmt( stringify::v0::tag
 #if defined(__cpp_char8_t)
 
 STRF_CONSTEXPR_CHAR_TRAITS
-auto make_fmt(stringify::v0::tag, const char8_t* str)
+auto make_fmt(strf::tag, const char8_t* str)
 {
     auto len = std::char_traits<char8_t>::length(str);
-    return stringify::v0::string_with_format<char8_t>{{str, len}};
+    return strf::string_with_format<char8_t>{{str, len}};
 }
 
 #endif
 
 STRF_CONSTEXPR_CHAR_TRAITS
-auto make_fmt(stringify::v0::tag, const char* str)
+auto make_fmt(strf::tag, const char* str)
 {
     auto len = std::char_traits<char>::length(str);
-    return stringify::v0::string_with_format<char>{{str, len}};
+    return strf::string_with_format<char>{{str, len}};
 }
 
 STRF_CONSTEXPR_CHAR_TRAITS
-auto make_fmt(stringify::v0::tag, const wchar_t* str)
+auto make_fmt(strf::tag, const wchar_t* str)
 {
     auto len = std::char_traits<wchar_t>::length(str);
-    return stringify::v0::string_with_format<wchar_t>{{str, len}};
+    return strf::string_with_format<wchar_t>{{str, len}};
 }
 
 STRF_CONSTEXPR_CHAR_TRAITS
-auto make_fmt(stringify::v0::tag, const char16_t* str)
+auto make_fmt(strf::tag, const char16_t* str)
 {
     auto len = std::char_traits<char16_t>::length(str);
-    return stringify::v0::string_with_format<char16_t>{{str, len}};
+    return strf::string_with_format<char16_t>{{str, len}};
 }
 
 STRF_CONSTEXPR_CHAR_TRAITS
-auto make_fmt(stringify::v0::tag, const char32_t* str)
+auto make_fmt(strf::tag, const char32_t* str)
 {
     auto len = std::char_traits<char32_t>::length(str);
-    return stringify::v0::string_with_format<char32_t>{{str, len}};
+    return strf::string_with_format<char32_t>{{str, len}};
 }
 
 namespace detail {
 
 template <typename CharT>
-class string_printer: public stringify::v0::printer<CharT>
+class string_printer: public strf::printer<CharT>
 {
 public:
 
     template <typename FPack, bool RequireSize>
     string_printer
         ( const FPack&
-        , stringify::v0::print_preview<RequireSize, false>& preview
+        , strf::print_preview<RequireSize, false>& preview
         , const CharT* str
         , std::size_t len ) noexcept
         : _str(str)
@@ -140,7 +140,7 @@ public:
     template <typename FPack, bool RequireSize>
     string_printer
         ( const FPack& fp
-        , stringify::v0::print_preview<RequireSize, true>& preview
+        , strf::print_preview<RequireSize, true>& preview
         , const CharT* str
         , std::size_t len ) noexcept
         : _str(str)
@@ -148,22 +148,22 @@ public:
     {
         preview.add_size(len);
         _calc_width( preview
-                   , _get_facet<stringify::v0::width_calculator_c<CharT>>(fp)
-                   , _get_facet<stringify::v0::encoding_c<CharT>>(fp)
-                   , _get_facet<stringify::v0::encoding_error_c>(fp)
-                   , _get_facet<stringify::v0::surrogate_policy_c>(fp) );
+                   , _get_facet<strf::width_calculator_c<CharT>>(fp)
+                   , _get_facet<strf::encoding_c<CharT>>(fp)
+                   , _get_facet<strf::encoding_error_c>(fp)
+                   , _get_facet<strf::surrogate_policy_c>(fp) );
     }
 
-    void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
+    void print_to(strf::basic_outbuf<CharT>& ob) const override;
 
 private:
 
     constexpr void _calc_width
-        ( stringify::v0::width_preview<true>& wpreview
-        , const stringify::v0::width_as_len<CharT>&
-        , stringify::v0::encoding<CharT>
-        , stringify::v0::encoding_error
-        , stringify::v0::surrogate_policy ) noexcept
+        ( strf::width_preview<true>& wpreview
+        , const strf::width_as_len<CharT>&
+        , strf::encoding<CharT>
+        , strf::encoding_error
+        , strf::surrogate_policy ) noexcept
     {
         auto remaining_width = wpreview.remaining_width().floor();
         if (static_cast<std::ptrdiff_t>(_len) <= remaining_width)
@@ -177,11 +177,11 @@ private:
     }
 
     constexpr void _calc_width
-        ( stringify::v0::width_preview<true>& wpreview
-        , const stringify::v0::width_as_u32len<CharT>&
-        , stringify::v0::encoding<CharT> enc
-        , stringify::v0::encoding_error
-        , stringify::v0::surrogate_policy )
+        ( strf::width_preview<true>& wpreview
+        , const strf::width_as_u32len<CharT>&
+        , strf::encoding<CharT> enc
+        , strf::encoding_error
+        , strf::surrogate_policy )
     {
         auto limit = wpreview.remaining_width();
         if (limit > 0)
@@ -199,11 +199,11 @@ private:
     }
 
     constexpr void _calc_width
-        ( stringify::v0::width_preview<true>& wpreview
-        , const stringify::v0::width_calculator<CharT>& wcalc
-        , stringify::v0::encoding<CharT> enc
-        , stringify::v0::encoding_error  enc_err
-        , stringify::v0::surrogate_policy  allow_surr )
+        ( strf::width_preview<true>& wpreview
+        , const strf::width_calculator<CharT>& wcalc
+        , strf::encoding<CharT> enc
+        , strf::encoding_error  enc_err
+        , strf::surrogate_policy  allow_surr )
     {
         auto limit = wpreview.remaining_width();
         if (limit > 0)
@@ -228,19 +228,19 @@ private:
     template <typename Category, typename FPack>
     static decltype(auto) _get_facet(const FPack& fp)
     {
-        using input_tag = stringify::v0::string_input_tag<CharT>;
+        using input_tag = strf::string_input_tag<CharT>;
         return fp.template get_facet<Category, input_tag>();
     }
 };
 
 template<typename CharT>
-void string_printer<CharT>::print_to(stringify::v0::basic_outbuf<CharT>& ob) const
+void string_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
 {
-    stringify::v0::write(ob, _str, _len);
+    strf::write(ob, _str, _len);
 }
 
 template <typename CharT>
-class fmt_string_printer: public stringify::v0::printer<CharT>
+class fmt_string_printer: public strf::printer<CharT>
 {
 public:
 
@@ -248,52 +248,52 @@ public:
     fmt_string_printer
         ( const FPack& fp
         , Preview& preview
-        , const stringify::v0::string_with_format<CharT>& input )
+        , const strf::string_with_format<CharT>& input )
         : _fmt(input)
-        , _encoding(_get_facet<stringify::v0::encoding_c<CharT>>(fp))
-        , _enc_err(_get_facet<stringify::v0::encoding_error_c>(fp))
-        , _allow_surr(_get_facet<stringify::v0::surrogate_policy_c>(fp))
+        , _encoding(_get_facet<strf::encoding_c<CharT>>(fp))
+        , _enc_err(_get_facet<strf::encoding_error_c>(fp))
+        , _allow_surr(_get_facet<strf::surrogate_policy_c>(fp))
     {
-        _init(preview, _get_facet<stringify::v0::width_calculator_c<CharT>>(fp));
+        _init(preview, _get_facet<strf::width_calculator_c<CharT>>(fp));
         _calc_size(preview);
     }
 
     ~fmt_string_printer();
 
-    void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override;
+    void print_to(strf::basic_outbuf<CharT>& ob) const override;
 
 private:
 
-    const stringify::v0::string_with_format<CharT> _fmt;
-    const stringify::v0::encoding<CharT> _encoding;
+    const strf::string_with_format<CharT> _fmt;
+    const strf::encoding<CharT> _encoding;
     std::int16_t _fillcount = 0;
-    const stringify::v0::encoding_error _enc_err;
-    const stringify::v0::surrogate_policy _allow_surr;
+    const strf::encoding_error _enc_err;
+    const strf::surrogate_policy _allow_surr;
 
     template <typename Category, typename FPack>
     static decltype(auto) _get_facet(const FPack& fp)
     {
-        using input_tag = stringify::v0::string_input_tag<CharT>;
+        using input_tag = strf::string_input_tag<CharT>;
         return fp.template get_facet<Category, input_tag>();
     }
 
     template <bool RequiringWidth>
-    void _init( stringify::v0::width_preview<RequiringWidth>& preview
-              , const stringify::v0::width_as_len<CharT>&);
+    void _init( strf::width_preview<RequiringWidth>& preview
+              , const strf::width_as_len<CharT>&);
 
     template <bool RequiringWidth>
-    void _init( stringify::v0::width_preview<RequiringWidth>& preview
-              , const stringify::v0::width_as_u32len<CharT>&);
+    void _init( strf::width_preview<RequiringWidth>& preview
+              , const strf::width_as_u32len<CharT>&);
 
     template <bool RequiringWidth>
-    void _init( stringify::v0::width_preview<RequiringWidth>& preview
-              , const stringify::v0::width_calculator<CharT>&);
+    void _init( strf::width_preview<RequiringWidth>& preview
+              , const strf::width_calculator<CharT>&);
 
-    constexpr void _calc_size(stringify::size_preview<false>&) const
+    constexpr void _calc_size(strf::size_preview<false>&) const
     {
     }
 
-    void _calc_size(stringify::size_preview<true>& preview) const
+    void _calc_size(strf::size_preview<true>& preview) const
     {
         preview.add_size(_fmt.value().length());
         if (_fillcount > 0)
@@ -303,8 +303,8 @@ private:
         }
     }
 
-    void _write_str(stringify::v0::basic_outbuf<CharT>& ob) const;
-    void _write_fill( stringify::v0::basic_outbuf<CharT>& ob
+    void _write_str(strf::basic_outbuf<CharT>& ob) const;
+    void _write_fill( strf::basic_outbuf<CharT>& ob
                     , unsigned count ) const;
 };
 
@@ -316,8 +316,8 @@ fmt_string_printer<CharT>::~fmt_string_printer()
 template<typename CharT>
 template <bool RequiringWidth>
 inline void fmt_string_printer<CharT>::_init
-    ( stringify::v0::width_preview<RequiringWidth>& preview
-    , const stringify::v0::width_as_len<CharT>&)
+    ( strf::width_preview<RequiringWidth>& preview
+    , const strf::width_as_len<CharT>&)
 {
     auto len = _fmt.value().length();
     if (_fmt.width() > static_cast<std::ptrdiff_t>(len))
@@ -334,8 +334,8 @@ inline void fmt_string_printer<CharT>::_init
 template<typename CharT>
 template <bool RequiringWidth>
 inline void fmt_string_printer<CharT>::_init
-    ( stringify::v0::width_preview<RequiringWidth>& preview
-    , const stringify::v0::width_as_u32len<CharT>&)
+    ( strf::width_preview<RequiringWidth>& preview
+    , const strf::width_as_u32len<CharT>&)
 {
     auto cp_count = _encoding.codepoints_count( _fmt.value().begin()
                                               , _fmt.value().end()
@@ -355,11 +355,11 @@ inline void fmt_string_printer<CharT>::_init
 template <typename CharT>
 template <bool RequiringWidth>
 inline void fmt_string_printer<CharT>::_init
-    ( stringify::v0::width_preview<RequiringWidth>& preview
-    , const stringify::v0::width_calculator<CharT>& wc)
+    ( strf::width_preview<RequiringWidth>& preview
+    , const strf::width_calculator<CharT>& wc)
 {
-    stringify::v0::width_t wmax = _fmt.width();
-    stringify::v0::width_t wdiff = 0;
+    strf::width_t wmax = _fmt.width();
+    strf::width_t wdiff = 0;
     if (preview.remaining_width() > _fmt.width())
     {
         wmax = preview.remaining_width();
@@ -369,7 +369,7 @@ inline void fmt_string_printer<CharT>::_init
                              , _fmt.value().begin(), _fmt.value().length()
                              , _encoding, _enc_err, _allow_surr );
 
-    stringify::v0::width_t fmt_width{_fmt.width()};
+    strf::width_t fmt_width{_fmt.width()};
     if (fmt_width > str_width)
     {
         auto wfill = (fmt_width - str_width);
@@ -384,19 +384,19 @@ inline void fmt_string_printer<CharT>::_init
 
 template<typename CharT>
 void fmt_string_printer<CharT>::print_to
-    ( stringify::v0::basic_outbuf<CharT>& ob ) const
+    ( strf::basic_outbuf<CharT>& ob ) const
 {
     if (_fillcount > 0)
     {
         switch (_fmt.alignment())
         {
-            case stringify::v0::text_alignment::left:
+            case strf::text_alignment::left:
             {
                 _write_str(ob);
                 _write_fill(ob, _fillcount);
                 break;
             }
-            case stringify::v0::text_alignment::center:
+            case strf::text_alignment::center:
             {
                 auto halfcount = _fillcount >> 1;
                 _write_fill(ob, halfcount);
@@ -419,14 +419,14 @@ void fmt_string_printer<CharT>::print_to
 
 template <typename CharT>
 void fmt_string_printer<CharT>::_write_str
-    ( stringify::v0::basic_outbuf<CharT>& ob ) const
+    ( strf::basic_outbuf<CharT>& ob ) const
 {
-    stringify::v0::write(ob, _fmt.value().begin(), _fmt.value().length());
+    strf::write(ob, _fmt.value().begin(), _fmt.value().length());
 }
 
 template <typename CharT>
 void fmt_string_printer<CharT>::_write_fill
-    ( stringify::v0::basic_outbuf<CharT>& ob
+    ( strf::basic_outbuf<CharT>& ob
     , unsigned count ) const
 {
     _encoding.encode_fill( ob, count, _fmt.fill(), _enc_err, _allow_surr );
@@ -454,7 +454,7 @@ STRF_EXPLICIT_TEMPLATE class fmt_string_printer<wchar_t>;
 } // namespace detail
 
 template <typename CharT, typename FPack, typename Preview>
-inline stringify::v0::detail::string_printer<CharT>
+inline strf::detail::string_printer<CharT>
 make_printer(const FPack& fp, Preview& preview, const CharT* str)
 {
     return {fp, preview, str, std::char_traits<CharT>::length(str)};
@@ -463,7 +463,7 @@ make_printer(const FPack& fp, Preview& preview, const CharT* str)
 #if defined(__cpp_char8_t)
 
 template <typename CharOut, typename FPack, typename Preview>
-inline stringify::v0::detail::string_printer<CharOut>
+inline strf::detail::string_printer<CharOut>
 make_printer(const FPack& fp, Preview& preview, const char8_t* str)
 {
     static_assert( std::is_same<char8_t, CharOut>::value
@@ -474,7 +474,7 @@ make_printer(const FPack& fp, Preview& preview, const char8_t* str)
 #endif
 
 template <typename CharOut, typename FPack, typename Preview>
-inline stringify::v0::detail::string_printer<CharOut>
+inline strf::detail::string_printer<CharOut>
 make_printer(const FPack& fp, Preview& preview, const char* str)
 {
     static_assert( std::is_same<char, CharOut>::value
@@ -483,7 +483,7 @@ make_printer(const FPack& fp, Preview& preview, const char* str)
 }
 
 template <typename CharOut, typename FPack, typename Preview>
-inline stringify::v0::detail::string_printer<CharOut>
+inline strf::detail::string_printer<CharOut>
 make_printer(const FPack& fp, Preview& preview, const char16_t* str)
 {
     static_assert( std::is_same<char16_t, CharOut>::value
@@ -492,7 +492,7 @@ make_printer(const FPack& fp, Preview& preview, const char16_t* str)
 }
 
 template <typename CharOut, typename FPack, typename Preview>
-inline stringify::v0::detail::string_printer<CharOut>
+inline strf::detail::string_printer<CharOut>
 make_printer(const FPack& fp, Preview& preview, const char32_t* str)
 {
     static_assert( std::is_same<char32_t, CharOut>::value
@@ -501,7 +501,7 @@ make_printer(const FPack& fp, Preview& preview, const char32_t* str)
 }
 
 template <typename CharOut, typename FPack, typename Preview>
-inline stringify::v0::detail::string_printer<CharOut>
+inline strf::detail::string_printer<CharOut>
 make_printer(const FPack& fp, Preview& preview, const wchar_t* str)
 {
     static_assert( std::is_same<wchar_t, CharOut>::value
@@ -516,7 +516,7 @@ template
     , typename CharIn
     , typename Traits
     , typename Allocator >
-inline stringify::v0::detail::string_printer<CharOut>
+inline strf::detail::string_printer<CharOut>
 make_printer(const FPack& fp, Preview& preview, const std::basic_string<CharIn, Traits, Allocator>& str)
 {
     static_assert( std::is_same<CharIn, CharOut>::value
@@ -532,7 +532,7 @@ template
     , typename Preview
     , typename CharIn
     , typename Traits >
-inline stringify::v0::detail::string_printer<CharOut>
+inline strf::detail::string_printer<CharOut>
 make_printer(const FPack& fp, Preview& preview, const std::basic_string_view<CharIn, Traits>& str)
 {
     static_assert( std::is_same<CharIn, CharOut>::value
@@ -543,15 +543,15 @@ make_printer(const FPack& fp, Preview& preview, const std::basic_string_view<Cha
 #endif //defined(STRF_HAS_STD_STRING_VIEW)
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
-inline stringify::v0::detail::fmt_string_printer<CharOut>
-make_printer(const FPack& fp, Preview& preview, const stringify::v0::string_with_format<CharIn>& input)
+inline strf::detail::fmt_string_printer<CharOut>
+make_printer(const FPack& fp, Preview& preview, const strf::string_with_format<CharIn>& input)
 {
     static_assert( std::is_same<CharIn, CharOut>::value
                  , "Character type mismatch. Use fmt_cv function." );
     return {fp, preview, input};
 }
 
-STRF_V0_NAMESPACE_END
+STRF_NAMESPACE_END
 
 #endif  /* STRF_V0_DETAIL_INPUT_TYPES_CHAR_PTR */
 

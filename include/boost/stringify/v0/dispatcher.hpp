@@ -9,18 +9,18 @@
 #include <boost/stringify/v0/detail/printers_tuple.hpp>
 #include <boost/stringify/v0/facets_pack.hpp>
 
-STRF_V0_NAMESPACE_BEGIN
+STRF_NAMESPACE_BEGIN
 
 template < typename OutbufCreator
-         , typename FPack = stringify::v0::facets_pack<> >
+         , typename FPack = strf::facets_pack<> >
 class dispatcher_with_given_size;
 
 template < typename OutbufCreator
-         , typename FPack = stringify::v0::facets_pack<> >
+         , typename FPack = strf::facets_pack<> >
 class dispatcher_calc_size;
 
 template < typename OutbufCreator
-         , typename FPack = stringify::v0::facets_pack<> >
+         , typename FPack = strf::facets_pack<> >
 class dispatcher_no_reserve;
 
 namespace detail {
@@ -46,7 +46,7 @@ public:
         const auto& self = static_cast<const _dispatcher_type&>(*this);
 
         using NewFPack = decltype
-            ( stringify::v0::pack( std::declval<const FPack&>()
+            ( strf::pack( std::declval<const FPack&>()
                                  , std::forward<FPE>(fpe) ...) );
 
         return DispatcherTmpl<OutbufCreator, NewFPack>
@@ -62,64 +62,64 @@ public:
         auto& self = static_cast<const _dispatcher_type&>(*this);
 
         using NewFPack = decltype
-            ( stringify::v0::pack( std::declval<FPack>()
+            ( strf::pack( std::declval<FPack>()
                                  , std::forward<FPE>(fpe) ...) );
 
         return DispatcherTmpl<OutbufCreator, NewFPack>
         { std::move(self), detail::dispatcher_tag{}, std::forward<FPE>(fpe) ...};
     }
 
-    constexpr stringify::v0::dispatcher_no_reserve<OutbufCreator, FPack>
+    constexpr strf::dispatcher_no_reserve<OutbufCreator, FPack>
     no_reserve() const &
     {
         const auto& self = static_cast<const _dispatcher_type&>(*this);
-        return { stringify::v0::detail::dispatcher_tag{}
+        return { strf::detail::dispatcher_tag{}
                , self._outbuf_creator
                , self._fpack };
     }
 
-    constexpr stringify::v0::dispatcher_no_reserve<OutbufCreator, FPack>
+    constexpr strf::dispatcher_no_reserve<OutbufCreator, FPack>
     no_reserve() &&
     {
         auto& self = static_cast<_dispatcher_type&>(*this);
-        return { stringify::v0::detail::dispatcher_tag{}
+        return { strf::detail::dispatcher_tag{}
                , std::move(self._outbuf_creator)
                , std::move(self._fpack) };
     }
 
-    constexpr stringify::v0::dispatcher_calc_size<OutbufCreator, FPack>
+    constexpr strf::dispatcher_calc_size<OutbufCreator, FPack>
     reserve_calc() const &
     {
         const auto& self = static_cast<const _dispatcher_type&>(*this);
-        return { stringify::v0::detail::dispatcher_tag{}
+        return { strf::detail::dispatcher_tag{}
                , self._outbuf_creator
                , self._fpack };
     }
 
-    stringify::v0::dispatcher_calc_size<OutbufCreator, FPack>
+    strf::dispatcher_calc_size<OutbufCreator, FPack>
     reserve_calc() &&
     {
         auto& self = static_cast<_dispatcher_type&>(*this);
-        return { stringify::v0::detail::dispatcher_tag{}
+        return { strf::detail::dispatcher_tag{}
                , std::move(self._outbuf_creator)
                , std::move(self._fpack) };
     }
 
-    constexpr stringify::v0::dispatcher_with_given_size<OutbufCreator, FPack>
+    constexpr strf::dispatcher_with_given_size<OutbufCreator, FPack>
     reserve(std::size_t size) const &
     {
         const auto& self = static_cast<const _dispatcher_type&>(*this);
-        return { stringify::v0::detail::dispatcher_tag{}
+        return { strf::detail::dispatcher_tag{}
                , size
                , self._outbuf_creator
                , self._fpack };
     }
 
-    constexpr stringify::v0::dispatcher_with_given_size<OutbufCreator, FPack>
+    constexpr strf::dispatcher_with_given_size<OutbufCreator, FPack>
     reserve(std::size_t size) &&
     {
         auto& self = static_cast<_dispatcher_type&>(*this);
-        return { stringify::v0::detail::dispatcher_tag{}
+        return { strf::detail::dispatcher_tag{}
                , size
                , std::move(self._outbuf_creator)
                , std::move(self._fpack) };
@@ -176,14 +176,14 @@ public:
 
 private:
 
-    static inline const stringify::v0::printer<char_type>&
-    _as_printer_cref(const stringify::v0::printer<char_type>& p)
+    static inline const strf::printer<char_type>&
+    _as_printer_cref(const strf::printer<char_type>& p)
     {
         return p;
     }
 
-    static inline const stringify::v0::printer<char_type>*
-    _as_printer_cptr(const stringify::v0::printer<char_type>& p)
+    static inline const strf::printer<char_type>*
+    _as_printer_cptr(const strf::printer<char_type>& p)
     {
          return &p;
     }
@@ -220,17 +220,17 @@ private:
         ( const char_type* str
         , const char_type* str_end
         , Preview* preview_arr
-        , std::initializer_list<const stringify::v0::printer<char_type>*> args ) const &
+        , std::initializer_list<const strf::printer<char_type>*> args ) const &
     {
         const auto& self = static_cast<const _dispatcher_type&>(*this);
 
-        using catenc = stringify::v0::encoding_c<char_type>;
-        using caterr = stringify::v0::tr_invalid_arg_c;
-        decltype(auto) enc = stringify::v0::get_facet<catenc, void>(self._fpack);
-        decltype(auto) arg_err = stringify::v0::get_facet<caterr, void>(self._fpack);
+        using catenc = strf::encoding_c<char_type>;
+        using caterr = strf::tr_invalid_arg_c;
+        decltype(auto) enc = strf::get_facet<catenc, void>(self._fpack);
+        decltype(auto) arg_err = strf::get_facet<caterr, void>(self._fpack);
 
         typename _dispatcher_type::_preview_type preview;
-        stringify::v0::detail::tr_string_printer<char_type> tr_printer
+        strf::detail::tr_string_printer<char_type> tr_printer
             (preview, preview_arr, args, str, str_end, enc, arg_err);
 
         return self._write(preview, tr_printer);
@@ -241,16 +241,16 @@ private:
 
 template < typename OutbufCreator, typename FPack >
 class dispatcher_no_reserve
-    : private stringify::v0::detail::dispatcher_common
+    : private strf::detail::dispatcher_common
         < dispatcher_no_reserve, OutbufCreator, FPack>
 {
-    using _common = stringify::v0::detail::dispatcher_common
-        < stringify::v0::dispatcher_no_reserve, OutbufCreator, FPack>;
+    using _common = strf::detail::dispatcher_common
+        < strf::dispatcher_no_reserve, OutbufCreator, FPack>;
 
     template < template <typename, typename> class, class, class>
-    friend class stringify::v0::detail::dispatcher_common;
+    friend class strf::detail::dispatcher_common;
 
-    using _preview_type = stringify::v0::print_preview<false, false>;
+    using _preview_type = strf::print_preview<false, false>;
 
 public:
 
@@ -268,7 +268,7 @@ public:
     template < std::enable_if_t
                  < std::is_copy_constructible<OutbufCreator>::value
                  , int > = 0 >
-    constexpr dispatcher_no_reserve( stringify::v0::detail::dispatcher_tag
+    constexpr dispatcher_no_reserve( strf::detail::dispatcher_tag
                                    , const OutbufCreator& oc
                                    , const FPack& fp )
         : _outbuf_creator(oc)
@@ -276,7 +276,7 @@ public:
     {
     }
 
-    constexpr dispatcher_no_reserve( stringify::v0::detail::dispatcher_tag
+    constexpr dispatcher_no_reserve( strf::detail::dispatcher_tag
                                    , OutbufCreator&& oc
                                    , FPack&& fp )
         : _outbuf_creator(std::move(oc))
@@ -315,8 +315,8 @@ private:
     template <class, class>
     friend class dispatcher_no_reserve;
 
-    static inline const stringify::v0::printer<char_type>&
-    _as_printer_cref(const stringify::v0::printer<char_type>& p)
+    static inline const strf::printer<char_type>&
+    _as_printer_cref(const strf::printer<char_type>& p)
     {
         return p;
     }
@@ -346,7 +346,7 @@ private:
 
     template <typename ... Printers>
     decltype(auto) _write
-        ( const stringify::v0::print_preview<false, false>&
+        ( const strf::print_preview<false, false>&
         , const Printers& ... printers) const
     {
         return _outbuf_creator.write(printers...);
@@ -358,16 +358,16 @@ private:
 
 template < typename OutbufCreator, typename FPack >
 class dispatcher_with_given_size
-    : public stringify::v0::detail::dispatcher_common
+    : public strf::detail::dispatcher_common
         < dispatcher_with_given_size, OutbufCreator, FPack>
 {
-    using _common = stringify::v0::detail::dispatcher_common
-        < stringify::v0::dispatcher_with_given_size, OutbufCreator, FPack>;
+    using _common = strf::detail::dispatcher_common
+        < strf::dispatcher_with_given_size, OutbufCreator, FPack>;
 
     template < template <typename, typename> class, class, class>
-    friend class stringify::v0::detail::dispatcher_common;
+    friend class strf::detail::dispatcher_common;
 
-    using _preview_type = stringify::v0::print_preview<false, false>;
+    using _preview_type = strf::print_preview<false, false>;
 
 public:
 
@@ -386,7 +386,7 @@ public:
     template < std::enable_if_t
                  < std::is_copy_constructible<OutbufCreator>::value
                  , int > = 0 >
-    constexpr dispatcher_with_given_size( stringify::v0::detail::dispatcher_tag
+    constexpr dispatcher_with_given_size( strf::detail::dispatcher_tag
                                         , std::size_t size
                                         , const OutbufCreator& oc
                                         , const FPack& fp )
@@ -396,7 +396,7 @@ public:
     {
     }
 
-    constexpr dispatcher_with_given_size( stringify::v0::detail::dispatcher_tag
+    constexpr dispatcher_with_given_size( strf::detail::dispatcher_tag
                                         , std::size_t size
                                         , OutbufCreator&& oc
                                         , FPack&& fp )
@@ -430,9 +430,9 @@ private:
 
     template <class, class>
     friend class dispatcher_with_given_size;
-    static inline const stringify::v0::printer<char_type>&
+    static inline const strf::printer<char_type>&
 
-    _as_printer_cref(const stringify::v0::printer<char_type>& p)
+    _as_printer_cref(const strf::printer<char_type>& p)
     {
         return p;
     }
@@ -464,7 +464,7 @@ private:
 
     template <typename ... Printers>
     decltype(auto) _write
-        ( const stringify::v0::print_preview<false, false>&
+        ( const strf::print_preview<false, false>&
         , const Printers& ... printers) const
     {
         return _outbuf_creator.sized_write(_size, printers...);
@@ -477,16 +477,16 @@ private:
 
 template < typename OutbufCreator, typename FPack >
 class dispatcher_calc_size
-    : public stringify::v0::detail::dispatcher_common
+    : public strf::detail::dispatcher_common
         < dispatcher_calc_size, OutbufCreator, FPack>
 {
-    using _common = stringify::v0::detail::dispatcher_common
-        < stringify::v0::dispatcher_calc_size, OutbufCreator, FPack>;
+    using _common = strf::detail::dispatcher_common
+        < strf::dispatcher_calc_size, OutbufCreator, FPack>;
 
     template < template <typename, typename> class, class, class>
-    friend class stringify::v0::detail::dispatcher_common;
+    friend class strf::detail::dispatcher_common;
 
-    using _preview_type = stringify::v0::print_preview<true, false>;
+    using _preview_type = strf::print_preview<true, false>;
 
 public:
 
@@ -504,7 +504,7 @@ public:
     template < std::enable_if_t
                  < std::is_copy_constructible<OutbufCreator>::value
                  , int > = 0 >
-    constexpr dispatcher_calc_size( stringify::v0::detail::dispatcher_tag
+    constexpr dispatcher_calc_size( strf::detail::dispatcher_tag
                                   , const OutbufCreator& oc
                                   , const FPack& fp )
         : _outbuf_creator(oc)
@@ -512,7 +512,7 @@ public:
     {
     }
 
-    constexpr dispatcher_calc_size( stringify::v0::detail::dispatcher_tag
+    constexpr dispatcher_calc_size( strf::detail::dispatcher_tag
                                   , OutbufCreator&& oc
                                   , FPack&& fp )
         : _outbuf_creator(std::move(oc))
@@ -551,8 +551,8 @@ private:
     template <typename, typename>
     friend class dispatcher_calc_size;
 
-    static inline const stringify::v0::printer<char_type>&
-    _as_printer_cref(const stringify::v0::printer<char_type>& p)
+    static inline const strf::printer<char_type>&
+    _as_printer_cref(const strf::printer<char_type>& p)
     {
         return p;
     }
@@ -582,7 +582,7 @@ private:
 
     template <typename ... Printers>
     decltype(auto) _write
-        ( const stringify::v0::print_preview<true, false>& preview
+        ( const strf::print_preview<true, false>& preview
         , const Printers& ... printers ) const
     {
         return _outbuf_creator.sized_write(preview.get_size(), printers...);
@@ -599,6 +599,6 @@ using printer_impl
                                        , std::declval<Preview&>()
                                        , std::declval<const Arg&>() ) );
 
-STRF_V0_NAMESPACE_END
+STRF_NAMESPACE_END
 
 #endif  // STRF_V0_DISPATCHER_HPP

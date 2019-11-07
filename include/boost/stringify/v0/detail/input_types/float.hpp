@@ -14,7 +14,7 @@
 #include <cstring>
 #include <type_traits>
 
-STRF_V0_NAMESPACE_BEGIN
+STRF_NAMESPACE_BEGIN
 namespace detail {
 
 struct double_dec
@@ -244,13 +244,13 @@ enum class float_notation{fixed, scientific, general};
 struct float_format_data
 {
     unsigned precision = (unsigned)-1;
-    stringify::v0::float_notation notation = float_notation::general;
+    strf::float_notation notation = float_notation::general;
     bool showpoint = false;
     bool showpos = false;
 };
 
-constexpr bool operator==( stringify::v0::float_format_data lhs
-                         , stringify::v0::float_format_data rhs ) noexcept
+constexpr bool operator==( strf::float_format_data lhs
+                         , strf::float_format_data rhs ) noexcept
 {
     return lhs.precision == rhs.precision
         && lhs.notation == rhs.notation
@@ -258,8 +258,8 @@ constexpr bool operator==( stringify::v0::float_format_data lhs
         && lhs.showpos == rhs.showpos ;
 }
 
-constexpr bool operator!=( stringify::v0::float_format_data lhs
-                         , stringify::v0::float_format_data rhs ) noexcept
+constexpr bool operator!=( strf::float_format_data lhs
+                         , strf::float_format_data rhs ) noexcept
 {
     return ! (lhs == rhs);
 }
@@ -307,14 +307,14 @@ public:
         _data.notation = float_notation::general;
         return static_cast<T&&>(*this);
     }
-    constexpr stringify::v0::float_format_data get_float_format_data() const noexcept
+    constexpr strf::float_format_data get_float_format_data() const noexcept
     {
         return _data;
     }
 
 private:
 
-    stringify::v0::float_format_data _data;
+    strf::float_format_data _data;
 };
 
 struct float_format
@@ -326,8 +326,8 @@ struct float_format
 template<typename FloatT, bool Align = false>
 using float_with_format = value_with_format
     < FloatT
-    , stringify::v0::float_format
-    , stringify::v0::alignment_format_q<Align> >;
+    , strf::float_format
+    , strf::alignment_format_q<Align> >;
 
 namespace detail {
 
@@ -339,14 +339,14 @@ struct double_printer_data: detail::double_dec
     double_printer_data
         ( FloatT f
         , float_format_data fmt
-        , const stringify::v0::numpunct_base* punct = nullptr )
+        , const strf::numpunct_base* punct = nullptr )
         :  double_printer_data(detail::decode(f), fmt, punct)
     {
     }
     double_printer_data
         ( detail::double_dec d
         , float_format_data fmt
-        , const stringify::v0::numpunct_base* punct = nullptr );
+        , const strf::numpunct_base* punct = nullptr );
 
     bool showpoint;
     bool showsign;
@@ -360,8 +360,8 @@ struct double_printer_data: detail::double_dec
 STRF_INLINE double_printer_data::double_printer_data
     ( detail::double_dec d
     , float_format_data fmt
-    , const stringify::v0::numpunct_base* punct )
-    : stringify::v0::detail::double_dec(d)
+    , const strf::numpunct_base* punct )
+    : strf::detail::double_dec(d)
     , showsign(fmt.showpos || negative)
 {
     if (nan || infinity)
@@ -373,7 +373,7 @@ STRF_INLINE double_printer_data::double_printer_data
     }
     else if (fmt.precision == (unsigned)-1)
     {
-        m10_digcount = stringify::v0::detail::count_digits<10>(m10);
+        m10_digcount = strf::detail::count_digits<10>(m10);
         extra_zeros = 0;
         switch(fmt.notation)
         {
@@ -419,7 +419,7 @@ STRF_INLINE double_printer_data::double_printer_data
     }
     else
     {
-        m10_digcount = stringify::v0::detail::count_digits<10>(m10);
+        m10_digcount = strf::detail::count_digits<10>(m10);
         int xz; // number of zeros to be added or ( if negative ) digits to be removed
         switch(fmt.notation)
         {
@@ -458,7 +458,7 @@ STRF_INLINE double_printer_data::double_printer_data
             unsigned dp = -xz;
             m10_digcount -= dp;
             e10 += dp;
-            auto p10 = stringify::v0::detail::pow10(dp);
+            auto p10 = strf::detail::pow10(dp);
             auto remainer = m10 % p10;
             m10 = m10 / p10;
             auto middle = p10 >> 1;
@@ -487,8 +487,8 @@ STRF_INLINE double_printer_data::double_printer_data
 
 template <typename CharT>
 void _print_amplified_integer_small_separator
-    ( stringify::v0::basic_outbuf<CharT>& ob
-    , stringify::v0::encoding<CharT> enc
+    ( strf::basic_outbuf<CharT>& ob
+    , strf::encoding<CharT> enc
     , const std::uint8_t* groups
     , unsigned num_groups
     , CharT separator
@@ -501,7 +501,7 @@ void _print_amplified_integer_small_separator
     unsigned grp_size = *grp_it;
     while (num_digits > grp_size)
     {
-        STRF_ASSERT(grp_size + 1 <= stringify::v0::min_size_after_recycle<CharT>());
+        STRF_ASSERT(grp_size + 1 <= strf::min_size_after_recycle<CharT>());
         ob.ensure(grp_size + 1);
         auto it = ob.pos();
         auto digits_2 = digits + grp_size;
@@ -515,14 +515,14 @@ void _print_amplified_integer_small_separator
     }
     if (num_digits != 0)
     {
-        STRF_ASSERT(num_digits <= stringify::v0::min_size_after_recycle<CharT>());
+        STRF_ASSERT(num_digits <= strf::min_size_after_recycle<CharT>());
         ob.ensure(num_digits);
         std::copy(digits, digits + num_digits, ob.pos());
         ob.advance(num_digits);
     }
     if (grp_size > num_digits)
     {
-        STRF_ASSERT(num_digits <= stringify::v0::min_size_after_recycle<CharT>());
+        STRF_ASSERT(num_digits <= strf::min_size_after_recycle<CharT>());
         grp_size -= num_digits;
         ob.ensure(grp_size);
         std::char_traits<CharT>::assign(ob.pos(), grp_size, '0');
@@ -531,7 +531,7 @@ void _print_amplified_integer_small_separator
     while (grp_it != groups)
     {
         grp_size = *--grp_it;
-        STRF_ASSERT(grp_size + 1 <= stringify::v0::min_size_after_recycle<CharT>());
+        STRF_ASSERT(grp_size + 1 <= strf::min_size_after_recycle<CharT>());
         ob.ensure(grp_size + 1);
         auto it = ob.pos();
         *it = separator;
@@ -542,8 +542,8 @@ void _print_amplified_integer_small_separator
 
 template <typename CharT>
 void _print_amplified_integer_big_separator
-    ( stringify::v0::basic_outbuf<CharT>& ob
-    , stringify::v0::encoding<CharT> enc
+    ( strf::basic_outbuf<CharT>& ob
+    , strf::encoding<CharT> enc
     , const std::uint8_t* groups
     , unsigned num_groups
     , char32_t separator
@@ -556,7 +556,7 @@ void _print_amplified_integer_big_separator
     unsigned grp_size = *grp_it;
     while (num_digits > grp_size)
     {
-        STRF_ASSERT(grp_size + separator_size <= stringify::v0::min_size_after_recycle<CharT>());
+        STRF_ASSERT(grp_size + separator_size <= strf::min_size_after_recycle<CharT>());
         ob.ensure(grp_size + separator_size);
         auto it = ob.pos();
         auto digits_2 = digits + grp_size;
@@ -569,14 +569,14 @@ void _print_amplified_integer_big_separator
     }
     if (num_digits != 0)
     {
-        STRF_ASSERT(num_digits <= stringify::v0::min_size_after_recycle<CharT>());
+        STRF_ASSERT(num_digits <= strf::min_size_after_recycle<CharT>());
         ob.ensure(num_digits);
         std::copy(digits, digits + num_digits, ob.pos());
         ob.advance(num_digits);
     }
     if (grp_size > num_digits)
     {
-        STRF_ASSERT(num_digits <= stringify::v0::min_size_after_recycle<CharT>());
+        STRF_ASSERT(num_digits <= strf::min_size_after_recycle<CharT>());
         grp_size -= num_digits;
         ob.ensure(grp_size);
         std::char_traits<CharT>::assign(ob.pos(), grp_size, '0');
@@ -585,7 +585,7 @@ void _print_amplified_integer_big_separator
     while (grp_it != groups)
     {
         grp_size = *--grp_it;
-        STRF_ASSERT(grp_size + separator_size <= stringify::v0::min_size_after_recycle<CharT>());
+        STRF_ASSERT(grp_size + separator_size <= strf::min_size_after_recycle<CharT>());
         ob.ensure(grp_size + separator_size);
         auto it = enc.encode_char(ob.pos(), separator);
         std::char_traits<CharT>::assign(it, grp_size, '0');
@@ -594,16 +594,16 @@ void _print_amplified_integer_big_separator
 }
 
 template <int Base, typename CharT>
-void print_amplified_integer( stringify::v0::basic_outbuf<CharT>& ob
-                            , const stringify::v0::numpunct_base& punct
-                            , stringify::v0::encoding<CharT> enc
+void print_amplified_integer( strf::basic_outbuf<CharT>& ob
+                            , const strf::numpunct_base& punct
+                            , strf::encoding<CharT> enc
                             , unsigned long long value
                             , unsigned num_digits
                             , unsigned num_trailing_zeros )
 {
     constexpr auto max_digits = detail::max_num_digits<unsigned long long, Base>;
     char digits_buff[max_digits];
-    auto digits = stringify::v0::detail::write_int_txtdigits_backwards<Base>
+    auto digits = strf::detail::write_int_txtdigits_backwards<Base>
         (value, digits_buff + max_digits);
     STRF_ASSERT(static_cast<int>(num_digits) == ((digits_buff + max_digits) - digits));
 
@@ -615,27 +615,27 @@ void print_amplified_integer( stringify::v0::basic_outbuf<CharT>& ob
         auto sep_size = enc.validate(sep32);
         if (sep_size == (std::size_t)-1)
         {
-            stringify::v0::detail::write_int<10>(ob, value, num_digits);
-            stringify::v0::detail::write_fill(ob, num_trailing_zeros, (CharT)'0');
+            strf::detail::write_int<10>(ob, value, num_digits);
+            strf::detail::write_fill(ob, num_trailing_zeros, (CharT)'0');
             return;
         }
         if (sep_size != 1)
         {
-            stringify::v0::detail::_print_amplified_integer_big_separator<CharT>
+            strf::detail::_print_amplified_integer_big_separator<CharT>
                 ( ob, enc, groups, num_groups, sep32, sep_size
                 , digits, num_digits );
             return;
         }
     }
     CharT sep = static_cast<CharT>(sep32);
-    stringify::v0::detail::_print_amplified_integer_small_separator<CharT>
+    strf::detail::_print_amplified_integer_small_separator<CharT>
         ( ob, enc, groups, num_groups, sep, digits, num_digits );
 }
 
 template <typename CharT>
 void print_scientific_notation
-    ( stringify::v0::basic_outbuf<CharT>& ob
-    , stringify::v0::encoding<CharT> enc
+    ( strf::basic_outbuf<CharT>& ob
+    , strf::encoding<CharT> enc
     , unsigned long long digits
     , unsigned num_digits
     , char32_t decimal_point
@@ -688,7 +688,7 @@ void print_scientific_notation
     {
         ob.ensure(num_digits + psize);
         auto it = ob.pos() + num_digits + psize;
-        const char* arr = stringify::v0::detail::chars_00_to_99();
+        const char* arr = strf::detail::chars_00_to_99();
 
         while(digits > 99)
         {
@@ -724,7 +724,7 @@ void print_scientific_notation
     }
     if (trailing_zeros != 0)
     {
-        stringify::v0::detail::write_fill(ob, trailing_zeros, CharT('0'));
+        strf::detail::write_fill(ob, trailing_zeros, CharT('0'));
     }
 
     unsigned adv = 4;
@@ -762,7 +762,7 @@ void print_scientific_notation
 }
 
 template <typename CharT>
-class punct_double_printer: public stringify::v0::printer<CharT>
+class punct_double_printer: public strf::printer<CharT>
 {
 public:
 
@@ -770,11 +770,11 @@ public:
     punct_double_printer
         ( const FP& fp
         , Preview& preview
-        , stringify::v0::float_with_format<FloatT, false> x )
+        , strf::float_with_format<FloatT, false> x )
         : _data{x.value(), x.get_float_format_data()}
-        , _punct(get_facet<stringify::v0::numpunct_c<10>, FloatT>(fp))
-        , _encoding(get_facet<stringify::v0::encoding_c<CharT>, FloatT>(fp))
-        , _enc_err(get_facet<stringify::v0::encoding_error_c, FloatT>(fp))
+        , _punct(get_facet<strf::numpunct_c<10>, FloatT>(fp))
+        , _encoding(get_facet<strf::encoding_c<CharT>, FloatT>(fp))
+        , _enc_err(get_facet<strf::encoding_error_c, FloatT>(fp))
     {
         STRF_IF_CONSTEXPR (Preview::width_required)
         {
@@ -790,44 +790,44 @@ public:
     punct_double_printer
         ( const FP& fp
         , Preview& preview
-        , stringify::v0::float_with_format<FloatT, true> x )
+        , strf::float_with_format<FloatT, true> x )
         : _data{x.value(), x.get_float_format_data()}
-        , _punct(get_facet<stringify::v0::numpunct_c<10>, FloatT>(fp))
-        , _encoding(get_facet<stringify::v0::encoding_c<CharT>, FloatT>(fp))
+        , _punct(get_facet<strf::numpunct_c<10>, FloatT>(fp))
+        , _encoding(get_facet<strf::encoding_c<CharT>, FloatT>(fp))
         , _fillchar(x.fill())
-        , _enc_err(fp.template get_facet<stringify::v0::encoding_error_c, FloatT>())
-        , _allow_surr(fp.template get_facet<stringify::v0::surrogate_policy_c, FloatT>())
+        , _enc_err(fp.template get_facet<strf::encoding_error_c, FloatT>())
+        , _allow_surr(fp.template get_facet<strf::surrogate_policy_c, FloatT>())
     {
         init(preview, x.width(), x.alignment());
     }
 
 
-    void print_to(stringify::v0::basic_outbuf<CharT>&) const override;
+    void print_to(strf::basic_outbuf<CharT>&) const override;
 
 private:
 
     template <typename Preview>
-    void init(Preview& preview, std::int16_t w, stringify::v0::text_alignment a);
+    void init(Preview& preview, std::int16_t w, strf::text_alignment a);
 
     std::int16_t _content_width() const;
     std::size_t _content_size() const;
 
-    stringify::v0::detail::double_printer_data _data;
-    const stringify::v0::numpunct_base& _punct;
-    const stringify::v0::encoding<CharT> _encoding;
+    strf::detail::double_printer_data _data;
+    const strf::numpunct_base& _punct;
+    const strf::encoding<CharT> _encoding;
     char32_t _fillchar = U' ';
     unsigned _left_fillcount = 0;
     unsigned _split_fillcount = 0;
     unsigned _right_fillcount = 0;
-    stringify::v0::encoding_error _enc_err;
-    stringify::v0::surrogate_policy _allow_surr = surrogate_policy::strict;
+    strf::encoding_error _enc_err;
+    strf::surrogate_policy _allow_surr = surrogate_policy::strict;
 };
 
 template <typename CharT>
 template <typename Preview>
 void punct_double_printer<CharT>::init( Preview& preview
                                       , std::int16_t fmt_width
-                                      , stringify::v0::text_alignment a )
+                                      , strf::text_alignment a )
 {
     auto content_width = _content_width();
     if (content_width > fmt_width)
@@ -853,17 +853,17 @@ void punct_double_printer<CharT>::init( Preview& preview
         }
         switch (a)
         {
-            case stringify::v0::text_alignment::right:
+            case strf::text_alignment::right:
                 _left_fillcount = fillcount;
                 break;
-            case stringify::v0::text_alignment::left:
+            case strf::text_alignment::left:
                 _right_fillcount = fillcount;
                 break;
-            case stringify::v0::text_alignment::split:
+            case strf::text_alignment::split:
                 _split_fillcount = fillcount;
                 break;
             default:
-                STRF_ASSERT(a == stringify::v0::text_alignment::center);
+                STRF_ASSERT(a == strf::text_alignment::center);
                 _left_fillcount = fillcount / 2;
                 _right_fillcount = fillcount - _left_fillcount;
         }
@@ -975,7 +975,7 @@ std::size_t punct_double_printer<CharT>::_content_size() const
 }
 
 template <typename CharT>
-void punct_double_printer<CharT>::print_to(stringify::v0::basic_outbuf<CharT>& ob) const
+void punct_double_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
 {
     if (_left_fillcount != 0)
     {
@@ -1009,7 +1009,7 @@ void punct_double_printer<CharT>::print_to(stringify::v0::basic_outbuf<CharT>& o
     }
     else if (_data.sci_notation)
     {
-        stringify::v0::detail::print_scientific_notation
+        strf::detail::print_scientific_notation
             ( ob, _encoding, _data.m10, _data.m10_digcount
             , _punct.decimal_point()
             , _data.e10 + _data.m10_digcount - 1
@@ -1020,19 +1020,19 @@ void punct_double_printer<CharT>::print_to(stringify::v0::basic_outbuf<CharT>& o
     {
         if (_punct.no_group_separation(_data.m10_digcount + _data.e10))
         {
-            stringify::v0::detail::write_int<10>(ob, _data.m10, _data.m10_digcount);
-            stringify::v0::detail::write_fill(ob, _data.e10, (CharT)'0');
+            strf::detail::write_int<10>(ob, _data.m10, _data.m10_digcount);
+            strf::detail::write_fill(ob, _data.e10, (CharT)'0');
         }
         else
         {
-            stringify::v0::detail::print_amplified_integer<10>
+            strf::detail::print_amplified_integer<10>
                 ( ob, _punct, _encoding, _data.m10
                 , _data.m10_digcount, _data.e10 );
         }
         if (_data.showpoint)
         {
             _encoding.encode_char( ob, _punct.decimal_point()
-                                 , stringify::v0::encoding_error::replace);
+                                 , strf::encoding_error::replace);
         }
         if (_data.extra_zeros)
         {
@@ -1048,22 +1048,22 @@ void punct_double_printer<CharT>::print_to(stringify::v0::basic_outbuf<CharT>& o
         {
             put(ob, static_cast<CharT>('0'));
             _encoding.encode_char( ob, _punct.decimal_point()
-                                 , stringify::v0::encoding_error::replace );
+                                 , strf::encoding_error::replace );
 
             if (e10u > _data.m10_digcount)
             {
-                stringify::v0::detail::write_fill(ob, e10u - _data.m10_digcount, (CharT)'0');
+                strf::detail::write_fill(ob, e10u - _data.m10_digcount, (CharT)'0');
             }
-            stringify::v0::detail::write_int<10>(ob, _data.m10, _data.m10_digcount);
+            strf::detail::write_int<10>(ob, _data.m10, _data.m10_digcount);
             if (_data.extra_zeros != 0)
             {
-                stringify::v0::detail::write_fill(ob, _data.extra_zeros,  (CharT)'0');
+                strf::detail::write_fill(ob, _data.extra_zeros,  (CharT)'0');
             }
         }
         else
         {
             //auto v = std::lldiv(_data.m10, detail::pow10(e10u)); // todo test this
-            auto p10 = stringify::v0::detail::pow10(e10u);
+            auto p10 = strf::detail::pow10(e10u);
             auto integral_part = _data.m10 / p10;
             auto fractional_part = _data.m10 % p10;
             auto idigcount = _data.m10_digcount - e10u;
@@ -1072,16 +1072,16 @@ void punct_double_printer<CharT>::print_to(stringify::v0::basic_outbuf<CharT>& o
 
             if (_punct.no_group_separation(idigcount))
             {
-                stringify::v0::detail::write_int<10>(ob, integral_part, idigcount);
+                strf::detail::write_int<10>(ob, integral_part, idigcount);
             }
             else
             {
-                stringify::v0::detail::write_int<10>( ob, _punct, _encoding
+                strf::detail::write_int<10>( ob, _punct, _encoding
                                                     , integral_part, idigcount );
             }
             _encoding.encode_char( ob, _punct.decimal_point()
-                                 , stringify::v0::encoding_error::replace );
-            stringify::v0::detail::write_int_with_leading_zeros<10>
+                                 , strf::encoding_error::replace );
+            strf::detail::write_int_with_leading_zeros<10>
                 (ob, fractional_part, e10u);
             if (_data.extra_zeros)
             {
@@ -1097,7 +1097,7 @@ void punct_double_printer<CharT>::print_to(stringify::v0::basic_outbuf<CharT>& o
 }
 
 template <typename CharT>
-class double_printer final: public stringify::v0::printer<CharT>
+class double_printer final: public strf::printer<CharT>
 {
 public:
 
@@ -1105,7 +1105,7 @@ public:
     double_printer
         ( const Fpack&
         , Preview& preview
-        , stringify::v0::float_with_format<FloatT, false> x )
+        , strf::float_with_format<FloatT, false> x )
         : _data(x.value(), x.get_float_format_data())
     {
         auto content_width = _content_width();
@@ -1117,22 +1117,22 @@ public:
     double_printer
         ( const Fpack& fp
         , Preview& preview
-        , stringify::v0::float_with_format<FloatT, true> x)
+        , strf::float_with_format<FloatT, true> x)
         : _data(x.value(), x.get_float_format_data())
-        , _encoding(fp.template get_facet<stringify::v0::encoding_c<CharT>, FloatT>())
+        , _encoding(fp.template get_facet<strf::encoding_c<CharT>, FloatT>())
         , _fillchar(x.fill())
-        , _enc_err(fp.template get_facet<stringify::v0::encoding_error_c, FloatT>())
-        , _allow_surr(fp.template get_facet<stringify::v0::surrogate_policy_c, FloatT>())
+        , _enc_err(fp.template get_facet<strf::encoding_error_c, FloatT>())
+        , _allow_surr(fp.template get_facet<strf::surrogate_policy_c, FloatT>())
     {
         init(preview, x.width(), x.alignment());
     }
 
-    void print_to(stringify::v0::basic_outbuf<CharT>&) const override;
+    void print_to(strf::basic_outbuf<CharT>&) const override;
 
 private:
 
     template <typename Preview>
-    void init(Preview& preview, std::int16_t w, stringify::v0::text_alignment a);
+    void init(Preview& preview, std::int16_t w, strf::text_alignment a);
 
     std::int16_t _content_width() const
     {
@@ -1153,22 +1153,22 @@ private:
                        * (-_data.e10 + 1 -(int)_data.m10_digcount) ))));
     }
 
-    stringify::v0::detail::double_printer_data _data;
-    stringify::v0::encoding<CharT> _encoding
-        = stringify::v0::encoding_c<CharT>::get_default();
+    strf::detail::double_printer_data _data;
+    strf::encoding<CharT> _encoding
+        = strf::encoding_c<CharT>::get_default();
     char32_t _fillchar = U' ';
     unsigned _left_fillcount = 0;
     unsigned _split_fillcount = 0;
     unsigned _right_fillcount = 0;
-    stringify::v0::encoding_error _enc_err = encoding_error::ignore;
-    stringify::v0::surrogate_policy _allow_surr = surrogate_policy::strict;
+    strf::encoding_error _enc_err = encoding_error::ignore;
+    strf::surrogate_policy _allow_surr = surrogate_policy::strict;
 };
 
 template <typename CharT>
 template <typename Preview>
 void double_printer<CharT>::init( Preview& preview
                                 , std::int16_t w
-                                , stringify::v0::text_alignment a )
+                                , strf::text_alignment a )
 {
     auto content_width = _content_width();
     if (content_width > w)
@@ -1191,17 +1191,17 @@ void double_printer<CharT>::init( Preview& preview
         }
         switch (a)
         {
-            case stringify::v0::text_alignment::right:
+            case strf::text_alignment::right:
                 _left_fillcount = fillcount;
                 break;
-            case stringify::v0::text_alignment::left:
+            case strf::text_alignment::left:
                 _right_fillcount = fillcount;
                 break;
-            case stringify::v0::text_alignment::split:
+            case strf::text_alignment::split:
                 _split_fillcount = fillcount;
                 break;
             default:
-                STRF_ASSERT(a == stringify::v0::text_alignment::center);
+                STRF_ASSERT(a == strf::text_alignment::center);
                 _left_fillcount = fillcount / 2;
                 _right_fillcount = fillcount - _left_fillcount;
         }
@@ -1210,7 +1210,7 @@ void double_printer<CharT>::init( Preview& preview
 
 template <typename CharT>
 void double_printer<CharT>::print_to
-    ( stringify::v0::basic_outbuf<CharT>& ob ) const
+    ( strf::basic_outbuf<CharT>& ob ) const
 {
     if (_left_fillcount != 0)
     {
@@ -1260,7 +1260,7 @@ void double_printer<CharT>::print_to
             if (_data.extra_zeros > 0)
             {
                 ob.advance_to(it);
-                stringify::v0::detail::write_fill<CharT>(ob, _data.extra_zeros, '0');
+                strf::detail::write_fill<CharT>(ob, _data.extra_zeros, '0');
                 it = ob.pos();
             }
         }
@@ -1274,7 +1274,7 @@ void double_printer<CharT>::print_to
             if (_data.extra_zeros > 0)
             {
                 ob.advance_to(itz);
-                stringify::v0::detail::write_fill<CharT>(ob, _data.extra_zeros, '0');
+                strf::detail::write_fill<CharT>(ob, _data.extra_zeros, '0');
                 it = ob.pos();
             }
         }
@@ -1341,7 +1341,7 @@ void double_printer<CharT>::print_to
             }
             else
             {
-                const char* const arr = stringify::v0::detail::chars_00_to_99();
+                const char* const arr = strf::detail::chars_00_to_99();
                 auto m = _data.m10;
                 CharT* const end = it + _data.m10_digcount + 1;
                 it = end;
@@ -1391,7 +1391,7 @@ void double_printer<CharT>::print_to
 }
 
 template <typename CharT>
-class fast_double_printer: public stringify::v0::printer<CharT>
+class fast_double_printer: public strf::printer<CharT>
 {
 public:
 
@@ -1423,7 +1423,7 @@ public:
 
     explicit fast_double_printer(float f)
         : _value(decode(f))
-        , _m10_digcount(stringify::v0::detail::count_digits<10>(_value.m10))
+        , _m10_digcount(strf::detail::count_digits<10>(_value.m10))
 
     {
         STRF_ASSERT(!_value.nan || !_value.infinity);
@@ -1433,7 +1433,7 @@ public:
 
     explicit fast_double_printer(double d)
         : _value(decode(d))
-        , _m10_digcount(stringify::v0::detail::count_digits<10>(_value.m10))
+        , _m10_digcount(strf::detail::count_digits<10>(_value.m10))
 
     {
         STRF_ASSERT(!_value.nan || !_value.infinity);
@@ -1441,7 +1441,7 @@ public:
             || (_value.e10 < -(int)_m10_digcount - 2 - (_m10_digcount > 1));
     }
 
-    void print_to(stringify::v0::basic_outbuf<CharT>&) const override;
+    void print_to(strf::basic_outbuf<CharT>&) const override;
 
     std::size_t size() const;
 
@@ -1480,7 +1480,7 @@ std::size_t fast_double_printer<CharT>::size() const
 
 template <typename CharT>
 void fast_double_printer<CharT>::print_to
-    ( stringify::v0::basic_outbuf<CharT>& ob ) const
+    ( strf::basic_outbuf<CharT>& ob ) const
 {
     if (_value.nan)
     {
@@ -1599,7 +1599,7 @@ void fast_double_printer<CharT>::print_to
             }
             else
             {
-                const char* const arr = stringify::v0::detail::chars_00_to_99();
+                const char* const arr = strf::detail::chars_00_to_99();
                 auto m = _value.m10;
                 it += _m10_digcount + 1;
                 CharT* const end = it;
@@ -1644,16 +1644,16 @@ void fast_double_printer<CharT>::print_to
 
 
 template <typename CharT>
-class fast_punct_double_printer: public stringify::v0::printer<CharT>
+class fast_punct_double_printer: public strf::printer<CharT>
 {
 public:
 
     template <typename FPack, typename Preview, typename FloatT>
     fast_punct_double_printer(const FPack& fp, Preview& preview, FloatT d)
-        : _punct(get_facet<stringify::v0::numpunct_c<10>, FloatT>(fp))
-        , _encoding(get_facet<stringify::v0::encoding_c<CharT>, FloatT>(fp))
+        : _punct(get_facet<strf::numpunct_c<10>, FloatT>(fp))
+        , _encoding(get_facet<strf::encoding_c<CharT>, FloatT>(fp))
         , _value(decode(d))
-        , _m10_digcount(stringify::v0::detail::count_digits<10>(_value.m10))
+        , _m10_digcount(strf::detail::count_digits<10>(_value.m10))
     {
         constexpr bool showpoint = false;
         if (_value.e10 > -(int)_m10_digcount)
@@ -1681,9 +1681,9 @@ public:
         }
     }
 
-    stringify::v0::width_t width() const;
+    strf::width_t width() const;
 
-    void print_to(stringify::v0::basic_outbuf<CharT>&) const override;
+    void print_to(strf::basic_outbuf<CharT>&) const override;
 
     std::size_t size() const;
 
@@ -1696,8 +1696,8 @@ private:
 
     }
 
-    const stringify::v0::numpunct_base& _punct;
-    stringify::v0::encoding<CharT> _encoding;
+    const strf::numpunct_base& _punct;
+    strf::encoding<CharT> _encoding;
     const detail::double_dec _value;
     const unsigned _m10_digcount;
     unsigned _sep_count;
@@ -1749,7 +1749,7 @@ std::size_t fast_punct_double_printer<CharT>::size() const
 }
 
 template <typename CharT>
-stringify::v0::width_t fast_punct_double_printer<CharT>::width() const
+strf::width_t fast_punct_double_printer<CharT>::width() const
 {
     if (_value.infinity || _value.nan)
     {
@@ -1792,7 +1792,7 @@ stringify::v0::width_t fast_punct_double_printer<CharT>::width() const
 
 template <typename CharT>
 void fast_punct_double_printer<CharT>::print_to
-    ( stringify::v0::basic_outbuf<CharT>& ob ) const
+    ( strf::basic_outbuf<CharT>& ob ) const
 {
     if (_value.negative)
     {
@@ -1816,7 +1816,7 @@ void fast_punct_double_printer<CharT>::print_to
     }
     else if (_sci_notation)
     {
-        stringify::v0::detail::print_scientific_notation
+        strf::detail::print_scientific_notation
             ( ob, _encoding, _value.m10, _m10_digcount
             , _punct.decimal_point()
             , _value.e10 + _m10_digcount - 1
@@ -1828,12 +1828,12 @@ void fast_punct_double_printer<CharT>::print_to
         {
             if (_punct.no_group_separation(_m10_digcount + _value.e10))
             {
-                stringify::v0::detail::write_int<10>(ob, _value.m10, _m10_digcount);
-                stringify::v0::detail::write_fill(ob, _value.e10, (CharT)'0');
+                strf::detail::write_int<10>(ob, _value.m10, _m10_digcount);
+                strf::detail::write_fill(ob, _value.e10, (CharT)'0');
             }
             else
             {
-                stringify::v0::detail::print_amplified_integer<10>
+                strf::detail::print_amplified_integer<10>
                     ( ob, _punct, _encoding, _value.m10
                     , _m10_digcount, _value.e10 );
             }
@@ -1845,17 +1845,17 @@ void fast_punct_double_printer<CharT>::print_to
             {
                 put(ob, static_cast<CharT>('0'));
                 _encoding.encode_char( ob, _punct.decimal_point()
-                                     , stringify::v0::encoding_error::replace );
+                                     , strf::encoding_error::replace );
                 if (e10u > _m10_digcount)
                 {
-                    stringify::v0::detail::write_fill(ob, e10u - _m10_digcount, (CharT)'0');
+                    strf::detail::write_fill(ob, e10u - _m10_digcount, (CharT)'0');
                 }
-                stringify::v0::detail::write_int<10>(ob, _value.m10, _m10_digcount);
+                strf::detail::write_int<10>(ob, _value.m10, _m10_digcount);
             }
             else
             {
                 //auto v = std::lldiv(_value.m10, detail::pow10(e10u)); // todo test this
-                auto p10 = stringify::v0::detail::pow10(e10u);
+                auto p10 = strf::detail::pow10(e10u);
                 auto integral_part = _value.m10 / p10;
                 auto fractional_part = _value.m10 % p10;
                 auto idigcount = _m10_digcount - e10u;
@@ -1863,16 +1863,16 @@ void fast_punct_double_printer<CharT>::print_to
 
                 if (_punct.no_group_separation(_m10_digcount - e10u))
                 {
-                    stringify::v0::detail::write_int<10>(ob, integral_part, idigcount);
+                    strf::detail::write_int<10>(ob, integral_part, idigcount);
                 }
                 else
                 {
-                    stringify::v0::detail::write_int<10>( ob, _punct, _encoding
+                    strf::detail::write_int<10>( ob, _punct, _encoding
                                                         , integral_part, idigcount );
                 }
                 _encoding.encode_char( ob, _punct.decimal_point()
-                                     , stringify::v0::encoding_error::replace );
-                stringify::v0::detail::write_int_with_leading_zeros<10>
+                                     , strf::encoding_error::replace );
+                strf::detail::write_int_with_leading_zeros<10>
                     (ob, fractional_part, e10u);
             }
         }
@@ -1912,23 +1912,23 @@ STRF_EXPLICIT_TEMPLATE class fast_punct_double_printer<wchar_t>;
 
 } // namespace detail
 
-inline auto make_fmt(stringify::v0::tag, float x)
+inline auto make_fmt(strf::tag, float x)
 {
-    return stringify::v0::float_with_format<float, false>{x};
+    return strf::float_with_format<float, false>{x};
 }
 
-inline auto make_fmt(stringify::v0::tag, double x)
+inline auto make_fmt(strf::tag, double x)
 {
-    return stringify::v0::float_with_format<double, false>{x};
+    return strf::float_with_format<double, false>{x};
 }
 
-inline void make_fmt(stringify::v0::tag, long double x) = delete;
+inline void make_fmt(strf::tag, long double x) = delete;
 
 template <typename CharT, typename FPack, typename Preview>
 inline typename std::conditional
-    < stringify::v0::detail::has_punct<CharT, FPack, float, 10>
-    , stringify::v0::detail::fast_punct_double_printer<CharT>
-    , stringify::v0::detail::fast_double_printer<CharT> >::type
+    < strf::detail::has_punct<CharT, FPack, float, 10>
+    , strf::detail::fast_punct_double_printer<CharT>
+    , strf::detail::fast_double_printer<CharT> >::type
 make_printer(const FPack& fp, Preview& preview, float d)
 {
     return {fp, preview, d};
@@ -1936,9 +1936,9 @@ make_printer(const FPack& fp, Preview& preview, float d)
 
 template <typename CharT, typename FPack, typename Preview>
 inline typename std::conditional
-    < stringify::v0::detail::has_punct<CharT, FPack, double, 10>
-    , stringify::v0::detail::fast_punct_double_printer<CharT>
-    , stringify::v0::detail::fast_double_printer<CharT> >::type
+    < strf::detail::has_punct<CharT, FPack, double, 10>
+    , strf::detail::fast_punct_double_printer<CharT>
+    , strf::detail::fast_double_printer<CharT> >::type
 make_printer(const FPack& fp, Preview& preview, double d)
 {
     return {fp, preview, d};
@@ -1949,31 +1949,31 @@ void make_printer(const FPack& fp, Preview& preview, long double d) = delete;
 
 template <typename CharT, typename FPack, typename Preview, bool Align>
 inline typename std::conditional
-    < stringify::v0::detail::has_punct<CharT, FPack, float, 10>
-    , stringify::v0::detail::punct_double_printer<CharT>
-    , stringify::v0::detail::double_printer<CharT> >::type
+    < strf::detail::has_punct<CharT, FPack, float, 10>
+    , strf::detail::punct_double_printer<CharT>
+    , strf::detail::double_printer<CharT> >::type
 make_printer
     ( const FPack& fp
     , Preview& preview
-    , stringify::v0::float_with_format<float, Align> x )
+    , strf::float_with_format<float, Align> x )
 {
     return {fp, preview, x};
 }
 
 template <typename CharT, typename FPack, typename Preview, bool Align>
 inline typename std::conditional
-    < stringify::v0::detail::has_punct<CharT, FPack, double, 10>
-    , stringify::v0::detail::punct_double_printer<CharT>
-    , stringify::v0::detail::double_printer<CharT> >::type
+    < strf::detail::has_punct<CharT, FPack, double, 10>
+    , strf::detail::punct_double_printer<CharT>
+    , strf::detail::double_printer<CharT> >::type
 make_printer
     ( const FPack& fp
     , Preview& preview
-    , stringify::v0::float_with_format<double, Align> x )
+    , strf::float_with_format<double, Align> x )
 {
     return {fp, preview, x};
 }
 
-STRF_V0_NAMESPACE_END
+STRF_NAMESPACE_END
 
 #endif  // STRF_V0_DETAIL_INPUT_TYPES_FLOAT_HPP
 

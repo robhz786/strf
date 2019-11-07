@@ -8,8 +8,6 @@
 #include <cstdlib>
 
 
-namespace strf = boost::stringify::v0;
-
 template <typename FPack>
 void basic_tests(const FPack& fp)
 {

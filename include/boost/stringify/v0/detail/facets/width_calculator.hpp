@@ -7,7 +7,7 @@
 
 #include <boost/stringify/v0/detail/facets/encoding.hpp>
 
-STRF_V0_NAMESPACE_BEGIN
+STRF_NAMESPACE_BEGIN
 
 template <typename CharT> struct width_calculator_c;
 template <typename CharT> class width_calculator;
@@ -17,41 +17,41 @@ class width_calculator
 {
 public:
 
-    using category = stringify::v0::width_calculator_c<CharT>;
+    using category = strf::width_calculator_c<CharT>;
 
-    virtual stringify::v0::width_t width_of
+    virtual strf::width_t width_of
         ( CharT ch
-        , stringify::v0::encoding<CharT> enc ) const = 0;
+        , strf::encoding<CharT> enc ) const = 0;
 
-    virtual stringify::v0::width_t width
-        ( stringify::v0::width_t limit
+    virtual strf::width_t width
+        ( strf::width_t limit
         , const CharT* str
         , std::size_t str_len
-        , stringify::v0::encoding<CharT> enc
-        , stringify::v0::encoding_error enc_err
-        , stringify::v0::surrogate_policy allow_surr ) const = 0;
+        , strf::encoding<CharT> enc
+        , strf::encoding_error enc_err
+        , strf::surrogate_policy allow_surr ) const = 0;
 };
 
 template <typename CharT>
-class width_as_len final: public stringify::v0::width_calculator<CharT>
+class width_as_len final: public strf::width_calculator<CharT>
 {
 public:
 
-    stringify::v0::width_t width_of
-        ( CharT ch, stringify::v0::encoding<CharT> enc ) const override
+    strf::width_t width_of
+        ( CharT ch, strf::encoding<CharT> enc ) const override
     {
         (void)ch;
         (void)enc;
         return 1;
     }
 
-    stringify::v0::width_t width
-        ( stringify::v0::width_t limit
+    strf::width_t width
+        ( strf::width_t limit
         , const CharT* str
         , std::size_t str_len
-        , stringify::v0::encoding<CharT> enc
-        , stringify::v0::encoding_error enc_err
-        , stringify::v0::surrogate_policy allow_surr ) const override
+        , strf::encoding<CharT> enc
+        , strf::encoding_error enc_err
+        , strf::surrogate_policy allow_surr ) const override
     {
         (void) limit;
         (void) str;
@@ -63,17 +63,17 @@ public:
         {
             return static_cast<std::int16_t>(str_len);
         }
-        return stringify::v0::width_t_max;
+        return strf::width_t_max;
     }
 };
 
 template <typename CharT>
-class width_as_u32len final: public stringify::v0::width_calculator<CharT>
+class width_as_u32len final: public strf::width_calculator<CharT>
 {
 public:
 
-    virtual stringify::v0::width_t width_of
-        ( CharT ch, stringify::v0::encoding<CharT> enc ) const override
+    virtual strf::width_t width_of
+        ( CharT ch, strf::encoding<CharT> enc ) const override
     {
         (void)ch;
         (void)enc;
@@ -81,13 +81,13 @@ public:
     }
 
 
-    stringify::v0::width_t width
-        ( stringify::v0::width_t limit
+    strf::width_t width
+        ( strf::width_t limit
         , const CharT* str
         , std::size_t str_len
-        , stringify::v0::encoding<CharT> enc
-        , stringify::v0::encoding_error enc_err
-        , stringify::v0::surrogate_policy allow_surr ) const override
+        , strf::encoding<CharT> enc
+        , strf::encoding_error enc_err
+        , strf::surrogate_policy allow_surr ) const override
     {
         (void) limit;
         (void) str;
@@ -102,7 +102,7 @@ public:
             {
                 return static_cast<std::int16_t>(count);
             }
-            return stringify::v0::width_t_max;
+            return strf::width_t_max;
         }
         return 0;
     }
@@ -113,9 +113,9 @@ struct width_calculator_c
 {
     static constexpr bool constrainable = true;
 
-    static const stringify::v0::width_as_len<CharT>& get_default()
+    static const strf::width_as_len<CharT>& get_default()
     {
-        static const stringify::v0::width_as_len<CharT> x{};
+        static const strf::width_as_len<CharT> x{};
         return x;
     }
 };
@@ -124,7 +124,7 @@ struct width_calculator_c
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
-STRF_V0_NAMESPACE_END
+STRF_NAMESPACE_END
 
 #endif  // STRF_V0_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
 

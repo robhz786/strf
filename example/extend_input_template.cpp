@@ -4,8 +4,6 @@
 
 #include <boost/stringify.hpp>
 
-namespace strf = boost::stringify::v0;
-
 namespace xxx
 {
 

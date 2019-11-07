@@ -7,7 +7,7 @@
 
 #include <boost/stringify/v0/printer.hpp>
 
-STRF_V0_NAMESPACE_BEGIN
+STRF_NAMESPACE_BEGIN
 
 namespace detail {
 
@@ -34,8 +34,8 @@ template <typename CharIn>
 static std::size_t same_size
     ( const CharIn* src
     , const CharIn* src_end
-    , stringify::v0::encoding_error err_hdl
-    , stringify::v0::surrogate_policy allow_surr )
+    , strf::encoding_error err_hdl
+    , strf::surrogate_policy allow_surr )
 {
     (void) allow_surr;
     (void) err_hdl;
@@ -47,34 +47,34 @@ template <class Impl>
 struct single_byte_encoding
 {
     static void to_utf32
-        ( stringify::v0::underlying_outbuf<4>& ob
+        ( strf::underlying_outbuf<4>& ob
         , const std::uint8_t* src
         , const std::uint8_t* src_end
-        , stringify::v0::encoding_error err_hdl
-        , stringify::v0::surrogate_policy allow_surr );
+        , strf::encoding_error err_hdl
+        , strf::surrogate_policy allow_surr );
 
     static void from_utf32
-        ( stringify::v0::underlying_outbuf<1>& ob
+        ( strf::underlying_outbuf<1>& ob
         , const char32_t* src
         , const char32_t* src_end
-        , stringify::v0::encoding_error err_hdl
-        , stringify::v0::surrogate_policy allow_surr );
+        , strf::encoding_error err_hdl
+        , strf::surrogate_policy allow_surr );
 
     static void sanitize
-        ( stringify::v0::underlying_outbuf<1>& ob
+        ( strf::underlying_outbuf<1>& ob
         , const std::uint8_t* src
         , const std::uint8_t* src_end
-        , stringify::v0::encoding_error err_hdl
-        , stringify::v0::surrogate_policy allow_surr );
+        , strf::encoding_error err_hdl
+        , strf::surrogate_policy allow_surr );
 
     static std::uint8_t* encode_char(std::uint8_t* dest, char32_t ch);
 
     static void encode_fill
-        ( stringify::v0::underlying_outbuf<1>& ob
+        ( strf::underlying_outbuf<1>& ob
         , std::size_t count
         , char32_t ch
-        , stringify::v0::encoding_error err_hdl
-        , stringify::v0::surrogate_policy );
+        , strf::encoding_error err_hdl
+        , strf::surrogate_policy );
 
     static char32_t decode_single_char(std::uint8_t ch)
     {
@@ -89,7 +89,7 @@ struct single_byte_encoding
     static std::size_t replacement_char_size();
 
     static void write_replacement_char
-        ( stringify::v0::underlying_outbuf<1>& ob );
+        ( strf::underlying_outbuf<1>& ob );
 
     static std::size_t validate(char32_t ch);
 };
@@ -107,11 +107,11 @@ std::size_t single_byte_encoding<Impl>::codepoints_count
 
 template <class Impl>
 void single_byte_encoding<Impl>::to_utf32
-    ( stringify::v0::underlying_outbuf<4>& ob
+    ( strf::underlying_outbuf<4>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
-    , stringify::v0::encoding_error err_hdl
-    , stringify::v0::surrogate_policy allow_surr )
+    , strf::encoding_error err_hdl
+    , strf::surrogate_policy allow_surr )
 {
     (void) allow_surr;
     auto dest_it = ob.pos();
@@ -124,15 +124,15 @@ void single_byte_encoding<Impl>::to_utf32
         {
             switch(err_hdl)
             {
-                case stringify::v0::encoding_error::stop:
+                case strf::encoding_error::stop:
                     ob.advance_to(dest_it);
                     throw_encoding_failure();
                     break;
-                case stringify::v0::encoding_error::replace:
+                case strf::encoding_error::replace:
                     ch32 = 0xFFFD;
                     break;
                 default:
-                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
                     continue;
             }
         }
@@ -145,11 +145,11 @@ void single_byte_encoding<Impl>::to_utf32
 
 template <class Impl>
 void single_byte_encoding<Impl>::sanitize
-    ( stringify::v0::underlying_outbuf<1>& ob
+    ( strf::underlying_outbuf<1>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
-    , stringify::v0::encoding_error err_hdl
-    , stringify::v0::surrogate_policy allow_surr )
+    , strf::encoding_error err_hdl
+    , strf::surrogate_policy allow_surr )
 {
     (void) allow_surr;
     auto dest_it = ob.pos();
@@ -166,15 +166,15 @@ void single_byte_encoding<Impl>::sanitize
         {
             switch(err_hdl)
             {
-                case stringify::v0::encoding_error::stop:
+                case strf::encoding_error::stop:
                     ob.advance_to(dest_it);
                     throw_encoding_failure();
                     return;
-                case stringify::v0::encoding_error::replace:
+                case strf::encoding_error::replace:
                     ch_out = '?';
                     break;
                 default:
-                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
                     continue;
             }
         }
@@ -188,7 +188,7 @@ void single_byte_encoding<Impl>::sanitize
 
 template <class Impl>
 void single_byte_encoding<Impl>::write_replacement_char
-    ( stringify::v0::underlying_outbuf<1>& ob )
+    ( strf::underlying_outbuf<1>& ob )
 {
     ob.ensure(1);
     *ob.pos() = '?';
@@ -220,25 +220,25 @@ std::uint8_t* single_byte_encoding<Impl>::encode_char
 
 template <class Impl>
 void single_byte_encoding<Impl>::encode_fill
-    ( stringify::v0::underlying_outbuf<1>& ob
+    ( strf::underlying_outbuf<1>& ob
     , std::size_t count
     , char32_t ch
-    , stringify::v0::encoding_error err_hdl
-    , stringify::v0::surrogate_policy )
+    , strf::encoding_error err_hdl
+    , strf::surrogate_policy )
 {
     unsigned ch2 = Impl::encode(ch);
     if (ch2 >= 0x100)
     {
         switch(err_hdl)
         {
-            case stringify::v0::encoding_error::replace:
+            case strf::encoding_error::replace:
                 ch2 = '?';
                 break;
-            case stringify::v0::encoding_error::stop:
+            case strf::encoding_error::stop:
                 throw_encoding_failure();
                 return;
             default:
-                STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
                 return;
         }
     }
@@ -260,11 +260,11 @@ void single_byte_encoding<Impl>::encode_fill
 
 template <class Impl>
 void single_byte_encoding<Impl>::from_utf32
-    ( stringify::v0::underlying_outbuf<1>& ob
+    ( strf::underlying_outbuf<1>& ob
     , const char32_t* src
     , const char32_t* src_end
-    , stringify::v0::encoding_error err_hdl
-    , stringify::v0::surrogate_policy allow_surr )
+    , strf::encoding_error err_hdl
+    , strf::surrogate_policy allow_surr )
 {
     (void)allow_surr;
     auto dest_it = ob.pos();
@@ -276,17 +276,17 @@ void single_byte_encoding<Impl>::from_utf32
         {
             switch(err_hdl)
             {
-                case stringify::v0::encoding_error::stop:
+                case strf::encoding_error::stop:
                     ob.advance_to(dest_it);
                     throw_encoding_failure();
                     return;
 
-                case stringify::v0::encoding_error::replace:
+                case strf::encoding_error::replace:
                     ch2 = '?';
                     break;
 
                 default:
-                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
                     continue;
             }
         }
@@ -561,10 +561,10 @@ STRF_INLINE unsigned impl_windows_1252::encode_ext(char32_t ch)
 }
 
 STRF_INLINE
-const stringify::v0::detail::encoding_impl<std::uint8_t>& windows_1252_impl()
+const strf::detail::encoding_impl<std::uint8_t>& windows_1252_impl()
 {
     using impl = detail::single_byte_encoding<detail::impl_windows_1252>;
-    static const stringify::v0::detail::encoding_impl<std::uint8_t> info =
+    static const strf::detail::encoding_impl<std::uint8_t> info =
          { { impl::from_utf32, detail::same_size<char32_t> }
          , { impl::to_utf32,   detail::same_size<std::uint8_t> }
          , { impl::sanitize,   detail::same_size<std::uint8_t> }
@@ -576,16 +576,16 @@ const stringify::v0::detail::encoding_impl<std::uint8_t>& windows_1252_impl()
          , impl::decode_single_char
          , nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
          , "windows-1252"
-         , stringify::v0::encoding_id::eid_windows_1252
+         , strf::encoding_id::eid_windows_1252
          , 1, 0x0, 0x7F };
     return info;
 }
 
 STRF_INLINE
-const stringify::v0::detail::encoding_impl<std::uint8_t>& iso_8859_1_impl()
+const strf::detail::encoding_impl<std::uint8_t>& iso_8859_1_impl()
 {
     using impl = detail::single_byte_encoding<detail::impl_iso8859_1>;
-    static const stringify::v0::detail::encoding_impl<std::uint8_t> info =
+    static const strf::detail::encoding_impl<std::uint8_t> info =
          { { impl::from_utf32, detail::same_size<char32_t> }
          , { impl::to_utf32,   detail::same_size<std::uint8_t> }
          , { impl::sanitize,   detail::same_size<std::uint8_t> }
@@ -597,16 +597,16 @@ const stringify::v0::detail::encoding_impl<std::uint8_t>& iso_8859_1_impl()
          , impl::decode_single_char
          , nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
          , "ISO-8859-1"
-         , stringify::v0::encoding_id::eid_iso_8859_1
+         , strf::encoding_id::eid_iso_8859_1
          , 1, 0x0, 0xFF };
     return info;
 }
 
 STRF_INLINE
-const stringify::v0::detail::encoding_impl<std::uint8_t>& iso_8859_3_impl()
+const strf::detail::encoding_impl<std::uint8_t>& iso_8859_3_impl()
 {
     using impl = detail::single_byte_encoding<detail::impl_iso8859_3>;
-    static const stringify::v0::detail::encoding_impl<std::uint8_t> info =
+    static const strf::detail::encoding_impl<std::uint8_t> info =
          { { impl::from_utf32, detail::same_size<char32_t> }
          , { impl::to_utf32,   detail::same_size<std::uint8_t> }
          , { impl::sanitize,   detail::same_size<std::uint8_t> }
@@ -618,7 +618,7 @@ const stringify::v0::detail::encoding_impl<std::uint8_t>& iso_8859_3_impl()
          , impl::decode_single_char
          , nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
          , "ISO-8859-3"
-         , stringify::v0::encoding_id::eid_iso_8859_3
+         , strf::encoding_id::eid_iso_8859_3
          , 1, 0x0, 0xA0 };
     return info;
 }
@@ -626,10 +626,10 @@ const stringify::v0::detail::encoding_impl<std::uint8_t>& iso_8859_3_impl()
 
 
 STRF_INLINE
-const stringify::v0::detail::encoding_impl<std::uint8_t>& iso_8859_15_impl()
+const strf::detail::encoding_impl<std::uint8_t>& iso_8859_15_impl()
 {
     using impl = detail::single_byte_encoding<detail::impl_iso8859_15>;
-    static const stringify::v0::detail::encoding_impl<std::uint8_t> info =
+    static const strf::detail::encoding_impl<std::uint8_t> info =
          { { impl::from_utf32, detail::same_size<char32_t> }
          , { impl::to_utf32, detail::same_size<std::uint8_t> }
          , { impl::sanitize, detail::same_size<std::uint8_t> }
@@ -641,13 +641,13 @@ const stringify::v0::detail::encoding_impl<std::uint8_t>& iso_8859_15_impl()
          , impl::decode_single_char
          , nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
          , "ISO-8859-15"
-         , stringify::v0::encoding_id::eid_iso_8859_15
+         , strf::encoding_id::eid_iso_8859_15
          , 1, 0x0, 0xA3 };
     return info;
 }
 
 } // namespace detail
-STRF_V0_NAMESPACE_END
+STRF_NAMESPACE_END
 
 #endif  // STRF_V0_DETAIL_SINGLE_BYTE_ENCODINGS_HPP
 

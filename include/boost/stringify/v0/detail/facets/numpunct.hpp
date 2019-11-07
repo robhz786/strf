@@ -8,7 +8,7 @@
 #include <string>
 #include <boost/stringify/v0/config.hpp>
 
-STRF_V0_NAMESPACE_BEGIN
+STRF_NAMESPACE_BEGIN
 
 namespace detail {
 
@@ -231,15 +231,15 @@ private:
 };
 
 template <int Base>
-class numpunct: public stringify::v0::numpunct_base
+class numpunct: public strf::numpunct_base
 {
 public:
 
     numpunct(unsigned first_group_size)
-        : stringify::v0::numpunct_base(first_group_size)
+        : strf::numpunct_base(first_group_size)
     {}
 
-    using category = stringify::v0::numpunct_c<Base>;
+    using category = strf::numpunct_c<Base>;
 
 protected:
 
@@ -247,12 +247,12 @@ protected:
 };
 
 template <int Base>
-class no_grouping final: public stringify::v0::numpunct<Base>
+class no_grouping final: public strf::numpunct<Base>
 {
 public:
 
     no_grouping()
-        : stringify::v0::numpunct<Base>((unsigned)-1)
+        : strf::numpunct<Base>((unsigned)-1)
     {
     }
 
@@ -283,12 +283,12 @@ public:
 };
 
 template <int Base>
-class monotonic_grouping: public stringify::v0::numpunct<Base>
+class monotonic_grouping: public strf::numpunct<Base>
 {
 public:
 
     constexpr monotonic_grouping(std::uint8_t groups_size)
-        : stringify::v0::numpunct<Base>(groups_size)
+        : strf::numpunct<Base>(groups_size)
         , _impl(groups_size)
     {
     }
@@ -328,17 +328,17 @@ public:
 
 private:
 
-    stringify::v0::detail::monotonic_grouping_impl _impl;
+    strf::detail::monotonic_grouping_impl _impl;
 };
 
 
 template <int Base>
-class str_grouping: public stringify::v0::numpunct<Base>
+class str_grouping: public strf::numpunct<Base>
 {
 public:
 
     str_grouping(std::string grouping)
-        : stringify::v0::numpunct<Base>
+        : strf::numpunct<Base>
             ( grouping.empty() || grouping.front() == '\0'
             ? (unsigned)-1
             : grouping.front() )
@@ -383,17 +383,17 @@ public:
 
 private:
 
-    stringify::v0::detail::str_grouping_impl _impl;
+    strf::detail::str_grouping_impl _impl;
 };
 
 template <int Base>
 // made final to enable the implementation of has_i18n
-class default_numpunct final: public stringify::v0::numpunct<Base>
+class default_numpunct final: public strf::numpunct<Base>
 {
 public:
 
     default_numpunct()
-        : stringify::v0::numpunct<Base>((unsigned)-1)
+        : strf::numpunct<Base>((unsigned)-1)
     {}
 
     unsigned groups( unsigned num_digits
@@ -425,9 +425,9 @@ template <int Base> struct numpunct_c
 
     constexpr static int base = Base;
 
-    static const stringify::v0::default_numpunct<base>& get_default()
+    static const strf::default_numpunct<base>& get_default()
     {
-        static const stringify::v0::default_numpunct<base> x{};
+        static const strf::default_numpunct<base> x{};
         return x;
     }
 };
@@ -435,27 +435,27 @@ template <int Base> struct numpunct_c
 namespace detail {
 
 template <int Base>
-std::true_type has_no_grouping(const stringify::v0::no_grouping<Base>&);
+std::true_type has_no_grouping(const strf::no_grouping<Base>&);
 
 template <int Base>
-std::true_type has_no_grouping(const stringify::v0::default_numpunct<Base>&);
+std::true_type has_no_grouping(const strf::default_numpunct<Base>&);
 
 template <int Base>
-std::false_type has_no_grouping(const stringify::v0::numpunct<Base>&);
+std::false_type has_no_grouping(const strf::numpunct<Base>&);
 
 template <typename CharT, typename FPack, typename InputT, unsigned Base>
 class has_punct_impl
 {
 public:
 
-    static std::true_type  test_numpunct(const stringify::v0::numpunct_base&);
-    static std::false_type test_numpunct(const stringify::v0::default_numpunct<Base>&);
+    static std::true_type  test_numpunct(const strf::numpunct_base&);
+    static std::false_type test_numpunct(const strf::default_numpunct<Base>&);
 
     static const FPack& fp();
 
     using has_numpunct_type = decltype
         ( test_numpunct
-            ( get_facet< stringify::v0::numpunct_c<Base>, InputT >(fp())) );
+            ( get_facet< strf::numpunct_c<Base>, InputT >(fp())) );
 
 public:
 
@@ -467,7 +467,7 @@ constexpr bool has_punct = has_punct_impl<CharT, FPack, InputT, Base>::has_punct
 
 } // namespace detail
 
-STRF_V0_NAMESPACE_END
+STRF_NAMESPACE_END
 
 #endif  // STRF_V0_DETAIL_FACETS_NUMPUNCT_HPP
 

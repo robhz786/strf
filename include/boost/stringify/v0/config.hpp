@@ -10,12 +10,8 @@
 
 #define STRF_ASSERT(x) assert(x)
 
-#define STRF_V0_NAMESPACE_BEGIN         \
-namespace boost {                                  \
-namespace stringify {                              \
-inline namespace v0 {                              \
-
-#define STRF_V0_NAMESPACE_END  } } }
+#define STRF_NAMESPACE_BEGIN namespace strf {
+#define STRF_NAMESPACE_END  }
 
 #if defined(STRF_SOURCE) && !defined(STRF_SEPARATE_COMPILATION)
 #define STRF_SEPARATE_COMPILATION

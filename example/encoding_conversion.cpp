@@ -8,9 +8,9 @@
 
 #if ! defined(__cpp_char8_t)
 
-namespace boost{ namespace stringify{ inline namespace v0{
+namespace strf {
 constexpr auto to_u8string = to_string;
-}}}
+}
 
 #endif
 
@@ -18,8 +18,6 @@ constexpr auto to_u8string = to_string;
 void input_ouput_different_char_types()
 {
     //[input_output_different_char_types
-    namespace strf = boost::stringify::v0;
-
     auto str   = strf::to_string( "aaa-"
                                 , strf::cv(u"bbb-")
                                 , strf::cv(U"ccc-")
@@ -50,8 +48,6 @@ void input_ouput_different_char_types()
 void arg()
 {
     //[ arg_encoding
-    namespace strf = boost::stringify::v0;
-
     auto str_utf8 = strf::to_u8string
         ( strf::cv("--\xA4--", strf::iso_8859_1<char>())
         , strf::cv("--\xA4--", strf::iso_8859_15<char>()));
@@ -63,7 +59,6 @@ void arg()
 void encoding_error_replace()
 {
     //[ encoding_error_replace
-    namespace strf = boost::stringify::v0;
     auto str = strf::to_u8string (strf::cv("--\x99--"));
     assert(str == u8"--\uFFFD--");
     //]
@@ -72,8 +67,6 @@ void encoding_error_replace()
 void error_signal_skip()
 {
     //[ encoding_error_ignore
-    namespace strf = boost::stringify::v0;
-
     auto str = strf::to_string
         .facets(strf::encoding_error::ignore)
         (strf::cv("--\x99--"));
@@ -86,8 +79,6 @@ void error_signal_skip()
 void encoding_error_stop()
 {
     //[encoding_error_stop
-    namespace strf = boost::stringify::v0;
-
     bool transcoding_failed = false;
     try
     {
@@ -102,13 +93,12 @@ void encoding_error_stop()
 
     assert(transcoding_failed);
     //]
+    (void) transcoding_failed;
 }
 
 void allow_surrogates ()
 {
     //[ allow_surrogates
-    namespace strf = boost::stringify::v0;
-
     std::u16string input_utf16 {u"-----"};
     input_utf16[1] = 0xD800; // a surrogate character alone
 

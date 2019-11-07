@@ -5,8 +5,6 @@
 #include <boost/stringify.hpp>
 #include "test_utils.hpp"
 
-namespace strf = boost::stringify::v0;
-
 int custom_width_calculator_function( int limit
                                     , const char32_t* it
                                     , const char32_t* end )

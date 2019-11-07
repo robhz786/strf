@@ -8,7 +8,7 @@
 #include <boost/stringify/v0/config.hpp>
 #include <cstring>
 
-STRF_V0_NAMESPACE_BEGIN
+STRF_NAMESPACE_BEGIN
 
 namespace detail{
 
@@ -36,7 +36,7 @@ struct fmt_replace_impl<From, List<T ...> >
 {
     template <class To>
     using type_tmpl =
-        typename stringify::v0::detail::fmt_replace_impl2
+        typename strf::detail::fmt_replace_impl2
             < From, To, List, T...>::type;
 };
 
@@ -44,7 +44,7 @@ struct fmt_replace_impl<From, List<T ...> >
 
 template <typename List, typename From, typename To>
 using fmt_replace
-    = typename stringify::v0::detail::fmt_replace_impl<From, List>
+    = typename strf::detail::fmt_replace_impl<From, List>
     ::template type_tmpl<To>;
 
 template <typename ValueType, class ... Fmts>
@@ -57,7 +57,7 @@ class value_with_format
 public:
 
     template <typename ... OhterFmts>
-    using replace_fmts = stringify::v0::value_with_format<ValueType, OhterFmts ...>;
+    using replace_fmts = strf::value_with_format<ValueType, OhterFmts ...>;
 
     constexpr value_with_format(const value_with_format&) = default;
     constexpr value_with_format(value_with_format&&) = default;
@@ -70,7 +70,7 @@ public:
     template <typename OtherValueType>
     constexpr value_with_format
         ( const ValueType& v
-        , const stringify::v0::value_with_format<OtherValueType, Fmts...>& f )
+        , const strf::value_with_format<OtherValueType, Fmts...>& f )
         : Fmts::template fn<value_with_format<ValueType, Fmts...>>
             ( static_cast
               < const typename Fmts
@@ -83,7 +83,7 @@ public:
     template <typename OtherValueType>
     constexpr value_with_format
         ( const ValueType& v
-        , stringify::v0::value_with_format<OtherValueType, Fmts...>&& f )
+        , strf::value_with_format<OtherValueType, Fmts...>&& f )
         : Fmts::template fn<value_with_format<ValueType, Fmts...>>
             ( static_cast
               < typename Fmts
@@ -95,7 +95,7 @@ public:
 
     template <typename ... OtherFmts>
     constexpr value_with_format
-        ( const stringify::v0::value_with_format<ValueType, OtherFmts...>& f )
+        ( const strf::value_with_format<ValueType, OtherFmts...>& f )
         : Fmts::template fn<value_with_format<ValueType, Fmts...>>
             ( static_cast
               < const typename OtherFmts
@@ -107,7 +107,7 @@ public:
 
     template <typename ... OtherFmts>
     constexpr value_with_format
-        ( stringify::v0::value_with_format<ValueType, OtherFmts...>&& f )
+        ( strf::value_with_format<ValueType, OtherFmts...>&& f )
         : Fmts::template fn<value_with_format<ValueType, Fmts...>>
             ( static_cast
               < typename OtherFmts
@@ -141,19 +141,19 @@ struct alignment_format_data
 {
     char32_t fill = U' ';
     std::int16_t width = 0;
-    stringify::v0::text_alignment alignment = stringify::v0::text_alignment::right;
+    strf::text_alignment alignment = strf::text_alignment::right;
 };
 
-constexpr bool operator==( stringify::v0::alignment_format_data lhs
-                         , stringify::v0::alignment_format_data rhs ) noexcept
+constexpr bool operator==( strf::alignment_format_data lhs
+                         , strf::alignment_format_data rhs ) noexcept
 {
     return lhs.fill == rhs.fill
         && lhs.width == rhs.width
         && lhs.alignment == rhs.alignment ;
 }
 
-constexpr bool operator!=( stringify::v0::alignment_format_data lhs
-                         , stringify::v0::alignment_format_data rhs ) noexcept
+constexpr bool operator!=( strf::alignment_format_data lhs
+                         , strf::alignment_format_data rhs ) noexcept
 {
     return ! (lhs == rhs);
 }
@@ -179,32 +179,32 @@ public:
 
     template <bool B, typename U>
     constexpr explicit alignment_format_fn
-        ( const stringify::v0::alignment_format_fn<B, U>& u ) noexcept
+        ( const strf::alignment_format_fn<B, U>& u ) noexcept
         : _data(u.get_alignment_format_data())
     {
     }
 
     constexpr T&& operator<(std::int16_t width) && noexcept
     {
-        _data.alignment = stringify::v0::text_alignment::left;
+        _data.alignment = strf::text_alignment::left;
         _data.width = width;
         return as_derived_rval_ref();
     }
     constexpr T&& operator>(std::int16_t width) && noexcept
     {
-        _data.alignment = stringify::v0::text_alignment::right;
+        _data.alignment = strf::text_alignment::right;
         _data.width = width;
         return as_derived_rval_ref();
     }
     constexpr T&& operator^(std::int16_t width) && noexcept
     {
-        _data.alignment = stringify::v0::text_alignment::center;
+        _data.alignment = strf::text_alignment::center;
         _data.width = width;
         return as_derived_rval_ref();
     }
     constexpr T&& operator%(std::int16_t width) && noexcept
     {
-        _data.alignment = stringify::v0::text_alignment::split;
+        _data.alignment = strf::text_alignment::split;
         _data.width = width;
         return as_derived_rval_ref();
     }
@@ -217,7 +217,7 @@ public:
     {
         return _data.width;
     }
-    constexpr stringify::v0::text_alignment alignment() const noexcept
+    constexpr strf::text_alignment alignment() const noexcept
     {
         return _data.alignment;
     }
@@ -233,17 +233,17 @@ public:
 
 private:
 
-    stringify::v0::alignment_format_data _data;
+    strf::alignment_format_data _data;
 };
 
 template <class T>
 class alignment_format_fn<false, T>
 {
     using derived_type = T;
-    using adapted_derived_type = stringify::v0::fmt_replace
+    using adapted_derived_type = strf::fmt_replace
             < T
-            , stringify::v0::alignment_format_q<false>
-            , stringify::v0::alignment_format_q<true> >;
+            , strf::alignment_format_q<false>
+            , strf::alignment_format_q<true> >;
 
     constexpr adapted_derived_type make_adapted() const
     {
@@ -284,9 +284,9 @@ public:
     {
         return 0;
     }
-    constexpr stringify::v0::text_alignment alignment() const noexcept
+    constexpr strf::text_alignment alignment() const noexcept
     {
-        return stringify::v0::text_alignment::right;
+        return strf::text_alignment::right;
     }
     constexpr char32_t fill() const noexcept
     {
@@ -302,11 +302,11 @@ template <bool Active>
 struct alignment_format_q
 {
     template <class T>
-    using fn = stringify::v0::alignment_format_fn<Active, T>;
+    using fn = strf::alignment_format_fn<Active, T>;
 };
 
-using alignment_format = stringify::v0::alignment_format_q<true>;
-using empty_alignment_format = stringify::v0::alignment_format_q<false>;
+using alignment_format = strf::alignment_format_q<true>;
+using empty_alignment_format = strf::alignment_format_q<false>;
 
 
 template <class T>
@@ -340,14 +340,14 @@ private:
 struct quantity_format
 {
     template <class T>
-    using fn = stringify::v0::quantity_format_fn<T>;
+    using fn = strf::quantity_format_fn<T>;
 };
 
 template <typename T>
 constexpr auto fmt(const T& value)
--> std::remove_cv_t<std::remove_reference_t<decltype(make_fmt(stringify::v0::tag{}, value))>>
+-> std::remove_cv_t<std::remove_reference_t<decltype(make_fmt(strf::tag{}, value))>>
 {
-    return make_fmt(stringify::v0::tag{}, value);
+    return make_fmt(strf::tag{}, value);
 }
 
 template <typename T>
@@ -460,7 +460,7 @@ constexpr auto sci(const T& value, P precision)
     return fmt(value).sci().p(precision);
 }
 
-STRF_V0_NAMESPACE_END
+STRF_NAMESPACE_END
 
 #endif  // STRF_V0_DETAIL_FORMAT_FUNCTIONS_HPP
 

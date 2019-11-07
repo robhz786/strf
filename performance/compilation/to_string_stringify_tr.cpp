@@ -2,8 +2,6 @@
 #include <boost/stringify.hpp>
 #include "args.hpp"
 
-namespace strf = boost::stringify;
-
 void FUNCTION_NAME (std::string& out)
 {
     out += strf::to_string .tr

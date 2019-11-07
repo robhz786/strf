@@ -7,8 +7,6 @@
 void sample()
 {
     //[ range_sample
-    namespace strf = boost::stringify::v0;
-
     int array[] = { 11, 22, 33 };
 
     auto str = strf::to_string("[", strf::range(array, ", "), "]");
@@ -21,8 +19,6 @@ void sample()
 void sample2()
 {
     //[ range_sample_2
-    namespace strf = boost::stringify::v0;
-
     int array[] = { 250, 251, 252 };
 
     auto str = strf::to_string("[", ~strf::hex(strf::range(array, ", ")), "]");
@@ -34,8 +30,6 @@ void sample2()
 void sample3()
 {
     //[ range_sample_3
-    namespace strf = boost::stringify::v0;
-
     int array[] = { 11, 22, 33 };
 
     auto str = strf::to_string("[", +strf::fmt_range(array, " ;") > 4, "]");

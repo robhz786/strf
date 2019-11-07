@@ -16,8 +16,6 @@
 
 int main()
 {
-    namespace strf = boost::stringify::v0;
-
     std::string u8sample1(500, 'A');
     std::string u8sample2;
     std::string u8sample3;
@@ -34,25 +32,25 @@ int main()
 
     std::cout << "\nUTF-8 to UTF-16\n";
 
-    PRINT_BENCHMARK("boost::stringify::write(u16dest)(u8sample1)")
+    PRINT_BENCHMARK("strf::write(u16dest)(u8sample1)")
     {
         auto err = strf::write(u16dest)(strf::cv(u8sample1));
         (void)err;
         clobber();
     }
-    PRINT_BENCHMARK("boost::stringify::write(u16dest)(u8sample2)")
+    PRINT_BENCHMARK("strf::write(u16dest)(u8sample2)")
     {
         auto err = strf::write(u16dest)(strf::cv(u8sample2));
         (void)err;
         clobber();
     }
-    PRINT_BENCHMARK("boost::stringify::write(u16dest)(u8sample3)")
+    PRINT_BENCHMARK("strf::write(u16dest)(u8sample3)")
     {
         auto err = strf::write(u16dest)(strf::cv(u8sample3));
         (void)err;
         clobber();
     }
-    PRINT_BENCHMARK("boost::stringify::write(u16dest)(u8sample4)")
+    PRINT_BENCHMARK("strf::write(u16dest)(u8sample4)")
     {
         auto err = strf::write(u16dest)(strf::cv(u8sample4));
         (void)err;

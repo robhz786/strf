@@ -16,7 +16,6 @@
 
 int main()
 {
-    namespace strf = boost::stringify;
     char dest[1000000];
     char* dest_end = dest + sizeof(dest);
     (void) dest_end;

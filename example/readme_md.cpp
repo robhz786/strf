@@ -6,9 +6,9 @@
 
 #if ! defined(__cpp_char8_t)
 
-namespace boost{ namespace stringify{ inline namespace v0{
+namespace strf {
 constexpr auto to_u8string = to_string;
-}}}
+}
 
 #endif
 
@@ -18,9 +18,6 @@ constexpr auto to_u8string = to_string;
 
 void samples()
 {
-    namespace strf = boost::stringify::v0; // Everything is inside this namespace.
-                                           // ( v0 is an inline namespace ).
-
     // basic example:
     int value = 255;
     std::string s = strf::to_string(value, " in hexadecimal is ", strf::hex(value));

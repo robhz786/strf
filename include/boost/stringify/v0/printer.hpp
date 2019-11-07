@@ -10,16 +10,16 @@
 #include <boost/stringify/v0/outbuf.hpp>
 #include <boost/stringify/v0/width_t.hpp>
 
-STRF_V0_NAMESPACE_BEGIN
+STRF_NAMESPACE_BEGIN
 
 class stringify_error: public std::exception
 {
     using std::exception::exception;
 };
 
-class encoding_failure: public stringify::stringify_error
+class encoding_failure: public strf::stringify_error
 {
-    using stringify::v0::stringify_error::stringify_error;
+    using strf::stringify_error::stringify_error;
 
     const char* what() const noexcept override
     {
@@ -29,12 +29,12 @@ class encoding_failure: public stringify::stringify_error
 
 inline void throw_encoding_failure()
 {
-    throw stringify::encoding_failure();
+    throw strf::encoding_failure();
 }
 
-class tr_string_syntax_error: public stringify::stringify_error
+class tr_string_syntax_error: public strf::stringify_error
 {
-    using stringify::v0::stringify_error::stringify_error;
+    using strf::stringify_error::stringify_error;
 
     const char* what() const noexcept override
     {
@@ -56,18 +56,18 @@ public:
     {
     }
 
-    virtual void print_to(stringify::v0::basic_outbuf<CharOut>& ob) const = 0;
+    virtual void print_to(strf::basic_outbuf<CharOut>& ob) const = 0;
 };
 
 namespace detail {
 
 template<std::size_t CharSize>
 void write_fill_continuation
-    ( stringify::v0::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuf<CharSize>& ob
     , std::size_t count
-    , typename stringify::v0::underlying_outbuf<CharSize>::char_type ch )
+    , typename strf::underlying_outbuf<CharSize>::char_type ch )
 {
-    using char_type = typename stringify::v0::underlying_outbuf<CharSize>::char_type;
+    using char_type = typename strf::underlying_outbuf<CharSize>::char_type;
 
     std::size_t space = ob.size();
     STRF_ASSERT(space < count);
@@ -93,11 +93,11 @@ void write_fill_continuation
 
 template <std::size_t CharSize>
 inline void write_fill
-    ( stringify::v0::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuf<CharSize>& ob
     , std::size_t count
-    , typename stringify::v0::underlying_outbuf<CharSize>::char_type ch )
+    , typename strf::underlying_outbuf<CharSize>::char_type ch )
 {
-    using char_type = typename stringify::v0::underlying_outbuf<CharSize>::char_type;
+    using char_type = typename strf::underlying_outbuf<CharSize>::char_type;
     if (count <= ob.size()) // the common case
     {
         std::char_traits<char_type>::assign(ob.pos(), count, ch);
@@ -111,11 +111,11 @@ inline void write_fill
 
 template<typename CharT>
 inline void write_fill
-    ( stringify::v0::basic_outbuf<CharT>& ob
+    ( strf::basic_outbuf<CharT>& ob
     , std::size_t count
     , CharT ch )
 {
-    using u_char_type = typename stringify::v0::underlying_outbuf<sizeof(CharT)>::char_type;
+    using u_char_type = typename strf::underlying_outbuf<sizeof(CharT)>::char_type;
     write_fill(ob.as_underlying(), count, static_cast<u_char_type>(ch));
 }
 
@@ -147,12 +147,12 @@ template <typename T>
 using is_string = std::is_base_of<string_input_tag_base, T>;
 
 template <typename CharIn>
-struct tr_string_input_tag: stringify::v0::string_input_tag<CharIn>
+struct tr_string_input_tag: strf::string_input_tag<CharIn>
 {
 };
 
 template <typename CharIn>
-struct range_separator_input_tag: stringify::v0::string_input_tag<CharIn>
+struct range_separator_input_tag: strf::string_input_tag<CharIn>
 {
 };
 
@@ -160,7 +160,7 @@ template <typename CharIn>
 struct is_tr_string_of
 {
     template <typename T>
-    using fn = std::is_same<stringify::v0::tr_string_input_tag<CharIn>, T>;
+    using fn = std::is_same<strf::tr_string_input_tag<CharIn>, T>;
 };
 
 template <typename T>
@@ -169,7 +169,7 @@ struct is_tr_string: std::false_type
 };
 
 template <typename CharIn>
-struct is_tr_string<stringify::v0::is_tr_string_of<CharIn>> : std::true_type
+struct is_tr_string<strf::is_tr_string_of<CharIn>> : std::true_type
 {
 };
 
@@ -181,18 +181,18 @@ class width_preview<true>
 {
 public:
 
-    explicit width_preview(stringify::v0::width_t initial_width) noexcept
+    explicit width_preview(strf::width_t initial_width) noexcept
         : _width(initial_width)
     {}
 
     width_preview(const width_preview&) = delete;
 
-    constexpr void subtract_width(stringify::v0::width_t w)
+    constexpr void subtract_width(strf::width_t w)
     {
         _width -= w;
     }
 
-    constexpr void checked_subtract_width(stringify::v0::width_t w)
+    constexpr void checked_subtract_width(strf::width_t w)
     {
         if (w < _width)
         {
@@ -221,14 +221,14 @@ public:
         _width = 0;
     }
 
-    constexpr stringify::v0::width_t remaining_width() const
+    constexpr strf::width_t remaining_width() const
     {
         return _width;
     }
 
 private:
 
-    stringify::v0::width_t _width;
+    strf::width_t _width;
 };
 
 template <>
@@ -239,11 +239,11 @@ public:
     width_preview() noexcept = default;;
     width_preview(const width_preview&) = delete;
 
-    constexpr void subtract_width(stringify::v0::width_t)
+    constexpr void subtract_width(strf::width_t)
     {
     }
 
-    constexpr void checked_subtract_width(stringify::v0::width_t)
+    constexpr void checked_subtract_width(strf::width_t)
     {
     }
 
@@ -255,7 +255,7 @@ public:
     {
     }
 
-    constexpr stringify::v0::width_t remaining_width() const
+    constexpr strf::width_t remaining_width() const
     {
         return 0;
     }
@@ -310,8 +310,8 @@ public:
 
 template <bool SizeRequired, bool WidthRequired>
 class print_preview
-    : public stringify::v0::size_preview<SizeRequired>
-    , public stringify::v0::width_preview<WidthRequired>
+    : public strf::size_preview<SizeRequired>
+    , public strf::width_preview<WidthRequired>
 {
 public:
 
@@ -321,8 +321,8 @@ public:
 
     template <bool W = WidthRequired>
     constexpr explicit print_preview
-        ( std::enable_if_t<W, stringify::v0::width_t> initial_width ) noexcept
-        : stringify::v0::width_preview<WidthRequired>{initial_width}
+        ( std::enable_if_t<W, strf::width_t> initial_width ) noexcept
+        : strf::width_preview<WidthRequired>{initial_width}
     {
     }
 
@@ -330,7 +330,7 @@ public:
     constexpr print_preview(const print_preview&) = delete;
 };
 
-STRF_V0_NAMESPACE_END
+STRF_NAMESPACE_END
 
 #endif  // STRF_V0_PRINTER_HPP
 

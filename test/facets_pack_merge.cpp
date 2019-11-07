@@ -6,8 +6,6 @@
 #include <boost/stringify.hpp>
 #include <vector>
 
-namespace strf = boost::stringify::v0;
-
 struct fcategory;
 
 struct facet_type

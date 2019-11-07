@@ -8,7 +8,7 @@
 #include <boost/stringify/v0/printer.hpp>
 #include <boost/stringify/v0/detail/facets/encoding.hpp>
 
-STRF_V0_NAMESPACE_BEGIN
+STRF_NAMESPACE_BEGIN
 
 enum class tr_invalid_arg
 {
@@ -29,10 +29,10 @@ template <typename Facet>
 class facet_trait;
 
 template <>
-class facet_trait<stringify::v0::tr_invalid_arg>
+class facet_trait<strf::tr_invalid_arg>
 {
 public:
-    using category = stringify::v0::tr_invalid_arg_c;
+    using category = strf::tr_invalid_arg_c;
     static constexpr bool store_by_value = true;
 };
 
@@ -76,7 +76,7 @@ constexpr std::size_t trstr_invalid_arg_size_when_stop = (std::size_t)-1;
 
 template <typename CharT>
 std::size_t invalid_arg_size
-    ( stringify::v0::encoding<CharT> enc
+    ( strf::encoding<CharT> enc
     , tr_invalid_arg policy )
 {
     switch(policy)
@@ -84,7 +84,7 @@ std::size_t invalid_arg_size
         case tr_invalid_arg::replace:
             return enc.replacement_char_size();
         case tr_invalid_arg::stop:
-            return stringify::v0::detail::trstr_invalid_arg_size_when_stop;
+            return strf::detail::trstr_invalid_arg_size_when_stop;
         default:
             return 0;
     }
@@ -92,7 +92,7 @@ std::size_t invalid_arg_size
 
 template <typename CharT>
 inline std::size_t tr_string_size
-    ( const stringify::v0::print_preview<false, false>*
+    ( const strf::print_preview<false, false>*
     , std::size_t
     , const CharT*
     , const CharT*
@@ -103,7 +103,7 @@ inline std::size_t tr_string_size
 
 template <typename CharT>
 std::size_t tr_string_size
-    ( const stringify::v0::print_preview<true, false>* args_preview
+    ( const strf::print_preview<true, false>* args_preview
     , std::size_t num_args
     , const CharT* it
     , const CharT* end
@@ -160,7 +160,7 @@ std::size_t tr_string_size
         }
         else if (CharT('0') <= ch && ch <= CharT('9'))
         {
-            auto result = stringify::v0::detail::read_uint(it, end);
+            auto result = strf::detail::read_uint(it, end);
 
             if (result.value < num_args)
             {
@@ -227,11 +227,11 @@ template <typename CharT>
 void tr_string_write
     ( const CharT* it
     , const CharT* end
-    , const stringify::v0::printer<CharT>* const * args
+    , const strf::printer<CharT>* const * args
     , std::size_t num_args
-    , stringify::v0::basic_outbuf<CharT>& ob
-    , stringify::v0::encoding<CharT> enc
-    , stringify::v0::tr_invalid_arg policy )
+    , strf::basic_outbuf<CharT>& ob
+    , strf::encoding<CharT> enc
+    , strf::tr_invalid_arg policy )
 {
     using traits = std::char_traits<CharT>;
     std::size_t arg_idx = 0;
@@ -242,11 +242,11 @@ void tr_string_write
         it = traits::find(it, (end - it), '{');
         if (it == nullptr)
         {
-            stringify::v0::write(ob, prev, end - prev);
+            strf::write(ob, prev, end - prev);
             return;
         }
 
-        stringify::v0::write(ob, prev, it - prev);
+        strf::write(ob, prev, it - prev);
         ++it;
 
         after_the_brace:
@@ -256,13 +256,13 @@ void tr_string_write
             {
                 args[arg_idx]->print_to(ob);
             }
-            else if (policy == stringify::v0::tr_invalid_arg::replace)
+            else if (policy == strf::tr_invalid_arg::replace)
             {
                 enc.write_replacement_char(ob);
             }
-            else if (policy == stringify::v0::tr_invalid_arg::stop)
+            else if (policy == strf::tr_invalid_arg::stop)
             {
-                throw stringify::v0::tr_string_syntax_error();
+                throw strf::tr_string_syntax_error();
             }
             break;
         }
@@ -275,30 +275,30 @@ void tr_string_write
                 args[arg_idx]->print_to(ob);
                 ++arg_idx;
             }
-            else if (policy == stringify::v0::tr_invalid_arg::replace)
+            else if (policy == strf::tr_invalid_arg::replace)
             {
                 enc.write_replacement_char(ob);
             }
-            else if (policy == stringify::v0::tr_invalid_arg::stop)
+            else if (policy == strf::tr_invalid_arg::stop)
             {
-                throw stringify::v0::tr_string_syntax_error();
+                throw strf::tr_string_syntax_error();
             }
             ++it;
         }
         else if (CharT('0') <= ch && ch <= CharT('9'))
         {
-            auto result = stringify::v0::detail::read_uint(it, end);
+            auto result = strf::detail::read_uint(it, end);
 
             if (result.value < num_args)
             {
                 args[result.value]->print_to(ob);            }
-            else if (policy == stringify::v0::tr_invalid_arg::replace)
+            else if (policy == strf::tr_invalid_arg::replace)
             {
                 enc.write_replacement_char(ob);
             }
-            else if (policy == stringify::v0::tr_invalid_arg::stop)
+            else if (policy == strf::tr_invalid_arg::stop)
             {
-                throw stringify::v0::tr_string_syntax_error();
+                throw strf::tr_string_syntax_error();
             }
 
             it = traits::find(result.it, end - result.it, '}');
@@ -314,10 +314,10 @@ void tr_string_write
             it2 = traits::find(it2, end - it2, '{');
             if (it2 == nullptr)
             {
-                stringify::v0::write(ob, it, end - it);
+                strf::write(ob, it, end - it);
                 return;
             }
-            stringify::v0::write(ob, it, (it2 - it));
+            strf::write(ob, it, (it2 - it));
             it = it2 + 1;
             goto after_the_brace;
         }
@@ -330,13 +330,13 @@ void tr_string_write
                     args[arg_idx]->print_to(ob);
                     ++arg_idx;
                 }
-                else if (policy == stringify::v0::tr_invalid_arg::replace)
+                else if (policy == strf::tr_invalid_arg::replace)
                 {
                     enc.write_replacement_char(ob);
                 }
-                else if (policy == stringify::v0::tr_invalid_arg::stop)
+                else if (policy == strf::tr_invalid_arg::stop)
                 {
-                    throw stringify::v0::tr_string_syntax_error();
+                    throw strf::tr_string_syntax_error();
                 }
             }
             auto it2 = it + 1;
@@ -358,13 +358,13 @@ public:
 
     template <bool SizeRequested>
     tr_string_printer
-        ( stringify::v0::print_preview<SizeRequested, false>& preview
-        , const stringify::v0::print_preview<SizeRequested, false>* args_preview
-        , std::initializer_list<const stringify::v0::printer<CharT>*> printers
+        ( strf::print_preview<SizeRequested, false>& preview
+        , const strf::print_preview<SizeRequested, false>* args_preview
+        , std::initializer_list<const strf::printer<CharT>*> printers
         , const CharT* tr_string
         , const CharT* tr_string_end
-        , stringify::v0::encoding<CharT> enc
-        , stringify::v0::tr_invalid_arg policy )
+        , strf::encoding<CharT> enc
+        , strf::tr_invalid_arg policy )
         : _tr_string(tr_string)
         , _tr_string_end(tr_string_end)
         , _enc(enc)
@@ -373,23 +373,23 @@ public:
         , _num_printers(printers.size())
     {
         preview.add_size
-            ( stringify::v0::detail::tr_string_size
+            ( strf::detail::tr_string_size
                 ( args_preview, _num_printers, _tr_string, _tr_string_end
-                , stringify::v0::detail::invalid_arg_size(_enc, _policy) ) );
+                , strf::detail::invalid_arg_size(_enc, _policy) ) );
     }
 
-    void print_to(stringify::v0::basic_outbuf<CharT>& ob) const
+    void print_to(strf::basic_outbuf<CharT>& ob) const
     {
-        stringify::v0::detail::tr_string_write
+        strf::detail::tr_string_write
             ( _tr_string, _tr_string_end, _printers_array, _num_printers
             , ob, _enc, _policy );
     }
 
     const CharT* _tr_string;
     const CharT* _tr_string_end;
-    stringify::v0::encoding<CharT> _enc;
-    stringify::v0::tr_invalid_arg _policy;
-    const stringify::v0::printer<CharT>* const * _printers_array;
+    strf::encoding<CharT> _enc;
+    strf::tr_invalid_arg _policy;
+    const strf::printer<CharT>* const * _printers_array;
     std::size_t _num_printers;
 };
 
@@ -397,7 +397,7 @@ public:
 
 } // namespace detail
 
-STRF_V0_NAMESPACE_END
+STRF_NAMESPACE_END
 
 #endif  // STRF_V0_DETAIL_TR_STRING_HPP
 

@@ -6,13 +6,11 @@
 
 #if ! defined(__cpp_char8_t)
 
-namespace boost{ namespace stringify{ inline namespace v0{
+namespace strf{
 constexpr auto to_u8string = to_string;
-}}}
+}
 
 #endif
-
-namespace strf = boost::stringify::v0;
 
 int main()
 {

@@ -5,17 +5,15 @@
 
 #if ! defined(__cpp_char8_t)
 
-namespace boost{ namespace stringify{ inline namespace v0{
+namespace strf {
 constexpr auto to_u8string = to_string;
-}}}
+}
 
 #endif
 
 //[ first_example
 #include <boost/stringify.hpp> // This is the only header you need to include.
 
-namespace strf = boost::stringify::v0; // Everything is inside this namespace.
-                                       // v0 is an inline namespace.
 void sample()
 {
     int value = 255;
@@ -27,8 +25,6 @@ void sample()
 void second_example()
 {
     //[second_example
-
-    namespace strf = boost::stringify::v0;
 
     // more formatting:  operator>(int width) : align to rigth
     //                   operator~()          : show base
@@ -90,7 +86,6 @@ void second_example()
 void format_functions()
 {
     //[ format_functions_example
-    namespace strf = boost::stringify::v0;
     auto s = strf::to_string
         ( "---"
         , ~strf::hex(255).p(4).fill(U'.') > 10
@@ -103,8 +98,6 @@ void format_functions()
 void format_functions_2()
 {
     //[ formatting_samples
-    namespace strf = boost::stringify::v0;
-
     auto str = strf::to_string
         ( strf::hex(255) > 5
         , '/', strf::center(255, 7, '.').hex()
@@ -119,8 +112,6 @@ void format_functions_2()
 void reserve()
 {
     //[ syntax_reserve
-    namespace strf = boost::stringify::v0;  // v0 is an inline namespace
-
     auto str = strf::to_string.reserve(5000)("blah", "blah");
 
     assert(str == "blahblah");
@@ -132,7 +123,6 @@ void basic_facet_sample()
 {
 
 //[ basic_facet_sample
-    namespace strf = boost::stringify::v0;
     constexpr int base = 10;
     auto punct = strf::str_grouping<base>{"\4\3\2"}.thousands_sep(U'.');
     auto s = strf::to_string
@@ -147,9 +137,6 @@ void basic_facet_sample()
 void constrained_facet()
 {
     //[ constrained_facet_sample
-
-    namespace strf = boost::stringify::v0;
-
     auto facet_obj = strf::constrain<std::is_signed>(strf::monotonic_grouping<10>{3});
 
     auto s = strf::to_string.facets(facet_obj)(100000u, "  ", 100000);
@@ -162,8 +149,6 @@ void constrained_facet()
 void overriding_sample()
 {
     //[ facets_overriding
-    namespace strf = boost::stringify::v0;
-
     auto punct_dec_1 = strf::monotonic_grouping<10>{1};
     auto punct_dec_2 = strf::monotonic_grouping<10>{2}.thousands_sep('.');
     auto punct_dec_3 = strf::monotonic_grouping<10>{3}.thousands_sep('^');;
@@ -186,8 +171,6 @@ void overriding_sample()
 void get_facet_sample()
 {
     //[ get_facet_sample
-    namespace strf = boost::stringify::v0;
-
     auto punct_hex  = strf::monotonic_grouping<16>{4}.thousands_sep('\'');
     auto punct_dec  = strf::monotonic_grouping<10>{3}.thousands_sep('.');
 
@@ -213,8 +196,6 @@ void get_facet_sample()
 void sample_numpunct_with_alternative_charset()
 {
 //[ numpuct__with_alternative_encoding
-    namespace strf = boost::stringify::v0;
-
     // Writting in Windows-1252
     auto s = strf::to_string
         .facets(strf::windows_1252<char>())
@@ -231,7 +212,6 @@ void output_FILE()
 {
 //[ output_FILE
     // writting to a FILE*
-    namespace strf = boost::stringify::v0;
     strf::write(stdout) ("Hello World!\n");
 //]
 }
@@ -239,7 +219,6 @@ void output_FILE()
 void input_ouput_different_char_types()
 {
     //[input_output_different_char_types
-    namespace strf = boost::stringify::v0;
     auto str = strf::to_string( strf::cv(u"aaa-")
                               , strf::cv(U"bbb-")
                               , strf::cv(L"ccc") );
@@ -251,7 +230,6 @@ void input_string_encoding()
 {
     //[input_string_encoding
     // Three input string. Each one in its own character set
-    namespace strf = boost::stringify::v0;
     auto s = strf::to_u8string( strf::cv("\x80\xA4 -- ", strf::iso_8859_1<char>())
                               , strf::cv("\x80\xA4 -- ", strf::iso_8859_15<char>())
                               , strf::cv("\x80\xA4", strf::windows_1252<char>()) );
@@ -265,7 +243,6 @@ void sani()
 {
     //[sani_utf8
     // sanitize UTF-8 input
-    namespace strf = boost::stringify::v0;
     auto s = strf::to_u8string(strf::cv("a b c \xFF d e"));
     assert(s == u8"a b c \uFFFD d e");
     //]
@@ -274,7 +251,6 @@ void sani()
 void monotonic_grouping()
 {
     //[monotonic_grouping
-    namespace strf = boost::stringify::v0;
     constexpr int base = 10;
 
     auto str = strf::to_string
@@ -288,7 +264,6 @@ void monotonic_grouping()
 void str_grouping()
 {
     //[str_grouping
-    namespace strf = boost::stringify::v0;
     constexpr int base = 10;
 
     auto punct = strf::str_grouping<base>{"\4\3\2"};
@@ -300,7 +275,6 @@ void str_grouping()
 void punct_non_decimal()
 {
     //[punct_non_decimal
-    namespace strf = boost::stringify::v0;
     auto str = strf::to_string
         .facets(strf::monotonic_grouping<16>{4}.thousands_sep(U'\''))
         (strf::hex(0xffffffffffLL));
@@ -312,9 +286,7 @@ void punct_non_decimal()
 // void width_as_len()
 // {
 //     //[width_as_len
-//     namespace strf = boost::stringify::v0;
-
-//     auto str = strf::to_u8string
+//     //     auto str = strf::to_u8string
 //         .facets(strf::width_as_len<char8_t>{})
 //         (strf::right(u8"áéíóú", 12, U'.'));
 
@@ -324,9 +296,7 @@ void punct_non_decimal()
 // void width_as_u32len()
 // {
 //     //[width_as_u32len
-//     namespace strf = boost::stringify::v0;
-
-//     auto str = strf::to_u8string
+//     //     auto str = strf::to_u8string
 //         .facets(strf::width_as_u32len<char8_t>{})
 //         (strf::right(u8"áéíóú", 12, U'.'));
 
@@ -358,10 +328,7 @@ void punct_non_decimal()
 // }
 
 //[avoid_repetitions
-
 namespace my { // my customizations
-
-namespace strf = boost::stringify::v0;
 
 const auto my_default_facets = strf::pack
     ( strf::monotonic_grouping<10>(3)
@@ -387,8 +354,6 @@ inline decltype(auto) write(Args&& ... args)
 
 void using_my_customizations()
 {
-    namespace strf = boost::stringify::v0;
-
     int x = 100000000;
     auto str = my::to_string(x);
     assert(str == "100,000,000");

@@ -9,13 +9,13 @@
 #include <boost/stringify/v0/facets_pack.hpp>
 #include <boost/stringify/v0/detail/printers_tuple.hpp>
 
-STRF_V0_NAMESPACE_BEGIN
+STRF_NAMESPACE_BEGIN
 
 template <typename FPack, typename ... Args>
 struct inner_pack_with_args
 {
     FPack fp;
-    stringify::v0::detail::simple_tuple<Args...> args;
+    strf::detail::simple_tuple<Args...> args;
 };
 
 template <typename FPack>
@@ -30,12 +30,12 @@ struct inner_pack
     FPack fp;
 
     template <typename ... Args>
-    constexpr stringify::v0::inner_pack_with_args
+    constexpr strf::inner_pack_with_args
         < FPack
-        , stringify::v0::detail::opt_val_or_cref<Args>... >
+        , strf::detail::opt_val_or_cref<Args>... >
     operator()(const Args& ... args) const
     {
-        return { fp, stringify::v0::detail::make_simple_tuple(args ...) };
+        return { fp, strf::detail::make_simple_tuple(args ...) };
     }
 };
 
@@ -46,22 +46,22 @@ template < typename CharT
          , typename ChildFPack
          , typename Preview
          , typename ... Args >
-class facets_pack_printer: public stringify::v0::printer<CharT>
+class facets_pack_printer: public strf::printer<CharT>
 {
 public:
 
     facets_pack_printer
         ( const ParentFPack& parent_fp
         , Preview& preview
-        , const stringify::v0::inner_pack_with_args<ChildFPack, Args...>& args )
+        , const strf::inner_pack_with_args<ChildFPack, Args...>& args )
         : _fp{parent_fp, args.fp}
         , _printers{_fp, preview, args.args}
     {
     }
 
-    void print_to(stringify::v0::basic_outbuf<CharT>& ob) const override
+    void print_to(strf::basic_outbuf<CharT>& ob) const override
     {
-        stringify::v0::detail::write(ob, _printers);
+        strf::detail::write(ob, _printers);
     }
 
     virtual ~facets_pack_printer()
@@ -70,11 +70,11 @@ public:
 
 private:
 
-    stringify::v0::facets_pack<ParentFPack, ChildFPack> _fp;
+    strf::facets_pack<ParentFPack, ChildFPack> _fp;
 
-    stringify::v0::detail::printers_tuple_from_args
+    strf::detail::printers_tuple_from_args
         < CharT
-        , stringify::v0::facets_pack<ParentFPack, ChildFPack>
+        , strf::facets_pack<ParentFPack, ChildFPack>
         , Preview
         , Args... >
     _printers;
@@ -84,7 +84,7 @@ template <typename ... F>
 constexpr bool are_constrainable_impl()
 {
     constexpr std::size_t N = sizeof...(F);
-    constexpr bool values[N] = {stringify::v0::is_constrainable_v<F> ...};
+    constexpr bool values[N] = {strf::is_constrainable_v<F> ...};
 
     for (std::size_t i = 0; i < N; ++i)
     {
@@ -106,19 +106,19 @@ template <typename ... F>
 struct all_are_constrainable
 {
     constexpr static bool value
-        = stringify::v0::detail::are_constrainable_impl<F...>();
+        = strf::detail::are_constrainable_impl<F...>();
 };
 
 } // namespace detail
 
 template <typename ... T>
 auto facets(T&& ... args)
-    -> stringify::v0::inner_pack
-           < decltype(stringify::v0::pack(std::forward<T>(args)...)) >
+    -> strf::inner_pack
+           < decltype(strf::pack(std::forward<T>(args)...)) >
 {
     static_assert
-        ( stringify::v0::is_constrainable_v
-            < decltype(stringify::v0::pack(std::forward<T>(args)...)) >
+        ( strf::is_constrainable_v
+            < decltype(strf::pack(std::forward<T>(args)...)) >
         , "All facet categories must be constrainable" );
     return {std::forward<T>(args)...};
 }
@@ -128,19 +128,19 @@ template < typename CharT
          , typename Preview
          , typename InnerFPack
          , typename ... Args >
-inline stringify::v0::detail::facets_pack_printer< CharT
+inline strf::detail::facets_pack_printer< CharT
                                                  , FPack
                                                  , InnerFPack
                                                  , Preview
                                                  , Args... >
 make_printer( const FPack& fp
             , Preview& preview
-            , const stringify::v0::inner_pack_with_args<InnerFPack, Args...>& f )
+            , const strf::inner_pack_with_args<InnerFPack, Args...>& f )
 {
     return {fp, preview, f};
 }
 
-STRF_V0_NAMESPACE_END
+STRF_NAMESPACE_END
 
 #endif  // STRF_V0_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
 

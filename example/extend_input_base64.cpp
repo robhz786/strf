@@ -7,8 +7,6 @@
 #include <array>
 #include <vector>
 
-namespace strf = boost::stringify::v0;
-
 auto write_out = strf::write(stdout);
 
 //[ base64_facet

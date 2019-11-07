@@ -8,8 +8,6 @@
 #include <algorithm>
 #include <boost/stringify.hpp>
 
-namespace strf = boost::stringify::v0;
-
 std::string make_str_0_to_xff()
 {
     std::string str(0x100, '\0');

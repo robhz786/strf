@@ -6,8 +6,6 @@
 #include <limits>
 #include "test_utils.hpp"
 
-namespace strf = boost::stringify::v0;
-
 int main()
 {
 

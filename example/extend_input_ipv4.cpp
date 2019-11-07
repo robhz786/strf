@@ -20,8 +20,6 @@ struct ipv4address
 //[ make_printer_ipv4address
 #include <boost/stringify.hpp>
 
-namespace strf = boost::stringify::v0;
-
 namespace xxx {
 
 template <typename CharT, typename FPack, typename Preview>

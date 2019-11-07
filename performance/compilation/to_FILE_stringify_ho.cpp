@@ -2,8 +2,6 @@
 #include <cstdio>
 #include "args.hpp"
 
-namespace strf = boost::stringify;
-
 void FUNCTION_NAME (std::FILE* out)
 {
     strf::write(out)

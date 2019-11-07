@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-STRF_V0_NAMESPACE_BEGIN
+STRF_NAMESPACE_BEGIN
 
 namespace detail {
 
@@ -47,7 +47,7 @@ template <typename IntT> struct max_num_digits_impl<IntT, 8>
 
 template<class IntT, unsigned Base>
 constexpr unsigned max_num_digits =
-    stringify::v0::detail::max_num_digits_impl<IntT, Base>::value;
+    strf::detail::max_num_digits_impl<IntT, Base>::value;
 
 
 template
@@ -181,7 +181,7 @@ struct digits_counter<10, 2>
     template <typename IntT>
     static unsigned count_digits(IntT value)
     {
-        auto uvalue = stringify::v0::detail::unsigned_abs(value);
+        auto uvalue = strf::detail::unsigned_abs(value);
         return count_digits_unsigned(uvalue);
     }
 };
@@ -223,7 +223,7 @@ struct digits_counter<10, 4>
     template <typename IntT>
     static unsigned count_digits(IntT value)
     {
-        auto uvalue = stringify::v0::detail::unsigned_abs(value);
+        auto uvalue = strf::detail::unsigned_abs(value);
         return count_digits_unsigned(uvalue);
     }
 };
@@ -268,7 +268,7 @@ struct digits_counter<10, 8>
     template <typename IntT>
     static unsigned count_digits(IntT value)
     {
-        auto uvalue = stringify::v0::detail::unsigned_abs(value);
+        auto uvalue = strf::detail::unsigned_abs(value);
         return count_digits_unsigned(uvalue);
     }
 };
@@ -343,7 +343,7 @@ struct digits_counter<16, 8>
 template <unsigned Base, typename intT>
 unsigned count_digits(intT value)
 {
-    return stringify::v0::detail::digits_counter<Base, sizeof(intT)>
+    return strf::detail::digits_counter<Base, sizeof(intT)>
         ::count_digits(value);
 }
 
@@ -394,8 +394,8 @@ public:
     template <typename IntT, typename CharT>
     static CharT* write_txtdigits_backwards(IntT value, CharT* it) noexcept
     {
-        auto uvalue = stringify::v0::detail::unsigned_abs(value);
-        const char* arr = stringify::v0::detail::chars_00_to_99();
+        auto uvalue = strf::detail::unsigned_abs(value);
+        const char* arr = strf::detail::chars_00_to_99();
         while(uvalue > 99)
         {
             auto index = (uvalue % 100) << 1;
@@ -425,8 +425,8 @@ public:
         , CharT sep
         , const std::uint8_t* groups ) noexcept
     {
-        auto uvalue = stringify::v0::detail::unsigned_abs(value);
-        const char* arr = stringify::v0::detail::chars_00_to_99();
+        auto uvalue = strf::detail::unsigned_abs(value);
+        const char* arr = strf::detail::chars_00_to_99();
         auto n = *groups;
         while (uvalue > 99)
         {
@@ -523,7 +523,7 @@ public:
         , CharT sep
         , const std::uint8_t* groups ) noexcept
     {
-        auto uvalue = stringify::v0::detail::unsigned_abs(value);
+        auto uvalue = strf::detail::unsigned_abs(value);
         auto n = *groups;
         // constexpr bool lowercase = true;
         // constexpr char char_a = 'A' | (lowercase << 5)
@@ -588,7 +588,7 @@ public:
         , CharT sep
         , const std::uint8_t* groups ) noexcept
     {
-        auto uvalue = stringify::v0::detail::unsigned_abs(value);
+        auto uvalue = strf::detail::unsigned_abs(value);
         auto n = *groups;
         while (uvalue > 0x7)
         {
@@ -642,7 +642,7 @@ inline void write_int_txtdigits_backwards_little_sep
 
 template <int Base, typename CharT, typename IntT>
 inline void write_int
-    ( stringify::v0::basic_outbuf<CharT>& ob
+    ( strf::basic_outbuf<CharT>& ob
     , IntT value
     , unsigned digcount )
 {
@@ -654,7 +654,7 @@ inline void write_int
 
 template <int Base, typename CharT, typename IntT>
 inline void write_int_with_leading_zeros
-    ( stringify::v0::basic_outbuf<CharT>& ob
+    ( strf::basic_outbuf<CharT>& ob
     , IntT value
     , unsigned digcount )
 {
@@ -672,8 +672,8 @@ inline void write_int_with_leading_zeros
 
 template <typename CharT>
 void write_digits_big_sep
-    ( stringify::v0::basic_outbuf<CharT>& ob
-    , const stringify::v0::encoding<CharT> encoding
+    ( strf::basic_outbuf<CharT>& ob
+    , const strf::encoding<CharT> encoding
     , const std::uint8_t* last_grp
     , unsigned char* digits
     , unsigned num_digits
@@ -719,8 +719,8 @@ void write_digits_big_sep
 
 template <int Base, typename CharT>
 void _write_digits_big_sep
-      ( stringify::v0::basic_outbuf<CharT>& ob
-      , stringify::v0::encoding<CharT> enc
+      ( strf::basic_outbuf<CharT>& ob
+      , strf::encoding<CharT> enc
       , const uint8_t* groups
       , unsigned long long value
       , unsigned digcount
@@ -732,10 +732,10 @@ void _write_digits_big_sep
     unsigned char digits_buff[max_digits];
 
     const auto dig_end = digits_buff + max_digits;
-    auto digits = stringify::v0::detail::write_int_txtdigits_backwards<Base>
+    auto digits = strf::detail::write_int_txtdigits_backwards<Base>
         ( value, dig_end );
 
-    stringify::v0::detail::write_digits_big_sep
+    strf::detail::write_digits_big_sep
         ( ob, enc, groups + num_groups - 1, digits, digcount
         , sep, sep_size );
 }
@@ -743,9 +743,9 @@ void _write_digits_big_sep
 
 template <int Base, typename CharT>
 void write_int
-      ( stringify::v0::basic_outbuf<CharT>& ob
-      , const stringify::v0::numpunct_base& punct
-      , stringify::v0::encoding<CharT> enc
+      ( strf::basic_outbuf<CharT>& ob
+      , const strf::numpunct_base& punct
+      , strf::encoding<CharT> enc
       , unsigned long long value
       , unsigned digcount )
 {
@@ -767,12 +767,12 @@ void write_int
         if (sep_size == (std::size_t)-1)
         {
             //no_punct:
-            stringify::v0::detail::write_int<Base>(ob, value, digcount);
+            strf::detail::write_int<Base>(ob, value, digcount);
             return;
         }
         if (sep_size != 1)
         {
-            stringify::v0::detail::_write_digits_big_sep<Base>
+            strf::detail::_write_digits_big_sep<Base>
                 ( ob, enc, groups, value, digcount, num_groups
                 , sep32, sep_size );
             return;
@@ -788,7 +788,7 @@ void write_int
 
 } // namespace detail
 
-STRF_V0_NAMESPACE_END
+STRF_NAMESPACE_END
 
 #endif  // STRF_V0_DETAIL_NUMBER_OF_DIGITS_HPP
 

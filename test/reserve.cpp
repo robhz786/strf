@@ -7,8 +7,6 @@
 #include "test_utils.hpp"
 #include <boost/stringify.hpp>
 
-namespace strf = boost::stringify::v0;
-
 class reservation_tester : public strf::basic_outbuf<char>
 {
     constexpr static std::size_t _buff_size = strf::min_size_after_recycle<char>();

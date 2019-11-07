@@ -1,8 +1,6 @@
 #include <boost/stringify.hpp>
 #include "args.hpp"
 
-namespace strf = boost::stringify;
-
 void FUNCTION_NAME (int)
 {
     constexpr std::size_t buff_len = 1000;

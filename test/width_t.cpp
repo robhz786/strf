@@ -7,8 +7,6 @@
 #include <limits>
 #include "test_utils.hpp"
 
-namespace strf = boost::stringify::v0;
-
 int main()
 {
     using namespace strf::width_literal;

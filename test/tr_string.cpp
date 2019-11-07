@@ -7,8 +7,6 @@
 
 int main()
 {
-    namespace strf = boost::stringify::v0;
-
     // positional argument and automatic arguments
     TEST("0 2 1 2 11")
         .tr( "{ } {2} {} {} {11}"

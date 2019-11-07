@@ -8,8 +8,6 @@
 void sample1()
 {
     //[ facets_pack_input
-    namespace strf = boost::stringify::v0;
-
     auto str = strf::to_string.facets(strf::monotonic_grouping<10>(1))
         ( 10000
         , "  "
@@ -30,8 +28,6 @@ void sample1()
 void sample2()
 {
     //[ facets_pack_input_2
-    namespace strf = boost::stringify::v0;
-
     auto fp = strf::pack
         ( strf::monotonic_grouping<10>(3)
         , strf::monotonic_grouping<16>(4).thousands_sep('\'') );
@@ -57,7 +53,6 @@ void sample2()
 void sample3()
 {
     //[ facets_pack_input_in_tr_string
-    namespace strf = boost::stringify::v0;
     auto str = strf::to_string
         .tr( "{} -- {} -- {}"
            , "aaa"

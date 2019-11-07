@@ -6,8 +6,6 @@
 #include <cstdint>
 #include <vector>
 
-namespace strf = boost::stringify::v0;
-
 namespace xxx {
 
 //[ ipv6address
