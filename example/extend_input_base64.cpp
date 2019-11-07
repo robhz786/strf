@@ -2,7 +2,6 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/detail/lightweight_test.hpp>
 #include <stringify.hpp>
 #include <array>
 #include <vector>
@@ -371,7 +370,7 @@ void tests()
 
     {
         auto result = strf::to_string(xxx::base64(data, data_size)) ;
-        BOOST_TEST(result == "VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYXp5IGRvZy4=\r\n");
+        assert(result == "VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYXp5IGRvZy4=\r\n");
     }
 
     {
@@ -384,7 +383,7 @@ void tests()
             "    VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYX\n"
             "    p5IGRvZy4=\n";
 
-        BOOST_TEST(result == expected);
+        assert(result == expected);
     }
     {
         // When the length of last line is exactly as base64_facet::line_length,
@@ -396,7 +395,7 @@ void tests()
             "    VGhlIHF1aWNrIGJyb3duIGZveCBqdW\r\n"
             "    1wcyBvdmVyIHRoZSBsYXp5IGRvZy4=\r\n";
 
-        BOOST_TEST(result == expected);
+        assert(result == expected);
     }
     {
         // When base64_facet::line_length == 1
@@ -404,7 +403,7 @@ void tests()
             .facets(xxx::base64_facet{1, {'\n', '\0'}})
             (xxx::base64("  >  ?", 6).indentation(2));
 
-        BOOST_TEST(result == "  I\n  C\n  A\n  +\n  I\n  C\n  A\n  /\n");
+        assert(result == "  I\n  C\n  A\n  +\n  I\n  C\n  A\n  /\n");
     }
     {
         // When base64_facet::line_length == 3
@@ -412,7 +411,7 @@ void tests()
             .facets(xxx::base64_facet{3, {'\n', '\0'}})
             (xxx::base64("  >  ?", 6).indentation(2));
 
-        BOOST_TEST(result == "  ICA\n  +IC\n  A/\n");
+        assert(result == "  ICA\n  +IC\n  A/\n");
     }
     {
         // When base64_facet::line_length == 4
@@ -420,13 +419,13 @@ void tests()
             .facets(xxx::base64_facet{4, {'\n', '\0'}})
             (xxx::base64("  >  ?", 6).indentation(2));
 
-        BOOST_TEST(result == "  ICA+\n  ICA/\n");
+        assert(result == "  ICA+\n  ICA/\n");
     }
     {
         // The default character for index 62 is '+'
         // and for index 63 is '/'
         auto result = strf::to_string(xxx::base64("  >  ?", 6));
-        BOOST_TEST(result == "ICA+ICA/\r\n");
+        assert(result == "ICA+ICA/\r\n");
     }
 
     {
@@ -435,7 +434,7 @@ void tests()
             .facets(xxx::base64_facet{50, {'\r', '\n'}, '-', '_'})
             (xxx::base64("  >  ?", 6));
 
-        BOOST_TEST(result == "ICA-ICA_\r\n");
+        assert(result == "ICA-ICA_\r\n");
     }
 
     {
@@ -445,7 +444,7 @@ void tests()
             .facets(xxx::base64_facet{0, {'\r', '\n'}})
             (xxx::base64("  >  ?", 6));
 
-        BOOST_TEST(result == "ICA+ICA/");
+        assert(result == "ICA+ICA/");
     }
     {
         // when base64_facet::eol[0] == '\0'
@@ -454,7 +453,7 @@ void tests()
             .facets(xxx::base64_facet{50, {'\0', '\n'}, '-', '_'})
             (xxx::base64("  >  ?", 6));
 
-        BOOST_TEST(result == "ICA-ICA_");
+        assert(result == "ICA-ICA_");
     }
     {
         // test indentation on single line mode
@@ -462,7 +461,7 @@ void tests()
             .facets(xxx::base64_facet{0})
             (xxx::base64("  >  ?", 6).indentation(4));
 
-        BOOST_TEST(result == "    ICA+ICA/");
+        assert(result == "    ICA+ICA/");
     }
     {
         //test in ranges
@@ -486,7 +485,7 @@ void tests()
             "------------\n"
             "    YWJjZGU=\n";
 
-        BOOST_TEST(result == expected);
+        assert(result == expected);
     }
 
 }
@@ -514,5 +513,5 @@ int main()
 {
     tests();
     sample();
-    return boost::report_errors();
+    return 0;
 }

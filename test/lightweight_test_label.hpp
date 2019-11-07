@@ -135,6 +135,6 @@ std::ostream& get_test_ostream()
 
 #define BOOST_LIGHTWEIGHT_TEST_OSTREAM test_utils::get_test_ostream()
 
-#include <boost/core/lightweight_test.hpp>
+#include "boost/lightweight_test.hpp"
 
 #endif // STRINGIFY_TEST_LIGHTWEIGHT_TEST_LABEL_HPP_INCLUDED

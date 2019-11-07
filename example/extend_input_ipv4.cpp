@@ -3,7 +3,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <vector>
-#include <boost/detail/lightweight_test.hpp>
+#include <stringify.hpp>
 
 //[ ipv4address_type
 namespace xxx {
@@ -47,7 +47,7 @@ void basic_sample()
 //[ ipv4_basic_sample
     xxx::ipv4address addr {{146, 20, 110, 251}};
     auto s = strf::to_string("The IP address of boost.org is ", addr);
-    BOOST_TEST(s == "The IP address of boost.org is 146.20.110.251");
+    assert(s == "The IP address of boost.org is 146.20.110.251");
 //]
 }
 
@@ -119,5 +119,5 @@ int main()
 {
     basic_sample();
     sample_fmt_sample();
-    return boost::report_errors();
+    return 0;
 }

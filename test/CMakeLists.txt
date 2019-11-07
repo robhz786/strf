@@ -7,7 +7,7 @@
 cmake_minimum_required (VERSION 3.0)
 project (stringify_test)
 
-include_directories("../../../")
+# include_directories("../include")
 
 foreach(
   t
