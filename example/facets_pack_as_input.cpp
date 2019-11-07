@@ -22,7 +22,7 @@ void sample1()
             , strf::hex(0x10000)
             , " }" ) );
 
-    BOOST_ASSERT(str == "1,0,0,0,0  10000  { 10,000  1'0000 }");
+    assert(str == "1,0,0,0,0  10000  { 10,000  1'0000 }");
     //]
 
 }
@@ -50,7 +50,7 @@ void sample2()
                   ("  { ", 10000, " }")
             , " }" ) );
 
-    BOOST_ASSERT(str == "1,0,0,0,0  10000  { 10,000  1'0000  { 1.00.00 } }");
+    assert(str == "1,0,0,0,0  10000  { 10,000  1'0000  { 1.00.00 } }");
     //]
 }
 
@@ -64,7 +64,7 @@ void sample3()
            , strf::facets()("bbb", "ccc", "ddd")
            , "eee" );
 
-    BOOST_ASSERT(str == "aaa -- bbbcccddd -- eee");
+    assert(str == "aaa -- bbbcccddd -- eee");
     //]
 }
 

@@ -2,7 +2,6 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/assert.hpp>
 #include <boost/stringify.hpp>
 
 #include <iostream>
@@ -41,10 +40,10 @@ void input_ouput_different_char_types()
                                  , strf::cv(U"ccc-")
                                  , L"ddd" );
 
-    BOOST_ASSERT(str   ==  "aaa-bbb-ccc-ddd");
-    BOOST_ASSERT(str16 == u"aaa-bbb-ccc-ddd");
-    BOOST_ASSERT(str32 == U"aaa-bbb-ccc-ddd");
-    BOOST_ASSERT(wstr  == L"aaa-bbb-ccc-ddd");
+    assert(str   ==  "aaa-bbb-ccc-ddd");
+    assert(str16 == u"aaa-bbb-ccc-ddd");
+    assert(str32 == U"aaa-bbb-ccc-ddd");
+    assert(wstr  == L"aaa-bbb-ccc-ddd");
     //]
 }
 
@@ -57,7 +56,7 @@ void arg()
         ( strf::cv("--\xA4--", strf::iso_8859_1<char>())
         , strf::cv("--\xA4--", strf::iso_8859_15<char>()));
 
-    BOOST_ASSERT(str_utf8 == u8"--\u00A4----\u20AC--");
+    assert(str_utf8 == u8"--\u00A4----\u20AC--");
     //]
 }
 
@@ -66,7 +65,7 @@ void encoding_error_replace()
     //[ encoding_error_replace
     namespace strf = boost::stringify::v0;
     auto str = strf::to_u8string (strf::cv("--\x99--"));
-    BOOST_ASSERT(str == u8"--\uFFFD--");
+    assert(str == u8"--\uFFFD--");
     //]
 }
 
@@ -79,7 +78,7 @@ void error_signal_skip()
         .facets(strf::encoding_error::ignore)
         (strf::cv("--\x99--"));
 
-    BOOST_ASSERT(str == "----");
+    assert(str == "----");
     //]
 }
 
@@ -101,7 +100,7 @@ void encoding_error_stop()
         transcoding_failed = true;
     }
 
-    BOOST_ASSERT(transcoding_failed);
+    assert(transcoding_failed);
     //]
 }
 
@@ -117,8 +116,8 @@ void allow_surrogates ()
 
     auto str2 = strf::to_u8string .facets(strf::surrogate_policy::lax) (strf::cv(input_utf16));
 
-    BOOST_ASSERT(str1 == u8"-\uFFFD---");       // surrogate sanitized
-    BOOST_ASSERT(str2 == u8"-\xED\xA0\x80---"); // surrogate allowed
+    assert(str1 == u8"-\uFFFD---");       // surrogate sanitized
+    assert(str2 == u8"-\xED\xA0\x80---"); // surrogate allowed
 
     // now back to UTF-16
     auto utf16_no_surr = strf::to_u16string(strf::cv(str2));
@@ -127,8 +126,8 @@ void allow_surrogates ()
         .facets(strf::surrogate_policy::lax)
         (strf::cv(str2));
 
-    BOOST_ASSERT(utf16_no_surr == u"-\uFFFD\uFFFD\uFFFD---"); // surrogate sanitized
-    BOOST_ASSERT(utf16_with_surr[1] == 0xD800);               // surrogate recovered
+    assert(utf16_no_surr == u"-\uFFFD\uFFFD\uFFFD---"); // surrogate sanitized
+    assert(utf16_with_surr[1] == 0xD800);               // surrogate recovered
     //]
 
 }

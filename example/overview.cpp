@@ -20,7 +20,7 @@ void sample()
 {
     int value = 255;
     auto s = strf::to_string(value, " in hexadecimal is ", strf::hex(value));
-    BOOST_ASSERT(s == "255 in hexadecimal is ff");
+    assert(s == "255 in hexadecimal is ff");
 }
 //]
 
@@ -36,7 +36,7 @@ void second_example()
     auto s = strf::to_string( "---"
                             , ~strf::hex(255).p(4).fill(U'.') > 10
                             , "---" );
-    BOOST_ASSERT(s == "---....0x00ff---");
+    assert(s == "---....0x00ff---");
 
     //
     // ranges
@@ -44,7 +44,7 @@ void second_example()
     int array[] = {20, 30, 40};
     const char* separator = " / ";
     s = strf::to_string( "--[", strf::range(array, separator), "]--");
-    BOOST_ASSERT(s == "--[20 / 30 / 40]--");
+    assert(s == "--[20 / 30 / 40]--");
 
     //
     // range with formatting
@@ -52,14 +52,14 @@ void second_example()
     s = strf::to_string( "--["
                        , ~strf::hex(strf::range(array, separator)).p(4)
                        , "]--");
-    BOOST_ASSERT(s == "--[0x0014 / 0x001e / 0x0028]--");
+    assert(s == "--[0x0014 / 0x001e / 0x0028]--");
 
     // or
 
     s = strf::to_string( "--["
                        , ~strf::fmt_range(array, separator).hex().p(4)
                        , "]--");
-    BOOST_ASSERT(s == "--[0x0014 / 0x001e / 0x0028]--");
+    assert(s == "--[0x0014 / 0x001e / 0x0028]--");
 
     //
     // join: align a group of argument as one:
@@ -70,7 +70,7 @@ void second_example()
                                                     , " in hexadecimal is "
                                                     , strf::hex(value) )
                        , "---" );
-    BOOST_ASSERT(s == "---...255 in hexadecimal is ff...---");
+    assert(s == "---...255 in hexadecimal is ff...---");
 
 
     // joins can contain any type of argument, including ranges and other joins
@@ -80,7 +80,7 @@ void second_example()
                                                   , strf::range(array, ", ")
                                                   , "]" )
                            , "}" ));
-    BOOST_ASSERT(s == "........{    [10, 20, 30]    }");
+    assert(s == "........{    [10, 20, 30]    }");
 //]
 }
 
@@ -96,7 +96,7 @@ void format_functions()
         , ~strf::hex(255).p(4).fill(U'.') > 10
         , "---" );
 
-    BOOST_ASSERT(s == "---....0x00ff---");
+    assert(s == "---....0x00ff---");
     //]
 }
 
@@ -112,7 +112,7 @@ void format_functions_2()
         , '/', strf::multi('a', 3) ^ 7
         , '/', +strf::fmt(255) );
 
-    BOOST_ASSERT(str == "   ff/..ff.../0x   ff/  aaa  /+255");
+    assert(str == "   ff/..ff.../0x   ff/  aaa  /+255");
     //]
 }
 
@@ -123,8 +123,8 @@ void reserve()
 
     auto str = strf::to_string.reserve(5000)("blah", "blah");
 
-    BOOST_ASSERT(str == "blahblah");
-    BOOST_ASSERT(str.capacity() >= 5000);
+    assert(str == "blahblah");
+    assert(str.capacity() >= 5000);
     //]
 }
 
@@ -139,7 +139,7 @@ void basic_facet_sample()
         .facets(punct)
         ("one hundred billions = ", 100000000000ll);
 
-    BOOST_ASSERT(s == "one hundred billions = 1.00.00.000.0000");
+    assert(s == "one hundred billions = 1.00.00.000.0000");
 //]
 }
 
@@ -154,7 +154,7 @@ void constrained_facet()
 
     auto s = strf::to_string.facets(facet_obj)(100000u, "  ", 100000);
 
-    BOOST_ASSERT(s == "100000  100,000");
+    assert(s == "100000  100,000");
     //]
 }
 
@@ -178,7 +178,7 @@ void overriding_sample()
                , strf::constrain<std::is_signed>(punct_dec_3) )
         ( 100000, "  ", 100000u ) ;
 
-    BOOST_ASSERT(s == "100^000  10.00.00");
+    assert(s == "100^000  10.00.00");
     //]
 }
 
@@ -196,13 +196,13 @@ void get_facet_sample()
         , strf::constrain<strf::is_int_number>(std::ref(punct_dec)) );//and here
 
     decltype(auto) f1 = strf::get_facet<strf::numpunct_c<16>, int>(fp);
-    BOOST_ASSERT(&f1 == &punct_hex);
+    assert(&f1 == &punct_hex);
 
     decltype(auto) f2 = strf::get_facet<strf::numpunct_c<10>, int>(fp);
-    BOOST_ASSERT(&f2 == &punct_dec);
+    assert(&f2 == &punct_dec);
 
     decltype(auto) f3 = strf::get_facet<strf::numpunct_c<10>, double>(fp);
-    BOOST_ASSERT(&f3 == &strf::numpunct_c<10>::get_default());
+    assert(&f3 == &strf::numpunct_c<10>::get_default());
     //]
     (void)f1;
     (void)f2;
@@ -222,7 +222,7 @@ void sample_numpunct_with_alternative_charset()
         ("one hundred billions = ", 100000000000ll);
 
     // The character U+2022 is encoded as '\225' in Windows-1252
-    BOOST_ASSERT(s == "one hundred billions = 1\2250000\225000\2250000");
+    assert(s == "one hundred billions = 1\2250000\225000\2250000");
 //]
 }
 
@@ -243,7 +243,7 @@ void input_ouput_different_char_types()
     auto str = strf::to_string( strf::cv(u"aaa-")
                               , strf::cv(U"bbb-")
                               , strf::cv(L"ccc") );
-    BOOST_ASSERT(str ==  "aaa-bbb-ccc");
+    assert(str ==  "aaa-bbb-ccc");
     //]
 }
 
@@ -257,7 +257,7 @@ void input_string_encoding()
                               , strf::cv("\x80\xA4", strf::windows_1252<char>()) );
 
     // The output by default is in UTF-8
-    BOOST_ASSERT(s == u8"\u0080\u00A4 -- \u0080\u20AC -- \u20AC\u00A4");
+    assert(s == u8"\u0080\u00A4 -- \u0080\u20AC -- \u20AC\u00A4");
     //]
 }
 
@@ -267,7 +267,7 @@ void sani()
     // sanitize UTF-8 input
     namespace strf = boost::stringify::v0;
     auto s = strf::to_u8string(strf::cv("a b c \xFF d e"));
-    BOOST_ASSERT(s == u8"a b c \uFFFD d e");
+    assert(s == u8"a b c \uFFFD d e");
     //]
 }
 
@@ -281,7 +281,7 @@ void monotonic_grouping()
         .facets(strf::monotonic_grouping<base>{3}.thousands_sep(U'.'))
         (100000000000ll);
 
-    BOOST_ASSERT(str == "100.000.000.000");
+    assert(str == "100.000.000.000");
     //]
 }
 
@@ -293,7 +293,7 @@ void str_grouping()
 
     auto punct = strf::str_grouping<base>{"\4\3\2"};
     auto str = strf::to_string.facets(punct)(100000000000ll);
-    BOOST_ASSERT(str == "1,00,00,000,0000");
+    assert(str == "1,00,00,000,0000");
     //]
 }
 
@@ -305,7 +305,7 @@ void punct_non_decimal()
         .facets(strf::monotonic_grouping<16>{4}.thousands_sep(U'\''))
         (strf::hex(0xffffffffffLL));
 
-    BOOST_ASSERT(str == "ff'ffff'ffff");
+    assert(str == "ff'ffff'ffff");
     //]
 }
 
@@ -318,7 +318,7 @@ void punct_non_decimal()
 //         .facets(strf::width_as_len<char8_t>{})
 //         (strf::right(u8"áéíóú", 12, U'.'));
 
-//     BOOST_ASSERT(str == u8"..áéíóú");
+//     assert(str == u8"..áéíóú");
 //     //]
 // }
 // void width_as_u32len()
@@ -330,7 +330,7 @@ void punct_non_decimal()
 //         .facets(strf::width_as_u32len<char8_t>{})
 //         (strf::right(u8"áéíóú", 12, U'.'));
 
-//     BOOST_ASSERT(str == u8".......áéíóú");
+//     assert(str == u8".......áéíóú");
 //     //]
 // }
 
@@ -353,7 +353,7 @@ void punct_non_decimal()
 //         .facets(strf::width_as(my_width_calculator))
 //         (strf::right(u8"今晩は", 10, U'.'));
 
-//     BOOST_ASSERT(str == u8"....今晩は");
+//     assert(str == u8"....今晩は");
 //     //]
 // }
 
@@ -391,20 +391,20 @@ void using_my_customizations()
 
     int x = 100000000;
     auto str = my::to_string(x);
-    BOOST_ASSERT(str == "100,000,000");
+    assert(str == "100,000,000");
 
     my::append(str) (" in hexadecimal is ", ~strf::hex(x));
-    BOOST_ASSERT(str == "100,000,000 in hexadecimal is 0x5f5'e100");
+    assert(str == "100,000,000 in hexadecimal is 0x5f5'e100");
 
     char buff[500];
     my::write(buff)(x, " in hexadecimal is ", ~strf::hex(x));
-    BOOST_ASSERT(str == buff);
+    assert(str == buff);
 
     // Overriding numpunct_c<16> back to default:
     str = my::to_string
         .facets(strf::default_numpunct<16>())
         (x, " in hexadecimal is ", ~strf::hex(x));
-    BOOST_ASSERT(str == "100,000,000 in hexadecimal is 0x5f5e100");
+    assert(str == "100,000,000 in hexadecimal is 0x5f5e100");
 }
 //]
 

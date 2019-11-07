@@ -269,7 +269,7 @@ void base64_printer<CharT>::_encode_3bytes
 template <typename CharT>
 CharT base64_printer<CharT>::_encode(std::uint8_t hextet) const
 {
-    BOOST_ASSERT(hextet <= 63);
+    assert(hextet <= 63);
     std::uint8_t ch =
         hextet < 26 ?  static_cast<std::uint8_t>('A') + hextet :
         hextet < 52 ?  static_cast<std::uint8_t>('a') + hextet - 26 :
@@ -507,7 +507,7 @@ void sample()
         "    VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYX\n"
         "    p5IGRvZy4=\n";
 
-    BOOST_ASSERT(obtained == expected);
+    assert(obtained == expected);
 //]
     (void)expected;
 };

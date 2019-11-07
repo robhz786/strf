@@ -212,7 +212,7 @@ public:
             }
             default:
             {
-                BOOST_ASSERT(_fmt.align == stringify::v0::text_alignment::center);
+                STRF_ASSERT(_fmt.align == stringify::v0::text_alignment::center);
                 auto half_fillcount = _fillcount >> 1;
                 _write_fill(ob, half_fillcount);
                 stringify::v0::detail::write(ob, _printers());;

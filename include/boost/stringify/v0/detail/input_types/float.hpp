@@ -10,7 +10,6 @@
 #include <boost/stringify/v0/detail/facets/numpunct.hpp>
 #include <boost/stringify/v0/detail/ryu/double.hpp>
 #include <boost/stringify/v0/detail/ryu/float.hpp>
-#include <boost/assert.hpp>
 #include <algorithm>
 #include <cstring>
 #include <type_traits>
@@ -42,17 +41,17 @@ BOOST_STRINGIFY_INLINE double_dec_base trivial_float_dec(
 {
     constexpr int m_size = 23;
 
-    BOOST_ASSERT(-10 <= biased_exponent && biased_exponent <= m_size);
-    BOOST_ASSERT((std::int32_t)k == (biased_exponent * 179 + 1850) >> 8);
-    BOOST_ASSERT(0 == (ieee_mantissa & (0x7FFFFF >> k)));
+    STRF_ASSERT(-10 <= biased_exponent && biased_exponent <= m_size);
+    STRF_ASSERT((std::int32_t)k == (biased_exponent * 179 + 1850) >> 8);
+    STRF_ASSERT(0 == (ieee_mantissa & (0x7FFFFF >> k)));
 
-    BOOST_ASSERT(k <= m_size);
-    BOOST_ASSERT(biased_exponent <= (int)k);
+    STRF_ASSERT(k <= m_size);
+    STRF_ASSERT(biased_exponent <= (int)k);
 
     std::int32_t e10 = biased_exponent - k;
     std::uint32_t m = (1ul << k) | (ieee_mantissa >> (m_size - k));
     int p5 = k - biased_exponent;
-    BOOST_ASSERT(p5 <= 10);
+    STRF_ASSERT(p5 <= 10);
     if (p5 >= 8 && (0 == (m & 0xFF))) {
         p5 -= 8;
         e10 += 8;
@@ -92,7 +91,7 @@ BOOST_STRINGIFY_INLINE double_dec_base trivial_float_dec(
     if (p5 >= 1) {
         m = (m << 2) + m; // m *= 5
     }
-    BOOST_ASSERT((m % 10) != 0);
+    STRF_ASSERT((m % 10) != 0);
     return {m, e10};
 }
 
@@ -101,17 +100,17 @@ BOOST_STRINGIFY_INLINE double_dec_base trivial_double_dec(
     std::int32_t biased_exponent,
     std::uint32_t k )
 {
-    BOOST_ASSERT(-22 <= biased_exponent && biased_exponent <= 52);
-    BOOST_ASSERT((std::int32_t)k == (biased_exponent * 179 + 4084) >> 8);
-    BOOST_ASSERT(0 == (ieee_mantissa & (0xFFFFFFFFFFFFFull >> k)));
+    STRF_ASSERT(-22 <= biased_exponent && biased_exponent <= 52);
+    STRF_ASSERT((std::int32_t)k == (biased_exponent * 179 + 4084) >> 8);
+    STRF_ASSERT(0 == (ieee_mantissa & (0xFFFFFFFFFFFFFull >> k)));
 
-    BOOST_ASSERT(biased_exponent <= (int)k);
-    BOOST_ASSERT(k <= 52);
+    STRF_ASSERT(biased_exponent <= (int)k);
+    STRF_ASSERT(k <= 52);
 
     std::int32_t e10 = biased_exponent - k;
     std::uint64_t m = (1ull << k) | (ieee_mantissa >> (52 - k));
     int p5 = k - biased_exponent;
-    BOOST_ASSERT(p5 <= 22);
+    STRF_ASSERT(p5 <= 22);
     if (p5 >= 16 && (0 == (m & 0xFFFF))) {
         p5 -= 16;
         e10 += 16;
@@ -160,7 +159,7 @@ BOOST_STRINGIFY_INLINE double_dec_base trivial_double_dec(
     if (p5 >= 1) {
         m = (m << 2) + m; // m *= 5
     }
-    BOOST_ASSERT((m % 10) != 0);
+    STRF_ASSERT((m % 10) != 0);
     return {m, e10};
 }
 BOOST_STRINGIFY_INLINE detail::double_dec decode(float f)
@@ -445,7 +444,7 @@ BOOST_STRINGIFY_INLINE double_printer_data::double_printer_data
             }
             default:
             {
-                BOOST_ASSERT(fmt.notation == float_notation::scientific);
+                STRF_ASSERT(fmt.notation == float_notation::scientific);
                 const unsigned frac_digits = m10_digcount - 1;
                 xz = (fmt.precision - frac_digits);
                 sci_notation = true;
@@ -497,12 +496,12 @@ void _print_amplified_integer_small_separator
     , unsigned num_digits )
 {
     (void)enc;
-    BOOST_ASSERT(num_groups != 0);
+    STRF_ASSERT(num_groups != 0);
     auto grp_it = groups + num_groups - 1;
     unsigned grp_size = *grp_it;
     while (num_digits > grp_size)
     {
-        BOOST_ASSERT(grp_size + 1 <= stringify::v0::min_size_after_recycle<CharT>());
+        STRF_ASSERT(grp_size + 1 <= stringify::v0::min_size_after_recycle<CharT>());
         ob.ensure(grp_size + 1);
         auto it = ob.pos();
         auto digits_2 = digits + grp_size;
@@ -511,19 +510,19 @@ void _print_amplified_integer_small_separator
         digits = digits_2;
         ob.advance(grp_size + 1);
         num_digits -= grp_size;
-        BOOST_ASSERT(grp_it != groups);
+        STRF_ASSERT(grp_it != groups);
         grp_size = *--grp_it;
     }
     if (num_digits != 0)
     {
-        BOOST_ASSERT(num_digits <= stringify::v0::min_size_after_recycle<CharT>());
+        STRF_ASSERT(num_digits <= stringify::v0::min_size_after_recycle<CharT>());
         ob.ensure(num_digits);
         std::copy(digits, digits + num_digits, ob.pos());
         ob.advance(num_digits);
     }
     if (grp_size > num_digits)
     {
-        BOOST_ASSERT(num_digits <= stringify::v0::min_size_after_recycle<CharT>());
+        STRF_ASSERT(num_digits <= stringify::v0::min_size_after_recycle<CharT>());
         grp_size -= num_digits;
         ob.ensure(grp_size);
         std::char_traits<CharT>::assign(ob.pos(), grp_size, '0');
@@ -532,7 +531,7 @@ void _print_amplified_integer_small_separator
     while (grp_it != groups)
     {
         grp_size = *--grp_it;
-        BOOST_ASSERT(grp_size + 1 <= stringify::v0::min_size_after_recycle<CharT>());
+        STRF_ASSERT(grp_size + 1 <= stringify::v0::min_size_after_recycle<CharT>());
         ob.ensure(grp_size + 1);
         auto it = ob.pos();
         *it = separator;
@@ -552,12 +551,12 @@ void _print_amplified_integer_big_separator
     , const char* digits
     , unsigned num_digits )
 {
-    BOOST_ASSERT(num_groups != 0);
+    STRF_ASSERT(num_groups != 0);
     auto grp_it = groups + num_groups - 1;
     unsigned grp_size = *grp_it;
     while (num_digits > grp_size)
     {
-        BOOST_ASSERT(grp_size + separator_size <= stringify::v0::min_size_after_recycle<CharT>());
+        STRF_ASSERT(grp_size + separator_size <= stringify::v0::min_size_after_recycle<CharT>());
         ob.ensure(grp_size + separator_size);
         auto it = ob.pos();
         auto digits_2 = digits + grp_size;
@@ -565,19 +564,19 @@ void _print_amplified_integer_big_separator
         digits = digits_2;
         ob.advance_to(enc.encode_char(it + grp_size, separator));
         num_digits -= grp_size;
-        BOOST_ASSERT(grp_it != groups);
+        STRF_ASSERT(grp_it != groups);
         grp_size = *--grp_it;
     }
     if (num_digits != 0)
     {
-        BOOST_ASSERT(num_digits <= stringify::v0::min_size_after_recycle<CharT>());
+        STRF_ASSERT(num_digits <= stringify::v0::min_size_after_recycle<CharT>());
         ob.ensure(num_digits);
         std::copy(digits, digits + num_digits, ob.pos());
         ob.advance(num_digits);
     }
     if (grp_size > num_digits)
     {
-        BOOST_ASSERT(num_digits <= stringify::v0::min_size_after_recycle<CharT>());
+        STRF_ASSERT(num_digits <= stringify::v0::min_size_after_recycle<CharT>());
         grp_size -= num_digits;
         ob.ensure(grp_size);
         std::char_traits<CharT>::assign(ob.pos(), grp_size, '0');
@@ -586,7 +585,7 @@ void _print_amplified_integer_big_separator
     while (grp_it != groups)
     {
         grp_size = *--grp_it;
-        BOOST_ASSERT(grp_size + separator_size <= stringify::v0::min_size_after_recycle<CharT>());
+        STRF_ASSERT(grp_size + separator_size <= stringify::v0::min_size_after_recycle<CharT>());
         ob.ensure(grp_size + separator_size);
         auto it = enc.encode_char(ob.pos(), separator);
         std::char_traits<CharT>::assign(it, grp_size, '0');
@@ -606,7 +605,7 @@ void print_amplified_integer( stringify::v0::basic_outbuf<CharT>& ob
     char digits_buff[max_digits];
     auto digits = stringify::v0::detail::write_int_txtdigits_backwards<Base>
         (value, digits_buff + max_digits);
-    BOOST_ASSERT(static_cast<int>(num_digits) == ((digits_buff + max_digits) - digits));
+    STRF_ASSERT(static_cast<int>(num_digits) == ((digits_buff + max_digits) - digits));
 
     std::uint8_t groups[std::numeric_limits<double>::max_exponent10 + 1];
     auto num_groups = punct.groups(num_trailing_zeros + num_digits, groups);
@@ -644,7 +643,7 @@ void print_scientific_notation
     , bool print_point
     , unsigned trailing_zeros )
 {
-    BOOST_ASSERT(num_digits == detail::count_digits<10>(digits));
+    STRF_ASSERT(num_digits == detail::count_digits<10>(digits));
 
     CharT small_decimal_point = static_cast<CharT>(decimal_point);
     std::size_t psize = 1;
@@ -720,7 +719,7 @@ void print_scientific_notation
             enc.encode_char(it, decimal_point);
         }
         * --it = highest_digit;
-        BOOST_ASSERT(it == ob.pos());
+        STRF_ASSERT(it == ob.pos());
         ob.advance(num_digits + psize);
     }
     if (trailing_zeros != 0)
@@ -731,7 +730,7 @@ void print_scientific_notation
     unsigned adv = 4;
     CharT* it;
     unsigned e10u = std::abs(exponent);
-    BOOST_ASSERT(e10u < 1000);
+    STRF_ASSERT(e10u < 1000);
 
     if (e10u >= 100)
     {
@@ -864,7 +863,7 @@ void punct_double_printer<CharT>::init( Preview& preview
                 _split_fillcount = fillcount;
                 break;
             default:
-                BOOST_ASSERT(a == stringify::v0::text_alignment::center);
+                STRF_ASSERT(a == stringify::v0::text_alignment::center);
                 _left_fillcount = fillcount / 2;
                 _right_fillcount = fillcount - _left_fillcount;
         }
@@ -961,7 +960,7 @@ std::size_t punct_double_printer<CharT>::_content_size() const
 
     std::size_t seps_size = 0;
     auto idigcount = (int)_data.m10_digcount + _data.e10;
-    BOOST_ASSERT(idigcount > 0);
+    STRF_ASSERT(idigcount > 0);
 
     if (idigcount > 1 && ! _punct.no_group_separation(idigcount))
     {
@@ -1042,7 +1041,7 @@ void punct_double_printer<CharT>::print_to(stringify::v0::basic_outbuf<CharT>& o
     }
     else
     {
-        BOOST_ASSERT(_data.e10 < 0);
+        STRF_ASSERT(_data.e10 < 0);
 
         unsigned e10u = - _data.e10;
         if (e10u >= _data.m10_digcount)
@@ -1069,7 +1068,7 @@ void punct_double_printer<CharT>::print_to(stringify::v0::basic_outbuf<CharT>& o
             auto fractional_part = _data.m10 % p10;
             auto idigcount = _data.m10_digcount - e10u;
 
-            BOOST_ASSERT(idigcount == detail::count_digits<10>(integral_part));
+            STRF_ASSERT(idigcount == detail::count_digits<10>(integral_part));
 
             if (_punct.no_group_separation(idigcount))
             {
@@ -1202,7 +1201,7 @@ void double_printer<CharT>::init( Preview& preview
                 _split_fillcount = fillcount;
                 break;
             default:
-                BOOST_ASSERT(a == stringify::v0::text_alignment::center);
+                STRF_ASSERT(a == stringify::v0::text_alignment::center);
                 _left_fillcount = fillcount / 2;
                 _right_fillcount = fillcount - _left_fillcount;
         }
@@ -1427,7 +1426,7 @@ public:
         , _m10_digcount(stringify::v0::detail::count_digits<10>(_value.m10))
 
     {
-        BOOST_ASSERT(!_value.nan || !_value.infinity);
+        STRF_ASSERT(!_value.nan || !_value.infinity);
         _sci_notation = (_value.e10 > 4 + (_m10_digcount > 1))
             || (_value.e10 < -(int)_m10_digcount - 2 - (_m10_digcount > 1));
     }
@@ -1437,7 +1436,7 @@ public:
         , _m10_digcount(stringify::v0::detail::count_digits<10>(_value.m10))
 
     {
-        BOOST_ASSERT(!_value.nan || !_value.infinity);
+        STRF_ASSERT(!_value.nan || !_value.infinity);
         _sci_notation = (_value.e10 > 4 + (_m10_digcount > 1))
             || (_value.e10 < -(int)_m10_digcount - 2 - (_m10_digcount > 1));
     }
@@ -1860,7 +1859,7 @@ void fast_punct_double_printer<CharT>::print_to
                 auto integral_part = _value.m10 / p10;
                 auto fractional_part = _value.m10 % p10;
                 auto idigcount = _m10_digcount - e10u;
-                BOOST_ASSERT(idigcount == detail::count_digits<10>(integral_part));
+                STRF_ASSERT(idigcount == detail::count_digits<10>(integral_part));
 
                 if (_punct.no_group_separation(_m10_digcount - e10u))
                 {

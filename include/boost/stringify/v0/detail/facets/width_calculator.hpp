@@ -6,7 +6,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/stringify/v0/detail/facets/encoding.hpp>
-#include <boost/assert.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 

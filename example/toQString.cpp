@@ -97,7 +97,7 @@ int main()
 {
     int x = 255;
     QString str = toQString(x, u" in hexadecimal is ", ~strf::hex(x));
-    BOOST_ASSERT(str == "255 in hexadecimal is 0xff");
+    assert(str == "255 in hexadecimal is 0xff");
 
     return 0;
 }

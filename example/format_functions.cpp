@@ -12,7 +12,7 @@ void sample_hex()
 
     auto str = strf::to_string(255, "  ", strf::hex(255));
 
-    BOOST_ASSERT(str == "255  ff");
+    assert(str == "255  ff");
     //]
 }
 
@@ -29,7 +29,7 @@ void samples()
         , '/', strf::multi('a', 3) ^ 7
         , '/', +strf::fmt(255) );
 
-    BOOST_ASSERT(str == "   ff/..ff.../0x   ff/  aaa  /+255");
+    assert(str == "   ff/..ff.../0x   ff/  aaa  /+255");
     //]
 }
 

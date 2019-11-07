@@ -11,7 +11,6 @@
 #include <boost/stringify/v0/detail/facets/encoding.hpp>
 #include <boost/stringify/v0/detail/facets/numpunct.hpp>
 #include <boost/stringify/v0/detail/int_digits.hpp>
-#include <boost/assert.hpp>
 #include <cstdint>
 
 // todo: optimize as in:

@@ -20,7 +20,7 @@ public:
         : stringify::v0::basic_outbuf_noexcept<CharT>(_buf, _buf_size)
         , _dest(dest_)
     {
-        BOOST_ASSERT(dest_ != nullptr);
+        STRF_ASSERT(dest_ != nullptr);
     }
 
     narrow_cfile_writer() = delete;
@@ -81,7 +81,7 @@ public:
         : stringify::v0::basic_outbuf_noexcept<wchar_t>(_buf, _buf_size)
         , _dest(dest_)
     {
-        BOOST_ASSERT(dest_ != nullptr);
+        STRF_ASSERT(dest_ != nullptr);
     }
 
     wide_cfile_writer() = delete;

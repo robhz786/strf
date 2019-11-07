@@ -99,7 +99,7 @@ void sample_fmt_sample()
     xxx::ipv4address addr {{146, 20, 110, 251}};
 
     auto s = strf::to_string("boost.org: ", strf::right(addr, 20, U'.'));
-    BOOST_ASSERT(s == "boost.org: ......146.20.110.251");
+    assert(s == "boost.org: ......146.20.110.251");
 //]
 
 
@@ -108,10 +108,10 @@ void sample_fmt_sample()
                                         , {{146, 20, 110, 251}}
                                         , {{110, 110, 110, 110}} };
     auto s2 = strf::to_string("[", strf::fmt_range(vec, " ;") > 16, "]");
-    BOOST_ASSERT(s2 == "[       127.0.0.1 ;  146.20.110.251 ; 110.110.110.110]");
+    assert(s2 == "[       127.0.0.1 ;  146.20.110.251 ; 110.110.110.110]");
 //]
     // auto s3 = strf::to_string("[", strf::range(vec, " ; "), "]");
-    // BOOST_ASSERT(s3 == "[127.0.0.1 ; 146.20.110.251 ; 110.110.110.110]");
+    // assert(s3 == "[127.0.0.1 ; 146.20.110.251 ; 110.110.110.110]");
 }
 
 

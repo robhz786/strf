@@ -298,23 +298,23 @@ int main()
     xxx::ipv6address addr{{0xaa, 0, 0, 0, 0xbb, 0, 0, 0xcc}};
 
     auto s = strf::to_string(addr);
-    BOOST_ASSERT(s == "aa:0:0:0:bb:0:0:cc");
+    assert(s == "aa:0:0:0:bb:0:0:cc");
 
     s = strf::to_string(strf::fmt(addr).big());
-    BOOST_ASSERT(s == "00aa:0000:0000:0000:00bb:0000:0000:00cc");
+    assert(s == "00aa:0000:0000:0000:00bb:0000:0000:00cc");
 
     s = strf::to_string(strf::right(addr, 20, U'.').small());
-    BOOST_ASSERT(s == ".......aa::bb:0:0:cc");
+    assert(s == ".......aa::bb:0:0:cc");
     //]
 
     s = strf::to_string(strf::right(addr, 20));
-    BOOST_ASSERT(s == "  aa:0:0:0:bb:0:0:cc");
+    assert(s == "  aa:0:0:0:bb:0:0:cc");
 
     s = strf::to_string(strf::join_right(22, U'.')(strf::left(addr, 20)));
-    BOOST_ASSERT(s == "..aa:0:0:0:bb:0:0:cc  ");
+    assert(s == "..aa:0:0:0:bb:0:0:cc  ");
 
     s = strf::to_string(strf::center(addr, 20));
-    BOOST_ASSERT(s == " aa:0:0:0:bb:0:0:cc ");
+    assert(s == " aa:0:0:0:bb:0:0:cc ");
 
     std::vector<xxx::ipv6address> vec =
         { {{0, 0, 0, 0, 0, 0}}
@@ -334,7 +334,7 @@ int main()
         "~~~~~~~~~~~~~0:0:1::\n"
         "~~~~~~~~~~~0:0:0:1::\n";
 
-    BOOST_ASSERT(s == expected_result);
+    assert(s == expected_result);
 
     (void)expected_result;
     return 0;

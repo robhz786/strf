@@ -93,7 +93,7 @@ public:
         {
             std::rethrow_exception(_eptr);
         }
-        BOOST_ASSERT(static_cast<T*>(this)->good());
+        STRF_ASSERT(static_cast<T*>(this)->good());
         auto * p = static_cast<T*>(this)->pos();
         static_cast<T*>(this)->set_good(false);
         static_cast<T*>(this)->_append(buf_begin(), p);

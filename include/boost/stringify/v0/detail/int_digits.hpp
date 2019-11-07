@@ -26,7 +26,7 @@ inline unsigned long long pow10(unsigned n)
         , 100000000000000000ull
         , 1000000000000000000ull
         , 10000000000000000000ull };
-    BOOST_ASSERT(n <= 19);
+    STRF_ASSERT(n <= 19);
 
     return p10[n];
 };
@@ -352,7 +352,7 @@ unsigned count_digits(intT value, int base)
 {
     if (base == 10) return count_digits<10>(value);
     if (base == 16) return count_digits<16>(value);
-    BOOST_ASSERT(base == 8);
+    STRF_ASSERT(base == 8);
     return count_digits<8>(value);
 }
 
@@ -466,7 +466,7 @@ public:
             }
             uvalue /= 100;
         }
-        BOOST_ASSERT(n != 0);
+        STRF_ASSERT(n != 0);
         if (uvalue < 10)
         {
             it[-1] = static_cast<CharT>('0' + uvalue);
@@ -680,9 +680,9 @@ void write_digits_big_sep
     , char32_t sep
     , std::size_t sep_size )
 {
-    BOOST_ASSERT(sep_size != (std::size_t)-1);
-    BOOST_ASSERT(sep_size != 1);
-    BOOST_ASSERT(sep_size == encoding.validate(sep));
+    STRF_ASSERT(sep_size != (std::size_t)-1);
+    STRF_ASSERT(sep_size != 1);
+    STRF_ASSERT(sep_size == encoding.validate(sep));
 
     ob.ensure(1);
 

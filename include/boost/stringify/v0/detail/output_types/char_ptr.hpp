@@ -25,7 +25,7 @@ public:
         : _dest(dest)
         , _dest_end(dest_end)
     {
-        BOOST_ASSERT(dest < dest_end);
+        STRF_ASSERT(dest < dest_end);
     }
 
     constexpr basic_cstr_writer_creator(const basic_cstr_writer_creator&) = default;

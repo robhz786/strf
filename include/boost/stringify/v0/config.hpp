@@ -6,6 +6,9 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <type_traits>
+#include <cassert>
+
+#define STRF_ASSERT(x) assert(x)
 
 #define BOOST_STRINGIFY_V0_NAMESPACE_BEGIN         \
 namespace boost {                                  \

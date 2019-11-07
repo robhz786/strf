@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <boost/stringify/v0/outbuf.hpp>
 #include <boost/stringify/v0/width_t.hpp>
-#include <boost/assert.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -71,7 +70,7 @@ void write_fill_continuation
     using char_type = typename stringify::v0::underlying_outbuf<CharSize>::char_type;
 
     std::size_t space = ob.size();
-    BOOST_ASSERT(space < count);
+    STRF_ASSERT(space < count);
     std::char_traits<char_type>::assign(ob.pos(), space, ch);
     count -= space;
     ob.advance_to(ob.end());

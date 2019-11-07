@@ -6,7 +6,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/stringify/v0/printer.hpp>
-#include <boost/assert.hpp>
 
 BOOST_STRINGIFY_V0_NAMESPACE_BEGIN
 
@@ -133,7 +132,7 @@ void single_byte_encoding<Impl>::to_utf32
                     ch32 = 0xFFFD;
                     break;
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     continue;
             }
         }
@@ -175,7 +174,7 @@ void single_byte_encoding<Impl>::sanitize
                     ch_out = '?';
                     break;
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     continue;
             }
         }
@@ -239,7 +238,7 @@ void single_byte_encoding<Impl>::encode_fill
                 throw_encoding_failure();
                 return;
             default:
-                BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                 return;
         }
     }
@@ -287,7 +286,7 @@ void single_byte_encoding<Impl>::from_utf32
                     break;
 
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     continue;
             }
         }

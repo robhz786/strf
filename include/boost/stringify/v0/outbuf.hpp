@@ -6,7 +6,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/stringify/v0/config.hpp>
-#include <boost/assert.hpp>
 #include <cstring>
 #include <cwchar>
 #include <cstdint>
@@ -60,7 +59,7 @@ public:
     }
     std::size_t size() const noexcept
     {
-        BOOST_ASSERT(_pos <= _end);
+        STRF_ASSERT(_pos <= _end);
         return _end - _pos;
     }
 
@@ -70,28 +69,28 @@ public:
     }
     void advance_to(char_type* p)
     {
-        BOOST_ASSERT(_pos <= p);
-        BOOST_ASSERT(p <= _end);
+        STRF_ASSERT(_pos <= p);
+        STRF_ASSERT(p <= _end);
         _pos = p;
     }
     void advance(std::size_t n)
     {
-        BOOST_ASSERT(pos() + n <= end());
+        STRF_ASSERT(pos() + n <= end());
         _pos += n;
     }
     void advance() noexcept
     {
-        BOOST_ASSERT(pos() < end());
+        STRF_ASSERT(pos() < end());
         ++_pos;
     }
     void require(std::size_t s)
     {
-        BOOST_ASSERT(s <= stringify::v0::min_size_after_recycle<char_type>());
+        STRF_ASSERT(s <= stringify::v0::min_size_after_recycle<char_type>());
         if (pos() + s > end())
         {
             recycle();
         }
-        BOOST_ASSERT(pos() + s <= end());
+        STRF_ASSERT(pos() + s <= end());
     }
     void ensure(std::size_t s)
     {
@@ -241,7 +240,7 @@ template <typename Outbuf, typename CharT>
 void outbuf_write_continuation(Outbuf& ob, const CharT* str, std::size_t len)
 {
     auto space = ob.size();
-    BOOST_ASSERT(space < len);
+    STRF_ASSERT(space < len);
     std::memcpy(ob.pos(), str, space * sizeof(CharT));
     str += space;
     len -= space;
@@ -332,7 +331,7 @@ inline void write
     , const stringify::v0::underlying_outbuf_char_type<CharSize>* str
     , const stringify::v0::underlying_outbuf_char_type<CharSize>* str_end )
 {
-    BOOST_ASSERT(str_end >= str);
+    STRF_ASSERT(str_end >= str);
     stringify::v0::detail::outbuf_write(ob, str, str_end - str);
 }
 
@@ -341,7 +340,7 @@ inline void write( stringify::v0::basic_outbuf<CharT>& ob
                  , const CharT* str
                  , const CharT* str_end )
 {
-    BOOST_ASSERT(str_end >= str);
+    STRF_ASSERT(str_end >= str);
     stringify::v0::detail::outbuf_write(ob, str, str_end - str);
 }
 
@@ -350,7 +349,7 @@ inline void write( stringify::v0::basic_outbuf_noexcept<CharT>& ob
                  , const CharT* str
                  , const CharT* str_end ) noexcept
 {
-    BOOST_ASSERT(str_end >= str);
+    STRF_ASSERT(str_end >= str);
     stringify::v0::detail::outbuf_write(ob, str, str_end - str);
 }
 
@@ -477,13 +476,13 @@ public:
     basic_cstr_writer(CharT* dest, CharT* dest_end)
         : basic_outbuf_noexcept<CharT>(dest, dest_end - 1)
     {
-        BOOST_ASSERT(dest < dest_end);
+        STRF_ASSERT(dest < dest_end);
     }
 
     basic_cstr_writer(CharT* dest, std::size_t len)
         : basic_outbuf_noexcept<CharT>(dest, dest + len - 1)
     {
-        BOOST_ASSERT(len != 0);
+        STRF_ASSERT(len != 0);
     }
 
     template <std::size_t N>

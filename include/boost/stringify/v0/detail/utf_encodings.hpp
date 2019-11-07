@@ -6,7 +6,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/stringify/v0/printer.hpp>
-#include <boost/assert.hpp>
 #include <algorithm>
 #include <cstring>
 
@@ -60,7 +59,7 @@ void repeat_sequence_continuation
     , simple_array<CharT, N> seq )
 {
     std::size_t space = ob.size() / N;
-    BOOST_ASSERT(space < count);
+    STRF_ASSERT(space < count);
 
     stringify::v0::detail::do_repeat_sequence(ob.pos(), space, seq);
     count -= space;
@@ -278,7 +277,7 @@ void utf8_to_utf32_transcode
                     ch32 = 0xFFFD;
                     break;
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     continue;
             }
         }
@@ -356,7 +355,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_to_utf32_size
                     ++size;
                     break;
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -460,7 +459,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_sanitize
                     break;
 
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -535,7 +534,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf8_sanitize_size
                     size += 3;
                     break;
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -617,7 +616,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_encode_fill
 
             default:
             {
-                BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::replace);
+                STRF_ASSERT(err_hdl == stringify::v0::encoding_error::replace);
                 stringify::v0::detail::simple_array<std::uint8_t, 3> seq
                     { 0xEF, 0xBF, 0xBD };
                 stringify::v0::detail::repeat_sequence(ob, count, seq);
@@ -730,7 +729,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf32_to_utf8_transcode
                     break;
 
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -783,7 +782,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf8_size
                     break;
 
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -863,7 +862,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf16_to_utf32_transcode
                     ch32 = 0xFFFD;
                     break;
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     continue;
             }
         }
@@ -916,7 +915,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_to_utf32_size
                     ++count;
                     break;
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -979,7 +978,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf16_sanitize
                     break;
 
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -1027,7 +1026,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf16_sanitize_size
                     ++count;
                     break;
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -1115,7 +1114,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf16_encode_fill
                 break;
 
             default:
-                BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::stop);
+                STRF_ASSERT(err_hdl == stringify::v0::encoding_error::stop);
                 throw_encoding_failure();
         }
     }
@@ -1170,7 +1169,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf32_to_utf16_transcode
                     break;
 
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -1206,7 +1205,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE std::size_t utf32_to_utf16_size
                     break;
 
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     break;
             }
         }
@@ -1264,7 +1263,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf32_sanitize
                         throw_encoding_failure();
                         return;
                     default:
-                        BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                        STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                         continue;
                 }
             }
@@ -1295,7 +1294,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf32_sanitize
                         throw_encoding_failure();
                         return;
                     default:
-                        BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                        STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                         continue;
                 }
             }
@@ -1348,7 +1347,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf32_encode_fill
             case stringify::v0::encoding_error::ignore:
                 return;
             default:
-                BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::replace);
+                STRF_ASSERT(err_hdl == stringify::v0::encoding_error::replace);
                 ch = 0xFFFD;
                 break;
         }
@@ -1459,7 +1458,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf8_to_utf16_transcode
                     *dest_it = 0xFFFD;
                     break;
                 default:
-                    BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                    STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                     --dest_it;
                     break;
             }
@@ -1617,7 +1616,7 @@ BOOST_STRINGIFY_STATIC_LINKAGE void utf16_to_utf8_transcode
                  }
 
                  default:
-                     BOOST_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
+                     STRF_ASSERT(err_hdl == stringify::v0::encoding_error::ignore);
                      break;
              }
         }

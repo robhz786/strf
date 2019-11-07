@@ -150,10 +150,10 @@ int main()
     int x = 255;
     std::size_t append_count = append(str) (x, u" in hexadecimal is ", ~strf::hex(x));
 
-    BOOST_ASSERT(str == "....255 in hexadecimal is 0xff");
+    assert(str == "....255 in hexadecimal is 0xff");
 
     // append_count is equal to the value returned by QStringAppender::finish()
-    BOOST_ASSERT(str.length() == (int)append_count + initial_length);
+    assert(str.length() == (int)append_count + initial_length);
 
     return 0;
 }

@@ -2,7 +2,6 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/assert.hpp>
 #include <boost/stringify.hpp>
 
 void sample()
@@ -14,7 +13,7 @@ void sample()
 
     auto str = strf::to_string("[", strf::range(array, ", "), "]");
 
-    BOOST_ASSERT(str == "[11, 22, 33]");
+    assert(str == "[11, 22, 33]");
     //]
 }
 
@@ -28,7 +27,7 @@ void sample2()
 
     auto str = strf::to_string("[", ~strf::hex(strf::range(array, ", ")), "]");
 
-    BOOST_ASSERT(str == "[0xfa, 0xfb, 0xfc]");
+    assert(str == "[0xfa, 0xfb, 0xfc]");
     //]
 }
 
@@ -41,7 +40,7 @@ void sample3()
 
     auto str = strf::to_string("[", +strf::fmt_range(array, " ;") > 4, "]");
 
-    BOOST_ASSERT(str == "[ +11 ; +22 ; +33]");
+    assert(str == "[ +11 ; +22 ; +33]");
     //]
 }
 

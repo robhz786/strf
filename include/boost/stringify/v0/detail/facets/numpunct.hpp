@@ -19,7 +19,7 @@ public:
     constexpr monotonic_grouping_impl(std::uint8_t groups_size)
         : _groups_size(groups_size)
     {
-        BOOST_ASSERT(_groups_size != 0);
+        STRF_ASSERT(_groups_size != 0);
     }
 
     constexpr monotonic_grouping_impl(const monotonic_grouping_impl&) = default;
@@ -48,7 +48,7 @@ public:
     str_grouping_impl(std::string grouping)
         : _grouping(std::move(grouping))
     {
-        BOOST_ASSERT(!_grouping.empty());
+        STRF_ASSERT(!_grouping.empty());
     }
 
     str_grouping_impl(const str_grouping_impl&) = default;
@@ -73,7 +73,7 @@ std::uint8_t* monotonic_grouping_impl::get_groups
     ( unsigned num_digits
     , std::uint8_t* groups_array ) const
 {
-    BOOST_ASSERT(_groups_size != 0);
+    STRF_ASSERT(_groups_size != 0);
     while(num_digits > _groups_size)
     {
         *groups_array = static_cast<std::uint8_t>(_groups_size);
@@ -87,7 +87,7 @@ std::uint8_t* monotonic_grouping_impl::get_groups
 BOOST_STRINGIFY_INLINE
 unsigned str_grouping_impl::get_thousands_sep_count(unsigned num_digits) const
 {
-    BOOST_ASSERT(!_grouping.empty());
+    STRF_ASSERT(!_grouping.empty());
     unsigned count = 0;
     for(auto ch : _grouping)
     {
@@ -111,7 +111,7 @@ BOOST_STRINGIFY_INLINE std::uint8_t* str_grouping_impl::get_groups
     ( unsigned num_digits
     , std::uint8_t* groups_array ) const
 {
-    BOOST_ASSERT(!_grouping.empty());
+    STRF_ASSERT(!_grouping.empty());
     for(auto ch : _grouping)
     {
         auto group_size = static_cast<unsigned>(ch);
@@ -259,7 +259,7 @@ public:
     unsigned groups( unsigned num_digits
                    , std::uint8_t* groups_array ) const override
     {
-        BOOST_ASSERT(num_digits <= 0xFF);
+        STRF_ASSERT(num_digits <= 0xFF);
         *groups_array = static_cast<std::uint8_t>(num_digits);
         return 1;
     }
@@ -399,7 +399,7 @@ public:
     unsigned groups( unsigned num_digits
                    , std::uint8_t* groups_array ) const override
     {
-        BOOST_ASSERT(num_digits <= 0xFF);
+        STRF_ASSERT(num_digits <= 0xFF);
         *groups_array = static_cast<std::uint8_t>(num_digits);
         return 1;
     }
