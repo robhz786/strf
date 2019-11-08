@@ -24,9 +24,6 @@ branches:
     - /fix\/.*/
     - /pr\/.*/
 
-script:
-  - ./ci/travis/build.sh
-
 #
 # Default toolsets in Ubuntu
 #
@@ -72,13 +69,28 @@ jobs:
       - COPY="all the environment settings from your job"
 
   include:
-    - { os: "linux", env: [ "CXX=g++-7", "CXX_STANDARD=14", CONFIG=Debug ], addons: *gcc-7     }
-    - { os: "linux", env: [ "CXX=g++-7", "CXX_STANDARD=17", CONFIG=Debug ], addons: *gcc-7     }
-    - { os: "linux", env: [ "CXX=g++-8", "CXX_STANDARD=14", CONFIG=Debug ], addons: *gcc-8     }
-    - { os: "linux", env: [ "CXX=g++-8", "CXX_STANDARD=20", CONFIG=Debug ], addons: *gcc-8     }
-    - { os: "linux", env: [ "CXX=g++-8", "CXX_STANDARD=20", CONFIG=Release ], addons: *gcc-8     }
-
+    - { os: "linux", env: [ "CXX=clang++-3", "CXX_STANDARD=14", CONFIG=Debug    ], addons: *clang-38 }
+    - { os: "linux", env: [ "CXX=clang++-8", "CXX_STANDARD=17", CONFIG=Debug    ], addons: *clang-8  }
+#    - { os: "linux", env: [ "CXX=g++-7", "CXX_STANDARD=14", CONFIG=Debug    ], addons: *gcc-7     }
+#    - { os: "linux", env: [ "CXX=g++-7", "CXX_STANDARD=17", CONFIG=Debug    ], addons: *gcc-7     }
+#    - { os: "linux", env: [ "CXX=g++-8", "CXX_STANDARD=14", CONFIG=Debug    ], addons: *gcc-8     }
+#    - { os: "linux", env: [ "CXX=g++-8", "CXX_STANDARD=20", CONFIG=Debug    ], addons: *gcc-8     }
+#    - { os: "linux", env: [ "CXX=g++-8", "CXX_STANDARD=20", CONFIG=Release  ], addons: *gcc-8     }
+    - os: linux
+      env: [ "COMMENT=codecov.io", "CXX=g++-7", "CXX_STANDARD=14", GCOV=gcov-7 ]
+      addons: *gcc-7
+      script
+        - pushd /tmp && git clone https://github.com/linux-test-project/lcov.git && export PATH=/tmp/lcov/bin:$PATH && which lcov && lcov --version && popd
+        - ci/travis/codecov_build.sh
+    - os
+      env: [ "COMMENT=ubsan", "CXX=g++-8", "CXX_STANDARD=14" ]
+      addons: *gcc-8
+      script
+        - ci/travis/ubsan_build.sh
 
 notifications:
   email:
     false
+
+script:
+  - ./ci/travis/build.sh

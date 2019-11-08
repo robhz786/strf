@@ -9,7 +9,7 @@ cmake -A %ARCH% ^
     -DSTRF_BUILD_TESTS=ON ^
     -DSTRF_BUILD_EXAMPLES=ON ^
     -G "%GENERATOR%"  .. ^
-  && cmake --build. --config %CONFIG%
+  && cmake --build . --config %CONFIG%
 
 
 

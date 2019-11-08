@@ -80,7 +80,6 @@ environment:
 
 build_script:
   - ci\appveyor\build.bat
-  - cd cmake_build && cmake --build . --config %CONFIG%
 
 test_script:
   - ctest -C %CONFIG%
