@@ -62,6 +62,7 @@ anchors:
   gcc-6:    &gcc-6    { apt: { packages: [ "g++-6"           ], sources: [ "ubuntu-toolchain-r-test"   ] } }
   gcc-7:    &gcc-7    { apt: { packages: [ "g++-7"           ], sources: [ "ubuntu-toolchain-r-test"   ] } }
   gcc-8:    &gcc-8    { apt: { packages: [ "g++-8"           ], sources: [ "ubuntu-toolchain-r-test"   ] } }
+  gcc-9:    &gcc-9    { apt: { packages: [ "g++-9"           ], sources: [ "ubuntu-toolchain-r-test"   ] } }
 
 jobs:
   allow_failures:
@@ -69,23 +70,26 @@ jobs:
       - COPY="all the environment settings from your job"
 
   include:
-    - { os: "linux", env: [ "CXX=clang++-3", "CXX_STANDARD=14", CONFIG=Debug    ], addons: *clang-38 }
+    - { os: "linux", env: [ "CXX=clang++-3.8", "CXX_STANDARD=14", CONFIG=Debug    ], addons: *clang-38 }
     - { os: "linux", env: [ "CXX=clang++-8", "CXX_STANDARD=17", CONFIG=Debug    ], addons: *clang-8  }
-#    - { os: "linux", env: [ "CXX=g++-7", "CXX_STANDARD=14", CONFIG=Debug    ], addons: *gcc-7     }
-#    - { os: "linux", env: [ "CXX=g++-7", "CXX_STANDARD=17", CONFIG=Debug    ], addons: *gcc-7     }
-#    - { os: "linux", env: [ "CXX=g++-8", "CXX_STANDARD=14", CONFIG=Debug    ], addons: *gcc-8     }
-#    - { os: "linux", env: [ "CXX=g++-8", "CXX_STANDARD=20", CONFIG=Debug    ], addons: *gcc-8     }
-#    - { os: "linux", env: [ "CXX=g++-8", "CXX_STANDARD=20", CONFIG=Release  ], addons: *gcc-8     }
+    - { os: "linux", env: [ "CXX=g++-7", "CXX_STANDARD=14", CONFIG=Debug    ], addons: *gcc-7     }
+    - { os: "linux", env: [ "CXX=g++-7", "CXX_STANDARD=17", CONFIG=Debug    ], addons: *gcc-7     }
+    - { os: "linux", env: [ "CXX=g++-8", "CXX_STANDARD=14", CONFIG=Debug    ], addons: *gcc-8     }
+    - { os: "linux", env: [ "CXX=g++-8", "CXX_STANDARD=20", CONFIG=Debug    ], addons: *gcc-8     }
+    - { os: "linux", env: [ "CXX=g++-8", "CXX_STANDARD=20", CONFIG=Release  ], addons: *gcc-8     }
     - os: linux
-      env: [ "COMMENT=codecov.io", "CXX=g++-7", "CXX_STANDARD=14", GCOV=gcov-7 ]
+      before_install:
+        - sudo apt-get update
+        - sudo apt-get -y install libperlio-gzip-perl libjson-perl
+      env: [ "COMMENT=codecov.io", "CC=gcc-7", CXX=g++-7", "CXX_STANDARD=14", GCOV=gcov-7 ]
       addons: *gcc-7
-      script
+      script:
         - pushd /tmp && git clone https://github.com/linux-test-project/lcov.git && export PATH=/tmp/lcov/bin:$PATH && which lcov && lcov --version && popd
         - ci/travis/codecov_build.sh
-    - os
-      env: [ "COMMENT=ubsan", "CXX=g++-8", "CXX_STANDARD=14" ]
+    - os: linux1
+      env: [ "COMMENT=ubsan", "CC=gcc-8", "CXX=g++-8", "CXX_STANDARD=14", CONFIG=Debug ]
       addons: *gcc-8
-      script
+      script:
         - ci/travis/ubsan_build.sh
 
 notifications:

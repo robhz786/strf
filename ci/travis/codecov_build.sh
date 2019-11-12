@@ -2,6 +2,7 @@
 
 set -ex
 
+root_dir="$( pwd -P )"
 src_dir="$( cd include; pwd -P )"
 
 mkdir cmake_build
@@ -20,12 +21,12 @@ cmake -DSTRF_BUILD_TESTS=ON \
 
 cmake --build .
 
-lcov --initial --base-directory $script_dir \
-     --directory $src_dir --capture --output-file all.info
+lcov --gcov-tool=$GCOV --initial --base-directory $script_dir \
+     --directory=$root_dir --capture --output-file all.info
 ctest
 
 lcov --gcov-tool=$GCOV --rc lcov_branch_coverage=1 \
-     --base-directory $script_dir --directory $src_dir \
+     --base-directory $script_dir --directory=$root_dir \
      --capture --output-file all.info
 lcov --gcov-tool=$GCOV --rc lcov_branch_coverage=1 \
      --extract all.info "*strf/*" --output-file coverage.info
