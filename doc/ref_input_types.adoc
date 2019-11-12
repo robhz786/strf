@@ -11,9 +11,7 @@ http://www.boost.org/LICENSE_1_0.txt
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename CharT, typename FPack>
 /{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack& fp, const CharT* str);
@@ -28,15 +26,13 @@ template <typename CharT, typename FPack, typename Traits>
     ( const FPack& fp
     , const std::basic_string_view<CharT, Traits>& str );
 
-}}}
+} // namespace strf
 ----
 
 === Formatted string
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename CharT>
 using string_with_format = {value_with_format}< /{asterisk} __implementation-defined__ {asterisk}/
@@ -63,16 +59,14 @@ template <typename CharT, typename FPack, typename CharIn>
     ( const FPack&
     , const string_with_format<CharT>& );
 
-}}}
+} // namespace strf
 ----
 
 === Encoded String
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename CharIn>
 class cv_string;  // __implementation-defined__
@@ -107,9 +101,7 @@ cv_string_with_encoding<CharIn> cv
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename CharOut, typename FPack, typename CharIn>
 /{asterisk} __implementation-defined__ {asterisk}/ make_printer
@@ -119,16 +111,14 @@ template <typename CharOut, typename FPack, typename CharIn>
 /{asterisk} __implementation-defined__ {asterisk}/ make_printer
     ( const FPack& fp, cv_string_with_encoding<CharIn> str );
 
-}}}
+} // namespace strf
 ----
 
 === Formatted encoded string
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename CharIn>
 using cv_string_with_format
@@ -138,26 +128,22 @@ template <typename CharIn>
 using cv_string_with_format_and_encoding
     = {value_with_format}<cv_string_with_encoding<CharIn>, {alignment_format}>;
 
-}}}
+} // namespace strf
 ----
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename CharIn>
 cv_string_with_format<CharIn> make_fmt(tag, cv_string<CharIn> cv_str) noexcept;
 
-}}}
+} // namespace strf
 ----
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 cv_string_with_format<char8_t>  fmt_cv(const char* str) noexcept;
 cv_string_with_format<char8_t>  fmt_cv(const char8_t* str) noexcept;
@@ -188,14 +174,12 @@ cv_string_with_format_and_encoding<CharIn> fmt_cv
     ( std::basic_string<CharIn, Traits, Allocator> str
     , encoding<CharIn> enc ) noexcept;
 
-}}}
+} // namespace strf
 ----
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename CharOut, typename FPack, typename CharIn>
 /{asterisk} __implementation-defined__ {asterisk}/ make_printer
@@ -207,16 +191,14 @@ template <typename CharOut, typename FPack, typename CharIn>
     ( const FPack& fp
     , cv_string_with_format_and_encoding<CharIn> str );
 
-}}}
+} // namespace strf
 ----
 
 === Single character
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename CharT, typename FPack>
 /{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack& fp, CharT ch);
@@ -236,7 +218,7 @@ template <typename CharT, typename FPack>
 template <typename CharT, typename FPack>
 /{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack& fp, wchar_t ch);
 
-}}}
+} // namespace strf
 ----
 NOTE: These `make_printer` overloads above emit a compilation error ( through a `static_assert`) if `decltype(ch)` is not `CharT`.
 
@@ -244,9 +226,7 @@ NOTE: These `make_printer` overloads above emit a compilation error ( through a 
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename CharT>
 using char_with_format = {value_with_format}< char_tag<CharT>
@@ -263,7 +243,7 @@ template <typename CharOut, typename FPack, typename CharIn>
 /{asterisk} __implementation-defined__ {asterisk}/ make_printer( const FPack& fp
                                          , char_with_format<CharIn> ch );
 
-}}}
+} // namespace strf
 ----
 
 NOTE: This `make_printer` overload emits a compilation error ( through a `static_assert` ) if `CharIn` is different from `CharOut`.
@@ -272,9 +252,7 @@ NOTE: This `make_printer` overload emits a compilation error ( through a `static
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename CharT, typename FPack>
 /{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack&, short);
@@ -300,16 +278,14 @@ template <typename CharT, typename FPack>
 template <typename CharT, typename FPack>
 /{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack&, unsigned long long);
 
-}}}
+} // namespace strf
 ----
 
 === Formatted integer
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename IntT>
 struct int_tag
@@ -318,10 +294,10 @@ struct int_tag
 };
 
 template <typename IntT, int Base = 10, bool Align = false>
-using int_with_format = stringify::v0::value_with_format
-    < stringify::v0::int_tag<IntT>
-    , stringify::v0::{int_format}<Base>
-    , stringify::v0::{alignment_format_q}<Align> >;
+using int_with_format = strf::value_with_format
+    < strf::int_tag<IntT>
+    , strf::{int_format}<Base>
+    , strf::{alignment_format_q}<Align> >;
 
 int_with_format<short>      make_fmt(tag, short);
 int_with_format<int>        make_fmt(tag, int);
@@ -336,16 +312,14 @@ int_with_format<unsigned long long > make_fmt(tag, unsigned long long);
 template <typename CharT, typename FPack, typename IntT, int Base, bool Align>
 /{asterisk} __implementation-defined__ {asterisk}/ make_printer( const FPack&
                                          , int_with_format<IntT, Base, Align> );
-}}}
+} // namespace strf
 ----
 
 === Floating point
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename CharT, typename FPack>
 /{asterisk} __implementation-defined__ {asterisk}/ make_printer(const FPack&, float);
@@ -357,16 +331,14 @@ template <typename CharT, typename FPack>
 template <typename CharT, typename FPack>
 void make_printer(const FPack&, long double) = delete;
 
-}}}
+} // namespace strf
 ----
 
 === Formatted floating point
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template<typename FloatT, bool Align = false>
 using float_with_format = {value_with_format}< FloatT
@@ -389,7 +361,7 @@ template <typename CharT, typename FPack, bool Align>
 void make_printer( const FPack&
                  , float_with_format<long double, Align>) = delete;
 
-}}}
+} // namespace strf
 ----
 
 === Range
@@ -398,9 +370,7 @@ void make_printer( const FPack&
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename Iterator>
 struct range_p { /{asterisk} __implementation-defined__ {asterisk}/ };
@@ -422,7 +392,7 @@ range_p<const T*> range(T (&array)[N]);
 template <typename CharT, typename FPack, typename Iterator>
 /{asterisk} __implementation-defined__ {asterisk}/ make_printer( const FPack&
                                          , range_p<Iterator> r )
-}}}
+} // namespace strf
 ----
 
 ==== With separator
@@ -451,7 +421,7 @@ sep_range_p<const T*>  range(T (&array)[N], const CharT* separator);
 template <typename CharT, typename FPack, typename Iterator>
 /{asterisk} __implementation-defined__ {asterisk}/ make_printer( const FPack&
                                          , sep_range_p<Iterator, CharT> )
-}}}
+} // namespace strf
 ----
 
 === Formatted range
@@ -460,9 +430,7 @@ template <typename CharT, typename FPack, typename Iterator>
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template < typename Iterator
          , typename V  = typename std::iterator_traits<Iterator>::value_type
@@ -500,9 +468,7 @@ template < typename CharT
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 template < typename Iterator
          , typename CharT
          , typename V  = typename std::iterator_traits<Iterator>::value_type
@@ -540,7 +506,7 @@ template < typename CharT
 /{asterisk} __implementation-defined__ {asterisk}/ make_printer
     ( const FPack& fp
     , const value_with_format<sep_range_p<Iterator, CharT>, Fmts\... >& )
-}}}
+} // namespace strf
 ----
 
 === Join
