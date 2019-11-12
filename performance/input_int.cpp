@@ -1,6 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include "loop_timer.hpp"
 #include "fmt/format.h"
 #include "fmt/compile.h"
@@ -20,7 +20,6 @@
 
 int main()
 {
-    namespace strf = boost::stringify;
     char dest[1000];
     char* dest_end = dest + sizeof(dest);
     (void) dest_end;

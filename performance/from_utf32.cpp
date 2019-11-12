@@ -10,13 +10,11 @@
 #include <locale>
 #include <fstream>
 
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include "loop_timer.hpp"
 
 int main()
 {
-    namespace strf = boost::stringify::v0;
-
     std::u32string u32sample1(500, U'A');
     std::u32string u32sample2(500, U'\u0100');
     std::u32string u32sample3(500, U'\u0800');

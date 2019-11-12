@@ -2,24 +2,21 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify.hpp>
-#include <boost/assert.hpp>
+#include <strf.hpp>
 #include <iostream>
 
 void samples()
 {
     //[joins_example
-    namespace strf = boost::stringify::v0;
-
     auto str = strf::to_string
         ("---", strf::join_right(15) ("abc", "def", 123), "---");
 
-    BOOST_ASSERT(str == "---      abcdef123---");
+    assert(str == "---      abcdef123---");
 
 
     str = strf::to_string
         ("---", strf::join_center(15) ("abc", "def", 123), "---");
-    BOOST_ASSERT(str == "---   abcdef123   ---");
+    assert(str == "---   abcdef123   ---");
 
 
     str = strf::to_string
@@ -27,13 +24,13 @@ void samples()
         , strf::join_left(15, U'.') ("abc", strf::right("def", 5), 123)
         , "---" );
 
-    BOOST_ASSERT(str == "---abc  def123....---");
+    assert(str == "---abc  def123....---");
 
     str = strf::to_string
         ( "---"
         , strf::join_split(15, '.', 1) (strf::left("abc", 5), "def", 123)
         , "---" );
-    BOOST_ASSERT(str == "---abc  ....def123---");
+    assert(str == "---abc  ....def123---");
     //]
 }
 
@@ -75,9 +72,6 @@ void sample()
 //[ join_with_tr_string_part3
 
     // in your code:
-
-    namespace strf = boost::stringify::v0;
-
     std::string host_name = "boost.org";
     unsigned char ip_addr [4] = {146, 20, 110, 251};
 
@@ -88,7 +82,7 @@ void sample()
 
     if (get_current_language() == language::English)
     {
-        BOOST_ASSERT(str == "The IP address of boost.org is 146.20.110.251");
+        assert(str == "The IP address of boost.org is 146.20.110.251");
     }
 
 //]

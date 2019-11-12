@@ -3,7 +3,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <vector>
-#include <boost/detail/lightweight_test.hpp>
+#include <strf.hpp>
 
 //[ ipv4address_type
 namespace xxx {
@@ -18,9 +18,7 @@ struct ipv4address
 
 
 //[ make_printer_ipv4address
-#include <boost/stringify.hpp>
-
-namespace strf = boost::stringify::v0;
+#include <strf.hpp>
 
 namespace xxx {
 
@@ -49,7 +47,7 @@ void basic_sample()
 //[ ipv4_basic_sample
     xxx::ipv4address addr {{146, 20, 110, 251}};
     auto s = strf::to_string("The IP address of boost.org is ", addr);
-    BOOST_TEST(s == "The IP address of boost.org is 146.20.110.251");
+    assert(s == "The IP address of boost.org is 146.20.110.251");
 //]
 }
 
@@ -99,7 +97,7 @@ void sample_fmt_sample()
     xxx::ipv4address addr {{146, 20, 110, 251}};
 
     auto s = strf::to_string("boost.org: ", strf::right(addr, 20, U'.'));
-    BOOST_ASSERT(s == "boost.org: ......146.20.110.251");
+    assert(s == "boost.org: ......146.20.110.251");
 //]
 
 
@@ -108,10 +106,10 @@ void sample_fmt_sample()
                                         , {{146, 20, 110, 251}}
                                         , {{110, 110, 110, 110}} };
     auto s2 = strf::to_string("[", strf::fmt_range(vec, " ;") > 16, "]");
-    BOOST_ASSERT(s2 == "[       127.0.0.1 ;  146.20.110.251 ; 110.110.110.110]");
+    assert(s2 == "[       127.0.0.1 ;  146.20.110.251 ; 110.110.110.110]");
 //]
     // auto s3 = strf::to_string("[", strf::range(vec, " ; "), "]");
-    // BOOST_ASSERT(s3 == "[127.0.0.1 ; 146.20.110.251 ; 110.110.110.110]");
+    // assert(s3 == "[127.0.0.1 ; 146.20.110.251 ; 110.110.110.110]");
 }
 
 
@@ -121,5 +119,5 @@ int main()
 {
     basic_sample();
     sample_fmt_sample();
-    return boost::report_errors();
+    return 0;
 }

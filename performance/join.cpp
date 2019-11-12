@@ -2,12 +2,11 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include "loop_timer.hpp"
 
 int main()
 {
-    namespace strf = boost::stringify;
     char dest[1000000];
     char* dest_end = dest + sizeof(dest);
     (void) dest_end;

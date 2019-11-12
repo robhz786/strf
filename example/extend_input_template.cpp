@@ -2,10 +2,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify.hpp>
-#include <boost/assert.hpp>
-
-namespace strf = boost::stringify::v0;
+#include <strf.hpp>
 
 namespace xxx
 {
@@ -46,7 +43,7 @@ int main()
 {
     yyy::derived<int> b{55};
     auto s = strf::to_string(b);
-    BOOST_ASSERT(s == "55");
+    assert(s == "55");
 
     return 0;
 }

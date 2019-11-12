@@ -11,13 +11,11 @@
 #include <codecvt>
 #include <fstream>
 
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include "loop_timer.hpp"
 
 int main()
 {
-    namespace strf = boost::stringify::v0;
-
     std::u16string u16sample1(500, u'A');
     std::u16string u16sample2(500, u'\u0100');
     std::u16string u16sample3(500, u'\u0800');
@@ -32,25 +30,25 @@ int main()
 
     std::cout << "\nUTF-16 to UTF-8\n";
 
-    PRINT_BENCHMARK("boost::stringify::write(u8dest)(u16sample1)")
+    PRINT_BENCHMARK("strf::write(u8dest)(u16sample1)")
     {
         auto err = strf::write(u8dest)(strf::cv(u16sample1));
         (void)err;
         clobber();
     }
-    PRINT_BENCHMARK("boost::stringify::write(u8dest)(u16sample2)")
+    PRINT_BENCHMARK("strf::write(u8dest)(u16sample2)")
     {
         auto err = strf::write(u8dest)(strf::cv(u16sample2));
         (void)err;
         clobber();
     }
-    PRINT_BENCHMARK("boost::stringify::write(u8dest)(u16sample3)")
+    PRINT_BENCHMARK("strf::write(u8dest)(u16sample3)")
     {
         auto err = strf::write(u8dest)(strf::cv(u16sample3));
         (void)err;
         clobber();
     }
-    PRINT_BENCHMARK("boost::stringify::write(u8dest)(u16sample4)")
+    PRINT_BENCHMARK("strf::write(u8dest)(u16sample4)")
     {
         auto err = strf::write(u8dest)(strf::cv(u16sample4));
         (void)err;

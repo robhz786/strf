@@ -4,8 +4,6 @@
 
 #include "test_utils.hpp"
 
-namespace strf = boost::stringify::v0;
-
 template <bool NoExcept, typename CharT >
 using string_maker = typename std::conditional
     < NoExcept

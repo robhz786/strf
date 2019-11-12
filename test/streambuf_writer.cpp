@@ -5,8 +5,6 @@
 #include "test_utils.hpp"
 #include <sstream>
 
-namespace strf = boost::stringify::v0;
-
 template <typename CharT>
 void test_successfull_writing()
 {

@@ -8,8 +8,6 @@
 #include <cstdlib>
 #include "test_utils.hpp"
 
-namespace strf = boost::stringify::v0;
-
 template <typename CharT>
 void test_narrow_successfull_writing()
 {

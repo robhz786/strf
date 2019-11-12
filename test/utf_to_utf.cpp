@@ -4,14 +4,8 @@
 
 #include "test_utils.hpp"
 
-#include <boost/stringify.hpp>
-
-#include <boost/hana/for_each.hpp>
-#include <boost/hana/tuple.hpp>
 #include <vector>
-
-namespace strf = boost::stringify::v0;
-namespace hana = boost::hana;
+#include <tuple>
 
 template <typename T>
 constexpr auto as_signed(const T& value)
@@ -208,29 +202,93 @@ void test_invalid_input
     }
 }
 
+
+template < typename Func
+         , typename EncIn >
+void combine_3(Func, EncIn)
+{
+}
+
+template < typename Func
+         , typename EncIn
+         , typename EncOut0
+         , typename ... EncOut >
+void combine_3(Func func, EncIn ein, EncOut0 eout0, EncOut ... eout)
+{
+    func(ein, eout0);
+    combine_3(func, ein, eout...);
+}
+
+template < typename Func
+         , typename Enc0 >
+void combine_2(Func func, Enc0 enc0)
+{
+    combine_3(func, enc0, enc0);
+}
+
+template < typename Func
+         , typename Enc0
+         , typename ... Enc >    
+void combine_2(Func func, Enc0 enc0, Enc... enc)
+{
+    combine_3(func, enc0, enc0, enc...);
+}
+
+template < typename Func
+         , typename EoutTuple
+         , std::size_t ... I >
+void combine(Func, const EoutTuple&, std::index_sequence<I...> )
+{
+}
+    
+template < typename Func
+         , typename EoutTuple
+         , std::size_t ... I
+         , typename Enc0
+         , typename ... Enc >
+void combine( Func func
+            , const EoutTuple& out_encodings
+            , std::index_sequence<I...> iseq
+            , Enc0 enc0
+            , Enc ... enc )
+          
+{
+    combine_2(func, enc0, std::get<I>(out_encodings)...);
+    combine(func, out_encodings, iseq, enc...);
+}
+
+template < typename Func, typename Tuple, std::size_t ... I >
+void for_all_combinations(Func func, const Tuple& encodings, std::index_sequence<I...> iseq)
+{
+    combine(func, encodings, iseq, std::get<I>(encodings)...);
+}
+
+template < typename Tuple, typename Func >
+void for_all_combinations(const Tuple& encodings, Func func)
+{
+    constexpr std::size_t tsize = std::tuple_size<Tuple>::value;
+    for_all_combinations(func, encodings, std::make_index_sequence<tsize>());
+}
+
+
 int main()
 {
-    auto encodings = hana::make_tuple
+    const auto encodings = std::make_tuple
         ( strf::utf8<char>(), strf::utf16<char16_t>()
         , strf::utf32<char32_t>(), strf::wchar_encoding());
 
-    hana::for_each(encodings, [&](const auto& ein){
-            hana::for_each(encodings, [&](const auto& eout) {
-                    test_valid_input(ein, eout);
-                });
-        });
+    for_all_combinations
+        ( encodings
+        , [](auto ein, auto eout){ test_valid_input(ein, eout); } );
 
-    hana::for_each(encodings, [&](const auto& ein){
-            hana::for_each(encodings, [&](const auto& eout) {
-                    test_allowed_surrogates(ein, eout);
-                });
-        });
+    for_all_combinations
+        ( encodings
+        , [](auto ein, auto eout){ test_allowed_surrogates(ein, eout); } );
 
-    hana::for_each(encodings, [&](const auto& ein){
-            hana::for_each(encodings, [&](const auto& eout) {
-                    test_invalid_input(ein, eout);
-                });
-        });
+    for_all_combinations
+        ( encodings
+        , [](auto ein, auto eout){ test_invalid_input(ein, eout); } );
 
+  
     return boost::report_errors();
 }

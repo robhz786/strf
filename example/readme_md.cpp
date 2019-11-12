@@ -2,25 +2,22 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 
 #if ! defined(__cpp_char8_t)
 
-namespace boost{ namespace stringify{ inline namespace v0{
+namespace strf {
 constexpr auto to_u8string = to_string;
-}}}
+}
 
 #endif
 
 #include <cassert>
 #include <iostream>
-#include <boost/stringify.hpp> // The whole library is included in this header
+#include <strf.hpp> // The whole library is included in this header
 
 void samples()
 {
-    namespace strf = boost::stringify::v0; // Everything is inside this namespace.
-                                           // ( v0 is an inline namespace ).
-
     // basic example:
     int value = 255;
     std::string s = strf::to_string(value, " in hexadecimal is ", strf::hex(value));

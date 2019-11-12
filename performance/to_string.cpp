@@ -6,15 +6,13 @@
 
 #include <iostream>
 #include <sstream>
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include "loop_timer.hpp"
 #include "fmt/format.h"
 #include <climits>
 
 int main()
 {
-    namespace strf = boost::stringify;
-
     PRINT_BENCHMARK("strf::to_string.reserve_calc() (\"Hello \", \"World\", \"!\")")
     {
         auto str = strf::to_string.reserve_calc()("Hello ", "World", "!");

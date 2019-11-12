@@ -1,8 +1,6 @@
-#define BOOST_STRINGIFY_SEPARATE_COMPILATION
-#include <boost/stringify.hpp>
+#define STRF_SEPARATE_COMPILATION
+#include <strf.hpp>
 #include "args.hpp"
-
-namespace strf = boost::stringify;
 
 void FUNCTION_NAME (int)
 {

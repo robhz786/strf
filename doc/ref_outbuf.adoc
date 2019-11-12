@@ -21,9 +21,7 @@ Return value:: Implementation-defined value greater than or equal to 64.
 
 [source,cpp]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <std::size_t CharSize>
 class underlying_outbuf;
@@ -81,7 +79,7 @@ template <std::size_t CharSize>
 void put( underlying_outbuf<CharSize>& ob
         , underlying_outbuf_char_type<CharSize> ch );
 
-}}} // namespace boost::stringify::v0
+} // namespace strf
 ----
 
 ==== Member types
@@ -300,9 +298,7 @@ Effect:: Same as `write(ob, data, data + data_size)`
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename CharT>
 class basic_outbuf: private {underlying_outbuf}<sizeof(CharT)>
@@ -368,7 +364,7 @@ void write(basic_outbuf<wchar_t>& ob, const wchar_t* cstr);
 template <typename CharT>
 void put(basic_outbuf<CharT>& ob, CharT ch);
 
-}}} // namespace boost::stringify::v0
+} // namespace strf
 ----
 
 ==== Public member functions
@@ -546,9 +542,7 @@ Effect:: Same as `write(ob, wcstr, std::wstrlen(wcstr))`
 
 [source,cpp]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename CharT>
 class basic_outbuf_noexcept: public basic_outbuf<CharT>
@@ -571,7 +565,7 @@ using u32outbuf_noexcept   = basic_outbuf_noexcept<char32_t>;
 using woutbuf_noexcept     = basic_outbuf_noexcept<wchar_t>;
 using bin_outbuf_noexcept  = basic_outbuf_noexcept<std::byte>;
 
-}}} // namespace boost::stringify::v0
+} // namespace strf
 ----
 
 [[basic_cstr_writer]]
@@ -579,9 +573,7 @@ using bin_outbuf_noexcept  = basic_outbuf_noexcept<std::byte>;
 
 [source,cpp]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename CharT>
 class basic_cstr_writer final: public basic_outbuf_noexcept<CharT>
@@ -602,7 +594,7 @@ public:
     result finish();
 };
 
-}}} // namespace boost::stringify::v0
+} // namespace strf
 ----
 
 ==== Public member function
@@ -672,9 +664,7 @@ Postconditions::
 ==== Synopsis
 [source,cpp]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
@@ -696,7 +686,7 @@ using u32string_maker = basic_string_maker<char32_t>;
 using wstring_maker   = basic_string_maker<wchar_t>;
 using u8string_maker  = basic_string_maker<char8_t>;
 
-}}} // namespace boost::stringify::v0
+} // namespace strf
 ----
 ==== Public member functions
 
@@ -730,9 +720,7 @@ Postconditions:: `good() == false`
 ==== Synopsis
 [source,cpp]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
@@ -753,7 +741,7 @@ using u16string_appender = basic_string_appender<char16_t>;
 using u32string_appender = basic_string_appender<char32_t>;
 using wstring_appender   = basic_string_appender<wchar_t>;
 
-}}} // namespace boost::stringify::v0
+} // namespace strf
 ----
 ==== Public member functions
 
@@ -787,9 +775,7 @@ Postcondition:: `good() == false`
 ==== Synopsis
 [source,cpp]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename CharT, typename Traits = std::char_traits<CharT> >
 class basic_streambuf_writer final: public basic_outbuf<CharT>
@@ -813,7 +799,7 @@ using streambuf_writer
 using wstreambuf_writer
     = basic_streambuf_writer<wchar_t, std::char_traits<wchar_t> >;
 
-}}} // namespace boost::stringify::v0
+} // namespace strf
 ----
 ==== Public member functions
 
@@ -844,9 +830,7 @@ Return value::
 ==== Synopsis
 [source,cpp]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename CharT>
 class narrow_cfile_writer final: public basic_outbuf_noexcept<CharT>
@@ -862,7 +846,7 @@ public:
     result finish();
 };
 
-}}} // namespace boost::stringify::v0
+} // namespace strf
 ----
 ==== Public member functions
 [source,cpp]
@@ -893,9 +877,7 @@ Return value::
 ==== Synopsis
 [source,cpp]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename CharT>
 class wide_cfile_writer final: public basic_outbuf_noexcept<CharT>
@@ -911,7 +893,7 @@ public:
     result finish();
 };
 
-}}} // namespace boost::stringify::v0
+} // namespace strf
 ----
 ==== Public member functions
 

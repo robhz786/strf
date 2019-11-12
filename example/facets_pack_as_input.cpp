@@ -2,14 +2,12 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 
 
 void sample1()
 {
     //[ facets_pack_input
-    namespace strf = boost::stringify::v0;
-
     auto str = strf::to_string.facets(strf::monotonic_grouping<10>(1))
         ( 10000
         , "  "
@@ -22,7 +20,7 @@ void sample1()
             , strf::hex(0x10000)
             , " }" ) );
 
-    BOOST_ASSERT(str == "1,0,0,0,0  10000  { 10,000  1'0000 }");
+    assert(str == "1,0,0,0,0  10000  { 10,000  1'0000 }");
     //]
 
 }
@@ -30,8 +28,6 @@ void sample1()
 void sample2()
 {
     //[ facets_pack_input_2
-    namespace strf = boost::stringify::v0;
-
     auto fp = strf::pack
         ( strf::monotonic_grouping<10>(3)
         , strf::monotonic_grouping<16>(4).thousands_sep('\'') );
@@ -50,21 +46,20 @@ void sample2()
                   ("  { ", 10000, " }")
             , " }" ) );
 
-    BOOST_ASSERT(str == "1,0,0,0,0  10000  { 10,000  1'0000  { 1.00.00 } }");
+    assert(str == "1,0,0,0,0  10000  { 10,000  1'0000  { 1.00.00 } }");
     //]
 }
 
 void sample3()
 {
     //[ facets_pack_input_in_tr_string
-    namespace strf = boost::stringify::v0;
     auto str = strf::to_string
         .tr( "{} -- {} -- {}"
            , "aaa"
            , strf::facets()("bbb", "ccc", "ddd")
            , "eee" );
 
-    BOOST_ASSERT(str == "aaa -- bbbcccddd -- eee");
+    assert(str == "aaa -- bbbcccddd -- eee");
     //]
 }
 

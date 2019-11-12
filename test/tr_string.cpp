@@ -2,13 +2,11 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include "test_utils.hpp"
 
 int main()
 {
-    namespace strf = boost::stringify::v0;
-
     // positional argument and automatic arguments
     TEST("0 2 1 2 11")
         .tr( "{ } {2} {} {} {11}"

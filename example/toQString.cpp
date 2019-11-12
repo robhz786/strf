@@ -3,10 +3,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <QString>
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include <climits>
-
-namespace strf = boost::stringify::v0;
 
 class QStringCreator: public strf::basic_outbuf<char16_t>
 {
@@ -97,7 +95,7 @@ int main()
 {
     int x = 255;
     QString str = toQString(x, u" in hexadecimal is ", ~strf::hex(x));
-    BOOST_ASSERT(str == "255 in hexadecimal is 0xff");
+    assert(str == "255 in hexadecimal is 0xff");
 
     return 0;
 }

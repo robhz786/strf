@@ -3,10 +3,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include <vector>
-
-namespace strf = boost::stringify::v0;
 
 struct fcategory;
 

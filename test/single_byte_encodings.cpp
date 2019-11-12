@@ -6,9 +6,7 @@
 
 #include <string>
 #include <algorithm>
-#include <boost/stringify.hpp>
-
-namespace strf = boost::stringify::v0;
+#include <strf.hpp>
 
 std::string make_str_0_to_xff()
 {

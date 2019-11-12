@@ -167,9 +167,7 @@ Compile-time requirements:::
 ==== Synopsis
 [source,cpp,subs=normal]
 ----
-namespace boost{
-namespace stringify{
-inline namespace v0 {
+namespace strf {
 
 template <template <class> class Filter, typename FPE>
 class constrained_fpe
@@ -187,7 +185,7 @@ private:
     FPE element; // exposition only;
 };
 
-}}}
+} // namespace strf
 ----
 
 ==== Member functions

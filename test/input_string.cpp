@@ -3,12 +3,10 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 
 int main()
 {
-    namespace strf = boost::stringify::v0;
-
     {
         TEST("   abc")   ( strf::right("abc", 6) );
         TEST("abc...")   ( strf::left    ("abc", 6, '.') );
@@ -57,7 +55,7 @@ int main()
         TEST(L"   abc")  ( strf::right(abc, 6) );
     }
 
-#if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
+#if defined(STRF_HAS_STD_STRING_VIEW)
 
     {
         std::string_view abc{"abcdef", 3};

@@ -10,14 +10,12 @@
 #include <locale>
 #include <fstream>
 
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include "loop_timer.hpp"
 
 
 int main()
 {
-    namespace strf = boost::stringify::v0;
-
     std::u16string u16sample1(500, u'A');
     std::u16string u16sample4;
     for(int i = 0; i < 500; ++i) u16sample4.append(u"\U00010000");

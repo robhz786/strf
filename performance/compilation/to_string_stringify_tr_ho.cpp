@@ -1,7 +1,5 @@
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include "args.hpp"
-
-namespace strf = boost::stringify;
 
 void FUNCTION_NAME (std::string& out)
 {

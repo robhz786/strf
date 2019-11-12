@@ -2,17 +2,14 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 
 void sample_hex()
 {
     //[ trivial_hex_sample
-
-    namespace strf = boost::stringify::v0;
-
     auto str = strf::to_string(255, "  ", strf::hex(255));
 
-    BOOST_ASSERT(str == "255  ff");
+    assert(str == "255  ff");
     //]
 }
 
@@ -20,8 +17,6 @@ void sample_hex()
 void samples()
 {
     //[ formatting_samples
-    namespace strf = boost::stringify::v0;
-
     auto str = strf::to_string
         ( strf::hex(255) > 5
         , '/', strf::center(255, 7, '.').hex()
@@ -29,7 +24,7 @@ void samples()
         , '/', strf::multi('a', 3) ^ 7
         , '/', +strf::fmt(255) );
 
-    BOOST_ASSERT(str == "   ff/..ff.../0x   ff/  aaa  /+255");
+    assert(str == "   ff/..ff.../0x   ff/  aaa  /+255");
     //]
 }
 

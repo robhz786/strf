@@ -29,9 +29,7 @@ type, and the types in `Fmts\...` defines the format functions.
 ==== Synopsis
 [source,cpp]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename ValueType, class ... Fmts>
 class value_with_format
@@ -66,7 +64,7 @@ public:
     constexpr const ValueType& value() const;
 };
 
-}}}
+} // namespace strf
 ----
 
 [[Formatter]]
@@ -125,9 +123,7 @@ with one template type parameter such that, given any types `T` and `U`:
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <bool Active>
 struct alignment_format_q
@@ -139,7 +135,7 @@ struct alignment_format_q
 using alignment_format       = alignment_format_q<true>;
 using empty_alignment_format = alignment_format_q<false>;
 
-}}}
+} // namespace strf
 ----
 
 [[alignment_format_fn]]
@@ -147,9 +143,7 @@ using empty_alignment_format = alignment_format_q<false>;
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <bool Active, class T>
 class alignment_format_fn;
@@ -202,7 +196,7 @@ public:
     constexpr converted_fmt fill(char32_t ch) const noexcept;
 };
 
-}}}
+} // namespace strf
 ----
 [[alignment_format_fn_constructors]]
 ===== Constructors
@@ -328,9 +322,7 @@ Return value:::
 ==== `alignment_format_data`
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 enum class text_alignment {left, right, split, center};
 
@@ -343,7 +335,7 @@ struct alignment_format_data
 
 constexpr bool operator==(alignment_format_data lhs, alignment_format_data rhs) noexcept;
 constexpr bool operator!=(alignment_format_data lhs, alignment_format_data rhs) noexcept;
-}}}
+} // namespace strf
 ----
 
 [[int_format]]
@@ -351,9 +343,7 @@ constexpr bool operator!=(alignment_format_data lhs, alignment_format_data rhs) 
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <class T, int Base>
 class int_format_fn;
@@ -362,19 +352,17 @@ template <int Base>
 struct int_format
 {
     template <typename T>
-    using fn = stringify::v0::int_format_fn<T, Base>;
+    using fn = strf::int_format_fn<T, Base>;
 };
 
-}}}
+} // namespace strf
 ----
 
 ==== `int_format_fn`
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 struct int_format_data
 {
@@ -411,7 +399,7 @@ public:
     constexpr /* see below {asterisk}/ dec() && noexcept; // decimal base
     constexpr /* see below {asterisk}/ oct() && noexcept; // octal base
 };
-}}}
+} // namespace strf
 ----
 [[int_format_fn_observers]]
 ===== Observers
@@ -501,9 +489,7 @@ Return value:::
 
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <class T, float Base>
 class float_format_fn;
@@ -515,15 +501,13 @@ struct float_format
     using fn = float_format_fn<T, Base>;
 };
 
-}}}
+} // namespace strf
 ----
 
 ==== `float_format_fn`
 [source,cpp,subs=normal]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <typename T>
 class float_format_fn
@@ -545,7 +529,7 @@ public:
     constexpr T&& sci() && noexcept;
     constexpr T&& fixed() && noexcept;
 };
-}}}
+} // namespace strf
 ----
 
 [[float_format_fn_constructors]]
@@ -618,9 +602,7 @@ Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
 ==== `float_format_data`
 [source,cpp]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 enum class float_notation{fixed, scientific, general};
 
@@ -634,7 +616,7 @@ struct float_format_data
 
 constexpr bool operator==(float_format_data lhs, float_format_data rhs) noexcept;
 constexpr bool operator!=(float_format_data lhs, float_format_data rhs) noexcept;
-}}}
+} // namespace strf
 ----
 
 [[float_notation]]
@@ -663,9 +645,7 @@ showpos:: Prints the positive sign `'+'` when the value is positive.
 === _Formatter_ `quantity_format`
 [source,cpp]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 struct quantity_format
 {
@@ -673,14 +653,12 @@ struct quantity_format
     using fn = quantity_format_fn<T>;
 };
 
-}}}
+} // namespace strf
 ----
 ==== `quantity_format_fn`
 [source,cpp]
 ----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
+namespace strf {
 
 template <class T>
 class quantity_format_fn
@@ -698,7 +676,7 @@ public:
     constexpr int count() const noexcept
 };
 
-}}}
+} // namespace strf
 ----
 ===== Constructors
 [source,cpp,subs=normal]
@@ -730,70 +708,4 @@ Return value::: `static_cast<T&&>(*this)`
 
 === Global format functions
 
-[source,cpp,subs=normal]
-----
-namespace boost {
-namespace stringify {
-inline namespace v0 {
-
-template <typename T>
-constexpr auto fmt(const T& value)
-{
-    return make_fmt(stringify::v0::tag{}, value);
-}
-
-template <typename T>
-constexpr auto hex(const T& value)
-{
-    return fmt(value).hex();
-}
-
-template <typename T>
-constexpr auto dec(const T& value)
-{
-    return fmt(value).dec();
-}
-
-template <typename T>
-constexpr auto oct(const T& value)
-{
-    return fmt(value).oct();
-}
-
-template <typename T>
-constexpr auto left(const T& value, int width)
-{
-    return fmt(value) < width;
-}
-
-template <typename T>
-constexpr auto right(const T& value, int width)
-{
-    return fmt(value) > width;
-}
-
-template <typename T>
-constexpr auto split(const T& value, int width)
-{
-    return fmt(value) % width;
-}
-
-template <typename T>
-constexpr auto center(const T& value, int width)
-{
-    return fmt(value) ^ width;
-}
-
-template <typename T>
-constexpr auto left(const T& value, int width, char32_t fill)
-{
-    return fmt(value).fill(fill) < width;
-}
-
-template <typename T>
-constexpr auto right(const T& value, int width, char32_t fill)
-{
-    return fmt(value).fill(fill) > width;
-
-}}}
-----
+include::ref_global_format_functions.adoc[]

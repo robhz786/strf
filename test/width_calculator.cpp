@@ -2,10 +2,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include "test_utils.hpp"
-
-namespace strf = boost::stringify::v0;
 
 int custom_width_calculator_function( int limit
                                     , const char32_t* it
