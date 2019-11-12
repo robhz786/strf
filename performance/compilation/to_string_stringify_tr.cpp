@@ -1,5 +1,5 @@
 #define STRF_SEPARATE_COMPILATION
-#include <stringify.hpp>
+#include <strf.hpp>
 #include "args.hpp"
 
 void FUNCTION_NAME (std::string& out)

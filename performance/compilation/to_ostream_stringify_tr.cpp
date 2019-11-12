@@ -1,5 +1,5 @@
 #define STRF_SEPARATE_COMPILATION
-#include <stringify.hpp>
+#include <strf.hpp>
 #include <ostream>
 #include "args.hpp"
 

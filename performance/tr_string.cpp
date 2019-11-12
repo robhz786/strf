@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <cstring>
 #include <climits>
-#include <stringify.hpp>
+#include <strf.hpp>
 #include "loop_timer.hpp"
 #include "fmt/format.h"
 

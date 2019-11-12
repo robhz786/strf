@@ -1,6 +1,6 @@
 
 cmake_minimum_required (VERSION 2.6)
-project (stringify_performance)
+project (strf_performance)
 
 foreach(
     x
@@ -14,7 +14,7 @@ foreach(
   add_executable(performance-${x}-header-only   ${x}.cpp)
   target_link_libraries(
     performance-${x}-header-only
-    stringify-header-only
+    strf-header-only
     fmt::fmt-header-only )
   set_target_properties(
     performance-${x}-header-only
@@ -25,7 +25,7 @@ foreach(
 #    DESTINATION "${BOOST_INSTALL_SUBDIR}/$<CONFIG>/benchmarks" )
 
   add_executable(performance-${x} ${x}.cpp)
-  target_link_libraries(performance-${x} fmt::fmt stringify)
+  target_link_libraries(performance-${x} fmt::fmt strf)
   set_target_properties(performance-${x} PROPERTIES OUTPUT_NAME ${x})
 #  install(
 #    TARGETS performance-${x}
@@ -49,7 +49,7 @@ foreach(
   add_executable(performance-${x}-header-only    ${x}.cpp)
   target_link_libraries(
     performance-${x}-header-only
-    stringify-header-only )
+    strf-header-only )
   set_target_properties(
     performance-${x}-header-only
     PROPERTIES OUTPUT_NAME
@@ -59,7 +59,7 @@ foreach(
     DESTINATION "${BOOST_INSTALL_SUBDIR}/$<CONFIG>/benchmarks")
 
   add_executable(performance-${x} ${x}.cpp)
-  target_link_libraries(performance-${x} stringify)
+  target_link_libraries(performance-${x} strf)
   set_target_properties(performance-${x} PROPERTIES OUTPUT_NAME ${x})
   install(
     TARGETS performance-${x}

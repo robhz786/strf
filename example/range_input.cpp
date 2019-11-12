@@ -2,7 +2,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <stringify.hpp>
+#include <strf.hpp>
+#include <vector>
 
 void sample()
 {
@@ -36,6 +37,20 @@ void sample3()
 
     assert(str == "[ +11 ; +22 ; +33]");
     //]
+}
+
+void sample4()
+{
+    
+std::vector<int> vec = { 11, 22, 33 };
+auto str1 = strf::to_string("[", +strf::fmt_range(vec, " ;") > 4, "]");
+assert(str1 == "[ +11 ; +22 ; +33]");
+
+auto str2 = strf::to_string
+    ( "["
+    , ~strf::fmt_range(vec, " / ").fill('.').hex() > 6,
+    " ]");
+assert(str2 == "[..0xfa / ..0xfb / ..0xfc]");
 }
 
 

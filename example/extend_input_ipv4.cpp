@@ -3,7 +3,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <vector>
-#include <stringify.hpp>
+#include <strf.hpp>
 
 //[ ipv4address_type
 namespace xxx {
@@ -18,7 +18,7 @@ struct ipv4address
 
 
 //[ make_printer_ipv4address
-#include <stringify.hpp>
+#include <strf.hpp>
 
 namespace xxx {
 

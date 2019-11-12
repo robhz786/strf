@@ -5,7 +5,7 @@
 #
 
 cmake_minimum_required (VERSION 3.5)
-project (stringify CXX)
+project (strf CXX)
 enable_testing()
 
 option(
@@ -31,51 +31,51 @@ set(
 
 set(CMAKE_INSTALL_PREFIX ${STRF_INSTALL_PREFIX})
 
-add_library(stringify-header-only INTERFACE)
-add_library(stringify STATIC build/stringify.cpp)
+add_library(strf-header-only INTERFACE)
+add_library(strf STATIC src/strf.cpp)
 
 target_compile_definitions(
-  stringify
+  strf
   PUBLIC STRF_SEPARATE_COMPILATION )
 
 target_include_directories(
-  stringify-header-only
+  strf-header-only
   INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:.> )
 target_include_directories(
-  stringify
+  strf
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:.> )
 
 set(features cxx_return_type_deduction cxx_decltype_auto)
-target_compile_features(stringify PUBLIC ${features})
-target_compile_features(stringify-header-only INTERFACE ${features})
+target_compile_features(strf PUBLIC ${features})
+target_compile_features(strf-header-only INTERFACE ${features})
 
 set_property(
-  TARGET stringify-header-only
-  PROPERTY EXPORT_NAME stringify-header-only)
+  TARGET strf-header-only
+  PROPERTY EXPORT_NAME strf-header-only)
 set_property(
-  TARGET stringify
-  PROPERTY EXPORT_NAME stringify)
+  TARGET strf
+  PROPERTY EXPORT_NAME strf)
 
 #install(
-#  TARGETS stringify-header-only stringify
-#  EXPORT stringify
+#  TARGETS strf-header-only strf
+#  EXPORT strf
 #  DESTINATION "${STRF_INSTALL_SUBDIR}/$<CONFIG>")
 #install(
-#  EXPORT stringify
-#  FILE stringify.cmake
+#  EXPORT strf
+#  FILE strf.cmake
 ##  NAMESPACE boost::
 #  DESTINATION "${STRF_INSTALL_SUBDIR}/cmake"  )
 #
 
 #install(
-#  FILES include/stringify.hpp
+#  FILES include/strf.hpp
 #  DESTINATION ./boost/ )
 #install(
-#  DIRECTORY include/stringify
+#  DIRECTORY include/strf
 #  DESTINATION ./boost/
 #  USE_SOURCE_PERMISSIONS )
 #

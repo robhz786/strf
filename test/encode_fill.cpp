@@ -3,7 +3,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "lightweight_test_label.hpp"
-#include <stringify.hpp>
+#include <strf.hpp>
 #include <vector>
 
 template <typename CharT>

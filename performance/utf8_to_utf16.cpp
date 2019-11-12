@@ -11,7 +11,7 @@
 #include <fstream>
 #include <codecvt>
 
-#include <stringify.hpp>
+#include <strf.hpp>
 #include "loop_timer.hpp"
 
 int main()

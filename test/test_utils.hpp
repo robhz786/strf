@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <iostream>
-#include <stringify.hpp>
+#include <strf.hpp>
 #include <cctype>
 
 #include "lightweight_test_label.hpp"

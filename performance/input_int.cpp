@@ -1,6 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <stringify.hpp>
+#include <strf.hpp>
 #include "loop_timer.hpp"
 #include "fmt/format.h"
 #include "fmt/compile.h"

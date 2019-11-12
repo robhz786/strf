@@ -1,7 +1,7 @@
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
-#include <stringify.hpp>
+#include <strf.hpp>
 
 #if ! defined(__cpp_char8_t)
 
@@ -12,7 +12,7 @@ constexpr auto to_u8string = to_string;
 #endif
 
 //[ first_example
-#include <stringify.hpp> // This is the only header you need to include.
+#include <strf.hpp> // This is the only header you need to include.
 
 void sample()
 {

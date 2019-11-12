@@ -5,7 +5,7 @@
 #
 
 cmake_minimum_required (VERSION 3.0)
-project (stringify_test)
+project (strf_test)
 
 # include_directories("../include")
 
@@ -40,8 +40,8 @@ foreach(
   add_executable(test-${t}-header-only   ${t}.cpp)
   add_executable(test-${t}-static-lib    ${t}.cpp)
 
-  target_link_libraries(test-${t}-header-only   stringify-header-only)
-  target_link_libraries(test-${t}-static-lib    stringify)
+  target_link_libraries(test-${t}-header-only   strf-header-only)
+  target_link_libraries(test-${t}-static-lib    strf)
 
   add_test(run-test-${t}-header-only   test-${t}-header-only)
   add_test(run-test-${t}-static-lib    test-${t}-static-lib)

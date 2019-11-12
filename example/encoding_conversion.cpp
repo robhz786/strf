@@ -2,7 +2,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <stringify.hpp>
+#include <strf.hpp>
 
 #include <iostream>
 
@@ -103,22 +103,24 @@ void allow_surrogates ()
     std::u16string input_utf16 {u"-----"};
     input_utf16[1] = 0xD800; // a surrogate character alone
 
-    auto str1 = strf::to_u8string(strf::cv(input_utf16));
+    // convert to UTF-8
+    auto str_strict = strf::to_u8string(strf::cv(input_utf16));
+    auto str_lax = strf::to_u8string
+        .facets(strf::surrogate_policy::lax)
+        ( strf::cv(input_utf16) );
 
-    auto str2 = strf::to_u8string .facets(strf::surrogate_policy::lax) (strf::cv(input_utf16));
-
-    assert(str1 == u8"-\uFFFD---");       // surrogate sanitized
-    assert(str2 == (const char8_t*)"-\xED\xA0\x80---"); // surrogate allowed
+    assert(str_strict == u8"-\uFFFD---");  // surrogate sanitized
+    assert(str_lax == (const char8_t*)"-\xED\xA0\x80---"); // surrogate allowed
 
     // now back to UTF-16
-    auto utf16_no_surr = strf::to_u16string(strf::cv(str2));
+    auto utf16_strict = strf::to_u16string(strf::cv(str_lax));
 
-    auto utf16_with_surr = strf::to_u16string
+    auto utf16_lax = strf::to_u16string
         .facets(strf::surrogate_policy::lax)
-        (strf::cv(str2));
+        ( strf::cv(str_lax) );
 
-    assert(utf16_no_surr == u"-\uFFFD\uFFFD\uFFFD---"); // surrogate sanitized
-    assert(utf16_with_surr[1] == 0xD800);               // surrogate recovered
+    assert(utf16_strict == u"-\uFFFD\uFFFD\uFFFD---"); // surrogate sanitized
+    assert(utf16_lax == input_utf16);                  // surrogate preserved
     //]
 
 }

@@ -5,7 +5,7 @@
 //[QStringAppender_def
 
 #include <QString>
-#include <stringify.hpp>
+#include <strf.hpp>
 #include <climits>
 
 class QStringAppender: public strf::basic_outbuf<char16_t>

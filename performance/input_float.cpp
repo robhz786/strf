@@ -1,7 +1,7 @@
 #define _USE_MATH_DEFINES
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <stringify.hpp>
+#include <strf.hpp>
 #include "loop_timer.hpp"
 #define FMT_USE_GRISU 1
 #include "fmt/compile.h"
