@@ -179,7 +179,7 @@ int main()
 
     print("\nUTF-16:\n");
 
-    PRINT_BENCHMARK("strf::write(u16dest) (strf::fmt_cv(u16str5) > 5)")
+    PRINT_BENCHMARK("strf::write(u16dest) (strf::fmt(u16str5) > 5)")
     {
         (void)strf::write(u16dest) (strf::fmt(u16str5) > 5);
     }

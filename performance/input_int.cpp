@@ -98,6 +98,8 @@ int main()
         clobber();
     }
 
+#else
+    std::cout << "\n";
 #endif// ! defined(HAS_CHARCONV)
 
     PRINT_BENCHMARK_N(10, "std::sprintf(dest, \"%d\", 25)")
@@ -207,7 +209,8 @@ int main()
         std::to_chars(dest + 80, dest_end, LLONG_MAX - 4);
         clobber();
     }
-
+#else
+    std::cout << '\n';
 #endif // defined(HAS_CHARCONV)
 
     PRINT_BENCHMARK_N(5, "std::sprintf(dest, \"%lld\", LLONG_MAX)")

@@ -7,6 +7,16 @@
 
 int main()
 {
+    char u8dest[100];
+    (void)strf::write(u8dest) (strf::fmt("hello") > 5);
+
+    (void)strf::write(u8dest)
+            .facets(strf::width_as_u32len<char>())
+        (strf::fmt("hello") > 5);
+    
+//    TEST("   abc")   ( strf::fmt("abc") > 6 );
+    
+/*    
     {
         TEST("   abc")   ( strf::right("abc", 6) );
         TEST("abc...")   ( strf::left    ("abc", 6, '.') );
@@ -92,7 +102,7 @@ int main()
         TEST("abcdefghi")    ( strf::fmt_cv(U"") > 0, strf::fmt_cv(abc)>0, strf::fmt_cv(def)<0, strf::fmt_cv(ghi)^0 );
 
     }
-
+*/
     return boost::report_errors();
 }
 

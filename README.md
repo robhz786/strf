@@ -18,7 +18,7 @@ Strf is C++ formatting library that
 
 # Compilers
 
-In its current state, Boost.Stringify is known to work with the following compilers:
+In its current state, Strf is known to work with the following compilers:
 
 * Clang 3.8 (with `--std=c++14` option )
 * GCC 7
