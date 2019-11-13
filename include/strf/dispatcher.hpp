@@ -265,9 +265,9 @@ public:
     {
     }
 
-    template < std::enable_if_t
-                 < std::is_copy_constructible<OutbufCreator>::value
-                 , int > = 0 >
+    template < typename T = OutbufCreator
+             , std::enable_if_t
+                 < std::is_copy_constructible<T>::value, int > = 0 >
     constexpr dispatcher_no_reserve( strf::detail::dispatcher_tag
                                    , const OutbufCreator& oc
                                    , const FPack& fp )
@@ -323,8 +323,9 @@ private:
 
     template < typename OtherFPack
              , typename ... FPE
+             , typename T = OutbufCreator
              , typename = std::enable_if_t
-                 < std::is_copy_constructible<OutbufCreator>::value > >
+                 < std::is_copy_constructible<T>::value > >
     constexpr dispatcher_no_reserve
         ( const dispatcher_no_reserve<OutbufCreator, OtherFPack>& other
         , detail::dispatcher_tag
@@ -383,9 +384,9 @@ public:
     {
     }
 
-    template < std::enable_if_t
-                 < std::is_copy_constructible<OutbufCreator>::value
-                 , int > = 0 >
+    template < typename T = OutbufCreator
+             , std::enable_if_t
+                 < std::is_copy_constructible<T>::value, int > = 0 >
     constexpr dispatcher_with_given_size( strf::detail::dispatcher_tag
                                         , std::size_t size
                                         , const OutbufCreator& oc
@@ -439,8 +440,9 @@ private:
 
     template < typename OtherFPack
              , typename ... FPE
+             , typename T = OutbufCreator
              , typename = std::enable_if_t
-                 < std::is_copy_constructible<OutbufCreator>::value > >
+                 < std::is_copy_constructible<T>::value > >
     constexpr dispatcher_with_given_size
         ( const dispatcher_with_given_size<OutbufCreator, OtherFPack>& other
         , detail::dispatcher_tag
@@ -501,9 +503,9 @@ public:
     {
     }
 
-    template < std::enable_if_t
-                 < std::is_copy_constructible<OutbufCreator>::value
-                 , int > = 0 >
+    template < typename T = OutbufCreator
+             , std::enable_if_t
+                 < std::is_copy_constructible<T>::value, int > = 0 >
     constexpr dispatcher_calc_size( strf::detail::dispatcher_tag
                                   , const OutbufCreator& oc
                                   , const FPack& fp )
@@ -559,8 +561,9 @@ private:
 
     template < typename OtherFPack
              , typename ... FPE
+             , typename T = OutbufCreator
              , typename = std::enable_if_t
-                 < std::is_copy_constructible<OutbufCreator>::value > >
+                 < std::is_copy_constructible<T>::value > >
     dispatcher_calc_size
         ( const dispatcher_calc_size<OutbufCreator, OtherFPack>& other
         , detail::dispatcher_tag

@@ -181,7 +181,7 @@ class width_preview<true>
 {
 public:
 
-    explicit width_preview(strf::width_t initial_width) noexcept
+    explicit constexpr width_preview(strf::width_t initial_width) noexcept
         : _width(initial_width)
     {}
 
@@ -236,7 +236,7 @@ class width_preview<false>
 {
 public:
 
-    width_preview() noexcept = default;;
+    constexpr width_preview() noexcept = default;;
     width_preview(const width_preview&) = delete;
 
     constexpr void subtract_width(strf::width_t)
@@ -268,7 +268,7 @@ template <>
 class size_preview<true>
 {
 public:
-    explicit size_preview(std::size_t initial_size = 0) noexcept
+    explicit constexpr size_preview(std::size_t initial_size = 0) noexcept
         : _size(initial_size)
     {
     }
@@ -295,7 +295,7 @@ class size_preview<false>
 {
 public:
 
-    size_preview() noexcept = default;
+    constexpr size_preview() noexcept = default;
     size_preview(const size_preview&) = delete;
 
     constexpr void add_size(std::size_t)

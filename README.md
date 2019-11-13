@@ -21,7 +21,7 @@ Strf is C++ formatting library that
 In its current state, Strf is known to work with the following compilers:
 
 * Clang 3.8 (with `--std=c++14` option )
-* GCC 7
+* GCC 6 (with `--std=c++14` option )
 * Visual Studio 2017 15.8
 
 # Overview

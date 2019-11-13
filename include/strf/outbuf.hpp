@@ -234,6 +234,9 @@ using basic_outbuf_noexcept_switch
 #if defined(__GNUC__)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Warray-bounds"
+#  if ! defined(__clang__)
+#    pragma GCC diagnostic ignored "-Wstringop-overflow"
+#  endif
 #endif
 
 template <typename Outbuf, typename CharT>
