@@ -27,8 +27,16 @@ public:
     {
     }
 
+#if defined(STRF_NO_CXX17_COPY_ELISION)
+
+    reservation_tester(reservation_tester&& other);
+
+#else // defined(STRF_NO_CXX17_COPY_ELISION)
+
     reservation_tester(const reservation_tester&) = delete;
     reservation_tester(reservation_tester&&) = delete;
+
+#endif // defined(STRF_NO_CXX17_COPY_ELISION)
 
     void recycle() override
     {
@@ -66,6 +74,14 @@ public:
         reservation_tester ob{size};
         strf::detail::write_args(ob, printers...);;
         return ob.finish();
+    }
+    reservation_tester create() const
+    {
+        return reservation_tester{};
+    }
+    reservation_tester create(std::size_t size) const
+    {
+        return reservation_tester{size};
     }
 };
 

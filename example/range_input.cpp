@@ -41,7 +41,7 @@ void sample3()
 
 void sample4()
 {
-    
+
 std::vector<int> vec = { 11, 22, 33 };
 auto str1 = strf::to_string("[", +strf::fmt_range(vec, " ;") > 4, "]");
 assert(str1 == "[ +11 ; +22 ; +33]");

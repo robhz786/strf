@@ -30,12 +30,9 @@ public:
 
     constexpr basic_cstr_writer_creator(const basic_cstr_writer_creator&) = default;
 
-    template <typename ... Printers>
-    finish_type write(const Printers& ... printers) const
+    basic_cstr_writer<CharT> create() const
     {
-        basic_cstr_writer<CharT> ob(_dest, _dest_end);
-        strf::detail::write_args(ob, printers...);;
-        return ob.finish();
+        return basic_cstr_writer<CharT>{_dest, _dest_end};
     }
 
 private:

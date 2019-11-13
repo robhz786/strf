@@ -23,8 +23,17 @@ public:
     }
 
     basic_streambuf_writer() = delete;
+
+#if defined(STRF_NO_CXX17_COPY_ELISION)
+
+    basic_streambuf_writer(basic_streambuf_writer&& other);
+
+#else  // defined(STRF_NO_CXX17_COPY_ELISION)
+
     basic_streambuf_writer(const basic_streambuf_writer&) = delete;
     basic_streambuf_writer(basic_streambuf_writer&&) = delete;
+
+#endif // defined(STRF_NO_CXX17_COPY_ELISION)
 
     ~basic_streambuf_writer()
     {
@@ -98,12 +107,9 @@ public:
 
     basic_streambuf_writer_creator(const basic_streambuf_writer_creator&) = default;
 
-    template <typename ... Printers>
-    _finish_type write(const Printers& ... printers) const
+    _outbuf_type create() const
     {
-        _outbuf_type ob(_dest);
-        strf::detail::write_args(ob, printers...);;
-        return ob.finish();
+        return _outbuf_type{_dest};
     }
 
 private:

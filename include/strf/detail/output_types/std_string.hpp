@@ -20,32 +20,37 @@ class basic_string_appender final: public strf::basic_outbuf<CharT>
 public:
 
     basic_string_appender(_string_type& str)
-        : strf::basic_outbuf<CharT>(nullptr, nullptr)
+        : strf::basic_outbuf<CharT>(_buf, _buf_size)
         , _str(str)
     {
-        this->set_pos(buf_begin());
-        this->set_end(buf_end());
     }
     basic_string_appender( _string_type& str
-                           , std::size_t size )
-        : strf::basic_outbuf<CharT>(nullptr, nullptr)
+                         , std::size_t size )
+        : strf::basic_outbuf<CharT>(_buf, _buf_size)
         , _str(str)
     {
-        this->set_pos(buf_begin());
-        this->set_end(buf_end());
+        _str.reserve(size);
     }
+
+#if defined(STRF_NO_CXX17_COPY_ELISION)
+
+    basic_string_appender(basic_string_appender&&);
+
+#else // defined(STRF_NO_CXX17_COPY_ELISION)
 
     basic_string_appender(const basic_string_appender&) = delete;
     basic_string_appender(basic_string_appender&&) = delete;
 
+#endif // defined(STRF_NO_CXX17_COPY_ELISION)
+
     void recycle() override
     {
         auto * p = this->pos();
-        this->set_pos(buf_begin());
+        this->set_pos(_buf);
         if (this->good())
         {
             this->set_good(false);
-            _str.append(buf_begin(), p);
+            _str.append(_buf, p);
             this->set_good(true);
         }
     }
@@ -56,20 +61,11 @@ public:
         if (this->good())
         {
             this->set_good(false);
-            _str.append(buf_begin(), p);
+            _str.append(_buf, p);
         }
     }
 
 private:
-
-    CharT* buf_begin()
-    {
-        return _buf;
-    }
-    CharT* buf_end()
-    {
-        return _buf + _buf_size;
-    }
 
     _string_type& _str;
     static constexpr std::size_t _buf_size
@@ -86,24 +82,31 @@ class basic_string_maker final: public strf::basic_outbuf<CharT>
 
 public:
 
-    basic_string_maker()
-        : strf::basic_outbuf<CharT>(nullptr, nullptr)
+    basic_string_maker() : strf::basic_outbuf<CharT>(_buf, _buf_size)
     {
-        this->set_pos(buf_begin());
-        this->set_end(buf_end());
     }
+
+#if defined(STRF_NO_CXX17_COPY_ELISION)
+
+    basic_string_maker(basic_string_maker&&);
+
+#else  // defined(STRF_NO_CXX17_COPY_ELISION)
 
     basic_string_maker(const basic_string_maker&) = delete;
     basic_string_maker(basic_string_maker&&) = delete;
 
+#endif // defined(STRF_NO_CXX17_COPY_ELISION)
+
+    ~basic_string_maker() = default;
+
     void recycle() override
     {
         auto * p = this->pos();
-        this->set_pos(buf_begin());
+        this->set_pos(_buf);
         if (this->good())
         {
             this->set_good(false);
-            _str.append(buf_begin(), p);
+            _str.append(_buf, p);
             this->set_good(true);
         }
     }
@@ -114,21 +117,13 @@ public:
         if (this->good())
         {
             this->set_good(false);
-            _str.append(buf_begin(), p);
+            _str.append(_buf, p);
         }
         return std::move(_str);
     }
 
 private:
 
-    CharT* buf_begin()
-    {
-        return _buf;
-    }
-    CharT* buf_end()
-    {
-        return _buf + _buf_size;
-    }
     _string_type _str;
     static constexpr std::size_t _buf_size
         = strf::min_size_after_recycle<CharT>();
@@ -151,8 +146,16 @@ public:
         this->set_end(&*_str.begin() + count);
     }
 
+#if defined(STRF_NO_CXX17_COPY_ELISION)
+
+    basic_pre_sized_string_maker(basic_pre_sized_string_maker&&);
+
+#else // defined(STRF_NO_CXX17_COPY_ELISION)
+
     basic_pre_sized_string_maker(const basic_pre_sized_string_maker&) = delete;
     basic_pre_sized_string_maker(basic_pre_sized_string_maker&&) = delete;
+
+#endif // defined(STRF_NO_CXX17_COPY_ELISION)
 
     void recycle() override
     {
@@ -207,6 +210,7 @@ class basic_string_appender_creator
 public:
 
     using char_type = CharT;
+    using outbuf_type = strf::basic_string_appender<CharT, Traits, Allocator>;
     using finish_type = void;
 
     basic_string_appender_creator
@@ -217,21 +221,15 @@ public:
 
     basic_string_appender_creator(const basic_string_appender_creator&) = default;
 
-    template <typename ... Printers>
-    void write(const Printers& ... printers) const
+    outbuf_type create() const
     {
-        strf::basic_string_appender<CharT, Traits, Allocator> ob(_str);
-        strf::detail::write_args(ob, printers...);;
-        ob.finish();
+        return outbuf_type{_str};
     }
 
-    template <typename ... Printers>
-    void sized_write(std::size_t size, const Printers& ... printers) const
+    outbuf_type create(std::size_t size) const
     {
         _str.reserve(_str.size() + size);
-        strf::basic_string_appender<CharT, Traits, Allocator> ob(_str);
-        strf::detail::write_args(ob, printers...);;
-        ob.finish();
+        return outbuf_type{_str};
     }
 
 private:
@@ -249,21 +247,14 @@ public:
     using char_type = CharT;
     using finish_type = std::basic_string<CharT, Traits, Allocator>;
 
-    template <typename ... Printers>
-    finish_type write(const Printers& ... printers) const
+    strf::basic_string_maker<CharT, Traits, Allocator> create() const
     {
-        strf::basic_string_maker<CharT, Traits, Allocator> ob;
-        strf::detail::write_args(ob, printers...);;
-        return ob.finish();
+        return strf::basic_string_maker<CharT, Traits, Allocator>{};
     }
-
-    template <typename ... Printers>
-    finish_type sized_write(std::size_t size, const Printers& ... printers) const
+    strf::basic_pre_sized_string_maker<CharT, Traits, Allocator>
+    create(std::size_t size) const
     {
-        strf::basic_pre_sized_string_maker<CharT, Traits, Allocator>
-            ob(size);
-        strf::detail::write_args(ob, printers...);;
-        return ob.finish();
+        return strf::basic_pre_sized_string_maker<CharT, Traits, Allocator>{size};
     }
 };
 

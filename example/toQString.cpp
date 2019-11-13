@@ -70,21 +70,13 @@ public:
     using char_type = char16_t;
     using finish_type = QString;
 
-    template <typename ... Printers>
-    finish_type write(const Printers& ... printers) const
+    QStringCreator create() const
     {
-        QStringCreator ob;
-        strf::detail::write_args(ob, printers...);;
-        return ob.finish();
+        return QStringCreator();
     }
-
-    template <typename ... Printers>
-    finish_type sized_write( std::size_t size
-                           , const Printers& ... printers ) const
+    QStringCreator create(std::size_t size) const
     {
-        QStringCreator ob(size);
-        strf::detail::write_args(ob, printers...);;
-        return ob.finish();
+        return QStringCreator(size);
     }
 };
 

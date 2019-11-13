@@ -194,9 +194,16 @@ public:
         , double reserve_factor
         , std::size_t size = 0 );
 
-    input_tester(input_tester&& r) = delete;
+#ifdef STRF_NO_CXX17_COPY_ELISION
 
+    input_tester(input_tester&& r);
+
+#else
+
+    input_tester(input_tester&& r) = delete;
     input_tester(const input_tester& r) = delete;
+
+#endif
 
     ~input_tester();
 
@@ -366,6 +373,12 @@ public:
             { _expected, _filename, _line, _function, _reserve_factor, size };
         strf::detail::write_args(ob, printers...);
         ob.finish();
+    }
+
+    test_utils::input_tester<CharT> create(std::size_t size) const
+    {
+        return test_utils::input_tester<CharT>
+            { _expected, _filename, _line, _function, _reserve_factor, size };
     }
 
 private:

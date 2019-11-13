@@ -228,7 +228,7 @@ void combine_2(Func func, Enc0 enc0)
 
 template < typename Func
          , typename Enc0
-         , typename ... Enc >    
+         , typename ... Enc >
 void combine_2(Func func, Enc0 enc0, Enc... enc)
 {
     combine_3(func, enc0, enc0, enc...);
@@ -240,7 +240,7 @@ template < typename Func
 void combine(Func, const EoutTuple&, std::index_sequence<I...> )
 {
 }
-    
+
 template < typename Func
          , typename EoutTuple
          , std::size_t ... I
@@ -251,7 +251,7 @@ void combine( Func func
             , std::index_sequence<I...> iseq
             , Enc0 enc0
             , Enc ... enc )
-          
+
 {
     combine_2(func, enc0, std::get<I>(out_encodings)...);
     combine(func, out_encodings, iseq, enc...);
@@ -289,6 +289,6 @@ int main()
         ( encodings
         , [](auto ein, auto eout){ test_invalid_input(ein, eout); } );
 
-  
+
     return boost::report_errors();
 }

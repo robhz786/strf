@@ -24,8 +24,17 @@ public:
     }
 
     narrow_cfile_writer() = delete;
+
+#ifdef STRF_NO_CXX17_COPY_ELISION
+
+    narrow_cfile_writer(narrow_cfile_writer&&);
+
+#else // defined(STRF_NO_CXX17_COPY_ELISION)
+
     narrow_cfile_writer(const narrow_cfile_writer&) = delete;
     narrow_cfile_writer(narrow_cfile_writer&&) = delete;
+
+#endif // defined(STRF_NO_CXX17_COPY_ELISION)
 
     ~narrow_cfile_writer()
     {
@@ -85,8 +94,17 @@ public:
     }
 
     wide_cfile_writer() = delete;
+
+#ifdef STRF_NO_CXX17_COPY_ELISION
+
+    wide_cfile_writer(wide_cfile_writer&&);
+
+#else // defined(STRF_NO_CXX17_COPY_ELISION)
+
     wide_cfile_writer(const wide_cfile_writer&) = delete;
     wide_cfile_writer(wide_cfile_writer&&) = delete;
+
+#endif // defined(STRF_NO_CXX17_COPY_ELISION)
 
     ~wide_cfile_writer()
     {
@@ -150,12 +168,9 @@ public:
     constexpr narrow_cfile_writer_creator
         (const narrow_cfile_writer_creator&) = default;
 
-    template <typename ... Printers>
-    finish_type write(const Printers& ... printers) const
+    outbuf_type create() const
     {
-        outbuf_type ob(_file);
-        strf::detail::write_args(ob, printers...);;
-        return ob.finish();
+        return outbuf_type{_file};
     }
 
 private:
@@ -176,12 +191,9 @@ public:
 
     constexpr wide_cfile_writer_creator(const wide_cfile_writer_creator&) = default;
 
-    template <typename ... Printers>
-    finish_type write(const Printers& ... printers) const
+    outbuf_type create() const
     {
-        outbuf_type ob(_file);
-        strf::detail::write_args(ob, printers...);;
-        return ob.finish();
+        return outbuf_type{_file};
     }
 
 private:

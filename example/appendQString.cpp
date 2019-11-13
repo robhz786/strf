@@ -103,7 +103,11 @@ public:
         : _str(str)
     {}
 
-    QStringAppenderCreator(const QStringAppenderCreator& str);
+#if ! defined(STRF_NO_CXX17_COPY_ELISION)
+
+    QStringAppenderCreator(QStringAppenderCreator&& str);
+
+#endif
 
     template <typename ... Printers>
     finish_type write(const Printers& ... printers) const
@@ -121,6 +125,16 @@ public:
         QStringAppender ob(_str);
         strf::detail::write_args(ob, printers...);;
         return ob.finish();
+    }
+
+    QStringAppender create() const
+    {
+        return QStringAppender{_str};
+    }
+    QStringAppender create(std::size_t size ) const
+    {
+        _str.reserve(_str.size() + size);
+        return QStringAppender{_str};
     }
 
 private:

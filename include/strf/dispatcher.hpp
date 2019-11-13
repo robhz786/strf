@@ -181,7 +181,6 @@ private:
     {
         return p;
     }
-
     static inline const strf::printer<char_type>*
     _as_printer_cptr(const strf::printer<char_type>& p)
     {
@@ -213,7 +212,6 @@ private:
                                                                 , preview_arr[I]
                                                                 , args ))... } );
     }
-
 
     template < typename Preview, typename ... Args >
     decltype(auto) _tr_write_3
@@ -315,12 +313,6 @@ private:
     template <class, class>
     friend class dispatcher_no_reserve;
 
-    static inline const strf::printer<char_type>&
-    _as_printer_cref(const strf::printer<char_type>& p)
-    {
-        return p;
-    }
-
     template < typename OtherFPack
              , typename ... FPE
              , typename T = OutbufCreator
@@ -350,7 +342,9 @@ private:
         ( const strf::print_preview<false, false>&
         , const Printers& ... printers) const
     {
-        return _outbuf_creator.write(printers...);
+        decltype(auto) ob = _outbuf_creator.create();
+        strf::detail::write_args(ob, printers...);
+        return ob.finish();
     }
 
     OutbufCreator _outbuf_creator;
@@ -385,8 +379,7 @@ public:
     }
 
     template < typename T = OutbufCreator
-             , std::enable_if_t
-                 < std::is_copy_constructible<T>::value, int > = 0 >
+             , std::enable_if_t<std::is_copy_constructible<T>::value, int> = 0 >
     constexpr dispatcher_with_given_size( strf::detail::dispatcher_tag
                                         , std::size_t size
                                         , const OutbufCreator& oc
@@ -431,12 +424,6 @@ private:
 
     template <class, class>
     friend class dispatcher_with_given_size;
-    static inline const strf::printer<char_type>&
-
-    _as_printer_cref(const strf::printer<char_type>& p)
-    {
-        return p;
-    }
 
     template < typename OtherFPack
              , typename ... FPE
@@ -469,7 +456,9 @@ private:
         ( const strf::print_preview<false, false>&
         , const Printers& ... printers) const
     {
-        return _outbuf_creator.sized_write(_size, printers...);
+        decltype(auto) ob = _outbuf_creator.create(_size);
+        strf::detail::write_args(ob, printers...);
+        return ob.finish();
     }
 
     std::size_t _size;
@@ -553,12 +542,6 @@ private:
     template <typename, typename>
     friend class dispatcher_calc_size;
 
-    static inline const strf::printer<char_type>&
-    _as_printer_cref(const strf::printer<char_type>& p)
-    {
-        return p;
-    }
-
     template < typename OtherFPack
              , typename ... FPE
              , typename T = OutbufCreator
@@ -588,7 +571,9 @@ private:
         ( const strf::print_preview<true, false>& preview
         , const Printers& ... printers ) const
     {
-        return _outbuf_creator.sized_write(preview.get_size(), printers...);
+        decltype(auto) ob = _outbuf_creator.create(preview.get_size());
+        strf::detail::write_args(ob, printers...);
+        return ob.finish();
     }
 
     OutbufCreator _outbuf_creator;

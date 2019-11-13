@@ -13,10 +13,10 @@ int main()
     (void)strf::write(u8dest)
             .facets(strf::width_as_u32len<char>())
         (strf::fmt("hello") > 5);
-    
+
 //    TEST("   abc")   ( strf::fmt("abc") > 6 );
-    
-/*    
+
+/*
     {
         TEST("   abc")   ( strf::right("abc", 6) );
         TEST("abc...")   ( strf::left    ("abc", 6, '.') );
