@@ -10,345 +10,149 @@
 
 STRF_NAMESPACE_BEGIN
 
-namespace detail {
-
-template <typename T, bool NoExcept, typename CharT>
-class string_writer_mixin;
-
-template <typename T, typename CharT>
-class string_writer_mixin<T, false, CharT>
+template < typename CharT
+         , typename Traits = std::char_traits<CharT>
+         , typename Allocator = std::allocator<CharT> >
+class basic_string_appender final: public strf::basic_outbuf<CharT>
 {
+    using _string_type = std::basic_string<CharT, Traits, Allocator>;
+
 public:
 
-    string_writer_mixin() = default;
-
-    void do_recycle()
+    basic_string_appender(_string_type& str)
+        : strf::basic_outbuf<CharT>(nullptr, nullptr)
+        , _str(str)
     {
-        auto * p = static_cast<T*>(this)->pos();
-        static_cast<T*>(this)->set_pos(_buf);
-        if (static_cast<T*>(this)->good())
+        this->set_pos(buf_begin());
+        this->set_end(buf_end());
+    }
+    basic_string_appender( _string_type& str
+                           , std::size_t size )
+        : strf::basic_outbuf<CharT>(nullptr, nullptr)
+        , _str(str)
+    {
+        this->set_pos(buf_begin());
+        this->set_end(buf_end());
+    }
+
+    basic_string_appender(const basic_string_appender&) = delete;
+    basic_string_appender(basic_string_appender&&) = delete;
+
+    void recycle() override
+    {
+        auto * p = this->pos();
+        this->set_pos(buf_begin());
+        if (this->good())
         {
-            static_cast<T*>(this)->set_good(false);
-            static_cast<T*>(this)->_append(buf_begin(), p);
-            static_cast<T*>(this)->set_good(true);
+            this->set_good(false);
+            _str.append(buf_begin(), p);
+            this->set_good(true);
         }
     }
-
-    void do_finish()
-    {
-        auto * p = static_cast<T*>(this)->pos();
-        if (static_cast<T*>(this)->good())
-        {
-            static_cast<T*>(this)->set_good(false);
-            static_cast<T*>(this)->_append(buf_begin(), p);
-        }
-    }
-
-    CharT* buf_begin()
-    {
-        return _buf;
-    }
-    CharT* buf_end()
-    {
-        return _buf + _buf_size;
-    }
-
-private:
-
-    static constexpr std::size_t _buf_size
-        = strf::min_size_after_recycle<CharT>();
-    CharT _buf[_buf_size];
-};
-
-#if defined(__cpp_exceptions)
-
-template <typename T, typename CharT>
-class string_writer_mixin<T, true, CharT>
-{
-public:
-
-    string_writer_mixin() = default;
-
-    void do_recycle() noexcept
-    {
-        auto * p = static_cast<T*>(this)->pos();
-        static_cast<T*>(this)->set_pos(buf_begin());
-        if (static_cast<T*>(this)->good())
-        {
-            try
-            {
-                static_cast<T*>(this)->_append(buf_begin(), p);
-            }
-            catch(...)
-            {
-                _eptr = std::current_exception();
-                static_cast<T*>(this)->set_good(false);
-            }
-        }
-    }
-
-    void do_finish()
-    {
-        if (_eptr != nullptr)
-        {
-            std::rethrow_exception(_eptr);
-        }
-        STRF_ASSERT(static_cast<T*>(this)->good());
-        auto * p = static_cast<T*>(this)->pos();
-        static_cast<T*>(this)->set_good(false);
-        static_cast<T*>(this)->_append(buf_begin(), p);
-    }
-
-    CharT* buf_begin()
-    {
-        return _buf;
-    }
-    CharT* buf_end()
-    {
-        return _buf + _buf_size;
-    }
-
-private:
-
-    std::exception_ptr _eptr = nullptr;
-    static constexpr std::size_t _buf_size
-        = strf::min_size_after_recycle<CharT>();
-    CharT _buf[_buf_size];
-};
-
-#else // defined(__cpp_exceptions)
-
-template <typename T, typename CharT>
-class string_writer_mixin<T, true, CharT>
-    : public string_writer_mixin<T, false, CharT>
-{
-};
-
-#endif // defined(__cpp_exceptions)
-
-template < bool NoExcept
-         , typename CharT
-         , typename Traits
-         , typename Allocator >
-class basic_string_appender_impl
-    : public strf::detail::basic_outbuf_noexcept_switch<NoExcept, CharT>
-    , protected strf::detail::string_writer_mixin
-        < basic_string_appender_impl<NoExcept, CharT, Traits, Allocator>
-        , NoExcept
-        , CharT >
-{
-public:
-
-    using string_type = std::basic_string<CharT, Traits>;
-
-    basic_string_appender_impl(string_type& str_)
-        : strf::detail::basic_outbuf_noexcept_switch<NoExcept, CharT>
-            ( strf::outbuf_garbage_buf<CharT>()
-            , strf::outbuf_garbage_buf_end<CharT>() )
-        , _str(str_)
-    {
-        this->set_pos(this->buf_begin());
-        this->set_end(this->buf_end());
-    }
-
-    basic_string_appender_impl(string_type& str_, std::size_t size)
-        : strf::detail::basic_outbuf_noexcept_switch<NoExcept, CharT>
-            ( strf::outbuf_garbage_buf<CharT>()
-            , strf::outbuf_garbage_buf_end<CharT>() )
-        , _str(str_)
-    {
-        this->set_pos(this->buf_begin());
-        this->set_end(this->buf_end());
-        str_.reserve(str_.size() + size);
-    }
-
-    basic_string_appender_impl() = delete;
-    basic_string_appender_impl(const basic_string_appender_impl&) = delete;
-    basic_string_appender_impl(basic_string_appender_impl&&) = delete;
-
-    ~basic_string_appender_impl() = default;
 
     void finish()
     {
-        this->do_finish();
+        auto * p = this->pos();
+        if (this->good())
+        {
+            this->set_good(false);
+            _str.append(buf_begin(), p);
+        }
     }
 
 private:
 
-    template <typename, bool, typename>
-    friend class detail::string_writer_mixin;
-
-    void _append(const CharT* begin, const CharT* end)
+    CharT* buf_begin()
     {
-        _str.append(begin, end);
+        return _buf;
+    }
+    CharT* buf_end()
+    {
+        return _buf + _buf_size;
     }
 
-    string_type& _str;
+    _string_type& _str;
+    static constexpr std::size_t _buf_size
+        = strf::min_size_after_recycle<CharT>();
+    CharT _buf[_buf_size];
 };
 
-template < bool NoExcept
-         , typename CharT
-         , typename Traits
-         , typename Allocator >
-class basic_string_maker_impl
-    : public strf::detail::basic_outbuf_noexcept_switch<NoExcept, CharT>
-    , protected strf::detail::string_writer_mixin
-        < basic_string_maker_impl<NoExcept, CharT, Traits, Allocator>
-        , NoExcept
-        , CharT >
+template < typename CharT
+         , typename Traits = std::char_traits<CharT>
+         , typename Allocator = std::allocator<CharT> >
+class basic_string_maker final: public strf::basic_outbuf<CharT>
 {
+    using _string_type = std::basic_string<CharT, Traits, Allocator>;
+
 public:
 
-    using string_type = std::basic_string<CharT, Traits>;
-
-    basic_string_maker_impl()
-        : strf::detail::basic_outbuf_noexcept_switch<NoExcept, CharT>
-            ( strf::outbuf_garbage_buf<CharT>()
-            , strf::outbuf_garbage_buf_end<CharT>() )
+    basic_string_maker()
+        : strf::basic_outbuf<CharT>(nullptr, nullptr)
     {
-        this->set_pos(this->buf_begin());
-        this->set_end(this->buf_end());
+        this->set_pos(buf_begin());
+        this->set_end(buf_end());
     }
 
-    basic_string_maker_impl(std::size_t size)
-        : strf::detail::basic_outbuf_noexcept_switch<NoExcept, CharT>
-            ( strf::outbuf_garbage_buf<CharT>()
-            , strf::outbuf_garbage_buf_end<CharT>() )
+    basic_string_maker(const basic_string_maker&) = delete;
+    basic_string_maker(basic_string_maker&&) = delete;
+
+    void recycle() override
     {
-        this->set_pos(this->buf_begin());
-        this->set_end(this->buf_end());
-        _str.reserve(size);
+        auto * p = this->pos();
+        this->set_pos(buf_begin());
+        if (this->good())
+        {
+            this->set_good(false);
+            _str.append(buf_begin(), p);
+            this->set_good(true);
+        }
     }
 
-    basic_string_maker_impl(const basic_string_maker_impl&) = delete;
-    basic_string_maker_impl(basic_string_maker_impl&&) = delete;
-
-    ~basic_string_maker_impl() = default;
-
-    string_type finish()
+    _string_type finish()
     {
-        this->do_finish();
+        auto * p = this->pos();
+        if (this->good())
+        {
+            this->set_good(false);
+            _str.append(buf_begin(), p);
+        }
         return std::move(_str);
     }
 
 private:
 
-    template <typename, bool, typename>
-    friend class detail::string_writer_mixin;
-
-    void _append(const CharT* begin, const CharT* end)
+    CharT* buf_begin()
     {
-        _str.append(begin, end);
+        return _buf;
     }
-
-    string_type _str;
-};
-
-} // namespace detail
-
-template < typename CharT
-         , typename Traits = std::char_traits<CharT>
-         , typename Allocator = std::allocator<CharT>  >
-class basic_string_appender_noexcept final
-    : public strf::detail::basic_string_appender_impl
-        < true, CharT, Traits, Allocator >
-{
-public:
-
-    using strf::detail::basic_string_appender_impl
-        < true, CharT, Traits, Allocator >
-        ::basic_string_appender_impl;
-
-    void recycle() noexcept(true) override
+    CharT* buf_end()
     {
-        this->do_recycle();
+        return _buf + _buf_size;
     }
+    _string_type _str;
+    static constexpr std::size_t _buf_size
+        = strf::min_size_after_recycle<CharT>();
+    CharT _buf[_buf_size];
 };
 
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
          , typename Allocator = std::allocator<CharT> >
-class basic_string_appender final
-    : public strf::detail::basic_string_appender_impl
-        < false, CharT, Traits, Allocator >
-{
-public:
-
-    using strf::detail::basic_string_appender_impl
-        < false, CharT, Traits, Allocator >
-        ::basic_string_appender_impl;
-
-    void recycle() override
-    {
-        this->do_recycle();
-    }
-};
-
-template < typename CharT
-         , typename Traits = std::char_traits<CharT>
-         , typename Allocator = std::allocator<CharT> >
-class basic_string_maker_noexcept final
-    : public strf::detail::basic_string_maker_impl
-        < true, CharT, Traits, Allocator >
-{
-public:
-
-    using strf::detail::basic_string_maker_impl
-        < true, CharT, Traits, Allocator >
-        ::basic_string_maker_impl;
-
-    void recycle() noexcept(true) override
-    {
-        this->do_recycle();
-    }
-};
-
-template < typename CharT
-         , typename Traits = std::char_traits<CharT>
-         , typename Allocator = std::allocator<CharT> >
-class basic_string_maker final
-    : public strf::detail::basic_string_maker_impl
-        < false, CharT, Traits, Allocator >
-{
-public:
-
-    using strf::detail::basic_string_maker_impl
-        < false, CharT, Traits, Allocator >
-        ::basic_string_maker_impl;
-
-    void recycle() override
-    {
-        this->do_recycle();
-    }
-};
-
-template < typename CharT
-         , typename Traits = std::char_traits<CharT>
-         , typename Allocator = std::allocator<CharT> >
-class pre_sized_basic_string_maker final
+class basic_pre_sized_string_maker final
     : public strf::basic_outbuf<CharT>
 {
 public:
 
-    // pre_sized_basic_string_maker()
-    //     : strf::basic_outbuf<CharT>
-    //         ( strf::outbuf_garbage_buf<CharT>()
-    //         , strf::outbuf_garbage_buf_end<CharT>() )
-    // {
-    //     _str.append(_str.capacity(), (CharT)0);
-    //     this->set_pos(_str.data());
-    //     this->set_end(_str.data() + _str.size());
-    // }
-
-    pre_sized_basic_string_maker(std::size_t count)
-        : strf::basic_outbuf<CharT>
-            ( strf::outbuf_garbage_buf<CharT>()
-            , strf::outbuf_garbage_buf_end<CharT>() )
+    basic_pre_sized_string_maker(std::size_t count)
+        : strf::basic_outbuf<CharT>(nullptr, nullptr)
         , _str(count, (CharT)0)
     {
         this->set_pos(&*_str.begin());
         this->set_end(&*_str.begin() + count);
     }
+
+    basic_pre_sized_string_maker(const basic_pre_sized_string_maker&) = delete;
+    basic_pre_sized_string_maker(basic_pre_sized_string_maker&&) = delete;
 
     void recycle() override
     {
@@ -382,25 +186,18 @@ using u16string_maker = basic_string_maker<char16_t>;
 using u32string_maker = basic_string_maker<char32_t>;
 using wstring_maker = basic_string_maker<wchar_t>;
 
-using string_appender_noexcept = basic_string_appender_noexcept<char>;
-using u16string_appender_noexcept = basic_string_appender_noexcept<char16_t>;
-using u32string_appender_noexcept = basic_string_appender_noexcept<char32_t>;
-using wstring_appender_noexcept = basic_string_appender_noexcept<wchar_t>;
-
-using string_maker_noexcept = basic_string_maker_noexcept<char>;
-using u16string_maker_noexcept = basic_string_maker_noexcept<char16_t>;
-using u32string_maker_noexcept = basic_string_maker_noexcept<char32_t>;
-using wstring_maker_noexcept = basic_string_maker_noexcept<wchar_t>;
+using pre_sized_string_maker = basic_pre_sized_string_maker<char>;
+using pre_sized_u16string_maker = basic_pre_sized_string_maker<char16_t>;
+using pre_sized_u32string_maker = basic_pre_sized_string_maker<char32_t>;
+using pre_sized_wstring_maker = basic_pre_sized_string_maker<wchar_t>;
 
 #if defined(__cpp_char8_t)
 
 using u8string_appender = basic_string_appender<char8_t>;
 using u8string_maker = basic_string_maker<char8_t>;
-using u8string_appender_noexcept = basic_string_appender_noexcept<char8_t>;
-using u8string_maker_noexcept = basic_string_maker_noexcept<char8_t>;
+using pre_sized_u8string_maker = basic_pre_sized_string_maker<char8_t>;
 
 #endif
-
 
 namespace detail {
 
@@ -463,7 +260,7 @@ public:
     template <typename ... Printers>
     finish_type sized_write(std::size_t size, const Printers& ... printers) const
     {
-        strf::pre_sized_basic_string_maker<CharT, Traits, Allocator>
+        strf::basic_pre_sized_string_maker<CharT, Traits, Allocator>
             ob(size);
         strf::detail::write_args(ob, printers...);;
         return ob.finish();
