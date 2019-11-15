@@ -41,6 +41,20 @@ matrix:
 environment:
 
   matrix:
+    - FLAVOR: Visual Studio 2019 C++2a
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      GENERATOR: Visual Studio 16 2019
+      ARCH: x64
+      CONFIG: Debug
+      CXX_STANDARD: 20
+
+    - FLAVOR: Visual Studio 2019 C++2a
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      GENERATOR: Visual Studio 16 2019
+      ARCH: x64
+      CONFIG: Release
+      CXX_STANDARD: 20
+
     - FLAVOR: Visual Studio 2017 C++2a
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       GENERATOR: Visual Studio 15 2017
@@ -48,35 +62,40 @@ environment:
       CONFIG: Debug
       CXX_STANDARD: 20
 
-#    - FLAVOR: Visual Studio 2017 C++2a
-#      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-#      ARCH: x64
-#      CONFIG: Release
-#      CXX_STANDARD: 20
-#
-#    - FLAVOR: Visual Studio 2017 C++2a
-#      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-#      ARCH: Win32
-#      CONFIG: Debug
-#      CXX_STANDARD: 20
-#
-#    - FLAVOR: Visual Studio 2017 C++2a
-#      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-#      ARCH: Win32
-#      CONFIG: Release
-#      CXX_STANDARD: 20
-#
-#    - FLAVOR: Visual Studio 2017 C++17
-#      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-#      ARCH: x64
-#      CONFIG: Debug
-#      CXX_STANDARD: 17
-#
-#    - FLAVOR: Visual Studio 2017 C++14 (Default)
-#      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-#      ARCH: x64
-#      CONFIG: Debug
-#      CXX_STANDARD: 14
+    - FLAVOR: Visual Studio 2017 C++2a
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      GENERATOR: Visual Studio 15 2017
+      ARCH: x64
+      CONFIG: Release
+      CXX_STANDARD: 20
+
+    - FLAVOR: Visual Studio 2017 C++2a
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      GENERATOR: Visual Studio 15 2017
+      ARCH: Win32
+      CONFIG: Debug
+      CXX_STANDARD: 20
+
+    - FLAVOR: Visual Studio 2017 C++2a
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      GENERATOR: Visual Studio 15 2017
+      ARCH: Win32
+      CONFIG: Release
+      CXX_STANDARD: 20
+
+    - FLAVOR: Visual Studio 2017 C++17
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      GENERATOR: Visual Studio 15 2017
+      ARCH: x64
+      CONFIG: Debug
+      CXX_STANDARD: 17
+
+    - FLAVOR: Visual Studio 2017 C++14 (Default)
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      GENERATOR: Visual Studio 15 2017
+      ARCH: x64
+      CONFIG: Debug
+      CXX_STANDARD: 14
 
 build_script:
   - ci\appveyor\build.bat
