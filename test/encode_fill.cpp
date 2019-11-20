@@ -40,7 +40,7 @@ void test_fill
     {
         std::int16_t count = 10;
         auto result = strf::to_basic_string<CharT>
-            .facets(enc, strf::encoding_error::replace, allow_surr)
+            .with(enc, strf::encoding_error::replace, allow_surr)
             (strf::right(CharT('x'), 11, fill_char));
 
         auto expected = repeat(count, encoded_char);
@@ -51,7 +51,7 @@ void test_fill
     {
         std::int16_t count = 200;
         auto result = strf::to_basic_string<CharT>
-            .facets(enc, strf::encoding_error::replace, allow_surr)
+            .with(enc, strf::encoding_error::replace, allow_surr)
             (strf::right(CharT('x'), count + 1, fill_char));
 
         auto expected = repeat(count, encoded_char);
@@ -89,7 +89,7 @@ void test_invalid_fill_stop
 
     {
         auto facets = strf::pack(enc, strf::encoding_error::stop, allow_surr);
-        BOOST_TEST_THROWS( (strf::to_string.facets(facets)(strf::right(0, 10, fill_char)))
+        BOOST_TEST_THROWS( (strf::to_string.with(facets)(strf::right(0, 10, fill_char)))
                          , strf::encoding_failure );
     }
 }
@@ -113,7 +113,7 @@ void test_invalid_fill_ignore
 
     {
         auto result = strf::to_basic_string<CharT>
-            .facets(enc, strf::encoding_error::ignore, allow_surr)
+            .with(enc, strf::encoding_error::ignore, allow_surr)
             ( strf::multi(CharT('-'), 5)
             , strf::right(CharT('x'), 11, fill_char)
             , strf::multi(CharT('+'), 5) );

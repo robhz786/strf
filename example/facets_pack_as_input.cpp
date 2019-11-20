@@ -8,7 +8,7 @@
 void sample1()
 {
     //[ facets_pack_input
-    auto str = strf::to_string.facets(strf::monotonic_grouping<10>(1))
+    auto str = strf::to_string.with(strf::monotonic_grouping<10>(1))
         ( 10000
         , "  "
         , strf::hex(0x10000)
@@ -32,7 +32,7 @@ void sample2()
         ( strf::monotonic_grouping<10>(3)
         , strf::monotonic_grouping<16>(4).thousands_sep('\'') );
 
-    auto str = strf::to_string.facets(strf::monotonic_grouping<10>(1))
+    auto str = strf::to_string.with(strf::monotonic_grouping<10>(1))
         ( 10000
         , "  "
         , strf::hex(0x10000)

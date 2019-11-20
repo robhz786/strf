@@ -247,9 +247,9 @@ int main()
 
     std::cout << "\n               With punctuation\n";
 
-    PRINT_BENCHMARK("strf::to(dest).facets(strf::monotonic_grouping<10>(3))(1000000.0)")
+    PRINT_BENCHMARK("strf::to(dest).with(strf::monotonic_grouping<10>(3))(1000000.0)")
     {
-        (void) strf::to(dest).facets(strf::monotonic_grouping<10>(3))(1000000.0);
+        (void) strf::to(dest).with(strf::monotonic_grouping<10>(3))(1000000.0);
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, fmt_loc, 1000000.0)")
@@ -259,9 +259,9 @@ int main()
     }
 
     std::cout << "\n";
-    PRINT_BENCHMARK("strf::to(dest).facets(strf::no_grouping<10>().decimal_point(':'))(1000000.0)")
+    PRINT_BENCHMARK("strf::to(dest).with(strf::no_grouping<10>().decimal_point(':'))(1000000.0)")
     {
-        (void) strf::to(dest).facets(strf::no_grouping<10>().decimal_point(':'))(1000000.0);
+        (void) strf::to(dest).with(strf::no_grouping<10>().decimal_point(':'))(1000000.0);
         clobber();
     }
 

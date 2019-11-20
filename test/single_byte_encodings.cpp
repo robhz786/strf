@@ -48,14 +48,14 @@ void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
                         , valid_u32input.end() );
     {
         // from and back to UTF-32
-        auto enc_str = strf::to_string.facets(enc) (strf::cv(valid_u32input));
+        auto enc_str = strf::to_string.with(enc) (strf::cv(valid_u32input));
         auto u32str = strf::to_u32string (strf::cv(enc_str, enc));
         BOOST_TEST(u32str == valid_u32input);
     }
     {
         // from UTF-8
         auto u8str = strf::to_string (strf::cv(valid_u32input));
-        auto enc_str = strf::to_string.facets(enc) (strf::cv(u8str, strf::utf8<char>()));
+        auto enc_str = strf::to_string.with(enc) (strf::cv(u8str, strf::utf8<char>()));
         auto u32str = strf::to_u32string (strf::cv(enc_str, enc));
         BOOST_TEST(u32str == valid_u32input);
 
@@ -63,22 +63,22 @@ void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
     {   // from UTF-8
         auto u8str = strf::to_string(strf::cv(decoded_0_to_0x100));
         TEST(char_0_to_0xff_sanitized(enc))
-            .facets(enc)
+            .with(enc)
             (strf::cv(u8str, strf::utf8<char>()));
     }
 
-    TEST(char_0_to_0xff_sanitized(enc)).facets(enc) (strf::cv(str_0_to_xff));
+    TEST(char_0_to_0xff_sanitized(enc)).with(enc) (strf::cv(str_0_to_xff));
     TEST("---?+++")
-        .facets(enc, strf::encoding_error::replace)
+        .with(enc, strf::encoding_error::replace)
         (strf::cv(u"---\U0010FFFF+++"));
     TEST_RF("---+++", 7.1 / 6.0)
-        .facets(enc, strf::encoding_error::ignore)
+        .with(enc, strf::encoding_error::ignore)
         (strf::cv(u"---\U0010FFFF+++"));
 
     {
         auto facets = strf::pack(enc, strf::encoding_error::stop);
         BOOST_TEST_THROWS(
-            ( (strf::to_string.facets(facets)(strf::cv(u"---\U0010FFFF++"))))
+            ( (strf::to_string.with(facets)(strf::cv(u"---\U0010FFFF++"))))
             , strf::encoding_failure );
     }
 }

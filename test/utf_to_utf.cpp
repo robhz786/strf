@@ -39,7 +39,7 @@ void test_valid_input
 
     auto input = valid_input_sample(ein);
     auto expected = valid_input_sample(eout);
-    TEST(expected).facets(eout) (strf::cv(input, ein));
+    TEST(expected).with(eout) (strf::cv(input, ein));
 }
 
 std::string sample_with_surrogates(const strf::encoding<char>&)
@@ -73,7 +73,7 @@ void test_allowed_surrogates
     const auto expected = sample_with_surrogates(eout);
 
     TEST(expected)
-        .facets( eout
+        .with( eout
                , strf::encoding_error::stop
                , strf::surrogate_policy::lax )
         (strf::cv(input, ein));
@@ -182,21 +182,21 @@ void test_invalid_input
             expected += suffix_out;
 
             TEST(expected)
-                .facets(eout)
-                .facets(strf::encoding_error::replace)
+                .with(eout)
+                .with(strf::encoding_error::replace)
                 (strf::cv(input, ein));
         }
 
         // ignore
         TEST(prefix_out + suffix_out)
             .reserve(6)
-            .facets(eout)
-            .facets(strf::encoding_error::ignore)
+            .with(eout)
+            .with(strf::encoding_error::ignore)
             (strf::cv(input, ein));
 
         // stop
-        BOOST_TEST_THROWS( (strf::to_string.facets(eout)
-                                           .facets(strf::encoding_error::stop)
+        BOOST_TEST_THROWS( (strf::to_string.with(eout)
+                                           .with(strf::encoding_error::stop)
                                             (strf::cv(input, ein)) )
                           , strf::encoding_failure );
     }

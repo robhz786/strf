@@ -376,7 +376,7 @@ void tests()
     {
         // customizing line length, end of line and identation
         auto result = strf::to_string
-            .facets(xxx::base64_facet{50, {'\n', '\0'}})
+            .with(xxx::base64_facet{50, {'\n', '\0'}})
             (xxx::base64(data, data_size).indentation(4));
 
         auto expected =
@@ -388,7 +388,7 @@ void tests()
     {
         // When the length of last line is exactly as base64_facet::line_length,
         auto result = strf::to_string
-            .facets(xxx::base64_facet{30})
+            .with(xxx::base64_facet{30})
             (xxx::base64(data, data_size).indentation(4));
 
         auto expected =
@@ -400,7 +400,7 @@ void tests()
     {
         // When base64_facet::line_length == 1
         auto result = strf::to_string
-            .facets(xxx::base64_facet{1, {'\n', '\0'}})
+            .with(xxx::base64_facet{1, {'\n', '\0'}})
             (xxx::base64("  >  ?", 6).indentation(2));
 
         assert(result == "  I\n  C\n  A\n  +\n  I\n  C\n  A\n  /\n");
@@ -408,7 +408,7 @@ void tests()
     {
         // When base64_facet::line_length == 3
         auto result = strf::to_string
-            .facets(xxx::base64_facet{3, {'\n', '\0'}})
+            .with(xxx::base64_facet{3, {'\n', '\0'}})
             (xxx::base64("  >  ?", 6).indentation(2));
 
         assert(result == "  ICA\n  +IC\n  A/\n");
@@ -416,7 +416,7 @@ void tests()
     {
         // When base64_facet::line_length == 4
         auto result = strf::to_string
-            .facets(xxx::base64_facet{4, {'\n', '\0'}})
+            .with(xxx::base64_facet{4, {'\n', '\0'}})
             (xxx::base64("  >  ?", 6).indentation(2));
 
         assert(result == "  ICA+\n  ICA/\n");
@@ -431,7 +431,7 @@ void tests()
     {
         // customizing characters for index 62 and 63
         auto result = strf::to_string
-            .facets(xxx::base64_facet{50, {'\r', '\n'}, '-', '_'})
+            .with(xxx::base64_facet{50, {'\r', '\n'}, '-', '_'})
             (xxx::base64("  >  ?", 6));
 
         assert(result == "ICA-ICA_\r\n");
@@ -441,7 +441,7 @@ void tests()
         // when base64_facet::line_length == 0'
         // then the result has no end of line
         auto result = strf::to_string
-            .facets(xxx::base64_facet{0, {'\r', '\n'}})
+            .with(xxx::base64_facet{0, {'\r', '\n'}})
             (xxx::base64("  >  ?", 6));
 
         assert(result == "ICA+ICA/");
@@ -450,7 +450,7 @@ void tests()
         // when base64_facet::eol[0] == '\0'
         // then the result has no end of line
         auto result = strf::to_string
-            .facets(xxx::base64_facet{50, {'\0', '\n'}, '-', '_'})
+            .with(xxx::base64_facet{50, {'\0', '\n'}, '-', '_'})
             (xxx::base64("  >  ?", 6));
 
         assert(result == "ICA-ICA_");
@@ -458,7 +458,7 @@ void tests()
     {
         // test indentation on single line mode
         auto result = strf::to_string
-            .facets(xxx::base64_facet{0})
+            .with(xxx::base64_facet{0})
             (xxx::base64("  >  ?", 6).indentation(4));
 
         assert(result == "    ICA+ICA/");
@@ -475,7 +475,7 @@ void tests()
             , {msg2, strlen(msg2)} };
 
         auto result = strf::to_string
-            .facets(xxx::base64_facet{50, {'\n', '\0'}})
+            .with(xxx::base64_facet{50, {'\n', '\0'}})
             (strf::fmt_range(vec, "------------\n").indentation(4));
 
         auto expected =
@@ -497,7 +497,7 @@ void sample()
     const char* msg  = "The quick brown fox jumps over the lazy dog.";
 
     auto obtained = strf::to_string
-        .facets(xxx::base64_facet{50, {'\n', '\0'}})
+        .with(xxx::base64_facet{50, {'\n', '\0'}})
         ( xxx::base64(msg, strlen(msg)).indentation(4) );
 
     auto expected =

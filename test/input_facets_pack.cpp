@@ -8,7 +8,7 @@
 int main()
 {
     TEST("1,0,0,0,0 10000 1000000 10,000 1'0000 1'000000 10.000 1^00^00 1'000000")
-        .facets(strf::monotonic_grouping<10>(1))
+        .with(strf::monotonic_grouping<10>(1))
         ( strf::fmt(10000), ' '
         , strf::hex(0x10000), ' '
         , strf::oct(01000000), ' '
@@ -31,7 +31,7 @@ int main()
     {   // inside joins
 
         TEST("****1,0,0,0,0 10000 1000000 10,000 1'0000 1'000000")
-            .facets(strf::monotonic_grouping<10>(1))
+            .with(strf::monotonic_grouping<10>(1))
             ( strf::join_right(50, U'*')
                 ( strf::fmt(10000), ' '
                 , strf::hex(0x10000), ' '

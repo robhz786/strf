@@ -69,7 +69,7 @@ void error_signal_skip()
 {
     //[ encoding_error_ignore
     auto str = strf::to_string
-        .facets(strf::encoding_error::ignore)
+        .with(strf::encoding_error::ignore)
         (strf::cv("--\x99--"));
 
     assert(str == "----");
@@ -84,7 +84,7 @@ void encoding_error_stop()
     try
     {
         auto str = strf::to_string
-            .facets(strf::encoding_error::stop)
+            .with(strf::encoding_error::stop)
             (strf::cv("--\x99--"));
     }
     catch(strf::encoding_failure&)
@@ -106,7 +106,7 @@ void allow_surrogates ()
     // convert to UTF-8
     auto str_strict = strf::to_u8string(strf::cv(input_utf16));
     auto str_lax = strf::to_u8string
-        .facets(strf::surrogate_policy::lax)
+        .with(strf::surrogate_policy::lax)
         ( strf::cv(input_utf16) );
 
     assert(str_strict == u8"-\uFFFD---");  // surrogate sanitized
@@ -116,7 +116,7 @@ void allow_surrogates ()
     auto utf16_strict = strf::to_u16string(strf::cv(str_lax));
 
     auto utf16_lax = strf::to_u16string
-        .facets(strf::surrogate_policy::lax)
+        .with(strf::surrogate_policy::lax)
         ( strf::cv(str_lax) );
 
     assert(utf16_strict == u"-\uFFFD\uFFFD\uFFFD---"); // surrogate sanitized

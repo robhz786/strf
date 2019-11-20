@@ -24,53 +24,53 @@ int main()
 {
     // auto wtable = strf::width_as(custom_width_calculator_function);
 
-    // TEST(u8"  \u2E3A\u2E3A\u2014") .facets(wtable)
+    // TEST(u8"  \u2E3A\u2E3A\u2014") .with(wtable)
     //     (strf::right(u8"\u2E3A\u2E3A\u2014", 12));
 
-    // TEST( u"  \u2E3A\u2E3A\u2014") .facets(wtable)
+    // TEST( u"  \u2E3A\u2E3A\u2014") .with(wtable)
     //     (strf::right( u"\u2E3A\u2E3A\u2014", 12));
 
-    // TEST( U"  \u2E3A\u2E3A\u2014") .facets(wtable)
+    // TEST( U"  \u2E3A\u2E3A\u2014") .with(wtable)
     //     (strf::right( U"\u2E3A\u2E3A\u2014", 12));
 
-    // TEST( L"  \u2E3A\u2E3A\u2014") .facets(wtable)
+    // TEST( L"  \u2E3A\u2E3A\u2014") .with(wtable)
     //     (strf::right( L"\u2E3A\u2E3A\u2014", 12));
 
-    // TEST(u8"  \u2E3A\u2E3A\u2014") .facets(wtable)
+    // TEST(u8"  \u2E3A\u2E3A\u2014") .with(wtable)
     //     (strf::fmt_cv( u"\u2E3A\u2E3A\u2014") > 12);
 
-    // TEST( u"  \u2E3A\u2E3A\u2014") .facets(wtable)
+    // TEST( u"  \u2E3A\u2E3A\u2014") .with(wtable)
     //     (strf::fmt_cv(u8"\u2E3A\u2E3A\u2014") > 12);
 
 
     TEST(u8"         \u2E3A\u2E3A\u2014")
-        .facets( strf::width_as_u32len<char>{} )
+        .with( strf::width_as_u32len<char>{} )
 #if defined(__cpp_char8_t)
-        .facets( strf::width_as_u32len<char8_t>{} )
+        .with( strf::width_as_u32len<char8_t>{} )
 #endif
         (strf::right(u8"\u2E3A\u2E3A\u2014", 12));
 
     TEST( u"         \u2E3A\u2E3A\u2014")
-        .facets(strf::width_as_u32len<char16_t>{})
+        .with(strf::width_as_u32len<char16_t>{})
         (strf::right( u"\u2E3A\u2E3A\u2014", 12));
 
     TEST( U"         \u2E3A\u2E3A\u2014")
-        .facets(strf::width_as_u32len<char32_t>{})
+        .with(strf::width_as_u32len<char32_t>{})
         (strf::right( U"\u2E3A\u2E3A\u2014", 12));
 
     TEST( L"         \u2E3A\u2E3A\u2014")
-        .facets(strf::width_as_u32len<wchar_t>{})
+        .with(strf::width_as_u32len<wchar_t>{})
         (strf::right( L"\u2E3A\u2E3A\u2014", 12));
 
     TEST(u8"         \u2E3A\u2E3A\u2014")
-        .facets(strf::width_as_u32len<char>{})
+        .with(strf::width_as_u32len<char>{})
 #if defined(__cpp_char8_t)
-        .facets( strf::width_as_u32len<char8_t>{} )
+        .with( strf::width_as_u32len<char8_t>{} )
 #endif
         (strf::fmt_cv(u8"\u2E3A\u2E3A\u2014") > 12);
 
     TEST( u"         \u2E3A\u2E3A\u2014")
-        .facets(strf::width_as_u32len<char16_t>{})
+        .with(strf::width_as_u32len<char16_t>{})
         (strf::fmt_cv(u"\u2E3A\u2E3A\u2014") > 12);
 
 

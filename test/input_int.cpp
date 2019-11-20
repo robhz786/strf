@@ -258,58 +258,58 @@ int main()
     {
         auto punct = strf::monotonic_grouping<10>{3};
 
-        TEST("0").facets(punct) (0);
-        TEST("1,000").facets(punct) (1000);
-        TEST("   1,000").facets(punct) (strf::join_right(8)(1000ul));
-        TEST("-1,000").facets(punct) (-1000);
+        TEST("0").with(punct) (0);
+        TEST("1,000").with(punct) (1000);
+        TEST("   1,000").with(punct) (strf::join_right(8)(1000ul));
+        TEST("-1,000").with(punct) (-1000);
 
-        TEST("       0").facets(punct) (strf::right(0, 8));
-        TEST("     100").facets(punct) (strf::right(100, 8));
-        TEST("   1,000").facets(punct) (strf::right(1000, 8));
-        TEST("   00000000001,000").facets(punct) (strf::right(1000,18).p(14));
-        TEST("    1000").facets(punct) (strf::hex(0x1000) > 8);
+        TEST("       0").with(punct) (strf::right(0, 8));
+        TEST("     100").with(punct) (strf::right(100, 8));
+        TEST("   1,000").with(punct) (strf::right(1000, 8));
+        TEST("   00000000001,000").with(punct) (strf::right(1000,18).p(14));
+        TEST("    1000").with(punct) (strf::hex(0x1000) > 8);
 
-        TEST("       0").facets(punct) ( strf::join_right(8)(strf::dec(0)) );
-        TEST("     100").facets(punct) ( strf::join_right(8)(strf::dec(100)) );
-        TEST("   1,000").facets(punct) ( strf::join_right(8)(strf::dec(1000)) );
-        TEST("    1000").facets(punct) ( strf::join_right(8)(strf::hex(0x1000)) );
+        TEST("       0").with(punct) ( strf::join_right(8)(strf::dec(0)) );
+        TEST("     100").with(punct) ( strf::join_right(8)(strf::dec(100)) );
+        TEST("   1,000").with(punct) ( strf::join_right(8)(strf::dec(1000)) );
+        TEST("    1000").with(punct) ( strf::join_right(8)(strf::hex(0x1000)) );
     }
 
     {
         auto punct = strf::monotonic_grouping<10>{3}.thousands_sep(0x10FFFF);
-        TEST(u8"  +1\U0010FFFF000").facets(punct) (+strf::right(1000, 8));
-        TEST(u8"  +1\U0010FFFF000").facets(punct) (strf::join_right(8)(+strf::dec(1000)));
-        TEST(u8"----+1\U0010FFFF000").facets(punct) (strf::join_right(8)(u8"----", +strf::dec(1000)));
+        TEST(u8"  +1\U0010FFFF000").with(punct) (+strf::right(1000, 8));
+        TEST(u8"  +1\U0010FFFF000").with(punct) (strf::join_right(8)(+strf::dec(1000)));
+        TEST(u8"----+1\U0010FFFF000").with(punct) (strf::join_right(8)(u8"----", +strf::dec(1000)));
     }
 
     {
         auto punct = strf::monotonic_grouping<16>{3}.thousands_sep('\'');
 
-        TEST("     0x0").facets(punct) (~strf::hex(0x0) > 8);
-        TEST("   0x100").facets(punct) (~strf::hex(0x100) > 8);
-        TEST(" 0x1'000").facets(punct) (~strf::hex(0x1000) > 8);
-        TEST("   1'000").facets(punct) ( strf::hex(0x1000) > 8);
+        TEST("     0x0").with(punct) (~strf::hex(0x0) > 8);
+        TEST("   0x100").with(punct) (~strf::hex(0x100) > 8);
+        TEST(" 0x1'000").with(punct) (~strf::hex(0x1000) > 8);
+        TEST("   1'000").with(punct) ( strf::hex(0x1000) > 8);
 
-        TEST("     0x0").facets(punct) ( strf::join_right(8)(~strf::hex(0x0)) );
-        TEST("   0x100").facets(punct) ( strf::join_right(8)(~strf::hex(0x100)) );
-        TEST(" 0x1'000").facets(punct) ( strf::join_right(8)(~strf::hex(0x1000)) );
+        TEST("     0x0").with(punct) ( strf::join_right(8)(~strf::hex(0x0)) );
+        TEST("   0x100").with(punct) ( strf::join_right(8)(~strf::hex(0x100)) );
+        TEST(" 0x1'000").with(punct) ( strf::join_right(8)(~strf::hex(0x1000)) );
 
-        TEST("     0x0").facets(punct) ( strf::join_right(8)(~strf::hex(0x0)) );
-        TEST("   0x100").facets(punct) ( strf::join_right(8)(~strf::hex(0x100)) );
-        TEST(" 0x1'000").facets(punct) ( strf::join_right(8)(~strf::hex(0x1000)) );
+        TEST("     0x0").with(punct) ( strf::join_right(8)(~strf::hex(0x0)) );
+        TEST("   0x100").with(punct) ( strf::join_right(8)(~strf::hex(0x100)) );
+        TEST(" 0x1'000").with(punct) ( strf::join_right(8)(~strf::hex(0x1000)) );
     }
 
     {
         auto punct = strf::monotonic_grouping<16>{3}.thousands_sep(0x10FFFF);
-        TEST(u8" 0x1\U0010FFFF000").facets(punct) (~strf::hex(0x1000) > 8);
-        TEST(u8" 0x1\U0010FFFF000").facets(punct) (strf::join_right(8)(~strf::hex(0x1000) > 8));
-        TEST(u8"---0x1\U0010FFFF000").facets(punct)
+        TEST(u8" 0x1\U0010FFFF000").with(punct) (~strf::hex(0x1000) > 8);
+        TEST(u8" 0x1\U0010FFFF000").with(punct) (strf::join_right(8)(~strf::hex(0x1000) > 8));
+        TEST(u8"---0x1\U0010FFFF000").with(punct)
             (strf::join_right(8)(u8"---", ~strf::hex(0x1000)));
     }
 
     {
         TEST("1'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7")
-            .facets(strf::monotonic_grouping<8>{1}.thousands_sep('\''))
+            .with(strf::monotonic_grouping<8>{1}.thousands_sep('\''))
             ( strf::oct(01777777777777777777777LL) );
     }
     {
@@ -322,14 +322,14 @@ int main()
             u8"7\U0010FFFF" u8"7";
 
         TEST(expected)
-            .facets(strf::monotonic_grouping<8>{1}.thousands_sep(0x10FFFF))
+            .with(strf::monotonic_grouping<8>{1}.thousands_sep(0x10FFFF))
             ( strf::oct(01777777777777777777777LL) );
     }
     {
         auto punct = strf::monotonic_grouping<8>{3}.thousands_sep(0x10FFFF);
-        TEST(u8"  01\U0010FFFF000").facets(punct) (~strf::oct(01000) > 8);
-        TEST(u8"  01\U0010FFFF000").facets(punct) (strf::join_right(8)(~strf::oct(01000)));
-        TEST(u8"----01\U0010FFFF000").facets(punct) (strf::join_right(8)(u8"----", ~strf::oct(01000)));
+        TEST(u8"  01\U0010FFFF000").with(punct) (~strf::oct(01000) > 8);
+        TEST(u8"  01\U0010FFFF000").with(punct) (strf::join_right(8)(~strf::oct(01000)));
+        TEST(u8"----01\U0010FFFF000").with(punct) (strf::join_right(8)(u8"----", ~strf::oct(01000)));
     }
 
 
@@ -339,32 +339,32 @@ int main()
         auto punct = strf::monotonic_grouping<10>{3}.thousands_sep(0xD800);
 
         TEST("100\xED\xA0\x80" "000\xED\xA0\x80" "000")
-            .facets(punct)
-            .facets(strf::allow_surrogates(true))
+            .with(punct)
+            .with(strf::allow_surrogates(true))
             (100000000);
 
         TEST(u8"100\uFFFD000\uFFFD000")
-            .facets(punct)
-            .facets(strf::allow_surrogates(false))
+            .with(punct)
+            .with(strf::allow_surrogates(false))
             (100000000);
 
         TEST(u8"100;000;000")
-            .facets(punct)
-            .facets(strf::allow_surrogates(false))
-            .facets(strf::encoding_error{U';'})
+            .with(punct)
+            .with(strf::allow_surrogates(false))
+            .with(strf::encoding_error{U';'})
             (100000000);
 
         TEST(u8"100000000")
-            .facets(punct)
-            .facets(strf::allow_surrogates{false})
-            .facets(strf::encoding_error{})
+            .with(punct)
+            .with(strf::allow_surrogates{false})
+            .with(strf::encoding_error{})
             (100000000);
 
         auto ec = std::make_error_code(std::errc::message_size);
         TEST_ERR(u8"", ec)
-            .facets(punct)
-            .facets(strf::allow_surrogates(false))
-            .facets(strf::encoding_error(ec))
+            .with(punct)
+            .with(strf::allow_surrogates(false))
+            .with(strf::encoding_error(ec))
             (100000000);
     }
 */

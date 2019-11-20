@@ -126,7 +126,7 @@ void basic_facet_sample()
     constexpr int base = 10;
     auto punct = strf::str_grouping<base>{"\4\3\2"}.thousands_sep(U'.');
     auto s = strf::to_string
-        .facets(punct)
+        .with(punct)
         ("one hundred billions = ", 100000000000ll);
 
     assert(s == "one hundred billions = 1.00.00.000.0000");
@@ -139,7 +139,7 @@ void constrained_facet()
     //[ constrained_facet_sample
     auto facet_obj = strf::constrain<std::is_signed>(strf::monotonic_grouping<10>{3});
 
-    auto s = strf::to_string.facets(facet_obj)(100000u, "  ", 100000);
+    auto s = strf::to_string.with(facet_obj)(100000u, "  ", 100000);
 
     assert(s == "100000  100,000");
     //]
@@ -158,7 +158,7 @@ void overriding_sample()
     // hence the presence of punt_dec_1 bellow has no effect.
 
     auto s = strf::to_string
-        .facets( punct_dec_1
+        .with( punct_dec_1
                , punct_dec_2
                , strf::constrain<std::is_signed>(punct_dec_3) )
         ( 100000, "  ", 100000u ) ;
@@ -198,8 +198,8 @@ void sample_numpunct_with_alternative_charset()
 //[ numpuct__with_alternative_encoding
     // Writting in Windows-1252
     auto s = strf::to_string
-        .facets(strf::windows_1252<char>())
-        .facets(strf::str_grouping<10>{"\4\3\2"}.thousands_sep(0x2022))
+        .with(strf::windows_1252<char>())
+        .with(strf::str_grouping<10>{"\4\3\2"}.thousands_sep(0x2022))
         ("one hundred billions = ", 100000000000ll);
 
     // The character U+2022 is encoded as '\225' in Windows-1252
@@ -254,7 +254,7 @@ void monotonic_grouping()
     constexpr int base = 10;
 
     auto str = strf::to_string
-        .facets(strf::monotonic_grouping<base>{3}.thousands_sep(U'.'))
+        .with(strf::monotonic_grouping<base>{3}.thousands_sep(U'.'))
         (100000000000ll);
 
     assert(str == "100.000.000.000");
@@ -267,7 +267,7 @@ void str_grouping()
     constexpr int base = 10;
 
     auto punct = strf::str_grouping<base>{"\4\3\2"};
-    auto str = strf::to_string.facets(punct)(100000000000ll);
+    auto str = strf::to_string.with(punct)(100000000000ll);
     assert(str == "1,00,00,000,0000");
     //]
 }
@@ -276,7 +276,7 @@ void punct_non_decimal()
 {
     //[punct_non_decimal
     auto str = strf::to_string
-        .facets(strf::monotonic_grouping<16>{4}.thousands_sep(U'\''))
+        .with(strf::monotonic_grouping<16>{4}.thousands_sep(U'\''))
         (strf::hex(0xffffffffffLL));
 
     assert(str == "ff'ffff'ffff");
@@ -287,7 +287,7 @@ void punct_non_decimal()
 // {
 //     //[width_as_len
 //     //     auto str = strf::to_u8string
-//         .facets(strf::width_as_len<char8_t>{})
+//         .with(strf::width_as_len<char8_t>{})
 //         (strf::right(u8"áéíóú", 12, U'.'));
 
 //     assert(str == u8"..áéíóú");
@@ -297,7 +297,7 @@ void punct_non_decimal()
 // {
 //     //[width_as_u32len
 //     //     auto str = strf::to_u8string
-//         .facets(strf::width_as_u32len<char8_t>{})
+//         .with(strf::width_as_u32len<char8_t>{})
 //         (strf::right(u8"áéíóú", 12, U'.'));
 
 //     assert(str == u8".......áéíóú");
@@ -320,7 +320,7 @@ void punct_non_decimal()
 //     };
 
 //     auto str = strf::to_u8string
-//         .facets(strf::width_as(my_width_calculator))
+//         .with(strf::width_as(my_width_calculator))
 //         (strf::right(u8"今晩は", 10, U'.'));
 
 //     assert(str == u8"....今晩は");
@@ -336,18 +336,18 @@ const auto my_default_facets = strf::pack
     , strf::surrogate_policy::lax
     , strf::encoding_error::ignore );
 
-const auto to_string = strf::to_string.facets(my_default_facets);
+const auto to_string = strf::to_string.with(my_default_facets);
 
 template <typename Str>
 inline auto append(Str& str)
 {
-    return strf::append(str).facets(my_default_facets);
+    return strf::append(str).with(my_default_facets);
 }
 
 template <typename ... Args>
 inline decltype(auto) to(Args&& ... args)
 {
-    return strf::to(std::forward<Args>(args)...).facets(my_default_facets);
+    return strf::to(std::forward<Args>(args)...).with(my_default_facets);
 }
 
 } // namespace my
@@ -367,7 +367,7 @@ void using_my_customizations()
 
     // Overriding numpunct_c<16> back to default:
     str = my::to_string
-        .facets(strf::default_numpunct<16>())
+        .with(strf::default_numpunct<16>())
         (x, " in hexadecimal is ", ~strf::hex(x));
     assert(str == "100,000,000 in hexadecimal is 0x5f5e100");
 }

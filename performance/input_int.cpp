@@ -282,9 +282,9 @@ int main()
     auto fmt_loc_int = fmt::compile<int>("{:n}");
     strf::monotonic_grouping<10> punct3(3);
 
-    PRINT_BENCHMARK("strf::to(dest).facets(punct3) (25)")
+    PRINT_BENCHMARK("strf::to(dest).with(punct3) (25)")
     {
-        (void)strf::to(dest).facets(punct3)(25);
+        (void)strf::to(dest).with(punct3)(25);
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, fmt_loc_int, 25)")
@@ -306,9 +306,9 @@ int main()
 
     auto fmt_loc_longlong = fmt::compile<long long>("{:n}");
 
-    PRINT_BENCHMARK("strf::to(dest).facets(punct3) (LLONG_MAX)")
+    PRINT_BENCHMARK("strf::to(dest).with(punct3) (LLONG_MAX)")
     {
-        (void)strf::to(dest).facets(punct3)(LLONG_MAX);
+        (void)strf::to(dest).with(punct3)(LLONG_MAX);
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, fmt_loc_longlong, LLONG_MAX)")
@@ -330,14 +330,14 @@ int main()
     std::cout << "\n               With punctuation, using a non-ascci character U+22C4\n";
     auto punct3_bigsep = punct3.thousands_sep(0x22C4);
 
-    PRINT_BENCHMARK("strf::to(dest).facets(punct3_bigsep) (25)")
+    PRINT_BENCHMARK("strf::to(dest).with(punct3_bigsep) (25)")
     {
-        (void)strf::to(dest).facets(punct3_bigsep)(25);
+        (void)strf::to(dest).with(punct3_bigsep)(25);
         clobber();
     }
-    PRINT_BENCHMARK("strf::to(dest).facets(punct3_bigsep) (LLONG_MAX)")
+    PRINT_BENCHMARK("strf::to(dest).with(punct3_bigsep) (LLONG_MAX)")
     {
-        (void)strf::to(dest).facets(punct3_bigsep)(LLONG_MAX);
+        (void)strf::to(dest).with(punct3_bigsep)(LLONG_MAX);
         clobber();
     }
 

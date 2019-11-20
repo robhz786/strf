@@ -112,32 +112,32 @@ int main()
     {
         (void)strf::to(u8dest) (strf::fmt(u8str5) > 5);
     }
-    PRINT_BENCHMARK("strf::to(u8dest) .facets(strf::width_as_u32len<char>{}) (strf::fmt(u8str5) > 5)")
+    PRINT_BENCHMARK("strf::to(u8dest) .with(strf::width_as_u32len<char>{}) (strf::fmt(u8str5) > 5)")
     {
         (void)strf::to(u8dest)
-            .facets(strf::width_as_u32len<char>())
+            .with(strf::width_as_u32len<char>())
             (strf::fmt(u8str5) > 5);
     }
-    PRINT_BENCHMARK("strf::to(u8dest) .facets(custom_wcalc<char>{}) (strf::fmt(u8str5) > 5)")
+    PRINT_BENCHMARK("strf::to(u8dest) .with(custom_wcalc<char>{}) (strf::fmt(u8str5) > 5)")
     {
         (void)strf::to(u8dest)
-            .facets(custom_wcalc<char>{})
+            .with(custom_wcalc<char>{})
             (strf::fmt(u8str5) > 5);
     }
     PRINT_BENCHMARK("strf::to(u8dest) (strf::join_right(5)(u8str5))")
     {
         (void)strf::to(u8dest) (strf::join_right(5)(u8str5));
     }
-    PRINT_BENCHMARK("strf::to(u8dest) .facets(strf::width_as_u32len<char>{}) (strf::join_right(5)(u8str5))")
+    PRINT_BENCHMARK("strf::to(u8dest) .with(strf::width_as_u32len<char>{}) (strf::join_right(5)(u8str5))")
     {
         (void)strf::to(u8dest)
-            .facets(strf::width_as_u32len<char>())
+            .with(strf::width_as_u32len<char>())
             (strf::join_right(5)(u8str5));
     }
-    PRINT_BENCHMARK("strf::to(u8dest) .facets(custom_wcalc<char>{}) (strf::join_right(5)(u8str5))")
+    PRINT_BENCHMARK("strf::to(u8dest) .with(custom_wcalc<char>{}) (strf::join_right(5)(u8str5))")
     {
         (void)strf::to(u8dest)
-            .facets(custom_wcalc<char>{})
+            .with(custom_wcalc<char>{})
             (strf::join_right(5)(u8str5));
     }
 
@@ -147,16 +147,16 @@ int main()
     {
         (void)strf::to(u8dest) (strf::fmt(u8str50) > 50);
     }
-    PRINT_BENCHMARK("strf::to(u8dest) .facets(strf::width_as_u32len<char>{}) (strf::fmt(u8str50) > 50)")
+    PRINT_BENCHMARK("strf::to(u8dest) .with(strf::width_as_u32len<char>{}) (strf::fmt(u8str50) > 50)")
     {
         (void)strf::to(u8dest)
-            .facets(strf::width_as_u32len<char>{})
+            .with(strf::width_as_u32len<char>{})
             (strf::fmt(u8str50) > 50);
     }
-    PRINT_BENCHMARK("strf::to(u8dest) .facets(custom_wcalc<char>{}) (strf::fmt(u8str50) > 50)")
+    PRINT_BENCHMARK("strf::to(u8dest) .with(custom_wcalc<char>{}) (strf::fmt(u8str50) > 50)")
     {
         (void)strf::to(u8dest)
-            .facets(custom_wcalc<char>{})
+            .with(custom_wcalc<char>{})
             (strf::fmt(u8str50) > 50);
     }
 
@@ -164,16 +164,16 @@ int main()
     {
         (void)strf::to(u8dest) (strf::join_right(50)(u8str50));
     }
-    PRINT_BENCHMARK("strf::to(u8dest) .facets(strf::width_as_u32len<char>{}) (strf::join_right(50)(u8str50))")
+    PRINT_BENCHMARK("strf::to(u8dest) .with(strf::width_as_u32len<char>{}) (strf::join_right(50)(u8str50))")
     {
         (void)strf::to(u8dest)
-            .facets(strf::width_as_u32len<char>())
+            .with(strf::width_as_u32len<char>())
             (strf::join_right(50)(u8str50));
     }
-    PRINT_BENCHMARK("strf::to(u8dest) .facets(custom_wcalc<char>{}) (strf::join_right(50)(u8str50))")
+    PRINT_BENCHMARK("strf::to(u8dest) .with(custom_wcalc<char>{}) (strf::join_right(50)(u8str50))")
     {
         (void)strf::to(u8dest)
-            .facets(custom_wcalc<char>{})
+            .with(custom_wcalc<char>{})
             (strf::join_right(50)(u8str50));
     }
 
@@ -183,32 +183,32 @@ int main()
     {
         (void)strf::to(u16dest) (strf::fmt(u16str5) > 5);
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .facets(strf::width_as_u32len<char16_t>{}) (strf::fmt(u16str5) > 5)")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len<char16_t>{}) (strf::fmt(u16str5) > 5)")
     {
         (void)strf::to(u16dest)
-            .facets(strf::width_as_u32len<char16_t>{})
+            .with(strf::width_as_u32len<char16_t>{})
             (strf::fmt(u16str5) > 5);
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .facets(custom_wcalc<char16_t>{}) (strf::fmt(u16str5) > 5)")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc<char16_t>{}) (strf::fmt(u16str5) > 5)")
     {
         (void)strf::to(u16dest)
-            .facets(custom_wcalc<char16_t>{})
+            .with(custom_wcalc<char16_t>{})
             (strf::fmt(u16str5) > 5);
     }
     PRINT_BENCHMARK("strf::to(u16dest) (strf::join_right(5)(u16str5))")
     {
         (void)strf::to(u16dest) (strf::join_right(5)(u16str5));
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .facets(strf::width_as_u32len<char16_t>{}) (strf::join_right(5)(u16str5))")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len<char16_t>{}) (strf::join_right(5)(u16str5))")
     {
         (void)strf::to(u16dest)
-            .facets(strf::width_as_u32len<char16_t>())
+            .with(strf::width_as_u32len<char16_t>())
             (strf::join_right(5)(u16str5));
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .facets(custom_wcalc<char16_t>{}) (strf::join_right(5)(u16str5))")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc<char16_t>{}) (strf::join_right(5)(u16str5))")
     {
         (void)strf::to(u16dest)
-            .facets(custom_wcalc<char16_t>{})
+            .with(custom_wcalc<char16_t>{})
             (strf::join_right(5)(u16str5));
     }
 
@@ -217,32 +217,32 @@ int main()
     {
         (void)strf::to(u16dest) (strf::fmt(u16str50) > 50);
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .facets(strf::width_as_u32len<char16_t>{}) (strf::fmt(u16str50) > 50)")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len<char16_t>{}) (strf::fmt(u16str50) > 50)")
     {
         (void)strf::to(u16dest)
-            .facets(strf::width_as_u32len<char16_t>{})
+            .with(strf::width_as_u32len<char16_t>{})
             (strf::fmt(u16str50) > 50);
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .facets(custom_wcalc<char16_t>{}) (strf::fmt(u16str50) > 50)")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc<char16_t>{}) (strf::fmt(u16str50) > 50)")
     {
         (void)strf::to(u16dest)
-            .facets(custom_wcalc<char16_t>{})
+            .with(custom_wcalc<char16_t>{})
             (strf::fmt(u16str50) > 50);
     }
     PRINT_BENCHMARK("strf::to(u16dest) (strf::join_right(50)(u16str50))")
     {
         (void)strf::to(u16dest) (strf::join_right(50)(u16str50));
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .facets(strf::width_as_u32len<char16_t>{}) (strf::join_right(50)(u16str50))")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len<char16_t>{}) (strf::join_right(50)(u16str50))")
     {
         (void)strf::to(u16dest)
-            .facets(strf::width_as_u32len<char16_t>())
+            .with(strf::width_as_u32len<char16_t>())
             (strf::join_right(50)(u16str50));
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .facets(custom_wcalc<char16_t>{}) (strf::join_right(50)(u16str50))")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc<char16_t>{}) (strf::join_right(50)(u16str50))")
     {
         (void)strf::to(u16dest)
-            .facets(custom_wcalc<char16_t>{})
+            .with(custom_wcalc<char16_t>{})
             (strf::join_right(50)(u16str50));
     }
 
@@ -252,32 +252,32 @@ int main()
     {
         (void)strf::to(u16dest) (strf::fmt_cv(u8str5) > 5);
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .facets(strf::width_as_u32len<char>{}) (strf::fmt_cv(u8str5) > 5)")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len<char>{}) (strf::fmt_cv(u8str5) > 5)")
     {
         (void)strf::to(u16dest)
-            .facets(strf::width_as_u32len<char>())
+            .with(strf::width_as_u32len<char>())
             (strf::fmt_cv(u8str5) > 5);
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .facets(custom_wcalc<char>{}) (strf::fmt_cv(u8str5) > 5)")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc<char>{}) (strf::fmt_cv(u8str5) > 5)")
     {
         (void)strf::to(u16dest)
-            .facets(custom_wcalc<char>{})
+            .with(custom_wcalc<char>{})
             (strf::fmt_cv(u8str5) > 5);
     }
     PRINT_BENCHMARK("strf::to(u16dest) (strf::join_right(5)(strf::cv(u8str5)))")
     {
         (void)strf::to(u16dest) (strf::join_right(5)(strf::cv(u8str5)));
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .facets(strf::width_as_u32len<char>{}) (strf::join_right(5)(strf::cv(u8str5)))")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len<char>{}) (strf::join_right(5)(strf::cv(u8str5)))")
     {
         (void)strf::to(u16dest)
-            .facets(strf::width_as_u32len<char>())
+            .with(strf::width_as_u32len<char>())
             (strf::join_right(5)(strf::cv(u8str5)));
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .facets(custom_wcalc<char>{}) (strf::join_right(5)(strf::cv(u8str5)))")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc<char>{}) (strf::join_right(5)(strf::cv(u8str5)))")
     {
         (void)strf::to(u16dest)
-            .facets(custom_wcalc<char>{})
+            .with(custom_wcalc<char>{})
             (strf::join_right(5)(strf::cv(u8str5)));
     }
 
@@ -285,32 +285,32 @@ int main()
     {
         (void)strf::to(u16dest) (strf::fmt_cv(u8str50) > 50);
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .facets(strf::width_as_u32len<char>{}) (strf::fmt_cv(u8str50) > 50)")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len<char>{}) (strf::fmt_cv(u8str50) > 50)")
     {
         (void)strf::to(u16dest)
-            .facets(strf::width_as_u32len<char>())
+            .with(strf::width_as_u32len<char>())
             (strf::fmt_cv(u8str50) > 50);
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .facets(custom_wcalc<char>{}) (strf::fmt_cv(u8str50) > 50)")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc<char>{}) (strf::fmt_cv(u8str50) > 50)")
     {
         (void)strf::to(u16dest)
-            .facets(custom_wcalc<char>{})
+            .with(custom_wcalc<char>{})
             (strf::fmt_cv(u8str50) > 50);
     }
     PRINT_BENCHMARK("strf::to(u16dest) (strf::join_right(50)(strf::cv(u8str50)))")
     {
         (void)strf::to(u16dest) (strf::join_right(50)(strf::cv(u8str50)));
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .facets(strf::width_as_u32len<char>{}) (strf::join_right(50)(strf::cv(u8str50)))")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len<char>{}) (strf::join_right(50)(strf::cv(u8str50)))")
     {
         (void)strf::to(u16dest)
-            .facets(strf::width_as_u32len<char>())
+            .with(strf::width_as_u32len<char>())
             (strf::join_right(50)(strf::cv(u8str50)));
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .facets(custom_wcalc<char>{}) (strf::join_right(50)(strf::cv(u8str50)))")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc<char>{}) (strf::join_right(50)(strf::cv(u8str50)))")
     {
         (void)strf::to(u16dest)
-            .facets(custom_wcalc<char>{})
+            .with(custom_wcalc<char>{})
             (strf::join_right(50)(strf::cv(u8str50)));
     }
     return 0;

@@ -55,7 +55,7 @@ int main()
    {
        //[ trstr_omit
        auto str = strf::to_string
-           .facets(strf::tr_invalid_arg::ignore)
+           .with(strf::tr_invalid_arg::ignore)
            .tr("{} are {}. {} are {}.", "Roses", "red", "Violets");
        assert(str == "Roses are red. Violets are .");
        //]
@@ -66,7 +66,7 @@ int main()
        try
        {
            auto str = strf::to_string
-               .facets(strf::tr_invalid_arg::stop)
+               .with(strf::tr_invalid_arg::stop)
                .tr("{} are {}. {} are {}.", "Roses", "red", "Violets");
        }
        catch(strf::tr_string_syntax_error&)

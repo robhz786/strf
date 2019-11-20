@@ -68,7 +68,7 @@ int main()
     // errors
     //
     BOOST_TEST_THROWS( (strf::to_string
-                            .facets(strf::tr_invalid_arg::stop)
+                            .with(strf::tr_invalid_arg::stop)
                             .tr("{ }__{2}--{}=={}..{}::{}~~", 0, 1, 2, 3))
                       , strf::tr_string_syntax_error );
 
@@ -76,11 +76,11 @@ int main()
         .tr(u8"{ }__{2}--{}=={}..{}::{}~~", 0, 1, 2, 3);
 
     TEST("0__2--1==2..3::~~")
-        .facets(strf::tr_invalid_arg::ignore)
+        .with(strf::tr_invalid_arg::ignore)
         .tr("{ }__{2}--{}=={}..{}::{}~~", 0, 1, 2, 3);
 
     BOOST_TEST_THROWS( (strf::to_string
-                            .facets(strf::tr_invalid_arg::stop)
+                            .with(strf::tr_invalid_arg::stop)
                             .tr("{ }__{10}--{}=={}..{}::{}~~", 0, 1, 2, 3))
                       , strf::tr_string_syntax_error );
 
@@ -88,7 +88,7 @@ int main()
         .tr(u8"{ }__{10}--{}=={}..{}::{}~~", 0, 1, 2, 3);
 
     TEST("0__--1==2..3::~~")
-        .facets(strf::tr_invalid_arg::ignore)
+        .with(strf::tr_invalid_arg::ignore)
         .tr("{ }__{10}--{}=={}..{}::{}~~", 0, 1, 2, 3);
 
 

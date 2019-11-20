@@ -11,7 +11,7 @@ int main()
     (void)strf::to(u8dest) (strf::fmt("hello") > 5);
 
     (void)strf::to(u8dest)
-        .facets(strf::width_as_u32len<char>())
+        .with(strf::width_as_u32len<char>())
         (strf::fmt("hello") > 5);
 
 //    TEST("   abc")   ( strf::fmt("abc") > 6 );

@@ -38,7 +38,7 @@ class destination_common
 public:
 
     template <typename ... FPE>
-    STRF_NODISCARD constexpr auto facets(FPE&& ... fpe) const &
+    STRF_NODISCARD constexpr auto with(FPE&& ... fpe) const &
     {
         static_assert( std::is_copy_constructible<OutbufCreator>::value
                      , "OutbufCreator must be copy constructible" );
@@ -54,7 +54,7 @@ public:
     }
 
     template <typename ... FPE>
-    STRF_NODISCARD constexpr auto facets(FPE&& ... fpe) &&
+    STRF_NODISCARD constexpr auto with(FPE&& ... fpe) &&
     {
         static_assert( std::is_move_constructible<OutbufCreator>::value
                      , "OutbufCreator must be move constructible" );
@@ -291,7 +291,7 @@ public:
     constexpr destination_no_reserve(const destination_no_reserve&) = default;
     constexpr destination_no_reserve(destination_no_reserve&&) = default;
 
-    using _common::facets;
+    using _common::with;
     using _common::operator();
     using _common::tr;
     using _common::reserve_calc;
@@ -415,7 +415,7 @@ public:
     constexpr destination_with_given_size(const destination_with_given_size&) = default;
     constexpr destination_with_given_size(destination_with_given_size&&) = default;
 
-    using _common::facets;
+    using _common::with;
     using _common::operator();
     using _common::tr;
     using _common::reserve_calc;
@@ -532,7 +532,7 @@ public:
     constexpr destination_calc_size(const destination_calc_size&) = default;
     constexpr destination_calc_size(destination_calc_size&&) = default;
 
-    using _common::facets;
+    using _common::with;
     using _common::operator();
     using _common::tr;
     using _common::no_reserve;
