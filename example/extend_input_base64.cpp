@@ -384,6 +384,8 @@ void tests()
             "    p5IGRvZy4=\n";
 
         assert(result == expected);
+        (void)result;
+        (void)expected;
     }
     {
         // When the length of last line is exactly as base64_facet::line_length,

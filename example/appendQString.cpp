@@ -169,6 +169,8 @@ int main()
 
     // append_count is equal to the value returned by QStringAppender::finish()
     assert(str.length() == (int)append_count + initial_length);
+    (void)initial_length;
+    (void)append_count;
 
     return 0;
 }

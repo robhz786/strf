@@ -203,7 +203,7 @@ void sample_numpunct_with_alternative_charset()
         ("one hundred billions = ", 100000000000ll);
 
     // The character U+2022 is encoded as '\225' in Windows-1252
-    assert(s == "one hundred billions = 1\2250000\225000\2250000");
+    assert(s == "one hundred billions = 1\225""0000\225""000\225""0000");
 //]
 }
 

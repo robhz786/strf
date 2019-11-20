@@ -4,7 +4,7 @@ mkdir cmake_build
 dir
 cd cmake_build
 cmake -A %ARCH% ^
-    -DCMAKE_CXX_FLAGS=" /W4 /EHsc" ^
+    -DCMAKE_CXX_FLAGS=" /Wall /EHsc" ^
     -DCMAKE_CXX_STANDARD=%CXX_STANDARD% ^
     -DSTRF_BUILD_TESTS=ON ^
     -DSTRF_BUILD_EXAMPLES=ON ^
