@@ -15,6 +15,13 @@ public:
     {
     }
 
+#if defined(STRF_NO_CXX17_COPY_ELISION)
+    QStringCreator(QStringCreator&& str);
+#else
+    QStringCreator(QStringrCreator&&) = delete;
+    QStringCreator(const QStringCreator&) = delete;
+#endif
+
     explicit QStringCreator(std::size_t size)
         : strf::basic_outbuf<char16_t>(_buffer, _buffer_size)
     {
@@ -64,7 +71,7 @@ QString QStringCreator::finish()
     return std::move(_str);
 }
 
-class QStringCreatorCreator
+class QStringCreatorFactory
 {
 public:
     using char_type = char16_t;
@@ -81,7 +88,7 @@ public:
 };
 
 
-constexpr strf::dispatcher_no_reserve<QStringCreatorCreator> toQString{};
+constexpr strf::dispatcher_no_reserve<QStringCreatorFactory> toQString{};
 
 int main()
 {

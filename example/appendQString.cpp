@@ -16,6 +16,13 @@ public:
 
     explicit QStringAppender(QString& str, std::size_t size);
 
+#if defined(STRF_NO_CXX17_COPY_ELISION)
+    QStringAppender(QStringAppender&& str);
+#else
+    QStringAppender(QStringAppender&& str) = delete;
+    QStringAppender(const QStringAppender& str) = delete;
+#endif
+
     void recycle() override;
 
     std::size_t finish();
@@ -90,24 +97,20 @@ std::size_t QStringAppender::finish()
 }
 //]
 
-//[QStringAppenderCreator
+//[QStringAppenderFactory
 
-class QStringAppenderCreator
+class QStringAppenderFactory
 {
 public:
 
     using char_type = char16_t;
     using finish_type = std::size_t;
 
-    QStringAppenderCreator(QString& str)
+    QStringAppenderFactory(QString& str)
         : _str(str)
     {}
 
-#if ! defined(STRF_NO_CXX17_COPY_ELISION)
-
-    QStringAppenderCreator(QStringAppenderCreator&& str);
-
-#endif
+    QStringAppenderFactory(const QStringAppenderFactory& str) = default;
 
     template <typename ... Printers>
     finish_type write(const Printers& ... printers) const
@@ -148,7 +151,7 @@ private:
 //[QStringAppender_append
 inline auto append(QString& str)
 {
-    return strf::dispatcher_no_reserve<QStringAppenderCreator> {str};
+    return strf::dispatcher_no_reserve<QStringAppenderFactory> {str};
 }
 //]
 
