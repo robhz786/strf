@@ -29,13 +29,13 @@ struct dispatcher_tag {};
 
 template < template <typename, typename> class DispatcherTmpl
          , class OutbufCreator
-         , class FPack >
+         , class FPack
+         , class PreviewType
+         , class CharT = typename OutbufCreator::char_type >
 class dispatcher_common
 {
     using _dispatcher_type = DispatcherTmpl<OutbufCreator, FPack>;
 public:
-
-    using char_type = typename OutbufCreator::char_type;
 
     template <typename ... FPE>
     STRF_NODISCARD constexpr auto facets(FPE&& ... fpe) const &
@@ -129,19 +129,19 @@ public:
     decltype(auto) operator()(const Args& ... args) const &
     {
         const auto& self = static_cast<const _dispatcher_type&>(*this);
-        typename _dispatcher_type::_preview_type preview;
+        PreviewType preview;
         return self._write
             ( preview
-            , _as_printer_cref(make_printer<char_type, FPack>( self._fpack
-                                                             , preview
-                                                             , args ))... );
+            , _as_printer_cref(make_printer<CharT, FPack>( self._fpack
+                                                         , preview
+                                                         , args ))... );
     }
 
 #if defined(STRF_HAS_STD_STRING_VIEW)
 
     template <typename ... Args>
     decltype(auto) tr
-        ( const std::basic_string_view<char_type>& str
+        ( const std::basic_string_view<CharT>& str
         , const Args& ... args ) const &
     {
 
@@ -150,7 +150,7 @@ public:
 
     // template <typename ... Args>
     // decltype(auto) tr
-    //     ( const std::basic_string_view<char_type>& str
+    //     ( const std::basic_string_view<CharT>& str
     //     , const Args& ... args ) &&
     // {
     //     return std::move(*this)._tr_write(str.begin, str.end(), args...);
@@ -159,37 +159,37 @@ public:
 #else
 
     template <typename ... Args>
-    decltype(auto) tr(const char_type* str, const Args& ... args) const &
+    decltype(auto) tr(const CharT* str, const Args& ... args) const &
     {
         return _tr_write
-            ( str, str + std::char_traits<char_type>::length(str), args... );
+            ( str, str + std::char_traits<CharT>::length(str), args... );
     }
 
     // template <typename ... Args>
-    // decltype(auto) tr(const char_type* str, const Args& ... args) &&
+    // decltype(auto) tr(const CharT* str, const Args& ... args) &&
     // {
     //     return std::move(*this)._tr_write
-    //         ( str, str + std::char_traits<char_type>::length(str), args... );
+    //         ( str, str + std::char_traits<CharT>::length(str), args... );
     // }
 
 #endif
 
 private:
 
-    static inline const strf::printer<char_type>&
-    _as_printer_cref(const strf::printer<char_type>& p)
+    static inline const strf::printer<CharT>&
+    _as_printer_cref(const strf::printer<CharT>& p)
     {
         return p;
     }
-    static inline const strf::printer<char_type>*
-    _as_printer_cptr(const strf::printer<char_type>& p)
+    static inline const strf::printer<CharT>*
+    _as_printer_cptr(const strf::printer<CharT>& p)
     {
          return &p;
     }
 
     template < typename ... Args >
-    decltype(auto) _tr_write( const char_type* str
-                            , const char_type* str_end
+    decltype(auto) _tr_write( const CharT* str
+                            , const CharT* str_end
                             , const Args& ... args) const &
     {
         return _tr_write_2
@@ -197,38 +197,38 @@ private:
     }
 
     template < std::size_t ... I, typename ... Args >
-    decltype(auto) _tr_write_2( const char_type* str
-                              , const char_type* str_end
+    decltype(auto) _tr_write_2( const CharT* str
+                              , const CharT* str_end
                               , std::index_sequence<I...>
                               , const Args& ... args) const &
     {
-        typename _dispatcher_type::_preview_type preview_arr[sizeof...(args)];
+        PreviewType preview_arr[sizeof...(args)];
         const auto& self = static_cast<const _dispatcher_type&>(*this);
         return _tr_write_3
             ( str
             , str_end
             , preview_arr
-            , { _as_printer_cptr( make_printer<char_type, FPack>( self._fpack
-                                                                , preview_arr[I]
-                                                                , args ))... } );
+            , { _as_printer_cptr( make_printer<CharT, FPack>( self._fpack
+                                                            , preview_arr[I]
+                                                            , args ))... } );
     }
 
     template < typename Preview, typename ... Args >
     decltype(auto) _tr_write_3
-        ( const char_type* str
-        , const char_type* str_end
+        ( const CharT* str
+        , const CharT* str_end
         , Preview* preview_arr
-        , std::initializer_list<const strf::printer<char_type>*> args ) const &
+        , std::initializer_list<const strf::printer<CharT>*> args ) const &
     {
         const auto& self = static_cast<const _dispatcher_type&>(*this);
 
-        using catenc = strf::encoding_c<char_type>;
+        using catenc = strf::encoding_c<CharT>;
         using caterr = strf::tr_invalid_arg_c;
         decltype(auto) enc = strf::get_facet<catenc, void>(self._fpack);
         decltype(auto) arg_err = strf::get_facet<caterr, void>(self._fpack);
 
-        typename _dispatcher_type::_preview_type preview;
-        strf::detail::tr_string_printer<char_type> tr_printer
+        PreviewType preview;
+        strf::detail::tr_string_printer<CharT> tr_printer
             (preview, preview_arr, args, str, str_end, enc, arg_err);
 
         return self._write(preview, tr_printer);
@@ -240,12 +240,18 @@ private:
 template < typename OutbufCreator, typename FPack >
 class dispatcher_no_reserve
     : private strf::detail::dispatcher_common
-        < dispatcher_no_reserve, OutbufCreator, FPack>
+        < strf::dispatcher_no_reserve
+        , OutbufCreator
+        , FPack
+        , strf::print_preview<false, false> >
 {
     using _common = strf::detail::dispatcher_common
-        < strf::dispatcher_no_reserve, OutbufCreator, FPack>;
+        < strf::dispatcher_no_reserve
+        , OutbufCreator
+        , FPack
+        , strf::print_preview<false, false> >;
 
-    template < template <typename, typename> class, class, class>
+    template <template <typename, typename> class, class, class, class, class>
     friend class strf::detail::dispatcher_common;
 
     using _preview_type = strf::print_preview<false, false>;
@@ -354,12 +360,18 @@ private:
 template < typename OutbufCreator, typename FPack >
 class dispatcher_with_given_size
     : public strf::detail::dispatcher_common
-        < dispatcher_with_given_size, OutbufCreator, FPack>
+        < strf::dispatcher_with_given_size
+        , OutbufCreator
+        , FPack
+        , strf::print_preview<false, false> >
 {
     using _common = strf::detail::dispatcher_common
-        < strf::dispatcher_with_given_size, OutbufCreator, FPack>;
+        < strf::dispatcher_with_given_size
+        , OutbufCreator
+        , FPack
+        , strf::print_preview<false, false> >;
 
-    template < template <typename, typename> class, class, class>
+    template < template <typename, typename> class, class,class, class, class>
     friend class strf::detail::dispatcher_common;
 
     using _preview_type = strf::print_preview<false, false>;
@@ -469,12 +481,18 @@ private:
 template < typename OutbufCreator, typename FPack >
 class dispatcher_calc_size
     : public strf::detail::dispatcher_common
-        < dispatcher_calc_size, OutbufCreator, FPack>
+        < strf::dispatcher_calc_size
+        , OutbufCreator
+        , FPack
+        , strf::print_preview<true, false> >
 {
     using _common = strf::detail::dispatcher_common
-        < strf::dispatcher_calc_size, OutbufCreator, FPack>;
+        < strf::dispatcher_calc_size
+        , OutbufCreator
+        , FPack
+        , strf::print_preview<true, false> >;
 
-    template < template <typename, typename> class, class, class>
+    template < template <typename, typename> class, class, class, class, class>
     friend class strf::detail::dispatcher_common;
 
     using _preview_type = strf::print_preview<true, false>;
