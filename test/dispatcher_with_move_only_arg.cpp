@@ -55,7 +55,7 @@ private:
 
 auto write(foo&& foo_)
 {
-    return strf::dispatcher<strf::facets_pack<>, foo_writer, foo>(std::move(foo_));
+    return strf::destination<strf::facets_pack<>, foo_writer, foo>(std::move(foo_));
 }
 
 

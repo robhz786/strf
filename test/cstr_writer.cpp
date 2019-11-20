@@ -54,7 +54,7 @@ void test_write_into_cstr_writer_after_finish()
 }
 
 template <typename CharT>
-void test_dispatchers()
+void test_destinations()
 {
 
     const auto half_str = test_utils::make_half_string<CharT>();
@@ -105,10 +105,10 @@ int main()
     test_cstr_writer_destination_too_small();
     test_write_into_cstr_writer_after_finish();
 
-    test_dispatchers<char>();
-    test_dispatchers<char16_t>();
-    test_dispatchers<char32_t>();
-    test_dispatchers<wchar_t>();
+    test_destinations<char>();
+    test_destinations<char16_t>();
+    test_destinations<char32_t>();
+    test_destinations<wchar_t>();
 
     return boost::report_errors();
 }

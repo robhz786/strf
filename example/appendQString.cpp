@@ -151,7 +151,7 @@ private:
 //[QStringAppender_append
 inline auto append(QString& str)
 {
-    return strf::dispatcher_no_reserve<QStringAppenderFactory> {str};
+    return strf::destination_no_reserve<QStringAppenderFactory> {str};
 }
 //]
 

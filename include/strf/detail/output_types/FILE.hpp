@@ -7,7 +7,7 @@
 
 #include <cstdio>
 #include <cstring>
-#include <strf/dispatcher.hpp>
+#include <strf/destination.hpp>
 
 STRF_NAMESPACE_BEGIN
 
@@ -207,14 +207,14 @@ private:
 template <typename CharT = char>
 inline auto write(std::FILE* destination)
 {
-    return strf::dispatcher_no_reserve
+    return strf::destination_no_reserve
         < strf::detail::narrow_cfile_writer_creator<CharT> >
         (destination);
 }
 
 inline auto wwrite(std::FILE* destination)
 {
-    return strf::dispatcher_no_reserve
+    return strf::destination_no_reserve
         < strf::detail::wide_cfile_writer_creator >
         (destination);
 }

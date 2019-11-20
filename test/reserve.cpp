@@ -87,7 +87,7 @@ public:
 
 constexpr auto reservation_test()
 {
-    return strf::dispatcher_no_reserve<reservation_tester_creator>();
+    return strf::destination_no_reserve<reservation_tester_creator>();
 }
 
 

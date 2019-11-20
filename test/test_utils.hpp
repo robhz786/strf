@@ -399,7 +399,7 @@ auto make_tester
    , const char* function
    , double reserve_factor = 1.0 )
 {
-   return strf::dispatcher_calc_size
+   return strf::destination_calc_size
        < test_utils::input_tester_creator<CharT> >
        ( expected, filename, line, function, reserve_factor);
 }
@@ -412,7 +412,7 @@ auto make_tester
    , const char* function
    , double reserve_factor = 1.0 )
 {
-   return strf::dispatcher_calc_size
+   return strf::destination_calc_size
        < test_utils::input_tester_creator<CharT> >
        ( expected, filename, line, function, reserve_factor);
 }

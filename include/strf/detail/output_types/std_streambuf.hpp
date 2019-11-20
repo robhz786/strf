@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <streambuf>
-#include <strf/dispatcher.hpp>
+#include <strf/destination.hpp>
 #include <strf/outbuf.hpp>
 
 STRF_NAMESPACE_BEGIN
@@ -124,7 +124,7 @@ private:
 template <typename CharT, typename Traits = std::char_traits<CharT> >
 inline auto write( std::basic_streambuf<CharT, Traits>& dest )
 {
-    return strf::dispatcher_no_reserve
+    return strf::destination_no_reserve
         < strf::detail::basic_streambuf_writer_creator<CharT, Traits> >
         (dest);
 }

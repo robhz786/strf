@@ -78,7 +78,7 @@ void test_failing_to_finish()
 }
 
 template <typename CharT>
-void test_dispatcher()
+void test_destination()
 {
     auto half_str = test_utils::make_half_string<CharT>();
     auto full_str = test_utils::make_full_string<CharT>();
@@ -97,10 +97,10 @@ void test_dispatcher()
 
 int main()
 {
-    test_dispatcher<char>();
-    test_dispatcher<char16_t>();
-    test_dispatcher<char32_t>();
-    test_dispatcher<wchar_t>();
+    test_destination<char>();
+    test_destination<char16_t>();
+    test_destination<char32_t>();
+    test_destination<wchar_t>();
 
     test_successfull_writing<char>();
     test_successfull_writing<char16_t>();

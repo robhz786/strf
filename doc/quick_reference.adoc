@@ -29,7 +29,7 @@ std::string sample()
     int x = 100;
 
     std::string str =
-        strf::to_string // the dispatcher
+        strf::to_string // the destination
         .reserve(100)   // The reserved capacity in the created string
         .facets(strf::monotonic_grouping<10>{3}) // numeric punctuation
         .tr("{0} times {0} is equal to {1}", x, x*x);
@@ -39,13 +39,13 @@ std::string sample()
 }
 ----
 
-[[dispatchers]]
-=== Dispatchers
+[[destinations]]
+=== Destinations
 
 ////
 [%header,cols=2*]
 |===
-| Dispatcher       | Return type
+| Destination       | Return type
 | `to_string`      | `std::string`
 | `to_u16string`   | `std::u16string`
 | `to_u326string`  | `std::u32string`
@@ -79,7 +79,7 @@ Where `CharT` can be `char`, `char8_t`, `char16_t`, `char32_t` or `wchar_t`.
 
 
 
-The "dispatcher" is what defines the effect and also the return type of the main usage syntax, as listed below:
+The "destination" is what defines the effect and also the return type of the main usage syntax, as listed below:
 
 [source,cpp,subs=normal]
 ----
@@ -253,7 +253,7 @@ Support reserve::: No
 
 [[reserve]]
 === Reserving
-The `reserve` and `reserve_calc` are only supported in some dispatcher types, as indicated above.
+The `reserve` and `reserve_calc` are only supported in some destination types, as indicated above.
 
 * `reserve(std::size_t count)` : The size of `count` characters is reserve in the destination object.
 * `reserve_calc()` : The necessary amount of characters is calculated and reserved in the destination object.
@@ -797,7 +797,7 @@ the number of fractional digits. `precision == 0` has the same effect as
 `precision == 1`. 
 
 === Single characters
-Type:: `CharT`, that is the output character type defined by the <<dispatchers,dispatcher>>.
+Type:: `CharT`, that is the output character type defined by the <<destinations,destination>>.
 
 Format functions::
 ( in addition to <<alignment_format_function, alignment functions>> )
@@ -810,7 +810,7 @@ and `std::basic_string<CharT, Traits, Alloc>`
 ::
 where:
 ::
-- `CharT` is the output character type ( defined by the <<dispatchers,dispatcher>> )
+- `CharT` is the output character type ( defined by the <<destinations,destination>> )
 - `Traits` can be any type that satisfies https://en.cppreference.com/w/cpp/named_req/CharTraits[CharTraits]
 - `Alloc` can be any type that satisfies https://en.cppreference.com/w/cpp/named_req/Allocator[Allocator]
 

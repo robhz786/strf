@@ -1,5 +1,5 @@
-#ifndef STRF_DISPATCHER_HPP
-#define STRF_DISPATCHER_HPP
+#ifndef STRF_DESTINATION_HPP
+#define STRF_DESTINATION_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -13,28 +13,28 @@ STRF_NAMESPACE_BEGIN
 
 template < typename OutbufCreator
          , typename FPack = strf::facets_pack<> >
-class dispatcher_with_given_size;
+class destination_with_given_size;
 
 template < typename OutbufCreator
          , typename FPack = strf::facets_pack<> >
-class dispatcher_calc_size;
+class destination_calc_size;
 
 template < typename OutbufCreator
          , typename FPack = strf::facets_pack<> >
-class dispatcher_no_reserve;
+class destination_no_reserve;
 
 namespace detail {
 
-struct dispatcher_tag {};
+struct destination_tag {};
 
-template < template <typename, typename> class DispatcherTmpl
+template < template <typename, typename> class DestinationTmpl
          , class OutbufCreator
          , class FPack
          , class PreviewType
          , class CharT = typename OutbufCreator::char_type >
-class dispatcher_common
+class destination_common
 {
-    using _dispatcher_type = DispatcherTmpl<OutbufCreator, FPack>;
+    using _destination_type = DestinationTmpl<OutbufCreator, FPack>;
 public:
 
     template <typename ... FPE>
@@ -43,14 +43,14 @@ public:
         static_assert( std::is_copy_constructible<OutbufCreator>::value
                      , "OutbufCreator must be copy constructible" );
 
-        const auto& self = static_cast<const _dispatcher_type&>(*this);
+        const auto& self = static_cast<const _destination_type&>(*this);
 
         using NewFPack = decltype
             ( strf::pack( std::declval<const FPack&>()
                                  , std::forward<FPE>(fpe) ...) );
 
-        return DispatcherTmpl<OutbufCreator, NewFPack>
-        { self, detail::dispatcher_tag{}, std::forward<FPE>(fpe) ...};
+        return DestinationTmpl<OutbufCreator, NewFPack>
+        { self, detail::destination_tag{}, std::forward<FPE>(fpe) ...};
     }
 
     template <typename ... FPE>
@@ -59,67 +59,67 @@ public:
         static_assert( std::is_move_constructible<OutbufCreator>::value
                      , "OutbufCreator must be move constructible" );
 
-        auto& self = static_cast<const _dispatcher_type&>(*this);
+        auto& self = static_cast<const _destination_type&>(*this);
 
         using NewFPack = decltype
             ( strf::pack( std::declval<FPack>()
                                  , std::forward<FPE>(fpe) ...) );
 
-        return DispatcherTmpl<OutbufCreator, NewFPack>
-        { std::move(self), detail::dispatcher_tag{}, std::forward<FPE>(fpe) ...};
+        return DestinationTmpl<OutbufCreator, NewFPack>
+        { std::move(self), detail::destination_tag{}, std::forward<FPE>(fpe) ...};
     }
 
-    constexpr strf::dispatcher_no_reserve<OutbufCreator, FPack>
+    constexpr strf::destination_no_reserve<OutbufCreator, FPack>
     no_reserve() const &
     {
-        const auto& self = static_cast<const _dispatcher_type&>(*this);
-        return { strf::detail::dispatcher_tag{}
+        const auto& self = static_cast<const _destination_type&>(*this);
+        return { strf::detail::destination_tag{}
                , self._outbuf_creator
                , self._fpack };
     }
 
-    constexpr strf::dispatcher_no_reserve<OutbufCreator, FPack>
+    constexpr strf::destination_no_reserve<OutbufCreator, FPack>
     no_reserve() &&
     {
-        auto& self = static_cast<_dispatcher_type&>(*this);
-        return { strf::detail::dispatcher_tag{}
+        auto& self = static_cast<_destination_type&>(*this);
+        return { strf::detail::destination_tag{}
                , std::move(self._outbuf_creator)
                , std::move(self._fpack) };
     }
 
-    constexpr strf::dispatcher_calc_size<OutbufCreator, FPack>
+    constexpr strf::destination_calc_size<OutbufCreator, FPack>
     reserve_calc() const &
     {
-        const auto& self = static_cast<const _dispatcher_type&>(*this);
-        return { strf::detail::dispatcher_tag{}
+        const auto& self = static_cast<const _destination_type&>(*this);
+        return { strf::detail::destination_tag{}
                , self._outbuf_creator
                , self._fpack };
     }
 
-    strf::dispatcher_calc_size<OutbufCreator, FPack>
+    strf::destination_calc_size<OutbufCreator, FPack>
     reserve_calc() &&
     {
-        auto& self = static_cast<_dispatcher_type&>(*this);
-        return { strf::detail::dispatcher_tag{}
+        auto& self = static_cast<_destination_type&>(*this);
+        return { strf::detail::destination_tag{}
                , std::move(self._outbuf_creator)
                , std::move(self._fpack) };
     }
 
-    constexpr strf::dispatcher_with_given_size<OutbufCreator, FPack>
+    constexpr strf::destination_with_given_size<OutbufCreator, FPack>
     reserve(std::size_t size) const &
     {
-        const auto& self = static_cast<const _dispatcher_type&>(*this);
-        return { strf::detail::dispatcher_tag{}
+        const auto& self = static_cast<const _destination_type&>(*this);
+        return { strf::detail::destination_tag{}
                , size
                , self._outbuf_creator
                , self._fpack };
     }
 
-    constexpr strf::dispatcher_with_given_size<OutbufCreator, FPack>
+    constexpr strf::destination_with_given_size<OutbufCreator, FPack>
     reserve(std::size_t size) &&
     {
-        auto& self = static_cast<_dispatcher_type&>(*this);
-        return { strf::detail::dispatcher_tag{}
+        auto& self = static_cast<_destination_type&>(*this);
+        return { strf::detail::destination_tag{}
                , size
                , std::move(self._outbuf_creator)
                , std::move(self._fpack) };
@@ -128,7 +128,7 @@ public:
     template <typename ... Args>
     decltype(auto) operator()(const Args& ... args) const &
     {
-        const auto& self = static_cast<const _dispatcher_type&>(*this);
+        const auto& self = static_cast<const _destination_type&>(*this);
         PreviewType preview;
         return self._write
             ( preview
@@ -203,7 +203,7 @@ private:
                               , const Args& ... args) const &
     {
         PreviewType preview_arr[sizeof...(args)];
-        const auto& self = static_cast<const _dispatcher_type&>(*this);
+        const auto& self = static_cast<const _destination_type&>(*this);
         return _tr_write_3
             ( str
             , str_end
@@ -220,7 +220,7 @@ private:
         , Preview* preview_arr
         , std::initializer_list<const strf::printer<CharT>*> args ) const &
     {
-        const auto& self = static_cast<const _dispatcher_type&>(*this);
+        const auto& self = static_cast<const _destination_type&>(*this);
 
         using catenc = strf::encoding_c<CharT>;
         using caterr = strf::tr_invalid_arg_c;
@@ -238,21 +238,21 @@ private:
 }// namespace detail
 
 template < typename OutbufCreator, typename FPack >
-class dispatcher_no_reserve
-    : private strf::detail::dispatcher_common
-        < strf::dispatcher_no_reserve
+class destination_no_reserve
+    : private strf::detail::destination_common
+        < strf::destination_no_reserve
         , OutbufCreator
         , FPack
         , strf::print_preview<false, false> >
 {
-    using _common = strf::detail::dispatcher_common
-        < strf::dispatcher_no_reserve
+    using _common = strf::detail::destination_common
+        < strf::destination_no_reserve
         , OutbufCreator
         , FPack
         , strf::print_preview<false, false> >;
 
     template <template <typename, typename> class, class, class, class, class>
-    friend class strf::detail::dispatcher_common;
+    friend class strf::detail::destination_common;
 
     using _preview_type = strf::print_preview<false, false>;
 
@@ -264,7 +264,7 @@ public:
              , std::enable_if_t
                  < std::is_constructible<OutbufCreator, Args...>::value
                  , int > = 0 >
-    constexpr dispatcher_no_reserve(Args&&... args)
+    constexpr destination_no_reserve(Args&&... args)
         : _outbuf_creator(std::forward<Args>(args)...)
     {
     }
@@ -272,24 +272,24 @@ public:
     template < typename T = OutbufCreator
              , std::enable_if_t
                  < std::is_copy_constructible<T>::value, int > = 0 >
-    constexpr dispatcher_no_reserve( strf::detail::dispatcher_tag
-                                   , const OutbufCreator& oc
-                                   , const FPack& fp )
+    constexpr destination_no_reserve( strf::detail::destination_tag
+                                    , const OutbufCreator& oc
+                                    , const FPack& fp )
         : _outbuf_creator(oc)
         , _fpack(fp)
     {
     }
 
-    constexpr dispatcher_no_reserve( strf::detail::dispatcher_tag
-                                   , OutbufCreator&& oc
-                                   , FPack&& fp )
+    constexpr destination_no_reserve( strf::detail::destination_tag
+                                    , OutbufCreator&& oc
+                                    , FPack&& fp )
         : _outbuf_creator(std::move(oc))
         , _fpack(std::move(fp))
     {
     }
 
-    constexpr dispatcher_no_reserve(const dispatcher_no_reserve&) = default;
-    constexpr dispatcher_no_reserve(dispatcher_no_reserve&&) = default;
+    constexpr destination_no_reserve(const destination_no_reserve&) = default;
+    constexpr destination_no_reserve(destination_no_reserve&&) = default;
 
     using _common::facets;
     using _common::operator();
@@ -297,19 +297,19 @@ public:
     using _common::reserve_calc;
     using _common::reserve;
 
-    constexpr dispatcher_no_reserve& no_reserve() &
+    constexpr destination_no_reserve& no_reserve() &
     {
         return *this;
     }
-    constexpr const dispatcher_no_reserve& no_reserve() const &
+    constexpr const destination_no_reserve& no_reserve() const &
     {
         return *this;
     }
-    constexpr dispatcher_no_reserve&& no_reserve() &&
+    constexpr destination_no_reserve&& no_reserve() &&
     {
         return std::move(*this);
     }
-    constexpr const dispatcher_no_reserve&& no_reserve() const &&
+    constexpr const destination_no_reserve&& no_reserve() const &&
     {
         return std::move(*this);
     }
@@ -317,16 +317,16 @@ public:
 private:
 
     template <class, class>
-    friend class dispatcher_no_reserve;
+    friend class destination_no_reserve;
 
     template < typename OtherFPack
              , typename ... FPE
              , typename T = OutbufCreator
              , typename = std::enable_if_t
                  < std::is_copy_constructible<T>::value > >
-    constexpr dispatcher_no_reserve
-        ( const dispatcher_no_reserve<OutbufCreator, OtherFPack>& other
-        , detail::dispatcher_tag
+    constexpr destination_no_reserve
+        ( const destination_no_reserve<OutbufCreator, OtherFPack>& other
+        , detail::destination_tag
         , FPE&& ... fpe )
         : _outbuf_creator(other._outbuf_creator)
         , _fpack(other._fpack, std::forward<FPE>(fpe)...)
@@ -334,9 +334,9 @@ private:
     }
 
     template < typename OtherFPack, typename ... FPE >
-    constexpr dispatcher_no_reserve
-        ( dispatcher_no_reserve<OutbufCreator, OtherFPack>&& other
-        , detail::dispatcher_tag
+    constexpr destination_no_reserve
+        ( destination_no_reserve<OutbufCreator, OtherFPack>&& other
+        , detail::destination_tag
         , FPE&& ... fpe )
         : _outbuf_creator(std::move(other._outbuf_creator))
         , _fpack(std::move(other._fpack), std::forward<FPE>(fpe)...)
@@ -358,21 +358,21 @@ private:
 };
 
 template < typename OutbufCreator, typename FPack >
-class dispatcher_with_given_size
-    : public strf::detail::dispatcher_common
-        < strf::dispatcher_with_given_size
+class destination_with_given_size
+    : public strf::detail::destination_common
+        < strf::destination_with_given_size
         , OutbufCreator
         , FPack
         , strf::print_preview<false, false> >
 {
-    using _common = strf::detail::dispatcher_common
-        < strf::dispatcher_with_given_size
+    using _common = strf::detail::destination_common
+        < strf::destination_with_given_size
         , OutbufCreator
         , FPack
         , strf::print_preview<false, false> >;
 
     template < template <typename, typename> class, class,class, class, class>
-    friend class strf::detail::dispatcher_common;
+    friend class strf::detail::destination_common;
 
     using _preview_type = strf::print_preview<false, false>;
 
@@ -384,7 +384,7 @@ public:
              , std::enable_if_t
                  < std::is_constructible<OutbufCreator, Args...>::value
                  , int > = 0 >
-    constexpr dispatcher_with_given_size(std::size_t size, Args&&... args)
+    constexpr destination_with_given_size(std::size_t size, Args&&... args)
         : _size(size)
         , _outbuf_creator(std::forward<Args>(args)...)
     {
@@ -392,28 +392,28 @@ public:
 
     template < typename T = OutbufCreator
              , std::enable_if_t<std::is_copy_constructible<T>::value, int> = 0 >
-    constexpr dispatcher_with_given_size( strf::detail::dispatcher_tag
-                                        , std::size_t size
-                                        , const OutbufCreator& oc
-                                        , const FPack& fp )
+    constexpr destination_with_given_size( strf::detail::destination_tag
+                                         , std::size_t size
+                                         , const OutbufCreator& oc
+                                         , const FPack& fp )
         : _size(size)
         , _outbuf_creator(oc)
         , _fpack(fp)
     {
     }
 
-    constexpr dispatcher_with_given_size( strf::detail::dispatcher_tag
-                                        , std::size_t size
-                                        , OutbufCreator&& oc
-                                        , FPack&& fp )
+    constexpr destination_with_given_size( strf::detail::destination_tag
+                                         , std::size_t size
+                                         , OutbufCreator&& oc
+                                         , FPack&& fp )
         : _size(size)
         , _outbuf_creator(std::move(oc))
         , _fpack(std::move(fp))
     {
     }
 
-    constexpr dispatcher_with_given_size(const dispatcher_with_given_size&) = default;
-    constexpr dispatcher_with_given_size(dispatcher_with_given_size&&) = default;
+    constexpr destination_with_given_size(const destination_with_given_size&) = default;
+    constexpr destination_with_given_size(destination_with_given_size&&) = default;
 
     using _common::facets;
     using _common::operator();
@@ -421,12 +421,12 @@ public:
     using _common::reserve_calc;
     using _common::no_reserve;
 
-    constexpr dispatcher_with_given_size& reserve(std::size_t size) &
+    constexpr destination_with_given_size& reserve(std::size_t size) &
     {
         _size = size;
         return *this;
     }
-    constexpr dispatcher_with_given_size&& reserve(std::size_t size) &&
+    constexpr destination_with_given_size&& reserve(std::size_t size) &&
     {
         _size = size;
         return std::move(*this);
@@ -435,16 +435,16 @@ public:
 private:
 
     template <class, class>
-    friend class dispatcher_with_given_size;
+    friend class destination_with_given_size;
 
     template < typename OtherFPack
              , typename ... FPE
              , typename T = OutbufCreator
              , typename = std::enable_if_t
                  < std::is_copy_constructible<T>::value > >
-    constexpr dispatcher_with_given_size
-        ( const dispatcher_with_given_size<OutbufCreator, OtherFPack>& other
-        , detail::dispatcher_tag
+    constexpr destination_with_given_size
+        ( const destination_with_given_size<OutbufCreator, OtherFPack>& other
+        , detail::destination_tag
         , FPE&& ... fpe )
         : _size(other._size)
         , _outbuf_creator(other._outbuf_creator)
@@ -453,9 +453,9 @@ private:
     }
 
     template < typename OtherFPack, typename ... FPE >
-    constexpr dispatcher_with_given_size
-        ( dispatcher_with_given_size<OutbufCreator, OtherFPack>&& other
-        , detail::dispatcher_tag
+    constexpr destination_with_given_size
+        ( destination_with_given_size<OutbufCreator, OtherFPack>&& other
+        , detail::destination_tag
         , FPE&& ... fpe )
         : _size(other.size)
         , _outbuf_creator(std::move(other._outbuf_creator))
@@ -479,21 +479,21 @@ private:
 };
 
 template < typename OutbufCreator, typename FPack >
-class dispatcher_calc_size
-    : public strf::detail::dispatcher_common
-        < strf::dispatcher_calc_size
+class destination_calc_size
+    : public strf::detail::destination_common
+        < strf::destination_calc_size
         , OutbufCreator
         , FPack
         , strf::print_preview<true, false> >
 {
-    using _common = strf::detail::dispatcher_common
-        < strf::dispatcher_calc_size
+    using _common = strf::detail::destination_common
+        < strf::destination_calc_size
         , OutbufCreator
         , FPack
         , strf::print_preview<true, false> >;
 
     template < template <typename, typename> class, class, class, class, class>
-    friend class strf::detail::dispatcher_common;
+    friend class strf::detail::destination_common;
 
     using _preview_type = strf::print_preview<true, false>;
 
@@ -505,7 +505,7 @@ public:
              , std::enable_if_t
                  < std::is_constructible<OutbufCreator, Args...>::value
                  , int > = 0 >
-    constexpr dispatcher_calc_size(Args&&... args)
+    constexpr destination_calc_size(Args&&... args)
         : _outbuf_creator(std::forward<Args>(args)...)
     {
     }
@@ -513,24 +513,24 @@ public:
     template < typename T = OutbufCreator
              , std::enable_if_t
                  < std::is_copy_constructible<T>::value, int > = 0 >
-    constexpr dispatcher_calc_size( strf::detail::dispatcher_tag
-                                  , const OutbufCreator& oc
-                                  , const FPack& fp )
+    constexpr destination_calc_size( strf::detail::destination_tag
+                                   , const OutbufCreator& oc
+                                   , const FPack& fp )
         : _outbuf_creator(oc)
         , _fpack(fp)
     {
     }
 
-    constexpr dispatcher_calc_size( strf::detail::dispatcher_tag
-                                  , OutbufCreator&& oc
-                                  , FPack&& fp )
+    constexpr destination_calc_size( strf::detail::destination_tag
+                                   , OutbufCreator&& oc
+                                   , FPack&& fp )
         : _outbuf_creator(std::move(oc))
         , _fpack(std::move(fp))
     {
     }
 
-    constexpr dispatcher_calc_size(const dispatcher_calc_size&) = default;
-    constexpr dispatcher_calc_size(dispatcher_calc_size&&) = default;
+    constexpr destination_calc_size(const destination_calc_size&) = default;
+    constexpr destination_calc_size(destination_calc_size&&) = default;
 
     using _common::facets;
     using _common::operator();
@@ -538,19 +538,19 @@ public:
     using _common::no_reserve;
     using _common::reserve;
 
-    constexpr const dispatcher_calc_size & reserve_calc() const &
+    constexpr const destination_calc_size & reserve_calc() const &
     {
         return *this;
     }
-    constexpr dispatcher_calc_size & reserve_calc() &
+    constexpr destination_calc_size & reserve_calc() &
     {
         return *this;
     }
-    constexpr const dispatcher_calc_size && reserve_calc() const &&
+    constexpr const destination_calc_size && reserve_calc() const &&
     {
         return std::move(*this);
     }
-    constexpr dispatcher_calc_size && reserve_calc() &&
+    constexpr destination_calc_size && reserve_calc() &&
     {
         return std::move(*this);
     }
@@ -558,16 +558,16 @@ public:
 private:
 
     template <typename, typename>
-    friend class dispatcher_calc_size;
+    friend class destination_calc_size;
 
     template < typename OtherFPack
              , typename ... FPE
              , typename T = OutbufCreator
              , typename = std::enable_if_t
                  < std::is_copy_constructible<T>::value > >
-    dispatcher_calc_size
-        ( const dispatcher_calc_size<OutbufCreator, OtherFPack>& other
-        , detail::dispatcher_tag
+    destination_calc_size
+        ( const destination_calc_size<OutbufCreator, OtherFPack>& other
+        , detail::destination_tag
         , FPE&& ... fpe )
         : _outbuf_creator(other._outbuf_creator)
         , _fpack(other._fpack, std::forward<FPE>(fpe)...)
@@ -575,9 +575,9 @@ private:
     }
 
     template < typename OtherFPack, typename ... FPE >
-    dispatcher_calc_size
-        ( dispatcher_calc_size<OutbufCreator, OtherFPack>&& other
-        , detail::dispatcher_tag
+    destination_calc_size
+        ( destination_calc_size<OutbufCreator, OtherFPack>&& other
+        , detail::destination_tag
         , FPE&& ... fpe )
         : _outbuf_creator(std::move(other._outbuf_creator))
         , _fpack(std::move(other._fpack), std::forward<FPE>(fpe)...)
@@ -607,4 +607,4 @@ using printer_impl
 
 STRF_NAMESPACE_END
 
-#endif  // STRF_DISPATCHER_HPP
+#endif  // STRF_DESTINATION_HPP

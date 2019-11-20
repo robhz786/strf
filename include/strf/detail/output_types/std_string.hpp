@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/outbuf.hpp>
-#include <strf/dispatcher.hpp>
+#include <strf/destination.hpp>
 
 STRF_NAMESPACE_BEGIN
 
@@ -263,7 +263,7 @@ public:
 template <typename CharT, typename Traits, typename Allocator>
 auto append(std::basic_string<CharT, Traits, Allocator>& str)
 {
-    return strf::dispatcher_no_reserve
+    return strf::destination_no_reserve
         < strf::detail::basic_string_appender_creator<CharT, Traits, Allocator> >
         { str };
 }
@@ -278,31 +278,31 @@ auto assign(std::basic_string<CharT, Traits, Allocator>& str)
 template< typename CharT
         , typename Traits = std::char_traits<CharT>
         , typename Allocator = std::allocator<CharT> >
-constexpr strf::dispatcher_no_reserve
+constexpr strf::destination_no_reserve
     < strf::detail::basic_string_maker_creator<CharT, Traits, Allocator> >
     to_basic_string{};
 
 #if defined(__cpp_char8_t)
 
-constexpr strf::dispatcher_no_reserve
+constexpr strf::destination_no_reserve
     < strf::detail::basic_string_maker_creator<char8_t> >
     to_u8string{};
 
 #endif
 
-constexpr strf::dispatcher_no_reserve
+constexpr strf::destination_no_reserve
     < strf::detail::basic_string_maker_creator<char> >
     to_string{};
 
-constexpr strf::dispatcher_no_reserve
+constexpr strf::destination_no_reserve
     < strf::detail::basic_string_maker_creator<char16_t> >
     to_u16string{};
 
-constexpr strf::dispatcher_no_reserve
+constexpr strf::destination_no_reserve
     < strf::detail::basic_string_maker_creator<char32_t> >
     to_u32string{};
 
-constexpr strf::dispatcher_no_reserve
+constexpr strf::destination_no_reserve
     < strf::detail::basic_string_maker_creator<wchar_t> >
     to_wstring{};
 

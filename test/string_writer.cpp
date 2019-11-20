@@ -33,7 +33,7 @@ void test_successfull_make()
 }
 
 template <typename CharT>
-void test_dispatchers()
+void test_destinations()
 {
     auto double_str = test_utils::make_double_string<CharT>();
     auto half_str = test_utils::make_half_string<CharT>();
@@ -69,8 +69,8 @@ void test_dispatchers()
 
 int main()
 {
-    test_dispatchers<char>();
-    test_dispatchers<char16_t>();
+    test_destinations<char>();
+    test_destinations<char16_t>();
 
     test_successfull_append<char>();
     test_successfull_append<char16_t>();

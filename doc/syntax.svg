@@ -73,9 +73,9 @@ see https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
     <text x="250" y="156" class="code">.reserve_calc()</text>
   </a>
 
-  <a href="quick_reference.html#dispatchers" target="_parent">
+  <a href="quick_reference.html#destinations" target="_parent">
     <rect width="168" height="28" rx="10" ry="10" x="2" y="181"/>
-    <text x="47" y="200" class="repl">dispatcher</text>
+    <text x="47" y="200" class="repl">destination</text>
   </a>
 
   <path d="M170 195 H450"/>
