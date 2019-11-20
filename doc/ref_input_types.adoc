@@ -596,7 +596,7 @@ struct inner_pack
 };
 
 template < typename\... T >
-inner_pack<delctype({pack}(std::forward<T>(args)\...))> facets(T&& \... args);
+inner_pack<delctype({pack}(std::forward<T>(args)\...))> with(T&& \... args);
 
 template < typename CharT
          , typename FPack

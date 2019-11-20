@@ -31,7 +31,7 @@ std::string sample()
     std::string str =
         strf::to_string // the destination
         .reserve(100)   // The reserved capacity in the created string
-        .facets(strf::monotonic_grouping<10>{3}) // numeric punctuation
+        .with(strf::monotonic_grouping<10>{3}) // numeric punctuation
         .tr("{0} times {0} is equal to {1}", x, x*x);
 
     assert(str.capacity() >= 100);
@@ -338,7 +338,7 @@ but they are analogous.
 Keep in mind that this is a locale-independent library.
 So things are always printed as in the C-locale, unless
 you explicitly specify otherwise, which you do by passing
-__facet objects__ to the <<usage_syntax,`facets`>> function.
+__facet objects__ to the <<usage_syntax,`with`>> function.
 
 Every __facet__ belongs to a __facet category__. 
 Each facet category corresponds to a concept, __i.e.__ a set of requirements that a class must satisfy. A class that satisfies such requirements is a facet of such facet category. Moreover, for each facet category there is class whose name, by convention, has a "_c" suffix and is the name of the category.
@@ -371,7 +371,7 @@ With the `constrain` function template you can create __constrained facets__, wh
 [source,cpp]
 ----
 auto facet_obj = strf::constrain<std::is_signed>(strf::monotonic_grouping<10>{3});
-auto s = strf::to_string.facets(facet_obj)(100000u, "  ", 100000);
+auto s = strf::to_string.with(facet_obj)(100000u, "  ", 100000);
 assert(s == "100000  100,000");
 ----
 
@@ -392,7 +392,7 @@ The library provides some type traits to parameterize `constrain`:
 [[facet_overriding]]
 ==== Overriding facets
 
-If there are two or more facets object passed to the `facets` function of the same category, and that apply to the same input type, then the last one wins:
+If there are two or more facets object passed to the `with` function of the same category, and that apply to the same input type, then the last one wins:
 
 [source,cpp]
 ----
@@ -405,9 +405,9 @@ auto punct_dec_3 = strf::monotonic_grouping<10>{3}.thousands_sep('^');;
 // hence the presence of punt_dec_1 bellow has no effect.
 
 auto s = strf::to_string
-    .facets( punct_dec_1
-           , punct_dec_2
-           , strf::constrain<std::is_signed>(punct_dec_3) )
+    .with( punct_dec_1
+         , punct_dec_2
+         , strf::constrain<std::is_signed>(punct_dec_3) )
     ( 100000, "  ", 100000u ) ;
 
 assert(s == "100^000  10.00.00");
@@ -428,7 +428,7 @@ If all groups have the same size, then you should choose the
 constexpr int base = 10;
 
 auto str = strf::to_string
-    .facets(strf::monotonic_grouping<base>{3}.thousands_sep(U'.'))
+    .with(strf::monotonic_grouping<base>{3}.thousands_sep(U'.'))
     (100000000000ll);
 
 assert(str == "100.000.000.000");
@@ -441,7 +441,7 @@ Otherwise, you can use the `str_grouping<Base>`:
 constexpr int base = 10;
 
 auto punct = strf::str_grouping<base>{"\4\3\2"};
-auto str = strf::to_string.facets(punct)(100000000000ll);
+auto str = strf::to_string.with(punct)(100000000000ll);
 assert(str == "1,00,00,000,0000");
 ----
 
@@ -485,8 +485,8 @@ How they are converted is specified that the `encoding` facet.
 [source,cpp]
 ----
 auto s = strf::to_string
-    .facets(strf::windows_1252<char>())
-    .facets(strf::str_grouping<10>{"\4\3\2"}.thousands_sep(0x2022))
+    .with(strf::windows_1252<char>())
+    .with(strf::str_grouping<10>{"\4\3\2"}.thousands_sep(0x2022))
     ("one hundred billions = ", 100000000000ll);
 
 // The character U+2022 is encoded as '\225' in Windows-1252
@@ -639,7 +639,7 @@ assert(str == u8"--\uFFFD--");
 [source,cpp]
 ----
 auto str = strf::to_string
-    .facets(strf::encoding_error::ignore)
+    .with(strf::encoding_error::ignore)
     (strf::cv("--\x99--"));
 
 assert(str == "----");
@@ -651,7 +651,7 @@ assert(str == "----");
 bool transcoding_failed = false;
 try{
     auto str = strf::to_string
-        .facets(strf::encoding_error::stop)
+        .with(strf::encoding_error::stop)
         (strf::cv("--\x99--"));
 }
 catch(strf::encoding_failure&){
@@ -682,7 +682,7 @@ input_utf16[1] = 0xD800; // a surrogate character alone
 // convert to UTF-8
 auto str_strict = strf::to_u8string(strf::cv(input_utf16));
 auto str_lax = strf::to_u8string
-    .facets(strf::surrogate_policy::lax)
+    .with(strf::surrogate_policy::lax)
     ( strf::cv(input_utf16) );
 
 assert(str_strict == u8"-\uFFFD---");  // surrogate sanitized
@@ -692,7 +692,7 @@ assert(str_lax == (const char8_t*)"-\xED\xA0\x80---"); // surrogate allowed
 auto utf16_strict = strf::to_u16string(strf::cv(str_lax));
 
 auto utf16_lax = strf::to_u16string
-    .facets(strf::surrogate_policy::lax)
+    .with(strf::surrogate_policy::lax)
     ( strf::cv(str_lax) );
 
 assert(utf16_strict == u"-\uFFFD\uFFFD\uFFFD---"); // surrogate sanitized
@@ -1019,17 +1019,17 @@ class inner_pack
 };
 
 template <typename ... Facets>
-inner_pack</*...*/> facets(const Facets& ... facets);
+inner_pack</*...*/> with(const Facets& ... facets);
 ----
 .Example 1
 [source,cpp]
 ----
-auto str = strf::to_string.facets(strf::monotonic_grouping<10>(1))
+auto str = strf::to_string.with(strf::monotonic_grouping<10>(1))
     ( 10000
     , "  "
     , strf::hex(0x10000)
-    , strf::facets( strf::monotonic_grouping<10>(3)
-                  , strf::monotonic_grouping<16>(4).thousands_sep('\'') )
+    , strf::with( strf::monotonic_grouping<10>(3)
+                , strf::monotonic_grouping<16>(4).thousands_sep('\'') )
         ( "  { "
         , 10000
         , "  "
@@ -1046,16 +1046,16 @@ auto fp = strf::pack
     ( strf::monotonic_grouping<10>(3)
     , strf::monotonic_grouping<16>(4).thousands_sep('\'') );
 
-auto str = strf::to_string.facets(strf::monotonic_grouping<10>(1))
+auto str = strf::to_string.with(strf::monotonic_grouping<10>(1))
     ( 10000
     , "  "
     , strf::hex(0x10000)
-    , strf::facets(fp)
+    , strf::with(fp)
         ( "  { "
         , 10000
         , "  "
         , strf::hex(0x10000)
-        , strf::facets
+        , strf::with
             (strf::monotonic_grouping<10>(2).thousands_sep('.'))
               ("  { ", 10000, " }")
         , " }" ) );

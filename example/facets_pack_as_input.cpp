@@ -8,12 +8,12 @@
 void sample1()
 {
     //[ facets_pack_input
-    auto str = strf::to_string.with(strf::monotonic_grouping<10>(1))
+    auto str = strf::to_string .with(strf::monotonic_grouping<10>(1))
         ( 10000
         , "  "
         , strf::hex(0x10000)
-        , strf::facets( strf::monotonic_grouping<10>(3)
-                      , strf::monotonic_grouping<16>(4).thousands_sep('\'') )
+        , strf::with( strf::monotonic_grouping<10>(3)
+                    , strf::monotonic_grouping<16>(4).thousands_sep('\'') )
             ( "  { "
             , 10000
             , "  "
@@ -36,12 +36,12 @@ void sample2()
         ( 10000
         , "  "
         , strf::hex(0x10000)
-        , strf::facets(fp)
+        , strf::with(fp)
             ( "  { "
             , 10000
             , "  "
             , strf::hex(0x10000)
-            , strf::facets
+            , strf::with
                 (strf::monotonic_grouping<10>(2).thousands_sep('.'))
                   ("  { ", 10000, " }")
             , " }" ) );
@@ -56,7 +56,7 @@ void sample3()
     auto str = strf::to_string
         .tr( "{} -- {} -- {}"
            , "aaa"
-           , strf::facets()("bbb", "ccc", "ddd")
+           , strf::with()("bbb", "ccc", "ddd")
            , "eee" );
 
     assert(str == "aaa -- bbbcccddd -- eee");

@@ -12,14 +12,14 @@ int main()
         ( strf::fmt(10000), ' '
         , strf::hex(0x10000), ' '
         , strf::oct(01000000), ' '
-        , strf::facets
+        , strf::with
             ( strf::monotonic_grouping<10>(3)
             , strf::monotonic_grouping<16>(4).thousands_sep('\'')
             , strf::monotonic_grouping<8>(6).thousands_sep('\'') )
             ( strf::fmt(10000), ' '
             , strf::hex(0x10000), ' '
             , strf::oct(01000000), ' '
-            , strf::facets
+            , strf::with
                 ( strf::monotonic_grouping<10>(3).thousands_sep('.')
                 , strf::monotonic_grouping<16>(2).thousands_sep('^') )
                 ( strf::fmt(10000), ' '
@@ -36,7 +36,7 @@ int main()
                 ( strf::fmt(10000), ' '
                 , strf::hex(0x10000), ' '
                 , strf::oct(01000000), ' '
-                , strf::facets
+                , strf::with
                     ( strf::monotonic_grouping<10>(3)
                     , strf::monotonic_grouping<16>(4).thousands_sep('\'')
                     , strf::monotonic_grouping<8>(6).thousands_sep('\'') )

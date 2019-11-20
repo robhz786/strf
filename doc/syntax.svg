@@ -46,7 +46,7 @@ see https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
       <rect width="170" height="28" rx="10" ry="10" x="240" y="5"/>
 
       <text x="250" y="24" >
-        <tspan class="code">.facets(</tspan>
+        <tspan class="code">.with(</tspan>
         <tspan class="repl">facets...</tspan>
         <tspan class="code">)</tspan>
       </text>

@@ -112,7 +112,7 @@ struct all_are_constrainable
 } // namespace detail
 
 template <typename ... T>
-auto facets(T&& ... args)
+auto with(T&& ... args)
     -> strf::inner_pack
            < decltype(strf::pack(std::forward<T>(args)...)) >
 {
