@@ -85,12 +85,12 @@ void test_destination()
 
     {
         std::basic_ostringstream<CharT> dest;
-        strf::write(dest.rdbuf()) (half_str, full_str);
+        strf::to(dest.rdbuf()) (half_str, full_str);
         BOOST_TEST(dest.str() == half_str + full_str);
     }
     {
         std::basic_ostringstream<CharT> dest;
-        strf::write(*dest.rdbuf()) (half_str, full_str);
+        strf::to(*dest.rdbuf()) (half_str, full_str);
         BOOST_TEST(dest.str() == half_str + full_str);
     }
 }

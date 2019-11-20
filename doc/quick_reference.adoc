@@ -54,22 +54,22 @@ std::string sample()
 | `append(std::basic_string<CharT, Traits, Alloc>&)`  | `void`
 | `assign(std::basic_string<CharT, Traits, Alloc>&)`  | `void`
 
-| `write(CharT* str, std::size)`
+| `to(CharT* str, std::size)`
 | `struct /{asterisk}{asterisk}/ { CharT* ptr; bool truncated; }`
 
-| `write(CharT* begin, CharT* end)`
+| `to(CharT* begin, CharT* end)`
 | `struct /{asterisk}{asterisk}/ { CharT* ptr; bool truncated; }`
 
-| `write(CharT (&)[N])`
+| `to(CharT (&)[N])`
 | `struct /{asterisk}{asterisk}/ { CharT* ptr; bool truncated; }`
 
-| `write(FILE*)`
+| `to(FILE*)`
 | `struct /{asterisk}{asterisk}/ { std::size_t count; bool truncated; }`
 
-| `wwrite(FILE*)`
+| `wto(FILE*)`
 | `struct /{asterisk}{asterisk}/ { std::size_t count; bool truncated; }`
 
-| `write(std::basic_streambuf<CharT, Traits, Alloc>&)`
+| `to(std::basic_streambuf<CharT, Traits, Alloc>&)`
 | `struct /{asterisk}{asterisk}/ { std::streamsize count; bool truncated; }`
 
 | 
@@ -155,11 +155,11 @@ Support reserve::: Yes.
 
 [source,cpp,subs=normal]
 ----
-/{asterisk}\...{asterisk}/ write ( char*     dest, std::size_t count );
-/{asterisk}\...{asterisk}/ write ( char8_t*  dest, std::size_t count );
-/{asterisk}\...{asterisk}/ write ( char16_t* dest, std::size_t count );
-/{asterisk}\...{asterisk}/ write ( char32_t* dest, std::size_t count );
-/{asterisk}\...{asterisk}/ write ( wchar_t*  dest, std::size_t count );
+/{asterisk}\...{asterisk}/ to ( char*     dest, std::size_t count );
+/{asterisk}\...{asterisk}/ to ( char8_t*  dest, std::size_t count );
+/{asterisk}\...{asterisk}/ to ( char16_t* dest, std::size_t count );
+/{asterisk}\...{asterisk}/ to ( char32_t* dest, std::size_t count );
+/{asterisk}\...{asterisk}/ to ( wchar_t*  dest, std::size_t count );
 ----
 ::
 [horizontal]
@@ -175,40 +175,40 @@ Return value:::
 
 [source,cpp,subs=normal]
 ----
-/{asterisk}\...{asterisk}/ write ( char*     dest, char*     dest_end );
-/{asterisk}\...{asterisk}/ write ( char8_t*  dest, char8_t*  dest_end );
-/{asterisk}\...{asterisk}/ write ( char16_t* dest, char16_t* dest_end );
-/{asterisk}\...{asterisk}/ write ( char32_t* dest, char32_t* dest_end );
-/{asterisk}\...{asterisk}/ write ( wchar_t*  dest, wchar_t*  dest_end );
+/{asterisk}\...{asterisk}/ to ( char*     dest, char*     dest_end );
+/{asterisk}\...{asterisk}/ to ( char8_t*  dest, char8_t*  dest_end );
+/{asterisk}\...{asterisk}/ to ( char16_t* dest, char16_t* dest_end );
+/{asterisk}\...{asterisk}/ to ( char32_t* dest, char32_t* dest_end );
+/{asterisk}\...{asterisk}/ to ( wchar_t*  dest, wchar_t*  dest_end );
 ----
 ::
 [horizontal]
 Requirements::: `dest_end > dest`
-Effect::: Same as in `write(dest, dest_end - dest)`
-Return type::: Same as in `write(dest, dest_end - dest)`
-Return value::: Same as in `write(dest, dest_end - dest)`
+Effect::: Same as in `to(dest, dest_end - dest)`
+Return type::: Same as in `to(dest, dest_end - dest)`
+Return value::: Same as in `to(dest, dest_end - dest)`
 Support reserve::: No
 
 
 [source,cpp,subs=normal]
 ----
-template<std::size_t N> /{asterisk}\...{asterisk}/ write ( char     (&dest)[N] );
-template<std::size_t N> /{asterisk}\...{asterisk}/ write ( char8_t  (&dest)[N] );
-template<std::size_t N> /{asterisk}\...{asterisk}/ write ( char16_t (&dest)[N] );
-template<std::size_t N> /{asterisk}\...{asterisk}/ write ( char32_t (&dest)[N] );
-template<std::size_t N> /{asterisk}\...{asterisk}/ write ( wchar_t  (&dest)[N] );
+template<std::size_t N> /{asterisk}\...{asterisk}/ to ( char     (&dest)[N] );
+template<std::size_t N> /{asterisk}\...{asterisk}/ to ( char8_t  (&dest)[N] );
+template<std::size_t N> /{asterisk}\...{asterisk}/ to ( char16_t (&dest)[N] );
+template<std::size_t N> /{asterisk}\...{asterisk}/ to ( char32_t (&dest)[N] );
+template<std::size_t N> /{asterisk}\...{asterisk}/ to ( wchar_t  (&dest)[N] );
 ----
 ::
 [horizontal]
-Effect::: Same as in `write(dest, N)`
-Return type::: Same as in `write(dest, N)`
-Return value::: Same as in `write(dest, N)`
+Effect::: Same as in `to(dest, N)`
+Return type::: Same as in `to(dest, N)`
+Return value::: Same as in `to(dest, N)`
 Support reserve::: No
 
 [source,cpp,subs=normal]
 ----
 template <typename CharT = char>
-/{asterisk}\...{asterisk}/ write(std::FILE* dest);
+/{asterisk}\...{asterisk}/ to(std::FILE* dest);
 ----
 ::
 [horizontal]
@@ -224,7 +224,7 @@ Support reserve::: No
 
 [source,cpp,subs=normal]
 ----
-/{asterisk}\...{asterisk}/ wwrite(std::FILE* dest);
+/{asterisk}\...{asterisk}/ wto(std::FILE* dest);
 ----
 ::
 [horizontal]
@@ -239,7 +239,7 @@ Support reserve::: No
 [source,cpp]
 ----
 template <typename CharT, typename Traits = std::char_traits<CharT> >
-/*...*/ write(std::basic_streambuf<CharT, Traits>& dest);
+/*...*/ to(std::basic_streambuf<CharT, Traits>& dest);
 ----
 ::
 [horizontal]

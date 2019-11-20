@@ -50,9 +50,9 @@ int main()
 
     std::cout << "\n\n               Without any formatting\n";
 
-    PRINT_BENCHMARK("strf::write(dest)(M_PI)")
+    PRINT_BENCHMARK("strf::to(dest)(M_PI)")
     {
-        (void) strf::write(dest)(M_PI);
+        (void) strf::to(dest)(M_PI);
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, fmtd, M_PI)")
@@ -62,9 +62,9 @@ int main()
     }
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::write(dest)(3.33)")
+    PRINT_BENCHMARK("strf::to(dest)(3.33)")
     {
-        (void) strf::write(dest)(3.33);
+        (void) strf::to(dest)(3.33);
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, fmtd, 3.33)")
@@ -74,9 +74,9 @@ int main()
     }
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::write(dest)(3.1234567+125)")
+    PRINT_BENCHMARK("strf::to(dest)(3.1234567+125)")
     {
-        (void) strf::write(dest)(3.1234567+125);
+        (void) strf::to(dest)(3.1234567+125);
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, fmtd, 3.1234567+125)")
@@ -88,9 +88,9 @@ int main()
     std::cout << "\n               General notation with precision = 6\n";
 
 
-    PRINT_BENCHMARK("strf::write(dest)(strf::fmt(M_PI).p(6))")
+    PRINT_BENCHMARK("strf::to(dest)(strf::fmt(M_PI).p(6))")
     {
-        (void) strf::write(dest)(strf::fmt(M_PI).p(6));
+        (void) strf::to(dest)(strf::fmt(M_PI).p(6));
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, fmtg, M_PI)")
@@ -107,9 +107,9 @@ int main()
 
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::write(dest)(strf::fmt(3.33).p(6))")
+    PRINT_BENCHMARK("strf::to(dest)(strf::fmt(3.33).p(6))")
     {
-        (void) strf::write(dest)(strf::fmt(3.33).p(6));
+        (void) strf::to(dest)(strf::fmt(3.33).p(6));
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, fmtg, 3.33)")
@@ -125,9 +125,9 @@ int main()
 
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::write(dest)(strf::fmt(3.1234567e+125).p(6))")
+    PRINT_BENCHMARK("strf::to(dest)(strf::fmt(3.1234567e+125).p(6))")
     {
-        (void) strf::write(dest)(strf::fmt(3.1234567+125).p(6));
+        (void) strf::to(dest)(strf::fmt(3.1234567+125).p(6));
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, fmtg, 3.1234567e+125)")
@@ -143,9 +143,9 @@ int main()
 
     std::cout << "\n               Fixed notation with precision = 6\n";
 
-    PRINT_BENCHMARK("strf::write(dest)(strf::fixed(M_PI).p(6))")
+    PRINT_BENCHMARK("strf::to(dest)(strf::fixed(M_PI).p(6))")
     {
-        (void) strf::write(dest)(strf::fixed(M_PI).p(6));
+        (void) strf::to(dest)(strf::fixed(M_PI).p(6));
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, fmtf, M_PI)")
@@ -160,9 +160,9 @@ int main()
     }
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::write(dest)(strf::fixed(3.33).p(6))")
+    PRINT_BENCHMARK("strf::to(dest)(strf::fixed(3.33).p(6))")
     {
-        (void) strf::write(dest)(strf::fixed(3.33).p(6));
+        (void) strf::to(dest)(strf::fixed(3.33).p(6));
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, fmtf, 3.33)")
@@ -177,9 +177,9 @@ int main()
     }
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::write(dest)(strf::fixed(123456.789).p(6))")
+    PRINT_BENCHMARK("strf::to(dest)(strf::fixed(123456.789).p(6))")
     {
-        (void) strf::write(dest)(strf::fixed(123456.789).p(6));
+        (void) strf::to(dest)(strf::fixed(123456.789).p(6));
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, fmtf, 123456.789)")
@@ -195,9 +195,9 @@ int main()
 
     std::cout << "\n               Scientific notation with precision = 6\n";
 
-    PRINT_BENCHMARK("strf::write(dest)(strf::sci(M_PI).p(6))")
+    PRINT_BENCHMARK("strf::to(dest)(strf::sci(M_PI).p(6))")
     {
-        (void) strf::write(dest)(strf::sci(M_PI).p(6));
+        (void) strf::to(dest)(strf::sci(M_PI).p(6));
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, fmte, M_PI)")
@@ -212,9 +212,9 @@ int main()
     }
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::write(dest)(strf::sci(3.33).p(6))")
+    PRINT_BENCHMARK("strf::to(dest)(strf::sci(3.33).p(6))")
     {
-        (void) strf::write(dest)(strf::sci(3.33).p(6));
+        (void) strf::to(dest)(strf::sci(3.33).p(6));
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, fmte, 3.33)")
@@ -229,9 +229,9 @@ int main()
     }
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::write(dest)((strf::sci(3.1234567+125).p(6))")
+    PRINT_BENCHMARK("strf::to(dest)((strf::sci(3.1234567+125).p(6))")
     {
-        (void) strf::write(dest)(3.1234567+125);
+        (void) strf::to(dest)(3.1234567+125);
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, fmte, 3.1234567+125)")
@@ -247,9 +247,9 @@ int main()
 
     std::cout << "\n               With punctuation\n";
 
-    PRINT_BENCHMARK("strf::write(dest).facets(strf::monotonic_grouping<10>(3))(1000000.0)")
+    PRINT_BENCHMARK("strf::to(dest).facets(strf::monotonic_grouping<10>(3))(1000000.0)")
     {
-        (void) strf::write(dest).facets(strf::monotonic_grouping<10>(3))(1000000.0);
+        (void) strf::to(dest).facets(strf::monotonic_grouping<10>(3))(1000000.0);
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, fmt_loc, 1000000.0)")
@@ -259,16 +259,16 @@ int main()
     }
 
     std::cout << "\n";
-    PRINT_BENCHMARK("strf::write(dest).facets(strf::no_grouping<10>().decimal_point(':'))(1000000.0)")
+    PRINT_BENCHMARK("strf::to(dest).facets(strf::no_grouping<10>().decimal_point(':'))(1000000.0)")
     {
-        (void) strf::write(dest).facets(strf::no_grouping<10>().decimal_point(':'))(1000000.0);
+        (void) strf::to(dest).facets(strf::no_grouping<10>().decimal_point(':'))(1000000.0);
         clobber();
     }
 
 
-    // strf::write(stdout)("\n ---- 6.103515625e-05 ---- \n");
-    // strf::write(stdout)("\n ---- 1234567890 ---- \n");
-    // strf::write(stdout)("\n ---- 1234567.12890625 ---- \n");
+    // strf::to(stdout)("\n ---- 6.103515625e-05 ---- \n");
+    // strf::to(stdout)("\n ---- 1234567890 ---- \n");
+    // strf::to(stdout)("\n ---- 1234567.12890625 ---- \n");
 
     return 0;
 }

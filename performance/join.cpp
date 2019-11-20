@@ -12,60 +12,60 @@ int main()
     (void) dest_end;
     escape(dest);
 
-    PRINT_BENCHMARK("strf::write(dest) (strf::join('a', 'b', 'c', 'd'))")
+    PRINT_BENCHMARK("strf::to(dest) (strf::join('a', 'b', 'c', 'd'))")
     {
-        strf::write(dest) (strf::join('a', 'b', 'c', 'd'));
+        strf::to(dest) (strf::join('a', 'b', 'c', 'd'));
         clobber();
     }
-    PRINT_BENCHMARK("strf::write(dest) ('a', 'b', 'c', 'd')")
+    PRINT_BENCHMARK("strf::to(dest) ('a', 'b', 'c', 'd')")
     {
-        strf::write(dest) ('a', 'b', 'c', 'd');
+        strf::to(dest) ('a', 'b', 'c', 'd');
         clobber();
     }
-    PRINT_BENCHMARK("strf::write(dest) (strf::join('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'))")
+    PRINT_BENCHMARK("strf::to(dest) (strf::join('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'))")
     {
-        strf::write(dest) (strf::join('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'));
+        strf::to(dest) (strf::join('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'));
         clobber();
     }
-    PRINT_BENCHMARK("strf::write(dest) ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')")
+    PRINT_BENCHMARK("strf::to(dest) ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h')")
     {
-        strf::write(dest) ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h');
+        strf::to(dest) ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h');
         clobber();
     }
     std::cout << "\n";
-    PRINT_BENCHMARK("strf::write(dest) (strf::join_right(15)('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'))")
+    PRINT_BENCHMARK("strf::to(dest) (strf::join_right(15)('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'))")
     {
-        strf::write(dest) (strf::join_right(15)('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'));
+        strf::to(dest) (strf::join_right(15)('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'));
         clobber();
     }
-    PRINT_BENCHMARK("strf::write(dest) (strf::join_split(15, 2)('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'))")
+    PRINT_BENCHMARK("strf::to(dest) (strf::join_split(15, 2)('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'))")
     {
-        strf::write(dest) (strf::join_split(15, 2)('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'));
+        strf::to(dest) (strf::join_split(15, 2)('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'));
         clobber();
     }
 
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::write(dest) (strf::join_right(15)(\"Hello World\"))")
+    PRINT_BENCHMARK("strf::to(dest) (strf::join_right(15)(\"Hello World\"))")
     {
-        strf::write(dest) (strf::join_right(15)("Hello World"));
+        strf::to(dest) (strf::join_right(15)("Hello World"));
         clobber();
     }
-    PRINT_BENCHMARK("strf::write(dest) (strf::fmt(\"Hello World\") > 15)")
+    PRINT_BENCHMARK("strf::to(dest) (strf::fmt(\"Hello World\") > 15)")
     {
-        strf::write(dest) (strf::fmt("Hello World") > 15);
+        strf::to(dest) (strf::fmt("Hello World") > 15);
         clobber();
     }
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::write(dest) (strf::join_right(4)(25))")
+    PRINT_BENCHMARK("strf::to(dest) (strf::join_right(4)(25))")
     {
-        strf::write(dest) (strf::join_right(4)(25));
+        strf::to(dest) (strf::join_right(4)(25));
         clobber();
     }
-    PRINT_BENCHMARK("strf::write(dest) (strf::dec(25) > 4)")
+    PRINT_BENCHMARK("strf::to(dest) (strf::dec(25) > 4)")
     {
-        strf::write(dest) (strf::dec(25) > 4);
+        strf::to(dest) (strf::dec(25) > 4);
         clobber();
     }
     std::cout << "\n";

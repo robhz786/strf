@@ -23,9 +23,9 @@ int main()
 
     std::cout << "               Without positional parameters\n";
 
-    PRINT_BENCHMARK("strf::write(dest) .tr(\"{}\", \"Hello World!\")")
+    PRINT_BENCHMARK("strf::to(dest) .tr(\"{}\", \"Hello World!\")")
     {
-        (void)strf::write(dest) .tr("{}", "Hello World!");
+        (void)strf::to(dest) .tr("{}", "Hello World!");
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, \"{}\", \"Hello World!\")")
@@ -36,9 +36,9 @@ int main()
 
     std::cout << "\n";
 
-    PRINT_BENCHMARK("strf::write(dest) .tr(\"ten = {}, twenty = {}\", 10, 20)")
+    PRINT_BENCHMARK("strf::to(dest) .tr(\"ten = {}, twenty = {}\", 10, 20)")
     {
-        (void)strf::write(dest).tr("ten = {}, twenty = {}", 10, 20);
+        (void)strf::to(dest).tr("ten = {}, twenty = {}", 10, 20);
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, \"ten = {}, twenty = {}\", 10, 20)")
@@ -49,9 +49,9 @@ int main()
 
     std::cout << "\n               With positional parameters\n";
 
-    PRINT_BENCHMARK("strf::write(dest) .tr(\"ten = {1}, twenty = {0}\", 20, 10)")
+    PRINT_BENCHMARK("strf::to(dest) .tr(\"ten = {1}, twenty = {0}\", 20, 10)")
     {
-        (void)strf::write(dest).tr("ten = {}, twenty = {}", 10, 20);
+        (void)strf::to(dest).tr("ten = {}, twenty = {}", 10, 20);
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, \"ten = {1}, twenty = {0}\", 20, 10)")

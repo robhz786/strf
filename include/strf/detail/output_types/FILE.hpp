@@ -205,14 +205,14 @@ private:
 
 
 template <typename CharT = char>
-inline auto write(std::FILE* destination)
+inline auto to(std::FILE* destination)
 {
     return strf::destination_no_reserve
         < strf::detail::narrow_cfile_writer_creator<CharT> >
         (destination);
 }
 
-inline auto wwrite(std::FILE* destination)
+inline auto wto(std::FILE* destination)
 {
     return strf::destination_no_reserve
         < strf::detail::wide_cfile_writer_creator >

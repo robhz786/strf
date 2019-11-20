@@ -30,27 +30,27 @@ int main()
 
     std::cout << "\nUTF-16 to UTF-8\n";
 
-    PRINT_BENCHMARK("strf::write(u8dest)(u16sample1)")
+    PRINT_BENCHMARK("strf::to(u8dest)(u16sample1)")
     {
-        auto err = strf::write(u8dest)(strf::cv(u16sample1));
+        auto err = strf::to(u8dest)(strf::cv(u16sample1));
         (void)err;
         clobber();
     }
-    PRINT_BENCHMARK("strf::write(u8dest)(u16sample2)")
+    PRINT_BENCHMARK("strf::to(u8dest)(u16sample2)")
     {
-        auto err = strf::write(u8dest)(strf::cv(u16sample2));
+        auto err = strf::to(u8dest)(strf::cv(u16sample2));
         (void)err;
         clobber();
     }
-    PRINT_BENCHMARK("strf::write(u8dest)(u16sample3)")
+    PRINT_BENCHMARK("strf::to(u8dest)(u16sample3)")
     {
-        auto err = strf::write(u8dest)(strf::cv(u16sample3));
+        auto err = strf::to(u8dest)(strf::cv(u16sample3));
         (void)err;
         clobber();
     }
-    PRINT_BENCHMARK("strf::write(u8dest)(u16sample4)")
+    PRINT_BENCHMARK("strf::to(u8dest)(u16sample4)")
     {
-        auto err = strf::write(u8dest)(strf::cv(u16sample4));
+        auto err = strf::to(u8dest)(strf::cv(u16sample4));
         (void)err;
         clobber();
     }

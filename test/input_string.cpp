@@ -8,10 +8,10 @@
 int main()
 {
     char u8dest[100];
-    (void)strf::write(u8dest) (strf::fmt("hello") > 5);
+    (void)strf::to(u8dest) (strf::fmt("hello") > 5);
 
-    (void)strf::write(u8dest)
-            .facets(strf::width_as_u32len<char>())
+    (void)strf::to(u8dest)
+        .facets(strf::width_as_u32len<char>())
         (strf::fmt("hello") > 5);
 
 //    TEST("   abc")   ( strf::fmt("abc") > 6 );

@@ -6,7 +6,7 @@
 #include <array>
 #include <vector>
 
-auto write_out = strf::write(stdout);
+auto write_out = strf::to(stdout);
 
 //[ base64_facet
 

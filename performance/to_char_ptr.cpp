@@ -30,9 +30,9 @@ int main()
     escape(dest);
 
     std::cout << "\n small strings \n";
-    PRINT_BENCHMARK("strf::write(dest) (\"Hello World!\")")
+    PRINT_BENCHMARK("strf::to(dest) (\"Hello World!\")")
     {
-        (void)strf::write(dest)("Hello World!");
+        (void)strf::to(dest)("Hello World!");
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, \"{}\", \"Hello World!\")")
@@ -56,14 +56,14 @@ int main()
     }
 
     std::cout << "\n";
-    PRINT_BENCHMARK("strf::write(dest) (\"Hello \", \"World\", '!')")
+    PRINT_BENCHMARK("strf::to(dest) (\"Hello \", \"World\", '!')")
     {
-        (void)strf::write(dest)("Hello ", "World", '!');
+        (void)strf::to(dest)("Hello ", "World", '!');
         clobber();
     }
-    PRINT_BENCHMARK("strf::write(dest) (\"Hello \", \"World\", \"!\")")
+    PRINT_BENCHMARK("strf::to(dest) (\"Hello \", \"World\", \"!\")")
     {
-        (void)strf::write(dest)("Hello ", "World", "!");
+        (void)strf::to(dest)("Hello ", "World", "!");
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, \"Hello {}!\", \"World\")")
@@ -83,9 +83,9 @@ int main()
         std::string std_string_long_string(1000, 'x');
         const char* long_string = std_string_long_string.c_str();
 
-        PRINT_BENCHMARK("strf::write(dest) (\"Hello \", long_string, \"!\")")
+        PRINT_BENCHMARK("strf::to(dest) (\"Hello \", long_string, \"!\")")
         {
-            (void)strf::write(dest)("Hello ", long_string, "!");
+            (void)strf::to(dest)("Hello ", long_string, "!");
             clobber();
         }
         PRINT_BENCHMARK("fmt::format_to(dest, \"Hello {}!\", long_string)")
@@ -102,14 +102,14 @@ int main()
 
     std::cout << "\n padding \n";
 
-    PRINT_BENCHMARK("strf::write(dest) (strf::right(\"aa\", 20))")
+    PRINT_BENCHMARK("strf::to(dest) (strf::right(\"aa\", 20))")
     {
-        (void)strf::write(dest)(strf::right("aa", 20));
+        (void)strf::to(dest)(strf::right("aa", 20));
         clobber();
     }
-    PRINT_BENCHMARK("strf::write(dest) (join_right(20)(\"aa\"))")
+    PRINT_BENCHMARK("strf::to(dest) (join_right(20)(\"aa\"))")
     {
-        (void)strf::write(dest)(strf::join_right(20)("aa"));
+        (void)strf::to(dest)(strf::join_right(20)("aa"));
     }
     PRINT_BENCHMARK("fmt::format_to(dest, \"{:20}\", \"aa\")")
     {
@@ -125,15 +125,15 @@ int main()
 
     std::cout << "\n Strings and integers mixed: \n";
 
-    PRINT_BENCHMARK("strf::write(dest) (\"blah blah \", INT_MAX, \" blah \", ~strf::hex(1234)<8, \" blah \", \"abcdef\")" )
+    PRINT_BENCHMARK("strf::to(dest) (\"blah blah \", INT_MAX, \" blah \", ~strf::hex(1234)<8, \" blah \", \"abcdef\")" )
     {
-        (void)strf::write(dest)("blah blah ", INT_MAX, " blah ", ~strf::hex(1234)<8, " blah ", "abcdef");
+        (void)strf::to(dest)("blah blah ", INT_MAX, " blah ", ~strf::hex(1234)<8, " blah ", "abcdef");
         clobber();
     }
 
-    PRINT_BENCHMARK("strf::write(dest) .tr(\"blah blah {} blah {} blah {}\", INT_MAX, ~strf::hex(1234)<8, \"abcdef\")")
+    PRINT_BENCHMARK("strf::to(dest) .tr(\"blah blah {} blah {} blah {}\", INT_MAX, ~strf::hex(1234)<8, \"abcdef\")")
     {
-        (void)strf::write(dest).tr("blah blah {} blah {} blah {}", INT_MAX, ~strf::hex(1234)<8, "abcdef");
+        (void)strf::to(dest).tr("blah blah {} blah {} blah {}", INT_MAX, ~strf::hex(1234)<8, "abcdef");
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, \"blah blah {} blah {:<#8x} blah {}\", INT_MAX, 1234, \"abcdef\")")
@@ -148,14 +148,14 @@ int main()
     }
 
     std::cout << std::endl;
-    PRINT_BENCHMARK("strf::write(dest) (\"ten =  \", 10, \", twenty = \", 20)")
+    PRINT_BENCHMARK("strf::to(dest) (\"ten =  \", 10, \", twenty = \", 20)")
     {
-        (void)strf::write(dest)("ten =  ", 10, ", twenty = ", 20);
+        (void)strf::to(dest)("ten =  ", 10, ", twenty = ", 20);
         clobber();
     }
-    PRINT_BENCHMARK("strf::write(dest) .tr(\"ten = {}, twenty = {}\", 10, 20)")
+    PRINT_BENCHMARK("strf::to(dest) .tr(\"ten = {}, twenty = {}\", 10, 20)")
     {
-        (void)strf::write(dest).tr("ten = {}, twenty = {}", 10, 20);
+        (void)strf::to(dest).tr("ten = {}, twenty = {}", 10, 20);
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, \"ten = {}, twenty = {}\", 10, 20)")

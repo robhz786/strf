@@ -67,7 +67,7 @@ void test_destinations()
             + test_utils::half_string_size<CharT> +1;
 
         CharT buff[buff_size];
-        auto res = strf::write(buff) (full_str,  half_str);
+        auto res = strf::to(buff) (full_str,  half_str);
 
         BOOST_TEST(!res.truncated);
         BOOST_TEST(res.ptr == buff + buff_size - 1);
@@ -79,7 +79,7 @@ void test_destinations()
             + test_utils::half_string_size<CharT> +1;
 
         CharT buff[buff_size];
-        auto res = strf::write(buff, buff_size) (full_str,  half_str);
+        auto res = strf::to(buff, buff_size) (full_str,  half_str);
 
         BOOST_TEST(!res.truncated);
         BOOST_TEST(res.ptr == buff + buff_size - 1);
@@ -91,7 +91,7 @@ void test_destinations()
             + test_utils::half_string_size<CharT> +1;
 
         CharT buff[buff_size];
-        auto res = strf::write(buff, buff + buff_size) (full_str,  half_str);
+        auto res = strf::to(buff, buff + buff_size) (full_str,  half_str);
 
         BOOST_TEST(!res.truncated);
         BOOST_TEST(res.ptr == buff + buff_size - 1);

@@ -205,9 +205,9 @@ int main()
             auto str = strf::to_u16string(strf::cv(u8sample1));
             escape(str.data());
         }
-        PRINT_BENCHMARK("strf::write(buff) (strf::cv(u8sample1)); strf::to_u16string.reserve_calc() (buff)")
+        PRINT_BENCHMARK("strf::to(buff) (strf::cv(u8sample1)); strf::to_u16string.reserve_calc() (buff)")
         {
-            (void)strf::write(buff)(strf::cv(u8sample1));
+            (void)strf::to(buff)(strf::cv(u8sample1));
             auto str = strf::to_u16string.reserve_calc() (buff);
             escape(str.data());
         }
@@ -236,9 +236,9 @@ int main()
             auto str = strf::to_string(strf::cv(u16sample1));
             escape(str.data());
         }
-        PRINT_BENCHMARK("strf::write(buff) (strf::cv(u16sample1)); strf::to_string.reserve_calc()(buff)")
+        PRINT_BENCHMARK("strf::to(buff) (strf::cv(u16sample1)); strf::to_string.reserve_calc()(buff)")
         {
-            (void)strf::write(buff)(strf::cv(u16sample1));
+            (void)strf::to(buff)(strf::cv(u16sample1));
             auto str = strf::to_string.reserve_calc()(buff);
             escape(str.data());
         }

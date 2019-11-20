@@ -165,7 +165,7 @@ void test_destination()
     auto path = test_utils::unique_tmp_file_name();
     std::FILE* file = std::fopen(path.c_str(), "w");
 
-    auto status = strf::write<CharT>(file)(half_str, full_str);
+    auto status = strf::to<CharT>(file)(half_str, full_str);
     std::fclose(file);
     auto obtained_content = test_utils::read_file<CharT>(path.c_str());
     std::remove(path.c_str());
@@ -184,7 +184,7 @@ void test_wdestination()
     auto path = test_utils::unique_tmp_file_name();
     std::FILE* file = std::fopen(path.c_str(), "w");
 
-    auto status = strf::wwrite(file)(half_str, full_str);
+    auto status = strf::wto(file)(half_str, full_str);
     std::fclose(file);
 
     auto obtained_content = test_utils::read_wfile(path.c_str());

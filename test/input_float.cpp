@@ -290,7 +290,7 @@ int main()
         char buff[64];
         for (const auto d: vec)
         {
-            (void) strf::write(buff) (d);
+            (void) strf::to(buff) (d);
             auto parsed = std::strtod(buff, nullptr);
             BOOST_TEST_EQ(parsed, d);
         }
@@ -301,7 +301,7 @@ int main()
         char buff[64];
         for (const float f: vec)
         {
-            (void) strf::write(buff) (f);
+            (void) strf::to(buff) (f);
             auto parsed = std::strtof(buff, nullptr);
             BOOST_TEST_EQ(parsed, f);
         }

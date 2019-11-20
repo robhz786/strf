@@ -46,21 +46,21 @@ private:
 #if defined(__cpp_char8_t)
 
 template<std::size_t N>
-inline auto write(char8_t (&dest)[N])
+inline auto to(char8_t (&dest)[N])
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char8_t> >
         (dest, dest + N);
 }
 
-inline auto write(char8_t* dest, char8_t* end)
+inline auto to(char8_t* dest, char8_t* end)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char8_t> >
         (dest, end);
 }
 
-inline auto write(char8_t* dest, std::size_t count)
+inline auto to(char8_t* dest, std::size_t count)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char8_t> >
@@ -70,21 +70,21 @@ inline auto write(char8_t* dest, std::size_t count)
 #endif
 
 template<std::size_t N>
-inline auto write(char (&dest)[N])
+inline auto to(char (&dest)[N])
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char> >
         (dest, dest + N);
 }
 
-inline auto write(char* dest, char* end)
+inline auto to(char* dest, char* end)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char> >
         (dest, end);
 }
 
-inline auto write(char* dest, std::size_t count)
+inline auto to(char* dest, std::size_t count)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char> >
@@ -92,21 +92,21 @@ inline auto write(char* dest, std::size_t count)
 }
 
 template<std::size_t N>
-inline auto write(char16_t (&dest)[N])
+inline auto to(char16_t (&dest)[N])
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char16_t> >
         (dest, dest + N);
 }
 
-inline auto write(char16_t* dest, char16_t* end)
+inline auto to(char16_t* dest, char16_t* end)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char16_t> >
         (dest, end);
 }
 
-inline auto write(char16_t* dest, std::size_t count)
+inline auto to(char16_t* dest, std::size_t count)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char16_t> >
@@ -114,21 +114,21 @@ inline auto write(char16_t* dest, std::size_t count)
 }
 
 template<std::size_t N>
-inline auto write(char32_t (&dest)[N])
+inline auto to(char32_t (&dest)[N])
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char32_t> >
         (dest, dest + N);
 }
 
-inline auto write(char32_t* dest, char32_t* end)
+inline auto to(char32_t* dest, char32_t* end)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char32_t> >
         (dest, end);
 }
 
-inline auto write(char32_t* dest, std::size_t count)
+inline auto to(char32_t* dest, std::size_t count)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char32_t> >
@@ -136,21 +136,21 @@ inline auto write(char32_t* dest, std::size_t count)
 }
 
 template<std::size_t N>
-inline auto write(wchar_t (&dest)[N])
+inline auto to(wchar_t (&dest)[N])
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<wchar_t> >
         (dest, dest + N);
 }
 
-inline auto write(wchar_t* dest, wchar_t* end)
+inline auto to(wchar_t* dest, wchar_t* end)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<wchar_t> >
         (dest, end);
 }
 
-inline auto write(wchar_t* dest, std::size_t count)
+inline auto to(wchar_t* dest, std::size_t count)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<wchar_t> >

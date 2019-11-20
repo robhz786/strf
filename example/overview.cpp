@@ -212,7 +212,7 @@ void output_FILE()
 {
 //[ output_FILE
     // writting to a FILE*
-    strf::write(stdout) ("Hello World!\n");
+    strf::to(stdout) ("Hello World!\n");
 //]
 }
 
@@ -345,9 +345,9 @@ inline auto append(Str& str)
 }
 
 template <typename ... Args>
-inline decltype(auto) write(Args&& ... args)
+inline decltype(auto) to(Args&& ... args)
 {
-    return strf::write(std::forward<Args>(args)...).facets(my_default_facets);
+    return strf::to(std::forward<Args>(args)...).facets(my_default_facets);
 }
 
 } // namespace my
@@ -362,7 +362,7 @@ void using_my_customizations()
     assert(str == "100,000,000 in hexadecimal is 0x5f5'e100");
 
     char buff[500];
-    my::write(buff)(x, " in hexadecimal is ", ~strf::hex(x));
+    my::to(buff)(x, " in hexadecimal is ", ~strf::hex(x));
     assert(str == buff);
 
     // Overriding numpunct_c<16> back to default:

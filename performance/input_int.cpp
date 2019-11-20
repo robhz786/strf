@@ -37,18 +37,18 @@ int main()
 
     std::cout << "\n\n               Small int\n";
 
-    PRINT_BENCHMARK_N(10, "strf::write(dest) (25)")
+    PRINT_BENCHMARK_N(10, "strf::to(dest) (25)")
     {
-        (void)strf::write(dest     , dest_end)(20);
-        (void)strf::write(dest + 2 , dest_end)(21);
-        (void)strf::write(dest + 4 , dest_end)(22);
-        (void)strf::write(dest + 6 , dest_end)(23);
-        (void)strf::write(dest + 8 , dest_end)(24);
-        (void)strf::write(dest + 10, dest_end)(25);
-        (void)strf::write(dest + 12, dest_end)(26);
-        (void)strf::write(dest + 14, dest_end)(27);
-        (void)strf::write(dest + 16, dest_end)(28);
-        (void)strf::write(dest + 18, dest_end)(29);
+        (void)strf::to(dest     , dest_end)(20);
+        (void)strf::to(dest + 2 , dest_end)(21);
+        (void)strf::to(dest + 4 , dest_end)(22);
+        (void)strf::to(dest + 6 , dest_end)(23);
+        (void)strf::to(dest + 8 , dest_end)(24);
+        (void)strf::to(dest + 10, dest_end)(25);
+        (void)strf::to(dest + 12, dest_end)(26);
+        (void)strf::to(dest + 14, dest_end)(27);
+        (void)strf::to(dest + 16, dest_end)(28);
+        (void)strf::to(dest + 18, dest_end)(29);
         clobber();
     }
     auto fmt_int = fmt::compile<int>("{}");
@@ -119,18 +119,18 @@ int main()
 
     std::cout << "\n";
 
-    PRINT_BENCHMARK_N(10, "strf::write(dest) (15, 25, 35, 45, 55)")
+    PRINT_BENCHMARK_N(10, "strf::to(dest) (15, 25, 35, 45, 55)")
     {
-        (void)strf::write(dest     , dest_end)(10, 20, 30, 40, 50);
-        (void)strf::write(dest + 2 , dest_end)(11, 21, 31, 41, 51);
-        (void)strf::write(dest + 4 , dest_end)(11, 21, 31, 41, 51);
-        (void)strf::write(dest + 6 , dest_end)(13, 23, 33, 43, 53);
-        (void)strf::write(dest + 8 , dest_end)(14, 24, 34, 44, 54);
-        (void)strf::write(dest + 10, dest_end)(15, 25, 35, 45, 55);
-        (void)strf::write(dest + 12, dest_end)(16, 26, 36, 46, 56);
-        (void)strf::write(dest + 14, dest_end)(17, 27, 37, 47, 57);
-        (void)strf::write(dest + 16, dest_end)(18, 28, 38, 48, 58);
-        (void)strf::write(dest + 18, dest_end)(19, 29, 39, 49, 59);
+        (void)strf::to(dest     , dest_end)(10, 20, 30, 40, 50);
+        (void)strf::to(dest + 2 , dest_end)(11, 21, 31, 41, 51);
+        (void)strf::to(dest + 4 , dest_end)(11, 21, 31, 41, 51);
+        (void)strf::to(dest + 6 , dest_end)(13, 23, 33, 43, 53);
+        (void)strf::to(dest + 8 , dest_end)(14, 24, 34, 44, 54);
+        (void)strf::to(dest + 10, dest_end)(15, 25, 35, 45, 55);
+        (void)strf::to(dest + 12, dest_end)(16, 26, 36, 46, 56);
+        (void)strf::to(dest + 14, dest_end)(17, 27, 37, 47, 57);
+        (void)strf::to(dest + 16, dest_end)(18, 28, 38, 48, 58);
+        (void)strf::to(dest + 18, dest_end)(19, 29, 39, 49, 59);
         clobber();
     }
 
@@ -167,13 +167,13 @@ int main()
 
     std::cout << "\n               Big int\n";
 
-    PRINT_BENCHMARK_N(5, "strf::write(dest) (LLONG_MAX)")
+    PRINT_BENCHMARK_N(5, "strf::to(dest) (LLONG_MAX)")
     {
-        (void)strf::write(dest     , dest_end)(LLONG_MAX    );
-        (void)strf::write(dest + 20, dest_end)(LLONG_MAX - 1);
-        (void)strf::write(dest + 40, dest_end)(LLONG_MAX - 2);
-        (void)strf::write(dest + 60, dest_end)(LLONG_MAX - 3);
-        (void)strf::write(dest + 80, dest_end)(LLONG_MAX - 4);
+        (void)strf::to(dest     , dest_end)(LLONG_MAX    );
+        (void)strf::to(dest + 20, dest_end)(LLONG_MAX - 1);
+        (void)strf::to(dest + 40, dest_end)(LLONG_MAX - 2);
+        (void)strf::to(dest + 60, dest_end)(LLONG_MAX - 3);
+        (void)strf::to(dest + 80, dest_end)(LLONG_MAX - 4);
         clobber();
     }
 
@@ -224,9 +224,9 @@ int main()
     }
 
     std::cout << "\n";
-    PRINT_BENCHMARK("strf::write(dest) (LLONG_MAX, LLONG_MAX, LLONG_MAX, LLONG_MAX, LLONG_MAX)")
+    PRINT_BENCHMARK("strf::to(dest) (LLONG_MAX, LLONG_MAX, LLONG_MAX, LLONG_MAX, LLONG_MAX)")
     {
-        (void)strf::write(dest , dest_end)( LLONG_MAX - 10, LLONG_MAX - 20
+        (void)strf::to(dest , dest_end)( LLONG_MAX - 10, LLONG_MAX - 20
                                                , LLONG_MAX - 30, LLONG_MAX - 40, LLONG_MAX - 50);
         clobber();
     }
@@ -247,13 +247,13 @@ int main()
 
     std::cout << "\n               With formatting \n";
 
-    PRINT_BENCHMARK_N(5, "strf::write(dest) (strf::dec(25).fill('*')<8, ~strf::hex(225), +strf::dec(25).p(5)>10)")
+    PRINT_BENCHMARK_N(5, "strf::to(dest) (strf::dec(25).fill('*')<8, ~strf::hex(225), +strf::dec(25).p(5)>10)")
     {
-        (void)strf::write(dest    , dest_end)(strf::dec(21).fill('*')<8, ' ', ~strf::hex(221), ' ', +strf::dec(21)>10);
-        (void)strf::write(dest + 2, dest_end)(strf::dec(22).fill('*')<8, ' ', ~strf::hex(222), ' ', +strf::dec(22)>10);
-        (void)strf::write(dest + 4, dest_end)(strf::dec(23).fill('*')<8, ' ', ~strf::hex(223), ' ', +strf::dec(23)>10);
-        (void)strf::write(dest + 6, dest_end)(strf::dec(24).fill('*')<8, ' ', ~strf::hex(224), ' ', +strf::dec(24)>10);
-        (void)strf::write(dest + 8, dest_end)(strf::dec(25).fill('*')<8, ' ', ~strf::hex(225), ' ', +strf::dec(25)>10);
+        (void)strf::to(dest    , dest_end)(strf::dec(21).fill('*')<8, ' ', ~strf::hex(221), ' ', +strf::dec(21)>10);
+        (void)strf::to(dest + 2, dest_end)(strf::dec(22).fill('*')<8, ' ', ~strf::hex(222), ' ', +strf::dec(22)>10);
+        (void)strf::to(dest + 4, dest_end)(strf::dec(23).fill('*')<8, ' ', ~strf::hex(223), ' ', +strf::dec(23)>10);
+        (void)strf::to(dest + 6, dest_end)(strf::dec(24).fill('*')<8, ' ', ~strf::hex(224), ' ', +strf::dec(24)>10);
+        (void)strf::to(dest + 8, dest_end)(strf::dec(25).fill('*')<8, ' ', ~strf::hex(225), ' ', +strf::dec(25)>10);
         clobber();
     }
 
@@ -282,9 +282,9 @@ int main()
     auto fmt_loc_int = fmt::compile<int>("{:n}");
     strf::monotonic_grouping<10> punct3(3);
 
-    PRINT_BENCHMARK("strf::write(dest).facets(punct3) (25)")
+    PRINT_BENCHMARK("strf::to(dest).facets(punct3) (25)")
     {
-        (void)strf::write(dest).facets(punct3)(25);
+        (void)strf::to(dest).facets(punct3)(25);
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, fmt_loc_int, 25)")
@@ -306,9 +306,9 @@ int main()
 
     auto fmt_loc_longlong = fmt::compile<long long>("{:n}");
 
-    PRINT_BENCHMARK("strf::write(dest).facets(punct3) (LLONG_MAX)")
+    PRINT_BENCHMARK("strf::to(dest).facets(punct3) (LLONG_MAX)")
     {
-        (void)strf::write(dest).facets(punct3)(LLONG_MAX);
+        (void)strf::to(dest).facets(punct3)(LLONG_MAX);
         clobber();
     }
     PRINT_BENCHMARK("fmt::format_to(dest, fmt_loc_longlong, LLONG_MAX)")
@@ -330,14 +330,14 @@ int main()
     std::cout << "\n               With punctuation, using a non-ascci character U+22C4\n";
     auto punct3_bigsep = punct3.thousands_sep(0x22C4);
 
-    PRINT_BENCHMARK("strf::write(dest).facets(punct3_bigsep) (25)")
+    PRINT_BENCHMARK("strf::to(dest).facets(punct3_bigsep) (25)")
     {
-        (void)strf::write(dest).facets(punct3_bigsep)(25);
+        (void)strf::to(dest).facets(punct3_bigsep)(25);
         clobber();
     }
-    PRINT_BENCHMARK("strf::write(dest).facets(punct3_bigsep) (LLONG_MAX)")
+    PRINT_BENCHMARK("strf::to(dest).facets(punct3_bigsep) (LLONG_MAX)")
     {
-        (void)strf::write(dest).facets(punct3_bigsep)(LLONG_MAX);
+        (void)strf::to(dest).facets(punct3_bigsep)(LLONG_MAX);
         clobber();
     }
 

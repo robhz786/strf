@@ -81,9 +81,9 @@ void samples()
 
     // other output types
     char buff[500];
-    strf::write(buff) (value, " in hexadecimal is ", strf::hex(value));
-    strf::write(stdout) ("Hello, ", "World", '!');
-    strf::write(std::cout.rdbuf()) ("Hello, ", "World", '!');
+    strf::to(buff) (value, " in hexadecimal is ", strf::hex(value));
+    strf::to(stdout) ("Hello, ", "World", '!');
+    strf::to(std::cout.rdbuf()) ("Hello, ", "World", '!');
     std::u16string s16 = strf::to_u16string( value
                                            , u" in hexadecimal is "
                                            , strf::hex(value) );
