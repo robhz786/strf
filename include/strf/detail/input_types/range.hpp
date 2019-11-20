@@ -190,9 +190,12 @@ void sep_range_printer<CharT, FPack, It>::_preview(Preview& preview) const
     {
         make_printer<CharT, FPack>(_fp, preview, *it);
         ++ count;
-        if ( ! Preview::size_required && preview.remaining_width() <= 0)
+        STRF_IF_CONSTEXPR (!Preview::size_required)
         {
-            return;
+            if (preview.remaining_width() <= 0)
+            {
+                return;
+            }
         }
     }
     if (count < 2)
@@ -405,9 +408,12 @@ void fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>::_preview
                                   , preview
                                   , _value_fmt_type_adapted{{*it}, _fmt} );
         ++ count;
-        if ( ! Preview::size_required && preview.remaining_width() <= 0)
+        STRF_IF_CONSTEXPR (!Preview::size_required)
         {
-            return;
+            if (preview.remaining_width() <= 0)
+            {
+                return;
+            }
         }
     }
     if (count < 2)

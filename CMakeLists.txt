@@ -21,15 +21,15 @@ option(
   "Build performace test"
   ${STRF_BUILD_BENCHMARKS})
 
-set(
-  STRF_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../.."
-  CACHE FILEPATH "installation path" )
+#set(
+#  STRF_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../.."
+#  CACHE FILEPATH "installation path" )
 set(
   STRF_INSTALL_SUBDIR "${CMAKE_CXX_COMPILER_ID}${CMAKE_CXX_COMPILER_VERSION}"
   CACHE STRING
   "subdirectory of STRF_INSTALL_PREFIX where the binaries and .cmake file will be installed")
 
-set(CMAKE_INSTALL_PREFIX ${STRF_INSTALL_PREFIX})
+#set(CMAKE_INSTALL_PREFIX ${STRF_INSTALL_PREFIX})
 
 add_library(strf-header-only INTERFACE)
 add_library(strf STATIC src/strf.cpp)
@@ -60,25 +60,25 @@ set_property(
   TARGET strf
   PROPERTY EXPORT_NAME strf)
 
-#install(
-#  TARGETS strf-header-only strf
-#  EXPORT strf
-#  DESTINATION "${STRF_INSTALL_SUBDIR}/$<CONFIG>")
-#install(
-#  EXPORT strf
-#  FILE strf.cmake
-##  NAMESPACE boost::
-#  DESTINATION "${STRF_INSTALL_SUBDIR}/cmake"  )
-#
+install(
+  TARGETS strf-header-only strf
+  EXPORT strf
+  DESTINATION "${STRF_INSTALL_SUBDIR}/$<CONFIG>")
+install(
+  EXPORT strf
+  FILE strf.cmake
+  NAMESPACE strf::
+  DESTINATION "${STRF_INSTALL_SUBDIR}/cmake"  )
 
-#install(
-#  FILES include/strf.hpp
-#  DESTINATION ./boost/ )
-#install(
-#  DIRECTORY include/strf
-#  DESTINATION ./boost/
-#  USE_SOURCE_PERMISSIONS )
-#
+
+install(
+  FILES include/strf.hpp
+  DESTINATION ./strf/ )
+install(
+  DIRECTORY include/strf
+  DESTINATION ./strf/
+  USE_SOURCE_PERMISSIONS )
+
 if (STRF_BUILD_TESTS)
   add_subdirectory(test test)
 endif(STRF_BUILD_TESTS)

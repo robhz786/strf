@@ -7,7 +7,24 @@
 
 #if defined(_MSC_VER)
 #pragma warning ( push )
+
+#if ! defined(__cpp_if_constexpr)
 #pragma warning ( disable : 4127 )
+#endif
+
+// #pragma warning ( disable : 4061 )
+// #pragma warning ( disable : 4365 )
+// #pragma warning ( disable : 4514 )
+// #pragma warning ( disable : 4571 )
+// #pragma warning ( disable : 4623 )
+// #pragma warning ( disable : 4625 )
+// #pragma warning ( disable : 4626 )
+// #pragma warning ( disable : 4627 )
+// #pragma warning ( disable : 4710 )
+// #pragma warning ( disable : 4820 )
+// #pragma warning ( disable : 5026 )
+// #pragma warning ( disable : 5027 )
+// #pragma warning ( disable : 5045 )
 #endif // defined(_MSC_VER)
 
 #include <strf/detail/input_types/int.hpp>

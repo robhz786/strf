@@ -667,12 +667,7 @@ public:
 
     void finish()
     {
-        if (_eptr != nullptr)
-        {
-            std::rethrow_exception(_eptr);
-        }
         auto p = this->pos();
-        this->set_pos(p);
         if (p != _begin && _ob.good())
         {
             _enc.from_u32().transcode(_ob, _begin, p, _err_hdl, _allow_surr);
@@ -687,7 +682,6 @@ private:
     char32_t* _begin;
     strf::encoding_error _err_hdl;
     strf::surrogate_policy _allow_surr;
-    std::exception_ptr _eptr = nullptr;
 };
 
 template <typename CharOut>
@@ -697,15 +691,9 @@ void buffered_encoder<CharOut>::recycle()
     this->set_pos(_begin);
     if (p != _begin && _ob.good())
     {
-        try
-        {
-            _enc.from_u32().transcode(_ob, _begin, p, _err_hdl, _allow_surr);
-        }
-        catch(...)
-        {
-            _eptr = std::current_exception();
-            this->set_good(false);
-        }
+        this->set_good(false);
+        _enc.from_u32().transcode(_ob, _begin, p, _err_hdl, _allow_surr);
+        this->set_good(true);
     }
 }
 

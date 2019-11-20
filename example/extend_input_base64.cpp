@@ -398,6 +398,8 @@ void tests()
             "    1wcyBvdmVyIHRoZSBsYXp5IGRvZy4=\r\n";
 
         assert(result == expected);
+        (void)result;
+        (void)expected;
     }
     {
         // When base64_facet::line_length == 1
@@ -488,6 +490,8 @@ void tests()
             "    YWJjZGU=\n";
 
         assert(result == expected);
+        (void)result;
+        (void)expected;
     }
 
 }
@@ -508,6 +512,7 @@ void sample()
 
     assert(obtained == expected);
 //]
+    (void)obtained;
     (void)expected;
 };
 
