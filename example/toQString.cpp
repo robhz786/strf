@@ -18,7 +18,7 @@ public:
 #if defined(STRF_NO_CXX17_COPY_ELISION)
     QStringCreator(QStringCreator&& str);
 #else
-    QStringCreator(QStringrCreator&&) = delete;
+    QStringCreator(QStringCreator&&) = delete;
     QStringCreator(const QStringCreator&) = delete;
 #endif
 
