@@ -52,6 +52,8 @@ class printer
 {
 public:
 
+    using char_type = CharOut;
+
     virtual ~printer()
     {
     }
@@ -120,12 +122,6 @@ inline void write_fill
 }
 
 } // namespace detail
-
-template <typename T>
-struct identity
-{
-    using type = T;
-};
 
 struct string_input_tag_base
 {

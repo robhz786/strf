@@ -57,12 +57,6 @@ template <bool ... C> constexpr bool fold_or = fold_or_impl<C...>::value;
 
 #endif // defined(__cpp_fold_expressions) else
 
-template <typename T>
-struct identity
-{
-    using type = T;
-};
-
 template <typename ... T>
 struct tmp_list
 {
@@ -322,7 +316,7 @@ public:
     template <typename Tag>
     constexpr const auto& do_get_facet
         ( const Rank&
-        , strf::detail::identity<_category>
+        , strf::identity<_category>
         , std::true_type ) const
     {
         return _facet;
@@ -371,7 +365,7 @@ public:
     template <typename Tag, typename Category>
     constexpr decltype(auto) do_get_facet
         ( const Rank&
-        , strf::detail::identity<Category>
+        , strf::identity<Category>
         , std::integral_constant<bool, _has_facet_v<Category, Tag>> ) const
     {
         return strf::detail::do_get_facet<Category, Tag>(_fpe);
@@ -400,7 +394,7 @@ public:
     template <typename Tag, typename Category>
     constexpr decltype(auto) do_get_facet
         ( const Rank&
-        , strf::detail::identity<Category>
+        , strf::identity<Category>
         , std::integral_constant
             < bool
             , strf::detail::has_facet_v<Category, Tag, FPE> > ) const
@@ -447,7 +441,7 @@ public:
     template <typename Tag, typename Category>
     constexpr decltype(auto) do_get_facet
         ( const Rank&
-        , strf::detail::identity<Category>
+        , strf::identity<Category>
         , std::integral_constant<bool, _has_facet_v<Category, Tag>> ) const
     {
         return _fp.template get_facet<Category, Tag>();
@@ -747,7 +741,7 @@ class facets_pack: private strf::detail::facets_pack_base_t<FPE...>
     template <typename Tag, typename Category>
     constexpr decltype(auto) do_get_facet
         ( const strf::detail::absolute_lowest_rank&
-        , strf::detail::identity<Category>
+        , strf::identity<Category>
         , ... ) const
     {
         return Category::get_default();
@@ -787,7 +781,7 @@ public:
     {
         return this->template do_get_facet<Tag>
             ( strf::detail::rank<sizeof...(FPE)>()
-            , strf::detail::identity<Category>()
+            , strf::identity<Category>()
             , std::true_type() );
     }
 };

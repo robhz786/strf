@@ -122,5 +122,17 @@
 
 // todo
 
+
+STRF_NAMESPACE_BEGIN
+
+template <typename T>
+struct identity
+{
+    using type = T;
+};
+
+STRF_NAMESPACE_END
+
+
 #endif  // STRF_CONFIG_HPP
 

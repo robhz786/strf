@@ -40,6 +40,41 @@ struct fmt_replace_impl<From, List<T ...> >
             < From, To, List, T...>::type;
 };
 
+template <typename FmtA, typename FmtB, typename ValueWithFormat>
+struct fmt_forward_switcher
+{
+    template <typename FmtAInit>
+    static const typename FmtB::template fn<ValueWithFormat>&
+    f(const FmtAInit&, const ValueWithFormat& v)
+    {
+        return v;
+    }
+
+    template <typename FmtAInit>
+    static typename FmtB::template fn<ValueWithFormat>&&
+    f(const FmtAInit&, ValueWithFormat&& v)
+    {
+        return v;
+    }
+};
+
+template <typename FmtA, typename ValueWithFormat>
+struct fmt_forward_switcher<FmtA, FmtA, ValueWithFormat>
+{
+    template <typename FmtAInit>
+    static constexpr FmtAInit&& f(std::remove_reference_t<FmtAInit>& fa, ...)
+    {
+        return static_cast<FmtAInit&&>(fa);
+    }
+
+    template <typename FmtAInit>
+    static constexpr FmtAInit&& f(std::remove_reference_t<FmtAInit>&& fa, ...)
+    {
+        return static_cast<FmtAInit&&>(fa);
+    }
+};
+
+
 } // namespace detail
 
 template <typename List, typename From, typename To>
@@ -117,6 +152,22 @@ public:
     {
     }
 
+    template <typename Fmt, typename FmtInit, typename ... OtherFmts>
+    constexpr value_with_format
+        ( const strf::value_with_format<ValueType, OtherFmts...>& f
+        , strf::identity<Fmt>
+        , FmtInit&& fmt_init )
+        : Fmts::template fn<value_with_format<ValueType, Fmts...>>
+            ( strf::detail::fmt_forward_switcher
+                  < Fmt
+                  , Fmts
+                  , strf::value_with_format<ValueType, OtherFmts...> >
+              :: template f<FmtInit>(fmt_init, f) )
+            ...
+        , _value(f.value())
+    {
+    }
+
     constexpr const ValueType& value() const
     {
         return _value;
@@ -176,6 +227,12 @@ class alignment_format_fn
 public:
 
     constexpr alignment_format_fn() noexcept = default;
+
+    constexpr explicit alignment_format_fn
+        ( strf::alignment_format_data data) noexcept
+        : _data(data)
+    {
+    }
 
     template <bool B, typename U>
     constexpr explicit alignment_format_fn
@@ -261,23 +318,46 @@ public:
 
     constexpr adapted_derived_type operator<(std::int16_t width) const noexcept
     {
-        return make_adapted() < width;
+        return adapted_derived_type
+            { static_cast<const T&>(*this)
+            , strf::identity<alignment_format_q<true>>{}
+            , strf::alignment_format_data{ U' '
+                                         , width
+                                         , strf::text_alignment::left } };
     }
     constexpr adapted_derived_type operator>(std::int16_t width) const noexcept
     {
-        return make_adapted() > width;
+        return adapted_derived_type
+            { static_cast<const T&>(*this)
+            , strf::identity<alignment_format_q<true>>{}
+            , strf::alignment_format_data{ U' '
+                                         , width
+                                         , strf::text_alignment::right } };
     }
     constexpr adapted_derived_type operator^(std::int16_t width) const noexcept
     {
-        return make_adapted() ^ width;
+        return adapted_derived_type
+            { static_cast<const T&>(*this)
+            , strf::identity<alignment_format_q<true>>{}
+            , strf::alignment_format_data{ U' '
+                                         , width
+                                         , strf::text_alignment::center } };
     }
     constexpr adapted_derived_type operator%(std::int16_t width) const noexcept
     {
-        return make_adapted() % width;
+        return adapted_derived_type
+            { static_cast<const T&>(*this)
+            , strf::identity<alignment_format_q<true>>{}
+            , strf::alignment_format_data{ U' '
+                                         , width
+                                         , strf::text_alignment::split } };
     }
     constexpr auto fill(char32_t ch) const noexcept
     {
-        return make_adapted().fill(ch);
+        return adapted_derived_type
+            { static_cast<const T&>(*this)
+            , strf::identity<alignment_format_q<true>>{}
+            , strf::alignment_format_data{ ch } };
     }
 
     constexpr std::int16_t width() const noexcept
