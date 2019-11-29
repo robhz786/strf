@@ -37,10 +37,10 @@ int main()
     //     (strf::right( L"\u2E3A\u2E3A\u2014", 12));
 
     // TEST(u8"  \u2E3A\u2E3A\u2014") .with(wtable)
-    //     (strf::fmt_cv( u"\u2E3A\u2E3A\u2014") > 12);
+    //     (strf::cv( u"\u2E3A\u2E3A\u2014") > 12);
 
     // TEST( u"  \u2E3A\u2E3A\u2014") .with(wtable)
-    //     (strf::fmt_cv(u8"\u2E3A\u2E3A\u2014") > 12);
+    //     (strf::cv(u8"\u2E3A\u2E3A\u2014") > 12);
 
 
     TEST(u8"         \u2E3A\u2E3A\u2014")
@@ -67,11 +67,11 @@ int main()
 #if defined(__cpp_char8_t)
         .with( strf::width_as_u32len<char8_t>{} )
 #endif
-        (strf::fmt_cv(u8"\u2E3A\u2E3A\u2014") > 12);
+        (strf::cv(u8"\u2E3A\u2E3A\u2014") > 12);
 
     TEST( u"         \u2E3A\u2E3A\u2014")
         .with(strf::width_as_u32len<char16_t>{})
-        (strf::fmt_cv(u"\u2E3A\u2E3A\u2014") > 12);
+        (strf::cv(u"\u2E3A\u2E3A\u2014") > 12);
 
 
     TEST(u8"   \u2E3A\u2E3A\u2014")
@@ -84,16 +84,16 @@ int main()
         (strf::fmt( U"\u2E3A\u2E3A\u2014") > 12);
 
     TEST( u"   \u2E3A\u2E3A\u2014")
-        (strf::fmt_cv(u8"\u2E3A\u2E3A\u2014") > 12);
+        (strf::cv(u8"\u2E3A\u2E3A\u2014") > 12);
 
     TEST(u8"         \u2E3A\u2E3A\u2014")
-        (strf::fmt_cv( u"\u2E3A\u2E3A\u2014") > 12);
+        (strf::cv( u"\u2E3A\u2E3A\u2014") > 12);
 
     TEST(u8"         \u2E3A\u2E3A\u2014")
-        (strf::fmt_cv( U"\u2E3A\u2E3A\u2014") > 12);
+        (strf::cv( U"\u2E3A\u2E3A\u2014") > 12);
 
     TEST( u"         \u2E3A\u2E3A\u2014")
-        (strf::fmt_cv( U"\u2E3A\u2E3A\u2014") > 12);
+        (strf::cv( U"\u2E3A\u2E3A\u2014") > 12);
 
     return boost::report_errors();
 }

@@ -7,16 +7,6 @@
 
 int main()
 {
-    char u8dest[100];
-    (void)strf::to(u8dest) (strf::fmt("hello") > 5);
-
-    (void)strf::to(u8dest)
-        .with(strf::width_as_u32len<char>())
-        (strf::fmt("hello") > 5);
-
-//    TEST("   abc")   ( strf::fmt("abc") > 6 );
-
-/*
     {
         TEST("   abc")   ( strf::right("abc", 6) );
         TEST("abc...")   ( strf::left    ("abc", 6, '.') );
@@ -88,21 +78,21 @@ int main()
         char32_t def[] = U"def";
         char32_t ghi[] = U"ghi";
         TEST("abc")      ( strf::cv(abc) );
-        TEST("   abc")   ( strf::fmt_cv(abc) > 6 );
-        TEST("abc...")   ( strf::fmt_cv(abc).fill('.') < 6 );
-        TEST("...abc")   ( strf::fmt_cv(abc).fill('.') > 6 );
-        TEST(".abc..")   ( strf::fmt_cv(abc).fill('.') ^ 6 );
+        TEST("   abc")   ( strf::cv(abc) > 6 );
+        TEST("abc...")   ( strf::cv(abc).fill('.') < 6 );
+        TEST("...abc")   ( strf::cv(abc).fill('.') > 6 );
+        TEST(".abc..")   ( strf::cv(abc).fill('.') ^ 6 );
         TEST("     abc")   ( strf::join_right(8)(strf::cv(abc)) );
-        TEST("...abc~~")   ( strf::join_right(8, '.')(strf::fmt_cv(abc).fill(U'~') < 5));
-        TEST(".....abc")   ( strf::join_right(8, '.')(strf::fmt_cv(abc).fill(U'~') < 3));
-        TEST(".....abc")   ( strf::join_right(8, '.')(strf::fmt_cv(abc).fill(U'~') < 2));
+        TEST("...abc~~")   ( strf::join_right(8, '.')(strf::cv(abc).fill(U'~') < 5));
+        TEST(".....abc")   ( strf::join_right(8, '.')(strf::cv(abc).fill(U'~') < 3));
+        TEST(".....abc")   ( strf::join_right(8, '.')(strf::cv(abc).fill(U'~') < 2));
 
-        TEST("   abcdefghi") ( strf::fmt_cv(U"") > 3, strf::fmt_cv(abc)>3, strf::fmt_cv(def)<3, strf::fmt_cv(ghi)^3 );
-        TEST("  abcdefghi")  ( strf::fmt_cv(U"") > 2, strf::fmt_cv(abc)>2, strf::fmt_cv(def)<2, strf::fmt_cv(ghi)^2 );
-        TEST("abcdefghi")    ( strf::fmt_cv(U"") > 0, strf::fmt_cv(abc)>0, strf::fmt_cv(def)<0, strf::fmt_cv(ghi)^0 );
+        TEST("   abcdefghi") ( strf::cv(U"") > 3, strf::cv(abc)>3, strf::cv(def)<3, strf::cv(ghi)^3 );
+        TEST("  abcdefghi")  ( strf::cv(U"") > 2, strf::cv(abc)>2, strf::cv(def)<2, strf::cv(ghi)^2 );
+        TEST("abcdefghi")    ( strf::cv(U"") > 0, strf::cv(abc)>0, strf::cv(def)<0, strf::cv(ghi)^0 );
 
     }
-*/
+
     return boost::report_errors();
 }
 

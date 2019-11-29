@@ -55,10 +55,142 @@ private:
 
 } // namespace detail
 
+template <typename CharT>
+struct no_cv_format;
+
+template <typename CharT>
+struct cv_format;
+
+template <typename CharT>
+struct cv_format_with_encoding;
+
+// template <typename CharT>
+// struct sani_format;
+
+// template <typename CharT>
+// struct sani_format_with_encoding;
+
+
+template <typename CharT, typename T>
+class no_cv_format_fn
+{
+public:
+
+    constexpr no_cv_format_fn() noexcept = default;
+    constexpr no_cv_format_fn(const no_cv_format_fn& other) noexcept = default;
+
+    template <typename U>
+    constexpr explicit no_cv_format_fn
+        ( const no_cv_format_fn<CharT, U>& ) noexcept
+    {
+    }
+
+    constexpr auto cv() const
+    {
+        using return_type = strf::fmt_replace< T
+                                             , strf::no_cv_format<CharT>
+                                             , strf::cv_format<CharT> >;
+        return return_type{ static_cast<const T&>(*this) };
+    }
+
+    constexpr auto cv(strf::encoding<CharT> enc) const
+    {
+        using return_type = strf::fmt_replace
+            < T
+            , strf::no_cv_format<CharT>
+            , strf::cv_format_with_encoding<CharT> >;
+
+        return return_type
+            { static_cast<const T&>(*this)
+            , strf::identity<strf::cv_format_with_encoding<CharT>>{}
+            , enc };
+    }
+};
+
+
+template <typename CharT, typename T>
+struct cv_format_fn
+{
+    constexpr cv_format_fn() noexcept = default;
+    constexpr cv_format_fn(const cv_format_fn& other) noexcept = default;
+
+    template <typename U>
+    constexpr explicit cv_format_fn
+        ( const cv_format_fn<CharT, U>& ) noexcept
+    {
+    }
+
+    template <typename U>
+    constexpr explicit cv_format_fn
+        ( const strf::no_cv_format_fn<CharT, U>& ) noexcept
+    {
+    }
+};
+
+template <typename CharT, typename T>
+class cv_format_with_encoding_fn
+{
+public:
+
+    cv_format_with_encoding_fn(strf::encoding<CharT> e)
+        : _encoding(e)
+    {
+    }
+
+    cv_format_with_encoding_fn
+        ( const cv_format_with_encoding_fn& other ) noexcept = default;
+
+    template <typename U>
+    explicit cv_format_with_encoding_fn
+        ( const strf::cv_format_with_encoding_fn<CharT, U>& other ) noexcept
+        : _encoding(other._encoding)
+    {
+    }
+
+    template <typename U>
+    explicit cv_format_with_encoding_fn
+        ( const strf::no_cv_format_fn<CharT, U>& other ) noexcept
+        : _encoding(other._encoding)
+    {
+    }
+
+    strf::encoding<CharT> get_encoding() const
+    {
+        return _encoding;
+    }
+
+private:
+
+    strf::encoding<CharT> _encoding;
+};
+
+template <typename CharT>
+struct cv_format
+{
+    template <typename T>
+    using fn = strf::cv_format_fn<CharT, T>;
+};
+
+template <typename CharT>
+struct cv_format_with_encoding
+{
+    template <typename T>
+    using fn = strf::cv_format_with_encoding_fn<CharT, T>;
+};
+
+template <typename CharT>
+struct no_cv_format
+{
+    template <typename T>
+    using fn = strf::no_cv_format_fn<CharT, T>;
+};
+
+
 template <typename CharIn>
 using string_with_format = strf::value_with_format
     < strf::detail::simple_string_view<CharIn>
-    , strf::alignment_format >;
+    , strf::alignment_format_q<false>
+    , strf::no_cv_format<CharIn> >;
 
 template <typename CharIn, typename Traits, typename Allocator>
 auto make_fmt( strf::tag
@@ -129,24 +261,22 @@ public:
     string_printer
         ( const FPack&
         , strf::print_preview<RequireSize, false>& preview
-        , const CharT* str
-        , std::size_t len ) noexcept
-        : _str(str)
-        , _len(len)
+        , simple_string_view<CharT> str) noexcept
+        : _str(str.begin())
+        , _len(str.size())
     {
-        preview.add_size(len);
+        preview.add_size(_len);
     }
 
     template <typename FPack, bool RequireSize>
     string_printer
         ( const FPack& fp
         , strf::print_preview<RequireSize, true>& preview
-        , const CharT* str
-        , std::size_t len ) noexcept
-        : _str(str)
-        , _len(len)
+        , simple_string_view<CharT> str ) noexcept
+        : _str(str.begin())
+        , _len(str.size())
     {
-        preview.add_size(len);
+        preview.add_size(_len);
         _calc_width( preview
                    , _get_facet<strf::width_calculator_c<CharT>>(fp)
                    , _get_facet<strf::encoding_c<CharT>>(fp)
@@ -248,8 +378,10 @@ public:
     fmt_string_printer
         ( const FPack& fp
         , Preview& preview
-        , const strf::string_with_format<CharT>& input )
-        : _fmt(input)
+        , strf::detail::simple_string_view<CharT> str
+        , strf::alignment_format_data text_alignment )
+        : _str(str)
+        , _afmt(text_alignment)
         , _encoding(_get_facet<strf::encoding_c<CharT>>(fp))
         , _enc_err(_get_facet<strf::encoding_error_c>(fp))
         , _allow_surr(_get_facet<strf::surrogate_policy_c>(fp))
@@ -264,7 +396,8 @@ public:
 
 private:
 
-    const strf::string_with_format<CharT> _fmt;
+    strf::detail::simple_string_view<CharT> _str;
+    strf::alignment_format_data _afmt;
     const strf::encoding<CharT> _encoding;
     std::int16_t _fillcount = 0;
     const strf::encoding_error _enc_err;
@@ -295,11 +428,11 @@ private:
 
     void _calc_size(strf::size_preview<true>& preview) const
     {
-        preview.add_size(_fmt.value().length());
+        preview.add_size(_str.length());
         if (_fillcount > 0)
         {
              preview.add_size( _fillcount
-                             * _encoding.char_size(_fmt.fill(), _enc_err) );
+                             * _encoding.char_size(_afmt.fill, _enc_err) );
         }
     }
 
@@ -319,11 +452,11 @@ inline void fmt_string_printer<CharT>::_init
     ( strf::width_preview<RequiringWidth>& preview
     , const strf::width_as_len<CharT>&)
 {
-    auto len = _fmt.value().length();
-    if (_fmt.width() > static_cast<std::ptrdiff_t>(len))
+    auto len = _str.length();
+    if (_afmt.width > static_cast<std::ptrdiff_t>(len))
     {
-        _fillcount = _fmt.width() - static_cast<std::int16_t>(len);
-        preview.subtract_width(_fmt.width());
+        _fillcount = _afmt.width - static_cast<std::int16_t>(len);
+        preview.subtract_width(_afmt.width);
     }
     else
     {
@@ -337,13 +470,13 @@ inline void fmt_string_printer<CharT>::_init
     ( strf::width_preview<RequiringWidth>& preview
     , const strf::width_as_u32len<CharT>&)
 {
-    auto cp_count = _encoding.codepoints_count( _fmt.value().begin()
-                                              , _fmt.value().end()
-                                              , _fmt.width() );
-    if (_fmt.width() > static_cast<std::ptrdiff_t>(cp_count))
+    auto cp_count = _encoding.codepoints_count( _str.begin()
+                                              , _str.end()
+                                              , _afmt.width );
+    if (_afmt.width > static_cast<std::ptrdiff_t>(cp_count))
     {
-        _fillcount = _fmt.width() - static_cast<std::int16_t>(cp_count);
-        preview.subtract_width(_fmt.width());
+        _fillcount = _afmt.width - static_cast<std::int16_t>(cp_count);
+        preview.subtract_width(_afmt.width);
     }
     else
     {
@@ -358,18 +491,18 @@ inline void fmt_string_printer<CharT>::_init
     ( strf::width_preview<RequiringWidth>& preview
     , const strf::width_calculator<CharT>& wc)
 {
-    strf::width_t wmax = _fmt.width();
+    strf::width_t wmax = _afmt.width;
     strf::width_t wdiff = 0;
-    if (preview.remaining_width() > _fmt.width())
+    if (preview.remaining_width() > _afmt.width)
     {
         wmax = preview.remaining_width();
-        wdiff = preview.remaining_width() - _fmt.width();
+        wdiff = preview.remaining_width() - _afmt.width;
     }
     auto str_width = wc.width( wmax
-                             , _fmt.value().begin(), _fmt.value().length()
+                             , _str.begin(), _str.length()
                              , _encoding, _enc_err, _allow_surr );
 
-    strf::width_t fmt_width{_fmt.width()};
+    strf::width_t fmt_width{_afmt.width};
     if (fmt_width > str_width)
     {
         auto wfill = (fmt_width - str_width);
@@ -388,7 +521,7 @@ void fmt_string_printer<CharT>::print_to
 {
     if (_fillcount > 0)
     {
-        switch (_fmt.alignment())
+        switch (_afmt.alignment)
         {
             case strf::text_alignment::left:
             {
@@ -421,7 +554,7 @@ template <typename CharT>
 void fmt_string_printer<CharT>::_write_str
     ( strf::basic_outbuf<CharT>& ob ) const
 {
-    strf::write(ob, _fmt.value().begin(), _fmt.value().length());
+    strf::write(ob, _str.begin(), _str.length());
 }
 
 template <typename CharT>
@@ -429,7 +562,7 @@ void fmt_string_printer<CharT>::_write_fill
     ( strf::basic_outbuf<CharT>& ob
     , unsigned count ) const
 {
-    _encoding.encode_fill( ob, count, _fmt.fill(), _enc_err, _allow_surr );
+    _encoding.encode_fill( ob, count, _afmt.fill, _enc_err, _allow_surr );
 }
 
 #if defined(STRF_SEPARATE_COMPILATION)
@@ -457,7 +590,7 @@ template <typename CharT, typename FPack, typename Preview>
 inline strf::detail::string_printer<CharT>
 make_printer(const FPack& fp, Preview& preview, const CharT* str)
 {
-    return {fp, preview, str, std::char_traits<CharT>::length(str)};
+    return {fp, preview, str};
 }
 
 #if defined(__cpp_char8_t)
@@ -468,7 +601,7 @@ make_printer(const FPack& fp, Preview& preview, const char8_t* str)
 {
     static_assert( std::is_same<char8_t, CharOut>::value
                  , "Character type mismatch. Use cv function." );
-    return {fp, preview, str, std::char_traits<char8_t>::length(str)};
+    return {fp, preview, str};
 }
 
 #endif
@@ -479,7 +612,7 @@ make_printer(const FPack& fp, Preview& preview, const char* str)
 {
     static_assert( std::is_same<char, CharOut>::value
                  , "Character type mismatch. Use cv function." );
-    return {fp, preview, str, std::char_traits<char>::length(str)};
+    return {fp, preview, str};
 }
 
 template <typename CharOut, typename FPack, typename Preview>
@@ -488,7 +621,7 @@ make_printer(const FPack& fp, Preview& preview, const char16_t* str)
 {
     static_assert( std::is_same<char16_t, CharOut>::value
                  , "Character type mismatch. Use cv function." );
-    return {fp, preview, str, std::char_traits<char16_t>::length(str)};
+    return {fp, preview, str};
 }
 
 template <typename CharOut, typename FPack, typename Preview>
@@ -497,7 +630,7 @@ make_printer(const FPack& fp, Preview& preview, const char32_t* str)
 {
     static_assert( std::is_same<char32_t, CharOut>::value
                  , "Character type mismatch. Use cv function." );
-    return {fp, preview, str, std::char_traits<char32_t>::length(str)};
+    return {fp, preview, str};
 }
 
 template <typename CharOut, typename FPack, typename Preview>
@@ -506,7 +639,7 @@ make_printer(const FPack& fp, Preview& preview, const wchar_t* str)
 {
     static_assert( std::is_same<wchar_t, CharOut>::value
                  , "Character type mismatch. Use cv function." );
-    return {fp, preview, str, std::char_traits<wchar_t>::length(str)};
+    return {fp, preview, str};
 }
 
 template
@@ -517,11 +650,13 @@ template
     , typename Traits
     , typename Allocator >
 inline strf::detail::string_printer<CharOut>
-make_printer(const FPack& fp, Preview& preview, const std::basic_string<CharIn, Traits, Allocator>& str)
+make_printer( const FPack& fp
+            , Preview& preview
+            , const std::basic_string<CharIn, Traits, Allocator>& str )
 {
     static_assert( std::is_same<CharIn, CharOut>::value
                  , "Character type mismatch. Use cv function." );
-    return {fp, preview, str.data(), str.size()};
+    return {fp, preview, {str.data(), str.size()}};
 }
 
 #if defined(STRF_HAS_STD_STRING_VIEW)
@@ -533,22 +668,29 @@ template
     , typename CharIn
     , typename Traits >
 inline strf::detail::string_printer<CharOut>
-make_printer(const FPack& fp, Preview& preview, const std::basic_string_view<CharIn, Traits>& str)
+make_printer( const FPack& fp
+            , Preview& preview
+            , const std::basic_string_view<CharIn, Traits>& str )
 {
     static_assert( std::is_same<CharIn, CharOut>::value
                  , "Character type mismatch. Use cv function." );
-    return {fp, preview, str.data(), str.size()};
+    return {fp, preview, {str.data(), str.size()}};
 }
 
 #endif //defined(STRF_HAS_STD_STRING_VIEW)
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
 inline strf::detail::fmt_string_printer<CharOut>
-make_printer(const FPack& fp, Preview& preview, const strf::string_with_format<CharIn>& input)
+make_printer( const FPack& fp
+            , Preview& preview
+            , const strf::value_with_format
+                < strf::detail::simple_string_view<CharIn>
+                , strf::alignment_format_q<true>
+                , strf::no_cv_format<CharIn> > input )
 {
     static_assert( std::is_same<CharIn, CharOut>::value
-                 , "Character type mismatch. Use fmt_cv function." );
-    return {fp, preview, input};
+                 , "Character type mismatch. Use cv function." );
+    return {fp, preview, input.value(), input.get_alignment_format_data()};
 }
 
 STRF_NAMESPACE_END

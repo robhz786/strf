@@ -248,21 +248,21 @@ int main()
 
     print("\nWhen converting UTF-8 to UTF-16:\n");
 
-    PRINT_BENCHMARK("strf::to(u16dest) (strf::fmt_cv(u8str5) > 5)")
+    PRINT_BENCHMARK("strf::to(u16dest) (strf::cv(u8str5) > 5)")
     {
-        (void)strf::to(u16dest) (strf::fmt_cv(u8str5) > 5);
+        (void)strf::to(u16dest) (strf::cv(u8str5) > 5);
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len<char>{}) (strf::fmt_cv(u8str5) > 5)")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len<char>{}) (strf::cv(u8str5) > 5)")
     {
         (void)strf::to(u16dest)
             .with(strf::width_as_u32len<char>())
-            (strf::fmt_cv(u8str5) > 5);
+            (strf::cv(u8str5) > 5);
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc<char>{}) (strf::fmt_cv(u8str5) > 5)")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc<char>{}) (strf::cv(u8str5) > 5)")
     {
         (void)strf::to(u16dest)
             .with(custom_wcalc<char>{})
-            (strf::fmt_cv(u8str5) > 5);
+            (strf::cv(u8str5) > 5);
     }
     PRINT_BENCHMARK("strf::to(u16dest) (strf::join_right(5)(strf::cv(u8str5)))")
     {
@@ -281,21 +281,21 @@ int main()
             (strf::join_right(5)(strf::cv(u8str5)));
     }
 
-        PRINT_BENCHMARK("strf::to(u16dest) (strf::fmt_cv(u8str50) > 50)")
+        PRINT_BENCHMARK("strf::to(u16dest) (strf::cv(u8str50) > 50)")
     {
-        (void)strf::to(u16dest) (strf::fmt_cv(u8str50) > 50);
+        (void)strf::to(u16dest) (strf::cv(u8str50) > 50);
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len<char>{}) (strf::fmt_cv(u8str50) > 50)")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len<char>{}) (strf::cv(u8str50) > 50)")
     {
         (void)strf::to(u16dest)
             .with(strf::width_as_u32len<char>())
-            (strf::fmt_cv(u8str50) > 50);
+            (strf::cv(u8str50) > 50);
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc<char>{}) (strf::fmt_cv(u8str50) > 50)")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc<char>{}) (strf::cv(u8str50) > 50)")
     {
         (void)strf::to(u16dest)
             .with(custom_wcalc<char>{})
-            (strf::fmt_cv(u8str50) > 50);
+            (strf::cv(u8str50) > 50);
     }
     PRINT_BENCHMARK("strf::to(u16dest) (strf::join_right(50)(strf::cv(u8str50)))")
     {
