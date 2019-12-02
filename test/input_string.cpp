@@ -5,6 +5,10 @@
 #include "test_utils.hpp"
 #include <strf.hpp>
 
+#if ! defined(__cpp_char8_t)
+using char8_t = char;
+#endif
+
 int main()
 {
     {
@@ -65,6 +69,53 @@ int main()
     }
 
 #endif
+
+    {   // by-pass encoding sanitization
+
+        TEST("---\x99---") (strf::cv("---\x99---"));
+        TEST("---\xA5---")
+            .with(strf::iso_8859_3<char>())
+            (strf::cv("---\xA5---", strf::iso_8859_3<char>()));
+        TEST(reinterpret_cast<const char8_t*>("---\xA5---"))
+            .with(strf::iso_8859_3<char8_t>())
+            (strf::cv("---\xA5---", strf::iso_8859_3<char>()));
+        TEST("...---\xA5---")
+            .with(strf::iso_8859_3<char>())
+            (strf::right("---\xA5---", 10, U'.').cv(strf::iso_8859_3<char>()));
+        TEST(reinterpret_cast<const char8_t*>("...---\xA5---"))
+            .with(strf::iso_8859_3<char8_t>())
+            (strf::right("---\xA5---", 10, U'.').cv(strf::iso_8859_3<char>()));
+    }
+    {   // encoding sanitization
+
+        TEST("---\xEF\xBF\xBD---") (strf::sani("---\x99---"));
+        TEST("   ---\xEF\xBF\xBD---") (strf::sani("---\x99---") > 10);
+        TEST("---\xEF\xBF\xBD---") (strf::sani("---\x99---", strf::utf8<char>()));
+        TEST("   ---\xEF\xBF\xBD---") (strf::sani("---\x99---", strf::utf8<char>()) > 10);
+        TEST("---?---")
+            .with(strf::iso_8859_3<char>())
+            (strf::sani("---\xA5---", strf::iso_8859_3<char>()));
+        TEST("  ---?---")
+            .with(strf::iso_8859_3<char>())
+            (strf::sani("---\xA5---", strf::iso_8859_3<char>()) > 9);
+
+        TEST("...---\x99---") (strf::cv("---\x99---").fill(U'.') > 10);
+        TEST("...---\x99---") (strf::cv("---\x99---", strf::utf8<char>()).fill(U'.') > 10);
+    }
+    {   // encoding conversion
+
+        TEST("--?--\x80--")
+            .with(strf::windows_1252<char>())
+            (strf::sani("--\uFFFF--\u20AC--", strf::utf8<char>()));
+
+        TEST("--?--\x80--")
+            .with(strf::windows_1252<char>())
+            (strf::cv("--\xC9\x90--\xE2\x82\xAC--", strf::utf8<char>()));
+
+        TEST("...--?--\x80--")
+            .with(strf::windows_1252<char>())
+            (strf::right("--\xC9\x90--\xE2\x82\xAC--", 14, U'.').cv(strf::utf8<char>()));
+    }
 
     {   // convertion from utf32
 

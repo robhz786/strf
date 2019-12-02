@@ -64,12 +64,11 @@ struct cv_format;
 template <typename CharT>
 struct cv_format_with_encoding;
 
-// template <typename CharT>
-// struct sani_format;
+template <typename CharT>
+struct sani_format;
 
-// template <typename CharT>
-// struct sani_format_with_encoding;
-
+template <typename CharT>
+struct sani_format_with_encoding;
 
 template <typename CharT, typename T>
 class no_cv_format_fn
@@ -105,8 +104,28 @@ public:
             , strf::identity<strf::cv_format_with_encoding<CharT>>{}
             , enc };
     }
-};
 
+    constexpr auto sani() const
+    {
+        using return_type = strf::fmt_replace< T
+                                             , strf::no_cv_format<CharT>
+                                             , strf::sani_format<CharT> >;
+        return return_type{ static_cast<const T&>(*this) };
+    }
+
+    constexpr auto sani(strf::encoding<CharT> enc) const
+    {
+        using return_type = strf::fmt_replace
+            < T
+            , strf::no_cv_format<CharT>
+            , strf::sani_format_with_encoding<CharT> >;
+
+        return return_type
+            { static_cast<const T&>(*this)
+            , strf::identity<strf::sani_format_with_encoding<CharT>>{}
+            , enc };
+    }
+};
 
 template <typename CharT, typename T>
 struct cv_format_fn
@@ -143,14 +162,14 @@ public:
     template <typename U>
     explicit cv_format_with_encoding_fn
         ( const strf::cv_format_with_encoding_fn<CharT, U>& other ) noexcept
-        : _encoding(other._encoding)
+        : _encoding(other.get_encoding())
     {
     }
 
     template <typename U>
     explicit cv_format_with_encoding_fn
         ( const strf::no_cv_format_fn<CharT, U>& other ) noexcept
-        : _encoding(other._encoding)
+        : _encoding(other.get_encoding())
     {
     }
 
@@ -162,6 +181,13 @@ public:
 private:
 
     strf::encoding<CharT> _encoding;
+};
+
+template <typename CharT>
+struct no_cv_format
+{
+    template <typename T>
+    using fn = strf::no_cv_format_fn<CharT, T>;
 };
 
 template <typename CharT>
@@ -179,12 +205,18 @@ struct cv_format_with_encoding
 };
 
 template <typename CharT>
-struct no_cv_format
+struct sani_format
 {
     template <typename T>
-    using fn = strf::no_cv_format_fn<CharT, T>;
+    using fn = strf::cv_format_fn<CharT, T>;
 };
 
+template <typename CharT>
+struct sani_format_with_encoding
+{
+    template <typename T>
+    using fn = strf::cv_format_with_encoding_fn<CharT, T>;
+};
 
 template <typename CharIn>
 using string_with_format = strf::value_with_format

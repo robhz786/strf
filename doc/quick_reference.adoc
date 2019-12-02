@@ -72,7 +72,7 @@ std::string sample()
 | `to(std::basic_streambuf<CharT, Traits, Alloc>&)`
 | `struct /{asterisk}{asterisk}/ { std::streamsize count; bool truncated; }`
 
-| 
+|
 |===
 Where `CharT` can be `char`, `char8_t`, `char16_t`, `char32_t` or `wchar_t`.
 ////
@@ -327,7 +327,7 @@ The enumeration `tr_invalid_arg` is a <<facets,facet>> that specifies what happe
 enum class tr_invalid_arg{ replace, stop, ignore };
 ----
 * `tr_invalid_arg::stop` : Throws an exception.
-* `tr_invalid_arg::ignore` : Ignores the invalid reference. 
+* `tr_invalid_arg::ignore` : Ignores the invalid reference.
 * `tr_invalid_arg::replace` :  Replaces the invalid reference by the https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;]. This is the default.
 
 [[facets]]
@@ -340,7 +340,7 @@ So things are always printed as in the C-locale, unless
 you explicitly specify otherwise, which you do by passing
 __facet objects__ to the <<usage_syntax,`with`>> function.
 
-Every __facet__ belongs to a __facet category__. 
+Every __facet__ belongs to a __facet category__.
 Each facet category corresponds to a concept, __i.e.__ a set of requirements that a class must satisfy. A class that satisfies such requirements is a facet of such facet category. Moreover, for each facet category there is class whose name, by convention, has a "_c" suffix and is the name of the category.
 
 For example, <<numpunct,`monotonic_grouping<10>`>> and
@@ -478,7 +478,7 @@ So an `encoding` object is used to represent an econding.
 When used as a facet, `encoding<CharT>` specifies what is the character
 encoding corresponding to `CharT`. For example, you may have noticed that
 <<numpunct,punctuation characters>> and fill characters are specified
-as `char32_t`. They are aways assumed to be in UTF-32. 
+as `char32_t`. They are aways assumed to be in UTF-32.
 How they are converted is specified that the `encoding` facet.
 
 .Example: write in Windows-1252
@@ -609,6 +609,23 @@ auto str_utf8 = strf::to_u8string
 assert(str_utf8 == u8"--\u00A4----\u20AC--");
 ----
 
+There is also the `sani` function that was the same
+effect as `cv` except when the input encoding is same as the
+output. In this case `sani` causes the input to be
+sanitized, whereas `cv` does not:
+
+[source, cpp]
+----
+auto str = strf::to_string
+    .with(strf::iso_8859_3<char>()) // the output encoding
+    ( strf::cv("--\xff--")                           // does't sanitize
+    , strf::cv("--\xff--", strf::iso_8859_3<char>()) // does't sanitize ( same encoding )
+    , strf::cv("--\xff--", strf::utf8<char>())       // sanitizes ( different encoding )
+    , strf::sani("--\xff--")                             // sanitizes
+    , strf::sani("--\xff--", strf::iso_8859_3<char>()) ) // sanitizes  
+
+assert(str == "--\xff----\xff----?----?----?--");
+----
 
 === Encoding error handling
 
@@ -794,7 +811,7 @@ the default, then prints the minimal amount of digits so that value
 can fully recovered by a parser. Otherwise, if notation is __general__,
 `precision` is the number of significant digits. Otherwise it is
 the number of fractional digits. `precision == 0` has the same effect as
-`precision == 1`. 
+`precision == 1`.
 
 === Single characters
 Type:: `CharT`, that is the output character type defined by the <<destinations,destination>>.
@@ -810,21 +827,33 @@ and `std::basic_string<CharT, Traits, Alloc>`
 ::
 where:
 ::
-- `CharT` is the output character type ( defined by the <<destinations,destination>> )
+- `CharT` is the character type. If it is not the same as the output character type ( defined by the <<destinations,destination>> ), then it is necessare to use the `cv` or `sani` format function.
 - `Traits` can be any type that satisfies https://en.cppreference.com/w/cpp/named_req/CharTraits[CharTraits]
 - `Alloc` can be any type that satisfies https://en.cppreference.com/w/cpp/named_req/Allocator[Allocator]
 
-=== Strings encoded differently
+Format functions::
+( in addition to <<alignment_format_function, alignment functions>> )
+`sani(encoding<CharT> enc)`::: Translates input string from `enc` to the
+                               output encoding. If the encodings are the same
+                               then sanitizes the input string.
+`sani()`::: Translates input string from the encoding associated to `CharT` to
+            the output encoding. If these encodings are the same
+            then sanitizes the input string.
+`cv(encoding<CharT> enc)`::: Translates input string from `enc` to the
+                             output encoding, if these encodings are not the same.
+                             Otherwise, copies input string as it is.
+`cv()`::: Translates input string from the encoding associated to `CharT` to
+          the output encoding, if these encodings are not the same.
+          Otherwise, copies the input string as it is.
 
-The `cv` function template enables you to pass a string based on a different encoding and character type as an input type. See <<encoding_conversion, Enconding conversion>>.
-
-The `fmt_cv` function enables you to apply <<alignment_format_function, alignment format functions>>.
-
+.Example
 [source,cpp]
 ----
-auto str = strf::to_string(strf::fmt_cv(u" Hello! ").fill('*') ^ 16);
+auto str = strf::to_string(strf::center(u" Hello! ", 16, '*').cv());
 assert(str == "**** Hello! ****");
 ----
+
+See also the section about <<encoding_conversion,encoding conversion>>.
 
 === Ranges
 
@@ -884,7 +913,7 @@ template <typename Iterator, typename CharT>
 } // namespace strf
 ----
 Any format function applicable to the element type of the
-range can also be applied to the 
+range can also be applied to the
 expression `strf::fmt_range(/{asterisk}\...{asterisk}/)`.
 This way the format functions is applied to all elements:
 
@@ -923,7 +952,7 @@ template <typename ... Args>
 ----
 The `join` function template enables you group a set of input
 arguments as if they were one. This can be usefull when creating
-new input types. 
+new input types.
 
 .Example
 [source,cpp]

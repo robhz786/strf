@@ -6,6 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/detail/input_types/string.hpp>
+#include <strf/detail/printer_variant.hpp>
 
 STRF_NAMESPACE_BEGIN
 
@@ -21,6 +22,20 @@ constexpr auto cv(const T& value, const E& e)
 -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).cv(e))>>
 {
     return fmt(value).cv(e);
+}
+
+template <typename T>
+constexpr auto sani(const T& value)
+-> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sani())>>
+{
+    return fmt(value).sani();
+}
+
+template <typename T, typename E>
+constexpr auto sani(const T& value, const E& e)
+-> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sani(e))>>
+{
+    return fmt(value).sani(e);
 }
 
 namespace detail {
@@ -527,18 +542,297 @@ STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<wchar_t, wchar_t>;
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
+template <typename CharIn, typename CharOut, bool SameSize>
+class cv_printer_maker_without_encoding;
+
+template <typename CharT>
+class cv_printer_maker_without_encoding<CharT, CharT, true>
+{
+    using CharIn = CharT;
+    using CharOut = CharT;
+
+public:
+
+    template <typename FPack, typename Preview>
+    inline static strf::detail::string_printer<CharOut> make_printer
+        ( const FPack& fp
+        , Preview& preview
+        , strf::value_with_format< strf::detail::simple_string_view<CharIn>
+                                 , strf::alignment_format_q<false>
+                                 , strf::cv_format<CharIn> > input )
+    {
+        return {fp, preview, input.value()};
+    }
+
+    template <typename FPack, typename Preview>
+    inline static strf::detail::fmt_string_printer<CharOut> make_printer
+        ( const FPack& fp
+        , Preview& preview
+        , strf::value_with_format< strf::detail::simple_string_view<CharIn>
+                                 , strf::alignment_format_q<true>
+                                 , strf::cv_format<CharIn> > input )
+    {
+        return {fp, preview, input.value(), input.get_alignment_format_data()};
+    }
+};
+
+template <typename CharIn, typename CharOut>
+class cv_printer_maker_without_encoding<CharIn, CharOut, true>
+{
+public:
+
+    template <typename FPack, typename Preview>
+    inline static strf::detail::printer_variant
+        < strf::detail::string_printer<CharOut>
+        , strf::detail::cv_string_printer<CharIn, CharOut> >
+    make_printer
+        ( const FPack& fp
+        , Preview& preview
+        , strf::value_with_format< strf::detail::simple_string_view<CharIn>
+                                 , strf::alignment_format_q<false>
+                                 , strf::cv_format<CharIn> > input )
+    {
+        using enc_cat_in = strf::encoding_c<CharIn>;
+        using input_tag_in = strf::string_input_tag<CharIn>;
+        auto encoding_in = strf::get_facet<enc_cat_in, input_tag_in>(fp);
+
+        using enc_cat_out = strf::encoding_c<CharOut>;
+        using input_tag_out = strf::string_input_tag<CharOut>;
+        auto encoding_out = strf::get_facet<enc_cat_out, input_tag_out>(fp);
+
+        if (encoding_in.id() == encoding_out.id())
+        {
+            return { strf::identity<strf::detail::string_printer<CharOut>>()
+                   , fp
+                   , preview
+                   , strf::detail::simple_string_view<CharOut>
+                       { reinterpret_cast<const CharOut*>(input.value().begin())
+                       , input.value().size() } };
+        }
+        else
+        {
+            return { strf::identity<strf::detail::cv_string_printer<CharIn, CharOut>>()
+                   , fp, preview, input.value(), encoding_in };
+        }
+    }
+
+    template <typename FPack, typename Preview>
+    inline static strf::detail::printer_variant
+        < strf::detail::fmt_string_printer<CharOut>
+        , strf::detail::fmt_cv_string_printer<CharIn, CharOut> >
+    make_printer
+        ( const FPack& fp
+        , Preview& preview
+        , strf::value_with_format< strf::detail::simple_string_view<CharIn>
+                                 , strf::alignment_format_q<true>
+                                 , strf::cv_format_with_encoding<CharIn> > input )
+    {
+        using enc_cat_in = strf::encoding_c<CharIn>;
+        using input_tag_in = strf::string_input_tag<CharIn>;
+        auto encoding_in = strf::get_facet<enc_cat_in, input_tag_in>(fp);
+
+        using enc_cat_out = strf::encoding_c<CharOut>;
+        using input_tag_out = strf::string_input_tag<CharOut>;
+        auto encoding_out = strf::get_facet<enc_cat_out, input_tag_out>(fp);
+
+        if (encoding_in.id() == encoding_out.id())
+        {
+            return { strf::identity<strf::detail::string_printer<CharOut>>()
+                   , fp
+                   , preview
+                   , strf::detail::simple_string_view<CharOut>
+                       { reinterpret_cast<const CharOut*>(input.value().begin())
+                       , input.value().size() }
+                   , input.get_alignment_format_data() };
+        }
+        else
+        {
+            return { strf::identity<strf::detail::cv_string_printer<CharIn, CharOut>>()
+                   , fp, preview, input.value()
+                   , input.get_alignment_format_data()
+                   , encoding_in };
+        }
+    }
+};
+
+template <typename CharIn, typename CharOut>
+class cv_printer_maker_without_encoding<CharIn, CharOut, false>
+{
+public:
+
+    template <typename FPack, typename Preview>
+    inline static strf::detail::cv_string_printer<CharIn, CharOut> make_printer
+        ( const FPack& fp
+        , Preview& preview
+        , strf::value_with_format< strf::detail::simple_string_view<CharIn>
+                                 , strf::alignment_format_q<false>
+                                 , strf::cv_format<CharIn> > input )
+    {
+        return {fp, preview, input.value()};
+    }
+
+    template <typename FPack, typename Preview>
+    inline static strf::detail::fmt_cv_string_printer<CharIn, CharOut> make_printer
+        ( const FPack& fp
+        , Preview& preview
+        , strf::value_with_format< strf::detail::simple_string_view<CharIn>
+                                 , strf::alignment_format_q<true>
+                                 , strf::cv_format<CharIn> > input )
+    {
+        return {fp, preview, input.value(), input.get_alignment_format_data()};
+    }
+};
+
+
+
+template <typename CharIn, typename CharOut, bool SameSize>
+class cv_printer_maker_with_encoding;
+
+template <typename CharIn, typename CharOut>
+class cv_printer_maker_with_encoding<CharIn, CharOut, true>
+{
+public:
+
+    template <typename FPack, typename Preview>
+    inline static strf::detail::printer_variant
+        < strf::detail::string_printer<CharOut>
+        , strf::detail::cv_string_printer<CharIn, CharOut> >
+    make_printer
+        ( const FPack& fp
+        , Preview& preview
+        , strf::value_with_format< strf::detail::simple_string_view<CharIn>
+                                 , strf::alignment_format_q<false>
+                                 , strf::cv_format_with_encoding<CharIn> > input )
+    {
+        using enc_cat = strf::encoding_c<CharOut>;
+        using input_tag = strf::string_input_tag<CharOut>;
+        auto encoding_from_facets = strf::get_facet<enc_cat, input_tag>(fp);
+        if (input.get_encoding().id() == encoding_from_facets.id())
+        {
+            return { strf::identity<strf::detail::string_printer<CharOut>>()
+                   , fp
+                   , preview
+                   , strf::detail::simple_string_view<CharOut>
+                       { reinterpret_cast<const CharOut*>(input.value().begin())
+                       , input.value().size() } };
+        }
+        else
+        {
+            return { strf::identity<strf::detail::cv_string_printer<CharIn, CharOut>>()
+                   , fp, preview, input.value(), input.get_encoding() };
+        }
+    }
+
+    template <typename FPack, typename Preview>
+    inline static strf::detail::printer_variant
+        < strf::detail::fmt_string_printer<CharOut>
+        , strf::detail::fmt_cv_string_printer<CharIn, CharOut> >
+    make_printer
+        ( const FPack& fp
+        , Preview& preview
+        , strf::value_with_format< strf::detail::simple_string_view<CharIn>
+                                 , strf::alignment_format_q<true>
+                                 , strf::cv_format_with_encoding<CharIn> > input )
+    {
+        using enc_cat = strf::encoding_c<CharOut>;
+        using input_tag = strf::string_input_tag<CharOut>;
+        auto encoding_from_facets = strf::get_facet<enc_cat, input_tag>(fp);
+        if (input.get_encoding().id() == encoding_from_facets.id())
+        {
+            return { strf::identity<strf::detail::fmt_string_printer<CharOut>>()
+                   , fp
+                   , preview
+                   , strf::detail::simple_string_view<CharOut>
+                       { reinterpret_cast<const CharOut*>(input.value().begin())
+                       , input.value().size() }
+                   , input.get_alignment_format_data() };
+        }
+        else
+        {
+            return { strf::identity<strf::detail::fmt_cv_string_printer<CharIn, CharOut>>()
+                   , fp
+                   , preview
+                   , input.value()
+                   , input.get_alignment_format_data()
+                   , input.get_encoding() };
+        }
+    }
+};
+
+template <typename CharIn, typename CharOut>
+class cv_printer_maker_with_encoding<CharIn, CharOut, false>
+{
+public:
+    template <typename FPack, typename Preview>
+    inline strf::detail::cv_string_printer<CharIn, CharOut> make_printer
+        ( const FPack& fp
+        , Preview& preview
+        , strf::value_with_format< strf::detail::simple_string_view<CharIn>
+                                 , strf::alignment_format_q<false>
+                                 , strf::cv_format_with_encoding<CharIn> > input )
+    {
+        return {fp, preview, input.value(), input.get_encoding()};
+    }
+
+    template <typename FPack, typename Preview>
+    inline static strf::detail::fmt_cv_string_printer<CharIn, CharOut> make_printer
+        ( const FPack& fp
+        , Preview& preview
+        , strf::value_with_format< strf::detail::simple_string_view<CharIn>
+                                 , strf::alignment_format_q<true>
+                                 , strf::cv_format_with_encoding<CharIn> > input )
+    {
+        return { fp
+               , preview
+               , input.value()
+               , input.get_alignment_format_data()
+               , input.get_encoding() };
+    }
+};
+
 } // namespace detail
 
+template < typename CharOut
+         , typename FPack
+         , typename Preview
+         , typename CharIn
+         , bool WithAlignment >
+inline auto make_printer
+    ( const FPack& fp
+    , Preview& preview
+    , strf::value_with_format< strf::detail::simple_string_view<CharIn>
+                             , strf::alignment_format_q<WithAlignment>
+                             , strf::cv_format<CharIn> > input )
+{
+    constexpr bool ss = sizeof(CharIn) == sizeof(CharOut);
+    return strf::detail::cv_printer_maker_without_encoding<CharIn, CharOut, ss>
+        :: make_printer(fp, preview, input);
+}
+
+template < typename CharOut
+         , typename FPack
+         , typename Preview
+         , typename CharIn
+         , bool WithAlignment >
+inline auto make_printer
+    ( const FPack& fp
+    , Preview& preview
+    , strf::value_with_format< strf::detail::simple_string_view<CharIn>
+                             , strf::alignment_format_q<WithAlignment>
+                             , strf::cv_format_with_encoding<CharIn> > input )
+{
+    constexpr bool ss = sizeof(CharIn) == sizeof(CharOut);
+    return strf::detail::cv_printer_maker_with_encoding<CharIn, CharOut, ss>
+        :: make_printer(fp, preview, input);
+}
+
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
-// inline std::conditional_t< std::is_same<CharIn, CharOut>::value
-//                          , strf::detail::string_printer<CharOut>
-//                          , strf::detail::cv_string_printer<CharIn, CharOut> >
 inline strf::detail::cv_string_printer<CharIn, CharOut>
 make_printer( const FPack& fp
             , Preview& preview
             , strf::value_with_format< strf::detail::simple_string_view<CharIn>
                                      , strf::alignment_format_q<false>
-                                     , strf::cv_format<CharIn> > input )
+                                     , strf::sani_format<CharIn> > input )
 {
     return {fp, preview, input.value()};
 }
@@ -549,7 +843,7 @@ make_printer( const FPack& fp
             , Preview& preview
             , strf::value_with_format< strf::detail::simple_string_view<CharIn>
                                      , strf::alignment_format_q<false>
-                                     , strf::cv_format_with_encoding<CharIn> > input )
+                                     , strf::sani_format_with_encoding<CharIn> > input )
 {
     return {fp, preview, input.value(), input.get_encoding()};
 }
@@ -560,15 +854,12 @@ make_printer( const FPack& fp
             , Preview& preview
             , strf::value_with_format< strf::detail::simple_string_view<CharIn>
                                      , strf::alignment_format_q<true>
-                                     , strf::cv_format<CharIn> > input )
+                                     , strf::sani_format<CharIn> > input )
 {
-    using enc_cat = strf::encoding_c<CharIn>;
-    using input_tag = strf::string_input_tag<CharIn>;
     return { fp
            , preview
            , input.value()
-           , input.get_alignment_format_data()
-           , strf::get_facet<enc_cat, input_tag>(fp) };
+           , input.get_alignment_format_data() };
 }
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
@@ -577,7 +868,7 @@ make_printer( const FPack& fp
             , Preview& preview
             , strf::value_with_format< strf::detail::simple_string_view<CharIn>
                                      , strf::alignment_format_q<true>
-                                     , strf::cv_format_with_encoding<CharIn> > input )
+                                     , strf::sani_format_with_encoding<CharIn> > input )
 {
     return { fp
            , preview

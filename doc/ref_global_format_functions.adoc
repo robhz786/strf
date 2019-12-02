@@ -63,5 +63,29 @@ constexpr auto right(const T& value, int width, char32_t fill)
     return fmt(value).fill(fill) > width;
 }
 
+template <typename T>
+constexpr auto cv(const T& value)
+{
+    return fmt(value).cv();
+}
+
+template <typename T, typename E>
+constexpr auto cv(const T& value, const E& encoding)
+{
+    return fmt(value).cv(encoding);
+}
+
+template <typename T>
+constexpr auto sani(const T& value)
+{
+    return fmt(value).sani();
+}
+
+template <typename T, typename E>
+constexpr auto sani(const T& value, const E& encoding)
+{
+    return fmt(value).sani(encoding);
+}
+
 } // namespace strf
 ----

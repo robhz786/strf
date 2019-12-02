@@ -60,7 +60,7 @@ void arg()
 void encoding_error_replace()
 {
     //[ encoding_error_replace
-    auto str = strf::to_u8string (strf::cv("--\x99--"));
+    auto str = strf::to_u8string (strf::sani("--\x99--"));
     assert(str == u8"--\uFFFD--");
     //]
 }
@@ -70,7 +70,7 @@ void error_signal_skip()
     //[ encoding_error_ignore
     auto str = strf::to_string
         .with(strf::encoding_error::ignore)
-        (strf::cv("--\x99--"));
+        (strf::sani("--\x99--"));
 
     assert(str == "----");
     //]
@@ -85,7 +85,7 @@ void encoding_error_stop()
     {
         auto str = strf::to_string
             .with(strf::encoding_error::stop)
-            (strf::cv("--\x99--"));
+            (strf::sani("--\x99--"));
     }
     catch(strf::encoding_failure&)
     {

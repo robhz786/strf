@@ -243,7 +243,7 @@ void sani()
 {
     //[sani_utf8
     // sanitize UTF-8 input
-    auto s = strf::to_u8string(strf::cv("a b c \xFF d e"));
+    auto s = strf::to_u8string(strf::sani("a b c \xFF d e"));
     assert(s == u8"a b c \uFFFD d e");
     //]
 }

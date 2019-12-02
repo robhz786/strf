@@ -39,7 +39,7 @@ void test_valid_input
 
     auto input = valid_input_sample(ein);
     auto expected = valid_input_sample(eout);
-    TEST(expected).with(eout) (strf::cv(input, ein));
+    TEST(expected).with(eout) (strf::sani(input, ein));
 }
 
 std::string sample_with_surrogates(const strf::encoding<char>&)
@@ -76,7 +76,7 @@ void test_allowed_surrogates
         .with( eout
                , strf::encoding_error::stop
                , strf::surrogate_policy::lax )
-        (strf::cv(input, ein));
+        (strf::sani(input, ein));
 }
 
 const auto& invalid_sequences(const strf::encoding<char>&)
@@ -184,7 +184,7 @@ void test_invalid_input
             TEST(expected)
                 .with(eout)
                 .with(strf::encoding_error::replace)
-                (strf::cv(input, ein));
+                (strf::sani(input, ein));
         }
 
         // ignore
@@ -192,12 +192,12 @@ void test_invalid_input
             .reserve(6)
             .with(eout)
             .with(strf::encoding_error::ignore)
-            (strf::cv(input, ein));
+            (strf::sani(input, ein));
 
         // stop
         BOOST_TEST_THROWS( (strf::to_string.with(eout)
                                            .with(strf::encoding_error::stop)
-                                            (strf::cv(input, ein)) )
+                                            (strf::sani(input, ein)) )
                           , strf::encoding_failure );
     }
 }
