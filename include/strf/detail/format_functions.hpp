@@ -62,13 +62,15 @@ template <typename FmtA, typename ValueWithFormat>
 struct fmt_forward_switcher<FmtA, FmtA, ValueWithFormat>
 {
     template <typename FmtAInit>
-    static constexpr FmtAInit&& f(std::remove_reference_t<FmtAInit>& fa, ...)
+    static constexpr FmtAInit&&
+    f(std::remove_reference_t<FmtAInit>& fa,  const ValueWithFormat&)
     {
         return static_cast<FmtAInit&&>(fa);
     }
 
     template <typename FmtAInit>
-    static constexpr FmtAInit&& f(std::remove_reference_t<FmtAInit>&& fa, ...)
+    static constexpr FmtAInit&&
+    f(std::remove_reference_t<FmtAInit>&& fa, const ValueWithFormat&)
     {
         return static_cast<FmtAInit&&>(fa);
     }

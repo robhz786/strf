@@ -106,7 +106,7 @@ int main()
 
         TEST("--?--\x80--")
             .with(strf::windows_1252<char>())
-            (strf::sani("--\uFFFF--\u20AC--", strf::utf8<char>()));
+            (strf::sani("--\xC9\x90--\xE2\x82\xAC--", strf::utf8<char>()));
 
         TEST("--?--\x80--")
             .with(strf::windows_1252<char>())

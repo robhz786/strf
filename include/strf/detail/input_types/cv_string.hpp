@@ -101,6 +101,7 @@ private:
         {
             preview.add_size(necessary_size());
         }
+        (void)fp;
     }
 
     constexpr void _calc_width
@@ -276,8 +277,8 @@ private:
     strf::alignment_format_data _afmt;
     const strf::encoding<CharIn> _src_encoding;
     const strf::encoding<CharOut> _dest_encoding;
-    const strf::transcoder_engine<CharIn, CharOut>* _transcoder_eng;
-    const strf::width_calculator<CharIn>* _wcalc;
+    const strf::transcoder_engine<CharIn, CharOut>* _transcoder_eng = nullptr;
+    const strf::width_calculator<CharIn>* _wcalc = nullptr;
     const strf::encoding_error _enc_err;
     const strf::surrogate_policy  _allow_surr;
     std::uint16_t _fillcount = 0;
