@@ -26,8 +26,9 @@ public:
     template <typename P, typename ... Args>
     printer_variant(strf::identity<P>, Args&& ... args)
     {
-        static_assert(sizeof(P) <= _max_size);
-        static_assert(std::is_base_of<strf::printer<char_type>, P>::value);
+        static_assert( std::is_base_of<strf::printer<char_type>, P>::value
+                     , "Invalid printer type" );
+        static_assert(sizeof(P) <= _max_size, "Invalid printer type");
         new ((void*)&_pool) P{std::forward<Args>(args)...};
     }
 
