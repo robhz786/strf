@@ -33,7 +33,7 @@ public:
 };
 
 template <typename CharT>
-class width_as_len final: public strf::width_calculator<CharT>
+class fast_width final: public strf::width_calculator<CharT>
 {
 public:
 
@@ -113,9 +113,9 @@ struct width_calculator_c
 {
     static constexpr bool constrainable = true;
 
-    static const strf::width_as_len<CharT>& get_default()
+    static const strf::fast_width<CharT>& get_default()
     {
-        static const strf::width_as_len<CharT> x{};
+        static const strf::fast_width<CharT> x{};
         return x;
     }
 };

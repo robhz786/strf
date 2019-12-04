@@ -112,7 +112,7 @@ private:
 
     constexpr void _calc_width
         ( strf::width_preview<true>& wpreview
-        , const strf::width_as_len<CharIn>& ) noexcept
+        , const strf::fast_width<CharIn>& ) noexcept
     {
         _count_codepoints(wpreview);
     }
@@ -292,7 +292,7 @@ private:
 
     template <bool RequiringWidth>
     void _init( strf::width_preview<RequiringWidth>& preview
-              , const strf::width_as_len<CharIn>&)
+              , const strf::fast_width<CharIn>&)
     {
         _init<RequiringWidth>(preview);
     }

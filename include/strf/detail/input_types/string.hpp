@@ -322,7 +322,7 @@ private:
 
     constexpr void _calc_width
         ( strf::width_preview<true>& wpreview
-        , const strf::width_as_len<CharT>&
+        , const strf::fast_width<CharT>&
         , strf::encoding<CharT>
         , strf::encoding_error
         , strf::surrogate_policy ) noexcept
@@ -444,7 +444,7 @@ private:
 
     template <bool RequiringWidth>
     void _init( strf::width_preview<RequiringWidth>& preview
-              , const strf::width_as_len<CharT>&);
+              , const strf::fast_width<CharT>&);
 
     template <bool RequiringWidth>
     void _init( strf::width_preview<RequiringWidth>& preview
@@ -482,7 +482,7 @@ template<typename CharT>
 template <bool RequiringWidth>
 inline void fmt_string_printer<CharT>::_init
     ( strf::width_preview<RequiringWidth>& preview
-    , const strf::width_as_len<CharT>&)
+    , const strf::fast_width<CharT>&)
 {
     auto len = _str.length();
     if (_afmt.width > static_cast<std::ptrdiff_t>(len))

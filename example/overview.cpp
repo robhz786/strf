@@ -283,16 +283,6 @@ void punct_non_decimal()
     //]
 }
 
-// void width_as_len()
-// {
-//     //[width_as_len
-//     //     auto str = strf::to_u8string
-//         .with(strf::width_as_len<char8_t>{})
-//         (strf::right(u8"áéíóú", 12, U'.'));
-
-//     assert(str == u8"..áéíóú");
-//     //]
-// }
 // void width_as_u32len()
 // {
 //     //[width_as_u32len
@@ -390,7 +380,6 @@ int main()
     monotonic_grouping();
     str_grouping();
     punct_non_decimal();
-    // width_as_len();
     // width_as_u32len();
     // width_func();
     using_my_customizations();

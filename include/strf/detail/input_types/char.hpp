@@ -46,12 +46,12 @@ public:
 private:
 
     void _wcalc( strf::width_preview<false>&
-               , const strf::width_as_len<CharT>&
+               , const strf::fast_width<CharT>&
                , strf::encoding<CharT> ) noexcept
     {
     }
     void _wcalc( strf::width_preview<true>& wpreview
-               , const strf::width_as_len<CharT>&
+               , const strf::fast_width<CharT>&
                , strf::encoding<CharT> ) noexcept
     {
         wpreview.subtract_width(1);
@@ -139,7 +139,7 @@ private:
 
     template <bool RequireWidth>
     void _init( strf::width_preview<RequireWidth>& wpreview
-              , const strf::width_as_len<CharT>&)
+              , const strf::fast_width<CharT>&)
     {
         _fast_init(wpreview);
     }
