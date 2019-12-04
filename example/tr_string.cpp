@@ -60,6 +60,9 @@ int main()
        assert(str == "Roses are red. Violets are .");
        //]
    }
+
+#if defined(__cpp_exceptions)
+
    {
        //[ trstr_stop
        bool exception_thrown = false;
@@ -78,6 +81,8 @@ int main()
        //]
        (void) exception_thrown;
    }
+
+#endif // defined(__cpp_exceptions)
 
    return 0;
 };

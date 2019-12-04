@@ -12,6 +12,7 @@
 
 STRF_NAMESPACE_BEGIN
 
+
 class stringify_error: public std::exception
 {
     using std::exception::exception;
@@ -27,20 +28,26 @@ class encoding_failure: public strf::stringify_error
     }
 };
 
+namespace detail {
+
+#if defined(__cpp_exceptions)
+
 inline void throw_encoding_failure()
 {
     throw strf::encoding_failure();
 }
 
-class tr_string_syntax_error: public strf::stringify_error
-{
-    using strf::stringify_error::stringify_error;
+#else // defined(__cpp_exceptions)
 
-    const char* what() const noexcept override
-    {
-        return "Boost.Stringify: Tr-string syntax error";
-    }
-};
+inline void throw_encoding_failure()
+{
+    std::abort();
+}
+
+#endif // defined(__cpp_exceptions)
+
+} // namespace detail
+
 
 struct tag
 {

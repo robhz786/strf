@@ -187,12 +187,16 @@ void test_invalid_input
                 (strf::sani(input, ein));
         }
 
+#if defined(__cpp_exceptions)
 
         // stop
         BOOST_TEST_THROWS( (strf::to_string.with(eout)
                                            .with(strf::encoding_error::stop)
                                             (strf::sani(input, ein)) )
                           , strf::encoding_failure );
+
+#endif // defined(__cpp_exceptions)
+
     }
 }
 

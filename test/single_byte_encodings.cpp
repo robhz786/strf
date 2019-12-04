@@ -72,12 +72,16 @@ void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
         .with(enc, strf::encoding_error::replace)
         (strf::sani(u"---\U0010FFFF+++"));
 
+#if defined(__cpp_exceptions)
+
     {
         auto facets = strf::pack(enc, strf::encoding_error::stop);
         BOOST_TEST_THROWS(
             ( (strf::to_string.with(facets)(strf::sani(u"---\U0010FFFF++"))))
             , strf::encoding_failure );
     }
+
+#endif // defined(__cpp_exceptions)
 }
 
 

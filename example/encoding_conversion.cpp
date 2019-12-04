@@ -67,6 +67,8 @@ void encoding_error_replace()
 
 void encoding_error_stop()
 {
+#if defined(__cpp_exceptions)
+
     //[encoding_error_stop
     bool transcoding_failed = false;
     try
@@ -83,6 +85,8 @@ void encoding_error_stop()
     assert(transcoding_failed);
     //]
     (void) transcoding_failed;
+
+#endif // defined(__cpp_exceptions)
 }
 
 void allow_surrogates ()

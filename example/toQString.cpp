@@ -47,6 +47,9 @@ void QStringCreator::recycle()
     {
         const QChar * qchar_buffer = reinterpret_cast<QChar*>(_buffer);
         std::size_t count = this->pos() - _buffer;
+
+#if defined(__cpp_exceptions)
+
         try
         {
             _str.append(qchar_buffer, count);
@@ -56,6 +59,12 @@ void QStringCreator::recycle()
             _eptr = std::current_exception();
             this->set_good(false);
         }
+#else
+
+        _str.append(qchar_buffer, count);
+
+#endif // defined(__cpp_exceptions)
+
     }
     this->set_pos(_buffer);
 }

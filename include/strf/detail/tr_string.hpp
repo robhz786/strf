@@ -10,6 +10,36 @@
 
 STRF_NAMESPACE_BEGIN
 
+class tr_string_syntax_error: public strf::stringify_error
+{
+    using strf::stringify_error::stringify_error;
+
+    const char* what() const noexcept override
+    {
+        return "Boost.Stringify: Tr-string syntax error";
+    }
+};
+
+namespace detail {
+
+#if defined(__cpp_exceptions)
+
+inline void throw_string_syntax_error()
+{
+    throw strf::tr_string_syntax_error();
+}
+
+#else // defined(__cpp_exceptions)
+
+inline void throw_string_syntax_error()
+{
+    std::abort();
+}
+
+#endif // defined(__cpp_exceptions)
+
+} // namespace detail
+
 enum class tr_invalid_arg
 {
     replace, stop, ignore
@@ -262,7 +292,7 @@ void tr_string_write
             }
             else if (policy == strf::tr_invalid_arg::stop)
             {
-                throw strf::tr_string_syntax_error();
+                strf::detail::throw_string_syntax_error();
             }
             break;
         }
@@ -281,7 +311,7 @@ void tr_string_write
             }
             else if (policy == strf::tr_invalid_arg::stop)
             {
-                throw strf::tr_string_syntax_error();
+                strf::detail::throw_string_syntax_error();
             }
             ++it;
         }
@@ -298,7 +328,7 @@ void tr_string_write
             }
             else if (policy == strf::tr_invalid_arg::stop)
             {
-                throw strf::tr_string_syntax_error();
+                strf::detail::throw_string_syntax_error();
             }
 
             it = traits::find(result.it, end - result.it, '}');
@@ -336,7 +366,7 @@ void tr_string_write
                 }
                 else if (policy == strf::tr_invalid_arg::stop)
                 {
-                    throw strf::tr_string_syntax_error();
+                    strf::detail::throw_string_syntax_error();
                 }
             }
             auto it2 = it + 1;

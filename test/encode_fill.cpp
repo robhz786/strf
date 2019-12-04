@@ -82,6 +82,12 @@ void test_invalid_fill_stop
     , char32_t fill_char
     , strf::surrogate_policy allow_surr = strf::surrogate_policy::strict )
 {
+    (void) enc;
+    (void) fill_char;
+    (void) allow_surr;
+
+#if defined(__cpp_exceptions)
+
     BOOST_TEST_LABEL << "encoding: " << enc.name()
                      << "; test_fill_char: \\u'"
                      << std::hex << (unsigned)fill_char << '\''
@@ -92,6 +98,8 @@ void test_invalid_fill_stop
         BOOST_TEST_THROWS( (strf::to_string.with(facets)(strf::right(0, 10, fill_char)))
                          , strf::encoding_failure );
     }
+
+#endif // defined(__cpp_exceptions)
 }
 
 int main()

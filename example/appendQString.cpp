@@ -66,6 +66,9 @@ void QStringAppender::recycle()
         std::size_t count = /*<<ouput_buffer::pos() returns the immediate position
                               after the last character the library wrote in the buffer>>*/this->pos() - _buffer;
         const QChar * qchar_buffer = reinterpret_cast<QChar*>(_buffer);
+
+#if defined(__cpp_exceptions)
+
         try
         {
             _str.append(qchar_buffer, count);
@@ -76,6 +79,14 @@ void QStringAppender::recycle()
             _eptr = std::current_exception();
             this->set_good(false);
         }
+
+#else
+
+        _str.append(qchar_buffer, count);
+        _count += count;
+
+#endif // defined(__cpp_exceptions)
+
     }
     // Reset the buffer position:
     this->set_pos(_buffer);
