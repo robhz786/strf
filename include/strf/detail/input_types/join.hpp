@@ -141,7 +141,7 @@ public:
             preview.add_size(p.get_size());
             if (_fillcount > 0)
             {
-                auto fcharsize = _encoding.char_size( _fmt.fillchar, _enc_err);
+                auto fcharsize = _encoding.char_size( _fmt.fillchar);
                 preview.add_size(_fillcount * fcharsize);
             }
         }
@@ -184,7 +184,7 @@ public:
             {
                 preview.add_size
                     ( _fillcount
-                    * _encoding.char_size(_fmt.fillchar, _enc_err) );
+                    * _encoding.char_size(_fmt.fillchar) );
             }
         }
     }
@@ -262,7 +262,7 @@ private:
     {
         if(_fillcount > 0)
         {
-            return _fillcount * _encoding.char_size( _fmt.fillchar, _enc_err);
+            return _fillcount * _encoding.char_size(_fmt.fillchar);
         }
         return 0;
     }

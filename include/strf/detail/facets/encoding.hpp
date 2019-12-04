@@ -13,7 +13,7 @@ template <typename> class facet_trait;
 
 enum class encoding_error
 {
-    replace, stop, ignore
+    replace, stop
 };
 
 struct encoding_error_c
@@ -168,7 +168,6 @@ struct transcoder_impl
     typedef std::size_t (&size_func_ref)
         ( const CharIn* src
         , const CharIn* src_end
-        , strf::encoding_error err_hdl
         , strf::surrogate_policy allow_surr );
 
     transcode_func_ref transcode;
@@ -306,13 +305,11 @@ public:
     std::size_t necessary_size
         ( const CharIn* src
         , const CharIn* src_end
-        , strf::encoding_error err_hdl
         , strf::surrogate_policy allow_surr ) const
     {
         return _impl->necessary_size
             ( reinterpret_cast<const _inner_char_type_in*>(src)
             , reinterpret_cast<const _inner_char_type_in*>(src_end)
-            , err_hdl
             , allow_surr );
     }
 
@@ -372,13 +369,11 @@ public:
     {
         return _impl->validate(ch);
     }
-    std::size_t char_size(char32_t ch, strf::encoding_error err_hdl) const
+    std::size_t char_size(char32_t ch) const
     {
         auto size = _impl->validate(ch);
         bool is_valid = (size != (std::size_t)-1);
-        bool shall_replace = (err_hdl == strf::encoding_error::replace);
-        return is_valid * size
-             + (!is_valid && shall_replace) * replacement_char_size();
+        return is_valid * size + (!is_valid) * replacement_char_size();
     }
     void encode_fill
         ( strf::basic_outbuf<char_type>& ob
@@ -413,10 +408,9 @@ public:
         auto rdest = reinterpret_cast<_impl_char_type*>(dest);
         return reinterpret_cast<char_type*>(_impl->encode_char(rdest, ch));
     }
-    void encode_char
-        ( strf::basic_outbuf<char_type>& ob
-        , char32_t ch
-        , strf::encoding_error err_hdl ) const
+    void encode_char( strf::basic_outbuf<char_type>& ob
+                    , char32_t ch
+                    , strf::encoding_error err_hdl ) const
     {
         if (u32equivalence_begin() <= ch && ch < u32equivalence_end())
         {
@@ -432,13 +426,13 @@ public:
                 ob.ensure(s);
                 ob.advance_to(this->encode_char(ob.pos(), ch));
             }
-            else if(err_hdl == strf::encoding_error::replace)
+            else
             {
+                if(err_hdl == strf::encoding_error::stop)
+                {
+                    throw_encoding_failure();
+                }
                 this->write_replacement_char(ob);
-            }
-            else if(err_hdl == strf::encoding_error::stop)
-            {
-                throw_encoding_failure();
             }
         }
     }
@@ -704,13 +698,11 @@ public:
 
     buffered_size_calculator
         ( strf::encoding<CharOut>& enc
-        , strf::encoding_error err_hdl
         , strf::surrogate_policy allow_surr )
         : strf::basic_outbuf<char32_t>
             ( strf::detail::global_mini_buffer32()
             , strf::detail::global_mini_buffer32_size )
         , _enc(enc)
-        , _err_hdl(err_hdl)
         , _allow_surr(allow_surr)
     {
         _begin = this->pos();
@@ -729,7 +721,6 @@ private:
     strf::encoding<CharOut> _enc;
     char32_t* _begin;
     std::size_t _sum = 0;
-    strf::encoding_error _err_hdl;
     strf::surrogate_policy _allow_surr;
 };
 
@@ -740,7 +731,7 @@ void buffered_size_calculator<CharOut>::recycle()
     if (end != _begin)
     {
         this->set_pos(_begin);
-        _sum += _enc.from_u32().necessary_size(_begin, end, _err_hdl, _allow_surr);
+        _sum += _enc.from_u32().necessary_size(_begin, end, _allow_surr);
     }
 }
 
@@ -770,12 +761,12 @@ inline std::size_t decode_encode_size
     , const CharIn* src_end
     , strf::encoding<CharIn> src_encoding
     , strf::encoding<CharOut> dest_encoding
-    , strf::encoding_error err_hdl
     , strf::surrogate_policy allow_surr )
 {
     strf::detail::buffered_size_calculator<CharOut> calc
-        { dest_encoding, err_hdl, allow_surr };
+        { dest_encoding, allow_surr };
 
+    constexpr strf::encoding_error err_hdl = strf::encoding_error::replace;
     src_encoding.to_u32().transcode(calc, src, src_end, err_hdl, allow_surr);
 
     return calc.get_sum();

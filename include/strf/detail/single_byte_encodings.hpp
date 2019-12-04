@@ -34,11 +34,9 @@ template <typename CharIn>
 static std::size_t same_size
     ( const CharIn* src
     , const CharIn* src_end
-    , strf::encoding_error err_hdl
     , strf::surrogate_policy allow_surr )
 {
     (void) allow_surr;
-    (void) err_hdl;
     return src_end - src;
 }
 
@@ -124,16 +122,13 @@ void single_byte_encoding<Impl>::to_utf32
         {
             switch(err_hdl)
             {
-                case strf::encoding_error::stop:
-                    ob.advance_to(dest_it);
-                    throw_encoding_failure();
-                    break;
                 case strf::encoding_error::replace:
                     ch32 = 0xFFFD;
                     break;
                 default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                    continue;
+                    STRF_ASSERT(err_hdl == strf::encoding_error::stop);
+                    ob.advance_to(dest_it);
+                    throw_encoding_failure();
             }
         }
         STRF_CHECK_DEST;
@@ -164,19 +159,12 @@ void single_byte_encoding<Impl>::sanitize
         }
         else
         {
-            switch(err_hdl)
+            if (err_hdl == strf::encoding_error::stop)
             {
-                case strf::encoding_error::stop:
-                    ob.advance_to(dest_it);
-                    throw_encoding_failure();
-                    return;
-                case strf::encoding_error::replace:
-                    ch_out = '?';
-                    break;
-                default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                    continue;
+                ob.advance_to(dest_it);
+                throw_encoding_failure();
             }
+            ch_out = '?';
         }
         STRF_CHECK_DEST;
         *dest_it = ch_out;
@@ -229,18 +217,11 @@ void single_byte_encoding<Impl>::encode_fill
     unsigned ch2 = Impl::encode(ch);
     if (ch2 >= 0x100)
     {
-        switch(err_hdl)
+        if (err_hdl == strf::encoding_error::stop)
         {
-            case strf::encoding_error::replace:
-                ch2 = '?';
-                break;
-            case strf::encoding_error::stop:
-                throw_encoding_failure();
-                return;
-            default:
-                STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                return;
+            throw_encoding_failure();
         }
+        ch2 = '?';
     }
     while(true)
     {
@@ -274,21 +255,12 @@ void single_byte_encoding<Impl>::from_utf32
         auto ch2 = Impl::encode(*src);
         if(ch2 >= 0x100)
         {
-            switch(err_hdl)
+            if (err_hdl == strf::encoding_error::stop)
             {
-                case strf::encoding_error::stop:
-                    ob.advance_to(dest_it);
-                    throw_encoding_failure();
-                    return;
-
-                case strf::encoding_error::replace:
-                    ch2 = '?';
-                    break;
-
-                default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                    continue;
+                ob.advance_to(dest_it);
+                throw_encoding_failure();
             }
+            ch2 = '?';
         }
         STRF_CHECK_DEST;
         *dest_it = static_cast<std::uint8_t>(ch2);

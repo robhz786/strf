@@ -187,12 +187,6 @@ void test_invalid_input
                 (strf::sani(input, ein));
         }
 
-        // ignore
-        TEST(prefix_out + suffix_out)
-            .reserve(6)
-            .with(eout)
-            .with(strf::encoding_error::ignore)
-            (strf::sani(input, ein));
 
         // stop
         BOOST_TEST_THROWS( (strf::to_string.with(eout)

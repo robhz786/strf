@@ -65,18 +65,6 @@ void encoding_error_replace()
     //]
 }
 
-void error_signal_skip()
-{
-    //[ encoding_error_ignore
-    auto str = strf::to_string
-        .with(strf::encoding_error::ignore)
-        (strf::sani("--\x99--"));
-
-    assert(str == "----");
-    //]
-}
-
-
 void encoding_error_stop()
 {
     //[encoding_error_stop
@@ -131,7 +119,6 @@ int main()
     input_ouput_different_char_types();
     arg();
     encoding_error_replace();
-    error_signal_skip();
     encoding_error_stop();
     allow_surrogates();
 

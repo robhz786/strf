@@ -176,10 +176,10 @@ private:
     void _calc_size(strf::size_preview<true>& spreview) const
     {
         std::size_t s = _fmt.count()
-                      * _encoding.char_size(_fmt.value().ch, _enc_err);
+                      * _encoding.char_size(_fmt.value().ch);
         if (_fillcount > 0)
         {
-            s += _fillcount * _encoding.char_size(_fmt.fill(), _enc_err);
+            s += _fillcount * _encoding.char_size(_fmt.fill());
         }
         spreview.add_size(s);
     }

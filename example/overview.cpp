@@ -323,8 +323,7 @@ namespace my { // my customizations
 const auto my_default_facets = strf::pack
     ( strf::monotonic_grouping<10>(3)
     , strf::monotonic_grouping<16>(4).thousands_sep(U'\'')
-    , strf::surrogate_policy::lax
-    , strf::encoding_error::ignore );
+    , strf::surrogate_policy::lax );
 
 const auto to_string = strf::to_string.with(my_default_facets);
 

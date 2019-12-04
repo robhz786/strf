@@ -266,20 +266,12 @@ void utf8_to_utf32_transcode
         else
         {
             invalid_sequence:
-            switch (err_hdl)
+            if (err_hdl == strf::encoding_error::stop)
             {
-                case strf::encoding_error::stop:
-                    ob.advance_to(dest_it);
-                    throw_encoding_failure();
-                    return;
-                case strf::encoding_error::replace:
-                    STRF_CHECK_DEST;
-                    ch32 = 0xFFFD;
-                    break;
-                default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                    continue;
+                ob.advance_to(dest_it);
+                throw_encoding_failure();
             }
+            ch32 = 0xFFFD;
         }
 
         STRF_CHECK_DEST;
@@ -292,7 +284,6 @@ void utf8_to_utf32_transcode
 STRF_STATIC_LINKAGE std::size_t utf8_to_utf32_size
     ( const std::uint8_t* src
     , const std::uint8_t* src_end
-    , strf::encoding_error err_hdl
     , strf::surrogate_policy allow_surr )
 {
     std::uint8_t ch0, ch1, ch2;
@@ -302,26 +293,21 @@ STRF_STATIC_LINKAGE std::size_t utf8_to_utf32_size
     {
         ch0 = (*src_it);
         ++src_it;
-        if (ch0 < 0x80)
-        {
-            ++size;
-        }
-        else if (0xC0 == (ch0 & 0xE0))
+        ++size;
+        if (0xC0 == (ch0 & 0xE0))
         {
             if (ch0 > 0xC1 && src_it != src_end && is_utf8_continuation(*src_it))
             {
-                ++size;
                 ++src_it;
-            } else goto invalid_sequence;
+            }
         }
         else if (0xE0 == ch0)
         {
             if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
-                ++size;
                 ++src_it;
-            } else goto invalid_sequence;
+            }
         }
         else if (0xE0 == (ch0 & 0xF0))
         {
@@ -329,9 +315,8 @@ STRF_STATIC_LINKAGE std::size_t utf8_to_utf32_size
               && first_2_of_3_are_valid( ch0, ch1, allow_surr )
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
-                ++size;
                 ++src_it;
-            } else goto invalid_sequence;
+            }
         }
         else if(0xEF < ch0)
         {
@@ -340,23 +325,7 @@ STRF_STATIC_LINKAGE std::size_t utf8_to_utf32_size
               && ++src_it != src_end && is_utf8_continuation(*src_it)
               && ++src_it != src_end && is_utf8_continuation(*src_it) )
             {
-                ++size;
                 ++src_it;
-            } else goto invalid_sequence;
-        }
-        else
-        {
-            invalid_sequence:
-            switch (err_hdl)
-            {
-                case strf::encoding_error::stop:
-                    return size;
-                case strf::encoding_error::replace:
-                    ++size;
-                    break;
-                default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                    break;
             }
         }
     }
@@ -443,24 +412,19 @@ STRF_STATIC_LINKAGE void utf8_sanitize
         else
         {
             invalid_sequence:
-            switch (err_hdl)
+            if (err_hdl == strf::encoding_error::replace)
             {
-                case strf::encoding_error::stop:
-                    ob.advance_to(dest_it);
-                    throw_encoding_failure();
-                    return;
-
-                case strf::encoding_error::replace:
-                    STRF_CHECK_DEST_SIZE(3);
-                    dest_it[0] = 0xEF;
-                    dest_it[1] = 0xBF;
-                    dest_it[2] = 0xBD;
-                    dest_it += 3;
-                    break;
-
-                default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                    break;
+                STRF_CHECK_DEST_SIZE(3);
+                dest_it[0] = 0xEF;
+                dest_it[1] = 0xBF;
+                dest_it[2] = 0xBD;
+                dest_it += 3;                
+            }
+            else
+            {
+                STRF_ASSERT(err_hdl == strf::encoding_error::stop);
+                ob.advance_to(dest_it);
+                throw_encoding_failure();
             }
         }
     }
@@ -470,7 +434,6 @@ STRF_STATIC_LINKAGE void utf8_sanitize
 STRF_STATIC_LINKAGE std::size_t utf8_sanitize_size
     ( const std::uint8_t* src
     , const std::uint8_t* src_end
-    , strf::encoding_error err_hdl
     , strf::surrogate_policy allow_surr )
 {
     using strf::detail::utf8_decode;
@@ -491,7 +454,11 @@ STRF_STATIC_LINKAGE std::size_t utf8_sanitize_size
             {
                 size += 2;
                 ++src_it;
-            } else goto invalid_sequence;
+            }
+            else
+            {
+                size += 3;
+            }
         }
         else if (0xE0 == ch0)
         {
@@ -500,43 +467,34 @@ STRF_STATIC_LINKAGE std::size_t utf8_sanitize_size
             {
                 size += 3;
                 ++src_it;
-            } else goto invalid_sequence;
+            }
+            else
+            {
+                size += 3;
+            }
         }
         else if (0xE0 == (ch0 & 0xF0))
         {
+            size += 3;
             if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
               && first_2_of_3_are_valid( ch0, ch1, allow_surr )
               && ++src_it != src_end && is_utf8_continuation(* src_it) )
             {
-                size += 3;
                 ++src_it;
-            } else goto invalid_sequence;
+            }
         }
-        else if(0xEF < ch0)
-        {
-            if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+        else if( 0xEF < ch0
+              &&   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
               && first_2_of_4_are_valid(ch0, ch1)
               && ++src_it != src_end && is_utf8_continuation(*src_it)
               && ++src_it != src_end && is_utf8_continuation(*src_it) )
-            {
-                size += 4;
-                ++src_it;
-            } else goto invalid_sequence;
+        {
+            size += 4;
+            ++src_it;
         }
         else
         {
-            invalid_sequence:
-            switch (err_hdl)
-            {
-                case strf::encoding_error::stop:
-                    return size;
-                case strf::encoding_error::replace:
-                    size += 3;
-                    break;
-                default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                    break;
-            }
+            size += 3;
         }
     }
     return size;
@@ -610,9 +568,6 @@ STRF_STATIC_LINKAGE void utf8_encode_fill
             case strf::encoding_error::stop:
                 throw_encoding_failure();
                 return;
-
-            case strf::encoding_error::ignore:
-                break;
 
             default:
             {
@@ -715,11 +670,6 @@ STRF_STATIC_LINKAGE void utf32_to_utf8_transcode
             invalid_sequence:
             switch (err_hdl)
             {
-                case strf::encoding_error::stop:
-                    ob.advance_to(dest_it);
-                    throw_encoding_failure();
-                    return;
-
                 case strf::encoding_error::replace:
                     STRF_CHECK_DEST_SIZE(3);
                     dest_it[0] = 0xEF;
@@ -729,8 +679,9 @@ STRF_STATIC_LINKAGE void utf32_to_utf8_transcode
                     break;
 
                 default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                    break;
+                    STRF_ASSERT(err_hdl == strf::encoding_error::stop);
+                    ob.advance_to(dest_it);
+                    throw_encoding_failure();
             }
         }
     }
@@ -740,51 +691,21 @@ STRF_STATIC_LINKAGE void utf32_to_utf8_transcode
 STRF_STATIC_LINKAGE std::size_t utf32_to_utf8_size
     ( const char32_t* src
     , const char32_t* src_end
-    , strf::encoding_error err_hdl
     , strf::surrogate_policy allow_surr )
 {
+    (void) allow_surr;
     auto src_it = src;
     std::size_t count = 0;
     for(;src_it != src_end; ++src_it)
     {
         auto ch = *src_it;
-        if(ch < 0x80)
+        if (ch < 0x110000)
         {
-            ++count;
-        }
-        else if (ch < 0x800)
-        {
-            count += 2;
-        }
-        else if (ch < 0x10000)
-        {
-            if ( allow_surr == strf::surrogate_policy::lax
-              || strf::detail::not_surrogate(ch) )
-            {
-                count += 3;
-            }
-            else goto invalid_char;
-        }
-        else if (ch < 0x110000)
-        {
-            count += 4;
+            count += 1 + (ch >= 0x80) + (ch >= 0x800) + (ch >= 0x10000);
         }
         else
         {
-            invalid_char:
-            switch (err_hdl)
-            {
-                case strf::encoding_error::stop:
-                    return count;
-
-                case strf::encoding_error::replace:
-                    count += 3;
-                    break;
-
-                default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                    break;
-            }
+            count += 3;
         }
     }
     return count;
@@ -852,18 +773,11 @@ STRF_STATIC_LINKAGE void utf16_to_utf32_transcode
         }
         else
         {
-            switch(err_hdl)
+            ch32 = 0xFFFD;
+            if (err_hdl == strf::encoding_error::stop)
             {
-                case strf::encoding_error::stop:
-                    ob.advance_to(dest_it);
-                    throw_encoding_failure();
-                    return;
-                case strf::encoding_error::replace:
-                    ch32 = 0xFFFD;
-                    break;
-                default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                    continue;
+                ob.advance_to(dest_it);
+                throw_encoding_failure();
             }
         }
 
@@ -877,9 +791,9 @@ STRF_STATIC_LINKAGE void utf16_to_utf32_transcode
 STRF_STATIC_LINKAGE std::size_t utf16_to_utf32_size
     ( const char16_t* src
     , const char16_t* src_end
-    , strf::encoding_error err_hdl
     , strf::surrogate_policy allow_surr )
 {
+    (void) allow_surr;
     unsigned long ch, ch2;
     std::size_t count = 0;
     const char16_t* src_it = src;
@@ -890,34 +804,12 @@ STRF_STATIC_LINKAGE std::size_t utf16_to_utf32_size
         ch = *src_it;
         src_it_next = src_it + 1;
 
-        if (not_surrogate(ch))
+        ++count;
+        if ( is_high_surrogate(ch)
+          && src_it_next != src_end
+          && is_low_surrogate(ch2 = *src_it_next))
         {
-            ++count;
-        }
-        else if ( is_high_surrogate(ch)
-               && src_it_next != src_end
-               && is_low_surrogate(ch2 = *src_it_next))
-        {
-            ++count;
             ++src_it_next;
-        }
-        else if(allow_surr == strf::surrogate_policy::lax)
-        {
-            ++count;
-        }
-        else
-        {
-            switch(err_hdl)
-            {
-                case strf::encoding_error::stop:
-                    return count;
-                case strf::encoding_error::replace:
-                    ++count;
-                    break;
-                default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                    break;
-            }
         }
     }
     return count;
@@ -964,23 +856,14 @@ STRF_STATIC_LINKAGE void utf16_sanitize
         }
         else
         {
-            switch(err_hdl)
+            if (err_hdl == strf::encoding_error::stop)
             {
-                case strf::encoding_error::stop:
-                    ob.advance_to(dest_it);
-                    throw_encoding_failure();
-                    return;
-
-                case strf::encoding_error::replace:
-                    STRF_CHECK_DEST;
-                    *dest_it = 0xFFFD;
-                    ++dest_it;
-                    break;
-
-                default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                    break;
+                ob.advance_to(dest_it);
+                throw_encoding_failure();
             }
+            STRF_CHECK_DEST;
+            *dest_it = 0xFFFD;
+            ++dest_it;
         }
     }
     ob.advance_to(dest_it);
@@ -989,46 +872,23 @@ STRF_STATIC_LINKAGE void utf16_sanitize
 STRF_STATIC_LINKAGE std::size_t utf16_sanitize_size
     ( const char16_t* src
     , const char16_t* src_end
-    , strf::encoding_error err_hdl
     , strf::surrogate_policy allow_surr )
 {
+    (void) allow_surr;
     std::size_t count = 0;
     const char16_t* src_it = src;
-    const char16_t* src_it_next;
     unsigned long ch, ch2;
-    for( ; src_it != src_end; src_it = src_it_next)
+    while (src_it != src_end)
     {
         ch = *src_it;
-        src_it_next = src_it + 1;
-
-        if (not_surrogate(ch))
+        ++ src_it;
+        ++ count;
+        if ( is_high_surrogate(ch)
+          && src_it != src_end
+          && is_low_surrogate(ch2 = *src_it))
         {
+            ++ src_it;
             ++ count;
-        }
-        else if ( is_high_surrogate(ch)
-               && src_it_next != src_end
-               && is_low_surrogate(ch2 = *src_it_next))
-        {
-            ++ src_it_next;
-            count += 2 ;
-        }
-        else if (allow_surr == strf::surrogate_policy::lax)
-        {
-            ++ count;
-        }
-        else
-        {
-            switch(err_hdl)
-            {
-                case strf::encoding_error::stop:
-                    return count;
-                case strf::encoding_error::replace:
-                    ++count;
-                    break;
-                default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                    break;
-            }
         }
     }
     return count;
@@ -1089,8 +949,7 @@ STRF_STATIC_LINKAGE void utf16_encode_fill
         {
             goto invalid_char;
         }
-        strf::detail::write_fill( ob, count
-                                         , static_cast<char16_t>(ch) );
+        strf::detail::write_fill(ob, count, static_cast<char16_t>(ch));
     }
     else if (ch < 0x110000)
     {
@@ -1104,19 +963,11 @@ STRF_STATIC_LINKAGE void utf16_encode_fill
     else
     {
         invalid_char:
-        switch (err_hdl)
+        if (err_hdl == strf::encoding_error::stop)
         {
-            case strf::encoding_error::replace:
-                strf::detail::write_fill(ob, count, u'\uFFFD');
-                break;
-
-            case strf::encoding_error::ignore:
-                break;
-
-            default:
-                STRF_ASSERT(err_hdl == strf::encoding_error::stop);
-                throw_encoding_failure();
+            throw_encoding_failure();
         }
+        strf::detail::write_fill(ob, count, u'\uFFFD');
     }
 }
 
@@ -1155,23 +1006,14 @@ STRF_STATIC_LINKAGE void utf32_to_utf16_transcode
         else
         {
             invalid_char:
-            switch(err_hdl)
+            if (err_hdl == strf::encoding_error::stop)
             {
-                case strf::encoding_error::stop:
-                    ob.advance_to(dest_it);
-                    throw_encoding_failure();
-                    return;
-
-                case strf::encoding_error::replace:
-                    STRF_CHECK_DEST;
-                    *dest_it = 0xFFFD;
-                    ++dest_it;
-                    break;
-
-                default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                    break;
+                ob.advance_to(dest_it);
+                throw_encoding_failure();
             }
+            STRF_CHECK_DEST;
+            *dest_it = 0xFFFD;
+            ++dest_it;
         }
     }
     ob.advance_to(dest_it);
@@ -1180,7 +1022,6 @@ STRF_STATIC_LINKAGE void utf32_to_utf16_transcode
 STRF_STATIC_LINKAGE std::size_t utf32_to_utf16_size
     ( const char32_t* src
     , const char32_t* src_end
-    , strf::encoding_error err_hdl
     , strf::surrogate_policy allow_surr )
 {
     (void) allow_surr;
@@ -1189,26 +1030,7 @@ STRF_STATIC_LINKAGE std::size_t utf32_to_utf16_size
     for ( ; src_it != src_end; ++src_it)
     {
         auto ch = *src_it;
-        if (ch < 0x110000)
-        {
-            count += ch < 0x10000 ? 1 : 2;
-        }
-        else
-        {
-            switch(err_hdl)
-            {
-                case strf::encoding_error::stop:
-                    return count;
-
-                case strf::encoding_error::replace:
-                    ++count;
-                    break;
-
-                default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                    break;
-            }
-        }
+        count += 1 + (0x10000 <= ch && ch < 0x110000);
     }
     return count;
 }
@@ -1224,10 +1046,8 @@ STRF_STATIC_LINKAGE void utf16_write_replacement_char
 STRF_STATIC_LINKAGE std::size_t utf32_sanitize_size
     ( const char32_t* src
     , const char32_t* src_end
-    , strf::encoding_error err_hdl
     , strf::surrogate_policy allow_surr )
 {
-    (void) err_hdl;
     (void) allow_surr;
     return src_end - src;
 }
@@ -1246,29 +1066,17 @@ STRF_STATIC_LINKAGE void utf32_sanitize
         for (auto src_it = src; src_it < src_end; ++src_it)
         {
             auto ch = *src_it;
-            char32_t ch_out;
-            if (ch < 0x110000)
+            if (ch >= 0x110000)
             {
-                ch_out = ch;
-            }
-            else
-            {
-                switch(err_hdl)
+                if (err_hdl == strf::encoding_error::stop)
                 {
-                    case strf::encoding_error::replace:
-                        ch_out = 0xFFFD;
-                        break;
-                    case strf::encoding_error::stop:
-                        ob.advance_to(dest_it);
-                        throw_encoding_failure();
-                        return;
-                    default:
-                        STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                        continue;
+                    ob.advance_to(dest_it);
+                    throw_encoding_failure();
                 }
+                ch = 0xFFFD;
             }
             STRF_CHECK_DEST;
-            *dest_it = ch_out;
+            *dest_it = ch;
             ++dest_it;
         }
     }
@@ -1277,29 +1085,17 @@ STRF_STATIC_LINKAGE void utf32_sanitize
         for(auto src_it = src; src_it < src_end; ++src_it)
         {
             char32_t ch = *src_it;
-            char32_t ch_out;
-            if (ch < 0x110000 && strf::detail::not_surrogate(ch))
+            if (ch >= 0x110000 || strf::detail::is_surrogate(ch))
             {
-                ch_out = ch;
-            }
-            else
-            {
-                switch(err_hdl)
+                if (err_hdl == strf::encoding_error::stop)
                 {
-                    case strf::encoding_error::replace:
-                        ch_out = 0xFFFD;
-                        break;
-                    case strf::encoding_error::stop:
-                        ob.advance_to(dest_it);
-                        throw_encoding_failure();
-                        return;
-                    default:
-                        STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                        continue;
+                    ob.advance_to(dest_it);
+                    throw_encoding_failure();
                 }
+                ch = 0xFFFD;
             }
             STRF_CHECK_DEST;
-            *dest_it = ch_out;
+            *dest_it = ch;
             ++dest_it;
         }
     }
@@ -1339,18 +1135,12 @@ STRF_STATIC_LINKAGE void utf32_encode_fill
     if (ch > 0x10FFFF || ( allow_surr == strf::surrogate_policy::strict
                         && detail::is_surrogate(ch) ))
     {
-        switch (err_hdl)
+        if (err_hdl == strf::encoding_error::stop)
         {
-            case strf::encoding_error::stop:
-                throw_encoding_failure();
-                return;
-            case strf::encoding_error::ignore:
-                return;
-            default:
-                STRF_ASSERT(err_hdl == strf::encoding_error::replace);
-                ch = 0xFFFD;
-                break;
+            throw_encoding_failure();
         }
+        STRF_ASSERT(err_hdl == strf::encoding_error::replace);
+        ch = 0xFFFD;
     }
     strf::detail::write_fill(ob, count, ch);
 }
@@ -1447,21 +1237,13 @@ STRF_STATIC_LINKAGE void utf8_to_utf16_transcode
         else
         {
             invalid_sequence:
-            switch(err_hdl)
+            if (err_hdl == strf::encoding_error::stop)
             {
-                case strf::encoding_error::stop:
-                    ob.advance_to(dest_it);
-                    throw_encoding_failure();
-                    return;
-                case strf::encoding_error::replace:
-                    STRF_CHECK_DEST;
-                    *dest_it = 0xFFFD;
-                    break;
-                default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                    --dest_it;
-                    break;
+                ob.advance_to(dest_it);
+                throw_encoding_failure();
             }
+            STRF_CHECK_DEST;
+            *dest_it = 0xFFFD;
         }
     }
     ob.advance_to(dest_it);
@@ -1470,10 +1252,8 @@ STRF_STATIC_LINKAGE void utf8_to_utf16_transcode
 STRF_STATIC_LINKAGE std::size_t utf8_to_utf16_size
     ( const std::uint8_t* src_begin
     , const std::uint8_t* src_end
-    , strf::encoding_error err_hdl
     , strf::surrogate_policy allow_surr )
 {
-    (void) err_hdl;
     using strf::detail::utf8_decode;
     using strf::detail::not_surrogate;
 
@@ -1484,26 +1264,21 @@ STRF_STATIC_LINKAGE std::size_t utf8_to_utf16_size
     {
         ch0 = *src_it;
         ++src_it;
-        if(ch0 < 0x80)
-        {
-            ++size;
-        }
-        else if (0xC0 == (ch0 & 0xE0))
+        ++size;
+        if (0xC0 == (ch0 & 0xE0))
         {
             if (ch0 > 0xC1 && src_it != src_end && is_utf8_continuation(*src_it))
             {
-                ++size;
                 ++src_it;
-            } else goto invalid_sequence;
+            }
         }
         else if (0xE0 == ch0)
         {
             if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
-                ++size;
                 ++src_it;
-            } else goto invalid_sequence;
+            }
         }
         else if (0xE0 == (ch0 & 0xF0))
         {
@@ -1511,9 +1286,8 @@ STRF_STATIC_LINKAGE std::size_t utf8_to_utf16_size
               && first_2_of_3_are_valid( ch0, ch1, allow_surr )
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
-                ++size;
                 ++src_it;
-            } else goto invalid_sequence;
+            }
         }
         else if(0xEF < ch0)
         {
@@ -1522,22 +1296,11 @@ STRF_STATIC_LINKAGE std::size_t utf8_to_utf16_size
               && ++src_it != src_end && is_utf8_continuation(*src_it)
               && ++src_it != src_end && is_utf8_continuation(*src_it) )
             {
-                size += 2;
                 ++src_it;
-            } else goto invalid_sequence;
-        }
-        else
-        {
-            invalid_sequence:
-            if (err_hdl == strf::encoding_error::stop)
-            {
-                return size;
-            }
-            if (err_hdl == strf::encoding_error::replace)
-            {
                 ++size;
             }
         }
+        
     }
     return size;
 }
@@ -1598,27 +1361,16 @@ STRF_STATIC_LINKAGE void utf16_to_utf8_transcode
         }
         else // invalid sequece
         {
-             switch(err_hdl)
-             {
-                 case strf::encoding_error::stop:
-                     ob.advance_to(dest_it);
-                     throw_encoding_failure();
-                     return;
-
-                 case strf::encoding_error::replace:
-                 {
-                     STRF_CHECK_DEST_SIZE(3);
-                     dest_it[0] = 0xEF;
-                     dest_it[1] = 0xBF;
-                     dest_it[2] = 0xBD;
-                     dest_it += 3;
-                     break;
-                 }
-
-                 default:
-                     STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                     break;
-             }
+            if (err_hdl == strf::encoding_error::stop)
+            {
+                ob.advance_to(dest_it);
+                throw_encoding_failure();
+            }
+            STRF_CHECK_DEST_SIZE(3);
+            dest_it[0] = 0xEF;
+            dest_it[1] = 0xBF;
+            dest_it[2] = 0xBD;
+            dest_it += 3;
         }
     }
     ob.advance_to(dest_it);
@@ -1627,10 +1379,8 @@ STRF_STATIC_LINKAGE void utf16_to_utf8_transcode
 STRF_STATIC_LINKAGE std::size_t utf16_to_utf8_size
     ( const char16_t* src_begin
     , const char16_t* src_end
-    , strf::encoding_error err_hdl
     , strf::surrogate_policy allow_surr )
 {
-    (void) err_hdl;
     (void) allow_surr;
     std::size_t size = 0;
     for(auto it = src_begin; it < src_end; ++it)

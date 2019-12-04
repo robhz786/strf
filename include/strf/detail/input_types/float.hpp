@@ -1160,7 +1160,7 @@ private:
     unsigned _left_fillcount = 0;
     unsigned _split_fillcount = 0;
     unsigned _right_fillcount = 0;
-    strf::encoding_error _enc_err = encoding_error::ignore;
+    strf::encoding_error _enc_err = encoding_error::replace;
     strf::surrogate_policy _allow_surr = surrogate_policy::strict;
 };
 

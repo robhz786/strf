@@ -71,9 +71,6 @@ void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
     TEST("---?+++")
         .with(enc, strf::encoding_error::replace)
         (strf::sani(u"---\U0010FFFF+++"));
-    TEST_RF("---+++", 7.1 / 6.0)
-        .with(enc, strf::encoding_error::ignore)
-        (strf::sani(u"---\U0010FFFF+++"));
 
     {
         auto facets = strf::pack(enc, strf::encoding_error::stop);

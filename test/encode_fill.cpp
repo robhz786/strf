@@ -94,34 +94,6 @@ void test_invalid_fill_stop
     }
 }
 
-template <typename CharT>
-void test_invalid_fill_ignore
-    ( strf::encoding<CharT> enc
-    , char32_t fill_char
-    , strf::surrogate_policy allow_surr = strf::surrogate_policy::strict )
-{
-    BOOST_TEST_LABEL << "test_fill_char: \\u'"
-                     << std::hex << (unsigned)fill_char << '\''
-                     << std::dec;
-
-    std::basic_string<CharT> expected(5, CharT('-'));
-    expected.push_back(CharT('x'));
-    for(int i = 0; i < 5; ++i)
-    {
-        expected.push_back(CharT('+'));
-    }
-
-    {
-        auto result = strf::to_basic_string<CharT>
-            .with(enc, strf::encoding_error::ignore, allow_surr)
-            ( strf::multi(CharT('-'), 5)
-            , strf::right(CharT('x'), 11, fill_char)
-            , strf::multi(CharT('+'), 5) );
-        BOOST_TEST(result == expected);
-    }
-}
-
-
 int main()
 {
     {
@@ -145,7 +117,6 @@ int main()
         test_fill(strf::utf8<char>(), 0xDFFF, "\xEF\xBF\xBD");
         test_fill(strf::utf8<char>(), 0x110000, "\xEF\xBF\xBD");
         test_invalid_fill_stop(strf::utf8<char>(), 0x110000);
-        test_invalid_fill_ignore(strf::utf8<char>(), 0x110000);
     }
 
     {
@@ -164,7 +135,6 @@ int main()
         test_fill(strf::utf16<char16_t>(), 0xDFFF, u"\uFFFD");
         test_fill(strf::utf16<char16_t>(), 0x110000, u"\uFFFD");
         test_invalid_fill_stop(strf::utf16<char16_t>(), 0x110000);
-        test_invalid_fill_ignore(strf::utf16<char16_t>(), 0x110000);
     }
 
     {
@@ -183,7 +153,6 @@ int main()
         test_fill(strf::utf32<char32_t>(), 0xDFFF, U"\uFFFD");
         test_fill(strf::utf32<char32_t>(), 0x110000, U"\uFFFD");
         test_invalid_fill_stop(strf::utf32<char32_t>(), 0x110000);
-        test_invalid_fill_ignore(strf::utf32<char32_t>(), 0x110000);
     }
 
     {
@@ -202,7 +171,6 @@ int main()
             test_fill(enc, 'a' , "a");
             test_fill(enc, 0x800, "?");
             test_invalid_fill_stop(enc, 0x800);
-            test_invalid_fill_ignore(enc, 0x800);
         }
     }
 

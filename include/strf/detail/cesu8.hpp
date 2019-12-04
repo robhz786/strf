@@ -204,17 +204,14 @@ strf::cv_result cesu8_to_utf32_transcode
             invalid_sequence:
             switch (err_hdl)
             {
-                case strf::encoding_error::stop:
-                    *src = src_it;
-                    *dest = dest_it;
-                    return strf::cv_result::invalid_char;
                 case strf::encoding_error::replace:
                     *dest_it = 0xFFFD;
                     break;
                 default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::ignore);
-                    --dest_it;
-                    break;
+                    STRF_ASSERT(err_hdl == strf::encoding_error::stop);
+                    *src = src_it;
+                    *dest = dest_it;
+                    return strf::cv_result::invalid_char;
             }
         }
     }

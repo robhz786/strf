@@ -289,7 +289,7 @@ template <typename CharOut>
 void input_tester<CharOut>::recycle()
 {
     _test_failure(" basic_outbuf::recycle() called "
-                  "( return of printer::necessary_size() too small ).\n");
+                  "( calculated size too small ).\n");
 
     std::size_t previous_size = 0;
     if (this->pos() != nullptr)

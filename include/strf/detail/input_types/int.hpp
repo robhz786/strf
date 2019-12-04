@@ -566,7 +566,7 @@ private:
         if (_fillcount > 0)
         {
             preview.add_size( _fillcount
-                            * _ichars.encoding().char_size(_afmt.fill, _enc_err) );
+                            * _ichars.encoding().char_size(_afmt.fill) );
         }
     }
 

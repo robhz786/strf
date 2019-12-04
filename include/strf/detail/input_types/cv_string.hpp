@@ -202,12 +202,11 @@ std::size_t cv_string_printer<CharIn, CharOut>::necessary_size() const
     if (_transcoder_eng)
     {
         strf::transcoder<CharIn, CharOut> transcoder(*_transcoder_eng);
-        return transcoder.necessary_size
-            ( _str, _str + _len, _enc_err, _allow_surr );
+        return transcoder.necessary_size(_str, _str + _len, _allow_surr);
     }
     return strf::decode_encode_size( _str, _str + _len
                                    , _src_encoding, _dest_encoding
-                                   , _enc_err, _allow_surr );
+                                   , _allow_surr );
 }
 
 template<typename CharIn, typename CharOut>
@@ -384,20 +383,18 @@ void fmt_cv_string_printer<CharIn, CharOut>::_calc_size
     if(_transcoder_eng)
     {
         strf::transcoder<CharIn, CharOut> transcoder(*_transcoder_eng);
-        size = transcoder.necessary_size( _str.begin()
-                                        , _str.end()
-                                        , _enc_err, _allow_surr );
+        size = transcoder.necessary_size(_str.begin(), _str.end(), _allow_surr);
     }
     else
     {
         size = strf::decode_encode_size
             ( _str.begin(), _str.end()
             , _src_encoding, _dest_encoding
-            , _enc_err, _allow_surr );
+            , _allow_surr );
     }
     if (_fillcount > 0)
     {
-        size += _fillcount * _dest_encoding.char_size(_afmt.fill, _enc_err);
+        size += _fillcount * _dest_encoding.char_size(_afmt.fill);
     }
     preview.add_size(size);
 }

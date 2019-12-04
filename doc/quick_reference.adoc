@@ -634,7 +634,7 @@ sequences are handled during encoding conversion.
 [source,cpp]
 ----
 namespace strf {
-enum class encoding_error{ replace, stop, ignore };
+enum class encoding_error{ replace, stop };
 }
 ----
 The default value is `encoding_error::replace`, that
@@ -650,16 +650,6 @@ https://www.unicode.org/versions/Unicode10.0.0/ch03.pdf[Chapter 3] ).
 ----
 auto str = strf::to_u8string (strf::cv("--\x99--"));
 assert(str == u8"--\uFFFD--");
-----
-
-.Ignore
-[source,cpp]
-----
-auto str = strf::to_string
-    .with(strf::encoding_error::ignore)
-    (strf::cv("--\x99--"));
-
-assert(str == "----");
 ----
 
 .Throw exception
