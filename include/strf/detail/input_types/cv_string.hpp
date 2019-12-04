@@ -114,20 +114,17 @@ private:
         ( strf::width_preview<true>& wpreview
         , const strf::width_as_len<CharIn>& ) noexcept
     {
-        auto remaining_width = wpreview.remaining_width().floor();
-        if (static_cast<std::ptrdiff_t>(_len) <= remaining_width)
-        {
-            wpreview.subtract_width(static_cast<std::int16_t>(_len));
-        }
-        else
-        {
-            wpreview.clear_remaining_width();
-        }
+        _count_codepoints(wpreview);
     }
 
     constexpr void _calc_width
         ( strf::width_preview<true>& wpreview
         , const strf::width_as_u32len<CharIn>& )
+    {
+        _count_codepoints(wpreview);
+    }
+
+    constexpr void _count_codepoints(strf::width_preview<true>& wpreview)
     {
         auto limit = wpreview.remaining_width();
         if (limit > 0)
@@ -291,12 +288,21 @@ private:
     }
 
     template <bool RequiringWidth>
-    void _init( strf::width_preview<RequiringWidth>& preview
-              , const strf::width_as_len<CharIn>&);
+    void _init( strf::width_preview<RequiringWidth>& );
 
     template <bool RequiringWidth>
     void _init( strf::width_preview<RequiringWidth>& preview
-              , const strf::width_as_u32len<CharIn>&);
+              , const strf::width_as_len<CharIn>&)
+    {
+        _init<RequiringWidth>(preview);
+    }
+
+    template <bool RequiringWidth>
+    void _init( strf::width_preview<RequiringWidth>& preview
+              , const strf::width_as_u32len<CharIn>&)
+    {
+        _init<RequiringWidth>(preview);
+    }
 
     template <bool RequiringWidth>
     void _init( strf::width_preview<RequiringWidth>& preview
@@ -318,32 +324,13 @@ private:
 template <typename CharIn, typename CharOut>
 template <bool RequiringWidth>
 void fmt_cv_string_printer<CharIn, CharOut>::_init
-    ( strf::width_preview<RequiringWidth>& preview
-    , const strf::width_as_len<CharIn>&)
+    ( strf::width_preview<RequiringWidth>& preview )
 {
-    auto len = _str.length();
-    if (_afmt.width > static_cast<std::ptrdiff_t>(len))
-    {
-        _fillcount = _afmt.width - static_cast<std::int16_t>(len);
-        preview.subtract_width(_afmt.width);
-    }
-    else
-    {
-        preview.checked_subtract_width(len);
-    }
-    _transcoder_eng =
-        strf::get_transcoder(_src_encoding, _dest_encoding);
-}
-
-template <typename CharIn, typename CharOut>
-template <bool RequiringWidth>
-void fmt_cv_string_printer<CharIn, CharOut>::_init
-    ( strf::width_preview<RequiringWidth>& preview
-    , const strf::width_as_u32len<CharIn>&)
-{
+    auto limit = std::max( _afmt.width
+                         , preview.remaining_width().ceil() );
     auto cp_count = _src_encoding.codepoints_count( _str.begin()
                                                   , _str.end()
-                                                  , _afmt.width );
+                                                  , limit );
     if (_afmt.width > static_cast<std::ptrdiff_t>(cp_count))
     {
         _fillcount = _afmt.width - static_cast<std::int16_t>(cp_count);

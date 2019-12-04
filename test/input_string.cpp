@@ -88,10 +88,10 @@ int main()
     }
     {   // encoding sanitization
 
-        TEST("---\xEF\xBF\xBD---") (strf::sani("---\x99---"));
-        TEST("   ---\xEF\xBF\xBD---") (strf::sani("---\x99---") > 10);
-        TEST("---\xEF\xBF\xBD---") (strf::sani("---\x99---", strf::utf8<char>()));
-        TEST("   ---\xEF\xBF\xBD---") (strf::sani("---\x99---", strf::utf8<char>()) > 10);
+        TEST("---\xEF\xBF\xBD---") (strf::sani("---\xFF---"));
+        TEST("   ---\xEF\xBF\xBD---") (strf::sani("---\xFF---") > 10);
+        TEST("---\xEF\xBF\xBD---") (strf::sani("---\xFF---", strf::utf8<char>()));
+        TEST("   ---\xEF\xBF\xBD---") (strf::sani("---\xFF---", strf::utf8<char>()) > 10);
         TEST("---?---")
             .with(strf::iso_8859_3<char>())
             (strf::sani("---\xA5---", strf::iso_8859_3<char>()));
@@ -112,9 +112,9 @@ int main()
             .with(strf::windows_1252<char>())
             (strf::cv("--\xC9\x90--\xE2\x82\xAC--", strf::utf8<char>()));
 
-        TEST("...--?--\x80--")
+        TEST("....--?--\x80--")
             .with(strf::windows_1252<char>())
-            (strf::right("--\xC9\x90--\xE2\x82\xAC--", 14, U'.').cv(strf::utf8<char>()));
+            (strf::right("--\xC9\x90--\xE2\x82\xAC--", 12, U'.').cv(strf::utf8<char>()));
     }
 
     {   // convertion from utf32

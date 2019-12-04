@@ -83,7 +83,7 @@ int main()
     TEST( U"         \u2E3A\u2E3A\u2014")
         (strf::fmt( U"\u2E3A\u2E3A\u2014") > 12);
 
-    TEST( u"   \u2E3A\u2E3A\u2014")
+    TEST( u"         \u2E3A\u2E3A\u2014")
         (strf::cv(u8"\u2E3A\u2E3A\u2014") > 12);
 
     TEST(u8"         \u2E3A\u2E3A\u2014")
