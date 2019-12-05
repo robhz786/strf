@@ -38,20 +38,20 @@ template <typename CharT>
 using string_with_format = {value_with_format}< /{asterisk} __implementation-defined__ {asterisk}/
                                             , {alignment_format} >;
 
-constexpr string_with_format<char>     make_fmt(tag, const char* str);
-constexpr string_with_format<char8_t>  make_fmt(tag, const char8_t* str);
-constexpr string_with_format<char16_t> make_fmt(tag, const char16_t* str);
-constexpr string_with_format<char32_t> make_fmt(tag, const char32_t* str);
-constexpr string_with_format<wchar_t>  make_fmt(tag, const wchar_t* str);
+constexpr string_with_format<char>     make_fmt(tag<>, const char* str);
+constexpr string_with_format<char8_t>  make_fmt(tag<>, const char8_t* str);
+constexpr string_with_format<char16_t> make_fmt(tag<>, const char16_t* str);
+constexpr string_with_format<char32_t> make_fmt(tag<>, const char32_t* str);
+constexpr string_with_format<wchar_t>  make_fmt(tag<>, const wchar_t* str);
 
 template <typename CharT, typename Traits, typename Allocator>
 auto string_with_format<CharT> make_fmt
-    ( tag
+    ( tag<>
     , const std::basic_string<CharT, Traits, Allocator>& str ) noexcept;
 
 template <typename CharT, typename Traits>
 auto string_with_format<CharT> make_fmt
-    ( tag
+    ( tag<>
     , std::basic_string_view<CharT, Traits>& str ) noexcept;
 
 template <typename CharT, typename FPack, typename CharIn>
@@ -136,7 +136,7 @@ using cv_string_with_format_and_encoding
 namespace strf {
 
 template <typename CharIn>
-cv_string_with_format<CharIn> make_fmt(tag, cv_string<CharIn> cv_str) noexcept;
+cv_string_with_format<CharIn> make_fmt(tag<>, cv_string<CharIn> cv_str) noexcept;
 
 } // namespace strf
 ----
@@ -233,11 +233,11 @@ using char_with_format = {value_with_format}< char_tag<CharT>
                                           , <<quantity_format,quantity_format>>
                                           , <<alignment_format,alignment_format>> >;
 
-constexpr char_with_format<char8_t>  make_fmt(tag, char8_t ch) noexcept;
-constexpr char_with_format<char8_t>  make_fmt(tag, char ch) noexcept;
-constexpr char_with_format<char16_t> make_fmt(tag, char16_t ch) noexcept;
-constexpr char_with_format<char32_t> make_fmt(tag, char32_t ch) noexcept;
-constexpr char_with_format<wchar_t>  make_fmt(tag, wchar_t ch) noexcept;
+constexpr char_with_format<char8_t>  make_fmt(tag<>, char8_t ch) noexcept;
+constexpr char_with_format<char8_t>  make_fmt(tag<>, char ch) noexcept;
+constexpr char_with_format<char16_t> make_fmt(tag<>, char16_t ch) noexcept;
+constexpr char_with_format<char32_t> make_fmt(tag<>, char32_t ch) noexcept;
+constexpr char_with_format<wchar_t>  make_fmt(tag<>, wchar_t ch) noexcept;
 
 template <typename CharOut, typename FPack, typename CharIn>
 /{asterisk} __implementation-defined__ {asterisk}/ make_printer( const FPack& fp
@@ -299,15 +299,15 @@ using int_with_format = strf::value_with_format
     , strf::{int_format}<Base>
     , strf::{alignment_format_q}<Align> >;
 
-int_with_format<short>      make_fmt(tag, short);
-int_with_format<int>        make_fmt(tag, int);
-int_with_format<long>       make_fmt(tag, long);
-int_with_format<long long > make_fmt(tag, long long);
+int_with_format<short>      make_fmt(tag<>, short);
+int_with_format<int>        make_fmt(tag<>, int);
+int_with_format<long>       make_fmt(tag<>, long);
+int_with_format<long long > make_fmt(tag<>, long long);
 
-int_with_format<unsigned short>      make_fmt(tag, unsigned short);
-int_with_format<unsigned int>        make_fmt(tag, unsigned int);
-int_with_format<unsigned long>       make_fmt(tag, unsigned long);
-int_with_format<unsigned long long > make_fmt(tag, unsigned long long);
+int_with_format<unsigned short>      make_fmt(tag<>, unsigned short);
+int_with_format<unsigned int>        make_fmt(tag<>, unsigned int);
+int_with_format<unsigned long>       make_fmt(tag<>, unsigned long);
+int_with_format<unsigned long long > make_fmt(tag<>, unsigned long long);
 
 template <typename CharT, typename FPack, typename IntT, int Base, bool Align>
 /{asterisk} __implementation-defined__ {asterisk}/ make_printer( const FPack&
@@ -345,8 +345,8 @@ using float_with_format = {value_with_format}< FloatT
                                            , {float_format}
                                            , {alignment_format_q}<Align> >;
 
-float_with_format<float,  false> make_fmt(tag, float x);
-float_with_format<double, false> make_fmt(tag, double x);
+float_with_format<float,  false> make_fmt(tag<>, float x);
+float_with_format<double, false> make_fmt(tag<>, double x);
 
 template <typename CharT, typename FPack, bool Align>
 /{asterisk} __implementation-defined__ {asterisk}/ make_printer( const FPack&
@@ -434,14 +434,14 @@ namespace strf {
 
 template < typename Iterator
          , typename V  = typename std::iterator_traits<Iterator>::value_type
-         , typename VF = decltype(make_fmt(tag{}, std::declval<const V&>())) >
+         , typename VF = decltype(make_fmt(tag<>{}, std::declval<const V&>())) >
 using range_with_format
     = {boost_mp_replace_front}<VF, range_p<Iterator>>;
 
 // make_fmt
 
 template < typename Iterator >
-range_with_format<Iterator> make_fmt(tag, range_p<Iterator>);
+range_with_format<Iterator> make_fmt(tag<>, range_p<Iterator>);
 
 // fmt_range
 
@@ -472,14 +472,14 @@ namespace strf {
 template < typename Iterator
          , typename CharT
          , typename V  = typename std::iterator_traits<Iterator>::value_type
-         , typename VF = decltype(make_fmt(tag{}, std::declval<const V&>())) >
+         , typename VF = decltype(make_fmt(tag<>{}, std::declval<const V&>())) >
 using range_with_format
     = {boost_mp_replace_front}<VF, sep_range_p<Iterator, CharT>>;
 
 // make_fmt
 
 template < typename Iterator, typename CharT >
-sep_range_with_format<Iterator> make_fmt(tag, sep_range_p<Iterator, CharT>);
+sep_range_with_format<Iterator> make_fmt(tag<>, sep_range_p<Iterator, CharT>);
 
 // fmt_range
 

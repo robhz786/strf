@@ -125,9 +125,10 @@
 
 STRF_NAMESPACE_BEGIN
 
-template <typename ... T>
-struct identity
+template <typename ... >
+struct tag
 {
+    explicit tag() = default;
 };
 
 STRF_NAMESPACE_END

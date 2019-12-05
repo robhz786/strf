@@ -587,7 +587,7 @@ public:
 
         if (encoding_in.id() == encoding_out.id())
         {
-            return { strf::identity<strf::detail::string_printer<CharOut>>()
+            return { strf::tag<strf::detail::string_printer<CharOut>>()
                    , fp
                    , preview
                    , strf::detail::simple_string_view<CharOut>
@@ -596,7 +596,7 @@ public:
         }
         else
         {
-            return { strf::identity<strf::detail::cv_string_printer<CharIn, CharOut>>()
+            return { strf::tag<strf::detail::cv_string_printer<CharIn, CharOut>>()
                    , fp, preview, input.value(), encoding_in };
         }
     }
@@ -622,7 +622,7 @@ public:
 
         if (encoding_in.id() == encoding_out.id())
         {
-            return { strf::identity<strf::detail::string_printer<CharOut>>()
+            return { strf::tag<strf::detail::string_printer<CharOut>>()
                    , fp
                    , preview
                    , strf::detail::simple_string_view<CharOut>
@@ -632,7 +632,7 @@ public:
         }
         else
         {
-            return { strf::identity<strf::detail::cv_string_printer<CharIn, CharOut>>()
+            return { strf::tag<strf::detail::cv_string_printer<CharIn, CharOut>>()
                    , fp, preview, input.value()
                    , input.get_alignment_format_data()
                    , encoding_in };
@@ -694,7 +694,7 @@ public:
         auto encoding_from_facets = strf::get_facet<enc_cat, input_tag>(fp);
         if (input.get_encoding().id() == encoding_from_facets.id())
         {
-            return { strf::identity<strf::detail::string_printer<CharOut>>()
+            return { strf::tag<strf::detail::string_printer<CharOut>>()
                    , fp
                    , preview
                    , strf::detail::simple_string_view<CharOut>
@@ -703,7 +703,7 @@ public:
         }
         else
         {
-            return { strf::identity<strf::detail::cv_string_printer<CharIn, CharOut>>()
+            return { strf::tag<strf::detail::cv_string_printer<CharIn, CharOut>>()
                    , fp, preview, input.value(), input.get_encoding() };
         }
     }
@@ -724,7 +724,7 @@ public:
         auto encoding_from_facets = strf::get_facet<enc_cat, input_tag>(fp);
         if (input.get_encoding().id() == encoding_from_facets.id())
         {
-            return { strf::identity<strf::detail::fmt_string_printer<CharOut>>()
+            return { strf::tag<strf::detail::fmt_string_printer<CharOut>>()
                    , fp
                    , preview
                    , strf::detail::simple_string_view<CharOut>
@@ -734,7 +734,7 @@ public:
         }
         else
         {
-            return { strf::identity<strf::detail::fmt_cv_string_printer<CharIn, CharOut>>()
+            return { strf::tag<strf::detail::fmt_cv_string_printer<CharIn, CharOut>>()
                    , fp
                    , preview
                    , input.value()

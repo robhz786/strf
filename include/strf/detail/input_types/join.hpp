@@ -77,7 +77,7 @@ public:
     constexpr _adapted_derived_type split_pos(std::ptrdiff_t pos) const noexcept
     {
         return { static_cast<const T&>(*this)
-               , strf::identity<strf::split_pos_format<true>>{}
+               , strf::tag<strf::split_pos_format<true>>{}
                , pos };
     }
 
@@ -109,7 +109,7 @@ struct aligned_join_t
     operator()(const Args& ... args) const
     {
         return { strf::detail::make_simple_tuple<Args...>(args...)
-               , strf::identity< strf::split_pos_format<true>
+               , strf::tag< strf::split_pos_format<true>
                                , strf::alignment_format_q<true> >{}
                , split_pos
                , strf::alignment_format_data{fillchar, width, align} };

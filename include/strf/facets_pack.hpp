@@ -316,7 +316,7 @@ public:
     template <typename Tag>
     constexpr const auto& do_get_facet
         ( const Rank&
-        , strf::identity<_category>
+        , strf::tag<_category>
         , std::true_type ) const
     {
         return _facet;
@@ -365,7 +365,7 @@ public:
     template <typename Tag, typename Category>
     constexpr decltype(auto) do_get_facet
         ( const Rank&
-        , strf::identity<Category>
+        , strf::tag<Category>
         , std::integral_constant<bool, _has_facet_v<Category, Tag>> ) const
     {
         return strf::detail::do_get_facet<Category, Tag>(_fpe);
@@ -394,7 +394,7 @@ public:
     template <typename Tag, typename Category>
     constexpr decltype(auto) do_get_facet
         ( const Rank&
-        , strf::identity<Category>
+        , strf::tag<Category>
         , std::integral_constant
             < bool
             , strf::detail::has_facet_v<Category, Tag, FPE> > ) const
@@ -441,7 +441,7 @@ public:
     template <typename Tag, typename Category>
     constexpr decltype(auto) do_get_facet
         ( const Rank&
-        , strf::identity<Category>
+        , strf::tag<Category>
         , std::integral_constant<bool, _has_facet_v<Category, Tag>> ) const
     {
         return _fp.template get_facet<Category, Tag>();
@@ -741,7 +741,7 @@ class facets_pack: private strf::detail::facets_pack_base_t<FPE...>
     template <typename Tag, typename Category>
     constexpr decltype(auto) do_get_facet
         ( const strf::detail::absolute_lowest_rank&
-        , strf::identity<Category>
+        , strf::tag<Category>
         , ... ) const
     {
         return Category::get_default();
@@ -781,7 +781,7 @@ public:
     {
         return this->template do_get_facet<Tag>
             ( strf::detail::rank<sizeof...(FPE)>()
-            , strf::identity<Category>()
+            , strf::tag<Category>()
             , std::true_type() );
     }
 };

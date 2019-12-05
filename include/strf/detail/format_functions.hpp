@@ -133,7 +133,7 @@ public:
     template <typename ... F, typename ... FInit>
     constexpr value_with_format
         ( const ValueType& v
-        , strf::identity<F...>
+        , strf::tag<F...>
         , FInit&& ... finit )
         : F::template fn<value_with_format<ValueType, Fmts...>>
             (std::forward<FInit>(finit))
@@ -169,7 +169,7 @@ public:
     template <typename Fmt, typename FmtInit, typename ... OtherFmts>
     constexpr value_with_format
         ( const strf::value_with_format<ValueType, OtherFmts...>& f
-        , strf::identity<Fmt>
+        , strf::tag<Fmt>
         , FmtInit&& fmt_init )
         : Fmts::template fn<value_with_format<ValueType, Fmts...>>
             ( strf::detail::fmt_forward_switcher
@@ -334,7 +334,7 @@ public:
     {
         return adapted_derived_type
             { static_cast<const T&>(*this)
-            , strf::identity<alignment_format_q<true>>{}
+            , strf::tag<alignment_format_q<true>>{}
             , strf::alignment_format_data{ U' '
                                          , width
                                          , strf::text_alignment::left } };
@@ -343,7 +343,7 @@ public:
     {
         return adapted_derived_type
             { static_cast<const T&>(*this)
-            , strf::identity<alignment_format_q<true>>{}
+            , strf::tag<alignment_format_q<true>>{}
             , strf::alignment_format_data{ U' '
                                          , width
                                          , strf::text_alignment::right } };
@@ -352,7 +352,7 @@ public:
     {
         return adapted_derived_type
             { static_cast<const T&>(*this)
-            , strf::identity<alignment_format_q<true>>{}
+            , strf::tag<alignment_format_q<true>>{}
             , strf::alignment_format_data{ U' '
                                          , width
                                          , strf::text_alignment::center } };
@@ -361,7 +361,7 @@ public:
     {
         return adapted_derived_type
             { static_cast<const T&>(*this)
-            , strf::identity<alignment_format_q<true>>{}
+            , strf::tag<alignment_format_q<true>>{}
             , strf::alignment_format_data{ U' '
                                          , width
                                          , strf::text_alignment::split } };
@@ -370,7 +370,7 @@ public:
     {
         return adapted_derived_type
             { static_cast<const T&>(*this)
-            , strf::identity<alignment_format_q<true>>{}
+            , strf::tag<alignment_format_q<true>>{}
             , strf::alignment_format_data{ ch } };
     }
 
@@ -439,9 +439,9 @@ struct quantity_format
 
 template <typename T>
 constexpr auto fmt(const T& value)
--> std::remove_cv_t<std::remove_reference_t<decltype(make_fmt(strf::tag{}, value))>>
+-> std::remove_cv_t<std::remove_reference_t<decltype(make_fmt(strf::tag<>{}, value))>>
 {
-    return make_fmt(strf::tag{}, value);
+    return make_fmt(strf::tag<>{}, value);
 }
 
 template <typename T>

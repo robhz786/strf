@@ -61,7 +61,7 @@ using ipv4address_with_format = strf::value_with_format<ipv4address, /*<<
 
 inline ipv4address_with_format make_fmt( /*<< The `tag` paramenter is not used.
      Its only purpose is to ensure there is no other `make_fmt` function
-     around there with the same signature. >>*/ strf::tag, ipv4address x) { return ipv4address_with_format{x}; }
+     around there with the same signature. >>*/ strf::tag<>, ipv4address x) { return ipv4address_with_format{x}; }
 
 } // namespace xxx
 //]

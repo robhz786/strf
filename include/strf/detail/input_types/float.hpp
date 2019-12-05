@@ -1912,17 +1912,17 @@ STRF_EXPLICIT_TEMPLATE class fast_punct_double_printer<wchar_t>;
 
 } // namespace detail
 
-inline auto make_fmt(strf::tag, float x)
+inline auto make_fmt(strf::tag<>, float x)
 {
     return strf::float_with_format<float, false>{x};
 }
 
-inline auto make_fmt(strf::tag, double x)
+inline auto make_fmt(strf::tag<>, double x)
 {
     return strf::float_with_format<double, false>{x};
 }
 
-inline void make_fmt(strf::tag, long double x) = delete;
+inline void make_fmt(strf::tag<>, long double x) = delete;
 
 template <typename CharT, typename FPack, typename Preview>
 inline typename std::conditional

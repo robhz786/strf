@@ -49,11 +49,6 @@ inline void throw_encoding_failure()
 } // namespace detail
 
 
-struct tag
-{
-    explicit tag() = default;
-};
-
 template <typename CharOut>
 class printer
 {

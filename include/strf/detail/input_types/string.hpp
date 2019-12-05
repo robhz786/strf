@@ -101,7 +101,7 @@ public:
 
         return return_type
             { static_cast<const T&>(*this)
-            , strf::identity<strf::cv_format_with_encoding<CharT>>{}
+            , strf::tag<strf::cv_format_with_encoding<CharT>>{}
             , enc };
     }
 
@@ -122,7 +122,7 @@ public:
 
         return return_type
             { static_cast<const T&>(*this)
-            , strf::identity<strf::sani_format_with_encoding<CharT>>{}
+            , strf::tag<strf::sani_format_with_encoding<CharT>>{}
             , enc };
     }
 };
@@ -225,7 +225,7 @@ using string_with_format = strf::value_with_format
     , strf::no_cv_format<CharIn> >;
 
 template <typename CharIn, typename Traits, typename Allocator>
-auto make_fmt( strf::tag
+auto make_fmt( strf::tag<>
              , const std::basic_string<CharIn, Traits, Allocator>& str) noexcept
 {
     return strf::string_with_format<CharIn>{{str.data(), str.size()}};
@@ -235,7 +235,7 @@ auto make_fmt( strf::tag
 
 template <typename CharIn, typename Traits>
 constexpr auto
-make_fmt( strf::tag
+make_fmt( strf::tag<>
         , const std::basic_string_view<CharIn, Traits>& str) noexcept
 {
     return strf::string_with_format<CharIn>{{str.data(), str.size()}};
@@ -246,7 +246,7 @@ make_fmt( strf::tag
 #if defined(__cpp_char8_t)
 
 STRF_CONSTEXPR_CHAR_TRAITS
-auto make_fmt(strf::tag, const char8_t* str)
+auto make_fmt(strf::tag<>, const char8_t* str)
 {
     auto len = std::char_traits<char8_t>::length(str);
     return strf::string_with_format<char8_t>{{str, len}};
@@ -255,28 +255,28 @@ auto make_fmt(strf::tag, const char8_t* str)
 #endif
 
 STRF_CONSTEXPR_CHAR_TRAITS
-auto make_fmt(strf::tag, const char* str)
+auto make_fmt(strf::tag<>, const char* str)
 {
     auto len = std::char_traits<char>::length(str);
     return strf::string_with_format<char>{{str, len}};
 }
 
 STRF_CONSTEXPR_CHAR_TRAITS
-auto make_fmt(strf::tag, const wchar_t* str)
+auto make_fmt(strf::tag<>, const wchar_t* str)
 {
     auto len = std::char_traits<wchar_t>::length(str);
     return strf::string_with_format<wchar_t>{{str, len}};
 }
 
 STRF_CONSTEXPR_CHAR_TRAITS
-auto make_fmt(strf::tag, const char16_t* str)
+auto make_fmt(strf::tag<>, const char16_t* str)
 {
     auto len = std::char_traits<char16_t>::length(str);
     return strf::string_with_format<char16_t>{{str, len}};
 }
 
 STRF_CONSTEXPR_CHAR_TRAITS
-auto make_fmt(strf::tag, const char32_t* str)
+auto make_fmt(strf::tag<>, const char32_t* str)
 {
     auto len = std::char_traits<char32_t>::length(str);
     return strf::string_with_format<char32_t>{{str, len}};

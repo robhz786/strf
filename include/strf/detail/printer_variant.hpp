@@ -24,7 +24,7 @@ public:
     using char_type = typename Printer0::char_type;
 
     template <typename P, typename ... Args>
-    printer_variant(strf::identity<P>, Args&& ... args)
+    printer_variant(strf::tag<P>, Args&& ... args)
     {
         static_assert( std::is_base_of<strf::printer<char_type>, P>::value
                      , "Invalid printer type" );
