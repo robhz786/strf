@@ -125,10 +125,9 @@
 
 STRF_NAMESPACE_BEGIN
 
-template <typename T>
+template <typename ... T>
 struct identity
 {
-    using type = T;
 };
 
 STRF_NAMESPACE_END

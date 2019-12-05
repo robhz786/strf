@@ -51,6 +51,11 @@ int main()
         strf::to(dest) (strf::join_right(15)("Hello World"));
         clobber();
     }
+    PRINT_BENCHMARK("strf::to(dest) (strf::join(\"Hello World\") > 15)")
+    {
+        strf::to(dest) (strf::join("Hello World") > 15);
+        clobber();
+    }
     PRINT_BENCHMARK("strf::to(dest) (strf::fmt(\"Hello World\") > 15)")
     {
         strf::to(dest) (strf::fmt("Hello World") > 15);

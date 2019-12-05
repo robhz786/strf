@@ -130,6 +130,18 @@ public:
     {
     }
 
+    template <typename ... F, typename ... FInit>
+    constexpr value_with_format
+        ( const ValueType& v
+        , strf::identity<F...>
+        , FInit&& ... finit )
+        : F::template fn<value_with_format<ValueType, Fmts...>>
+            (std::forward<FInit>(finit))
+        ...
+        , _value(v)
+    {
+    }
+ 
     template <typename ... OtherFmts>
     constexpr value_with_format
         ( const strf::value_with_format<ValueType, OtherFmts...>& f )
