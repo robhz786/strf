@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/config.hpp>
+#include <strf/detail/common.hpp>
 #include <type_traits>
 #include <cstdint>
 

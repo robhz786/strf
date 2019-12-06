@@ -1,5 +1,5 @@
-#ifndef STRF_CONFIG_HPP
-#define STRF_CONFIG_HPP
+#ifndef STRF_DETAIL_COMMMON_HPP
+#define STRF_DETAIL_COMMMON_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -116,14 +116,70 @@
 
 #elif ! defined(__cpp_deduction_guides) || (__cpp_deduction_guides < 201703)
    // compilers that dont support Class template argument deductions
-   // usually dont support either guaranteed copy elision
+   // usually also dont support guaranteed copy elision
 #  define STRF_NO_CXX17_COPY_ELISION
 #endif
 
-// todo
-
-
 STRF_NAMESPACE_BEGIN
+
+namespace detail
+{
+
+#if defined(__cpp_fold_expressions)
+
+template <bool ... C> constexpr bool fold_and = (C && ...);
+template <bool ... C> constexpr bool fold_or  = (C || ...);
+
+#else //defined(__cpp_fold_expressions)
+
+template <bool ... > struct fold_and_impl;
+template <bool ... > struct fold_or_impl;
+
+template <> struct fold_and_impl<>
+{
+    constexpr static bool value = true;
+};
+
+template <> struct fold_or_impl<>
+{
+    constexpr static bool value = false;
+};
+
+template <bool C0, bool ... C>
+struct fold_and_impl<C0, C...>
+{
+     constexpr static bool value = fold_and_impl<C...>::value && C0;
+};
+
+template <bool C0, bool ... C>
+struct fold_or_impl<C0, C...>
+{
+     constexpr static bool value = fold_or_impl<C...>::value || C0;
+};
+
+template <bool ... C> constexpr bool fold_and = fold_and_impl<C...>::value;
+template <bool ... C> constexpr bool fold_or = fold_or_impl<C...>::value;
+
+#endif // defined(__cpp_fold_expressions)
+
+} // namespace detail
+
+struct absolute_lowest_rank
+{
+    explicit absolute_lowest_rank() = default;
+};
+
+template <std::size_t N>
+struct rank: rank<N - 1>
+{
+    explicit rank() = default;
+};
+
+template <>
+struct rank<0>: absolute_lowest_rank
+{
+    explicit rank() = default;
+};
 
 template <typename ... >
 struct tag
@@ -133,6 +189,5 @@ struct tag
 
 STRF_NAMESPACE_END
 
-
-#endif  // STRF_CONFIG_HPP
+#endif  // STRF_DETAIL_COMMMON_HPP
 

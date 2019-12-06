@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/config.hpp>
+#include <strf/detail/common.hpp>
 #include <utility>
 #include <type_traits>
 #include <functional>
@@ -17,45 +17,7 @@ template <typename ... F> class facets_pack;
 template <template <class> class Filter, typename FPE>
 class constrained_fpe;
 
-namespace detail
-{
-
-#if defined(__cpp_fold_expressions)
-
-template <bool ... C> constexpr bool fold_and = (C && ...);
-template <bool ... C> constexpr bool fold_or  = (C || ...);
-
-#else
-
-template <bool ... > struct fold_and_impl;
-template <bool ... > struct fold_or_impl;
-
-template <> struct fold_and_impl<>
-{
-    constexpr static bool value = true;
-};
-
-template <> struct fold_or_impl<>
-{
-    constexpr static bool value = false;
-};
-
-template <bool C0, bool ... C>
-struct fold_and_impl<C0, C...>
-{
-     constexpr static bool value = fold_and_impl<C...>::value && C0;
-};
-
-template <bool C0, bool ... C>
-struct fold_or_impl<C0, C...>
-{
-     constexpr static bool value = fold_or_impl<C...>::value || C0;
-};
-
-template <bool ... C> constexpr bool fold_and = fold_and_impl<C...>::value;
-template <bool ... C> constexpr bool fold_or = fold_or_impl<C...>::value;
-
-#endif // defined(__cpp_fold_expressions) else
+namespace detail {
 
 template <typename ... T>
 struct tmp_list
@@ -65,20 +27,6 @@ struct tmp_list
 
     template <typename E>
     using push_back = strf::detail::tmp_list<T..., E>;
-};
-
-struct absolute_lowest_rank
-{
-};
-
-template <std::size_t N>
-struct rank: rank<N - 1>
-{
-};
-
-template <>
-struct rank<0>: absolute_lowest_rank
-{
 };
 
 template <typename F, typename = typename F::category>
@@ -508,7 +456,7 @@ struct facets_pack_base_trait<std::index_sequence<RankNum...>, FPE...>
     using type = facets_pack_base
         < strf::detail::tmp_list
             < strf::detail::fpe_wrapper
-                 < strf::detail::rank<RankNum>
+                 < strf::rank<RankNum>
                  , FPE >
             ... >
         , FPE ... >;
@@ -542,12 +490,12 @@ public:
 template <std::size_t RankN, typename TipFPE, typename ... OthersFPE>
 class facets_pack_base<RankN, TipFPE, OthersFPE...>
     : public strf::detail::fpe_wrapper
-        < strf::detail::rank<RankN>, TipFPE >
+        < strf::rank<RankN>, TipFPE >
     , public strf::detail::facets_pack_base
         < RankN + 1, OthersFPE...>
 {
     using _base_tip_fpe = strf::detail::fpe_wrapper
-        < strf::detail::rank<RankN>, TipFPE >;
+        < strf::rank<RankN>, TipFPE >;
 
     using _base_others_fpe = strf::detail::facets_pack_base
         < RankN + 1, OthersFPE...>;
@@ -740,7 +688,7 @@ class facets_pack: private strf::detail::facets_pack_base_t<FPE...>
 
     template <typename Tag, typename Category>
     constexpr decltype(auto) do_get_facet
-        ( const strf::detail::absolute_lowest_rank&
+        ( const strf::absolute_lowest_rank&
         , strf::tag<Category>
         , ... ) const
     {
@@ -780,7 +728,7 @@ public:
     constexpr decltype(auto) get_facet() const
     {
         return this->template do_get_facet<Tag>
-            ( strf::detail::rank<sizeof...(FPE)>()
+            ( strf::rank<sizeof...(FPE)>()
             , strf::tag<Category>()
             , std::true_type() );
     }
