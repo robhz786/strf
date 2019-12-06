@@ -132,7 +132,8 @@ public:
         PreviewType preview;
         return self._write
             ( preview
-            , _as_printer_cref(make_printer<CharT, FPack>( self._fpack
+            , _as_printer_cref(make_printer<CharT, FPack>( strf::rank<5>{}
+                                                         , self._fpack
                                                          , preview
                                                          , args ))... );
     }
@@ -208,7 +209,8 @@ private:
             ( str
             , str_end
             , preview_arr
-            , { _as_printer_cptr( make_printer<CharT, FPack>( self._fpack
+            , { _as_printer_cptr( make_printer<CharT, FPack>( strf::rank<5>{}
+                                                            , self._fpack
                                                             , preview_arr[I]
                                                             , args ))... } );
     }
@@ -601,7 +603,8 @@ private:
 
 template <typename CharOut, typename FPack, typename Preview, typename Arg>
 using printer_impl
-= decltype(make_printer<CharOut, FPack>( std::declval<const FPack&>()
+= decltype(make_printer<CharOut, FPack>( strf::rank<5>{}
+                                       , std::declval<const FPack&>()
                                        , std::declval<Preview&>()
                                        , std::declval<const Arg&>() ) );
 

@@ -620,7 +620,7 @@ STRF_EXPLICIT_TEMPLATE class fmt_string_printer<wchar_t>;
 
 template <typename CharT, typename FPack, typename Preview>
 inline strf::detail::string_printer<CharT>
-make_printer(const FPack& fp, Preview& preview, const CharT* str)
+make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const CharT* str)
 {
     return {fp, preview, str};
 }
@@ -629,7 +629,7 @@ make_printer(const FPack& fp, Preview& preview, const CharT* str)
 
 template <typename CharOut, typename FPack, typename Preview>
 inline strf::detail::string_printer<CharOut>
-make_printer(const FPack& fp, Preview& preview, const char8_t* str)
+make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const char8_t* str)
 {
     static_assert( std::is_same<char8_t, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -640,7 +640,7 @@ make_printer(const FPack& fp, Preview& preview, const char8_t* str)
 
 template <typename CharOut, typename FPack, typename Preview>
 inline strf::detail::string_printer<CharOut>
-make_printer(const FPack& fp, Preview& preview, const char* str)
+make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const char* str)
 {
     static_assert( std::is_same<char, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -649,7 +649,7 @@ make_printer(const FPack& fp, Preview& preview, const char* str)
 
 template <typename CharOut, typename FPack, typename Preview>
 inline strf::detail::string_printer<CharOut>
-make_printer(const FPack& fp, Preview& preview, const char16_t* str)
+make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const char16_t* str)
 {
     static_assert( std::is_same<char16_t, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -658,7 +658,7 @@ make_printer(const FPack& fp, Preview& preview, const char16_t* str)
 
 template <typename CharOut, typename FPack, typename Preview>
 inline strf::detail::string_printer<CharOut>
-make_printer(const FPack& fp, Preview& preview, const char32_t* str)
+make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const char32_t* str)
 {
     static_assert( std::is_same<char32_t, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -667,7 +667,7 @@ make_printer(const FPack& fp, Preview& preview, const char32_t* str)
 
 template <typename CharOut, typename FPack, typename Preview>
 inline strf::detail::string_printer<CharOut>
-make_printer(const FPack& fp, Preview& preview, const wchar_t* str)
+make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const wchar_t* str)
 {
     static_assert( std::is_same<wchar_t, CharOut>::value
                  , "Character type mismatch. Use cv function." );
@@ -682,7 +682,8 @@ template
     , typename Traits
     , typename Allocator >
 inline strf::detail::string_printer<CharOut>
-make_printer( const FPack& fp
+make_printer( strf::rank<1>
+            , const FPack& fp
             , Preview& preview
             , const std::basic_string<CharIn, Traits, Allocator>& str )
 {
@@ -700,7 +701,8 @@ template
     , typename CharIn
     , typename Traits >
 inline strf::detail::string_printer<CharOut>
-make_printer( const FPack& fp
+make_printer( strf::rank<1>
+            , const FPack& fp
             , Preview& preview
             , const std::basic_string_view<CharIn, Traits>& str )
 {
@@ -713,7 +715,8 @@ make_printer( const FPack& fp
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
 inline strf::detail::fmt_string_printer<CharOut>
-make_printer( const FPack& fp
+make_printer( strf::rank<1>
+            , const FPack& fp
             , Preview& preview
             , const strf::value_with_format
                 < strf::detail::simple_string_view<CharIn>

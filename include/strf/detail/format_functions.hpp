@@ -141,7 +141,7 @@ public:
         , _value(v)
     {
     }
- 
+
     template <typename ... OtherFmts>
     constexpr value_with_format
         ( const strf::value_with_format<ValueType, OtherFmts...>& f )

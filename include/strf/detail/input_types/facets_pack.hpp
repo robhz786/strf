@@ -129,11 +129,12 @@ template < typename CharT
          , typename InnerFPack
          , typename ... Args >
 inline strf::detail::facets_pack_printer< CharT
-                                                 , FPack
-                                                 , InnerFPack
-                                                 , Preview
-                                                 , Args... >
-make_printer( const FPack& fp
+                                        , FPack
+                                        , InnerFPack
+                                        , Preview
+                                        , Args... >
+make_printer( strf::rank<1>
+            , const FPack& fp
             , Preview& preview
             , const strf::inner_pack_with_args<InnerFPack, Args...>& f )
 {

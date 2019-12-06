@@ -1929,7 +1929,7 @@ inline typename std::conditional
     < strf::detail::has_punct<CharT, FPack, float, 10>
     , strf::detail::fast_punct_double_printer<CharT>
     , strf::detail::fast_double_printer<CharT> >::type
-make_printer(const FPack& fp, Preview& preview, float d)
+make_printer(strf::rank<1>, const FPack& fp, Preview& preview, float d)
 {
     return {fp, preview, d};
 }
@@ -1939,23 +1939,23 @@ inline typename std::conditional
     < strf::detail::has_punct<CharT, FPack, double, 10>
     , strf::detail::fast_punct_double_printer<CharT>
     , strf::detail::fast_double_printer<CharT> >::type
-make_printer(const FPack& fp, Preview& preview, double d)
+make_printer(strf::rank<1>, const FPack& fp, Preview& preview, double d)
 {
     return {fp, preview, d};
 }
 
 template <typename CharT, typename FPack, typename Preview>
-void make_printer(const FPack& fp, Preview& preview, long double d) = delete;
+void make_printer(strf::rank<1>, const FPack& fp, Preview& preview, long double d) = delete;
 
 template <typename CharT, typename FPack, typename Preview, bool Align>
 inline typename std::conditional
     < strf::detail::has_punct<CharT, FPack, float, 10>
     , strf::detail::punct_double_printer<CharT>
     , strf::detail::double_printer<CharT> >::type
-make_printer
-    ( const FPack& fp
-    , Preview& preview
-    , strf::float_with_format<float, Align> x )
+make_printer( strf::rank<1>
+            , const FPack& fp
+            , Preview& preview
+            , strf::float_with_format<float, Align> x )
 {
     return {fp, preview, x};
 }
@@ -1965,10 +1965,10 @@ inline typename std::conditional
     < strf::detail::has_punct<CharT, FPack, double, 10>
     , strf::detail::punct_double_printer<CharT>
     , strf::detail::double_printer<CharT> >::type
-make_printer
-    ( const FPack& fp
-    , Preview& preview
-    , strf::float_with_format<double, Align> x )
+make_printer( strf::rank<1>
+            , const FPack& fp
+            , Preview& preview
+            , strf::float_with_format<double, Align> x )
 {
     return {fp, preview, x};
 }

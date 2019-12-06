@@ -45,7 +45,7 @@ public:
 
 template <typename CharT, typename FPack>
 inline ::detail::exceptional_printer<CharT>
-make_printer( const FPack&, exception_tag x )
+make_printer(strf::rank<1>, const FPack&, exception_tag x)
 {
     return {x};
 }

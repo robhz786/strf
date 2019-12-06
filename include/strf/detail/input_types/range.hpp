@@ -115,7 +115,7 @@ void range_printer<CharT, FPack, ForwardIt>::_preview(Preview& preview) const
 {
     for(auto it = _begin; it != _end; ++it)
     {
-        make_printer<CharT, FPack>(_fp, preview, *it);
+        make_printer<CharT, FPack>(strf::rank<5>{}, _fp, preview, *it);
     }
 }
 
@@ -126,7 +126,7 @@ void range_printer<CharT, FPack, ForwardIt>::print_to
     strf::print_preview<false, false> no_preview;
     for(auto it = _begin; it != _end; ++it)
     {
-        make_printer<CharT, FPack>(_fp, no_preview, *it).print_to(ob);
+        make_printer<CharT, FPack>(strf::rank<5>{},_fp, no_preview, *it).print_to(ob);
     }
 }
 
@@ -188,7 +188,7 @@ void sep_range_printer<CharT, FPack, It>::_preview(Preview& preview) const
     std::size_t count = 0;
     for(auto it = _begin; it != _end; ++it)
     {
-        make_printer<CharT, FPack>(_fp, preview, *it);
+        make_printer<CharT, FPack>(strf::rank<5>{}, _fp, preview, *it);
         ++ count;
         STRF_IF_CONSTEXPR (!Preview::size_required)
         {
@@ -240,11 +240,13 @@ void sep_range_printer<CharT, FPack, ForwardIt>::print_to
     auto it = _begin;
     if (it != _end)
     {
-        make_printer<CharT, FPack>(_fp, no_preview, *it).print_to(ob);
+        make_printer<CharT, FPack>(strf::rank<5>{}, _fp, no_preview, *it)
+            .print_to(ob);
         while (++it != _end)
         {
             strf::write(ob, _sep_begin, _sep_len);
-            make_printer<CharT, FPack>(_fp, no_preview, *it).print_to(ob);
+            make_printer<CharT, FPack>(strf::rank<5>{}, _fp, no_preview, *it)
+                .print_to(ob);
         }
     }
 }
@@ -311,7 +313,8 @@ void fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::_preview
     auto r = _fmt.value();
     for(auto it = r.begin; it != r.end; ++it)
     {
-        make_printer<CharOut, FPack>( _fp
+        make_printer<CharOut, FPack>( strf::rank<5>{}
+                                    , _fp
                                     , preview
                                     , _value_fmt_type_adapted{{*it}, _fmt} );
     }
@@ -328,7 +331,8 @@ void fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::print_to
     auto r = _fmt.value();
     for(auto it = r.begin; it != r.end; ++it)
     {
-        make_printer<CharOut, FPack>( _fp
+        make_printer<CharOut, FPack>( strf::rank<5>{}
+                                    , _fp
                                     , no_preview
                                     , _value_fmt_type_adapted{{*it}, _fmt} )
             .print_to(ob);
@@ -404,7 +408,8 @@ void fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>::_preview
     std::size_t count = 0;
     for(auto it = r.begin; it != r.end; ++it)
     {
-        make_printer<CharT, FPack>( _fp
+        make_printer<CharT, FPack>( strf::rank<5>{}
+                                  , _fp
                                   , preview
                                   , _value_fmt_type_adapted{{*it}, _fmt} );
         ++ count;
@@ -463,13 +468,13 @@ void fmt_sep_range_printer<CharT, FPack, ForwardIt, Fmts ...>
     if (it != r.end)
     {
         make_printer<CharT, FPack>
-            ( _fp, no_preview, _value_fmt_type_adapted{{*it}, _fmt} )
+            ( strf::rank<5>{}, _fp, no_preview, _value_fmt_type_adapted{{*it}, _fmt} )
             .print_to(ob);
         while(++it != r.end)
         {
             strf::write(ob, r.sep_begin, r.sep_len);
             make_printer<CharT, FPack>
-                ( _fp, no_preview, _value_fmt_type_adapted{{*it}, _fmt} )
+                ( strf::rank<5>{}, _fp, no_preview, _value_fmt_type_adapted{{*it}, _fmt} )
                 .print_to(ob);
         }
     }
@@ -482,7 +487,8 @@ template < typename CharOut
          , typename Preview
          , typename ForwardIt >
 inline strf::detail::range_printer<CharOut, FPack, ForwardIt>
-make_printer( const FPack& fp
+make_printer( strf::rank<1>
+            , const FPack& fp
             , Preview& preview
             , strf::range_p<ForwardIt> r )
 {
@@ -494,7 +500,8 @@ template < typename CharOut
          , typename Preview
          , typename ForwardIt >
 inline strf::detail::sep_range_printer<CharOut, FPack, ForwardIt>
-make_printer( const FPack& fp
+make_printer( strf::rank<1>
+            , const FPack& fp
             , Preview& preview
             , strf::sep_range_p<ForwardIt, CharOut> r )
 {
@@ -508,7 +515,8 @@ template < typename CharOut
          , typename ... Fmts >
 inline
 strf::detail::fmt_range_printer<CharOut, FPack, ForwardIt, Fmts...>
-make_printer( const FPack& fp
+make_printer( strf::rank<1>
+            , const FPack& fp
             , Preview& preview
             , const strf::value_with_format
                 < strf::range_p<ForwardIt>
@@ -524,7 +532,8 @@ template < typename CharOut
          , typename ... Fmts >
 inline strf::detail::fmt_sep_range_printer< CharOut, FPack
                                                    , ForwardIt , Fmts... >
-make_printer( const FPack& fp
+make_printer( strf::rank<1>
+            , const FPack& fp
             , Preview& preview
             , const strf::value_with_format
                 < strf::sep_range_p<ForwardIt, CharOut>

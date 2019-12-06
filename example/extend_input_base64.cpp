@@ -340,7 +340,8 @@ void base64_printer<CharT>::_write_end_of_line(strf::basic_outbuf<CharT>& ob) co
 namespace xxx {
 
 template <typename CharT, typename FPack, typename Preview>
-inline base64_printer<CharT> make_printer( const FPack& fp
+inline base64_printer<CharT> make_printer( strf::rank<1>
+                                         , const FPack& fp
                                          , Preview& preview
                                          , const base64_input_with_format& fmt )
 {
@@ -351,11 +352,12 @@ inline base64_printer<CharT> make_printer( const FPack& fp
 
 
 template <typename CharT, typename FPack, typename Preview>
-inline base64_printer<CharT> make_printer( const FPack& fp
+inline base64_printer<CharT> make_printer( strf::rank<1> r
+                                         , const FPack& fp
                                          , Preview& preview
                                          , const base64_input& input )
 {
-    return make_printer(fp, preview, base64_input_with_format{input});
+    return make_printer(r, fp, preview, base64_input_with_format{input});
 }
 
 } // namespace xxx

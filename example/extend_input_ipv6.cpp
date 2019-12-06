@@ -150,8 +150,8 @@ private:
 
     ipv6addr_with_format _fmt;
 
-  /*<< `printer_impl<CharT, FPack, Arg>` is equivalent to
-     `decltype(make_printer(ob, fp, std::declval<Arg>())`
+  /*<< `strf::printer_impl<CharT, FPack, Arg>` is equivalent to
+     `decltype(make_printer(strf::rank<5>{}, ob, fp, std::declval<Arg>())`
       where the type of `ob` is `strf::basic_outbuf<CharT>&`,
       and the type of `fp` is `const Fpack&`.
       Hence the type of `_colon` derives from `printer<CharT>`,
@@ -177,20 +177,27 @@ ipv6_printer<CharT>::ipv6_printer
         , strf::get_facet<strf::encoding_error_c, void>(fp)
         , strf::get_facet<strf::surrogate_policy_c, void>(fp) }
     , _fmt(fmt)
-    , _colon{strf::make_printer<CharT>(fp, static_cast<CharT>(':'))}
+    , _colon{strf::make_printer<CharT>(strf::rank<5>{}, fp, static_cast<CharT>(':'))}
     , _hextets
-        { { strf::make_printer<CharT>( /*<< It is not a problem if `fp`
+        { { strf::make_printer<CharT>(strf::rank<5>{},  /*<< It is not a problem if `fp`
         is a temporary object. It won't lead to dangling references because,
         by convention, a printer class don't store any reference to the
         facets_pack that it is been constructed with.
                      >>*/fp, strf::hex(fmt.value().hextets[0]).p(precision)) }
-        , { strf::make_printer<CharT>(fp, strf::hex(fmt.value().hextets[1]).p(precision)) }
-        , { strf::make_printer<CharT>(fp, strf::hex(fmt.value().hextets[2]).p(precision)) }
-        , { strf::make_printer<CharT>(fp, strf::hex(fmt.value().hextets[3]).p(precision)) }
-        , { strf::make_printer<CharT>(fp, strf::hex(fmt.value().hextets[4]).p(precision)) }
-        , { strf::make_printer<CharT>(fp, strf::hex(fmt.value().hextets[5]).p(precision)) }
-        , { strf::make_printer<CharT>(fp, strf::hex(fmt.value().hextets[6]).p(precision)) }
-        , { strf::make_printer<CharT>(fp, strf::hex(fmt.value().hextets[7]).p(precision)) } }
+        , { strf::make_printer<CharT>( strf::rank<5>{}, fp
+                                     , strf::hex(fmt.value().hextets[1]).p(precision)) }
+        , { strf::make_printer<CharT>( strf::rank<5>{}, fp
+                                     , strf::hex(fmt.value().hextets[2]).p(precision)) }
+        , { strf::make_printer<CharT>( strf::rank<5>{}, fp
+                                     , strf::hex(fmt.value().hextets[3]).p(precision)) }
+        , { strf::make_printer<CharT>( strf::rank<5>{}, fp
+                                     , strf::hex(fmt.value().hextets[4]).p(precision)) }
+        , { strf::make_printer<CharT>( strf::rank<5>{}, fp
+                                     , strf::hex(fmt.value().hextets[5]).p(precision)) }
+        , { strf::make_printer<CharT>( strf::rank<5>{}, fp
+                                     , strf::hex(fmt.value().hextets[6]).p(precision)) }
+        , { strf::make_printer<CharT>( strf::rank<5>{}, fp
+                                     , strf::hex(fmt.value().hextets[7]).p(precision)) } }
 {
 }
 
@@ -274,14 +281,16 @@ void ipv6_printer<CharT>::compose_abbreviated
 
 //[ipv6__make_printer
 template <typename CharT, typename FPack>
-inline ipv6_printer<CharT> make_printer( const FPack& fp
+inline ipv6_printer<CharT> make_printer( strf::rank<1>
+                                       , const FPack& fp
                                        , const ipv6address& addr )
 {
     return ipv6_printer<CharT>{fp, ipv6addr_with_format{addr}};
 }
 
 template <typename CharT, typename FPack>
-inline ipv6_printer<CharT> make_printer( const FPack& fp
+inline ipv6_printer<CharT> make_printer( strf::rank<1>
+                                       , const FPack& fp
                                        , const ipv6addr_with_format& addr )
 {
     return ipv6_printer<CharT>{fp, addr};

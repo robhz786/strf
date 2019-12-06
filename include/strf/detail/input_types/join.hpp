@@ -360,7 +360,8 @@ using aligned_join_printer_impl_of
 = aligned_join_printer_impl
     < CharT
     , decltype(make_printer<CharT>
-                  ( std::declval<const FPack&>()
+                  ( strf::rank<5>()
+                  , std::declval<const FPack&>()
                   , std::declval<strf::print_preview<Preview::size_required, true>&>()
                   , std::declval<const Args&>() )) ... >;
 
@@ -424,14 +425,16 @@ template <typename CharT, typename FPack, typename Preview, typename ... Args>
 class join_printer
     : public strf::detail::join_printer_impl
         < CharT
-        , decltype(make_printer<CharT>( std::declval<const FPack&>()
+        , decltype(make_printer<CharT>( strf::rank<5>()
+                                      , std::declval<const FPack&>()
                                       , std::declval<Preview&>()
                                       , std::declval<const Args&>() )) ... >
 {
     using _join_impl
     = strf::detail::join_printer_impl
         < CharT
-        , decltype(make_printer<CharT>( std::declval<const FPack&>()
+        , decltype(make_printer<CharT>( strf::rank<5>()
+                                      , std::declval<const FPack&>()
                                       , std::declval<Preview&>()
                                       , std::declval<const Args&>() )) ... >;
 public:
@@ -457,7 +460,8 @@ template < typename CharT
          , bool SplitPosActive
          , typename... Args >
 inline strf::detail::join_printer<CharT, FPack, Preview, Args...>
-make_printer( const FPack& fp
+make_printer( strf::rank<1>
+            , const FPack& fp
             , Preview& preview
             , const strf::value_with_format
                 < strf::detail::simple_tuple<Args...>
@@ -487,7 +491,8 @@ template < typename CharT
          , bool SplitPosActive
          , typename... Args >
 inline strf::detail::aligned_join_printer<CharT, FPack, Preview, Args...>
-make_printer( const FPack& fp
+make_printer( strf::rank<1>
+            , const FPack& fp
             , Preview& preview
             , const strf::value_with_format
                 < strf::detail::simple_tuple<Args...>

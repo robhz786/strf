@@ -783,7 +783,8 @@ template < typename CharOut
          , typename CharIn
          , bool WithAlignment >
 inline auto make_printer
-    ( const FPack& fp
+    ( strf::rank<1>
+    , const FPack& fp
     , Preview& preview
     , strf::value_with_format< strf::detail::simple_string_view<CharIn>
                              , strf::alignment_format_q<WithAlignment>
@@ -800,7 +801,8 @@ template < typename CharOut
          , typename CharIn
          , bool WithAlignment >
 inline auto make_printer
-    ( const FPack& fp
+    ( strf::rank<1>
+    , const FPack& fp
     , Preview& preview
     , strf::value_with_format< strf::detail::simple_string_view<CharIn>
                              , strf::alignment_format_q<WithAlignment>
@@ -813,7 +815,8 @@ inline auto make_printer
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
 inline strf::detail::cv_string_printer<CharIn, CharOut>
-make_printer( const FPack& fp
+make_printer( strf::rank<1>
+            , const FPack& fp
             , Preview& preview
             , strf::value_with_format< strf::detail::simple_string_view<CharIn>
                                      , strf::alignment_format_q<false>
@@ -824,7 +827,8 @@ make_printer( const FPack& fp
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
 inline strf::detail::cv_string_printer<CharIn, CharOut>
-make_printer( const FPack& fp
+make_printer( strf::rank<1>
+            , const FPack& fp
             , Preview& preview
             , strf::value_with_format< strf::detail::simple_string_view<CharIn>
                                      , strf::alignment_format_q<false>
@@ -835,7 +839,8 @@ make_printer( const FPack& fp
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
 inline strf::detail::fmt_cv_string_printer<CharIn, CharOut>
-make_printer( const FPack& fp
+make_printer( strf::rank<1>
+            , const FPack& fp
             , Preview& preview
             , strf::value_with_format< strf::detail::simple_string_view<CharIn>
                                      , strf::alignment_format_q<true>
@@ -849,7 +854,8 @@ make_printer( const FPack& fp
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
 inline strf::detail::fmt_cv_string_printer<CharIn, CharOut>
-make_printer( const FPack& fp
+make_printer( strf::rank<1>
+            , const FPack& fp
             , Preview& preview
             , strf::value_with_format< strf::detail::simple_string_view<CharIn>
                                      , strf::alignment_format_q<true>

@@ -23,11 +23,12 @@ struct ipv4address
 namespace xxx {
 
 template <typename CharT, typename FPack, typename Preview>
-auto make_printer(const FPack& fp, Preview& preview, ipv4address addr)
+auto make_printer(strf::rank<1>, const FPack& fp, Preview& preview, ipv4address addr)
 {
     (void)fp;
     return make_printer<CharT>
-        ( /*<< Note we are not forwarding `fp` but instead passing an empty
+        ( strf::rank<5>{}
+        , /*<< Note we are not forwarding `fp` but instead passing an empty
 facets pack. In others cases, however, you may want to propagate some or
 all of the facets.
  >>*/strf::pack()
@@ -71,14 +72,16 @@ inline ipv4address_with_format make_fmt( /*<< The `tag` paramenter is not used.
 namespace xxx {
 
 template <typename CharT, typename FPack, typename Preview>
-auto make_printer( const FPack& fp
+auto make_printer( strf::rank<1>
+                 , const FPack& fp
                  , Preview& preview
                  , ipv4address_with_format fmt_addr )
 {
     (void)fp;
     xxx::ipv4address addr = fmt_addr.value();
     return strf::make_printer<CharT>
-        ( strf::pack()
+        ( strf::rank<5>{}
+        , strf::pack()
         , preview
         , strf::join_align(fmt_addr.width(), fmt_addr.alignment(), fmt_addr.fill())
             ( addr.bytes[0], CharT{'.'}

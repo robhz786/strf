@@ -686,7 +686,7 @@ inline typename std::conditional
     < strf::detail::has_intpunct<CharT, FPack, short, 10>
     , strf::detail::punct_int_printer<CharT>
     , strf::detail::int_printer<CharT> >::type
-make_printer(const FPack& fp, Preview& preview, short x)
+make_printer(strf::rank<1>, const FPack& fp, Preview& preview, short x)
 {
     return {fp, preview, x};
 }
@@ -696,7 +696,7 @@ inline typename std::conditional
     < strf::detail::has_intpunct<CharT, FPack, int, 10>
     , strf::detail::punct_int_printer<CharT>
     , strf::detail::int_printer<CharT> >::type
-make_printer(const FPack& fp, Preview& preview, int x)
+make_printer(strf::rank<1>, const FPack& fp, Preview& preview, int x)
 {
     return {fp, preview, x};
 }
@@ -706,7 +706,7 @@ inline typename std::conditional
     < strf::detail::has_intpunct<CharT, FPack, long, 10>
     , strf::detail::punct_int_printer<CharT>
     , strf::detail::int_printer<CharT> >::type
-make_printer(const FPack& fp, Preview& preview, long x)
+make_printer(strf::rank<1>, const FPack& fp, Preview& preview, long x)
 {
     return {fp, preview, x};
 }
@@ -716,7 +716,7 @@ inline typename std::conditional
     < strf::detail::has_intpunct<CharT, FPack, long long, 10>
     , strf::detail::punct_int_printer<CharT>
     , strf::detail::int_printer<CharT> >::type
-make_printer(const FPack& fp, Preview& preview, long long x)
+make_printer(strf::rank<1>, const FPack& fp, Preview& preview, long long x)
 {
     return {fp, preview, x};
 }
@@ -726,7 +726,7 @@ inline typename std::conditional
     < strf::detail::has_intpunct<CharT, FPack, unsigned short, 10>
     , strf::detail::punct_int_printer<CharT>
     , strf::detail::int_printer<CharT> >::type
-make_printer(const FPack& fp, Preview& preview, unsigned short x)
+make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned short x)
 {
     return {fp, preview, x};
 }
@@ -736,7 +736,7 @@ inline typename std::conditional
     < strf::detail::has_intpunct<CharT, FPack, unsigned int, 10>
     , strf::detail::punct_int_printer<CharT>
     , strf::detail::int_printer<CharT> >::type
-make_printer(const FPack& fp, Preview& preview, unsigned int x)
+make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned int x)
 {
     return {fp, preview, x};
 }
@@ -746,7 +746,7 @@ inline typename std::conditional
     < strf::detail::has_intpunct<CharT, FPack, unsigned long, 10>
     , strf::detail::punct_int_printer<CharT>
     , strf::detail::int_printer<CharT> >::type
-make_printer(const FPack& fp, Preview& preview, unsigned long x)
+make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned long x)
 {
     return {fp, preview, x};
 }
@@ -756,14 +756,15 @@ inline typename std::conditional
     < strf::detail::has_intpunct<CharT, FPack, unsigned long long, 10>
     , strf::detail::punct_int_printer<CharT>
     , strf::detail::int_printer<CharT> >::type
-make_printer(const FPack& fp, Preview& preview, unsigned long long x)
+make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned long long x)
 {
     return {fp, preview, x};
 }
 
 template <typename CharT, typename FPack, typename Preview, typename IntT, int Base>
 inline strf::detail::full_fmt_int_printer<CharT, Base>
-make_printer( const FPack& fp
+make_printer( strf::rank<1>
+            , const FPack& fp
             , Preview& preview
             , const strf::int_with_format<IntT, Base, true>& x )
 {
@@ -772,7 +773,8 @@ make_printer( const FPack& fp
 
 template <typename CharT, typename FPack, typename Preview, typename IntT, int Base>
 inline strf::detail::partial_fmt_int_printer<CharT, Base>
-make_printer( const FPack& fp
+make_printer( strf::rank<1>
+            , const FPack& fp
             , Preview& preview
             , const strf::int_with_format<IntT, Base, false>& x )
 {

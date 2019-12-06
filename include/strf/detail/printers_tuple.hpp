@@ -147,7 +147,7 @@ public:
         , Preview& p
         , const strf::detail::simple_tuple<Args...>& args )
         : indexed_obj<I, Printers>
-        { make_printer<CharT>(fp, p, args.template get<I>()) } ...
+        { make_printer<CharT>(strf::rank<5>{}, fp, p, args.template get<I>()) } ...
     {
     }
 
@@ -185,7 +185,8 @@ class printers_tuple_alias
 {
     template <typename Arg>
     using _printer
-    = decltype(make_printer<CharT>( std::declval<const FPack&>()
+    = decltype(make_printer<CharT>( strf::rank<5>{}
+                                  , std::declval<const FPack&>()
                                   , std::declval<Preview&>()
                                   , std::declval<const Arg&>()));
 public:
