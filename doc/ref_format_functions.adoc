@@ -664,6 +664,7 @@ template <class T>
 class quantity_format_fn
 {
 public:
+    constexpr quantity_format_fn(std::size_t count) noexcept;
     constexpr quantity_format_fn() noexcept;
 
     template <typename U>
@@ -672,8 +673,8 @@ public:
     {
     }
 
-    constexpr T&& multi(int count) && noexcept
-    constexpr int count() const noexcept
+    constexpr T&& multi(std::size_t count) && noexcept
+    constexpr std::size_t count() const noexcept
 };
 
 } // namespace strf
@@ -689,10 +690,7 @@ Postconditions::: `count() == 1`
 [source,cpp,subs=normal]
 ----
 template <typename U>
-constexpr explicit quantity_format_fn(const quantity_format_fn<U>& u) noexcept
-    : _count(u.count())
-{
-}
+constexpr explicit quantity_format_fn(const quantity_format_fn<U>& u) noexcept;
 ----
 ::
 Postconditions::: `count() == u.count()`
@@ -700,7 +698,7 @@ Postconditions::: `count() == u.count()`
 ===== Format functions
 [source,cpp,subs=normal]
 ----
-constexpr T&& multi(int count) && noexcept
+constexpr T&& multi(std::size_t count) && noexcept
 ----
 ::
 Postconditions::: `count() == count`

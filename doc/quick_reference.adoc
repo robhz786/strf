@@ -808,7 +808,7 @@ Type:: `CharT`, that is the output character type defined by the <<destinations,
 
 Format functions::
 ( in addition to <<alignment_format_functions, alignment functions>> )
-`multi(int count)`::: Prints the character `count` times. Default value is `1`.
+`multi(std::size_t count)`::: Prints the character `count` times. Default value is `1`.
 
 === Strings
 Types::

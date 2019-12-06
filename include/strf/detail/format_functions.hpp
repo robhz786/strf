@@ -408,6 +408,10 @@ class quantity_format_fn
 {
 public:
 
+    constexpr quantity_format_fn(std::size_t count) noexcept
+        : _count(count)
+    {
+    }
     constexpr quantity_format_fn() noexcept = default;
 
     template <typename U>
@@ -416,19 +420,19 @@ public:
     {
     }
 
-    constexpr T&& multi(int count) && noexcept
+    constexpr T&& multi(std::size_t count) && noexcept
     {
         _count = count;
         return static_cast<T&&>(*this);
     }
-    constexpr int count() const noexcept
+    constexpr std::size_t count() const noexcept
     {
         return _count;
     }
 
 private:
 
-    int _count = 1;
+    std::size_t _count = 1;
 };
 
 struct quantity_format
