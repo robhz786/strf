@@ -103,7 +103,7 @@ using ipv6addr_with_format = strf::value_with_format< ipv6address
                                                     , ipv6_format
                                                     , strf::alignment_format >;
 
-inline auto make_fmt(strf::tag<>, const ipv6address& addr)
+inline auto make_fmt(strf::rank<1>, const ipv6address& addr)
 {
     return ipv6addr_with_format{addr};
 }

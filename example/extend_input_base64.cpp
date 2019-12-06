@@ -110,7 +110,7 @@ inline auto base64(const void* bytes, std::size_t num_bytes)
 `base64` function already instantiates `base64_input_with_format`, we still
  need to overload `make_fmt` if we want `base64_input` to work in
  [link ranges fmt_range]
- >>*/inline auto make_fmt(strf::tag<>, const base64_input& d)
+ >>*/inline auto make_fmt(strf::rank<1>, const base64_input& d)
 {
     return base64_input_with_format{d};
 }

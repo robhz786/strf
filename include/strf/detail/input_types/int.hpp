@@ -781,35 +781,35 @@ make_printer( strf::rank<1>
     return {fp, preview, x};
 }
 
-inline auto make_fmt(strf::tag<>, short x)
+inline auto make_fmt(strf::rank<1>, short x)
 {
     return strf::int_with_format<short>{{x}};
 }
-inline auto make_fmt(strf::tag<>, int x)
+inline auto make_fmt(strf::rank<1>, int x)
 {
     return strf::int_with_format<int>{{x}};
 }
-inline auto make_fmt(strf::tag<>, long x)
+inline auto make_fmt(strf::rank<1>, long x)
 {
     return strf::int_with_format<long>{{x}};
 }
-inline auto make_fmt(strf::tag<>, long long x)
+inline auto make_fmt(strf::rank<1>, long long x)
 {
     return strf::int_with_format<long long>{{x}};
 }
-inline auto make_fmt(strf::tag<>, unsigned short x)
+inline auto make_fmt(strf::rank<1>, unsigned short x)
 {
     return strf::int_with_format<unsigned short>{{x}};
 }
-inline auto make_fmt(strf::tag<>, unsigned x)
+inline auto make_fmt(strf::rank<1>, unsigned x)
 {
     return  strf::int_with_format<unsigned>{{x}};
 }
-inline auto make_fmt(strf::tag<>, unsigned long x)
+inline auto make_fmt(strf::rank<1>, unsigned long x)
 {
     return strf::int_with_format<unsigned long>{{x}};
 }
-inline auto make_fmt(strf::tag<>, unsigned long long x)
+inline auto make_fmt(strf::rank<1>, unsigned long long x)
 {
     return strf::int_with_format<unsigned long long>{{x}};
 }

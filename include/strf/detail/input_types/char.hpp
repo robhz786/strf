@@ -377,26 +377,26 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, char_with_format<
 
 #if defined(__cpp_char8_t)
 
-constexpr auto make_fmt(strf::tag<>, char8_t ch) noexcept
+constexpr auto make_fmt(strf::rank<1>, char8_t ch) noexcept
 {
     return strf::char_with_format<char8_t>{{ch}};
 }
 
 #endif
 
-constexpr auto make_fmt(strf::tag<>, char ch) noexcept
+constexpr auto make_fmt(strf::rank<1>, char ch) noexcept
 {
     return strf::char_with_format<char>{{ch}};
 }
-constexpr auto make_fmt(strf::tag<>, wchar_t ch) noexcept
+constexpr auto make_fmt(strf::rank<1>, wchar_t ch) noexcept
 {
     return strf::char_with_format<wchar_t>{{ch}};
 }
-constexpr auto make_fmt(strf::tag<>, char16_t ch) noexcept
+constexpr auto make_fmt(strf::rank<1>, char16_t ch) noexcept
 {
     return strf::char_with_format<char16_t>{{ch}};
 }
-constexpr auto make_fmt(strf::tag<>, char32_t ch) noexcept
+constexpr auto make_fmt(strf::rank<1>, char32_t ch) noexcept
 {
     return strf::char_with_format<char32_t>{{ch}};
 }
