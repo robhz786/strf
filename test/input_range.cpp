@@ -2,15 +2,13 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include "test_utils.hpp"
 #include <vector>
 
 
 int main()
 {
-    namespace strf = boost::stringify::v0;
-
     {
         std::vector<int> vec_int = {11, 22, 33, 44};
         TEST("---11223344---")

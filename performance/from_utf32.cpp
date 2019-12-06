@@ -10,13 +10,11 @@
 #include <locale>
 #include <fstream>
 
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include "loop_timer.hpp"
 
 int main()
 {
-    namespace strf = boost::stringify::v0;
-
     std::u32string u32sample1(500, U'A');
     std::u32string u32sample2(500, U'\u0100');
     std::u32string u32sample3(500, U'\u0800');
@@ -28,13 +26,13 @@ int main()
     //constexpr std::size_t u16dest_size = sizeof(u16dest) / sizeof(u16dest[0]);
     //char16_t* u16dest_end = &u16dest[u16dest_size];
 
-    PRINT_BENCHMARK("format(u16dest) (u32sample1)")
+    PRINT_BENCHMARK("strf::to(u16dest) (u32sample1)")
     {
-        (void)strf::write(u16dest) (u32sample1);
+        (void)strf::to(u16dest) (u32sample1);
     }
-    PRINT_BENCHMARK("format(u16dest) (u32sample4)")
+    PRINT_BENCHMARK("strf::to(u16dest) (u32sample4)")
     {
-        (void)strf::write(u16dest) (u32sample4);
+        (void)strf::to(u16dest) (u32sample4);
     }
 
     std::cout << "\nUTF-32 to UTF-8\n";
@@ -43,21 +41,21 @@ int main()
     constexpr std::size_t u8dest_size = sizeof(u8dest) / sizeof(u8dest[0]);
     char* u8dest_end = &u8dest[u8dest_size];
 
-    PRINT_BENCHMARK("format(u8dest) (u32sample1)")
+    PRINT_BENCHMARK("strf::to(u8dest) (u32sample1)")
     {
-        (void)strf::write(u8dest) (u32sample1);
+        (void)strf::to(u8dest) (u32sample1);
     }
-    PRINT_BENCHMARK("format(u8dest) (u32sample2)")
+    PRINT_BENCHMARK("strf::to(u8dest) (u32sample2)")
     {
-        (void)strf::write(u8dest) (u32sample2);
+        (void)strf::to(u8dest) (u32sample2);
     }
-    PRINT_BENCHMARK("format(u8dest) (u32sample3)")
+    PRINT_BENCHMARK("strf::to(u8dest) (u32sample3)")
     {
-        (void)strf::write(u8dest) (u32sample3);
+        (void)strf::to(u8dest) (u32sample3);
     }
-    PRINT_BENCHMARK("format(u8dest) (u32sample4)")
+    PRINT_BENCHMARK("strf::to(u8dest) (u32sample4)")
     {
-        (void)strf::write(u8dest) (u32sample4);
+        (void)strf::to(u8dest) (u32sample4);
     }
 
 #if ! defined(_MSC_VER)

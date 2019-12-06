@@ -6,9 +6,7 @@
 
 #include <string>
 #include <algorithm>
-#include <boost/stringify.hpp>
-
-namespace strf = boost::stringify::v0;
+#include <strf.hpp>
 
 std::string make_str_0_to_xff()
 {
@@ -40,7 +38,7 @@ void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
 
     {
         // to UTF-32
-        TEST(decoded_0_to_0x100) (strf::cv(str_0_to_xff, enc));
+        TEST(decoded_0_to_0x100) (strf::sani(str_0_to_xff, enc));
     }
 
     std::u32string valid_u32input = decoded_0_to_0x100;
@@ -50,39 +48,40 @@ void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
                         , valid_u32input.end() );
     {
         // from and back to UTF-32
-        auto enc_str = strf::to_string.facets(enc) (strf::cv(valid_u32input));
-        auto u32str = strf::to_u32string (strf::cv(enc_str, enc));
+        auto enc_str = strf::to_string.with(enc) (strf::sani(valid_u32input));
+        auto u32str = strf::to_u32string (strf::sani(enc_str, enc));
         BOOST_TEST(u32str == valid_u32input);
     }
     {
         // from UTF-8
-        auto u8str = strf::to_string (strf::cv(valid_u32input));
-        auto enc_str = strf::to_string.facets(enc) (strf::cv(u8str, strf::utf8<char>()));
-        auto u32str = strf::to_u32string (strf::cv(enc_str, enc));
+        auto u8str = strf::to_string (strf::sani(valid_u32input));
+        auto enc_str = strf::to_string.with(enc) (strf::sani(u8str, strf::utf8<char>()));
+        auto u32str = strf::to_u32string (strf::sani(enc_str, enc));
         BOOST_TEST(u32str == valid_u32input);
 
     }
     {   // from UTF-8
-        auto u8str = strf::to_string(strf::cv(decoded_0_to_0x100));
+        auto u8str = strf::to_string(strf::sani(decoded_0_to_0x100));
         TEST(char_0_to_0xff_sanitized(enc))
-            .facets(enc)
-            (strf::cv(u8str, strf::utf8<char>()));
+            .with(enc)
+            (strf::sani(u8str, strf::utf8<char>()));
     }
 
-    TEST(char_0_to_0xff_sanitized(enc)).facets(enc) (strf::cv(str_0_to_xff));
+    TEST(char_0_to_0xff_sanitized(enc)).with(enc) (strf::sani(str_0_to_xff));
     TEST("---?+++")
-        .facets(enc, strf::encoding_error::replace)
-        (strf::cv(u"---\U0010FFFF+++"));
-    TEST_RF("---+++", 7.1 / 6.0)
-        .facets(enc, strf::encoding_error::ignore)
-        (strf::cv(u"---\U0010FFFF+++"));
+        .with(enc, strf::encoding_error::replace)
+        (strf::sani(u"---\U0010FFFF+++"));
+
+#if defined(__cpp_exceptions)
 
     {
         auto facets = strf::pack(enc, strf::encoding_error::stop);
         BOOST_TEST_THROWS(
-            ( (strf::to_string.facets(facets)(strf::cv(u"---\U0010FFFF++"))))
-            , strf::encoding_failure )
+            ( (strf::to_string.with(facets)(strf::sani(u"---\U0010FFFF++"))))
+            , strf::encoding_failure );
     }
+
+#endif // defined(__cpp_exceptions)
 }
 
 

@@ -2,11 +2,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include <cstdint>
 #include <vector>
-
-namespace strf = boost::stringify::v0;
 
 namespace xxx {
 
@@ -105,7 +103,7 @@ using ipv6addr_with_format = strf::value_with_format< ipv6address
                                                     , ipv6_format
                                                     , strf::alignment_format >;
 
-inline auto make_fmt(strf::tag, const ipv6address& addr)
+inline auto make_fmt(strf::rank<1>, const ipv6address& addr)
 {
     return ipv6addr_with_format{addr};
 }
@@ -137,7 +135,7 @@ protected:
 
     void compose(strf::printers_receiver<CharT>& out) const override;
 
-    strf::alignment_format::fn<void> formatting() const override;
+    strf::alignment_format_data formatting() const override;
 
 private:
 
@@ -152,15 +150,15 @@ private:
 
     ipv6addr_with_format _fmt;
 
-  /*<< `printer_impl<CharT, FPack, Arg>` is equivalent to
-     `decltype(make_printer(ob, fp, std::declval<Arg>())`
-      where the type of `ob` is `output_buffer<CharT>&`,
+  /*<< `strf::printer_impl<CharT, FPack, Arg>` is equivalent to
+     `decltype(make_printer(strf::rank<5>{}, ob, fp, std::declval<Arg>())`
+      where the type of `ob` is `strf::basic_outbuf<CharT>&`,
       and the type of `fp` is `const Fpack&`.
       Hence the type of `_colon` derives from `printer<CharT>`,
       and so do the elements of `_hextets`.
- >>*/strf::printer_impl<CharT, strf::facets_pack<>, CharT> _colon;
+      >>*/strf::printer_impl<CharT, strf::facets_pack<>, CharT> _colon;
 
-    using fmt_hextet = decltype(strf::fmt(ipv6address{}.hextets[0]).hex().p(0));
+    using fmt_hextet = decltype(strf::hex(ipv6address{}.hextets[0]).p(0));
 
     strf::printer_impl<CharT, strf::facets_pack<>, fmt_hextet> _hextets[8];
 };
@@ -179,20 +177,27 @@ ipv6_printer<CharT>::ipv6_printer
         , strf::get_facet<strf::encoding_error_c, void>(fp)
         , strf::get_facet<strf::surrogate_policy_c, void>(fp) }
     , _fmt(fmt)
-    , _colon{strf::make_printer<CharT>(fp, static_cast<CharT>(':'))}
+    , _colon{strf::make_printer<CharT>(strf::rank<5>{}, fp, static_cast<CharT>(':'))}
     , _hextets
-        { { strf::make_printer<CharT>( /*<< It is not a problem if `fp`
+        { { strf::make_printer<CharT>(strf::rank<5>{},  /*<< It is not a problem if `fp`
         is a temporary object. It won't lead to dangling references because,
         by convention, a printer class don't store any reference to the
         facets_pack that it is been constructed with.
                      >>*/fp, strf::hex(fmt.value().hextets[0]).p(precision)) }
-        , { strf::make_printer<CharT>(fp, strf::hex(fmt.value().hextets[1]).p(precision)) }
-        , { strf::make_printer<CharT>(fp, strf::hex(fmt.value().hextets[2]).p(precision)) }
-        , { strf::make_printer<CharT>(fp, strf::hex(fmt.value().hextets[3]).p(precision)) }
-        , { strf::make_printer<CharT>(fp, strf::hex(fmt.value().hextets[4]).p(precision)) }
-        , { strf::make_printer<CharT>(fp, strf::hex(fmt.value().hextets[5]).p(precision)) }
-        , { strf::make_printer<CharT>(fp, strf::hex(fmt.value().hextets[6]).p(precision)) }
-        , { strf::make_printer<CharT>(fp, strf::hex(fmt.value().hextets[7]).p(precision)) } }
+        , { strf::make_printer<CharT>( strf::rank<5>{}, fp
+                                     , strf::hex(fmt.value().hextets[1]).p(precision)) }
+        , { strf::make_printer<CharT>( strf::rank<5>{}, fp
+                                     , strf::hex(fmt.value().hextets[2]).p(precision)) }
+        , { strf::make_printer<CharT>( strf::rank<5>{}, fp
+                                     , strf::hex(fmt.value().hextets[3]).p(precision)) }
+        , { strf::make_printer<CharT>( strf::rank<5>{}, fp
+                                     , strf::hex(fmt.value().hextets[4]).p(precision)) }
+        , { strf::make_printer<CharT>( strf::rank<5>{}, fp
+                                     , strf::hex(fmt.value().hextets[5]).p(precision)) }
+        , { strf::make_printer<CharT>( strf::rank<5>{}, fp
+                                     , strf::hex(fmt.value().hextets[6]).p(precision)) }
+        , { strf::make_printer<CharT>( strf::rank<5>{}, fp
+                                     , strf::hex(fmt.value().hextets[7]).p(precision)) } }
 {
 }
 
@@ -201,13 +206,9 @@ ipv6_printer<CharT>::ipv6_printer
 
 //[ ipv6_printer__formatting
 template <typename CharT>
-strf::alignment_format::fn<void> ipv6_printer<CharT>::formatting() const
+strf::alignment_format_data ipv6_printer<CharT>::formatting() const
 {
- /*<< That works because the `alignment_format::fn<void>` can be implicitly
-         converted from `alignment_format::fn<`[~AnyType]`>`,
-         and `ipv6addr_with_format` derives from
-         `alignment_format::fn<`ipv6addr_with_format`>`
- >>*/return _fmt;
+    return _fmt.get_alignment_format_data();
 }
 //]
 
@@ -280,14 +281,16 @@ void ipv6_printer<CharT>::compose_abbreviated
 
 //[ipv6__make_printer
 template <typename CharT, typename FPack>
-inline ipv6_printer<CharT> make_printer( const FPack& fp
+inline ipv6_printer<CharT> make_printer( strf::rank<1>
+                                       , const FPack& fp
                                        , const ipv6address& addr )
 {
     return ipv6_printer<CharT>{fp, ipv6addr_with_format{addr}};
 }
 
 template <typename CharT, typename FPack>
-inline ipv6_printer<CharT> make_printer( const FPack& fp
+inline ipv6_printer<CharT> make_printer( strf::rank<1>
+                                       , const FPack& fp
                                        , const ipv6addr_with_format& addr )
 {
     return ipv6_printer<CharT>{fp, addr};
@@ -302,23 +305,23 @@ int main()
     xxx::ipv6address addr{{0xaa, 0, 0, 0, 0xbb, 0, 0, 0xcc}};
 
     auto s = strf::to_string(addr);
-    BOOST_ASSERT(s == "aa:0:0:0:bb:0:0:cc");
+    assert(s == "aa:0:0:0:bb:0:0:cc");
 
     s = strf::to_string(strf::fmt(addr).big());
-    BOOST_ASSERT(s == "00aa:0000:0000:0000:00bb:0000:0000:00cc");
+    assert(s == "00aa:0000:0000:0000:00bb:0000:0000:00cc");
 
     s = strf::to_string(strf::right(addr, 20, U'.').small());
-    BOOST_ASSERT(s == ".......aa::bb:0:0:cc");
+    assert(s == ".......aa::bb:0:0:cc");
     //]
 
     s = strf::to_string(strf::right(addr, 20));
-    BOOST_ASSERT(s == "  aa:0:0:0:bb:0:0:cc");
+    assert(s == "  aa:0:0:0:bb:0:0:cc");
 
     s = strf::to_string(strf::join_right(22, U'.')(strf::left(addr, 20)));
-    BOOST_ASSERT(s == "..aa:0:0:0:bb:0:0:cc  ");
+    assert(s == "..aa:0:0:0:bb:0:0:cc  ");
 
     s = strf::to_string(strf::center(addr, 20));
-    BOOST_ASSERT(s == " aa:0:0:0:bb:0:0:cc ");
+    assert(s == " aa:0:0:0:bb:0:0:cc ");
 
     std::vector<xxx::ipv6address> vec =
         { {{0, 0, 0, 0, 0, 0}}
@@ -338,7 +341,7 @@ int main()
         "~~~~~~~~~~~~~0:0:1::\n"
         "~~~~~~~~~~~0:0:0:1::\n";
 
-    BOOST_ASSERT(s == expected_result);
+    assert(s == expected_result);
 
     (void)expected_result;
     return 0;

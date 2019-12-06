@@ -2,25 +2,13 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include "test_utils.hpp"
-
-namespace strf = boost::stringify::v0;
 
 int main()
 {
     unsigned char groups[100];
     auto * groups_end = groups + sizeof(groups);
-
-    {
-        strf::monotonic_grouping<10> grouper(0);
-
-        TEST("100000000000000") .facets(grouper) (100000000000000);
-        BOOST_TEST(grouper.thousands_sep_count(0) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(1) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(2) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(50) == 0);
-    }
 
     {
         strf::monotonic_grouping<10> grouper(4);
@@ -34,24 +22,24 @@ int main()
 
         std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
         {
-            auto last = grouper.groups(3, groups);
-            BOOST_TEST(last == groups);
+            auto num_groups = grouper.groups(3, groups);
+            BOOST_TEST(num_groups == 1);
             BOOST_TEST(groups[0] == 3);
             BOOST_TEST(groups[1] == 0xff);
         }
 
         std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
         {
-            auto last = grouper.groups(4, groups);
-            BOOST_TEST(last == groups);
+            auto num_groups = grouper.groups(4, groups);
+            BOOST_TEST(num_groups == 1);
             BOOST_TEST(groups[0] == 4);
             BOOST_TEST(groups[1] == 0xff);
         }
 
         std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
         {
-            auto last = grouper.groups(5, groups);
-            BOOST_TEST(last == groups + 1);
+            auto num_groups = grouper.groups(5, groups);
+            BOOST_TEST(num_groups == 2);
             BOOST_TEST(groups[0] == 4);
             BOOST_TEST(groups[1] == 1);
             BOOST_TEST(groups[2] == 0xff);
@@ -59,8 +47,8 @@ int main()
 
         std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
         {
-            auto last = grouper.groups(8, groups);
-            BOOST_TEST(last == groups + 1);
+            auto num_groups = grouper.groups(8, groups);
+            BOOST_TEST(num_groups == 2);
             BOOST_TEST(groups[0] == 4);
             BOOST_TEST(groups[1] == 4);
             BOOST_TEST(groups[2] == 0xff);
@@ -68,8 +56,8 @@ int main()
 
         std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
         {
-            auto last = grouper.groups(9, groups);
-            BOOST_TEST(last == groups + 2);
+            auto num_groups = grouper.groups(9, groups);
+            BOOST_TEST(num_groups == 1 + 2);
             BOOST_TEST(groups[0] == 4);
             BOOST_TEST(groups[1] == 4);
             BOOST_TEST(groups[2] == 1);
@@ -79,19 +67,9 @@ int main()
 
     auto big_value = 10000000000000000000ull;
     {
-        strf::str_grouping<10> grouper{std::string{}};
-        TEST("1000") .facets(grouper) (1000);
-        TEST("0") .facets(grouper) (0);
-
-        BOOST_TEST(grouper.thousands_sep_count(0) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(1) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(2) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(3) == 0);
-    }
-    {
         strf::str_grouping<10> grouper{std::string("\0", 1)};
-        TEST("1000") .facets(grouper) (1000);
-        TEST("0") .facets(grouper) (0);
+        TEST("1000") .with(grouper) (1000);
+        TEST("0") .with(grouper) (0);
 
         BOOST_TEST(grouper.thousands_sep_count(0) == 0);
         BOOST_TEST(grouper.thousands_sep_count(1) == 0);
@@ -101,8 +79,8 @@ int main()
     }
     {
         strf::str_grouping<10> grouper{std::string("\001\002\003\000", 4)};
-        TEST("10000000000000,000,00,0") .facets(grouper) (big_value);
-        TEST("0") .facets(grouper) (0);
+        TEST("10000000000000,000,00,0") .with(grouper) (big_value);
+        TEST("0") .with(grouper) (0);
 
         BOOST_TEST(grouper.thousands_sep_count(0) == 0);
         BOOST_TEST(grouper.thousands_sep_count(1) == 0);
@@ -120,8 +98,8 @@ int main()
     }
     {
         strf::str_grouping<10> grouper{std::string("\001\002\003")};
-        TEST("10,000,000,000,000,000,00,0") .facets(grouper) (big_value);
-        TEST("0") .facets(grouper) (0);
+        TEST("10,000,000,000,000,000,00,0") .with(grouper) (big_value);
+        TEST("0") .with(grouper) (0);
 
         BOOST_TEST(grouper.thousands_sep_count(0) == 0);
         BOOST_TEST(grouper.thousands_sep_count(1) == 0);
@@ -139,15 +117,15 @@ int main()
     }
     {
         strf::str_grouping<10> grouper{std::string("\xff")};
-        TEST("10000000000000000000") .facets(grouper) (big_value);
-        TEST("0") .facets(grouper) (0);
+        TEST("10000000000000000000") .with(grouper) (big_value);
+        TEST("0") .with(grouper) (0);
 
     }
     {
         auto grouper = strf::str_grouping<10>{std::string("\x0f\002")}.thousands_sep(',');
-        TEST("1,00,00,000000000000000") .facets(grouper) (big_value);
-        TEST("100000000000000") .facets(grouper) (100000000000000);
-        TEST("0") .facets(grouper) (0);
+        TEST("1,00,00,000000000000000") .with(grouper) (big_value);
+        TEST("100000000000000") .with(grouper) (100000000000000);
+        TEST("0") .with(grouper) (0);
 
 
         BOOST_TEST(grouper.thousands_sep_count(0) == 0);
@@ -159,15 +137,15 @@ int main()
 
         {
             std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
-            auto last = grouper.groups(15, groups);
-            BOOST_TEST(last == groups);
+            auto num_groups = grouper.groups(15, groups);
+            BOOST_TEST(num_groups == 1);
             BOOST_TEST(groups[0] == 15);
             BOOST_TEST(groups[1] == 0xff);
         }
         {
             std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
-            auto last = grouper.groups(16, groups);
-            BOOST_TEST(last == groups + 1);
+            auto num_groups = grouper.groups(16, groups);
+            BOOST_TEST(num_groups == 2);
             BOOST_TEST(groups[0] == 15);
             BOOST_TEST(groups[1] == 1);
             BOOST_TEST(groups[2] == 0xff);

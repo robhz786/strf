@@ -2,10 +2,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include "test_utils.hpp"
-
-namespace strf = boost::stringify::v0;
 
 int custom_width_calculator_function( int limit
                                     , const char32_t* it
@@ -24,45 +22,56 @@ int custom_width_calculator_function( int limit
 
 int main()
 {
-    auto cp_count = strf::width_as_u32len();
-    auto wtable = strf::width_as(custom_width_calculator_function);
+    // auto wtable = strf::width_as(custom_width_calculator_function);
 
-    TEST(u8"  \u2E3A\u2E3A\u2014") .facets(wtable)
+    // TEST(u8"  \u2E3A\u2E3A\u2014") .with(wtable)
+    //     (strf::right(u8"\u2E3A\u2E3A\u2014", 12));
+
+    // TEST( u"  \u2E3A\u2E3A\u2014") .with(wtable)
+    //     (strf::right( u"\u2E3A\u2E3A\u2014", 12));
+
+    // TEST( U"  \u2E3A\u2E3A\u2014") .with(wtable)
+    //     (strf::right( U"\u2E3A\u2E3A\u2014", 12));
+
+    // TEST( L"  \u2E3A\u2E3A\u2014") .with(wtable)
+    //     (strf::right( L"\u2E3A\u2E3A\u2014", 12));
+
+    // TEST(u8"  \u2E3A\u2E3A\u2014") .with(wtable)
+    //     (strf::cv( u"\u2E3A\u2E3A\u2014") > 12);
+
+    // TEST( u"  \u2E3A\u2E3A\u2014") .with(wtable)
+    //     (strf::cv(u8"\u2E3A\u2E3A\u2014") > 12);
+
+
+    TEST(u8"         \u2E3A\u2E3A\u2014")
+        .with( strf::width_as_u32len<char>{} )
+#if defined(__cpp_char8_t)
+        .with( strf::width_as_u32len<char8_t>{} )
+#endif
         (strf::right(u8"\u2E3A\u2E3A\u2014", 12));
 
-    TEST( u"  \u2E3A\u2E3A\u2014") .facets(wtable)
+    TEST( u"         \u2E3A\u2E3A\u2014")
+        .with(strf::width_as_u32len<char16_t>{})
         (strf::right( u"\u2E3A\u2E3A\u2014", 12));
 
-    TEST( U"  \u2E3A\u2E3A\u2014") .facets(wtable)
+    TEST( U"         \u2E3A\u2E3A\u2014")
+        .with(strf::width_as_u32len<char32_t>{})
         (strf::right( U"\u2E3A\u2E3A\u2014", 12));
 
-    TEST( L"  \u2E3A\u2E3A\u2014") .facets(wtable)
+    TEST( L"         \u2E3A\u2E3A\u2014")
+        .with(strf::width_as_u32len<wchar_t>{})
         (strf::right( L"\u2E3A\u2E3A\u2014", 12));
 
-    TEST(u8"  \u2E3A\u2E3A\u2014") .facets(wtable)
-        (strf::fmt_cv( u"\u2E3A\u2E3A\u2014") > 12);
+    TEST(u8"         \u2E3A\u2E3A\u2014")
+        .with(strf::width_as_u32len<char>{})
+#if defined(__cpp_char8_t)
+        .with( strf::width_as_u32len<char8_t>{} )
+#endif
+        (strf::cv(u8"\u2E3A\u2E3A\u2014") > 12);
 
-    TEST( u"  \u2E3A\u2E3A\u2014") .facets(wtable)
-        (strf::fmt_cv(u8"\u2E3A\u2E3A\u2014") > 12);
-
-
-    TEST(u8"         \u2E3A\u2E3A\u2014") .facets(cp_count)
-        (strf::right(u8"\u2E3A\u2E3A\u2014", 12));
-
-    TEST( u"         \u2E3A\u2E3A\u2014") .facets(cp_count)
-        (strf::right( u"\u2E3A\u2E3A\u2014", 12));
-
-    TEST( U"         \u2E3A\u2E3A\u2014") .facets(cp_count)
-        (strf::right( U"\u2E3A\u2E3A\u2014", 12));
-
-    TEST( L"         \u2E3A\u2E3A\u2014") .facets(cp_count)
-        (strf::right( L"\u2E3A\u2E3A\u2014", 12));
-
-    TEST(u8"         \u2E3A\u2E3A\u2014") .facets(cp_count)
-        (strf::fmt_cv(u8"\u2E3A\u2E3A\u2014") > 12);
-
-    TEST( u"         \u2E3A\u2E3A\u2014") .facets(cp_count)
-        (strf::fmt_cv(u"\u2E3A\u2E3A\u2014") > 12);
+    TEST( u"         \u2E3A\u2E3A\u2014")
+        .with(strf::width_as_u32len<char16_t>{})
+        (strf::cv(u"\u2E3A\u2E3A\u2014") > 12);
 
 
     TEST(u8"   \u2E3A\u2E3A\u2014")
@@ -74,17 +83,17 @@ int main()
     TEST( U"         \u2E3A\u2E3A\u2014")
         (strf::fmt( U"\u2E3A\u2E3A\u2014") > 12);
 
-    TEST( u"   \u2E3A\u2E3A\u2014")
-        (strf::fmt_cv(u8"\u2E3A\u2E3A\u2014") > 12);
+    TEST( u"         \u2E3A\u2E3A\u2014")
+        (strf::cv(u8"\u2E3A\u2E3A\u2014") > 12);
 
     TEST(u8"         \u2E3A\u2E3A\u2014")
-        (strf::fmt_cv( u"\u2E3A\u2E3A\u2014") > 12);
+        (strf::cv( u"\u2E3A\u2E3A\u2014") > 12);
 
     TEST(u8"         \u2E3A\u2E3A\u2014")
-        (strf::fmt_cv( U"\u2E3A\u2E3A\u2014") > 12);
+        (strf::cv( U"\u2E3A\u2E3A\u2014") > 12);
 
     TEST( u"         \u2E3A\u2E3A\u2014")
-        (strf::fmt_cv( U"\u2E3A\u2E3A\u2014") > 12);
+        (strf::cv( U"\u2E3A\u2E3A\u2014") > 12);
 
     return boost::report_errors();
 }

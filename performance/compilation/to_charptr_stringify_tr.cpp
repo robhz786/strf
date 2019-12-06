@@ -1,8 +1,6 @@
-#define BOOST_STRINGIFY_SEPARATE_COMPILATION
-#include <boost/stringify.hpp>
+#define STRF_SEPARATE_COMPILATION
+#include <strf.hpp>
 #include "args.hpp"
-
-namespace strf = boost::stringify;
 
 void FUNCTION_NAME (int)
 {
@@ -11,7 +9,7 @@ void FUNCTION_NAME (int)
     char *end = buff + buff_len;
     char* out = buff;
 
-    out = strf::write(out, end) .tr
+    out = strf::to(out, end) .tr
         ( "blah blah blah {} {} {} blah {} {} {}\n"
         , strf::right(arg_a0, 10)
         , arg_a1
@@ -21,7 +19,7 @@ void FUNCTION_NAME (int)
         , arg_a5 )
         .ptr;
 
-    out = strf::write(out, end) .tr
+    out = strf::to(out, end) .tr
         ( "blah blah {} {}{} {} {} blah {} {} {}\n"
         , arg_b0
         , strf::right(arg_b1, 9)
@@ -33,7 +31,7 @@ void FUNCTION_NAME (int)
         , arg_b7 )
         .ptr;
 
-    out = strf::write(out, end) .tr
+    out = strf::to(out, end) .tr
         ( "blah blah {} {:>10} {} {} {} {} {} {}\n"
         , arg_c0
         , strf::right(arg_c1, 10)

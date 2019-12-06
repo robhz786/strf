@@ -1,0 +1,91 @@
+////
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename T>
+constexpr auto hex(const T& value)
+{
+    return fmt(value).hex();
+}
+
+template <typename T>
+constexpr auto dec(const T& value)
+{
+    return fmt(value).dec();
+}
+
+template <typename T>
+constexpr auto oct(const T& value)
+{
+    return fmt(value).oct();
+}
+
+template <typename T>
+constexpr auto left(const T& value, int width)
+{
+    return fmt(value) < width;
+}
+
+template <typename T>
+constexpr auto right(const T& value, int width)
+{
+    return fmt(value) > width;
+}
+
+template <typename T>
+constexpr auto split(const T& value, int width)
+{
+    return fmt(value) % width;
+}
+
+template <typename T>
+constexpr auto center(const T& value, int width)
+{
+    return fmt(value) ^ width;
+}
+
+template <typename T>
+constexpr auto left(const T& value, int width, char32_t fill)
+{
+    return fmt(value).fill(fill) < width;
+}
+
+template <typename T>
+constexpr auto right(const T& value, int width, char32_t fill)
+{
+    return fmt(value).fill(fill) > width;
+}
+
+template <typename T>
+constexpr auto cv(const T& value)
+{
+    return fmt(value).cv();
+}
+
+template <typename T, typename E>
+constexpr auto cv(const T& value, const E& encoding)
+{
+    return fmt(value).cv(encoding);
+}
+
+template <typename T>
+constexpr auto sani(const T& value)
+{
+    return fmt(value).sani();
+}
+
+template <typename T, typename E>
+constexpr auto sani(const T& value, const E& encoding)
+{
+    return fmt(value).sani(encoding);
+}
+
+} // namespace strf
+----

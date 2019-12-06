@@ -3,20 +3,27 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <QString>
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include <climits>
 
-namespace strf = boost::stringify::v0;
-
-class QStringCreator: public strf::output_buffer<char16_t>
+class QStringCreator: public strf::basic_outbuf<char16_t>
 {
 public:
 
-    QStringCreator() : strf::output_buffer<char16_t>(_buffer, _buffer_size)
+    QStringCreator()
+        : strf::basic_outbuf<char16_t>(_buffer, _buffer_size)
     {
     }
 
-    void reserve(std::size_t size)
+#if defined(STRF_NO_CXX17_COPY_ELISION)
+    QStringCreator(QStringCreator&& str);
+#else
+    QStringCreator(QStringCreator&&) = delete;
+    QStringCreator(const QStringCreator&) = delete;
+#endif
+
+    explicit QStringCreator(std::size_t size)
+        : strf::basic_outbuf<char16_t>(_buffer, _buffer_size)
     {
         Q_ASSERT(size < static_cast<std::size_t>(INT_MAX));
         _str.reserve(static_cast<int>(size));
@@ -29,31 +36,73 @@ public:
 private:
 
     QString _str;
-    constexpr static std::size_t _buffer_size = strf::min_buff_size;
+    std::exception_ptr _eptr = nullptr;
+    constexpr static std::size_t _buffer_size = strf::min_size_after_recycle<char16_t>();
     char16_t _buffer[_buffer_size];
 };
 
 void QStringCreator::recycle()
 {
-    const QChar * qchar_buffer = reinterpret_cast<QChar*>(_buffer);
-    std::size_t count = this->pos() - _buffer;
-    _str.append(qchar_buffer, count);
+    if (this->good())
+    {
+        const QChar * qchar_buffer = reinterpret_cast<QChar*>(_buffer);
+        std::size_t count = this->pos() - _buffer;
+
+#if defined(__cpp_exceptions)
+
+        try
+        {
+            _str.append(qchar_buffer, count);
+        }
+        catch(...)
+        {
+            _eptr = std::current_exception();
+            this->set_good(false);
+        }
+#else
+
+        _str.append(qchar_buffer, count);
+
+#endif // defined(__cpp_exceptions)
+
+    }
     this->set_pos(_buffer);
 }
 
 QString QStringCreator::finish()
 {
     recycle();
+    this->set_good(false);
+    if (_eptr != nullptr)
+    {
+        std::rethrow_exception(_eptr);
+    }
     return std::move(_str);
 }
 
-constexpr strf::dispatcher<strf::facets_pack<>, QStringCreator> toQString{};
+class QStringCreatorFactory
+{
+public:
+    using char_type = char16_t;
+    using finish_type = QString;
+
+    QStringCreator create() const
+    {
+        return QStringCreator();
+    }
+    QStringCreator create(std::size_t size) const
+    {
+        return QStringCreator(size);
+    }
+};
+
+constexpr strf::destination_no_reserve<QStringCreatorFactory> toQString{};
 
 int main()
 {
     int x = 255;
     QString str = toQString(x, u" in hexadecimal is ", ~strf::hex(x));
-    BOOST_ASSERT(str == "255 in hexadecimal is 0xff");
+    assert(str == "255 in hexadecimal is 0xff");
 
     return 0;
 }

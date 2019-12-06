@@ -1,0 +1,151 @@
+**** when on Default formatting ****
+
+when e10 <= -_m10_digcount:  (0.1234  1.234e-03)
+
+   fixed_width = 2 - e10
+   sci_width   = m10_digcount + 4 + (e10 < -99) + (m10_digcount > 1)
+
+      ==> -e10 < m10_digcount + 2 + (e10 < -99) + (m10_digcount > 1)
+
+when  e10 >= 0:  (123400  1.234e-05)
+
+   fixed_width = m10_digcount + e10
+   sci_width   = m10_digcount + 4 + (e10 > 99) + (m10_digcount > 1)
+
+      ==>  e10 < 4 + (e10 > 99) + (m10_digcount > 1)
+
+when -m10_digcount < e10 < 0:  (12.34 1.234e+01)
+
+   fixed_width = m10_digcount + 1
+   sci_width   = m10_digcount + 4 + (e10 < -99) + (m10_digcount > 1)
+
+      ==>  3 + (e10 < -99) + (m10_digcount > 1) > 0 ==> aways fixed
+
+
+=> fixed_width = m10_digcount * (e10 > -m10_digcount)
+             + (e10 < 0)
+             + (e10 < -m10_digcount) 
+             + (e10 >= 0) * e10
+   sci_width   = m10_digcount + 4 + (e10u > 99) + (m10_digcount > 1)
+
+**** when on NonDefault formatting ****
+
+when e10 <= -m10_digcount:   (0.1234  1.234e-03)
+
+   fixed_width = 2 - e10
+   sci_width   = m10_digcount + 4 + (e10 < -99) + (m10_digcount > 1)
+
+      ==> -e10 < m10_digcount + 2 + (e10 < -99) + (m10_digcount > 1 || showpoint)
+
+when  e10 >= 0:  (123400  1.234e-05)
+
+   fixed_width = m10_digcount + e10 + showpoint
+   sci_width   = m10_digcount + 4 + (e10 > 99) + (m10_digcount > 1 || showpoint)
+
+      ==>  e10 + showpoint < 4 + (e10 > 99) + (m10_digcount > 1 || showpoint)
+
+
+when -m10_digcount < e10 < 0:  (12.34 1.234e+01) ==> aways fixed
+
+   fixed_width = m10_digcount + 1
+   sci_width   = m10_digcount + 4 + (e10 < -99) + (m10_digcount > 1 || showpoint)
+
+      ==>  3 + (e10 < -99) + (m10_digcount > 1) > 0 == aways true
+
+> fixed_width = m10_digcount * (e10 > -m10_digcount)
+             + (e10 < 0 || showpoint)
+             + (e10 < -m10_digcount) 
+             + (e10 >= 0) * e10
+
+
+**** when on NonDefault formatting with punctuation ****
+
+when e10 <= -m10_digcount:   (0.1234  1.234e-03)
+
+   fixed_width = 2 - e10
+   sci_width   = m10_digcount + 4 + (e10 < -99) + (m10_digcount > 1)
+
+      ==> - e10 > m10_digcount + 2 + (e10 < -99) + (m10_digcount > 1 || showpoint)
+
+-------------------------------------------------------------------------------
+
+when -m10_digcount < e10 < 0:  (1,2,3.4 123.4e+01)
+
+   fixed_width = m10_digcount + 1 + sep_width_sum
+   sci_width   = m10_digcount + 4 + (m10_digcount > 1 || showpoint)
+
+when  e10 >= 0:  (123400  1.234e-05)
+
+   fixed_width = m10_digcount + e10 + showpoint + sep_width_sum
+   sci_width   = m10_digcount + 4 + (e10 > 99) + (m10_digcount > 1 || showpoint)
+
+      ==>  e10 + showpoint < 4 + (e10 > 99) + (m10_digcount > 1 || showpoint)
+
+fixed_width =  m10_digcount + e10 * (e10 > 0) + (e10 < 0 || showpoint) + sep_width_sum
+sci_width   =  m10_digcount + 4 + (e10 > 99) + (m10_digcount > 1 || showpoint)
+
+sci_notation = (e10 + showpoint) * (e10 >= 0) + sep_width_sum
+          
+
+
+
+    // precision:
+    // if precision == (unsigned)-1, which is the default, then
+    // prints how many digits are necessary for a parser
+    // to fully recover the exact value
+
+    // otherwise when on fixed or scientific notation
+    // precision is the number of digits after the radix point
+
+    // on general notation, precision is the number of significant
+    // digits. If 0, do like when precision == (unsigned)-1
+
+    //
+
+/*
+   when e10 <= -m10_digcount:
+         _sci_notation = (m10_digcount + 2 + (showpoint || m10_digcount > 1) < -e10)
+
+     fixed < sci <=>
+     -e10 < m10_digcount + 2 + (showpoint || m10_digcount > 1) + (e10 > 99)
+
+     1 e-1
+       0.1      : 2 - e10
+       1e-01    : m10_digcount + 4 + (showpoint || m10_digcount > 1) + (e10 < -99)
+     1 e-3
+       0.001
+       1e-03
+
+     1 e-4
+       0.0001
+       1e-04
+       1.e-04
+     1 e-5
+       0.00001  : 2 - e10
+       1e-05    : m10_digcount + 4 + (showpoint || m10_digcount > 1) + (e10 < -99)
+       1.e-05
+
+     22 e-2
+       0.22
+       2.2e-01
+     22 e-5
+       0.00022  : 2 - e10
+       2.2e-04  : m10_digcount + 4 + (showpoint || m10_digcount > 1) + (-e10 < -99)
+     333e-5
+       0.00333  : 2 - e10
+       3.33e-04 : m10_digcount + 4 + (showpoint || m10_digcount > 1) + (-e10 < -99)
+
+
+   when e10 >= 0:   _sci_notation = e10 > 4 + (!showpoint && m10_digcount > 1)
+     fixed : m10_digcount + 1 + e10;
+     sci   : m10_digcount + 4 + (showpoint || m10_digcount > 1) + (e10 > 99)
+
+     fixed < sci <=>
+     e10 < 3 + (showpoint || m10_digcount > 1) + (e10 > 99)
+
+
+   when -m10_digcount < e10 < 0  : (m10_digcount must be greater than 1 )
+     22 e-1         _sci_notation = false
+       2.2      : m10_digcount + 1
+       2.2e-01  : m10_digcount + 5 + (e10 > 99)
+*/

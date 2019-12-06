@@ -5,18 +5,23 @@
 //[QStringAppender_def
 
 #include <QString>
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include <climits>
 
-namespace strf = boost::stringify::v0;
-
-class QStringAppender: public strf::output_buffer<char16_t>
+class QStringAppender: public strf::basic_outbuf<char16_t>
 {
 public:
 
     QStringAppender(QString& str);
 
-    void reserve(std::size_t size);
+    explicit QStringAppender(QString& str, std::size_t size);
+
+#if defined(STRF_NO_CXX17_COPY_ELISION)
+    QStringAppender(QStringAppender&& str);
+#else
+    QStringAppender(QStringAppender&& str) = delete;
+    QStringAppender(const QStringAppender& str) = delete;
+#endif
 
     void recycle() override;
 
@@ -26,8 +31,9 @@ private:
 
     QString& _str;
     std::size_t _count = 0;
+    std::exception_ptr _eptr = nullptr;
 
-    constexpr static std::size_t _buffer_size = strf::min_buff_size;
+    constexpr static std::size_t _buffer_size = strf::min_size_after_recycle<char16_t>();
     char16_t _buffer[_buffer_size];
 };
 
@@ -35,22 +41,53 @@ private:
 
 //[QStringAppender_ctor
 QStringAppender::QStringAppender(QString& str)
-    : strf::output_buffer<char16_t>(_buffer, _buffer_size)
+    : strf::basic_outbuf<char16_t>(_buffer, _buffer_size)
     , _str(str)
 {
 }
+
+QStringAppender::QStringAppender(QString& str, std::size_t size)
+    : strf::basic_outbuf<char16_t>(_buffer, _buffer_size)
+    , _str(str)
+{
+    Q_ASSERT(_str.size() + size < static_cast<std::size_t>(INT_MAX));
+    _str.reserve(_str.size() + static_cast<int>(size));
+}
+
+
 //]
 
 //[QStringAppender_recycle
 void QStringAppender::recycle()
 {
-    // Flush the content:
-    std::size_t count = /*<<ouput_buffer::pos() returns the immediate position
-    after the last character the library wrote in the buffer>>*/this->pos() - _buffer;
-    const QChar * qchar_buffer = reinterpret_cast<QChar*>(_buffer);
-    _str.append(qchar_buffer, count);
-    _count += count;
+    if (this->good())
+    {
+        // Flush the content:
+        std::size_t count = /*<<ouput_buffer::pos() returns the immediate position
+                              after the last character the library wrote in the buffer>>*/this->pos() - _buffer;
+        const QChar * qchar_buffer = reinterpret_cast<QChar*>(_buffer);
 
+#if defined(__cpp_exceptions)
+
+        try
+        {
+            _str.append(qchar_buffer, count);
+            _count += count;
+        }
+        catch(...)
+        {
+            _eptr = std::current_exception();
+            this->set_good(false);
+        }
+
+#else
+
+        _str.append(qchar_buffer, count);
+        _count += count;
+
+#endif // defined(__cpp_exceptions)
+
+    }
     // Reset the buffer position:
     this->set_pos(_buffer);
 
@@ -59,30 +96,75 @@ void QStringAppender::recycle()
 }
 //]
 
-
-//[QStringAppender_reserve
-void QStringAppender::reserve(std::size_t size)
-{
-    Q_ASSERT(_str.size() + size < static_cast<std::size_t>(INT_MAX));
-    _str.reserve(_str.size() + static_cast<int>(size));
-}
-//]
-
 //[QStringAppender_finish
 std::size_t QStringAppender::finish()
 {
     recycle();
+    if (_eptr != nullptr)
+    {
+        std::rethrow_exception(_eptr);
+    }
     return _count;
 }
 //]
 
-//[QStringAppender_dispatcher
-inline auto append(QString& str)
+//[QStringAppenderFactory
+
+class QStringAppenderFactory
 {
-    return strf::dispatcher<strf::facets_pack<>, QStringAppender, QString&> {str};
-}
+public:
+
+    using char_type = char16_t;
+    using finish_type = std::size_t;
+
+    QStringAppenderFactory(QString& str)
+        : _str(str)
+    {}
+
+    QStringAppenderFactory(const QStringAppenderFactory& str) = default;
+
+    template <typename ... Printers>
+    finish_type write(const Printers& ... printers) const
+    {
+        QStringAppender ob(_str);
+        strf::detail::write_args(ob, printers...);;
+        return ob.finish();
+    }
+
+    template <typename ... Printers>
+    finish_type sized_write( std::size_t size
+                           , const Printers& ... printers ) const
+    {
+        _str.reserve(_str.size() + size);
+        QStringAppender ob(_str);
+        strf::detail::write_args(ob, printers...);;
+        return ob.finish();
+    }
+
+    QStringAppender create() const
+    {
+        return QStringAppender{_str};
+    }
+    QStringAppender create(std::size_t size ) const
+    {
+        _str.reserve(_str.size() + size);
+        return QStringAppender{_str};
+    }
+
+private:
+
+    QString& _str;
+};
+
+
 //]
 
+//[QStringAppender_append
+inline auto append(QString& str)
+{
+    return strf::destination_no_reserve<QStringAppenderFactory> {str};
+}
+//]
 
 
 //[QStringAppender_use
@@ -94,10 +176,12 @@ int main()
     int x = 255;
     std::size_t append_count = append(str) (x, u" in hexadecimal is ", ~strf::hex(x));
 
-    BOOST_ASSERT(str == "....255 in hexadecimal is 0xff");
+    assert(str == "....255 in hexadecimal is 0xff");
 
     // append_count is equal to the value returned by QStringAppender::finish()
-    BOOST_ASSERT(str.length() == (int)append_count + initial_length);
+    assert(str.length() == (int)append_count + initial_length);
+    (void)initial_length;
+    (void)append_count;
 
     return 0;
 }

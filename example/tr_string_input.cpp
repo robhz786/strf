@@ -6,14 +6,12 @@
 void sample()
 {
     //[ tr_string_as_input
-    namespace strf = boost::stringify::v0;
-
     auto result = strf::to_string.tr( "{} --- {} --- {}"
                                     , "aaa"
                                     , strf::as("( {} {} )", "bbb", "ccc")
                                     , "ddd" );
 
-    BOOST_ASSERT(result == "aaa --- ( bbb ccc ) --- ddd");
+    assert(result == "aaa --- ( bbb ccc ) --- ddd");
     //]
 }
 

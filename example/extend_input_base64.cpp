@@ -2,14 +2,11 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/detail/lightweight_test.hpp>
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include <array>
 #include <vector>
 
-namespace strf = boost::stringify::v0;
-
-auto write_out = strf::write(stdout);
+auto write_out = strf::to(stdout);
 
 //[ base64_facet
 
@@ -113,7 +110,7 @@ inline auto base64(const void* bytes, std::size_t num_bytes)
 `base64` function already instantiates `base64_input_with_format`, we still
  need to overload `make_fmt` if we want `base64_input` to work in
  [link ranges fmt_range]
- >>*/inline auto make_fmt(strf::tag, const base64_input& d)
+ >>*/inline auto make_fmt(strf::rank<1>, const base64_input& d)
 {
     return base64_input_with_format{d};
 }
@@ -128,27 +125,31 @@ class base64_printer: public strf::printer<CharT>
 {
 public:
 
+    template <bool PreviewSize>
     base64_printer
         ( base64_facet facet
+        , strf::print_preview<PreviewSize, false>& preview
         , const base64_input_with_format& fmt );
 
-    int width(int) const override;
-
-    std::size_t necessary_size() const override;
-
-    void write(strf::output_buffer<CharT>& ob) const override;
+    void print_to(strf::basic_outbuf<CharT>& ob) const override;
 
 private:
 
-    void _write_single_line(strf::output_buffer<CharT>& ob) const;
+    void _calc_size(strf::size_preview<false>&) const
+    {
+    }
 
-    void _encode_all_data_in_this_line(strf::output_buffer<CharT>& ob) const;
+    void _calc_size(strf::size_preview<true>&) const;
 
-    void _write_multiline(strf::output_buffer<CharT>& ob) const;
+    void _write_single_line(strf::basic_outbuf<CharT>& ob) const;
 
-    void _write_identation(strf::output_buffer<CharT>& ob) const;
+    void _encode_all_data_in_this_line(strf::basic_outbuf<CharT>& ob) const;
 
-    void _write_end_of_line(strf::output_buffer<CharT>& ob) const;
+    void _write_multiline(strf::basic_outbuf<CharT>& ob) const;
+
+    void _write_identation(strf::basic_outbuf<CharT>& ob) const;
+
+    void _write_end_of_line(strf::basic_outbuf<CharT>& ob) const;
 
     void _encode_3bytes
         ( CharT* dest
@@ -162,39 +163,36 @@ private:
 };
 
 template <typename CharT>
+template <bool PreviewSize>
 base64_printer<CharT>::base64_printer
     ( base64_facet facet
+    , strf::print_preview<PreviewSize, false>& preview
     , const base64_input_with_format& fmt )
     : _facet(facet)
     , _fmt(fmt)
 {
+    _calc_size(preview);
 }
 
 template <typename CharT>
-int base64_printer<CharT>::width(int) const
-{
-    return 0;
-}
-
-template <typename CharT>
-std::size_t base64_printer<CharT>::necessary_size() const
+void base64_printer<CharT>::_calc_size(strf::size_preview<true>& preview) const
 {
     std::size_t num_digits = 4 * (_fmt.value().num_bytes + 2) / 3;
+    preview.add_size(num_digits);
     if (_facet.line_length > 0 && _facet.eol[0] != '\0')
     {
         std::size_t num_lines
             = (num_digits + _facet.line_length - 1)
             / _facet.line_length;
         std::size_t eol_size = 1 + (_facet.eol[1] != '\0');
-        return num_digits + num_lines * (_fmt.indentation() + eol_size);
+        preview.add_size(num_lines * (_fmt.indentation() + eol_size));
     }
-    return num_digits;
 }
 
 //[ base64_printer__write
 
 template <typename CharT>
-void base64_printer<CharT>::write(strf::output_buffer<CharT>& ob) const
+void base64_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
 {
     if (_facet.single_line())
     {
@@ -207,14 +205,14 @@ void base64_printer<CharT>::write(strf::output_buffer<CharT>& ob) const
 }
 
 template <typename CharT>
-void base64_printer<CharT>::_write_single_line(strf::output_buffer<CharT>& ob) const
+void base64_printer<CharT>::_write_single_line(strf::basic_outbuf<CharT>& ob) const
 {
     _write_identation(ob);
     _encode_all_data_in_this_line(ob);
 }
 
 template <typename CharT>
-void base64_printer<CharT>::_write_identation(strf::output_buffer<CharT>& ob) const
+void base64_printer<CharT>::_write_identation(strf::basic_outbuf<CharT>& ob) const
 {
     using traits = std::char_traits<CharT>;
     std::size_t count = _fmt.indentation();
@@ -235,7 +233,7 @@ void base64_printer<CharT>::_write_identation(strf::output_buffer<CharT>& ob) co
 }
 
 template <typename CharT>
-void base64_printer<CharT>::_encode_all_data_in_this_line(strf::output_buffer<CharT>& ob) const
+void base64_printer<CharT>::_encode_all_data_in_this_line(strf::basic_outbuf<CharT>& ob) const
 {
     auto data_it = static_cast<const std::uint8_t*>(_fmt.value().bytes);
     for ( std::ptrdiff_t count = _fmt.value().num_bytes
@@ -268,7 +266,7 @@ void base64_printer<CharT>::_encode_3bytes
 template <typename CharT>
 CharT base64_printer<CharT>::_encode(std::uint8_t hextet) const
 {
-    BOOST_ASSERT(hextet <= 63);
+    assert(hextet <= 63);
     std::uint8_t ch =
         hextet < 26 ?  static_cast<std::uint8_t>('A') + hextet :
         hextet < 52 ?  static_cast<std::uint8_t>('a') + hextet - 26 :
@@ -281,7 +279,7 @@ CharT base64_printer<CharT>::_encode(std::uint8_t hextet) const
 //]
 
 template <typename CharT>
-void base64_printer<CharT>::_write_multiline(strf::output_buffer<CharT>& ob) const
+void base64_printer<CharT>::_write_multiline(strf::basic_outbuf<CharT>& ob) const
 {
     _write_identation(ob);
 
@@ -326,7 +324,7 @@ void base64_printer<CharT>::_write_multiline(strf::output_buffer<CharT>& ob) con
 }
 
 template <typename CharT>
-void base64_printer<CharT>::_write_end_of_line(strf::output_buffer<CharT>& ob) const
+void base64_printer<CharT>::_write_end_of_line(strf::basic_outbuf<CharT>& ob) const
 {
     ob.ensure(2);
     ob.pos()[0] = _facet.eol[0];
@@ -341,21 +339,25 @@ void base64_printer<CharT>::_write_end_of_line(strf::output_buffer<CharT>& ob) c
 
 namespace xxx {
 
-template <typename CharT, typename FPack>
-inline base64_printer<CharT> make_printer( const FPack& fp
+template <typename CharT, typename FPack, typename Preview>
+inline base64_printer<CharT> make_printer( strf::rank<1>
+                                         , const FPack& fp
+                                         , Preview& preview
                                          , const base64_input_with_format& fmt )
 {
   /*<< see [link facets_pack get_facet.]
 >>*/auto facet = strf::get_facet<base64_facet_c, base64_input>(fp);
-    return {facet, fmt};
+    return {facet, preview, fmt};
 }
 
 
-template <typename CharT, typename FPack>
-inline base64_printer<CharT> make_printer( const FPack& fp
+template <typename CharT, typename FPack, typename Preview>
+inline base64_printer<CharT> make_printer( strf::rank<1> r
+                                         , const FPack& fp
+                                         , Preview& preview
                                          , const base64_input& input )
 {
-    return make_printer(fp, base64_input_with_format{input});
+    return make_printer(r, fp, preview, base64_input_with_format{input});
 }
 
 } // namespace xxx
@@ -370,98 +372,102 @@ void tests()
 
     {
         auto result = strf::to_string(xxx::base64(data, data_size)) ;
-        BOOST_TEST(result == "VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYXp5IGRvZy4=\r\n");
+        assert(result == "VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYXp5IGRvZy4=\r\n");
     }
 
     {
         // customizing line length, end of line and identation
         auto result = strf::to_string
-            .facets(xxx::base64_facet{50, {'\n', '\0'}})
+            .with(xxx::base64_facet{50, {'\n', '\0'}})
             (xxx::base64(data, data_size).indentation(4));
 
         auto expected =
             "    VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYX\n"
             "    p5IGRvZy4=\n";
 
-        BOOST_TEST(result == expected);
+        assert(result == expected);
+        (void)result;
+        (void)expected;
     }
     {
         // When the length of last line is exactly as base64_facet::line_length,
         auto result = strf::to_string
-            .facets(xxx::base64_facet{30})
+            .with(xxx::base64_facet{30})
             (xxx::base64(data, data_size).indentation(4));
 
         auto expected =
             "    VGhlIHF1aWNrIGJyb3duIGZveCBqdW\r\n"
             "    1wcyBvdmVyIHRoZSBsYXp5IGRvZy4=\r\n";
 
-        BOOST_TEST(result == expected);
+        assert(result == expected);
+        (void)result;
+        (void)expected;
     }
     {
         // When base64_facet::line_length == 1
         auto result = strf::to_string
-            .facets(xxx::base64_facet{1, {'\n', '\0'}})
+            .with(xxx::base64_facet{1, {'\n', '\0'}})
             (xxx::base64("  >  ?", 6).indentation(2));
 
-        BOOST_TEST(result == "  I\n  C\n  A\n  +\n  I\n  C\n  A\n  /\n");
+        assert(result == "  I\n  C\n  A\n  +\n  I\n  C\n  A\n  /\n");
     }
     {
         // When base64_facet::line_length == 3
         auto result = strf::to_string
-            .facets(xxx::base64_facet{3, {'\n', '\0'}})
+            .with(xxx::base64_facet{3, {'\n', '\0'}})
             (xxx::base64("  >  ?", 6).indentation(2));
 
-        BOOST_TEST(result == "  ICA\n  +IC\n  A/\n");
+        assert(result == "  ICA\n  +IC\n  A/\n");
     }
     {
         // When base64_facet::line_length == 4
         auto result = strf::to_string
-            .facets(xxx::base64_facet{4, {'\n', '\0'}})
+            .with(xxx::base64_facet{4, {'\n', '\0'}})
             (xxx::base64("  >  ?", 6).indentation(2));
 
-        BOOST_TEST(result == "  ICA+\n  ICA/\n");
+        assert(result == "  ICA+\n  ICA/\n");
     }
     {
         // The default character for index 62 is '+'
         // and for index 63 is '/'
         auto result = strf::to_string(xxx::base64("  >  ?", 6));
-        BOOST_TEST(result == "ICA+ICA/\r\n");
+        assert(result == "ICA+ICA/\r\n");
     }
 
     {
         // customizing characters for index 62 and 63
         auto result = strf::to_string
-            .facets(xxx::base64_facet{50, {'\r', '\n'}, '-', '_'})
+            .with(xxx::base64_facet{50, {'\r', '\n'}, '-', '_'})
             (xxx::base64("  >  ?", 6));
 
-        BOOST_TEST(result == "ICA-ICA_\r\n");
+        assert(result == "ICA-ICA_\r\n");
     }
 
     {
         // when base64_facet::line_length == 0'
         // then the result has no end of line
         auto result = strf::to_string
-            .facets(xxx::base64_facet{0, {'\r', '\n'}})
+            .with(xxx::base64_facet{0, {'\r', '\n'}})
             (xxx::base64("  >  ?", 6));
 
-        BOOST_TEST(result == "ICA+ICA/");
+        assert(result == "ICA+ICA/");
     }
     {
         // when base64_facet::eol[0] == '\0'
         // then the result has no end of line
         auto result = strf::to_string
-            .facets(xxx::base64_facet{50, {'\0', '\n'}, '-', '_'})
+            .with(xxx::base64_facet{50, {'\0', '\n'}, '-', '_'})
             (xxx::base64("  >  ?", 6));
 
-        BOOST_TEST(result == "ICA-ICA_");
+        assert(result == "ICA-ICA_");
     }
     {
         // test indentation on single line mode
         auto result = strf::to_string
-            .facets(xxx::base64_facet{0})
+            .with(xxx::base64_facet{0})
             (xxx::base64("  >  ?", 6).indentation(4));
 
-        BOOST_TEST(result == "    ICA+ICA/");
+        assert(result == "    ICA+ICA/");
     }
     {
         //test in ranges
@@ -475,7 +481,7 @@ void tests()
             , {msg2, strlen(msg2)} };
 
         auto result = strf::to_string
-            .facets(xxx::base64_facet{50, {'\n', '\0'}})
+            .with(xxx::base64_facet{50, {'\n', '\0'}})
             (strf::fmt_range(vec, "------------\n").indentation(4));
 
         auto expected =
@@ -485,7 +491,9 @@ void tests()
             "------------\n"
             "    YWJjZGU=\n";
 
-        BOOST_TEST(result == expected);
+        assert(result == expected);
+        (void)result;
+        (void)expected;
     }
 
 }
@@ -497,15 +505,16 @@ void sample()
     const char* msg  = "The quick brown fox jumps over the lazy dog.";
 
     auto obtained = strf::to_string
-        .facets(xxx::base64_facet{50, {'\n', '\0'}})
+        .with(xxx::base64_facet{50, {'\n', '\0'}})
         ( xxx::base64(msg, strlen(msg)).indentation(4) );
 
     auto expected =
         "    VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYX\n"
         "    p5IGRvZy4=\n";
 
-    BOOST_ASSERT(obtained == expected);
+    assert(obtained == expected);
 //]
+    (void)obtained;
     (void)expected;
 };
 
@@ -513,5 +522,5 @@ int main()
 {
     tests();
     sample();
-    return boost::report_errors();
+    return 0;
 }

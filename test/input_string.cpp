@@ -3,14 +3,15 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <boost/stringify.hpp>
+#include <strf.hpp>
+
+#if ! defined(__cpp_char8_t)
+using char8_t = char;
+#endif
 
 int main()
 {
-    namespace strf = boost::stringify::v0;
-
     {
-        TEST("abc") .facets(strf::width_as_u32len(), strf::utf8<char>()) ( strf::cv("abc") );
         TEST("   abc")   ( strf::right("abc", 6) );
         TEST("abc...")   ( strf::left    ("abc", 6, '.') );
         TEST("...abc")   ( strf::right   ("abc", 6, '.') );
@@ -58,7 +59,7 @@ int main()
         TEST(L"   abc")  ( strf::right(abc, 6) );
     }
 
-#if defined(BOOST_STRINGIFY_HAS_STD_STRING_VIEW)
+#if defined(STRF_HAS_STD_STRING_VIEW)
 
     {
         std::string_view abc{"abcdef", 3};
@@ -68,6 +69,53 @@ int main()
     }
 
 #endif
+
+    {   // by-pass encoding sanitization
+
+        TEST("---\x99---") (strf::cv("---\x99---"));
+        TEST("---\xA5---")
+            .with(strf::iso_8859_3<char>())
+            (strf::cv("---\xA5---", strf::iso_8859_3<char>()));
+        TEST(reinterpret_cast<const char8_t*>("---\xA5---"))
+            .with(strf::iso_8859_3<char8_t>())
+            (strf::cv("---\xA5---", strf::iso_8859_3<char>()));
+        TEST("...---\xA5---")
+            .with(strf::iso_8859_3<char>())
+            (strf::right("---\xA5---", 10, U'.').cv(strf::iso_8859_3<char>()));
+        TEST(reinterpret_cast<const char8_t*>("...---\xA5---"))
+            .with(strf::iso_8859_3<char8_t>())
+            (strf::right("---\xA5---", 10, U'.').cv(strf::iso_8859_3<char>()));
+    }
+    {   // encoding sanitization
+
+        TEST("---\xEF\xBF\xBD---") (strf::sani("---\xFF---"));
+        TEST("   ---\xEF\xBF\xBD---") (strf::sani("---\xFF---") > 10);
+        TEST("---\xEF\xBF\xBD---") (strf::sani("---\xFF---", strf::utf8<char>()));
+        TEST("   ---\xEF\xBF\xBD---") (strf::sani("---\xFF---", strf::utf8<char>()) > 10);
+        TEST("---?---")
+            .with(strf::iso_8859_3<char>())
+            (strf::sani("---\xA5---", strf::iso_8859_3<char>()));
+        TEST("  ---?---")
+            .with(strf::iso_8859_3<char>())
+            (strf::sani("---\xA5---", strf::iso_8859_3<char>()) > 9);
+
+        TEST("...---\x99---") (strf::cv("---\x99---").fill(U'.') > 10);
+        TEST("...---\x99---") (strf::cv("---\x99---", strf::utf8<char>()).fill(U'.') > 10);
+    }
+    {   // encoding conversion
+
+        TEST("--?--\x80--")
+            .with(strf::windows_1252<char>())
+            (strf::sani("--\xC9\x90--\xE2\x82\xAC--", strf::utf8<char>()));
+
+        TEST("--?--\x80--")
+            .with(strf::windows_1252<char>())
+            (strf::cv("--\xC9\x90--\xE2\x82\xAC--", strf::utf8<char>()));
+
+        TEST("....--?--\x80--")
+            .with(strf::windows_1252<char>())
+            (strf::right("--\xC9\x90--\xE2\x82\xAC--", 12, U'.').cv(strf::utf8<char>()));
+    }
 
     {   // convertion from utf32
 
@@ -81,18 +129,18 @@ int main()
         char32_t def[] = U"def";
         char32_t ghi[] = U"ghi";
         TEST("abc")      ( strf::cv(abc) );
-        TEST("   abc")   ( strf::fmt_cv(abc) > 6 );
-        TEST("abc...")   ( strf::fmt_cv(abc).left(6, '.') );
-        TEST("...abc")   ( strf::fmt_cv(abc).right(6, '.') );
-        TEST(".abc..")   ( strf::fmt_cv(abc).center(6, '.') );
+        TEST("   abc")   ( strf::cv(abc) > 6 );
+        TEST("abc...")   ( strf::cv(abc).fill('.') < 6 );
+        TEST("...abc")   ( strf::cv(abc).fill('.') > 6 );
+        TEST(".abc..")   ( strf::cv(abc).fill('.') ^ 6 );
         TEST("     abc")   ( strf::join_right(8)(strf::cv(abc)) );
-        TEST("...abc~~")   ( strf::join_right(8, '.')( strf::fmt_cv(abc).left(5, U'~') ) );
-        TEST(".....abc")   ( strf::join_right(8, '.')( strf::fmt_cv(abc).left(3, U'~') ) );
-        TEST(".....abc")   ( strf::join_right(8, '.')( strf::fmt_cv(abc).left(2, U'~') ) );
+        TEST("...abc~~")   ( strf::join_right(8, '.')(strf::cv(abc).fill(U'~') < 5));
+        TEST(".....abc")   ( strf::join_right(8, '.')(strf::cv(abc).fill(U'~') < 3));
+        TEST(".....abc")   ( strf::join_right(8, '.')(strf::cv(abc).fill(U'~') < 2));
 
-        TEST("   abcdefghi") ( strf::fmt_cv(U"") > 3, strf::fmt_cv(abc)>3, strf::fmt_cv(def)<3, strf::fmt_cv(ghi)^3 );
-        TEST("  abcdefghi")  ( strf::fmt_cv(U"") > 2, strf::fmt_cv(abc)>2, strf::fmt_cv(def)<2, strf::fmt_cv(ghi)^2 );
-        TEST("abcdefghi")    ( strf::fmt_cv(U"") > 0, strf::fmt_cv(abc)>0, strf::fmt_cv(def)<0, strf::fmt_cv(ghi)^0 );
+        TEST("   abcdefghi") ( strf::cv(U"") > 3, strf::cv(abc)>3, strf::cv(def)<3, strf::cv(ghi)^3 );
+        TEST("  abcdefghi")  ( strf::cv(U"") > 2, strf::cv(abc)>2, strf::cv(def)<2, strf::cv(ghi)^2 );
+        TEST("abcdefghi")    ( strf::cv(U"") > 0, strf::cv(abc)>0, strf::cv(def)<0, strf::cv(ghi)^0 );
 
     }
 

@@ -3,7 +3,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <vector>
-#include <boost/detail/lightweight_test.hpp>
+#include <strf.hpp>
 
 //[ ipv4address_type
 namespace xxx {
@@ -18,26 +18,25 @@ struct ipv4address
 
 
 //[ make_printer_ipv4address
-#include <boost/stringify.hpp>
-
-namespace strf = boost::stringify::v0;
+#include <strf.hpp>
 
 namespace xxx {
 
-template <typename CharT, typename FPack>
-auto make_printer(const FPack& fp, ipv4address addr)
+template <typename CharT, typename FPack, typename Preview>
+auto make_printer(strf::rank<1>, const FPack& fp, Preview& preview, ipv4address addr)
 {
     (void)fp;
     return make_printer<CharT>
-        ( /*<< Note we are not forwarding `fp` but instead passing an empty
+        ( strf::rank<5>{}
+        , /*<< Note we are not forwarding `fp` but instead passing an empty
 facets pack. In others cases, however, you may want to propagate some or
 all of the facets.
  >>*/strf::pack()
-        , strf::join()
-            ( addr.bytes[0], CharT{'.'}
-            , addr.bytes[1], CharT{'.'}
-            , addr.bytes[2], CharT{'.'}
-            , addr.bytes[3] ) );
+        , preview
+        , strf::join( addr.bytes[0], CharT{'.'}
+                    , addr.bytes[1], CharT{'.'}
+                    , addr.bytes[2], CharT{'.'}
+                    , addr.bytes[3] ) );
 }
 
 } // namespace xxx
@@ -49,7 +48,7 @@ void basic_sample()
 //[ ipv4_basic_sample
     xxx::ipv4address addr {{146, 20, 110, 251}};
     auto s = strf::to_string("The IP address of boost.org is ", addr);
-    BOOST_TEST(s == "The IP address of boost.org is 146.20.110.251");
+    assert(s == "The IP address of boost.org is 146.20.110.251");
 //]
 }
 
@@ -61,9 +60,9 @@ using ipv4address_with_format = strf::value_with_format<ipv4address, /*<<
     The `alignment_format` class template provides the [link format_functions
     formatting functions] related to alignment. >>*/strf::alignment_format>;
 
-inline ipv4address_with_format make_fmt( /*<< The `tag` paramenter is not used.
+inline ipv4address_with_format make_fmt( /*<< The `rank<1>` paramenter is not used.
      Its only purpose is to ensure there is no other `make_fmt` function
-     around there with the same signature. >>*/ strf::tag, ipv4address x) { return ipv4address_with_format{x}; }
+     around there with the same signature. >>*/ strf::rank<1>, ipv4address x) { return ipv4address_with_format{x}; }
 
 } // namespace xxx
 //]
@@ -72,15 +71,19 @@ inline ipv4address_with_format make_fmt( /*<< The `tag` paramenter is not used.
 //[make_printer_fmt_ipv4
 namespace xxx {
 
-template <typename CharT, typename FPack>
-auto make_printer( const FPack& fp
+template <typename CharT, typename FPack, typename Preview>
+auto make_printer( strf::rank<1>
+                 , const FPack& fp
+                 , Preview& preview
                  , ipv4address_with_format fmt_addr )
 {
     (void)fp;
     xxx::ipv4address addr = fmt_addr.value();
     return strf::make_printer<CharT>
-        ( strf::pack()
-        , strf::join(fmt_addr.width(), fmt_addr.alignment(), fmt_addr.fill())
+        ( strf::rank<5>{}
+        , strf::pack()
+        , preview
+        , strf::join_align(fmt_addr.width(), fmt_addr.alignment(), fmt_addr.fill())
             ( addr.bytes[0], CharT{'.'}
             , addr.bytes[1], CharT{'.'}
             , addr.bytes[2], CharT{'.'}
@@ -97,7 +100,7 @@ void sample_fmt_sample()
     xxx::ipv4address addr {{146, 20, 110, 251}};
 
     auto s = strf::to_string("boost.org: ", strf::right(addr, 20, U'.'));
-    BOOST_ASSERT(s == "boost.org: ......146.20.110.251");
+    assert(s == "boost.org: ......146.20.110.251");
 //]
 
 
@@ -106,10 +109,10 @@ void sample_fmt_sample()
                                         , {{146, 20, 110, 251}}
                                         , {{110, 110, 110, 110}} };
     auto s2 = strf::to_string("[", strf::fmt_range(vec, " ;") > 16, "]");
-    BOOST_ASSERT(s2 == "[       127.0.0.1 ;  146.20.110.251 ; 110.110.110.110]");
+    assert(s2 == "[       127.0.0.1 ;  146.20.110.251 ; 110.110.110.110]");
 //]
     // auto s3 = strf::to_string("[", strf::range(vec, " ; "), "]");
-    // BOOST_ASSERT(s3 == "[127.0.0.1 ; 146.20.110.251 ; 110.110.110.110]");
+    // assert(s3 == "[127.0.0.1 ; 146.20.110.251 ; 110.110.110.110]");
 }
 
 
@@ -119,5 +122,5 @@ int main()
 {
     basic_sample();
     sample_fmt_sample();
-    return boost::report_errors();
+    return 0;
 }

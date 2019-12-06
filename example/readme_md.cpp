@@ -2,25 +2,22 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 
 #if ! defined(__cpp_char8_t)
 
-namespace boost{ namespace stringify{ inline namespace v0{
+namespace strf {
 constexpr auto to_u8string = to_string;
-}}}
+}
 
 #endif
 
 #include <cassert>
 #include <iostream>
-#include <boost/stringify.hpp> // The whole library is included in this header
+#include <strf.hpp> // The whole library is included in this header
 
 void samples()
 {
-    namespace strf = boost::stringify::v0; // Everything is inside this namespace.
-                                           // ( v0 is an inline namespace ).
-
     // basic example:
     int value = 255;
     std::string s = strf::to_string(value, " in hexadecimal is ", strf::hex(value));
@@ -66,17 +63,17 @@ void samples()
     strf::assign(s) ("aaa", "bbb");
     strf::append(s) ("ccc", "ddd");
     assert(s == "aaabbbcccddd");
-    
+
     // other output types
     char buff[500];
-    strf::write(buff) (value, " in hexadecimal is ", strf::hex(value));
-    strf::write(stdout) ("Hello, ", "World", '!');
-    strf::write(std::cout.rdbuf()) ("Hello, ", "World", '!');
+    strf::to(buff) (value, " in hexadecimal is ", strf::hex(value));
+    strf::to(stdout) ("Hello, ", "World", '!');
+    strf::to(std::cout.rdbuf()) ("Hello, ", "World", '!');
     std::u16string s16 = strf::to_u16string( value
                                            , u" in hexadecimal is "
                                            , strf::hex(value) );
     assert(s16 == u"255 in hexadecimal is ff");
-    
+
     // alternative syntax:
     s = strf::to_string.tr("{} in hexadecimal is {}", value, strf::hex(value));
     assert(s == "255 in hexadecimal is ff");

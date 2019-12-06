@@ -5,31 +5,38 @@
 #define  _CRT_SECURE_NO_WARNINGS
 
 #include "test_utils.hpp"
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 
-namespace strf = boost::stringify::v0;
-
-class reservation_tester : public strf::output_buffer<char>
+class reservation_tester : public strf::basic_outbuf<char>
 {
-    constexpr static std::size_t _buff_size = strf::min_buff_size;
+    constexpr static std::size_t _buff_size = strf::min_size_after_recycle<char>();
     char _buff[_buff_size];
 
 public:
 
     reservation_tester()
-        : output_buffer<char>{ _buff, _buff + _buff_size }
+        : strf::basic_outbuf<char>{ _buff, _buff + _buff_size }
         , _buff{0}
     {
     }
 
-    reservation_tester(const reservation_tester&) = delete;
+    reservation_tester(std::size_t size)
+        : strf::basic_outbuf<char>{ _buff, _buff + _buff_size }
+        , _buff{0}
+        , _reserved_size{size}
+    {
+    }
 
+#if defined(STRF_NO_CXX17_COPY_ELISION)
+
+    reservation_tester(reservation_tester&& other);
+
+#else // defined(STRF_NO_CXX17_COPY_ELISION)
+
+    reservation_tester(const reservation_tester&) = delete;
     reservation_tester(reservation_tester&&) = delete;
 
-    void reserve(std::size_t s)
-    {
-        _reserve_size = s;
-    }
+#endif // defined(STRF_NO_CXX17_COPY_ELISION)
 
     void recycle() override
     {
@@ -38,25 +45,56 @@ public:
 
     std::size_t finish()
     {
-        return _reserve_size;
+        return _reserved_size;
     }
 
 private:
 
-    std::size_t _reserve_size = std::numeric_limits<std::size_t>::max();
+    std::size_t _reserved_size = 0;
 };
 
 
+class reservation_tester_creator
+{
+public:
+
+    using char_type = char;
+
+    template <typename ... Printers>
+    std::size_t write(const Printers& ... printers) const
+    {
+        reservation_tester ob;
+        strf::detail::write_args(ob, printers...);;
+        return ob.finish();
+    }
+
+    template <typename ... Printers>
+    std::size_t sized_write(std::size_t size, const Printers& ... printers) const
+    {
+        reservation_tester ob{size};
+        strf::detail::write_args(ob, printers...);;
+        return ob.finish();
+    }
+    reservation_tester create() const
+    {
+        return reservation_tester{};
+    }
+    reservation_tester create(std::size_t size) const
+    {
+        return reservation_tester{size};
+    }
+};
+
 constexpr auto reservation_test()
 {
-    return strf::dispatcher<strf::facets_pack<>, reservation_tester>();
+    return strf::destination_no_reserve<reservation_tester_creator>();
 }
 
 
 int main()
 {
     // on non-const rval ref
-    constexpr std::size_t not_reserved = std::numeric_limits<std::size_t>::max();
+    constexpr std::size_t not_reserved = 0;
 
     {
         auto size = reservation_test()  ("abcd");
@@ -71,7 +109,7 @@ int main()
         BOOST_TEST_EQ(size, 4);
     }
 
-    // on non-const ref
+    // // on non-const ref
 
     {
         auto tester = reservation_test();
@@ -89,7 +127,7 @@ int main()
         BOOST_TEST_EQ(size, 4);
     }
 
-    // on const ref
+    // // on const ref
 
     {
         const auto tester = reservation_test();
@@ -107,7 +145,7 @@ int main()
         BOOST_TEST_EQ(size, 4);
     }
 
-    // on const rval ref
+    // // on const rval ref
 
     {
         const auto tester = reservation_test();

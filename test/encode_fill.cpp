@@ -3,10 +3,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "lightweight_test_label.hpp"
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include <vector>
-
-namespace strf = boost::stringify::v0;
 
 template <typename CharT>
 std::basic_string<CharT> repeat
@@ -40,10 +38,10 @@ void test_fill
                      << std::dec;
 
     {
-        int count = 10;
+        std::int16_t count = 10;
         auto result = strf::to_basic_string<CharT>
-            .facets(enc, strf::encoding_error::replace, allow_surr)
-            (strf::right(CharT('x'), count + 1, fill_char));
+            .with(enc, strf::encoding_error::replace, allow_surr)
+            (strf::right(CharT('x'), 11, fill_char));
 
         auto expected = repeat(count, encoded_char);
         expected.push_back(CharT('x'));
@@ -51,9 +49,9 @@ void test_fill
         BOOST_TEST(result == expected);
     }
     {
-        int count = 200;
+        std::int16_t count = 200;
         auto result = strf::to_basic_string<CharT>
-            .facets(enc, strf::encoding_error::replace, allow_surr)
+            .with(enc, strf::encoding_error::replace, allow_surr)
             (strf::right(CharT('x'), count + 1, fill_char));
 
         auto expected = repeat(count, encoded_char);
@@ -84,6 +82,12 @@ void test_invalid_fill_stop
     , char32_t fill_char
     , strf::surrogate_policy allow_surr = strf::surrogate_policy::strict )
 {
+    (void) enc;
+    (void) fill_char;
+    (void) allow_surr;
+
+#if defined(__cpp_exceptions)
+
     BOOST_TEST_LABEL << "encoding: " << enc.name()
                      << "; test_fill_char: \\u'"
                      << std::hex << (unsigned)fill_char << '\''
@@ -91,39 +95,12 @@ void test_invalid_fill_stop
 
     {
         auto facets = strf::pack(enc, strf::encoding_error::stop, allow_surr);
-        BOOST_TEST_THROWS( (strf::to_string.facets(facets)(strf::right(0, 10, fill_char)))
+        BOOST_TEST_THROWS( (strf::to_string.with(facets)(strf::right(0, 10, fill_char)))
                          , strf::encoding_failure );
     }
+
+#endif // defined(__cpp_exceptions)
 }
-
-template <typename CharT>
-void test_invalid_fill_ignore
-    ( strf::encoding<CharT> enc
-    , char32_t fill_char
-    , strf::surrogate_policy allow_surr = strf::surrogate_policy::strict )
-{
-    BOOST_TEST_LABEL << "test_fill_char: \\u'"
-                     << std::hex << (unsigned)fill_char << '\''
-                     << std::dec;
-
-    std::basic_string<CharT> expected(5, CharT('-'));
-    expected.push_back(CharT('x'));
-    for(int i = 0; i < 5; ++i)
-    {
-        expected.push_back(CharT('+'));
-    }
-
-    {
-        int count = 10;
-        auto result = strf::to_basic_string<CharT>
-            .facets(enc, strf::encoding_error::ignore, allow_surr)
-            ( strf::multi(CharT('-'), 5)
-            , strf::right(CharT('x'), count + 1, fill_char)
-            , strf::multi(CharT('+'), 5) );
-        BOOST_TEST(result == expected);
-    }
-}
-
 
 int main()
 {
@@ -148,7 +125,6 @@ int main()
         test_fill(strf::utf8<char>(), 0xDFFF, "\xEF\xBF\xBD");
         test_fill(strf::utf8<char>(), 0x110000, "\xEF\xBF\xBD");
         test_invalid_fill_stop(strf::utf8<char>(), 0x110000);
-        test_invalid_fill_ignore(strf::utf8<char>(), 0x110000);
     }
 
     {
@@ -167,7 +143,6 @@ int main()
         test_fill(strf::utf16<char16_t>(), 0xDFFF, u"\uFFFD");
         test_fill(strf::utf16<char16_t>(), 0x110000, u"\uFFFD");
         test_invalid_fill_stop(strf::utf16<char16_t>(), 0x110000);
-        test_invalid_fill_ignore(strf::utf16<char16_t>(), 0x110000);
     }
 
     {
@@ -186,7 +161,6 @@ int main()
         test_fill(strf::utf32<char32_t>(), 0xDFFF, U"\uFFFD");
         test_fill(strf::utf32<char32_t>(), 0x110000, U"\uFFFD");
         test_invalid_fill_stop(strf::utf32<char32_t>(), 0x110000);
-        test_invalid_fill_ignore(strf::utf32<char32_t>(), 0x110000);
     }
 
     {
@@ -205,7 +179,6 @@ int main()
             test_fill(enc, 'a' , "a");
             test_fill(enc, 0x800, "?");
             test_invalid_fill_stop(enc, 0x800);
-            test_invalid_fill_ignore(enc, 0x800);
         }
     }
 

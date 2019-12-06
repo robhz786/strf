@@ -2,13 +2,11 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include "test_utils.hpp"
 
 int main()
 {
-    namespace strf = boost::stringify::v0;
-
     // positional argument and automatic arguments
     TEST("0 2 1 2 11")
         .tr( "{ } {2} {} {} {11}"
@@ -66,31 +64,32 @@ int main()
     TEST(u"asdfqwert")
         .tr(u"as{-xxxx}df{-abc{}qwert", u"ignored");
 
-    //
-    // errors
-    //
-    BOOST_TEST_THROWS( (strf::to_string
-                            .facets(strf::tr_invalid_arg::stop)
-                            .tr("{ }__{2}--{}=={}..{}::{}~~", 0, 1, 2, 3))
-                      , strf::tr_string_syntax_error );
-
     TEST(u8"0__2--1==2..3::\uFFFD~~")
         .tr(u8"{ }__{2}--{}=={}..{}::{}~~", 0, 1, 2, 3);
 
     TEST("0__2--1==2..3::~~")
-        .facets(strf::tr_invalid_arg::ignore)
+        .with(strf::tr_invalid_arg::ignore)
         .tr("{ }__{2}--{}=={}..{}::{}~~", 0, 1, 2, 3);
 
+#if defined(__cpp_exceptions)
+
     BOOST_TEST_THROWS( (strf::to_string
-                            .facets(strf::tr_invalid_arg::stop)
+                            .with(strf::tr_invalid_arg::stop)
+                            .tr("{ }__{2}--{}=={}..{}::{}~~", 0, 1, 2, 3))
+                      , strf::tr_string_syntax_error );
+
+    BOOST_TEST_THROWS( (strf::to_string
+                            .with(strf::tr_invalid_arg::stop)
                             .tr("{ }__{10}--{}=={}..{}::{}~~", 0, 1, 2, 3))
                       , strf::tr_string_syntax_error );
+
+#endif // defined(__cpp_exceptions)
 
     TEST(u8"0__\uFFFD--1==2..3::\uFFFD~~")
         .tr(u8"{ }__{10}--{}=={}..{}::{}~~", 0, 1, 2, 3);
 
     TEST("0__--1==2..3::~~")
-        .facets(strf::tr_invalid_arg::ignore)
+        .with(strf::tr_invalid_arg::ignore)
         .tr("{ }__{10}--{}=={}..{}::{}~~", 0, 1, 2, 3);
 
 

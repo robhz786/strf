@@ -2,10 +2,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 #include "test_utils.hpp"
-
-namespace strf = boost::stringify::v0;
 
 struct foo // note: foo is not copiable
 {
@@ -29,19 +27,19 @@ struct foo // note: foo is not copiable
     char* dest_end;
 };
 
-class foo_writer: public strf::output_buffer<char>
+class foo_writer: public strf::basic_outbuf<char>
 {
 public:
 
     foo_writer(foo&& foo_)
-        : _foo(std::move(foo_))
+        : strf::basic_outbuf<char>{foo_.dest, foo_.dest_end - 1}
+        , _foo(std::move(foo_))
     {
-        this->set_pos(_foo.dest);
-        this->set_end(_foo.dest_end - 1);
     }
 
     void recycle() override
     {
+        this->set_pos(_foo.dest);
     }
 
     void finish()
@@ -57,7 +55,7 @@ private:
 
 auto write(foo&& foo_)
 {
-    return strf::dispatcher<strf::facets_pack<>, foo_writer, foo>(std::move(foo_));
+    return strf::destination<strf::facets_pack<>, foo_writer, foo>(std::move(foo_));
 }
 
 

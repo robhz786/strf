@@ -4,8 +4,7 @@
 #include <iostream>
 #include <sstream>
 
-namespace boost {
-namespace detail {
+namespace test_utils {
 
 class test_label
 {
@@ -120,13 +119,12 @@ std::ostream& get_test_ostream()
     return std::cerr;
 }
 
-} // namespace detail
-} // namespace boost
+} // namespace test_utils
 
 #define STR_CONCAT(str1, str2) str1 ## str2
 
 #define BOOST_TEST_LABEL_IMPL(LINE)                                     \
-    ::boost::detail::test_label STR_CONCAT(test_label_, LINE) {};     \
+    ::test_utils::test_label STR_CONCAT(test_label_, LINE) {};     \
     STR_CONCAT(test_label_, LINE).get_label_ostream_writer()
 
 #define BOOST_TEST_LABEL   BOOST_TEST_LABEL_IMPL(__LINE__)
@@ -135,8 +133,8 @@ std::ostream& get_test_ostream()
 #  error <boost/core/lightweight_test.hpp> must not be defined before "lightweight_test_label.hpp"
 #endif
 
-#define BOOST_LIGHTWEIGHT_TEST_OSTREAM boost::detail::get_test_ostream()
+#define BOOST_LIGHTWEIGHT_TEST_OSTREAM test_utils::get_test_ostream()
 
-#include <boost/core/lightweight_test.hpp>
+#include "boost/lightweight_test.hpp"
 
 #endif // STRINGIFY_TEST_LIGHTWEIGHT_TEST_LABEL_HPP_INCLUDED

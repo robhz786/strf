@@ -7,7 +7,7 @@
 cmake_minimum_required (VERSION 3.0)
 enable_testing()
 
-project (boost_stringify_example)
+project (strf_example)
 
 remove_definitions(-DNDEBUG)
 
@@ -21,13 +21,13 @@ foreach(x
     joins
     range_input
     extend_input_ipv4
-    extend_input_ipv6
+#   extend_input_ipv6
     extend_input_base64
     extend_input_template
     ) 
 
   Add_executable(${x} ${x}.cpp)
-  target_link_libraries(${x} boost_stringify)
+  target_link_libraries(${x} strf)
   add_test(NAME run_${x} COMMAND ${x})  
 
 endforeach(x)
@@ -38,11 +38,11 @@ find_package(Qt5Core QUIET)
 if (Qt5Core_FOUND)
 
   add_executable(toQString toQString.cpp)
-  target_link_libraries(toQString Qt5::Core boost_stringify)
+  target_link_libraries(toQString Qt5::Core strf)
   add_test(NAME run_toQString COMMAND toQString)
 
   add_executable(appendQString appendQString.cpp)
-  target_link_libraries(appendQString Qt5::Core boost_stringify)
+  target_link_libraries(appendQString Qt5::Core strf)
   add_test(NAME run_appendQString COMMAND appendQString)
 
 

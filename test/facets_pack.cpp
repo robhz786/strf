@@ -3,7 +3,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <boost/stringify.hpp>
+#include <strf.hpp>
 
 template <int N> struct fcategory;
 
@@ -142,8 +142,6 @@ using derives_from_x = std::is_base_of<class_x, T>;
 
 template <typename T>
 using is_64 = std::integral_constant<bool, sizeof(T) == 8>;
-
-namespace strf = boost::stringify;
 
 void test_facets_pack()
 {

@@ -2,10 +2,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/stringify.hpp>
-#include <boost/assert.hpp>
-
-namespace strf = boost::stringify::v0;
+#include <strf.hpp>
 
 namespace xxx
 {
@@ -18,12 +15,14 @@ struct base
 };
 
 
-template <typename CharOut, typename FPack, typename T>
+template <typename CharOut, typename FPack, typename Preview, typename T>
 inline auto make_printer
-    ( const FPack& fp
+    ( strf::rank<1>
+    , const FPack& fp
+    , Preview& preview
     , const base<T> b )
 {
-    return make_printer<CharOut, FPack>(fp, b.value);
+    return make_printer<CharOut, FPack>(strf::rank<5>{}, fp, preview, b.value);
 }
 
 
@@ -45,7 +44,7 @@ int main()
 {
     yyy::derived<int> b{55};
     auto s = strf::to_string(b);
-    BOOST_ASSERT(s == "55");
+    assert(s == "55");
 
     return 0;
 }
