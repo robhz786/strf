@@ -314,8 +314,7 @@ void punct_int_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
         {
             put(ob, static_cast<CharT>('-'));
         }
-        strf::detail::write_int<10>( ob, _punct, _encoding
-                                            , _uvalue, _digcount );
+        strf::detail::write_int<10>(ob, _punct, _encoding, _uvalue, _digcount);
     }
 }
 

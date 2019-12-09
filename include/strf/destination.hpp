@@ -237,6 +237,17 @@ private:
     }
 };
 
+template < typename OB >
+inline decltype(std::declval<OB&>().finish()) finish(strf::rank<2>, OB& ob)
+{
+    return ob.finish();
+}
+
+template < typename OB >
+inline void finish(strf::rank<1>, OB&)
+{
+}
+
 }// namespace detail
 
 template < typename OutbufCreator, typename FPack >
@@ -352,7 +363,7 @@ private:
     {
         decltype(auto) ob = _outbuf_creator.create();
         strf::detail::write_args(ob, printers...);
-        return ob.finish();
+        return strf::detail::finish(strf::rank<2>(), ob);
     }
 
     OutbufCreator _outbuf_creator;
@@ -472,7 +483,7 @@ private:
     {
         decltype(auto) ob = _outbuf_creator.create(_size);
         strf::detail::write_args(ob, printers...);
-        return ob.finish();
+        return strf::detail::finish(strf::rank<2>(), ob);
     }
 
     std::size_t _size;
@@ -593,7 +604,7 @@ private:
     {
         decltype(auto) ob = _outbuf_creator.create(preview.get_size());
         strf::detail::write_args(ob, printers...);
-        return ob.finish();
+        return strf::detail::finish(strf::rank<2>(), ob);
     }
 
     OutbufCreator _outbuf_creator;
@@ -607,6 +618,40 @@ using printer_impl
                                        , std::declval<const FPack&>()
                                        , std::declval<Preview&>()
                                        , std::declval<const Arg&>() ) );
+
+namespace detail {
+
+template <typename CharT>
+class outbuf_reference
+{
+public:
+
+    using char_type = CharT;
+
+    explicit outbuf_reference(strf::basic_outbuf<CharT>& ob) noexcept
+        : _ob(ob)
+    {
+    }
+
+    strf::basic_outbuf<CharT>& create() const
+    {
+        return _ob;
+    }
+
+private:
+    strf::basic_outbuf<CharT>& _ob;
+};
+
+
+} // namespace detail
+
+
+template <typename CharT>
+auto to(strf::basic_outbuf<CharT>& ob)
+{
+    return strf::destination_no_reserve<strf::detail::outbuf_reference<CharT>>(ob);
+}
+
 
 STRF_NAMESPACE_END
 

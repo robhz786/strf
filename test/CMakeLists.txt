@@ -22,6 +22,7 @@ foreach(
 #  input_char32
   input_facets_pack
   input_range
+  miscellaneous
   numpunct
   join
   facets_pack_merge
