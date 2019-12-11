@@ -52,11 +52,12 @@ STRF_INLINE double_dec_base trivial_float_dec(
     std::uint32_t m = (1ul << k) | (ieee_mantissa >> (m_size - k));
     int p5 = k - biased_exponent;
     STRF_ASSERT(p5 <= 10);
-    if (p5 >= 8 && (0 == (m & 0xFF))) {
-        p5 -= 8;
-        e10 += 8;
-        m = m >> 8;
-    }
+    // when p5 >= 8 , k <= 5; then (m & 0xFF) != 0
+    // if (p5 >= 8 && (0 == (m & 0xFF))) {
+    //     p5 -= 8;
+    //     e10 += 8;
+    //     m = m >> 8;
+    // }
     if (p5 >= 4 && (0 == (m & 0xF))) {
         p5 -= 4;
         e10 += 4;
@@ -111,11 +112,12 @@ STRF_INLINE double_dec_base trivial_double_dec(
     std::uint64_t m = (1ull << k) | (ieee_mantissa >> (52 - k));
     int p5 = k - biased_exponent;
     STRF_ASSERT(p5 <= 22);
-    if (p5 >= 16 && (0 == (m & 0xFFFF))) {
-        p5 -= 16;
-        e10 += 16;
-        m = m >> 16;
-    }
+    // when p5 >= 16 , k <= 15; then (m & 0xFFFF) != 0
+    // if (p5 >= 16 && (0 == (m & 0xFFFF))) {
+    //     p5 -= 16;
+    //     e10 += 16;
+    //     m = m >> 16;
+    // }
     if (p5 >= 8 && (0 == (m & 0xFF))) {
         p5 -= 8;
         e10 += 8;
@@ -379,24 +381,37 @@ STRF_INLINE double_printer_data::double_printer_data
         {
             case float_notation::general:
             {
-                if (punct == nullptr)
+                if (punct != nullptr)
                 {
-                    sci_notation = (e10 > 4 + (!fmt.showpoint && m10_digcount > 1))
-                        || (e10 < -(int)m10_digcount - 2 - (fmt.showpoint || m10_digcount > 1));
-                }
-                else if (e10 > - (int)m10_digcount)
-                {
-                    auto sep_count = punct->thousands_sep_count(m10_digcount + e10);
-                    bool e10neg = e10 < 0;
-                    int fw = e10 * !e10neg + (fmt.showpoint || e10neg) + (int)sep_count;
-                    int sw = 4 + (e10 > 99) + (m10_digcount > 1 || fmt.showpoint);
-                    sci_notation = sw < fw;
+                    if (e10 > - (int)m10_digcount)
+                    {
+                        int idigcount = (int)m10_digcount + e10;
+                        if (punct->no_group_separation(idigcount))
+                        {
+                            goto no_thousands_separator;
+                        }
+                        else
+                        {
+                            auto sep_count = punct->thousands_sep_count(idigcount);
+                            bool e10neg = e10 < 0;
+                            int fw = e10 * !e10neg + (fmt.showpoint || e10neg) + (int)sep_count;
+                            int sw = 4 + (e10 > 99) + (m10_digcount > 1 || fmt.showpoint);
+                            sci_notation = sw < fw;
+                        }
+                    }
+                    else
+                    {
+                        int tmp = m10_digcount + 2 + (e10 < -99)
+                            + (m10_digcount > 1 || fmt.showpoint);
+                        sci_notation = -e10 > tmp;
+                    }
                 }
                 else
                 {
-                    int tmp = m10_digcount + 2 + (e10 < -99)
-                        + (m10_digcount > 1 || fmt.showpoint);
-                    sci_notation = -e10 > tmp;
+                    no_thousands_separator:
+                    sci_notation = (e10 > 4 + (!fmt.showpoint && m10_digcount > 1))
+                        || (e10 < ( -(int)m10_digcount - 2
+                                    - (fmt.showpoint || m10_digcount > 1) ));
                 }
                 showpoint = fmt.showpoint
                         || (sci_notation && m10_digcount > 1)
@@ -463,7 +478,7 @@ STRF_INLINE double_printer_data::double_printer_data
             m10 = m10 / p10;
             auto middle = p10 >> 1;
             m10 += (remainer > middle || (remainer == middle && (m10 & 1) == 1));
-            if (fmt.notation == float_notation::general && ! fmt.showpoint)
+            if (fmt.notation == float_notation::general)
             {
                 while (m10 % 10 == 0)
                 {
@@ -589,7 +604,7 @@ void _print_amplified_integer_big_separator
         ob.ensure(grp_size + separator_size);
         auto it = enc.encode_char(ob.pos(), separator);
         std::char_traits<CharT>::assign(it, grp_size, '0');
-        ob.advance_to(it + separator_size);
+        ob.advance_to(it + grp_size);
     }
 }
 
@@ -610,6 +625,7 @@ void print_amplified_integer( strf::basic_outbuf<CharT>& ob
     std::uint8_t groups[std::numeric_limits<double>::max_exponent10 + 1];
     auto num_groups = punct.groups(num_trailing_zeros + num_digits, groups);
     auto sep32 = punct.thousands_sep();
+    CharT sep = static_cast<CharT>(sep32);
     if (sep32 >= enc.u32equivalence_end() || sep32 < enc.u32equivalence_begin())
     {
         auto sep_size = enc.validate(sep32);
@@ -626,8 +642,8 @@ void print_amplified_integer( strf::basic_outbuf<CharT>& ob
                 , digits, num_digits );
             return;
         }
+        enc.encode_char(&sep, sep32);
     }
-    CharT sep = static_cast<CharT>(sep32);
     strf::detail::_print_amplified_integer_small_separator<CharT>
         ( ob, enc, groups, num_groups, sep, digits, num_digits );
 }
@@ -771,10 +787,14 @@ public:
         ( const FP& fp
         , Preview& preview
         , strf::float_with_format<FloatT, false> x )
-        : _data{x.value(), x.get_float_format_data()}
-        , _punct(get_facet<strf::numpunct_c<10>, FloatT>(fp))
+        : _punct(get_facet<strf::numpunct_c<10>, FloatT>(fp))
         , _encoding(get_facet<strf::encoding_c<CharT>, FloatT>(fp))
         , _enc_err(get_facet<strf::encoding_error_c, FloatT>(fp))
+        , _allow_surr(fp.template get_facet<strf::surrogate_policy_c, FloatT>())
+        , _sep_size(_encoding.validate(_punct.thousands_sep()))
+        , _data{ x.value()
+               , x.get_float_format_data()
+               , (_sep_size != (std::size_t)-1 ? &_punct : nullptr) }
     {
         STRF_IF_CONSTEXPR (Preview::width_required)
         {
@@ -791,14 +811,17 @@ public:
         ( const FP& fp
         , Preview& preview
         , strf::float_with_format<FloatT, true> x )
-        : _data{x.value(), x.get_float_format_data()}
-        , _punct(get_facet<strf::numpunct_c<10>, FloatT>(fp))
+        : _punct(get_facet<strf::numpunct_c<10>, FloatT>(fp))
         , _encoding(get_facet<strf::encoding_c<CharT>, FloatT>(fp))
         , _fillchar(x.fill())
         , _enc_err(fp.template get_facet<strf::encoding_error_c, FloatT>())
         , _allow_surr(fp.template get_facet<strf::surrogate_policy_c, FloatT>())
+        , _sep_size(_encoding.validate(_punct.thousands_sep()))
+        , _data{ x.value()
+               , x.get_float_format_data()
+               , (_sep_size != (std::size_t)-1 ? &_punct : nullptr) }
     {
-        init(preview, x.width(), x.alignment());
+        _init(preview, x.width(), x.alignment());
     }
 
 
@@ -807,12 +830,11 @@ public:
 private:
 
     template <typename Preview>
-    void init(Preview& preview, std::int16_t w, strf::text_alignment a);
+    void _init(Preview& preview, std::int16_t w, strf::text_alignment a);
 
     std::int16_t _content_width() const;
     std::size_t _content_size() const;
 
-    strf::detail::double_printer_data _data;
     const strf::numpunct_base& _punct;
     const strf::encoding<CharT> _encoding;
     char32_t _fillchar = U' ';
@@ -821,16 +843,18 @@ private:
     unsigned _right_fillcount = 0;
     strf::encoding_error _enc_err;
     strf::surrogate_policy _allow_surr = surrogate_policy::strict;
+    std::size_t _sep_size;
+    strf::detail::double_printer_data _data;
 };
 
 template <typename CharT>
 template <typename Preview>
-void punct_double_printer<CharT>::init( Preview& preview
-                                      , std::int16_t fmt_width
-                                      , strf::text_alignment a )
+void punct_double_printer<CharT>::_init( Preview& preview
+                                       , std::int16_t fmt_width
+                                       , strf::text_alignment a )
 {
     auto content_width = _content_width();
-    if (content_width > fmt_width)
+    if (content_width >= fmt_width)
     {
         preview.subtract_width(content_width);
         STRF_IF_CONSTEXPR (Preview::size_required)
@@ -888,31 +912,36 @@ std::int16_t punct_double_printer<CharT>::_content_width() const
             + detail::count_digits<10>(e10u)
             + decpoint_width;
     }
-    else if (_data.e10 < 0)
+    else
     {
         if (_data.e10 <= -(int)_data.m10_digcount)
         {
             w = _data.showsign + 1 + decpoint_width
-                - _data.e10 + _data.extra_zeros;
+                    - _data.e10 + _data.extra_zeros;
         }
         else
         {
             auto idigcount = (int)_data.m10_digcount + _data.e10;
-            w = _data.showsign
-                + (int)_data.m10_digcount
-                + _data.extra_zeros
-                + 1 // decpoint_width
-                + _punct.thousands_sep_count(idigcount);
+            int sep_w = ( _sep_size != (std::size_t)-1
+                        ? _punct.thousands_sep_count(idigcount)
+                        : 0 );
+            if (_data.e10 < 0)
+            {
+                    w = _data.showsign
+                        + (int)_data.m10_digcount
+                        + _data.extra_zeros
+                        + 1 // decpoint_width
+                        + sep_w;
+            }
+            else
+            {
+                w = _data.showsign
+                    + idigcount
+                    + _data.extra_zeros
+                    + _data.showpoint
+                    + sep_w;
+            }
         }
-    }
-    else
-    {
-        auto idigcount = _data.m10_digcount + _data.e10;
-        w = _data.showsign
-            + idigcount
-            + _data.extra_zeros
-            + _data.showpoint
-            + _punct.thousands_sep_count(idigcount);
     }
     return static_cast<std::int16_t>(w);
 }
@@ -920,17 +949,6 @@ std::int16_t punct_double_printer<CharT>::_content_width() const
 template <typename CharT>
 std::size_t punct_double_printer<CharT>::_content_size() const
 {
-    auto fillcount = _left_fillcount + _split_fillcount + _right_fillcount;
-    std::size_t fillsize = 0;
-    if (fillcount != 0)
-    {
-        fillsize = _encoding.validate(_fillchar);
-        if (fillsize == (size_t)-1)
-        {
-            fillsize = _encoding.replacement_char_size();
-        }
-        fillsize *= fillcount;
-    }
     if (_data.infinity || _data.nan)
     {
         return 3 + _data.showsign;
@@ -955,20 +973,18 @@ std::size_t punct_double_printer<CharT>::_content_size() const
     }
     if (_data.e10 <= -(int)_data.m10_digcount)
     {
-        return 1 + point_size + (-_data.e10) +_data.extra_zeros;
+        return 1 + _data.showsign + point_size + (-_data.e10) +_data.extra_zeros;
     }
 
     std::size_t seps_size = 0;
     auto idigcount = (int)_data.m10_digcount + _data.e10;
     STRF_ASSERT(idigcount > 0);
 
-    if (idigcount > 1 && ! _punct.no_group_separation(idigcount))
+    if ( idigcount > 1
+      && _sep_size != (std::size_t)-1
+      && ! _punct.no_group_separation(idigcount))
     {
-        auto s = _encoding.validate(_punct.thousands_sep());
-        if (s != (std::size_t)-1)
-        {
-            seps_size = s * _punct.thousands_sep_count(idigcount);
-        }
+        seps_size = _sep_size * _punct.thousands_sep_count(idigcount);
     }
     return _data.showsign + seps_size + point_size + _data.m10_digcount
         + _data.extra_zeros + (_data.e10 > 0) * _data.e10;
@@ -1171,7 +1187,7 @@ void double_printer<CharT>::init( Preview& preview
                                 , strf::text_alignment a )
 {
     auto content_width = _content_width();
-    if (content_width > w)
+    if (content_width >= w)
     {
         preview.checked_subtract_width(content_width);
         preview.add_size(content_width);
@@ -1447,13 +1463,6 @@ public:
 
 private:
 
-    unsigned _size_sci() const
-    {
-        return _value.negative + _m10_digcount + (_m10_digcount != 1) + 4
-            + (_value.e10 > 99 || _value.e10 < -99);
-
-    }
-
     const detail::double_dec _value;
     bool _sci_notation ;
     const unsigned _m10_digcount;
@@ -1654,11 +1663,15 @@ public:
         , _encoding(get_facet<strf::encoding_c<CharT>, FloatT>(fp))
         , _value(decode(d))
         , _m10_digcount(strf::detail::count_digits<10>(_value.m10))
+        , _sep_count(0)
     {
         constexpr bool showpoint = false;
         if (_value.e10 > -(int)_m10_digcount)
         {
-            _sep_count = _punct.thousands_sep_count((int)_m10_digcount + _value.e10);
+            if (_encoding.validate(_punct.thousands_sep()) != (std::size_t)-1)
+            {
+                _sep_count = _punct.thousands_sep_count((int)_m10_digcount + _value.e10);
+            }
             bool e10neg = _value.e10 < 0;
             int fw = _value.e10 * !e10neg  + (showpoint || e10neg) + (int)_sep_count;
             int sw = 4 + (_value.e10 > 99) + (_m10_digcount > 1 || showpoint);
@@ -1688,13 +1701,6 @@ public:
     std::size_t size() const;
 
 private:
-
-    unsigned _size_sci() const
-    {
-        return _value.negative + _m10_digcount + (_m10_digcount != 1) + 4
-            + (_value.e10 > 99 || _value.e10 < -99);
-
-    }
 
     const strf::numpunct_base& _punct;
     strf::encoding<CharT> _encoding;
@@ -1757,7 +1763,6 @@ strf::width_t fast_punct_double_printer<CharT>::width() const
             (3 + (_value.negative && _value.infinity));
     }
     constexpr unsigned decpoint_width = 1;
-    constexpr unsigned sep_width = 1;
     if (_sci_notation)
     {
         unsigned e10u = std::abs(_value.e10 + (int)_m10_digcount - 1);
@@ -1768,26 +1773,24 @@ strf::width_t fast_punct_double_printer<CharT>::width() const
             + decpoint_width * (_m10_digcount > 1);
         return static_cast<std::int16_t>(w);
     }
+    if (_value.e10 <= -(int)_m10_digcount)
+    {
+        return static_cast<std::int16_t>
+            (_value.negative + 1 - _value.e10 +  decpoint_width);
+    }
+    int sep_w = 0;
+    auto idigcount = (int)_m10_digcount + _value.e10;
+    if ( _encoding.validate(_punct.thousands_sep()) != (std::size_t)-1)
+    {
+        sep_w = _punct.thousands_sep_count(idigcount);
+    }
     if (_value.e10 < 0)
     {
-        if (_value.e10 <= -(int)_m10_digcount)
-        {
-            return static_cast<std::int16_t>
-                (_value.negative + 1 - _value.e10 +  decpoint_width);
-        }
-        else
-        {
-            auto idigcount = (int)_m10_digcount + _value.e10;
-            auto w = _value.negative
-                + (int)_m10_digcount
-                + decpoint_width
-                + _punct.thousands_sep_count(idigcount) * sep_width;
-            return static_cast<std::int16_t>(w);
-        }
+        auto w = _value.negative + (int)_m10_digcount
+            + decpoint_width + sep_w;
+        return static_cast<std::int16_t>(w);
     }
-    auto idigcount = _m10_digcount + _value.e10;
-    return static_cast<std::int16_t>( _value.negative + idigcount
-                                    + _punct.thousands_sep_count(idigcount) );
+    return static_cast<std::int16_t>(_value.negative + idigcount + sep_w);
 }
 
 template <typename CharT>
@@ -1868,7 +1871,7 @@ void fast_punct_double_printer<CharT>::print_to
                 else
                 {
                     strf::detail::write_int<10>( ob, _punct, _encoding
-                                                        , integral_part, idigcount );
+                                               , integral_part, idigcount );
                 }
                 _encoding.encode_char( ob, _punct.decimal_point()
                                      , strf::encoding_error::replace );

@@ -753,22 +753,20 @@ void write_int
                                                       , Base >;
     uint8_t groups[max_digits];
     const auto num_groups = punct.groups(digcount, groups);
-    (void) num_groups;
-
-    // if (num_groups == 0)
-    // {
-    //     goto no_punct;
-    // }
-
+    if (num_groups == 0)
+    {
+        no_punct:
+        strf::detail::write_int<Base>(ob, value, digcount);
+        return;
+    }
     auto sep32 = punct.thousands_sep();
+    CharT sep = static_cast<CharT>(sep32);
     if (sep32 >= enc.u32equivalence_end() || sep32 < enc.u32equivalence_begin())
     {
         auto sep_size = enc.validate(sep32);
         if (sep_size == (std::size_t)-1)
         {
-            //no_punct:
-            strf::detail::write_int<Base>(ob, value, digcount);
-            return;
+            goto no_punct;
         }
         if (sep_size != 1)
         {
@@ -777,12 +775,13 @@ void write_int
                 , sep32, sep_size );
             return;
         }
+        enc.encode_char(&sep, sep32);
     }
     std::size_t size = digcount + num_groups - 1;
     ob.ensure(size);
     auto next_p = ob.pos() + size;
     detail::write_int_txtdigits_backwards_little_sep<Base>
-        ( value, next_p, static_cast<CharT>(sep32), groups );
+        ( value, next_p, sep, groups );
     ob.advance_to(next_p);
 }
 

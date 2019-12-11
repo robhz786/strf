@@ -692,6 +692,22 @@ make_printer( strf::rank<1>
     return {fp, preview, {str.data(), str.size()}};
 }
 
+template
+    < typename CharOut
+    , typename FPack
+    , typename Preview
+    , typename CharIn >
+inline strf::detail::string_printer<CharOut>
+make_printer( strf::rank<1>
+            , const FPack& fp
+            , Preview& preview
+            , const strf::detail::simple_string_view<CharIn>& str )
+{
+    static_assert( std::is_same<CharIn, CharOut>::value
+                 , "Character type mismatch. Use cv function." );
+    return {fp, preview, str};
+}
+
 #if defined(STRF_HAS_STD_STRING_VIEW)
 
 template

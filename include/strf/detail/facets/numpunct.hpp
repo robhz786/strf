@@ -279,6 +279,9 @@ public:
         return std::move(*this);
     }
 
+    using strf::numpunct<Base>::decimal_point;
+    using strf::numpunct<Base>::thousands_sep;
+
     using no_group_sep = std::true_type;
 };
 
@@ -325,6 +328,9 @@ public:
         numpunct_base::decimal_point(ch);
         return std::move(*this);
     }
+
+    using strf::numpunct<Base>::decimal_point;
+    using strf::numpunct<Base>::thousands_sep;
 
 private:
 
@@ -381,6 +387,9 @@ public:
         return std::move(*this);
     }
 
+    using strf::numpunct<Base>::decimal_point;
+    using strf::numpunct<Base>::thousands_sep;
+
 private:
 
     strf::detail::str_grouping_impl _impl;
@@ -416,6 +425,10 @@ public:
     {
         return U'.';
     }
+
+    using strf::numpunct<Base>::decimal_point;
+    using strf::numpunct<Base>::thousands_sep;
+
     using no_group_sep = std::true_type;
 };
 
