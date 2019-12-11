@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <cstring>
 
+#include <strf/detail/define_specifiers.hpp>
+
 STRF_NAMESPACE_BEGIN
 
 #define STRF_CHECK_DEST     \
@@ -44,7 +46,7 @@ template <typename T> struct simple_array<T,3> { T obj0;  T obj1; T obj2; };
 template <typename T> struct simple_array<T,4> { T obj0;  T obj1; T obj2; T obj3; };
 
 template <typename CharT, std::size_t N>
-inline void do_repeat_sequence
+inline __hd__ void do_repeat_sequence
     ( CharT* dest
     , std::size_t count
     , simple_array<CharT, N> seq )
@@ -82,7 +84,7 @@ void repeat_sequence_continuation
 }
 
 template <typename CharT, std::size_t N>
-inline void repeat_sequence
+inline __hd__ void repeat_sequence
     ( strf::underlying_outbuf<sizeof(CharT)>& ob
     , std::size_t count
     , simple_array<CharT, N> seq )
@@ -98,54 +100,54 @@ inline void repeat_sequence
     }
 }
 
-constexpr bool is_surrogate(std::uint32_t codepoint)
+constexpr __hd__ bool is_surrogate(std::uint32_t codepoint)
 {
     return codepoint >> 11 == 0x1B;
 }
-constexpr bool is_high_surrogate(std::uint32_t codepoint) noexcept
+constexpr __hd__ bool is_high_surrogate(std::uint32_t codepoint) noexcept
 {
     return codepoint >> 10 == 0x36;
 }
-constexpr bool is_low_surrogate(std::uint32_t codepoint) noexcept
+constexpr __hd__ bool is_low_surrogate(std::uint32_t codepoint) noexcept
 {
     return codepoint >> 10 == 0x37;
 }
-constexpr bool not_surrogate(std::uint32_t codepoint)
+constexpr __hd__ bool not_surrogate(std::uint32_t codepoint)
 {
     return codepoint >> 11 != 0x1B;
 }
-constexpr  bool not_high_surrogate(std::uint32_t codepoint)
+constexpr __hd__  bool not_high_surrogate(std::uint32_t codepoint)
 {
     return codepoint >> 10 != 0x36;
 }
-constexpr  bool not_low_surrogate(std::uint32_t codepoint)
+constexpr __hd__  bool not_low_surrogate(std::uint32_t codepoint)
 {
     return codepoint >> 10 != 0x37;
 }
-constexpr std::uint16_t utf8_decode(std::uint16_t ch0, std::uint16_t ch1)
+constexpr __hd__ std::uint16_t utf8_decode(std::uint16_t ch0, std::uint16_t ch1)
 {
     return (((ch0 & 0x1F) << 6) |
             ((ch1 & 0x3F) << 0));
 }
-constexpr std::uint16_t utf8_decode(std::uint16_t ch0, std::uint16_t ch1, std::uint16_t ch2)
+constexpr __hd__ std::uint16_t utf8_decode(std::uint16_t ch0, std::uint16_t ch1, std::uint16_t ch2)
 {
     return (((ch0 & 0x0F) << 12) |
             ((ch1 & 0x3F) <<  6) |
             ((ch2 & 0x3F) <<  0));
 }
-constexpr std::uint32_t utf8_decode(std::uint32_t ch0, std::uint32_t ch1, std::uint32_t ch2, std::uint32_t ch3)
+constexpr __hd__ std::uint32_t utf8_decode(std::uint32_t ch0, std::uint32_t ch1, std::uint32_t ch2, std::uint32_t ch3)
 {
     return (((ch0 & 0x07) << 18) |
             ((ch1 & 0x3F) << 12) |
             ((ch2 & 0x3F) <<  6) |
             ((ch3 & 0x3F) <<  0));
 }
-constexpr bool is_utf8_continuation(std::uint8_t ch)
+constexpr __hd__ bool is_utf8_continuation(std::uint8_t ch)
 {
     return (ch & 0xC0) == 0x80;
 }
 
-constexpr bool valid_start_3bytes
+constexpr __hd__ bool valid_start_3bytes
     ( std::uint8_t ch0
     , std::uint8_t ch1
     , strf::surrogate_policy allow_surr )
@@ -155,46 +157,46 @@ constexpr bool valid_start_3bytes
             || (0x1B != (((ch0 & 0xF) << 1) | ((ch1 >> 5) & 1)))) );
 }
 
-inline unsigned utf8_decode_first_2_of_3(std::uint8_t ch0, std::uint8_t ch1)
+inline __hd__ unsigned utf8_decode_first_2_of_3(std::uint8_t ch0, std::uint8_t ch1)
 {
     return ((ch0 & 0x0F) << 6) | (ch1 & 0x3F);
 }
 
-inline bool first_2_of_3_are_valid( unsigned x
+inline __hd__ bool first_2_of_3_are_valid( unsigned x
                                   , strf::surrogate_policy allow_surr )
 {
     return ( allow_surr == strf::surrogate_policy::lax
           || (x >> 5) != 0x1B );
 }
-inline bool first_2_of_3_are_valid( std::uint8_t ch0
+inline __hd__ bool first_2_of_3_are_valid( std::uint8_t ch0
                                   , std::uint8_t ch1
                                   , strf::surrogate_policy allow_surr )
 {
     return first_2_of_3_are_valid(utf8_decode_first_2_of_3(ch0, ch1), allow_surr);
 }
 
-inline unsigned utf8_decode_first_2_of_4(std::uint8_t ch0, std::uint8_t ch1)
+inline __hd__ unsigned utf8_decode_first_2_of_4(std::uint8_t ch0, std::uint8_t ch1)
 {
     return ((ch0 & 0x07) << 6) | (ch1 & 0x3F);
 }
 
-inline unsigned utf8_decode_last_2_of_4(unsigned long x, unsigned ch2, unsigned ch3)
+inline __hd__ unsigned utf8_decode_last_2_of_4(unsigned long x, unsigned ch2, unsigned ch3)
 {
     return (x << 12) | ((ch2 & 0x3F) <<  6) | (ch3 & 0x3F);
 }
 
-inline bool first_2_of_4_are_valid(unsigned x)
+inline __hd__ bool first_2_of_4_are_valid(unsigned x)
 {
     return 0xF < x && x < 0x110;
 }
 
-inline bool first_2_of_4_are_valid(std::uint8_t ch0, std::uint8_t ch1)
+inline __hd__ bool first_2_of_4_are_valid(std::uint8_t ch0, std::uint8_t ch1)
 {
     return first_2_of_4_are_valid(utf8_decode_first_2_of_4(ch0, ch1));
 }
 
 STRF_STATIC_LINKAGE
-void utf8_to_utf32_transcode
+__hd__ void utf8_to_utf32_transcode
     ( strf::underlying_outbuf<4>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
@@ -281,7 +283,7 @@ void utf8_to_utf32_transcode
     ob.advance_to(dest_it);
 }
 
-STRF_STATIC_LINKAGE std::size_t utf8_to_utf32_size
+STRF_STATIC_LINKAGE __hd__ std::size_t utf8_to_utf32_size
     ( const std::uint8_t* src
     , const std::uint8_t* src_end
     , strf::surrogate_policy allow_surr )
@@ -332,7 +334,7 @@ STRF_STATIC_LINKAGE std::size_t utf8_to_utf32_size
     return size;
 }
 
-STRF_STATIC_LINKAGE void utf8_sanitize
+STRF_STATIC_LINKAGE __hd__ void utf8_sanitize
     ( strf::underlying_outbuf<1>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
@@ -431,7 +433,7 @@ STRF_STATIC_LINKAGE void utf8_sanitize
     ob.advance_to(dest_it);
 }
 
-STRF_STATIC_LINKAGE std::size_t utf8_sanitize_size
+STRF_STATIC_LINKAGE __hd__ std::size_t utf8_sanitize_size
     ( const std::uint8_t* src
     , const std::uint8_t* src_end
     , strf::surrogate_policy allow_surr )
@@ -500,7 +502,7 @@ STRF_STATIC_LINKAGE std::size_t utf8_sanitize_size
     return size;
 }
 
-STRF_STATIC_LINKAGE std::size_t utf8_codepoints_count
+STRF_STATIC_LINKAGE __hd__ std::size_t utf8_codepoints_count
         ( const std::uint8_t* begin
         , const std::uint8_t* end
         , std::size_t max_count )
@@ -516,7 +518,7 @@ STRF_STATIC_LINKAGE std::size_t utf8_codepoints_count
     return count;
 }
 
-STRF_STATIC_LINKAGE void utf8_encode_fill
+STRF_STATIC_LINKAGE __hd__ void utf8_encode_fill
     ( strf::underlying_outbuf<1>& ob
     , std::size_t count
     , char32_t ch
@@ -581,7 +583,7 @@ STRF_STATIC_LINKAGE void utf8_encode_fill
 }
 
 
-STRF_STATIC_LINKAGE std::uint8_t* utf8_encode_char
+STRF_STATIC_LINKAGE __hd__ std::uint8_t* utf8_encode_char
     ( std::uint8_t* dest
     , char32_t ch )
 {
@@ -617,7 +619,7 @@ STRF_STATIC_LINKAGE std::uint8_t* utf8_encode_char
     return dest + 3;
 }
 
-STRF_STATIC_LINKAGE void utf32_to_utf8_transcode
+STRF_STATIC_LINKAGE __hd__ void utf32_to_utf8_transcode
     ( strf::underlying_outbuf<1>& ob
     , const char32_t* src
     , const char32_t* src_end
@@ -688,7 +690,7 @@ STRF_STATIC_LINKAGE void utf32_to_utf8_transcode
     ob.advance_to(dest_it);
 }
 
-STRF_STATIC_LINKAGE std::size_t utf32_to_utf8_size
+STRF_STATIC_LINKAGE __hd__ std::size_t utf32_to_utf8_size
     ( const char32_t* src
     , const char32_t* src_end
     , strf::surrogate_policy allow_surr )
@@ -711,7 +713,7 @@ STRF_STATIC_LINKAGE std::size_t utf32_to_utf8_size
     return count;
 }
 
-STRF_STATIC_LINKAGE void utf8_write_replacement_char
+STRF_STATIC_LINKAGE __hd__ void utf8_write_replacement_char
     ( strf::underlying_outbuf<1>& ob )
 {
     auto dest_it = ob.pos();
@@ -724,13 +726,13 @@ STRF_STATIC_LINKAGE void utf8_write_replacement_char
     ob.advance_to(dest_it);
 }
 
-STRF_STATIC_LINKAGE char32_t utf8_decode_single_char(std::uint8_t ch)
+STRF_STATIC_LINKAGE __hd__ char32_t utf8_decode_single_char(std::uint8_t ch)
 {
     const std::uint8_t uch = ch;
     return uch < 0x80 ? static_cast<char32_t>(uch) : static_cast<char32_t>(-1);
 }
 
-STRF_STATIC_LINKAGE std::size_t utf8_validate(char32_t ch)
+STRF_STATIC_LINKAGE __hd__ std::size_t utf8_validate(char32_t ch)
 {
     return ( ch < 0x80     ? 1 :
              ch < 0x800    ? 2 :
@@ -738,7 +740,7 @@ STRF_STATIC_LINKAGE std::size_t utf8_validate(char32_t ch)
              ch < 0x110000 ? 4 : (std::size_t)-1 );
 }
 
-STRF_STATIC_LINKAGE void utf16_to_utf32_transcode
+STRF_STATIC_LINKAGE __hd__ void utf16_to_utf32_transcode
     ( strf::underlying_outbuf<4>& ob
     , const char16_t* src
     , const char16_t* src_end
@@ -788,7 +790,7 @@ STRF_STATIC_LINKAGE void utf16_to_utf32_transcode
     ob.advance_to(dest_it);
 }
 
-STRF_STATIC_LINKAGE std::size_t utf16_to_utf32_size
+STRF_STATIC_LINKAGE __hd__ std::size_t utf16_to_utf32_size
     ( const char16_t* src
     , const char16_t* src_end
     , strf::surrogate_policy allow_surr )
@@ -815,7 +817,7 @@ STRF_STATIC_LINKAGE std::size_t utf16_to_utf32_size
     return count;
 }
 
-STRF_STATIC_LINKAGE void utf16_sanitize
+STRF_STATIC_LINKAGE __hd__ void utf16_sanitize
     ( strf::underlying_outbuf<2>& ob
     , const char16_t* src
     , const char16_t* src_end
@@ -869,7 +871,7 @@ STRF_STATIC_LINKAGE void utf16_sanitize
     ob.advance_to(dest_it);
 }
 
-STRF_STATIC_LINKAGE std::size_t utf16_sanitize_size
+STRF_STATIC_LINKAGE __hd__ std::size_t utf16_sanitize_size
     ( const char16_t* src
     , const char16_t* src_end
     , strf::surrogate_policy allow_surr )
@@ -894,7 +896,7 @@ STRF_STATIC_LINKAGE std::size_t utf16_sanitize_size
     return count;
 }
 
-STRF_STATIC_LINKAGE std::size_t utf16_codepoints_count
+STRF_STATIC_LINKAGE __hd__ std::size_t utf16_codepoints_count
     ( const char16_t* begin
     , const char16_t* end
     , std::size_t max_count )
@@ -910,12 +912,12 @@ STRF_STATIC_LINKAGE std::size_t utf16_codepoints_count
     return count;
 }
 
-STRF_STATIC_LINKAGE std::size_t utf16_validate(char32_t ch)
+STRF_STATIC_LINKAGE __hd__ std::size_t utf16_validate(char32_t ch)
 {
     return ch < 0x10000 ? 1 : ch < 0x110000 ? 2 : (std::size_t)-1;
 }
 
-STRF_STATIC_LINKAGE char16_t* utf16_encode_char
+STRF_STATIC_LINKAGE __hd__ char16_t* utf16_encode_char
     ( char16_t* dest
     , char32_t ch )
 {
@@ -935,7 +937,7 @@ STRF_STATIC_LINKAGE char16_t* utf16_encode_char
     return dest + 1;
 }
 
-STRF_STATIC_LINKAGE void utf16_encode_fill
+STRF_STATIC_LINKAGE __hd__ void utf16_encode_fill
     ( strf::underlying_outbuf<2>& ob
     , std::size_t count
     , char32_t ch
@@ -971,7 +973,7 @@ STRF_STATIC_LINKAGE void utf16_encode_fill
     }
 }
 
-STRF_STATIC_LINKAGE void utf32_to_utf16_transcode
+STRF_STATIC_LINKAGE __hd__ void utf32_to_utf16_transcode
     ( strf::underlying_outbuf<2>& ob
     , const char32_t* src
     , const char32_t* src_end
@@ -1019,7 +1021,7 @@ STRF_STATIC_LINKAGE void utf32_to_utf16_transcode
     ob.advance_to(dest_it);
 }
 
-STRF_STATIC_LINKAGE std::size_t utf32_to_utf16_size
+STRF_STATIC_LINKAGE __hd__ std::size_t utf32_to_utf16_size
     ( const char32_t* src
     , const char32_t* src_end
     , strf::surrogate_policy allow_surr )
@@ -1035,7 +1037,7 @@ STRF_STATIC_LINKAGE std::size_t utf32_to_utf16_size
     return count;
 }
 
-STRF_STATIC_LINKAGE void utf16_write_replacement_char
+STRF_STATIC_LINKAGE __hd__ void utf16_write_replacement_char
     ( strf::underlying_outbuf<2>& ob )
 {
     ob.ensure(1);
@@ -1043,7 +1045,7 @@ STRF_STATIC_LINKAGE void utf16_write_replacement_char
     ob.advance();
 }
 
-STRF_STATIC_LINKAGE std::size_t utf32_sanitize_size
+STRF_STATIC_LINKAGE __hd__ std::size_t utf32_sanitize_size
     ( const char32_t* src
     , const char32_t* src_end
     , strf::surrogate_policy allow_surr )
@@ -1052,7 +1054,7 @@ STRF_STATIC_LINKAGE std::size_t utf32_sanitize_size
     return src_end - src;
 }
 
-STRF_STATIC_LINKAGE void utf32_sanitize
+STRF_STATIC_LINKAGE __hd__ void utf32_sanitize
     ( strf::underlying_outbuf<4>& ob
     , const char32_t* src
     , const char32_t* src_end
@@ -1102,7 +1104,7 @@ STRF_STATIC_LINKAGE void utf32_sanitize
     ob.advance_to(dest_it);
 }
 
-inline std::size_t utf32_codepoints_count
+inline __hd__ std::size_t utf32_codepoints_count
     ( const char32_t* begin
     , const char32_t* end
     , std::size_t max_count )
@@ -1111,13 +1113,13 @@ inline std::size_t utf32_codepoints_count
     return len < max_count ? len : max_count;
 }
 
-inline std::size_t utf32_validate(char32_t ch)
+inline __hd__ std::size_t utf32_validate(char32_t ch)
 {
     (void)ch;
     return 1;
 }
 
-STRF_STATIC_LINKAGE char32_t* utf32_encode_char
+STRF_STATIC_LINKAGE __hd__ char32_t* utf32_encode_char
     ( char32_t* dest
     , char32_t ch )
 {
@@ -1125,7 +1127,7 @@ STRF_STATIC_LINKAGE char32_t* utf32_encode_char
     return dest + 1;
 }
 
-STRF_STATIC_LINKAGE void utf32_encode_fill
+STRF_STATIC_LINKAGE __hd__ void utf32_encode_fill
     ( strf::underlying_outbuf<4>& ob
     , std::size_t count
     , char32_t ch
@@ -1145,7 +1147,7 @@ STRF_STATIC_LINKAGE void utf32_encode_fill
     strf::detail::write_fill(ob, count, ch);
 }
 
-STRF_STATIC_LINKAGE void utf32_write_replacement_char
+STRF_STATIC_LINKAGE __hd__ void utf32_write_replacement_char
     ( strf::underlying_outbuf<4>& ob )
 {
     ob.ensure(1);
@@ -1153,17 +1155,17 @@ STRF_STATIC_LINKAGE void utf32_write_replacement_char
     ob.advance();
 }
 
-inline char32_t utf16_decode_single_char(char16_t ch)
+inline __hd__ char32_t utf16_decode_single_char(char16_t ch)
 {
     return ch;
 }
 
-inline char32_t utf32_decode_single_char(char32_t ch)
+inline __hd__ char32_t utf32_decode_single_char(char32_t ch)
 {
     return ch;
 }
 
-STRF_STATIC_LINKAGE void utf8_to_utf16_transcode
+STRF_STATIC_LINKAGE __hd__ void utf8_to_utf16_transcode
     ( strf::underlying_outbuf<2>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
@@ -1249,7 +1251,7 @@ STRF_STATIC_LINKAGE void utf8_to_utf16_transcode
     ob.advance_to(dest_it);
 }
 
-STRF_STATIC_LINKAGE std::size_t utf8_to_utf16_size
+STRF_STATIC_LINKAGE __hd__ std::size_t utf8_to_utf16_size
     ( const std::uint8_t* src_begin
     , const std::uint8_t* src_end
     , strf::surrogate_policy allow_surr )
@@ -1305,7 +1307,7 @@ STRF_STATIC_LINKAGE std::size_t utf8_to_utf16_size
     return size;
 }
 
-STRF_STATIC_LINKAGE void utf16_to_utf8_transcode
+STRF_STATIC_LINKAGE __hd__ void utf16_to_utf8_transcode
     ( strf::underlying_outbuf<1>& ob
     , const char16_t* src
     , const char16_t* src_end
@@ -1376,7 +1378,7 @@ STRF_STATIC_LINKAGE void utf16_to_utf8_transcode
     ob.advance_to(dest_it);
 }
 
-STRF_STATIC_LINKAGE std::size_t utf16_to_utf8_size
+STRF_STATIC_LINKAGE __hd__ std::size_t utf16_to_utf8_size
     ( const char16_t* src_begin
     , const char16_t* src_end
     , strf::surrogate_policy allow_surr )
@@ -1410,7 +1412,7 @@ STRF_STATIC_LINKAGE std::size_t utf16_to_utf8_size
 }
 
 STRF_STATIC_LINKAGE
-const strf::detail::transcoder_impl<std::uint8_t, char16_t>* utf8_to_enc16
+__hd__ const strf::detail::transcoder_impl<std::uint8_t, char16_t>* utf8_to_enc16
     ( const strf::detail::encoding_impl<char16_t>& other )
 {
     if (other.id == encoding_id::eid_utf16)
@@ -1424,7 +1426,7 @@ const strf::detail::transcoder_impl<std::uint8_t, char16_t>* utf8_to_enc16
 }
 
 STRF_STATIC_LINKAGE
-const strf::detail::transcoder_impl<char16_t, std::uint8_t>* utf8_from_enc16
+__hd__ const strf::detail::transcoder_impl<char16_t, std::uint8_t>* utf8_from_enc16
     ( const strf::detail::encoding_impl<char16_t>& other )
 {
     if (other.id == encoding_id::eid_utf16)
@@ -1438,7 +1440,7 @@ const strf::detail::transcoder_impl<char16_t, std::uint8_t>* utf8_from_enc16
 }
 
 STRF_INLINE
-const strf::detail::encoding_impl<std::uint8_t>& utf8_impl()
+__hd__ const strf::detail::encoding_impl<std::uint8_t>& utf8_impl()
 {
     static const strf::detail::encoding_impl<std::uint8_t> encoding_obj =
          { { strf::detail::utf32_to_utf8_transcode
@@ -1465,7 +1467,7 @@ const strf::detail::encoding_impl<std::uint8_t>& utf8_impl()
 }
 
 STRF_INLINE
-const strf::detail::encoding_impl<char16_t>& utf16_impl()
+__hd__ const strf::detail::encoding_impl<char16_t>& utf16_impl()
 {
     static const strf::detail::encoding_impl<char16_t> encoding_obj =
         { { strf::detail::utf32_to_utf16_transcode
@@ -1489,7 +1491,7 @@ const strf::detail::encoding_impl<char16_t>& utf16_impl()
 }
 
 STRF_INLINE
-const strf::detail::encoding_impl<char32_t>& utf32_impl()
+__hd__ const  strf::detail::encoding_impl<char32_t>& utf32_impl()
 {
     static const strf::detail::encoding_impl<char32_t> encoding_obj =
         { { strf::detail::utf32_sanitize
@@ -1515,6 +1517,8 @@ const strf::detail::encoding_impl<char32_t>& utf32_impl()
 } // namespace detail
 
 STRF_NAMESPACE_END
+
+#include <strf/detail/undefine_specifiers.hpp>
 
 #endif  // STRF_DETAIL_UTF_ENCODINGS_HPP
 

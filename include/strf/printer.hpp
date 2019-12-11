@@ -5,13 +5,18 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#ifndef __CUDA_ARCH__
 #include <system_error>
-#include <algorithm>
+#include <algorithm> // TODO: Need to replace dependence on <algorithm>...
+#endif // __CUDA_ARCH__
 #include <strf/outbuf.hpp>
 #include <strf/width_t.hpp>
 
+#include <strf/detail/define_specifiers.hpp>
+
 STRF_NAMESPACE_BEGIN
 
+#ifndef __CUDA_ARCH__
 
 class stringify_error: public std::exception
 {
@@ -48,6 +53,9 @@ inline void throw_encoding_failure()
 
 } // namespace detail
 
+#endif // __CUDA_ARCH__
+
+
 
 template <typename CharOut>
 class printer
@@ -56,11 +64,11 @@ public:
 
     using char_type = CharOut;
 
-    virtual ~printer()
+    virtual __hd__ ~printer()
     {
     }
 
-    virtual void print_to(strf::basic_outbuf<CharOut>& ob) const = 0;
+    virtual __hd__ void print_to(strf::basic_outbuf<CharOut>& ob) const = 0;
 };
 
 namespace detail {
@@ -114,7 +122,7 @@ inline void write_fill
 }
 
 template<typename CharT>
-inline void write_fill
+inline __hd__ void write_fill
     ( strf::basic_outbuf<CharT>& ob
     , std::size_t count
     , CharT ch )
@@ -179,18 +187,18 @@ class width_preview<true>
 {
 public:
 
-    explicit constexpr width_preview(strf::width_t initial_width) noexcept
+    explicit constexpr __hd__ width_preview(strf::width_t initial_width) noexcept
         : _width(initial_width)
     {}
 
-    width_preview(const width_preview&) = delete;
+    __hd__ width_preview(const width_preview&) = delete;
 
-    constexpr void subtract_width(strf::width_t w)
+    constexpr __hd__ void subtract_width(strf::width_t w)
     {
         _width -= w;
     }
 
-    constexpr void checked_subtract_width(strf::width_t w)
+    constexpr __hd__ void checked_subtract_width(strf::width_t w)
     {
         if (w < _width)
         {
@@ -202,7 +210,7 @@ public:
         }
     }
 
-    constexpr void checked_subtract_width(std::ptrdiff_t w)
+    constexpr __hd__ void checked_subtract_width(std::ptrdiff_t w)
     {
         if (w < _width.ceil())
         {
@@ -214,12 +222,12 @@ public:
         }
     }
 
-    constexpr void clear_remaining_width()
+    constexpr __hd__ void clear_remaining_width()
     {
         _width = 0;
     }
 
-    constexpr strf::width_t remaining_width() const
+    constexpr __hd__ strf::width_t remaining_width() const
     {
         return _width;
     }
@@ -234,26 +242,26 @@ class width_preview<false>
 {
 public:
 
-    constexpr width_preview() noexcept = default;;
-    width_preview(const width_preview&) = delete;
+    constexpr __hd__ width_preview() noexcept = default;;
+    __hd__ width_preview(const width_preview&) = delete;
 
-    constexpr void subtract_width(strf::width_t)
+    constexpr __hd__ void subtract_width(strf::width_t)
     {
     }
 
-    constexpr void checked_subtract_width(strf::width_t)
+    constexpr __hd__ void checked_subtract_width(strf::width_t)
     {
     }
 
-    constexpr void checked_subtract_width(std::ptrdiff_t)
+    constexpr __hd__ void checked_subtract_width(std::ptrdiff_t)
     {
     }
 
-    constexpr void clear_remaining_width()
+    constexpr __hd__ void clear_remaining_width()
     {
     }
 
-    constexpr strf::width_t remaining_width() const
+    constexpr __hd__ strf::width_t remaining_width() const
     {
         return 0;
     }
@@ -266,19 +274,19 @@ template <>
 class size_preview<true>
 {
 public:
-    explicit constexpr size_preview(std::size_t initial_size = 0) noexcept
+    explicit constexpr __hd__ size_preview(std::size_t initial_size = 0) noexcept
         : _size(initial_size)
     {
     }
 
-    size_preview(const size_preview&) = delete;
+    __hd__ size_preview(const size_preview&) = delete;
 
-    constexpr void add_size(std::size_t s)
+    constexpr __hd__ void add_size(std::size_t s)
     {
         _size += s;
     }
 
-    constexpr std::size_t get_size() const
+    constexpr __hd__ std::size_t get_size() const
     {
         return _size;
     }
@@ -293,14 +301,14 @@ class size_preview<false>
 {
 public:
 
-    constexpr size_preview() noexcept = default;
+    constexpr __hd__ size_preview() noexcept = default;
     size_preview(const size_preview&) = delete;
 
-    constexpr void add_size(std::size_t)
+    constexpr __hd__ void add_size(std::size_t)
     {
     }
 
-    constexpr std::size_t get_size() const
+    constexpr __hd__ std::size_t get_size() const
     {
         return 0;
     }
@@ -318,17 +326,19 @@ public:
     static constexpr bool nothing_required = ! SizeRequired && ! WidthRequired;
 
     template <bool W = WidthRequired>
-    constexpr explicit print_preview
+    constexpr __hd__ explicit print_preview
         ( std::enable_if_t<W, strf::width_t> initial_width ) noexcept
         : strf::width_preview<WidthRequired>{initial_width}
     {
     }
 
-    constexpr print_preview() noexcept = default;
-    constexpr print_preview(const print_preview&) = delete;
+    constexpr __hd__ print_preview() noexcept = default;
+    constexpr __hd__ print_preview(const print_preview&) = delete;
 };
 
 STRF_NAMESPACE_END
+
+#include <strf/detail/undefine_specifiers.hpp>
 
 #endif  // STRF_PRINTER_HPP
 

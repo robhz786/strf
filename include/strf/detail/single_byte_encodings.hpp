@@ -7,12 +7,14 @@
 
 #include <strf/printer.hpp>
 
+#include <strf/detail/define_specifiers.hpp>
+
 STRF_NAMESPACE_BEGIN
 
 namespace detail {
 
 template<size_t SIZE, class T>
-constexpr size_t array_size(T (&)[SIZE]) {
+constexpr __hd__ size_t array_size(T (&)[SIZE]) {
     return SIZE;
 }
 
@@ -24,14 +26,14 @@ struct ch32_to_char
 
 struct cmp_ch32_to_char
 {
-    bool operator()(ch32_to_char a, ch32_to_char b) const
+    __hd__ bool operator()(ch32_to_char a, ch32_to_char b) const
     {
         return a.key < b.key;
     }
 };
 
 template <typename CharIn>
-static std::size_t same_size
+static __hd__ std::size_t same_size
     ( const CharIn* src
     , const CharIn* src_end
     , strf::surrogate_policy allow_surr )
@@ -44,57 +46,57 @@ static std::size_t same_size
 template <class Impl>
 struct single_byte_encoding
 {
-    static void to_utf32
+    static __hd__ void to_utf32
         ( strf::underlying_outbuf<4>& ob
         , const std::uint8_t* src
         , const std::uint8_t* src_end
         , strf::encoding_error err_hdl
         , strf::surrogate_policy allow_surr );
 
-    static void from_utf32
+    static __hd__ void from_utf32
         ( strf::underlying_outbuf<1>& ob
         , const char32_t* src
         , const char32_t* src_end
         , strf::encoding_error err_hdl
         , strf::surrogate_policy allow_surr );
 
-    static void sanitize
+    static __hd__ void sanitize
         ( strf::underlying_outbuf<1>& ob
         , const std::uint8_t* src
         , const std::uint8_t* src_end
         , strf::encoding_error err_hdl
         , strf::surrogate_policy allow_surr );
 
-    static std::uint8_t* encode_char(std::uint8_t* dest, char32_t ch);
+    static __hd__ std::uint8_t* encode_char(std::uint8_t* dest, char32_t ch);
 
-    static void encode_fill
+    static __hd__ void encode_fill
         ( strf::underlying_outbuf<1>& ob
         , std::size_t count
         , char32_t ch
         , strf::encoding_error err_hdl
         , strf::surrogate_policy );
 
-    static char32_t decode_single_char(std::uint8_t ch)
+    static __hd__ char32_t decode_single_char(std::uint8_t ch)
     {
         return Impl::decode(ch);
     }
 
-    static std::size_t codepoints_count
+    static __hd__ std::size_t codepoints_count
         ( const std::uint8_t* begin
         , const std::uint8_t* end
         , std::size_t max_count );
 
-    static std::size_t replacement_char_size();
+    static __hd__ std::size_t replacement_char_size();
 
-    static void write_replacement_char
+    static __hd__ void write_replacement_char
         ( strf::underlying_outbuf<1>& ob );
 
-    static std::size_t validate(char32_t ch);
+    static __hd__ std::size_t validate(char32_t ch);
 };
 
 
 template <class Impl>
-std::size_t single_byte_encoding<Impl>::codepoints_count
+__hd__ std::size_t single_byte_encoding<Impl>::codepoints_count
     ( const std::uint8_t* begin
     , const std::uint8_t* end
     , std::size_t max_count )
@@ -104,7 +106,7 @@ std::size_t single_byte_encoding<Impl>::codepoints_count
 }
 
 template <class Impl>
-void single_byte_encoding<Impl>::to_utf32
+__hd__ void single_byte_encoding<Impl>::to_utf32
     ( strf::underlying_outbuf<4>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
@@ -139,7 +141,7 @@ void single_byte_encoding<Impl>::to_utf32
 }
 
 template <class Impl>
-void single_byte_encoding<Impl>::sanitize
+__hd__ void single_byte_encoding<Impl>::sanitize
     ( strf::underlying_outbuf<1>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
@@ -175,7 +177,7 @@ void single_byte_encoding<Impl>::sanitize
 
 
 template <class Impl>
-void single_byte_encoding<Impl>::write_replacement_char
+__hd__ void single_byte_encoding<Impl>::write_replacement_char
     ( strf::underlying_outbuf<1>& ob )
 {
     ob.ensure(1);
@@ -184,19 +186,19 @@ void single_byte_encoding<Impl>::write_replacement_char
 }
 
 template <class Impl>
-std::size_t single_byte_encoding<Impl>::replacement_char_size()
+__hd__ std::size_t single_byte_encoding<Impl>::replacement_char_size()
 {
     return 1;
 }
 
 template <class Impl>
-std::size_t single_byte_encoding<Impl>::validate(char32_t ch)
+__hd__ std::size_t single_byte_encoding<Impl>::validate(char32_t ch)
 {
     return Impl::encode(ch) < 0x100 ? 1 : (std::size_t)-1;
 }
 
 template <class Impl>
-std::uint8_t* single_byte_encoding<Impl>::encode_char
+__hd__ std::uint8_t* single_byte_encoding<Impl>::encode_char
     ( std::uint8_t* dest
     , char32_t ch )
 {
@@ -207,7 +209,7 @@ std::uint8_t* single_byte_encoding<Impl>::encode_char
 }
 
 template <class Impl>
-void single_byte_encoding<Impl>::encode_fill
+__hd__ void single_byte_encoding<Impl>::encode_fill
     ( strf::underlying_outbuf<1>& ob
     , std::size_t count
     , char32_t ch
@@ -240,7 +242,7 @@ void single_byte_encoding<Impl>::encode_fill
 }
 
 template <class Impl>
-void single_byte_encoding<Impl>::from_utf32
+__hd__ void single_byte_encoding<Impl>::from_utf32
     ( strf::underlying_outbuf<1>& ob
     , const char32_t* src
     , const char32_t* src_end
@@ -271,19 +273,19 @@ void single_byte_encoding<Impl>::from_utf32
 
 struct impl_strict_ascii
 {
-    static bool is_valid(std::uint8_t ch)
+    static __hd__ bool is_valid(std::uint8_t ch)
     {
         return ch < 0x80;
     }
 
-    static char32_t decode(std::uint8_t ch)
+    static __hd__ char32_t decode(std::uint8_t ch)
     {
         if (ch < 0x80)
             return ch;
         return (char32_t)-1;
     }
 
-    static unsigned encode(char32_t ch)
+    static __hd__ unsigned encode(char32_t ch)
     {
         return ch < 0x80 ? ch : 0x100;
     }
@@ -291,17 +293,17 @@ struct impl_strict_ascii
 
 struct impl_iso8859_1
 {
-    static bool is_valid(std::uint8_t)
+    static __hd__ bool is_valid(std::uint8_t)
     {
         return true;
     }
 
-    static char32_t decode(std::uint8_t ch)
+    static __hd__ char32_t decode(std::uint8_t ch)
     {
         return ch;
     }
 
-    static unsigned encode(char32_t ch)
+    static __hd__ unsigned encode(char32_t ch)
     {
         return ch;
     }
@@ -311,7 +313,7 @@ struct impl_iso8859_1
 
 struct impl_iso8859_3
 {
-    static bool is_valid(std::uint8_t ch)
+    static __hd__ bool is_valid(std::uint8_t ch)
     {
         return ch != 0xA5
             && ch != 0xAE
@@ -322,12 +324,12 @@ struct impl_iso8859_3
             && ch != 0xF0;
     }
 
-    static unsigned encode(char32_t ch);
+    static __hd__ unsigned encode(char32_t ch);
 
-    static char32_t decode(std::uint8_t ch);
+    static __hd__ char32_t decode(std::uint8_t ch);
 };
 
-STRF_INLINE unsigned impl_iso8859_3::encode(char32_t ch)
+STRF_INLINE __hd__ unsigned impl_iso8859_3::encode(char32_t ch)
 {
     if (ch < 0xA1)
     {
@@ -365,7 +367,7 @@ STRF_INLINE unsigned impl_iso8859_3::encode(char32_t ch)
     return it != enc_map_end && it->key == ch ? it->value : 0x100;
 }
 
-STRF_INLINE char32_t impl_iso8859_3::decode(std::uint8_t ch)
+STRF_INLINE __hd__ char32_t impl_iso8859_3::decode(std::uint8_t ch)
 {
     if (ch < 0xA1)
     {
@@ -397,12 +399,12 @@ class impl_iso8859_15
 {
 public:
 
-    static bool is_valid(std::uint8_t)
+    static __hd__ bool is_valid(std::uint8_t)
     {
         return true;
     }
 
-    static char32_t decode(std::uint8_t ch)
+    static __hd__ char32_t decode(std::uint8_t ch)
     {
         static const unsigned short ext[] = {
             /*                           */ 0x20AC, 0x00A5, 0x0160, 0x00A7,
@@ -417,17 +419,17 @@ public:
         return ext[ch - 0xA4];
     }
 
-    static unsigned encode(char32_t ch)
+    static __hd__ unsigned encode(char32_t ch)
     {
         return (ch < 0xA0 || (0xBE < ch && ch < 0x100)) ? ch : encode_ext(ch);
     }
 
 private:
 
-    static unsigned encode_ext(char32_t ch);
+    static __hd__ unsigned encode_ext(char32_t ch);
 };
 
-STRF_INLINE unsigned impl_iso8859_15::encode_ext(char32_t ch)
+STRF_INLINE __hd__ unsigned impl_iso8859_15::encode_ext(char32_t ch)
 {
     switch(ch)
     {
@@ -459,12 +461,12 @@ public:
 
     constexpr static unsigned short decode_fail = 0xFFFF;
 
-    static bool is_valid(std::uint8_t)
+    static __hd__ bool is_valid(std::uint8_t)
     {
         return true;
     }
 
-    static char32_t decode(std::uint8_t ch)
+    static __hd__ char32_t decode(std::uint8_t ch)
     {
         if (ch < 0x80 || 0x9F < ch)
         {
@@ -482,7 +484,7 @@ public:
         }
     }
 
-    static unsigned encode(char32_t ch)
+    static __hd__ unsigned encode(char32_t ch)
     {
         return (ch < 0x80 || (0x9F < ch && ch < 0x100)) ? ch : encode_ext(ch);
     }
@@ -492,7 +494,7 @@ private:
     static unsigned encode_ext(char32_t ch);
 };
 
-STRF_INLINE unsigned impl_windows_1252::encode_ext(char32_t ch)
+STRF_INLINE __hd__ unsigned impl_windows_1252::encode_ext(char32_t ch)
 {
     switch(ch)
     {
@@ -533,7 +535,7 @@ STRF_INLINE unsigned impl_windows_1252::encode_ext(char32_t ch)
 }
 
 STRF_INLINE
-const strf::detail::encoding_impl<std::uint8_t>& windows_1252_impl()
+__hd__ const strf::detail::encoding_impl<std::uint8_t>& windows_1252_impl()
 {
     using impl = detail::single_byte_encoding<detail::impl_windows_1252>;
     static const strf::detail::encoding_impl<std::uint8_t> info =
@@ -554,7 +556,7 @@ const strf::detail::encoding_impl<std::uint8_t>& windows_1252_impl()
 }
 
 STRF_INLINE
-const strf::detail::encoding_impl<std::uint8_t>& iso_8859_1_impl()
+__hd__ const strf::detail::encoding_impl<std::uint8_t>& iso_8859_1_impl()
 {
     using impl = detail::single_byte_encoding<detail::impl_iso8859_1>;
     static const strf::detail::encoding_impl<std::uint8_t> info =
@@ -575,7 +577,7 @@ const strf::detail::encoding_impl<std::uint8_t>& iso_8859_1_impl()
 }
 
 STRF_INLINE
-const strf::detail::encoding_impl<std::uint8_t>& iso_8859_3_impl()
+__hd__ const strf::detail::encoding_impl<std::uint8_t>& iso_8859_3_impl()
 {
     using impl = detail::single_byte_encoding<detail::impl_iso8859_3>;
     static const strf::detail::encoding_impl<std::uint8_t> info =
@@ -598,7 +600,7 @@ const strf::detail::encoding_impl<std::uint8_t>& iso_8859_3_impl()
 
 
 STRF_INLINE
-const strf::detail::encoding_impl<std::uint8_t>& iso_8859_15_impl()
+__hd__ const strf::detail::encoding_impl<std::uint8_t>& iso_8859_15_impl()
 {
     using impl = detail::single_byte_encoding<detail::impl_iso8859_15>;
     static const strf::detail::encoding_impl<std::uint8_t> info =
@@ -620,6 +622,9 @@ const strf::detail::encoding_impl<std::uint8_t>& iso_8859_15_impl()
 
 } // namespace detail
 STRF_NAMESPACE_END
+
+#include <strf/detail/undefine_specifiers.hpp>
+
 
 #endif  // STRF_DETAIL_SINGLE_BYTE_ENCODINGS_HPP
 

@@ -1,6 +1,9 @@
 #ifndef STRF_DETAIL_COMMMON_HPP
 #define STRF_DETAIL_COMMMON_HPP
 
+// TODO: This seems to rely on some standard library headers which have host-side-only code!
+// double-check and either avoid the reliance or duplicate the headers :-(
+
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -120,6 +123,8 @@
 #  define STRF_NO_CXX17_COPY_ELISION
 #endif
 
+#include <strf/detail/define_specifiers.hpp>
+
 STRF_NAMESPACE_BEGIN
 
 namespace detail
@@ -166,28 +171,30 @@ template <bool ... C> constexpr bool fold_or = fold_or_impl<C...>::value;
 
 struct absolute_lowest_rank
 {
-    explicit absolute_lowest_rank() = default;
+    explicit __hd__ absolute_lowest_rank() = default;
 };
 
 template <std::size_t N>
 struct rank: rank<N - 1>
 {
-    explicit rank() = default;
+    explicit __hd__ rank() = default;
 };
 
 template <>
 struct rank<0>: absolute_lowest_rank
 {
-    explicit rank() = default;
+    explicit __hd__ rank() = default;
 };
 
 template <typename ... >
 struct tag
 {
-    explicit tag() = default;
+    explicit __hd__ tag() = default;
 };
 
 STRF_NAMESPACE_END
+
+#include <strf/detail/undefine_specifiers.hpp>
 
 #endif  // STRF_DETAIL_COMMMON_HPP
 

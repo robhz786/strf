@@ -7,6 +7,8 @@
 
 #include <strf/detail/facets/encoding.hpp>
 
+#include <strf/detail/define_specifiers.hpp>
+
 STRF_NAMESPACE_BEGIN
 
 template <typename CharT> struct width_calculator_c;
@@ -19,11 +21,11 @@ public:
 
     using category = strf::width_calculator_c<CharT>;
 
-    virtual strf::width_t width_of
+    virtual __hd__  strf::width_t width_of
         ( CharT ch
         , strf::encoding<CharT> enc ) const = 0;
 
-    virtual strf::width_t width
+    virtual __hd__  strf::width_t width
         ( strf::width_t limit
         , const CharT* str
         , std::size_t str_len
@@ -37,7 +39,7 @@ class fast_width final: public strf::width_calculator<CharT>
 {
 public:
 
-    strf::width_t width_of
+	__hd__ strf::width_t width_of
         ( CharT ch, strf::encoding<CharT> enc ) const override
     {
         (void)ch;
@@ -45,7 +47,7 @@ public:
         return 1;
     }
 
-    strf::width_t width
+	__hd__ strf::width_t width
         ( strf::width_t limit
         , const CharT* str
         , std::size_t str_len
@@ -72,7 +74,7 @@ class width_as_u32len final: public strf::width_calculator<CharT>
 {
 public:
 
-    virtual strf::width_t width_of
+    virtual __hd__  strf::width_t width_of
         ( CharT ch, strf::encoding<CharT> enc ) const override
     {
         (void)ch;
@@ -81,7 +83,7 @@ public:
     }
 
 
-    strf::width_t width
+    __hd__ strf::width_t width
         ( strf::width_t limit
         , const CharT* str
         , std::size_t str_len
@@ -113,7 +115,7 @@ struct width_calculator_c
 {
     static constexpr bool constrainable = true;
 
-    static const strf::fast_width<CharT>& get_default()
+    static __hd__ const strf::fast_width<CharT>& get_default()
     {
         static const strf::fast_width<CharT> x{};
         return x;
@@ -125,6 +127,8 @@ struct width_calculator_c
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
 STRF_NAMESPACE_END
+
+#include <strf/detail/undefine_specifiers.hpp>
 
 #endif  // STRF_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
 

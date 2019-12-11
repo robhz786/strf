@@ -9,6 +9,8 @@
 #include <strf/destination.hpp>
 #include <strf/outbuf.hpp>
 
+#include <strf/detail/define_specifiers.hpp>
+
 STRF_NAMESPACE_BEGIN
 
 namespace detail {
@@ -21,16 +23,18 @@ public:
     using char_type = CharT;
     using finish_type = typename basic_cstr_writer<CharT>::result;
 
-    constexpr basic_cstr_writer_creator(CharT* dest, CharT* dest_end) noexcept
+    constexpr __hd__
+    basic_cstr_writer_creator(CharT* dest, CharT* dest_end) noexcept
         : _dest(dest)
         , _dest_end(dest_end)
     {
         STRF_ASSERT(dest < dest_end);
     }
 
-    constexpr basic_cstr_writer_creator(const basic_cstr_writer_creator&) = default;
+    constexpr __hd__
+    basic_cstr_writer_creator(const basic_cstr_writer_creator&) = default;
 
-    basic_cstr_writer<CharT> create() const
+    __hd__ basic_cstr_writer<CharT> create() const
     {
         return basic_cstr_writer<CharT>{_dest, _dest_end};
     }
@@ -46,21 +50,21 @@ private:
 #if defined(__cpp_char8_t)
 
 template<std::size_t N>
-inline auto to(char8_t (&dest)[N])
+inline __hd__ auto to(char8_t (&dest)[N])
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char8_t> >
         (dest, dest + N);
 }
 
-inline auto to(char8_t* dest, char8_t* end)
+inline __hd__ auto to(char8_t* dest, char8_t* end)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char8_t> >
         (dest, end);
 }
 
-inline auto to(char8_t* dest, std::size_t count)
+inline __hd__ auto to(char8_t* dest, std::size_t count)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char8_t> >
@@ -70,21 +74,21 @@ inline auto to(char8_t* dest, std::size_t count)
 #endif
 
 template<std::size_t N>
-inline auto to(char (&dest)[N])
+inline __hd__ auto to(char (&dest)[N])
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char> >
         (dest, dest + N);
 }
 
-inline auto to(char* dest, char* end)
+inline __hd__ auto to(char* dest, char* end)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char> >
         (dest, end);
 }
 
-inline auto to(char* dest, std::size_t count)
+inline __hd__ auto to(char* dest, std::size_t count)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char> >
@@ -92,21 +96,21 @@ inline auto to(char* dest, std::size_t count)
 }
 
 template<std::size_t N>
-inline auto to(char16_t (&dest)[N])
+inline __hd__ auto to(char16_t (&dest)[N])
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char16_t> >
         (dest, dest + N);
 }
 
-inline auto to(char16_t* dest, char16_t* end)
+inline __hd__ auto to(char16_t* dest, char16_t* end)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char16_t> >
         (dest, end);
 }
 
-inline auto to(char16_t* dest, std::size_t count)
+inline __hd__ auto to(char16_t* dest, std::size_t count)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char16_t> >
@@ -114,21 +118,21 @@ inline auto to(char16_t* dest, std::size_t count)
 }
 
 template<std::size_t N>
-inline auto to(char32_t (&dest)[N])
+inline __hd__ auto to(char32_t (&dest)[N])
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char32_t> >
         (dest, dest + N);
 }
 
-inline auto to(char32_t* dest, char32_t* end)
+inline __hd__ auto to(char32_t* dest, char32_t* end)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char32_t> >
         (dest, end);
 }
 
-inline auto to(char32_t* dest, std::size_t count)
+inline __hd__ auto to(char32_t* dest, std::size_t count)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<char32_t> >
@@ -136,21 +140,21 @@ inline auto to(char32_t* dest, std::size_t count)
 }
 
 template<std::size_t N>
-inline auto to(wchar_t (&dest)[N])
+inline __hd__ auto to(wchar_t (&dest)[N])
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<wchar_t> >
         (dest, dest + N);
 }
 
-inline auto to(wchar_t* dest, wchar_t* end)
+inline __hd__ auto to(wchar_t* dest, wchar_t* end)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<wchar_t> >
         (dest, end);
 }
 
-inline auto to(wchar_t* dest, std::size_t count)
+inline __hd__ auto to(wchar_t* dest, std::size_t count)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_cstr_writer_creator<wchar_t> >
@@ -158,6 +162,8 @@ inline auto to(wchar_t* dest, std::size_t count)
 }
 
 STRF_NAMESPACE_END
+
+#include <strf/detail/undefine_specifiers.hpp>
 
 #endif  /* STRF_DETAIL_OUTPUT_TYPES_CHAR_PTR_HPP */
 
