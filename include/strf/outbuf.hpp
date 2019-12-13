@@ -379,19 +379,13 @@ inline __hd__ void write( strf::basic_outbuf_noexcept<CharT>& ob
 inline __hd__ void write( strf::basic_outbuf<char>& ob
                  , const char* str )
 {
-#ifndef __CUDA_ARCH__
-	using std::strlen;
-#endif
-    strf::detail::outbuf_write(ob, str, strlen(str));
+    strf::detail::outbuf_write(ob, str, detail::strlen(str));
 }
 
 inline __hd__ void write( strf::basic_outbuf_noexcept<char>& ob
                  , const char* str ) noexcept
 {
-#ifndef __CUDA_ARCH__
-	using std::strlen;
-#endif
-    strf::detail::outbuf_write(ob, str, strlen(str));
+    strf::detail::outbuf_write(ob, str, detail::strlen(str));
 }
 
 inline __hd__ void write( strf::basic_outbuf<wchar_t>& ob
