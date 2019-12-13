@@ -10,6 +10,9 @@
 
 STRF_NAMESPACE_BEGIN
 
+// cv and sani format functions are defined in no_cv_format_fn in string.hpp
+// They are related to encoding conversion and sanitization.
+
 template <typename T>
 constexpr auto cv(const T& value)
 -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).cv())>>
