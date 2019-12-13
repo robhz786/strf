@@ -6,7 +6,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/detail/tr_string.hpp>
-#include <strf/detail/printers_tuple.hpp>
 #include <strf/facets_pack.hpp>
 
 STRF_NAMESPACE_BEGIN

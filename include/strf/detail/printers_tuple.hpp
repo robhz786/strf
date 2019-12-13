@@ -79,40 +79,6 @@ make_simple_tuple(const Args& ... args)
     { strf::detail::simple_tuple_from_args{}, args... };
 }
 
-
-#ifdef __cpp_fold_expressions
-
-
-template <typename CharT, typename ... Printers>
-inline void write_args( strf::basic_outbuf<CharT>& ob
-                      , const Printers& ... printers )
-{
-    (... , printers.print_to(ob));
-}
-
-#else
-
-
-template <typename CharT>
-inline void write_args(strf::basic_outbuf<CharT>&)
-{
-}
-
-template <typename CharT, typename Printer, typename ... Printers>
-inline void write_args
-    ( strf::basic_outbuf<CharT>& ob
-    , const Printer& printer
-    , const Printers& ... printers )
-{
-    printer.print_to(ob);
-    if (ob.good()) {
-        write_args(ob, printers ...);
-    }
-}
-
-#endif
-
-
 template <std::size_t J, typename ... T>
 constexpr const auto& get(const simple_tuple<T...>& tp)
 {

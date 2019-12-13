@@ -328,6 +328,40 @@ public:
     constexpr print_preview(const print_preview&) = delete;
 };
 
+namespace detail {
+
+#if defined(__cpp_fold_expressions)
+
+template <typename CharT, typename ... Printers>
+inline void write_args( strf::basic_outbuf<CharT>& ob
+                      , const Printers& ... printers )
+{
+    (... , printers.print_to(ob));
+}
+
+#else // defined(__cpp_fold_expressions)
+
+template <typename CharT>
+inline void write_args(strf::basic_outbuf<CharT>&)
+{
+}
+
+template <typename CharT, typename Printer, typename ... Printers>
+inline void write_args
+    ( strf::basic_outbuf<CharT>& ob
+    , const Printer& printer
+    , const Printers& ... printers )
+{
+    printer.print_to(ob);
+    if (ob.good()) {
+        write_args(ob, printers ...);
+    }
+}
+
+#endif // defined(__cpp_fold_expressions)
+
+} // namespace detail
+
 STRF_NAMESPACE_END
 
 #endif  // STRF_PRINTER_HPP
