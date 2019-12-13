@@ -10,6 +10,8 @@
 
 #include <type_traits>
 #include <cassert>
+#include <cstddef> // for std::size_t
+#include <cstring> // for std::strlen
 
 #define STRF_ASSERT(x) assert(x)
 
@@ -166,6 +168,18 @@ template <bool ... C> constexpr bool fold_and = fold_and_impl<C...>::value;
 template <bool ... C> constexpr bool fold_or = fold_or_impl<C...>::value;
 
 #endif // defined(__cpp_fold_expressions)
+
+inline __hd__ std::size_t
+strlen( const char* str )
+{
+#ifndef __CUDA_ARCH__
+	return std::strlen(str);
+#else
+	const char* p { str };
+	while(*p != '\0') { ++p; }
+	return (p - str);
+#endif
+}
 
 } // namespace detail
 
