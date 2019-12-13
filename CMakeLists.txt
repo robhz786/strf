@@ -4,8 +4,8 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 
-cmake_minimum_required (VERSION 3.5)
-project (strf CXX)
+cmake_minimum_required (VERSION 3.8)
+project (strf CXX CUDA)
 enable_testing()
 
 option(
