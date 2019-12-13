@@ -37,14 +37,26 @@ foreach(
   string_writer
   )
 
-  add_executable(test-${t}-header-only   ${t}.cpp)
-  add_executable(test-${t}-static-lib    ${t}.cpp)
+#  add_executable(test-${t}-header-only   ${t}.cpp)
+#  add_executable(test-${t}-static-lib    ${t}.cpp)
 
-  target_link_libraries(test-${t}-header-only   strf-header-only)
-  target_link_libraries(test-${t}-static-lib    strf)
+#  target_link_libraries(test-${t}-header-only   strf-header-only)
+#  target_link_libraries(test-${t}-static-lib    strf)
 
-  add_test(run-test-${t}-header-only   test-${t}-header-only)
-  add_test(run-test-${t}-static-lib    test-${t}-static-lib)
+#  add_test(run-test-${t}-header-only   test-${t}-header-only)
+#  add_test(run-test-${t}-static-lib    test-${t}-static-lib)
 
 endforeach(t)
+
+add_executable(test-cuda_inclusion-header-only   cuda_inclusion.cu)
+add_executable(test-cuda_inclusion-static-lib    cuda_inclusion.cu)
+
+target_link_libraries(test-cuda_inclusion-header-only   strf-header-only)
+target_link_libraries(test-cuda_inclusion-static-lib    strf)
+
+#set_target_properties(test-cuda_inclusion-static-lib PROPERTIES CXX_STANDARD 14)
+#set_target_properties(test-cuda_inclusion-header-only PROPERTIES CXX_STANDARD 14)
+
+add_test(run-test-cuda_inclusion-header-only   test-cuda_inclusion-header-only)
+add_test(run-test-cuda_inclusion-static-lib    test-cuda_inclusion-static-lib)
 

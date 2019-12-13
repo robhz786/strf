@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <strf.hpp>
+
 #include <cctype>
 
 #include "lightweight_test_label.hpp"
@@ -221,7 +222,8 @@ private:
     void _test_failure(const MsgArgs&... msg_args)
     {
         _test_failed = true;
-        strf::append(_failure_msg)(msg_args...);
+        // strf::append(_failure_msg)(msg_args...);
+        _failure_msg += "(failure arguments not appeneded)";
     }
 
     bool _wrongly_reserved() const;
@@ -311,8 +313,13 @@ void input_tester<CharOut>::finish()
     }
     if (_expected != _result)
     {
+#ifndef __CUDACC__
         _test_failure( "\n expected: \"", strf::cv(_expected), '\"'
                      , "\n obtained: \"", strf::cv(_result), "\"\n" );
+#else
+        _test_failure( "\n expected: \"", _expected, '\"'
+                     , "\n obtained: \"", _result, "\"\n" );
+#endif
 
     }
     if(_wrongly_reserved())
