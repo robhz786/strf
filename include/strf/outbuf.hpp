@@ -88,7 +88,7 @@ public:
         STRF_ASSERT(pos() + n <= end());
         _pos += n;
     }
-    void advance() noexcept
+    __hd__ void advance() noexcept
     {
         STRF_ASSERT(pos() < end());
         ++_pos;
@@ -292,7 +292,10 @@ __hd__ void outbuf_write(Outbuf& ob, const CharT* str, std::size_t len)
     auto p = ob.pos();
     if (p + len <= ob.end()) // the common case
     {
-        std::memcpy(p, str, len * sizeof(CharT));
+#ifndef __CUDA_ARCH__
+    	using std::memcpy;
+#endif
+        memcpy(p, str, len * sizeof(CharT));
         ob.advance(len);
     }
     else
@@ -376,25 +379,37 @@ inline __hd__ void write( strf::basic_outbuf_noexcept<CharT>& ob
 inline __hd__ void write( strf::basic_outbuf<char>& ob
                  , const char* str )
 {
-    strf::detail::outbuf_write(ob, str, std::strlen(str));
+#ifndef __CUDA_ARCH__
+	using std::strlen;
+#endif
+    strf::detail::outbuf_write(ob, str, strlen(str));
 }
 
 inline __hd__ void write( strf::basic_outbuf_noexcept<char>& ob
                  , const char* str ) noexcept
 {
-    strf::detail::outbuf_write(ob, str, std::strlen(str));
+#ifndef __CUDA_ARCH__
+	using std::strlen;
+#endif
+    strf::detail::outbuf_write(ob, str, strlen(str));
 }
 
 inline __hd__ void write( strf::basic_outbuf<wchar_t>& ob
                  , const wchar_t* str )
 {
-    strf::detail::outbuf_write(ob, str, std::wcslen(str));
+#ifndef __CUDA_ARCH__
+	using std::wcslen;
+#endif
+strf::detail::outbuf_write(ob, str, std::wcslen(str));
 }
 
 inline __hd__ void write( strf::basic_outbuf_noexcept<wchar_t>& ob
                  , const wchar_t* str ) noexcept
 {
-    strf::detail::outbuf_write(ob, str, std::wcslen(str));
+#ifndef __CUDA_ARCH__
+	using std::wcslen;
+#endif
+    strf::detail::outbuf_write(ob, str, wcslen(str));
 }
 
 template <std::size_t CharSize>

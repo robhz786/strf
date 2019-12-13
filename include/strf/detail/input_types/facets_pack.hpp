@@ -7,7 +7,7 @@
 
 #include <strf/printer.hpp>
 #include <strf/facets_pack.hpp>
-#include <strf/detail/printers_tuple.hpp>
+// #include <strf/detail/printers_tuple.hpp>
 
 STRF_NAMESPACE_BEGIN
 

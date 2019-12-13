@@ -6,6 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/printer.hpp>
+#include <algorithm>
 
 #include <strf/detail/define_specifiers.hpp>
 
@@ -329,6 +330,37 @@ struct impl_iso8859_3
     static __hd__ char32_t decode(std::uint8_t ch);
 };
 
+template< class ForwardIt, class T, class Compare >
+ForwardIt __hd__ lower_bound
+    ( ForwardIt first
+    , ForwardIt last
+    , const T& value
+    , Compare comp )
+{
+#ifndef __CUDA_ARCH__
+    return std::lower_bound(first, last, value, comp);
+#else
+    auto search_range_length { last - first };
+    	// We don't have the equivalent of std::distance on the device-side
+
+    ForwardIt iter;
+    while (search_range_length > 0) {
+    	auto half_range_length = search_range_length/2;
+        iter = first;
+        iter += half_range_length;
+        if (comp(*iter, value)) {
+            first = ++iter;
+            search_range_length -= (half_range_length + 1);
+            	// the extra +1 is since we've just checked the midpoint
+        }
+        else {
+        	search_range_length = half_range_length;
+        }
+    }
+    return first;
+#endif
+}
+
 STRF_INLINE __hd__ unsigned impl_iso8859_3::encode(char32_t ch)
 {
     if (ch < 0xA1)
@@ -360,10 +392,10 @@ STRF_INLINE __hd__ unsigned impl_iso8859_3::encode(char32_t ch)
         , {0x017B, 0xAF}, {0x017C, 0xBF}, {0x02D8, 0xA2}, {0x02D9, 0xFF} };
 
     const ch32_to_char* enc_map_end = enc_map + detail::array_size(enc_map);
-    auto it = std::lower_bound( enc_map
-                              , enc_map_end
-                              , ch32_to_char{ch, 0}
-                              , cmp_ch32_to_char{} );
+    auto it = lower_bound( enc_map
+                          , enc_map_end
+                          , ch32_to_char{ch, 0}
+                          , cmp_ch32_to_char{} );
     return it != enc_map_end && it->key == ch ? it->value : 0x100;
 }
 
@@ -491,7 +523,7 @@ public:
 
 private:
 
-    static unsigned encode_ext(char32_t ch);
+    static __hd__ unsigned encode_ext(char32_t ch);
 };
 
 STRF_INLINE __hd__ unsigned impl_windows_1252::encode_ext(char32_t ch)

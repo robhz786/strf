@@ -9,58 +9,60 @@
 #include <algorithm>
 #include <cstring>
 
+#include <strf/detail/define_specifiers.hpp>
+
 STRF_NAMESPACE_BEGIN
 
 namespace detail {
 
-constexpr bool is_surrogate(unsigned long codepoint)
+constexpr __hd__ bool is_surrogate(unsigned long codepoint)
 {
     return codepoint >> 11 == 0x1B;
 }
-constexpr bool is_high_surrogate(unsigned long codepoint) noexcept
+constexpr __hd__ bool is_high_surrogate(unsigned long codepoint) noexcept
 {
     return codepoint >> 10 == 0x36;
 }
-constexpr bool is_low_surrogate(unsigned long codepoint) noexcept
+constexpr __hd__ bool is_low_surrogate(unsigned long codepoint) noexcept
 {
     return codepoint >> 10 == 0x37;
 }
-constexpr bool not_surrogate(unsigned long codepoint)
+constexpr __hd__ bool not_surrogate(unsigned long codepoint)
 {
     return codepoint >> 11 != 0x1B;
 }
-constexpr  bool not_high_surrogate(unsigned long codepoint)
+constexpr __hd__  bool not_high_surrogate(unsigned long codepoint)
 {
     return codepoint >> 10 != 0x36;
 }
-constexpr  bool not_low_surrogate(unsigned long codepoint)
+constexpr __hd__  bool not_low_surrogate(unsigned long codepoint)
 {
     return codepoint >> 10 != 0x37;
 }
-constexpr unsigned utf8_decode(unsigned ch0, unsigned ch1)
+constexpr __hd__ unsigned utf8_decode(unsigned ch0, unsigned ch1)
 {
     return (((ch0 & 0x1F) << 6) |
             ((ch1 & 0x3F) << 0));
 }
-constexpr unsigned utf8_decode(unsigned ch0, unsigned ch1, unsigned ch2)
+constexpr __hd__ unsigned utf8_decode(unsigned ch0, unsigned ch1, unsigned ch2)
 {
     return (((ch0 & 0x0F) << 12) |
             ((ch1 & 0x3F) <<  6) |
             ((ch2 & 0x3F) <<  0));
 }
-constexpr unsigned utf8_decode(unsigned ch0, unsigned ch1, unsigned ch2, unsigned ch3)
+constexpr __hd__ unsigned utf8_decode(unsigned ch0, unsigned ch1, unsigned ch2, unsigned ch3)
 {
     return (((ch0 & 0x07) << 18) |
             ((ch1 & 0x3F) << 12) |
             ((ch2 & 0x3F) <<  6) |
             ((ch3 & 0x3F) <<  0));
 }
-constexpr bool is_utf8_continuation(std::uint8_t ch)
+constexpr __hd__ bool is_utf8_continuation(std::uint8_t ch)
 {
     return (ch & 0xC0) == 0x80;
 }
 
-constexpr bool valid_start_3bytes
+constexpr __hd__ bool valid_start_3bytes
     ( std::uint8_t ch0
     , std::uint8_t ch1
     , bool allow_surr )
@@ -69,42 +71,42 @@ constexpr bool valid_start_3bytes
           && (allow_surr || (0x1B != (((ch0 & 0xF) << 1) | ((ch1 >> 5) & 1)))) );
 }
 
-inline unsigned utf8_decode_first_2_of_3(std::uint8_t ch0, std::uint8_t ch1)
+inline __hd__ unsigned utf8_decode_first_2_of_3(std::uint8_t ch0, std::uint8_t ch1)
 {
     return ((ch0 & 0x0F) << 6) | (ch1 & 0x3F);
 }
 
-inline bool first_2_of_3_are_valid(unsigned x, bool allow_surr)
+inline __hd__ bool first_2_of_3_are_valid(unsigned x, bool allow_surr)
 {
     return /*0x1F < x && */(allow_surr || (x >> 5) != 0x1B);
 }
-inline bool first_2_of_3_are_valid(std::uint8_t ch0,  std::uint8_t ch1, bool allow_surr)
+inline __hd__ bool first_2_of_3_are_valid(std::uint8_t ch0,  std::uint8_t ch1, bool allow_surr)
 {
     return first_2_of_3_are_valid(utf8_decode_first_2_of_3(ch0, ch1), allow_surr);
 }
 
-inline unsigned utf8_decode_first_2_of_4(std::uint8_t ch0, std::uint8_t ch1)
+inline __hd__ unsigned utf8_decode_first_2_of_4(std::uint8_t ch0, std::uint8_t ch1)
 {
     return ((ch0 & 0x07) << 6) | (ch1 & 0x3F);
 }
 
-inline unsigned utf8_decode_last_2_of_4(unsigned long x, unsigned ch2, unsigned ch3)
+inline __hd__ unsigned utf8_decode_last_2_of_4(unsigned long x, unsigned ch2, unsigned ch3)
 {
     return (x << 12) | ((ch2 & 0x3F) <<  6) | (ch3 & 0x3F);
 }
 
-inline bool first_2_of_4_are_valid(unsigned x)
+inline __hd__ bool first_2_of_4_are_valid(unsigned x)
 {
     return 0xF < x && x < 0x110;
 }
 
-inline bool first_2_of_4_are_valid(unsigned ch0, unsigned ch1)
+inline __hd__ bool first_2_of_4_are_valid(unsigned ch0, unsigned ch1)
 {
     return first_2_of_4_are_valid(utf8_decode_first_2_of_4(ch0, ch1));
 }
 
 STRF_STATIC_LINKAGE
-strf::cv_result cesu8_to_utf32_transcode
+strf::cv_result __hd__ cesu8_to_utf32_transcode
     ( const std::uint8_t** src
     , const std::uint8_t* src_end
     , char32_t** dest
@@ -228,6 +230,9 @@ strf::cv_result cesu8_to_utf32_transcode
 } // namespace detail
 
 STRF_NAMESPACE_END
+
+#include <strf/detail/undefine_specifiers.hpp>
+
 
 #endif  // STRF_DETAIL_CESU8_HPP
 

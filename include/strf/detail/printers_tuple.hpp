@@ -7,6 +7,8 @@
 
 #include <strf/detail/facets/encoding.hpp>
 
+#include <strf/detail/define_specifiers.hpp>
+
 STRF_NAMESPACE_BEGIN
 namespace detail {
 
@@ -31,7 +33,7 @@ class simple_tuple_impl;
 
 template <std::size_t ... I, typename ... T>
 class simple_tuple_impl<std::index_sequence<I...>, T...>
-    : private detail::indexed_obj<I, T> ...
+    : private indexed_obj<I, T> ...
 {
     template <std::size_t J, typename U>
     constexpr static const indexed_obj<J, U>& _get(const indexed_obj<J, U>& r)
@@ -45,7 +47,7 @@ public:
 
     template <typename ... Args>
     constexpr explicit simple_tuple_impl(simple_tuple_from_args, Args&& ... args)
-        : detail::indexed_obj<I, T>{args}...
+        : indexed_obj<I, T>(args)...
     {
     }
 
@@ -147,7 +149,7 @@ public:
         , Preview& p
         , const strf::detail::simple_tuple<Args...>& args )
         : indexed_obj<I, Printers>
-        { make_printer<CharT>(strf::rank<5>{}, fp, p, args.template get<I>()) } ...
+        ( make_printer<CharT>(strf::rank<5>(), fp, p, args.template get<I>()) ) ...
     {
     }
 
@@ -185,7 +187,7 @@ class printers_tuple_alias
 {
     template <typename Arg>
     using _printer
-    = decltype(make_printer<CharT>( strf::rank<5>{}
+    = decltype(make_printer<CharT>( strf::rank<5>()
                                   , std::declval<const FPack&>()
                                   , std::declval<Preview&>()
                                   , std::declval<const Arg&>()));
@@ -203,6 +205,8 @@ using printers_tuple_from_args
 } // namespace detail
 
 STRF_NAMESPACE_END
+
+#include <strf/detail/undefine_specifiers.hpp>
 
 #endif  // STRF_DETAIL_PRINTERS_TUPLE_HPP
 

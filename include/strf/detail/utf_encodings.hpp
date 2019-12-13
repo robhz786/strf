@@ -45,17 +45,34 @@ template <typename T> struct simple_array<T,2> { T obj0;  T obj1; };
 template <typename T> struct simple_array<T,3> { T obj0;  T obj1; T obj2; };
 template <typename T> struct simple_array<T,4> { T obj0;  T obj1; T obj2; T obj3; };
 
+#ifdef __CUDA_ARCH__
+
+template<class OutputIt, class Size, class T>
+OutputIt __hd__ fill_n(OutputIt first, Size count, const T& value)
+{
+	auto it = first;
+    for (Size i = 0; i != count; ++i, ++first) {
+        *it = value;
+    }
+    return it;
+}
+
+#endif
+
 template <typename CharT, std::size_t N>
 inline __hd__ void do_repeat_sequence
     ( CharT* dest
     , std::size_t count
     , simple_array<CharT, N> seq )
 {
-    std::fill_n(reinterpret_cast<simple_array<CharT, N>*>(dest), count, seq);
+#ifndef __CUDA_ARCH__
+	using std::fill_n;
+#endif
+    fill_n(reinterpret_cast<simple_array<CharT, N>*>(dest), count, seq);
 }
 
 template <typename CharT, std::size_t N>
-void repeat_sequence_continuation
+__hd__ void repeat_sequence_continuation
     ( strf::underlying_outbuf<sizeof(CharT)>& ob
     , std::size_t count
     , simple_array<CharT, N> seq )
@@ -288,7 +305,7 @@ STRF_STATIC_LINKAGE __hd__ std::size_t utf8_to_utf32_size
     , const std::uint8_t* src_end
     , strf::surrogate_policy allow_surr )
 {
-    std::uint8_t ch0, ch1, ch2;
+    std::uint8_t ch0, ch1;
     const std::uint8_t* src_it = src;
     std::size_t size = 0;
     while (src_it != src_end)
@@ -306,7 +323,7 @@ STRF_STATIC_LINKAGE __hd__ std::size_t utf8_to_utf32_size
         else if (0xE0 == ch0)
         {
             if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
+              && ++src_it != src_end && is_utf8_continuation(* src_it) )
             {
                 ++src_it;
             }
@@ -315,7 +332,7 @@ STRF_STATIC_LINKAGE __hd__ std::size_t utf8_to_utf32_size
         {
             if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
               && first_2_of_3_are_valid( ch0, ch1, allow_surr )
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
+              && ++src_it != src_end && is_utf8_continuation(* src_it) )
             {
                 ++src_it;
             }
@@ -796,7 +813,7 @@ STRF_STATIC_LINKAGE __hd__ std::size_t utf16_to_utf32_size
     , strf::surrogate_policy allow_surr )
 {
     (void) allow_surr;
-    unsigned long ch, ch2;
+    unsigned long ch;
     std::size_t count = 0;
     const char16_t* src_it = src;
     const char16_t* src_it_next;
@@ -809,7 +826,7 @@ STRF_STATIC_LINKAGE __hd__ std::size_t utf16_to_utf32_size
         ++count;
         if ( is_high_surrogate(ch)
           && src_it_next != src_end
-          && is_low_surrogate(ch2 = *src_it_next))
+          && is_low_surrogate(*src_it_next))
         {
             ++src_it_next;
         }
@@ -879,7 +896,7 @@ STRF_STATIC_LINKAGE __hd__ std::size_t utf16_sanitize_size
     (void) allow_surr;
     std::size_t count = 0;
     const char16_t* src_it = src;
-    unsigned long ch, ch2;
+    unsigned long ch;
     while (src_it != src_end)
     {
         ch = *src_it;
@@ -887,7 +904,7 @@ STRF_STATIC_LINKAGE __hd__ std::size_t utf16_sanitize_size
         ++ count;
         if ( is_high_surrogate(ch)
           && src_it != src_end
-          && is_low_surrogate(ch2 = *src_it))
+          && is_low_surrogate(*src_it))
         {
             ++ src_it;
             ++ count;
@@ -1260,7 +1277,7 @@ STRF_STATIC_LINKAGE __hd__ std::size_t utf8_to_utf16_size
     using strf::detail::not_surrogate;
 
     std::size_t size = 0;
-    std::uint8_t ch0, ch1, ch2;
+    std::uint8_t ch0, ch1;
     auto src_it = src_begin;
     while(src_it < src_end)
     {
@@ -1277,7 +1294,7 @@ STRF_STATIC_LINKAGE __hd__ std::size_t utf8_to_utf16_size
         else if (0xE0 == ch0)
         {
             if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
+              && ++src_it != src_end && is_utf8_continuation(* src_it) )
             {
                 ++src_it;
             }
@@ -1286,7 +1303,7 @@ STRF_STATIC_LINKAGE __hd__ std::size_t utf8_to_utf16_size
         {
             if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
               && first_2_of_3_are_valid( ch0, ch1, allow_surr )
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
+              && ++src_it != src_end && is_utf8_continuation(* src_it) )
             {
                 ++src_it;
             }

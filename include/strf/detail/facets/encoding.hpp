@@ -33,7 +33,7 @@ class facet_trait<strf::encoding_error>
 {
 public:
     using category = strf::encoding_error_c;
-    static constexpr __hd__ bool store_by_value = true;
+    static constexpr bool store_by_value = true;
 };
 
 enum class surrogate_policy : bool
@@ -630,20 +630,22 @@ get_transcoder( strf::encoding<CharIn> src_encoding
 
 namespace detail {
 
-constexpr __hd__ std::size_t global_mini_buffer32_size = 16;
+#ifndef __CUDA_ARCH__
+constexpr std::size_t global_mini_buffer32_size = 16;
 
 inline __hd__ char32_t* global_mini_buffer32()
 {
     thread_local static char32_t buff[global_mini_buffer32_size];
     return buff;
 }
+#endif
 
 template <typename CharOut>
 class buffered_encoder: public strf::basic_outbuf<char32_t>
 {
 public:
 
-    buffered_encoder
+	__hd__ buffered_encoder
         ( strf::encoding<CharOut>& enc
         , strf::basic_outbuf<CharOut>& ob
         , strf::encoding_error err_hdl
@@ -659,9 +661,9 @@ public:
         _begin = this->pos();
     }
 
-    void recycle() override;
+    __hd__ void recycle() override;
 
-    void finish()
+    __hd__ void finish()
     {
         auto p = this->pos();
         if (p != _begin && _ob.good())
@@ -681,7 +683,7 @@ private:
 };
 
 template <typename CharOut>
-void buffered_encoder<CharOut>::recycle()
+__hd__ void buffered_encoder<CharOut>::recycle()
 {
     auto p = this->pos();
     this->set_pos(_begin);
@@ -698,7 +700,7 @@ class buffered_size_calculator: public strf::basic_outbuf<char32_t>
 {
 public:
 
-    buffered_size_calculator
+	__hd__ buffered_size_calculator
         ( strf::encoding<CharOut>& enc
         , strf::surrogate_policy allow_surr )
         : strf::basic_outbuf<char32_t>
@@ -710,9 +712,9 @@ public:
         _begin = this->pos();
     }
 
-    void recycle() override;
+    __hd__ void recycle() override;
 
-    std::size_t get_sum()
+    __hd__ std::size_t get_sum()
     {
         recycle();
         return _sum;
@@ -727,7 +729,7 @@ private:
 };
 
 template <typename CharOut>
-void buffered_size_calculator<CharOut>::recycle()
+__hd__ void buffered_size_calculator<CharOut>::recycle()
 {
     auto end = this->pos();
     if (end != _begin)

@@ -7,6 +7,8 @@
 #include <strf/detail/format_functions.hpp>
 #include <strf/facets_pack.hpp>
 
+#warning "Shouldn't get here."
+
 STRF_NAMESPACE_BEGIN
 
 namespace detail {
@@ -316,7 +318,7 @@ public:
                    , _get_facet<strf::surrogate_policy_c>(fp) );
     }
 
-    void print_to(strf::basic_outbuf<CharT>& ob) const override;
+    void __hd__ print_to(strf::basic_outbuf<CharT>& ob) const override;
 
 private:
 

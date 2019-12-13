@@ -5,18 +5,17 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef __CUDA_ARCH__
+// #ifndef __CUDA_ARCH__
 #include <system_error>
-#include <algorithm> // TODO: Need to replace dependence on <algorithm>...
-#endif // __CUDA_ARCH__
+#include <algorithm>
+// #endif // __CUDA_ARCH__
 #include <strf/outbuf.hpp>
 #include <strf/width_t.hpp>
+#include <strf/detail/char_traits.hpp>
 
 #include <strf/detail/define_specifiers.hpp>
 
 STRF_NAMESPACE_BEGIN
-
-#ifndef __CUDA_ARCH__
 
 class stringify_error: public std::exception
 {
@@ -35,26 +34,23 @@ class encoding_failure: public strf::stringify_error
 
 namespace detail {
 
-#if defined(__cpp_exceptions)
-
-inline void throw_encoding_failure()
+// TODO: Shouldn't throw_encoding_failure() be renamed handle_encoding_failure() ?
+// I mean, we don't always throw...
+inline __hd__ void throw_encoding_failure()
 {
+#if defined(__cpp_exceptions) && !defined(__CUDA_ARCH__)
     throw strf::encoding_failure();
-}
-
 #else // defined(__cpp_exceptions)
-
-inline void throw_encoding_failure()
-{
+#ifndef __CUDA_ARCH__
     std::abort();
+#else
+    asm("trap;");
+#endif
+#endif // defined(__cpp_exceptions)
 }
 
-#endif // defined(__cpp_exceptions)
 
 } // namespace detail
-
-#endif // __CUDA_ARCH__
-
 
 
 template <typename CharOut>
@@ -64,17 +60,17 @@ public:
 
     using char_type = CharOut;
 
-    virtual __hd__ ~printer()
+    __hd__ virtual ~printer()
     {
     }
 
-    virtual __hd__ void print_to(strf::basic_outbuf<CharOut>& ob) const = 0;
+    __hd__ virtual void print_to(strf::basic_outbuf<CharOut>& ob) const = 0;
 };
 
 namespace detail {
 
 template<std::size_t CharSize>
-void write_fill_continuation
+void __hd__ write_fill_continuation
     ( strf::underlying_outbuf<CharSize>& ob
     , std::size_t count
     , typename strf::underlying_outbuf<CharSize>::char_type ch )
@@ -83,7 +79,7 @@ void write_fill_continuation
 
     std::size_t space = ob.size();
     STRF_ASSERT(space < count);
-    std::char_traits<char_type>::assign(ob.pos(), space, ch);
+    char_traits<char_type>::assign(ob.pos(), space, ch);
     count -= space;
     ob.advance_to(ob.end());
     ob.recycle();
@@ -92,11 +88,11 @@ void write_fill_continuation
         space = ob.size();
         if (count <= space)
         {
-            std::char_traits<char_type>::assign(ob.pos(), count, ch);
+            char_traits<char_type>::assign(ob.pos(), count, ch);
             ob.advance(count);
             break;
         }
-        std::char_traits<char_type>::assign(ob.pos(), space, ch);
+        char_traits<char_type>::assign(ob.pos(), space, ch);
         count -= space;
         ob.advance_to(ob.end());
         ob.recycle();
@@ -104,7 +100,7 @@ void write_fill_continuation
 }
 
 template <std::size_t CharSize>
-inline void write_fill
+inline __hd__ void write_fill
     ( strf::underlying_outbuf<CharSize>& ob
     , std::size_t count
     , typename strf::underlying_outbuf<CharSize>::char_type ch )
@@ -112,7 +108,7 @@ inline void write_fill
     using char_type = typename strf::underlying_outbuf<CharSize>::char_type;
     if (count <= ob.size()) // the common case
     {
-        std::char_traits<char_type>::assign(ob.pos(), count, ch);
+        char_traits<char_type>::assign(ob.pos(), count, ch);
         ob.advance(count);
     }
     else
@@ -326,7 +322,7 @@ public:
     static constexpr bool nothing_required = ! SizeRequired && ! WidthRequired;
 
     template <bool W = WidthRequired>
-    constexpr __hd__ explicit print_preview
+    __hd__ constexpr explicit print_preview
         ( std::enable_if_t<W, strf::width_t> initial_width ) noexcept
         : strf::width_preview<WidthRequired>{initial_width}
     {
@@ -340,5 +336,4 @@ STRF_NAMESPACE_END
 
 #include <strf/detail/undefine_specifiers.hpp>
 
-#endif  // STRF_PRINTER_HPP
-
+#endif // STRF_PRINTER_HPP
