@@ -6,6 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/printer.hpp>
+#include <limits>
 #include <strf/detail/facets/encoding.hpp>
 
 STRF_NAMESPACE_BEGIN

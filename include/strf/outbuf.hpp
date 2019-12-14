@@ -6,15 +6,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/detail/common.hpp>
-#ifndef __CUDA_ARCH__
-#include <cstring>
-	// TODO: Is this used for anything other than memcpy?
-#else
-	// TODO: If necessary, I have my
-	// own - implemented but not properly tested - <string.h>
-	// GPU-side per-thread implementation which might be used
-	// for this purpose. But - how much of it do we really need?
-#endif
+#include <strf/detail/standard_lib_functions.hpp>
+
 #include <cwchar>
 #include <cstdint>
 
@@ -250,16 +243,10 @@ using basic_outbuf_noexcept_switch
 template <typename Outbuf, typename CharT>
 STRF_HD void outbuf_write_continuation(Outbuf& ob, const CharT* str, std::size_t len)
 {
-#ifndef __CUDA_ARCH__
-	using std::memcpy;
-#else
-	// CUDA has a device-side memcpy(); see:
-	// https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#dynamic-global-memory-allocation-and-operations
-#endif
     auto space = ob.size();
     STRF_ASSERT(space < len);
 
-    memcpy(ob.pos(), str, space * sizeof(CharT));
+    detail::str_copy(ob.pos(), str, space * sizeof(CharT));
     str += space;
     len -= space;
     ob.advance_to(ob.end());
@@ -273,7 +260,7 @@ STRF_HD void outbuf_write_continuation(Outbuf& ob, const CharT* str, std::size_t
             ob.advance(len);
             break;
         }
-        memcpy(ob.pos(), str, space * sizeof(CharT));
+        detail::str_copy(ob.pos(), str, space * sizeof(CharT));
         len -= space;
         str += space;
         ob.advance_to(ob.end());
@@ -290,10 +277,7 @@ STRF_HD void outbuf_write(Outbuf& ob, const CharT* str, std::size_t len)
     auto p = ob.pos();
     if (p + len <= ob.end()) // the common case
     {
-#ifndef __CUDA_ARCH__
-    	using std::memcpy;
-#endif
-        memcpy(p, str, len * sizeof(CharT));
+        strf::detail::str_copy(p, str, len * sizeof(CharT));
         ob.advance(len);
     }
     else

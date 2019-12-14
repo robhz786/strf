@@ -6,8 +6,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/printer.hpp>
-#include <algorithm>
-#include <cstring>
+#include <cstdint>
+#include <cstddef> // for std::size_t
 
 STRF_NAMESPACE_BEGIN
 
@@ -43,30 +43,13 @@ template <typename T> struct simple_array<T,2> { T obj0;  T obj1; };
 template <typename T> struct simple_array<T,3> { T obj0;  T obj1; T obj2; };
 template <typename T> struct simple_array<T,4> { T obj0;  T obj1; T obj2; T obj3; };
 
-#ifdef __CUDA_ARCH__
-
-template<class OutputIt, class Size, class T>
-OutputIt STRF_HD fill_n(OutputIt first, Size count, const T& value)
-{
-	auto it = first;
-    for (Size i = 0; i != count; ++i, ++first) {
-        *it = value;
-    }
-    return it;
-}
-
-#endif
-
 template <typename CharT, std::size_t N>
 inline STRF_HD void do_repeat_sequence
     ( CharT* dest
     , std::size_t count
     , simple_array<CharT, N> seq )
 {
-#ifndef __CUDA_ARCH__
-	using std::fill_n;
-#endif
-    fill_n(reinterpret_cast<simple_array<CharT, N>*>(dest), count, seq);
+	strf::detail::str_fill_n(reinterpret_cast<simple_array<CharT, N>*>(dest), count, seq);
 }
 
 template <typename CharT, std::size_t N>

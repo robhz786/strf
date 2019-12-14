@@ -244,11 +244,11 @@ STRF_HD void fmt_char_printer<CharT>::_write_body
             std::size_t space = ob.size();
             if (count <= space)
             {
-                std::fill_n(ob.pos(), count, _fmt.value().ch);
+                strf::detail::str_fill_n(ob.pos(), count, _fmt.value().ch);
                 ob.advance(count);
                 break;
             }
-            std::fill_n(ob.pos(), space, _fmt.value().ch);
+            strf::detail::str_fill_n(ob.pos(), space, _fmt.value().ch);
             count -= space;
             ob.advance_to(ob.end());
             ob.recycle();

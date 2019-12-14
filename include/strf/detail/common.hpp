@@ -84,7 +84,7 @@
 #endif // defined(__has_cpp_attribute)
 
 #ifndef STRF_CONSTEXPR_CHAR_TRAITS
-#define STRF_CONSTEXPR_CHAR_TRAITS inline
+#define STRF_CONSTEXPR_CHAR_TRAITS constexpr
 #endif
 
 #if defined(STRF_HAS_NODISCARD)
@@ -146,6 +146,9 @@
 #define STRF_DEVICE
 
 #endif // __CUDACC__
+
+// TODO: This could be controlled from CMake
+#define STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS 1
 
 STRF_NAMESPACE_BEGIN
 
