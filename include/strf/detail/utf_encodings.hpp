@@ -286,7 +286,7 @@ STRF_HD void utf8_to_utf32_transcode
             if (err_hdl == strf::encoding_error::stop)
             {
                 ob.advance_to(dest_it);
-                strf::detail::throw_encoding_failure();
+                strf::detail::handle_encoding_failure();
             }
             ch32 = 0xFFFD;
         }
@@ -441,7 +441,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf8_sanitize
             {
                 STRF_ASSERT(err_hdl == strf::encoding_error::stop);
                 ob.advance_to(dest_it);
-                strf::detail::throw_encoding_failure();
+                strf::detail::handle_encoding_failure();
             }
         }
     }
@@ -583,7 +583,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf8_encode_fill
         switch(err_hdl)
         {
             case strf::encoding_error::stop:
-                strf::detail::throw_encoding_failure();
+                strf::detail::handle_encoding_failure();
                 return;
 
             default:
@@ -698,7 +698,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf32_to_utf8_transcode
                 default:
                     STRF_ASSERT(err_hdl == strf::encoding_error::stop);
                     ob.advance_to(dest_it);
-                    strf::detail::throw_encoding_failure();
+                    strf::detail::handle_encoding_failure();
             }
         }
     }
@@ -794,7 +794,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf16_to_utf32_transcode
             if (err_hdl == strf::encoding_error::stop)
             {
                 ob.advance_to(dest_it);
-                strf::detail::throw_encoding_failure();
+                strf::detail::handle_encoding_failure();
             }
         }
 
@@ -876,7 +876,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf16_sanitize
             if (err_hdl == strf::encoding_error::stop)
             {
                 ob.advance_to(dest_it);
-                strf::detail::throw_encoding_failure();
+                strf::detail::handle_encoding_failure();
             }
             STRF_CHECK_DEST;
             *dest_it = 0xFFFD;
@@ -982,7 +982,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf16_encode_fill
         invalid_char:
         if (err_hdl == strf::encoding_error::stop)
         {
-            strf::detail::throw_encoding_failure();
+            strf::detail::handle_encoding_failure();
         }
         strf::detail::write_fill(ob, count, u'\uFFFD');
     }
@@ -1026,7 +1026,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf32_to_utf16_transcode
             if (err_hdl == strf::encoding_error::stop)
             {
                 ob.advance_to(dest_it);
-                strf::detail::throw_encoding_failure();
+                strf::detail::handle_encoding_failure();
             }
             STRF_CHECK_DEST;
             *dest_it = 0xFFFD;
@@ -1088,7 +1088,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf32_sanitize
                 if (err_hdl == strf::encoding_error::stop)
                 {
                     ob.advance_to(dest_it);
-                    strf::detail::throw_encoding_failure();
+                    strf::detail::handle_encoding_failure();
                 }
                 ch = 0xFFFD;
             }
@@ -1107,7 +1107,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf32_sanitize
                 if (err_hdl == strf::encoding_error::stop)
                 {
                     ob.advance_to(dest_it);
-                    strf::detail::throw_encoding_failure();
+                    strf::detail::handle_encoding_failure();
                 }
                 ch = 0xFFFD;
             }
@@ -1154,7 +1154,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf32_encode_fill
     {
         if (err_hdl == strf::encoding_error::stop)
         {
-            strf::detail::throw_encoding_failure();
+            strf::detail::handle_encoding_failure();
         }
         STRF_ASSERT(err_hdl == strf::encoding_error::replace);
         ch = 0xFFFD;
@@ -1257,7 +1257,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf8_to_utf16_transcode
             if (err_hdl == strf::encoding_error::stop)
             {
                 ob.advance_to(dest_it);
-                strf::detail::throw_encoding_failure();
+                strf::detail::handle_encoding_failure();
             }
             STRF_CHECK_DEST;
             *dest_it = 0xFFFD;
@@ -1381,7 +1381,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf16_to_utf8_transcode
             if (err_hdl == strf::encoding_error::stop)
             {
                 ob.advance_to(dest_it);
-                strf::detail::throw_encoding_failure();
+                strf::detail::handle_encoding_failure();
             }
             STRF_CHECK_DEST_SIZE(3);
             dest_it[0] = 0xEF;

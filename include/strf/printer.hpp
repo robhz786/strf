@@ -32,9 +32,7 @@ class encoding_failure: public strf::stringify_error
 
 namespace detail {
 
-// TODO: Shouldn't throw_encoding_failure() be renamed handle_encoding_failure() ?
-// I mean, we don't always throw...
-inline STRF_HD void throw_encoding_failure()
+inline STRF_HD void handle_encoding_failure()
 {
 #if defined(__cpp_exceptions) && !defined(__CUDA_ARCH__)
     throw strf::encoding_failure();
@@ -44,7 +42,7 @@ inline STRF_HD void throw_encoding_failure()
 #else
     asm("trap;");
 #endif
-#endif // defined(__cpp_exceptions)
+#endif // defined(__cpp_exceptions) && !defined(__CUDA_ARCH__)
 }
 
 

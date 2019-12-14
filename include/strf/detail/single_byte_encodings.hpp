@@ -129,7 +129,7 @@ STRF_HD void single_byte_encoding<Impl>::to_utf32
                 default:
                     STRF_ASSERT(err_hdl == strf::encoding_error::stop);
                     ob.advance_to(dest_it);
-                    strf::detail::throw_encoding_failure();
+                    strf::detail::handle_encoding_failure();
             }
         }
         STRF_CHECK_DEST;
@@ -163,7 +163,7 @@ STRF_HD void single_byte_encoding<Impl>::sanitize
             if (err_hdl == strf::encoding_error::stop)
             {
                 ob.advance_to(dest_it);
-                strf::detail::throw_encoding_failure();
+                strf::detail::handle_encoding_failure();
             }
             ch_out = '?';
         }
@@ -220,7 +220,7 @@ STRF_HD void single_byte_encoding<Impl>::encode_fill
     {
         if (err_hdl == strf::encoding_error::stop)
         {
-            strf::detail::throw_encoding_failure();
+            strf::detail::handle_encoding_failure();
         }
         ch2 = '?';
     }
@@ -259,7 +259,7 @@ STRF_HD void single_byte_encoding<Impl>::from_utf32
             if (err_hdl == strf::encoding_error::stop)
             {
                 ob.advance_to(dest_it);
-                strf::detail::throw_encoding_failure();
+                strf::detail::handle_encoding_failure();
             }
             ch2 = '?';
         }

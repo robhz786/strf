@@ -430,7 +430,7 @@ public:
             {
                 if(err_hdl == strf::encoding_error::stop)
                 {
-                    strf::detail::throw_encoding_failure();
+                    strf::detail::handle_encoding_failure();
                 }
                 this->write_replacement_char(ob);
             }
