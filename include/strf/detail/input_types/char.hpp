@@ -10,8 +10,6 @@
 #include <strf/facets_pack.hpp>
 #include <strf/detail/facets/width_calculator.hpp>
 
-#include <strf/detail/define_specifiers.hpp>
-
 STRF_NAMESPACE_BEGIN
 
 template <typename CharT>
@@ -43,28 +41,28 @@ public:
               , get_facet<strf::encoding_c<CharT>, CharT>(fp) );
     }
 
-    __hd__ void  print_to(strf::basic_outbuf<CharT>& ob) const override;
+    STRF_HD void  print_to(strf::basic_outbuf<CharT>& ob) const override;
 
 private:
 
-    __hd__ void  _wcalc( strf::width_preview<false>&
+    STRF_HD void  _wcalc( strf::width_preview<false>&
                , const strf::fast_width<CharT>&
                , strf::encoding<CharT> ) noexcept
     {
     }
-    __hd__ void  _wcalc( strf::width_preview<true>& wpreview
+    STRF_HD void  _wcalc( strf::width_preview<true>& wpreview
                , const strf::fast_width<CharT>&
                , strf::encoding<CharT> ) noexcept
     {
         wpreview.subtract_width(1);
     }
-    __hd__ void  _wcalc( strf::width_preview<true>& wpreview
+    STRF_HD void  _wcalc( strf::width_preview<true>& wpreview
                , const strf::width_as_u32len<CharT>&
                , strf::encoding<CharT> ) noexcept
     {
         wpreview.subtract_width(1);
     }
-    __hd__ void  _wcalc( strf::width_preview<true>& wpreview
+    STRF_HD void  _wcalc( strf::width_preview<true>& wpreview
                , const strf::width_calculator<CharT>& wc
                , strf::encoding<CharT> encoding )
     {
@@ -75,7 +73,7 @@ private:
 };
 
 template <typename CharT>
-__hd__ void  char_printer<CharT>::print_to
+STRF_HD void  char_printer<CharT>::print_to
     ( strf::basic_outbuf<CharT>& ob ) const
 {
     ob.ensure(1);
@@ -107,7 +105,7 @@ public:
         _calc_size(preview);
     }
 
-    __hd__ void  print_to(strf::basic_outbuf<CharT>& ob) const override;
+    STRF_HD void  print_to(strf::basic_outbuf<CharT>& ob) const override;
 
 private:
 
@@ -125,7 +123,7 @@ private:
     }
 
     template <bool RequireWidth>
-    __hd__ void  _fast_init(strf::width_preview<RequireWidth>& wpreview)
+    STRF_HD void  _fast_init(strf::width_preview<RequireWidth>& wpreview)
     {
         if (_fmt.width() > static_cast<std::ptrdiff_t>(_fmt.count()))
         {
@@ -140,21 +138,21 @@ private:
     }
 
     template <bool RequireWidth>
-    __hd__ void  _init( strf::width_preview<RequireWidth>& wpreview
+    STRF_HD void  _init( strf::width_preview<RequireWidth>& wpreview
               , const strf::fast_width<CharT>&)
     {
         _fast_init(wpreview);
     }
 
     template <bool RequireWidth>
-    __hd__ void  _init( strf::width_preview<RequireWidth>& wpreview
+    STRF_HD void  _init( strf::width_preview<RequireWidth>& wpreview
               , const strf::width_as_u32len<CharT>&)
     {
         _fast_init(wpreview);
     }
 
     template <bool RequireWidth>
-    __hd__ void  _init( strf::width_preview<RequireWidth>& wpreview
+    STRF_HD void  _init( strf::width_preview<RequireWidth>& wpreview
               , const strf::width_calculator<CharT>& wc)
     {
         auto ch_width = wc.wc.width_of(_fmt.value().ch, _encoding);
@@ -171,11 +169,11 @@ private:
         }
     }
 
-    __hd__ void  _calc_size(strf::size_preview<false>&) const
+    STRF_HD void  _calc_size(strf::size_preview<false>&) const
     {
     }
 
-    __hd__ void  _calc_size(strf::size_preview<true>& spreview) const
+    STRF_HD void  _calc_size(strf::size_preview<true>& spreview) const
     {
         std::size_t s = _fmt.count()
                       * _encoding.char_size(_fmt.value().ch);
@@ -186,15 +184,15 @@ private:
         spreview.add_size(s);
     }
 
-    __hd__ void  _write_body(strf::basic_outbuf<CharT>& ob) const;
+    STRF_HD void  _write_body(strf::basic_outbuf<CharT>& ob) const;
 
-    __hd__ void  _write_fill
+    STRF_HD void  _write_fill
         ( strf::basic_outbuf<CharT>& ob
         , unsigned count ) const;
 };
 
 template <typename CharT>
-__hd__ void  fmt_char_printer<CharT>::print_to
+STRF_HD void  fmt_char_printer<CharT>::print_to
     ( strf::basic_outbuf<CharT>& ob ) const
 {
     if (_fillcount == 0)
@@ -229,7 +227,7 @@ __hd__ void  fmt_char_printer<CharT>::print_to
 }
 
 template <typename CharT>
-__hd__ void  fmt_char_printer<CharT>::_write_body
+STRF_HD void  fmt_char_printer<CharT>::_write_body
     ( strf::basic_outbuf<CharT>& ob ) const
 {
     if (_fmt.count() == 1)
@@ -260,7 +258,7 @@ __hd__ void  fmt_char_printer<CharT>::_write_body
 }
 
 template <typename CharT>
-__hd__ void  fmt_char_printer<CharT>::_write_fill
+STRF_HD void  fmt_char_printer<CharT>::_write_fill
     ( strf::basic_outbuf<CharT>& ob
     , unsigned count ) const
 {
@@ -303,7 +301,7 @@ STRF_EXPLICIT_TEMPLATE class fmt_char_printer<wchar_t>;
 
 template <typename CharOut, typename FPack, typename Preview>
 inline strf::detail::char_printer<CharOut>
- __hd__ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, CharOut ch)
+ STRF_HD make_printer(strf::rank<1>, const FPack& fp, Preview& preview, CharOut ch)
 {
     return {fp, preview, ch};
 }
@@ -312,7 +310,7 @@ inline strf::detail::char_printer<CharOut>
 
 template <typename CharOut, typename FPack, typename Preview>
 inline strf::detail::char_printer<CharOut>
- __hd__ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, char8_t ch)
+ STRF_HD make_printer(strf::rank<1>, const FPack& fp, Preview& preview, char8_t ch)
 {
     static_assert( std::is_same<CharOut, char8_t>::value
                  , "Character type mismatch." );
@@ -327,14 +325,14 @@ template < typename CharOut
          , typename CharIn
          , std::enable_if_t<std::is_same<CharIn, CharOut>::value, int> = 0>
 inline strf::detail::char_printer<CharOut>
- __hd__ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, CharIn ch)
+ STRF_HD make_printer(strf::rank<1>, const FPack& fp, Preview& preview, CharIn ch)
 {
     return {fp, preview, ch};
 }
 
 template <typename CharOut, typename FPack, typename Preview>
 inline strf::detail::char_printer<CharOut>
- __hd__ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, char ch)
+ STRF_HD make_printer(strf::rank<1>, const FPack& fp, Preview& preview, char ch)
 {
     static_assert( std::is_same<CharOut, char>::value
                  , "Character type mismatch." );
@@ -343,7 +341,7 @@ inline strf::detail::char_printer<CharOut>
 
 template <typename CharOut, typename FPack, typename Preview>
 inline strf::detail::char_printer<CharOut>
- __hd__ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, wchar_t ch)
+ STRF_HD make_printer(strf::rank<1>, const FPack& fp, Preview& preview, wchar_t ch)
 {
     static_assert( std::is_same<CharOut, wchar_t>::value
                  , "Character type mismatch." );
@@ -352,7 +350,7 @@ inline strf::detail::char_printer<CharOut>
 
 template <typename CharOut, typename FPack, typename Preview>
 inline strf::detail::char_printer<CharOut>
- __hd__ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, char16_t ch)
+ STRF_HD make_printer(strf::rank<1>, const FPack& fp, Preview& preview, char16_t ch)
 {
     static_assert( std::is_same<CharOut, char16_t>::value
                  , "Character type mismatch." );
@@ -361,7 +359,7 @@ inline strf::detail::char_printer<CharOut>
 
 template <typename CharOut, typename FPack, typename Preview>
 inline strf::detail::char_printer<CharOut>
- __hd__ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, char32_t ch )
+ STRF_HD make_printer(strf::rank<1>, const FPack& fp, Preview& preview, char32_t ch )
 {
     static_assert( std::is_same<CharOut, char32_t>::value
                  , "Character type mismatch." );
@@ -370,7 +368,7 @@ inline strf::detail::char_printer<CharOut>
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
 inline strf::detail::fmt_char_printer<CharOut>
- __hd__ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, char_with_format<CharIn> ch)
+ STRF_HD make_printer(strf::rank<1>, const FPack& fp, Preview& preview, char_with_format<CharIn> ch)
 {
     static_assert( std::is_same<CharOut, CharIn>::value
                  , "Character type mismatch." );
@@ -379,26 +377,26 @@ inline strf::detail::fmt_char_printer<CharOut>
 
 #if defined(__cpp_char8_t)
 
-constexpr __hd__ auto make_fmt(strf::rank<1>, char8_t ch) noexcept
+constexpr STRF_HD auto make_fmt(strf::rank<1>, char8_t ch) noexcept
 {
     return strf::char_with_format<char8_t>{{ch}};
 }
 
 #endif
 
-constexpr __hd__ auto make_fmt(strf::rank<1>, char ch) noexcept
+constexpr STRF_HD auto make_fmt(strf::rank<1>, char ch) noexcept
 {
     return strf::char_with_format<char>{{ch}};
 }
-constexpr __hd__ auto make_fmt(strf::rank<1>, wchar_t ch) noexcept
+constexpr STRF_HD auto make_fmt(strf::rank<1>, wchar_t ch) noexcept
 {
     return strf::char_with_format<wchar_t>{{ch}};
 }
-constexpr __hd__ auto make_fmt(strf::rank<1>, char16_t ch) noexcept
+constexpr STRF_HD auto make_fmt(strf::rank<1>, char16_t ch) noexcept
 {
     return strf::char_with_format<char16_t>{{ch}};
 }
-constexpr __hd__ auto make_fmt(strf::rank<1>, char32_t ch) noexcept
+constexpr STRF_HD auto make_fmt(strf::rank<1>, char32_t ch) noexcept
 {
     return strf::char_with_format<char32_t>{{ch}};
 }
@@ -414,8 +412,6 @@ template <> struct is_char<char32_t>: public std::true_type {};
 template <> struct is_char<wchar_t>: public std::true_type {};
 
 STRF_NAMESPACE_END
-
-#include <strf/detail/undefine_specifiers.hpp>
 
 #endif // STRF_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
 

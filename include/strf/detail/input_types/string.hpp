@@ -318,7 +318,7 @@ public:
                    , _get_facet<strf::surrogate_policy_c>(fp) );
     }
 
-    void __hd__ print_to(strf::basic_outbuf<CharT>& ob) const override;
+    void STRF_HD print_to(strf::basic_outbuf<CharT>& ob) const override;
 
 private:
 

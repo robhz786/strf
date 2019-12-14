@@ -7,8 +7,6 @@
 
 #include <strf/detail/facets/encoding.hpp>
 
-#include <strf/detail/define_specifiers.hpp>
-
 STRF_NAMESPACE_BEGIN
 namespace detail {
 
@@ -205,8 +203,6 @@ using printers_tuple_from_args
 } // namespace detail
 
 STRF_NAMESPACE_END
-
-#include <strf/detail/undefine_specifiers.hpp>
 
 #endif  // STRF_DETAIL_PRINTERS_TUPLE_HPP
 
