@@ -5,13 +5,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-// #ifndef __CUDA_ARCH__
-#include <system_error>
-#include <algorithm>
-// #endif // __CUDA_ARCH__
 #include <strf/outbuf.hpp>
 #include <strf/width_t.hpp>
-#include <strf/detail/char_traits.hpp>
+#include <strf/detail/standard_lib_functions.hpp>
 
 STRF_NAMESPACE_BEGIN
 
@@ -75,7 +71,7 @@ void STRF_HD write_fill_continuation
 
     std::size_t space = ob.size();
     STRF_ASSERT(space < count);
-    char_traits<char_type>::assign(ob.pos(), space, ch);
+    strf::detail::char_assign<char_type>(ob.pos(), space, ch);
     count -= space;
     ob.advance_to(ob.end());
     ob.recycle();
@@ -84,11 +80,11 @@ void STRF_HD write_fill_continuation
         space = ob.size();
         if (count <= space)
         {
-            char_traits<char_type>::assign(ob.pos(), count, ch);
+            strf::detail::char_assign<char_type>(ob.pos(), count, ch);
             ob.advance(count);
             break;
         }
-        char_traits<char_type>::assign(ob.pos(), space, ch);
+        strf::detail::char_assign(ob.pos(), space, ch);
         count -= space;
         ob.advance_to(ob.end());
         ob.recycle();
@@ -104,7 +100,7 @@ inline STRF_HD void write_fill
     using char_type = typename strf::underlying_outbuf<CharSize>::char_type;
     if (count <= ob.size()) // the common case
     {
-        char_traits<char_type>::assign(ob.pos(), count, ch);
+        strf::detail::char_assign<char_type>(ob.pos(), count, ch);
         ob.advance(count);
     }
     else

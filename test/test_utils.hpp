@@ -12,6 +12,8 @@
 
 #include "lightweight_test_label.hpp"
 
+#include <algorithm> // for std::generate.
+
 #if defined(_WIN32)
 #include <windows.h>
 #endif  // defined(_WIN32)
