@@ -16,8 +16,6 @@
 // todo: optimize as in:
 // https://pvk.ca/Blog/2017/12/22/appnexus-common-framework-its-out-also-how-to-print-integers-faster/
 
-#include <strf/detail/define_specifiers.hpp>
-
 STRF_NAMESPACE_BEGIN
 
 template <int Base>
@@ -30,7 +28,7 @@ struct int_format_data
     bool showpos = false;
 };
 
-constexpr __hd__ bool operator==( strf::int_format_data lhs
+constexpr STRF_HD bool operator==( strf::int_format_data lhs
                          , strf::int_format_data rhs) noexcept
 {
     return lhs.precision == rhs.precision
@@ -38,7 +36,7 @@ constexpr __hd__ bool operator==( strf::int_format_data lhs
         && lhs.showpos == rhs.showpos;
 }
 
-constexpr __hd__ bool operator!=( strf::int_format_data lhs
+constexpr STRF_HD bool operator!=( strf::int_format_data lhs
                          , strf::int_format_data rhs) noexcept
 {
     return ! (lhs == rhs);
@@ -55,88 +53,88 @@ private:
 
 public:
 
-    constexpr __hd__ int_format_fn()  noexcept = default;
+    constexpr STRF_HD int_format_fn()  noexcept = default;
 
     template <typename U, int OtherBase>
-    constexpr __hd__ int_format_fn(const int_format_fn<U, OtherBase> & u) noexcept
+    constexpr STRF_HD int_format_fn(const int_format_fn<U, OtherBase> & u) noexcept
         : _data(u.get_int_format_data())
     {
     }
 
     template < int B = 16 >
-    constexpr __hd__ std::enable_if_t<Base == B && B == 16, T&&>
+    constexpr STRF_HD std::enable_if_t<Base == B && B == 16, T&&>
     hex() &&
     {
         return static_cast<T&&>(*this);
     }
 
     template < int B = 16 >
-    constexpr __hd__ std::enable_if_t<Base != B && B == 16, _adapted_derived_type<B>>
+    constexpr STRF_HD std::enable_if_t<Base != B && B == 16, _adapted_derived_type<B>>
     hex() &&
     {
         return _adapted_derived_type<B>{ static_cast<const T&>(*this) };
     }
 
     template < int B = 10 >
-    constexpr __hd__ std::enable_if_t<Base == B && B == 10, T&&>
+    constexpr STRF_HD std::enable_if_t<Base == B && B == 10, T&&>
     dec() &&
     {
         return static_cast<T&&>(*this);
     }
 
     template < int B = 10 >
-    constexpr __hd__ std::enable_if_t<Base != B && B == 10, _adapted_derived_type<B>>
+    constexpr STRF_HD std::enable_if_t<Base != B && B == 10, _adapted_derived_type<B>>
     dec() &&
     {
         return _adapted_derived_type<B>{ static_cast<const T&>(*this) };
     }
 
     template < int B = 8 >
-    constexpr __hd__ std::enable_if_t<Base == B && B == 8, T&&>
+    constexpr STRF_HD std::enable_if_t<Base == B && B == 8, T&&>
     oct() &&
     {
         return static_cast<T&&>(*this);
     }
 
     template < int B = 8 >
-    constexpr __hd__ std::enable_if_t<Base != B && B == 8, _adapted_derived_type<B>>
+    constexpr STRF_HD std::enable_if_t<Base != B && B == 8, _adapted_derived_type<B>>
     oct() &&
     {
         return _adapted_derived_type<B>{ static_cast<const T&>(*this) };
     }
 
-    constexpr __hd__ T&& p(unsigned _) && noexcept
+    constexpr STRF_HD T&& p(unsigned _) && noexcept
     {
         _data.precision = _;
         return static_cast<T&&>(*this);
     }
-    __hd__ T&& operator+() && noexcept
+    STRF_HD T&& operator+() && noexcept
     {
         _data.showpos = true;
         return static_cast<T&&>(*this);
     }
-    constexpr __hd__ T&& operator~() && noexcept
+    constexpr STRF_HD T&& operator~() && noexcept
     {
         _data.showbase = true;
         return static_cast<T&&>(*this);
     }
-    constexpr static __hd__ int base() noexcept
+    constexpr static STRF_HD int base() noexcept
     {
         return Base;
     }
-    constexpr __hd__ unsigned precision() const noexcept
+    constexpr STRF_HD unsigned precision() const noexcept
     {
         return _data.precision;
     }
-    constexpr __hd__ bool showbase() const noexcept
+    constexpr STRF_HD bool showbase() const noexcept
     {
         return _data.showbase;
     }
-    constexpr __hd__ bool showpos() const noexcept
+    constexpr STRF_HD bool showpos() const noexcept
     {
         return _data.showpos;
     }
-    constexpr __hd__ strf::int_format_data get_int_format_data() const noexcept
+    constexpr STRF_HD strf::int_format_data get_int_format_data() const noexcept
     {
         return _data;
     }
@@ -172,9 +170,9 @@ class has_intpunct_impl
 {
 public:
 
-    static __hd__ std::true_type  test_numpunct(const strf::numpunct_base&);
-    static __hd__ std::false_type test_numpunct(const strf::default_numpunct<Base>&);
-    static __hd__ std::false_type test_numpunct(const strf::no_grouping<Base>&);
+    static STRF_HD std::true_type  test_numpunct(const strf::numpunct_base&);
+    static STRF_HD std::false_type test_numpunct(const strf::default_numpunct<Base>&);
+    static STRF_HD std::false_type test_numpunct(const strf::no_grouping<Base>&);
 
     static const FPack& fp();
 
@@ -195,7 +193,7 @@ class int_printer: public printer<CharT>
 public:
 
     template <typename Preview, typename IntT>
-    __hd__ int_printer(Preview& preview, IntT value)
+    STRF_HD int_printer(Preview& preview, IntT value)
     {
         _negative = value < 0;
         _uvalue = strf::detail::unsigned_abs(value);
@@ -206,12 +204,12 @@ public:
     }
 
     template <typename FP, typename Preview, typename IntT>
-    __hd__ int_printer(const FP&, Preview& preview, IntT value)
+    STRF_HD int_printer(const FP&, Preview& preview, IntT value)
         : int_printer(preview, value)
     {
     }
 
-    __hd__ void print_to(strf::basic_outbuf<CharT>& ob) const override;
+    STRF_HD void print_to(strf::basic_outbuf<CharT>& ob) const override;
 
 private:
 
@@ -221,7 +219,7 @@ private:
 };
 
 template <typename CharT>
-__hd__ void int_printer<CharT>::print_to
+STRF_HD void int_printer<CharT>::print_to
     ( strf::basic_outbuf<CharT>& ob ) const
 {
     unsigned size = _digcount + _negative;
@@ -240,7 +238,7 @@ class punct_int_printer: public printer<CharT>
 public:
 
     template <typename FPack, typename Preview, typename IntT>
-    __hd__ punct_int_printer
+    STRF_HD punct_int_printer
         ( const FPack& fp
         , Preview& preview
         , IntT value ) noexcept
@@ -260,15 +258,15 @@ public:
         _calc_size(preview);
     }
 
-    __hd__ void print_to(strf::basic_outbuf<CharT>& ob) const override;
+    STRF_HD void print_to(strf::basic_outbuf<CharT>& ob) const override;
 
 private:
 
-    __hd__ void _calc_size(strf::size_preview<false>&) const
+    STRF_HD void _calc_size(strf::size_preview<false>&) const
     {
     }
 
-    __hd__ void _calc_size(strf::size_preview<true>&) const;
+    STRF_HD void _calc_size(strf::size_preview<true>&) const;
 
     const strf::numpunct_base& _punct;
     strf::encoding<CharT> _encoding;
@@ -279,7 +277,7 @@ private:
 };
 
 template <typename CharT>
-__hd__ void punct_int_printer<CharT>::_calc_size
+STRF_HD void punct_int_printer<CharT>::_calc_size
     ( strf::size_preview<true>& preview ) const
 {
     std::size_t size = _digcount + _negative;
@@ -295,7 +293,7 @@ __hd__ void punct_int_printer<CharT>::_calc_size
 }
 
 template <typename CharT>
-__hd__ void punct_int_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
+STRF_HD void punct_int_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
 {
     if (_sepcount == 0)
     {
@@ -327,7 +325,7 @@ class partial_fmt_int_printer: public strf::printer<CharT>
 public:
 
     template <typename FPack, typename Preview, typename IntT>
-    __hd__ partial_fmt_int_printer
+    STRF_HD partial_fmt_int_printer
         ( const FPack& fp
         , Preview& preview
         , const strf::int_with_format<IntT, Base, false>& value )
@@ -341,7 +339,7 @@ public:
     }
 
     template <typename FPack, typename Preview, typename IntT>
-    __hd__ partial_fmt_int_printer
+    STRF_HD partial_fmt_int_printer
         ( const FPack& fp
         , Preview& preview
         , const strf::int_with_format<IntT, Base, true>& value )
@@ -354,26 +352,26 @@ public:
         calc_size(preview);
     }
 
-    __hd__ std::int16_t width() const
+    STRF_HD std::int16_t width() const
     {
         return static_cast<std::int16_t>( std::max(_precision, _digcount)
                                         + _prefixsize
                                         + static_cast<int>(_sepcount) );
     }
 
-    __hd__ auto encoding() const
+    STRF_HD auto encoding() const
     {
         return _encoding;
     }
 
-    __hd__ void print_to(strf::basic_outbuf<CharT>& ob) const override;
-    __hd__ void calc_size(strf::size_preview<false>& ) const
+    STRF_HD void print_to(strf::basic_outbuf<CharT>& ob) const override;
+    STRF_HD void calc_size(strf::size_preview<false>& ) const
     {
     }
-    __hd__ void calc_size(strf::size_preview<true>& ) const;
+    STRF_HD void calc_size(strf::size_preview<true>& ) const;
 
-    __hd__ void write_complement(strf::basic_outbuf<CharT>& ob) const;
-    __hd__ void write_digits(strf::basic_outbuf<CharT>& ob) const;
+    STRF_HD void write_complement(strf::basic_outbuf<CharT>& ob) const;
+    STRF_HD void write_digits(strf::basic_outbuf<CharT>& ob) const;
 
 private:
 
@@ -387,12 +385,12 @@ private:
     std::uint8_t _prefixsize = 0;
 
     template <typename IntT, bool HasPunct>
-    __hd__  void _init(IntT value, strf::int_format_data fmt);
+    STRF_HD  void _init(IntT value, strf::int_format_data fmt);
 };
 
 template <typename CharT, int Base>
 template <typename IntT, bool HasPunct>
-__hd__ void partial_fmt_int_printer<CharT, Base>::_init
+STRF_HD void partial_fmt_int_printer<CharT, Base>::_init
     ( IntT value
     , strf::int_format_data fmt )
 {
@@ -423,7 +421,7 @@ __hd__ void partial_fmt_int_printer<CharT, Base>::_init
 }
 
 template <typename CharT, int Base>
-__hd__ void partial_fmt_int_printer<CharT, Base>::calc_size
+STRF_HD void partial_fmt_int_printer<CharT, Base>::calc_size
     ( strf::size_preview<true>& preview ) const
 {
     std::size_t s = std::max(_precision, _digcount) + _prefixsize;
@@ -439,7 +437,7 @@ __hd__ void partial_fmt_int_printer<CharT, Base>::calc_size
 }
 
 template <typename CharT, int Base>
-__hd__ inline void partial_fmt_int_printer<CharT, Base>::print_to
+STRF_HD inline void partial_fmt_int_printer<CharT, Base>::print_to
     ( strf::basic_outbuf<CharT>& ob ) const
 {
     if (_sepcount == 0)
@@ -491,7 +489,7 @@ __hd__ inline void partial_fmt_int_printer<CharT, Base>::print_to
 }
 
 template <typename CharT, int Base>
-inline __hd__ void partial_fmt_int_printer<CharT, Base>::write_complement
+inline STRF_HD void partial_fmt_int_printer<CharT, Base>::write_complement
     ( strf::basic_outbuf<CharT>& ob ) const
 {
     if (_prefixsize != 0)
@@ -517,7 +515,7 @@ inline __hd__ void partial_fmt_int_printer<CharT, Base>::write_complement
 }
 
 template <typename CharT, int Base>
-inline __hd__ void partial_fmt_int_printer<CharT, Base>::write_digits
+inline STRF_HD void partial_fmt_int_printer<CharT, Base>::write_digits
     ( strf::basic_outbuf<CharT>& ob ) const
 {
     if (_precision > _digcount)
@@ -542,14 +540,14 @@ class full_fmt_int_printer: public printer<CharT>
 public:
 
     template <typename FPack, typename Preview, typename IntT>
-    __hd__ full_fmt_int_printer
+    STRF_HD full_fmt_int_printer
         ( const FPack& fp
         , Preview& preview
         , strf::int_with_format<IntT, Base, true> value ) noexcept;
 
-    __hd__ ~full_fmt_int_printer();
+    STRF_HD ~full_fmt_int_printer();
 
-    __hd__ void print_to( strf::basic_outbuf<CharT>& ob ) const override;
+    STRF_HD void print_to( strf::basic_outbuf<CharT>& ob ) const override;
 
 private:
 
@@ -559,11 +557,11 @@ private:
     strf::alignment_format_data _afmt;
     strf::surrogate_policy _allow_surr;
 
-    __hd__  void _calc_fill_size(strf::size_preview<false>&) const
+    STRF_HD  void _calc_fill_size(strf::size_preview<false>&) const
     {
     }
 
-    __hd__  void _calc_fill_size(strf::size_preview<true>& preview) const
+    STRF_HD  void _calc_fill_size(strf::size_preview<true>& preview) const
     {
         if (_fillcount > 0)
         {
@@ -572,7 +570,7 @@ private:
         }
     }
 
-    __hd__  void _write_fill
+    STRF_HD  void _write_fill
         ( strf::basic_outbuf<CharT>& ob
         , std::size_t count ) const
     {
@@ -583,7 +581,7 @@ private:
 
 template <typename CharT, int Base>
 template <typename FPack, typename Preview, typename IntT>
-inline __hd__ full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
+inline STRF_HD full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
     ( const FPack& fp
     , Preview& preview
     , strf::int_with_format<IntT, Base, true> value ) noexcept
@@ -602,12 +600,12 @@ inline __hd__ full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
 }
 
 template <typename CharT, int Base>
-__hd__ full_fmt_int_printer<CharT, Base>::~full_fmt_int_printer()
+STRF_HD full_fmt_int_printer<CharT, Base>::~full_fmt_int_printer()
 {
 }
 
 template <typename CharT, int Base>
-__hd__ void full_fmt_int_printer<CharT, Base>::print_to
+STRF_HD void full_fmt_int_printer<CharT, Base>::print_to
         ( strf::basic_outbuf<CharT>& ob ) const
 {
     if (_fillcount == 0)
@@ -684,7 +682,7 @@ STRF_EXPLICIT_TEMPLATE class punct_int_printer<wchar_t>;
 } // namespace detail
 
 template <typename CharT, typename FPack, typename Preview>
-inline __hd__ typename std::conditional
+inline STRF_HD typename std::conditional
     < strf::detail::has_intpunct<CharT, FPack, short, 10>
     , strf::detail::punct_int_printer<CharT>
     , strf::detail::int_printer<CharT> >::type
@@ -694,7 +692,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, short x)
 }
 
 template <typename CharT, typename FPack, typename Preview>
-inline __hd__ typename std::conditional
+inline STRF_HD typename std::conditional
     < strf::detail::has_intpunct<CharT, FPack, int, 10>
     , strf::detail::punct_int_printer<CharT>
     , strf::detail::int_printer<CharT> >::type
@@ -704,7 +702,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, int x)
 }
 
 template <typename CharT, typename FPack, typename Preview>
-inline __hd__ typename std::conditional
+inline STRF_HD typename std::conditional
     < strf::detail::has_intpunct<CharT, FPack, long, 10>
     , strf::detail::punct_int_printer<CharT>
     , strf::detail::int_printer<CharT> >::type
@@ -714,7 +712,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, long x)
 }
 
 template <typename CharT, typename FPack, typename Preview>
-inline __hd__ typename std::conditional
+inline STRF_HD typename std::conditional
     < strf::detail::has_intpunct<CharT, FPack, long long, 10>
     , strf::detail::punct_int_printer<CharT>
     , strf::detail::int_printer<CharT> >::type
@@ -724,7 +722,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, long long x)
 }
 
 template <typename CharT, typename FPack, typename Preview>
-inline __hd__ typename std::conditional
+inline STRF_HD typename std::conditional
     < strf::detail::has_intpunct<CharT, FPack, unsigned short, 10>
     , strf::detail::punct_int_printer<CharT>
     , strf::detail::int_printer<CharT> >::type
@@ -734,7 +732,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned short x)
 }
 
 template <typename CharT, typename FPack, typename Preview>
-inline __hd__ typename std::conditional
+inline STRF_HD typename std::conditional
     < strf::detail::has_intpunct<CharT, FPack, unsigned int, 10>
     , strf::detail::punct_int_printer<CharT>
     , strf::detail::int_printer<CharT> >::type
@@ -744,7 +742,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned int x)
 }
 
 template <typename CharT, typename FPack, typename Preview>
-inline __hd__ typename std::conditional
+inline STRF_HD typename std::conditional
     < strf::detail::has_intpunct<CharT, FPack, unsigned long, 10>
     , strf::detail::punct_int_printer<CharT>
     , strf::detail::int_printer<CharT> >::type
@@ -754,7 +752,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned long x)
 }
 
 template <typename CharT, typename FPack, typename Preview>
-inline __hd__ typename std::conditional
+inline STRF_HD typename std::conditional
     < strf::detail::has_intpunct<CharT, FPack, unsigned long long, 10>
     , strf::detail::punct_int_printer<CharT>
     , strf::detail::int_printer<CharT> >::type
@@ -764,7 +762,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned long lon
 }
 
 template <typename CharT, typename FPack, typename Preview, typename IntT, int Base>
-__hd__ inline strf::detail::full_fmt_int_printer<CharT, Base>
+STRF_HD inline strf::detail::full_fmt_int_printer<CharT, Base>
 make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
@@ -774,7 +772,7 @@ make_printer( strf::rank<1>
 }
 
 template <typename CharT, typename FPack, typename Preview, typename IntT, int Base>
-__hd__ inline strf::detail::partial_fmt_int_printer<CharT, Base>
+STRF_HD inline strf::detail::partial_fmt_int_printer<CharT, Base>
 make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
@@ -783,35 +781,35 @@ make_printer( strf::rank<1>
     return {fp, preview, x};
 }
 
-inline __hd__ auto make_fmt(strf::rank<1>, short x)
+inline STRF_HD auto make_fmt(strf::rank<1>, short x)
 {
     return strf::int_with_format<short>{{x}};
 }
-inline __hd__ auto make_fmt(strf::rank<1>, int x)
+inline STRF_HD auto make_fmt(strf::rank<1>, int x)
 {
     return strf::int_with_format<int>{{x}};
 }
-inline __hd__ auto make_fmt(strf::rank<1>, long x)
+inline STRF_HD auto make_fmt(strf::rank<1>, long x)
 {
     return strf::int_with_format<long>{{x}};
 }
-inline __hd__ auto make_fmt(strf::rank<1>, long long x)
+inline STRF_HD auto make_fmt(strf::rank<1>, long long x)
 {
     return strf::int_with_format<long long>{{x}};
 }
-inline __hd__ auto make_fmt(strf::rank<1>, unsigned short x)
+inline STRF_HD auto make_fmt(strf::rank<1>, unsigned short x)
 {
     return strf::int_with_format<unsigned short>{{x}};
 }
-inline __hd__ auto make_fmt(strf::rank<1>, unsigned x)
+inline STRF_HD auto make_fmt(strf::rank<1>, unsigned x)
 {
     return  strf::int_with_format<unsigned>{{x}};
 }
-inline __hd__ auto make_fmt(strf::rank<1>, unsigned long x)
+inline STRF_HD auto make_fmt(strf::rank<1>, unsigned long x)
 {
     return strf::int_with_format<unsigned long>{{x}};
 }
-inline __hd__ auto make_fmt(strf::rank<1>, unsigned long long x)
+inline STRF_HD auto make_fmt(strf::rank<1>, unsigned long long x)
 {
     return strf::int_with_format<unsigned long long>{{x}};
 }
@@ -827,7 +825,5 @@ template <> struct is_int_number<unsigned long>: public std::true_type {};
 template <> struct is_int_number<unsigned long long>: public std::true_type {};
 
 STRF_NAMESPACE_END
-
-#include <strf/detail/undefine_specifiers.hpp>
 
 #endif // STRF_DETAIL_INPUT_TYPES_FMT_INT_HPP_INCLUDED
