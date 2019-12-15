@@ -21,6 +21,14 @@ using opt_val_or_cref = std::conditional_t
 template <std::size_t I, typename T>
 struct indexed_obj
 {
+    constexpr indexed_obj(const T& cp)
+        : obj(cp)
+    {
+    }
+
+    constexpr indexed_obj(const indexed_obj&) = default;
+    constexpr indexed_obj(indexed_obj&&) = default;
+
     T obj;
 };
 
@@ -45,7 +53,7 @@ public:
 
     template <typename ... Args>
     constexpr explicit simple_tuple_impl(simple_tuple_from_args, Args&& ... args)
-        : detail::indexed_obj<I, T>{args}...
+        : indexed_obj<I, T>(args)...
     {
     }
 
@@ -85,6 +93,22 @@ constexpr const auto& get(const simple_tuple<T...>& tp)
     return tp.template get<J>();
 }
 
+template <std::size_t I, typename Printer>
+struct indexed_printer
+{
+    using char_type = typename Printer::char_type;
+
+    template <typename FPack, typename Preview, typename Arg>
+    indexed_printer( const FPack& fp, Preview& preview, const Arg& arg )
+        : printer(make_printer<char_type>(strf::rank<5>(), fp, preview, arg))
+    {
+    }
+    indexed_printer(const indexed_printer& ) = default;
+    indexed_printer(indexed_printer&& ) = default;
+
+    Printer printer;
+};
+
 template < typename CharT
          , typename ISeq
          , typename ... Printers >
@@ -94,10 +118,10 @@ template < typename CharT
          , std::size_t ... I
          , typename ... Printers >
 class printers_tuple_impl<CharT, std::index_sequence<I...>, Printers...>
-    : private detail::indexed_obj<I, Printers> ...
+    : private detail::indexed_printer<I, Printers> ...
 {
     template <std::size_t J, typename T>
-    static const indexed_obj<J, T>& _get(const indexed_obj<J, T>& r)
+    static const indexed_printer<J, T>& _get(const indexed_printer<J, T>& r)
     {
         return r;
     }
@@ -110,10 +134,9 @@ public:
     template < typename FPack, typename Preview, typename ... Args >
     printers_tuple_impl
         ( const FPack& fp
-        , Preview& p
+        , Preview& preview
         , const strf::detail::simple_tuple<Args...>& args )
-        : indexed_obj<I, Printers>
-        { make_printer<CharT>(strf::rank<5>{}, fp, p, args.template get<I>()) } ...
+        : indexed_printer<I, Printers>(fp, preview, args.template get<I>()) ...
     {
     }
 
@@ -123,7 +146,7 @@ public:
     template <std::size_t J>
     const auto& get() const
     {
-        return _get<J>(*this).obj;
+        return _get<J>(*this).printer;
     }
 };
 
@@ -151,7 +174,7 @@ class printers_tuple_alias
 {
     template <typename Arg>
     using _printer
-    = decltype(make_printer<CharT>( strf::rank<5>{}
+    = decltype(make_printer<CharT>( strf::rank<5>()
                                   , std::declval<const FPack&>()
                                   , std::declval<Preview&>()
                                   , std::declval<const Arg&>()));
