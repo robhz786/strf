@@ -33,24 +33,35 @@ set(
 
 add_library(strf-header-only INTERFACE)
 add_library(strf STATIC src/strf.cpp)
+add_library(strf-cuda STATIC src/strf.cu)
 
 target_compile_definitions(
   strf
   PUBLIC STRF_SEPARATE_COMPILATION )
+
+#target_compile_options(strf-cuda PRIVATE "--device-c" )
 
 target_include_directories(
   strf-header-only
   INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:.> )
+
 target_include_directories(
   strf
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:.> )
 
+target_include_directories(
+  strf-cuda
+  PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:.> )
+
 set(features cxx_return_type_deduction cxx_decltype_auto)
 target_compile_features(strf PUBLIC ${features})
+target_compile_features(strf-cuda PUBLIC ${features})
 target_compile_features(strf-header-only INTERFACE ${features})
 
 set_property(
@@ -59,9 +70,12 @@ set_property(
 set_property(
   TARGET strf
   PROPERTY EXPORT_NAME strf)
+set_property(
+  TARGET strf-cuda
+  PROPERTY EXPORT_NAME strf-cuda)
 
 install(
-  TARGETS strf-header-only strf
+  TARGETS strf-header-only strf strf-cuda
   EXPORT strf
   DESTINATION "${STRF_INSTALL_SUBDIR}/$<CONFIG>")
 install(
@@ -69,7 +83,6 @@ install(
   FILE strf.cmake
   NAMESPACE strf::
   DESTINATION "${STRF_INSTALL_SUBDIR}/cmake"  )
-
 
 install(
   FILES include/strf.hpp

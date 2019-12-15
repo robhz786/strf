@@ -61,7 +61,7 @@ foreach(
   set_target_properties(test-${t}-header-only PROPERTIES CXX_STANDARD 14)
 
   target_link_libraries(test-${t}-header-only   strf-header-only)
-  target_link_libraries(test-${t}-static-lib    strf)
+  target_link_libraries(test-${t}-static-lib    strf-cuda)
 
   add_test(run-test-${t}-header-only   test-${t}-header-only)
   add_test(run-test-${t}-static-lib    test-${t}-static-lib)
