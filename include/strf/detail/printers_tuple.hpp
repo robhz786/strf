@@ -21,6 +21,14 @@ using opt_val_or_cref = std::conditional_t
 template <std::size_t I, typename T>
 struct indexed_obj
 {
+    constexpr STRF_HD indexed_obj(const T& cp)
+        : obj(cp)
+    {
+    }
+
+    constexpr STRF_HD indexed_obj(const indexed_obj&) = default;
+    constexpr STRF_HD indexed_obj(indexed_obj&&) = default;
+
     T obj;
 };
 
@@ -119,6 +127,25 @@ constexpr STRF_HD const auto& get(const simple_tuple<T...>& tp)
     return tp.template get<J>();
 }
 
+template <std::size_t I, typename Printer>
+struct indexed_printer
+{
+    using char_type = typename Printer::char_type;
+
+    template <typename FPack, typename Preview, typename Arg>
+    STRF_HD indexed_printer( const FPack& fp
+                           , Preview& preview
+                           , const Arg& arg )
+        : printer(make_printer<char_type>(strf::rank<5>(), fp, preview, arg))
+    {
+    }
+    STRF_HD indexed_printer(const indexed_printer& ) = default;
+    STRF_HD indexed_printer(indexed_printer&& ) = default;
+
+    Printer printer;
+};
+
+
 template < typename CharT
          , typename ISeq
          , typename ... Printers >
@@ -128,10 +155,10 @@ template < typename CharT
          , std::size_t ... I
          , typename ... Printers >
 class printers_tuple_impl<CharT, std::index_sequence<I...>, Printers...>
-    : private detail::indexed_obj<I, Printers> ...
+    : private detail::indexed_printer<I, Printers> ...
 {
     template <std::size_t J, typename T>
-    static STRF_HD const indexed_obj<J, T>& _get(const indexed_obj<J, T>& r)
+    static STRF_HD const indexed_printer<J, T>& _get(const indexed_printer<J, T>& r)
     {
         return r;
     }
@@ -144,10 +171,9 @@ public:
     template < typename FPack, typename Preview, typename ... Args >
     STRF_HD printers_tuple_impl
         ( const FPack& fp
-        , Preview& p
+        , Preview& preview
         , const strf::detail::simple_tuple<Args...>& args )
-        : indexed_obj<I, Printers>
-        ( make_printer<CharT>(strf::rank<5>(), fp, p, args.template get<I>()) ) ...
+        : indexed_printer<I, Printers>(fp, preview, args.template get<I>()) ...
     {
     }
 
@@ -157,7 +183,7 @@ public:
     template <std::size_t J>
     STRF_HD const auto& get() const
     {
-        return _get<J>(*this).obj;
+        return _get<J>(*this).printer;
     }
 };
 
