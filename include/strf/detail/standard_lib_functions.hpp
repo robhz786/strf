@@ -81,7 +81,7 @@ template <class CharT>
 inline STRF_CONSTEXPR_CHAR_TRAITS STRF_HD CharT*
 char_assign(CharT* s, std::size_t n, CharT a)
 {
-    return str_fill_n<CharT, std::size_t, CharT>(s, a, n);
+    return str_fill_n<CharT, std::size_t, CharT>(s, n, a);
 }
 
 
