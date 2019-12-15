@@ -11,6 +11,7 @@
 #include <strf/detail/facets/encoding.hpp>
 #include <strf/detail/facets/numpunct.hpp>
 #include <strf/detail/int_digits.hpp>
+#include <strf/detail/standard_lib_functions.hpp>
 #include <cstdint>
 
 // todo: optimize as in:
@@ -354,7 +355,7 @@ public:
 
     STRF_HD std::int16_t width() const
     {
-        return static_cast<std::int16_t>( std::max(_precision, _digcount)
+        return static_cast<std::int16_t>( strf::detail::max(_precision, _digcount)
                                         + _prefixsize
                                         + static_cast<int>(_sepcount) );
     }
@@ -424,7 +425,7 @@ template <typename CharT, int Base>
 STRF_HD void partial_fmt_int_printer<CharT, Base>::calc_size
     ( strf::size_preview<true>& preview ) const
 {
-    std::size_t s = std::max(_precision, _digcount) + _prefixsize;
+    std::size_t s = strf::detail::max(_precision, _digcount) + _prefixsize;
     if (_sepcount > 0)
     {
         auto sepsize = _encoding.validate(_punct.thousands_sep());

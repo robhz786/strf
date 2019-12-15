@@ -84,6 +84,18 @@ char_assign(CharT* s, std::size_t n, CharT a)
     return str_fill_n<CharT, std::size_t, CharT>(s, n, a);
 }
 
+template <class T>
+inline constexpr STRF_HD const T&
+max(const T& lhs, const T& rhs) noexcept
+{
+#if !defined(__CUDA_ARCH__) && STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS
+	return std::max(lhs, rhs);
+#elif __CUDA_ARCH__
+    return max(lhs, rhs);
+#else
+    return (lhs < rhs) ? rhs : lhs;
+#endif
+}
 
 } // namespace detail
 
