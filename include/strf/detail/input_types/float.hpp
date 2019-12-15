@@ -34,7 +34,7 @@ struct double_dec_base
 
 #if ! defined(STRF_OMIT_IMPL)
 
-STRF_INLINE double_dec_base trivial_float_dec(
+STRF_INLINE STRF_HD double_dec_base trivial_float_dec(
     std::uint32_t ieee_mantissa,
     std::int32_t biased_exponent,
     std::uint32_t k )
@@ -95,7 +95,7 @@ STRF_INLINE double_dec_base trivial_float_dec(
     return {m, e10};
 }
 
-STRF_INLINE double_dec_base trivial_double_dec(
+STRF_INLINE STRF_HD double_dec_base trivial_double_dec(
     std::uint64_t ieee_mantissa,
     std::int32_t biased_exponent,
     std::uint32_t k )
@@ -162,7 +162,7 @@ STRF_INLINE double_dec_base trivial_double_dec(
     STRF_ASSERT((m % 10) != 0);
     return {m, e10};
 }
-STRF_INLINE detail::double_dec decode(float f)
+STRF_INLINE STRF_HD detail::double_dec decode(float f)
 {
     constexpr int bias = 127;
     constexpr int e_size = 8;
@@ -197,7 +197,7 @@ STRF_INLINE detail::double_dec decode(float f)
 }
 
 
-STRF_INLINE detail::double_dec decode(double d)
+STRF_INLINE STRF_HD detail::double_dec decode(double d)
 {
     constexpr int bias = 1023;
     constexpr int e_size = 11; // bits in exponent
@@ -249,7 +249,7 @@ struct float_format_data
     bool showpos = false;
 };
 
-constexpr bool operator==( strf::float_format_data lhs
+constexpr STRF_HD bool operator==( strf::float_format_data lhs
                          , strf::float_format_data rhs ) noexcept
 {
     return lhs.precision == rhs.precision
@@ -258,7 +258,7 @@ constexpr bool operator==( strf::float_format_data lhs
         && lhs.showpos == rhs.showpos ;
 }
 
-constexpr bool operator!=( strf::float_format_data lhs
+constexpr STRF_HD bool operator!=( strf::float_format_data lhs
                          , strf::float_format_data rhs ) noexcept
 {
     return ! (lhs == rhs);
@@ -273,36 +273,36 @@ public:
     constexpr float_format_fn() noexcept = default;
 
     template <typename U>
-    constexpr explicit float_format_fn(const float_format_fn<U>& other) noexcept
+    constexpr STRF_HD explicit float_format_fn(const float_format_fn<U>& other) noexcept
         : _data(other.get_float_format_data())
     {
     }
-    constexpr T&& operator+() && noexcept
+    constexpr STRF_HD T&& operator+() && noexcept
     {
         _data.showpos = true;
         return static_cast<T&&>(*this);
     }
-    constexpr T&& operator~() && noexcept
+    constexpr STRF_HD T&& operator~() && noexcept
     {
         _data.showpoint = true;
         return static_cast<T&&>(*this);
     }
-    constexpr T&& p(unsigned _) && noexcept
+    constexpr STRF_HD T&& p(unsigned _) && noexcept
     {
         _data.precision = _;
         return static_cast<T&&>(*this);
     }
-    constexpr T&& sci() && noexcept
+    constexpr STRF_HD T&& sci() && noexcept
     {
         _data.notation = float_notation::scientific;
         return static_cast<T&&>(*this);
     }
-    constexpr T&& fixed() && noexcept
+    constexpr STRF_HD T&& fixed() && noexcept
     {
         _data.notation = float_notation::fixed;
         return static_cast<T&&>(*this);
     }
-    constexpr T&& gen() && noexcept
+    constexpr STRF_HD T&& gen() && noexcept
     {
         _data.notation = float_notation::general;
         return static_cast<T&&>(*this);
@@ -333,17 +333,17 @@ namespace detail {
 
 struct double_printer_data: detail::double_dec
 {
-    constexpr double_printer_data(const double_printer_data&) = default;
+    constexpr STRF_HD double_printer_data(const double_printer_data&) = default;
 
     template <typename FloatT>
-    double_printer_data
+    STRF_HD double_printer_data
         ( FloatT f
         , float_format_data fmt
         , const strf::numpunct_base* punct = nullptr )
         :  double_printer_data(detail::decode(f), fmt, punct)
     {
     }
-    double_printer_data
+    STRF_HD double_printer_data
         ( detail::double_dec d
         , float_format_data fmt
         , const strf::numpunct_base* punct = nullptr );
@@ -357,7 +357,7 @@ struct double_printer_data: detail::double_dec
 
 #if !defined(STRF_OMIT_IMPL)
 
-STRF_INLINE double_printer_data::double_printer_data
+STRF_INLINE STRF_HD double_printer_data::double_printer_data
     ( detail::double_dec d
     , float_format_data fmt
     , const strf::numpunct_base* punct )
@@ -486,7 +486,7 @@ STRF_INLINE double_printer_data::double_printer_data
 #endif // !defined(STRF_OMIT_IMPL)
 
 template <typename CharT>
-void _print_amplified_integer_small_separator
+STRF_HD void _print_amplified_integer_small_separator
     ( strf::basic_outbuf<CharT>& ob
     , strf::encoding<CharT> enc
     , const std::uint8_t* groups
@@ -541,7 +541,7 @@ void _print_amplified_integer_small_separator
 }
 
 template <typename CharT>
-void _print_amplified_integer_big_separator
+STRF_HD void _print_amplified_integer_big_separator
     ( strf::basic_outbuf<CharT>& ob
     , strf::encoding<CharT> enc
     , const std::uint8_t* groups
@@ -594,7 +594,7 @@ void _print_amplified_integer_big_separator
 }
 
 template <int Base, typename CharT>
-void print_amplified_integer( strf::basic_outbuf<CharT>& ob
+STRF_HD void print_amplified_integer( strf::basic_outbuf<CharT>& ob
                             , const strf::numpunct_base& punct
                             , strf::encoding<CharT> enc
                             , unsigned long long value
@@ -633,7 +633,7 @@ void print_amplified_integer( strf::basic_outbuf<CharT>& ob
 }
 
 template <typename CharT>
-void print_scientific_notation
+STRF_HD void print_scientific_notation
     ( strf::basic_outbuf<CharT>& ob
     , strf::encoding<CharT> enc
     , unsigned long long digits
@@ -767,7 +767,7 @@ class punct_double_printer: public strf::printer<CharT>
 public:
 
     template <typename FP, typename Preview, typename FloatT>
-    punct_double_printer
+    STRF_HD punct_double_printer
         ( const FP& fp
         , Preview& preview
         , strf::float_with_format<FloatT, false> x )
@@ -787,7 +787,7 @@ public:
     }
 
     template <typename FP, typename Preview, typename FloatT>
-    punct_double_printer
+    STRF_HD punct_double_printer
         ( const FP& fp
         , Preview& preview
         , strf::float_with_format<FloatT, true> x )
@@ -807,10 +807,10 @@ public:
 private:
 
     template <typename Preview>
-    void init(Preview& preview, std::int16_t w, strf::text_alignment a);
+    STRF_HD void init(Preview& preview, std::int16_t w, strf::text_alignment a);
 
-    std::int16_t _content_width() const;
-    std::size_t _content_size() const;
+    STRF_HD std::int16_t _content_width() const;
+    STRF_HD std::size_t _content_size() const;
 
     strf::detail::double_printer_data _data;
     const strf::numpunct_base& _punct;
@@ -825,7 +825,7 @@ private:
 
 template <typename CharT>
 template <typename Preview>
-void punct_double_printer<CharT>::init( Preview& preview
+STRF_HD void punct_double_printer<CharT>::init( Preview& preview
                                       , std::int16_t fmt_width
                                       , strf::text_alignment a )
 {
@@ -871,7 +871,7 @@ void punct_double_printer<CharT>::init( Preview& preview
 }
 
 template <typename CharT>
-std::int16_t punct_double_printer<CharT>::_content_width() const
+STRF_HD std::int16_t punct_double_printer<CharT>::_content_width() const
 {
     int decpoint_width = _data.showpoint;
     unsigned w = 0;
@@ -918,7 +918,7 @@ std::int16_t punct_double_printer<CharT>::_content_width() const
 }
 
 template <typename CharT>
-std::size_t punct_double_printer<CharT>::_content_size() const
+STRF_HD std::size_t punct_double_printer<CharT>::_content_size() const
 {
     auto fillcount = _left_fillcount + _split_fillcount + _right_fillcount;
     std::size_t fillsize = 0;
@@ -975,7 +975,7 @@ std::size_t punct_double_printer<CharT>::_content_size() const
 }
 
 template <typename CharT>
-void punct_double_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
+STRF_HD void punct_double_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
 {
     if (_left_fillcount != 0)
     {
@@ -1102,7 +1102,7 @@ class double_printer final: public strf::printer<CharT>
 public:
 
     template <typename Fpack, typename Preview, typename FloatT>
-    double_printer
+    STRF_HD double_printer
         ( const Fpack&
         , Preview& preview
         , strf::float_with_format<FloatT, false> x )
@@ -1114,7 +1114,7 @@ public:
     }
 
     template <typename Fpack, typename Preview, typename FloatT>
-    double_printer
+    STRF_HD double_printer
         ( const Fpack& fp
         , Preview& preview
         , strf::float_with_format<FloatT, true> x)
@@ -1132,9 +1132,9 @@ public:
 private:
 
     template <typename Preview>
-    void init(Preview& preview, std::int16_t w, strf::text_alignment a);
+    STRF_HD void init(Preview& preview, std::int16_t w, strf::text_alignment a);
 
-    std::int16_t _content_width() const
+    STRF_HD std::int16_t _content_width() const
     {
         return static_cast<std::int16_t>
                ( _data.nan * 3
@@ -1166,7 +1166,7 @@ private:
 
 template <typename CharT>
 template <typename Preview>
-void double_printer<CharT>::init( Preview& preview
+STRF_HD void double_printer<CharT>::init( Preview& preview
                                 , std::int16_t w
                                 , strf::text_alignment a )
 {
@@ -1209,7 +1209,7 @@ void double_printer<CharT>::init( Preview& preview
 }
 
 template <typename CharT>
-void double_printer<CharT>::print_to
+STRF_HD void double_printer<CharT>::print_to
     ( strf::basic_outbuf<CharT>& ob ) const
 {
     if (_left_fillcount != 0)
@@ -1396,7 +1396,7 @@ class fast_double_printer: public strf::printer<CharT>
 public:
 
     template <typename FPack, typename Preview>
-    fast_double_printer(const FPack, Preview& preview, float f)
+    STRF_HD fast_double_printer(const FPack, Preview& preview, float f)
         : fast_double_printer(f)
     {
         std::size_t s = 0;
@@ -1409,7 +1409,7 @@ public:
     }
 
     template <typename FPack, typename Preview>
-    fast_double_printer(const FPack, Preview& preview, double d)
+    STRF_HD fast_double_printer(const FPack, Preview& preview, double d)
         : fast_double_printer(d)
     {
         std::size_t s = 0;
@@ -1421,7 +1421,7 @@ public:
         preview.add_size(s);
     }
 
-    explicit fast_double_printer(float f)
+    STRF_HD explicit fast_double_printer(float f)
         : _value(decode(f))
         , _m10_digcount(strf::detail::count_digits<10>(_value.m10))
 
@@ -1431,7 +1431,7 @@ public:
             || (_value.e10 < -(int)_m10_digcount - 2 - (_m10_digcount > 1));
     }
 
-    explicit fast_double_printer(double d)
+    explicit STRF_HD fast_double_printer(double d)
         : _value(decode(d))
         , _m10_digcount(strf::detail::count_digits<10>(_value.m10))
 
@@ -1441,13 +1441,13 @@ public:
             || (_value.e10 < -(int)_m10_digcount - 2 - (_m10_digcount > 1));
     }
 
-    void print_to(strf::basic_outbuf<CharT>&) const override;
+    STRF_HD void print_to(strf::basic_outbuf<CharT>&) const override;
 
-    std::size_t size() const;
+    STRF_HD std::size_t size() const;
 
 private:
 
-    unsigned _size_sci() const
+    STRF_HD unsigned _size_sci() const
     {
         return _value.negative + _m10_digcount + (_m10_digcount != 1) + 4
             + (_value.e10 > 99 || _value.e10 < -99);
@@ -1460,7 +1460,7 @@ private:
 };
 
 template <typename CharT>
-std::size_t fast_double_printer<CharT>::size() const
+STRF_HD std::size_t fast_double_printer<CharT>::size() const
 {
     return ( _value.nan * 3
            + (_value.infinity * 3)
@@ -1479,7 +1479,7 @@ std::size_t fast_double_printer<CharT>::size() const
 }
 
 template <typename CharT>
-void fast_double_printer<CharT>::print_to
+STRF_HD void fast_double_printer<CharT>::print_to
     ( strf::basic_outbuf<CharT>& ob ) const
 {
     if (_value.nan)
@@ -1649,7 +1649,7 @@ class fast_punct_double_printer: public strf::printer<CharT>
 public:
 
     template <typename FPack, typename Preview, typename FloatT>
-    fast_punct_double_printer(const FPack& fp, Preview& preview, FloatT d)
+    STRF_HD fast_punct_double_printer(const FPack& fp, Preview& preview, FloatT d)
         : _punct(get_facet<strf::numpunct_c<10>, FloatT>(fp))
         , _encoding(get_facet<strf::encoding_c<CharT>, FloatT>(fp))
         , _value(decode(d))
@@ -1681,11 +1681,11 @@ public:
         }
     }
 
-    strf::width_t width() const;
+    STRF_HD strf::width_t width() const;
 
-    void print_to(strf::basic_outbuf<CharT>&) const override;
+    STRF_HD void print_to(strf::basic_outbuf<CharT>&) const override;
 
-    std::size_t size() const;
+    STRF_HD std::size_t size() const;
 
 private:
 
@@ -1706,7 +1706,7 @@ private:
 };
 
 template <typename CharT>
-std::size_t fast_punct_double_printer<CharT>::size() const
+STRF_HD std::size_t fast_punct_double_printer<CharT>::size() const
 {
     if (_value.infinity || _value.nan)
     {
@@ -1749,7 +1749,7 @@ std::size_t fast_punct_double_printer<CharT>::size() const
 }
 
 template <typename CharT>
-strf::width_t fast_punct_double_printer<CharT>::width() const
+STRF_HD strf::width_t fast_punct_double_printer<CharT>::width() const
 {
     if (_value.infinity || _value.nan)
     {
@@ -1791,7 +1791,7 @@ strf::width_t fast_punct_double_printer<CharT>::width() const
 }
 
 template <typename CharT>
-void fast_punct_double_printer<CharT>::print_to
+STRF_HD void fast_punct_double_printer<CharT>::print_to
     ( strf::basic_outbuf<CharT>& ob ) const
 {
     if (_value.negative)
@@ -1912,20 +1912,20 @@ STRF_EXPLICIT_TEMPLATE class fast_punct_double_printer<wchar_t>;
 
 } // namespace detail
 
-inline auto make_fmt(strf::rank<1>, float x)
+inline STRF_HD auto make_fmt(strf::rank<1>, float x)
 {
     return strf::float_with_format<float, false>{x};
 }
 
-inline auto make_fmt(strf::rank<1>, double x)
+inline STRF_HD auto make_fmt(strf::rank<1>, double x)
 {
     return strf::float_with_format<double, false>{x};
 }
 
-inline void make_fmt(strf::rank<1>, long double x) = delete;
+inline STRF_HD void make_fmt(strf::rank<1>, long double x) = delete;
 
 template <typename CharT, typename FPack, typename Preview>
-inline typename std::conditional
+inline STRF_HD typename std::conditional
     < strf::detail::has_punct<CharT, FPack, float, 10>
     , strf::detail::fast_punct_double_printer<CharT>
     , strf::detail::fast_double_printer<CharT> >::type
@@ -1935,7 +1935,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, float d)
 }
 
 template <typename CharT, typename FPack, typename Preview>
-inline typename std::conditional
+inline STRF_HD typename std::conditional
     < strf::detail::has_punct<CharT, FPack, double, 10>
     , strf::detail::fast_punct_double_printer<CharT>
     , strf::detail::fast_double_printer<CharT> >::type
@@ -1945,10 +1945,10 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, double d)
 }
 
 template <typename CharT, typename FPack, typename Preview>
-void make_printer(strf::rank<1>, const FPack& fp, Preview& preview, long double d) = delete;
+STRF_HD void make_printer(strf::rank<1>, const FPack& fp, Preview& preview, long double d) = delete;
 
 template <typename CharT, typename FPack, typename Preview, bool Align>
-inline typename std::conditional
+inline STRF_HD typename std::conditional
     < strf::detail::has_punct<CharT, FPack, float, 10>
     , strf::detail::punct_double_printer<CharT>
     , strf::detail::double_printer<CharT> >::type
@@ -1961,7 +1961,7 @@ make_printer( strf::rank<1>
 }
 
 template <typename CharT, typename FPack, typename Preview, bool Align>
-inline typename std::conditional
+inline STRF_HD typename std::conditional
     < strf::detail::has_punct<CharT, FPack, double, 10>
     , strf::detail::punct_double_printer<CharT>
     , strf::detail::double_printer<CharT> >::type

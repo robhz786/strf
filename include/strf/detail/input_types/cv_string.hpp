@@ -172,7 +172,7 @@ private:
     const strf::surrogate_policy _allow_surr;
 
     template <typename Category, typename FPack>
-    static decltype(auto) _get_facet(const FPack& fp)
+    static STRF_HD decltype(auto) _get_facet(const FPack& fp)
     {
         using input_tag = strf::string_input_tag<CharIn>;
         return fp.template get_facet<Category, input_tag>();
@@ -280,7 +280,7 @@ private:
     std::uint16_t _fillcount = 0;
 
     template <typename Category, typename FPack>
-    static decltype(auto) _get_facet(const FPack& fp)
+    static STRF_HD decltype(auto) _get_facet(const FPack& fp)
     {
         using input_tag = strf::string_input_tag<CharIn>;
         return fp.template get_facet<Category, input_tag>();
@@ -539,7 +539,7 @@ class cv_printer_maker_without_encoding<CharT, CharT, true>
 public:
 
     template <typename FPack, typename Preview>
-    inline static strf::detail::string_printer<CharOut> make_printer
+    static inline STRF_HD strf::detail::string_printer<CharOut> make_printer
         ( const FPack& fp
         , Preview& preview
         , strf::value_with_format< strf::detail::simple_string_view<CharIn>
@@ -550,7 +550,7 @@ public:
     }
 
     template <typename FPack, typename Preview>
-    inline static strf::detail::fmt_string_printer<CharOut> make_printer
+    static inline STRF_HD strf::detail::fmt_string_printer<CharOut> make_printer
         ( const FPack& fp
         , Preview& preview
         , strf::value_with_format< strf::detail::simple_string_view<CharIn>
@@ -567,7 +567,7 @@ class cv_printer_maker_without_encoding<CharIn, CharOut, true>
 public:
 
     template <typename FPack, typename Preview>
-    inline static strf::detail::printer_variant
+    static inline STRF_HD strf::detail::printer_variant
         < strf::detail::string_printer<CharOut>
         , strf::detail::cv_string_printer<CharIn, CharOut> >
     make_printer
@@ -602,7 +602,7 @@ public:
     }
 
     template <typename FPack, typename Preview>
-    inline static strf::detail::printer_variant
+    static inline STRF_HD strf::detail::printer_variant
         < strf::detail::fmt_string_printer<CharOut>
         , strf::detail::fmt_cv_string_printer<CharIn, CharOut> >
     make_printer
@@ -646,7 +646,7 @@ class cv_printer_maker_without_encoding<CharIn, CharOut, false>
 public:
 
     template <typename FPack, typename Preview>
-    inline static strf::detail::cv_string_printer<CharIn, CharOut> make_printer
+    static inline STRF_HD strf::detail::cv_string_printer<CharIn, CharOut> make_printer
         ( const FPack& fp
         , Preview& preview
         , strf::value_with_format< strf::detail::simple_string_view<CharIn>
@@ -657,7 +657,7 @@ public:
     }
 
     template <typename FPack, typename Preview>
-    inline static strf::detail::fmt_cv_string_printer<CharIn, CharOut> make_printer
+    static inline STRF_HD strf::detail::fmt_cv_string_printer<CharIn, CharOut> make_printer
         ( const FPack& fp
         , Preview& preview
         , strf::value_with_format< strf::detail::simple_string_view<CharIn>
@@ -679,7 +679,7 @@ class cv_printer_maker_with_encoding<CharIn, CharOut, true>
 public:
 
     template <typename FPack, typename Preview>
-    inline static strf::detail::printer_variant
+    static inline STRF_HD strf::detail::printer_variant
         < strf::detail::string_printer<CharOut>
         , strf::detail::cv_string_printer<CharIn, CharOut> >
     make_printer
@@ -709,7 +709,7 @@ public:
     }
 
     template <typename FPack, typename Preview>
-    inline static strf::detail::printer_variant
+    static inline STRF_HD strf::detail::printer_variant
         < strf::detail::fmt_string_printer<CharOut>
         , strf::detail::fmt_cv_string_printer<CharIn, CharOut> >
     make_printer
@@ -749,7 +749,7 @@ class cv_printer_maker_with_encoding<CharIn, CharOut, false>
 {
 public:
     template <typename FPack, typename Preview>
-    inline strf::detail::cv_string_printer<CharIn, CharOut> make_printer
+    inline STRF_HD strf::detail::cv_string_printer<CharIn, CharOut> make_printer
         ( const FPack& fp
         , Preview& preview
         , strf::value_with_format< strf::detail::simple_string_view<CharIn>
@@ -760,7 +760,7 @@ public:
     }
 
     template <typename FPack, typename Preview>
-    inline static strf::detail::fmt_cv_string_printer<CharIn, CharOut> make_printer
+    static inline STRF_HD strf::detail::fmt_cv_string_printer<CharIn, CharOut> make_printer
         ( const FPack& fp
         , Preview& preview
         , strf::value_with_format< strf::detail::simple_string_view<CharIn>
@@ -782,7 +782,7 @@ template < typename CharOut
          , typename Preview
          , typename CharIn
          , bool WithAlignment >
-inline auto make_printer
+inline STRF_HD auto make_printer
     ( strf::rank<1>
     , const FPack& fp
     , Preview& preview
@@ -800,7 +800,7 @@ template < typename CharOut
          , typename Preview
          , typename CharIn
          , bool WithAlignment >
-inline auto make_printer
+inline STRF_HD auto make_printer
     ( strf::rank<1>
     , const FPack& fp
     , Preview& preview
@@ -815,7 +815,7 @@ inline auto make_printer
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
 inline strf::detail::cv_string_printer<CharIn, CharOut>
-make_printer( strf::rank<1>
+STRF_HD make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
             , strf::value_with_format< strf::detail::simple_string_view<CharIn>
@@ -827,7 +827,7 @@ make_printer( strf::rank<1>
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
 inline strf::detail::cv_string_printer<CharIn, CharOut>
-make_printer( strf::rank<1>
+STRF_HD make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
             , strf::value_with_format< strf::detail::simple_string_view<CharIn>
@@ -839,7 +839,7 @@ make_printer( strf::rank<1>
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
 inline strf::detail::fmt_cv_string_printer<CharIn, CharOut>
-make_printer( strf::rank<1>
+STRF_HD make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
             , strf::value_with_format< strf::detail::simple_string_view<CharIn>
@@ -854,7 +854,7 @@ make_printer( strf::rank<1>
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
 inline strf::detail::fmt_cv_string_printer<CharIn, CharOut>
-make_printer( strf::rank<1>
+STRF_HD make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
             , strf::value_with_format< strf::detail::simple_string_view<CharIn>

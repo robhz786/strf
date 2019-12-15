@@ -520,7 +520,7 @@ const STRF_HD strf::detail::transcoder_impl<char32_t, CharIn>* enc_from_enc
 template <typename CharIn, typename CharOut>
 struct get_transcoder_helper
 {
-    static const strf::detail::transcoder_impl<CharIn, CharOut>* get
+    static STRF_HD const strf::detail::transcoder_impl<CharIn, CharOut>* get
         ( const strf::detail::encoding_impl<CharIn>& src_encoding
         , const strf::detail::encoding_impl<CharOut>& dest_encoding )
     {
@@ -534,7 +534,7 @@ struct get_transcoder_helper
 template <typename CharT>
 struct get_transcoder_helper<CharT, CharT>
 {
-    static const strf::detail::transcoder_impl<CharT, CharT>* get
+    static STRF_HD const strf::detail::transcoder_impl<CharT, CharT>* get
         ( const strf::detail::encoding_impl<CharT>& src_encoding
         , const strf::detail::encoding_impl<CharT>& dest_encoding )
     {
@@ -553,7 +553,7 @@ template <>
 struct get_transcoder_helper<char32_t, char32_t>
 {
     using CharT = char32_t;
-    static const strf::detail::transcoder_impl<CharT, CharT>* get
+    static STRF_HD const strf::detail::transcoder_impl<CharT, CharT>* get
         ( const strf::detail::encoding_impl<CharT>& src_encoding
         , const strf::detail::encoding_impl<CharT>& dest_encoding )
     {
@@ -571,7 +571,7 @@ struct get_transcoder_helper<char32_t, char32_t>
 template <typename CharOut>
 struct get_transcoder_helper<char32_t, CharOut >
 {
-    static const strf::detail::transcoder_impl<char32_t, CharOut>* get
+    static STRF_HD const strf::detail::transcoder_impl<char32_t, CharOut>* get
         ( const strf::detail::encoding_impl<char32_t>& src_encoding
         , const strf::detail::encoding_impl<CharOut>& dest_encoding )
     {
@@ -589,7 +589,7 @@ struct get_transcoder_helper<char32_t, CharOut >
 template <typename CharIn>
 struct get_transcoder_helper<CharIn, char32_t>
 {
-    static const strf::detail::transcoder_impl<CharIn, char32_t>* get
+    static STRF_HD const strf::detail::transcoder_impl<CharIn, char32_t>* get
         ( const strf::detail::encoding_impl<CharIn>& src_encoding
         , const strf::detail::encoding_impl<char32_t>& dest_encoding )
     {
@@ -894,7 +894,7 @@ struct encoding_c<char>
 {
     static constexpr bool constrainable = false;
 
-    static encoding<char> get_default()
+    static STRF_HD encoding<char> get_default()
     {
         return strf::utf8<char>();
     }
@@ -907,7 +907,7 @@ struct encoding_c<char8_t>
 {
     static constexpr bool constrainable = false;
 
-    static encoding<char8_t> get_default()
+    static STRF_HD encoding<char8_t> get_default()
     {
         return strf::utf8<char8_t>();
     }
@@ -920,7 +920,7 @@ struct encoding_c<char16_t>
 {
     static constexpr bool constrainable = false;
 
-    static encoding<char16_t> get_default()
+    static STRF_HD encoding<char16_t> get_default()
     {
         return strf::utf16<char16_t>();
     }
@@ -931,7 +931,7 @@ struct encoding_c<char32_t>
 {
     static constexpr bool constrainable = false;
 
-    static encoding<char32_t> get_default()
+    static STRF_HD encoding<char32_t> get_default()
     {
         return strf::utf32<char32_t>();
     }
@@ -942,7 +942,7 @@ struct encoding_c<wchar_t>
 {
     static constexpr bool constrainable = false;
 
-    static encoding<wchar_t> get_default()
+    static STRF_HD encoding<wchar_t> get_default()
     {
         return strf::wchar_encoding();
     }

@@ -32,7 +32,7 @@ class char_printer: public printer<CharT>
 public:
 
     template <typename FPack, typename Preview>
-    char_printer (const FPack& fp, Preview& preview, CharT ch)
+    STRF_HD char_printer (const FPack& fp, Preview& preview, CharT ch)
         : _ch(ch)
     {
         preview.add_size(1);
@@ -117,7 +117,7 @@ private:
     std::int16_t _fillcount = 0;
 
     template <typename Category, typename FPack>
-    static decltype(auto) _get_facet(const FPack& fp)
+    static STRF_HD decltype(auto) _get_facet(const FPack& fp)
     {
         return fp.template get_facet<Category, input_type>();
     }

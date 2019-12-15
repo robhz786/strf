@@ -1,13 +1,11 @@
 #ifndef STRF_DETAIL_INPUT_TYPES_STRING
 #define STRF_DETAIL_INPUT_TYPES_STRING
 
-#include <algorithm>
 #include <limits>
+#include <string>
 #include <strf/detail/facets/width_calculator.hpp>
 #include <strf/detail/format_functions.hpp>
 #include <strf/facets_pack.hpp>
-
-#warning "Shouldn't get here."
 
 STRF_NAMESPACE_BEGIN
 
@@ -18,33 +16,33 @@ class simple_string_view
 {
 public:
 
-    constexpr simple_string_view(const CharIn* str, std::size_t len) noexcept
+    constexpr STRF_HD simple_string_view(const CharIn* str, std::size_t len) noexcept
         : _begin(str)
         , _len(len)
     {
     }
 
-    constexpr simple_string_view(const simple_string_view&) noexcept = default;
+    constexpr STRF_HD simple_string_view(const simple_string_view&) noexcept = default;
 
     STRF_CONSTEXPR_CHAR_TRAITS
-    simple_string_view(const CharIn* str) noexcept
+    STRF_HD simple_string_view(const CharIn* str) noexcept
         : _begin(str)
-        , _len(std::char_traits<CharIn>::length(str))
+        , _len(strf::detail::str_length<CharIn>(str))
     {
     }
-    constexpr const CharIn* begin() const
+    constexpr STRF_HD const CharIn* begin() const
     {
         return _begin;
     }
-    constexpr const CharIn* end() const
+    constexpr STRF_HD const CharIn* end() const
     {
         return _begin + _len;
     }
-    constexpr std::size_t size() const
+    constexpr STRF_HD std::size_t size() const
     {
         return _len;
     }
-    constexpr std::size_t length() const
+    constexpr STRF_HD std::size_t length() const
     {
         return _len;
     }
@@ -77,16 +75,16 @@ class no_cv_format_fn
 {
 public:
 
-    constexpr no_cv_format_fn() noexcept = default;
-    constexpr no_cv_format_fn(const no_cv_format_fn& other) noexcept = default;
+    constexpr STRF_HD no_cv_format_fn() noexcept = default;
+    constexpr STRF_HD no_cv_format_fn(const no_cv_format_fn& other) noexcept = default;
 
     template <typename U>
-    constexpr explicit no_cv_format_fn
+    constexpr STRF_HD explicit no_cv_format_fn
         ( const no_cv_format_fn<CharT, U>& ) noexcept
     {
     }
 
-    constexpr auto cv() const
+    constexpr STRF_HD auto cv() const
     {
         using return_type = strf::fmt_replace< T
                                              , strf::no_cv_format<CharT>
@@ -94,7 +92,7 @@ public:
         return return_type{ static_cast<const T&>(*this) };
     }
 
-    constexpr auto cv(strf::encoding<CharT> enc) const
+    constexpr STRF_HD auto cv(strf::encoding<CharT> enc) const
     {
         using return_type = strf::fmt_replace
             < T
@@ -107,7 +105,7 @@ public:
             , enc };
     }
 
-    constexpr auto sani() const
+    constexpr STRF_HD auto sani() const
     {
         using return_type = strf::fmt_replace< T
                                              , strf::no_cv_format<CharT>
@@ -115,7 +113,7 @@ public:
         return return_type{ static_cast<const T&>(*this) };
     }
 
-    constexpr auto sani(strf::encoding<CharT> enc) const
+    constexpr STRF_HD auto sani(strf::encoding<CharT> enc) const
     {
         using return_type = strf::fmt_replace
             < T
@@ -132,17 +130,17 @@ public:
 template <typename CharT, typename T>
 struct cv_format_fn
 {
-    constexpr cv_format_fn() noexcept = default;
-    constexpr cv_format_fn(const cv_format_fn& other) noexcept = default;
+    constexpr STRF_HD cv_format_fn() noexcept = default;
+    constexpr STRF_HD cv_format_fn(const cv_format_fn& other) noexcept = default;
 
     template <typename U>
-    constexpr explicit cv_format_fn
+    constexpr STRF_HD explicit cv_format_fn
         ( const cv_format_fn<CharT, U>& ) noexcept
     {
     }
 
     template <typename U>
-    constexpr explicit cv_format_fn
+    constexpr STRF_HD explicit cv_format_fn
         ( const strf::no_cv_format_fn<CharT, U>& ) noexcept
     {
     }
@@ -227,7 +225,7 @@ using string_with_format = strf::value_with_format
     , strf::no_cv_format<CharIn> >;
 
 template <typename CharIn, typename Traits, typename Allocator>
-auto make_fmt( strf::rank<1>
+STRF_HD auto  make_fmt( strf::rank<1>
              , const std::basic_string<CharIn, Traits, Allocator>& str) noexcept
 {
     return strf::string_with_format<CharIn>{{str.data(), str.size()}};
@@ -236,7 +234,7 @@ auto make_fmt( strf::rank<1>
 #if defined(STRF_HAS_STD_STRING_VIEW)
 
 template <typename CharIn, typename Traits>
-constexpr auto
+constexpr STRF_HD auto
 make_fmt( strf::rank<1>
         , const std::basic_string_view<CharIn, Traits>& str) noexcept
 {
@@ -247,40 +245,40 @@ make_fmt( strf::rank<1>
 
 #if defined(__cpp_char8_t)
 
-STRF_CONSTEXPR_CHAR_TRAITS
-auto make_fmt(strf::rank<1>, const char8_t* str)
+STRF_CONSTEXPR_CHAR_TRAITS STRF_HD
+auto  make_fmt(strf::rank<1>, const char8_t* str)
 {
-    auto len = std::char_traits<char8_t>::length(str);
+    auto len = strf::detail::str_length<char8_t>(str);
     return strf::string_with_format<char8_t>{{str, len}};
 }
 
 #endif
 
-STRF_CONSTEXPR_CHAR_TRAITS
-auto make_fmt(strf::rank<1>, const char* str)
+STRF_CONSTEXPR_CHAR_TRAITS STRF_HD
+auto  make_fmt(strf::rank<1>, const char* str)
 {
-    auto len = std::char_traits<char>::length(str);
+    auto len = strf::detail::str_length<char>(str);
     return strf::string_with_format<char>{{str, len}};
 }
 
-STRF_CONSTEXPR_CHAR_TRAITS
-auto make_fmt(strf::rank<1>, const wchar_t* str)
+STRF_CONSTEXPR_CHAR_TRAITS STRF_HD
+auto  make_fmt(strf::rank<1>, const wchar_t* str)
 {
-    auto len = std::char_traits<wchar_t>::length(str);
+    auto len = strf::detail::str_length<wchar_t>(str);
     return strf::string_with_format<wchar_t>{{str, len}};
 }
 
-STRF_CONSTEXPR_CHAR_TRAITS
-auto make_fmt(strf::rank<1>, const char16_t* str)
+STRF_CONSTEXPR_CHAR_TRAITS STRF_HD
+auto  make_fmt(strf::rank<1>, const char16_t* str)
 {
-    auto len = std::char_traits<char16_t>::length(str);
+    auto len = strf::detail::str_length<char16_t>(str);
     return strf::string_with_format<char16_t>{{str, len}};
 }
 
-STRF_CONSTEXPR_CHAR_TRAITS
-auto make_fmt(strf::rank<1>, const char32_t* str)
+STRF_CONSTEXPR_CHAR_TRAITS STRF_HD
+auto  make_fmt(strf::rank<1>, const char32_t* str)
 {
-    auto len = std::char_traits<char32_t>::length(str);
+    auto len = strf::detail::str_length<char32_t>(str);
     return strf::string_with_format<char32_t>{{str, len}};
 }
 
@@ -292,7 +290,7 @@ class string_printer: public strf::printer<CharT>
 public:
 
     template <typename FPack, bool RequireSize>
-    string_printer
+    STRF_HD string_printer
         ( const FPack&
         , strf::print_preview<RequireSize, false>& preview
         , simple_string_view<CharT> str) noexcept
@@ -303,7 +301,7 @@ public:
     }
 
     template <typename FPack, bool RequireSize>
-    string_printer
+    STRF_HD string_printer
         ( const FPack& fp
         , strf::print_preview<RequireSize, true>& preview
         , simple_string_view<CharT> str ) noexcept
@@ -318,11 +316,11 @@ public:
                    , _get_facet<strf::surrogate_policy_c>(fp) );
     }
 
-    void STRF_HD print_to(strf::basic_outbuf<CharT>& ob) const override;
+    STRF_HD void STRF_HD print_to(strf::basic_outbuf<CharT>& ob) const override;
 
 private:
 
-    constexpr void _calc_width
+    constexpr STRF_HD void STRF_HD _calc_width
         ( strf::width_preview<true>& wpreview
         , const strf::fast_width<CharT>&
         , strf::encoding<CharT>
@@ -340,7 +338,7 @@ private:
         }
     }
 
-    constexpr void _calc_width
+    constexpr STRF_HD void STRF_HD _calc_width
         ( strf::width_preview<true>& wpreview
         , const strf::width_as_u32len<CharT>&
         , strf::encoding<CharT> enc
@@ -362,7 +360,7 @@ private:
         }
     }
 
-    constexpr void _calc_width
+    constexpr STRF_HD void STRF_HD _calc_width
         ( strf::width_preview<true>& wpreview
         , const strf::width_calculator<CharT>& wcalc
         , strf::encoding<CharT> enc
@@ -390,7 +388,7 @@ private:
     const std::size_t _len;
 
     template <typename Category, typename FPack>
-    static decltype(auto) _get_facet(const FPack& fp)
+    static STRF_HD decltype(auto) _get_facet(const FPack& fp)
     {
         using input_tag = strf::string_input_tag<CharT>;
         return fp.template get_facet<Category, input_tag>();
@@ -398,7 +396,7 @@ private:
 };
 
 template<typename CharT>
-void string_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
+STRF_HD void STRF_HD string_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
 {
     strf::write(ob, _str, _len);
 }
@@ -409,7 +407,7 @@ class fmt_string_printer: public strf::printer<CharT>
 public:
 
     template <typename FPack, typename Preview>
-    fmt_string_printer
+    STRF_HD fmt_string_printer
         ( const FPack& fp
         , Preview& preview
         , strf::detail::simple_string_view<CharT> str
@@ -424,9 +422,9 @@ public:
         _calc_size(preview);
     }
 
-    ~fmt_string_printer();
+    STRF_HD ~fmt_string_printer();
 
-    void print_to(strf::basic_outbuf<CharT>& ob) const override;
+    STRF_HD void STRF_HD print_to(strf::basic_outbuf<CharT>& ob) const override;
 
 private:
 
@@ -438,29 +436,29 @@ private:
     const strf::surrogate_policy _allow_surr;
 
     template <typename Category, typename FPack>
-    static decltype(auto) _get_facet(const FPack& fp)
+    static STRF_HD decltype(auto) _get_facet(const FPack& fp)
     {
         using input_tag = strf::string_input_tag<CharT>;
         return fp.template get_facet<Category, input_tag>();
     }
 
     template <bool RequiringWidth>
-    void _init( strf::width_preview<RequiringWidth>& preview
+    STRF_HD void STRF_HD _init( strf::width_preview<RequiringWidth>& preview
               , const strf::fast_width<CharT>&);
 
     template <bool RequiringWidth>
-    void _init( strf::width_preview<RequiringWidth>& preview
+    STRF_HD void STRF_HD _init( strf::width_preview<RequiringWidth>& preview
               , const strf::width_as_u32len<CharT>&);
 
     template <bool RequiringWidth>
-    void _init( strf::width_preview<RequiringWidth>& preview
+    STRF_HD void STRF_HD _init( strf::width_preview<RequiringWidth>& preview
               , const strf::width_calculator<CharT>&);
 
-    constexpr void _calc_size(strf::size_preview<false>&) const
+    constexpr STRF_HD void STRF_HD _calc_size(strf::size_preview<false>&) const
     {
     }
 
-    void _calc_size(strf::size_preview<true>& preview) const
+    STRF_HD void STRF_HD _calc_size(strf::size_preview<true>& preview) const
     {
         preview.add_size(_str.length());
         if (_fillcount > 0)
@@ -470,19 +468,19 @@ private:
         }
     }
 
-    void _write_str(strf::basic_outbuf<CharT>& ob) const;
-    void _write_fill( strf::basic_outbuf<CharT>& ob
+    STRF_HD void STRF_HD _write_str(strf::basic_outbuf<CharT>& ob) const;
+    STRF_HD void STRF_HD _write_fill( strf::basic_outbuf<CharT>& ob
                     , unsigned count ) const;
 };
 
 template<typename CharT>
-fmt_string_printer<CharT>::~fmt_string_printer()
+STRF_HD fmt_string_printer<CharT>::~fmt_string_printer()
 {
 }
 
 template<typename CharT>
 template <bool RequiringWidth>
-inline void fmt_string_printer<CharT>::_init
+inline STRF_HD void STRF_HD fmt_string_printer<CharT>::_init
     ( strf::width_preview<RequiringWidth>& preview
     , const strf::fast_width<CharT>&)
 {
@@ -500,7 +498,7 @@ inline void fmt_string_printer<CharT>::_init
 
 template<typename CharT>
 template <bool RequiringWidth>
-inline void fmt_string_printer<CharT>::_init
+inline STRF_HD void STRF_HD fmt_string_printer<CharT>::_init
     ( strf::width_preview<RequiringWidth>& preview
     , const strf::width_as_u32len<CharT>&)
 {
@@ -521,7 +519,7 @@ inline void fmt_string_printer<CharT>::_init
 
 template <typename CharT>
 template <bool RequiringWidth>
-inline void fmt_string_printer<CharT>::_init
+inline STRF_HD void STRF_HD fmt_string_printer<CharT>::_init
     ( strf::width_preview<RequiringWidth>& preview
     , const strf::width_calculator<CharT>& wc)
 {
@@ -550,7 +548,7 @@ inline void fmt_string_printer<CharT>::_init
 }
 
 template<typename CharT>
-void fmt_string_printer<CharT>::print_to
+void STRF_HD fmt_string_printer<CharT>::print_to
     ( strf::basic_outbuf<CharT>& ob ) const
 {
     if (_fillcount > 0)
@@ -585,14 +583,14 @@ void fmt_string_printer<CharT>::print_to
 }
 
 template <typename CharT>
-void fmt_string_printer<CharT>::_write_str
+void STRF_HD fmt_string_printer<CharT>::_write_str
     ( strf::basic_outbuf<CharT>& ob ) const
 {
     strf::write(ob, _str.begin(), _str.length());
 }
 
 template <typename CharT>
-void fmt_string_printer<CharT>::_write_fill
+void STRF_HD fmt_string_printer<CharT>::_write_fill
     ( strf::basic_outbuf<CharT>& ob
     , unsigned count ) const
 {
@@ -621,7 +619,7 @@ STRF_EXPLICIT_TEMPLATE class fmt_string_printer<wchar_t>;
 } // namespace detail
 
 template <typename CharT, typename FPack, typename Preview>
-inline strf::detail::string_printer<CharT>
+inline STRF_HD strf::detail::string_printer<CharT>
 make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const CharT* str)
 {
     return {fp, preview, str};
@@ -630,7 +628,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const CharT* str)
 #if defined(__cpp_char8_t)
 
 template <typename CharOut, typename FPack, typename Preview>
-inline strf::detail::string_printer<CharOut>
+inline STRF_HD strf::detail::string_printer<CharOut>
 make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const char8_t* str)
 {
     static_assert( std::is_same<char8_t, CharOut>::value
@@ -641,7 +639,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const char8_t* st
 #endif
 
 template <typename CharOut, typename FPack, typename Preview>
-inline strf::detail::string_printer<CharOut>
+inline STRF_HD strf::detail::string_printer<CharOut>
 make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const char* str)
 {
     static_assert( std::is_same<char, CharOut>::value
@@ -650,7 +648,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const char* str)
 }
 
 template <typename CharOut, typename FPack, typename Preview>
-inline strf::detail::string_printer<CharOut>
+inline STRF_HD strf::detail::string_printer<CharOut>
 make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const char16_t* str)
 {
     static_assert( std::is_same<char16_t, CharOut>::value
@@ -659,7 +657,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const char16_t* s
 }
 
 template <typename CharOut, typename FPack, typename Preview>
-inline strf::detail::string_printer<CharOut>
+inline STRF_HD strf::detail::string_printer<CharOut>
 make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const char32_t* str)
 {
     static_assert( std::is_same<char32_t, CharOut>::value
@@ -668,7 +666,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const char32_t* s
 }
 
 template <typename CharOut, typename FPack, typename Preview>
-inline strf::detail::string_printer<CharOut>
+inline STRF_HD strf::detail::string_printer<CharOut>
 make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const wchar_t* str)
 {
     static_assert( std::is_same<wchar_t, CharOut>::value
@@ -683,7 +681,7 @@ template
     , typename CharIn
     , typename Traits
     , typename Allocator >
-inline strf::detail::string_printer<CharOut>
+inline STRF_HD strf::detail::string_printer<CharOut>
 make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
@@ -702,7 +700,7 @@ template
     , typename Preview
     , typename CharIn
     , typename Traits >
-inline strf::detail::string_printer<CharOut>
+inline STRF_HD strf::detail::string_printer<CharOut>
 make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
@@ -716,7 +714,7 @@ make_printer( strf::rank<1>
 #endif //defined(STRF_HAS_STD_STRING_VIEW)
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
-inline strf::detail::fmt_string_printer<CharOut>
+inline STRF_HD strf::detail::fmt_string_printer<CharOut>
 make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
