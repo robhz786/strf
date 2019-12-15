@@ -14,28 +14,28 @@ template <typename T>
 constexpr auto cv(const T& value)
 -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).cv())>>
 {
-    return fmt(value).cv();
+    return fmt(value).convert_charset(); // defined in no_cv_format_fn
 }
 
 template <typename T, typename E>
 constexpr auto cv(const T& value, const E& e)
 -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).cv(e))>>
 {
-    return fmt(value).cv(e);
+    return fmt(value).convert_charset(e); // defined in no_cv_format_fn
 }
 
 template <typename T>
 constexpr auto sani(const T& value)
 -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sani())>>
 {
-    return fmt(value).sani();
+    return fmt(value).sani(); // defined in no_cv_format_fn
 }
 
 template <typename T, typename E>
 constexpr auto sani(const T& value, const E& e)
 -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sani(e))>>
 {
-    return fmt(value).sani(e);
+    return fmt(value).sani(e); // defined in no_cv_format_fn
 }
 
 namespace detail {

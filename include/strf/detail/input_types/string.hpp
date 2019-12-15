@@ -84,7 +84,7 @@ public:
     {
     }
 
-    constexpr STRF_HD auto cv() const
+    constexpr STRF_HD auto convert_charset() const
     {
         using return_type = strf::fmt_replace< T
                                              , strf::no_cv_format<CharT>
@@ -92,7 +92,7 @@ public:
         return return_type{ static_cast<const T&>(*this) };
     }
 
-    constexpr STRF_HD auto cv(strf::encoding<CharT> enc) const
+    constexpr STRF_HD auto convert_charset(strf::encoding<CharT> enc) const
     {
         using return_type = strf::fmt_replace
             < T
@@ -103,6 +103,14 @@ public:
             { static_cast<const T&>(*this)
             , strf::tag<strf::cv_format_with_encoding<CharT>>{}
             , enc };
+    }
+    constexpr STRF_HD auto cv() const
+    {
+        return convert_charset();
+    }
+    constexpr STRF_HD auto cv(strf::encoding<CharT> enc) const
+    {
+        return convert_charset(enc);
     }
 
     constexpr STRF_HD auto sani() const
