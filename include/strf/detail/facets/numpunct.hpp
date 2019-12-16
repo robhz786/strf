@@ -167,7 +167,7 @@ public:
     {
     }
 
-    bool no_group_separation(unsigned num_digits) const
+    STRF_HD bool no_group_separation(unsigned num_digits) const
     {
         return num_digits <= _first_group_size;
     }
@@ -198,7 +198,7 @@ public:
         _thousands_sep = ch;
         return std::move(*this);
     }
-    char32_t decimal_point() const
+    STRF_HD char32_t decimal_point() const
     {
         return _decimal_point;
     }
@@ -268,12 +268,12 @@ public:
         (void)num_digits;
         return 0;
     }
-    no_grouping &  decimal_point(char32_t ch) &
+    STRF_HD no_grouping &  decimal_point(char32_t ch) &
     {
         numpunct_base::decimal_point(ch);
         return *this;
     }
-    no_grouping && decimal_point(char32_t ch) &&
+    STRF_HD no_grouping && decimal_point(char32_t ch) &&
     {
         numpunct_base::decimal_point(ch);
         return std::move(*this);

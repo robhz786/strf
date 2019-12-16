@@ -324,11 +324,11 @@ public:
                    , _get_facet<strf::surrogate_policy_c>(fp) );
     }
 
-    STRF_HD void STRF_HD print_to(strf::basic_outbuf<CharT>& ob) const override;
+    STRF_HD void print_to(strf::basic_outbuf<CharT>& ob) const override;
 
 private:
 
-    constexpr STRF_HD void STRF_HD _calc_width
+    constexpr STRF_HD void _calc_width
         ( strf::width_preview<true>& wpreview
         , const strf::fast_width<CharT>&
         , strf::encoding<CharT>
@@ -346,7 +346,7 @@ private:
         }
     }
 
-    constexpr STRF_HD void STRF_HD _calc_width
+    constexpr STRF_HD void _calc_width
         ( strf::width_preview<true>& wpreview
         , const strf::width_as_u32len<CharT>&
         , strf::encoding<CharT> enc
@@ -368,7 +368,7 @@ private:
         }
     }
 
-    constexpr STRF_HD void STRF_HD _calc_width
+    constexpr STRF_HD void _calc_width
         ( strf::width_preview<true>& wpreview
         , const strf::width_calculator<CharT>& wcalc
         , strf::encoding<CharT> enc
@@ -404,7 +404,7 @@ private:
 };
 
 template<typename CharT>
-STRF_HD void STRF_HD string_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
+STRF_HD void string_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
 {
     strf::write(ob, _str, _len);
 }
@@ -432,7 +432,7 @@ public:
 
     STRF_HD ~fmt_string_printer();
 
-    STRF_HD void STRF_HD print_to(strf::basic_outbuf<CharT>& ob) const override;
+    STRF_HD void print_to(strf::basic_outbuf<CharT>& ob) const override;
 
 private:
 
@@ -451,22 +451,22 @@ private:
     }
 
     template <bool RequiringWidth>
-    STRF_HD void STRF_HD _init( strf::width_preview<RequiringWidth>& preview
+    STRF_HD void _init( strf::width_preview<RequiringWidth>& preview
               , const strf::fast_width<CharT>&);
 
     template <bool RequiringWidth>
-    STRF_HD void STRF_HD _init( strf::width_preview<RequiringWidth>& preview
+    STRF_HD void _init( strf::width_preview<RequiringWidth>& preview
               , const strf::width_as_u32len<CharT>&);
 
     template <bool RequiringWidth>
-    STRF_HD void STRF_HD _init( strf::width_preview<RequiringWidth>& preview
+    STRF_HD void _init( strf::width_preview<RequiringWidth>& preview
               , const strf::width_calculator<CharT>&);
 
-    constexpr STRF_HD void STRF_HD _calc_size(strf::size_preview<false>&) const
+    constexpr STRF_HD void _calc_size(strf::size_preview<false>&) const
     {
     }
 
-    STRF_HD void STRF_HD _calc_size(strf::size_preview<true>& preview) const
+    STRF_HD void _calc_size(strf::size_preview<true>& preview) const
     {
         preview.add_size(_str.length());
         if (_fillcount > 0)
@@ -476,8 +476,8 @@ private:
         }
     }
 
-    STRF_HD void STRF_HD _write_str(strf::basic_outbuf<CharT>& ob) const;
-    STRF_HD void STRF_HD _write_fill( strf::basic_outbuf<CharT>& ob
+    STRF_HD void _write_str(strf::basic_outbuf<CharT>& ob) const;
+    STRF_HD void _write_fill( strf::basic_outbuf<CharT>& ob
                     , unsigned count ) const;
 };
 
@@ -488,7 +488,7 @@ STRF_HD fmt_string_printer<CharT>::~fmt_string_printer()
 
 template<typename CharT>
 template <bool RequiringWidth>
-inline STRF_HD void STRF_HD fmt_string_printer<CharT>::_init
+inline STRF_HD void fmt_string_printer<CharT>::_init
     ( strf::width_preview<RequiringWidth>& preview
     , const strf::fast_width<CharT>&)
 {
@@ -506,7 +506,7 @@ inline STRF_HD void STRF_HD fmt_string_printer<CharT>::_init
 
 template<typename CharT>
 template <bool RequiringWidth>
-inline STRF_HD void STRF_HD fmt_string_printer<CharT>::_init
+inline STRF_HD void fmt_string_printer<CharT>::_init
     ( strf::width_preview<RequiringWidth>& preview
     , const strf::width_as_u32len<CharT>&)
 {
@@ -527,7 +527,7 @@ inline STRF_HD void STRF_HD fmt_string_printer<CharT>::_init
 
 template <typename CharT>
 template <bool RequiringWidth>
-inline STRF_HD void STRF_HD fmt_string_printer<CharT>::_init
+inline STRF_HD void fmt_string_printer<CharT>::_init
     ( strf::width_preview<RequiringWidth>& preview
     , const strf::width_calculator<CharT>& wc)
 {

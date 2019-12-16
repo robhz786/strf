@@ -47,13 +47,12 @@ str_length(const CharT* str)
 #endif
 }
 
-
 template <class CharT>
 inline STRF_CONSTEXPR_CHAR_TRAITS STRF_HD CharT*
-str_copy(CharT* destination, const CharT* source, std::size_t count)
+str_copy_n(CharT* destination, const CharT* source, std::size_t count)
 {
 #if !defined(__CUDA_ARCH__) && STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS
-    return static_cast<CharT*>(std::memcpy(destination, source, count));
+    return std::char_traits<CharT>::copy(destination, source, count);
 #elif defined(__CUDA_ARCH__)
     // CUDA has a built-in device-side memcpy(); see:
     // https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#dynamic-global-memory-allocation-and-operations
@@ -63,10 +62,26 @@ str_copy(CharT* destination, const CharT* source, std::size_t count)
     return static_cast<CharT*>(result);
 #else
     CharT* ret  = destination;
-    for(;count != 0; ++destination, ++source) {
+    for(;count != 0; ++destination, ++source, --count;) {
         *destination = *source;
     }
     return ret;
+#endif
+}
+
+template <class InputIt, class Size, class OutputIt>
+inline STRF_HD constexpr
+OutputIt copy_n(InputIt first, Size count, OutputIt result)
+{
+#if !defined(__CUDA_ARCH__) && STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS
+    return std::copy_n(first, count, result);
+#else
+    auto src_it { first };
+    auto dest_it { result };
+    for(; count != 0; ++src_it, ++dest_it, --count) {
+        *dest_it = *src_it;
+    }
+    return result;
 #endif
 }
 

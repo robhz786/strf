@@ -246,7 +246,7 @@ STRF_HD void outbuf_write_continuation(Outbuf& ob, const CharT* str, std::size_t
     auto space = ob.size();
     STRF_ASSERT(space < len);
 
-    detail::str_copy(ob.pos(), str, space * sizeof(CharT));
+    detail::str_copy_n(ob.pos(), str, space * sizeof(CharT));
     str += space;
     len -= space;
     ob.advance_to(ob.end());
@@ -260,7 +260,7 @@ STRF_HD void outbuf_write_continuation(Outbuf& ob, const CharT* str, std::size_t
             ob.advance(len);
             break;
         }
-        detail::str_copy(ob.pos(), str, space * sizeof(CharT));
+        detail::str_copy_n(ob.pos(), str, space * sizeof(CharT));
         len -= space;
         str += space;
         ob.advance_to(ob.end());
@@ -277,7 +277,7 @@ STRF_HD void outbuf_write(Outbuf& ob, const CharT* str, std::size_t len)
     auto p = ob.pos();
     if (p + len <= ob.end()) // the common case
     {
-        strf::detail::str_copy(p, str, len * sizeof(CharT));
+        strf::detail::str_copy_n(p, str, len * sizeof(CharT));
         ob.advance(len);
     }
     else

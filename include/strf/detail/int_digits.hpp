@@ -9,7 +9,7 @@ STRF_NAMESPACE_BEGIN
 
 namespace detail {
 
-inline unsigned long long pow10(unsigned n)
+inline STRF_HD unsigned long long pow10(unsigned n)
 {
     static const unsigned long long p10[] =
         { 1, 10, 100, 1000, 10000, 100000, 1000000
@@ -53,7 +53,7 @@ constexpr unsigned max_num_digits =
 template
     < typename IntT
     , typename unsigned_IntT = typename std::make_unsigned<IntT>::type >
-inline typename std::enable_if<std::is_signed<IntT>::value, unsigned_IntT>::type STRF_HD
+inline STRF_HD typename std::enable_if<std::is_signed<IntT>::value, unsigned_IntT>::type STRF_HD
 unsigned_abs(IntT value)
 {
     return ( value > 0
@@ -62,7 +62,7 @@ unsigned_abs(IntT value)
 }
 
 template<typename IntT>
-inline typename std::enable_if<std::is_unsigned<IntT>::value, IntT>::type STRF_HD
+inline STRF_HD typename std::enable_if<std::is_unsigned<IntT>::value, IntT>::type STRF_HD
 unsigned_abs(IntT value)
 {
     return value;
@@ -664,7 +664,7 @@ inline STRF_HD void write_int_with_leading_zeros
     auto p2 = intdigits_writer<Base>::write_txtdigits_backwards(value, end);
     if (p != p2)
     {
-        std::char_traits<CharT>::assign(p, p2 - p, (CharT)'0');
+        strf::detail::str_fill_n<CharT>(p, p2 - p, (CharT)'0');
     }
     ob.advance_to(end);
 }
