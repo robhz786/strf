@@ -11,28 +11,28 @@
 STRF_NAMESPACE_BEGIN
 
 template <typename T>
-constexpr auto cv(const T& value)
+constexpr STRF_HD auto cv(const T& value)
 -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).cv())>>
 {
     return fmt(value).convert_charset(); // defined in no_cv_format_fn
 }
 
 template <typename T, typename E>
-constexpr auto cv(const T& value, const E& e)
+constexpr STRF_HD auto cv(const T& value, const E& e)
 -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).cv(e))>>
 {
     return fmt(value).convert_charset(e); // defined in no_cv_format_fn
 }
 
 template <typename T>
-constexpr auto sani(const T& value)
+constexpr STRF_HD auto sani(const T& value)
 -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sani())>>
 {
     return fmt(value).sani(); // defined in no_cv_format_fn
 }
 
 template <typename T, typename E>
-constexpr auto sani(const T& value, const E& e)
+constexpr STRF_HD auto sani(const T& value, const E& e)
 -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sani(e))>>
 {
     return fmt(value).sani(e); // defined in no_cv_format_fn
@@ -46,7 +46,7 @@ class cv_string_printer: public strf::printer<CharOut>
 public:
 
     template <typename FPack, typename Preview>
-    cv_string_printer
+    STRF_HD cv_string_printer
         ( const FPack& fp
         , Preview& preview
         , strf::detail::simple_string_view<CharIn> str
@@ -61,7 +61,7 @@ public:
     }
 
     template <typename FPack, typename Preview>
-    cv_string_printer
+    STRF_HD cv_string_printer
         ( const FPack& fp
         , Preview& preview
         , strf::detail::simple_string_view<CharIn> str ) noexcept
@@ -74,23 +74,23 @@ public:
         _preview(fp, preview);
     }
 
-    cv_string_printer
+    STRF_HD cv_string_printer
         ( strf::detail::simple_string_view<CharIn> str
         , strf::encoding<CharIn> src_enc
         , strf::encoding<CharOut> dest_enc
         , strf::encoding_error enc_err
         , strf::surrogate_policy allow_surr ) noexcept;
 
-    ~cv_string_printer() = default;
+    STRF_HD ~cv_string_printer() = default;
 
-    std::size_t necessary_size() const;
+    STRF_HD std::size_t necessary_size() const;
 
-    void print_to(strf::basic_outbuf<CharOut>& ob) const override;
+    STRF_HD void print_to(strf::basic_outbuf<CharOut>& ob) const override;
 
 private:
 
     template <typename FPack, typename Preview>
-    void _preview(const FPack& fp, Preview& preview)
+    STRF_HD void _preview(const FPack& fp, Preview& preview)
     {
         STRF_IF_CONSTEXPR (Preview::width_required)
         {
@@ -104,27 +104,27 @@ private:
         (void)fp;
     }
 
-    constexpr void _calc_width
+    STRF_HD constexpr void _calc_width
         ( strf::width_preview<false>&
         , const strf::width_calculator<CharIn>& ) noexcept
     {
     }
 
-    constexpr void _calc_width
+    STRF_HD constexpr void _calc_width
         ( strf::width_preview<true>& wpreview
         , const strf::fast_width<CharIn>& ) noexcept
     {
         _count_codepoints(wpreview);
     }
 
-    constexpr void _calc_width
+    STRF_HD constexpr void _calc_width
         ( strf::width_preview<true>& wpreview
         , const strf::width_as_u32len<CharIn>& )
     {
         _count_codepoints(wpreview);
     }
 
-    constexpr void _count_codepoints(strf::width_preview<true>& wpreview)
+    STRF_HD constexpr void _count_codepoints(strf::width_preview<true>& wpreview)
     {
         auto limit = wpreview.remaining_width();
         if (limit > 0)
@@ -143,7 +143,7 @@ private:
         }
     }
 
-    constexpr void _calc_width
+    STRF_HD constexpr void _calc_width
         ( strf::width_preview<true>& wpreview
         , const strf::width_calculator<CharIn>& wcalc )
     {
@@ -180,7 +180,7 @@ private:
 };
 
 template<typename CharIn, typename CharOut>
-cv_string_printer<CharIn, CharOut>::cv_string_printer
+STRF_HD cv_string_printer<CharIn, CharOut>::cv_string_printer
     ( strf::detail::simple_string_view<CharIn> str
     , strf::encoding<CharIn> src_enc
     , strf::encoding<CharOut> dest_enc
@@ -197,7 +197,7 @@ cv_string_printer<CharIn, CharOut>::cv_string_printer
 }
 
 template<typename CharIn, typename CharOut>
-std::size_t cv_string_printer<CharIn, CharOut>::necessary_size() const
+STRF_HD std::size_t cv_string_printer<CharIn, CharOut>::necessary_size() const
 {
     if (_transcoder_eng)
     {
@@ -210,7 +210,7 @@ std::size_t cv_string_printer<CharIn, CharOut>::necessary_size() const
 }
 
 template<typename CharIn, typename CharOut>
-void cv_string_printer<CharIn, CharOut>::print_to
+STRF_HD void cv_string_printer<CharIn, CharOut>::print_to
     ( strf::basic_outbuf<CharOut>& ob ) const
 {
     if (_transcoder_eng != nullptr)
@@ -231,7 +231,7 @@ class fmt_cv_string_printer: public printer<CharOut>
 public:
 
     template <typename FPack, typename Preview>
-    fmt_cv_string_printer
+    STRF_HD fmt_cv_string_printer
         ( const FPack& fp
         , Preview& preview
         , strf::detail::simple_string_view<CharIn> str
@@ -249,7 +249,7 @@ public:
     }
 
     template <typename FPack, typename Preview>
-    fmt_cv_string_printer
+    STRF_HD fmt_cv_string_printer
         ( const FPack& fp
         , Preview& preview
         , strf::detail::simple_string_view<CharIn> str
@@ -265,7 +265,7 @@ public:
         _calc_size(preview);
     }
 
-    void print_to(strf::basic_outbuf<CharOut>& ob) const override;
+    STRF_HD void print_to(strf::basic_outbuf<CharOut>& ob) const override;
 
 private:
 
@@ -287,42 +287,42 @@ private:
     }
 
     template <bool RequiringWidth>
-    void _init( strf::width_preview<RequiringWidth>& );
+    STRF_HD void _init( strf::width_preview<RequiringWidth>& );
 
     template <bool RequiringWidth>
-    void _init( strf::width_preview<RequiringWidth>& preview
+    STRF_HD void _init( strf::width_preview<RequiringWidth>& preview
               , const strf::fast_width<CharIn>&)
     {
         _init<RequiringWidth>(preview);
     }
 
     template <bool RequiringWidth>
-    void _init( strf::width_preview<RequiringWidth>& preview
+    STRF_HD void _init( strf::width_preview<RequiringWidth>& preview
               , const strf::width_as_u32len<CharIn>&)
     {
         _init<RequiringWidth>(preview);
     }
 
     template <bool RequiringWidth>
-    void _init( strf::width_preview<RequiringWidth>& preview
+    STRF_HD void _init( strf::width_preview<RequiringWidth>& preview
               , const strf::width_calculator<CharIn>&);
 
     constexpr void _calc_size(strf::size_preview<false>&) const
     {
     }
 
-    void _calc_size(strf::size_preview<true>& preview) const;
+    STRF_HD void _calc_size(strf::size_preview<true>& preview) const;
 
-    void _write_str(strf::basic_outbuf<CharOut>& ob) const;
+    STRF_HD void _write_str(strf::basic_outbuf<CharOut>& ob) const;
 
-    void _write_fill
+    STRF_HD void _write_fill
         ( strf::basic_outbuf<CharOut>& ob
         , unsigned count ) const;
 };
 
 template <typename CharIn, typename CharOut>
 template <bool RequiringWidth>
-void fmt_cv_string_printer<CharIn, CharOut>::_init
+void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_init
     ( strf::width_preview<RequiringWidth>& preview )
 {
     auto limit = std::max( _afmt.width
@@ -345,7 +345,7 @@ void fmt_cv_string_printer<CharIn, CharOut>::_init
 
 template <typename CharIn, typename CharOut>
 template <bool RequiringWidth>
-void fmt_cv_string_printer<CharIn, CharOut>::_init
+void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_init
     ( strf::width_preview<RequiringWidth>& preview
     , const strf::width_calculator<CharIn>& wc)
 {
@@ -376,7 +376,7 @@ void fmt_cv_string_printer<CharIn, CharOut>::_init
 }
 
 template<typename CharIn, typename CharOut>
-void fmt_cv_string_printer<CharIn, CharOut>::_calc_size
+void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_calc_size
     ( strf::size_preview<true>& preview ) const
 {
     std::size_t size;
@@ -401,7 +401,7 @@ void fmt_cv_string_printer<CharIn, CharOut>::_calc_size
 
 
 template<typename CharIn, typename CharOut>
-void fmt_cv_string_printer<CharIn, CharOut>::print_to
+void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::print_to
     ( strf::basic_outbuf<CharOut>& ob ) const
 {
     if (_fillcount > 0)
@@ -437,7 +437,7 @@ void fmt_cv_string_printer<CharIn, CharOut>::print_to
 
 
 template<typename CharIn, typename CharOut>
-void fmt_cv_string_printer<CharIn, CharOut>::_write_str
+void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_write_str
     ( strf::basic_outbuf<CharOut>& ob ) const
 {
     if (_transcoder_eng)
@@ -456,7 +456,7 @@ void fmt_cv_string_printer<CharIn, CharOut>::_write_str
 }
 
 template<typename CharIn, typename CharOut>
-void fmt_cv_string_printer<CharIn, CharOut>::_write_fill
+void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_write_fill
     ( strf::basic_outbuf<CharOut>& ob
     , unsigned count ) const
 {
@@ -814,8 +814,8 @@ inline STRF_HD auto make_printer
 }
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
-inline strf::detail::cv_string_printer<CharIn, CharOut>
-STRF_HD make_printer( strf::rank<1>
+inline STRF_HD strf::detail::cv_string_printer<CharIn, CharOut>
+make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
             , strf::value_with_format< strf::detail::simple_string_view<CharIn>
@@ -826,8 +826,8 @@ STRF_HD make_printer( strf::rank<1>
 }
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
-inline strf::detail::cv_string_printer<CharIn, CharOut>
-STRF_HD make_printer( strf::rank<1>
+inline STRF_HD strf::detail::cv_string_printer<CharIn, CharOut>
+make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
             , strf::value_with_format< strf::detail::simple_string_view<CharIn>
@@ -838,8 +838,8 @@ STRF_HD make_printer( strf::rank<1>
 }
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
-inline strf::detail::fmt_cv_string_printer<CharIn, CharOut>
-STRF_HD make_printer( strf::rank<1>
+inline STRF_HD strf::detail::fmt_cv_string_printer<CharIn, CharOut>
+make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
             , strf::value_with_format< strf::detail::simple_string_view<CharIn>
@@ -853,8 +853,8 @@ STRF_HD make_printer( strf::rank<1>
 }
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
-inline strf::detail::fmt_cv_string_printer<CharIn, CharOut>
-STRF_HD make_printer( strf::rank<1>
+inline STRF_HD strf::detail::fmt_cv_string_printer<CharIn, CharOut>
+make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
             , strf::value_with_format< strf::detail::simple_string_view<CharIn>

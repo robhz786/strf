@@ -628,15 +628,20 @@ get_transcoder( strf::encoding<CharIn> src_encoding
 
 namespace detail {
 
-#ifndef __CUDA_ARCH__
 constexpr std::size_t global_mini_buffer32_size = 16;
 
 inline STRF_HD char32_t* global_mini_buffer32()
 {
+#ifdef __CUDA_ARCH__
+    // TODO: Try thinking of something smarter than this code...
+
+    asm("trap;"); // there is no equivalent of "static thread_local" in GPU device-side code
+    return nullptr;
+#else
     thread_local static char32_t buff[global_mini_buffer32_size];
     return buff;
-}
 #endif
+}
 
 template <typename CharOut>
 class buffered_encoder: public strf::basic_outbuf<char32_t>
