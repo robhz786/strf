@@ -519,10 +519,9 @@ void _print_amplified_integer_small_separator
         STRF_ASSERT(grp_size + 1 <= strf::min_size_after_recycle<CharT>());
         ob.ensure(grp_size + 1);
         auto it = ob.pos();
-        auto digits_2 = digits + grp_size;
-        std::copy(digits, digits_2, it);
+        std::copy_n(digits, grp_size, it);
         it[grp_size] = separator;
-        digits = digits_2;
+        digits += grp_size;
         ob.advance(grp_size + 1);
         num_digits -= grp_size;
         STRF_ASSERT(grp_it != groups);
@@ -532,7 +531,7 @@ void _print_amplified_integer_small_separator
     {
         STRF_ASSERT(num_digits <= strf::min_size_after_recycle<CharT>());
         ob.ensure(num_digits);
-        std::copy(digits, digits + num_digits, ob.pos());
+        std::copy_n(digits, num_digits, ob.pos());
         ob.advance(num_digits);
     }
     if (grp_size > num_digits)
@@ -574,9 +573,8 @@ void _print_amplified_integer_big_separator
         STRF_ASSERT(grp_size + separator_size <= strf::min_size_after_recycle<CharT>());
         ob.ensure(grp_size + separator_size);
         auto it = ob.pos();
-        auto digits_2 = digits + grp_size;
-        std::copy(digits, digits_2, it);
-        digits = digits_2;
+        std::copy_n(digits, grp_size, it);
+        digits += grp_size;
         ob.advance_to(enc.encode_char(it + grp_size, separator));
         num_digits -= grp_size;
         STRF_ASSERT(grp_it != groups);
@@ -586,7 +584,7 @@ void _print_amplified_integer_big_separator
     {
         STRF_ASSERT(num_digits <= strf::min_size_after_recycle<CharT>());
         ob.ensure(num_digits);
-        std::copy(digits, digits + num_digits, ob.pos());
+        std::copy_n(digits, num_digits, ob.pos());
         ob.advance(num_digits);
     }
     if (grp_size > num_digits)
