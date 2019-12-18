@@ -113,7 +113,7 @@ public:
         return convert_charset(enc);
     }
 
-    constexpr auto sani() const
+    constexpr auto sanitize_charset() const
     {
         using return_type = strf::fmt_replace< T
                                              , strf::no_cv_format<CharT>
@@ -121,7 +121,7 @@ public:
         return return_type{ static_cast<const T&>(*this) };
     }
 
-    constexpr auto sani(strf::encoding<CharT> enc) const
+    constexpr auto sanitize_charset(strf::encoding<CharT> enc) const
     {
         using return_type = strf::fmt_replace
             < T
@@ -132,6 +132,14 @@ public:
             { static_cast<const T&>(*this)
             , strf::tag<strf::sani_format_with_encoding<CharT>>{}
             , enc };
+    }
+    constexpr auto sani() const
+    {
+        return sanitize_charset();
+    }
+    constexpr auto sani(strf::encoding<CharT> enc) const
+    {
+        return sanitize_charset(enc);
     }
 };
 
