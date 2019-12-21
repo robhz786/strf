@@ -110,8 +110,14 @@ public:
     {
     }
 
-    void recycle() noexcept
+    STRF_HD void recycle() noexcept override
     {
+#ifdef __CUDA_ARCH__
+        asm("trap;");
+#endif
+        // This will only be compiled as device-side code;
+        // the host-side version simply doesn't have object
+        // code, so using it should fail linking
         auto p = this->pos();
         this->set_pos(_buf);
         if (this->good())
@@ -133,7 +139,7 @@ public:
         bool success;
     };
 
-    result finish()
+    STRF_HD result finish()
     {
         recycle();
         auto g = this->good();
@@ -207,17 +213,26 @@ private:
 template <typename CharT = char>
 inline auto to(std::FILE* destination)
 {
+#ifndef __CUDA_ARCH__
     return strf::destination_no_reserve
         < strf::detail::narrow_cfile_writer_creator<CharT> >
         (destination);
+#else
+    return 0;
+#endif
 }
 
 inline auto wto(std::FILE* destination)
 {
+#ifndef __CUDA_ARCH__
     return strf::destination_no_reserve
         < strf::detail::wide_cfile_writer_creator >
         (destination);
+#else
+    return 0;
+#endif
 }
+
 
 STRF_NAMESPACE_END
 

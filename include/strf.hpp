@@ -44,9 +44,8 @@
 // Output types
 //
 #include <strf/detail/output_types/char_ptr.hpp>
-//#ifndef __CUDA_ARCH__
-//#include <strf/detail/output_types/std_string.hpp>
-//#include <strf/detail/output_types/FILE.hpp>
+#include <strf/detail/output_types/std_string.hpp>
+#include <strf/detail/output_types/FILE.hpp>
 //#include <strf/detail/output_types/std_streambuf.hpp>
 //#endif
 
