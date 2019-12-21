@@ -97,7 +97,7 @@ constexpr STRF_HD bool are_constrainable_impl()
 }
 
 template <>
-constexpr bool are_constrainable_impl<>()
+constexpr STRF_HD bool are_constrainable_impl<>()
 {
     return true;
 }
