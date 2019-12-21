@@ -1,8 +1,6 @@
 #ifndef STRF_JOIN_HPP
 #define STRF_JOIN_HPP
 
-#warning "Shouldn't get here"
-
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -28,27 +26,27 @@ class split_pos_format_fn<true, T>
 {
 public:
 
-    constexpr split_pos_format_fn() noexcept = default;
-    constexpr split_pos_format_fn(const split_pos_format_fn&) noexcept = default;
-    constexpr explicit split_pos_format_fn(std::ptrdiff_t pos) noexcept
+    constexpr STRF_HD split_pos_format_fn() noexcept = default;
+    constexpr STRF_HD split_pos_format_fn(const split_pos_format_fn&) noexcept = default;
+    constexpr STRF_HD explicit split_pos_format_fn(std::ptrdiff_t pos) noexcept
         : _pos(pos)
     {
     }
 
     template <bool B, typename U>
-    constexpr explicit split_pos_format_fn
+    constexpr STRF_HD explicit split_pos_format_fn
         ( const split_pos_format_fn<B,U>& r ) noexcept
         : _pos(r.split_pos())
     {
     }
 
-    constexpr T&& split_pos(std::ptrdiff_t pos) && noexcept
+    constexpr STRF_HD T&& split_pos(std::ptrdiff_t pos) && noexcept
     {
         _pos = pos;
         return static_cast<T&&>(*this);
     }
 
-    constexpr std::ptrdiff_t split_pos() const noexcept
+    constexpr STRF_HD std::ptrdiff_t split_pos() const noexcept
     {
         return _pos;
     }
@@ -67,23 +65,23 @@ class split_pos_format_fn<false, T>
             , strf::split_pos_format<true> >;
 public:
 
-    constexpr split_pos_format_fn() noexcept = default;
-    constexpr split_pos_format_fn(const split_pos_format_fn&) noexcept = default;
+    constexpr STRF_HD split_pos_format_fn() noexcept = default;
+    constexpr STRF_HD split_pos_format_fn(const split_pos_format_fn&) noexcept = default;
 
     template <typename U>
-    constexpr explicit split_pos_format_fn
+    constexpr STRF_HD explicit split_pos_format_fn
         ( const strf::split_pos_format_fn<false,U>& ) noexcept
     {
     }
 
-    constexpr _adapted_derived_type split_pos(std::ptrdiff_t pos) const noexcept
+    constexpr STRF_HD _adapted_derived_type split_pos(std::ptrdiff_t pos) const noexcept
     {
         return { static_cast<const T&>(*this)
                , strf::tag<strf::split_pos_format<true>>{}
                , pos };
     }
 
-    constexpr std::ptrdiff_t split_pos() const noexcept
+    constexpr STRF_HD std::ptrdiff_t split_pos() const noexcept
     {
         return 0;
     }
@@ -104,7 +102,7 @@ struct aligned_join_t
     std::ptrdiff_t split_pos = 1;
 
     template <typename ... Args>
-    constexpr strf::value_with_format
+    constexpr STRF_HD strf::value_with_format
         < strf::detail::simple_tuple<strf::detail::opt_val_or_cref<Args>... >
         , strf::split_pos_format<true>
         , strf::alignment_format_q<true> >
@@ -474,7 +472,7 @@ make_printer( strf::rank<1>
 }
 
 template <typename ... Args>
-constexpr strf::value_with_format
+constexpr STRF_HD strf::value_with_format
     < strf::detail::simple_tuple<strf::detail::opt_val_or_cref<Args>...>
     , strf::split_pos_format<false>
     , strf::alignment_format_q<false> >
@@ -505,7 +503,7 @@ make_printer( strf::rank<1>
            , input.get_alignment_format_data() };
 }
 
-constexpr strf::aligned_join_t join_align( std::int16_t width
+constexpr STRF_HD strf::aligned_join_t join_align( std::int16_t width
                                          , strf::text_alignment align
                                          , char32_t fillchar = U' '
                                          , int split_pos = 0 )
@@ -513,25 +511,25 @@ constexpr strf::aligned_join_t join_align( std::int16_t width
     return {width, align, fillchar, split_pos};
 }
 
-constexpr strf::aligned_join_t
+constexpr STRF_HD strf::aligned_join_t
 join_center(std::int16_t width, char32_t fillchar = U' ') noexcept
 {
     return {width, strf::text_alignment::center, fillchar, 0};
 }
 
-constexpr strf::aligned_join_t
+constexpr STRF_HD strf::aligned_join_t
 join_left(std::int16_t width, char32_t fillchar = U' ') noexcept
 {
     return {width, strf::text_alignment::left, fillchar, 0};
 }
 
-constexpr strf::aligned_join_t
+constexpr STRF_HD strf::aligned_join_t
 join_right(std::int16_t width, char32_t fillchar = U' ') noexcept
 {
     return {width, strf::text_alignment::right, fillchar, 0};
 }
 
-constexpr strf::aligned_join_t
+constexpr STRF_HD strf::aligned_join_t
 join_split( std::int16_t width
           , char32_t fillchar
           , std::ptrdiff_t split_pos ) noexcept
@@ -539,7 +537,7 @@ join_split( std::int16_t width
     return {width, strf::text_alignment::split, fillchar, split_pos};
 }
 
-constexpr strf::aligned_join_t
+constexpr STRF_HD strf::aligned_join_t
 join_split(std::int16_t width, std::ptrdiff_t split_pos) noexcept
 {
     return {width, strf::text_alignment::split, U' ', split_pos};

@@ -35,7 +35,7 @@
 #include <strf/detail/input_types/float.hpp>
 #include <strf/detail/input_types/string.hpp>
 #include <strf/detail/input_types/cv_string.hpp>
-//#include <strf/detail/input_types/join.hpp>
+#include <strf/detail/input_types/join.hpp>
 //#include <strf/detail/input_types/facets_pack.hpp>
 #include <strf/detail/input_types/range.hpp>
 
