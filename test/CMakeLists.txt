@@ -37,14 +37,14 @@ foreach(
   string_writer
   )
 
-#  add_executable(test-${t}-header-only   ${t}.cpp)
-#  add_executable(test-${t}-static-lib    ${t}.cpp)
+  add_executable(test-${t}-header-only   ${t}.cpp)
+  add_executable(test-${t}-static-lib    ${t}.cpp)
 
-#  target_link_libraries(test-${t}-header-only   strf-header-only)
-#  target_link_libraries(test-${t}-static-lib    strf)
+  target_link_libraries(test-${t}-header-only   strf-header-only)
+  target_link_libraries(test-${t}-static-lib    strf)
 
-#  add_test(run-test-${t}-header-only   test-${t}-header-only)
-#  add_test(run-test-${t}-static-lib    test-${t}-static-lib)
+  add_test(run-test-${t}-header-only   test-${t}-header-only)
+  add_test(run-test-${t}-static-lib    test-${t}-static-lib)
 
 endforeach(t)
 
