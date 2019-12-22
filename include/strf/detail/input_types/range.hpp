@@ -54,7 +54,7 @@ using mp_replace_front
 
 template < typename Iterator
          , typename V  = typename std::iterator_traits<Iterator>::value_type
-         , typename VF = decltype( make_fmt( strf::rank<1>{}
+         , typename VF = decltype( make_fmt( strf::rank<5>{}
                                            , std::declval<const V&>()) ) >
 using range_with_format
     = strf::detail::mp_replace_front
@@ -63,7 +63,7 @@ using range_with_format
 template < typename Iterator
          , typename CharT
          , typename V  = typename std::iterator_traits<Iterator>::value_type
-         , typename VF = decltype( make_fmt( strf::rank<1>{}
+         , typename VF = decltype( make_fmt( strf::rank<5>{}
                                            , std::declval<const V&>()) ) >
 using sep_range_with_format
     = strf::detail::mp_replace_front
@@ -259,7 +259,7 @@ class fmt_range_printer: public printer<CharOut>
 {
     using _value_type = typename std::iterator_traits<ForwardIt>::value_type;
     using _value_fmt_type
-        = decltype( make_fmt( strf::rank<1>{}
+        = decltype( make_fmt( strf::rank<5>{}
                             , std::declval<const _value_type&>()) );
     using _value_fmt_type_adapted
         = typename _value_fmt_type::template replace_fmts<Fmts...>;
@@ -347,7 +347,7 @@ class fmt_sep_range_printer: public printer<CharT>
 {
     using _value_type = typename std::iterator_traits<ForwardIt>::value_type;
     using _value_fmt_type
-        = decltype( make_fmt( strf::rank<1>{}
+        = decltype( make_fmt( strf::rank<5>{}
                             , std::declval<const _value_type&>()) );
     using _value_fmt_type_adapted
         = typename _value_fmt_type::template replace_fmts<Fmts...>;

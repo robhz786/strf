@@ -44,9 +44,8 @@ public:
 
         const auto& self = static_cast<const _destination_type&>(*this);
 
-        using NewFPack = decltype
-            ( strf::pack( std::declval<const FPack&>()
-                                 , std::forward<FPE>(fpe) ...) );
+        using NewFPack = decltype( strf::pack( std::declval<const FPack&>()
+                                             , std::forward<FPE>(fpe) ...) );
 
         return DestinationTmpl<OutbufCreator, NewFPack>
         { self, detail::destination_tag{}, std::forward<FPE>(fpe) ...};
@@ -60,9 +59,8 @@ public:
 
         auto& self = static_cast<const _destination_type&>(*this);
 
-        using NewFPack = decltype
-            ( strf::pack( std::declval<FPack>()
-                                 , std::forward<FPE>(fpe) ...) );
+        using NewFPack = decltype( strf::pack( std::declval<FPack>()
+                                             , std::forward<FPE>(fpe) ...) );
 
         return DestinationTmpl<OutbufCreator, NewFPack>
         { std::move(self), detail::destination_tag{}, std::forward<FPE>(fpe) ...};

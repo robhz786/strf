@@ -443,9 +443,9 @@ struct quantity_format
 
 template <typename T>
 constexpr auto fmt(const T& value)
--> std::remove_cv_t<std::remove_reference_t<decltype(make_fmt(strf::rank<1>{}, value))>>
+-> std::remove_cv_t<std::remove_reference_t<decltype(make_fmt(strf::rank<5>{}, value))>>
 {
-    return make_fmt(strf::rank<1>{}, value);
+    return make_fmt(strf::rank<5>{}, value);
 }
 
 template <typename T>
