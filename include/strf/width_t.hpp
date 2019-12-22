@@ -56,7 +56,7 @@ public:
     {
     }
 
-    constexpr static width_t from_underlying(std::int32_t v)
+    constexpr static width_t from_underlying(std::int32_t v) noexcept
     {
         return {from_underlying_tag{}, v};
     }
@@ -81,74 +81,74 @@ public:
     {
         return _value != other._value;
     }
-    constexpr bool operator<(const width_t& other) const
+    constexpr bool operator<(const width_t& other) const noexcept
     {
         return _value < other._value;
     }
-    constexpr bool operator>(const width_t& other) const
+    constexpr bool operator>(const width_t& other) const noexcept
     {
         return _value > other._value;
     }
-    constexpr bool operator<=(const width_t& other) const
+    constexpr bool operator<=(const width_t& other) const noexcept
     {
         return _value <= other._value;
     }
-    constexpr bool operator>=(const width_t& other) const
+    constexpr bool operator>=(const width_t& other) const noexcept
     {
         return _value >= other._value;
     }
-    constexpr bool is_integral() const
+    constexpr bool is_integral() const noexcept
     {
         return (_value & 0xFFFF) == 0;
     }
-    constexpr std::int16_t floor() const
+    constexpr std::int16_t floor() const noexcept
     {
         return static_cast<std::uint16_t>
             ( static_cast<std::uint32_t>(_value) >> 16 );
     }
-    constexpr std::int16_t ceil() const
+    constexpr std::int16_t ceil() const noexcept
     {
         auto tmp = static_cast<std::uint32_t>(_value) + 0xFFFF;
         return static_cast<std::uint16_t>(tmp >> 16);
     }
-    constexpr std::int16_t round() const
+    constexpr std::int16_t round() const noexcept
     {
         std::int16_t i = floor();
         std::uint16_t f = static_cast<std::int16_t>(_value & 0xFFFF);
         constexpr std::uint16_t half = 0x8000;
         return i + (f > half || ((i & 1) && f == half));
     }
-    constexpr width_t operator-() const
+    constexpr width_t operator-() const noexcept
     {
         return {from_underlying_tag{}, -_value};
     }
-    constexpr width_t operator+() const
+    constexpr width_t operator+() const noexcept
     {
         return *this;
     }
-    constexpr width_t& operator+=(width_t other)
+    constexpr width_t& operator+=(width_t other) noexcept
     {
         _value += other._value;
         return *this;
     }
-    constexpr width_t& operator-=(width_t other)
+    constexpr width_t& operator-=(width_t other) noexcept
     {
         _value -= other._value;
         return *this;
     }
-    constexpr width_t& operator*=(std::int16_t m)
+    constexpr width_t& operator*=(std::int16_t m) noexcept
     {
         _value *= m;
         return *this;
     }
-    constexpr width_t& operator/=(std::int16_t d)
+    constexpr width_t& operator/=(std::int16_t d) noexcept
     {
         auto v = static_cast<std::uint64_t>(static_cast<std::uint32_t>(_value));
         auto tmp = (static_cast<std::int64_t>(v << 32) / d);
         _value = static_cast<std::int32_t>(static_cast<std::uint64_t>(tmp) >> 32);
         return *this;
     }
-    constexpr width_t& operator*=(width_t other)
+    constexpr width_t& operator*=(width_t other) noexcept
     {
         std::int64_t tmp
             = static_cast<std::int64_t>(_value)
@@ -157,7 +157,7 @@ public:
         _value = static_cast<std::int32_t>(tmp >> 16);
         return *this;
     }
-    constexpr width_t& operator/=(width_t other)
+    constexpr width_t& operator/=(width_t other) noexcept
     {
         auto v = static_cast<std::uint64_t>(static_cast<std::uint32_t>(_value));
         std::int64_t tmp = static_cast<std::int64_t>(v << 32) / other._value;
@@ -166,7 +166,7 @@ public:
         return *this;
     }
 
-    constexpr std::int32_t underlying_value() const
+    constexpr std::int32_t underlying_value() const noexcept
     {
         return _value;
     }
@@ -184,7 +184,7 @@ constexpr strf::width_t width_min
 
 
 constexpr strf::width_t checked_add( strf::width_t lhs
-                                            , strf::width_t rhs )
+                                   , strf::width_t rhs ) noexcept
 {
     std::int64_t ulhs = lhs.underlying_value();
     std::int64_t urhs = rhs.underlying_value();
@@ -201,7 +201,7 @@ constexpr strf::width_t checked_add( strf::width_t lhs
 }
 
 constexpr strf::width_t checked_subtract( strf::width_t lhs
-                                                 , std::int64_t rhs )
+                                        , std::int64_t rhs ) noexcept
 {
     std::int64_t ulhs = lhs.underlying_value();
     std::int64_t tmp = ulhs - rhs;
@@ -217,13 +217,12 @@ constexpr strf::width_t checked_subtract( strf::width_t lhs
 }
 
 constexpr strf::width_t checked_subtract( strf::width_t lhs
-                                                 , strf::width_t rhs )
+                                        , strf::width_t rhs ) noexcept
 {
     return checked_subtract(lhs, rhs.underlying_value());
 }
 
-constexpr strf::width_t checked_mul( strf::width_t w
-                                            , std::uint32_t x )
+constexpr strf::width_t checked_mul(strf::width_t w, std::uint32_t x)
 {
     std::int64_t tmp = x;
     tmp *= w.underlying_value();
@@ -238,115 +237,103 @@ constexpr strf::width_t checked_mul( strf::width_t w
     return strf::width_min;
 }
 
-constexpr bool operator==(strf::width_t lhs, std::int16_t rhs )
+constexpr bool operator==(strf::width_t lhs, std::int16_t rhs) noexcept
 {
     return lhs == strf::width_t{rhs};
 }
-constexpr bool operator==(std::int16_t lhs, strf::width_t rhs )
+constexpr bool operator==(std::int16_t lhs, strf::width_t rhs) noexcept
 {
     return strf::width_t{lhs} == rhs;
 }
-constexpr bool operator!=(strf::width_t lhs, std::int16_t rhs )
+constexpr bool operator!=(strf::width_t lhs, std::int16_t rhs) noexcept
 {
     return lhs != strf::width_t{rhs};
 }
-constexpr bool operator!=(std::int16_t lhs, strf::width_t rhs )
+constexpr bool operator!=(std::int16_t lhs, strf::width_t rhs) noexcept
 {
     return strf::width_t{lhs} != rhs;
 }
-constexpr bool operator<(strf::width_t lhs, std::int16_t rhs )
+constexpr bool operator<(strf::width_t lhs, std::int16_t rhs) noexcept
 {
     return lhs < strf::width_t{rhs};
 }
-constexpr bool operator<(std::int16_t lhs, strf::width_t rhs )
+constexpr bool operator<(std::int16_t lhs, strf::width_t rhs) noexcept
 {
     return strf::width_t{lhs} < rhs;
 }
-constexpr bool operator<=(strf::width_t lhs, std::int16_t rhs )
+constexpr bool operator<=(strf::width_t lhs, std::int16_t rhs) noexcept
 {
     return lhs <= strf::width_t{rhs};
 }
-constexpr bool operator<=(std::int16_t lhs, strf::width_t rhs )
+constexpr bool operator<=(std::int16_t lhs, strf::width_t rhs) noexcept
 {
     return strf::width_t{lhs} <= rhs;
 }
-constexpr bool operator>(strf::width_t lhs, std::int16_t rhs )
+constexpr bool operator>(strf::width_t lhs, std::int16_t rhs) noexcept
 {
     return lhs > strf::width_t{rhs};
 }
-constexpr bool operator>(std::int16_t lhs, strf::width_t rhs )
+constexpr bool operator>(std::int16_t lhs, strf::width_t rhs) noexcept
 {
     return strf::width_t{lhs} > rhs;
 }
-constexpr bool operator>=(strf::width_t lhs, std::int16_t rhs )
+constexpr bool operator>=(strf::width_t lhs, std::int16_t rhs) noexcept
 {
     return lhs >= strf::width_t{rhs};
 }
-constexpr bool operator>=(std::int16_t lhs, strf::width_t rhs )
+constexpr bool operator>=(std::int16_t lhs, strf::width_t rhs) noexcept
 {
     return strf::width_t{lhs} >= rhs;
 }
-constexpr strf::width_t operator+( strf::width_t lhs
-                                          , strf::width_t rhs )
+constexpr strf::width_t operator+(strf::width_t lhs, strf::width_t rhs) noexcept
 {
     return lhs += rhs;
 }
-constexpr strf::width_t operator+( std::int16_t lhs
-                                          , strf::width_t rhs )
+constexpr strf::width_t operator+(std::int16_t lhs, strf::width_t rhs) noexcept
 {
     return rhs += lhs;
 }
-constexpr strf::width_t operator+( strf::width_t lhs
-                                          , std::int16_t rhs )
+constexpr strf::width_t operator+(strf::width_t lhs, std::int16_t rhs) noexcept
 {
     return lhs += rhs;
 }
 
-constexpr strf::width_t operator-( strf::width_t lhs
-                                          , strf::width_t rhs )
+constexpr strf::width_t operator-(strf::width_t lhs, strf::width_t rhs) noexcept
 {
     return lhs -= rhs;
 }
-constexpr strf::width_t operator-( std::int16_t lhs
-                                          , strf::width_t rhs )
+constexpr strf::width_t operator-(std::int16_t lhs, strf::width_t rhs) noexcept
 {
     return strf::width_t(lhs) -= rhs;
 }
-constexpr strf::width_t operator-( strf::width_t lhs
-                                          , std::int16_t rhs )
+constexpr strf::width_t operator-(strf::width_t lhs, std::int16_t rhs) noexcept
 {
     return lhs -= rhs;
 }
 
 
-constexpr strf::width_t operator*( strf::width_t lhs
-                                          , strf::width_t rhs )
+constexpr strf::width_t operator*(strf::width_t lhs, strf::width_t rhs) noexcept
 {
     return lhs *= rhs;
 }
-constexpr strf::width_t operator*( std::int16_t lhs
-                                          , strf::width_t rhs )
+constexpr strf::width_t operator*(std::int16_t lhs, strf::width_t rhs) noexcept
 {
     return strf::width_t(lhs) *= rhs;
 }
-constexpr strf::width_t operator*( strf::width_t lhs
-                                          , std::int16_t rhs )
+constexpr strf::width_t operator*(strf::width_t lhs, std::int16_t rhs) noexcept
 {
     return lhs *= rhs;
 }
 
-constexpr strf::width_t operator/( strf::width_t lhs
-                                          , strf::width_t rhs )
+constexpr strf::width_t operator/(strf::width_t lhs, strf::width_t rhs) noexcept
 {
     return lhs /= rhs;
 }
-constexpr strf::width_t operator/( std::int16_t lhs
-                                          , strf::width_t rhs )
+constexpr strf::width_t operator/(std::int16_t lhs, strf::width_t rhs) noexcept
 {
     return strf::width_t(lhs) /= rhs;
 }
-constexpr strf::width_t operator/( strf::width_t lhs
-                                          , std::int16_t rhs )
+constexpr strf::width_t operator/(strf::width_t lhs, std::int16_t rhs) noexcept
 {
     return lhs /= rhs;
 }
