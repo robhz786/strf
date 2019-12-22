@@ -142,7 +142,7 @@ constexpr bool has_facet_v
     ::template has_facet_v<Cat, Tag>;
 
 template <typename Cat, typename Tag, typename FPE>
-constexpr STRF_HD STRF_HD decltype(auto) do_get_facet(const FPE& elm)
+constexpr STRF_HD decltype(auto) do_get_facet(const FPE& elm)
 {
     using traits = strf::detail::fpe_traits<FPE>;
     return traits::template get_facet<Cat, Tag>(elm);

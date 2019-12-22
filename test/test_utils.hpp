@@ -315,13 +315,8 @@ void input_tester<CharOut>::finish()
     }
     if (_expected != _result)
     {
-#ifndef __CUDACC__
         _test_failure( "\n expected: \"", strf::cv(_expected), '\"'
                      , "\n obtained: \"", strf::cv(_result), "\"\n" );
-#else
-        _test_failure( "\n expected: \"", _expected, '\"'
-                     , "\n obtained: \"", _result, "\"\n" );
-#endif
 
     }
     if(_wrongly_reserved())

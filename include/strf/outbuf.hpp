@@ -374,16 +374,16 @@ inline STRF_HD void write( strf::basic_outbuf<wchar_t>& ob
                  , const wchar_t* str )
 {
 #ifndef __CUDA_ARCH__
-	using std::wcslen;
+    using std::wcslen;
 #endif
-strf::detail::outbuf_write(ob, str, std::wcslen(str));
+    strf::detail::outbuf_write(ob, str, std::wcslen(str));
 }
 
 inline STRF_HD void write( strf::basic_outbuf_noexcept<wchar_t>& ob
                  , const wchar_t* str ) noexcept
 {
 #ifndef __CUDA_ARCH__
-	using std::wcslen;
+    using std::wcslen;
 #endif
     strf::detail::outbuf_write(ob, str, wcslen(str));
 }
@@ -484,13 +484,13 @@ class basic_cstr_writer final: public strf::basic_outbuf_noexcept<CharT>
 {
 public:
 
-	STRF_HD basic_cstr_writer(CharT* dest, CharT* dest_end)
+    STRF_HD basic_cstr_writer(CharT* dest, CharT* dest_end)
         : basic_outbuf_noexcept<CharT>(dest, dest_end - 1)
     {
         STRF_ASSERT(dest < dest_end);
     }
 
-	STRF_HD basic_cstr_writer(CharT* dest, std::size_t len)
+    STRF_HD basic_cstr_writer(CharT* dest, std::size_t len)
         : basic_outbuf_noexcept<CharT>(dest, dest + len - 1)
     {
         STRF_ASSERT(len != 0);
@@ -559,7 +559,7 @@ class discarded_outbuf final
 {
 public:
 
-	STRF_HD discarded_outbuf()
+    STRF_HD discarded_outbuf()
         : basic_outbuf_noexcept<CharT>
             { strf::outbuf_garbage_buf<CharT>()
             , strf::outbuf_garbage_buf_end<CharT>() }

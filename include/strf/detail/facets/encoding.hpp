@@ -628,20 +628,7 @@ get_transcoder( strf::encoding<CharIn> src_encoding
 
 namespace detail {
 
-constexpr std::size_t global_mini_buffer32_size = 16;
-
-inline STRF_HD char32_t* global_mini_buffer32()
-{
-#ifdef __CUDA_ARCH__
-    // TODO: Try thinking of something smarter than this code...
-
-    asm("trap;"); // there is no equivalent of "static thread_local" in GPU device-side code
-    return nullptr;
-#else
-    thread_local static char32_t buff[global_mini_buffer32_size];
-    return buff;
-#endif
-}
+constexpr const std::size_t mini_buffer32_size = 16;
 
 template <typename CharOut>
 class buffered_encoder: public strf::basic_outbuf<char32_t>
@@ -654,8 +641,8 @@ public:
         , strf::encoding_error err_hdl
         , strf::surrogate_policy allow_surr )
         : strf::basic_outbuf<char32_t>
-            ( strf::detail::global_mini_buffer32()
-            , strf::detail::global_mini_buffer32_size )
+            ( _mini_buffer
+            , strf::detail::mini_buffer32_size )
         , _enc(enc)
         , _ob(ob)
         , _err_hdl(err_hdl)
@@ -683,6 +670,7 @@ private:
     char32_t* _begin;
     strf::encoding_error _err_hdl;
     strf::surrogate_policy _allow_surr;
+    char32_t _mini_buffer[mini_buffer32_size];
 };
 
 template <typename CharOut>
@@ -707,8 +695,8 @@ public:
         ( strf::encoding<CharOut>& enc
         , strf::surrogate_policy allow_surr )
         : strf::basic_outbuf<char32_t>
-            ( strf::detail::global_mini_buffer32()
-            , strf::detail::global_mini_buffer32_size )
+            ( _mini_buffer
+            , strf::detail::mini_buffer32_size )
         , _enc(enc)
         , _allow_surr(allow_surr)
     {
@@ -729,6 +717,7 @@ private:
     char32_t* _begin;
     std::size_t _sum = 0;
     strf::surrogate_policy _allow_surr;
+    char32_t _mini_buffer[mini_buffer32_size];
 };
 
 template <typename CharOut>

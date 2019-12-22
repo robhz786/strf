@@ -71,7 +71,7 @@
 
 #if defined(__cpp_lib_string_view_)
 #define STRF_HAS_STD_STRING_VIEW
-#define STRF_CONSTEXPR_CHAR_TRAITS constexpr
+#define STRF_CONSTEXPR_CHAR_TRAITS inline
 #include <string_view>
 #else
 #include <string> // char_traits

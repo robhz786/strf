@@ -70,7 +70,7 @@ public:
     }
 
     constexpr STRF_HD strf::destination_no_reserve<OutbufCreator, FPack>
-    STRF_HD no_reserve() const &
+    no_reserve() const &
     {
         const auto& self = static_cast<const _destination_type&>(*this);
         return { strf::detail::destination_tag{}
@@ -88,7 +88,7 @@ public:
     }
 
     constexpr STRF_HD strf::destination_calc_size<OutbufCreator, FPack>
-    STRF_HD reserve_calc() const &
+    reserve_calc() const &
     {
         const auto& self = static_cast<const _destination_type&>(*this);
         return { strf::detail::destination_tag{}
