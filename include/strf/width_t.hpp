@@ -176,10 +176,10 @@ private:
     std::int32_t _value;
 };
 
-constexpr strf::width_t width_t_max
+constexpr strf::width_t width_max
     = strf::width_t::from_underlying(INT32_MAX);
 
-constexpr strf::width_t width_t_min
+constexpr strf::width_t width_min
     = strf::width_t::from_underlying(INT32_MIN);
 
 
@@ -195,9 +195,9 @@ constexpr strf::width_t checked_add( strf::width_t lhs
     }
     if (tmp > INT32_MAX)
     {
-        return strf::width_t_max;
+        return strf::width_max;
     }
-    return strf::width_t_min;
+    return strf::width_min;
 }
 
 constexpr strf::width_t checked_subtract( strf::width_t lhs
@@ -211,9 +211,9 @@ constexpr strf::width_t checked_subtract( strf::width_t lhs
     }
     if (tmp < INT32_MIN)
     {
-        return strf::width_t_min;
+        return strf::width_min;
     }
-    return strf::width_t_max;
+    return strf::width_max;
 }
 
 constexpr strf::width_t checked_subtract( strf::width_t lhs
@@ -233,9 +233,9 @@ constexpr strf::width_t checked_mul( strf::width_t w
     }
     if (tmp > INT32_MAX)
     {
-        return strf::width_t_max;
+        return strf::width_max;
     }
-    return strf::width_t_min;
+    return strf::width_min;
 }
 
 constexpr bool operator==(strf::width_t lhs, std::int16_t rhs )

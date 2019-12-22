@@ -113,7 +113,7 @@ private:
     const strf::encoding_error  _enc_err;
     const strf::char_with_format<CharT> _fmt;
     const strf::surrogate_policy  _allow_surr;
-    strf::width_t _content_width = strf::width_t_max;
+    strf::width_t _content_width = strf::width_max;
     std::int16_t _fillcount = 0;
 
     template <typename Category, typename FPack>
