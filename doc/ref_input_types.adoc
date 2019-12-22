@@ -14,16 +14,16 @@ http://www.boost.org/LICENSE_1_0.txt
 namespace strf {
 
 template <typename CharT, typename FPack>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer(rank<1>, const FPack&, const CharT*);
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>(rank<1>, const FPack&, const CharT*);
 
 template <typename CharT, typename FPack, typename Traits, typename Allocator>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>
     ( strf::rank<1>
     , const FPack&
     , const std::basic_string<CharT, Traits, Allocator>& );
 
 template <typename CharT, typename FPack, typename Traits>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>
     ( strf::rank<1>
     , const FPack&
     , const std::basic_string_view<CharT, Traits>& );
@@ -40,24 +40,24 @@ template <typename CharT>
 using string_with_format = {value_with_format}< /{asterisk} __implementation-defined__ {asterisk}/
                                             , {alignment_format} >;
 
-constexpr string_with_format<char>     make_fmt(rank<1>, const char* str);
-constexpr string_with_format<char8_t>  make_fmt(rank<1>, const char8_t* str);
-constexpr string_with_format<char16_t> make_fmt(rank<1>, const char16_t* str);
-constexpr string_with_format<char32_t> make_fmt(rank<1>, const char32_t* str);
-constexpr string_with_format<wchar_t>  make_fmt(rank<1>, const wchar_t* str);
+constexpr string_with_format<char>     <<make_fmt,make_fmt>>(rank<1>, const char* str);
+constexpr string_with_format<char8_t>  <<make_fmt,make_fmt>>(rank<1>, const char8_t* str);
+constexpr string_with_format<char16_t> <<make_fmt,make_fmt>>(rank<1>, const char16_t* str);
+constexpr string_with_format<char32_t> <<make_fmt,make_fmt>>(rank<1>, const char32_t* str);
+constexpr string_with_format<wchar_t>  <<make_fmt,make_fmt>>(rank<1>, const wchar_t* str);
 
 template <typename CharT, typename Traits, typename Allocator>
-auto string_with_format<CharT> make_fmt
+auto string_with_format<CharT> <<make_fmt,make_fmt>>
     ( rank<1>
     , const std::basic_string<CharT, Traits, Allocator>& str ) noexcept;
 
 template <typename CharT, typename Traits>
-auto string_with_format<CharT> make_fmt
+auto string_with_format<CharT> <<make_fmt,make_fmt>>
     ( rank<1>
     , std::basic_string_view<CharT, Traits>& str ) noexcept;
 
 template <typename CharT, typename FPack, typename CharIn>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>
     ( strf::rank<1>
     , const FPack&
     , const string_with_format<CharT>& );
@@ -107,11 +107,11 @@ cv_string_with_encoding<CharIn> cv
 namespace strf {
 
 template <typename CharOut, typename FPack, typename CharIn>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>
     ( rank<1>, const FPack&, cv_string<CharIn> );
 
 template <typename CharOut, typename FPack, typename CharIn>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>
     ( rank<1>, const FPack&, cv_string_with_encoding<CharIn> );
 
 } // namespace strf
@@ -139,7 +139,7 @@ using cv_string_with_format_and_encoding
 namespace strf {
 
 template <typename CharIn>
-cv_string_with_format<CharIn> make_fmt(rank<1>, cv_string<CharIn> cv_str) noexcept;
+cv_string_with_format<CharIn> <<make_fmt,make_fmt>>(rank<1>, cv_string<CharIn> cv_str) noexcept;
 
 } // namespace strf
 ----
@@ -185,13 +185,13 @@ cv_string_with_format_and_encoding<CharIn> fmt_cv
 namespace strf {
 
 template <typename CharOut, typename FPack, typename CharIn>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>
     ( strf::rank<1>
     , const FPack&
     , cv_string_with_format<CharIn> );
 
 template <typename CharOut, typename FPack, typename CharIn>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>
     ( strf::rank<1>
     , const FPack&
     , cv_string_with_format_and_encoding<CharIn> );
@@ -206,26 +206,26 @@ template <typename CharOut, typename FPack, typename CharIn>
 namespace strf {
 
 template <typename CharT, typename FPack>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer(rank<1>, const FPack&, CharT ch);
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>(rank<1>, const FPack&, CharT ch);
 
 template <typename CharT, typename FPack>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer(rank<1>, const FPack&, char ch);
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>(rank<1>, const FPack&, char ch);
 
 template <typename CharT, typename FPack>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer(rank<1>, const FPack&, char8_t ch);
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>(rank<1>, const FPack&, char8_t ch);
 
 template <typename CharT, typename FPack>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer(rank<1>, const FPack&, char16_t ch);
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>(rank<1>, const FPack&, char16_t ch);
 
 template <typename CharT, typename FPack>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer(rank<1>, const FPack&, char32_t ch);
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>(rank<1>, const FPack&, char32_t ch);
 
 template <typename CharT, typename FPack>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer(rank<1>, const FPack&, wchar_t ch);
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>(rank<1>, const FPack&, wchar_t ch);
 
 } // namespace strf
 ----
-NOTE: These `make_printer` overloads above emit a compilation error ( through a `static_assert`) if `decltype(ch)` is not `CharT`.
+NOTE: These <<make_printer,`make_printer`>> overloads above emit a compilation error ( through a `static_assert`) if `decltype(ch)` is not `CharT`.
 
 === Formatted single character
 
@@ -238,21 +238,21 @@ using char_with_format = {value_with_format}< char_tag<CharT>
                                           , <<quantity_format,quantity_format>>
                                           , <<alignment_format,alignment_format>> >;
 
-constexpr char_with_format<char8_t>  make_fmt(rank<1>, char8_t ch) noexcept;
-constexpr char_with_format<char8_t>  make_fmt(rank<1>, char ch) noexcept;
-constexpr char_with_format<char16_t> make_fmt(rank<1>, char16_t ch) noexcept;
-constexpr char_with_format<char32_t> make_fmt(rank<1>, char32_t ch) noexcept;
-constexpr char_with_format<wchar_t>  make_fmt(rank<1>, wchar_t ch) noexcept;
+constexpr char_with_format<char8_t>  <<make_fmt,make_fmt>>(rank<1>, char8_t ch) noexcept;
+constexpr char_with_format<char8_t>  <<make_fmt,make_fmt>>(rank<1>, char ch) noexcept;
+constexpr char_with_format<char16_t> <<make_fmt,make_fmt>>(rank<1>, char16_t ch) noexcept;
+constexpr char_with_format<char32_t> <<make_fmt,make_fmt>>(rank<1>, char32_t ch) noexcept;
+constexpr char_with_format<wchar_t>  <<make_fmt,make_fmt>>(rank<1>, wchar_t ch) noexcept;
 
 template <typename CharOut, typename FPack, typename CharIn>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer( strf::rank<1>
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>( strf::rank<1>
                                          , const FPack&
                                          , char_with_format<CharIn> );
 
 } // namespace strf
 ----
 
-NOTE: This `make_printer` overload emits a compilation error ( through a `static_assert` ) if `CharIn` is different from `CharOut`.
+NOTE: This <<make_printer,`make_printer`>> overload emits a compilation error ( through a `static_assert` ) if `CharIn` is different from `CharOut`.
 
 === Integer
 
@@ -261,28 +261,28 @@ NOTE: This `make_printer` overload emits a compilation error ( through a `static
 namespace strf {
 
 template <typename CharT, typename FPack>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer(rank<1>, const FPack&, short);
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>(rank<1>, const FPack&, short);
 
 template <typename CharT, typename FPack>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer(rank<1>, const FPack&, int);
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>(rank<1>, const FPack&, int);
 
 template <typename CharT, typename FPack>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer(rank<1>, const FPack&, long);
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>(rank<1>, const FPack&, long);
 
 template <typename CharT, typename FPack>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer(rank<1>, const FPack&, long long);
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>(rank<1>, const FPack&, long long);
 
 template <typename CharT, typename FPack>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer(rank<1>, const FPack&, unsigned short);
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>(rank<1>, const FPack&, unsigned short);
 
 template <typename CharT, typename FPack>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer(rank<1>, const FPack&, unsigned int);
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>(rank<1>, const FPack&, unsigned int);
 
 template <typename CharT, typename FPack>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer(rank<1>, const FPack&, unsigned long);
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>(rank<1>, const FPack&, unsigned long);
 
 template <typename CharT, typename FPack>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer(rank<1>, const FPack&, unsigned long long);
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>(rank<1>, const FPack&, unsigned long long);
 
 } // namespace strf
 ----
@@ -305,18 +305,18 @@ using int_with_format = strf::value_with_format
     , strf::{int_format}<Base>
     , strf::{alignment_format_q}<Align> >;
 
-int_with_format<short>      make_fmt(rank<1>, short);
-int_with_format<int>        make_fmt(rank<1>, int);
-int_with_format<long>       make_fmt(rank<1>, long);
-int_with_format<long long > make_fmt(rank<1>, long long);
+int_with_format<short>      <<make_fmt,make_fmt>>(rank<1>, short);
+int_with_format<int>        <<make_fmt,make_fmt>>(rank<1>, int);
+int_with_format<long>       <<make_fmt,make_fmt>>(rank<1>, long);
+int_with_format<long long > <<make_fmt,make_fmt>>(rank<1>, long long);
 
-int_with_format<unsigned short>      make_fmt(rank<1>, unsigned short);
-int_with_format<unsigned int>        make_fmt(rank<1>, unsigned int);
-int_with_format<unsigned long>       make_fmt(rank<1>, unsigned long);
-int_with_format<unsigned long long > make_fmt(rank<1>, unsigned long long);
+int_with_format<unsigned short>      <<make_fmt,make_fmt>>(rank<1>, unsigned short);
+int_with_format<unsigned int>        <<make_fmt,make_fmt>>(rank<1>, unsigned int);
+int_with_format<unsigned long>       <<make_fmt,make_fmt>>(rank<1>, unsigned long);
+int_with_format<unsigned long long > <<make_fmt,make_fmt>>(rank<1>, unsigned long long);
 
 template <typename CharT, typename FPack, typename IntT, int Base, bool Align>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer( strf::rank<1>
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>( strf::rank<1>
                                          , const FPack&
                                          , int_with_format<IntT, Base, Align> );
 } // namespace strf
@@ -329,14 +329,14 @@ template <typename CharT, typename FPack, typename IntT, int Base, bool Align>
 namespace strf {
 
 template <typename CharT, typename FPack>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer(rank<1>, const FPack&, float);
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>(rank<1>, const FPack&, float);
 
 template <typename CharT, typename FPack>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer(rank<1>, const FPack&, double);
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>(rank<1>, const FPack&, double);
 
 // long double not supported
 template <typename CharT, typename FPack>
-void make_printer(rank<1>, const FPack&, long double) = delete;
+void <<make_printer,make_printer>>(rank<1>, const FPack&, long double) = delete;
 
 } // namespace strf
 ----
@@ -352,22 +352,22 @@ using float_with_format = {value_with_format}< FloatT
                                            , {float_format}
                                            , {alignment_format_q}<Align> >;
 
-float_with_format<float,  false> make_fmt(rank<1>, float x);
-float_with_format<double, false> make_fmt(rank<1>, double x);
+float_with_format<float,  false> <<make_fmt,make_fmt>>(rank<1>, float x);
+float_with_format<double, false> <<make_fmt,make_fmt>>(rank<1>, double x);
 
 template <typename CharT, typename FPack, bool Align>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer( strf::rank<1>
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>( strf::rank<1>
                                          , const FPack&
                                          , float_with_format<float, Align> );
 
 template <typename CharT, typename FPack, bool Align>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer( strf::rank<1>
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>( strf::rank<1>
                                          , const FPack&
                                          , float_with_format<double, Align> );
 
 // long double not supported
 template <typename CharT, typename FPack, bool Align>
-void make_printer( strf::rank<1>
+void <<make_printer,make_printer>>( strf::rank<1>
                  , const FPack&
                  , float_with_format<long double, Align>) = delete;
 
@@ -400,15 +400,18 @@ range_p<const T*> range(T (&array)[N]);
 // make_printer
 
 template <typename CharT, typename FPack, typename Iterator>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer( strf::rank<1>
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>( strf::rank<1>
                                          , const FPack&
                                          , range_p<Iterator> r )
+
 } // namespace strf
 ----
 
 ==== With separator
 [source,cpp,subs=normal]
 ----
+namespace strf {
+
 template <typename Iterator, typename CharIn>
 struct sep_range_p { /{asterisk} __implementation-defined__ {asterisk}/ };
 
@@ -430,12 +433,13 @@ sep_range_p<const T*>  range(T (&array)[N], const CharT* separator);
 // make_printer
 
 template <typename CharT, typename FPack, typename Iterator>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer( strf::rank<1>
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>( strf::rank<1>
                                          , const FPack&
                                          , sep_range_p<Iterator, CharT> );
 } // namespace strf
 ----
 
+[[formatted_range]]
 === Formatted range
 
 ==== Without separator
@@ -446,14 +450,14 @@ namespace strf {
 
 template < typename Iterator
          , typename V  = typename std::iterator_traits<Iterator>::value_type
-         , typename VF = decltype(make_fmt(rank<1>{}, std::declval<const V&>())) >
+         , typename VF = decltype(<<make_fmt,make_fmt>>(rank<1>{}, std::declval<const V&>())) >
 using range_with_format
     = {boost_mp_replace_front}<VF, range_p<Iterator>>;
 
 // make_fmt
 
 template < typename Iterator >
-range_with_format<Iterator> make_fmt(rank<1>, range_p<Iterator>);
+range_with_format<Iterator> <<make_fmt,make_fmt>>(rank<1>, range_p<Iterator>);
 
 // fmt_range
 
@@ -473,26 +477,29 @@ template < typename CharT
          , typename FPack
          , typename Iterator
          , typename \... Fmts >
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>
     ( strf::rank<1>
     , const FPack&
     , const value_with_format< range_p<Iterator>, Fmts\... >& );
+
+} // namespace strf
 ----
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
+
 template < typename Iterator
          , typename CharT
          , typename V  = typename std::iterator_traits<Iterator>::value_type
-         , typename VF = decltype(make_fmt(rank<1>{}, std::declval<const V&>())) >
+         , typename VF = decltype(<<make_fmt,make_fmt>>(rank<1>{}, std::declval<const V&>())) >
 using range_with_format
     = {boost_mp_replace_front}<VF, sep_range_p<Iterator, CharT>>;
 
 // make_fmt
 
 template < typename Iterator, typename CharT >
-sep_range_with_format<Iterator> make_fmt(rank<1>, sep_range_p<Iterator, CharT>);
+sep_range_with_format<Iterator> <<make_fmt,make_fmt>>(rank<1>, sep_range_p<Iterator, CharT>);
 
 // fmt_range
 
@@ -516,17 +523,21 @@ template < typename CharT
          , typename FPack
          , typename Iterator
          , typename \... Fmts >
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>
     ( strf::rank<1>
     , const FPack&
     , const value_with_format<sep_range_p<Iterator, CharT>, Fmts\... >& )
+
 } // namespace strf
 ----
 
+[[join]]
 === Join
 
 [source,cpp,subs=normal]
 ----
+namespace strf {
+
 template <typename \... Args>
 struct joint_t {/{asterisk} __implementation-defined__ {asterisk}/};
 
@@ -535,13 +546,17 @@ join_t<Args...> join(const Args& ... args);
 
 template <typename CharT, typename FPack, typename... Args>
 {/{asterisk} __implementation-defined__ {asterisk}/}
-make_printer(rank<1>, const FPack&, const join_t<Args...>&);
+<<make_printer,make_printer>>(rank<1>, const FPack&, const join_t<Args...>&);
+
+} // namespace strf
 ----
 
+[[aligned_join]]
 === Aligned join
 
 [source,cpp,subs=normal]
 ----
+namespace strf {
 
 template <typename ... Args>
 struct aligned_joined_args {/{asterisk} __implementation-defined__ {asterisk}/};
@@ -587,16 +602,20 @@ constexpr aligned_join_t join_split(int width, int num_leading_args) noexcept
 }
 
 template <typename CharT, typename FPack, typename \... Args>
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>
     ( strf::rank<1>
     , const FPack&
     , const aligned_joined_args<Args\...>& );
+
+} // namespace strf
 ----
 
 === Facets pack
 
 [source,cpp,subs=normal]
 ----
+namespace strf {
+
 template < typename FPack, typename \... Args >
 struct inner_pack_with_args { /{asterisk} __implementation-defined__ {asterisk}/ };
 
@@ -617,10 +636,12 @@ template < typename CharT
          , typename FPack
          , typename InnerFPack
          , typename \... Args >
-/{asterisk} __implementation-defined__ {asterisk}/ make_printer
+/{asterisk} __implementation-defined__ {asterisk}/ <<make_printer,make_printer>>
     ( strf::rank<1>
     , const FPack&
     , const inner_pack_with_args<InnerFPack, Args\...>& );
+
+} // namespace strf
 ----
 
 

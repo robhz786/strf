@@ -66,6 +66,7 @@ public:
 
 } // namespace strf
 ----
+To-do
 
 [[Formatter]]
 === Type requirement _Formatter_
@@ -200,13 +201,15 @@ public:
 ----
 [[alignment_format_fn_constructors]]
 ===== Constructors
+====
 [source,cpp,subs=normal]
 ----
 constexpr alignment_format_fn() noexcept;
 ----
 ::
 Postconditions::: `get_alignmet_format_data() == {alignment_format_data}{}`
-
+====
+====
 [source,cpp,subs=normal]
 ----
 template <bool B, typename U>
@@ -216,9 +219,10 @@ constexpr explitic alignment_format_fn(const alignment_format_fn<B, U>& u) noexc
 Postconditions::: `get_alignmet_format_data() == u.get_alignmet_format_data()`
 Note::: This function only participates in overload resolution if 'Active' is `true`
         or `B` is `false`
-
+====
 [[alignment_format_fn_observers]]
 ===== Observers
+====
 [source,cpp,subs=normal]
 ----
 constexpr {alignment_format_data} get_alignmet_format_data() const noexcept;
@@ -227,27 +231,31 @@ constexpr {alignment_format_data} get_alignmet_format_data() const noexcept;
 Return value:::
 - `alignment_format_data{}`, when `Active` is `false`.
 - The value corresponding to the state of this object, when `Active` is `true`.
-
+====
+====
 [source,cpp]
 ----
 constexpr int width() const noexcept;
 ----
 ::
 Return value::: `get_alignmet_format_data().width`
-
+====
+====
 [source,cpp]
 ----
 constexpr text_alignment alignment() const noexcept;
 ----
 ::
 Return value::: `get_alignmet_format_data().alignment`
-
+====
+====
 [source,cpp]
 ----
 constexpr char32_t fill() const noexcept;
 ----
 ::
 Return value::: `get_alignmet_format_data().fill`
+====
 
 [[alignment_format_fn_format_functions]]
 ===== Format functions
@@ -257,7 +265,7 @@ Return value::: `get_alignmet_format_data().fill`
 //
 // In `alignment_format_fn<true, T>` the format functions modify
 // the object and return `static_cast<T&&>(this)`.
-
+====
 [source,cpp]
 ----
 constexpr /*return type */ operator<(int width) /* qualifier */ noexcept;
@@ -270,6 +278,8 @@ Return value:::
 - when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)} < width`.
 - when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
 
+====
+====
 [source,cpp]
 ----
 constexpr /*return type */ operator>(int width) /* qualifier */ noexcept;
@@ -281,7 +291,8 @@ Posconditions::: The return value `r` satisfies:
 Return value:::
 - when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)} > width`.
 - when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
-
+====
+====
 [source,cpp]
 ----
 constexpr /*return type */ operator^(int width) /* qualifier */ noexcept;
@@ -293,8 +304,8 @@ Posconditions::: The return value `r` satisfies:
 Return value:::
 - when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)} ^ width`.
 - when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
-[%hardbreaks]
-
+====
+====
 [source,cpp]
 ----
 constexpr /*return type */ operator%(int width) /* qualifier */ noexcept;
@@ -306,7 +317,8 @@ Posconditions::: The return value `r` satisfies:
 Return value:::
 - when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)} % width`.
 - when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
-
+====
+====
 [source,cpp]
 ----
 constexpr /*return type */ fill(char32_t ch) /* qualifier */ noexcept;
@@ -317,9 +329,11 @@ Posconditions::: The return value `r` satisfies:
 Return value:::
 - when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)}.fill(ch)`.
 - when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
+====
 
 [[alignment_format_data]]
 ==== `alignment_format_data`
+
 [source,cpp,subs=normal]
 ----
 namespace strf {
@@ -403,44 +417,51 @@ public:
 ----
 [[int_format_fn_observers]]
 ===== Observers
+====
 [source,cpp]
 ----
 constexpr int_format_data get_int_format_data() const noexcept;
 ----
 ::
 Return value::: The value corresponding to the state of this object.
-
+====
+====
 [source,cpp]
 ----
 constexpr unsigned precision() const noexcept;
 ----
 ::
 Return value::: `get_int_format_data().precision`
-
+====
+====
 [source,cpp]
 ----
 constexpr showpos() const noexcept;
 ----
 ::
 Return value::: `get_int_format_data().showpos`
-
+====
+====
 [source,cpp]
 ----
 constexpr showbase() const noexcept;
 ----
 ::
 Return value::: `get_int_format_data().showbase`
-
+====
+====
 [source,cpp]
 ----
 constexpr static base() noexcept;
 ----
 ::
 Return value::: `Base`
+====
 
 [[int_format_fn_format_functions]]
 ===== Format functions
 
+====
 [source,cpp]
 ----
 constexpr T&& p(unsigned precision) && noexcept;
@@ -448,7 +469,8 @@ constexpr T&& p(unsigned precision) && noexcept;
 ::
 Postconditions:::  `precision() == precision`
 Return value::: `std::move(static_cast<T&>(*this))`
-
+====
+====
 [source,cpp]
 ----
 constexpr T&& operator+() && noexcept;
@@ -456,7 +478,8 @@ constexpr T&& operator+() && noexcept;
 ::
 Postconditions:::  `showpos() == true`
 Return value::: `std::move(static_cast<T&>(*this))`
-
+====
+====
 [source,cpp]
 ----
 constexpr T&& operator~() && noexcept;
@@ -464,7 +487,8 @@ constexpr T&& operator~() && noexcept;
 ::
 Postconditions:::  `showbase() == true`
 Return value::: `std::move(static_cast<T&>(*this))`
-
+====
+====
 [source,cpp]
 ----
 constexpr /* see below */ hex() &&;     // hexadecimal base
@@ -483,6 +507,7 @@ Return type:::
 , where `NewBase` is equal to `10` in `dec()`, `16` in `hex()`, and `8` in `oct()`.
 Return value:::
 - `static_cast<ReturnType>(static_cast<T&>(*this))`, where `ReturnType` is the return type;
+====
 
 [[float_format]]
 === _Formatter_ `float_format`
@@ -534,22 +559,26 @@ public:
 
 [[float_format_fn_constructors]]
 ===== Constructors
+====
 [source,cpp,subs=normal]
 ----
 constexpr float_format_fn() noexcept;
 ----
 ::
 Postconditions::: `get_float_format_data() == {float_format_data}{}`
-
+====
+====
+[source,cpp,subs=normal]
 ----
 template <typename U>
 constexpr explicit float_format_fn(const float_format_fn<U>& other) noexcept;
 ----
 ::
 Postconditions::: `get_float_format_data() == other.get_float_format_data()`
-
+====
 [[float_format_fn_format_functions]]
 ===== Format functions
+====
 [source,cpp,subs=normal]
 ----
 constexpr T&& operator+() && noexcept;
@@ -557,7 +586,8 @@ constexpr T&& operator+() && noexcept;
 ::
 Postconditions::: `get_float_format_data().<<float_showpos,showpos>> == true`
 Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
-
+====
+====
 [source,cpp,subs=normal]
 ----
 constexpr T&& operator~() && noexcept;
@@ -565,7 +595,8 @@ constexpr T&& operator~() && noexcept;
 ::
 Postconditions::: `get_float_format_data().<<float_showpoint,showpoint>> == true`
 Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
-
+====
+====
 [source,cpp,subs=normal]
 ----
 constexpr T&& p(unsigned precision) && noexcept;
@@ -573,7 +604,8 @@ constexpr T&& p(unsigned precision) && noexcept;
 ::
 Postconditions::: `get_float_format_data().<<float_precision,precision>> == precision`
 Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
-
+====
+====
 [source,cpp,subs=normal]
 ----
 constexpr T&& gen() && noexcept;
@@ -581,7 +613,8 @@ constexpr T&& gen() && noexcept;
 ::
 Postconditions::: `get_float_format_data().<<float_notation,notation>> = float_notation::general`
 Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
-
+====
+====
 [source,cpp,subs=normal]
 ----
 constexpr T&& sci() && noexcept;
@@ -589,7 +622,8 @@ constexpr T&& sci() && noexcept;
 ::
 Postconditions::: `get_float_format_data().<<float_notation,notation>> = float_notation::scientific`
 Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
-
+====
+====
 [source,cpp,subs=normal]
 ----
 constexpr T&& fixed() && noexcept;
@@ -597,6 +631,7 @@ constexpr T&& fixed() && noexcept;
 ::
 Postconditions::: `get_float_format_data().<<float_notation,notation>> = float_notation::fixed`
 Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
+====
 
 [[float_format_data]]
 ==== `float_format_data`
@@ -680,13 +715,15 @@ public:
 } // namespace strf
 ----
 ===== Constructors
+====
 [source,cpp,subs=normal]
 ----
 constexpr quantity_format_fn() noexcept;
 ----
 ::
 Postconditions::: `count() == 1`
-
+====
+====
 [source,cpp,subs=normal]
 ----
 template <typename U>
@@ -694,8 +731,10 @@ constexpr explicit quantity_format_fn(const quantity_format_fn<U>& u) noexcept;
 ----
 ::
 Postconditions::: `count() == u.count()`
+====
 
 ===== Format functions
+====
 [source,cpp,subs=normal]
 ----
 constexpr T&& multi(std::size_t count) && noexcept
@@ -703,6 +742,7 @@ constexpr T&& multi(std::size_t count) && noexcept
 ::
 Postconditions::: `count() == count`
 Return value::: `static_cast<T&&>(*this)`
+====
 
 === Global format functions
 
