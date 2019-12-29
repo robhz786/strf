@@ -77,19 +77,23 @@ set_property(
 install(
   TARGETS strf-header-only strf strf-cuda
   EXPORT strf
-  DESTINATION "${STRF_INSTALL_SUBDIR}/$<CONFIG>")
+  LIBRARY DESTINATION "lib"
+  ARCHIVE DESTINATION "lib"
+  RUNTIME DESTINATION "bin"
+  INCLUDES DESTINATION "include")
 install(
   EXPORT strf
-  FILE strf.cmake
+  FILE strf-config.cmake
   NAMESPACE strf::
-  DESTINATION "${STRF_INSTALL_SUBDIR}/cmake"  )
+  DESTINATION "lib/cmake"  )
 
+# TODO: These should be pulled into the installation directory by some target...
 install(
   FILES include/strf.hpp
-  DESTINATION ./strf/ )
+  DESTINATION include )
 install(
   DIRECTORY include/strf
-  DESTINATION ./strf/
+  DESTINATION include
   USE_SOURCE_PERMISSIONS )
 
 if (STRF_BUILD_TESTS)
