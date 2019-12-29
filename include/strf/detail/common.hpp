@@ -196,11 +196,11 @@ inline STRF_HD std::size_t
 strlen( const char* str )
 {
 #ifndef __CUDA_ARCH__
-	return std::strlen(str);
+    return std::strlen(str);
 #else
-	const char* p { str };
-	while(*p != '\0') { ++p; }
-	return (p - str);
+    const char* p { str };
+    while(*p != '\0') { ++p; }
+    return (p - str);
 #endif
 }
 
@@ -208,25 +208,25 @@ strlen( const char* str )
 
 struct absolute_lowest_rank
 {
-    explicit STRF_HD absolute_lowest_rank() = default;
+        explicit constexpr STRF_HD absolute_lowest_rank() noexcept { };
 };
 
 template <std::size_t N>
 struct rank: rank<N - 1>
 {
-    explicit STRF_HD rank() = default;
+        explicit constexpr STRF_HD rank() noexcept { };
 };
 
 template <>
 struct rank<0>: absolute_lowest_rank
 {
-    explicit STRF_HD rank() = default;
+        explicit constexpr STRF_HD rank() noexcept { }
 };
 
 template <typename ... >
 struct tag
 {
-    explicit STRF_HD tag() = default;
+        explicit constexpr STRF_HD tag() noexcept { }
 };
 
 STRF_NAMESPACE_END

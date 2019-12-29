@@ -63,7 +63,10 @@ public:
         return {from_underlying_tag{}, v};
     }
 
-    constexpr STRF_HD width_t(const width_t&) noexcept = default;
+    constexpr STRF_HD width_t(const width_t& other) noexcept
+        : width_t(other._value)
+    {
+    }
 
     constexpr STRF_HD width_t& operator=(const width_t& other) noexcept
     {

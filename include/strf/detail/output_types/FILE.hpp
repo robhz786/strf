@@ -106,7 +106,7 @@ public:
 
 #endif // defined(STRF_NO_CXX17_COPY_ELISION)
 
-    ~wide_cfile_writer()
+    STRF_HD ~wide_cfile_writer()
     {
     }
 

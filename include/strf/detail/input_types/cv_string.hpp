@@ -81,7 +81,7 @@ public:
         , strf::encoding_error enc_err
         , strf::surrogate_policy allow_surr ) noexcept;
 
-    STRF_HD ~cv_string_printer() = default;
+        STRF_HD ~cv_string_printer() { }
 
     STRF_HD std::size_t necessary_size() const;
 

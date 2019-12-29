@@ -48,7 +48,7 @@ public:
     underlying_outbuf& STRF_HD operator=(const underlying_outbuf&) = delete;
     underlying_outbuf& STRF_HD operator=(underlying_outbuf&&) = delete;
 
-    virtual STRF_HD ~underlying_outbuf() = default;
+        virtual STRF_HD ~underlying_outbuf() { };
 
     STRF_HD char_type* pos() const noexcept
     {
@@ -143,7 +143,7 @@ public:
     STRF_HD basic_outbuf& operator=(const basic_outbuf&) = delete;
     STRF_HD basic_outbuf& operator=(basic_outbuf&&) = delete;
 
-    virtual STRF_HD ~basic_outbuf() = default;
+    virtual STRF_HD ~basic_outbuf() { };
 
     STRF_HD CharT* pos() const noexcept
     {
@@ -567,7 +567,9 @@ public:
         this->set_good(false);
     }
 
-    STRF_HD ~discarded_outbuf() = default;
+    STRF_HD ~discarded_outbuf()
+    {
+    }
 
     STRF_HD void recycle() noexcept override
     {

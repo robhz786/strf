@@ -240,9 +240,15 @@ class fpe_wrapper
 
 public:
 
-    constexpr STRF_HD fpe_wrapper(const fpe_wrapper&) = default;
+    constexpr STRF_HD fpe_wrapper(const fpe_wrapper& other)
+        : _facet(other._facet)
+    {
+    }
 
-    constexpr STRF_HD fpe_wrapper(fpe_wrapper&&) = default;
+    constexpr STRF_HD fpe_wrapper(fpe_wrapper&& other)
+        : _facet(other._facet)
+    {
+    }
 
     template
         < typename F = Facet
@@ -289,8 +295,15 @@ class fpe_wrapper<Rank, strf::constrained_fpe<Filter, FPE>>
 
 public:
 
-    constexpr STRF_HD fpe_wrapper(const fpe_wrapper&) = default;
-    constexpr STRF_HD fpe_wrapper(fpe_wrapper&&) = default;
+    constexpr STRF_HD fpe_wrapper(const fpe_wrapper& other)
+       : _fpe(other._fpe)
+    {
+    }
+
+    constexpr STRF_HD fpe_wrapper(fpe_wrapper&& other)
+        : _fpe(other._fpe)
+    {
+    }
 
     template
         < typename F = FPE
@@ -329,8 +342,14 @@ class fpe_wrapper<Rank, const FPE&>
 {
 public:
 
-    constexpr STRF_HD fpe_wrapper(const fpe_wrapper&) = default;
-    constexpr STRF_HD fpe_wrapper(fpe_wrapper&&) = default;
+    constexpr STRF_HD fpe_wrapper(const fpe_wrapper& other)
+        : _fpe(other._fpe)
+    {
+    }
+    constexpr STRF_HD fpe_wrapper(fpe_wrapper&& other)
+        : _fpe(other._fpe)
+    {
+    }
 
     constexpr STRF_HD fpe_wrapper(const FPE& fpe)
         : _fpe(fpe)
@@ -367,8 +386,14 @@ class fpe_wrapper<Rank, strf::facets_pack<FPE...>>
 
 public:
 
-    constexpr STRF_HD fpe_wrapper(const fpe_wrapper&) = default;
-    constexpr STRF_HD fpe_wrapper(fpe_wrapper&&) = default;
+    constexpr STRF_HD fpe_wrapper(const fpe_wrapper& other)
+        : _fp(other._fp)
+    {
+    }
+    constexpr STRF_HD fpe_wrapper(fpe_wrapper&& other)
+        : _fp(other._fp)
+    {
+    }
 
     template
         < typename FP = _fp_type
@@ -420,8 +445,14 @@ class facets_pack_base< strf::detail::tmp_list<FPEWrappers ...>
 
 public:
 
-    constexpr STRF_HD facets_pack_base(const facets_pack_base&) = default;
-    constexpr STRF_HD facets_pack_base(facets_pack_base&&) = default;
+    constexpr STRF_HD facets_pack_base(const facets_pack_base& other)
+        : FPEWrappers(fpe) ...
+    {
+    }
+    constexpr STRF_HD facets_pack_base(facets_pack_base&& other)
+        : FPEWrappers(fpe) ...
+    {
+    }
 
     template
         < typename WL = detail::tmp_list<FPE...>
@@ -478,9 +509,17 @@ template <std::size_t RankN>
 class facets_pack_base<RankN>
 {
 public:
-    constexpr STRF_HD facets_pack_base(const facets_pack_base&) = default;
-    constexpr STRF_HD facets_pack_base(facets_pack_base&&) = default;
-    constexpr STRF_HD facets_pack_base() = default;
+    constexpr STRF_HD facets_pack_base(const facets_pack_base&)
+    {
+    }
+
+    constexpr STRF_HD facets_pack_base(facets_pack_base&&)
+    {
+    }
+
+    constexpr STRF_HD facets_pack_base()
+    {
+    }
 
     constexpr STRF_HD void do_get_facet() const
     {
@@ -502,9 +541,21 @@ class facets_pack_base<RankN, TipFPE, OthersFPE...>
 
 public:
 
-    constexpr STRF_HD facets_pack_base(const facets_pack_base&) = default;
+    constexpr STRF_HD facets_pack_base(const facets_pack_base& other)
+        : strf::detail::fpe_wrapper
+        < strf::rank<RankN>, TipFPE >(other)
+        , strf::detail::facets_pack_base
+        < RankN + 1, OthersFPE...>(other)
+    {
+    }
 
-    constexpr STRF_HD facets_pack_base(facets_pack_base&& other) = default;
+    constexpr STRF_HD facets_pack_base(facets_pack_base&& other)
+        : strf::detail::fpe_wrapper
+        < strf::rank<RankN>, TipFPE >(other)
+        , strf::detail::facets_pack_base
+        < RankN + 1, OthersFPE...>(other)
+    {
+    }
 
     template< typename T = TipFPE
             , typename B = _base_others_fpe
@@ -619,9 +670,15 @@ public:
     {
     }
 
-    constexpr STRF_HD constrained_fpe(const constrained_fpe&) = default;
+    constexpr STRF_HD constrained_fpe(const constrained_fpe& other)
+        : _fpe(other._fpe)
+    {
+    }
 
-    constexpr STRF_HD constrained_fpe(constrained_fpe&& other) = default;
+    constexpr STRF_HD constrained_fpe(constrained_fpe&& other)
+        : _fpe(other._fpe)
+    {
+    }
 
     template
         < typename F = FPE
@@ -666,9 +723,15 @@ template <>
 class facets_pack<>
 {
 public:
-    constexpr STRF_HD facets_pack(const facets_pack&) = default;
-    constexpr STRF_HD facets_pack(facets_pack&&) = default;
-    constexpr STRF_HD facets_pack() = default;
+    constexpr STRF_HD facets_pack(const facets_pack&)
+    {
+    }
+    constexpr STRF_HD facets_pack(facets_pack&&)
+    {
+    }
+    constexpr STRF_HD facets_pack()
+    {
+    }
 
     STRF_HD facets_pack& operator=(const facets_pack&) = delete;
     STRF_HD facets_pack& operator=(facets_pack&&) = delete;
@@ -697,8 +760,15 @@ class facets_pack: private strf::detail::facets_pack_base_t<FPE...>
 
 public:
 
-    constexpr STRF_HD facets_pack(const facets_pack&) = default;
-    constexpr STRF_HD facets_pack(facets_pack&& other) = default;
+    constexpr STRF_HD facets_pack(const facets_pack& other)
+        : _base_type(other)
+    {
+    }
+
+    constexpr STRF_HD facets_pack(facets_pack&& other)
+        : _base_type(other)
+    {
+    }
 
     template
         < bool Dummy = true

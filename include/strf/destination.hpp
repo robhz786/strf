@@ -290,8 +290,26 @@ public:
     {
     }
 
-    constexpr STRF_HD destination_no_reserve(const destination_no_reserve&) = default;
-    constexpr STRF_HD destination_no_reserve(destination_no_reserve&&) = default;
+    constexpr STRF_HD destination_no_reserve(const destination_no_reserve& other)
+        : _outbuf_creator(other._outbuf_creator)
+        , _fpack(other._fpack)
+        , strf::detail::destination_common
+        < strf::destination_no_reserve
+        , OutbufCreator
+        , FPack
+        , strf::print_preview<false, false> >(other)
+    {
+    }
+    constexpr STRF_HD destination_no_reserve(destination_no_reserve&& other)
+        : _outbuf_creator(other._outbuf_creator)
+        , _fpack(other._fpack)
+        , strf::detail::destination_common
+        < strf::destination_no_reserve
+        , OutbufCreator
+        , FPack
+        , strf::print_preview<false, false> >(other)
+    {
+    }
 
     using _common::with;
     using _common::operator();
@@ -414,8 +432,30 @@ public:
     {
     }
 
-    constexpr STRF_HD destination_with_given_size(const destination_with_given_size&) = default;
-    constexpr STRF_HD destination_with_given_size(destination_with_given_size&&) = default;
+    constexpr STRF_HD destination_with_given_size(const destination_with_given_size& other)
+        : _size(other._size),
+         _outbuf_creator(other._outbuf_creator)
+        , _fpack(other._fpack)
+        , strf::detail::destination_common
+        < strf::destination_with_given_size
+        , OutbufCreator
+        , FPack
+        , strf::print_preview<false, false> >(other)
+    {
+    }
+
+    constexpr STRF_HD destination_with_given_size(destination_with_given_size&& other)
+        : _size(other._size),
+         _outbuf_creator(other._outbuf_creator)
+        , _fpack(other._fpack)
+        , strf::detail::destination_common
+        < strf::destination_with_given_size
+        , OutbufCreator
+        , FPack
+        , strf::print_preview<false, false> >(other)
+    {
+    }
+
 
     using _common::with;
     using _common::operator();
@@ -531,8 +571,27 @@ public:
     {
     }
 
-    constexpr STRF_HD destination_calc_size(const destination_calc_size&) = default;
-    constexpr STRF_HD destination_calc_size(destination_calc_size&&) = default;
+    constexpr STRF_HD destination_calc_size(const destination_calc_size& other)
+        : _outbuf_creator(other._outbuf_creator)
+        , _fpack(other._fpack)
+        , strf::detail::destination_common
+        < strf::destination_calc_size
+        , OutbufCreator
+        , FPack
+        , strf::print_preview<true, false> >(other)
+    {
+    }
+
+    constexpr STRF_HD destination_calc_size(destination_calc_size&& other)
+        : _outbuf_creator(other._outbuf_creator)
+        , _fpack(other._fpack)
+        , strf::detail::destination_common
+        < strf::destination_calc_size
+        , OutbufCreator
+        , FPack
+        , strf::print_preview<true, false> >(other)
+    {
+    }
 
     using _common::with;
     using _common::operator();

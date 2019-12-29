@@ -230,8 +230,13 @@ class width_preview<false>
 {
 public:
 
-    constexpr STRF_HD width_preview() noexcept = default;;
-    STRF_HD width_preview(const width_preview&) = delete;
+    constexpr STRF_HD width_preview() noexcept
+    {
+    }
+
+    STRF_HD width_preview(const width_preview& other) noexcept
+    {
+    }
 
     constexpr STRF_HD void subtract_width(strf::width_t)
     {
@@ -289,8 +294,13 @@ class size_preview<false>
 {
 public:
 
-    constexpr STRF_HD size_preview() noexcept = default;
-    size_preview(const size_preview&) = delete;
+    constexpr STRF_HD size_preview() noexcept
+    {
+    }
+
+    constexpr STRF_HD size_preview(const size_preview&) noexcept
+    {
+    }
 
     constexpr STRF_HD void add_size(std::size_t)
     {
@@ -320,8 +330,14 @@ public:
     {
     }
 
-    constexpr STRF_HD print_preview() noexcept = default;
-    constexpr STRF_HD print_preview(const print_preview&) = delete;
+    constexpr STRF_HD print_preview() noexcept
+    {
+    }
+    constexpr STRF_HD print_preview(const print_preview& other)
+        : strf::size_preview<SizeRequired>(other)
+        , strf::width_preview<WidthRequired>(other)
+    {
+    }
 };
 
 STRF_NAMESPACE_END

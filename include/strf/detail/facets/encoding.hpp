@@ -275,7 +275,8 @@ public:
     {
     }
 
-    constexpr STRF_HD transcoder(const transcoder&) noexcept = default;
+        constexpr STRF_HD transcoder(const transcoder& other) noexcept
+        : transcoder(other._impl) { }
 
     transcoder& operator=(const transcoder& cp) noexcept
     {
@@ -342,7 +343,10 @@ public:
     {
     }
 
-    STRF_HD encoding(const encoding&) = default;
+        STRF_HD encoding(const encoding& other)  noexcept
+        : _impl(other._impl)
+    {
+    }
 
     STRF_HD encoding& operator=(const encoding& cp)
     {
@@ -635,7 +639,7 @@ class buffered_encoder: public strf::basic_outbuf<char32_t>
 {
 public:
 
-	STRF_HD buffered_encoder
+    STRF_HD buffered_encoder
         ( strf::encoding<CharOut>& enc
         , strf::basic_outbuf<CharOut>& ob
         , strf::encoding_error err_hdl
@@ -691,7 +695,7 @@ class buffered_size_calculator: public strf::basic_outbuf<char32_t>
 {
 public:
 
-	STRF_HD buffered_size_calculator
+    STRF_HD buffered_size_calculator
         ( strf::encoding<CharOut>& enc
         , strf::surrogate_policy allow_surr )
         : strf::basic_outbuf<char32_t>

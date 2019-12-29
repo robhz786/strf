@@ -97,11 +97,21 @@ public:
     template <typename ... OhterFmts>
     using replace_fmts = strf::value_with_format<ValueType, OhterFmts ...>;
 
-    constexpr STRF_HD value_with_format(const value_with_format&) = default;
-    constexpr STRF_HD value_with_format(value_with_format&&) = default;
-
     explicit constexpr STRF_HD value_with_format(const ValueType& v)
         : _value(v)
+    {
+    }
+
+    constexpr STRF_HD value_with_format(const value_with_format& other)
+        : Fmts::template fn<value_with_format<ValueType, Fmts...>>(other)
+        ...
+        , _value(other._value)
+    {
+    }
+    constexpr STRF_HD value_with_format(value_with_format&& other)
+        : Fmts::template fn<value_with_format<ValueType, Fmts...>>(other)
+        ...
+        , _value(other._value)
     {
     }
 
@@ -241,7 +251,9 @@ class alignment_format_fn
 
 public:
 
-    constexpr STRF_HD alignment_format_fn() noexcept = default;
+    constexpr STRF_HD alignment_format_fn() noexcept
+    {
+    }
 
     constexpr STRF_HD explicit alignment_format_fn
         ( strf::alignment_format_data data) noexcept
@@ -324,7 +336,9 @@ class alignment_format_fn<false, T>
 
 public:
 
-    constexpr STRF_HD alignment_format_fn() noexcept = default;
+    constexpr STRF_HD alignment_format_fn() noexcept
+    {
+    }
 
     template <typename U>
     constexpr STRF_HD explicit alignment_format_fn(const alignment_format_fn<false, U>&) noexcept
@@ -413,7 +427,10 @@ public:
         : _count(count)
     {
     }
-    constexpr STRF_HD quantity_format_fn() noexcept = default;
+
+    constexpr STRF_HD quantity_format_fn() noexcept
+    {
+    }
 
     template <typename U>
     constexpr STRF_HD explicit quantity_format_fn(const quantity_format_fn<U>& u) noexcept

@@ -54,7 +54,7 @@ private:
 
 public:
 
-    constexpr STRF_HD int_format_fn()  noexcept = default;
+        constexpr STRF_HD int_format_fn()  noexcept { }
 
     template <typename U, int OtherBase>
     constexpr STRF_HD int_format_fn(const int_format_fn<U, OtherBase> & u) noexcept

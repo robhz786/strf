@@ -26,8 +26,14 @@ struct indexed_obj
     {
     }
 
-    constexpr STRF_HD indexed_obj(const indexed_obj&) = default;
-    constexpr STRF_HD indexed_obj(indexed_obj&&) = default;
+    constexpr STRF_HD indexed_obj(const indexed_obj& other)
+        : obj(other.obj)
+    {
+    }
+    constexpr STRF_HD indexed_obj(indexed_obj&& other)
+        : obj(other.obj)
+    {
+    }
 
     T obj;
 };
@@ -57,8 +63,14 @@ public:
     {
     }
 
-    constexpr STRF_HD simple_tuple_impl(const simple_tuple_impl&) = default;
-    constexpr STRF_HD simple_tuple_impl(simple_tuple_impl&&) = default;
+    constexpr STRF_HD simple_tuple_impl(const simple_tuple_impl& other)
+        : indexed_obj<I, T>(other) ...
+    {
+       }
+    constexpr STRF_HD simple_tuple_impl(simple_tuple_impl&& other)
+        : indexed_obj<I, T>(other) ...
+    {
+    }
 
     template <std::size_t J>
     constexpr STRF_HD const auto& get() const
@@ -139,8 +151,14 @@ struct indexed_printer
         : printer(make_printer<char_type>(strf::rank<5>(), fp, preview, arg))
     {
     }
-    STRF_HD indexed_printer(const indexed_printer& ) = default;
-    STRF_HD indexed_printer(indexed_printer&& ) = default;
+    STRF_HD indexed_printer(const indexed_printer& other)
+        : printer(other.printer)
+    {
+    }
+    STRF_HD indexed_printer(indexed_printer&& other)
+        : printer(other.printer)
+    {
+    }
 
     Printer printer;
 };
@@ -177,8 +195,14 @@ public:
     {
     }
 
-    STRF_HD printers_tuple_impl(const printers_tuple_impl& fp) = default;
-    STRF_HD printers_tuple_impl(printers_tuple_impl&& fp) = default;
+    STRF_HD printers_tuple_impl(const printers_tuple_impl& fp)
+        : detail::indexed_printer<I, Printers>(fp)...
+    {
+    }
+    STRF_HD printers_tuple_impl(printers_tuple_impl&& fp)
+        : detail::indexed_printer<I, Printers>(fp)...
+    {
+    }
 
     template <std::size_t J>
     STRF_HD const auto& get() const

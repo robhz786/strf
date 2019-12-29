@@ -26,10 +26,16 @@ class split_pos_format_fn<true, T>
 {
 public:
 
-    constexpr STRF_HD split_pos_format_fn() noexcept = default;
-    constexpr STRF_HD split_pos_format_fn(const split_pos_format_fn&) noexcept = default;
+        constexpr STRF_HD split_pos_format_fn() noexcept
+    {
+    };
+
     constexpr STRF_HD explicit split_pos_format_fn(std::ptrdiff_t pos) noexcept
         : _pos(pos)
+    {
+    }
+    constexpr STRF_HD split_pos_format_fn(const split_pos_format_fn& other) noexcept
+        : split_pos_format_fn(other._pos)
     {
     }
 
@@ -65,8 +71,9 @@ class split_pos_format_fn<false, T>
             , strf::split_pos_format<true> >;
 public:
 
-    constexpr STRF_HD split_pos_format_fn() noexcept = default;
-    constexpr STRF_HD split_pos_format_fn(const split_pos_format_fn&) noexcept = default;
+
+        constexpr STRF_HD split_pos_format_fn() noexcept { }
+    constexpr STRF_HD split_pos_format_fn(const split_pos_format_fn& other) noexcept { }
 
     template <typename U>
     constexpr STRF_HD explicit split_pos_format_fn

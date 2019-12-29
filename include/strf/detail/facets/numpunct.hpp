@@ -22,7 +22,8 @@ public:
         STRF_ASSERT(_groups_size != 0);
     }
 
-    constexpr STRF_HD monotonic_grouping_impl(const monotonic_grouping_impl&) = default;
+        constexpr STRF_HD monotonic_grouping_impl(const monotonic_grouping_impl& other) noexcept
+        : monotonic_grouping_impl(other._groups_size) { }
 
     STRF_HD unsigned get_thousands_sep_count(unsigned num_digits) const
     {
@@ -156,7 +157,7 @@ public:
 
     STRF_HD numpunct_base( unsigned first_group_size
                  , char32_t dec_point = U'.'
-                 , char32_t sep = U',' )
+                 , char32_t sep = U',' ) noexcept
         : _first_group_size(first_group_size)
         , _decimal_point(dec_point)
         , _thousands_sep(sep)
@@ -221,7 +222,8 @@ public:
 
 protected:
 
-    STRF_HD numpunct_base(const numpunct_base&) = default;
+        STRF_HD numpunct_base(const numpunct_base& other) noexcept
+        : numpunct_base(other._first_group_size, other._decimal_point, other._thousands_sep) { }
 
 private:
 
@@ -235,7 +237,7 @@ class numpunct: public strf::numpunct_base
 {
 public:
 
-	STRF_HD numpunct(unsigned first_group_size)
+    STRF_HD numpunct(unsigned first_group_size) noexcept
         : strf::numpunct_base(first_group_size)
     {}
 
@@ -243,7 +245,8 @@ public:
 
 protected:
 
-    STRF_HD numpunct(const numpunct&) = default;
+        STRF_HD numpunct(const numpunct& other) noexcept
+        : strf::numpunct_base(other) { }
 };
 
 template <int Base>
@@ -251,7 +254,7 @@ class no_grouping final: public strf::numpunct<Base>
 {
 public:
 
-	STRF_HD no_grouping()
+    STRF_HD no_grouping()
         : strf::numpunct<Base>((unsigned)-1)
     {
     }
@@ -293,7 +296,10 @@ public:
     {
     }
 
-    constexpr STRF_HD monotonic_grouping(const monotonic_grouping&) = default;
+        constexpr STRF_HD monotonic_grouping(const monotonic_grouping& other)
+        : strf::numpunct<Base>(other), _impl(other._impl)
+    {
+    }
 
     STRF_HD unsigned groups( unsigned num_digits
                    , std::uint8_t* groups_array ) const override
@@ -337,7 +343,7 @@ class str_grouping: public strf::numpunct<Base>
 {
 public:
 
-	str_grouping(std::string grouping)
+    str_grouping(std::string grouping)
         : strf::numpunct<Base>
             ( grouping.empty() || grouping.front() == '\0'
             ? (unsigned)-1
@@ -346,9 +352,9 @@ public:
     {
     }
 
-	str_grouping(const str_grouping&) = default;
+    str_grouping(const str_grouping&) = default;
 
-	str_grouping(str_grouping&& other) = default;
+    str_grouping(str_grouping&& other) = default;
 
     unsigned groups( unsigned num_digits
                    , std::uint8_t* groups_array ) const override
