@@ -482,7 +482,7 @@ void tests()
 
         auto result = strf::to_string
             .with(xxx::base64_facet{50, {'\n', '\0'}})
-            (strf::fmt_range(vec, "------------\n").indentation(4));
+            (strf::fmt_range_sep(vec, "------------\n").indentation(4));
 
         auto expected =
             "    YWJj\n"
