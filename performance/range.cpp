@@ -50,9 +50,9 @@ int main()
         clobber();
     }
     std::cout << "\n               Range with separator\n";
-    PRINT_BENCHMARK("strf::to(dest) (strf::range_sep(array_1_to_6, \"; \"))")
+    PRINT_BENCHMARK("strf::to(dest) (strf::separated_range(array_1_to_6, \"; \"))")
     {
-        strf::to(dest) (strf::range_sep(array_1_to_6, "; "));
+        strf::to(dest) (strf::separated_range(array_1_to_6, "; "));
         clobber();
     }
     PRINT_BENCHMARK("/* loop by hand */")
@@ -74,9 +74,9 @@ int main()
     }
 
     std::cout << "\n               Formatted range with separator\n";
-    PRINT_BENCHMARK("strf::to(dest) (+strf::fmt_range_sep(array_1_to_6, \"; \"))")
+    PRINT_BENCHMARK("strf::to(dest) (+strf::fmt_separated_range(array_1_to_6, \"; \"))")
     {
-        strf::to(dest) (strf::range_sep(array_1_to_6, "; "));
+        strf::to(dest) (strf::separated_range(array_1_to_6, "; "));
         clobber();
     }
     PRINT_BENCHMARK("/* loop by hand */")

@@ -35,12 +35,12 @@ void samples()
     // ranges
     int array[] = {20, 30, 40};
     const char* separator = " / ";
-    s = strf::to_string( "--[", strf::range_sep(array, separator), "]--");
+    s = strf::to_string( "--[", strf::separated_range(array, separator), "]--");
     assert(s == "--[20 / 30 / 40]--");
 
     // range with formatting
     s = strf::to_string( "--["
-                       , ~strf::hex(strf::range_sep(array, separator)).p(4)
+                       , ~strf::hex(strf::separated_range(array, separator)).p(4)
                        , "]--");
     assert(s == "--[0x0014 / 0x001e / 0x0028]--");
 

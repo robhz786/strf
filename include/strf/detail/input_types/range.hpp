@@ -565,7 +565,7 @@ inline auto range(ForwardIt begin, ForwardIt end)
 }
 
 template <typename ForwardIt, typename CharT>
-inline auto range_sep(ForwardIt begin, ForwardIt end, const CharT* sep)
+inline auto separated_range(ForwardIt begin, ForwardIt end, const CharT* sep)
 {
     std::size_t sep_len = std::char_traits<CharT>::length(sep);
     return strf::sep_range_p<ForwardIt, CharT>
@@ -586,7 +586,7 @@ inline auto range(T (&array)[N])
 }
 
 template <typename Range, typename CharT>
-inline auto range_sep(const Range& range, const CharT* sep)
+inline auto separated_range(const Range& range, const CharT* sep)
 {
     std::size_t sep_len = std::char_traits<CharT>::length(sep);
     using namespace std;
@@ -596,7 +596,7 @@ inline auto range_sep(const Range& range, const CharT* sep)
 }
 
 template <typename T, std::size_t N, typename CharT>
-inline auto range_sep(T (&array)[N], const CharT* sep)
+inline auto separated_range(T (&array)[N], const CharT* sep)
 {
     std::size_t sep_len = std::char_traits<CharT>::length(sep);
     return strf::sep_range_p<const T*, CharT>
@@ -610,7 +610,7 @@ inline auto fmt_range(ForwardIt begin, ForwardIt end)
 }
 
 template <typename ForwardIt, typename CharT>
-inline auto fmt_range_sep(ForwardIt begin, ForwardIt end, const CharT* sep)
+inline auto fmt_separated_range(ForwardIt begin, ForwardIt end, const CharT* sep)
 {
     std::size_t sep_len = std::char_traits<CharT>::length(sep);
     return strf::sep_range_with_format<ForwardIt, CharT>
@@ -637,7 +637,7 @@ inline auto fmt_range(T (&array)[N])
 template < typename Range
          , typename CharT
          , typename It = typename Range::const_iterator >
-inline auto fmt_range_sep(const Range& range, const CharT* sep)
+inline auto fmt_separated_range(const Range& range, const CharT* sep)
 {
     std::size_t sep_len = std::char_traits<CharT>::length(sep);
     using namespace std;
@@ -647,7 +647,7 @@ inline auto fmt_range_sep(const Range& range, const CharT* sep)
 }
 
 template <typename T, std::size_t N, typename CharT>
-inline auto fmt_range_sep(T (&array)[N], const CharT* sep)
+inline auto fmt_separated_range(T (&array)[N], const CharT* sep)
 {
     std::size_t sep_len = std::char_traits<CharT>::length(sep);
     using namespace std;

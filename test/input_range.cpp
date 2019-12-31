@@ -80,10 +80,10 @@ int main()
     {
         char vec[] = {'a', 'b', 'c', 'd'};
         TEST("abcd") (strf::range(vec));
-        TEST("a, b, c, d") (strf::range_sep(vec,  ", "));
+        TEST("a, b, c, d") (strf::separated_range(vec,  ", "));
         TEST("abc") (strf::range(vec,  vec + 3));
-        TEST("a, b, c") (strf::range_sep(vec,  vec + 3, ", "));
-        
+        TEST("a, b, c") (strf::separated_range(vec,  vec + 3, ", "));
+
         TEST("aaabbbcccddd") (strf::fmt_range(vec).multi(3));
         TEST("  --aaabbbcccddd--")
             ( strf::join_right(18)("--", strf::fmt_range(vec).multi(3), "--") );
@@ -100,42 +100,42 @@ int main()
     {   // with separator
         int vec [3] = {11, 22, 33};
 
-        TEST( "11, 22, 33") (strf::range_sep(vec,  ", "));
-        TEST( "11, 22, 33") (strf::range_sep(vec, vec + 3, ", "));
-        TEST(u"+11, +22, +33") (+strf::fmt_range_sep(vec,  u", "));
-        TEST(u"+11, +22, +33") (+strf::fmt_range_sep(vec, vec + 3, u", ")); 
+        TEST( "11, 22, 33") (strf::separated_range(vec,  ", "));
+        TEST( "11, 22, 33") (strf::separated_range(vec, vec + 3, ", "));
+        TEST(u"+11, +22, +33") (+strf::fmt_separated_range(vec,  u", "));
+        TEST(u"+11, +22, +33") (+strf::fmt_separated_range(vec, vec + 3, u", "));
 
-        TEST( "0xb, 0x16, 0x21") (~strf::hex(strf::range_sep(vec,   ", ")));
-        TEST(u"0xb, 0x16, 0x21") (~strf::hex(strf::range_sep(vec,   u", ")));
+        TEST( "0xb, 0x16, 0x21") (~strf::hex(strf::separated_range(vec,   ", ")));
+        TEST(u"0xb, 0x16, 0x21") (~strf::hex(strf::separated_range(vec,   u", ")));
 
         TEST( "  11, 22, 33")
-            (strf::join_right(12)(strf::range_sep(vec,  ", ")));
+            (strf::join_right(12)(strf::separated_range(vec,  ", ")));
         TEST( "  --11, 22, 33--")
-            (strf::join_right(16)("--", strf::range_sep(vec,  ", "), "--"));
+            (strf::join_right(16)("--", strf::separated_range(vec,  ", "), "--"));
 
         TEST( "   0xb, 0x16, 0x21")
-             (strf::join_right(18)(~strf::hex(strf::range_sep(vec, ", "))));
+             (strf::join_right(18)(~strf::hex(strf::separated_range(vec, ", "))));
         TEST( "--0xb, 0x16, 0x21--")
-             (strf::join_right(8)("--", ~strf::hex(strf::range_sep(vec, ", ")), "--"));
+             (strf::join_right(8)("--", ~strf::hex(strf::separated_range(vec, ", ")), "--"));
         TEST( "--11, 22, 33--")
-             (strf::join_right(8)("--", strf::range_sep(vec, ", "), "--"));
+             (strf::join_right(8)("--", strf::separated_range(vec, ", "), "--"));
         TEST( "--11, 22, 33--")
-             (strf::join_right(7)("--", strf::range_sep(vec, ", "), "--"));
+             (strf::join_right(7)("--", strf::separated_range(vec, ", "), "--"));
     }
     {
         std::array<int, 3> stl_array = {11, 22, 33};
         TEST( "112233")        (strf::range(stl_array));
-        TEST( "11, 22, 33")    (strf::range_sep(stl_array,  ", "));
-        TEST(u"+11+22+33")     (+strf::fmt_range(stl_array));     
-        TEST(u"+11, +22, +33") (+strf::fmt_range_sep(stl_array,  u", "));     
+        TEST( "11, 22, 33")    (strf::separated_range(stl_array,  ", "));
+        TEST(u"+11+22+33")     (+strf::fmt_range(stl_array));
+        TEST(u"+11, +22, +33") (+strf::fmt_separated_range(stl_array,  u", "));
     }
     {   // range of only one element with separator
         int vec [1] = {11};
 
-        TEST( "11") (strf::range_sep(vec,  ", "));
-        TEST(u"+11") (+strf::fmt_range_sep(vec,  u", "));
+        TEST( "11") (strf::separated_range(vec,  ", "));
+        TEST(u"+11") (+strf::fmt_separated_range(vec,  u", "));
 
-        TEST( "0xb") (~strf::hex(strf::range_sep(vec,   ", ")));
+        TEST( "0xb") (~strf::hex(strf::separated_range(vec,   ", ")));
     }
 
     return boost::report_errors();

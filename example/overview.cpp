@@ -39,21 +39,21 @@ void second_example()
     //
     int array[] = {20, 30, 40};
     const char* separator = " / ";
-    s = strf::to_string( "--[", strf::range_sep(array, separator), "]--");
+    s = strf::to_string( "--[", strf::separated_range(array, separator), "]--");
     assert(s == "--[20 / 30 / 40]--");
 
     //
     // range with formatting
     //
     s = strf::to_string( "--["
-                       , ~strf::hex(strf::range_sep(array, separator)).p(4)
+                       , ~strf::hex(strf::separated_range(array, separator)).p(4)
                        , "]--");
     assert(s == "--[0x0014 / 0x001e / 0x0028]--");
 
     // or
 
     s = strf::to_string( "--["
-                       , ~strf::fmt_range_sep(array, separator).hex().p(4)
+                       , ~strf::fmt_separated_range(array, separator).hex().p(4)
                        , "]--");
     assert(s == "--[0x0014 / 0x001e / 0x0028]--");
 
@@ -73,7 +73,7 @@ void second_example()
     s = strf::to_string( strf::join_right(30, U'.')
                            ( "{"
                            , strf::join_center(20)( "["
-                                                  , strf::range_sep(array, ", ")
+                                                  , strf::separated_range(array, ", ")
                                                   , "]" )
                            , "}" ));
     assert(s == "........{    [10, 20, 30]    }");
