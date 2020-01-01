@@ -890,6 +890,8 @@ assert(str == "[11, 22, 33]");
 
 [source,cpp]
 ----
+namespace strf {
+
 template <typename Range>
 /*...*/ fmt_range(const Range& r);
 

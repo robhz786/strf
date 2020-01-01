@@ -21,7 +21,7 @@ struct range_p
 };
 
 template <typename ForwardIt, typename CharIn>
-struct sep_range_p
+struct separated_range_p
 {
     using iterator = ForwardIt;
     using value_type = typename std::iterator_traits<ForwardIt>::value_type;
@@ -67,7 +67,7 @@ template < typename Iterator
                                            , std::declval<const V&>()) ) >
 using sep_range_with_format
     = strf::detail::mp_replace_front
-        < VF, strf::sep_range_p<Iterator, CharT> >;
+        < VF, strf::separated_range_p<Iterator, CharT> >;
 
 namespace detail {
 
@@ -354,11 +354,11 @@ class fmt_sep_range_printer: public printer<CharT>
 
     using _fmt_type = detail::mp_replace_front
         < _value_fmt_type
-        , strf::sep_range_p<ForwardIt, CharT> >;
+        , strf::separated_range_p<ForwardIt, CharT> >;
 
     using _fmt_type_adapted = detail::mp_replace_front
         < _value_fmt_type_adapted
-        , strf::sep_range_p<ForwardIt, CharT> >;
+        , strf::separated_range_p<ForwardIt, CharT> >;
 
 public:
 
@@ -503,7 +503,7 @@ inline strf::detail::sep_range_printer<CharOut, FPack, ForwardIt>
 make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
-            , strf::sep_range_p<ForwardIt, CharOut> r )
+            , strf::separated_range_p<ForwardIt, CharOut> r )
 {
     return {fp, preview, r.begin, r.end, r.sep_begin, r.sep_len};
 }
@@ -530,13 +530,12 @@ template < typename CharOut
          , typename Preview
          , typename ForwardIt
          , typename ... Fmts >
-inline strf::detail::fmt_sep_range_printer< CharOut, FPack
-                                                   , ForwardIt , Fmts... >
+inline strf::detail::fmt_sep_range_printer<CharOut, FPack, ForwardIt , Fmts...>
 make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
             , const strf::value_with_format
-                < strf::sep_range_p<ForwardIt, CharOut>
+                < strf::separated_range_p<ForwardIt, CharOut>
                 , Fmts ... >& fmt )
 {
     return {fp, preview, fmt};
@@ -552,7 +551,7 @@ make_fmt(strf::rank<1>, strf::range_p<ForwardIt> r)
 template <typename ForwardIt, typename CharT>
 inline strf::sep_range_with_format<ForwardIt, CharT>
 make_fmt( strf::rank<1>
-        , strf::sep_range_p<ForwardIt, CharT> r )
+        , strf::separated_range_p<ForwardIt, CharT> r )
 {
     return strf::sep_range_with_format<ForwardIt, CharT>
         {{r.begin, r.end, r.sep_begin, r.sep_len}};
@@ -568,7 +567,7 @@ template <typename ForwardIt, typename CharT>
 inline auto separated_range(ForwardIt begin, ForwardIt end, const CharT* sep)
 {
     std::size_t sep_len = std::char_traits<CharT>::length(sep);
-    return strf::sep_range_p<ForwardIt, CharT>
+    return strf::separated_range_p<ForwardIt, CharT>
         {begin, end, sep, sep_len};
 }
 
@@ -590,7 +589,7 @@ inline auto separated_range(const Range& range, const CharT* sep)
 {
     std::size_t sep_len = std::char_traits<CharT>::length(sep);
     using namespace std;
-    return strf::sep_range_p
+    return strf::separated_range_p
         <typename Range::const_iterator, CharT>
         {begin(range), end(range), sep, sep_len};
 }
@@ -599,7 +598,7 @@ template <typename T, std::size_t N, typename CharT>
 inline auto separated_range(T (&array)[N], const CharT* sep)
 {
     std::size_t sep_len = std::char_traits<CharT>::length(sep);
-    return strf::sep_range_p<const T*, CharT>
+    return strf::separated_range_p<const T*, CharT>
         {&array[0], &array[0] + N, sep, sep_len};
 }
 
@@ -641,7 +640,7 @@ inline auto fmt_separated_range(const Range& range, const CharT* sep)
 {
     std::size_t sep_len = std::char_traits<CharT>::length(sep);
     using namespace std;
-    strf::sep_range_p<It, CharT> r
+    strf::separated_range_p<It, CharT> r
     { begin(range), end(range), sep, sep_len };
     return strf::sep_range_with_format<It, CharT>{r};
 }
