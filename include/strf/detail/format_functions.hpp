@@ -470,6 +470,13 @@ constexpr auto oct(const T& value)
 }
 
 template <typename T>
+constexpr auto bin(const T& value)
+-> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).bin())>>
+{
+    return fmt(value).bin();
+}
+
+template <typename T>
 constexpr auto left(const T& value, std::int16_t width)
     -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value) < width)>>
 {

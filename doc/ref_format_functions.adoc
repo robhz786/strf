@@ -412,6 +412,7 @@ public:
     constexpr /* see below {asterisk}/ hex() && noexcept; // hexadecimal base
     constexpr /* see below {asterisk}/ dec() && noexcept; // decimal base
     constexpr /* see below {asterisk}/ oct() && noexcept; // octal base
+    constexpr /* see below {asterisk}/ bin() && noexcept; // binary base 
 };
 } // namespace strf
 ----
@@ -494,6 +495,7 @@ Return value::: `std::move(static_cast<T&>(*this))`
 constexpr /* see below */ hex() &&;     // hexadecimal base
 constexpr /* see below */ dec() &&;     // decimal base
 constexpr /* see below */ oct() &&;     // octal base
+constexpr /* see below */ bin() &&;     // binary base
 ----
 ::
 Return type:::
@@ -504,7 +506,8 @@ Return type:::
                   , T&&
                   , {boost_mp_replace}<T, int_format<Base>, int_format<NewBase> >
 ----
-, where `NewBase` is equal to `10` in `dec()`, `16` in `hex()`, and `8` in `oct()`.
+, where `NewBase` is equal to `10` in `dec()`, `16` in `hex()`, `8` in `oct()`
+and `2` in `bin()`.
 Return value:::
 - `static_cast<ReturnType>(static_cast<T&>(*this))`, where `ReturnType` is the return type;
 ====

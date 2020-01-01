@@ -5,6 +5,10 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#ifdef __cpp_lib_bitops
+#include <bit>
+#endif
+
 STRF_NAMESPACE_BEGIN
 
 namespace detail {
@@ -44,6 +48,10 @@ template <typename IntT> struct max_num_digits_impl<IntT, 8>
 {
     static constexpr unsigned value = (sizeof(IntT) * 8 + 2) / 3;
 };
+template <typename IntT> struct max_num_digits_impl<IntT, 2>
+{
+    static constexpr unsigned value = sizeof(IntT) * 8;
+};
 
 template<class IntT, unsigned Base>
 constexpr unsigned max_num_digits =
@@ -71,25 +79,121 @@ unsigned_abs(IntT value)
 template <int Base, int IntSize>
 struct digits_counter;
 
+#if defined(__cpp_lib_bitops)
+
 template<>
-struct digits_counter<8, 2>
+struct digits_counter<2, 4>
 {
-    static unsigned count_digits(uint_fast16_t value)
+    static inline unsigned count_digits(uint_fast32_t value)
+    {
+        return sizeof(value) * 8 - std::countl_zero(value);
+    }
+};
+template<>
+struct digits_counter<2, 8>
+{
+    static inline unsigned count_digits(uint_fast64_t value)
+    {
+        return sizeof(value) * 8 - std::countl_zero(value);
+    }
+};
+template<>
+struct digits_counter<8, 4>
+{
+    static unsigned count_digits(uint_fast32_t value)
+    {
+        int bin_digits = sizeof(value) * 8 - std::countl_zero(value);
+        return (bin_digits + 2) / 3;
+    }
+};
+template<>
+struct digits_counter<8, 8>
+{
+    static unsigned count_digits(uint_fast64_t value)
+    {
+        int bin_digits = sizeof(value) * 8 - std::countl_zero(value);
+        return (bin_digits + 2) / 3;
+    }
+};
+template<>
+struct digits_counter<16, 4>
+{
+    static unsigned count_digits(uint_fast32_t value)
+    {
+        int bin_digits = sizeof(value) * 8 - std::countl_zero(value);
+        return (bin_digits + 3) >> 2;
+    }
+};
+template<>
+struct digits_counter<16, 8>
+{
+    static unsigned count_digits(uint_fast64_t value)
+    {
+        int bin_digits = sizeof(value) * 8 - std::countl_zero(value);
+        return (bin_digits + 3) >> 2;
+    }
+};
+
+#else // defined(__cpp_lib_bitops)
+
+template<>
+struct digits_counter<2, 4>
+{
+    static unsigned count_digits(uint_fast32_t value)
     {
         unsigned num_digits = 1;
-        if(value > 07777u)
-        {
-            value >>= 12;
-            num_digits += 4;
+        if( value > 0xfffful ) {
+            value >>= 16;
+            num_digits += 16 ;
         }
-        if(value > 077u)
-        {
-            value >>= 6;
-            num_digits += 2;
+        if( value > 0xfful ) {
+            value >>= 8;
+            num_digits += 8 ;
         }
-        if(value > 07u)
-        {
-            ++num_digits;
+        if (value > 0xful) {
+            value >>= 4;
+            num_digits += 4 ;
+        }
+        if (value > 3) {
+            value >>= 2;
+            num_digits += 2 ;
+        }
+        if (value > 1) {
+            return num_digits + 1;
+        }
+        return num_digits;
+    }
+};
+
+template<>
+struct digits_counter<2, 8>
+{
+    static unsigned count_digits(uint_fast64_t value)
+    {
+
+        unsigned num_digits = 1;
+        if( value > 0xffffffffull ) {
+            value >>= 32;
+            num_digits += 32 ;
+        }
+        if( value > 0xfffful ) {
+            value >>= 16;
+            num_digits += 16 ;
+        }
+        if( value > 0xfful ) {
+            value >>= 8;
+            num_digits += 8 ;
+        }
+        if (value > 0xful) {
+            value >>= 4;
+            num_digits += 4 ;
+        }
+        if (value > 3) {
+            value >>= 2;
+            num_digits += 2 ;
+        }
+        if (value > 1) {
+            return num_digits + 1;
         }
         return num_digits;
     }
@@ -158,6 +262,53 @@ struct digits_counter<8, 8>
     }
 };
 
+template<>
+struct digits_counter<16, 4>
+{
+    static unsigned count_digits(uint_fast32_t value)
+    {
+        unsigned num_digits = 1;
+        if( value > 0xfffful ) {
+            value >>= 16;
+            num_digits += 4 ;
+        }
+        if( value > 0xfful ) {
+            value >>= 8;
+            num_digits += 2 ;
+        }
+        if (value > 0xful) {
+            ++num_digits;
+        }
+        return num_digits;
+    }
+};
+
+template<>
+struct digits_counter<16, 8>
+{
+    static unsigned count_digits(uint_fast64_t value)
+    {
+        unsigned num_digits = 1;
+        if( value > 0xffffffffuLL ) {
+            value >>= 32;
+            num_digits += 8 ;
+        }
+        if( value > 0xffffuLL ) {
+            value >>= 16;
+            num_digits += 4 ;
+        }
+        if( value > 0xffuLL ) {
+            value >>= 8;
+            num_digits += 2 ;
+        }
+        if( value > 0xfuLL ) {
+            ++num_digits;
+        }
+        return num_digits;
+    }
+};
+
+#endif // defined(__cpp_lib_bitops)
 
 template<>
 struct digits_counter<10, 2>
@@ -185,7 +336,6 @@ struct digits_counter<10, 2>
         return count_digits_unsigned(uvalue);
     }
 };
-
 
 template<>
 struct digits_counter<10, 4>
@@ -218,7 +368,6 @@ struct digits_counter<10, 4>
 
         return num_digits;
     }
-
 
     template <typename IntT>
     static unsigned count_digits(IntT value)
@@ -274,72 +423,6 @@ struct digits_counter<10, 8>
 };
 
 
-template<>
-struct digits_counter<16, 2>
-{
-    static unsigned count_digits(uint_fast16_t value)
-    {
-        unsigned num_digits = 1;
-        if( value > 0xffu ) {
-            value >>= 8;
-            num_digits += 2 ;
-        }
-        if (value > 0xfu) {
-            ++num_digits;
-        }
-        return num_digits;
-    }
-};
-
-
-template<>
-struct digits_counter<16, 4>
-{
-    static unsigned count_digits(uint_fast32_t value)
-    {
-        unsigned num_digits = 1;
-        if( value > 0xfffful ) {
-            value >>= 16;
-            num_digits += 4 ;
-        }
-        if( value > 0xfful ) {
-            value >>= 8;
-            num_digits += 2 ;
-        }
-        if (value > 0xful) {
-            ++num_digits;
-        }
-        return num_digits;
-    }
-};
-
-
-template<>
-struct digits_counter<16, 8>
-{
-    static unsigned count_digits(uint_fast64_t value)
-    {
-        unsigned num_digits = 1;
-        if( value > 0xffffffffuLL ) {
-            value >>= 32;
-            num_digits += 8 ;
-        }
-        if( value > 0xffffuLL ) {
-            value >>= 16;
-            num_digits += 4 ;
-        }
-        if( value > 0xffuLL ) {
-            value >>= 8;
-            num_digits += 2 ;
-        }
-        if( value > 0xfuLL ) {
-            ++num_digits;
-        }
-        return num_digits;
-    }
-};
-
-
 template <unsigned Base, typename intT>
 unsigned count_digits(intT value)
 {
@@ -384,10 +467,10 @@ inline const char* chars_00_to_99()
 }
 
 template <int Base>
-class intdigits_writer;
+class intdigits_backwards_writer;
 
 template <>
-class intdigits_writer<10>
+class intdigits_backwards_writer<10>
 {
 public:
 
@@ -490,7 +573,7 @@ public:
 };
 
 template <>
-class intdigits_writer<16>
+class intdigits_backwards_writer<16>
 {
 public:
 
@@ -563,7 +646,7 @@ public:
 };
 
 template <>
-class intdigits_writer<8>
+class intdigits_backwards_writer<8>
 {
 public:
 
@@ -604,71 +687,29 @@ public:
     }
 };
 
-
 template <typename IntT, typename CharT>
 inline CharT* write_int_dec_txtdigits_backwards(IntT value, CharT* it) noexcept
 {
-    return intdigits_writer<10>::write_txtdigits_backwards(value, it);
+    return intdigits_backwards_writer<10>::write_txtdigits_backwards(value, it);
 }
 
 template <typename IntT, typename CharT>
 inline CharT* write_int_hex_txtdigits_backwards(IntT value, CharT* it) noexcept
 {
-    return intdigits_writer<16>::write_txtdigits_backwards(value, it);
+    return intdigits_backwards_writer<16>::write_txtdigits_backwards(value, it);
 }
 
 template <typename IntT, typename CharT>
 inline CharT* write_int_oct_txtdigits_backwards(IntT value, CharT* it) noexcept
 {
-    return intdigits_writer<8>::write_txtdigits_backwards(value, it);
+    return intdigits_backwards_writer<8>::write_txtdigits_backwards(value, it);
 }
 
 template <int Base, typename IntT, typename CharT>
 inline CharT* write_int_txtdigits_backwards(IntT value, CharT* it) noexcept
 {
-    return intdigits_writer<Base>::write_txtdigits_backwards(value, it);
+    return intdigits_backwards_writer<Base>::write_txtdigits_backwards(value, it);
 }
-
-template <int Base, typename IntT, typename CharT>
-inline void write_int_txtdigits_backwards_little_sep
-    ( IntT value
-    , CharT* it
-    , CharT sep
-    , const std::uint8_t* groups ) noexcept
-{
-    intdigits_writer<Base>::write_txtdigits_backwards_little_sep
-        ( value, it, sep, groups );
-}
-
-template <int Base, typename CharT, typename IntT>
-inline void write_int
-    ( strf::basic_outbuf<CharT>& ob
-    , IntT value
-    , unsigned digcount )
-{
-    ob.ensure(digcount);
-    auto p = ob.pos() + digcount;
-    intdigits_writer<Base>::write_txtdigits_backwards(value, p);
-    ob.advance_to(p);
-}
-
-template <int Base, typename CharT, typename IntT>
-inline void write_int_with_leading_zeros
-    ( strf::basic_outbuf<CharT>& ob
-    , IntT value
-    , unsigned digcount )
-{
-    ob.ensure(digcount);
-    auto p = ob.pos();
-    auto end = p + digcount;
-    auto p2 = intdigits_writer<Base>::write_txtdigits_backwards(value, end);
-    if (p != p2)
-    {
-        std::char_traits<CharT>::assign(p, p2 - p, (CharT)'0');
-    }
-    ob.advance_to(end);
-}
-
 
 template <typename CharT>
 void write_digits_big_sep
@@ -717,72 +758,289 @@ void write_digits_big_sep
     ob.advance_to(pos);
 }
 
-template <int Base, typename CharT>
-void _write_digits_big_sep
-      ( strf::basic_outbuf<CharT>& ob
-      , strf::encoding<CharT> enc
-      , const uint8_t* groups
-      , unsigned long long value
-      , unsigned digcount
-      , unsigned num_groups
-      , char32_t sep
-      , std::size_t sep_size )
+template <int Base>
+class intdigits_writer
 {
-    constexpr auto max_digits = detail::max_num_digits<unsigned long long, Base>;
-    unsigned char digits_buff[max_digits];
+public:
 
-    const auto dig_end = digits_buff + max_digits;
-    auto digits = strf::detail::write_int_txtdigits_backwards<Base>
-        ( value, dig_end );
+    template <typename IntT, typename CharT>
+    static inline void write
+        ( strf::basic_outbuf<CharT>& ob
+        , IntT value
+        , unsigned digcount ) noexcept
+    {
+        static_assert(std::is_unsigned<IntT>::value, "expected unsigned int");
 
-    strf::detail::write_digits_big_sep
-        ( ob, enc, groups + num_groups - 1, digits, digcount
-        , sep, sep_size );
+        ob.ensure(digcount);
+        auto p = ob.pos() + digcount;
+        intdigits_backwards_writer<Base>::write_txtdigits_backwards(value, p);
+        ob.advance_to(p);
+    }
+
+    template <typename UIntT, typename CharT>
+    static void write
+          ( strf::basic_outbuf<CharT>& ob
+          , const strf::numpunct_base& punct
+          , strf::encoding<CharT> enc
+          , UIntT value
+          , unsigned digcount )
+    {
+        static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
+
+        constexpr auto max_digits = detail::max_num_digits<UIntT, Base>;
+        uint8_t groups[max_digits];
+        const auto num_groups = punct.groups(digcount, groups);
+        if (num_groups == 0)
+        {
+            no_punct:
+            write(ob, value, digcount);
+            return;
+        }
+        auto sep32 = punct.thousands_sep();
+        CharT sep = static_cast<CharT>(sep32);
+        if (sep32 >= enc.u32equivalence_end() || sep32 < enc.u32equivalence_begin())
+        {
+            auto sep_size = enc.validate(sep32);
+            if (sep_size == (std::size_t)-1)
+            {
+                goto no_punct;
+            }
+            if (sep_size != 1)
+            {
+                write_digits_big_sep( ob, enc, groups, value, digcount
+                                    , num_groups, sep32, sep_size );
+                return;
+            }
+            enc.encode_char(&sep, sep32);
+        }
+        std::size_t size = digcount + num_groups - 1;
+        ob.ensure(size);
+        auto next_p = ob.pos() + size;
+        intdigits_backwards_writer<Base>::write_txtdigits_backwards_little_sep
+            (value, next_p, sep, groups);
+        ob.advance_to(next_p);
+    }
+
+private:
+
+    template <typename CharT>
+    static void write_digits_big_sep
+          ( strf::basic_outbuf<CharT>& ob
+          , strf::encoding<CharT> enc
+          , const uint8_t* groups
+          , unsigned long long value
+          , unsigned digcount
+          , unsigned num_groups
+          , char32_t sep
+          , std::size_t sep_size )
+    {
+        constexpr auto max_digits = detail::max_num_digits<unsigned long long, Base>;
+        unsigned char digits_buff[max_digits];
+
+        const auto dig_end = digits_buff + max_digits;
+        auto digits = strf::detail::write_int_txtdigits_backwards<Base>
+            ( value, dig_end );
+
+        strf::detail::write_digits_big_sep
+            ( ob, enc, groups + num_groups - 1, digits, digcount
+            , sep, sep_size );
+    }
+}; // class template intdigits_writer
+
+template <>
+class intdigits_writer<2>
+{
+public:
+
+    template <typename CharT, typename UIntT>
+    static void write
+        ( strf::basic_outbuf<CharT>& ob
+        , UIntT value
+        , unsigned digcount ) noexcept
+    {
+        static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
+
+        if (value <= 1)
+        {
+            outbuf_put(ob, (CharT)'0' + value);
+            return;
+        }
+        auto it = ob.pos();
+        auto end = ob.end();
+        UIntT mask = (UIntT)1 << (digcount - 1);
+        do
+        {
+            if (it == end)
+            {
+                ob.advance_to(it);
+                ob.recycle();
+                it = ob.pos();
+                end = ob.end();
+            }
+            *it = (CharT)'0' + (0 != (value & mask));
+            ++it;
+            mask = mask >> 1;
+        }
+        while(mask != 0);
+
+        ob.advance_to(it);
+    }
+
+    template <typename UIntT, typename CharT>
+    static void write
+          ( strf::basic_outbuf<CharT>& ob
+          , const strf::numpunct_base& punct
+          , strf::encoding<CharT> enc
+          , UIntT value
+          , unsigned digcount )
+    {
+        static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
+        if (value <= 1)
+        {
+            outbuf_put(ob, (CharT)'0' + value);
+            return;
+        }
+
+        constexpr auto max_digits = detail::max_num_digits<UIntT, 2>;
+        uint8_t groups[max_digits];
+        const auto num_groups = punct.groups(digcount, groups);
+        if (num_groups == 0)
+        {
+            no_punct:
+            write(ob, value, digcount);
+            return;
+        }
+        auto sep32 = punct.thousands_sep();
+        CharT sep = static_cast<CharT>(sep32);
+        if (sep32 >= enc.u32equivalence_end() || sep32 < enc.u32equivalence_begin())
+        {
+            auto sep_size = enc.validate(sep32);
+            if (sep_size == (std::size_t)-1)
+            {
+                goto no_punct;
+            }
+            if (sep_size != 1)
+            {
+                write_big_sep( ob, enc, groups + num_groups -1, value, digcount
+                             , sep32, sep_size );
+                return;
+            }
+            enc.encode_char(&sep, sep32);
+        }
+        write_little_sep(ob, groups + num_groups -1, value, digcount, sep);
+    }
+
+private:
+
+    template <typename UIntT, typename CharT>
+    static void write_little_sep
+          ( strf::basic_outbuf<CharT>& ob
+          , const uint8_t* groups
+          , UIntT value
+          , unsigned digcount
+          , CharT sep )
+    {
+        auto grp_it = groups;
+        auto grp_size = *grp_it;
+        ob.ensure(grp_size);
+        auto it = ob.pos();
+        auto end = ob.end();
+        UIntT mask = (UIntT)1 << (digcount - 1);
+
+        while (true)
+        {
+            for(;grp_size != 0; --grp_size)
+            {
+                *it = (CharT)'0' + (0 != (value & mask));
+                mask = mask >> 1;
+                ++it;
+            }
+            if (mask == 0)
+            {
+                break;
+            }
+            grp_size = * --grp_it;
+            if (it + grp_size + 1 > end)
+            {
+                ob.advance_to(it);
+                ob.recycle();
+                it = ob.pos();
+                end = ob.end();
+            }
+            *it = sep;
+            ++it;
+        }
+        ob.advance_to(it);
+     }
+
+    template <typename UIntT, typename CharT>
+    static void write_big_sep
+        ( strf::basic_outbuf<CharT>& ob
+        , const strf::encoding<CharT> encoding
+        , const std::uint8_t* groups
+        , UIntT value
+        , unsigned digcount
+        , char32_t sep
+        , std::size_t sep_size )
+    {
+        auto grp_it = groups;
+        auto grp_size = *grp_it;
+        auto it = ob.pos();
+        auto end = ob.end();
+        UIntT mask = (UIntT)1 << (digcount - 1);
+
+        while (true)
+        {
+            if (it + grp_size > end)
+            {
+                ob.advance_to(it);
+                ob.recycle();
+                it = ob.pos();
+                end = ob.end();
+            }
+            for(;grp_size != 0; --grp_size)
+            {
+                *it = (CharT)'0' + (0 != (value & mask));
+                mask = mask >> 1;
+                ++it;
+            }
+            if (mask == 0)
+            {
+                break;
+            }
+            grp_size = * --grp_it;
+            if (it + grp_size + sep_size > end)
+            {
+                ob.advance_to(it);
+                ob.recycle();
+                it = ob.pos();
+                end = ob.end();
+            }
+            it = encoding.encode_char(it, sep);
+        }
+        ob.advance_to(it);
+    }
+
+}; // class intdigits_writer<2>
+
+template <int Base, typename CharT, typename UIntT>
+inline void write_int
+    ( strf::basic_outbuf<CharT>& ob
+    , UIntT value
+    , unsigned digcount ) noexcept
+{
+    intdigits_writer<Base>::write(ob, value, digcount);
 }
 
-
-template <int Base, typename CharT>
-void write_int
+template <int Base, typename CharT, typename UIntT>
+static void write_int
       ( strf::basic_outbuf<CharT>& ob
       , const strf::numpunct_base& punct
       , strf::encoding<CharT> enc
-      , unsigned long long value
+      , UIntT value
       , unsigned digcount )
 {
-    constexpr auto max_digits = detail::max_num_digits< decltype(value)
-                                                      , Base >;
-    uint8_t groups[max_digits];
-    const auto num_groups = punct.groups(digcount, groups);
-    if (num_groups == 0)
-    {
-        no_punct:
-        strf::detail::write_int<Base>(ob, value, digcount);
-        return;
-    }
-    auto sep32 = punct.thousands_sep();
-    CharT sep = static_cast<CharT>(sep32);
-    if (sep32 >= enc.u32equivalence_end() || sep32 < enc.u32equivalence_begin())
-    {
-        auto sep_size = enc.validate(sep32);
-        if (sep_size == (std::size_t)-1)
-        {
-            goto no_punct;
-        }
-        if (sep_size != 1)
-        {
-            strf::detail::_write_digits_big_sep<Base>
-                ( ob, enc, groups, value, digcount, num_groups
-                , sep32, sep_size );
-            return;
-        }
-        enc.encode_char(&sep, sep32);
-    }
-    std::size_t size = digcount + num_groups - 1;
-    ob.ensure(size);
-    auto next_p = ob.pos() + size;
-    detail::write_int_txtdigits_backwards_little_sep<Base>
-        ( value, next_p, sep, groups );
-    ob.advance_to(next_p);
+    intdigits_writer<Base>::write(ob, punct, enc, value, digcount);
 }
 
 } // namespace detail

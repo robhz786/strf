@@ -119,6 +119,11 @@
 #  define STRF_NO_CXX17_COPY_ELISION
 #endif
 
+#if defined(__GNUC__) && (__cplusplus > 201703L) && !defined(__cpp_lib_bitopts)
+// some versions of GCC forgot to define __cpp_lib_bitopts
+#  define __cpp_lib_bitopts  	201907
+#endif
+
 STRF_NAMESPACE_BEGIN
 
 namespace detail

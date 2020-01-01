@@ -103,6 +103,20 @@ public:
         return _adapted_derived_type<B>{ static_cast<const T&>(*this) };
     }
 
+    template < int B = 2 >
+    constexpr std::enable_if_t<Base == B && B == 2, T&&>
+    bin() &&
+    {
+        return static_cast<T&&>(*this);
+    }
+
+    template < int B = 2 >
+    constexpr std::enable_if_t<Base != B && B == 2, _adapted_derived_type<B>>
+    bin() &&
+    {
+        return _adapted_derived_type<B>{ static_cast<const T&>(*this) };
+    }
+
     constexpr T&& p(unsigned _) && noexcept
     {
         _data.precision = _;
@@ -404,7 +418,8 @@ void partial_fmt_int_printer<CharT, Base>::_init
     {
         _uvalue = unsigned_type(value);
         _negative = false;
-        _prefixsize = static_cast<unsigned>(fmt.showbase) << static_cast<unsigned>(Base == 16);
+        _prefixsize = static_cast<unsigned>(fmt.showbase)
+            << static_cast<unsigned>(Base == 16 || Base == 2);
     }
     _digcount = strf::detail::count_digits<Base>(_uvalue);
     _precision = fmt.precision;
@@ -455,24 +470,26 @@ inline void partial_fmt_int_printer<CharT, Base>::print_to
                 * it = static_cast<CharT>('0');
                 ++ it;
             }
-            else
+            else STRF_IF_CONSTEXPR (Base == 16)
             {
                 it[0] = static_cast<CharT>('0');
                 it[1] = static_cast<CharT>('x');
                 it += 2;
             }
+            else
+            {
+                it[0] = static_cast<CharT>('0');
+                it[1] = static_cast<CharT>('b');
+                it += 2;
+            }
         }
+        ob.advance_to(it);
         if (_precision > _digcount)
         {
-            ob.advance_to(it);
             unsigned zeros = _precision - _digcount;
             strf::detail::write_fill(ob, zeros, CharT('0'));
-            it = ob.pos();
-            ob.ensure(_digcount);
         }
-        it += _digcount;
-        strf::detail::write_int_txtdigits_backwards<Base>(_uvalue, it);
-        ob.advance_to(it);
+        strf::detail::write_int<Base>(ob, _uvalue, _digcount);
     }
     else
     {
@@ -483,7 +500,7 @@ inline void partial_fmt_int_printer<CharT, Base>::print_to
             strf::detail::write_fill(ob, zeros, CharT('0'));
         }
         strf::detail::write_int<Base>( ob, _punct, _encoding
-                                              , _uvalue, _digcount );
+                                     , _uvalue, _digcount );
     }
 }
 
@@ -504,10 +521,16 @@ inline void partial_fmt_int_printer<CharT, Base>::write_complement
             * ob.pos() = static_cast<CharT>('0');
             ob.advance(1);
         }
-        else
+        else STRF_IF_CONSTEXPR (Base == 16)
         {
             ob.pos()[0] = static_cast<CharT>('0');
             ob.pos()[1] = static_cast<CharT>('x');
+            ob.advance(2);
+        }
+        else
+        {
+            ob.pos()[0] = static_cast<CharT>('0');
+            ob.pos()[1] = static_cast<CharT>('b');
             ob.advance(2);
         }
     }
@@ -529,7 +552,7 @@ inline void partial_fmt_int_printer<CharT, Base>::write_digits
     else
     {
         strf::detail::write_int<Base>( ob, _punct, _encoding
-                                              , _uvalue, _digcount );
+                                     , _uvalue, _digcount );
     }
 }
 

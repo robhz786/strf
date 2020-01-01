@@ -356,6 +356,7 @@ Both have the same purpose: to customize numeric punctuation.
 |`numpunct_c<10>`      |Yes |Numeric punctuation for decimal base
 |`numpunct_c<16>`      |Yes |Numeric punctuation for hexadecimal base
 |`numpunct_c<8>`       |Yes |Numeric punctuation for octal base
+|`numpunct_c<2>`       |Yes |Numeric punctuation for binary base
 
 |`encoding_c<CharT>`   |No  |The encoding correponding to character type `CharT`
 |`encoding_error_c`    |Yes |Encoding error handling
@@ -769,13 +770,14 @@ Format functions::
 `dec()`::: Use decimal base ( This is already the default, though )
 `hex()`::: Use hexadecimal base.
 `oct()`::: Use octal base.
+`bin()`::: Use binary base.
 `p(unsigned precision)`::: Ensures that at least `precision` digits
 are printed by adding extra zero leading digits if necessary.
 `operator+()`::: When in decimal base, print the positive sign
 `"+"` when value is non negative. No effect for other bases.
 `operator~()`::: Print the base indication
-( `"0x"` for hexadecimal, `"0"` for octal ). No effect for
-decimal base.
+( `"0x"` for hexadecimal, `"0"` for octal and `"0b"` for binary ).
+No effect in decimal base.
 
 
 === Floating Points

@@ -500,6 +500,23 @@ STRF_INLINE double_printer_data::double_printer_data
 
 #endif // !defined(STRF_OMIT_IMPL)
 
+template <int Base, typename CharT, typename IntT>
+inline void write_int_with_leading_zeros
+    ( strf::basic_outbuf<CharT>& ob
+    , IntT value
+    , unsigned digcount )
+{
+    ob.ensure(digcount);
+    auto p = ob.pos();
+    auto end = p + digcount;
+    auto p2 = intdigits_backwards_writer<Base>::write_txtdigits_backwards(value, end);
+    if (p != p2)
+    {
+        std::char_traits<CharT>::assign(p, p2 - p, (CharT)'0');
+    }
+    ob.advance_to(end);
+}
+
 template <typename CharT>
 void _print_amplified_integer_small_separator
     ( strf::basic_outbuf<CharT>& ob
@@ -1091,7 +1108,7 @@ void punct_double_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
             else
             {
                 strf::detail::write_int<10>( ob, _punct, _encoding
-                                                    , integral_part, idigcount );
+                                           , integral_part, idigcount );
             }
             _encoding.encode_char( ob, _punct.decimal_point()
                                  , strf::encoding_error::replace );
