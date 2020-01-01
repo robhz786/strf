@@ -63,14 +63,13 @@
 #define STRF_HAS_STD_CHARCONV
 #endif //defined(__cpp_lib_to_chars)
 
-
-#if defined(__cpp_lib_string_view_)
+#if defined(__cpp_lib_string_view)
 #define STRF_HAS_STD_STRING_VIEW
 #define STRF_CONSTEXPR_CHAR_TRAITS constexpr
 #include <string_view>
 #else
 #include <string> // char_traits
-#endif // defined(__cpp_lib_string_view_)
+#endif // defined(__cpp_lib_string_view)
 
 #if defined(__has_cpp_attribute)
 #if __has_cpp_attribute(nodiscard)

@@ -142,8 +142,7 @@ public:
         ( const std::basic_string_view<CharT>& str
         , const Args& ... args ) const &
     {
-
-       _tr_write(str.begin, str.end(), args...);
+        return _tr_write(str.begin(), str.end(), args...);
     }
 
     // template <typename ... Args>

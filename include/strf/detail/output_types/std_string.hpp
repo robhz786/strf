@@ -7,6 +7,7 @@
 
 #include <strf/outbuf.hpp>
 #include <strf/destination.hpp>
+#include <string>
 
 STRF_NAMESPACE_BEGIN
 
