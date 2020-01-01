@@ -415,17 +415,17 @@ struct sep_range_p { /{asterisk} __implementation-defined__ {asterisk}/ };
 // range
 
 template <typename Iterator, typename CharT>
-sep_range_p<Iterator> range( Iterator begin
-                           , Iterator end
-                           , const CharT* separator );
+sep_range_p<Iterator> separated_range( Iterator begin
+                                     , Iterator end
+                                     , const CharT* separator );
 
 template < typename Range
          , typename CharT
          , typename Iterator = typename Range::const_iterator>
-sep_range_p<Iterator> range(const Range& range, const CharT* separator);
+sep_range_p<Iterator> separated_range(const Range& range, const CharT* separator);
 
 template <typename T, std::size_t N, typename CharT>
-sep_range_p<const T*>  range(T (&array)[N], const CharT* separator);
+sep_range_p<const T*>  separated_range(T (&array)[N], const CharT* separator);
 
 // make_printer
 

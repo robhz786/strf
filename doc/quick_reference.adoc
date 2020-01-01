@@ -856,18 +856,24 @@ namespace strf {
 template <typename Range>
 /*...*/ range(const Range& r);
 
-template <typename Iterator, typename CharT>
+template <typename T, std::size_t N>
+/*...*/ range(T (&array)[N]);
+
+template <typename Iterator>
 /*...*/ range(const Iterator& begin, const Iterator& end);
 
 // With separator:
 
 template <typename Range, typename CharT>
-/*...*/ range(const Range& r, const CharT* separator);
+/*...*/ separated_range(const Range& r, const CharT* separator);
+
+template <typename T, std::size_t N, typename CharT>
+/*...*/ separated_range(T (&array)[N], const CharT* separator);
 
 template <typename Iterator, typename CharT>
-/*...*/ range( const Iterator& begin
-             , const Iterator& end
-             , const CharT* separator );
+/*...*/ separated_range( const Iterator& begin
+                       , const Iterator& end
+                       , const CharT* separator );
 
 } // namespace strf
 ----
@@ -876,7 +882,7 @@ template <typename Iterator, typename CharT>
 [source,cpp]
 ----
 std::vector<int> vec = { 11, 22, 33 };
-auto str = strf::to_string("[", strf::range(vec, ", "), "]");
+auto str = strf::to_string("[", strf::separated_range(vec, ", "), "]");
 assert(str == "[11, 22, 33]");
 ----
 
@@ -884,34 +890,43 @@ assert(str == "[11, 22, 33]");
 
 [source,cpp]
 ----
+namespace strf {
+
 template <typename Range>
 /*...*/ fmt_range(const Range& r);
 
-template <typename Iterator, typename CharT>
+template <typename T, std::size_t N>
+/*...*/ fmt_range(T (&array)[N], const Range& r);
+
+template <typename Iterator>
 /*...*/ fmt_range(const Iterator& begin, const Iterator& end);
 
 // With separator:
 
 template <typename Range, typename CharT>
-/*...*/ fmt_range(const Range& r, const CharT* separator);
+/*...*/ fmt_separated_range(const Range& r, const CharT* separator);
+
+template <typename T, std::size_t N, typename CharT>
+/*...*/ fmt_separated_range(T (&array)[N], const CharT* separator);
 
 template <typename Iterator, typename CharT>
-/*...*/ fmt_range( const Iterator& begin
-                 , const Iterator& end
-                 , const CharT* separator );
+/*...*/ fmt_separated_range( const Iterator& begin
+                           , const Iterator& end
+                           , const CharT* separator );
 
 } // namespace strf
 ----
 Any format function applicable to the element type of the
 range can also be applied to the
-expression `strf::fmt_range(/{asterisk}\...{asterisk}/)`.
+expression `strf::fmt_range(/{asterisk}\...{asterisk}/)` or
+`strf::fmt_separated_range(/{asterisk}\...{asterisk}/)`.
 This way the format functions is applied to all elements:
 
 .Example 1
 [source,cpp]
 ----
 std::vector<int> vec = { 11, 22, 33 };
-auto str1 = strf::to_string("[", +strf::fmt_range(vec, " ;") > 4, "]");
+auto str1 = strf::to_string("[", +strf::fmt_separated_range(vec, " ;") > 4, "]");
 assert(str1 == "[ +11 ; +22 ; +33]");
 ----
 
@@ -921,7 +936,7 @@ assert(str1 == "[ +11 ; +22 ; +33]");
 std::vector<int> vec = { 11, 22, 33 };
 auto str2 = strf::to_string
     ( "["
-    , ~strf::fmt_range(vec, " / ").fill('.').hex() > 6,
+    , ~strf::fmt_separated_range(vec, " / ").fill('.').hex() > 6,
     " ]");
 
 assert(str2 == "[..0xfa / ..0xfb / ..0xfc]");
