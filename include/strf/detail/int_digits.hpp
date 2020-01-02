@@ -862,7 +862,7 @@ public:
 
         if (value <= 1)
         {
-            outbuf_put(ob, (CharT)'0' + value);
+            strf::put(ob, static_cast<CharT>('0' + value));
             return;
         }
         auto it = ob.pos();
@@ -897,7 +897,7 @@ public:
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
         if (value <= 1)
         {
-            outbuf_put(ob, (CharT)'0' + value);
+            strf::put(ob, static_cast<CharT>('0' + value));
             return;
         }
 
