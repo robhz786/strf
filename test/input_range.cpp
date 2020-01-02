@@ -65,7 +65,7 @@ int main()
             , "---" );
     }
     {
-        std::array<const char*, 3> vec = { "aa", "bb", "cc" };
+        std::array<const char*, 3> vec{ { "aa", "bb", "cc" } };
         TEST("aabbcc") (strf::range(vec));
         TEST("..aa..bb..cc") (strf::right(strf::range(vec), 4, '.'));
         TEST("..aa..bb..cc--")
@@ -123,7 +123,7 @@ int main()
              (strf::join_right(7)("--", strf::separated_range(vec, ", "), "--"));
     }
     {
-        std::array<int, 3> stl_array = {11, 22, 33};
+        std::array<int, 3> stl_array{ {11, 22, 33} };
         TEST( "112233")        (strf::range(stl_array));
         TEST( "11, 22, 33")    (strf::separated_range(stl_array,  ", "));
         TEST(u"+11+22+33")     (+strf::fmt_range(stl_array));

@@ -142,32 +142,16 @@ public:
         ( const std::basic_string_view<CharT>& str
         , const Args& ... args ) const &
     {
-        return _tr_write(str.begin(), str.end(), args...);
+        return _tr_write(str.data(), str.size(), args...);
     }
-
-    // template <typename ... Args>
-    // decltype(auto) tr
-    //     ( const std::basic_string_view<CharT>& str
-    //     , const Args& ... args ) &&
-    // {
-    //     return std::move(*this)._tr_write(str.begin, str.end(), args...);
-    // }
 
 #else
 
     template <typename ... Args>
     decltype(auto) tr(const CharT* str, const Args& ... args) const &
     {
-        return _tr_write
-            ( str, str + std::char_traits<CharT>::length(str), args... );
+        return _tr_write(str, std::char_traits<CharT>::length(str), args...);
     }
-
-    // template <typename ... Args>
-    // decltype(auto) tr(const CharT* str, const Args& ... args) &&
-    // {
-    //     return std::move(*this)._tr_write
-    //         ( str, str + std::char_traits<CharT>::length(str), args... );
-    // }
 
 #endif
 
@@ -186,11 +170,11 @@ private:
 
     template < typename ... Args >
     decltype(auto) _tr_write( const CharT* str
-                            , const CharT* str_end
+                            , std::size_t str_len
                             , const Args& ... args) const &
     {
         return _tr_write_2
-            (str, str_end, std::make_index_sequence<sizeof...(args)>(), args...);
+            (str, str + str_len, std::make_index_sequence<sizeof...(args)>(), args...);
     }
 
     template < std::size_t ... I, typename ... Args >
