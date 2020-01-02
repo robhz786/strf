@@ -451,7 +451,7 @@ assert(str == "1,00,00,000,0000");
 [[lettercase]]
 == Letter case
 
-The `lettercase` facets affect the letter cases when printing numeric values.
+The `lettercase` facet affects the letter cases when printing numeric values.
 The default value is `strf::lowercase`.
 
 [source,cpp]
@@ -822,6 +822,7 @@ Types::
 `unsigned long int` and
 `unsigned long long int`
 
+[[int_fmt]]
 Format functions::
 ( in addition to <<alignment_format_functions, alignment functions>> )
 `dec()`::: Use decimal base ( This is already the default, though )
@@ -921,6 +922,19 @@ template <typename T, std::size_t N>
 template <typename Iterator>
 /*...*/ range(const Iterator& begin, const Iterator& end);
 
+// With operation
+
+template <typename Range, typename UnaryOperation>
+/*...*/ range(const Range& r, UnaryOperation unary_op);
+
+template <typename T, std::size_t N, typename UnaryOperation>
+/*...*/ range(T (&array)[N], UnaryOperation unary_op);
+
+template <typename Iterator, typename UnaryOperation>
+/*...*/ range( const Iterator& begin
+             , const Iterator& end
+             , UnaryOperation unary_op );
+
 // With separator:
 
 template <typename Range, typename CharT>
@@ -934,15 +948,41 @@ template <typename Iterator, typename CharT>
                        , const Iterator& end
                        , const CharT* separator );
 
+// With separator and operation
+
+template <typename Range, typename CharT, typename UnaryOperation>
+/*...*/ separated_range( const Range& r
+                       , const CharT* separator
+                       , UnaryOperation unary_op );
+
+template <typename T, std::size_t N, typename CharT, typename UnaryOperation>
+/*...*/ separated_range( T (&array)[N]
+                       , const CharT* separator
+                       , UnaryOperation unary_op );
+
+template <typename Iterator, typename CharT, typename UnaryOperation>
+/*...*/ separated_range( const Iterator& begin
+                       , const Iterator& end
+                       , const CharT* separator
+                       , UnaryOperation unary_op );
 } // namespace strf
 ----
 
-.Example
-[source,cpp]
+.Examples
+[source,cpp,subs=normal]
 ----
-std::vector<int> vec = { 11, 22, 33 };
-auto str = strf::to_string("[", strf::separated_range(vec, ", "), "]");
-assert(str == "[11, 22, 33]");
+int arr[3] = { 11, 22, 33 };
+
+auto str = strf::to_string(strf::range(arr));
+assert(str == "112233");
+
+str = strf::to_string(strf::separated_range(arr, ", "));
+assert(str == "11, 22, 33");
+
+auto op = [](auto x){ return strf::<<joins,join>>('(', +strf::fmt(x * 10), ')'); };
+
+str = strf::to_string(strf::separated_range(arr, ", ", op));
+assert(str == "(+110), (+220), (+330)");
 ----
 
 ==== With formatting
@@ -960,7 +1000,7 @@ template <typename T, std::size_t N>
 template <typename Iterator>
 /*...*/ fmt_range(const Iterator& begin, const Iterator& end);
 
-// With separator:
+// With separator
 
 template <typename Range, typename CharT>
 /*...*/ fmt_separated_range(const Range& r, const CharT* separator);
@@ -972,7 +1012,6 @@ template <typename Iterator, typename CharT>
 /*...*/ fmt_separated_range( const Iterator& begin
                            , const Iterator& end
                            , const CharT* separator );
-
 } // namespace strf
 ----
 Any format function applicable to the element type of the
@@ -1001,6 +1040,19 @@ auto str2 = strf::to_string
 assert(str2 == "[..0xfa / ..0xfb / ..0xfc]");
 ----
 
+Actually, you don't need to use `fmt_range` or `fmt_separated_range`.
+You can apply format function directly into `range(/{asterisk}\...{asterisk}/)`
+or `separarated_range(/{asterisk}\...{asterisk}/)`, as long as you don't pass
+an operation function object:
+
+[source,cpp]
+----
+std::vector<int> vec = { 11, 22, 33 };
+auto str = strf::to_string("[", ~strf::hex(strf::separated_range(vec, " ; ")), "]");
+assert(str == "[0xb ; 0x16 ; 0x21]");
+----
+
+[[joins]]
 === Joins
 
 ==== Without alignment
@@ -1014,28 +1066,39 @@ template <typename ... Args>
 
 }
 ----
-The `join` function template enables you group a set of input
-arguments as if they were one.
+_Joins_ enables you to group a set of input arguments as one:
 
-.Example
 [source,cpp]
 ----
-std::string host_name = "isocpp.org";
-unsigned char ip_addr [4] = {104, 236, 162, 70};
+std::string month = "May";
+int day = 5;
 
-auto str = strf::to_string .tr
-    ( "The IP address of {} is {}."
-    , host_name
-    , strf::join(ip_addr[0], '.', ip_addr[1], '.', ip_addr[2], '.', ip_addr[3]));
+auto str = strf::to_string.tr("Today is {}.", strf::join(month, ' ', day))
+assert(str == "Today is May 5")
+----
 
-assert(str == "The IP address of isocpp.org is 104.236.162.70.");
+It can be handy to create aliases:
+
+[source,cpp,subs=normal]
+----
+struct date{ int day, month, year; };
+
+auto as_yyyymmdd = [](date d)
+{
+    return strf::join( strf::<<int_fmt,dec>>(d.year).<<int_fmt,p>>(4), '/'
+                     , strf::<<int_fmt,dec>>(d.month).<<int_fmt,p>>(2), '/'
+                     , strf::<<int_fmt,dec>>(d.day).<<int_fmt,p>>(2) );
+};
+
+date today {1, 1, 1935};
+auto str = strf::to_string("Today is ", as_yyyymmdd(today), '.');
+assert(str == "Today is 1935/01/01.");
 ----
 
 ==== With alignment
 
-The return type of `join(args ...)` provides the
-<<alignment_format_functions,alignment format functions>>.
-You can use them to align a join:
+You can apply the <<alignment_format_functions,alignment format functions>>
+one the return type of `join(args\...)`
 
 [source,cpp]
 ----
@@ -1055,7 +1118,7 @@ assert(str == "ab    cdef");
 ----
 
 The functions below provide an alternartive syntax to create aligned
-join. Their return type has the `operator()(const Args& ... args)` member function
+join. Their return type has the `operator()(const Args& \... args)` member function
 that receives the elements of the join.
 
 [source,cpp]
@@ -1103,8 +1166,8 @@ assert(str == "---abc  ....def123---");
 ----
 
 === Facets
-You can <<facet_overriding,override facets>> to a
-subset of the input arguments.
+It is possible to <<facet_overriding,override facets>>
+to only a subset of the input arguments.
 
 [source,cpp]
 ----
@@ -1113,14 +1176,14 @@ namespace strf {
 template < typename FPack >
 class inner_pack
 {
+public:
     template <typename... Args>
-    /*...*/  operator()(const Args& \... args) const;
-
+    /*...*/  operator()(const Args&... args) const;
     //...
 };
 
 template <typename ... Facets>
-inner_pack</*...*/> with(const Facets& ... facets);
+inner_pack</*...*/> with(const Facets&... facets);
 ----
 .Example 1
 [source,cpp]

@@ -97,7 +97,7 @@ int main()
         TEST("--aaabbbcccddd--")
             ( strf::join_right(2)("--", strf::fmt_range(vec).multi(3), "--") );
     }
-    {   // with separator
+    {   // With separator
         int vec [3] = {11, 22, 33};
 
         TEST( "11, 22, 33") (strf::separated_range(vec,  ", "));
@@ -129,14 +129,50 @@ int main()
         TEST(u"+11+22+33")     (+strf::fmt_range(stl_array));
         TEST(u"+11, +22, +33") (+strf::fmt_separated_range(stl_array,  u", "));
     }
-    {   // range of only one element with separator
-        int vec [1] = {11};
+    {   // range of only one element
+        int arr [1] = {11};
 
-        TEST( "11") (strf::separated_range(vec,  ", "));
-        TEST(u"+11") (+strf::fmt_separated_range(vec,  u", "));
+        TEST( "11") (strf::range(arr));
+        TEST(u"+11") (+strf::fmt_range(arr));
+        TEST( "0xb") (~strf::hex(strf::range(arr)));
+        
+        TEST( "11") (strf::separated_range(arr,  ", "));
+        TEST(u"+11") (+strf::fmt_separated_range(arr,  u", "));
+        TEST( "0xb") (~strf::hex(strf::separated_range(arr,   ", ")));
 
-        TEST( "0xb") (~strf::hex(strf::separated_range(vec,   ", ")));
+        std::array<int, 1> stl_arr{{11}};
+
+        TEST( "11") (strf::range(stl_arr));
+        TEST( "+11") (+strf::fmt_range(stl_arr));
+        TEST( "0xb") (~strf::hex(strf::range(stl_arr)));
+        
+        TEST( "11") (strf::separated_range(stl_arr,  ", "));
+        TEST(u"+11") (+strf::fmt_separated_range(stl_arr,  u", "));
+        TEST( "0xb") (~strf::hex(strf::separated_range(stl_arr,   ", ")));
+
     }
+    {  // Emtpy range
+        std::array<int, 0> stl_arr{{}};
+        TEST( "") (strf::range(stl_arr));
+        TEST(u"") (+strf::fmt_range(stl_arr));
+        TEST( "") (~strf::hex(strf::range(stl_arr)));
+        
+        TEST( "") (strf::separated_range(stl_arr,  ", "));
+        TEST(u"") (+strf::fmt_separated_range(stl_arr,  u", "));
+        TEST( "") (~strf::hex(strf::separated_range(stl_arr,   ", ")));       
+    }
+    {   // Range transformed by functor 
+        auto func = [](int x){ return strf::join('<', -x, '>'); };
+        int arr [3] = {11, 22, 33};
+        std::array<int, 3> stl_arr{{11, 22, 33}};
 
+        TEST("<-11><-22><-33>") ( strf::range(arr, func) );
+        TEST("<-11><-22><-33>") ( strf::range(stl_arr, func) );
+        TEST("<-11><-22><-33>") ( strf::range(arr, arr + 3, func) );
+
+        TEST("<-11>, <-22>, <-33>") ( strf::separated_range(arr, ", ", func) );
+        TEST("<-11>, <-22>, <-33>") ( strf::separated_range(stl_arr, ", ", func) );
+        TEST("<-11>, <-22>, <-33>") ( strf::separated_range(arr, arr + 3, ", ", func) );
+    }
     return boost::report_errors();
 }
