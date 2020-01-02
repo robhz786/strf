@@ -338,30 +338,32 @@ but they are analogous.
 Keep in mind that this is a locale-independent library.
 So things are always printed as in the C-locale, unless
 you explicitly specify otherwise, which you do by passing
-__facet objects__ to the <<usage_syntax,`with`>> function.
+__facet objects__ to the `<<usage_syntax,with>>` function.
 
 Every __facet__ belongs to a __facet category__.
 Each facet category corresponds to a concept, __i.e.__ a set of requirements that a class must satisfy. A class that satisfies such requirements is a facet of such facet category. Moreover, for each facet category there is class whose name, by convention, has a "_c" suffix and is the name of the category.
 
-For example, <<numpunct,`monotonic_grouping<10>`>> and
-<<numpunct, `str_grouping<10>`>>  are both facets of the category
-`numpunct_c<10>`.
+For example, `<<numpunct,monotonic_grouping>><10>` and
+`<<numpunct,str_grouping>><10>`  are both facets of the category
+`<<numpunct,numpunct_c>><10>`.
 Both have the same purpose: to customize numeric punctuation.
 
 [%header,cols="2,1,4"]
 |===
 |Category |Constrainable |What it controls
 
-|`width_calculation_c` |Yes |How the width is calculated
-|`numpunct_c<10>`      |Yes |Numeric punctuation for decimal base
-|`numpunct_c<16>`      |Yes |Numeric punctuation for hexadecimal base
-|`numpunct_c<8>`       |Yes |Numeric punctuation for octal base
-|`numpunct_c<2>`       |Yes |Numeric punctuation for binary base
+|`<<width_calculation,width_calculation_c>>` |Yes |How the width is calculated
+|`<<numpunct, numpunct_c>><10>`      |Yes |Numeric punctuation for decimal base
+|`<<numpunct, numpunct_c>><16>`      |Yes |Numeric punctuation for hexadecimal base
+|`<<numpunct, numpunct_c>><8>`       |Yes |Numeric punctuation for octal base
+|`<<numpunct, numpunct_c>><2>`       |Yes |Numeric punctuation for binary base
 
-|`encoding_c<CharT>`   |No  |The encoding correponding to character type `CharT`
-|`encoding_error_c`    |Yes |Encoding error handling
-|`surrogates_policy_c` |Yes |Wheter surrogates are treated as errors
-|`tr_string_error_c`   |No  |Tr-string parsing error handling
+|`<<lettercase,lettercase_c>>`        |Yes |Letter case in numeric types
+
+|`<<encoding,encoding_c>><CharT>`   |No  |The encoding correponding to character type `CharT`
+|`<<encoding_error,encoding_error_c>>`    |Yes |Encoding error handling
+|`<<surrogates_policy,surrogates_policy_c>>` |Yes |Wheter surrogates are treated as errors
+|`<<tr_string_error,tr_string_error_c>>`   |No  |Tr-string parsing error handling
 |===
 
 [[constrained_facets]]
@@ -444,6 +446,58 @@ constexpr int base = 10;
 auto punct = strf::str_grouping<base>{"\4\3\2"};
 auto str = strf::to_string.with(punct)(100000000000ll);
 assert(str == "1,00,00,000,0000");
+----
+
+[[lettercase]]
+== Letter case
+
+The `lettercase` facets affect the letter cases when printing numeric values.
+The default value is `strf::lowercase`.
+
+[source,cpp]
+----
+namespace strf {
+
+enum class lettercase { lower = /*...*/, mixed = /*...*/, upper = /*...*/ };
+
+constexpr lettercase lowercase = lettercase::lower;
+constexpr lettercase mixedcase = lettercase::mixed;
+constexpr lettercase uppercase = lettercase::upper;
+
+}
+----
+
+.Printed numeric values examples
+[%header,cols="1,2"]
+|===
+|Value | Result examples
+
+|`strf::lowercase`
+|`0xab` `1e+50` `inf` `nan`
+
+|`strf::mixedcase`
+|`0xAB` `1e+50` `Inf` `NaN`
+
+|`strf::uppercase`
+|`0XAB` `1E+50` `INF` `NAN`
+|===
+
+.Usage example
+[source,cpp]
+----
+auto str_upper = strf::to_string.with(strf::uppercase)
+    ( ~strf::hex(0xabc), ' '
+    , 1.0e+50, ' '
+    , std::numeric_limits<FloatT>::infinity() );
+
+assert(str_upper == "0XAB 1E+50 INF");
+
+auto str_mixed = strf::to_string.with(strf::mixedcase)
+    ( ~strf::hex(0xabc), ' '
+    , 1.e+50, ' '
+    , std::numeric_limits<FloatT>::infinity() );
+
+assert(str_upper == "0xAB 1e+50 Inf");
 ----
 
 [[encoding]]
@@ -628,6 +682,7 @@ auto str = strf::to_string
 assert(str == "--\xff----\xff----?----?----?--");
 ----
 
+[[encoding_error]]
 === Encoding error handling
 
 The `encoding_error` enumeration controls how invalid
@@ -668,6 +723,7 @@ catch(strf::encoding_failure&){
 assert(transcoding_failed);
 ----
 
+[[surrogates_policy]]
 === Surrogates tolerance
 
 The `surrogate_policy` enumeration is a facet that controls
@@ -707,6 +763,7 @@ assert(utf16_strict == u"-\uFFFD\uFFFD\uFFFD---"); // surrogate sanitized
 assert(utf16_lax == input_utf16);                  // surrogate preserved
 ----
 
+[[width_calculation]]
 == Width Calculation
 
 to-do

@@ -319,7 +319,7 @@ void punct_int_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
             ++it;
         }
         it += _digcount;
-        strf::detail::write_int_txtdigits_backwards<10>(_uvalue, it);
+        strf::detail::write_int_dec_txtdigits_backwards(_uvalue, it);
         ob.advance_to(it);
     }
     else
@@ -328,7 +328,8 @@ void punct_int_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
         {
             put(ob, static_cast<CharT>('-'));
         }
-        strf::detail::write_int<10>(ob, _punct, _encoding, _uvalue, _digcount);
+        strf::detail::write_int<10>( ob, _punct, _encoding, _uvalue
+                                   , _digcount, strf::lowercase );
     }
 }
 
@@ -344,6 +345,7 @@ public:
         , const strf::int_with_format<IntT, Base, false>& value )
         : _punct(get_facet<strf::numpunct_c<Base>, IntT>(fp))
         , _encoding(get_facet<strf::encoding_c<CharT>, IntT>(fp))
+        , _lettercase(get_facet<strf::lettercase_c, IntT>(fp))
     {
         _init<IntT, detail::has_intpunct<CharT, FPack, IntT, Base>>
             ( value.value().value, value.get_int_format_data() );
@@ -358,6 +360,7 @@ public:
         , const strf::int_with_format<IntT, Base, true>& value )
         : _punct(get_facet<strf::numpunct_c<Base>, IntT>(fp))
         , _encoding(get_facet<strf::encoding_c<CharT>, IntT>(fp))
+        , _lettercase(get_facet<strf::lettercase_c, IntT>(fp))
     {
         _init<IntT, detail::has_intpunct<CharT, FPack, IntT, Base>>
             ( value.value().value, value.get_int_format_data() );
@@ -396,6 +399,7 @@ private:
     unsigned _precision = 0;
     bool _negative = false;
     std::uint8_t _prefixsize = 0;
+    strf::lettercase _lettercase;
 
     template <typename IntT, bool HasPunct>
     void _init(IntT value, strf::int_format_data fmt);
@@ -473,13 +477,15 @@ inline void partial_fmt_int_printer<CharT, Base>::print_to
             else STRF_IF_CONSTEXPR (Base == 16)
             {
                 it[0] = static_cast<CharT>('0');
-                it[1] = static_cast<CharT>('x');
+                it[1] = static_cast<CharT>
+                    ('X' | ((_lettercase != strf::uppercase) << 5));
                 it += 2;
             }
             else
             {
                 it[0] = static_cast<CharT>('0');
-                it[1] = static_cast<CharT>('b');
+                it[1] = static_cast<CharT>
+                    ('B' | ((_lettercase != strf::uppercase) << 5));
                 it += 2;
             }
         }
@@ -489,7 +495,7 @@ inline void partial_fmt_int_printer<CharT, Base>::print_to
             unsigned zeros = _precision - _digcount;
             strf::detail::write_fill(ob, zeros, CharT('0'));
         }
-        strf::detail::write_int<Base>(ob, _uvalue, _digcount);
+        strf::detail::write_int<Base>(ob, _uvalue, _digcount, _lettercase);
     }
     else
     {
@@ -500,7 +506,7 @@ inline void partial_fmt_int_printer<CharT, Base>::print_to
             strf::detail::write_fill(ob, zeros, CharT('0'));
         }
         strf::detail::write_int<Base>( ob, _punct, _encoding
-                                     , _uvalue, _digcount );
+                                     , _uvalue, _digcount, _lettercase );
     }
 }
 
@@ -524,13 +530,15 @@ inline void partial_fmt_int_printer<CharT, Base>::write_complement
         else STRF_IF_CONSTEXPR (Base == 16)
         {
             ob.pos()[0] = static_cast<CharT>('0');
-            ob.pos()[1] = static_cast<CharT>('x');
+            ob.pos()[1] = static_cast<CharT>
+                ('X' | ((_lettercase != strf::uppercase) << 5));
             ob.advance(2);
         }
         else
         {
             ob.pos()[0] = static_cast<CharT>('0');
-            ob.pos()[1] = static_cast<CharT>('b');
+            ob.pos()[1] = static_cast<CharT>
+                ('B' | ((_lettercase != strf::uppercase) << 5));
             ob.advance(2);
         }
     }
@@ -547,12 +555,12 @@ inline void partial_fmt_int_printer<CharT, Base>::write_digits
     }
     if (_sepcount == 0)
     {
-        strf::detail::write_int<Base>(ob, _uvalue, _digcount);
+        strf::detail::write_int<Base>(ob, _uvalue, _digcount, _lettercase);
     }
     else
     {
         strf::detail::write_int<Base>( ob, _punct, _encoding
-                                     , _uvalue, _digcount );
+                                     , _uvalue, _digcount, _lettercase );
     }
 }
 
@@ -578,6 +586,7 @@ private:
     strf::encoding_error _enc_err;
     strf::alignment_format_data _afmt;
     strf::surrogate_policy _allow_surr;
+    strf::lettercase _lettercase;
 
     void _calc_fill_size(strf::size_preview<false>&) const
     {
@@ -611,6 +620,7 @@ inline full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
     , _enc_err(get_facet<strf::encoding_error_c, IntT>(fp))
     , _afmt(value.get_alignment_format_data())
     , _allow_surr(get_facet<strf::surrogate_policy_c, IntT>(fp))
+    , _lettercase(get_facet<strf::lettercase_c, IntT>(fp))
 {
     auto content_width = _ichars.width();
     if (_afmt.width > content_width)

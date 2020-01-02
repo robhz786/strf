@@ -55,6 +55,25 @@ void test_subnormal_values(const FPack& fp)
     TEST("___________+inf~~~~~").with(fp) (j(+strf::left  (infinity, 9, '~')));
     TEST("___________~~+inf~~~").with(fp) (j(+strf::center(infinity, 9, '~')));
     TEST("___________+~~~~~inf").with(fp) (j(+strf::split (infinity, 9, '~')));
+
+    TEST("_________________nan").with(fp, strf::lowercase)  (j(quiet_nan));
+    TEST("_________________inf").with(fp, strf::lowercase)  (j(infinity));
+    TEST("________________-inf").with(fp, strf::lowercase)  (j(-infinity));
+    TEST("_________________inf").with(fp, strf::lowercase)  (j(strf::sci(infinity)));
+    TEST("________________-inf").with(fp, strf::lowercase)  (j(strf::sci(-infinity)));
+
+    TEST("_________________NaN").with(fp, strf::mixedcase)  (j(quiet_nan));
+    TEST("_________________Inf").with(fp, strf::mixedcase)  (j(infinity));
+    TEST("________________-Inf").with(fp, strf::mixedcase)  (j(-infinity));
+    TEST("_________________Inf").with(fp, strf::mixedcase)  (j(strf::sci(infinity)));
+    TEST("________________-Inf").with(fp, strf::mixedcase)  (j(strf::sci(-infinity)));
+
+    TEST("_________________NAN").with(fp, strf::uppercase)  (j(quiet_nan));
+    TEST("_________________INF").with(fp, strf::uppercase)  (j(infinity));
+    TEST("________________-INF").with(fp, strf::uppercase)  (j(-infinity));
+    TEST("_________________INF").with(fp, strf::uppercase)  (j(strf::sci(infinity)));
+    TEST("________________-INF").with(fp, strf::uppercase)  (j(strf::sci(-infinity)));
+
 }
 
 const char* replace_decimal_point
@@ -118,6 +137,15 @@ void basic_tests(const FPack& fp)
 
     TEST(rd("_____________+0.0001")).with(fp) (j(+strf::fixed(0.0001)));
     TEST(rd("_______+0.0001000000")).with(fp) (j(+strf::fixed(0.0001).p(10)));
+
+
+    TEST(rd("_______________1e+50")).with(fp, strf::lowercase)  (j(1e+50));
+    TEST(rd("_______________1e+50")).with(fp, strf::mixedcase)  (j(1e+50));
+    TEST(rd("_______________1E+50")).with(fp, strf::uppercase)  (j(1e+50));
+
+    TEST(rd("______________ 1e+50")).with(fp, strf::lowercase)  (j(strf::sci(1e+50)>6));
+    TEST(rd("______________ 1e+50")).with(fp, strf::mixedcase)  (j(strf::sci(1e+50)>6));
+    TEST(rd("______________ 1E+50")).with(fp, strf::uppercase)  (j(strf::sci(1e+50)>6));
 
     //----------------------------------------------------------------
     // when precision is not specified, the general format selects the

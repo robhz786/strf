@@ -172,12 +172,17 @@ int main()
     TEST ("....0.....")  (  strf::center(0,    10, '.') );
     TEST ("...123....")  (  strf::center(123u, 10, '.') );
 
-    // hexadecimal case
-    //TEST("0X1234567890ABCDEF") ( ~strf::uphex(0x1234567890abcdefLL) );
-    TEST("0x1234567890abcdef") ( ~strf::hex(0x1234567890abcdefLL) );
+    // hexadecimal letter case
+    TEST("0X1234567890ABCDEF").with(strf::uppercase) ( ~strf::hex(0x1234567890abcdefLL) );
+    TEST("0x1234567890ABCDEF").with(strf::mixedcase) ( ~strf::hex(0x1234567890abcdefLL) );
+    TEST("0x1234567890abcdef").with(strf::lowercase) ( ~strf::hex(0x1234567890abcdefLL) );
+
+    // binary letter case
+    TEST("0B111").with(strf::uppercase) ( ~strf::bin(7) );
+    TEST("0b111").with(strf::mixedcase) ( ~strf::bin(7) );
+    TEST("0b111").with(strf::lowercase) ( ~strf::bin(7) );
 
     // hexadecimal aligment
-
     TEST("        aa")   (  strf::hex(0xAA)>10 );
     TEST("      0xaa")   ( ~strf::hex(0xAA)>10 );
     TEST("aa        ")   (  strf::hex(0xAA)<10 );

@@ -49,7 +49,7 @@ struct tr_invalid_arg_c
 {
     static constexpr bool constrainable = false;
 
-    static tr_invalid_arg get_default()
+    static constexpr tr_invalid_arg get_default() noexcept
     {
         return tr_invalid_arg::replace;
     }
@@ -78,7 +78,7 @@ struct read_uint_result
 
 
 template <typename CharT>
-read_uint_result<CharT> read_uint(const CharT* it, const CharT* end)
+read_uint_result<CharT> read_uint(const CharT* it, const CharT* end) noexcept
 {
     std::size_t value = *it -  static_cast<CharT>('0');
     constexpr long limit = std::numeric_limits<long>::max() / 10 - 9;
@@ -107,7 +107,7 @@ constexpr std::size_t trstr_invalid_arg_size_when_stop = (std::size_t)-1;
 template <typename CharT>
 std::size_t invalid_arg_size
     ( strf::encoding<CharT> enc
-    , tr_invalid_arg policy )
+    , tr_invalid_arg policy ) noexcept
 {
     switch(policy)
     {
@@ -126,7 +126,7 @@ inline std::size_t tr_string_size
     , std::size_t
     , const CharT*
     , const CharT*
-    , std::size_t )
+    , std::size_t ) noexcept
 {
     return 0;
 }
@@ -137,7 +137,7 @@ std::size_t tr_string_size
     , std::size_t num_args
     , const CharT* it
     , const CharT* end
-    , std::size_t inv_arg_size )
+    , std::size_t inv_arg_size ) noexcept
 {
     using traits = std::char_traits<CharT>;
 
@@ -394,7 +394,7 @@ public:
         , const CharT* tr_string
         , const CharT* tr_string_end
         , strf::encoding<CharT> enc
-        , strf::tr_invalid_arg policy )
+        , strf::tr_invalid_arg policy ) noexcept
         : _tr_string(tr_string)
         , _tr_string_end(tr_string_end)
         , _enc(enc)

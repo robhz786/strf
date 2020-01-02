@@ -504,12 +504,14 @@ template <int Base, typename CharT, typename IntT>
 inline void write_int_with_leading_zeros
     ( strf::basic_outbuf<CharT>& ob
     , IntT value
-    , unsigned digcount )
+    , unsigned digcount
+    , strf::lettercase lc )
 {
     ob.ensure(digcount);
     auto p = ob.pos();
     auto end = p + digcount;
-    auto p2 = intdigits_backwards_writer<Base>::write_txtdigits_backwards(value, end);
+    using writer = detail::intdigits_backwards_writer<Base>;
+    auto p2 = writer::write_txtdigits_backwards(value, end, lc);
     if (p != p2)
     {
         std::char_traits<CharT>::assign(p, p2 - p, (CharT)'0');
@@ -623,7 +625,7 @@ void _print_amplified_integer_big_separator
     }
 }
 
-template <int Base, typename CharT>
+template <typename CharT>
 void print_amplified_integer( strf::basic_outbuf<CharT>& ob
                             , const strf::numpunct_base& punct
                             , strf::encoding<CharT> enc
@@ -631,9 +633,9 @@ void print_amplified_integer( strf::basic_outbuf<CharT>& ob
                             , unsigned num_digits
                             , unsigned num_trailing_zeros )
 {
-    constexpr auto max_digits = detail::max_num_digits<unsigned long long, Base>;
+    constexpr auto max_digits = detail::max_num_digits<unsigned long long, 10>;
     char digits_buff[max_digits];
-    auto digits = strf::detail::write_int_txtdigits_backwards<Base>
+    auto digits = strf::detail::write_int_dec_txtdigits_backwards
         (value, digits_buff + max_digits);
     STRF_ASSERT(static_cast<int>(num_digits) == ((digits_buff + max_digits) - digits));
 
@@ -646,7 +648,7 @@ void print_amplified_integer( strf::basic_outbuf<CharT>& ob
         auto sep_size = enc.validate(sep32);
         if (sep_size == (std::size_t)-1)
         {
-            strf::detail::write_int<10>(ob, value, num_digits);
+            strf::detail::write_int<10>(ob, value, num_digits, strf::lowercase);
             strf::detail::write_fill(ob, num_trailing_zeros, (CharT)'0');
             return;
         }
@@ -672,7 +674,8 @@ void print_scientific_notation
     , char32_t decimal_point
     , int exponent
     , bool print_point
-    , unsigned trailing_zeros )
+    , unsigned trailing_zeros
+    , strf::lettercase lc )
 {
     STRF_ASSERT(num_digits == detail::count_digits<10>(digits));
 
@@ -787,9 +790,90 @@ void print_scientific_notation
         it[3] = static_cast<CharT>('0' + e10u);
         it[2] = '0';
     }
-    it[0] = 'e';
+    it[0] = 'E' | ((lc != strf::uppercase) << 5);
     it[1] = static_cast<CharT>('+' + ((exponent < 0) << 1));
     ob.advance(adv);
+}
+
+template <typename CharT>
+void print_nan(strf::basic_outbuf<CharT>& ob, strf::lettercase lc)
+{
+    ob.ensure(3);
+    auto p = ob.pos();
+    switch (lc)
+    {
+        case strf::mixedcase:
+            p[0] = 'N';
+            p[1] = 'a';
+            p[2] = 'N';
+            break;
+        case strf::uppercase:
+            p[0] = 'N';
+            p[1] = 'A';
+            p[2] = 'N';
+            break;
+        default:
+            p[0] = 'n';
+            p[1] = 'a';
+            p[2] = 'n';
+    }
+    ob.advance(3);
+}
+
+template <typename CharT>
+void print_inf(strf::basic_outbuf<CharT>& ob, strf::lettercase lc)
+{
+    ob.ensure(3);
+    auto p = ob.pos();
+    switch (lc)
+    {
+        case strf::mixedcase:
+            p[0] = 'I';
+            p[1] = 'n';
+            p[2] = 'f';
+            break;
+        case strf::uppercase:
+            p[0] = 'I';
+            p[1] = 'N';
+            p[2] = 'F';
+            break;
+        default:
+            p[0] = 'i';
+            p[1] = 'n';
+            p[2] = 'f';
+    }
+    ob.advance(3);
+}
+
+template <typename CharT>
+void print_inf( strf::basic_outbuf<CharT>& ob
+              , strf::lettercase lc
+              , bool negative )
+{
+    ob.ensure(3 + negative);
+    auto p = ob.pos();
+    if (negative)
+    {
+        *p ++ = '-';
+    }
+    switch (lc)
+    {
+        case strf::mixedcase:
+            *p++ = 'I';
+            *p++ = 'n';
+            *p++ = 'f';
+            break;
+        case strf::uppercase:
+            *p++ = 'I';
+            *p++ = 'N';
+            *p++ = 'F';
+            break;
+        default:
+            *p++ = 'i';
+            *p++ = 'n';
+            *p++ = 'f';
+    }
+    ob.advance_to(p);
 }
 
 template <typename CharT>
@@ -806,6 +890,7 @@ public:
         , _encoding(get_facet<strf::encoding_c<CharT>, FloatT>(fp))
         , _enc_err(get_facet<strf::encoding_error_c, FloatT>(fp))
         , _allow_surr(fp.template get_facet<strf::surrogate_policy_c, FloatT>())
+        , _lettercase(get_facet<strf::lettercase_c, FloatT>(fp))
         , _sep_size(_encoding.validate(_punct.thousands_sep()))
         , _data{ x.value()
                , x.get_float_format_data()
@@ -831,6 +916,7 @@ public:
         , _fillchar(x.fill())
         , _enc_err(fp.template get_facet<strf::encoding_error_c, FloatT>())
         , _allow_surr(fp.template get_facet<strf::surrogate_policy_c, FloatT>())
+        , _lettercase(fp.template get_facet<strf::lettercase_c, FloatT>())
         , _sep_size(_encoding.validate(_punct.thousands_sep()))
         , _data{ x.value()
                , x.get_float_format_data()
@@ -858,6 +944,7 @@ private:
     unsigned _right_fillcount = 0;
     strf::encoding_error _enc_err;
     strf::surrogate_policy _allow_surr = surrogate_policy::strict;
+    strf::lettercase _lettercase;
     std::size_t _sep_size;
     strf::detail::double_printer_data _data;
 };
@@ -1024,19 +1111,11 @@ void punct_double_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
     }
     if (_data.nan)
     {
-        ob.ensure(3);
-        ob.pos()[0] = 'n';
-        ob.pos()[1] = 'a';
-        ob.pos()[2] = 'n';
-        ob.advance(3);
+        strf::detail::print_nan(ob, _lettercase);
     }
     else if (_data.infinity)
     {
-        ob.ensure(3);
-        ob.pos()[0] = 'i';
-        ob.pos()[1] = 'n';
-        ob.pos()[2] = 'f';
-        ob.advance(3);
+        strf::detail::print_inf(ob, _lettercase);
     }
     else if (_data.sci_notation)
     {
@@ -1045,18 +1124,20 @@ void punct_double_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
             , _punct.decimal_point()
             , _data.e10 + _data.m10_digcount - 1
             , _data.showpoint
-            , _data.extra_zeros );
+            , _data.extra_zeros
+            , _lettercase );
     }
     else if (_data.e10 >= 0)
     {
         if (_punct.no_group_separation(_data.m10_digcount + _data.e10))
         {
-            strf::detail::write_int<10>(ob, _data.m10, _data.m10_digcount);
+            strf::detail::write_int<10>( ob, _data.m10, _data.m10_digcount
+                                       , strf::lowercase );
             strf::detail::write_fill(ob, _data.e10, (CharT)'0');
         }
         else
         {
-            strf::detail::print_amplified_integer<10>
+            strf::detail::print_amplified_integer
                 ( ob, _punct, _encoding, _data.m10
                 , _data.m10_digcount, _data.e10 );
         }
@@ -1085,7 +1166,8 @@ void punct_double_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
             {
                 strf::detail::write_fill(ob, e10u - _data.m10_digcount, (CharT)'0');
             }
-            strf::detail::write_int<10>(ob, _data.m10, _data.m10_digcount);
+            strf::detail::write_int<10>( ob, _data.m10, _data.m10_digcount
+                                       , strf::lowercase);
             if (_data.extra_zeros != 0)
             {
                 strf::detail::write_fill(ob, _data.extra_zeros,  (CharT)'0');
@@ -1103,17 +1185,17 @@ void punct_double_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
 
             if (_punct.no_group_separation(idigcount))
             {
-                strf::detail::write_int<10>(ob, integral_part, idigcount);
+                strf::detail::write_int<10>(ob, integral_part, idigcount, strf::lowercase);
             }
             else
             {
-                strf::detail::write_int<10>( ob, _punct, _encoding
-                                           , integral_part, idigcount );
+                strf::detail::write_int<10>( ob, _punct, _encoding, integral_part
+                                           , idigcount, strf::lowercase );
             }
             _encoding.encode_char( ob, _punct.decimal_point()
                                  , strf::encoding_error::replace );
             strf::detail::write_int_with_leading_zeros<10>
-                (ob, fractional_part, e10u);
+                (ob, fractional_part, e10u, strf::lowercase);
             if (_data.extra_zeros)
             {
                 detail::write_fill(ob, _data.extra_zeros,  (CharT)'0');
@@ -1134,10 +1216,11 @@ public:
 
     template <typename Fpack, typename Preview, typename FloatT>
     double_printer
-        ( const Fpack&
+        ( const Fpack& fp
         , Preview& preview
         , strf::float_with_format<FloatT, false> x )
         : _data(x.value(), x.get_float_format_data())
+        , _lettercase(get_facet<strf::lettercase_c, FloatT>(fp))
     {
         auto content_width = _content_width();
         preview.subtract_width(content_width);
@@ -1154,6 +1237,7 @@ public:
         , _fillchar(x.fill())
         , _enc_err(fp.template get_facet<strf::encoding_error_c, FloatT>())
         , _allow_surr(fp.template get_facet<strf::surrogate_policy_c, FloatT>())
+        , _lettercase(get_facet<strf::lettercase_c, FloatT>(fp))
     {
         init(preview, x.width(), x.alignment());
     }
@@ -1193,6 +1277,7 @@ private:
     unsigned _right_fillcount = 0;
     strf::encoding_error _enc_err = encoding_error::replace;
     strf::surrogate_policy _allow_surr = surrogate_policy::strict;
+    strf::lettercase _lettercase;
 };
 
 template <typename CharT>
@@ -1259,19 +1344,11 @@ void double_printer<CharT>::print_to
     }
     if (_data.nan)
     {
-        ob.ensure(3);
-        ob.pos()[0] = 'n';
-        ob.pos()[1] = 'a';
-        ob.pos()[2] = 'n';
-        ob.advance(3);
+        strf::detail::print_nan(ob, _lettercase);
     }
     else if (_data.infinity)
     {
-        ob.ensure(3);
-        ob.pos()[0] = 'i';
-        ob.pos()[1] = 'n';
-        ob.pos()[2] = 'f';
-        ob.advance(3);
+        strf::detail::print_inf(ob, _lettercase);
     }
     else if (_data.sci_notation)
     {
@@ -1310,7 +1387,7 @@ void double_printer<CharT>::print_to
             }
         }
         auto e10 = _data.e10 - 1 + (int)_data.m10_digcount;
-        it[0] = 'e';
+        it[0] = 'E' | ((_lettercase != strf::uppercase) << 5);
         it[1] = static_cast<CharT>('+' + ((e10 < 0) << 1));
         unsigned e10u = std::abs(e10);
         if (e10u >= 100)
@@ -1427,8 +1504,8 @@ class fast_double_printer: public strf::printer<CharT>
 public:
 
     template <typename FPack, typename Preview>
-    fast_double_printer(const FPack, Preview& preview, float f)
-        : fast_double_printer(f)
+    fast_double_printer(const FPack& fp, Preview& preview, float f) noexcept
+        : fast_double_printer(f, get_facet<strf::lettercase_c, float>(fp))
     {
         std::size_t s = 0;
         STRF_IF_CONSTEXPR (Preview::width_required || Preview::size_required)
@@ -1440,8 +1517,8 @@ public:
     }
 
     template <typename FPack, typename Preview>
-    fast_double_printer(const FPack, Preview& preview, double d)
-        : fast_double_printer(d)
+    fast_double_printer(const FPack& fp, Preview& preview, double d) noexcept
+        : fast_double_printer(d, get_facet<strf::lettercase_c, double>(fp))
     {
         std::size_t s = 0;
         STRF_IF_CONSTEXPR (Preview::width_required || Preview::size_required)
@@ -1452,9 +1529,10 @@ public:
         preview.add_size(s);
     }
 
-    explicit fast_double_printer(float f)
+    fast_double_printer(float f, strf::lettercase lc) noexcept
         : _value(decode(f))
         , _m10_digcount(strf::detail::count_digits<10>(_value.m10))
+        , _lettercase(lc)
 
     {
         STRF_ASSERT(!_value.nan || !_value.infinity);
@@ -1462,9 +1540,10 @@ public:
             || (_value.e10 < -(int)_m10_digcount - 2 - (_m10_digcount > 1));
     }
 
-    explicit fast_double_printer(double d)
+    fast_double_printer(double d, strf::lettercase lc) noexcept
         : _value(decode(d))
         , _m10_digcount(strf::detail::count_digits<10>(_value.m10))
+        , _lettercase(lc)
 
     {
         STRF_ASSERT(!_value.nan || !_value.infinity);
@@ -1481,6 +1560,7 @@ private:
     const detail::double_dec _value;
     bool _sci_notation ;
     const unsigned _m10_digcount;
+    strf::lettercase _lettercase;
 };
 
 template <typename CharT>
@@ -1508,31 +1588,11 @@ void fast_double_printer<CharT>::print_to
 {
     if (_value.nan)
     {
-        ob.ensure(3);
-        ob.pos()[0] = 'n';
-        ob.pos()[1] = 'a';
-        ob.pos()[2] = 'n';
-        ob.advance(3);
+        strf::detail::print_nan(ob, _lettercase);
     }
     else if (_value.infinity)
     {
-        if (_value.negative)
-        {
-            ob.ensure(4);
-            ob.pos()[0] = '-';
-            ob.pos()[1] = 'i';
-            ob.pos()[2] = 'n';
-            ob.pos()[3] = 'f';
-            ob.advance(4);
-        }
-        else
-        {
-            ob.ensure(3);
-            ob.pos()[0] = 'i';
-            ob.pos()[1] = 'n';
-            ob.pos()[2] = 'f';
-            ob.advance(3);
-        }
+        strf::detail::print_inf(ob, _lettercase, _value.negative);
     }
     else if (_sci_notation)
     {
@@ -1559,7 +1619,7 @@ void fast_double_printer<CharT>::print_to
             it = next;
         }
         auto e10 = _value.e10 - 1 + (int)_m10_digcount;
-        it[0] = 'e';
+        it[0] = 'E' | ((_lettercase != strf::uppercase) << 5);
         it[1] = static_cast<CharT>('+' + ((e10 < 0) << 1));
         unsigned e10u = std::abs(e10);
         if (e10u >= 100)
@@ -1679,6 +1739,7 @@ public:
         , _value(decode(d))
         , _m10_digcount(strf::detail::count_digits<10>(_value.m10))
         , _sep_count(0)
+        , _lettercase(get_facet<strf::lettercase_c, FloatT>(fp))
     {
         constexpr bool showpoint = false;
         if (_value.e10 > -(int)_m10_digcount)
@@ -1722,6 +1783,7 @@ private:
     const detail::double_dec _value;
     const unsigned _m10_digcount;
     unsigned _sep_count;
+    strf::lettercase _lettercase;
     bool _sci_notation ;
 
 };
@@ -1818,19 +1880,11 @@ void fast_punct_double_printer<CharT>::print_to
     }
     if (_value.nan)
     {
-        ob.ensure(3);
-        ob.pos()[0] = 'n';
-        ob.pos()[1] = 'a';
-        ob.pos()[2] = 'n';
-        ob.advance(3);
+        strf::detail::print_nan(ob, _lettercase);
     }
     else if (_value.infinity)
     {
-        ob.ensure(3);
-        ob.pos()[0] = 'i';
-        ob.pos()[1] = 'n';
-        ob.pos()[2] = 'f';
-        ob.advance(3);
+        strf::detail::print_inf(ob, _lettercase);
     }
     else if (_sci_notation)
     {
@@ -1838,7 +1892,7 @@ void fast_punct_double_printer<CharT>::print_to
             ( ob, _encoding, _value.m10, _m10_digcount
             , _punct.decimal_point()
             , _value.e10 + _m10_digcount - 1
-            , false, 0 );
+            , false, 0, _lettercase );
     }
     else
     {
@@ -1846,12 +1900,13 @@ void fast_punct_double_printer<CharT>::print_to
         {
             if (_punct.no_group_separation(_m10_digcount + _value.e10))
             {
-                strf::detail::write_int<10>(ob, _value.m10, _m10_digcount);
+                strf::detail::write_int<10>( ob, _value.m10, _m10_digcount
+                                           , strf::lowercase);
                 strf::detail::write_fill(ob, _value.e10, (CharT)'0');
             }
             else
             {
-                strf::detail::print_amplified_integer<10>
+                strf::detail::print_amplified_integer
                     ( ob, _punct, _encoding, _value.m10
                     , _m10_digcount, _value.e10 );
             }
@@ -1868,7 +1923,8 @@ void fast_punct_double_printer<CharT>::print_to
                 {
                     strf::detail::write_fill(ob, e10u - _m10_digcount, (CharT)'0');
                 }
-                strf::detail::write_int<10>(ob, _value.m10, _m10_digcount);
+                strf::detail::write_int<10>( ob, _value.m10, _m10_digcount
+                                           , strf::lowercase );
             }
             else
             {
@@ -1881,17 +1937,19 @@ void fast_punct_double_printer<CharT>::print_to
 
                 if (_punct.no_group_separation(_m10_digcount - e10u))
                 {
-                    strf::detail::write_int<10>(ob, integral_part, idigcount);
+                    strf::detail::write_int<10>( ob, integral_part, idigcount
+                                               , strf::lowercase );
                 }
                 else
                 {
                     strf::detail::write_int<10>( ob, _punct, _encoding
-                                               , integral_part, idigcount );
+                                               , integral_part, idigcount
+                                               , strf::lowercase );
                 }
                 _encoding.encode_char( ob, _punct.decimal_point()
                                      , strf::encoding_error::replace );
                 strf::detail::write_int_with_leading_zeros<10>
-                    (ob, fractional_part, e10u);
+                    (ob, fractional_part, e10u, strf::lowercase);
             }
         }
     }
