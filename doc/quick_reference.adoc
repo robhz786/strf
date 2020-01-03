@@ -12,6 +12,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :sectnumlevels: 2
 :toc: left
 :toclevels: 2
+:icons: font
 
 [[usage_syntax]]
 == Main usage syntax
@@ -1094,6 +1095,48 @@ date today {1, 1, 1935};
 auto str = strf::to_string("Today is ", as_yyyymmdd(today), '.');
 assert(str == "Today is 1935/01/01.");
 ----
+
+[WARNING]
+====
+Watch out for dangling references when using joins.
+When passing an array to `join`, it is stored by reference
+in the returned object. So the code below has UB:
+[source]
+----
+auto get_hello(const char* name)
+{
+    char buff[20]; // temporary array
+    strcpy(buff, "Hello");
+    return strf::join(buff, name, '!');
+}
+
+int main()
+{
+    // accessing a dangling array reference
+    strf::to(stdout)(get_hello("Maria"));
+}
+----
+Of course, `get_hello()` could be fixed by simply returning instead
+`strf::join("Hello", name, '!')`, since string literals have
+static storage duration.
+
+Also, although arguments are stored by value in joins
+( except for arrays ), some of the arguments may contain references.
+For exemple, if `str` is a `std::string`, then
+`strf::<<format_function_aliases,right>>(str, 10)` doesn't store a copy of
+`str`, but a reference to its array of characters.
+====
+
+[TIP]
+====
+If you don't want to ( or can not ) store an argument by copy in a
+join, you can use `std::reference_wrapper`:
+[source]
+----
+std::string name = /*...*/;
+strf::to(stdout) (strf::join("Hello ", std::ref(name), '!') ^ 50);
+----
+====
 
 ==== With alignment
 

@@ -591,6 +591,16 @@ private:
     FPack _fpack;
 };
 
+template <typename CharOut, typename FPack, typename Preview, typename Arg>
+inline auto make_printer
+    ( strf::rank<1>
+    , const FPack& fp
+    , Preview& preview
+    , std::reference_wrapper<Arg> arg)
+{
+    return make_printer<CharOut, FPack>
+        ( strf::rank<5>{}, fp, preview, arg.get() );
+}
 
 template <typename CharOut, typename FPack, typename Preview, typename Arg>
 using printer_impl
@@ -598,7 +608,6 @@ using printer_impl
                                        , std::declval<const FPack&>()
                                        , std::declval<Preview&>()
                                        , std::declval<const Arg&>() ) );
-
 namespace detail {
 
 template <typename CharT>

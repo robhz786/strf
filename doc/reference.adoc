@@ -10,6 +10,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :sectnums:
 :toc: left
 :toclevels: 2
+:icons: font
 
 :value_with_format: <<value_with_format,value_with_format>>
 :alignment_format: <<alignment_format,alignment_format>>

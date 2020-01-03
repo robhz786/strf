@@ -12,11 +12,7 @@ namespace detail {
 
 template <typename Arg>
 using opt_val_or_cref = std::conditional_t
-    < ( std::is_trivially_copyable<Arg>::value
-     && ! std::is_array<Arg>::value
-     && sizeof(Arg) < 4 * sizeof(void*) )
-    , Arg
-    , const Arg& > ;
+    < std::is_array<Arg>::value, const Arg&, Arg > ;
 
 template <std::size_t I, typename T>
 struct indexed_obj
