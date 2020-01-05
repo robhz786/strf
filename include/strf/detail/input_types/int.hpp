@@ -343,27 +343,27 @@ public:
         ( const FPack& fp
         , Preview& preview
         , const strf::int_with_format<IntT, Base, false>& value )
-        : _punct(get_facet<strf::numpunct_c<Base>, IntT>(fp))
-        , _encoding(get_facet<strf::encoding_c<CharT>, IntT>(fp))
-        , _lettercase(get_facet<strf::lettercase_c, IntT>(fp))
+        : partial_fmt_int_printer( fp, preview, value.value().value
+                                 , value.get_int_format_data() )
     {
-        _init<IntT, detail::has_intpunct<CharT, FPack, IntT, Base>>
-            ( value.value().value, value.get_int_format_data() );
-        preview.subtract_width(width());
-        calc_size(preview);
     }
 
-    template <typename FPack, typename Preview, typename IntT>
+    template < typename FPack
+             , typename Preview
+             , typename IntT
+             , typename IntTag = IntT /* used in get_facet */ >
     partial_fmt_int_printer
         ( const FPack& fp
         , Preview& preview
-        , const strf::int_with_format<IntT, Base, true>& value )
-        : _punct(get_facet<strf::numpunct_c<Base>, IntT>(fp))
-        , _encoding(get_facet<strf::encoding_c<CharT>, IntT>(fp))
-        , _lettercase(get_facet<strf::lettercase_c, IntT>(fp))
+        , IntT value
+        , int_format_data fdata
+        , strf::tag<IntT, IntTag> = strf::tag<IntT, IntTag>{} )
+        : _punct(get_facet<strf::numpunct_c<Base>, IntTag>(fp))
+        , _encoding(get_facet<strf::encoding_c<CharT>, IntTag>(fp))
+        , _lettercase(get_facet<strf::lettercase_c, IntTag>(fp))
     {
-        _init<IntT, detail::has_intpunct<CharT, FPack, IntT, Base>>
-            ( value.value().value, value.get_int_format_data() );
+        _init<IntT, detail::has_intpunct<CharT, FPack, IntTag, Base>>
+            ( value, fdata );
         preview.subtract_width(width());
         calc_size(preview);
     }
@@ -575,6 +575,13 @@ public:
         , Preview& preview
         , strf::int_with_format<IntT, Base, true> value ) noexcept;
 
+    template <typename FPack, typename Preview>
+    full_fmt_int_printer
+        ( const FPack& fp
+        , Preview& preview
+        , const void* value
+        , strf::alignment_format_data afdata );
+
     ~full_fmt_int_printer();
 
     void print_to( strf::basic_outbuf<CharT>& ob ) const override;
@@ -586,7 +593,6 @@ private:
     strf::encoding_error _enc_err;
     strf::alignment_format_data _afmt;
     strf::surrogate_policy _allow_surr;
-    strf::lettercase _lettercase;
 
     void _calc_fill_size(strf::size_preview<false>&) const
     {
@@ -616,11 +622,34 @@ inline full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
     ( const FPack& fp
     , Preview& preview
     , strf::int_with_format<IntT, Base, true> value ) noexcept
-    : _ichars(fp, preview, value)
+    : _ichars( fp, preview, value.value().value
+             , value.get_int_format_data()/*, strf::tag<IntT>()*/)
     , _enc_err(get_facet<strf::encoding_error_c, IntT>(fp))
     , _afmt(value.get_alignment_format_data())
     , _allow_surr(get_facet<strf::surrogate_policy_c, IntT>(fp))
-    , _lettercase(get_facet<strf::lettercase_c, IntT>(fp))
+{
+    auto content_width = _ichars.width();
+    if (_afmt.width > content_width)
+    {
+        _fillcount = _afmt.width - content_width;
+        preview.subtract_width(static_cast<std::int16_t>(_fillcount));
+    }
+    _calc_fill_size(preview);
+}
+
+template <typename CharT, int Base>
+template <typename FPack, typename Preview>
+inline full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
+    ( const FPack& fp
+    , Preview& preview
+    , const void* value
+    , strf::alignment_format_data afdata )
+    : _ichars( fp, preview, reinterpret_cast<std::size_t>(value)
+             , strf::int_format_data{0, true}
+             , strf::tag<std::size_t, const void*>() )
+    , _enc_err(get_facet<strf::encoding_error_c, const void*>(fp))
+    , _afmt(afdata)
+    , _allow_surr(get_facet<strf::surrogate_policy_c, const void*>(fp))
 {
     auto content_width = _ichars.width();
     if (_afmt.width > content_width)
@@ -844,6 +873,39 @@ inline auto make_fmt(strf::rank<1>, unsigned long x)
 inline auto make_fmt(strf::rank<1>, unsigned long long x)
 {
     return strf::int_with_format<unsigned long long>{{x}};
+}
+
+// void*
+
+template < typename CharOut, typename FPack, typename Preview >
+inline strf::detail::partial_fmt_int_printer<CharOut, 16>
+make_printer( strf::rank<1>
+            , const FPack& fp
+            , Preview& preview
+            , const void* p )
+{
+    return { fp, preview, reinterpret_cast<std::size_t>(p)
+           , strf::int_format_data{0, true, false}
+           , strf::tag<std::size_t, const void*>() };
+}
+
+
+template < typename CharOut, typename FPack, typename Preview >
+inline strf::detail::full_fmt_int_printer<CharOut, 16>
+make_printer( strf::rank<1>
+            , const FPack& fp
+            , Preview& preview
+            , strf::value_with_format<const void*, strf::alignment_format> f )
+{
+    return { fp
+           , preview
+           , f.value()
+           , f.get_alignment_format_data() };
+}
+
+inline auto make_fmt(strf::rank<1>, const void* p)
+{
+    return strf::value_with_format<const void*, strf::alignment_format>(p);
 }
 
 template <typename> struct is_int_number: public std::false_type {};

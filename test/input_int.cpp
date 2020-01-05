@@ -442,6 +442,29 @@ int main()
             ( strf::bin(0xF) );
     }
 
+    {   // print void*
+        void* ptr = reinterpret_cast<void*>((std::size_t)0xABC);
+
+        TEST("0xabc") (ptr);
+        TEST("...0xabc") (strf::right(ptr, 8, '.'));
+        TEST("...0xabc  ") (strf::join(strf::right(ptr, 8, '.')) < 10);
+        TEST("...0xABC").with(strf::mixedcase) (strf::right(ptr, 8, '.'));
+        TEST("...0XABC")
+            .with(strf::constrain<std::is_pointer>(strf::uppercase))
+            (strf::right(ptr, 8, '.'));
+
+        ptr = reinterpret_cast<void*>((std::size_t)0xABCDEF1234);
+
+        TEST("0xab'cd'ef'12'34")
+            .with(strf::monotonic_grouping<16>{2}.thousands_sep('\''))
+            (ptr);
+
+        TEST("0x....ab'cd'ef'12'34")
+            .with(strf::monotonic_grouping<16>{2}.thousands_sep('\''))
+            (strf::split(ptr, 20, '.'));
+    }
+
+
     return boost::report_errors();
 }
 

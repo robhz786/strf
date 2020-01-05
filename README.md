@@ -116,7 +116,6 @@ In its current state, Strf is known to work with the following compilers:
 * Make it possible to use it as a static library.
 * More input types:
   - Hexadecimal floating-points.
-  - `void*`
   - `bool` ( currently converted to `int` and printed as `0` or `1` )
   - `char32_t` ( converting from UTF-32 to the output encoding )
 * More encodings:

@@ -363,7 +363,7 @@ Both have the same purpose: to customize numeric punctuation.
 
 |`<<encoding,encoding_c>><CharT>`   |No  |The encoding correponding to character type `CharT`
 |`<<encoding_error,encoding_error_c>>`    |Yes |Encoding error handling
-|`<<surrogates_policy,surrogates_policy_c>>` |Yes |Wheter surrogates are treated as errors
+|`<<surrogate_policy,surrogate_policy_c>>` |Yes |Wheter surrogates are treated as errors
 |`<<tr_string_error,tr_string_error_c>>`   |No  |Tr-string parsing error handling
 |===
 
@@ -724,7 +724,7 @@ catch(strf::encoding_failure&){
 assert(transcoding_failed);
 ----
 
-[[surrogates_policy]]
+[[surrogate_policy]]
 === Surrogates tolerance
 
 The `surrogate_policy` enumeration is a facet that controls
@@ -838,6 +838,12 @@ are printed by adding extra zero leading digits if necessary.
 ( `"0x"` for hexadecimal, `"0"` for octal and `"0b"` for binary ).
 No effect in decimal base.
 
+Facet categories::
+- `<<lettercase,lettercase_c>>`
+- `<<numpunct, numpunct_c>><__Base__>`
+- `<<encoding,encoding_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
+- `<<surrogate_policy,surrogate_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
+- `<<encoding_error,encoding_error_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
 
 === Floating Points
 Types::
@@ -864,12 +870,38 @@ can fully recovered by a parser. Otherwise, if notation is __general__,
 the number of fractional digits. `precision == 0` has the same effect as
 `precision == 1`.
 
+Facet categories::
+- `<<lettercase,lettercase_c>>`
+- `<<numpunct, numpunct_c>><10>`
+- `<<encoding,encoding_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
+- `<<surrogate_policy,surrogate_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
+- `<<encoding_error,encoding_error_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
+
+=== `const void*`
+Types:: `const void*`
+Format functions::
+The <<alignment_format_functions, alignment functions>> only.
+
+Facet categories::
+- `<<lettercase,lettercase_c>>`
+- `<<numpunct, numpunct_c>><16>`
+- `<<encoding,encoding_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
+- `<<surrogate_policy,surrogate_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
+- `<<encoding_error,encoding_error_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
+
 === Single characters
 Type:: `CharT`, that is the output character type defined by the <<destinations,destination>>.
 
 Format functions::
 ( in addition to <<alignment_format_functions, alignment functions>> )
 `multi(std::size_t count)`::: Prints the character `count` times. Default value is `1`.
+
+Facet categories::
+- `<<width_calculation,width_calculation_c>>`
+- `<<encoding,encoding_c>><__CharType__>`
+- `<<surrogate_policy,surrogate_policy_c>>`
+- `<<encoding_error,encoding_error_c>>`
+
 
 === Strings
 Types::
@@ -896,15 +928,21 @@ Format functions::
 `cv()`::: Translates input string from the encoding associated to `CharT` to
           the output encoding, if these encodings are not the same.
           Otherwise, copies the input string as it is.
-
++
 .Example
 [source,cpp]
 ----
 auto str = strf::to_string(strf::center(u" Hello! ", 16, '*').cv());
 assert(str == "**** Hello! ****");
 ----
-
++
 See also the section about <<encoding_conversion,encoding conversion>>.
+
+Facet categories::
+- `<<width_calculation,width_calculation_c>>`
+- `<<encoding,encoding_c>><__CharType__>`
+- `<<surrogate_policy,surrogate_policy_c>>`
+- `<<encoding_error,encoding_error_c>>`
 
 === Ranges
 
