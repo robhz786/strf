@@ -237,6 +237,17 @@ private:
     }
 };
 
+template < typename OB >
+inline decltype(std::declval<OB&>().finish()) finish(strf::rank<2>, OB& ob)
+{
+    return ob.finish();
+}
+
+template < typename OB >
+inline void finish(strf::rank<1>, OB&)
+{
+}
+
 }// namespace detail
 
 template < typename OutbufCreator, typename FPack >
@@ -291,23 +302,23 @@ public:
     }
 
     constexpr STRF_HD destination_no_reserve(const destination_no_reserve& other)
-        : _outbuf_creator(other._outbuf_creator)
+        : strf::detail::destination_common
+            < strf::destination_no_reserve
+            , OutbufCreator
+            , FPack
+            , strf::print_preview<false, false> >(other)
+        , _outbuf_creator(other._outbuf_creator)
         , _fpack(other._fpack)
-        , strf::detail::destination_common
-        < strf::destination_no_reserve
-        , OutbufCreator
-        , FPack
-        , strf::print_preview<false, false> >(other)
     {
     }
     constexpr STRF_HD destination_no_reserve(destination_no_reserve&& other)
-        : _outbuf_creator(other._outbuf_creator)
+        : strf::detail::destination_common
+            < strf::destination_no_reserve
+            , OutbufCreator
+            , FPack
+            , strf::print_preview<false, false> >(other)
+        , _outbuf_creator(other._outbuf_creator)
         , _fpack(other._fpack)
-        , strf::detail::destination_common
-        < strf::destination_no_reserve
-        , OutbufCreator
-        , FPack
-        , strf::print_preview<false, false> >(other)
     {
     }
 
@@ -370,7 +381,7 @@ private:
     {
         decltype(auto) ob = _outbuf_creator.create();
         strf::detail::write_args(ob, printers...);
-        return ob.finish();
+        return strf::detail::finish(strf::rank<2>(), ob);
     }
 
     OutbufCreator _outbuf_creator;
@@ -433,26 +444,26 @@ public:
     }
 
     constexpr STRF_HD destination_with_given_size(const destination_with_given_size& other)
-        : _size(other._size),
-         _outbuf_creator(other._outbuf_creator)
+        : strf::detail::destination_common
+            < strf::destination_with_given_size
+            , OutbufCreator
+            , FPack
+            , strf::print_preview<false, false> >(other)
+        , _size(other._size)
+        , _outbuf_creator(other._outbuf_creator)
         , _fpack(other._fpack)
-        , strf::detail::destination_common
-        < strf::destination_with_given_size
-        , OutbufCreator
-        , FPack
-        , strf::print_preview<false, false> >(other)
     {
     }
 
     constexpr STRF_HD destination_with_given_size(destination_with_given_size&& other)
-        : _size(other._size),
-         _outbuf_creator(other._outbuf_creator)
+        : strf::detail::destination_common
+            < strf::destination_with_given_size
+            , OutbufCreator
+            , FPack
+            , strf::print_preview<false, false> >(other)
+        , _size(other._size)
+        , _outbuf_creator(other._outbuf_creator)
         , _fpack(other._fpack)
-        , strf::detail::destination_common
-        < strf::destination_with_given_size
-        , OutbufCreator
-        , FPack
-        , strf::print_preview<false, false> >(other)
     {
     }
 
@@ -512,7 +523,7 @@ private:
     {
         decltype(auto) ob = _outbuf_creator.create(_size);
         strf::detail::write_args(ob, printers...);
-        return ob.finish();
+        return strf::detail::finish(strf::rank<2>(), ob);
     }
 
     std::size_t _size;
@@ -572,24 +583,24 @@ public:
     }
 
     constexpr STRF_HD destination_calc_size(const destination_calc_size& other)
-        : _outbuf_creator(other._outbuf_creator)
+        : strf::detail::destination_common
+            < strf::destination_calc_size
+            , OutbufCreator
+            , FPack
+            , strf::print_preview<true, false> >(other)
+        , _outbuf_creator(other._outbuf_creator)
         , _fpack(other._fpack)
-        , strf::detail::destination_common
-        < strf::destination_calc_size
-        , OutbufCreator
-        , FPack
-        , strf::print_preview<true, false> >(other)
     {
     }
 
     constexpr STRF_HD destination_calc_size(destination_calc_size&& other)
-        : _outbuf_creator(other._outbuf_creator)
+        : strf::detail::destination_common
+            < strf::destination_calc_size
+            , OutbufCreator
+            , FPack
+            , strf::print_preview<true, false> >(other)
+        , _outbuf_creator(other._outbuf_creator)
         , _fpack(other._fpack)
-        , strf::detail::destination_common
-        < strf::destination_calc_size
-        , OutbufCreator
-        , FPack
-        , strf::print_preview<true, false> >(other)
     {
     }
 
@@ -652,7 +663,7 @@ private:
     {
         decltype(auto) ob = _outbuf_creator.create(preview.get_size());
         strf::detail::write_args(ob, printers...);
-        return ob.finish();
+        return strf::detail::finish(strf::rank<2>(), ob);
     }
 
     OutbufCreator _outbuf_creator;
@@ -666,6 +677,40 @@ using printer_impl
                                        , std::declval<const FPack&>()
                                        , std::declval<Preview&>()
                                        , std::declval<const Arg&>() ) );
+
+namespace detail {
+
+template <typename CharT>
+class outbuf_reference
+{
+public:
+
+    using char_type = CharT;
+
+    explicit STRF_HD outbuf_reference(strf::basic_outbuf<CharT>& ob) noexcept
+        : _ob(ob)
+    {
+    }
+
+    STRF_HD strf::basic_outbuf<CharT>& create() const
+    {
+        return _ob;
+    }
+
+private:
+    strf::basic_outbuf<CharT>& _ob;
+};
+
+
+} // namespace detail
+
+
+template <typename CharT>
+inline STRF_HD auto to(strf::basic_outbuf<CharT>& ob)
+{
+    return strf::destination_no_reserve<strf::detail::outbuf_reference<CharT>>(ob);
+}
+
 
 STRF_NAMESPACE_END
 

@@ -206,10 +206,10 @@ void test_facets_pack()
         BOOST_TEST_EQ(f2i.value, 22);
         BOOST_TEST_EQ(f3i.value, 30);
 
-        BOOST_TEST_EQ(&f1i, &f1_10);
-        BOOST_TEST_EQ(&f2t, &f2_20);
-        BOOST_TEST_EQ(&f2d, &f2_21);
-        BOOST_TEST_EQ(&f2i, &f2_22);
+        BOOST_TEST(&f1i == &f1_10);
+        BOOST_TEST(&f2t == &f2_20);
+        BOOST_TEST(&f2d == &f2_21);
+        BOOST_TEST(&f2i == &f2_22);
     }
 
     {   // std::reference_wrapper< constrained_fpe<Filter, Facet> >
@@ -243,8 +243,8 @@ void test_facets_pack()
         BOOST_TEST_EQ(f2i.value, 22);
         BOOST_TEST_EQ(f3i.value, 30);
 
-        BOOST_TEST_EQ(&f1i, &f1_10);
-        BOOST_TEST_EQ(&f2t, &f2_20);
+        BOOST_TEST(&f1i == &f1_10);
+        BOOST_TEST(&f2t == &f2_20);
     }
 
     {  //std::reference_wrapper
@@ -281,10 +281,10 @@ void test_facets_pack()
         BOOST_TEST_EQ(f2i.value, 22);
         BOOST_TEST_EQ(f3i.value, 30);
 
-        BOOST_TEST_EQ(&f1i, &f1_10);
-        BOOST_TEST_EQ(&f2t, &f2_20);
-        BOOST_TEST_EQ(&f2d, &f2_21);
-        BOOST_TEST_EQ(&f2i, &f2_22);
+        BOOST_TEST(&f1i == &f1_10);
+        BOOST_TEST(&f2t == &f2_20);
+        BOOST_TEST(&f2d == &f2_21);
+        BOOST_TEST(&f2i == &f2_22);
     }
 
     {   // constrain<Filter1>(constrain<Filter2>(facet))
@@ -330,9 +330,9 @@ void test_facets_pack()
         static_assert(std::is_same<decltype(xf2_20), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_21), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_22), const facet<2>&>::value, "wrong type");
-        BOOST_TEST_EQ(&xf2_20, &f2_20);
-        BOOST_TEST_EQ(&xf2_21, &f2_21);
-        BOOST_TEST_EQ(&xf2_22, &f2_22);
+        BOOST_TEST(&xf2_20 == &f2_20);
+        BOOST_TEST(&xf2_21 == &f2_21);
+        BOOST_TEST(&xf2_22 == &f2_22);
 
     }
 }
@@ -432,7 +432,7 @@ void test_constrained_fpe()
 
         BOOST_TEST_EQ(log.cp_count, 0);
         BOOST_TEST_EQ(log.mv_count, 0);
-        BOOST_TEST_EQ(&f, (&strf::get_facet<fcategory<0>, std::int64_t>(fp)));
+        BOOST_TEST(&f == (&strf::get_facet<fcategory<0>, std::int64_t>(fp)));
         BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::int32_t>(fp).value));
         BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::uint64_t>(fp).value));
         BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, double>(fp).value));
@@ -448,7 +448,7 @@ void test_constrained_fpe()
 
         BOOST_TEST_EQ(log.cp_count, 0);
         BOOST_TEST_EQ(log.mv_count, 0);
-        BOOST_TEST_EQ(&f, (&strf::get_facet<fcategory<0>, std::int64_t>(fp)));
+        BOOST_TEST(&f == (&strf::get_facet<fcategory<0>, std::int64_t>(fp)));
         BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::int32_t>(fp).value));
         BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::uint64_t>(fp).value));
         BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, double>(fp).value));
@@ -487,8 +487,8 @@ void test_constrained_fpe()
         BOOST_TEST_EQ(201, (strf::get_facet<fcategory<1>, double>(fp2).value));
         BOOST_TEST_EQ(301, (strf::get_facet<fcategory<1>, int>(fp2).value));
 
-        BOOST_TEST_EQ( &(strf::get_facet<fcategory<1>, double>(fp2))
-                     , &(strf::get_facet<fcategory<1>, double>(fp)) );
+        BOOST_TEST( &(strf::get_facet<fcategory<1>, double>(fp2)) ==
+                    &(strf::get_facet<fcategory<1>, double>(fp)) );
     }
 
     {

@@ -34,7 +34,7 @@ std::string char_0_to_0xff_sanitized(strf::encoding<char> enc)
 
 void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
 {
-    BOOST_TEST_LABEL << enc.name();
+    BOOST_TEST_LABEL (enc.name());
 
     {
         // to UTF-32

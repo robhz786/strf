@@ -16,18 +16,18 @@ class narrow_cfile_writer final: public strf::basic_outbuf_noexcept<CharT>
 {
 public:
 
-    explicit narrow_cfile_writer(std::FILE* dest_)
+    explicit STRF_HD narrow_cfile_writer(std::FILE* dest_)
         : strf::basic_outbuf_noexcept<CharT>(_buf, _buf_size)
         , _dest(dest_)
     {
         STRF_ASSERT(dest_ != nullptr);
     }
 
-    narrow_cfile_writer() = delete;
+    STRF_HD narrow_cfile_writer() = delete;
 
 #ifdef STRF_NO_CXX17_COPY_ELISION
 
-    narrow_cfile_writer(narrow_cfile_writer&&);
+    STRF_HD narrow_cfile_writer(narrow_cfile_writer&&);
 
 #else // defined(STRF_NO_CXX17_COPY_ELISION)
 
@@ -36,11 +36,11 @@ public:
 
 #endif // defined(STRF_NO_CXX17_COPY_ELISION)
 
-    ~narrow_cfile_writer()
+    STRF_HD ~narrow_cfile_writer()
     {
     }
 
-    void recycle() noexcept
+    STRF_HD void recycle() noexcept
     {
         auto p = this->pos();
         this->set_pos(_buf);
@@ -59,7 +59,7 @@ public:
         bool success;
     };
 
-    result finish()
+    STRF_HD result finish()
     {
         bool g = this->good();
         this->set_good(false);

@@ -276,12 +276,12 @@ std::vector<float> generate_float_samples()
 int main()
 {
     {
-        BOOST_TEST_LABEL << "default facets";
+        BOOST_TEST_LABEL ("default facets");
         basic_tests(strf::pack());
     }
 
     {
-        BOOST_TEST_LABEL << "with punctuation";
+        BOOST_TEST_LABEL ("with punctuation");
         basic_tests(strf::no_grouping<10>{});
     }
 

@@ -3,6 +3,7 @@
 #include "test_utils.hpp"
 #include <strf.hpp>
 #include <sstream>
+#include <iostream>
 
 // Note: There are adaptations of, say, std::span for use with CUDA (= I adapted it...).
 // But we want to avoid dependency clutter here, so let's just stick to the basics.

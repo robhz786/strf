@@ -2,8 +2,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include "lightweight_test_label.hpp"
-#include <strf.hpp>
+#include "test_utils.hpp"
 #include <vector>
 
 template <typename CharT>
@@ -33,9 +32,8 @@ void test_fill
     , std::basic_string<CharT> encoded_char
     , strf::surrogate_policy allow_surr = strf::surrogate_policy::strict )
 {
-    BOOST_TEST_LABEL << enc.name() << ", test_fill_char: U+"
-                     << std::hex << (unsigned)fill_char
-                     << std::dec;
+    BOOST_TEST_LABEL ( enc.name(), ", test_fill_char: U+"
+                     , strf::hex((unsigned)fill_char) );
 
     {
         std::int16_t count = 10;
@@ -88,10 +86,8 @@ void test_invalid_fill_stop
 
 #if defined(__cpp_exceptions)
 
-    BOOST_TEST_LABEL << "encoding: " << enc.name()
-                     << "; test_fill_char: \\u'"
-                     << std::hex << (unsigned)fill_char << '\''
-                     << std::dec;
+    BOOST_TEST_LABEL ( "encoding: ", enc.name(), "; test_fill_char: \\u'"
+                     , strf::hex((unsigned)fill_char), '\'' );
 
     {
         auto facets = strf::pack(enc, strf::encoding_error::stop, allow_surr);

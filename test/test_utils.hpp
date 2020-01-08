@@ -5,18 +5,15 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <iostream>
 #include <strf.hpp>
-
 #include <cctype>
-
-#include "lightweight_test_label.hpp"
-
 #include <algorithm> // for std::generate.
 
 #if defined(_WIN32)
 #include <windows.h>
 #endif  // defined(_WIN32)
+
+#include "boost/current_function.hpp"
 
 namespace test_utils {
 
@@ -182,6 +179,102 @@ inline void turn_into_bad(strf::basic_outbuf<CharT>& ob)
     strf::detail::outbuf_test_tool::turn_into_bad(ob.as_underlying());
 }
 
+int& test_err_count()
+{
+    static int count = 0;
+    return count;
+}
+
+strf::narrow_cfile_writer<char>& test_outbuf()
+{
+    static strf::narrow_cfile_writer<char> ob(stdout);
+    return ob;
+}
+
+class test_scope
+{
+public:
+
+    test_scope(const test_scope&) = delete;
+
+    test_scope()
+        : parent_(curr_test_scope())
+    {
+        parent_->child_ = this;
+        curr_test_scope() = this;
+        description_[0] = '\0';
+    }
+
+    ~test_scope()
+    {
+        if (parent_) {
+            parent_->child_ = child_;
+        }
+        if (child_) {
+            child_ -> parent_ = parent_;
+        }
+    }
+
+    auto description_writer()
+    {
+        return strf::to(description_);
+    }
+
+    static void print_stack(strf::outbuf& out)
+    {
+        test_scope* first = root().child_;
+        if (first != nullptr) {
+            strf::write(out, "\n    At ");
+        }
+        for(auto it = first; it != nullptr; it = it->child_) {
+            strf::write(out, it->description_);
+            strf::put(out, '/');
+        }
+        if (first != nullptr) {
+            strf::put(out, '\n');
+        }
+    }
+
+private:
+
+    struct root_tag {};
+
+    test_scope(root_tag)
+    {
+        description_[0] = '\0';
+    }
+
+    static test_scope& root()
+    {
+        static test_scope r{test_scope::root_tag{}};
+        return r;
+    }
+
+    static test_scope*& curr_test_scope()
+    {
+        static test_scope* curr = &root();
+        return curr;
+    }
+
+
+    test_scope* parent_ = nullptr;
+    test_scope* child_ = nullptr;
+    char description_[200];
+};
+
+template <typename ... Args>
+auto test_failure
+    ( const char* filename
+    , int line
+    , const char* funcname
+    , const Args& ... args )
+{
+    ++ test_err_count();
+    to(test_outbuf()) (filename, ':', line, ": ", args...);
+    test_scope::print_stack(test_outbuf());
+    to(test_outbuf()) ("\n    In function '", funcname, "'\n");
+}
+
 template <typename CharOut>
 class input_tester
     : public strf::basic_outbuf<CharOut>
@@ -223,9 +316,8 @@ private:
     template <typename ... MsgArgs>
     void _test_failure(const MsgArgs&... msg_args)
     {
-        _test_failed = true;
-        // strf::append(_failure_msg)(msg_args...);
-        _failure_msg += "(failure arguments not appeneded)";
+        test_utils::test_failure( _src_filename, _src_line
+                                , _function, msg_args... );
     }
 
     bool _wrongly_reserved() const;
@@ -234,7 +326,6 @@ private:
 
     std::basic_string<CharOut> _result;
     std::basic_string<CharOut> _expected;
-    std::string _failure_msg;
     std::size_t _reserved_size;
     const char* _src_filename;
     const char* _function;
@@ -244,7 +335,6 @@ private:
     bool _expect_error = false;
     bool _recycle_called = false;
     bool _source_location_printed = false;
-    bool _test_failed = false;
 };
 
 
@@ -315,20 +405,14 @@ void input_tester<CharOut>::finish()
     }
     if (_expected != _result)
     {
-        _test_failure( "\n expected: \"", strf::cv(_expected), '\"'
-                     , "\n obtained: \"", strf::cv(_result), "\"\n" );
+        _test_failure( "\n  expected: \"", strf::cv(_expected), '\"'
+                     , "\n  obtained: \"", strf::cv(_result), "\"" );
 
     }
     if(_wrongly_reserved())
     {
-        _test_failure( "\n reserved size  : ", _reserved_size
-                     , "\n necessary size : ", _result.length(), '\n' );
-    }
-
-    if (_test_failed)
-    {
-        ::boost::detail::error_impl( _failure_msg.c_str(), _src_filename
-                                   , _src_line, _function);
+        _test_failure( "\n  reserved size  : ", _reserved_size
+                     , "\n  necessary size : ", _result.length() );
     }
 }
 
@@ -421,6 +505,38 @@ auto make_tester
        ( expected, filename, line, function, reserve_factor);
 }
 
+#if defined(_MSC_VER)
+# pragma warning(push)
+# pragma warning(disable: 4389)
+#elif defined(__clang__) && defined(__has_warning)
+# if __has_warning("-Wsign-compare")
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wsign-compare"
+# endif
+#elif defined(__GNUC__) && !(defined(__INTEL_COMPILER) || defined(__ICL) || defined(__ICC) || defined(__ECC)) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 406
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wsign-compare"
+#endif
+
+
+template <typename T, typename U>
+constexpr bool equal(const T&a, const U&b)
+{
+    return a == b;
+}
+
+
+#if defined(_MSC_VER)
+# pragma warning(pop)
+#elif defined(__clang__) && defined(__has_warning)
+# if __has_warning("-Wsign-compare")
+#  pragma clang diagnostic pop
+# endif
+#elif defined(__GNUC__) && !(defined(__INTEL_COMPILER) || defined(__ICL) || defined(__ICC) || defined(__ECC)) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 406
+# pragma GCC diagnostic pop
+#endif
+
+
 } // namespace test_utils
 
 #define TEST(EXPECTED)                                                  \
@@ -428,5 +544,71 @@ auto make_tester
 
 #define TEST_RF(EXPECTED, RF)                                           \
     test_utils::make_tester((EXPECTED), __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, (RF))
+
+#define TEST_STR_CONCAT(str1, str2) str1 ## str2
+
+#define TEST_LABEL_IMPL(LINE)                                           \
+    test_utils::test_scope TEST_STR_CONCAT(test_label_, LINE);          \
+    TEST_STR_CONCAT(test_label_, LINE).description_writer()
+
+#define BOOST_TEST_LABEL   TEST_LABEL_IMPL(__LINE__)
+
+#define BOOST_ERROR(msg) \
+    test_utils::test_failure(__FILE__, __LINE__, BOOST_CURRENT_FUNCTION, (msg));
+
+#define BOOST_TEST(expr)                                                \
+    if (!(expr))                                                        \
+        test_utils::test_failure                                        \
+            ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION                \
+            , "test (" #expr ") failed. " );                            \
+
+#define BOOST_TEST_EQ(a, b)                                             \
+    if (!test_utils::equal((a), (b)))                                   \
+        test_utils::test_failure                                        \
+            ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION                \
+            , " test (", (a), " == ", (b), ") failed. " );
+
+#define BOOST_TEST_CSTR_EQ(a, b)                                        \
+    if (0 != std::strcmp(a, b))                                         \
+        test_utils::test_failure                                        \
+            ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION                \
+            , "test (s1 == s2) failed. Where:\n    s1 is \"", (a)     \
+            , "\"\n    s2 is \"", (b), '\"' );
+
+#define BOOST_TEST_THROWS( EXPR, EXCEP )                                \
+  { bool caught = false;                                                \
+    try { EXPR; }                                                       \
+    catch(EXCEP const&) { caught = true; }                              \
+    if (!caught)                                                        \
+          test_utils::test_failure                                      \
+              ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION              \
+              , "exception " #EXCEP " not thrown as expected" );        \
+  }
+
+
+int test_finish()
+{
+    int err_count = test_utils::test_err_count();
+    if (err_count == 0) {
+        strf::write(test_utils::test_outbuf(), "All test passed!\n");
+    }
+    else {
+        strf::to(test_utils::test_outbuf()) (err_count, " tests failed!\n");
+        // auto digcount = strf::detail::count_digits<10>(err_count);
+        // strf::detail::write_int(ob, err_count, digcount);
+        // strf::write(ob, " tests failed!\n");
+    }
+    test_utils::test_outbuf().finish();
+    return err_count;
+}
+
+namespace boost {
+
+inline int report_errors()
+{
+    return test_finish();
+}
+
+}
 
 #endif
