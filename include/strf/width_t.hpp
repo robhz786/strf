@@ -64,7 +64,7 @@ public:
     }
 
     constexpr STRF_HD width_t(const width_t& other) noexcept
-        : width_t(other._value)
+        : _value(other._value)
     {
     }
 
