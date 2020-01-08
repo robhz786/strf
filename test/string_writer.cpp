@@ -16,7 +16,7 @@ void test_successfull_append()
     write(ob, tiny_str.c_str(), tiny_str.size());
     write(ob, double_str.c_str(), double_str.size());
     ob.finish();
-    BOOST_TEST(str == expected_content);
+    TEST_TRUE(str == expected_content);
 }
 
 template <typename CharT>
@@ -29,7 +29,7 @@ void test_successfull_make()
     strf::basic_string_maker<CharT> ob;
     write(ob, tiny_str.c_str(), tiny_str.size());
     write(ob, double_str.c_str(), double_str.size());
-    BOOST_TEST(ob.finish() == expected_content);
+    TEST_TRUE(ob.finish() == expected_content);
 }
 
 template <typename CharT>
@@ -39,30 +39,30 @@ void test_destinations()
     auto half_str = test_utils::make_half_string<CharT>();
     {
         auto s = strf::to_basic_string<CharT>(half_str);
-        BOOST_TEST(s == half_str);
+        TEST_TRUE(s == half_str);
     }
     {
         auto s = strf::to_basic_string<CharT>.reserve(20) (half_str);
-        BOOST_TEST(s == half_str);
+        TEST_TRUE(s == half_str);
     }
     {
         auto s = strf::to_basic_string<CharT>.reserve_calc() (half_str);
-        BOOST_TEST(s == half_str);
+        TEST_TRUE(s == half_str);
     }
     {
         auto s = double_str;
         strf::append(s) (half_str);
-        BOOST_TEST(s == double_str + half_str);
+        TEST_TRUE(s == double_str + half_str);
     }
     {
         auto s = double_str;
         strf::append(s).reserve(20) (half_str);
-        BOOST_TEST(s == double_str + half_str);
+        TEST_TRUE(s == double_str + half_str);
     }
     {
         auto s = double_str;
         strf::append(s).reserve_calc() (half_str);
-        BOOST_TEST(s == double_str + half_str);
+        TEST_TRUE(s == double_str + half_str);
     }
 }
 
@@ -82,5 +82,5 @@ int main()
     test_successfull_make<char>();
     test_successfull_make<char16_t>();
 
-    return boost::report_errors();
+    return test_finish();
 }

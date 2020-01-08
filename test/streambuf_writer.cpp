@@ -23,9 +23,9 @@ void test_successfull_writing()
 
     auto obtained_content = dest.str();
 
-    BOOST_TEST(status.success);
-    BOOST_TEST_EQ(status.count, obtained_content.size());
-    BOOST_TEST(obtained_content == expected_content);
+    TEST_TRUE(status.success);
+    TEST_EQ(status.count, obtained_content.size());
+    TEST_TRUE(obtained_content == expected_content);
 }
 
 template <typename CharT>
@@ -47,9 +47,9 @@ void test_failing_to_recycle()
 
     auto obtained_content = dest.str();
 
-    BOOST_TEST(! status.success);
-    BOOST_TEST_EQ(status.count, obtained_content.size());
-    BOOST_TEST(obtained_content == expected_content);
+    TEST_TRUE(! status.success);
+    TEST_EQ(status.count, obtained_content.size());
+    TEST_TRUE(obtained_content == expected_content);
 }
 
 template <typename CharT>
@@ -72,9 +72,9 @@ void test_failing_to_finish()
 
     auto obtained_content = dest.str();
 
-    BOOST_TEST(! status.success);
-    BOOST_TEST_EQ(status.count, obtained_content.size());
-    BOOST_TEST(obtained_content == expected_content);
+    TEST_TRUE(! status.success);
+    TEST_EQ(status.count, obtained_content.size());
+    TEST_TRUE(obtained_content == expected_content);
 }
 
 template <typename CharT>
@@ -86,12 +86,12 @@ void test_destination()
     {
         std::basic_ostringstream<CharT> dest;
         strf::to(dest.rdbuf()) (half_str, full_str);
-        BOOST_TEST(dest.str() == half_str + full_str);
+        TEST_TRUE(dest.str() == half_str + full_str);
     }
     {
         std::basic_ostringstream<CharT> dest;
         strf::to(*dest.rdbuf()) (half_str, full_str);
-        BOOST_TEST(dest.str() == half_str + full_str);
+        TEST_TRUE(dest.str() == half_str + full_str);
     }
 }
 
@@ -117,5 +117,5 @@ int main()
     test_failing_to_finish<char32_t>();
     test_failing_to_finish<wchar_t>();
 
-    return boost::report_errors();
+    return test_finish();
 }

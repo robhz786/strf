@@ -26,9 +26,9 @@ void test_narrow_successfull_writing()
     auto obtained_content = test_utils::read_file<CharT>(file);
     std::fclose(file);
 
-    BOOST_TEST(status.success);
-    BOOST_TEST_EQ(status.count, obtained_content.size());
-    BOOST_TEST(obtained_content == expected_content);
+    TEST_TRUE(status.success);
+    TEST_EQ(status.count, obtained_content.size());
+    TEST_TRUE(obtained_content == expected_content);
 }
 
 void test_wide_successfull_writing()
@@ -48,9 +48,9 @@ void test_wide_successfull_writing()
     auto obtained_content = test_utils::read_wfile(file);
     std::fclose(file);
 
-    BOOST_TEST(status.success);
-    BOOST_TEST_EQ(status.count, obtained_content.size());
-    BOOST_TEST(obtained_content == expected_content);
+    TEST_TRUE(status.success);
+    TEST_EQ(status.count, obtained_content.size());
+    TEST_TRUE(obtained_content == expected_content);
 }
 
 template <typename CharT>
@@ -74,9 +74,9 @@ void test_narrow_failing_to_recycle()
     auto obtained_content = test_utils::read_file<CharT>(path.c_str());
     std::remove(path.c_str());
 
-    BOOST_TEST(! status.success);
-    BOOST_TEST_EQ(status.count, obtained_content.size());
-    BOOST_TEST(obtained_content == expected_content);
+    TEST_TRUE(! status.success);
+    TEST_EQ(status.count, obtained_content.size());
+    TEST_TRUE(obtained_content == expected_content);
 }
 
 void test_wide_failing_to_recycle()
@@ -99,9 +99,9 @@ void test_wide_failing_to_recycle()
     auto obtained_content = test_utils::read_wfile(path.c_str());
     std::remove(path.c_str());
 
-    BOOST_TEST(! status.success);
-    BOOST_TEST_EQ(status.count, obtained_content.size());
-    BOOST_TEST(obtained_content == expected_content);
+    TEST_TRUE(! status.success);
+    TEST_EQ(status.count, obtained_content.size());
+    TEST_TRUE(obtained_content == expected_content);
 }
 
 
@@ -126,9 +126,9 @@ void test_narrow_failing_to_finish()
     auto obtained_content = test_utils::read_file<CharT>(path.c_str());
     std::remove(path.c_str());
 
-    BOOST_TEST(! status.success);
-    BOOST_TEST_EQ(status.count, obtained_content.size());
-    BOOST_TEST(obtained_content == expected_content);
+    TEST_TRUE(! status.success);
+    TEST_EQ(status.count, obtained_content.size());
+    TEST_TRUE(obtained_content == expected_content);
 }
 
 void test_wide_failing_to_finish()
@@ -151,9 +151,9 @@ void test_wide_failing_to_finish()
     auto obtained_content = test_utils::read_file<char>(path.c_str());
     std::remove(path.c_str());
 
-    BOOST_TEST(! status.success);
-    BOOST_TEST_EQ(status.count, obtained_content.size());
-    BOOST_TEST(obtained_content == expected_content);
+    TEST_TRUE(! status.success);
+    TEST_EQ(status.count, obtained_content.size());
+    TEST_TRUE(obtained_content == expected_content);
 }
 
 template <typename CharT>
@@ -170,9 +170,9 @@ void test_destination()
     auto obtained_content = test_utils::read_file<CharT>(path.c_str());
     std::remove(path.c_str());
 
-    BOOST_TEST(status.success);
-    BOOST_TEST_EQ(status.count, obtained_content.size());
-    BOOST_TEST(obtained_content == half_str + full_str);
+    TEST_TRUE(status.success);
+    TEST_EQ(status.count, obtained_content.size());
+    TEST_TRUE(obtained_content == half_str + full_str);
 
 }
 
@@ -190,9 +190,9 @@ void test_wdestination()
     auto obtained_content = test_utils::read_wfile(path.c_str());
     std::remove(path.c_str());
 
-    BOOST_TEST(status.success);
-    BOOST_TEST_EQ(status.count, obtained_content.size());
-    BOOST_TEST(obtained_content == half_str + full_str);
+    TEST_TRUE(status.success);
+    TEST_EQ(status.count, obtained_content.size());
+    TEST_TRUE(obtained_content == half_str + full_str);
 }
 
 int main()
@@ -225,5 +225,5 @@ int main()
     test_wide_failing_to_recycle();
     test_wide_failing_to_finish();
 
-    return boost::report_errors();
+    return test_finish();
 }

@@ -551,31 +551,31 @@ constexpr bool equal(const T&a, const U&b)
     test_utils::test_scope TEST_STR_CONCAT(test_label_, LINE);          \
     TEST_STR_CONCAT(test_label_, LINE).description_writer()
 
-#define BOOST_TEST_LABEL   TEST_LABEL_IMPL(__LINE__)
+#define TEST_LABEL   TEST_LABEL_IMPL(__LINE__)
 
-#define BOOST_ERROR(msg) \
+#define TEST_ERROR(msg) \
     test_utils::test_failure(__FILE__, __LINE__, BOOST_CURRENT_FUNCTION, (msg));
 
-#define BOOST_TEST(expr)                                                \
+#define TEST_TRUE(expr)                                                 \
     if (!(expr))                                                        \
         test_utils::test_failure                                        \
             ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION                \
             , "test (" #expr ") failed. " );                            \
 
-#define BOOST_TEST_EQ(a, b)                                             \
+#define TEST_EQ(a, b)                                                   \
     if (!test_utils::equal((a), (b)))                                   \
         test_utils::test_failure                                        \
             ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION                \
             , " test (", (a), " == ", (b), ") failed. " );
 
-#define BOOST_TEST_CSTR_EQ(a, b)                                        \
+#define TEST_CSTR_EQ(a, b)                                              \
     if (0 != std::strcmp(a, b))                                         \
         test_utils::test_failure                                        \
             ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION                \
-            , "test (s1 == s2) failed. Where:\n    s1 is \"", (a)     \
+            , "test (s1 == s2) failed. Where:\n    s1 is \"", (a)       \
             , "\"\n    s2 is \"", (b), '\"' );
 
-#define BOOST_TEST_THROWS( EXPR, EXCEP )                                \
+#define TEST_THROWS( EXPR, EXCEP )                                      \
   { bool caught = false;                                                \
     try { EXPR; }                                                       \
     catch(EXCEP const&) { caught = true; }                              \
@@ -585,7 +585,6 @@ constexpr bool equal(const T&a, const U&b)
               , "exception " #EXCEP " not thrown as expected" );        \
   }
 
-
 int test_finish()
 {
     int err_count = test_utils::test_err_count();
@@ -594,21 +593,9 @@ int test_finish()
     }
     else {
         strf::to(test_utils::test_outbuf()) (err_count, " tests failed!\n");
-        // auto digcount = strf::detail::count_digits<10>(err_count);
-        // strf::detail::write_int(ob, err_count, digcount);
-        // strf::write(ob, " tests failed!\n");
     }
     test_utils::test_outbuf().finish();
     return err_count;
-}
-
-namespace boost {
-
-inline int report_errors()
-{
-    return test_finish();
-}
-
 }
 
 #endif

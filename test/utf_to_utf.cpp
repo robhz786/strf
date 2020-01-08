@@ -35,7 +35,7 @@ void test_valid_input
     ( const strf::encoding<CharIn>& ein
     , const strf::encoding<CharOut>& eout )
 {
-    BOOST_TEST_LABEL ("from ", ein.name(), " to ", eout.name());
+    TEST_LABEL ("from ", ein.name(), " to ", eout.name());
 
     auto input = valid_input_sample(ein);
     auto expected = valid_input_sample(eout);
@@ -67,7 +67,7 @@ void test_allowed_surrogates
     ( const strf::encoding<CharIn>& ein
     , const strf::encoding<CharOut>& eout )
 {
-    BOOST_TEST_LABEL ("from ", ein.name()," to ", eout.name());
+    TEST_LABEL ("from ", ein.name()," to ", eout.name());
 
     const auto input    = sample_with_surrogates(ein);
     const auto expected = sample_with_surrogates(eout);
@@ -159,7 +159,7 @@ void test_invalid_input
     ( const strf::encoding<ChIn>& ein
     , const strf::encoding<ChOut>& eout )
 {
-    BOOST_TEST_LABEL ("From invalid ", ein.name(), " to ", eout.name());
+    TEST_LABEL ("From invalid ", ein.name(), " to ", eout.name());
 
     const std::basic_string<ChIn>  suffix_in { (ChIn)'d', (ChIn)'e', (ChIn)'f' };
     const std::basic_string<ChOut> suffix_out{ (ChOut)'d', (ChOut)'e', (ChOut)'f' };
@@ -171,7 +171,7 @@ void test_invalid_input
         const int err_count = s.first;
         const auto& seq = s.second;
 
-        BOOST_TEST_LABEL ( "Sequence = ", stringify_invalid_char_sequence(seq));
+        TEST_LABEL ( "Sequence = ", stringify_invalid_char_sequence(seq));
 
         const std::basic_string<ChIn> input = prefix_in + seq + suffix_in;
 
@@ -190,7 +190,7 @@ void test_invalid_input
 #if defined(__cpp_exceptions)
 
         // stop
-        BOOST_TEST_THROWS( (strf::to_string.with(eout)
+        TEST_THROWS( (strf::to_string.with(eout)
                                            .with(strf::encoding_error::stop)
                                             (strf::sani(input, ein)) )
                           , strf::encoding_failure );
@@ -288,5 +288,5 @@ int main()
         , [](auto ein, auto eout){ test_invalid_input(ein, eout); } );
 
 
-    return boost::report_errors();
+    return test_finish();
 }

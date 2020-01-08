@@ -34,7 +34,7 @@ std::string char_0_to_0xff_sanitized(strf::encoding<char> enc)
 
 void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
 {
-    BOOST_TEST_LABEL (enc.name());
+    TEST_LABEL (enc.name());
 
     {
         // to UTF-32
@@ -50,14 +50,14 @@ void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
         // from and back to UTF-32
         auto enc_str = strf::to_string.with(enc) (strf::sani(valid_u32input));
         auto u32str = strf::to_u32string (strf::sani(enc_str, enc));
-        BOOST_TEST(u32str == valid_u32input);
+        TEST_TRUE(u32str == valid_u32input);
     }
     {
         // from UTF-8
         auto u8str = strf::to_string (strf::sani(valid_u32input));
         auto enc_str = strf::to_string.with(enc) (strf::sani(u8str, strf::utf8<char>()));
         auto u32str = strf::to_u32string (strf::sani(enc_str, enc));
-        BOOST_TEST(u32str == valid_u32input);
+        TEST_TRUE(u32str == valid_u32input);
 
     }
     {   // from UTF-8
@@ -76,7 +76,7 @@ void test(const strf::encoding<char>& enc, std::u32string decoded_0_to_0x100)
 
     {
         auto facets = strf::pack(enc, strf::encoding_error::stop);
-        BOOST_TEST_THROWS(
+        TEST_THROWS(
             ( (strf::to_string.with(facets)(strf::sani(u"---\U0010FFFF++"))))
             , strf::encoding_failure );
     }
@@ -151,5 +151,5 @@ int main()
     test(strf::iso_8859_3<char>(), decoded_0_to_xff_iso_8859_3());
     test(strf::iso_8859_15<char>(), decoded_0_to_xff_iso_8859_15());
     test(strf::windows_1252<char>(), decoded_0_to_xff_windows_1252() );
-    return boost::report_errors();
+    return test_finish();
 }

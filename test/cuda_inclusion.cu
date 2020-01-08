@@ -7,5 +7,5 @@
 
 int main()
 {
-    return boost::report_errors();
+    return test_finish();
 }

@@ -276,12 +276,12 @@ std::vector<float> generate_float_samples()
 int main()
 {
     {
-        BOOST_TEST_LABEL ("default facets");
+        TEST_LABEL ("default facets");
         basic_tests(strf::pack());
     }
 
     {
-        BOOST_TEST_LABEL ("with punctuation");
+        TEST_LABEL ("with punctuation");
         basic_tests(strf::no_grouping<10>{});
     }
 
@@ -292,7 +292,7 @@ int main()
         {
             (void) strf::to(buff) (d);
             auto parsed = std::strtod(buff, nullptr);
-            BOOST_TEST_EQ(parsed, d);
+            TEST_EQ(parsed, d);
         }
     }
 
@@ -303,7 +303,7 @@ int main()
         {
             (void) strf::to(buff) (f);
             auto parsed = std::strtof(buff, nullptr);
-            BOOST_TEST_EQ(parsed, f);
+            TEST_EQ(parsed, f);
         }
     }
     constexpr auto j = strf::join_right(20, '_');
@@ -336,6 +336,6 @@ int main()
         TEST("_______+1,024125e+03").with(p) (j(+strf::sci(1024.125f)));
     }
 
-    return boost::report_errors();
+    return test_finish();
 }
 

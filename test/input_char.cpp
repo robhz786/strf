@@ -53,7 +53,7 @@ int main()
 
     // todo: test with alternative width calculators
 
-    return boost::report_errors();
+    return test_finish();
 }
 
 

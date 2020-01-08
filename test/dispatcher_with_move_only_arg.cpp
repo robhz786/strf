@@ -66,13 +66,13 @@ int main()
 
     write(foo(buff, buff + sizeof(buff))) ("abcd", 1234);
 
-    BOOST_TEST_CSTR_EQ("abcd1234", buff);
+    TEST_CSTR_EQ("abcd1234", buff);
 
     write(foo(buff, buff + sizeof(buff))).tr("--{}--{}--", "abcd", 1234);
 
-    BOOST_TEST_CSTR_EQ("--abcd--1234--", buff);
+    TEST_CSTR_EQ("--abcd--1234--", buff);
 
-    return boost::report_errors();
+    return test_finish();
 }
 
 

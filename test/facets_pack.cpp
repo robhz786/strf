@@ -171,10 +171,10 @@ void test_facets_pack()
         static_assert(std::is_same<decltype(f2i), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(f3i), const facet<3>&>::value, "wrong type");
 
-        BOOST_TEST_EQ(f1i.value, 10);
-        BOOST_TEST_EQ(f2d.value, 21);
-        BOOST_TEST_EQ(f2i.value, 22);
-        BOOST_TEST_EQ(f3i.value, 30);
+        TEST_EQ(f1i.value, 10);
+        TEST_EQ(f2d.value, 21);
+        TEST_EQ(f2i.value, 22);
+        TEST_EQ(f3i.value, 30);
     }
 
     {   // store Facet by reference
@@ -200,16 +200,16 @@ void test_facets_pack()
         static_assert(std::is_same<decltype(f2i), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(f3i), const facet<3>&>::value, "wrong type");
 
-        BOOST_TEST_EQ(f1i.value, 10);
-        BOOST_TEST_EQ(f2t.value, 20);
-        BOOST_TEST_EQ(f2d.value, 21);
-        BOOST_TEST_EQ(f2i.value, 22);
-        BOOST_TEST_EQ(f3i.value, 30);
+        TEST_EQ(f1i.value, 10);
+        TEST_EQ(f2t.value, 20);
+        TEST_EQ(f2d.value, 21);
+        TEST_EQ(f2i.value, 22);
+        TEST_EQ(f3i.value, 30);
 
-        BOOST_TEST(&f1i == &f1_10);
-        BOOST_TEST(&f2t == &f2_20);
-        BOOST_TEST(&f2d == &f2_21);
-        BOOST_TEST(&f2i == &f2_22);
+        TEST_TRUE(&f1i == &f1_10);
+        TEST_TRUE(&f2t == &f2_20);
+        TEST_TRUE(&f2d == &f2_21);
+        TEST_TRUE(&f2i == &f2_22);
     }
 
     {   // std::reference_wrapper< constrained_fpe<Filter, Facet> >
@@ -237,14 +237,14 @@ void test_facets_pack()
         static_assert(std::is_same<decltype(f2i), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(f3i), const facet<3>&>::value, "wrong type");
 
-        BOOST_TEST_EQ(f1i.value, 10);
-        BOOST_TEST_EQ(f2t.value, 20);
-        BOOST_TEST_EQ(f2d.value, 21);
-        BOOST_TEST_EQ(f2i.value, 22);
-        BOOST_TEST_EQ(f3i.value, 30);
+        TEST_EQ(f1i.value, 10);
+        TEST_EQ(f2t.value, 20);
+        TEST_EQ(f2d.value, 21);
+        TEST_EQ(f2i.value, 22);
+        TEST_EQ(f3i.value, 30);
 
-        BOOST_TEST(&f1i == &f1_10);
-        BOOST_TEST(&f2t == &f2_20);
+        TEST_TRUE(&f1i == &f1_10);
+        TEST_TRUE(&f2t == &f2_20);
     }
 
     {  //std::reference_wrapper
@@ -275,16 +275,16 @@ void test_facets_pack()
         static_assert(std::is_same<decltype(f2i), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(f3i), const facet<3>&>::value, "wrong type");
 
-        BOOST_TEST_EQ(f1i.value, 10);
-        BOOST_TEST_EQ(f2t.value, 20);
-        BOOST_TEST_EQ(f2d.value, 21);
-        BOOST_TEST_EQ(f2i.value, 22);
-        BOOST_TEST_EQ(f3i.value, 30);
+        TEST_EQ(f1i.value, 10);
+        TEST_EQ(f2t.value, 20);
+        TEST_EQ(f2d.value, 21);
+        TEST_EQ(f2i.value, 22);
+        TEST_EQ(f3i.value, 30);
 
-        BOOST_TEST(&f1i == &f1_10);
-        BOOST_TEST(&f2t == &f2_20);
-        BOOST_TEST(&f2d == &f2_21);
-        BOOST_TEST(&f2i == &f2_22);
+        TEST_TRUE(&f1i == &f1_10);
+        TEST_TRUE(&f2t == &f2_20);
+        TEST_TRUE(&f2d == &f2_21);
+        TEST_TRUE(&f2i == &f2_22);
     }
 
     {   // constrain<Filter1>(constrain<Filter2>(facet))
@@ -306,9 +306,9 @@ void test_facets_pack()
         static_assert(std::is_same<decltype(xf2_20), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_21), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_22), const facet<2>&>::value, "wrong type");
-        BOOST_TEST_EQ(xf2_20.value, 20);
-        BOOST_TEST_EQ(xf2_21.value, 21);
-        BOOST_TEST_EQ(xf2_22.value, 22);
+        TEST_EQ(xf2_20.value, 20);
+        TEST_EQ(xf2_21.value, 21);
+        TEST_EQ(xf2_22.value, 22);
     }
 
     {   // constrain<Filter1>(std::ref(a_contrained_facet))
@@ -330,9 +330,9 @@ void test_facets_pack()
         static_assert(std::is_same<decltype(xf2_20), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_21), const facet<2>&>::value, "wrong type");
         static_assert(std::is_same<decltype(xf2_22), const facet<2>&>::value, "wrong type");
-        BOOST_TEST(&xf2_20 == &f2_20);
-        BOOST_TEST(&xf2_21 == &f2_21);
-        BOOST_TEST(&xf2_22 == &f2_22);
+        TEST_TRUE(&xf2_20 == &f2_20);
+        TEST_TRUE(&xf2_21 == &f2_21);
+        TEST_TRUE(&xf2_22 == &f2_22);
 
     }
 }
@@ -365,12 +365,12 @@ void test_constrained_fpe()
         decltype(fp) fp2{fp};
         const auto fp3 = pack(fp2);
 
-        BOOST_TEST_EQ(log.cp_count, 6);
-        BOOST_TEST_EQ(log.mv_count, 0);
-        BOOST_TEST_EQ(10, (strf::get_facet<fcategory<0>, std::int64_t>(fp3).value));
-        BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::int32_t>(fp3).value));
-        BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::uint64_t>(fp3).value));
-        BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, double>(fp3).value));
+        TEST_EQ(log.cp_count, 6);
+        TEST_EQ(log.mv_count, 0);
+        TEST_EQ(10, (strf::get_facet<fcategory<0>, std::int64_t>(fp3).value));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::int32_t>(fp3).value));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::uint64_t>(fp3).value));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, double>(fp3).value));
     }
     {   // construct the constrained facet from rvalue reference;
 
@@ -378,27 +378,27 @@ void test_constrained_fpe()
         facet<0> f{10, &log};
 
         auto c = strf::constrain<is_64>(std::move(f));
-        BOOST_TEST_EQ(log.cp_count, 0);
+        TEST_EQ(log.cp_count, 0);
 
         auto c2 = strf::constrain<std::is_integral>(std::move(c));
-        BOOST_TEST_EQ(log.cp_count, 0);
+        TEST_EQ(log.cp_count, 0);
 
         auto fp = pack(std::move(c2));
-        BOOST_TEST_EQ(log.cp_count, 0);
+        TEST_EQ(log.cp_count, 0);
 
         auto c3 = strf::constrain<std::is_signed>(std::move(fp));
-        BOOST_TEST_EQ(log.cp_count, 0);
+        TEST_EQ(log.cp_count, 0);
 
         auto fp2 = pack(std::move(c3));
-        BOOST_TEST_EQ(log.cp_count, 0);
+        TEST_EQ(log.cp_count, 0);
 
         auto fp3 = pack(std::move(fp2));
-        BOOST_TEST_EQ(log.cp_count, 0);
+        TEST_EQ(log.cp_count, 0);
 
-        BOOST_TEST_EQ(10, (strf::get_facet<fcategory<0>, std::int64_t>(fp3).value));
-        BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::int32_t>(fp3).value));
-        BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, double>(fp3).value));
-        BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::uint64_t>(fp3).value));
+        TEST_EQ(10, (strf::get_facet<fcategory<0>, std::int64_t>(fp3).value));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::int32_t>(fp3).value));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, double>(fp3).value));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::uint64_t>(fp3).value));
     }
 
     {   // construct the constrained facet from rvalue reference;
@@ -413,12 +413,12 @@ void test_constrained_fpe()
         auto c3 = strf::constrain<std::is_signed>(std::move(fp));
         auto fp2 = pack(std::move(c3));
         auto fp3 = pack(std::move(fp2));
-        BOOST_TEST_EQ(log.cp_count, 6);
+        TEST_EQ(log.cp_count, 6);
 
-        BOOST_TEST_EQ(10, (strf::get_facet<fcategory<0>, std::int64_t>(fp3).value));
-        BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::int32_t>(fp3).value));
-        BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, double>(fp3).value));
-        BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::uint64_t>(fp3).value));
+        TEST_EQ(10, (strf::get_facet<fcategory<0>, std::int64_t>(fp3).value));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::int32_t>(fp3).value));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, double>(fp3).value));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::uint64_t>(fp3).value));
     }
 
 
@@ -430,12 +430,12 @@ void test_constrained_fpe()
         auto c3 = strf::constrain<std::is_signed>(c2);
         auto fp = pack(c3);
 
-        BOOST_TEST_EQ(log.cp_count, 0);
-        BOOST_TEST_EQ(log.mv_count, 0);
-        BOOST_TEST(&f == (&strf::get_facet<fcategory<0>, std::int64_t>(fp)));
-        BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::int32_t>(fp).value));
-        BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::uint64_t>(fp).value));
-        BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, double>(fp).value));
+        TEST_EQ(log.cp_count, 0);
+        TEST_EQ(log.mv_count, 0);
+        TEST_TRUE(&f == (&strf::get_facet<fcategory<0>, std::int64_t>(fp)));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::int32_t>(fp).value));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::uint64_t>(fp).value));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, double>(fp).value));
     }
 
     {   // constrain a facet reference
@@ -446,12 +446,12 @@ void test_constrained_fpe()
         auto c3 = strf::constrain<std::is_signed>(c2);
         auto fp = pack(c3);
 
-        BOOST_TEST_EQ(log.cp_count, 0);
-        BOOST_TEST_EQ(log.mv_count, 0);
-        BOOST_TEST(&f == (&strf::get_facet<fcategory<0>, std::int64_t>(fp)));
-        BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::int32_t>(fp).value));
-        BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::uint64_t>(fp).value));
-        BOOST_TEST_EQ(-1, (strf::get_facet<fcategory<0>, double>(fp).value));
+        TEST_EQ(log.cp_count, 0);
+        TEST_EQ(log.mv_count, 0);
+        TEST_TRUE(&f == (&strf::get_facet<fcategory<0>, std::int64_t>(fp)));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::int32_t>(fp).value));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::uint64_t>(fp).value));
+        TEST_EQ(-1, (strf::get_facet<fcategory<0>, double>(fp).value));
     }
 
     {   // constrain a facets_pack
@@ -466,9 +466,9 @@ void test_constrained_fpe()
             , strf::constrain<std::is_integral>(facet<1>(301)) );
 
 
-        BOOST_TEST_EQ(101, (strf::get_facet<fcategory<1>, float>(fp2).value));
-        BOOST_TEST_EQ(201, (strf::get_facet<fcategory<1>, double>(fp2).value));
-        BOOST_TEST_EQ(301, (strf::get_facet<fcategory<1>, int>(fp2).value));
+        TEST_EQ(101, (strf::get_facet<fcategory<1>, float>(fp2).value));
+        TEST_EQ(201, (strf::get_facet<fcategory<1>, double>(fp2).value));
+        TEST_EQ(301, (strf::get_facet<fcategory<1>, int>(fp2).value));
     }
 
 
@@ -483,22 +483,22 @@ void test_constrained_fpe()
             , strf::constrain<is_64>(std::ref(fp))
             , strf::constrain<std::is_integral>(facet<1>(301)) );
 
-        BOOST_TEST_EQ(101, (strf::get_facet<fcategory<1>, float>(fp2).value));
-        BOOST_TEST_EQ(201, (strf::get_facet<fcategory<1>, double>(fp2).value));
-        BOOST_TEST_EQ(301, (strf::get_facet<fcategory<1>, int>(fp2).value));
+        TEST_EQ(101, (strf::get_facet<fcategory<1>, float>(fp2).value));
+        TEST_EQ(201, (strf::get_facet<fcategory<1>, double>(fp2).value));
+        TEST_EQ(301, (strf::get_facet<fcategory<1>, int>(fp2).value));
 
-        BOOST_TEST( &(strf::get_facet<fcategory<1>, double>(fp2)) ==
+        TEST_TRUE( &(strf::get_facet<fcategory<1>, double>(fp2)) ==
                     &(strf::get_facet<fcategory<1>, double>(fp)) );
     }
 
     {
-        BOOST_TEST(!(std::is_copy_constructible<facet<0, enable_only_move>>::value));
-        BOOST_TEST(!(std::is_move_constructible<facet<0, disable_copy_and_move>>::value));
+        TEST_TRUE(!(std::is_copy_constructible<facet<0, enable_only_move>>::value));
+        TEST_TRUE(!(std::is_move_constructible<facet<0, disable_copy_and_move>>::value));
 
-        BOOST_TEST((std::is_copy_constructible<facet<0, enable_copy>>::value));
-        BOOST_TEST((std::is_move_constructible<facet<0, enable_copy>>::value));
-        BOOST_TEST((std::is_copy_constructible<facet<0, enable_copy_and_move>>::value));
-        BOOST_TEST((std::is_move_constructible<facet<0, enable_copy_and_move>>::value));
+        TEST_TRUE((std::is_copy_constructible<facet<0, enable_copy>>::value));
+        TEST_TRUE((std::is_move_constructible<facet<0, enable_copy>>::value));
+        TEST_TRUE((std::is_copy_constructible<facet<0, enable_copy_and_move>>::value));
+        TEST_TRUE((std::is_move_constructible<facet<0, enable_copy_and_move>>::value));
     }
 }
 
@@ -539,14 +539,14 @@ void compilation_tests()
         , decltype(strf::pack(facet<0>{0})) >
         ::value;
 
-    BOOST_TEST(test1);
-    BOOST_TEST(test2);
-    BOOST_TEST(test3);
-    BOOST_TEST(test4);
-    BOOST_TEST(test5);
-    BOOST_TEST(test6);
-    BOOST_TEST(test7);
-    BOOST_TEST(test8);
+    TEST_TRUE(test1);
+    TEST_TRUE(test2);
+    TEST_TRUE(test3);
+    TEST_TRUE(test4);
+    TEST_TRUE(test5);
+    TEST_TRUE(test6);
+    TEST_TRUE(test7);
+    TEST_TRUE(test8);
 }
 
 int main()
@@ -555,5 +555,5 @@ int main()
     test_constrained_fpe();
     compilation_tests();
 
-    return boost::report_errors();
+    return test_finish();
 }

@@ -41,10 +41,10 @@ __global__ void kernel_using_cstr_to(char* buffer, std::size_t buffer_size)
 
 inline void ensure_cuda_success_(cudaError_t status, const char *file, int line, bool abort=true)
 {
-	BOOST_TEST_EQ(status, cudaSuccess);
+	TEST_EQ(status, cudaSuccess);
 	if (abort and (status != cudaSuccess)) {
-		BOOST_ERROR(cudaGetErrorString(status));
-		exit(boost::report_errors());
+		TEST_ERROR(cudaGetErrorString(status));
+		exit(test_finish());
 	}
 }
 
@@ -72,10 +72,10 @@ void test_cstr_writer()
 	ensure_cuda_success(cudaDeviceSynchronize());
 	args host_side_args;
 	ensure_cuda_success(cudaMemcpy(&host_side_args, device_side_args, sizeof(struct args), cudaMemcpyDeviceToHost));
-	BOOST_TEST_EQ(host_side_args.write_result.truncated, false);
-	BOOST_TEST_EQ(host_side_args.write_result.ptr, &(device_side_args->buffer[0]) + std::strlen("Hello world"));
+	TEST_EQ(host_side_args.write_result.truncated, false);
+	TEST_EQ(host_side_args.write_result.ptr, &(device_side_args->buffer[0]) + std::strlen("Hello world"));
 	if (host_side_args.write_result.ptr == &(device_side_args->buffer[0])) {
-		BOOST_TEST_EQ(strncmp(host_side_args.write_result.ptr, host_side_args.buffer, buffer_size), 0);
+		TEST_EQ(strncmp(host_side_args.write_result.ptr, host_side_args.buffer, buffer_size), 0);
 	}
 }
 
@@ -98,7 +98,7 @@ void test_cstr_to()
 	ensure_cuda_success(cudaMemcpy(&host_side_buffer, device_side_buffer, buffer_size , cudaMemcpyDeviceToHost));
 	std::stringstream expected;
 	expected << "Hello" << ' ' << "world, from thread " << 0;
-	BOOST_TEST_EQ(strncmp(host_side_buffer, expected.str().c_str(), buffer_size), 0);
+	TEST_EQ(strncmp(host_side_buffer, expected.str().c_str(), buffer_size), 0);
 //	std::cout << "Result: \"" << host_side_buffer << "\"\n";
 //	std::cout << "Expected: \"" << expected.str() <<  "\"\n";
 }
@@ -113,7 +113,7 @@ void cstr_to_sanity_check()
 	print_functor ( "Hello", ' ', "world, from thread ", 1 );
 	std::stringstream expected;
 	expected << "Hello" << ' ' << "world, from thread " << 1;
-	BOOST_TEST_EQ(strncmp(buffer, expected.str().c_str(), buffer_size), 0);
+	TEST_EQ(strncmp(buffer, expected.str().c_str(), buffer_size), 0);
 }
 
 
@@ -122,16 +122,16 @@ int main(void)
 	auto num_devices { 0 };
 	auto status = cudaGetDeviceCount(&num_devices);
 
-	BOOST_TEST_EQ(status, cudaSuccess);
+	TEST_EQ(status, cudaSuccess);
 	if (status != cudaSuccess)
 	{
 		std::stringstream ss;
 		ss << "cudaGetDeviceCount failed: " << cudaGetErrorString(status) <<  '\n';
-		BOOST_ERROR(ss.str().c_str());
+		TEST_ERROR(ss.str().c_str());
 	}
 	if (num_devices == 0) {
 		std::cerr << "No devices - can't run this test\n";
-		return boost::report_errors();
+		return test_finish();
 	}
 	// TODO: Test basic_cstr_writer's with different character types
 	test_cstr_writer();
@@ -139,5 +139,5 @@ int main(void)
 	test_cstr_to();
 
 	cudaDeviceReset();
-	return boost::report_errors();
+	return test_finish();
 }

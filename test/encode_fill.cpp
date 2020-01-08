@@ -32,7 +32,7 @@ void test_fill
     , std::basic_string<CharT> encoded_char
     , strf::surrogate_policy allow_surr = strf::surrogate_policy::strict )
 {
-    BOOST_TEST_LABEL ( enc.name(), ", test_fill_char: U+"
+    TEST_LABEL ( enc.name(), ", test_fill_char: U+"
                      , strf::hex((unsigned)fill_char) );
 
     {
@@ -44,7 +44,7 @@ void test_fill
         auto expected = repeat(count, encoded_char);
         expected.push_back(CharT('x'));
 
-        BOOST_TEST(result == expected);
+        TEST_TRUE(result == expected);
     }
     {
         std::int16_t count = 200;
@@ -55,7 +55,7 @@ void test_fill
         auto expected = repeat(count, encoded_char);
         expected.push_back(CharT('x'));
 
-        BOOST_TEST(result == expected);
+        TEST_TRUE(result == expected);
     }
 }
 
@@ -86,12 +86,12 @@ void test_invalid_fill_stop
 
 #if defined(__cpp_exceptions)
 
-    BOOST_TEST_LABEL ( "encoding: ", enc.name(), "; test_fill_char: \\u'"
+    TEST_LABEL ( "encoding: ", enc.name(), "; test_fill_char: \\u'"
                      , strf::hex((unsigned)fill_char), '\'' );
 
     {
         auto facets = strf::pack(enc, strf::encoding_error::stop, allow_surr);
-        BOOST_TEST_THROWS( (strf::to_string.with(facets)(strf::right(0, 10, fill_char)))
+        TEST_THROWS( (strf::to_string.with(facets)(strf::right(0, 10, fill_char)))
                          , strf::encoding_failure );
     }
 
@@ -178,5 +178,5 @@ int main()
         }
     }
 
-    return boost::report_errors();
+    return test_finish();
 }
