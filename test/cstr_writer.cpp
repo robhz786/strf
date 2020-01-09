@@ -59,31 +59,41 @@ void test_destinations()
 
     const auto half_str = test_utils::make_half_string<CharT>();
     const auto full_str = test_utils::make_full_string<CharT>();
-    const auto double_str = test_utils::make_double_string<CharT>();
 
     {
         constexpr std::size_t buff_size
             = test_utils::full_string_size<CharT>
-            + test_utils::half_string_size<CharT> +1;
+            + test_utils::half_string_size<CharT> + 1;
 
         CharT buff[buff_size];
         auto res = strf::to(buff) (full_str,  half_str);
 
         TEST_TRUE(!res.truncated);
         TEST_TRUE(res.ptr == buff + buff_size - 1);
-        TEST_TRUE(full_str + half_str == buff);
+        TEST_TRUE(*res.ptr == CharT())
+        TEST_TRUE(strf::detail::str_equal( full_str.begin()
+                                         , buff
+                                         , test_utils::full_string_size<CharT>) );
+        TEST_TRUE(strf::detail::str_equal( half_str.begin()
+                                         , buff + test_utils::full_string_size<CharT>
+                                         , test_utils::half_string_size<CharT>) );
     }
     {
         constexpr std::size_t buff_size
             = test_utils::full_string_size<CharT>
-            + test_utils::half_string_size<CharT> +1;
+            + test_utils::half_string_size<CharT> + 1;
 
         CharT buff[buff_size];
         auto res = strf::to(buff, buff_size) (full_str,  half_str);
 
         TEST_TRUE(!res.truncated);
         TEST_TRUE(res.ptr == buff + buff_size - 1);
-        TEST_TRUE(full_str + half_str == buff);
+        TEST_TRUE(strf::detail::str_equal( full_str.begin()
+                                         , buff
+                                         , test_utils::full_string_size<CharT>) );
+        TEST_TRUE(strf::detail::str_equal( half_str.begin()
+                                         , buff + test_utils::full_string_size<CharT>
+                                         , test_utils::half_string_size<CharT>) );
     }
     {
         constexpr std::size_t buff_size
@@ -95,7 +105,12 @@ void test_destinations()
 
         TEST_TRUE(!res.truncated);
         TEST_TRUE(res.ptr == buff + buff_size - 1);
-        TEST_TRUE(full_str + half_str == buff);
+        TEST_TRUE(strf::detail::str_equal( full_str.begin()
+                                         , buff
+                                         , test_utils::full_string_size<CharT>) );
+        TEST_TRUE(strf::detail::str_equal( half_str.begin()
+                                         , buff + test_utils::full_string_size<CharT>
+                                         , test_utils::half_string_size<CharT>) );
     }
 }
 

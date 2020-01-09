@@ -16,6 +16,11 @@ class simple_string_view
 {
 public:
 
+    constexpr STRF_HD simple_string_view(const CharIn* begin, const CharIn* end) noexcept
+        : _begin(begin)
+        , _len(end - begin)
+    {
+    }
     constexpr STRF_HD simple_string_view(const CharIn* str, std::size_t len) noexcept
         : _begin(str)
         , _len(len)
@@ -245,9 +250,18 @@ using string_with_format = strf::value_with_format
     , strf::alignment_format_q<false>
     , strf::no_cv_format<CharIn> >;
 
+template <typename CharIn>
+constexpr STRF_HD auto make_fmt
+    ( strf::rank<1>
+    , const strf::detail::simple_string_view<CharIn>& str) noexcept
+{
+    return strf::string_with_format<CharIn>{str};
+}
+
 template <typename CharIn, typename Traits, typename Allocator>
-STRF_HD auto  make_fmt( strf::rank<1>
-             , const std::basic_string<CharIn, Traits, Allocator>& str) noexcept
+STRF_HD auto make_fmt
+    ( strf::rank<1>
+    , const std::basic_string<CharIn, Traits, Allocator>& str) noexcept
 {
     return strf::string_with_format<CharIn>{{str.data(), str.size()}};
 }
@@ -255,9 +269,9 @@ STRF_HD auto  make_fmt( strf::rank<1>
 #if defined(STRF_HAS_STD_STRING_VIEW)
 
 template <typename CharIn, typename Traits>
-constexpr STRF_HD auto
-make_fmt( strf::rank<1>
-        , const std::basic_string_view<CharIn, Traits>& str) noexcept
+constexpr STRF_HD auto make_fmt
+    ( strf::rank<1>
+    , const std::basic_string_view<CharIn, Traits>& str) noexcept
 {
     return strf::string_with_format<CharIn>{{str.data(), str.size()}};
 }
@@ -711,6 +725,22 @@ make_printer( strf::rank<1>
     static_assert( std::is_same<CharIn, CharOut>::value
                  , "Character type mismatch. Use cv function." );
     return {fp, preview, {str.data(), str.size()}};
+}
+
+template
+    < typename CharOut
+    , typename FPack
+    , typename Preview
+    , typename CharIn >
+inline STRF_HD strf::detail::string_printer<CharOut>
+make_printer( strf::rank<1>
+            , const FPack& fp
+            , Preview& preview
+            , const strf::detail::simple_string_view<CharIn>& str )
+{
+    static_assert( std::is_same<CharIn, CharOut>::value
+                 , "Character type mismatch. Use cv function." );
+    return {fp, preview, str};
 }
 
 #if defined(STRF_HAS_STD_STRING_VIEW)

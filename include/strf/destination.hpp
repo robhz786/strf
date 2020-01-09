@@ -238,13 +238,14 @@ private:
 };
 
 template < typename OB >
-inline decltype(std::declval<OB&>().finish()) finish(strf::rank<2>, OB& ob)
+inline STRF_HD decltype(std::declval<OB&>().finish())
+    finish(strf::rank<2>, OB& ob)
 {
     return ob.finish();
 }
 
 template < typename OB >
-inline void finish(strf::rank<1>, OB&)
+inline STRF_HD void finish(strf::rank<1>, OB&)
 {
 }
 

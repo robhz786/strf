@@ -16,10 +16,9 @@ void test_narrow_successfull_writing()
 
     std::FILE* file = std::tmpfile();
     strf::narrow_cfile_writer<CharT> writer(file);
-    auto expected_content = tiny_str + double_str;
 
-    write(writer, tiny_str.data(), tiny_str.size());
-    write(writer, double_str.data(), double_str.size());
+    write(writer, tiny_str.begin(), tiny_str.size());
+    write(writer, double_str.begin(), double_str.size());
     auto status = writer.finish();
     std::fflush(file);
     std::rewind(file);
@@ -28,7 +27,14 @@ void test_narrow_successfull_writing()
 
     TEST_TRUE(status.success);
     TEST_EQ(status.count, obtained_content.size());
-    TEST_TRUE(obtained_content == expected_content);
+    TEST_EQ(status.count, tiny_str.size() + double_str.size());
+    TEST_TRUE(0 == obtained_content.compare( 0, tiny_str.size()
+                                           , tiny_str.begin()
+                                           , tiny_str.size() ));
+    TEST_TRUE(0 == obtained_content.compare( tiny_str.size()
+                                           , double_str.size()
+                                           , double_str.begin()
+                                           , double_str.size() ));
 }
 
 void test_wide_successfull_writing()
@@ -38,10 +44,9 @@ void test_wide_successfull_writing()
 
     std::FILE* file = std::tmpfile();
     strf::wide_cfile_writer writer(file);
-    auto expected_content = tiny_str + double_str;
 
-    write(writer, tiny_str.data(), tiny_str.size());
-    write(writer, double_str.data(), double_str.size());
+    write(writer, tiny_str.begin(), tiny_str.size());
+    write(writer, double_str.begin(), double_str.size());
     auto status = writer.finish();
     std::fflush(file);
     std::rewind(file);
@@ -50,7 +55,14 @@ void test_wide_successfull_writing()
 
     TEST_TRUE(status.success);
     TEST_EQ(status.count, obtained_content.size());
-    TEST_TRUE(obtained_content == expected_content);
+    TEST_EQ(status.count, tiny_str.size() + double_str.size());
+    TEST_TRUE(0 == obtained_content.compare( 0, tiny_str.size()
+                                           , tiny_str.begin()
+                                           , tiny_str.size() ));
+    TEST_TRUE(0 == obtained_content.compare( tiny_str.size()
+                                           , double_str.size()
+                                           , double_str.begin()
+                                           , double_str.size() ));
 }
 
 template <typename CharT>
@@ -58,16 +70,15 @@ void test_narrow_failing_to_recycle()
 {
     auto half_str = test_utils::make_half_string<CharT>();
     auto double_str = test_utils::make_double_string<CharT>();
-    auto expected_content = half_str;
 
     auto path = test_utils::unique_tmp_file_name();
     std::FILE* file = std::fopen(path.c_str(), "w");
     strf::narrow_cfile_writer<CharT> writer(file);
 
-    write(writer, half_str.data(), half_str.size());
+    write(writer, half_str.begin(), half_str.size());
     writer.recycle(); // first recycle shall work
     test_utils::turn_into_bad(writer);
-    write(writer, double_str.data(), double_str.size());
+    write(writer, double_str.begin(), double_str.size());
 
     auto status = writer.finish();
     std::fclose(file);
@@ -76,23 +87,25 @@ void test_narrow_failing_to_recycle()
 
     TEST_TRUE(! status.success);
     TEST_EQ(status.count, obtained_content.size());
-    TEST_TRUE(obtained_content == expected_content);
+    TEST_EQ(status.count, half_str.size());
+    TEST_TRUE(0 == obtained_content.compare( 0, half_str.size()
+                                           , half_str.begin()
+                                           , half_str.size() ));
 }
 
 void test_wide_failing_to_recycle()
 {
     auto half_str = test_utils::make_half_string<wchar_t>();
     auto double_str = test_utils::make_double_string<wchar_t>();
-    auto expected_content = test_utils::make_half_string<wchar_t>();
 
     auto path = test_utils::unique_tmp_file_name();
     std::FILE* file = std::fopen(path.c_str(), "w");
     strf::wide_cfile_writer writer(file);
 
-    write(writer, half_str.data(), half_str.size());
+    write(writer, half_str.begin(), half_str.size());
     writer.recycle();
     test_utils::turn_into_bad(writer);
-    write(writer, double_str.data(), double_str.size());
+    write(writer, double_str.begin(), double_str.size());
 
     auto status = writer.finish();
     std::fclose(file);
@@ -101,7 +114,10 @@ void test_wide_failing_to_recycle()
 
     TEST_TRUE(! status.success);
     TEST_EQ(status.count, obtained_content.size());
-    TEST_TRUE(obtained_content == expected_content);
+    TEST_EQ(status.count, half_str.size());
+    TEST_TRUE(0 == obtained_content.compare( 0, half_str.size()
+                                           , half_str.begin()
+                                           , half_str.size() ));
 }
 
 
@@ -110,15 +126,14 @@ void test_narrow_failing_to_finish()
 {
     auto double_str = test_utils::make_double_string<CharT>();
     auto half_str = test_utils::make_half_string<CharT>();
-    auto expected_content = double_str;
 
     auto path = test_utils::unique_tmp_file_name();
     std::FILE* file = std::fopen(path.c_str(), "w");
     strf::narrow_cfile_writer<CharT> writer(file);
 
-    write(writer, double_str.data(), double_str.size());
+    write(writer, double_str.begin(), double_str.size());
     writer.recycle();
-    write(writer, half_str.data(), half_str.size());
+    write(writer, half_str.begin(), half_str.size());
     test_utils::turn_into_bad(writer);
 
     auto status = writer.finish();
@@ -128,22 +143,24 @@ void test_narrow_failing_to_finish()
 
     TEST_TRUE(! status.success);
     TEST_EQ(status.count, obtained_content.size());
-    TEST_TRUE(obtained_content == expected_content);
+    TEST_EQ(status.count, double_str.size());
+    TEST_TRUE(0 == obtained_content.compare( 0, double_str.size()
+                                           , double_str.begin()
+                                           , double_str.size() ));
 }
 
 void test_wide_failing_to_finish()
 {
     auto double_str = test_utils::make_double_string<wchar_t>();
     auto half_str = test_utils::make_half_string<wchar_t>();
-    auto expected_content = test_utils::make_double_string<char>();
 
     auto path = test_utils::unique_tmp_file_name();
     std::FILE* file = std::fopen(path.c_str(), "w");
     strf::wide_cfile_writer writer(file);
 
-    write(writer, double_str.data(), double_str.size());
+    write(writer, double_str.begin(), double_str.size());
     writer.recycle();
-    write(writer, half_str.data(), half_str.size());
+    write(writer, half_str.begin(), half_str.size());
     test_utils::turn_into_bad(writer);
 
     auto status = writer.finish();
@@ -153,7 +170,11 @@ void test_wide_failing_to_finish()
 
     TEST_TRUE(! status.success);
     TEST_EQ(status.count, obtained_content.size());
-    TEST_TRUE(obtained_content == expected_content);
+    TEST_EQ(status.count, double_str.size());
+    auto narrow_double_str = test_utils::make_double_string<char>();
+    TEST_TRUE(0 == obtained_content.compare( 0, narrow_double_str.size()
+                                           , narrow_double_str.begin()
+                                           , narrow_double_str.size() ));
 }
 
 template <typename CharT>
@@ -172,7 +193,14 @@ void test_destination()
 
     TEST_TRUE(status.success);
     TEST_EQ(status.count, obtained_content.size());
-    TEST_TRUE(obtained_content == half_str + full_str);
+    TEST_EQ(status.count, half_str.size() + full_str.size());
+    TEST_TRUE(0 == obtained_content.compare( 0, half_str.size()
+                                           , half_str.begin()
+                                           , half_str.size() ));
+    TEST_TRUE(0 == obtained_content.compare( half_str.size()
+                                           , full_str.size()
+                                           , full_str.begin()
+                                           , full_str.size() ));
 
 }
 
@@ -192,7 +220,14 @@ void test_wdestination()
 
     TEST_TRUE(status.success);
     TEST_EQ(status.count, obtained_content.size());
-    TEST_TRUE(obtained_content == half_str + full_str);
+    TEST_EQ(status.count, half_str.size() + full_str.size());
+    TEST_TRUE(0 == obtained_content.compare( 0, half_str.size()
+                                           , half_str.begin()
+                                           , half_str.size() ));
+    TEST_TRUE(0 == obtained_content.compare( half_str.size()
+                                           , full_str.size()
+                                           , full_str.begin()
+                                           , full_str.size() ));
 }
 
 int main()
