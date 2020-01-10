@@ -245,12 +245,13 @@ public:
     {
         test_scope* first = root().child_;
         if (first != nullptr) {
-            strf::write(out, "\n    At ");
+            strf::write(out, "\n    ( ");
             strf::write(out, first->description_);
             for(auto it = first->child_; it != nullptr; it = it->child_) {
                 strf::put(out, '/');
                 strf::write(out, it->description_);
             }
+            strf::write(out, " )");
         }
     }
 
@@ -557,11 +558,9 @@ constexpr bool equal(const T&a, const U&b)
 
 #define TEST_STR_CONCAT(str1, str2) str1 ## str2
 
-#define TEST_LABEL_IMPL(LINE)                                           \
-    test_utils::test_scope TEST_STR_CONCAT(test_label_, LINE);          \
-    TEST_STR_CONCAT(test_label_, LINE).description_writer()
-
-#define TEST_LABEL   TEST_LABEL_IMPL(__LINE__)
+#define TEST_SCOPE_DESCRIPTION                                          \
+    test_utils::test_scope TEST_STR_CONCAT(test_label_, __LINE__);      \
+    TEST_STR_CONCAT(test_label_, __LINE__).description_writer()
 
 #define TEST_ERROR(msg) \
     test_utils::test_failure(__FILE__, __LINE__, BOOST_CURRENT_FUNCTION, (msg));

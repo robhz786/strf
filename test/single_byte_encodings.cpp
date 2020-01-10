@@ -72,7 +72,7 @@ bool operator==( strf::detail::simple_string_view<CharT> str1
 void test( const strf::encoding<char>& enc
          , strf::detail::simple_string_view<char32_t> decoded_0_to_0xff )
 {
-    TEST_LABEL (enc.name());
+    TEST_SCOPE_DESCRIPTION(enc.name());
 
     {
         // to UTF-32

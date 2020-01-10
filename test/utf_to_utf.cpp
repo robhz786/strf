@@ -41,7 +41,7 @@ void test_valid_input
     ( const strf::encoding<CharIn>& ein
     , const strf::encoding<CharOut>& eout )
 {
-    TEST_LABEL ("from ", ein.name(), " to ", eout.name());
+    TEST_SCOPE_DESCRIPTION("from ", ein.name(), " to ", eout.name());
 
     auto input = valid_input_sample(ein);
     auto expected = valid_input_sample(eout);
@@ -77,7 +77,7 @@ void test_allowed_surrogates
     ( const strf::encoding<CharIn>& ein
     , const strf::encoding<CharOut>& eout )
 {
-    TEST_LABEL ("from ", ein.name()," to ", eout.name());
+    TEST_SCOPE_DESCRIPTION("from ", ein.name()," to ", eout.name());
 
     const auto input    = sample_with_surrogates(ein);
     const auto expected = sample_with_surrogates(eout);
@@ -201,7 +201,7 @@ void test_invalid_input
     ( const strf::encoding<ChIn>& ein
     , const strf::encoding<ChOut>& eout )
 {
-    TEST_LABEL ("From invalid ", ein.name(), " to ", eout.name());
+    TEST_SCOPE_DESCRIPTION("From invalid ", ein.name(), " to ", eout.name());
 
     const ChIn  suffix_in  [] = { 'd', 'e', 'f' };
     const ChOut suffix_out [] = { 'd', 'e', 'f' };
@@ -213,12 +213,10 @@ void test_invalid_input
         const int err_count = s.first;
         const auto& seq = s.second;
 
-        // todo
-        // TEST_LABEL ( "Sequence = "
-        //            , strf::separated_range
-        //                ( seq
-        //                , " "
-        //                , [](auto ch){ return ~strf::hex((usigned)ch); } ) );
+        // TO-DO
+        // auto f = [](auto ch){ return ~strf::hex((usigned)ch); }
+        // TEST_SCOPE_DESCRIPTION( "Sequence = "
+        //                       , strf::separated_range(seq, " ", f) );
         ChIn buff_in[20];
         ChOut buff_out[80];
         auto input = concatenate(buff_in, prefix_in, seq, 1, suffix_in);

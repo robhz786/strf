@@ -32,8 +32,8 @@ void test_fill
     , std::basic_string<CharT> encoded_char
     , strf::surrogate_policy allow_surr = strf::surrogate_policy::strict )
 {
-    TEST_LABEL ( enc.name(), ", test_fill_char: U+"
-                     , strf::hex((unsigned)fill_char) );
+    TEST_SCOPE_DESCRIPTION( enc.name(), ", test_fill_char: U+"
+                          , strf::hex((unsigned)fill_char) );
 
     {
         std::int16_t count = 10;
@@ -86,8 +86,8 @@ void test_invalid_fill_stop
 
 #if defined(__cpp_exceptions)
 
-    TEST_LABEL ( "encoding: ", enc.name(), "; test_fill_char: \\u'"
-                     , strf::hex((unsigned)fill_char), '\'' );
+    TEST_SCOPE_DESCRIPTION( "encoding: ", enc.name(), "; test_fill_char: \\u'"
+                          , strf::hex((unsigned)fill_char), '\'' );
 
     {
         auto facets = strf::pack(enc, strf::encoding_error::stop, allow_surr);

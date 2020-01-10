@@ -20,8 +20,8 @@ void test_char( strf::encoding<CharT> enc
                     , char32_t ch
                     , std::basic_string<CharT> encoded_char )
 {
-    TEST_LABEL ( "encoding: ", enc.name()
-                     , "; char: \\u'", strf::hex((unsigned)ch), '\'');
+    TEST_SCOPE_DESCRIPTION( "encoding: ", enc.name()
+                          , "; char: \\u'", strf::hex((unsigned)ch), '\'');
     CharT buff[100];
 
     auto it = enc.encode_char(buff, ch);
