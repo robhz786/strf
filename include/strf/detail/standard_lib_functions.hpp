@@ -47,6 +47,24 @@ str_length(const CharT* str)
 #endif
 }
 
+
+template <class CharT>
+inline STRF_CONSTEXPR_CHAR_TRAITS STRF_HD bool
+str_equal(const CharT* str1, const CharT* str2, std::size_t count)
+{
+#if !defined(__CUDA_ARCH__) && STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS
+    return 0 == std::char_traits<CharT>::compare(str1, str2, count);
+#elif defined(__CUDA_ARCH__)
+    for(;count != 0; ++str1, ++str2, --count;) {
+        if (*str1 != *str2) {
+            return false;
+        }
+    }
+    return true;
+#endif
+}
+
+
 template <class CharT>
 inline STRF_CONSTEXPR_CHAR_TRAITS STRF_HD CharT*
 str_copy_n(CharT* destination, const CharT* source, std::size_t count)

@@ -95,5 +95,5 @@ int main()
     TEST( u"         \u2E3A\u2E3A\u2014")
         (strf::cv( U"\u2E3A\u2E3A\u2014") > 12);
 
-    return boost::report_errors();
+    return test_finish();
 }

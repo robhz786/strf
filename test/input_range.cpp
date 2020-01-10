@@ -138,5 +138,5 @@ int main()
         TEST( "0xb") (~strf::hex(strf::separated_range(vec,   ", ")));
     }
 
-    return boost::report_errors();
+    return test_finish();
 }

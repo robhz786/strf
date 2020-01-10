@@ -368,6 +368,6 @@ int main()
             (100000000);
     }
 */
-    return boost::report_errors();
+    return test_finish();
 }
 
