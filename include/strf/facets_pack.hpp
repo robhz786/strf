@@ -246,7 +246,7 @@ public:
     }
 
     constexpr STRF_HD fpe_wrapper(fpe_wrapper&& other)
-        : _facet(other._facet)
+        : _facet(std::move(other._facet))
     {
     }
 
@@ -301,7 +301,7 @@ public:
     }
 
     constexpr STRF_HD fpe_wrapper(fpe_wrapper&& other)
-        : _fpe(other._fpe)
+        : _fpe(std::move(other._fpe))
     {
     }
 
@@ -347,7 +347,7 @@ public:
     {
     }
     constexpr STRF_HD fpe_wrapper(fpe_wrapper&& other)
-        : _fpe(other._fpe)
+        : _fpe(std::move(other._fpe))
     {
     }
 
@@ -391,7 +391,7 @@ public:
     {
     }
     constexpr STRF_HD fpe_wrapper(fpe_wrapper&& other)
-        : _fp(other._fp)
+        : _fp(std::move(other._fp))
     {
     }
 
@@ -444,15 +444,6 @@ class facets_pack_base< strf::detail::tmp_list<FPEWrappers ...>
     }
 
 public:
-
-    constexpr STRF_HD facets_pack_base(const facets_pack_base& other)
-        : FPEWrappers(fpe) ...
-    {
-    }
-    constexpr STRF_HD facets_pack_base(facets_pack_base&& other)
-        : FPEWrappers(fpe) ...
-    {
-    }
 
     template
         < typename WL = detail::tmp_list<FPE...>
@@ -551,9 +542,9 @@ public:
 
     constexpr STRF_HD facets_pack_base(facets_pack_base&& other)
         : strf::detail::fpe_wrapper
-        < strf::rank<RankN>, TipFPE >(other)
+        < strf::rank<RankN>, TipFPE >(std::move(other))
         , strf::detail::facets_pack_base
-        < RankN + 1, OthersFPE...>(other)
+        < RankN + 1, OthersFPE...>(std::move(other))
     {
     }
 
@@ -676,7 +667,7 @@ public:
     }
 
     constexpr STRF_HD constrained_fpe(constrained_fpe&& other)
-        : _fpe(other._fpe)
+        : _fpe(std::move(other._fpe))
     {
     }
 
@@ -766,7 +757,7 @@ public:
     }
 
     constexpr STRF_HD facets_pack(facets_pack&& other)
-        : _base_type(other)
+        : _base_type(std::move(other))
     {
     }
 
