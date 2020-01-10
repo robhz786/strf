@@ -20,6 +20,10 @@ public:
         : strf::basic_outbuf_noexcept<CharT>(_buf, _buf_size)
         , _dest(dest_)
     {
+#ifdef __CUDA_ARCH__
+        // files are not accessible on CUDA devices
+        asm("trap;");
+#endif
         STRF_ASSERT(dest_ != nullptr);
     }
 
@@ -42,6 +46,13 @@ public:
 
     STRF_HD void recycle() noexcept
     {
+#ifdef __CUDA_ARCH__
+        // This class cannot be instantiated in device-side code;
+        // this and other methods are marked STRF_HD since they
+        // override potentially-host-and-device-side-capable
+        // methods.
+        asm("trap;");
+#else
         auto p = this->pos();
         this->set_pos(_buf);
         if (this->good())
@@ -51,6 +62,7 @@ public:
             _count += count_inc;
             this->set_good(count == count_inc);
         }
+#endif
     }
 
     struct result
@@ -61,6 +73,14 @@ public:
 
     STRF_HD result finish()
     {
+#ifdef __CUDA_ARCH__
+        // This class cannot be instantiated in device-side code;
+        // this and other methods are marked STRF_HD since they
+        // override potentially-host-and-device-side-capable
+        // methods.
+        asm("trap;");
+        return {};
+#else
         bool g = this->good();
         this->set_good(false);
         if (g)
@@ -71,6 +91,7 @@ public:
             g = (count == count_inc);
         }
         return {_count, g};
+#endif
     }
 
 private:
