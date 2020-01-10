@@ -57,9 +57,15 @@ foreach(
   add_executable(test-${t}-header-only   ${t}.cu)
   add_executable(test-${t}-static-lib    ${t}.cu)
 
-  set_target_properties(test-${t}-static-lib PROPERTIES CXX_STANDARD 14)
   set_target_properties(test-${t}-header-only PROPERTIES CXX_STANDARD 14)
+  set_target_properties(test-${t}-static-lib PROPERTIES CXX_STANDARD 14)
 
+  # Note: Users of strf in CUDA device-side code may want to add this 
+  # assembly option to their build options as well, since by default, ptxas
+  # complains on kernels with dynamic memory allocation.
+  target_compile_options(test-${t}-header-only PRIVATE --ptxas-options --suppress-stack-size-warning)
+  target_compile_options(test-${t}-static-lib PRIVATE --ptxas-options --suppress-stack-size-warning)
+ 
   target_link_libraries(test-${t}-header-only   strf-header-only)
   target_link_libraries(test-${t}-static-lib    strf-cuda)
 
