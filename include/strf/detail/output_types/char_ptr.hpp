@@ -29,9 +29,6 @@ public:
         STRF_ASSERT(dest < dest_end);
     }
 
-    constexpr STRF_HD
-    basic_cstr_writer_creator(const basic_cstr_writer_creator&) = default;
-
     STRF_HD basic_cstr_writer<CharT> create() const
     {
         return basic_cstr_writer<CharT>{_dest, _dest_end};

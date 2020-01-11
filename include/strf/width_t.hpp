@@ -52,7 +52,6 @@ public:
     //     }
     // }
 
-
     constexpr STRF_HD width_t(from_underlying_tag, std::int32_t v) noexcept
         : _value(v)
     {

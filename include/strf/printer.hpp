@@ -234,10 +234,6 @@ public:
     {
     }
 
-    STRF_HD width_preview(const width_preview& other) noexcept
-    {
-    }
-
     constexpr STRF_HD void subtract_width(strf::width_t)
     {
     }
@@ -298,10 +294,6 @@ public:
     {
     }
 
-    constexpr STRF_HD size_preview(const size_preview&) noexcept
-    {
-    }
-
     constexpr STRF_HD void add_size(std::size_t)
     {
     }
@@ -331,11 +323,6 @@ public:
     }
 
     constexpr STRF_HD print_preview() noexcept
-    {
-    }
-    constexpr STRF_HD print_preview(const print_preview& other)
-        : strf::size_preview<SizeRequired>(other)
-        , strf::width_preview<WidthRequired>(other)
     {
     }
 };

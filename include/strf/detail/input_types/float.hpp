@@ -333,16 +333,6 @@ namespace detail {
 
 struct double_printer_data: detail::double_dec
 {
-        constexpr STRF_HD double_printer_data(const double_printer_data& other)
-        : double_dec(other)
-        , showpoint(other.showpoint)
-        , showsign(other.showsign)
-        , sci_notation(other.sci_notation)
-        , m10_digcount(other.m10_digcount)
-        , extra_zeros(other.extra_zeros)
-    {
-    }
-
     template <typename FloatT>
     STRF_HD double_printer_data
         ( FloatT f

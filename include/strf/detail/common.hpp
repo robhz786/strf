@@ -208,25 +208,25 @@ strlen( const char* str )
 
 struct absolute_lowest_rank
 {
-        explicit constexpr STRF_HD absolute_lowest_rank() noexcept { };
+    explicit constexpr STRF_HD absolute_lowest_rank() noexcept { };
 };
 
 template <std::size_t N>
 struct rank: rank<N - 1>
 {
-        explicit constexpr STRF_HD rank() noexcept { };
+    explicit constexpr STRF_HD rank() noexcept { };
 };
 
 template <>
 struct rank<0>: absolute_lowest_rank
 {
-        explicit constexpr STRF_HD rank() noexcept { }
+    explicit constexpr STRF_HD rank() noexcept { }
 };
 
 template <typename ... >
 struct tag
 {
-        explicit constexpr STRF_HD tag() noexcept { }
+    explicit constexpr STRF_HD tag() noexcept { }
 };
 
 STRF_NAMESPACE_END

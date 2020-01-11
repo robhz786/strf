@@ -287,39 +287,18 @@ public:
              , std::enable_if_t
                  < std::is_copy_constructible<T>::value, int > = 0 >
     constexpr STRF_HD destination_no_reserve( strf::detail::destination_tag
-                                    , const OutbufCreator& oc
-                                    , const FPack& fp )
+                                            , const OutbufCreator& oc
+                                            , const FPack& fp )
         : _outbuf_creator(oc)
         , _fpack(fp)
     {
     }
 
     constexpr STRF_HD destination_no_reserve( strf::detail::destination_tag
-                                    , OutbufCreator&& oc
-                                    , FPack&& fp )
+                                            , OutbufCreator&& oc
+                                            , FPack&& fp )
         : _outbuf_creator(std::move(oc))
         , _fpack(std::move(fp))
-    {
-    }
-
-    constexpr STRF_HD destination_no_reserve(const destination_no_reserve& other)
-        : strf::detail::destination_common
-            < strf::destination_no_reserve
-            , OutbufCreator
-            , FPack
-            , strf::print_preview<false, false> >(other)
-        , _outbuf_creator(other._outbuf_creator)
-        , _fpack(other._fpack)
-    {
-    }
-    constexpr STRF_HD destination_no_reserve(destination_no_reserve&& other)
-        : strf::detail::destination_common
-            < strf::destination_no_reserve
-            , OutbufCreator
-            , FPack
-            , strf::print_preview<false, false> >(other)
-        , _outbuf_creator(other._outbuf_creator)
-        , _fpack(other._fpack)
     {
     }
 
@@ -425,9 +404,9 @@ public:
     template < typename T = OutbufCreator
              , std::enable_if_t<std::is_copy_constructible<T>::value, int> = 0 >
     constexpr STRF_HD destination_with_given_size( strf::detail::destination_tag
-                                         , std::size_t size
-                                         , const OutbufCreator& oc
-                                         , const FPack& fp )
+                                                 , std::size_t size
+                                                 , const OutbufCreator& oc
+                                                 , const FPack& fp )
         : _size(size)
         , _outbuf_creator(oc)
         , _fpack(fp)
@@ -435,39 +414,14 @@ public:
     }
 
     constexpr STRF_HD destination_with_given_size( strf::detail::destination_tag
-                                         , std::size_t size
-                                         , OutbufCreator&& oc
-                                         , FPack&& fp )
+                                                 , std::size_t size
+                                                 , OutbufCreator&& oc
+                                                 , FPack&& fp )
         : _size(size)
         , _outbuf_creator(std::move(oc))
         , _fpack(std::move(fp))
     {
     }
-
-    constexpr STRF_HD destination_with_given_size(const destination_with_given_size& other)
-        : strf::detail::destination_common
-            < strf::destination_with_given_size
-            , OutbufCreator
-            , FPack
-            , strf::print_preview<false, false> >(other)
-        , _size(other._size)
-        , _outbuf_creator(other._outbuf_creator)
-        , _fpack(other._fpack)
-    {
-    }
-
-    constexpr STRF_HD destination_with_given_size(destination_with_given_size&& other)
-        : strf::detail::destination_common
-            < strf::destination_with_given_size
-            , OutbufCreator
-            , FPack
-            , strf::print_preview<false, false> >(other)
-        , _size(other._size)
-        , _outbuf_creator(other._outbuf_creator)
-        , _fpack(other._fpack)
-    {
-    }
-
 
     using _common::with;
     using _common::operator();
@@ -568,40 +522,18 @@ public:
              , std::enable_if_t
                  < std::is_copy_constructible<T>::value, int > = 0 >
     constexpr STRF_HD destination_calc_size( strf::detail::destination_tag
-                                   , const OutbufCreator& oc
-                                   , const FPack& fp )
+                                           , const OutbufCreator& oc
+                                           , const FPack& fp )
         : _outbuf_creator(oc)
         , _fpack(fp)
     {
     }
 
     constexpr STRF_HD destination_calc_size( strf::detail::destination_tag
-                                   , OutbufCreator&& oc
-                                   , FPack&& fp )
+                                           , OutbufCreator&& oc
+                                           , FPack&& fp )
         : _outbuf_creator(std::move(oc))
         , _fpack(std::move(fp))
-    {
-    }
-
-    constexpr STRF_HD destination_calc_size(const destination_calc_size& other)
-        : strf::detail::destination_common
-            < strf::destination_calc_size
-            , OutbufCreator
-            , FPack
-            , strf::print_preview<true, false> >(other)
-        , _outbuf_creator(other._outbuf_creator)
-        , _fpack(other._fpack)
-    {
-    }
-
-    constexpr STRF_HD destination_calc_size(destination_calc_size&& other)
-        : strf::detail::destination_common
-            < strf::destination_calc_size
-            , OutbufCreator
-            , FPack
-            , strf::print_preview<true, false> >(other)
-        , _outbuf_creator(other._outbuf_creator)
-        , _fpack(other._fpack)
     {
     }
 

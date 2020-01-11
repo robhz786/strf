@@ -102,19 +102,6 @@ public:
     {
     }
 
-    constexpr STRF_HD value_with_format(const value_with_format& other)
-        : Fmts::template fn<value_with_format<ValueType, Fmts...>>(other)
-        ...
-        , _value(other._value)
-    {
-    }
-    constexpr STRF_HD value_with_format(value_with_format&& other)
-        : Fmts::template fn<value_with_format<ValueType, Fmts...>>(other)
-        ...
-        , _value(other._value)
-    {
-    }
-
     template <typename OtherValueType>
     constexpr STRF_HD value_with_format
         ( const ValueType& v

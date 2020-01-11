@@ -22,9 +22,6 @@ public:
         STRF_ASSERT(_groups_size != 0);
     }
 
-        constexpr STRF_HD monotonic_grouping_impl(const monotonic_grouping_impl& other) noexcept
-        : monotonic_grouping_impl(other._groups_size) { }
-
     STRF_HD unsigned get_thousands_sep_count(unsigned num_digits) const
     {
         return (_groups_size == 0 || num_digits == 0)
@@ -245,7 +242,7 @@ public:
 
 protected:
 
-        STRF_HD numpunct(const numpunct& other) noexcept
+    STRF_HD numpunct(const numpunct& other) noexcept
         : strf::numpunct_base(other) { }
 };
 
@@ -296,13 +293,8 @@ public:
     {
     }
 
-        constexpr STRF_HD monotonic_grouping(const monotonic_grouping& other)
-        : strf::numpunct<Base>(other), _impl(other._impl)
-    {
-    }
-
     STRF_HD unsigned groups( unsigned num_digits
-                   , std::uint8_t* groups_array ) const override
+                           , std::uint8_t* groups_array ) const override
     {
         auto s = _impl.get_groups(num_digits, groups_array) - groups_array;
         return 1 + static_cast<unsigned>(s);
@@ -354,7 +346,7 @@ public:
 
     str_grouping(const str_grouping&) = default;
 
-    str_grouping(str_grouping&& other) = default;
+    str_grouping(str_grouping&&) = default;
 
     unsigned groups( unsigned num_digits
                    , std::uint8_t* groups_array ) const override

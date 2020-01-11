@@ -48,7 +48,7 @@ public:
     underlying_outbuf& STRF_HD operator=(const underlying_outbuf&) = delete;
     underlying_outbuf& STRF_HD operator=(underlying_outbuf&&) = delete;
 
-        virtual STRF_HD ~underlying_outbuf() { };
+    virtual STRF_HD ~underlying_outbuf() { };
 
     STRF_HD char_type* pos() const noexcept
     {

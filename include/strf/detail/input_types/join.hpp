@@ -33,10 +33,6 @@ public:
         : _pos(pos)
     {
     }
-    constexpr STRF_HD split_pos_format_fn(const split_pos_format_fn& other) noexcept
-        : split_pos_format_fn(other._pos)
-    {
-    }
 
     template <bool B, typename U>
     constexpr STRF_HD explicit split_pos_format_fn
@@ -73,9 +69,6 @@ public:
     constexpr STRF_HD split_pos_format_fn() noexcept
     {
     }
-    constexpr STRF_HD split_pos_format_fn(const split_pos_format_fn& other) noexcept
-    {
-    }
 
     template<typename U>
     constexpr STRF_HD explicit split_pos_format_fn(const strf::split_pos_format_fn<false, U>&) noexcept
@@ -84,9 +77,9 @@ public:
 
     constexpr STRF_HD _adapted_derived_type split_pos(std::ptrdiff_t pos) const noexcept
     {
-        return {static_cast<const T&>(*this)
-            , strf::tag<strf::split_pos_format<true>> {}
-            , pos};
+        return { static_cast<const T&>(*this)
+               , strf::tag<strf::split_pos_format<true>> {}
+               , pos};
     }
 
     constexpr STRF_HD std::ptrdiff_t split_pos() const noexcept
@@ -367,8 +360,6 @@ public:
     {
     }
 
-    STRF_HD aligned_join_printer(const aligned_join_printer&) = default;
-
     virtual STRF_HD ~aligned_join_printer()
     {
     }
@@ -419,12 +410,13 @@ class join_printer
                                       , std::declval<const Args&>() )) ... >;
 public:
 
-    STRF_HD join_printer(const FPack& fp, Preview& preview, const strf::detail::simple_tuple<Args...>& args) :
-        _join_impl(fp, preview, args)
+    STRF_HD join_printer( const FPack& fp
+                        , Preview& preview
+                        , const strf::detail::simple_tuple<Args...>& args )
+        : _join_impl(fp, preview, args)
     {
     }
 
-    STRF_HD join_printer(const join_printer& cp) = default;
     virtual STRF_HD ~join_printer()
     {
     }

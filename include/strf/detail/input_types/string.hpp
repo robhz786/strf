@@ -27,11 +27,6 @@ public:
     {
     }
 
-    constexpr STRF_HD simple_string_view(const simple_string_view& other) noexcept
-        : simple_string_view(other._begin, other._len)
-    {
-    }
-
     STRF_CONSTEXPR_CHAR_TRAITS
     STRF_HD simple_string_view(const CharIn* str) noexcept
         : _begin(str)
@@ -83,13 +78,9 @@ class no_cv_format_fn
 {
 public:
 
-        constexpr STRF_HD no_cv_format_fn() noexcept
+    constexpr STRF_HD no_cv_format_fn() noexcept
     {
     }
-
-        constexpr STRF_HD no_cv_format_fn(const no_cv_format_fn& other) noexcept
-    {
-       }
 
     template <typename U>
     constexpr STRF_HD explicit no_cv_format_fn
@@ -151,11 +142,7 @@ public:
 template <typename CharT, typename T>
 struct cv_format_fn
 {
-        constexpr STRF_HD cv_format_fn() noexcept
-    {
-    }
-
-        constexpr STRF_HD cv_format_fn(const cv_format_fn& other) noexcept
+    constexpr STRF_HD cv_format_fn() noexcept
     {
     }
 

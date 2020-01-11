@@ -240,16 +240,6 @@ class fpe_wrapper
 
 public:
 
-    constexpr STRF_HD fpe_wrapper(const fpe_wrapper& other)
-        : _facet(other._facet)
-    {
-    }
-
-    constexpr STRF_HD fpe_wrapper(fpe_wrapper&& other)
-        : _facet(std::move(other._facet))
-    {
-    }
-
     template
         < typename F = Facet
         , typename = std::enable_if_t<std::is_copy_constructible<F>::value> >
@@ -295,16 +285,6 @@ class fpe_wrapper<Rank, strf::constrained_fpe<Filter, FPE>>
 
 public:
 
-    constexpr STRF_HD fpe_wrapper(const fpe_wrapper& other)
-       : _fpe(other._fpe)
-    {
-    }
-
-    constexpr STRF_HD fpe_wrapper(fpe_wrapper&& other)
-        : _fpe(std::move(other._fpe))
-    {
-    }
-
     template
         < typename F = FPE
         , typename = std::enable_if_t<std::is_copy_constructible<F>::value > >
@@ -342,15 +322,6 @@ class fpe_wrapper<Rank, const FPE&>
 {
 public:
 
-    constexpr STRF_HD fpe_wrapper(const fpe_wrapper& other)
-        : _fpe(other._fpe)
-    {
-    }
-    constexpr STRF_HD fpe_wrapper(fpe_wrapper&& other)
-        : _fpe(std::move(other._fpe))
-    {
-    }
-
     constexpr STRF_HD fpe_wrapper(const FPE& fpe)
         : _fpe(fpe)
     {
@@ -386,18 +357,9 @@ class fpe_wrapper<Rank, strf::facets_pack<FPE...>>
 
 public:
 
-    constexpr STRF_HD fpe_wrapper(const fpe_wrapper& other)
-        : _fp(other._fp)
-    {
-    }
-    constexpr STRF_HD fpe_wrapper(fpe_wrapper&& other)
-        : _fp(std::move(other._fp))
-    {
-    }
-
     template
         < typename FP = _fp_type
-        , typename = std::enable_if_t<std::is_copy_constructible<FP>::value> >
+        , std::enable_if_t<std::is_copy_constructible<FP>::value, int> = 0>
     constexpr STRF_HD fpe_wrapper(const _fp_type& fp)
         : _fp(fp)
     {
@@ -405,7 +367,7 @@ public:
 
     template
         < typename FP = _fp_type
-        , typename = std::enable_if_t<std::is_move_constructible<FP>::value> >
+        , std::enable_if_t<std::is_move_constructible<FP>::value, int> = 0>
     constexpr STRF_HD fpe_wrapper(_fp_type&& fp)
         : _fp(std::move(fp))
     {
@@ -500,17 +462,6 @@ template <std::size_t RankN>
 class facets_pack_base<RankN>
 {
 public:
-    constexpr STRF_HD facets_pack_base(const facets_pack_base&)
-    {
-    }
-
-    constexpr STRF_HD facets_pack_base(facets_pack_base&&)
-    {
-    }
-
-    constexpr STRF_HD facets_pack_base()
-    {
-    }
 
     constexpr STRF_HD void do_get_facet() const
     {
@@ -531,22 +482,6 @@ class facets_pack_base<RankN, TipFPE, OthersFPE...>
         < RankN + 1, OthersFPE...>;
 
 public:
-
-    constexpr STRF_HD facets_pack_base(const facets_pack_base& other)
-        : strf::detail::fpe_wrapper
-        < strf::rank<RankN>, TipFPE >(other)
-        , strf::detail::facets_pack_base
-        < RankN + 1, OthersFPE...>(other)
-    {
-    }
-
-    constexpr STRF_HD facets_pack_base(facets_pack_base&& other)
-        : strf::detail::fpe_wrapper
-        < strf::rank<RankN>, TipFPE >(std::move(other))
-        , strf::detail::facets_pack_base
-        < RankN + 1, OthersFPE...>(std::move(other))
-    {
-    }
 
     template< typename T = TipFPE
             , typename B = _base_others_fpe
@@ -651,23 +586,12 @@ class constrained_fpe
 {
 public:
 
-    static_assert( strf::is_constrainable_v<FPE>
-                 , "Not constrainable");
+    static_assert(strf::is_constrainable_v<FPE>, "FPE not constrainable");
 
     template
         < typename F = FPE
         , typename = std::enable_if_t<std::is_default_constructible<F>::value> >
     constexpr STRF_HD explicit constrained_fpe()
-    {
-    }
-
-    constexpr STRF_HD constrained_fpe(const constrained_fpe& other)
-        : _fpe(other._fpe)
-    {
-    }
-
-    constexpr STRF_HD constrained_fpe(constrained_fpe&& other)
-        : _fpe(std::move(other._fpe))
     {
     }
 
@@ -686,9 +610,6 @@ public:
         : _fpe(std::forward<U>(arg))
     {
     }
-
-    constexpr STRF_HD constrained_fpe& operator=(const constrained_fpe&) = delete;
-    constexpr STRF_HD constrained_fpe& operator=(constrained_fpe&&) = delete;
 
     constexpr STRF_HD const FPE& get() const
     {
@@ -714,18 +635,6 @@ template <>
 class facets_pack<>
 {
 public:
-    constexpr STRF_HD facets_pack(const facets_pack&)
-    {
-    }
-    constexpr STRF_HD facets_pack(facets_pack&&)
-    {
-    }
-    constexpr STRF_HD facets_pack()
-    {
-    }
-
-    STRF_HD facets_pack& operator=(const facets_pack&) = delete;
-    STRF_HD facets_pack& operator=(facets_pack&&) = delete;
 
     template <typename Category, typename Tag>
     STRF_HD decltype(auto) get_facet() const
@@ -751,16 +660,6 @@ class facets_pack: private strf::detail::facets_pack_base_t<FPE...>
 
 public:
 
-    constexpr STRF_HD facets_pack(const facets_pack& other)
-        : _base_type(other)
-    {
-    }
-
-    constexpr STRF_HD facets_pack(facets_pack&& other)
-        : _base_type(std::move(other))
-    {
-    }
-
     template
         < bool Dummy = true
         , typename = std::enable_if_t
@@ -780,10 +679,6 @@ public:
         : _base_type(std::forward<U>(fpe)...)
     {
     }
-
-    STRF_HD facets_pack& operator=(const facets_pack&) = delete;
-
-    STRF_HD facets_pack& operator=(facets_pack&&) = delete;
 
     template <typename Category, typename Tag>
     constexpr STRF_HD decltype(auto) get_facet() const

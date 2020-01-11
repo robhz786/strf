@@ -275,9 +275,6 @@ public:
     {
     }
 
-        constexpr STRF_HD transcoder(const transcoder& other) noexcept
-        : transcoder(other._impl) { }
-
     transcoder& operator=(const transcoder& cp) noexcept
     {
         _impl = cp._impl;
