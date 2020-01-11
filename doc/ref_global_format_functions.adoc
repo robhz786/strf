@@ -34,6 +34,12 @@ constexpr auto oct(const T& value)
 }
 
 template <typename T>
+constexpr auto bin(const T& value)
+{
+    return fmt(value).bin();
+}
+
+template <typename T>
 constexpr auto left(const T& value, int width)
 {
     return fmt(value) < width;
