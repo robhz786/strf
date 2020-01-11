@@ -50,7 +50,7 @@ class facets_pack_printer: public strf::printer<CharT>
 {
 public:
 
-	STRF_HD facets_pack_printer
+	  STRF_HD facets_pack_printer
         ( const ParentFPack& parent_fp
         , Preview& preview
         , const strf::inner_pack_with_args<ChildFPack, Args...>& args )

@@ -49,7 +49,8 @@ inline STRF_HD void do_repeat_sequence
     , std::size_t count
     , simple_array<CharT, N> seq )
 {
-	strf::detail::str_fill_n(reinterpret_cast<simple_array<CharT, N>*>(dest), count, seq);
+    auto reinterpreted_dest = reinterpret_cast<simple_array<CharT, N>*>(dest);
+    strf::detail::str_fill_n(reinterpreted_dest, count, seq);
 }
 
 template <typename CharT, std::size_t N>

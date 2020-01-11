@@ -122,7 +122,7 @@ inline constexpr STRF_HD const T&
 max(const T& lhs, const T& rhs) noexcept
 {
 #if !defined(__CUDA_ARCH__) && STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS
-	return std::max(lhs, rhs);
+    return std::max(lhs, rhs);
 #elif __CUDA_ARCH__
     return max(lhs, rhs);
 #else

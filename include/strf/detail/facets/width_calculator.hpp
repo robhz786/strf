@@ -37,7 +37,7 @@ class fast_width final: public strf::width_calculator<CharT>
 {
 public:
 
-	STRF_HD strf::width_t width_of
+    STRF_HD strf::width_t width_of
         ( CharT ch, strf::encoding<CharT> enc ) const override
     {
         (void)ch;
@@ -45,7 +45,7 @@ public:
         return 1;
     }
 
-	STRF_HD strf::width_t width
+    STRF_HD strf::width_t width
         ( strf::width_t limit
         , const CharT* str
         , std::size_t str_len

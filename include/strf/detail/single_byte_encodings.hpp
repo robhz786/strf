@@ -339,20 +339,20 @@ ForwardIt STRF_HD lower_bound
     return std::lower_bound(first, last, value, comp);
 #else
     auto search_range_length { last - first };
-    	// We don't have the equivalent of std::distance on the device-side
+        // We don't have the equivalent of std::distance on the device-side
 
     ForwardIt iter;
     while (search_range_length > 0) {
-    	auto half_range_length = search_range_length/2;
+        auto half_range_length = search_range_length/2;
         iter = first;
         iter += half_range_length;
         if (comp(*iter, value)) {
             first = ++iter;
             search_range_length -= (half_range_length + 1);
-            	// the extra +1 is since we've just checked the midpoint
+                // the extra +1 is since we've just checked the midpoint
         }
         else {
-        	search_range_length = half_range_length;
+            search_range_length = half_range_length;
         }
     }
     return first;
