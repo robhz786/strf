@@ -443,9 +443,9 @@ struct quantity_format
 
 template <typename T>
 constexpr auto fmt(const T& value)
--> std::remove_cv_t<std::remove_reference_t<decltype(make_fmt(strf::rank<1>{}, value))>>
+-> std::remove_cv_t<std::remove_reference_t<decltype(make_fmt(strf::rank<5>{}, value))>>
 {
-    return make_fmt(strf::rank<1>{}, value);
+    return make_fmt(strf::rank<5>{}, value);
 }
 
 template <typename T>
@@ -467,6 +467,13 @@ constexpr auto oct(const T& value)
 -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).oct())>>
 {
     return fmt(value).oct();
+}
+
+template <typename T>
+constexpr auto bin(const T& value)
+-> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).bin())>>
+{
+    return fmt(value).bin();
 }
 
 template <typename T>
@@ -557,6 +564,35 @@ constexpr auto sci(const T& value, P precision)
 {
     return fmt(value).sci().p(precision);
 }
+
+template <typename T>
+constexpr auto cv(const T& value)
+-> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).cv())>>
+{
+    return fmt(value).convert_charset(); // defined in no_cv_format_fn
+}
+
+template <typename T, typename E>
+constexpr auto cv(const T& value, const E& e)
+-> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).cv(e))>>
+{
+    return fmt(value).convert_charset(e);  // defined in no_cv_format_fn
+}
+
+template <typename T>
+constexpr auto sani(const T& value)
+-> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sani())>>
+{
+    return fmt(value).sanitize_charset();  // defined in no_cv_format_fn
+}
+
+template <typename T, typename E>
+constexpr auto sani(const T& value, const E& e)
+-> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sani(e))>>
+{
+    return fmt(value).sanitize_charset(e);  // defined in no_cv_format_fn
+}
+
 
 STRF_NAMESPACE_END
 

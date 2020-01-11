@@ -63,7 +63,7 @@ public:
         {
             return static_cast<std::int16_t>(str_len);
         }
-        return strf::width_t_max;
+        return strf::width_max;
     }
 };
 
@@ -102,7 +102,7 @@ public:
             {
                 return static_cast<std::int16_t>(count);
             }
-            return strf::width_t_max;
+            return strf::width_max;
         }
         return 0;
     }

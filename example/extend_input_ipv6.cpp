@@ -331,7 +331,7 @@ int main()
         , {{0, 0, 0, 1, 0, 0}} };
 
     s = strf::to_string
-        ( strf::fmt_range(vec, "\n").small().fill(U'~') > 20
+        ( strf::fmt_separated_range(vec, "\n").small().fill(U'~') > 20
         , "\n" );
 
     const char* expected_result =

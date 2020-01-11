@@ -63,14 +63,13 @@
 #define STRF_HAS_STD_CHARCONV
 #endif //defined(__cpp_lib_to_chars)
 
-
-#if defined(__cpp_lib_string_view_)
+#if defined(__cpp_lib_string_view)
 #define STRF_HAS_STD_STRING_VIEW
 #define STRF_CONSTEXPR_CHAR_TRAITS constexpr
 #include <string_view>
 #else
 #include <string> // char_traits
-#endif // defined(__cpp_lib_string_view_)
+#endif // defined(__cpp_lib_string_view)
 
 #if defined(__has_cpp_attribute)
 #if __has_cpp_attribute(nodiscard)
@@ -118,6 +117,11 @@
    // compilers that dont support Class template argument deductions
    // usually also dont support guaranteed copy elision
 #  define STRF_NO_CXX17_COPY_ELISION
+#endif
+
+#if defined(__GNUC__) && (__cplusplus > 201703L) && !defined(__cpp_lib_bitopts)
+// some versions of GCC forgot to define __cpp_lib_bitopts
+#  define __cpp_lib_bitopts  	201907
 #endif
 
 STRF_NAMESPACE_BEGIN

@@ -12,6 +12,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :sectnumlevels: 2
 :toc: left
 :toclevels: 2
+:icons: font
 
 [[usage_syntax]]
 == Main usage syntax
@@ -338,29 +339,32 @@ but they are analogous.
 Keep in mind that this is a locale-independent library.
 So things are always printed as in the C-locale, unless
 you explicitly specify otherwise, which you do by passing
-__facet objects__ to the <<usage_syntax,`with`>> function.
+__facet objects__ to the `<<usage_syntax,with>>` function.
 
 Every __facet__ belongs to a __facet category__.
 Each facet category corresponds to a concept, __i.e.__ a set of requirements that a class must satisfy. A class that satisfies such requirements is a facet of such facet category. Moreover, for each facet category there is class whose name, by convention, has a "_c" suffix and is the name of the category.
 
-For example, <<numpunct,`monotonic_grouping<10>`>> and
-<<numpunct, `str_grouping<10>`>>  are both facets of the category
-`numpunct_c<10>`.
+For example, `<<numpunct,monotonic_grouping>><10>` and
+`<<numpunct,str_grouping>><10>`  are both facets of the category
+`<<numpunct,numpunct_c>><10>`.
 Both have the same purpose: to customize numeric punctuation.
 
 [%header,cols="2,1,4"]
 |===
 |Category |Constrainable |What it controls
 
-|`width_calculation_c` |Yes |How the width is calculated
-|`numpunct_c<10>`      |Yes |Numeric punctuation for decimal base
-|`numpunct_c<16>`      |Yes |Numeric punctuation for hexadecimal base
-|`numpunct_c<8>`       |Yes |Numeric punctuation for octal base
+|`<<width_calculation,width_calculation_c>>` |Yes |How the width is calculated
+|`<<numpunct, numpunct_c>><10>`      |Yes |Numeric punctuation for decimal base
+|`<<numpunct, numpunct_c>><16>`      |Yes |Numeric punctuation for hexadecimal base
+|`<<numpunct, numpunct_c>><8>`       |Yes |Numeric punctuation for octal base
+|`<<numpunct, numpunct_c>><2>`       |Yes |Numeric punctuation for binary base
 
-|`encoding_c<CharT>`   |No  |The encoding correponding to character type `CharT`
-|`encoding_error_c`    |Yes |Encoding error handling
-|`surrogates_policy_c` |Yes |Wheter surrogates are treated as errors
-|`tr_string_error_c`   |No  |Tr-string parsing error handling
+|`<<lettercase,lettercase_c>>`        |Yes |Letter case in numeric types
+
+|`<<encoding,encoding_c>><CharT>`   |No  |The encoding correponding to character type `CharT`
+|`<<encoding_error,encoding_error_c>>`    |Yes |Encoding error handling
+|`<<surrogate_policy,surrogate_policy_c>>` |Yes |Wheter surrogates are treated as errors
+|`<<tr_string_error,tr_string_error_c>>`   |No  |Tr-string parsing error handling
 |===
 
 [[constrained_facets]]
@@ -443,6 +447,58 @@ constexpr int base = 10;
 auto punct = strf::str_grouping<base>{"\4\3\2"};
 auto str = strf::to_string.with(punct)(100000000000ll);
 assert(str == "1,00,00,000,0000");
+----
+
+[[lettercase]]
+== Letter case
+
+The `lettercase` facet affects the letter cases when printing numeric values.
+The default value is `strf::lowercase`.
+
+[source,cpp]
+----
+namespace strf {
+
+enum class lettercase { lower = /*...*/, mixed = /*...*/, upper = /*...*/ };
+
+constexpr lettercase lowercase = lettercase::lower;
+constexpr lettercase mixedcase = lettercase::mixed;
+constexpr lettercase uppercase = lettercase::upper;
+
+}
+----
+
+.Printed numeric values examples
+[%header,cols="1,2"]
+|===
+|Value | Result examples
+
+|`strf::lowercase`
+|`0xab` `1e+50` `inf` `nan`
+
+|`strf::mixedcase`
+|`0xAB` `1e+50` `Inf` `NaN`
+
+|`strf::uppercase`
+|`0XAB` `1E+50` `INF` `NAN`
+|===
+
+.Usage example
+[source,cpp]
+----
+auto str_upper = strf::to_string.with(strf::uppercase)
+    ( ~strf::hex(0xabc), ' '
+    , 1.0e+50, ' '
+    , std::numeric_limits<FloatT>::infinity() );
+
+assert(str_upper == "0XAB 1E+50 INF");
+
+auto str_mixed = strf::to_string.with(strf::mixedcase)
+    ( ~strf::hex(0xabc), ' '
+    , 1.e+50, ' '
+    , std::numeric_limits<FloatT>::infinity() );
+
+assert(str_upper == "0xAB 1e+50 Inf");
 ----
 
 [[encoding]]
@@ -627,6 +683,7 @@ auto str = strf::to_string
 assert(str == "--\xff----\xff----?----?----?--");
 ----
 
+[[encoding_error]]
 === Encoding error handling
 
 The `encoding_error` enumeration controls how invalid
@@ -667,6 +724,7 @@ catch(strf::encoding_failure&){
 assert(transcoding_failed);
 ----
 
+[[surrogate_policy]]
 === Surrogates tolerance
 
 The `surrogate_policy` enumeration is a facet that controls
@@ -706,6 +764,7 @@ assert(utf16_strict == u"-\uFFFD\uFFFD\uFFFD---"); // surrogate sanitized
 assert(utf16_lax == input_utf16);                  // surrogate preserved
 ----
 
+[[width_calculation]]
 == Width Calculation
 
 to-do
@@ -764,19 +823,27 @@ Types::
 `unsigned long int` and
 `unsigned long long int`
 
+[[int_fmt]]
 Format functions::
 ( in addition to <<alignment_format_functions, alignment functions>> )
 `dec()`::: Use decimal base ( This is already the default, though )
 `hex()`::: Use hexadecimal base.
 `oct()`::: Use octal base.
+`bin()`::: Use binary base.
 `p(unsigned precision)`::: Ensures that at least `precision` digits
 are printed by adding extra zero leading digits if necessary.
 `operator+()`::: When in decimal base, print the positive sign
 `"+"` when value is non negative. No effect for other bases.
 `operator~()`::: Print the base indication
-( `"0x"` for hexadecimal, `"0"` for octal ). No effect for
-decimal base.
+( `"0x"` for hexadecimal, `"0"` for octal and `"0b"` for binary ).
+No effect in decimal base.
 
+Facet categories::
+- `<<lettercase,lettercase_c>>`
+- `<<numpunct, numpunct_c>><__Base__>`
+- `<<encoding,encoding_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
+- `<<surrogate_policy,surrogate_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
+- `<<encoding_error,encoding_error_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
 
 === Floating Points
 Types::
@@ -803,12 +870,38 @@ can fully recovered by a parser. Otherwise, if notation is __general__,
 the number of fractional digits. `precision == 0` has the same effect as
 `precision == 1`.
 
+Facet categories::
+- `<<lettercase,lettercase_c>>`
+- `<<numpunct, numpunct_c>><10>`
+- `<<encoding,encoding_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
+- `<<surrogate_policy,surrogate_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
+- `<<encoding_error,encoding_error_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
+
+=== `const void*`
+Types:: `const void*`
+Format functions::
+The <<alignment_format_functions, alignment functions>> only.
+
+Facet categories::
+- `<<lettercase,lettercase_c>>`
+- `<<numpunct, numpunct_c>><16>`
+- `<<encoding,encoding_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
+- `<<surrogate_policy,surrogate_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
+- `<<encoding_error,encoding_error_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
+
 === Single characters
 Type:: `CharT`, that is the output character type defined by the <<destinations,destination>>.
 
 Format functions::
 ( in addition to <<alignment_format_functions, alignment functions>> )
 `multi(std::size_t count)`::: Prints the character `count` times. Default value is `1`.
+
+Facet categories::
+- `<<width_calculation,width_calculation_c>>`
+- `<<encoding,encoding_c>><__CharType__>`
+- `<<surrogate_policy,surrogate_policy_c>>`
+- `<<encoding_error,encoding_error_c>>`
+
 
 === Strings
 Types::
@@ -835,15 +928,21 @@ Format functions::
 `cv()`::: Translates input string from the encoding associated to `CharT` to
           the output encoding, if these encodings are not the same.
           Otherwise, copies the input string as it is.
-
++
 .Example
 [source,cpp]
 ----
 auto str = strf::to_string(strf::center(u" Hello! ", 16, '*').cv());
 assert(str == "**** Hello! ****");
 ----
-
++
 See also the section about <<encoding_conversion,encoding conversion>>.
+
+Facet categories::
+- `<<width_calculation,width_calculation_c>>`
+- `<<encoding,encoding_c>><__CharType__>`
+- `<<surrogate_policy,surrogate_policy_c>>`
+- `<<encoding_error,encoding_error_c>>`
 
 === Ranges
 
@@ -856,62 +955,115 @@ namespace strf {
 template <typename Range>
 /*...*/ range(const Range& r);
 
-template <typename Iterator, typename CharT>
+template <typename T, std::size_t N>
+/*...*/ range(T (&array)[N]);
+
+template <typename Iterator>
 /*...*/ range(const Iterator& begin, const Iterator& end);
+
+// With operation
+
+template <typename Range, typename UnaryOperation>
+/*...*/ range(const Range& r, UnaryOperation unary_op);
+
+template <typename T, std::size_t N, typename UnaryOperation>
+/*...*/ range(T (&array)[N], UnaryOperation unary_op);
+
+template <typename Iterator, typename UnaryOperation>
+/*...*/ range( const Iterator& begin
+             , const Iterator& end
+             , UnaryOperation unary_op );
 
 // With separator:
 
 template <typename Range, typename CharT>
-/*...*/ range(const Range& r, const CharT* separator);
+/*...*/ separated_range(const Range& r, const CharT* separator);
+
+template <typename T, std::size_t N, typename CharT>
+/*...*/ separated_range(T (&array)[N], const CharT* separator);
 
 template <typename Iterator, typename CharT>
-/*...*/ range( const Iterator& begin
-             , const Iterator& end
-             , const CharT* separator );
+/*...*/ separated_range( const Iterator& begin
+                       , const Iterator& end
+                       , const CharT* separator );
 
+// With separator and operation
+
+template <typename Range, typename CharT, typename UnaryOperation>
+/*...*/ separated_range( const Range& r
+                       , const CharT* separator
+                       , UnaryOperation unary_op );
+
+template <typename T, std::size_t N, typename CharT, typename UnaryOperation>
+/*...*/ separated_range( T (&array)[N]
+                       , const CharT* separator
+                       , UnaryOperation unary_op );
+
+template <typename Iterator, typename CharT, typename UnaryOperation>
+/*...*/ separated_range( const Iterator& begin
+                       , const Iterator& end
+                       , const CharT* separator
+                       , UnaryOperation unary_op );
 } // namespace strf
 ----
 
-.Example
-[source,cpp]
+.Examples
+[source,cpp,subs=normal]
 ----
-std::vector<int> vec = { 11, 22, 33 };
-auto str = strf::to_string("[", strf::range(vec, ", "), "]");
-assert(str == "[11, 22, 33]");
+int arr[3] = { 11, 22, 33 };
+
+auto str = strf::to_string(strf::range(arr));
+assert(str == "112233");
+
+str = strf::to_string(strf::separated_range(arr, ", "));
+assert(str == "11, 22, 33");
+
+auto op = [](auto x){ return strf::<<joins,join>>('(', +strf::fmt(x * 10), ')'); };
+
+str = strf::to_string(strf::separated_range(arr, ", ", op));
+assert(str == "(+110), (+220), (+330)");
 ----
 
 ==== With formatting
 
 [source,cpp]
 ----
+namespace strf {
+
 template <typename Range>
 /*...*/ fmt_range(const Range& r);
 
-template <typename Iterator, typename CharT>
+template <typename T, std::size_t N>
+/*...*/ fmt_range(T (&array)[N], const Range& r);
+
+template <typename Iterator>
 /*...*/ fmt_range(const Iterator& begin, const Iterator& end);
 
-// With separator:
+// With separator
 
 template <typename Range, typename CharT>
-/*...*/ fmt_range(const Range& r, const CharT* separator);
+/*...*/ fmt_separated_range(const Range& r, const CharT* separator);
+
+template <typename T, std::size_t N, typename CharT>
+/*...*/ fmt_separated_range(T (&array)[N], const CharT* separator);
 
 template <typename Iterator, typename CharT>
-/*...*/ fmt_range( const Iterator& begin
-                 , const Iterator& end
-                 , const CharT* separator );
-
+/*...*/ fmt_separated_range( const Iterator& begin
+                           , const Iterator& end
+                           , const CharT* separator );
 } // namespace strf
 ----
 Any format function applicable to the element type of the
 range can also be applied to the
-expression `strf::fmt_range(/{asterisk}\...{asterisk}/)`.
+expression `strf::fmt_range(/{asterisk}\...{asterisk}/)` or
+`strf::fmt_separated_range(/{asterisk}\...{asterisk}/)`.
 This way the format functions is applied to all elements:
 
 .Example 1
 [source,cpp]
 ----
 std::vector<int> vec = { 11, 22, 33 };
-auto str1 = strf::to_string("[", +strf::fmt_range(vec, " ;") > 4, "]");
+auto str1 = strf::to_string("[", +strf::fmt_separated_range(vec, " ;") > 4, "]");
 assert(str1 == "[ +11 ; +22 ; +33]");
 ----
 
@@ -921,12 +1073,25 @@ assert(str1 == "[ +11 ; +22 ; +33]");
 std::vector<int> vec = { 11, 22, 33 };
 auto str2 = strf::to_string
     ( "["
-    , ~strf::fmt_range(vec, " / ").fill('.').hex() > 6,
+    , ~strf::fmt_separated_range(vec, " / ").fill('.').hex() > 6,
     " ]");
 
 assert(str2 == "[..0xfa / ..0xfb / ..0xfc]");
 ----
 
+Actually, you don't need to use `fmt_range` or `fmt_separated_range`.
+You can apply format function directly into `range(/{asterisk}\...{asterisk}/)`
+or `separarated_range(/{asterisk}\...{asterisk}/)`, as long as you don't pass
+an operation function object:
+
+[source,cpp]
+----
+std::vector<int> vec = { 11, 22, 33 };
+auto str = strf::to_string("[", ~strf::hex(strf::separated_range(vec, " ; ")), "]");
+assert(str == "[0xb ; 0x16 ; 0x21]");
+----
+
+[[joins]]
 === Joins
 
 ==== Without alignment
@@ -940,28 +1105,81 @@ template <typename ... Args>
 
 }
 ----
-The `join` function template enables you group a set of input
-arguments as if they were one.
+_Joins_ enables you to group a set of input arguments as one:
 
-.Example
 [source,cpp]
 ----
-std::string host_name = "isocpp.org";
-unsigned char ip_addr [4] = {104, 236, 162, 70};
+std::string month = "May";
+int day = 5;
 
-auto str = strf::to_string .tr
-    ( "The IP address of {} is {}."
-    , host_name
-    , strf::join(ip_addr[0], '.', ip_addr[1], '.', ip_addr[2], '.', ip_addr[3]));
-
-assert(str == "The IP address of isocpp.org is 104.236.162.70.");
+auto str = strf::to_string.tr("Today is {}.", strf::join(month, ' ', day))
+assert(str == "Today is May 5")
 ----
+
+It can be handy to create aliases:
+
+[source,cpp,subs=normal]
+----
+struct date{ int day, month, year; };
+
+auto as_yyyymmdd = [](date d)
+{
+    return strf::join( strf::<<int_fmt,dec>>(d.year).<<int_fmt,p>>(4), '/'
+                     , strf::<<int_fmt,dec>>(d.month).<<int_fmt,p>>(2), '/'
+                     , strf::<<int_fmt,dec>>(d.day).<<int_fmt,p>>(2) );
+};
+
+date today {1, 1, 1935};
+auto str = strf::to_string("Today is ", as_yyyymmdd(today), '.');
+assert(str == "Today is 1935/01/01.");
+----
+
+[WARNING]
+====
+Watch out for dangling references when using joins.
+When passing an array to `join`, it is stored by reference
+in the returned object. So the code below has UB:
+[source]
+----
+auto get_hello(const char* name)
+{
+    char buff[20]; // temporary array
+    strcpy(buff, "Hello");
+    return strf::join(buff, name, '!');
+}
+
+int main()
+{
+    // accessing a dangling array reference
+    strf::to(stdout)(get_hello("Maria"));
+}
+----
+Of course, `get_hello()` could be fixed by simply returning instead
+`strf::join("Hello", name, '!')`, since string literals have
+static storage duration.
+
+Also, although arguments are stored by value in joins
+( except for arrays ), some of the arguments may contain references.
+For exemple, if `str` is a `std::string`, then
+`strf::<<format_function_aliases,right>>(str, 10)` doesn't store a copy of
+`str`, but a reference to its array of characters.
+====
+
+[TIP]
+====
+If you don't want to ( or can not ) store an argument by copy in a
+join, you can use `std::reference_wrapper`:
+[source]
+----
+std::string name = /*...*/;
+strf::to(stdout) (strf::join("Hello ", std::ref(name), '!') ^ 50);
+----
+====
 
 ==== With alignment
 
-The return type of `join(args ...)` provides the
-<<alignment_format_functions,alignment format functions>>.
-You can use them to align a join:
+You can apply the <<alignment_format_functions,alignment format functions>>
+one the return type of `join(args\...)`
 
 [source,cpp]
 ----
@@ -981,7 +1199,7 @@ assert(str == "ab    cdef");
 ----
 
 The functions below provide an alternartive syntax to create aligned
-join. Their return type has the `operator()(const Args& ... args)` member function
+join. Their return type has the `operator()(const Args& \... args)` member function
 that receives the elements of the join.
 
 [source,cpp]
@@ -1029,8 +1247,8 @@ assert(str == "---abc  ....def123---");
 ----
 
 === Facets
-You can <<facet_overriding,override facets>> to a
-subset of the input arguments.
+It is possible to <<facet_overriding,override facets>>
+to only a subset of the input arguments.
 
 [source,cpp]
 ----
@@ -1039,14 +1257,14 @@ namespace strf {
 template < typename FPack >
 class inner_pack
 {
+public:
     template <typename... Args>
-    /*...*/  operator()(const Args& \... args) const;
-
+    /*...*/  operator()(const Args&... args) const;
     //...
 };
 
 template <typename ... Facets>
-inner_pack</*...*/> with(const Facets& ... facets);
+inner_pack</*...*/> with(const Facets&... facets);
 ----
 .Example 1
 [source,cpp]

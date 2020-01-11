@@ -10,34 +10,6 @@
 
 STRF_NAMESPACE_BEGIN
 
-template <typename T>
-constexpr auto cv(const T& value)
--> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).cv())>>
-{
-    return fmt(value).cv();
-}
-
-template <typename T, typename E>
-constexpr auto cv(const T& value, const E& e)
--> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).cv(e))>>
-{
-    return fmt(value).cv(e);
-}
-
-template <typename T>
-constexpr auto sani(const T& value)
--> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sani())>>
-{
-    return fmt(value).sani();
-}
-
-template <typename T, typename E>
-constexpr auto sani(const T& value, const E& e)
--> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sani(e))>>
-{
-    return fmt(value).sani(e);
-}
-
 namespace detail {
 
 template<typename CharIn, typename CharOut>

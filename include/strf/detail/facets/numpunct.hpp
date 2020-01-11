@@ -278,6 +278,14 @@ public:
         numpunct_base::decimal_point(ch);
         return std::move(*this);
     }
+    constexpr auto decimal_point() const
+    {
+        return numpunct_base::decimal_point();
+    }
+    constexpr auto thousand_sep() const
+    {
+        return numpunct_base::thousands_sep();
+    }
 
     using no_group_sep = std::true_type;
 };
@@ -324,6 +332,14 @@ public:
     {
         numpunct_base::decimal_point(ch);
         return std::move(*this);
+    }
+    constexpr auto decimal_point() const
+    {
+        return numpunct_base::decimal_point();
+    }
+    constexpr auto thousand_sep() const
+    {
+        return numpunct_base::thousands_sep();
     }
 
 private:
@@ -380,6 +396,14 @@ public:
         numpunct_base::decimal_point(ch);
         return std::move(*this);
     }
+    constexpr auto decimal_point() const
+    {
+        return numpunct_base::decimal_point();
+    }
+    constexpr auto thousand_sep() const
+    {
+        return numpunct_base::thousands_sep();
+    }
 
 private:
 
@@ -416,6 +440,7 @@ public:
     {
         return U'.';
     }
+
     using no_group_sep = std::true_type;
 };
 

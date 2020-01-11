@@ -6,7 +6,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/detail/tr_string.hpp>
-#include <strf/detail/printers_tuple.hpp>
 #include <strf/facets_pack.hpp>
 
 STRF_NAMESPACE_BEGIN
@@ -45,9 +44,8 @@ public:
 
         const auto& self = static_cast<const _destination_type&>(*this);
 
-        using NewFPack = decltype
-            ( strf::pack( std::declval<const FPack&>()
-                                 , std::forward<FPE>(fpe) ...) );
+        using NewFPack = decltype( strf::pack( std::declval<const FPack&>()
+                                             , std::forward<FPE>(fpe) ...) );
 
         return DestinationTmpl<OutbufCreator, NewFPack>
         { self, detail::destination_tag{}, std::forward<FPE>(fpe) ...};
@@ -61,9 +59,8 @@ public:
 
         auto& self = static_cast<const _destination_type&>(*this);
 
-        using NewFPack = decltype
-            ( strf::pack( std::declval<FPack>()
-                                 , std::forward<FPE>(fpe) ...) );
+        using NewFPack = decltype( strf::pack( std::declval<FPack>()
+                                             , std::forward<FPE>(fpe) ...) );
 
         return DestinationTmpl<OutbufCreator, NewFPack>
         { std::move(self), detail::destination_tag{}, std::forward<FPE>(fpe) ...};
@@ -145,33 +142,16 @@ public:
         ( const std::basic_string_view<CharT>& str
         , const Args& ... args ) const &
     {
-
-       _tr_write(str.begin, str.end(), args...);
+        return _tr_write(str.data(), str.size(), args...);
     }
-
-    // template <typename ... Args>
-    // decltype(auto) tr
-    //     ( const std::basic_string_view<CharT>& str
-    //     , const Args& ... args ) &&
-    // {
-    //     return std::move(*this)._tr_write(str.begin, str.end(), args...);
-    // }
 
 #else
 
     template <typename ... Args>
     decltype(auto) tr(const CharT* str, const Args& ... args) const &
     {
-        return _tr_write
-            ( str, str + std::char_traits<CharT>::length(str), args... );
+        return _tr_write(str, std::char_traits<CharT>::length(str), args...);
     }
-
-    // template <typename ... Args>
-    // decltype(auto) tr(const CharT* str, const Args& ... args) &&
-    // {
-    //     return std::move(*this)._tr_write
-    //         ( str, str + std::char_traits<CharT>::length(str), args... );
-    // }
 
 #endif
 
@@ -190,11 +170,11 @@ private:
 
     template < typename ... Args >
     decltype(auto) _tr_write( const CharT* str
-                            , const CharT* str_end
+                            , std::size_t str_len
                             , const Args& ... args) const &
     {
         return _tr_write_2
-            (str, str_end, std::make_index_sequence<sizeof...(args)>(), args...);
+            (str, str + str_len, std::make_index_sequence<sizeof...(args)>(), args...);
     }
 
     template < std::size_t ... I, typename ... Args >
@@ -236,6 +216,17 @@ private:
         return self._write(preview, tr_printer);
     }
 };
+
+template < typename OB >
+inline decltype(std::declval<OB&>().finish()) finish(strf::rank<2>, OB& ob)
+{
+    return ob.finish();
+}
+
+template < typename OB >
+inline void finish(strf::rank<1>, OB&)
+{
+}
 
 }// namespace detail
 
@@ -352,7 +343,7 @@ private:
     {
         decltype(auto) ob = _outbuf_creator.create();
         strf::detail::write_args(ob, printers...);
-        return ob.finish();
+        return strf::detail::finish(strf::rank<2>(), ob);
     }
 
     OutbufCreator _outbuf_creator;
@@ -472,7 +463,7 @@ private:
     {
         decltype(auto) ob = _outbuf_creator.create(_size);
         strf::detail::write_args(ob, printers...);
-        return ob.finish();
+        return strf::detail::finish(strf::rank<2>(), ob);
     }
 
     std::size_t _size;
@@ -593,13 +584,23 @@ private:
     {
         decltype(auto) ob = _outbuf_creator.create(preview.get_size());
         strf::detail::write_args(ob, printers...);
-        return ob.finish();
+        return strf::detail::finish(strf::rank<2>(), ob);
     }
 
     OutbufCreator _outbuf_creator;
     FPack _fpack;
 };
 
+template <typename CharOut, typename FPack, typename Preview, typename Arg>
+inline auto make_printer
+    ( strf::rank<1>
+    , const FPack& fp
+    , Preview& preview
+    , std::reference_wrapper<Arg> arg)
+{
+    return make_printer<CharOut, FPack>
+        ( strf::rank<5>{}, fp, preview, arg.get() );
+}
 
 template <typename CharOut, typename FPack, typename Preview, typename Arg>
 using printer_impl
@@ -607,6 +608,39 @@ using printer_impl
                                        , std::declval<const FPack&>()
                                        , std::declval<Preview&>()
                                        , std::declval<const Arg&>() ) );
+namespace detail {
+
+template <typename CharT>
+class outbuf_reference
+{
+public:
+
+    using char_type = CharT;
+
+    explicit outbuf_reference(strf::basic_outbuf<CharT>& ob) noexcept
+        : _ob(ob)
+    {
+    }
+
+    strf::basic_outbuf<CharT>& create() const
+    {
+        return _ob;
+    }
+
+private:
+    strf::basic_outbuf<CharT>& _ob;
+};
+
+
+} // namespace detail
+
+
+template <typename CharT>
+auto to(strf::basic_outbuf<CharT>& ob)
+{
+    return strf::destination_no_reserve<strf::detail::outbuf_reference<CharT>>(ob);
+}
+
 
 STRF_NAMESPACE_END
 

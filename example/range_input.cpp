@@ -10,7 +10,7 @@ void sample()
     //[ range_sample
     int array[] = { 11, 22, 33 };
 
-    auto str = strf::to_string("[", strf::range(array, ", "), "]");
+    auto str = strf::to_string("[", strf::separated_range(array, ", "), "]");
 
     assert(str == "[11, 22, 33]");
     //]
@@ -22,7 +22,7 @@ void sample2()
     //[ range_sample_2
     int array[] = { 250, 251, 252 };
 
-    auto str = strf::to_string("[", ~strf::hex(strf::range(array, ", ")), "]");
+    auto str = strf::to_string("[", ~strf::hex(strf::separated_range(array, ", ")), "]");
 
     assert(str == "[0xfa, 0xfb, 0xfc]");
     //]
@@ -33,7 +33,7 @@ void sample3()
     //[ range_sample_3
     int array[] = { 11, 22, 33 };
 
-    auto str = strf::to_string("[", +strf::fmt_range(array, " ;") > 4, "]");
+    auto str = strf::to_string("[", +strf::fmt_separated_range(array, " ;") > 4, "]");
 
     assert(str == "[ +11 ; +22 ; +33]");
     //]
@@ -43,12 +43,12 @@ void sample4()
 {
 
 std::vector<int> vec = { 11, 22, 33 };
-auto str1 = strf::to_string("[", +strf::fmt_range(vec, " ;") > 4, "]");
+auto str1 = strf::to_string("[", +strf::fmt_separated_range(vec, " ;") > 4, "]");
 assert(str1 == "[ +11 ; +22 ; +33]");
 
 auto str2 = strf::to_string
     ( "["
-    , ~strf::fmt_range(vec, " / ").fill('.').hex() > 6,
+    , ~strf::fmt_separated_range(vec, " / ").fill('.').hex() > 6,
     " ]");
 assert(str2 == "[..0xfa / ..0xfb / ..0xfc]");
 }

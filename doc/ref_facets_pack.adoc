@@ -10,6 +10,7 @@ http://www.boost.org/LICENSE_1_0.txt
 [[facets_pack]]
 === Class template `facets_pack`
 
+====
 [source,cpp]
 ----
 template <typename ... FPE>
@@ -18,10 +19,11 @@ class facets_pack;
 ::
 Compile-time requirements::: All types in `FPE\...` satisfy
  <<FacetsPackElement, _FacetsPackElement_>>.
+====
 
 ==== Member functions
 ===== Constructors
-
+====
 [source,cpp]
 ----
 constexpr facets_pack(const facets_pack& other);
@@ -31,7 +33,8 @@ Effects::: Initializes each element with the const reference
           of the corresponding element in `other`
 Compile-time requirements::: `std::is_copy_constructible_v<FPE> && \...`,
       otherwise this constructor does not participate in overload resolution.
-
+====
+====
 [source,cpp]
 ----
 constexpr facets_pack(facets_pack&& other);
@@ -41,7 +44,8 @@ Effects::: Initializes each element from the
           rvalue reference of the corresponding element in `other`
 Compile-time requirements::: `std::is_move_constructible_v<FPE> && \...`, otherwise this
           constructor does not participate in overload resolution.
-
+====
+====
 [source,cpp]
 ----
 constexpr explicit facets_pack(const FPE& ... fpe)
@@ -50,7 +54,8 @@ constexpr explicit facets_pack(const FPE& ... fpe)
 Effects::: Initializes each element with the correspondig value in `fpe\...`
 Compile-time requirements::: `std::is_copy_constructible_v<FPE> && \...`, otherwise this
       constructor does not participate in overload resolution.
-
+====
+====
 [source,cpp]
 ----
 template <typename... U>[br]
@@ -62,8 +67,9 @@ Compile-time requirements::: This constructor does not participate in overload r
 - `sizeof\...(U) == sizeof\...(FPE)`, and
 - `sizeof\...(U) != 0`, and
 - `std::is_constructible_v<FPE, U&&> && \...`
-
+====
 ===== Assignment operators (deleted)
+====
 [source,cpp]
 ----
    facets_pack& operator=(const facets_pack&) = delete
@@ -73,10 +79,11 @@ Compile-time requirements::: This constructor does not participate in overload r
 Assignments are deleted because they seem unecessary and it's unclear
 what would be the best
 implementation in the case there is any reference type in `FPE\...`.
-
+====
 
 [[pack]]
 === Function template `pack`
+====
 [source,cpp]
 ----
 template <typename ... Types>
@@ -89,9 +96,11 @@ Return type::: `facets_pack<VTypes\...>`, where for each `Ti` in `Types\...`,
 - `const F&` , if `Vi` is `std::reference_wrapper<F>`
 - `const Vi` , if `Vi` <<facet_stored_by_value, `facet_stored_by_value<Vi>`>> is `false`
 - `Ti` , otherwise
+====
 
 [[get_facet]]
 === Function template `get_facet`
+====
 [source,cpp]
 ----
 template <typename FCat, typename Tag, typename ... T>
@@ -102,12 +111,14 @@ Effects::: If <<has_facet, `has_facet<FCat, Tag>(fp)`>> returns `true` then
           returns <<do_get_facet,`do_get_facet<FCat, Tag>(fp)`, otherwise
           return `FCat::get_default()`.
 Compile-time requirements:::  `FCat` satisfies <<FacetCategory,_FacetCategory_>>.
+====
 
 [[has_facet]]
 === Hypothetical function template `fas_facet`
 NOTE: This function template does not exists in this library.
        It is only documented to help to explain the
        <<get_facet, `get_facet`>> function template.
+====
 [source,cpp]
 ----
 template <typename FCat, typename Tag, typename FPE>
@@ -125,6 +136,7 @@ Effects:::
 Compile-time requirements:::
 - `FCat` satisfies <<FacetCategory, _FacetCategory_>>.
 - `FPE` satisfies <<FacetsPackElement, _FacetsPackElement_>>.
+====
 
 
 [[do_get_facet]]
@@ -132,7 +144,7 @@ Compile-time requirements:::
 NOTE: This function template is not part of the library.
       It only is documented to help to explaine the
       <<get_facet,`get_facet`>> function template
-
+====
 [source,cpp]
 ----
 template <typename FCat, typename Tag, typename FPE>
@@ -143,10 +155,12 @@ Compile-time requirements:::
 - `FCat` satisfies <<FacetCategory,_FacetCategory_>>.
 - `FPE` satisfies <<FacetsPackElement,_FacetsPackElement_>>.
 - `has_facet<FCat, Tag>(fpe)` is `true`.
+====
 
 [[constrained_fpe]]
 === Class template `constrained_fpe`
 
+====
 [source,cpp]
 ----
 template <template <class> class Filter, typename FPE>
@@ -163,6 +177,7 @@ Compile-time requirements:::
 - For any type `T`, `Filter<T>` has a member variable `value` that is a
   static constexpr value whose type is implicitly convertible to `bool`
 - `FPE` satisfies <<ConstrainableFacetsPackElement,_ConstrainableFacetsPackElement_>>.
+====
 
 ==== Synopsis
 [source,cpp,subs=normal]
@@ -191,13 +206,15 @@ private:
 ==== Member functions
 [[constrained_fpe_constructor]]
 ===== Constructors
+====
 [source,cpp]
 ----
 constexpr explicit constrained_fpe(const FPE& fpe);
 ----
 ::
 Effect::: Initializes the element of the `constrained_fpe` with `fpe`.
-
+====
+====
 [source,cpp]
 ----
 constexpr constrained_fpe(const constrained_fpe& other);
@@ -206,7 +223,8 @@ constexpr constrained_fpe(const constrained_fpe& other);
 Effect::: Initializes the element of the `constrained_fpe` from
      the const reference of the element of `other`.
 Compile-time requirements::: `std::is_copy_constructible<FPE>::value` is `true`.
-
+====
+====
 [source,cpp]
 ----
 constexpr constrained_fpe(constrained_fpe&& other);
@@ -217,16 +235,19 @@ Effect::: Initializes the element of the `constrained_fpe` from
 Compile-time requirements::: `std::is_move_constructible<FPE>::value` is `true`.
 
 [[constrained_fpe_element_access]]
+====
 ===== Element access
 
+====
 [source,cpp]
 ----
 constexpr const FPE& get() const;
 ----
 ::
 Effect::: Return the stored element;
-
+====
 === Function template `constrain`
+====
 [source]
 ----
 template <template <class> class Filter, typename T>
@@ -242,10 +263,11 @@ Return type::: `constrained_fpe<Filter, U>`, where `U` is
 - `T`, otherwise
 Compile-time requirements:::
 `T` is a type such that `U` satisfies <<FacetsPackElement, _FacetsPackElement_>>.
+====
 
 [[FacetsPackElement]]
 === Type requirement _FacetsPackElement_
-A given type `F` satisfies _FacetsPackElement_ if, any if, the following conditions is true:
+A given type `F` satisfies _FacetsPackElement_ if, and only if, the following conditions is true:
 
 - `F` satisfies <<Facet,_Facet_>>
   and <<facet_stored_by_value,`facet_stored_by_value<F>`>> is `true`
@@ -309,14 +331,24 @@ public:
 };
 ----
 ==== Public members
-
-- ``facet_trait<F>::store_by_value`` is equal to ``F::store_by_value``
-  is such expression is well formed and implicitly convetible to `bool`,
-  otherwise it is `false`.
-- ``facet_trait<F>::category`` is a type alias to `Facet::category` if
-   such member exist and is a type, otherwise it is an alias to `void`.
-
-==== Specializations
+====
+[source]
+----
+constexpr static bool store_by_value;
+----
+Value:: Equal to `F::store_by_value` is such expression is well formed
+and implicitly convetible to `bool`, otherwise it is `false`.
+====
+====
+[source]
+----
+typename /* */ category;
+----
+Same as `Facet::category` if such member exist and is a type,
+otherwise it is an alias to `void`.
+====
+==== Specialization
+====
 [source]
 ----
 template <typename F>
@@ -327,18 +359,21 @@ public:
     constexpr static bool store_by_value = facet_stored_by_value<F>::store_by_value;
 };
 ----
+====
 
 [[facet_category]]
 === Type alias `facet_category`
 `facet_category` is just a syntatic sugar:
+====
 [source]
 ----
 template <typename Facet>
 using facet_category = facet_traits<Facet>::typename category;
 ----
-
+====
 [[facet_stored_by_value]]
 === Variable template `facet_stored_by_value`
+====
 [source]
 ----
 template <typename T>
@@ -347,4 +382,5 @@ constexpr bool facet_stored_by_value;
 ::
 Value::: ``facet_traits<T>::store_by_value`` if such expression
        is well formed and implicitly convertible to `bool`,
-       otherwise the value is `true`
+       otherwise the value is `true`.
+====

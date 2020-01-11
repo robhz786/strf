@@ -90,6 +90,17 @@ int main()
     TEST("1000000000000000000000")   ( strf::oct(01000000000000000000000LL) );
     TEST("1777777777777777777777")   ( strf::oct(01777777777777777777777LL) );
 
+    TEST("0")                        ( strf::bin(0) );
+    TEST("1")                        ( strf::bin(1) );
+    TEST("11")                       ( strf::bin(3) );
+    TEST("111")                      ( strf::bin(7) );
+    TEST("1111")                     ( strf::bin(0xf) );
+    TEST("11111111")                 ( strf::bin(0xff) );
+    TEST("1010101010101010101010101010101010101010101010101010101010101010")
+        ( strf::bin(0xaaaaaaaaaaaaaaaaLL) );
+    TEST("1111111111111111111111111111111111111111111111111111111111111111")
+        ( strf::bin(0xffffffffffffffffLL) );
+
     TEST("9")                    ( 9 );
     TEST("99")                   ( 99 );
     TEST("9999")                 ( 9999 );
@@ -129,7 +140,7 @@ int main()
     TEST ("....-00123")  (  strf::right(-123 , 10, '.').p(5) );
     TEST ("-000000123")  (  strf::right(-123 , 10, '.').p(9) );
     TEST ("0000000123")  (  strf::right(123 , 10, '.').p(10) );
-    TEST ("000000000123")  (  strf::right(123 , 10, '.').p(12) );
+    TEST ("000000000123")(  strf::right(123 , 10, '.').p(12) );
 
     TEST ("......+123")  ( +strf::right(123 , 10, '.') );
     TEST ("......-123")  ( +strf::right(-123, 10, '.') );
@@ -161,12 +172,17 @@ int main()
     TEST ("....0.....")  (  strf::center(0,    10, '.') );
     TEST ("...123....")  (  strf::center(123u, 10, '.') );
 
-    // hexadecimal case
-    //TEST("0X1234567890ABCDEF") ( ~strf::uphex(0x1234567890abcdefLL) );
-    TEST("0x1234567890abcdef") ( ~strf::hex(0x1234567890abcdefLL) );
+    // hexadecimal letter case
+    TEST("0X1234567890ABCDEF").with(strf::uppercase) ( ~strf::hex(0x1234567890abcdefLL) );
+    TEST("0x1234567890ABCDEF").with(strf::mixedcase) ( ~strf::hex(0x1234567890abcdefLL) );
+    TEST("0x1234567890abcdef").with(strf::lowercase) ( ~strf::hex(0x1234567890abcdefLL) );
+
+    // binary letter case
+    TEST("0B111").with(strf::uppercase) ( ~strf::bin(7) );
+    TEST("0b111").with(strf::mixedcase) ( ~strf::bin(7) );
+    TEST("0b111").with(strf::lowercase) ( ~strf::bin(7) );
 
     // hexadecimal aligment
-
     TEST("        aa")   (  strf::hex(0xAA)>10 );
     TEST("      0xaa")   ( ~strf::hex(0xAA)>10 );
     TEST("aa        ")   (  strf::hex(0xAA)<10 );
@@ -203,8 +219,45 @@ int main()
     TEST("000000000aa")   (  strf::hex(0xAA).p(11)^10 );
     TEST("0x0000000aa")   ( ~strf::hex(0xAA).p(9)^10 );
 
+    // binary aligment
 
-// octadecimal aligment
+    TEST("        11")   (  strf::bin(3)>10 );
+    TEST("      0b11")   ( ~strf::bin(3)>10 );
+    TEST("11        ")   (  strf::bin(3)<10 );
+    TEST("0b11      ")   ( ~strf::bin(3)<10 );
+    TEST("        11")   (  strf::bin(3)%10 );
+    TEST("0b      11")   ( ~strf::bin(3)%10 );
+    TEST("    11    ")   (  strf::bin(3)^10 );
+    TEST("   0b11   ")   ( ~strf::bin(3)^10 );
+
+    TEST("     00011")   (  strf::bin(3).p(5)>10 );
+    TEST("   0b00011")   ( ~strf::bin(3).p(5)>10 );
+    TEST("00011     ")   (  strf::bin(3).p(5)<10 );
+    TEST("0b00011   ")   ( ~strf::bin(3).p(5)<10 );
+    TEST("     00011")   (  strf::bin(3).p(5)%10 );
+    TEST("0b   00011")   ( ~strf::bin(3).p(5)%10 );
+    TEST("  00011   ")   (  strf::bin(3).p(5)^10 );
+    TEST(" 0b00011  ")   ( ~strf::bin(3).p(5)^10 );
+
+    TEST("0000000011")   (  strf::bin(3).p(10)>10 );
+    TEST("0b00000011")   ( ~strf::bin(3).p(8)>10 );
+    TEST("0000000011")   (  strf::bin(3).p(10)<10 );
+    TEST("0b00000011")   ( ~strf::bin(3).p(8)<10 );
+    TEST("0000000011")   (  strf::bin(3).p(10)%10 );
+    TEST("0b00000011")   ( ~strf::bin(3).p(8)%10 );
+    TEST("0000000011")   (  strf::bin(3).p(10)^10 );
+    TEST("0b00000011")   ( ~strf::bin(3).p(8)^10 );
+
+    TEST("00000000011")   (  strf::bin(3).p(11)>10 );
+    TEST("0b000000011")   ( ~strf::bin(3).p(9)>10 );
+    TEST("00000000011")   (  strf::bin(3).p(11)<10 );
+    TEST("0b000000011")   ( ~strf::bin(3).p(9)<10 );
+    TEST("00000000011")   (  strf::bin(3).p(11)%10 );
+    TEST("0b000000011")   ( ~strf::bin(3).p(9)%10 );
+    TEST("00000000011")   (  strf::bin(3).p(11)^10 );
+    TEST("0b000000011")   ( ~strf::bin(3).p(9)^10 );
+
+    // octadecimal aligment
 
     TEST("        77")   (  strf::oct(077)>10 );
     TEST("       077")   ( ~strf::oct(077)>10 );
@@ -224,9 +277,10 @@ int main()
     TEST("   0077   ")   (  strf::oct(077).p(4)^10 );
     TEST("  00077   ")   ( ~strf::oct(077).p(4)^10 );
 
-    // showpos in octadecimal and hexadecimal must not have any effect
+    // showpos in octa, binary and hexadecimal must not have any effect
 
     TEST("aa") ( +strf::hex(0xAA) );
+    TEST("11") ( +strf::bin(3) );
     TEST("77") ( +strf::oct(077) );
 
 
@@ -298,6 +352,22 @@ int main()
         TEST("   0x100").with(punct) ( strf::join_right(8)(~strf::hex(0x100)) );
         TEST(" 0x1'000").with(punct) ( strf::join_right(8)(~strf::hex(0x1000)) );
     }
+   {
+        auto punct = strf::monotonic_grouping<2>{3}.thousands_sep('\'');
+
+        TEST("     0b0").with(punct) (~strf::bin(0) > 8);
+        TEST("   0b100").with(punct) (~strf::bin(4) > 8);
+        TEST(" 0b1'000").with(punct) (~strf::bin(8) > 8);
+        TEST("   1'000").with(punct) ( strf::bin(8) > 8);
+
+        TEST("     0b0").with(punct) ( strf::join_right(8)(~strf::bin(0)) );
+        TEST("   0b100").with(punct) ( strf::join_right(8)(~strf::bin(4)) );
+        TEST(" 0b1'000").with(punct) ( strf::join_right(8)(~strf::bin(8)) );
+
+        TEST("     0b0").with(punct) ( strf::join_right(8)(~strf::bin(0)) );
+        TEST("   0b100").with(punct) ( strf::join_right(8)(~strf::bin(4)) );
+        TEST(" 0b1'000").with(punct) ( strf::join_right(8)(~strf::bin(8)) );
+    }
 
     {
         auto punct = strf::monotonic_grouping<16>{3}.thousands_sep(0x10FFFF);
@@ -332,42 +402,69 @@ int main()
         TEST(u8"----01\U0010FFFF000").with(punct) (strf::join_right(8)(u8"----", ~strf::oct(01000)));
     }
 
+    TEST(u8"1\U0010FFFF" u8"1\U0010FFFF" u8"1\U0010FFFF" u8"1")
+        .with(strf::monotonic_grouping<2>{1}.thousands_sep(0x10FFFF))
+        ( strf::bin(0xF) );
+    TEST(u8"1\U0010FFFF" u8"10101010\U0010FFFF" u8"10101010")
+        .with(strf::monotonic_grouping<2>{8}.thousands_sep(0x10FFFF))
+        ( strf::bin(0x1aaaa) );
+    TEST("1'1'1'1")
+        .with(strf::monotonic_grouping<2>{1}.thousands_sep('\''))
+        ( strf::bin(0xF) );
+    TEST("1'10101010'10101010")
+        .with(strf::monotonic_grouping<2>{8}.thousands_sep('\''))
+        ( strf::bin(0x1aaaa) );
+    TEST(u8"1010\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
+         u8"1010\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
+         u8"1010\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
+         u8"1010\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
+         u8"1010\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF" u8"1010")
+        .with(strf::monotonic_grouping<2>{4}.thousands_sep(0x10FFFF))
+        ( strf::bin(0xaaaaaaaaaaaaaaaaLL) );
 
-    /*
     {
-        // invalid punctuation char
-        auto punct = strf::monotonic_grouping<10>{3}.thousands_sep(0xD800);
+        // Invalid punctuation char. ( They shall be omitted ).
 
-        TEST("100\xED\xA0\x80" "000\xED\xA0\x80" "000")
-            .with(punct)
-            .with(strf::allow_surrogates(true))
-            (100000000);
+        TEST("9999")
+            .with(strf::monotonic_grouping<10>{1}.thousands_sep(0xFFFFFF))
+            ( 9999 );
 
-        TEST(u8"100\uFFFD000\uFFFD000")
-            .with(punct)
-            .with(strf::allow_surrogates(false))
-            (100000000);
+        TEST("ffff")
+            .with(strf::monotonic_grouping<10>{1}.thousands_sep(0xFFFFFF))
+            ( strf::hex(0xFFFF) );
 
-        TEST(u8"100;000;000")
-            .with(punct)
-            .with(strf::allow_surrogates(false))
-            .with(strf::encoding_error{U';'})
-            (100000000);
+        TEST("7777")
+        .with(strf::monotonic_grouping<10>{1}.thousands_sep(0xFFFFFF))
+            ( strf::oct(07777) );
 
-        TEST(u8"100000000")
-            .with(punct)
-            .with(strf::allow_surrogates{false})
-            .with(strf::encoding_error{})
-            (100000000);
-
-        auto ec = std::make_error_code(std::errc::message_size);
-        TEST_ERR(u8"", ec)
-            .with(punct)
-            .with(strf::allow_surrogates(false))
-            .with(strf::encoding_error(ec))
-            (100000000);
+        TEST("1111")
+        .with(strf::monotonic_grouping<2>{1}.thousands_sep(0xFFFFFF))
+            ( strf::bin(0xF) );
     }
-*/
+
+    {   // print void*
+        void* ptr = reinterpret_cast<void*>((std::size_t)0xABC);
+
+        TEST("0xabc") (ptr);
+        TEST("...0xabc") (strf::right(ptr, 8, '.'));
+        TEST("...0xabc  ") (strf::join(strf::right(ptr, 8, '.')) < 10);
+        TEST("...0xABC").with(strf::mixedcase) (strf::right(ptr, 8, '.'));
+        TEST("...0XABC")
+            .with(strf::constrain<std::is_pointer>(strf::uppercase))
+            (strf::right(ptr, 8, '.'));
+
+        ptr = reinterpret_cast<void*>((std::size_t)0xABCDEF1234);
+
+        TEST("0xab'cd'ef'12'34")
+            .with(strf::monotonic_grouping<16>{2}.thousands_sep('\''))
+            (ptr);
+
+        TEST("0x....ab'cd'ef'12'34")
+            .with(strf::monotonic_grouping<16>{2}.thousands_sep('\''))
+            (strf::split(ptr, 20, '.'));
+    }
+
+
     return boost::report_errors();
 }
 

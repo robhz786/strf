@@ -10,6 +10,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :sectnums:
 :toc: left
 :toclevels: 2
+:icons: font
 
 :value_with_format: <<value_with_format,value_with_format>>
 :alignment_format: <<alignment_format,alignment_format>>
@@ -39,7 +40,9 @@ http://www.boost.org/LICENSE_1_0.txt
 
 :std_conditional_t: https://en.cppreference.com/w/cpp/types/conditional[std::conditional_t]
 
+include::ref_outbuf.adoc[]
+include::ref_destination.adoc[]
+include::ref_printer.adoc[]
 include::ref_input_types.adoc[]
 include::ref_format_functions.adoc[]
 include::ref_facets_pack.adoc[]
-include::ref_outbuf.adoc[]

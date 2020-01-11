@@ -23,13 +23,17 @@ cmake --build .
 
 lcov --gcov-tool=$GCOV --initial --base-directory $script_dir \
      --directory=$root_dir --capture --output-file all.info
-ctest
+
+for t in ./test/*-header-only
+do
+    $t
+done
 
 lcov --gcov-tool=$GCOV --rc lcov_branch_coverage=1 \
      --base-directory $script_dir --directory=$root_dir \
      --capture --output-file all.info
 lcov --gcov-tool=$GCOV --rc lcov_branch_coverage=1 \
-     --extract all.info "*strf/*" --output-file coverage.info
+     --extract all.info "*include/strf/*" --output-file coverage.info
 
 curl -s https://codecov.io/bash > .codecov
 chmod +x .codecov

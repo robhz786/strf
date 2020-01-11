@@ -286,7 +286,7 @@ STRF_STATIC_LINKAGE std::size_t utf8_to_utf32_size
     , const std::uint8_t* src_end
     , strf::surrogate_policy allow_surr )
 {
-    std::uint8_t ch0, ch1, ch2;
+    std::uint8_t ch0, ch1;
     const std::uint8_t* src_it = src;
     std::size_t size = 0;
     while (src_it != src_end)
@@ -303,17 +303,17 @@ STRF_STATIC_LINKAGE std::size_t utf8_to_utf32_size
         }
         else if (0xE0 == ch0)
         {
-            if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
+            if (   src_it != src_end && ((*src_it & 0xE0) == 0xA0)
+              && ++src_it != src_end && is_utf8_continuation(*src_it) )
             {
                 ++src_it;
             }
         }
         else if (0xE0 == (ch0 & 0xF0))
         {
-            if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
+            if ( src_it != src_end && is_utf8_continuation(ch1 = *src_it)
               && first_2_of_3_are_valid( ch0, ch1, allow_surr )
-              && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
+              && ++src_it != src_end && is_utf8_continuation(*src_it) )
             {
                 ++src_it;
             }
@@ -877,7 +877,7 @@ STRF_STATIC_LINKAGE std::size_t utf16_sanitize_size
     (void) allow_surr;
     std::size_t count = 0;
     const char16_t* src_it = src;
-    unsigned long ch, ch2;
+    unsigned long ch;
     while (src_it != src_end)
     {
         ch = *src_it;
@@ -885,7 +885,7 @@ STRF_STATIC_LINKAGE std::size_t utf16_sanitize_size
         ++ count;
         if ( is_high_surrogate(ch)
           && src_it != src_end
-          && is_low_surrogate(ch2 = *src_it))
+          && is_low_surrogate(*src_it))
         {
             ++ src_it;
             ++ count;

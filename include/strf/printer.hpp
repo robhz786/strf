@@ -185,12 +185,12 @@ public:
 
     width_preview(const width_preview&) = delete;
 
-    constexpr void subtract_width(strf::width_t w)
+    constexpr void subtract_width(strf::width_t w) noexcept
     {
         _width -= w;
     }
 
-    constexpr void checked_subtract_width(strf::width_t w)
+    constexpr void checked_subtract_width(strf::width_t w) noexcept
     {
         if (w < _width)
         {
@@ -202,7 +202,7 @@ public:
         }
     }
 
-    constexpr void checked_subtract_width(std::ptrdiff_t w)
+    constexpr void checked_subtract_width(std::ptrdiff_t w) noexcept
     {
         if (w < _width.ceil())
         {
@@ -214,12 +214,12 @@ public:
         }
     }
 
-    constexpr void clear_remaining_width()
+    constexpr void clear_remaining_width() noexcept
     {
         _width = 0;
     }
 
-    constexpr strf::width_t remaining_width() const
+    constexpr strf::width_t remaining_width() const noexcept
     {
         return _width;
     }
@@ -237,23 +237,23 @@ public:
     constexpr width_preview() noexcept = default;;
     width_preview(const width_preview&) = delete;
 
-    constexpr void subtract_width(strf::width_t)
+    constexpr void subtract_width(strf::width_t) noexcept
     {
     }
 
-    constexpr void checked_subtract_width(strf::width_t)
+    constexpr void checked_subtract_width(strf::width_t) noexcept
     {
     }
 
-    constexpr void checked_subtract_width(std::ptrdiff_t)
+    constexpr void checked_subtract_width(std::ptrdiff_t) noexcept
     {
     }
 
-    constexpr void clear_remaining_width()
+    constexpr void clear_remaining_width() noexcept
     {
     }
 
-    constexpr strf::width_t remaining_width() const
+    constexpr strf::width_t remaining_width() const noexcept
     {
         return 0;
     }
@@ -273,12 +273,12 @@ public:
 
     size_preview(const size_preview&) = delete;
 
-    constexpr void add_size(std::size_t s)
+    constexpr void add_size(std::size_t s) noexcept
     {
         _size += s;
     }
 
-    constexpr std::size_t get_size() const
+    constexpr std::size_t get_size() const noexcept
     {
         return _size;
     }
@@ -296,11 +296,11 @@ public:
     constexpr size_preview() noexcept = default;
     size_preview(const size_preview&) = delete;
 
-    constexpr void add_size(std::size_t)
+    constexpr void add_size(std::size_t) noexcept
     {
     }
 
-    constexpr std::size_t get_size() const
+    constexpr std::size_t get_size() const noexcept
     {
         return 0;
     }
@@ -327,6 +327,40 @@ public:
     constexpr print_preview() noexcept = default;
     constexpr print_preview(const print_preview&) = delete;
 };
+
+namespace detail {
+
+#if defined(__cpp_fold_expressions)
+
+template <typename CharT, typename ... Printers>
+inline void write_args( strf::basic_outbuf<CharT>& ob
+                      , const Printers& ... printers )
+{
+    (... , printers.print_to(ob));
+}
+
+#else // defined(__cpp_fold_expressions)
+
+template <typename CharT>
+inline void write_args(strf::basic_outbuf<CharT>&)
+{
+}
+
+template <typename CharT, typename Printer, typename ... Printers>
+inline void write_args
+    ( strf::basic_outbuf<CharT>& ob
+    , const Printer& printer
+    , const Printers& ... printers )
+{
+    printer.print_to(ob);
+    if (ob.good()) {
+        write_args(ob, printers ...);
+    }
+}
+
+#endif // defined(__cpp_fold_expressions)
+
+} // namespace detail
 
 STRF_NAMESPACE_END
 

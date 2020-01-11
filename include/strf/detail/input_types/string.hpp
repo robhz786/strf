@@ -84,7 +84,7 @@ public:
     {
     }
 
-    constexpr auto cv() const
+    constexpr auto convert_charset() const
     {
         using return_type = strf::fmt_replace< T
                                              , strf::no_cv_format<CharT>
@@ -92,7 +92,7 @@ public:
         return return_type{ static_cast<const T&>(*this) };
     }
 
-    constexpr auto cv(strf::encoding<CharT> enc) const
+    constexpr auto convert_charset(strf::encoding<CharT> enc) const
     {
         using return_type = strf::fmt_replace
             < T
@@ -104,8 +104,16 @@ public:
             , strf::tag<strf::cv_format_with_encoding<CharT>>{}
             , enc };
     }
+    constexpr auto cv() const
+    {
+        return convert_charset();
+    }
+    constexpr auto cv(strf::encoding<CharT> enc) const
+    {
+        return convert_charset(enc);
+    }
 
-    constexpr auto sani() const
+    constexpr auto sanitize_charset() const
     {
         using return_type = strf::fmt_replace< T
                                              , strf::no_cv_format<CharT>
@@ -113,7 +121,7 @@ public:
         return return_type{ static_cast<const T&>(*this) };
     }
 
-    constexpr auto sani(strf::encoding<CharT> enc) const
+    constexpr auto sanitize_charset(strf::encoding<CharT> enc) const
     {
         using return_type = strf::fmt_replace
             < T
@@ -124,6 +132,14 @@ public:
             { static_cast<const T&>(*this)
             , strf::tag<strf::sani_format_with_encoding<CharT>>{}
             , enc };
+    }
+    constexpr auto sani() const
+    {
+        return sanitize_charset();
+    }
+    constexpr auto sani(strf::encoding<CharT> enc) const
+    {
+        return sanitize_charset(enc);
     }
 };
 
@@ -690,6 +706,22 @@ make_printer( strf::rank<1>
     static_assert( std::is_same<CharIn, CharOut>::value
                  , "Character type mismatch. Use cv function." );
     return {fp, preview, {str.data(), str.size()}};
+}
+
+template
+    < typename CharOut
+    , typename FPack
+    , typename Preview
+    , typename CharIn >
+inline strf::detail::string_printer<CharOut>
+make_printer( strf::rank<1>
+            , const FPack& fp
+            , Preview& preview
+            , const strf::detail::simple_string_view<CharIn>& str )
+{
+    static_assert( std::is_same<CharIn, CharOut>::value
+                 , "Character type mismatch. Use cv function." );
+    return {fp, preview, str};
 }
 
 #if defined(STRF_HAS_STD_STRING_VIEW)

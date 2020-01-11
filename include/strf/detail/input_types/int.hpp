@@ -103,6 +103,20 @@ public:
         return _adapted_derived_type<B>{ static_cast<const T&>(*this) };
     }
 
+    template < int B = 2 >
+    constexpr std::enable_if_t<Base == B && B == 2, T&&>
+    bin() &&
+    {
+        return static_cast<T&&>(*this);
+    }
+
+    template < int B = 2 >
+    constexpr std::enable_if_t<Base != B && B == 2, _adapted_derived_type<B>>
+    bin() &&
+    {
+        return _adapted_derived_type<B>{ static_cast<const T&>(*this) };
+    }
+
     constexpr T&& p(unsigned _) && noexcept
     {
         _data.precision = _;
@@ -305,7 +319,7 @@ void punct_int_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
             ++it;
         }
         it += _digcount;
-        strf::detail::write_int_txtdigits_backwards<10>(_uvalue, it);
+        strf::detail::write_int_dec_txtdigits_backwards(_uvalue, it);
         ob.advance_to(it);
     }
     else
@@ -314,8 +328,8 @@ void punct_int_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
         {
             put(ob, static_cast<CharT>('-'));
         }
-        strf::detail::write_int<10>( ob, _punct, _encoding
-                                            , _uvalue, _digcount );
+        strf::detail::write_int<10>( ob, _punct, _encoding, _uvalue
+                                   , _digcount, strf::lowercase );
     }
 }
 
@@ -329,25 +343,27 @@ public:
         ( const FPack& fp
         , Preview& preview
         , const strf::int_with_format<IntT, Base, false>& value )
-        : _punct(get_facet<strf::numpunct_c<Base>, IntT>(fp))
-        , _encoding(get_facet<strf::encoding_c<CharT>, IntT>(fp))
+        : partial_fmt_int_printer( fp, preview, value.value().value
+                                 , value.get_int_format_data() )
     {
-        _init<IntT, detail::has_intpunct<CharT, FPack, IntT, Base>>
-            ( value.value().value, value.get_int_format_data() );
-        preview.subtract_width(width());
-        calc_size(preview);
     }
 
-    template <typename FPack, typename Preview, typename IntT>
+    template < typename FPack
+             , typename Preview
+             , typename IntT
+             , typename IntTag = IntT /* used in get_facet */ >
     partial_fmt_int_printer
         ( const FPack& fp
         , Preview& preview
-        , const strf::int_with_format<IntT, Base, true>& value )
-        : _punct(get_facet<strf::numpunct_c<Base>, IntT>(fp))
-        , _encoding(get_facet<strf::encoding_c<CharT>, IntT>(fp))
+        , IntT value
+        , int_format_data fdata
+        , strf::tag<IntT, IntTag> = strf::tag<IntT, IntTag>{} )
+        : _punct(get_facet<strf::numpunct_c<Base>, IntTag>(fp))
+        , _encoding(get_facet<strf::encoding_c<CharT>, IntTag>(fp))
+        , _lettercase(get_facet<strf::lettercase_c, IntTag>(fp))
     {
-        _init<IntT, detail::has_intpunct<CharT, FPack, IntT, Base>>
-            ( value.value().value, value.get_int_format_data() );
+        _init<IntT, detail::has_intpunct<CharT, FPack, IntTag, Base>>
+            ( value, fdata );
         preview.subtract_width(width());
         calc_size(preview);
     }
@@ -383,6 +399,7 @@ private:
     unsigned _precision = 0;
     bool _negative = false;
     std::uint8_t _prefixsize = 0;
+    strf::lettercase _lettercase;
 
     template <typename IntT, bool HasPunct>
     void _init(IntT value, strf::int_format_data fmt);
@@ -405,7 +422,8 @@ void partial_fmt_int_printer<CharT, Base>::_init
     {
         _uvalue = unsigned_type(value);
         _negative = false;
-        _prefixsize = static_cast<unsigned>(fmt.showbase) << static_cast<unsigned>(Base == 16);
+        _prefixsize = static_cast<unsigned>(fmt.showbase)
+            << static_cast<unsigned>(Base == 16 || Base == 2);
     }
     _digcount = strf::detail::count_digits<Base>(_uvalue);
     _precision = fmt.precision;
@@ -456,24 +474,28 @@ inline void partial_fmt_int_printer<CharT, Base>::print_to
                 * it = static_cast<CharT>('0');
                 ++ it;
             }
+            else STRF_IF_CONSTEXPR (Base == 16)
+            {
+                it[0] = static_cast<CharT>('0');
+                it[1] = static_cast<CharT>
+                    ('X' | ((_lettercase != strf::uppercase) << 5));
+                it += 2;
+            }
             else
             {
                 it[0] = static_cast<CharT>('0');
-                it[1] = static_cast<CharT>('x');
+                it[1] = static_cast<CharT>
+                    ('B' | ((_lettercase != strf::uppercase) << 5));
                 it += 2;
             }
         }
+        ob.advance_to(it);
         if (_precision > _digcount)
         {
-            ob.advance_to(it);
             unsigned zeros = _precision - _digcount;
             strf::detail::write_fill(ob, zeros, CharT('0'));
-            it = ob.pos();
-            ob.ensure(_digcount);
         }
-        it += _digcount;
-        strf::detail::write_int_txtdigits_backwards<Base>(_uvalue, it);
-        ob.advance_to(it);
+        strf::detail::write_int<Base>(ob, _uvalue, _digcount, _lettercase);
     }
     else
     {
@@ -484,7 +506,7 @@ inline void partial_fmt_int_printer<CharT, Base>::print_to
             strf::detail::write_fill(ob, zeros, CharT('0'));
         }
         strf::detail::write_int<Base>( ob, _punct, _encoding
-                                              , _uvalue, _digcount );
+                                     , _uvalue, _digcount, _lettercase );
     }
 }
 
@@ -505,10 +527,18 @@ inline void partial_fmt_int_printer<CharT, Base>::write_complement
             * ob.pos() = static_cast<CharT>('0');
             ob.advance(1);
         }
+        else STRF_IF_CONSTEXPR (Base == 16)
+        {
+            ob.pos()[0] = static_cast<CharT>('0');
+            ob.pos()[1] = static_cast<CharT>
+                ('X' | ((_lettercase != strf::uppercase) << 5));
+            ob.advance(2);
+        }
         else
         {
             ob.pos()[0] = static_cast<CharT>('0');
-            ob.pos()[1] = static_cast<CharT>('x');
+            ob.pos()[1] = static_cast<CharT>
+                ('B' | ((_lettercase != strf::uppercase) << 5));
             ob.advance(2);
         }
     }
@@ -525,12 +555,12 @@ inline void partial_fmt_int_printer<CharT, Base>::write_digits
     }
     if (_sepcount == 0)
     {
-        strf::detail::write_int<Base>(ob, _uvalue, _digcount);
+        strf::detail::write_int<Base>(ob, _uvalue, _digcount, _lettercase);
     }
     else
     {
         strf::detail::write_int<Base>( ob, _punct, _encoding
-                                              , _uvalue, _digcount );
+                                     , _uvalue, _digcount, _lettercase );
     }
 }
 
@@ -544,6 +574,13 @@ public:
         ( const FPack& fp
         , Preview& preview
         , strf::int_with_format<IntT, Base, true> value ) noexcept;
+
+    template <typename FPack, typename Preview>
+    full_fmt_int_printer
+        ( const FPack& fp
+        , Preview& preview
+        , const void* value
+        , strf::alignment_format_data afdata );
 
     ~full_fmt_int_printer();
 
@@ -585,10 +622,34 @@ inline full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
     ( const FPack& fp
     , Preview& preview
     , strf::int_with_format<IntT, Base, true> value ) noexcept
-    : _ichars(fp, preview, value)
+    : _ichars( fp, preview, value.value().value
+             , value.get_int_format_data()/*, strf::tag<IntT>()*/)
     , _enc_err(get_facet<strf::encoding_error_c, IntT>(fp))
     , _afmt(value.get_alignment_format_data())
     , _allow_surr(get_facet<strf::surrogate_policy_c, IntT>(fp))
+{
+    auto content_width = _ichars.width();
+    if (_afmt.width > content_width)
+    {
+        _fillcount = _afmt.width - content_width;
+        preview.subtract_width(static_cast<std::int16_t>(_fillcount));
+    }
+    _calc_fill_size(preview);
+}
+
+template <typename CharT, int Base>
+template <typename FPack, typename Preview>
+inline full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
+    ( const FPack& fp
+    , Preview& preview
+    , const void* value
+    , strf::alignment_format_data afdata )
+    : _ichars( fp, preview, reinterpret_cast<std::size_t>(value)
+             , strf::int_format_data{0, true}
+             , strf::tag<std::size_t, const void*>() )
+    , _enc_err(get_facet<strf::encoding_error_c, const void*>(fp))
+    , _afmt(afdata)
+    , _allow_surr(get_facet<strf::surrogate_policy_c, const void*>(fp))
 {
     auto content_width = _ichars.width();
     if (_afmt.width > content_width)
@@ -812,6 +873,39 @@ inline auto make_fmt(strf::rank<1>, unsigned long x)
 inline auto make_fmt(strf::rank<1>, unsigned long long x)
 {
     return strf::int_with_format<unsigned long long>{{x}};
+}
+
+// void*
+
+template < typename CharOut, typename FPack, typename Preview >
+inline strf::detail::partial_fmt_int_printer<CharOut, 16>
+make_printer( strf::rank<1>
+            , const FPack& fp
+            , Preview& preview
+            , const void* p )
+{
+    return { fp, preview, reinterpret_cast<std::size_t>(p)
+           , strf::int_format_data{0, true, false}
+           , strf::tag<std::size_t, const void*>() };
+}
+
+
+template < typename CharOut, typename FPack, typename Preview >
+inline strf::detail::full_fmt_int_printer<CharOut, 16>
+make_printer( strf::rank<1>
+            , const FPack& fp
+            , Preview& preview
+            , strf::value_with_format<const void*, strf::alignment_format> f )
+{
+    return { fp
+           , preview
+           , f.value()
+           , f.get_alignment_format_data() };
+}
+
+inline auto make_fmt(strf::rank<1>, const void* p)
+{
+    return strf::value_with_format<const void*, strf::alignment_format>(p);
 }
 
 template <typename> struct is_int_number: public std::false_type {};

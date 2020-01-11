@@ -88,17 +88,31 @@ void sample()
 //]
 }
 
-
-
 language get_current_language()
 {
     return language::English;
 }
 
+void sample_date()
+{
+    struct date{ int day, month, year; };
+    date today {1, 1, 1935};
+
+    auto as_yyyymmdd = [](date d)
+    {
+        return strf::join( strf::dec(d.year).p(4), '/'
+                         , strf::dec(d.month).p(2), '/'
+                         , strf::dec(d.day).p(2) );
+    };
+
+    auto str = strf::to_string("Today is ", as_yyyymmdd(today), '.');
+    assert(str == "Today is 1935/01/01.");
+}
 
 int main()
 {
     samples();
     sample();
+    sample_date();
     return 0;
 }
