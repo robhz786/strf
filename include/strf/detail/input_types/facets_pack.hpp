@@ -22,7 +22,7 @@ template <typename FPack>
 struct inner_pack
 {
     template <typename ... T>
-    constexpr inner_pack(T&& ... args)
+    STRF_HD constexpr inner_pack(T&& ... args)
         : fp{std::forward<T>(args)...}
     {
     }
@@ -33,7 +33,7 @@ struct inner_pack
     constexpr strf::inner_pack_with_args
         < FPack
         , strf::detail::opt_val_or_cref<Args>... >
-    operator()(const Args& ... args) const
+    STRF_HD operator()(const Args& ... args) const
     {
         return { fp, strf::detail::make_simple_tuple(args ...) };
     }
@@ -50,7 +50,7 @@ class facets_pack_printer: public strf::printer<CharT>
 {
 public:
 
-    facets_pack_printer
+	  STRF_HD facets_pack_printer
         ( const ParentFPack& parent_fp
         , Preview& preview
         , const strf::inner_pack_with_args<ChildFPack, Args...>& args )
@@ -59,12 +59,12 @@ public:
     {
     }
 
-    void print_to(strf::basic_outbuf<CharT>& ob) const override
+    STRF_HD void print_to(strf::basic_outbuf<CharT>& ob) const override
     {
         strf::detail::write(ob, _printers);
     }
 
-    virtual ~facets_pack_printer()
+    STRF_HD virtual ~facets_pack_printer()
     {
     }
 
@@ -81,7 +81,7 @@ private:
 };
 
 template <typename ... F>
-constexpr bool are_constrainable_impl()
+constexpr STRF_HD bool are_constrainable_impl()
 {
     constexpr std::size_t N = sizeof...(F);
     constexpr bool values[N] = {strf::is_constrainable_v<F> ...};
@@ -97,7 +97,7 @@ constexpr bool are_constrainable_impl()
 }
 
 template <>
-constexpr bool are_constrainable_impl<>()
+constexpr STRF_HD bool are_constrainable_impl<>()
 {
     return true;
 }
@@ -112,7 +112,7 @@ struct all_are_constrainable
 } // namespace detail
 
 template <typename ... T>
-auto with(T&& ... args)
+STRF_HD auto with(T&& ... args)
     -> strf::inner_pack
            < decltype(strf::pack(std::forward<T>(args)...)) >
 {
@@ -128,12 +128,12 @@ template < typename CharT
          , typename Preview
          , typename InnerFPack
          , typename ... Args >
-inline strf::detail::facets_pack_printer< CharT
+inline STRF_HD strf::detail::facets_pack_printer< CharT
                                         , FPack
                                         , InnerFPack
                                         , Preview
                                         , Args... >
-make_printer( strf::rank<1>
+STRF_HD make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
             , const strf::inner_pack_with_args<InnerFPack, Args...>& f )

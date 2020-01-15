@@ -17,13 +17,10 @@ using opt_val_or_cref = std::conditional_t
 template <std::size_t I, typename T>
 struct indexed_obj
 {
-    constexpr indexed_obj(const T& cp)
+    constexpr STRF_HD indexed_obj(const T& cp)
         : obj(cp)
     {
     }
-
-    constexpr indexed_obj(const indexed_obj&) = default;
-    constexpr indexed_obj(indexed_obj&&) = default;
 
     T obj;
 };
@@ -35,10 +32,10 @@ class simple_tuple_impl;
 
 template <std::size_t ... I, typename ... T>
 class simple_tuple_impl<std::index_sequence<I...>, T...>
-    : private detail::indexed_obj<I, T> ...
+    : private indexed_obj<I, T> ...
 {
     template <std::size_t J, typename U>
-    constexpr static const indexed_obj<J, U>& _get(const indexed_obj<J, U>& r)
+    static constexpr STRF_HD const indexed_obj<J, U>& _get(const indexed_obj<J, U>& r)
     {
         return r;
     }
@@ -48,16 +45,13 @@ public:
     static constexpr std::size_t size = sizeof...(T);
 
     template <typename ... Args>
-    constexpr explicit simple_tuple_impl(simple_tuple_from_args, Args&& ... args)
+    constexpr STRF_HD explicit simple_tuple_impl(simple_tuple_from_args, Args&& ... args)
         : indexed_obj<I, T>(args)...
     {
     }
 
-    constexpr simple_tuple_impl(const simple_tuple_impl&) = default;
-    constexpr simple_tuple_impl(simple_tuple_impl&&) = default;
-
     template <std::size_t J>
-    constexpr const auto& get() const
+    constexpr STRF_HD const auto& get() const
     {
         return _get<J>(*this).obj;
     }
@@ -74,7 +68,7 @@ class simple_tuple
 };
 
 template <typename ... Args>
-constexpr strf::detail::simple_tuple
+constexpr STRF_HD strf::detail::simple_tuple
     < strf::detail::opt_val_or_cref<Args>... >
 make_simple_tuple(const Args& ... args)
 {
@@ -84,7 +78,7 @@ make_simple_tuple(const Args& ... args)
 }
 
 template <std::size_t J, typename ... T>
-constexpr const auto& get(const simple_tuple<T...>& tp)
+constexpr STRF_HD const auto& get(const simple_tuple<T...>& tp)
 {
     return tp.template get<J>();
 }
@@ -95,15 +89,24 @@ struct indexed_printer
     using char_type = typename Printer::char_type;
 
     template <typename FPack, typename Preview, typename Arg>
-    indexed_printer( const FPack& fp, Preview& preview, const Arg& arg )
+    STRF_HD indexed_printer( const FPack& fp
+                           , Preview& preview
+                           , const Arg& arg )
         : printer(make_printer<char_type>(strf::rank<5>(), fp, preview, arg))
     {
     }
-    indexed_printer(const indexed_printer& ) = default;
-    indexed_printer(indexed_printer&& ) = default;
+    STRF_HD indexed_printer(const indexed_printer& other)
+        : printer(other.printer)
+    {
+    }
+    STRF_HD indexed_printer(indexed_printer&& other)
+        : printer(other.printer)
+    {
+    }
 
     Printer printer;
 };
+
 
 template < typename CharT
          , typename ISeq
@@ -117,7 +120,7 @@ class printers_tuple_impl<CharT, std::index_sequence<I...>, Printers...>
     : private detail::indexed_printer<I, Printers> ...
 {
     template <std::size_t J, typename T>
-    static const indexed_printer<J, T>& _get(const indexed_printer<J, T>& r)
+    static STRF_HD const indexed_printer<J, T>& _get(const indexed_printer<J, T>& r)
     {
         return r;
     }
@@ -128,7 +131,7 @@ public:
     static constexpr std::size_t size = sizeof...(Printers);
 
     template < typename FPack, typename Preview, typename ... Args >
-    printers_tuple_impl
+    STRF_HD printers_tuple_impl
         ( const FPack& fp
         , Preview& preview
         , const strf::detail::simple_tuple<Args...>& args )
@@ -136,11 +139,8 @@ public:
     {
     }
 
-    printers_tuple_impl(const printers_tuple_impl& fp) = default;
-    printers_tuple_impl(printers_tuple_impl&& fp) = default;
-
     template <std::size_t J>
-    const auto& get() const
+    STRF_HD const auto& get() const
     {
         return _get<J>(*this).printer;
     }
@@ -148,7 +148,7 @@ public:
 
 
 template< typename CharT, std::size_t ... I, typename ... Printers >
-void write( strf::basic_outbuf<CharT>& ob
+STRF_HD void write( strf::basic_outbuf<CharT>& ob
           , const strf::detail::printers_tuple_impl
              < CharT, std::index_sequence<I...>, Printers... >& printers )
 {

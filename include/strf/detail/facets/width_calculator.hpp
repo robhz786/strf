@@ -19,11 +19,11 @@ public:
 
     using category = strf::width_calculator_c<CharT>;
 
-    virtual strf::width_t width_of
+    virtual STRF_HD strf::width_t width_of
         ( CharT ch
         , strf::encoding<CharT> enc ) const = 0;
 
-    virtual strf::width_t width
+    virtual STRF_HD strf::width_t width
         ( strf::width_t limit
         , const CharT* str
         , std::size_t str_len
@@ -37,7 +37,7 @@ class fast_width final: public strf::width_calculator<CharT>
 {
 public:
 
-    strf::width_t width_of
+    STRF_HD strf::width_t width_of
         ( CharT ch, strf::encoding<CharT> enc ) const override
     {
         (void)ch;
@@ -45,7 +45,7 @@ public:
         return 1;
     }
 
-    strf::width_t width
+    STRF_HD strf::width_t width
         ( strf::width_t limit
         , const CharT* str
         , std::size_t str_len
@@ -72,7 +72,7 @@ class width_as_u32len final: public strf::width_calculator<CharT>
 {
 public:
 
-    virtual strf::width_t width_of
+    virtual STRF_HD strf::width_t width_of
         ( CharT ch, strf::encoding<CharT> enc ) const override
     {
         (void)ch;
@@ -81,7 +81,7 @@ public:
     }
 
 
-    strf::width_t width
+    STRF_HD strf::width_t width
         ( strf::width_t limit
         , const CharT* str
         , std::size_t str_len
@@ -113,7 +113,7 @@ struct width_calculator_c
 {
     static constexpr bool constrainable = true;
 
-    static const strf::fast_width<CharT>& get_default()
+    static STRF_HD const strf::fast_width<CharT>& get_default()
     {
         static const strf::fast_width<CharT> x{};
         return x;

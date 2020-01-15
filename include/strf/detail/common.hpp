@@ -1,12 +1,17 @@
 #ifndef STRF_DETAIL_COMMMON_HPP
 #define STRF_DETAIL_COMMMON_HPP
 
+// TODO: This seems to rely on some standard library headers which have host-side-only code!
+// double-check and either avoid the reliance or duplicate the headers :-(
+
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <type_traits>
 #include <cassert>
+#include <cstddef> // for std::size_t
+#include <cstring> // for std::strlen
 
 #define STRF_ASSERT(x) assert(x)
 
@@ -124,6 +129,31 @@
 #  define __cpp_lib_bitopts  	201907
 #endif
 
+// Define CUDA-related host/device execution scope specifiers/decorators
+
+#ifdef __CUDACC__
+
+#define STRF_HOST    __forceinline__ __host__
+#define STRF_DEVICE  __forceinline__          __device__
+#define STRF_FD      __forceinline__          __device__
+#define STRF_FH      __forceinline__ __host__
+#define STRF_FHD     __forceinline__ __host__ __device__
+#define STRF_HD                      __host__ __device__
+
+#else // __CUDACC__
+
+#define STRF_FD inline
+#define STRF_FH inline
+#define STRF_FHD inline
+#define STRF_HD
+#define STRF_HOST
+#define STRF_DEVICE
+
+#endif // __CUDACC__
+
+// TODO: This could be controlled from CMake
+#define STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS 1
+
 STRF_NAMESPACE_BEGIN
 
 namespace detail
@@ -166,29 +196,41 @@ template <bool ... C> constexpr bool fold_or = fold_or_impl<C...>::value;
 
 #endif // defined(__cpp_fold_expressions)
 
+inline STRF_HD std::size_t
+strlen( const char* str )
+{
+#ifndef __CUDA_ARCH__
+    return std::strlen(str);
+#else
+    const char* p { str };
+    while(*p != '\0') { ++p; }
+    return (p - str);
+#endif
+}
+
 } // namespace detail
 
 struct absolute_lowest_rank
 {
-    explicit absolute_lowest_rank() = default;
+    explicit constexpr STRF_HD absolute_lowest_rank() noexcept { };
 };
 
 template <std::size_t N>
 struct rank: rank<N - 1>
 {
-    explicit rank() = default;
+    explicit constexpr STRF_HD rank() noexcept { };
 };
 
 template <>
 struct rank<0>: absolute_lowest_rank
 {
-    explicit rank() = default;
+    explicit constexpr STRF_HD rank() noexcept { }
 };
 
 template <typename ... >
 struct tag
 {
-    explicit tag() = default;
+    explicit constexpr STRF_HD tag() noexcept { }
 };
 
 STRF_NAMESPACE_END

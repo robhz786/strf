@@ -18,7 +18,7 @@ constexpr lettercase uppercase = lettercase::upper;
 struct lettercase_c
 {
     static constexpr bool constrainable = true;
-    constexpr static strf::lettercase get_default() noexcept
+    constexpr static STRF_HD strf::lettercase get_default() noexcept
     {
         return strf::lettercase::lower;
     }

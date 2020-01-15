@@ -8,7 +8,6 @@
 
 int main()
 {
-
     TEST ( "0") ( 0 );
     TEST (u"0") ( 0 );
     TEST (U"0") ( 0 );
@@ -463,8 +462,6 @@ int main()
             .with(strf::monotonic_grouping<16>{2}.thousands_sep('\''))
             (strf::split(ptr, 20, '.'));
     }
-
-
-    return boost::report_errors();
+    return test_finish();
 }
 

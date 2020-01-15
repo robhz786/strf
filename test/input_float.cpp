@@ -345,35 +345,34 @@ std::vector<float> generate_float_samples()
 int main()
 {
     {
-        BOOST_TEST_LABEL << "subnormal float 32";
+        TEST_SCOPE_DESCRIPTION("subnormal float 32");
         {
-            BOOST_TEST_LABEL << "without punctuation";
+            TEST_SCOPE_DESCRIPTION("without punctuation");
             test_subnormal_values<float>(strf::pack());
         }
         {
-            BOOST_TEST_LABEL << "with punctuation";
+            TEST_SCOPE_DESCRIPTION("with punctuation");
             test_subnormal_values<float>(strf::no_grouping<10>{});
         }
     }
     {
-        BOOST_TEST_LABEL << "subnormal double";
+        TEST_SCOPE_DESCRIPTION("subnormal double");
         {
-            BOOST_TEST_LABEL << "without punctuation";
+            TEST_SCOPE_DESCRIPTION("without punctuation");
             test_subnormal_values<double>(strf::pack());
         }
         {
-            BOOST_TEST_LABEL << "with punctuation";
+            TEST_SCOPE_DESCRIPTION("with punctuation");
             test_subnormal_values<double>(strf::no_grouping<10>{});
         }
     }
 
     {
-        BOOST_TEST_LABEL << "default facets";
+        TEST_SCOPE_DESCRIPTION("default facets");
         basic_tests(strf::pack());
     }
-
     {
-        BOOST_TEST_LABEL << "with small decimal point";
+        TEST_SCOPE_DESCRIPTION("with small decimal point");
         auto punct = strf::monotonic_grouping<10>(1)
             .thousands_sep(0xFFFFFFF) // invalid separator is not printed
             .decimal_point('*');
@@ -381,7 +380,7 @@ int main()
     }
 
     {
-        BOOST_TEST_LABEL << "with big decimal point";
+        TEST_SCOPE_DESCRIPTION("with big decimal point");
         auto punct = strf::monotonic_grouping<10>(1)
             .thousands_sep(0xFFFFFFF) // invalid separator is not printed
             .decimal_point(0x1F784);
@@ -389,7 +388,7 @@ int main()
     }
 
     {
-        BOOST_TEST_LABEL << "with invalid decimal point";
+        TEST_SCOPE_DESCRIPTION("with invalid decimal point");
         auto punct = strf::monotonic_grouping<10>(1)
             .thousands_sep(0xFFFFFFF) // invalid separator is not printed
             .decimal_point(0xFFFFFFF);
@@ -403,7 +402,7 @@ int main()
         {
             (void) strf::to(buff) (d);
             auto parsed = std::strtod(buff, nullptr);
-            BOOST_TEST_EQ(parsed, d);
+            TEST_EQ(parsed, d);
         }
     }
 
@@ -414,7 +413,7 @@ int main()
         {
             (void) strf::to(buff) (f);
             auto parsed = std::strtof(buff, nullptr);
-            BOOST_TEST_EQ(parsed, f);
+            TEST_EQ(parsed, f);
         }
     }
     constexpr auto j = strf::join_right(20, '_');
@@ -515,6 +514,6 @@ int main()
             .with(strf::monotonic_grouping<10>{1}.decimal_point(0xFFFFFFF))
             (j(~strf::fixed(1.5)));
     }
-    return boost::report_errors();
+    return test_finish();
 }
 

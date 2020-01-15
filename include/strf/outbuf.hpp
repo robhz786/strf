@@ -6,7 +6,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/detail/common.hpp>
-#include <cstring>
+#include <strf/detail/standard_lib_functions.hpp>
+
 #include <cwchar>
 #include <cstdint>
 
@@ -30,7 +31,7 @@ using underlying_outbuf_char_type
 = typename strf::detail::underlying_outbuf_char_type_impl<CharSize>::type;
 
 template <typename CharT>
-constexpr std::size_t min_size_after_recycle()
+constexpr STRF_HD std::size_t min_size_after_recycle()
 {
     return 64;
 }
@@ -42,48 +43,48 @@ public:
 
     using char_type = strf::underlying_outbuf_char_type<CharSize>;
 
-    underlying_outbuf(const underlying_outbuf&) = delete;
-    underlying_outbuf(underlying_outbuf&&) = delete;
-    underlying_outbuf& operator=(const underlying_outbuf&) = delete;
-    underlying_outbuf& operator=(underlying_outbuf&&) = delete;
+    STRF_HD underlying_outbuf(const underlying_outbuf&) = delete;
+    STRF_HD underlying_outbuf(underlying_outbuf&&) = delete;
+    underlying_outbuf& STRF_HD operator=(const underlying_outbuf&) = delete;
+    underlying_outbuf& STRF_HD operator=(underlying_outbuf&&) = delete;
 
-    virtual ~underlying_outbuf() = default;
+    virtual STRF_HD ~underlying_outbuf() { };
 
-    char_type* pos() const noexcept
+    STRF_HD char_type* pos() const noexcept
     {
         return _pos;
     }
-    char_type* end() const noexcept
+    STRF_HD char_type* end() const noexcept
     {
         return _end;
     }
-    std::size_t size() const noexcept
+    STRF_HD std::size_t size() const noexcept
     {
         STRF_ASSERT(_pos <= _end);
         return _end - _pos;
     }
 
-    bool good() const noexcept
+    STRF_HD bool good() const noexcept
     {
         return _good;
     }
-    void advance_to(char_type* p)
+    STRF_HD void advance_to(char_type* p)
     {
         STRF_ASSERT(_pos <= p);
         STRF_ASSERT(p <= _end);
         _pos = p;
     }
-    void advance(std::size_t n)
+    STRF_HD void advance(std::size_t n)
     {
         STRF_ASSERT(pos() + n <= end());
         _pos += n;
     }
-    void advance() noexcept
+    STRF_HD void advance() noexcept
     {
         STRF_ASSERT(pos() < end());
         ++_pos;
     }
-    void require(std::size_t s)
+    STRF_HD void require(std::size_t s)
     {
         STRF_ASSERT(s <= strf::min_size_after_recycle<char_type>());
         if (pos() + s > end())
@@ -92,28 +93,28 @@ public:
         }
         STRF_ASSERT(pos() + s <= end());
     }
-    void ensure(std::size_t s)
+    STRF_HD void ensure(std::size_t s)
     {
         require(s);
     }
 
-    virtual void recycle() = 0;
+    STRF_HD virtual void recycle() = 0;
 
 protected:
 
-    underlying_outbuf(char_type* pos_, char_type* end_) noexcept
+    STRF_HD underlying_outbuf(char_type* pos_, char_type* end_) noexcept
         : _pos(pos_), _end(end_)
     { }
 
-    underlying_outbuf(char_type* pos_, std::size_t s) noexcept
+    STRF_HD underlying_outbuf(char_type* pos_, std::size_t s) noexcept
         : _pos(pos_), _end(pos_ + s)
     { }
 
-    void set_pos(char_type* p) noexcept
+    STRF_HD void set_pos(char_type* p) noexcept
     { _pos = p; };
-    void set_end(char_type* e) noexcept
+    STRF_HD void set_end(char_type* e) noexcept
     { _end = e; };
-    void set_good(bool g) noexcept
+    STRF_HD void set_good(bool g) noexcept
     { _good = g; };
 
 private:
@@ -137,30 +138,30 @@ public:
 
     using char_type = CharT;
 
-    basic_outbuf(const basic_outbuf&) = delete;
-    basic_outbuf(basic_outbuf&&) = delete;
-    basic_outbuf& operator=(const basic_outbuf&) = delete;
-    basic_outbuf& operator=(basic_outbuf&&) = delete;
+    STRF_HD basic_outbuf(const basic_outbuf&) = delete;
+    STRF_HD basic_outbuf(basic_outbuf&&) = delete;
+    STRF_HD basic_outbuf& operator=(const basic_outbuf&) = delete;
+    STRF_HD basic_outbuf& operator=(basic_outbuf&&) = delete;
 
-    virtual ~basic_outbuf() = default;
+    virtual STRF_HD ~basic_outbuf() { };
 
-    CharT* pos() const noexcept
+    STRF_HD CharT* pos() const noexcept
     {
         return reinterpret_cast<CharT*>(_underlying_impl::pos());
     }
-    CharT* end() const noexcept
+    STRF_HD CharT* end() const noexcept
     {
         return reinterpret_cast<CharT*>(_underlying_impl::end());
     }
-    void advance_to(CharT* p)
+    STRF_HD void advance_to(CharT* p)
     {
         _underlying_impl::advance_to(reinterpret_cast<_underlying_char_t*>(p));
     }
-    _underlying_impl& as_underlying() noexcept
+    STRF_HD _underlying_impl& as_underlying() noexcept
     {
         return *this;
     }
-    const _underlying_impl& as_underlying() const noexcept
+    STRF_HD const _underlying_impl& as_underlying() const noexcept
     {
         return *this;
     }
@@ -174,20 +175,20 @@ public:
 
 protected:
 
-    basic_outbuf(CharT* pos_, CharT* end_) noexcept
+    STRF_HD basic_outbuf(CharT* pos_, CharT* end_) noexcept
         : _underlying_impl( reinterpret_cast<_underlying_char_t*>(pos_)
                           , reinterpret_cast<_underlying_char_t*>(end_) )
     { }
 
-    basic_outbuf(CharT* pos_, std::size_t s) noexcept
+    STRF_HD basic_outbuf(CharT* pos_, std::size_t s) noexcept
         : _underlying_impl(reinterpret_cast<_underlying_char_t*>(pos_), s)
     { }
 
-    void set_pos(CharT* p) noexcept
+    STRF_HD void set_pos(CharT* p) noexcept
     {
         _underlying_impl::set_pos(reinterpret_cast<_underlying_char_t*>(p));
     }
-    void set_end(CharT* e) noexcept
+    STRF_HD void set_end(CharT* e) noexcept
     {
         _underlying_impl::set_end(reinterpret_cast<_underlying_char_t*>(e));
     }
@@ -200,7 +201,7 @@ class basic_outbuf_noexcept: public basic_outbuf<CharT>
 {
 public:
 
-    virtual void recycle() noexcept = 0;
+    virtual STRF_HD void recycle() noexcept = 0;
 
 protected:
 
@@ -240,11 +241,12 @@ using basic_outbuf_noexcept_switch
 #endif
 
 template <typename Outbuf, typename CharT>
-void outbuf_write_continuation(Outbuf& ob, const CharT* str, std::size_t len)
+STRF_HD void outbuf_write_continuation(Outbuf& ob, const CharT* str, std::size_t len)
 {
     auto space = ob.size();
     STRF_ASSERT(space < len);
-    std::memcpy(ob.pos(), str, space * sizeof(CharT));
+
+    detail::str_copy_n(ob.pos(), str, space);
     str += space;
     len -= space;
     ob.advance_to(ob.end());
@@ -254,11 +256,11 @@ void outbuf_write_continuation(Outbuf& ob, const CharT* str, std::size_t len)
         space = ob.size();
         if (len <= space)
         {
-            std::memcpy(ob.pos(), str, len * sizeof(CharT));
+            memcpy(ob.pos(), str, len * sizeof(CharT));
             ob.advance(len);
             break;
         }
-        std::memcpy(ob.pos(), str, space * sizeof(CharT));
+        detail::str_copy_n(ob.pos(), str, space);
         len -= space;
         str += space;
         ob.advance_to(ob.end());
@@ -270,12 +272,12 @@ void outbuf_write_continuation(Outbuf& ob, const CharT* str, std::size_t len)
 #endif
 
 template <typename Outbuf, typename CharT = typename Outbuf::char_type>
-void outbuf_write(Outbuf& ob, const CharT* str, std::size_t len)
+STRF_HD void outbuf_write(Outbuf& ob, const CharT* str, std::size_t len)
 {
     auto p = ob.pos();
     if (p + len <= ob.end()) // the common case
     {
-        std::memcpy(p, str, len * sizeof(CharT));
+        strf::detail::str_copy_n(p, str, len);
         ob.advance(len);
     }
     else
@@ -285,7 +287,7 @@ void outbuf_write(Outbuf& ob, const CharT* str, std::size_t len)
 }
 
 template <typename Outbuf, typename CharT = typename Outbuf::char_type>
-void outbuf_put(Outbuf& ob, CharT c)
+STRF_HD void outbuf_put(Outbuf& ob, CharT c)
 {
     auto p = ob.pos();
     if (p != ob.end())
@@ -304,7 +306,7 @@ void outbuf_put(Outbuf& ob, CharT c)
 } // namespace detail
 
 template <std::size_t CharSize>
-inline void write
+inline STRF_HD void write
     ( strf::underlying_outbuf<CharSize>& ob
     , const strf::underlying_outbuf_char_type<CharSize>* str
     , std::size_t len )
@@ -313,7 +315,7 @@ inline void write
 }
 
 template <typename CharT>
-inline void write( strf::basic_outbuf<CharT>& ob
+inline STRF_HD void write( strf::basic_outbuf<CharT>& ob
                  , const CharT* str
                  , std::size_t len )
 {
@@ -321,7 +323,7 @@ inline void write( strf::basic_outbuf<CharT>& ob
 }
 
 template <typename CharT>
-inline void write( strf::basic_outbuf_noexcept<CharT>& ob
+inline STRF_HD void write( strf::basic_outbuf_noexcept<CharT>& ob
                  , const CharT* str
                  , std::size_t len )
 {
@@ -329,7 +331,7 @@ inline void write( strf::basic_outbuf_noexcept<CharT>& ob
 }
 
 template <std::size_t CharSize>
-inline void write
+inline STRF_HD void write
     ( strf::underlying_outbuf<CharSize>& ob
     , const strf::underlying_outbuf_char_type<CharSize>* str
     , const strf::underlying_outbuf_char_type<CharSize>* str_end )
@@ -339,7 +341,7 @@ inline void write
 }
 
 template <typename CharT>
-inline void write( strf::basic_outbuf<CharT>& ob
+inline STRF_HD void write( strf::basic_outbuf<CharT>& ob
                  , const CharT* str
                  , const CharT* str_end )
 {
@@ -348,7 +350,7 @@ inline void write( strf::basic_outbuf<CharT>& ob
 }
 
 template <typename CharT>
-inline void write( strf::basic_outbuf_noexcept<CharT>& ob
+inline STRF_HD void write( strf::basic_outbuf_noexcept<CharT>& ob
                  , const CharT* str
                  , const CharT* str_end ) noexcept
 {
@@ -356,32 +358,38 @@ inline void write( strf::basic_outbuf_noexcept<CharT>& ob
     strf::detail::outbuf_write(ob, str, str_end - str);
 }
 
-inline void write( strf::basic_outbuf<char>& ob
+inline STRF_HD void write( strf::basic_outbuf<char>& ob
                  , const char* str )
 {
-    strf::detail::outbuf_write(ob, str, std::strlen(str));
+    strf::detail::outbuf_write(ob, str, detail::strlen(str));
 }
 
-inline void write( strf::basic_outbuf_noexcept<char>& ob
+inline STRF_HD void write( strf::basic_outbuf_noexcept<char>& ob
                  , const char* str ) noexcept
 {
-    strf::detail::outbuf_write(ob, str, std::strlen(str));
+    strf::detail::outbuf_write(ob, str, detail::strlen(str));
 }
 
-inline void write( strf::basic_outbuf<wchar_t>& ob
+inline STRF_HD void write( strf::basic_outbuf<wchar_t>& ob
                  , const wchar_t* str )
 {
+#ifndef __CUDA_ARCH__
+    using std::wcslen;
+#endif
     strf::detail::outbuf_write(ob, str, std::wcslen(str));
 }
 
-inline void write( strf::basic_outbuf_noexcept<wchar_t>& ob
+inline STRF_HD void write( strf::basic_outbuf_noexcept<wchar_t>& ob
                  , const wchar_t* str ) noexcept
 {
-    strf::detail::outbuf_write(ob, str, std::wcslen(str));
+#ifndef __CUDA_ARCH__
+    using std::wcslen;
+#endif
+    strf::detail::outbuf_write(ob, str, wcslen(str));
 }
 
 template <std::size_t CharSize>
-inline void put
+inline STRF_HD void put
     ( strf::underlying_outbuf<CharSize>& ob
     , strf::underlying_outbuf_char_type<CharSize> c )
 {
@@ -389,13 +397,13 @@ inline void put
 }
 
 template <typename CharT>
-inline void put( strf::basic_outbuf<CharT>& ob, CharT c )
+inline STRF_HD void put( strf::basic_outbuf<CharT>& ob, CharT c )
 {
     strf::detail::outbuf_put(ob, c);
 }
 
 template <typename CharT>
-inline void put( strf::basic_outbuf_noexcept<CharT>& ob, CharT c ) noexcept
+inline STRF_HD void put( strf::basic_outbuf_noexcept<CharT>& ob, CharT c ) noexcept
 {
     strf::detail::outbuf_put(ob, c);
 }
@@ -427,12 +435,12 @@ class outbuf_test_tool
 public:
 
     template<std::size_t CharSize>
-    static void turn_into_bad(underlying_outbuf<CharSize>& ob)
+    static STRF_HD void turn_into_bad(underlying_outbuf<CharSize>& ob)
     {
         ob.set_good(false);
     }
     template<std::size_t CharSize>
-    static void force_set_pos
+    static STRF_HD void force_set_pos
         ( underlying_outbuf<CharSize>& ob
         , strf::underlying_outbuf_char_type<CharSize>* pos)
     {
@@ -441,7 +449,7 @@ public:
 };
 
 
-inline char32_t* _outbuf_garbage_buf()
+inline STRF_HD char32_t* _outbuf_garbage_buf()
 {
     constexpr std::size_t s1
         = (strf::min_size_after_recycle<char>() + 1) / 4;
@@ -459,13 +467,13 @@ inline char32_t* _outbuf_garbage_buf()
 } // namespace detail
 
 template <typename CharT>
-inline CharT* outbuf_garbage_buf()
+inline STRF_HD CharT* outbuf_garbage_buf()
 {
     return reinterpret_cast<CharT*>(strf::detail::_outbuf_garbage_buf());
 }
 
 template <typename CharT>
-inline CharT* outbuf_garbage_buf_end()
+inline STRF_HD CharT* outbuf_garbage_buf_end()
 {
     return strf::outbuf_garbage_buf<CharT>()
         + strf::min_size_after_recycle<CharT>();
@@ -476,29 +484,29 @@ class basic_cstr_writer final: public strf::basic_outbuf_noexcept<CharT>
 {
 public:
 
-    basic_cstr_writer(CharT* dest, CharT* dest_end)
+    STRF_HD basic_cstr_writer(CharT* dest, CharT* dest_end)
         : basic_outbuf_noexcept<CharT>(dest, dest_end - 1)
     {
         STRF_ASSERT(dest < dest_end);
     }
 
-    basic_cstr_writer(CharT* dest, std::size_t len)
+    STRF_HD basic_cstr_writer(CharT* dest, std::size_t len)
         : basic_outbuf_noexcept<CharT>(dest, dest + len - 1)
     {
         STRF_ASSERT(len != 0);
     }
 
     template <std::size_t N>
-    basic_cstr_writer(CharT (&dest)[N])
+    STRF_HD basic_cstr_writer(CharT (&dest)[N])
         : basic_outbuf_noexcept<CharT>(dest, dest + N - 1)
     {
     }
 
-    basic_cstr_writer(basic_cstr_writer&& r)
+    STRF_HD basic_cstr_writer(basic_cstr_writer&& r)
         : basic_cstr_writer(r.pos(), r.end())
     {}
 
-    void recycle() noexcept override
+    STRF_HD void recycle() noexcept override
     {
         if (this->good())
         {
@@ -515,7 +523,7 @@ public:
         bool truncated;
     };
 
-    result finish()
+    STRF_HD result finish()
     {
         bool g = this->good();
         if (g)
@@ -551,7 +559,7 @@ class discarded_outbuf final
 {
 public:
 
-    discarded_outbuf()
+    STRF_HD discarded_outbuf()
         : basic_outbuf_noexcept<CharT>
             { strf::outbuf_garbage_buf<CharT>()
             , strf::outbuf_garbage_buf_end<CharT>() }
@@ -559,9 +567,11 @@ public:
         this->set_good(false);
     }
 
-    ~discarded_outbuf() = default;
+    STRF_HD ~discarded_outbuf()
+    {
+    }
 
-    void recycle() noexcept override
+    STRF_HD void recycle() noexcept override
     {
         this->set_pos(strf::outbuf_garbage_buf<CharT>());
     }
