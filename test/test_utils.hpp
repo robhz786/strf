@@ -249,7 +249,7 @@ public:
             strf::write(out, "\n    ( ");
             strf::write(out, first->description_);
             for(auto it = first->child_; it != nullptr; it = it->child_) {
-                strf::put(out, '/');
+                strf::write(out, " / ");
                 strf::write(out, it->description_);
             }
             strf::write(out, " )");

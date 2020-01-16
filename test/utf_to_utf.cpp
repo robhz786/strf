@@ -95,8 +95,8 @@ const auto& invalid_sequences(const strf::encoding<char>&)
     // "Best Practices for Using U+FFFD"
     using str_view = strf::detail::simple_string_view<char>;
     using pair = std::pair<int,str_view>;
-    static std::array<std::pair<int, str_view>, 17> seqs =
-        { pair{3, "\xF1\x80\x80\xE1\x80\xC0"} // sample from Tabble 3-8 of Unicode standard
+    static std::array<std::pair<int, str_view>, 17> seqs
+       {{ pair{3, "\xF1\x80\x80\xE1\x80\xC0"} // sample from Tabble 3-8 of Unicode standard
         , pair{2, "\xC1\xBF"}                 // overlong sequence
         , pair{3, "\xE0\x9F\x80"}             // overlong sequence
         , pair{3, "\xC1\xBF\x80"}             // overlong sequence with extra continuation bytes
@@ -113,7 +113,7 @@ const auto& invalid_sequences(const strf::encoding<char>&)
         , pair{1, "\xF0\x90\xBF" }            // missing continuation
         , pair{4, "\xF4\xBF\xBF\xBF"}         // codepoint too big
         , pair{6, "\xF5\x90\x80\x80\x80\x80"} // codepoint too big with extra continuation bytes
-        };
+        }};
 
     return seqs;
 }
@@ -124,10 +124,10 @@ const auto& invalid_sequences(const strf::encoding<char16_t>&)
     using pair = std::pair<int,str_view>;
     static const char16_t ch[] = {0xD800, 0xDBFF, 0xDC00, 0xDFFF};
     static const std::array<std::pair<int,str_view>, 4> seqs
-        { pair{1, {&ch[0], 1}}
+       {{ pair{1, {&ch[0], 1}}
         , pair{1, {&ch[1], 1}}
         , pair{1, {&ch[2], 1}}
-        , pair{1, {&ch[3], 1}} };
+        , pair{1, {&ch[3], 1}} }};
 
     return seqs;
 }
@@ -137,12 +137,12 @@ const auto& invalid_sequences(const strf::encoding<char32_t>&)
     using str_view = strf::detail::simple_string_view<char32_t>;
     using pair = std::pair<int,str_view>;
     static const char32_t ch[] = {0xD800, 0xDBFF,0xDC00,0xDFFF, 0x110000};
-    static const std::array<pair, 5> seqs =
-        { pair{1, {&ch[0], 1}}
+    static const std::array<pair, 5> seqs
+       {{ pair{1, {&ch[0], 1}}
         , pair{1, {&ch[1], 1}}
         , pair{1, {&ch[2], 1}}
         , pair{1, {&ch[3], 1}}
-        , pair{1, {&ch[4], 1}} };
+        , pair{1, {&ch[4], 1}} }};
 
     return seqs;
 }
@@ -153,12 +153,12 @@ const auto& invalid_sequences(const strf::encoding<wchar_t>&)
     using pair = std::pair<int,str_view>;
     static const wchar_t ch[] = { 0xD800, 0xDBFF, 0xDC00, 0xDFFF
                                 , (sizeof(wchar_t) == 4 ? 0x110000 : 0xDFFF) };
-    static const std::array<pair, 5> seqs =
-        { pair{1, {&ch[0], 1}}
+    static const std::array<pair, 5> seqs
+       {{ pair{1, {&ch[0], 1}}
         , pair{1, {&ch[1], 1}}
         , pair{1, {&ch[2], 1}}
         , pair{1, {&ch[3], 1}}
-        , pair{1, {&ch[4], 1}} };
+        , pair{1, {&ch[4], 1}} }};
 
     return seqs;
 }
@@ -213,9 +213,13 @@ void test_invalid_input
         const int err_count = s.first;
         const auto& seq = s.second;
 
-        auto f = [](auto ch){ return ~strf::hex((unsigned)ch); };
-        TEST_SCOPE_DESCRIPTION( "Sequence = "
-                              , strf::separated_range(seq, " ", f) );
+        auto f = [](auto ch){
+            return ~strf::hex((unsigned)(std::make_unsigned_t<ChIn>)ch);
+        };
+        TEST_SCOPE_DESCRIPTION
+            .with(strf::mixedcase)
+            ( "Sequence = ", strf::separated_range(seq, " ", f) );
+
         ChIn buff_in[20];
         ChOut buff_out[80];
         auto input = concatenate(buff_in, prefix_in, seq, 1, suffix_in);
