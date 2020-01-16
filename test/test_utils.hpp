@@ -557,7 +557,9 @@ constexpr bool equal(const T&a, const U&b)
     test_utils::make_tester( (EXPECTED), __FILE__, __LINE__             \
                            , BOOST_CURRENT_FUNCTION, (RF))
 
-#define TEST_STR_CONCAT(str1, str2) str1 ## str2
+#define TEST_STR_CONCAT_2(str1, str2) str1 ## str2
+
+#define TEST_STR_CONCAT(str1, str2) TEST_STR_CONCAT_2(str1, str2)
 
 #define TEST_SCOPE_DESCRIPTION                                          \
     test_utils::test_scope TEST_STR_CONCAT(test_label_, __LINE__);      \
