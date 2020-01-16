@@ -7,7 +7,7 @@
 
 #include <strf/detail/facets/encoding.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 template <typename CharT> struct width_calculator_c;
 template <typename CharT> class width_calculator;
@@ -121,7 +121,7 @@ struct width_calculator_c
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
 

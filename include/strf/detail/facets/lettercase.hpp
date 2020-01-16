@@ -7,7 +7,7 @@
 
 #include <strf/detail/common.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 enum class lettercase { lower = 0, mixed = 1, upper = 3 };
 
@@ -35,7 +35,7 @@ public:
     static constexpr bool store_by_value = true;
 };
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_FACETS_LETTERCASE_HPP
 

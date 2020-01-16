@@ -9,7 +9,7 @@
 #include <strf/width_t.hpp>
 #include <strf/detail/standard_lib_functions.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 class stringify_error: public std::exception
 {
@@ -350,6 +350,6 @@ inline STRF_HD void write_args
 
 } // namespace detail
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif // STRF_PRINTER_HPP

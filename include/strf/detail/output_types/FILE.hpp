@@ -9,7 +9,7 @@
 #include <cstring>
 #include <strf/destination.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 template <typename CharT>
 class narrow_cfile_writer final: public strf::basic_outbuf_noexcept<CharT>
@@ -250,7 +250,7 @@ inline auto wto(std::FILE* destination)
 }
 
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_OUTPUT_TYPES_FILE_HPP
 

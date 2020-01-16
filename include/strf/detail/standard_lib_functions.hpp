@@ -13,7 +13,7 @@
 #include <string> // for std::char_traits
 #endif
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 namespace detail {
 
@@ -132,7 +132,7 @@ max(const T& lhs, const T& rhs) noexcept
 
 } // namespace detail
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 
 #endif // STRF_DETAIL_STANDARD_LIB_FUNCTIONS_HPP

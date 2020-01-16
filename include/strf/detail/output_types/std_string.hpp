@@ -9,7 +9,7 @@
 #include <strf/destination.hpp>
 #include <string>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
@@ -304,7 +304,7 @@ constexpr strf::destination_no_reserve
     to_wstring{};
 
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_OUTPUT_TYPES_STD_STRING_HPP
 

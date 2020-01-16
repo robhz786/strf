@@ -14,7 +14,7 @@
 #include <cstring>
 #include <type_traits>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 namespace detail {
 
 struct double_dec
@@ -1815,7 +1815,7 @@ make_printer( strf::rank<1>
     return {fp, preview, x};
 }
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_INPUT_TYPES_FLOAT_HPP
 

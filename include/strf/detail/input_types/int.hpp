@@ -17,7 +17,7 @@
 // todo: optimize as in:
 // https://pvk.ca/Blog/2017/12/22/appnexus-common-framework-its-out-also-how-to-print-integers-faster/
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 template <int Base>
 struct int_format;
@@ -867,6 +867,6 @@ template <> struct is_int_number<unsigned int>: public std::true_type {};
 template <> struct is_int_number<unsigned long>: public std::true_type {};
 template <> struct is_int_number<unsigned long long>: public std::true_type {};
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif // STRF_DETAIL_INPUT_TYPES_FMT_INT_HPP_INCLUDED

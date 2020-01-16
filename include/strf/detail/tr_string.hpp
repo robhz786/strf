@@ -9,7 +9,7 @@
 #include <limits>
 #include <strf/detail/facets/encoding.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 class tr_string_syntax_error: public strf::stringify_error
 {
@@ -354,7 +354,7 @@ public:
 
 } // namespace detail
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_TR_STRING_HPP
 

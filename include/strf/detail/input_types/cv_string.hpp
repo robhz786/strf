@@ -8,7 +8,7 @@
 #include <strf/detail/input_types/string.hpp>
 #include <strf/detail/printer_variant.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 namespace detail {
 
@@ -794,7 +794,7 @@ make_printer( strf::rank<1>
            , input.get_encoding() };
 }
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_INPUT_TYPES_CV_STRING_HPP
 

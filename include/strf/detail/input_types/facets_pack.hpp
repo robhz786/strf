@@ -9,7 +9,7 @@
 #include <strf/facets_pack.hpp>
 #include <strf/detail/printers_tuple.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 template <typename FPack, typename ... Args>
 struct inner_pack_with_args
@@ -139,7 +139,7 @@ STRF_HD make_printer( strf::rank<1>
     return {fp, preview, f};
 }
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_INPUT_TYPES_FACETS_PACK_HPP
 

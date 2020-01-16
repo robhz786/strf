@@ -8,7 +8,7 @@
 #include <strf/detail/tr_string.hpp>
 #include <strf/facets_pack.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 template < typename OutbufCreator
          , typename FPack = strf::facets_pack<> >
@@ -632,6 +632,6 @@ auto STRF_HD to(strf::basic_outbuf<CharT>& ob)
     return strf::destination_no_reserve<strf::detail::outbuf_reference<CharT>>(ob);
 }
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DESTINATION_HPP

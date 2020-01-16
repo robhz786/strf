@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <functional>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 template <typename ... F> class facets_pack;
 
@@ -715,7 +715,7 @@ constexpr STRF_HD decltype(auto) get_facet(const strf::facets_pack<FPE...>& fp)
     return fp.template get_facet<FacetCategory, Tag>();
 }
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_FACETS_PACK_HPP
 

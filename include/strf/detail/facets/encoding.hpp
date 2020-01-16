@@ -7,7 +7,7 @@
 
 #include <strf/printer.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 template <typename> class facet_trait;
 
@@ -772,7 +772,7 @@ const STRF_HD strf::detail::encoding_impl<std::uint8_t>& iso_8859_15_impl();
 
 #endif // defined(STRF_OMIT_IMPL)
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #if ! defined(STRF_OMIT_IMPL)
 
@@ -781,7 +781,7 @@ STRF_NAMESPACE_END
 
 #endif // defined(STRF_OMIT_IMPL)
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 template <typename CharT>
 inline STRF_HD strf::encoding<CharT> utf16()
@@ -929,7 +929,7 @@ struct encoding_c<wchar_t>
     }
 };
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_FACETS_ENCODINGS_HPP
 

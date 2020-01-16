@@ -8,7 +8,7 @@
 #include <strf/printer.hpp>
 #include <algorithm>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 namespace detail {
 
@@ -630,7 +630,7 @@ STRF_HD const strf::detail::encoding_impl<std::uint8_t>& iso_8859_15_impl()
 }
 
 } // namespace detail
-STRF_NAMESPACE_END
+} // namespace strf
 
 
 #endif  // STRF_DETAIL_SINGLE_BYTE_ENCODINGS_HPP

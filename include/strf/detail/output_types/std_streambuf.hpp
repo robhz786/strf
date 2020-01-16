@@ -9,7 +9,7 @@
 #include <strf/destination.hpp>
 #include <strf/outbuf.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 template <typename CharT, typename Traits = std::char_traits<CharT> >
 class basic_streambuf_writer final: public strf::basic_outbuf<CharT>
@@ -134,7 +134,7 @@ inline auto to( std::basic_streambuf<CharT, Traits>* dest )
     return strf::to(*dest);
 }
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
 

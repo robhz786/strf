@@ -10,7 +10,7 @@
 #include <bit>
 #endif
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 namespace detail {
 
@@ -997,7 +997,7 @@ inline STRF_HD void write_int
 
 } // namespace detail
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_NUMBER_OF_DIGITS_HPP
 

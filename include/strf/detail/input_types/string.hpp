@@ -7,7 +7,7 @@
 #include <strf/detail/format_functions.hpp>
 #include <strf/facets_pack.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 namespace detail {
 
@@ -748,7 +748,7 @@ make_printer( strf::rank<1>
     return {fp, preview, input.value(), input.get_alignment_format_data()};
 }
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  /* STRF_DETAIL_INPUT_TYPES_CHAR_PTR */
 

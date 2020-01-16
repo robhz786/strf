@@ -8,7 +8,7 @@
 #include <string>
 #include <strf/detail/common.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 namespace detail {
 
@@ -480,7 +480,7 @@ constexpr bool has_punct = has_punct_impl<CharT, FPack, InputT, Base>::has_punct
 
 } // namespace detail
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_FACETS_NUMPUNCT_HPP
 

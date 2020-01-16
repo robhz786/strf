@@ -9,7 +9,7 @@
 #include <strf/destination.hpp>
 #include <strf/outbuf.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 namespace detail {
 
@@ -156,7 +156,7 @@ inline STRF_HD auto to(wchar_t* dest, std::size_t count)
         (dest, dest + count);
 }
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  /* STRF_DETAIL_OUTPUT_TYPES_CHAR_PTR_HPP */
 

@@ -8,7 +8,7 @@
 #include <initializer_list>
 #include <strf/detail/facets/encoding.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 template <typename ForwardIt>
 struct range_p
@@ -936,7 +936,7 @@ inline STRF_HD auto separated_range(T (&array)[N], const CharT* sep, UnaryOp op)
         { &array[0], &array[0] + N, sep, sep_len, op };
 }
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_INPUT_TYPES_RANGE_HPP
 

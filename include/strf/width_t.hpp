@@ -11,7 +11,7 @@
 #include <type_traits>
 #include <cstdint>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 class width_t
 {
@@ -545,7 +545,7 @@ constexpr STRF_HD strf::width_t operator "" _w()
 
 } // namespace width_literal
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_WIDTH_T_HPP
 

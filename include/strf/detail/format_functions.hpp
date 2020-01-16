@@ -9,7 +9,7 @@
 #include <cstring>
 
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 namespace detail{
 
@@ -599,7 +599,7 @@ constexpr STRF_HD auto sani(const T& value, const E& e)
 }
 
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 
 #endif  // STRF_DETAIL_FORMAT_FUNCTIONS_HPP

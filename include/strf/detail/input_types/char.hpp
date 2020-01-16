@@ -10,7 +10,7 @@
 #include <strf/facets_pack.hpp>
 #include <strf/detail/facets/width_calculator.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 template <typename CharT>
 struct char_tag
@@ -393,7 +393,7 @@ template <> struct is_char<char16_t>: public std::true_type {};
 template <> struct is_char<char32_t>: public std::true_type {};
 template <> struct is_char<wchar_t>: public std::true_type {};
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif // STRF_DETAIL_INPUT_TYPES_CHAR_HPP_INCLUDED
 

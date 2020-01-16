@@ -15,9 +15,6 @@
 
 #define STRF_ASSERT(x) assert(x)
 
-#define STRF_NAMESPACE_BEGIN namespace strf {
-#define STRF_NAMESPACE_END  }
-
 #if defined(STRF_SOURCE) && !defined(STRF_SEPARATE_COMPILATION)
 #define STRF_SEPARATE_COMPILATION
 #endif
@@ -154,7 +151,7 @@
 // TODO: This could be controlled from CMake
 #define STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS 1
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 namespace detail
 {
@@ -233,7 +230,7 @@ struct tag
     explicit constexpr STRF_HD tag() noexcept { }
 };
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_COMMMON_HPP
 

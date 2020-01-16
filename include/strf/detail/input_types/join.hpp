@@ -13,7 +13,7 @@
 #include <tuple>
 #endif
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 template<bool Active>
 struct split_pos_format;
@@ -502,7 +502,7 @@ constexpr STRF_HD strf::aligned_join_t join_split(std::int16_t width, std::ptrdi
     return {width, strf::text_alignment::split, U' ', split_pos};
 }
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_JOIN_HPP
 

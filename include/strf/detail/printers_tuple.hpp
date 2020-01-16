@@ -7,7 +7,7 @@
 
 #include <strf/detail/facets/encoding.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 namespace detail {
 
 template <typename Arg>
@@ -187,7 +187,7 @@ using printers_tuple_from_args
 
 } // namespace detail
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_PRINTERS_TUPLE_HPP
 

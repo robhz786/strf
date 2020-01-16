@@ -11,7 +11,7 @@
 #include <cwchar>
 #include <cstdint>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 namespace detail {
 
@@ -566,7 +566,7 @@ public:
     }
 };
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // BOOST_OUTBUF_HPP
 

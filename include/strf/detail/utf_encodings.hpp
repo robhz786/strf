@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <cstddef> // for std::size_t
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 #define STRF_CHECK_DEST     \
     if (dest_it == dest_end) {         \
@@ -1326,7 +1326,7 @@ STRF_HD const  strf::detail::encoding_impl<char32_t>& utf32_impl()
 
 } // namespace detail
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_UTF_ENCODINGS_HPP
 
