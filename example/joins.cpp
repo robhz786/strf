@@ -52,8 +52,7 @@ const char* msg_the_ip_address_of_X_is_X();
 
 const char* msg_the_ip_address_of_X_is_X()
 {
-    switch(get_current_language())
-    {
+    switch(get_current_language()) {
         case language::Spanish:
             return "La direcci\u00F3n IP de {} es {}";
 
@@ -80,8 +79,7 @@ void sample()
         , host_name
         , strf::join(ip_addr[0], '.', ip_addr[1], '.', ip_addr[2], '.', ip_addr[3]));
 
-    if (get_current_language() == language::English)
-    {
+    if (get_current_language() == language::English) {
         assert(str == "The IP address of boost.org is 146.20.110.251");
     }
 

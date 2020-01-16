@@ -194,12 +194,10 @@ constexpr STRF_HD strf::width_t checked_add( strf::width_t lhs
     std::int64_t ulhs = lhs.underlying_value();
     std::int64_t urhs = rhs.underlying_value();
     std::int64_t tmp = ulhs + urhs;
-    if (INT32_MIN <= tmp && tmp <= INT32_MAX)
-    {
+    if (INT32_MIN <= tmp && tmp <= INT32_MAX) {
         return strf::width_t::from_underlying(static_cast<std::int32_t>(tmp));
     }
-    if (tmp > INT32_MAX)
-    {
+    if (tmp > INT32_MAX) {
         return strf::width_max;
     }
     return strf::width_min;
@@ -210,12 +208,10 @@ constexpr STRF_HD strf::width_t checked_subtract( strf::width_t lhs
 {
     std::int64_t ulhs = lhs.underlying_value();
     std::int64_t tmp = ulhs - rhs;
-    if (INT32_MIN <= tmp && tmp <= INT32_MAX)
-    {
+    if (INT32_MIN <= tmp && tmp <= INT32_MAX) {
         return strf::width_t::from_underlying(static_cast<std::int32_t>(tmp));
     }
-    if (tmp < INT32_MIN)
-    {
+    if (tmp < INT32_MIN) {
         return strf::width_min;
     }
     return strf::width_max;
@@ -232,12 +228,10 @@ constexpr STRF_HD strf::width_t checked_mul( strf::width_t w
 {
     std::int64_t tmp = x;
     tmp *= w.underlying_value();
-    if (INT32_MIN <= tmp && tmp <= INT32_MAX)
-    {
+    if (INT32_MIN <= tmp && tmp <= INT32_MAX) {
         return strf::width_t::from_underlying(static_cast<std::int32_t>(tmp));
     }
-    if (tmp > INT32_MAX)
-    {
+    if (tmp > INT32_MAX) {
         return strf::width_max;
     }
     return strf::width_min;

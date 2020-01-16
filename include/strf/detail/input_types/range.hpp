@@ -137,8 +137,7 @@ template <typename CharT, typename FPack, typename ForwardIt>
 template <typename Preview, typename >
 STRF_HD void range_printer<CharT, FPack, ForwardIt>::_preview(Preview& preview) const
 {
-    for(auto it = _begin; it != _end; ++it)
-    {
+    for(auto it = _begin; it != _end; ++it) {
         make_printer<CharT, FPack>(strf::rank<5>{}, _fp, preview, *it);
     }
 }
@@ -148,8 +147,7 @@ STRF_HD void range_printer<CharT, FPack, ForwardIt>::print_to
     ( strf::basic_outbuf<CharT>& ob ) const
 {
     strf::print_preview<false, false> no_preview;
-    for(auto it = _begin; it != _end; ++it)
-    {
+    for(auto it = _begin; it != _end; ++it) {
         make_printer<CharT, FPack>(strf::rank<5>{},_fp, no_preview, *it).print_to(ob);
     }
 }
@@ -211,24 +209,19 @@ template <typename Preview, typename>
 STRF_HD void separated_range_printer<CharT, FPack, It>::_preview(Preview& preview) const
 {
     std::size_t count = 0;
-    for(auto it = _begin; it != _end; ++it)
-    {
+    for(auto it = _begin; it != _end; ++it) {
         make_printer<CharT, FPack>(strf::rank<5>{}, _fp, preview, *it);
         ++ count;
-        STRF_IF_CONSTEXPR (!Preview::size_required)
-        {
-            if (preview.remaining_width() <= 0)
-            {
+        STRF_IF_CONSTEXPR (!Preview::size_required) {
+            if (preview.remaining_width() <= 0) {
                 return;
             }
         }
     }
-    if (count < 2)
-    {
+    if (count < 2) {
         return;
     }
-    if (Preview::width_required)
-    {
+    if (Preview::width_required) {
         decltype(auto) wcalc
             = _get_facet<strf::width_calculator_c<CharT>>(_fp);
         decltype(auto) encoding
@@ -238,21 +231,16 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::_preview(Preview& previe
 
         auto dw = wcalc.width( preview.remaining_width(), _sep_begin, _sep_len
                              , encoding, enc_err, allow_surr );
-        if (dw != 0)
-        {
-            if (count > UINT32_MAX)
-            {
+        if (dw != 0) {
+            if (count > UINT32_MAX) {
                 preview.clear_remaining_width();
-            }
-            else
-            {
+            } else {
                 preview.checked_subtract_width
                     ( checked_mul(dw, static_cast<std::uint32_t>(count - 1)) );
             }
         }
     }
-    if (Preview::size_required)
-    {
+    if (Preview::size_required) {
         preview.add_size((count - 1) * _sep_len);
     }
 }
@@ -263,12 +251,10 @@ STRF_HD void separated_range_printer<CharT, FPack, ForwardIt>::print_to
 {
     strf::print_preview<false, false> no_preview;
     auto it = _begin;
-    if (it != _end)
-    {
+    if (it != _end) {
         make_printer<CharT, FPack>(strf::rank<5>{}, _fp, no_preview, *it)
             .print_to(ob);
-        while (++it != _end)
-        {
+        while (++it != _end) {
             strf::write(ob, _sep_begin, _sep_len);
             make_printer<CharT, FPack>(strf::rank<5>{}, _fp, no_preview, *it)
                 .print_to(ob);
@@ -336,8 +322,7 @@ STRF_HD void fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::_preview
     ( Preview& preview ) const
 {
     auto r = _fmt.value();
-    for(auto it = r.begin; it != r.end; ++it)
-    {
+    for(auto it = r.begin; it != r.end; ++it) {
         make_printer<CharOut, FPack>( strf::rank<5>{}
                                     , _fp
                                     , preview
@@ -354,8 +339,7 @@ STRF_HD void fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::print_to
 {
     strf::print_preview<false, false> no_preview;
     auto r = _fmt.value();
-    for(auto it = r.begin; it != r.end; ++it)
-    {
+    for(auto it = r.begin; it != r.end; ++it) {
         make_printer<CharOut, FPack>( strf::rank<5>{}
                                     , _fp
                                     , no_preview
@@ -431,27 +415,22 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, ForwardIt, Fmts ...>::_pr
 {
     auto r = _fmt.value();
     std::size_t count = 0;
-    for(auto it = r.begin; it != r.end; ++it)
-    {
+    for(auto it = r.begin; it != r.end; ++it) {
         make_printer<CharT, FPack>( strf::rank<5>{}
                                   , _fp
                                   , preview
                                   , _value_fmt_type_adapted{{*it}, _fmt} );
         ++ count;
-        STRF_IF_CONSTEXPR (!Preview::size_required)
-        {
-            if (preview.remaining_width() <= 0)
-            {
+        STRF_IF_CONSTEXPR (!Preview::size_required) {
+            if (preview.remaining_width() <= 0) {
                 return;
             }
         }
     }
-    if (count < 2)
-    {
+    if (count < 2) {
         return;
     }
-    if (Preview::width_required)
-    {
+    if (Preview::width_required) {
         decltype(auto) wcalc
             = _get_facet<strf::width_calculator_c<CharT>>(_fp);
         decltype(auto) encoding
@@ -461,21 +440,16 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, ForwardIt, Fmts ...>::_pr
 
         auto dw = wcalc.width( preview.remaining_width(), r.sep_begin, r.sep_len
                              , encoding, enc_err, allow_surr );
-        if (dw != 0)
-        {
-            if (count > UINT32_MAX)
-            {
+        if (dw != 0) {
+            if (count > UINT32_MAX) {
                 preview.clear_remaining_width();
-            }
-            else
-            {
+            } else {
                 preview.checked_subtract_width
                     ( checked_mul(dw, static_cast<std::uint32_t>(count - 1)) );
             }
         }
     }
-    if (Preview::size_required)
-    {
+    if (Preview::size_required) {
         preview.add_size((count - 1) * r.sep_len);
     }
 }
@@ -490,13 +464,11 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, ForwardIt, Fmts ...>
     strf::print_preview<false, false> no_preview;
     auto r = _fmt.value();
     auto it = r.begin;
-    if (it != r.end)
-    {
+    if (it != r.end) {
         make_printer<CharT, FPack>
             ( strf::rank<5>{}, _fp, no_preview, _value_fmt_type_adapted{{*it}, _fmt} )
             .print_to(ob);
-        while(++it != r.end)
-        {
+        while(++it != r.end) {
             strf::write(ob, r.sep_begin, r.sep_len);
             make_printer<CharT, FPack>
                 ( strf::rank<5>{}, _fp, no_preview, _value_fmt_type_adapted{{*it}, _fmt} )
@@ -551,8 +523,7 @@ template <typename Preview, typename >
 STRF_HD void transformed_range_printer<CharT, FPack, ForwardIt, UnaryOp>
     ::_preview(Preview& preview) const
 {
-    for(auto it = _begin; it != _end; ++it)
-    {
+    for(auto it = _begin; it != _end; ++it) {
         make_printer<CharT, FPack>(strf::rank<5>{}, _fp, preview, _op(*it));
     }
 }
@@ -562,8 +533,7 @@ STRF_HD void transformed_range_printer<CharT, FPack, ForwardIt, UnaryOp>::print_
     ( strf::basic_outbuf<CharT>& ob ) const
 {
     strf::print_preview<false, false> no_preview;
-    for(auto it = _begin; it != _end; ++it)
-    {
+    for(auto it = _begin; it != _end; ++it) {
         make_printer<CharT, FPack>(strf::rank<5>{},_fp, no_preview, _op(*it))
             .print_to(ob);
     }
@@ -630,24 +600,19 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
     ::_preview(Preview& preview) const
 {
     std::size_t count = 0;
-    for(auto it = _begin; it != _end; ++it)
-    {
+    for(auto it = _begin; it != _end; ++it) {
         make_printer<CharT, FPack>(strf::rank<5>{}, _fp, preview, _op(*it));
         ++ count;
-        STRF_IF_CONSTEXPR (!Preview::size_required)
-        {
-            if (preview.remaining_width() <= 0)
-            {
+        STRF_IF_CONSTEXPR (!Preview::size_required) {
+            if (preview.remaining_width() <= 0) {
                 return;
             }
         }
     }
-    if (count < 2)
-    {
+    if (count < 2) {
         return;
     }
-    if (Preview::width_required)
-    {
+    if (Preview::width_required) {
         decltype(auto) wcalc
             = _get_facet<strf::width_calculator_c<CharT>>(_fp);
         decltype(auto) encoding
@@ -657,21 +622,16 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
 
         auto dw = wcalc.width( preview.remaining_width(), _sep_begin, _sep_len
                              , encoding, enc_err, allow_surr );
-        if (dw != 0)
-        {
-            if (count > UINT32_MAX)
-            {
+        if (dw != 0) {
+            if (count > UINT32_MAX) {
                 preview.clear_remaining_width();
-            }
-            else
-            {
+            } else {
                 preview.checked_subtract_width
                     ( checked_mul(dw, static_cast<std::uint32_t>(count - 1)) );
             }
         }
     }
-    if (Preview::size_required)
-    {
+    if (Preview::size_required) {
         preview.add_size((count - 1) * _sep_len);
     }
 }
@@ -682,12 +642,10 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
 {
     strf::print_preview<false, false> no_preview;
     auto it = _begin;
-    if (it != _end)
-    {
+    if (it != _end) {
         make_printer<CharT, FPack>(strf::rank<5>{}, _fp, no_preview, _op(*it))
             .print_to(ob);
-        while (++it != _end)
-        {
+        while (++it != _end) {
             strf::write(ob, _sep_begin, _sep_len);
             make_printer<CharT, FPack>(strf::rank<5>{}, _fp, no_preview, _op(*it))
                 .print_to(ob);

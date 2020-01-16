@@ -59,8 +59,7 @@ public:
         (void) enc_err;
         (void) allow_surr;
 
-        if (str_len < INT16_MAX)
-        {
+        if (str_len < INT16_MAX) {
             return static_cast<std::int16_t>(str_len);
         }
         return strf::width_max;
@@ -95,11 +94,9 @@ public:
         (void) enc_err;
         (void) allow_surr;
 
-        if (limit > 0)
-        {
+        if (limit > 0) {
             auto count = enc.codepoints_count(str, str + str_len, limit.ceil());
-            if (count < INT16_MAX)
-            {
+            if (count < INT16_MAX) {
                 return static_cast<std::int16_t>(count);
             }
             return strf::width_max;

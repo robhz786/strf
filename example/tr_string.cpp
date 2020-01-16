@@ -66,14 +66,12 @@ int main()
    {
        //[ trstr_stop
        bool exception_thrown = false;
-       try
-       {
+       try {
            auto str = strf::to_string
                .with(strf::tr_invalid_arg::stop)
                .tr("{} are {}. {} are {}.", "Roses", "red", "Violets");
        }
-       catch(strf::tr_string_syntax_error&)
-       {
+       catch(strf::tr_string_syntax_error&) {
             exception_thrown = true;
        }
 

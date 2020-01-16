@@ -48,8 +48,7 @@ public:
     {
         auto * p = this->pos();
         this->set_pos(_buf);
-        if (this->good())
-        {
+        if (this->good()) {
             this->set_good(false);
             _str.append(_buf, p);
             this->set_good(true);
@@ -59,8 +58,7 @@ public:
     void finish()
     {
         auto * p = this->pos();
-        if (this->good())
-        {
+        if (this->good()) {
             this->set_good(false);
             _str.append(_buf, p);
         }
@@ -104,8 +102,7 @@ public:
     {
         auto * p = this->pos();
         this->set_pos(_buf);
-        if (this->good())
-        {
+        if (this->good()) {
             this->set_good(false);
             _str.append(_buf, p);
             this->set_good(true);
@@ -115,8 +112,7 @@ public:
     _string_type finish()
     {
         auto * p = this->pos();
-        if (this->good())
-        {
+        if (this->good()) {
             this->set_good(false);
             _str.append(_buf, p);
         }

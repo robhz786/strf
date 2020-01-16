@@ -115,14 +115,11 @@ STRF_HD void single_byte_encoding<Impl>::to_utf32
     (void) allow_surr;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
-    for (auto src_it = src; src_it < src_end; ++src_it)
-    {
+    for (auto src_it = src; src_it < src_end; ++src_it) {
         ob.ensure(1);
         char32_t ch32 = Impl::decode(*src_it);
-        if(ch32 == (char32_t)-1)
-        {
-            switch(err_hdl)
-            {
+        if(ch32 == (char32_t)-1) {
+            switch(err_hdl) {
                 case strf::encoding_error::replace:
                     ch32 = 0xFFFD;
                     break;
@@ -151,17 +148,13 @@ STRF_HD void single_byte_encoding<Impl>::sanitize
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
     std::uint8_t ch_out = '?';
-    for (auto src_it = src; src_it < src_end; ++src_it)
-    {
+    for (auto src_it = src; src_it < src_end; ++src_it) {
         std::uint8_t ch = *src_it;
-        if (Impl::is_valid(ch))
-        {
+        if (Impl::is_valid(ch)) {
             ch_out = ch;
         }
-        else
-        {
-            if (err_hdl == strf::encoding_error::stop)
-            {
+        else {
+            if (err_hdl == strf::encoding_error::stop) {
                 ob.advance_to(dest_it);
                 strf::detail::handle_encoding_failure();
             }
@@ -216,19 +209,15 @@ STRF_HD void single_byte_encoding<Impl>::encode_fill
     , strf::surrogate_policy )
 {
     unsigned ch2 = Impl::encode(ch);
-    if (ch2 >= 0x100)
-    {
-        if (err_hdl == strf::encoding_error::stop)
-        {
+    if (ch2 >= 0x100) {
+        if (err_hdl == strf::encoding_error::stop) {
             strf::detail::handle_encoding_failure();
         }
         ch2 = '?';
     }
-    while(true)
-    {
+    while(true) {
         std::size_t available = ob.size();
-        if (count <= available)
-        {
+        if (count <= available) {
             std::memset(ob.pos(), ch2, count);
             ob.advance(count);
             return;
@@ -251,13 +240,10 @@ STRF_HD void single_byte_encoding<Impl>::from_utf32
     (void)allow_surr;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
-    for(; src != src_end; ++src)
-    {
+    for(; src != src_end; ++src) {
         auto ch2 = Impl::encode(*src);
-        if(ch2 >= 0x100)
-        {
-            if (err_hdl == strf::encoding_error::stop)
-            {
+        if(ch2 >= 0x100) {
+            if (err_hdl == strf::encoding_error::stop) {
                 ob.advance_to(dest_it);
                 strf::detail::handle_encoding_failure();
             }
@@ -361,8 +347,7 @@ ForwardIt STRF_HD lower_bound
 
 STRF_INLINE STRF_HD unsigned impl_iso8859_3::encode(char32_t ch)
 {
-    if (ch < 0xA1)
-    {
+    if (ch < 0xA1) {
         return ch;
     }
     static const ch32_to_char enc_map[] =
@@ -399,12 +384,10 @@ STRF_INLINE STRF_HD unsigned impl_iso8859_3::encode(char32_t ch)
 
 STRF_INLINE STRF_HD char32_t impl_iso8859_3::decode(std::uint8_t ch)
 {
-    if (ch < 0xA1)
-    {
+    if (ch < 0xA1) {
         return ch;
     }
-    else
-    {
+    else {
         constexpr short undef = -1;
         static const short ext[] =
             { /* A0*/ 0x0126, 0x02D8, 0x00A3, 0x00A4,  undef, 0x0124, 0x00A7
@@ -461,8 +444,7 @@ private:
 
 STRF_INLINE STRF_HD unsigned impl_iso8859_15::encode_ext(char32_t ch)
 {
-    switch(ch)
-    {
+    switch(ch) {
         case 0x20AC: return 0xA4;
         case 0x0160: return 0xA6;
         case 0x0161: return 0xA8;
@@ -498,12 +480,10 @@ public:
 
     static STRF_HD char32_t decode(std::uint8_t ch)
     {
-        if (ch < 0x80 || 0x9F < ch)
-        {
+        if (ch < 0x80 || 0x9F < ch) {
             return ch;
         }
-        else
-        {
+        else {
             static const unsigned short ext[] = {
                 0x20AC, 0x0081, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021,
                 0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, 0x008D, 0x017D, 0x008F,
@@ -526,8 +506,7 @@ private:
 
 STRF_INLINE STRF_HD unsigned impl_windows_1252::encode_ext(char32_t ch)
 {
-    switch(ch)
-    {
+    switch(ch) {
         case 0x81: return 0x81;
         case 0x8D: return 0x8D;
         case 0x8F: return 0x8F;

@@ -43,8 +43,7 @@ public:
     {
         std::streamsize count = this->pos() - _buf;
         this->set_pos(_buf);
-        if (this->good())
-        {
+        if (this->good()) {
             auto count_inc = _dest.sputn(_buf, count);
             _count += count_inc;
             this->set_good(count_inc == count);
@@ -63,8 +62,7 @@ public:
         auto g = this->good();
         this->set_pos(_buf);
         this->set_good(false);
-        if (g)
-        {
+        if (g) {
             auto count_inc = _dest.sputn(_buf, count);
             _count += count_inc;
             g = (count_inc == count);

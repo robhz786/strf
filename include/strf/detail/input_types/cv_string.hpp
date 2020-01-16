@@ -64,13 +64,11 @@ private:
     template <typename FPack, typename Preview>
     STRF_HD void _preview(const FPack& fp, Preview& preview)
     {
-        STRF_IF_CONSTEXPR (Preview::width_required)
-        {
+        STRF_IF_CONSTEXPR (Preview::width_required) {
             const auto& wc = _get_facet<strf::width_calculator_c<CharIn>>(fp);
             _calc_width(preview, wc);
         }
-        STRF_IF_CONSTEXPR (Preview::size_required)
-        {
+        STRF_IF_CONSTEXPR (Preview::size_required) {
             preview.add_size(necessary_size());
         }
         (void)fp;
@@ -99,17 +97,13 @@ private:
     STRF_HD constexpr void _count_codepoints(strf::width_preview<true>& wpreview)
     {
         auto limit = wpreview.remaining_width();
-        if (limit > 0)
-        {
+        if (limit > 0) {
             auto count = _src_encoding.codepoints_count
                 ( _str, _str + _len, limit.ceil() );
 
-            if (static_cast<std::ptrdiff_t>(count) < limit.ceil())
-            {
+            if (static_cast<std::ptrdiff_t>(count) < limit.ceil()) {
                 wpreview.subtract_width(static_cast<std::int16_t>(count));
-            }
-            else
-            {
+            } else {
                 wpreview.clear_remaining_width();
             }
         }
@@ -120,16 +114,12 @@ private:
         , const strf::width_calculator<CharIn>& wcalc )
     {
         auto limit = wpreview.remaining_width();
-        if (limit > 0)
-        {
+        if (limit > 0) {
             auto w = wcalc.width( limit, _str, _len, _src_encoding
                                 , _enc_err, _allow_surr );
-            if (w < limit)
-            {
+            if (w < limit) {
                 wpreview.subtract_width(w);
-            }
-            else
-            {
+            } else {
                 wpreview.clear_remaining_width();
             }
         }
@@ -171,8 +161,7 @@ STRF_HD cv_string_printer<CharIn, CharOut>::cv_string_printer
 template<typename CharIn, typename CharOut>
 STRF_HD std::size_t cv_string_printer<CharIn, CharOut>::necessary_size() const
 {
-    if (_transcoder_eng)
-    {
+    if (_transcoder_eng) {
         strf::transcoder<CharIn, CharOut> transcoder(*_transcoder_eng);
         return transcoder.necessary_size(_str, _str + _len, _allow_surr);
     }
@@ -185,13 +174,10 @@ template<typename CharIn, typename CharOut>
 STRF_HD void cv_string_printer<CharIn, CharOut>::print_to
     ( strf::basic_outbuf<CharOut>& ob ) const
 {
-    if (_transcoder_eng != nullptr)
-    {
+    if (_transcoder_eng != nullptr) {
         strf::transcoder<CharIn, CharOut> transcoder(*_transcoder_eng);
         transcoder.transcode(ob, _str, _str + _len, _enc_err, _allow_surr );
-    }
-    else
-    {
+    } else {
         strf::decode_encode( ob, _str, _str + _len, _src_encoding
                            , _dest_encoding, _enc_err, _allow_surr );
     }
@@ -302,13 +288,10 @@ void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_init
     auto cp_count = _src_encoding.codepoints_count( _str.begin()
                                                   , _str.end()
                                                   , limit );
-    if (_afmt.width > static_cast<std::ptrdiff_t>(cp_count))
-    {
+    if (_afmt.width > static_cast<std::ptrdiff_t>(cp_count)) {
         _fillcount = _afmt.width - static_cast<std::int16_t>(cp_count);
         preview.subtract_width(_afmt.width);
-    }
-    else
-    {
+    } else {
         preview.checked_subtract_width(cp_count);
     }
     _transcoder_eng =
@@ -323,8 +306,7 @@ void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_init
 {
     strf::width_t wmax = _afmt.width;
     strf::width_t wdiff = 0;
-    if (preview.remaining_width() > _afmt.width)
-    {
+    if (preview.remaining_width() > _afmt.width) {
         wmax = preview.remaining_width();
         wdiff = preview.remaining_width() - _afmt.width;
     }
@@ -333,14 +315,11 @@ void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_init
                              , _src_encoding, _enc_err, _allow_surr );
 
     strf::width_t fmt_width{_afmt.width};
-    if (fmt_width > str_width)
-    {
+    if (fmt_width > str_width) {
         auto wfill = (fmt_width - str_width);
         _fillcount = wfill.round();
         preview.subtract_width(wfill + _fillcount);
-    }
-    else
-    {
+    } else {
         preview.subtract_width(str_width);
     }
     _transcoder_eng =
@@ -352,20 +331,16 @@ void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_calc_size
     ( strf::size_preview<true>& preview ) const
 {
     std::size_t size;
-    if(_transcoder_eng)
-    {
+    if(_transcoder_eng) {
         strf::transcoder<CharIn, CharOut> transcoder(*_transcoder_eng);
         size = transcoder.necessary_size(_str.begin(), _str.end(), _allow_surr);
-    }
-    else
-    {
+    } else {
         size = strf::decode_encode_size
             ( _str.begin(), _str.end()
             , _src_encoding, _dest_encoding
             , _allow_surr );
     }
-    if (_fillcount > 0)
-    {
+    if (_fillcount > 0) {
         size += _fillcount * _dest_encoding.char_size(_afmt.fill);
     }
     preview.add_size(size);
@@ -376,18 +351,14 @@ template<typename CharIn, typename CharOut>
 void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::print_to
     ( strf::basic_outbuf<CharOut>& ob ) const
 {
-    if (_fillcount > 0)
-    {
-        switch(_afmt.alignment)
-        {
-            case strf::text_alignment::left:
-            {
+    if (_fillcount > 0) {
+        switch(_afmt.alignment) {
+            case strf::text_alignment::left: {
                 _write_str(ob);
                 _write_fill(ob, _fillcount);
                 break;
             }
-            case strf::text_alignment::center:
-            {
+            case strf::text_alignment::center: {
                 auto halfcount = _fillcount >> 1;
                 _write_fill(ob, halfcount);
                 _write_str(ob);
@@ -400,9 +371,7 @@ void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::print_to
                 _write_str(ob);
             }
         }
-    }
-    else
-    {
+    } else {
         _write_str(ob);
     }
 }
@@ -412,14 +381,11 @@ template<typename CharIn, typename CharOut>
 void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_write_str
     ( strf::basic_outbuf<CharOut>& ob ) const
 {
-    if (_transcoder_eng)
-    {
+    if (_transcoder_eng) {
         strf::transcoder<CharIn, CharOut> transcoder(*_transcoder_eng);
         transcoder.transcode( ob, _str.begin(), _str.end()
                             , _enc_err, _allow_surr );
-    }
-    else
-    {
+    } else {
         strf::decode_encode( ob
                            , _str.begin(), _str.end()
                            , _src_encoding, _dest_encoding
@@ -557,17 +523,14 @@ public:
         using input_tag_out = strf::string_input_tag<CharOut>;
         auto encoding_out = strf::get_facet<enc_cat_out, input_tag_out>(fp);
 
-        if (encoding_in.id() == encoding_out.id())
-        {
+        if (encoding_in.id() == encoding_out.id()) {
             return { strf::tag<strf::detail::string_printer<CharOut>>()
                    , fp
                    , preview
                    , strf::detail::simple_string_view<CharOut>
                        { reinterpret_cast<const CharOut*>(input.value().begin())
                        , input.value().size() } };
-        }
-        else
-        {
+        } else {
             return { strf::tag<strf::detail::cv_string_printer<CharIn, CharOut>>()
                    , fp, preview, input.value(), encoding_in };
         }
@@ -592,8 +555,7 @@ public:
         using input_tag_out = strf::string_input_tag<CharOut>;
         auto encoding_out = strf::get_facet<enc_cat_out, input_tag_out>(fp);
 
-        if (encoding_in.id() == encoding_out.id())
-        {
+        if (encoding_in.id() == encoding_out.id()) {
             return { strf::tag<strf::detail::string_printer<CharOut>>()
                    , fp
                    , preview
@@ -601,9 +563,7 @@ public:
                        { reinterpret_cast<const CharOut*>(input.value().begin())
                        , input.value().size() }
                    , input.get_alignment_format_data() };
-        }
-        else
-        {
+        } else {
             return { strf::tag<strf::detail::cv_string_printer<CharIn, CharOut>>()
                    , fp, preview, input.value()
                    , input.get_alignment_format_data()
@@ -664,17 +624,14 @@ public:
         using enc_cat = strf::encoding_c<CharOut>;
         using input_tag = strf::string_input_tag<CharOut>;
         auto encoding_from_facets = strf::get_facet<enc_cat, input_tag>(fp);
-        if (input.get_encoding().id() == encoding_from_facets.id())
-        {
+        if (input.get_encoding().id() == encoding_from_facets.id()) {
             return { strf::tag<strf::detail::string_printer<CharOut>>()
                    , fp
                    , preview
                    , strf::detail::simple_string_view<CharOut>
                        { reinterpret_cast<const CharOut*>(input.value().begin())
                        , input.value().size() } };
-        }
-        else
-        {
+        } else {
             return { strf::tag<strf::detail::cv_string_printer<CharIn, CharOut>>()
                    , fp, preview, input.value(), input.get_encoding() };
         }
@@ -694,8 +651,7 @@ public:
         using enc_cat = strf::encoding_c<CharOut>;
         using input_tag = strf::string_input_tag<CharOut>;
         auto encoding_from_facets = strf::get_facet<enc_cat, input_tag>(fp);
-        if (input.get_encoding().id() == encoding_from_facets.id())
-        {
+        if (input.get_encoding().id() == encoding_from_facets.id()) {
             return { strf::tag<strf::detail::fmt_string_printer<CharOut>>()
                    , fp
                    , preview
@@ -703,9 +659,7 @@ public:
                        { reinterpret_cast<const CharOut*>(input.value().begin())
                        , input.value().size() }
                    , input.get_alignment_format_data() };
-        }
-        else
-        {
+        } else {
             return { strf::tag<strf::detail::fmt_cv_string_printer<CharIn, CharOut>>()
                    , fp
                    , preview

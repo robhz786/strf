@@ -361,12 +361,9 @@ private:
         , strf::surrogate_policy ) noexcept
     {
         auto remaining_width = wpreview.remaining_width().floor();
-        if (static_cast<std::ptrdiff_t>(_len) <= remaining_width)
-        {
+        if (static_cast<std::ptrdiff_t>(_len) <= remaining_width) {
             wpreview.subtract_width(static_cast<std::int16_t>(_len));
-        }
-        else
-        {
+        } else {
             wpreview.clear_remaining_width();
         }
     }
@@ -379,15 +376,11 @@ private:
         , strf::surrogate_policy )
     {
         auto limit = wpreview.remaining_width();
-        if (limit > 0)
-        {
+        if (limit > 0) {
             auto count = enc.codepoints_count(_str, _str + _len, limit.ceil());
-            if (static_cast<std::ptrdiff_t>(count) < limit.ceil())
-            {
+            if (static_cast<std::ptrdiff_t>(count) < limit.ceil()) {
                 wpreview.subtract_width(static_cast<std::int16_t>(count));
-            }
-            else
-            {
+            } else {
                 wpreview.clear_remaining_width();
             }
         }
@@ -401,15 +394,11 @@ private:
         , strf::surrogate_policy  allow_surr )
     {
         auto limit = wpreview.remaining_width();
-        if (limit > 0)
-        {
+        if (limit > 0) {
             auto w = wcalc.width(limit, _str, _len, enc, enc_err, allow_surr);
-            if (w < limit)
-            {
+            if (w < limit) {
                 wpreview.subtract_width(w);
-            }
-            else
-            {
+            } else {
                 wpreview.clear_remaining_width();
             }
             // wcalc.subtract_width( wpreview, _str, _len
@@ -494,8 +483,7 @@ private:
     STRF_HD void _calc_size(strf::size_preview<true>& preview) const
     {
         preview.add_size(_str.length());
-        if (_fillcount > 0)
-        {
+        if (_fillcount > 0) {
              preview.add_size( _fillcount
                              * _encoding.char_size(_afmt.fill) );
         }
@@ -518,13 +506,10 @@ inline STRF_HD void fmt_string_printer<CharT>::_init
     , const strf::fast_width<CharT>&)
 {
     auto len = _str.length();
-    if (_afmt.width > static_cast<std::ptrdiff_t>(len))
-    {
+    if (_afmt.width > static_cast<std::ptrdiff_t>(len)) {
         _fillcount = _afmt.width - static_cast<std::int16_t>(len);
         preview.subtract_width(_afmt.width);
-    }
-    else
-    {
+    } else {
         preview.checked_subtract_width(len);
     }
 }
@@ -538,13 +523,10 @@ inline STRF_HD void fmt_string_printer<CharT>::_init
     auto cp_count = _encoding.codepoints_count( _str.begin()
                                               , _str.end()
                                               , _afmt.width );
-    if (_afmt.width > static_cast<std::ptrdiff_t>(cp_count))
-    {
+    if (_afmt.width > static_cast<std::ptrdiff_t>(cp_count)) {
         _fillcount = _afmt.width - static_cast<std::int16_t>(cp_count);
         preview.subtract_width(_afmt.width);
-    }
-    else
-    {
+    } else {
         preview.checked_subtract_width(cp_count);
     }
 
@@ -558,8 +540,7 @@ inline STRF_HD void fmt_string_printer<CharT>::_init
 {
     strf::width_t wmax = _afmt.width;
     strf::width_t wdiff = 0;
-    if (preview.remaining_width() > _afmt.width)
-    {
+    if (preview.remaining_width() > _afmt.width) {
         wmax = preview.remaining_width();
         wdiff = preview.remaining_width() - _afmt.width;
     }
@@ -568,14 +549,11 @@ inline STRF_HD void fmt_string_printer<CharT>::_init
                              , _encoding, _enc_err, _allow_surr );
 
     strf::width_t fmt_width{_afmt.width};
-    if (fmt_width > str_width)
-    {
+    if (fmt_width > str_width) {
         auto wfill = (fmt_width - str_width);
         _fillcount = wfill.round();
         preview.subtract_width(wfill + _fillcount);
-    }
-    else
-    {
+    } else {
         preview.subtract_width(str_width);
     }
 }
@@ -584,33 +562,26 @@ template<typename CharT>
 void STRF_HD fmt_string_printer<CharT>::print_to
     ( strf::basic_outbuf<CharT>& ob ) const
 {
-    if (_fillcount > 0)
-    {
-        switch (_afmt.alignment)
-        {
-            case strf::text_alignment::left:
-            {
+    if (_fillcount > 0) {
+        switch (_afmt.alignment) {
+            case strf::text_alignment::left: {
                 _write_str(ob);
                 _write_fill(ob, _fillcount);
                 break;
             }
-            case strf::text_alignment::center:
-            {
+            case strf::text_alignment::center: {
                 auto halfcount = _fillcount >> 1;
                 _write_fill(ob, halfcount);
                 _write_str(ob);
                 _write_fill(ob, _fillcount - halfcount);
                 break;
             }
-            default:
-            {
+            default: {
                 _write_fill(ob, _fillcount);
                 _write_str(ob);
             }
         }
-    }
-    else
-    {
+    } else {
         _write_str(ob);
     }
 }

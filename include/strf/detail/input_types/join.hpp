@@ -233,8 +233,7 @@ public:
         }
         width_t width = _fillcount + wmax - p.remaining_width();
         preview.subtract_width(width);
-        STRF_IF_CONSTEXPR (ReqSize)
-        {
+        STRF_IF_CONSTEXPR (ReqSize) {
             preview.add_size(p.get_size());
             if (_fillcount > 0) {
                 preview.add_size(_fillcount * _encoding.char_size(_afmt.fill));

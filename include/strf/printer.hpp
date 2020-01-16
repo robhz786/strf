@@ -75,11 +75,9 @@ void STRF_HD write_fill_continuation
     count -= space;
     ob.advance_to(ob.end());
     ob.recycle();
-    while (ob.good())
-    {
+    while (ob.good()) {
         space = ob.size();
-        if (count <= space)
-        {
+        if (count <= space) {
             strf::detail::char_assign<char_type>(ob.pos(), count, ch);
             ob.advance(count);
             break;
@@ -98,13 +96,10 @@ inline STRF_HD void write_fill
     , typename strf::underlying_outbuf<CharSize>::char_type ch )
 {
     using char_type = typename strf::underlying_outbuf<CharSize>::char_type;
-    if (count <= ob.size()) // the common case
-    {
+    if (count <= ob.size()) { // the common case
         strf::detail::char_assign<char_type>(ob.pos(), count, ch);
         ob.advance(count);
-    }
-    else
-    {
+    } else {
         write_fill_continuation(ob, count, ch);
     }
 }
@@ -188,24 +183,18 @@ public:
 
     constexpr STRF_HD void checked_subtract_width(strf::width_t w) noexcept
     {
-        if (w < _width)
-        {
+        if (w < _width) {
             _width -= w;
-        }
-        else
-        {
+        } else {
             _width = 0;
         }
     }
 
     constexpr STRF_HD void checked_subtract_width(std::ptrdiff_t w) noexcept
     {
-        if (w < _width.ceil())
-        {
+        if (w < _width.ceil()) {
             _width -= static_cast<std::int16_t>(w);
-        }
-        else
-        {
+        } else {
             _width = 0;
         }
     }

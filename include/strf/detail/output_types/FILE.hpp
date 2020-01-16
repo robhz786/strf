@@ -55,8 +55,7 @@ public:
 #else
         auto p = this->pos();
         this->set_pos(_buf);
-        if (this->good())
-        {
+        if (this->good()) {
             std::size_t count = p - _buf;
             auto count_inc = std::fwrite(_buf, sizeof(CharT), count, _dest);
             _count += count_inc;
@@ -83,8 +82,7 @@ public:
 #else
         bool g = this->good();
         this->set_good(false);
-        if (g)
-        {
+        if (g) {
             std::size_t count = this->pos() - _buf;
             auto count_inc = std::fwrite(_buf, sizeof(CharT), count, _dest);
             _count += count_inc;
@@ -141,12 +139,9 @@ public:
         // code, so using it should fail linking
         auto p = this->pos();
         this->set_pos(_buf);
-        if (this->good())
-        {
-            for (auto it = _buf; it != p; ++it, ++_count)
-            {
-                if(std::fputwc(*it, _dest) == WEOF)
-                {
+        if (this->good()) {
+            for (auto it = _buf; it != p; ++it, ++_count) {
+                if(std::fputwc(*it, _dest) == WEOF) {
                     this->set_good(false);
                     break;
                 }

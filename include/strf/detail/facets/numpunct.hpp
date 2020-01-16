@@ -72,8 +72,7 @@ std::uint8_t* monotonic_grouping_impl::get_groups
     , std::uint8_t* groups_array ) const
 {
     STRF_ASSERT(_groups_size != 0);
-    while(num_digits > _groups_size)
-    {
+    while(num_digits > _groups_size) {
         *groups_array = static_cast<std::uint8_t>(_groups_size);
         ++ groups_array;
         num_digits -= _groups_size;
@@ -87,15 +86,12 @@ unsigned str_grouping_impl::get_thousands_sep_count(unsigned num_digits) const
 {
     STRF_ASSERT(!_grouping.empty());
     unsigned count = 0;
-    for(auto ch : _grouping)
-    {
+    for(auto ch : _grouping) {
         auto grp = static_cast<unsigned>(ch);
-        if(grp == 0 || grp >= num_digits)
-        {
+        if(grp == 0 || grp >= num_digits) {
             return count;
         }
-        if(grp < num_digits)
-        {
+        if(grp < num_digits) {
             ++ count;
             num_digits -= grp;
         }
@@ -110,29 +106,23 @@ STRF_INLINE std::uint8_t* str_grouping_impl::get_groups
     , std::uint8_t* groups_array ) const
 {
     STRF_ASSERT(!_grouping.empty());
-    for(auto ch : _grouping)
-    {
+    for(auto ch : _grouping) {
         auto group_size = static_cast<unsigned>(ch);
-        if (group_size == 0)
-        {
+        if (group_size == 0) {
             *groups_array = static_cast<std::uint8_t>(num_digits);
             return groups_array;
         }
-        if (group_size < num_digits)
-        {
+        if (group_size < num_digits) {
             *groups_array = static_cast<std::uint8_t>(group_size);
             num_digits -= group_size;
             ++ groups_array;
-        }
-        else
-        {
+        } else {
             *groups_array = static_cast<std::uint8_t>(num_digits);
             return groups_array;
         }
     }
     const unsigned last_group_size = _grouping.back();
-    while(num_digits > last_group_size)
-    {
+    while(num_digits > last_group_size) {
         *groups_array = static_cast<std::uint8_t>(last_group_size);
         ++ groups_array;
         num_digits -= last_group_size;

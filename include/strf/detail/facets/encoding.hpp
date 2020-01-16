@@ -413,24 +413,17 @@ public:
                     , char32_t ch
                     , strf::encoding_error err_hdl ) const
     {
-        if (u32equivalence_begin() <= ch && ch < u32equivalence_end())
-        {
+        if (u32equivalence_begin() <= ch && ch < u32equivalence_end()) {
             ob.ensure(1);
             *ob.pos() = static_cast<CharT>(ch);
             ob.advance();
-        }
-        else
-        {
+        } else {
             auto s = validate(ch);
-            if(s != (std::size_t)-1)
-            {
+            if(s != (std::size_t)-1) {
                 ob.ensure(s);
                 ob.advance_to(this->encode_char(ob.pos(), ch));
-            }
-            else
-            {
-                if(err_hdl == strf::encoding_error::stop)
-                {
+            } else {
+                if(err_hdl == strf::encoding_error::stop) {
                     strf::detail::handle_encoding_failure();
                 }
                 this->write_replacement_char(ob);
@@ -539,8 +532,7 @@ struct get_transcoder_helper<CharT, CharT>
         ( const strf::detail::encoding_impl<CharT>& src_encoding
         , const strf::detail::encoding_impl<CharT>& dest_encoding )
     {
-        if (src_encoding.id == dest_encoding.id)
-        {
+        if (src_encoding.id == dest_encoding.id) {
             return & src_encoding.sanitizer;
         }
         const strf::detail::transcoder_impl<CharT, CharT>* t
@@ -558,8 +550,7 @@ struct get_transcoder_helper<char32_t, char32_t>
         ( const strf::detail::encoding_impl<CharT>& src_encoding
         , const strf::detail::encoding_impl<CharT>& dest_encoding )
     {
-        if (src_encoding.id == dest_encoding.id)
-        {
+        if (src_encoding.id == dest_encoding.id) {
             return & src_encoding.sanitizer;
         }
         const strf::detail::transcoder_impl<CharT, CharT>* t
@@ -576,8 +567,7 @@ struct get_transcoder_helper<char32_t, CharOut >
         ( const strf::detail::encoding_impl<char32_t>& src_encoding
         , const strf::detail::encoding_impl<CharOut>& dest_encoding )
     {
-        if (src_encoding.id == strf::encoding_id::eid_utf32)
-        {
+        if (src_encoding.id == strf::encoding_id::eid_utf32) {
             return & dest_encoding.from_u32;
         }
         const strf::detail::transcoder_impl<char32_t, CharOut>* t
@@ -594,8 +584,7 @@ struct get_transcoder_helper<CharIn, char32_t>
         ( const strf::detail::encoding_impl<CharIn>& src_encoding
         , const strf::detail::encoding_impl<char32_t>& dest_encoding )
     {
-        if (dest_encoding.id == strf::encoding_id::eid_utf32)
-        {
+        if (dest_encoding.id == strf::encoding_id::eid_utf32) {
             return & src_encoding.to_u32;
         }
         const strf::detail::transcoder_impl<CharIn, char32_t>* t
@@ -657,8 +646,7 @@ public:
     STRF_HD void finish()
     {
         auto p = this->pos();
-        if (p != _begin && _ob.good())
-        {
+        if (p != _begin && _ob.good()) {
             _enc.from_u32().transcode(_ob, _begin, p, _err_hdl, _allow_surr);
         }
         this->set_good(false);
@@ -679,8 +667,7 @@ STRF_HD void buffered_encoder<CharOut>::recycle()
 {
     auto p = this->pos();
     this->set_pos(_begin);
-    if (p != _begin && _ob.good())
-    {
+    if (p != _begin && _ob.good()) {
         this->set_good(false);
         _enc.from_u32().transcode(_ob, _begin, p, _err_hdl, _allow_surr);
         this->set_good(true);
@@ -725,8 +712,7 @@ template <typename CharOut>
 STRF_HD void buffered_size_calculator<CharOut>::recycle()
 {
     auto end = this->pos();
-    if (end != _begin)
-    {
+    if (end != _begin) {
         this->set_pos(_begin);
         _sum += _enc.from_u32().necessary_size(_begin, end, _allow_surr);
     }

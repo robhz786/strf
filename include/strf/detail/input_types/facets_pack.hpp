@@ -86,10 +86,8 @@ constexpr STRF_HD bool are_constrainable_impl()
     constexpr std::size_t N = sizeof...(F);
     constexpr bool values[N] = {strf::is_constrainable_v<F> ...};
 
-    for (std::size_t i = 0; i < N; ++i)
-    {
-        if( ! values[i])
-        {
+    for (std::size_t i = 0; i < N; ++i) {
+        if( ! values[i]) {
             return false;
         }
     }

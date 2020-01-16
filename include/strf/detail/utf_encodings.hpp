@@ -66,11 +66,9 @@ STRF_HD void repeat_sequence_continuation
     count -= space;
     ob.advance(space * N);
     ob.recycle();
-    while (true)//ob.good())
-    {
+    while (true) { //ob.good())
         space = ob.size() / N;
-        if (count <= space)
-        {
+        if (count <= space) {
             strf::detail::do_repeat_sequence(ob.pos(), count, seq);
             ob.advance(count * N);
             return;
@@ -88,13 +86,10 @@ inline STRF_HD void repeat_sequence
     , std::size_t count
     , simple_array<CharT, N> seq )
 {
-    if (count * N <= ob.size())
-    {
+    if (count * N <= ob.size()) {
         strf::detail::do_repeat_sequence(ob.pos(), count, seq);
         ob.advance(count * N);
-    }
-    else
-    {
+    } else {
         strf::detail::repeat_sequence_continuation(ob, count, seq);
     }
 }
@@ -212,63 +207,44 @@ STRF_HD void utf8_to_utf32_transcode
     auto dest_end = ob.end();
     char32_t ch32;
 
-    while(src_it != src_end)
-    {
+    while(src_it != src_end) {
         ch0 = (*src_it);
         ++src_it;
-        if (ch0 < 0x80)
-        {
-            //STRF_CHECK_DEST;
+        if (ch0 < 0x80) {
             ch32 = ch0;
-        }
-        else if (0xC0 == (ch0 & 0xE0))
-        {
-            if(ch0 > 0xC1 && src_it != src_end && is_utf8_continuation(ch1 = * src_it))
-            {
-                //STRF_CHECK_DEST;
+        } else if (0xC0 == (ch0 & 0xE0)) {
+            if(ch0 > 0xC1 && src_it != src_end && is_utf8_continuation(ch1 = * src_it)) {
                 ch32 = utf8_decode(ch0, ch1);
                 ++src_it;
             } else goto invalid_sequence;
-        }
-        else if (0xE0 == ch0)
-        {
+        } else if (0xE0 == ch0) {
             if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
-                //STRF_CHECK_DEST;
                 ch32 = ((ch1 & 0x3F) << 6) | (ch2 & 0x3F);
                 ++src_it;
             } else goto invalid_sequence;
-        }
-        else if (0xE0 == (ch0 & 0xF0))
-        {
+        } else if (0xE0 == (ch0 & 0xF0)) {
             if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
               && first_2_of_3_are_valid( x = utf8_decode_first_2_of_3(ch0, ch1)
                                        , allow_surr )
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
-                //STRF_CHECK_DEST;
                 ch32 = (x << 6) | (ch2 & 0x3F);
                 ++src_it;
             } else goto invalid_sequence;
-        }
-        else if (0xEF < ch0)
-        {
+        } else if (0xEF < ch0) {
             if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
               && first_2_of_4_are_valid(x = utf8_decode_first_2_of_4(ch0, ch1))
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
               && ++src_it != src_end && is_utf8_continuation(ch3 = * src_it) )
             {
-                //STRF_CHECK_DEST;
                 ch32 = utf8_decode_last_2_of_4(x, ch2, ch3);
                 ++src_it;
             } else goto invalid_sequence;
-        }
-        else
-        {
+        } else {
             invalid_sequence:
-            if (err_hdl == strf::encoding_error::stop)
-            {
+            if (err_hdl == strf::encoding_error::stop) {
                 ob.advance_to(dest_it);
                 strf::detail::handle_encoding_failure();
             }
@@ -290,37 +266,28 @@ STRF_STATIC_LINKAGE STRF_HD std::size_t utf8_to_utf32_size
     std::uint8_t ch0, ch1;
     const std::uint8_t* src_it = src;
     std::size_t size = 0;
-    while (src_it != src_end)
-    {
+    while (src_it != src_end) {
         ch0 = (*src_it);
         ++src_it;
         ++size;
-        if (0xC0 == (ch0 & 0xE0))
-        {
-            if (ch0 > 0xC1 && src_it != src_end && is_utf8_continuation(*src_it))
-            {
+        if (0xC0 == (ch0 & 0xE0)) {
+            if (ch0 > 0xC1 && src_it != src_end && is_utf8_continuation(*src_it)) {
                 ++src_it;
             }
-        }
-        else if (0xE0 == ch0)
-        {
+        } else if (0xE0 == ch0) {
             if (   src_it != src_end && ((*src_it & 0xE0) == 0xA0)
               && ++src_it != src_end && is_utf8_continuation(*src_it) )
             {
                 ++src_it;
             }
-        }
-        else if (0xE0 == (ch0 & 0xF0))
-        {
+        } else if (0xE0 == (ch0 & 0xF0)) {
             if ( src_it != src_end && is_utf8_continuation(ch1 = *src_it)
               && first_2_of_3_are_valid( ch0, ch1, allow_surr )
               && ++src_it != src_end && is_utf8_continuation(*src_it) )
             {
                 ++src_it;
             }
-        }
-        else if(0xEF < ch0)
-        {
+        } else if(0xEF < ch0) {
             if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
               && first_2_of_4_are_valid(ch0, ch1)
               && ++src_it != src_end && is_utf8_continuation(*src_it)
@@ -346,29 +313,22 @@ STRF_STATIC_LINKAGE STRF_HD void utf8_sanitize
     auto src_it = src;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
-    while(src_it != src_end)
-    {
+    while(src_it != src_end) {
         ch0 = (*src_it);
         ++src_it;
-        if(ch0 < 0x80)
-        {
+        if(ch0 < 0x80) {
             STRF_CHECK_DEST;
             *dest_it = ch0;
             ++dest_it;
-        }
-        else if(0xC0 == (ch0 & 0xE0))
-        {
-            if(ch0 > 0xC1 && src_it != src_end && is_utf8_continuation(ch1 = * src_it))
-            {
+        } else if(0xC0 == (ch0 & 0xE0)) {
+            if(ch0 > 0xC1 && src_it != src_end && is_utf8_continuation(ch1 = * src_it)) {
                 STRF_CHECK_DEST_SIZE(2);
                 ++src_it;
                 dest_it[0] = ch0;
                 dest_it[1] = ch1;
                 dest_it += 2;
             } else goto invalid_sequence;
-        }
-        else if (0xE0 == ch0)
-        {
+        } else if (0xE0 == ch0) {
             if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
@@ -379,9 +339,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf8_sanitize
                 dest_it[2] = ch2;
                 dest_it += 3;
             } else goto invalid_sequence;
-        }
-        else if (0xE0 == (ch0 & 0xF0))
-        {
+        } else if (0xE0 == (ch0 & 0xF0)) {
             if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
               && first_2_of_3_are_valid(ch0, ch1, allow_surr)
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
@@ -393,9 +351,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf8_sanitize
                 dest_it[2] = ch2;
                 dest_it += 3;
             } else goto invalid_sequence;
-        }
-        else if (0xF0 == (ch0 & 0xF8))
-        {
+        } else if (0xF0 == (ch0 & 0xF8)) {
             if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
               && first_2_of_4_are_valid(ch0, ch1)
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
@@ -409,20 +365,15 @@ STRF_STATIC_LINKAGE STRF_HD void utf8_sanitize
                 dest_it[3] = ch3;
                 dest_it += 4;
             } else goto invalid_sequence;
-        }
-        else
-        {
+        } else {
             invalid_sequence:
-            if (err_hdl == strf::encoding_error::replace)
-            {
+            if (err_hdl == strf::encoding_error::replace) {
                 STRF_CHECK_DEST_SIZE(3);
                 dest_it[0] = 0xEF;
                 dest_it[1] = 0xBF;
                 dest_it[2] = 0xBD;
                 dest_it += 3;
-            }
-            else
-            {
+            } else {
                 STRF_ASSERT(err_hdl == strf::encoding_error::stop);
                 ob.advance_to(dest_it);
                 strf::detail::handle_encoding_failure();
@@ -441,41 +392,28 @@ STRF_STATIC_LINKAGE STRF_HD std::size_t utf8_sanitize_size
     std::uint8_t ch0, ch1;
     const std::uint8_t* src_it = src;
     std::size_t size = 0;
-    while(src_it != src_end)
-    {
+    while(src_it != src_end) {
         ch0 = *src_it;
         ++src_it;
-        if(ch0 < 0x80)
-        {
+        if(ch0 < 0x80) {
             ++size;
-        }
-        else if (0xC0 == (ch0 & 0xE0))
-        {
-            if (ch0 > 0xC1 && src_it != src_end && is_utf8_continuation(*src_it))
-            {
+        } else if (0xC0 == (ch0 & 0xE0)) {
+            if (ch0 > 0xC1 && src_it != src_end && is_utf8_continuation(*src_it)) {
                 size += 2;
                 ++src_it;
-            }
-            else
-            {
+            } else {
                 size += 3;
             }
-        }
-        else if (0xE0 == ch0)
-        {
+        } else if (0xE0 == ch0) {
             if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
               && ++src_it != src_end && is_utf8_continuation(* src_it) )
             {
                 size += 3;
                 ++src_it;
-            }
-            else
-            {
+            } else {
                 size += 3;
             }
-        }
-        else if (0xE0 == (ch0 & 0xF0))
-        {
+        } else if (0xE0 == (ch0 & 0xF0)) {
             size += 3;
             if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
               && first_2_of_3_are_valid( ch0, ch1, allow_surr )
@@ -483,8 +421,7 @@ STRF_STATIC_LINKAGE STRF_HD std::size_t utf8_sanitize_size
             {
                 ++src_it;
             }
-        }
-        else if( 0xEF < ch0
+        } else if( 0xEF < ch0
               &&   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
               && first_2_of_4_are_valid(ch0, ch1)
               && ++src_it != src_end && is_utf8_continuation(*src_it)
@@ -492,9 +429,7 @@ STRF_STATIC_LINKAGE STRF_HD std::size_t utf8_sanitize_size
         {
             size += 4;
             ++src_it;
-        }
-        else
-        {
+        } else {
             size += 3;
         }
     }
@@ -507,10 +442,8 @@ STRF_STATIC_LINKAGE STRF_HD std::size_t utf8_codepoints_count
         , std::size_t max_count )
 {
     std::size_t count = 0;
-    for(auto it = begin; it != end && count < max_count; ++it)
-    {
-        if (!is_utf8_continuation(*it))
-        {
+    for(auto it = begin; it != end && count < max_count; ++it) {
+        if (!is_utf8_continuation(*it)) {
             ++ count;
         }
     }
@@ -524,21 +457,16 @@ STRF_STATIC_LINKAGE STRF_HD void utf8_encode_fill
     , strf::encoding_error err_hdl
     , strf::surrogate_policy allow_surr )
 {
-    if (ch < 0x80)
-    {
+    if (ch < 0x80) {
         strf::detail::write_fill( ob, count
                                          , static_cast<std::uint8_t>(ch) );
-    }
-    else if (ch < 0x800)
-    {
+    } else if (ch < 0x800) {
         strf::detail::simple_array<std::uint8_t, 2> seq = {
             static_cast<std::uint8_t>(0xC0 | ((ch & 0x7C0) >> 6)),
             static_cast<std::uint8_t>(0x80 |  (ch &  0x3F))
         };
         strf::detail::repeat_sequence(ob, count, seq);
-    }
-    else if (ch <  0x10000)
-    {
+    } else if (ch <  0x10000) {
         if ( allow_surr == strf::surrogate_policy::strict
           && detail::is_surrogate(ch) )
         {
@@ -550,9 +478,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf8_encode_fill
             static_cast<std::uint8_t>(0x80 |  (ch &   0x3F)),
         };
         strf::detail::repeat_sequence(ob, count, seq);
-    }
-    else if (ch < 0x110000)
-    {
+    } else if (ch < 0x110000) {
         strf::detail::simple_array<std::uint8_t, 4> seq = {
             static_cast<std::uint8_t>(0xF0 | ((ch & 0x1C0000) >> 18)),
             static_cast<std::uint8_t>(0x80 | ((ch &  0x3F000) >> 12)),
@@ -560,18 +486,14 @@ STRF_STATIC_LINKAGE STRF_HD void utf8_encode_fill
             static_cast<std::uint8_t>(0x80 |  (ch &     0x3F))
         };
         strf::detail::repeat_sequence(ob, count, seq);
-    }
-    else
-    {
+    } else {
         invalid_char:
-        switch(err_hdl)
-        {
+        switch(err_hdl) {
             case strf::encoding_error::stop:
                 strf::detail::handle_encoding_failure();
                 return;
 
-            default:
-            {
+            default: {
                 STRF_ASSERT(err_hdl == strf::encoding_error::replace);
                 strf::detail::simple_array<std::uint8_t, 3> seq
                     { 0xEF, 0xBF, 0xBD };
@@ -586,26 +508,22 @@ STRF_STATIC_LINKAGE STRF_HD std::uint8_t* utf8_encode_char
     ( std::uint8_t* dest
     , char32_t ch )
 {
-    if (ch < 0x80)
-    {
+    if (ch < 0x80) {
         *dest = static_cast<std::uint8_t>(ch);
         return dest + 1;
     }
-    if (ch < 0x800)
-    {
+    if (ch < 0x800) {
         dest[0] = static_cast<std::uint8_t>(0xC0 | ((ch & 0x7C0) >> 6));
         dest[1] = static_cast<std::uint8_t>(0x80 |  (ch &  0x3F));
         return dest + 2;
     }
-    if (ch <  0x10000)
-    {
+    if (ch <  0x10000) {
         dest[0] = static_cast<std::uint8_t>(0xE0 | ((ch & 0xF000) >> 12));
         dest[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0xFC0) >> 6));
         dest[2] = static_cast<std::uint8_t>(0x80 |  (ch &   0x3F));
         return dest + 3;
     }
-    if (ch < 0x110000)
-    {
+    if (ch < 0x110000) {
         dest[0] = static_cast<std::uint8_t>(0xF0 | ((ch & 0x1C0000) >> 18));
         dest[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0x3F000) >> 12));
         dest[2] = static_cast<std::uint8_t>(0x80 | ((ch &    0xFC0) >> 6));
@@ -628,24 +546,18 @@ STRF_STATIC_LINKAGE STRF_HD void utf32_to_utf8_transcode
     auto src_it = src;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
-    for(;src_it != src_end; ++src_it)
-    {
+    for(;src_it != src_end; ++src_it) {
         auto ch = *src_it;
-        if(ch < 0x80)
-        {
+        if(ch < 0x80) {
             STRF_CHECK_DEST;
             *dest_it = static_cast<std::uint8_t>(ch);
             ++dest_it;
-        }
-        else if (ch < 0x800)
-        {
+        } else if (ch < 0x800) {
             STRF_CHECK_DEST_SIZE(2);
             dest_it[0] = static_cast<std::uint8_t>(0xC0 | ((ch & 0x7C0) >> 6));
             dest_it[1] = static_cast<std::uint8_t>(0x80 |  (ch &  0x3F));
             dest_it += 2;
-        }
-        else if (ch < 0x10000)
-        {
+        } else if (ch < 0x10000) {
             if ( allow_surr == strf::surrogate_policy::lax
               || strf::detail::not_surrogate(ch))
             {
@@ -654,23 +566,17 @@ STRF_STATIC_LINKAGE STRF_HD void utf32_to_utf8_transcode
                 dest_it[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0xFC0) >> 6));
                 dest_it[2] = static_cast<std::uint8_t>(0x80 |  (ch &   0x3F));
                 dest_it += 3;
-            }
-            else goto invalid_sequence;
-        }
-        else if (ch < 0x110000)
-        {
+            } else goto invalid_sequence;
+        } else if (ch < 0x110000) {
             STRF_CHECK_DEST_SIZE(4);
             dest_it[0] = static_cast<std::uint8_t>(0xF0 | ((ch & 0x1C0000) >> 18));
             dest_it[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0x3F000) >> 12));
             dest_it[2] = static_cast<std::uint8_t>(0x80 | ((ch &    0xFC0) >> 6));
             dest_it[3] = static_cast<std::uint8_t>(0x80 |  (ch &     0x3F));
             dest_it += 4;
-        }
-        else
-        {
+        } else {
             invalid_sequence:
-            switch (err_hdl)
-            {
+            switch (err_hdl) {
                 case strf::encoding_error::replace:
                     STRF_CHECK_DEST_SIZE(3);
                     dest_it[0] = 0xEF;
@@ -697,15 +603,11 @@ STRF_STATIC_LINKAGE STRF_HD std::size_t utf32_to_utf8_size
     (void) allow_surr;
     auto src_it = src;
     std::size_t count = 0;
-    for(;src_it != src_end; ++src_it)
-    {
+    for(;src_it != src_end; ++src_it) {
         auto ch = *src_it;
-        if (ch < 0x110000)
-        {
+        if (ch < 0x110000) {
             count += 1 + (ch >= 0x80) + (ch >= 0x800) + (ch >= 0x10000);
-        }
-        else
-        {
+        } else {
             count += 3;
         }
     }
@@ -751,32 +653,23 @@ STRF_STATIC_LINKAGE STRF_HD void utf16_to_utf32_transcode
     const char16_t* src_it_next;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
-    for(auto src_it = src; src_it != src_end; src_it = src_it_next)
-    {
+    for(auto src_it = src; src_it != src_end; src_it = src_it_next) {
         src_it_next = src_it + 1;
         ch = *src_it;
         src_it_next = src_it + 1;
 
-        if (not_surrogate(ch))
-        {
+        if (not_surrogate(ch)) {
             ch32 = ch;
-        }
-        else if ( is_high_surrogate(ch)
+        } else if ( is_high_surrogate(ch)
                && src_it_next != src_end
-               && is_low_surrogate(ch2 = *src_it_next))
-        {
+               && is_low_surrogate(ch2 = *src_it_next)) {
             ch32 = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
             ++src_it_next;
-        }
-        else if (allow_surr == strf::surrogate_policy::lax)
-        {
+        } else if (allow_surr == strf::surrogate_policy::lax) {
             ch32 = ch;
-        }
-        else
-        {
+        } else {
             ch32 = 0xFFFD;
-            if (err_hdl == strf::encoding_error::stop)
-            {
+            if (err_hdl == strf::encoding_error::stop) {
                 ob.advance_to(dest_it);
                 strf::detail::handle_encoding_failure();
             }
@@ -799,8 +692,7 @@ STRF_STATIC_LINKAGE STRF_HD std::size_t utf16_to_utf32_size
     std::size_t count = 0;
     const char16_t* src_it = src;
     const char16_t* src_it_next;
-    for(; src_it != src_end; src_it = src_it_next)
-    {
+    for(; src_it != src_end; src_it = src_it_next) {
         src_it_next = src_it + 1;
         ch = *src_it;
         src_it_next = src_it + 1;
@@ -828,18 +720,15 @@ STRF_STATIC_LINKAGE STRF_HD void utf16_sanitize
     const char16_t* src_it_next;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
-    for( ; src_it != src_end; src_it = src_it_next)
-    {
+    for( ; src_it != src_end; src_it = src_it_next) {
         ch = *src_it;
         src_it_next = src_it + 1;
 
-        if (not_surrogate(ch))
-        {
+        if (not_surrogate(ch)) {
             STRF_CHECK_DEST;
             *dest_it = static_cast<char16_t>(ch);
             ++dest_it;
-        }
-        else if ( is_high_surrogate(ch)
+        } else if ( is_high_surrogate(ch)
                && src_it_next != src_end
                && is_low_surrogate(ch2 = *src_it_next))
         {
@@ -848,17 +737,12 @@ STRF_STATIC_LINKAGE STRF_HD void utf16_sanitize
             dest_it[0] = static_cast<char16_t>(ch);
             dest_it[1] = static_cast<char16_t>(ch2);
             dest_it += 2;
-        }
-        else if (allow_surr == strf::surrogate_policy::lax)
-        {
+        } else if (allow_surr == strf::surrogate_policy::lax) {
             STRF_CHECK_DEST;
             *dest_it = static_cast<char16_t>(ch);
             ++dest_it;
-        }
-        else
-        {
-            if (err_hdl == strf::encoding_error::stop)
-            {
+        } else {
+            if (err_hdl == strf::encoding_error::stop) {
                 ob.advance_to(dest_it);
                 strf::detail::handle_encoding_failure();
             }
@@ -879,8 +763,7 @@ STRF_STATIC_LINKAGE STRF_HD std::size_t utf16_sanitize_size
     std::size_t count = 0;
     const char16_t* src_it = src;
     unsigned long ch;
-    while (src_it != src_end)
-    {
+    while (src_it != src_end) {
         ch = *src_it;
         ++ src_it;
         ++ count;
@@ -901,10 +784,8 @@ STRF_STATIC_LINKAGE STRF_HD std::size_t utf16_codepoints_count
     , std::size_t max_count )
 {
     std::size_t count = 0;
-    for(auto it = begin; it != end && count < max_count; ++it, ++count)
-    {
-        if(is_high_surrogate(*it))
-        {
+    for(auto it = begin; it != end && count < max_count; ++it, ++count) {
+        if(is_high_surrogate(*it)) {
             ++it;
         }
     }
@@ -920,13 +801,11 @@ STRF_STATIC_LINKAGE STRF_HD char16_t* utf16_encode_char
     ( char16_t* dest
     , char32_t ch )
 {
-    if (ch < 0x10000)
-    {
+    if (ch < 0x10000) {
         *dest = static_cast<char16_t>(ch);
         return dest + 1;
     }
-    if (ch < 0x110000)
-    {
+    if (ch < 0x110000) {
         char32_t sub_codepoint = ch - 0x10000;
         dest[0] = static_cast<char16_t>(0xD800 + ((sub_codepoint & 0xFFC00) >> 10));
         dest[1] = static_cast<char16_t>(0xDC00 +  (sub_codepoint &  0x3FF));
@@ -943,29 +822,23 @@ STRF_STATIC_LINKAGE STRF_HD void utf16_encode_fill
     , strf::encoding_error err_hdl
     , strf::surrogate_policy allow_surr )
 {
-    if (ch < 0x10000)
-    {
+    if (ch < 0x10000) {
         if ( allow_surr  == strf::surrogate_policy::strict
           && detail::is_surrogate(ch) )
         {
             goto invalid_char;
         }
         strf::detail::write_fill(ob, count, static_cast<char16_t>(ch));
-    }
-    else if (ch < 0x110000)
-    {
+    } else if (ch < 0x110000) {
         char32_t sub_codepoint = ch - 0x10000;
         strf::detail::simple_array<char16_t, 2> seq = {
             static_cast<char16_t>(0xD800 + ((sub_codepoint & 0xFFC00) >> 10)),
             static_cast<char16_t>(0xDC00 +  (sub_codepoint &  0x3FF))
         };
         strf::detail::repeat_sequence(ob, count, seq);
-    }
-    else
-    {
+    } else {
         invalid_char:
-        if (err_hdl == strf::encoding_error::stop)
-        {
+        if (err_hdl == strf::encoding_error::stop) {
             strf::detail::handle_encoding_failure();
         }
         strf::detail::write_fill(ob, count, u'\uFFFD');
@@ -982,33 +855,25 @@ STRF_STATIC_LINKAGE STRF_HD void utf32_to_utf16_transcode
     auto src_it = src;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
-    for ( ; src_it != src_end; ++src_it)
-    {
+    for ( ; src_it != src_end; ++src_it) {
         auto ch = *src_it;
-        if (ch < 0x10000)
-        {
+        if (ch < 0x10000) {
             if ( allow_surr == strf::surrogate_policy::lax
               || strf::detail::not_surrogate(ch) )
             {
                 STRF_CHECK_DEST;
                 *dest_it = static_cast<char16_t>(ch);
                 ++dest_it;
-            }
-            else goto invalid_char;
-        }
-        else if (ch < 0x110000)
-        {
+            } else goto invalid_char;
+        } else if (ch < 0x110000) {
             STRF_CHECK_DEST_SIZE(2);
             char32_t sub_codepoint = ch - 0x10000;
             dest_it[0] = static_cast<char16_t>(0xD800 + ((sub_codepoint & 0xFFC00) >> 10));
             dest_it[1] = static_cast<char16_t>(0xDC00 +  (sub_codepoint &  0x3FF));
             dest_it += 2;
-        }
-        else
-        {
+        } else {
             invalid_char:
-            if (err_hdl == strf::encoding_error::stop)
-            {
+            if (err_hdl == strf::encoding_error::stop) {
                 ob.advance_to(dest_it);
                 strf::detail::handle_encoding_failure();
             }
@@ -1028,8 +893,7 @@ STRF_STATIC_LINKAGE STRF_HD std::size_t utf32_to_utf16_size
     (void) allow_surr;
     std::size_t count = 0;
     const char32_t* src_it = src;
-    for ( ; src_it != src_end; ++src_it)
-    {
+    for ( ; src_it != src_end; ++src_it) {
         auto ch = *src_it;
         count += 1 + (0x10000 <= ch && ch < 0x110000);
     }
@@ -1062,15 +926,11 @@ STRF_STATIC_LINKAGE STRF_HD void utf32_sanitize
 {
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
-    if (allow_surr == strf::surrogate_policy::lax)
-    {
-        for (auto src_it = src; src_it < src_end; ++src_it)
-        {
+    if (allow_surr == strf::surrogate_policy::lax) {
+        for (auto src_it = src; src_it < src_end; ++src_it) {
             auto ch = *src_it;
-            if (ch >= 0x110000)
-            {
-                if (err_hdl == strf::encoding_error::stop)
-                {
+            if (ch >= 0x110000) {
+                if (err_hdl == strf::encoding_error::stop) {
                     ob.advance_to(dest_it);
                     strf::detail::handle_encoding_failure();
                 }
@@ -1080,16 +940,11 @@ STRF_STATIC_LINKAGE STRF_HD void utf32_sanitize
             *dest_it = ch;
             ++dest_it;
         }
-    }
-    else
-    {
-        for(auto src_it = src; src_it < src_end; ++src_it)
-        {
+    } else {
+        for(auto src_it = src; src_it < src_end; ++src_it) {
             char32_t ch = *src_it;
-            if (ch >= 0x110000 || strf::detail::is_surrogate(ch))
-            {
-                if (err_hdl == strf::encoding_error::stop)
-                {
+            if (ch >= 0x110000 || strf::detail::is_surrogate(ch)) {
+                if (err_hdl == strf::encoding_error::stop) {
                     ob.advance_to(dest_it);
                     strf::detail::handle_encoding_failure();
                 }
@@ -1136,8 +991,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf32_encode_fill
     if (ch > 0x10FFFF || ( allow_surr == strf::surrogate_policy::strict
                         && detail::is_surrogate(ch) ))
     {
-        if (err_hdl == strf::encoding_error::stop)
-        {
+        if (err_hdl == strf::encoding_error::stop) {
             strf::detail::handle_encoding_failure();
         }
         STRF_ASSERT(err_hdl == strf::encoding_error::replace);
@@ -1179,17 +1033,13 @@ STRF_STATIC_LINKAGE STRF_HD void utf8_to_utf16_transcode
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
 
-    for (;src_it != src_end; ++dest_it)
-    {
+    for (;src_it != src_end; ++dest_it) {
         ch0 = (*src_it);
         ++src_it;
-        if (ch0 < 0x80)
-        {
+        if (ch0 < 0x80) {
             STRF_CHECK_DEST;
             *dest_it = ch0;
-        }
-        else if (0xC0 == (ch0 & 0xE0))
-        {
+        } else if (0xC0 == (ch0 & 0xE0)) {
             if ( ch0 > 0xC1
               && src_it != src_end && is_utf8_continuation(ch1 = * src_it))
             {
@@ -1197,9 +1047,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf8_to_utf16_transcode
                 *dest_it = utf8_decode(ch0, ch1);
                 ++src_it;
             } else goto invalid_sequence;
-        }
-        else if (0xE0 == ch0)
-        {
+        } else if (0xE0 == ch0) {
             if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
@@ -1207,9 +1055,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf8_to_utf16_transcode
                 *dest_it = ((ch1 & 0x3F) << 6) | (ch2 & 0x3F);
                 ++src_it;
             } else goto invalid_sequence;
-        }
-        else if (0xE0 == (ch0 & 0xF0))
-        {
+        } else if (0xE0 == (ch0 & 0xF0)) {
             if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
               && first_2_of_3_are_valid( x = utf8_decode_first_2_of_3(ch0, ch1)
                                        , allow_surr )
@@ -1219,9 +1065,7 @@ STRF_STATIC_LINKAGE STRF_HD void utf8_to_utf16_transcode
                 *dest_it = static_cast<char16_t>((x << 6) | (ch2 & 0x3F));
                 ++src_it;
             } else goto invalid_sequence;
-        }
-        else if (0xEF < ch0)
-        {
+        } else if (0xEF < ch0) {
             if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
                  && first_2_of_4_are_valid(x = utf8_decode_first_2_of_4(ch0, ch1))
                  && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it)
@@ -1234,12 +1078,9 @@ STRF_STATIC_LINKAGE STRF_HD void utf8_to_utf16_transcode
                 ++dest_it;
                 ++src_it;
             } else goto invalid_sequence;
-        }
-        else
-        {
+        } else {
             invalid_sequence:
-            if (err_hdl == strf::encoding_error::stop)
-            {
+            if (err_hdl == strf::encoding_error::stop) {
                 ob.advance_to(dest_it);
                 strf::detail::handle_encoding_failure();
             }
@@ -1261,37 +1102,28 @@ STRF_STATIC_LINKAGE STRF_HD std::size_t utf8_to_utf16_size
     std::size_t size = 0;
     std::uint8_t ch0, ch1;
     auto src_it = src_begin;
-    while(src_it < src_end)
-    {
+    while(src_it < src_end) {
         ch0 = *src_it;
         ++src_it;
         ++size;
-        if (0xC0 == (ch0 & 0xE0))
-        {
-            if (ch0 > 0xC1 && src_it != src_end && is_utf8_continuation(*src_it))
-            {
+        if (0xC0 == (ch0 & 0xE0)) {
+            if (ch0 > 0xC1 && src_it != src_end && is_utf8_continuation(*src_it)) {
                 ++src_it;
             }
-        }
-        else if (0xE0 == ch0)
-        {
+        } else if (0xE0 == ch0) {
             if (   src_it != src_end && (((ch1 = * src_it) & 0xE0) == 0xA0)
               && ++src_it != src_end && is_utf8_continuation(* src_it) )
             {
                 ++src_it;
             }
-        }
-        else if (0xE0 == (ch0 & 0xF0))
-        {
+        } else if (0xE0 == (ch0 & 0xF0)) {
             if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
               && first_2_of_3_are_valid( ch0, ch1, allow_surr )
               && ++src_it != src_end && is_utf8_continuation(* src_it) )
             {
                 ++src_it;
             }
-        }
-        else if(0xEF < ch0)
-        {
+        } else if(0xEF < ch0) {
             if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
               && first_2_of_4_are_valid(ch0, ch1)
               && ++src_it != src_end && is_utf8_continuation(*src_it)
@@ -1318,32 +1150,25 @@ STRF_STATIC_LINKAGE STRF_HD void utf16_to_utf8_transcode
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
 
-    for( ; src_it < src_end; ++src_it)
-    {
+    for( ; src_it < src_end; ++src_it) {
         auto ch = *src_it;
-        if (ch < 0x80)
-        {
+        if (ch < 0x80) {
             STRF_CHECK_DEST;
             *dest_it = static_cast<std::uint8_t>(ch);
             ++dest_it;
-        }
-        else if (ch < 0x800)
-        {
+        } else if (ch < 0x800) {
             STRF_CHECK_DEST_SIZE(2);
             dest_it[0] = static_cast<std::uint8_t>(0xC0 | ((ch & 0x7C0) >> 6));
             dest_it[1] = static_cast<std::uint8_t>(0x80 |  (ch &  0x3F));
             dest_it += 2;
-        }
-        else if (not_surrogate(ch))
-        {
+        } else if (not_surrogate(ch)) {
             three_bytes:
             STRF_CHECK_DEST_SIZE(3);
             dest_it[0] = static_cast<std::uint8_t>(0xE0 | ((ch & 0xF000) >> 12));
             dest_it[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0xFC0) >> 6));
             dest_it[2] = static_cast<std::uint8_t>(0x80 |  (ch &   0x3F));
             dest_it += 3;
-        }
-        else if ( strf::detail::is_high_surrogate(ch)
+        } else if ( strf::detail::is_high_surrogate(ch)
                && src_it != src_end
                && strf::detail::is_low_surrogate(*(src_it + 1)))
         {
@@ -1355,15 +1180,10 @@ STRF_STATIC_LINKAGE STRF_HD void utf16_to_utf8_transcode
             dest_it[2] = static_cast<std::uint8_t>(0x80 | ((codepoint &    0xFC0) >> 6));
             dest_it[3] = static_cast<std::uint8_t>(0x80 |  (codepoint &     0x3F));
             dest_it += 4;
-        }
-        else if (allow_surr == strf::surrogate_policy::lax)
-        {
+        } else if (allow_surr == strf::surrogate_policy::lax) {
             goto three_bytes;
-        }
-        else // invalid sequece
-        {
-            if (err_hdl == strf::encoding_error::stop)
-            {
+        } else { // invalid sequece
+            if (err_hdl == strf::encoding_error::stop) {
                 ob.advance_to(dest_it);
                 strf::detail::handle_encoding_failure();
             }
@@ -1384,26 +1204,19 @@ STRF_STATIC_LINKAGE STRF_HD std::size_t utf16_to_utf8_size
 {
     (void) allow_surr;
     std::size_t size = 0;
-    for(auto it = src_begin; it < src_end; ++it)
-    {
+    for(auto it = src_begin; it < src_end; ++it) {
         char16_t ch = *it;
-        if (ch < 0x80)
-        {
+        if (ch < 0x80) {
             ++size;
-        }
-        else if (ch < 0x800)
-        {
+        } else if (ch < 0x800) {
             size += 2;
-        }
-        else if ( strf::detail::is_high_surrogate(ch)
+        } else if ( strf::detail::is_high_surrogate(ch)
                && it + 1 != src_end
                && strf::detail::is_low_surrogate(*(it + 1)) )
         {
             size += 4;
             ++it;
-        }
-        else
-        {
+        } else {
             size += 3;
         }
     }
@@ -1414,8 +1227,7 @@ STRF_STATIC_LINKAGE
 STRF_HD const strf::detail::transcoder_impl<std::uint8_t, char16_t>* utf8_to_enc16
     ( const strf::detail::encoding_impl<char16_t>& other )
 {
-    if (other.id == encoding_id::eid_utf16)
-    {
+    if (other.id == encoding_id::eid_utf16) {
         static const strf::detail::transcoder_impl<std::uint8_t, char16_t> tr_obj =
             { strf::detail::utf8_to_utf16_transcode
             , strf::detail::utf8_to_utf16_size };
@@ -1428,8 +1240,7 @@ STRF_STATIC_LINKAGE
 STRF_HD const strf::detail::transcoder_impl<char16_t, std::uint8_t>* utf8_from_enc16
     ( const strf::detail::encoding_impl<char16_t>& other )
 {
-    if (other.id == encoding_id::eid_utf16)
-    {
+    if (other.id == encoding_id::eid_utf16) {
         static const strf::detail::transcoder_impl<char16_t, std::uint8_t> tr_obj =
             { strf::detail::utf16_to_utf8_transcode
             , strf::detail::utf16_to_utf8_size };

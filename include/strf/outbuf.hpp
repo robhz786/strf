@@ -87,8 +87,7 @@ public:
     STRF_HD void require(std::size_t s)
     {
         STRF_ASSERT(s <= strf::min_size_after_recycle<char_type>());
-        if (pos() + s > end())
-        {
+        if (pos() + s > end()) {
             recycle();
         }
         STRF_ASSERT(pos() + s <= end());
@@ -250,12 +249,10 @@ STRF_HD void outbuf_write_continuation(Outbuf& ob, const CharT* str, std::size_t
     str += space;
     len -= space;
     ob.advance_to(ob.end());
-    while (ob.good())
-    {
+    while (ob.good()) {
         ob.recycle();
         space = ob.size();
-        if (len <= space)
-        {
+        if (len <= space) {
             memcpy(ob.pos(), str, len * sizeof(CharT));
             ob.advance(len);
             break;
@@ -275,13 +272,10 @@ template <typename Outbuf, typename CharT = typename Outbuf::char_type>
 STRF_HD void outbuf_write(Outbuf& ob, const CharT* str, std::size_t len)
 {
     auto p = ob.pos();
-    if (p + len <= ob.end()) // the common case
-    {
+    if (p + len <= ob.end()) { // the common case
         strf::detail::str_copy_n(p, str, len);
         ob.advance(len);
-    }
-    else
-    {
+    } else {
         detail::outbuf_write_continuation<Outbuf, CharT>(ob, str, len);
     }
 }
@@ -290,13 +284,10 @@ template <typename Outbuf, typename CharT = typename Outbuf::char_type>
 STRF_HD void outbuf_put(Outbuf& ob, CharT c)
 {
     auto p = ob.pos();
-    if (p != ob.end())
-    {
+    if (p != ob.end()) {
         *p = c;
         ob.advance_to(p+1);
-    }
-    else
-    {
+    } else {
         ob.recycle();
         *ob.pos() = c;
         ob.advance();
@@ -508,8 +499,7 @@ public:
 
     STRF_HD void recycle() noexcept override
     {
-        if (this->good())
-        {
+        if (this->good()) {
             _it = this->pos();
             this->set_good(false);
             this->set_end(outbuf_garbage_buf_end<CharT>());
@@ -526,8 +516,7 @@ public:
     STRF_HD result finish()
     {
         bool g = this->good();
-        if (g)
-        {
+        if (g) {
             _it = this->pos();
             this->set_good(false);
         }

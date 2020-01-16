@@ -125,13 +125,10 @@ private:
     template <bool RequireWidth>
     STRF_HD void _fast_init(strf::width_preview<RequireWidth>& wpreview)
     {
-        if (_fmt.width() > static_cast<std::ptrdiff_t>(_fmt.count()))
-        {
+        if (_fmt.width() > static_cast<std::ptrdiff_t>(_fmt.count())) {
             _fillcount = _fmt.width() - static_cast<std::int16_t>(_fmt.count());
             wpreview.subtract_width(_fmt.width());
-        }
-        else
-        {
+        } else {
             _fillcount = 0;
             wpreview.checked_subtract_width(_fmt.count());
         }
@@ -157,13 +154,10 @@ private:
     {
         auto ch_width = wc.wc.width_of(_fmt.value().ch, _encoding);
         auto content_width = checked_mul(ch_width, _fmt.count());
-        if (content_width < _fmt.width())
-        {
+        if (content_width < _fmt.width()) {
             _fillcount = (_fmt.width() - content_width).round();
             wpreview.checked_subtract_width(content_width + _fillcount);
-        }
-        else
-        {
+        } else {
             _fillcount = 0;
             wpreview.checked_subtract_width(content_width);
         }
@@ -177,8 +171,7 @@ private:
     {
         std::size_t s = _fmt.count()
                       * _encoding.char_size(_fmt.value().ch);
-        if (_fillcount > 0)
-        {
+        if (_fillcount > 0) {
             s += _fillcount * _encoding.char_size(_fmt.fill());
         }
         spreview.add_size(s);
@@ -195,22 +188,16 @@ template <typename CharT>
 STRF_HD void fmt_char_printer<CharT>::print_to
     ( strf::basic_outbuf<CharT>& ob ) const
 {
-    if (_fillcount == 0)
-    {
+    if (_fillcount == 0) {
         return _write_body(ob);
-    }
-    else
-    {
-        switch(_fmt.alignment())
-        {
-            case strf::text_alignment::left:
-            {
+    } else {
+        switch(_fmt.alignment()) {
+            case strf::text_alignment::left: {
                 _write_body(ob);
                 _write_fill(ob, _fillcount);
                 break;
             }
-            case strf::text_alignment::center:
-            {
+            case strf::text_alignment::center: {
                 auto halfcount = _fillcount / 2;
                 _write_fill(ob, halfcount);
                 _write_body(ob);
@@ -230,20 +217,15 @@ template <typename CharT>
 STRF_HD void fmt_char_printer<CharT>::_write_body
     ( strf::basic_outbuf<CharT>& ob ) const
 {
-    if (_fmt.count() == 1)
-    {
+    if (_fmt.count() == 1) {
         ob.ensure(1);
         * ob.pos() = _fmt.value().ch;
         ob.advance();
-    }
-    else
-    {
+    } else {
         std::size_t count = _fmt.count();
-        while(true)
-        {
+        while(true) {
             std::size_t space = ob.size();
-            if (count <= space)
-            {
+            if (count <= space) {
                 strf::detail::str_fill_n(ob.pos(), count, _fmt.value().ch);
                 ob.advance(count);
                 break;

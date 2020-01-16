@@ -41,8 +41,7 @@ std::wstring read_wfile(std::FILE* file)
 {
     std::wstring result;
     wint_t ch = fgetwc(file);
-    while(ch != WEOF)
-    {
+    while(ch != WEOF) {
         result += static_cast<wchar_t>(ch);
         ch = fgetwc(file);
     };
@@ -65,8 +64,7 @@ std::wstring read_wfile(const char* filename)
 
 #endif  // defined(_WIN32)
 
-    if(file != nullptr)
-    {
+    if(file != nullptr) {
         result = read_wfile(file);
         fclose(file);
     }
@@ -80,8 +78,7 @@ std::basic_string<CharT> read_file(std::FILE* file)
     CharT buff[buff_size];
     std::basic_string<CharT> result;
     std::size_t read_size = 0;
-    do
-    {
+    do {
         read_size = std::fread(buff, sizeof(buff[0]), buff_size, file);
         result.append(buff, read_size);
     }
@@ -107,12 +104,10 @@ std::basic_string<CharT> read_file(const char* filename)
 #endif  // defined(_WIN32)
 
 
-    if(file != nullptr)
-    {
+    if(file != nullptr) {
         result = read_file<CharT>(file);
     }
-    if (file != nullptr)
-    {
+    if (file != nullptr) {
         fclose(file);
     }
 
@@ -386,8 +381,7 @@ input_tester<CharOut>::input_tester
     , _src_line(src_line)
     , _reserve_factor(reserve_factor)
 {
-    if (size > _buffer_size)
-    {
+    if (size > _buffer_size) {
         test_utils::test_message
             ( _src_filename, _src_line, _function
             , "Warning: reserved more characters (", size
@@ -413,9 +407,7 @@ void input_tester<CharOut>::recycle()
         _pos_before_overflow = this->pos();
         this->set_pos(strf::outbuf_garbage_buf<CharOut>());
         this->set_end(strf::outbuf_garbage_buf_end<CharOut>());
-    }
-    else
-    {
+    } else {
         this->set_end(_buffer + _buffer_size);
     }
 }
@@ -435,8 +427,7 @@ void input_tester<CharOut>::finish()
                      , "\n  obtained: \"", strf::cv(result), "\"" );
 
     }
-    if(_wrongly_reserved(result.size()))
-    {
+    if(_wrongly_reserved(result.size())) {
         _test_failure( "\n  reserved size  : ", _reserved_size
                      , "\n  necessary size : ", result.size() );
     }
@@ -602,8 +593,7 @@ int test_finish()
     int err_count = test_utils::test_err_count();
     if (err_count == 0) {
         strf::write(test_utils::test_outbuf(), "All test passed!\n");
-    }
-    else {
+    } else {
         strf::to(test_utils::test_outbuf()) (err_count, " tests failed!\n");
     }
     test_utils::test_outbuf().finish();

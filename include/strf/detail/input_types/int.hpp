@@ -240,8 +240,7 @@ STRF_HD void int_printer<CharT>::print_to
     unsigned size = _digcount + _negative;
     ob.ensure(size);
     CharT* it = write_int_dec_txtdigits_backwards(_uvalue, ob.pos() + size);
-    if (_negative)
-    {
+    if (_negative) {
         it[-1] = '-';
     }
     ob.advance(size);
@@ -296,11 +295,9 @@ STRF_HD void punct_int_printer<CharT>::_calc_size
     ( strf::size_preview<true>& preview ) const
 {
     std::size_t size = _digcount + _negative;
-    if (_sepcount != 0)
-    {
+    if (_sepcount != 0) {
         auto sepsize = _encoding.validate(_punct.thousands_sep());
-        if (sepsize != std::size_t(-1))
-        {
+        if (sepsize != std::size_t(-1)) {
             size += sepsize * _sepcount;
         }
     }
@@ -310,23 +307,18 @@ STRF_HD void punct_int_printer<CharT>::_calc_size
 template <typename CharT>
 STRF_HD void punct_int_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
 {
-    if (_sepcount == 0)
-    {
+    if (_sepcount == 0) {
         ob.ensure(_negative + _digcount);
         auto it = ob.pos();
-        if (_negative)
-        {
+        if (_negative) {
             *it = static_cast<CharT>('-');
             ++it;
         }
         it += _digcount;
         strf::detail::write_int_dec_txtdigits_backwards(_uvalue, it);
         ob.advance_to(it);
-    }
-    else
-    {
-        if (_negative)
-        {
+    } else {
+        if (_negative) {
             put(ob, static_cast<CharT>('-'));
         }
         strf::detail::write_int<10>( ob, _punct, _encoding, _uvalue
@@ -413,14 +405,11 @@ STRF_HD void partial_fmt_int_printer<CharT, Base>::_init
     , strf::int_format_data fmt )
 {
     using unsigned_type = typename std::make_unsigned<IntT>::type;
-    STRF_IF_CONSTEXPR (Base == 10)
-    {
+    STRF_IF_CONSTEXPR (Base == 10) {
         _negative = value < 0;
         _prefixsize = _negative || fmt.showpos;
         _uvalue = strf::detail::unsigned_abs(value);
-    }
-    else
-    {
+    } else {
         _uvalue = unsigned_type(value);
         _negative = false;
         _prefixsize = static_cast<unsigned>(fmt.showbase)
@@ -429,12 +418,9 @@ STRF_HD void partial_fmt_int_printer<CharT, Base>::_init
     _digcount = strf::detail::count_digits<Base>(_uvalue);
     _precision = fmt.precision;
 
-    STRF_IF_CONSTEXPR (HasPunct)
-    {
+    STRF_IF_CONSTEXPR (HasPunct) {
         _sepcount = _punct.thousands_sep_count(_digcount);
-    }
-    else
-    {
+    } else {
         _sepcount = 0;
     }
 }
@@ -444,11 +430,9 @@ STRF_HD void partial_fmt_int_printer<CharT, Base>::calc_size
     ( strf::size_preview<true>& preview ) const
 {
     std::size_t s = strf::detail::max(_precision, _digcount) + _prefixsize;
-    if (_sepcount > 0)
-    {
+    if (_sepcount > 0) {
         auto sepsize = _encoding.validate(_punct.thousands_sep());
-        if (sepsize != (std::size_t)-1)
-        {
+        if (sepsize != (std::size_t)-1) {
             s += _sepcount * sepsize;
         }
     }
@@ -459,31 +443,22 @@ template <typename CharT, int Base>
 STRF_HD inline void partial_fmt_int_printer<CharT, Base>::print_to
     ( strf::basic_outbuf<CharT>& ob ) const
 {
-    if (_sepcount == 0)
-    {
+    if (_sepcount == 0) {
         ob.ensure(_prefixsize + _digcount);
         auto it = ob.pos();
-        if (_prefixsize != 0)
-        {
-            STRF_IF_CONSTEXPR (Base == 10)
-            {
+        if (_prefixsize != 0) {
+            STRF_IF_CONSTEXPR (Base == 10) {
                 * it = static_cast<CharT>('+') + (_negative << 1);
                 ++ it;
-            }
-            else STRF_IF_CONSTEXPR (Base == 8)
-            {
+            } else STRF_IF_CONSTEXPR (Base == 8) {
                 * it = static_cast<CharT>('0');
                 ++ it;
-            }
-            else STRF_IF_CONSTEXPR (Base == 16)
-            {
+            } else STRF_IF_CONSTEXPR (Base == 16) {
                 it[0] = static_cast<CharT>('0');
                 it[1] = static_cast<CharT>
                     ('X' | ((_lettercase != strf::uppercase) << 5));
                 it += 2;
-            }
-            else
-            {
+            } else {
                 it[0] = static_cast<CharT>('0');
                 it[1] = static_cast<CharT>
                     ('B' | ((_lettercase != strf::uppercase) << 5));
@@ -491,18 +466,14 @@ STRF_HD inline void partial_fmt_int_printer<CharT, Base>::print_to
             }
         }
         ob.advance_to(it);
-        if (_precision > _digcount)
-        {
+        if (_precision > _digcount) {
             unsigned zeros = _precision - _digcount;
             strf::detail::write_fill(ob, zeros, CharT('0'));
         }
         strf::detail::write_int<Base>(ob, _uvalue, _digcount, _lettercase);
-    }
-    else
-    {
+    } else {
         write_complement(ob);
-        if (_precision > _digcount)
-        {
+        if (_precision > _digcount) {
             unsigned zeros = _precision - _digcount;
             strf::detail::write_fill(ob, zeros, CharT('0'));
         }
@@ -515,28 +486,20 @@ template <typename CharT, int Base>
 inline STRF_HD void partial_fmt_int_printer<CharT, Base>::write_complement
     ( strf::basic_outbuf<CharT>& ob ) const
 {
-    if (_prefixsize != 0)
-    {
+    if (_prefixsize != 0) {
         ob.ensure(_prefixsize);
-        STRF_IF_CONSTEXPR (Base == 10)
-        {
+        STRF_IF_CONSTEXPR (Base == 10) {
             * ob.pos() = static_cast<CharT>('+') + (_negative << 1);
             ob.advance(1);
-        }
-        else STRF_IF_CONSTEXPR (Base == 8)
-        {
+        } else STRF_IF_CONSTEXPR (Base == 8) {
             * ob.pos() = static_cast<CharT>('0');
             ob.advance(1);
-        }
-        else STRF_IF_CONSTEXPR (Base == 16)
-        {
+        } else STRF_IF_CONSTEXPR (Base == 16) {
             ob.pos()[0] = static_cast<CharT>('0');
             ob.pos()[1] = static_cast<CharT>
                 ('X' | ((_lettercase != strf::uppercase) << 5));
             ob.advance(2);
-        }
-        else
-        {
+        } else {
             ob.pos()[0] = static_cast<CharT>('0');
             ob.pos()[1] = static_cast<CharT>
                 ('B' | ((_lettercase != strf::uppercase) << 5));
@@ -549,17 +512,13 @@ template <typename CharT, int Base>
 inline STRF_HD void partial_fmt_int_printer<CharT, Base>::write_digits
     ( strf::basic_outbuf<CharT>& ob ) const
 {
-    if (_precision > _digcount)
-    {
+    if (_precision > _digcount) {
         unsigned zeros = _precision - _digcount;
         strf::detail::write_fill(ob, zeros, CharT('0'));
     }
-    if (_sepcount == 0)
-    {
+    if (_sepcount == 0) {
         strf::detail::write_int<Base>(ob, _uvalue, _digcount, _lettercase);
-    }
-    else
-    {
+    } else {
         strf::detail::write_int<Base>( ob, _punct, _encoding
                                      , _uvalue, _digcount, _lettercase );
     }
@@ -601,8 +560,7 @@ private:
 
     STRF_HD  void _calc_fill_size(strf::size_preview<true>& preview) const
     {
-        if (_fillcount > 0)
-        {
+        if (_fillcount > 0) {
             preview.add_size( _fillcount
                             * _ichars.encoding().char_size(_afmt.fill) );
         }
@@ -630,8 +588,7 @@ inline STRF_HD full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
     , _allow_surr(get_facet<strf::surrogate_policy_c, IntT>(fp))
 {
     auto content_width = _ichars.width();
-    if (_afmt.width > content_width)
-    {
+    if (_afmt.width > content_width) {
         _fillcount = _afmt.width - content_width;
         preview.subtract_width(static_cast<std::int16_t>(_fillcount));
     }
@@ -653,8 +610,7 @@ inline STRF_HD full_fmt_int_printer<CharT, Base>::full_fmt_int_printer
     , _allow_surr(get_facet<strf::surrogate_policy_c, const void*>(fp))
 {
     auto content_width = _ichars.width();
-    if (_afmt.width > content_width)
-    {
+    if (_afmt.width > content_width) {
         _fillcount = _afmt.width - content_width;
         preview.subtract_width(static_cast<std::int16_t>(_fillcount));
     }
@@ -670,37 +626,29 @@ template <typename CharT, int Base>
 STRF_HD void full_fmt_int_printer<CharT, Base>::print_to
         ( strf::basic_outbuf<CharT>& ob ) const
 {
-    if (_fillcount == 0)
-    {
+    if (_fillcount == 0) {
         _ichars.print_to(ob);
-    }
-    else
-    {
-        switch(_afmt.alignment)
-        {
-            case strf::text_alignment::left:
-            {
+    } else {
+        switch(_afmt.alignment) {
+            case strf::text_alignment::left: {
                 _ichars.print_to(ob);
                 _write_fill(ob, _fillcount);
                 break;
             }
-            case strf::text_alignment::split:
-            {
+            case strf::text_alignment::split: {
                 _ichars.write_complement(ob);
                 _write_fill(ob, _fillcount);
                 _ichars.write_digits(ob);
                 break;
             }
-            case strf::text_alignment::center:
-            {
+            case strf::text_alignment::center: {
                 auto halfcount = _fillcount / 2;
                 _write_fill(ob, halfcount);
                 _ichars.print_to(ob);
                 _write_fill(ob, _fillcount - halfcount);
                 break;
             }
-            default:
-            {
+            default: {
                 _write_fill(ob, _fillcount);
                 _ichars.print_to(ob);
             }

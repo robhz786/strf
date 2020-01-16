@@ -60,8 +60,7 @@ QStringAppender::QStringAppender(QString& str, std::size_t size)
 //[QStringAppender_recycle
 void QStringAppender::recycle()
 {
-    if (this->good())
-    {
+    if (this->good()) {
         // Flush the content:
         std::size_t count = /*<<ouput_buffer::pos() returns the immediate position
                               after the last character the library wrote in the buffer>>*/this->pos() - _buffer;
@@ -69,13 +68,10 @@ void QStringAppender::recycle()
 
 #if defined(__cpp_exceptions)
 
-        try
-        {
+        try {
             _str.append(qchar_buffer, count);
             _count += count;
-        }
-        catch(...)
-        {
+        } catch(...) {
             _eptr = std::current_exception();
             this->set_good(false);
         }
@@ -100,8 +96,7 @@ void QStringAppender::recycle()
 std::size_t QStringAppender::finish()
 {
     recycle();
-    if (_eptr != nullptr)
-    {
+    if (_eptr != nullptr) {
         std::rethrow_exception(_eptr);
     }
     return _count;
