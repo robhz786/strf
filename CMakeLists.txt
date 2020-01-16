@@ -6,9 +6,9 @@
 
 cmake_minimum_required (VERSION 3.8)
 option(
-  STRF_BUILD_CUDA_STATIC_LIB
+  STRF_CUDA_SUPPORT
   "Build the static library for CUDA device-side use"
-  ${STRF_BUILD_CUDA_STATIC_LIB} )
+  ${STRF_CUDA_SUPPORT} )
 option(
   STRF_BUILD_TESTS
   "Build unit tests"
@@ -22,11 +22,11 @@ option(
   "Build performace test"
   ${STRF_BUILD_BENCHMARKS})
 
-if (STRF_BUILD_CUDA_STATIC_LIB)
+if (STRF_CUDA_SUPPORT)
   project (strf CXX CUDA)
-else (STRF_BUILD_CUDA_STATIC_LIB)
+else (STRF_CUDA_SUPPORT)
   project (strf CXX)
-endif (STRF_BUILD_CUDA_STATIC_LIB)
+endif (STRF_CUDA_SUPPORT)
 
 if (STRF_BUILD_TESTS OR STRF_BUILD_EXAMPLES)
   enable_testing()
@@ -66,7 +66,7 @@ set_property(
 
 set(TARGETS_TO_INSTALL strf-header-only strf)
 
-if (${STRF_BUILD_CUDA_STATIC_LIB})
+if (${STRF_CUDA_SUPPORT})
   add_library(strf-cuda STATIC src/strf.cu)
   target_include_directories(
     strf-cuda

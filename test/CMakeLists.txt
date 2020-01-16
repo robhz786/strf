@@ -47,7 +47,7 @@ foreach(
 
 endforeach(t)
 
-if (${STRF_BUILD_CUDA_STATIC_LIB})
+if (${STRF_CUDA_SUPPORT})
   foreach(
     t
     cuda_inclusion
