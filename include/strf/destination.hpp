@@ -8,7 +8,7 @@
 #include <strf/detail/tr_string.hpp>
 #include <strf/facets_pack.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 template < typename OutbufCreator
          , typename FPack = strf::facets_pack<> >
@@ -37,7 +37,7 @@ class destination_common
 public:
 
     template <typename ... FPE>
-    STRF_NODISCARD constexpr auto with(FPE&& ... fpe) const &
+    STRF_NODISCARD constexpr STRF_HD auto with(FPE&& ... fpe) const &
     {
         static_assert( std::is_copy_constructible<OutbufCreator>::value
                      , "OutbufCreator must be copy constructible" );
@@ -52,7 +52,7 @@ public:
     }
 
     template <typename ... FPE>
-    STRF_NODISCARD constexpr auto with(FPE&& ... fpe) &&
+    STRF_NODISCARD constexpr STRF_HD auto with(FPE&& ... fpe) &&
     {
         static_assert( std::is_move_constructible<OutbufCreator>::value
                      , "OutbufCreator must be move constructible" );
@@ -66,7 +66,7 @@ public:
         { std::move(self), detail::destination_tag{}, std::forward<FPE>(fpe) ...};
     }
 
-    constexpr strf::destination_no_reserve<OutbufCreator, FPack>
+    constexpr STRF_HD strf::destination_no_reserve<OutbufCreator, FPack>
     no_reserve() const &
     {
         const auto& self = static_cast<const _destination_type&>(*this);
@@ -75,7 +75,7 @@ public:
                , self._fpack };
     }
 
-    constexpr strf::destination_no_reserve<OutbufCreator, FPack>
+    constexpr STRF_HD strf::destination_no_reserve<OutbufCreator, FPack>
     no_reserve() &&
     {
         auto& self = static_cast<_destination_type&>(*this);
@@ -84,7 +84,7 @@ public:
                , std::move(self._fpack) };
     }
 
-    constexpr strf::destination_calc_size<OutbufCreator, FPack>
+    constexpr STRF_HD strf::destination_calc_size<OutbufCreator, FPack>
     reserve_calc() const &
     {
         const auto& self = static_cast<const _destination_type&>(*this);
@@ -94,7 +94,7 @@ public:
     }
 
     strf::destination_calc_size<OutbufCreator, FPack>
-    reserve_calc() &&
+    STRF_HD reserve_calc() &&
     {
         auto& self = static_cast<_destination_type&>(*this);
         return { strf::detail::destination_tag{}
@@ -102,7 +102,7 @@ public:
                , std::move(self._fpack) };
     }
 
-    constexpr strf::destination_with_given_size<OutbufCreator, FPack>
+    constexpr STRF_HD strf::destination_with_given_size<OutbufCreator, FPack>
     reserve(std::size_t size) const &
     {
         const auto& self = static_cast<const _destination_type&>(*this);
@@ -112,7 +112,7 @@ public:
                , self._fpack };
     }
 
-    constexpr strf::destination_with_given_size<OutbufCreator, FPack>
+    constexpr STRF_HD strf::destination_with_given_size<OutbufCreator, FPack>
     reserve(std::size_t size) &&
     {
         auto& self = static_cast<_destination_type&>(*this);
@@ -123,7 +123,7 @@ public:
     }
 
     template <typename ... Args>
-    decltype(auto) operator()(const Args& ... args) const &
+    decltype(auto) STRF_HD operator()(const Args& ... args) const &
     {
         const auto& self = static_cast<const _destination_type&>(*this);
         PreviewType preview;
@@ -138,7 +138,7 @@ public:
 #if defined(STRF_HAS_STD_STRING_VIEW)
 
     template <typename ... Args>
-    decltype(auto) tr
+    decltype(auto) STRF_HD tr
         ( const std::basic_string_view<CharT>& str
         , const Args& ... args ) const &
     {
@@ -148,7 +148,7 @@ public:
 #else
 
     template <typename ... Args>
-    decltype(auto) tr(const CharT* str, const Args& ... args) const &
+    decltype(auto) STRF_HD tr(const CharT* str, const Args& ... args) const &
     {
         return _tr_write(str, std::char_traits<CharT>::length(str), args...);
     }
@@ -158,27 +158,27 @@ public:
 private:
 
     static inline const strf::printer<CharT>&
-    _as_printer_cref(const strf::printer<CharT>& p)
+    STRF_HD _as_printer_cref(const strf::printer<CharT>& p)
     {
         return p;
     }
     static inline const strf::printer<CharT>*
-    _as_printer_cptr(const strf::printer<CharT>& p)
+    STRF_HD _as_printer_cptr(const strf::printer<CharT>& p)
     {
          return &p;
     }
 
     template < typename ... Args >
-    decltype(auto) _tr_write( const CharT* str
-                            , std::size_t str_len
-                            , const Args& ... args) const &
+    decltype(auto) STRF_HD _tr_write( const CharT* str
+                                    , std::size_t str_len
+                                    , const Args& ... args) const &
     {
         return _tr_write_2
             (str, str + str_len, std::make_index_sequence<sizeof...(args)>(), args...);
     }
 
     template < std::size_t ... I, typename ... Args >
-    decltype(auto) _tr_write_2( const CharT* str
+    decltype(auto) STRF_HD _tr_write_2( const CharT* str
                               , const CharT* str_end
                               , std::index_sequence<I...>
                               , const Args& ... args) const &
@@ -196,7 +196,7 @@ private:
     }
 
     template < typename Preview, typename ... Args >
-    decltype(auto) _tr_write_3
+    decltype(auto) STRF_HD _tr_write_3
         ( const CharT* str
         , const CharT* str_end
         , Preview* preview_arr
@@ -218,13 +218,14 @@ private:
 };
 
 template < typename OB >
-inline decltype(std::declval<OB&>().finish()) finish(strf::rank<2>, OB& ob)
+inline STRF_HD decltype(std::declval<OB&>().finish())
+    finish(strf::rank<2>, OB& ob)
 {
     return ob.finish();
 }
 
 template < typename OB >
-inline void finish(strf::rank<1>, OB&)
+inline STRF_HD void finish(strf::rank<1>, OB&)
 {
 }
 
@@ -257,7 +258,7 @@ public:
              , std::enable_if_t
                  < std::is_constructible<OutbufCreator, Args...>::value
                  , int > = 0 >
-    constexpr destination_no_reserve(Args&&... args)
+    constexpr STRF_HD destination_no_reserve(Args&&... args)
         : _outbuf_creator(std::forward<Args>(args)...)
     {
     }
@@ -265,24 +266,21 @@ public:
     template < typename T = OutbufCreator
              , std::enable_if_t
                  < std::is_copy_constructible<T>::value, int > = 0 >
-    constexpr destination_no_reserve( strf::detail::destination_tag
-                                    , const OutbufCreator& oc
-                                    , const FPack& fp )
+    constexpr STRF_HD destination_no_reserve( strf::detail::destination_tag
+                                            , const OutbufCreator& oc
+                                            , const FPack& fp )
         : _outbuf_creator(oc)
         , _fpack(fp)
     {
     }
 
-    constexpr destination_no_reserve( strf::detail::destination_tag
-                                    , OutbufCreator&& oc
-                                    , FPack&& fp )
+    constexpr STRF_HD destination_no_reserve( strf::detail::destination_tag
+                                            , OutbufCreator&& oc
+                                            , FPack&& fp )
         : _outbuf_creator(std::move(oc))
         , _fpack(std::move(fp))
     {
     }
-
-    constexpr destination_no_reserve(const destination_no_reserve&) = default;
-    constexpr destination_no_reserve(destination_no_reserve&&) = default;
 
     using _common::with;
     using _common::operator();
@@ -290,19 +288,19 @@ public:
     using _common::reserve_calc;
     using _common::reserve;
 
-    constexpr destination_no_reserve& no_reserve() &
+    constexpr STRF_HD destination_no_reserve& no_reserve() &
     {
         return *this;
     }
-    constexpr const destination_no_reserve& no_reserve() const &
+    constexpr STRF_HD const destination_no_reserve& no_reserve() const &
     {
         return *this;
     }
-    constexpr destination_no_reserve&& no_reserve() &&
+    constexpr STRF_HD destination_no_reserve&& no_reserve() &&
     {
         return std::move(*this);
     }
-    constexpr const destination_no_reserve&& no_reserve() const &&
+    constexpr STRF_HD const destination_no_reserve&& no_reserve() const &&
     {
         return std::move(*this);
     }
@@ -317,7 +315,7 @@ private:
              , typename T = OutbufCreator
              , typename = std::enable_if_t
                  < std::is_copy_constructible<T>::value > >
-    constexpr destination_no_reserve
+    constexpr STRF_HD destination_no_reserve
         ( const destination_no_reserve<OutbufCreator, OtherFPack>& other
         , detail::destination_tag
         , FPE&& ... fpe )
@@ -327,7 +325,7 @@ private:
     }
 
     template < typename OtherFPack, typename ... FPE >
-    constexpr destination_no_reserve
+    constexpr STRF_HD destination_no_reserve
         ( destination_no_reserve<OutbufCreator, OtherFPack>&& other
         , detail::destination_tag
         , FPE&& ... fpe )
@@ -337,7 +335,7 @@ private:
     }
 
     template <typename ... Printers>
-    decltype(auto) _write
+    decltype(auto) STRF_HD _write
         ( const strf::print_preview<false, false>&
         , const Printers& ... printers) const
     {
@@ -377,7 +375,7 @@ public:
              , std::enable_if_t
                  < std::is_constructible<OutbufCreator, Args...>::value
                  , int > = 0 >
-    constexpr destination_with_given_size(std::size_t size, Args&&... args)
+    constexpr STRF_HD destination_with_given_size(std::size_t size, Args&&... args)
         : _size(size)
         , _outbuf_creator(std::forward<Args>(args)...)
     {
@@ -385,28 +383,25 @@ public:
 
     template < typename T = OutbufCreator
              , std::enable_if_t<std::is_copy_constructible<T>::value, int> = 0 >
-    constexpr destination_with_given_size( strf::detail::destination_tag
-                                         , std::size_t size
-                                         , const OutbufCreator& oc
-                                         , const FPack& fp )
+    constexpr STRF_HD destination_with_given_size( strf::detail::destination_tag
+                                                 , std::size_t size
+                                                 , const OutbufCreator& oc
+                                                 , const FPack& fp )
         : _size(size)
         , _outbuf_creator(oc)
         , _fpack(fp)
     {
     }
 
-    constexpr destination_with_given_size( strf::detail::destination_tag
-                                         , std::size_t size
-                                         , OutbufCreator&& oc
-                                         , FPack&& fp )
+    constexpr STRF_HD destination_with_given_size( strf::detail::destination_tag
+                                                 , std::size_t size
+                                                 , OutbufCreator&& oc
+                                                 , FPack&& fp )
         : _size(size)
         , _outbuf_creator(std::move(oc))
         , _fpack(std::move(fp))
     {
     }
-
-    constexpr destination_with_given_size(const destination_with_given_size&) = default;
-    constexpr destination_with_given_size(destination_with_given_size&&) = default;
 
     using _common::with;
     using _common::operator();
@@ -414,12 +409,12 @@ public:
     using _common::reserve_calc;
     using _common::no_reserve;
 
-    constexpr destination_with_given_size& reserve(std::size_t size) &
+    constexpr STRF_HD destination_with_given_size& reserve(std::size_t size) &
     {
         _size = size;
         return *this;
     }
-    constexpr destination_with_given_size&& reserve(std::size_t size) &&
+    constexpr STRF_HD destination_with_given_size&& reserve(std::size_t size) &&
     {
         _size = size;
         return std::move(*this);
@@ -435,7 +430,7 @@ private:
              , typename T = OutbufCreator
              , typename = std::enable_if_t
                  < std::is_copy_constructible<T>::value > >
-    constexpr destination_with_given_size
+    constexpr STRF_HD destination_with_given_size
         ( const destination_with_given_size<OutbufCreator, OtherFPack>& other
         , detail::destination_tag
         , FPE&& ... fpe )
@@ -446,7 +441,7 @@ private:
     }
 
     template < typename OtherFPack, typename ... FPE >
-    constexpr destination_with_given_size
+    constexpr STRF_HD destination_with_given_size
         ( destination_with_given_size<OutbufCreator, OtherFPack>&& other
         , detail::destination_tag
         , FPE&& ... fpe )
@@ -457,7 +452,7 @@ private:
     }
 
     template <typename ... Printers>
-    decltype(auto) _write
+    decltype(auto) STRF_HD _write
         ( const strf::print_preview<false, false>&
         , const Printers& ... printers) const
     {
@@ -498,7 +493,7 @@ public:
              , std::enable_if_t
                  < std::is_constructible<OutbufCreator, Args...>::value
                  , int > = 0 >
-    constexpr destination_calc_size(Args&&... args)
+    constexpr STRF_HD destination_calc_size(Args&&... args)
         : _outbuf_creator(std::forward<Args>(args)...)
     {
     }
@@ -506,24 +501,21 @@ public:
     template < typename T = OutbufCreator
              , std::enable_if_t
                  < std::is_copy_constructible<T>::value, int > = 0 >
-    constexpr destination_calc_size( strf::detail::destination_tag
-                                   , const OutbufCreator& oc
-                                   , const FPack& fp )
+    constexpr STRF_HD destination_calc_size( strf::detail::destination_tag
+                                           , const OutbufCreator& oc
+                                           , const FPack& fp )
         : _outbuf_creator(oc)
         , _fpack(fp)
     {
     }
 
-    constexpr destination_calc_size( strf::detail::destination_tag
-                                   , OutbufCreator&& oc
-                                   , FPack&& fp )
+    constexpr STRF_HD destination_calc_size( strf::detail::destination_tag
+                                           , OutbufCreator&& oc
+                                           , FPack&& fp )
         : _outbuf_creator(std::move(oc))
         , _fpack(std::move(fp))
     {
     }
-
-    constexpr destination_calc_size(const destination_calc_size&) = default;
-    constexpr destination_calc_size(destination_calc_size&&) = default;
 
     using _common::with;
     using _common::operator();
@@ -531,19 +523,19 @@ public:
     using _common::no_reserve;
     using _common::reserve;
 
-    constexpr const destination_calc_size & reserve_calc() const &
+    constexpr STRF_HD const destination_calc_size & reserve_calc() const &
     {
         return *this;
     }
-    constexpr destination_calc_size & reserve_calc() &
+    constexpr STRF_HD destination_calc_size & reserve_calc() &
     {
         return *this;
     }
-    constexpr const destination_calc_size && reserve_calc() const &&
+    constexpr STRF_HD const destination_calc_size && reserve_calc() const &&
     {
         return std::move(*this);
     }
-    constexpr destination_calc_size && reserve_calc() &&
+    constexpr STRF_HD destination_calc_size && reserve_calc() &&
     {
         return std::move(*this);
     }
@@ -558,7 +550,7 @@ private:
              , typename T = OutbufCreator
              , typename = std::enable_if_t
                  < std::is_copy_constructible<T>::value > >
-    destination_calc_size
+    STRF_HD destination_calc_size
         ( const destination_calc_size<OutbufCreator, OtherFPack>& other
         , detail::destination_tag
         , FPE&& ... fpe )
@@ -568,7 +560,7 @@ private:
     }
 
     template < typename OtherFPack, typename ... FPE >
-    destination_calc_size
+    STRF_HD destination_calc_size
         ( destination_calc_size<OutbufCreator, OtherFPack>&& other
         , detail::destination_tag
         , FPE&& ... fpe )
@@ -578,7 +570,7 @@ private:
     }
 
     template <typename ... Printers>
-    decltype(auto) _write
+    decltype(auto) STRF_HD _write
         ( const strf::print_preview<true, false>& preview
         , const Printers& ... printers ) const
     {
@@ -592,7 +584,7 @@ private:
 };
 
 template <typename CharOut, typename FPack, typename Preview, typename Arg>
-inline auto make_printer
+inline STRF_HD auto make_printer
     ( strf::rank<1>
     , const FPack& fp
     , Preview& preview
@@ -617,12 +609,12 @@ public:
 
     using char_type = CharT;
 
-    explicit outbuf_reference(strf::basic_outbuf<CharT>& ob) noexcept
+    explicit STRF_HD outbuf_reference(strf::basic_outbuf<CharT>& ob) noexcept
         : _ob(ob)
     {
     }
 
-    strf::basic_outbuf<CharT>& create() const
+    STRF_HD strf::basic_outbuf<CharT>& create() const
     {
         return _ob;
     }
@@ -634,14 +626,12 @@ private:
 
 } // namespace detail
 
-
 template <typename CharT>
-auto to(strf::basic_outbuf<CharT>& ob)
+auto STRF_HD to(strf::basic_outbuf<CharT>& ob)
 {
     return strf::destination_no_reserve<strf::detail::outbuf_reference<CharT>>(ob);
 }
 
-
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DESTINATION_HPP

@@ -83,23 +83,22 @@ int main()
 
 #if defined(__cpp_exceptions)
 
-    BOOST_TEST_THROWS( (strf::to_string
+    TEST_THROWS( (strf::to_string
                             .with(strf::tr_invalid_arg::stop)
                             .reserve_calc()
                             .tr("{ }__{2}--{}=={}..{}::{}~~", 0, 1, 2, 3))
                       , strf::tr_string_syntax_error );
-    BOOST_TEST_THROWS( (strf::to_string
-                            .with(strf::tr_invalid_arg::stop)
-                            .reserve_calc()
-                            .tr("{ }__{2}--{}=={}..{}::{blah}~~", 0, 1, 2, 3))
-                      , strf::tr_string_syntax_error );
-    BOOST_TEST_THROWS( (strf::to_string
-                            .with(strf::tr_invalid_arg::stop)
-                            .reserve_calc()
-                            .tr("{ }__{2}--{}=={}..{}::{", 0, 1, 2, 3))
-                      , strf::tr_string_syntax_error );
-
-    BOOST_TEST_THROWS( (strf::to_string
+    TEST_THROWS( (strf::to_string
+                      .with(strf::tr_invalid_arg::stop)
+                      .reserve_calc()
+                      .tr("{ }__{2}--{}=={}..{}::{blah}~~", 0, 1, 2, 3))
+                , strf::tr_string_syntax_error );
+    TEST_THROWS( (strf::to_string
+                      .with(strf::tr_invalid_arg::stop)
+                      .reserve_calc()
+                      .tr("{ }__{2}--{}=={}..{}::{", 0, 1, 2, 3))
+                , strf::tr_string_syntax_error );
+    TEST_THROWS( (strf::to_string
                             .with(strf::tr_invalid_arg::stop)
                             .reserve_calc()
                             .tr("{ }__{10}--{}=={}..{}::{}~~", 0, 1, 2, 3))
@@ -118,6 +117,6 @@ int main()
         .tr("{ }__{10}--{}=={}..{}::{", 0, 1, 2, 3);
 
 
-    return boost::report_errors();
+    return test_finish();
 
 }

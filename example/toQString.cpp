@@ -43,19 +43,16 @@ private:
 
 void QStringCreator::recycle()
 {
-    if (this->good())
-    {
+    if (this->good()) {
         const QChar * qchar_buffer = reinterpret_cast<QChar*>(_buffer);
         std::size_t count = this->pos() - _buffer;
 
 #if defined(__cpp_exceptions)
 
-        try
-        {
+        try {
             _str.append(qchar_buffer, count);
         }
-        catch(...)
-        {
+        catch(...) {
             _eptr = std::current_exception();
             this->set_good(false);
         }
@@ -73,8 +70,7 @@ QString QStringCreator::finish()
 {
     recycle();
     this->set_good(false);
-    if (_eptr != nullptr)
-    {
+    if (_eptr != nullptr) {
         std::rethrow_exception(_eptr);
     }
     return std::move(_str);

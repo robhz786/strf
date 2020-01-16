@@ -179,8 +179,7 @@ void base64_printer<CharT>::_calc_size(strf::size_preview<true>& preview) const
 {
     std::size_t num_digits = 4 * (_fmt.value().num_bytes + 2) / 3;
     preview.add_size(num_digits);
-    if (_facet.line_length > 0 && _facet.eol[0] != '\0')
-    {
+    if (_facet.line_length > 0 && _facet.eol[0] != '\0') {
         std::size_t num_lines
             = (num_digits + _facet.line_length - 1)
             / _facet.line_length;
@@ -194,12 +193,9 @@ void base64_printer<CharT>::_calc_size(strf::size_preview<true>& preview) const
 template <typename CharT>
 void base64_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
 {
-    if (_facet.single_line())
-    {
+    if (_facet.single_line()) {
         _write_single_line(ob);
-    }
-    else
-    {
+    } else {
         _write_multiline(ob);
     }
 }
@@ -216,11 +212,9 @@ void base64_printer<CharT>::_write_identation(strf::basic_outbuf<CharT>& ob) con
 {
     using traits = std::char_traits<CharT>;
     std::size_t count = _fmt.indentation();
-    while(true)
-    {
+    while(true) {
         std::size_t buff_size = ob.size();
-        if (buff_size >= count)
-        {
+        if (buff_size >= count) {
             traits::assign(ob.pos(), count, CharT(' '));
             ob.advance(count);
             return;
@@ -236,10 +230,7 @@ template <typename CharT>
 void base64_printer<CharT>::_encode_all_data_in_this_line(strf::basic_outbuf<CharT>& ob) const
 {
     auto data_it = static_cast<const std::uint8_t*>(_fmt.value().bytes);
-    for ( std::ptrdiff_t count = _fmt.value().num_bytes
-        ; count > 0
-        ; count -= 3 )
-    {
+    for (std::ptrdiff_t count = _fmt.value().num_bytes; count > 0; count -= 3) {
         ob.ensure(4);
         _encode_3bytes(ob.pos(), data_it, count);
         ob.advance(4);
@@ -287,23 +278,17 @@ void base64_printer<CharT>::_write_multiline(strf::basic_outbuf<CharT>& ob) cons
     std::ptrdiff_t remaining_bytes = _fmt.value().num_bytes;
     unsigned cursor_pos = 0;
 
-    while (remaining_bytes > 0)
-    {
-        if (cursor_pos + 4 < _facet.line_length)
-        {
+    while (remaining_bytes > 0) {
+        if (cursor_pos + 4 < _facet.line_length) {
             ob.ensure(4);
             _encode_3bytes(ob.pos(), data_it, remaining_bytes);
             ob.advance(4);
             cursor_pos += 4;
-        }
-        else
-        {
+        } else {
             CharT tmp[4];
             _encode_3bytes(tmp, data_it, remaining_bytes);
-            for(int i=0; i < 4; ++i)
-            {
-                if (cursor_pos == _facet.line_length)
-                {
+            for(int i=0; i < 4; ++i) {
+                if (cursor_pos == _facet.line_length) {
                     cursor_pos = 0;
                     _write_end_of_line(ob);
                     _write_identation(ob);
@@ -317,8 +302,7 @@ void base64_printer<CharT>::_write_multiline(strf::basic_outbuf<CharT>& ob) cons
         data_it += 3;
         remaining_bytes -= 3;
     }
-    if (cursor_pos != 0)
-    {
+    if (cursor_pos != 0) {
         _write_end_of_line(ob);
     }
 }

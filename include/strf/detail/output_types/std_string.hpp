@@ -9,7 +9,7 @@
 #include <strf/destination.hpp>
 #include <string>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
@@ -48,8 +48,7 @@ public:
     {
         auto * p = this->pos();
         this->set_pos(_buf);
-        if (this->good())
-        {
+        if (this->good()) {
             this->set_good(false);
             _str.append(_buf, p);
             this->set_good(true);
@@ -59,8 +58,7 @@ public:
     void finish()
     {
         auto * p = this->pos();
-        if (this->good())
-        {
+        if (this->good()) {
             this->set_good(false);
             _str.append(_buf, p);
         }
@@ -104,8 +102,7 @@ public:
     {
         auto * p = this->pos();
         this->set_pos(_buf);
-        if (this->good())
-        {
+        if (this->good()) {
             this->set_good(false);
             _str.append(_buf, p);
             this->set_good(true);
@@ -115,8 +112,7 @@ public:
     _string_type finish()
     {
         auto * p = this->pos();
-        if (this->good())
-        {
+        if (this->good()) {
             this->set_good(false);
             _str.append(_buf, p);
         }
@@ -308,7 +304,7 @@ constexpr strf::destination_no_reserve
     to_wstring{};
 
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_OUTPUT_TYPES_STD_STRING_HPP
 

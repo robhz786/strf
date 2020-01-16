@@ -5,8 +5,10 @@ Branch   | Travis | Appveyor | codecov.io
 develop  | [![Build Status](https://travis-ci.org/robhz786/strf.svg?branch=develop)](https://travis-ci.org/robhz786/strf)| [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/strf?branch=develop&svg=true)](https://ci.appveyor.com/project/robhz786/strf/branch/develop)| [![codecov](https://codecov.io/gh/robhz786/robhz786/branch/develop/graph/badge.svg)](https://codecov.io/gh/robhz786/strf/branch/develop)
 master   | [![Build Status](https://travis-ci.org/robhz786/strf.svg?branch=master)](https://travis-ci.org/robhz786/strf)| [![Build Status](https://ci.appveyor.com/api/projects/status/github/robhz786/strf?branch=master&svg=true)](https://ci.appveyor.com/project/robhz786/strf/branch/master)| [![codecov](https://codecov.io/gh/robhz786/robhz786/branch/master/graph/badge.svg)](https://codecov.io/gh/robhz786/strf/branch/master)
 
-**Version:** 0.10.1
+**Version:** 0.10.2
 **documentation:** http://robhz786.github.io/strf/doc/quick_reference.html
+[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/cpp-strf/strf)
+
 
 Strf is a header-only C++14 formatting library that
 
@@ -42,16 +44,15 @@ void samples()
 
     // ranges
     int array[] = {20, 30, 40};
-    const char* separator = " / ";
-    s = strf::to_string( "--[", strf::separated_range(array, separator), "]--");
+    s = strf::to_string( "--[", strf::separated_range(array, " / "), "]--");
     assert(s == "--[20 / 30 / 40]--");
 
 
     // range with formatting
     s = strf::to_string( "--["
-                       , ~strf::hex(strf::separated_range(array, separator)).p(4)
+                       , ~strf::hex(strf::separated_range(array, ", ")).p(4)
                        , "]--");
-    assert(s == "--[0x0014 / 0x001e / 0x0028]--");
+    assert(s == "--[0x0014, 0x001e, 0x0028]--");
 
 
     // join: align a group of argument as one:
@@ -98,9 +99,10 @@ void samples()
     assert(s == "255 in hexadecimal is ff");
 }
 ```
-# Acknowledgment
+# Acknowledgments
 
-This library uses [Ryu](https://github.com/ulfjack/ryu) to print floating-points. Thanks to Ulf Adams for creating such a great algorithm and providing a C implementation. It saved me a ton of work.
+- This library uses [Ryu](https://github.com/ulfjack/ryu) to print floating-points. Thanks to Ulf Adams for creating such a great algorithm and providing a C implementation. It saved me a ton of work.
+- Thanks to Eyal Rozenberg --- the author of cuda-kat library --- for enabling strf to work on CUDA.
 
 # Compilers
 

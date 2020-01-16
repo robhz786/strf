@@ -9,25 +9,29 @@
 #include <cstring>
 #include <strf/destination.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 template <typename CharT>
 class narrow_cfile_writer final: public strf::basic_outbuf_noexcept<CharT>
 {
 public:
 
-    explicit narrow_cfile_writer(std::FILE* dest_)
+    explicit STRF_HD narrow_cfile_writer(std::FILE* dest_)
         : strf::basic_outbuf_noexcept<CharT>(_buf, _buf_size)
         , _dest(dest_)
     {
+#ifdef __CUDA_ARCH__
+        // files are not accessible on CUDA devices
+        asm("trap;");
+#endif
         STRF_ASSERT(dest_ != nullptr);
     }
 
-    narrow_cfile_writer() = delete;
+    STRF_HD narrow_cfile_writer() = delete;
 
 #ifdef STRF_NO_CXX17_COPY_ELISION
 
-    narrow_cfile_writer(narrow_cfile_writer&&);
+    STRF_HD narrow_cfile_writer(narrow_cfile_writer&&);
 
 #else // defined(STRF_NO_CXX17_COPY_ELISION)
 
@@ -36,21 +40,28 @@ public:
 
 #endif // defined(STRF_NO_CXX17_COPY_ELISION)
 
-    ~narrow_cfile_writer()
+    STRF_HD ~narrow_cfile_writer()
     {
     }
 
-    void recycle() noexcept
+    STRF_HD void recycle() noexcept
     {
+#ifdef __CUDA_ARCH__
+        // This class cannot be instantiated in device-side code;
+        // this and other methods are marked STRF_HD since they
+        // override potentially-host-and-device-side-capable
+        // methods.
+        asm("trap;");
+#else
         auto p = this->pos();
         this->set_pos(_buf);
-        if (this->good())
-        {
+        if (this->good()) {
             std::size_t count = p - _buf;
             auto count_inc = std::fwrite(_buf, sizeof(CharT), count, _dest);
             _count += count_inc;
             this->set_good(count == count_inc);
         }
+#endif
     }
 
     struct result
@@ -59,18 +70,26 @@ public:
         bool success;
     };
 
-    result finish()
+    STRF_HD result finish()
     {
+#ifdef __CUDA_ARCH__
+        // This class cannot be instantiated in device-side code;
+        // this and other methods are marked STRF_HD since they
+        // override potentially-host-and-device-side-capable
+        // methods.
+        asm("trap;");
+        return {};
+#else
         bool g = this->good();
         this->set_good(false);
-        if (g)
-        {
+        if (g) {
             std::size_t count = this->pos() - _buf;
             auto count_inc = std::fwrite(_buf, sizeof(CharT), count, _dest);
             _count += count_inc;
             g = (count == count_inc);
         }
         return {_count, g};
+#endif
     }
 
 private:
@@ -106,20 +125,23 @@ public:
 
 #endif // defined(STRF_NO_CXX17_COPY_ELISION)
 
-    ~wide_cfile_writer()
+    STRF_HD ~wide_cfile_writer()
     {
     }
 
-    void recycle() noexcept
+    STRF_HD void recycle() noexcept override
     {
+#ifdef __CUDA_ARCH__
+        asm("trap;");
+#endif
+        // This will only be compiled as device-side code;
+        // the host-side version simply doesn't have object
+        // code, so using it should fail linking
         auto p = this->pos();
         this->set_pos(_buf);
-        if (this->good())
-        {
-            for (auto it = _buf; it != p; ++it, ++_count)
-            {
-                if(std::fputwc(*it, _dest) == WEOF)
-                {
+        if (this->good()) {
+            for (auto it = _buf; it != p; ++it, ++_count) {
+                if(std::fputwc(*it, _dest) == WEOF) {
                     this->set_good(false);
                     break;
                 }
@@ -133,7 +155,7 @@ public:
         bool success;
     };
 
-    result finish()
+    STRF_HD result finish()
     {
         recycle();
         auto g = this->good();
@@ -207,19 +229,28 @@ private:
 template <typename CharT = char>
 inline auto to(std::FILE* destination)
 {
+#ifndef __CUDA_ARCH__
     return strf::destination_no_reserve
         < strf::detail::narrow_cfile_writer_creator<CharT> >
         (destination);
+#else
+    return 0;
+#endif
 }
 
 inline auto wto(std::FILE* destination)
 {
+#ifndef __CUDA_ARCH__
     return strf::destination_no_reserve
         < strf::detail::wide_cfile_writer_creator >
         (destination);
+#else
+    return 0;
+#endif
 }
 
-STRF_NAMESPACE_END
+
+} // namespace strf
 
 #endif  // STRF_DETAIL_OUTPUT_TYPES_FILE_HPP
 

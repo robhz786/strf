@@ -8,7 +8,7 @@
 #include <string>
 #include <strf/detail/common.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 namespace detail {
 
@@ -16,22 +16,20 @@ class monotonic_grouping_impl
 {
 public:
 
-    constexpr monotonic_grouping_impl(std::uint8_t groups_size)
+    constexpr STRF_HD monotonic_grouping_impl(std::uint8_t groups_size)
         : _groups_size(groups_size)
     {
         STRF_ASSERT(_groups_size != 0);
     }
 
-    constexpr monotonic_grouping_impl(const monotonic_grouping_impl&) = default;
-
-    unsigned get_thousands_sep_count(unsigned num_digits) const
+    STRF_HD unsigned get_thousands_sep_count(unsigned num_digits) const
     {
         return (_groups_size == 0 || num_digits == 0)
             ? 0
             : (num_digits - 1) / _groups_size;
     }
 
-    std::uint8_t* get_groups
+    STRF_HD std::uint8_t* get_groups
         ( unsigned num_digits
         , std::uint8_t* groups_array ) const;
 
@@ -68,14 +66,13 @@ private:
 
 #if defined(STRF_SOURCE) || ! defined(STRF_SEPARATE_COMPILATION)
 
-STRF_INLINE
+STRF_INLINE STRF_HD
 std::uint8_t* monotonic_grouping_impl::get_groups
     ( unsigned num_digits
     , std::uint8_t* groups_array ) const
 {
     STRF_ASSERT(_groups_size != 0);
-    while(num_digits > _groups_size)
-    {
+    while(num_digits > _groups_size) {
         *groups_array = static_cast<std::uint8_t>(_groups_size);
         ++ groups_array;
         num_digits -= _groups_size;
@@ -89,15 +86,12 @@ unsigned str_grouping_impl::get_thousands_sep_count(unsigned num_digits) const
 {
     STRF_ASSERT(!_grouping.empty());
     unsigned count = 0;
-    for(auto ch : _grouping)
-    {
+    for(auto ch : _grouping) {
         auto grp = static_cast<unsigned>(ch);
-        if(grp == 0 || grp >= num_digits)
-        {
+        if(grp == 0 || grp >= num_digits) {
             return count;
         }
-        if(grp < num_digits)
-        {
+        if(grp < num_digits) {
             ++ count;
             num_digits -= grp;
         }
@@ -112,29 +106,23 @@ STRF_INLINE std::uint8_t* str_grouping_impl::get_groups
     , std::uint8_t* groups_array ) const
 {
     STRF_ASSERT(!_grouping.empty());
-    for(auto ch : _grouping)
-    {
+    for(auto ch : _grouping) {
         auto group_size = static_cast<unsigned>(ch);
-        if (group_size == 0)
-        {
+        if (group_size == 0) {
             *groups_array = static_cast<std::uint8_t>(num_digits);
             return groups_array;
         }
-        if (group_size < num_digits)
-        {
+        if (group_size < num_digits) {
             *groups_array = static_cast<std::uint8_t>(group_size);
             num_digits -= group_size;
             ++ groups_array;
-        }
-        else
-        {
+        } else {
             *groups_array = static_cast<std::uint8_t>(num_digits);
             return groups_array;
         }
     }
     const unsigned last_group_size = _grouping.back();
-    while(num_digits > last_group_size)
-    {
+    while(num_digits > last_group_size) {
         *groups_array = static_cast<std::uint8_t>(last_group_size);
         ++ groups_array;
         num_digits -= last_group_size;
@@ -154,20 +142,20 @@ class numpunct_base
 {
 public:
 
-    numpunct_base( unsigned first_group_size
+    STRF_HD numpunct_base( unsigned first_group_size
                  , char32_t dec_point = U'.'
-                 , char32_t sep = U',' )
+                 , char32_t sep = U',' ) noexcept
         : _first_group_size(first_group_size)
         , _decimal_point(dec_point)
         , _thousands_sep(sep)
     {
     }
 
-    virtual ~numpunct_base()
+    virtual STRF_HD ~numpunct_base()
     {
     }
 
-    bool no_group_separation(unsigned num_digits) const
+    STRF_HD bool no_group_separation(unsigned num_digits) const
     {
         return num_digits <= _first_group_size;
     }
@@ -175,30 +163,30 @@ public:
     /**
     Caller must ensure that groups_array has at least num_digits elements
      */
-    virtual unsigned groups
+    virtual STRF_HD unsigned groups
         ( unsigned num_digits
         , std::uint8_t* groups_array ) const = 0;
 
     /**
       return the number of thousands separators for such number of digits
      */
-    virtual unsigned thousands_sep_count(unsigned num_digits) const = 0;
+    virtual STRF_HD unsigned thousands_sep_count(unsigned num_digits) const = 0;
 
-    char32_t thousands_sep() const
+    STRF_HD char32_t thousands_sep() const
     {
         return _thousands_sep;
     }
-    numpunct_base &  thousands_sep(char32_t ch) &
+    STRF_HD numpunct_base &  thousands_sep(char32_t ch) &
     {
         _thousands_sep = ch;
         return *this;
     }
-    numpunct_base && thousands_sep(char32_t ch) &&
+    STRF_HD numpunct_base && thousands_sep(char32_t ch) &&
     {
         _thousands_sep = ch;
         return std::move(*this);
     }
-    char32_t decimal_point() const
+    STRF_HD char32_t decimal_point() const
     {
         return _decimal_point;
     }
@@ -207,7 +195,7 @@ public:
         _decimal_point = ch;
         return *this;
     }
-    numpunct_base && decimal_point(char32_t ch) &&
+    STRF_HD numpunct_base && decimal_point(char32_t ch) &&
     {
         _decimal_point = ch;
         return std::move(*this);
@@ -221,7 +209,8 @@ public:
 
 protected:
 
-    numpunct_base(const numpunct_base&) = default;
+        STRF_HD numpunct_base(const numpunct_base& other) noexcept
+        : numpunct_base(other._first_group_size, other._decimal_point, other._thousands_sep) { }
 
 private:
 
@@ -235,7 +224,7 @@ class numpunct: public strf::numpunct_base
 {
 public:
 
-    numpunct(unsigned first_group_size)
+    STRF_HD numpunct(unsigned first_group_size) noexcept
         : strf::numpunct_base(first_group_size)
     {}
 
@@ -243,7 +232,8 @@ public:
 
 protected:
 
-    numpunct(const numpunct&) = default;
+    STRF_HD numpunct(const numpunct& other) noexcept
+        : strf::numpunct_base(other) { }
 };
 
 template <int Base>
@@ -251,29 +241,29 @@ class no_grouping final: public strf::numpunct<Base>
 {
 public:
 
-    no_grouping()
+    STRF_HD no_grouping()
         : strf::numpunct<Base>((unsigned)-1)
     {
     }
 
-    unsigned groups( unsigned num_digits
+    STRF_HD unsigned groups( unsigned num_digits
                    , std::uint8_t* groups_array ) const override
     {
         STRF_ASSERT(num_digits <= 0xFF);
         *groups_array = static_cast<std::uint8_t>(num_digits);
         return 1;
     }
-    unsigned thousands_sep_count(unsigned num_digits) const override
+    STRF_HD unsigned thousands_sep_count(unsigned num_digits) const override
     {
         (void)num_digits;
         return 0;
     }
-    no_grouping &  decimal_point(char32_t ch) &
+    STRF_HD no_grouping &  decimal_point(char32_t ch) &
     {
         numpunct_base::decimal_point(ch);
         return *this;
     }
-    no_grouping && decimal_point(char32_t ch) &&
+    STRF_HD no_grouping && decimal_point(char32_t ch) &&
     {
         numpunct_base::decimal_point(ch);
         return std::move(*this);
@@ -295,21 +285,19 @@ class monotonic_grouping: public strf::numpunct<Base>
 {
 public:
 
-    constexpr monotonic_grouping(std::uint8_t groups_size)
+    constexpr STRF_HD monotonic_grouping(std::uint8_t groups_size)
         : strf::numpunct<Base>(groups_size)
         , _impl(groups_size)
     {
     }
 
-    constexpr monotonic_grouping(const monotonic_grouping&) = default;
-
-    unsigned groups( unsigned num_digits
-                   , std::uint8_t* groups_array ) const override
+    STRF_HD unsigned groups( unsigned num_digits
+                           , std::uint8_t* groups_array ) const override
     {
         auto s = _impl.get_groups(num_digits, groups_array) - groups_array;
         return 1 + static_cast<unsigned>(s);
     }
-    unsigned thousands_sep_count(unsigned num_digits) const override
+    STRF_HD unsigned thousands_sep_count(unsigned num_digits) const override
     {
         return _impl.get_thousands_sep_count(num_digits);
     }
@@ -364,7 +352,7 @@ public:
 
     str_grouping(const str_grouping&) = default;
 
-    str_grouping(str_grouping&& other) = default;
+    str_grouping(str_grouping&&) = default;
 
     unsigned groups( unsigned num_digits
                    , std::uint8_t* groups_array ) const override
@@ -416,18 +404,18 @@ class default_numpunct final: public strf::numpunct<Base>
 {
 public:
 
-    default_numpunct()
+    STRF_HD default_numpunct()
         : strf::numpunct<Base>((unsigned)-1)
     {}
 
-    unsigned groups( unsigned num_digits
+    STRF_HD unsigned groups( unsigned num_digits
                    , std::uint8_t* groups_array ) const override
     {
         STRF_ASSERT(num_digits <= 0xFF);
         *groups_array = static_cast<std::uint8_t>(num_digits);
         return 1;
     }
-    unsigned thousands_sep_count(unsigned num_digits) const override
+    STRF_HD unsigned thousands_sep_count(unsigned num_digits) const override
     {
         (void)num_digits;
         return 0;
@@ -473,10 +461,10 @@ class has_punct_impl
 {
 public:
 
-    static std::true_type  test_numpunct(const strf::numpunct_base&);
-    static std::false_type test_numpunct(const strf::default_numpunct<Base>&);
+    static STRF_HD std::true_type  test_numpunct(const strf::numpunct_base&);
+    static STRF_HD std::false_type test_numpunct(const strf::default_numpunct<Base>&);
 
-    static const FPack& fp();
+    static STRF_HD const FPack& fp();
 
     using has_numpunct_type = decltype
         ( test_numpunct
@@ -492,7 +480,7 @@ constexpr bool has_punct = has_punct_impl<CharT, FPack, InputT, Base>::has_punct
 
 } // namespace detail
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_FACETS_NUMPUNCT_HPP
 

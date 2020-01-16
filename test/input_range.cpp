@@ -174,5 +174,5 @@ int main()
         TEST("<-11>, <-22>, <-33>") ( strf::separated_range(stl_arr, ", ", func) );
         TEST("<-11>, <-22>, <-33>") ( strf::separated_range(arr, arr + 3, ", ", func) );
     }
-    return boost::report_errors();
+    return test_finish();
 }

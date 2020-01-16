@@ -7,7 +7,7 @@
 
 #include <strf/detail/facets/encoding.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 template <typename CharT> struct width_calculator_c;
 template <typename CharT> class width_calculator;
@@ -19,11 +19,11 @@ public:
 
     using category = strf::width_calculator_c<CharT>;
 
-    virtual strf::width_t width_of
+    virtual STRF_HD strf::width_t width_of
         ( CharT ch
         , strf::encoding<CharT> enc ) const = 0;
 
-    virtual strf::width_t width
+    virtual STRF_HD strf::width_t width
         ( strf::width_t limit
         , const CharT* str
         , std::size_t str_len
@@ -37,7 +37,7 @@ class fast_width final: public strf::width_calculator<CharT>
 {
 public:
 
-    strf::width_t width_of
+    STRF_HD strf::width_t width_of
         ( CharT ch, strf::encoding<CharT> enc ) const override
     {
         (void)ch;
@@ -45,7 +45,7 @@ public:
         return 1;
     }
 
-    strf::width_t width
+    STRF_HD strf::width_t width
         ( strf::width_t limit
         , const CharT* str
         , std::size_t str_len
@@ -59,8 +59,7 @@ public:
         (void) enc_err;
         (void) allow_surr;
 
-        if (str_len < INT16_MAX)
-        {
+        if (str_len < INT16_MAX) {
             return static_cast<std::int16_t>(str_len);
         }
         return strf::width_max;
@@ -72,7 +71,7 @@ class width_as_u32len final: public strf::width_calculator<CharT>
 {
 public:
 
-    virtual strf::width_t width_of
+    virtual STRF_HD strf::width_t width_of
         ( CharT ch, strf::encoding<CharT> enc ) const override
     {
         (void)ch;
@@ -81,7 +80,7 @@ public:
     }
 
 
-    strf::width_t width
+    STRF_HD strf::width_t width
         ( strf::width_t limit
         , const CharT* str
         , std::size_t str_len
@@ -95,11 +94,9 @@ public:
         (void) enc_err;
         (void) allow_surr;
 
-        if (limit > 0)
-        {
+        if (limit > 0) {
             auto count = enc.codepoints_count(str, str + str_len, limit.ceil());
-            if (count < INT16_MAX)
-            {
+            if (count < INT16_MAX) {
                 return static_cast<std::int16_t>(count);
             }
             return strf::width_max;
@@ -113,7 +110,7 @@ struct width_calculator_c
 {
     static constexpr bool constrainable = true;
 
-    static const strf::fast_width<CharT>& get_default()
+    static STRF_HD const strf::fast_width<CharT>& get_default()
     {
         static const strf::fast_width<CharT> x{};
         return x;
@@ -124,7 +121,7 @@ struct width_calculator_c
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_FACETS_WIDTH_CALCULATOR_HPP
 

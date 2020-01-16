@@ -6,9 +6,10 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/printer.hpp>
+#include <limits>
 #include <strf/detail/facets/encoding.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 class tr_string_syntax_error: public strf::stringify_error
 {
@@ -83,15 +84,12 @@ read_uint_result<CharT> read_uint(const CharT* it, const CharT* end) noexcept
     std::size_t value = *it -  static_cast<CharT>('0');
     constexpr long limit = std::numeric_limits<long>::max() / 10 - 9;
     ++it;
-    while (it != end)
-    {
+    while (it != end) {
         CharT ch = *it;
-        if (ch < static_cast<CharT>('0') || static_cast<CharT>('9') < ch)
-        {
+        if (ch < static_cast<CharT>('0') || static_cast<CharT>('9') < ch) {
             break;
         }
-        if(value > limit)
-        {
+        if(value > limit) {
             value = std::numeric_limits<std::size_t>::max();
             break;
         }
@@ -109,8 +107,7 @@ std::size_t invalid_arg_size
     ( strf::encoding<CharT> enc
     , tr_invalid_arg policy ) noexcept
 {
-    switch(policy)
-    {
+    switch(policy) {
         case tr_invalid_arg::replace:
             return enc.replacement_char_size();
         case tr_invalid_arg::stop:
@@ -144,12 +141,10 @@ std::size_t tr_string_size
     std::size_t count = 0;
     std::size_t arg_idx = 0;
 
-    while (it != end)
-    {
+    while (it != end) {
         const CharT* prev = it;
         it = traits::find(it, (end - it), '{');
-        if (it == nullptr)
-        {
+        if (it == nullptr) {
             count += (end - prev);
             break;
         }
@@ -157,94 +152,64 @@ std::size_t tr_string_size
         ++it;
 
         after_the_brace:
-        if (it == end)
-        {
-            if (arg_idx < num_args)
-            {
+        if (it == end) {
+            if (arg_idx < num_args) {
                 count += args_preview[arg_idx].get_size();
-            }
-            else if (inv_arg_size != trstr_invalid_arg_size_when_stop)
-            {
+            } else if (inv_arg_size != trstr_invalid_arg_size_when_stop) {
                 count += inv_arg_size;
             }
             break;
         }
 
         auto ch = *it;
-        if (ch == '}')
-        {
-            if (arg_idx < num_args)
-            {
+        if (ch == '}') {
+            if (arg_idx < num_args) {
                 count += args_preview[arg_idx].get_size();
                 ++arg_idx;
-            }
-            else if(inv_arg_size == trstr_invalid_arg_size_when_stop)
-            {
+            } else if(inv_arg_size == trstr_invalid_arg_size_when_stop) {
                 break;
-            }
-            else
-            {
+            } else {
                 count += inv_arg_size;
             }
             ++it;
-        }
-        else if (CharT('0') <= ch && ch <= CharT('9'))
-        {
+        } else if (CharT('0') <= ch && ch <= CharT('9')) {
             auto result = strf::detail::read_uint(it, end);
 
-            if (result.value < num_args)
-            {
+            if (result.value < num_args) {
                 count += args_preview[result.value].get_size();
-            }
-            else if(inv_arg_size == trstr_invalid_arg_size_when_stop)
-            {
+            } else if(inv_arg_size == trstr_invalid_arg_size_when_stop) {
                 break;
-            }
-            else
-            {
+            } else {
                 count += inv_arg_size;
             }
             it = traits::find(result.it, end - result.it, '}');
-            if (it == nullptr)
-            {
+            if (it == nullptr) {
                 break;
             }
             ++it;
-        }
-        else if(ch == '{')
-        {
+        } else if(ch == '{') {
             auto it2 = it + 1;
             it2 = traits::find(it2, end - it2, '{');
-            if (it2 == nullptr)
-            {
+            if (it2 == nullptr) {
                 return count += end - it;
             }
             count += (it2 - it);
             it = it2 + 1;
             goto after_the_brace;
-        }
-        else
-        {
-            if (ch != '-')
-            {
-                if (arg_idx < num_args)
-                {
+        } else {
+            if (ch != '-') {
+                if (arg_idx < num_args) {
                     count += args_preview[arg_idx].get_size();
                     ++arg_idx;
-                }
-                else if(inv_arg_size == trstr_invalid_arg_size_when_stop)
-                {
+                } else if(inv_arg_size == trstr_invalid_arg_size_when_stop) {
                     break;
-                }
-                else
-                {
+                } else {
                     count += inv_arg_size;
                 }
             }
             auto it2 = it + 1;
             it = traits::find(it2, (end - it2), '}');
-            if (it == nullptr)
-            {
+            if (it == nullptr) {
                 break;
             }
             ++it;
@@ -266,113 +231,75 @@ void tr_string_write
     using traits = std::char_traits<CharT>;
     std::size_t arg_idx = 0;
 
-    while (it != end)
-    {
+    while (it != end) {
         const CharT* prev = it;
         it = traits::find(it, (end - it), '{');
-        if (it == nullptr)
-        {
+        if (it == nullptr) {
             strf::write(ob, prev, end - prev);
             return;
         }
-
         strf::write(ob, prev, it - prev);
         ++it;
-
         after_the_brace:
-        if (it == end)
-        {
-            if (arg_idx < num_args)
-            {
+        if (it == end) {
+            if (arg_idx < num_args) {
                 args[arg_idx]->print_to(ob);
-            }
-            else if (policy == strf::tr_invalid_arg::replace)
-            {
+            } else if (policy == strf::tr_invalid_arg::replace) {
                 enc.write_replacement_char(ob);
-            }
-            else if (policy == strf::tr_invalid_arg::stop)
-            {
+            } else if (policy == strf::tr_invalid_arg::stop) {
                 strf::detail::throw_string_syntax_error();
             }
             break;
         }
-
         auto ch = *it;
-        if (ch == '}')
-        {
-            if (arg_idx < num_args)
-            {
+        if (ch == '}') {
+            if (arg_idx < num_args) {
                 args[arg_idx]->print_to(ob);
                 ++arg_idx;
-            }
-            else if (policy == strf::tr_invalid_arg::replace)
-            {
+            } else if (policy == strf::tr_invalid_arg::replace) {
                 enc.write_replacement_char(ob);
-            }
-            else if (policy == strf::tr_invalid_arg::stop)
-            {
+            } else if (policy == strf::tr_invalid_arg::stop) {
                 strf::detail::throw_string_syntax_error();
             }
             ++it;
-        }
-        else if (CharT('0') <= ch && ch <= CharT('9'))
-        {
+        } else if (CharT('0') <= ch && ch <= CharT('9')) {
             auto result = strf::detail::read_uint(it, end);
-
-            if (result.value < num_args)
-            {
-                args[result.value]->print_to(ob);            }
-            else if (policy == strf::tr_invalid_arg::replace)
-            {
+            if (result.value < num_args) {
+                args[result.value]->print_to(ob);
+            } else if (policy == strf::tr_invalid_arg::replace) {
                 enc.write_replacement_char(ob);
-            }
-            else if (policy == strf::tr_invalid_arg::stop)
-            {
+            } else if (policy == strf::tr_invalid_arg::stop) {
                 strf::detail::throw_string_syntax_error();
             }
-
             it = traits::find(result.it, end - result.it, '}');
-            if (it == nullptr)
-            {
+            if (it == nullptr) {
                 break;
             }
             ++it;
-        }
-        else if(ch == '{')
-        {
+        } else if(ch == '{') {
             auto it2 = it + 1;
             it2 = traits::find(it2, end - it2, '{');
-            if (it2 == nullptr)
-            {
+            if (it2 == nullptr) {
                 strf::write(ob, it, end - it);
                 return;
             }
             strf::write(ob, it, (it2 - it));
             it = it2 + 1;
             goto after_the_brace;
-        }
-        else
-        {
-            if (ch != '-')
-            {
-                if (arg_idx < num_args)
-                {
+        } else {
+            if (ch != '-') {
+                if (arg_idx < num_args) {
                     args[arg_idx]->print_to(ob);
                     ++arg_idx;
-                }
-                else if (policy == strf::tr_invalid_arg::replace)
-                {
+                } else if (policy == strf::tr_invalid_arg::replace) {
                     enc.write_replacement_char(ob);
-                }
-                else if (policy == strf::tr_invalid_arg::stop)
-                {
+                } else if (policy == strf::tr_invalid_arg::stop) {
                     strf::detail::throw_string_syntax_error();
                 }
             }
             auto it2 = it + 1;
             it = traits::find(it2, (end - it2), '}');
-            if (it == nullptr)
-            {
+            if (it == nullptr) {
                 break;
             }
             ++it;
@@ -427,7 +354,7 @@ public:
 
 } // namespace detail
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_TR_STRING_HPP
 

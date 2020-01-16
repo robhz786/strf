@@ -5,13 +5,11 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <system_error>
-#include <algorithm>
 #include <strf/outbuf.hpp>
 #include <strf/width_t.hpp>
+#include <strf/detail/standard_lib_functions.hpp>
 
-STRF_NAMESPACE_BEGIN
-
+namespace strf {
 
 class stringify_error: public std::exception
 {
@@ -30,21 +28,19 @@ class encoding_failure: public strf::stringify_error
 
 namespace detail {
 
-#if defined(__cpp_exceptions)
-
-inline void throw_encoding_failure()
+inline STRF_HD void handle_encoding_failure()
 {
+#if defined(__cpp_exceptions) && !defined(__CUDA_ARCH__)
     throw strf::encoding_failure();
-}
-
 #else // defined(__cpp_exceptions)
-
-inline void throw_encoding_failure()
-{
+#ifndef __CUDA_ARCH__
     std::abort();
+#else
+    asm("trap;");
+#endif
+#endif // defined(__cpp_exceptions) && !defined(__CUDA_ARCH__)
 }
 
-#endif // defined(__cpp_exceptions)
 
 } // namespace detail
 
@@ -56,17 +52,17 @@ public:
 
     using char_type = CharOut;
 
-    virtual ~printer()
+    STRF_HD virtual ~printer()
     {
     }
 
-    virtual void print_to(strf::basic_outbuf<CharOut>& ob) const = 0;
+    STRF_HD virtual void print_to(strf::basic_outbuf<CharOut>& ob) const = 0;
 };
 
 namespace detail {
 
 template<std::size_t CharSize>
-void write_fill_continuation
+void STRF_HD write_fill_continuation
     ( strf::underlying_outbuf<CharSize>& ob
     , std::size_t count
     , typename strf::underlying_outbuf<CharSize>::char_type ch )
@@ -75,20 +71,18 @@ void write_fill_continuation
 
     std::size_t space = ob.size();
     STRF_ASSERT(space < count);
-    std::char_traits<char_type>::assign(ob.pos(), space, ch);
+    strf::detail::char_assign<char_type>(ob.pos(), space, ch);
     count -= space;
     ob.advance_to(ob.end());
     ob.recycle();
-    while (ob.good())
-    {
+    while (ob.good()) {
         space = ob.size();
-        if (count <= space)
-        {
-            std::char_traits<char_type>::assign(ob.pos(), count, ch);
+        if (count <= space) {
+            strf::detail::char_assign<char_type>(ob.pos(), count, ch);
             ob.advance(count);
             break;
         }
-        std::char_traits<char_type>::assign(ob.pos(), space, ch);
+        strf::detail::char_assign(ob.pos(), space, ch);
         count -= space;
         ob.advance_to(ob.end());
         ob.recycle();
@@ -96,25 +90,22 @@ void write_fill_continuation
 }
 
 template <std::size_t CharSize>
-inline void write_fill
+inline STRF_HD void write_fill
     ( strf::underlying_outbuf<CharSize>& ob
     , std::size_t count
     , typename strf::underlying_outbuf<CharSize>::char_type ch )
 {
     using char_type = typename strf::underlying_outbuf<CharSize>::char_type;
-    if (count <= ob.size()) // the common case
-    {
-        std::char_traits<char_type>::assign(ob.pos(), count, ch);
+    if (count <= ob.size()) { // the common case
+        strf::detail::char_assign<char_type>(ob.pos(), count, ch);
         ob.advance(count);
-    }
-    else
-    {
+    } else {
         write_fill_continuation(ob, count, ch);
     }
 }
 
 template<typename CharT>
-inline void write_fill
+inline STRF_HD void write_fill
     ( strf::basic_outbuf<CharT>& ob
     , std::size_t count
     , CharT ch )
@@ -179,47 +170,41 @@ class width_preview<true>
 {
 public:
 
-    explicit constexpr width_preview(strf::width_t initial_width) noexcept
+    explicit constexpr STRF_HD width_preview(strf::width_t initial_width) noexcept
         : _width(initial_width)
     {}
 
-    width_preview(const width_preview&) = delete;
+    STRF_HD width_preview(const width_preview&) = delete;
 
-    constexpr void subtract_width(strf::width_t w) noexcept
+    constexpr STRF_HD void subtract_width(strf::width_t w) noexcept
     {
         _width -= w;
     }
 
-    constexpr void checked_subtract_width(strf::width_t w) noexcept
+    constexpr STRF_HD void checked_subtract_width(strf::width_t w) noexcept
     {
-        if (w < _width)
-        {
+        if (w < _width) {
             _width -= w;
-        }
-        else
-        {
+        } else {
             _width = 0;
         }
     }
 
-    constexpr void checked_subtract_width(std::ptrdiff_t w) noexcept
+    constexpr STRF_HD void checked_subtract_width(std::ptrdiff_t w) noexcept
     {
-        if (w < _width.ceil())
-        {
+        if (w < _width.ceil()) {
             _width -= static_cast<std::int16_t>(w);
-        }
-        else
-        {
+        } else {
             _width = 0;
         }
     }
 
-    constexpr void clear_remaining_width() noexcept
+    constexpr STRF_HD void clear_remaining_width() noexcept
     {
         _width = 0;
     }
 
-    constexpr strf::width_t remaining_width() const noexcept
+    constexpr STRF_HD strf::width_t remaining_width() const noexcept
     {
         return _width;
     }
@@ -234,26 +219,27 @@ class width_preview<false>
 {
 public:
 
-    constexpr width_preview() noexcept = default;;
-    width_preview(const width_preview&) = delete;
-
-    constexpr void subtract_width(strf::width_t) noexcept
+    constexpr STRF_HD width_preview() noexcept
     {
     }
 
-    constexpr void checked_subtract_width(strf::width_t) noexcept
+    constexpr STRF_HD void subtract_width(strf::width_t) noexcept
     {
     }
 
-    constexpr void checked_subtract_width(std::ptrdiff_t) noexcept
+    constexpr STRF_HD void checked_subtract_width(strf::width_t) noexcept
     {
     }
 
-    constexpr void clear_remaining_width() noexcept
+    constexpr STRF_HD void checked_subtract_width(std::ptrdiff_t) noexcept
     {
     }
 
-    constexpr strf::width_t remaining_width() const noexcept
+    constexpr STRF_HD void clear_remaining_width() noexcept
+    {
+    }
+
+    constexpr STRF_HD strf::width_t remaining_width() const noexcept
     {
         return 0;
     }
@@ -266,19 +252,19 @@ template <>
 class size_preview<true>
 {
 public:
-    explicit constexpr size_preview(std::size_t initial_size = 0) noexcept
+    explicit constexpr STRF_HD size_preview(std::size_t initial_size = 0) noexcept
         : _size(initial_size)
     {
     }
 
-    size_preview(const size_preview&) = delete;
+    STRF_HD size_preview(const size_preview&) = delete;
 
-    constexpr void add_size(std::size_t s) noexcept
+    constexpr STRF_HD void add_size(std::size_t s) noexcept
     {
         _size += s;
     }
 
-    constexpr std::size_t get_size() const noexcept
+    constexpr STRF_HD std::size_t get_size() const noexcept
     {
         return _size;
     }
@@ -293,14 +279,15 @@ class size_preview<false>
 {
 public:
 
-    constexpr size_preview() noexcept = default;
-    size_preview(const size_preview&) = delete;
-
-    constexpr void add_size(std::size_t) noexcept
+    constexpr STRF_HD size_preview() noexcept
     {
     }
 
-    constexpr std::size_t get_size() const noexcept
+    constexpr STRF_HD void add_size(std::size_t) noexcept
+    {
+    }
+
+    constexpr STRF_HD std::size_t get_size() const noexcept
     {
         return 0;
     }
@@ -318,14 +305,15 @@ public:
     static constexpr bool nothing_required = ! SizeRequired && ! WidthRequired;
 
     template <bool W = WidthRequired>
-    constexpr explicit print_preview
+    STRF_HD constexpr explicit print_preview
         ( std::enable_if_t<W, strf::width_t> initial_width ) noexcept
         : strf::width_preview<WidthRequired>{initial_width}
     {
     }
 
-    constexpr print_preview() noexcept = default;
-    constexpr print_preview(const print_preview&) = delete;
+    constexpr STRF_HD print_preview() noexcept
+    {
+    }
 };
 
 namespace detail {
@@ -333,7 +321,7 @@ namespace detail {
 #if defined(__cpp_fold_expressions)
 
 template <typename CharT, typename ... Printers>
-inline void write_args( strf::basic_outbuf<CharT>& ob
+inline STRF_HD void write_args( strf::basic_outbuf<CharT>& ob
                       , const Printers& ... printers )
 {
     (... , printers.print_to(ob));
@@ -342,12 +330,12 @@ inline void write_args( strf::basic_outbuf<CharT>& ob
 #else // defined(__cpp_fold_expressions)
 
 template <typename CharT>
-inline void write_args(strf::basic_outbuf<CharT>&)
+inline STRF_HD void write_args(strf::basic_outbuf<CharT>&)
 {
 }
 
 template <typename CharT, typename Printer, typename ... Printers>
-inline void write_args
+inline STRF_HD void write_args
     ( strf::basic_outbuf<CharT>& ob
     , const Printer& printer
     , const Printers& ... printers )
@@ -362,7 +350,6 @@ inline void write_args
 
 } // namespace detail
 
-STRF_NAMESPACE_END
+} // namespace strf
 
-#endif  // STRF_PRINTER_HPP
-
+#endif // STRF_PRINTER_HPP
