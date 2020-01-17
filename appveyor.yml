@@ -73,6 +73,7 @@ environment:
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       GENERATOR: Visual Studio 15 2017
       ARCH: Win32
+      platform: x86
       CONFIG: Debug
       CXX_STANDARD: 20
 
@@ -80,6 +81,7 @@ environment:
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       GENERATOR: Visual Studio 15 2017
       ARCH: Win32
+      platform: x86
       CONFIG: Release
       CXX_STANDARD: 20
 

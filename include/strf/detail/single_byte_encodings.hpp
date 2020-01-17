@@ -544,10 +544,10 @@ STRF_INLINE STRF_HD unsigned impl_windows_1252::encode_ext(char32_t ch)
 }
 
 STRF_INLINE
-STRF_HD const strf::detail::encoding_impl<std::uint8_t>& windows_1252_impl()
+STRF_HD const strf::underlying_encoding<1>& windows_1252_impl()
 {
     using impl = detail::single_byte_encoding<detail::impl_windows_1252>;
-    static const strf::detail::encoding_impl<std::uint8_t> info =
+    static const strf::underlying_encoding<1> info =
          { { impl::from_utf32, detail::same_size<char32_t> }
          , { impl::to_utf32,   detail::same_size<std::uint8_t> }
          , { impl::sanitize,   detail::same_size<std::uint8_t> }
@@ -565,10 +565,10 @@ STRF_HD const strf::detail::encoding_impl<std::uint8_t>& windows_1252_impl()
 }
 
 STRF_INLINE
-STRF_HD const strf::detail::encoding_impl<std::uint8_t>& iso_8859_1_impl()
+STRF_HD const strf::underlying_encoding<1>& iso_8859_1_impl()
 {
     using impl = detail::single_byte_encoding<detail::impl_iso8859_1>;
-    static const strf::detail::encoding_impl<std::uint8_t> info =
+    static const strf::underlying_encoding<1> info =
          { { impl::from_utf32, detail::same_size<char32_t> }
          , { impl::to_utf32,   detail::same_size<std::uint8_t> }
          , { impl::sanitize,   detail::same_size<std::uint8_t> }
@@ -586,10 +586,10 @@ STRF_HD const strf::detail::encoding_impl<std::uint8_t>& iso_8859_1_impl()
 }
 
 STRF_INLINE
-STRF_HD const strf::detail::encoding_impl<std::uint8_t>& iso_8859_3_impl()
+STRF_HD const strf::underlying_encoding<1>& iso_8859_3_impl()
 {
     using impl = detail::single_byte_encoding<detail::impl_iso8859_3>;
-    static const strf::detail::encoding_impl<std::uint8_t> info =
+    static const strf::underlying_encoding<1> info =
          { { impl::from_utf32, detail::same_size<char32_t> }
          , { impl::to_utf32,   detail::same_size<std::uint8_t> }
          , { impl::sanitize,   detail::same_size<std::uint8_t> }
@@ -609,10 +609,10 @@ STRF_HD const strf::detail::encoding_impl<std::uint8_t>& iso_8859_3_impl()
 
 
 STRF_INLINE
-STRF_HD const strf::detail::encoding_impl<std::uint8_t>& iso_8859_15_impl()
+STRF_HD const strf::underlying_encoding<1>& iso_8859_15_impl()
 {
     using impl = detail::single_byte_encoding<detail::impl_iso8859_15>;
-    static const strf::detail::encoding_impl<std::uint8_t> info =
+    static const strf::underlying_encoding<1> info =
          { { impl::from_utf32, detail::same_size<char32_t> }
          , { impl::to_utf32, detail::same_size<std::uint8_t> }
          , { impl::sanitize, detail::same_size<std::uint8_t> }

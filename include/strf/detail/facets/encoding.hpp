@@ -143,87 +143,80 @@ enum class encoding_id : unsigned
     // https://docs.python.org/2.4/lib/standard-encodings.html
 };
 
-namespace detail {
-
-template <typename CharIn, typename CharOut>
-struct transcoder_impl
+template <std::size_t CharInSize, std::size_t CharOutSize>
+struct underlying_transcoder
 {
-    using _under_char_in = typename strf::underlying_outbuf<sizeof(CharIn)>
-        ::char_type;
-    using _under_char_out = typename strf::underlying_outbuf<sizeof(CharOut)>
-        ::char_type;
-
-    static_assert( std::is_same<CharIn, _under_char_in>::value
-                 , "Incorrect input char type" );
-    static_assert( std::is_same<CharOut, _under_char_out>::value
-                 , "Incorrect output char type" );
+    using char_in = strf::underlying_outbuf_char_type<CharInSize>;
+    using char_out = strf::underlying_outbuf_char_type<CharOutSize>;
 
     typedef void (&transcode_func_ref)
-        ( strf::underlying_outbuf<sizeof(CharOut)>&
-        , const CharIn* src
-        , const CharIn* src_end
+        ( strf::underlying_outbuf<CharOutSize>&
+        , const char_in* src
+        , const char_in* src_end
         , strf::encoding_error err_hdl
         , strf::surrogate_policy allow_surr );
 
     typedef std::size_t (&size_func_ref)
-        ( const CharIn* src
-        , const CharIn* src_end
+        ( const char_in* src
+        , const char_in* src_end
         , strf::surrogate_policy allow_surr );
 
     transcode_func_ref transcode;
     size_func_ref necessary_size;
 };
 
-template <typename CharT>
-struct encoding_impl
+template <std::size_t CharSize>
+struct underlying_encoding
 {
-    using char_type = CharT;
-    using _u_char_type
-        = typename strf::underlying_outbuf<sizeof(CharT)>::char_type;
-    using _char8  = typename strf::underlying_outbuf<1>::char_type;
-    using _char16 = typename strf::underlying_outbuf<2>::char_type;
-    using _char32 = typename strf::underlying_outbuf<4>::char_type;
-
-
-    static_assert( std::is_same<CharT, _u_char_type>::value
-                 , "Incorrect char type" );
+    using char_type = strf::underlying_outbuf_char_type<CharSize>;
 
     typedef std::size_t (&validate_func_ref)(char32_t ch);
-    typedef CharT* (&encode_char_func_ref)(CharT* dest, char32_t ch);
+
+    typedef char_type* (&encode_char_func_ref)(char_type* dest, char32_t ch);
+
     typedef void (&encode_fill_func_ref)
-        ( strf::underlying_outbuf<sizeof(CharT)>&
+        ( strf::underlying_outbuf<CharSize>&
         , std::size_t count
         , char32_t ch
         , strf::encoding_error err_hdl
         , strf::surrogate_policy allow_surr );
-    typedef std::size_t (&codepoints_count_func_ref)
-        ( const CharT* begin
-        , const CharT* end
-        , std::size_t max_count );
-    typedef void (&write_replacement_char_func_ref)
-        ( strf::underlying_outbuf<sizeof(CharT)>& );
-    typedef char32_t (&decode_char_func_ref)(CharT ch);
-    typedef const strf::detail::transcoder_impl<CharT, _char8>* (*to8_func_ptr)
-        ( const strf::detail::encoding_impl<_char8>& enc );
-    typedef const strf::detail::transcoder_impl<_char8, CharT>*
-        (*from8_func_ptr)
-        ( const strf::detail::encoding_impl<_char8>& enc );
-    typedef const strf::detail::transcoder_impl<CharT, _char16>*
-        (*to16_func_ptr)
-        ( const strf::detail::encoding_impl<_char16>& enc );
-    typedef const strf::detail::transcoder_impl<char16_t, CharT>*
-        (*from16_func_ptr)
-        ( const strf::detail::encoding_impl<_char16>& enc );
-    typedef const strf::detail::transcoder_impl<CharT, _char32>*
-        (*to32_func_ptr)
-        ( const strf::detail::encoding_impl<_char32>& enc );
-    typedef const strf::detail::transcoder_impl<_char32, CharT>*
-        (*from32_func_ptr)
-        ( const strf::detail::encoding_impl<_char32>& enc );
 
-    strf::detail::transcoder_impl<_char32, CharT> from_u32;
-    strf::detail::transcoder_impl<CharT, _char32> to_u32;
-    strf::detail::transcoder_impl<CharT, CharT> sanitizer;
+    typedef std::size_t (&codepoints_count_func_ref)
+        ( const char_type* begin
+        , const char_type* end
+        , std::size_t max_count );
+
+    typedef void (&write_replacement_char_func_ref)
+        ( strf::underlying_outbuf<CharSize>& );
+
+    typedef char32_t (&decode_char_func_ref)(char_type ch);
+
+    typedef const strf::underlying_transcoder<CharSize, 1>* (*to8_func_ptr)
+        ( const strf::underlying_encoding<1>& enc );
+
+    typedef const strf::underlying_transcoder<1, CharSize>*
+        (*from8_func_ptr)
+        ( const strf::underlying_encoding<1>& enc );
+
+    typedef const strf::underlying_transcoder<CharSize, 2>*
+        (*to16_func_ptr)
+        ( const strf::underlying_encoding<2>& enc );
+
+    typedef const strf::underlying_transcoder<2, CharSize>*
+        (*from16_func_ptr)
+        ( const strf::underlying_encoding<2>& enc );
+
+    typedef const strf::underlying_transcoder<CharSize, 4>*
+        (*to32_func_ptr)
+        ( const strf::underlying_encoding<4>& enc );
+
+    typedef const strf::underlying_transcoder<4, CharSize>*
+        (*from32_func_ptr)
+        ( const strf::underlying_encoding<4>& enc );
+
+    strf::underlying_transcoder<4, CharSize> from_u32;
+    strf::underlying_transcoder<CharSize, 4> to_u32;
+    strf::underlying_transcoder<CharSize, CharSize> sanitizer;
 
     validate_func_ref validate;
     encode_char_func_ref encode_char;
@@ -246,19 +239,13 @@ struct encoding_impl
     char32_t u32equivalence_end;
 };
 
-} // namespace detail
-
 template <typename CharIn, typename CharOut>
 using transcoder_engine
-    = strf::detail::transcoder_impl
-          < typename strf::underlying_outbuf<sizeof(CharIn)>::char_type
-          , typename strf::underlying_outbuf<sizeof(CharOut)>::char_type >;
+    = strf::underlying_transcoder< sizeof(CharIn), sizeof(CharOut) >;
 
 template <typename CharT>
 using encoding_engine
-    = strf::detail::encoding_impl
-        < typename strf::underlying_outbuf<sizeof(CharT)>::char_type >;
-
+    = strf::underlying_encoding<sizeof(CharT)>;
 
 template <typename CharIn, typename CharOut>
 class transcoder
@@ -467,75 +454,75 @@ private:
 
 namespace detail {
 
-template <typename CharIn>
-const STRF_HD strf::detail::transcoder_impl<CharIn, std::uint8_t>* enc_to_enc
-    ( const strf::detail::encoding_impl<CharIn>& enc1
-    , const strf::detail::encoding_impl<std::uint8_t>& enc2)
+template <std::size_t CharInSize>
+const STRF_HD strf::underlying_transcoder<CharInSize, 1>* enc_to_enc
+    ( const strf::underlying_encoding<CharInSize>& from_enc
+    , const strf::underlying_encoding<1>& to_enc)
 {
-    return enc1.to8 ? enc1.to8(enc2) : nullptr;
+    return from_enc.to8 ? from_enc.to8(to_enc) : nullptr;
 }
-template <typename CharIn>
-const STRF_HD strf::detail::transcoder_impl<CharIn, char16_t>* enc_to_enc
-    ( const strf::detail::encoding_impl<CharIn>& enc1
-    , const strf::detail::encoding_impl<char16_t>& enc2)
+template <std::size_t CharInSize>
+const STRF_HD strf::underlying_transcoder<CharInSize, 2>* enc_to_enc
+    ( const strf::underlying_encoding<CharInSize>& from_enc
+    , const strf::underlying_encoding<2>& to_enc)
 {
-    return enc1.to16 ? enc1.to16(enc2) : nullptr;
+    return from_enc.to16 ? from_enc.to16(to_enc) : nullptr;
 }
-template <typename CharIn>
-const STRF_HD strf::detail::transcoder_impl<CharIn, char32_t>* enc_to_enc
-    ( const strf::detail::encoding_impl<CharIn>& enc1
-    , const strf::detail::encoding_impl<char32_t>& enc2)
+template <std::size_t CharInSize>
+const STRF_HD strf::underlying_transcoder<CharInSize, 4>* enc_to_enc
+    ( const strf::underlying_encoding<CharInSize>& from_enc
+    , const strf::underlying_encoding<4>& to_enc)
 {
-    return enc1.to32 ? enc1.to32(enc2) : nullptr;
-}
-
-template <typename CharIn>
-const STRF_HD strf::detail::transcoder_impl<std::uint8_t, CharIn>* enc_from_enc
-    ( const strf::detail::encoding_impl<CharIn>& enc1
-    , const strf::detail::encoding_impl<std::uint8_t>& enc2)
-{
-    return enc1.from8 ? enc1.from8(enc2) : nullptr;
-}
-template <typename CharIn>
-const STRF_HD strf::detail::transcoder_impl<char16_t, CharIn>* enc_from_enc
-    ( const strf::detail::encoding_impl<CharIn>& enc1
-    , const strf::detail::encoding_impl<char16_t>& enc2)
-{
-    return enc1.from16 ? enc1.from16(enc2) : nullptr;
-}
-template <typename CharIn>
-const STRF_HD strf::detail::transcoder_impl<char32_t, CharIn>* enc_from_enc
-    ( const strf::detail::encoding_impl<CharIn>& enc1
-    , const strf::detail::encoding_impl<char32_t>& enc2)
-{
-    return enc1.from32 ? enc1.from32(enc2) : nullptr;
+    return from_enc.to32 ? from_enc.to32(to_enc) : nullptr;
 }
 
-template <typename CharIn, typename CharOut>
+template <std::size_t CharInSize>
+const STRF_HD strf::underlying_transcoder<1, CharInSize>* enc_from_enc
+    ( const strf::underlying_encoding<CharInSize>& to_enc
+    , const strf::underlying_encoding<1>& from_enc)
+{
+    return to_enc.from8 ? to_enc.from8(from_enc) : nullptr;
+}
+template <std::size_t CharInSize>
+const STRF_HD strf::underlying_transcoder<2, CharInSize>* enc_from_enc
+    ( const strf::underlying_encoding<CharInSize>& to_enc
+    , const strf::underlying_encoding<2>& from_enc)
+{
+    return to_enc.from16 ? to_enc.from16(from_enc) : nullptr;
+}
+template <std::size_t CharInSize>
+const STRF_HD strf::underlying_transcoder<4, CharInSize>* enc_from_enc
+    ( const strf::underlying_encoding<CharInSize>& to_enc
+    , const strf::underlying_encoding<4>& from_enc)
+{
+    return to_enc.from32 ? to_enc.from32(from_enc) : nullptr;
+}
+
+template <std::size_t CharInSize, std::size_t CharOutSize>
 struct get_transcoder_helper
 {
-    static STRF_HD const strf::detail::transcoder_impl<CharIn, CharOut>* get
-        ( const strf::detail::encoding_impl<CharIn>& src_encoding
-        , const strf::detail::encoding_impl<CharOut>& dest_encoding )
+    static STRF_HD const strf::underlying_transcoder<CharInSize, CharOutSize>* get
+        ( const strf::underlying_encoding<CharInSize>& src_encoding
+        , const strf::underlying_encoding<CharOutSize>& dest_encoding )
     {
-        const strf::detail::transcoder_impl<CharIn, CharOut>* t
+        const strf::underlying_transcoder<CharInSize, CharOutSize>* t
             = strf::detail::enc_from_enc(dest_encoding, src_encoding);
         return t != nullptr ? t
             : strf::detail::enc_to_enc(src_encoding, dest_encoding);
     }
 };
 
-template <typename CharT>
-struct get_transcoder_helper<CharT, CharT>
+template <std::size_t CharSize>
+struct get_transcoder_helper<CharSize, CharSize>
 {
-    static STRF_HD const strf::detail::transcoder_impl<CharT, CharT>* get
-        ( const strf::detail::encoding_impl<CharT>& src_encoding
-        , const strf::detail::encoding_impl<CharT>& dest_encoding )
+    static STRF_HD const strf::underlying_transcoder<CharSize, CharSize>* get
+        ( const strf::underlying_encoding<CharSize>& src_encoding
+        , const strf::underlying_encoding<CharSize>& dest_encoding )
     {
         if (src_encoding.id == dest_encoding.id) {
             return & src_encoding.sanitizer;
         }
-        const strf::detail::transcoder_impl<CharT, CharT>* t
+        const strf::underlying_transcoder<CharSize, CharSize>* t
             = strf::detail::enc_from_enc(dest_encoding, src_encoding);
         return t != nullptr ? t
             : strf::detail::enc_to_enc(src_encoding, dest_encoding);
@@ -543,51 +530,50 @@ struct get_transcoder_helper<CharT, CharT>
 };
 
 template <>
-struct get_transcoder_helper<char32_t, char32_t>
+struct get_transcoder_helper<4, 4>
 {
-    using CharT = char32_t;
-    static STRF_HD const strf::detail::transcoder_impl<CharT, CharT>* get
-        ( const strf::detail::encoding_impl<CharT>& src_encoding
-        , const strf::detail::encoding_impl<CharT>& dest_encoding )
+    static STRF_HD const strf::underlying_transcoder<4, 4>* get
+        ( const strf::underlying_encoding<4>& src_encoding
+        , const strf::underlying_encoding<4>& dest_encoding )
     {
         if (src_encoding.id == dest_encoding.id) {
             return & src_encoding.sanitizer;
         }
-        const strf::detail::transcoder_impl<CharT, CharT>* t
+        const strf::underlying_transcoder<4, 4>* t
             = strf::detail::enc_from_enc(dest_encoding, src_encoding);
         return t != nullptr ? t
             : strf::detail::enc_to_enc(src_encoding, dest_encoding);
     }
 };
 
-template <typename CharOut>
-struct get_transcoder_helper<char32_t, CharOut >
+template <std::size_t CharOutSize>
+struct get_transcoder_helper<4, CharOutSize>
 {
-    static STRF_HD const strf::detail::transcoder_impl<char32_t, CharOut>* get
-        ( const strf::detail::encoding_impl<char32_t>& src_encoding
-        , const strf::detail::encoding_impl<CharOut>& dest_encoding )
+    static STRF_HD const strf::underlying_transcoder<4, CharOutSize>* get
+        ( const strf::underlying_encoding<4>& src_encoding
+        , const strf::underlying_encoding<CharOutSize>& dest_encoding )
     {
         if (src_encoding.id == strf::encoding_id::eid_utf32) {
             return & dest_encoding.from_u32;
         }
-        const strf::detail::transcoder_impl<char32_t, CharOut>* t
+        const strf::underlying_transcoder<4, CharOutSize>* t
             = strf::detail::enc_from_enc(dest_encoding, src_encoding);
         return t != nullptr ? t
             : strf::detail::enc_to_enc(src_encoding, dest_encoding);
     }
 };
 
-template <typename CharIn>
-struct get_transcoder_helper<CharIn, char32_t>
+template <std::size_t CharInSize>
+struct get_transcoder_helper<CharInSize, 4>
 {
-    static STRF_HD const strf::detail::transcoder_impl<CharIn, char32_t>* get
-        ( const strf::detail::encoding_impl<CharIn>& src_encoding
-        , const strf::detail::encoding_impl<char32_t>& dest_encoding )
+    static STRF_HD const strf::underlying_transcoder<CharInSize, 4>* get
+        ( const strf::underlying_encoding<CharInSize>& src_encoding
+        , const strf::underlying_encoding<4>& dest_encoding )
     {
         if (dest_encoding.id == strf::encoding_id::eid_utf32) {
             return & src_encoding.to_u32;
         }
-        const strf::detail::transcoder_impl<CharIn, char32_t>* t
+        const strf::underlying_transcoder<CharInSize, 4>* t
             = strf::detail::enc_from_enc(dest_encoding, src_encoding);
         return t != nullptr ? t
             : strf::detail::enc_to_enc(src_encoding, dest_encoding);
@@ -602,8 +588,7 @@ inline STRF_HD const strf::transcoder_engine<CharIn, CharOut>*
 encoding<CharIn>::transcoder_engine_to(strf::encoding<CharOut> e) const
 {
     using impl = strf::detail::get_transcoder_helper
-        < typename strf::encoding<CharIn>::_impl_char_type
-        , typename strf::encoding<CharOut>::_impl_char_type >;
+        < sizeof(CharIn), sizeof(CharOut) >;
 
     return impl::get(*_impl, *e._impl);
 }
@@ -760,13 +745,13 @@ inline STRF_HD std::size_t decode_encode_size
 
 namespace detail {
 
-const STRF_HD strf::detail::encoding_impl<std::uint8_t>& utf8_impl();
-const STRF_HD strf::detail::encoding_impl<char16_t>& utf16_impl();
-const STRF_HD strf::detail::encoding_impl<char32_t>& utf32_impl();
-const STRF_HD strf::detail::encoding_impl<std::uint8_t>& windows_1252_impl();
-const STRF_HD strf::detail::encoding_impl<std::uint8_t>& iso_8859_1_impl();
-const STRF_HD strf::detail::encoding_impl<std::uint8_t>& iso_8859_3_impl();
-const STRF_HD strf::detail::encoding_impl<std::uint8_t>& iso_8859_15_impl();
+const STRF_HD strf::underlying_encoding<1>& utf8_impl();
+const STRF_HD strf::underlying_encoding<2>& utf16_impl();
+const STRF_HD strf::underlying_encoding<4>& utf32_impl();
+const STRF_HD strf::underlying_encoding<1>& windows_1252_impl();
+const STRF_HD strf::underlying_encoding<1>& iso_8859_1_impl();
+const STRF_HD strf::underlying_encoding<1>& iso_8859_3_impl();
+const STRF_HD strf::underlying_encoding<1>& iso_8859_15_impl();
 
 } // namespace detail
 
@@ -800,13 +785,13 @@ inline STRF_HD strf::encoding<CharT> utf32()
 
 namespace detail {
 
-inline STRF_HD const strf::detail::encoding_impl<char16_t>&
+inline STRF_HD const strf::underlying_encoding<2>&
 get_w_encoding_impl(std::integral_constant<std::size_t, 2>)
 {
     return strf::detail::utf16_impl();
 }
 
-inline STRF_HD const strf::detail::encoding_impl<char32_t>&
+inline STRF_HD const strf::underlying_encoding<4>&
 get_w_encoding_impl(std::integral_constant<std::size_t, 4>)
 {
     return strf::detail::utf32_impl();

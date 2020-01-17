@@ -1224,11 +1224,11 @@ STRF_STATIC_LINKAGE STRF_HD std::size_t utf16_to_utf8_size
 }
 
 STRF_STATIC_LINKAGE
-STRF_HD const strf::detail::transcoder_impl<std::uint8_t, char16_t>* utf8_to_enc16
-    ( const strf::detail::encoding_impl<char16_t>& other )
+STRF_HD const strf::underlying_transcoder<1, 2>* utf8_to_enc16
+    ( const strf::underlying_encoding<2>& other )
 {
     if (other.id == encoding_id::eid_utf16) {
-        static const strf::detail::transcoder_impl<std::uint8_t, char16_t> tr_obj =
+        static const strf::underlying_transcoder<1, 2> tr_obj =
             { strf::detail::utf8_to_utf16_transcode
             , strf::detail::utf8_to_utf16_size };
         return & tr_obj;
@@ -1237,11 +1237,11 @@ STRF_HD const strf::detail::transcoder_impl<std::uint8_t, char16_t>* utf8_to_enc
 }
 
 STRF_STATIC_LINKAGE
-STRF_HD const strf::detail::transcoder_impl<char16_t, std::uint8_t>* utf8_from_enc16
-    ( const strf::detail::encoding_impl<char16_t>& other )
+STRF_HD const strf::underlying_transcoder<2, 1>* utf8_from_enc16
+    ( const strf::underlying_encoding<2>& other )
 {
     if (other.id == encoding_id::eid_utf16) {
-        static const strf::detail::transcoder_impl<char16_t, std::uint8_t> tr_obj =
+        static const strf::underlying_transcoder<2, 1> tr_obj =
             { strf::detail::utf16_to_utf8_transcode
             , strf::detail::utf16_to_utf8_size };
         return & tr_obj;
@@ -1250,9 +1250,9 @@ STRF_HD const strf::detail::transcoder_impl<char16_t, std::uint8_t>* utf8_from_e
 }
 
 STRF_INLINE
-STRF_HD const strf::detail::encoding_impl<std::uint8_t>& utf8_impl()
+STRF_HD const strf::underlying_encoding<1>& utf8_impl()
 {
-    static const strf::detail::encoding_impl<std::uint8_t> encoding_obj =
+    static const strf::underlying_encoding<1> encoding_obj =
          { { strf::detail::utf32_to_utf8_transcode
            , strf::detail::utf32_to_utf8_size }
          , { strf::detail::utf8_to_utf32_transcode
@@ -1277,9 +1277,9 @@ STRF_HD const strf::detail::encoding_impl<std::uint8_t>& utf8_impl()
 }
 
 STRF_INLINE
-STRF_HD const strf::detail::encoding_impl<char16_t>& utf16_impl()
+STRF_HD const strf::underlying_encoding<2>& utf16_impl()
 {
-    static const strf::detail::encoding_impl<char16_t> encoding_obj =
+    static const strf::underlying_encoding<2> encoding_obj =
         { { strf::detail::utf32_to_utf16_transcode
           , strf::detail::utf32_to_utf16_size }
         , { strf::detail::utf16_to_utf32_transcode
@@ -1301,9 +1301,9 @@ STRF_HD const strf::detail::encoding_impl<char16_t>& utf16_impl()
 }
 
 STRF_INLINE
-STRF_HD const  strf::detail::encoding_impl<char32_t>& utf32_impl()
+STRF_HD const  strf::underlying_encoding<4>& utf32_impl()
 {
-    static const strf::detail::encoding_impl<char32_t> encoding_obj =
+    static const strf::underlying_encoding<4> encoding_obj =
         { { strf::detail::utf32_sanitize
           , strf::detail::utf32_sanitize_size }
         , { strf::detail::utf32_sanitize
