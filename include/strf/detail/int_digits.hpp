@@ -681,10 +681,10 @@ inline STRF_HD void write_int_txtdigits_backwards_little_sep
         ( value, it, sep, groups, lc );
 }
 
-template <typename CharT>
+template <std::size_t CharSize>
 STRF_HD void write_digits_big_sep
-    ( strf::basic_outbuf<CharT>& ob
-    , const strf::encoding<CharT> encoding
+    ( strf::underlying_outbuf<CharSize>& ob
+    , const strf::underlying_encoding<CharSize>& encoding
     , const std::uint8_t* last_grp
     , unsigned char* digits
     , unsigned num_digits
@@ -729,9 +729,9 @@ class intdigits_writer
 {
 public:
 
-    template <typename IntT, typename CharT>
+    template <typename IntT, std::size_t CharSize>
     static inline STRF_HD void write
-        ( strf::basic_outbuf<CharT>& ob
+        ( strf::underlying_outbuf<CharSize>& ob
         , IntT value
         , unsigned digcount
         , strf::lettercase lc )
@@ -744,11 +744,11 @@ public:
         ob.advance_to(p);
     }
 
-    template <typename UIntT, typename CharT>
+    template <typename UIntT, std::size_t CharSize>
     static STRF_HD void write
-          ( strf::basic_outbuf<CharT>& ob
+          ( strf::underlying_outbuf<CharSize>& ob
           , const strf::numpunct_base& punct
-          , strf::encoding<CharT> enc
+          , const strf::underlying_encoding<CharSize>& enc
           , UIntT value
           , unsigned digcount
           , strf::lettercase lc )
@@ -764,8 +764,8 @@ public:
             return;
         }
         auto sep32 = punct.thousands_sep();
-        CharT sep = static_cast<CharT>(sep32);
-        if (sep32 >= enc.u32equivalence_end() || sep32 < enc.u32equivalence_begin()) {
+        auto sep = static_cast<strf::underlying_outbuf_char_type<CharSize>>(sep32);
+        if (sep32 >= enc.u32equivalence_end || sep32 < enc.u32equivalence_begin) {
             auto sep_size = enc.validate(sep32);
             if (sep_size == (std::size_t)-1) {
                 goto no_punct;
@@ -787,10 +787,10 @@ public:
 
 private:
 
-    template <typename CharT>
+    template <std::size_t CharSize>
     static STRF_HD void write_digits_big_sep
-          ( strf::basic_outbuf<CharT>& ob
-          , strf::encoding<CharT> enc
+          ( strf::underlying_outbuf<CharSize>& ob
+          , const strf::underlying_encoding<CharSize>& enc
           , const uint8_t* groups
           , unsigned long long value
           , unsigned digcount
@@ -817,17 +817,18 @@ class intdigits_writer<2>
 {
 public:
 
-    template <typename CharT, typename UIntT>
+    template <std::size_t CharSize, typename UIntT>
     static STRF_HD void write
-        ( strf::basic_outbuf<CharT>& ob
+        ( strf::underlying_outbuf<CharSize>& ob
         , UIntT value
         , unsigned digcount
         , strf::lettercase = strf::lowercase )
     {
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
+        using char_type = strf::underlying_outbuf_char_type<CharSize>;
 
         if (value <= 1) {
-            strf::put(ob, static_cast<CharT>('0' + value));
+            strf::put(ob, static_cast<char_type>('0' + value));
             return;
         }
         auto it = ob.pos();
@@ -840,7 +841,7 @@ public:
                 it = ob.pos();
                 end = ob.end();
             }
-            *it = (CharT)'0' + (0 != (value & mask));
+            *it = (char_type)'0' + (0 != (value & mask));
             ++it;
             mask = mask >> 1;
         }
@@ -849,18 +850,19 @@ public:
         ob.advance_to(it);
     }
 
-    template <typename UIntT, typename CharT>
+    template <typename UIntT, std::size_t CharSize>
     static STRF_HD void write
-        ( strf::basic_outbuf<CharT>& ob
+        ( strf::underlying_outbuf<CharSize>& ob
         , const strf::numpunct_base& punct
-        , strf::encoding<CharT> enc
+        , const strf::underlying_encoding<CharSize>& enc
         , UIntT value
         , unsigned digcount
         , strf::lettercase = strf::lowercase )
     {
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
+        using char_type = strf::underlying_outbuf_char_type<CharSize>;
         if (value <= 1) {
-            strf::put(ob, static_cast<CharT>('0' + value));
+            strf::put(ob, static_cast<char_type>('0' + value));
             return;
         }
 
@@ -873,8 +875,8 @@ public:
             return;
         }
         auto sep32 = punct.thousands_sep();
-        CharT sep = static_cast<CharT>(sep32);
-        if (sep32 >= enc.u32equivalence_end() || sep32 < enc.u32equivalence_begin()) {
+        char_type sep = static_cast<char_type>(sep32);
+        if (sep32 >= enc.u32equivalence_end || sep32 < enc.u32equivalence_begin) {
             auto sep_size = enc.validate(sep32);
             if (sep_size == (std::size_t)-1) {
                 goto no_punct;
@@ -891,14 +893,15 @@ public:
 
 private:
 
-    template <typename UIntT, typename CharT>
+    template <typename UIntT, std::size_t CharSize>
     static STRF_HD void write_little_sep
-        ( strf::basic_outbuf<CharT>& ob
+        ( strf::underlying_outbuf<CharSize>& ob
         , const uint8_t* groups
         , UIntT value
         , unsigned digcount
-        , CharT sep )
+        , strf::underlying_outbuf_char_type<CharSize> sep )
     {
+        using char_type = strf::underlying_outbuf_char_type<CharSize>;
         auto grp_it = groups;
         auto grp_size = *grp_it;
         ob.ensure(grp_size);
@@ -908,7 +911,7 @@ private:
 
         while (true) {
             for(;grp_size != 0; --grp_size) {
-                *it = (CharT)'0' + (0 != (value & mask));
+                *it = (char_type)'0' + (0 != (value & mask));
                 mask = mask >> 1;
                 ++it;
             }
@@ -928,16 +931,17 @@ private:
         ob.advance_to(it);
      }
 
-    template <typename UIntT, typename CharT>
+    template <typename UIntT, std::size_t CharSize>
     static STRF_HD void write_big_sep
-        ( strf::basic_outbuf<CharT>& ob
-        , const strf::encoding<CharT> encoding
+        ( strf::underlying_outbuf<CharSize>& ob
+        , const strf::underlying_encoding<CharSize>& encoding
         , const std::uint8_t* groups
         , UIntT value
         , unsigned digcount
         , char32_t sep
         , std::size_t sep_size )
     {
+        using char_type = strf::underlying_outbuf_char_type<CharSize>;
         auto grp_it = groups;
         auto grp_size = *grp_it;
         auto it = ob.pos();
@@ -952,7 +956,7 @@ private:
                 end = ob.end();
             }
             for(;grp_size != 0; --grp_size) {
-                *it = (CharT)'0' + (0 != (value & mask));
+                *it = (char_type)'0' + (0 != (value & mask));
                 mask = mask >> 1;
                 ++it;
             }
@@ -973,9 +977,9 @@ private:
 
 }; // class intdigits_writer<2>
 
-template <int Base, typename CharT, typename UIntT>
+template <int Base, std::size_t CharSize, typename UIntT>
 inline STRF_HD void write_int
-    ( strf::basic_outbuf<CharT>& ob
+    ( strf::underlying_outbuf<CharSize>& ob
     , UIntT value
     , unsigned digcount
     , strf::lettercase lc )
@@ -983,11 +987,11 @@ inline STRF_HD void write_int
     intdigits_writer<Base>::write(ob, value, digcount, lc);
 }
 
-template <int Base, typename CharT, typename UIntT>
+template <int Base, std::size_t CharSize, typename UIntT>
 inline STRF_HD void write_int
-      ( strf::basic_outbuf<CharT>& ob
+      ( strf::underlying_outbuf<CharSize>& ob
       , const strf::numpunct_base& punct
-      , strf::encoding<CharT> enc
+      , const strf::underlying_encoding<CharSize>& enc
       , UIntT value
       , unsigned digcount
       , strf::lettercase lc )

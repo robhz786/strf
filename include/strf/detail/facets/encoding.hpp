@@ -219,7 +219,7 @@ struct underlying_encoding
     strf::underlying_transcoder<CharSize, CharSize> sanitizer;
 
     validate_func_ref validate;
-    encode_char_func_ref encode_char;
+    encode_char_func_ref encode_char_fn;
     encode_fill_func_ref encode_fill;
     codepoints_count_func_ref codepoints_count;
     write_replacement_char_func_ref write_replacement_char;
@@ -237,6 +237,40 @@ struct underlying_encoding
     std::size_t replacement_char_size;
     char32_t u32equivalence_begin;
     char32_t u32equivalence_end;
+
+    STRF_HD std::size_t char_size(char32_t ch) const
+    {
+        auto size = validate(ch);
+        bool is_valid = (size != (std::size_t)-1);
+        return is_valid * size + (!is_valid) * replacement_char_size;
+    }
+
+    STRF_HD char_type* encode_char(char_type* dest, char32_t ch) const
+    {
+        return encode_char_fn(dest, ch);
+    }
+    STRF_HD void encode_char( strf::underlying_outbuf<CharSize>& ob
+                            , char32_t ch
+                            , strf::encoding_error err_hdl ) const
+    {
+        using char_type = strf::underlying_outbuf_char_type<CharSize>;
+        if (u32equivalence_begin <= ch && ch < u32equivalence_end) {
+            ob.ensure(1);
+            *ob.pos() = static_cast<char_type>(ch);
+            ob.advance();
+        } else {
+            auto s = validate(ch);
+            if(s != (std::size_t)-1) {
+                ob.ensure(s);
+                ob.advance_to(this->encode_char(ob.pos(), ch));
+            } else {
+                if(err_hdl == strf::encoding_error::stop) {
+                    strf::detail::handle_encoding_failure();
+                }
+                this->write_replacement_char(ob);
+            }
+        }
+    }
 };
 
 template <typename CharIn, typename CharOut>
@@ -298,7 +332,8 @@ public:
             , allow_surr );
     }
 
-    STRF_HD engine_type & get_engine() const
+    STRF_HD const strf::underlying_transcoder<sizeof(CharIn), sizeof(CharOut)>&
+    as_underlying() const
     {
         return *_impl;
     }
@@ -396,27 +431,6 @@ public:
         auto rdest = reinterpret_cast<_impl_char_type*>(dest);
         return reinterpret_cast<char_type*>(_impl->encode_char(rdest, ch));
     }
-    STRF_HD void encode_char( strf::basic_outbuf<char_type>& ob
-                    , char32_t ch
-                    , strf::encoding_error err_hdl ) const
-    {
-        if (u32equivalence_begin() <= ch && ch < u32equivalence_end()) {
-            ob.ensure(1);
-            *ob.pos() = static_cast<CharT>(ch);
-            ob.advance();
-        } else {
-            auto s = validate(ch);
-            if(s != (std::size_t)-1) {
-                ob.ensure(s);
-                ob.advance_to(this->encode_char(ob.pos(), ch));
-            } else {
-                if(err_hdl == strf::encoding_error::stop) {
-                    strf::detail::handle_encoding_failure();
-                }
-                this->write_replacement_char(ob);
-            }
-        }
-    }
     STRF_HD const char* name() const
     {
         return _impl->name;
@@ -442,7 +456,7 @@ public:
     const strf::transcoder_engine<char_type, CharT2>*
     STRF_HD transcoder_engine_to(strf::encoding<CharT2> e) const;
 
-    const STRF_HD strf::encoding_engine<CharT>& get_impl() const
+    STRF_HD const strf::underlying_encoding<sizeof(CharT)>& as_underlying() const
     {
         return *_impl;
     }
@@ -593,31 +607,31 @@ encoding<CharIn>::transcoder_engine_to(strf::encoding<CharOut> e) const
     return impl::get(*_impl, *e._impl);
 }
 
-template <typename CharIn, typename CharOut>
-inline STRF_HD const strf::transcoder_engine<CharIn, CharOut>*
-get_transcoder( strf::encoding<CharIn> src_encoding
-              , strf::encoding<CharOut> dest_encoding )
+template <std::size_t CharInSize, std::size_t CharOutSize>
+inline STRF_HD const strf::underlying_transcoder<CharInSize, CharOutSize>*
+get_transcoder( const strf::underlying_encoding<CharInSize>& src_encoding
+              , const strf::underlying_encoding<CharOutSize>& dest_encoding )
 {
-    return src_encoding.transcoder_engine_to(dest_encoding);
+    return strf::detail::get_transcoder_helper<CharInSize, CharOutSize>
+        ::get(src_encoding, dest_encoding);
 }
 
 namespace detail {
 
 constexpr const std::size_t mini_buffer32_size = 16;
 
-template <typename CharOut>
-class buffered_encoder: public strf::basic_outbuf<char32_t>
+template <std::size_t CharOutSize>
+class buffered_encoder: public strf::underlying_outbuf<4>
 {
 public:
 
     STRF_HD buffered_encoder
-        ( strf::encoding<CharOut>& enc
-        , strf::basic_outbuf<CharOut>& ob
+        ( const strf::underlying_encoding<CharOutSize>& enc
+        , strf::underlying_outbuf<CharOutSize>& ob
         , strf::encoding_error err_hdl
         , strf::surrogate_policy allow_surr )
-        : strf::basic_outbuf<char32_t>
-            ( _mini_buffer
-            , strf::detail::mini_buffer32_size )
+        : strf::underlying_outbuf<4>( _mini_buffer
+                                    , strf::detail::mini_buffer32_size )
         , _enc(enc)
         , _ob(ob)
         , _err_hdl(err_hdl)
@@ -632,42 +646,42 @@ public:
     {
         auto p = this->pos();
         if (p != _begin && _ob.good()) {
-            _enc.from_u32().transcode(_ob, _begin, p, _err_hdl, _allow_surr);
+            _enc.from_u32.transcode(_ob, _begin, p, _err_hdl, _allow_surr);
         }
         this->set_good(false);
     }
 
 private:
 
-    strf::encoding<CharOut> _enc;
-    strf::basic_outbuf<CharOut>& _ob;
+    const strf::underlying_encoding<CharOutSize>& _enc;
+    strf::underlying_outbuf<CharOutSize>& _ob;
     char32_t* _begin;
     strf::encoding_error _err_hdl;
     strf::surrogate_policy _allow_surr;
     char32_t _mini_buffer[mini_buffer32_size];
 };
 
-template <typename CharOut>
-STRF_HD void buffered_encoder<CharOut>::recycle()
+template <std::size_t CharOutSize>
+STRF_HD void buffered_encoder<CharOutSize>::recycle()
 {
     auto p = this->pos();
     this->set_pos(_begin);
     if (p != _begin && _ob.good()) {
         this->set_good(false);
-        _enc.from_u32().transcode(_ob, _begin, p, _err_hdl, _allow_surr);
+        _enc.from_u32.transcode(_ob, _begin, p, _err_hdl, _allow_surr);
         this->set_good(true);
     }
 }
 
-template <typename CharOut>
-class buffered_size_calculator: public strf::basic_outbuf<char32_t>
+template <std::size_t CharOutSize>
+class buffered_size_calculator: public strf::underlying_outbuf<4>
 {
 public:
 
     STRF_HD buffered_size_calculator
-        ( strf::encoding<CharOut>& enc
+        ( const strf::underlying_encoding<CharOutSize>& enc
         , strf::surrogate_policy allow_surr )
-        : strf::basic_outbuf<char32_t>
+        : strf::underlying_outbuf<4>
             ( _mini_buffer
             , strf::detail::mini_buffer32_size )
         , _enc(enc)
@@ -686,56 +700,56 @@ public:
 
 private:
 
-    strf::encoding<CharOut> _enc;
+    const strf::underlying_encoding<CharOutSize>& _enc;
     char32_t* _begin;
     std::size_t _sum = 0;
     strf::surrogate_policy _allow_surr;
     char32_t _mini_buffer[mini_buffer32_size];
 };
 
-template <typename CharOut>
-STRF_HD void buffered_size_calculator<CharOut>::recycle()
+template <std::size_t CharOutSize>
+STRF_HD void buffered_size_calculator<CharOutSize>::recycle()
 {
     auto end = this->pos();
     if (end != _begin) {
         this->set_pos(_begin);
-        _sum += _enc.from_u32().necessary_size(_begin, end, _allow_surr);
+        _sum += _enc.from_u32.necessary_size(_begin, end, _allow_surr);
     }
 }
 
 } // namespace detail
 
 
-template<typename CharIn, typename CharOut>
+template<std::size_t CharInSize, std::size_t CharOutSize>
 inline STRF_HD void decode_encode
-    ( strf::basic_outbuf<CharOut>& ob
-    , const CharIn* src
-    , const CharIn* src_end
-    , strf::encoding<CharIn> src_encoding
-    , strf::encoding<CharOut> dest_encoding
+    ( strf::underlying_outbuf<CharOutSize>& ob
+    , const strf::underlying_outbuf_char_type<CharInSize>* src
+    , const strf::underlying_outbuf_char_type<CharInSize>* src_end
+    , const strf::underlying_encoding<CharInSize>& src_encoding
+    , const strf::underlying_encoding<CharOutSize>& dest_encoding
     , strf::encoding_error err_hdl
     , strf::surrogate_policy allow_surr )
 {
-    strf::detail::buffered_encoder<CharOut> dest
+    strf::detail::buffered_encoder<CharOutSize> dest
         { dest_encoding, ob, err_hdl, allow_surr };
 
-    src_encoding.to_u32().transcode(dest, src, src_end, err_hdl, allow_surr);
+    src_encoding.to_u32.transcode(dest, src, src_end, err_hdl, allow_surr);
     dest.finish();
 }
 
-template<typename CharIn, typename CharOut>
+template<std::size_t CharInSize, std::size_t CharOutSize>
 inline STRF_HD std::size_t decode_encode_size
-    ( const CharIn* src
-    , const CharIn* src_end
-    , strf::encoding<CharIn> src_encoding
-    , strf::encoding<CharOut> dest_encoding
+    ( const strf::underlying_outbuf_char_type<CharInSize>* src
+    , const strf::underlying_outbuf_char_type<CharInSize>* src_end
+    , const strf::underlying_encoding<CharInSize>& src_encoding
+    , const strf::underlying_encoding<CharOutSize>& dest_encoding
     , strf::surrogate_policy allow_surr )
 {
-    strf::detail::buffered_size_calculator<CharOut> calc
+    strf::detail::buffered_size_calculator<CharOutSize> calc
         { dest_encoding, allow_surr };
 
     constexpr strf::encoding_error err_hdl = strf::encoding_error::replace;
-    src_encoding.to_u32().transcode(calc, src, src_end, err_hdl, allow_surr);
+    src_encoding.to_u32.transcode(calc, src, src_end, err_hdl, allow_surr);
 
     return calc.get_sum();
 }

@@ -9,36 +9,37 @@
 
 namespace strf {
 
-template <typename CharT> struct width_calculator_c;
-template <typename CharT> class width_calculator;
+template <std::size_t CharSize> struct width_calculator_c;
+template <std::size_t CharSize> class width_calculator;
 
-template <typename CharT>
+template <std::size_t CharSize>
 class width_calculator
 {
 public:
-
-    using category = strf::width_calculator_c<CharT>;
+    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using category = strf::width_calculator_c<CharSize>;
 
     virtual STRF_HD strf::width_t width_of
-        ( CharT ch
-        , strf::encoding<CharT> enc ) const = 0;
+        ( char_type ch
+        , const strf::underlying_encoding<CharSize>& enc ) const = 0;
 
     virtual STRF_HD strf::width_t width
         ( strf::width_t limit
-        , const CharT* str
+        , const char_type* str
         , std::size_t str_len
-        , strf::encoding<CharT> enc
+        , const strf::underlying_encoding<CharSize>& enc
         , strf::encoding_error enc_err
         , strf::surrogate_policy allow_surr ) const = 0;
 };
 
-template <typename CharT>
-class fast_width final: public strf::width_calculator<CharT>
+template <std::size_t CharSize>
+class fast_width final: public strf::width_calculator<CharSize>
 {
 public:
+    using char_type = strf::underlying_outbuf_char_type<CharSize>;
 
     STRF_HD strf::width_t width_of
-        ( CharT ch, strf::encoding<CharT> enc ) const override
+        ( char_type ch, const strf::underlying_encoding<CharSize>& enc ) const override
     {
         (void)ch;
         (void)enc;
@@ -46,10 +47,8 @@ public:
     }
 
     STRF_HD strf::width_t width
-        ( strf::width_t limit
-        , const CharT* str
-        , std::size_t str_len
-        , strf::encoding<CharT> enc
+        ( strf::width_t limit, const char_type* str, std::size_t str_len
+        , const strf::underlying_encoding<CharSize>& enc
         , strf::encoding_error enc_err
         , strf::surrogate_policy allow_surr ) const override
     {
@@ -66,13 +65,14 @@ public:
     }
 };
 
-template <typename CharT>
-class width_as_u32len final: public strf::width_calculator<CharT>
+template <std::size_t CharSize>
+class width_as_u32len final: public strf::width_calculator<CharSize>
 {
 public:
+    using char_type = strf::underlying_outbuf_char_type<CharSize>;
 
     virtual STRF_HD strf::width_t width_of
-        ( CharT ch, strf::encoding<CharT> enc ) const override
+        ( char_type ch, const strf::underlying_encoding<CharSize>& enc ) const override
     {
         (void)ch;
         (void)enc;
@@ -81,10 +81,8 @@ public:
 
 
     STRF_HD strf::width_t width
-        ( strf::width_t limit
-        , const CharT* str
-        , std::size_t str_len
-        , strf::encoding<CharT> enc
+        ( strf::width_t limit, const char_type* str, std::size_t str_len
+        , const strf::underlying_encoding<CharSize>& enc
         , strf::encoding_error enc_err
         , strf::surrogate_policy allow_surr ) const override
     {
@@ -105,14 +103,14 @@ public:
     }
 };
 
-template <typename CharT>
+template <std::size_t CharSize>
 struct width_calculator_c
 {
     static constexpr bool constrainable = true;
 
-    static STRF_HD const strf::fast_width<CharT>& get_default()
+    static STRF_HD const strf::fast_width<CharSize>& get_default()
     {
-        static const strf::fast_width<CharT> x{};
+        static const strf::fast_width<CharSize> x{};
         return x;
     }
 };

@@ -96,7 +96,7 @@ using sep_range_with_format
 namespace detail {
 
 template <typename CharT, typename FPack, typename ForwardIt>
-class range_printer: public printer<CharT>
+class range_printer: public strf::printer<sizeof(CharT)>
 {
 public:
 
@@ -115,7 +115,7 @@ public:
         _preview(preview);
     }
 
-    STRF_HD void print_to(strf::basic_outbuf<CharT>& ob) const override;
+    STRF_HD void print_to(strf::underlying_outbuf<sizeof(CharT)>& ob) const override;
 
 private:
 
@@ -144,7 +144,7 @@ STRF_HD void range_printer<CharT, FPack, ForwardIt>::_preview(Preview& preview) 
 
 template <typename CharT, typename FPack, typename ForwardIt>
 STRF_HD void range_printer<CharT, FPack, ForwardIt>::print_to
-    ( strf::basic_outbuf<CharT>& ob ) const
+    ( strf::underlying_outbuf<sizeof(CharT)>& ob ) const
 {
     strf::print_preview<false, false> no_preview;
     for(auto it = _begin; it != _end; ++it) {
@@ -153,7 +153,7 @@ STRF_HD void range_printer<CharT, FPack, ForwardIt>::print_to
 }
 
 template <typename CharT, typename FPack, typename ForwardIt>
-class separated_range_printer: public printer<CharT>
+class separated_range_printer: public strf::printer<sizeof(CharT)>
 {
 public:
 
@@ -177,7 +177,7 @@ public:
         _preview(preview);
     }
 
-    STRF_HD void print_to(strf::basic_outbuf<CharT>& ob) const override;
+    STRF_HD void print_to(strf::underlying_outbuf<sizeof(CharT)>& ob) const override;
 
 private:
 
@@ -223,13 +223,15 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::_preview(Preview& previe
     }
     if (Preview::width_required) {
         decltype(auto) wcalc
-            = _get_facet<strf::width_calculator_c<CharT>>(_fp);
+            = _get_facet<strf::width_calculator_c<sizeof(CharT)>>(_fp);
         decltype(auto) encoding
-            = _get_facet<strf::encoding_c<CharT>>(_fp);
+            = _get_facet<strf::encoding_c<CharT>>(_fp).as_underlying();
         auto enc_err = _get_facet<strf::encoding_error_c>(_fp);
         auto allow_surr = _get_facet<strf::surrogate_policy_c>(_fp);
 
-        auto dw = wcalc.width( preview.remaining_width(), _sep_begin, _sep_len
+        using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
+        auto dw = wcalc.width( preview.remaining_width()
+                             , reinterpret_cast<const uchar*>(_sep_begin), _sep_len
                              , encoding, enc_err, allow_surr );
         if (dw != 0) {
             if (count > UINT32_MAX) {
@@ -247,15 +249,16 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::_preview(Preview& previe
 
 template <typename CharT, typename FPack, typename ForwardIt>
 STRF_HD void separated_range_printer<CharT, FPack, ForwardIt>::print_to
-    ( strf::basic_outbuf<CharT>& ob ) const
+    ( strf::underlying_outbuf<sizeof(CharT)>& ob ) const
 {
+    using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
     strf::print_preview<false, false> no_preview;
     auto it = _begin;
     if (it != _end) {
         make_printer<CharT, FPack>(strf::rank<5>{}, _fp, no_preview, *it)
             .print_to(ob);
         while (++it != _end) {
-            strf::write(ob, _sep_begin, _sep_len);
+            strf::write(ob, reinterpret_cast<const uchar*>(_sep_begin), _sep_len);
             make_printer<CharT, FPack>(strf::rank<5>{}, _fp, no_preview, *it)
                 .print_to(ob);
         }
@@ -266,7 +269,7 @@ template < typename CharOut
          , typename FPack
          , typename ForwardIt
          , typename ... Fmts >
-class fmt_range_printer: public printer<CharOut>
+class fmt_range_printer: public strf::printer<sizeof(CharOut)>
 {
     using _value_type = typename std::iterator_traits<ForwardIt>::value_type;
     using _value_fmt_type
@@ -295,7 +298,7 @@ public:
         _preview(preview);
     }
 
-    STRF_HD void print_to(strf::basic_outbuf<CharOut>& ob) const override;
+    STRF_HD void print_to(strf::underlying_outbuf<sizeof(CharOut)>& ob) const override;
 
 private:
 
@@ -335,7 +338,7 @@ template< typename CharOut
         , typename ForwardIt
         , typename ... Fmts >
 STRF_HD void fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::print_to
-    ( strf::basic_outbuf<CharOut>& ob ) const
+    ( strf::underlying_outbuf<sizeof(CharOut)>& ob ) const
 {
     strf::print_preview<false, false> no_preview;
     auto r = _fmt.value();
@@ -352,7 +355,7 @@ template< typename CharT
         , typename FPack
         , typename ForwardIt
         , typename ... Fmts >
-class fmt_separated_range_printer: public printer<CharT>
+class fmt_separated_range_printer: public strf::printer<sizeof(CharT)>
 {
     using _value_type = typename std::iterator_traits<ForwardIt>::value_type;
     using _value_fmt_type
@@ -373,15 +376,15 @@ public:
 
     template <typename Preview>
     STRF_HD fmt_separated_range_printer( const FPack& fp
-                         , Preview& preview
-                         , const _fmt_type_adapted& fmt )
+                                       , Preview& preview
+                                       , const _fmt_type_adapted& fmt )
         : _fp(fp)
         , _fmt(fmt)
     {
         _preview(preview);
     }
 
-    STRF_HD void print_to(strf::basic_outbuf<CharT>& ob) const override;
+    STRF_HD void print_to(strf::underlying_outbuf<sizeof(CharT)>& ob) const override;
 
 private:
 
@@ -432,13 +435,15 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, ForwardIt, Fmts ...>::_pr
     }
     if (Preview::width_required) {
         decltype(auto) wcalc
-            = _get_facet<strf::width_calculator_c<CharT>>(_fp);
+            = _get_facet<strf::width_calculator_c<sizeof(CharT)>>(_fp);
         decltype(auto) encoding
-            = _get_facet<strf::encoding_c<CharT>>(_fp);
+            = _get_facet<strf::encoding_c<CharT>>(_fp).as_underlying();
         auto enc_err = _get_facet<strf::encoding_error_c>(_fp);
         auto allow_surr = _get_facet<strf::surrogate_policy_c>(_fp);
 
-        auto dw = wcalc.width( preview.remaining_width(), r.sep_begin, r.sep_len
+        using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
+        auto dw = wcalc.width( preview.remaining_width()
+                             , reinterpret_cast<const uchar*>(r.sep_begin), r.sep_len
                              , encoding, enc_err, allow_surr );
         if (dw != 0) {
             if (count > UINT32_MAX) {
@@ -459,8 +464,9 @@ template< typename CharT
         , typename ForwardIt
         , typename ... Fmts >
 STRF_HD void fmt_separated_range_printer<CharT, FPack, ForwardIt, Fmts ...>
-::print_to( strf::basic_outbuf<CharT>& ob ) const
+::print_to( strf::underlying_outbuf<sizeof(CharT)>& ob ) const
 {
+    using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
     strf::print_preview<false, false> no_preview;
     auto r = _fmt.value();
     auto it = r.begin;
@@ -469,7 +475,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, ForwardIt, Fmts ...>
             ( strf::rank<5>{}, _fp, no_preview, _value_fmt_type_adapted{{*it}, _fmt} )
             .print_to(ob);
         while(++it != r.end) {
-            strf::write(ob, r.sep_begin, r.sep_len);
+            strf::write(ob, reinterpret_cast<const uchar*>(r.sep_begin), r.sep_len);
             make_printer<CharT, FPack>
                 ( strf::rank<5>{}, _fp, no_preview, _value_fmt_type_adapted{{*it}, _fmt} )
                 .print_to(ob);
@@ -478,7 +484,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, ForwardIt, Fmts ...>
 }
 
 template <typename CharT, typename FPack, typename ForwardIt, typename UnaryOp>
-class transformed_range_printer: public strf::printer<CharT>
+class transformed_range_printer: public strf::printer<sizeof(CharT)>
 {
 public:
 
@@ -499,7 +505,7 @@ public:
         _preview(preview);
     }
 
-    STRF_HD void print_to(strf::basic_outbuf<CharT>& ob) const override;
+    STRF_HD void print_to(strf::underlying_outbuf<sizeof(CharT)>& ob) const override;
 
 private:
 
@@ -530,7 +536,7 @@ STRF_HD void transformed_range_printer<CharT, FPack, ForwardIt, UnaryOp>
 
 template <typename CharT, typename FPack, typename ForwardIt, typename UnaryOp>
 STRF_HD void transformed_range_printer<CharT, FPack, ForwardIt, UnaryOp>::print_to
-    ( strf::basic_outbuf<CharT>& ob ) const
+    ( strf::underlying_outbuf<sizeof(CharT)>& ob ) const
 {
     strf::print_preview<false, false> no_preview;
     for(auto it = _begin; it != _end; ++it) {
@@ -540,7 +546,7 @@ STRF_HD void transformed_range_printer<CharT, FPack, ForwardIt, UnaryOp>::print_
 }
 
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
-class sep_transformed_range_printer: public printer<CharT>
+class sep_transformed_range_printer: public strf::printer<sizeof(CharT)>
 {
 public:
 
@@ -566,7 +572,7 @@ public:
         _preview(preview);
     }
 
-    STRF_HD void print_to(strf::basic_outbuf<CharT>& ob) const override;
+    STRF_HD void print_to(strf::underlying_outbuf<sizeof(CharT)>& ob) const override;
 
 private:
 
@@ -614,13 +620,15 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
     }
     if (Preview::width_required) {
         decltype(auto) wcalc
-            = _get_facet<strf::width_calculator_c<CharT>>(_fp);
+            = _get_facet<strf::width_calculator_c<sizeof(CharT)>>(_fp);
         decltype(auto) encoding
-            = _get_facet<strf::encoding_c<CharT>>(_fp);
+            = _get_facet<strf::encoding_c<CharT>>(_fp).as_underlying();
         auto enc_err = _get_facet<strf::encoding_error_c>(_fp);
         auto allow_surr = _get_facet<strf::surrogate_policy_c>(_fp);
 
-        auto dw = wcalc.width( preview.remaining_width(), _sep_begin, _sep_len
+        using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
+        auto dw = wcalc.width( preview.remaining_width()
+                             , reinterpret_cast<const uchar*>(_sep_begin), _sep_len
                              , encoding, enc_err, allow_surr );
         if (dw != 0) {
             if (count > UINT32_MAX) {
@@ -638,15 +646,16 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
 
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
 STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
-    ( strf::basic_outbuf<CharT>& ob ) const
+    ( strf::underlying_outbuf<sizeof(CharT)>& ob ) const
 {
     strf::print_preview<false, false> no_preview;
+    using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
     auto it = _begin;
     if (it != _end) {
         make_printer<CharT, FPack>(strf::rank<5>{}, _fp, no_preview, _op(*it))
             .print_to(ob);
         while (++it != _end) {
-            strf::write(ob, _sep_begin, _sep_len);
+            strf::write(ob, reinterpret_cast<const uchar*>(_sep_begin), _sep_len);
             make_printer<CharT, FPack>(strf::rank<5>{}, _fp, no_preview, _op(*it))
                 .print_to(ob);
         }

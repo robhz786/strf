@@ -149,7 +149,7 @@ private:
 
   /*<< `strf::printer_impl<CharT, FPack, Arg>` is equivalent to
      `decltype(make_printer(strf::rank<5>{}, ob, fp, std::declval<Arg>())`
-      where the type of `ob` is `strf::basic_outbuf<CharT>&`,
+      where the type of `ob` is `strf::underlying_outbuf<CharSize>&`,
       and the type of `fp` is `const Fpack&`.
       Hence the type of `_colon` derives from `printer<CharT>`,
       and so do the elements of `_hextets`.

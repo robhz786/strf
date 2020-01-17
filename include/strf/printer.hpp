@@ -45,18 +45,18 @@ inline STRF_HD void handle_encoding_failure()
 } // namespace detail
 
 
-template <typename CharOut>
+template <std::size_t CharSize>
 class printer
 {
 public:
 
-    using char_type = CharOut;
+    constexpr static std::size_t char_size = CharSize;
 
     STRF_HD virtual ~printer()
     {
     }
 
-    STRF_HD virtual void print_to(strf::basic_outbuf<CharOut>& ob) const = 0;
+    STRF_HD virtual void print_to(strf::underlying_outbuf<CharSize>& ob) const = 0;
 };
 
 namespace detail {
@@ -320,23 +320,23 @@ namespace detail {
 
 #if defined(__cpp_fold_expressions)
 
-template <typename CharT, typename ... Printers>
-inline STRF_HD void write_args( strf::basic_outbuf<CharT>& ob
-                      , const Printers& ... printers )
+template <std::size_t CharSize, typename ... Printers>
+inline STRF_HD void write_args( strf::underlying_outbuf<CharSize>& ob
+                              , const Printers& ... printers )
 {
     (... , printers.print_to(ob));
 }
 
 #else // defined(__cpp_fold_expressions)
 
-template <typename CharT>
-inline STRF_HD void write_args(strf::basic_outbuf<CharT>&)
+template <std::size_t CharSize>
+inline STRF_HD void write_args(strf::underlying_outbuf<CharSize>&)
 {
 }
 
-template <typename CharT, typename Printer, typename ... Printers>
+template <std::size_t CharSize, typename Printer, typename ... Printers>
 inline STRF_HD void write_args
-    ( strf::basic_outbuf<CharT>& ob
+    ( strf::underlying_outbuf<CharSize>& ob
     , const Printer& printer
     , const Printers& ... printers )
 {

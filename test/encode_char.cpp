@@ -17,8 +17,8 @@ struct fixture
 
 template <typename CharT>
 void test_char( strf::encoding<CharT> enc
-                    , char32_t ch
-                    , std::basic_string<CharT> encoded_char )
+              , char32_t ch
+              , std::basic_string<CharT> encoded_char )
 {
     TEST_SCOPE_DESCRIPTION( "encoding: ", enc.name()
                           , "; char: \\u'", strf::hex((unsigned)ch), '\'');

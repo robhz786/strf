@@ -46,7 +46,7 @@ template < typename CharT
          , typename ChildFPack
          , typename Preview
          , typename ... Args >
-class facets_pack_printer: public strf::printer<CharT>
+class facets_pack_printer: public strf::printer<sizeof(CharT)>
 {
 public:
 
@@ -55,11 +55,11 @@ public:
         , Preview& preview
         , const strf::inner_pack_with_args<ChildFPack, Args...>& args )
         : _fp{parent_fp, args.fp}
-        , _printers{_fp, preview, args.args}
+        , _printers{_fp, preview, args.args, strf::tag<CharT>()}
     {
     }
 
-    STRF_HD void print_to(strf::basic_outbuf<CharT>& ob) const override
+    STRF_HD void print_to(strf::underlying_outbuf<sizeof(CharT)>& ob) const override
     {
         strf::detail::write(ob, _printers);
     }

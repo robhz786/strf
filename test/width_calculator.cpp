@@ -44,33 +44,27 @@ int main()
 
 
     TEST(u8"         \u2E3A\u2E3A\u2014")
-        .with( strf::width_as_u32len<char>{} )
-#if defined(__cpp_char8_t)
-        .with( strf::width_as_u32len<char8_t>{} )
-#endif
+        .with( strf::width_as_u32len<1>{} )
         (strf::right(u8"\u2E3A\u2E3A\u2014", 12));
 
     TEST( u"         \u2E3A\u2E3A\u2014")
-        .with(strf::width_as_u32len<char16_t>{})
+        .with(strf::width_as_u32len<2>{})
         (strf::right( u"\u2E3A\u2E3A\u2014", 12));
 
     TEST( U"         \u2E3A\u2E3A\u2014")
-        .with(strf::width_as_u32len<char32_t>{})
+        .with(strf::width_as_u32len<4>{})
         (strf::right( U"\u2E3A\u2E3A\u2014", 12));
 
     TEST( L"         \u2E3A\u2E3A\u2014")
-        .with(strf::width_as_u32len<wchar_t>{})
+        .with(strf::width_as_u32len<sizeof(wchar_t)>{})
         (strf::right( L"\u2E3A\u2E3A\u2014", 12));
 
     TEST(u8"         \u2E3A\u2E3A\u2014")
-        .with(strf::width_as_u32len<char>{})
-#if defined(__cpp_char8_t)
-        .with( strf::width_as_u32len<char8_t>{} )
-#endif
+        .with(strf::width_as_u32len<1>{})
         (strf::cv(u8"\u2E3A\u2E3A\u2014") > 12);
 
     TEST( u"         \u2E3A\u2E3A\u2014")
-        .with(strf::width_as_u32len<char16_t>{})
+        .with(strf::width_as_u32len<2>{})
         (strf::cv(u"\u2E3A\u2E3A\u2014") > 12);
 
 

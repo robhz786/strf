@@ -120,10 +120,11 @@ inline auto base64(const void* bytes, std::size_t num_bytes)
 
 namespace xxx {
 
-template <typename CharT>
-class base64_printer: public strf::printer<CharT>
+template <std::size_t CharSize>
+class base64_printer: public strf::printer<CharSize>
 {
 public:
+    using char_type = strf::underlying_outbuf_char_type<CharSize>;
 
     template <bool PreviewSize>
     base64_printer
@@ -131,7 +132,7 @@ public:
         , strf::print_preview<PreviewSize, false>& preview
         , const base64_input_with_format& fmt );
 
-    void print_to(strf::basic_outbuf<CharT>& ob) const override;
+    void print_to(strf::underlying_outbuf<CharSize>& ob) const override;
 
 private:
 
@@ -141,30 +142,30 @@ private:
 
     void _calc_size(strf::size_preview<true>&) const;
 
-    void _write_single_line(strf::basic_outbuf<CharT>& ob) const;
+    void _write_single_line(strf::underlying_outbuf<CharSize>& ob) const;
 
-    void _encode_all_data_in_this_line(strf::basic_outbuf<CharT>& ob) const;
+    void _encode_all_data_in_this_line(strf::underlying_outbuf<CharSize>& ob) const;
 
-    void _write_multiline(strf::basic_outbuf<CharT>& ob) const;
+    void _write_multiline(strf::underlying_outbuf<CharSize>& ob) const;
 
-    void _write_identation(strf::basic_outbuf<CharT>& ob) const;
+    void _write_identation(strf::underlying_outbuf<CharSize>& ob) const;
 
-    void _write_end_of_line(strf::basic_outbuf<CharT>& ob) const;
+    void _write_end_of_line(strf::underlying_outbuf<CharSize>& ob) const;
 
     void _encode_3bytes
-        ( CharT* dest
+        ( char_type* dest
         , const std::uint8_t* data
         , std::size_t data_size ) const;
 
-    CharT _encode(std::uint8_t hextet) const;
+    char_type _encode(std::uint8_t hextet) const;
 
     const base64_facet _facet;
     const base64_input_with_format _fmt;
 };
 
-template <typename CharT>
+template <std::size_t CharSize>
 template <bool PreviewSize>
-base64_printer<CharT>::base64_printer
+base64_printer<CharSize>::base64_printer
     ( base64_facet facet
     , strf::print_preview<PreviewSize, false>& preview
     , const base64_input_with_format& fmt )
@@ -174,8 +175,8 @@ base64_printer<CharT>::base64_printer
     _calc_size(preview);
 }
 
-template <typename CharT>
-void base64_printer<CharT>::_calc_size(strf::size_preview<true>& preview) const
+template <std::size_t CharSize>
+void base64_printer<CharSize>::_calc_size(strf::size_preview<true>& preview) const
 {
     std::size_t num_digits = 4 * (_fmt.value().num_bytes + 2) / 3;
     preview.add_size(num_digits);
@@ -190,8 +191,8 @@ void base64_printer<CharT>::_calc_size(strf::size_preview<true>& preview) const
 
 //[ base64_printer__write
 
-template <typename CharT>
-void base64_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
+template <std::size_t CharSize>
+void base64_printer<CharSize>::print_to(strf::underlying_outbuf<CharSize>& ob) const
 {
     if (_facet.single_line()) {
         _write_single_line(ob);
@@ -200,34 +201,34 @@ void base64_printer<CharT>::print_to(strf::basic_outbuf<CharT>& ob) const
     }
 }
 
-template <typename CharT>
-void base64_printer<CharT>::_write_single_line(strf::basic_outbuf<CharT>& ob) const
+template <std::size_t CharSize>
+void base64_printer<CharSize>::_write_single_line(strf::underlying_outbuf<CharSize>& ob) const
 {
     _write_identation(ob);
     _encode_all_data_in_this_line(ob);
 }
 
-template <typename CharT>
-void base64_printer<CharT>::_write_identation(strf::basic_outbuf<CharT>& ob) const
+template <std::size_t CharSize>
+void base64_printer<CharSize>::_write_identation(strf::underlying_outbuf<CharSize>& ob) const
 {
-    using traits = std::char_traits<CharT>;
+    using traits = std::char_traits<char_type>;
     std::size_t count = _fmt.indentation();
     while(true) {
         std::size_t buff_size = ob.size();
         if (buff_size >= count) {
-            traits::assign(ob.pos(), count, CharT(' '));
+            traits::assign(ob.pos(), count, char_type(' '));
             ob.advance(count);
             return;
         }
-        traits::assign(ob.pos(), buff_size, CharT(' '));
+        traits::assign(ob.pos(), buff_size, char_type(' '));
         count -= buff_size;
         ob.advance_to(ob.end());
         ob.recycle();
     };
 }
 
-template <typename CharT>
-void base64_printer<CharT>::_encode_all_data_in_this_line(strf::basic_outbuf<CharT>& ob) const
+template <std::size_t CharSize>
+void base64_printer<CharSize>::_encode_all_data_in_this_line(strf::underlying_outbuf<CharSize>& ob) const
 {
     auto data_it = static_cast<const std::uint8_t*>(_fmt.value().bytes);
     for (std::ptrdiff_t count = _fmt.value().num_bytes; count > 0; count -= 3) {
@@ -238,9 +239,9 @@ void base64_printer<CharT>::_encode_all_data_in_this_line(strf::basic_outbuf<Cha
     }
 }
 
-template <typename CharT>
-void base64_printer<CharT>::_encode_3bytes
-    ( CharT* dest
+template <std::size_t CharSize>
+void base64_printer<CharSize>::_encode_3bytes
+    ( char_type* dest
     , const std::uint8_t* data
     , std::size_t data_size ) const
 {
@@ -254,8 +255,8 @@ void base64_printer<CharT>::_encode_3bytes
     dest[3] = data_size < 3 ? '=' : _encode(data[2] & 0x3F);
 }
 
-template <typename CharT>
-CharT base64_printer<CharT>::_encode(std::uint8_t hextet) const
+template <std::size_t CharSize>
+auto base64_printer<CharSize>::_encode(std::uint8_t hextet) const -> char_type
 {
     assert(hextet <= 63);
     std::uint8_t ch =
@@ -269,8 +270,8 @@ CharT base64_printer<CharT>::_encode(std::uint8_t hextet) const
 }
 //]
 
-template <typename CharT>
-void base64_printer<CharT>::_write_multiline(strf::basic_outbuf<CharT>& ob) const
+template <std::size_t CharSize>
+void base64_printer<CharSize>::_write_multiline(strf::underlying_outbuf<CharSize>& ob) const
 {
     _write_identation(ob);
 
@@ -285,7 +286,7 @@ void base64_printer<CharT>::_write_multiline(strf::basic_outbuf<CharT>& ob) cons
             ob.advance(4);
             cursor_pos += 4;
         } else {
-            CharT tmp[4];
+            char_type tmp[4];
             _encode_3bytes(tmp, data_it, remaining_bytes);
             for(int i=0; i < 4; ++i) {
                 if (cursor_pos == _facet.line_length) {
@@ -307,8 +308,8 @@ void base64_printer<CharT>::_write_multiline(strf::basic_outbuf<CharT>& ob) cons
     }
 }
 
-template <typename CharT>
-void base64_printer<CharT>::_write_end_of_line(strf::basic_outbuf<CharT>& ob) const
+template <std::size_t CharSize>
+void base64_printer<CharSize>::_write_end_of_line(strf::underlying_outbuf<CharSize>& ob) const
 {
     ob.ensure(2);
     ob.pos()[0] = _facet.eol[0];
@@ -324,10 +325,9 @@ void base64_printer<CharT>::_write_end_of_line(strf::basic_outbuf<CharT>& ob) co
 namespace xxx {
 
 template <typename CharT, typename FPack, typename Preview>
-inline base64_printer<CharT> make_printer( strf::rank<1>
-                                         , const FPack& fp
-                                         , Preview& preview
-                                         , const base64_input_with_format& fmt )
+inline base64_printer<sizeof(CharT)> make_printer
+    ( strf::rank<1>, const FPack& fp, Preview& preview
+    , const base64_input_with_format& fmt )
 {
   /*<< see [link facets_pack get_facet.]
 >>*/auto facet = strf::get_facet<base64_facet_c, base64_input>(fp);
@@ -336,10 +336,9 @@ inline base64_printer<CharT> make_printer( strf::rank<1>
 
 
 template <typename CharT, typename FPack, typename Preview>
-inline base64_printer<CharT> make_printer( strf::rank<1> r
-                                         , const FPack& fp
-                                         , Preview& preview
-                                         , const base64_input& input )
+inline base64_printer<sizeof(CharT)> make_printer
+    ( strf::rank<1> r, const FPack& fp, Preview& preview
+    , const base64_input& input )
 {
     return make_printer(r, fp, preview, base64_input_with_format{input});
 }

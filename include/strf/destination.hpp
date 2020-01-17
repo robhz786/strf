@@ -157,13 +157,13 @@ public:
 
 private:
 
-    static inline const strf::printer<CharT>&
-    STRF_HD _as_printer_cref(const strf::printer<CharT>& p)
+    static inline const strf::printer<sizeof(CharT)>&
+    STRF_HD _as_printer_cref(const strf::printer<sizeof(CharT)>& p)
     {
         return p;
     }
-    static inline const strf::printer<CharT>*
-    STRF_HD _as_printer_cptr(const strf::printer<CharT>& p)
+    static inline const strf::printer<sizeof(CharT)>*
+    STRF_HD _as_printer_cptr(const strf::printer<sizeof(CharT)>& p)
     {
          return &p;
     }
@@ -200,17 +200,17 @@ private:
         ( const CharT* str
         , const CharT* str_end
         , Preview* preview_arr
-        , std::initializer_list<const strf::printer<CharT>*> args ) const &
+        , std::initializer_list<const strf::printer<sizeof(CharT)>*> args ) const &
     {
         const auto& self = static_cast<const _destination_type&>(*this);
 
         using catenc = strf::encoding_c<CharT>;
         using caterr = strf::tr_invalid_arg_c;
-        decltype(auto) enc = strf::get_facet<catenc, void>(self._fpack);
+        decltype(auto) enc = strf::get_facet<catenc, void>(self._fpack).as_underlying();
         decltype(auto) arg_err = strf::get_facet<caterr, void>(self._fpack);
 
         PreviewType preview;
-        strf::detail::tr_string_printer<CharT> tr_printer
+        strf::detail::tr_string_printer<sizeof(CharT)> tr_printer
             (preview, preview_arr, args, str, str_end, enc, arg_err);
 
         return self._write(preview, tr_printer);
@@ -340,7 +340,7 @@ private:
         , const Printers& ... printers) const
     {
         decltype(auto) ob = _outbuf_creator.create();
-        strf::detail::write_args(ob, printers...);
+        strf::detail::write_args(ob.as_underlying(), printers...);
         return strf::detail::finish(strf::rank<2>(), ob);
     }
 
@@ -457,7 +457,7 @@ private:
         , const Printers& ... printers) const
     {
         decltype(auto) ob = _outbuf_creator.create(_size);
-        strf::detail::write_args(ob, printers...);
+        strf::detail::write_args(ob.as_underlying(), printers...);
         return strf::detail::finish(strf::rank<2>(), ob);
     }
 
@@ -575,7 +575,7 @@ private:
         , const Printers& ... printers ) const
     {
         decltype(auto) ob = _outbuf_creator.create(preview.get_size());
-        strf::detail::write_args(ob, printers...);
+        strf::detail::write_args(ob.as_underlying(), printers...);
         return strf::detail::finish(strf::rank<2>(), ob);
     }
 

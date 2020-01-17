@@ -135,7 +135,7 @@ int main()
         TEST( "11") (strf::range(arr));
         TEST(u"+11") (+strf::fmt_range(arr));
         TEST( "0xb") (~strf::hex(strf::range(arr)));
-        
+
         TEST( "11") (strf::separated_range(arr,  ", "));
         TEST(u"+11") (+strf::fmt_separated_range(arr,  u", "));
         TEST( "0xb") (~strf::hex(strf::separated_range(arr,   ", ")));
@@ -145,7 +145,7 @@ int main()
         TEST( "11") (strf::range(stl_arr));
         TEST( "+11") (+strf::fmt_range(stl_arr));
         TEST( "0xb") (~strf::hex(strf::range(stl_arr)));
-        
+
         TEST( "11") (strf::separated_range(stl_arr,  ", "));
         TEST(u"+11") (+strf::fmt_separated_range(stl_arr,  u", "));
         TEST( "0xb") (~strf::hex(strf::separated_range(stl_arr,   ", ")));
@@ -156,12 +156,12 @@ int main()
         TEST( "") (strf::range(stl_arr));
         TEST(u"") (+strf::fmt_range(stl_arr));
         TEST( "") (~strf::hex(strf::range(stl_arr)));
-        
+
         TEST( "") (strf::separated_range(stl_arr,  ", "));
         TEST(u"") (+strf::fmt_separated_range(stl_arr,  u", "));
-        TEST( "") (~strf::hex(strf::separated_range(stl_arr,   ", ")));       
+        TEST( "") (~strf::hex(strf::separated_range(stl_arr,   ", ")));
     }
-    {   // Range transformed by functor 
+    {   // Range transformed by functor
         auto func = [](int x){ return strf::join('<', -x, '>'); };
         int arr [3] = {11, 22, 33};
         std::array<int, 3> stl_arr{{11, 22, 33}};

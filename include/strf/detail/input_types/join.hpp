@@ -119,10 +119,10 @@ struct aligned_join_t
 
 namespace detail {
 
-template<typename CharT>
+template<std::size_t CharSize>
 STRF_HD void print_split
-    ( strf::basic_outbuf<CharT>& ob
-    , strf::encoding<CharT> enc
+    ( strf::underlying_outbuf<CharSize>& ob
+    , const strf::underlying_encoding<CharSize>& enc
     , unsigned fillcount
     , char32_t fillchar
     , std::ptrdiff_t split_pos
@@ -133,10 +133,10 @@ STRF_HD void print_split
     enc.encode_fill(ob, fillcount, fillchar, enc_err, allow_surr);
 }
 
-template<typename CharT, typename Printer, typename ... Printers>
+template<std::size_t CharSize, typename Printer, typename ... Printers>
 STRF_HD void print_split
-    ( strf::basic_outbuf<CharT>& ob
-    , strf::encoding<CharT> enc
+    ( strf::underlying_outbuf<CharSize>& ob
+    , const strf::underlying_encoding<CharSize>& enc
     , unsigned fillcount
     , char32_t fillchar
     , std::ptrdiff_t split_pos
@@ -154,12 +154,12 @@ STRF_HD void print_split
     }
 }
 
-template<typename CharT, std::size_t ... I, typename ... Printers>
+template<std::size_t CharSize, std::size_t ... I, typename ... Printers>
 STRF_HD void print_split
     ( const strf::detail::printers_tuple_impl
-        < CharT, std::index_sequence<I...>, Printers... >& printers
-    , strf::basic_outbuf<CharT>& ob
-    , strf::encoding<CharT> enc
+        < CharSize, std::index_sequence<I...>, Printers... >& printers
+    , strf::underlying_outbuf<CharSize>& ob
+    , const strf::underlying_encoding<CharSize>& enc
     , unsigned fillcount
     , char32_t fillchar
     , std::ptrdiff_t split_pos
@@ -170,28 +170,29 @@ STRF_HD void print_split
                              , allow_surr, printers.template get<I>()... );
 }
 
-template<typename CharT, typename ... Printers>
-class aligned_join_printer_impl: public printer<CharT>
+template<std::size_t CharSize, typename ... Printers>
+class aligned_join_printer_impl: public printer<CharSize>
 {
-    using _printers_tuple = strf::detail::printers_tuple<CharT, Printers...>;
+    using _printers_tuple = strf::detail::printers_tuple<CharSize, Printers...>;
 
 public:
 
-    template<typename FPack, bool ReqSize, typename ... Args>
+    template<typename FPack, bool ReqSize, typename CharT, typename ... Args>
     STRF_HD aligned_join_printer_impl
         ( const FPack& fp
         , strf::print_preview<ReqSize, false>& preview
         , const strf::detail::simple_tuple<Args...>& args
         , std::ptrdiff_t split_pos
-        , strf::alignment_format_data afmt )
+        , strf::alignment_format_data afmt
+        , strf::tag<CharT> tag_char)
         : _split_pos(split_pos)
         , _afmt(afmt)
-        , _encoding(_get_facet<strf::encoding_c<CharT>>(fp))
+        , _encoding(_get_facet<strf::encoding_c<CharT>>(fp).as_underlying())
         , _enc_err(_get_facet<strf::encoding_error_c>(fp))
         , _allow_surr(_get_facet<strf::surrogate_policy_c>(fp))
     {
         strf::print_preview<ReqSize, true> p { _afmt.width };
-        new (_printers_ptr()) _printers_tuple { fp, p, args };
+        new (_printers_ptr()) _printers_tuple { fp, p, args, tag_char };
         if (p.remaining_width() > 0) {
             _fillcount = p.remaining_width().round();
         }
@@ -205,15 +206,16 @@ public:
         (void) preview;
     }
 
-    template<typename FPack, bool ReqSize, typename ... Args>
+    template<typename FPack, bool ReqSize, typename CharT, typename ... Args>
     STRF_HD aligned_join_printer_impl
         ( const FPack& fp, strf::print_preview<ReqSize, true>& preview
         , const strf::detail::simple_tuple<Args...>& args
         , std::ptrdiff_t split_pos
-        , strf::alignment_format_data afmt )
+        , strf::alignment_format_data afmt
+        , strf::tag<CharT> )
         : _split_pos(split_pos)
         , _afmt(afmt)
-        , _encoding(_get_facet<strf::encoding_c<CharT>>(fp))
+        , _encoding(_get_facet<strf::encoding_c<CharT>>(fp).as_underlying())
         , _enc_err(_get_facet<strf::encoding_error_c>(fp))
         , _allow_surr(_get_facet<strf::surrogate_policy_c>(fp))
     {
@@ -226,8 +228,9 @@ public:
             wmax = preview.remaining_width();
             diff = preview.remaining_width() - _afmt.width;
         }
-        strf::print_preview<ReqSize, true> p { wmax };
-        new (_printers_ptr()) _printers_tuple { fp, p, args }; // todo: what if this throws ?
+        strf::print_preview<ReqSize, true> p{wmax};
+        // todo: what if the line below throws ?
+        new (_printers_ptr()) _printers_tuple{fp, p, args, strf::tag<CharT>()};
         if (p.remaining_width() > diff) {
             _fillcount = (p.remaining_width() - diff).round();
         }
@@ -246,7 +249,7 @@ public:
         _printers_ptr()->~_printers_tuple();
     }
 
-    STRF_HD void print_to(strf::basic_outbuf<CharT>& ob) const override
+    STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override
     {
         switch (_afmt.alignment) {
             case strf::text_alignment::left: {
@@ -278,14 +281,14 @@ private:
 
     using _printers_tuple_storage = typename std::aligned_storage_t
 #if defined(_MSC_VER)
-    <sizeof(std::tuple<Printers...>), alignof(strf::printer<CharT>)>;
+    <sizeof(std::tuple<Printers...>), alignof(strf::printer<CharSize>)>;
 #else
     <sizeof(_printers_tuple), alignof(_printers_tuple)>;
 #endif
     _printers_tuple_storage _pool;
     std::ptrdiff_t _split_pos;
     strf::alignment_format_data _afmt;
-    const strf::encoding<CharT> _encoding;
+    const strf::underlying_encoding<CharSize>& _encoding;
     strf::width_t _width;
     std::int16_t _fillcount = 0;
     strf::encoding_error _enc_err;
@@ -314,16 +317,16 @@ private:
         return 0;
     }
 
-    STRF_HD void _write_fill(strf::basic_outbuf<CharT>& ob, int count) const
+    STRF_HD void _write_fill(strf::underlying_outbuf<CharSize>& ob, int count) const
     {
         _encoding.encode_fill(ob, count, _afmt.fill, _enc_err, _allow_surr);
     }
 
-    STRF_HD void _print_split(strf::basic_outbuf<CharT>& ob) const;
+    STRF_HD void _print_split(strf::underlying_outbuf<CharSize>& ob) const;
 };
 
-template<typename CharT, typename ... Printers>
-STRF_HD void aligned_join_printer_impl<CharT, Printers...>::_print_split(strf::basic_outbuf<CharT>& ob) const
+template<std::size_t CharSize, typename ... Printers>
+STRF_HD void aligned_join_printer_impl<CharSize, Printers...>::_print_split(strf::underlying_outbuf<CharSize>& ob) const
 {
     strf::detail::print_split( _printers(), ob, _encoding, _fillcount, _afmt.fill
                              , _split_pos, _enc_err, _allow_surr );
@@ -332,7 +335,7 @@ STRF_HD void aligned_join_printer_impl<CharT, Printers...>::_print_split(strf::b
 template<typename CharT, typename FPack, typename Preview, typename ... Args>
 using aligned_join_printer_impl_of
 = aligned_join_printer_impl
-    < CharT
+    < sizeof(CharT)
     , decltype
         ( make_printer<CharT>
             ( strf::rank<5>()
@@ -355,7 +358,8 @@ public:
         , const strf::detail::simple_tuple<Args...>& args
         , std::ptrdiff_t split_pos
         , strf::alignment_format_data afmt )
-        : _aligned_join_impl(fp, preview, args, split_pos, afmt)
+        : _aligned_join_impl( fp, preview, args, split_pos, afmt
+                            , strf::tag<CharT>() )
     {
     }
 
@@ -364,16 +368,17 @@ public:
     }
 };
 
-template<typename CharT, typename ... Printers>
-class join_printer_impl: public printer<CharT> {
+template<std::size_t CharSize, typename ... Printers>
+class join_printer_impl: public printer<CharSize> {
 public:
 
-    template<typename FPack, typename Preview, typename ... Args>
+    template<typename FPack, typename Preview, typename CharT, typename ... Args>
     STRF_HD join_printer_impl
         ( const FPack& fp
         , Preview& preview
-        , const strf::detail::simple_tuple<Args...>& args )
-        : _printers { fp, preview, args }
+        , const strf::detail::simple_tuple<Args...>& args
+        , strf::tag<CharT> tag_char )
+        : _printers{fp, preview, args, tag_char}
     {
     }
 
@@ -381,28 +386,27 @@ public:
     {
     }
 
-    STRF_HD void print_to(strf::basic_outbuf<CharT>& ob) const override
+    STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override
     {
         strf::detail::write(ob, _printers);
     }
 
 private:
 
-    strf::detail::printers_tuple<CharT, Printers...> _printers;
+    strf::detail::printers_tuple<CharSize, Printers...> _printers;
 };
 
 template<typename CharT, typename FPack, typename Preview, typename ... Args>
 class join_printer
     : public strf::detail::join_printer_impl
-        < CharT
+        < sizeof(CharT)
         , decltype(make_printer<CharT>( strf::rank<5>()
                                       , std::declval<const FPack&>()
                                       , std::declval<Preview&>()
-                                      , std::declval<const Args&>() )) ...>
+                                      , std::declval<const Args&>() )) ... >
 {
-
     using _join_impl = strf::detail::join_printer_impl
-        < CharT
+        < sizeof(CharT)
         , decltype(make_printer<CharT>( strf::rank<5>()
                                       , std::declval<const FPack&>()
                                       , std::declval<Preview&>()
@@ -412,7 +416,7 @@ public:
     STRF_HD join_printer( const FPack& fp
                         , Preview& preview
                         , const strf::detail::simple_tuple<Args...>& args )
-        : _join_impl(fp, preview, args)
+        : _join_impl(fp, preview, args, strf::tag<CharT>())
     {
     }
 
@@ -453,7 +457,11 @@ join(const Args& ... args)
         { strf::detail::make_simple_tuple(args...) };
 }
 
-template<typename CharT, typename FPack, typename Preview, bool SplitPosActive, typename ... Args>
+template< typename CharT
+        , typename FPack
+        , typename Preview
+        , bool SplitPosActive
+        , typename ... Args >
 inline STRF_HD strf::detail::aligned_join_printer<CharT, FPack, Preview, Args...> make_printer
     ( strf::rank<1>
     , const FPack& fp

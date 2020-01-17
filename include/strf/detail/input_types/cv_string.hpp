@@ -12,44 +12,54 @@ namespace strf {
 
 namespace detail {
 
-template<typename CharIn, typename CharOut>
-class cv_string_printer: public strf::printer<CharOut>
+template<std::size_t CharInSize, std::size_t CharOutSize>
+class cv_string_printer: public strf::printer<CharOutSize>
 {
 public:
 
-    template <typename FPack, typename Preview>
+    using char_in_type = strf::underlying_outbuf_char_type<CharInSize>;
+
+    template <typename FPack, typename Preview, typename CharIn, typename CharOut>
     STRF_HD cv_string_printer
         ( const FPack& fp
         , Preview& preview
         , strf::detail::simple_string_view<CharIn> str
-        , strf::encoding<CharIn> src_enc ) noexcept
-        : cv_string_printer( str
-                           , src_enc
-                           , _get_facet<strf::encoding_c<CharOut>>(fp)
-                           , _get_facet<strf::encoding_error_c>(fp)
-                           , _get_facet<strf::surrogate_policy_c>(fp) )
+        , strf::encoding<CharIn> src_enc
+        , strf::tag<CharOut> ) noexcept
+        : cv_string_printer( { reinterpret_cast<const char_in_type*>(str.begin())
+                             , str.size() }
+                           , src_enc.as_underlying()
+                           , _get_facet<strf::encoding_c<CharOut>, CharIn>(fp).as_underlying()
+                           , _get_facet<strf::encoding_error_c, CharIn>(fp)
+                           , _get_facet<strf::surrogate_policy_c, CharIn>(fp) )
     {
-        _preview(fp, preview);
+        static_assert(sizeof(CharIn) == CharInSize);
+        static_assert(sizeof(CharOut) == CharOutSize);
+        _preview<CharIn>(fp, preview);
     }
 
-    template <typename FPack, typename Preview>
+    template <typename FPack, typename Preview, typename CharIn, typename CharOut>
     STRF_HD cv_string_printer
         ( const FPack& fp
         , Preview& preview
-        , strf::detail::simple_string_view<CharIn> str ) noexcept
-        : cv_string_printer( str
-                           , _get_facet<strf::encoding_c<CharIn>>(fp)
-                           , _get_facet<strf::encoding_c<CharOut>>(fp)
-                           , _get_facet<strf::encoding_error_c>(fp)
-                           , _get_facet<strf::surrogate_policy_c>(fp) )
+        , strf::detail::simple_string_view<CharIn> str
+        , strf::tag<CharOut> ) noexcept
+        : cv_string_printer( { reinterpret_cast<const char_in_type*>(str.begin())
+                             , str.size()}
+                           , _get_facet<strf::encoding_c<CharIn>, CharIn>(fp).as_underlying()
+                           , _get_facet<strf::encoding_c<CharOut>, CharIn>(fp).as_underlying()
+                           , _get_facet<strf::encoding_error_c, CharIn>(fp)
+                           , _get_facet<strf::surrogate_policy_c, CharIn>(fp) )
     {
-        _preview(fp, preview);
+        static_assert(sizeof(CharIn) == CharInSize);
+        static_assert(sizeof(CharOut) == CharOutSize);
+        _preview<CharIn>(fp, preview);
     }
 
     STRF_HD cv_string_printer
-        ( strf::detail::simple_string_view<CharIn> str
-        , strf::encoding<CharIn> src_enc
-        , strf::encoding<CharOut> dest_enc
+        ( strf::detail::simple_string_view<char_in_type> str
+        , const strf::underlying_encoding<CharInSize>& src_enc
+        , const strf::underlying_encoding<CharOutSize>& dest_enc
         , strf::encoding_error enc_err
         , strf::surrogate_policy allow_surr ) noexcept;
 
@@ -57,15 +67,16 @@ public:
 
     STRF_HD std::size_t necessary_size() const;
 
-    STRF_HD void print_to(strf::basic_outbuf<CharOut>& ob) const override;
+    STRF_HD void print_to(strf::underlying_outbuf<CharOutSize>& ob) const override;
 
 private:
 
-    template <typename FPack, typename Preview>
+    template <typename CharIn, typename FPack, typename Preview>
     STRF_HD void _preview(const FPack& fp, Preview& preview)
     {
         STRF_IF_CONSTEXPR (Preview::width_required) {
-            const auto& wc = _get_facet<strf::width_calculator_c<CharIn>>(fp);
+            const auto& wc
+                = _get_facet<strf::width_calculator_c<CharInSize>, CharIn>(fp);
             _calc_width(preview, wc);
         }
         STRF_IF_CONSTEXPR (Preview::size_required) {
@@ -76,20 +87,20 @@ private:
 
     STRF_HD constexpr void _calc_width
         ( strf::width_preview<false>&
-        , const strf::width_calculator<CharIn>& ) noexcept
+        , const strf::width_calculator<CharInSize>& ) noexcept
     {
     }
 
     STRF_HD constexpr void _calc_width
         ( strf::width_preview<true>& wpreview
-        , const strf::fast_width<CharIn>& ) noexcept
+        , const strf::fast_width<CharInSize>& ) noexcept
     {
         _count_codepoints(wpreview);
     }
 
     STRF_HD constexpr void _calc_width
         ( strf::width_preview<true>& wpreview
-        , const strf::width_as_u32len<CharIn>& )
+        , const strf::width_as_u32len<CharInSize>& )
     {
         _count_codepoints(wpreview);
     }
@@ -111,7 +122,7 @@ private:
 
     STRF_HD constexpr void _calc_width
         ( strf::width_preview<true>& wpreview
-        , const strf::width_calculator<CharIn>& wcalc )
+        , const strf::width_calculator<CharInSize>& wcalc )
     {
         auto limit = wpreview.remaining_width();
         if (limit > 0) {
@@ -125,15 +136,15 @@ private:
         }
     }
 
-    const CharIn* const _str;
+    const char_in_type* const _str;
     const std::size_t _len;
-    const strf::encoding<CharIn>  _src_encoding;
-    const strf::encoding<CharOut> _dest_encoding;
-    const strf::transcoder_engine<CharIn, CharOut>* _transcoder_eng;
+    const strf::underlying_encoding<CharInSize>&  _src_encoding;
+    const strf::underlying_encoding<CharOutSize>& _dest_encoding;
+    const strf::underlying_transcoder<CharInSize, CharOutSize>* _transcoder;
     const strf::encoding_error _enc_err;
     const strf::surrogate_policy _allow_surr;
 
-    template <typename Category, typename FPack>
+    template <typename Category, typename CharIn, typename FPack>
     static STRF_HD decltype(auto) _get_facet(const FPack& fp)
     {
         using input_tag = strf::string_input_tag<CharIn>;
@@ -141,103 +152,107 @@ private:
     }
 };
 
-template<typename CharIn, typename CharOut>
-STRF_HD cv_string_printer<CharIn, CharOut>::cv_string_printer
-    ( strf::detail::simple_string_view<CharIn> str
-    , strf::encoding<CharIn> src_enc
-    , strf::encoding<CharOut> dest_enc
+template<std::size_t CharInSize, std::size_t CharOutSize>
+STRF_HD cv_string_printer<CharInSize, CharOutSize>::cv_string_printer
+    ( strf::detail::simple_string_view<char_in_type> str
+    , const strf::underlying_encoding<CharInSize>& src_enc
+    , const strf::underlying_encoding<CharOutSize>& dest_enc
     , strf::encoding_error enc_err
     , strf::surrogate_policy allow_surr ) noexcept
     : _str(str.begin())
     , _len(str.size())
     , _src_encoding(src_enc)
     , _dest_encoding(dest_enc)
-    , _transcoder_eng(strf::get_transcoder(src_enc, dest_enc))
+    , _transcoder(strf::get_transcoder(src_enc, dest_enc))
     , _enc_err(enc_err)
     , _allow_surr(allow_surr)
 {
 }
 
-template<typename CharIn, typename CharOut>
-STRF_HD std::size_t cv_string_printer<CharIn, CharOut>::necessary_size() const
+template<std::size_t CharInSize, std::size_t CharOutSize>
+STRF_HD std::size_t cv_string_printer<CharInSize, CharOutSize>::necessary_size() const
 {
-    if (_transcoder_eng) {
-        strf::transcoder<CharIn, CharOut> transcoder(*_transcoder_eng);
-        return transcoder.necessary_size(_str, _str + _len, _allow_surr);
+    if (_transcoder) {
+        return _transcoder->necessary_size(_str, _str + _len, _allow_surr);
     }
     return strf::decode_encode_size( _str, _str + _len
                                    , _src_encoding, _dest_encoding
                                    , _allow_surr );
 }
 
-template<typename CharIn, typename CharOut>
-STRF_HD void cv_string_printer<CharIn, CharOut>::print_to
-    ( strf::basic_outbuf<CharOut>& ob ) const
+template<std::size_t CharInSize, std::size_t CharOutSize>
+STRF_HD void cv_string_printer<CharInSize, CharOutSize>::print_to
+    ( strf::underlying_outbuf<CharOutSize>& ob ) const
 {
-    if (_transcoder_eng != nullptr) {
-        strf::transcoder<CharIn, CharOut> transcoder(*_transcoder_eng);
-        transcoder.transcode(ob, _str, _str + _len, _enc_err, _allow_surr );
+    if (_transcoder != nullptr) {
+        _transcoder->transcode( ob, _str, _str + _len
+                                  , _enc_err, _allow_surr );
     } else {
         strf::decode_encode( ob, _str, _str + _len, _src_encoding
                            , _dest_encoding, _enc_err, _allow_surr );
     }
 }
 
-template<typename CharIn, typename CharOut>
-class fmt_cv_string_printer: public printer<CharOut>
+template<std::size_t CharInSize, std::size_t CharOutSize>
+class fmt_cv_string_printer: public printer<CharOutSize>
 {
 public:
+    using char_in_type = strf::underlying_outbuf_char_type<CharInSize>;
 
-    template <typename FPack, typename Preview>
+    template <typename FPack, typename Preview, typename CharIn, typename CharOut>
     STRF_HD fmt_cv_string_printer
         ( const FPack& fp
         , Preview& preview
         , strf::detail::simple_string_view<CharIn> str
         , strf::alignment_format_data text_alignment
-        , strf::encoding<CharIn> src_enc ) noexcept
-        : _str(str)
+        , strf::encoding<CharIn> src_enc
+        , strf::tag<CharOut> ) noexcept
+        : _str{ reinterpret_cast<const char_in_type*>(str.begin())
+              , str.size() }
         , _afmt(text_alignment)
-        , _src_encoding(src_enc)
-        , _dest_encoding(_get_facet<strf::encoding_c<CharOut>>(fp))
-        , _enc_err(_get_facet<strf::encoding_error_c>(fp))
-        , _allow_surr(_get_facet<strf::surrogate_policy_c>(fp))
+        , _src_encoding(src_enc.as_underlying())
+        , _dest_encoding(_get_facet<strf::encoding_c<CharOut>, CharIn>(fp).as_underlying())
+        , _enc_err(_get_facet<strf::encoding_error_c, CharIn>(fp))
+        , _allow_surr(_get_facet<strf::surrogate_policy_c, CharIn>(fp))
     {
-        _init(preview, _get_facet<strf::width_calculator_c<CharIn>>(fp));
+        _init(preview, _get_facet<strf::width_calculator_c<CharInSize>, CharIn>(fp));
         _calc_size(preview);
     }
 
-    template <typename FPack, typename Preview>
+    template <typename FPack, typename Preview, typename CharIn, typename CharOut>
     STRF_HD fmt_cv_string_printer
         ( const FPack& fp
         , Preview& preview
         , strf::detail::simple_string_view<CharIn> str
-        , strf::alignment_format_data text_alignment ) noexcept
-        : _str(str)
+        , strf::alignment_format_data text_alignment
+        , strf::tag<CharOut> ) noexcept
+        : _str{ reinterpret_cast<const char_in_type*>(str.begin())
+              , str.size() }
         , _afmt(text_alignment)
-        , _src_encoding(_get_facet<strf::encoding_c<CharIn>>(fp))
-        , _dest_encoding(_get_facet<strf::encoding_c<CharOut>>(fp))
-        , _enc_err(_get_facet<strf::encoding_error_c>(fp))
-        , _allow_surr(_get_facet<strf::surrogate_policy_c>(fp))
+        , _src_encoding(_get_facet<strf::encoding_c<CharIn>, CharIn>(fp).as_underlying())
+        , _dest_encoding(_get_facet<strf::encoding_c<CharOut>, CharIn>(fp).as_underlying())
+        , _enc_err(_get_facet<strf::encoding_error_c, CharIn>(fp))
+        , _allow_surr(_get_facet<strf::surrogate_policy_c, CharIn>(fp))
     {
-        _init(preview, _get_facet<strf::width_calculator_c<CharIn>>(fp));
+        _init(preview, _get_facet<strf::width_calculator_c<CharInSize>, CharIn>(fp));
         _calc_size(preview);
     }
 
-    STRF_HD void print_to(strf::basic_outbuf<CharOut>& ob) const override;
+    STRF_HD void print_to(strf::underlying_outbuf<CharOutSize>& ob) const override;
 
 private:
 
-    strf::detail::simple_string_view<CharIn> _str;
+    strf::detail::simple_string_view<char_in_type> _str;
     strf::alignment_format_data _afmt;
-    const strf::encoding<CharIn> _src_encoding;
-    const strf::encoding<CharOut> _dest_encoding;
-    const strf::transcoder_engine<CharIn, CharOut>* _transcoder_eng = nullptr;
-    const strf::width_calculator<CharIn>* _wcalc = nullptr;
+    const strf::underlying_encoding<CharInSize>& _src_encoding;
+    const strf::underlying_encoding<CharOutSize>& _dest_encoding;
+    const strf::underlying_transcoder<CharInSize, CharOutSize>* _transcoder = nullptr;
+    const strf::width_calculator<CharInSize>* _wcalc = nullptr;
     const strf::encoding_error _enc_err;
     const strf::surrogate_policy  _allow_surr;
     std::uint16_t _fillcount = 0;
 
-    template <typename Category, typename FPack>
+    template <typename Category, typename CharIn, typename FPack>
     static STRF_HD decltype(auto) _get_facet(const FPack& fp)
     {
         using input_tag = strf::string_input_tag<CharIn>;
@@ -249,21 +264,21 @@ private:
 
     template <bool RequiringWidth>
     STRF_HD void _init( strf::width_preview<RequiringWidth>& preview
-              , const strf::fast_width<CharIn>&)
+                      , const strf::fast_width<CharInSize>&)
     {
         _init<RequiringWidth>(preview);
     }
 
     template <bool RequiringWidth>
     STRF_HD void _init( strf::width_preview<RequiringWidth>& preview
-              , const strf::width_as_u32len<CharIn>&)
+                      , const strf::width_as_u32len<CharInSize>&)
     {
         _init<RequiringWidth>(preview);
     }
 
     template <bool RequiringWidth>
     STRF_HD void _init( strf::width_preview<RequiringWidth>& preview
-              , const strf::width_calculator<CharIn>&);
+                      , const strf::width_calculator<CharInSize>&);
 
     constexpr void _calc_size(strf::size_preview<false>&) const
     {
@@ -271,16 +286,16 @@ private:
 
     STRF_HD void _calc_size(strf::size_preview<true>& preview) const;
 
-    STRF_HD void _write_str(strf::basic_outbuf<CharOut>& ob) const;
+    STRF_HD void _write_str(strf::underlying_outbuf<CharOutSize>& ob) const;
 
     STRF_HD void _write_fill
-        ( strf::basic_outbuf<CharOut>& ob
+        ( strf::underlying_outbuf<CharOutSize>& ob
         , unsigned count ) const;
 };
 
-template <typename CharIn, typename CharOut>
+template <std::size_t CharInSize, std::size_t CharOutSize>
 template <bool RequiringWidth>
-void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_init
+void STRF_HD fmt_cv_string_printer<CharInSize, CharOutSize>::_init
     ( strf::width_preview<RequiringWidth>& preview )
 {
     auto limit = std::max( _afmt.width
@@ -294,15 +309,15 @@ void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_init
     } else {
         preview.checked_subtract_width(cp_count);
     }
-    _transcoder_eng =
+    _transcoder =
         strf::get_transcoder(_src_encoding, _dest_encoding);
 }
 
-template <typename CharIn, typename CharOut>
+template <std::size_t CharInSize, std::size_t CharOutSize>
 template <bool RequiringWidth>
-void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_init
+void STRF_HD fmt_cv_string_printer<CharInSize, CharOutSize>::_init
     ( strf::width_preview<RequiringWidth>& preview
-    , const strf::width_calculator<CharIn>& wc)
+    , const strf::width_calculator<CharInSize>& wc)
 {
     strf::width_t wmax = _afmt.width;
     strf::width_t wdiff = 0;
@@ -322,18 +337,17 @@ void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_init
     } else {
         preview.subtract_width(str_width);
     }
-    _transcoder_eng =
+    _transcoder =
         strf::get_transcoder(_src_encoding, _dest_encoding);
 }
 
-template<typename CharIn, typename CharOut>
-void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_calc_size
+template<std::size_t CharInSize, std::size_t CharOutSize>
+void STRF_HD fmt_cv_string_printer<CharInSize, CharOutSize>::_calc_size
     ( strf::size_preview<true>& preview ) const
 {
     std::size_t size;
-    if(_transcoder_eng) {
-        strf::transcoder<CharIn, CharOut> transcoder(*_transcoder_eng);
-        size = transcoder.necessary_size(_str.begin(), _str.end(), _allow_surr);
+    if(_transcoder) {
+        size = _transcoder->necessary_size(_str.begin(), _str.end(), _allow_surr);
     } else {
         size = strf::decode_encode_size
             ( _str.begin(), _str.end()
@@ -347,9 +361,9 @@ void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_calc_size
 }
 
 
-template<typename CharIn, typename CharOut>
-void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::print_to
-    ( strf::basic_outbuf<CharOut>& ob ) const
+template<std::size_t CharInSize, std::size_t CharOutSize>
+void STRF_HD fmt_cv_string_printer<CharInSize, CharOutSize>::print_to
+    ( strf::underlying_outbuf<CharOutSize>& ob ) const
 {
     if (_fillcount > 0) {
         switch(_afmt.alignment) {
@@ -366,10 +380,8 @@ void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::print_to
                 break;
             }
             default:
-            {
                 _write_fill(ob, _fillcount);
                 _write_str(ob);
-            }
         }
     } else {
         _write_str(ob);
@@ -377,14 +389,13 @@ void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::print_to
 }
 
 
-template<typename CharIn, typename CharOut>
-void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_write_str
-    ( strf::basic_outbuf<CharOut>& ob ) const
+template<std::size_t CharInSize, std::size_t CharOutSize>
+void STRF_HD fmt_cv_string_printer<CharInSize, CharOutSize>::_write_str
+    ( strf::underlying_outbuf<CharOutSize>& ob ) const
 {
-    if (_transcoder_eng) {
-        strf::transcoder<CharIn, CharOut> transcoder(*_transcoder_eng);
-        transcoder.transcode( ob, _str.begin(), _str.end()
-                            , _enc_err, _allow_surr );
+    if (_transcoder) {
+        _transcoder->transcode( ob, _str.begin(), _str.end()
+                              , _enc_err, _allow_surr );
     } else {
         strf::decode_encode( ob
                            , _str.begin(), _str.end()
@@ -393,9 +404,9 @@ void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_write_str
     }
 }
 
-template<typename CharIn, typename CharOut>
-void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_write_fill
-    ( strf::basic_outbuf<CharOut>& ob
+template<std::size_t CharInSize, std::size_t CharOutSize>
+void STRF_HD fmt_cv_string_printer<CharInSize, CharOutSize>::_write_fill
+    ( strf::underlying_outbuf<CharOutSize>& ob
     , unsigned count ) const
 {
     _dest_encoding.encode_fill(ob, count, _afmt.fill, _enc_err, _allow_surr);
@@ -403,65 +414,25 @@ void STRF_HD fmt_cv_string_printer<CharIn, CharOut>::_write_fill
 
 #if defined(STRF_SEPARATE_COMPILATION)
 
-#if defined(__cpp_char8_t)
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<1, 1>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<1, 2>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<1, 4>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<2, 1>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<2, 2>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<2, 4>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<4, 1>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<4, 2>;
+STRF_EXPLICIT_TEMPLATE class cv_string_printer<4, 4>;
 
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, char8_t>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, char>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, char16_t>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, char32_t>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char8_t, wchar_t>;
-
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char, char8_t>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char16_t, char8_t>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char32_t, char8_t>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<wchar_t, char8_t>;
-
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, char8_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, char>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, char16_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, char32_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char8_t, wchar_t>;
-
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char, char8_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char16_t, char8_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char32_t, char8_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<wchar_t, char8_t>;
-
-#endif
-
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char, char>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char, char16_t>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char, char32_t>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char, wchar_t>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char16_t, char>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char16_t, char16_t>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char16_t, char32_t>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char16_t, wchar_t>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char32_t, char>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char32_t, char16_t>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char32_t, char32_t>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<char32_t, wchar_t>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<wchar_t, char>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<wchar_t, char16_t>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<wchar_t, char32_t>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<wchar_t, wchar_t>;
-
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char, char>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char, char16_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char, char32_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char, wchar_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char16_t, char>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char16_t, char16_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char16_t, char32_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char16_t, wchar_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char32_t, char>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char32_t, char16_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char32_t, char32_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<char32_t, wchar_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<wchar_t, char>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<wchar_t, char16_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<wchar_t, char32_t>;
-STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<wchar_t, wchar_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<1, 1>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<1, 2>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<1, 4>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<2, 1>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<2, 2>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<2, 4>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<4, 1>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<4, 2>;
+STRF_EXPLICIT_TEMPLATE class fmt_cv_string_printer<4, 4>;
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
@@ -471,31 +442,29 @@ class cv_printer_maker_without_encoding;
 template <typename CharT>
 class cv_printer_maker_without_encoding<CharT, CharT, true>
 {
-    using CharIn = CharT;
-    using CharOut = CharT;
 
 public:
-
     template <typename FPack, typename Preview>
-    static inline STRF_HD strf::detail::string_printer<CharOut> make_printer
+    static inline STRF_HD strf::detail::string_printer<sizeof(CharT)> make_printer
         ( const FPack& fp
         , Preview& preview
-        , strf::value_with_format< strf::detail::simple_string_view<CharIn>
+        , strf::value_with_format< strf::detail::simple_string_view<CharT>
                                  , strf::alignment_format_q<false>
-                                 , strf::cv_format<CharIn> > input )
+                                 , strf::cv_format<CharT> > input )
     {
-        return {fp, preview, input.value()};
+        return {fp, preview, input.value(), strf::tag<CharT>()};
     }
 
     template <typename FPack, typename Preview>
-    static inline STRF_HD strf::detail::fmt_string_printer<CharOut> make_printer
+    static inline STRF_HD strf::detail::fmt_string_printer<sizeof(CharT)> make_printer
         ( const FPack& fp
         , Preview& preview
-        , strf::value_with_format< strf::detail::simple_string_view<CharIn>
+        , strf::value_with_format< strf::detail::simple_string_view<CharT>
                                  , strf::alignment_format_q<true>
-                                 , strf::cv_format<CharIn> > input )
+                                 , strf::cv_format<CharT> > input )
     {
-        return {fp, preview, input.value(), input.get_alignment_format_data()};
+        return { fp, preview, input.value(), input.get_alignment_format_data()
+               , strf::tag<CharT>()};
     }
 };
 
@@ -503,11 +472,13 @@ template <typename CharIn, typename CharOut>
 class cv_printer_maker_without_encoding<CharIn, CharOut, true>
 {
 public:
+    static_assert(sizeof(CharIn) == sizeof(CharOut), "");
+    constexpr static std::size_t char_size = sizeof(CharIn);
 
     template <typename FPack, typename Preview>
     static inline STRF_HD strf::detail::printer_variant
-        < strf::detail::string_printer<CharOut>
-        , strf::detail::cv_string_printer<CharIn, CharOut> >
+        < strf::detail::string_printer<char_size>
+        , strf::detail::cv_string_printer<char_size, char_size> >
     make_printer
         ( const FPack& fp
         , Preview& preview
@@ -517,29 +488,30 @@ public:
     {
         using enc_cat_in = strf::encoding_c<CharIn>;
         using input_tag_in = strf::string_input_tag<CharIn>;
-        auto encoding_in = strf::get_facet<enc_cat_in, input_tag_in>(fp);
+        const auto& encoding_in = strf::get_facet<enc_cat_in, input_tag_in>(fp);
 
         using enc_cat_out = strf::encoding_c<CharOut>;
         using input_tag_out = strf::string_input_tag<CharOut>;
-        auto encoding_out = strf::get_facet<enc_cat_out, input_tag_out>(fp);
+        const auto& encoding_out = strf::get_facet<enc_cat_out, input_tag_out>(fp);
 
         if (encoding_in.id() == encoding_out.id()) {
-            return { strf::tag<strf::detail::string_printer<CharOut>>()
+            return { strf::tag<strf::detail::string_printer<char_size>>()
                    , fp
                    , preview
                    , strf::detail::simple_string_view<CharOut>
                        { reinterpret_cast<const CharOut*>(input.value().begin())
-                       , input.value().size() } };
+                       , input.value().size() }
+                   , strf::tag<CharOut>() };
         } else {
-            return { strf::tag<strf::detail::cv_string_printer<CharIn, CharOut>>()
-                   , fp, preview, input.value(), encoding_in };
+            return { strf::tag<strf::detail::cv_string_printer<char_size, char_size>>()
+                   , fp, preview, input.value(), encoding_in, strf::tag<CharOut>() };
         }
     }
 
     template <typename FPack, typename Preview>
     static inline STRF_HD strf::detail::printer_variant
-        < strf::detail::fmt_string_printer<CharOut>
-        , strf::detail::fmt_cv_string_printer<CharIn, CharOut> >
+        < strf::detail::fmt_string_printer<char_size>
+        , strf::detail::fmt_cv_string_printer<char_size, char_size> >
     make_printer
         ( const FPack& fp
         , Preview& preview
@@ -549,14 +521,14 @@ public:
     {
         using enc_cat_in = strf::encoding_c<CharIn>;
         using input_tag_in = strf::string_input_tag<CharIn>;
-        auto encoding_in = strf::get_facet<enc_cat_in, input_tag_in>(fp);
+        const auto& encoding_in = strf::get_facet<enc_cat_in, input_tag_in>(fp);
 
         using enc_cat_out = strf::encoding_c<CharOut>;
         using input_tag_out = strf::string_input_tag<CharOut>;
-        auto encoding_out = strf::get_facet<enc_cat_out, input_tag_out>(fp);
+        const auto& encoding_out = strf::get_facet<enc_cat_out, input_tag_out>(fp);
 
         if (encoding_in.id() == encoding_out.id()) {
-            return { strf::tag<strf::detail::string_printer<CharOut>>()
+            return { strf::tag<strf::detail::string_printer<char_size>>()
                    , fp
                    , preview
                    , strf::detail::simple_string_view<CharOut>
@@ -564,7 +536,7 @@ public:
                        , input.value().size() }
                    , input.get_alignment_format_data() };
         } else {
-            return { strf::tag<strf::detail::cv_string_printer<CharIn, CharOut>>()
+            return { strf::tag<strf::detail::cv_string_printer<char_size, char_size>>()
                    , fp, preview, input.value()
                    , input.get_alignment_format_data()
                    , encoding_in };
@@ -578,28 +550,32 @@ class cv_printer_maker_without_encoding<CharIn, CharOut, false>
 public:
 
     template <typename FPack, typename Preview>
-    static inline STRF_HD strf::detail::cv_string_printer<CharIn, CharOut> make_printer
+    static inline STRF_HD
+    strf::detail::cv_string_printer<sizeof(CharIn), sizeof(CharOut)>
+    make_printer
         ( const FPack& fp
         , Preview& preview
         , strf::value_with_format< strf::detail::simple_string_view<CharIn>
                                  , strf::alignment_format_q<false>
                                  , strf::cv_format<CharIn> > input )
     {
-        return {fp, preview, input.value()};
+        return {fp, preview, input.value(), strf::tag<CharOut>()};
     }
 
     template <typename FPack, typename Preview>
-    static inline STRF_HD strf::detail::fmt_cv_string_printer<CharIn, CharOut> make_printer
+    static inline STRF_HD
+    strf::detail::fmt_cv_string_printer<sizeof(CharIn), sizeof(CharOut)>
+    make_printer
         ( const FPack& fp
         , Preview& preview
         , strf::value_with_format< strf::detail::simple_string_view<CharIn>
                                  , strf::alignment_format_q<true>
                                  , strf::cv_format<CharIn> > input )
     {
-        return {fp, preview, input.value(), input.get_alignment_format_data()};
+        return { fp, preview, input.value(), input.get_alignment_format_data()
+               , strf::tag<CharOut>() };
     }
 };
-
 
 
 template <typename CharIn, typename CharOut, bool SameSize>
@@ -609,11 +585,12 @@ template <typename CharIn, typename CharOut>
 class cv_printer_maker_with_encoding<CharIn, CharOut, true>
 {
 public:
+    static_assert(sizeof(CharIn) == sizeof(CharOut), "");
 
     template <typename FPack, typename Preview>
     static inline STRF_HD strf::detail::printer_variant
-        < strf::detail::string_printer<CharOut>
-        , strf::detail::cv_string_printer<CharIn, CharOut> >
+        < strf::detail::string_printer<sizeof(CharOut)>
+        , strf::detail::cv_string_printer<sizeof(CharIn), sizeof(CharOut)> >
     make_printer
         ( const FPack& fp
         , Preview& preview
@@ -623,24 +600,28 @@ public:
     {
         using enc_cat = strf::encoding_c<CharOut>;
         using input_tag = strf::string_input_tag<CharOut>;
-        auto encoding_from_facets = strf::get_facet<enc_cat, input_tag>(fp);
-        if (input.get_encoding().id() == encoding_from_facets.id()) {
-            return { strf::tag<strf::detail::string_printer<CharOut>>()
+        const auto& encoding_from_facets
+            = strf::get_facet<enc_cat, input_tag>(fp).as_underlying();
+        if (input.get_encoding().id() == encoding_from_facets.id) {
+            return { strf::tag<strf::detail::string_printer<sizeof(CharOut)>>()
                    , fp
                    , preview
                    , strf::detail::simple_string_view<CharOut>
                        { reinterpret_cast<const CharOut*>(input.value().begin())
-                       , input.value().size() } };
+                       , input.value().size() }
+                   , strf::tag<CharOut>() };
         } else {
-            return { strf::tag<strf::detail::cv_string_printer<CharIn, CharOut>>()
-                   , fp, preview, input.value(), input.get_encoding() };
+            return { strf::tag<strf::detail::cv_string_printer
+                                  <sizeof(CharIn), sizeof(CharOut)>>()
+                   , fp, preview, input.value(), input.get_encoding()
+                   , strf::tag<CharOut>() };
         }
     }
 
     template <typename FPack, typename Preview>
     static inline STRF_HD strf::detail::printer_variant
-        < strf::detail::fmt_string_printer<CharOut>
-        , strf::detail::fmt_cv_string_printer<CharIn, CharOut> >
+        < strf::detail::fmt_string_printer<sizeof(CharOut)>
+        , strf::detail::fmt_cv_string_printer<sizeof(CharIn), sizeof(CharOut)> >
     make_printer
         ( const FPack& fp
         , Preview& preview
@@ -650,22 +631,26 @@ public:
     {
         using enc_cat = strf::encoding_c<CharOut>;
         using input_tag = strf::string_input_tag<CharOut>;
-        auto encoding_from_facets = strf::get_facet<enc_cat, input_tag>(fp);
-        if (input.get_encoding().id() == encoding_from_facets.id()) {
-            return { strf::tag<strf::detail::fmt_string_printer<CharOut>>()
+        const auto& encoding_from_facets
+            = strf::get_facet<enc_cat, input_tag>(fp).as_underlying();
+        if (input.get_encoding().id() == encoding_from_facets.id) {
+            return { strf::tag<strf::detail::fmt_string_printer<sizeof(CharOut)>>()
                    , fp
                    , preview
                    , strf::detail::simple_string_view<CharOut>
                        { reinterpret_cast<const CharOut*>(input.value().begin())
                        , input.value().size() }
-                   , input.get_alignment_format_data() };
+                   , input.get_alignment_format_data()
+                   , strf::tag<CharOut>() };
         } else {
-            return { strf::tag<strf::detail::fmt_cv_string_printer<CharIn, CharOut>>()
+            return { strf::tag<strf::detail::fmt_cv_string_printer
+                                  <sizeof(CharIn), sizeof(CharOut)>>()
                    , fp
                    , preview
                    , input.value()
                    , input.get_alignment_format_data()
-                   , input.get_encoding() };
+                   , input.get_encoding()
+                   , strf::tag<CharOut>() };
         }
     }
 };
@@ -675,18 +660,23 @@ class cv_printer_maker_with_encoding<CharIn, CharOut, false>
 {
 public:
     template <typename FPack, typename Preview>
-    inline STRF_HD strf::detail::cv_string_printer<CharIn, CharOut> make_printer
+    inline STRF_HD
+    strf::detail::cv_string_printer<sizeof(CharIn), sizeof(CharOut)>
+    make_printer
         ( const FPack& fp
         , Preview& preview
         , strf::value_with_format< strf::detail::simple_string_view<CharIn>
                                  , strf::alignment_format_q<false>
                                  , strf::cv_format_with_encoding<CharIn> > input )
     {
-        return {fp, preview, input.value(), input.get_encoding()};
+        return { fp, preview, input.value(), input.get_encoding()
+               , strf::tag<CharOut>()};
     }
 
     template <typename FPack, typename Preview>
-    static inline STRF_HD strf::detail::fmt_cv_string_printer<CharIn, CharOut> make_printer
+    static inline STRF_HD
+    strf::detail::fmt_cv_string_printer<sizeof(CharIn), sizeof(CharOut)>
+    make_printer
         ( const FPack& fp
         , Preview& preview
         , strf::value_with_format< strf::detail::simple_string_view<CharIn>
@@ -697,7 +687,8 @@ public:
                , preview
                , input.value()
                , input.get_alignment_format_data()
-               , input.get_encoding() };
+               , input.get_encoding()
+               , strf::tag<CharOut>() };
     }
 };
 
@@ -740,7 +731,7 @@ inline STRF_HD auto make_printer
 }
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
-inline STRF_HD strf::detail::cv_string_printer<CharIn, CharOut>
+inline STRF_HD strf::detail::cv_string_printer<sizeof(CharIn), sizeof(CharOut)>
 make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
@@ -748,11 +739,11 @@ make_printer( strf::rank<1>
                                      , strf::alignment_format_q<false>
                                      , strf::sani_format<CharIn> > input )
 {
-    return {fp, preview, input.value()};
+    return {fp, preview, input.value(), strf::tag<CharOut>()};
 }
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
-inline STRF_HD strf::detail::cv_string_printer<CharIn, CharOut>
+inline STRF_HD strf::detail::cv_string_printer<sizeof(CharIn), sizeof(CharOut)>
 make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
@@ -760,11 +751,12 @@ make_printer( strf::rank<1>
                                      , strf::alignment_format_q<false>
                                      , strf::sani_format_with_encoding<CharIn> > input )
 {
-    return {fp, preview, input.value(), input.get_encoding()};
+    return { fp, preview, input.value(), input.get_encoding()
+           , strf::tag<CharOut>() };
 }
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
-inline STRF_HD strf::detail::fmt_cv_string_printer<CharIn, CharOut>
+inline STRF_HD strf::detail::fmt_cv_string_printer<sizeof(CharIn), sizeof(CharOut)>
 make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
@@ -775,11 +767,12 @@ make_printer( strf::rank<1>
     return { fp
            , preview
            , input.value()
-           , input.get_alignment_format_data() };
+           , input.get_alignment_format_data()
+           , strf::tag<CharOut>() };
 }
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
-inline STRF_HD strf::detail::fmt_cv_string_printer<CharIn, CharOut>
+inline STRF_HD strf::detail::fmt_cv_string_printer<sizeof(CharIn), sizeof(CharOut)>
 make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
@@ -791,7 +784,8 @@ make_printer( strf::rank<1>
            , preview
            , input.value()
            , input.get_alignment_format_data()
-           , input.get_encoding() };
+           , input.get_encoding()
+           , strf::tag<CharOut>() };
 }
 
 } // namespace strf

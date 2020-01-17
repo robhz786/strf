@@ -102,14 +102,14 @@ read_uint_result<CharT> read_uint(const CharT* it, const CharT* end) noexcept
 
 constexpr std::size_t trstr_invalid_arg_size_when_stop = (std::size_t)-1;
 
-template <typename CharT>
+template <std::size_t CharSize>
 std::size_t invalid_arg_size
-    ( strf::encoding<CharT> enc
+    ( const strf::underlying_encoding<CharSize>& enc
     , tr_invalid_arg policy ) noexcept
 {
     switch(policy) {
         case tr_invalid_arg::replace:
-            return enc.replacement_char_size();
+            return enc.replacement_char_size;
         case tr_invalid_arg::stop:
             return strf::detail::trstr_invalid_arg_size_when_stop;
         default:
@@ -222,17 +222,18 @@ template <typename CharT>
 void tr_string_write
     ( const CharT* it
     , const CharT* end
-    , const strf::printer<CharT>* const * args
+    , const strf::printer<sizeof(CharT)>* const * args
     , std::size_t num_args
-    , strf::basic_outbuf<CharT>& ob
-    , strf::encoding<CharT> enc
+    , strf::underlying_outbuf<sizeof(CharT)>& ob
+    , const strf::underlying_encoding<sizeof(CharT)>& enc
     , strf::tr_invalid_arg policy )
 {
-    using traits = std::char_traits<CharT>;
+    using char_type = strf::underlying_outbuf_char_type<sizeof(CharT)>;
+    using traits = std::char_traits<char_type>;
     std::size_t arg_idx = 0;
 
     while (it != end) {
-        const CharT* prev = it;
+        const char_type* prev = it;
         it = traits::find(it, (end - it), '{');
         if (it == nullptr) {
             strf::write(ob, prev, end - prev);
@@ -262,7 +263,7 @@ void tr_string_write
                 strf::detail::throw_string_syntax_error();
             }
             ++it;
-        } else if (CharT('0') <= ch && ch <= CharT('9')) {
+        } else if (char_type('0') <= ch && ch <= char_type('9')) {
             auto result = strf::detail::read_uint(it, end);
             if (result.value < num_args) {
                 args[result.value]->print_to(ob);
@@ -307,46 +308,47 @@ void tr_string_write
     }
 }
 
-template <typename CharT>
+template <std::size_t CharSize>
 class tr_string_printer
 {
 public:
-    using char_type = CharT;
+    using char_type = strf::underlying_outbuf_char_type<CharSize>;
 
-    template <bool SizeRequested>
+    template <typename CharT, bool SizeRequested>
     tr_string_printer
         ( strf::print_preview<SizeRequested, false>& preview
         , const strf::print_preview<SizeRequested, false>* args_preview
-        , std::initializer_list<const strf::printer<CharT>*> printers
+        , std::initializer_list<const strf::printer<CharSize>*> printers
         , const CharT* tr_string
         , const CharT* tr_string_end
-        , strf::encoding<CharT> enc
+        , const strf::underlying_encoding<CharSize>& enc
         , strf::tr_invalid_arg policy ) noexcept
-        : _tr_string(tr_string)
-        , _tr_string_end(tr_string_end)
+        : _tr_string(reinterpret_cast<const char_type*>(tr_string))
+        , _tr_string_end(reinterpret_cast<const char_type*>(tr_string_end))
         , _enc(enc)
         , _policy(policy)
         , _printers_array(printers.begin())
         , _num_printers(printers.size())
     {
+        static_assert(sizeof(CharT) == CharSize, "");
         preview.add_size
             ( strf::detail::tr_string_size
                 ( args_preview, _num_printers, _tr_string, _tr_string_end
                 , strf::detail::invalid_arg_size(_enc, _policy) ) );
     }
 
-    void print_to(strf::basic_outbuf<CharT>& ob) const
+    void print_to(strf::underlying_outbuf<CharSize>& ob) const
     {
         strf::detail::tr_string_write
             ( _tr_string, _tr_string_end, _printers_array, _num_printers
             , ob, _enc, _policy );
     }
 
-    const CharT* _tr_string;
-    const CharT* _tr_string_end;
-    strf::encoding<CharT> _enc;
+    const char_type* _tr_string;
+    const char_type* _tr_string_end;
+    const strf::underlying_encoding<CharSize>& _enc;
     strf::tr_invalid_arg _policy;
-    const strf::printer<CharT>* const * _printers_array;
+    const strf::printer<CharSize>* const * _printers_array;
     std::size_t _num_printers;
 };
 

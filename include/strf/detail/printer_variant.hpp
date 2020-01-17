@@ -21,12 +21,12 @@ class printer_variant
 
 public:
 
-    using char_type = typename Printer0::char_type;
+    static constexpr std::size_t char_size = Printer0::char_size;
 
     template <typename P, typename ... Args>
     printer_variant(strf::tag<P>, Args&& ... args)
     {
-        static_assert( std::is_base_of<strf::printer<char_type>, P>::value
+        static_assert( std::is_base_of<strf::printer<char_size>, P>::value
                      , "Invalid printer type" );
         static_assert(sizeof(P) <= _max_size, "Invalid printer type");
         new ((void*)&_pool) P{std::forward<Args>(args)...};
@@ -43,25 +43,25 @@ public:
         _get_ptr()->~printer();
     }
 
-    operator const strf::printer<char_type>& () const
+    operator const strf::printer<char_size>& () const
     {
         return *_get_ptr();
     }
 
-    const strf::printer<char_type>& get() const
+    const strf::printer<char_size>& get() const
     {
         return *_get_ptr();
     }
 
 private:
 
-    const strf::printer<char_type>* _get_ptr() const
+    const strf::printer<char_size>* _get_ptr() const
     {
-        return reinterpret_cast<const strf::printer<char_type>*>(&_pool);
+        return reinterpret_cast<const strf::printer<char_size>*>(&_pool);
     }
 
     using _storage_type = typename std::aligned_storage_t
-        < _max_size, alignof(strf::printer<char_type>)>;
+        < _max_size, alignof(strf::printer<char_size>)>;
 
     _storage_type _pool;
 };
