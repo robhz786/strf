@@ -59,8 +59,7 @@ public:
     loop_timer
         ( const std::function<void(result)>& report
         , duration expected_duration = std::chrono::seconds{1}
-        , unsigned quantity = 1
-        )
+        , unsigned quantity = 1 )
         : m_report(report)
         , m_expected_duration(expected_duration)
         , m_it_count(0)
@@ -73,8 +72,7 @@ public:
     loop_timer
         ( const std::string& label
         , duration expected_duration = std::chrono::seconds{1}
-        , unsigned quantity = 1
-        )
+        , unsigned quantity = 1 )
         : loop_timer(default_reporter(label), expected_duration, quantity)
     {
     }
@@ -88,11 +86,9 @@ public:
 
     bool shall_continue()
     {
-        if(++ m_it_count == m_it_count_stop)
-        {
+        if(++ m_it_count == m_it_count_stop) {
             m_stop_time = clock_type::now();
-            if (duration_is_long_enough())
-            {
+            if (duration_is_long_enough()) {
                 return false;
             }
             calibrate();
@@ -112,14 +108,11 @@ private:
     void calibrate()
     {
         decltype(m_expected_duration) dur = m_stop_time - m_start_time;
-        if (dur < std::chrono::milliseconds{10})
-        {
+        if (dur < std::chrono::milliseconds{10}) {
             // duration too small even for calibration.
             // So calibrate next (or further) time
             m_it_count_stop *= 2;
-        }
-        else
-        {
+        } else {
             auto new_loop_size_f = std::ceil
                 ( 1.2
                 * static_cast<double>(m_it_count_stop)

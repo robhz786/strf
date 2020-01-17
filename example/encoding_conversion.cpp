@@ -71,14 +71,12 @@ void encoding_error_stop()
 
     //[encoding_error_stop
     bool transcoding_failed = false;
-    try
-    {
+    try {
         auto str = strf::to_string
             .with(strf::encoding_error::stop)
             (strf::sani("--\x99--"));
     }
-    catch(strf::encoding_failure&)
-    {
+    catch(strf::encoding_failure&) {
         transcoding_failed = true;
     }
 

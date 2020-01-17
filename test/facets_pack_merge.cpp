@@ -87,30 +87,30 @@ int main()
 
     {
         auto fp = strf::pack(x7, x6, x5, x4, x3, x2, x1);
-        BOOST_TEST(digest(fp) == expected);
+        TEST_TRUE(digest(fp) == expected);
     }
 
     {
         auto fp = strf::pack(x7, x6, x5, x5, x4, x5, x4, x3, x2, x1, x1);
-        BOOST_TEST(digest(fp) == expected);
+        TEST_TRUE(digest(fp) == expected);
     }
 
     {
         auto fp = strf::pack
             (strf::pack(x7), strf::pack(x6, x5), x4, x3, x2, x1);
-        BOOST_TEST(digest(fp) == expected);
+        TEST_TRUE(digest(fp) == expected);
     }
 
     {
         auto fp = strf::pack
             (x7, x6, x5, x4, x3, x2, strf::pack(x1));
-        BOOST_TEST(digest(fp) == expected);
+        TEST_TRUE(digest(fp) == expected);
     }
 
     {
         auto fp = strf::pack
             (x7, x6, x5, strf::pack(x4, x3), x2, x1);
-        BOOST_TEST(digest(fp) == expected);
+        TEST_TRUE(digest(fp) == expected);
     }
 
     {
@@ -123,7 +123,7 @@ int main()
             , strf::pack(x2)
             , strf::pack(x1)
             );
-        BOOST_TEST(digest(fp) == expected);
+        TEST_TRUE(digest(fp) == expected);
     }
     {
         auto fp = strf::pack
@@ -135,7 +135,7 @@ int main()
             , strf::pack(strf::pack(x2))
             , strf::pack(strf::pack(x1))
             );
-        BOOST_TEST(digest(fp) == expected);
+        TEST_TRUE(digest(fp) == expected);
     }
     {
         auto fp = strf::pack
@@ -144,7 +144,7 @@ int main()
             , strf::pack(strf::pack(x3), strf::pack(x2))
             , strf::pack(strf::pack(x2), strf::pack(x1))
             );
-        BOOST_TEST(digest(fp) == expected);
+        TEST_TRUE(digest(fp) == expected);
     }
     {
         auto fp = strf::pack
@@ -153,7 +153,7 @@ int main()
             , x4, x3, x2
             , strf::pack(strf::pack(x2, x1))
             );
-        BOOST_TEST(digest(fp) == expected);
+        TEST_TRUE(digest(fp) == expected);
     }
     {
         auto fp = strf::pack
@@ -167,11 +167,11 @@ int main()
             , strf::pack()
             );
 
-        BOOST_TEST(digest(fp) == expected);
+        TEST_TRUE(digest(fp) == expected);
     }
 
 
-    return boost::report_errors();
+    return test_finish();
 }
 
 

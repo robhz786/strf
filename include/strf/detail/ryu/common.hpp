@@ -35,7 +35,7 @@
 
 STRF_DETAIL_RYU_NAMESPACE_BEGIN;
 
-inline uint32_t decimalLength9(const uint32_t v) {
+inline STRF_HD uint32_t decimalLength9(const uint32_t v) {
   // Function precondition: v is not a 10-digit number.
   // (f2s: 9 digits are sufficient for round-tripping.)
   // (d2fixed: We print 9-digit blocks.)
@@ -52,7 +52,7 @@ inline uint32_t decimalLength9(const uint32_t v) {
 }
 
 // Returns e == 0 ? 1 : ceil(log_2(5^e)).
-inline int32_t pow5bits(const int32_t e) {
+inline STRF_HD int32_t pow5bits(const int32_t e) {
   // This approximation works up to the point that the multiplication overflows at e = 3529.
   // If the multiplication were done in 64 bits, it would fail at 5^4004 which is just greater
   // than 2^9297.
@@ -62,7 +62,7 @@ inline int32_t pow5bits(const int32_t e) {
 }
 
 // Returns floor(log_10(2^e)).
-inline uint32_t log10Pow2(const int32_t e) {
+inline STRF_HD uint32_t log10Pow2(const int32_t e) {
   // The first value this approximation fails for is 2^1651 which is just greater than 10^297.
   assert(e >= 0);
   assert(e <= 1650);
@@ -70,14 +70,14 @@ inline uint32_t log10Pow2(const int32_t e) {
 }
 
 // Returns floor(log_10(5^e)).
-inline uint32_t log10Pow5(const int32_t e) {
+inline STRF_HD uint32_t log10Pow5(const int32_t e) {
   // The first value this approximation fails for is 5^2621 which is just greater than 10^1832.
   assert(e >= 0);
   assert(e <= 2620);
   return (((uint32_t) e) * 732923) >> 20;
 }
 
-inline int copy_special_str(char * const result, const bool sign, const bool exponent, const bool mantissa) {
+inline STRF_HD int copy_special_str(char * const result, const bool sign, const bool exponent, const bool mantissa) {
   if (mantissa) {
     memcpy(result, "NaN", 3);
     return 3;
@@ -93,13 +93,13 @@ inline int copy_special_str(char * const result, const bool sign, const bool exp
   return sign + 3;
 }
 
-inline uint32_t float_to_bits(const float f) {
+inline STRF_HD uint32_t float_to_bits(const float f) {
   uint32_t bits = 0;
   memcpy(&bits, &f, sizeof(float));
   return bits;
 }
 
-inline uint64_t double_to_bits(const double d) {
+inline STRF_HD uint64_t double_to_bits(const double d) {
   uint64_t bits = 0;
   memcpy(&bits, &d, sizeof(double));
   return bits;

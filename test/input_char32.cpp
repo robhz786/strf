@@ -75,7 +75,7 @@ int main()
     TEST("aaaa")   ( strf::join_left(4, '.')(strf::multi(U'a', 4) > 4) );
     TEST("aaaa..") ( strf::join_left(6, '.')(strf::multi(U'a', 4) > 4) );
 
-    return boost::report_errors();
+    return test_finish();
 }
 
 

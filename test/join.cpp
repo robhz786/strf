@@ -26,7 +26,7 @@ int main()
     TEST("abcdef123") (strf::join("abc", "def", 123) > 8);
     TEST("abcdef123") (strf::join("abc", "def", 123));
 
-    
+
     TEST("   abcdef123   ") (strf::join_center(15)("abc", "de", "f", 123));
     TEST("   abcdef123") (strf::join_split(12, -5)("abc", "de", "f", 123));
     TEST("   abcdef123") (strf::join_split(12, 0)("abc", "de", "f", 123));
@@ -54,7 +54,7 @@ int main()
     TEST("        ") (strf::join() ^ 8);
     TEST("        ") (strf::join() < 8);
     TEST("        ") (strf::join() > 8);
-    
+
     TEST("        ") (strf::join_split(8, 0)());
     TEST("        ") (strf::join_split(8, 2)());
     TEST("        ") (strf::join_center(8)());
@@ -103,6 +103,5 @@ int main()
                                  , strf::join('a', 'b', 'c')
                                  , "}--" ) > 8);
 
-    
-    return boost::report_errors();
+    return test_finish();
 }

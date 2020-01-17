@@ -12,56 +12,56 @@ int main()
 
     {
         strf::monotonic_grouping<10> grouper(4);
-        BOOST_TEST(grouper.thousands_sep_count(0) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(1) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(4) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(5) == 1);
-        BOOST_TEST(grouper.thousands_sep_count(8) == 1);
-        BOOST_TEST(grouper.thousands_sep_count(9) == 2);
-        BOOST_TEST(grouper.thousands_sep_count(12) == 2);
+        TEST_TRUE(grouper.thousands_sep_count(0) == 0);
+        TEST_TRUE(grouper.thousands_sep_count(1) == 0);
+        TEST_TRUE(grouper.thousands_sep_count(4) == 0);
+        TEST_TRUE(grouper.thousands_sep_count(5) == 1);
+        TEST_TRUE(grouper.thousands_sep_count(8) == 1);
+        TEST_TRUE(grouper.thousands_sep_count(9) == 2);
+        TEST_TRUE(grouper.thousands_sep_count(12) == 2);
 
         std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
         {
             auto num_groups = grouper.groups(3, groups);
-            BOOST_TEST(num_groups == 1);
-            BOOST_TEST(groups[0] == 3);
-            BOOST_TEST(groups[1] == 0xff);
+            TEST_TRUE(num_groups == 1);
+            TEST_TRUE(groups[0] == 3);
+            TEST_TRUE(groups[1] == 0xff);
         }
 
         std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
         {
             auto num_groups = grouper.groups(4, groups);
-            BOOST_TEST(num_groups == 1);
-            BOOST_TEST(groups[0] == 4);
-            BOOST_TEST(groups[1] == 0xff);
+            TEST_TRUE(num_groups == 1);
+            TEST_TRUE(groups[0] == 4);
+            TEST_TRUE(groups[1] == 0xff);
         }
 
         std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
         {
             auto num_groups = grouper.groups(5, groups);
-            BOOST_TEST(num_groups == 2);
-            BOOST_TEST(groups[0] == 4);
-            BOOST_TEST(groups[1] == 1);
-            BOOST_TEST(groups[2] == 0xff);
+            TEST_TRUE(num_groups == 2);
+            TEST_TRUE(groups[0] == 4);
+            TEST_TRUE(groups[1] == 1);
+            TEST_TRUE(groups[2] == 0xff);
         }
 
         std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
         {
             auto num_groups = grouper.groups(8, groups);
-            BOOST_TEST(num_groups == 2);
-            BOOST_TEST(groups[0] == 4);
-            BOOST_TEST(groups[1] == 4);
-            BOOST_TEST(groups[2] == 0xff);
+            TEST_TRUE(num_groups == 2);
+            TEST_TRUE(groups[0] == 4);
+            TEST_TRUE(groups[1] == 4);
+            TEST_TRUE(groups[2] == 0xff);
         }
 
         std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
         {
             auto num_groups = grouper.groups(9, groups);
-            BOOST_TEST(num_groups == 1 + 2);
-            BOOST_TEST(groups[0] == 4);
-            BOOST_TEST(groups[1] == 4);
-            BOOST_TEST(groups[2] == 1);
-            BOOST_TEST(groups[3] == 0xff);
+            TEST_TRUE(num_groups == 1 + 2);
+            TEST_TRUE(groups[0] == 4);
+            TEST_TRUE(groups[1] == 4);
+            TEST_TRUE(groups[2] == 1);
+            TEST_TRUE(groups[3] == 0xff);
         }
     }
 
@@ -71,10 +71,10 @@ int main()
         TEST("1000") .with(grouper) (1000);
         TEST("0") .with(grouper) (0);
 
-        BOOST_TEST(grouper.thousands_sep_count(0) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(1) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(2) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(3) == 0);
+        TEST_TRUE(grouper.thousands_sep_count(0) == 0);
+        TEST_TRUE(grouper.thousands_sep_count(1) == 0);
+        TEST_TRUE(grouper.thousands_sep_count(2) == 0);
+        TEST_TRUE(grouper.thousands_sep_count(3) == 0);
 
     }
     {
@@ -82,37 +82,37 @@ int main()
         TEST("10000000000000,000,00,0") .with(grouper) (big_value);
         TEST("0") .with(grouper) (0);
 
-        BOOST_TEST(grouper.thousands_sep_count(0) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(1) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(2) == 1);
-        BOOST_TEST(grouper.thousands_sep_count(3) == 1);
-        BOOST_TEST(grouper.thousands_sep_count(4) == 2);
-        BOOST_TEST(grouper.thousands_sep_count(5) == 2);
-        BOOST_TEST(grouper.thousands_sep_count(6) == 2);
-        BOOST_TEST(grouper.thousands_sep_count(7) == 3);
-        BOOST_TEST(grouper.thousands_sep_count(8) == 3);
-        BOOST_TEST(grouper.thousands_sep_count(9) == 3);
-        BOOST_TEST(grouper.thousands_sep_count(10) == 3);
-        BOOST_TEST(grouper.thousands_sep_count(11) == 3);
-        BOOST_TEST(grouper.thousands_sep_count(99) == 3);
+        TEST_TRUE(grouper.thousands_sep_count(0) == 0);
+        TEST_TRUE(grouper.thousands_sep_count(1) == 0);
+        TEST_TRUE(grouper.thousands_sep_count(2) == 1);
+        TEST_TRUE(grouper.thousands_sep_count(3) == 1);
+        TEST_TRUE(grouper.thousands_sep_count(4) == 2);
+        TEST_TRUE(grouper.thousands_sep_count(5) == 2);
+        TEST_TRUE(grouper.thousands_sep_count(6) == 2);
+        TEST_TRUE(grouper.thousands_sep_count(7) == 3);
+        TEST_TRUE(grouper.thousands_sep_count(8) == 3);
+        TEST_TRUE(grouper.thousands_sep_count(9) == 3);
+        TEST_TRUE(grouper.thousands_sep_count(10) == 3);
+        TEST_TRUE(grouper.thousands_sep_count(11) == 3);
+        TEST_TRUE(grouper.thousands_sep_count(99) == 3);
     }
     {
         strf::str_grouping<10> grouper{std::string("\001\002\003")};
         TEST("10,000,000,000,000,000,00,0") .with(grouper) (big_value);
         TEST("0") .with(grouper) (0);
 
-        BOOST_TEST(grouper.thousands_sep_count(0) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(1) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(2) == 1);
-        BOOST_TEST(grouper.thousands_sep_count(3) == 1);
-        BOOST_TEST(grouper.thousands_sep_count(4) == 2);
-        BOOST_TEST(grouper.thousands_sep_count(5) == 2);
-        BOOST_TEST(grouper.thousands_sep_count(6) == 2);
-        BOOST_TEST(grouper.thousands_sep_count(7) == 3);
-        BOOST_TEST(grouper.thousands_sep_count(8) == 3);
-        BOOST_TEST(grouper.thousands_sep_count(9) == 3);
-        BOOST_TEST(grouper.thousands_sep_count(10) == 4);
-        BOOST_TEST(grouper.thousands_sep_count(11) == 4);
+        TEST_TRUE(grouper.thousands_sep_count(0) == 0);
+        TEST_TRUE(grouper.thousands_sep_count(1) == 0);
+        TEST_TRUE(grouper.thousands_sep_count(2) == 1);
+        TEST_TRUE(grouper.thousands_sep_count(3) == 1);
+        TEST_TRUE(grouper.thousands_sep_count(4) == 2);
+        TEST_TRUE(grouper.thousands_sep_count(5) == 2);
+        TEST_TRUE(grouper.thousands_sep_count(6) == 2);
+        TEST_TRUE(grouper.thousands_sep_count(7) == 3);
+        TEST_TRUE(grouper.thousands_sep_count(8) == 3);
+        TEST_TRUE(grouper.thousands_sep_count(9) == 3);
+        TEST_TRUE(grouper.thousands_sep_count(10) == 4);
+        TEST_TRUE(grouper.thousands_sep_count(11) == 4);
 
     }
     {
@@ -128,29 +128,29 @@ int main()
         TEST("0") .with(grouper) (0);
 
 
-        BOOST_TEST(grouper.thousands_sep_count(0) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(1) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(15) == 0);
-        BOOST_TEST(grouper.thousands_sep_count(16) == 1);
-        BOOST_TEST(grouper.thousands_sep_count(17) == 1);
-        BOOST_TEST(grouper.thousands_sep_count(18) == 2);
+        TEST_TRUE(grouper.thousands_sep_count(0) == 0);
+        TEST_TRUE(grouper.thousands_sep_count(1) == 0);
+        TEST_TRUE(grouper.thousands_sep_count(15) == 0);
+        TEST_TRUE(grouper.thousands_sep_count(16) == 1);
+        TEST_TRUE(grouper.thousands_sep_count(17) == 1);
+        TEST_TRUE(grouper.thousands_sep_count(18) == 2);
 
         {
             std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
             auto num_groups = grouper.groups(15, groups);
-            BOOST_TEST(num_groups == 1);
-            BOOST_TEST(groups[0] == 15);
-            BOOST_TEST(groups[1] == 0xff);
+            TEST_TRUE(num_groups == 1);
+            TEST_TRUE(groups[0] == 15);
+            TEST_TRUE(groups[1] == 0xff);
         }
         {
             std::fill(groups, groups_end, static_cast<std::uint8_t>(0xff));
             auto num_groups = grouper.groups(16, groups);
-            BOOST_TEST(num_groups == 2);
-            BOOST_TEST(groups[0] == 15);
-            BOOST_TEST(groups[1] == 1);
-            BOOST_TEST(groups[2] == 0xff);
+            TEST_TRUE(num_groups == 2);
+            TEST_TRUE(groups[0] == 15);
+            TEST_TRUE(groups[1] == 1);
+            TEST_TRUE(groups[2] == 0xff);
         }
     }
 
-    return boost::report_errors();;
+    return test_finish();;
 }

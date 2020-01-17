@@ -23,16 +23,13 @@ static int abbreviation(ipv6address addr)
     int greatest_zgroup_size = 0;
     auto greatest_zgroup_it = end;
     auto it = std::find(begin, end, 0);
-    while (it != end)
-    {
+    while (it != end) {
         auto zgroup_size = 1;
         auto zgroup_it = it;
-        while(++it != end && *it == 0)
-        {
+        while(++it != end && *it == 0) {
             ++ zgroup_size;
         }
-        if (zgroup_size > 1 && zgroup_size > greatest_zgroup_size)
-        {
+        if (zgroup_size > 1 && zgroup_size > greatest_zgroup_size) {
             greatest_zgroup_size = zgroup_size;
             greatest_zgroup_it = zgroup_it;
         }
@@ -217,12 +214,10 @@ strf::alignment_format_data ipv6_printer<CharT>::formatting() const
 template <typename CharT>
 void ipv6_printer<CharT>::compose(strf::printers_receiver<CharT>& out) const
 {
-    if(_fmt.is_small())
-    {
+    if(_fmt.is_small()) {
         compose_abbreviated(out);
     }
-    else
-    {
+    else {
         compose_non_abbreviated(out);
     }
 }
@@ -233,8 +228,7 @@ void ipv6_printer<CharT>::compose_non_abbreviated
     ( strf::printers_receiver<CharT>& out ) const
 {
     out.put(_hextets[0]);
-    for(int i = 1; i < 8; ++i)
-    {
+    for(int i = 1; i < 8; ++i) {
         out.put(_colon);
         out.put(_hextets[i]);
     }
@@ -253,27 +247,22 @@ void ipv6_printer<CharT>::compose_abbreviated
     omitted in the abbreviated IPv6 representation
     >>*/ abbreviation(_fmt.value());
     bool prev_show = true;
-    for (int i = 0; i < 8; ++i)
-    {
+    for (int i = 0; i < 8; ++i) {
         bool show_hextet = abbr_bits & 1;
         abbr_bits >>= 1;
 
-        if (show_hextet)
-        {
-            if(i > 0)
-            {
+        if (show_hextet) {
+            if(i > 0) {
                 out.put(_colon);
             }
             out.put(_hextets[i]);
         }
-        else if(prev_show)
-        {
+        else if(prev_show) {
             out.put(_colon);
         }
         prev_show = show_hextet;
     }
-    if (!prev_show)
-    {
+    if (!prev_show) {
         return out.put(_colon);
     }
 }
@@ -331,7 +320,7 @@ int main()
         , {{0, 0, 0, 1, 0, 0}} };
 
     s = strf::to_string
-        ( strf::fmt_range(vec, "\n").small().fill(U'~') > 20
+        ( strf::fmt_separated_range(vec, "\n").small().fill(U'~') > 20
         , "\n" );
 
     const char* expected_result =

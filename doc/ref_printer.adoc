@@ -1,0 +1,489 @@
+////
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
+
+
+== Printable
+
+[[printer]]
+=== Class template `printer`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT>
+class printer
+{
+public:
+    using char_type = CharOut;
+    virtual ~printer() {}
+    virtual void print_to(<<basic_outbuf,basic_outbuf>><CharT>&) const = 0;
+};
+
+} // namespace strf
+----
+
+[[make_printer]]
+[[Printable]]
+=== Type requiment _Printable_
+
+The type `T` satisfies _Printable_ if
+Given,
+
+- `CharT`, a character type.
+- `FPack`, a type that is an instance of `<<facets_pack,facets_pack>>`
+- `fp`, an expression of type `const FPack`.
+- `prev`, an expression of type `<<print_preview,print_preview>><false, false>&`
+- `x`, an expression of type `const T`.
+
+The expression below is valid
+----
+make_printer<CharT, FPack>(strf::rank<5>(), fpack, prev, x)
+----
+and
+
+- its return type is a class that derives from `<<printer,printer>><CharT>`
+
+////
+What are customization point objects and how to use them?
+https://stackoverflow.com/questions/53495848/what-are-customization-point-objects-and-how-to-use-them
+
+`make_printer` is a customization point to define input types.
+To print a value `x`, the library uses the printer object returned by
+the expresion:
+////
+[[PrintableWithWidthPreview]]
+=== Type requirement _PrintableWithWidthPreview_
+
+The type `T` satisfies _PrintableSizePreview_ if it satisfies
+<<Printable,_Printable_>> and
+Given,
+
+- `CharT`, a character type.
+- `FPack`, a type that is an instance of `<<facets_pack,facets_pack>>`
+- `fp`, an expression of type `const FPack`.
+- `prev`, an expression of type `<<print_preview,print_preview>><false, true>&`,
+   or `<<print_preview,print_preview>><true, true>&`,
+- `x`, an expression of type `const T`.
+
+The expression below is valid
+----
+make_printer<CharT, FPack>(strf::rank<5>(), fpack, prev, x)
+----
+And
+
+- its return type is a class that derives from `<<printer,printer>><CharT>`
+- The pos-condition `(rw_pre - rw_pos == w || rw_pos <= 0)` is satisfied, where `rw_pre` and `rw_pos` are the value of `prev.remaining_width()` before and after the `make_printer` call respectively, and `w` is the predicted width of the content that the returned printer writes ( in `print_to` ).
+
+NOTE: The pratical effect of a type being _PrintableWithWidthPreview_ is that it can be
+used in <<aligned_join, aligned joins>>.
+[[PrintableWithSizePreview]]
+=== Type requirement _PrintableWithSizePreview_ if it satisfies
+<<Printable,_Printable_>> and
+
+The type `T` satisfies _PrintableSizePreview_ if
+Given,
+
+- `CharT`, a character type.
+- `FPack`, a type that is an instance of `<<facets_pack,facets_pack>>`
+- `fp`, an expression of type `const FPack`.
+- `prev`, an expression of type `<<print_preview,print_preview>><true, false>&`,
+   or `<<print_preview,print_preview>><true, true>&`,
+- `x`, an expression of type `const T`.
+
+The expression below is valid
+----
+make_printer<CharT, FPack>(strf::rank<5>(), fpack, prev, x)
+----
+And
+
+- its return type is a class that derives from `<<printer,printer>><CharT>`
+- The pos-condition `(s_pos - s_pre == s)` is satisfied, where `s_pos` and `s_pre` are the value of `prev.get_size()` before and after the `make_printer` call respectively, and `s` -- the estimated number of characters that the returned printer writes in `<<printer,print_to>>` -- does not need to be exact but must be such that for any value `ob` of type `<<basic_outbuf,basic_outbuf>><CharT>&`, if `ob.<<underlying_outbuf_size,size>>()` is less than or equal to `s`, then `p.print_to(ob)` is guaranted to not call `ob.<<underlying_outbuf_recycle,recycle>>()`, where `p` is the value `make_printer` returns.
+
+[NOTE]
+====
+The pratical effect of a type being _PrintableWithSizePreview_,
+is that it be used in `<<destination_calc_size,destination_calc_size>>`, _i.e._,
+when `reserve_calc` is used.
+For example, in the expression below, the type of `arg0`, `arg1`, `arg2`, `etc` must all be _PrintableWithSizePreview_:
+[source,cpp]
+----
+auto str = strf::make_string.reserve_calc()(arg0, arg1, arg2, etc);
+----
+====
+
+[[make_fmt]]
+[[fmtprintable]]
+=== Type requirement _FmtPrintable_
+
+The type `T` satisfies _FmtPrintable_ if
+
+- given `x`, an expression of type `const T`
+
+The expression below is valid
+[source,cpp,subs=normal]
+----
+make_fmt(strf::rank<5>(), x)
+----
+and
+
+- The return type is <<Printable,_Printable_>>, and it is an instance
+of the `<<value_with_format,value_with_format>>` class template.
+////
+- `make_fmt(strf::rank<5>(), x).value() == x`
+////
+
+////
+NOTE: `make_fmt` is a customization point to associate format functions to 
+input types.
+All the <<format_function_aliases,format function aliases>> require the
+argument's type to be _FmtPrintable_.
+Printing <<formatted_range, formatted ranges>> also requires that the
+range element type be _FmtPrintable_.
+////
+
+NOTE: The practical of a value being of a _FmtPrintable_ type,
+is that you can apply <<format_function_aliases,format functions>>
+over it. Also, to print <<formatted_range, formatted ranges>>
+, the range element type must be _FmtPrintable_.
+
+
+[[print_preview]]
+=== Class template `print_preview`
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <bool PreviewSize, bool PreviewWidth>
+class print_preview
+    : public <<size_preview, size_preview>><PreviewSize>
+    , public <<width_preview, width_preview>><PreviewWidth>
+{
+public:
+    static constexpr bool size_required = PreviewSize;
+    static constexpr bool width_required = PreviewWidth;
+    static constexpr bool nothing_required = ! PreviewSize && ! PreviewWidth;
+
+    constexpr print_preview() noexcept = default;
+    constexpr explicit print_preview(<<width_t,width_t>> initial_width) noexcept;
+};
+
+} // namespace strf
+----
+==== Constructors
+====
+[source,cpp,subs=normal]
+----
+constexpr print_preview() noexcept;
+----
+::
+[horizontal]
+Effect:: Default-construct each of the base classes.
+====
+====
+[source,cpp,subs=normal]
+----
+constexpr explicit print_preview(<<width_t,width_t>> initial_width) noexcept;
+----
+::
+Compile-time requirement:: `PreviewWidth` is `true`, otherwise this constructor
+does not participate in overload resolution.
+Effect:: Initializes <<width_preview, width_preview>><PreviewWidth> base
+with `initial_width`.
+====
+[[size_preview]]
+=== Class template `size_preview`
+[source,cpp,subs=normal]
+----
+namespace strf {
+template <bool Active>
+class size_preview
+{
+public:
+    explicit constexpr size_preview() noexcept;
+    explicit constexpr size_preview(std::size_t initial_size) noexcept;
+
+    constexpr void add_size(std::size_t) noexcept;
+    constexpr std::size_t get_size() const noexcept;
+};
+} // namespace strf
+----
+
+==== Member functions
+====
+[source,cpp]
+----
+explicit constexpr size_preview() noexcept;
+----
+::
+Postcondition:: `get_size() == 0`
+====
+====
+[source,cpp]
+----
+explicit constexpr size_preview(std::size_t initial_size) noexcept;
+----
+::
+Compile-time requirement:: `Active` is `true`, otherwise this constructor
+does not participate in overload resolution.
+Postcondition:: `get_size() == initial_size`
+====
+====
+[source,cpp]
+----
+constexpr void add_size(std::size_t s) noexcept;
+----
+::
+Postcondition::
+When `Active` is `false`::: None
+When `Active` is `true` ::: `(get_size() - previous_size == s)`, where `previous_size` is the return value of `get_size()` before this call.
+====
+====
+[source,cpp]
+----
+constexpr void get_size() const noexcept;
+----
+::
+Return value::
+When `Active` is `false`::: `0` (always)
+When `Active` is `true` ::: The internally stored size value.
+====
+[[width_preview]]
+=== Class template `width_preview`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+template <bool Active>
+class width_preview
+{
+public:
+    constexpr width_preview() noexcept;
+    explicit constexpr width_preview(<<width_t,width_t>> initial_width) noexcept;
+    constexpr void subtract_width(<<width_t,width_t>>) noexcept;
+    constexpr void checked_subtract_width(std::ptrdiff_t w) noexcept;
+    constexpr void clear_remaining_width() noexcept;
+    constexpr <<width_t,width_t>> remaining_width() const noexcept;
+}
+} // namespace strf
+----
+
+==== Member functions
+====
+[source,cpp]
+----
+constexpr width_preview() noexcept;
+----
+::
+Postcondition:: `remaining_width() == 0`
+====
+====
+[source,cpp,subs=normal]
+----
+constexpr width_preview(<<width_t,width_t>> initial_width) noexcept;
+----
+::
+Compile-time requirement:: `Active` is `true`, otherwise this constructor
+does not participate in overload resolution.
+Postcondition:: `remaining_width() == initial_width`
+====
+====
+[source,cpp,subs=normal]
+----
+void subtract_width(<<width_t,width_t>> w) noexcept;
+----
+::
+Postcondition::
+When `Active` is `false`::: None
+When `Active` is `true` :::
++
+[source,cpp,subs=normal]
+----
+remaining_width() == previous_w - w
+----
+where `previous_w` is the return value of `remaining_width()` before this call.
+====
+====
+[source,cpp,subs=normal]
+----
+void checked_subtract_width(<<width_t,width_t>> w) noexcept;
+----
+::
+Postcondition::
+When `Active` is `false`::: None
+When `Active` is `true` :::
++
+[source,cpp,subs=normal]
+----
+remaining_width() == (w < previous_w ? previous_w - w : 0)
+----
+where `previous_w` is the return value of `remaining_width()` before this call.
+====
+====
+[source,cpp,subs=normal]
+----
+void checked_subtract_width(std::ptrdiff_t w)
+----
+::
+Postcondition::
+When `Active` is `false`::: None
+When `Active` is `true` :::
++
+[source,cpp,subs=normal]
+----
+remaining_width() == (w < previous_w.ceil() ? previous_w - (std::int16_t)w : 0)
+----
+where `previous_w` is the return value of `remaining_width()` before this call.
+====
+
+
+[[width_t]]
+=== Class `width_t`
+
+The `width_t` class implements signed
+https://en.wikipedia.org/wiki/Q_(number_format)[Q16.16] arithmetics and
+is used to represent width of textual content, _i.e._ when
+<<alignment_format,text alignment formatting>> is used.
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+class width_t
+{
+public:
+
+    struct from_underlying_tag{};
+    constexpr width_t() noexcept;
+    constexpr width_t(std::int16_t) noexcept;
+    constexpr width_t(const width_t&) noexcept;
+    constexpr width_t(from_underlying_tag, std::int32_t) noexcept;
+
+    constexpr width_t& operator=(const width_t& other) noexcept;
+    constexpr width_t& operator=(std::int16_t& x) noexcept;
+
+    constexpr bool operator==(const width_t& other) const noexcept;
+    constexpr bool operator!=(const width_t& other) const noexcept;
+    constexpr bool operator<(const width_t& other) const noexcept;
+    constexpr bool operator>(const width_t& other) const noexcept;
+    constexpr bool operator\<=(const width_t& other) const noexcept;
+    constexpr bool operator>=(const width_t& other) const noexcept;
+
+    constexpr bool is_integral() const noexcept;
+    constexpr std::int16_t floor() const noexcept;
+    constexpr std::int16_t ceil() const noexcept;
+    constexpr std::int16_t round() const noexcept;
+
+    constexpr width_t operator-() const noexcept;
+    constexpr width_t operator+() const noexcept;
+    constexpr width_t& operator+=(width_t other) noexcept;
+    constexpr width_t& operator-=(width_t other) noexcept;
+    constexpr width_t& operator{asterisk}=(std::int16_t m) noexcept;
+    constexpr width_t& operator/=(std::int16_t d) noexcept;
+    constexpr width_t& operator{asterisk}=(width_t other) noexcept;
+    constexpr width_t& operator/=(width_t other) noexcept;
+
+    constexpr std::int32_t underlying_value() const noexcept;
+    constexpr static width_t from_underlying(std::int32_t) noexcept;
+
+private:
+    std::int32_t _underlying_value; // exposition only
+};
+
+namespace width_literal {
+
+template <char ... C>
+constexpr strf::width_t operator "" _w()
+
+} // namespace width_literal
+
+constexpr strf::width_t width_max = strf::width_t::from_underlying(INT32_MAX);
+constexpr strf::width_t width_min = strf::width_t::from_underlying(INT32_MIN);
+
+constexpr bool operator==(strf::width_t lhs, std::int16_t rhs) noexcept;
+constexpr bool operator==(std::int16_t lhs, strf::width_t rhs) noexcept;
+constexpr bool operator!=(strf::width_t lhs, std::int16_t rhs) noexcept;
+constexpr bool operator!=(std::int16_t lhs, strf::width_t rhs) noexcept;
+constexpr bool operator< (strf::width_t lhs, std::int16_t rhs) noexcept;
+constexpr bool operator< (std::int16_t lhs, strf::width_t rhs) noexcept;
+constexpr bool operator\<=(strf::width_t lhs, std::int16_t rhs) noexcept;
+constexpr bool operator\<=(std::int16_t lhs, strf::width_t rhs) noexcept;
+constexpr bool operator> (strf::width_t lhs, std::int16_t rhs) noexcept;
+constexpr bool operator> (std::int16_t lhs, strf::width_t rhs) noexcept;
+constexpr bool operator>=(strf::width_t lhs, std::int16_t rhs) noexcept;
+constexpr bool operator>=(std::int16_t lhs, strf::width_t rhs) noexcept;
+
+constexpr strf::width_t operator+(strf::width_t lhs, strf::width_t rhs) noexcept;
+constexpr strf::width_t operator+(std::int16_t lhs, strf::width_t rhs) noexcept;
+constexpr strf::width_t operator+(strf::width_t lhs, std::int16_t rhs) noexcept;
+constexpr strf::width_t operator-(strf::width_t lhs, strf::width_t rhs) noexcept;
+constexpr strf::width_t operator-(std::int16_t lhs, strf::width_t rhs) noexcept;
+constexpr strf::width_t operator-(strf::width_t lhs, std::int16_t rhs) noexcept;
+constexpr strf::width_t operator*(strf::width_t lhs, strf::width_t rhs) noexcept;
+constexpr strf::width_t operator*(std::int16_t lhs, strf::width_t rhs) noexcept;
+constexpr strf::width_t operator*(strf::width_t lhs, std::int16_t rhs) noexcept;
+constexpr strf::width_t operator/(strf::width_t lhs, strf::width_t rhs) noexcept;
+constexpr strf::width_t operator/(std::int16_t lhs, strf::width_t rhs) noexcept;
+constexpr strf::width_t operator/(strf::width_t lhs, std::int16_t rhs) noexcept;
+
+constexpr strf::width_t checked_add
+    ( strf::width_t lhs
+    , strf::width_t rhs ) noexcept;
+
+constexpr strf::width_t checked_subtract
+    ( strf::width_t lhs
+    , std::int64_t rhs ) noexcept;
+
+constexpr strf::width_t checked_subtract
+    ( strf::width_t lhs
+    , strf::width_t rhs ) noexcept;
+
+constexpr strf::width_t checked_mul
+    ( strf::width_t w
+    , std::uint32_t x ) noexcept;
+
+} // namespace strf
+----
+
+to-do
+
+[[rank]]
+=== Class template `rank`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <std::size_t N>
+struct rank: rank<N - 1>
+{
+    explicit rank() = default;
+};
+
+template <>
+struct rank<0>
+{
+    explicit rank() = default;
+};
+
+} // namespace strf
+----
+
+[[tag]]
+=== Class template `tag`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename\... >
+struct tag
+{
+    explicit tag() = default;
+};
+
+} // namespace strf
+----

@@ -4,32 +4,33 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 
-cmake_minimum_required (VERSION 3.5)
-project (strf CXX)
-enable_testing()
-
+cmake_minimum_required (VERSION 3.8)
+option(
+  STRF_CUDA_SUPPORT
+  "Build the static library for CUDA device-side use"
+  ${STRF_CUDA_SUPPORT} )
 option(
   STRF_BUILD_TESTS
-  "Build  unit test"
+  "Build unit tests"
   ${STRF_BUILD_TESTS} )
 option(
  STRF_BUILD_EXAMPLES
- "Test examples files"
+ "Test example programs"
   ${STRF_BUILD_EXAMPLES})
 option(
   STRF_BUILD_BENCHMARKS
   "Build performace test"
   ${STRF_BUILD_BENCHMARKS})
 
-#set(
-#  STRF_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../.."
-#  CACHE FILEPATH "installation path" )
-set(
-  STRF_INSTALL_SUBDIR "${CMAKE_CXX_COMPILER_ID}${CMAKE_CXX_COMPILER_VERSION}"
-  CACHE STRING
-  "subdirectory of STRF_INSTALL_PREFIX where the binaries and .cmake file will be installed")
+if (STRF_CUDA_SUPPORT)
+  project (strf CXX CUDA)
+else (STRF_CUDA_SUPPORT)
+  project (strf CXX)
+endif (STRF_CUDA_SUPPORT)
 
-#set(CMAKE_INSTALL_PREFIX ${STRF_INSTALL_PREFIX})
+if (STRF_BUILD_TESTS OR STRF_BUILD_EXAMPLES)
+  enable_testing()
+endif (STRF_BUILD_TESTS OR STRF_BUILD_EXAMPLES)
 
 add_library(strf-header-only INTERFACE)
 add_library(strf STATIC src/strf.cpp)
@@ -42,12 +43,15 @@ target_include_directories(
   strf-header-only
   INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:.> )
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  )
+
 target_include_directories(
   strf
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:.> )
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  )
 
 set(features cxx_return_type_deduction cxx_decltype_auto)
 target_compile_features(strf PUBLIC ${features})
@@ -60,24 +64,46 @@ set_property(
   TARGET strf
   PROPERTY EXPORT_NAME strf)
 
+set(TARGETS_TO_INSTALL strf-header-only strf)
+
+if (${STRF_CUDA_SUPPORT})
+  add_library(strf-cuda STATIC src/strf.cu)
+  target_include_directories(
+    strf-cuda
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  )
+  target_compile_features(strf-cuda PUBLIC ${features})
+  set_property(
+    TARGET strf-cuda
+    PROPERTY EXPORT_NAME strf-cuda)
+  list(APPEND TARGETS_TO_INSTALL strf-cuda)
+endif()
+
+include(GNUInstallDirs)
+
 install(
-  TARGETS strf-header-only strf
+  TARGETS ${TARGETS_TO_INSTALL}
   EXPORT strf
-  DESTINATION "${STRF_INSTALL_SUBDIR}/$<CONFIG>")
+  RUNTIME DESTINATION  "${CMAKE_INSTALL_BINDIR}"
+  ARCHIVE DESTINATION  "${CMAKE_INSTALL_LIBDIR}"
+  LIBRARY DESTINATION  "${CMAKE_INSTALL_LIBDIR}"
+  INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
 install(
   EXPORT strf
-  FILE strf.cmake
+  FILE "strf-config.cmake"
   NAMESPACE strf::
-  DESTINATION "${STRF_INSTALL_SUBDIR}/cmake"  )
+  DESTINATION "lib/cmake/strf" )
 
-
+# TODO: These should be pulled into the installation directory by some target...
 install(
   FILES include/strf.hpp
-  DESTINATION ./strf/ )
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" )
 install(
   DIRECTORY include/strf
-  DESTINATION ./strf/
-  USE_SOURCE_PERMISSIONS )
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" )
 
 if (STRF_BUILD_TESTS)
   add_subdirectory(test test)

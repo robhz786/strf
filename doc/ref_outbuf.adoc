@@ -1,10 +1,15 @@
+////
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
 
 == Outbuf
 
-
 [[min_size_after_recycle]]
 === `min_size_after_recycle`
-
+====
 [source,cpp]
 ----
 template <typename CharT>
@@ -12,7 +17,7 @@ constexpr std::size_t min_size_after_recycle();
 ----
 [horizontal]
 Return value:: Implementation-defined value greater than or equal to 64.
-
+====
 
 [[underlying_outbuf]]
 === Class template `underlying_outbuf`
@@ -85,29 +90,33 @@ void put( underlying_outbuf<CharSize>& ob
 ==== Member types
 
 [[underlying_outbuf_char_type]]
+====
 [source,cpp]
 ----
 using char_type = /*see below*/;
 ----
 [horizontal]
-Equal to::
+Same as::
 - `std::uint8_t` if `CharSize == 1`
 - `char16_t` if `CharSize == 2`
 - `char32_t` if `CharSize == 4`
 
 It is undefined for any other `CharSize` value.
+====
 
 ==== Public member functions
 
 [[underlying_outbuf_pos]]
+====
 [source,cpp]
 ----
 char_type* pos() const noxcept;
 ----
 [horizontal]
 Return:: The memory position where the content shall be written.
-
+====
 [[underlying_outbuf_end]]
+====
 [source,cpp]
 ----
 char_type* end() const noxcept;
@@ -115,16 +124,18 @@ char_type* end() const noxcept;
 [horizontal]
 Return:: The end of memory position where the content shall be written.
          Dereferencing `end()` has undefined behaviour.
-
+====
 [[underlying_outbuf_size]]
+====
 [source,cpp]
 ----
 std::size_t size() const noexcept;
 ----
 [horizontal]
 Return:: `end() - pos()`
-
+====
 [[underlying_outbuf_recycle]]
+====
 [source,cpp]
 ----
 virtual void recycle() = 0;
@@ -134,6 +145,7 @@ Posconditions::
 - `size() >= {min_size_after_recycle}<char_type>()`
 - The range [ `pos()`, `end()` ) is valid accessible memory area
 - If the return value of `good()` was `false` before this call to `recycle()`, then `good()` remains returning `false`.
+====
 
 // Effect::
 // Depends on the derivate class, but if `good()` returns `true`,
@@ -145,6 +157,7 @@ Posconditions::
 
 
 [[underlying_outbuf_require]]
+====
 [source,cpp]
 ----
 void require(std::size_t s)
@@ -153,8 +166,9 @@ void require(std::size_t s)
 Effect:: Calls `recycle()` if `size() < s`.
 Precondition:: `s \<= {min_size_after_recycle}<char_type>()`
 Postcondition:: `size() >= s`
-
+====
 [[underlying_outbuf_advance_to]]
+====
 [source,cpp]
 ----
 void advance_to(char_type* p)
@@ -163,8 +177,9 @@ void advance_to(char_type* p)
 Effect:: Advance the buffer's position to `p`.
 Precondition:: `pos() \<= p && p \<= end()`
 Postcondition:: `pos() == p`
-
+====
 [[underlying_outbuf_advance_count]]
+====
 [source,cpp]
 ----
 void advance(std::size_t n)
@@ -172,8 +187,9 @@ void advance(std::size_t n)
 [horizontal]
 Effect:: Same as `advance_to(pos() + n)`
 Precondition:: `n \<= size()`
-
+====
 [[underlying_outbuf_advance]]
+====
 [source,cpp]
 ----
 void advance()
@@ -181,8 +197,9 @@ void advance()
 [horizontal]
 Effect:: Same as `advance_to(1)`
 Precondition:: `pos() != end()`
-
+====
 [[underlying_outbuf_good]]
+====
 [source,cpp]
 ----
 bool good() const;
@@ -194,10 +211,12 @@ relevant side effect because the content written in the buffer
 will not be read anymore.
 Note:: The range [ `pos()`, `end()` ) shall aways be a valid
 accessible memory, even when `good()` returns `false`.
+====
 
 ==== Protected Member functions
 
 [[underlying_outbuf_ctor_range]]
+====
 [source,cpp]
 ----
 underlying_outbuf(CharT* pos_, CharT* end_)
@@ -210,8 +229,9 @@ Posconditions::
 - `pos() == pos_`
 - `end() == end_`
 - `good() == true`
-
+====
 [[underlying_outbuf_ctor_count]]
+====
 [source,cpp]
 ----
 underlying_outbuf(CharT* pos_, std::size_t n)
@@ -223,34 +243,39 @@ Posconditions::
 - `pos() == pos_`
 - `end() == pos_ + n`
 - `good() == true`
-
+====
 [[underlying_outbuf_set_pos]]
+====
 [source,cpp]
 ----
 void set_pos(CharT* p) noexcept
 ----
 [horizontal]
 Postconditions:: `pos() == p`
-
+====
 [[underlying_outbuf_set_end]]
+====
 [source,cpp]
 ----
 void set_end(CharT* e) noexcept
 ----
 [horizontal]
 Postconditions:: `end() == e`
-
+====
 [[underlying_outbuf_set_good]]
+====
 [source,cpp]
 ----
 void set_good(bool g) noexcept
 ----
 [horizontal]
 Postconditions:: `good() == g`
+====
 
 ==== Global functions
 
 [[underlying_outbuf_put]]
+====
 [source,cpp]
 ----
 template <std::size_t CharSize>
@@ -268,9 +293,11 @@ if (ob.size() == 0) {
 *ob.pos() = ch;
 ob.advance();
 ----
+====
 
 [[underlying_outbuf_write]]
 [[underlying_outbuf_write_range]]
+====
 [source,cpp]
 ----
 template <std::size_t CharSize>
@@ -281,8 +308,9 @@ void write( underlying_outbuf<CharSize>& ob
 [horizontal]
 Effect:: Writes the the range [ `data`, `data_end` ) into `ob`, calling `ob.recycle()`
          how many times are necessary.
-
+====
 [[underlying_outbuf_write_count]]
+====
 [source,cpp]
 ----
 template <std::size_t CharSize>
@@ -292,6 +320,7 @@ void write( underlying_outbuf<CharSize>& ob
 ----
 [horizontal]
 Effect:: Same as `write(ob, data, data + data_size)`
+====
 
 [[basic_outbuf]]
 === Class template `basic_outbuf`
@@ -370,6 +399,7 @@ void put(basic_outbuf<CharT>& ob, CharT ch);
 ==== Public member functions
 
 [[basic_outbuf_as_underlying]]
+====
 [source,cpp,subs=normal]
 ----
 underlying_outbuf<sizeof(CharT)>& as_underlying() noexcept;
@@ -377,25 +407,27 @@ const underlying_outbuf<sizeof(CharT)>& as_underlying() const noexcept;
 ----
 [horizontal]
 Return:: `*this`
-
+====
 [[basic_outbuf_pos]]
+====
 [source,cpp]
 ----
 char_type* pos() const noexcept;
 ----
 [horizontal]
 Return:: `(CharT*) as_underlying().pos();`
-
-
+====
 [[basic_outbuf_end]]
+====
 [source,cpp]
 ----
 char_type* end() const noexcept;
 ----
 [horizontal]
 Return:: `(CharT*) as_underlying().end();`
-
+====
 [[basic_outbuf_advance_to]]
+====
 [source,cpp]
 ----
 void advance_to(char_type* p);
@@ -408,6 +440,7 @@ Effect:: Same as
 as_underlying().advance_to((underlying_outbuf_char_type<sizeof(CharT)>*)p)
 ----
 Precondition:: `p \<= end()`
+====
 
 ==== Public member functions inherited from private base `underlying_outbuf<sizeof(CharT)>`
 
@@ -423,6 +456,7 @@ Precondition:: `p \<= end()`
 ==== Protected member functions
 
 [[basic_outbuf_ctor_range]]
+====
 [source,cpp]
 ----
 basic_outbuf(char_type* pos_, char_type* end_);
@@ -430,16 +464,18 @@ basic_outbuf(char_type* pos_, char_type* end_);
 [horizontal]
 Effect:: Initializes private base class `underlying_outbuf<sizeof(CharT)>`
 with `pos_` and `end_` casted as `underlying_outbuf_char_type<sizeof(CharT)>*`.
-
+====
 [[basic_outbuf_ctor_count]]
+====
 [source,cpp]
 ----
 basic_outbuf(char_type* pos_, std::size_t n);
 ----
 [horizontal]
 Effect:: Same as `basic_outbuf(pos_, pos + n)`
-
+====
 [[basic_outbuf_]]
+====
 [source,cpp]
 ----
 void set_pos(char_type* p) noexcept;
@@ -451,8 +487,9 @@ Effect:: Same as
 ----
 as_underlying().set_pos((underlying_outbuf_char_type<sizeof(CharT)>*)p)
 ----
-
+====
 [[basic_outbuf_]]
+====
 [source,cpp]
 ----
 void set_end(char_type* e) noexcept;
@@ -464,18 +501,21 @@ Effect:: Same as
 ----
 as_underlying().set_end((underlying_outbuf_char_type<sizeof(CharT)>*)e)
 ----
-
+====
 [[basic_outbuf_set_good]]
+====
 [source,cpp]
 ----
 void set_good(bool g) noexcept;
 ----
 [horizontal]
 Effect:: Same as `as_underlying().set_good(g)`
+====
 
 ==== Global functions
 
 [[basic_outbuf_put]]
+====
 [source,cpp]
 ----
 template <typename CharT>
@@ -492,9 +532,10 @@ if (ob.size() == 0) {
 *ob.pos() = ch;
 ob.advance();
 ----
-
+====
 [[basic_outbuf_write]]
 [[basic_outbuf_write_range]]
+====
 [source,cpp]
 ----
 template <typename CharT>
@@ -505,8 +546,9 @@ void write( basic_outbuf<CharT>& ob
 [horizontal]
 Effect:: Writes the the range [ `data`, `data_end` ) into `ob`, calling `ob.recycle()`
          how many times are necessary.
-
+====
 [[basic_outbuf_write_count]]
+====
 [source,cpp]
 ----
 template <typename CharT>
@@ -516,9 +558,9 @@ void write( basic_outbuf<CharT>& ob
 ----
 [horizontal]
 Effect:: Same as `write(ob, data, data + data_size)`
-
-
+====
 [[basic_outbuf_write_cstr]]
+====
 [source,cpp]
 ----
 void write( basic_outbuf<char>& ob
@@ -526,8 +568,9 @@ void write( basic_outbuf<char>& ob
 ----
 [horizontal]
 Effect:: Same as `write(ob, cstr, std::strlen(cstr))`
-
+====
 [[basic_outbuf_write_wcstr]]
+====
 [source,cpp]
 ----
 void write( basic_outbuf<wchar_t>& ob
@@ -536,7 +579,7 @@ void write( basic_outbuf<wchar_t>& ob
 [horizontal]
 [horizontal]
 Effect:: Same as `write(ob, wcstr, std::wstrlen(wcstr))`
-
+====
 [[basic_outbuf_noexcept]]
 === Class template `basic_outbuf_noexcept`
 
@@ -599,6 +642,7 @@ public:
 
 ==== Public member function
 
+====
 [source,cpp]
 ----
 basic_cstr_writer(CharT* dest, CharT* dest_end);
@@ -609,7 +653,8 @@ Postconditions::
 - `good() == true`
 - `pos() == dest`
 - `end() == dest_end - 1`
-
+====
+====
 [source,cpp]
 ----
 basic_cstr_writer(CharT* dest, std::size_t dest_size);
@@ -620,7 +665,8 @@ Postconditions::
 - `good() == true`
 - `pos() == dest`
 - `end() == dest + dest_size - 1`
-
+====
+====
 [source,cpp]
 ----
 template <std::size_t N>
@@ -631,7 +677,8 @@ Postconditions::
 - `good() == true`
 - `pos() == dest`
 - `end() == dest + N - 1`
-
+====
+====
 [source,cpp]
 ----
 void recycle() noexcept;
@@ -641,8 +688,8 @@ Postconditions::
 - `good() == false`
 - `pos() == {garbage_buf}<CharT>()`
 - `end() == {garbage_buf_end}<CharT>()`
-
-
+====
+====
 [source,cpp]
 ----
 result finish();
@@ -657,7 +704,7 @@ Postconditions::
 - `good() == false`
 - `pos() == {garbage_buf}<CharT>()`
 - `end() == {garbage_buf_end}<CharT>()`
-
+====
 
 [[basic_string_maker]]
 === Class template `basic_string_maker`
@@ -690,13 +737,15 @@ using u8string_maker  = basic_string_maker<char8_t>;
 ----
 ==== Public member functions
 
+====
 [source,cpp]
 ----
 void reserve(std::size_t size);
 ----
 [horizontal]
 Effect:: Calls `str.reserve(size)`, where `str` is the private string object that is returned by `finish()`.
-
+====
+====
 [source,cpp]
 ----
 void recycle() override;
@@ -706,7 +755,8 @@ Effects::
 - If `good()` is `true` then calls `str.append(p0, pos())`, where `str` is the private string object that is returned by `finish()`, and `p0` is the return value of `pos()` before any call to `advance` and `advance_to` since the last call to `recycle()` ( all in this object ), or since this object's contruction, whatever happened last.
 - Calls `set_pos` and/or `set_end`.
 Postconditions:: `size() >= min_size_after_recycle<CharT>()`
-
+====
+====
 [source,cpp]
 ----
 basic_string<CharT, Traits, Allocator> finish()
@@ -714,6 +764,7 @@ basic_string<CharT, Traits, Allocator> finish()
 [horizontal]
 Effects:: Calls `recycle()` and `set_good(false)` and return the internal string.
 Postconditions:: `good() == false`
+====
 
 [[basic_string_appender]]
 === Class template `basic_string_appender`
@@ -745,13 +796,15 @@ using wstring_appender   = basic_string_appender<wchar_t>;
 ----
 ==== Public member functions
 
+====
 [source,cpp]
 ----
 void reserve(std::size_t size);
 ----
 [horizontal]
 Effect:: Calls `str.reserve(str.size() + size)`, where `str` is the reference that this object was initialized with.
-
+====
+====
 [source,cpp]
 ----
 void recycle() override;
@@ -761,7 +814,8 @@ Effects::
 - If `good()` is `true` then calls `str.append(p0, pos())`, where `str` is the reference that this object was initialized with, and `p0` is the return value of `pos()` before any call to `advance` and `advance_to` since the last call to `recycle()` ( all in this object ), or since this object's contruction, whatever happened last.
 - Calls `set_pos` and/or `set_end`.
 Postconditions:: `size() >= min_size_after_recycle<CharT>()`
-
+====
+====
 [source,cpp]
 ----
 void finish()
@@ -769,6 +823,7 @@ void finish()
 [horizontal]
 Effects:: Calls `recycle()` and `set_good(false)`.
 Postcondition:: `good() == false`
+====
 
 [[basic_streambuf_writer]]
 === Class template `basic_streambuf_writer`
@@ -803,6 +858,7 @@ using wstreambuf_writer
 ----
 ==== Public member functions
 
+====
 [source,cpp]
 ----
 void recycle() override;
@@ -813,7 +869,8 @@ Effects::
 - If the returned value of `dest.sputn` is less then `pos() - p0`, calls `set_good(false)`.
 - Calls `set_pos` and/or `set_end`.
 Postconditions:: `size() >= min_size_after_recycle<CharT>()`
-
+====
+====
 [source,cpp]
 ----
 result finish();
@@ -824,6 +881,7 @@ Effects::
 Return value::
 - `result::count` is the sum of the values returned by `dest.sputn`.
 - `result::success` is the value `good()` would return before this call to `finish()`.
+====
 
 [[narrow_cfile_writer]]
 === Class template `narrow_cfile_writer`
@@ -849,6 +907,7 @@ public:
 } // namespace strf
 ----
 ==== Public member functions
+====
 [source,cpp]
 ----
 void recycle() override;
@@ -863,13 +922,19 @@ Effects::
 -  If the returned value of std::fwrite is less then pos() - p0, calls set_good(false).
 -  Calls set_pos and/or set_end.
 Postconditions:: `size() >= min_size_after_recycle<CharT>()`
-
+====
+====
+[source,cpp]
+----
+result finish();
+----
 [horizontal]
 Effects::
 - Calls `recycle()` and `set_good(false)`.
 Return value::
 - `result::count` is the sum of values returned by all calls `std::fwrite` done by this object.
 - `result::success` is the value `good()` would return before this call to `finish()`
+====
 
 
 [[wide_cfile_writer]]
@@ -896,8 +961,7 @@ public:
 } // namespace strf
 ----
 ==== Public member functions
-
-
+====
 [source,cpp]
 ----
 void recycle() override;
@@ -907,7 +971,8 @@ Effects::
 - If `good() == true`, for each character `ch` in the range [ `p0`, `pos()` ) calls `std::fputwc(ch, dest)`, until WEOF is returned or the whole range is read, where `dest` is the `FILE*` used to initialize this object, and `p0` is the return value of `pos()` before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
 - If `std::fputwc` returns WEOF, calls `set_good(false)`.
 - Calls `set_pos` and/or `set_end`.
-
+====
+====
 [source,cpp]
 ----
 result finish();
@@ -918,6 +983,7 @@ Effects::
 Return value::
 - `result::count` is the number of calls to `std::fputwc` by this object that did not return WEOF .
 - `result::success` is the value `good()` would return before this call to `finish()`
+====
 
 [[garbage_buf]]
 === Garbage buffer

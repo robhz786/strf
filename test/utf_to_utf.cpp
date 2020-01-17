@@ -4,7 +4,7 @@
 
 #include "test_utils.hpp"
 
-#include <vector>
+#include <array>
 #include <tuple>
 
 template <typename T>
@@ -12,20 +12,26 @@ constexpr auto as_signed(const T& value)
 {
     return static_cast<typename std::make_signed<T>::type>(value);
 }
-
-std::string valid_input_sample(const strf::encoding<char>&)
+strf::detail::simple_string_view<char>
+valid_input_sample(const strf::encoding<char>&)
 {
     return {(const char*)u8"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", 19};
 }
-std::u16string valid_input_sample(const strf::encoding<char16_t>&)
+
+strf::detail::simple_string_view<char16_t>
+valid_input_sample(const strf::encoding<char16_t>&)
 {
     return {u"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", 10};
 }
-std::u32string valid_input_sample(const strf::encoding<char32_t>&)
+
+strf::detail::simple_string_view<char32_t>
+valid_input_sample(const strf::encoding<char32_t>&)
 {
     return {U"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", 8};
 }
-std::wstring valid_input_sample(const strf::encoding<wchar_t>&)
+
+strf::detail::simple_string_view<wchar_t>
+valid_input_sample(const strf::encoding<wchar_t>&)
 {
     return {L"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", (sizeof(wchar_t) == 2 ? 10 : 8)};
 }
@@ -35,28 +41,32 @@ void test_valid_input
     ( const strf::encoding<CharIn>& ein
     , const strf::encoding<CharOut>& eout )
 {
-    BOOST_TEST_LABEL << "from " << ein.name() << " to " << eout.name();
+    TEST_SCOPE_DESCRIPTION("from ", ein.name(), " to ", eout.name());
 
     auto input = valid_input_sample(ein);
     auto expected = valid_input_sample(eout);
     TEST(expected).with(eout) (strf::sani(input, ein));
 }
 
-std::string sample_with_surrogates(const strf::encoding<char>&)
+strf::detail::simple_string_view<char>
+sample_with_surrogates(const strf::encoding<char>&)
 {
     return " \xED\xA0\x80 \xED\xAF\xBF \xED\xB0\x80 \xED\xBF\xBF";
 }
-std::u16string sample_with_surrogates(const strf::encoding<char16_t>&)
+strf::detail::simple_string_view<char16_t>
+sample_with_surrogates(const strf::encoding<char16_t>&)
 {
     static const char16_t arr[] = {' ', 0xD800, ' ', 0xDBFF, ' ', 0xDC00, ' ', 0xDFFF, 0};
     return {arr, 8};
 }
-std::u32string sample_with_surrogates(const strf::encoding<char32_t>&)
+strf::detail::simple_string_view<char32_t>
+sample_with_surrogates(const strf::encoding<char32_t>&)
 {
     static const char32_t arr[] = {' ', 0xD800, ' ', 0xDBFF, ' ', 0xDC00, ' ', 0xDFFF, 0};
     return {arr, 8};
 }
-std::wstring sample_with_surrogates(const strf::encoding<wchar_t>&)
+strf::detail::simple_string_view<wchar_t>
+sample_with_surrogates(const strf::encoding<wchar_t>&)
 {
     static const wchar_t arr[] = {' ', 0xD800, ' ', 0xDBFF, ' ', 0xDC00, ' ', 0xDFFF, 0};
     return {arr, 8};
@@ -67,7 +77,7 @@ void test_allowed_surrogates
     ( const strf::encoding<CharIn>& ein
     , const strf::encoding<CharOut>& eout )
 {
-    BOOST_TEST_LABEL << "from " << ein.name() << " to " << eout.name();
+    TEST_SCOPE_DESCRIPTION("from ", ein.name()," to ", eout.name());
 
     const auto input    = sample_with_surrogates(ein);
     const auto expected = sample_with_surrogates(eout);
@@ -83,75 +93,107 @@ const auto& invalid_sequences(const strf::encoding<char>&)
 {
     // based on https://www.unicode.org/versions/Unicode10.0.0/ch03.pdf
     // "Best Practices for Using U+FFFD"
-    static std::vector<std::pair<int, std::string>> seqs =
-        { {3, "\xF1\x80\x80\xE1\x80\xC0"} // sample from Tabble 3-8 of Unicode standard
-        , {2, "\xC1\xBF"}                 // overlong sequence
-        , {3, "\xE0\x9F\x80"}             // overlong sequence
-        , {3, "\xC1\xBF\x80"}             // overlong sequence with extra continuation bytes
-        , {4, "\xE0\x9F\x80\x80"}         // overlong sequence with extra continuation bytes
-        , {1, "\xC2"}                     // missing continuation
-        , {1, "\xE0\xA0"}                 // missing continuation
-        , {3, "\xED\xA0\x80"}             // surrogate
-        , {3, "\xED\xAF\xBF"}             // surrogate
-        , {3, "\xED\xB0\x80"}             // surrogate
-        , {3, "\xED\xBF\xBF"}             // surrogate
-        , {5, "\xED\xBF\xBF\x80\x80"}     // surrogate with extra continuation bytes
-        , {4, "\xF0\x8F\xBF\xBF" }        // overlong sequence
-        , {5, "\xF0\x8F\xBF\xBF\x80" }    // overlong sequence with extra continuation bytes
-        , {1, "\xF0\x90\xBF" }            // missing continuation
-        , {4, "\xF4\xBF\xBF\xBF"}         // codepoint too big
-        , {6, "\xF5\x90\x80\x80\x80\x80"} // codepoint too big with extra continuation bytes
-        };
+    using str_view = strf::detail::simple_string_view<char>;
+    using pair = std::pair<int,str_view>;
+    static std::array<std::pair<int, str_view>, 17> seqs
+       {{ pair{3, "\xF1\x80\x80\xE1\x80\xC0"} // sample from Tabble 3-8 of Unicode standard
+        , pair{2, "\xC1\xBF"}                 // overlong sequence
+        , pair{3, "\xE0\x9F\x80"}             // overlong sequence
+        , pair{3, "\xC1\xBF\x80"}             // overlong sequence with extra continuation bytes
+        , pair{4, "\xE0\x9F\x80\x80"}         // overlong sequence with extra continuation bytes
+        , pair{1, "\xC2"}                     // missing continuation
+        , pair{1, "\xE0\xA0"}                 // missing continuation
+        , pair{3, "\xED\xA0\x80"}             // surrogate
+        , pair{3, "\xED\xAF\xBF"}             // surrogate
+        , pair{3, "\xED\xB0\x80"}             // surrogate
+        , pair{3, "\xED\xBF\xBF"}             // surrogate
+        , pair{5, "\xED\xBF\xBF\x80\x80"}     // surrogate with extra continuation bytes
+        , pair{4, "\xF0\x8F\xBF\xBF" }        // overlong sequence
+        , pair{5, "\xF0\x8F\xBF\xBF\x80" }    // overlong sequence with extra continuation bytes
+        , pair{1, "\xF0\x90\xBF" }            // missing continuation
+        , pair{4, "\xF4\xBF\xBF\xBF"}         // codepoint too big
+        , pair{6, "\xF5\x90\x80\x80\x80\x80"} // codepoint too big with extra continuation bytes
+        }};
 
     return seqs;
 }
 
 const auto& invalid_sequences(const strf::encoding<char16_t>&)
 {
-    static const std::vector<std::pair<int, std::u16string>> seqs =
-        { {1, {(char16_t)0xD800}}
-        , {1, {(char16_t)0xDBFF}}
-        , {1, {(char16_t)0xDC00}}
-        , {1, {(char16_t)0xDFFF}} };
+    using str_view = strf::detail::simple_string_view<char16_t>;
+    using pair = std::pair<int,str_view>;
+    static const char16_t ch[] = {0xD800, 0xDBFF, 0xDC00, 0xDFFF};
+    static const std::array<std::pair<int,str_view>, 4> seqs
+       {{ pair{1, {&ch[0], 1}}
+        , pair{1, {&ch[1], 1}}
+        , pair{1, {&ch[2], 1}}
+        , pair{1, {&ch[3], 1}} }};
 
     return seqs;
 }
 
 const auto& invalid_sequences(const strf::encoding<char32_t>&)
 {
-    static const std::vector<std::pair<int, std::u32string>> seqs =
-        { {1, {(char32_t)0xD800}}
-        , {1, {(char32_t)0xDBFF}}
-        , {1, {(char32_t)0xDC00}}
-        , {1, {(char32_t)0xDFFF}}
-        , {1, {(char32_t)0x110000}} };
+    using str_view = strf::detail::simple_string_view<char32_t>;
+    using pair = std::pair<int,str_view>;
+    static const char32_t ch[] = {0xD800, 0xDBFF,0xDC00,0xDFFF, 0x110000};
+    static const std::array<pair, 5> seqs
+       {{ pair{1, {&ch[0], 1}}
+        , pair{1, {&ch[1], 1}}
+        , pair{1, {&ch[2], 1}}
+        , pair{1, {&ch[3], 1}}
+        , pair{1, {&ch[4], 1}} }};
 
     return seqs;
 }
 
 const auto& invalid_sequences(const strf::encoding<wchar_t>&)
 {
-    static const std::vector<std::pair<int, std::wstring>> seqs =
-        { {1, {(wchar_t)0xD800}}
-        , {1, {(wchar_t)0xDBFF}}
-        , {1, {(wchar_t)0xDC00}}
-        , {1, {(wchar_t)0xDFFF}}
-        , {1, {wchar_t(sizeof(wchar_t) == 4 ? 0x110000 : 0xDFFF)}} };
+    using str_view = strf::detail::simple_string_view<wchar_t>;
+    using pair = std::pair<int,str_view>;
+    static const wchar_t ch[] = { 0xD800, 0xDBFF, 0xDC00, 0xDFFF
+                                , (sizeof(wchar_t) == 4 ? 0x110000 : 0xDFFF) };
+    static const std::array<pair, 5> seqs
+       {{ pair{1, {&ch[0], 1}}
+        , pair{1, {&ch[1], 1}}
+        , pair{1, {&ch[2], 1}}
+        , pair{1, {&ch[3], 1}}
+        , pair{1, {&ch[4], 1}} }};
 
     return seqs;
 }
 
-std::string    replacement_char(const strf::encoding<char>&){ return (const char*)u8"\uFFFD";}
-std::u16string replacement_char(const strf::encoding<char16_t>&){ return u"\uFFFD";}
-std::u32string replacement_char(const strf::encoding<char32_t>&){ return U"\uFFFD";}
-std::wstring   replacement_char(const strf::encoding<wchar_t>&){ return L"\uFFFD";}
+strf::detail::simple_string_view<char>
+replacement_char(const strf::encoding<char>&){ return (const char*)u8"\uFFFD";}
+strf::detail::simple_string_view<char16_t>
+replacement_char(const strf::encoding<char16_t>&){ return u"\uFFFD";}
+strf::detail::simple_string_view<char32_t>
+replacement_char(const strf::encoding<char32_t>&){ return U"\uFFFD";}
+strf::detail::simple_string_view<wchar_t>
+replacement_char(const strf::encoding<wchar_t>&){ return L"\uFFFD";}
 
 
-template <typename StrType, typename CharIn = typename StrType::value_type>
-std::string stringify_invalid_char_sequence(const StrType& seq)
+template <typename CharT>
+strf::detail::simple_string_view<CharT> concatenate
+    ( CharT* buff
+    , const CharT(&prefix)[3]
+    , strf::detail::simple_string_view<CharT> str
+    , std::size_t count
+    , const CharT(&suffix)[3] )
 {
-    std::vector<unsigned> vec(seq.begin(), seq.end());
-    return strf::to_string(' ', ~strf::fmt_range(vec, " ").hex());
+    buff[0] = prefix[0];
+    buff[1] = prefix[1];
+    buff[2] = prefix[2];
+    auto it = buff + 3;
+    for (std::size_t i = 0; i < count; ++i) {
+        strf::detail::str_copy_n(it, str.begin(), str.size());
+        it += str.size();
+    }
+    it[0] = suffix[0];
+    it[1] = suffix[1];
+    it[2] = suffix[2];
+
+    return {buff, it + 3};
 }
 
 template <typename ChIn, typename ChOut>
@@ -159,28 +201,35 @@ void test_invalid_input
     ( const strf::encoding<ChIn>& ein
     , const strf::encoding<ChOut>& eout )
 {
-    BOOST_TEST_LABEL << "From invalid " << ein.name() << " to " << eout.name();
+    TEST_SCOPE_DESCRIPTION("From invalid ", ein.name(), " to ", eout.name());
 
-    const std::basic_string<ChIn>  suffix_in { (ChIn)'d', (ChIn)'e', (ChIn)'f' };
-    const std::basic_string<ChOut> suffix_out{ (ChOut)'d', (ChOut)'e', (ChOut)'f' };
-    const std::basic_string<ChIn>  prefix_in { (ChIn)'a', (ChIn)'b', (ChIn)'c' };
-    const std::basic_string<ChOut> prefix_out{ (ChOut)'a', (ChOut)'b', (ChOut)'c' };
+    const ChIn  suffix_in  [] = { 'd', 'e', 'f' };
+    const ChOut suffix_out [] = { 'd', 'e', 'f' };
+    const ChIn  prefix_in  [] = { 'a', 'b', 'c' };
+    const ChOut prefix_out [] = { 'a', 'b', 'c' };
 
     for(const auto& s : invalid_sequences(ein))
     {
         const int err_count = s.first;
         const auto& seq = s.second;
 
-        BOOST_TEST_LABEL << "Sequence = " << stringify_invalid_char_sequence(seq);
+        auto f = [](auto ch){
+            return ~strf::hex((unsigned)(std::make_unsigned_t<ChIn>)ch);
+        };
+        TEST_SCOPE_DESCRIPTION
+            .with(strf::mixedcase)
+            ( "Sequence = ", strf::separated_range(seq, " ", f) );
 
-        const std::basic_string<ChIn> input = prefix_in + seq + suffix_in;
+        ChIn buff_in[20];
+        ChOut buff_out[80];
+        auto input = concatenate(buff_in, prefix_in, seq, 1, suffix_in);
 
         {   // replace
-            std::basic_string<ChOut> expected = prefix_out;
-            for(int i = 0; i < err_count; i++)
-                expected.append(replacement_char(eout));
-            expected += suffix_out;
-
+            auto expected = concatenate( buff_out
+                                       , prefix_out
+                                       , replacement_char(eout)
+                                       , err_count
+                                       , suffix_out );
             TEST(expected)
                 .with(eout)
                 .with(strf::encoding_error::replace)
@@ -190,10 +239,10 @@ void test_invalid_input
 #if defined(__cpp_exceptions)
 
         // stop
-        BOOST_TEST_THROWS( (strf::to_string.with(eout)
-                                           .with(strf::encoding_error::stop)
-                                            (strf::sani(input, ein)) )
-                          , strf::encoding_failure );
+        TEST_THROWS( (strf::to(buff_out)
+                          .with(eout, strf::encoding_error::stop)
+                          (strf::sani(input, ein)))
+                   , strf::encoding_failure );
 
 #endif // defined(__cpp_exceptions)
 
@@ -287,6 +336,5 @@ int main()
         ( encodings
         , [](auto ein, auto eout){ test_invalid_input(ein, eout); } );
 
-
-    return boost::report_errors();
+    return test_finish();
 }

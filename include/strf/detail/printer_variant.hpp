@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <algorithm>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 namespace detail {
 
@@ -68,7 +68,7 @@ private:
 
 } // namespace detail
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_PRINTER_VARIANT_HPP
 

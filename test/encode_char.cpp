@@ -2,8 +2,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include "lightweight_test_label.hpp"
-#include <strf.hpp>
+#include "test_utils.hpp"
 #include <vector>
 
 template <typename CharT>
@@ -21,15 +20,14 @@ void test_char( strf::encoding<CharT> enc
                     , char32_t ch
                     , std::basic_string<CharT> encoded_char )
 {
-    BOOST_TEST_LABEL << "encoding: " << enc.name() << "; char: \\u'"
-                     << std::hex << (unsigned)ch << '\'' << std::dec;
-
+    TEST_SCOPE_DESCRIPTION( "encoding: ", enc.name()
+                          , "; char: \\u'", strf::hex((unsigned)ch), '\'');
     CharT buff[100];
 
     auto it = enc.encode_char(buff, ch);
 
-    BOOST_TEST_EQ(std::size_t(it - buff), encoded_char.size());
-    BOOST_TEST(std::equal(encoded_char.begin(), encoded_char.end(), buff));
+    TEST_EQ(std::size_t(it - buff), encoded_char.size());
+    TEST_TRUE(std::equal(encoded_char.begin(), encoded_char.end(), buff));
 }
 
 int main()
@@ -77,5 +75,5 @@ int main()
     }
 
 
-    return boost::report_errors();
+    return test_finish();
 }

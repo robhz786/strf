@@ -1,17 +1,19 @@
 #ifndef STRF_DETAIL_COMMMON_HPP
 #define STRF_DETAIL_COMMMON_HPP
 
+// TODO: This seems to rely on some standard library headers which have host-side-only code!
+// double-check and either avoid the reliance or duplicate the headers :-(
+
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <type_traits>
 #include <cassert>
+#include <cstddef> // for std::size_t
+#include <cstring> // for std::strlen
 
 #define STRF_ASSERT(x) assert(x)
-
-#define STRF_NAMESPACE_BEGIN namespace strf {
-#define STRF_NAMESPACE_END  }
 
 #if defined(STRF_SOURCE) && !defined(STRF_SEPARATE_COMPILATION)
 #define STRF_SEPARATE_COMPILATION
@@ -63,14 +65,13 @@
 #define STRF_HAS_STD_CHARCONV
 #endif //defined(__cpp_lib_to_chars)
 
-
-#if defined(__cpp_lib_string_view_)
+#if defined(__cpp_lib_string_view)
 #define STRF_HAS_STD_STRING_VIEW
 #define STRF_CONSTEXPR_CHAR_TRAITS constexpr
 #include <string_view>
 #else
 #include <string> // char_traits
-#endif // defined(__cpp_lib_string_view_)
+#endif // defined(__cpp_lib_string_view)
 
 #if defined(__has_cpp_attribute)
 #if __has_cpp_attribute(nodiscard)
@@ -120,7 +121,37 @@
 #  define STRF_NO_CXX17_COPY_ELISION
 #endif
 
-STRF_NAMESPACE_BEGIN
+#if defined(__GNUC__) && (__cplusplus > 201703L) && !defined(__cpp_lib_bitopts)
+// some versions of GCC forgot to define __cpp_lib_bitopts
+#  define __cpp_lib_bitopts  	201907
+#endif
+
+// Define CUDA-related host/device execution scope specifiers/decorators
+
+#ifdef __CUDACC__
+
+#define STRF_HOST    __forceinline__ __host__
+#define STRF_DEVICE  __forceinline__          __device__
+#define STRF_FD      __forceinline__          __device__
+#define STRF_FH      __forceinline__ __host__
+#define STRF_FHD     __forceinline__ __host__ __device__
+#define STRF_HD                      __host__ __device__
+
+#else // __CUDACC__
+
+#define STRF_FD inline
+#define STRF_FH inline
+#define STRF_FHD inline
+#define STRF_HD
+#define STRF_HOST
+#define STRF_DEVICE
+
+#endif // __CUDACC__
+
+// TODO: This could be controlled from CMake
+#define STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS 1
+
+namespace strf {
 
 namespace detail
 {
@@ -162,32 +193,44 @@ template <bool ... C> constexpr bool fold_or = fold_or_impl<C...>::value;
 
 #endif // defined(__cpp_fold_expressions)
 
+inline STRF_HD std::size_t
+strlen( const char* str )
+{
+#ifndef __CUDA_ARCH__
+    return std::strlen(str);
+#else
+    const char* p { str };
+    while(*p != '\0') { ++p; }
+    return (p - str);
+#endif
+}
+
 } // namespace detail
 
 struct absolute_lowest_rank
 {
-    explicit absolute_lowest_rank() = default;
+    explicit constexpr STRF_HD absolute_lowest_rank() noexcept { };
 };
 
 template <std::size_t N>
 struct rank: rank<N - 1>
 {
-    explicit rank() = default;
+    explicit constexpr STRF_HD rank() noexcept { };
 };
 
 template <>
 struct rank<0>: absolute_lowest_rank
 {
-    explicit rank() = default;
+    explicit constexpr STRF_HD rank() noexcept { }
 };
 
 template <typename ... >
 struct tag
 {
-    explicit tag() = default;
+    explicit constexpr STRF_HD tag() noexcept { }
 };
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_COMMMON_HPP
 

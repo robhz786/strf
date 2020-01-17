@@ -7,20 +7,21 @@
 
 #include <strf/detail/facets/encoding.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 namespace detail {
 
 template <typename Arg>
 using opt_val_or_cref = std::conditional_t
-    < ( std::is_trivially_copyable<Arg>::value
-     && ! std::is_array<Arg>::value
-     && sizeof(Arg) < 4 * sizeof(void*) )
-    , Arg
-    , const Arg& > ;
+    < std::is_array<Arg>::value, const Arg&, Arg > ;
 
 template <std::size_t I, typename T>
 struct indexed_obj
 {
+    constexpr STRF_HD indexed_obj(const T& cp)
+        : obj(cp)
+    {
+    }
+
     T obj;
 };
 
@@ -31,10 +32,10 @@ class simple_tuple_impl;
 
 template <std::size_t ... I, typename ... T>
 class simple_tuple_impl<std::index_sequence<I...>, T...>
-    : private detail::indexed_obj<I, T> ...
+    : private indexed_obj<I, T> ...
 {
     template <std::size_t J, typename U>
-    constexpr static const indexed_obj<J, U>& _get(const indexed_obj<J, U>& r)
+    static constexpr STRF_HD const indexed_obj<J, U>& _get(const indexed_obj<J, U>& r)
     {
         return r;
     }
@@ -44,16 +45,13 @@ public:
     static constexpr std::size_t size = sizeof...(T);
 
     template <typename ... Args>
-    constexpr explicit simple_tuple_impl(simple_tuple_from_args, Args&& ... args)
-        : detail::indexed_obj<I, T>{args}...
+    constexpr STRF_HD explicit simple_tuple_impl(simple_tuple_from_args, Args&& ... args)
+        : indexed_obj<I, T>(args)...
     {
     }
 
-    constexpr simple_tuple_impl(const simple_tuple_impl&) = default;
-    constexpr simple_tuple_impl(simple_tuple_impl&&) = default;
-
     template <std::size_t J>
-    constexpr const auto& get() const
+    constexpr STRF_HD const auto& get() const
     {
         return _get<J>(*this).obj;
     }
@@ -70,7 +68,7 @@ class simple_tuple
 };
 
 template <typename ... Args>
-constexpr strf::detail::simple_tuple
+constexpr STRF_HD strf::detail::simple_tuple
     < strf::detail::opt_val_or_cref<Args>... >
 make_simple_tuple(const Args& ... args)
 {
@@ -79,45 +77,36 @@ make_simple_tuple(const Args& ... args)
     { strf::detail::simple_tuple_from_args{}, args... };
 }
 
-
-#ifdef __cpp_fold_expressions
-
-
-template <typename CharT, typename ... Printers>
-inline void write_args( strf::basic_outbuf<CharT>& ob
-                      , const Printers& ... printers )
-{
-    (... , printers.print_to(ob));
-}
-
-#else
-
-
-template <typename CharT>
-inline void write_args(strf::basic_outbuf<CharT>&)
-{
-}
-
-template <typename CharT, typename Printer, typename ... Printers>
-inline void write_args
-    ( strf::basic_outbuf<CharT>& ob
-    , const Printer& printer
-    , const Printers& ... printers )
-{
-    printer.print_to(ob);
-    if (ob.good()) {
-        write_args(ob, printers ...);
-    }
-}
-
-#endif
-
-
 template <std::size_t J, typename ... T>
-constexpr const auto& get(const simple_tuple<T...>& tp)
+constexpr STRF_HD const auto& get(const simple_tuple<T...>& tp)
 {
     return tp.template get<J>();
 }
+
+template <std::size_t I, typename Printer>
+struct indexed_printer
+{
+    using char_type = typename Printer::char_type;
+
+    template <typename FPack, typename Preview, typename Arg>
+    STRF_HD indexed_printer( const FPack& fp
+                           , Preview& preview
+                           , const Arg& arg )
+        : printer(make_printer<char_type>(strf::rank<5>(), fp, preview, arg))
+    {
+    }
+    STRF_HD indexed_printer(const indexed_printer& other)
+        : printer(other.printer)
+    {
+    }
+    STRF_HD indexed_printer(indexed_printer&& other)
+        : printer(other.printer)
+    {
+    }
+
+    Printer printer;
+};
+
 
 template < typename CharT
          , typename ISeq
@@ -128,10 +117,10 @@ template < typename CharT
          , std::size_t ... I
          , typename ... Printers >
 class printers_tuple_impl<CharT, std::index_sequence<I...>, Printers...>
-    : private detail::indexed_obj<I, Printers> ...
+    : private detail::indexed_printer<I, Printers> ...
 {
     template <std::size_t J, typename T>
-    static const indexed_obj<J, T>& _get(const indexed_obj<J, T>& r)
+    static STRF_HD const indexed_printer<J, T>& _get(const indexed_printer<J, T>& r)
     {
         return r;
     }
@@ -142,28 +131,24 @@ public:
     static constexpr std::size_t size = sizeof...(Printers);
 
     template < typename FPack, typename Preview, typename ... Args >
-    printers_tuple_impl
+    STRF_HD printers_tuple_impl
         ( const FPack& fp
-        , Preview& p
+        , Preview& preview
         , const strf::detail::simple_tuple<Args...>& args )
-        : indexed_obj<I, Printers>
-        { make_printer<CharT>(strf::rank<5>{}, fp, p, args.template get<I>()) } ...
+        : indexed_printer<I, Printers>(fp, preview, args.template get<I>()) ...
     {
     }
 
-    printers_tuple_impl(const printers_tuple_impl& fp) = default;
-    printers_tuple_impl(printers_tuple_impl&& fp) = default;
-
     template <std::size_t J>
-    const auto& get() const
+    STRF_HD const auto& get() const
     {
-        return _get<J>(*this).obj;
+        return _get<J>(*this).printer;
     }
 };
 
 
 template< typename CharT, std::size_t ... I, typename ... Printers >
-void write( strf::basic_outbuf<CharT>& ob
+STRF_HD void write( strf::basic_outbuf<CharT>& ob
           , const strf::detail::printers_tuple_impl
              < CharT, std::index_sequence<I...>, Printers... >& printers )
 {
@@ -185,7 +170,7 @@ class printers_tuple_alias
 {
     template <typename Arg>
     using _printer
-    = decltype(make_printer<CharT>( strf::rank<5>{}
+    = decltype(make_printer<CharT>( strf::rank<5>()
                                   , std::declval<const FPack&>()
                                   , std::declval<Preview&>()
                                   , std::declval<const Arg&>()));
@@ -202,7 +187,7 @@ using printers_tuple_from_args
 
 } // namespace detail
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_PRINTERS_TUPLE_HPP
 

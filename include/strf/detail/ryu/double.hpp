@@ -43,7 +43,7 @@
 
 // ABSL avoids uint128_t on Win32 even if __SIZEOF_INT128__ is defined.
 // Let's do the same for now.
-#if defined(__SIZEOF_INT128__) && !defined(_MSC_VER) && !defined(STRF_RYU_ONLY_64_BIT_OPS)
+#if defined(__SIZEOF_INT128__) && !defined(_MSC_VER) && !defined(STRF_RYU_ONLY_64_BIT_OPS) && !defined (__CUDA_ARCH__)
 #define STRF_RYU_HAS_UINT128
 #elif defined(_MSC_VER) && !defined(STRF_RYU_ONLY_64_BIT_OPS) && defined(_M_X64)
 #define STRF_RYU_HAS_64_BIT_INTRINSICS
@@ -95,13 +95,13 @@ STRF_DETAIL_RYU_NAMESPACE_BEGIN;
 #if defined(STRF_RYU_HAS_UINT128)
 
 // Best case: use 128-bit type.
-inline uint64_t mulShift(const uint64_t m, const uint64_t* const mul, const int32_t j) {
+inline STRF_HD uint64_t mulShift(const uint64_t m, const uint64_t* const mul, const int32_t j) {
   const uint128_t b0 = ((uint128_t) m) * mul[0];
   const uint128_t b2 = ((uint128_t) m) * mul[1];
   return (uint64_t) (((b0 >> 64) + b2) >> (j - 64));
 }
 
-inline uint64_t mulShiftAll(const uint64_t m, const uint64_t* const mul, const int32_t j,
+inline STRF_HD uint64_t mulShiftAll(const uint64_t m, const uint64_t* const mul, const int32_t j,
   uint64_t* const vp, uint64_t* const vm, const uint32_t mmShift) {
 //  m <<= 2;
 //  uint128_t b0 = ((uint128_t) m) * mul[0]; // 0
@@ -122,7 +122,7 @@ inline uint64_t mulShiftAll(const uint64_t m, const uint64_t* const mul, const i
 
 #elif defined(STRF_RYU_HAS_64_BIT_INTRINSICS)
 
-inline uint64_t mulShift(const uint64_t m, const uint64_t* const mul, const int32_t j) {
+inline STRF_HD uint64_t mulShift(const uint64_t m, const uint64_t* const mul, const int32_t j) {
   // m is maximum 55 bits
   uint64_t high1;                                   // 128
   const uint64_t low1 = umul128(m, mul[1], &high1); // 64
@@ -135,7 +135,7 @@ inline uint64_t mulShift(const uint64_t m, const uint64_t* const mul, const int3
   return shiftright128(sum, high1, j - 64);
 }
 
-inline uint64_t mulShiftAll(const uint64_t m, const uint64_t* const mul, const int32_t j,
+inline STRF_HD uint64_t mulShiftAll(const uint64_t m, const uint64_t* const mul, const int32_t j,
   uint64_t* const vp, uint64_t* const vm, const uint32_t mmShift) {
   *vp = mulShift(4 * m + 2, mul, j);
   *vm = mulShift(4 * m - 1 - mmShift, mul, j);
@@ -144,7 +144,7 @@ inline uint64_t mulShiftAll(const uint64_t m, const uint64_t* const mul, const i
 
 #else // !defined(STRF_RYU_HAS_UINT128) && !defined(STRF_RYU_HAS_64_BIT_INTRINSICS)
 
-inline uint64_t mulShiftAll(uint64_t m, const uint64_t* const mul, const int32_t j,
+inline STRF_HD uint64_t mulShiftAll(uint64_t m, const uint64_t* const mul, const int32_t j,
   uint64_t* const vp, uint64_t* const vm, const uint32_t mmShift) {
   m <<= 1;
   // m is maximum 55 bits
@@ -179,7 +179,7 @@ inline uint64_t mulShiftAll(uint64_t m, const uint64_t* const mul, const int32_t
 
 #endif // STRF_RYU_HAS_64_BIT_INTRINSICS
 
-inline uint32_t decimalLength17(const uint64_t v) {
+inline STRF_HD uint32_t decimalLength17(const uint64_t v) {
   // This is slightly faster than a loop.
   // The average output length is 16.38 digits, so we check high-to-low.
   // Function precondition: v is not an 18, 19, or 20-digit number.
@@ -212,7 +212,7 @@ typedef struct floating_decimal_64 {
   int32_t exponent;
 } floating_decimal_64;
 
-inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_t ieeeExponent) {
+inline STRF_HD floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_t ieeeExponent) {
   int32_t e2;
   uint64_t m2;
   if (ieeeExponent == 0) {
@@ -437,7 +437,7 @@ inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_t ieeeE
 
 #if 0
 
-inline int to_chars(const floating_decimal_64 v, const bool sign, char* const result) {
+inline STRF_HD int to_chars(const floating_decimal_64 v, const bool sign, char* const result) {
   // Step 5: Print the decimal representation.
   int index = 0;
   if (sign) {
@@ -545,7 +545,7 @@ inline int to_chars(const floating_decimal_64 v, const bool sign, char* const re
   return index;
 }
 
-inline bool d2d_small_int(const uint64_t ieeeMantissa, const uint32_t ieeeExponent,
+inline STRF_HD bool d2d_small_int(const uint64_t ieeeMantissa, const uint32_t ieeeExponent,
   floating_decimal_64* const v) {
   const uint64_t m2 = (1ull << STRF_RYU_DOUBLE_MANTISSA_BITS) | ieeeMantissa;
   const int32_t e2 = (int32_t) ieeeExponent - STRF_RYU_DOUBLE_BIAS - STRF_RYU_DOUBLE_MANTISSA_BITS;
@@ -577,7 +577,7 @@ inline bool d2d_small_int(const uint64_t ieeeMantissa, const uint32_t ieeeExpone
   return true;
 }
 
-int d2s_buffered_n(double f, char* result) {
+STRF_HD int d2s_buffered_n(double f, char* result) {
   // Step 1: Decode the floating-point number, and unify normalized and subnormal cases.
   const uint64_t bits = double_to_bits(f);
 
@@ -621,14 +621,14 @@ int d2s_buffered_n(double f, char* result) {
   return to_chars(v, ieeeSign, result);
 }
 
-void d2s_buffered(double f, char* result) {
+STRF_HD void d2s_buffered(double f, char* result) {
   const int index = d2s_buffered_n(f, result);
 
   // Terminate the string.
   result[index] = '\0';
 }
 
-char* d2s(double f) {
+STRF_HD char* d2s(double f) {
   char* const result = (char*) malloc(25);
   d2s_buffered(f, result);
   return result;

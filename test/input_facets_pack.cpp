@@ -64,7 +64,7 @@ int main()
           :: value
         , "encoding shall not be constrainable");
 
-    int rc = boost::report_errors();
+    int rc = test_finish();
     return rc;
 }
 

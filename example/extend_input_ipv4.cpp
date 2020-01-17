@@ -108,10 +108,10 @@ void sample_fmt_sample()
     std::vector<xxx::ipv4address> vec = { {{127, 0, 0, 1}}
                                         , {{146, 20, 110, 251}}
                                         , {{110, 110, 110, 110}} };
-    auto s2 = strf::to_string("[", strf::fmt_range(vec, " ;") > 16, "]");
+    auto s2 = strf::to_string("[", strf::fmt_separated_range(vec, " ;") > 16, "]");
     assert(s2 == "[       127.0.0.1 ;  146.20.110.251 ; 110.110.110.110]");
 //]
-    // auto s3 = strf::to_string("[", strf::range(vec, " ; "), "]");
+    // auto s3 = strf::to_string("[", strf::separated_range(vec, " ; "), "]");
     // assert(s3 == "[127.0.0.1 ; 146.20.110.251 ; 110.110.110.110]");
 }
 

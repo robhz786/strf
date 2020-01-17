@@ -9,7 +9,7 @@
 #include <strf/destination.hpp>
 #include <strf/outbuf.hpp>
 
-STRF_NAMESPACE_BEGIN
+namespace strf {
 
 template <typename CharT, typename Traits = std::char_traits<CharT> >
 class basic_streambuf_writer final: public strf::basic_outbuf<CharT>
@@ -43,8 +43,7 @@ public:
     {
         std::streamsize count = this->pos() - _buf;
         this->set_pos(_buf);
-        if (this->good())
-        {
+        if (this->good()) {
             auto count_inc = _dest.sputn(_buf, count);
             _count += count_inc;
             this->set_good(count_inc == count);
@@ -63,8 +62,7 @@ public:
         auto g = this->good();
         this->set_pos(_buf);
         this->set_good(false);
-        if (g)
-        {
+        if (g) {
             auto count_inc = _dest.sputn(_buf, count);
             _count += count_inc;
             g = (count_inc == count);
@@ -136,7 +134,7 @@ inline auto to( std::basic_streambuf<CharT, Traits>* dest )
     return strf::to(*dest);
 }
 
-STRF_NAMESPACE_END
+} // namespace strf
 
 #endif  // STRF_DETAIL_OUTPUT_TYPES_STD_STREAMBUF_HPP
 
