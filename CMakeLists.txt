@@ -22,11 +22,14 @@ option(
   "Build performace test"
   ${STRF_BUILD_BENCHMARKS})
 
+project (
+  strf 
+  VERSION 0.10.2 
+  LANGUAGES CXX)
+
 if (STRF_CUDA_SUPPORT)
-  project (strf CXX CUDA)
-else (STRF_CUDA_SUPPORT)
-  project (strf CXX)
-endif (STRF_CUDA_SUPPORT)
+  enable_language(CUDA)
+endif ()
 
 if (STRF_BUILD_TESTS OR STRF_BUILD_EXAMPLES)
   enable_testing()
@@ -81,6 +84,14 @@ if (${STRF_CUDA_SUPPORT})
   list(APPEND TARGETS_TO_INSTALL strf-cuda)
 endif()
 
+
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file(
+  "strf-config-version.cmake"
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMinorVersion)
+
 include(GNUInstallDirs)
 
 install(
@@ -95,6 +106,10 @@ install(
   EXPORT strf
   FILE "strf-config.cmake"
   NAMESPACE strf::
+  DESTINATION "lib/cmake/strf" )
+
+install(
+  FILES "${CMAKE_CURRENT_BINARY_DIR}/strf-config-version.cmake"
   DESTINATION "lib/cmake/strf" )
 
 # TODO: These should be pulled into the installation directory by some target...
