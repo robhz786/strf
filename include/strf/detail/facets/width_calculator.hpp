@@ -21,13 +21,15 @@ public:
 
     virtual STRF_HD strf::width_t width_of
         ( char_type ch
-        , const strf::underlying_encoding<CharSize>& enc ) const = 0;
+        , strf::decode_single_char_func<CharSize> decode_fn ) const = 0;
 
     virtual STRF_HD strf::width_t width
         ( strf::width_t limit
         , const char_type* str
         , std::size_t str_len
-        , const strf::underlying_encoding<CharSize>& enc
+        , strf::encoding_id enc_id
+        , strf::transcode_func<CharSize, 4> transcode_fn
+        , strf::codepoints_count_func<CharSize> cp_count_fn
         , strf::encoding_error enc_err
         , strf::surrogate_policy allow_surr ) const = 0;
 };
@@ -39,22 +41,29 @@ public:
     using char_type = strf::underlying_outbuf_char_type<CharSize>;
 
     STRF_HD strf::width_t width_of
-        ( char_type ch, const strf::underlying_encoding<CharSize>& enc ) const override
+        ( char_type ch
+        , strf::decode_single_char_func<CharSize> decode_fn ) const  override
     {
-        (void)ch;
-        (void)enc;
+        (void) ch;
+        (void) decode_fn;
         return 1;
     }
 
     STRF_HD strf::width_t width
-        ( strf::width_t limit, const char_type* str, std::size_t str_len
-        , const strf::underlying_encoding<CharSize>& enc
+        ( strf::width_t limit
+        , const char_type* str
+        , std::size_t str_len
+        , strf::encoding_id enc_id
+        , strf::transcode_func<CharSize, 4> transcode_fn
+        , strf::codepoints_count_func<CharSize> cp_count_fn
         , strf::encoding_error enc_err
         , strf::surrogate_policy allow_surr ) const override
     {
         (void) limit;
         (void) str;
-        (void) enc;
+        (void) enc_id;
+        (void) transcode_fn;
+        (void) cp_count_fn;
         (void) enc_err;
         (void) allow_surr;
 
@@ -72,28 +81,34 @@ public:
     using char_type = strf::underlying_outbuf_char_type<CharSize>;
 
     virtual STRF_HD strf::width_t width_of
-        ( char_type ch, const strf::underlying_encoding<CharSize>& enc ) const override
+        ( char_type ch
+        , strf::decode_single_char_func<CharSize> decode_fn ) const override
     {
-        (void)ch;
-        (void)enc;
+        (void) ch;
+        (void) decode_fn;
         return 1;
     }
 
 
     STRF_HD strf::width_t width
-        ( strf::width_t limit, const char_type* str, std::size_t str_len
-        , const strf::underlying_encoding<CharSize>& enc
+        ( strf::width_t limit
+        , const char_type* str
+        , std::size_t str_len
+        , strf::encoding_id enc_id
+        , strf::transcode_func<CharSize, 4> transcode_fn
+        , strf::codepoints_count_func<CharSize> cp_count_fn
         , strf::encoding_error enc_err
         , strf::surrogate_policy allow_surr ) const override
     {
         (void) limit;
         (void) str;
-        (void) enc;
+        (void) enc_id;
+        (void) transcode_fn;
         (void) enc_err;
         (void) allow_surr;
 
         if (limit > 0) {
-            auto count = enc.codepoints_count(str, str + str_len, limit.ceil());
+            auto count = cp_count_fb(str, str + str_len, limit.ceil());
             if (count < INT16_MAX) {
                 return static_cast<std::int16_t>(count);
             }

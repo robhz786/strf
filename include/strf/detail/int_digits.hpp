@@ -684,7 +684,7 @@ inline STRF_HD void write_int_txtdigits_backwards_little_sep
 template <std::size_t CharSize>
 STRF_HD void write_digits_big_sep
     ( strf::underlying_outbuf<CharSize>& ob
-    , const strf::underlying_encoding<CharSize>& encoding
+    , strf::encode_char_func<CharSize> encode_char
     , const std::uint8_t* last_grp
     , unsigned char* digits
     , unsigned num_digits
@@ -693,7 +693,6 @@ STRF_HD void write_digits_big_sep
 {
     STRF_ASSERT(sep_size != (std::size_t)-1);
     STRF_ASSERT(sep_size != 1);
-    STRF_ASSERT(sep_size == encoding.validate(sep));
 
     ob.ensure(1);
 
@@ -717,7 +716,7 @@ STRF_HD void write_digits_big_sep
             end = ob.end();
         }
         if (n == 0) {
-            pos = encoding.encode_char(pos, sep);
+            pos = encode_char(pos, sep);
             n = *--grp_it;
         }
     }
@@ -745,38 +744,17 @@ public:
     }
 
     template <typename UIntT, std::size_t CharSize>
-    static STRF_HD void write
-          ( strf::underlying_outbuf<CharSize>& ob
-          , const strf::numpunct_base& punct
-          , const strf::underlying_encoding<CharSize>& enc
-          , UIntT value
-          , unsigned digcount
-          , strf::lettercase lc )
+    static STRF_HD void write_little_sep
+        ( strf::underlying_outbuf<CharSize>& ob
+        , const strf::numpunct_base& punct
+        , UIntT value
+        , unsigned digcount
+        , strf::underlying_outbuf_char_type<CharSize> sep
+        , strf::lettercase lc )
     {
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
-
-        constexpr auto max_digits = detail::max_num_digits<UIntT, Base>;
-        uint8_t groups[max_digits];
+        uint8_t groups[detail::max_num_digits<UIntT, Base>];
         const auto num_groups = punct.groups(digcount, groups);
-        if (num_groups == 0) {
-            no_punct:
-            write(ob, value, digcount, lc);
-            return;
-        }
-        auto sep32 = punct.thousands_sep();
-        auto sep = static_cast<strf::underlying_outbuf_char_type<CharSize>>(sep32);
-        if (sep32 >= enc.u32equivalence_end || sep32 < enc.u32equivalence_begin) {
-            auto sep_size = enc.validate(sep32);
-            if (sep_size == (std::size_t)-1) {
-                goto no_punct;
-            }
-            if (sep_size != 1) {
-                write_digits_big_sep( ob, enc, groups, value, digcount
-                                    , num_groups, sep32, sep_size, lc );
-                return;
-            }
-            enc.encode_char(&sep, sep32);
-        }
         std::size_t size = digcount + num_groups - 1;
         ob.ensure(size);
         auto next_p = ob.pos() + size;
@@ -785,31 +763,29 @@ public:
         ob.advance_to(next_p);
     }
 
-private:
-
-    template <std::size_t CharSize>
-    static STRF_HD void write_digits_big_sep
-          ( strf::underlying_outbuf<CharSize>& ob
-          , const strf::underlying_encoding<CharSize>& enc
-          , const uint8_t* groups
-          , unsigned long long value
-          , unsigned digcount
-          , unsigned num_groups
-          , char32_t sep
-          , std::size_t sep_size
-          , strf::lettercase lc )
+    template <typename UIntT, std::size_t CharSize>
+    static STRF_HD void write_big_sep
+        ( strf::underlying_outbuf<CharSize>& ob
+        , const strf::numpunct_base& punct
+        , strf::encode_char_func<CharSize> encode_char
+        , UIntT value
+        , unsigned sep_size
+        , unsigned digcount
+        , strf::lettercase lc )
     {
-        constexpr auto max_digits = detail::max_num_digits<unsigned long long, Base>;
+        static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
+        constexpr auto max_digits = detail::max_num_digits<UIntT, Base>;
+        uint8_t groups[max_digits];
+        const auto num_groups = punct.groups(digcount, groups);
         unsigned char digits_buff[max_digits];
-
         const auto dig_end = digits_buff + max_digits;
         auto digits = strf::detail::write_int_txtdigits_backwards<Base>
             ( value, dig_end, lc);
-
         strf::detail::write_digits_big_sep
-            ( ob, enc, groups + num_groups - 1, digits, digcount
-            , sep, sep_size );
+            ( ob, encode_char, groups + num_groups - 1, digits, digcount
+            , punct.thousands_sep(), sep_size );
     }
+
 }; // class template intdigits_writer
 
 template <>
@@ -851,58 +827,21 @@ public:
     }
 
     template <typename UIntT, std::size_t CharSize>
-    static STRF_HD void write
-        ( strf::underlying_outbuf<CharSize>& ob
-        , const strf::numpunct_base& punct
-        , const strf::underlying_encoding<CharSize>& enc
-        , UIntT value
-        , unsigned digcount
-        , strf::lettercase = strf::lowercase )
-    {
-        static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
-        using char_type = strf::underlying_outbuf_char_type<CharSize>;
-        if (value <= 1) {
-            strf::put(ob, static_cast<char_type>('0' + value));
-            return;
-        }
-
-        constexpr auto max_digits = detail::max_num_digits<UIntT, 2>;
-        uint8_t groups[max_digits];
-        const auto num_groups = punct.groups(digcount, groups);
-        if (num_groups == 0) {
-            no_punct:
-            write(ob, value, digcount);
-            return;
-        }
-        auto sep32 = punct.thousands_sep();
-        char_type sep = static_cast<char_type>(sep32);
-        if (sep32 >= enc.u32equivalence_end || sep32 < enc.u32equivalence_begin) {
-            auto sep_size = enc.validate(sep32);
-            if (sep_size == (std::size_t)-1) {
-                goto no_punct;
-            }
-            if (sep_size != 1) {
-                write_big_sep( ob, enc, groups + num_groups -1, value, digcount
-                             , sep32, sep_size );
-                return;
-            }
-            enc.encode_char(&sep, sep32);
-        }
-        write_little_sep(ob, groups + num_groups -1, value, digcount, sep);
-    }
-
-private:
-
-    template <typename UIntT, std::size_t CharSize>
     static STRF_HD void write_little_sep
         ( strf::underlying_outbuf<CharSize>& ob
-        , const uint8_t* groups
+        , const strf::numpunct_base& punct
         , UIntT value
         , unsigned digcount
-        , strf::underlying_outbuf_char_type<CharSize> sep )
+        , strf::underlying_outbuf_char_type<CharSize> sep
+        , strf::lettercase = strf::lowercase )
     {
+        STRF_ASSERT(value > 1);
+        static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
         using char_type = strf::underlying_outbuf_char_type<CharSize>;
-        auto grp_it = groups;
+        uint8_t groups[detail::max_num_digits<UIntT, 2>];
+        auto num_groups = punct.groups(digcount, groups);
+
+        auto grp_it = groups + num_groups - 1;
         auto grp_size = *grp_it;
         ob.ensure(grp_size);
         auto it = ob.pos();
@@ -929,25 +868,31 @@ private:
             ++it;
         }
         ob.advance_to(it);
-     }
+    }
+
 
     template <typename UIntT, std::size_t CharSize>
     static STRF_HD void write_big_sep
         ( strf::underlying_outbuf<CharSize>& ob
-        , const strf::underlying_encoding<CharSize>& encoding
-        , const std::uint8_t* groups
+        , const strf::numpunct_base& punct
+        , strf::encode_char_func<CharSize> encode_char
         , UIntT value
+        , unsigned sep_size
         , unsigned digcount
-        , char32_t sep
-        , std::size_t sep_size )
+        , strf::lettercase = strf::lowercase )
     {
+        STRF_ASSERT(value > 1);
+        static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
         using char_type = strf::underlying_outbuf_char_type<CharSize>;
-        auto grp_it = groups;
+        uint8_t groups[detail::max_num_digits<UIntT, 2>];
+        auto num_groups = punct.groups(digcount, groups);
+
+        char32_t sep = punct.thousands_sep();
+        auto grp_it = groups + num_groups - 1;
         auto grp_size = *grp_it;
         auto it = ob.pos();
         auto end = ob.end();
         UIntT mask = (UIntT)1 << (digcount - 1);
-
         while (true) {
             if (it + grp_size > end) {
                 ob.advance_to(it);
@@ -970,7 +915,7 @@ private:
                 it = ob.pos();
                 end = ob.end();
             }
-            it = encoding.encode_char(it, sep);
+            it = encode_char(it, sep);
         }
         ob.advance_to(it);
     }
@@ -988,16 +933,32 @@ inline STRF_HD void write_int
 }
 
 template <int Base, std::size_t CharSize, typename UIntT>
-inline STRF_HD void write_int
-      ( strf::underlying_outbuf<CharSize>& ob
-      , const strf::numpunct_base& punct
-      , const strf::underlying_encoding<CharSize>& enc
-      , UIntT value
-      , unsigned digcount
-      , strf::lettercase lc )
+inline STRF_HD void write_int_little_sep
+    ( strf::underlying_outbuf<CharSize>& ob
+    , const strf::numpunct_base& punct
+    , UIntT value
+    , unsigned digcount
+    , strf::underlying_outbuf_char_type<CharSize> sep
+    , strf::lettercase lc = strf::lowercase )
 {
-    intdigits_writer<Base>::write(ob, punct, enc, value, digcount, lc);
+    intdigits_writer<Base>::write_little_sep
+        ( ob, punct, value, digcount, sep, lc );
 }
+
+template <int Base, std::size_t CharSize, typename UIntT>
+inline STRF_HD void write_int_big_sep
+    ( strf::underlying_outbuf<CharSize>& ob
+    , const strf::numpunct_base& punct
+    , strf::encode_char_func<CharSize> encode_char
+    , UIntT value
+    , unsigned sep_size
+    , unsigned digcount
+    , strf::lettercase lc = strf::lowercase )
+{
+    intdigits_writer<Base>::write_big_sep
+        ( ob, punct, encode_char, value, sep_size, digcount, lc);
+}
+
 
 } // namespace detail
 

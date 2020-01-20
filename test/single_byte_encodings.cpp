@@ -19,7 +19,8 @@ strf::detail::simple_string_view<char> make_str_0_to_xff()
 
 auto str_0_to_xff = make_str_0_to_xff();
 
-strf::detail::simple_string_view<char> char_0_to_0xff_sanitized(strf::encoding<char> enc)
+template <typename Encoding>
+strf::detail::simple_string_view<char> char_0_to_0xff_sanitized(const Encoding& enc)
 {
     static char str[0x100];
     for(unsigned i = 0; i < 0x100; ++i)
@@ -69,7 +70,8 @@ bool operator==( strf::detail::simple_string_view<CharT> str1
     return std::equal(str1.begin(), str1.end(), str2.begin());
 }
 
-void test( const strf::encoding<char>& enc
+template <typename Encoding>
+void test( const Encoding& enc
          , strf::detail::simple_string_view<char32_t> decoded_0_to_0xff )
 {
     TEST_SCOPE_DESCRIPTION(enc.name());

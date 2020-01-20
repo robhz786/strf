@@ -58,7 +58,7 @@ int main()
 
     static_assert
         ( ! strf::detail::all_are_constrainable
-          < strf::encoding<char>
+          < strf::utf8<char>
           , strf::width_calculator<2>
           , strf::numpunct<10> >
           :: value

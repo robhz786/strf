@@ -398,6 +398,64 @@ inline STRF_HD void put( strf::basic_outbuf_noexcept<CharT>& ob, CharT c ) noexc
 {
     strf::detail::outbuf_put(ob, c);
 }
+
+namespace detail {
+
+template<std::size_t CharSize>
+void STRF_HD write_fill_continuation
+    ( strf::underlying_outbuf<CharSize>& ob
+    , std::size_t count
+    , typename strf::underlying_outbuf<CharSize>::char_type ch )
+{
+    using char_type = typename strf::underlying_outbuf<CharSize>::char_type;
+
+    std::size_t space = ob.size();
+    STRF_ASSERT(space < count);
+    strf::detail::char_assign<char_type>(ob.pos(), space, ch);
+    count -= space;
+    ob.advance_to(ob.end());
+    ob.recycle();
+    while (ob.good()) {
+        space = ob.size();
+        if (count <= space) {
+            strf::detail::char_assign<char_type>(ob.pos(), count, ch);
+            ob.advance(count);
+            break;
+        }
+        strf::detail::char_assign(ob.pos(), space, ch);
+        count -= space;
+        ob.advance_to(ob.end());
+        ob.recycle();
+    }
+}
+
+template <std::size_t CharSize>
+inline STRF_HD void write_fill
+    ( strf::underlying_outbuf<CharSize>& ob
+    , std::size_t count
+    , typename strf::underlying_outbuf<CharSize>::char_type ch )
+{
+    using char_type = typename strf::underlying_outbuf<CharSize>::char_type;
+    if (count <= ob.size()) { // the common case
+        strf::detail::char_assign<char_type>(ob.pos(), count, ch);
+        ob.advance(count);
+    } else {
+        write_fill_continuation(ob, count, ch);
+    }
+}
+
+template<typename CharT>
+inline STRF_HD void write_fill
+    ( strf::basic_outbuf<CharT>& ob
+    , std::size_t count
+    , CharT ch )
+{
+    using u_char_type = typename strf::underlying_outbuf<sizeof(CharT)>::char_type;
+    write_fill(ob.as_underlying(), count, static_cast<u_char_type>(ch));
+}
+
+} // namespace detail
+
 // type aliases
 
 #if defined(__cpp_lib_byte)

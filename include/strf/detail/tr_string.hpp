@@ -102,21 +102,6 @@ read_uint_result<CharT> read_uint(const CharT* it, const CharT* end) noexcept
 
 constexpr std::size_t trstr_invalid_arg_size_when_stop = (std::size_t)-1;
 
-template <std::size_t CharSize>
-std::size_t invalid_arg_size
-    ( const strf::underlying_encoding<CharSize>& enc
-    , tr_invalid_arg policy ) noexcept
-{
-    switch(policy) {
-        case tr_invalid_arg::replace:
-            return enc.replacement_char_size;
-        case tr_invalid_arg::stop:
-            return strf::detail::trstr_invalid_arg_size_when_stop;
-        default:
-            return 0;
-    }
-}
-
 template <typename CharT>
 inline std::size_t tr_string_size
     ( const strf::print_preview<false, false>*
@@ -218,17 +203,17 @@ std::size_t tr_string_size
     return count;
 }
 
-template <typename CharT>
+template <std::size_t CharSize>
 void tr_string_write
-    ( const CharT* it
-    , const CharT* end
-    , const strf::printer<sizeof(CharT)>* const * args
+    ( const strf::underlying_outbuf_char_type<CharSize>* it
+    , const strf::underlying_outbuf_char_type<CharSize>* end
+    , const strf::printer<CharSize>* const * args
     , std::size_t num_args
-    , strf::underlying_outbuf<sizeof(CharT)>& ob
-    , const strf::underlying_encoding<sizeof(CharT)>& enc
+    , strf::underlying_outbuf<CharSize>& ob
+    , strf::write_replacement_char_func<CharSize> write_replacement_char
     , strf::tr_invalid_arg policy )
 {
-    using char_type = strf::underlying_outbuf_char_type<sizeof(CharT)>;
+    using char_type = strf::underlying_outbuf_char_type<CharSize>;
     using traits = std::char_traits<char_type>;
     std::size_t arg_idx = 0;
 
@@ -246,7 +231,7 @@ void tr_string_write
             if (arg_idx < num_args) {
                 args[arg_idx]->print_to(ob);
             } else if (policy == strf::tr_invalid_arg::replace) {
-                enc.write_replacement_char(ob);
+                write_replacement_char(ob);
             } else if (policy == strf::tr_invalid_arg::stop) {
                 strf::detail::throw_string_syntax_error();
             }
@@ -258,7 +243,7 @@ void tr_string_write
                 args[arg_idx]->print_to(ob);
                 ++arg_idx;
             } else if (policy == strf::tr_invalid_arg::replace) {
-                enc.write_replacement_char(ob);
+                write_replacement_char(ob);
             } else if (policy == strf::tr_invalid_arg::stop) {
                 strf::detail::throw_string_syntax_error();
             }
@@ -268,7 +253,7 @@ void tr_string_write
             if (result.value < num_args) {
                 args[result.value]->print_to(ob);
             } else if (policy == strf::tr_invalid_arg::replace) {
-                enc.write_replacement_char(ob);
+                write_replacement_char(ob);
             } else if (policy == strf::tr_invalid_arg::stop) {
                 strf::detail::throw_string_syntax_error();
             }
@@ -293,7 +278,7 @@ void tr_string_write
                     args[arg_idx]->print_to(ob);
                     ++arg_idx;
                 } else if (policy == strf::tr_invalid_arg::replace) {
-                    enc.write_replacement_char(ob);
+                    write_replacement_char(ob);
                 } else if (policy == strf::tr_invalid_arg::stop) {
                     strf::detail::throw_string_syntax_error();
                 }
@@ -312,46 +297,64 @@ template <std::size_t CharSize>
 class tr_string_printer
 {
 public:
+
     using char_type = strf::underlying_outbuf_char_type<CharSize>;
 
-    template <typename CharT, bool SizeRequested>
+    template <bool SizeRequested, typename Encoding>
     tr_string_printer
         ( strf::print_preview<SizeRequested, false>& preview
         , const strf::print_preview<SizeRequested, false>* args_preview
         , std::initializer_list<const strf::printer<CharSize>*> printers
-        , const CharT* tr_string
-        , const CharT* tr_string_end
-        , const strf::underlying_encoding<CharSize>& enc
+        , const char_type* tr_string
+        , const char_type* tr_string_end
+        , const Encoding& enc
         , strf::tr_invalid_arg policy ) noexcept
         : _tr_string(reinterpret_cast<const char_type*>(tr_string))
         , _tr_string_end(reinterpret_cast<const char_type*>(tr_string_end))
-        , _enc(enc)
-        , _policy(policy)
+        , _write_replacement_char_func(enc.write_replacement_char)
         , _printers_array(printers.begin())
         , _num_printers(printers.size())
+        , _policy(policy)
     {
-        static_assert(sizeof(CharT) == CharSize, "");
-        preview.add_size
-            ( strf::detail::tr_string_size
-                ( args_preview, _num_printers, _tr_string, _tr_string_end
-                , strf::detail::invalid_arg_size(_enc, _policy) ) );
+        STRF_IF_CONSTEXPR (SizeRequested) {
+            std::size_t invalid_arg_size;
+            switch (policy) {
+                case strf::tr_invalid_arg::replace:
+                    invalid_arg_size = enc.replacement_char_size();
+                    break;
+                case strf::tr_invalid_arg::stop:
+                    invalid_arg_size = strf::detail::trstr_invalid_arg_size_when_stop;
+                    break;
+                default:
+                    STRF_ASSERT(policy == strf::tr_invalid_arg::ignore);
+                    invalid_arg_size = 0;
+                    break;
+            }
+            std::size_t s = strf::detail::tr_string_size
+                ( args_preview, printers.size(), tr_string, tr_string_end
+                , invalid_arg_size );
+            preview.add_size(s);
+        } else {
+            (void) args_preview;
+        }
     }
 
     void print_to(strf::underlying_outbuf<CharSize>& ob) const
     {
         strf::detail::tr_string_write
             ( _tr_string, _tr_string_end, _printers_array, _num_printers
-            , ob, _enc, _policy );
+            , ob, _write_replacement_char_func, _policy );
     }
+
+private:
 
     const char_type* _tr_string;
     const char_type* _tr_string_end;
-    const strf::underlying_encoding<CharSize>& _enc;
-    strf::tr_invalid_arg _policy;
+    strf::write_replacement_char_func<CharSize> _write_replacement_char_func;
     const strf::printer<CharSize>* const * _printers_array;
     std::size_t _num_printers;
+    strf::tr_invalid_arg _policy;
 };
-
 
 
 } // namespace detail

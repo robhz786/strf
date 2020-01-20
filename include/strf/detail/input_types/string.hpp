@@ -67,13 +67,13 @@ struct no_cv_format;
 template <typename CharT>
 struct cv_format;
 
-template <typename CharT>
+template <typename CharT, typename Encoding>
 struct cv_format_with_encoding;
 
 template <typename CharT>
 struct sani_format;
 
-template <typename CharT>
+template <typename CharT, typename Encoding>
 struct sani_format_with_encoding;
 
 template <typename CharT, typename T>
@@ -99,23 +99,25 @@ public:
         return return_type{ static_cast<const T&>(*this) };
     }
 
-    constexpr STRF_HD auto convert_charset(strf::encoding<CharT> enc) const
+    template <typename Encoding>
+    constexpr STRF_HD auto convert_charset(const Encoding& enc) const
     {
         using return_type = strf::fmt_replace
             < T
             , strf::no_cv_format<CharT>
-            , strf::cv_format_with_encoding<CharT> >;
+            , strf::cv_format_with_encoding<CharT, Encoding> >;
 
         return return_type
             { static_cast<const T&>(*this)
-            , strf::tag<strf::cv_format_with_encoding<CharT>>{}
+            , strf::tag<strf::cv_format_with_encoding<CharT, Encoding>>{}
             , enc };
     }
     constexpr STRF_HD auto cv() const
     {
         return convert_charset();
     }
-    constexpr STRF_HD auto cv(strf::encoding<CharT> enc) const
+    template <typename Encoding>
+    constexpr STRF_HD auto cv(const Encoding& enc) const
     {
         return convert_charset(enc);
     }
@@ -127,24 +129,25 @@ public:
                                              , strf::sani_format<CharT> >;
         return return_type{ static_cast<const T&>(*this) };
     }
-
-    constexpr STRF_HD auto sanitize_charset(strf::encoding<CharT> enc) const
+    template <typename Encoding>
+    constexpr STRF_HD auto sanitize_charset(const Encoding& enc) const
     {
         using return_type = strf::fmt_replace
             < T
             , strf::no_cv_format<CharT>
-            , strf::sani_format_with_encoding<CharT> >;
+            , strf::sani_format_with_encoding<CharT, Encoding> >;
 
         return return_type
             { static_cast<const T&>(*this)
-            , strf::tag<strf::sani_format_with_encoding<CharT>>{}
+             , strf::tag<strf::sani_format_with_encoding<CharT, Encoding>>{}
             , enc };
     }
     constexpr auto sani() const
     {
         return sanitize_charset();
     }
-    constexpr auto sani(strf::encoding<CharT> enc) const
+    template <typename Encoding>
+    constexpr auto sani(const Encoding& enc) const
     {
         return sanitize_charset(enc);
     }
@@ -170,12 +173,12 @@ struct cv_format_fn
     }
 };
 
-template <typename CharT, typename T>
+template <typename CharT, typename Encoding, typename T>
 class cv_format_with_encoding_fn
 {
 public:
 
-    cv_format_with_encoding_fn(strf::encoding<CharT> e)
+    cv_format_with_encoding_fn(const Encoding& e)
         : _encoding(e)
     {
     }
@@ -185,7 +188,7 @@ public:
 
     template <typename U>
     explicit cv_format_with_encoding_fn
-        ( const strf::cv_format_with_encoding_fn<CharT, U>& other ) noexcept
+        ( const strf::cv_format_with_encoding_fn<CharT, Encoding, U>& other ) noexcept
         : _encoding(other.get_encoding())
     {
     }
@@ -197,14 +200,14 @@ public:
     {
     }
 
-    strf::encoding<CharT> get_encoding() const
+    const Encoding& get_encoding() const
     {
         return _encoding;
     }
 
 private:
 
-    strf::encoding<CharT> _encoding;
+    const Encoding& _encoding;
 };
 
 template <typename CharT>
@@ -221,11 +224,11 @@ struct cv_format
     using fn = strf::cv_format_fn<CharT, T>;
 };
 
-template <typename CharT>
+template <typename CharT, typename Encoding>
 struct cv_format_with_encoding
 {
     template <typename T>
-    using fn = strf::cv_format_with_encoding_fn<CharT, T>;
+    using fn = strf::cv_format_with_encoding_fn<CharT, Encoding, T>;
 };
 
 template <typename CharT>
@@ -235,11 +238,11 @@ struct sani_format
     using fn = strf::cv_format_fn<CharT, T>;
 };
 
-template <typename CharT>
+template <typename CharT, typename Encoding>
 struct sani_format_with_encoding
 {
     template <typename T>
-    using fn = strf::cv_format_with_encoding_fn<CharT, T>;
+    using fn = strf::cv_format_with_encoding_fn<CharT, Encoding, T>;
 };
 
 template <typename CharIn>
@@ -347,7 +350,7 @@ public:
         preview.add_size(_len);
         _calc_width( preview
                    , _get_facet<strf::width_calculator_c<CharSize>, CharT>(fp)
-                   , _get_facet<strf::encoding_c<CharT>, CharT>(fp).as_underlying()
+                   , _get_facet<strf::encoding_c<CharT>, CharT>(fp)
                    , _get_facet<strf::encoding_error_c, CharT>(fp)
                    , _get_facet<strf::surrogate_policy_c, CharT>(fp) );
     }
@@ -356,10 +359,11 @@ public:
 
 private:
 
+    template <typename Encoding>
     constexpr STRF_HD void _calc_width
         ( strf::width_preview<true>& wpreview
         , const strf::fast_width<CharSize>&
-        , const strf::underlying_encoding<CharSize>&
+        , const Encoding&
         , strf::encoding_error
         , strf::surrogate_policy ) noexcept
     {
@@ -371,10 +375,11 @@ private:
         }
     }
 
+    template <typename Encoding>
     constexpr STRF_HD void _calc_width
         ( strf::width_preview<true>& wpreview
         , const strf::width_as_u32len<CharSize>&
-        , const strf::underlying_encoding<CharSize>& enc
+        , const Encoding& enc
         , strf::encoding_error
         , strf::surrogate_policy )
     {
@@ -389,23 +394,24 @@ private:
         }
     }
 
+    template <typename Encoding>
     constexpr STRF_HD void _calc_width
         ( strf::width_preview<true>& wpreview
         , const strf::width_calculator<CharSize>& wcalc
-        , const strf::underlying_encoding<CharSize>& enc
+        , const Encoding& enc
         , strf::encoding_error  enc_err
         , strf::surrogate_policy  allow_surr )
     {
         auto limit = wpreview.remaining_width();
         if (limit > 0) {
-            auto w = wcalc.width(limit, _str, _len, enc, enc_err, allow_surr);
+            auto w = wcalc.width
+                ( limit, _str, _len, enc.id(), enc.to_u32().transcode
+                , enc.codepoints_count, enc_err, allow_surr);
             if (w < limit) {
                 wpreview.subtract_width(w);
             } else {
                 wpreview.clear_remaining_width();
             }
-            // wcalc.subtract_width( wpreview, _str, _len
-            //                      , encoding, enc_err, allow_surr );
         }
     }
 
@@ -441,12 +447,14 @@ public:
         , strf::tag<CharT> )
         : _str(reinterpret_cast<const char_type*>(str.begin()), str.size())
         , _afmt(text_alignment)
-        , _encoding(_get_facet<strf::encoding_c<CharT>, CharT>(fp).as_underlying())
         , _enc_err(_get_facet<strf::encoding_error_c, CharT>(fp))
         , _allow_surr(_get_facet<strf::surrogate_policy_c, CharT>(fp))
     {
-        _init(preview, _get_facet<strf::width_calculator_c<CharSize>, CharT>(fp));
-        _calc_size(preview);
+        decltype(auto) enc =  _get_facet<strf::encoding_c<CharT>, CharT>(fp);
+        _encode_fill = enc.encode_fill;
+        _init( preview, _get_facet<strf::width_calculator_c<CharSize>, CharT>(fp)
+             , enc );
+        _calc_size(preview, enc);
     }
 
     STRF_HD ~fmt_string_printer();
@@ -457,7 +465,7 @@ private:
 
     strf::detail::simple_string_view<char_type> _str;
     strf::alignment_format_data _afmt;
-    const strf::underlying_encoding<CharSize>& _encoding;
+    strf::encode_fill_func<CharSize> _encode_fill;
     std::int16_t _fillcount = 0;
     const strf::encoding_error _enc_err;
     const strf::surrogate_policy _allow_surr;
@@ -469,34 +477,41 @@ private:
         return fp.template get_facet<Category, input_tag>();
     }
 
-    template <bool RequiringWidth>
+    template <bool RequiringWidth, typename Encoding>
     STRF_HD void _init( strf::width_preview<RequiringWidth>& preview
-                      , const strf::fast_width<CharSize>&);
+                      , const strf::fast_width<CharSize>&
+                      , const Encoding& enc );
 
-    template <bool RequiringWidth>
+    template <bool RequiringWidth, typename Encoding>
     STRF_HD void _init( strf::width_preview<RequiringWidth>& preview
-                      , const strf::width_as_u32len<CharSize>&);
+                      , const strf::width_as_u32len<CharSize>&
+                      , const Encoding& enc );
 
-    template <bool RequiringWidth>
+    template <bool RequiringWidth, typename Encoding>
     STRF_HD void _init( strf::width_preview<RequiringWidth>& preview
-                      , const strf::width_calculator<CharSize>&);
+                      , const strf::width_calculator<CharSize>&
+                      , const Encoding& enc );
 
-    constexpr STRF_HD void _calc_size(strf::size_preview<false>&) const
+    template <typename Encoding>
+    constexpr STRF_HD void _calc_size
+        (strf::size_preview<false>&, const Encoding&) const
     {
     }
 
-    STRF_HD void _calc_size(strf::size_preview<true>& preview) const
+    template <typename Encoding>
+    STRF_HD void _calc_size
+        (strf::size_preview<true>& preview, const Encoding& enc) const
     {
         preview.add_size(_str.length());
         if (_fillcount > 0) {
              preview.add_size( _fillcount
-                             * _encoding.char_size(_afmt.fill) );
+                             * enc.encoded_char_size(_afmt.fill) );
         }
     }
 
     STRF_HD void _write_str(strf::underlying_outbuf<CharSize>& ob) const;
     STRF_HD void _write_fill( strf::underlying_outbuf<CharSize>& ob
-                    , unsigned count ) const;
+                            , unsigned count ) const;
 };
 
 template<std::size_t CharSize>
@@ -505,10 +520,11 @@ STRF_HD fmt_string_printer<CharSize>::~fmt_string_printer()
 }
 
 template<std::size_t CharSize>
-template <bool RequiringWidth>
+template <bool RequiringWidth, typename Encoding>
 inline STRF_HD void fmt_string_printer<CharSize>::_init
     ( strf::width_preview<RequiringWidth>& preview
-    , const strf::fast_width<CharSize>&)
+    , const strf::fast_width<CharSize>&
+    , const Encoding& )
 {
     auto len = _str.length();
     if (_afmt.width > static_cast<std::ptrdiff_t>(len)) {
@@ -520,14 +536,14 @@ inline STRF_HD void fmt_string_printer<CharSize>::_init
 }
 
 template<std::size_t CharSize>
-template <bool RequiringWidth>
+template <bool RequiringWidth, typename Encoding>
 inline STRF_HD void fmt_string_printer<CharSize>::_init
     ( strf::width_preview<RequiringWidth>& preview
-    , const strf::width_as_u32len<CharSize>&)
+    , const strf::width_as_u32len<CharSize>&
+    , const Encoding& enc )
 {
-    auto cp_count = _encoding.codepoints_count( _str.begin()
-                                              , _str.end()
-                                              , _afmt.width );
+    auto cp_count = enc.codepoints_count
+        ( _str.begin(), _str.end(), _afmt.width );
     if (_afmt.width > static_cast<std::ptrdiff_t>(cp_count)) {
         _fillcount = _afmt.width - static_cast<std::int16_t>(cp_count);
         preview.subtract_width(_afmt.width);
@@ -538,10 +554,11 @@ inline STRF_HD void fmt_string_printer<CharSize>::_init
 }
 
 template <std::size_t CharSize>
-template <bool RequiringWidth>
+template <bool RequiringWidth, typename Encoding>
 inline STRF_HD void fmt_string_printer<CharSize>::_init
     ( strf::width_preview<RequiringWidth>& preview
-    , const strf::width_calculator<CharSize>& wc)
+    , const strf::width_calculator<CharSize>& wc
+    , const Encoding& enc )
 {
     strf::width_t wmax = _afmt.width;
     strf::width_t wdiff = 0;
@@ -549,9 +566,9 @@ inline STRF_HD void fmt_string_printer<CharSize>::_init
         wmax = preview.remaining_width();
         wdiff = preview.remaining_width() - _afmt.width;
     }
-    auto str_width = wc.width( wmax
-                             , _str.begin(), _str.length()
-                             , _encoding, _enc_err, _allow_surr );
+    auto str_width = wc.width
+        ( wmax, _str.begin(), _str.length(), enc.to_u32().transcode
+        , enc.codepoints_count, _enc_err, _allow_surr );
 
     strf::width_t fmt_width{_afmt.width};
     if (fmt_width > str_width) {
@@ -603,7 +620,7 @@ void STRF_HD fmt_string_printer<CharSize>::_write_fill
     ( strf::underlying_outbuf<CharSize>& ob
     , unsigned count ) const
 {
-    _encoding.encode_fill( ob, count, _afmt.fill, _enc_err, _allow_surr );
+    _encode_fill( ob, count, _afmt.fill, _enc_err, _allow_surr );
 }
 
 #if defined(STRF_SEPARATE_COMPILATION)

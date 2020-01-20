@@ -27,6 +27,21 @@
 // #pragma warning ( disable : 5045 )
 #endif // defined(_MSC_VER)
 
+
+#include <strf/detail/single_byte_encodings.hpp>
+#include <strf/detail/utf_encodings.hpp>
+
+// define default encoding:
+namespace strf  {
+template <typename CharT>
+struct encoding_c
+{
+    static constexpr bool constrainable = false;
+    static strf::utf<CharT> get_default() { return {}; }
+};
+}
+
+
 //
 // Input types
 //

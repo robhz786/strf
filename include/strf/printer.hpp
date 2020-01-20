@@ -7,43 +7,8 @@
 
 #include <strf/outbuf.hpp>
 #include <strf/width_t.hpp>
-#include <strf/detail/standard_lib_functions.hpp>
 
 namespace strf {
-
-class stringify_error: public std::exception
-{
-    using std::exception::exception;
-};
-
-class encoding_failure: public strf::stringify_error
-{
-    using strf::stringify_error::stringify_error;
-
-    const char* what() const noexcept override
-    {
-        return "Boost.Stringify: encoding conversion error";
-    }
-};
-
-namespace detail {
-
-inline STRF_HD void handle_encoding_failure()
-{
-#if defined(__cpp_exceptions) && !defined(__CUDA_ARCH__)
-    throw strf::encoding_failure();
-#else // defined(__cpp_exceptions)
-#ifndef __CUDA_ARCH__
-    std::abort();
-#else
-    asm("trap;");
-#endif
-#endif // defined(__cpp_exceptions) && !defined(__CUDA_ARCH__)
-}
-
-
-} // namespace detail
-
 
 template <std::size_t CharSize>
 class printer
@@ -58,63 +23,6 @@ public:
 
     STRF_HD virtual void print_to(strf::underlying_outbuf<CharSize>& ob) const = 0;
 };
-
-namespace detail {
-
-template<std::size_t CharSize>
-void STRF_HD write_fill_continuation
-    ( strf::underlying_outbuf<CharSize>& ob
-    , std::size_t count
-    , typename strf::underlying_outbuf<CharSize>::char_type ch )
-{
-    using char_type = typename strf::underlying_outbuf<CharSize>::char_type;
-
-    std::size_t space = ob.size();
-    STRF_ASSERT(space < count);
-    strf::detail::char_assign<char_type>(ob.pos(), space, ch);
-    count -= space;
-    ob.advance_to(ob.end());
-    ob.recycle();
-    while (ob.good()) {
-        space = ob.size();
-        if (count <= space) {
-            strf::detail::char_assign<char_type>(ob.pos(), count, ch);
-            ob.advance(count);
-            break;
-        }
-        strf::detail::char_assign(ob.pos(), space, ch);
-        count -= space;
-        ob.advance_to(ob.end());
-        ob.recycle();
-    }
-}
-
-template <std::size_t CharSize>
-inline STRF_HD void write_fill
-    ( strf::underlying_outbuf<CharSize>& ob
-    , std::size_t count
-    , typename strf::underlying_outbuf<CharSize>::char_type ch )
-{
-    using char_type = typename strf::underlying_outbuf<CharSize>::char_type;
-    if (count <= ob.size()) { // the common case
-        strf::detail::char_assign<char_type>(ob.pos(), count, ch);
-        ob.advance(count);
-    } else {
-        write_fill_continuation(ob, count, ch);
-    }
-}
-
-template<typename CharT>
-inline STRF_HD void write_fill
-    ( strf::basic_outbuf<CharT>& ob
-    , std::size_t count
-    , CharT ch )
-{
-    using u_char_type = typename strf::underlying_outbuf<sizeof(CharT)>::char_type;
-    write_fill(ob.as_underlying(), count, static_cast<u_char_type>(ch));
-}
-
-} // namespace detail
 
 struct string_input_tag_base
 {

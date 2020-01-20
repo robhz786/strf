@@ -28,7 +28,7 @@ foreach(
   facets_pack
   reserve
   width_t
-  width_calculator
+#  width_calculator
   utf_to_utf
   single_byte_encodings
   cstr_writer

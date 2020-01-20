@@ -13,33 +13,33 @@ constexpr auto as_signed(const T& value)
     return static_cast<typename std::make_signed<T>::type>(value);
 }
 strf::detail::simple_string_view<char>
-valid_input_sample(const strf::encoding<char>&)
+valid_input_sample(const strf::utf<char>&)
 {
     return {(const char*)u8"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", 19};
 }
 
 strf::detail::simple_string_view<char16_t>
-valid_input_sample(const strf::encoding<char16_t>&)
+valid_input_sample(const strf::utf<char16_t>&)
 {
     return {u"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", 10};
 }
 
 strf::detail::simple_string_view<char32_t>
-valid_input_sample(const strf::encoding<char32_t>&)
+valid_input_sample(const strf::utf<char32_t>&)
 {
     return {U"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", 8};
 }
 
 strf::detail::simple_string_view<wchar_t>
-valid_input_sample(const strf::encoding<wchar_t>&)
+valid_input_sample(const strf::utf<wchar_t>&)
 {
     return {L"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", (sizeof(wchar_t) == 2 ? 10 : 8)};
 }
 
-template <typename CharIn, typename CharOut>
+template <typename SrcEncoding, typename DestEncoding>
 void test_valid_input
-    ( const strf::encoding<CharIn>& ein
-    , const strf::encoding<CharOut>& eout )
+    ( const SrcEncoding& ein
+    , const DestEncoding& eout )
 {
     TEST_SCOPE_DESCRIPTION("from ", ein.name(), " to ", eout.name());
 
@@ -49,33 +49,33 @@ void test_valid_input
 }
 
 strf::detail::simple_string_view<char>
-sample_with_surrogates(const strf::encoding<char>&)
+sample_with_surrogates(const strf::utf<char>&)
 {
     return " \xED\xA0\x80 \xED\xAF\xBF \xED\xB0\x80 \xED\xBF\xBF";
 }
 strf::detail::simple_string_view<char16_t>
-sample_with_surrogates(const strf::encoding<char16_t>&)
+sample_with_surrogates(const strf::utf<char16_t>&)
 {
     static const char16_t arr[] = {' ', 0xD800, ' ', 0xDBFF, ' ', 0xDC00, ' ', 0xDFFF, 0};
     return {arr, 8};
 }
 strf::detail::simple_string_view<char32_t>
-sample_with_surrogates(const strf::encoding<char32_t>&)
+sample_with_surrogates(const strf::utf<char32_t>&)
 {
     static const char32_t arr[] = {' ', 0xD800, ' ', 0xDBFF, ' ', 0xDC00, ' ', 0xDFFF, 0};
     return {arr, 8};
 }
 strf::detail::simple_string_view<wchar_t>
-sample_with_surrogates(const strf::encoding<wchar_t>&)
+sample_with_surrogates(const strf::utf<wchar_t>&)
 {
     static const wchar_t arr[] = {' ', 0xD800, ' ', 0xDBFF, ' ', 0xDC00, ' ', 0xDFFF, 0};
     return {arr, 8};
 }
 
-template <typename CharIn, typename CharOut>
+template <typename SrcEncoding, typename DestEncoding>
 void test_allowed_surrogates
-    ( const strf::encoding<CharIn>& ein
-    , const strf::encoding<CharOut>& eout )
+    ( const SrcEncoding& ein
+    , const DestEncoding& eout )
 {
     TEST_SCOPE_DESCRIPTION("from ", ein.name()," to ", eout.name());
 
@@ -89,7 +89,7 @@ void test_allowed_surrogates
         (strf::sani(input, ein));
 }
 
-const auto& invalid_sequences(const strf::encoding<char>&)
+const auto& invalid_sequences(const strf::utf<char>&)
 {
     // based on https://www.unicode.org/versions/Unicode10.0.0/ch03.pdf
     // "Best Practices for Using U+FFFD"
@@ -118,7 +118,7 @@ const auto& invalid_sequences(const strf::encoding<char>&)
     return seqs;
 }
 
-const auto& invalid_sequences(const strf::encoding<char16_t>&)
+const auto& invalid_sequences(const strf::utf<char16_t>&)
 {
     using str_view = strf::detail::simple_string_view<char16_t>;
     using pair = std::pair<int,str_view>;
@@ -132,7 +132,7 @@ const auto& invalid_sequences(const strf::encoding<char16_t>&)
     return seqs;
 }
 
-const auto& invalid_sequences(const strf::encoding<char32_t>&)
+const auto& invalid_sequences(const strf::utf<char32_t>&)
 {
     using str_view = strf::detail::simple_string_view<char32_t>;
     using pair = std::pair<int,str_view>;
@@ -147,7 +147,7 @@ const auto& invalid_sequences(const strf::encoding<char32_t>&)
     return seqs;
 }
 
-const auto& invalid_sequences(const strf::encoding<wchar_t>&)
+const auto& invalid_sequences(const strf::utf<wchar_t>&)
 {
     using str_view = strf::detail::simple_string_view<wchar_t>;
     using pair = std::pair<int,str_view>;
@@ -164,13 +164,13 @@ const auto& invalid_sequences(const strf::encoding<wchar_t>&)
 }
 
 strf::detail::simple_string_view<char>
-replacement_char(const strf::encoding<char>&){ return (const char*)u8"\uFFFD";}
+replacement_char(const strf::utf<char>&){ return (const char*)u8"\uFFFD";}
 strf::detail::simple_string_view<char16_t>
-replacement_char(const strf::encoding<char16_t>&){ return u"\uFFFD";}
+replacement_char(const strf::utf<char16_t>&){ return u"\uFFFD";}
 strf::detail::simple_string_view<char32_t>
-replacement_char(const strf::encoding<char32_t>&){ return U"\uFFFD";}
+replacement_char(const strf::utf<char32_t>&){ return U"\uFFFD";}
 strf::detail::simple_string_view<wchar_t>
-replacement_char(const strf::encoding<wchar_t>&){ return L"\uFFFD";}
+replacement_char(const strf::utf<wchar_t>&){ return L"\uFFFD";}
 
 
 template <typename CharT>
@@ -196,17 +196,33 @@ strf::detail::simple_string_view<CharT> concatenate
     return {buff, it + 3};
 }
 
-template <typename ChIn, typename ChOut>
+template <class>
+struct get_template_parameter_impl;
+
+template <class C, template <class> class Tmpl>
+struct get_template_parameter_impl<Tmpl<C>>
+{
+    using type = C;
+};
+
+template <class T>
+using get_template_parameter
+= typename get_template_parameter_impl<T>::type;
+
+
+template <typename SrcEncoding, typename DestEncoding>
 void test_invalid_input
-    ( const strf::encoding<ChIn>& ein
-    , const strf::encoding<ChOut>& eout )
+    ( const SrcEncoding& ein
+    , const DestEncoding& eout )
 {
     TEST_SCOPE_DESCRIPTION("From invalid ", ein.name(), " to ", eout.name());
+    using src_char_type  = get_template_parameter<SrcEncoding>;
+    using dest_char_type = get_template_parameter<DestEncoding>;
 
-    const ChIn  suffix_in  [] = { 'd', 'e', 'f' };
-    const ChOut suffix_out [] = { 'd', 'e', 'f' };
-    const ChIn  prefix_in  [] = { 'a', 'b', 'c' };
-    const ChOut prefix_out [] = { 'a', 'b', 'c' };
+    const src_char_type  suffix_in  [] = { 'd', 'e', 'f' };
+    const dest_char_type suffix_out [] = { 'd', 'e', 'f' };
+    const src_char_type  prefix_in  [] = { 'a', 'b', 'c' };
+    const dest_char_type prefix_out [] = { 'a', 'b', 'c' };
 
     for(const auto& s : invalid_sequences(ein))
     {
@@ -214,14 +230,14 @@ void test_invalid_input
         const auto& seq = s.second;
 
         auto f = [](auto ch){
-            return ~strf::hex((unsigned)(std::make_unsigned_t<ChIn>)ch);
+            return ~strf::hex((unsigned)(std::make_unsigned_t<src_char_type>)ch);
         };
         TEST_SCOPE_DESCRIPTION
             .with(strf::mixedcase)
             ( "Sequence = ", strf::separated_range(seq, " ", f) );
 
-        ChIn buff_in[20];
-        ChOut buff_out[80];
+        src_char_type buff_in[20];
+        dest_char_type buff_out[80];
         auto input = concatenate(buff_in, prefix_in, seq, 1, suffix_in);
 
         {   // replace
@@ -322,7 +338,7 @@ int main()
 {
     const auto encodings = std::make_tuple
         ( strf::utf8<char>(), strf::utf16<char16_t>()
-        , strf::utf32<char32_t>(), strf::wchar_encoding());
+        , strf::utf32<char32_t>(), strf::utfw());
 
     for_all_combinations
         ( encodings

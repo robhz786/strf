@@ -122,7 +122,7 @@ namespace detail {
 template<std::size_t CharSize>
 STRF_HD void print_split
     ( strf::underlying_outbuf<CharSize>& ob
-    , const strf::underlying_encoding<CharSize>& enc
+    , strf::encode_fill_func<CharSize> encode_fill
     , unsigned fillcount
     , char32_t fillchar
     , std::ptrdiff_t split_pos
@@ -130,13 +130,13 @@ STRF_HD void print_split
     , strf::surrogate_policy allow_surr)
 {
     (void) split_pos;
-    enc.encode_fill(ob, fillcount, fillchar, enc_err, allow_surr);
+    encode_fill(ob, fillcount, fillchar, enc_err, allow_surr);
 }
 
 template<std::size_t CharSize, typename Printer, typename ... Printers>
 STRF_HD void print_split
     ( strf::underlying_outbuf<CharSize>& ob
-    , const strf::underlying_encoding<CharSize>& enc
+    , strf::encode_fill_func<CharSize> encode_fill
     , unsigned fillcount
     , char32_t fillchar
     , std::ptrdiff_t split_pos
@@ -147,9 +147,10 @@ STRF_HD void print_split
 {
     if (split_pos > 0) {
         p.print_to(ob);
-        print_split(ob, enc, fillcount, fillchar, split_pos - 1, enc_err, allow_surr, printers...);
+        print_split( ob, encode_fill, fillcount, fillchar, split_pos - 1
+                   , enc_err, allow_surr, printers... );
     } else {
-        enc.encode_fill(ob, fillcount, fillchar, enc_err, allow_surr);
+        encode_fill(ob, fillcount, fillchar, enc_err, allow_surr);
         strf::detail::write_args(ob, p, printers...);
     }
 }
@@ -159,14 +160,14 @@ STRF_HD void print_split
     ( const strf::detail::printers_tuple_impl
         < CharSize, std::index_sequence<I...>, Printers... >& printers
     , strf::underlying_outbuf<CharSize>& ob
-    , const strf::underlying_encoding<CharSize>& enc
+    , strf::encode_fill_func<CharSize> encode_fill
     , unsigned fillcount
     , char32_t fillchar
     , std::ptrdiff_t split_pos
     , strf::encoding_error enc_err
     , strf::surrogate_policy allow_surr )
 {
-    strf::detail::print_split( ob, enc, fillcount, fillchar, split_pos, enc_err
+    strf::detail::print_split( ob, encode_fill, fillcount, fillchar, split_pos, enc_err
                              , allow_surr, printers.template get<I>()... );
 }
 
@@ -187,10 +188,11 @@ public:
         , strf::tag<CharT> tag_char)
         : _split_pos(split_pos)
         , _afmt(afmt)
-        , _encoding(_get_facet<strf::encoding_c<CharT>>(fp).as_underlying())
         , _enc_err(_get_facet<strf::encoding_error_c>(fp))
         , _allow_surr(_get_facet<strf::surrogate_policy_c>(fp))
     {
+        decltype(auto) enc = _get_facet<strf::encoding_c<CharT>>(fp);
+        _encode_fill_func = enc.encode_fill;
         strf::print_preview<ReqSize, true> p { _afmt.width };
         new (_printers_ptr()) _printers_tuple { fp, p, args, tag_char };
         if (p.remaining_width() > 0) {
@@ -199,7 +201,7 @@ public:
         STRF_IF_CONSTEXPR (ReqSize) {
             preview.add_size(p.get_size());
             if (_fillcount > 0) {
-                auto fcharsize = _encoding.char_size(_afmt.fill);
+                auto fcharsize = enc.encoded_char_size(_afmt.fill);
                 preview.add_size(_fillcount * fcharsize);
             }
         }
@@ -215,10 +217,11 @@ public:
         , strf::tag<CharT> )
         : _split_pos(split_pos)
         , _afmt(afmt)
-        , _encoding(_get_facet<strf::encoding_c<CharT>>(fp).as_underlying())
         , _enc_err(_get_facet<strf::encoding_error_c>(fp))
         , _allow_surr(_get_facet<strf::surrogate_policy_c>(fp))
     {
+        decltype(auto) enc = _get_facet<strf::encoding_c<CharT>>(fp);
+        _encode_fill_func = enc.encode_fill;
         if (_afmt.width < 0) {
             _afmt.width = 0;
         }
@@ -239,7 +242,8 @@ public:
         STRF_IF_CONSTEXPR (ReqSize) {
             preview.add_size(p.get_size());
             if (_fillcount > 0) {
-                preview.add_size(_fillcount * _encoding.char_size(_afmt.fill));
+                auto fcharsize = enc.encoded_char_size(_afmt.fill);
+                preview.add_size( _fillcount * fcharsize);
             }
         }
     }
@@ -288,7 +292,7 @@ private:
     _printers_tuple_storage _pool;
     std::ptrdiff_t _split_pos;
     strf::alignment_format_data _afmt;
-    const strf::underlying_encoding<CharSize>& _encoding;
+    strf::encode_fill_func<CharSize> _encode_fill_func;
     strf::width_t _width;
     std::int16_t _fillcount = 0;
     strf::encoding_error _enc_err;
@@ -309,27 +313,20 @@ private:
         return fp.template get_facet<Category, strf::aligned_join_t>();
     }
 
-    STRF_HD std::size_t _fill_length() const
-    {
-        if (_fillcount > 0) {
-            return _fillcount * _encoding.char_size(_afmt.fill);
-        }
-        return 0;
-    }
-
     STRF_HD void _write_fill(strf::underlying_outbuf<CharSize>& ob, int count) const
     {
-        _encoding.encode_fill(ob, count, _afmt.fill, _enc_err, _allow_surr);
+        _encode_fill_func(ob, count, _afmt.fill, _enc_err, _allow_surr);
     }
 
     STRF_HD void _print_split(strf::underlying_outbuf<CharSize>& ob) const;
 };
 
 template<std::size_t CharSize, typename ... Printers>
-STRF_HD void aligned_join_printer_impl<CharSize, Printers...>::_print_split(strf::underlying_outbuf<CharSize>& ob) const
+STRF_HD void aligned_join_printer_impl<CharSize, Printers...>::_print_split
+    ( strf::underlying_outbuf<CharSize>& ob ) const
 {
-    strf::detail::print_split( _printers(), ob, _encoding, _fillcount, _afmt.fill
-                             , _split_pos, _enc_err, _allow_surr );
+    strf::detail::print_split( _printers(), ob, _encode_fill_func, _fillcount
+                             , _afmt.fill, _split_pos, _enc_err, _allow_surr );
 }
 
 template<typename CharT, typename FPack, typename Preview, typename ... Args>

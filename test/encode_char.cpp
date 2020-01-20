@@ -15,19 +15,20 @@ struct fixture
     CharT* const dest_end = buff + buff_size;
 };
 
-template <typename CharT>
-void test_char( strf::encoding<CharT> enc
+template <typename CharT, typename Encoding>
+void test_char( const Encoding& enc
               , char32_t ch
               , std::basic_string<CharT> encoded_char )
 {
     TEST_SCOPE_DESCRIPTION( "encoding: ", enc.name()
                           , "; char: \\u'", strf::hex((unsigned)ch), '\'');
-    CharT buff[100];
 
+    strf::underlying_outbuf_char_type<sizeof(CharT)> buff[100];
     auto it = enc.encode_char(buff, ch);
 
     TEST_EQ(std::size_t(it - buff), encoded_char.size());
-    TEST_TRUE(std::equal(encoded_char.begin(), encoded_char.end(), buff));
+    TEST_TRUE( std::equal( encoded_char.begin(), encoded_char.end()
+                         , reinterpret_cast<const CharT*>(buff) ));
 }
 
 int main()
@@ -64,14 +65,17 @@ int main()
         test_char<char>(strf::iso_8859_3<char>(), 0x02D8, "\xA2");
         test_char<char>(strf::iso_8859_15<char>(), 0x20AC, "\xA4");
 
-        for (auto enc : { strf::windows_1252<char>()
-                        , strf::iso_8859_1<char>()
-                        , strf::iso_8859_3<char>()
-                        , strf::iso_8859_15<char>() } )
-        {
-            test_char<char>(enc, 'a' , "a");
-            test_char<char>(enc, 0x800 , "?");
-        }
+        test_char<char>(strf::ascii<char>()       , 'a' , "a");
+        test_char<char>(strf::windows_1252<char>(), 'a' , "a");
+        test_char<char>(strf::iso_8859_1<char>()  , 'a' , "a");
+        test_char<char>(strf::iso_8859_3<char>()  , 'a' , "a");
+        test_char<char>(strf::iso_8859_15<char>() , 'a' , "a");
+
+        test_char<char>(strf::ascii<char>()       , 0x800 , "?");
+        test_char<char>(strf::windows_1252<char>(), 0x800 , "?");
+        test_char<char>(strf::iso_8859_1<char>()  , 0x800 , "?");
+        test_char<char>(strf::iso_8859_3<char>()  , 0x800 , "?");
+        test_char<char>(strf::iso_8859_15<char>() , 0x800 , "?");
     }
 
 

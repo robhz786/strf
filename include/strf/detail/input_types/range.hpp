@@ -225,14 +225,17 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::_preview(Preview& previe
         decltype(auto) wcalc
             = _get_facet<strf::width_calculator_c<sizeof(CharT)>>(_fp);
         decltype(auto) encoding
-            = _get_facet<strf::encoding_c<CharT>>(_fp).as_underlying();
+            = _get_facet<strf::encoding_c<CharT>>(_fp);
         auto enc_err = _get_facet<strf::encoding_error_c>(_fp);
         auto allow_surr = _get_facet<strf::surrogate_policy_c>(_fp);
 
         using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
         auto dw = wcalc.width( preview.remaining_width()
                              , reinterpret_cast<const uchar*>(_sep_begin), _sep_len
-                             , encoding, enc_err, allow_surr );
+                             , encoding.id()
+                             , encoding.to_u32().transcode
+                             , encoding.codepoints_count
+                             , enc_err, allow_surr );
         if (dw != 0) {
             if (count > UINT32_MAX) {
                 preview.clear_remaining_width();
@@ -436,15 +439,17 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, ForwardIt, Fmts ...>::_pr
     if (Preview::width_required) {
         decltype(auto) wcalc
             = _get_facet<strf::width_calculator_c<sizeof(CharT)>>(_fp);
-        decltype(auto) encoding
-            = _get_facet<strf::encoding_c<CharT>>(_fp).as_underlying();
+        decltype(auto) encoding = _get_facet<strf::encoding_c<CharT>>(_fp);
         auto enc_err = _get_facet<strf::encoding_error_c>(_fp);
         auto allow_surr = _get_facet<strf::surrogate_policy_c>(_fp);
 
         using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
         auto dw = wcalc.width( preview.remaining_width()
                              , reinterpret_cast<const uchar*>(r.sep_begin), r.sep_len
-                             , encoding, enc_err, allow_surr );
+                             , encoding.id()
+                             , encoding.to_u32().transcode
+                             , encoding.codepoints_count
+                             , enc_err, allow_surr );
         if (dw != 0) {
             if (count > UINT32_MAX) {
                 preview.clear_remaining_width();
@@ -619,17 +624,18 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
         return;
     }
     if (Preview::width_required) {
-        decltype(auto) wcalc
-            = _get_facet<strf::width_calculator_c<sizeof(CharT)>>(_fp);
-        decltype(auto) encoding
-            = _get_facet<strf::encoding_c<CharT>>(_fp).as_underlying();
+        decltype(auto) wcalc = _get_facet<strf::width_calculator_c<sizeof(CharT)>>(_fp);
+        decltype(auto) encoding = _get_facet<strf::encoding_c<CharT>>(_fp);
         auto enc_err = _get_facet<strf::encoding_error_c>(_fp);
         auto allow_surr = _get_facet<strf::surrogate_policy_c>(_fp);
 
         using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
         auto dw = wcalc.width( preview.remaining_width()
                              , reinterpret_cast<const uchar*>(_sep_begin), _sep_len
-                             , encoding, enc_err, allow_surr );
+                             , encoding.id()
+                             , encoding.to_u32().transcode
+                             , encoding.codepoints_count
+                             , enc_err, allow_surr );
         if (dw != 0) {
             if (count > UINT32_MAX) {
                 preview.clear_remaining_width();

@@ -439,8 +439,6 @@ int main()
         auto p1 = strf::monotonic_grouping<10>{1}.thousands_sep(',');
 
         // check whether it correctly selects the shortest representation
-        TEST("_______________1,0,0").with(p1) (j(100.0));
-        TEST("_______________1e+03").with(p1) (j(1000.0));
         TEST("_____________1,0,0,0").with(p1) (j(strf::fixed(1000.0)));
         TEST("________1.000005e+05").with(p1) (j(100000.5));
         TEST("_________1,0,0,0,0.5").with(p1) (j(10000.5));
