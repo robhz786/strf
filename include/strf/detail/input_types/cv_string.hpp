@@ -36,7 +36,7 @@ public:
         static_assert(sizeof(DestChar) == DestCharSize);
 
         init_( preview
-             , _get_facet<strf::width_calculator_c<SrcCharSize>, SrcChar>(fp)
+             , _get_facet<strf::width_calculator_c, SrcChar>(fp)
              , src_enc
              , _get_facet<strf::encoding_c<DestChar>, SrcChar>(fp) );
     }
@@ -76,7 +76,9 @@ private:
             _u32_to_dest = dest_enc.from_u32().transcode;
         }
         STRF_IF_CONSTEXPR (Preview::width_required) {
-            _calc_width(preview, wcalc, src_enc);
+            auto w = wcalc.width( src_enc, preview.remaining_width(), _str, _len
+                                , _enc_err, _allow_surr );
+            preview.subtract_width(w);
         }
         STRF_IF_CONSTEXPR (Preview::size_required) {
             strf::transcode_size_func<SrcCharSize>  transcode_size
@@ -93,43 +95,6 @@ private:
             preview.add_size(s);
         }
     }
-
-    template <typename SrcEncoding>
-    STRF_HD constexpr void _calc_width
-        ( strf::width_preview<false>&
-        , const strf::width_calculator<SrcCharSize>&
-        , const SrcEncoding& ) noexcept
-    {
-    }
-
-    template <typename SrcEncoding>
-    STRF_HD constexpr void _calc_width
-        ( strf::width_preview<true>& wpreview
-        , const strf::fast_width<SrcCharSize>&
-        , const SrcEncoding& enc ) noexcept
-    {
-        _count_codepoints(wpreview, enc);
-    }
-
-    template <typename SrcEncoding>
-    STRF_HD constexpr void _calc_width
-        ( strf::width_preview<true>& wpreview
-        , const strf::width_as_u32len<SrcCharSize>&
-        , const SrcEncoding& enc )
-    {
-        _count_codepoints(wpreview, enc);
-    }
-
-    template <typename SrcEncoding>
-    STRF_HD constexpr void _count_codepoints
-        ( strf::width_preview<true>& wpreview
-        , const SrcEncoding& enc );
-
-    template <typename SrcEncoding>
-    STRF_HD constexpr void _calc_width
-        ( strf::width_preview<true>& wpreview
-        , const strf::width_calculator<SrcCharSize>& wcalc
-        , const SrcEncoding& enc );
 
     STRF_HD bool can_transcode_directly() const
     {
@@ -152,43 +117,6 @@ private:
         return fp.template get_facet<Category, input_tag>();
     }
 };
-
-template <std::size_t SrcCharSize, std::size_t DestCharSize>
-template <typename SrcEncoding>
-STRF_HD constexpr void cv_string_printer<SrcCharSize, DestCharSize>::_count_codepoints
-    ( strf::width_preview<true>& wpreview
-    , const SrcEncoding& enc )
-{
-    auto limit = wpreview.remaining_width();
-    if (limit > 0) {
-        auto count = enc.codepoints_count(_str, _str + _len, limit.ceil());
-        if (static_cast<std::ptrdiff_t>(count) < limit.ceil()) {
-            wpreview.subtract_width(static_cast<std::int16_t>(count));
-        } else {
-            wpreview.clear_remaining_width();
-        }
-    }
-}
-
-template <std::size_t SrcCharSize, std::size_t DestCharSize>
-template <typename SrcEncoding>
-STRF_HD constexpr void cv_string_printer<SrcCharSize, DestCharSize>::_calc_width
-    ( strf::width_preview<true>& wpreview
-    , const strf::width_calculator<SrcCharSize>& wcalc
-    , const SrcEncoding& enc )
-{
-    auto limit = wpreview.remaining_width();
-    if (limit > 0) {
-        auto w = wcalc.width
-            ( limit, _str, _len, enc.id(), enc.to_u32().transcode
-            , enc.codepoints_count, _enc_err, _allow_surr);
-        if (w < limit) {
-            wpreview.subtract_width(w);
-        } else {
-            wpreview.clear_remaining_width();
-        }
-    }
-}
 
 template<std::size_t SrcCharSize, std::size_t DestCharSize>
 STRF_HD void cv_string_printer<SrcCharSize, DestCharSize>::print_to
@@ -227,7 +155,7 @@ public:
         static_assert(sizeof(SrcChar) == SrcCharSize);
         static_assert(sizeof(DestChar) == DestCharSize);
         init_( preview
-             , _get_facet<strf::width_calculator_c<SrcCharSize>, SrcChar>(fp)
+             , _get_facet<strf::width_calculator_c, SrcChar>(fp)
              , src_enc
              , _get_facet<strf::encoding_c<DestChar>, SrcChar>(fp) );
     }
@@ -291,40 +219,22 @@ void STRF_HD fmt_cv_string_printer<SrcCharSize, DestCharSize>::init_
     static_assert(SrcEnc::char_size == SrcCharSize);
     static_assert(DestEnc::char_size == DestCharSize);
 
-    decltype(auto) transcoder = get_transcoder(src_enc, dest_enc);
     _encode_fill = dest_enc.encode_fill;
+    decltype(auto) transcoder = get_transcoder(src_enc, dest_enc);
     _transcode = transcoder.transcode;
     if (_transcode == nullptr) {
         _src_to_u32 = src_enc.to_u32().transcode;
         _u32_to_dest = dest_enc.from_u32().transcode;
     }
-    int fillcount = 0;
-    STRF_IF_CONSTEXPR (Preview::width_required) {
-        if ( preview.remaining_width().ceil() > _afmt.width) {
-            auto strw = wcalc.width
-                ( preview.remaining_width().ceil(), _str, _len, src_enc.id()
-                , src_enc.to_u32().transcode, src_enc.codepoints_count
-                , _enc_err, _allow_surr );
-            if (_afmt.width > strw) {
-                fillcount = (_afmt.width - strw).round();
-            }
-            preview.subtract_width(strw + fillcount);
-        } else {
-            preview.clear_remaining_width();
-            auto strw = wcalc.width
-                ( _afmt.width, _str, _len, src_enc.id()
-                , src_enc.to_u32().transcode, src_enc.codepoints_count
-                , _enc_err, _allow_surr );
-            fillcount = (_afmt.width - strw).round();
-        }
-    } else {
-        auto strw = wcalc.width
-            ( _afmt.width, _str, _len, src_enc.id()
-            , src_enc.to_u32().transcode, src_enc.codepoints_count
-            , _enc_err, _allow_surr );
-        fillcount = (_afmt.width - strw).round();
-    }
-    if (fillcount > 0) {
+    unsigned fillcount = 0;
+    strf::width_t fmt_width = _afmt.width;
+    strf::width_t limit =
+        ( Preview::width_required && preview.remaining_width() > fmt_width
+        ? preview.remaining_width()
+        : fmt_width );
+    auto strw = wcalc.width(src_enc, limit, _str, _len , _enc_err, _allow_surr);
+    if (fmt_width > strw) {
+        fillcount = (fmt_width - strw).round();
         switch(_afmt.alignment) {
             case strf::text_alignment::left:
                 _left_fillcount = 0;
@@ -340,6 +250,11 @@ void STRF_HD fmt_cv_string_printer<SrcCharSize, DestCharSize>::init_
                 _left_fillcount = fillcount;
                 _right_fillcount = 0;
         }
+        preview.subtract_width(strw + fillcount);
+    } else {
+        _right_fillcount = 0;
+        _left_fillcount = 0;
+        preview.subtract_width(strw);
     }
     STRF_IF_CONSTEXPR (Preview::size_required) {
         std::size_t s = 0;

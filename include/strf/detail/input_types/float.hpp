@@ -993,9 +993,6 @@ STRF_HD std::size_t punct_double_printer<CharSize>::_content_size() const
         return 1 + _data.showsign + _decimal_point_size
             + (-_data.e10) +_data.extra_zeros;
     }
-
-    auto idigcount = (int)_data.m10_digcount + _data.e10;
-    STRF_ASSERT(idigcount > 0);
     return _data.showsign + _sep_count * _sep_size + _decimal_point_size
         + _data.m10_digcount + _data.extra_zeros + (_data.e10 > 0) * _data.e10;
 }

@@ -51,7 +51,7 @@ int main()
 
     static_assert
         ( strf::detail::all_are_constrainable
-          < strf::width_calculator<1>
+          < strf::fast_width
           , strf::numpunct<10> >
           :: value
         , "these facets should be constrainable");
@@ -59,7 +59,7 @@ int main()
     static_assert
         ( ! strf::detail::all_are_constrainable
           < strf::utf8<char>
-          , strf::width_calculator<2>
+          , strf::fast_width
           , strf::numpunct<10> >
           :: value
         , "encoding shall not be constrainable");

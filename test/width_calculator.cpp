@@ -44,27 +44,27 @@ int main()
 
 
     TEST(u8"         \u2E3A\u2E3A\u2014")
-        .with( strf::width_as_u32len<1>{} )
+        .with( strf::width_as_u32len{} )
         (strf::right(u8"\u2E3A\u2E3A\u2014", 12));
 
     TEST( u"         \u2E3A\u2E3A\u2014")
-        .with(strf::width_as_u32len<2>{})
+        .with(strf::width_as_u32len{})
         (strf::right( u"\u2E3A\u2E3A\u2014", 12));
 
     TEST( U"         \u2E3A\u2E3A\u2014")
-        .with(strf::width_as_u32len<4>{})
+        .with(strf::width_as_u32len{})
         (strf::right( U"\u2E3A\u2E3A\u2014", 12));
 
     TEST( L"         \u2E3A\u2E3A\u2014")
-        .with(strf::width_as_u32len<sizeof(wchar_t)>{})
+        .with(strf::width_as_u32len{})
         (strf::right( L"\u2E3A\u2E3A\u2014", 12));
 
     TEST(u8"         \u2E3A\u2E3A\u2014")
-        .with(strf::width_as_u32len<1>{})
+        .with(strf::width_as_u32len{})
         (strf::cv(u8"\u2E3A\u2E3A\u2014") > 12);
 
     TEST( u"         \u2E3A\u2E3A\u2014")
-        .with(strf::width_as_u32len<2>{})
+        .with(strf::width_as_u32len{})
         (strf::cv(u"\u2E3A\u2E3A\u2014") > 12);
 
 
@@ -77,7 +77,7 @@ int main()
     TEST( U"         \u2E3A\u2E3A\u2014")
         (strf::fmt( U"\u2E3A\u2E3A\u2014") > 12);
 
-    TEST( u"         \u2E3A\u2E3A\u2014")
+    TEST( u"   \u2E3A\u2E3A\u2014")
         (strf::cv(u8"\u2E3A\u2E3A\u2014") > 12);
 
     TEST(u8"         \u2E3A\u2E3A\u2014")

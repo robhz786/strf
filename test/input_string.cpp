@@ -114,7 +114,7 @@ int main()
 
         TEST("....--?--\x80--")
             .with(strf::windows_1252<char>())
-            (strf::right("--\xC9\x90--\xE2\x82\xAC--", 12, U'.').cv(strf::utf8<char>()));
+            (strf::right("--\xC9\x90--\xE2\x82\xAC--", 15, U'.').cv(strf::utf8<char>()));
     }
 
     {   // convertion from utf32

@@ -9,64 +9,30 @@
 
 namespace strf {
 
-template <std::size_t CharSize> struct width_calculator_c;
-template <std::size_t CharSize> class width_calculator;
+struct width_calculator_c;
 
-template <std::size_t CharSize>
-class width_calculator
+class fast_width final
 {
 public:
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
-    using category = strf::width_calculator_c<CharSize>;
+    using category = width_calculator_c;
 
-    virtual STRF_HD strf::width_t width_of
-        ( char_type ch
-        , strf::decode_single_char_func<CharSize> decode_fn ) const = 0;
-
-    virtual STRF_HD strf::width_t width
-        ( strf::width_t limit
-        , const char_type* str
-        , std::size_t str_len
-        , strf::encoding_id enc_id
-        , strf::transcode_func<CharSize, 4> transcode_fn
-        , strf::codepoints_count_func<CharSize> cp_count_fn
-        , strf::encoding_error enc_err
-        , strf::surrogate_policy allow_surr ) const = 0;
-};
-
-template <std::size_t CharSize>
-class fast_width final: public strf::width_calculator<CharSize>
-{
-public:
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
-
-    STRF_HD strf::width_t width_of
-        ( char_type ch
-        , strf::decode_single_char_func<CharSize> decode_fn ) const  override
+    template <typename Encoding>
+    STRF_HD strf::width_t width
+        ( const Encoding&
+        , strf::underlying_outbuf_char_type<Encoding::char_size> ) const noexcept
     {
-        (void) ch;
-        (void) decode_fn;
         return 1;
     }
 
-    STRF_HD strf::width_t width
-        ( strf::width_t limit
-        , const char_type* str
+    template <typename Encoding>
+    constexpr STRF_HD strf::width_t width
+        ( const Encoding&
+        , strf::width_t
+        , const strf::underlying_outbuf_char_type<Encoding::char_size>*
         , std::size_t str_len
-        , strf::encoding_id enc_id
-        , strf::transcode_func<CharSize, 4> transcode_fn
-        , strf::codepoints_count_func<CharSize> cp_count_fn
-        , strf::encoding_error enc_err
-        , strf::surrogate_policy allow_surr ) const override
+        , strf::encoding_error
+        , strf::surrogate_policy ) const noexcept
     {
-        (void) limit;
-        (void) str;
-        (void) enc_id;
-        (void) transcode_fn;
-        (void) cp_count_fn;
-        (void) enc_err;
-        (void) allow_surr;
-
         if (str_len < INT16_MAX) {
             return static_cast<std::int16_t>(str_len);
         }
@@ -74,41 +40,32 @@ public:
     }
 };
 
-template <std::size_t CharSize>
-class width_as_u32len final: public strf::width_calculator<CharSize>
+class width_as_u32len final
 {
 public:
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using category = width_calculator_c;
 
-    virtual STRF_HD strf::width_t width_of
-        ( char_type ch
-        , strf::decode_single_char_func<CharSize> decode_fn ) const override
+    template <typename Encoding>
+    constexpr STRF_HD strf::width_t width
+        ( const Encoding&
+        , strf::underlying_outbuf_char_type<Encoding::char_size> ) const noexcept
     {
-        (void) ch;
-        (void) decode_fn;
         return 1;
     }
 
-
+    template <typename Encoding>
     STRF_HD strf::width_t width
-        ( strf::width_t limit
-        , const char_type* str
+        ( const Encoding& enc
+        , strf::width_t limit
+        , const strf::underlying_outbuf_char_type<Encoding::char_size>* str
         , std::size_t str_len
-        , strf::encoding_id enc_id
-        , strf::transcode_func<CharSize, 4> transcode_fn
-        , strf::codepoints_count_func<CharSize> cp_count_fn
-        , strf::encoding_error enc_err
-        , strf::surrogate_policy allow_surr ) const override
+        , strf::encoding_error
+        , strf::surrogate_policy ) const
     {
-        (void) limit;
         (void) str;
-        (void) enc_id;
-        (void) transcode_fn;
-        (void) enc_err;
-        (void) allow_surr;
 
         if (limit > 0) {
-            auto count = cp_count_fb(str, str + str_len, limit.ceil());
+            auto count = enc.codepoints_count(str, str + str_len, limit.ceil());
             if (count < INT16_MAX) {
                 return static_cast<std::int16_t>(count);
             }
@@ -118,15 +75,13 @@ public:
     }
 };
 
-template <std::size_t CharSize>
 struct width_calculator_c
 {
     static constexpr bool constrainable = true;
 
-    static STRF_HD const strf::fast_width<CharSize>& get_default()
+    static constexpr STRF_HD strf::fast_width get_default() noexcept
     {
-        static const strf::fast_width<CharSize> x{};
-        return x;
+        return {};
     }
 };
 
