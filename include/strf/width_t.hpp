@@ -224,7 +224,7 @@ constexpr STRF_HD strf::width_t checked_subtract( strf::width_t lhs
 }
 
 constexpr STRF_HD strf::width_t checked_mul( strf::width_t w
-                                            , std::uint32_t x ) noexcept
+                                           , std::size_t x ) noexcept
 {
     std::int64_t tmp = x;
     tmp *= w.underlying_value();

@@ -856,7 +856,7 @@ STRF_HD void punct_double_printer<CharSize>::init_
         if (! _punct.no_group_separation(int_dig_count)) {
             auto sep_validation = enc.validate(_punct.thousands_sep());
             if (sep_validation != strf::invalid_char_len) {
-                _sep_size = sep_validation;
+                _sep_size = static_cast<unsigned>(sep_validation);
                 _sep_count = _punct.thousands_sep_count(int_dig_count);
                 if (general_format) {
                     bool e10neg = _data.e10 < 0;
@@ -888,9 +888,9 @@ STRF_HD void punct_double_printer<CharSize>::init_
             enc.encode_char(&ch, _decimal_point);
             _decimal_point = ch;
         } else if (validation != strf::invalid_char_len) {
-            _decimal_point_size = validation;
+            _decimal_point_size = static_cast<unsigned>(validation);
         } else {
-            _decimal_point_size = enc.replacement_char_size();
+            _decimal_point_size = static_cast<unsigned>(enc.replacement_char_size());
             _decimal_point = enc.replacement_char();
         }
     }
@@ -1636,7 +1636,7 @@ STRF_HD void fast_punct_double_printer<CharSize>::init_(const Encoding& enc)
                         showpoint = _m10_digcount != 1;
                         goto init_decimal_point;
                     }
-                    _sep_size = sep_validation;
+                    _sep_size = static_cast<unsigned>(sep_validation);
                     if (_sep_size == 1) {
                         _encode_char(&_little_sep, _punct.thousands_sep());
                     }
@@ -1662,9 +1662,9 @@ STRF_HD void fast_punct_double_printer<CharSize>::init_(const Encoding& enc)
             enc.encode_char(&ch, _decimal_point);
             _decimal_point = ch;
         } else if (validation != strf::invalid_char_len) {
-            _decimal_point_size = validation;
+            _decimal_point_size = static_cast<unsigned>(validation);
         } else {
-            _decimal_point_size = enc.replacement_char_size();
+            _decimal_point_size = static_cast<unsigned>(enc.replacement_char_size());
             _decimal_point = enc.replacement_char();
         }
     }

@@ -335,6 +335,7 @@ public:
         : _str(reinterpret_cast<const char_type*>(str.begin()))
         , _len(str.size())
     {
+        (void)fp;
         STRF_IF_CONSTEXPR(Preview::width_required) {
             decltype(auto) wcalc = _get_facet<strf::width_calculator_c, CharT>(fp);
             auto w = wcalc.width( _get_facet<strf::encoding_c<CharT>, CharT>(fp)
@@ -428,7 +429,7 @@ inline STRF_HD void fmt_string_printer<CharSize>::_init
     ( Preview& preview, const WCalc& wcalc, const Encoding& enc )
 {
     _encode_fill = enc.encode_fill;
-    unsigned fillcount = 0;
+    std::uint16_t fillcount = 0;
     strf::width_t fmt_width = _afmt.width;
     strf::width_t limit =
         ( Preview::width_required && preview.remaining_width() > fmt_width
@@ -443,7 +444,7 @@ inline STRF_HD void fmt_string_printer<CharSize>::_init
                 _right_fillcount = fillcount;
                 break;
             case strf::text_alignment::center: {
-                auto halfcount = fillcount / 2;
+                std::uint16_t halfcount = fillcount >> 1;
                 _left_fillcount = halfcount;
                 _right_fillcount = fillcount - halfcount;
                 break;

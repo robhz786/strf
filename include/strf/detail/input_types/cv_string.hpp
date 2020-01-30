@@ -32,8 +32,8 @@ public:
         , _enc_err(_get_facet<strf::encoding_error_c, SrcChar>(fp))
         , _allow_surr(_get_facet<strf::surrogate_policy_c, SrcChar>(fp))
     {
-        static_assert(sizeof(SrcChar) == SrcCharSize);
-        static_assert(sizeof(DestChar) == DestCharSize);
+        static_assert(sizeof(SrcChar) == SrcCharSize, "Incompatible char type");
+        static_assert(sizeof(DestChar) == DestCharSize, "Incompatible char type");
 
         init_( preview
              , _get_facet<strf::width_calculator_c, SrcChar>(fp)
@@ -67,8 +67,8 @@ private:
     {
         (void) wcalc;
 
-        static_assert(SrcEncoding::char_size == SrcCharSize);
-        static_assert(DestEncoding::char_size == DestCharSize);
+        static_assert(SrcEncoding::char_size == SrcCharSize, "Incompatible char type");
+        static_assert(DestEncoding::char_size == DestCharSize, "Incompatible char type");
         decltype(auto) transcoder = get_transcoder(src_enc, dest_enc);
         _transcode = transcoder.transcode;
         if (_transcode == nullptr) {
@@ -152,8 +152,8 @@ public:
         , _enc_err(_get_facet<strf::encoding_error_c, SrcChar>(fp))
         , _allow_surr(_get_facet<strf::surrogate_policy_c, SrcChar>(fp))
     {
-        static_assert(sizeof(SrcChar) == SrcCharSize);
-        static_assert(sizeof(DestChar) == DestCharSize);
+        static_assert(sizeof(SrcChar) == SrcCharSize, "Incompatible char type");
+        static_assert(sizeof(DestChar) == DestCharSize, "Incompatible char type");
         init_( preview
              , _get_facet<strf::width_calculator_c, SrcChar>(fp)
              , src_enc
@@ -216,8 +216,8 @@ void STRF_HD fmt_cv_string_printer<SrcCharSize, DestCharSize>::init_
     ( Preview& preview, const WCalc& wcalc
     , const SrcEnc& src_enc, const DestEnc& dest_enc )
 {
-    static_assert(SrcEnc::char_size == SrcCharSize);
-    static_assert(DestEnc::char_size == DestCharSize);
+    static_assert(SrcEnc::char_size == SrcCharSize, "Incompatible char type");
+    static_assert(DestEnc::char_size == DestCharSize, "Incompatible char type");
 
     _encode_fill = dest_enc.encode_fill;
     decltype(auto) transcoder = get_transcoder(src_enc, dest_enc);
@@ -226,7 +226,7 @@ void STRF_HD fmt_cv_string_printer<SrcCharSize, DestCharSize>::init_
         _src_to_u32 = src_enc.to_u32().transcode;
         _u32_to_dest = dest_enc.from_u32().transcode;
     }
-    unsigned fillcount = 0;
+    std::uint16_t fillcount = 0;
     strf::width_t fmt_width = _afmt.width;
     strf::width_t limit =
         ( Preview::width_required && preview.remaining_width() > fmt_width
@@ -241,7 +241,7 @@ void STRF_HD fmt_cv_string_printer<SrcCharSize, DestCharSize>::init_
                 _right_fillcount = fillcount;
                 break;
             case strf::text_alignment::center: {
-                auto halfcount = fillcount / 2;
+                std::uint16_t halfcount = fillcount / 2;
                 _left_fillcount = halfcount;
                 _right_fillcount = fillcount - halfcount;
                 break;

@@ -39,6 +39,7 @@ public:
     {
         static_assert(sizeof(CharT) == CharSize, "");
         preview.add_size(1);
+        (void)fp;
         STRF_IF_CONSTEXPR(Preview::width_required) {
             decltype(auto) wcalc = get_facet<strf::width_calculator_c, CharT>(fp);
             auto w = wcalc.width( get_facet<strf::encoding_c<CharT>, CharT>(fp)
@@ -97,8 +98,8 @@ private:
     const strf::alignment_format_data _afmt;
     const strf::encoding_error  _enc_err;
     const strf::surrogate_policy  _allow_surr;
-    std::int16_t _left_fillcount;
-    std::int16_t _right_fillcount;
+    std::uint16_t _left_fillcount;
+    std::uint16_t _right_fillcount;
     char_type _ch;
 
     template <typename Category, typename CharT, typename FPack>
@@ -118,9 +119,9 @@ STRF_HD void fmt_char_printer<CharSize>::_init
 {
     auto ch_width = wc.width(enc, _ch);
     auto content_width = checked_mul(ch_width, _count);
-    unsigned fillcount = 0;
+    std::uint16_t fillcount = 0;
     if (content_width < _afmt.width) {
-        fillcount = (_afmt.width - content_width).round();
+        fillcount = static_cast<std::uint16_t>((_afmt.width - content_width).round());
         preview.checked_subtract_width(content_width + fillcount);
     } else {
         fillcount = 0;
@@ -132,7 +133,7 @@ STRF_HD void fmt_char_printer<CharSize>::_init
             _right_fillcount = fillcount;
             break;
         case strf::text_alignment::center: {
-            auto halfcount = fillcount / 2;
+            std::uint16_t halfcount = fillcount >> 1;
             _left_fillcount = halfcount;
             _right_fillcount = fillcount - halfcount;
             break;
