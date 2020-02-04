@@ -495,7 +495,7 @@ STRF_HD void print_amplified_integer_small_separator
         <strf::underlying_outbuf_char_type<CharSize>>();
     (void) size_after_recycle;
 
-    constexpr auto max_digits = detail::max_num_digits<unsigned long long, 10>;
+    constexpr auto max_digits = detail::max_num_digits<unsigned long long, 10>();
     char digits_buff[max_digits];
     auto digits = strf::detail::write_int_dec_txtdigits_backwards
         (value, digits_buff + max_digits);
@@ -558,7 +558,7 @@ STRF_HD void print_amplified_integer_big_separator
         <strf::underlying_outbuf_char_type<CharSize>>();
     (void) size_after_recycle;
 
-    constexpr auto max_digits = detail::max_num_digits<unsigned long long, 10>;
+    constexpr auto max_digits = detail::max_num_digits<unsigned long long, 10>();
     char digits_buff[max_digits];
     auto digits = strf::detail::write_int_dec_txtdigits_backwards
         (value, digits_buff + max_digits);

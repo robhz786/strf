@@ -37,7 +37,10 @@ template <typename CharT>
 struct encoding_c
 {
     static constexpr bool constrainable = false;
-    static strf::utf<CharT> get_default() { return {}; }
+    static constexpr STRF_HD strf::utf<CharT> get_default() noexcept
+    {
+        return {};
+    }
 };
 }
 

@@ -438,10 +438,9 @@ template <int Base> struct numpunct_c
 
     constexpr static int base = Base;
 
-    static const strf::default_numpunct<base>& get_default()
+    static STRF_HD strf::default_numpunct<base> get_default()
     {
-        static const strf::default_numpunct<base> x{};
-        return x;
+        return {};
     }
 };
 

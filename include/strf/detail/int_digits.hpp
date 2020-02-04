@@ -55,9 +55,10 @@ template <typename IntT> struct max_num_digits_impl<IntT, 2>
 };
 
 template<class IntT, unsigned Base>
-constexpr unsigned max_num_digits =
-    strf::detail::max_num_digits_impl<IntT, Base>::value;
-
+constexpr STRF_HD unsigned max_num_digits()
+{
+    return strf::detail::max_num_digits_impl<IntT, Base>::value;
+}
 
 template
     < typename IntT
@@ -753,7 +754,7 @@ public:
         , strf::lettercase lc )
     {
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
-        uint8_t groups[detail::max_num_digits<UIntT, Base>];
+        uint8_t groups[detail::max_num_digits<UIntT, Base>()];
         const auto num_groups = punct.groups(digcount, groups);
         std::size_t size = digcount + num_groups - 1;
         ob.ensure(size);
@@ -774,7 +775,7 @@ public:
         , strf::lettercase lc )
     {
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
-        constexpr auto max_digits = detail::max_num_digits<UIntT, Base>;
+        constexpr auto max_digits = detail::max_num_digits<UIntT, Base>();
         uint8_t groups[max_digits];
         const auto num_groups = punct.groups(digcount, groups);
         unsigned char digits_buff[max_digits];
@@ -838,7 +839,7 @@ public:
         STRF_ASSERT(value > 1);
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
         using char_type = strf::underlying_outbuf_char_type<CharSize>;
-        uint8_t groups[detail::max_num_digits<UIntT, 2>];
+        uint8_t groups[detail::max_num_digits<UIntT, 2>()];
         auto num_groups = punct.groups(digcount, groups);
 
         auto grp_it = groups + num_groups - 1;
@@ -884,7 +885,7 @@ public:
         STRF_ASSERT(value > 1);
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
         using char_type = strf::underlying_outbuf_char_type<CharSize>;
-        uint8_t groups[detail::max_num_digits<UIntT, 2>];
+        uint8_t groups[detail::max_num_digits<UIntT, 2>()];
         auto num_groups = punct.groups(digcount, groups);
 
         char32_t sep = punct.thousands_sep();

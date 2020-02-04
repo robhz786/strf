@@ -124,7 +124,7 @@ template <int N> struct fcategory
 {
     constexpr static bool constrainable = true;
 
-    constexpr static facet<N> get_default() noexcept
+    constexpr static STRF_HD facet<N> get_default() noexcept
     {
         return facet<N>{-1};
     }

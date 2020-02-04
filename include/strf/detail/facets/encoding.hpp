@@ -50,7 +50,7 @@ struct encoding_error_c
 {
     static constexpr bool constrainable = false;
 
-    static constexpr STRF_HD strf::encoding_error get_default()
+    static constexpr STRF_HD strf::encoding_error get_default() noexcept
     {
         return strf::encoding_error::replace;
     }
@@ -73,7 +73,7 @@ struct surrogate_policy_c
 {
     static constexpr bool constrainable = false;
 
-    static constexpr STRF_HD strf::surrogate_policy get_default()
+    static constexpr STRF_HD strf::surrogate_policy get_default() noexcept
     {
         return strf::surrogate_policy::strict;
     }
@@ -383,7 +383,7 @@ STRF_INLINE STRF_HD void buffered_size_calculator::recycle()
 } // namespace detail
 
 template<std::size_t SrcCharSize, std::size_t DestCharSize>
-void decode_encode
+STRF_HD void decode_encode
     ( strf::underlying_outbuf<DestCharSize>& ob
     , strf::transcode_func<SrcCharSize, 4> to_u32
     , strf::transcode_func<4, DestCharSize> from_u32
@@ -398,7 +398,7 @@ void decode_encode
 }
 
 template<std::size_t SrcCharSize>
-std::size_t STRF_HD decode_encode_size
+STRF_HD std::size_t decode_encode_size
     ( strf::transcode_func<SrcCharSize, 4> to_u32
     , strf::transcode_size_func<4> size_calc_func
     , const underlying_outbuf_char_type<SrcCharSize>* str

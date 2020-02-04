@@ -168,31 +168,6 @@ void overriding_sample()
 }
 
 
-void get_facet_sample()
-{
-    //[ get_facet_sample
-    auto punct_hex  = strf::monotonic_grouping<16>{4}.thousands_sep('\'');
-    auto punct_dec  = strf::monotonic_grouping<10>{3}.thousands_sep('.');
-
-    auto fp = strf::pack
-        ( std::ref(punct_hex) // note the use of std::ref here
-        , strf::constrain<strf::is_int_number>(std::ref(punct_dec)) );//and here
-
-    decltype(auto) f1 = strf::get_facet<strf::numpunct_c<16>, int>(fp);
-    assert(&f1 == &punct_hex);
-
-    decltype(auto) f2 = strf::get_facet<strf::numpunct_c<10>, int>(fp);
-    assert(&f2 == &punct_dec);
-
-    decltype(auto) f3 = strf::get_facet<strf::numpunct_c<10>, double>(fp);
-    assert(&f3 == &strf::numpunct_c<10>::get_default());
-    //]
-    (void)f1;
-    (void)f2;
-    (void)f3;
-}
-
-
 void sample_numpunct_with_alternative_charset()
 {
 //[ numpuct__with_alternative_encoding
@@ -371,7 +346,6 @@ int main()
     basic_facet_sample();
     constrained_facet();
     overriding_sample();
-    get_facet_sample();
     output_FILE();
     input_ouput_different_char_types();
     input_string_encoding();

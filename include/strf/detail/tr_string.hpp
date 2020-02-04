@@ -50,7 +50,7 @@ struct tr_invalid_arg_c
 {
     static constexpr bool constrainable = false;
 
-    static constexpr tr_invalid_arg get_default() noexcept
+    static constexpr STRF_HD tr_invalid_arg get_default() noexcept
     {
         return tr_invalid_arg::replace;
     }
