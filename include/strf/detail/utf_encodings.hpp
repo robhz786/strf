@@ -197,8 +197,9 @@ inline STRF_HD bool first_2_of_4_are_valid(std::uint8_t ch0, std::uint8_t ch1)
 } // namespace detail
 
 template <>
-struct static_transcoder<strf::encoding_id::eid_utf8, strf::encoding_id::eid_utf8>
+class static_transcoder<strf::encoding_id::eid_utf8, strf::encoding_id::eid_utf8>
 {
+public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<1>& ob
         , const std::uint8_t* src
@@ -214,9 +215,10 @@ struct static_transcoder<strf::encoding_id::eid_utf8, strf::encoding_id::eid_utf
 
 //struct utf8_to_utf16
 template <>
-struct static_transcoder
+class static_transcoder
     < strf::encoding_id::eid_utf8, strf::encoding_id::eid_utf16 >
 {
+public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<2>& ob
         , const std::uint8_t* src
@@ -231,9 +233,10 @@ struct static_transcoder
 };
 
 template <>
-struct static_transcoder
+class static_transcoder
     < strf::encoding_id::eid_utf8, strf::encoding_id::eid_utf32 >
 {
+public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<4>& ob
         , const std::uint8_t* src
@@ -249,10 +252,10 @@ struct static_transcoder
 
 //struct utf16_to_utf8
 template <>
-struct static_transcoder
+class static_transcoder
     < strf::encoding_id::eid_utf16, strf::encoding_id::eid_utf8 >
 {
-
+public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<1>& ob
         , const char16_t* src
@@ -269,9 +272,10 @@ struct static_transcoder
 
 //struct utf16_to_utf16
 template <>
-struct static_transcoder
+class static_transcoder
     < strf::encoding_id::eid_utf16, strf::encoding_id::eid_utf16 >
 {
+public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<2>& ob
         , const char16_t* src
@@ -287,9 +291,10 @@ struct static_transcoder
 
 //struct utf16_to_utf32
 template <>
-struct static_transcoder
+class static_transcoder
     < strf::encoding_id::eid_utf16, strf::encoding_id::eid_utf32 >
 {
+public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<4>& ob
         , const char16_t* src
@@ -305,9 +310,10 @@ struct static_transcoder
 
 //struct utf32_to_utf8
 template <>
-struct static_transcoder
+class static_transcoder
     < strf::encoding_id::eid_utf32, strf::encoding_id::eid_utf8 >
 {
+public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<1>& ob
         , const char32_t* src
@@ -323,9 +329,10 @@ struct static_transcoder
 
 //struct utf32_to_utf16
 template <>
-struct static_transcoder
+class static_transcoder
     < strf::encoding_id::eid_utf32, strf::encoding_id::eid_utf16 >
 {
+public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<2>& ob
         , const char32_t* src
@@ -341,9 +348,10 @@ struct static_transcoder
 
 //struct utf32_to_utf32
 template <>
-struct static_transcoder
+class static_transcoder
     < strf::encoding_id::eid_utf32, strf::encoding_id::eid_utf32 >
 {
+public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<4>& ob
         , const char32_t* src

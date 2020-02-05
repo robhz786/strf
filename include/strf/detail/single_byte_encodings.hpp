@@ -64,10 +64,8 @@ struct impl_strict_ascii
     {
         return "ASCII";
     };
-    static constexpr STRF_HD strf::encoding_id id() noexcept
-    {
-        return strf::encoding_id::eid_pure_ascii;
-    }
+    static constexpr strf::encoding_id id = strf::encoding_id::eid_pure_ascii;
+
     static STRF_HD bool is_valid(std::uint8_t ch)
     {
         return ch < 0x80;
@@ -90,10 +88,8 @@ struct impl_iso_8859_1
     {
         return "ISO-8859-1";
     };
-    static constexpr STRF_HD strf::encoding_id id() noexcept
-    {
-        return strf::encoding_id::eid_iso_8859_1;
-    }
+    static constexpr strf::encoding_id id = strf::encoding_id::eid_iso_8859_1;
+
     static STRF_HD bool is_valid(std::uint8_t)
     {
         return true;
@@ -114,10 +110,8 @@ struct impl_iso_8859_3
     {
         return "ISO-8859-3";
     };
-    static constexpr STRF_HD strf::encoding_id id() noexcept
-    {
-        return strf::encoding_id::eid_iso_8859_3;
-    }
+    static constexpr strf::encoding_id id = strf::encoding_id::eid_iso_8859_3;
+
     static STRF_HD bool is_valid(std::uint8_t ch)
     {
         return ch != 0xA5
@@ -237,10 +231,8 @@ public:
     {
         return "ISO-8859-15";
     };
-    static constexpr STRF_HD strf::encoding_id id() noexcept
-    {
-        return strf::encoding_id::eid_iso_8859_15;
-    }
+    static constexpr strf::encoding_id id = strf::encoding_id::eid_iso_8859_15;
+
     static STRF_HD bool is_valid(std::uint8_t)
     {
         return true;
@@ -307,10 +299,8 @@ public:
     {
         return "windows-1252";
     };
-    static constexpr STRF_HD strf::encoding_id id() noexcept
-    {
-        return strf::encoding_id::eid_windows_1252;
-    }
+    static constexpr strf::encoding_id id = strf::encoding_id::eid_windows_1252;
+
     constexpr static unsigned short decode_fail = 0xFFFF;
 
     static STRF_HD bool is_valid(std::uint8_t)
@@ -691,7 +681,7 @@ public:
     };
     static constexpr STRF_HD strf::encoding_id id() noexcept
     {
-        return Impl::id();
+        return Impl::id;
     }
     static constexpr STRF_HD char32_t replacement_char() noexcept
     {
@@ -733,20 +723,20 @@ public:
     }
 
     static constexpr STRF_HD
-    strf::static_transcoder<strf::encoding_id::eid_utf32, id()>
+    strf::static_transcoder<strf::encoding_id::eid_utf32, Impl::id>
     from_u32() noexcept
     {
         return {};
     }
 
     static constexpr STRF_HD
-    strf::static_transcoder<id(), strf::encoding_id::eid_utf32>
+    strf::static_transcoder<Impl::id, strf::encoding_id::eid_utf32>
     to_u32() noexcept
     {
         return {};
     }
 
-    static constexpr STRF_HD strf::static_transcoder<id(), id()>
+    static constexpr STRF_HD strf::static_transcoder<Impl::id, Impl::id>
     sanitize() noexcept
     {
         return {};

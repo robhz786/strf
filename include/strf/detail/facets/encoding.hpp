@@ -223,14 +223,16 @@ template <typename CharT>
 struct encoding_c;
 
 template <strf::encoding_id>
-struct static_encoding;
+class static_encoding;
 
 template <strf::encoding_id Src, strf::encoding_id Dest>
-struct static_transcoder;
+class static_transcoder;
 
 template <std::size_t SrcCharSize, std::size_t DestCharSize>
-struct dynamic_transcoder
+class dynamic_transcoder
 {
+public:
+
     template <strf::encoding_id Src, strf::encoding_id Dest>
     constexpr dynamic_transcoder(strf::static_transcoder<Src, Dest> t) noexcept
         : transcode(t.transcode)

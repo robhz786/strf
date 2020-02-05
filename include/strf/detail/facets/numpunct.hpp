@@ -438,10 +438,15 @@ template <int Base> struct numpunct_c
 
     constexpr static int base = Base;
 
-    static STRF_HD strf::default_numpunct<base> get_default()
+#if defined(__CUDACC__)
+    static STRF_HD const strf::default_numpunct<base>& get_default() noexcept;
+#else
+    static STRF_HD const strf::default_numpunct<base>& get_default() noexcept
     {
-        return {};
+        static const strf::default_numpunct<base> x;
+        return x;
     }
+#endif
 };
 
 namespace detail {
