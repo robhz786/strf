@@ -208,7 +208,7 @@ struct alignment_format_data
 };
 
 constexpr STRF_HD bool operator==( strf::alignment_format_data lhs
-                         , strf::alignment_format_data rhs ) noexcept
+                                 , strf::alignment_format_data rhs ) noexcept
 {
     return lhs.fill == rhs.fill
         && lhs.width == rhs.width
@@ -216,7 +216,7 @@ constexpr STRF_HD bool operator==( strf::alignment_format_data lhs
 }
 
 constexpr STRF_HD bool operator!=( strf::alignment_format_data lhs
-                         , strf::alignment_format_data rhs ) noexcept
+                                 , strf::alignment_format_data rhs ) noexcept
 {
     return ! (lhs == rhs);
 }

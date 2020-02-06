@@ -7,18 +7,17 @@
 cmake_minimum_required (VERSION 3.0)
 project (strf_test)
 
-# include_directories("../include")
-
 foreach(
   t
   tr_string
 #  dispatcher_with_move_only_arg
   encode_char
   encode_fill
-  input_string
+  input_bool
   input_char
-  input_int
   input_float
+  input_int
+  input_string
 #  input_char32
   input_facets_pack
   input_range

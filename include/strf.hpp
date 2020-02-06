@@ -48,6 +48,7 @@ struct encoding_c
 //
 // Input types
 //
+#include <strf/detail/input_types/bool.hpp>
 #include <strf/detail/input_types/int.hpp>
 #include <strf/detail/input_types/char.hpp>
 #include <strf/detail/input_types/float.hpp>
