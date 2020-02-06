@@ -223,7 +223,7 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::preview_(Preview& previe
     }
     if (Preview::width_required) {
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(fp_);
-        using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
+        using uchar = strf::underlying_char_type<sizeof(CharT)>;
         auto dw = wcalc.width( get_facet_<strf::encoding_c<CharT>>(fp_)
                              , preview.remaining_width()
                              , reinterpret_cast<const uchar*>(sep_begin_)
@@ -248,7 +248,7 @@ template <typename CharT, typename FPack, typename ForwardIt>
 STRF_HD void separated_range_printer<CharT, FPack, ForwardIt>::print_to
     ( strf::underlying_outbuf<sizeof(CharT)>& ob ) const
 {
-    using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
+    using uchar = strf::underlying_char_type<sizeof(CharT)>;
     strf::print_preview<false, false> no_preview;
     auto it = begin_;
     if (it != end_) {
@@ -432,7 +432,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, ForwardIt, Fmts ...>::pre
     }
     if (Preview::width_required) {
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(fp_);
-        using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
+        using uchar = strf::underlying_char_type<sizeof(CharT)>;
         auto dw = wcalc.width( get_facet_<strf::encoding_c<CharT>>(fp_)
                              , preview.remaining_width()
                              , reinterpret_cast<const uchar*>(r.sep_begin)
@@ -460,7 +460,7 @@ template< typename CharT
 STRF_HD void fmt_separated_range_printer<CharT, FPack, ForwardIt, Fmts ...>
 ::print_to( strf::underlying_outbuf<sizeof(CharT)>& ob ) const
 {
-    using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
+    using uchar = strf::underlying_char_type<sizeof(CharT)>;
     strf::print_preview<false, false> no_preview;
     auto r = fmt_.value();
     auto it = r.begin;
@@ -614,7 +614,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
     }
     if (Preview::width_required) {
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(fp_);
-        using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
+        using uchar = strf::underlying_char_type<sizeof(CharT)>;
         auto dw = wcalc.width( get_facet_<strf::encoding_c<CharT>>(fp_)
                              , preview.remaining_width()
                              , reinterpret_cast<const uchar*>(sep_begin_)
@@ -640,7 +640,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
     ( strf::underlying_outbuf<sizeof(CharT)>& ob ) const
 {
     strf::print_preview<false, false> no_preview;
-    using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
+    using uchar = strf::underlying_char_type<sizeof(CharT)>;
     auto it = begin_;
     if (it != end_) {
         make_printer<CharT, FPack>(strf::rank<5>{}, fp_, no_preview, op_(*it))

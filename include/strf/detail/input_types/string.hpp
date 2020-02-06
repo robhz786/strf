@@ -324,7 +324,7 @@ template <std::size_t CharSize>
 class string_printer: public strf::printer<CharSize>
 {
 public:
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using char_type = strf::underlying_char_type<CharSize>;
 
     template <typename FPack, typename Preview, typename CharT>
     STRF_HD string_printer
@@ -372,7 +372,7 @@ template <std::size_t CharSize>
 class fmt_string_printer: public strf::printer<CharSize>
 {
 public:
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using char_type = strf::underlying_char_type<CharSize>;
 
     template <typename FPack, typename Preview, typename CharT>
     STRF_HD fmt_string_printer

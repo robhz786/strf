@@ -124,7 +124,7 @@ template <std::size_t CharSize>
 class base64_printer: public strf::printer<CharSize>
 {
 public:
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using char_type = strf::underlying_char_type<CharSize>;
 
     template <bool PreviewSize>
     base64_printer

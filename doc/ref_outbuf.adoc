@@ -66,30 +66,30 @@ protected:
 // global type aliases
 
 template <std::size_t CharSize>
-using underlying_outbuf_char_type = typename underlying_outbuf<CharSize>::char_type
+using underlying_char_type = typename underlying_outbuf<CharSize>::char_type
 
 // global functions
 
 template <std::size_t CharSize>
 void write( underlying_outbuf<CharSize>& ob
-          , const underlying_outbuf_char_type<CharSize>* data
+          , const underlying_char_type<CharSize>* data
           , std::size_t data_size );
 
 template <std::size_t CharSize>
 void write( underlying_outbuf<CharSize>& ob
-          , const underlying_outbuf_char_type<CharSize>* data
-          , const underlying_outbuf_char_type<CharSize>* data_end );
+          , const underlying_char_type<CharSize>* data
+          , const underlying_char_type<CharSize>* data_end );
 
 template <std::size_t CharSize>
 void put( underlying_outbuf<CharSize>& ob
-        , underlying_outbuf_char_type<CharSize> ch );
+        , underlying_char_type<CharSize> ch );
 
 } // namespace strf
 ----
 
 ==== Member types
 
-[[underlying_outbuf_char_type]]
+[[underlying_char_type]]
 ====
 [source,cpp]
 ----
@@ -280,7 +280,7 @@ Postconditions:: `good() == g`
 ----
 template <std::size_t CharSize>
 void put( underlying_outbuf<CharSize>& ob
-        , underlying_outbuf_char_type<CharSize> ch );
+        , underlying_char_type<CharSize> ch );
 ----
 [horizontal]
 Effect:: Same as:
@@ -302,8 +302,8 @@ ob.advance();
 ----
 template <std::size_t CharSize>
 void write( underlying_outbuf<CharSize>& ob
-          , const underlying_outbuf_char_type<CharSize>* data
-          , const underlying_outbuf_char_type<CharSize>* data_end );
+          , const underlying_char_type<CharSize>* data
+          , const underlying_char_type<CharSize>* data_end );
 ----
 [horizontal]
 Effect:: Writes the the range [ `data`, `data_end` ) into `ob`, calling `ob.recycle()`
@@ -315,7 +315,7 @@ Effect:: Writes the the range [ `data`, `data_end` ) into `ob`, calling `ob.recy
 ----
 template <std::size_t CharSize>
 void write( underlying_outbuf<CharSize>& ob
-          , const underlying_outbuf_char_type<CharSize>* data
+          , const underlying_char_type<CharSize>* data
           , std::size_t data_size );
 ----
 [horizontal]
@@ -437,7 +437,7 @@ Effect:: Same as
 +
 [source,cpp]
 ----
-as_underlying().advance_to((underlying_outbuf_char_type<sizeof(CharT)>*)p)
+as_underlying().advance_to((underlying_char_type<sizeof(CharT)>*)p)
 ----
 Precondition:: `p \<= end()`
 ====
@@ -463,7 +463,7 @@ basic_outbuf(char_type* pos_, char_type* end_);
 ----
 [horizontal]
 Effect:: Initializes private base class `underlying_outbuf<sizeof(CharT)>`
-with `pos_` and `end_` casted as `underlying_outbuf_char_type<sizeof(CharT)>*`.
+with `pos_` and `end_` casted as `underlying_char_type<sizeof(CharT)>*`.
 ====
 [[basic_outbuf_ctor_count]]
 ====
@@ -485,7 +485,7 @@ Effect:: Same as
 +
 [source, cpp]
 ----
-as_underlying().set_pos((underlying_outbuf_char_type<sizeof(CharT)>*)p)
+as_underlying().set_pos((underlying_char_type<sizeof(CharT)>*)p)
 ----
 ====
 [[basic_outbuf_]]
@@ -499,7 +499,7 @@ Effect:: Same as
 +
 [source, cpp]
 ----
-as_underlying().set_end((underlying_outbuf_char_type<sizeof(CharT)>*)e)
+as_underlying().set_end((underlying_char_type<sizeof(CharT)>*)e)
 ----
 ====
 [[basic_outbuf_set_good]]

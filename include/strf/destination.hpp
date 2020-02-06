@@ -210,7 +210,7 @@ private:
         using caterr = strf::tr_invalid_arg_c;
         decltype(auto) arg_err = strf::get_facet<caterr, void>(self.fpack_);
 
-        using uchar_type = strf::underlying_outbuf_char_type<sizeof(CharT)>;
+        using uchar_type = strf::underlying_char_type<sizeof(CharT)>;
         auto ustr = reinterpret_cast<const uchar_type*>(str);
         auto ustr_end = reinterpret_cast<const uchar_type*>(str_end);
 

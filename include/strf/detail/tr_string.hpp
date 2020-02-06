@@ -205,15 +205,15 @@ std::size_t tr_string_size
 
 template <std::size_t CharSize>
 void tr_string_write
-    ( const strf::underlying_outbuf_char_type<CharSize>* it
-    , const strf::underlying_outbuf_char_type<CharSize>* end
+    ( const strf::underlying_char_type<CharSize>* it
+    , const strf::underlying_char_type<CharSize>* end
     , const strf::printer<CharSize>* const * args
     , std::size_t num_args
     , strf::underlying_outbuf<CharSize>& ob
     , strf::write_replacement_char_func<CharSize> write_replacement_char
     , strf::tr_invalid_arg policy )
 {
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using char_type = strf::underlying_char_type<CharSize>;
     using traits = std::char_traits<char_type>;
     std::size_t arg_idx = 0;
 
@@ -298,7 +298,7 @@ class tr_string_printer
 {
 public:
 
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using char_type = strf::underlying_char_type<CharSize>;
 
     template <bool SizeRequested, typename Encoding>
     tr_string_printer

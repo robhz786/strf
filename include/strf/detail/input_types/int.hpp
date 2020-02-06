@@ -207,7 +207,7 @@ class int_printer: public strf::printer<CharSize>
 {
 public:
 
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using char_type = strf::underlying_char_type<CharSize>;
 
     template <typename Preview, typename IntT>
     STRF_HD int_printer(Preview& preview, IntT value)
@@ -253,7 +253,7 @@ class punct_int_printer: public strf::printer<CharSize>
 {
 public:
 
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using char_type = strf::underlying_char_type<CharSize>;
 
     template <typename FPack, typename Preview, typename IntT, typename CharT>
     STRF_HD punct_int_printer
@@ -333,7 +333,7 @@ class partial_fmt_int_printer: public strf::printer<CharSize>
 {
 public:
 
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using char_type = strf::underlying_char_type<CharSize>;
 
     template <typename FPack, typename Preview, typename IntT, typename CharT>
     STRF_HD partial_fmt_int_printer
@@ -559,7 +559,7 @@ class full_fmt_int_printer: public printer<CharSize>
 {
 public:
 
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using char_type = strf::underlying_char_type<CharSize>;
 
     template <typename FPack, typename Preview, typename IntT, typename CharT>
     STRF_HD full_fmt_int_printer

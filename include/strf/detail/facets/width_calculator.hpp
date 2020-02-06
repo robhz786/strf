@@ -19,7 +19,7 @@ public:
     template <typename Encoding>
     STRF_HD strf::width_t width
         ( const Encoding&
-        , strf::underlying_outbuf_char_type<Encoding::char_size> ) const noexcept
+        , strf::underlying_char_type<Encoding::char_size> ) const noexcept
     {
         return 1;
     }
@@ -28,7 +28,7 @@ public:
     constexpr STRF_HD strf::width_t width
         ( const Encoding&
         , strf::width_t
-        , const strf::underlying_outbuf_char_type<Encoding::char_size>*
+        , const strf::underlying_char_type<Encoding::char_size>*
         , std::size_t str_len
         , strf::encoding_error
         , strf::surrogate_policy ) const noexcept
@@ -48,7 +48,7 @@ public:
     template <typename Encoding>
     constexpr STRF_HD strf::width_t width
         ( const Encoding&
-        , strf::underlying_outbuf_char_type<Encoding::char_size> ) const noexcept
+        , strf::underlying_char_type<Encoding::char_size> ) const noexcept
     {
         return 1;
     }
@@ -57,7 +57,7 @@ public:
     STRF_HD strf::width_t width
         ( const Encoding& enc
         , strf::width_t limit
-        , const strf::underlying_outbuf_char_type<Encoding::char_size>* str
+        , const strf::underlying_char_type<Encoding::char_size>* str
         , std::size_t str_len
         , strf::encoding_error
         , strf::surrogate_policy ) const

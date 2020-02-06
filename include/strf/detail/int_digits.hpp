@@ -750,7 +750,7 @@ public:
         , const strf::numpunct_base& punct
         , UIntT value
         , unsigned digcount
-        , strf::underlying_outbuf_char_type<CharSize> sep
+        , strf::underlying_char_type<CharSize> sep
         , strf::lettercase lc )
     {
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
@@ -802,7 +802,7 @@ public:
         , strf::lettercase = strf::lowercase )
     {
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
-        using char_type = strf::underlying_outbuf_char_type<CharSize>;
+        using char_type = strf::underlying_char_type<CharSize>;
 
         if (value <= 1) {
             strf::put(ob, static_cast<char_type>('0' + value));
@@ -833,12 +833,12 @@ public:
         , const strf::numpunct_base& punct
         , UIntT value
         , unsigned digcount
-        , strf::underlying_outbuf_char_type<CharSize> sep
+        , strf::underlying_char_type<CharSize> sep
         , strf::lettercase = strf::lowercase )
     {
         STRF_ASSERT(value > 1);
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
-        using char_type = strf::underlying_outbuf_char_type<CharSize>;
+        using char_type = strf::underlying_char_type<CharSize>;
         uint8_t groups[detail::max_num_digits<UIntT, 2>()];
         auto num_groups = punct.groups(digcount, groups);
 
@@ -884,7 +884,7 @@ public:
     {
         STRF_ASSERT(value > 1);
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
-        using char_type = strf::underlying_outbuf_char_type<CharSize>;
+        using char_type = strf::underlying_char_type<CharSize>;
         uint8_t groups[detail::max_num_digits<UIntT, 2>()];
         auto num_groups = punct.groups(digcount, groups);
 
@@ -939,7 +939,7 @@ inline STRF_HD void write_int_little_sep
     , const strf::numpunct_base& punct
     , UIntT value
     , unsigned digcount
-    , strf::underlying_outbuf_char_type<CharSize> sep
+    , strf::underlying_char_type<CharSize> sep
     , strf::lettercase lc = strf::lowercase )
 {
     intdigits_writer<Base>::write_little_sep

@@ -76,7 +76,7 @@ public:
     template <typename Encoding>
     strf::width_t width
         ( const Encoding& enc
-        , strf::underlying_outbuf_char_type<Encoding::char_size> ch ) const noexcept
+        , strf::underlying_char_type<Encoding::char_size> ch ) const noexcept
     {
         auto ch32 = enc.decode_single_char(ch);
         return ( ch32 == U'\u2E3A' ? 4
@@ -88,7 +88,7 @@ public:
     constexpr STRF_HD strf::width_t width
         ( const Encoding& enc
         , strf::width_t limit
-        , const strf::underlying_outbuf_char_type<Encoding::char_size>* str
+        , const strf::underlying_char_type<Encoding::char_size>* str
         , std::size_t str_len
         , strf::encoding_error enc_err
         , strf::surrogate_policy allow_surr ) const noexcept

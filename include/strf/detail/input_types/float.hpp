@@ -487,7 +487,7 @@ STRF_HD void print_amplified_integer_small_separator
     , unsigned long long value
     , unsigned num_digits
     , unsigned num_trailing_zeros
-    , strf::underlying_outbuf_char_type<CharSize> separator )
+    , strf::underlying_char_type<CharSize> separator )
 {
     STRF_ASSERT( ! punct.no_group_separation(num_trailing_zeros + num_digits));
 
@@ -615,7 +615,7 @@ STRF_HD void print_scientific_notation
     , strf::lettercase lc )
 {
     // digits
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using char_type = strf::underlying_char_type<CharSize>;
 
     print_point |= num_digits != 1;
     ob.ensure(num_digits + print_point * decimal_point_size);
@@ -763,7 +763,7 @@ class punct_double_printer: public strf::printer<CharSize>
 {
 public:
 
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using char_type = strf::underlying_char_type<CharSize>;
 
     template <typename FP, typename Preview, typename FloatT, typename CharT>
     STRF_HD punct_double_printer
@@ -1112,7 +1112,7 @@ class double_printer final: public strf::printer<CharSize>
 {
 public:
 
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using char_type = strf::underlying_char_type<CharSize>;
 
     template <typename Fpack, typename Preview, typename FloatT, typename CharT>
     STRF_HD double_printer
@@ -1364,7 +1364,7 @@ class fast_double_printer: public strf::printer<CharSize>
 {
 public:
 
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using char_type = strf::underlying_char_type<CharSize>;
 
     template <typename FPack, typename Preview, typename CharT>
     STRF_HD fast_double_printer
@@ -1564,7 +1564,7 @@ class fast_punct_double_printer: public strf::printer<CharSize>
 {
 public:
 
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using char_type = strf::underlying_char_type<CharSize>;
 
     template <typename FPack, typename Preview, typename FloatT, typename CharT>
     STRF_HD fast_punct_double_printer

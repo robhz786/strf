@@ -1,5 +1,5 @@
-#ifndef BOOST_OUTBUF_HPP
-#define BOOST_OUTBUF_HPP
+#ifndef STRF_OUTBUF_HPP_INCLUDED
+#define STRF_OUTBUF_HPP_INCLUDED
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -18,17 +18,17 @@ namespace detail {
 class outbuf_test_tool;
 
 template <std::size_t CharSize>
-struct underlying_outbuf_char_type_impl;
+struct underlying_char_type_impl;
 
-template <> struct underlying_outbuf_char_type_impl<1>{using type = std::uint8_t;};
-template <> struct underlying_outbuf_char_type_impl<2>{using type = char16_t;};
-template <> struct underlying_outbuf_char_type_impl<4>{using type = char32_t;};
+template <> struct underlying_char_type_impl<1>{using type = std::uint8_t;};
+template <> struct underlying_char_type_impl<2>{using type = char16_t;};
+template <> struct underlying_char_type_impl<4>{using type = char32_t;};
 
 } // namespace detail
 
 template <std::size_t CharSize>
-using underlying_outbuf_char_type
-= typename strf::detail::underlying_outbuf_char_type_impl<CharSize>::type;
+using underlying_char_type
+= typename strf::detail::underlying_char_type_impl<CharSize>::type;
 
 template <std::size_t CharSize>
 constexpr STRF_HD std::size_t min_size_after_recycle()
@@ -41,7 +41,7 @@ class underlying_outbuf
 {
 public:
 
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using char_type = strf::underlying_char_type<CharSize>;
 
     STRF_HD underlying_outbuf(const underlying_outbuf&) = delete;
     STRF_HD underlying_outbuf(underlying_outbuf&&) = delete;
@@ -299,7 +299,7 @@ STRF_HD void outbuf_put(Outbuf& ob, CharT c)
 template <std::size_t CharSize>
 inline STRF_HD void write
     ( strf::underlying_outbuf<CharSize>& ob
-    , const strf::underlying_outbuf_char_type<CharSize>* str
+    , const strf::underlying_char_type<CharSize>* str
     , std::size_t len )
 {
     strf::detail::outbuf_write(ob, str, len);
@@ -324,8 +324,8 @@ inline STRF_HD void write( strf::basic_outbuf_noexcept<CharT>& ob
 template <std::size_t CharSize>
 inline STRF_HD void write
     ( strf::underlying_outbuf<CharSize>& ob
-    , const strf::underlying_outbuf_char_type<CharSize>* str
-    , const strf::underlying_outbuf_char_type<CharSize>* str_end )
+    , const strf::underlying_char_type<CharSize>* str
+    , const strf::underlying_char_type<CharSize>* str_end )
 {
     STRF_ASSERT(str_end >= str);
     strf::detail::outbuf_write(ob, str, str_end - str);
@@ -382,7 +382,7 @@ inline STRF_HD void write( strf::basic_outbuf_noexcept<wchar_t>& ob
 template <std::size_t CharSize>
 inline STRF_HD void put
     ( strf::underlying_outbuf<CharSize>& ob
-    , strf::underlying_outbuf_char_type<CharSize> c )
+    , strf::underlying_char_type<CharSize> c )
 {
     strf::detail::outbuf_put(ob, c);
 }
@@ -491,7 +491,7 @@ public:
     template<std::size_t CharSize>
     static STRF_HD void force_set_pos
         ( underlying_outbuf<CharSize>& ob
-        , strf::underlying_outbuf_char_type<CharSize>* pos)
+        , strf::underlying_char_type<CharSize>* pos)
     {
         ob.set_pos(pos);
     }
@@ -623,5 +623,5 @@ public:
 
 } // namespace strf
 
-#endif  // BOOST_OUTBUF_HPP
+#endif  // STRF_OUTBUF_HPP_INCLUDED
 

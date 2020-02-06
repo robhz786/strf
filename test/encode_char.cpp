@@ -23,7 +23,7 @@ void test_char( const Encoding& enc
     TEST_SCOPE_DESCRIPTION( "encoding: ", enc.name()
                           , "; char: \\u'", strf::hex((unsigned)ch), '\'');
 
-    strf::underlying_outbuf_char_type<sizeof(CharT)> buff[100];
+    strf::underlying_char_type<sizeof(CharT)> buff[100];
     auto it = enc.encode_char(buff, ch);
 
     TEST_EQ(std::size_t(it - buff), encoded_char.size());

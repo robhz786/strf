@@ -18,7 +18,7 @@ template <std::size_t CharSize>
 class bool_printer: public printer<CharSize>
 {
 public:
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using char_type = strf::underlying_char_type<CharSize>;
 
     template <typename Preview>
     STRF_HD bool_printer(Preview& preview, bool value)
@@ -61,7 +61,7 @@ template <std::size_t CharSize>
 class fmt_bool_printer: public printer<CharSize>
 {
 public:
-    using char_type = strf::underlying_outbuf_char_type<CharSize>;
+    using char_type = strf::underlying_char_type<CharSize>;
 
     template <typename FPack, typename Preview, typename CharT>
     STRF_HD fmt_bool_printer

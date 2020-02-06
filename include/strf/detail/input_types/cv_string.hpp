@@ -17,7 +17,7 @@ class cv_string_printer: public strf::printer<DestCharSize>
 {
 public:
 
-    using char_in_type = strf::underlying_outbuf_char_type<SrcCharSize>;
+    using char_in_type = strf::underlying_char_type<SrcCharSize>;
 
     template < typename FPack, typename Preview, typename SrcChar
              , typename DestChar, typename SrcEncoding >
@@ -135,7 +135,7 @@ template<std::size_t SrcCharSize, std::size_t DestCharSize>
 class fmt_cv_string_printer: public printer<DestCharSize>
 {
 public:
-    using char_in_type = strf::underlying_outbuf_char_type<SrcCharSize>;
+    using char_in_type = strf::underlying_char_type<SrcCharSize>;
 
     template < typename FPack, typename Preview, typename SrcChar
              , typename DestChar, typename SrcEncoding >
