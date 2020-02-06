@@ -68,7 +68,7 @@ private:
 
     string_type_& str_;
     static constexpr std::size_t buf_size_
-        = strf::min_size_after_recycle<CharT>();
+        = strf::min_size_after_recycle<sizeof(CharT)>();
     CharT buf_[buf_size_];
 };
 
@@ -123,7 +123,7 @@ private:
 
     string_type_ str_;
     static constexpr std::size_t buf_size_
-        = strf::min_size_after_recycle<CharT>();
+        = strf::min_size_after_recycle<sizeof(CharT)>();
     CharT buf_[buf_size_];
 };
 
@@ -159,7 +159,7 @@ public:
         std::size_t original_size = this->pos() - str_.data();
         auto append_size = std::max
             ( original_size
-            , strf::min_size_after_recycle<CharT>() );
+            , strf::min_size_after_recycle<sizeof(CharT)>() );
         str_.append(append_size, (CharT)0);
         this->set_pos(&*str_.begin() + original_size);
         this->set_end(&*str_.begin() + original_size + append_size);

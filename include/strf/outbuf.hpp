@@ -30,7 +30,7 @@ template <std::size_t CharSize>
 using underlying_outbuf_char_type
 = typename strf::detail::underlying_outbuf_char_type_impl<CharSize>::type;
 
-template <typename CharT>
+template <std::size_t CharSize>
 constexpr STRF_HD std::size_t min_size_after_recycle()
 {
     return 64;
@@ -86,7 +86,7 @@ public:
     }
     STRF_HD void require(std::size_t s)
     {
-        STRF_ASSERT(s <= strf::min_size_after_recycle<char_type>());
+        STRF_ASSERT(s <= strf::min_size_after_recycle<CharSize>());
         if (pos() + s > end()) {
             recycle();
         }
@@ -500,12 +500,9 @@ public:
 
 inline STRF_HD char32_t* outbuf_garbage_buf_()
 {
-    constexpr std::size_t s1
-        = (strf::min_size_after_recycle<char>() + 1) / 4;
-    constexpr std::size_t s2
-        = (strf::min_size_after_recycle<char16_t>() + 1) / 2;
-    constexpr std::size_t s4
-        = strf::min_size_after_recycle<char32_t>();
+    constexpr std::size_t s1 = (strf::min_size_after_recycle<1>() + 1) / 4;
+    constexpr std::size_t s2 = (strf::min_size_after_recycle<2>() + 1) / 2;
+    constexpr std::size_t s4 = strf::min_size_after_recycle<4>();
     constexpr std::size_t max_s1_s2 = s1 > s2 ? s1 : s2;
     constexpr std::size_t max_s1_s2_s4 = max_s1_s2 > s4 ? max_s1_s2 : s4;
 
@@ -525,7 +522,7 @@ template <typename CharT>
 inline STRF_HD CharT* outbuf_garbage_buf_end()
 {
     return strf::outbuf_garbage_buf<CharT>()
-        + strf::min_size_after_recycle<CharT>();
+        + strf::min_size_after_recycle<sizeof(CharT)>();
 }
 
 template <typename CharT>

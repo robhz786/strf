@@ -97,7 +97,7 @@ private:
     std::FILE* dest_;
     std::size_t count_ = 0;
     static constexpr std::size_t buf_size_
-        = strf::min_size_after_recycle<CharT>();
+        = strf::min_size_after_recycle<sizeof(CharT)>();
     CharT buf_[buf_size_];
 };
 
@@ -168,7 +168,7 @@ public:
     std::FILE* dest_;
     std::size_t count_ = 0;
     static constexpr std::size_t buf_size_
-        = strf::min_size_after_recycle<wchar_t>();
+        = strf::min_size_after_recycle<sizeof(wchar_t)>();
     wchar_t buf_[buf_size_];
 };
 

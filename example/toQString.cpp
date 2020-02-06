@@ -37,7 +37,7 @@ private:
 
     QString str_;
     std::exception_ptr eptr_ = nullptr;
-    constexpr static std::size_t buffer_size_ = strf::min_size_after_recycle<char16_t>();
+    constexpr static std::size_t buffer_size_ = strf::min_size_after_recycle<2>();
     char16_t buffer_[buffer_size_];
 };
 

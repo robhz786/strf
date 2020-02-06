@@ -136,7 +136,7 @@ std::basic_string<CharT> make_string(std::size_t size)
 
 template <typename CharT>
 constexpr std::size_t full_string_size
-= strf::min_size_after_recycle<CharT>();
+= strf::min_size_after_recycle<sizeof(CharT)>();
 
 template <typename CharT>
 constexpr std::size_t half_string_size = full_string_size<CharT> / 2;
@@ -401,7 +401,7 @@ void input_tester<CharOut>::recycle()
     test_failure_(" basic_outbuf::recycle() called "
                   "( calculated size too small ).\n");
 
-    if ( this->pos() + strf::min_size_after_recycle<CharOut>()
+    if ( this->pos() + strf::min_size_after_recycle<sizeof(CharOut)>()
        > buffer_ + buffer_size_ )
     {
         pos_before_overflow_ = this->pos();

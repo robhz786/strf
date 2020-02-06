@@ -491,8 +491,7 @@ STRF_HD void print_amplified_integer_small_separator
 {
     STRF_ASSERT( ! punct.no_group_separation(num_trailing_zeros + num_digits));
 
-    constexpr std::size_t size_after_recycle = strf::min_size_after_recycle
-        <strf::underlying_outbuf_char_type<CharSize>>();
+    constexpr std::size_t size_after_recycle = strf::min_size_after_recycle<CharSize>();
     (void) size_after_recycle;
 
     constexpr auto max_digits = detail::max_num_digits<unsigned long long, 10>();
@@ -554,8 +553,7 @@ STRF_HD void print_amplified_integer_big_separator
     STRF_ASSERT( ! punct.no_group_separation(num_trailing_zeros + num_digits));
     STRF_ASSERT(separator_size > 1);
 
-    constexpr std::size_t size_after_recycle = strf::min_size_after_recycle
-        <strf::underlying_outbuf_char_type<CharSize>>();
+    constexpr std::size_t size_after_recycle = strf::min_size_after_recycle<CharSize>();
     (void) size_after_recycle;
 
     constexpr auto max_digits = detail::max_num_digits<unsigned long long, 10>();

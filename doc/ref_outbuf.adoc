@@ -12,7 +12,7 @@ http://www.boost.org/LICENSE_1_0.txt
 ====
 [source,cpp]
 ----
-template <typename CharT>
+template <std::size_t CharSize>
 constexpr std::size_t min_size_after_recycle();
 ----
 [horizontal]
@@ -142,7 +142,7 @@ virtual void recycle() = 0;
 ----
 [horizontal]
 Posconditions::
-- `size() >= {min_size_after_recycle}<char_type>()`
+- `size() >= {min_size_after_recycle}<CharSize>()`
 - The range [ `pos()`, `end()` ) is valid accessible memory area
 - If the return value of `good()` was `false` before this call to `recycle()`, then `good()` remains returning `false`.
 ====
@@ -164,7 +164,7 @@ void require(std::size_t s)
 ----
 [horizontal]
 Effect:: Calls `recycle()` if `size() < s`.
-Precondition:: `s \<= {min_size_after_recycle}<char_type>()`
+Precondition:: `s \<= {min_size_after_recycle}<CharSize>()`
 Postcondition:: `size() >= s`
 ====
 [[underlying_outbuf_advance_to]]
@@ -754,7 +754,7 @@ void recycle() override;
 Effects::
 - If `good()` is `true` then calls `str.append(p0, pos())`, where `str` is the private string object that is returned by `finish()`, and `p0` is the return value of `pos()` before any call to `advance` and `advance_to` since the last call to `recycle()` ( all in this object ), or since this object's contruction, whatever happened last.
 - Calls `set_pos` and/or `set_end`.
-Postconditions:: `size() >= min_size_after_recycle<CharT>()`
+Postconditions:: `size() >= min_size_after_recycle<sizeof(CharT)>()`
 ====
 ====
 [source,cpp]
@@ -813,7 +813,7 @@ void recycle() override;
 Effects::
 - If `good()` is `true` then calls `str.append(p0, pos())`, where `str` is the reference that this object was initialized with, and `p0` is the return value of `pos()` before any call to `advance` and `advance_to` since the last call to `recycle()` ( all in this object ), or since this object's contruction, whatever happened last.
 - Calls `set_pos` and/or `set_end`.
-Postconditions:: `size() >= min_size_after_recycle<CharT>()`
+Postconditions:: `size() >= min_size_after_recycle<sizeof(CharT)>()`
 ====
 ====
 [source,cpp]
@@ -868,7 +868,7 @@ Effects::
 - If `good()` is `true` then calls `dest.sputn(p0, pos() - p0)`, where `dest` is the reference this object was initialized with, and `p0` is the return value of `pos()` before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
 - If the returned value of `dest.sputn` is less then `pos() - p0`, calls `set_good(false)`.
 - Calls `set_pos` and/or `set_end`.
-Postconditions:: `size() >= min_size_after_recycle<CharT>()`
+Postconditions:: `size() >= min_size_after_recycle<sizeof(CharT)>()`
 ====
 ====
 [source,cpp]
@@ -921,7 +921,7 @@ Effects::
     whatever happened last.
 -  If the returned value of std::fwrite is less then pos() - p0, calls set_good(false).
 -  Calls set_pos and/or set_end.
-Postconditions:: `size() >= min_size_after_recycle<CharT>()`
+Postconditions:: `size() >= min_size_after_recycle<sizeof(CharT)>()`
 ====
 ====
 [source,cpp]
