@@ -20,7 +20,7 @@ public:
 
     streambuf_that_fails_on_overflow()
     {
-        Base::setp(&m_buffer[0], &m_buffer[SIZE]);
+        Base::setp(&buffer_[0], &buffer_[SIZE]);
     }
 
     int_type overflow(int_type) override
@@ -35,7 +35,7 @@ public:
 
 private:
 
-    char_type m_buffer[SIZE];
+    char_type buffer_[SIZE];
 
 };
 

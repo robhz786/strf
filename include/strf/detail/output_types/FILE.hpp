@@ -16,15 +16,15 @@ class narrow_cfile_writer final: public strf::basic_outbuf_noexcept<CharT>
 {
 public:
 
-    explicit STRF_HD narrow_cfile_writer(std::FILE* dest_)
-        : strf::basic_outbuf_noexcept<CharT>(_buf, _buf_size)
-        , _dest(dest_)
+    explicit STRF_HD narrow_cfile_writer(std::FILE* d)
+        : strf::basic_outbuf_noexcept<CharT>(buf_, buf_size_)
+        , dest_(d)
     {
 #ifdef __CUDA_ARCH__
         // files are not accessible on CUDA devices
         asm("trap;");
 #endif
-        STRF_ASSERT(dest_ != nullptr);
+        STRF_ASSERT(d != nullptr);
     }
 
     STRF_HD narrow_cfile_writer() = delete;
@@ -54,11 +54,11 @@ public:
         asm("trap;");
 #else
         auto p = this->pos();
-        this->set_pos(_buf);
+        this->set_pos(buf_);
         if (this->good()) {
-            std::size_t count = p - _buf;
-            auto count_inc = std::fwrite(_buf, sizeof(CharT), count, _dest);
-            _count += count_inc;
+            std::size_t count = p - buf_;
+            auto count_inc = std::fwrite(buf_, sizeof(CharT), count, dest_);
+            count_ += count_inc;
             this->set_good(count == count_inc);
         }
 #endif
@@ -83,33 +83,33 @@ public:
         bool g = this->good();
         this->set_good(false);
         if (g) {
-            std::size_t count = this->pos() - _buf;
-            auto count_inc = std::fwrite(_buf, sizeof(CharT), count, _dest);
-            _count += count_inc;
+            std::size_t count = this->pos() - buf_;
+            auto count_inc = std::fwrite(buf_, sizeof(CharT), count, dest_);
+            count_ += count_inc;
             g = (count == count_inc);
         }
-        return {_count, g};
+        return {count_, g};
 #endif
     }
 
 private:
 
-    std::FILE* _dest;
-    std::size_t _count = 0;
-    static constexpr std::size_t _buf_size
+    std::FILE* dest_;
+    std::size_t count_ = 0;
+    static constexpr std::size_t buf_size_
         = strf::min_size_after_recycle<CharT>();
-    CharT _buf[_buf_size];
+    CharT buf_[buf_size_];
 };
 
 class wide_cfile_writer final: public strf::basic_outbuf_noexcept<wchar_t>
 {
 public:
 
-    explicit wide_cfile_writer(std::FILE* dest_)
-        : strf::basic_outbuf_noexcept<wchar_t>(_buf, _buf_size)
-        , _dest(dest_)
+    explicit wide_cfile_writer(std::FILE* d)
+        : strf::basic_outbuf_noexcept<wchar_t>(buf_, buf_size_)
+        , dest_(d)
     {
-        STRF_ASSERT(dest_ != nullptr);
+        STRF_ASSERT(d != nullptr);
     }
 
     wide_cfile_writer() = delete;
@@ -138,10 +138,10 @@ public:
         // the host-side version simply doesn't have object
         // code, so using it should fail linking
         auto p = this->pos();
-        this->set_pos(_buf);
+        this->set_pos(buf_);
         if (this->good()) {
-            for (auto it = _buf; it != p; ++it, ++_count) {
-                if(std::fputwc(*it, _dest) == WEOF) {
+            for (auto it = buf_; it != p; ++it, ++count_) {
+                if(std::fputwc(*it, dest_) == WEOF) {
                     this->set_good(false);
                     break;
                 }
@@ -160,16 +160,16 @@ public:
         recycle();
         auto g = this->good();
         this->set_good(false);
-        return {_count, g};
+        return {count_, g};
     }
 
   private:
 
-    std::FILE* _dest;
-    std::size_t _count = 0;
-    static constexpr std::size_t _buf_size
+    std::FILE* dest_;
+    std::size_t count_ = 0;
+    static constexpr std::size_t buf_size_
         = strf::min_size_after_recycle<wchar_t>();
-    wchar_t _buf[_buf_size];
+    wchar_t buf_[buf_size_];
 };
 
 namespace detail {
@@ -184,7 +184,7 @@ public:
     using finish_type = typename outbuf_type::result;
 
     constexpr narrow_cfile_writer_creator(FILE* file) noexcept
-        : _file(file)
+        : file_(file)
     {}
 
     constexpr narrow_cfile_writer_creator
@@ -192,11 +192,11 @@ public:
 
     outbuf_type create() const
     {
-        return outbuf_type{_file};
+        return outbuf_type{file_};
     }
 
 private:
-    FILE* _file;
+    FILE* file_;
 };
 
 class wide_cfile_writer_creator
@@ -208,19 +208,19 @@ public:
     using finish_type = typename outbuf_type::result;
 
     constexpr wide_cfile_writer_creator(FILE* file) noexcept
-        : _file(file)
+        : file_(file)
     {}
 
     constexpr wide_cfile_writer_creator(const wide_cfile_writer_creator&) = default;
 
     outbuf_type create() const
     {
-        return outbuf_type{_file};
+        return outbuf_type{file_};
     }
 
 private:
 
-    FILE* _file;
+    FILE* file_;
 };
 
 } // namespace detail

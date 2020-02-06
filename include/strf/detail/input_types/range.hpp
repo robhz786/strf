@@ -108,37 +108,37 @@ public:
                  , Preview& preview
                  , iterator begin
                  , iterator end )
-        : _fp(fp)
-        , _begin(begin)
-        , _end(end)
+        : fp_(fp)
+        , begin_(begin)
+        , end_(end)
     {
-        _preview(preview);
+        preview_(preview);
     }
 
     STRF_HD void print_to(strf::underlying_outbuf<sizeof(CharT)>& ob) const override;
 
 private:
 
-    STRF_HD void _preview(strf::print_preview<false, false>&) const
+    STRF_HD void preview_(strf::print_preview<false, false>&) const
     {
     }
 
     template < typename Preview
              , typename = std::enable_if_t< Preview::size_required
                                          || Preview::width_required > >
-    STRF_HD void _preview(Preview& preview) const;
+    STRF_HD void preview_(Preview& preview) const;
 
-    const FPack& _fp;
-    iterator _begin;
-    iterator _end;
+    const FPack& fp_;
+    iterator begin_;
+    iterator end_;
 };
 
 template <typename CharT, typename FPack, typename ForwardIt>
 template <typename Preview, typename >
-STRF_HD void range_printer<CharT, FPack, ForwardIt>::_preview(Preview& preview) const
+STRF_HD void range_printer<CharT, FPack, ForwardIt>::preview_(Preview& preview) const
 {
-    for(auto it = _begin; it != _end; ++it) {
-        make_printer<CharT, FPack>(strf::rank<5>{}, _fp, preview, *it);
+    for(auto it = begin_; it != end_; ++it) {
+        make_printer<CharT, FPack>(strf::rank<5>{}, fp_, preview, *it);
     }
 }
 
@@ -147,8 +147,8 @@ STRF_HD void range_printer<CharT, FPack, ForwardIt>::print_to
     ( strf::underlying_outbuf<sizeof(CharT)>& ob ) const
 {
     strf::print_preview<false, false> no_preview;
-    for(auto it = _begin; it != _end; ++it) {
-        make_printer<CharT, FPack>(strf::rank<5>{},_fp, no_preview, *it).print_to(ob);
+    for(auto it = begin_; it != end_; ++it) {
+        make_printer<CharT, FPack>(strf::rank<5>{},fp_, no_preview, *it).print_to(ob);
     }
 }
 
@@ -168,36 +168,36 @@ public:
         , iterator end
         , const CharT* sep
         , std::size_t sep_len )
-        : _fp(fp)
-        , _begin(begin)
-        , _end(end)
-        , _sep_begin(sep)
-        , _sep_len(sep_len)
+        : fp_(fp)
+        , begin_(begin)
+        , end_(end)
+        , sep_begin_(sep)
+        , sep_len_(sep_len)
     {
-        _preview(preview);
+        preview_(preview);
     }
 
     STRF_HD void print_to(strf::underlying_outbuf<sizeof(CharT)>& ob) const override;
 
 private:
 
-    STRF_HD void _preview(strf::print_preview<false, false>&) const
+    STRF_HD void preview_(strf::print_preview<false, false>&) const
     {
     }
 
     template < typename Preview
              , typename = std::enable_if_t< Preview::size_required
                                          || Preview::width_required > >
-    STRF_HD void _preview(Preview& preview) const;
+    STRF_HD void preview_(Preview& preview) const;
 
-    const FPack& _fp;
-    iterator _begin;
-    iterator _end;
-    const CharT* _sep_begin;
-    std::size_t _sep_len;
+    const FPack& fp_;
+    iterator begin_;
+    iterator end_;
+    const CharT* sep_begin_;
+    std::size_t sep_len_;
 
     template <typename Category>
-    decltype(auto) _get_facet(const FPack& fp) const
+    decltype(auto) get_facet_(const FPack& fp) const
     {
         using sep_tag = strf::range_separator_input_tag<CharT>;
         return fp.template get_facet<Category, sep_tag>();
@@ -206,11 +206,11 @@ private:
 
 template <typename CharT, typename FPack, typename It>
 template <typename Preview, typename>
-STRF_HD void separated_range_printer<CharT, FPack, It>::_preview(Preview& preview) const
+STRF_HD void separated_range_printer<CharT, FPack, It>::preview_(Preview& preview) const
 {
     std::size_t count = 0;
-    for(auto it = _begin; it != _end; ++it) {
-        make_printer<CharT, FPack>(strf::rank<5>{}, _fp, preview, *it);
+    for(auto it = begin_; it != end_; ++it) {
+        make_printer<CharT, FPack>(strf::rank<5>{}, fp_, preview, *it);
         ++ count;
         STRF_IF_CONSTEXPR (!Preview::size_required) {
             if (preview.remaining_width() <= 0) {
@@ -222,14 +222,14 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::_preview(Preview& previe
         return;
     }
     if (Preview::width_required) {
-        decltype(auto) wcalc = _get_facet<strf::width_calculator_c>(_fp);
+        decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(fp_);
         using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
-        auto dw = wcalc.width( _get_facet<strf::encoding_c<CharT>>(_fp)
+        auto dw = wcalc.width( get_facet_<strf::encoding_c<CharT>>(fp_)
                              , preview.remaining_width()
-                             , reinterpret_cast<const uchar*>(_sep_begin)
-                             , _sep_len
-                             , _get_facet<strf::encoding_error_c>(_fp)
-                             , _get_facet<strf::surrogate_policy_c>(_fp) );
+                             , reinterpret_cast<const uchar*>(sep_begin_)
+                             , sep_len_
+                             , get_facet_<strf::encoding_error_c>(fp_)
+                             , get_facet_<strf::surrogate_policy_c>(fp_) );
         if (dw != 0) {
             if (count > UINT32_MAX) {
                 preview.clear_remaining_width();
@@ -240,7 +240,7 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::_preview(Preview& previe
         }
     }
     if (Preview::size_required) {
-        preview.add_size((count - 1) * _sep_len);
+        preview.add_size((count - 1) * sep_len_);
     }
 }
 
@@ -250,13 +250,13 @@ STRF_HD void separated_range_printer<CharT, FPack, ForwardIt>::print_to
 {
     using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
     strf::print_preview<false, false> no_preview;
-    auto it = _begin;
-    if (it != _end) {
-        make_printer<CharT, FPack>(strf::rank<5>{}, _fp, no_preview, *it)
+    auto it = begin_;
+    if (it != end_) {
+        make_printer<CharT, FPack>(strf::rank<5>{}, fp_, no_preview, *it)
             .print_to(ob);
-        while (++it != _end) {
-            strf::write(ob, reinterpret_cast<const uchar*>(_sep_begin), _sep_len);
-            make_printer<CharT, FPack>(strf::rank<5>{}, _fp, no_preview, *it)
+        while (++it != end_) {
+            strf::write(ob, reinterpret_cast<const uchar*>(sep_begin_), sep_len_);
+            make_printer<CharT, FPack>(strf::rank<5>{}, fp_, no_preview, *it)
                 .print_to(ob);
         }
     }
@@ -268,19 +268,19 @@ template < typename CharOut
          , typename ... Fmts >
 class fmt_range_printer: public strf::printer<sizeof(CharOut)>
 {
-    using _value_type = typename std::iterator_traits<ForwardIt>::value_type;
-    using _value_fmt_type
+    using value_type_ = typename std::iterator_traits<ForwardIt>::value_type;
+    using value_fmt_type_
         = decltype( make_fmt( strf::rank<5>{}
-                            , std::declval<const _value_type&>()) );
-    using _value_fmt_type_adapted
-        = typename _value_fmt_type::template replace_fmts<Fmts...>;
+                            , std::declval<const value_type_&>()) );
+    using value_fmt_type_adapted_
+        = typename value_fmt_type_::template replace_fmts<Fmts...>;
 
-    using _fmt_type = detail::mp_replace_front
-        < _value_fmt_type
+    using fmt_type_ = detail::mp_replace_front
+        < value_fmt_type_
         , strf::range_p<ForwardIt> >;
 
-    using _fmt_type_adapted = detail::mp_replace_front
-        < _value_fmt_type_adapted
+    using fmt_type_adapted_ = detail::mp_replace_front
+        < value_fmt_type_adapted_
         , strf::range_p<ForwardIt> >;
 
 public:
@@ -288,28 +288,28 @@ public:
     template <typename Preview>
     STRF_HD fmt_range_printer( const FPack& fp
                      , Preview& preview
-                     , const _fmt_type_adapted& fmt)
-        : _fp(fp)
-        , _fmt(fmt)
+                     , const fmt_type_adapted_& fmt)
+        : fp_(fp)
+        , fmt_(fmt)
     {
-        _preview(preview);
+        preview_(preview);
     }
 
     STRF_HD void print_to(strf::underlying_outbuf<sizeof(CharOut)>& ob) const override;
 
 private:
 
-    STRF_HD void _preview(strf::print_preview<false, false>&) const
+    STRF_HD void preview_(strf::print_preview<false, false>&) const
     {
     }
 
     template < typename Preview
              , typename = std::enable_if_t< Preview::size_required
                                          || Preview::width_required > >
-    STRF_HD void _preview(Preview& preview) const;
+    STRF_HD void preview_(Preview& preview) const;
 
-    const FPack& _fp;
-    _fmt_type_adapted _fmt;
+    const FPack& fp_;
+    fmt_type_adapted_ fmt_;
 };
 
 
@@ -318,15 +318,15 @@ template < typename CharOut
          , typename ForwardIt
          , typename ... Fmts >
 template <typename Preview, typename >
-STRF_HD void fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::_preview
+STRF_HD void fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::preview_
     ( Preview& preview ) const
 {
-    auto r = _fmt.value();
+    auto r = fmt_.value();
     for(auto it = r.begin; it != r.end; ++it) {
         make_printer<CharOut, FPack>( strf::rank<5>{}
-                                    , _fp
+                                    , fp_
                                     , preview
-                                    , _value_fmt_type_adapted{{*it}, _fmt} );
+                                    , value_fmt_type_adapted_{{*it}, fmt_} );
     }
 }
 
@@ -338,12 +338,12 @@ STRF_HD void fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::print_to
     ( strf::underlying_outbuf<sizeof(CharOut)>& ob ) const
 {
     strf::print_preview<false, false> no_preview;
-    auto r = _fmt.value();
+    auto r = fmt_.value();
     for(auto it = r.begin; it != r.end; ++it) {
         make_printer<CharOut, FPack>( strf::rank<5>{}
-                                    , _fp
+                                    , fp_
                                     , no_preview
-                                    , _value_fmt_type_adapted{{*it}, _fmt} )
+                                    , value_fmt_type_adapted_{{*it}, fmt_} )
             .print_to(ob);
     }
 }
@@ -354,19 +354,19 @@ template< typename CharT
         , typename ... Fmts >
 class fmt_separated_range_printer: public strf::printer<sizeof(CharT)>
 {
-    using _value_type = typename std::iterator_traits<ForwardIt>::value_type;
-    using _value_fmt_type
+    using value_type_ = typename std::iterator_traits<ForwardIt>::value_type;
+    using value_fmt_type_
         = decltype( make_fmt( strf::rank<5>{}
-                            , std::declval<const _value_type&>()) );
-    using _value_fmt_type_adapted
-        = typename _value_fmt_type::template replace_fmts<Fmts...>;
+                            , std::declval<const value_type_&>()) );
+    using value_fmt_type_adapted_
+        = typename value_fmt_type_::template replace_fmts<Fmts...>;
 
-    using _fmt_type = detail::mp_replace_front
-        < _value_fmt_type
+    using fmt_type_ = detail::mp_replace_front
+        < value_fmt_type_
         , strf::separated_range_p<ForwardIt, CharT> >;
 
-    using _fmt_type_adapted = detail::mp_replace_front
-        < _value_fmt_type_adapted
+    using fmt_type_adapted_ = detail::mp_replace_front
+        < value_fmt_type_adapted_
         , strf::separated_range_p<ForwardIt, CharT> >;
 
 public:
@@ -374,31 +374,31 @@ public:
     template <typename Preview>
     STRF_HD fmt_separated_range_printer( const FPack& fp
                                        , Preview& preview
-                                       , const _fmt_type_adapted& fmt )
-        : _fp(fp)
-        , _fmt(fmt)
+                                       , const fmt_type_adapted_& fmt )
+        : fp_(fp)
+        , fmt_(fmt)
     {
-        _preview(preview);
+        preview_(preview);
     }
 
     STRF_HD void print_to(strf::underlying_outbuf<sizeof(CharT)>& ob) const override;
 
 private:
 
-    STRF_HD void _preview(strf::print_preview<false, false>&) const
+    STRF_HD void preview_(strf::print_preview<false, false>&) const
     {
     }
 
     template < typename Preview
              , typename = std::enable_if_t< Preview::size_required
                                          || Preview::width_required > >
-    STRF_HD void _preview(Preview& preview) const;
+    STRF_HD void preview_(Preview& preview) const;
 
-    const FPack& _fp;
-    _fmt_type_adapted _fmt;
+    const FPack& fp_;
+    fmt_type_adapted_ fmt_;
 
     template <typename Category>
-    static inline STRF_HD decltype(auto) _get_facet(const FPack& fp)
+    static inline STRF_HD decltype(auto) get_facet_(const FPack& fp)
     {
         using sep_tag = strf::range_separator_input_tag<CharT>;
         return fp.template get_facet<Category, sep_tag>();
@@ -410,16 +410,16 @@ template< typename CharT
         , typename ForwardIt
         , typename ... Fmts >
 template <typename Preview, typename>
-STRF_HD void fmt_separated_range_printer<CharT, FPack, ForwardIt, Fmts ...>::_preview
+STRF_HD void fmt_separated_range_printer<CharT, FPack, ForwardIt, Fmts ...>::preview_
     ( Preview& preview ) const
 {
-    auto r = _fmt.value();
+    auto r = fmt_.value();
     std::size_t count = 0;
     for(auto it = r.begin; it != r.end; ++it) {
         make_printer<CharT, FPack>( strf::rank<5>{}
-                                  , _fp
+                                  , fp_
                                   , preview
-                                  , _value_fmt_type_adapted{{*it}, _fmt} );
+                                  , value_fmt_type_adapted_{{*it}, fmt_} );
         ++ count;
         STRF_IF_CONSTEXPR (!Preview::size_required) {
             if (preview.remaining_width() <= 0) {
@@ -431,14 +431,14 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, ForwardIt, Fmts ...>::_pr
         return;
     }
     if (Preview::width_required) {
-        decltype(auto) wcalc = _get_facet<strf::width_calculator_c>(_fp);
+        decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(fp_);
         using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
-        auto dw = wcalc.width( _get_facet<strf::encoding_c<CharT>>(_fp)
+        auto dw = wcalc.width( get_facet_<strf::encoding_c<CharT>>(fp_)
                              , preview.remaining_width()
                              , reinterpret_cast<const uchar*>(r.sep_begin)
                              , r.sep_len
-                             , _get_facet<strf::encoding_error_c>(_fp)
-                             , _get_facet<strf::surrogate_policy_c>(_fp) );
+                             , get_facet_<strf::encoding_error_c>(fp_)
+                             , get_facet_<strf::surrogate_policy_c>(fp_) );
         if (dw != 0) {
             if (count > UINT32_MAX) {
                 preview.clear_remaining_width();
@@ -462,16 +462,16 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, ForwardIt, Fmts ...>
 {
     using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
     strf::print_preview<false, false> no_preview;
-    auto r = _fmt.value();
+    auto r = fmt_.value();
     auto it = r.begin;
     if (it != r.end) {
         make_printer<CharT, FPack>
-            ( strf::rank<5>{}, _fp, no_preview, _value_fmt_type_adapted{{*it}, _fmt} )
+            ( strf::rank<5>{}, fp_, no_preview, value_fmt_type_adapted_{{*it}, fmt_} )
             .print_to(ob);
         while(++it != r.end) {
             strf::write(ob, reinterpret_cast<const uchar*>(r.sep_begin), r.sep_len);
             make_printer<CharT, FPack>
-                ( strf::rank<5>{}, _fp, no_preview, _value_fmt_type_adapted{{*it}, _fmt} )
+                ( strf::rank<5>{}, fp_, no_preview, value_fmt_type_adapted_{{*it}, fmt_} )
                 .print_to(ob);
         }
     }
@@ -491,40 +491,40 @@ public:
                              , iterator begin
                              , iterator end
                              , UnaryOp op )
-        : _fp(fp)
-        , _begin(begin)
-        , _end(end)
-        , _op(op)
+        : fp_(fp)
+        , begin_(begin)
+        , end_(end)
+        , op_(op)
     {
-        _preview(preview);
+        preview_(preview);
     }
 
     STRF_HD void print_to(strf::underlying_outbuf<sizeof(CharT)>& ob) const override;
 
 private:
 
-    STRF_HD void _preview(strf::print_preview<false, false>&) const
+    STRF_HD void preview_(strf::print_preview<false, false>&) const
     {
     }
 
     template < typename Preview
              , typename = std::enable_if_t< Preview::size_required
                                          || Preview::width_required > >
-    STRF_HD void _preview(Preview& preview) const;
+    STRF_HD void preview_(Preview& preview) const;
 
-    const FPack& _fp;
-    iterator _begin;
-    iterator _end;
-    UnaryOp _op;
+    const FPack& fp_;
+    iterator begin_;
+    iterator end_;
+    UnaryOp op_;
 };
 
 template <typename CharT, typename FPack, typename ForwardIt, typename UnaryOp>
 template <typename Preview, typename >
 STRF_HD void transformed_range_printer<CharT, FPack, ForwardIt, UnaryOp>
-    ::_preview(Preview& preview) const
+    ::preview_(Preview& preview) const
 {
-    for(auto it = _begin; it != _end; ++it) {
-        make_printer<CharT, FPack>(strf::rank<5>{}, _fp, preview, _op(*it));
+    for(auto it = begin_; it != end_; ++it) {
+        make_printer<CharT, FPack>(strf::rank<5>{}, fp_, preview, op_(*it));
     }
 }
 
@@ -533,8 +533,8 @@ STRF_HD void transformed_range_printer<CharT, FPack, ForwardIt, UnaryOp>::print_
     ( strf::underlying_outbuf<sizeof(CharT)>& ob ) const
 {
     strf::print_preview<false, false> no_preview;
-    for(auto it = _begin; it != _end; ++it) {
-        make_printer<CharT, FPack>(strf::rank<5>{},_fp, no_preview, _op(*it))
+    for(auto it = begin_; it != end_; ++it) {
+        make_printer<CharT, FPack>(strf::rank<5>{},fp_, no_preview, op_(*it))
             .print_to(ob);
     }
 }
@@ -556,38 +556,38 @@ public:
         , const CharT* sep
         , std::size_t sep_len
         , UnaryOp op )
-        : _fp(fp)
-        , _begin(begin)
-        , _end(end)
-        , _sep_begin(sep)
-        , _sep_len(sep_len)
-        , _op(op)
+        : fp_(fp)
+        , begin_(begin)
+        , end_(end)
+        , sep_begin_(sep)
+        , sep_len_(sep_len)
+        , op_(op)
     {
-        _preview(preview);
+        preview_(preview);
     }
 
     STRF_HD void print_to(strf::underlying_outbuf<sizeof(CharT)>& ob) const override;
 
 private:
 
-    STRF_HD void _preview(strf::print_preview<false, false>&) const
+    STRF_HD void preview_(strf::print_preview<false, false>&) const
     {
     }
 
     template < typename Preview
              , typename = std::enable_if_t< Preview::size_required
                                          || Preview::width_required > >
-    STRF_HD void _preview(Preview& preview) const;
+    STRF_HD void preview_(Preview& preview) const;
 
-    const FPack& _fp;
-    iterator _begin;
-    iterator _end;
-    const CharT* _sep_begin;
-    std::size_t _sep_len;
-    UnaryOp _op;
+    const FPack& fp_;
+    iterator begin_;
+    iterator end_;
+    const CharT* sep_begin_;
+    std::size_t sep_len_;
+    UnaryOp op_;
 
     template <typename Category>
-    STRF_HD decltype(auto) _get_facet(const FPack& fp) const
+    STRF_HD decltype(auto) get_facet_(const FPack& fp) const
     {
         using sep_tag = strf::range_separator_input_tag<CharT>;
         return fp.template get_facet<Category, sep_tag>();
@@ -597,11 +597,11 @@ private:
 template <typename CharT, typename FPack, typename It, typename UnaryOp>
 template <typename Preview, typename>
 STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
-    ::_preview(Preview& preview) const
+    ::preview_(Preview& preview) const
 {
     std::size_t count = 0;
-    for(auto it = _begin; it != _end; ++it) {
-        make_printer<CharT, FPack>(strf::rank<5>{}, _fp, preview, _op(*it));
+    for(auto it = begin_; it != end_; ++it) {
+        make_printer<CharT, FPack>(strf::rank<5>{}, fp_, preview, op_(*it));
         ++ count;
         STRF_IF_CONSTEXPR (!Preview::size_required) {
             if (preview.remaining_width() <= 0) {
@@ -613,14 +613,14 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
         return;
     }
     if (Preview::width_required) {
-        decltype(auto) wcalc = _get_facet<strf::width_calculator_c>(_fp);
+        decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(fp_);
         using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
-        auto dw = wcalc.width( _get_facet<strf::encoding_c<CharT>>(_fp)
+        auto dw = wcalc.width( get_facet_<strf::encoding_c<CharT>>(fp_)
                              , preview.remaining_width()
-                             , reinterpret_cast<const uchar*>(_sep_begin)
-                             , _sep_len
-                             , _get_facet<strf::encoding_error_c>(_fp)
-                             , _get_facet<strf::surrogate_policy_c>(_fp) );
+                             , reinterpret_cast<const uchar*>(sep_begin_)
+                             , sep_len_
+                             , get_facet_<strf::encoding_error_c>(fp_)
+                             , get_facet_<strf::surrogate_policy_c>(fp_) );
         if (dw != 0) {
             if (count > UINT32_MAX) {
                 preview.clear_remaining_width();
@@ -631,7 +631,7 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
         }
     }
     if (Preview::size_required) {
-        preview.add_size((count - 1) * _sep_len);
+        preview.add_size((count - 1) * sep_len_);
     }
 }
 
@@ -641,13 +641,13 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
 {
     strf::print_preview<false, false> no_preview;
     using uchar = strf::underlying_outbuf_char_type<sizeof(CharT)>;
-    auto it = _begin;
-    if (it != _end) {
-        make_printer<CharT, FPack>(strf::rank<5>{}, _fp, no_preview, _op(*it))
+    auto it = begin_;
+    if (it != end_) {
+        make_printer<CharT, FPack>(strf::rank<5>{}, fp_, no_preview, op_(*it))
             .print_to(ob);
-        while (++it != _end) {
-            strf::write(ob, reinterpret_cast<const uchar*>(_sep_begin), _sep_len);
-            make_printer<CharT, FPack>(strf::rank<5>{}, _fp, no_preview, _op(*it))
+        while (++it != end_) {
+            strf::write(ob, reinterpret_cast<const uchar*>(sep_begin_), sep_len_);
+            make_printer<CharT, FPack>(strf::rank<5>{}, fp_, no_preview, op_(*it))
                 .print_to(ob);
         }
     }

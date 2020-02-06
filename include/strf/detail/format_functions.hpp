@@ -98,7 +98,7 @@ public:
     using replace_fmts = strf::value_with_format<ValueType, OhterFmts ...>;
 
     explicit constexpr STRF_HD value_with_format(const ValueType& v)
-        : _value(v)
+        : value_(v)
     {
     }
 
@@ -111,7 +111,7 @@ public:
               < const typename Fmts
              :: template fn<value_with_format<OtherValueType, Fmts...>>& >(f) )
         ...
-        , _value(v)
+        , value_(v)
     {
     }
 
@@ -124,7 +124,7 @@ public:
               < typename Fmts
              :: template fn<value_with_format<OtherValueType, Fmts...>> &&>(f) )
         ...
-        , _value(static_cast<ValueType&&>(v))
+        , value_(static_cast<ValueType&&>(v))
     {
     }
 
@@ -136,7 +136,7 @@ public:
         : F::template fn<value_with_format<ValueType, Fmts...>>
             (std::forward<FInit>(finit))
         ...
-        , _value(v)
+        , value_(v)
     {
     }
 
@@ -148,7 +148,7 @@ public:
               < const typename OtherFmts
              :: template fn<value_with_format<ValueType, OtherFmts ...>>& >(f) )
         ...
-        , _value(f.value())
+        , value_(f.value())
     {
     }
 
@@ -160,7 +160,7 @@ public:
               < typename OtherFmts
              :: template fn<value_with_format<ValueType, OtherFmts ...>>&& >(f) )
         ...
-        , _value(static_cast<ValueType&&>(f.value()))
+        , value_(static_cast<ValueType&&>(f.value()))
     {
     }
 
@@ -176,23 +176,23 @@ public:
                   , strf::value_with_format<ValueType, OtherFmts...> >
               :: template f<FmtInit>(fmt_init, f) )
             ...
-        , _value(f.value())
+        , value_(f.value())
     {
     }
 
     constexpr STRF_HD const ValueType& value() const
     {
-        return _value;
+        return value_;
     }
 
     constexpr STRF_HD ValueType& value()
     {
-        return _value;
+        return value_;
     }
 
 private:
 
-    ValueType _value;
+    ValueType value_;
 };
 
 template <bool Active>
@@ -244,67 +244,67 @@ public:
 
     constexpr STRF_HD explicit alignment_format_fn
         ( strf::alignment_format_data data) noexcept
-        : _data(data)
+        : data_(data)
     {
     }
 
     template <bool B, typename U>
     constexpr STRF_HD explicit alignment_format_fn
         ( const strf::alignment_format_fn<B, U>& u ) noexcept
-        : _data(u.get_alignment_format_data())
+        : data_(u.get_alignment_format_data())
     {
     }
 
     constexpr STRF_HD T&& operator<(std::int16_t width) && noexcept
     {
-        _data.alignment = strf::text_alignment::left;
-        _data.width = width;
+        data_.alignment = strf::text_alignment::left;
+        data_.width = width;
         return as_derived_rval_ref();
     }
     constexpr STRF_HD T&& operator>(std::int16_t width) && noexcept
     {
-        _data.alignment = strf::text_alignment::right;
-        _data.width = width;
+        data_.alignment = strf::text_alignment::right;
+        data_.width = width;
         return as_derived_rval_ref();
     }
     constexpr STRF_HD T&& operator^(std::int16_t width) && noexcept
     {
-        _data.alignment = strf::text_alignment::center;
-        _data.width = width;
+        data_.alignment = strf::text_alignment::center;
+        data_.width = width;
         return as_derived_rval_ref();
     }
     constexpr STRF_HD T&& operator%(std::int16_t width) && noexcept
     {
-        _data.alignment = strf::text_alignment::split;
-        _data.width = width;
+        data_.alignment = strf::text_alignment::split;
+        data_.width = width;
         return as_derived_rval_ref();
     }
     constexpr STRF_HD T&& fill(char32_t ch) && noexcept
     {
-        _data.fill = ch;
+        data_.fill = ch;
         return as_derived_rval_ref();
     }
     constexpr STRF_HD std::int16_t width() const noexcept
     {
-        return _data.width;
+        return data_.width;
     }
     constexpr STRF_HD strf::text_alignment alignment() const noexcept
     {
-        return _data.alignment;
+        return data_.alignment;
     }
     constexpr STRF_HD char32_t fill() const noexcept
     {
-        return _data.fill;
+        return data_.fill;
     }
 
     constexpr STRF_HD alignment_format_data get_alignment_format_data() const noexcept
     {
-        return _data;
+        return data_;
     }
 
 private:
 
-    strf::alignment_format_data _data;
+    strf::alignment_format_data data_;
 };
 
 template <class T>
@@ -411,7 +411,7 @@ class quantity_format_fn
 public:
 
     constexpr STRF_HD quantity_format_fn(std::size_t count) noexcept
-        : _count(count)
+        : count_(count)
     {
     }
 
@@ -421,23 +421,23 @@ public:
 
     template <typename U>
     constexpr STRF_HD explicit quantity_format_fn(const quantity_format_fn<U>& u) noexcept
-        : _count(u.count())
+        : count_(u.count())
     {
     }
 
     constexpr STRF_HD T&& multi(std::size_t count) && noexcept
     {
-        _count = count;
+        count_ = count;
         return static_cast<T&&>(*this);
     }
     constexpr STRF_HD std::size_t count() const noexcept
     {
-        return _count;
+        return count_;
     }
 
 private:
 
-    std::size_t _count = 1;
+    std::size_t count_ = 1;
 };
 
 struct quantity_format

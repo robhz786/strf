@@ -27,18 +27,18 @@ public:
         , strf::detail::simple_string_view<SrcChar> str
         , const SrcEncoding& src_enc
         , strf::tag<DestChar> ) noexcept
-        : _str(reinterpret_cast<const char_in_type*>(str.begin()))
-        , _len(str.size())
-        , _enc_err(_get_facet<strf::encoding_error_c, SrcChar>(fp))
-        , _allow_surr(_get_facet<strf::surrogate_policy_c, SrcChar>(fp))
+        : str_(reinterpret_cast<const char_in_type*>(str.begin()))
+        , len_(str.size())
+        , enc_err_(get_facet_<strf::encoding_error_c, SrcChar>(fp))
+        , allow_surr_(get_facet_<strf::surrogate_policy_c, SrcChar>(fp))
     {
         static_assert(sizeof(SrcChar) == SrcCharSize, "Incompatible char type");
         static_assert(sizeof(DestChar) == DestCharSize, "Incompatible char type");
 
         init_( preview
-             , _get_facet<strf::width_calculator_c, SrcChar>(fp)
+             , get_facet_<strf::width_calculator_c, SrcChar>(fp)
              , src_enc
-             , _get_facet<strf::encoding_c<DestChar>, SrcChar>(fp) );
+             , get_facet_<strf::encoding_c<DestChar>, SrcChar>(fp) );
     }
 
     template <typename FPack, typename Preview, typename SrcChar, typename DestChar>
@@ -49,7 +49,7 @@ public:
         , strf::tag<DestChar> char_tag ) noexcept
         : cv_string_printer
               ( fp, preview, str
-              , _get_facet<strf::encoding_c<SrcChar>, SrcChar>(fp), char_tag )
+              , get_facet_<strf::encoding_c<SrcChar>, SrcChar>(fp), char_tag )
     {
     }
 
@@ -70,14 +70,14 @@ private:
         static_assert(SrcEncoding::char_size == SrcCharSize, "Incompatible char type");
         static_assert(DestEncoding::char_size == DestCharSize, "Incompatible char type");
         decltype(auto) transcoder = get_transcoder(src_enc, dest_enc);
-        _transcode = transcoder.transcode;
-        if (_transcode == nullptr) {
-            _src_to_u32 = src_enc.to_u32().transcode;
-            _u32_to_dest = dest_enc.from_u32().transcode;
+        transcode_ = transcoder.transcode;
+        if (transcode_ == nullptr) {
+            src_to_u32_ = src_enc.to_u32().transcode;
+            u32_to_dest_ = dest_enc.from_u32().transcode;
         }
         STRF_IF_CONSTEXPR (Preview::width_required) {
-            auto w = wcalc.width( src_enc, preview.remaining_width(), _str, _len
-                                , _enc_err, _allow_surr );
+            auto w = wcalc.width( src_enc, preview.remaining_width(), str_, len_
+                                , enc_err_, allow_surr_ );
             preview.subtract_width(w);
         }
         STRF_IF_CONSTEXPR (Preview::size_required) {
@@ -85,12 +85,12 @@ private:
                 = transcoder.necessary_size;
             std::size_t s = 0;
             if (transcode_size != nullptr) {
-                s = transcode_size(_str, _str + _len, _allow_surr);
+                s = transcode_size(str_, str_ + len_, allow_surr_);
             } else {
                 s = strf::decode_encode_size<SrcCharSize>
                     ( src_enc.to_u32().transcode
                     , dest_enc.from_u32().necessary_size
-                    , _str, _str + _len, _enc_err, _allow_surr );
+                    , str_, str_ + len_, enc_err_, allow_surr_ );
             }
             preview.add_size(s);
         }
@@ -98,20 +98,20 @@ private:
 
     STRF_HD bool can_transcode_directly() const
     {
-        return _u32_to_dest == nullptr;
+        return u32_to_dest_ == nullptr;
     }
 
-    const char_in_type* const _str;
-    const std::size_t _len;
+    const char_in_type* const str_;
+    const std::size_t len_;
     union {
-        strf::transcode_func<SrcCharSize, DestCharSize>  _transcode;
-        strf::transcode_func<SrcCharSize, 4>  _src_to_u32;
+        strf::transcode_func<SrcCharSize, DestCharSize>  transcode_;
+        strf::transcode_func<SrcCharSize, 4>  src_to_u32_;
     };
-    strf::transcode_func<4, DestCharSize>  _u32_to_dest = nullptr;
-    const strf::encoding_error _enc_err;
-    const strf::surrogate_policy _allow_surr;
+    strf::transcode_func<4, DestCharSize>  u32_to_dest_ = nullptr;
+    const strf::encoding_error enc_err_;
+    const strf::surrogate_policy allow_surr_;
     template <typename Category, typename SrcChar, typename FPack>
-    static STRF_HD decltype(auto) _get_facet(const FPack& fp)
+    static STRF_HD decltype(auto) get_facet_(const FPack& fp)
     {
         using input_tag = strf::string_input_tag<SrcChar>;
         return fp.template get_facet<Category, input_tag>();
@@ -123,11 +123,11 @@ STRF_HD void cv_string_printer<SrcCharSize, DestCharSize>::print_to
     ( strf::underlying_outbuf<DestCharSize>& ob ) const
 {
     if (can_transcode_directly()) {
-        _transcode(ob, _str, _str + _len, _enc_err, _allow_surr);
+        transcode_(ob, str_, str_ + len_, enc_err_, allow_surr_);
     } else {
         strf::decode_encode<SrcCharSize, DestCharSize>
-            ( ob, _src_to_u32, _u32_to_dest, _str
-            , _str + _len, _enc_err, _allow_surr );
+            ( ob, src_to_u32_, u32_to_dest_, str_
+            , str_ + len_, enc_err_, allow_surr_ );
     }
 }
 
@@ -146,18 +146,18 @@ public:
         , strf::alignment_format_data text_alignment
         , const SrcEncoding& src_enc
         , strf::tag<DestChar> ) noexcept
-        : _str(reinterpret_cast<const char_in_type*>(str.begin()))
-        , _len(str.size())
-        , _afmt(text_alignment)
-        , _enc_err(_get_facet<strf::encoding_error_c, SrcChar>(fp))
-        , _allow_surr(_get_facet<strf::surrogate_policy_c, SrcChar>(fp))
+        : str_(reinterpret_cast<const char_in_type*>(str.begin()))
+        , len_(str.size())
+        , afmt_(text_alignment)
+        , enc_err_(get_facet_<strf::encoding_error_c, SrcChar>(fp))
+        , allow_surr_(get_facet_<strf::surrogate_policy_c, SrcChar>(fp))
     {
         static_assert(sizeof(SrcChar) == SrcCharSize, "Incompatible char type");
         static_assert(sizeof(DestChar) == DestCharSize, "Incompatible char type");
         init_( preview
-             , _get_facet<strf::width_calculator_c, SrcChar>(fp)
+             , get_facet_<strf::width_calculator_c, SrcChar>(fp)
              , src_enc
-             , _get_facet<strf::encoding_c<DestChar>, SrcChar>(fp) );
+             , get_facet_<strf::encoding_c<DestChar>, SrcChar>(fp) );
     }
 
     template <typename FPack, typename Preview, typename SrcChar, typename DestChar>
@@ -169,7 +169,7 @@ public:
         , strf::tag<DestChar> ch_tag ) noexcept
         : fmt_cv_string_printer
             ( fp, preview, str, text_alignment
-            , _get_facet<strf::encoding_c<SrcChar>, SrcChar>(fp), ch_tag )
+            , get_facet_<strf::encoding_c<SrcChar>, SrcChar>(fp), ch_tag )
     {
     }
 
@@ -179,25 +179,25 @@ private:
 
     STRF_HD bool can_transcode_directly() const
     {
-        return _u32_to_dest == nullptr;
+        return u32_to_dest_ == nullptr;
     }
 
-    const char_in_type* _str;
-    std::size_t _len;
-    strf::alignment_format_data _afmt;
+    const char_in_type* str_;
+    std::size_t len_;
+    strf::alignment_format_data afmt_;
     union {
-        strf::transcode_func<SrcCharSize, DestCharSize>  _transcode;
-        strf::transcode_func<SrcCharSize, 4>  _src_to_u32;
+        strf::transcode_func<SrcCharSize, DestCharSize>  transcode_;
+        strf::transcode_func<SrcCharSize, 4>  src_to_u32_;
     };
-    strf::transcode_func<4, DestCharSize>  _u32_to_dest = nullptr;
-    strf::encode_fill_func<DestCharSize> _encode_fill = nullptr;
-    const strf::encoding_error _enc_err;
-    const strf::surrogate_policy  _allow_surr;
-    std::uint16_t _left_fillcount = 0;
-    std::uint16_t _right_fillcount = 0;
+    strf::transcode_func<4, DestCharSize>  u32_to_dest_ = nullptr;
+    strf::encode_fill_func<DestCharSize> encode_fill_ = nullptr;
+    const strf::encoding_error enc_err_;
+    const strf::surrogate_policy  allow_surr_;
+    std::uint16_t left_fillcount_ = 0;
+    std::uint16_t right_fillcount_ = 0;
 
     template <typename Category, typename SrcChar, typename FPack>
-    static STRF_HD decltype(auto) _get_facet(const FPack& fp)
+    static STRF_HD decltype(auto) get_facet_(const FPack& fp)
     {
         using input_tag = strf::string_input_tag<SrcChar>;
         return fp.template get_facet<Category, input_tag>();
@@ -219,41 +219,41 @@ void STRF_HD fmt_cv_string_printer<SrcCharSize, DestCharSize>::init_
     static_assert(SrcEnc::char_size == SrcCharSize, "Incompatible char type");
     static_assert(DestEnc::char_size == DestCharSize, "Incompatible char type");
 
-    _encode_fill = dest_enc.encode_fill;
+    encode_fill_ = dest_enc.encode_fill;
     decltype(auto) transcoder = get_transcoder(src_enc, dest_enc);
-    _transcode = transcoder.transcode;
-    if (_transcode == nullptr) {
-        _src_to_u32 = src_enc.to_u32().transcode;
-        _u32_to_dest = dest_enc.from_u32().transcode;
+    transcode_ = transcoder.transcode;
+    if (transcode_ == nullptr) {
+        src_to_u32_ = src_enc.to_u32().transcode;
+        u32_to_dest_ = dest_enc.from_u32().transcode;
     }
     std::uint16_t fillcount = 0;
-    strf::width_t fmt_width = _afmt.width;
+    strf::width_t fmt_width = afmt_.width;
     strf::width_t limit =
         ( Preview::width_required && preview.remaining_width() > fmt_width
         ? preview.remaining_width()
         : fmt_width );
-    auto strw = wcalc.width(src_enc, limit, _str, _len , _enc_err, _allow_surr);
+    auto strw = wcalc.width(src_enc, limit, str_, len_ , enc_err_, allow_surr_);
     if (fmt_width > strw) {
         fillcount = (fmt_width - strw).round();
-        switch(_afmt.alignment) {
+        switch(afmt_.alignment) {
             case strf::text_alignment::left:
-                _left_fillcount = 0;
-                _right_fillcount = fillcount;
+                left_fillcount_ = 0;
+                right_fillcount_ = fillcount;
                 break;
             case strf::text_alignment::center: {
                 std::uint16_t halfcount = fillcount / 2;
-                _left_fillcount = halfcount;
-                _right_fillcount = fillcount - halfcount;
+                left_fillcount_ = halfcount;
+                right_fillcount_ = fillcount - halfcount;
                 break;
             }
             default:
-                _left_fillcount = fillcount;
-                _right_fillcount = 0;
+                left_fillcount_ = fillcount;
+                right_fillcount_ = 0;
         }
         preview.subtract_width(strw + fillcount);
     } else {
-        _right_fillcount = 0;
-        _left_fillcount = 0;
+        right_fillcount_ = 0;
+        left_fillcount_ = 0;
         preview.subtract_width(strw);
     }
     STRF_IF_CONSTEXPR (Preview::size_required) {
@@ -261,14 +261,14 @@ void STRF_HD fmt_cv_string_printer<SrcCharSize, DestCharSize>::init_
         strf::transcode_size_func<SrcCharSize>  transcode_size
                 = transcoder.necessary_size;
         if (transcode_size != nullptr) {
-            s = transcode_size(_str, _str + _len, _allow_surr);
+            s = transcode_size(str_, str_ + len_, allow_surr_);
         } else {
             s = strf::decode_encode_size<SrcCharSize>
                 ( src_enc.to_u32().transcode, dest_enc.from_u32().necessary_size
-                , _str, _str + _len, _enc_err, _allow_surr );
+                , str_, str_ + len_, enc_err_, allow_surr_ );
         }
         if (fillcount > 0) {
-            s += dest_enc.encoded_char_size(_afmt.fill) * fillcount;
+            s += dest_enc.encoded_char_size(afmt_.fill) * fillcount;
         }
         preview.add_size(s);
     }
@@ -278,18 +278,18 @@ template<std::size_t SrcCharSize, std::size_t DestCharSize>
 void STRF_HD fmt_cv_string_printer<SrcCharSize, DestCharSize>::print_to
     ( strf::underlying_outbuf<DestCharSize>& ob ) const
 {
-    if (_left_fillcount > 0) {
-        _encode_fill(ob, _left_fillcount, _afmt.fill, _enc_err, _allow_surr);
+    if (left_fillcount_ > 0) {
+        encode_fill_(ob, left_fillcount_, afmt_.fill, enc_err_, allow_surr_);
     }
     if (can_transcode_directly()) {
-        _transcode(ob, _str, _str + _len, _enc_err, _allow_surr);
+        transcode_(ob, str_, str_ + len_, enc_err_, allow_surr_);
     } else {
         strf::decode_encode<SrcCharSize, DestCharSize>
-            ( ob, _src_to_u32, _u32_to_dest, _str
-            , _str + _len, _enc_err, _allow_surr );
+            ( ob, src_to_u32_, u32_to_dest_, str_
+            , str_ + len_, enc_err_, allow_surr_ );
     }
-    if (_right_fillcount > 0) {
-        _encode_fill(ob, _right_fillcount, _afmt.fill, _enc_err, _allow_surr);
+    if (right_fillcount_ > 0) {
+        encode_fill_(ob, right_fillcount_, afmt_.fill, enc_err_, allow_surr_);
     }
 }
 

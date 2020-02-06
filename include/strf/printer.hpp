@@ -79,47 +79,47 @@ class width_preview<true>
 public:
 
     explicit constexpr STRF_HD width_preview(strf::width_t initial_width) noexcept
-        : _width(initial_width)
+        : width_(initial_width)
     {}
 
     STRF_HD width_preview(const width_preview&) = delete;
 
     constexpr STRF_HD void subtract_width(strf::width_t w) noexcept
     {
-        _width -= w;
+        width_ -= w;
     }
 
     constexpr STRF_HD void checked_subtract_width(strf::width_t w) noexcept
     {
-        if (w < _width) {
-            _width -= w;
+        if (w < width_) {
+            width_ -= w;
         } else {
-            _width = 0;
+            width_ = 0;
         }
     }
 
     constexpr STRF_HD void checked_subtract_width(std::ptrdiff_t w) noexcept
     {
-        if (w < _width.ceil()) {
-            _width -= static_cast<std::int16_t>(w);
+        if (w < width_.ceil()) {
+            width_ -= static_cast<std::int16_t>(w);
         } else {
-            _width = 0;
+            width_ = 0;
         }
     }
 
     constexpr STRF_HD void clear_remaining_width() noexcept
     {
-        _width = 0;
+        width_ = 0;
     }
 
     constexpr STRF_HD strf::width_t remaining_width() const noexcept
     {
-        return _width;
+        return width_;
     }
 
 private:
 
-    strf::width_t _width;
+    strf::width_t width_;
 };
 
 template <>
@@ -161,7 +161,7 @@ class size_preview<true>
 {
 public:
     explicit constexpr STRF_HD size_preview(std::size_t initial_size = 0) noexcept
-        : _size(initial_size)
+        : size_(initial_size)
     {
     }
 
@@ -169,17 +169,17 @@ public:
 
     constexpr STRF_HD void add_size(std::size_t s) noexcept
     {
-        _size += s;
+        size_ += s;
     }
 
     constexpr STRF_HD std::size_t get_size() const noexcept
     {
-        return _size;
+        return size_;
     }
 
 private:
 
-    std::size_t _size;
+    std::size_t size_;
 };
 
 template <>

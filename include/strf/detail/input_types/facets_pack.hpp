@@ -54,14 +54,14 @@ public:
         ( const ParentFPack& parent_fp
         , Preview& preview
         , const strf::inner_pack_with_args<ChildFPack, Args...>& args )
-        : _fp{parent_fp, args.fp}
-        , _printers{_fp, preview, args.args, strf::tag<CharT>()}
+        : fp_{parent_fp, args.fp}
+        , printers_{fp_, preview, args.args, strf::tag<CharT>()}
     {
     }
 
     STRF_HD void print_to(strf::underlying_outbuf<sizeof(CharT)>& ob) const override
     {
-        strf::detail::write(ob, _printers);
+        strf::detail::write(ob, printers_);
     }
 
     STRF_HD virtual ~facets_pack_printer()
@@ -70,14 +70,14 @@ public:
 
 private:
 
-    strf::facets_pack<ParentFPack, ChildFPack> _fp;
+    strf::facets_pack<ParentFPack, ChildFPack> fp_;
 
     strf::detail::printers_tuple_from_args
         < CharT
         , strf::facets_pack<ParentFPack, ChildFPack>
         , Preview
         , Args... >
-    _printers;
+    printers_;
 };
 
 template <typename ... F>

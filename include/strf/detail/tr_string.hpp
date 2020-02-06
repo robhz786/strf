@@ -309,12 +309,12 @@ public:
         , const char_type* tr_string_end
         , const Encoding& enc
         , strf::tr_invalid_arg policy ) noexcept
-        : _tr_string(reinterpret_cast<const char_type*>(tr_string))
-        , _tr_string_end(reinterpret_cast<const char_type*>(tr_string_end))
-        , _write_replacement_char_func(enc.write_replacement_char)
-        , _printers_array(printers.begin())
-        , _num_printers(printers.size())
-        , _policy(policy)
+        : tr_string_(reinterpret_cast<const char_type*>(tr_string))
+        , tr_string_end_(reinterpret_cast<const char_type*>(tr_string_end))
+        , write_replacement_char_func_(enc.write_replacement_char)
+        , printers_array_(printers.begin())
+        , num_printers_(printers.size())
+        , policy_(policy)
     {
         STRF_IF_CONSTEXPR (SizeRequested) {
             std::size_t invalid_arg_size;
@@ -342,18 +342,18 @@ public:
     void print_to(strf::underlying_outbuf<CharSize>& ob) const
     {
         strf::detail::tr_string_write
-            ( _tr_string, _tr_string_end, _printers_array, _num_printers
-            , ob, _write_replacement_char_func, _policy );
+            ( tr_string_, tr_string_end_, printers_array_, num_printers_
+            , ob, write_replacement_char_func_, policy_ );
     }
 
 private:
 
-    const char_type* _tr_string;
-    const char_type* _tr_string_end;
-    strf::write_replacement_char_func<CharSize> _write_replacement_char_func;
-    const strf::printer<CharSize>* const * _printers_array;
-    std::size_t _num_printers;
-    strf::tr_invalid_arg _policy;
+    const char_type* tr_string_;
+    const char_type* tr_string_end_;
+    strf::write_replacement_char_func<CharSize> write_replacement_char_func_;
+    const strf::printer<CharSize>* const * printers_array_;
+    std::size_t num_printers_;
+    strf::tr_invalid_arg policy_;
 };
 
 

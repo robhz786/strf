@@ -52,37 +52,37 @@ public:
 
     STRF_HD char_type* pos() const noexcept
     {
-        return _pos;
+        return pos_;
     }
     STRF_HD char_type* end() const noexcept
     {
-        return _end;
+        return end_;
     }
     STRF_HD std::size_t size() const noexcept
     {
-        STRF_ASSERT(_pos <= _end);
-        return _end - _pos;
+        STRF_ASSERT(pos_ <= end_);
+        return end_ - pos_;
     }
 
     STRF_HD bool good() const noexcept
     {
-        return _good;
+        return good_;
     }
     STRF_HD void advance_to(char_type* p)
     {
-        STRF_ASSERT(_pos <= p);
-        STRF_ASSERT(p <= _end);
-        _pos = p;
+        STRF_ASSERT(pos_ <= p);
+        STRF_ASSERT(p <= end_);
+        pos_ = p;
     }
     STRF_HD void advance(std::size_t n)
     {
         STRF_ASSERT(pos() + n <= end());
-        _pos += n;
+        pos_ += n;
     }
     STRF_HD void advance() noexcept
     {
         STRF_ASSERT(pos() < end());
-        ++_pos;
+        ++pos_;
     }
     STRF_HD void require(std::size_t s)
     {
@@ -101,26 +101,26 @@ public:
 
 protected:
 
-    STRF_HD underlying_outbuf(char_type* pos_, char_type* end_) noexcept
-        : _pos(pos_), _end(end_)
+    STRF_HD underlying_outbuf(char_type* p, char_type* e) noexcept
+        : pos_(p), end_(e)
     { }
 
-    STRF_HD underlying_outbuf(char_type* pos_, std::size_t s) noexcept
-        : _pos(pos_), _end(pos_ + s)
+    STRF_HD underlying_outbuf(char_type* p, std::size_t s) noexcept
+        : pos_(p), end_(p + s)
     { }
 
     STRF_HD void set_pos(char_type* p) noexcept
-    { _pos = p; };
+    { pos_ = p; };
     STRF_HD void set_end(char_type* e) noexcept
-    { _end = e; };
+    { end_ = e; };
     STRF_HD void set_good(bool g) noexcept
-    { _good = g; };
+    { good_ = g; };
 
 private:
 
-    char_type* _pos;
-    char_type* _end;
-    bool _good = true;
+    char_type* pos_;
+    char_type* end_;
+    bool good_ = true;
     friend class strf::detail::outbuf_test_tool;
 };
 
@@ -130,8 +130,8 @@ class basic_outbuf;
 template <typename CharT>
 class basic_outbuf: private strf::underlying_outbuf<sizeof(CharT)>
 {
-    using _underlying_impl = strf::underlying_outbuf<sizeof(CharT)>;
-    using _underlying_char_t = typename _underlying_impl::char_type;
+    using underlying_impl_ = strf::underlying_outbuf<sizeof(CharT)>;
+    using underlying_char_t_ = typename underlying_impl_::char_type;
 
 public:
 
@@ -146,53 +146,53 @@ public:
 
     STRF_HD CharT* pos() const noexcept
     {
-        return reinterpret_cast<CharT*>(_underlying_impl::pos());
+        return reinterpret_cast<CharT*>(underlying_impl_::pos());
     }
     STRF_HD CharT* end() const noexcept
     {
-        return reinterpret_cast<CharT*>(_underlying_impl::end());
+        return reinterpret_cast<CharT*>(underlying_impl_::end());
     }
     STRF_HD void advance_to(CharT* p)
     {
-        _underlying_impl::advance_to(reinterpret_cast<_underlying_char_t*>(p));
+        underlying_impl_::advance_to(reinterpret_cast<underlying_char_t_*>(p));
     }
-    STRF_HD _underlying_impl& as_underlying() noexcept
+    STRF_HD underlying_impl_& as_underlying() noexcept
     {
         return *this;
     }
-    STRF_HD const _underlying_impl& as_underlying() const noexcept
+    STRF_HD const underlying_impl_& as_underlying() const noexcept
     {
         return *this;
     }
 
-    using _underlying_impl::size;
-    using _underlying_impl::advance;
-    using _underlying_impl::good;
-    using _underlying_impl::require;
-    using _underlying_impl::ensure;
-    using _underlying_impl::recycle;
+    using underlying_impl_::size;
+    using underlying_impl_::advance;
+    using underlying_impl_::good;
+    using underlying_impl_::require;
+    using underlying_impl_::ensure;
+    using underlying_impl_::recycle;
 
 protected:
 
-    STRF_HD basic_outbuf(CharT* pos_, CharT* end_) noexcept
-        : _underlying_impl( reinterpret_cast<_underlying_char_t*>(pos_)
-                          , reinterpret_cast<_underlying_char_t*>(end_) )
+    STRF_HD basic_outbuf(CharT* p, CharT* e) noexcept
+        : underlying_impl_( reinterpret_cast<underlying_char_t_*>(p)
+                          , reinterpret_cast<underlying_char_t_*>(e) )
     { }
 
-    STRF_HD basic_outbuf(CharT* pos_, std::size_t s) noexcept
-        : _underlying_impl(reinterpret_cast<_underlying_char_t*>(pos_), s)
+    STRF_HD basic_outbuf(CharT* p, std::size_t s) noexcept
+        : underlying_impl_(reinterpret_cast<underlying_char_t_*>(p), s)
     { }
 
     STRF_HD void set_pos(CharT* p) noexcept
     {
-        _underlying_impl::set_pos(reinterpret_cast<_underlying_char_t*>(p));
+        underlying_impl_::set_pos(reinterpret_cast<underlying_char_t_*>(p));
     }
     STRF_HD void set_end(CharT* e) noexcept
     {
-        _underlying_impl::set_end(reinterpret_cast<_underlying_char_t*>(e));
+        underlying_impl_::set_end(reinterpret_cast<underlying_char_t_*>(e));
     }
 
-    using _underlying_impl::set_good;
+    using underlying_impl_::set_good;
 };
 
 template <typename CharT>
@@ -498,7 +498,7 @@ public:
 };
 
 
-inline STRF_HD char32_t* _outbuf_garbage_buf()
+inline STRF_HD char32_t* outbuf_garbage_buf_()
 {
     constexpr std::size_t s1
         = (strf::min_size_after_recycle<char>() + 1) / 4;
@@ -518,7 +518,7 @@ inline STRF_HD char32_t* _outbuf_garbage_buf()
 template <typename CharT>
 inline STRF_HD CharT* outbuf_garbage_buf()
 {
-    return reinterpret_cast<CharT*>(strf::detail::_outbuf_garbage_buf());
+    return reinterpret_cast<CharT*>(strf::detail::outbuf_garbage_buf_());
 }
 
 template <typename CharT>
@@ -558,7 +558,7 @@ public:
     STRF_HD void recycle() noexcept override
     {
         if (this->good()) {
-            _it = this->pos();
+            it_ = this->pos();
             this->set_good(false);
             this->set_end(outbuf_garbage_buf_end<CharT>());
         }
@@ -575,20 +575,20 @@ public:
     {
         bool g = this->good();
         if (g) {
-            _it = this->pos();
+            it_ = this->pos();
             this->set_good(false);
         }
         this->set_pos(outbuf_garbage_buf<CharT>());
         this->set_end(outbuf_garbage_buf_end<CharT>());
 
-        *_it = CharT();
+        *it_ = CharT();
 
-        return { _it, ! g };
+        return { it_, ! g };
     }
 
 private:
 
-    CharT* _it = nullptr;
+    CharT* it_ = nullptr;
 };
 
 

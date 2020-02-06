@@ -18,8 +18,8 @@ class width_accumulator: public strf::underlying_outbuf<4>
 public:
 
     width_accumulator(strf::width_t limit)
-        : strf::underlying_outbuf<4>(_buff, _buff + _buff_size)
-        , _limit(limit)
+        : strf::underlying_outbuf<4>(buff_, buff_ + buff_size_)
+        , limit_(limit)
     {
     }
 
@@ -27,17 +27,17 @@ public:
 
     strf::width_t get_result()
     {
-        if (_limit > 0)
+        if (limit_ > 0)
         {
-            _sum += _wfunc(_limit, _buff, this->pos());
-            this->set_pos(_buff);
+            sum_ += wfunc_(limit_, buff_, this->pos());
+            this->set_pos(buff_);
         }
-        return _sum;
+        return sum_;
     }
 
 private:
 
-    strf::width_t _wfunc(strf::width_t limit, const char32_t* it, const char32_t* end )
+    strf::width_t wfunc_(strf::width_t limit, const char32_t* it, const char32_t* end )
     {
         strf::width_t w = 0;
         for (; w < limit && it != end; ++it)
@@ -50,20 +50,20 @@ private:
         return w;
     }
 
-    constexpr static std::size_t _buff_size = 16;
-    char32_t _buff[_buff_size];
-    const strf::width_t _limit;
-    strf::width_t _sum = 0;
+    constexpr static std::size_t buff_size_ = 16;
+    char32_t buff_[buff_size_];
+    const strf::width_t limit_;
+    strf::width_t sum_ = 0;
 };
 
 void width_accumulator::recycle()
 {
     auto p = this->pos();
-    this->set_pos(_buff);
+    this->set_pos(buff_);
     if (this->good())
     {
-        _sum += _wfunc(_limit - _sum, _buff, p);
-        this->set_good(_sum < _limit);
+        sum_ += wfunc_(limit_ - sum_, buff_, p);
+        this->set_good(sum_ < limit_);
     }
 }
 

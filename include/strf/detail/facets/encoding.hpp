@@ -298,11 +298,11 @@ public:
         , strf::underlying_outbuf<DestCharSize>& ob
         , strf::encoding_error enc_err
         , strf::surrogate_policy allow_surr )
-        : strf::underlying_outbuf<4>( _buff, _buff_size )
-        , _transcode(func)
-        , _ob(ob)
-        , _enc_err(enc_err)
-        , _allow_surr(allow_surr)
+        : strf::underlying_outbuf<4>( buff_, buff_size_ )
+        , transcode_(func)
+        , ob_(ob)
+        , enc_err_(enc_err)
+        , allow_surr_(allow_surr)
     {
     }
 
@@ -311,20 +311,20 @@ public:
     STRF_HD void finish()
     {
         auto p = this->pos();
-        if (p != _buff && _ob.good()) {
-            _transcode(_ob, _buff, p, _enc_err, _allow_surr);
+        if (p != buff_ && ob_.good()) {
+            transcode_(ob_, buff_, p, enc_err_, allow_surr_);
         }
         this->set_good(false);
     }
 
 private:
 
-    strf::transcode_func<4, DestCharSize> _transcode;
-    strf::underlying_outbuf<DestCharSize>& _ob;
-    strf::encoding_error _enc_err;
-    strf::surrogate_policy _allow_surr;
-    constexpr static const std::size_t _buff_size = 32;
-    char32_t _buff[_buff_size];
+    strf::transcode_func<4, DestCharSize> transcode_;
+    strf::underlying_outbuf<DestCharSize>& ob_;
+    strf::encoding_error enc_err_;
+    strf::surrogate_policy allow_surr_;
+    constexpr static const std::size_t buff_size_ = 32;
+    char32_t buff_[buff_size_];
 };
 
 
@@ -332,10 +332,10 @@ template <std::size_t DestCharSize>
 STRF_HD void buffered_encoder<DestCharSize>::recycle()
 {
     auto p = this->pos();
-    this->set_pos(_buff);
-    if (p != _buff && _ob.good()) {
+    this->set_pos(buff_);
+    if (p != buff_ && ob_.good()) {
         this->set_good(false);
-        _transcode(_ob, _buff, p, _enc_err, _allow_surr);
+        transcode_(ob_, buff_, p, enc_err_, allow_surr_);
         this->set_good(true);
     }
 }
@@ -346,9 +346,9 @@ public:
 
     STRF_HD buffered_size_calculator
         ( strf::transcode_size_func<4> func, strf::surrogate_policy allow_surr )
-        : strf::underlying_outbuf<4>(_buff, _buff_size)
-        , _size_func(func)
-        , _allow_surr(allow_surr)
+        : strf::underlying_outbuf<4>(buff_, buff_size_)
+        , size_func_(func)
+        , allow_surr_(allow_surr)
     {
     }
 
@@ -357,16 +357,16 @@ public:
     STRF_HD std::size_t get_sum()
     {
         recycle();
-        return _sum;
+        return sum_;
     }
 
 private:
 
-    strf::transcode_size_func<4> _size_func;
-    std::size_t _sum = 0;
-    strf::surrogate_policy _allow_surr;
-    constexpr static const std::size_t _buff_size = 32;
-    char32_t _buff[_buff_size];
+    strf::transcode_size_func<4> size_func_;
+    std::size_t sum_ = 0;
+    strf::surrogate_policy allow_surr_;
+    constexpr static const std::size_t buff_size_ = 32;
+    char32_t buff_[buff_size_];
 };
 
 #if ! defined(STRF_OMIT_IMPL)
@@ -374,9 +374,9 @@ private:
 STRF_INLINE STRF_HD void buffered_size_calculator::recycle()
 {
     auto p = this->pos();
-    if (p != _buff) {
-        this->set_pos(_buff);
-        _sum += _size_func(_buff, p, _allow_surr);
+    if (p != buff_) {
+        this->set_pos(buff_);
+        sum_ += size_func_(buff_, p, allow_surr_);
     }
 }
 

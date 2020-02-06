@@ -31,15 +31,15 @@ class foo_writer: public strf::basic_outbuf<char>
 {
 public:
 
-    foo_writer(foo&& foo_)
-        : strf::basic_outbuf<char>{foo_.dest, foo_.dest_end - 1}
-        , _foo(std::move(foo_))
+    foo_writer(foo&& f)
+        : strf::basic_outbuf<char>{f.dest, f.dest_end - 1}
+        , foo_(std::move(f))
     {
     }
 
     void recycle() override
     {
-        this->set_pos(_foo.dest);
+        this->set_pos(foo_.dest);
     }
 
     void finish()
@@ -49,13 +49,13 @@ public:
 
 private:
 
-    foo _foo;
+    foo foo_;
 };
 
 
-auto write(foo&& foo_)
+auto write(foo&& f)
 {
-    return strf::destination<strf::facets_pack<>, foo_writer, foo>(std::move(foo_));
+    return strf::destination<strf::facets_pack<>, foo_writer, foo>(std::move(f));
 }
 
 

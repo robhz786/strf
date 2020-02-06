@@ -20,12 +20,12 @@ public:
     struct from_underlying_tag{};
 
     constexpr STRF_HD width_t() noexcept
-        : _value(0)
+        : value_(0)
     {
     }
 
     constexpr STRF_HD width_t(std::int16_t x) noexcept
-        : _value(static_cast<std::int32_t>(static_cast<std::uint32_t>(x) << 16))
+        : value_(static_cast<std::int32_t>(static_cast<std::uint32_t>(x) << 16))
     {
     }
 
@@ -36,24 +36,24 @@ public:
     // {
     //     STRF_IF_CONSTEXPR ( std::is_unsigned<IntT>::value )
     //     {
-    //         _value = x < 0x10000 ? static_cast<std::int32_t>(x) : INT_MAX;
+    //         value_ = x < 0x10000 ? static_cast<std::int32_t>(x) : INT_MAX;
     //     }
     //     else
     //     {
     //         if (x >= INT16_MAX)
     //         {
-    //             _value = INT32_MAX
+    //             value_ = INT32_MAX
     //         }
     //         else if (x < INT16_MIN)
     //         {
-    //             _value = INT32_MIN
+    //             value_ = INT32_MIN
     //         }
-    //         _value =  static_cast<std::int32_t>(x < 16);
+    //         value_ =  static_cast<std::int32_t>(x < 16);
     //     }
     // }
 
     constexpr STRF_HD width_t(from_underlying_tag, std::int32_t v) noexcept
-        : _value(v)
+        : value_(v)
     {
     }
 
@@ -63,68 +63,68 @@ public:
     }
 
     constexpr STRF_HD width_t(const width_t& other) noexcept
-        : _value(other._value)
+        : value_(other.value_)
     {
     }
 
     constexpr STRF_HD width_t& operator=(const width_t& other) noexcept
     {
-        _value = other._value;
+        value_ = other.value_;
         return *this;
     }
     constexpr STRF_HD width_t& operator=(std::int16_t& x) noexcept
     {
-        _value = static_cast<std::int32_t>(static_cast<std::uint32_t>(x) << 16);
+        value_ = static_cast<std::int32_t>(static_cast<std::uint32_t>(x) << 16);
         return *this;
     }
     constexpr STRF_HD bool operator==(const width_t& other) const noexcept
     {
-        return _value == other._value;
+        return value_ == other.value_;
     }
     constexpr STRF_HD bool operator!=(const width_t& other) const noexcept
     {
-        return _value != other._value;
+        return value_ != other.value_;
     }
     constexpr STRF_HD bool operator<(const width_t& other) const noexcept
     {
-        return _value < other._value;
+        return value_ < other.value_;
     }
     constexpr STRF_HD bool operator>(const width_t& other) const noexcept
     {
-        return _value > other._value;
+        return value_ > other.value_;
     }
     constexpr STRF_HD bool operator<=(const width_t& other) const noexcept
     {
-        return _value <= other._value;
+        return value_ <= other.value_;
     }
     constexpr STRF_HD bool operator>=(const width_t& other) const noexcept
     {
-        return _value >= other._value;
+        return value_ >= other.value_;
     }
     constexpr STRF_HD bool is_integral() const noexcept
     {
-        return (_value & 0xFFFF) == 0;
+        return (value_ & 0xFFFF) == 0;
     }
     constexpr STRF_HD std::int16_t floor() const noexcept
     {
         return static_cast<std::uint16_t>
-            ( static_cast<std::uint32_t>(_value) >> 16 );
+            ( static_cast<std::uint32_t>(value_) >> 16 );
     }
     constexpr STRF_HD std::int16_t ceil() const noexcept
     {
-        auto tmp = static_cast<std::uint32_t>(_value) + 0xFFFF;
+        auto tmp = static_cast<std::uint32_t>(value_) + 0xFFFF;
         return static_cast<std::uint16_t>(tmp >> 16);
     }
     constexpr STRF_HD std::int16_t round() const noexcept
     {
         std::int16_t i = floor();
-        std::uint16_t f = static_cast<std::int16_t>(_value & 0xFFFF);
+        std::uint16_t f = static_cast<std::int16_t>(value_ & 0xFFFF);
         constexpr std::uint16_t half = 0x8000;
         return i + (f > half || ((i & 1) && f == half));
     }
     constexpr STRF_HD width_t operator-() const noexcept
     {
-        return {from_underlying_tag{}, -_value};
+        return {from_underlying_tag{}, -value_};
     }
     constexpr STRF_HD width_t operator+() const noexcept
     {
@@ -133,52 +133,52 @@ public:
     constexpr STRF_HD width_t& operator+=(width_t other) noexcept
 
     {
-        _value += other._value;
+        value_ += other.value_;
         return *this;
     }
     constexpr STRF_HD width_t& operator-=(width_t other) noexcept
     {
-        _value -= other._value;
+        value_ -= other.value_;
         return *this;
     }
     constexpr STRF_HD width_t& operator*=(std::int16_t m) noexcept
     {
-        _value *= m;
+        value_ *= m;
         return *this;
     }
     constexpr STRF_HD width_t& operator/=(std::int16_t d) noexcept
     {
-        auto v = static_cast<std::uint64_t>(static_cast<std::uint32_t>(_value));
+        auto v = static_cast<std::uint64_t>(static_cast<std::uint32_t>(value_));
         auto tmp = (static_cast<std::int64_t>(v << 32) / d);
-        _value = static_cast<std::int32_t>(static_cast<std::uint64_t>(tmp) >> 32);
+        value_ = static_cast<std::int32_t>(static_cast<std::uint64_t>(tmp) >> 32);
         return *this;
     }
     constexpr STRF_HD width_t& operator*=(width_t other) noexcept
     {
         std::int64_t tmp
-            = static_cast<std::int64_t>(_value)
-            * static_cast<std::int64_t>(other._value);
+            = static_cast<std::int64_t>(value_)
+            * static_cast<std::int64_t>(other.value_);
 
-        _value = static_cast<std::int32_t>(tmp >> 16);
+        value_ = static_cast<std::int32_t>(tmp >> 16);
         return *this;
     }
     constexpr STRF_HD width_t& operator/=(width_t other) noexcept
     {
-        auto v = static_cast<std::uint64_t>(static_cast<std::uint32_t>(_value));
-        std::int64_t tmp = static_cast<std::int64_t>(v << 32) / other._value;
+        auto v = static_cast<std::uint64_t>(static_cast<std::uint32_t>(value_));
+        std::int64_t tmp = static_cast<std::int64_t>(v << 32) / other.value_;
 
-        _value = static_cast<std::int32_t>(static_cast<std::int64_t>(tmp) >> 16);
+        value_ = static_cast<std::int32_t>(static_cast<std::int64_t>(tmp) >> 16);
         return *this;
     }
 
     constexpr STRF_HD std::int32_t underlying_value() const noexcept
     {
-        return _value;
+        return value_;
     }
 
 private:
 
-    std::int32_t _value;
+    std::int32_t value_;
 };
 
 constexpr strf::width_t width_max
@@ -431,9 +431,9 @@ struct dec_frac_digits<0, D0, D...>
 template <char D0, char...D>
 struct dec_frac_digits<1, D0, D...>
 {
-    static constexpr unsigned _digit = (D0 - '0');
-    static constexpr bool _round_up = mp_round_up<(_digit & 1), D...>::value;
-    static constexpr std::uint64_t fvalue = _digit + _round_up;
+    static constexpr unsigned digit_ = (D0 - '0');
+    static constexpr bool round_up_ = mp_round_up<(digit_ & 1), D...>::value;
+    static constexpr std::uint64_t fvalue = digit_ + round_up_;
     static constexpr std::uint64_t fdigcount = 1;
 };
 

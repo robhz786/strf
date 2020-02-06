@@ -16,9 +16,9 @@ class basic_streambuf_writer final: public strf::basic_outbuf<CharT>
 {
 public:
 
-    explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>& dest_)
-        : strf::basic_outbuf<CharT>(_buf, _buf_size)
-        , _dest(dest_)
+    explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>& d)
+        : strf::basic_outbuf<CharT>(buf_, buf_size_)
+        , dest_(d)
     {
     }
 
@@ -41,11 +41,11 @@ public:
 
     void recycle() override
     {
-        std::streamsize count = this->pos() - _buf;
-        this->set_pos(_buf);
+        std::streamsize count = this->pos() - buf_;
+        this->set_pos(buf_);
         if (this->good()) {
-            auto count_inc = _dest.sputn(_buf, count);
-            _count += count_inc;
+            auto count_inc = dest_.sputn(buf_, count);
+            count_ += count_inc;
             this->set_good(count_inc == count);
         }
     }
@@ -58,25 +58,25 @@ public:
 
     result finish()
     {
-        std::streamsize count = this->pos() - _buf;
+        std::streamsize count = this->pos() - buf_;
         auto g = this->good();
-        this->set_pos(_buf);
+        this->set_pos(buf_);
         this->set_good(false);
         if (g) {
-            auto count_inc = _dest.sputn(_buf, count);
-            _count += count_inc;
+            auto count_inc = dest_.sputn(buf_, count);
+            count_ += count_inc;
             g = (count_inc == count);
         }
-        return {_count, g};
+        return {count_, g};
     }
 
 private:
 
-    std::basic_streambuf<CharT, Traits>& _dest;
-    std::streamsize _count = 0;
-    static constexpr std::size_t _buf_size
+    std::basic_streambuf<CharT, Traits>& dest_;
+    std::streamsize count_ = 0;
+    static constexpr std::size_t buf_size_
         = strf::min_size_after_recycle<CharT>();
-    CharT _buf[_buf_size];
+    CharT buf_[buf_size_];
 };
 
 using streambuf_writer
@@ -90,8 +90,8 @@ namespace detail {
 template <typename CharT, typename Traits>
 class basic_streambuf_writer_creator
 {
-    using _outbuf_type = strf::basic_streambuf_writer<CharT, Traits>;
-    using _finish_type = typename _outbuf_type::result;
+    using outbuf_type_ = strf::basic_streambuf_writer<CharT, Traits>;
+    using finish_type_ = typename outbuf_type_::result;
 
 public:
 
@@ -99,20 +99,20 @@ public:
 
     basic_streambuf_writer_creator
         ( std::basic_streambuf<CharT, Traits>& dest )
-        : _dest(dest)
+        : dest_(dest)
     {
     }
 
     basic_streambuf_writer_creator(const basic_streambuf_writer_creator&) = default;
 
-    _outbuf_type create() const
+    outbuf_type_ create() const
     {
-        return _outbuf_type{_dest};
+        return outbuf_type_{dest_};
     }
 
 private:
 
-    std::basic_streambuf<CharT, Traits>& _dest;
+    std::basic_streambuf<CharT, Traits>& dest_;
 };
 
 

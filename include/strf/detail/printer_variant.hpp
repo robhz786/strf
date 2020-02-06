@@ -16,7 +16,7 @@ namespace detail {
 template <typename Printer0, typename ... Printers>
 class printer_variant
 {
-    static constexpr std::size_t _max_size
+    static constexpr std::size_t max_size_
     = std::max({sizeof(Printer0), sizeof(Printers)...});
 
 public:
@@ -28,8 +28,8 @@ public:
     {
         static_assert( std::is_base_of<strf::printer<char_size>, P>::value
                      , "Invalid printer type" );
-        static_assert(sizeof(P) <= _max_size, "Invalid printer type");
-        new ((void*)&_pool) P{std::forward<Args>(args)...};
+        static_assert(sizeof(P) <= max_size_, "Invalid printer type");
+        new ((void*)&pool_) P{std::forward<Args>(args)...};
     }
 
 #if defined(STRF_NO_CXX17_COPY_ELISION)
@@ -40,30 +40,30 @@ public:
 
     ~printer_variant()
     {
-        _get_ptr()->~printer();
+        get_ptr_()->~printer();
     }
 
     operator const strf::printer<char_size>& () const
     {
-        return *_get_ptr();
+        return *get_ptr_();
     }
 
     const strf::printer<char_size>& get() const
     {
-        return *_get_ptr();
+        return *get_ptr_();
     }
 
 private:
 
-    const strf::printer<char_size>* _get_ptr() const
+    const strf::printer<char_size>* get_ptr_() const
     {
-        return reinterpret_cast<const strf::printer<char_size>*>(&_pool);
+        return reinterpret_cast<const strf::printer<char_size>*>(&pool_);
     }
 
-    using _storage_type = typename std::aligned_storage_t
-        < _max_size, alignof(strf::printer<char_size>)>;
+    using storage_type_ = typename std::aligned_storage_t
+        < max_size_, alignof(strf::printer<char_size>)>;
 
-    _storage_type _pool;
+    storage_type_ pool_;
 };
 
 } // namespace detail

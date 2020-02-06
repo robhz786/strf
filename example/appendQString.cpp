@@ -29,29 +29,29 @@ public:
 
 private:
 
-    QString& _str;
-    std::size_t _count = 0;
-    std::exception_ptr _eptr = nullptr;
+    QString& str_;
+    std::size_t count_ = 0;
+    std::exception_ptr eptr_ = nullptr;
 
-    constexpr static std::size_t _buffer_size = strf::min_size_after_recycle<char16_t>();
-    char16_t _buffer[_buffer_size];
+    constexpr static std::size_t buffer_size_ = strf::min_size_after_recycle<char16_t>();
+    char16_t buffer_[buffer_size_];
 };
 
 //]
 
 //[QStringAppender_ctor
 QStringAppender::QStringAppender(QString& str)
-    : strf::basic_outbuf<char16_t>(_buffer, _buffer_size)
-    , _str(str)
+    : strf::basic_outbuf<char16_t>(buffer_, buffer_size_)
+    , str_(str)
 {
 }
 
 QStringAppender::QStringAppender(QString& str, std::size_t size)
-    : strf::basic_outbuf<char16_t>(_buffer, _buffer_size)
-    , _str(str)
+    : strf::basic_outbuf<char16_t>(buffer_, buffer_size_)
+    , str_(str)
 {
-    Q_ASSERT(_str.size() + size < static_cast<std::size_t>(INT_MAX));
-    _str.reserve(_str.size() + static_cast<int>(size));
+    Q_ASSERT(str_.size() + size < static_cast<std::size_t>(INT_MAX));
+    str_.reserve(str_.size() + static_cast<int>(size));
 }
 
 
@@ -63,32 +63,32 @@ void QStringAppender::recycle()
     if (this->good()) {
         // Flush the content:
         std::size_t count = /*<<ouput_buffer::pos() returns the immediate position
-                              after the last character the library wrote in the buffer>>*/this->pos() - _buffer;
-        const QChar * qchar_buffer = reinterpret_cast<QChar*>(_buffer);
+                              after the last character the library wrote in the buffer>>*/this->pos() - buffer_;
+        const QChar * qchar_buffer = reinterpret_cast<QChar*>(buffer_);
 
 #if defined(__cpp_exceptions)
 
         try {
-            _str.append(qchar_buffer, count);
-            _count += count;
+            str_.append(qchar_buffer, count);
+            count_ += count;
         } catch(...) {
-            _eptr = std::current_exception();
+            eptr_ = std::current_exception();
             this->set_good(false);
         }
 
 #else
 
-        _str.append(qchar_buffer, count);
-        _count += count;
+        str_.append(qchar_buffer, count);
+        count_ += count;
 
 #endif // defined(__cpp_exceptions)
 
     }
     // Reset the buffer position:
-    this->set_pos(_buffer);
+    this->set_pos(buffer_);
 
     // Not necessary to set the buffer's end since it's the same as before:
-    // this->set_end(_buffer + _buffer_size);
+    // this->set_end(buffer_ + buffer_size_);
 }
 //]
 
@@ -96,10 +96,10 @@ void QStringAppender::recycle()
 std::size_t QStringAppender::finish()
 {
     recycle();
-    if (_eptr != nullptr) {
-        std::rethrow_exception(_eptr);
+    if (eptr_ != nullptr) {
+        std::rethrow_exception(eptr_);
     }
-    return _count;
+    return count_;
 }
 //]
 
@@ -113,7 +113,7 @@ public:
     using finish_type = std::size_t;
 
     QStringAppenderFactory(QString& str)
-        : _str(str)
+        : str_(str)
     {}
 
     QStringAppenderFactory(const QStringAppenderFactory& str) = default;
@@ -121,7 +121,7 @@ public:
     template <typename ... Printers>
     finish_type write(const Printers& ... printers) const
     {
-        QStringAppender ob(_str);
+        QStringAppender ob(str_);
         strf::detail::write_args(ob, printers...);;
         return ob.finish();
     }
@@ -130,25 +130,25 @@ public:
     finish_type sized_write( std::size_t size
                            , const Printers& ... printers ) const
     {
-        _str.reserve(_str.size() + size);
-        QStringAppender ob(_str);
+        str_.reserve(str_.size() + size);
+        QStringAppender ob(str_);
         strf::detail::write_args(ob, printers...);;
         return ob.finish();
     }
 
     QStringAppender create() const
     {
-        return QStringAppender{_str};
+        return QStringAppender{str_};
     }
     QStringAppender create(std::size_t size ) const
     {
-        _str.reserve(_str.size() + size);
-        return QStringAppender{_str};
+        str_.reserve(str_.size() + size);
+        return QStringAppender{str_};
     }
 
 private:
 
-    QString& _str;
+    QString& str_;
 };
 
 

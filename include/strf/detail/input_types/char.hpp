@@ -35,7 +35,7 @@ public:
 
     template <typename FPack, typename Preview, typename CharT>
     STRF_HD char_printer(const FPack& fp, Preview& preview, CharT ch)
-        : _ch(static_cast<char_type>(ch))
+        : ch_(static_cast<char_type>(ch))
     {
         static_assert(sizeof(CharT) == CharSize, "");
         preview.add_size(1);
@@ -52,7 +52,7 @@ public:
 
 private:
 
-    char_type _ch;
+    char_type ch_;
 };
 
 template <std::size_t CharSize>
@@ -60,7 +60,7 @@ STRF_HD void char_printer<CharSize>::print_to
     ( strf::underlying_outbuf<CharSize>& ob ) const
 {
     ob.ensure(1);
-    *ob.pos() = _ch;
+    *ob.pos() = ch_;
     ob.advance();
 }
 
@@ -76,16 +76,16 @@ public:
         ( const FPack& fp
         , Preview& preview
         , const strf::char_with_format<CharT>& input ) noexcept
-        : _count(input.count())
-        , _afmt(input.get_alignment_format_data())
-        , _enc_err(_get_facet<strf::encoding_error_c, CharT>(fp))
-        , _allow_surr(_get_facet<strf::surrogate_policy_c, CharT>(fp))
-        , _ch(static_cast<char_type>(input.value().ch))
+        : count_(input.count())
+        , afmt_(input.get_alignment_format_data())
+        , enc_err_(get_facet_<strf::encoding_error_c, CharT>(fp))
+        , allow_surr_(get_facet_<strf::surrogate_policy_c, CharT>(fp))
+        , ch_(static_cast<char_type>(input.value().ch))
     {
-        decltype(auto) enc = _get_facet<strf::encoding_c<CharT>, CharT>(fp);
-        _encode_fill_fn = enc.encode_fill;
-        _init( preview
-             , _get_facet<strf::width_calculator_c, CharT>(fp)
+        decltype(auto) enc = get_facet_<strf::encoding_c<CharT>, CharT>(fp);
+        encode_fill_fn_ = enc.encode_fill;
+        init_( preview
+             , get_facet_<strf::width_calculator_c, CharT>(fp)
              , enc );
     }
 
@@ -93,60 +93,60 @@ public:
 
 private:
 
-    strf::encode_fill_func<CharSize> _encode_fill_fn;
-    std::size_t _count;
-    const strf::alignment_format_data _afmt;
-    const strf::encoding_error  _enc_err;
-    const strf::surrogate_policy  _allow_surr;
-    std::uint16_t _left_fillcount;
-    std::uint16_t _right_fillcount;
-    char_type _ch;
+    strf::encode_fill_func<CharSize> encode_fill_fn_;
+    std::size_t count_;
+    const strf::alignment_format_data afmt_;
+    const strf::encoding_error  enc_err_;
+    const strf::surrogate_policy  allow_surr_;
+    std::uint16_t left_fillcount_;
+    std::uint16_t right_fillcount_;
+    char_type ch_;
 
     template <typename Category, typename CharT, typename FPack>
-    static STRF_HD decltype(auto) _get_facet(const FPack& fp)
+    static STRF_HD decltype(auto) get_facet_(const FPack& fp)
     {
         return fp.template get_facet<Category, CharT>();
     }
 
     template <typename Preview, typename WCalc, typename Encoding>
-    STRF_HD void _init(Preview& preview, const WCalc& wc, const Encoding& enc);
+    STRF_HD void init_(Preview& preview, const WCalc& wc, const Encoding& enc);
 };
 
 template <std::size_t CharSize>
 template <typename Preview, typename WCalc, typename Encoding>
-STRF_HD void fmt_char_printer<CharSize>::_init
+STRF_HD void fmt_char_printer<CharSize>::init_
     ( Preview& preview, const WCalc& wc, const Encoding& enc)
 {
-    auto ch_width = wc.width(enc, _ch);
-    auto content_width = checked_mul(ch_width, _count);
+    auto ch_width = wc.width(enc, ch_);
+    auto content_width = checked_mul(ch_width, count_);
     std::uint16_t fillcount = 0;
-    if (content_width < _afmt.width) {
-        fillcount = static_cast<std::uint16_t>((_afmt.width - content_width).round());
+    if (content_width < afmt_.width) {
+        fillcount = static_cast<std::uint16_t>((afmt_.width - content_width).round());
         preview.checked_subtract_width(content_width + fillcount);
     } else {
         fillcount = 0;
         preview.checked_subtract_width(content_width);
     }
-    switch(_afmt.alignment) {
+    switch(afmt_.alignment) {
         case strf::text_alignment::left:
-            _left_fillcount = 0;
-            _right_fillcount = fillcount;
+            left_fillcount_ = 0;
+            right_fillcount_ = fillcount;
             break;
         case strf::text_alignment::center: {
             std::uint16_t halfcount = fillcount >> 1;
-            _left_fillcount = halfcount;
-            _right_fillcount = fillcount - halfcount;
+            left_fillcount_ = halfcount;
+            right_fillcount_ = fillcount - halfcount;
             break;
         }
         default:
-            _left_fillcount = fillcount;
-            _right_fillcount = 0;
+            left_fillcount_ = fillcount;
+            right_fillcount_ = 0;
     }
     STRF_IF_CONSTEXPR (Preview::size_required) {
         if (fillcount > 0) {
-            preview.add_size(_count + fillcount * enc.encoded_char_size(_afmt.fill));
+            preview.add_size(count_ + fillcount * enc.encoded_char_size(afmt_.fill));
         } else {
-            preview.add_size(_count);
+            preview.add_size(count_);
         }
     }
 }
@@ -156,30 +156,30 @@ template <std::size_t CharSize>
 STRF_HD void fmt_char_printer<CharSize>::print_to
     ( strf::underlying_outbuf<CharSize>& ob ) const
 {
-    if (_left_fillcount != 0) {
-        _encode_fill_fn(ob, _left_fillcount, _afmt.fill, _enc_err, _allow_surr);
+    if (left_fillcount_ != 0) {
+        encode_fill_fn_(ob, left_fillcount_, afmt_.fill, enc_err_, allow_surr_);
     }
-    if (_count == 1) {
+    if (count_ == 1) {
         ob.ensure(1);
-        * ob.pos() = _ch;
+        * ob.pos() = ch_;
         ob.advance();
     } else {
-        std::size_t count = _count;
+        std::size_t count = count_;
         while(true) {
             std::size_t space = ob.size();
             if (count <= space) {
-                strf::detail::str_fill_n(ob.pos(), count, _ch);
+                strf::detail::str_fill_n(ob.pos(), count, ch_);
                 ob.advance(count);
                 break;
             }
-            strf::detail::str_fill_n(ob.pos(), space, _ch);
+            strf::detail::str_fill_n(ob.pos(), space, ch_);
             count -= space;
             ob.advance_to(ob.end());
             ob.recycle();
         }
     }
-    if (_right_fillcount != 0) {
-        _encode_fill_fn(ob, _right_fillcount, _afmt.fill, _enc_err, _allow_surr);
+    if (right_fillcount_ != 0) {
+        encode_fill_fn_(ob, right_fillcount_, afmt_.fill, enc_err_, allow_surr_);
     }
 
 }

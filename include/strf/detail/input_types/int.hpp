@@ -49,7 +49,7 @@ class int_format_fn
 private:
 
     template <int OtherBase>
-    using _adapted_derived_type
+    using adapted_derived_type_
         = strf::fmt_replace<T, int_format<Base>, int_format<OtherBase> >;
 
 public:
@@ -58,7 +58,7 @@ public:
 
     template <typename U, int OtherBase>
     constexpr STRF_HD int_format_fn(const int_format_fn<U, OtherBase> & u) noexcept
-        : _data(u.get_int_format_data())
+        : data_(u.get_int_format_data())
     {
     }
 
@@ -70,10 +70,10 @@ public:
     }
 
     template < int B = 16 >
-    constexpr STRF_HD std::enable_if_t<Base != B && B == 16, _adapted_derived_type<B>>
+    constexpr STRF_HD std::enable_if_t<Base != B && B == 16, adapted_derived_type_<B>>
     hex() &&
     {
-        return _adapted_derived_type<B>{ static_cast<const T&>(*this) };
+        return adapted_derived_type_<B>{ static_cast<const T&>(*this) };
     }
 
     template < int B = 10 >
@@ -84,10 +84,10 @@ public:
     }
 
     template < int B = 10 >
-    constexpr STRF_HD std::enable_if_t<Base != B && B == 10, _adapted_derived_type<B>>
+    constexpr STRF_HD std::enable_if_t<Base != B && B == 10, adapted_derived_type_<B>>
     dec() &&
     {
-        return _adapted_derived_type<B>{ static_cast<const T&>(*this) };
+        return adapted_derived_type_<B>{ static_cast<const T&>(*this) };
     }
 
     template < int B = 8 >
@@ -98,10 +98,10 @@ public:
     }
 
     template < int B = 8 >
-    constexpr STRF_HD std::enable_if_t<Base != B && B == 8, _adapted_derived_type<B>>
+    constexpr STRF_HD std::enable_if_t<Base != B && B == 8, adapted_derived_type_<B>>
     oct() &&
     {
-        return _adapted_derived_type<B>{ static_cast<const T&>(*this) };
+        return adapted_derived_type_<B>{ static_cast<const T&>(*this) };
     }
 
     template < int B = 2 >
@@ -112,25 +112,25 @@ public:
     }
 
     template < int B = 2 >
-    constexpr STRF_HD std::enable_if_t<Base != B && B == 2, _adapted_derived_type<B>>
+    constexpr STRF_HD std::enable_if_t<Base != B && B == 2, adapted_derived_type_<B>>
     bin() &&
     {
-        return _adapted_derived_type<B>{ static_cast<const T&>(*this) };
+        return adapted_derived_type_<B>{ static_cast<const T&>(*this) };
     }
 
     constexpr STRF_HD T&& p(unsigned _) && noexcept
     {
-        _data.precision = _;
+        data_.precision = _;
         return static_cast<T&&>(*this);
     }
     STRF_HD T&& operator+() && noexcept
     {
-        _data.showpos = true;
+        data_.showpos = true;
         return static_cast<T&&>(*this);
     }
     constexpr STRF_HD T&& operator~() && noexcept
     {
-        _data.showbase = true;
+        data_.showbase = true;
         return static_cast<T&&>(*this);
     }
     constexpr static STRF_HD int base() noexcept
@@ -139,24 +139,24 @@ public:
     }
     constexpr STRF_HD unsigned precision() const noexcept
     {
-        return _data.precision;
+        return data_.precision;
     }
     constexpr STRF_HD bool showbase() const noexcept
     {
-        return _data.showbase;
+        return data_.showbase;
     }
     constexpr STRF_HD bool showpos() const noexcept
     {
-        return _data.showpos;
+        return data_.showpos;
     }
     constexpr STRF_HD strf::int_format_data get_int_format_data() const noexcept
     {
-        return _data;
+        return data_;
     }
 
 private:
 
-    strf::int_format_data _data;
+    strf::int_format_data data_;
 };
 
 template <typename IntT>
@@ -212,12 +212,12 @@ public:
     template <typename Preview, typename IntT>
     STRF_HD int_printer(Preview& preview, IntT value)
     {
-        _negative = value < 0;
-        _uvalue = strf::detail::unsigned_abs(value);
-        _digcount = strf::detail::count_digits<10>(_uvalue);
-        auto _size = _digcount + _negative;
-        preview.subtract_width(static_cast<std::int16_t>(_size));
-        preview.add_size(_size);
+        negative_ = value < 0;
+        uvalue_ = strf::detail::unsigned_abs(value);
+        digcount_ = strf::detail::count_digits<10>(uvalue_);
+        auto size_ = digcount_ + negative_;
+        preview.subtract_width(static_cast<std::int16_t>(size_));
+        preview.add_size(size_);
     }
 
     template <typename FP, typename Preview, typename IntT, typename CharT>
@@ -230,19 +230,19 @@ public:
 
 private:
 
-    unsigned long long _uvalue;
-    unsigned _digcount;
-    bool _negative;
+    unsigned long long uvalue_;
+    unsigned digcount_;
+    bool negative_;
 };
 
 template <std::size_t CharSize>
 STRF_HD void int_printer<CharSize>::print_to
     ( strf::underlying_outbuf<CharSize>& ob ) const
 {
-    unsigned size = _digcount + _negative;
+    unsigned size = digcount_ + negative_;
     ob.ensure(size);
-    auto* it = write_int_dec_txtdigits_backwards(_uvalue, ob.pos() + size);
-    if (_negative) {
+    auto* it = write_int_dec_txtdigits_backwards(uvalue_, ob.pos() + size);
+    if (negative_) {
         it[-1] = '-';
     }
     ob.advance(size);
@@ -261,69 +261,69 @@ public:
         , Preview& preview
         , IntT value
         , strf::tag<CharT> ) noexcept
-        : _punct(get_facet<strf::numpunct_c<10>, IntT>(fp))
+        : punct_(get_facet<strf::numpunct_c<10>, IntT>(fp))
     {
         decltype(auto) encoding = get_facet<strf::encoding_c<CharT>, IntT>(fp);
 
-        _uvalue = strf::detail::unsigned_abs(value);
-        _digcount = strf::detail::count_digits<10>(_uvalue);
-        if (! _punct.no_group_separation(_digcount)) {
-            char32_t sep32 = _punct.thousands_sep();
+        uvalue_ = strf::detail::unsigned_abs(value);
+        digcount_ = strf::detail::count_digits<10>(uvalue_);
+        if (! punct_.no_group_separation(digcount_)) {
+            char32_t sep32 = punct_.thousands_sep();
             std::size_t sepsize = encoding.validate(sep32);
             if (sepsize != (std::size_t)-1) {
-                _sepsize = static_cast<unsigned>(sepsize);
-                _sepcount = _punct.thousands_sep_count(_digcount);
-                if (_sepsize == 1) {
-                    encoding.encode_char(&_little_sep, sep32);
+                sepsize_ = static_cast<unsigned>(sepsize);
+                sepcount_ = punct_.thousands_sep_count(digcount_);
+                if (sepsize_ == 1) {
+                    encoding.encode_char(&little_sep_, sep32);
                 } else {
-                    _encode_char = encoding.encode_char;
+                    encode_char_ = encoding.encode_char;
                 }
             }
         }
-        _negative = value < 0;
-        preview.add_size(_digcount + _negative + _sepsize * _sepcount);
+        negative_ = value < 0;
+        preview.add_size(digcount_ + negative_ + sepsize_ * sepcount_);
         preview.subtract_width
-            ( static_cast<std::int16_t>(_sepcount + _digcount + _negative) );
+            ( static_cast<std::int16_t>(sepcount_ + digcount_ + negative_) );
     }
 
     STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override;
 
 private:
 
-    const strf::numpunct_base& _punct;
-    strf::encode_char_func<CharSize> _encode_char;
-    unsigned long long _uvalue;
-    unsigned _digcount;
-    unsigned _sepcount = 0;
-    unsigned _sepsize = 0;
-    char_type _little_sep;
-    bool _negative;
+    const strf::numpunct_base& punct_;
+    strf::encode_char_func<CharSize> encode_char_;
+    unsigned long long uvalue_;
+    unsigned digcount_;
+    unsigned sepcount_ = 0;
+    unsigned sepsize_ = 0;
+    char_type little_sep_;
+    bool negative_;
 };
 
 template <std::size_t CharSize>
 STRF_HD void punct_int_printer<CharSize>::print_to(strf::underlying_outbuf<CharSize>& ob) const
 {
-    if (_sepcount == 0) {
-        ob.ensure(_negative + _digcount);
+    if (sepcount_ == 0) {
+        ob.ensure(negative_ + digcount_);
         auto it = ob.pos();
-        if (_negative) {
+        if (negative_) {
             *it = static_cast<char_type>('-');
             ++it;
         }
-        it += _digcount;
-        strf::detail::write_int_dec_txtdigits_backwards(_uvalue, it);
+        it += digcount_;
+        strf::detail::write_int_dec_txtdigits_backwards(uvalue_, it);
         ob.advance_to(it);
     } else {
-        if (_negative) {
+        if (negative_) {
             put(ob, static_cast<char_type>('-'));
         }
-        if (_sepsize == 1) {
+        if (sepsize_ == 1) {
             strf::detail::write_int_little_sep<10>
-                (ob, _punct, _uvalue, _digcount, _little_sep, strf::lowercase);
+                (ob, punct_, uvalue_, digcount_, little_sep_, strf::lowercase);
         } else {
             strf::detail::write_int_big_sep<10>
-                ( ob, _punct, _encode_char, _uvalue, _sepsize
-                , _digcount, strf::lowercase );
+                ( ob, punct_, encode_char_, uvalue_, sepsize_
+                , digcount_, strf::lowercase );
         }
     }
 }
@@ -359,12 +359,12 @@ public:
         , int_format_data fdata
         , strf::tag<CharT>
         , strf::tag<IntT, IntTag> = strf::tag<IntT, IntTag>{} )
-        : _punct(get_facet<strf::numpunct_c<Base>, IntTag>(fp))
-        , _lettercase(get_facet<strf::lettercase_c, IntTag>(fp))
+        : punct_(get_facet<strf::numpunct_c<Base>, IntTag>(fp))
+        , lettercase_(get_facet<strf::lettercase_c, IntTag>(fp))
     {
-        _init<IntT>( value, fdata );
+        init_<IntT>( value, fdata );
         STRF_IF_CONSTEXPR (detail::has_intpunct<FPack, IntTag, Base>) {
-            _init_punct(get_facet<strf::encoding_c<CharT>, IntTag>(fp));
+            init_punct_(get_facet<strf::encoding_c<CharT>, IntTag>(fp));
         }
         preview.subtract_width(width());
         calc_size(preview);
@@ -372,9 +372,9 @@ public:
 
     STRF_HD std::int16_t width() const
     {
-        return static_cast<std::int16_t>( strf::detail::max(_precision, _digcount)
-                                        + _prefixsize
-                                        + static_cast<int>(_sepcount) );
+        return static_cast<std::int16_t>( strf::detail::max(precision_, digcount_)
+                                        + prefixsize_
+                                        + static_cast<int>(sepcount_) );
     }
 
     STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override;
@@ -388,61 +388,61 @@ public:
 
 private:
 
-    const strf::numpunct_base& _punct;
-    strf::encode_char_func<CharSize> _encode_char;
-    unsigned long long _uvalue = 0;
-    unsigned _precision = 0;
-    unsigned _digcount = 0;
-    unsigned _sepcount = 0;
-    unsigned _sepsize = 0;
-    char_type _little_sep;
-    strf::lettercase _lettercase;
-    bool _negative = false;
-    std::uint8_t _prefixsize = 0;
+    const strf::numpunct_base& punct_;
+    strf::encode_char_func<CharSize> encode_char_;
+    unsigned long long uvalue_ = 0;
+    unsigned precision_ = 0;
+    unsigned digcount_ = 0;
+    unsigned sepcount_ = 0;
+    unsigned sepsize_ = 0;
+    char_type little_sep_;
+    strf::lettercase lettercase_;
+    bool negative_ = false;
+    std::uint8_t prefixsize_ = 0;
 
     template <typename IntT>
-    STRF_HD void _init(IntT value, strf::int_format_data fmt);
+    STRF_HD void init_(IntT value, strf::int_format_data fmt);
 
     template <typename Encoding>
-    STRF_HD void _init_punct(const Encoding& encoding);
+    STRF_HD void init_punct_(const Encoding& encoding);
 };
 
 template <std::size_t CharSize, int Base>
 template <typename IntT>
-STRF_HD void partial_fmt_int_printer<CharSize, Base>::_init
+STRF_HD void partial_fmt_int_printer<CharSize, Base>::init_
     ( IntT value
     , strf::int_format_data fmt )
 {
     using unsigned_type = std::make_unsigned_t<IntT>;
     STRF_IF_CONSTEXPR (Base == 10) {
-        _negative = value < 0;
-        _prefixsize = _negative || fmt.showpos;
-        _uvalue = strf::detail::unsigned_abs(value);
+        negative_ = value < 0;
+        prefixsize_ = negative_ || fmt.showpos;
+        uvalue_ = strf::detail::unsigned_abs(value);
     } else {
-        _uvalue = unsigned_type(value);
-        _negative = false;
-        _prefixsize = static_cast<unsigned>(fmt.showbase)
+        uvalue_ = unsigned_type(value);
+        negative_ = false;
+        prefixsize_ = static_cast<unsigned>(fmt.showbase)
             << static_cast<unsigned>(Base == 16 || Base == 2);
     }
-    _digcount = strf::detail::count_digits<Base>(_uvalue);
-    _precision = fmt.precision;
+    digcount_ = strf::detail::count_digits<Base>(uvalue_);
+    precision_ = fmt.precision;
 }
 
 template <std::size_t CharSize, int Base>
 template <typename Encoding>
-STRF_HD void partial_fmt_int_printer<CharSize, Base>::_init_punct
+STRF_HD void partial_fmt_int_printer<CharSize, Base>::init_punct_
     (const Encoding& encoding)
 {
-    if (! _punct.no_group_separation(_digcount)) {
-        char32_t sep32 = _punct.thousands_sep();
+    if (! punct_.no_group_separation(digcount_)) {
+        char32_t sep32 = punct_.thousands_sep();
         std::size_t sepsize = encoding.validate(sep32);
         if (sepsize != (std::size_t)-1) {
-            _sepsize = static_cast<unsigned>(sepsize);
-            _sepcount = _punct.thousands_sep_count(_digcount);
-            if (_sepsize == 1) {
-                encoding.encode_char(&_little_sep, sep32);
+            sepsize_ = static_cast<unsigned>(sepsize);
+            sepcount_ = punct_.thousands_sep_count(digcount_);
+            if (sepsize_ == 1) {
+                encoding.encode_char(&little_sep_, sep32);
             } else {
-                _encode_char = encoding.encode_char;
+                encode_char_ = encoding.encode_char;
             }
         }
     }
@@ -452,9 +452,9 @@ template <std::size_t CharSize, int Base>
 STRF_HD void partial_fmt_int_printer<CharSize, Base>::calc_size
     ( strf::size_preview<true>& preview ) const
 {
-    std::size_t s = strf::detail::max(_precision, _digcount) + _prefixsize;
-    if (_sepcount > 0) {
-        s += _sepcount * _sepsize;
+    std::size_t s = strf::detail::max(precision_, digcount_) + prefixsize_;
+    if (sepcount_ > 0) {
+        s += sepcount_ * sepsize_;
     }
     preview.add_size(s);
 }
@@ -463,12 +463,12 @@ template <std::size_t CharSize, int Base>
 STRF_HD inline void partial_fmt_int_printer<CharSize, Base>::print_to
     ( strf::underlying_outbuf<CharSize>& ob ) const
 {
-    if (_sepcount == 0) {
-        ob.ensure(_prefixsize + _digcount);
+    if (sepcount_ == 0) {
+        ob.ensure(prefixsize_ + digcount_);
         auto it = ob.pos();
-        if (_prefixsize != 0) {
+        if (prefixsize_ != 0) {
             STRF_IF_CONSTEXPR (Base == 10) {
-                * it = static_cast<char_type>('+') + (_negative << 1);
+                * it = static_cast<char_type>('+') + (negative_ << 1);
                 ++ it;
             } else STRF_IF_CONSTEXPR (Base == 8) {
                 * it = static_cast<char_type>('0');
@@ -476,34 +476,34 @@ STRF_HD inline void partial_fmt_int_printer<CharSize, Base>::print_to
             } else STRF_IF_CONSTEXPR (Base == 16) {
                 it[0] = static_cast<char_type>('0');
                 it[1] = static_cast<char_type>
-                    ('X' | ((_lettercase != strf::uppercase) << 5));
+                    ('X' | ((lettercase_ != strf::uppercase) << 5));
                 it += 2;
             } else {
                 it[0] = static_cast<char_type>('0');
                 it[1] = static_cast<char_type>
-                    ('B' | ((_lettercase != strf::uppercase) << 5));
+                    ('B' | ((lettercase_ != strf::uppercase) << 5));
                 it += 2;
             }
         }
         ob.advance_to(it);
-        if (_precision > _digcount) {
-            unsigned zeros = _precision - _digcount;
+        if (precision_ > digcount_) {
+            unsigned zeros = precision_ - digcount_;
             strf::detail::write_fill(ob, zeros, char_type('0'));
         }
-        strf::detail::write_int<Base>(ob, _uvalue, _digcount, _lettercase);
+        strf::detail::write_int<Base>(ob, uvalue_, digcount_, lettercase_);
     } else {
         write_complement(ob);
-        if (_precision > _digcount) {
-            unsigned zeros = _precision - _digcount;
+        if (precision_ > digcount_) {
+            unsigned zeros = precision_ - digcount_;
             strf::detail::write_fill(ob, zeros, char_type('0'));
         }
-        if (_sepsize == 1) {
+        if (sepsize_ == 1) {
             strf::detail::write_int_little_sep<Base>
-                (ob, _punct, _uvalue, _digcount, _little_sep, strf::lowercase);
+                (ob, punct_, uvalue_, digcount_, little_sep_, strf::lowercase);
         } else {
             strf::detail::write_int_big_sep<Base>
-                ( ob, _punct, _encode_char, _uvalue, _sepsize
-                , _digcount, strf::lowercase );
+                ( ob, punct_, encode_char_, uvalue_, sepsize_
+                , digcount_, strf::lowercase );
         }
     }
 }
@@ -512,10 +512,10 @@ template <std::size_t CharSize, int Base>
 inline STRF_HD void partial_fmt_int_printer<CharSize, Base>::write_complement
     ( strf::underlying_outbuf<CharSize>& ob ) const
 {
-    if (_prefixsize != 0) {
-        ob.ensure(_prefixsize);
+    if (prefixsize_ != 0) {
+        ob.ensure(prefixsize_);
         STRF_IF_CONSTEXPR (Base == 10) {
-            * ob.pos() = static_cast<char_type>('+') + (_negative << 1);
+            * ob.pos() = static_cast<char_type>('+') + (negative_ << 1);
             ob.advance(1);
         } else STRF_IF_CONSTEXPR (Base == 8) {
             * ob.pos() = static_cast<char_type>('0');
@@ -523,12 +523,12 @@ inline STRF_HD void partial_fmt_int_printer<CharSize, Base>::write_complement
         } else STRF_IF_CONSTEXPR (Base == 16) {
             ob.pos()[0] = static_cast<char_type>('0');
             ob.pos()[1] = static_cast<char_type>
-                ('X' | ((_lettercase != strf::uppercase) << 5));
+                ('X' | ((lettercase_ != strf::uppercase) << 5));
             ob.advance(2);
         } else {
             ob.pos()[0] = static_cast<char_type>('0');
             ob.pos()[1] = static_cast<char_type>
-                ('B' | ((_lettercase != strf::uppercase) << 5));
+                ('B' | ((lettercase_ != strf::uppercase) << 5));
             ob.advance(2);
         }
     }
@@ -538,19 +538,19 @@ template <std::size_t CharSize, int Base>
 inline STRF_HD void partial_fmt_int_printer<CharSize, Base>::write_digits
     ( strf::underlying_outbuf<CharSize>& ob ) const
 {
-    if (_precision > _digcount) {
-        unsigned zeros = _precision - _digcount;
+    if (precision_ > digcount_) {
+        unsigned zeros = precision_ - digcount_;
         strf::detail::write_fill(ob, zeros, char_type('0'));
     }
-    if (_sepcount == 0) {
-        strf::detail::write_int<Base>(ob, _uvalue, _digcount, _lettercase);
-    } else if (_sepsize == 1) {
+    if (sepcount_ == 0) {
+        strf::detail::write_int<Base>(ob, uvalue_, digcount_, lettercase_);
+    } else if (sepsize_ == 1) {
         strf::detail::write_int_little_sep<Base>
-            (ob, _punct, _uvalue, _digcount, _little_sep, strf::lowercase);
+            (ob, punct_, uvalue_, digcount_, little_sep_, strf::lowercase);
     } else {
         strf::detail::write_int_big_sep<Base>
-            ( ob, _punct, _encode_char, _uvalue, _sepsize
-            , _digcount, strf::lowercase );
+            ( ob, punct_, encode_char_, uvalue_, sepsize_
+            , digcount_, strf::lowercase );
     }
 }
 
@@ -582,36 +582,36 @@ public:
 
 private:
 
-    strf::detail::partial_fmt_int_printer<CharSize, Base> _ichars;
-    strf::encode_fill_func<CharSize> _encode_fill;
-    unsigned _fillcount = 0;
-    strf::encoding_error _enc_err;
-    strf::alignment_format_data _afmt;
-    strf::surrogate_policy _allow_surr;
+    strf::detail::partial_fmt_int_printer<CharSize, Base> ichars_;
+    strf::encode_fill_func<CharSize> encode_fill_;
+    unsigned fillcount_ = 0;
+    strf::encoding_error enc_err_;
+    strf::alignment_format_data afmt_;
+    strf::surrogate_policy allow_surr_;
 
     template <typename Encoding>
-    STRF_HD  void _calc_fill_size
+    STRF_HD  void calc_fill_size_
         ( strf::size_preview<false>&
         , const Encoding& ) const
     {
     }
 
     template <typename Encoding>
-    STRF_HD void _calc_fill_size
+    STRF_HD void calc_fill_size_
         ( strf::size_preview<true>& preview
         , const Encoding& enc ) const
     {
-        if (_fillcount > 0) {
-            preview.add_size(_fillcount* enc.encoded_char_size(_afmt.fill));
+        if (fillcount_ > 0) {
+            preview.add_size(fillcount_* enc.encoded_char_size(afmt_.fill));
         }
     }
 
-    STRF_HD  void _write_fill
+    STRF_HD  void write_fill_
         ( strf::underlying_outbuf<CharSize>& ob
         , std::size_t count ) const
     {
-        return _encode_fill
-            ( ob, count, _afmt.fill, _enc_err, _allow_surr );
+        return encode_fill_
+            ( ob, count, afmt_.fill, enc_err_, allow_surr_ );
     }
 };
 
@@ -622,20 +622,20 @@ inline STRF_HD full_fmt_int_printer<CharSize, Base>::full_fmt_int_printer
     , Preview& preview
     , strf::int_with_format<IntT, Base, true> value
     , strf::tag<CharT> tag_char) noexcept
-    : _ichars( fp, preview, value.value().value
+    : ichars_( fp, preview, value.value().value
              , value.get_int_format_data(), tag_char/*, strf::tag<IntT>()*/)
-    , _enc_err(get_facet<strf::encoding_error_c, IntT>(fp))
-    , _afmt(value.get_alignment_format_data())
-    , _allow_surr(get_facet<strf::surrogate_policy_c, IntT>(fp))
+    , enc_err_(get_facet<strf::encoding_error_c, IntT>(fp))
+    , afmt_(value.get_alignment_format_data())
+    , allow_surr_(get_facet<strf::surrogate_policy_c, IntT>(fp))
 {
-    auto content_width = _ichars.width();
-    if (_afmt.width > content_width) {
-        _fillcount = _afmt.width - content_width;
-        preview.subtract_width(static_cast<std::int16_t>(_fillcount));
+    auto content_width = ichars_.width();
+    if (afmt_.width > content_width) {
+        fillcount_ = afmt_.width - content_width;
+        preview.subtract_width(static_cast<std::int16_t>(fillcount_));
     }
     decltype(auto) encoding = get_facet<strf::encoding_c<CharT>, IntT>(fp);
-    _encode_fill = encoding.encode_fill;
-    _calc_fill_size(preview, encoding);
+    encode_fill_ = encoding.encode_fill;
+    calc_fill_size_(preview, encoding);
 }
 
 template <std::size_t CharSize, int Base>
@@ -646,22 +646,22 @@ inline STRF_HD full_fmt_int_printer<CharSize, Base>::full_fmt_int_printer
     , const void* value
     , strf::alignment_format_data afdata
     , strf::tag<CharT> tag_char )
-    : _ichars( fp, preview, reinterpret_cast<std::size_t>(value)
+    : ichars_( fp, preview, reinterpret_cast<std::size_t>(value)
              , strf::int_format_data{0, true}
              , tag_char
              , strf::tag<std::size_t, const void*>() )
-    , _enc_err(get_facet<strf::encoding_error_c, const void*>(fp))
-    , _afmt(afdata)
-    , _allow_surr(get_facet<strf::surrogate_policy_c, const void*>(fp))
+    , enc_err_(get_facet<strf::encoding_error_c, const void*>(fp))
+    , afmt_(afdata)
+    , allow_surr_(get_facet<strf::surrogate_policy_c, const void*>(fp))
 {
-    auto content_width = _ichars.width();
-    if (_afmt.width > content_width) {
-        _fillcount = _afmt.width - content_width;
-        preview.subtract_width(static_cast<std::int16_t>(_fillcount));
+    auto content_width = ichars_.width();
+    if (afmt_.width > content_width) {
+        fillcount_ = afmt_.width - content_width;
+        preview.subtract_width(static_cast<std::int16_t>(fillcount_));
     }
     decltype(auto) encoding = get_facet<strf::encoding_c<CharT>, const void*>(fp);
-    _encode_fill = encoding.encode_fill;
-    _calc_fill_size(preview, encoding);
+    encode_fill_ = encoding.encode_fill;
+    calc_fill_size_(preview, encoding);
 }
 
 template <std::size_t CharSize, int Base>
@@ -673,31 +673,31 @@ template <std::size_t CharSize, int Base>
 STRF_HD void full_fmt_int_printer<CharSize, Base>::print_to
         ( strf::underlying_outbuf<CharSize>& ob ) const
 {
-    if (_fillcount == 0) {
-        _ichars.print_to(ob);
+    if (fillcount_ == 0) {
+        ichars_.print_to(ob);
     } else {
-        switch(_afmt.alignment) {
+        switch(afmt_.alignment) {
             case strf::text_alignment::left: {
-                _ichars.print_to(ob);
-                _write_fill(ob, _fillcount);
+                ichars_.print_to(ob);
+                write_fill_(ob, fillcount_);
                 break;
             }
             case strf::text_alignment::split: {
-                _ichars.write_complement(ob);
-                _write_fill(ob, _fillcount);
-                _ichars.write_digits(ob);
+                ichars_.write_complement(ob);
+                write_fill_(ob, fillcount_);
+                ichars_.write_digits(ob);
                 break;
             }
             case strf::text_alignment::center: {
-                auto halfcount = _fillcount / 2;
-                _write_fill(ob, halfcount);
-                _ichars.print_to(ob);
-                _write_fill(ob, _fillcount - halfcount);
+                auto halfcount = fillcount_ / 2;
+                write_fill_(ob, halfcount);
+                ichars_.print_to(ob);
+                write_fill_(ob, fillcount_ - halfcount);
                 break;
             }
             default: {
-                _write_fill(ob, _fillcount);
-                _ichars.print_to(ob);
+                write_fill_(ob, fillcount_);
+                ichars_.print_to(ob);
             }
         }
     }

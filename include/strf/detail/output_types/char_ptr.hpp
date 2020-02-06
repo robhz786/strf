@@ -23,21 +23,21 @@ public:
 
     constexpr STRF_HD
     basic_cstr_writer_creator(CharT* dest, CharT* dest_end) noexcept
-        : _dest(dest)
-        , _dest_end(dest_end)
+        : dest_(dest)
+        , dest_end_(dest_end)
     {
         STRF_ASSERT(dest < dest_end);
     }
 
     STRF_HD basic_cstr_writer<CharT> create() const
     {
-        return basic_cstr_writer<CharT>{_dest, _dest_end};
+        return basic_cstr_writer<CharT>{dest_, dest_end_};
     }
 
 private:
 
-    CharT* _dest;
-    CharT* _dest_end;
+    CharT* dest_;
+    CharT* dest_end_;
 };
 
 }

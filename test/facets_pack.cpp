@@ -62,29 +62,29 @@ class facet_base
 {
 public:
 
-    constexpr facet_base(int value_, ctor_log* log_ = nullptr)
-        : value(value_)
-        , _log(log_)
+    constexpr facet_base(int v, ctor_log* log = nullptr)
+        : value(v)
+        , log_(log)
     {
     }
 
     constexpr facet_base(const facet_base& f)
         : value(f.value)
-        , _log(f._log)
+        , log_(f.log_)
     {
-        if(_log)
+        if(log_)
         {
-            ++ _log->cp_count;
+            ++ log_->cp_count;
         }
     }
 
     constexpr facet_base(facet_base&& f)
         : value(f.value)
-        , _log(f._log)
+        , log_(f.log_)
     {
-        if(_log)
+        if(log_)
         {
-            ++ _log->mv_count;
+            ++ log_->mv_count;
         }
     }
 
@@ -92,7 +92,7 @@ public:
 
 private:
 
-    ctor_log* _log;
+    ctor_log* log_;
 };
 
 template < int N
@@ -102,8 +102,8 @@ class facet: public facet_base
 {
 public:
 
-    constexpr facet(int value_, ctor_log* log_ = nullptr)
-        : facet_base(value_, log_)
+    constexpr facet(int v, ctor_log* log = nullptr)
+        : facet_base(v, log)
     {
     }
 
@@ -117,7 +117,7 @@ private:
 
     // suppress default copy and move constructor according to
     // template parameter
-    cond_cp_mv<static_cast<facet_conf>(Conf & ctors_bits)> _cond_cp_mv;
+    cond_cp_mv<static_cast<facet_conf>(Conf & ctors_bits)> cond_cp_mv_;
 };
 
 template <int N> struct fcategory

@@ -20,43 +20,43 @@ public:
     using const_iterator = const CharIn*;
 
     constexpr STRF_HD simple_string_view(const CharIn* begin, const CharIn* end) noexcept
-        : _begin(begin)
-        , _len(end - begin)
+        : begin_(begin)
+        , len_(end - begin)
     {
     }
     constexpr STRF_HD simple_string_view(const CharIn* str, std::size_t len) noexcept
-        : _begin(str)
-        , _len(len)
+        : begin_(str)
+        , len_(len)
     {
     }
 
     STRF_CONSTEXPR_CHAR_TRAITS
     STRF_HD simple_string_view(const CharIn* str) noexcept
-        : _begin(str)
-        , _len(strf::detail::str_length<CharIn>(str))
+        : begin_(str)
+        , len_(strf::detail::str_length<CharIn>(str))
     {
     }
     constexpr STRF_HD const CharIn* begin() const
     {
-        return _begin;
+        return begin_;
     }
     constexpr STRF_HD const CharIn* end() const
     {
-        return _begin + _len;
+        return begin_ + len_;
     }
     constexpr STRF_HD std::size_t size() const
     {
-        return _len;
+        return len_;
     }
     constexpr STRF_HD std::size_t length() const
     {
-        return _len;
+        return len_;
     }
 
 private:
 
-    const CharIn* _begin;
-    const std::size_t _len;
+    const CharIn* begin_;
+    const std::size_t len_;
 };
 
 } // namespace detail
@@ -179,7 +179,7 @@ class cv_format_with_encoding_fn
 public:
 
     cv_format_with_encoding_fn(const Encoding& e)
-        : _encoding(e)
+        : encoding_(e)
     {
     }
 
@@ -189,25 +189,25 @@ public:
     template <typename U>
     explicit cv_format_with_encoding_fn
         ( const strf::cv_format_with_encoding_fn<CharT, Encoding, U>& other ) noexcept
-        : _encoding(other.get_encoding())
+        : encoding_(other.get_encoding())
     {
     }
 
     template <typename U>
     explicit cv_format_with_encoding_fn
         ( const strf::no_cv_format_fn<CharT, U>& other ) noexcept
-        : _encoding(other.get_encoding())
+        : encoding_(other.get_encoding())
     {
     }
 
     const Encoding& get_encoding() const
     {
-        return _encoding;
+        return encoding_;
     }
 
 private:
 
-    const Encoding& _encoding;
+    const Encoding& encoding_;
 };
 
 template <typename CharT>
@@ -332,30 +332,30 @@ public:
         , Preview& preview
         , simple_string_view<CharT> str
         , strf::tag<CharT> ) noexcept
-        : _str(reinterpret_cast<const char_type*>(str.begin()))
-        , _len(str.size())
+        : str_(reinterpret_cast<const char_type*>(str.begin()))
+        , len_(str.size())
     {
         (void)fp;
         STRF_IF_CONSTEXPR(Preview::width_required) {
-            decltype(auto) wcalc = _get_facet<strf::width_calculator_c, CharT>(fp);
-            auto w = wcalc.width( _get_facet<strf::encoding_c<CharT>, CharT>(fp)
-                                , preview.remaining_width(), _str, _len
-                                , _get_facet<strf::encoding_error_c, CharT>(fp)
-                                , _get_facet<strf::surrogate_policy_c, CharT>(fp) );
+            decltype(auto) wcalc = get_facet_<strf::width_calculator_c, CharT>(fp);
+            auto w = wcalc.width( get_facet_<strf::encoding_c<CharT>, CharT>(fp)
+                                , preview.remaining_width(), str_, len_
+                                , get_facet_<strf::encoding_error_c, CharT>(fp)
+                                , get_facet_<strf::surrogate_policy_c, CharT>(fp) );
             preview.subtract_width(w);
         }
-        preview.add_size(_len);
+        preview.add_size(len_);
     }
 
     STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override;
 
 private:
 
-    const char_type* _str;
-    const std::size_t _len;
+    const char_type* str_;
+    const std::size_t len_;
 
     template <typename Category, typename CharT, typename FPack>
-    static STRF_HD decltype(auto) _get_facet(const FPack& fp)
+    static STRF_HD decltype(auto) get_facet_(const FPack& fp)
     {
         using input_tag = strf::string_input_tag<CharT>;
         return fp.template get_facet<Category, input_tag>();
@@ -365,7 +365,7 @@ private:
 template<std::size_t CharSize>
 STRF_HD void string_printer<CharSize>::print_to(strf::underlying_outbuf<CharSize>& ob) const
 {
-    strf::write(ob, _str, _len);
+    strf::write(ob, str_, len_);
 }
 
 template <std::size_t CharSize>
@@ -381,15 +381,15 @@ public:
         , strf::detail::simple_string_view<CharT> str
         , strf::alignment_format_data text_alignment
         , strf::tag<CharT> )
-        : _str(reinterpret_cast<const char_type*>(str.begin()))
-        , _len(str.size())
-        , _afmt(text_alignment)
-        , _enc_err(_get_facet<strf::encoding_error_c, CharT>(fp))
-        , _allow_surr(_get_facet<strf::surrogate_policy_c, CharT>(fp))
+        : str_(reinterpret_cast<const char_type*>(str.begin()))
+        , len_(str.size())
+        , afmt_(text_alignment)
+        , enc_err_(get_facet_<strf::encoding_error_c, CharT>(fp))
+        , allow_surr_(get_facet_<strf::surrogate_policy_c, CharT>(fp))
     {
-         _init( preview
-              , _get_facet<strf::width_calculator_c, CharT>(fp)
-              , _get_facet<strf::encoding_c<CharT>, CharT>(fp) );
+         init_( preview
+              , get_facet_<strf::width_calculator_c, CharT>(fp)
+              , get_facet_<strf::encoding_c<CharT>, CharT>(fp) );
     }
 
     STRF_HD ~fmt_string_printer();
@@ -398,24 +398,24 @@ public:
 
 private:
 
-    const char_type* _str;
-    std::size_t _len;
-    strf::encode_fill_func<CharSize> _encode_fill;
-    strf::alignment_format_data _afmt;
-    std::int16_t _left_fillcount;
-    std::int16_t _right_fillcount;
-    const strf::encoding_error _enc_err;
-    const strf::surrogate_policy _allow_surr;
+    const char_type* str_;
+    std::size_t len_;
+    strf::encode_fill_func<CharSize> encode_fill_;
+    strf::alignment_format_data afmt_;
+    std::int16_t left_fillcount_;
+    std::int16_t right_fillcount_;
+    const strf::encoding_error enc_err_;
+    const strf::surrogate_policy allow_surr_;
 
     template <typename Category, typename CharT, typename FPack>
-    static STRF_HD decltype(auto) _get_facet(const FPack& fp)
+    static STRF_HD decltype(auto) get_facet_(const FPack& fp)
     {
         using input_tag = strf::string_input_tag<CharT>;
         return fp.template get_facet<Category, input_tag>();
     }
 
     template <typename Preview, typename WCalc, typename Encoding>
-    STRF_HD void _init(Preview&, const WCalc&, const Encoding&);
+    STRF_HD void init_(Preview&, const WCalc&, const Encoding&);
 };
 
 template<std::size_t CharSize>
@@ -425,45 +425,45 @@ STRF_HD fmt_string_printer<CharSize>::~fmt_string_printer()
 
 template<std::size_t CharSize>
 template <typename Preview, typename WCalc, typename Encoding>
-inline STRF_HD void fmt_string_printer<CharSize>::_init
+inline STRF_HD void fmt_string_printer<CharSize>::init_
     ( Preview& preview, const WCalc& wcalc, const Encoding& enc )
 {
-    _encode_fill = enc.encode_fill;
+    encode_fill_ = enc.encode_fill;
     std::uint16_t fillcount = 0;
-    strf::width_t fmt_width = _afmt.width;
+    strf::width_t fmt_width = afmt_.width;
     strf::width_t limit =
         ( Preview::width_required && preview.remaining_width() > fmt_width
         ? preview.remaining_width()
         : fmt_width );
-    auto strw = wcalc.width(enc, limit, _str, _len , _enc_err, _allow_surr);
+    auto strw = wcalc.width(enc, limit, str_, len_ , enc_err_, allow_surr_);
     if (fmt_width > strw) {
         fillcount = (fmt_width - strw).round();
-        switch(_afmt.alignment) {
+        switch(afmt_.alignment) {
             case strf::text_alignment::left:
-                _left_fillcount = 0;
-                _right_fillcount = fillcount;
+                left_fillcount_ = 0;
+                right_fillcount_ = fillcount;
                 break;
             case strf::text_alignment::center: {
                 std::uint16_t halfcount = fillcount >> 1;
-                _left_fillcount = halfcount;
-                _right_fillcount = fillcount - halfcount;
+                left_fillcount_ = halfcount;
+                right_fillcount_ = fillcount - halfcount;
                 break;
             }
             default:
-                _left_fillcount = fillcount;
-                _right_fillcount = 0;
+                left_fillcount_ = fillcount;
+                right_fillcount_ = 0;
         }
         preview.subtract_width(strw + fillcount);
     } else {
-        _right_fillcount = 0;
-        _left_fillcount = 0;
+        right_fillcount_ = 0;
+        left_fillcount_ = 0;
         preview.subtract_width(strw);
     }
 
     STRF_IF_CONSTEXPR (Preview::size_required) {
-        preview.add_size(_len);
+        preview.add_size(len_);
         if (fillcount > 0) {
-             preview.add_size(fillcount * enc.encoded_char_size(_afmt.fill));
+             preview.add_size(fillcount * enc.encoded_char_size(afmt_.fill));
         }
     }
 }
@@ -472,12 +472,12 @@ template<std::size_t CharSize>
 void STRF_HD fmt_string_printer<CharSize>::print_to
     ( strf::underlying_outbuf<CharSize>& ob ) const
 {
-    if (_left_fillcount > 0) {
-        _encode_fill( ob, _left_fillcount, _afmt.fill, _enc_err, _allow_surr );
+    if (left_fillcount_ > 0) {
+        encode_fill_( ob, left_fillcount_, afmt_.fill, enc_err_, allow_surr_ );
     }
-    strf::write(ob, _str, _len);
-    if (_right_fillcount > 0) {
-        _encode_fill( ob, _right_fillcount, _afmt.fill, _enc_err, _allow_surr );
+    strf::write(ob, str_, len_);
+    if (right_fillcount_ > 0) {
+        encode_fill_( ob, right_fillcount_, afmt_.fill, enc_err_, allow_surr_ );
     }
 }
 

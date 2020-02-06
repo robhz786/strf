@@ -35,7 +35,7 @@ class simple_tuple_impl<std::index_sequence<I...>, T...>
     : private indexed_obj<I, T> ...
 {
     template <std::size_t J, typename U>
-    static constexpr STRF_HD const indexed_obj<J, U>& _get(const indexed_obj<J, U>& r)
+    static constexpr STRF_HD const indexed_obj<J, U>& get_(const indexed_obj<J, U>& r)
     {
         return r;
     }
@@ -53,7 +53,7 @@ public:
     template <std::size_t J>
     constexpr STRF_HD const auto& get() const
     {
-        return _get<J>(*this).obj;
+        return get_<J>(*this).obj;
     }
 };
 
@@ -119,7 +119,7 @@ class printers_tuple_impl<CharSize, std::index_sequence<I...>, Printers...>
     : private detail::indexed_printer<I, Printers> ...
 {
     template <std::size_t J, typename T>
-    static STRF_HD const indexed_printer<J, T>& _get(const indexed_printer<J, T>& r)
+    static STRF_HD const indexed_printer<J, T>& get_(const indexed_printer<J, T>& r)
     {
         return r;
     }
@@ -142,7 +142,7 @@ public:
     template <std::size_t J>
     STRF_HD const auto& get() const
     {
-        return _get<J>(*this).printer;
+        return get_<J>(*this).printer;
     }
 };
 
@@ -170,14 +170,14 @@ template < typename CharT
 class printers_tuple_alias
 {
     template <typename Arg>
-    using _printer
+    using printer_
     = decltype(make_printer<CharT>( strf::rank<5>()
                                   , std::declval<const FPack&>()
                                   , std::declval<Preview&>()
                                   , std::declval<const Arg&>()));
 public:
 
-    using type = printers_tuple_impl<sizeof(CharT), ISeq, _printer<Args>...>;
+    using type = printers_tuple_impl<sizeof(CharT), ISeq, printer_<Args>...>;
 };
 
 template < typename CharT, typename FPack, typename Preview, typename ... Args >
