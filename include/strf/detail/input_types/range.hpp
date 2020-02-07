@@ -119,7 +119,8 @@ public:
 
 private:
 
-    STRF_HD void preview_(strf::print_preview<false, false>&) const
+    STRF_HD void preview_
+        (strf::print_preview<strf::preview_size::no, strf::preview_width::no>&) const
     {
     }
 
@@ -146,7 +147,7 @@ template <typename CharT, typename FPack, typename ForwardIt>
 STRF_HD void range_printer<CharT, FPack, ForwardIt>::print_to
     ( strf::underlying_outbuf<sizeof(CharT)>& ob ) const
 {
-    strf::print_preview<false, false> no_preview;
+    strf::print_preview<strf::preview_size::no, strf::preview_width::no> no_preview;
     for(auto it = begin_; it != end_; ++it) {
         make_printer<CharT, FPack>(strf::rank<5>{},fp_, no_preview, *it).print_to(ob);
     }
@@ -181,7 +182,8 @@ public:
 
 private:
 
-    STRF_HD void preview_(strf::print_preview<false, false>&) const
+    STRF_HD void preview_
+        ( strf::print_preview<strf::preview_size::no, strf::preview_width::no>& ) const
     {
     }
 
@@ -249,7 +251,7 @@ STRF_HD void separated_range_printer<CharT, FPack, ForwardIt>::print_to
     ( strf::underlying_outbuf<sizeof(CharT)>& ob ) const
 {
     using uchar = strf::underlying_char_type<sizeof(CharT)>;
-    strf::print_preview<false, false> no_preview;
+    strf::print_preview<strf::preview_size::no, strf::preview_width::no> no_preview;
     auto it = begin_;
     if (it != end_) {
         make_printer<CharT, FPack>(strf::rank<5>{}, fp_, no_preview, *it)
@@ -299,7 +301,8 @@ public:
 
 private:
 
-    STRF_HD void preview_(strf::print_preview<false, false>&) const
+    STRF_HD void preview_
+        ( strf::print_preview<strf::preview_size::no, strf::preview_width::no>& ) const
     {
     }
 
@@ -337,7 +340,7 @@ template< typename CharOut
 STRF_HD void fmt_range_printer<CharOut, FPack, ForwardIt, Fmts ...>::print_to
     ( strf::underlying_outbuf<sizeof(CharOut)>& ob ) const
 {
-    strf::print_preview<false, false> no_preview;
+    strf::print_preview<strf::preview_size::no, strf::preview_width::no> no_preview;
     auto r = fmt_.value();
     for(auto it = r.begin; it != r.end; ++it) {
         make_printer<CharOut, FPack>( strf::rank<5>{}
@@ -385,7 +388,8 @@ public:
 
 private:
 
-    STRF_HD void preview_(strf::print_preview<false, false>&) const
+    STRF_HD void preview_
+        ( strf::print_preview<strf::preview_size::no, strf::preview_width::no>& ) const
     {
     }
 
@@ -461,7 +465,7 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, ForwardIt, Fmts ...>
 ::print_to( strf::underlying_outbuf<sizeof(CharT)>& ob ) const
 {
     using uchar = strf::underlying_char_type<sizeof(CharT)>;
-    strf::print_preview<false, false> no_preview;
+    strf::print_preview<strf::preview_size::no, strf::preview_width::no> no_preview;
     auto r = fmt_.value();
     auto it = r.begin;
     if (it != r.end) {
@@ -503,7 +507,8 @@ public:
 
 private:
 
-    STRF_HD void preview_(strf::print_preview<false, false>&) const
+    STRF_HD void preview_
+        ( strf::print_preview<strf::preview_size::no, strf::preview_width::no>& ) const
     {
     }
 
@@ -532,7 +537,7 @@ template <typename CharT, typename FPack, typename ForwardIt, typename UnaryOp>
 STRF_HD void transformed_range_printer<CharT, FPack, ForwardIt, UnaryOp>::print_to
     ( strf::underlying_outbuf<sizeof(CharT)>& ob ) const
 {
-    strf::print_preview<false, false> no_preview;
+    strf::print_preview<strf::preview_size::no, strf::preview_width::no> no_preview;
     for(auto it = begin_; it != end_; ++it) {
         make_printer<CharT, FPack>(strf::rank<5>{},fp_, no_preview, op_(*it))
             .print_to(ob);
@@ -570,7 +575,8 @@ public:
 
 private:
 
-    STRF_HD void preview_(strf::print_preview<false, false>&) const
+    STRF_HD void preview_
+        ( strf::print_preview<strf::preview_size::no, strf::preview_width::no>& ) const
     {
     }
 
@@ -639,7 +645,7 @@ template <typename CharT, typename FPack, typename It, typename UnaryOp>
 STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
     ( strf::underlying_outbuf<sizeof(CharT)>& ob ) const
 {
-    strf::print_preview<false, false> no_preview;
+    strf::print_preview<strf::preview_size::no, strf::preview_width::no> no_preview;
     using uchar = strf::underlying_char_type<sizeof(CharT)>;
     auto it = begin_;
     if (it != end_) {

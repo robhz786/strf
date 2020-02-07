@@ -242,18 +242,19 @@ class destination_no_reserve
         < strf::destination_no_reserve
         , OutbufCreator
         , FPack
-        , strf::print_preview<false, false> >
+        , strf::print_preview<strf::preview_size::no, strf::preview_width::no> >
 {
     using common_ = strf::detail::destination_common
         < strf::destination_no_reserve
         , OutbufCreator
         , FPack
-        , strf::print_preview<false, false> >;
+        , strf::print_preview<strf::preview_size::no, strf::preview_width::no> >;
 
     template <template <typename, typename> class, class, class, class, class>
     friend class strf::detail::destination_common;
 
-    using preview_type_ = strf::print_preview<false, false>;
+    using preview_type_
+        = strf::print_preview<strf::preview_size::no, strf::preview_width::no>;
 
 public:
 
@@ -341,7 +342,7 @@ private:
 
     template <typename ... Printers>
     decltype(auto) STRF_HD write_
-        ( const strf::print_preview<false, false>&
+        ( const preview_type_&
         , const Printers& ... printers) const
     {
         decltype(auto) ob = outbuf_creator_.create();
@@ -359,18 +360,19 @@ class destination_with_given_size
         < strf::destination_with_given_size
         , OutbufCreator
         , FPack
-        , strf::print_preview<false, false> >
+        , strf::print_preview<strf::preview_size::no, strf::preview_width::no> >
 {
     using common_ = strf::detail::destination_common
         < strf::destination_with_given_size
         , OutbufCreator
         , FPack
-        , strf::print_preview<false, false> >;
+        , strf::print_preview<strf::preview_size::no, strf::preview_width::no> >;
 
     template < template <typename, typename> class, class,class, class, class>
     friend class strf::detail::destination_common;
 
-    using preview_type_ = strf::print_preview<false, false>;
+    using preview_type_
+        = strf::print_preview<strf::preview_size::no, strf::preview_width::no>;
 
 public:
 
@@ -458,7 +460,7 @@ private:
 
     template <typename ... Printers>
     decltype(auto) STRF_HD write_
-        ( const strf::print_preview<false, false>&
+        ( const preview_type_&
         , const Printers& ... printers) const
     {
         decltype(auto) ob = outbuf_creator_.create(size_);
@@ -477,18 +479,19 @@ class destination_calc_size
         < strf::destination_calc_size
         , OutbufCreator
         , FPack
-        , strf::print_preview<true, false> >
+        , strf::print_preview<strf::preview_size::yes, strf::preview_width::no> >
 {
     using common_ = strf::detail::destination_common
         < strf::destination_calc_size
         , OutbufCreator
         , FPack
-        , strf::print_preview<true, false> >;
+        , strf::print_preview<strf::preview_size::yes, strf::preview_width::no> >;
 
     template < template <typename, typename> class, class, class, class, class>
     friend class strf::detail::destination_common;
 
-    using preview_type_ = strf::print_preview<true, false>;
+    using preview_type_
+        = strf::print_preview<strf::preview_size::yes, strf::preview_width::no>;
 
 public:
 
@@ -576,7 +579,7 @@ private:
 
     template <typename ... Printers>
     decltype(auto) STRF_HD write_
-        ( const strf::print_preview<true, false>& preview
+        ( const preview_type_& preview
         , const Printers& ... printers ) const
     {
         decltype(auto) ob = outbuf_creator_.create(preview.get_size());

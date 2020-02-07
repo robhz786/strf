@@ -201,21 +201,24 @@ public:
     }
 };
 
-template <bool SizeRequired, bool WidthRequired>
+enum class preview_width: bool { no = false, yes = true };
+enum class preview_size : bool { no = false, yes = true };
+
+template <strf::preview_size SizeRequired, strf::preview_width WidthRequired>
 class print_preview
-    : public strf::size_preview<SizeRequired>
-    , public strf::width_preview<WidthRequired>
+    : public strf::size_preview<static_cast<bool>(SizeRequired)>
+    , public strf::width_preview<static_cast<bool>(WidthRequired)>
 {
 public:
 
-    static constexpr bool size_required = SizeRequired;
-    static constexpr bool width_required = WidthRequired;
-    static constexpr bool nothing_required = ! SizeRequired && ! WidthRequired;
+    static constexpr bool size_required = static_cast<bool>(SizeRequired);
+    static constexpr bool width_required = static_cast<bool>(WidthRequired);
+    static constexpr bool nothing_required = ! size_required && ! width_required;
 
-    template <bool W = WidthRequired>
+    template <strf::preview_width W = WidthRequired>
     STRF_HD constexpr explicit print_preview
-        ( std::enable_if_t<W, strf::width_t> initial_width ) noexcept
-        : strf::width_preview<WidthRequired>{initial_width}
+        ( std::enable_if_t<static_cast<bool>(W), strf::width_t> initial_width ) noexcept
+        : strf::width_preview<true>{initial_width}
     {
     }
 

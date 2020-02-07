@@ -126,10 +126,10 @@ class base64_printer: public strf::printer<CharSize>
 public:
     using char_type = strf::underlying_char_type<CharSize>;
 
-    template <bool PreviewSize>
+    template <strf::preview_size PreviewSize>
     base64_printer
         ( base64_facet facet
-        , strf::print_preview<PreviewSize, false>& preview
+        , strf::print_preview<PreviewSize, strf::preview_width::no>& preview
         , const base64_input_with_format& fmt );
 
     void print_to(strf::underlying_outbuf<CharSize>& ob) const override;
@@ -164,10 +164,10 @@ private:
 };
 
 template <std::size_t CharSize>
-template <bool PreviewSize>
+template <strf::preview_size PreviewSize>
 base64_printer<CharSize>::base64_printer
     ( base64_facet facet
-    , strf::print_preview<PreviewSize, false>& preview
+    , strf::print_preview<PreviewSize, strf::preview_width::no>& preview
     , const base64_input_with_format& fmt )
     : facet_(facet)
     , fmt_(fmt)

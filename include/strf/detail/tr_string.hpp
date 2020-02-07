@@ -104,7 +104,7 @@ constexpr std::size_t trstr_invalid_arg_size_when_stop = (std::size_t)-1;
 
 template <typename CharT>
 inline std::size_t tr_string_size
-    ( const strf::print_preview<false, false>*
+    ( const strf::print_preview<strf::preview_size::no, strf::preview_width::no>*
     , std::size_t
     , const CharT*
     , const CharT*
@@ -115,7 +115,7 @@ inline std::size_t tr_string_size
 
 template <typename CharT>
 std::size_t tr_string_size
-    ( const strf::print_preview<true, false>* args_preview
+    ( const strf::print_preview<strf::preview_size::yes, strf::preview_width::no>* args_preview
     , std::size_t num_args
     , const CharT* it
     , const CharT* end
@@ -300,10 +300,10 @@ public:
 
     using char_type = strf::underlying_char_type<CharSize>;
 
-    template <bool SizeRequested, typename Encoding>
+    template <strf::preview_size SizeRequested, typename Encoding>
     tr_string_printer
-        ( strf::print_preview<SizeRequested, false>& preview
-        , const strf::print_preview<SizeRequested, false>* args_preview
+        ( strf::print_preview<SizeRequested, strf::preview_width::no>& preview
+        , const strf::print_preview<SizeRequested, strf::preview_width::no>* args_preview
         , std::initializer_list<const strf::printer<CharSize>*> printers
         , const char_type* tr_string
         , const char_type* tr_string_end
@@ -316,7 +316,7 @@ public:
         , num_printers_(printers.size())
         , policy_(policy)
     {
-        STRF_IF_CONSTEXPR (SizeRequested) {
+        STRF_IF_CONSTEXPR (static_cast<bool>(SizeRequested)) {
             std::size_t invalid_arg_size;
             switch (policy) {
                 case strf::tr_invalid_arg::replace:

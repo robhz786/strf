@@ -178,10 +178,10 @@ class aligned_join_printer_impl: public printer<CharSize>
 
 public:
 
-    template<typename FPack, bool ReqSize, typename CharT, typename ... Args>
+    template<typename FPack, strf::preview_size ReqSize, typename CharT, typename ... Args>
     STRF_HD aligned_join_printer_impl
         ( const FPack& fp
-        , strf::print_preview<ReqSize, false>& preview
+        , strf::print_preview<ReqSize, strf::preview_width::no>& preview
         , const strf::detail::simple_tuple<Args...>& args
         , std::ptrdiff_t split_pos
         , strf::alignment_format_data afmt
@@ -193,12 +193,12 @@ public:
     {
         decltype(auto) enc = get_facet_<strf::encoding_c<CharT>>(fp);
         encode_fill_func_ = enc.encode_fill;
-        strf::print_preview<ReqSize, true> p { afmt_.width };
+        strf::print_preview<ReqSize, strf::preview_width::yes> p { afmt_.width };
         new (printers_ptr_()) printers_tuple_ { fp, p, args, tag_char };
         if (p.remaining_width() > 0) {
             fillcount_ = p.remaining_width().round();
         }
-        STRF_IF_CONSTEXPR (ReqSize) {
+        STRF_IF_CONSTEXPR (static_cast<bool>(ReqSize)) {
             preview.add_size(p.get_size());
             if (fillcount_ > 0) {
                 auto fcharsize = enc.encoded_char_size(afmt_.fill);
@@ -208,9 +208,9 @@ public:
         (void) preview;
     }
 
-    template<typename FPack, bool ReqSize, typename CharT, typename ... Args>
+    template<typename FPack, strf::preview_size ReqSize, typename CharT, typename ... Args>
     STRF_HD aligned_join_printer_impl
-        ( const FPack& fp, strf::print_preview<ReqSize, true>& preview
+    ( const FPack& fp, strf::print_preview<ReqSize, strf::preview_width::yes>& preview
         , const strf::detail::simple_tuple<Args...>& args
         , std::ptrdiff_t split_pos
         , strf::alignment_format_data afmt
@@ -231,7 +231,7 @@ public:
             wmax = preview.remaining_width();
             diff = preview.remaining_width() - afmt_.width;
         }
-        strf::print_preview<ReqSize, true> p{wmax};
+        strf::print_preview<ReqSize, strf::preview_width::yes> p{wmax};
         // todo: what if the line below throws ?
         new (printers_ptr_()) printers_tuple_{fp, p, args, strf::tag<CharT>()};
         if (p.remaining_width() > diff) {
@@ -239,7 +239,7 @@ public:
         }
         width_t width = fillcount_ + wmax - p.remaining_width();
         preview.subtract_width(width);
-        STRF_IF_CONSTEXPR (ReqSize) {
+        STRF_IF_CONSTEXPR (static_cast<bool>(ReqSize)) {
             preview.add_size(p.get_size());
             if (fillcount_ > 0) {
                 auto fcharsize = enc.encoded_char_size(afmt_.fill);
@@ -337,7 +337,10 @@ using aligned_join_printer_impl_of
         ( make_printer<CharT>
             ( strf::rank<5>()
             , std::declval<const FPack&>()
-            , std::declval<strf::print_preview<Preview::size_required, true>&>()
+            , std::declval
+                < strf::print_preview
+                    < static_cast<strf::preview_size>(Preview::size_required)
+                    , strf::preview_width::yes >& >()
             , std::declval<const Args&>() )) ... >;
 
 template<typename CharT, typename FPack, typename Preview, typename ... Args>
