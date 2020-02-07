@@ -4,7 +4,7 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.11)
 option(
   STRF_CUDA_SUPPORT
   "Build the static library for CUDA device-side use"
