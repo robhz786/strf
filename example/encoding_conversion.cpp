@@ -48,7 +48,7 @@ void input_ouput_different_char_types()
 
 void arg()
 {
-    //[ arg_encoding
+    //[ arg_charset
     auto str_utf8 = strf::to_u8string
         ( strf::cv("--\xA4--", strf::iso_8859_1<char>())
         , strf::cv("--\xA4--", strf::iso_8859_15<char>()));
@@ -57,26 +57,26 @@ void arg()
     //]
 }
 
-void encoding_error_replace()
+void invalid_seq_policy_replace()
 {
-    //[ encoding_error_replace
+    //[ invalid_seq_policy_replace
     auto str = strf::to_u8string (strf::sani("--\x99--"));
     assert(str == u8"--\uFFFD--");
     //]
 }
 
-void encoding_error_stop()
+void invalid_seq_policy_stop()
 {
 #if defined(__cpp_exceptions)
 
-    //[encoding_error_stop
+    //[invalid_seq_policy_stop
     bool transcoding_failed = false;
     try {
         auto str = strf::to_string
-            .with(strf::encoding_error::stop)
+            .with(strf::invalid_seq_policy::stop)
             (strf::sani("--\x99--"));
     }
-    catch(strf::encoding_failure&) {
+    catch(strf::invalid_sequence&) {
         transcoding_failed = true;
     }
 
@@ -120,8 +120,8 @@ int main()
 {
     input_ouput_different_char_types();
     arg();
-    encoding_error_replace();
-    encoding_error_stop();
+    invalid_seq_policy_replace();
+    invalid_seq_policy_stop();
     allow_surrogates();
 
     return 0;

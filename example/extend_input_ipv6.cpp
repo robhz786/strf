@@ -117,11 +117,11 @@ public:
         : ipv6_printer
           ( fmt
           , fmt.is_big() ? 4 : 0
-          , strf::facets_pack< strf::encoding<CharT>
-                             , strf::encoding_error
+          , strf::facets_pack< strf::charset<CharT>
+                             , strf::invalid_seq_policy
                              , strf::surrogate_policy >
-              { strf::get_facet<strf::encoding_c<CharT>, ipv6_printer>(fp)
-              , strf::get_facet<strf::encoding_error_c, ipv6_printer>(fp)
+              { strf::get_facet<strf::charset_c<CharT>, ipv6_printer>(fp)
+              , strf::get_facet<strf::invalid_seq_policy_c, ipv6_printer>(fp)
               , strf::get_facet<strf::surrogate_policy_c, ipv6_printer>(fp) } )
     {
     }
@@ -138,8 +138,8 @@ private:
 
     ipv6_printer( ipv6addr_with_format fmt
                 , int precision
-                , strf::facets_pack< strf::encoding<CharT>
-                                   , strf::encoding_error
+                , strf::facets_pack< strf::charset<CharT>
+                                   , strf::invalid_seq_policy
                                    , strf::surrogate_policy > fp );
 
     void compose_non_abbreviated(strf::printers_receiver<CharT>& out) const;
@@ -166,12 +166,12 @@ template <typename CharT>
 ipv6_printer<CharT>::ipv6_printer
     ( ipv6addr_with_format fmt
     , int precision
-    , strf::facets_pack< strf::encoding<CharT>
-                       , strf::encoding_error
+    , strf::facets_pack< strf::charset<CharT>
+                       , strf::invalid_seq_policy
                        , strf::surrogate_policy > fp )
     : strf::dynamic_join_printer<CharT>
-        { strf::get_facet<strf::encoding_c<CharT>, void>(fp)
-        , strf::get_facet<strf::encoding_error_c, void>(fp)
+        { strf::get_facet<strf::charset_c<CharT>, void>(fp)
+        , strf::get_facet<strf::invalid_seq_policy_c, void>(fp)
         , strf::get_facet<strf::surrogate_policy_c, void>(fp) }
     , fmt_(fmt)
     , colon_{strf::make_printer<CharT>(strf::rank<5>{}, fp, static_cast<CharT>(':'))}

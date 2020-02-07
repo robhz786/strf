@@ -361,8 +361,8 @@ Both have the same purpose: to customize numeric punctuation.
 
 |`<<lettercase,lettercase_c>>`        |Yes |Letter case in numeric types
 
-|`<<encoding,encoding_c>><CharT>`   |No  |The encoding correponding to character type `CharT`
-|`<<encoding_error,encoding_error_c>>`    |Yes |Encoding error handling
+|`<<charset,charset_c>><CharT>`   |No  |The character encoding correponding to character type `CharT`
+|`<<invalid_seq_policy,invalid_seq_policy_c>>`    |Yes |Encoding error handling
 |`<<surrogate_policy,surrogate_policy_c>>` |Yes |Wheter surrogates are treated as errors
 |`<<tr_string_error,tr_string_error_c>>`   |No  |Tr-string parsing error handling
 |===
@@ -501,41 +501,57 @@ auto str_mixed = strf::to_string.with(strf::mixedcase)
 assert(str_upper == "0xAB 1e+50 Inf");
 ----
 
-[[encoding]]
+[[charset]]
 == Character encodings
 
-=== Class template `encoding`
+////
+[source,cpp]
+----
+namespace strf {
 
-The `encoding` class template stores a reference to an const object
-with static storage duration of an implementation-defined type that
-contains information and algorithms related to a character encoding.
-It has the size of a pointer, and it is cheap to copy.
+enum class charset_id {
+    utf8 = /*...*/,
+    utf16 = /*...*/,
+    utf32 = /*...*/,
+    ascii = /*...*/,
+    iso_8859_1 = /*...*/,
+    iso_8859_3 = /*...*/,
+    iso_8859_15 = /*...*/,
+    windows_1252 = /*...*/
+};
+
+template <charset_id>
+class static_charset;
+
+}; // namespace strf
+----
+////
+
+The class templates below are facets that specify the charset
+correspoing to the character type. Their instances are always
+empty classes. More charsets are expected to be included in
+future version of the library.
 
 [source,cpp]
 ----
 namespace strf {
 
-template <typename CharT>
-class encoding
-{
-public:
-    encoding (const encoding&) noexcept;
-    encoding& operator=(const encoding&);
-    bool operator==(const encoding&);
-    const char* name() const; // example: "UTF-8"
+template <typename CharT> struct ascii;
+template <typename CharT> struct iso_8859_1;
+template <typename CharT> struct iso_8859_3;
+template <typename CharT> struct iso_8858_15;
+template <typename CharT> struct windows_1252;
 
-    // other functions ( to-do ) ...
-};
+template <typename CharT> struct utf8;
+template <typename CharT> struct utf16;
+template <typename CharT> struct utf32;
+
+template <typename CharT>
+using utf = /* utf8<CharT> , utf16<CharT> or utf32<CharT> */
+            /* , depending on sizeof(CharT) */;
 
 } // namespace strf
 ----
-
-So an `encoding` object is used to represent an econding.
-When used as a facet, `encoding<CharT>` specifies what is the character
-encoding corresponding to `CharT`. For example, you may have noticed that
-<<numpunct,punctuation characters>> and fill characters are specified
-as `char32_t`. They are aways assumed to be in UTF-32.
-How they are converted is specified that the `encoding` facet.
 
 .Example: write in Windows-1252
 [source,cpp]
@@ -548,86 +564,6 @@ auto s = strf::to_string
 // The character U+2022 is encoded as '\225' in Windows-1252
 assert(s == "one hundred billions = 1\2250000\225000\2250000");
 ----
-
-=== Supported encodings
-
-Currently the library only provide few encodings. But list is expected
-to grow:
-
-[source,cpp]
-----
-template<typename CharT> encoding<CharT> utf8();
-----
-::
-[horizontal]
-Requirements::: `sizeof(CharT) == 1`
-Return::: The UTF-8 encoding
-Note::: This is the default facet for `char` and `char8_t`
-
-[source,cpp]
-----
-template<typename CharT> encoding<CharT> iso_8859_1();
-----
-::
-[horizontal]
-Requirements::: `sizeof(CharT) == 1`
-Return::: The https://en.wikipedia.org/wiki/ISO/IEC_8859-1[ISO/IEC 8859-1] encoding
-
-[source,cpp]
-----
-template<typename CharT> encoding<CharT> iso_8859_1();
-----
-::
-[horizontal]
-Requirements::: `sizeof(CharT) == 1`
-Return::: The https://en.wikipedia.org/wiki/ISO/IEC_8859-1[ISO/IEC 8859-1] encoding
-
-[source,cpp]
-----
-template<typename CharT> encoding<CharT> iso_8859_15();
-----
-::
-[horizontal]
-Requirements::: `sizeof(CharT) == 1`
-Return::: The https://en.wikipedia.org/wiki/ISO/IEC_8859-15[ISO/IEC 8859-15] encoding
-
-[source,cpp]
-----
-template<typename CharT> encoding<CharT> windows_1252();
-----
-::
-[horizontal]
-Requirements::: `sizeof(CharT) == 1`
-Return::: The https://en.wikipedia.org/wiki/Windows-1252[Windows-1252] encoding
-
-[source,cpp]
-----
-template<typename CharT> encoding<CharT> utf16()`;
-----
-::
-[horizontal]
-Requirements::: `sizeof(CharT) == 2`
-Return::: The UTF-16 encoding.
-Note::: This is the default for `char16_t`.
-
-[source,cpp]
-----
-template<typename CharT> encoding<CharT> utf32();
-----
-::
-[horizontal]
-Requirements::: `sizeof(CharT) == 4`
-Return::: UTF-32 encoding.
-Note::: This is the default for `char32_t`.
-
-[source,cpp]
-----
-encoding<wchar_t> utfw();
-----
-::
-[horizontal]
-Returns::: UTF-16 if `sizeof(wchar_t) == 2` and UTF-32 if `sizeof(wchar_t) == 4`
-Note::: This is the default for `wchar_t`.
 
 [[encoding_conversion]]
 === Encoding conversion
@@ -683,18 +619,18 @@ auto str = strf::to_string
 assert(str == "--\xff----\xff----?----?----?--");
 ----
 
-[[encoding_error]]
+[[invalid_seq_policy]]
 === Encoding error handling
 
-The `encoding_error` enumeration controls how invalid
+The `invalid_seq_policy` enumeration controls how invalid
 sequences are handled during encoding conversion.
 [source,cpp]
 ----
 namespace strf {
-enum class encoding_error{ replace, stop };
+enum class invalid_seq_policy{ replace, stop };
 }
 ----
-The default value is `encoding_error::replace`, that
+The default value is `invalid_seq_policy::replace`, that
 causes the invalid sequence to be replaced the
 https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;]. When the input is UTF-8,
 the library follows the practice recommended by the Unicode
@@ -715,10 +651,10 @@ assert(str == u8"--\uFFFD--");
 bool transcoding_failed = false;
 try{
     auto str = strf::to_string
-        .with(strf::encoding_error::stop)
+        .with(strf::invalid_seq_policy::stop)
         (strf::cv("--\x99--"));
 }
-catch(strf::encoding_failure&){
+catch(strf::invalid_sequence&){
     transcoding_failed = true;
 }
 assert(transcoding_failed);
@@ -841,9 +777,9 @@ No effect in decimal base.
 Facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<numpunct, numpunct_c>><__Base__>`
-- `<<encoding,encoding_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
+- `<<charset,charset_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
 - `<<surrogate_policy,surrogate_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
-- `<<encoding_error,encoding_error_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
+- `<<invalid_seq_policy,invalid_seq_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
 
 === Floating Points
 Types::
@@ -873,9 +809,9 @@ the number of fractional digits. `precision == 0` has the same effect as
 Facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<numpunct, numpunct_c>><10>`
-- `<<encoding,encoding_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
+- `<<charset,charset_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
 - `<<surrogate_policy,surrogate_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
-- `<<encoding_error,encoding_error_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
+- `<<invalid_seq_policy,invalid_seq_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
 
 === `const void*`
 Types:: `const void*`
@@ -885,9 +821,9 @@ The <<alignment_format_functions, alignment functions>> only.
 Facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<numpunct, numpunct_c>><16>`
-- `<<encoding,encoding_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
+- `<<charset,charset_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
 - `<<surrogate_policy,surrogate_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
-- `<<encoding_error,encoding_error_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
+- `<<invalid_seq_policy,invalid_seq_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
 
 === Single characters
 Type:: `CharT`, that is the output character type defined by the <<destinations,destination>>.
@@ -898,9 +834,9 @@ Format functions::
 
 Facet categories::
 - `<<width_calculation,width_calculation_c>>`
-- `<<encoding,encoding_c>><__CharType__>`
+- `<<charset,charset_c>><__CharType__>`
 - `<<surrogate_policy,surrogate_policy_c>>`
-- `<<encoding_error,encoding_error_c>>`
+- `<<invalid_seq_policy,invalid_seq_policy_c>>`
 
 
 === Strings
@@ -916,15 +852,16 @@ where:
 
 Format functions::
 ( in addition to <<alignment_format_functions, alignment functions>> )
-`sani(encoding<CharT> enc)`::: Translates input string from `enc` to the
-                               output encoding. If the encodings are the same
-                               then sanitizes the input string.
+`template <typename Charset> sani(Charset cs)`:::
+   Translates input string from `cs` to the output encoding.
+   If the encodings are the same then sanitizes the input string.
 `sani()`::: Translates input string from the encoding associated to `CharT` to
             the output encoding. If these encodings are the same
             then sanitizes the input string.
-`cv(encoding<CharT> enc)`::: Translates input string from `enc` to the
-                             output encoding, if these encodings are not the same.
-                             Otherwise, copies input string as it is.
+`template <typename Charset> cv(Charset cs)`:::
+   Translates input string from `enc` to the
+   output encoding, if these encodings are not the same.
+   Otherwise, copies input string as it is.
 `cv()`::: Translates input string from the encoding associated to `CharT` to
           the output encoding, if these encodings are not the same.
           Otherwise, copies the input string as it is.
@@ -940,9 +877,9 @@ See also the section about <<encoding_conversion,encoding conversion>>.
 
 Facet categories::
 - `<<width_calculation,width_calculation_c>>`
-- `<<encoding,encoding_c>><__CharType__>`
+- `<<charset,charset_c>><__CharType__>`
 - `<<surrogate_policy,surrogate_policy_c>>`
-- `<<encoding_error,encoding_error_c>>`
+- `<<invalid_seq_policy,invalid_seq_policy_c>>`
 
 === Ranges
 
@@ -1319,5 +1256,5 @@ to-do
 === Adding Facets
 to-do
 
-=== Adding encodings
+=== Adding character encodings
 to-do

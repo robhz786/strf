@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_SINGLE_BYTE_ENCODINGS_HPP
-#define STRF_DETAIL_SINGLE_BYTE_ENCODINGS_HPP
+#ifndef STRF_DETAIL_SINGLE_BYTE_CHARSETS_HPP
+#define STRF_DETAIL_SINGLE_BYTE_CHARSETS_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -64,7 +64,7 @@ struct impl_strict_ascii
     {
         return "ASCII";
     };
-    static constexpr strf::encoding_id id = strf::encoding_id::ascii;
+    static constexpr strf::charset_id id = strf::charset_id::ascii;
 
     static STRF_HD bool is_valid(std::uint8_t ch)
     {
@@ -88,7 +88,7 @@ struct impl_iso_8859_1
     {
         return "ISO-8859-1";
     };
-    static constexpr strf::encoding_id id = strf::encoding_id::iso_8859_1;
+    static constexpr strf::charset_id id = strf::charset_id::iso_8859_1;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -110,7 +110,7 @@ struct impl_iso_8859_3
     {
         return "ISO-8859-3";
     };
-    static constexpr strf::encoding_id id = strf::encoding_id::iso_8859_3;
+    static constexpr strf::charset_id id = strf::charset_id::iso_8859_3;
 
     static STRF_HD bool is_valid(std::uint8_t ch)
     {
@@ -231,7 +231,7 @@ public:
     {
         return "ISO-8859-15";
     };
-    static constexpr strf::encoding_id id = strf::encoding_id::iso_8859_15;
+    static constexpr strf::charset_id id = strf::charset_id::iso_8859_15;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -299,7 +299,7 @@ public:
     {
         return "windows-1252";
     };
-    static constexpr strf::encoding_id id = strf::encoding_id::windows_1252;
+    static constexpr strf::charset_id id = strf::charset_id::windows_1252;
 
     constexpr static unsigned short decode_fail = 0xFFFF;
 
@@ -379,48 +379,48 @@ STRF_INLINE STRF_HD unsigned impl_windows_1252::encode_ext(char32_t ch)
 
 
 template <class Impl>
-struct single_byte_encoding_to_utf32
+struct single_byte_charset_to_utf32
 {
     static STRF_HD void transcode
         ( strf::underlying_outbuf<4>& ob
         , const std::uint8_t* src
         , const std::uint8_t* src_end
-        , strf::encoding_error err_hdl
-        , strf::surrogate_policy allow_surr );
+        , strf::invalid_seq_policy inv_seq_poli
+        , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t necessary_size
         ( const std::uint8_t* src
         , const std::uint8_t* src_end
-        , strf::surrogate_policy allow_surr ) noexcept
+        , strf::surrogate_policy surr_poli ) noexcept
     {
-        (void) allow_surr;
+        (void) surr_poli;
         return src_end - src;
     }
 };
 
 template <class Impl>
-STRF_HD void single_byte_encoding_to_utf32<Impl>::transcode
+STRF_HD void single_byte_charset_to_utf32<Impl>::transcode
     ( strf::underlying_outbuf<4>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
-    , strf::encoding_error err_hdl
-    , strf::surrogate_policy allow_surr )
+    , strf::invalid_seq_policy inv_seq_poli
+    , strf::surrogate_policy surr_poli )
 {
-    (void) allow_surr;
+    (void) surr_poli;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
     for (auto src_it = src; src_it < src_end; ++src_it) {
         //ob.ensure(1);
         char32_t ch32 = Impl::decode(*src_it);
         if(ch32 == (char32_t)-1) {
-            switch(err_hdl) {
-                case strf::encoding_error::replace:
+            switch(inv_seq_poli) {
+                case strf::invalid_seq_policy::replace:
                     ch32 = 0xFFFD;
                     break;
                 default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::stop);
+                    STRF_ASSERT(inv_seq_poli == strf::invalid_seq_policy::stop);
                     ob.advance_to(dest_it);
-                    strf::detail::handle_encoding_failure();
+                    strf::detail::handle_invalid_sequence();
             }
         }
         STRF_CHECK_DEST;
@@ -431,42 +431,42 @@ STRF_HD void single_byte_encoding_to_utf32<Impl>::transcode
 }
 
 template <class Impl>
-struct utf32_to_single_byte_encoding
+struct utf32_to_single_byte_charset
 {
     static STRF_HD void transcode
         ( strf::underlying_outbuf<1>& ob
         , const char32_t* src
         , const char32_t* src_end
-        , strf::encoding_error err_hdl
-        , strf::surrogate_policy allow_surr );
+        , strf::invalid_seq_policy inv_seq_poli
+        , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t necessary_size
         ( const char32_t* src
         , const char32_t* src_end
-        , strf::surrogate_policy allow_surr ) noexcept
+        , strf::surrogate_policy surr_poli ) noexcept
     {
-        (void) allow_surr;
+        (void) surr_poli;
         return src_end - src;
     }
 };
 
 template <class Impl>
-STRF_HD void utf32_to_single_byte_encoding<Impl>::transcode
+STRF_HD void utf32_to_single_byte_charset<Impl>::transcode
     ( strf::underlying_outbuf<1>& ob
     , const char32_t* src
     , const char32_t* src_end
-    , strf::encoding_error err_hdl
-    , strf::surrogate_policy allow_surr )
+    , strf::invalid_seq_policy inv_seq_poli
+    , strf::surrogate_policy surr_poli )
 {
-    (void)allow_surr;
+    (void)surr_poli;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
     for(; src != src_end; ++src) {
         auto ch2 = Impl::encode(*src);
         if(ch2 >= 0x100) {
-            if (err_hdl == strf::encoding_error::stop) {
+            if (inv_seq_poli == strf::invalid_seq_policy::stop) {
                 ob.advance_to(dest_it);
-                strf::detail::handle_encoding_failure();
+                strf::detail::handle_invalid_sequence();
             }
             ch2 = '?';
         }
@@ -478,34 +478,34 @@ STRF_HD void utf32_to_single_byte_encoding<Impl>::transcode
 }
 
 template <class Impl>
-struct single_byte_encoding_sanitizer
+struct single_byte_charset_sanitizer
 {
     static STRF_HD void transcode
         ( strf::underlying_outbuf<1>& ob
         , const std::uint8_t* src
         , const std::uint8_t* src_end
-        , strf::encoding_error err_hdl
-        , strf::surrogate_policy allow_surr );
+        , strf::invalid_seq_policy inv_seq_poli
+        , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t necessary_size
         ( const std::uint8_t* src
         , const std::uint8_t* src_end
-        , strf::surrogate_policy allow_surr ) noexcept
+        , strf::surrogate_policy surr_poli ) noexcept
     {
-        (void) allow_surr;
+        (void) surr_poli;
         return src_end - src;
     }
 };
 
 template <class Impl>
-STRF_HD void single_byte_encoding_sanitizer<Impl>::transcode
+STRF_HD void single_byte_charset_sanitizer<Impl>::transcode
     ( strf::underlying_outbuf<1>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
-    , strf::encoding_error err_hdl
-    , strf::surrogate_policy allow_surr )
+    , strf::invalid_seq_policy inv_seq_poli
+    , strf::surrogate_policy surr_poli )
 {
-    (void) allow_surr;
+    (void) surr_poli;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
     std::uint8_t ch_out = '?';
@@ -515,9 +515,9 @@ STRF_HD void single_byte_encoding_sanitizer<Impl>::transcode
             ch_out = ch;
         }
         else {
-            if (err_hdl == strf::encoding_error::stop) {
+            if (inv_seq_poli == strf::invalid_seq_policy::stop) {
                 ob.advance_to(dest_it);
-                strf::detail::handle_encoding_failure();
+                strf::detail::handle_invalid_sequence();
             }
             ch_out = '?';
         }
@@ -533,135 +533,135 @@ STRF_HD void single_byte_encoding_sanitizer<Impl>::transcode
 
 template <>
 class static_transcoder
-    < strf::encoding_id::ascii
-    , strf::encoding_id::ascii >
-    : public strf::detail::single_byte_encoding_sanitizer
+    < strf::charset_id::ascii
+    , strf::charset_id::ascii >
+    : public strf::detail::single_byte_charset_sanitizer
         <strf::detail::impl_strict_ascii>
 {
 };
 
 template <>
 class static_transcoder
-    < strf::encoding_id::utf32
-    , strf::encoding_id::ascii >
-    : public strf::detail::utf32_to_single_byte_encoding
+    < strf::charset_id::utf32
+    , strf::charset_id::ascii >
+    : public strf::detail::utf32_to_single_byte_charset
         <strf::detail::impl_strict_ascii>
 {
 };
 
 template <>
 class static_transcoder
-    < strf::encoding_id::ascii
-    , strf::encoding_id::utf32 >
-    : public strf::detail::single_byte_encoding_to_utf32
+    < strf::charset_id::ascii
+    , strf::charset_id::utf32 >
+    : public strf::detail::single_byte_charset_to_utf32
         <strf::detail::impl_strict_ascii>
 {
 };
 
 template <>
 class static_transcoder
-    < strf::encoding_id::iso_8859_1
-    , strf::encoding_id::iso_8859_1 >
-    : public strf::detail::single_byte_encoding_sanitizer
+    < strf::charset_id::iso_8859_1
+    , strf::charset_id::iso_8859_1 >
+    : public strf::detail::single_byte_charset_sanitizer
         <strf::detail::impl_iso_8859_1>
 {
 };
 
 template <>
 class static_transcoder
-    < strf::encoding_id::utf32
-    , strf::encoding_id::iso_8859_1 >
-    : public strf::detail::utf32_to_single_byte_encoding
+    < strf::charset_id::utf32
+    , strf::charset_id::iso_8859_1 >
+    : public strf::detail::utf32_to_single_byte_charset
         <strf::detail::impl_iso_8859_1>
 {
 };
 
 template <>
 class static_transcoder
-    < strf::encoding_id::iso_8859_1
-    , strf::encoding_id::utf32 >
-    : public strf::detail::single_byte_encoding_to_utf32
+    < strf::charset_id::iso_8859_1
+    , strf::charset_id::utf32 >
+    : public strf::detail::single_byte_charset_to_utf32
         <strf::detail::impl_iso_8859_1>
 {
 };
 
 template <>
 class static_transcoder
-    < strf::encoding_id::iso_8859_3
-    , strf::encoding_id::iso_8859_3 >
-    : public strf::detail::single_byte_encoding_sanitizer
+    < strf::charset_id::iso_8859_3
+    , strf::charset_id::iso_8859_3 >
+    : public strf::detail::single_byte_charset_sanitizer
         <strf::detail::impl_iso_8859_3>
 {
 };
 
 template <>
 class static_transcoder
-    < strf::encoding_id::utf32
-    , strf::encoding_id::iso_8859_3 >
-    : public strf::detail::utf32_to_single_byte_encoding
+    < strf::charset_id::utf32
+    , strf::charset_id::iso_8859_3 >
+    : public strf::detail::utf32_to_single_byte_charset
         <strf::detail::impl_iso_8859_3>
 {
 };
 
 template <>
 class static_transcoder
-    < strf::encoding_id::iso_8859_3
-    , strf::encoding_id::utf32 >
-    : public strf::detail::single_byte_encoding_to_utf32
+    < strf::charset_id::iso_8859_3
+    , strf::charset_id::utf32 >
+    : public strf::detail::single_byte_charset_to_utf32
         <strf::detail::impl_iso_8859_3>
 {
 };
 
 template <>
 class static_transcoder
-    < strf::encoding_id::iso_8859_15
-    , strf::encoding_id::iso_8859_15 >
-    : public strf::detail::single_byte_encoding_sanitizer
+    < strf::charset_id::iso_8859_15
+    , strf::charset_id::iso_8859_15 >
+    : public strf::detail::single_byte_charset_sanitizer
         <strf::detail::impl_iso_8859_15>
 {
 };
 
 template <>
 class static_transcoder
-    < strf::encoding_id::utf32
-    , strf::encoding_id::iso_8859_15 >
-    : public strf::detail::utf32_to_single_byte_encoding
+    < strf::charset_id::utf32
+    , strf::charset_id::iso_8859_15 >
+    : public strf::detail::utf32_to_single_byte_charset
         <strf::detail::impl_iso_8859_15>
 {
 };
 
 template <>
 class static_transcoder
-    < strf::encoding_id::iso_8859_15
-    , strf::encoding_id::utf32 >
-    : public strf::detail::single_byte_encoding_to_utf32
+    < strf::charset_id::iso_8859_15
+    , strf::charset_id::utf32 >
+    : public strf::detail::single_byte_charset_to_utf32
         <strf::detail::impl_iso_8859_15>
 {
 };
 
 template <>
 class static_transcoder
-    < strf::encoding_id::windows_1252
-    , strf::encoding_id::windows_1252 >
-    : public strf::detail::single_byte_encoding_sanitizer
+    < strf::charset_id::windows_1252
+    , strf::charset_id::windows_1252 >
+    : public strf::detail::single_byte_charset_sanitizer
         <strf::detail::impl_windows_1252>
 {
 };
 
 template <>
 class static_transcoder
-    < strf::encoding_id::utf32
-    , strf::encoding_id::windows_1252 >
-    : public strf::detail::utf32_to_single_byte_encoding
+    < strf::charset_id::utf32
+    , strf::charset_id::windows_1252 >
+    : public strf::detail::utf32_to_single_byte_charset
         <strf::detail::impl_windows_1252>
 {
 };
 
 template <>
 class static_transcoder
-    < strf::encoding_id::windows_1252
-    , strf::encoding_id::utf32 >
-    : public strf::detail::single_byte_encoding_to_utf32
+    < strf::charset_id::windows_1252
+    , strf::charset_id::utf32 >
+    : public strf::detail::single_byte_charset_to_utf32
         <strf::detail::impl_windows_1252>
 {
 };
@@ -669,7 +669,7 @@ class static_transcoder
 namespace detail {
 
 template <class Impl>
-class single_byte_encoding
+class single_byte_charset
 {
     using char_type_ = std::uint8_t;
 public:
@@ -679,7 +679,7 @@ public:
     {
         return Impl::name();
     };
-    static constexpr STRF_HD strf::encoding_id id() noexcept
+    static constexpr STRF_HD strf::charset_id id() noexcept
     {
         return Impl::id;
     }
@@ -707,7 +707,7 @@ public:
 
     static STRF_HD void encode_fill
         ( strf::underlying_outbuf<1>& ob, std::size_t count, char32_t ch
-        , strf::encoding_error err_hdl, strf::surrogate_policy );
+        , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy );
 
     static STRF_HD std::size_t codepoints_count
         ( const std::uint8_t* begin, const std::uint8_t* end
@@ -723,14 +723,14 @@ public:
     }
 
     static constexpr STRF_HD
-    strf::static_transcoder<strf::encoding_id::utf32, Impl::id>
+    strf::static_transcoder<strf::charset_id::utf32, Impl::id>
     from_u32() noexcept
     {
         return {};
     }
 
     static constexpr STRF_HD
-    strf::static_transcoder<Impl::id, strf::encoding_id::utf32>
+    strf::static_transcoder<Impl::id, strf::charset_id::utf32>
     to_u32() noexcept
     {
         return {};
@@ -745,7 +745,7 @@ public:
 
 
 template <class Impl>
-STRF_HD std::uint8_t* single_byte_encoding<Impl>::encode_char
+STRF_HD std::uint8_t* single_byte_charset<Impl>::encode_char
     ( std::uint8_t* dest
     , char32_t ch )
 {
@@ -756,17 +756,17 @@ STRF_HD std::uint8_t* single_byte_encoding<Impl>::encode_char
 }
 
 template <class Impl>
-STRF_HD void single_byte_encoding<Impl>::encode_fill
+STRF_HD void single_byte_charset<Impl>::encode_fill
     ( strf::underlying_outbuf<1>& ob
     , std::size_t count
     , char32_t ch
-    , strf::encoding_error err_hdl
+    , strf::invalid_seq_policy inv_seq_poli
     , strf::surrogate_policy )
 {
     unsigned ch2 = Impl::encode(ch);
     if (ch2 >= 0x100) {
-        if (err_hdl == strf::encoding_error::stop) {
-            strf::detail::handle_encoding_failure();
+        if (inv_seq_poli == strf::invalid_seq_policy::stop) {
+            strf::detail::handle_invalid_sequence();
         }
         ch2 = '?';
     }
@@ -788,77 +788,77 @@ STRF_HD void single_byte_encoding<Impl>::encode_fill
 
 
 template <>
-class static_encoding<strf::encoding_id::ascii>
-    : public strf::detail::single_byte_encoding<strf::detail::impl_strict_ascii>
+class static_charset<strf::charset_id::ascii>
+    : public strf::detail::single_byte_charset<strf::detail::impl_strict_ascii>
 {
 };
 
 template <>
-class static_encoding<strf::encoding_id::iso_8859_1>
-    : public strf::detail::single_byte_encoding<strf::detail::impl_iso_8859_1>
+class static_charset<strf::charset_id::iso_8859_1>
+    : public strf::detail::single_byte_charset<strf::detail::impl_iso_8859_1>
 {
 };
 
 template <>
-class static_encoding<strf::encoding_id::iso_8859_3>
-    : public strf::detail::single_byte_encoding<strf::detail::impl_iso_8859_3>
+class static_charset<strf::charset_id::iso_8859_3>
+    : public strf::detail::single_byte_charset<strf::detail::impl_iso_8859_3>
 {
 };
 
 template <>
-class static_encoding<strf::encoding_id::iso_8859_15>
-    : public strf::detail::single_byte_encoding<strf::detail::impl_iso_8859_15>
+class static_charset<strf::charset_id::iso_8859_15>
+    : public strf::detail::single_byte_charset<strf::detail::impl_iso_8859_15>
 {
 };
 
 template <>
-class static_encoding<strf::encoding_id::windows_1252>
-    : public strf::detail::single_byte_encoding<strf::detail::impl_windows_1252>
+class static_charset<strf::charset_id::windows_1252>
+    : public strf::detail::single_byte_charset<strf::detail::impl_windows_1252>
 {
 };
 
 template <typename CharT>
 struct ascii
-    : public strf::static_encoding<strf::encoding_id::ascii>
+    : public strf::static_charset<strf::charset_id::ascii>
 {
     static_assert(sizeof(CharT) == 1, "Invalid char type for iso_8859_1");
-    using category = strf::encoding_c<CharT>;
+    using category = strf::charset_c<CharT>;
 };
 
 template <typename CharT>
 struct iso_8859_1
-    : public strf::static_encoding<strf::encoding_id::iso_8859_1>
+    : public strf::static_charset<strf::charset_id::iso_8859_1>
 {
     static_assert(sizeof(CharT) == 1, "Invalid char type for iso_8859_1");
-    using category = strf::encoding_c<CharT>;
+    using category = strf::charset_c<CharT>;
 };
 
 template <typename CharT>
 struct iso_8859_3
-    : public strf::static_encoding<strf::encoding_id::iso_8859_3>
+    : public strf::static_charset<strf::charset_id::iso_8859_3>
 {
     static_assert(sizeof(CharT) == 1, "Invalid char type for iso_8859_3");
-    using category = strf::encoding_c<CharT>;
+    using category = strf::charset_c<CharT>;
 };
 
 template <typename CharT>
 struct iso_8859_15
-    : public strf::static_encoding<strf::encoding_id::iso_8859_15>
+    : public strf::static_charset<strf::charset_id::iso_8859_15>
 {
     static_assert(sizeof(CharT) == 1, "Invalid char type for iso_8859_15");
-    using category = strf::encoding_c<CharT>;
+    using category = strf::charset_c<CharT>;
 };
 
 template <typename CharT>
 struct windows_1252
-    : public strf::static_encoding<strf::encoding_id::windows_1252>
+    : public strf::static_charset<strf::charset_id::windows_1252>
 {
     static_assert(sizeof(CharT) == 1, "Invalid char type for windows_1252");
-    using category = strf::encoding_c<CharT>;
+    using category = strf::charset_c<CharT>;
 };
 
 } // namespace strf
 
 
-#endif  // STRF_DETAIL_SINGLE_BYTE_ENCODINGS_HPP
+#endif  // STRF_DETAIL_SINGLE_BYTE_CHARSETS_HPP
 

@@ -73,28 +73,28 @@ class custom_wcalc
 public:
     using category = strf::width_calculator_c;
 
-    template <typename Encoding>
+    template <typename Charset>
     strf::width_t width
-        ( const Encoding& enc
-        , strf::underlying_char_type<Encoding::char_size> ch ) const noexcept
+        ( const Charset& cs
+        , strf::underlying_char_type<Charset::char_size> ch ) const noexcept
     {
-        auto ch32 = enc.decode_single_char(ch);
+        auto ch32 = cs.decode_single_char(ch);
         return ( ch32 == U'\u2E3A' ? 4
                : ch32 == U'\u2014' ? 2
                : 1 );
     }
 
-    template <typename Encoding>
+    template <typename Charset>
     constexpr STRF_HD strf::width_t width
-        ( const Encoding& enc
+        ( const Charset& cs
         , strf::width_t limit
-        , const strf::underlying_char_type<Encoding::char_size>* str
+        , const strf::underlying_char_type<Charset::char_size>* str
         , std::size_t str_len
-        , strf::encoding_error enc_err
-        , strf::surrogate_policy allow_surr ) const noexcept
+        , strf::invalid_seq_policy inv_seq_poli
+        , strf::surrogate_policy surr_poli ) const noexcept
     {
         width_accumulator acc(limit);
-        enc.to_u32().transcode(acc, str, str + str_len, enc_err, allow_surr);
+        cs.to_u32().transcode(acc, str, str + str_len, inv_seq_poli, surr_poli);
         return acc.get_result();
     }
 };

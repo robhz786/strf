@@ -31,10 +31,10 @@
 #include <strf/detail/single_byte_encodings.hpp>
 #include <strf/detail/utf_encodings.hpp>
 
-// define default encoding:
+// define default charset:
 namespace strf  {
 template <typename CharT>
-struct encoding_c
+struct charset_c
 {
     static constexpr bool constrainable = false;
     static constexpr STRF_HD strf::utf<CharT> get_default() noexcept

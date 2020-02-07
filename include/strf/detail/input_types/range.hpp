@@ -226,11 +226,11 @@ STRF_HD void separated_range_printer<CharT, FPack, It>::preview_(Preview& previe
     if (Preview::width_required) {
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(fp_);
         using uchar = strf::underlying_char_type<sizeof(CharT)>;
-        auto dw = wcalc.width( get_facet_<strf::encoding_c<CharT>>(fp_)
+        auto dw = wcalc.width( get_facet_<strf::charset_c<CharT>>(fp_)
                              , preview.remaining_width()
                              , reinterpret_cast<const uchar*>(sep_begin_)
                              , sep_len_
-                             , get_facet_<strf::encoding_error_c>(fp_)
+                             , get_facet_<strf::invalid_seq_policy_c>(fp_)
                              , get_facet_<strf::surrogate_policy_c>(fp_) );
         if (dw != 0) {
             if (count > UINT32_MAX) {
@@ -437,11 +437,11 @@ STRF_HD void fmt_separated_range_printer<CharT, FPack, ForwardIt, Fmts ...>::pre
     if (Preview::width_required) {
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(fp_);
         using uchar = strf::underlying_char_type<sizeof(CharT)>;
-        auto dw = wcalc.width( get_facet_<strf::encoding_c<CharT>>(fp_)
+        auto dw = wcalc.width( get_facet_<strf::charset_c<CharT>>(fp_)
                              , preview.remaining_width()
                              , reinterpret_cast<const uchar*>(r.sep_begin)
                              , r.sep_len
-                             , get_facet_<strf::encoding_error_c>(fp_)
+                             , get_facet_<strf::invalid_seq_policy_c>(fp_)
                              , get_facet_<strf::surrogate_policy_c>(fp_) );
         if (dw != 0) {
             if (count > UINT32_MAX) {
@@ -621,11 +621,11 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>
     if (Preview::width_required) {
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(fp_);
         using uchar = strf::underlying_char_type<sizeof(CharT)>;
-        auto dw = wcalc.width( get_facet_<strf::encoding_c<CharT>>(fp_)
+        auto dw = wcalc.width( get_facet_<strf::charset_c<CharT>>(fp_)
                              , preview.remaining_width()
                              , reinterpret_cast<const uchar*>(sep_begin_)
                              , sep_len_
-                             , get_facet_<strf::encoding_error_c>(fp_)
+                             , get_facet_<strf::invalid_seq_policy_c>(fp_)
                              , get_facet_<strf::surrogate_policy_c>(fp_) );
         if (dw != 0) {
             if (count > UINT32_MAX) {

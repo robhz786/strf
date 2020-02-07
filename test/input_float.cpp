@@ -489,7 +489,7 @@ int main()
             (j(strf::fmt(1e+5)));
 
         {
-            // punctuation in single-byte encoding
+            // punctuation in single-byte charset
             auto fp = strf::pack( strf::iso_8859_3<char>()
                                 , strf::monotonic_grouping<10>(4)
                                     .decimal_point(0x130)
