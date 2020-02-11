@@ -400,7 +400,7 @@ private:
 
     const char_type* str_;
     std::size_t len_;
-    strf::encode_fill_func<CharSize> encode_fill_;
+    strf::encode_fill_f<CharSize> encode_fill_;
     strf::alignment_format_data afmt_;
     std::int16_t left_fillcount_;
     std::int16_t right_fillcount_;

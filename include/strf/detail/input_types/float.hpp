@@ -543,7 +543,7 @@ STRF_HD void print_amplified_integer_small_separator
 template <std::size_t CharSize>
 STRF_HD void print_amplified_integer_big_separator
     ( strf::underlying_outbuf<CharSize>& ob
-    , strf::encode_char_func<CharSize> encode_char
+    , strf::encode_char_f<CharSize> encode_char
     , const strf::numpunct_base& punct
     , unsigned long long value
     , unsigned num_digits
@@ -604,7 +604,7 @@ STRF_HD void print_amplified_integer_big_separator
 template <std::size_t CharSize>
 STRF_HD void print_scientific_notation
     ( strf::underlying_outbuf<CharSize>& ob
-    , strf::encode_char_func<CharSize> encode_char
+    , strf::encode_char_f<CharSize> encode_char
     , unsigned long long digits
     , unsigned num_digits
     , char32_t decimal_point
@@ -825,8 +825,8 @@ private:
     STRF_HD std::size_t content_size_() const;
 
     const strf::numpunct_base& punct_;
-    strf::encode_char_func<CharSize> encode_char_;
-    strf::encode_fill_func<CharSize> encode_fill_;
+    strf::encode_char_f<CharSize> encode_char_;
+    strf::encode_fill_f<CharSize> encode_fill_;
     char32_t fillchar_ = U' ';
     unsigned left_fillcount_ = 0;
     unsigned split_fillcount_ = 0;
@@ -1174,7 +1174,7 @@ private:
     }
 
     strf::detail::double_printer_data data_;
-    strf::encode_fill_func<CharSize> encode_fill_;
+    strf::encode_fill_f<CharSize> encode_fill_;
     char32_t fillchar_ = U' ';
     unsigned left_fillcount_ = 0;
     unsigned split_fillcount_ = 0;
@@ -1596,7 +1596,7 @@ private:
     STRF_HD void init_(const Charset& cs);
 
     const strf::numpunct_base& punct_;
-    strf::encode_char_func<CharSize> encode_char_;
+    strf::encode_char_f<CharSize> encode_char_;
     const detail::double_dec value_;
     const unsigned m10_digcount_;
     unsigned sep_count_ = 0;

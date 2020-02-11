@@ -291,7 +291,7 @@ public:
 private:
 
     const strf::numpunct_base& punct_;
-    strf::encode_char_func<CharSize> encode_char_;
+    strf::encode_char_f<CharSize> encode_char_;
     unsigned long long uvalue_;
     unsigned digcount_;
     unsigned sepcount_ = 0;
@@ -389,7 +389,7 @@ public:
 private:
 
     const strf::numpunct_base& punct_;
-    strf::encode_char_func<CharSize> encode_char_;
+    strf::encode_char_f<CharSize> encode_char_;
     unsigned long long uvalue_ = 0;
     unsigned precision_ = 0;
     unsigned digcount_ = 0;
@@ -583,7 +583,7 @@ public:
 private:
 
     strf::detail::partial_fmt_int_printer<CharSize, Base> ichars_;
-    strf::encode_fill_func<CharSize> encode_fill_;
+    strf::encode_fill_f<CharSize> encode_fill_;
     unsigned fillcount_ = 0;
     strf::invalid_seq_policy inv_seq_poli_;
     strf::alignment_format_data afmt_;

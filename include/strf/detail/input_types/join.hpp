@@ -122,7 +122,7 @@ namespace detail {
 template<std::size_t CharSize>
 STRF_HD void print_split
     ( strf::underlying_outbuf<CharSize>& ob
-    , strf::encode_fill_func<CharSize> encode_fill
+    , strf::encode_fill_f<CharSize> encode_fill
     , unsigned fillcount
     , char32_t fillchar
     , std::ptrdiff_t split_pos
@@ -136,7 +136,7 @@ STRF_HD void print_split
 template<std::size_t CharSize, typename Printer, typename ... Printers>
 STRF_HD void print_split
     ( strf::underlying_outbuf<CharSize>& ob
-    , strf::encode_fill_func<CharSize> encode_fill
+    , strf::encode_fill_f<CharSize> encode_fill
     , unsigned fillcount
     , char32_t fillchar
     , std::ptrdiff_t split_pos
@@ -160,7 +160,7 @@ STRF_HD void print_split
     ( const strf::detail::printers_tuple_impl
         < CharSize, std::index_sequence<I...>, Printers... >& printers
     , strf::underlying_outbuf<CharSize>& ob
-    , strf::encode_fill_func<CharSize> encode_fill
+    , strf::encode_fill_f<CharSize> encode_fill
     , unsigned fillcount
     , char32_t fillchar
     , std::ptrdiff_t split_pos
@@ -292,7 +292,7 @@ private:
     printers_tuple_storage_ pool_;
     std::ptrdiff_t split_pos_;
     strf::alignment_format_data afmt_;
-    strf::encode_fill_func<CharSize> encode_fill_func_;
+    strf::encode_fill_f<CharSize> encode_fill_func_;
     strf::width_t width_;
     std::int16_t fillcount_ = 0;
     strf::invalid_seq_policy inv_seq_poli_;

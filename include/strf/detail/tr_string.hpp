@@ -210,7 +210,7 @@ void tr_string_write
     , const strf::printer<CharSize>* const * args
     , std::size_t num_args
     , strf::underlying_outbuf<CharSize>& ob
-    , strf::write_replacement_char_func<CharSize> write_replacement_char
+    , strf::write_replacement_char_f<CharSize> write_replacement_char
     , strf::tr_invalid_arg policy )
 {
     using char_type = strf::underlying_char_type<CharSize>;
@@ -350,7 +350,7 @@ private:
 
     const char_type* tr_string_;
     const char_type* tr_string_end_;
-    strf::write_replacement_char_func<CharSize> write_replacement_char_func_;
+    strf::write_replacement_char_f<CharSize> write_replacement_char_func_;
     const strf::printer<CharSize>* const * printers_array_;
     std::size_t num_printers_;
     strf::tr_invalid_arg policy_;

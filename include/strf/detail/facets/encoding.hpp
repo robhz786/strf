@@ -176,7 +176,7 @@ enum class charset_id : unsigned
 constexpr std::size_t invalid_char_len = (std::size_t)-1;
 
 template <std::size_t SrcCharSize, std::size_t DestCharSize>
-using transcode_func = void (*)
+using transcode_f = void (*)
     ( strf::underlying_outbuf<DestCharSize>& ob
     , const strf::underlying_char_type<SrcCharSize>* begin
     , const strf::underlying_char_type<SrcCharSize>* end
@@ -184,39 +184,39 @@ using transcode_func = void (*)
     , strf::surrogate_policy surr_poli );
 
 template <std::size_t SrcCharSize>
-using transcode_size_func = std::size_t (*)
+using transcode_size_f = std::size_t (*)
     ( const strf::underlying_char_type<SrcCharSize>* begin
     , const strf::underlying_char_type<SrcCharSize>* end
     , strf::surrogate_policy surr_poli );
 
 template <std::size_t CharSize>
-using write_replacement_char_func = void (*)
+using write_replacement_char_f = void (*)
     ( strf::underlying_outbuf<CharSize>& );
 
 // assume allow_surragates::lax
-using validate_func = std::size_t (*)(char32_t ch);
+using validate_f = std::size_t (*)(char32_t ch);
 
 // assume allow_surragates::lax and strf::invalid_seq_policy::replace
-using encoded_char_size_func = std::size_t (*)(char32_t ch);
+using encoded_char_size_f = std::size_t (*)(char32_t ch);
 
 // assume allow_surragates::lax and strf::invalid_seq_policy::replace
 template <std::size_t CharSize>
-using encode_char_func = strf::underlying_char_type<CharSize>*(*)
+using encode_char_f = strf::underlying_char_type<CharSize>*(*)
     ( strf::underlying_char_type<CharSize>* dest, char32_t ch );
 
 template <std::size_t CharSize>
-using encode_fill_func = void (*)
+using encode_fill_f = void (*)
     ( strf::underlying_outbuf<CharSize>&, std::size_t count, char32_t ch
     , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy surr_poli );
 
 template <std::size_t CharSize>
-using codepoints_count_func = std::size_t (*)
+using codepoints_count_f = std::size_t (*)
     ( const strf::underlying_char_type<CharSize>* begin
     , const strf::underlying_char_type<CharSize>* end
     , std::size_t max_count );
 
 template <std::size_t CharSize>
-using decode_single_char_func = char32_t (*)
+using decode_single_char_f = char32_t (*)
     ( strf::underlying_char_type<CharSize> );
 
 template <typename CharT>
@@ -246,8 +246,8 @@ public:
     {
     }
 
-    strf::transcode_func<SrcCharSize, DestCharSize> transcode;
-    strf::transcode_size_func<SrcCharSize> necessary_size;
+    strf::transcode_f<SrcCharSize, DestCharSize> transcode;
+    strf::transcode_size_f<SrcCharSize> necessary_size;
 };
 
 namespace detail {
@@ -294,7 +294,7 @@ class buffered_encoder: public strf::underlying_outbuf<4>
 public:
 
     STRF_HD buffered_encoder
-        ( strf::transcode_func<4, DestCharSize> func
+        ( strf::transcode_f<4, DestCharSize> func
         , strf::underlying_outbuf<DestCharSize>& ob
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli )
@@ -319,7 +319,7 @@ public:
 
 private:
 
-    strf::transcode_func<4, DestCharSize> transcode_;
+    strf::transcode_f<4, DestCharSize> transcode_;
     strf::underlying_outbuf<DestCharSize>& ob_;
     strf::invalid_seq_policy inv_seq_poli_;
     strf::surrogate_policy surr_poli_;
@@ -345,7 +345,7 @@ class buffered_size_calculator: public strf::underlying_outbuf<4>
 public:
 
     STRF_HD buffered_size_calculator
-        ( strf::transcode_size_func<4> func, strf::surrogate_policy surr_poli )
+        ( strf::transcode_size_f<4> func, strf::surrogate_policy surr_poli )
         : strf::underlying_outbuf<4>(buff_, buff_size_)
         , size_func_(func)
         , surr_poli_(surr_poli)
@@ -362,7 +362,7 @@ public:
 
 private:
 
-    strf::transcode_size_func<4> size_func_;
+    strf::transcode_size_f<4> size_func_;
     std::size_t sum_ = 0;
     strf::surrogate_policy surr_poli_;
     constexpr static const std::size_t buff_size_ = 32;
@@ -387,8 +387,8 @@ STRF_INLINE STRF_HD void buffered_size_calculator::recycle()
 template<std::size_t SrcCharSize, std::size_t DestCharSize>
 STRF_HD void decode_encode
     ( strf::underlying_outbuf<DestCharSize>& ob
-    , strf::transcode_func<SrcCharSize, 4> to_u32
-    , strf::transcode_func<4, DestCharSize> from_u32
+    , strf::transcode_f<SrcCharSize, 4> to_u32
+    , strf::transcode_f<4, DestCharSize> from_u32
     , const underlying_char_type<SrcCharSize>* str
     , const underlying_char_type<SrcCharSize>* str_end
     , strf::invalid_seq_policy inv_seq_poli
@@ -401,8 +401,8 @@ STRF_HD void decode_encode
 
 template<std::size_t SrcCharSize>
 STRF_HD std::size_t decode_encode_size
-    ( strf::transcode_func<SrcCharSize, 4> to_u32
-    , strf::transcode_size_func<4> size_calc_func
+    ( strf::transcode_f<SrcCharSize, 4> to_u32
+    , strf::transcode_size_f<4> size_calc_func
     , const underlying_char_type<SrcCharSize>* str
     , const underlying_char_type<SrcCharSize>* str_end
     , strf::invalid_seq_policy inv_seq_poli

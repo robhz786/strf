@@ -93,7 +93,7 @@ public:
 
 private:
 
-    strf::encode_fill_func<CharSize> encode_fill_fn_;
+    strf::encode_fill_f<CharSize> encode_fill_fn_;
     std::size_t count_;
     const strf::alignment_format_data afmt_;
     const strf::invalid_seq_policy  inv_seq_poli_;

@@ -92,7 +92,7 @@ public:
 
 private:
 
-    strf::encode_fill_func<CharSize> encode_fill_;
+    strf::encode_fill_f<CharSize> encode_fill_;
     std::uint16_t fillcount_;
     bool value_;
     strf::invalid_seq_policy inv_seq_poli_;

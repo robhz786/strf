@@ -81,7 +81,7 @@ private:
             preview.subtract_width(w);
         }
         STRF_IF_CONSTEXPR (Preview::size_required) {
-            strf::transcode_size_func<SrcCharSize>  transcode_size
+            strf::transcode_size_f<SrcCharSize>  transcode_size
                 = transcoder.necessary_size;
             std::size_t s = 0;
             if (transcode_size != nullptr) {
@@ -104,10 +104,10 @@ private:
     const char_in_type* const str_;
     const std::size_t len_;
     union {
-        strf::transcode_func<SrcCharSize, DestCharSize>  transcode_;
-        strf::transcode_func<SrcCharSize, 4>  src_to_u32_;
+        strf::transcode_f<SrcCharSize, DestCharSize>  transcode_;
+        strf::transcode_f<SrcCharSize, 4>  src_to_u32_;
     };
-    strf::transcode_func<4, DestCharSize>  u32_to_dest_ = nullptr;
+    strf::transcode_f<4, DestCharSize>  u32_to_dest_ = nullptr;
     const strf::invalid_seq_policy inv_seq_poli_;
     const strf::surrogate_policy surr_poli_;
     template <typename Category, typename SrcChar, typename FPack>
@@ -186,11 +186,11 @@ private:
     std::size_t len_;
     strf::alignment_format_data afmt_;
     union {
-        strf::transcode_func<SrcCharSize, DestCharSize>  transcode_;
-        strf::transcode_func<SrcCharSize, 4>  src_to_u32_;
+        strf::transcode_f<SrcCharSize, DestCharSize>  transcode_;
+        strf::transcode_f<SrcCharSize, 4>  src_to_u32_;
     };
-    strf::transcode_func<4, DestCharSize>  u32_to_dest_ = nullptr;
-    strf::encode_fill_func<DestCharSize> encode_fill_ = nullptr;
+    strf::transcode_f<4, DestCharSize>  u32_to_dest_ = nullptr;
+    strf::encode_fill_f<DestCharSize> encode_fill_ = nullptr;
     const strf::invalid_seq_policy inv_seq_poli_;
     const strf::surrogate_policy  surr_poli_;
     std::uint16_t left_fillcount_ = 0;
@@ -258,7 +258,7 @@ void STRF_HD fmt_cv_string_printer<SrcCharSize, DestCharSize>::init_
     }
     STRF_IF_CONSTEXPR (Preview::size_required) {
         std::size_t s = 0;
-        strf::transcode_size_func<SrcCharSize>  transcode_size
+        strf::transcode_size_f<SrcCharSize>  transcode_size
                 = transcoder.necessary_size;
         if (transcode_size != nullptr) {
             s = transcode_size(str_, str_ + len_, surr_poli_);

@@ -685,7 +685,7 @@ inline STRF_HD void write_int_txtdigits_backwards_little_sep
 template <std::size_t CharSize>
 STRF_HD void write_digits_big_sep
     ( strf::underlying_outbuf<CharSize>& ob
-    , strf::encode_char_func<CharSize> encode_char
+    , strf::encode_char_f<CharSize> encode_char
     , const std::uint8_t* last_grp
     , unsigned char* digits
     , unsigned num_digits
@@ -768,7 +768,7 @@ public:
     static STRF_HD void write_big_sep
         ( strf::underlying_outbuf<CharSize>& ob
         , const strf::numpunct_base& punct
-        , strf::encode_char_func<CharSize> encode_char
+        , strf::encode_char_f<CharSize> encode_char
         , UIntT value
         , unsigned sep_size
         , unsigned digcount
@@ -876,7 +876,7 @@ public:
     static STRF_HD void write_big_sep
         ( strf::underlying_outbuf<CharSize>& ob
         , const strf::numpunct_base& punct
-        , strf::encode_char_func<CharSize> encode_char
+        , strf::encode_char_f<CharSize> encode_char
         , UIntT value
         , unsigned sep_size
         , unsigned digcount
@@ -950,7 +950,7 @@ template <int Base, std::size_t CharSize, typename UIntT>
 inline STRF_HD void write_int_big_sep
     ( strf::underlying_outbuf<CharSize>& ob
     , const strf::numpunct_base& punct
-    , strf::encode_char_func<CharSize> encode_char
+    , strf::encode_char_f<CharSize> encode_char
     , UIntT value
     , unsigned sep_size
     , unsigned digcount
