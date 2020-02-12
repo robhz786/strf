@@ -83,7 +83,7 @@ public:
         , ch_(static_cast<char_type>(input.value().ch))
     {
         decltype(auto) cs = get_facet_<strf::charset_c<CharT>, CharT>(fp);
-        encode_fill_fn_ = cs.encode_fill;
+        encode_fill_fn_ = cs.encode_fill_func();
         init_( preview
              , get_facet_<strf::width_calculator_c, CharT>(fp)
              , cs );

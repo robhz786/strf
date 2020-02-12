@@ -10,7 +10,8 @@ project (strf_test)
 foreach(
   t
   tr_string
-#  dispatcher_with_move_only_arg
+  #  dispatcher_with_move_only_arg
+  dynamic_charset
   encode_char
   encode_fill
   input_bool

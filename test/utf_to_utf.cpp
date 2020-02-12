@@ -211,9 +211,7 @@ using get_template_parameter
 
 
 template <typename SrcCharset, typename DestCharset>
-void test_invalid_input
-    ( const SrcCharset& ein
-    , const DestCharset& eout )
+void test_invalid_input(const SrcCharset& ein, const DestCharset& eout)
 {
     TEST_SCOPE_DESCRIPTION("From invalid ", ein.name(), " to ", eout.name());
     using src_char_type  = get_template_parameter<SrcCharset>;
@@ -351,6 +349,61 @@ int main()
     for_all_combinations
         ( charsets
         , [](auto ein, auto eout){ test_invalid_input(ein, eout); } );
+
+    TEST_TRUE((std::is_same
+                   < strf::static_underlying_transcoder< strf::charset_id::utf8
+                                                       , strf::charset_id::utf8 >
+                   , decltype(strf::get_transcoder( strf::utf<char>()
+                                                  , strf::utf<char>())) >
+                  :: value));
+    TEST_TRUE((std::is_same
+                   < strf::static_underlying_transcoder< strf::charset_id::utf8
+                                                       , strf::charset_id::utf16 >
+                   , decltype(strf::get_transcoder( strf::utf<char>()
+                                                  , strf::utf<char16_t>())) >
+                  :: value));
+    TEST_TRUE((std::is_same
+                   < strf::static_underlying_transcoder< strf::charset_id::utf8
+                                                       , strf::charset_id::utf32 >
+                   , decltype(strf::get_transcoder( strf::utf<char>()
+                                                  , strf::utf<char32_t>())) >
+                  :: value));
+    TEST_TRUE((std::is_same
+                   < strf::static_underlying_transcoder< strf::charset_id::utf16
+                                                       , strf::charset_id::utf8 >
+                   , decltype(strf::get_transcoder( strf::utf<char16_t>()
+                                                  , strf::utf<char>())) >
+                  :: value));
+    TEST_TRUE((std::is_same
+                   < strf::static_underlying_transcoder< strf::charset_id::utf16
+                                                       , strf::charset_id::utf16 >
+                   , decltype(strf::get_transcoder( strf::utf<char16_t>()
+                                                  , strf::utf<char16_t>())) >
+                  :: value));
+    TEST_TRUE((std::is_same
+                   < strf::static_underlying_transcoder< strf::charset_id::utf16
+                                                       , strf::charset_id::utf32 >
+                   , decltype(strf::get_transcoder( strf::utf<char16_t>()
+                                                  , strf::utf<char32_t>())) >
+                  :: value));
+    TEST_TRUE((std::is_same
+                   < strf::static_underlying_transcoder< strf::charset_id::utf32
+                                                       , strf::charset_id::utf8 >
+                   , decltype(strf::get_transcoder( strf::utf<char32_t>()
+                                                  , strf::utf<char>())) >
+                  :: value));
+    TEST_TRUE((std::is_same
+                   < strf::static_underlying_transcoder< strf::charset_id::utf32
+                                                       , strf::charset_id::utf16 >
+                   , decltype(strf::get_transcoder( strf::utf<char32_t>()
+                                                  , strf::utf<char16_t>())) >
+                  :: value));
+    TEST_TRUE((std::is_same
+                   < strf::static_underlying_transcoder< strf::charset_id::utf32
+                                                       , strf::charset_id::utf32 >
+                   , decltype(strf::get_transcoder( strf::utf<char32_t>()
+                                                  , strf::utf<char32_t>())) >
+                  :: value));
 
     return test_finish();
 }

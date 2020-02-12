@@ -428,7 +428,7 @@ template <typename Preview, typename WCalc, typename Charset>
 inline STRF_HD void fmt_string_printer<CharSize>::init_
     ( Preview& preview, const WCalc& wcalc, const Charset& cs )
 {
-    encode_fill_ = cs.encode_fill;
+    encode_fill_ = cs.encode_fill_func();
     std::uint16_t fillcount = 0;
     strf::width_t fmt_width = afmt_.width;
     strf::width_t limit =

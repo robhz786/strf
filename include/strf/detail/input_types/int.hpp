@@ -276,7 +276,7 @@ public:
                 if (sepsize_ == 1) {
                     cs.encode_char(&little_sep_, sep32);
                 } else {
-                    encode_char_ = cs.encode_char;
+                    encode_char_ = cs.encode_char_func();
                 }
             }
         }
@@ -442,7 +442,7 @@ STRF_HD void partial_fmt_int_printer<CharSize, Base>::init_punct_
             if (sepsize_ == 1) {
                 cs.encode_char(&little_sep_, sep32);
             } else {
-                encode_char_ = cs.encode_char;
+                encode_char_ = cs.encode_char_func();
             }
         }
     }
@@ -634,7 +634,7 @@ inline STRF_HD full_fmt_int_printer<CharSize, Base>::full_fmt_int_printer
         preview.subtract_width(static_cast<std::int16_t>(fillcount_));
     }
     decltype(auto) cs = get_facet<strf::charset_c<CharT>, IntT>(fp);
-    encode_fill_ = cs.encode_fill;
+    encode_fill_ = cs.encode_fill_func();
     calc_fill_size_(preview, cs);
 }
 
@@ -660,7 +660,7 @@ inline STRF_HD full_fmt_int_printer<CharSize, Base>::full_fmt_int_printer
         preview.subtract_width(static_cast<std::int16_t>(fillcount_));
     }
     decltype(auto) cs = get_facet<strf::charset_c<CharT>, const void*>(fp);
-    encode_fill_ = cs.encode_fill;
+    encode_fill_ = cs.encode_fill_func();
     calc_fill_size_(preview, cs);
 }
 

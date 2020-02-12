@@ -192,7 +192,7 @@ public:
         , surr_poli_(get_facet_<strf::surrogate_policy_c>(fp))
     {
         decltype(auto) cs = get_facet_<strf::charset_c<CharT>>(fp);
-        encode_fill_func_ = cs.encode_fill;
+        encode_fill_func_ = cs.encode_fill_func();
         strf::print_preview<ReqSize, strf::preview_width::yes> p { afmt_.width };
         new (printers_ptr_()) printers_tuple_ { fp, p, args, tag_char };
         if (p.remaining_width() > 0) {
@@ -221,7 +221,7 @@ public:
         , surr_poli_(get_facet_<strf::surrogate_policy_c>(fp))
     {
         decltype(auto) cs = get_facet_<strf::charset_c<CharT>>(fp);
-        encode_fill_func_ = cs.encode_fill;
+        encode_fill_func_ = cs.encode_fill_func();
         if (afmt_.width < 0) {
             afmt_.width = 0;
         }

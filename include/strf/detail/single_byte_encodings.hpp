@@ -396,6 +396,15 @@ struct single_byte_charset_to_utf32
         (void) surr_poli;
         return src_end - src;
     }
+
+    static STRF_HD strf::transcode_f<1, 4> transcode_func() noexcept
+    {
+        return transcode;
+    }
+    static STRF_HD strf::transcode_size_f<1> necessary_size_func() noexcept
+    {
+        return necessary_size;
+    }
 };
 
 template <class Impl>
@@ -448,6 +457,14 @@ struct utf32_to_single_byte_charset
         (void) surr_poli;
         return src_end - src;
     }
+    static STRF_HD strf::transcode_f<4, 1> transcode_func() noexcept
+    {
+        return transcode;
+    }
+    static STRF_HD strf::transcode_size_f<4> necessary_size_func() noexcept
+    {
+        return necessary_size;
+    }
 };
 
 template <class Impl>
@@ -495,6 +512,15 @@ struct single_byte_charset_sanitizer
         (void) surr_poli;
         return src_end - src;
     }
+
+    static STRF_HD strf::transcode_f<1, 1> transcode_func() noexcept
+    {
+        return transcode;
+    }
+    static STRF_HD strf::transcode_size_f<1> necessary_size_func() noexcept
+    {
+        return necessary_size;
+    }
 };
 
 template <class Impl>
@@ -532,7 +558,7 @@ STRF_HD void single_byte_charset_sanitizer<Impl>::transcode
 
 
 template <>
-class static_transcoder
+class static_underlying_transcoder
     < strf::charset_id::ascii
     , strf::charset_id::ascii >
     : public strf::detail::single_byte_charset_sanitizer
@@ -541,7 +567,7 @@ class static_transcoder
 };
 
 template <>
-class static_transcoder
+class static_underlying_transcoder
     < strf::charset_id::utf32
     , strf::charset_id::ascii >
     : public strf::detail::utf32_to_single_byte_charset
@@ -550,7 +576,7 @@ class static_transcoder
 };
 
 template <>
-class static_transcoder
+class static_underlying_transcoder
     < strf::charset_id::ascii
     , strf::charset_id::utf32 >
     : public strf::detail::single_byte_charset_to_utf32
@@ -559,7 +585,7 @@ class static_transcoder
 };
 
 template <>
-class static_transcoder
+class static_underlying_transcoder
     < strf::charset_id::iso_8859_1
     , strf::charset_id::iso_8859_1 >
     : public strf::detail::single_byte_charset_sanitizer
@@ -568,7 +594,7 @@ class static_transcoder
 };
 
 template <>
-class static_transcoder
+class static_underlying_transcoder
     < strf::charset_id::utf32
     , strf::charset_id::iso_8859_1 >
     : public strf::detail::utf32_to_single_byte_charset
@@ -577,7 +603,7 @@ class static_transcoder
 };
 
 template <>
-class static_transcoder
+class static_underlying_transcoder
     < strf::charset_id::iso_8859_1
     , strf::charset_id::utf32 >
     : public strf::detail::single_byte_charset_to_utf32
@@ -586,7 +612,7 @@ class static_transcoder
 };
 
 template <>
-class static_transcoder
+class static_underlying_transcoder
     < strf::charset_id::iso_8859_3
     , strf::charset_id::iso_8859_3 >
     : public strf::detail::single_byte_charset_sanitizer
@@ -595,7 +621,7 @@ class static_transcoder
 };
 
 template <>
-class static_transcoder
+class static_underlying_transcoder
     < strf::charset_id::utf32
     , strf::charset_id::iso_8859_3 >
     : public strf::detail::utf32_to_single_byte_charset
@@ -604,7 +630,7 @@ class static_transcoder
 };
 
 template <>
-class static_transcoder
+class static_underlying_transcoder
     < strf::charset_id::iso_8859_3
     , strf::charset_id::utf32 >
     : public strf::detail::single_byte_charset_to_utf32
@@ -613,7 +639,7 @@ class static_transcoder
 };
 
 template <>
-class static_transcoder
+class static_underlying_transcoder
     < strf::charset_id::iso_8859_15
     , strf::charset_id::iso_8859_15 >
     : public strf::detail::single_byte_charset_sanitizer
@@ -622,7 +648,7 @@ class static_transcoder
 };
 
 template <>
-class static_transcoder
+class static_underlying_transcoder
     < strf::charset_id::utf32
     , strf::charset_id::iso_8859_15 >
     : public strf::detail::utf32_to_single_byte_charset
@@ -631,7 +657,7 @@ class static_transcoder
 };
 
 template <>
-class static_transcoder
+class static_underlying_transcoder
     < strf::charset_id::iso_8859_15
     , strf::charset_id::utf32 >
     : public strf::detail::single_byte_charset_to_utf32
@@ -640,7 +666,7 @@ class static_transcoder
 };
 
 template <>
-class static_transcoder
+class static_underlying_transcoder
     < strf::charset_id::windows_1252
     , strf::charset_id::windows_1252 >
     : public strf::detail::single_byte_charset_sanitizer
@@ -649,7 +675,7 @@ class static_transcoder
 };
 
 template <>
-class static_transcoder
+class static_underlying_transcoder
     < strf::charset_id::utf32
     , strf::charset_id::windows_1252 >
     : public strf::detail::utf32_to_single_byte_charset
@@ -658,7 +684,7 @@ class static_transcoder
 };
 
 template <>
-class static_transcoder
+class static_underlying_transcoder
     < strf::charset_id::windows_1252
     , strf::charset_id::utf32 >
     : public strf::detail::single_byte_charset_to_utf32
@@ -721,25 +747,52 @@ public:
     {
         return Impl::decode(ch);
     }
-
+    static STRF_HD strf::encode_char_f<1> encode_char_func() noexcept
+    {
+        return encode_char;
+    }
+    static STRF_HD strf::encode_fill_f<1> encode_fill_func() noexcept
+    {
+        return encode_fill;
+    }
+    static STRF_HD
+    strf::write_replacement_char_f<1> write_replacement_char_func() noexcept
+    {
+        return write_replacement_char;
+    }
     static constexpr STRF_HD
-    strf::static_transcoder<strf::charset_id::utf32, Impl::id>
+    strf::static_underlying_transcoder<strf::charset_id::utf32, Impl::id>
     from_u32() noexcept
     {
         return {};
     }
-
     static constexpr STRF_HD
-    strf::static_transcoder<Impl::id, strf::charset_id::utf32>
+    strf::static_underlying_transcoder<Impl::id, strf::charset_id::utf32>
     to_u32() noexcept
     {
         return {};
     }
-
-    static constexpr STRF_HD strf::static_transcoder<Impl::id, Impl::id>
-    sanitize() noexcept
+    static constexpr STRF_HD strf::static_underlying_transcoder<Impl::id, Impl::id>
+    sanitizer() noexcept
     {
         return {};
+    }
+    static strf::dynamic_underlying_charset<1> to_dynamic() noexcept
+    {
+        static const strf::dynamic_underlying_charset_data<1> data = {
+            name(), id(), replacement_char(), 1, validate, encoded_char_size,
+            encode_char, encode_fill, codepoints_count, write_replacement_char,
+            decode_single_char,
+            strf::dynamic_underlying_transcoder<4, 1>{from_u32()},
+            strf::dynamic_underlying_transcoder<1, 4>{to_u32()},
+            strf::dynamic_underlying_transcoder<1, 1>{sanitizer()},
+            nullptr, nullptr, nullptr, nullptr
+        };
+        return strf::dynamic_underlying_charset<1>{data};
+    }
+    explicit operator strf::dynamic_underlying_charset<1> () const
+    {
+        return to_dynamic();
     }
 };
 
@@ -788,38 +841,38 @@ STRF_HD void single_byte_charset<Impl>::encode_fill
 
 
 template <>
-class static_charset<strf::charset_id::ascii>
+class static_underlying_charset<strf::charset_id::ascii>
     : public strf::detail::single_byte_charset<strf::detail::impl_strict_ascii>
 {
 };
 
 template <>
-class static_charset<strf::charset_id::iso_8859_1>
+class static_underlying_charset<strf::charset_id::iso_8859_1>
     : public strf::detail::single_byte_charset<strf::detail::impl_iso_8859_1>
 {
 };
 
 template <>
-class static_charset<strf::charset_id::iso_8859_3>
+class static_underlying_charset<strf::charset_id::iso_8859_3>
     : public strf::detail::single_byte_charset<strf::detail::impl_iso_8859_3>
 {
 };
 
 template <>
-class static_charset<strf::charset_id::iso_8859_15>
+class static_underlying_charset<strf::charset_id::iso_8859_15>
     : public strf::detail::single_byte_charset<strf::detail::impl_iso_8859_15>
 {
 };
 
 template <>
-class static_charset<strf::charset_id::windows_1252>
+class static_underlying_charset<strf::charset_id::windows_1252>
     : public strf::detail::single_byte_charset<strf::detail::impl_windows_1252>
 {
 };
 
 template <typename CharT>
 struct ascii
-    : public strf::static_charset<strf::charset_id::ascii>
+    : public strf::static_underlying_charset<strf::charset_id::ascii>
 {
     static_assert(sizeof(CharT) == 1, "Invalid char type for iso_8859_1");
     using category = strf::charset_c<CharT>;
@@ -827,7 +880,7 @@ struct ascii
 
 template <typename CharT>
 struct iso_8859_1
-    : public strf::static_charset<strf::charset_id::iso_8859_1>
+    : public strf::static_underlying_charset<strf::charset_id::iso_8859_1>
 {
     static_assert(sizeof(CharT) == 1, "Invalid char type for iso_8859_1");
     using category = strf::charset_c<CharT>;
@@ -835,7 +888,7 @@ struct iso_8859_1
 
 template <typename CharT>
 struct iso_8859_3
-    : public strf::static_charset<strf::charset_id::iso_8859_3>
+    : public strf::static_underlying_charset<strf::charset_id::iso_8859_3>
 {
     static_assert(sizeof(CharT) == 1, "Invalid char type for iso_8859_3");
     using category = strf::charset_c<CharT>;
@@ -843,7 +896,7 @@ struct iso_8859_3
 
 template <typename CharT>
 struct iso_8859_15
-    : public strf::static_charset<strf::charset_id::iso_8859_15>
+    : public strf::static_underlying_charset<strf::charset_id::iso_8859_15>
 {
     static_assert(sizeof(CharT) == 1, "Invalid char type for iso_8859_15");
     using category = strf::charset_c<CharT>;
@@ -851,7 +904,7 @@ struct iso_8859_15
 
 template <typename CharT>
 struct windows_1252
-    : public strf::static_charset<strf::charset_id::windows_1252>
+    : public strf::static_underlying_charset<strf::charset_id::windows_1252>
 {
     static_assert(sizeof(CharT) == 1, "Invalid char type for windows_1252");
     using category = strf::charset_c<CharT>;

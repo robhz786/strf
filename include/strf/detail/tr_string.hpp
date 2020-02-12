@@ -311,7 +311,7 @@ public:
         , strf::tr_invalid_arg policy ) noexcept
         : tr_string_(reinterpret_cast<const char_type*>(tr_string))
         , tr_string_end_(reinterpret_cast<const char_type*>(tr_string_end))
-        , write_replacement_char_func_(cs.write_replacement_char)
+        , write_replacement_char_func_(cs.write_replacement_char_func())
         , printers_array_(printers.begin())
         , num_printers_(printers.size())
         , policy_(policy)

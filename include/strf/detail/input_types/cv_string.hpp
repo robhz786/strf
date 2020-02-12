@@ -70,10 +70,10 @@ private:
         static_assert(SrcCharset::char_size == SrcCharSize, "Incompatible char type");
         static_assert(DestCharset::char_size == DestCharSize, "Incompatible char type");
         decltype(auto) transcoder = get_transcoder(src_cs, dest_cs);
-        transcode_ = transcoder.transcode;
+        transcode_ = transcoder.transcode_func();
         if (transcode_ == nullptr) {
-            src_to_u32_ = src_cs.to_u32().transcode;
-            u32_to_dest_ = dest_cs.from_u32().transcode;
+            src_to_u32_ = src_cs.to_u32().transcode_func();
+            u32_to_dest_ = dest_cs.from_u32().transcode_func();
         }
         STRF_IF_CONSTEXPR (Preview::width_required) {
             auto w = wcalc.width( src_cs, preview.remaining_width(), str_, len_
@@ -82,14 +82,14 @@ private:
         }
         STRF_IF_CONSTEXPR (Preview::size_required) {
             strf::transcode_size_f<SrcCharSize>  transcode_size
-                = transcoder.necessary_size;
+                = transcoder.necessary_size_func();
             std::size_t s = 0;
             if (transcode_size != nullptr) {
                 s = transcode_size(str_, str_ + len_, surr_poli_);
             } else {
                 s = strf::decode_encode_size<SrcCharSize>
-                    ( src_cs.to_u32().transcode
-                    , dest_cs.from_u32().necessary_size
+                    ( src_cs.to_u32().transcode_func()
+                    , dest_cs.from_u32().necessary_size_func()
                     , str_, str_ + len_, inv_seq_poli_, surr_poli_ );
             }
             preview.add_size(s);
@@ -219,12 +219,12 @@ void STRF_HD fmt_cv_string_printer<SrcCharSize, DestCharSize>::init_
     static_assert(SrcCharset::char_size == SrcCharSize, "Incompatible char type");
     static_assert(DestCharset::char_size == DestCharSize, "Incompatible char type");
 
-    encode_fill_ = dest_cs.encode_fill;
+    encode_fill_ = dest_cs.encode_fill_func();
     decltype(auto) transcoder = get_transcoder(src_cs, dest_cs);
-    transcode_ = transcoder.transcode;
+    transcode_ = transcoder.transcode_func();
     if (transcode_ == nullptr) {
-        src_to_u32_ = src_cs.to_u32().transcode;
-        u32_to_dest_ = dest_cs.from_u32().transcode;
+        src_to_u32_ = src_cs.to_u32().transcode_func();
+        u32_to_dest_ = dest_cs.from_u32().transcode_func();
     }
     std::uint16_t fillcount = 0;
     strf::width_t fmt_width = afmt_.width;
@@ -258,13 +258,14 @@ void STRF_HD fmt_cv_string_printer<SrcCharSize, DestCharSize>::init_
     }
     STRF_IF_CONSTEXPR (Preview::size_required) {
         std::size_t s = 0;
-        strf::transcode_size_f<SrcCharSize>  transcode_size
-                = transcoder.necessary_size;
+        strf::transcode_size_f<SrcCharSize> transcode_size
+                = transcoder.necessary_size_func();
         if (transcode_size != nullptr) {
             s = transcode_size(str_, str_ + len_, surr_poli_);
         } else {
             s = strf::decode_encode_size<SrcCharSize>
-                ( src_cs.to_u32().transcode, dest_cs.from_u32().necessary_size
+                ( src_cs.to_u32().transcode
+                , dest_cs.from_u32().necessary_size_func()
                 , str_, str_ + len_, inv_seq_poli_, surr_poli_ );
         }
         if (fillcount > 0) {
@@ -545,7 +546,7 @@ class cv_printer_maker_with_charset<SrcChar, DestChar, false>
 {
 public:
     template <typename FPack, typename Preview, typename SrcCharset>
-    inline STRF_HD
+    static inline STRF_HD
     strf::detail::cv_string_printer<sizeof(SrcChar), sizeof(DestChar)>
     make_printer
         ( const FPack& fp

@@ -847,8 +847,8 @@ template <typename Charset>
 STRF_HD void punct_double_printer<CharSize>::init_
     ( const Charset& cs, bool general_format, bool fmt_showpoint)
 {
-    encode_char_ = cs.encode_char;
-    encode_fill_ = cs.encode_fill;
+    encode_char_ = cs.encode_char_func();
+    encode_fill_ = cs.encode_fill_func();
     if (!data_.sci_notation) {
         auto int_dig_count = (int)data_.m10_digcount + data_.e10;
         if (! punct_.no_group_separation(int_dig_count)) {
@@ -1190,7 +1190,7 @@ STRF_HD void double_printer<CharSize>::init_
     ( Preview& preview, std::int16_t w, strf::text_alignment a
     , const Charset& cs )
 {
-    encode_fill_ = cs.encode_fill;
+    encode_fill_ = cs.encode_fill_func();
     auto content_width = content_width_();
     if (content_width >= w) {
         preview.checked_subtract_width(content_width);
@@ -1613,7 +1613,7 @@ template <std::size_t CharSize>
 template <typename Charset>
 STRF_HD void fast_punct_double_printer<CharSize>::init_(const Charset& cs)
 {
-    encode_char_ = cs.encode_char;
+    encode_char_ = cs.encode_char_func();
     bool showpoint;
     if (value_.e10 > -(int)m10_digcount_) {
         bool e10neg = value_.e10 < 0;

@@ -77,7 +77,7 @@ public:
         decltype(auto) cs = strf::get_facet<charset_c<CharT>, bool>(fp);
         std::uint16_t w = 5 - (int)input.value();
         if (afmt_.width > w) {
-            encode_fill_ = cs.encode_fill;
+            encode_fill_ = cs.encode_fill_func();
             fillcount_ = static_cast<std::uint16_t>(afmt_.width - w);
             preview.subtract_width(afmt_.width);
             preview.add_size(w + fillcount_ * cs.encoded_char_size(afmt_.fill));
