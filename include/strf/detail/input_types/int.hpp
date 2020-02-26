@@ -8,7 +8,7 @@
 #include <strf/printer.hpp>
 #include <strf/facets_pack.hpp>
 #include <strf/detail/format_functions.hpp>
-#include <strf/detail/facets/encoding.hpp>
+#include <strf/detail/facets/charset.hpp>
 #include <strf/detail/facets/numpunct.hpp>
 #include <strf/detail/int_digits.hpp>
 #include <strf/detail/standard_lib_functions.hpp>

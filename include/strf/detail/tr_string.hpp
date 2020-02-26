@@ -7,7 +7,7 @@
 
 #include <strf/printer.hpp>
 #include <limits>
-#include <strf/detail/facets/encoding.hpp>
+#include <strf/detail/facets/charset.hpp>
 
 namespace strf {
 

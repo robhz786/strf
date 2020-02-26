@@ -472,7 +472,7 @@ private:
 
 } // namespace strf
 
-#include <strf/detail/utf_encodings.hpp>
+#include <strf/detail/utf.hpp>
 
 namespace strf {
 

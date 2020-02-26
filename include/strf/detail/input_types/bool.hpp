@@ -8,7 +8,7 @@
 #include <strf/facets_pack.hpp>
 #include <strf/printer.hpp>
 #include <strf/detail/format_functions.hpp>
-#include <strf/detail/facets/encoding.hpp>
+#include <strf/detail/facets/charset.hpp>
 
 namespace strf {
 
