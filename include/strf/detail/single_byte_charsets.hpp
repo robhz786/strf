@@ -871,44 +871,19 @@ class static_underlying_charset<strf::charset_id::windows_1252>
 };
 
 template <typename CharT>
-struct ascii
-    : public strf::static_underlying_charset<strf::charset_id::ascii>
-{
-    static_assert(sizeof(CharT) == 1, "Invalid char type for iso_8859_1");
-    using category = strf::charset_c<CharT>;
-};
+using ascii = strf::static_charset<CharT, strf::charset_id::ascii>;
 
 template <typename CharT>
-struct iso_8859_1
-    : public strf::static_underlying_charset<strf::charset_id::iso_8859_1>
-{
-    static_assert(sizeof(CharT) == 1, "Invalid char type for iso_8859_1");
-    using category = strf::charset_c<CharT>;
-};
+using iso_8859_1 = strf::static_charset<CharT, strf::charset_id::iso_8859_1>;
 
 template <typename CharT>
-struct iso_8859_3
-    : public strf::static_underlying_charset<strf::charset_id::iso_8859_3>
-{
-    static_assert(sizeof(CharT) == 1, "Invalid char type for iso_8859_3");
-    using category = strf::charset_c<CharT>;
-};
+using iso_8859_3 = strf::static_charset<CharT, strf::charset_id::iso_8859_3>;
 
 template <typename CharT>
-struct iso_8859_15
-    : public strf::static_underlying_charset<strf::charset_id::iso_8859_15>
-{
-    static_assert(sizeof(CharT) == 1, "Invalid char type for iso_8859_15");
-    using category = strf::charset_c<CharT>;
-};
+using iso_8859_15 = strf::static_charset<CharT, strf::charset_id::iso_8859_15>;
 
 template <typename CharT>
-struct windows_1252
-    : public strf::static_underlying_charset<strf::charset_id::windows_1252>
-{
-    static_assert(sizeof(CharT) == 1, "Invalid char type for windows_1252");
-    using category = strf::charset_c<CharT>;
-};
+using windows_1252 = strf::static_charset<CharT, strf::charset_id::windows_1252>;
 
 } // namespace strf
 

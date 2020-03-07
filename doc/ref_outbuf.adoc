@@ -7,8 +7,22 @@ http://www.boost.org/LICENSE_1_0.txt
 
 == Outbuf
 
-[[min_size_after_recycle]]
-=== `min_size_after_recycle`
+:min_size_after_recycle: <<min_size_after_recycle,min_size_after_recycle>>
+:basic_outbuf: <<basic_outbuf,basic_outbuf>>
+:underlying_outbuf: <<underlying_outbuf,underlying_outbuf>>
+:underlying_char_type: <<underlying_char_type,underlying_char_type>>
+
+:basic_cstr_writer: <<basic_cstr_writer, basic_cstr_writer>>
+:basic_string_maker: <<basic_string_maker, basic_string_maker>>
+:basic_string_appender: <<basic_string_appender, basic_string_appender>>
+:basic_streambuf_writer: <<basic_streambuf_writer, basic_streambuf_writer>>
+:narrow_cfile_writer: <<narrow_cfile_writer, narrow_cfile_writer>>
+:wide_cfile_writer: <<wide_cfile_writer, wide_cfile_writer>>
+:garbage_buf: <<garbage_buf, garbage_buf>>
+:garbage_buf_end: <<garbage_buf, garbage_buf_end>>
+
+
+=== Function template `min_size_after_recycle` [[min_size_after_recycle]]
 ====
 [source,cpp]
 ----
@@ -19,81 +33,13 @@ constexpr std::size_t min_size_after_recycle();
 Return value:: Implementation-defined value greater than or equal to 64.
 ====
 
-[[underlying_outbuf]]
-=== Class template `underlying_outbuf`
+=== Template alias `underlying_char_type` [[underlying_char_type]]
 
-==== Synopsis
-
-[source,cpp]
-----
-namespace strf {
-
-template <std::size_t CharSize>
-class underlying_outbuf;
-{
-public:
-
-    using char_type = /*see below*/;
-
-    underlying_outbuf(const underlying_outbuf&) = delete;
-    underlying_outbuf(underlying_outbuf&&) = delete;
-    underlying_outbuf& operator=(const underlying_outbuf&) = delete;
-    underlying_outbuf& operator=(underlying_outbuf&&) = delete;
-
-    virtual ~underlying_outbuf() = default;
-
-    char_type* pos() const noexcept;
-    char_type* end() const noexcept;
-    std::size_t size() const noexcept;
-    bool good() const noexcept;
-    void advance_to(char_type* p);
-    void advance(std::size_t n);
-    void require(std::size_t s);
-
-    virtual bool recycle() = 0;
-
-protected:
-
-    underlying_outbuf(char_type* pos_, char_type* end_);
-
-    underlying_outbuf(char_type* pos_, std::size_t n);
-
-    void set_pos(char_type* p) noexcept;
-    void set_end(char_type* e) noexcept;
-    void set_good(true g) noexcept;
-};
-
-// global type aliases
-
-template <std::size_t CharSize>
-using underlying_char_type = typename underlying_outbuf<CharSize>::char_type
-
-// global functions
-
-template <std::size_t CharSize>
-void write( underlying_outbuf<CharSize>& ob
-          , const underlying_char_type<CharSize>* data
-          , std::size_t data_size );
-
-template <std::size_t CharSize>
-void write( underlying_outbuf<CharSize>& ob
-          , const underlying_char_type<CharSize>* data
-          , const underlying_char_type<CharSize>* data_end );
-
-template <std::size_t CharSize>
-void put( underlying_outbuf<CharSize>& ob
-        , underlying_char_type<CharSize> ch );
-
-} // namespace strf
-----
-
-==== Member types
-
-[[underlying_char_type]]
 ====
 [source,cpp]
 ----
-using char_type = /*see below*/;
+template <std::size_t CharSize>
+using underlying_char_type = /*see below*/;
 ----
 [horizontal]
 Same as::
@@ -102,6 +48,78 @@ Same as::
 - `char32_t` if `CharSize == 4`
 
 It is undefined for any other `CharSize` value.
+====
+
+=== Class template `underlying_outbuf` [[underlying_outbuf]]
+
+==== Synopsis
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <std::size_t CharSize>
+class underlying_outbuf;
+{
+public:
+
+    using char_type = {underlying_char_type}<CharSize>;
+
+    underlying_outbuf(const underlying_outbuf&) = delete;
+    underlying_outbuf(underlying_outbuf&&) = delete;
+    underlying_outbuf& operator=(const underlying_outbuf&) = delete;
+    underlying_outbuf& operator=(underlying_outbuf&&) = delete;
+
+    virtual ~underlying_outbuf() = default;
+
+    char_type{asterisk} pos() const noexcept;
+    char_type{asterisk} end() const noexcept;
+    std::size_t size() const noexcept;
+    bool good() const noexcept;
+    void advance_to(char_type{asterisk} p);
+    void advance(std::size_t n);
+    void require(std::size_t s);
+
+    virtual bool recycle() = 0;
+
+protected:
+
+    underlying_outbuf(char_type{asterisk} pos_, char_type{asterisk} end_);
+
+    underlying_outbuf(char_type{asterisk} pos_, std::size_t n);
+
+    void set_pos(char_type{asterisk} p) noexcept;
+    void set_end(char_type{asterisk} e) noexcept;
+    void set_good(bool g) noexcept;
+};
+
+// global functions
+
+template <std::size_t CharSize>
+void write( underlying_outbuf<CharSize>& ob
+          , const {underlying_char_type}<CharSize>{asterisk} data
+          , std::size_t data_size );
+
+template <std::size_t CharSize>
+void write( underlying_outbuf<CharSize>& ob
+          , const {underlying_char_type}<CharSize>{asterisk} data
+          , const {underlying_char_type}<CharSize>{asterisk} data_end );
+
+template <std::size_t CharSize>
+void put( underlying_outbuf<CharSize>& ob
+        , {underlying_char_type}<CharSize> ch );
+
+} // namespace strf
+----
+
+==== Member types
+
+[[underlying_outbuf_char_type]]
+====
+[source,cpp,subs=normal]
+----
+using char_type = {underlying_char_type}<CharSize>;
+----
 ====
 
 ==== Public member functions
@@ -276,11 +294,11 @@ Postconditions:: `good() == g`
 
 [[underlying_outbuf_put]]
 ====
-[source,cpp]
+[source,cpp,subs=normal]
 ----
 template <std::size_t CharSize>
 void put( underlying_outbuf<CharSize>& ob
-        , underlying_char_type<CharSize> ch );
+        , {underlying_char_type}<CharSize> ch );
 ----
 [horizontal]
 Effect:: Same as:
@@ -298,12 +316,12 @@ ob.advance();
 [[underlying_outbuf_write]]
 [[underlying_outbuf_write_range]]
 ====
-[source,cpp]
+[source,cpp,subs=normal]
 ----
 template <std::size_t CharSize>
 void write( underlying_outbuf<CharSize>& ob
-          , const underlying_char_type<CharSize>* data
-          , const underlying_char_type<CharSize>* data_end );
+          , const {underlying_char_type}<CharSize>{asterisk} data
+          , const {underlying_char_type}<CharSize>{asterisk} data_end );
 ----
 [horizontal]
 Effect:: Writes the the range [ `data`, `data_end` ) into `ob`, calling `ob.recycle()`
@@ -311,11 +329,11 @@ Effect:: Writes the the range [ `data`, `data_end` ) into `ob`, calling `ob.recy
 ====
 [[underlying_outbuf_write_count]]
 ====
-[source,cpp]
+[source,cpp,subs=normal]
 ----
 template <std::size_t CharSize>
 void write( underlying_outbuf<CharSize>& ob
-          , const underlying_char_type<CharSize>* data
+          , const {underlying_char_type}<CharSize>{asterisk} data
           , std::size_t data_size );
 ----
 [horizontal]
@@ -344,9 +362,9 @@ public:
     {underlying_outbuf}<sizeof(CharT)>& as_underlying() noexcept;
     const {underlying_outbuf}<sizeof(CharT)>& as_underlying() const noexcept;
 
-    char_type* pos() const noexcept;
-    char_type* end() const noexcept;
-    void advance_to(char_type* p);
+    char_type{asterisk} pos() const noexcept;
+    char_type{asterisk} end() const noexcept;
+    void advance_to(char_type{asterisk} p);
 
     using {underlying_outbuf}<sizeof(CharT)>::<<underlying_outbuf_size,size>>
     using {underlying_outbuf}<sizeof(CharT)>::<<underlying_outbuf_advance,advance>>
@@ -356,11 +374,11 @@ public:
 
 protected:
 
-    basic_outbuf(char_type* pos_, char_type* end_);
-    basic_outbuf(char_type* pos_, std::size_t n);
+    basic_outbuf(char_type{asterisk} pos_, char_type{asterisk} end_);
+    basic_outbuf(char_type{asterisk} pos_, std::size_t n);
 
-    void set_pos(char_type* p) noexcept;
-    void set_end(char_type* e) noexcept;
+    void set_pos(char_type{asterisk} p) noexcept;
+    void set_end(char_type{asterisk} e) noexcept;
 
     using {underlying_outbuf}<sizeof(CharT)>::<<underlying_outbuf_set_good,set_good>>;
 };
@@ -378,17 +396,17 @@ using bin_outbuf  = basic_outbuf<std::byte>;
 
 template <typename CharT>
 void write( basic_outbuf<CharT>& ob
-          , const CharT* data
+          , const CharT{asterisk} data
           , std::size_t count );
 
 template <typename CharT>
 void write( basic_outbuf<CharT>& ob
-          , const CharT* data
-          , const CharT* data_end );
+          , const CharT{asterisk} data
+          , const CharT{asterisk} data_end );
 
-void write(basic_outbuf<char>& ob, const char* cstr);
+void write(basic_outbuf<char>& ob, const char{asterisk} cstr);
 
-void write(basic_outbuf<wchar_t>& ob, const wchar_t* cstr);
+void write(basic_outbuf<wchar_t>& ob, const wchar_t{asterisk} cstr);
 
 template <typename CharT>
 void put(basic_outbuf<CharT>& ob, CharT ch);
@@ -435,9 +453,9 @@ void advance_to(char_type* p);
 [horizontal]
 Effect:: Same as
 +
-[source,cpp]
+[source,cpp,subs=normal]
 ----
-as_underlying().advance_to((underlying_char_type<sizeof(CharT)>*)p)
+as_underlying().advance_to(({underlying_char_type}<sizeof(CharT)>{asterisk})p)
 ----
 Precondition:: `p \<= end()`
 ====
@@ -463,7 +481,7 @@ basic_outbuf(char_type* pos_, char_type* end_);
 ----
 [horizontal]
 Effect:: Initializes private base class `underlying_outbuf<sizeof(CharT)>`
-with `pos_` and `end_` casted as `underlying_char_type<sizeof(CharT)>*`.
+with `pos_` and `end_` casted as `{underlying_char_type}<sizeof(CharT)>{asterisk}`.
 ====
 [[basic_outbuf_ctor_count]]
 ====
@@ -483,9 +501,9 @@ void set_pos(char_type* p) noexcept;
 [horizontal]
 Effect:: Same as
 +
-[source, cpp]
+[source,cpp,subs=normal]
 ----
-as_underlying().set_pos((underlying_char_type<sizeof(CharT)>*)p)
+as_underlying().set_pos(({underlying_char_type}<sizeof(CharT)>*)p)
 ----
 ====
 [[basic_outbuf_]]
@@ -497,9 +515,9 @@ void set_end(char_type* e) noexcept;
 [horizontal]
 Effect:: Same as
 +
-[source, cpp]
+[source,cpp,subs=normal]
 ----
-as_underlying().set_end((underlying_char_type<sizeof(CharT)>*)e)
+as_underlying().set_end(({underlying_char_type}<sizeof(CharT)>*)e)
 ----
 ====
 [[basic_outbuf_set_good]]

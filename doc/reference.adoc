@@ -21,20 +21,6 @@ http://www.boost.org/LICENSE_1_0.txt
 :alignment_format_data: <<alignment_format_data,alignment_format_data>>
 :pack: <<pack,pack>>
 
-:min_size_after_recycle: <<min_size_after_recycle,min_size_after_recycle>>
-:basic_outbuf: <<basic_outbuf,basic_outbuf>>
-:underlying_outbuf: <<underlying_outbuf,underlying_outbuf>>
-
-:basic_cstr_writer: <<basic_cstr_writer, basic_cstr_writer>>
-:basic_string_maker: <<basic_string_maker, basic_string_maker>>
-:basic_string_appender: <<basic_string_appender, basic_string_appender>>
-:basic_streambuf_writer: <<basic_streambuf_writer, basic_streambuf_writer>>
-:narrow_cfile_writer: <<narrow_cfile_writer, narrow_cfile_writer>>
-:wide_cfile_writer: <<wide_cfile_writer, wide_cfile_writer>>
-:garbage_buf: <<garbage_buf, garbage_buf>>
-:garbage_buf_end: <<garbage_buf, garbage_buf_end>>
-
-
 :boost_mp_replace_front: https://www.boost.org/doc/libs/develop/libs/mp11/doc/html/mp11.html#mp_replace_frontl_t[boost::mp_replace_front]
 :boost_mp_replace: https://www.boost.org/doc/libs/develop/libs/mp11/doc/html/mp11.html#mp_replacel_v_w[boost::mp_replace]
 
@@ -46,3 +32,4 @@ include::ref_printer.adoc[]
 include::ref_input_types.adoc[]
 include::ref_format_functions.adoc[]
 include::ref_facets_pack.adoc[]
+include::ref_charset.adoc[]

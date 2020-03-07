@@ -122,12 +122,13 @@ const auto& invalid_sequences(const strf::utf<char16_t>&)
 {
     using str_view = strf::detail::simple_string_view<char16_t>;
     using pair = std::pair<int,str_view>;
-    static const char16_t ch[] = {0xD800, 0xDBFF, 0xDC00, 0xDFFF};
-    static const std::array<std::pair<int,str_view>, 4> seqs
+    static const char16_t ch[] = {0xDFFF, 0xDC00, 0xD800, 0xDBFF};
+    static const std::array<std::pair<int,str_view>, 5> seqs
        {{ pair{1, {&ch[0], 1}}
         , pair{1, {&ch[1], 1}}
         , pair{1, {&ch[2], 1}}
-        , pair{1, {&ch[3], 1}} }};
+        , pair{1, {&ch[3], 1}}
+        , pair{2, {&ch[1], 2}} }};
 
     return seqs;
 }
@@ -197,25 +198,25 @@ strf::detail::simple_string_view<CharT> concatenate
 }
 
 template <class>
-struct get_template_parameter_impl;
+struct get_first_template_parameter_impl;
 
-template <class C, template <class> class Tmpl>
-struct get_template_parameter_impl<Tmpl<C>>
+template <class T0, strf::charset_id T1, template <class, strf::charset_id> class Tmpl>
+struct get_first_template_parameter_impl<Tmpl<T0, T1>>
 {
-    using type = C;
+    using type = T0;
 };
 
 template <class T>
-using get_template_parameter
-= typename get_template_parameter_impl<T>::type;
+using get_first_template_parameter
+= typename get_first_template_parameter_impl<T>::type;
 
 
 template <typename SrcCharset, typename DestCharset>
 void test_invalid_input(const SrcCharset& ein, const DestCharset& eout)
 {
     TEST_SCOPE_DESCRIPTION("From invalid ", ein.name(), " to ", eout.name());
-    using src_char_type  = get_template_parameter<SrcCharset>;
-    using dest_char_type = get_template_parameter<DestCharset>;
+    using src_char_type  = get_first_template_parameter<SrcCharset>;
+    using dest_char_type = get_first_template_parameter<DestCharset>;
 
     const src_char_type  suffix_in  [] = { 'd', 'e', 'f' };
     const dest_char_type suffix_out [] = { 'd', 'e', 'f' };
@@ -335,8 +336,8 @@ void for_all_combinations(const Tuple& charsets, Func func)
 int main()
 {
     const auto charsets = std::make_tuple
-        ( strf::utf8<char>(), strf::utf16<char16_t>()
-        , strf::utf32<char32_t>(), strf::utfw());
+        ( strf::utf<char>(), strf::utf<char16_t>()
+        , strf::utf<char32_t>(), strf::utf<wchar_t>());
 
     for_all_combinations
         ( charsets
@@ -353,55 +354,55 @@ int main()
     TEST_TRUE((std::is_same
                    < strf::static_underlying_transcoder< strf::charset_id::utf8
                                                        , strf::charset_id::utf8 >
-                   , decltype(strf::get_transcoder( strf::utf<char>()
-                                                  , strf::utf<char>())) >
+                   , decltype(strf::find_transcoder( strf::utf<char>()
+                                                   , strf::utf<char>())) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_underlying_transcoder< strf::charset_id::utf8
                                                        , strf::charset_id::utf16 >
-                   , decltype(strf::get_transcoder( strf::utf<char>()
+                   , decltype(strf::find_transcoder( strf::utf<char>()
                                                   , strf::utf<char16_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_underlying_transcoder< strf::charset_id::utf8
                                                        , strf::charset_id::utf32 >
-                   , decltype(strf::get_transcoder( strf::utf<char>()
+                   , decltype(strf::find_transcoder( strf::utf<char>()
                                                   , strf::utf<char32_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_underlying_transcoder< strf::charset_id::utf16
                                                        , strf::charset_id::utf8 >
-                   , decltype(strf::get_transcoder( strf::utf<char16_t>()
+                   , decltype(strf::find_transcoder( strf::utf<char16_t>()
                                                   , strf::utf<char>())) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_underlying_transcoder< strf::charset_id::utf16
                                                        , strf::charset_id::utf16 >
-                   , decltype(strf::get_transcoder( strf::utf<char16_t>()
+                   , decltype(strf::find_transcoder( strf::utf<char16_t>()
                                                   , strf::utf<char16_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_underlying_transcoder< strf::charset_id::utf16
                                                        , strf::charset_id::utf32 >
-                   , decltype(strf::get_transcoder( strf::utf<char16_t>()
+                   , decltype(strf::find_transcoder( strf::utf<char16_t>()
                                                   , strf::utf<char32_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_underlying_transcoder< strf::charset_id::utf32
                                                        , strf::charset_id::utf8 >
-                   , decltype(strf::get_transcoder( strf::utf<char32_t>()
+                   , decltype(strf::find_transcoder( strf::utf<char32_t>()
                                                   , strf::utf<char>())) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_underlying_transcoder< strf::charset_id::utf32
                                                        , strf::charset_id::utf16 >
-                   , decltype(strf::get_transcoder( strf::utf<char32_t>()
+                   , decltype(strf::find_transcoder( strf::utf<char32_t>()
                                                   , strf::utf<char16_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
                    < strf::static_underlying_transcoder< strf::charset_id::utf32
                                                        , strf::charset_id::utf32 >
-                   , decltype(strf::get_transcoder( strf::utf<char32_t>()
+                   , decltype(strf::find_transcoder( strf::utf<char32_t>()
                                                   , strf::utf<char32_t>())) >
                   :: value));
 

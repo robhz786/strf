@@ -69,7 +69,7 @@ private:
 
         static_assert(SrcCharset::char_size == SrcCharSize, "Incompatible char type");
         static_assert(DestCharset::char_size == DestCharSize, "Incompatible char type");
-        decltype(auto) transcoder = get_transcoder(src_cs, dest_cs);
+        decltype(auto) transcoder = find_transcoder(src_cs, dest_cs);
         transcode_ = transcoder.transcode_func();
         if (transcode_ == nullptr) {
             src_to_u32_ = src_cs.to_u32().transcode_func();
@@ -220,7 +220,7 @@ void STRF_HD fmt_cv_string_printer<SrcCharSize, DestCharSize>::init_
     static_assert(DestCharset::char_size == DestCharSize, "Incompatible char type");
 
     encode_fill_ = dest_cs.encode_fill_func();
-    decltype(auto) transcoder = get_transcoder(src_cs, dest_cs);
+    decltype(auto) transcoder = find_transcoder(src_cs, dest_cs);
     transcode_ = transcoder.transcode_func();
     if (transcode_ == nullptr) {
         src_to_u32_ = src_cs.to_u32().transcode_func();

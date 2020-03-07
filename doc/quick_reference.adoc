@@ -325,10 +325,9 @@ assert(str == "} { } aaa");
 The enumeration `tr_invalid_arg` is a <<facets,facet>> that specifies what happens when the tr-string references a non existing argument.
 [source,cpp]
 ----
-enum class tr_invalid_arg{ replace, stop, ignore };
+enum class tr_invalid_arg{ replace, stop };
 ----
 * `tr_invalid_arg::stop` : Throws an exception.
-* `tr_invalid_arg::ignore` : Ignores the invalid reference.
 * `tr_invalid_arg::replace` :  Replaces the invalid reference by the https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;]. This is the default.
 
 [[facets]]

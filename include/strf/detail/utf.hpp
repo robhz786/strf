@@ -303,7 +303,6 @@ public:
     {
         return necessary_size;
     }
-
 };
 
 //struct utf16_to_utf16
@@ -439,7 +438,6 @@ public:
 
         return src_end - src;
     }
-
     static STRF_HD strf::transcode_f<4, 4> transcode_func() noexcept
     {
         return transcode;
@@ -556,22 +554,13 @@ public:
     {
         return {};
     }
-    // static STRF_HD strf::dynamic_underlying_transcoder<1, 1>
-    // find_transcoder_from_1byte_charset(strf::charset_id id) noexcept
-    // {
-    //     if (id == strf::charset_id::utf8) {
-    //         strf::dynamic_underlying_transcoder<1, 1>{strf::utf8_to_utf8{}};
-    //     }
-    //     return {};
-    // }
-    // static STRF_HD strf::dynamic_underlying_transcoder<1, 1>
-    // find_transcoder_to_1byte_charset(strf::charset_id id) noexcept
-    // {
-    //     if (id == strf::charset_id::utf8) {
-    //         strf::dynamic_underlying_transcoder<1, 1>{strf::utf8_to_utf8{}};
-    //     }
-    //     return {};
-    // }
+    static STRF_HD strf::dynamic_underlying_transcoder<2, 1>
+    find_transcoder_from
+        ( std::integral_constant<std::size_t, 2>
+        , strf::charset_id id ) noexcept
+    {
+        return find_transcoder_from_2bytes_charset(id);
+    }
     static STRF_HD strf::dynamic_underlying_transcoder<2, 1>
     find_transcoder_from_2bytes_charset(strf::charset_id id) noexcept
     {
@@ -579,6 +568,13 @@ public:
             strf::dynamic_underlying_transcoder<2, 1>{strf::utf16_to_utf8{}};
         }
         return {};
+    }
+    static STRF_HD strf::dynamic_underlying_transcoder<1, 2>
+    find_transcoder_to
+        ( std::integral_constant<std::size_t, 2>
+        , strf::charset_id id) noexcept
+    {
+        return find_transcoder_to_2bytes_charset(id);
     }
     static STRF_HD strf::dynamic_underlying_transcoder<1, 2>
     find_transcoder_to_2bytes_charset(strf::charset_id id) noexcept
@@ -695,7 +691,20 @@ public:
     {
         return {};
     }
-
+    static STRF_HD strf::dynamic_underlying_transcoder<1, 2>
+    find_transcoder_from
+        ( std::integral_constant<std::size_t, 1>
+        , strf::charset_id id ) noexcept
+    {
+        return find_transcoder_from_1byte_charset(id);
+    }
+    static STRF_HD strf::dynamic_underlying_transcoder<2, 1>
+    find_transcoder_to
+        ( std::integral_constant<std::size_t, 1>
+        , strf::charset_id id) noexcept
+    {
+        return find_transcoder_to_1byte_charset(id);
+    }
     static STRF_HD strf::dynamic_underlying_transcoder<1, 2>
     find_transcoder_from_1byte_charset(strf::charset_id id) noexcept
     {
@@ -1909,27 +1918,14 @@ STRF_INLINE STRF_HD std::size_t utf16_to_utf8::necessary_size
 
 #endif // ! defined(STRF_OMIT_IMPL)
 
+template <typename CharT>
+using utf8 = strf::static_charset<CharT, strf::charset_id::utf8>;
 
 template <typename CharT>
-struct utf8: public strf::utf8_impl
-{
-    static_assert(sizeof(CharT) == 1, "Wrong character type size for UTF-8");
-    using category = strf::charset_c<CharT>;
-};
+using utf16 = strf::static_charset<CharT, strf::charset_id::utf16>;
 
 template <typename CharT>
-struct utf16: public strf::utf16_impl
-{
-    static_assert(sizeof(CharT) == 2, "Wrong character type size for UTF-16");
-    using category = strf::charset_c<CharT>;
-};
-
-template <typename CharT>
-struct utf32: public strf::utf32_impl
-{
-    static_assert(sizeof(CharT) == 4, "Wrong character type size for UTF-32");
-    using category = strf::charset_c<CharT>;
-};
+using utf32 = strf::static_charset<CharT, strf::charset_id::utf32>;
 
 namespace detail {
 
@@ -1961,8 +1957,8 @@ template <typename CharT>
 using utf = typename strf::detail::mp_utf_charset<sizeof(CharT)>
     :: template fn<CharT>;
 
-using utfw = strf::utf<wchar_t>;
-using wchar_charset = strf::utf<wchar_t>;
+// using utfw = strf::utf<wchar_t>;
+// using wchar_charset = strf::utf<wchar_t>;
 
 } // namespace strf
 
