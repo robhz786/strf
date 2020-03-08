@@ -82,14 +82,14 @@ private:
         }
         STRF_IF_CONSTEXPR (Preview::size_required) {
             strf::transcode_size_f<SrcCharSize>  transcode_size
-                = transcoder.necessary_size_func();
+                = transcoder.transcode_size_func();
             std::size_t s = 0;
             if (transcode_size != nullptr) {
                 s = transcode_size(str_, str_ + len_, surr_poli_);
             } else {
                 s = strf::decode_encode_size<SrcCharSize>
                     ( src_cs.to_u32().transcode_func()
-                    , dest_cs.from_u32().necessary_size_func()
+                    , dest_cs.from_u32().transcode_size_func()
                     , str_, str_ + len_, inv_seq_poli_, surr_poli_ );
             }
             preview.add_size(s);
@@ -259,13 +259,13 @@ void STRF_HD fmt_cv_string_printer<SrcCharSize, DestCharSize>::init_
     STRF_IF_CONSTEXPR (Preview::size_required) {
         std::size_t s = 0;
         strf::transcode_size_f<SrcCharSize> transcode_size
-                = transcoder.necessary_size_func();
+                = transcoder.transcode_size_func();
         if (transcode_size != nullptr) {
             s = transcode_size(str_, str_ + len_, surr_poli_);
         } else {
             s = strf::decode_encode_size<SrcCharSize>
                 ( src_cs.to_u32().transcode
-                , dest_cs.from_u32().necessary_size_func()
+                , dest_cs.from_u32().transcode_size_func()
                 , str_, str_ + len_, inv_seq_poli_, surr_poli_ );
         }
         if (fillcount > 0) {

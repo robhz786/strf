@@ -230,7 +230,7 @@ The following must hold:
 ====
 [source,cpp]
 ----
-x.necessary_size(begin, end, surr_poli)
+x.transcode_size(begin, end, surr_poli)
 ----
 [horizontal]
 Return type:: `std::size_t`
@@ -251,19 +251,19 @@ Effect:: Converts the content `[begin, end)` from one encoding to another
          `{invalid_seq_policy}` and `{surrogate_policy}`.
 Precondition:: `x.transcode_func() != nullptr` is `true`
 Postconditions:: `dest.recycle()` is not called() if
-        `dest.size() >= x.necessary_size(begin, end, surr_poli)` is `true`.
+        `dest.size() >= x.transcode_size(begin, end, surr_poli)` is `true`.
 ====
-[[UnderlyingTranscoder_necessary_size_func]]
+[[UnderlyingTranscoder_transcode_size_func]]
 ====
 [source,cpp]
 ----
-x.necessary_size_func()
+x.transcode_size_func()
 ----
 [horizontal]
 Return type:: `{transcode_size_f}<SrcCharSize>`
 Return value:: A function pointer such that
-               `x.necessary_size_func() (begin, end, surr_poli)` has the same
-               effect as `x.necessary_size(begin, end, surr_poli)`.
+               `x.transcode_size_func() (begin, end, surr_poli)` has the same
+               effect as `x.transcode_size(begin, end, surr_poli)`.
 ====
 [[UnderlyingTranscoder_transcode_func]]
 ====
@@ -636,7 +636,7 @@ There is no generic implementation of the `static_underlying_transcoder` class t
 Instead, there are template instantiations for some pairs of charsets.
 All of them are empty classes, and are __{UnderlyingTranscoder}__, and their
 member functions `<<UnderlyingTranscoder_transcode_func, transcode_func>>`
-and `<<UnderlyingTranscoder_necessary_size_func,necessary_size_func>>`
+and `<<UnderlyingTranscoder_transcode_size_func,transcode_size_func>>`
 never return `nullptr`
 
 
@@ -665,13 +665,13 @@ public:
         , {invalid_seq_policy} inv_seq_poli
         , {surrogate_policy} surr_poli ) const;
 
-    std::size_t necessary_size
+    std::size_t transcode_size
         ( const {underlying_char_type}<SrcCharSize>* begin
         , const {underlying_char_type}<SrcCharSize>* end
         , {surrogate_policy} surr_poli ) const;
 
     constexpr {transcode_f}<SrcCharSize, DestCharSize> transcode_func() const noexcept;
-    constexpr {transcode_size_f}<SrcCharSize> necessary_size_func() const noexcept;
+    constexpr {transcode_size_f}<SrcCharSize> transcode_size_func() const noexcept;
 };
 
 } // namespace strf
@@ -686,7 +686,7 @@ Default constructor
 [horizontal]
 Postconditions::
 * `transcode_func() == nullptr`
-* `necessary_size_func() == nullptr`
+* `transcode_size_func() == nullptr`
 ====
 
 ====
@@ -699,7 +699,7 @@ Trivial copy constructor
 [horizontal]
 Postconditions::
 * `transcode_func() == other.transcode_func()`
-* `necessary_size_func() == other.necessary_size_func()`
+* `transcode_size_func() == other.transcode_size_func()`
 ====
 
 ====
@@ -712,7 +712,7 @@ constexpr explicit dynamic_underlying_transcoder
 [horizontal]
 Postconditions::
 * `transcode_func() == other.transcode_func()`
-* `necessary_size_func() == other.necessary_size_func()`
+* `transcode_size_func() == other.transcode_size_func()`
 ====
 
 ====
@@ -730,12 +730,12 @@ Effect: Calls `transcode_func()(ob, begin, end, inv_seq_poli, surr_poli)`
 ====
 [source,cpp,subs=normal]
 ----
-std::size_t necessary_size
+std::size_t transcode_size
     ( const {underlying_char_type}<SrcCharSize>* begin
     , const {underlying_char_type}<SrcCharSize>* end
     , {surrogate_policy} surr_poli ) const;
 ----
-Effect: Calls `necessary_size_func()(begin, eng, surr_poli)`
+Effect: Calls `transcode_size_func()(begin, eng, surr_poli)`
 ====
 
 === Struct template `dynamic_underlying_charset_data` [[dynamic_underlying_charset_data]]
@@ -1135,7 +1135,7 @@ Convert the content in `[str, str_end)` to UTF-32 using `to_u32`
 Postcondition: `ob.recycle()` is not called if `ob.size()` is not less
 then the value returned by
 `{decode_encode_size}(to_u32, size_calc_func, str, str_end, inv_seq_poli, surr_poli)`,
-where `size_calc_func` is the return of `dest_sc.from_u32().necessary_size_func()`,
+where `size_calc_func` is the return of `dest_sc.from_u32().transcode_size_func()`,
 where `dest_sc` is the __UnderlyingCharset__ object such that the return value of
 `dest_sc.to_u32().transcode_func()` is equal to `to_u32`.
 

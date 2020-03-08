@@ -245,13 +245,13 @@ public:
     constexpr explicit STRF_HD dynamic_underlying_transcoder
         ( strf::static_underlying_transcoder<Src, Dest> t ) noexcept
         : transcode_func_(t.transcode_func())
-        , necessary_size_func_(t.necessary_size_func())
+        , transcode_size_func_(t.transcode_size_func())
     {
     }
 
     constexpr STRF_HD dynamic_underlying_transcoder() noexcept
         : transcode_func_(nullptr)
-        , necessary_size_func_(nullptr)
+        , transcode_size_func_(nullptr)
     {
     }
 
@@ -265,12 +265,12 @@ public:
         transcode_func_(ob, begin, end, inv_seq_poli, surr_poli);
     }
 
-    STRF_HD std::size_t necessary_size
+    STRF_HD std::size_t transcode_size
         ( const strf::underlying_char_type<SrcCharSize>* begin
         , const strf::underlying_char_type<SrcCharSize>* end
         , strf::surrogate_policy surr_poli ) const
     {
-        return necessary_size_func_(begin, end, surr_poli);
+        return transcode_size_func_(begin, end, surr_poli);
     }
 
     constexpr STRF_HD strf::transcode_f<SrcCharSize, DestCharSize>
@@ -280,15 +280,15 @@ public:
     }
 
     constexpr STRF_HD strf::transcode_size_f<SrcCharSize>
-    necessary_size_func() const noexcept
+    transcode_size_func() const noexcept
     {
-        return necessary_size_func_;
+        return transcode_size_func_;
     }
 
 private:
 
     strf::transcode_f<SrcCharSize, DestCharSize> transcode_func_;
-    strf::transcode_size_f<SrcCharSize> necessary_size_func_;
+    strf::transcode_size_f<SrcCharSize> transcode_size_func_;
 };
 
 template <std::size_t CharSize>

@@ -207,7 +207,7 @@ public:
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t necessary_size
+    static STRF_HD std::size_t transcode_size
         ( const std::uint8_t* src
         , const std::uint8_t* src_end
         , strf::surrogate_policy surr_poli );
@@ -216,9 +216,9 @@ public:
     {
         return transcode;
     }
-    static STRF_HD strf::transcode_size_f<1> necessary_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<1> transcode_size_func() noexcept
     {
-        return necessary_size;
+        return transcode_size;
     }
 };
 
@@ -235,7 +235,7 @@ public:
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t necessary_size
+    static STRF_HD std::size_t transcode_size
         ( const std::uint8_t* src
         , const std::uint8_t* src_end
         , strf::surrogate_policy surr_poli );
@@ -244,9 +244,9 @@ public:
     {
         return transcode;
     }
-    static STRF_HD strf::transcode_size_f<1> necessary_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<1> transcode_size_func() noexcept
     {
-        return necessary_size;
+        return transcode_size;
     }
 };
 
@@ -262,7 +262,7 @@ public:
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t necessary_size
+    static STRF_HD std::size_t transcode_size
         ( const std::uint8_t* src
         , const std::uint8_t* src_end
         , strf::surrogate_policy surr_poli );
@@ -271,9 +271,9 @@ public:
     {
         return transcode;
     }
-    static STRF_HD strf::transcode_size_f<1> necessary_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<1> transcode_size_func() noexcept
     {
-        return necessary_size;
+        return transcode_size;
     }
 };
 
@@ -290,7 +290,7 @@ public:
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t necessary_size
+    static STRF_HD std::size_t transcode_size
         ( const char16_t* src
         , const char16_t* src_end
         , strf::surrogate_policy surr_poli );
@@ -299,9 +299,9 @@ public:
     {
         return transcode;
     }
-    static STRF_HD strf::transcode_size_f<2> necessary_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<2> transcode_size_func() noexcept
     {
-        return necessary_size;
+        return transcode_size;
     }
 };
 
@@ -318,7 +318,7 @@ public:
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t necessary_size
+    static STRF_HD std::size_t transcode_size
         ( const char16_t* src
         , const char16_t* src_end
         , strf::surrogate_policy surr_poli );
@@ -327,9 +327,9 @@ public:
     {
         return transcode;
     }
-    static STRF_HD strf::transcode_size_f<2> necessary_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<2> transcode_size_func() noexcept
     {
-        return necessary_size;
+        return transcode_size;
     }
 };
 
@@ -346,7 +346,7 @@ public:
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t necessary_size
+    static STRF_HD std::size_t transcode_size
         ( const char16_t* src
         , const char16_t* src_end
         , strf::surrogate_policy surr_poli );
@@ -355,9 +355,9 @@ public:
     {
         return transcode;
     }
-    static STRF_HD strf::transcode_size_f<2> necessary_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<2> transcode_size_func() noexcept
     {
-        return necessary_size;
+        return transcode_size;
     }
 };
 
@@ -374,7 +374,7 @@ public:
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t necessary_size
+    static STRF_HD std::size_t transcode_size
         ( const char32_t* src
         , const char32_t* src_end
         , strf::surrogate_policy surr_poli );
@@ -383,9 +383,9 @@ public:
     {
         return transcode;
     }
-    static STRF_HD strf::transcode_size_f<4> necessary_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<4> transcode_size_func() noexcept
     {
-        return necessary_size;
+        return transcode_size;
     }
 };
 
@@ -402,7 +402,7 @@ public:
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t necessary_size
+    static STRF_HD std::size_t transcode_size
         ( const char32_t* src
         , const char32_t* src_end
         , strf::surrogate_policy surr_poli );
@@ -411,9 +411,9 @@ public:
     {
         return transcode;
     }
-    static STRF_HD strf::transcode_size_f<4> necessary_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<4> transcode_size_func() noexcept
     {
-        return necessary_size;
+        return transcode_size;
     }
 };
 
@@ -430,7 +430,7 @@ public:
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t necessary_size
+    static STRF_HD std::size_t transcode_size
         ( const char32_t* src
         , const char32_t* src_end
         , strf::surrogate_policy )
@@ -442,9 +442,9 @@ public:
     {
         return transcode;
     }
-    static STRF_HD strf::transcode_size_f<4> necessary_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<4> transcode_size_func() noexcept
     {
-        return necessary_size;
+        return transcode_size;
     }
 };
 
@@ -930,7 +930,7 @@ STRF_INLINE STRF_HD void utf8_to_utf32::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf8_to_utf32::necessary_size
+STRF_INLINE STRF_HD std::size_t utf8_to_utf32::transcode_size
     ( const std::uint8_t* src
     , const std::uint8_t* src_end
     , strf::surrogate_policy surr_poli )
@@ -1062,7 +1062,7 @@ STRF_INLINE STRF_HD void utf8_to_utf8::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf8_to_utf8::necessary_size
+STRF_INLINE STRF_HD std::size_t utf8_to_utf8::transcode_size
     ( const std::uint8_t* src
     , const std::uint8_t* src_end
     , strf::surrogate_policy surr_poli )
@@ -1318,7 +1318,7 @@ STRF_INLINE STRF_HD void utf32_to_utf8::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf32_to_utf8::necessary_size
+STRF_INLINE STRF_HD std::size_t utf32_to_utf8::transcode_size
     ( const char32_t* src
     , const char32_t* src_end
     , strf::surrogate_policy surr_poli )
@@ -1391,7 +1391,7 @@ STRF_INLINE STRF_HD void utf16_to_utf32::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf16_to_utf32::necessary_size
+STRF_INLINE STRF_HD std::size_t utf16_to_utf32::transcode_size
     ( const char16_t* src
     , const char16_t* src_end
     , strf::surrogate_policy surr_poli )
@@ -1463,7 +1463,7 @@ STRF_INLINE STRF_HD void utf16_to_utf16::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf16_to_utf16::necessary_size
+STRF_INLINE STRF_HD std::size_t utf16_to_utf16::transcode_size
     ( const char16_t* src
     , const char16_t* src_end
     , strf::surrogate_policy surr_poli )
@@ -1610,7 +1610,7 @@ STRF_INLINE STRF_HD void utf32_to_utf16::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf32_to_utf16::necessary_size
+STRF_INLINE STRF_HD std::size_t utf32_to_utf16::transcode_size
     ( const char32_t* src
     , const char32_t* src_end
     , strf::surrogate_policy surr_poli )
@@ -1781,7 +1781,7 @@ STRF_INLINE STRF_HD void utf8_to_utf16::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf8_to_utf16::necessary_size
+STRF_INLINE STRF_HD std::size_t utf8_to_utf16::transcode_size
     ( const std::uint8_t* src_begin
     , const std::uint8_t* src_end
     , strf::surrogate_policy surr_poli )
@@ -1890,7 +1890,7 @@ STRF_INLINE STRF_HD void utf16_to_utf8::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf16_to_utf8::necessary_size
+STRF_INLINE STRF_HD std::size_t utf16_to_utf8::transcode_size
     ( const char16_t* src_begin
     , const char16_t* src_end
     , strf::surrogate_policy surr_poli )

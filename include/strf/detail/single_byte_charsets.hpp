@@ -388,7 +388,7 @@ struct single_byte_charset_to_utf32
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
-    static constexpr STRF_HD std::size_t necessary_size
+    static constexpr STRF_HD std::size_t transcode_size
         ( const std::uint8_t* src
         , const std::uint8_t* src_end
         , strf::surrogate_policy surr_poli ) noexcept
@@ -401,9 +401,9 @@ struct single_byte_charset_to_utf32
     {
         return transcode;
     }
-    static STRF_HD strf::transcode_size_f<1> necessary_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<1> transcode_size_func() noexcept
     {
-        return necessary_size;
+        return transcode_size;
     }
 };
 
@@ -449,7 +449,7 @@ struct utf32_to_single_byte_charset
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
-    static constexpr STRF_HD std::size_t necessary_size
+    static constexpr STRF_HD std::size_t transcode_size
         ( const char32_t* src
         , const char32_t* src_end
         , strf::surrogate_policy surr_poli ) noexcept
@@ -461,9 +461,9 @@ struct utf32_to_single_byte_charset
     {
         return transcode;
     }
-    static STRF_HD strf::transcode_size_f<4> necessary_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<4> transcode_size_func() noexcept
     {
-        return necessary_size;
+        return transcode_size;
     }
 };
 
@@ -504,7 +504,7 @@ struct single_byte_charset_sanitizer
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
-    static constexpr STRF_HD std::size_t necessary_size
+    static constexpr STRF_HD std::size_t transcode_size
         ( const std::uint8_t* src
         , const std::uint8_t* src_end
         , strf::surrogate_policy surr_poli ) noexcept
@@ -517,9 +517,9 @@ struct single_byte_charset_sanitizer
     {
         return transcode;
     }
-    static STRF_HD strf::transcode_size_f<1> necessary_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<1> transcode_size_func() noexcept
     {
-        return necessary_size;
+        return transcode_size;
     }
 };
 
