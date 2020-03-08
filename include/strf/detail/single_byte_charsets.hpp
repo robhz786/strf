@@ -743,7 +743,7 @@ public:
         return len < max_count ? len : max_count;
     }
 
-    static STRF_HD char32_t decode_single_char(std::uint8_t ch)
+    static STRF_HD char32_t decode_char(std::uint8_t ch)
     {
         return Impl::decode(ch);
     }
@@ -782,7 +782,7 @@ public:
         static const strf::dynamic_underlying_charset_data<1> data = {
             name(), id(), replacement_char(), 1, validate, encoded_char_size,
             encode_char, encode_fill, codepoints_count, write_replacement_char,
-            decode_single_char,
+            decode_char,
             strf::dynamic_underlying_transcoder<4, 1>{from_u32()},
             strf::dynamic_underlying_transcoder<1, 4>{to_u32()},
             strf::dynamic_underlying_transcoder<1, 1>{sanitizer()},

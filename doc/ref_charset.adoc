@@ -21,11 +21,11 @@ http://www.boost.org/LICENSE_1_0.txt
 :encoded_char_size_f: <<charset_function_pointers,encoded_char_size_f>>
 :encode_fill_f: <<charset_function_pointers,encode_fill_f>>
 :codepoints_count_f: <<charset_function_pointers,codepoints_count_f>>
-:decode_single_char_f: <<charset_function_pointers,decode_single_char_f>>
+:decode_char_f: <<charset_function_pointers,decode_char_f>>
 :encode_char_f: <<charset_function_pointers,encode_char_f>>
 :encode_fill_f: <<charset_function_pointers,encode_fill_f>>
 :codepoints_count_f: <<charset_function_pointers,codepoints_count_f>>
-:decode_single_char_f: <<charset_function_pointers,decode_single_char_f>>
+:decode_char_f: <<charset_function_pointers,decode_char_f>>
 :find_transcoder_f: <<charset_function_pointers,find_transcoder_f>>
 
 
@@ -199,7 +199,7 @@ using codepoints_count_f = std::size_t ({asterisk})
     , std::size_t max_count );
 
 template <std::size_t CharSize>
-using decode_single_char_f = char32_t ({asterisk}) ( {underlying_char_type}<CharSize> );
+using decode_char_f = char32_t ({asterisk}) ( {underlying_char_type}<CharSize> );
 
 template <std::size_t SrcCharSize, std::size_t DestCharSize>
 using find_transcoder_f =
@@ -438,7 +438,7 @@ Return value:: The number of Unicode code points in the range `[begin, end)`,
 ====
 [source,cpp]
 ----
-x.decode_single_char(ch)
+x.decode_char(ch)
 ----
 ::
 [horizontal]
@@ -754,7 +754,7 @@ struct dynamic_underlying_charset_data {
     {encode_fill_f}<CharSize> encode_fill_func;
     {codepoints_count_f}<CharSize> codepoints_count_func;
     {write_replacement_char_f}<CharSize> write_replacement_char_func;
-    {decode_single_char_f}<CharSize> decode_single_char_func;
+    {decode_char_f}<CharSize> decode_char_func;
 
     {dynamic_underlying_transcoder}<4, CharSize> from_u32;
     {dynamic_underlying_transcoder}<CharSize, 4> to_u32;
@@ -813,7 +813,7 @@ public:
 
     void write_replacement_char({underlying_outbuf}<CharSize>& ob) const;
 
-    char32_t decode_single_char(char_type_ ch) const;
+    char32_t decode_char(char_type_ ch) const;
 
     {encode_char_f}<char_size> encode_char_func() const noexcept;
 
@@ -983,10 +983,10 @@ Effect:: Calls `this\->data\->write_replacement_char_func(ob)`.
 ====
 [source,cpp,subs=normal]
 ----
-char32_t decode_single_char(char_type_ ch) const;
+char32_t decode_char(char_type_ ch) const;
 ----
 [horizontal]
-Effect:: Calls and returns `this\->data\->decode_single_char_func(ch)`.
+Effect:: Calls and returns `this\->data\->decode_char_func(ch)`.
 ====
 ====
 [source,cpp,subs=normal]

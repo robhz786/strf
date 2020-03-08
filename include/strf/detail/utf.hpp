@@ -523,7 +523,7 @@ public:
     static STRF_HD void write_replacement_char
         ( strf::underlying_outbuf<char_size>& );
 
-    static STRF_HD char32_t decode_single_char(char_type_ ch) noexcept
+    static STRF_HD char32_t decode_char(char_type_ ch) noexcept
     {
         if (ch < 0x80)
             return static_cast<char32_t>(ch);
@@ -589,7 +589,7 @@ public:
         static const strf::dynamic_underlying_charset_data<1> data = {
             name(), id(), replacement_char(), 3, validate, encoded_char_size,
             encode_char, encode_fill, codepoints_count, write_replacement_char,
-            decode_single_char,
+            decode_char,
             strf::dynamic_underlying_transcoder<4, 1>{from_u32()},
             strf::dynamic_underlying_transcoder<1, 4>{to_u32()},
             strf::dynamic_underlying_transcoder<1, 1>{sanitizer()},
@@ -662,7 +662,7 @@ public:
     static STRF_HD void write_replacement_char
         ( strf::underlying_outbuf<char_size>& );
 
-    static STRF_HD char32_t decode_single_char(char_type_ ch) noexcept
+    static STRF_HD char32_t decode_char(char_type_ ch) noexcept
     {
         return ch;
     }
@@ -726,7 +726,7 @@ public:
         static const strf::dynamic_underlying_charset_data<2> data = {
             name(), id(), replacement_char(), 1, validate, encoded_char_size,
             encode_char, encode_fill, codepoints_count, write_replacement_char,
-            decode_single_char,
+            decode_char,
             strf::dynamic_underlying_transcoder<4, 2>{from_u32()},
             strf::dynamic_underlying_transcoder<2, 4>{to_u32()},
             strf::dynamic_underlying_transcoder<2, 2>{sanitizer()},
@@ -803,7 +803,7 @@ public:
     static STRF_HD void write_replacement_char
         ( strf::underlying_outbuf<char_size>& );
 
-    static STRF_HD char32_t decode_single_char(char_type_ ch) noexcept
+    static STRF_HD char32_t decode_char(char_type_ ch) noexcept
     {
         return ch;
     }
@@ -837,7 +837,7 @@ public:
         static const strf::dynamic_underlying_charset_data<4> data = {
             name(), id(), replacement_char(), 1, validate, encoded_char_size,
             encode_char, encode_fill, codepoints_count, write_replacement_char,
-            decode_single_char,
+            decode_char,
             strf::dynamic_underlying_transcoder<4, 4>{from_u32()},
             strf::dynamic_underlying_transcoder<4, 4>{to_u32()},
             strf::dynamic_underlying_transcoder<4, 4>{sanitizer()},

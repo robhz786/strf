@@ -14,7 +14,7 @@ public:
         ( const Charset& cs
         , strf::underlying_char_type<Charset::char_size> ch ) const noexcept
     {
-        auto ch32 = cs.decode_single_char(ch);
+        auto ch32 = cs.decode_char(ch);
         return ch32 == U'\u2014' ? 2 : 1;
     }
 

@@ -25,7 +25,7 @@ strf::detail::simple_string_view<char> char_0_to_0xff_sanitized(const Charset& c
     static char str[0x100];
     for(unsigned i = 0; i < 0x100; ++i)
     {
-        char32_t ch32 = cs.decode_single_char(static_cast<std::uint8_t>(i));
+        char32_t ch32 = cs.decode_char(static_cast<std::uint8_t>(i));
         unsigned char ch = ( ch32 == (char32_t)-1
                            ? static_cast<unsigned char>('?')
                            : static_cast<unsigned char>(i) );

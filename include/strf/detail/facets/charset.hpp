@@ -228,7 +228,7 @@ using codepoints_count_f = std::size_t (*)
     , std::size_t max_count );
 
 template <std::size_t CharSize>
-using decode_single_char_f = char32_t (*)
+using decode_char_f = char32_t (*)
     ( strf::underlying_char_type<CharSize> );
 
 template <std::size_t SrcCharSize, std::size_t DestCharSize>
@@ -304,7 +304,7 @@ struct dynamic_underlying_charset_data
     strf::encode_fill_f<CharSize> encode_fill_func;
     strf::codepoints_count_f<CharSize> codepoints_count_func;
     strf::write_replacement_char_f<CharSize> write_replacement_char_func;
-    strf::decode_single_char_f<CharSize> decode_single_char_func;
+    strf::decode_char_f<CharSize> decode_char_func;
 
     strf::dynamic_underlying_transcoder<4, CharSize> from_u32;
     strf::dynamic_underlying_transcoder<CharSize, 4> to_u32;
@@ -398,9 +398,9 @@ public:
     {
         data_->write_replacement_char_func(ob);
     }
-    STRF_HD char32_t decode_single_char(char_type_ ch) const
+    STRF_HD char32_t decode_char(char_type_ ch) const
     {
-        return data_->decode_single_char_func(ch);
+        return data_->decode_char_func(ch);
     }
 
     STRF_HD strf::encode_char_f<char_size> encode_char_func() const noexcept
