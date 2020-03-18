@@ -543,7 +543,7 @@ STRF_HD void print_amplified_integer_small_separator
 template <std::size_t CharSize>
 STRF_HD void print_amplified_integer_big_separator
     ( strf::underlying_outbuf<CharSize>& ob
-    , strf::encode_char_func<CharSize> encode_char
+    , strf::encode_char_f<CharSize> encode_char
     , const strf::numpunct_base& punct
     , unsigned long long value
     , unsigned num_digits
@@ -604,7 +604,7 @@ STRF_HD void print_amplified_integer_big_separator
 template <std::size_t CharSize>
 STRF_HD void print_scientific_notation
     ( strf::underlying_outbuf<CharSize>& ob
-    , strf::encode_char_func<CharSize> encode_char
+    , strf::encode_char_f<CharSize> encode_char
     , unsigned long long digits
     , unsigned num_digits
     , char32_t decimal_point
@@ -772,14 +772,14 @@ public:
         , strf::float_with_format<FloatT, false> x
         , strf::tag<CharT> )
         : punct_(strf::get_facet<strf::numpunct_c<10>, FloatT>(fp))
-        , enc_err_(strf::get_facet<strf::encoding_error_c, FloatT>(fp))
-        , allow_surr_(strf::get_facet<strf::surrogate_policy_c, FloatT>(fp))
+        , inv_seq_poli_(strf::get_facet<strf::invalid_seq_policy_c, FloatT>(fp))
+        , surr_poli_(strf::get_facet<strf::surrogate_policy_c, FloatT>(fp))
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(fp))
     {
         const auto fmt = x.get_float_format_data();
         data_ = strf::detail::init_double_printer_data(x.value(), fmt);
-        decltype(auto) enc = get_facet<strf::encoding_c<CharT>, FloatT>(fp);
-        init_(enc, fmt.notation == float_notation::general, fmt.showpoint);
+        decltype(auto) cs = get_facet<strf::charset_c<CharT>, FloatT>(fp);
+        init_(cs, fmt.notation == float_notation::general, fmt.showpoint);
         STRF_IF_CONSTEXPR (Preview::width_required) {
             preview.subtract_width(content_width_());
         }
@@ -796,15 +796,15 @@ public:
         , strf::tag<CharT> )
         : punct_(strf::get_facet<strf::numpunct_c<10>, FloatT>(fp))
         , fillchar_(x.fill())
-        , enc_err_(strf::get_facet<strf::encoding_error_c, FloatT>(fp))
-        , allow_surr_(strf::get_facet<strf::surrogate_policy_c, FloatT>(fp))
+        , inv_seq_poli_(strf::get_facet<strf::invalid_seq_policy_c, FloatT>(fp))
+        , surr_poli_(strf::get_facet<strf::surrogate_policy_c, FloatT>(fp))
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(fp))
     {
         const auto fmt = x.get_float_format_data();
         data_ = strf::detail::init_double_printer_data(x.value(), fmt);
-        decltype(auto) enc = get_facet<strf::encoding_c<CharT>, FloatT>(fp);
-        init_( enc, fmt.notation == float_notation::general, fmt.showpoint);
-        init_(preview, x.width(), x.alignment(), enc);
+        decltype(auto) cs = get_facet<strf::charset_c<CharT>, FloatT>(fp);
+        init_( cs, fmt.notation == float_notation::general, fmt.showpoint);
+        init_(preview, x.width(), x.alignment(), cs);
     }
 
 
@@ -812,21 +812,21 @@ public:
 
 private:
 
-    template <typename Encoding>
+    template <typename Charset>
     STRF_HD void init_
-        (const Encoding& enc, bool fmt_general_format, bool fmt_showpoint);
+        (const Charset& cs, bool fmt_general_format, bool fmt_showpoint);
 
-    template <typename Preview, typename Encoding>
+    template <typename Preview, typename Charset>
     STRF_HD void init_
         ( Preview& preview, std::int16_t w, strf::text_alignment a
-        , const Encoding& encoding );
+        , const Charset& cs );
 
     STRF_HD std::int16_t content_width_() const;
     STRF_HD std::size_t content_size_() const;
 
     const strf::numpunct_base& punct_;
-    strf::encode_char_func<CharSize> encode_char_;
-    strf::encode_fill_func<CharSize> encode_fill_;
+    strf::encode_char_f<CharSize> encode_char_;
+    strf::encode_fill_f<CharSize> encode_fill_;
     char32_t fillchar_ = U' ';
     unsigned left_fillcount_ = 0;
     unsigned split_fillcount_ = 0;
@@ -836,23 +836,23 @@ private:
     unsigned decimal_point_size_ = 0;
     char32_t decimal_point_;
     char_type little_sep_;
-    strf::encoding_error enc_err_;
-    strf::surrogate_policy allow_surr_ = surrogate_policy::strict;
+    strf::invalid_seq_policy inv_seq_poli_;
+    strf::surrogate_policy surr_poli_ = surrogate_policy::strict;
     strf::lettercase lettercase_;
     strf::detail::double_printer_data data_;
 };
 
 template <std::size_t CharSize>
-template <typename Encoding>
+template <typename Charset>
 STRF_HD void punct_double_printer<CharSize>::init_
-    ( const Encoding& enc, bool general_format, bool fmt_showpoint)
+    ( const Charset& cs, bool general_format, bool fmt_showpoint)
 {
-    encode_char_ = enc.encode_char;
-    encode_fill_ = enc.encode_fill;
+    encode_char_ = cs.encode_char_func();
+    encode_fill_ = cs.encode_fill_func();
     if (!data_.sci_notation) {
         auto int_dig_count = (int)data_.m10_digcount + data_.e10;
         if (! punct_.no_group_separation(int_dig_count)) {
-            auto sep_validation = enc.validate(punct_.thousands_sep());
+            auto sep_validation = cs.validate(punct_.thousands_sep());
             if (sep_validation != strf::invalid_char_len) {
                 sep_size_ = static_cast<unsigned>(sep_validation);
                 sep_count_ = punct_.thousands_sep_count(int_dig_count);
@@ -870,7 +870,7 @@ STRF_HD void punct_double_printer<CharSize>::init_
                     }
                 }
                 if (sep_size_ == 1) {
-                    enc.encode_char(&little_sep_, punct_.thousands_sep());
+                    cs.encode_char(&little_sep_, punct_.thousands_sep());
                 }
             }
         }
@@ -879,28 +879,28 @@ STRF_HD void punct_double_printer<CharSize>::init_
     if (data_.showpoint) {
 
         decimal_point_ = punct_.decimal_point();
-        auto validation = enc.validate(decimal_point_);
+        auto validation = cs.validate(decimal_point_);
         if (validation == 1) {
             decimal_point_size_ = 1;
             char_type ch;
-            enc.encode_char(&ch, decimal_point_);
+            cs.encode_char(&ch, decimal_point_);
             decimal_point_ = ch;
         } else if (validation != strf::invalid_char_len) {
             decimal_point_size_ = static_cast<unsigned>(validation);
         } else {
-            decimal_point_size_ = static_cast<unsigned>(enc.replacement_char_size());
-            decimal_point_ = enc.replacement_char();
+            decimal_point_size_ = static_cast<unsigned>(cs.replacement_char_size());
+            decimal_point_ = cs.replacement_char();
         }
     }
 }
 
 template <std::size_t CharSize>
-template <typename Preview, typename Encoding>
+template <typename Preview, typename Charset>
 STRF_HD void punct_double_printer<CharSize>::init_
     ( Preview& preview, std::int16_t fmt_width, strf::text_alignment a
-    , const Encoding& encoding )
+    , const Charset& cs )
 {
-    (void) encoding;
+    (void) cs;
     auto content_width = content_width_();
     if (content_width >= fmt_width) {
         preview.subtract_width(content_width);
@@ -911,9 +911,9 @@ STRF_HD void punct_double_printer<CharSize>::init_
         auto fillcount = fmt_width - content_width;
         preview.subtract_width(fmt_width);
         STRF_IF_CONSTEXPR (Preview::size_required) {
-            std::size_t fillsize = encoding.validate(fillchar_);
+            std::size_t fillsize = cs.validate(fillchar_);
             if (fillsize == (size_t)-1) {
-                fillsize = encoding.replacement_char_size();
+                fillsize = cs.replacement_char_size();
             }
             preview.add_size(content_size_() + fillsize * fillcount);
         }
@@ -1000,13 +1000,13 @@ STRF_HD void punct_double_printer<CharSize>::print_to
     (strf::underlying_outbuf<CharSize>& ob) const
 {
     if (left_fillcount_ != 0) {
-        encode_fill_(ob, left_fillcount_, fillchar_, enc_err_, allow_surr_);
+        encode_fill_(ob, left_fillcount_, fillchar_, inv_seq_poli_, surr_poli_);
     }
     if (data_.showsign) {
         put(ob, static_cast<char_type>('+' + (data_.negative << 1)));
     }
     if (split_fillcount_ != 0) {
-        encode_fill_(ob, split_fillcount_, fillchar_, enc_err_, allow_surr_);
+        encode_fill_(ob, split_fillcount_, fillchar_, inv_seq_poli_, surr_poli_);
     }
     if (data_.nan) {
         strf::detail::print_nan(ob, lettercase_);
@@ -1103,7 +1103,7 @@ STRF_HD void punct_double_printer<CharSize>::print_to
         }
     }
     if (right_fillcount_ != 0) {
-        encode_fill_(ob, right_fillcount_, fillchar_, enc_err_, allow_surr_);
+        encode_fill_(ob, right_fillcount_, fillchar_, inv_seq_poli_, surr_poli_);
     }
 }
 
@@ -1138,21 +1138,21 @@ public:
         : data_(strf::detail::init_double_printer_data
                 (x.value(), x.get_float_format_data()))
         , fillchar_(x.fill())
-        , enc_err_(strf::get_facet<strf::encoding_error_c, FloatT>(fp))
-        , allow_surr_(strf::get_facet<strf::surrogate_policy_c, FloatT>(fp))
+        , inv_seq_poli_(strf::get_facet<strf::invalid_seq_policy_c, FloatT>(fp))
+        , surr_poli_(strf::get_facet<strf::surrogate_policy_c, FloatT>(fp))
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(fp))
     {
-        decltype(auto) enc = strf::get_facet<strf::encoding_c<CharT>, FloatT>(fp);
-        init_(preview, x.width(), x.alignment(), enc);
+        decltype(auto) cs = strf::get_facet<strf::charset_c<CharT>, FloatT>(fp);
+        init_(preview, x.width(), x.alignment(), cs);
     }
 
     STRF_HD void print_to(strf::underlying_outbuf<CharSize>&) const override;
 
 private:
 
-    template <typename Preview, typename Encoding>
+    template <typename Preview, typename Charset>
     STRF_HD void init_( Preview& preview, std::int16_t w, strf::text_alignment a
-                      , const Encoding& enc );
+                      , const Charset& cs );
 
     STRF_HD std::int16_t content_width_() const
     {
@@ -1174,23 +1174,23 @@ private:
     }
 
     strf::detail::double_printer_data data_;
-    strf::encode_fill_func<CharSize> encode_fill_;
+    strf::encode_fill_f<CharSize> encode_fill_;
     char32_t fillchar_ = U' ';
     unsigned left_fillcount_ = 0;
     unsigned split_fillcount_ = 0;
     unsigned right_fillcount_ = 0;
-    strf::encoding_error enc_err_ = encoding_error::replace;
-    strf::surrogate_policy allow_surr_ = surrogate_policy::strict;
+    strf::invalid_seq_policy inv_seq_poli_ = invalid_seq_policy::replace;
+    strf::surrogate_policy surr_poli_ = surrogate_policy::strict;
     strf::lettercase lettercase_;
 };
 
 template <std::size_t CharSize>
-template <typename Preview, typename Encoding>
+template <typename Preview, typename Charset>
 STRF_HD void double_printer<CharSize>::init_
     ( Preview& preview, std::int16_t w, strf::text_alignment a
-    , const Encoding& enc )
+    , const Charset& cs )
 {
-    encode_fill_ = enc.encode_fill;
+    encode_fill_ = cs.encode_fill_func();
     auto content_width = content_width_();
     if (content_width >= w) {
         preview.checked_subtract_width(content_width);
@@ -1199,9 +1199,9 @@ STRF_HD void double_printer<CharSize>::init_
         auto fillcount = (w - static_cast<std::int16_t>(content_width));
         preview.subtract_width(w);
         STRF_IF_CONSTEXPR(Preview::size_required) {
-            std::size_t fillchar_size = enc.validate(fillchar_);
+            std::size_t fillchar_size = cs.validate(fillchar_);
             if (fillchar_size == (size_t)-1) {
-                fillchar_size = enc.replacement_char_size();
+                fillchar_size = cs.replacement_char_size();
             }
             preview.add_size(content_width + fillchar_size * fillcount);
         }
@@ -1228,13 +1228,13 @@ STRF_HD void double_printer<CharSize>::print_to
     ( strf::underlying_outbuf<CharSize>& ob ) const
 {
     if (left_fillcount_ != 0) {
-        encode_fill_(ob, left_fillcount_, fillchar_, enc_err_, allow_surr_);
+        encode_fill_(ob, left_fillcount_, fillchar_, inv_seq_poli_, surr_poli_);
     }
     if (data_.showsign) {
         put<CharSize>(ob, '+' + (data_.negative << 1));
     }
     if (split_fillcount_ != 0) {
-        encode_fill_(ob, split_fillcount_, fillchar_, enc_err_, allow_surr_);
+        encode_fill_(ob, split_fillcount_, fillchar_, inv_seq_poli_, surr_poli_);
     }
     if (data_.nan) {
         strf::detail::print_nan(ob, lettercase_);
@@ -1355,7 +1355,7 @@ STRF_HD void double_printer<CharSize>::print_to
         }
     }
     if (right_fillcount_ != 0) {
-        encode_fill_(ob, right_fillcount_, fillchar_, enc_err_, allow_surr_);
+        encode_fill_(ob, right_fillcount_, fillchar_, inv_seq_poli_, surr_poli_);
     }
 }
 
@@ -1575,7 +1575,7 @@ public:
         , sep_count_(0)
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(fp))
     {
-        init_(strf::get_facet<strf::encoding_c<CharT>, FloatT>(fp));
+        init_(strf::get_facet<strf::charset_c<CharT>, FloatT>(fp));
         STRF_IF_CONSTEXPR (Preview::width_required) {
             preview.subtract_width(width());
         }
@@ -1592,11 +1592,11 @@ public:
 
 private:
 
-    template <typename Encoding>
-    STRF_HD void init_(const Encoding& encoding);
+    template <typename Charset>
+    STRF_HD void init_(const Charset& cs);
 
     const strf::numpunct_base& punct_;
-    strf::encode_char_func<CharSize> encode_char_;
+    strf::encode_char_f<CharSize> encode_char_;
     const detail::double_dec value_;
     const unsigned m10_digcount_;
     unsigned sep_count_ = 0;
@@ -1610,10 +1610,10 @@ private:
 };
 
 template <std::size_t CharSize>
-template <typename Encoding>
-STRF_HD void fast_punct_double_printer<CharSize>::init_(const Encoding& enc)
+template <typename Charset>
+STRF_HD void fast_punct_double_printer<CharSize>::init_(const Charset& cs)
 {
-    encode_char_ = enc.encode_char;
+    encode_char_ = cs.encode_char_func();
     bool showpoint;
     if (value_.e10 > -(int)m10_digcount_) {
         bool e10neg = value_.e10 < 0;
@@ -1625,7 +1625,7 @@ STRF_HD void fast_punct_double_printer<CharSize>::init_(const Encoding& enc)
         } else {
             auto int_dig_count = (int)m10_digcount_ + value_.e10;
             if (! punct_.no_group_separation(int_dig_count)) {
-                auto sep_validation = enc.validate(punct_.thousands_sep());
+                auto sep_validation = cs.validate(punct_.thousands_sep());
                 if (sep_validation != strf::invalid_char_len) {
                     sep_count_ = punct_.thousands_sep_count(int_dig_count);
                     if (scientific_width < fixed_width + (int)sep_count_) {
@@ -1653,17 +1653,17 @@ STRF_HD void fast_punct_double_printer<CharSize>::init_(const Encoding& enc)
     init_decimal_point:
     if (showpoint) {
         decimal_point_ = punct_.decimal_point();
-        auto validation = enc.validate(decimal_point_);
+        auto validation = cs.validate(decimal_point_);
         if (validation == 1) {
             decimal_point_size_ = 1;
             char_type ch;
-            enc.encode_char(&ch, decimal_point_);
+            cs.encode_char(&ch, decimal_point_);
             decimal_point_ = ch;
         } else if (validation != strf::invalid_char_len) {
             decimal_point_size_ = static_cast<unsigned>(validation);
         } else {
-            decimal_point_size_ = static_cast<unsigned>(enc.replacement_char_size());
-            decimal_point_ = enc.replacement_char();
+            decimal_point_size_ = static_cast<unsigned>(cs.replacement_char_size());
+            decimal_point_ = cs.replacement_char();
         }
     }
 }

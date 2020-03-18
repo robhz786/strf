@@ -19,13 +19,13 @@ strf::detail::simple_string_view<char> make_str_0_to_xff()
 
 auto str_0_to_xff = make_str_0_to_xff();
 
-template <typename Encoding>
-strf::detail::simple_string_view<char> char_0_to_0xff_sanitized(const Encoding& enc)
+template <typename Charset>
+strf::detail::simple_string_view<char> char_0_to_0xff_sanitized(const Charset& cs)
 {
     static char str[0x100];
     for(unsigned i = 0; i < 0x100; ++i)
     {
-        char32_t ch32 = enc.decode_single_char(static_cast<std::uint8_t>(i));
+        char32_t ch32 = cs.decode_char(static_cast<std::uint8_t>(i));
         unsigned char ch = ( ch32 == (char32_t)-1
                            ? static_cast<unsigned char>('?')
                            : static_cast<unsigned char>(i) );
@@ -70,25 +70,25 @@ bool operator==( strf::detail::simple_string_view<CharT> str1
     return std::equal(str1.begin(), str1.end(), str2.begin());
 }
 
-template <typename Encoding>
-void test( const Encoding& enc
+template <typename Charset>
+void test( const Charset& cs
          , strf::detail::simple_string_view<char32_t> decoded_0_to_0xff )
 {
-    TEST_SCOPE_DESCRIPTION(enc.name());
+    TEST_SCOPE_DESCRIPTION(cs.name());
 
     {
         // to UTF-32
-        TEST(decoded_0_to_0xff) (strf::sani(str_0_to_xff, enc));
+        TEST(decoded_0_to_0xff) (strf::sani(str_0_to_xff, cs));
     }
 
     auto valid_u32input = remove_fffd(decoded_0_to_0xff);
     char char_buf[0x400];
     {
         // from and back to UTF-32
-        auto r = strf::to(char_buf).with(enc) (strf::sani(valid_u32input));
-        auto enc_str = make_view(char_buf, r.ptr);
+        auto r = strf::to(char_buf).with(cs) (strf::sani(valid_u32input));
+        auto cs_str = make_view(char_buf, r.ptr);
 
-        TEST(valid_u32input) (strf::sani(enc_str, enc));
+        TEST(valid_u32input) (strf::sani(cs_str, cs));
     }
     {
         // from UTF-8
@@ -96,36 +96,36 @@ void test( const Encoding& enc
         auto r8 = strf::to(char8_buf) (strf::sani(valid_u32input));
         auto u8str =  make_view(char8_buf, r8.ptr);
 
-        auto r = strf::to(char_buf).with(enc) (strf::sani(u8str, strf::utf8<char>()));
-        auto enc_str = make_view(char_buf, r.ptr);
+        auto r = strf::to(char_buf).with(cs) (strf::sani(u8str, strf::utf8<char>()));
+        auto cs_str = make_view(char_buf, r.ptr);
 
-        TEST(valid_u32input) (strf::sani(enc_str, enc));
+        TEST(valid_u32input) (strf::sani(cs_str, cs));
 
     }
 
-    auto sanitized_0_to_0xff = char_0_to_0xff_sanitized(enc);
+    auto sanitized_0_to_0xff = char_0_to_0xff_sanitized(cs);
     {   // from UTF-8
         char char8_buf[0x400];
         auto r8 = strf::to(char8_buf) (strf::sani(decoded_0_to_0xff));
         auto u8str = make_view(char8_buf, r8.ptr);
         TEST(sanitized_0_to_0xff)
-            .with(enc)
+            .with(cs)
             (strf::sani(u8str, strf::utf8<char>()));
     }
 
     TEST(sanitized_0_to_0xff)
-        .with(enc) (strf::sani(str_0_to_xff));
+        .with(cs) (strf::sani(str_0_to_xff));
     TEST("---?+++")
-        .with(enc, strf::encoding_error::replace)
+        .with(cs, strf::invalid_seq_policy::replace)
         (strf::sani(u"---\U0010FFFF+++"));
 
 #if defined(__cpp_exceptions)
 
     {
-        auto facets = strf::pack(enc, strf::encoding_error::stop);
+        auto facets = strf::pack(cs, strf::invalid_seq_policy::stop);
         TEST_THROWS(
             ( (strf::to_string.with(facets)(strf::sani(u"---\U0010FFFF++"))))
-            , strf::encoding_failure );
+            , strf::invalid_sequence );
     }
 
 #endif // defined(__cpp_exceptions)

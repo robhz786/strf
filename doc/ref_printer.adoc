@@ -29,7 +29,7 @@ public:
 
 [[make_printer]]
 [[Printable]]
-=== Type requiment _Printable_
+=== Type requirement _Printable_
 
 The type `T` satisfies _Printable_ if
 Given,
@@ -117,7 +117,6 @@ auto str = strf::make_string.reserve_calc()(arg0, arg1, arg2, etc);
 ====
 
 [[make_fmt]]
-[[fmtprintable]]
 === Type requirement _FmtPrintable_
 
 The type `T` satisfies _FmtPrintable_ if

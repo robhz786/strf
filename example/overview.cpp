@@ -170,7 +170,7 @@ void overriding_sample()
 
 void sample_numpunct_with_alternative_charset()
 {
-//[ numpuct__with_alternative_encoding
+//[ numpuct__with_alternative_charset
     // Writting in Windows-1252
     auto s = strf::to_string
         .with(strf::windows_1252<char>())
@@ -201,9 +201,9 @@ void input_ouput_different_char_types()
     //]
 }
 
-void input_string_encoding()
+void input_string_charset()
 {
-    //[input_string_encoding
+    //[input_string_charset
     // Three input string. Each one in its own character set
     auto s = strf::to_u8string( strf::cv("\x80\xA4 -- ", strf::iso_8859_1<char>())
                               , strf::cv("\x80\xA4 -- ", strf::iso_8859_15<char>())
@@ -258,11 +258,11 @@ void punct_non_decimal()
     //]
 }
 
-// void width_as_u32len()
+// void width_as_fast_u32len()
 // {
-//     //[width_as_u32len
+//     //[width_as_fast_u32len
 //     //     auto str = strf::to_u8string
-//         .with(strf::width_as_u32len<char8_t>{})
+//         .with(strf::width_as_fast_u32len<char8_t>{})
 //         (strf::right(u8"áéíóú", 12, U'.'));
 
 //     assert(str == u8".......áéíóú");
@@ -348,12 +348,12 @@ int main()
     overriding_sample();
     output_FILE();
     input_ouput_different_char_types();
-    input_string_encoding();
+    input_string_charset();
     sani();
     monotonic_grouping();
     str_grouping();
     punct_non_decimal();
-    // width_as_u32len();
+    // width_as_fast_u32len();
     // width_func();
     using_my_customizations();
     return 0;

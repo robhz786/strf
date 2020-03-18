@@ -8,7 +8,7 @@
 #include <strf/facets_pack.hpp>
 #include <strf/printer.hpp>
 #include <strf/detail/format_functions.hpp>
-#include <strf/detail/facets/encoding.hpp>
+#include <strf/detail/facets/charset.hpp>
 
 namespace strf {
 
@@ -70,17 +70,17 @@ public:
         , strf::value_with_format<bool, strf::alignment_format> input
         , strf::tag<CharT> )
         : value_(input.value())
-        , enc_err_(strf::get_facet<strf::encoding_error_c, bool>(fp))
-        , allow_surr_(get_facet<strf::surrogate_policy_c, bool>(fp))
+        , inv_seq_poli_(strf::get_facet<strf::invalid_seq_policy_c, bool>(fp))
+        , surr_poli_(get_facet<strf::surrogate_policy_c, bool>(fp))
         , afmt_(input.get_alignment_format_data())
     {
-        decltype(auto) enc = strf::get_facet<encoding_c<CharT>, bool>(fp);
+        decltype(auto) cs = strf::get_facet<charset_c<CharT>, bool>(fp);
         std::uint16_t w = 5 - (int)input.value();
         if (afmt_.width > w) {
-            encode_fill_ = enc.encode_fill;
+            encode_fill_ = cs.encode_fill_func();
             fillcount_ = static_cast<std::uint16_t>(afmt_.width - w);
             preview.subtract_width(afmt_.width);
-            preview.add_size(w + fillcount_ * enc.encoded_char_size(afmt_.fill));
+            preview.add_size(w + fillcount_ * cs.encoded_char_size(afmt_.fill));
         } else {
             fillcount_ = 0;
             preview.subtract_width(w);
@@ -92,11 +92,11 @@ public:
 
 private:
 
-    strf::encode_fill_func<CharSize> encode_fill_;
+    strf::encode_fill_f<CharSize> encode_fill_;
     std::uint16_t fillcount_;
     bool value_;
-    strf::encoding_error enc_err_;
-    strf::surrogate_policy allow_surr_;
+    strf::invalid_seq_policy inv_seq_poli_;
+    strf::surrogate_policy surr_poli_;
     strf::alignment_format_data afmt_;
 };
 
@@ -108,7 +108,7 @@ void fmt_bool_printer<CharSize>::print_to
     if (afmt_.alignment != strf::text_alignment::left) {
         std::uint16_t s = afmt_.alignment == strf::text_alignment::center;
         std::uint16_t count = fillcount_ >> s;
-        encode_fill_(ob, count, afmt_.fill, enc_err_, allow_surr_ );
+        encode_fill_(ob, count, afmt_.fill, inv_seq_poli_, surr_poli_ );
     }
 
     auto size = 5 - (int)value_;
@@ -129,12 +129,12 @@ void fmt_bool_printer<CharSize>::print_to
     ob.advance(size);
 
     if ( afmt_.alignment == strf::text_alignment::left) {
-        encode_fill_(ob, fillcount_, afmt_.fill, enc_err_, allow_surr_ );
+        encode_fill_(ob, fillcount_, afmt_.fill, inv_seq_poli_, surr_poli_ );
     }
     else if ( afmt_.alignment == strf::text_alignment::center) {
         std::uint16_t half_count = fillcount_ >> 1;
         std::uint16_t count = fillcount_ - half_count;
-        encode_fill_(ob, count, afmt_.fill, enc_err_, allow_surr_ );
+        encode_fill_(ob, count, afmt_.fill, inv_seq_poli_, surr_poli_ );
     }
 }
 

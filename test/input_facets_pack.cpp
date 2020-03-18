@@ -62,7 +62,7 @@ int main()
           , strf::fast_width
           , strf::numpunct<10> >
           :: value
-        , "encoding shall not be constrainable");
+        , "charset shall not be constrainable");
 
     int rc = test_finish();
     return rc;

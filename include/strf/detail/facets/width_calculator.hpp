@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/facets/encoding.hpp>
+#include <strf/detail/facets/charset.hpp>
 
 namespace strf {
 
@@ -16,21 +16,21 @@ class fast_width final
 public:
     using category = width_calculator_c;
 
-    template <typename Encoding>
+    template <typename Charset>
     STRF_HD strf::width_t width
-        ( const Encoding&
-        , strf::underlying_char_type<Encoding::char_size> ) const noexcept
+        ( const Charset&
+        , strf::underlying_char_type<Charset::char_size> ) const noexcept
     {
         return 1;
     }
 
-    template <typename Encoding>
+    template <typename Charset>
     constexpr STRF_HD strf::width_t width
-        ( const Encoding&
+        ( const Charset&
         , strf::width_t
-        , const strf::underlying_char_type<Encoding::char_size>*
+        , const strf::underlying_char_type<Charset::char_size>*
         , std::size_t str_len
-        , strf::encoding_error
+        , strf::invalid_seq_policy
         , strf::surrogate_policy ) const noexcept
     {
         if (str_len < INT16_MAX) {
@@ -40,34 +40,34 @@ public:
     }
 };
 
-class width_as_u32len final
+class width_as_fast_u32len final
 {
 public:
     using category = width_calculator_c;
 
-    template <typename Encoding>
+    template <typename Charset>
     constexpr STRF_HD strf::width_t width
-        ( const Encoding&
-        , strf::underlying_char_type<Encoding::char_size> ) const noexcept
+        ( const Charset&
+        , strf::underlying_char_type<Charset::char_size> ) const noexcept
     {
         return 1;
     }
 
-    template <typename Encoding>
+    template <typename Charset>
     STRF_HD strf::width_t width
-        ( const Encoding& enc
+        ( const Charset& cs
         , strf::width_t limit
-        , const strf::underlying_char_type<Encoding::char_size>* str
+        , const strf::underlying_char_type<Charset::char_size>* str
         , std::size_t str_len
-        , strf::encoding_error
+        , strf::invalid_seq_policy
         , strf::surrogate_policy ) const
     {
         (void) str;
 
         if (limit > 0) {
-            auto count = enc.codepoints_count(str, str + str_len, limit.ceil());
-            if (count < INT16_MAX) {
-                return static_cast<std::int16_t>(count);
+            auto res = cs.codepoints_fast_count(str, str + str_len, limit.ceil());
+            if (res.count < INT16_MAX) {
+                return static_cast<std::int16_t>(res.count);
             }
             return strf::width_max;
         }

@@ -52,7 +52,7 @@ void samples()
                        , "---" );
     assert(s == "---...255 in hexadecimal is ff...---");
 
-    // encoding conversion
+    // charset conversion
     auto s_utf8 = strf::to_u8string( strf::cv(u"aaa-")
                                    , strf::cv(U"bbb-")
                                    , strf::cv( "\x80\xA4"

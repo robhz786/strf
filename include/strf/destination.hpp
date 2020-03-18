@@ -204,8 +204,8 @@ private:
     {
         const auto& self = static_cast<const destination_type_&>(*this);
 
-        using catenc = strf::encoding_c<CharT>;
-        decltype(auto) enc = strf::get_facet<catenc, void>(self.fpack_);
+        using catenc = strf::charset_c<CharT>;
+        decltype(auto) cs = strf::get_facet<catenc, void>(self.fpack_);
 
         using caterr = strf::tr_invalid_arg_c;
         decltype(auto) arg_err = strf::get_facet<caterr, void>(self.fpack_);
@@ -216,7 +216,7 @@ private:
 
         PreviewType preview;
         strf::detail::tr_string_printer<sizeof(CharT)> tr_printer
-            (preview, preview_arr, args, ustr, ustr_end, enc, arg_err);
+            (preview, preview_arr, args, ustr, ustr_end, cs, arg_err);
 
         return self.write_(preview, tr_printer);
     }

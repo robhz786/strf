@@ -1,11 +1,11 @@
-#ifndef STRF_DETAIL_UTF_ENCODINGS_HPP
-#define STRF_DETAIL_UTF_ENCODINGS_HPP
+#ifndef STRF_DETAIL_UTF_CHARSETS_HPP
+#define STRF_DETAIL_UTF_CHARSETS_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/facets/encoding.hpp>
+#include <strf/detail/facets/charset.hpp>
 #include <strf/detail/standard_lib_functions.hpp>
 #include <cstdint>
 #include <cstddef> // for std::size_t
@@ -149,10 +149,10 @@ constexpr STRF_HD bool is_utf8_continuation(std::uint8_t ch)
 constexpr STRF_HD bool valid_start_3bytes
     ( std::uint8_t ch0
     , std::uint8_t ch1
-    , strf::surrogate_policy allow_surr )
+    , strf::surrogate_policy surr_poli )
 {
     return ( (ch0 != 0xE0 || ch1 != 0x80)
-          && ( allow_surr == strf::surrogate_policy::lax
+          && ( surr_poli == strf::surrogate_policy::lax
             || (0x1B != (((ch0 & 0xF) << 1) | ((ch1 >> 5) & 1)))) );
 }
 
@@ -162,16 +162,16 @@ inline STRF_HD unsigned utf8_decode_first_2_of_3(std::uint8_t ch0, std::uint8_t 
 }
 
 inline STRF_HD bool first_2_of_3_are_valid( unsigned x
-                                  , strf::surrogate_policy allow_surr )
+                                  , strf::surrogate_policy surr_poli )
 {
-    return ( allow_surr == strf::surrogate_policy::lax
+    return ( surr_poli == strf::surrogate_policy::lax
           || (x >> 5) != 0x1B );
 }
 inline STRF_HD bool first_2_of_3_are_valid( std::uint8_t ch0
                                   , std::uint8_t ch1
-                                  , strf::surrogate_policy allow_surr )
+                                  , strf::surrogate_policy surr_poli )
 {
-    return first_2_of_3_are_valid(utf8_decode_first_2_of_3(ch0, ch1), allow_surr);
+    return first_2_of_3_are_valid(utf8_decode_first_2_of_3(ch0, ch1), surr_poli);
 }
 
 inline STRF_HD unsigned utf8_decode_first_2_of_4(std::uint8_t ch0, std::uint8_t ch1)
@@ -197,169 +197,240 @@ inline STRF_HD bool first_2_of_4_are_valid(std::uint8_t ch0, std::uint8_t ch1)
 } // namespace detail
 
 template <>
-class static_transcoder<strf::encoding_id::eid_utf8, strf::encoding_id::eid_utf8>
+class static_underlying_transcoder<strf::charset_id::utf8, strf::charset_id::utf8>
 {
 public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<1>& ob
         , const std::uint8_t* src
         , const std::uint8_t* src_end
-        , strf::encoding_error err_hdl
-        , strf::surrogate_policy allow_surr );
+        , strf::invalid_seq_policy inv_seq_poli
+        , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t necessary_size
+    static STRF_HD std::size_t transcode_size
         ( const std::uint8_t* src
         , const std::uint8_t* src_end
-        , strf::surrogate_policy allow_surr );
+        , strf::surrogate_policy surr_poli );
+
+    static STRF_HD strf::transcode_f<1, 1> transcode_func() noexcept
+    {
+        return transcode;
+    }
+    static STRF_HD strf::transcode_size_f<1> transcode_size_func() noexcept
+    {
+        return transcode_size;
+    }
 };
 
 //struct utf8_to_utf16
 template <>
-class static_transcoder
-    < strf::encoding_id::eid_utf8, strf::encoding_id::eid_utf16 >
+class static_underlying_transcoder
+    < strf::charset_id::utf8, strf::charset_id::utf16 >
 {
 public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<2>& ob
         , const std::uint8_t* src
         , const std::uint8_t* src_end
-        , strf::encoding_error err_hdl
-        , strf::surrogate_policy allow_surr );
+        , strf::invalid_seq_policy inv_seq_poli
+        , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t necessary_size
+    static STRF_HD std::size_t transcode_size
         ( const std::uint8_t* src
         , const std::uint8_t* src_end
-        , strf::surrogate_policy allow_surr );
+        , strf::surrogate_policy surr_poli );
+
+    static STRF_HD strf::transcode_f<1, 2> transcode_func() noexcept
+    {
+        return transcode;
+    }
+    static STRF_HD strf::transcode_size_f<1> transcode_size_func() noexcept
+    {
+        return transcode_size;
+    }
 };
 
 template <>
-class static_transcoder
-    < strf::encoding_id::eid_utf8, strf::encoding_id::eid_utf32 >
+class static_underlying_transcoder
+    < strf::charset_id::utf8, strf::charset_id::utf32 >
 {
 public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<4>& ob
         , const std::uint8_t* src
         , const std::uint8_t* src_end
-        , strf::encoding_error err_hdl
-        , strf::surrogate_policy allow_surr );
+        , strf::invalid_seq_policy inv_seq_poli
+        , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t necessary_size
+    static STRF_HD std::size_t transcode_size
         ( const std::uint8_t* src
         , const std::uint8_t* src_end
-        , strf::surrogate_policy allow_surr );
+        , strf::surrogate_policy surr_poli );
+
+    static STRF_HD strf::transcode_f<1, 4> transcode_func() noexcept
+    {
+        return transcode;
+    }
+    static STRF_HD strf::transcode_size_f<1> transcode_size_func() noexcept
+    {
+        return transcode_size;
+    }
 };
 
 //struct utf16_to_utf8
 template <>
-class static_transcoder
-    < strf::encoding_id::eid_utf16, strf::encoding_id::eid_utf8 >
+class static_underlying_transcoder
+    < strf::charset_id::utf16, strf::charset_id::utf8 >
 {
 public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<1>& ob
         , const char16_t* src
         , const char16_t* src_end
-        , strf::encoding_error err_hdl
-        , strf::surrogate_policy allow_surr );
+        , strf::invalid_seq_policy inv_seq_poli
+        , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t necessary_size
+    static STRF_HD std::size_t transcode_size
         ( const char16_t* src
         , const char16_t* src_end
-        , strf::surrogate_policy allow_surr );
+        , strf::surrogate_policy surr_poli );
 
+    static STRF_HD strf::transcode_f<2, 1> transcode_func() noexcept
+    {
+        return transcode;
+    }
+    static STRF_HD strf::transcode_size_f<2> transcode_size_func() noexcept
+    {
+        return transcode_size;
+    }
 };
 
 //struct utf16_to_utf16
 template <>
-class static_transcoder
-    < strf::encoding_id::eid_utf16, strf::encoding_id::eid_utf16 >
+class static_underlying_transcoder
+    < strf::charset_id::utf16, strf::charset_id::utf16 >
 {
 public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<2>& ob
         , const char16_t* src
         , const char16_t* src_end
-        , strf::encoding_error err_hdl
-        , strf::surrogate_policy allow_surr );
+        , strf::invalid_seq_policy inv_seq_poli
+        , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t necessary_size
+    static STRF_HD std::size_t transcode_size
         ( const char16_t* src
         , const char16_t* src_end
-        , strf::surrogate_policy allow_surr );
+        , strf::surrogate_policy surr_poli );
+
+    static STRF_HD strf::transcode_f<2, 2> transcode_func() noexcept
+    {
+        return transcode;
+    }
+    static STRF_HD strf::transcode_size_f<2> transcode_size_func() noexcept
+    {
+        return transcode_size;
+    }
 };
 
 //struct utf16_to_utf32
 template <>
-class static_transcoder
-    < strf::encoding_id::eid_utf16, strf::encoding_id::eid_utf32 >
+class static_underlying_transcoder
+    < strf::charset_id::utf16, strf::charset_id::utf32 >
 {
 public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<4>& ob
         , const char16_t* src
         , const char16_t* src_end
-        , strf::encoding_error err_hdl
-        , strf::surrogate_policy allow_surr );
+        , strf::invalid_seq_policy inv_seq_poli
+        , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t necessary_size
+    static STRF_HD std::size_t transcode_size
         ( const char16_t* src
         , const char16_t* src_end
-        , strf::surrogate_policy allow_surr );
+        , strf::surrogate_policy surr_poli );
+
+    static STRF_HD strf::transcode_f<2, 4> transcode_func() noexcept
+    {
+        return transcode;
+    }
+    static STRF_HD strf::transcode_size_f<2> transcode_size_func() noexcept
+    {
+        return transcode_size;
+    }
 };
 
 //struct utf32_to_utf8
 template <>
-class static_transcoder
-    < strf::encoding_id::eid_utf32, strf::encoding_id::eid_utf8 >
+class static_underlying_transcoder
+    < strf::charset_id::utf32, strf::charset_id::utf8 >
 {
 public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<1>& ob
         , const char32_t* src
         , const char32_t* src_end
-        , strf::encoding_error err_hdl
-        , strf::surrogate_policy allow_surr );
+        , strf::invalid_seq_policy inv_seq_poli
+        , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t necessary_size
+    static STRF_HD std::size_t transcode_size
         ( const char32_t* src
         , const char32_t* src_end
-        , strf::surrogate_policy allow_surr );
+        , strf::surrogate_policy surr_poli );
+
+    static STRF_HD strf::transcode_f<4, 1> transcode_func() noexcept
+    {
+        return transcode;
+    }
+    static STRF_HD strf::transcode_size_f<4> transcode_size_func() noexcept
+    {
+        return transcode_size;
+    }
 };
 
 //struct utf32_to_utf16
 template <>
-class static_transcoder
-    < strf::encoding_id::eid_utf32, strf::encoding_id::eid_utf16 >
+class static_underlying_transcoder
+    < strf::charset_id::utf32, strf::charset_id::utf16 >
 {
 public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<2>& ob
         , const char32_t* src
         , const char32_t* src_end
-        , strf::encoding_error err_hdl
-        , strf::surrogate_policy allow_surr );
+        , strf::invalid_seq_policy inv_seq_poli
+        , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t necessary_size
+    static STRF_HD std::size_t transcode_size
         ( const char32_t* src
         , const char32_t* src_end
-        , strf::surrogate_policy allow_surr );
+        , strf::surrogate_policy surr_poli );
+
+    static STRF_HD strf::transcode_f<4, 2> transcode_func() noexcept
+    {
+        return transcode;
+    }
+    static STRF_HD strf::transcode_size_f<4> transcode_size_func() noexcept
+    {
+        return transcode_size;
+    }
 };
 
 //struct utf32_to_utf32
 template <>
-class static_transcoder
-    < strf::encoding_id::eid_utf32, strf::encoding_id::eid_utf32 >
+class static_underlying_transcoder
+    < strf::charset_id::utf32, strf::charset_id::utf32 >
 {
 public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<4>& ob
         , const char32_t* src
         , const char32_t* src_end
-        , strf::encoding_error err_hdl
-        , strf::surrogate_policy allow_surr );
+        , strf::invalid_seq_policy inv_seq_poli
+        , strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t necessary_size
+    static STRF_HD std::size_t transcode_size
         ( const char32_t* src
         , const char32_t* src_end
         , strf::surrogate_policy )
@@ -367,32 +438,40 @@ public:
 
         return src_end - src;
     }
+    static STRF_HD strf::transcode_f<4, 4> transcode_func() noexcept
+    {
+        return transcode;
+    }
+    static STRF_HD strf::transcode_size_f<4> transcode_size_func() noexcept
+    {
+        return transcode_size;
+    }
 };
 
-using utf8_to_utf8 = strf::static_transcoder
-    < strf::encoding_id::eid_utf8, strf::encoding_id::eid_utf8 >;
-using utf8_to_utf16 = strf::static_transcoder
-    < strf::encoding_id::eid_utf8, strf::encoding_id::eid_utf16 >;
-using utf8_to_utf32 = strf::static_transcoder
-    < strf::encoding_id::eid_utf8, strf::encoding_id::eid_utf32 >;
+using utf8_to_utf8 = strf::static_underlying_transcoder
+    < strf::charset_id::utf8, strf::charset_id::utf8 >;
+using utf8_to_utf16 = strf::static_underlying_transcoder
+    < strf::charset_id::utf8, strf::charset_id::utf16 >;
+using utf8_to_utf32 = strf::static_underlying_transcoder
+    < strf::charset_id::utf8, strf::charset_id::utf32 >;
 
-using utf16_to_utf8 = strf::static_transcoder
-    < strf::encoding_id::eid_utf16, strf::encoding_id::eid_utf8 >;
-using utf16_to_utf16 = strf::static_transcoder
-    < strf::encoding_id::eid_utf16, strf::encoding_id::eid_utf16 >;
-using utf16_to_utf32 = strf::static_transcoder
-    < strf::encoding_id::eid_utf16, strf::encoding_id::eid_utf32 >;
+using utf16_to_utf8 = strf::static_underlying_transcoder
+    < strf::charset_id::utf16, strf::charset_id::utf8 >;
+using utf16_to_utf16 = strf::static_underlying_transcoder
+    < strf::charset_id::utf16, strf::charset_id::utf16 >;
+using utf16_to_utf32 = strf::static_underlying_transcoder
+    < strf::charset_id::utf16, strf::charset_id::utf32 >;
 
-using utf32_to_utf8 = strf::static_transcoder
-    < strf::encoding_id::eid_utf32, strf::encoding_id::eid_utf8 >;
-using utf32_to_utf16 = strf::static_transcoder
-    < strf::encoding_id::eid_utf32, strf::encoding_id::eid_utf16 >;
-using utf32_to_utf32 = strf::static_transcoder
-    < strf::encoding_id::eid_utf32, strf::encoding_id::eid_utf32 >;
+using utf32_to_utf8 = strf::static_underlying_transcoder
+    < strf::charset_id::utf32, strf::charset_id::utf8 >;
+using utf32_to_utf16 = strf::static_underlying_transcoder
+    < strf::charset_id::utf32, strf::charset_id::utf16 >;
+using utf32_to_utf32 = strf::static_underlying_transcoder
+    < strf::charset_id::utf32, strf::charset_id::utf32 >;
 
 
 template <>
-class static_encoding<strf::encoding_id::eid_utf8>
+class static_underlying_charset<strf::charset_id::utf8>
 {
     using char_type_ = std::uint8_t;
 public:
@@ -402,9 +481,9 @@ public:
     {
         return "UTF-8";
     };
-    static constexpr STRF_HD strf::encoding_id id() noexcept
+    static constexpr STRF_HD strf::charset_id id() noexcept
     {
-        return strf::encoding_id::eid_utf8;
+        return strf::charset_id::utf8;
     }
     static constexpr STRF_HD char32_t replacement_char() noexcept
     {
@@ -431,26 +510,40 @@ public:
     static STRF_HD char_type_* encode_char
         ( char_type_* dest, char32_t ch ) noexcept;
 
-    // static STRF_HD void encode_char
-    //     ( strf::underlying_outbuf<char_size>& ob, char32_t ch );
-
     static STRF_HD void encode_fill
         ( strf::underlying_outbuf<char_size>&, std::size_t count, char32_t ch
-        , strf::encoding_error err_hdl, strf::surrogate_policy allow_surr );
+        , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t codepoints_count
-        ( const char_type_* begin, const char_type_* end, std::size_t max_count );
+    static STRF_HD strf::codepoints_count_result<1> codepoints_fast_count
+        ( const char_type_* begin, const char_type_* end
+        , std::size_t max_count ) noexcept;
+
+    static STRF_HD strf::codepoints_count_result<1> codepoints_robust_count
+        ( const char_type_* begin, const char_type_* end
+        , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept;
 
     static STRF_HD void write_replacement_char
         ( strf::underlying_outbuf<char_size>& );
 
-    static STRF_HD char32_t decode_single_char(char_type_ ch) noexcept
+    static STRF_HD char32_t decode_char(char_type_ ch) noexcept
     {
         if (ch < 0x80)
             return static_cast<char32_t>(ch);
         return 0xFFFD;
     }
-
+    static STRF_HD strf::encode_char_f<char_size> encode_char_func() noexcept
+    {
+        return encode_char;
+    }
+    static STRF_HD strf::encode_fill_f<char_size> encode_fill_func() noexcept
+    {
+        return encode_fill;
+    }
+    static STRF_HD strf::write_replacement_char_f<char_size>
+    write_replacement_char_func() noexcept
+    {
+        return write_replacement_char;
+    }
     static constexpr STRF_HD strf::utf32_to_utf8 from_u32() noexcept
     {
         return {};
@@ -463,55 +556,74 @@ public:
     {
         return {};
     }
-
-    // static STRF_HD const strf::underlying_transcoder<char_size, 1>* to8
-    //     ( const strf::underlying_encoding<1>& enc );
-
-    // static STRF_HD const strf::underlying_transcoder<1, char_size>*
-    //     from8
-    //     ( const strf::underlying_encoding<1>& enc );
-
-    // static STRF_HD const strf::underlying_transcoder<char_size, 2>*
-    //     to16
-    //     ( const strf::underlying_encoding<2>& enc );
-
-    // static STRF_HD const strf::underlying_transcoder<2, char_size>*
-    //     from16
-    //     ( const strf::undelying_encoding<2>& enc );
-
-    // static STRF_HD const strf::underlying_transcoder<char_size, 4>*
-    //     to32
-    //     ( const strf::underlying_encoding<4>& enc );
-
-    // static STRF_HD const strf::underlying_transcoder<4, char_size>*
-    //     from32
-    //     ( const strf::underlying_encoding<4>& enc );
-
-    // static STRF_HD strf::underlying_transcoder<char_size, 2> to16
-    //     ( strf::encoding_id eid )
-    // {
-    //     if (eid == strf::encoding_id::eid_utf16) {
-    //         return { strf::utf8_to_utf16::transcode
-    //                , strf::utf8_to_utf16::necessary_size };
-    //     }
-    //     return {nullptr, nullptr};
-    // }
+    static STRF_HD strf::dynamic_underlying_transcoder<2, 1>
+    find_transcoder_from
+        ( std::integral_constant<std::size_t, 2>
+        , strf::charset_id id ) noexcept
+    {
+        return find_transcoder_from_2bytes_charset(id);
+    }
+    static STRF_HD strf::dynamic_underlying_transcoder<2, 1>
+    find_transcoder_from_2bytes_charset(strf::charset_id id) noexcept
+    {
+        if (id == strf::charset_id::utf16) {
+            strf::dynamic_underlying_transcoder<2, 1>{strf::utf16_to_utf8{}};
+        }
+        return {};
+    }
+    static STRF_HD strf::dynamic_underlying_transcoder<1, 2>
+    find_transcoder_to
+        ( std::integral_constant<std::size_t, 2>
+        , strf::charset_id id) noexcept
+    {
+        return find_transcoder_to_2bytes_charset(id);
+    }
+    static STRF_HD strf::dynamic_underlying_transcoder<1, 2>
+    find_transcoder_to_2bytes_charset(strf::charset_id id) noexcept
+    {
+        if (id == strf::charset_id::utf16) {
+            strf::dynamic_underlying_transcoder<1, 2>{strf::utf8_to_utf16{}};
+        }
+        return {};
+    }
+    static strf::dynamic_underlying_charset<1> to_dynamic() noexcept
+    {
+        static const strf::dynamic_underlying_charset_data<1> data = {
+            name(), id(), replacement_char(), 3, validate, encoded_char_size,
+            encode_char, encode_fill, codepoints_fast_count,
+            codepoints_robust_count, write_replacement_char, decode_char,
+            strf::dynamic_underlying_transcoder<4, 1>{from_u32()},
+            strf::dynamic_underlying_transcoder<1, 4>{to_u32()},
+            strf::dynamic_underlying_transcoder<1, 1>{sanitizer()},
+            strf::find_transcoder_f<1, 1>{nullptr},
+            find_transcoder_from_2bytes_charset,
+            strf::find_transcoder_f<1, 1>{nullptr},
+            find_transcoder_to_2bytes_charset
+        };
+        return strf::dynamic_underlying_charset<1>{data};
+    }
+    explicit operator strf::dynamic_underlying_charset<1> () const
+    {
+        return to_dynamic();
+    }
 };
 
 template <>
-class static_encoding<strf::encoding_id::eid_utf16>
+class static_underlying_charset<strf::charset_id::utf16>
 {
     using char_type_ = char16_t;
+
 public:
+
     static constexpr std::size_t char_size = 2;
 
     static STRF_HD const char* name() noexcept
     {
         return "UTF-16";
     };
-    static constexpr STRF_HD strf::encoding_id id() noexcept
+    static constexpr STRF_HD strf::charset_id id() noexcept
     {
-        return strf::encoding_id::eid_utf16;
+        return strf::charset_id::utf16;
     }
     static constexpr STRF_HD char32_t replacement_char() noexcept
     {
@@ -521,14 +633,6 @@ public:
     {
         return 1;
     }
-    static constexpr STRF_HD char32_t u32equivalence_begin() noexcept
-    {
-        return 0;
-    }
-    static constexpr STRF_HD char32_t u32equivalence_end() noexcept
-    {
-        return 0x80;
-    }
     static constexpr STRF_HD std::size_t validate(char32_t ch) noexcept
     {
         return ch < 0x10000 ? 1 : ch < 0x110000 ? 2 : (std::size_t)-1;
@@ -537,28 +641,42 @@ public:
     {
         return 1 + (0x10000 <= ch && ch < 0x110000);
     }
+
     static STRF_HD char_type_* encode_char
         (char_type_* dest, char32_t ch) noexcept;
 
-    // static STRF_HD void encode_char
-    //     ( strf::underlying_outbuf<char_size>& ob, char32_t ch );
-
     static STRF_HD void encode_fill
         ( strf::underlying_outbuf<char_size>&, std::size_t count, char32_t ch
-        , strf::encoding_error err_hdl, strf::surrogate_policy allow_surr );
+        , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t codepoints_count
+    static STRF_HD strf::codepoints_count_result<2> codepoints_fast_count
         ( const char_type_* begin, const char_type_* end
-        , std::size_t max_count ) noexcept;;
+        , std::size_t max_count ) noexcept;
+
+    static STRF_HD strf::codepoints_count_result<2> codepoints_robust_count
+        ( const char_type_* begin, const char_type_* end
+        , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept;
 
     static STRF_HD void write_replacement_char
         ( strf::underlying_outbuf<char_size>& );
 
-    static STRF_HD char32_t decode_single_char(char_type_ ch) noexcept
+    static STRF_HD char32_t decode_char(char_type_ ch) noexcept
     {
         return ch;
     }
-
+    static STRF_HD strf::encode_char_f<char_size> encode_char_func() noexcept
+    {
+        return encode_char;
+    }
+    static STRF_HD strf::encode_fill_f<char_size> encode_fill_func() noexcept
+    {
+        return encode_fill;
+    }
+    static STRF_HD strf::write_replacement_char_f<char_size>
+    write_replacement_char_func() noexcept
+    {
+        return write_replacement_char;
+    }
     static constexpr STRF_HD strf::utf32_to_utf16 from_u32() noexcept
     {
         return {};
@@ -571,10 +689,60 @@ public:
     {
         return {};
     }
+    static STRF_HD strf::dynamic_underlying_transcoder<1, 2>
+    find_transcoder_from
+        ( std::integral_constant<std::size_t, 1>
+        , strf::charset_id id ) noexcept
+    {
+        return find_transcoder_from_1byte_charset(id);
+    }
+    static STRF_HD strf::dynamic_underlying_transcoder<2, 1>
+    find_transcoder_to
+        ( std::integral_constant<std::size_t, 1>
+        , strf::charset_id id) noexcept
+    {
+        return find_transcoder_to_1byte_charset(id);
+    }
+    static STRF_HD strf::dynamic_underlying_transcoder<1, 2>
+    find_transcoder_from_1byte_charset(strf::charset_id id) noexcept
+    {
+        if (id == strf::charset_id::utf8) {
+            return strf::dynamic_underlying_transcoder<1, 2>{strf::utf8_to_utf16{}};
+        }
+        return {};
+    }
+    static STRF_HD strf::dynamic_underlying_transcoder<2, 1>
+    find_transcoder_to_1byte_charset(strf::charset_id id) noexcept
+    {
+        if (id == strf::charset_id::utf8) {
+            return strf::dynamic_underlying_transcoder<2, 1>{strf::utf16_to_utf8{}};
+        }
+        return {};
+    }
+    static strf::dynamic_underlying_charset<2> to_dynamic() noexcept
+    {
+        static const strf::dynamic_underlying_charset_data<2> data = {
+            name(), id(), replacement_char(), 1, validate, encoded_char_size,
+            encode_char, encode_fill, codepoints_fast_count,
+            codepoints_robust_count, write_replacement_char, decode_char,
+            strf::dynamic_underlying_transcoder<4, 2>{from_u32()},
+            strf::dynamic_underlying_transcoder<2, 4>{to_u32()},
+            strf::dynamic_underlying_transcoder<2, 2>{sanitizer()},
+            find_transcoder_from_1byte_charset,
+            strf::find_transcoder_f<2, 2>{nullptr},
+            find_transcoder_to_1byte_charset,
+            strf::find_transcoder_f<2, 2>{nullptr}
+        };
+        return strf::dynamic_underlying_charset<2>{data};
+    }
+    explicit operator strf::dynamic_underlying_charset<2> () const
+    {
+        return to_dynamic();
+    }
 };
 
 template <>
-class static_encoding<strf::encoding_id::eid_utf32>
+class static_underlying_charset<strf::charset_id::utf32>
 {
     using char_type_ = char32_t;
 public:
@@ -584,9 +752,9 @@ public:
     {
         return "UTF-32";
     };
-    static constexpr STRF_HD strf::encoding_id id() noexcept
+    static constexpr STRF_HD strf::charset_id id() noexcept
     {
-        return strf::encoding_id::eid_utf32;
+        return strf::charset_id::utf32;
     }
     static constexpr STRF_HD char32_t replacement_char() noexcept
     {
@@ -618,29 +786,48 @@ public:
         *dest = ch < 0x110000 ? ch : U'\uFFFD';
         return dest + 1;
     }
-    // static STRF_HD void encode_char
-    //     ( strf::underlying_outbuf<char_size>& ob, char32_t ch )
-    // {
-    //     strf::put(ob, ch < 0x110000 ? ch : U'\uFFFD');
-    // }
     static STRF_HD void encode_fill
         ( strf::underlying_outbuf<char_size>&, std::size_t count, char32_t ch
-        , strf::encoding_error err_hdl, strf::surrogate_policy allow_surr );
+        , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t codepoints_count
+    static STRF_HD strf::codepoints_count_result<char_size> codepoints_fast_count
         ( const char_type_* begin, const char_type_* end
         , std::size_t max_count ) noexcept
     {
-        std::size_t len = end - begin;
-        return len < max_count ? len : max_count;
+        const char32_t* pos = begin + max_count;
+        if (pos <= end) {
+            return {max_count, pos};
+        }
+        return {static_cast<std::size_t>(end - begin), end};
+    }
+
+    static STRF_HD strf::codepoints_count_result<char_size> codepoints_robust_count
+        ( const char_type_* begin, const char_type_* end
+        , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept
+    {
+        (void)surr_poli;
+        return codepoints_fast_count(begin, end, max_count);
     }
 
     static STRF_HD void write_replacement_char
         ( strf::underlying_outbuf<char_size>& );
 
-    static STRF_HD char32_t decode_single_char(char_type_ ch) noexcept
+    static STRF_HD char32_t decode_char(char_type_ ch) noexcept
     {
         return ch;
+    }
+    static STRF_HD strf::encode_char_f<char_size> encode_char_func() noexcept
+    {
+        return encode_char;
+    }
+    static STRF_HD strf::encode_fill_f<char_size> encode_fill_func() noexcept
+    {
+        return encode_fill;
+    }
+    static STRF_HD strf::write_replacement_char_f<char_size>
+    write_replacement_char_func() noexcept
+    {
+        return write_replacement_char;
     }
     static constexpr STRF_HD strf::utf32_to_utf32 from_u32() noexcept
     {
@@ -654,11 +841,28 @@ public:
     {
         return {};
     }
+    static strf::dynamic_underlying_charset<4> to_dynamic() noexcept
+    {
+        static const strf::dynamic_underlying_charset_data<4> data = {
+            name(), id(), replacement_char(), 1, validate, encoded_char_size,
+            encode_char, encode_fill, codepoints_fast_count,
+            codepoints_robust_count, write_replacement_char, decode_char,
+            strf::dynamic_underlying_transcoder<4, 4>{from_u32()},
+            strf::dynamic_underlying_transcoder<4, 4>{to_u32()},
+            strf::dynamic_underlying_transcoder<4, 4>{sanitizer()},
+            nullptr, nullptr, nullptr, nullptr
+        };
+        return strf::dynamic_underlying_charset<4>{data};
+    }
+    explicit operator strf::dynamic_underlying_charset<4> () const
+    {
+        return to_dynamic();
+    }
 };
 
-using utf8_impl = static_encoding<strf::encoding_id::eid_utf8>;
-using utf16_impl = static_encoding<strf::encoding_id::eid_utf16>;
-using utf32_impl = static_encoding<strf::encoding_id::eid_utf32>;
+using utf8_impl = static_underlying_charset<strf::charset_id::utf8>;
+using utf16_impl = static_underlying_charset<strf::charset_id::utf16>;
+using utf32_impl = static_underlying_charset<strf::charset_id::utf32>;
 
 #if ! defined(STRF_OMIT_IMPL)
 
@@ -666,8 +870,8 @@ STRF_INLINE STRF_HD void utf8_to_utf32::transcode
     ( strf::underlying_outbuf<4>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
-    , strf::encoding_error err_hdl
-    , strf::surrogate_policy allow_surr )
+    , strf::invalid_seq_policy inv_seq_poli
+    , strf::surrogate_policy surr_poli )
 {
     using strf::detail::utf8_decode;
     using strf::detail::utf8_decode_first_2_of_3;
@@ -704,7 +908,7 @@ STRF_INLINE STRF_HD void utf8_to_utf32::transcode
         } else if (0xE0 == (ch0 & 0xF0)) {
             if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
               && first_2_of_3_are_valid( x = utf8_decode_first_2_of_3(ch0, ch1)
-                                       , allow_surr )
+                                       , surr_poli )
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
                 ch32 = (x << 6) | (ch2 & 0x3F);
@@ -721,9 +925,9 @@ STRF_INLINE STRF_HD void utf8_to_utf32::transcode
             } else goto invalid_sequence;
         } else {
             invalid_sequence:
-            if (err_hdl == strf::encoding_error::stop) {
+            if (inv_seq_poli == strf::invalid_seq_policy::stop) {
                 ob.advance_to(dest_it);
-                strf::detail::handle_encoding_failure();
+                strf::detail::handle_invalid_sequence();
             }
             ch32 = 0xFFFD;
         }
@@ -735,10 +939,10 @@ STRF_INLINE STRF_HD void utf8_to_utf32::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf8_to_utf32::necessary_size
+STRF_INLINE STRF_HD std::size_t utf8_to_utf32::transcode_size
     ( const std::uint8_t* src
     , const std::uint8_t* src_end
-    , strf::surrogate_policy allow_surr )
+    , strf::surrogate_policy surr_poli )
 {
     using strf::detail::is_utf8_continuation;
     using strf::detail::first_2_of_3_are_valid;
@@ -763,7 +967,7 @@ STRF_INLINE STRF_HD std::size_t utf8_to_utf32::necessary_size
             }
         } else if (0xE0 == (ch0 & 0xF0)) {
             if ( src_it != src_end && is_utf8_continuation(ch1 = *src_it)
-              && first_2_of_3_are_valid( ch0, ch1, allow_surr )
+              && first_2_of_3_are_valid( ch0, ch1, surr_poli )
               && ++src_it != src_end && is_utf8_continuation(*src_it) )
             {
                 ++src_it;
@@ -785,8 +989,8 @@ STRF_INLINE STRF_HD void utf8_to_utf8::transcode
     ( strf::underlying_outbuf<1>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
-    , strf::encoding_error err_hdl
-    , strf::surrogate_policy allow_surr )
+    , strf::invalid_seq_policy inv_seq_poli
+    , strf::surrogate_policy surr_poli )
 {
     using strf::detail::utf8_decode;
     using strf::detail::is_utf8_continuation;
@@ -825,7 +1029,7 @@ STRF_INLINE STRF_HD void utf8_to_utf8::transcode
             } else goto invalid_sequence;
         } else if (0xE0 == (ch0 & 0xF0)) {
             if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-              && first_2_of_3_are_valid(ch0, ch1, allow_surr)
+              && first_2_of_3_are_valid(ch0, ch1, surr_poli)
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
                 STRF_CHECK_DEST_SIZE(3);
@@ -851,26 +1055,26 @@ STRF_INLINE STRF_HD void utf8_to_utf8::transcode
             } else goto invalid_sequence;
         } else {
             invalid_sequence:
-            if (err_hdl == strf::encoding_error::replace) {
+            if (inv_seq_poli == strf::invalid_seq_policy::replace) {
                 STRF_CHECK_DEST_SIZE(3);
                 dest_it[0] = 0xEF;
                 dest_it[1] = 0xBF;
                 dest_it[2] = 0xBD;
                 dest_it += 3;
             } else {
-                STRF_ASSERT(err_hdl == strf::encoding_error::stop);
+                STRF_ASSERT(inv_seq_poli == strf::invalid_seq_policy::stop);
                 ob.advance_to(dest_it);
-                strf::detail::handle_encoding_failure();
+                strf::detail::handle_invalid_sequence();
             }
         }
     }
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf8_to_utf8::necessary_size
+STRF_INLINE STRF_HD std::size_t utf8_to_utf8::transcode_size
     ( const std::uint8_t* src
     , const std::uint8_t* src_end
-    , strf::surrogate_policy allow_surr )
+    , strf::surrogate_policy surr_poli )
 {
     using strf::detail::utf8_decode;
     using strf::detail::is_utf8_continuation;
@@ -904,7 +1108,7 @@ STRF_INLINE STRF_HD std::size_t utf8_to_utf8::necessary_size
         } else if (0xE0 == (ch0 & 0xF0)) {
             size += 3;
             if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-              && first_2_of_3_are_valid( ch0, ch1, allow_surr )
+              && first_2_of_3_are_valid( ch0, ch1, surr_poli )
               && ++src_it != src_end && is_utf8_continuation(* src_it) )
             {
                 ++src_it;
@@ -924,26 +1128,88 @@ STRF_INLINE STRF_HD std::size_t utf8_to_utf8::necessary_size
     return size;
 }
 
-STRF_INLINE STRF_HD std::size_t utf8_impl::codepoints_count
-        ( const std::uint8_t* begin
-        , const std::uint8_t* end
-        , std::size_t max_count )
+STRF_INLINE STRF_HD strf::codepoints_count_result<1> utf8_impl::codepoints_fast_count
+    ( const std::uint8_t* begin
+    , const std::uint8_t* end
+    , std::size_t max_count ) noexcept
 {
     std::size_t count = 0;
-    for(auto it = begin; it != end && count < max_count; ++it) {
+    auto it = begin;
+    while (it != end && count < max_count) {
         if (!strf::detail::is_utf8_continuation(*it)) {
             ++ count;
         }
+        ++it;
     }
-    return count;
+    return {count, it};
 }
+
+STRF_INLINE STRF_HD strf::codepoints_count_result<1> utf8_impl::codepoints_robust_count
+    ( const std::uint8_t* begin
+    , const std::uint8_t* end
+    , std::size_t max_count
+    , strf::surrogate_policy surr_poli ) noexcept
+{
+
+    using strf::detail::utf8_decode;
+    using strf::detail::is_utf8_continuation;
+    using strf::detail::first_2_of_3_are_valid;
+    using strf::detail::first_2_of_4_are_valid;
+
+    std::uint8_t ch0, ch1;
+    std::size_t count = 0;
+    const std::uint8_t* it = begin;
+    while(it != end && count < max_count) {
+        ch0 = *it;
+        ++it;
+        if(ch0 < 0x80) {
+            ++count;
+        } else if (0xC0 == (ch0 & 0xE0)) {
+            if (ch0 > 0xC1 && it != end && is_utf8_continuation(*it)) {
+                count += 2;
+                ++it;
+            } else {
+                count += 3;
+            }
+        } else if (0xE0 == ch0) {
+            if (   it != end && (((ch1 = * it) & 0xE0) == 0xA0)
+              && ++it != end && is_utf8_continuation(* it) )
+            {
+                count += 3;
+                ++it;
+            } else {
+                count += 3;
+            }
+        } else if (0xE0 == (ch0 & 0xF0)) {
+            count += 3;
+            if ( it != end && is_utf8_continuation(ch1 = * it)
+              && first_2_of_3_are_valid( ch0, ch1, surr_poli )
+              && ++it != end && is_utf8_continuation(* it) )
+            {
+                ++it;
+            }
+        } else if( 0xEF < ch0
+              &&   it != end && is_utf8_continuation(ch1 = * it)
+              && first_2_of_4_are_valid(ch0, ch1)
+              && ++it != end && is_utf8_continuation(*it)
+              && ++it != end && is_utf8_continuation(*it) )
+        {
+            count += 4;
+            ++it;
+        } else {
+            count += 3;
+        }
+    }
+    return {count, it};
+}
+
 
 STRF_INLINE STRF_HD void utf8_impl::encode_fill
     ( strf::underlying_outbuf<1>& ob
     , std::size_t count
     , char32_t ch
-    , strf::encoding_error err_hdl
-    , strf::surrogate_policy allow_surr )
+    , strf::invalid_seq_policy inv_seq_poli
+    , strf::surrogate_policy surr_poli )
 {
     if (ch < 0x80) {
         strf::detail::write_fill( ob, count
@@ -955,7 +1221,7 @@ STRF_INLINE STRF_HD void utf8_impl::encode_fill
         };
         strf::detail::repeat_sequence(ob, count, seq);
     } else if (ch <  0x10000) {
-        if ( allow_surr == strf::surrogate_policy::strict
+        if ( surr_poli == strf::surrogate_policy::strict
           && detail::is_surrogate(ch) )
         {
             goto invalid_char;
@@ -976,13 +1242,13 @@ STRF_INLINE STRF_HD void utf8_impl::encode_fill
         strf::detail::repeat_sequence(ob, count, seq);
     } else {
         invalid_char:
-        switch(err_hdl) {
-            case strf::encoding_error::stop:
-                strf::detail::handle_encoding_failure();
+        switch(inv_seq_poli) {
+            case strf::invalid_seq_policy::stop:
+                strf::detail::handle_invalid_sequence();
                 return;
 
             default: {
-                STRF_ASSERT(err_hdl == strf::encoding_error::replace);
+                STRF_ASSERT(inv_seq_poli == strf::invalid_seq_policy::replace);
                 strf::detail::simple_array<std::uint8_t, 3> seq
                     { 0xEF, 0xBF, 0xBD };
                 strf::detail::repeat_sequence(ob, count, seq);
@@ -1068,8 +1334,8 @@ STRF_INLINE STRF_HD void utf32_to_utf8::transcode
     ( strf::underlying_outbuf<1>& ob
     , const char32_t* src
     , const char32_t* src_end
-    , strf::encoding_error err_hdl
-    , strf::surrogate_policy allow_surr )
+    , strf::invalid_seq_policy inv_seq_poli
+    , strf::surrogate_policy surr_poli )
 {
     auto src_it = src;
     auto dest_it = ob.pos();
@@ -1086,7 +1352,7 @@ STRF_INLINE STRF_HD void utf32_to_utf8::transcode
             dest_it[1] = static_cast<std::uint8_t>(0x80 |  (ch &  0x3F));
             dest_it += 2;
         } else if (ch < 0x10000) {
-            if ( allow_surr == strf::surrogate_policy::lax
+            if ( surr_poli == strf::surrogate_policy::lax
               || strf::detail::not_surrogate(ch))
             {
                 STRF_CHECK_DEST_SIZE(3);
@@ -1104,8 +1370,8 @@ STRF_INLINE STRF_HD void utf32_to_utf8::transcode
             dest_it += 4;
         } else {
             invalid_sequence:
-            switch (err_hdl) {
-                case strf::encoding_error::replace:
+            switch (inv_seq_poli) {
+                case strf::invalid_seq_policy::replace:
                     STRF_CHECK_DEST_SIZE(3);
                     dest_it[0] = 0xEF;
                     dest_it[1] = 0xBF;
@@ -1114,21 +1380,21 @@ STRF_INLINE STRF_HD void utf32_to_utf8::transcode
                     break;
 
                 default:
-                    STRF_ASSERT(err_hdl == strf::encoding_error::stop);
+                    STRF_ASSERT(inv_seq_poli == strf::invalid_seq_policy::stop);
                     ob.advance_to(dest_it);
-                    strf::detail::handle_encoding_failure();
+                    strf::detail::handle_invalid_sequence();
             }
         }
     }
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf32_to_utf8::necessary_size
+STRF_INLINE STRF_HD std::size_t utf32_to_utf8::transcode_size
     ( const char32_t* src
     , const char32_t* src_end
-    , strf::surrogate_policy allow_surr )
+    , strf::surrogate_policy surr_poli )
 {
-    (void) allow_surr;
+    (void) surr_poli;
     auto src_it = src;
     std::size_t count = 0;
     for(;src_it != src_end; ++src_it) {
@@ -1159,8 +1425,8 @@ STRF_INLINE STRF_HD void utf16_to_utf32::transcode
     ( strf::underlying_outbuf<4>& ob
     , const char16_t* src
     , const char16_t* src_end
-    , strf::encoding_error err_hdl
-    , strf::surrogate_policy allow_surr )
+    , strf::invalid_seq_policy inv_seq_poli
+    , strf::surrogate_policy surr_poli )
 {
     unsigned long ch, ch2;
     char32_t ch32;
@@ -1179,13 +1445,13 @@ STRF_INLINE STRF_HD void utf16_to_utf32::transcode
                && strf::detail::is_low_surrogate(ch2 = *src_it_next)) {
             ch32 = 0x10000 + (((ch & 0x3FF) << 10) | (ch2 & 0x3FF));
             ++src_it_next;
-        } else if (allow_surr == strf::surrogate_policy::lax) {
+        } else if (surr_poli == strf::surrogate_policy::lax) {
             ch32 = ch;
         } else {
             ch32 = 0xFFFD;
-            if (err_hdl == strf::encoding_error::stop) {
+            if (inv_seq_poli == strf::invalid_seq_policy::stop) {
                 ob.advance_to(dest_it);
-                strf::detail::handle_encoding_failure();
+                strf::detail::handle_invalid_sequence();
             }
         }
 
@@ -1196,12 +1462,12 @@ STRF_INLINE STRF_HD void utf16_to_utf32::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf16_to_utf32::necessary_size
+STRF_INLINE STRF_HD std::size_t utf16_to_utf32::transcode_size
     ( const char16_t* src
     , const char16_t* src_end
-    , strf::surrogate_policy allow_surr )
+    , strf::surrogate_policy surr_poli )
 {
-    (void) allow_surr;
+    (void) surr_poli;
     unsigned long ch;
     std::size_t count = 0;
     const char16_t* src_it = src;
@@ -1226,8 +1492,8 @@ STRF_INLINE STRF_HD void utf16_to_utf16::transcode
     ( strf::underlying_outbuf<2>& ob
     , const char16_t* src
     , const char16_t* src_end
-    , strf::encoding_error err_hdl
-    , strf::surrogate_policy allow_surr )
+    , strf::invalid_seq_policy inv_seq_poli
+    , strf::surrogate_policy surr_poli )
 {
     unsigned long ch, ch2;
     auto src_it = src;
@@ -1251,14 +1517,14 @@ STRF_INLINE STRF_HD void utf16_to_utf16::transcode
             dest_it[0] = static_cast<char16_t>(ch);
             dest_it[1] = static_cast<char16_t>(ch2);
             dest_it += 2;
-        } else if (allow_surr == strf::surrogate_policy::lax) {
+        } else if (surr_poli == strf::surrogate_policy::lax) {
             STRF_CHECK_DEST;
             *dest_it = static_cast<char16_t>(ch);
             ++dest_it;
         } else {
-            if (err_hdl == strf::encoding_error::stop) {
+            if (inv_seq_poli == strf::invalid_seq_policy::stop) {
                 ob.advance_to(dest_it);
-                strf::detail::handle_encoding_failure();
+                strf::detail::handle_invalid_sequence();
             }
             STRF_CHECK_DEST;
             *dest_it = 0xFFFD;
@@ -1268,12 +1534,12 @@ STRF_INLINE STRF_HD void utf16_to_utf16::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf16_to_utf16::necessary_size
+STRF_INLINE STRF_HD std::size_t utf16_to_utf16::transcode_size
     ( const char16_t* src
     , const char16_t* src_end
-    , strf::surrogate_policy allow_surr )
+    , strf::surrogate_policy surr_poli )
 {
-    (void) allow_surr;
+    (void) surr_poli;
     std::size_t count = 0;
     const char16_t* src_it = src;
     unsigned long ch;
@@ -1292,18 +1558,44 @@ STRF_INLINE STRF_HD std::size_t utf16_to_utf16::necessary_size
     return count;
 }
 
-STRF_INLINE STRF_HD std::size_t utf16_impl::codepoints_count
+STRF_INLINE STRF_HD strf::codepoints_count_result<2> utf16_impl::codepoints_fast_count
     ( const char16_t* begin
     , const char16_t* end
     , std::size_t max_count ) noexcept
 {
     std::size_t count = 0;
-    for(auto it = begin; it != end && count < max_count; ++it, ++count) {
+    auto it = begin;
+    while(it != end && count < max_count) {
         if(strf::detail::is_high_surrogate(*it)) {
             ++it;
         }
+        ++it;
+        ++count;
     }
-    return count;
+    return {count, it};
+}
+
+STRF_INLINE STRF_HD strf::codepoints_count_result<2> utf16_impl::codepoints_robust_count
+    ( const char16_t* begin
+    , const char16_t* end
+    , std::size_t max_count
+    , strf::surrogate_policy surr_poli ) noexcept
+{
+    (void) surr_poli;
+    std::size_t count = 0;
+    const char16_t* it = begin;
+    unsigned long ch;
+    while (it != end && count < max_count) {
+        ch = *it;
+        ++ it;
+        ++ count;
+        if ( strf::detail::is_high_surrogate(ch) && it != end
+          && strf::detail::is_low_surrogate(*it)) {
+            ++ it;
+            ++ count;
+        }
+    }
+    return {count, it};
 }
 
 STRF_INLINE STRF_HD char16_t* utf16_impl::encode_char
@@ -1349,11 +1641,11 @@ STRF_INLINE STRF_HD void utf16_impl::encode_fill
     ( strf::underlying_outbuf<2>& ob
     , std::size_t count
     , char32_t ch
-    , strf::encoding_error err_hdl
-    , strf::surrogate_policy allow_surr )
+    , strf::invalid_seq_policy inv_seq_poli
+    , strf::surrogate_policy surr_poli )
 {
     if (ch < 0x10000) {
-        if ( allow_surr  == strf::surrogate_policy::strict
+        if ( surr_poli  == strf::surrogate_policy::strict
           && strf::detail::is_surrogate(ch) )
         {
             goto invalid_char;
@@ -1368,8 +1660,8 @@ STRF_INLINE STRF_HD void utf16_impl::encode_fill
         strf::detail::repeat_sequence(ob, count, seq);
     } else {
         invalid_char:
-        if (err_hdl == strf::encoding_error::stop) {
-            strf::detail::handle_encoding_failure();
+        if (inv_seq_poli == strf::invalid_seq_policy::stop) {
+            strf::detail::handle_invalid_sequence();
         }
         strf::detail::write_fill(ob, count, u'\uFFFD');
     }
@@ -1379,8 +1671,8 @@ STRF_INLINE STRF_HD void utf32_to_utf16::transcode
     ( strf::underlying_outbuf<2>& ob
     , const char32_t* src
     , const char32_t* src_end
-    , strf::encoding_error err_hdl
-    , strf::surrogate_policy allow_surr )
+    , strf::invalid_seq_policy inv_seq_poli
+    , strf::surrogate_policy surr_poli )
 {
     auto src_it = src;
     auto dest_it = ob.pos();
@@ -1388,7 +1680,7 @@ STRF_INLINE STRF_HD void utf32_to_utf16::transcode
     for ( ; src_it != src_end; ++src_it) {
         auto ch = *src_it;
         if (ch < 0x10000) {
-            if ( allow_surr == strf::surrogate_policy::lax
+            if ( surr_poli == strf::surrogate_policy::lax
               || strf::detail::not_surrogate(ch) )
             {
                 STRF_CHECK_DEST;
@@ -1403,9 +1695,9 @@ STRF_INLINE STRF_HD void utf32_to_utf16::transcode
             dest_it += 2;
         } else {
             invalid_char:
-            if (err_hdl == strf::encoding_error::stop) {
+            if (inv_seq_poli == strf::invalid_seq_policy::stop) {
                 ob.advance_to(dest_it);
-                strf::detail::handle_encoding_failure();
+                strf::detail::handle_invalid_sequence();
             }
             STRF_CHECK_DEST;
             *dest_it = 0xFFFD;
@@ -1415,12 +1707,12 @@ STRF_INLINE STRF_HD void utf32_to_utf16::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf32_to_utf16::necessary_size
+STRF_INLINE STRF_HD std::size_t utf32_to_utf16::transcode_size
     ( const char32_t* src
     , const char32_t* src_end
-    , strf::surrogate_policy allow_surr )
+    , strf::surrogate_policy surr_poli )
 {
-    (void) allow_surr;
+    (void) surr_poli;
     std::size_t count = 0;
     const char32_t* src_it = src;
     for ( ; src_it != src_end; ++src_it) {
@@ -1442,18 +1734,18 @@ STRF_INLINE STRF_HD void utf32_to_utf32::transcode
     ( strf::underlying_outbuf<4>& ob
     , const char32_t* src
     , const char32_t* src_end
-    , strf::encoding_error err_hdl
-    , strf::surrogate_policy allow_surr )
+    , strf::invalid_seq_policy inv_seq_poli
+    , strf::surrogate_policy surr_poli )
 {
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
-    if (allow_surr == strf::surrogate_policy::lax) {
+    if (surr_poli == strf::surrogate_policy::lax) {
         for (auto src_it = src; src_it < src_end; ++src_it) {
             auto ch = *src_it;
             if (ch >= 0x110000) {
-                if (err_hdl == strf::encoding_error::stop) {
+                if (inv_seq_poli == strf::invalid_seq_policy::stop) {
                     ob.advance_to(dest_it);
-                    strf::detail::handle_encoding_failure();
+                    strf::detail::handle_invalid_sequence();
                 }
                 ch = 0xFFFD;
             }
@@ -1465,9 +1757,9 @@ STRF_INLINE STRF_HD void utf32_to_utf32::transcode
         for(auto src_it = src; src_it < src_end; ++src_it) {
             char32_t ch = *src_it;
             if (ch >= 0x110000 || strf::detail::is_surrogate(ch)) {
-                if (err_hdl == strf::encoding_error::stop) {
+                if (inv_seq_poli == strf::invalid_seq_policy::stop) {
                     ob.advance_to(dest_it);
-                    strf::detail::handle_encoding_failure();
+                    strf::detail::handle_invalid_sequence();
                 }
                 ch = 0xFFFD;
             }
@@ -1483,16 +1775,16 @@ STRF_INLINE STRF_HD void utf32_impl::encode_fill
     ( strf::underlying_outbuf<4>& ob
     , std::size_t count
     , char32_t ch
-    , strf::encoding_error err_hdl
-    , strf::surrogate_policy allow_surr )
+    , strf::invalid_seq_policy inv_seq_poli
+    , strf::surrogate_policy surr_poli )
 {
-    if (ch > 0x10FFFF || ( allow_surr == strf::surrogate_policy::strict
+    if (ch > 0x10FFFF || ( surr_poli == strf::surrogate_policy::strict
                         && detail::is_surrogate(ch) ))
     {
-        if (err_hdl == strf::encoding_error::stop) {
-            strf::detail::handle_encoding_failure();
+        if (inv_seq_poli == strf::invalid_seq_policy::stop) {
+            strf::detail::handle_invalid_sequence();
         }
-        STRF_ASSERT(err_hdl == strf::encoding_error::replace);
+        STRF_ASSERT(inv_seq_poli == strf::invalid_seq_policy::replace);
         ch = 0xFFFD;
     }
     strf::detail::write_fill(ob, count, ch);
@@ -1511,8 +1803,8 @@ STRF_INLINE STRF_HD void utf8_to_utf16::transcode
     ( strf::underlying_outbuf<2>& ob
     , const std::uint8_t* src
     , const std::uint8_t* src_end
-    , strf::encoding_error err_hdl
-    , strf::surrogate_policy allow_surr )
+    , strf::invalid_seq_policy inv_seq_poli
+    , strf::surrogate_policy surr_poli )
 {
     using strf::detail::utf8_decode;
     using strf::detail::utf8_decode_first_2_of_3;
@@ -1553,7 +1845,7 @@ STRF_INLINE STRF_HD void utf8_to_utf16::transcode
         } else if (0xE0 == (ch0 & 0xF0)) {
             if (   src_it != src_end && is_utf8_continuation(ch1 = * src_it)
               && first_2_of_3_are_valid( x = utf8_decode_first_2_of_3(ch0, ch1)
-                                       , allow_surr )
+                                       , surr_poli )
               && ++src_it != src_end && is_utf8_continuation(ch2 = * src_it) )
             {
                 STRF_CHECK_DEST;
@@ -1575,9 +1867,9 @@ STRF_INLINE STRF_HD void utf8_to_utf16::transcode
             } else goto invalid_sequence;
         } else {
             invalid_sequence:
-            if (err_hdl == strf::encoding_error::stop) {
+            if (inv_seq_poli == strf::invalid_seq_policy::stop) {
                 ob.advance_to(dest_it);
-                strf::detail::handle_encoding_failure();
+                strf::detail::handle_invalid_sequence();
             }
             STRF_CHECK_DEST;
             *dest_it = 0xFFFD;
@@ -1586,10 +1878,10 @@ STRF_INLINE STRF_HD void utf8_to_utf16::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf8_to_utf16::necessary_size
+STRF_INLINE STRF_HD std::size_t utf8_to_utf16::transcode_size
     ( const std::uint8_t* src_begin
     , const std::uint8_t* src_end
-    , strf::surrogate_policy allow_surr )
+    , strf::surrogate_policy surr_poli )
 {
     using strf::detail::utf8_decode;
     using strf::detail::not_surrogate;
@@ -1616,7 +1908,7 @@ STRF_INLINE STRF_HD std::size_t utf8_to_utf16::necessary_size
             }
         } else if (0xE0 == (ch0 & 0xF0)) {
             if ( src_it != src_end && is_utf8_continuation(ch1 = * src_it)
-              && first_2_of_3_are_valid( ch0, ch1, allow_surr )
+              && first_2_of_3_are_valid( ch0, ch1, surr_poli )
               && ++src_it != src_end && is_utf8_continuation(* src_it) )
             {
                 ++src_it;
@@ -1640,10 +1932,10 @@ STRF_INLINE STRF_HD void utf16_to_utf8::transcode
     ( strf::underlying_outbuf<1>& ob
     , const char16_t* src
     , const char16_t* src_end
-    , strf::encoding_error err_hdl
-    , strf::surrogate_policy allow_surr )
+    , strf::invalid_seq_policy inv_seq_poli
+    , strf::surrogate_policy surr_poli )
 {
-    (void) err_hdl;
+    (void) inv_seq_poli;
     auto src_it = src;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
@@ -1678,12 +1970,12 @@ STRF_INLINE STRF_HD void utf16_to_utf8::transcode
             dest_it[2] = static_cast<std::uint8_t>(0x80 | ((codepoint &    0xFC0) >> 6));
             dest_it[3] = static_cast<std::uint8_t>(0x80 |  (codepoint &     0x3F));
             dest_it += 4;
-        } else if (allow_surr == strf::surrogate_policy::lax) {
+        } else if (surr_poli == strf::surrogate_policy::lax) {
             goto three_bytes;
         } else { // invalid sequece
-            if (err_hdl == strf::encoding_error::stop) {
+            if (inv_seq_poli == strf::invalid_seq_policy::stop) {
                 ob.advance_to(dest_it);
-                strf::detail::handle_encoding_failure();
+                strf::detail::handle_invalid_sequence();
             }
             STRF_CHECK_DEST_SIZE(3);
             dest_it[0] = 0xEF;
@@ -1695,12 +1987,12 @@ STRF_INLINE STRF_HD void utf16_to_utf8::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf16_to_utf8::necessary_size
+STRF_INLINE STRF_HD std::size_t utf16_to_utf8::transcode_size
     ( const char16_t* src_begin
     , const char16_t* src_end
-    , strf::surrogate_policy allow_surr )
+    , strf::surrogate_policy surr_poli )
 {
-    (void) allow_surr;
+    (void) surr_poli;
     std::size_t size = 0;
     for(auto it = src_begin; it < src_end; ++it) {
         char16_t ch = *it;
@@ -1723,47 +2015,34 @@ STRF_INLINE STRF_HD std::size_t utf16_to_utf8::necessary_size
 
 #endif // ! defined(STRF_OMIT_IMPL)
 
+template <typename CharT>
+using utf8 = strf::static_charset<CharT, strf::charset_id::utf8>;
 
 template <typename CharT>
-struct utf8: public strf::utf8_impl
-{
-    static_assert(sizeof(CharT) == 1, "Wrong character type size for UTF-8");
-    using category = strf::encoding_c<CharT>;
-};
+using utf16 = strf::static_charset<CharT, strf::charset_id::utf16>;
 
 template <typename CharT>
-struct utf16: public strf::utf16_impl
-{
-    static_assert(sizeof(CharT) == 2, "Wrong character type size for UTF-16");
-    using category = strf::encoding_c<CharT>;
-};
-
-template <typename CharT>
-struct utf32: public strf::utf32_impl
-{
-    static_assert(sizeof(CharT) == 4, "Wrong character type size for UTF-32");
-    using category = strf::encoding_c<CharT>;
-};
+using utf32 = strf::static_charset<CharT, strf::charset_id::utf32>;
 
 namespace detail {
 
 template <std::size_t CharSize>
-struct mp_utf_encoding;
+struct mp_utf_charset;
 
 template <>
-struct mp_utf_encoding<1>
+struct mp_utf_charset<1>
 {
     template <typename CharT>
     using fn = strf::utf8<CharT>;
 };
 template <>
-struct mp_utf_encoding<2>
+struct mp_utf_charset<2>
 {
     template <typename CharT>
     using fn = strf::utf16<CharT>;
 };
 template <>
-struct mp_utf_encoding<4>
+struct mp_utf_charset<4>
 {
     template <typename CharT>
     using fn = strf::utf32<CharT>;
@@ -1772,13 +2051,13 @@ struct mp_utf_encoding<4>
 } // namespace detail
 
 template <typename CharT>
-using utf = typename strf::detail::mp_utf_encoding<sizeof(CharT)>
+using utf = typename strf::detail::mp_utf_charset<sizeof(CharT)>
     :: template fn<CharT>;
 
-using utfw = strf::utf<wchar_t>;
-using wchar_encoding = strf::utf<wchar_t>;
+// using utfw = strf::utf<wchar_t>;
+// using wchar_charset = strf::utf<wchar_t>;
 
 } // namespace strf
 
-#endif  // STRF_DETAIL_UTF_ENCODINGS_HPP
+#endif  // STRF_DETAIL_UTF_CHARSETS_HPP
 

@@ -67,14 +67,14 @@ struct no_cv_format;
 template <typename CharT>
 struct cv_format;
 
-template <typename CharT, typename Encoding>
-struct cv_format_with_encoding;
+template <typename CharT, typename Charset>
+struct cv_format_with_charset;
 
 template <typename CharT>
 struct sani_format;
 
-template <typename CharT, typename Encoding>
-struct sani_format_with_encoding;
+template <typename CharT, typename Charset>
+struct sani_format_with_charset;
 
 template <typename CharT, typename T>
 class no_cv_format_fn
@@ -99,27 +99,27 @@ public:
         return return_type{ static_cast<const T&>(*this) };
     }
 
-    template <typename Encoding>
-    constexpr STRF_HD auto convert_charset(const Encoding& enc) const
+    template <typename Charset>
+    constexpr STRF_HD auto convert_charset(const Charset& cs) const
     {
         using return_type = strf::fmt_replace
             < T
             , strf::no_cv_format<CharT>
-            , strf::cv_format_with_encoding<CharT, Encoding> >;
+            , strf::cv_format_with_charset<CharT, Charset> >;
 
         return return_type
             { static_cast<const T&>(*this)
-            , strf::tag<strf::cv_format_with_encoding<CharT, Encoding>>{}
-            , enc };
+            , strf::tag<strf::cv_format_with_charset<CharT, Charset>>{}
+            , cs };
     }
     constexpr STRF_HD auto cv() const
     {
         return convert_charset();
     }
-    template <typename Encoding>
-    constexpr STRF_HD auto cv(const Encoding& enc) const
+    template <typename Charset>
+    constexpr STRF_HD auto cv(const Charset& cs) const
     {
-        return convert_charset(enc);
+        return convert_charset(cs);
     }
 
     constexpr STRF_HD auto sanitize_charset() const
@@ -129,27 +129,27 @@ public:
                                              , strf::sani_format<CharT> >;
         return return_type{ static_cast<const T&>(*this) };
     }
-    template <typename Encoding>
-    constexpr STRF_HD auto sanitize_charset(const Encoding& enc) const
+    template <typename Charset>
+    constexpr STRF_HD auto sanitize_charset(const Charset& cs) const
     {
         using return_type = strf::fmt_replace
             < T
             , strf::no_cv_format<CharT>
-            , strf::sani_format_with_encoding<CharT, Encoding> >;
+            , strf::sani_format_with_charset<CharT, Charset> >;
 
         return return_type
             { static_cast<const T&>(*this)
-             , strf::tag<strf::sani_format_with_encoding<CharT, Encoding>>{}
-            , enc };
+             , strf::tag<strf::sani_format_with_charset<CharT, Charset>>{}
+            , cs };
     }
     constexpr auto sani() const
     {
         return sanitize_charset();
     }
-    template <typename Encoding>
-    constexpr auto sani(const Encoding& enc) const
+    template <typename Charset>
+    constexpr auto sani(const Charset& cs) const
     {
-        return sanitize_charset(enc);
+        return sanitize_charset(cs);
     }
 };
 
@@ -173,41 +173,41 @@ struct cv_format_fn
     }
 };
 
-template <typename CharT, typename Encoding, typename T>
-class cv_format_with_encoding_fn
+template <typename CharT, typename Charset, typename T>
+class cv_format_with_charset_fn
 {
 public:
 
-    cv_format_with_encoding_fn(const Encoding& e)
-        : encoding_(e)
+    cv_format_with_charset_fn(const Charset& e)
+        : charset_(e)
     {
     }
 
-    cv_format_with_encoding_fn
-        ( const cv_format_with_encoding_fn& other ) noexcept = default;
+    cv_format_with_charset_fn
+        ( const cv_format_with_charset_fn& other ) noexcept = default;
 
     template <typename U>
-    explicit cv_format_with_encoding_fn
-        ( const strf::cv_format_with_encoding_fn<CharT, Encoding, U>& other ) noexcept
-        : encoding_(other.get_encoding())
+    explicit cv_format_with_charset_fn
+        ( const strf::cv_format_with_charset_fn<CharT, Charset, U>& other ) noexcept
+        : charset_(other.get_charset())
     {
     }
 
     template <typename U>
-    explicit cv_format_with_encoding_fn
+    explicit cv_format_with_charset_fn
         ( const strf::no_cv_format_fn<CharT, U>& other ) noexcept
-        : encoding_(other.get_encoding())
+        : charset_(other.get_charset())
     {
     }
 
-    const Encoding& get_encoding() const
+    const Charset& get_charset() const
     {
-        return encoding_;
+        return charset_;
     }
 
 private:
 
-    const Encoding& encoding_;
+    const Charset& charset_;
 };
 
 template <typename CharT>
@@ -224,11 +224,11 @@ struct cv_format
     using fn = strf::cv_format_fn<CharT, T>;
 };
 
-template <typename CharT, typename Encoding>
-struct cv_format_with_encoding
+template <typename CharT, typename Charset>
+struct cv_format_with_charset
 {
     template <typename T>
-    using fn = strf::cv_format_with_encoding_fn<CharT, Encoding, T>;
+    using fn = strf::cv_format_with_charset_fn<CharT, Charset, T>;
 };
 
 template <typename CharT>
@@ -238,11 +238,11 @@ struct sani_format
     using fn = strf::cv_format_fn<CharT, T>;
 };
 
-template <typename CharT, typename Encoding>
-struct sani_format_with_encoding
+template <typename CharT, typename Charset>
+struct sani_format_with_charset
 {
     template <typename T>
-    using fn = strf::cv_format_with_encoding_fn<CharT, Encoding, T>;
+    using fn = strf::cv_format_with_charset_fn<CharT, Charset, T>;
 };
 
 template <typename CharIn>
@@ -338,9 +338,9 @@ public:
         (void)fp;
         STRF_IF_CONSTEXPR(Preview::width_required) {
             decltype(auto) wcalc = get_facet_<strf::width_calculator_c, CharT>(fp);
-            auto w = wcalc.width( get_facet_<strf::encoding_c<CharT>, CharT>(fp)
+            auto w = wcalc.width( get_facet_<strf::charset_c<CharT>, CharT>(fp)
                                 , preview.remaining_width(), str_, len_
-                                , get_facet_<strf::encoding_error_c, CharT>(fp)
+                                , get_facet_<strf::invalid_seq_policy_c, CharT>(fp)
                                 , get_facet_<strf::surrogate_policy_c, CharT>(fp) );
             preview.subtract_width(w);
         }
@@ -384,12 +384,12 @@ public:
         : str_(reinterpret_cast<const char_type*>(str.begin()))
         , len_(str.size())
         , afmt_(text_alignment)
-        , enc_err_(get_facet_<strf::encoding_error_c, CharT>(fp))
-        , allow_surr_(get_facet_<strf::surrogate_policy_c, CharT>(fp))
+        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, CharT>(fp))
+        , surr_poli_(get_facet_<strf::surrogate_policy_c, CharT>(fp))
     {
          init_( preview
               , get_facet_<strf::width_calculator_c, CharT>(fp)
-              , get_facet_<strf::encoding_c<CharT>, CharT>(fp) );
+              , get_facet_<strf::charset_c<CharT>, CharT>(fp) );
     }
 
     STRF_HD ~fmt_string_printer();
@@ -400,12 +400,12 @@ private:
 
     const char_type* str_;
     std::size_t len_;
-    strf::encode_fill_func<CharSize> encode_fill_;
+    strf::encode_fill_f<CharSize> encode_fill_;
     strf::alignment_format_data afmt_;
     std::int16_t left_fillcount_;
     std::int16_t right_fillcount_;
-    const strf::encoding_error enc_err_;
-    const strf::surrogate_policy allow_surr_;
+    const strf::invalid_seq_policy inv_seq_poli_;
+    const strf::surrogate_policy surr_poli_;
 
     template <typename Category, typename CharT, typename FPack>
     static STRF_HD decltype(auto) get_facet_(const FPack& fp)
@@ -414,8 +414,8 @@ private:
         return fp.template get_facet<Category, input_tag>();
     }
 
-    template <typename Preview, typename WCalc, typename Encoding>
-    STRF_HD void init_(Preview&, const WCalc&, const Encoding&);
+    template <typename Preview, typename WCalc, typename Charset>
+    STRF_HD void init_(Preview&, const WCalc&, const Charset&);
 };
 
 template<std::size_t CharSize>
@@ -424,18 +424,18 @@ STRF_HD fmt_string_printer<CharSize>::~fmt_string_printer()
 }
 
 template<std::size_t CharSize>
-template <typename Preview, typename WCalc, typename Encoding>
+template <typename Preview, typename WCalc, typename Charset>
 inline STRF_HD void fmt_string_printer<CharSize>::init_
-    ( Preview& preview, const WCalc& wcalc, const Encoding& enc )
+    ( Preview& preview, const WCalc& wcalc, const Charset& cs )
 {
-    encode_fill_ = enc.encode_fill;
+    encode_fill_ = cs.encode_fill_func();
     std::uint16_t fillcount = 0;
     strf::width_t fmt_width = afmt_.width;
     strf::width_t limit =
         ( Preview::width_required && preview.remaining_width() > fmt_width
         ? preview.remaining_width()
         : fmt_width );
-    auto strw = wcalc.width(enc, limit, str_, len_ , enc_err_, allow_surr_);
+    auto strw = wcalc.width(cs, limit, str_, len_ , inv_seq_poli_, surr_poli_);
     if (fmt_width > strw) {
         fillcount = (fmt_width - strw).round();
         switch(afmt_.alignment) {
@@ -463,7 +463,7 @@ inline STRF_HD void fmt_string_printer<CharSize>::init_
     STRF_IF_CONSTEXPR (Preview::size_required) {
         preview.add_size(len_);
         if (fillcount > 0) {
-             preview.add_size(fillcount * enc.encoded_char_size(afmt_.fill));
+             preview.add_size(fillcount * cs.encoded_char_size(afmt_.fill));
         }
     }
 }
@@ -473,11 +473,11 @@ void STRF_HD fmt_string_printer<CharSize>::print_to
     ( strf::underlying_outbuf<CharSize>& ob ) const
 {
     if (left_fillcount_ > 0) {
-        encode_fill_( ob, left_fillcount_, afmt_.fill, enc_err_, allow_surr_ );
+        encode_fill_( ob, left_fillcount_, afmt_.fill, inv_seq_poli_, surr_poli_ );
     }
     strf::write(ob, str_, len_);
     if (right_fillcount_ > 0) {
-        encode_fill_( ob, right_fillcount_, afmt_.fill, enc_err_, allow_surr_ );
+        encode_fill_( ob, right_fillcount_, afmt_.fill, inv_seq_poli_, surr_poli_ );
     }
 }
 

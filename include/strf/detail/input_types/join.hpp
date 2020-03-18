@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/facets/encoding.hpp>
+#include <strf/detail/facets/charset.hpp>
 #include <strf/detail/printers_tuple.hpp>
 #include <strf/detail/format_functions.hpp>
 
@@ -122,35 +122,35 @@ namespace detail {
 template<std::size_t CharSize>
 STRF_HD void print_split
     ( strf::underlying_outbuf<CharSize>& ob
-    , strf::encode_fill_func<CharSize> encode_fill
+    , strf::encode_fill_f<CharSize> encode_fill
     , unsigned fillcount
     , char32_t fillchar
     , std::ptrdiff_t split_pos
-    , strf::encoding_error enc_err
-    , strf::surrogate_policy allow_surr)
+    , strf::invalid_seq_policy inv_seq_poli
+    , strf::surrogate_policy surr_poli)
 {
     (void) split_pos;
-    encode_fill(ob, fillcount, fillchar, enc_err, allow_surr);
+    encode_fill(ob, fillcount, fillchar, inv_seq_poli, surr_poli);
 }
 
 template<std::size_t CharSize, typename Printer, typename ... Printers>
 STRF_HD void print_split
     ( strf::underlying_outbuf<CharSize>& ob
-    , strf::encode_fill_func<CharSize> encode_fill
+    , strf::encode_fill_f<CharSize> encode_fill
     , unsigned fillcount
     , char32_t fillchar
     , std::ptrdiff_t split_pos
-    , strf::encoding_error enc_err
-    , strf::surrogate_policy allow_surr
+    , strf::invalid_seq_policy inv_seq_poli
+    , strf::surrogate_policy surr_poli
     , const Printer& p
     , const Printers& ... printers )
 {
     if (split_pos > 0) {
         p.print_to(ob);
         print_split( ob, encode_fill, fillcount, fillchar, split_pos - 1
-                   , enc_err, allow_surr, printers... );
+                   , inv_seq_poli, surr_poli, printers... );
     } else {
-        encode_fill(ob, fillcount, fillchar, enc_err, allow_surr);
+        encode_fill(ob, fillcount, fillchar, inv_seq_poli, surr_poli);
         strf::detail::write_args(ob, p, printers...);
     }
 }
@@ -160,15 +160,15 @@ STRF_HD void print_split
     ( const strf::detail::printers_tuple_impl
         < CharSize, std::index_sequence<I...>, Printers... >& printers
     , strf::underlying_outbuf<CharSize>& ob
-    , strf::encode_fill_func<CharSize> encode_fill
+    , strf::encode_fill_f<CharSize> encode_fill
     , unsigned fillcount
     , char32_t fillchar
     , std::ptrdiff_t split_pos
-    , strf::encoding_error enc_err
-    , strf::surrogate_policy allow_surr )
+    , strf::invalid_seq_policy inv_seq_poli
+    , strf::surrogate_policy surr_poli )
 {
-    strf::detail::print_split( ob, encode_fill, fillcount, fillchar, split_pos, enc_err
-                             , allow_surr, printers.template get<I>()... );
+    strf::detail::print_split( ob, encode_fill, fillcount, fillchar, split_pos, inv_seq_poli
+                             , surr_poli, printers.template get<I>()... );
 }
 
 template<std::size_t CharSize, typename ... Printers>
@@ -188,11 +188,11 @@ public:
         , strf::tag<CharT> tag_char)
         : split_pos_(split_pos)
         , afmt_(afmt)
-        , enc_err_(get_facet_<strf::encoding_error_c>(fp))
-        , allow_surr_(get_facet_<strf::surrogate_policy_c>(fp))
+        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c>(fp))
+        , surr_poli_(get_facet_<strf::surrogate_policy_c>(fp))
     {
-        decltype(auto) enc = get_facet_<strf::encoding_c<CharT>>(fp);
-        encode_fill_func_ = enc.encode_fill;
+        decltype(auto) cs = get_facet_<strf::charset_c<CharT>>(fp);
+        encode_fill_func_ = cs.encode_fill_func();
         strf::print_preview<ReqSize, strf::preview_width::yes> p { afmt_.width };
         new (printers_ptr_()) printers_tuple_ { fp, p, args, tag_char };
         if (p.remaining_width() > 0) {
@@ -201,7 +201,7 @@ public:
         STRF_IF_CONSTEXPR (static_cast<bool>(ReqSize)) {
             preview.add_size(p.get_size());
             if (fillcount_ > 0) {
-                auto fcharsize = enc.encoded_char_size(afmt_.fill);
+                auto fcharsize = cs.encoded_char_size(afmt_.fill);
                 preview.add_size(fillcount_ * fcharsize);
             }
         }
@@ -217,11 +217,11 @@ public:
         , strf::tag<CharT> )
         : split_pos_(split_pos)
         , afmt_(afmt)
-        , enc_err_(get_facet_<strf::encoding_error_c>(fp))
-        , allow_surr_(get_facet_<strf::surrogate_policy_c>(fp))
+        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c>(fp))
+        , surr_poli_(get_facet_<strf::surrogate_policy_c>(fp))
     {
-        decltype(auto) enc = get_facet_<strf::encoding_c<CharT>>(fp);
-        encode_fill_func_ = enc.encode_fill;
+        decltype(auto) cs = get_facet_<strf::charset_c<CharT>>(fp);
+        encode_fill_func_ = cs.encode_fill_func();
         if (afmt_.width < 0) {
             afmt_.width = 0;
         }
@@ -242,7 +242,7 @@ public:
         STRF_IF_CONSTEXPR (static_cast<bool>(ReqSize)) {
             preview.add_size(p.get_size());
             if (fillcount_ > 0) {
-                auto fcharsize = enc.encoded_char_size(afmt_.fill);
+                auto fcharsize = cs.encoded_char_size(afmt_.fill);
                 preview.add_size( fillcount_ * fcharsize);
             }
         }
@@ -292,11 +292,11 @@ private:
     printers_tuple_storage_ pool_;
     std::ptrdiff_t split_pos_;
     strf::alignment_format_data afmt_;
-    strf::encode_fill_func<CharSize> encode_fill_func_;
+    strf::encode_fill_f<CharSize> encode_fill_func_;
     strf::width_t width_;
     std::int16_t fillcount_ = 0;
-    strf::encoding_error enc_err_;
-    strf::surrogate_policy allow_surr_;
+    strf::invalid_seq_policy inv_seq_poli_;
+    strf::surrogate_policy surr_poli_;
 
     STRF_HD printers_tuple_ * printers_ptr_()
     {
@@ -315,7 +315,7 @@ private:
 
     STRF_HD void write_fill_(strf::underlying_outbuf<CharSize>& ob, int count) const
     {
-        encode_fill_func_(ob, count, afmt_.fill, enc_err_, allow_surr_);
+        encode_fill_func_(ob, count, afmt_.fill, inv_seq_poli_, surr_poli_);
     }
 
     STRF_HD void print_split_(strf::underlying_outbuf<CharSize>& ob) const;
@@ -326,7 +326,7 @@ STRF_HD void aligned_join_printer_impl<CharSize, Printers...>::print_split_
     ( strf::underlying_outbuf<CharSize>& ob ) const
 {
     strf::detail::print_split( printers_(), ob, encode_fill_func_, fillcount_
-                             , afmt_.fill, split_pos_, enc_err_, allow_surr_ );
+                             , afmt_.fill, split_pos_, inv_seq_poli_, surr_poli_ );
 }
 
 template<typename CharT, typename FPack, typename Preview, typename ... Args>

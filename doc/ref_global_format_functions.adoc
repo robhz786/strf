@@ -81,10 +81,10 @@ constexpr auto cv(const T& value)
     return fmt(value).cv();
 }
 
-template <typename T, typename E>
-constexpr auto cv(const T& value, const E& encoding)
+template <typename T, typename Charset>
+constexpr auto cv(const T& value, const Charset& cs)
 {
-    return fmt(value).cv(encoding);
+    return fmt(value).cv(cs);
 }
 
 template <typename T>
@@ -93,10 +93,10 @@ constexpr auto sani(const T& value)
     return fmt(value).sani();
 }
 
-template <typename T, typename E>
-constexpr auto sani(const T& value, const E& encoding)
+template <typename T, typename Charset>
+constexpr auto sani(const T& value, const Charset& cs)
 {
-    return fmt(value).sani(encoding);
+    return fmt(value).sani(cs);
 }
 
 } // namespace strf
