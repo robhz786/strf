@@ -735,14 +735,23 @@ public:
         ( strf::underlying_outbuf<1>& ob, std::size_t count, char32_t ch
         , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy );
 
-    static STRF_HD std::size_t codepoints_count
+    static STRF_HD strf::codepoints_count_result<1> codepoints_fast_count
         ( const std::uint8_t* begin, const std::uint8_t* end
-        , std::size_t max_count )
+        , std::size_t max_count ) noexcept
     {
-        std::size_t len = end - begin;
-        return len < max_count ? len : max_count;
+        const std::uint8_t* pos = begin + max_count;
+        if (pos <= end) {
+            return {max_count, pos};
+        }
+        return {static_cast<std::size_t>(end - begin), end};
     }
-
+    static STRF_HD strf::codepoints_count_result<1> codepoints_robust_count
+        ( const std::uint8_t* begin, const std::uint8_t* end
+        , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept
+    {
+        (void) surr_poli;
+        return codepoints_fast_count(begin, end, max_count);
+    }    
     static STRF_HD char32_t decode_char(std::uint8_t ch)
     {
         return Impl::decode(ch);
@@ -781,8 +790,8 @@ public:
     {
         static const strf::dynamic_underlying_charset_data<1> data = {
             name(), id(), replacement_char(), 1, validate, encoded_char_size,
-            encode_char, encode_fill, codepoints_count, write_replacement_char,
-            decode_char,
+            encode_char, encode_fill, codepoints_fast_count,
+            codepoints_robust_count, write_replacement_char, decode_char,
             strf::dynamic_underlying_transcoder<4, 1>{from_u32()},
             strf::dynamic_underlying_transcoder<1, 4>{to_u32()},
             strf::dynamic_underlying_transcoder<1, 1>{sanitizer()},

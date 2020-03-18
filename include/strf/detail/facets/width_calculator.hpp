@@ -40,7 +40,7 @@ public:
     }
 };
 
-class width_as_u32len final
+class width_as_fast_u32len final
 {
 public:
     using category = width_calculator_c;
@@ -65,9 +65,9 @@ public:
         (void) str;
 
         if (limit > 0) {
-            auto count = cs.codepoints_count(str, str + str_len, limit.ceil());
-            if (count < INT16_MAX) {
-                return static_cast<std::int16_t>(count);
+            auto res = cs.codepoints_fast_count(str, str + str_len, limit.ceil());
+            if (res.count < INT16_MAX) {
+                return static_cast<std::int16_t>(res.count);
             }
             return strf::width_max;
         }

@@ -222,10 +222,25 @@ using encode_fill_f = void (*)
     , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy surr_poli );
 
 template <std::size_t CharSize>
-using codepoints_count_f = std::size_t (*)
+struct codepoints_count_result {
+    std::size_t count;
+    const strf::underlying_char_type<CharSize>* pos;
+};
+
+template <std::size_t CharSize>
+using codepoints_fast_count_f =
+    strf::codepoints_count_result<CharSize> (*)
     ( const strf::underlying_char_type<CharSize>* begin
     , const strf::underlying_char_type<CharSize>* end
     , std::size_t max_count );
+
+template <std::size_t CharSize>
+using codepoints_robust_count_f =
+    strf::codepoints_count_result<CharSize> (*)
+    ( const strf::underlying_char_type<CharSize>* begin
+    , const strf::underlying_char_type<CharSize>* end
+    , std::size_t max_count
+    , strf::surrogate_policy surr_poli );
 
 template <std::size_t CharSize>
 using decode_char_f = char32_t (*)
@@ -302,7 +317,8 @@ struct dynamic_underlying_charset_data
     strf::encoded_char_size_f encoded_char_size_func;
     strf::encode_char_f<CharSize> encode_char_func;
     strf::encode_fill_f<CharSize> encode_fill_func;
-    strf::codepoints_count_f<CharSize> codepoints_count_func;
+    strf::codepoints_fast_count_f<CharSize> codepoints_fast_count_func;
+    strf::codepoints_robust_count_f<CharSize> codepoints_robust_count_func;
     strf::write_replacement_char_f<CharSize> write_replacement_char_func;
     strf::decode_char_f<CharSize> decode_char_func;
 
@@ -388,11 +404,17 @@ public:
     {
         data_->encode_fill_func(ob, count, ch, inv_seq_poli, surr_poli);
     }
-    STRF_HD std::size_t codepoints_count
+    STRF_HD strf::codepoints_count_result<CharSize> codepoints_fast_count
         ( const char_type_* begin, const char_type_* end
         , std::size_t max_count ) const
     {
-        return data_->codepoints_count(begin, end, max_count);
+        return data_->codepoints_fast_count_func(begin, end, max_count);
+    }
+    STRF_HD strf::codepoints_count_result<CharSize> codepoints_robust_count
+        ( const char_type_* begin, const char_type_* end
+        , std::size_t max_count ) const
+    {
+        return data_->codepoints_robust_count_func(begin, end, max_count);
     }
     STRF_HD void write_replacement_char(strf::underlying_outbuf<CharSize>& ob) const
     {

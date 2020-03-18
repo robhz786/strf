@@ -258,11 +258,11 @@ void punct_non_decimal()
     //]
 }
 
-// void width_as_u32len()
+// void width_as_fast_u32len()
 // {
-//     //[width_as_u32len
+//     //[width_as_fast_u32len
 //     //     auto str = strf::to_u8string
-//         .with(strf::width_as_u32len<char8_t>{})
+//         .with(strf::width_as_fast_u32len<char8_t>{})
 //         (strf::right(u8"áéíóú", 12, U'.'));
 
 //     assert(str == u8".......áéíóú");
@@ -353,7 +353,7 @@ int main()
     monotonic_grouping();
     str_grouping();
     punct_non_decimal();
-    // width_as_u32len();
+    // width_as_fast_u32len();
     // width_func();
     using_my_customizations();
     return 0;

@@ -510,15 +510,17 @@ public:
     static STRF_HD char_type_* encode_char
         ( char_type_* dest, char32_t ch ) noexcept;
 
-    // static STRF_HD void encode_char
-    //     ( strf::underlying_outbuf<char_size>& ob, char32_t ch );
-
     static STRF_HD void encode_fill
         ( strf::underlying_outbuf<char_size>&, std::size_t count, char32_t ch
         , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t codepoints_count
-        ( const char_type_* begin, const char_type_* end, std::size_t max_count );
+    static STRF_HD strf::codepoints_count_result<1> codepoints_fast_count
+        ( const char_type_* begin, const char_type_* end
+        , std::size_t max_count ) noexcept;
+
+    static STRF_HD strf::codepoints_count_result<1> codepoints_robust_count
+        ( const char_type_* begin, const char_type_* end
+        , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept;
 
     static STRF_HD void write_replacement_char
         ( strf::underlying_outbuf<char_size>& );
@@ -588,8 +590,8 @@ public:
     {
         static const strf::dynamic_underlying_charset_data<1> data = {
             name(), id(), replacement_char(), 3, validate, encoded_char_size,
-            encode_char, encode_fill, codepoints_count, write_replacement_char,
-            decode_char,
+            encode_char, encode_fill, codepoints_fast_count,
+            codepoints_robust_count, write_replacement_char, decode_char,
             strf::dynamic_underlying_transcoder<4, 1>{from_u32()},
             strf::dynamic_underlying_transcoder<1, 4>{to_u32()},
             strf::dynamic_underlying_transcoder<1, 1>{sanitizer()},
@@ -631,14 +633,6 @@ public:
     {
         return 1;
     }
-    static constexpr STRF_HD char32_t u32equivalence_begin() noexcept
-    {
-        return 0;
-    }
-    static constexpr STRF_HD char32_t u32equivalence_end() noexcept
-    {
-        return 0x80;
-    }
     static constexpr STRF_HD std::size_t validate(char32_t ch) noexcept
     {
         return ch < 0x10000 ? 1 : ch < 0x110000 ? 2 : (std::size_t)-1;
@@ -655,9 +649,13 @@ public:
         ( strf::underlying_outbuf<char_size>&, std::size_t count, char32_t ch
         , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t codepoints_count
+    static STRF_HD strf::codepoints_count_result<2> codepoints_fast_count
         ( const char_type_* begin, const char_type_* end
-        , std::size_t max_count ) noexcept;;
+        , std::size_t max_count ) noexcept;
+
+    static STRF_HD strf::codepoints_count_result<2> codepoints_robust_count
+        ( const char_type_* begin, const char_type_* end
+        , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept;
 
     static STRF_HD void write_replacement_char
         ( strf::underlying_outbuf<char_size>& );
@@ -725,8 +723,8 @@ public:
     {
         static const strf::dynamic_underlying_charset_data<2> data = {
             name(), id(), replacement_char(), 1, validate, encoded_char_size,
-            encode_char, encode_fill, codepoints_count, write_replacement_char,
-            decode_char,
+            encode_char, encode_fill, codepoints_fast_count,
+            codepoints_robust_count, write_replacement_char, decode_char,
             strf::dynamic_underlying_transcoder<4, 2>{from_u32()},
             strf::dynamic_underlying_transcoder<2, 4>{to_u32()},
             strf::dynamic_underlying_transcoder<2, 2>{sanitizer()},
@@ -792,12 +790,23 @@ public:
         ( strf::underlying_outbuf<char_size>&, std::size_t count, char32_t ch
         , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy surr_poli );
 
-    static STRF_HD std::size_t codepoints_count
+    static STRF_HD strf::codepoints_count_result<char_size> codepoints_fast_count
         ( const char_type_* begin, const char_type_* end
         , std::size_t max_count ) noexcept
     {
-        std::size_t len = end - begin;
-        return len < max_count ? len : max_count;
+        const char32_t* pos = begin + max_count;
+        if (pos <= end) {
+            return {max_count, pos};
+        }
+        return {static_cast<std::size_t>(end - begin), end};
+    }
+
+    static STRF_HD strf::codepoints_count_result<char_size> codepoints_robust_count
+        ( const char_type_* begin, const char_type_* end
+        , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept
+    {
+        (void)surr_poli;
+        return codepoints_fast_count(begin, end, max_count);
     }
 
     static STRF_HD void write_replacement_char
@@ -836,8 +845,8 @@ public:
     {
         static const strf::dynamic_underlying_charset_data<4> data = {
             name(), id(), replacement_char(), 1, validate, encoded_char_size,
-            encode_char, encode_fill, codepoints_count, write_replacement_char,
-            decode_char,
+            encode_char, encode_fill, codepoints_fast_count,
+            codepoints_robust_count, write_replacement_char, decode_char,
             strf::dynamic_underlying_transcoder<4, 4>{from_u32()},
             strf::dynamic_underlying_transcoder<4, 4>{to_u32()},
             strf::dynamic_underlying_transcoder<4, 4>{sanitizer()},
@@ -1119,19 +1128,81 @@ STRF_INLINE STRF_HD std::size_t utf8_to_utf8::transcode_size
     return size;
 }
 
-STRF_INLINE STRF_HD std::size_t utf8_impl::codepoints_count
-        ( const std::uint8_t* begin
-        , const std::uint8_t* end
-        , std::size_t max_count )
+STRF_INLINE STRF_HD strf::codepoints_count_result<1> utf8_impl::codepoints_fast_count
+    ( const std::uint8_t* begin
+    , const std::uint8_t* end
+    , std::size_t max_count ) noexcept
 {
     std::size_t count = 0;
-    for(auto it = begin; it != end && count < max_count; ++it) {
+    auto it = begin;
+    while (it != end && count < max_count) {
         if (!strf::detail::is_utf8_continuation(*it)) {
             ++ count;
         }
+        ++it;
     }
-    return count;
+    return {count, it};
 }
+
+STRF_INLINE STRF_HD strf::codepoints_count_result<1> utf8_impl::codepoints_robust_count
+    ( const std::uint8_t* begin
+    , const std::uint8_t* end
+    , std::size_t max_count
+    , strf::surrogate_policy surr_poli ) noexcept
+{
+
+    using strf::detail::utf8_decode;
+    using strf::detail::is_utf8_continuation;
+    using strf::detail::first_2_of_3_are_valid;
+    using strf::detail::first_2_of_4_are_valid;
+
+    std::uint8_t ch0, ch1;
+    std::size_t count = 0;
+    const std::uint8_t* it = begin;
+    while(it != end && count < max_count) {
+        ch0 = *it;
+        ++it;
+        if(ch0 < 0x80) {
+            ++count;
+        } else if (0xC0 == (ch0 & 0xE0)) {
+            if (ch0 > 0xC1 && it != end && is_utf8_continuation(*it)) {
+                count += 2;
+                ++it;
+            } else {
+                count += 3;
+            }
+        } else if (0xE0 == ch0) {
+            if (   it != end && (((ch1 = * it) & 0xE0) == 0xA0)
+              && ++it != end && is_utf8_continuation(* it) )
+            {
+                count += 3;
+                ++it;
+            } else {
+                count += 3;
+            }
+        } else if (0xE0 == (ch0 & 0xF0)) {
+            count += 3;
+            if ( it != end && is_utf8_continuation(ch1 = * it)
+              && first_2_of_3_are_valid( ch0, ch1, surr_poli )
+              && ++it != end && is_utf8_continuation(* it) )
+            {
+                ++it;
+            }
+        } else if( 0xEF < ch0
+              &&   it != end && is_utf8_continuation(ch1 = * it)
+              && first_2_of_4_are_valid(ch0, ch1)
+              && ++it != end && is_utf8_continuation(*it)
+              && ++it != end && is_utf8_continuation(*it) )
+        {
+            count += 4;
+            ++it;
+        } else {
+            count += 3;
+        }
+    }
+    return {count, it};
+}
+
 
 STRF_INLINE STRF_HD void utf8_impl::encode_fill
     ( strf::underlying_outbuf<1>& ob
@@ -1487,18 +1558,44 @@ STRF_INLINE STRF_HD std::size_t utf16_to_utf16::transcode_size
     return count;
 }
 
-STRF_INLINE STRF_HD std::size_t utf16_impl::codepoints_count
+STRF_INLINE STRF_HD strf::codepoints_count_result<2> utf16_impl::codepoints_fast_count
     ( const char16_t* begin
     , const char16_t* end
     , std::size_t max_count ) noexcept
 {
     std::size_t count = 0;
-    for(auto it = begin; it != end && count < max_count; ++it, ++count) {
+    auto it = begin;
+    while(it != end && count < max_count) {
         if(strf::detail::is_high_surrogate(*it)) {
             ++it;
         }
+        ++it;
+        ++count;
     }
-    return count;
+    return {count, it};
+}
+
+STRF_INLINE STRF_HD strf::codepoints_count_result<2> utf16_impl::codepoints_robust_count
+    ( const char16_t* begin
+    , const char16_t* end
+    , std::size_t max_count
+    , strf::surrogate_policy surr_poli ) noexcept
+{
+    (void) surr_poli;
+    std::size_t count = 0;
+    const char16_t* it = begin;
+    unsigned long ch;
+    while (it != end && count < max_count) {
+        ch = *it;
+        ++ it;
+        ++ count;
+        if ( strf::detail::is_high_surrogate(ch) && it != end
+          && strf::detail::is_low_surrogate(*it)) {
+            ++ it;
+            ++ count;
+        }
+    }
+    return {count, it};
 }
 
 STRF_INLINE STRF_HD char16_t* utf16_impl::encode_char
