@@ -1,0 +1,44 @@
+////
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
+
+== Miscellaneous
+
+=== Class template `rank` [[rank]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <std::size_t N>
+struct rank: rank<N - 1>
+{
+    explicit rank() = default;
+};
+
+template <>
+struct rank<0>
+{
+    explicit rank() = default;
+};
+
+} // namespace strf
+----
+
+=== Class template `tag` [[tag]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename\... >
+struct tag
+{
+    explicit tag() = default;
+};
+
+} // namespace strf
+----

@@ -231,8 +231,8 @@ Given
 * `DestCharSize`, a `constexpr std::size_t` value equal to `1`, `2` or `4`
 * `SrcCharType`, the type of `{underlying_char_type}<SrcCharSize>`
 * `X`, a _UnderlyingTranscoder_ type from `SrcCharSize` to `DestCharSize`
-* `x`, a value of type `const X`
-* `dest`, a value of type `{underlying_outbuf}<DestCharSize>&`
+* `x`, an expression of type `X` or `const X`
+* `dest`, an lvalue reference of type `{underlying_outbuf}<DestCharSize>`
 * `begin`, a value of type `const SrcCharType*`
 * `end`,  a value of type `const SrcCharType*`
 * `inv_seq_poli`, a value of type `{invalid_seq_policy}`
@@ -256,6 +256,7 @@ Return value:: The number of character that
   difficult ( but ideally not much greater ).
 Precondition:: `x.transcode_func() != nullptr` is `true`
 ====
+[[UnderlyingTranscoder_transcode]]
 ====
 [source,cpp]
 ----
@@ -317,10 +318,10 @@ Given
 * `max_count`, a value of type `std::size_t`
 * `ch32`, a value of type `char32_t`
 * `ch`, a value of type `char_type`
-* `ob`, value of type `{underlying_outbuf}<CharSize>`
+* `ob`, an lvalue reference of type `{underlying_outbuf}<CharSize>`
 * `cs_id`, value of type `{charset_id}`
 * `X`, a _UnderlyingCharset_ type for value `CharSize`
-* `x`, a value of type `const X`
+* `x`, an expression of type `X` or `const X`
 
 `X` must be https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible]
 and satisfy the expressions below:
@@ -439,6 +440,7 @@ Effect:: Writes `count` times into `ob` the UTF-32 character `ch32` encoded into
          values of `inv_seq_poli` and `surr_poli`.
 Return type:: `void`
 ====
+[[UnderlyingCharset_codepoints_fast_count]]
 ====
 [source,cpp]
 ----
@@ -465,7 +467,7 @@ If the input is non-conformant to the corresponding character encoding,
 this function may return an incorrect value. For instance, for UTF-8
 this function may simply count the bytes that are not continuation bytes.
 ====
-
+[[UnderlyingCharset_codepoints_robust_count]]
 ====
 [source,cpp]
 ----
@@ -490,7 +492,7 @@ Posconditions::
 * `begin \<= pos && pos \<= end` is `true`
 
 ====
-
+[[Charset_decode_char]]
 ====
 [source,cpp]
 ----
@@ -550,6 +552,7 @@ x.from_u32()
 Return type:: A __{UnderlyingTranscoder}__ from `4` to `CharSize`
 Return value:: A transcoder that converts UTF-32 to this charset.
 ====
+[[UnderlyingCharset_to_u32]]
 ====
 [source,cpp]
 ----
@@ -1235,7 +1238,7 @@ by passing `str` and `str_end` to `to_u32`.
 
 
 
-=== Facet category template `charset_c` [charset_c]
+=== Facet category template `charset_c` [[charset_c]]
 
 [source,cpp,subs=normal]
 ----
@@ -1253,7 +1256,7 @@ struct charset_c {
 For a type to be a facet of `charset_c<CharT>` it has to
 to be _CharsetFacet_ of `CharT`
 
-==== TypeRequirement _CharsetFacet_ [[CharsetFacet]]
+==== Type requirement _CharsetFacet_ [[CharsetFacet]]
 
 - `CharT`, a character type
 - `X`, _CharsetFacet_ type of `CharT`
@@ -1266,7 +1269,7 @@ The following must hold:
 NOTE: There are two class templates that satisfy _CharsetFacet_: `{static_charset}` and `{dynamic_charset}`.
 
 
-==== Class template `static_charset` [[static_charset]]
+=== Class template `static_charset` [[static_charset]]
 
 [source,cpp,subs=normal]
 ----
@@ -1282,7 +1285,7 @@ public:
 } // namespace strf
 ----
 
-==== Type aliases [[static_charset_aliases]]
+=== Type aliases for charsets [[static_charset_aliases]]
 
 [source,cpp,subs=normal]
 ----
@@ -1321,7 +1324,7 @@ where `cs_id` is `charset_id::utf8`, `charset_id::utf16`
 or `charset_id::utf32`, depending on the value of `sizeof(CharT)`.
 ====
 
-==== Class template `dynamic_charset` [[dynamic_charset]]
+=== Class template `dynamic_charset` [[dynamic_charset]]
 
 [source,cpp,subs=normal]
 ----

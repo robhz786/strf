@@ -42,8 +42,8 @@ public:
         (void)fp;
         STRF_IF_CONSTEXPR(Preview::width_required) {
             decltype(auto) wcalc = get_facet<strf::width_calculator_c, CharT>(fp);
-            auto w = wcalc.width( get_facet<strf::charset_c<CharT>, CharT>(fp)
-                                , static_cast<char_type>(ch) );
+            auto w = wcalc.char_width( get_facet<strf::charset_c<CharT>, CharT>(fp)
+                                     , static_cast<char_type>(ch) );
             preview.subtract_width(w);
         }
     }
@@ -117,7 +117,7 @@ template <typename Preview, typename WCalc, typename Charset>
 STRF_HD void fmt_char_printer<CharSize>::init_
     ( Preview& preview, const WCalc& wc, const Charset& cs)
 {
-    auto ch_width = wc.width(cs, ch_);
+    auto ch_width = wc.char_width(cs, ch_);
     auto content_width = checked_mul(ch_width, count_);
     std::uint16_t fillcount = 0;
     if (content_width < afmt_.width) {

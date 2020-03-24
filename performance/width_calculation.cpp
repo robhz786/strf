@@ -13,92 +13,6 @@
 #include <strf.hpp>
 #include "loop_timer.hpp"
 
-class width_accumulator: public strf::underlying_outbuf<4>
-{
-public:
-
-    width_accumulator(strf::width_t limit)
-        : strf::underlying_outbuf<4>(buff_, buff_ + buff_size_)
-        , limit_(limit)
-    {
-    }
-
-    void recycle() override;
-
-    strf::width_t get_result()
-    {
-        if (limit_ > 0)
-        {
-            sum_ += wfunc_(limit_, buff_, this->pos());
-            this->set_pos(buff_);
-        }
-        return sum_;
-    }
-
-private:
-
-    strf::width_t wfunc_(strf::width_t limit, const char32_t* it, const char32_t* end )
-    {
-        strf::width_t w = 0;
-        for (; w < limit && it != end; ++it)
-        {
-            auto ch = *it;
-            w += ( ch == U'\u2E3A' ? 4
-                 : ch == U'\u2014' ? 2
-                 : 1 );
-        }
-        return w;
-    }
-
-    constexpr static std::size_t buff_size_ = 16;
-    char32_t buff_[buff_size_];
-    const strf::width_t limit_;
-    strf::width_t sum_ = 0;
-};
-
-void width_accumulator::recycle()
-{
-    auto p = this->pos();
-    this->set_pos(buff_);
-    if (this->good())
-    {
-        sum_ += wfunc_(limit_ - sum_, buff_, p);
-        this->set_good(sum_ < limit_);
-    }
-}
-
-
-class custom_wcalc
-{
-public:
-    using category = strf::width_calculator_c;
-
-    template <typename Charset>
-    strf::width_t width
-        ( const Charset& cs
-        , strf::underlying_char_type<Charset::char_size> ch ) const noexcept
-    {
-        auto ch32 = cs.decode_char(ch);
-        return ( ch32 == U'\u2E3A' ? 4
-               : ch32 == U'\u2014' ? 2
-               : 1 );
-    }
-
-    template <typename Charset>
-    constexpr STRF_HD strf::width_t width
-        ( const Charset& cs
-        , strf::width_t limit
-        , const strf::underlying_char_type<Charset::char_size>* str
-        , std::size_t str_len
-        , strf::invalid_seq_policy inv_seq_poli
-        , strf::surrogate_policy surr_poli ) const noexcept
-    {
-        width_accumulator acc(limit);
-        cs.to_u32().transcode(acc, str, str + str_len, inv_seq_poli, surr_poli);
-        return acc.get_result();
-    }
-};
-
 int main()
 {
     char u8dest[100000];
@@ -110,6 +24,8 @@ int main()
     const std::u16string u16str50 {50, u'x'};
 
     const auto print = strf::to(stdout);
+    auto wfunc = [](char32_t ch) { return (ch == U'\u2E3A' ? 4 : ch == U'\u2014' ? 2 : 1); };
+    auto custom_wcalc = strf::make_width_calculator(wfunc);
 
     print("UTF-8:\n");
 
@@ -123,10 +39,16 @@ int main()
             .with(strf::width_as_fast_u32len())
             (strf::fmt(u8str5) > 5);
     }
-    PRINT_BENCHMARK("strf::to(u8dest) .with(custom_wcalc{}) (strf::fmt(u8str5) > 5)")
+    PRINT_BENCHMARK("strf::to(u8dest) .with(strf::width_as_u32len{}) (strf::fmt(u8str5) > 5)")
     {
         (void)strf::to(u8dest)
-            .with(custom_wcalc{})
+            .with(strf::width_as_u32len())
+            (strf::fmt(u8str5) > 5);
+    }
+    PRINT_BENCHMARK("strf::to(u8dest) .with(custom_wcalc) (strf::fmt(u8str5) > 5)")
+    {
+        (void)strf::to(u8dest)
+            .with(custom_wcalc)
             (strf::fmt(u8str5) > 5);
     }
     PRINT_BENCHMARK("strf::to(u8dest) (strf::join_right(5)(u8str5))")
@@ -139,10 +61,16 @@ int main()
             .with(strf::width_as_fast_u32len())
             (strf::join_right(5)(u8str5));
     }
-    PRINT_BENCHMARK("strf::to(u8dest) .with(custom_wcalc{}) (strf::join_right(5)(u8str5))")
+    PRINT_BENCHMARK("strf::to(u8dest) .with(strf::width_as_u32len{}) (strf::join_right(5)(u8str5))")
     {
         (void)strf::to(u8dest)
-            .with(custom_wcalc{})
+            .with(strf::width_as_u32len())
+            (strf::join_right(5)(u8str5));
+    }
+    PRINT_BENCHMARK("strf::to(u8dest) .with(custom_wcalc) (strf::join_right(5)(u8str5))")
+    {
+        (void)strf::to(u8dest)
+            .with(custom_wcalc)
             (strf::join_right(5)(u8str5));
     }
 
@@ -158,10 +86,16 @@ int main()
             .with(strf::width_as_fast_u32len{})
             (strf::fmt(u8str50) > 50);
     }
-    PRINT_BENCHMARK("strf::to(u8dest) .with(custom_wcalc{}) (strf::fmt(u8str50) > 50)")
+    PRINT_BENCHMARK("strf::to(u8dest) .with(strf::width_as_u32len{}) (strf::fmt(u8str50) > 50)")
     {
         (void)strf::to(u8dest)
-            .with(custom_wcalc{})
+            .with(strf::width_as_u32len{})
+            (strf::fmt(u8str50) > 50);
+    }
+    PRINT_BENCHMARK("strf::to(u8dest) .with(custom_wcalc) (strf::fmt(u8str50) > 50)")
+    {
+        (void)strf::to(u8dest)
+            .with(custom_wcalc)
             (strf::fmt(u8str50) > 50);
     }
 
@@ -175,10 +109,16 @@ int main()
             .with(strf::width_as_fast_u32len())
             (strf::join_right(50)(u8str50));
     }
-    PRINT_BENCHMARK("strf::to(u8dest) .with(custom_wcalc{}) (strf::join_right(50)(u8str50))")
+    PRINT_BENCHMARK("strf::to(u8dest) .with(strf::width_as_u32len{}) (strf::join_right(50)(u8str50))")
     {
         (void)strf::to(u8dest)
-            .with(custom_wcalc{})
+            .with(strf::width_as_u32len())
+            (strf::join_right(50)(u8str50));
+    }
+    PRINT_BENCHMARK("strf::to(u8dest) .with(custom_wcalc) (strf::join_right(50)(u8str50))")
+    {
+        (void)strf::to(u8dest)
+            .with(custom_wcalc)
             (strf::join_right(50)(u8str50));
     }
 
@@ -194,10 +134,16 @@ int main()
             .with(strf::width_as_fast_u32len{})
             (strf::fmt(u16str5) > 5);
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc{}) (strf::fmt(u16str5) > 5)")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len{}) (strf::fmt(u16str5) > 5)")
     {
         (void)strf::to(u16dest)
-            .with(custom_wcalc{})
+            .with(strf::width_as_u32len{})
+            (strf::fmt(u16str5) > 5);
+    }
+    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc) (strf::fmt(u16str5) > 5)")
+    {
+        (void)strf::to(u16dest)
+            .with(custom_wcalc)
             (strf::fmt(u16str5) > 5);
     }
     PRINT_BENCHMARK("strf::to(u16dest) (strf::join_right(5)(u16str5))")
@@ -210,10 +156,16 @@ int main()
             .with(strf::width_as_fast_u32len())
             (strf::join_right(5)(u16str5));
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc{}) (strf::join_right(5)(u16str5))")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len{}) (strf::join_right(5)(u16str5))")
     {
         (void)strf::to(u16dest)
-            .with(custom_wcalc{})
+            .with(strf::width_as_u32len())
+            (strf::join_right(5)(u16str5));
+    }
+    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc) (strf::join_right(5)(u16str5))")
+    {
+        (void)strf::to(u16dest)
+            .with(custom_wcalc)
             (strf::join_right(5)(u16str5));
     }
 
@@ -228,10 +180,16 @@ int main()
             .with(strf::width_as_fast_u32len{})
             (strf::fmt(u16str50) > 50);
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc{}) (strf::fmt(u16str50) > 50)")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len{}) (strf::fmt(u16str50) > 50)")
     {
         (void)strf::to(u16dest)
-            .with(custom_wcalc{})
+            .with(strf::width_as_u32len{})
+            (strf::fmt(u16str50) > 50);
+    }
+    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc) (strf::fmt(u16str50) > 50)")
+    {
+        (void)strf::to(u16dest)
+            .with(custom_wcalc)
             (strf::fmt(u16str50) > 50);
     }
     PRINT_BENCHMARK("strf::to(u16dest) (strf::join_right(50)(u16str50))")
@@ -244,10 +202,16 @@ int main()
             .with(strf::width_as_fast_u32len())
             (strf::join_right(50)(u16str50));
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc{}) (strf::join_right(50)(u16str50))")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len{}) (strf::join_right(50)(u16str50))")
     {
         (void)strf::to(u16dest)
-            .with(custom_wcalc{})
+            .with(strf::width_as_u32len())
+            (strf::join_right(50)(u16str50));
+    }
+    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc) (strf::join_right(50)(u16str50))")
+    {
+        (void)strf::to(u16dest)
+            .with(custom_wcalc)
             (strf::join_right(50)(u16str50));
     }
 
@@ -263,10 +227,16 @@ int main()
             .with(strf::width_as_fast_u32len())
             (strf::cv(u8str5) > 5);
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc{}) (strf::cv(u8str5) > 5)")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len{}) (strf::cv(u8str5) > 5)")
     {
         (void)strf::to(u16dest)
-            .with(custom_wcalc{})
+            .with(strf::width_as_u32len())
+            (strf::cv(u8str5) > 5);
+    }
+    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc) (strf::cv(u8str5) > 5)")
+    {
+        (void)strf::to(u16dest)
+            .with(custom_wcalc)
             (strf::cv(u8str5) > 5);
     }
     PRINT_BENCHMARK("strf::to(u16dest) (strf::join_right(5)(strf::cv(u8str5)))")
@@ -279,10 +249,16 @@ int main()
             .with(strf::width_as_fast_u32len())
             (strf::join_right(5)(strf::cv(u8str5)));
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc{}) (strf::join_right(5)(strf::cv(u8str5)))")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len{}) (strf::join_right(5)(strf::cv(u8str5)))")
     {
         (void)strf::to(u16dest)
-            .with(custom_wcalc{})
+            .with(strf::width_as_u32len())
+            (strf::join_right(5)(strf::cv(u8str5)));
+    }
+    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc) (strf::join_right(5)(strf::cv(u8str5)))")
+    {
+        (void)strf::to(u16dest)
+            .with(custom_wcalc)
             (strf::join_right(5)(strf::cv(u8str5)));
     }
 
@@ -296,10 +272,16 @@ int main()
             .with(strf::width_as_fast_u32len())
             (strf::cv(u8str50) > 50);
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc{}) (strf::cv(u8str50) > 50)")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len{}) (strf::cv(u8str50) > 50)")
     {
         (void)strf::to(u16dest)
-            .with(custom_wcalc{})
+            .with(strf::width_as_u32len())
+            (strf::cv(u8str50) > 50);
+    }
+    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc) (strf::cv(u8str50) > 50)")
+    {
+        (void)strf::to(u16dest)
+            .with(custom_wcalc)
             (strf::cv(u8str50) > 50);
     }
     PRINT_BENCHMARK("strf::to(u16dest) (strf::join_right(50)(strf::cv(u8str50)))")
@@ -312,10 +294,16 @@ int main()
             .with(strf::width_as_fast_u32len())
             (strf::join_right(50)(strf::cv(u8str50)));
     }
-    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc{}) (strf::join_right(50)(strf::cv(u8str50)))")
+    PRINT_BENCHMARK("strf::to(u16dest) .with(strf::width_as_u32len{}) (strf::join_right(50)(strf::cv(u8str50)))")
     {
         (void)strf::to(u16dest)
-            .with(custom_wcalc{})
+            .with(strf::width_as_u32len())
+            (strf::join_right(50)(strf::cv(u8str50)));
+    }
+    PRINT_BENCHMARK("strf::to(u16dest) .with(custom_wcalc) (strf::join_right(50)(strf::cv(u8str50)))")
+    {
+        (void)strf::to(u16dest)
+            .with(custom_wcalc)
             (strf::join_right(50)(strf::cv(u8str50)));
     }
     return 0;

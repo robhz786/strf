@@ -352,7 +352,7 @@ Both have the same purpose: to customize numeric punctuation.
 |===
 |Category |Constrainable |What it controls
 
-|`<<width_calculation,width_calculation_c>>` |Yes |How the width is calculated
+|`<<width_calculator,width_calculator_c>>` |Yes |How the width is calculated
 |`<<numpunct, numpunct_c>><10>`      |Yes |Numeric punctuation for decimal base
 |`<<numpunct, numpunct_c>><16>`      |Yes |Numeric punctuation for hexadecimal base
 |`<<numpunct, numpunct_c>><8>`       |Yes |Numeric punctuation for octal base
@@ -609,11 +609,11 @@ sanitized, whereas `cv` does not:
 ----
 auto str = strf::to_string
     .with(strf::iso_8859_3<char>()) // the output encoding
-    ( strf::cv("--\xff--")                           // does't sanitize
-    , strf::cv("--\xff--", strf::iso_8859_3<char>()) // does't sanitize ( same encoding )
-    , strf::cv("--\xff--", strf::utf8<char>())       // sanitizes ( different encoding )
-    , strf::sani("--\xff--")                             // sanitizes
-    , strf::sani("--\xff--", strf::iso_8859_3<char>()) ) // sanitizes  
+    ( strf::cv("--\xff--")                           // not sanitized
+    , strf::cv("--\xff--", strf::iso_8859_3<char>()) // not sanitized ( same encoding )
+    , strf::cv("--\xff--", strf::utf8<char>())       // sanitized ( different encoding )
+    , strf::sani("--\xff--")                             // sanitized
+    , strf::sani("--\xff--", strf::iso_8859_3<char>()) ) // sanitized
 
 assert(str == "--\xff----\xff----?----?----?--");
 ----
@@ -699,13 +699,140 @@ assert(utf16_strict == u"-\uFFFD\uFFFD\uFFFD---"); // surrogate sanitized
 assert(utf16_lax == input_utf16);                  // surrogate preserved
 ----
 
-[[width_calculation]]
+[[width_calculator]]
 == Width Calculation
 
-to-do
+The `<<reference#width_calculator_c,width_calculator_c>>` facet category
+enables you to choose how the width of a string is calculated when using
+<<alignment_format_functions,alignment formatting>>. You have five options:
 
-[[format_functions]]
-== Format functions
+* The `<<reference#fast_width,fast_width>>` facet assumes that the width
+  of a string is equal to its size. This is the least accurate method,
+  but it's the fastest and also is what others formatting
+  libraries usually do. Therefore it's the default facet.
++
+.Example
+[source,cpp]
+----
+const char* str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+auto result = strf::to_string.with(strf::fast_width{})
+                             ( strf::right(str, 12, '*') );
+
+assert(result == "*15.00 \xE2\x82\xAC \x80"); // width calculated as 11
+----
+* The `<<reference#width_as_fast_u32len,width_as_fast_u32len>>` facet
+  evaluates the width of a string as the number of Unicode code points.
+  However, differently from `width_as_u32len`, to gain performance,
+  it assumes that the measured string is totally conformant to its charset.
+  Nonconformities do not cause undefined behaviour, but lead to incorrect
+  values. For example, the width of an UTF-8 string may simply be calculated as
+  the number of bytes that are not in the range [`0x80`, `0xBF`], __i.e.__,
+  are not continuation bytes. So that an extra continuation byte -- that
+  would replaced by a `"\uFFFD"` during sanitization -- is not counted.
++
+.Example
+[source,cpp]
+----
+const char* str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+auto result = strf::to_string.with(strf::width_as_fast_u32len{})
+                             ( strf::right(str, 12, '*') );
+assert(result == "****15.00 \xE2\x82\xAC \x80"); // width calculated as 8
+----
+* The `<<reference#width_as_u32len,width_as_u32len>>` facet also
+  evaluates the width of a string as the number of Unicode code points.
+  But each nonconformity to the charset is counted as an extra
+  code points ( as if it were replaced by
+  https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;] ).
++
+.Example
+[source,cpp]
+----
+const char* str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+auto result = strf::to_string.with(strf::width_as_u32len{})
+                             ( strf::right(str, 12, '*') );
+
+assert(result == "***15.00 \xE2\x82\xAC \x80"); // width calculated as 9
+----
+* The `<<reference#make_width_calculator,make_width_calculator>>` function
+  template takes a function object `f` as paramenter and
+  returns a facet object that calculates the width of the strings
+  by converting them to UTF-32 ( following the policy associated to
+  `<<invalid_seq_policy,invalid_seq_policy>>::replace` ) and then calling
+  `f` to evaluate the width of each UTF-32 character. `f` shall take a
+  `char32_t` parameter and return a `<<reference#width_t,width_t>>`,
+  which is a type that implements
+  https://en.wikipedia.org/wiki/Fixed-point_arithmetic[Q16.16 fixed-point arithmetics].
+  This means that can use non itegral values.
++
+.Example
+[source,cpp,subs=normal]
+----
+auto wfunc = [](char32_t ch) \-> strf::<<reference#width_t,width_t>> {
+    using namespace strf::<<reference#width_literal,width_literal>>;
+
+    static const strf::<<reference#width_t,width_t>> roman_numerals_width [] = {
+        0.5642_w, 1.1193_w, 1.6789_w, 1.8807_w, 1.2982_w, 1.8853_w,
+        2.4954_w, 3.0046_w, 1.8945_w, 1.3624_w, 1.9035_w, 2.4771_w,
+        1.1789_w, 1.4495_w, 1.4128_w, 1.7294_w
+    };
+    if (ch < 0x2160 || ch > 0x216F) {
+        return 1;
+    }
+    return roman_numerals_width[ch - 0x2160];
+};
+auto my_wcalc = strf::make_width_calculator(wfunc);
+const char* str = "\u2163 + \u2167 = \u216B"; // "Ⅳ + Ⅷ = Ⅻ"
+auto result = strf::to_string.with(my_wcalc) (strf::right(str, 18, '.'));
+
+// width calculated as 13.3624, rounded to 13:
+assert(result == "\.....\u2163 + \u2167 = \u216B");
+----
+* The fifth option is to implement your own width calculator. This
+  implies to create a class that satisfies the
+  <<reference#WidthCalculator,WidthCalculator>> type requirements.
+  There are two reasons why you may want to do that, instead
+  of the of the previous options:
+** Accuracy: The previous methods are not able to take into
+  account the presence of ligatures and digraphs.
+** Peformance: The object returned by
+  `<<reference#make_width_calculator,make_width_calculator>>`
+  converts the string to UTF-32 before calling the provided
+  function object for each UTF-32 character.
+  When you implement your own calculator, you can optimize
+  it to directly measure strings that are encoded
+  in a specific charset.
+////
+  To-do example
+////
+//-
+'''
+[NOTE]
+====
+The width calculation algorithm is applied
+on the input, not the output string. Keep that in mind when
+converting from one charset to another using
+`<<encoding_conversion,cv>>` or `<<encoding_conversion,sani`>>.
+For example, when converting from UTF-8 to UTF-16 and using
+the `fast_width` facet, the
+width of the string is its size in UTF-8, not in UTF-16.
+[source,cpp]
+----
+const char* str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+
+auto res1 = strf::to_u16string.with(strf::fast_width{})
+            ( strf::cv(str) > 12 );
+auto res2 = strf::to_u16string.with(strf::width_as_fast_u32len{})
+            ( strf::cv(str) > 12 );
+auto res3 = strf::to_u16string.with(strf::width_as_u32len{})
+            ( strf::cv(str) > 12 );
+
+assert(res1 == u" 15.00 € �");    // width calculated as 11 ( == strlen(str) )
+assert(res2 == u"    15.00 € �"); // width calculated as 8
+assert(res3 == u"   15.00 € �");  // width calculated as 9
+----
+====
+
+== Format functions [[format_functions]]
 
 [source,cpp]
 ----
@@ -761,6 +888,7 @@ Types::
 [[int_fmt]]
 Format functions::
 ( in addition to <<alignment_format_functions, alignment functions>> )
+[horizontal]
 `dec()`::: Use decimal base ( This is already the default, though )
 `hex()`::: Use hexadecimal base.
 `oct()`::: Use octal base.
@@ -773,6 +901,7 @@ are printed by adding extra zero leading digits if necessary.
 ( `"0x"` for hexadecimal, `"0"` for octal and `"0b"` for binary ).
 No effect in decimal base.
 
+//-
 Facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<numpunct, numpunct_c>><__Base__>`
@@ -786,6 +915,7 @@ Types::
 
 Format functions::
 ( In addition to the <<alignment_format_functions, alignment functions>> )
+[horizontal]
 `operator+()`::: When in decimal base, print the positive sign
 `"+"` when value is non negative. No effect for other bases.
 `operator~()`:::  Prints the decimal point even when there
@@ -793,11 +923,11 @@ are no fractional digits.
 `sci()`::: Use scientific notation, like this: `"1.2345e+02"`.
 `fixed()`::: Use decimanl notation, like this: `"123.45"`.
 `gen()`::: This is the default notation.
- When precision is unspecified ( or equal to `(unsigned)-1` )
- prints in the scientfic notation if, and only if, it is shorter
- than the fixed notation. Otherwise, does like in `std::printf`:
- uses the scientfic notation if the exponent is less than -4 or greater
- than or equal to the precision. Trailing fractional zeros are not printed.
+When precision is unspecified ( or equal to `(unsigned)-1` )
+prints in the scientfic notation if, and only if, it is shorter
+than the fixed notation. Otherwise, does like in `std::printf`:
+uses the scientfic notation if the exponent is less than -4 or greater
+than or equal to the precision. Trailing fractional zeros are not printed.
 `p(unsigned precision)`::: If `precision == (unsigned)-1`, which is
 the default, then prints the minimal amount of digits so that value
 can fully recovered by a parser. Otherwise, if notation is __general__,
@@ -805,6 +935,7 @@ can fully recovered by a parser. Otherwise, if notation is __general__,
 the number of fractional digits. `precision == 0` has the same effect as
 `precision == 1`.
 
+//-
 Facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<numpunct, numpunct_c>><10>`
@@ -829,10 +960,12 @@ Type:: `CharT`, that is the output character type defined by the <<destinations,
 
 Format functions::
 ( in addition to <<alignment_format_functions, alignment functions>> )
+[horizontal]
 `multi(std::size_t count)`::: Prints the character `count` times. Default value is `1`.
 
+//-
 Facet categories::
-- `<<width_calculation,width_calculation_c>>`
+- `<<width_calculator,width_calculator_c>>`
 - `<<charset,charset_c>><__CharType__>`
 - `<<surrogate_policy,surrogate_policy_c>>`
 - `<<invalid_seq_policy,invalid_seq_policy_c>>`
@@ -851,6 +984,7 @@ where:
 
 Format functions::
 ( in addition to <<alignment_format_functions, alignment functions>> )
+
 `template <typename Charset> sani(Charset cs)`:::
    Translates input string from `cs` to the output encoding.
    If the encodings are the same then sanitizes the input string.
@@ -874,8 +1008,9 @@ assert(str == "**** Hello! ****");
 +
 See also the section about <<encoding_conversion,encoding conversion>>.
 
+//-
 Facet categories::
-- `<<width_calculation,width_calculation_c>>`
+- `<<width_calculator,width_calculator_c>>`
 - `<<charset,charset_c>><__CharType__>`
 - `<<surrogate_policy,surrogate_policy_c>>`
 - `<<invalid_seq_policy,invalid_seq_policy_c>>`

@@ -751,7 +751,7 @@ public:
     {
         (void) surr_poli;
         return codepoints_fast_count(begin, end, max_count);
-    }    
+    }
     static STRF_HD char32_t decode_char(std::uint8_t ch)
     {
         return Impl::decode(ch);

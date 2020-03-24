@@ -258,39 +258,68 @@ void punct_non_decimal()
     //]
 }
 
-// void width_as_fast_u32len()
-// {
-//     //[width_as_fast_u32len
-//     //     auto str = strf::to_u8string
-//         .with(strf::width_as_fast_u32len<char8_t>{})
-//         (strf::right(u8"áéíóú", 12, U'.'));
+void fast_width()
+{
+    const char* str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+    auto result = strf::to_string.with(strf::fast_width{})
+        ( strf::right(str, 12, '*') );
 
-//     assert(str == u8".......áéíóú");
-//     //]
-// }
+    assert(result == "*15.00 \xE2\x82\xAC \x80"); // width calculated as 11
+}
 
-// void width_func()
-// {
-//     //[width_func
-//     auto my_width_calculator =
-//         [] (int limit, const char32_t* it, const char32_t* end)
-//     {
-//         int sum = 0;
-//         for (; sum < limit && it != end; ++it)
-//         {
-//             auto ch = *it;
-//             sum += ((0x2E80 <= ch && ch <= 0x9FFF) ? 2 : 1);
-//         }
-//         return sum;
-//     };
+void width_as_fast_u32len()
+{
+    const char* str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+    auto result = strf::to_string .with(strf::width_as_fast_u32len{})
+        ( strf::right(str, 12, '*'));
+    assert(result == "****15.00 \xE2\x82\xAC \x80"); // width calculated as 8
+}
 
-//     auto str = strf::to_u8string
-//         .with(strf::width_as(my_width_calculator))
-//         (strf::right(u8"今晩は", 10, U'.'));
+void width_as_u32len()
+{
+    const char* str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+    auto result = strf::to_string .with(strf::width_as_u32len{}) ( strf::right(str, 12, '*'));
 
-//     assert(str == u8"....今晩は");
-//     //]
-// }
+    assert(result == "***15.00 \xE2\x82\xAC \x80"); // width calculated as 9
+}
+
+void width_in_cv()
+{
+    const char* str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+
+    auto res1 = strf::to_u16string.with(strf::fast_width{})          (strf::cv(str) > 12);
+    auto res2 = strf::to_u16string.with(strf::width_as_fast_u32len{})(strf::cv(str) > 12);
+    auto res3 = strf::to_u16string.with(strf::width_as_u32len{})     (strf::cv(str) > 12);
+
+    assert(res1 == u" 15.00 € �");    // width calculated as 11 ( == strlen(str) )
+    assert(res2 == u"    15.00 € �"); // width calculated as 8
+    assert(res3 == u"   15.00 € �");  // width calculated as 9
+}
+
+
+void width_func()
+{
+    auto wfunc = [](char32_t ch) -> strf::width_t {
+        using namespace strf::width_literal;
+
+        static const strf::width_t roman_numerals_width [] = {
+            0.5642_w, 1.1193_w, 1.6789_w, 1.8807_w, 1.2982_w, 1.8853_w,
+            2.4954_w, 3.0046_w, 1.8945_w, 1.3624_w, 1.9035_w, 2.4771_w,
+            1.1789_w, 1.4495_w, 1.4128_w, 1.7294_w
+        };
+
+        if (ch < 0x2160 || ch > 0x216F) {
+            return 1;
+        }
+        return roman_numerals_width[ch - 0x2160];
+    };
+    auto my_wcalc = strf::make_width_calculator(wfunc);
+    const char* str = "\u2163 + \u2167 = \u216B"; // "Ⅳ + Ⅷ = Ⅻ"
+    auto result = strf::to_string.with(my_wcalc) (strf::right(str, 18, '.'));
+
+    // width calculated as 13.3624, rounded to 13:
+    assert(result == ".....\u2163 + \u2167 = \u216B");
+}
 
 //[avoid_repetitions
 namespace my { // my customizations
@@ -353,8 +382,11 @@ int main()
     monotonic_grouping();
     str_grouping();
     punct_non_decimal();
-    // width_as_fast_u32len();
-    // width_func();
+    fast_width();
+    width_as_u32len();
+    width_as_fast_u32len();
+    width_func();
+    width_in_cv();
     using_my_customizations();
     return 0;
 }

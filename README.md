@@ -74,7 +74,7 @@ void samples()
     auto s_utf8 = strf::to_u8string( strf::cv(u"aaa-")
                                    , strf::cv(U"bbb-")
                                    , strf::cv( "\x80\xA4"
-                                   , strf::windows_1252<char>() ) );
+                                             , strf::windows_1252<char>() ) );
     assert(s_utf8 == u8"aaa-bbb-\u20AC\u00A4");
 
 

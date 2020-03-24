@@ -338,10 +338,9 @@ public:
         (void)fp;
         STRF_IF_CONSTEXPR(Preview::width_required) {
             decltype(auto) wcalc = get_facet_<strf::width_calculator_c, CharT>(fp);
-            auto w = wcalc.width( get_facet_<strf::charset_c<CharT>, CharT>(fp)
-                                , preview.remaining_width(), str_, len_
-                                , get_facet_<strf::invalid_seq_policy_c, CharT>(fp)
-                                , get_facet_<strf::surrogate_policy_c, CharT>(fp) );
+            auto w = wcalc.str_width( get_facet_<strf::charset_c<CharT>, CharT>(fp)
+                                    , preview.remaining_width(), str_, len_
+                                    , get_facet_<strf::surrogate_policy_c, CharT>(fp) );
             preview.subtract_width(w);
         }
         preview.add_size(len_);
@@ -435,7 +434,7 @@ inline STRF_HD void fmt_string_printer<CharSize>::init_
         ( Preview::width_required && preview.remaining_width() > fmt_width
         ? preview.remaining_width()
         : fmt_width );
-    auto strw = wcalc.width(cs, limit, str_, len_ , inv_seq_poli_, surr_poli_);
+    auto strw = wcalc.str_width(cs, limit, str_, len_, surr_poli_);
     if (fmt_width > strw) {
         fillcount = (fmt_width - strw).round();
         switch(afmt_.alignment) {

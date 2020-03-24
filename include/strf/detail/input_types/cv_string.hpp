@@ -76,8 +76,7 @@ private:
             u32_to_dest_ = dest_cs.from_u32().transcode_func();
         }
         STRF_IF_CONSTEXPR (Preview::width_required) {
-            auto w = wcalc.width( src_cs, preview.remaining_width(), str_, len_
-                                , inv_seq_poli_, surr_poli_ );
+            auto w = wcalc.str_width(src_cs, preview.remaining_width(), str_, len_, surr_poli_);
             preview.subtract_width(w);
         }
         STRF_IF_CONSTEXPR (Preview::size_required) {
@@ -232,7 +231,7 @@ void STRF_HD fmt_cv_string_printer<SrcCharSize, DestCharSize>::init_
         ( Preview::width_required && preview.remaining_width() > fmt_width
         ? preview.remaining_width()
         : fmt_width );
-    auto strw = wcalc.width(src_cs, limit, str_, len_ , inv_seq_poli_, surr_poli_);
+    auto strw = wcalc.str_width(src_cs, limit, str_, len_, surr_poli_);
     if (fmt_width > strw) {
         fillcount = (fmt_width - strw).round();
         switch(afmt_.alignment) {

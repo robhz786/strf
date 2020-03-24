@@ -1159,45 +1159,35 @@ STRF_INLINE STRF_HD strf::codepoints_count_result<1> utf8_impl::codepoints_robus
     std::uint8_t ch0, ch1;
     std::size_t count = 0;
     const std::uint8_t* it = begin;
-    while(it != end && count < max_count) {
-        ch0 = *it;
+    while (it != end && count != max_count) {
+        ch0 = (*it);
         ++it;
-        if(ch0 < 0x80) {
-            ++count;
-        } else if (0xC0 == (ch0 & 0xE0)) {
+        ++count;
+        if (0xC0 == (ch0 & 0xE0)) {
             if (ch0 > 0xC1 && it != end && is_utf8_continuation(*it)) {
-                count += 2;
                 ++it;
-            } else {
-                count += 3;
             }
         } else if (0xE0 == ch0) {
-            if (   it != end && (((ch1 = * it) & 0xE0) == 0xA0)
-              && ++it != end && is_utf8_continuation(* it) )
+            if (   it != end && ((*it & 0xE0) == 0xA0)
+              && ++it != end && is_utf8_continuation(*it) )
             {
-                count += 3;
                 ++it;
-            } else {
-                count += 3;
             }
         } else if (0xE0 == (ch0 & 0xF0)) {
-            count += 3;
-            if ( it != end && is_utf8_continuation(ch1 = * it)
+            if ( it != end && is_utf8_continuation(ch1 = *it)
               && first_2_of_3_are_valid( ch0, ch1, surr_poli )
-              && ++it != end && is_utf8_continuation(* it) )
+              && ++it != end && is_utf8_continuation(*it) )
             {
                 ++it;
             }
-        } else if( 0xEF < ch0
-              &&   it != end && is_utf8_continuation(ch1 = * it)
+        } else if(0xEF < ch0) {
+            if (   it != end && is_utf8_continuation(ch1 = * it)
               && first_2_of_4_are_valid(ch0, ch1)
               && ++it != end && is_utf8_continuation(*it)
               && ++it != end && is_utf8_continuation(*it) )
-        {
-            count += 4;
-            ++it;
-        } else {
-            count += 3;
+            {
+                ++it;
+            }
         }
     }
     return {count, it};

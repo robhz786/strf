@@ -4,34 +4,6 @@
 
 #include "test_utils.hpp"
 
-class custom_char_wcalc
-{
-public:
-    using category = strf::width_calculator_c;
-
-    template <typename Charset>
-    strf::width_t width
-        ( const Charset& cs
-        , strf::underlying_char_type<Charset::char_size> ch ) const noexcept
-    {
-        auto ch32 = cs.decode_char(ch);
-        return ch32 == U'\u2014' ? 2 : 1;
-    }
-
-    template <typename Charset>
-    constexpr STRF_HD strf::width_t width
-        ( const Charset&
-        , strf::width_t
-        , const strf::underlying_char_type<Charset::char_size>*
-        , std::size_t str_len
-        , strf::invalid_seq_policy
-        , strf::surrogate_policy ) const noexcept
-    {
-        return str_len;
-    }
-};
-
-
 int main()
 {
     strf::dynamic_charset<char> dyn_utf8{strf::utf<char>()};
@@ -76,10 +48,12 @@ int main()
         //TEST(U"\uFFFD" U"10\uFFFD" U"5\uFFFD").with(punct, dyn_utf32) (input);
     }
     {
-        TEST( "   x").with(custom_char_wcalc{}, dyn_ascii)(strf::fmt('x') > 4);
-        TEST( "   x").with(custom_char_wcalc{}, dyn_utf8) (strf::fmt('x') > 4);
-        TEST(u"   x").with(custom_char_wcalc{}, dyn_utf16)(strf::fmt(u'x') > 4);
-        TEST(U"   x").with(custom_char_wcalc{}, dyn_utf32)(strf::fmt(U'x') > 4);
+        auto custom_wcalc = strf::make_width_calculator
+            ( [](char32_t ch) -> strf::width_t { return 1 + (ch == U'\u2014'); } );
+        TEST( "   x").with(custom_wcalc, dyn_ascii)(strf::fmt('x') > 4);
+        TEST( "   x").with(custom_wcalc, dyn_utf8) (strf::fmt('x') > 4);
+        TEST(u"   x").with(custom_wcalc, dyn_utf16)(strf::fmt(u'x') > 4);
+        TEST(U"   x").with(custom_wcalc, dyn_utf32)(strf::fmt(U'x') > 4);
     }
 
     return test_finish();
