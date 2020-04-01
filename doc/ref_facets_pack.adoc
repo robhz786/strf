@@ -313,17 +313,17 @@ A given a type `FCat` satisfies `FacetCategory` if:
   value convertible to `bool`. ( If this value is `false` then
   the facets associated `FCat` can not be <<constrained_fpe,constrained>> ).
 
-[[facet_trait]]
-=== Class template `facet_trait`
+[[facet_traits]]
+=== Class template `facet_traits`
 
 This class template provides the <<Facet,Facet>> informations.
 If you create a new facet, you can either define such informations as
-members of the facet, or specialize `facet_trait`.
+members of the facet, or specialize `facet_traits`.
 
 [source]
 ----
 template <typename F>
-class facet_trait
+class facet_traits
 {
 public:
     using category = /* Facet::category or void */;
@@ -352,10 +352,10 @@ otherwise it is an alias to `void`.
 [source]
 ----
 template <typename F>
-class facet_trait<const F>
+class facet_traits<const F>
 {
 public:
-    using category = typename facet_trait<F>::category;
+    using category = typename facet_traits<F>::category;
     constexpr static bool store_by_value = facet_stored_by_value<F>::store_by_value;
 };
 ----
@@ -368,7 +368,7 @@ public:
 [source]
 ----
 template <typename Facet>
-using facet_category = facet_trait<Facet>::typename category;
+using facet_category = facet_traits<Facet>::typename category;
 ----
 ====
 [[facet_stored_by_value]]
@@ -380,7 +380,7 @@ template <typename T>
 constexpr bool facet_stored_by_value;
 ----
 ::
-Value::: ``facet_trait<T>::store_by_value`` if such expression
+Value::: ``facet_traits<T>::store_by_value`` if such expression
        is well formed and implicitly convertible to `bool`,
        otherwise the value is `true`.
 ====

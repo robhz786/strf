@@ -57,10 +57,10 @@ struct tr_invalid_arg_c
 };
 
 template <typename Facet>
-class facet_trait;
+class facet_traits;
 
 template <>
-class facet_trait<strf::tr_invalid_arg>
+class facet_traits<strf::tr_invalid_arg>
 {
 public:
     using category = strf::tr_invalid_arg_c;

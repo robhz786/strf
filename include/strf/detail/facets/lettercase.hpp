@@ -25,10 +25,10 @@ struct lettercase_c
 };
 
 template <typename Facet>
-class facet_trait;
+class facet_traits;
 
 template <>
-class facet_trait<strf::lettercase>
+class facet_traits<strf::lettercase>
 {
 public:
     using category = strf::lettercase_c;

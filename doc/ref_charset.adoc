@@ -104,7 +104,7 @@ struct invalid_seq_policy_c {
 };
 
 template <>
-class <<facet_trait,facet_trait>><invalid_seq_policy> {
+class <<facet_traits,facet_traits>><invalid_seq_policy> {
 public:
     using category = invalid_seq_policy_c;
     static constexpr bool store_by_value = true;
@@ -145,7 +145,7 @@ struct surrogate_policy_c {
 };
 
 template <>
-class facet_trait<surrogate_policy> {
+class facet_traits<surrogate_policy> {
 public:
     using category = surrogate_policy_c;
     static constexpr bool store_by_value = true;
