@@ -84,12 +84,12 @@ private:
                 = transcoder.transcode_size_func();
             std::size_t s = 0;
             if (transcode_size != nullptr) {
-                s = transcode_size(str_, str_ + len_, surr_poli_);
+                s = transcode_size(str_, len_, surr_poli_);
             } else {
                 s = strf::decode_encode_size<SrcCharSize>
                     ( src_cs.to_u32().transcode_func()
                     , dest_cs.from_u32().transcode_size_func()
-                    , str_, str_ + len_, inv_seq_poli_, surr_poli_ );
+                    , str_, len_, inv_seq_poli_, surr_poli_ );
             }
             preview.add_size(s);
         }
@@ -122,11 +122,11 @@ STRF_HD void cv_string_printer<SrcCharSize, DestCharSize>::print_to
     ( strf::underlying_outbuf<DestCharSize>& ob ) const
 {
     if (can_transcode_directly()) {
-        transcode_(ob, str_, str_ + len_, inv_seq_poli_, surr_poli_);
+        transcode_(ob, str_, len_, inv_seq_poli_, surr_poli_);
     } else {
         strf::decode_encode<SrcCharSize, DestCharSize>
             ( ob, src_to_u32_, u32_to_dest_, str_
-            , str_ + len_, inv_seq_poli_, surr_poli_ );
+            , len_, inv_seq_poli_, surr_poli_ );
     }
 }
 
@@ -260,12 +260,12 @@ void STRF_HD fmt_cv_string_printer<SrcCharSize, DestCharSize>::init_
         strf::transcode_size_f<SrcCharSize> transcode_size
                 = transcoder.transcode_size_func();
         if (transcode_size != nullptr) {
-            s = transcode_size(str_, str_ + len_, surr_poli_);
+            s = transcode_size(str_, len_, surr_poli_);
         } else {
             s = strf::decode_encode_size<SrcCharSize>
                 ( src_cs.to_u32().transcode
                 , dest_cs.from_u32().transcode_size_func()
-                , str_, str_ + len_, inv_seq_poli_, surr_poli_ );
+                , str_, len_, inv_seq_poli_, surr_poli_ );
         }
         if (fillcount > 0) {
             s += dest_cs.encoded_char_size(afmt_.fill) * fillcount;
@@ -282,11 +282,11 @@ void STRF_HD fmt_cv_string_printer<SrcCharSize, DestCharSize>::print_to
         encode_fill_(ob, left_fillcount_, afmt_.fill, inv_seq_poli_, surr_poli_);
     }
     if (can_transcode_directly()) {
-        transcode_(ob, str_, str_ + len_, inv_seq_poli_, surr_poli_);
+        transcode_(ob, str_, len_, inv_seq_poli_, surr_poli_);
     } else {
         strf::decode_encode<SrcCharSize, DestCharSize>
             ( ob, src_to_u32_, u32_to_dest_, str_
-            , str_ + len_, inv_seq_poli_, surr_poli_ );
+            , len_, inv_seq_poli_, surr_poli_ );
     }
     if (right_fillcount_ > 0) {
         encode_fill_(ob, right_fillcount_, afmt_.fill, inv_seq_poli_, surr_poli_);

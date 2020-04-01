@@ -203,13 +203,13 @@ public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<1>& ob
         , const std::uint8_t* src
-        , const std::uint8_t* src_end
+        , std::size_t src_size
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
         ( const std::uint8_t* src
-        , const std::uint8_t* src_end
+        , std::size_t src_size
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD strf::transcode_f<1, 1> transcode_func() noexcept
@@ -231,13 +231,13 @@ public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<2>& ob
         , const std::uint8_t* src
-        , const std::uint8_t* src_end
+        , std::size_t src_size
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
         ( const std::uint8_t* src
-        , const std::uint8_t* src_end
+        , std::size_t src_size
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD strf::transcode_f<1, 2> transcode_func() noexcept
@@ -258,13 +258,13 @@ public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<4>& ob
         , const std::uint8_t* src
-        , const std::uint8_t* src_end
+        , std::size_t src_size
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
         ( const std::uint8_t* src
-        , const std::uint8_t* src_end
+        , std::size_t src_size
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD strf::transcode_f<1, 4> transcode_func() noexcept
@@ -286,13 +286,13 @@ public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<1>& ob
         , const char16_t* src
-        , const char16_t* src_end
+        , std::size_t src_size
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
         ( const char16_t* src
-        , const char16_t* src_end
+        , std::size_t src_size
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD strf::transcode_f<2, 1> transcode_func() noexcept
@@ -314,13 +314,13 @@ public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<2>& ob
         , const char16_t* src
-        , const char16_t* src_end
+        , std::size_t src_size
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
         ( const char16_t* src
-        , const char16_t* src_end
+        , std::size_t src_size
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD strf::transcode_f<2, 2> transcode_func() noexcept
@@ -342,13 +342,13 @@ public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<4>& ob
         , const char16_t* src
-        , const char16_t* src_end
+        , std::size_t src_size
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
         ( const char16_t* src
-        , const char16_t* src_end
+        , std::size_t src_size
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD strf::transcode_f<2, 4> transcode_func() noexcept
@@ -370,13 +370,13 @@ public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<1>& ob
         , const char32_t* src
-        , const char32_t* src_end
+        , std::size_t src_size
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
         ( const char32_t* src
-        , const char32_t* src_end
+        , std::size_t src_size
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD strf::transcode_f<4, 1> transcode_func() noexcept
@@ -398,13 +398,13 @@ public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<2>& ob
         , const char32_t* src
-        , const char32_t* src_end
+        , std::size_t src_size
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
         ( const char32_t* src
-        , const char32_t* src_end
+        , std::size_t src_size
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD strf::transcode_f<4, 2> transcode_func() noexcept
@@ -426,17 +426,17 @@ public:
     static STRF_HD void transcode
         ( strf::underlying_outbuf<4>& ob
         , const char32_t* src
-        , const char32_t* src_end
+        , std::size_t src_size
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
         ( const char32_t* src
-        , const char32_t* src_end
+        , std::size_t src_size
         , strf::surrogate_policy )
     {
-
-        return src_end - src;
+        (void) src;
+        return src_size;
     }
     static STRF_HD strf::transcode_f<4, 4> transcode_func() noexcept
     {
@@ -514,12 +514,12 @@ public:
         ( strf::underlying_outbuf<char_size>&, std::size_t count, char32_t ch
         , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy surr_poli );
 
-    static STRF_HD strf::codepoints_count_result<1> codepoints_fast_count
-        ( const char_type_* begin, const char_type_* end
+    static STRF_HD strf::codepoints_count_result codepoints_fast_count
+        ( const char_type_* src, std::size_t src_size
         , std::size_t max_count ) noexcept;
 
-    static STRF_HD strf::codepoints_count_result<1> codepoints_robust_count
-        ( const char_type_* begin, const char_type_* end
+    static STRF_HD strf::codepoints_count_result codepoints_robust_count
+        ( const char_type_* src, std::size_t src_size
         , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept;
 
     static STRF_HD void write_replacement_char
@@ -649,12 +649,12 @@ public:
         ( strf::underlying_outbuf<char_size>&, std::size_t count, char32_t ch
         , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy surr_poli );
 
-    static STRF_HD strf::codepoints_count_result<2> codepoints_fast_count
-        ( const char_type_* begin, const char_type_* end
+    static STRF_HD strf::codepoints_count_result codepoints_fast_count
+        ( const char_type_* src, std::size_t src_size
         , std::size_t max_count ) noexcept;
 
-    static STRF_HD strf::codepoints_count_result<2> codepoints_robust_count
-        ( const char_type_* begin, const char_type_* end
+    static STRF_HD strf::codepoints_count_result codepoints_robust_count
+        ( const char_type_* src, std::size_t src_size
         , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept;
 
     static STRF_HD void write_replacement_char
@@ -790,23 +790,23 @@ public:
         ( strf::underlying_outbuf<char_size>&, std::size_t count, char32_t ch
         , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy surr_poli );
 
-    static STRF_HD strf::codepoints_count_result<char_size> codepoints_fast_count
-        ( const char_type_* begin, const char_type_* end
+    static STRF_HD strf::codepoints_count_result codepoints_fast_count
+        ( const char_type_* src, std::size_t src_size
         , std::size_t max_count ) noexcept
     {
-        const char32_t* pos = begin + max_count;
-        if (pos <= end) {
-            return {max_count, pos};
+        (void) src;
+        if (max_count <= src_size) {
+            return {max_count, max_count};
         }
-        return {static_cast<std::size_t>(end - begin), end};
+        return {src_size, src_size};
     }
 
-    static STRF_HD strf::codepoints_count_result<char_size> codepoints_robust_count
-        ( const char_type_* begin, const char_type_* end
+    static STRF_HD strf::codepoints_count_result codepoints_robust_count
+        ( const char_type_* src, std::size_t src_size
         , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept
     {
         (void)surr_poli;
-        return codepoints_fast_count(begin, end, max_count);
+        return codepoints_fast_count(src, src_size, max_count);
     }
 
     static STRF_HD void write_replacement_char
@@ -869,7 +869,7 @@ using utf32_impl = static_underlying_charset<strf::charset_id::utf32>;
 STRF_INLINE STRF_HD void utf8_to_utf32::transcode
     ( strf::underlying_outbuf<4>& ob
     , const std::uint8_t* src
-    , const std::uint8_t* src_end
+    , std::size_t src_size
     , strf::invalid_seq_policy inv_seq_poli
     , strf::surrogate_policy surr_poli )
 {
@@ -884,6 +884,7 @@ STRF_INLINE STRF_HD void utf8_to_utf32::transcode
     std::uint8_t ch0, ch1, ch2, ch3;
     unsigned long x;
     auto src_it = src;
+    auto src_end = src + src_size;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
     char32_t ch32;
@@ -941,7 +942,7 @@ STRF_INLINE STRF_HD void utf8_to_utf32::transcode
 
 STRF_INLINE STRF_HD std::size_t utf8_to_utf32::transcode_size
     ( const std::uint8_t* src
-    , const std::uint8_t* src_end
+    , std::size_t src_size
     , strf::surrogate_policy surr_poli )
 {
     using strf::detail::is_utf8_continuation;
@@ -949,7 +950,8 @@ STRF_INLINE STRF_HD std::size_t utf8_to_utf32::transcode_size
     using strf::detail::first_2_of_4_are_valid;
 
     std::uint8_t ch0, ch1;
-    const std::uint8_t* src_it = src;
+    auto src_it = src;
+    auto src_end = src + src_size;
     std::size_t size = 0;
     while (src_it != src_end) {
         ch0 = (*src_it);
@@ -988,7 +990,7 @@ STRF_INLINE STRF_HD std::size_t utf8_to_utf32::transcode_size
 STRF_INLINE STRF_HD void utf8_to_utf8::transcode
     ( strf::underlying_outbuf<1>& ob
     , const std::uint8_t* src
-    , const std::uint8_t* src_end
+    , std::size_t src_size
     , strf::invalid_seq_policy inv_seq_poli
     , strf::surrogate_policy surr_poli )
 {
@@ -999,6 +1001,7 @@ STRF_INLINE STRF_HD void utf8_to_utf8::transcode
 
     std::uint8_t ch0, ch1, ch2, ch3;
     auto src_it = src;
+    auto src_end = src + src_size;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
     while(src_it != src_end) {
@@ -1073,7 +1076,7 @@ STRF_INLINE STRF_HD void utf8_to_utf8::transcode
 
 STRF_INLINE STRF_HD std::size_t utf8_to_utf8::transcode_size
     ( const std::uint8_t* src
-    , const std::uint8_t* src_end
+    , std::size_t src_size
     , strf::surrogate_policy surr_poli )
 {
     using strf::detail::utf8_decode;
@@ -1083,6 +1086,7 @@ STRF_INLINE STRF_HD std::size_t utf8_to_utf8::transcode_size
 
     std::uint8_t ch0, ch1;
     const std::uint8_t* src_it = src;
+    auto src_end = src + src_size;
     std::size_t size = 0;
     while(src_it != src_end) {
         ch0 = *src_it;
@@ -1128,29 +1132,29 @@ STRF_INLINE STRF_HD std::size_t utf8_to_utf8::transcode_size
     return size;
 }
 
-STRF_INLINE STRF_HD strf::codepoints_count_result<1> utf8_impl::codepoints_fast_count
-    ( const std::uint8_t* begin
-    , const std::uint8_t* end
+STRF_INLINE STRF_HD strf::codepoints_count_result utf8_impl::codepoints_fast_count
+    ( const std::uint8_t* src
+    , std::size_t src_size
     , std::size_t max_count ) noexcept
 {
     std::size_t count = 0;
-    auto it = begin;
+    auto it = src;
+    auto end = src + src_size;
     while (it != end && count < max_count) {
         if (!strf::detail::is_utf8_continuation(*it)) {
             ++ count;
         }
         ++it;
     }
-    return {count, it};
+    return {count, static_cast<std::size_t>(it - src)};
 }
 
-STRF_INLINE STRF_HD strf::codepoints_count_result<1> utf8_impl::codepoints_robust_count
-    ( const std::uint8_t* begin
-    , const std::uint8_t* end
+STRF_INLINE STRF_HD strf::codepoints_count_result utf8_impl::codepoints_robust_count
+    ( const std::uint8_t* src
+    , std::size_t src_size
     , std::size_t max_count
     , strf::surrogate_policy surr_poli ) noexcept
 {
-
     using strf::detail::utf8_decode;
     using strf::detail::is_utf8_continuation;
     using strf::detail::first_2_of_3_are_valid;
@@ -1158,7 +1162,8 @@ STRF_INLINE STRF_HD strf::codepoints_count_result<1> utf8_impl::codepoints_robus
 
     std::uint8_t ch0, ch1;
     std::size_t count = 0;
-    const std::uint8_t* it = begin;
+    auto it = src;
+    auto end = src + src_size;
     while (it != end && count != max_count) {
         ch0 = (*it);
         ++it;
@@ -1190,7 +1195,7 @@ STRF_INLINE STRF_HD strf::codepoints_count_result<1> utf8_impl::codepoints_robus
             }
         }
     }
-    return {count, it};
+    return {count, static_cast<std::size_t>(it - src)};
 }
 
 
@@ -1323,11 +1328,12 @@ STRF_INLINE STRF_HD std::uint8_t* utf8_impl::encode_char
 STRF_INLINE STRF_HD void utf32_to_utf8::transcode
     ( strf::underlying_outbuf<1>& ob
     , const char32_t* src
-    , const char32_t* src_end
+    , std::size_t src_size
     , strf::invalid_seq_policy inv_seq_poli
     , strf::surrogate_policy surr_poli )
 {
     auto src_it = src;
+    auto src_end = src + src_size;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
     for(;src_it != src_end; ++src_it) {
@@ -1381,11 +1387,12 @@ STRF_INLINE STRF_HD void utf32_to_utf8::transcode
 
 STRF_INLINE STRF_HD std::size_t utf32_to_utf8::transcode_size
     ( const char32_t* src
-    , const char32_t* src_end
+    , std::size_t src_size
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
     auto src_it = src;
+    auto src_end = src + src_size;
     std::size_t count = 0;
     for(;src_it != src_end; ++src_it) {
         auto ch = *src_it;
@@ -1414,13 +1421,14 @@ STRF_INLINE STRF_HD void utf8_impl::write_replacement_char
 STRF_INLINE STRF_HD void utf16_to_utf32::transcode
     ( strf::underlying_outbuf<4>& ob
     , const char16_t* src
-    , const char16_t* src_end
+    , std::size_t src_size
     , strf::invalid_seq_policy inv_seq_poli
     , strf::surrogate_policy surr_poli )
 {
     unsigned long ch, ch2;
     char32_t ch32;
     const char16_t* src_it_next;
+    auto src_end = src + src_size;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
     for(auto src_it = src; src_it != src_end; src_it = src_it_next) {
@@ -1454,13 +1462,14 @@ STRF_INLINE STRF_HD void utf16_to_utf32::transcode
 
 STRF_INLINE STRF_HD std::size_t utf16_to_utf32::transcode_size
     ( const char16_t* src
-    , const char16_t* src_end
+    , std::size_t src_size
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
     unsigned long ch;
     std::size_t count = 0;
-    const char16_t* src_it = src;
+    auto src_it = src;
+    const auto src_end = src + src_size;
     const char16_t* src_it_next;
     for(; src_it != src_end; src_it = src_it_next) {
         src_it_next = src_it + 1;
@@ -1481,12 +1490,13 @@ STRF_INLINE STRF_HD std::size_t utf16_to_utf32::transcode_size
 STRF_INLINE STRF_HD void utf16_to_utf16::transcode
     ( strf::underlying_outbuf<2>& ob
     , const char16_t* src
-    , const char16_t* src_end
+    , std::size_t src_size
     , strf::invalid_seq_policy inv_seq_poli
     , strf::surrogate_policy surr_poli )
 {
     unsigned long ch, ch2;
     auto src_it = src;
+    const auto src_end = src + src_size;
     const char16_t* src_it_next;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
@@ -1526,12 +1536,13 @@ STRF_INLINE STRF_HD void utf16_to_utf16::transcode
 
 STRF_INLINE STRF_HD std::size_t utf16_to_utf16::transcode_size
     ( const char16_t* src
-    , const char16_t* src_end
+    , std::size_t src_size
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
     std::size_t count = 0;
     const char16_t* src_it = src;
+    const auto src_end = src + src_size;
     unsigned long ch;
     while (src_it != src_end) {
         ch = *src_it;
@@ -1548,13 +1559,14 @@ STRF_INLINE STRF_HD std::size_t utf16_to_utf16::transcode_size
     return count;
 }
 
-STRF_INLINE STRF_HD strf::codepoints_count_result<2> utf16_impl::codepoints_fast_count
-    ( const char16_t* begin
-    , const char16_t* end
+STRF_INLINE STRF_HD strf::codepoints_count_result utf16_impl::codepoints_fast_count
+    ( const char16_t* src
+    , std::size_t src_size
     , std::size_t max_count ) noexcept
 {
     std::size_t count = 0;
-    auto it = begin;
+    auto it = src;
+    const auto end = src + src_size;
     while(it != end && count < max_count) {
         if(strf::detail::is_high_surrogate(*it)) {
             ++it;
@@ -1562,18 +1574,19 @@ STRF_INLINE STRF_HD strf::codepoints_count_result<2> utf16_impl::codepoints_fast
         ++it;
         ++count;
     }
-    return {count, it};
+    return {count, static_cast<std::size_t>(it - src)};
 }
 
-STRF_INLINE STRF_HD strf::codepoints_count_result<2> utf16_impl::codepoints_robust_count
-    ( const char16_t* begin
-    , const char16_t* end
+STRF_INLINE STRF_HD strf::codepoints_count_result utf16_impl::codepoints_robust_count
+    ( const char16_t* src
+    , std::size_t src_size
     , std::size_t max_count
     , strf::surrogate_policy surr_poli ) noexcept
 {
     (void) surr_poli;
     std::size_t count = 0;
-    const char16_t* it = begin;
+    const char16_t* it = src;
+    const auto end = src + src_size;
     unsigned long ch;
     while (it != end && count < max_count) {
         ch = *it;
@@ -1585,7 +1598,7 @@ STRF_INLINE STRF_HD strf::codepoints_count_result<2> utf16_impl::codepoints_robu
             ++ count;
         }
     }
-    return {count, it};
+    return {count, static_cast<std::size_t>(it - src)};
 }
 
 STRF_INLINE STRF_HD char16_t* utf16_impl::encode_char
@@ -1660,11 +1673,12 @@ STRF_INLINE STRF_HD void utf16_impl::encode_fill
 STRF_INLINE STRF_HD void utf32_to_utf16::transcode
     ( strf::underlying_outbuf<2>& ob
     , const char32_t* src
-    , const char32_t* src_end
+    , std::size_t src_size
     , strf::invalid_seq_policy inv_seq_poli
     , strf::surrogate_policy surr_poli )
 {
     auto src_it = src;
+    const auto src_end = src + src_size;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
     for ( ; src_it != src_end; ++src_it) {
@@ -1699,12 +1713,13 @@ STRF_INLINE STRF_HD void utf32_to_utf16::transcode
 
 STRF_INLINE STRF_HD std::size_t utf32_to_utf16::transcode_size
     ( const char32_t* src
-    , const char32_t* src_end
+    , std::size_t src_size
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
     std::size_t count = 0;
     const char32_t* src_it = src;
+    const auto src_end = src + src_size;
     for ( ; src_it != src_end; ++src_it) {
         auto ch = *src_it;
         count += 1 + (0x10000 <= ch && ch < 0x110000);
@@ -1723,10 +1738,11 @@ STRF_INLINE STRF_HD void utf16_impl::write_replacement_char
 STRF_INLINE STRF_HD void utf32_to_utf32::transcode
     ( strf::underlying_outbuf<4>& ob
     , const char32_t* src
-    , const char32_t* src_end
+    , std::size_t src_size
     , strf::invalid_seq_policy inv_seq_poli
     , strf::surrogate_policy surr_poli )
 {
+    const auto src_end = src + src_size;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
     if (surr_poli == strf::surrogate_policy::lax) {
@@ -1792,7 +1808,7 @@ STRF_INLINE STRF_HD void utf32_impl::write_replacement_char
 STRF_INLINE STRF_HD void utf8_to_utf16::transcode
     ( strf::underlying_outbuf<2>& ob
     , const std::uint8_t* src
-    , const std::uint8_t* src_end
+    , std::size_t src_size
     , strf::invalid_seq_policy inv_seq_poli
     , strf::surrogate_policy surr_poli )
 {
@@ -1807,6 +1823,7 @@ STRF_INLINE STRF_HD void utf8_to_utf16::transcode
     std::uint8_t ch0, ch1, ch2, ch3;
     unsigned long x;
     auto src_it = src;
+    const auto src_end = src + src_size;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
 
@@ -1869,8 +1886,8 @@ STRF_INLINE STRF_HD void utf8_to_utf16::transcode
 }
 
 STRF_INLINE STRF_HD std::size_t utf8_to_utf16::transcode_size
-    ( const std::uint8_t* src_begin
-    , const std::uint8_t* src_end
+    ( const std::uint8_t* src
+    , std::size_t src_size
     , strf::surrogate_policy surr_poli )
 {
     using strf::detail::utf8_decode;
@@ -1881,7 +1898,8 @@ STRF_INLINE STRF_HD std::size_t utf8_to_utf16::transcode_size
 
     std::size_t size = 0;
     std::uint8_t ch0, ch1;
-    auto src_it = src_begin;
+    auto src_it = src;
+    const auto src_end = src + src_size;
     while(src_it < src_end) {
         ch0 = *src_it;
         ++src_it;
@@ -1921,12 +1939,13 @@ STRF_INLINE STRF_HD std::size_t utf8_to_utf16::transcode_size
 STRF_INLINE STRF_HD void utf16_to_utf8::transcode
     ( strf::underlying_outbuf<1>& ob
     , const char16_t* src
-    , const char16_t* src_end
+    , std::size_t src_size
     , strf::invalid_seq_policy inv_seq_poli
     , strf::surrogate_policy surr_poli )
 {
     (void) inv_seq_poli;
     auto src_it = src;
+    const auto src_end = src + src_size;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
 
@@ -1978,13 +1997,14 @@ STRF_INLINE STRF_HD void utf16_to_utf8::transcode
 }
 
 STRF_INLINE STRF_HD std::size_t utf16_to_utf8::transcode_size
-    ( const char16_t* src_begin
-    , const char16_t* src_end
+    ( const char16_t* src
+    , std::size_t src_size
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
+    const auto src_end = src + src_size;
     std::size_t size = 0;
-    for(auto it = src_begin; it < src_end; ++it) {
+    for(auto it = src; it < src_end; ++it) {
         char16_t ch = *it;
         if (ch < 0x80) {
             ++size;

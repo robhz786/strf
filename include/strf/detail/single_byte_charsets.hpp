@@ -384,17 +384,18 @@ struct single_byte_charset_to_utf32
     static STRF_HD void transcode
         ( strf::underlying_outbuf<4>& ob
         , const std::uint8_t* src
-        , const std::uint8_t* src_end
+        , std::size_t src_size
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t transcode_size
         ( const std::uint8_t* src
-        , const std::uint8_t* src_end
+        , std::size_t src_size
         , strf::surrogate_policy surr_poli ) noexcept
     {
+        (void) src;
         (void) surr_poli;
-        return src_end - src;
+        return src_size;
     }
 
     static STRF_HD strf::transcode_f<1, 4> transcode_func() noexcept
@@ -411,13 +412,14 @@ template <class Impl>
 STRF_HD void single_byte_charset_to_utf32<Impl>::transcode
     ( strf::underlying_outbuf<4>& ob
     , const std::uint8_t* src
-    , const std::uint8_t* src_end
+    , std::size_t src_size
     , strf::invalid_seq_policy inv_seq_poli
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
+    auto src_end = src + src_size;
     for (auto src_it = src; src_it < src_end; ++src_it) {
         //ob.ensure(1);
         char32_t ch32 = Impl::decode(*src_it);
@@ -445,17 +447,18 @@ struct utf32_to_single_byte_charset
     static STRF_HD void transcode
         ( strf::underlying_outbuf<1>& ob
         , const char32_t* src
-        , const char32_t* src_end
+        , std::size_t src_size
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t transcode_size
         ( const char32_t* src
-        , const char32_t* src_end
+        , std::size_t src_size
         , strf::surrogate_policy surr_poli ) noexcept
     {
+        (void) src;
         (void) surr_poli;
-        return src_end - src;
+        return src_size;
     }
     static STRF_HD strf::transcode_f<4, 1> transcode_func() noexcept
     {
@@ -471,13 +474,14 @@ template <class Impl>
 STRF_HD void utf32_to_single_byte_charset<Impl>::transcode
     ( strf::underlying_outbuf<1>& ob
     , const char32_t* src
-    , const char32_t* src_end
+    , std::size_t src_size
     , strf::invalid_seq_policy inv_seq_poli
     , strf::surrogate_policy surr_poli )
 {
     (void)surr_poli;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
+    auto src_end = src + src_size;
     for(; src != src_end; ++src) {
         auto ch2 = Impl::encode(*src);
         if(ch2 >= 0x100) {
@@ -500,17 +504,18 @@ struct single_byte_charset_sanitizer
     static STRF_HD void transcode
         ( strf::underlying_outbuf<1>& ob
         , const std::uint8_t* src
-        , const std::uint8_t* src_end
+        , std::size_t src_size
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t transcode_size
         ( const std::uint8_t* src
-        , const std::uint8_t* src_end
+        , std::size_t src_size
         , strf::surrogate_policy surr_poli ) noexcept
     {
+        (void) src;
         (void) surr_poli;
-        return src_end - src;
+        return src_size;
     }
 
     static STRF_HD strf::transcode_f<1, 1> transcode_func() noexcept
@@ -527,13 +532,14 @@ template <class Impl>
 STRF_HD void single_byte_charset_sanitizer<Impl>::transcode
     ( strf::underlying_outbuf<1>& ob
     , const std::uint8_t* src
-    , const std::uint8_t* src_end
+    , std::size_t src_size
     , strf::invalid_seq_policy inv_seq_poli
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
     auto dest_it = ob.pos();
     auto dest_end = ob.end();
+    auto src_end = src + src_size;
     std::uint8_t ch_out = '?';
     for (auto src_it = src; src_it < src_end; ++src_it) {
         std::uint8_t ch = *src_it;
@@ -735,22 +741,26 @@ public:
         ( strf::underlying_outbuf<1>& ob, std::size_t count, char32_t ch
         , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy );
 
-    static STRF_HD strf::codepoints_count_result<1> codepoints_fast_count
-        ( const std::uint8_t* begin, const std::uint8_t* end
+    static STRF_HD strf::codepoints_count_result codepoints_fast_count
+        ( const std::uint8_t* src, std::size_t src_size
         , std::size_t max_count ) noexcept
     {
-        const std::uint8_t* pos = begin + max_count;
-        if (pos <= end) {
-            return {max_count, pos};
+        (void) src;
+        if (max_count < src_size) {
+            return {max_count, max_count};
         }
-        return {static_cast<std::size_t>(end - begin), end};
+        return {src_size, src_size};
     }
-    static STRF_HD strf::codepoints_count_result<1> codepoints_robust_count
-        ( const std::uint8_t* begin, const std::uint8_t* end
+    static STRF_HD strf::codepoints_count_result codepoints_robust_count
+        ( const std::uint8_t* src, std::size_t src_size
         , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept
     {
+        (void) src;
         (void) surr_poli;
-        return codepoints_fast_count(begin, end, max_count);
+        if (max_count < src_size) {
+            return {max_count, max_count};
+        }
+        return {src_size, src_size};
     }
     static STRF_HD char32_t decode_char(std::uint8_t ch)
     {

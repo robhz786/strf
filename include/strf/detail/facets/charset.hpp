@@ -190,15 +190,15 @@ constexpr std::size_t invalid_char_len = (std::size_t)-1;
 template <std::size_t SrcCharSize, std::size_t DestCharSize>
 using transcode_f = void (*)
     ( strf::underlying_outbuf<DestCharSize>& ob
-    , const strf::underlying_char_type<SrcCharSize>* begin
-    , const strf::underlying_char_type<SrcCharSize>* end
+    , const strf::underlying_char_type<SrcCharSize>* src
+    , std::size_t src_size
     , strf::invalid_seq_policy inv_seq_poli
     , strf::surrogate_policy surr_poli );
 
 template <std::size_t SrcCharSize>
 using transcode_size_f = std::size_t (*)
-    ( const strf::underlying_char_type<SrcCharSize>* begin
-    , const strf::underlying_char_type<SrcCharSize>* end
+    ( const strf::underlying_char_type<SrcCharSize>* src
+    , std::size_t src_size
     , strf::surrogate_policy surr_poli );
 
 template <std::size_t CharSize>
@@ -221,24 +221,21 @@ using encode_fill_f = void (*)
     ( strf::underlying_outbuf<CharSize>&, std::size_t count, char32_t ch
     , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy surr_poli );
 
-template <std::size_t CharSize>
 struct codepoints_count_result {
     std::size_t count;
-    const strf::underlying_char_type<CharSize>* pos;
+    std::size_t pos;
 };
 
 template <std::size_t CharSize>
-using codepoints_fast_count_f =
-    strf::codepoints_count_result<CharSize> (*)
-    ( const strf::underlying_char_type<CharSize>* begin
-    , const strf::underlying_char_type<CharSize>* end
+using codepoints_fast_count_f = strf::codepoints_count_result (*)
+    ( const strf::underlying_char_type<CharSize>* src
+    , std::size_t src_size
     , std::size_t max_count );
 
 template <std::size_t CharSize>
-using codepoints_robust_count_f =
-    strf::codepoints_count_result<CharSize> (*)
-    ( const strf::underlying_char_type<CharSize>* begin
-    , const strf::underlying_char_type<CharSize>* end
+using codepoints_robust_count_f = strf::codepoints_count_result (*)
+    ( const strf::underlying_char_type<CharSize>* src
+    , std::size_t src_size
     , std::size_t max_count
     , strf::surrogate_policy surr_poli );
 
@@ -272,20 +269,20 @@ public:
 
     STRF_HD void transcode
         ( strf::underlying_outbuf<DestCharSize>& ob
-        , const strf::underlying_char_type<SrcCharSize>* begin
-        , const strf::underlying_char_type<SrcCharSize>* end
+        , const strf::underlying_char_type<SrcCharSize>* src
+        , std::size_t src_size
         , strf::invalid_seq_policy inv_seq_poli
         , strf::surrogate_policy surr_poli ) const
     {
-        transcode_func_(ob, begin, end, inv_seq_poli, surr_poli);
+        transcode_func_(ob, src, src_size, inv_seq_poli, surr_poli);
     }
 
     STRF_HD std::size_t transcode_size
-        ( const strf::underlying_char_type<SrcCharSize>* begin
-        , const strf::underlying_char_type<SrcCharSize>* end
+        ( const strf::underlying_char_type<SrcCharSize>* src
+        , std::size_t src_size
         , strf::surrogate_policy surr_poli ) const
     {
-        return transcode_size_func_(begin, end, surr_poli);
+        return transcode_size_func_(src, src_size, surr_poli);
     }
 
     constexpr STRF_HD strf::transcode_f<SrcCharSize, DestCharSize>
@@ -404,17 +401,16 @@ public:
     {
         data_->encode_fill_func(ob, count, ch, inv_seq_poli, surr_poli);
     }
-    STRF_HD strf::codepoints_count_result<CharSize> codepoints_fast_count
-        ( const char_type_* begin, const char_type_* end
-        , std::size_t max_count ) const
+    STRF_HD strf::codepoints_count_result codepoints_fast_count
+        ( const char_type_* src, std::size_t src_size, std::size_t max_count ) const
     {
-        return data_->codepoints_fast_count_func(begin, end, max_count);
+        return data_->codepoints_fast_count_func(src, src_size, max_count);
     }
-    STRF_HD strf::codepoints_count_result<CharSize> codepoints_robust_count
-        ( const char_type_* begin, const char_type_* end
+    STRF_HD strf::codepoints_count_result codepoints_robust_count
+        ( const char_type_* src, std::size_t* src_size
         , std::size_t max_count ) const
     {
-        return data_->codepoints_robust_count_func(begin, end, max_count);
+        return data_->codepoints_robust_count_func(src, src_size, max_count);
     }
     STRF_HD void write_replacement_char(strf::underlying_outbuf<CharSize>& ob) const
     {
@@ -778,7 +774,8 @@ public:
     {
         auto p = this->pos();
         if (p != buff_ && ob_.good()) {
-            transcode_(ob_, buff_, p, inv_seq_poli_, surr_poli_);
+            transcode_( ob_, buff_, static_cast<std::size_t>(p - buff_)
+                      , inv_seq_poli_, surr_poli_);
         }
         this->set_good(false);
     }
@@ -801,7 +798,8 @@ STRF_HD void buffered_encoder<DestCharSize>::recycle()
     this->set_pos(buff_);
     if (p != buff_ && ob_.good()) {
         this->set_good(false);
-        transcode_(ob_, buff_, p, inv_seq_poli_, surr_poli_);
+        transcode_( ob_, buff_, static_cast<std::size_t>(p - buff_)
+                  , inv_seq_poli_, surr_poli_);
         this->set_good(true);
     }
 }
@@ -842,7 +840,7 @@ STRF_INLINE STRF_HD void buffered_size_calculator::recycle()
     auto p = this->pos();
     if (p != buff_) {
         this->set_pos(buff_);
-        sum_ += size_func_(buff_, p, surr_poli_);
+        sum_ += size_func_(buff_, static_cast<std::size_t>(p - buff_), surr_poli_);
     }
 }
 
@@ -855,13 +853,13 @@ STRF_HD void decode_encode
     ( strf::underlying_outbuf<DestCharSize>& ob
     , strf::transcode_f<SrcCharSize, 4> to_u32
     , strf::transcode_f<4, DestCharSize> from_u32
-    , const underlying_char_type<SrcCharSize>* str
-    , const underlying_char_type<SrcCharSize>* str_end
+    , const underlying_char_type<SrcCharSize>* src
+    , std::size_t src_size
     , strf::invalid_seq_policy inv_seq_poli
     , strf::surrogate_policy surr_poli )
 {
     strf::detail::buffered_encoder<DestCharSize> tmp{from_u32, ob, inv_seq_poli, surr_poli};
-    to_u32(tmp, str, str_end, inv_seq_poli, surr_poli);
+    to_u32(tmp, src, src_size, inv_seq_poli, surr_poli);
     tmp.finish();
 }
 
@@ -869,13 +867,13 @@ template<std::size_t SrcCharSize>
 STRF_HD std::size_t decode_encode_size
     ( strf::transcode_f<SrcCharSize, 4> to_u32
     , strf::transcode_size_f<4> size_calc_func
-    , const underlying_char_type<SrcCharSize>* str
-    , const underlying_char_type<SrcCharSize>* str_end
+    , const underlying_char_type<SrcCharSize>* src
+    , std::size_t src_size
     , strf::invalid_seq_policy inv_seq_poli
     , strf::surrogate_policy surr_poli )
 {
     strf::detail::buffered_size_calculator acc{size_calc_func, surr_poli};
-    to_u32(acc, str, str_end, inv_seq_poli, surr_poli);
+    to_u32(acc, src, src_size, inv_seq_poli, surr_poli);
     return acc.get_sum();
 }
 

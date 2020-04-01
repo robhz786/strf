@@ -11,9 +11,9 @@ namespace strf {
 
 struct width_calculator_c;
 
-struct width_and_len {
+struct width_and_pos {
     strf::width_t width;
-    std::size_t len;
+    std::size_t pos;
 };
 
 class fast_width final
@@ -44,7 +44,7 @@ public:
     }
 
     template <typename Charset>
-    constexpr STRF_HD strf::width_and_len str_width_and_len
+    constexpr STRF_HD strf::width_and_pos str_width_and_pos
         ( const Charset&
         , strf::width_t limit
         , const strf::underlying_char_type<Charset::char_size>*
@@ -85,7 +85,7 @@ public:
     {
         if (limit > 0) {
             auto lim = limit.floor();
-            auto ret = cs.codepoints_fast_count(str, str + str_len, lim);
+            auto ret = cs.codepoints_fast_count(str, str_len, lim);
             STRF_ASSERT((std::ptrdiff_t)ret.count <= strf::width_max.floor());
             return static_cast<std::int16_t>(ret.count);
         }
@@ -93,7 +93,7 @@ public:
     }
 
     template <typename Charset>
-    constexpr STRF_HD strf::width_and_len str_width_and_len
+    constexpr STRF_HD strf::width_and_pos str_width_and_pos
         ( const Charset& cs
         , strf::width_t limit
         , const strf::underlying_char_type<Charset::char_size>* str
@@ -102,9 +102,9 @@ public:
     {
         if (limit > 0) {
             std::ptrdiff_t lim = limit.floor();
-            auto res = cs.codepoints_fast_count(str, str + str_len, lim);
+            auto res = cs.codepoints_fast_count(str, str_len, lim);
             STRF_ASSERT((std::ptrdiff_t)res.count <= lim);
-            return { static_cast<std::int16_t>(res.count), std::size_t(res.pos - str) };
+            return { static_cast<std::int16_t>(res.count), res.pos };
         }
         return {0, 0};
     }
@@ -134,7 +134,7 @@ public:
     {
         if (limit > 0) {
             auto lim = limit.floor();
-            auto ret = cs.codepoints_robust_count(str, str + str_len, lim, surr_poli);
+            auto ret = cs.codepoints_robust_count(str, str_len, lim, surr_poli);
             STRF_ASSERT((std::ptrdiff_t)ret.count <= strf::width_max.floor());
             return static_cast<std::int16_t>(ret.count);
         }
@@ -142,7 +142,7 @@ public:
     }
 
     template <typename Charset>
-    constexpr STRF_HD strf::width_and_len str_width_and_len
+    constexpr STRF_HD strf::width_and_pos str_width_and_pos
         ( const Charset& cs
         , strf::width_t limit
         , const strf::underlying_char_type<Charset::char_size>* str
@@ -151,10 +151,9 @@ public:
     {
         if (limit > 0) {
             std::ptrdiff_t lim = limit.floor();
-            auto res = cs.codepoints_robust_count(str, str + str_len, lim, surr_poli);
+            auto res = cs.codepoints_robust_count(str, str_len, lim, surr_poli);
             STRF_ASSERT((std::ptrdiff_t)res.count <= lim);
-            return { static_cast<std::int16_t>(res.count)
-                   , static_cast<std::size_t>(res.pos - str) };
+            return { static_cast<std::int16_t>(res.count), res.pos };
         }
         return {0, 0};
     }
@@ -256,12 +255,12 @@ public:
     {
         strf::detail::width_accumulator<CharWidthFunc> acc(limit, func_);
         auto inv_seq_poli = strf::invalid_seq_policy::replace;
-        cs.to_u32().transcode(acc, str, str + str_len, inv_seq_poli, surr_poli);
+        cs.to_u32().transcode(acc, str, str_len, inv_seq_poli, surr_poli);
         return acc.get_result().width;
     }
 
     template <typename Charset>
-    constexpr STRF_HD strf::width_and_len str_width_and_len
+    constexpr STRF_HD strf::width_and_pos str_width_and_pos
         ( const Charset& cs
         , strf::width_t limit
         , const strf::underlying_char_type<Charset::char_size>* str
@@ -277,7 +276,7 @@ public:
         }
         auto res2 = cs.codepoints_robust_count
             (str, str + str_len, res.codepoints_count, surr_poli);
-        return {res.width, static_cast<std::size_t>(res2.pos - str)};
+        return {res.width, res2.pos};
     }
 
 private:
