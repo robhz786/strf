@@ -446,6 +446,8 @@ struct quantity_format
     using fn = strf::quantity_format_fn<T>;
 };
 
+inline namespace format_functions {
+
 template <typename T>
 constexpr STRF_HD auto fmt(const T& value)
 -> std::remove_cv_t<std::remove_reference_t<decltype(make_fmt(strf::rank<5>{}, value))>>
@@ -598,7 +600,7 @@ constexpr STRF_HD auto sani(const T& value, const E& e)
     return fmt(value).sanitize_charset(e);  // defined in no_cv_format_fn
 }
 
-
+} // inline namespace format_functions
 } // namespace strf
 
 

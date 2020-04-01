@@ -8,6 +8,7 @@ http://www.boost.org/LICENSE_1_0.txt
 [source,cpp,subs=normal]
 ----
 namespace strf {
+inline namespace format_functions {
 
 template <typename T>
 constexpr auto fmt(const T& value)
@@ -99,5 +100,6 @@ constexpr auto sani(const T& value, const Charset& cs)
     return fmt(value).sani(cs);
 }
 
+} // inline namespace format_functions
 } // namespace strf
 ----
