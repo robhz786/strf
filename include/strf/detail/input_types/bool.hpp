@@ -41,7 +41,7 @@ void STRF_HD bool_printer<CharSize>::print_to(strf::underlying_outbuf<CharSize>&
 {
     auto size = 5 - (int)value_;
     ob.ensure(size);
-    auto p = ob.pos();
+    auto p = ob.pointer();
     if (value_) {
         p[0] = static_cast<char_type>('t');
         p[1] = static_cast<char_type>('r');
@@ -113,7 +113,7 @@ void fmt_bool_printer<CharSize>::print_to
 
     auto size = 5 - (int)value_;
     ob.ensure(size);
-    auto p = ob.pos();
+    auto p = ob.pointer();
     if (value_) {
         p[0] = static_cast<char_type>('t');
         p[1] = static_cast<char_type>('r');

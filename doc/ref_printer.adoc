@@ -77,7 +77,7 @@ make_printer<CharT, FPack>(strf::rank<5>(), fpack, prev, x)
 And
 
 - its return type is a class that derives from `<<printer,printer>><CharT>`
-- The pos-condition `(rw_pre - rw_pos == w || rw_pos <= 0)` is satisfied, where `rw_pre` and `rw_pos` are the value of `prev.remaining_width()` before and after the `make_printer` call respectively, and `w` is the predicted width of the content that the returned printer writes ( in `print_to` ).
+- The poscondition `(rw_pre - rw_pos == w || rw_pos <= 0)` is satisfied, where `rw_pre` and `rw_pos` are the value of `prev.remaining_width()` before and after the `make_printer` call respectively, and `w` is the predicted width of the content that the returned printer writes ( in `print_to` ).
 
 NOTE: The pratical effect of a type being _PrintableWithWidthPreview_ is that it can be
 used in <<aligned_join, aligned joins>>.
@@ -102,7 +102,7 @@ make_printer<CharT, FPack>(strf::rank<5>(), fpack, prev, x)
 And
 
 - its return type is a class that derives from `<<printer,printer>><CharT>`
-- The pos-condition `(s_pos - s_pre == s)` is satisfied, where `s_pos` and `s_pre` are the value of `prev.get_size()` before and after the `make_printer` call respectively, and `s` -- the estimated number of characters that the returned printer writes in `<<printer,print_to>>` -- does not need to be exact but must be such that for any value `ob` of type `<<basic_outbuf,basic_outbuf>><CharT>&`, if `ob.<<underlying_outbuf_size,size>>()` is less than or equal to `s`, then `p.print_to(ob)` is guaranted to not call `ob.<<underlying_outbuf_recycle,recycle>>()`, where `p` is the value `make_printer` returns.
+- The poscondition `(s_pos - s_pre == s)` is satisfied, where `s_pos` and `s_pre` are the value of `prev.get_size()` before and after the `make_printer` call respectively, and `s` -- the estimated number of characters that the returned printer writes in `<<printer,print_to>>` -- does not need to be exact but must be such that for any value `ob` of type `<<basic_outbuf,basic_outbuf>><CharT>&`, if `ob.<<underlying_outbuf_size,size>>()` is less than or equal to `s`, then `p.print_to(ob)` is guaranted to not call `ob.<<underlying_outbuf_recycle,recycle>>()`, where `p` is the value `make_printer` returns.
 
 [NOTE]
 ====

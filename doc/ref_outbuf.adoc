@@ -72,7 +72,7 @@ public:
 
     virtual ~underlying_outbuf() = default;
 
-    char_type{asterisk} pos() const noexcept;
+    char_type{asterisk} pointer() const noexcept;
     char_type{asterisk} end() const noexcept;
     std::size_t size() const noexcept;
     bool good() const noexcept;
@@ -84,11 +84,11 @@ public:
 
 protected:
 
-    underlying_outbuf(char_type{asterisk} pos_, char_type{asterisk} end_);
+    underlying_outbuf(char_type{asterisk} pointer_, char_type{asterisk} end_);
 
-    underlying_outbuf(char_type{asterisk} pos_, std::size_t n);
+    underlying_outbuf(char_type{asterisk} pointer_, std::size_t n);
 
-    void set_pos(char_type{asterisk} p) noexcept;
+    void set_pointer(char_type{asterisk} p) noexcept;
     void set_end(char_type{asterisk} e) noexcept;
     void set_good(bool g) noexcept;
 };
@@ -124,11 +124,11 @@ using char_type = {underlying_char_type}<CharSize>;
 
 ==== Public member functions
 
-[[underlying_outbuf_pos]]
+[[underlying_outbuf_pointer]]
 ====
 [source,cpp]
 ----
-char_type* pos() const noxcept;
+char_type* pointer() const noxcept;
 ----
 [horizontal]
 Return:: The memory position where the content shall be written.
@@ -150,7 +150,7 @@ Return:: The end of memory position where the content shall be written.
 std::size_t size() const noexcept;
 ----
 [horizontal]
-Return:: `end() - pos()`
+Return:: `end() - pointer()`
 ====
 [[underlying_outbuf_recycle]]
 ====
@@ -161,14 +161,14 @@ virtual void recycle() = 0;
 [horizontal]
 Posconditions::
 - `size() >= {min_size_after_recycle}<CharSize>()`
-- The range [ `pos()`, `end()` ) is valid accessible memory area
+- The range [ `pointer()`, `end()` ) is valid accessible memory area
 - If the return value of `good()` was `false` before this call to `recycle()`, then `good()` remains returning `false`.
 ====
 
 // Effect::
 // Depends on the derivate class, but if `good()` returns `true`,
-// then supposedly consumes the content in the range [`p`, `pos()`),
-// where `p` is the value `pos()` would have returned if called before
+// then supposedly consumes the content in the range [`p`, `pointer()`),
+// where `p` is the value `pointer()` would have returned if called before
 // any call to `advance` or `advance_to` in this object since the last
 // time `recycle` was called in this object, or, in case `recycle`
 // was not called in this object yet, since this object was constructed.
@@ -192,9 +192,9 @@ Postcondition:: `size() >= s`
 void advance_to(char_type* p)
 ----
 [horizontal]
-Effect:: Advance the buffer's position to `p`.
-Precondition:: `pos() \<= p && p \<= end()`
-Postcondition:: `pos() == p`
+Effect:: Advance the buffer's pointer to `p`.
+Precondition:: `pointer() \<= p && p \<= end()`
+Postcondition:: `pointer() == p`
 ====
 [[underlying_outbuf_advance_count]]
 ====
@@ -203,7 +203,7 @@ Postcondition:: `pos() == p`
 void advance(std::size_t n)
 ----
 [horizontal]
-Effect:: Same as `advance_to(pos() + n)`
+Effect:: Same as `advance_to(pointer() + n)`
 Precondition:: `n \<= size()`
 ====
 [[underlying_outbuf_advance]]
@@ -214,7 +214,7 @@ void advance()
 ----
 [horizontal]
 Effect:: Same as `advance_to(1)`
-Precondition:: `pos() != end()`
+Precondition:: `pointer() != end()`
 ====
 [[underlying_outbuf_good]]
 ====
@@ -227,7 +227,7 @@ Return:: The state of this object. If the return value is `false`,
 then it means that calling `advance` of `advance_to` has no
 relevant side effect because the content written in the buffer
 will not be read anymore.
-Note:: The range [ `pos()`, `end()` ) shall aways be a valid
+Note:: The range [ `pointer()`, `end()` ) shall aways be a valid
 accessible memory, even when `good()` returns `false`.
 ====
 
@@ -237,14 +237,14 @@ accessible memory, even when `good()` returns `false`.
 ====
 [source,cpp]
 ----
-underlying_outbuf(CharT* pos_, CharT* end_)
+underlying_outbuf(CharT* pointer_, CharT* end_)
 ----
 [horizontal]
 Preconditions::
-- `pos_ \<= end_`
-- The range [ `pos_`, `end_` ) must be an accessible memory area.
+- `pointer_ \<= end_`
+- The range [ `pointer_`, `end_` ) must be an accessible memory area.
 Posconditions::
-- `pos() == pos_`
+- `pointer() == pointer_`
 - `end() == end_`
 - `good() == true`
 ====
@@ -252,24 +252,24 @@ Posconditions::
 ====
 [source,cpp]
 ----
-underlying_outbuf(CharT* pos_, std::size_t n)
+underlying_outbuf(CharT* pointer_, std::size_t n)
 ----
 [horizontal]
 Preconditions::
-- The range [ `pos_`, `pos_ + n ` ) must be an accessible memory area.
+- The range [ `pointer_`, `pointer_ + n ` ) must be an accessible memory area.
 Posconditions::
-- `pos() == pos_`
-- `end() == pos_ + n`
+- `pointer() == pointer_`
+- `end() == pointer_ + n`
 - `good() == true`
 ====
-[[underlying_outbuf_set_pos]]
+[[underlying_outbuf_set_pointer]]
 ====
 [source,cpp]
 ----
-void set_pos(CharT* p) noexcept
+void set_pointer(CharT* p) noexcept
 ----
 [horizontal]
-Postconditions:: `pos() == p`
+Postconditions:: `pointer() == p`
 ====
 [[underlying_outbuf_set_end]]
 ====
@@ -308,7 +308,7 @@ Effect:: Same as:
 if (ob.size() == 0) {
     ob.recycle();
 }
-*ob.pos() = ch;
+*ob.pointer() = ch;
 ob.advance();
 ----
 ====
@@ -362,7 +362,7 @@ public:
     {underlying_outbuf}<sizeof(CharT)>& as_underlying() noexcept;
     const {underlying_outbuf}<sizeof(CharT)>& as_underlying() const noexcept;
 
-    char_type{asterisk} pos() const noexcept;
+    char_type{asterisk} pointer() const noexcept;
     char_type{asterisk} end() const noexcept;
     void advance_to(char_type{asterisk} p);
 
@@ -374,10 +374,10 @@ public:
 
 protected:
 
-    basic_outbuf(char_type{asterisk} pos_, char_type{asterisk} end_);
-    basic_outbuf(char_type{asterisk} pos_, std::size_t n);
+    basic_outbuf(char_type{asterisk} pointer_, char_type{asterisk} end_);
+    basic_outbuf(char_type{asterisk} pointer_, std::size_t n);
 
-    void set_pos(char_type{asterisk} p) noexcept;
+    void set_pointer(char_type{asterisk} p) noexcept;
     void set_end(char_type{asterisk} e) noexcept;
 
     using {underlying_outbuf}<sizeof(CharT)>::<<underlying_outbuf_set_good,set_good>>;
@@ -426,14 +426,14 @@ const underlying_outbuf<sizeof(CharT)>& as_underlying() const noexcept;
 [horizontal]
 Return:: `*this`
 ====
-[[basic_outbuf_pos]]
+[[basic_outbuf_pointer]]
 ====
 [source,cpp]
 ----
-char_type* pos() const noexcept;
+char_type* pointer() const noexcept;
 ----
 [horizontal]
-Return:: `(CharT*) as_underlying().pos();`
+Return:: `(CharT*) as_underlying().pointer();`
 ====
 [[basic_outbuf_end]]
 ====
@@ -477,33 +477,33 @@ Precondition:: `p \<= end()`
 ====
 [source,cpp]
 ----
-basic_outbuf(char_type* pos_, char_type* end_);
+basic_outbuf(char_type* pointer_, char_type* end_);
 ----
 [horizontal]
 Effect:: Initializes private base class `underlying_outbuf<sizeof(CharT)>`
-with `pos_` and `end_` casted as `{underlying_char_type}<sizeof(CharT)>{asterisk}`.
+with `pointer_` and `end_` casted as `{underlying_char_type}<sizeof(CharT)>{asterisk}`.
 ====
 [[basic_outbuf_ctor_count]]
 ====
 [source,cpp]
 ----
-basic_outbuf(char_type* pos_, std::size_t n);
+basic_outbuf(char_type* pointer_, std::size_t n);
 ----
 [horizontal]
-Effect:: Same as `basic_outbuf(pos_, pos + n)`
+Effect:: Same as `basic_outbuf(pointer_, pointer_ + n)`
 ====
 [[basic_outbuf_]]
 ====
 [source,cpp]
 ----
-void set_pos(char_type* p) noexcept;
+void set_pointer(char_type* p) noexcept;
 ----
 [horizontal]
 Effect:: Same as
 +
 [source,cpp,subs=normal]
 ----
-as_underlying().set_pos(({underlying_char_type}<sizeof(CharT)>*)p)
+as_underlying().set_pointer(({underlying_char_type}<sizeof(CharT)>*)p)
 ----
 ====
 [[basic_outbuf_]]
@@ -547,7 +547,7 @@ Effect:: Same as:
 if (ob.size() == 0) {
     ob.recycle();
 }
-*ob.pos() = ch;
+*ob.pointer() = ch;
 ob.advance();
 ----
 ====
@@ -669,7 +669,7 @@ basic_cstr_writer(CharT* dest, CharT* dest_end);
 Precondition:: `dest < dest_end`
 Postconditions::
 - `good() == true`
-- `pos() == dest`
+- `pointer() == dest`
 - `end() == dest_end - 1`
 ====
 ====
@@ -681,7 +681,7 @@ basic_cstr_writer(CharT* dest, std::size_t dest_size);
 Precondition:: `dest_size != 0`
 Postconditions::
 - `good() == true`
-- `pos() == dest`
+- `pointer() == dest`
 - `end() == dest + dest_size - 1`
 ====
 ====
@@ -693,7 +693,7 @@ basic_cstr_writer(CharT (&dest)[N]);
 [horizontal]
 Postconditions::
 - `good() == true`
-- `pos() == dest`
+- `pointer() == dest`
 - `end() == dest + N - 1`
 ====
 ====
@@ -704,7 +704,7 @@ void recycle() noexcept;
 [horizontal]
 Postconditions::
 - `good() == false`
-- `pos() == {garbage_buf}<CharT>()`
+- `pointer() == {garbage_buf}<CharT>()`
 - `end() == {garbage_buf_end}<CharT>()`
 ====
 ====
@@ -717,10 +717,10 @@ Effects::
 - Assign to `'\0'` the position after the last written character in memory area used to initialize this object and set this object into "bad" state.
 Return value::
 - `result::truncated` is `true` if `recycle` or `finish` has ever been called in this object.
-- `retulr::ptr` is the position after the last written character in memory area used to initialize this object
+- `result::ptr` points to the termination character `'\0'`.
 Postconditions::
 - `good() == false`
-- `pos() == {garbage_buf}<CharT>()`
+- `pointer() == {garbage_buf}<CharT>()`
 - `end() == {garbage_buf_end}<CharT>()`
 ====
 
@@ -770,8 +770,8 @@ void recycle() override;
 ----
 [horizontal]
 Effects::
-- If `good()` is `true` then calls `str.append(p0, pos())`, where `str` is the private string object that is returned by `finish()`, and `p0` is the return value of `pos()` before any call to `advance` and `advance_to` since the last call to `recycle()` ( all in this object ), or since this object's contruction, whatever happened last.
-- Calls `set_pos` and/or `set_end`.
+- If `good()` is `true` then calls `str.append(p0, pointer())`, where `str` is the private string object that is returned by `finish()`, and `p0` is the return value of `pointer()` before any call to `advance` and `advance_to` since the last call to `recycle()` ( all in this object ), or since this object's contruction, whatever happened last.
+- Calls `set_pointer` and/or `set_end`.
 Postconditions:: `size() >= min_size_after_recycle<sizeof(CharT)>()`
 ====
 ====
@@ -829,8 +829,8 @@ void recycle() override;
 ----
 [horizontal]
 Effects::
-- If `good()` is `true` then calls `str.append(p0, pos())`, where `str` is the reference that this object was initialized with, and `p0` is the return value of `pos()` before any call to `advance` and `advance_to` since the last call to `recycle()` ( all in this object ), or since this object's contruction, whatever happened last.
-- Calls `set_pos` and/or `set_end`.
+- If `good()` is `true` then calls `str.append(p0, pointer())`, where `str` is the reference that this object was initialized with, and `p0` is the return value of `pointer()` before any call to `advance` and `advance_to` since the last call to `recycle()` ( all in this object ), or since this object's contruction, whatever happened last.
+- Calls `set_pointer` and/or `set_end`.
 Postconditions:: `size() >= min_size_after_recycle<sizeof(CharT)>()`
 ====
 ====
@@ -883,9 +883,9 @@ void recycle() override;
 ----
 [horizontal]
 Effects::
-- If `good()` is `true` then calls `dest.sputn(p0, pos() - p0)`, where `dest` is the reference this object was initialized with, and `p0` is the return value of `pos()` before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
-- If the returned value of `dest.sputn` is less then `pos() - p0`, calls `set_good(false)`.
-- Calls `set_pos` and/or `set_end`.
+- If `good()` is `true` then calls `dest.sputn(p0, pointer() - p0)`, where `dest` is the reference this object was initialized with, and `p0` is the return value of `pointer()` before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
+- If the returned value of `dest.sputn` is less then `pointer() - p0`, calls `set_good(false)`.
+- Calls `set_pointer` and/or `set_end`.
 Postconditions:: `size() >= min_size_after_recycle<sizeof(CharT)>()`
 ====
 ====
@@ -932,13 +932,13 @@ void recycle() override;
 ----
 [horizontal]
 Effects::
-- If `good() == true`, calls `std::fwrite(p0, pos() - p0, sizeof(CharT), dest)`,
+- If `good() == true`, calls `std::fwrite(p0, pointer() - p0, sizeof(CharT), dest)`,
     where `dest` is the `FILE*` used to initialize this object, and
-    `p0` is return value of `pos()` before any call to `advance` and `advance_to`
+    `p0` is return value of `pointer()` before any call to `advance` and `advance_to`
     since the last call to `recycle()`, or since this object's contruction,
     whatever happened last.
--  If the returned value of std::fwrite is less then pos() - p0, calls set_good(false).
--  Calls set_pos and/or set_end.
+-  If the returned value of std::fwrite is less then pointer() - p0, calls set_good(false).
+-  Calls set_pointer and/or set_end.
 Postconditions:: `size() >= min_size_after_recycle<sizeof(CharT)>()`
 ====
 ====
@@ -986,9 +986,9 @@ void recycle() override;
 ----
 [horizontal]
 Effects::
-- If `good() == true`, for each character `ch` in the range [ `p0`, `pos()` ) calls `std::fputwc(ch, dest)`, until WEOF is returned or the whole range is read, where `dest` is the `FILE*` used to initialize this object, and `p0` is the return value of `pos()` before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
+- If `good() == true`, for each character `ch` in the range [ `p0`, `pointer()` ) calls `std::fputwc(ch, dest)`, until WEOF is returned or the whole range is read, where `dest` is the `FILE*` used to initialize this object, and `p0` is the return value of `pointer()` before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
 - If `std::fputwc` returns WEOF, calls `set_good(false)`.
-- Calls `set_pos` and/or `set_end`.
+- Calls `set_pointer` and/or `set_end`.
 ====
 ====
 [source,cpp]

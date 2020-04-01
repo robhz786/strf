@@ -697,31 +697,31 @@ STRF_HD void write_digits_big_sep
 
     ob.ensure(1);
 
-    auto pos = ob.pos();
+    auto ptr = ob.pointer();
     auto end = ob.end();
     auto grp_it = last_grp;
     auto n = *grp_it;
 
     while(true) {
-        *pos = *digits;
-        ++pos;
+        *ptr = *digits;
+        ++ptr;
         ++digits;
         if (--num_digits == 0) {
             break;
         }
         --n;
-        if (pos == end || (n == 0 && pos + sep_size >= end)) {
-            ob.advance_to(pos);
+        if (ptr == end || (n == 0 && ptr + sep_size >= end)) {
+            ob.advance_to(ptr);
             ob.recycle();
-            pos = ob.pos();
+            ptr = ob.pointer();
             end = ob.end();
         }
         if (n == 0) {
-            pos = encode_char(pos, sep);
+            ptr = encode_char(ptr, sep);
             n = *--grp_it;
         }
     }
-    ob.advance_to(pos);
+    ob.advance_to(ptr);
 }
 
 template <int Base>
@@ -739,7 +739,7 @@ public:
         static_assert(std::is_unsigned<IntT>::value, "expected unsigned int");
 
         ob.ensure(digcount);
-        auto p = ob.pos() + digcount;
+        auto p = ob.pointer() + digcount;
         intdigits_backwards_writer<Base>::write_txtdigits_backwards(value, p, lc);
         ob.advance_to(p);
     }
@@ -758,7 +758,7 @@ public:
         const auto num_groups = punct.groups(digcount, groups);
         std::size_t size = digcount + num_groups - 1;
         ob.ensure(size);
-        auto next_p = ob.pos() + size;
+        auto next_p = ob.pointer() + size;
         intdigits_backwards_writer<Base>::write_txtdigits_backwards_little_sep
             (value, next_p, sep, groups, lc);
         ob.advance_to(next_p);
@@ -808,14 +808,14 @@ public:
             strf::put(ob, static_cast<char_type>('0' + value));
             return;
         }
-        auto it = ob.pos();
+        auto it = ob.pointer();
         auto end = ob.end();
         UIntT mask = (UIntT)1 << (digcount - 1);
         do {
             if (it == end) {
                 ob.advance_to(it);
                 ob.recycle();
-                it = ob.pos();
+                it = ob.pointer();
                 end = ob.end();
             }
             *it = (char_type)'0' + (0 != (value & mask));
@@ -845,7 +845,7 @@ public:
         auto grp_it = groups + num_groups - 1;
         auto grp_size = *grp_it;
         ob.ensure(grp_size);
-        auto it = ob.pos();
+        auto it = ob.pointer();
         auto end = ob.end();
         UIntT mask = (UIntT)1 << (digcount - 1);
 
@@ -862,7 +862,7 @@ public:
             if (it + grp_size + 1 > end) {
                 ob.advance_to(it);
                 ob.recycle();
-                it = ob.pos();
+                it = ob.pointer();
                 end = ob.end();
             }
             *it = sep;
@@ -891,14 +891,14 @@ public:
         char32_t sep = punct.thousands_sep();
         auto grp_it = groups + num_groups - 1;
         auto grp_size = *grp_it;
-        auto it = ob.pos();
+        auto it = ob.pointer();
         auto end = ob.end();
         UIntT mask = (UIntT)1 << (digcount - 1);
         while (true) {
             if (it + grp_size > end) {
                 ob.advance_to(it);
                 ob.recycle();
-                it = ob.pos();
+                it = ob.pointer();
                 end = ob.end();
             }
             for(;grp_size != 0; --grp_size) {
@@ -913,7 +913,7 @@ public:
             if (it + grp_size + sep_size > end) {
                 ob.advance_to(it);
                 ob.recycle();
-                it = ob.pos();
+                it = ob.pointer();
                 end = ob.end();
             }
             it = encode_char(it, sep);

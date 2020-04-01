@@ -216,11 +216,11 @@ void base64_printer<CharSize>::write_identation_(strf::underlying_outbuf<CharSiz
     while(true) {
         std::size_t buff_size = ob.size();
         if (buff_size >= count) {
-            traits::assign(ob.pos(), count, char_type(' '));
+            traits::assign(ob.pointer(), count, char_type(' '));
             ob.advance(count);
             return;
         }
-        traits::assign(ob.pos(), buff_size, char_type(' '));
+        traits::assign(ob.pointer(), buff_size, char_type(' '));
         count -= buff_size;
         ob.advance_to(ob.end());
         ob.recycle();
@@ -233,7 +233,7 @@ void base64_printer<CharSize>::encode_all_data_in_this_line_(strf::underlying_ou
     auto data_it = static_cast<const std::uint8_t*>(fmt_.value().bytes);
     for (std::ptrdiff_t count = fmt_.value().num_bytes; count > 0; count -= 3) {
         ob.ensure(4);
-        encode_3bytes_(ob.pos(), data_it, count);
+        encode_3bytes_(ob.pointer(), data_it, count);
         ob.advance(4);
         data_it += 3;
     }
@@ -282,7 +282,7 @@ void base64_printer<CharSize>::write_multiline_(strf::underlying_outbuf<CharSize
     while (remaining_bytes > 0) {
         if (cursor_pos + 4 < facet_.line_length) {
             ob.ensure(4);
-            encode_3bytes_(ob.pos(), data_it, remaining_bytes);
+            encode_3bytes_(ob.pointer(), data_it, remaining_bytes);
             ob.advance(4);
             cursor_pos += 4;
         } else {
@@ -295,7 +295,7 @@ void base64_printer<CharSize>::write_multiline_(strf::underlying_outbuf<CharSize
                     write_identation_(ob);
                 }
                 ob.ensure(1);
-                * ob.pos() = tmp[i];
+                * ob.pointer() = tmp[i];
                 ob.advance(1);
                 ++cursor_pos;
             }
@@ -312,8 +312,8 @@ template <std::size_t CharSize>
 void base64_printer<CharSize>::write_end_of_line_(strf::underlying_outbuf<CharSize>& ob) const
 {
     ob.ensure(2);
-    ob.pos()[0] = facet_.eol[0];
-    ob.pos()[1] = facet_.eol[1];
+    ob.pointer()[0] = facet_.eol[0];
+    ob.pointer()[1] = facet_.eol[1];
     ob.advance(facet_.eol[1] == '\0' ? 1 : 2);
 }
 

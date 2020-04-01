@@ -21,7 +21,7 @@ namespace strf {
         if (!ob.good()) {              \
             return;                    \
         }                              \
-        dest_it = ob.pos();            \
+        dest_it = ob.pointer();        \
         dest_end = ob.end();           \
     }
 
@@ -32,7 +32,7 @@ namespace strf {
         if (!ob.good()) {                         \
             return;                               \
         }                                         \
-        dest_it = ob.pos();                       \
+        dest_it = ob.pointer();                   \
         dest_end = ob.end();                      \
     }
 
@@ -67,18 +67,18 @@ STRF_HD void repeat_sequence_continuation
     std::size_t space = ob.size() / N;
     STRF_ASSERT(space < count);
 
-    strf::detail::do_repeat_sequence(ob.pos(), space, seq);
+    strf::detail::do_repeat_sequence(ob.pointer(), space, seq);
     count -= space;
     ob.advance(space * N);
     ob.recycle();
     while (true) { //ob.good())
         space = ob.size() / N;
         if (count <= space) {
-            strf::detail::do_repeat_sequence(ob.pos(), count, seq);
+            strf::detail::do_repeat_sequence(ob.pointer(), count, seq);
             ob.advance(count * N);
             return;
         }
-        strf::detail::do_repeat_sequence(ob.pos(), space, seq);
+        strf::detail::do_repeat_sequence(ob.pointer(), space, seq);
         count -= space;
         ob.advance(space * N);
         ob.recycle();
@@ -92,7 +92,7 @@ inline STRF_HD void repeat_sequence
     , simple_array<CharT, N> seq )
 {
     if (count * N <= ob.size()) {
-        strf::detail::do_repeat_sequence(ob.pos(), count, seq);
+        strf::detail::do_repeat_sequence(ob.pointer(), count, seq);
         ob.advance(count * N);
     } else {
         strf::detail::repeat_sequence_continuation(ob, count, seq);
@@ -885,7 +885,7 @@ STRF_INLINE STRF_HD void utf8_to_utf32::transcode
     unsigned long x;
     auto src_it = src;
     auto src_end = src + src_size;
-    auto dest_it = ob.pos();
+    auto dest_it = ob.pointer();
     auto dest_end = ob.end();
     char32_t ch32;
 
@@ -1002,7 +1002,7 @@ STRF_INLINE STRF_HD void utf8_to_utf8::transcode
     std::uint8_t ch0, ch1, ch2, ch3;
     auto src_it = src;
     auto src_end = src + src_size;
-    auto dest_it = ob.pos();
+    auto dest_it = ob.pointer();
     auto dest_end = ob.end();
     while(src_it != src_end) {
         ch0 = (*src_it);
@@ -1294,14 +1294,14 @@ STRF_INLINE STRF_HD std::uint8_t* utf8_impl::encode_char
 //     }
 //     else if (ch < 0x800) {
 //         ob.ensure(2);
-//         auto dest = ob.pos();
+//         auto dest = ob.pointer();
 //         dest[0] = static_cast<std::uint8_t>(0xC0 | ((ch & 0x7C0) >> 6));
 //         dest[1] = static_cast<std::uint8_t>(0x80 |  (ch &  0x3F));
 //         ob.advance_to(dest + 2);
 //     }
 //     else if (ch <  0x10000) {
 //         ob.ensure(3);
-//         auto dest = ob.pos();
+//         auto dest = ob.pointer();
 //         dest[0] = static_cast<std::uint8_t>(0xE0 | ((ch & 0xF000) >> 12));
 //         dest[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0xFC0) >> 6));
 //         dest[2] = static_cast<std::uint8_t>(0x80 |  (ch &   0x3F));
@@ -1309,7 +1309,7 @@ STRF_INLINE STRF_HD std::uint8_t* utf8_impl::encode_char
 //     }
 //     else if (ch < 0x110000) {
 //         ob.ensure(4);
-//         auto dest = ob.pos();
+//         auto dest = ob.pointer();
 //         dest[0] = static_cast<std::uint8_t>(0xF0 | ((ch & 0x1C0000) >> 18));
 //         dest[1] = static_cast<std::uint8_t>(0x80 | ((ch &  0x3F000) >> 12));
 //         dest[2] = static_cast<std::uint8_t>(0x80 | ((ch &    0xFC0) >> 6));
@@ -1317,7 +1317,7 @@ STRF_INLINE STRF_HD std::uint8_t* utf8_impl::encode_char
 //         ob.advance_to(dest + 4);
 //     } else {
 //         ob.ensure(3);
-//         auto dest = ob.pos();
+//         auto dest = ob.pointer();
 //         dest[0] = 0xEF;
 //         dest[1] = 0xBF;
 //         dest[2] = 0xBD;
@@ -1334,7 +1334,7 @@ STRF_INLINE STRF_HD void utf32_to_utf8::transcode
 {
     auto src_it = src;
     auto src_end = src + src_size;
-    auto dest_it = ob.pos();
+    auto dest_it = ob.pointer();
     auto dest_end = ob.end();
     for(;src_it != src_end; ++src_it) {
         auto ch = *src_it;
@@ -1408,7 +1408,7 @@ STRF_INLINE STRF_HD std::size_t utf32_to_utf8::transcode_size
 STRF_INLINE STRF_HD void utf8_impl::write_replacement_char
     ( strf::underlying_outbuf<1>& ob )
 {
-    auto dest_it = ob.pos();
+    auto dest_it = ob.pointer();
     auto dest_end = ob.end();
     STRF_CHECK_DEST_SIZE(3);
     dest_it[0] = 0xEF;
@@ -1429,7 +1429,7 @@ STRF_INLINE STRF_HD void utf16_to_utf32::transcode
     char32_t ch32;
     const char16_t* src_it_next;
     auto src_end = src + src_size;
-    auto dest_it = ob.pos();
+    auto dest_it = ob.pointer();
     auto dest_end = ob.end();
     for(auto src_it = src; src_it != src_end; src_it = src_it_next) {
         src_it_next = src_it + 1;
@@ -1498,7 +1498,7 @@ STRF_INLINE STRF_HD void utf16_to_utf16::transcode
     auto src_it = src;
     const auto src_end = src + src_size;
     const char16_t* src_it_next;
-    auto dest_it = ob.pos();
+    auto dest_it = ob.pointer();
     auto dest_end = ob.end();
     for( ; src_it != src_end; src_it = src_it_next) {
         ch = *src_it;
@@ -1629,7 +1629,7 @@ STRF_INLINE STRF_HD char16_t* utf16_impl::encode_char
 //     }
 //     else if (ch < 0x110000) {
 //         ob.ensure(2);
-//         auto dest = ob.pos();
+//         auto dest = ob.pointer();
 //         char32_t sub_codepoint = ch - 0x10000;
 //         dest[0] = static_cast<char16_t>(0xD800 + ((sub_codepoint & 0xFFC00) >> 10));
 //         dest[1] = static_cast<char16_t>(0xDC00 +  (sub_codepoint &  0x3FF));
@@ -1679,7 +1679,7 @@ STRF_INLINE STRF_HD void utf32_to_utf16::transcode
 {
     auto src_it = src;
     const auto src_end = src + src_size;
-    auto dest_it = ob.pos();
+    auto dest_it = ob.pointer();
     auto dest_end = ob.end();
     for ( ; src_it != src_end; ++src_it) {
         auto ch = *src_it;
@@ -1731,7 +1731,7 @@ STRF_INLINE STRF_HD void utf16_impl::write_replacement_char
     ( strf::underlying_outbuf<2>& ob )
 {
     ob.ensure(1);
-    *ob.pos() = 0xFFFD;
+    *ob.pointer() = 0xFFFD;
     ob.advance();
 }
 
@@ -1743,7 +1743,7 @@ STRF_INLINE STRF_HD void utf32_to_utf32::transcode
     , strf::surrogate_policy surr_poli )
 {
     const auto src_end = src + src_size;
-    auto dest_it = ob.pos();
+    auto dest_it = ob.pointer();
     auto dest_end = ob.end();
     if (surr_poli == strf::surrogate_policy::lax) {
         for (auto src_it = src; src_it < src_end; ++src_it) {
@@ -1800,7 +1800,7 @@ STRF_INLINE STRF_HD void utf32_impl::write_replacement_char
     ( strf::underlying_outbuf<4>& ob )
 {
     ob.ensure(1);
-    *ob.pos() = 0xFFFD;
+    *ob.pointer() = 0xFFFD;
     ob.advance();
 }
 
@@ -1824,7 +1824,7 @@ STRF_INLINE STRF_HD void utf8_to_utf16::transcode
     unsigned long x;
     auto src_it = src;
     const auto src_end = src + src_size;
-    auto dest_it = ob.pos();
+    auto dest_it = ob.pointer();
     auto dest_end = ob.end();
 
     for (;src_it != src_end; ++dest_it) {
@@ -1946,7 +1946,7 @@ STRF_INLINE STRF_HD void utf16_to_utf8::transcode
     (void) inv_seq_poli;
     auto src_it = src;
     const auto src_end = src + src_size;
-    auto dest_it = ob.pos();
+    auto dest_it = ob.pointer();
     auto dest_end = ob.end();
 
     for( ; src_it < src_end; ++src_it) {

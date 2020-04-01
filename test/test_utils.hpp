@@ -358,7 +358,7 @@ private:
     bool recycle_called_ = false;
     bool source_location_printed_ = false;
 
-    CharOut* pos_before_overflow_ = nullptr;
+    CharOut* pointer_before_overflow_ = nullptr;
     //constexpr static std::size_t buffer_size_ = 500;
     enum {buffer_size_ = 500};
     CharOut buffer_[buffer_size_];
@@ -401,11 +401,11 @@ void input_tester<CharOut>::recycle()
     test_failure_(" basic_outbuf::recycle() called "
                   "( calculated size too small ).\n");
 
-    if ( this->pos() + strf::min_size_after_recycle<sizeof(CharOut)>()
+    if ( this->pointer() + strf::min_size_after_recycle<sizeof(CharOut)>()
        > buffer_ + buffer_size_ )
     {
-        pos_before_overflow_ = this->pos();
-        this->set_pos(strf::outbuf_garbage_buf<CharOut>());
+        pointer_before_overflow_ = this->pointer();
+        this->set_pointer(strf::outbuf_garbage_buf<CharOut>());
         this->set_end(strf::outbuf_garbage_buf_end<CharOut>());
     } else {
         this->set_end(buffer_ + buffer_size_);
@@ -415,8 +415,8 @@ void input_tester<CharOut>::recycle()
 template <typename CharOut>
 void input_tester<CharOut>::finish()
 {
-    auto pos = pos_before_overflow_ ? pos_before_overflow_ : this->pos();
-    strf::detail::simple_string_view<CharOut> result{buffer_, pos};
+    auto pointer = pointer_before_overflow_ ? pointer_before_overflow_ : this->pointer();
+    strf::detail::simple_string_view<CharOut> result{buffer_, pointer};
 
     if ( result.size() != expected_.size()
       || 0 != std::char_traits<CharOut>::compare( expected_.begin()

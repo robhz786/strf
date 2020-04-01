@@ -53,8 +53,8 @@ public:
         // methods.
         asm("trap;");
 #else
-        auto p = this->pos();
-        this->set_pos(buf_);
+        auto p = this->pointer();
+        this->set_pointer(buf_);
         if (this->good()) {
             std::size_t count = p - buf_;
             auto count_inc = std::fwrite(buf_, sizeof(CharT), count, dest_);
@@ -83,7 +83,7 @@ public:
         bool g = this->good();
         this->set_good(false);
         if (g) {
-            std::size_t count = this->pos() - buf_;
+            std::size_t count = this->pointer() - buf_;
             auto count_inc = std::fwrite(buf_, sizeof(CharT), count, dest_);
             count_ += count_inc;
             g = (count == count_inc);
@@ -137,8 +137,8 @@ public:
         // This will only be compiled as device-side code;
         // the host-side version simply doesn't have object
         // code, so using it should fail linking
-        auto p = this->pos();
-        this->set_pos(buf_);
+        auto p = this->pointer();
+        this->set_pointer(buf_);
         if (this->good()) {
             for (auto it = buf_; it != p; ++it, ++count_) {
                 if(std::fputwc(*it, dest_) == WEOF) {

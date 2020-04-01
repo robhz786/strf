@@ -772,7 +772,7 @@ public:
 
     STRF_HD void finish()
     {
-        auto p = this->pos();
+        auto p = this->pointer();
         if (p != buff_ && ob_.good()) {
             transcode_( ob_, buff_, static_cast<std::size_t>(p - buff_)
                       , inv_seq_poli_, surr_poli_);
@@ -794,8 +794,8 @@ private:
 template <std::size_t DestCharSize>
 STRF_HD void buffered_encoder<DestCharSize>::recycle()
 {
-    auto p = this->pos();
-    this->set_pos(buff_);
+    auto p = this->pointer();
+    this->set_pointer(buff_);
     if (p != buff_ && ob_.good()) {
         this->set_good(false);
         transcode_( ob_, buff_, static_cast<std::size_t>(p - buff_)
@@ -837,9 +837,9 @@ private:
 
 STRF_INLINE STRF_HD void buffered_size_calculator::recycle()
 {
-    auto p = this->pos();
+    auto p = this->pointer();
     if (p != buff_) {
-        this->set_pos(buff_);
+        this->set_pointer(buff_);
         sum_ += size_func_(buff_, static_cast<std::size_t>(p - buff_), surr_poli_);
     }
 }

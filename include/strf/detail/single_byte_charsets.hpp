@@ -17,7 +17,7 @@
         if (!ob.good()) {          \
             return;                \
         }                          \
-        dest_it = ob.pos();        \
+        dest_it = ob.pointer();    \
         dest_end = ob.end();       \
     }
 
@@ -28,7 +28,7 @@
         if (!ob.good()) {              \
             return;                    \
         }                              \
-        dest_it = ob.pos();            \
+        dest_it = ob.pointer();        \
         dest_end = ob.end();           \
     }
 
@@ -417,7 +417,7 @@ STRF_HD void single_byte_charset_to_utf32<Impl>::transcode
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
-    auto dest_it = ob.pos();
+    auto dest_it = ob.pointer();
     auto dest_end = ob.end();
     auto src_end = src + src_size;
     for (auto src_it = src; src_it < src_end; ++src_it) {
@@ -479,7 +479,7 @@ STRF_HD void utf32_to_single_byte_charset<Impl>::transcode
     , strf::surrogate_policy surr_poli )
 {
     (void)surr_poli;
-    auto dest_it = ob.pos();
+    auto dest_it = ob.pointer();
     auto dest_end = ob.end();
     auto src_end = src + src_size;
     for(; src != src_end; ++src) {
@@ -537,7 +537,7 @@ STRF_HD void single_byte_charset_sanitizer<Impl>::transcode
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
-    auto dest_it = ob.pos();
+    auto dest_it = ob.pointer();
     auto dest_end = ob.end();
     auto src_end = src + src_size;
     std::uint8_t ch_out = '?';
@@ -845,11 +845,11 @@ STRF_HD void single_byte_charset<Impl>::encode_fill
     while(true) {
         std::size_t available = ob.size();
         if (count <= available) {
-            std::memset(ob.pos(), ch2, count);
+            std::memset(ob.pointer(), ch2, count);
             ob.advance(count);
             return;
         }
-        std::memset(ob.pos(), ch2, available);
+        std::memset(ob.pointer(), ch2, available);
         ob.advance_to(ob.end());
         count -= available;
         ob.recycle();

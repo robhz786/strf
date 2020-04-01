@@ -39,12 +39,12 @@ public:
 
     void recycle() override
     {
-        this->set_pos(foo_.dest);
+        this->set_pointer(foo_.dest);
     }
 
     void finish()
     {
-        *this->pos() = '\0';
+        *this->pointer() = '\0';
     }
 
 private:

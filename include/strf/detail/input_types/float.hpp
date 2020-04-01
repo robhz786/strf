@@ -470,7 +470,7 @@ inline STRF_HD void write_int_with_leading_zeros
     , strf::lettercase lc )
 {
     ob.ensure(digcount);
-    auto p = ob.pos();
+    auto p = ob.pointer();
     auto end = p + digcount;
     using writer = detail::intdigits_backwards_writer<Base>;
     auto p2 = writer::write_txtdigits_backwards(value, end, lc);
@@ -507,7 +507,7 @@ STRF_HD void print_amplified_integer_small_separator
     while (num_digits > grp_size) {
         STRF_ASSERT(grp_size + 1 <= size_after_recycle);
         ob.ensure(grp_size + 1);
-        auto it = ob.pos();
+        auto it = ob.pointer();
         strf::detail::copy_n(digits, grp_size, it);
         it[grp_size] = separator;
         digits += grp_size;
@@ -519,21 +519,21 @@ STRF_HD void print_amplified_integer_small_separator
     if (num_digits != 0) {
         STRF_ASSERT(num_digits <= size_after_recycle);
         ob.ensure(num_digits);
-        strf::detail::copy_n(digits, num_digits, ob.pos());
+        strf::detail::copy_n(digits, num_digits, ob.pointer());
         ob.advance(num_digits);
     }
     if (grp_size > num_digits) {
         STRF_ASSERT(num_digits <= size_after_recycle);
         grp_size -= num_digits;
         ob.ensure(grp_size);
-        strf::detail::str_fill_n(ob.pos(), grp_size, '0');
+        strf::detail::str_fill_n(ob.pointer(), grp_size, '0');
         ob.advance(grp_size);
     }
     while (grp_it != groups) {
         grp_size = *--grp_it;
         STRF_ASSERT(grp_size + 1 <= size_after_recycle);
         ob.ensure(grp_size + 1);
-        auto it = ob.pos();
+        auto it = ob.pointer();
         *it = separator;
         strf::detail::str_fill_n(it + 1, grp_size, '0');
         ob.advance(grp_size + 1);
@@ -570,7 +570,7 @@ STRF_HD void print_amplified_integer_big_separator
     while (num_digits > grp_size) {
         STRF_ASSERT(grp_size + separator_size <= size_after_recycle);
         ob.ensure(grp_size + separator_size);
-        auto it = ob.pos();
+        auto it = ob.pointer();
         strf::detail::copy_n(digits, grp_size, it);
         digits += grp_size;
         ob.advance_to(encode_char(it + grp_size, separator));
@@ -581,21 +581,21 @@ STRF_HD void print_amplified_integer_big_separator
     if (num_digits != 0) {
         STRF_ASSERT(num_digits <= size_after_recycle);
         ob.ensure(num_digits);
-        strf::detail::copy_n(digits, num_digits, ob.pos());
+        strf::detail::copy_n(digits, num_digits, ob.pointer());
         ob.advance(num_digits);
     }
     if (grp_size > num_digits) {
         STRF_ASSERT(num_digits <= size_after_recycle);
         grp_size -= num_digits;
         ob.ensure(grp_size);
-        strf::detail::str_fill_n(ob.pos(), grp_size, '0');
+        strf::detail::str_fill_n(ob.pointer(), grp_size, '0');
         ob.advance(grp_size);
     }
     while (grp_it != groups) {
         grp_size = *--grp_it;
         STRF_ASSERT(grp_size + separator_size <= size_after_recycle);
         ob.ensure(grp_size + separator_size);
-        auto it = encode_char(ob.pos(), separator);
+        auto it = encode_char(ob.pointer(), separator);
         strf::detail::str_fill_n(it, grp_size, '0');
         ob.advance_to(it + grp_size);
     }
@@ -620,7 +620,7 @@ STRF_HD void print_scientific_notation
     print_point |= num_digits != 1;
     ob.ensure(num_digits + print_point * decimal_point_size);
     if (num_digits == 1) {
-        auto it = ob.pos();
+        auto it = ob.pointer();
         *it = static_cast<char_type>('0' + digits);
         ++it;
         if (print_point) {
@@ -632,7 +632,7 @@ STRF_HD void print_scientific_notation
         }
         ob.advance_to(it);
     } else {
-       auto it = ob.pos();
+       auto it = ob.pointer();
        auto end = it + num_digits + decimal_point_size;
        *it = *write_int_dec_txtdigits_backwards(digits, end);
        ++it;
@@ -659,7 +659,7 @@ STRF_HD void print_scientific_notation
 
     if (e10u >= 100) {
         ob.ensure(5);
-        it = ob.pos();
+        it = ob.pointer();
         it[4] = static_cast<char_type>('0' + e10u % 10);
         e10u /= 10;
         it[3] = static_cast<char_type>('0' + e10u % 10);
@@ -667,12 +667,12 @@ STRF_HD void print_scientific_notation
         adv = 5;
     } else if (e10u >= 10) {
         ob.ensure(4);
-        it = ob.pos();
+        it = ob.pointer();
         it[3] = static_cast<char_type>('0' + e10u % 10);
         it[2] = static_cast<char_type>('0' + e10u / 10);
     } else {
         ob.ensure(4);
-        it = ob.pos();
+        it = ob.pointer();
         it[3] = static_cast<char_type>('0' + e10u);
         it[2] = '0';
     }
@@ -685,7 +685,7 @@ template <std::size_t CharSize>
 STRF_HD void print_nan(strf::underlying_outbuf<CharSize>& ob, strf::lettercase lc)
 {
     ob.ensure(3);
-    auto p = ob.pos();
+    auto p = ob.pointer();
     switch (lc) {
         case strf::mixedcase:
             p[0] = 'N';
@@ -709,7 +709,7 @@ template <std::size_t CharSize>
 STRF_HD void print_inf(strf::underlying_outbuf<CharSize>& ob, strf::lettercase lc)
 {
     ob.ensure(3);
-    auto p = ob.pos();
+    auto p = ob.pointer();
     switch (lc) {
         case strf::mixedcase:
             p[0] = 'I';
@@ -735,7 +735,7 @@ STRF_HD void print_inf( strf::underlying_outbuf<CharSize>& ob
                       , bool negative )
 {
     ob.ensure(3 + negative);
-    auto p = ob.pos();
+    auto p = ob.pointer();
     if (negative) {
         *p ++ = '-';
     }
@@ -1036,7 +1036,7 @@ STRF_HD void punct_double_printer<CharSize>::print_to
             strf::put(ob, static_cast<char_type>(decimal_point_));
         } else if (decimal_point_size_ != 0) {
             ob.ensure(decimal_point_size_);
-            ob.advance_to(encode_char_(ob.pos(), decimal_point_));
+            ob.advance_to(encode_char_(ob.pointer(), decimal_point_));
         }
         if (data_.extra_zeros) {
             detail::write_fill(ob, data_.extra_zeros,  (char_type)'0');
@@ -1047,7 +1047,7 @@ STRF_HD void punct_double_printer<CharSize>::print_to
         unsigned e10u = - data_.e10;
         if (e10u >= data_.m10_digcount) {
             ob.ensure(1 + decimal_point_size_);
-            auto it = ob.pos();
+            auto it = ob.pointer();
             *it++ = static_cast<char_type>('0');
             if (decimal_point_size_ == 1) {
                 *it++ = static_cast<char_type>(decimal_point_);
@@ -1086,7 +1086,7 @@ STRF_HD void punct_double_printer<CharSize>::print_to
             }
 
             ob.ensure(decimal_point_size_);
-            auto it = ob.pos();
+            auto it = ob.pointer();
             if (decimal_point_size_ == 1) {
                 *it++ = static_cast<char_type>(decimal_point_);
             } else {
@@ -1244,7 +1244,7 @@ STRF_HD void double_printer<CharSize>::print_to
         ob.ensure( data_.m10_digcount
                  + data_.showpoint
                  + 4 + (data_.e10 > 99 || data_.e10 < -99) );
-        char_type* it = ob.pos();
+        char_type* it = ob.pointer();
         if (data_.m10_digcount == 1) {
             * it = static_cast<char_type>('0' + data_.m10);
             ++it;
@@ -1255,7 +1255,7 @@ STRF_HD void double_printer<CharSize>::print_to
             if (data_.extra_zeros > 0) {
                 ob.advance_to(it);
                 strf::detail::write_fill<CharSize>(ob, data_.extra_zeros, '0');
-                it = ob.pos();
+                it = ob.pointer();
             }
         } else {
             auto itz = it + data_.m10_digcount + 1;
@@ -1266,7 +1266,7 @@ STRF_HD void double_printer<CharSize>::print_to
             if (data_.extra_zeros > 0) {
                 ob.advance_to(itz);
                 strf::detail::write_fill<CharSize>(ob, data_.extra_zeros, '0');
-                it = ob.pos();
+                it = ob.pointer();
             }
         }
         auto e10 = data_.e10 - 1 + (int)data_.m10_digcount;
@@ -1292,7 +1292,7 @@ STRF_HD void double_printer<CharSize>::print_to
     } else {
         ob.ensure( data_.showpoint + data_.m10_digcount
                  + (data_.e10 < -(int)data_.m10_digcount) );
-        auto it = ob.pos();
+        auto it = ob.pointer();
         if (data_.e10 >= 0) {
             it += data_.m10_digcount;
             write_int_dec_txtdigits_backwards(data_.m10, it);
@@ -1300,7 +1300,7 @@ STRF_HD void double_printer<CharSize>::print_to
             detail::write_fill(ob, data_.e10, (char_type)'0');
             if (data_.showpoint) {
                 ob.ensure(1);
-                *ob.pos() = '.';
+                *ob.pointer() = '.';
                 ob.advance();
             }
             detail::write_fill(ob, data_.extra_zeros, (char_type)'0');
@@ -1313,7 +1313,7 @@ STRF_HD void double_printer<CharSize>::print_to
                 detail::write_fill(ob, e10u - data_.m10_digcount, (char_type)'0');
 
                 ob.ensure(data_.m10_digcount);
-                auto end = ob.pos() + data_.m10_digcount;
+                auto end = ob.pointer() + data_.m10_digcount;
                 write_int_dec_txtdigits_backwards(data_.m10, end);
                 ob.advance_to(end);
                 detail::write_fill(ob, data_.extra_zeros, (char_type)'0');
@@ -1456,7 +1456,7 @@ STRF_HD void fast_double_printer<CharSize>::print_to
     } else if (sci_notation_) {
         ob.ensure( value_.negative + m10_digcount_ + (m10_digcount_ != 1) + 4
                  + (value_.e10 > 99 || value_.e10 < -99) );
-        char_type* it = ob.pos();
+        char_type* it = ob.pointer();
         if (value_.negative) {
             * it = '-';
             ++it;
@@ -1496,7 +1496,7 @@ STRF_HD void fast_double_printer<CharSize>::print_to
                  + m10_digcount_ * (value_.e10 > - (int)m10_digcount_)
                  + (value_.e10 < - (int)m10_digcount_)
                  + (value_.e10 < 0) );
-        auto it = ob.pos();
+        auto it = ob.pointer();
         if (value_.negative) {
             *it = '-';
             ++it;
@@ -1517,7 +1517,7 @@ STRF_HD void fast_double_printer<CharSize>::print_to
                 detail::write_fill(ob, e10u - m10_digcount_, (char_type)'0');
 
                 ob.ensure(m10_digcount_);
-                auto end = ob.pos() + m10_digcount_;
+                auto end = ob.pointer() + m10_digcount_;
                 write_int_dec_txtdigits_backwards(value_.m10, end);
                 ob.advance_to(end);
             } else {
@@ -1756,7 +1756,7 @@ STRF_HD void fast_punct_double_printer<CharSize>::print_to
             unsigned e10u = - value_.e10;
             if (e10u >= m10_digcount_) {
                 ob.ensure(1 + decimal_point_size_);
-                auto it = ob.pos();
+                auto it = ob.pointer();
                 *it = static_cast<char_type>('0');
                 if (decimal_point_size_ == 1) {
                     it[1] = static_cast<char_type>(decimal_point_);
@@ -1790,9 +1790,9 @@ STRF_HD void fast_punct_double_printer<CharSize>::print_to
                 }
                 ob.ensure(decimal_point_size_);
                 if (decimal_point_size_ == 1) {
-                    *ob.pos() = static_cast<char_type>(decimal_point_);
+                    *ob.pointer() = static_cast<char_type>(decimal_point_);
                 } else {
-                    encode_char_(ob.pos(), decimal_point_);
+                    encode_char_(ob.pointer(), decimal_point_);
                 }
                 ob.advance(decimal_point_size_);
 

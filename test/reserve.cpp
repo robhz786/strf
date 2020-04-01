@@ -40,7 +40,7 @@ public:
 
     void recycle() override
     {
-        this->set_pos(buff_);
+        this->set_pointer(buff_);
     }
 
     std::size_t finish()

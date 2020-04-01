@@ -50,9 +50,9 @@ public:
 
     virtual STRF_HD ~underlying_outbuf() { };
 
-    STRF_HD char_type* pos() const noexcept
+    STRF_HD char_type* pointer() const noexcept
     {
-        return pos_;
+        return pointer_;
     }
     STRF_HD char_type* end() const noexcept
     {
@@ -60,8 +60,8 @@ public:
     }
     STRF_HD std::size_t size() const noexcept
     {
-        STRF_ASSERT(pos_ <= end_);
-        return end_ - pos_;
+        STRF_ASSERT(pointer_ <= end_);
+        return end_ - pointer_;
     }
 
     STRF_HD bool good() const noexcept
@@ -70,27 +70,27 @@ public:
     }
     STRF_HD void advance_to(char_type* p)
     {
-        STRF_ASSERT(pos_ <= p);
+        STRF_ASSERT(pointer_ <= p);
         STRF_ASSERT(p <= end_);
-        pos_ = p;
+        pointer_ = p;
     }
     STRF_HD void advance(std::size_t n)
     {
-        STRF_ASSERT(pos() + n <= end());
-        pos_ += n;
+        STRF_ASSERT(pointer() + n <= end());
+        pointer_ += n;
     }
     STRF_HD void advance() noexcept
     {
-        STRF_ASSERT(pos() < end());
-        ++pos_;
+        STRF_ASSERT(pointer() < end());
+        ++pointer_;
     }
     STRF_HD void require(std::size_t s)
     {
         STRF_ASSERT(s <= strf::min_size_after_recycle<CharSize>());
-        if (pos() + s > end()) {
+        if (pointer() + s > end()) {
             recycle();
         }
-        STRF_ASSERT(pos() + s <= end());
+        STRF_ASSERT(pointer() + s <= end());
     }
     STRF_HD void ensure(std::size_t s)
     {
@@ -102,15 +102,15 @@ public:
 protected:
 
     STRF_HD underlying_outbuf(char_type* p, char_type* e) noexcept
-        : pos_(p), end_(e)
+        : pointer_(p), end_(e)
     { }
 
     STRF_HD underlying_outbuf(char_type* p, std::size_t s) noexcept
-        : pos_(p), end_(p + s)
+        : pointer_(p), end_(p + s)
     { }
 
-    STRF_HD void set_pos(char_type* p) noexcept
-    { pos_ = p; };
+    STRF_HD void set_pointer(char_type* p) noexcept
+    { pointer_ = p; };
     STRF_HD void set_end(char_type* e) noexcept
     { end_ = e; };
     STRF_HD void set_good(bool g) noexcept
@@ -118,7 +118,7 @@ protected:
 
 private:
 
-    char_type* pos_;
+    char_type* pointer_;
     char_type* end_;
     bool good_ = true;
     friend class strf::detail::outbuf_test_tool;
@@ -144,9 +144,9 @@ public:
 
     virtual STRF_HD ~basic_outbuf() { };
 
-    STRF_HD CharT* pos() const noexcept
+    STRF_HD CharT* pointer() const noexcept
     {
-        return reinterpret_cast<CharT*>(underlying_impl_::pos());
+        return reinterpret_cast<CharT*>(underlying_impl_::pointer());
     }
     STRF_HD CharT* end() const noexcept
     {
@@ -183,9 +183,9 @@ protected:
         : underlying_impl_(reinterpret_cast<underlying_char_t_*>(p), s)
     { }
 
-    STRF_HD void set_pos(CharT* p) noexcept
+    STRF_HD void set_pointer(CharT* p) noexcept
     {
-        underlying_impl_::set_pos(reinterpret_cast<underlying_char_t_*>(p));
+        underlying_impl_::set_pointer(reinterpret_cast<underlying_char_t_*>(p));
     }
     STRF_HD void set_end(CharT* e) noexcept
     {
@@ -245,7 +245,7 @@ STRF_HD void outbuf_write_continuation(Outbuf& ob, const CharT* str, std::size_t
     auto space = ob.size();
     STRF_ASSERT(space < len);
 
-    detail::str_copy_n(ob.pos(), str, space);
+    detail::str_copy_n(ob.pointer(), str, space);
     str += space;
     len -= space;
     ob.advance_to(ob.end());
@@ -253,11 +253,11 @@ STRF_HD void outbuf_write_continuation(Outbuf& ob, const CharT* str, std::size_t
         ob.recycle();
         space = ob.size();
         if (len <= space) {
-            memcpy(ob.pos(), str, len * sizeof(CharT));
+            memcpy(ob.pointer(), str, len * sizeof(CharT));
             ob.advance(len);
             break;
         }
-        detail::str_copy_n(ob.pos(), str, space);
+        detail::str_copy_n(ob.pointer(), str, space);
         len -= space;
         str += space;
         ob.advance_to(ob.end());
@@ -271,7 +271,7 @@ STRF_HD void outbuf_write_continuation(Outbuf& ob, const CharT* str, std::size_t
 template <typename Outbuf, typename CharT = typename Outbuf::char_type>
 STRF_HD void outbuf_write(Outbuf& ob, const CharT* str, std::size_t len)
 {
-    auto p = ob.pos();
+    auto p = ob.pointer();
     if (p + len <= ob.end()) { // the common case
         strf::detail::str_copy_n(p, str, len);
         ob.advance(len);
@@ -283,13 +283,13 @@ STRF_HD void outbuf_write(Outbuf& ob, const CharT* str, std::size_t len)
 template <typename Outbuf, typename CharT = typename Outbuf::char_type>
 STRF_HD void outbuf_put(Outbuf& ob, CharT c)
 {
-    auto p = ob.pos();
+    auto p = ob.pointer();
     if (p != ob.end()) {
         *p = c;
         ob.advance_to(p+1);
     } else {
         ob.recycle();
-        *ob.pos() = c;
+        *ob.pointer() = c;
         ob.advance();
     }
 }
@@ -411,18 +411,18 @@ void STRF_HD write_fill_continuation
 
     std::size_t space = ob.size();
     STRF_ASSERT(space < count);
-    strf::detail::char_assign<char_type>(ob.pos(), space, ch);
+    strf::detail::char_assign<char_type>(ob.pointer(), space, ch);
     count -= space;
     ob.advance_to(ob.end());
     ob.recycle();
     while (ob.good()) {
         space = ob.size();
         if (count <= space) {
-            strf::detail::char_assign<char_type>(ob.pos(), count, ch);
+            strf::detail::char_assign<char_type>(ob.pointer(), count, ch);
             ob.advance(count);
             break;
         }
-        strf::detail::char_assign(ob.pos(), space, ch);
+        strf::detail::char_assign(ob.pointer(), space, ch);
         count -= space;
         ob.advance_to(ob.end());
         ob.recycle();
@@ -437,7 +437,7 @@ inline STRF_HD void write_fill
 {
     using char_type = typename strf::underlying_outbuf<CharSize>::char_type;
     if (count <= ob.size()) { // the common case
-        strf::detail::char_assign<char_type>(ob.pos(), count, ch);
+        strf::detail::char_assign<char_type>(ob.pointer(), count, ch);
         ob.advance(count);
     } else {
         write_fill_continuation(ob, count, ch);
@@ -489,11 +489,11 @@ public:
         ob.set_good(false);
     }
     template<std::size_t CharSize>
-    static STRF_HD void force_set_pos
+    static STRF_HD void force_set_pointer
         ( underlying_outbuf<CharSize>& ob
-        , strf::underlying_char_type<CharSize>* pos)
+        , strf::underlying_char_type<CharSize>* pointer)
     {
-        ob.set_pos(pos);
+        ob.set_pointer(pointer);
     }
 };
 
@@ -549,17 +549,17 @@ public:
     }
 
     STRF_HD basic_cstr_writer(basic_cstr_writer&& r)
-        : basic_cstr_writer(r.pos(), r.end())
+        : basic_cstr_writer(r.pointer(), r.end())
     {}
 
     STRF_HD void recycle() noexcept override
     {
         if (this->good()) {
-            it_ = this->pos();
+            it_ = this->pointer();
             this->set_good(false);
             this->set_end(outbuf_garbage_buf_end<CharT>());
         }
-        this->set_pos(outbuf_garbage_buf<CharT>());
+        this->set_pointer(outbuf_garbage_buf<CharT>());
     }
 
     struct result
@@ -572,10 +572,10 @@ public:
     {
         bool g = this->good();
         if (g) {
-            it_ = this->pos();
+            it_ = this->pointer();
             this->set_good(false);
         }
-        this->set_pos(outbuf_garbage_buf<CharT>());
+        this->set_pointer(outbuf_garbage_buf<CharT>());
         this->set_end(outbuf_garbage_buf_end<CharT>());
 
         *it_ = CharT();
@@ -617,7 +617,7 @@ public:
 
     STRF_HD void recycle() noexcept override
     {
-        this->set_pos(strf::outbuf_garbage_buf<CharT>());
+        this->set_pointer(strf::outbuf_garbage_buf<CharT>());
     }
 };
 

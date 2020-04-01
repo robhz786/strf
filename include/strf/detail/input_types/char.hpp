@@ -60,7 +60,7 @@ STRF_HD void char_printer<CharSize>::print_to
     ( strf::underlying_outbuf<CharSize>& ob ) const
 {
     ob.ensure(1);
-    *ob.pos() = ch_;
+    *ob.pointer() = ch_;
     ob.advance();
 }
 
@@ -161,18 +161,18 @@ STRF_HD void fmt_char_printer<CharSize>::print_to
     }
     if (count_ == 1) {
         ob.ensure(1);
-        * ob.pos() = ch_;
+        * ob.pointer() = ch_;
         ob.advance();
     } else {
         std::size_t count = count_;
         while(true) {
             std::size_t space = ob.size();
             if (count <= space) {
-                strf::detail::str_fill_n(ob.pos(), count, ch_);
+                strf::detail::str_fill_n(ob.pointer(), count, ch_);
                 ob.advance(count);
                 break;
             }
-            strf::detail::str_fill_n(ob.pos(), space, ch_);
+            strf::detail::str_fill_n(ob.pointer(), space, ch_);
             count -= space;
             ob.advance_to(ob.end());
             ob.recycle();

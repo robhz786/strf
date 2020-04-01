@@ -241,7 +241,7 @@ STRF_HD void int_printer<CharSize>::print_to
 {
     unsigned size = digcount_ + negative_;
     ob.ensure(size);
-    auto* it = write_int_dec_txtdigits_backwards(uvalue_, ob.pos() + size);
+    auto* it = write_int_dec_txtdigits_backwards(uvalue_, ob.pointer() + size);
     if (negative_) {
         it[-1] = '-';
     }
@@ -305,7 +305,7 @@ STRF_HD void punct_int_printer<CharSize>::print_to(strf::underlying_outbuf<CharS
 {
     if (sepcount_ == 0) {
         ob.ensure(negative_ + digcount_);
-        auto it = ob.pos();
+        auto it = ob.pointer();
         if (negative_) {
             *it = static_cast<char_type>('-');
             ++it;
@@ -465,7 +465,7 @@ STRF_HD inline void partial_fmt_int_printer<CharSize, Base>::print_to
 {
     if (sepcount_ == 0) {
         ob.ensure(prefixsize_ + digcount_);
-        auto it = ob.pos();
+        auto it = ob.pointer();
         if (prefixsize_ != 0) {
             STRF_IF_CONSTEXPR (Base == 10) {
                 * it = static_cast<char_type>('+') + (negative_ << 1);
@@ -515,19 +515,19 @@ inline STRF_HD void partial_fmt_int_printer<CharSize, Base>::write_complement
     if (prefixsize_ != 0) {
         ob.ensure(prefixsize_);
         STRF_IF_CONSTEXPR (Base == 10) {
-            * ob.pos() = static_cast<char_type>('+') + (negative_ << 1);
+            * ob.pointer() = static_cast<char_type>('+') + (negative_ << 1);
             ob.advance(1);
         } else STRF_IF_CONSTEXPR (Base == 8) {
-            * ob.pos() = static_cast<char_type>('0');
+            * ob.pointer() = static_cast<char_type>('0');
             ob.advance(1);
         } else STRF_IF_CONSTEXPR (Base == 16) {
-            ob.pos()[0] = static_cast<char_type>('0');
-            ob.pos()[1] = static_cast<char_type>
+            ob.pointer()[0] = static_cast<char_type>('0');
+            ob.pointer()[1] = static_cast<char_type>
                 ('X' | ((lettercase_ != strf::uppercase) << 5));
             ob.advance(2);
         } else {
-            ob.pos()[0] = static_cast<char_type>('0');
-            ob.pos()[1] = static_cast<char_type>
+            ob.pointer()[0] = static_cast<char_type>('0');
+            ob.pointer()[1] = static_cast<char_type>
                 ('B' | ((lettercase_ != strf::uppercase) << 5));
             ob.advance(2);
         }

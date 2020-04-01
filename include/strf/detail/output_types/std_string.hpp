@@ -46,8 +46,8 @@ public:
 
     void recycle() override
     {
-        auto * p = this->pos();
-        this->set_pos(buf_);
+        auto * p = this->pointer();
+        this->set_pointer(buf_);
         if (this->good()) {
             this->set_good(false);
             str_.append(buf_, p);
@@ -57,7 +57,7 @@ public:
 
     void finish()
     {
-        auto * p = this->pos();
+        auto * p = this->pointer();
         if (this->good()) {
             this->set_good(false);
             str_.append(buf_, p);
@@ -100,8 +100,8 @@ public:
 
     void recycle() override
     {
-        auto * p = this->pos();
-        this->set_pos(buf_);
+        auto * p = this->pointer();
+        this->set_pointer(buf_);
         if (this->good()) {
             this->set_good(false);
             str_.append(buf_, p);
@@ -111,7 +111,7 @@ public:
 
     string_type_ finish()
     {
-        auto * p = this->pos();
+        auto * p = this->pointer();
         if (this->good()) {
             this->set_good(false);
             str_.append(buf_, p);
@@ -139,7 +139,7 @@ public:
         : strf::basic_outbuf<CharT>(nullptr, nullptr)
         , str_(count, (CharT)0)
     {
-        this->set_pos(&*str_.begin());
+        this->set_pointer(&*str_.begin());
         this->set_end(&*str_.begin() + count);
     }
 
@@ -156,18 +156,18 @@ public:
 
     void recycle() override
     {
-        std::size_t original_size = this->pos() - str_.data();
+        std::size_t original_size = this->pointer() - str_.data();
         auto append_size = std::max
             ( original_size
             , strf::min_size_after_recycle<sizeof(CharT)>() );
         str_.append(append_size, (CharT)0);
-        this->set_pos(&*str_.begin() + original_size);
+        this->set_pointer(&*str_.begin() + original_size);
         this->set_end(&*str_.begin() + original_size + append_size);
     }
 
     std::basic_string<CharT, Traits, Allocator> finish()
     {
-        str_.resize(this->pos() - str_.data());
+        str_.resize(this->pointer() - str_.data());
         return std::move(str_);
     }
 

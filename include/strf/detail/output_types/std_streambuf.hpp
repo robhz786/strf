@@ -41,8 +41,8 @@ public:
 
     void recycle() override
     {
-        std::streamsize count = this->pos() - buf_;
-        this->set_pos(buf_);
+        std::streamsize count = this->pointer() - buf_;
+        this->set_pointer(buf_);
         if (this->good()) {
             auto count_inc = dest_.sputn(buf_, count);
             count_ += count_inc;
@@ -58,9 +58,9 @@ public:
 
     result finish()
     {
-        std::streamsize count = this->pos() - buf_;
+        std::streamsize count = this->pointer() - buf_;
         auto g = this->good();
-        this->set_pos(buf_);
+        this->set_pointer(buf_);
         this->set_good(false);
         if (g) {
             auto count_inc = dest_.sputn(buf_, count);

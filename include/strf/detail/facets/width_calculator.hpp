@@ -203,8 +203,8 @@ private:
 template <typename WFunc>
 void width_accumulator<WFunc>::recycle()
 {
-    auto end = this->pos();
-    this->set_pos(buff_);
+    auto end = this->pointer();
+    this->set_pointer(buff_);
     if (this->good()) {
         auto it = buff_;
         for (; it != end; ++it)
