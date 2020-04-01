@@ -260,7 +260,7 @@ void punct_non_decimal()
 
 void fast_width()
 {
-    const char* str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+    auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
     auto result = strf::to_string.with(strf::fast_width{})
         ( strf::right(str, 12, '*') );
 
@@ -269,7 +269,7 @@ void fast_width()
 
 void width_as_fast_u32len()
 {
-    const char* str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+    auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
     auto result = strf::to_string .with(strf::width_as_fast_u32len{})
         ( strf::right(str, 12, '*'));
     assert(result == "****15.00 \xE2\x82\xAC \x80"); // width calculated as 8
@@ -277,7 +277,7 @@ void width_as_fast_u32len()
 
 void width_as_u32len()
 {
-    const char* str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+    auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
     auto result = strf::to_string .with(strf::width_as_u32len{}) ( strf::right(str, 12, '*'));
 
     assert(result == "***15.00 \xE2\x82\xAC \x80"); // width calculated as 9
@@ -285,15 +285,15 @@ void width_as_u32len()
 
 void width_in_cv()
 {
-    const char* str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+    auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
 
     auto res1 = strf::to_u16string.with(strf::fast_width{})          (strf::cv(str) > 12);
     auto res2 = strf::to_u16string.with(strf::width_as_fast_u32len{})(strf::cv(str) > 12);
     auto res3 = strf::to_u16string.with(strf::width_as_u32len{})     (strf::cv(str) > 12);
 
-    assert(res1 == u" 15.00 € �");    // width calculated as 11 ( == strlen(str) )
-    assert(res2 == u"    15.00 € �"); // width calculated as 8
-    assert(res3 == u"   15.00 € �");  // width calculated as 9
+    assert(res1 == u" 15.00 \u20AC \uFFFD");    // width calculated as 11 ( == strlen(str) )
+    assert(res2 == u"    15.00 \u20AC \uFFFD"); // width calculated as 8
+    assert(res3 == u"   15.00 \u20AC \uFFFD");  // width calculated as 9
 }
 
 
@@ -314,11 +314,11 @@ void width_func()
         return roman_numerals_width[ch - 0x2160];
     };
     auto my_wcalc = strf::make_width_calculator(wfunc);
-    const char* str = "\u2163 + \u2167 = \u216B"; // "Ⅳ + Ⅷ = Ⅻ"
-    auto result = strf::to_string.with(my_wcalc) (strf::right(str, 18, '.'));
+    auto str = u8"\u2163 + \u2167 = \u216B"; // "Ⅳ + Ⅷ = Ⅻ"
+    auto result = strf::to_u8string.with(my_wcalc) (strf::right(str, 18, '.'));
 
     // width calculated as 13.3624, rounded to 13:
-    assert(result == ".....\u2163 + \u2167 = \u216B");
+    assert(result == u8".....\u2163 + \u2167 = \u216B");
 }
 
 //[avoid_repetitions
