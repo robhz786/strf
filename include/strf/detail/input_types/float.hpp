@@ -241,12 +241,11 @@ detail::double_dec decode(float f);
 
 } // namespace detail
 
-enum class float_notation{fixed, scientific, general};
+enum class float_notation{fixed, scientific, general/*, hex*/};
 
 struct float_format_data
 {
     unsigned precision = (unsigned)-1;
-    strf::float_notation notation = float_notation::general;
     bool showpoint = false;
     bool showpos = false;
 };
@@ -255,7 +254,6 @@ constexpr STRF_HD bool operator==( strf::float_format_data lhs
                                  , strf::float_format_data rhs ) noexcept
 {
     return lhs.precision == rhs.precision
-        && lhs.notation == rhs.notation
         && lhs.showpoint == rhs.showpoint
         && lhs.showpos == rhs.showpos ;
 }
@@ -266,16 +264,27 @@ constexpr STRF_HD bool operator!=( strf::float_format_data lhs
     return ! (lhs == rhs);
 }
 
+template <strf::float_notation Notation>
 struct float_format;
 
-template <typename T>
+template <typename T, strf::float_notation Notation = strf::float_notation::general>
 class float_format_fn
 {
+    template <strf::float_notation OtherNotation>
+    using adapted_derived_type_
+        = strf::fmt_replace<T, float_format<Notation>, float_format<OtherNotation> >;
+
 public:
+
     constexpr float_format_fn() noexcept = default;
 
-    template <typename U>
-    constexpr STRF_HD explicit float_format_fn(const float_format_fn<U>& other) noexcept
+    constexpr STRF_HD explicit float_format_fn(const strf::float_format_data& data) noexcept
+        : data_(data)
+    {
+    }
+
+    template <typename U, strf::float_notation N>
+    constexpr STRF_HD explicit float_format_fn(const float_format_fn<U, N>& other) noexcept
         : data_(other.get_float_format_data())
     {
     }
@@ -294,21 +303,55 @@ public:
         data_.precision = _;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T&& sci() && noexcept
+
+    template <strf::float_notation N = strf::float_notation::scientific>
+    constexpr STRF_HD
+    std::enable_if_t<N == Notation && N == strf::float_notation::scientific, T&&>
+    sci() && noexcept
     {
-        data_.notation = float_notation::scientific;
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T&& fixed() && noexcept
+    template <strf::float_notation N = strf::float_notation::scientific>
+    constexpr STRF_HD
+    std::enable_if_t< N != Notation && N == strf::float_notation::scientific
+                    , adapted_derived_type_<N> >
+    sci() const & noexcept
     {
-        data_.notation = float_notation::fixed;
+        return adapted_derived_type_<N>{ static_cast<const T&>(*this) };
+    }
+
+    template <strf::float_notation N = strf::float_notation::fixed>
+    constexpr STRF_HD
+    std::enable_if_t<N == Notation && N == strf::float_notation::fixed, T&&>
+    fixed() && noexcept
+    {
         return static_cast<T&&>(*this);
     }
-    constexpr STRF_HD T&& gen() && noexcept
+    template <strf::float_notation N = strf::float_notation::fixed>
+    constexpr STRF_HD
+    std::enable_if_t< N != Notation && N == strf::float_notation::fixed
+                    , adapted_derived_type_<N> >
+    fixed() const & noexcept
     {
-        data_.notation = float_notation::general;
+        return adapted_derived_type_<N>{ static_cast<const T&>(*this) };
+    }
+
+    template <strf::float_notation N = strf::float_notation::general>
+    constexpr STRF_HD
+    std::enable_if_t<N == Notation && N == strf::float_notation::general, T&&>
+    gen() && noexcept
+    {
         return static_cast<T&&>(*this);
     }
+    template <strf::float_notation N = strf::float_notation::general>
+    constexpr STRF_HD
+    std::enable_if_t< N != Notation && N == strf::float_notation::general
+                    , adapted_derived_type_<N> >
+    gen() const & noexcept
+    {
+        return adapted_derived_type_<N>{ static_cast<const T&>(*this) };
+    }
+
     constexpr strf::float_format_data get_float_format_data() const noexcept
     {
         return data_;
@@ -319,16 +362,17 @@ private:
     strf::float_format_data data_;
 };
 
+template <strf::float_notation Notation>
 struct float_format
 {
     template <typename T>
-    using fn = float_format_fn<T>;
+    using fn = float_format_fn<T, Notation>;
 };
 
-template<typename FloatT, bool Align = false>
+template<typename FloatT, strf::float_notation Notation, bool Align = false>
 using float_with_format = value_with_format
     < FloatT
-    , strf::float_format
+    , strf::float_format<Notation>
     , strf::alignment_format_q<Align> >;
 
 namespace detail {
@@ -348,26 +392,31 @@ struct double_printer_data
 };
 
 
+template <strf::float_notation Notation>
 STRF_HD double_printer_data init_double_printer_data
     ( detail::double_dec d, float_format_data fmt );
 
+template <strf::float_notation Notation>
 inline STRF_HD double_printer_data init_double_printer_data
     ( float f, float_format_data fmt )
 {
-    return init_double_printer_data(detail::decode(f), fmt);
+    return init_double_printer_data<Notation>(detail::decode(f), fmt);
 }
 
+template <strf::float_notation Notation>
 inline STRF_HD double_printer_data init_double_printer_data
     ( double d, float_format_data fmt )
 {
-    return init_double_printer_data(detail::decode(d), fmt);
+    return init_double_printer_data<Notation>(detail::decode(d), fmt);
 }
 
-#if !defined(STRF_OMIT_IMPL)
+//#if !defined(STRF_OMIT_IMPL)
 
-STRF_INLINE STRF_HD double_printer_data init_double_printer_data
+template <strf::float_notation Notation>
+STRF_HD double_printer_data init_double_printer_data
     ( detail::double_dec dd, float_format_data fmt )
 {
+    //static_assert(Notation != strf::float_notation::hex, "");
     double_printer_data data;
     std::memcpy(&data.m10, &dd, sizeof(dd));
     data.showsign = fmt.showpos || data.negative;
@@ -380,58 +429,47 @@ STRF_INLINE STRF_HD double_printer_data init_double_printer_data
     } else if (fmt.precision == (unsigned)-1) {
         data.m10_digcount = strf::detail::count_digits<10>(data.m10);
         data.extra_zeros = 0;
-        switch(fmt.notation) {
-            case float_notation::general: {
-                data.sci_notation
-                    = (data.e10 > 4 + (!fmt.showpoint && data.m10_digcount != 1))
-                   || (data.e10 < ( -(int)data.m10_digcount - 2
-                                   - (fmt.showpoint || data.m10_digcount != 1) ));
-                data.showpoint = fmt.showpoint
-                        || (data.sci_notation && data.m10_digcount != 1)
-                        || (!data.sci_notation && data.e10 < 0);
-                break;
-            }
-            case float_notation::fixed: {
-                data.sci_notation = false;
-                data.showpoint = fmt.showpoint || (data.e10 < 0);
-                break;
-            }
-            case float_notation::scientific: {
-                data.sci_notation = true;
-                data.showpoint = fmt.showpoint || (data.m10_digcount != 1);
-                break;
-            }
+        STRF_IF_CONSTEXPR (Notation == float_notation::general) {
+            data.sci_notation
+                = (data.e10 > 4 + (!fmt.showpoint && data.m10_digcount != 1))
+               || (data.e10 < ( -(int)data.m10_digcount - 2
+                               - (fmt.showpoint || data.m10_digcount != 1) ));
+            data.showpoint = fmt.showpoint
+                    || (data.sci_notation && data.m10_digcount != 1)
+                    || (!data.sci_notation && data.e10 < 0);
+        }
+        STRF_IF_CONSTEXPR (Notation == float_notation::fixed) {
+            data.sci_notation = false;
+            data.showpoint = fmt.showpoint || (data.e10 < 0);
+        }
+        STRF_IF_CONSTEXPR (Notation == float_notation::scientific) {
+           data.sci_notation = true;
+           data.showpoint = fmt.showpoint || (data.m10_digcount != 1);
         }
     } else {
         data.m10_digcount = strf::detail::count_digits<10>(data.m10);
         int xz; // number of zeros to be added or ( if negative ) digits to be removed
-        switch(fmt.notation) {
-            case float_notation::general: {
-                int p = fmt.precision + (fmt.precision == 0);
-                int sci_notation_exp = data.e10 + (int)data.m10_digcount - 1;
-                data.sci_notation = (sci_notation_exp < -4 || sci_notation_exp >= p);
-                data.showpoint = fmt.showpoint
-                    || (data.sci_notation && data.m10_digcount != 1)
-                    || (!data.sci_notation && data.e10 < 0);
-                xz = ((unsigned)p < data.m10_digcount || fmt.showpoint)
-                   * (p - (int)data.m10_digcount);
-                break;
-            }
-            case float_notation::fixed: {
-                const int frac_digits = (data.e10 < 0) * -data.e10;
-                xz = (fmt.precision - frac_digits);
-                data.sci_notation = false;
-                data.showpoint = fmt.showpoint || (fmt.precision != 0);
-                break;
-            }
-            default: {
-                STRF_ASSERT(fmt.notation == float_notation::scientific);
-                const unsigned frac_digits = data.m10_digcount - 1;
-                xz = (fmt.precision - frac_digits);
-                data.sci_notation = true;
-                data.showpoint = fmt.showpoint || (fmt.precision != 0);
-                break;
-            }
+        STRF_IF_CONSTEXPR (Notation == float_notation::general) {
+            int p = fmt.precision + (fmt.precision == 0);
+            int sci_notation_exp = data.e10 + (int)data.m10_digcount - 1;
+            data.sci_notation = (sci_notation_exp < -4 || sci_notation_exp >= p);
+            data.showpoint = fmt.showpoint
+                || (data.sci_notation && data.m10_digcount != 1)
+                || (!data.sci_notation && data.e10 < 0);
+            xz = ((unsigned)p < data.m10_digcount || fmt.showpoint)
+               * (p - (int)data.m10_digcount);
+         }
+        STRF_IF_CONSTEXPR (Notation == float_notation::fixed) {
+            const int frac_digits = (data.e10 < 0) * -data.e10;
+            xz = (fmt.precision - frac_digits);
+            data.sci_notation = false;
+            data.showpoint = fmt.showpoint || (fmt.precision != 0);
+        }
+        STRF_IF_CONSTEXPR (Notation == float_notation::scientific) {
+            const unsigned frac_digits = data.m10_digcount - 1;
+            xz = (fmt.precision - frac_digits);
+            data.sci_notation = true;
+            data.showpoint = fmt.showpoint || (fmt.precision != 0);
         }
         if (xz < 0) {
             data.extra_zeros = 0;
@@ -443,7 +481,7 @@ STRF_INLINE STRF_HD double_printer_data init_double_printer_data
             data.m10 = data.m10 / p10;
             auto middle = p10 >> 1;
             data.m10 += (remainer > middle || (remainer == middle && (data.m10 & 1) == 1));
-            if (fmt.notation == float_notation::general) {
+            STRF_IF_CONSTEXPR (Notation == float_notation::general) {
                 while (data.m10 % 10 == 0) {
                     data.m10 /= 10;
                     -- data.m10_digcount;
@@ -460,7 +498,7 @@ STRF_INLINE STRF_HD double_printer_data init_double_printer_data
     return data;
 }
 
-#endif // !defined(STRF_OMIT_IMPL)
+//#endif // !defined(STRF_OMIT_IMPL)
 
 template <int Base, std::size_t CharSize, typename IntT>
 inline STRF_HD void write_int_with_leading_zeros
@@ -765,11 +803,12 @@ public:
 
     using char_type = strf::underlying_char_type<CharSize>;
 
-    template <typename FP, typename Preview, typename FloatT, typename CharT>
+    template < typename FP, typename Preview, typename FloatT
+             , strf::float_notation Notation, typename CharT>
     STRF_HD punct_double_printer
         ( const FP& fp
         , Preview& preview
-        , strf::float_with_format<FloatT, false> x
+        , strf::float_with_format<FloatT, Notation, false> x
         , strf::tag<CharT> )
         : punct_(strf::get_facet<strf::numpunct_c<10>, FloatT>(fp))
         , inv_seq_poli_(strf::get_facet<strf::invalid_seq_policy_c, FloatT>(fp))
@@ -777,9 +816,9 @@ public:
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(fp))
     {
         const auto fmt = x.get_float_format_data();
-        data_ = strf::detail::init_double_printer_data(x.value(), fmt);
+        data_ = strf::detail::init_double_printer_data<Notation>(x.value(), fmt);
         decltype(auto) cs = get_facet<strf::charset_c<CharT>, FloatT>(fp);
-        init_(cs, fmt.notation == float_notation::general, fmt.showpoint);
+        init_(cs, Notation == float_notation::general, fmt.showpoint);
         STRF_IF_CONSTEXPR (Preview::width_required) {
             preview.subtract_width(content_width_());
         }
@@ -788,11 +827,12 @@ public:
         }
     }
 
-    template <typename FP, typename Preview, typename FloatT, typename CharT>
+    template < typename FP, typename Preview, typename FloatT
+             , strf::float_notation Notation, typename CharT >
     STRF_HD punct_double_printer
         ( const FP& fp
         , Preview& preview
-        , strf::float_with_format<FloatT, true> x
+        , strf::float_with_format<FloatT, Notation, true> x
         , strf::tag<CharT> )
         : punct_(strf::get_facet<strf::numpunct_c<10>, FloatT>(fp))
         , fillchar_(x.fill())
@@ -801,9 +841,9 @@ public:
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(fp))
     {
         const auto fmt = x.get_float_format_data();
-        data_ = strf::detail::init_double_printer_data(x.value(), fmt);
+        data_ = strf::detail::init_double_printer_data<Notation>(x.value(), fmt);
         decltype(auto) cs = get_facet<strf::charset_c<CharT>, FloatT>(fp);
-        init_( cs, fmt.notation == float_notation::general, fmt.showpoint);
+        init_( cs, Notation == float_notation::general, fmt.showpoint);
         init_(preview, x.width(), x.alignment(), cs);
     }
 
@@ -1114,14 +1154,15 @@ public:
 
     using char_type = strf::underlying_char_type<CharSize>;
 
-    template <typename Fpack, typename Preview, typename FloatT, typename CharT>
+    template < typename Fpack, typename Preview, typename FloatT
+             , strf::float_notation Notation, typename CharT >
     STRF_HD double_printer
         ( const Fpack& fp
         , Preview& preview
-        , strf::float_with_format<FloatT, false> x
+        , strf::float_with_format<FloatT, Notation, false> x
         , strf::tag<CharT> )
-        : data_(strf::detail::init_double_printer_data
-                (x.value(), x.get_float_format_data()))
+        : data_(strf::detail::init_double_printer_data<Notation>
+                    (x.value(), x.get_float_format_data()))
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(fp))
     {
         auto content_width = content_width_();
@@ -1129,14 +1170,15 @@ public:
         preview.add_size(content_width);
     }
 
-    template <typename Fpack, typename Preview, typename FloatT, typename CharT>
+    template < typename Fpack, typename Preview, typename FloatT
+             , strf::float_notation Notation, typename CharT >
     STRF_HD double_printer
         ( const Fpack& fp
         , Preview& preview
-        , strf::float_with_format<FloatT, true> x
+        , strf::float_with_format<FloatT, Notation, true> x
         , strf::tag<CharT>)
-        : data_(strf::detail::init_double_printer_data
-                (x.value(), x.get_float_format_data()))
+        : data_(strf::detail::init_double_printer_data<Notation>
+                    (x.value(), x.get_float_format_data()))
         , fillchar_(x.fill())
         , inv_seq_poli_(strf::get_facet<strf::invalid_seq_policy_c, FloatT>(fp))
         , surr_poli_(strf::get_facet<strf::surrogate_policy_c, FloatT>(fp))
@@ -1828,12 +1870,12 @@ STRF_EXPLICIT_TEMPLATE class fast_punct_double_printer<4>;
 
 inline STRF_HD auto make_fmt(strf::rank<1>, float x)
 {
-    return strf::float_with_format<float, false>{x};
+    return strf::float_with_format<float, strf::float_notation::general, false>{x};
 }
 
 inline STRF_HD auto make_fmt(strf::rank<1>, double x)
 {
-    return strf::float_with_format<double, false>{x};
+    return strf::float_with_format<double, strf::float_notation::general, false>{x};
 }
 
 inline STRF_HD void make_fmt(strf::rank<1>, long double x) = delete;
@@ -1861,7 +1903,11 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, double d)
 template <typename CharT, typename FPack, typename Preview>
 STRF_HD void make_printer(strf::rank<1>, const FPack& fp, Preview& preview, long double d) = delete;
 
-template <typename CharT, typename FPack, typename Preview, bool Align>
+template < typename CharT
+         , typename FPack
+         , typename Preview
+         , strf::float_notation Notation
+         , bool Align >
 inline STRF_HD typename std::conditional
     < strf::detail::has_punct<CharT, FPack, float, 10>
     , strf::detail::punct_double_printer<sizeof(CharT)>
@@ -1869,12 +1915,16 @@ inline STRF_HD typename std::conditional
 make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
-            , strf::float_with_format<float, Align> x )
+            , strf::float_with_format<float, Notation, Align> x )
 {
     return {fp, preview, x, strf::tag<CharT>()};
 }
 
-template <typename CharT, typename FPack, typename Preview, bool Align>
+template < typename CharT
+         , typename FPack
+         , typename Preview
+         , strf::float_notation Notation
+         , bool Align >
 inline STRF_HD typename std::conditional
     < strf::detail::has_punct<CharT, FPack, double, 10>
     , strf::detail::punct_double_printer<sizeof(CharT)>
@@ -1882,7 +1932,7 @@ inline STRF_HD typename std::conditional
 make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
-            , strf::float_with_format<double, Align> x )
+            , strf::float_with_format<double, Notation, Align> x )
 {
     return {fp, preview, x, strf::tag<CharT>()};
 }
