@@ -11,11 +11,33 @@
 
 int main()
 {
+    using namespace strf::width_literal;
     {
         auto wfunc = [](char32_t ch) -> strf::width_t {
             return ( ch == U'\u2E3A' ? 4: ch == U'\u2014' ? 2: 1 );
         };
         auto wcalc = strf::make_width_calculator(wfunc);
+        TEST("abcd").with(wcalc)  (strf::left("abcd", 0));
+        TEST("abcd").with(wcalc)  (strf::left("abcd", 3));
+        TEST("abcd ").with(wcalc) (strf::left("abcd", 5));
+
+        TEST("abc  ").with(wcalc) (strf::left("abcd", 5).p(3));
+        TEST("abcd ").with(wcalc) (strf::left("abcd", 5).p(4));
+        TEST("abcd ").with(wcalc) (strf::left("abcd", 5).p(5));
+
+        TEST("123456789-123456789-123456789-   ").with(wcalc)
+            (strf::left("123456789-123456789-123456789-", 33).p(32));
+
+        TEST("123456789-123456789-123456789-   ").with(wcalc)
+            (strf::left("123456789-123456789-123456789-", 33).p(30));
+
+        TEST("123456789-123456789-123456789    ").with(wcalc)
+            (strf::left("123456789-123456789-123456789-", 33).p(29));
+
+        TEST("12345                            ").with(wcalc)
+            (strf::left("123456789-123456789-123456789-", 33).p(5));
+        TEST("12345                            ").with(wcalc)
+            (strf::left("123456789-123456789-123456789-", 33).p(5.99_w));
 
         TEST(u8"\u2E3A\u2E3A\u2014") .with(wcalc)
             (strf::right(u8"\u2E3A\u2E3A\u2014", 8));
@@ -37,13 +59,18 @@ int main()
 
         // TEST( u"  \u2E3A\u2E3A\u2014") .with(wcalc)
         //     (strf::cv(u8"\u2E3A\u2E3A\u2014") > 12);
+
     }
     // --------------------------------------------------------------------------------
     // strf::fast_width
     // --------------------------------------------------------------------------------
-    TEST_FAST_WIDTH("abcd")  (strf::left("abcd", 0));
-    TEST_FAST_WIDTH("abcd")  (strf::left("abcd", 3));
-    TEST_FAST_WIDTH("abcd ") (strf::left("abcd", 5));
+    TEST_FAST_WIDTH("abcd")   (strf::left("abcd", 0));
+    TEST_FAST_WIDTH("abcd")   (strf::left("abcd", 3));
+    TEST_FAST_WIDTH("abcd ")  (strf::left("abcd", 5));
+
+    TEST_FAST_WIDTH("abc  ") (strf::left("abcd", 5).p(3));
+    TEST_FAST_WIDTH("abcd ") (strf::left("abcd", 5).p(4));
+    TEST_FAST_WIDTH("abcd ") (strf::left("abcd", 5).p(5));
 
     TEST_FAST_WIDTH(u8"   \u2E3A\u2E3A\u2014")
         (strf::fmt(u8"\u2E3A\u2E3A\u2014") > 12);
@@ -73,6 +100,10 @@ int main()
     TEST_W_AS_FAST_U32LEN("abcd")  (strf::left("abcd", 0));
     TEST_W_AS_FAST_U32LEN("abcd")  (strf::left("abcd", 4));
     TEST_W_AS_FAST_U32LEN("abcd ") (strf::left("abcd", 5));
+
+    TEST_W_AS_FAST_U32LEN("abc  ") (strf::left("abcd", 5).p(3.999_w));
+    TEST_W_AS_FAST_U32LEN("abcd ") (strf::left("abcd", 5).p(4));
+    TEST_W_AS_FAST_U32LEN("abcd ") (strf::left("abcd", 5).p(5));
 
     TEST_W_AS_FAST_U32LEN("            a \xC4\x80 \xE0\xA0\x80 \xF0\x90\x80\x80")
         (strf::right("a \xC4\x80 \xE0\xA0\x80 \xF0\x90\x80\x80", 19));
@@ -105,6 +136,10 @@ int main()
     TEST_W_AS_U32LEN("abcd")  (strf::left("abcd", 0));
     TEST_W_AS_U32LEN("abcd")  (strf::left("abcd", 4));
     TEST_W_AS_U32LEN("abcd ") (strf::left("abcd", 5));
+
+    TEST_W_AS_U32LEN("abc  ") (strf::left("abcd", 5).p(3.999_w));
+    TEST_W_AS_U32LEN("abcd ") (strf::left("abcd", 5).p(4));
+    TEST_W_AS_U32LEN("abcd ") (strf::left("abcd", 5).p(5));
 
     // --------------------------------------------------------------------------------
     // Invalid UTF-8 input, when converting to another encoding or sanitizing

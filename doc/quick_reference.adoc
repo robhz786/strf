@@ -917,11 +917,12 @@ Format functions::
 `operator~()`:::  Prints the decimal point even when there
 are no fractional digits.
 `sci()`::: Use scientific notation, like this: `"1.2345e+02"`.
-`fixed()`::: Use decimanl notation, like this: `"123.45"`.
+`fixed()`::: Use decimal notation, like this: `"123.45"`.
 `gen()`::: This is the default notation.
 When precision is unspecified ( or equal to `(unsigned)-1` )
 prints in the scientfic notation if, and only if, it is shorter
-than the fixed notation. Otherwise, does like in `std::printf`:
+than the fixed notation. Otherwise ( when precision is specified ),
+does like in `std::printf`:
 uses the scientfic notation if the exponent is less than -4 or greater
 than or equal to the precision. Trailing fractional zeros are not printed.
 `p(unsigned precision)`::: If `precision == (unsigned)-1`, which is
@@ -974,13 +975,26 @@ and `std::basic_string<CharT, Traits, Alloc>`
 ::
 where:
 ::
-- `CharT` is the character type. If it is not the same as the output character type ( defined by the <<destinations,destination>> ), then it is necessare to use the `cv` or `sani` format function.
+- `CharT` is the character type. If it is not the same as the output character type ( defined by the <<destinations,destination>> ), then it is necessary to use the `cv` or `sani` format function.
 - `Traits` can be any type that satisfies https://en.cppreference.com/w/cpp/named_req/CharTraits[CharTraits]
 - `Alloc` can be any type that satisfies https://en.cppreference.com/w/cpp/named_req/Allocator[Allocator]
 
 Format functions::
 ( in addition to <<alignment_format_functions, alignment functions>> )
 
+`p(<<reference#width_t,width_t>> limit)`:::   
+   Does not print the whole string if its width is greater than `limit`,
+   but the greatest possible amount of its leading Unicode code points
+   such that the width is not greater than `limit`.
++
+////
+   but prints the maxixum leading sub-string such that its width
+   is not greater than `limit`.
+   Prints the maximum amount of Unicode code points such that
+   the width is not greater than `limit`.   
+   __To-to__
+////
++
 `template <typename Charset> sani(Charset cs)`:::
    Translates input string from `cs` to the output encoding.
    If the encodings are the same then sanitizes the input string.

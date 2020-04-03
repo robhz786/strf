@@ -8,7 +8,6 @@
 #include <strf/facets_pack.hpp>
 
 namespace strf {
-
 namespace detail {
 
 template <typename CharIn>
@@ -245,10 +244,93 @@ struct sani_format_with_charset
     using fn = strf::cv_format_with_charset_fn<CharT, Charset, T>;
 };
 
-template <typename CharIn>
+template <typename T, bool Active>
+class string_precision_format_fn;
+
+template <bool Active>
+struct string_precision_format
+{
+    template <typename T>
+    using fn = strf::string_precision_format_fn<T, Active>;
+};
+
+template <bool Active>
+struct string_precision
+{
+};
+
+template <>
+struct string_precision<true>
+{
+    strf::width_t precision;
+};
+
+template <typename T>
+class string_precision_format_fn<T, true>
+{
+public:
+    constexpr string_precision_format_fn(strf::width_t p) noexcept
+        : precision_(p)
+    {
+    }
+    template <typename U>
+    constexpr string_precision_format_fn(strf::string_precision_format_fn<U, true> other) noexcept
+        : precision_(other.precision_)
+    {
+    }
+    constexpr STRF_HD T&& p(strf::width_t _) && noexcept
+    {
+        precision_ = _;
+        return static_cast<T&&>(*this);
+    }
+    constexpr STRF_HD strf::width_t precision() const noexcept
+    {
+        return precision_;
+    }
+    constexpr STRF_HD auto get_string_precision() const noexcept
+    {
+        return strf::string_precision<true>{precision_};
+    }
+
+private:
+
+    strf::width_t precision_;
+};
+
+
+template <typename T>
+class string_precision_format_fn<T, false>
+{
+    using adapted_derived_type_
+        = strf::fmt_replace< T
+                           , strf::string_precision_format<false>
+                           , strf::string_precision_format<true> >;
+public:
+
+    constexpr string_precision_format_fn() noexcept
+    {
+    }
+    template <typename U>
+    constexpr string_precision_format_fn(strf::string_precision_format_fn<U, false>) noexcept
+    {
+    }
+    constexpr STRF_HD adapted_derived_type_ p(strf::width_t precision) const noexcept
+    {
+        return { static_cast<const T&>(*this)
+               , strf::tag<string_precision_format<true> >{}
+               , precision };
+    }
+    constexpr STRF_HD auto get_string_precision() const noexcept
+    {
+        return strf::string_precision<false>{};
+    }
+};
+
+template <typename CharIn, bool HasPrecision = false, bool HasAlignment = false>
 using string_with_format = strf::value_with_format
     < strf::detail::simple_string_view<CharIn>
-    , strf::alignment_format_q<false>
+    , strf::string_precision_format<HasPrecision>
+    , strf::alignment_format_q<HasAlignment>
     , strf::no_cv_format<CharIn> >;
 
 template <typename CharIn>
@@ -330,7 +412,7 @@ public:
     STRF_HD string_printer
         ( const FPack& fp
         , Preview& preview
-        , simple_string_view<CharT> str
+        , strf::detail::simple_string_view<CharT> str
         , strf::tag<CharT> ) noexcept
         : str_(reinterpret_cast<const char_type*>(str.begin()))
         , len_(str.size())
@@ -344,6 +426,46 @@ public:
             preview.subtract_width(w);
         }
         preview.add_size(len_);
+    }
+
+    template <typename FPack, typename Preview, typename CharT>
+    STRF_HD string_printer
+        ( const FPack& fp
+        , Preview& preview
+        , strf::detail::simple_string_view<CharT> str
+        , strf::string_precision<false>
+        , strf::tag<CharT> t) noexcept
+        : string_printer(fp, preview, str, t)
+    {
+    }
+
+    template <typename FPack, typename Preview, typename CharT>
+    STRF_HD string_printer
+        ( const FPack& fp
+        , Preview& preview
+        , strf::detail::simple_string_view<CharT> str
+        , strf::string_precision<true> sp
+        , strf::tag<CharT> ) noexcept
+        : str_(reinterpret_cast<const char_type*>(str.begin()))
+    {
+        decltype(auto) wcalc = get_facet_<strf::width_calculator_c, CharT>(fp);
+        decltype(auto) cs = get_facet_<strf::charset_c<CharT>, CharT>(fp);
+        decltype(auto) surr_poli = get_facet_<strf::surrogate_policy_c, CharT>(fp);
+        auto res = wcalc.str_width_and_pos(cs, sp.precision, str_, str.size(), surr_poli);
+        len_ = res.pos;
+        preview.subtract_width(res.width);
+    }
+
+    template <typename FPack, typename Preview, bool HasP, typename CharT>
+    STRF_HD string_printer
+        ( const FPack& fp
+        , Preview& preview
+        , strf::detail::simple_string_view<CharT> str
+        , strf::string_precision<HasP> sp
+        , strf::alignment_format_data
+        , strf::tag<CharT> t) noexcept
+        : string_printer(fp, preview, str, sp, t)
+    {
     }
 
     STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override;
@@ -368,13 +490,13 @@ STRF_HD void string_printer<CharSize>::print_to(strf::underlying_outbuf<CharSize
 }
 
 template <std::size_t CharSize>
-class fmt_string_printer: public strf::printer<CharSize>
+class aligned_string_printer: public strf::printer<CharSize>
 {
 public:
     using char_type = strf::underlying_char_type<CharSize>;
 
     template <typename FPack, typename Preview, typename CharT>
-    STRF_HD fmt_string_printer
+    STRF_HD aligned_string_printer
         ( const FPack& fp
         , Preview& preview
         , strf::detail::simple_string_view<CharT> str
@@ -386,12 +508,52 @@ public:
         , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, CharT>(fp))
         , surr_poli_(get_facet_<strf::surrogate_policy_c, CharT>(fp))
     {
-         init_( preview
-              , get_facet_<strf::width_calculator_c, CharT>(fp)
-              , get_facet_<strf::charset_c<CharT>, CharT>(fp) );
+        decltype(auto) wcalc = get_facet_<strf::width_calculator_c, CharT>(fp);
+        decltype(auto) cs = get_facet_<strf::charset_c<CharT>, CharT>(fp);
+        strf::width_t limit = ( Preview::width_required && preview.remaining_width() > afmt_.width
+                              ? preview.remaining_width()
+                              : afmt_.width );
+        auto strw = wcalc.str_width(cs, limit, str_, len_, surr_poli_);
+        encode_fill_ = cs.encode_fill_func();
+        auto fillcount = init_(preview, strw);
+        preview_size_(preview, cs, fillcount);
     }
 
-    STRF_HD ~fmt_string_printer();
+    template <typename FPack, typename Preview, typename CharT>
+    STRF_HD aligned_string_printer
+        ( const FPack& fp
+        , Preview& preview
+        , strf::detail::simple_string_view<CharT> str
+        , strf::string_precision<false>
+        , strf::alignment_format_data text_alignment
+        , strf::tag<CharT> )
+        : aligned_string_printer(fp, preview, str, text_alignment, strf::tag<CharT>{})
+    {
+    }
+
+    template <typename FPack, typename Preview, typename CharT>
+    STRF_HD aligned_string_printer
+        ( const FPack& fp
+        , Preview& preview
+        , strf::detail::simple_string_view<CharT> str
+        , strf::string_precision<true> sp
+        , strf::alignment_format_data text_alignment
+        , strf::tag<CharT> )
+        : str_(reinterpret_cast<const char_type*>(str.begin()))
+        , afmt_(text_alignment)
+        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, CharT>(fp))
+        , surr_poli_(get_facet_<strf::surrogate_policy_c, CharT>(fp))
+    {
+        decltype(auto) wcalc = get_facet_<strf::width_calculator_c, CharT>(fp);
+        decltype(auto) cs = get_facet_<strf::charset_c<CharT>, CharT>(fp);
+        auto res = wcalc.str_width_and_pos(cs, sp.precision, str_, str.size(), surr_poli_);
+        len_ = res.pos;
+        encode_fill_ = cs.encode_fill_func();
+        auto fillcount = init_(preview, res.width);
+        preview_size_(preview, cs, fillcount);
+    }
+
+    STRF_HD ~aligned_string_printer();
 
     STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override;
 
@@ -413,30 +575,37 @@ private:
         return fp.template get_facet<Category, input_tag>();
     }
 
-    template <typename Preview, typename WCalc, typename Charset>
-    STRF_HD void init_(Preview&, const WCalc&, const Charset&);
+    template <typename Preview>
+    STRF_HD std::uint16_t init_(Preview&, strf::width_t strw);
+
+    template <typename Charset>
+    STRF_HD void preview_size_( strf::size_preview<true>& preview
+                              , Charset cs, std::uint16_t fillcount )
+    {
+        preview.add_size(len_);
+        if (fillcount > 0) {
+            preview.add_size(fillcount * cs.encoded_char_size(afmt_.fill));
+        }
+    }
+
+    template <typename Charset>
+    STRF_HD void preview_size_(strf::size_preview<false>&, Charset, std::uint16_t)
+    {
+    }
 };
 
 template<std::size_t CharSize>
-STRF_HD fmt_string_printer<CharSize>::~fmt_string_printer()
+STRF_HD aligned_string_printer<CharSize>::~aligned_string_printer()
 {
 }
 
 template<std::size_t CharSize>
-template <typename Preview, typename WCalc, typename Charset>
-inline STRF_HD void fmt_string_printer<CharSize>::init_
-    ( Preview& preview, const WCalc& wcalc, const Charset& cs )
+template <typename Preview>
+inline STRF_HD std::uint16_t aligned_string_printer<CharSize>::init_
+    ( Preview& preview, strf::width_t strw )
 {
-    encode_fill_ = cs.encode_fill_func();
-    std::uint16_t fillcount = 0;
-    strf::width_t fmt_width = afmt_.width;
-    strf::width_t limit =
-        ( Preview::width_required && preview.remaining_width() > fmt_width
-        ? preview.remaining_width()
-        : fmt_width );
-    auto strw = wcalc.str_width(cs, limit, str_, len_, surr_poli_);
-    if (fmt_width > strw) {
-        fillcount = (fmt_width - strw).round();
+    if (afmt_.width > strw) {
+        std::uint16_t fillcount = (afmt_.width - strw).round();
         switch(afmt_.alignment) {
             case strf::text_alignment::left:
                 left_fillcount_ = 0;
@@ -453,22 +622,17 @@ inline STRF_HD void fmt_string_printer<CharSize>::init_
                 right_fillcount_ = 0;
         }
         preview.subtract_width(strw + fillcount);
+        return fillcount;
     } else {
         right_fillcount_ = 0;
         left_fillcount_ = 0;
         preview.subtract_width(strw);
-    }
-
-    STRF_IF_CONSTEXPR (Preview::size_required) {
-        preview.add_size(len_);
-        if (fillcount > 0) {
-             preview.add_size(fillcount * cs.encoded_char_size(afmt_.fill));
-        }
+        return 0;
     }
 }
 
 template<std::size_t CharSize>
-void STRF_HD fmt_string_printer<CharSize>::print_to
+void STRF_HD aligned_string_printer<CharSize>::print_to
     ( strf::underlying_outbuf<CharSize>& ob ) const
 {
     if (left_fillcount_ > 0) {
@@ -486,9 +650,9 @@ STRF_EXPLICIT_TEMPLATE class string_printer<1>;
 STRF_EXPLICIT_TEMPLATE class string_printer<2>;
 STRF_EXPLICIT_TEMPLATE class string_printer<4>;
 
-STRF_EXPLICIT_TEMPLATE class fmt_string_printer<1>;
-STRF_EXPLICIT_TEMPLATE class fmt_string_printer<2>;
-STRF_EXPLICIT_TEMPLATE class fmt_string_printer<4>;
+STRF_EXPLICIT_TEMPLATE class aligned_string_printer<1>;
+STRF_EXPLICIT_TEMPLATE class aligned_string_printer<2>;
+STRF_EXPLICIT_TEMPLATE class aligned_string_printer<4>;
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
@@ -610,20 +774,26 @@ make_printer( strf::rank<1>
 
 #endif //defined(STRF_HAS_STD_STRING_VIEW)
 
-template <typename CharOut, typename FPack, typename Preview, typename CharIn>
-inline STRF_HD strf::detail::fmt_string_printer<sizeof(CharOut)>
+template < typename CharOut, typename FPack, typename Preview, typename CharIn
+         , bool HasPrecision, bool HasAlignment >
+inline STRF_HD std::conditional_t
+    < HasAlignment
+    , strf::detail::aligned_string_printer<sizeof(CharOut)>
+    , strf::detail::string_printer<sizeof(CharOut)> >
 make_printer( strf::rank<1>
             , const FPack& fp
             , Preview& preview
             , const strf::value_with_format
                 < strf::detail::simple_string_view<CharIn>
-                , strf::alignment_format_q<true>
+                , strf::string_precision_format<HasPrecision>
+                , strf::alignment_format_q<HasAlignment>
                 , strf::no_cv_format<CharIn> > input )
 {
     static_assert( std::is_same<CharIn, CharOut>::value
                  , "Character type mismatch. Use cv function." );
-    return { fp, preview, input.value(), input.get_alignment_format_data()
-           , strf::tag<CharOut>()};
+    return { fp, preview, input.value(), input.get_string_precision()
+           , input.get_alignment_format_data()
+           , strf::tag<CharOut>() };
 }
 
 } // namespace strf

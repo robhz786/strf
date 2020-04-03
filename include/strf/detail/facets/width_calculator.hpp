@@ -213,7 +213,7 @@ void width_accumulator<WFunc>::recycle()
             if (w > limit_) {
                 this->set_good(false);
                 whole_string_covered_ = false;
-                return;
+                break;
             }
             width_ = w;
         }
@@ -269,13 +269,13 @@ public:
     {
         strf::detail::width_accumulator<CharWidthFunc> acc(limit, func_);
         auto inv_seq_poli = strf::invalid_seq_policy::replace;
-        cs.to_u32().transcode(acc, str, str + str_len, inv_seq_poli, surr_poli);
+        cs.to_u32().transcode(acc, str, str_len, inv_seq_poli, surr_poli);
         auto res = acc.get_result();
         if (res.whole_string_covered) {
             return {res.width, str_len};
         }
         auto res2 = cs.codepoints_robust_count
-            (str, str + str_len, res.codepoints_count, surr_poli);
+            (str, str_len, res.codepoints_count, surr_poli);
         return {res.width, res2.pos};
     }
 
