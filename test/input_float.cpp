@@ -59,11 +59,19 @@ void test_subnormal_values(const FPack& fp)
     TEST("___________+nan~~~~~").with(fp) (j(+strf::left  (quiet_nan, 9, '~')));
     TEST("___________~~+nan~~~").with(fp) (j(+strf::center(quiet_nan, 9, '~')));
     TEST("___________+~~~~~nan").with(fp) (j(+strf::split (quiet_nan, 9, '~')));
+    TEST("___________~~~~~+nan").with(fp) (j(+strf::right (quiet_nan, 9, '~')));
+    TEST("___________+nan~~~~~").with(fp) (j(+strf::left  (quiet_nan, 9, '~')));
+    TEST("___________~~+nan~~~").with(fp) (j(+strf::center(quiet_nan, 9, '~')));
+    TEST("___________+~~~~~nan").with(fp) (j(+strf::split (quiet_nan, 9, '~')));
 
     TEST("___________~~~~~+inf").with(fp) (j(+strf::right (infinity, 9, '~')));
     TEST("___________+inf~~~~~").with(fp) (j(+strf::left  (infinity, 9, '~')));
     TEST("___________~~+inf~~~").with(fp) (j(+strf::center(infinity, 9, '~')));
     TEST("___________+~~~~~inf").with(fp) (j(+strf::split (infinity, 9, '~')));
+    TEST("___________~~~~~+inf").with(fp) (j(+strf::right (infinity, 9, '~').hex()));
+    TEST("___________+inf~~~~~").with(fp) (j(+strf::left  (infinity, 9, '~').hex()));
+    TEST("___________~~+inf~~~").with(fp) (j(+strf::center(infinity, 9, '~').hex()));
+    TEST("___________+~~~~~inf").with(fp) (j(+strf::split (infinity, 9, '~').hex()));
 
     TEST("_________________nan").with(fp, strf::lowercase)  (j(quiet_nan));
     TEST("_________________inf").with(fp, strf::lowercase)  (j(infinity));
@@ -318,8 +326,11 @@ void basic_tests(const FPack& fp)
     TEST(rd("______0x0.0009p-1022")).with(fp) (j(strf::hex(0x0.0009p-1022)));
 
     TEST(rd("______________0x1p+0")).with(fp) (j(strf::hex(0x1.12345p+0).p(0)));
+    TEST(rd("________0x1.12345p+0")).with(fp) (j(strf::hex(0x1.12345p+0).p(5)));
+    TEST(rd("_______0x1.123450p+0")).with(fp) (j(strf::hex(0x1.12345p+0).p(6)));
     TEST(rd("_____________0x1.p+0")).with(fp) (j(~strf::hex(0x1.12345p+0).p(0)));
     TEST(rd("_______0x0.000p-1022")).with(fp) (j(strf::hex(0x0.0008p-1022).p(3)));
+    TEST(rd("_______0x0.002p-1022")).with(fp) (j(strf::hex(0x0.0018p-1022).p(3)));
     TEST(rd("_______0x0.001p-1022")).with(fp) (j(strf::hex(0x0.0008000000001p-1022).p(3)));
 
     TEST(rd("______________0X0P+0")).with(fp, strf::uppercase) (j(strf::hex(0.0)));
@@ -334,6 +345,11 @@ void basic_tests(const FPack& fp)
     TEST(rd("____0x0.abcdefp-1022")).with(fp, strf::lowercase) (j(strf::hex(0x0.abcdefp-1022)));
     TEST(rd("______0x1.abcdefp+10")).with(fp, strf::lowercase) (j(strf::hex(0x1.abcdefp+10)));
 
+    TEST(rd("_________-0x1p+0****")).with(fp) (j(strf::left(-1.0, 11, '*').hex()));
+    TEST(rd("_________****-0x1p+0")).with(fp) (j(strf::right(-1.0, 11, '*').hex()));
+    TEST(rd("_________-****0x1p+0")).with(fp) (j(strf::split(-1.0, 11, '*').hex()));
+    TEST(rd("_________**-0x1p+0**")).with(fp) (j(strf::center(-1.0, 11, '*').hex()));
+    TEST(rd("_____________-0x1p+0")).with(fp) (j(strf::center(-1.0, 7, '*').hex()));
 }
 
 double make_double(std::uint64_t ieee_exponent, std::uint64_t ieee_mantissa)
@@ -549,6 +565,7 @@ int main()
                  "0000\xFF""0000\xFF""0000\xFF""0000\xFF""0000\xFF""0000")
                 .with(fp)
                 (strf::join_right(89, '_')(strf::fixed(1.234e+69)));
+            TEST("_______0x1\xA9""abcdefp+1") .with(fp) (j(strf::hex(0x1.abcdefp+1)));
         }
         // invalid decimal point
         TEST("______________1\xEF\xBF\xBD""e+03")

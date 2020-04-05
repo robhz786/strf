@@ -1902,9 +1902,9 @@ struct hex_double_printer_data
     unsigned exponent_digcount = 0;
     unsigned mantissa_digcount = 0;
     unsigned extra_zeros = 0;
+    bool showpoint = false;
     bool negative;
     bool showsign;
-    bool showpoint;
 };
 
 #if ! defined(STRF_OMIT_IMPL)
@@ -2007,6 +2007,39 @@ public:
         }
     }
 
+    template <typename FP, typename Preview, typename FloatT, typename CharT>
+    hex_double_printer
+        ( const FP& fp
+        , Preview& preview
+        , strf::float_with_format<FloatT, strf::float_notation::hex, true> x
+        , strf::tag<CharT> )
+        : data_(strf::detail::init_hex_double_printer_data
+                   (x.get_float_format_data(), x.value()))
+        , inv_seq_poli_(strf::get_facet<strf::invalid_seq_policy_c, FloatT>(fp))
+        , surr_poli_(strf::get_facet<strf::surrogate_policy_c, FloatT>(fp))
+        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(fp))
+    {
+        int content_width_without_point = 0;
+        decltype(auto) charset = strf::get_facet<strf::charset_c<CharT>, FloatT>(fp);
+        encode_fill_ = charset.encode_fill_func();
+        if (data_.exponent != 1024) {
+            init_(strf::get_facet<strf::numpunct_c<10>, FloatT>(fp), charset);
+            content_width_without_point = data_.showsign + 5
+                + data_.mantissa_digcount
+                + data_.extra_zeros + data_.exponent_digcount;
+        } else {
+            content_width_without_point = 3 + data_.showsign;
+        }
+        int content_width = content_width_without_point + data_.showpoint;
+        auto fillcount = init_fills_(content_width, x.get_alignment_format_data());
+        preview.checked_subtract_width(content_width + fillcount);
+        STRF_IF_CONSTEXPR (Preview::size_required) {
+            preview.add_size(content_width_without_point);
+            preview.add_size(pointsize_);
+            preview.add_size(fillcount * charset.encoded_char_size(x.fill()));
+        }
+    }
+
     STRF_HD void print_to(strf::underlying_outbuf<CharSize>&) const override;
 
 private:
@@ -2017,7 +2050,7 @@ private:
         if (data_.showpoint) {
             decimal_point_ = punct.decimal_point();
             pointsize_ = 1;
-            if (decimal_point_ > 0x80) {
+            if (decimal_point_ >= 0x80) {
                 encode_char_ = charset.encode_char_func();
                 pointsize_ = static_cast<unsigned>(charset.encoded_char_size(decimal_point_));
                 if (pointsize_ == 1) {
@@ -2029,9 +2062,41 @@ private:
         }
     }
 
+    STRF_HD std::uint16_t init_fills_(int content_width, strf::alignment_format_data afmt)
+    {
+        if (content_width < afmt.width) {
+            fillchar_ = afmt.fill;
+            std::uint16_t fillcount = afmt.width - (std::uint16_t)content_width;
+            switch(afmt.alignment) {
+                case strf::text_alignment::left:
+                    right_fillcount_ = fillcount;
+                    break;
+                case strf::text_alignment::right:
+                    left_fillcount_ = fillcount;
+                    break;
+                case strf::text_alignment::split:
+                    split_fillcount_ = fillcount;
+                    break;
+                default:
+                    STRF_ASSERT(afmt.alignment == strf::text_alignment::center);
+                    left_fillcount_ = fillcount >> 1;
+                    right_fillcount_ = fillcount - left_fillcount_;
+            }
+            return fillcount;
+        }
+        return 0;
+    }
+
     strf::encode_char_f<CharSize> encode_char_ = nullptr;
+    strf::encode_fill_f<CharSize> encode_fill_ = nullptr;
     strf::detail::hex_double_printer_data data_;
+    std::uint16_t left_fillcount_ = 0;
+    std::uint16_t split_fillcount_ = 0;
+    std::uint16_t right_fillcount_ = 0;
+    strf::invalid_seq_policy inv_seq_poli_ = strf::invalid_seq_policy::replace;
+    strf::surrogate_policy surr_poli_ = strf::surrogate_policy::strict;
     strf::lettercase lettercase_;
+    char32_t fillchar_ = ' ';
     char32_t decimal_point_ = '.';
     unsigned pointsize_ = 0;
 };
@@ -2041,14 +2106,19 @@ template <std::size_t CharSize>
 STRF_HD void hex_double_printer<CharSize>::print_to
     ( strf::underlying_outbuf<CharSize>& ob ) const
 {
+    if (left_fillcount_ != 0) {
+        encode_fill_(ob, left_fillcount_, fillchar_, inv_seq_poli_, surr_poli_);
+    }
+    if (data_.showsign) {
+        put(ob, static_cast<char_type>('+' + (data_.negative << 1)));
+    }
+    if (split_fillcount_ != 0) {
+        encode_fill_(ob, split_fillcount_, fillchar_, inv_seq_poli_, surr_poli_);
+    }
     auto data = data_;
     if (data.exponent != 1024) {
-        ob.ensure(data.showsign + 3 + pointsize_ + data.mantissa_digcount);
+        ob.ensure(3 + pointsize_ + data.mantissa_digcount);
         auto it = ob.pointer();
-        if (data.showsign) {
-            *it = static_cast<char_type>('+') + (data.negative << 1);
-            ++it;
-        }
         it[0] = '0';
         it[1] = 'X' | ((lettercase_ != strf::uppercase) << 5);
         it[2] = 0x30 | int(data.exponent != -1023);
@@ -2116,14 +2186,14 @@ STRF_HD void hex_double_printer<CharSize>::print_to
             ob.advance_to(it);
         }
     } else {
-        if (data.showsign) {
-            strf::put(ob, static_cast<char_type>('+' + (data.negative << 1)));
-        }
         if (data.mantissa == 0) {
             strf::detail::print_inf(ob, lettercase_);
         } else {
             strf::detail::print_nan(ob, lettercase_);
         }
+    }
+    if (right_fillcount_ != 0) {
+        encode_fill_(ob, right_fillcount_, fillchar_, inv_seq_poli_, surr_poli_);
     }
 }
 
@@ -2209,11 +2279,12 @@ struct fmt_float_printer_maker
 template <>
 struct fmt_float_printer_maker<strf::float_notation::hex>
 {
-    template <typename CharT, typename FPack, typename Preview, typename FloatT>
+    template < typename CharT, typename FPack, typename Preview
+             , typename FloatT, bool HasAlignment >
     static inline STRF_HD strf::detail::hex_double_printer<sizeof(CharT)>
     make( const FPack& fp
         , Preview& preview
-        , strf::float_with_format<FloatT, strf::float_notation::hex, false> x )
+        , strf::float_with_format<FloatT, strf::float_notation::hex, HasAlignment> x )
     {
         return {fp, preview, x, strf::tag<CharT>()};
     }
