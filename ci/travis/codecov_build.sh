@@ -12,6 +12,8 @@ script_dir="$( pwd -P )"
 
 cmake -DSTRF_BUILD_TESTS=ON \
       -DSTRF_BUILD_EXAMPLES=ON \
+      -DCMAKE_CXX_COMPILER=g++-7 \
+      -DCMAKE_C_COMPILER=gcc-7 \
       -DCMAKE_CXX_FLAGS="-Wall -Wextra -O0 -fprofile-arcs -ftest-coverage -DNDEBUG" \
       -DCMAKE_C_FLAGS="-Wall -Wextra -O0 -fprofile-arcs -ftest-coverage -DNDEBUG" \
       -DCMAKE_EXE_LINKER_FLAGS="-ftest-coverage -fprofile-arcs" \
