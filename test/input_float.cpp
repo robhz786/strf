@@ -100,7 +100,7 @@ void basic_tests(const FPack& fp)
 {
     constexpr auto j = strf::join_right(20, '_');
 
-    auto punct = strf::get_facet<strf::numpunct_c<10>, double>(fp);
+    decltype(auto) punct = strf::get_facet<strf::numpunct_c<10>, double>(fp);
     auto decimal_point = punct.decimal_point();
 
     auto rd = [decimal_point](const char* str)

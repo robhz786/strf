@@ -125,17 +125,6 @@ constexpr bool is_constrainable_v
 
 namespace detail{
 
-template <bool enable> struct fp_args
-{
-};
-
-template <> struct fp_args<true>
-{
-    template <typename ... T>
-    static constexpr bool copy_constructible_v
-    = detail::fold_and<std::is_copy_constructible<T>::value...>;
-};
-
 template <typename Cat, typename Tag, typename FPE>
 constexpr bool has_facet_v
 = strf::detail::fpe_traits<FPE>
@@ -524,7 +513,7 @@ struct pack_arg // rvalue reference
 
     using elem_type = std::remove_cv_t<T>;
 
-    static constexpr T&& forward(T& arg)
+    static STRF_HD constexpr T&& forward(T& arg)
     {
         return static_cast<T&&>(arg);
     }
@@ -538,7 +527,7 @@ struct pack_arg<T&>
         , std::remove_cv_t<T>
         , const T& >;
 
-    static constexpr const T& forward(const T& arg)
+    static STRF_HD constexpr const T& forward(const T& arg)
     {
         return arg;
     }
@@ -549,7 +538,7 @@ struct pack_arg_ref
 {
     using elem_type = const T&;
 
-    static constexpr const T& forward(const std::reference_wrapper<T>& arg)
+    static STRF_HD constexpr const T& forward(const std::reference_wrapper<T>& arg)
     {
         return arg.get();
     }
@@ -663,7 +652,7 @@ public:
     template
         < bool Dummy = true
         , typename = std::enable_if_t
-            < detail::fp_args<Dummy>::template copy_constructible_v<FPE...> > >
+            < detail::fold_and<Dummy, std::is_copy_constructible<FPE>::value...> > >
     constexpr STRF_HD explicit facets_pack(const FPE& ... fpe)
         : _base_type(fpe...)
     {

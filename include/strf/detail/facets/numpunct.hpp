@@ -190,7 +190,7 @@ public:
     {
         return _decimal_point;
     }
-    numpunct_base &  decimal_point(char32_t ch) &
+    STRF_HD numpunct_base &  decimal_point(char32_t ch) &
     {
         _decimal_point = ch;
         return *this;
@@ -268,11 +268,11 @@ public:
         numpunct_base::decimal_point(ch);
         return std::move(*this);
     }
-    constexpr auto decimal_point() const
+    constexpr STRF_HD auto decimal_point() const
     {
         return numpunct_base::decimal_point();
     }
-    constexpr auto thousand_sep() const
+    constexpr STRF_HD auto thousand_sep() const
     {
         return numpunct_base::thousands_sep();
     }
@@ -301,31 +301,31 @@ public:
     {
         return _impl.get_thousands_sep_count(num_digits);
     }
-    monotonic_grouping &  thousands_sep(char32_t ch) &
+    STRF_HD monotonic_grouping &  thousands_sep(char32_t ch) &
     {
         numpunct_base::thousands_sep(ch);
         return *this;
     }
-    monotonic_grouping && thousands_sep(char32_t ch) &&
+    STRF_HD monotonic_grouping && thousands_sep(char32_t ch) &&
     {
         numpunct_base::thousands_sep(ch);
         return std::move(*this);
     }
-    monotonic_grouping &  decimal_point(char32_t ch) &
+    STRF_HD monotonic_grouping &  decimal_point(char32_t ch) &
     {
         numpunct_base::decimal_point(ch);
         return *this;
     }
-    monotonic_grouping && decimal_point(char32_t ch) &&
+    STRF_HD monotonic_grouping && decimal_point(char32_t ch) &&
     {
         numpunct_base::decimal_point(ch);
         return std::move(*this);
     }
-    constexpr auto decimal_point() const
+    constexpr STRF_HD auto decimal_point() const
     {
         return numpunct_base::decimal_point();
     }
-    constexpr auto thousand_sep() const
+    constexpr STRF_HD auto thousand_sep() const
     {
         return numpunct_base::thousands_sep();
     }
@@ -341,7 +341,7 @@ class str_grouping: public strf::numpunct<Base>
 {
 public:
 
-    str_grouping(std::string grouping)
+    STRF_HD str_grouping(std::string grouping)
         : strf::numpunct<Base>
             ( grouping.empty() || grouping.front() == '\0'
             ? (unsigned)-1
@@ -354,41 +354,41 @@ public:
 
     str_grouping(str_grouping&&) = default;
 
-    unsigned groups( unsigned num_digits
+    STRF_HD unsigned groups( unsigned num_digits
                    , std::uint8_t* groups_array ) const override
     {
         auto s = _impl.get_groups(num_digits, groups_array) - groups_array;
         return 1 + static_cast<unsigned>(s);
     }
-    unsigned thousands_sep_count(unsigned num_digits) const override
+    STRF_HD unsigned thousands_sep_count(unsigned num_digits) const override
     {
         return _impl.get_thousands_sep_count(num_digits);
     }
-    str_grouping &  thousands_sep(char32_t ch) &
+    STRF_HD str_grouping &  thousands_sep(char32_t ch) &
     {
         numpunct_base::thousands_sep(ch);
         return *this;
     }
-    str_grouping && thousands_sep(char32_t ch) &&
+    STRF_HD str_grouping && thousands_sep(char32_t ch) &&
     {
         numpunct_base::thousands_sep(ch);
         return std::move(*this);
     }
-    str_grouping &  decimal_point(char32_t ch) &
+    STRF_HD str_grouping &  decimal_point(char32_t ch) &
     {
         numpunct_base::decimal_point(ch);
         return *this;
     }
-    str_grouping && decimal_point(char32_t ch) &&
+    STRF_HD str_grouping && decimal_point(char32_t ch) &&
     {
         numpunct_base::decimal_point(ch);
         return std::move(*this);
     }
-    constexpr auto decimal_point() const
+    constexpr STRF_HD auto decimal_point() const
     {
         return numpunct_base::decimal_point();
     }
-    constexpr auto thousand_sep() const
+    constexpr STRF_HD auto thousand_sep() const
     {
         return numpunct_base::thousands_sep();
     }
@@ -420,11 +420,11 @@ public:
         (void)num_digits;
         return 0;
     }
-    char32_t thousands_sep() const
+    STRF_HD char32_t thousands_sep() const
     {
         return U',';
     }
-    char32_t decimal_point() const
+    STRF_HD char32_t decimal_point() const
     {
         return U'.';
     }
@@ -438,10 +438,16 @@ template <int Base> struct numpunct_c
 
     constexpr static int base = Base;
 
-    static const strf::default_numpunct<base>& get_default()
+    static STRF_HD const strf::default_numpunct<base>& get_default()
     {
+#if defined (__CUDA_ARCH__)
+        // TODO: find a decent alternative to this workaround:
+        const strf::default_numpunct<base> * ptr = nullptr;
+        return *ptr;
+#else
         static const strf::default_numpunct<base> x{};
         return x;
+#endif
     }
 };
 
