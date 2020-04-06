@@ -31,7 +31,7 @@ __global__ void kernel_using_cstr_to(char* buffer, std::size_t buffer_size)
 {
 	int global_thread_id = threadIdx.x + blockIdx.x * blockDim.x;
 	auto printer = strf::to(buffer, buffer_size);
-	printer ( "Hello", ' ', "world, from thread ", global_thread_id );
+	printer ( "Hello", ' ', "world, from thread ", strf::fmt(global_thread_id) );
 }
 
 
