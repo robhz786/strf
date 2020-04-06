@@ -18,7 +18,10 @@ namespace detail {
 class outbuf_test_tool;
 
 template <std::size_t CharSize>
-struct underlying_char_type_impl;
+struct underlying_char_type_impl
+{
+    static_assert( CharSize == 1 || CharSize == 2 || CharSize == 4, "Invalid CharSize");
+};
 
 template <> struct underlying_char_type_impl<1>{using type = std::uint8_t;};
 template <> struct underlying_char_type_impl<2>{using type = char16_t;};

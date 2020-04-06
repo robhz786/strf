@@ -20,7 +20,7 @@ void test_subnormal_values(const FPack& fp)
     TEST("_________________inf").with(fp)  (j(infinity));
     TEST("________________-inf").with(fp)  (j(-infinity));
 
-    TEST("_________________nan").with(fp)  (j(strf::fmt(quiet_nan)));
+    TEST("________________-nan").with(fp)  (j(strf::fmt(-quiet_nan)));
     TEST("_________________nan").with(fp)  (j(strf::fmt(signaling_nan)));
     TEST("________________+nan").with(fp)  (j(+strf::fmt(signaling_nan)));
     TEST("________________+inf").with(fp)  (j(+strf::fmt(infinity)));
@@ -46,6 +46,19 @@ void test_subnormal_values(const FPack& fp)
     TEST("________________-inf").with(fp)  (j(strf::sci(-infinity)));
     TEST("________________-inf").with(fp) (j(+strf::sci(-infinity)));
 
+    TEST("_________________nan").with(fp)  (j(strf::hex(quiet_nan)));
+    TEST("________________-nan").with(fp)  (j(strf::hex(-signaling_nan)));
+    TEST("________________+nan").with(fp)  (j(+strf::hex(quiet_nan)));
+    TEST("________________+nan").with(fp)  (j(+strf::hex(signaling_nan)));
+    TEST("_________________inf").with(fp)  (j(strf::hex(infinity)));
+    TEST("________________+inf").with(fp) (j(+strf::hex(infinity)));
+    TEST("________________-inf").with(fp)  (j(strf::hex(-infinity)));
+    TEST("________________-inf").with(fp) (j(+strf::hex(-infinity)));
+
+    TEST("___________~~~~~+nan").with(fp) (j(+strf::right (quiet_nan, 9, '~')));
+    TEST("___________+nan~~~~~").with(fp) (j(+strf::left  (quiet_nan, 9, '~')));
+    TEST("___________~~+nan~~~").with(fp) (j(+strf::center(quiet_nan, 9, '~')));
+    TEST("___________+~~~~~nan").with(fp) (j(+strf::split (quiet_nan, 9, '~')));
     TEST("___________~~~~~+nan").with(fp) (j(+strf::right (quiet_nan, 9, '~')));
     TEST("___________+nan~~~~~").with(fp) (j(+strf::left  (quiet_nan, 9, '~')));
     TEST("___________~~+nan~~~").with(fp) (j(+strf::center(quiet_nan, 9, '~')));
@@ -55,25 +68,37 @@ void test_subnormal_values(const FPack& fp)
     TEST("___________+inf~~~~~").with(fp) (j(+strf::left  (infinity, 9, '~')));
     TEST("___________~~+inf~~~").with(fp) (j(+strf::center(infinity, 9, '~')));
     TEST("___________+~~~~~inf").with(fp) (j(+strf::split (infinity, 9, '~')));
+    TEST("___________~~~~~+inf").with(fp) (j(+strf::right (infinity, 9, '~').hex()));
+    TEST("___________+inf~~~~~").with(fp) (j(+strf::left  (infinity, 9, '~').hex()));
+    TEST("___________~~+inf~~~").with(fp) (j(+strf::center(infinity, 9, '~').hex()));
+    TEST("___________+~~~~~inf").with(fp) (j(+strf::split (infinity, 9, '~').hex()));
 
     TEST("_________________nan").with(fp, strf::lowercase)  (j(quiet_nan));
     TEST("_________________inf").with(fp, strf::lowercase)  (j(infinity));
     TEST("________________-inf").with(fp, strf::lowercase)  (j(-infinity));
     TEST("_________________inf").with(fp, strf::lowercase)  (j(strf::sci(infinity)));
     TEST("________________-inf").with(fp, strf::lowercase)  (j(strf::sci(-infinity)));
+    TEST("_________________inf").with(fp, strf::lowercase)  (j(strf::hex(infinity)));
+    TEST("________________-inf").with(fp, strf::lowercase)  (j(strf::hex(-infinity)));
+    TEST("_________________nan").with(fp, strf::lowercase)  (j(strf::hex(quiet_nan)));
 
     TEST("_________________NaN").with(fp, strf::mixedcase)  (j(quiet_nan));
     TEST("_________________Inf").with(fp, strf::mixedcase)  (j(infinity));
     TEST("________________-Inf").with(fp, strf::mixedcase)  (j(-infinity));
     TEST("_________________Inf").with(fp, strf::mixedcase)  (j(strf::sci(infinity)));
     TEST("________________-Inf").with(fp, strf::mixedcase)  (j(strf::sci(-infinity)));
+    TEST("_________________Inf").with(fp, strf::mixedcase)  (j(strf::hex(infinity)));
+    TEST("________________-Inf").with(fp, strf::mixedcase)  (j(strf::hex(-infinity)));
+    TEST("_________________NaN").with(fp, strf::mixedcase)  (j(strf::hex(quiet_nan)));
 
     TEST("_________________NAN").with(fp, strf::uppercase)  (j(quiet_nan));
     TEST("_________________INF").with(fp, strf::uppercase)  (j(infinity));
     TEST("________________-INF").with(fp, strf::uppercase)  (j(-infinity));
     TEST("_________________INF").with(fp, strf::uppercase)  (j(strf::sci(infinity)));
     TEST("________________-INF").with(fp, strf::uppercase)  (j(strf::sci(-infinity)));
-
+    TEST("_________________INF").with(fp, strf::uppercase)  (j(strf::hex(infinity)));
+    TEST("________________-INF").with(fp, strf::uppercase)  (j(strf::hex(-infinity)));
+    TEST("_________________NAN").with(fp, strf::uppercase)  (j(strf::hex(quiet_nan)));
 }
 
 const char* replace_decimal_point
@@ -238,9 +263,7 @@ void basic_tests(const FPack& fp)
     TEST(rd("______________1.2500")).with(fp)  (j(strf::fixed(1.25).p(4)));
     TEST(rd("_______________0.125")).with(fp)  (j(strf::fixed(0.125)));
 
-
     TEST(rd("______________0.e+00")).with(fp)  (j(~strf::sci(0.0)));
-
     TEST(rd("______________1.e+04")).with(fp)  (j(~strf::sci(1e+4)));
     TEST(rd("_____________+1.e+04")).with(fp) (j(~+strf::sci(1e+4)));
     TEST(rd("_____________-1.e+04")).with(fp) (j(~strf::sci(-1e+4)));
@@ -287,6 +310,46 @@ void basic_tests(const FPack& fp)
         (j(strf::split(-1.25, 7, 0xFFFFFFF)));
     TEST(rd("_____________+\xEF\xBF\xBD\xEF\xBF\xBD""1.25")).with(fp)
         (j(+strf::split(1.25, 7, 0xFFFFFFF)));
+
+    // hexadecimal
+
+    TEST(rd("______________0x0p+0")).with(fp) (j(strf::hex(0.0)));
+    TEST(rd("_____________0x0.p+0")).with(fp) (j(~strf::hex(0.0)));
+    TEST(rd("__________0x0.000p+0")).with(fp) (j(strf::hex(0.0).p(3)));
+    TEST(rd("_____________-0x1p-3")).with(fp) (j(strf::hex(-0.125)));
+    TEST(rd("_____________0x1p+11")).with(fp) (j(strf::hex(2048.0)));
+    TEST(rd("__0x1.fffffffffffffp+1023")).with(fp)
+        ( strf::join_right(25, '_') (strf::hex((std::numeric_limits<double>::max)())));
+    TEST(rd("___________0x1p-1022")).with(fp) (j(strf::hex(0x1p-1022)));
+    TEST(rd("__________0x1.p-1022")).with(fp) (j(~strf::hex(0x1p-1022)));
+    TEST(rd("_______0x1.000p-1022")).with(fp) (j(~strf::hex(0x1p-1022).p(3)));
+    TEST(rd("______0x0.0009p-1022")).with(fp) (j(strf::hex(0x0.0009p-1022)));
+
+    TEST(rd("______________0x1p+0")).with(fp) (j(strf::hex(0x1.12345p+0).p(0)));
+    TEST(rd("________0x1.12345p+0")).with(fp) (j(strf::hex(0x1.12345p+0).p(5)));
+    TEST(rd("_______0x1.123450p+0")).with(fp) (j(strf::hex(0x1.12345p+0).p(6)));
+    TEST(rd("_____________0x1.p+0")).with(fp) (j(~strf::hex(0x1.12345p+0).p(0)));
+    TEST(rd("_______0x0.000p-1022")).with(fp) (j(strf::hex(0x0.0008p-1022).p(3)));
+    TEST(rd("_______0x0.002p-1022")).with(fp) (j(strf::hex(0x0.0018p-1022).p(3)));
+    TEST(rd("_______0x0.001p-1022")).with(fp) (j(strf::hex(0x0.0008000000001p-1022).p(3)));
+
+    TEST(rd("______________0X0P+0")).with(fp, strf::uppercase) (j(strf::hex(0.0)));
+    TEST(rd("____0X0.ABCDEFP-1022")).with(fp, strf::uppercase) (j(strf::hex(0x0.abcdefp-1022)));
+    TEST(rd("______0X1.ABCDEFP+10")).with(fp, strf::uppercase) (j(strf::hex(0x1.abcdefp+10)));
+
+    TEST(rd("______________0x0p+0")).with(fp, strf::mixedcase) (j(strf::hex(0.0)));
+    TEST(rd("____0x0.ABCDEFp-1022")).with(fp, strf::mixedcase) (j(strf::hex(0x0.abcdefp-1022)));
+    TEST(rd("______0x1.ABCDEFp+10")).with(fp, strf::mixedcase) (j(strf::hex(0x1.abcdefp+10)));
+
+    TEST(rd("______________0x0p+0")).with(fp, strf::lowercase) (j(strf::hex(0.0)));
+    TEST(rd("____0x0.abcdefp-1022")).with(fp, strf::lowercase) (j(strf::hex(0x0.abcdefp-1022)));
+    TEST(rd("______0x1.abcdefp+10")).with(fp, strf::lowercase) (j(strf::hex(0x1.abcdefp+10)));
+
+    TEST(rd("_________-0x1p+0****")).with(fp) (j(strf::left(-1.0, 11, '*').hex()));
+    TEST(rd("_________****-0x1p+0")).with(fp) (j(strf::right(-1.0, 11, '*').hex()));
+    TEST(rd("_________-****0x1p+0")).with(fp) (j(strf::split(-1.0, 11, '*').hex()));
+    TEST(rd("_________**-0x1p+0**")).with(fp) (j(strf::center(-1.0, 11, '*').hex()));
+    TEST(rd("_____________-0x1p+0")).with(fp) (j(strf::center(-1.0, 7, '*').hex()));
 }
 
 double make_double(std::uint64_t ieee_exponent, std::uint64_t ieee_mantissa)
@@ -502,6 +565,7 @@ int main()
                  "0000\xFF""0000\xFF""0000\xFF""0000\xFF""0000\xFF""0000")
                 .with(fp)
                 (strf::join_right(89, '_')(strf::fixed(1.234e+69)));
+            TEST("_______0x1\xA9""abcdefp+1") .with(fp) (j(strf::hex(0x1.abcdefp+1)));
         }
         // invalid decimal point
         TEST("______________1\xEF\xBF\xBD""e+03")

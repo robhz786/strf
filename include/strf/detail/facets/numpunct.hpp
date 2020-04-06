@@ -399,7 +399,7 @@ private:
 };
 
 template <int Base>
-// made final to enable the implementation of has_i18n
+// made final to enable the implementation of has_punct
 class default_numpunct final: public strf::numpunct<Base>
 {
 public:

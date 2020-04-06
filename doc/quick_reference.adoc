@@ -916,8 +916,8 @@ Format functions::
 `"+"` when value is non negative. No effect for other bases.
 `operator~()`:::  Prints the decimal point even when there
 are no fractional digits.
-`sci()`::: Use scientific notation, like this: `"1.2345e+02"`.
-`fixed()`::: Use decimal notation, like this: `"123.45"`.
+`sci()`::: Print in scientific notation, like this: `"1.2345e+02"`.
+`fixed()`::: Print in decimal notation, like this: `"123.45"`.
 `gen()`::: This is the default notation.
 When precision is unspecified ( or equal to `(unsigned)-1` )
 prints in the scientfic notation if, and only if, it is shorter
@@ -925,6 +925,7 @@ than the fixed notation. Otherwise ( when precision is specified ),
 does like in `std::printf`:
 uses the scientfic notation if the exponent is less than -4 or greater
 than or equal to the precision. Trailing fractional zeros are not printed.
+`hex()`::: Print in hexadecimal notation, like this `"-0x1.abcd123e+5"`
 `p(unsigned precision)`::: If `precision == (unsigned)-1`, which is
 the default, then prints the minimal amount of digits so that value
 can fully recovered by a parser. Otherwise, if notation is __general__,
