@@ -29,7 +29,7 @@ branches:
     - develop
     - /bugfix\/.*/
     - /feature\/.*/
-    - /fix\/.*/
+    - /hotfix-.*/
     - /pr\/.*/
     - /release-.*/
 

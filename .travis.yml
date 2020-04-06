@@ -21,7 +21,7 @@ branches:
     - /release-.*/
     - /bugfix\/.*/
     - /feature\/.*/
-    - /fix\/.*/
+    - /hotfix-.*/
     - /pr\/.*/
 
 #
