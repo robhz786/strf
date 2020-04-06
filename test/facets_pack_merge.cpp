@@ -17,7 +17,7 @@ struct facet_type
 struct fcategory
 {
     constexpr static bool constrainable = true;
-    static auto get_default() noexcept
+    static STRF_HD auto get_default() noexcept
     {
         return facet_type {};
     }

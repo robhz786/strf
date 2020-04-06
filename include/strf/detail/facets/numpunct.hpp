@@ -438,11 +438,22 @@ template <int Base> struct numpunct_c
 
     constexpr static int base = Base;
 
-    static const strf::default_numpunct<base>& get_default()
+    static STRF_HD const strf::default_numpunct<base>& get_default()
     {
+#ifdef __CUDA_ARCH__
+        asm("trap;");
+            // TODO: Think of a better solution for having a single instance to use here.
+            // We would need some mechanism for global initialization (e.g. perhaps
+            // based on compare-and
+#else
         static const strf::default_numpunct<base> x{};
         return x;
+#endif
+#pragma push
+#pragma diag_suppress = implicit_return_from_non_void_function
     }
+#pragma diag_default = implicit_return_from_non_void_function
+#pragma pop
 };
 
 namespace detail {

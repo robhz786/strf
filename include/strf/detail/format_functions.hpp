@@ -45,14 +45,14 @@ template <typename FmtA, typename FmtB, typename ValueWithFormat>
 struct fmt_forward_switcher
 {
     template <typename FmtAInit>
-    static const typename FmtB::template fn<ValueWithFormat>&
+    static STRF_HD const typename FmtB::template fn<ValueWithFormat>&
     f(const FmtAInit&, const ValueWithFormat& v)
     {
         return v;
     }
 
     template <typename FmtAInit>
-    static typename FmtB::template fn<ValueWithFormat>&&
+    static STRF_HD typename FmtB::template fn<ValueWithFormat>&&
     f(const FmtAInit&, ValueWithFormat&& v)
     {
         return v;
