@@ -28,7 +28,7 @@ void test_subnormal_values(const FPack& fp)
     TEST("________________-inf").with(fp)  (j(strf::fmt(-infinity)));
     TEST("________________-inf").with(fp) (j(+strf::fmt(-infinity)));
 
-    TEST("_________________nan").with(fp)  (j(strf::fixed(quiet_nan)));
+    TEST("________________-nan").with(fp)  (j(strf::fixed(-quiet_nan)));
     TEST("_________________nan").with(fp)  (j(strf::fixed(signaling_nan)));
     TEST("________________+nan").with(fp)  (j(+strf::fixed(quiet_nan)));
     TEST("________________+nan").with(fp)  (j(+strf::fixed(signaling_nan)));
@@ -37,7 +37,7 @@ void test_subnormal_values(const FPack& fp)
     TEST("________________-inf").with(fp)  (j(strf::fixed(-infinity)));
     TEST("________________-inf").with(fp) (j(+strf::fixed(-infinity)));
 
-    TEST("_________________nan").with(fp)  (j(strf::sci(quiet_nan)));
+    TEST("________________-nan").with(fp)  (j(strf::sci(-quiet_nan)));
     TEST("_________________nan").with(fp)  (j(strf::sci(signaling_nan)));
     TEST("________________+nan").with(fp)  (j(+strf::sci(quiet_nan)));
     TEST("________________+nan").with(fp)  (j(+strf::sci(signaling_nan)));
@@ -55,7 +55,7 @@ void test_subnormal_values(const FPack& fp)
     TEST("________________-inf").with(fp)  (j(strf::hex(-infinity)));
     TEST("________________-inf").with(fp) (j(+strf::hex(-infinity)));
 
-    TEST("___________~~~~~+nan").with(fp) (j(+strf::right (quiet_nan, 9, '~')));
+    TEST("___________~~~~~-nan").with(fp) (j(strf::right (-quiet_nan, 9, '~')));
     TEST("___________+nan~~~~~").with(fp) (j(+strf::left  (quiet_nan, 9, '~')));
     TEST("___________~~+nan~~~").with(fp) (j(+strf::center(quiet_nan, 9, '~')));
     TEST("___________+~~~~~nan").with(fp) (j(+strf::split (quiet_nan, 9, '~')));
@@ -83,6 +83,7 @@ void test_subnormal_values(const FPack& fp)
     TEST("_________________nan").with(fp, strf::lowercase)  (j(strf::hex(quiet_nan)));
 
     TEST("_________________NaN").with(fp, strf::mixedcase)  (j(quiet_nan));
+    TEST("________________-NaN").with(fp, strf::mixedcase)  (j(-quiet_nan));
     TEST("_________________Inf").with(fp, strf::mixedcase)  (j(infinity));
     TEST("________________-Inf").with(fp, strf::mixedcase)  (j(-infinity));
     TEST("_________________Inf").with(fp, strf::mixedcase)  (j(strf::sci(infinity)));
@@ -92,6 +93,7 @@ void test_subnormal_values(const FPack& fp)
     TEST("_________________NaN").with(fp, strf::mixedcase)  (j(strf::hex(quiet_nan)));
 
     TEST("_________________NAN").with(fp, strf::uppercase)  (j(quiet_nan));
+    TEST("________________-NAN").with(fp, strf::uppercase)  (j(-quiet_nan));
     TEST("_________________INF").with(fp, strf::uppercase)  (j(infinity));
     TEST("________________-INF").with(fp, strf::uppercase)  (j(-infinity));
     TEST("_________________INF").with(fp, strf::uppercase)  (j(strf::sci(infinity)));

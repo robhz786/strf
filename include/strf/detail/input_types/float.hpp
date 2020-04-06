@@ -757,6 +757,34 @@ STRF_HD void print_nan(strf::underlying_outbuf<CharSize>& ob, strf::lettercase l
             p[2] = 'n';
     }
     ob.advance(3);
+
+}
+template <std::size_t CharSize>
+STRF_HD void print_nan(strf::underlying_outbuf<CharSize>& ob, strf::lettercase lc
+                      , bool negative )
+{
+    ob.ensure(3 + negative);
+    auto p = ob.pointer();
+    if (negative) {
+        *p ++ = '-';
+    }
+    switch (lc) {
+        case strf::mixedcase:
+            *p++ = 'N';
+            *p++ = 'a';
+            *p++ = 'N';
+            break;
+        case strf::uppercase:
+            *p++ = 'N';
+            *p++ = 'A';
+            *p++ = 'N';
+            break;
+        default:
+            *p++ = 'n';
+            *p++ = 'a';
+            *p++ = 'n';
+    }
+    ob.advance_to(p);
 }
 
 template <std::size_t CharSize>
@@ -1489,7 +1517,7 @@ STRF_HD std::size_t fast_double_printer<CharSize>::size() const
 {
     return ( value_.nan * 3
            + (value_.infinity * 3)
-           + (value_.negative && !value_.nan)
+           + value_.negative
            + !(value_.infinity | value_.nan)
            * ( ( sci_notation_
                * ( 4 // e+xx
@@ -1508,7 +1536,7 @@ STRF_HD void fast_double_printer<CharSize>::print_to
     ( strf::underlying_outbuf<CharSize>& ob ) const
 {
     if (value_.nan) {
-        strf::detail::print_nan(ob, lettercase_);
+        strf::detail::print_nan(ob, lettercase_, value_.negative);
     } else if (value_.infinity) {
         strf::detail::print_inf(ob, lettercase_, value_.negative);
     } else if (sci_notation_) {
@@ -1731,7 +1759,7 @@ template <std::size_t CharSize>
 STRF_HD std::size_t fast_punct_double_printer<CharSize>::size_() const
 {
     if (value_.infinity || value_.nan) {
-        return 3 + (value_.negative && value_.infinity);
+        return 3 + value_.negative;
     }
     if (sci_notation_) {
         unsigned e10u = std::abs(value_.e10 + (int)m10_digcount_ - 1);
@@ -1752,8 +1780,7 @@ template <std::size_t CharSize>
 STRF_HD strf::width_t fast_punct_double_printer<CharSize>::width_() const
 {
     if (value_.infinity || value_.nan) {
-        return static_cast<std::int16_t>
-            (3 + (value_.negative && value_.infinity));
+        return static_cast<std::int16_t>(3 + value_.negative);
     }
     constexpr unsigned decpoint_width = 1;
     if (sci_notation_) {
