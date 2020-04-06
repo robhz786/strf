@@ -440,7 +440,7 @@ template <int Base> struct numpunct_c
 
     static STRF_HD const strf::default_numpunct<base>& get_default()
     {
-#if defined (__CUDACC__)
+#if defined (__CUDA_ARCH__)
         // TODO: find a decent alternative to this workaround:
         const strf::default_numpunct<base> * ptr = nullptr;
         return *ptr;
