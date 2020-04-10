@@ -1611,8 +1611,8 @@ STRF_INLINE STRF_HD char16_t* utf16_impl::encode_char
     }
     if (ch < 0x110000) {
         char32_t sub_codepoint = ch - 0x10000;
-        dest[0] = static_cast<char16_t>(0xD800 + ((sub_codepoint & 0xFFC00) >> 10));
-        dest[1] = static_cast<char16_t>(0xDC00 +  (sub_codepoint &  0x3FF));
+        dest[0] = static_cast<char16_t>(0xD800 + (sub_codepoint >> 10));
+        dest[1] = static_cast<char16_t>(0xDC00 + (sub_codepoint &  0x3FF));
         return dest + 2;
     }
     *dest = 0xFFFD;
@@ -1631,8 +1631,8 @@ STRF_INLINE STRF_HD char16_t* utf16_impl::encode_char
 //         ob.ensure(2);
 //         auto dest = ob.pointer();
 //         char32_t sub_codepoint = ch - 0x10000;
-//         dest[0] = static_cast<char16_t>(0xD800 + ((sub_codepoint & 0xFFC00) >> 10));
-//         dest[1] = static_cast<char16_t>(0xDC00 +  (sub_codepoint &  0x3FF));
+//         dest[0] = static_cast<char16_t>(0xD800 + (sub_codepoint >> 10));
+//         dest[1] = static_cast<char16_t>(0xDC00 + (sub_codepoint &  0x3FF));
 //         ob.advance_to(dest + 2);
 //     }
 //     else {
@@ -1657,8 +1657,8 @@ STRF_INLINE STRF_HD void utf16_impl::encode_fill
     } else if (ch < 0x110000) {
         char32_t sub_codepoint = ch - 0x10000;
         strf::detail::simple_array<char16_t, 2> seq = {
-            static_cast<char16_t>(0xD800 + ((sub_codepoint & 0xFFC00) >> 10)),
-            static_cast<char16_t>(0xDC00 +  (sub_codepoint &  0x3FF))
+            static_cast<char16_t>(0xD800 + (sub_codepoint >> 10)),
+            static_cast<char16_t>(0xDC00 + (sub_codepoint &  0x3FF))
         };
         strf::detail::repeat_sequence(ob, count, seq);
     } else {
@@ -1694,8 +1694,8 @@ STRF_INLINE STRF_HD void utf32_to_utf16::transcode
         } else if (ch < 0x110000) {
             STRF_CHECK_DEST_SIZE(2);
             char32_t sub_codepoint = ch - 0x10000;
-            dest_it[0] = static_cast<char16_t>(0xD800 + ((sub_codepoint & 0xFFC00) >> 10));
-            dest_it[1] = static_cast<char16_t>(0xDC00 +  (sub_codepoint &  0x3FF));
+            dest_it[0] = static_cast<char16_t>(0xD800 | (sub_codepoint >> 10));
+            dest_it[1] = static_cast<char16_t>(0xDC00 | (sub_codepoint &  0x3FF));
             dest_it += 2;
         } else {
             invalid_char:
@@ -1867,7 +1867,7 @@ STRF_INLINE STRF_HD void utf8_to_utf16::transcode
             {
                 STRF_CHECK_DEST_SIZE(2);
                 x = utf8_decode_last_2_of_4(x, ch2, ch3) - 0x10000;
-                dest_it[0] = static_cast<char16_t>(0xD800 + ((x & 0xFFC00) >> 10));
+                dest_it[0] = static_cast<char16_t>(0xD800 +  (x >> 10));
                 dest_it[1] = static_cast<char16_t>(0xDC00 +  (x & 0x3FF));
                 ++dest_it;
                 ++src_it;
