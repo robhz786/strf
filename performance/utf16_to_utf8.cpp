@@ -10,118 +10,141 @@
 #include <locale>
 #include <codecvt>
 #include <fstream>
-
+#include <benchmark/benchmark.h>
 #include <strf.hpp>
-#include "loop_timer.hpp"
 
-int main()
+static void fill_with_codepoints
+    ( std::integral_constant<std::size_t, 1>
+    , char16_t* str
+    , std::uint32_t count)
 {
-    std::u16string u16sample1(500, u'A');
-    std::u16string u16sample2(500, u'\u0100');
-    std::u16string u16sample3(500, u'\u0800');
-    std::u16string u16sample4;
-    for(int i = 0; i < 500; ++i) u16sample4.append(u"\U00010000");
-
-    char u8dest[100000];
-    constexpr std::size_t u8dest_size = sizeof(u8dest) / sizeof(u8dest[0]);
-    char* u8dest_end = &u8dest[u8dest_size];
-
-    escape(u8dest);
-
-    std::cout << "\nUTF-16 to UTF-8\n";
-
-    PRINT_BENCHMARK("strf::to(u8dest)(u16sample1)")
-    {
-        auto err = strf::to(u8dest)(strf::cv(u16sample1));
-        (void)err;
-        clobber();
+    for(std::uint32_t i = 0, x = 1; i < count; ++i, ++x){
+        if (x >= 0x80) {
+            x = 0;
+        }
+        str[i] = x;
     }
-    PRINT_BENCHMARK("strf::to(u8dest)(u16sample2)")
-    {
-        auto err = strf::to(u8dest)(strf::cv(u16sample2));
-        (void)err;
-        clobber();
+}
+static void fill_with_codepoints
+    ( std::integral_constant<std::size_t, 2>
+    , char16_t* str
+    , std::uint32_t count)
+{
+    auto count2 = 2 * count;
+    for(std::uint32_t i = 0, x = 0x80; i < count2; ++i, x += 0x10){
+        if (x >= 0x800) {
+            x = 0x80;
+        }
+        str[i] = x;
     }
-    PRINT_BENCHMARK("strf::to(u8dest)(u16sample3)")
-    {
-        auto err = strf::to(u8dest)(strf::cv(u16sample3));
-        (void)err;
-        clobber();
-    }
-    PRINT_BENCHMARK("strf::to(u8dest)(u16sample4)")
-    {
-        auto err = strf::to(u8dest)(strf::cv(u16sample4));
-        (void)err;
-        clobber();
-    }
+}
 
-#if defined(_MSC_VER)
-// disable warning that std::codecvt_utf8_utf16 is deprecated
-#pragma warning (disable:4996)
-#endif
+static void fill_with_codepoints
+    ( std::integral_constant<std::size_t, 3>
+    , char16_t* str
+    , std::uint32_t count)
+{
+    auto count3 = 3 * count;
+    for(std::uint32_t i = 0, x = 0x800; i < count3; ++ i, x += 0x100){
+        if (x >= 0xD800 && x <= 0xDFFF){
+            x= 0xE000;
+        }
+        if (x >= 0x10000) {
+            x = 0x800;
+        }
+        str[i] = x;
+    }
+}
 
+static void fill_with_codepoints
+    ( std::integral_constant<std::size_t, 4>
+    , char16_t* str
+    , std::uint32_t count)
+{
+    auto count4 = 4 * count;
+    for(std::uint32_t i = 0, x = 0x10000; i < count4; i += 2, x += 0x1000){
+        if (x >= 0x10FFFF) {
+            x = 0x10000;
+        }
+        x -= 0x10000;
+        str[i]     = 0xD800 | (x >> 10);
+        str[i + 1] = 0xDC00 | (x & 0x3FF);
+    }
+}
+
+template <std::size_t CodepointsSize>
+void fill_with_codepoints(char16_t* str, unsigned count) {
+    fill_with_codepoints(std::integral_constant<std::size_t, CodepointsSize>(), str, count);
+}
+
+template <std::size_t CodepointsCount, std::size_t CodepointsSize>
+static void bm_strf(benchmark::State& state) {
+    char16_t u16sample[CodepointsCount * 2];
+    char     u8dest   [CodepointsCount * 4 + 1];
+    fill_with_codepoints<CodepointsSize>(u16sample, CodepointsCount);
+    strf::detail::simple_string_view<char16_t> u16str
+        (u16sample, CodepointsCount * (1 + (CodepointsSize==4)));
+    for(auto _ : state) {
+        strf::to(u8dest)(strf::cv(u16str));
+        benchmark::DoNotOptimize(u8dest);
+    }
+}
+
+template <std::size_t CodepointsCount, std::size_t CodepointsSize>
+static void bm_codecvt(benchmark::State& state) {
+    char16_t u16sample[CodepointsCount * 2];
+    char     u8dest   [CodepointsCount * 4 + 1];
+    const char16_t* u16from_next = nullptr;
+    char* u8to_next = nullptr;
+    fill_with_codepoints<CodepointsSize>(u16sample, CodepointsCount);
     std::codecvt_utf8_utf16<char16_t> codecvt;
-    const char16_t* cu16next = nullptr;
-    char* u8next = nullptr;
-
-    std::cout << "\nUTF-16 to UTF-8 using std::codecvt_utf8_utf16<char16_t>\n";
-
-    PRINT_BENCHMARK("std::codecvt / u16sample1")
-    {
+    for(auto _ : state) {
         std::mbstate_t mb{};
         codecvt.out
             ( mb
-            , &*u16sample1.begin()
-            , &*u16sample1.end()
-            , cu16next
+            , u16sample
+            , u16sample + CodepointsCount * (1 + (CodepointsSize == 4))
+            , u16from_next
             , u8dest
-            , u8dest_end
-            , u8next);
-        *u8next = '\0';
-        clobber();
+            , u8dest + CodepointsCount * 4
+            , u8to_next);
+        benchmark::DoNotOptimize(u8dest);
     }
+}
 
-    PRINT_BENCHMARK("std::codecvt / u16sample2")
-    {
-        std::mbstate_t mb{};
-        codecvt.out
-            ( mb
-            , &*u16sample2.begin()
-            , &*u16sample2.end()
-            , cu16next
-            , u8dest
-            , u8dest_end
-            , u8next);
-        *u8next = '\0';
-        clobber();
-    }
-    PRINT_BENCHMARK("std::codecvt / u16sample3")
-    {
-        std::mbstate_t mb{};
-        codecvt.out
-            ( mb
-            , &*u16sample3.begin()
-            , &*u16sample3.end()
-            , cu16next
-            , u8dest
-            , u8dest_end
-            , u8next);
-        *u8next = '\0';
-        clobber();
-    }
-    PRINT_BENCHMARK("std::codecvt / u16sample4")
-    {
-        std::mbstate_t mb{};
-        codecvt.out
-            ( mb
-            , &*u16sample4.begin()
-            , &*u16sample4.end()
-            , cu16next
-            , u8dest
-            , u8dest_end
-            , u8next);
-        *u8next = '\0';
-        clobber();
-    }
+static void dummy (benchmark::State&)
+{
+}
 
+int main(int argc, char** argv)
+{
+    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::cv(u16small1))", bm_strf<20, 1>);
+    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::cv(u16small2))", bm_strf<20, 2>);
+    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::cv(u16small3))", bm_strf<20, 3>);
+    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::cv(u16small4))", bm_strf<20, 4>);
+
+    benchmark::RegisterBenchmark("    -------------", dummy);
+
+    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::cv(u16big1))", bm_strf<200, 1>);
+    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::cv(u16big2))", bm_strf<200, 2>);
+    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::cv(u16big3))", bm_strf<200, 3>);
+    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::cv(u16big4))", bm_strf<200, 4>);
+
+    benchmark::RegisterBenchmark("    -------------", dummy);
+
+    benchmark::RegisterBenchmark("std::codecvt / u16small1 to utf8", bm_codecvt<20, 1>);
+    benchmark::RegisterBenchmark("std::codecvt / u16small2 to utf8", bm_codecvt<20, 2>);
+    benchmark::RegisterBenchmark("std::codecvt / u16small3 to utf8", bm_codecvt<20, 3>);
+    benchmark::RegisterBenchmark("std::codecvt / u16small4 to utf8", bm_codecvt<20, 4>);
+
+    benchmark::RegisterBenchmark("    -------------", dummy);
+
+    benchmark::RegisterBenchmark("std::codecvt / u16big1 to utf8", bm_codecvt<200, 1>);
+    benchmark::RegisterBenchmark("std::codecvt / u16big2 to utf8", bm_codecvt<200, 2>);
+    benchmark::RegisterBenchmark("std::codecvt / u16big3 to utf8", bm_codecvt<200, 3>);
+    benchmark::RegisterBenchmark("std::codecvt / u16big4 to utf8", bm_codecvt<200, 4>);
+
+    benchmark::Initialize(&argc, argv);
+    benchmark::RunSpecifiedBenchmarks();
+    return 0;
 }

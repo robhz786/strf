@@ -15,7 +15,8 @@ foreach(
   target_link_libraries(
     performance-${x}-header-only
     strf-header-only
-    fmt::fmt-header-only )
+    fmt::fmt-header-only
+    benchmark )
   set_target_properties(
     performance-${x}-header-only
     PROPERTIES OUTPUT_NAME
@@ -25,7 +26,7 @@ foreach(
     DESTINATION "${STRF_INSTALL_SUBDIR}/$<CONFIG>/benchmarks" )
 
   add_executable(performance-${x} ${x}.cpp)
-  target_link_libraries(performance-${x} fmt::fmt strf)
+  target_link_libraries(performance-${x} strf fmt::fmt benchmark)
   set_target_properties(performance-${x} PROPERTIES OUTPUT_NAME ${x})
   install(
     TARGETS performance-${x}
@@ -40,8 +41,6 @@ foreach(
     range
     join
     width_calculation
-#    from_utf32
-#    to_utf32
     utf8_to_utf16
     utf16_to_utf8
 )
@@ -49,7 +48,8 @@ foreach(
   add_executable(performance-${x}-header-only    ${x}.cpp)
   target_link_libraries(
     performance-${x}-header-only
-    strf-header-only )
+    strf-header-only
+    benchmark )
   set_target_properties(
     performance-${x}-header-only
     PROPERTIES OUTPUT_NAME
@@ -59,7 +59,7 @@ foreach(
     DESTINATION "${STRF_INSTALL_SUBDIR}/$<CONFIG>/benchmarks")
 
   add_executable(performance-${x} ${x}.cpp)
-  target_link_libraries(performance-${x} strf)
+  target_link_libraries(performance-${x} strf benchmark)
   set_target_properties(performance-${x} PROPERTIES OUTPUT_NAME ${x})
   install(
     TARGETS performance-${x}

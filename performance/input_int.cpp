@@ -1,9 +1,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <strf.hpp>
-#include "loop_timer.hpp"
 #include "fmt/format.h"
 #include "fmt/compile.h"
+#include <benchmark/benchmark.h>
 #include <cstdio>
 #include <climits>
 #include <clocale>
@@ -18,328 +18,151 @@
 #endif
 
 
-int main()
+#define CREATE_BENCHMARK(PREFIX, FIXTURE)                    \
+    static void PREFIX ## _func (benchmark::State& state) {  \
+        FIXTURE;                                             \
+        char dest[110];                                      \
+        char* dest_end = dest + sizeof(dest);                \
+        (void) dest_end;                                     \
+        for(auto _ : state) {                                \
+            PREFIX ## _OP ;                                  \
+            benchmark::DoNotOptimize(dest);                  \
+            benchmark::ClobberMemory();                      \
+        }                                                    \
+    }
+
+#define REGISTER_BENCHMARK(X) benchmark::RegisterBenchmark(STR(X ## _OP), X ## _func);
+#define STR2(X) #X
+#define STR(X) STR2(X)
+
+#define STRF_I_OP         strf::to(dest)(25);
+#define FMT_I_FIXTURE     auto fmt_int = fmt::compile<int>("{}");
+#define FMT_I_OP          fmt::format_to(dest, fmt_int, 25);
+#define FMT_INT_I_OP      strcpy(dest, fmt::format_int{25}.c_str());
+#define TOCHARS_I_OP      std::to_chars(dest, dest_end, 25);
+#define SPRINTF_I_OP      std::sprintf(dest, "%d", 25);
+#define STRF_5I_OP        strf::to(dest)(15, 25, 35, 45, 55);
+#define FMT_5I_FIXTURE    auto fmt_5x_int = fmt::compile<int, int, int, int, int>("{}{}{}{}{}");
+#define FMT_5I_OP         fmt::format_to(dest + 10, fmt_5x_int, 15, 25, 35, 45, 55);
+#define SPRINTF_5I_OP     std::sprintf(dest, "%d%d%d%d%d", 15, 25, 35, 45, 55);
+#define STRF_ULL_OP       strf::to(dest)(~0ull);
+#define FMT_ULL_FIXTURE   auto fmt_ulonglong = fmt::compile<std::uint64_t>("{}");
+#define FMT_ULL_OP        fmt::format_to(dest, fmt_ulonglong, ~0ull);
+#define FMT_INT_ULL_OP    strcpy(dest, fmt::format_int{~0ull}.c_str());
+#define TOCHARS_ULL_OP    std::to_chars(dest, dest_end, ~0ull);
+#define SPRINTF_ULL_OP    std::sprintf(dest, "%lld", LLONG_MAX);
+#define STRF_5ULL_OP      strf::to(dest)(~0ull, ~0ull>>1, ~0ull>>2, ~0ull>>3, ~0ull>>4);
+#define FMT_5ULL_FIXTURE  auto fmt_5x_ulonglong = \
+                          fmt::compile<std::uint64_t, std::uint64_t, std::uint64_t, \
+                                       std::uint64_t, std::uint64_t>("{}{}{}{}{}");
+#define FMT_5ULL_OP       fmt::format_to(dest, fmt_5x_ulonglong, ~0ull, ~0ull>>1, ~0ull>>2, ~0ull>>3, ~0ull>>4);
+#define SPRINTF_5ULL_OP   std::sprintf(dest, "%llud%llud%llud%llud%llud", ~0ull, ~0ull>>1, ~0ull>>2, ~0ull>>3, ~0ull>>4 );
+#define STRF_MIX_OP       strf::to(dest)(strf::dec(21).fill('*')<8, ' ', ~strf::hex(221), ' ', +strf::dec(21)>10);
+#define FMT_MIX_FIXTURE   auto fmt_3_int = fmt::compile<int, int, int>("{:*<8}{:#x}{:>+10}");
+#define FMT_MIX_OP        fmt::format_to(dest, fmt_3_int, 21, 221, 21);
+#define SPRINTF_MIX_OP    std::sprintf(dest, "%-8d%#x%+10d", 21, 221, 21);
+#define STRF_PUNCT_FIXTURE    strf::monotonic_grouping<10> punct3(3);
+#define STRF_PUNCT_I_OP       strf::to(dest).with(punct3)(25);
+#define FMT_PUNCT_I_FIXTURE   std::setlocale(LC_ALL, "en_US.UTF-8"); \
+                              auto fmt_loc_int = fmt::compile<int>("{:n}");
+#define FMT_PUNCT_I_OP        fmt::format_to(dest, fmt_loc_int, 25);
+#define SPRINTF_PUNCT_I_OP    std::sprintf(dest, "%'d", 25);
+#define STRF_PUNCT_ULL_OP     strf::to(dest).with(punct3)(~0ull);
+#define FMT_PUNCT_ULL_FIXTURE std::setlocale(LC_ALL, "en_US.UTF-8"); \
+                              auto fmt_loc_ulonglong = fmt::compile<std::uint64_t>("{:n}");
+#define FMT_PUNCT_ULL_OP      fmt::format_to(dest, fmt_loc_ulonglong, ~0ull);
+#define SPRINTF_PUNCT_ULL_OP  std::sprintf(dest, "%'llud", ~0ull);
+#define STRF_BIGPUNCT_FIXTURE auto punct3_bigsep = strf::monotonic_grouping<10>(3).thousands_sep(0x22C4);
+#define STRF_BIGPUNCT_I_OP    strf::to(dest).with(punct3_bigsep)(25);
+#define STRF_BIGPUNCT_ULL_OP  strf::to(dest).with(punct3_bigsep)(~0ull);
+
+
+CREATE_BENCHMARK(STRF_I, ;);
+CREATE_BENCHMARK(FMT_I, FMT_I_FIXTURE);
+CREATE_BENCHMARK(FMT_INT_I,  ;);
+#if defined(HAS_CHARCONV)
+CREATE_BENCHMARK(TOCHARS_I,  ;);
+#endif
+CREATE_BENCHMARK(SPRINTF_I,  ;);
+CREATE_BENCHMARK(STRF_5I,  ;);
+CREATE_BENCHMARK(FMT_5I, FMT_5I_FIXTURE);
+CREATE_BENCHMARK(SPRINTF_5I,  ;);
+CREATE_BENCHMARK(STRF_ULL,  ;);
+CREATE_BENCHMARK(FMT_ULL, FMT_ULL_FIXTURE);
+CREATE_BENCHMARK(FMT_INT_ULL,  ;);
+#if defined(HAS_CHARCONV)
+CREATE_BENCHMARK(TOCHARS_ULL,  ;);
+#endif
+CREATE_BENCHMARK(SPRINTF_ULL,  ;);
+CREATE_BENCHMARK(STRF_5ULL,  ;);
+CREATE_BENCHMARK(FMT_5ULL,  FMT_5ULL_FIXTURE);
+CREATE_BENCHMARK(SPRINTF_5ULL,  ;);
+CREATE_BENCHMARK(STRF_MIX,  ;);
+CREATE_BENCHMARK(FMT_MIX, FMT_MIX_FIXTURE);
+CREATE_BENCHMARK(SPRINTF_MIX,  ;);
+CREATE_BENCHMARK(STRF_PUNCT_I, STRF_PUNCT_FIXTURE);
+CREATE_BENCHMARK(FMT_PUNCT_I, FMT_PUNCT_I_FIXTURE);
+#if defined(__GNU_LIBRARY__)
+CREATE_BENCHMARK(SPRINTF_PUNCT_I, ;);
+#endif
+CREATE_BENCHMARK(STRF_PUNCT_ULL, STRF_PUNCT_FIXTURE);
+CREATE_BENCHMARK(FMT_PUNCT_ULL,  FMT_PUNCT_ULL_FIXTURE);
+#if defined(__GNU_LIBRARY__)
+CREATE_BENCHMARK(SPRINTF_PUNCT_ULL, ;);
+#endif
+CREATE_BENCHMARK(STRF_BIGPUNCT_I, STRF_BIGPUNCT_FIXTURE);
+CREATE_BENCHMARK(STRF_BIGPUNCT_ULL, STRF_BIGPUNCT_FIXTURE);
+
+
+int main(int argc, char** argv)
 {
-    char dest[1000];
-    char* dest_end = dest + sizeof(dest);
-    (void) dest_end;
-    escape(dest);
-
-    auto dummy_punct = strf::no_grouping<10>().decimal_point(':');
-
-    std::cout << "auto fmt_int = fmt::compile<int>(\"{}\");\n";
-    std::cout << "auto fmt_5x_int = fmt::compile<int, int, int, int, int>(\"{}{}{}{}{}\");\n";
-    std::cout << "auto fmt_longlong = fmt::compile<long long>(\"{}\");\n";
-    std::cout << "auto fmt_5x_longlong = fmt::compile<long long, long long, long long, long long, long long>(\"{}{}{}{}{}\");\n;";
-    std::cout << "auto fmt_3_int = fmt::compile<int, int, int>(\"{:*<8}{:#x}{:>+10}\");\n";
-    std::cout << "auto fmt_loc_int = fmt::compile<int>(\"{:n}\");\n";
-    std::cout << "auto fmt_loc_longlong = fmt::compile<long long>(\"{:n}\");\n";
-
-    std::cout << "\n\n               Small int\n";
-
-    PRINT_BENCHMARK_N(10, "strf::to(dest) (25)")
-    {
-        (void)strf::to(dest     , dest_end)(20);
-        (void)strf::to(dest + 2 , dest_end)(21);
-        (void)strf::to(dest + 4 , dest_end)(22);
-        (void)strf::to(dest + 6 , dest_end)(23);
-        (void)strf::to(dest + 8 , dest_end)(24);
-        (void)strf::to(dest + 10, dest_end)(25);
-        (void)strf::to(dest + 12, dest_end)(26);
-        (void)strf::to(dest + 14, dest_end)(27);
-        (void)strf::to(dest + 16, dest_end)(28);
-        (void)strf::to(dest + 18, dest_end)(29);
-        clobber();
-    }
-    auto fmt_int = fmt::compile<int>("{}");
-    PRINT_BENCHMARK_N(10, "fmt::format_to(dest, fmt_int, 25)")
-    {
-        fmt::format_to(dest,      fmt_int, 20);
-        fmt::format_to(dest +  2, fmt_int, 21);
-        fmt::format_to(dest +  4, fmt_int, 22);
-        fmt::format_to(dest +  6, fmt_int, 23);
-        fmt::format_to(dest +  8, fmt_int, 24);
-        fmt::format_to(dest + 10, fmt_int, 25);
-        fmt::format_to(dest + 12, fmt_int, 26);
-        fmt::format_to(dest + 14, fmt_int, 27);
-        fmt::format_to(dest + 16, fmt_int, 28);
-        fmt::format_to(dest + 18, fmt_int, 29);
-        clobber();
-    }
-    PRINT_BENCHMARK_N(10, "strcpy(dest, fmt::format_int{25}.c_str())")
-    {
-        strcpy(dest,      fmt::format_int{20}.c_str());
-        strcpy(dest +  2, fmt::format_int{21}.c_str());
-        strcpy(dest +  4, fmt::format_int{22}.c_str());
-        strcpy(dest +  6, fmt::format_int{23}.c_str());
-        strcpy(dest +  8, fmt::format_int{24}.c_str());
-        strcpy(dest + 10, fmt::format_int{25}.c_str());
-        strcpy(dest + 12, fmt::format_int{26}.c_str());
-        strcpy(dest + 14, fmt::format_int{27}.c_str());
-        strcpy(dest + 16, fmt::format_int{28}.c_str());
-        strcpy(dest + 18, fmt::format_int{29}.c_str());
-        clobber();
-    }
-
+    REGISTER_BENCHMARK(STRF_I);
+    REGISTER_BENCHMARK(FMT_I);
+    REGISTER_BENCHMARK(FMT_INT_I);
 #if defined(HAS_CHARCONV)
-
-    PRINT_BENCHMARK_N(10, "std::to_chars(dest, dest_end, 25)")
-    {
-        std::to_chars(dest,      dest_end, 20);
-        std::to_chars(dest +  2, dest_end, 21);
-        std::to_chars(dest +  4, dest_end, 21);
-        std::to_chars(dest +  6, dest_end, 23);
-        std::to_chars(dest +  8, dest_end, 24);
-        std::to_chars(dest + 10, dest_end, 25);
-        std::to_chars(dest + 12, dest_end, 26);
-        std::to_chars(dest + 14, dest_end, 27);
-        std::to_chars(dest + 16, dest_end, 28);
-        std::to_chars(dest + 18, dest_end, 29);
-        clobber();
-    }
-
-#else
-    std::cout << "\n";
-#endif// ! defined(HAS_CHARCONV)
-
-    PRINT_BENCHMARK_N(10, "std::sprintf(dest, \"%d\", 25)")
-    {
-        std::sprintf(dest, "%d", 20);
-        std::sprintf(dest, "%d", 21);
-        std::sprintf(dest, "%d", 21);
-        std::sprintf(dest, "%d", 23);
-        std::sprintf(dest, "%d", 24);
-        std::sprintf(dest, "%d", 25);
-        std::sprintf(dest, "%d", 26);
-        std::sprintf(dest, "%d", 27);
-        std::sprintf(dest, "%d", 28);
-        std::sprintf(dest, "%d", 29);
-        clobber();
-    }
-
-    std::cout << "\n";
-
-    PRINT_BENCHMARK_N(10, "strf::to(dest) (15, 25, 35, 45, 55)")
-    {
-        (void)strf::to(dest     , dest_end)(10, 20, 30, 40, 50);
-        (void)strf::to(dest + 2 , dest_end)(11, 21, 31, 41, 51);
-        (void)strf::to(dest + 4 , dest_end)(11, 21, 31, 41, 51);
-        (void)strf::to(dest + 6 , dest_end)(13, 23, 33, 43, 53);
-        (void)strf::to(dest + 8 , dest_end)(14, 24, 34, 44, 54);
-        (void)strf::to(dest + 10, dest_end)(15, 25, 35, 45, 55);
-        (void)strf::to(dest + 12, dest_end)(16, 26, 36, 46, 56);
-        (void)strf::to(dest + 14, dest_end)(17, 27, 37, 47, 57);
-        (void)strf::to(dest + 16, dest_end)(18, 28, 38, 48, 58);
-        (void)strf::to(dest + 18, dest_end)(19, 29, 39, 49, 59);
-        clobber();
-    }
-
-    auto fmt_5x_int = fmt::compile<int, int, int, int, int>("{}{}{}{}{}");
-    PRINT_BENCHMARK_N(10, "fmt::format_to(dest, fmt_5x_int, 15, 25, 35, 45, 55)")
-    {
-        fmt::format_to(dest,      fmt_5x_int, 10, 20, 30, 40, 50);
-        fmt::format_to(dest +  2, fmt_5x_int, 11, 21, 31, 41, 51);
-        fmt::format_to(dest +  4, fmt_5x_int, 11, 21, 31, 41, 51);
-        fmt::format_to(dest +  6, fmt_5x_int, 13, 23, 33, 43, 53);
-        fmt::format_to(dest +  8, fmt_5x_int, 14, 24, 34, 44, 54);
-        fmt::format_to(dest + 10, fmt_5x_int, 15, 25, 35, 45, 55);
-        fmt::format_to(dest + 12, fmt_5x_int, 16, 26, 36, 46, 56);
-        fmt::format_to(dest + 14, fmt_5x_int, 17, 27, 37, 47, 57);
-        fmt::format_to(dest + 16, fmt_5x_int, 18, 28, 38, 48, 58);
-        fmt::format_to(dest + 18, fmt_5x_int, 19, 29, 39, 49, 59);
-        clobber();
-    }
-
-    PRINT_BENCHMARK_N(10, "std::sprintf(dest, \"%d\", 25)")
-    {
-        std::sprintf(dest, "%d%d%d%d%d", 10, 20, 30, 40, 50);
-        std::sprintf(dest, "%d%d%d%d%d", 11, 21, 31, 41, 51);
-        std::sprintf(dest, "%d%d%d%d%d", 11, 21, 31, 41, 51);
-        std::sprintf(dest, "%d%d%d%d%d", 13, 23, 33, 43, 53);
-        std::sprintf(dest, "%d%d%d%d%d", 14, 24, 34, 44, 54);
-        std::sprintf(dest, "%d%d%d%d%d", 15, 25, 35, 45, 55);
-        std::sprintf(dest, "%d%d%d%d%d", 16, 26, 36, 46, 56);
-        std::sprintf(dest, "%d%d%d%d%d", 17, 27, 37, 47, 57);
-        std::sprintf(dest, "%d%d%d%d%d", 18, 28, 38, 48, 58);
-        std::sprintf(dest, "%d%d%d%d%d", 19, 29, 39, 49, 59);
-        clobber();
-    }
-
-    std::cout << "\n               Big int\n";
-
-    PRINT_BENCHMARK_N(5, "strf::to(dest) (LLONG_MAX)")
-    {
-        (void)strf::to(dest     , dest_end)(LLONG_MAX    );
-        (void)strf::to(dest + 20, dest_end)(LLONG_MAX - 1);
-        (void)strf::to(dest + 40, dest_end)(LLONG_MAX - 2);
-        (void)strf::to(dest + 60, dest_end)(LLONG_MAX - 3);
-        (void)strf::to(dest + 80, dest_end)(LLONG_MAX - 4);
-        clobber();
-    }
-
-    auto fmt_longlong = fmt::compile<long long>("{}");
-
-    PRINT_BENCHMARK_N(5, "fmt::format_to(dest, \"{}\", LLONG_MAX)")
-    {
-        fmt::format_to(dest     , fmt_longlong, LLONG_MAX    );
-        fmt::format_to(dest + 20, fmt_longlong, LLONG_MAX - 1);
-        fmt::format_to(dest + 40, fmt_longlong, LLONG_MAX - 2);
-        fmt::format_to(dest + 60, fmt_longlong, LLONG_MAX - 3);
-        fmt::format_to(dest + 80, fmt_longlong, LLONG_MAX - 4);
-        clobber();
-    }
-    PRINT_BENCHMARK_N(5, "strcpy(dest, fmt::format_int{LLONG_MAX}.c_str())")
-    {
-        strcpy(dest     , fmt::format_int{LLONG_MAX    }.c_str());
-        strcpy(dest + 20, fmt::format_int{LLONG_MAX - 1}.c_str());
-        strcpy(dest + 40, fmt::format_int{LLONG_MAX - 2}.c_str());
-        strcpy(dest + 60, fmt::format_int{LLONG_MAX - 3}.c_str());
-        strcpy(dest + 80, fmt::format_int{LLONG_MAX - 4}.c_str());
-        clobber();
-    }
-
+    REGISTER_BENCHMARK(TOCHARS_I);
+#endif
+    REGISTER_BENCHMARK(SPRINTF_I);
+    REGISTER_BENCHMARK(STRF_5I);
+    REGISTER_BENCHMARK(FMT_5I);
+    REGISTER_BENCHMARK(SPRINTF_5I);
+    REGISTER_BENCHMARK(STRF_ULL);
+    REGISTER_BENCHMARK(FMT_ULL);
+    REGISTER_BENCHMARK(FMT_INT_ULL);
 #if defined(HAS_CHARCONV)
-
-    PRINT_BENCHMARK_N(5, "std::to_chars(dest, dest_end, LLONG_MAX)")
-    {
-        std::to_chars(dest     , dest_end, LLONG_MAX);
-        std::to_chars(dest + 20, dest_end, LLONG_MAX - 1);
-        std::to_chars(dest + 40, dest_end, LLONG_MAX - 2);
-        std::to_chars(dest + 60, dest_end, LLONG_MAX - 3);
-        std::to_chars(dest + 80, dest_end, LLONG_MAX - 4);
-        clobber();
-    }
-#else
-    std::cout << '\n';
-#endif // defined(HAS_CHARCONV)
-
-    PRINT_BENCHMARK_N(5, "std::sprintf(dest, \"%lld\", LLONG_MAX)")
-    {
-        std::sprintf(dest     , "%lld", LLONG_MAX);
-        std::sprintf(dest + 20, "%lld", LLONG_MAX - 1);
-        std::sprintf(dest + 40, "%lld", LLONG_MAX - 2);
-        std::sprintf(dest + 60, "%lld", LLONG_MAX - 3);
-        std::sprintf(dest + 80, "%lld", LLONG_MAX - 4);
-        clobber();
-    }
-
-    std::cout << "\n";
-    PRINT_BENCHMARK("strf::to(dest) (LLONG_MAX, LLONG_MAX, LLONG_MAX, LLONG_MAX, LLONG_MAX)")
-    {
-        (void)strf::to(dest , dest_end)( LLONG_MAX - 10, LLONG_MAX - 20
-                                               , LLONG_MAX - 30, LLONG_MAX - 40, LLONG_MAX - 50);
-        clobber();
-    }
-    auto fmt_5x_longlong = fmt::compile<long long, long long, long long, long long, long long>("{}{}{}{}{}");
-    PRINT_BENCHMARK("fmt::format_to(dest, fmt_5x_longlong, LLONG_MAX, LLONG_MAX, LLONG_MAX, LLONG_MAX, LLONG_MAX)")
-    {
-        fmt::format_to( dest, fmt_5x_longlong, LLONG_MAX - 10, LLONG_MAX - 20
-                      , LLONG_MAX - 30, LLONG_MAX - 40, LLONG_MAX - 50);
-        clobber();
-    }
-
-    PRINT_BENCHMARK("std::sprintf(dest, \"%lld\", LLONG_MAX, LLONG_MAX, LLONG_MAX, LLONG_MAX, LLONG_MAX)")
-    {
-        std::sprintf( dest , "%lld%lld%lld%lld%lld", LLONG_MAX - 10, LLONG_MAX - 20
-                    , LLONG_MAX - 30, LLONG_MAX - 40, LLONG_MAX - 50);
-        clobber();
-    }
-
-    std::cout << "\n               With formatting \n";
-
-    PRINT_BENCHMARK_N(5, "strf::to(dest) (strf::dec(25).fill('*')<8, ~strf::hex(225), +strf::dec(25).p(5)>10)")
-    {
-        (void)strf::to(dest    , dest_end)(strf::dec(21).fill('*')<8, ' ', ~strf::hex(221), ' ', +strf::dec(21)>10);
-        (void)strf::to(dest + 2, dest_end)(strf::dec(22).fill('*')<8, ' ', ~strf::hex(222), ' ', +strf::dec(22)>10);
-        (void)strf::to(dest + 4, dest_end)(strf::dec(23).fill('*')<8, ' ', ~strf::hex(223), ' ', +strf::dec(23)>10);
-        (void)strf::to(dest + 6, dest_end)(strf::dec(24).fill('*')<8, ' ', ~strf::hex(224), ' ', +strf::dec(24)>10);
-        (void)strf::to(dest + 8, dest_end)(strf::dec(25).fill('*')<8, ' ', ~strf::hex(225), ' ', +strf::dec(25)>10);
-        clobber();
-    }
-
-    auto fmt_3_int = fmt::compile<int, int, int>("{:*<8}{:#x}{:>+10}");
-    PRINT_BENCHMARK_N(5, "fmt::format_to(dest, fmt_3_int, 25, 225, 25)")
-    {
-        fmt::format_to(dest,      fmt_3_int, 21, 221, 21);
-        fmt::format_to(dest +  2, fmt_3_int, 22, 222, 22);
-        fmt::format_to(dest +  4, fmt_3_int, 23, 223, 23);
-        fmt::format_to(dest +  6, fmt_3_int, 24, 224, 24);
-        fmt::format_to(dest +  8, fmt_3_int, 25, 225, 25);
-        clobber();
-    }
-    PRINT_BENCHMARK_N(5, "std::sprintf(dest, \"%-8d%#8x%+10.5d\", 25, 225, 25)")
-    {
-        std::sprintf(dest, "%-8d%#x%+10d", 21, 221, 21);
-        std::sprintf(dest, "%-8d%#x%+10d", 22, 222, 22);
-        std::sprintf(dest, "%-8d%#x%+10d", 23, 223, 23);
-        std::sprintf(dest, "%-8d%#x%+10d", 24, 224, 24);
-        std::sprintf(dest, "%-8d%#x%+10d", 25, 225, 25);
-        clobber();
-    }
-
-    std::cout << "\n               With punctuation\n";
-    std::setlocale(LC_ALL, "en_US.UTF-8");
-    auto fmt_loc_int = fmt::compile<int>("{:n}");
-    strf::monotonic_grouping<10> punct3(3);
-
-    PRINT_BENCHMARK("strf::to(dest).with(punct3) (25)")
-    {
-        (void)strf::to(dest).with(punct3)(25);
-        clobber();
-    }
-    PRINT_BENCHMARK("fmt::format_to(dest, fmt_loc_int, 25)")
-    {
-        fmt::format_to(dest, fmt_loc_int, 25);
-        clobber();
-    }
-
-#if defined(__GNU_LIBRARY__)
-    PRINT_BENCHMARK("std::sprintf(dest, \"%'d\", 25)")
-    {
-        std::sprintf(dest, "%'d", 25);
-        clobber();
-    }
-#else
-    std::cout << "\n";
+    REGISTER_BENCHMARK(TOCHARS_ULL);
 #endif
-    std::cout << "\n";
-
-    auto fmt_loc_longlong = fmt::compile<long long>("{:n}");
-
-    PRINT_BENCHMARK("strf::to(dest).with(punct3) (LLONG_MAX)")
-    {
-        (void)strf::to(dest).with(punct3)(LLONG_MAX);
-        clobber();
-    }
-    PRINT_BENCHMARK("fmt::format_to(dest, fmt_loc_longlong, LLONG_MAX)")
-    {
-        fmt::format_to(dest, fmt_loc_longlong, LLONG_MAX);
-        clobber();
-    }
+    REGISTER_BENCHMARK(SPRINTF_ULL);
+    REGISTER_BENCHMARK(STRF_5ULL);
+    REGISTER_BENCHMARK(FMT_5ULL);
+    REGISTER_BENCHMARK(SPRINTF_5ULL);
+    REGISTER_BENCHMARK(STRF_MIX);
+    REGISTER_BENCHMARK(FMT_MIX);
+    REGISTER_BENCHMARK(SPRINTF_MIX);
+    REGISTER_BENCHMARK(STRF_PUNCT_I);
+    REGISTER_BENCHMARK(FMT_PUNCT_I);
 #if defined(__GNU_LIBRARY__)
-    PRINT_BENCHMARK("std::sprintf(dest, \"%'lld\", LLONG_MAX)")
-    {
-        std::sprintf(dest, "%'lld", LLONG_MAX);
-        clobber();
-    }
-#else
-    std::cout << "\n";
+    REGISTER_BENCHMARK(SPRINTF_PUNCT_I);
 #endif
-    std::cout << "\n";
+    REGISTER_BENCHMARK(STRF_PUNCT_ULL);
+    REGISTER_BENCHMARK(FMT_PUNCT_ULL);
+#if defined(__GNU_LIBRARY__)
+    REGISTER_BENCHMARK(SPRINTF_PUNCT_ULL);
+#endif
+    REGISTER_BENCHMARK(STRF_BIGPUNCT_I);
+    REGISTER_BENCHMARK(STRF_BIGPUNCT_ULL);
 
-    std::cout << "\n               With punctuation, using a non-ascci character U+22C4\n";
-    auto punct3_bigsep = punct3.thousands_sep(0x22C4);
+    benchmark::Initialize(&argc, argv);
+    benchmark::RunSpecifiedBenchmarks();
 
-    PRINT_BENCHMARK("strf::to(dest).with(punct3_bigsep) (25)")
-    {
-        (void)strf::to(dest).with(punct3_bigsep)(25);
-        clobber();
-    }
-    PRINT_BENCHMARK("strf::to(dest).with(punct3_bigsep) (LLONG_MAX)")
-    {
-        (void)strf::to(dest).with(punct3_bigsep)(LLONG_MAX);
-        clobber();
-    }
+   strf::to(stdout)(
+        "auto fmt_int = fmt::compile<int>(\"{}\");\n"
+        "auto fmt_5x_int = fmt::compile<int, int, int, int, int>(\"{}{}{}{}{}\");\n"
+        "auto fmt_ulonglong = fmt::compile<std::uint64_t>(\"{}\");\n"
+        "auto fmt_5x_ulonglong = fmt::compile<std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t>(\"{}{}{}{}{}\");\n"
+        "auto fmt_3_int = fmt::compile<int, int, int>(\"{:*<8}{:#x}{:>+10}\");\n"
+        "auto fmt_loc_int = fmt::compile<int>(\"{:n}\");\n"
+        "auto fmt_loc_ulonglong = fmt::compile<std::uint64_t>(\"{:n}\");\n" );
 
     return 0;
 }
