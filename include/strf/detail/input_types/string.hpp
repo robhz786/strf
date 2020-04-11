@@ -269,12 +269,13 @@ template <typename T>
 class string_precision_format_fn<T, true>
 {
 public:
-    constexpr string_precision_format_fn(strf::width_t p) noexcept
+    constexpr STRF_HD string_precision_format_fn(strf::width_t p) noexcept
         : precision_(p)
     {
     }
     template <typename U>
-    constexpr string_precision_format_fn(strf::string_precision_format_fn<U, true> other) noexcept
+    constexpr STRF_HD string_precision_format_fn
+        ( strf::string_precision_format_fn<U, true> other ) noexcept
         : precision_(other.precision_)
     {
     }
@@ -307,11 +308,12 @@ class string_precision_format_fn<T, false>
                            , strf::string_precision_format<true> >;
 public:
 
-    constexpr string_precision_format_fn() noexcept
+    constexpr STRF_HD string_precision_format_fn() noexcept
     {
     }
     template <typename U>
-    constexpr string_precision_format_fn(strf::string_precision_format_fn<U, false>) noexcept
+    constexpr STRF_HD string_precision_format_fn
+        ( strf::string_precision_format_fn<U, false> ) noexcept
     {
     }
     constexpr STRF_HD adapted_derived_type_ p(strf::width_t precision) const noexcept
