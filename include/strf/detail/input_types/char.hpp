@@ -91,7 +91,7 @@ class fmt_char_printer: public printer<CharT>
 public:
 
     template <typename FPack, typename Preview>
-    fmt_char_printer
+    STRF_HD fmt_char_printer
         ( const FPack& fp
         , Preview& preview
         , const strf::char_with_format<CharT>& input ) noexcept

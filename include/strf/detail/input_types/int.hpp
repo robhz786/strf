@@ -189,7 +189,7 @@ public:
     static STRF_HD std::false_type test_numpunct(const strf::default_numpunct<Base>&);
     static STRF_HD std::false_type test_numpunct(const strf::no_grouping<Base>&);
 
-    static const FPack& fp();
+    static STRF_HD const FPack& fp();
 
     using has_numpunct_type = decltype
         ( test_numpunct
