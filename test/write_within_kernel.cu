@@ -37,20 +37,21 @@ __global__ void using_cstr_to(char* buffer, std::size_t buffer_size)
 
 __global__ void formatting_functions(char* buffer, std::size_t buffer_size)
 {
-	auto printer = strf::to(buffer, buffer_size);
-	printer (
-		"strf::fmt(0) gives ", strf::fmt(0), '\n',
-		"strf::fmt(0).hex() gives ", strf::fmt(0).hex(), '\n',
-		"strf::fmt(0).bin() gives ", strf::fmt(0).bin(), '\n',
-		"strf::left(0, 2, '0') gives ", strf::left(0, 2, '0'), '\n',
-		"strf::right(0, 2, '0') gives ", strf::right(0, 2, '0'), '\n'
-// If you enable the following lines, you get an illegal memory access
-		// , "strf::fmt(123) gives ", strf::fmt(123), '\n'
-		// , "strf::fmt(123).hex() gives ", strf::fmt(123).hex(), '\n'
-		// , "strf::fmt(123).bin() gives ", strf::fmt(123).bin(), '\n'
-		// , "strf::left(123, 5, '0') gives ", strf::left(123, 5, '0'), '\n'
-		// , "strf::right(123, 5, '0') gives ", strf::right(123, 5, '0'), '\n'
-	);
+	strf::cstr_writer writer(buffer, buffer_size);
+	auto printer = strf::to(writer);
+
+	printer ("strf::fmt(0) gives ", strf::fmt(0), '\n');
+	printer ("strf::fmt(0).hex() gives ", strf::fmt(0).hex(), '\n');
+	printer ("strf::fmt(0).bin() gives ", strf::fmt(0).bin(), '\n');
+	printer ("strf::left(0, 2, '0') gives ", strf::left(0, 2, '0'), '\n');
+	printer ("strf::right(0, 2, '0') gives ", strf::right(0, 2, '0'), '\n');
+	printer ("strf::fmt(123) gives ", strf::fmt(123), '\n');
+	printer ("strf::fmt(123).hex() gives ", strf::fmt(123).hex(), '\n');
+	printer ("strf::fmt(123).bin() gives ", strf::fmt(123).bin(), '\n');
+	printer ("strf::left(123, 5, '0') gives ", strf::left(123, 5, '0'), '\n');
+	printer ("strf::right(123, 5, '0') gives ", strf::right(123, 5, '0'), '\n');
+
+	writer.finish();
 }
 
 } // namespace kernels
@@ -125,7 +126,7 @@ void test_cstr_to()
 void test_formatting_functions()
 {
 	char* device_side_buffer;
-	const std::size_t buffer_size { 1000 };
+	constexpr std::size_t buffer_size { 1000 };
 	ensure_cuda_success( cudaMalloc(&device_side_buffer, buffer_size) );
 	ensure_cuda_success( cudaMemset(device_side_buffer, 0, buffer_size) );
 
@@ -142,13 +143,12 @@ void test_formatting_functions()
 		"strf::fmt(0).hex() gives 0\n"
 		"strf::fmt(0).bin() gives 0\n"
 		"strf::left(0, 2, '0') gives 00\n"
-		"strf::right(0, 2, '0') gives 00\n";
-
-//		"strf::fmt(123) gives 123\n"
-//		"strf::fmt(123).hex() gives  7b\n"
-//		"strf::fmt(123).bin() gives  01111100\n"
-//		"strf::left(123, 5, '0') gives 12300\n"
-//		"strf::right(123, 5, '0') gives 00123\n";
+		"strf::right(0, 2, '0') gives 00\n"
+		"strf::fmt(123) gives 123\n"
+		"strf::fmt(123).hex() gives 7b\n"
+		"strf::fmt(123).bin() gives 1111011\n"
+		"strf::left(123, 5, '0') gives 12300\n"
+		"strf::right(123, 5, '0') gives 00123\n";
 	TEST_EQ(strncmp(host_side_buffer, expected.str().c_str(), buffer_size), 0);
 	std::cout << std::endl;
 	std::cout << "Result: \"" << host_side_buffer << "\"\n";
@@ -188,7 +188,7 @@ int main(void)
 	// TODO: Test basic_cstr_writer's with different character types
 	test_cstr_writer();
 	cstr_to_sanity_check();
-	test_cstr_to();
+	//test_cstr_to();
 	test_formatting_functions();
 
 	cudaDeviceReset();

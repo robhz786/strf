@@ -905,7 +905,7 @@ template < typename It
            = decltype(std::declval<const UnaryOp&>()(*std::declval<const It&>())) >
 inline STRF_HD auto separated_range(It begin, It end, const CharT* sep, UnaryOp op)
 {
-    std::size_t sep_len = std::char_traits<CharT>::length(sep);
+    std::size_t sep_len = strf::detail::str_length(sep);
     return strf::separated_transformed_range_p<It, CharT, UnaryOp>
         { begin, end, sep, sep_len, op };
 }
@@ -918,7 +918,7 @@ template < typename Range
            = decltype(std::declval<const UnaryOp&>()(*std::declval<const It&>())) >
 inline STRF_HD auto separated_range(const Range& range, const CharT* sep, UnaryOp op)
 {
-    std::size_t sep_len = std::char_traits<CharT>::length(sep);
+    std::size_t sep_len = strf::detail::str_length(sep);
     using namespace std;
     return strf::separated_transformed_range_p<It, CharT, UnaryOp>
         { begin(range), end(range), sep, sep_len, op };
@@ -931,7 +931,7 @@ template < typename T
          , typename = decltype(std::declval<const UnaryOp&>()(*(T*)0)) >
 inline STRF_HD auto separated_range(T (&array)[N], const CharT* sep, UnaryOp op)
 {
-    std::size_t sep_len = std::char_traits<CharT>::length(sep);
+    std::size_t sep_len = strf::detail::str_length(sep);
     return strf::separated_transformed_range_p<const T*, CharT, UnaryOp>
         { &array[0], &array[0] + N, sep, sep_len, op };
 }
