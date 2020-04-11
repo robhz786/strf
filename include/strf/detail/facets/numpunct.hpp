@@ -447,8 +447,8 @@ template <int Base> struct numpunct_c
 #else
         static const strf::default_numpunct<base> x{};
         return x;
-    }
 #endif
+    }
 };
 
 namespace detail {

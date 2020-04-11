@@ -189,7 +189,7 @@ public:
     static STRF_HD std::false_type test_numpunct(const strf::default_numpunct<Base>&);
     static STRF_HD std::false_type test_numpunct(const strf::no_grouping<Base>&);
 
-    static const FPack& fp();
+    static STRF_HD const FPack& fp();
 
     using has_numpunct_type = decltype
         ( test_numpunct
@@ -200,7 +200,10 @@ public:
 };
 
 template <typename FPack, typename IntT, unsigned Base>
-constexpr bool has_intpunct = has_intpunct_impl<FPack, IntT, Base>::value;
+constexpr STRF_HD bool has_intpunct()
+{
+    return has_intpunct_impl<FPack, IntT, Base>::value;
+}
 
 template <std::size_t CharSize>
 class int_printer: public strf::printer<CharSize>
@@ -363,7 +366,7 @@ public:
         , lettercase_(get_facet<strf::lettercase_c, IntTag>(fp))
     {
         init_<IntT>( value, fdata );
-        STRF_IF_CONSTEXPR (detail::has_intpunct<FPack, IntTag, Base>) {
+        STRF_IF_CONSTEXPR (detail::has_intpunct<FPack, IntTag, Base>()) {
             init_punct_(get_facet<strf::charset_c<CharT>, IntTag>(fp));
         }
         preview.subtract_width(width());
@@ -739,7 +742,7 @@ STRF_EXPLICIT_TEMPLATE class full_fmt_int_printer<4, 16>;
 
 template <typename CharT, typename FPack, typename Preview>
 inline STRF_HD typename std::conditional
-    < strf::detail::has_intpunct<FPack, short, 10>
+    < strf::detail::has_intpunct<FPack, short, 10>()
     , strf::detail::punct_int_printer<sizeof(CharT)>
     , strf::detail::int_printer<sizeof(CharT)> >::type
 make_printer(strf::rank<1>, const FPack& fp, Preview& preview, short x)
@@ -749,7 +752,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, short x)
 
 template <typename CharT, typename FPack, typename Preview>
 inline STRF_HD typename std::conditional
-    < strf::detail::has_intpunct<FPack, int, 10>
+    < strf::detail::has_intpunct<FPack, int, 10>()
     , strf::detail::punct_int_printer<sizeof(CharT)>
     , strf::detail::int_printer<sizeof(CharT)> >::type
 make_printer(strf::rank<1>, const FPack& fp, Preview& preview, int x)
@@ -759,7 +762,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, int x)
 
 template <typename CharT, typename FPack, typename Preview>
 inline STRF_HD typename std::conditional
-    < strf::detail::has_intpunct<FPack, long, 10>
+    < strf::detail::has_intpunct<FPack, long, 10>()
     , strf::detail::punct_int_printer<sizeof(CharT)>
     , strf::detail::int_printer<sizeof(CharT)> >::type
 make_printer(strf::rank<1>, const FPack& fp, Preview& preview, long x)
@@ -769,7 +772,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, long x)
 
 template <typename CharT, typename FPack, typename Preview>
 inline STRF_HD typename std::conditional
-    < strf::detail::has_intpunct<FPack, long long, 10>
+    < strf::detail::has_intpunct<FPack, long long, 10>()
     , strf::detail::punct_int_printer<sizeof(CharT)>
     , strf::detail::int_printer<sizeof(CharT)> >::type
 make_printer(strf::rank<1>, const FPack& fp, Preview& preview, long long x)
@@ -779,7 +782,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, long long x)
 
 template <typename CharT, typename FPack, typename Preview>
 inline STRF_HD typename std::conditional
-    < strf::detail::has_intpunct<FPack, unsigned short, 10>
+    < strf::detail::has_intpunct<FPack, unsigned short, 10>()
     , strf::detail::punct_int_printer<sizeof(CharT)>
     , strf::detail::int_printer<sizeof(CharT)> >::type
 make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned short x)
@@ -789,7 +792,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned short x)
 
 template <typename CharT, typename FPack, typename Preview>
 inline STRF_HD typename std::conditional
-    < strf::detail::has_intpunct<FPack, unsigned int, 10>
+    < strf::detail::has_intpunct<FPack, unsigned int, 10>()
     , strf::detail::punct_int_printer<sizeof(CharT)>
     , strf::detail::int_printer<sizeof(CharT)> >::type
 make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned int x)
@@ -799,7 +802,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned int x)
 
 template <typename CharT, typename FPack, typename Preview>
 inline STRF_HD typename std::conditional
-    < strf::detail::has_intpunct<FPack, unsigned long, 10>
+    < strf::detail::has_intpunct<FPack, unsigned long, 10>()
     , strf::detail::punct_int_printer<sizeof(CharT)>
     , strf::detail::int_printer<sizeof(CharT)> >::type
 make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned long x)
@@ -809,7 +812,7 @@ make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned long x)
 
 template <typename CharT, typename FPack, typename Preview>
 inline STRF_HD typename std::conditional
-    < strf::detail::has_intpunct<FPack, unsigned long long, 10>
+    < strf::detail::has_intpunct<FPack, unsigned long long, 10>()
     , strf::detail::punct_int_printer<sizeof(CharT)>
     , strf::detail::int_printer<sizeof(CharT)> >::type
 make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned long long x)

@@ -45,14 +45,14 @@ template <typename FmtA, typename FmtB, typename ValueWithFormat>
 struct fmt_forward_switcher
 {
     template <typename FmtAInit>
-    static const typename FmtB::template fn<ValueWithFormat>&
+    static STRF_HD const typename FmtB::template fn<ValueWithFormat>&
     f(const FmtAInit&, const ValueWithFormat& v)
     {
         return v;
     }
 
     template <typename FmtAInit>
-    static typename FmtB::template fn<ValueWithFormat>&&
+    static STRF_HD typename FmtB::template fn<ValueWithFormat>&&
     f(const FmtAInit&, ValueWithFormat&& v)
     {
         return v;
@@ -224,13 +224,13 @@ constexpr STRF_HD bool operator!=( strf::alignment_format_data lhs
 template <bool Active, class T>
 class alignment_format_fn
 {
-    T& as_derived_ref()
+    STRF_HD T& as_derived_ref()
     {
         T* d =  static_cast<T*>(this);
         return *d;
     }
 
-    T&& as_derived_rval_ref()
+    STRF_HD T&& as_derived_rval_ref()
     {
         T* d =  static_cast<T*>(this);
         return static_cast<T&&>(*d);
