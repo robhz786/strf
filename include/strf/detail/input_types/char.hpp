@@ -72,7 +72,7 @@ public:
     using char_type = strf::underlying_char_type<CharSize>;
 
     template <typename FPack, typename Preview, typename CharT>
-    fmt_char_printer
+    STRF_HD fmt_char_printer
         ( const FPack& fp
         , Preview& preview
         , const strf::char_with_format<CharT>& input ) noexcept

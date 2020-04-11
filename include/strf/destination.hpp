@@ -150,7 +150,7 @@ public:
     template <typename ... Args>
     decltype(auto) STRF_HD tr(const CharT* str, const Args& ... args) const &
     {
-        return tr_write_(str, std::char_traits<CharT>::length(str), args...);
+        return tr_write_(str, strf::detail::str_length<CharT>(str), args...);
     }
 
 #endif
