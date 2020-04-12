@@ -18,6 +18,24 @@ public:
     using iterator = const CharIn*;
     using const_iterator = const CharIn*;
 
+#if defined(STRF_HAS_STD_STRING_VIEW)
+
+    template <typename Traits>
+    constexpr STRF_HD simple_string_view(std::basic_string_view<CharIn, Traits> sv)
+        : begin_(sv.begin())
+        , len_(sv.size())
+    {
+    }
+
+#endif //defined(STRF_HAS_STD_STRING_VIEW)
+
+    template <typename Traits, typename Allocator>
+    STRF_HD simple_string_view(const std::basic_string<CharIn, Traits, Allocator>& s)
+        : begin_(s.data())
+        , len_(s.size())
+    {
+    }
+
     constexpr STRF_HD simple_string_view(const CharIn* begin, const CharIn* end) noexcept
         : begin_(begin)
         , len_(end - begin)
@@ -410,6 +428,20 @@ class string_printer: public strf::printer<CharSize>
 public:
     using char_type = strf::underlying_char_type<CharSize>;
 
+    template <typename FPack, typename Preview, typename CharT, bool HasPrecision>
+    STRF_HD string_printer
+        ( const FPack& fp
+        , Preview& preview
+        , const strf::value_with_format
+            < strf::detail::simple_string_view<CharT>
+            , strf::string_precision_format<HasPrecision>
+            , strf::alignment_format_q<false>
+            , strf::no_cv_format<CharT> > input
+        , strf::tag<CharT> t = strf::tag<CharT>{} )
+        : string_printer(fp, preview, input.value(), input.get_string_precision(), t)
+    {
+    }
+
     template <typename FPack, typename Preview, typename CharT>
     STRF_HD string_printer
         ( const FPack& fp
@@ -496,6 +528,21 @@ class aligned_string_printer: public strf::printer<CharSize>
 {
 public:
     using char_type = strf::underlying_char_type<CharSize>;
+
+    template <typename FPack, typename Preview, typename CharT, bool HasPrecision>
+    STRF_HD aligned_string_printer
+        ( const FPack& fp
+        , Preview& preview
+        , const strf::value_with_format
+            < strf::detail::simple_string_view<CharT>
+            , strf::string_precision_format<HasPrecision>
+            , strf::alignment_format_q<true>
+            , strf::no_cv_format<CharT> > input
+        , strf::tag<CharT> t )
+        : aligned_string_printer( fp, preview, input.value(), input.get_string_precision()
+                                , input.get_alignment_format_data(), t )
+    {
+    }
 
     template <typename FPack, typename Preview, typename CharT>
     STRF_HD aligned_string_printer
@@ -793,9 +840,7 @@ make_printer( strf::rank<1>
 {
     static_assert( std::is_same<CharIn, CharOut>::value
                  , "Character type mismatch. Use cv function." );
-    return { fp, preview, input.value(), input.get_string_precision()
-           , input.get_alignment_format_data()
-           , strf::tag<CharOut>() };
+    return { fp, preview, input, strf::tag<CharOut>() };
 }
 
 } // namespace strf

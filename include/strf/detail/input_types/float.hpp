@@ -859,6 +859,8 @@ public:
         , surr_poli_(strf::get_facet<strf::surrogate_policy_c, FloatT>(fp))
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(fp))
     {
+        static_assert(Notation != strf::float_notation::hex, "");
+
         const auto fmt = x.get_float_format_data();
         data_ = strf::detail::init_double_printer_data<Notation>(x.value(), fmt);
         decltype(auto) cs = get_facet<strf::charset_c<CharT>, FloatT>(fp);
@@ -884,6 +886,8 @@ public:
         , surr_poli_(strf::get_facet<strf::surrogate_policy_c, FloatT>(fp))
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(fp))
     {
+        static_assert(Notation != strf::float_notation::hex, "");
+
         const auto fmt = x.get_float_format_data();
         data_ = strf::detail::init_double_printer_data<Notation>(x.value(), fmt);
         decltype(auto) cs = get_facet<strf::charset_c<CharT>, FloatT>(fp);
@@ -1209,6 +1213,8 @@ public:
                     (x.value(), x.get_float_format_data()))
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(fp))
     {
+        static_assert(Notation != strf::float_notation::hex, "");
+
         auto content_width = content_width_();
         preview.subtract_width(content_width);
         preview.add_size(content_width);
@@ -1228,6 +1234,8 @@ public:
         , surr_poli_(strf::get_facet<strf::surrogate_policy_c, FloatT>(fp))
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(fp))
     {
+        static_assert(Notation != strf::float_notation::hex, "");
+
         decltype(auto) cs = strf::get_facet<strf::charset_c<CharT>, FloatT>(fp);
         init_(preview, x.width(), x.alignment(), cs);
     }

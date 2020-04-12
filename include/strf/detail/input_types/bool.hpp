@@ -20,8 +20,8 @@ class bool_printer: public printer<CharSize>
 public:
     using char_type = strf::underlying_char_type<CharSize>;
 
-    template <typename Preview>
-    STRF_HD bool_printer(Preview& preview, bool value)
+    template <typename FPack, typename Preview, typename CharT>
+    STRF_HD bool_printer(const FPack&, Preview& preview, bool value, strf::tag<CharT>)
         : value_(value)
     {
         preview.subtract_width(5 - (int)value);
@@ -147,9 +147,9 @@ inline STRF_HD auto make_fmt(strf::rank<1>, bool b)
 
 template < typename CharT, typename FPack, typename Preview >
 inline STRF_HD strf::detail::bool_printer<sizeof(CharT)>
-make_printer(strf::rank<1>, const FPack&, Preview& preview, bool b)
+make_printer(strf::rank<1>, const FPack& fp, Preview& preview, bool b)
 {
-    return {preview, b};
+    return {fp, preview, b, strf::tag<CharT>{}};
 }
 
 template < typename CharT, typename FPack, typename Preview >

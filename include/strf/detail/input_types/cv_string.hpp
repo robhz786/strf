@@ -19,6 +19,21 @@ public:
     using char_in_type = strf::underlying_char_type<SrcCharSize>;
 
     template < typename FPack, typename Preview, typename SrcChar
+             , typename DestChar, bool HasPrecision >
+    STRF_HD cv_string_printer
+        ( const FPack& fp
+        , Preview& preview
+        , strf::value_with_format< strf::detail::simple_string_view<SrcChar>
+                                 , strf::string_precision_format<HasPrecision>
+                                 , strf::alignment_format_q<false>
+                                 , strf::cv_format<SrcChar> > input
+        , strf::tag<DestChar> tag )
+        : cv_string_printer( fp, preview, input.value(), input.get_string_precision()
+                           , get_facet_<strf::charset_c<SrcChar>>(fp), tag )
+    {
+    }
+
+    template < typename FPack, typename Preview, typename SrcChar
              , typename DestChar, typename SrcCharset >
     STRF_HD cv_string_printer
         ( const FPack& fp
@@ -152,6 +167,24 @@ class aligned_cv_string_printer: public printer<DestCharSize>
 {
 public:
     using char_in_type = strf::underlying_char_type<SrcCharSize>;
+
+    template < typename FPack, typename Preview, typename SrcChar
+             , typename SrcCharset, typename DestChar, bool HasPrecision >
+    STRF_HD aligned_cv_string_printer
+        ( const FPack& fp
+        , Preview& preview
+        , strf::value_with_format
+            < strf::detail::simple_string_view<SrcChar>
+            , strf::string_precision_format<HasPrecision>
+            , strf::alignment_format_q<true>
+            , strf::cv_format_with_charset<SrcChar, SrcCharset> > input
+        , strf::tag<DestChar> t )
+        : aligned_cv_string_printer
+            ( fp, preview, input.value(), input.get_string_precision()
+            , input.get_alignment_format_data()
+            , get_facet_<strf::charset_c<SrcChar>>(fp), t )
+    {
+    }
 
     template < typename FPack, typename Preview, typename SrcChar
              , typename DestChar, typename SrcCharset >

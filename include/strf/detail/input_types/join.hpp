@@ -347,19 +347,20 @@ template<typename CharT, typename FPack, typename Preview, typename ... Args>
 class aligned_join_printer
     : public strf::detail::aligned_join_printer_impl_of<CharT, FPack, Preview, Args...>
 {
-    using aligned_join_impl_ = strf::detail::aligned_join_printer_impl_of
-        <CharT, FPack, Preview, Args...>;
-
 public:
 
+    template <bool SplitPosActive>
     STRF_HD aligned_join_printer
         ( const FPack& fp
         , Preview& preview
-        , const strf::detail::simple_tuple<Args...>& args
-        , std::ptrdiff_t split_pos
-        , strf::alignment_format_data afmt )
-        : aligned_join_impl_( fp, preview, args, split_pos, afmt
-                            , strf::tag<CharT>() )
+        , const strf::value_with_format
+            < strf::detail::simple_tuple<Args...>
+            , strf::split_pos_format<SplitPosActive>
+            , strf::alignment_format_q<true> > input
+        , strf::tag<CharT> t = strf::tag<CharT>{} )
+        : strf::detail::aligned_join_printer_impl_of<CharT, FPack, Preview, Args...>
+              ( fp, preview, input.value(), input.split_pos()
+              , input.get_alignment_format_data(), t )
     {
     }
 
@@ -413,10 +414,12 @@ class join_printer
                                       , std::declval<const Args&>() )) ... >;
 public:
 
-    STRF_HD join_printer( const FPack& fp
-                        , Preview& preview
-                        , const strf::detail::simple_tuple<Args...>& args )
-        : join_impl_(fp, preview, args, strf::tag<CharT>())
+    STRF_HD join_printer
+        ( const FPack& fp
+        , Preview& preview
+        , const strf::detail::simple_tuple<Args...>& args
+        , strf::tag<CharT> t = strf::tag<CharT>() )
+        : join_impl_(fp, preview, args, t)
     {
     }
 
@@ -471,8 +474,7 @@ inline STRF_HD strf::detail::aligned_join_printer<CharT, FPack, Preview, Args...
         , strf::split_pos_format<SplitPosActive>
         , strf::alignment_format_q<true> > input )
 {
-    return { fp, preview, input.value(), input.split_pos()
-           , input.get_alignment_format_data() };
+    return { fp, preview, input };
 }
 
 constexpr STRF_HD strf::aligned_join_t join_align

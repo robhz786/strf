@@ -104,13 +104,11 @@ public:
     using value_type = typename std::iterator_traits<ForwardIt>::value_type;
 
     template <typename Preview>
-    STRF_HD range_printer( const FPack& fp
-                 , Preview& preview
-                 , iterator begin
-                 , iterator end )
+    STRF_HD range_printer( const FPack& fp, Preview& preview, strf::range_p<ForwardIt> r
+                         , strf::tag<CharT> = strf::tag<CharT>{} )
         : fp_(fp)
-        , begin_(begin)
-        , end_(end)
+        , begin_(r.begin)
+        , end_(r.end)
     {
         preview_(preview);
     }
@@ -165,15 +163,13 @@ public:
     STRF_HD separated_range_printer
         ( const FPack& fp
         , Preview& preview
-        , iterator begin
-        , iterator end
-        , const CharT* sep
-        , std::size_t sep_len )
+        , strf::separated_range_p<ForwardIt, CharT> r
+        , strf::tag<CharT> = strf::tag<CharT>{} )
         : fp_(fp)
-        , begin_(begin)
-        , end_(end)
-        , sep_begin_(sep)
-        , sep_len_(sep_len)
+        , begin_(r.begin)
+        , end_(r.end)
+        , sep_begin_(r.sep_begin)
+        , sep_len_(r.sep_len)
     {
         preview_(preview);
     }
@@ -287,9 +283,11 @@ class fmt_range_printer: public strf::printer<sizeof(CharOut)>
 public:
 
     template <typename Preview>
-    STRF_HD fmt_range_printer( const FPack& fp
-                     , Preview& preview
-                     , const fmt_type_adapted_& fmt)
+    STRF_HD fmt_range_printer
+        ( const FPack& fp
+        , Preview& preview
+        , const fmt_type_adapted_& fmt
+        , strf::tag<CharOut> = strf::tag<CharOut>{} )
         : fp_(fp)
         , fmt_(fmt)
     {
@@ -374,9 +372,11 @@ class fmt_separated_range_printer: public strf::printer<sizeof(CharT)>
 public:
 
     template <typename Preview>
-    STRF_HD fmt_separated_range_printer( const FPack& fp
-                                       , Preview& preview
-                                       , const fmt_type_adapted_& fmt )
+    STRF_HD fmt_separated_range_printer
+        ( const FPack& fp
+        , Preview& preview
+        , const fmt_type_adapted_& fmt
+        , strf::tag<CharT> = strf::tag<CharT>{} )
         : fp_(fp)
         , fmt_(fmt)
     {
@@ -488,15 +488,15 @@ public:
     using value_type = typename std::iterator_traits<ForwardIt>::value_type;
 
     template <typename Preview>
-    transformed_range_printer( const FPack& fp
-                             , Preview& preview
-                             , iterator begin
-                             , iterator end
-                             , UnaryOp op )
+    transformed_range_printer
+        ( const FPack& fp
+        , Preview& preview
+        , const strf::transformed_range_p<ForwardIt, UnaryOp>& r
+        , strf::tag<CharT> = strf::tag<CharT>{} )
         : fp_(fp)
-        , begin_(begin)
-        , end_(end)
-        , op_(op)
+        , begin_(r.begin)
+        , end_(r.end)
+        , op_(r.op)
     {
         preview_(preview);
     }
@@ -549,22 +549,18 @@ public:
 
     using iterator = It;
     using value_type = typename std::iterator_traits<It>::value_type;
-
     template <typename Preview>
     STRF_HD sep_transformed_range_printer
         ( const FPack& fp
         , Preview& preview
-        , iterator begin
-        , iterator end
-        , const CharT* sep
-        , std::size_t sep_len
-        , UnaryOp op )
+        , const strf::separated_transformed_range_p<It, CharT, UnaryOp>& r
+        , strf::tag<CharT> = strf::tag<CharT>{} )
         : fp_(fp)
-        , begin_(begin)
-        , end_(end)
-        , sep_begin_(sep)
-        , sep_len_(sep_len)
-        , op_(op)
+        , begin_(r.begin)
+        , end_(r.end)
+        , sep_begin_(r.sep_begin)
+        , sep_len_(r.sep_len)
+        , op_(r.op)
     {
         preview_(preview);
     }
@@ -668,7 +664,7 @@ make_printer( strf::rank<1>
             , Preview& preview
             , strf::range_p<ForwardIt> r )
 {
-    return {fp, preview, r.begin, r.end};
+    return {fp, preview, r};
 }
 
 template < typename CharOut
@@ -681,7 +677,7 @@ make_printer( strf::rank<1>
             , Preview& preview
             , strf::separated_range_p<ForwardIt, CharOut> r )
 {
-    return {fp, preview, r.begin, r.end, r.sep_begin, r.sep_len};
+    return {fp, preview, r};
 }
 
 template < typename CharOut
@@ -730,7 +726,7 @@ make_printer( strf::rank<1>
             , Preview& preview
             , const strf::transformed_range_p<ForwardIt, UnaryOp>& r )
 {
-    return {fp, preview, r.begin, r.end, r.op};
+    return {fp, preview, r};
 }
 
 template < typename CharOut
@@ -745,7 +741,7 @@ make_printer( strf::rank<1>
             , Preview& preview
             , const strf::separated_transformed_range_p<ForwardIt, CharOut, UnaryOp>& r )
 {
-    return {fp, preview, r.begin, r.end, r.sep_begin, r.sep_len, r.op};
+    return {fp, preview, r};
 }
 
 template <typename ForwardIt>

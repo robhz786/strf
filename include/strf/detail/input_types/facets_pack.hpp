@@ -53,7 +53,8 @@ public:
 	  STRF_HD facets_pack_printer
         ( const ParentFPack& parent_fp
         , Preview& preview
-        , const strf::inner_pack_with_args<ChildFPack, Args...>& args )
+        , const strf::inner_pack_with_args<ChildFPack, Args...>& args
+        , strf::tag<CharT> = strf::tag<CharT>{} )
         : fp_{parent_fp, args.fp}
         , printers_{fp_, preview, args.args, strf::tag<CharT>()}
     {

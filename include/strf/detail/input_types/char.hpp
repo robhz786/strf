@@ -34,7 +34,9 @@ public:
     using char_type = strf::underlying_char_type<CharSize>;
 
     template <typename FPack, typename Preview, typename CharT>
-    STRF_HD char_printer(const FPack& fp, Preview& preview, CharT ch)
+    STRF_HD char_printer
+        ( const FPack& fp, Preview& preview, CharT ch
+        , strf::tag<CharT> = strf::tag<CharT>{} )
         : ch_(static_cast<char_type>(ch))
     {
         static_assert(sizeof(CharT) == CharSize, "");
@@ -75,7 +77,8 @@ public:
     STRF_HD fmt_char_printer
         ( const FPack& fp
         , Preview& preview
-        , const strf::char_with_format<CharT>& input ) noexcept
+        , const strf::char_with_format<CharT>& input
+        , strf::tag<CharT> = strf::tag<CharT>{} ) noexcept
         : count_(input.count())
         , afmt_(input.get_alignment_format_data())
         , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, CharT>(fp))
