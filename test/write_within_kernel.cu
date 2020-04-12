@@ -126,7 +126,7 @@ void test_cstr_to()
 void test_formatting_functions()
 {
 	char* device_side_buffer;
-	constexpr std::size_t buffer_size { 1000 };
+	constexpr std::size_t buffer_size { 400 };
 	ensure_cuda_success( cudaMalloc(&device_side_buffer, buffer_size) );
 	ensure_cuda_success( cudaMemset(device_side_buffer, 0, buffer_size) );
 
@@ -188,7 +188,7 @@ int main(void)
 	// TODO: Test basic_cstr_writer's with different character types
 	test_cstr_writer();
 	cstr_to_sanity_check();
-	//test_cstr_to();
+	test_cstr_to();
 	test_formatting_functions();
 
 	cudaDeviceReset();
