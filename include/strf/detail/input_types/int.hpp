@@ -212,8 +212,35 @@ public:
 
     using char_type = strf::underlying_char_type<CharSize>;
 
+    template <typename FP, typename Preview, typename IntT, typename CharT>
+    STRF_HD int_printer(const FP&, Preview& preview, IntT value, strf::tag<CharT>)
+    {
+        init_(preview, value);
+    }
+
+    STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override;
+
+private:
+
+    template <typename Preview>
+    STRF_HD void init_(Preview& p, short value){ init2_(p, value); }
+    template <typename Preview>
+    STRF_HD void init_(Preview& p, int value){ init2_(p, value); }
+    template <typename Preview>
+    STRF_HD void init_(Preview& p, long value){ init2_(p, value); }
+    template <typename Preview>
+    STRF_HD void init_(Preview& p, long long value){ init2_(p, value); }
+    template <typename Preview>
+    STRF_HD void init_(Preview& p, unsigned short value){ init2_(p, value); }
+    template <typename Preview>
+    STRF_HD void init_(Preview& p, unsigned int value){ init2_(p, value); }
+    template <typename Preview>
+    STRF_HD void init_(Preview& p, unsigned long value){ init2_(p, value); }
+    template <typename Preview>
+    STRF_HD void init_(Preview& p, unsigned long long value){ init2_(p, value); }
+
     template <typename Preview, typename IntT>
-    STRF_HD int_printer(Preview& preview, IntT value)
+    STRF_HD void init2_(Preview& preview, IntT value)
     {
         negative_ = value < 0;
         uvalue_ = strf::detail::unsigned_abs(value);
@@ -223,15 +250,6 @@ public:
         preview.add_size(size_);
     }
 
-    template <typename FP, typename Preview, typename IntT, typename CharT>
-    STRF_HD int_printer(const FP&, Preview& preview, IntT value, strf::tag<CharT>)
-        : int_printer(preview, value)
-    {
-    }
-
-    STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override;
-
-private:
 
     unsigned long long uvalue_;
     unsigned digcount_;
@@ -347,6 +365,19 @@ public:
         : partial_fmt_int_printer( fp, preview, value.value().value
                                  , value.get_int_format_data()
                                  , tag_char )
+    {
+    }
+
+    template <typename FPack, typename Preview, typename CharT>
+    STRF_HD partial_fmt_int_printer
+        ( const FPack& fp
+        , Preview& preview
+        , const void* value
+        , strf::tag<CharT> tag_char )
+        : partial_fmt_int_printer
+            ( fp, preview, reinterpret_cast<std::size_t>(value)
+            , strf::int_format_data{0, true, false}
+            , tag_char, strf::tag<std::size_t, const void*>() )
     {
     }
 
@@ -575,9 +606,19 @@ public:
     STRF_HD full_fmt_int_printer
         ( const FPack& fp
         , Preview& preview
-        , const void* value
-        , strf::alignment_format_data afdata
-        , strf::tag<CharT> );
+        , strf::value_with_format<const void*, strf::alignment_format> input
+        , strf::tag<CharT> chtag )
+        : full_fmt_int_printer
+          ( strf::pack
+              ( strf::get_facet<strf::lettercase_c, const void*>(fp)
+              , std::cref(strf::get_facet<strf::numpunct_c<16>, const void*>(fp)) )
+          , preview
+          , ~strf::int_with_format<std::size_t, 16, true>
+              ({reinterpret_cast<std::size_t>(input.value())})
+              .set(input.get_alignment_format_data())
+          , chtag )
+    {
+    }
 
     STRF_HD ~full_fmt_int_printer();
 
@@ -637,32 +678,6 @@ inline STRF_HD full_fmt_int_printer<CharSize, Base>::full_fmt_int_printer
         preview.subtract_width(static_cast<std::int16_t>(fillcount_));
     }
     decltype(auto) cs = get_facet<strf::charset_c<CharT>, IntT>(fp);
-    encode_fill_ = cs.encode_fill_func();
-    calc_fill_size_(preview, cs);
-}
-
-template <std::size_t CharSize, int Base>
-template <typename FPack, typename Preview, typename CharT>
-inline STRF_HD full_fmt_int_printer<CharSize, Base>::full_fmt_int_printer
-    ( const FPack& fp
-    , Preview& preview
-    , const void* value
-    , strf::alignment_format_data afdata
-    , strf::tag<CharT> tag_char )
-    : ichars_( fp, preview, reinterpret_cast<std::size_t>(value)
-             , strf::int_format_data{0, true}
-             , tag_char
-             , strf::tag<std::size_t, const void*>() )
-    , inv_seq_poli_(get_facet<strf::invalid_seq_policy_c, const void*>(fp))
-    , afmt_(afdata)
-    , surr_poli_(get_facet<strf::surrogate_policy_c, const void*>(fp))
-{
-    auto content_width = ichars_.width();
-    if (afmt_.width > content_width) {
-        fillcount_ = afmt_.width - content_width;
-        preview.subtract_width(static_cast<std::int16_t>(fillcount_));
-    }
-    decltype(auto) cs = get_facet<strf::charset_c<CharT>, const void*>(fp);
     encode_fill_ = cs.encode_fill_func();
     calc_fill_size_(preview, cs);
 }
@@ -738,107 +753,93 @@ STRF_EXPLICIT_TEMPLATE class full_fmt_int_printer<4, 16>;
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
+template <typename CharT, typename IntT>
+struct int_printer_traits
+{
+    template <typename FPack>
+    using printer_type = typename std::conditional
+        < strf::detail::has_intpunct<FPack, IntT, 10>()
+        , strf::detail::punct_int_printer<sizeof(CharT)>
+        , strf::detail::int_printer<sizeof(CharT)> >::type;
+};
+
+template <typename CharT>
+struct void_ptr_printer_traits
+{
+   template <typename>
+   using printer_type
+   = strf::detail::partial_fmt_int_printer<sizeof(CharT), 16>;
+};
+
+template <typename CharT>
+struct aligned_void_ptr_printer_traits
+{
+   template <typename>
+   using printer_type
+   = strf::detail::full_fmt_int_printer<sizeof(CharT), 16>;
+};
+
+
 } // namespace detail
 
-template <typename CharT, typename FPack, typename Preview>
-inline STRF_HD typename std::conditional
-    < strf::detail::has_intpunct<FPack, short, 10>()
-    , strf::detail::punct_int_printer<sizeof(CharT)>
-    , strf::detail::int_printer<sizeof(CharT)> >::type
-make_printer(strf::rank<1>, const FPack& fp, Preview& preview, short x)
-{
-    return {fp, preview, x, strf::tag<CharT>()};
-}
+template <typename CharT>
+STRF_HD strf::detail::int_printer_traits<CharT, short>
+get_printer_traits(strf::tag<CharT>, short);
 
-template <typename CharT, typename FPack, typename Preview>
-inline STRF_HD typename std::conditional
-    < strf::detail::has_intpunct<FPack, int, 10>()
-    , strf::detail::punct_int_printer<sizeof(CharT)>
-    , strf::detail::int_printer<sizeof(CharT)> >::type
-make_printer(strf::rank<1>, const FPack& fp, Preview& preview, int x)
-{
-    return {fp, preview, x, strf::tag<CharT>()};
-}
+template <typename CharT>
+STRF_HD strf::detail::int_printer_traits<CharT, int>
+get_printer_traits(strf::tag<CharT>, int);
 
-template <typename CharT, typename FPack, typename Preview>
-inline STRF_HD typename std::conditional
-    < strf::detail::has_intpunct<FPack, long, 10>()
-    , strf::detail::punct_int_printer<sizeof(CharT)>
-    , strf::detail::int_printer<sizeof(CharT)> >::type
-make_printer(strf::rank<1>, const FPack& fp, Preview& preview, long x)
-{
-    return {fp, preview, x, strf::tag<CharT>()};
-}
+template <typename CharT>
+STRF_HD strf::detail::int_printer_traits<CharT, long>
+get_printer_traits(strf::tag<CharT>, long);
 
-template <typename CharT, typename FPack, typename Preview>
-inline STRF_HD typename std::conditional
-    < strf::detail::has_intpunct<FPack, long long, 10>()
-    , strf::detail::punct_int_printer<sizeof(CharT)>
-    , strf::detail::int_printer<sizeof(CharT)> >::type
-make_printer(strf::rank<1>, const FPack& fp, Preview& preview, long long x)
-{
-    return {fp, preview, x, strf::tag<CharT>()};
-}
+template <typename CharT>
+STRF_HD strf::detail::int_printer_traits<CharT, long long>
+get_printer_traits(strf::tag<CharT>, long long);
 
-template <typename CharT, typename FPack, typename Preview>
-inline STRF_HD typename std::conditional
-    < strf::detail::has_intpunct<FPack, unsigned short, 10>()
-    , strf::detail::punct_int_printer<sizeof(CharT)>
-    , strf::detail::int_printer<sizeof(CharT)> >::type
-make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned short x)
-{
-    return {fp, preview, x, strf::tag<CharT>()};
-}
+template <typename CharT>
+STRF_HD strf::detail::int_printer_traits<CharT, unsigned short>
+get_printer_traits(strf::tag<CharT>, unsigned short);
 
-template <typename CharT, typename FPack, typename Preview>
-inline STRF_HD typename std::conditional
-    < strf::detail::has_intpunct<FPack, unsigned int, 10>()
-    , strf::detail::punct_int_printer<sizeof(CharT)>
-    , strf::detail::int_printer<sizeof(CharT)> >::type
-make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned int x)
-{
-    return {fp, preview, x, strf::tag<CharT>()};
-}
+template <typename CharT>
+STRF_HD strf::detail::int_printer_traits<CharT, unsigned int>
+get_printer_traits(strf::tag<CharT>, unsigned int);
 
-template <typename CharT, typename FPack, typename Preview>
-inline STRF_HD typename std::conditional
-    < strf::detail::has_intpunct<FPack, unsigned long, 10>()
-    , strf::detail::punct_int_printer<sizeof(CharT)>
-    , strf::detail::int_printer<sizeof(CharT)> >::type
-make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned long x)
-{
-    return {fp, preview, x, strf::tag<CharT>()};
-}
+template <typename CharT>
+STRF_HD strf::detail::int_printer_traits<CharT, unsigned long>
+get_printer_traits(strf::tag<CharT>, unsigned long);
 
-template <typename CharT, typename FPack, typename Preview>
-inline STRF_HD typename std::conditional
-    < strf::detail::has_intpunct<FPack, unsigned long long, 10>()
-    , strf::detail::punct_int_printer<sizeof(CharT)>
-    , strf::detail::int_printer<sizeof(CharT)> >::type
-make_printer(strf::rank<1>, const FPack& fp, Preview& preview, unsigned long long x)
-{
-    return {fp, preview, x, strf::tag<CharT>()};
-}
+template <typename CharT>
+STRF_HD strf::detail::int_printer_traits<CharT, unsigned long long>
+get_printer_traits(strf::tag<CharT>, unsigned long long);
 
-template <typename CharT, typename FPack, typename Preview, typename IntT, int Base>
-STRF_HD inline strf::detail::full_fmt_int_printer<sizeof(CharT), Base>
-make_printer( strf::rank<1>
-            , const FPack& fp
-            , Preview& preview
-            , const strf::int_with_format<IntT, Base, true>& x )
+template <typename CharT, typename IntT, int Base>
+class printer_traits<CharT, strf::int_with_format<IntT, Base, false>>
 {
-    return {fp, preview, x, strf::tag<CharT>()};
-}
+public:
+    template <typename>
+    using printer_type = strf::detail::partial_fmt_int_printer<sizeof(CharT), Base>;
+};
 
-template <typename CharT, typename FPack, typename Preview, typename IntT, int Base>
-STRF_HD inline strf::detail::partial_fmt_int_printer<sizeof(CharT), Base>
-make_printer( strf::rank<1>
-            , const FPack& fp
-            , Preview& preview
-            , const strf::int_with_format<IntT, Base, false>& x )
+template <typename CharT, typename IntT, int Base>
+class printer_traits<CharT, strf::int_with_format<IntT, Base, true>>
 {
-    return {fp, preview, x, strf::tag<CharT>()};
-}
+public:
+    template <typename>
+    using printer_type = strf::detail::full_fmt_int_printer<sizeof(CharT), Base>;
+};
+
+// void*
+
+template <typename CharT>
+STRF_HD strf::detail::void_ptr_printer_traits<CharT> get_printer_traits
+    ( strf::tag<CharT>, const void* );
+
+template <typename CharT>
+STRF_HD strf::detail::aligned_void_ptr_printer_traits<CharT> get_printer_traits
+    ( strf::tag<CharT>
+    , strf::value_with_format<const void*, strf::alignment_format> f );
 
 inline STRF_HD auto make_fmt(strf::rank<1>, short x)
 {
@@ -872,37 +873,6 @@ inline STRF_HD auto make_fmt(strf::rank<1>, unsigned long long x)
 {
     return strf::int_with_format<unsigned long long>{{x}};
 }
-
-// void*
-
-template < typename CharOut, typename FPack, typename Preview >
-inline STRF_HD strf::detail::partial_fmt_int_printer<sizeof(CharOut), 16>
-make_printer( strf::rank<1>
-            , const FPack& fp
-            , Preview& preview
-            , const void* p )
-{
-    return { fp, preview, reinterpret_cast<std::size_t>(p)
-           , strf::int_format_data{0, true, false}
-           , strf::tag<CharOut>()
-           , strf::tag<std::size_t, const void*>() };
-}
-
-
-template < typename CharOut, typename FPack, typename Preview >
-inline STRF_HD strf::detail::full_fmt_int_printer<sizeof(CharOut), 16>
-make_printer( strf::rank<1>
-            , const FPack& fp
-            , Preview& preview
-            , strf::value_with_format<const void*, strf::alignment_format> f )
-{
-    return { fp
-           , preview
-           , f.value()
-           , f.get_alignment_format_data()
-           , strf::tag<CharOut>() };
-}
-
 inline STRF_HD auto make_fmt(strf::rank<1>, const void* p)
 {
     return strf::value_with_format<const void*, strf::alignment_format>(p);

@@ -198,83 +198,51 @@ STRF_EXPLICIT_TEMPLATE class fmt_char_printer<4>;
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
+template <typename CharOut, typename CharIn>
+class char_printer_traits
+{
+public:
+    static_assert(std::is_same<CharIn, CharOut>::value, "Character type mismatch.");
+
+    template <typename FPack>
+    using printer_type = strf::detail::char_printer<sizeof(CharOut)>;
+};
+
 } // namespace detail
 
-template <typename CharOut, typename FPack, typename Preview>
-inline strf::detail::char_printer<sizeof(CharOut)>
-STRF_HD make_printer(strf::rank<1>, const FPack& fp, Preview& preview, CharOut ch)
-{
-    return {fp, preview, ch};
-}
+template <typename CharT>
+STRF_HD strf::detail::char_printer_traits<CharT, char>
+get_printer_traits(strf::tag<CharT>, char);
 
 #if defined(__cpp_char8_t)
 
-template <typename CharOut, typename FPack, typename Preview>
-inline strf::detail::char_printer<sizeof(CharOut)>
-STRF_HD make_printer(strf::rank<1>, const FPack& fp, Preview& preview, char8_t ch)
-{
-    static_assert( std::is_same<CharOut, char8_t>::value
-                 , "Character type mismatch." );
-    return {fp, preview, ch};
-}
+template <typename CharT>
+STRF_HD strf::detail::char_printer_traits<CharT, char8_t>
+get_printer_traits(strf::tag<CharT>, char8_t);
 
 #endif
 
-template < typename CharOut
-         , typename FPack
-         , typename Preview
-         , typename CharIn
-         , std::enable_if_t<std::is_same<CharIn, CharOut>::value, int> = 0>
-inline strf::detail::char_printer<sizeof(CharOut)>
-STRF_HD make_printer(strf::rank<1>, const FPack& fp, Preview& preview, CharIn ch)
-{
-    return {fp, preview, ch};
-}
+template <typename CharT>
+STRF_HD strf::detail::char_printer_traits<CharT, char16_t>
+get_printer_traits(strf::tag<CharT>, char16_t);
 
-template <typename CharOut, typename FPack, typename Preview>
-inline strf::detail::char_printer<sizeof(CharOut)>
-STRF_HD make_printer(strf::rank<1>, const FPack& fp, Preview& preview, char ch)
-{
-    static_assert( std::is_same<CharOut, char>::value
-                 , "Character type mismatch." );
-    return {fp, preview, ch};
-}
+template <typename CharT>
+STRF_HD strf::detail::char_printer_traits<CharT, char32_t>
+get_printer_traits(strf::tag<CharT>, char32_t);
 
-template <typename CharOut, typename FPack, typename Preview>
-inline strf::detail::char_printer<sizeof(CharOut)>
-STRF_HD make_printer(strf::rank<1>, const FPack& fp, Preview& preview, wchar_t ch)
-{
-    static_assert( std::is_same<CharOut, wchar_t>::value
-                 , "Character type mismatch." );
-    return {fp, preview, ch};
-}
+template <typename CharT>
+STRF_HD strf::detail::char_printer_traits<CharT, wchar_t>
+get_printer_traits(strf::tag<CharT>, wchar_t);
 
-template <typename CharOut, typename FPack, typename Preview>
-inline strf::detail::char_printer<sizeof(CharOut)>
-STRF_HD make_printer(strf::rank<1>, const FPack& fp, Preview& preview, char16_t ch)
+template <typename CharOut, typename CharIn>
+class printer_traits<CharOut, char_with_format<CharIn>>
 {
-    static_assert( std::is_same<CharOut, char16_t>::value
-                 , "Character type mismatch." );
-    return {fp, preview, ch};
-}
+public:
+    static_assert(std::is_same<CharOut, CharIn>::value, "Character type mismatch.");
 
-template <typename CharOut, typename FPack, typename Preview>
-inline strf::detail::char_printer<sizeof(CharOut)>
-STRF_HD make_printer(strf::rank<1>, const FPack& fp, Preview& preview, char32_t ch )
-{
-    static_assert( std::is_same<CharOut, char32_t>::value
-                 , "Character type mismatch." );
-    return {fp, preview, ch};
-}
-
-template <typename CharOut, typename FPack, typename Preview, typename CharIn>
-inline strf::detail::fmt_char_printer<sizeof(CharOut)>
-STRF_HD make_printer(strf::rank<1>, const FPack& fp, Preview& preview, char_with_format<CharIn> ch)
-{
-    static_assert( std::is_same<CharOut, CharIn>::value
-                 , "Character type mismatch." );
-    return {fp, preview, ch};
-}
+    template <typename FPack>
+    using printer_type = strf::detail::fmt_char_printer<sizeof(CharOut)>;
+};
 
 #if defined(__cpp_char8_t)
 

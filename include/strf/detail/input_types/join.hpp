@@ -329,27 +329,17 @@ STRF_HD void aligned_join_printer_impl<CharSize, Printers...>::print_split_
                              , afmt_.fill, split_pos_, inv_seq_poli_, surr_poli_ );
 }
 
-template<typename CharT, typename FPack, typename Preview, typename ... Args>
+template<typename CharT, typename FPack, typename ... Args>
 using aligned_join_printer_impl_of
-= aligned_join_printer_impl
-    < sizeof(CharT)
-    , decltype
-        ( make_printer<CharT>
-            ( strf::rank<5>()
-            , std::declval<const FPack&>()
-            , std::declval
-                < strf::print_preview
-                    < static_cast<strf::preview_size>(Preview::size_required)
-                    , strf::preview_width::yes >& >()
-            , std::declval<const Args&>() )) ... >;
+= aligned_join_printer_impl<sizeof(CharT), strf::printer_impl<CharT, FPack, Args>...>;
 
-template<typename CharT, typename FPack, typename Preview, typename ... Args>
+template<typename CharT, typename FPack, typename ... Args>
 class aligned_join_printer
-    : public strf::detail::aligned_join_printer_impl_of<CharT, FPack, Preview, Args...>
+    : public strf::detail::aligned_join_printer_impl_of<CharT, FPack, Args...>
 {
 public:
 
-    template <bool SplitPosActive>
+    template <typename Preview, bool SplitPosActive>
     STRF_HD aligned_join_printer
         ( const FPack& fp
         , Preview& preview
@@ -358,7 +348,7 @@ public:
             , strf::split_pos_format<SplitPosActive>
             , strf::alignment_format_q<true> > input
         , strf::tag<CharT> t = strf::tag<CharT>{} )
-        : strf::detail::aligned_join_printer_impl_of<CharT, FPack, Preview, Args...>
+        : strf::detail::aligned_join_printer_impl_of<CharT, FPack, Args...>
               ( fp, preview, input.value(), input.split_pos()
               , input.get_alignment_format_data(), t )
     {
@@ -397,29 +387,25 @@ private:
     strf::detail::printers_tuple<CharSize, Printers...> printers_;
 };
 
-template<typename CharT, typename FPack, typename Preview, typename ... Args>
+template<typename CharT, typename FPack, typename ... Args>
 class join_printer
     : public strf::detail::join_printer_impl
-        < sizeof(CharT)
-        , decltype(make_printer<CharT>( strf::rank<5>()
-                                      , std::declval<const FPack&>()
-                                      , std::declval<Preview&>()
-                                      , std::declval<const Args&>() )) ... >
+        < sizeof(CharT), strf::printer_impl<CharT, FPack, Args> ... >
 {
-    using join_impl_ = strf::detail::join_printer_impl
-        < sizeof(CharT)
-        , decltype(make_printer<CharT>( strf::rank<5>()
-                                      , std::declval<const FPack&>()
-                                      , std::declval<Preview&>()
-                                      , std::declval<const Args&>() )) ... >;
 public:
 
+    template <typename Preview>
     STRF_HD join_printer
         ( const FPack& fp
         , Preview& preview
-        , const strf::detail::simple_tuple<Args...>& args
+        , const strf::value_with_format
+            < strf::detail::simple_tuple<strf::detail::opt_val_or_cref<Args>...>
+            , strf::split_pos_format<false>
+            , strf::alignment_format_q<false> >& j
         , strf::tag<CharT> t = strf::tag<CharT>() )
-        : join_impl_(fp, preview, args, t)
+        : strf::detail::join_printer_impl
+            < sizeof(CharT), strf::printer_impl<CharT, FPack, Args> ... >
+            (fp, preview, j.value(), t)
     {
     }
 
@@ -430,21 +416,21 @@ public:
 
 } // namespace detail
 
-template< typename CharT
-        , typename FPack
-        , typename Preview
-        , bool SplitPosActive
-        , typename ... Args >
-inline STRF_HD strf::detail::join_printer<CharT, FPack, Preview, Args...> make_printer
-    ( strf::rank<1>
-    , const FPack& fp
-    , Preview& preview
-    , const strf::value_with_format< strf::detail::simple_tuple<Args...>
-                                   , strf::split_pos_format<SplitPosActive>
-                                   , strf::alignment_format_q<false> > input )
+template <typename CharT, bool HasSplitPos, bool HasAlignment, typename ...Args>
+class printer_traits
+    < CharT
+    , strf::value_with_format
+        < strf::detail::simple_tuple<Args...>
+        , strf::split_pos_format<HasSplitPos>
+        , strf::alignment_format_q<HasAlignment> > >
 {
-    return {fp, preview, input.value()};
-}
+public:
+    template <typename FPack>
+    using printer_type = std::conditional_t
+        < HasAlignment
+        , strf::detail::aligned_join_printer<CharT, FPack, Args...>
+        , strf::detail::join_printer<CharT, FPack, Args...> >;
+};
 
 template<typename ... Args>
 constexpr STRF_HD strf::value_with_format
@@ -458,23 +444,6 @@ join(const Args& ... args)
         , strf::split_pos_format<false>
         , strf::alignment_format_q<false> >
         { strf::detail::make_simple_tuple(args...) };
-}
-
-template< typename CharT
-        , typename FPack
-        , typename Preview
-        , bool SplitPosActive
-        , typename ... Args >
-inline STRF_HD strf::detail::aligned_join_printer<CharT, FPack, Preview, Args...> make_printer
-    ( strf::rank<1>
-    , const FPack& fp
-    , Preview& preview
-    , const strf::value_with_format
-        < strf::detail::simple_tuple<Args...>
-        , strf::split_pos_format<SplitPosActive>
-        , strf::alignment_format_q<true> > input )
-{
-    return { fp, preview, input };
 }
 
 constexpr STRF_HD strf::aligned_join_t join_align

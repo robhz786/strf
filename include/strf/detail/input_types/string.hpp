@@ -22,7 +22,7 @@ public:
 
     template <typename Traits>
     constexpr STRF_HD simple_string_view(std::basic_string_view<CharIn, Traits> sv)
-        : begin_(sv.begin())
+        : begin_(sv.data())
         , len_(sv.size())
     {
     }
@@ -442,11 +442,25 @@ public:
     {
     }
 
+    template < typename FPack, typename Preview, typename Str, typename CharT
+             , typename = decltype(strf::detail::simple_string_view<CharT>(std::declval<const Str&>())) >
+    STRF_HD string_printer
+        ( const FPack& fp
+        , Preview& preview
+        , const Str& str
+        , strf::tag<CharT> t ) noexcept
+        : string_printer
+            ( fp, preview, strf::detail::simple_string_view<CharT>(str)
+            ,  strf::string_precision<false>(), t )
+    {
+    }
+
     template <typename FPack, typename Preview, typename CharT>
     STRF_HD string_printer
         ( const FPack& fp
         , Preview& preview
         , strf::detail::simple_string_view<CharT> str
+        , strf::string_precision<false>
         , strf::tag<CharT> ) noexcept
         : str_(reinterpret_cast<const char_type*>(str.begin()))
         , len_(str.size())
@@ -460,17 +474,6 @@ public:
             preview.subtract_width(w);
         }
         preview.add_size(len_);
-    }
-
-    template <typename FPack, typename Preview, typename CharT>
-    STRF_HD string_printer
-        ( const FPack& fp
-        , Preview& preview
-        , strf::detail::simple_string_view<CharT> str
-        , strf::string_precision<false>
-        , strf::tag<CharT> t) noexcept
-        : string_printer(fp, preview, str, t)
-    {
     }
 
     template <typename FPack, typename Preview, typename CharT>
@@ -705,143 +708,78 @@ STRF_EXPLICIT_TEMPLATE class aligned_string_printer<4>;
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
+template <typename DestCharT, typename SrcCharT = DestCharT>
+class string_printer_traits
+{
+public:
+    static_assert( std::is_same<DestCharT, SrcCharT>::value
+                 , "Character type mismatch. Use cv function." );
+    template <typename>
+    using printer_type = strf::detail::string_printer<sizeof(SrcCharT)>;
+};
+
 } // namespace detail
 
-template <typename CharT, typename FPack, typename Preview>
-inline STRF_HD strf::detail::string_printer<sizeof(CharT)>
-make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const CharT* str)
-{
-    return {fp, preview, str, strf::tag<CharT>()};
-}
+template <typename CharOut>
+STRF_HD strf::detail::string_printer_traits<CharOut, char> get_printer_traits
+(strf::tag<CharOut>, const char*);
 
 #if defined(__cpp_char8_t)
 
-template <typename CharOut, typename FPack, typename Preview>
-inline STRF_HD strf::detail::string_printer<sizeof(CharOut)>
-make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const char8_t* str)
-{
-    static_assert( std::is_same<char8_t, CharOut>::value
-                 , "Character type mismatch. Use cv function." );
-    strf::detail::simple_string_view<CharOut> strv = str;
-    return {fp, preview, strv, strf::tag<CharOut>()};
-}
+template <typename CharOut>
+STRF_HD strf::detail::string_printer_traits<CharOut, char8_t> get_printer_traits
+( strf::tag<CharOut>, const char8_t* );
 
-#endif
+#endif // defined(__cpp_char8_t)
 
-template <typename CharOut, typename FPack, typename Preview>
-inline STRF_HD strf::detail::string_printer<sizeof(CharOut)>
-make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const char* str)
-{
-    static_assert( std::is_same<char, CharOut>::value
-                 , "Character type mismatch. Use cv function." );
-    strf::detail::simple_string_view<CharOut> strv = str;
-    return {fp, preview, strv, strf::tag<CharOut>()};
-}
+template <typename CharOut>
+STRF_HD strf::detail::string_printer_traits<CharOut, char16_t> get_printer_traits
+( strf::tag<CharOut>, const char16_t* );
 
-template <typename CharOut, typename FPack, typename Preview>
-inline STRF_HD strf::detail::string_printer<sizeof(CharOut)>
-make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const char16_t* str)
-{
-    static_assert( std::is_same<char16_t, CharOut>::value
-                 , "Character type mismatch. Use cv function." );
-    strf::detail::simple_string_view<CharOut> strv = str;
-    return {fp, preview, strv, strf::tag<CharOut>()};
-}
+template <typename CharOut>
+STRF_HD strf::detail::string_printer_traits<CharOut, char32_t> get_printer_traits
+( strf::tag<CharOut>, const char32_t* );
 
-template <typename CharOut, typename FPack, typename Preview>
-inline STRF_HD strf::detail::string_printer<sizeof(CharOut)>
-make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const char32_t* str)
-{
-    static_assert( std::is_same<char32_t, CharOut>::value
-                 , "Character type mismatch. Use cv function." );
-    strf::detail::simple_string_view<CharOut> strv = str;
-    return {fp, preview, strv, strf::tag<CharOut>()};
-}
+template <typename CharOut>
+STRF_HD strf::detail::string_printer_traits<CharOut, wchar_t> get_printer_traits
+( strf::tag<CharOut>, const wchar_t* );
 
-template <typename CharOut, typename FPack, typename Preview>
-inline STRF_HD strf::detail::string_printer<sizeof(CharOut)>
-make_printer(strf::rank<1>, const FPack& fp, Preview& preview, const wchar_t* str)
-{
-    static_assert( std::is_same<wchar_t, CharOut>::value
-                 , "Character type mismatch. Use cv function." );
-    strf::detail::simple_string_view<CharOut> strv = str;
-    return {fp, preview, strv, strf::tag<CharOut>()};
-}
+template <typename CharOut, typename CharIn, typename Traits, typename Allocator>
+STRF_HD strf::detail::string_printer_traits<CharOut, CharIn> get_printer_traits
+( strf::tag<CharOut>, const std::basic_string<CharIn, Traits, Allocator>& );
 
-template
-    < typename CharOut
-    , typename FPack
-    , typename Preview
-    , typename CharIn
-    , typename Traits
-    , typename Allocator >
-inline STRF_HD strf::detail::string_printer<sizeof(CharOut)>
-make_printer( strf::rank<1>
-            , const FPack& fp
-            , Preview& preview
-            , const std::basic_string<CharIn, Traits, Allocator>& str )
-{
-    static_assert( std::is_same<CharIn, CharOut>::value
-                 , "Character type mismatch. Use cv function." );
-    return {fp, preview, {str.data(), str.size()}, strf::tag<CharOut>()};
-}
-
-template
-    < typename CharOut
-    , typename FPack
-    , typename Preview
-    , typename CharIn >
-inline STRF_HD strf::detail::string_printer<sizeof(CharOut)>
-make_printer( strf::rank<1>
-            , const FPack& fp
-            , Preview& preview
-            , const strf::detail::simple_string_view<CharIn>& str )
-{
-    static_assert( std::is_same<CharIn, CharOut>::value
-                 , "Character type mismatch. Use cv function." );
-    return {fp, preview, str, strf::tag<CharOut>()};
-}
+template <typename CharOut, typename CharIn>
+STRF_HD strf::detail::string_printer_traits<CharOut, CharIn> get_printer_traits
+( strf::tag<CharOut>, strf::detail::simple_string_view<CharIn> );
 
 #if defined(STRF_HAS_STD_STRING_VIEW)
 
-template
-    < typename CharOut
-    , typename FPack
-    , typename Preview
-    , typename CharIn
-    , typename Traits >
-inline STRF_HD strf::detail::string_printer<sizeof(CharOut)>
-make_printer( strf::rank<1>
-            , const FPack& fp
-            , Preview& preview
-            , const std::basic_string_view<CharIn, Traits>& str )
-{
-    static_assert( std::is_same<CharIn, CharOut>::value
-                 , "Character type mismatch. Use cv function." );
-    return {fp, preview, {str.data(), str.size()}, strf::tag<CharOut>()};
-}
+template <typename CharOut, typename CharIn, typename Traits>
+STRF_HD strf::detail::string_printer_traits<CharOut, CharIn> get_printer_traits
+( strf::tag<CharOut>, std::basic_string_view<CharIn, Traits> );
 
 #endif //defined(STRF_HAS_STD_STRING_VIEW)
 
-template < typename CharOut, typename FPack, typename Preview, typename CharIn
-         , bool HasPrecision, bool HasAlignment >
-inline STRF_HD std::conditional_t
-    < HasAlignment
-    , strf::detail::aligned_string_printer<sizeof(CharOut)>
-    , strf::detail::string_printer<sizeof(CharOut)> >
-make_printer( strf::rank<1>
-            , const FPack& fp
-            , Preview& preview
-            , const strf::value_with_format
-                < strf::detail::simple_string_view<CharIn>
-                , strf::string_precision_format<HasPrecision>
-                , strf::alignment_format_q<HasAlignment>
-                , strf::no_cv_format<CharIn> > input )
+template <typename CharOut, typename CharIn, bool HasPrecision, bool HasAlignment>
+class printer_traits
+    < CharOut
+    , strf::value_with_format
+        < strf::detail::simple_string_view<CharIn>
+        , strf::string_precision_format<HasPrecision>
+        , strf::alignment_format_q<HasAlignment>
+        , strf::no_cv_format<CharIn> > >
 {
+public:
     static_assert( std::is_same<CharIn, CharOut>::value
                  , "Character type mismatch. Use cv function." );
-    return { fp, preview, input, strf::tag<CharOut>() };
-}
+
+    template <typename>
+    using printer_type = std::conditional_t
+        < HasAlignment
+        , strf::detail::aligned_string_printer<sizeof(CharOut)>
+        , strf::detail::string_printer<sizeof(CharOut)> >;
+
+};
 
 } // namespace strf
 

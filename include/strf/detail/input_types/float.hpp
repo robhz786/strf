@@ -2256,6 +2256,18 @@ STRF_EXPLICIT_TEMPLATE class hex_double_printer<4>;
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
+template <typename CharT, typename FloatT>
+struct float_printer_traits
+{
+    template <typename FPack>
+    using printer_type = std::conditional_t
+        < strf::detail::has_punct<CharT, FPack, FloatT, 10>
+        , strf::detail::fast_punct_double_printer<sizeof(CharT)>
+        , strf::detail::fast_double_printer<sizeof(CharT)> >;
+};
+
+struct long_double_not_supported {};
+
 } // namespace detail
 
 inline STRF_HD auto make_fmt(strf::rank<1>, float x)
@@ -2270,81 +2282,52 @@ inline STRF_HD auto make_fmt(strf::rank<1>, double x)
 
 inline STRF_HD void make_fmt(strf::rank<1>, long double x) = delete;
 
-template <typename CharT, typename FPack, typename Preview>
-inline STRF_HD typename std::conditional
-    < strf::detail::has_punct<CharT, FPack, float, 10>
-    , strf::detail::fast_punct_double_printer<sizeof(CharT)>
-    , strf::detail::fast_double_printer<sizeof(CharT)> >::type
-make_printer(strf::rank<1>, const FPack& fp, Preview& preview, float d)
+template <typename CharT>
+class printer_traits<CharT, float>
+    : public strf::detail::float_printer_traits<CharT, float>
 {
-    return {fp, preview, d, strf::tag<CharT>()};
-}
-
-template <typename CharT, typename FPack, typename Preview>
-inline STRF_HD typename std::conditional
-    < strf::detail::has_punct<CharT, FPack, double, 10>
-    , strf::detail::fast_punct_double_printer<sizeof(CharT)>
-    , strf::detail::fast_double_printer<sizeof(CharT)> >::type
-make_printer(strf::rank<1>, const FPack& fp, Preview& preview, double d)
-{
-    return {fp, preview, d, strf::tag<CharT>()};
-}
-
-template <typename CharT, typename FPack, typename Preview>
-STRF_HD void make_printer(strf::rank<1>, const FPack& fp, Preview& preview, long double d) = delete;
-
-namespace detail {
-
-template <strf::float_notation Notation>
-struct fmt_float_printer_maker
-{
-    template <typename CharT, typename FPack, typename Preview, typename FloatT, bool Align>
-    static inline STRF_HD typename std::conditional
-        < strf::detail::has_punct<CharT, FPack, FloatT, 10>
-        , strf::detail::punct_double_printer<sizeof(CharT)>
-        , strf::detail::double_printer<sizeof(CharT)> >::type
-    make( const FPack& fp
-        , Preview& preview
-        , strf::float_with_format<FloatT, Notation, Align> x )
-    {
-        return {fp, preview, x, strf::tag<CharT>()};
-    }
 };
 
-template <>
-struct fmt_float_printer_maker<strf::float_notation::hex>
+template <typename CharT>
+class printer_traits<CharT, double>
+    : public strf::detail::float_printer_traits<CharT, double>
 {
-    template < typename CharT, typename FPack, typename Preview
-             , typename FloatT, bool HasAlignment >
-    static inline STRF_HD strf::detail::hex_double_printer<sizeof(CharT)>
-    make( const FPack& fp
-        , Preview& preview
-        , strf::float_with_format<FloatT, strf::float_notation::hex, HasAlignment> x )
-    {
-        return {fp, preview, x, strf::tag<CharT>()};
-    }
 };
 
-
-} // namespace detail
-
-template < typename CharT
-         , typename FPack
-         , typename Preview
-         , typename FloatT
-         , strf::float_notation Notation
-         , bool Align >
-inline STRF_HD auto
-make_printer( strf::rank<1>
-            , const FPack& fp
-            , Preview& preview
-            , strf::float_with_format<FloatT, Notation, Align> x )
+template <typename CharT>
+class printer_traits<CharT, long double>
 {
+public:
+    template <typename>
+    using printer_type = strf::detail::long_double_not_supported;
+};
+
+template <typename CharT, typename FloatT, strf::float_notation Notation, bool HasAlignemnt>
+class printer_traits<CharT, strf::float_with_format<FloatT, Notation, HasAlignemnt>>
+{
+public:
     static_assert( std::is_same<FloatT, float>::value || std::is_same<FloatT, double>::value
                  , "unsupported floating-point type" );
-    return strf::detail::fmt_float_printer_maker<Notation>::template make<CharT>(fp, preview, x);
-}
 
+    template <typename FPack>
+    using printer_type = std::conditional_t
+        < strf::detail::has_punct<CharT, FPack, FloatT, 10>
+        , strf::detail::punct_double_printer<sizeof(CharT)>
+        , strf::detail::double_printer<sizeof(CharT)> >;
+};
+
+template < typename CharT, typename FloatT, bool HasAlignment>
+class printer_traits
+    < CharT
+    , strf::float_with_format<FloatT, strf::float_notation::hex, HasAlignment> >
+{
+public:
+    static_assert( std::is_same<FloatT, float>::value || std::is_same<FloatT, double>::value
+                 , "unsupported floating-point type" );
+
+    template <typename>
+    using printer_type = strf::detail::hex_double_printer<sizeof(CharT)>;
+};
 
 } // namespace strf
 

@@ -261,6 +261,51 @@ inline STRF_HD void write_args
 
 } // namespace detail
 
+template <typename CharT, typename T>
+class printer_traits
+{
+public:
+
+    template <typename FPack>
+    using printer_type = typename
+        decltype(get_printer_traits( strf::tag<CharT>()
+                                   , std::declval<const T&>() ))
+        :: template printer_type<FPack>;
+};
+
+template <typename CharT, typename T>
+class printer_traits<CharT, std::reference_wrapper<T>>
+    : public strf::printer_traits<CharT, std::remove_cv_t<T>>
+{
+};
+
+struct printer_type_getter_c;
+
+struct printer_type_getter
+{
+    using category = strf::printer_type_getter_c;
+
+    template <typename CharT, typename FPack, typename PrintableType>
+    using type = typename
+        strf::printer_traits<CharT, PrintableType>
+        ::template printer_type<FPack>;
+};
+
+struct printer_type_getter_c
+{
+    constexpr static printer_type_getter get_default() noexcept
+    {
+        return {};
+    }
+};
+
+template <typename CharOut, typename FPack, typename Arg>
+using printer_impl
+= typename
+  decltype(strf::get_facet<strf::printer_type_getter_c, Arg>(std::declval<FPack>()))
+  ::template type<CharOut, FPack, Arg>;
+
+
 } // namespace strf
 
 #endif // STRF_PRINTER_HPP

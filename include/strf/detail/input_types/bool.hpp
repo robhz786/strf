@@ -145,22 +145,21 @@ inline STRF_HD auto make_fmt(strf::rank<1>, bool b)
     return strf::value_with_format<bool, strf::alignment_format>(b);
 }
 
-template < typename CharT, typename FPack, typename Preview >
-inline STRF_HD strf::detail::bool_printer<sizeof(CharT)>
-make_printer(strf::rank<1>, const FPack& fp, Preview& preview, bool b)
+template <typename CharT>
+class printer_traits<CharT, bool>
 {
-    return {fp, preview, b, strf::tag<CharT>{}};
-}
+public:
+    template <typename>
+    using printer_type = strf::detail::bool_printer<sizeof(CharT)>;
+};
 
-template < typename CharT, typename FPack, typename Preview >
-inline STRF_HD strf::detail::fmt_bool_printer<sizeof(CharT)> make_printer
-    ( strf::rank<1>
-    , const FPack& fp
-    , Preview& preview
-    , strf::value_with_format<bool, strf::alignment_format> x )
+template <typename CharT>
+class printer_traits<CharT, strf::value_with_format<bool, strf::alignment_format>>
 {
-    return {fp, preview, x, strf::tag<CharT>{}};
-}
+public:
+    template <typename>
+    using printer_type = strf::detail::fmt_bool_printer<sizeof(CharT)>;
+};
 
 } // namespace strf
 

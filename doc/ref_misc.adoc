@@ -40,5 +40,12 @@ struct tag
     explicit tag() = default;
 };
 
+template <typename T>
+struct tag<T>
+{
+    explicit constexpr STRF_HD tag() noexcept { }
+    using type = T;
+};
+
 } // namespace strf
 ----

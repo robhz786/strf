@@ -44,13 +44,13 @@ namespace detail {
 template < typename CharT
          , typename ParentFPack
          , typename ChildFPack
-         , typename Preview
          , typename ... Args >
 class facets_pack_printer: public strf::printer<sizeof(CharT)>
 {
 public:
 
-	  STRF_HD facets_pack_printer
+    template <typename Preview>
+	STRF_HD facets_pack_printer
         ( const ParentFPack& parent_fp
         , Preview& preview
         , const strf::inner_pack_with_args<ChildFPack, Args...>& args
@@ -76,7 +76,6 @@ private:
     strf::detail::printers_tuple_from_args
         < CharT
         , strf::facets_pack<ParentFPack, ChildFPack>
-        , Preview
         , Args... >
     printers_;
 };
@@ -92,7 +91,7 @@ constexpr STRF_HD bool are_constrainable_impl()
             return false;
         }
     }
-    return true;;
+    return true;
 }
 
 template <>
@@ -112,8 +111,7 @@ struct all_are_constrainable
 
 template <typename ... T>
 STRF_HD auto with(T&& ... args)
-    -> strf::inner_pack
-           < decltype(strf::pack(std::forward<T>(args)...)) >
+    -> strf::inner_pack<decltype(strf::pack(std::forward<T>(args)...))>
 {
     static_assert
         ( strf::is_constrainable_v
@@ -122,23 +120,14 @@ STRF_HD auto with(T&& ... args)
     return {std::forward<T>(args)...};
 }
 
-template < typename CharT
-         , typename FPack
-         , typename Preview
-         , typename InnerFPack
-         , typename ... Args >
-inline STRF_HD strf::detail::facets_pack_printer< CharT
-                                        , FPack
-                                        , InnerFPack
-                                        , Preview
-                                        , Args... >
-STRF_HD make_printer( strf::rank<1>
-            , const FPack& fp
-            , Preview& preview
-            , const strf::inner_pack_with_args<InnerFPack, Args...>& f )
+template <typename CharT, typename InnerFPack, typename ... Args>
+class printer_traits<CharT, strf::inner_pack_with_args<InnerFPack, Args...>>
 {
-    return {fp, preview, f};
-}
+public:
+    template <typename FPack>
+    using printer_type
+    = strf::detail::facets_pack_printer<CharT, FPack, InnerFPack, Args... >;
+};
 
 } // namespace strf
 

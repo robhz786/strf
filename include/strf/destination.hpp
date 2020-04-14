@@ -34,6 +34,12 @@ template < template <typename, typename> class DestinationTmpl
 class destination_common
 {
     using destination_type_ = DestinationTmpl<OutbufCreator, FPack>;
+
+    template <typename Arg>
+    using printer_ = strf::printer_impl<CharT, FPack, Arg>;
+
+    static constexpr strf::tag<CharT> chtag_ = strf::tag<CharT>{};
+
 public:
 
     template <typename ... FPE>
@@ -129,10 +135,7 @@ public:
         PreviewType preview;
         return self.write_
             ( preview
-            , as_printer_cref_(make_printer<CharT, FPack>( strf::rank<5>{}
-                                                         , self.fpack_
-                                                         , preview
-                                                         , args ))... );
+            , as_printer_cref_(printer_<Args>(self.fpack_, preview, args, chtag_))... );
     }
 
 #if defined(STRF_HAS_STD_STRING_VIEW)
@@ -189,10 +192,7 @@ private:
             ( str
             , str_end
             , preview_arr
-            , { as_printer_cptr_( make_printer<CharT, FPack>( strf::rank<5>{}
-                                                            , self.fpack_
-                                                            , preview_arr[I]
-                                                            , args ))... } );
+            , {as_printer_cptr_(printer_<Args>(self.fpack_, preview_arr[I], args, chtag_))...} );
     }
 
     template < typename Preview, typename ... Args >
@@ -591,23 +591,6 @@ private:
     FPack fpack_;
 };
 
-template <typename CharOut, typename FPack, typename Preview, typename Arg>
-inline STRF_HD auto make_printer
-    ( strf::rank<1>
-    , const FPack& fp
-    , Preview& preview
-    , std::reference_wrapper<Arg> arg)
-{
-    return make_printer<CharOut, FPack>
-        ( strf::rank<5>{}, fp, preview, arg.get() );
-}
-
-template <typename CharOut, typename FPack, typename Preview, typename Arg>
-using printer_impl
-= decltype(make_printer<CharOut, FPack>( strf::rank<5>{}
-                                       , std::declval<const FPack&>()
-                                       , std::declval<Preview&>()
-                                       , std::declval<const Arg&>() ) );
 namespace detail {
 
 template <typename CharT>
