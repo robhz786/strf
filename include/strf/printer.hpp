@@ -299,12 +299,21 @@ struct printer_type_getter_c
     }
 };
 
+namespace detail {
+
+template <typename CharOut, typename FPack, typename Arg>
+struct printer_impl_helper
+{
+    static const FPack& fp();
+    using facet = decltype(strf::get_facet<strf::printer_type_getter_c, Arg>(fp()));
+    using printer = typename facet::template type<CharOut, FPack, Arg>;
+};
+
+} // namespace detail
+
 template <typename CharOut, typename FPack, typename Arg>
 using printer_impl
-= typename
-  decltype(strf::get_facet<strf::printer_type_getter_c, Arg>(std::declval<FPack>()))
-  ::template type<CharOut, FPack, Arg>;
-
+= typename strf::detail::printer_impl_helper<CharOut, FPack, Arg>::printer;
 
 } // namespace strf
 
