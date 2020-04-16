@@ -5,6 +5,7 @@ See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
 
+:get_facet: <<get_facet,get_facet>>
 == facets_pack
 
 [[facets_pack]]
@@ -98,8 +99,7 @@ Return type::: `facets_pack<VTypes\...>`, where for each `Ti` in `Types\...`,
 - `Ti` , otherwise
 ====
 
-[[get_facet]]
-=== Function template `get_facet`
+=== Function template `get_facet` [[get_facet]]
 ====
 [source,cpp]
 ----
