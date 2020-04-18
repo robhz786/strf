@@ -293,7 +293,7 @@ struct printer_type_getter
 
 struct printer_type_getter_c
 {
-    constexpr static printer_type_getter get_default() noexcept
+    constexpr static STRF_HD printer_type_getter get_default() noexcept
     {
         return {};
     }
