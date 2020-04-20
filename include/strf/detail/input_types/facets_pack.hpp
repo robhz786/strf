@@ -41,22 +41,58 @@ struct inner_pack
 
 namespace detail {
 
+template < typename, typename, typename, typename, typename ... >
+class facets_pack_printer;
+
 template < typename CharT
          , typename ParentFPack
+         , typename Preview
+         , typename ChildFPack
+         , typename ... Args >
+struct facets_pack_printer_input
+{
+    using printer_type = strf::detail::facets_pack_printer
+        < CharT, ParentFPack, Preview, ChildFPack, Args... >;
+
+    ParentFPack fp;
+    Preview& preview;
+    strf::inner_pack_with_args<ChildFPack, Args...> arg;
+};
+
+} // namespace detail
+
+template < typename CharT
+         , typename ParentFPack
+         , typename Preview
+         , typename ChildFPack
+         , typename ... Args >
+constexpr STRF_HD strf::detail::facets_pack_printer_input
+    < CharT, ParentFPack, Preview, ChildFPack, Args... >
+make_printer_input
+    ( const ParentFPack fp
+    , Preview& preview
+    , const strf::inner_pack_with_args<ChildFPack, Args...>& arg )
+{
+    return {fp, preview, arg};
+}
+
+namespace detail {
+
+template < typename CharT
+         , typename ParentFPack
+         , typename Preview
          , typename ChildFPack
          , typename ... Args >
 class facets_pack_printer: public strf::printer<sizeof(CharT)>
 {
 public:
 
-    template <typename Preview>
+    template <typename ParentFPack2>
     STRF_HD facets_pack_printer
-        ( const ParentFPack& parent_fp
-        , Preview& preview
-        , const strf::inner_pack_with_args<ChildFPack, Args...>& args
-        , strf::tag<CharT> = strf::tag<CharT>{} )
-        : fp_{parent_fp, args.fp}
-        , printers_{fp_, preview, args.args, strf::tag<CharT>()}
+        ( const strf::detail::facets_pack_printer_input
+            < CharT, ParentFPack2, Preview, ChildFPack, Args... >& input )
+        : fp_{input.fp, input.arg.fp}
+        , printers_{fp_, input.preview, input.arg.args, strf::tag<CharT>()}
     {
     }
 
@@ -79,6 +115,7 @@ private:
     strf::detail::printers_tuple_from_args
         < CharT
         , strf::facets_pack<ParentFPack, ChildFPack>
+        , Preview
         , Args... >
     printers_;
 };
@@ -122,15 +159,6 @@ STRF_HD auto with(T&& ... args)
         , "All facet categories must be constrainable" );
     return {std::forward<T>(args)...};
 }
-
-template <typename CharT, typename InnerFPack, typename ... Args>
-class printer_traits<CharT, strf::inner_pack_with_args<InnerFPack, Args...>>
-{
-public:
-    template <typename FPack>
-    using printer_type
-    = strf::detail::facets_pack_printer<CharT, FPack, InnerFPack, Args... >;
-};
 
 } // namespace strf
 

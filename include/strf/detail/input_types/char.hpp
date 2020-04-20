@@ -12,6 +12,65 @@
 #include <strf/detail/format_functions.hpp>
 
 namespace strf {
+namespace detail {
+
+template <std::size_t> class char_printer;
+template <std::size_t> class fmt_char_printer;
+
+template <typename CharT, typename FPack, typename Preview>
+struct char_printer_input
+{
+    using printer_type = strf::detail::char_printer<sizeof(CharT)>;
+    static constexpr bool preview_width = true;
+    static constexpr bool preview_size = true;
+
+    FPack fp;
+    Preview& preview;
+    CharT value;
+};
+
+template <typename CharOut, typename FPack, typename Preview, typename CharIn>
+constexpr STRF_HD strf::detail::char_printer_input<CharOut, FPack, Preview>
+make_char_printer_input(const FPack& fp, Preview& preview, CharIn ch)
+{
+    static_assert( std::is_same<CharIn, CharOut>::value
+                 , "Character type mismatch.");
+    return {fp, preview, ch};
+}
+
+} // namespace detail
+
+template <typename CharOut, typename FPack, typename Preview>
+constexpr STRF_HD auto make_printer_input(const FPack& fp, Preview& preview, char ch)
+{
+    return strf::detail::make_char_printer_input<CharOut>(fp, preview, ch);
+}
+
+#if defined(__cpp_char8_t)
+
+template <typename CharOut, typename FPack, typename Preview>
+constexpr STRF_HD auto make_printer_input(const FPack& fp, Preview& preview, char8_t ch)
+{
+    return strf::detail::make_char_printer_input<CharOut>(fp, preview, ch);
+}
+
+#endif
+
+template <typename CharOut, typename FPack, typename Preview>
+constexpr STRF_HD auto make_printer_input(const FPack& fp, Preview& preview, char16_t ch)
+{
+    return strf::detail::make_char_printer_input<CharOut>(fp, preview, ch);
+}
+template <typename CharOut, typename FPack, typename Preview>
+constexpr STRF_HD auto make_printer_input(const FPack& fp, Preview& preview, char32_t ch)
+{
+    return strf::detail::make_char_printer_input<CharOut>(fp, preview, ch);
+}
+template <typename CharOut, typename FPack, typename Preview>
+constexpr STRF_HD auto make_printer_input(const FPack& fp, Preview& preview, wchar_t ch)
+{
+    return strf::detail::make_char_printer_input<CharOut>(fp, preview, ch);
+}
 
 template <typename CharT>
 struct char_tag
@@ -27,11 +86,70 @@ using char_with_format = strf::value_with_format
 
 namespace detail {
 
+template <typename CharT, typename FPack, typename Preview>
+struct fmt_char_printer_input
+{
+    using printer_type = strf::detail::fmt_char_printer<sizeof(CharT)>;
+    static constexpr bool preview_width = true;
+    static constexpr bool preview_size = true;
+
+    const FPack& fp;
+    Preview& preview;
+    strf::char_with_format<CharT> x;
+};
+
+} // namespace detail
+
+template <typename CharOut, typename FPack, typename Preview, typename CharIn>
+constexpr STRF_HD strf::detail::fmt_char_printer_input<CharOut, FPack, Preview>
+make_printer_input(const FPack& fp, Preview& preview, strf::char_with_format<CharIn> x)
+{
+    static_assert( std::is_same<CharIn, CharOut>::value
+                 , "Character type mismatch.");
+    return {fp, preview, x};
+}
+
+#if defined(__cpp_char8_t)
+
+constexpr STRF_HD auto make_fmt(strf::rank<1>, char8_t ch) noexcept
+{
+    return strf::char_with_format<char8_t>{{ch}};
+}
+
+#endif
+
+constexpr STRF_HD auto make_fmt(strf::rank<1>, char ch) noexcept
+{
+    return strf::char_with_format<char>{{ch}};
+}
+constexpr STRF_HD auto make_fmt(strf::rank<1>, wchar_t ch) noexcept
+{
+    return strf::char_with_format<wchar_t>{{ch}};
+}
+constexpr STRF_HD auto make_fmt(strf::rank<1>, char16_t ch) noexcept
+{
+    return strf::char_with_format<char16_t>{{ch}};
+}
+constexpr STRF_HD auto make_fmt(strf::rank<1>, char32_t ch) noexcept
+{
+    return strf::char_with_format<char32_t>{{ch}};
+}
+
+
+namespace detail {
+
 template <std::size_t CharSize>
 class char_printer: public strf::printer<CharSize>
 {
 public:
     using char_type = strf::underlying_char_type<CharSize>;
+
+    template <typename CharT, typename FPack, typename Preview>
+    STRF_HD char_printer
+        ( strf::detail::char_printer_input<CharT, FPack, Preview> input )
+        : char_printer(input.fp, input.preview, input.value, strf::tag<CharT>{} )
+    {
+    }
 
     template <typename FPack, typename Preview, typename CharT>
     STRF_HD char_printer
@@ -72,6 +190,13 @@ class fmt_char_printer: public strf::printer<CharSize>
 {
 public:
     using char_type = strf::underlying_char_type<CharSize>;
+
+    template <typename CharT, typename FPack, typename Preview>
+    STRF_HD fmt_char_printer
+        ( strf::detail::fmt_char_printer_input<CharT, FPack, Preview> input )
+        : fmt_char_printer(input.fp, input.preview, input.x, strf::tag<CharT>())
+    {
+    }
 
     template <typename FPack, typename Preview, typename CharT>
     STRF_HD fmt_char_printer
@@ -198,77 +323,7 @@ STRF_EXPLICIT_TEMPLATE class fmt_char_printer<4>;
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
-template <typename CharOut, typename CharIn>
-class char_printer_traits
-{
-public:
-    static_assert(std::is_same<CharIn, CharOut>::value, "Character type mismatch.");
-
-    template <typename FPack>
-    using printer_type = strf::detail::char_printer<sizeof(CharOut)>;
-};
-
 } // namespace detail
-
-template <typename CharT>
-STRF_HD strf::detail::char_printer_traits<CharT, char>
-get_printer_traits(strf::tag<CharT>, char);
-
-#if defined(__cpp_char8_t)
-
-template <typename CharT>
-STRF_HD strf::detail::char_printer_traits<CharT, char8_t>
-get_printer_traits(strf::tag<CharT>, char8_t);
-
-#endif
-
-template <typename CharT>
-STRF_HD strf::detail::char_printer_traits<CharT, char16_t>
-get_printer_traits(strf::tag<CharT>, char16_t);
-
-template <typename CharT>
-STRF_HD strf::detail::char_printer_traits<CharT, char32_t>
-get_printer_traits(strf::tag<CharT>, char32_t);
-
-template <typename CharT>
-STRF_HD strf::detail::char_printer_traits<CharT, wchar_t>
-get_printer_traits(strf::tag<CharT>, wchar_t);
-
-template <typename CharOut, typename CharIn>
-class printer_traits<CharOut, char_with_format<CharIn>>
-{
-public:
-    static_assert(std::is_same<CharOut, CharIn>::value, "Character type mismatch.");
-
-    template <typename FPack>
-    using printer_type = strf::detail::fmt_char_printer<sizeof(CharOut)>;
-};
-
-#if defined(__cpp_char8_t)
-
-constexpr STRF_HD auto make_fmt(strf::rank<1>, char8_t ch) noexcept
-{
-    return strf::char_with_format<char8_t>{{ch}};
-}
-
-#endif
-
-constexpr STRF_HD auto make_fmt(strf::rank<1>, char ch) noexcept
-{
-    return strf::char_with_format<char>{{ch}};
-}
-constexpr STRF_HD auto make_fmt(strf::rank<1>, wchar_t ch) noexcept
-{
-    return strf::char_with_format<wchar_t>{{ch}};
-}
-constexpr STRF_HD auto make_fmt(strf::rank<1>, char16_t ch) noexcept
-{
-    return strf::char_with_format<char16_t>{{ch}};
-}
-constexpr STRF_HD auto make_fmt(strf::rank<1>, char32_t ch) noexcept
-{
-    return strf::char_with_format<char32_t>{{ch}};
-}
 
 template <typename> struct is_char: public std::false_type {};
 

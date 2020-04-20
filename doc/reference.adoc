@@ -27,12 +27,11 @@ http://www.boost.org/LICENSE_1_0.txt
 :std_conditional_t: https://en.cppreference.com/w/cpp/types/conditional[std::conditional_t]
 
 include::ref_outbuf.adoc[]
-include::ref_destination.adoc[]
-include::ref_printer.adoc[]
+// include::ref_destination.adoc[]
+// include::ref_printer.adoc[]
 // include::ref_input_types.adoc[]
-== Printable types __(To-do)__
-include::ref_format_functions.adoc[]
+// include::ref_format_functions.adoc[]
 include::ref_facets_pack.adoc[]
 include::ref_charset.adoc[]
 include::ref_width.adoc[]
-include::ref_misc.adoc[]
+// include::ref_misc.adoc[]

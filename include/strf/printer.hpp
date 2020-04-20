@@ -7,6 +7,7 @@
 
 #include <strf/outbuf.hpp>
 #include <strf/width_t.hpp>
+#include <strf/facets_pack.hpp>
 
 namespace strf {
 
@@ -261,59 +262,41 @@ inline STRF_HD void write_args
 
 } // namespace detail
 
-template <typename CharT, typename T>
-class printer_traits
+template <typename CharT>
+inline STRF_HD void make_printer_input() {};
+
+template < typename CharT, typename FPack, typename Preview
+         , typename Arg, typename Printer >
+struct usual_printer_input
 {
-public:
+    using printer_type = Printer;
 
-    template <typename FPack>
-    using printer_type = typename
-        decltype(get_printer_traits( strf::tag<CharT>()
-                                   , std::declval<const T&>() ))
-        :: template printer_type<FPack>;
-};
-
-template <typename CharT, typename T>
-class printer_traits<CharT, std::reference_wrapper<T>>
-    : public strf::printer_traits<CharT, std::remove_cv_t<T>>
-{
-};
-
-struct printer_type_getter_c;
-
-struct printer_type_getter
-{
-    using category = strf::printer_type_getter_c;
-
-    template <typename CharT, typename FPack, typename PrintableType>
-    using type = typename
-        strf::printer_traits<CharT, PrintableType>
-        ::template printer_type<FPack>;
-};
-
-struct printer_type_getter_c
-{
-    constexpr static STRF_HD printer_type_getter get_default() noexcept
-    {
-        return {};
-    }
+    FPack fp;
+    Preview& preview;
+    Arg arg;
 };
 
 namespace detail {
 
-template <typename CharOut, typename FPack, typename Arg>
+template <typename CharT, typename FPack, typename Preview, typename Arg>
 struct printer_impl_helper
 {
     static const FPack& fp();
-    using facet = decltype(strf::get_facet<strf::printer_type_getter_c, Arg>(fp()));
-    using printer = typename facet::template type<CharOut, FPack, Arg>;
+    static Preview& preview();
+    static const Arg& arg();
+
+    using printer_input = decltype
+        ( make_printer_input<CharT>(fp(), preview(), arg()) );
+
+    using printer = typename printer_input::printer_type;
 };
 
 } // namespace detail
 
-template <typename CharOut, typename FPack, typename Arg>
-using printer_impl
-= typename strf::detail::printer_impl_helper<CharOut, FPack, Arg>::printer;
+template <typename CharT, typename FPack, typename Preview, typename Arg>
+using printer_impl = typename strf::detail::printer_impl_helper
+    < CharT, FPack, Preview, Arg >
+    ::printer;
 
 } // namespace strf
 

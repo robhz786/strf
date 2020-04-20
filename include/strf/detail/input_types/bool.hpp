@@ -12,6 +12,55 @@
 
 namespace strf {
 
+inline STRF_HD auto make_fmt(strf::rank<1>, bool b)
+{
+    return strf::value_with_format<bool, strf::alignment_format>(b);
+}
+
+namespace detail {
+
+template <std::size_t CharSize> class bool_printer;
+template <std::size_t CharSize> class fmt_bool_printer;
+
+template <typename CharT, typename Preview>
+struct bool_printer_input
+{
+    using printer_type = strf::detail::bool_printer<sizeof(CharT)>;
+
+    Preview& preview;
+    bool value;
+};
+
+template <typename CharT, typename FPack, typename Preview>
+struct fmt_bool_printer_input
+{
+    using printer_type = strf::detail::fmt_bool_printer<sizeof(CharT)>;
+
+    FPack fp;
+    Preview& preview;
+    strf::value_with_format<bool, strf::alignment_format> vwf;
+};
+
+} // namespace detail
+
+
+template <typename CharOut, typename FPack, typename Preview>
+constexpr STRF_HD strf::detail::bool_printer_input<CharOut, Preview>
+make_printer_input(const FPack&, Preview& preview, bool b)
+{
+    return {preview, b};
+}
+
+template <typename CharOut, typename FPack, typename Preview>
+constexpr STRF_HD strf::detail::fmt_bool_printer_input<CharOut, FPack, Preview>
+make_printer_input
+    ( const FPack& fp
+    , Preview& preview
+    , strf::value_with_format<bool, strf::alignment_format> vwf )
+{
+    return {fp, preview, vwf};
+}
+
 namespace detail {
 
 template <std::size_t CharSize>
@@ -20,12 +69,13 @@ class bool_printer: public printer<CharSize>
 public:
     using char_type = strf::underlying_char_type<CharSize>;
 
-    template <typename FPack, typename Preview, typename CharT>
-    STRF_HD bool_printer(const FPack&, Preview& preview, bool value, strf::tag<CharT>)
-        : value_(value)
+    template <typename CharT, typename Preview>
+    STRF_HD bool_printer
+        ( strf::detail::bool_printer_input<CharT, Preview> input )
+        : value_(input.value)
     {
-        preview.subtract_width(5 - (int)value);
-        preview.add_size(5 - (int)value);
+        input.preview.subtract_width(5 - (int)input.value);
+        input.preview.add_size(5 - (int)input.value);
     }
 
     void STRF_HD print_to(strf::underlying_outbuf<CharSize>& ob) const override;
@@ -65,26 +115,23 @@ public:
 
     template <typename FPack, typename Preview, typename CharT>
     STRF_HD fmt_bool_printer
-        ( FPack& fp
-        , Preview& preview
-        , strf::value_with_format<bool, strf::alignment_format> input
-        , strf::tag<CharT> )
-        : value_(input.value())
-        , inv_seq_poli_(strf::get_facet<strf::invalid_seq_policy_c, bool>(fp))
-        , surr_poli_(get_facet<strf::surrogate_policy_c, bool>(fp))
-        , afmt_(input.get_alignment_format_data())
+        ( strf::detail::fmt_bool_printer_input<CharT, FPack, Preview> input )
+        : value_(input.vwf.value())
+        , inv_seq_poli_(strf::get_facet<strf::invalid_seq_policy_c, bool>(input.fp))
+        , surr_poli_(get_facet<strf::surrogate_policy_c, bool>(input.fp))
+        , afmt_(input.vwf.get_alignment_format_data())
     {
-        decltype(auto) cs = strf::get_facet<charset_c<CharT>, bool>(fp);
-        std::uint16_t w = 5 - (int)input.value();
+        decltype(auto) cs = strf::get_facet<charset_c<CharT>, bool>(input.fp);
+        std::uint16_t w = 5 - (int)input.vwf.value();
         if (afmt_.width > w) {
             encode_fill_ = cs.encode_fill_func();
             fillcount_ = static_cast<std::uint16_t>(afmt_.width - w);
-            preview.subtract_width(afmt_.width);
-            preview.add_size(w + fillcount_ * cs.encoded_char_size(afmt_.fill));
+            input.preview.subtract_width(afmt_.width);
+            input.preview.add_size(w + fillcount_ * cs.encoded_char_size(afmt_.fill));
         } else {
             fillcount_ = 0;
-            preview.subtract_width(w);
-            preview.add_size(w);
+            input.preview.subtract_width(w);
+            input.preview.add_size(w);
         }
     }
 
@@ -139,27 +186,6 @@ void fmt_bool_printer<CharSize>::print_to
 }
 
 } // namespace detail
-
-inline STRF_HD auto make_fmt(strf::rank<1>, bool b)
-{
-    return strf::value_with_format<bool, strf::alignment_format>(b);
-}
-
-template <typename CharT>
-class printer_traits<CharT, bool>
-{
-public:
-    template <typename>
-    using printer_type = strf::detail::bool_printer<sizeof(CharT)>;
-};
-
-template <typename CharT>
-class printer_traits<CharT, strf::value_with_format<bool, strf::alignment_format>>
-{
-public:
-    template <typename>
-    using printer_type = strf::detail::fmt_bool_printer<sizeof(CharT)>;
-};
 
 } // namespace strf
 
