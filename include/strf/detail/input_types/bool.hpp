@@ -115,7 +115,7 @@ public:
 
     template <typename FPack, typename Preview, typename CharT>
     STRF_HD fmt_bool_printer
-        ( strf::detail::fmt_bool_printer_input<CharT, FPack, Preview> input )
+        ( const strf::detail::fmt_bool_printer_input<CharT, FPack, Preview>& input )
         : value_(input.vwf.value())
         , inv_seq_poli_(strf::get_facet<strf::invalid_seq_policy_c, bool>(input.fp))
         , surr_poli_(get_facet<strf::surrogate_policy_c, bool>(input.fp))

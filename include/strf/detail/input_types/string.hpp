@@ -661,7 +661,7 @@ public:
 
     template <typename CharT, typename FPack, typename Preview>
     constexpr STRF_HD string_printer
-        ( strf::detail::string_printer_input<CharT, FPack, Preview> input )
+        ( const strf::detail::string_printer_input<CharT, FPack, Preview>& input )
         : str_(reinterpret_cast<const char_type*>(input.str))
         , len_(input.len)
     {
@@ -681,8 +681,8 @@ public:
     template < typename DestCharT, typename FPack, typename Preview
              , typename SrcCharT, typename CvFormat >
     constexpr STRF_HD string_printer
-        ( strf::detail::fmt_string_printer_input
-            < DestCharT, FPack, Preview, SrcCharT, false, false, CvFormat>
+        ( const strf::detail::fmt_string_printer_input
+            < DestCharT, FPack, Preview, SrcCharT, false, false, CvFormat >&
             input )
         : str_(reinterpret_cast<const char_type*>(input.vwf.value().data()))
         , len_(input.vwf.value().size())
@@ -706,8 +706,8 @@ public:
     template < typename DestCharT, typename FPack, typename Preview
              , typename SrcCharT, typename CvFormat >
     constexpr STRF_HD string_printer
-        ( strf::detail::fmt_string_printer_input
-            < DestCharT, FPack, Preview, SrcCharT, true, false, CvFormat>
+        ( const strf::detail::fmt_string_printer_input
+            < DestCharT, FPack, Preview, SrcCharT, true, false, CvFormat >&
             input )
         : str_(reinterpret_cast<const char_type*>(input.vwf.value().data()))
     {
@@ -756,8 +756,8 @@ public:
     template < typename DestCharT, typename FPack, typename Preview
              , typename SrcCharT, typename CvFormat >
     STRF_HD aligned_string_printer
-        ( strf::detail::fmt_string_printer_input
-            < DestCharT, FPack, Preview, SrcCharT, false, true, CvFormat>
+        ( const strf::detail::fmt_string_printer_input
+            < DestCharT, FPack, Preview, SrcCharT, false, true, CvFormat >&
             input )
         : str_(reinterpret_cast<const char_type*>(input.vwf.value().data()))
         , len_(input.vwf.value().size())
@@ -783,8 +783,8 @@ public:
     template < typename DestCharT, typename FPack, typename Preview
              , typename SrcCharT, typename CvFormat >
     STRF_HD aligned_string_printer
-        ( strf::detail::fmt_string_printer_input
-            < DestCharT, FPack, Preview, SrcCharT, true, true, CvFormat>
+        ( const strf::detail::fmt_string_printer_input
+            < DestCharT, FPack, Preview, SrcCharT, true, true, CvFormat >&
             input )
         : str_(reinterpret_cast<const char_type*>(input.vwf.value().begin()))
         , afmt_(input.vwf.get_alignment_format_data())

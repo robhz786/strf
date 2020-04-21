@@ -396,8 +396,8 @@ public:
 
     template <typename FPack2, bool HasSplitPos>
     constexpr STRF_HD aligned_join_printer
-        ( strf::detail::join_printer_input
-            < CharT, FPack2, Preview, HasSplitPos, true, Args... > input )
+        ( const strf::detail::join_printer_input
+            < CharT, FPack2, Preview, HasSplitPos, true, Args... >& input )
         : strf::detail::aligned_join_printer_impl_of
             < CharT, FPack, Preview, Args... > (input)
     {
@@ -445,8 +445,8 @@ public:
 
     template <typename FPack2, bool HasSplitPos>
     STRF_HD join_printer
-        ( strf::detail::join_printer_input
-              < CharT, FPack2, Preview, HasSplitPos, false, Args... > input )
+        ( const strf::detail::join_printer_input
+              < CharT, FPack2, Preview, HasSplitPos, false, Args... >& input )
         : strf::detail::join_printer_impl
             < sizeof(CharT), strf::printer_impl<CharT, FPack, Preview, Args>... >
             ( input.fp, input.preview, input.vwf.value(), strf::tag<CharT>() )

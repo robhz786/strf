@@ -26,7 +26,7 @@ struct char_printer_input
 
     FPack fp;
     Preview& preview;
-    CharT value;
+    CharT arg;
 };
 
 template <typename CharOut, typename FPack, typename Preview, typename CharIn>
@@ -95,7 +95,7 @@ struct fmt_char_printer_input
 
     const FPack& fp;
     Preview& preview;
-    strf::char_with_format<CharT> x;
+    strf::char_with_format<CharT> vwf;
 };
 
 } // namespace detail
@@ -146,25 +146,16 @@ public:
 
     template <typename CharT, typename FPack, typename Preview>
     STRF_HD char_printer
-        ( strf::detail::char_printer_input<CharT, FPack, Preview> input )
-        : char_printer(input.fp, input.preview, input.value, strf::tag<CharT>{} )
-    {
-    }
-
-    template <typename FPack, typename Preview, typename CharT>
-    STRF_HD char_printer
-        ( const FPack& fp, Preview& preview, CharT ch
-        , strf::tag<CharT> = strf::tag<CharT>{} )
-        : ch_(static_cast<char_type>(ch))
+        ( const strf::detail::char_printer_input<CharT, FPack, Preview>& input )
+        : ch_(static_cast<char_type>(input.arg))
     {
         static_assert(sizeof(CharT) == CharSize, "");
-        preview.add_size(1);
-        (void)fp;
+        input.preview.add_size(1);
         STRF_IF_CONSTEXPR(Preview::width_required) {
-            decltype(auto) wcalc = get_facet<strf::width_calculator_c, CharT>(fp);
-            auto w = wcalc.char_width( get_facet<strf::charset_c<CharT>, CharT>(fp)
-                                     , static_cast<char_type>(ch) );
-            preview.subtract_width(w);
+            decltype(auto) wcalc = get_facet<strf::width_calculator_c, CharT>(input.fp);
+            auto w = wcalc.char_width( get_facet<strf::charset_c<CharT>, CharT>(input.fp)
+                                     , static_cast<char_type>(ch_) );
+            input.preview.subtract_width(w);
         }
     }
 
@@ -193,27 +184,17 @@ public:
 
     template <typename CharT, typename FPack, typename Preview>
     STRF_HD fmt_char_printer
-        ( strf::detail::fmt_char_printer_input<CharT, FPack, Preview> input )
-        : fmt_char_printer(input.fp, input.preview, input.x, strf::tag<CharT>())
+        ( const strf::detail::fmt_char_printer_input<CharT, FPack, Preview>& input )
+        : count_(input.vwf.count())
+        , afmt_(input.vwf.get_alignment_format_data())
+        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, CharT>(input.fp))
+        , surr_poli_(get_facet_<strf::surrogate_policy_c, CharT>(input.fp))
+        , ch_(static_cast<char_type>(input.vwf.value().ch))
     {
-    }
-
-    template <typename FPack, typename Preview, typename CharT>
-    STRF_HD fmt_char_printer
-        ( const FPack& fp
-        , Preview& preview
-        , const strf::char_with_format<CharT>& input
-        , strf::tag<CharT> = strf::tag<CharT>{} ) noexcept
-        : count_(input.count())
-        , afmt_(input.get_alignment_format_data())
-        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, CharT>(fp))
-        , surr_poli_(get_facet_<strf::surrogate_policy_c, CharT>(fp))
-        , ch_(static_cast<char_type>(input.value().ch))
-    {
-        decltype(auto) cs = get_facet_<strf::charset_c<CharT>, CharT>(fp);
+        decltype(auto) cs = get_facet_<strf::charset_c<CharT>, CharT>(input.fp);
         encode_fill_fn_ = cs.encode_fill_func();
-        init_( preview
-             , get_facet_<strf::width_calculator_c, CharT>(fp)
+        init_( input.preview
+             , get_facet_<strf::width_calculator_c, CharT>(input.fp)
              , cs );
     }
 

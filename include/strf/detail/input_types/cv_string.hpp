@@ -64,8 +64,8 @@ public:
     template < typename DestCharT, typename FPack, typename Preview
              , typename SrcCharT, typename CvFormat >
     STRF_HD cv_string_printer
-        ( strf::detail::fmt_string_printer_input
-            < DestCharT, FPack, Preview, SrcCharT, false, false, CvFormat>
+        ( const strf::detail::fmt_string_printer_input
+            < DestCharT, FPack, Preview, SrcCharT, false, false, CvFormat >&
             input )
         : str_(reinterpret_cast<const char_in_type*>(input.vwf.value().data()))
         , len_(input.vwf.value().size())
@@ -89,8 +89,8 @@ public:
    template < typename DestCharT, typename FPack, typename Preview
              , typename SrcCharT, typename CvFormat >
     STRF_HD cv_string_printer
-        ( strf::detail::fmt_string_printer_input
-            < DestCharT, FPack, Preview, SrcCharT, true, false, CvFormat>
+        ( const strf::detail::fmt_string_printer_input
+            < DestCharT, FPack, Preview, SrcCharT, true, false, CvFormat >&
             input )
         : str_(reinterpret_cast<const char_in_type*>(input.vwf.value().data()))
         , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, SrcCharT>(input.fp))
@@ -189,8 +189,8 @@ public:
     template < typename DestCharT, typename FPack, typename Preview
              , typename SrcCharT, typename CvFormat >
     aligned_cv_string_printer
-        ( strf::detail::fmt_string_printer_input
-            < DestCharT, FPack, Preview, SrcCharT, false, true, CvFormat>
+        ( const strf::detail::fmt_string_printer_input
+            < DestCharT, FPack, Preview, SrcCharT, false, true, CvFormat >&
             input )
         : str_(reinterpret_cast<const char_in_type*>(input.vwf.value().data()))
         , len_(input.vwf.value().size())
@@ -215,8 +215,8 @@ public:
     template < typename DestCharT, typename FPack, typename Preview
              , typename SrcCharT, typename CvFormat >
     aligned_cv_string_printer
-        ( strf::detail::fmt_string_printer_input
-            < DestCharT, FPack, Preview, SrcCharT, true, true, CvFormat>
+        ( const strf::detail::fmt_string_printer_input
+            < DestCharT, FPack, Preview, SrcCharT, true, true, CvFormat >&
             input )
         : str_(reinterpret_cast<const char_in_type*>(input.vwf.value().data()))
         , len_(input.vwf.value().size())
@@ -384,8 +384,8 @@ public:
     template < typename DestCharT, typename FPack, typename Preview
              , typename SrcCharT, bool HasPrecision, typename CvFormat >
     cv_string_printer_variant
-        ( strf::detail::fmt_string_printer_input
-            < DestCharT, FPack, Preview, SrcCharT, HasPrecision, false, CvFormat>
+        ( const strf::detail::fmt_string_printer_input
+            < DestCharT, FPack, Preview, SrcCharT, HasPrecision, false, CvFormat >&
             input )
     {
         decltype(auto) charset_in  = strf::detail::get_src_charset(input);
@@ -429,8 +429,8 @@ public:
     template < typename DestCharT, typename FPack, typename Preview
              , typename SrcCharT, bool HasPrecision, typename CvFormat >
     aligned_cv_string_printer_variant
-        ( strf::detail::fmt_string_printer_input
-            < DestCharT, FPack, Preview, SrcCharT, HasPrecision, true, CvFormat>
+        ( const strf::detail::fmt_string_printer_input
+            < DestCharT, FPack, Preview, SrcCharT, HasPrecision, true, CvFormat >&
             input )
     {
         decltype(auto) charset_in  = strf::detail::get_src_charset(input);

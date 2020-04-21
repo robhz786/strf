@@ -962,8 +962,8 @@ public:
     template < typename FPack, typename Preview, typename FloatT
              , strf::float_notation Notation, typename CharT>
     STRF_HD punct_double_printer
-        ( strf::detail::fmt_double_printer_input
-            < CharT, FPack, Preview, FloatT, Notation, false > input )
+        ( const strf::detail::fmt_double_printer_input
+            < CharT, FPack, Preview, FloatT, Notation, false >& input )
         : punct_(strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp))
         , inv_seq_poli_(strf::get_facet<strf::invalid_seq_policy_c, FloatT>(input.fp))
         , surr_poli_(strf::get_facet<strf::surrogate_policy_c, FloatT>(input.fp))
@@ -986,8 +986,8 @@ public:
     template < typename FPack, typename Preview, typename FloatT
              , strf::float_notation Notation, typename CharT >
     STRF_HD punct_double_printer
-        ( strf::detail::fmt_double_printer_input
-            < CharT, FPack, Preview, FloatT, Notation, true > input )
+        ( const strf::detail::fmt_double_printer_input
+            < CharT, FPack, Preview, FloatT, Notation, true >& input )
         : punct_(strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp))
         , fillchar_(input.vwf.fill())
         , inv_seq_poli_(strf::get_facet<strf::invalid_seq_policy_c, FloatT>(input.fp))
@@ -1313,8 +1313,8 @@ public:
     template < typename FPack, typename Preview, typename FloatT
              , strf::float_notation Notation, typename CharT >
     STRF_HD double_printer
-        ( strf::detail::fmt_double_printer_input
-            < CharT, FPack, Preview, FloatT, Notation, false > input )
+        ( const strf::detail::fmt_double_printer_input
+            < CharT, FPack, Preview, FloatT, Notation, false >& input )
         : data_( strf::detail::init_double_printer_data<Notation>
                     ( input.vwf.value(), input.vwf.get_float_format_data() ) )
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
@@ -1329,8 +1329,8 @@ public:
     template < typename FPack, typename Preview, typename FloatT
              , strf::float_notation Notation, typename CharT >
     STRF_HD double_printer
-        ( strf::detail::fmt_double_printer_input
-            < CharT, FPack, Preview, FloatT, Notation, true > input )
+        ( const strf::detail::fmt_double_printer_input
+            < CharT, FPack, Preview, FloatT, Notation, true >& input )
         : data_( strf::detail::init_double_printer_data<Notation>
                     ( input.vwf.value(), input.vwf.get_float_format_data() ) )
         , fillchar_(input.vwf.fill())
@@ -1753,7 +1753,8 @@ public:
 
     template <typename CharT, typename FPack, typename Preview, typename FloatT>
     STRF_HD fast_punct_double_printer
-        ( strf::detail::fast_punct_double_printer_input<CharT, FPack, Preview, FloatT> input )
+        ( const strf::detail::fast_punct_double_printer_input
+              < CharT, FPack, Preview, FloatT >& input )
         : punct_(strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp))
         , value_(decode(input.value))
         , m10_digcount_(strf::detail::count_digits<10>(value_.m10))
@@ -2103,8 +2104,8 @@ public:
 
     template <typename CharT, typename FPack, typename Preview, typename FloatT>
     hex_double_printer
-        ( strf::detail::fmt_double_printer_input
-            < CharT, FPack, Preview, FloatT, strf::float_notation::hex, false >
+        ( const strf::detail::fmt_double_printer_input
+            < CharT, FPack, Preview, FloatT, strf::float_notation::hex, false >&
             input )
         : data_( strf::detail::init_hex_double_printer_data
                    ( input.vwf.get_float_format_data(), input.vwf.value() ) )
@@ -2134,8 +2135,8 @@ public:
 
     template <typename CharT, typename FPack, typename Preview, typename FloatT>
     hex_double_printer
-        ( strf::detail::fmt_double_printer_input
-            < CharT, FPack, Preview, FloatT, strf::float_notation::hex, true >
+        ( const strf::detail::fmt_double_printer_input
+            < CharT, FPack, Preview, FloatT, strf::float_notation::hex, true >&
             input )
         : data_( strf::detail::init_hex_double_printer_data
                    ( input.vwf.get_float_format_data(), input.vwf.value() ) )

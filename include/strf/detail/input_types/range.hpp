@@ -242,7 +242,8 @@ public:
 
     template <typename FPack2, typename Preview>
     STRF_HD range_printer
-        ( strf::detail::range_printer_input<CharT, FPack2, Preview, It> input )
+        ( const strf::detail::range_printer_input
+              < CharT, FPack2, Preview, It >& input )
         : fp_(input.fp)
         , begin_(input.arg.begin)
         , end_(input.arg.end)
@@ -306,7 +307,8 @@ public:
 
     template <typename FPack2, typename Preview>
     STRF_HD separated_range_printer
-        ( strf::detail::separated_range_printe_input<CharT, FPack2, Preview, It> input )
+        ( const strf::detail::separated_range_printe_input
+            < CharT, FPack2, Preview, It >& input )
         : fp_(input.fp)
         , begin_(input.arg.begin)
         , end_(input.arg.end)
@@ -430,8 +432,8 @@ public:
 
     template <typename FPack2, typename Preview>
     STRF_HD fmt_range_printer
-        ( strf::detail::fmt_range_printer_input
-              < CharT, FPack2, Preview, It, Fmts ...> input )
+        ( const strf::detail::fmt_range_printer_input
+              < CharT, FPack2, Preview, It, Fmts ...>& input )
         : fp_(input.fp)
         , fmt_(input.arg)
     {
@@ -517,8 +519,8 @@ public:
 
     template <typename FPack2, typename Preview>
     STRF_HD fmt_separated_range_printer
-        ( strf::detail::fmt_separated_range_printer_input
-              < CharT, FPack2, Preview, It, Fmts... > input )
+        ( const strf::detail::fmt_separated_range_printer_input
+              < CharT, FPack2, Preview, It, Fmts... >& input )
         : fp_(input.fp)
         , fmt_(input.arg)
     {
@@ -637,8 +639,8 @@ public:
 
     template <typename FPack2, typename Preview>
     transformed_range_printer
-        ( strf::detail::transformed_range_printer_input
-              < CharT, FPack2, Preview, It, UnaryOp > input )
+        ( const strf::detail::transformed_range_printer_input
+              < CharT, FPack2, Preview, It, UnaryOp >& input )
         : fp_(input.fp)
         , begin_(input.arg.begin)
         , end_(input.arg.end)
@@ -709,8 +711,8 @@ public:
     using value_type = typename std::iterator_traits<It>::value_type;
     template <typename FPack2, typename Preview>
     STRF_HD sep_transformed_range_printer
-        ( strf::detail::sep_transformed_range_printer_input
-              < CharT, FPack2, Preview, It, UnaryOp > input )
+        ( const strf::detail::sep_transformed_range_printer_input
+              < CharT, FPack2, Preview, It, UnaryOp >& input )
         : fp_(input.fp)
         , begin_(input.arg.begin)
         , end_(input.arg.end)
