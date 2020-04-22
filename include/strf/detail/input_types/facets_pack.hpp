@@ -61,20 +61,17 @@ struct facets_pack_printer_input
 
 } // namespace detail
 
-template < typename CharT
-         , typename ParentFPack
-         , typename Preview
-         , typename ChildFPack
-         , typename ... Args >
-constexpr STRF_HD strf::detail::facets_pack_printer_input
-    < CharT, ParentFPack, Preview, ChildFPack, Args... >
-make_printer_input
-    ( const ParentFPack fp
-    , Preview& preview
-    , const strf::inner_pack_with_args<ChildFPack, Args...>& arg )
+template < typename CharT, typename FPack, typename Preview
+         , typename ChildFPack, typename... Args >
+struct printer_traits
+    < CharT, FPack, Preview
+    , strf::inner_pack_with_args<ChildFPack, Args...> >
+    : strf::usual_printer_traits_by_cref
+        < CharT, FPack
+        , strf::detail::facets_pack_printer
+            < CharT, FPack, Preview, ChildFPack, Args... > >
 {
-    return {fp, preview, arg};
-}
+};
 
 namespace detail {
 
@@ -87,10 +84,9 @@ class facets_pack_printer: public strf::printer<sizeof(CharT)>
 {
 public:
 
-    template <typename ParentFPack2>
+    template <typename... T>
     STRF_HD facets_pack_printer
-        ( const strf::detail::facets_pack_printer_input
-            < CharT, ParentFPack2, Preview, ChildFPack, Args... >& input )
+        ( const strf::usual_printer_input<T...>& input )
         : fp_{input.fp, input.arg.fp}
         , printers_{fp_, input.preview, input.arg.args, strf::tag<CharT>()}
     {

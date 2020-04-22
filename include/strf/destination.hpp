@@ -161,7 +161,7 @@ private:
     STRF_HD auto p_input_(PreviewType& preview, const Arg& arg) const
     {
         const auto& self = static_cast<const destination_type_&>(*this);
-        return make_printer_input<CharT>(self.fpack_, preview, arg);
+        return strf::make_printer_input<CharT>(self.fpack_, preview, arg);
     }
 
     static inline const strf::printer<sizeof(CharT)>&

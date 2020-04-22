@@ -124,7 +124,7 @@ public:
         , const strf::detail::simple_tuple<Args...>& args
         , strf::tag<CharT> tag)
         : indexed_printer<I, Printers>
-            ( make_printer_input<CharT, const FPack&>
+            ( strf::make_printer_input<CharT, const FPack&>
                 ( fp, preview, args.template get<I>() ) ) ...
     {
         (void)tag;

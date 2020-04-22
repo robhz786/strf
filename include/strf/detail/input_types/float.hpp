@@ -401,7 +401,7 @@ inline STRF_HD auto make_fmt(strf::rank<1>, double x)
     return strf::float_with_format<double, strf::float_notation::general, false>{x};
 }
 
-inline STRF_HD void make_fmt(strf::rank<1>, long double x) = delete;
+inline STRF_HD void make_fmt(strf::rank<1>, long double) = delete;
 
 namespace detail {
 
@@ -414,7 +414,18 @@ template <std::size_t> class hex_double_printer;
 template < typename CharT, typename Preview, typename FloatT>
 struct fast_double_printer_input
 {
-    using printer_type =  strf::detail::fast_double_printer<sizeof(CharT)>;
+    using printer_type = strf::detail::fast_double_printer<sizeof(CharT)>;
+
+    template <typename FPack>
+    fast_double_printer_input(const FPack& fp, Preview& preview_, FloatT arg_)
+        : preview(preview_)
+        , value(arg_)
+        , lcase(strf::get_facet<strf::lettercase_c, float>(fp))
+    {
+    }
+
+    fast_double_printer_input(const fast_double_printer_input&) = default;
+    fast_double_printer_input(fast_double_printer_input&&) = default;
 
     Preview& preview;
     FloatT value;
@@ -431,8 +442,6 @@ struct fast_punct_double_printer_input
     Preview& preview;
     FloatT value;
 };
-
-
 
 template < typename CharT, typename FPack, typename Preview, typename FloatT
          , strf::float_notation Notation, bool HasAlignment >
@@ -454,54 +463,42 @@ struct fmt_double_printer_input
 } // namespace detail
 
 template <typename CharT, typename FPack, typename Preview>
-void make_printer_input(const FPack&, Preview&, long double) = delete;
+void do_make_printer_input(const FPack&, Preview&, long double) = delete;
 
 template <typename CharT, typename FPack, typename Preview>
-constexpr STRF_HD std::enable_if_t
-    < ! strf::detail::has_punct<CharT, FPack, float, 10>
-    , strf::detail::fast_double_printer_input<CharT, Preview, float> >
-make_printer_input(const FPack& fp, Preview& preview, float value)
-{
-    return {preview, value, strf::get_facet<strf::lettercase_c, float>(fp)};
-}
-
-template <typename CharT, typename FPack, typename Preview>
-constexpr STRF_HD std::enable_if_t
+constexpr STRF_HD std::conditional_t
     < strf::detail::has_punct<CharT, FPack, float, 10>
-    , strf::detail::fast_punct_double_printer_input<CharT, FPack, Preview, float> >
-make_printer_input(const FPack& fp, Preview& preview, float value)
+    , strf::detail::fast_punct_double_printer_input<CharT, FPack, Preview, float>
+    , strf::detail::fast_double_printer_input<CharT, Preview, float> >
+do_make_printer_input(const FPack& fp, Preview& preview, float value)
 {
     return {fp, preview, value};
 }
 
 template <typename CharT, typename FPack, typename Preview>
-constexpr STRF_HD std::enable_if_t
-    < ! strf::detail::has_punct<CharT, FPack, double, 10>
-    , strf::detail::fast_double_printer_input<CharT, Preview, double> >
-make_printer_input(const FPack& fp, Preview& preview, double value)
-{
-    return {preview, value, strf::get_facet<strf::lettercase_c, double>(fp)};
-}
-
-template <typename CharT, typename FPack, typename Preview>
-constexpr STRF_HD std::enable_if_t
+constexpr STRF_HD std::conditional_t
     < strf::detail::has_punct<CharT, FPack, double, 10>
-    , strf::detail::fast_punct_double_printer_input<CharT, FPack, Preview, double> >
-make_printer_input(const FPack& fp, Preview& preview, double value)
+    , strf::detail::fast_punct_double_printer_input<CharT, FPack, Preview, double>
+    , strf::detail::fast_double_printer_input<CharT, Preview, double> >
+do_make_printer_input(const FPack& fp, Preview& preview, double value)
 {
     return {fp, preview, value};
 }
 
-template < typename CharT, typename FPack, typename Preview, typename FloatT
-         , strf::float_notation Notation, bool HasAlignment >
-constexpr STRF_HD strf::detail::fmt_double_printer_input
-    < CharT, FPack, Preview, FloatT, Notation, HasAlignment >
-make_printer_input
-    ( const FPack& fp, Preview& preview
-    , strf::float_with_format<FloatT, Notation, HasAlignment> vwf )
+template < typename CharT, typename FPack, typename Preview
+         , typename FloatT, strf::float_notation Notation, bool HasAlignment >
+struct printer_traits
+    < CharT, FPack, Preview
+    , strf::float_with_format<FloatT, Notation, HasAlignment> >
 {
-    return {fp, preview, vwf};
-}
+    template <typename Arg>
+    constexpr static STRF_HD strf::detail::fmt_double_printer_input
+        < CharT, FPack, Preview, FloatT, Notation, HasAlignment >
+    make_input(const FPack fp, Preview& preview, const Arg& arg)
+    {
+        return {fp, preview, arg};
+    }
+};
 
 namespace detail {
 

@@ -140,25 +140,28 @@ public:
     strf::value_with_format
         < strf::detail::simple_tuple<Args...>
         , strf::split_pos_format<HasSplitPos>
-        , strf::alignment_format_q<HasAlignment> > vwf;
+        , strf::alignment_format_q<HasAlignment> > arg;
 };
 
 } // namespace detail
 
 template< typename CharT, typename FPack, typename Preview
         , bool HasSplitPos, bool HasAlignment, typename ... Args>
-constexpr STRF_HD strf::detail::join_printer_input
-    <CharT, FPack, Preview, HasSplitPos, HasAlignment, Args ...>
-make_printer_input
-    ( const FPack& fp
-    , Preview& preview
+struct printer_traits
+    < CharT, FPack, Preview
     , strf::value_with_format
         < strf::detail::simple_tuple<Args...>
         , strf::split_pos_format<HasSplitPos>
-        , strf::alignment_format_q<HasAlignment> > vwf)
+        , strf::alignment_format_q<HasAlignment> > >
 {
-    return {fp, preview, vwf};
-}
+    template<typename Arg>
+    constexpr static STRF_HD strf::detail::join_printer_input
+        < CharT, FPack, Preview, HasSplitPos, HasAlignment, Args... >
+    make_input(const FPack& fp, Preview& preview, const Arg& arg)
+    {
+        return {fp, preview, arg};
+    }
+};
 
 namespace detail {
 
@@ -230,8 +233,8 @@ public:
               , strf::print_preview<ReqSize, strf::preview_width::no>
               , HasSplitPos
               , true, Args ...>& input )
-        : split_pos_(input.vwf.split_pos())
-        , afmt_(input.vwf.get_alignment_format_data())
+        : split_pos_(input.arg.split_pos())
+        , afmt_(input.arg.get_alignment_format_data())
         , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c>(input.fp))
         , surr_poli_(get_facet_<strf::surrogate_policy_c>(input.fp))
     {
@@ -239,7 +242,7 @@ public:
         encode_fill_func_ = cs.encode_fill_func();
         strf::print_preview<ReqSize, strf::preview_width::yes> p { afmt_.width };
         new (printers_ptr_()) printers_tuple_
-            { input.fp, p, input.vwf.value(), strf::tag<CharT>{} };
+            { input.fp, p, input.arg.value(), strf::tag<CharT>{} };
         if (p.remaining_width() > 0) {
             fillcount_ = p.remaining_width().round();
         }
@@ -261,8 +264,8 @@ public:
               , strf::print_preview<ReqSize, strf::preview_width::yes>
               , HasSplitPos
               , true, Args ...>& input )
-        : split_pos_(input.vwf.split_pos())
-        , afmt_(input.vwf.get_alignment_format_data())
+        : split_pos_(input.arg.split_pos())
+        , afmt_(input.arg.get_alignment_format_data())
         , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c>(input.fp))
         , surr_poli_(get_facet_<strf::surrogate_policy_c>(input.fp))
     {
@@ -280,7 +283,7 @@ public:
         strf::print_preview<ReqSize, strf::preview_width::yes> p{wmax};
         // to-do: what if the line below throws ?
         new (printers_ptr_()) printers_tuple_
-            { input.fp, p, input.vwf.value(), strf::tag<CharT>() };
+            { input.fp, p, input.arg.value(), strf::tag<CharT>() };
         if (p.remaining_width() > diff) {
             fillcount_ = (p.remaining_width() - diff).round();
         }
@@ -449,7 +452,7 @@ public:
               < CharT, FPack2, Preview, HasSplitPos, false, Args... >& input )
         : strf::detail::join_printer_impl
             < sizeof(CharT), strf::printer_impl<CharT, FPack, Preview, Args>... >
-            ( input.fp, input.preview, input.vwf.value(), strf::tag<CharT>() )
+            ( input.fp, input.preview, input.arg.value(), strf::tag<CharT>() )
     {
     }
 

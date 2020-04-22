@@ -545,7 +545,7 @@ struct fmt_string_printer_input
 
 template <typename DestCharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::string_printer_input<DestCharT, FPack, Preview>
-make_printer_input(const FPack& fp, Preview& preview, const char* str) noexcept
+do_make_printer_input(const FPack& fp, Preview& preview, const char* str) noexcept
 {
     static_assert( std::is_same<char, DestCharT>::value
                  , "Character type mismatch. Use cv function." );
@@ -556,7 +556,7 @@ make_printer_input(const FPack& fp, Preview& preview, const char* str) noexcept
 
 template <typename DestCharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::string_printer_input<DestCharT, FPack, Preview>
-make_printer_input(const FPack& fp, Preview& preview, const char8_t* str) noexcept
+do_make_printer_input(const FPack& fp, Preview& preview, const char8_t* str) noexcept
 {
     static_assert( std::is_same<char8_t, DestCharT>::value
                  , "Character type mismatch. Use cv function." );
@@ -567,7 +567,7 @@ make_printer_input(const FPack& fp, Preview& preview, const char8_t* str) noexce
 
 template <typename DestCharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::string_printer_input<DestCharT, FPack, Preview>
-make_printer_input(const FPack& fp, Preview& preview, const char16_t* str) noexcept
+do_make_printer_input(const FPack& fp, Preview& preview, const char16_t* str) noexcept
 {
     static_assert( std::is_same<char16_t, DestCharT>::value
                  , "Character type mismatch. Use cv function." );
@@ -576,7 +576,7 @@ make_printer_input(const FPack& fp, Preview& preview, const char16_t* str) noexc
 
 template <typename DestCharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::string_printer_input<DestCharT, FPack, Preview>
-make_printer_input(const FPack& fp, Preview& preview, const char32_t* str) noexcept
+do_make_printer_input(const FPack& fp, Preview& preview, const char32_t* str) noexcept
 {
     static_assert( std::is_same<char32_t, DestCharT>::value
                  , "Character type mismatch. Use cv function." );
@@ -585,7 +585,7 @@ make_printer_input(const FPack& fp, Preview& preview, const char32_t* str) noexc
 
 template <typename DestCharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::string_printer_input<DestCharT, FPack, Preview>
-make_printer_input(const FPack& fp, Preview& preview, const wchar_t* str) noexcept
+do_make_printer_input(const FPack& fp, Preview& preview, const wchar_t* str) noexcept
 {
     static_assert( std::is_same<wchar_t, DestCharT>::value
                  , "Character type mismatch. Use cv function." );
@@ -595,7 +595,7 @@ make_printer_input(const FPack& fp, Preview& preview, const wchar_t* str) noexce
 template < typename DestCharT, typename FPack, typename Preview
          , typename SrcCharT>
 constexpr STRF_HD strf::detail::string_printer_input<DestCharT, FPack, Preview>
-make_printer_input
+do_make_printer_input
     ( const FPack& fp
     , Preview& preview
     , strf::detail::simple_string_view<SrcCharT> sv ) noexcept
@@ -608,7 +608,7 @@ make_printer_input
 template < typename DestCharT, typename FPack, typename Preview
          , typename SrcCharT, typename Traits, typename Allocator >
 constexpr STRF_HD strf::detail::string_printer_input<DestCharT, FPack, Preview>
-make_printer_input
+do_make_printer_input
     ( const FPack& fp
     , Preview& preview
     , const std::basic_string<SrcCharT, Traits, Allocator>& s ) noexcept
@@ -623,7 +623,7 @@ make_printer_input
 template < typename DestCharT, typename FPack, typename Preview
          , typename SrcCharT, typename Traits >
 constexpr STRF_HD strf::detail::string_printer_input<DestCharT, FPack, Preview>
-make_printer_input
+do_make_printer_input
     ( const FPack& fp
     , Preview& preview
     , std::basic_string_view<SrcCharT, Traits> sv ) noexcept
@@ -639,7 +639,7 @@ template < typename DestCharT, typename FPack, typename Preview, typename SrcCha
          , bool HasPrecision, bool HasAlignment, typename CvFormat >
 constexpr STRF_HD strf::detail::fmt_string_printer_input
     < DestCharT, FPack, Preview, SrcCharT, HasPrecision, HasAlignment, CvFormat>
-make_printer_input
+do_make_printer_input
     ( const FPack& fp
     , Preview& preview
     , const strf::value_with_format
