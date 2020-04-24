@@ -540,116 +540,103 @@ struct fmt_string_printer_input
     value_with_format_type vwf;
 };
 
+template <typename DestCharT, typename FPack, typename Preview, typename SrcCharT>
+struct string_printer_traits
+{
+    static_assert( std::is_same<SrcCharT, DestCharT>::value
+                 , "Character type mismatch. Use `cv` or `sani` format function." );
+
+    constexpr static STRF_HD
+    strf::detail::string_printer_input<DestCharT, FPack, Preview>
+    make_input ( const FPack& fp, Preview& preview
+               , strf::detail::simple_string_view<SrcCharT> str )
+    {
+        return {fp, preview, str.data(), str.size()};
+    }
+};
 
 } // namespace detail
 
 template <typename DestCharT, typename FPack, typename Preview>
-constexpr STRF_HD strf::detail::string_printer_input<DestCharT, FPack, Preview>
-do_make_printer_input(const FPack& fp, Preview& preview, const char* str) noexcept
-{
-    static_assert( std::is_same<char, DestCharT>::value
-                 , "Character type mismatch. Use cv function." );
-    return {fp, preview, str, strf::detail::str_length(str) };
-}
+constexpr STRF_HD
+strf::detail::string_printer_traits
+    < DestCharT, FPack, Preview, char >
+get_printer_traits(const FPack&, Preview&, const char*)
+{ return {}; }
 
 #if defined(__cpp_char8_t)
 
 template <typename DestCharT, typename FPack, typename Preview>
-constexpr STRF_HD strf::detail::string_printer_input<DestCharT, FPack, Preview>
-do_make_printer_input(const FPack& fp, Preview& preview, const char8_t* str) noexcept
-{
-    static_assert( std::is_same<char8_t, DestCharT>::value
-                 , "Character type mismatch. Use cv function." );
-    return {fp, preview, str, strf::detail::str_length(str) };
-}
+constexpr STRF_HD strf::detail::string_printer_traits
+    < DestCharT, FPack, Preview, char8_t >
+get_printer_traits(const FPack&, Preview&, const char8_t*)
+{ return {}; }
 
 #endif // defined(__cpp_char8_t)
 
 template <typename DestCharT, typename FPack, typename Preview>
-constexpr STRF_HD strf::detail::string_printer_input<DestCharT, FPack, Preview>
-do_make_printer_input(const FPack& fp, Preview& preview, const char16_t* str) noexcept
-{
-    static_assert( std::is_same<char16_t, DestCharT>::value
-                 , "Character type mismatch. Use cv function." );
-    return {fp, preview, str, strf::detail::str_length(str) };
-}
+constexpr STRF_HD strf::detail::string_printer_traits
+    < DestCharT, FPack, Preview, char16_t >
+get_printer_traits(const FPack&, Preview&, const char16_t*)
+{ return {}; }
 
 template <typename DestCharT, typename FPack, typename Preview>
-constexpr STRF_HD strf::detail::string_printer_input<DestCharT, FPack, Preview>
-do_make_printer_input(const FPack& fp, Preview& preview, const char32_t* str) noexcept
-{
-    static_assert( std::is_same<char32_t, DestCharT>::value
-                 , "Character type mismatch. Use cv function." );
-    return {fp, preview, str, strf::detail::str_length(str) };
-}
+constexpr STRF_HD strf::detail::string_printer_traits
+    < DestCharT, FPack, Preview, char32_t >
+get_printer_traits(const FPack&, Preview&, const char32_t*)
+{ return {}; }
 
 template <typename DestCharT, typename FPack, typename Preview>
-constexpr STRF_HD strf::detail::string_printer_input<DestCharT, FPack, Preview>
-do_make_printer_input(const FPack& fp, Preview& preview, const wchar_t* str) noexcept
-{
-    static_assert( std::is_same<wchar_t, DestCharT>::value
-                 , "Character type mismatch. Use cv function." );
-    return {fp, preview, str, strf::detail::str_length(str) };
-}
-
-template < typename DestCharT, typename FPack, typename Preview
-         , typename SrcCharT>
-constexpr STRF_HD strf::detail::string_printer_input<DestCharT, FPack, Preview>
-do_make_printer_input
-    ( const FPack& fp
-    , Preview& preview
-    , strf::detail::simple_string_view<SrcCharT> sv ) noexcept
-{
-    static_assert( std::is_same<SrcCharT, DestCharT>::value
-                 , "Character type mismatch. Use cv function." );
-    return {fp, preview, sv.data(), sv.size() };
-}
+constexpr STRF_HD strf::detail::string_printer_traits
+    < DestCharT, FPack, Preview, wchar_t >
+get_printer_traits(const FPack&, Preview&, const wchar_t*)
+{ return {}; }
 
 template < typename DestCharT, typename FPack, typename Preview
          , typename SrcCharT, typename Traits, typename Allocator >
-constexpr STRF_HD strf::detail::string_printer_input<DestCharT, FPack, Preview>
-do_make_printer_input
-    ( const FPack& fp
-    , Preview& preview
-    , const std::basic_string<SrcCharT, Traits, Allocator>& s ) noexcept
-{
-    static_assert( std::is_same<SrcCharT, DestCharT>::value
-                 , "Character type mismatch. Use cv function." );
-    return {fp, preview, s.data(), s.size() };
-}
+constexpr STRF_HD strf::detail::string_printer_traits
+    < DestCharT, FPack, Preview, SrcCharT >
+get_printer_traits( const FPack&, Preview&
+                  , const std::basic_string<SrcCharT, Traits, Allocator>& )
+{ return {}; }
 
 #if defined(STRF_HAS_STD_STRING_VIEW)
 
 template < typename DestCharT, typename FPack, typename Preview
          , typename SrcCharT, typename Traits >
-constexpr STRF_HD strf::detail::string_printer_input<DestCharT, FPack, Preview>
-do_make_printer_input
-    ( const FPack& fp
-    , Preview& preview
-    , std::basic_string_view<SrcCharT, Traits> sv ) noexcept
-{
-    static_assert( std::is_same<SrcCharT, DestCharT>::value
-                 , "Character type mismatch. Use cv function." );
-    return {fp, preview, sv.data(), sv.size() };
-}
+constexpr STRF_HD strf::detail::string_printer_traits
+    < DestCharT, FPack, Preview, SrcCharT >
+get_printer_traits( const FPack&, Preview&
+                  , const std::basic_string_view<SrcCharT, Traits>& )
+{ return {}; }
 
 #endif //defined(STRF_HAS_STD_STRING_VIEW)
 
+template < typename DestCharT, typename FPack, typename Preview, typename SrcCharT >
+constexpr STRF_HD strf::detail::string_printer_traits
+    < DestCharT, FPack, Preview, SrcCharT >
+get_printer_traits( const FPack&, Preview&
+                  , const strf::detail::simple_string_view<SrcCharT>& ){ return {}; }
+
 template < typename DestCharT, typename FPack, typename Preview, typename SrcCharT
          , bool HasPrecision, bool HasAlignment, typename CvFormat >
-constexpr STRF_HD strf::detail::fmt_string_printer_input
-    < DestCharT, FPack, Preview, SrcCharT, HasPrecision, HasAlignment, CvFormat>
-do_make_printer_input
-    ( const FPack& fp
-    , Preview& preview
-    , const strf::value_with_format
+struct printer_traits
+    < DestCharT, FPack, Preview
+    , strf::value_with_format
           < strf::detail::simple_string_view<SrcCharT>
           , strf::string_precision_format<HasPrecision>
           , strf::alignment_format_q<HasAlignment>
-          , CvFormat > input ) noexcept
+          , CvFormat > >
 {
-    return {fp, preview, input};
-}
+    template <typename Arg>
+    constexpr static STRF_HD strf::detail::fmt_string_printer_input
+        < DestCharT, FPack, Preview, SrcCharT
+        , HasPrecision, HasAlignment, CvFormat>
+    make_input(const FPack& fp, Preview& preview, const Arg& arg)
+    {
+        return {fp, preview, arg};
+    }
+};
 
 namespace detail {
 

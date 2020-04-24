@@ -417,7 +417,7 @@ struct fast_double_printer_input
     using printer_type = strf::detail::fast_double_printer<sizeof(CharT)>;
 
     template <typename FPack>
-    fast_double_printer_input(const FPack& fp, Preview& preview_, FloatT arg_)
+    STRF_HD fast_double_printer_input(const FPack& fp, Preview& preview_, FloatT arg_)
         : preview(preview_)
         , value(arg_)
         , lcase(strf::get_facet<strf::lettercase_c, float>(fp))
@@ -443,6 +443,21 @@ struct fast_punct_double_printer_input
     FloatT value;
 };
 
+template < typename CharT, typename FPack, typename Preview, typename FloatT >
+struct fast_double_printer_traits
+{
+    using printer_input_type = std::conditional_t
+        < strf::detail::has_punct<CharT, FPack, FloatT, 10>
+        , strf::detail::fast_punct_double_printer_input<CharT, FPack, Preview, FloatT>
+        , strf::detail::fast_double_printer_input<CharT, Preview, FloatT> >;
+
+    constexpr static STRF_HD printer_input_type
+    make_input(const FPack& fp, Preview& preview, FloatT arg)
+    {
+        return {fp, preview, arg};
+    }
+};
+
 template < typename CharT, typename FPack, typename Preview, typename FloatT
          , strf::float_notation Notation, bool HasAlignment >
 struct fmt_double_printer_input
@@ -463,27 +478,21 @@ struct fmt_double_printer_input
 } // namespace detail
 
 template <typename CharT, typename FPack, typename Preview>
-void do_make_printer_input(const FPack&, Preview&, long double) = delete;
+constexpr STRF_HD strf::detail::fast_double_printer_traits
+    < CharT, FPack, Preview, float >
+get_printer_traits(const FPack&, Preview&, float)
+{ return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
-constexpr STRF_HD std::conditional_t
-    < strf::detail::has_punct<CharT, FPack, float, 10>
-    , strf::detail::fast_punct_double_printer_input<CharT, FPack, Preview, float>
-    , strf::detail::fast_double_printer_input<CharT, Preview, float> >
-do_make_printer_input(const FPack& fp, Preview& preview, float value)
-{
-    return {fp, preview, value};
-}
+constexpr STRF_HD strf::detail::fast_double_printer_traits
+    < CharT, FPack, Preview, double >
+get_printer_traits(const FPack&, Preview&, double)
+{ return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
-constexpr STRF_HD std::conditional_t
-    < strf::detail::has_punct<CharT, FPack, double, 10>
-    , strf::detail::fast_punct_double_printer_input<CharT, FPack, Preview, double>
-    , strf::detail::fast_double_printer_input<CharT, Preview, double> >
-do_make_printer_input(const FPack& fp, Preview& preview, double value)
-{
-    return {fp, preview, value};
-}
+constexpr STRF_HD void
+get_printer_traits(const FPack&, Preview&, long double) = delete;
+
 
 template < typename CharT, typename FPack, typename Preview
          , typename FloatT, strf::float_notation Notation, bool HasAlignment >

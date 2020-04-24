@@ -263,17 +263,15 @@ inline STRF_HD void write_args
 } // namespace detail
 
 template <typename CharT>
-inline STRF_HD void do_make_printer_input() {};
+inline STRF_HD void get_printer_traits() {};
 
 template <typename CharT, typename FPack, typename Preview, typename Arg>
 struct printer_traits
+    : decltype( get_printer_traits<CharT, FPack>
+                  ( std::declval<const FPack&>()
+                  , std::declval<Preview&>()
+                  , std::declval<const Arg&>() ) )
 {
-    template <typename Arg2>
-    constexpr static STRF_HD auto make_input
-        ( const FPack& fp, Preview& preview, const Arg2& arg )
-    {
-        return do_make_printer_input<CharT, FPack>(fp, preview, arg);
-    }
 };
 
 template < typename CharT, typename FPack, typename Preview
@@ -311,40 +309,38 @@ struct usual_printer_traits_by_cref
     }
 };
 
-template <typename CharT>
-class printer_input_maker_c;
+class printer_traits_finder_c;
 
-template <typename CharT>
-class default_printer_input_maker
+class printer_traits_finder
 {
 public:
-    using category = printer_input_maker_c<CharT>;
+    using category = strf::printer_traits_finder_c;
 
-    template <typename FPack, typename Preview, typename Arg>
-    constexpr static STRF_HD auto make_input
-        ( const FPack& fp, Preview& preview, const Arg& arg )
-    {
-        return strf::printer_traits<CharT, FPack, Preview, Arg>
-            ::make_input(fp, preview, arg);
-    }
+    template < typename CharT, typename FPack
+             , typename Preview, typename Arg >
+    using type = strf::printer_traits<CharT, FPack, Preview, Arg>;
 };
 
-template <typename CharT>
-class printer_input_maker_c
+class printer_traits_finder_c
 {
 public:
-    constexpr static STRF_HD strf::default_printer_input_maker<CharT> get_default()
+    constexpr static STRF_HD strf::printer_traits_finder get_default()
     {
         return {};
     }
 };
 
 template <typename CharT, typename FPack, typename Preview, typename Arg>
+using printer_traits_alias = typename
+    decltype(strf::get_facet<printer_traits_finder_c, Arg>(std::declval<const FPack&>()))
+    :: template type<CharT, FPack, Preview, Arg>;
+
+template <typename CharT, typename FPack, typename Preview, typename Arg>
 constexpr STRF_HD auto make_printer_input
     ( const FPack& fp, Preview& preview, const Arg& arg )
 {
-    return strf::get_facet<strf::printer_input_maker_c<CharT>, Arg>(fp)
-        .template make_input<FPack>(fp, preview, arg);
+    using pt = strf::printer_traits_alias<CharT, FPack, Preview, Arg>;
+    return pt::make_input(fp, preview, arg);
 }
 
 namespace detail {

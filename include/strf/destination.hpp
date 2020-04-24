@@ -38,6 +38,9 @@ class destination_common
     template <typename Arg>
     using printer_ = strf::printer_impl<CharT, FPack, PreviewType, Arg>;
 
+    template <typename Arg>
+    using printer_traits_ = printer_traits_alias<CharT, FPack, PreviewType, Arg>;
+
 public:
 
     template <typename ... FPE>
@@ -133,7 +136,10 @@ public:
         PreviewType preview;
         return self.write_
             ( preview
-            , as_printer_cref_(printer_<Args>(p_input_<Args>(preview, args))) ... );
+            , as_printer_cref_
+              ( printer_<Args>
+                ( printer_traits_<Args>::make_input
+                  ( self.fpack_, preview, args ) ) )... );
     }
 
 #if defined(STRF_HAS_STD_STRING_VIEW)
@@ -157,12 +163,6 @@ public:
 #endif
 
 private:
-    template <typename Arg>
-    STRF_HD auto p_input_(PreviewType& preview, const Arg& arg) const
-    {
-        const auto& self = static_cast<const destination_type_&>(*this);
-        return strf::make_printer_input<CharT>(self.fpack_, preview, arg);
-    }
 
     static inline const strf::printer<sizeof(CharT)>&
     STRF_HD as_printer_cref_(const strf::printer<sizeof(CharT)>& p)
@@ -191,11 +191,15 @@ private:
                               , const Args& ... args) const &
     {
         PreviewType preview_arr[sizeof...(args)];
+        const auto& fpack = static_cast<const destination_type_&>(*this).fpack_;
         return tr_write_3_
             ( str
             , str_end
             , preview_arr
-            , {as_printer_cptr_(printer_<Args>(p_input_<Args>(preview_arr[I], args)))...} );
+            , { as_printer_cptr_
+                ( printer_<Args>
+                  ( printer_traits_<Args>::make_input
+                    ( fpack, preview_arr[I], args ) ) )... } );
     }
 
     template < typename Preview, typename ... Args >
