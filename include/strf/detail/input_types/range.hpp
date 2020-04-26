@@ -117,13 +117,13 @@ class sep_transformed_range_printer;
 
 template <typename CharT, typename FPack, typename Preview, typename It>
 struct printer_traits<CharT, FPack, Preview, strf::range_p<It>>
-    : strf::usual_printer_traits_by_val
+    : strf::usual_printer_traits
         < CharT, FPack, strf::detail::range_printer<CharT, FPack, It> >
 { };
 
 template <typename CharT, typename FPack, typename Preview, typename It>
 struct printer_traits<CharT, FPack, Preview, strf::separated_range_p<It, CharT>>
-    : strf::usual_printer_traits_by_val
+    : strf::usual_printer_traits
         < CharT, FPack, strf::detail::separated_range_printer<CharT, FPack, It> >
 { };
 
@@ -132,7 +132,7 @@ template < typename CharT, typename FPack, typename Preview
 struct printer_traits
     < CharT, FPack, Preview
     , strf::value_with_format<strf::range_p<It>, Fmts ...> >
-    : strf::usual_printer_traits_by_val
+    : strf::usual_printer_traits
         < CharT, FPack, strf::detail::fmt_range_printer<CharT, FPack, It, Fmts...> >
 { };
 
@@ -141,7 +141,7 @@ template < typename CharT, typename FPack, typename Preview
 struct printer_traits
     < CharT, FPack, Preview
     , strf::value_with_format<strf::separated_range_p<It, CharT>, Fmts ...>>
-    : strf::usual_printer_traits_by_val
+    : strf::usual_printer_traits
         < CharT, FPack
         , strf::detail::fmt_separated_range_printer<CharT, FPack, It, Fmts...> >
 { };
@@ -150,7 +150,7 @@ template < typename CharT, typename FPack, typename Preview
          , typename It, typename UnaryOp >
 struct printer_traits
     < CharT, FPack, Preview, strf::transformed_range_p<It, UnaryOp> >
-    : strf::usual_printer_traits_by_val
+    : strf::usual_printer_traits
         < CharT, FPack, strf::detail::transformed_range_printer<CharT, FPack, It, UnaryOp> >
 { };
 
@@ -159,7 +159,7 @@ template < typename CharT, typename FPack, typename Preview
 struct printer_traits
     < CharT, FPack, Preview
     , strf::separated_transformed_range_p<It, CharT, UnaryOp>>
-    : strf::usual_printer_traits_by_val
+    : strf::usual_printer_traits
         < CharT, FPack
         , strf::detail::sep_transformed_range_printer<CharT, FPack, It, UnaryOp> >
 { };

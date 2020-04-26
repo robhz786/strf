@@ -384,7 +384,7 @@ template < typename CharT, typename FPack, typename Preview
          , typename IntT, int Base, bool HasAlignment >
 struct printer_traits
     < CharT, FPack, Preview, strf::int_with_format<IntT, Base, HasAlignment> >
-    : strf::usual_printer_traits_by_val
+    : strf::usual_printer_traits
         < CharT, FPack
         , std::conditional_t
             < HasAlignment

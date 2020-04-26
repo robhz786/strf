@@ -58,7 +58,7 @@ template <std::size_t> class fmt_char_printer;
 
 template <typename DestCharT, typename FPack, typename SrcCharT>
 struct char_printer_traits
-    : strf::usual_printer_traits_by_val
+    : strf::usual_printer_traits
         < DestCharT, FPack, strf::detail::char_printer<sizeof(DestCharT)> >
 {
      static_assert( std::is_same<SrcCharT, DestCharT>::value
@@ -98,7 +98,7 @@ struct printer_traits<CharT, FPack, Preview, wchar_t>
 
 template <typename DestCharT, typename FPack, typename Preview, typename SrcCharT>
 struct printer_traits<DestCharT, FPack, Preview, strf::char_with_format<SrcCharT>>
-    : strf::usual_printer_traits_by_val
+    : strf::usual_printer_traits
         < DestCharT, FPack, strf::detail::fmt_char_printer<sizeof(DestCharT)> >
 {
     static_assert( std::is_same<SrcCharT, DestCharT>::value

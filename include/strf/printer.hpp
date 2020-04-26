@@ -285,7 +285,7 @@ struct usual_printer_input
 };
 
 template <typename CharT, typename FPack, typename Printer>
-struct usual_printer_traits_by_val
+struct usual_printer_traits
 {
     template <typename Preview, typename Arg>
     constexpr static STRF_HD
