@@ -66,7 +66,7 @@ template < typename CharT, typename FPack, typename Preview
 struct printer_traits
     < CharT, FPack, Preview
     , strf::inner_pack_with_args<ChildFPack, Args...> >
-    : strf::usual_printer_traits_by_cref
+    : strf::usual_printer_traits_by_val
         < CharT, FPack
         , strf::detail::facets_pack_printer
             < CharT, FPack, Preview, ChildFPack, Args... > >
