@@ -337,47 +337,47 @@ struct voidptr_printer_traits
 
 template <typename CharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::int_printer_traits<CharT, FPack, Preview, short>
-get_printer_traits(const FPack&, Preview&, short)
+get_printer_traits(Preview&, short)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::int_printer_traits<CharT, FPack, Preview, int>
-get_printer_traits(const FPack&, Preview&, int)
+get_printer_traits(Preview&, int)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::int_printer_traits<CharT, FPack, Preview, long>
-get_printer_traits(const FPack&, Preview&, long)
+get_printer_traits(Preview&, long)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::int_printer_traits<CharT, FPack, Preview, long long>
-get_printer_traits(const FPack&, Preview&, long long)
+get_printer_traits(Preview&, long long)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::int_printer_traits<CharT, FPack, Preview, unsigned short>
-get_printer_traits(const FPack&, Preview&, unsigned short)
+get_printer_traits(Preview&, unsigned short)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::int_printer_traits<CharT, FPack, Preview, unsigned int>
-get_printer_traits(const FPack&, Preview&, unsigned int)
+get_printer_traits(Preview&, unsigned int)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::int_printer_traits<CharT, FPack, Preview, unsigned long>
-get_printer_traits(const FPack&, Preview&, unsigned long)
+get_printer_traits(Preview&, unsigned long)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::int_printer_traits<CharT, FPack, Preview, unsigned long long>
-get_printer_traits(const FPack&, Preview&, unsigned long long)
+get_printer_traits(Preview&, unsigned long long)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::voidptr_printer_traits<CharT, FPack>
-get_printer_traits(const FPack&, Preview&, const void*)
+get_printer_traits(Preview&, const void*)
 { return {}; }
 
 template < typename CharT, typename FPack, typename Preview

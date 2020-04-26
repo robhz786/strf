@@ -480,18 +480,17 @@ struct fmt_double_printer_input
 template <typename CharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::fast_double_printer_traits
     < CharT, FPack, Preview, float >
-get_printer_traits(const FPack&, Preview&, float)
+get_printer_traits(Preview&, float)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::fast_double_printer_traits
     < CharT, FPack, Preview, double >
-get_printer_traits(const FPack&, Preview&, double)
+get_printer_traits(Preview&, double)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
-constexpr STRF_HD void
-get_printer_traits(const FPack&, Preview&, long double) = delete;
+constexpr STRF_HD void get_printer_traits(Preview&, long double) = delete;
 
 
 template < typename CharT, typename FPack, typename Preview

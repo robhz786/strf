@@ -561,7 +561,7 @@ template <typename DestCharT, typename FPack, typename Preview>
 constexpr STRF_HD
 strf::detail::string_printer_traits
     < DestCharT, FPack, Preview, char >
-get_printer_traits(const FPack&, Preview&, const char*)
+get_printer_traits(Preview&, const char*)
 { return {}; }
 
 #if defined(__cpp_char8_t)
@@ -569,7 +569,7 @@ get_printer_traits(const FPack&, Preview&, const char*)
 template <typename DestCharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::string_printer_traits
     < DestCharT, FPack, Preview, char8_t >
-get_printer_traits(const FPack&, Preview&, const char8_t*)
+get_printer_traits(Preview&, const char8_t*)
 { return {}; }
 
 #endif // defined(__cpp_char8_t)
@@ -577,27 +577,26 @@ get_printer_traits(const FPack&, Preview&, const char8_t*)
 template <typename DestCharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::string_printer_traits
     < DestCharT, FPack, Preview, char16_t >
-get_printer_traits(const FPack&, Preview&, const char16_t*)
+get_printer_traits(Preview&, const char16_t*)
 { return {}; }
 
 template <typename DestCharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::string_printer_traits
     < DestCharT, FPack, Preview, char32_t >
-get_printer_traits(const FPack&, Preview&, const char32_t*)
+get_printer_traits(Preview&, const char32_t*)
 { return {}; }
 
 template <typename DestCharT, typename FPack, typename Preview>
 constexpr STRF_HD strf::detail::string_printer_traits
     < DestCharT, FPack, Preview, wchar_t >
-get_printer_traits(const FPack&, Preview&, const wchar_t*)
+get_printer_traits(Preview&, const wchar_t*)
 { return {}; }
 
 template < typename DestCharT, typename FPack, typename Preview
          , typename SrcCharT, typename Traits, typename Allocator >
 constexpr STRF_HD strf::detail::string_printer_traits
     < DestCharT, FPack, Preview, SrcCharT >
-get_printer_traits( const FPack&, Preview&
-                  , const std::basic_string<SrcCharT, Traits, Allocator>& )
+get_printer_traits(Preview&, const std::basic_string<SrcCharT, Traits, Allocator>&)
 { return {}; }
 
 #if defined(STRF_HAS_STD_STRING_VIEW)
@@ -606,8 +605,7 @@ template < typename DestCharT, typename FPack, typename Preview
          , typename SrcCharT, typename Traits >
 constexpr STRF_HD strf::detail::string_printer_traits
     < DestCharT, FPack, Preview, SrcCharT >
-get_printer_traits( const FPack&, Preview&
-                  , const std::basic_string_view<SrcCharT, Traits>& )
+get_printer_traits(Preview&, const std::basic_string_view<SrcCharT, Traits>&)
 { return {}; }
 
 #endif //defined(STRF_HAS_STD_STRING_VIEW)
@@ -615,8 +613,8 @@ get_printer_traits( const FPack&, Preview&
 template < typename DestCharT, typename FPack, typename Preview, typename SrcCharT >
 constexpr STRF_HD strf::detail::string_printer_traits
     < DestCharT, FPack, Preview, SrcCharT >
-get_printer_traits( const FPack&, Preview&
-                  , const strf::detail::simple_string_view<SrcCharT>& ){ return {}; }
+get_printer_traits(Preview&, const strf::detail::simple_string_view<SrcCharT>&)
+{ return {}; }
 
 template < typename DestCharT, typename FPack, typename Preview, typename SrcCharT
          , bool HasPrecision, bool HasAlignment, typename CvFormat >

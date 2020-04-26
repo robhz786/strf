@@ -268,9 +268,8 @@ inline STRF_HD void get_printer_traits() {};
 template <typename CharT, typename FPack, typename Preview, typename Arg>
 struct printer_traits
     : decltype( get_printer_traits<CharT, FPack>
-                  ( std::declval<const FPack&>()
-                  , std::declval<Preview&>()
-                  , std::declval<const Arg&>() ) )
+                  ( std::declval<Preview&>()
+                  , std::declval<Arg>() ) )
 {
 };
 
