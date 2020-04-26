@@ -20,10 +20,9 @@ foreach(x
     facets_pack_as_input
     joins
     range_input
-#   extend_input_ipv4
-#   extend_input_ipv6
-#   extend_input_base64
-#   extend_input_template
+    extend_input_ipv4
+    extend_input_base64
+    extend_input_template
     ) 
 
   Add_executable(${x} ${x}.cpp)

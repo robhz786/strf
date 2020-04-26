@@ -8,8 +8,6 @@
 
 auto write_out = strf::to(stdout);
 
-//[ base64_facet
-
 namespace xxx {
 
 struct base64_facet_c;
@@ -34,30 +32,17 @@ struct base64_facet_c
 {
     static constexpr bool constrainable = true;
 
-    static base64_facet get_default()
+    constexpr static base64_facet get_default()
     {
         return {};
     }
 };
 
-} // namespace xxx
-//]
-
-//[ fmt_base64_input
-
-namespace xxx {
 struct base64_input
 {
     const void* bytes = nullptr;
     std::size_t num_bytes = 0;
 };
-} // namespace xxx
-
-//]
-
-//[ base64_format
-
-namespace xxx {
 
 struct base64_format
 {
@@ -90,12 +75,6 @@ struct base64_format
     };
 };
 
-} //namespace xxx
-//]
-
-//[ base64_input_with_format
-
-namespace xxx {
 
 using base64_input_with_format = strf::value_with_format< base64_input
                                                         , base64_format >;
@@ -106,19 +85,14 @@ inline auto base64(const void* bytes, std::size_t num_bytes)
     return base64_input_with_format{data};
 }
 
-/*<< Although `strf::fmt` is not needed to work with `base64_input` since the
-`base64` function already instantiates `base64_input_with_format`, we still
- need to overload `make_fmt` if we want `base64_input` to work in
- [link ranges fmt_range]
- >>*/inline auto make_fmt(strf::rank<1>, const base64_input& d)
+// Although `strf::fmt` is not needed to work with `base64_input` since the
+// `base64` function already instantiates `base64_input_with_format`, we still
+//  need to overload `make_fmt` if we want `base64_input` to work in fmt_range
+inline auto make_fmt(strf::rank<1>, const base64_input& d)
 {
     return base64_input_with_format{d};
 }
 
-}  // namespace xxx
-//]
-
-namespace xxx {
 
 template <std::size_t CharSize>
 class base64_printer: public strf::printer<CharSize>
@@ -126,6 +100,16 @@ class base64_printer: public strf::printer<CharSize>
 public:
     using char_type = strf::underlying_char_type<CharSize>;
 
+    template <typename ... T>
+    base64_printer
+        ( const strf::usual_printer_input<T...>& input)
+        : base64_printer
+            ( strf::get_facet<base64_facet_c, base64_facet_c>(input.fp)
+            , input.preview
+            , input.arg )
+    {
+    }    
+    
     template <strf::preview_size PreviewSize>
     base64_printer
         ( base64_facet facet
@@ -317,35 +301,25 @@ void base64_printer<CharSize>::write_end_of_line_(strf::underlying_outbuf<CharSi
     ob.advance(facet_.eol[1] == '\0' ? 1 : 2);
 }
 
-
 } //namespace xxx
 
-//[ make_printer_base64
-
-namespace xxx {
+namespace strf {
 
 template <typename CharT, typename FPack, typename Preview>
-inline base64_printer<sizeof(CharT)> make_printer
-    ( strf::rank<1>, const FPack& fp, Preview& preview
-    , const base64_input_with_format& fmt )
+struct printer_traits<CharT, FPack, Preview, xxx::base64_input>
+    : strf::usual_printer_traits<CharT, FPack, xxx::base64_printer<sizeof(CharT)>>
 {
-  /*<< see [link facets_pack get_facet.]
->>*/auto facet = strf::get_facet<base64_facet_c, base64_input>(fp);
-    return {facet, preview, fmt};
-}
-
+    static_assert(!Preview::require_width, "");
+};
 
 template <typename CharT, typename FPack, typename Preview>
-inline base64_printer<sizeof(CharT)> make_printer
-    ( strf::rank<1> r, const FPack& fp, Preview& preview
-    , const base64_input& input )
+struct printer_traits<CharT, FPack, Preview, xxx::base64_input_with_format>
+    : strf::usual_printer_traits<CharT, FPack, xxx::base64_printer<sizeof(CharT)>>
 {
-    return make_printer(r, fp, preview, base64_input_with_format{input});
+    static_assert(!Preview::width_required, "");
+};
+
 }
-
-} // namespace xxx
-
-//]
 
 
 void tests()
