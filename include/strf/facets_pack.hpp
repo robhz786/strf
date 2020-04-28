@@ -87,11 +87,9 @@ template <typename Rank, typename FPE> class fpe_wrapper;
 } // namespace detail
 
 template <typename F>
-class facet_traits
+struct facet_traits
 {
     using helper_ = strf::detail::category_member_type_or_void<F>;
-
-public:
 
     using category = typename helper_::type;
     constexpr static bool store_by_value
@@ -103,9 +101,8 @@ constexpr bool facet_stored_by_value
 = strf::detail::by_value_getter((strf::facet_traits<F>*)0);
 
 template <typename F>
-class facet_traits<const F>
+struct facet_traits<const F>
 {
-public:
     using category = typename strf::facet_traits<F>::category;
     const static bool store_by_value = strf::facet_traits<F>::store_by_value;
 };

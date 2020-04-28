@@ -9,13 +9,13 @@ http://www.boost.org/LICENSE_1_0.txt
 == facets_pack
 
 [[facets_pack]]
-=== Class template `facets_pack`
+=== Struct template `facets_pack`
 
 ====
 [source,cpp]
 ----
 template <typename ... FPE>
-class facets_pack;
+struct facets_pack;
 ----
 ::
 Compile-time requirements::: All types in `FPE\...` satisfy

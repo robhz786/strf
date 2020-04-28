@@ -25,7 +25,7 @@ image::syntax.svg[opts=interactive]
 #include <strf.hpp>
 #include <cassert>
 
-std::string sample()
+void sample()
 {
     int x = 100;
 

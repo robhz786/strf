@@ -9,7 +9,7 @@
 
 namespace strf {
 
-template <typename> class facet_traits;
+template <typename> struct facet_traits;
 
 enum class invalid_seq_policy
 {
@@ -57,9 +57,8 @@ struct invalid_seq_policy_c
 };
 
 template <>
-class facet_traits<strf::invalid_seq_policy>
+struct facet_traits<strf::invalid_seq_policy>
 {
-public:
     using category = strf::invalid_seq_policy_c;
     static constexpr bool store_by_value = true;
 };
@@ -80,9 +79,8 @@ struct surrogate_policy_c
 };
 
 template <>
-class facet_traits<strf::surrogate_policy>
+struct facet_traits<strf::surrogate_policy>
 {
-public:
     using category = strf::surrogate_policy_c;
     static constexpr bool store_by_value = true;
 };

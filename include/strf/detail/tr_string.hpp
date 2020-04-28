@@ -57,12 +57,11 @@ struct tr_invalid_arg_c
 };
 
 template <typename Facet>
-class facet_traits;
+struct facet_traits;
 
 template <>
-class facet_traits<strf::tr_invalid_arg>
+struct facet_traits<strf::tr_invalid_arg>
 {
-public:
     using category = strf::tr_invalid_arg_c;
     static constexpr bool store_by_value = true;
 };
