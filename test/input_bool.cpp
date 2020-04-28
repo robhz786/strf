@@ -13,20 +13,44 @@ int main()
     TEST (U"true") ( true );
     TEST (L"true") ( true );
 
+    TEST ( "True").with(strf::mixedcase) ( true );
+    TEST (u"True").with(strf::mixedcase) ( true );
+    TEST (U"True").with(strf::mixedcase) ( true );
+    TEST (L"True").with(strf::mixedcase) ( true );
+
+    TEST ( "TRUE").with(strf::uppercase) ( true );
+    TEST (u"TRUE").with(strf::uppercase) ( true );
+    TEST (U"TRUE").with(strf::uppercase) ( true );
+    TEST (L"TRUE").with(strf::uppercase) ( true );
+
     TEST ( "false") ( false );
     TEST (u"false") ( false );
     TEST (U"false") ( false );
     TEST (L"false") ( false );
 
+    TEST ( "False").with(strf::mixedcase) ( false );
+    TEST (u"False").with(strf::mixedcase) ( false );
+    TEST (U"False").with(strf::mixedcase) ( false );
+    TEST (L"False").with(strf::mixedcase) ( false );
+
+    TEST ( "FALSE").with(strf::uppercase) ( false );
+    TEST (u"FALSE").with(strf::uppercase) ( false );
+    TEST (U"FALSE").with(strf::uppercase) ( false );
+    TEST (L"FALSE").with(strf::uppercase) ( false );
+
     TEST ("true      ")  (  strf::left(true, 10) );
     TEST ("   true   ")  (  strf::center(true, 10) );
     TEST ("      true")  (  strf::right(true, 10) );
     TEST ("      true")  (  strf::split(true, 10) );
+    TEST ("      True").with(strf::mixedcase)  (  strf::right(true, 10) );
+    TEST ("      TRUE").with(strf::uppercase)  (  strf::right(true, 10) );
 
     TEST ("false     ")  (  strf::left(false, 10) );
     TEST ("  false   ")  (  strf::center(false, 10) );
-    TEST ("     false")  (  strf::right(false, 10) );
     TEST ("     false")  (  strf::split(false, 10) );
+    TEST ("     false")  (  strf::right(false, 10) );
+    TEST ("     False").with(strf::mixedcase)  (  strf::right(false, 10) );
+    TEST ("     FALSE").with(strf::uppercase)  (  strf::right(false, 10) );
 
     constexpr auto j = strf::join_right(20, U'_');
 

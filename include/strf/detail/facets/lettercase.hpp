@@ -9,7 +9,7 @@
 
 namespace strf {
 
-enum class lettercase { lower = 0, mixed = 1, upper = 3 };
+enum class lettercase : std::uint16_t { lower = 0x2020, mixed = 0x20, upper = 0 };
 
 constexpr lettercase lowercase = lettercase::lower;
 constexpr lettercase mixedcase = lettercase::mixed;

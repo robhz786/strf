@@ -369,7 +369,7 @@ Both have the same purpose: to customize numeric punctuation.
 [[constrained_facets]]
 ==== Constrained facets
 
-With the `constrain` function template you can create __constrained facets__, which are facets that only apply to certain input types. Its template parameter is a template type that contains a `value` member constexpr convertible to bool that tells whether a given input type is under the influence of the given facet:
+With the `constrain` function template you can create __constrained facets__, which are facets that only apply to certain printable types. Its template parameter is a template type that contains a `value` member constexpr convertible to bool that tells whether a given input type is under the influence of the given facet:
 
 [source,cpp]
 ----
@@ -404,7 +404,7 @@ auto punct_dec_2 = strf::monotonic_grouping<10>{2}.thousands_sep('.');
 auto punct_dec_3 = strf::monotonic_grouping<10>{3}.thousands_sep('^');;
 
 // Below, punct_dec_3 overrides punct_dec_2, but only for signed types.
-// punct_dec_2 overrides punct_dec_1 for all input types,
+// punct_dec_2 overrides punct_dec_1 for all printable types,
 // hence the presence of punt_dec_1 bellow has no effect.
 
 auto s = strf::to_string
@@ -473,13 +473,13 @@ constexpr lettercase uppercase = lettercase::upper;
 |Value | Result examples
 
 |`strf::lowercase`
-|`0xab` `1e+50` `inf` `nan`
+|`0xab` `1e+50` `inf` `nan` `true` `false`
 
 |`strf::mixedcase`
-|`0xAB` `1e+50` `Inf` `NaN`
+|`0xAB` `1e+50` `Inf` `NaN` `True` `False`
 
 |`strf::uppercase`
-|`0XAB` `1E+50` `INF` `NAN`
+|`0XAB` `1E+50` `INF` `NAN` `TRUE` `FALSE`
 |===
 
 .Usage example
@@ -848,8 +848,8 @@ also contains the same format functions. This way, you can call
 several of them in a row like
 `fmt(value).func1(/{asterisk}\...{asterisk}/).func2(/{asterisk}\...{asterisk}/).func3(/{asterisk}\...{asterisk}/)`. What format functions are available depends on the
 type of `value`, so you need to check them in the further section
-<<input_types, "Input types">>. But there is a set of format functions
-that is common is most input types, which are related to alignment
+<<printable_types, "printable types">>. But there is a set of format functions
+that is common is most printable types, which are related to alignment
 (__a.k.a__ justification):
 
 [[alignment_format_functions]]
@@ -866,8 +866,8 @@ for format functions:
 
 include::ref_global_format_functions.adoc[]
 
-[[input_types]]
-== Input types
+[[printable_types]]
+== printable types
 
 === Integers
 
@@ -952,6 +952,13 @@ Facet categories::
 - `<<charset,charset_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
 - `<<surrogate_policy,surrogate_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
 - `<<invalid_seq_policy,invalid_seq_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
+
+=== `bool`
+Type:: `bool`
+Format functions::
+<<alignment_format_functions, Alignment functions>> only.
+Facet categories::
+- `<<lettercase,lettercase_c>>`
 
 === Single characters
 Type:: `CharT`, that is the output character type defined by the <<destinations,destination>>.
@@ -1395,7 +1402,7 @@ assert(str == "1,0,0,0,0  10000  { 10,000  1'0000  { 1.00.00 } }");
 === Adding output types
 to-do
 
-=== Adding input typess
+=== Adding printable types
 to-do
 
 === Adding Facets
