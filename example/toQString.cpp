@@ -97,7 +97,7 @@ constexpr strf::destination_no_reserve<QStringCreatorFactory> toQString{};
 int main()
 {
     int x = 255;
-    QString str = toQString(x, u" in hexadecimal is ", ~strf::hex(x));
+    QString str = toQString(x, u" in hexadecimal is ", *strf::hex(x));
     assert(str == "255 in hexadecimal is 0xff");
 
     return 0;

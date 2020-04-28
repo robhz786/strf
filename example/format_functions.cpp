@@ -20,7 +20,7 @@ void samples()
     auto str = strf::to_string
         ( strf::hex(255) > 5
         , '/', strf::center(255, 7, '.').hex()
-        , '/', ~strf::hex(255) % 7
+        , '/', *strf::hex(255) % 7
         , '/', strf::multi('a', 3) ^ 7
         , '/', +strf::fmt(255) );
 

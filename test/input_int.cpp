@@ -172,109 +172,109 @@ int main()
     TEST ("...123....")  (  strf::center(123u, 10, '.') );
 
     // hexadecimal letter case
-    TEST("0X1234567890ABCDEF").with(strf::uppercase) ( ~strf::hex(0x1234567890abcdefLL) );
-    TEST("0x1234567890ABCDEF").with(strf::mixedcase) ( ~strf::hex(0x1234567890abcdefLL) );
-    TEST("0x1234567890abcdef").with(strf::lowercase) ( ~strf::hex(0x1234567890abcdefLL) );
+    TEST("0X1234567890ABCDEF").with(strf::uppercase) ( *strf::hex(0x1234567890abcdefLL) );
+    TEST("0x1234567890ABCDEF").with(strf::mixedcase) ( *strf::hex(0x1234567890abcdefLL) );
+    TEST("0x1234567890abcdef").with(strf::lowercase) ( *strf::hex(0x1234567890abcdefLL) );
 
     // binary letter case
-    TEST("0B111").with(strf::uppercase) ( ~strf::bin(7) );
-    TEST("0b111").with(strf::mixedcase) ( ~strf::bin(7) );
-    TEST("0b111").with(strf::lowercase) ( ~strf::bin(7) );
+    TEST("0B111").with(strf::uppercase) ( *strf::bin(7) );
+    TEST("0b111").with(strf::mixedcase) ( *strf::bin(7) );
+    TEST("0b111").with(strf::lowercase) ( *strf::bin(7) );
 
     // hexadecimal aligment
     TEST("        aa")   (  strf::hex(0xAA)>10 );
-    TEST("      0xaa")   ( ~strf::hex(0xAA)>10 );
+    TEST("      0xaa")   ( *strf::hex(0xAA)>10 );
     TEST("aa        ")   (  strf::hex(0xAA)<10 );
-    TEST("0xaa      ")   ( ~strf::hex(0xAA)<10 );
+    TEST("0xaa      ")   ( *strf::hex(0xAA)<10 );
     TEST("        aa")   (  strf::hex(0xAA)%10 );
-    TEST("0x      aa")   ( ~strf::hex(0xAA)%10 );
+    TEST("0x      aa")   ( *strf::hex(0xAA)%10 );
     TEST("    aa    ")   (  strf::hex(0xAA)^10 );
-    TEST("   0xaa   ")   ( ~strf::hex(0xAA)^10 );
+    TEST("   0xaa   ")   ( *strf::hex(0xAA)^10 );
 
     TEST("     000aa")   (  strf::hex(0xAA).p(5)>10 );
-    TEST("   0x000aa")   ( ~strf::hex(0xAA).p(5)>10 );
+    TEST("   0x000aa")   ( *strf::hex(0xAA).p(5)>10 );
     TEST("000aa     ")   (  strf::hex(0xAA).p(5)<10 );
-    TEST("0x000aa   ")   ( ~strf::hex(0xAA).p(5)<10 );
+    TEST("0x000aa   ")   ( *strf::hex(0xAA).p(5)<10 );
     TEST("     000aa")   (  strf::hex(0xAA).p(5)%10 );
-    TEST("0x   000aa")   ( ~strf::hex(0xAA).p(5)%10 );
+    TEST("0x   000aa")   ( *strf::hex(0xAA).p(5)%10 );
     TEST("  000aa   ")   (  strf::hex(0xAA).p(5)^10 );
-    TEST(" 0x000aa  ")   ( ~strf::hex(0xAA).p(5)^10 );
+    TEST(" 0x000aa  ")   ( *strf::hex(0xAA).p(5)^10 );
 
     TEST("00000000aa")   (  strf::hex(0xAA).p(10)>10 );
-    TEST("0x000000aa")   ( ~strf::hex(0xAA).p(8)>10 );
+    TEST("0x000000aa")   ( *strf::hex(0xAA).p(8)>10 );
     TEST("00000000aa")   (  strf::hex(0xAA).p(10)<10 );
-    TEST("0x000000aa")   ( ~strf::hex(0xAA).p(8)<10 );
+    TEST("0x000000aa")   ( *strf::hex(0xAA).p(8)<10 );
     TEST("00000000aa")   (  strf::hex(0xAA).p(10)%10 );
-    TEST("0x000000aa")   ( ~strf::hex(0xAA).p(8)%10 );
+    TEST("0x000000aa")   ( *strf::hex(0xAA).p(8)%10 );
     TEST("00000000aa")   (  strf::hex(0xAA).p(10)^10 );
-    TEST("0x000000aa")   ( ~strf::hex(0xAA).p(8)^10 );
+    TEST("0x000000aa")   ( *strf::hex(0xAA).p(8)^10 );
 
     TEST("000000000aa")   (  strf::hex(0xAA).p(11)>10 );
-    TEST("0x0000000aa")   ( ~strf::hex(0xAA).p(9)>10 );
+    TEST("0x0000000aa")   ( *strf::hex(0xAA).p(9)>10 );
     TEST("000000000aa")   (  strf::hex(0xAA).p(11)<10 );
-    TEST("0x0000000aa")   ( ~strf::hex(0xAA).p(9)<10 );
+    TEST("0x0000000aa")   ( *strf::hex(0xAA).p(9)<10 );
     TEST("000000000aa")   (  strf::hex(0xAA).p(11)%10 );
-    TEST("0x0000000aa")   ( ~strf::hex(0xAA).p(9)%10 );
+    TEST("0x0000000aa")   ( *strf::hex(0xAA).p(9)%10 );
     TEST("000000000aa")   (  strf::hex(0xAA).p(11)^10 );
-    TEST("0x0000000aa")   ( ~strf::hex(0xAA).p(9)^10 );
+    TEST("0x0000000aa")   ( *strf::hex(0xAA).p(9)^10 );
 
     // binary aligment
 
     TEST("        11")   (  strf::bin(3)>10 );
-    TEST("      0b11")   ( ~strf::bin(3)>10 );
+    TEST("      0b11")   ( *strf::bin(3)>10 );
     TEST("11        ")   (  strf::bin(3)<10 );
-    TEST("0b11      ")   ( ~strf::bin(3)<10 );
+    TEST("0b11      ")   ( *strf::bin(3)<10 );
     TEST("        11")   (  strf::bin(3)%10 );
-    TEST("0b      11")   ( ~strf::bin(3)%10 );
+    TEST("0b      11")   ( *strf::bin(3)%10 );
     TEST("    11    ")   (  strf::bin(3)^10 );
-    TEST("   0b11   ")   ( ~strf::bin(3)^10 );
+    TEST("   0b11   ")   ( *strf::bin(3)^10 );
 
     TEST("     00011")   (  strf::bin(3).p(5)>10 );
-    TEST("   0b00011")   ( ~strf::bin(3).p(5)>10 );
+    TEST("   0b00011")   ( *strf::bin(3).p(5)>10 );
     TEST("00011     ")   (  strf::bin(3).p(5)<10 );
-    TEST("0b00011   ")   ( ~strf::bin(3).p(5)<10 );
+    TEST("0b00011   ")   ( *strf::bin(3).p(5)<10 );
     TEST("     00011")   (  strf::bin(3).p(5)%10 );
-    TEST("0b   00011")   ( ~strf::bin(3).p(5)%10 );
+    TEST("0b   00011")   ( *strf::bin(3).p(5)%10 );
     TEST("  00011   ")   (  strf::bin(3).p(5)^10 );
-    TEST(" 0b00011  ")   ( ~strf::bin(3).p(5)^10 );
+    TEST(" 0b00011  ")   ( *strf::bin(3).p(5)^10 );
 
     TEST("0000000011")   (  strf::bin(3).p(10)>10 );
-    TEST("0b00000011")   ( ~strf::bin(3).p(8)>10 );
+    TEST("0b00000011")   ( *strf::bin(3).p(8)>10 );
     TEST("0000000011")   (  strf::bin(3).p(10)<10 );
-    TEST("0b00000011")   ( ~strf::bin(3).p(8)<10 );
+    TEST("0b00000011")   ( *strf::bin(3).p(8)<10 );
     TEST("0000000011")   (  strf::bin(3).p(10)%10 );
-    TEST("0b00000011")   ( ~strf::bin(3).p(8)%10 );
+    TEST("0b00000011")   ( *strf::bin(3).p(8)%10 );
     TEST("0000000011")   (  strf::bin(3).p(10)^10 );
-    TEST("0b00000011")   ( ~strf::bin(3).p(8)^10 );
+    TEST("0b00000011")   ( *strf::bin(3).p(8)^10 );
 
     TEST("00000000011")   (  strf::bin(3).p(11)>10 );
-    TEST("0b000000011")   ( ~strf::bin(3).p(9)>10 );
+    TEST("0b000000011")   ( *strf::bin(3).p(9)>10 );
     TEST("00000000011")   (  strf::bin(3).p(11)<10 );
-    TEST("0b000000011")   ( ~strf::bin(3).p(9)<10 );
+    TEST("0b000000011")   ( *strf::bin(3).p(9)<10 );
     TEST("00000000011")   (  strf::bin(3).p(11)%10 );
-    TEST("0b000000011")   ( ~strf::bin(3).p(9)%10 );
+    TEST("0b000000011")   ( *strf::bin(3).p(9)%10 );
     TEST("00000000011")   (  strf::bin(3).p(11)^10 );
-    TEST("0b000000011")   ( ~strf::bin(3).p(9)^10 );
+    TEST("0b000000011")   ( *strf::bin(3).p(9)^10 );
 
     // octadecimal aligment
 
     TEST("        77")   (  strf::oct(077)>10 );
-    TEST("       077")   ( ~strf::oct(077)>10 );
+    TEST("       077")   ( *strf::oct(077)>10 );
     TEST("77        ")   (  strf::oct(077)<10 );
-    TEST("077       ")   ( ~strf::oct(077)<10 );
+    TEST("077       ")   ( *strf::oct(077)<10 );
     TEST("        77")   (  strf::oct(077)%10 );
-    TEST("0       77")   ( ~strf::oct(077)%10 );
+    TEST("0       77")   ( *strf::oct(077)%10 );
     TEST("    77    ")   (  strf::oct(077)^10 );
-    TEST("   077    ")   ( ~strf::oct(077)^10 );
+    TEST("   077    ")   ( *strf::oct(077)^10 );
 
     TEST("      0077")   (  strf::oct(077).p(4)>10 );
-    TEST("     00077")   ( ~strf::oct(077).p(4)>10 );
+    TEST("     00077")   ( *strf::oct(077).p(4)>10 );
     TEST("0077      ")   (  strf::oct(077).p(4)<10 );
-    TEST("00077     ")   ( ~strf::oct(077).p(4)<10 );
+    TEST("00077     ")   ( *strf::oct(077).p(4)<10 );
     TEST("      0077")   (  strf::oct(077).p(4)%10 );
-    TEST("0     0077")   ( ~strf::oct(077).p(4)%10 );
+    TEST("0     0077")   ( *strf::oct(077).p(4)%10 );
     TEST("   0077   ")   (  strf::oct(077).p(4)^10 );
-    TEST("  00077   ")   ( ~strf::oct(077).p(4)^10 );
+    TEST("  00077   ")   ( *strf::oct(077).p(4)^10 );
 
     // showpos in octa, binary and hexadecimal must not have any effect
 
@@ -338,42 +338,42 @@ int main()
     {
         auto punct = strf::monotonic_grouping<16>{3}.thousands_sep('\'');
 
-        TEST("     0x0").with(punct) (~strf::hex(0x0) > 8);
-        TEST("   0x100").with(punct) (~strf::hex(0x100) > 8);
-        TEST(" 0x1'000").with(punct) (~strf::hex(0x1000) > 8);
+        TEST("     0x0").with(punct) (*strf::hex(0x0) > 8);
+        TEST("   0x100").with(punct) (*strf::hex(0x100) > 8);
+        TEST(" 0x1'000").with(punct) (*strf::hex(0x1000) > 8);
         TEST("   1'000").with(punct) ( strf::hex(0x1000) > 8);
 
-        TEST("     0x0").with(punct) ( strf::join_right(8)(~strf::hex(0x0)) );
-        TEST("   0x100").with(punct) ( strf::join_right(8)(~strf::hex(0x100)) );
-        TEST(" 0x1'000").with(punct) ( strf::join_right(8)(~strf::hex(0x1000)) );
+        TEST("     0x0").with(punct) ( strf::join_right(8)(*strf::hex(0x0)) );
+        TEST("   0x100").with(punct) ( strf::join_right(8)(*strf::hex(0x100)) );
+        TEST(" 0x1'000").with(punct) ( strf::join_right(8)(*strf::hex(0x1000)) );
 
-        TEST("     0x0").with(punct) ( strf::join_right(8)(~strf::hex(0x0)) );
-        TEST("   0x100").with(punct) ( strf::join_right(8)(~strf::hex(0x100)) );
-        TEST(" 0x1'000").with(punct) ( strf::join_right(8)(~strf::hex(0x1000)) );
+        TEST("     0x0").with(punct) ( strf::join_right(8)(*strf::hex(0x0)) );
+        TEST("   0x100").with(punct) ( strf::join_right(8)(*strf::hex(0x100)) );
+        TEST(" 0x1'000").with(punct) ( strf::join_right(8)(*strf::hex(0x1000)) );
     }
    {
         auto punct = strf::monotonic_grouping<2>{3}.thousands_sep('\'');
 
-        TEST("     0b0").with(punct) (~strf::bin(0) > 8);
-        TEST("   0b100").with(punct) (~strf::bin(4) > 8);
-        TEST(" 0b1'000").with(punct) (~strf::bin(8) > 8);
+        TEST("     0b0").with(punct) (*strf::bin(0) > 8);
+        TEST("   0b100").with(punct) (*strf::bin(4) > 8);
+        TEST(" 0b1'000").with(punct) (*strf::bin(8) > 8);
         TEST("   1'000").with(punct) ( strf::bin(8) > 8);
 
-        TEST("     0b0").with(punct) ( strf::join_right(8)(~strf::bin(0)) );
-        TEST("   0b100").with(punct) ( strf::join_right(8)(~strf::bin(4)) );
-        TEST(" 0b1'000").with(punct) ( strf::join_right(8)(~strf::bin(8)) );
+        TEST("     0b0").with(punct) ( strf::join_right(8)(*strf::bin(0)) );
+        TEST("   0b100").with(punct) ( strf::join_right(8)(*strf::bin(4)) );
+        TEST(" 0b1'000").with(punct) ( strf::join_right(8)(*strf::bin(8)) );
 
-        TEST("     0b0").with(punct) ( strf::join_right(8)(~strf::bin(0)) );
-        TEST("   0b100").with(punct) ( strf::join_right(8)(~strf::bin(4)) );
-        TEST(" 0b1'000").with(punct) ( strf::join_right(8)(~strf::bin(8)) );
+        TEST("     0b0").with(punct) ( strf::join_right(8)(*strf::bin(0)) );
+        TEST("   0b100").with(punct) ( strf::join_right(8)(*strf::bin(4)) );
+        TEST(" 0b1'000").with(punct) ( strf::join_right(8)(*strf::bin(8)) );
     }
 
     {
         auto punct = strf::monotonic_grouping<16>{3}.thousands_sep(0x10FFFF);
-        TEST(u8" 0x1\U0010FFFF000").with(punct) (~strf::hex(0x1000) > 8);
-        TEST(u8" 0x1\U0010FFFF000").with(punct) (strf::join_right(8)(~strf::hex(0x1000) > 8));
+        TEST(u8" 0x1\U0010FFFF000").with(punct) (*strf::hex(0x1000) > 8);
+        TEST(u8" 0x1\U0010FFFF000").with(punct) (strf::join_right(8)(*strf::hex(0x1000) > 8));
         TEST(u8"---0x1\U0010FFFF000").with(punct)
-            (strf::join_right(8)(u8"---", ~strf::hex(0x1000)));
+            (strf::join_right(8)(u8"---", *strf::hex(0x1000)));
     }
 
     {
@@ -396,9 +396,9 @@ int main()
     }
     {
         auto punct = strf::monotonic_grouping<8>{3}.thousands_sep(0x10FFFF);
-        TEST(u8"  01\U0010FFFF000").with(punct) (~strf::oct(01000) > 8);
-        TEST(u8"  01\U0010FFFF000").with(punct) (strf::join_right(8)(~strf::oct(01000)));
-        TEST(u8"----01\U0010FFFF000").with(punct) (strf::join_right(8)(u8"----", ~strf::oct(01000)));
+        TEST(u8"  01\U0010FFFF000").with(punct) (*strf::oct(01000) > 8);
+        TEST(u8"  01\U0010FFFF000").with(punct) (strf::join_right(8)(*strf::oct(01000)));
+        TEST(u8"----01\U0010FFFF000").with(punct) (strf::join_right(8)(u8"----", *strf::oct(01000)));
     }
 
     TEST(u8"1\U0010FFFF" u8"1\U0010FFFF" u8"1\U0010FFFF" u8"1")

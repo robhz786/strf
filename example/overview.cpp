@@ -27,10 +27,10 @@ void second_example()
     //[second_example
 
     // more formatting:  operator>(int width) : align to rigth
-    //                   operator~()          : show base
+    //                   operator*()          : show base
     //                   p(int)               : set precision
     auto s = strf::to_string( "---"
-                            , ~strf::hex(255).p(4).fill(U'.') > 10
+                            , *strf::hex(255).p(4).fill(U'.') > 10
                             , "---" );
     assert(s == "---....0x00ff---");
 
@@ -46,14 +46,14 @@ void second_example()
     // range with formatting
     //
     s = strf::to_string( "--["
-                       , ~strf::hex(strf::separated_range(array, separator)).p(4)
+                       , *strf::hex(strf::separated_range(array, separator)).p(4)
                        , "]--");
     assert(s == "--[0x0014 / 0x001e / 0x0028]--");
 
     // or
 
     s = strf::to_string( "--["
-                       , ~strf::fmt_separated_range(array, separator).hex().p(4)
+                       , *strf::fmt_separated_range(array, separator).hex().p(4)
                        , "]--");
     assert(s == "--[0x0014 / 0x001e / 0x0028]--");
 
@@ -88,7 +88,7 @@ void format_functions()
     //[ format_functions_example
     auto s = strf::to_string
         ( "---"
-        , ~strf::hex(255).p(4).fill(U'.') > 10
+        , *strf::hex(255).p(4).fill(U'.') > 10
         , "---" );
 
     assert(s == "---....0x00ff---");
@@ -101,7 +101,7 @@ void format_functions_2()
     auto str = strf::to_string
         ( strf::hex(255) > 5
         , '/', strf::center(255, 7, '.').hex()
-        , '/', ~strf::hex(255) % 7
+        , '/', *strf::hex(255) % 7
         , '/', strf::multi('a', 3) ^ 7
         , '/', +strf::fmt(255) );
 
@@ -351,17 +351,17 @@ void using_my_customizations()
     auto str = my::to_string(x);
     assert(str == "100,000,000");
 
-    my::append(str) (" in hexadecimal is ", ~strf::hex(x));
+    my::append(str) (" in hexadecimal is ", *strf::hex(x));
     assert(str == "100,000,000 in hexadecimal is 0x5f5'e100");
 
     char buff[500];
-    my::to(buff)(x, " in hexadecimal is ", ~strf::hex(x));
+    my::to(buff)(x, " in hexadecimal is ", *strf::hex(x));
     assert(str == buff);
 
     // Overriding numpunct_c<16> back to default:
     str = my::to_string
         .with(strf::default_numpunct<16>())
-        (x, " in hexadecimal is ", ~strf::hex(x));
+        (x, " in hexadecimal is ", *strf::hex(x));
     assert(str == "100,000,000 in hexadecimal is 0x5f5e100");
 }
 //]

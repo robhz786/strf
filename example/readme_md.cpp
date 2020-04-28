@@ -25,10 +25,10 @@ void samples()
 
 
     // more formatting:  operator>(int width) : align to rigth
-    //                   operator~()          : show base
+    //                   operator*()          : show base
     //                   p(int)               : set precision
     s = strf::to_string( "---"
-                       , ~strf::hex(255).p(4).fill(U'.') > 10
+                       , *strf::hex(255).p(4).fill(U'.') > 10
                        , "---" );
     assert(s == "---....0x00ff---");
 
@@ -40,7 +40,7 @@ void samples()
 
     // range with formatting
     s = strf::to_string( "--["
-                       , ~strf::hex(strf::separated_range(array, separator)).p(4)
+                       , *strf::hex(strf::separated_range(array, separator)).p(4)
                        , "]--");
     assert(s == "--[0x0014 / 0x001e / 0x0028]--");
 

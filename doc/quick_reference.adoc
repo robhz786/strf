@@ -486,14 +486,14 @@ constexpr lettercase uppercase = lettercase::upper;
 [source,cpp]
 ----
 auto str_upper = strf::to_string.with(strf::uppercase)
-    ( ~strf::hex(0xabc), ' '
+    ( *strf::hex(0xabc), ' '
     , 1.0e+50, ' '
     , std::numeric_limits<FloatT>::infinity() );
 
 assert(str_upper == "0XAB 1E+50 INF");
 
 auto str_mixed = strf::to_string.with(strf::mixedcase)
-    ( ~strf::hex(0xabc), ' '
+    ( *strf::hex(0xabc), ' '
     , 1.e+50, ' '
     , std::numeric_limits<FloatT>::infinity() );
 
@@ -893,9 +893,10 @@ Format functions::
 are printed by adding extra zero leading digits if necessary.
 `operator+()`::: When in decimal base, print the positive sign
 `"+"` when value is non negative. No effect for other bases.
-`operator~()`::: Print the base indication
+`operator*()`::: Print the base indication
 ( `"0x"` for hexadecimal, `"0"` for octal and `"0b"` for binary ).
 No effect in decimal base.
+`operator~()`::: Equivalent to `operator*()`. Deprecated.
 
 //-
 Facet categories::
@@ -914,8 +915,9 @@ Format functions::
 [horizontal]
 `operator+()`::: When in decimal base, print the positive sign
 `"+"` when value is non negative. No effect for other bases.
-`operator~()`:::  Prints the decimal point even when there
+`operator*()`:::  Prints the decimal point even when there
 are no fractional digits.
+`operator~()`::: Equivalent to `operator*()`. Deprecated.
 `sci()`::: Print in scientific notation, like this: `"1.2345e+02"`.
 `fixed()`::: Print in decimal notation, like this: `"123.45"`.
 `gen()`::: This is the default notation.
@@ -1162,7 +1164,7 @@ assert(str1 == "[ +11 ; +22 ; +33]");
 std::vector<int> vec = { 11, 22, 33 };
 auto str2 = strf::to_string
     ( "["
-    , ~strf::fmt_separated_range(vec, " / ").fill('.').hex() > 6,
+    , *strf::fmt_separated_range(vec, " / ").fill('.').hex() > 6,
     " ]");
 
 assert(str2 == "[..0xfa / ..0xfb / ..0xfc]");
@@ -1176,7 +1178,7 @@ an operation function object:
 [source,cpp]
 ----
 std::vector<int> vec = { 11, 22, 33 };
-auto str = strf::to_string("[", ~strf::hex(strf::separated_range(vec, " ; ")), "]");
+auto str = strf::to_string("[", *strf::hex(strf::separated_range(vec, " ; ")), "]");
 assert(str == "[0xb ; 0x16 ; 0x21]");
 ----
 

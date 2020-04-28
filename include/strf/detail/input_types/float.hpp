@@ -293,6 +293,12 @@ public:
         data_.showpos = true;
         return static_cast<T&&>(*this);
     }
+    constexpr STRF_HD T&& operator*() && noexcept
+    {
+        data_.showpoint = true;
+        return static_cast<T&&>(*this);
+    }
+    [[deprecated]] // use instead operator*
     constexpr STRF_HD T&& operator~() && noexcept
     {
         data_.showpoint = true;

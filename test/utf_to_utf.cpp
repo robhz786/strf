@@ -229,7 +229,7 @@ void test_invalid_input(const SrcCharset& ein, const DestCharset& eout)
         const auto& seq = s.second;
 
         auto f = [](auto ch){
-            return ~strf::hex((unsigned)(std::make_unsigned_t<src_char_type>)ch);
+            return *strf::hex((unsigned)(std::make_unsigned_t<src_char_type>)ch);
         };
         TEST_SCOPE_DESCRIPTION
             .with(strf::mixedcase)

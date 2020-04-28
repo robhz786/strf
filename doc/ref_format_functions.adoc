@@ -22,7 +22,7 @@ Compile-time requirements:::
 The purpose of the `value_with_format` class template is to aid
 the creation classes that contain format functions.
 The types of expressions like `fmt("Hello")`,
-`fmt(55)`, `~hex(55) > 20`, etc, are all `value_with_format`
+`fmt(55)`, `*hex(55) > 20`, etc, are all `value_with_format`
 instances. The `ValueType` template parameter holds the input
 type, and the types in `Fmts\...` defines the format functions.
 
@@ -407,7 +407,9 @@ public:
     // <<int_format_fn_format_functions, format functions>>
     constexpr T&& p(unsigned precision) && noexcept; // set precision
     constexpr T&& operator+() && noexcept;           // show positive sign
-    constexpr T&& operator~() && noexcept;           // show base
+    constexpr T&& operator*() && noexcept;           // show base
+    [[deprecated]] constexpr T&& operator~() && noexcept;           // show base
+    
 
     constexpr /* see below {asterisk}/ hex() && noexcept; // hexadecimal base
     constexpr /* see below {asterisk}/ dec() && noexcept; // decimal base
@@ -483,7 +485,7 @@ Return value::: `std::move(static_cast<T&>(*this))`
 ====
 [source,cpp]
 ----
-constexpr T&& operator~() && noexcept;
+constexpr T&& operator*() && noexcept;
 ----
 ::
 Postconditions:::  `showbase() == true`
@@ -551,7 +553,7 @@ public:
 
     // <<float_format_fn_format_functions, format functions>>
     constexpr T&& operator+() && noexcept;
-    constexpr T&& operator~() && noexcept;
+    constexpr T&& operator*() && noexcept;
     constexpr T&& p(unsigned precision) && noexcept;
     constexpr T&& gen() && noexcept;
     constexpr T&& sci() && noexcept;
@@ -593,7 +595,7 @@ Return value::: `static_cast<T&&>(static_cast<T&>(*this))`
 ====
 [source,cpp,subs=normal]
 ----
-constexpr T&& operator~() && noexcept;
+constexpr T&& operator*() && noexcept;
 ----
 ::
 Postconditions::: `get_float_format_data().<<float_showpoint,showpoint>> == true`

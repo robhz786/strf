@@ -128,6 +128,12 @@ public:
         data_.showpos = true;
         return static_cast<T&&>(*this);
     }
+    constexpr STRF_HD T&& operator*() && noexcept
+    {
+        data_.showbase = true;
+        return static_cast<T&&>(*this);
+    }
+    [[deprecated]] // use instead operator*
     constexpr STRF_HD T&& operator~() && noexcept
     {
         data_.showbase = true;
@@ -328,7 +334,7 @@ struct voidptr_printable_traits
             , strf::get_facet<strf::charset_c<CharT>, const void*>(fp) );
 
         return strf::make_printer_input<CharT>
-            ( new_fp, preview, ~strf::hex(reinterpret_cast<std::size_t>(arg)) );
+            ( new_fp, preview, *strf::hex(reinterpret_cast<std::size_t>(arg)) );
     }
 };
 
@@ -410,7 +416,7 @@ struct printable_traits
 
         return strf::make_printer_input<CharT>
             ( new_fp, preview
-            , ~strf::hex(reinterpret_cast<std::size_t>(arg.value()))
+            , *strf::hex(reinterpret_cast<std::size_t>(arg.value()))
                 .set(arg.get_alignment_format_data()) );
     }
 };

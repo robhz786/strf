@@ -105,8 +105,8 @@ int main()
         TEST(u"+11, +22, +33") (+strf::fmt_separated_range(vec,  u", "));
         TEST(u"+11, +22, +33") (+strf::fmt_separated_range(vec, vec + 3, u", "));
 
-        TEST( "0xb, 0x16, 0x21") (~strf::hex(strf::separated_range(vec,   ", ")));
-        TEST(u"0xb, 0x16, 0x21") (~strf::hex(strf::separated_range(vec,   u", ")));
+        TEST( "0xb, 0x16, 0x21") (*strf::hex(strf::separated_range(vec,   ", ")));
+        TEST(u"0xb, 0x16, 0x21") (*strf::hex(strf::separated_range(vec,   u", ")));
 
         TEST( "  11, 22, 33")
             (strf::join_right(12)(strf::separated_range(vec,  ", ")));
@@ -114,9 +114,9 @@ int main()
             (strf::join_right(16)("--", strf::separated_range(vec,  ", "), "--"));
 
         TEST( "   0xb, 0x16, 0x21")
-             (strf::join_right(18)(~strf::hex(strf::separated_range(vec, ", "))));
+             (strf::join_right(18)(*strf::hex(strf::separated_range(vec, ", "))));
         TEST( "--0xb, 0x16, 0x21--")
-             (strf::join_right(8)("--", ~strf::hex(strf::separated_range(vec, ", ")), "--"));
+             (strf::join_right(8)("--", *strf::hex(strf::separated_range(vec, ", ")), "--"));
         TEST( "--11, 22, 33--")
              (strf::join_right(8)("--", strf::separated_range(vec, ", "), "--"));
         TEST( "--11, 22, 33--")
@@ -134,32 +134,32 @@ int main()
 
         TEST( "11") (strf::range(arr));
         TEST(u"+11") (+strf::fmt_range(arr));
-        TEST( "0xb") (~strf::hex(strf::range(arr)));
+        TEST( "0xb") (*strf::hex(strf::range(arr)));
 
         TEST( "11") (strf::separated_range(arr,  ", "));
         TEST(u"+11") (+strf::fmt_separated_range(arr,  u", "));
-        TEST( "0xb") (~strf::hex(strf::separated_range(arr,   ", ")));
+        TEST( "0xb") (*strf::hex(strf::separated_range(arr,   ", ")));
 
         std::array<int, 1> stl_arr{{11}};
 
         TEST( "11") (strf::range(stl_arr));
         TEST( "+11") (+strf::fmt_range(stl_arr));
-        TEST( "0xb") (~strf::hex(strf::range(stl_arr)));
+        TEST( "0xb") (*strf::hex(strf::range(stl_arr)));
 
         TEST( "11") (strf::separated_range(stl_arr,  ", "));
         TEST(u"+11") (+strf::fmt_separated_range(stl_arr,  u", "));
-        TEST( "0xb") (~strf::hex(strf::separated_range(stl_arr,   ", ")));
+        TEST( "0xb") (*strf::hex(strf::separated_range(stl_arr,   ", ")));
 
     }
     {  // Emtpy range
         std::array<int, 0> stl_arr{{}};
         TEST( "") (strf::range(stl_arr));
         TEST(u"") (+strf::fmt_range(stl_arr));
-        TEST( "") (~strf::hex(strf::range(stl_arr)));
+        TEST( "") (*strf::hex(strf::range(stl_arr)));
 
         TEST( "") (strf::separated_range(stl_arr,  ", "));
         TEST(u"") (+strf::fmt_separated_range(stl_arr,  u", "));
-        TEST( "") (~strf::hex(strf::separated_range(stl_arr,   ", ")));
+        TEST( "") (*strf::hex(strf::separated_range(stl_arr,   ", ")));
     }
     {   // Range transformed by functor
         auto func = [](int x){ return strf::join('<', -x, '>'); };

@@ -169,7 +169,7 @@ int main()
     int initial_length = str.length();
 
     int x = 255;
-    std::size_t append_count = append(str) (x, u" in hexadecimal is ", ~strf::hex(x));
+    std::size_t append_count = append(str) (x, u" in hexadecimal is ", *strf::hex(x));
 
     assert(str == "....255 in hexadecimal is 0xff");
 

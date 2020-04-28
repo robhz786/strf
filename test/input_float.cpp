@@ -157,10 +157,10 @@ void basic_tests(const FPack& fp)
 
     TEST(rd("__________________+1")).with(fp) (j(+strf::fmt(1.0)));
     TEST(rd("__________________-1")).with(fp) (j(+strf::fmt(-1.0)));
-    TEST(rd("__________________1.")).with(fp) (j(~strf::fmt(1.0)));
-    TEST(rd("_________________-1.")).with(fp) (j(~strf::fmt(-1.0)));
-    TEST(rd("_________________+1.")).with(fp)(j(~+strf::fmt(1.0)));
-    TEST(rd("_________________-1.")).with(fp)(j(+~strf::fmt(-1.0)));
+    TEST(rd("__________________1.")).with(fp) (j(*strf::fmt(1.0)));
+    TEST(rd("_________________-1.")).with(fp) (j(*strf::fmt(-1.0)));
+    TEST(rd("_________________+1.")).with(fp)(j(*+strf::fmt(1.0)));
+    TEST(rd("_________________-1.")).with(fp)(j(+*strf::fmt(-1.0)));
 
     TEST(rd("_____________+0.0001")).with(fp) (j(+strf::fixed(0.0001)));
     TEST(rd("_______+0.0001000000")).with(fp) (j(+strf::fixed(0.0001).p(10)));
@@ -188,19 +188,19 @@ void basic_tests(const FPack& fp)
     TEST(rd("____________0.000123")).with(fp)  (j(1.23e-04));
     TEST(rd("____________1.23e-05")).with(fp)  (j(1.23e-05));
     TEST(rd("_______________10000")).with(fp)  (j(strf::fmt(1e+4)));
-    TEST(rd("______________10000.")).with(fp) (j(~strf::fmt(1e+4)));
+    TEST(rd("______________10000.")).with(fp) (j(*strf::fmt(1e+4)));
     TEST(rd("_______________1e+05")).with(fp)  (j(strf::fmt(1e+5)));
-    TEST(rd("______________1.e+05")).with(fp) (j(~strf::fmt(1e+5)));
+    TEST(rd("______________1.e+05")).with(fp) (j(*strf::fmt(1e+5)));
     TEST(rd("_____________1200000")).with(fp)  (j(strf::fmt(1.2e+6)));
-    TEST(rd("_____________1.2e+06")).with(fp) (j(~strf::fmt(1.2e+6)));
+    TEST(rd("_____________1.2e+06")).with(fp) (j(*strf::fmt(1.2e+6)));
     TEST(rd("_______________0.001")).with(fp)   (j(strf::fmt(1e-03)));
     TEST(rd("_______________1e-04")).with(fp)   (j(strf::fmt(1e-04)));
-    TEST(rd("______________0.0001")).with(fp)  (j(~strf::fmt(1e-04)));
-    TEST(rd("______________1.e-05")).with(fp)  (j(~strf::fmt(1e-05)));
+    TEST(rd("______________0.0001")).with(fp)  (j(*strf::fmt(1e-04)));
+    TEST(rd("______________1.e-05")).with(fp)  (j(*strf::fmt(1e-05)));
     TEST(rd("_____________0.00012")).with(fp)   (j(strf::fmt(1.2e-04)));
-    TEST(rd("_____________0.00012")).with(fp) (j(~strf::fmt(1.2e-04)));
+    TEST(rd("_____________0.00012")).with(fp) (j(*strf::fmt(1.2e-04)));
     TEST(rd("_____________1.2e-05")).with(fp)  (j(strf::fmt(1.2e-05)));
-    TEST(rd("_____________1.2e-05")).with(fp) (j(~strf::fmt(1.2e-05)));
+    TEST(rd("_____________1.2e-05")).with(fp) (j(*strf::fmt(1.2e-05)));
     TEST(rd("____________0.000123")).with(fp)  (j(strf::fmt(1.23e-04)));
     TEST(rd("____________1.23e-05")).with(fp)  (j(strf::fmt(1.23e-05)));
     TEST(rd("_____6.103515625e-05")).with(fp)    (j(strf::fmt(6.103515625e-05)));
@@ -235,48 +235,48 @@ void basic_tests(const FPack& fp)
     TEST(rd("_____________1.3e+05")).with(fp) (j(strf::fmt(125001.0).p(2)));
 
     // and the decimal point appears only if followed by
-    // a digit, or if operator~() is used.
+    // a digit, or if operator*() is used.
     TEST(rd("_______________1e+04")).with(fp)   (j(strf::fmt(10000.0).p(3)));
-    TEST(rd("______________1.e+04")).with(fp)  (j(~strf::fmt(10000.0).p(1)));
-    TEST(rd("________________123.")).with(fp)  (j(~strf::fmt(123.0).p(3)));
+    TEST(rd("______________1.e+04")).with(fp)  (j(*strf::fmt(10000.0).p(1)));
+    TEST(rd("________________123.")).with(fp)  (j(*strf::fmt(123.0).p(3)));
 
-    // and trailing zeros are removed, unless operator~() is used.
+    // and trailing zeros are removed, unless operator*() is used.
     TEST(rd("_____________1.5e+04")).with(fp)   (j(strf::fmt(15000.0).p(3)));
-    TEST(rd("____________1.50e+04")).with(fp)  (j(~strf::fmt(15000.0).p(3)));
+    TEST(rd("____________1.50e+04")).with(fp)  (j(*strf::fmt(15000.0).p(3)));
     TEST(rd("_____________1.5e+04")).with(fp)  (j(strf::fmt(15001.0).p(3)));
-    TEST(rd("_____________1.5e+04")).with(fp)  (j(~strf::fmt(15001.0).p(3)));
+    TEST(rd("_____________1.5e+04")).with(fp)  (j(*strf::fmt(15001.0).p(3)));
     TEST(rd("_________________123")).with(fp)   (j(strf::fmt(123.0).p(5)));
-    TEST(rd("______________123.00")).with(fp)  (j(~strf::fmt(123.0).p(5)));
+    TEST(rd("______________123.00")).with(fp)  (j(*strf::fmt(123.0).p(5)));
     //----------------------------------------------------------------
 
     // force fixed notation
 
-    TEST(rd("__________________1.")).with(fp)  (j(~strf::fixed(1.0)));
+    TEST(rd("__________________1.")).with(fp)  (j(*strf::fixed(1.0)));
     TEST(rd("___________________1")).with(fp)   (j(strf::fixed(1.0)));
     TEST(rd("__________________+1")).with(fp)  (j(+strf::fixed(1.0)));
     TEST(rd("__________________-1")).with(fp)   (j(strf::fixed(-1.0)));
     TEST(rd("__________________-1")).with(fp)  (j(+strf::fixed(-1.0)));
 
     TEST(rd("___________________1")).with(fp)  (j(strf::fixed(1.0).p(0)));
-    TEST(rd("__________________1.")).with(fp) (j(~strf::fixed(1.0).p(0)));
+    TEST(rd("__________________1.")).with(fp) (j(*strf::fixed(1.0).p(0)));
     TEST(rd("_________________1.0")).with(fp)  (j(strf::fixed(1.0).p(1)));
     TEST(rd("________________1.00")).with(fp)  (j(strf::fixed(1.0).p(2)));
     TEST(rd("______________1.0000")).with(fp)  (j(strf::fixed(1.0).p(4)));
     TEST(rd("______________1.2500")).with(fp)  (j(strf::fixed(1.25).p(4)));
     TEST(rd("_______________0.125")).with(fp)  (j(strf::fixed(0.125)));
 
-    TEST(rd("______________0.e+00")).with(fp)  (j(~strf::sci(0.0)));
-    TEST(rd("______________1.e+04")).with(fp)  (j(~strf::sci(1e+4)));
-    TEST(rd("_____________+1.e+04")).with(fp) (j(~+strf::sci(1e+4)));
-    TEST(rd("_____________-1.e+04")).with(fp) (j(~strf::sci(-1e+4)));
+    TEST(rd("______________0.e+00")).with(fp)  (j(*strf::sci(0.0)));
+    TEST(rd("______________1.e+04")).with(fp)  (j(*strf::sci(1e+4)));
+    TEST(rd("_____________+1.e+04")).with(fp) (j(*+strf::sci(1e+4)));
+    TEST(rd("_____________-1.e+04")).with(fp) (j(*strf::sci(-1e+4)));
 
     TEST(rd("_____________1.0e+04")).with(fp)   (j(strf::sci(1e+4).p(1)));
     TEST(rd("_____________1.0e+04")).with(fp)   (j(strf::sci(1e+4).p(1)));
     TEST(rd("___________+1.00e+04")).with(fp)  (j(+strf::sci(1e+4).p(2)));
-    TEST(rd("______________1.e+04")).with(fp)  (j(~strf::sci(1e+4).p(0)));
-    TEST(rd("_____________+1.e+04")).with(fp) (j(~+strf::sci(1e+4).p(0)));
+    TEST(rd("______________1.e+04")).with(fp)  (j(*strf::sci(1e+4).p(0)));
+    TEST(rd("_____________+1.e+04")).with(fp) (j(*+strf::sci(1e+4).p(0)));
     TEST(rd("______________-1e+04")).with(fp)  (j(+strf::sci(-1e+4).p(0)));
-    TEST(rd("_____________-1.e+04")).with(fp)  (j(~strf::sci(-1e+4).p(0)));
+    TEST(rd("_____________-1.e+04")).with(fp)  (j(*strf::sci(-1e+4).p(0)));
 
     TEST(rd("____________1.25e+02")).with(fp) (j(strf::sci(125.0).p(2)));
     TEST(rd("_____________1.2e+02")).with(fp) (j(strf::sci(125.0).p(1)));
@@ -316,21 +316,21 @@ void basic_tests(const FPack& fp)
     // hexadecimal
 
     TEST(rd("______________0x0p+0")).with(fp) (j(strf::hex(0.0)));
-    TEST(rd("_____________0x0.p+0")).with(fp) (j(~strf::hex(0.0)));
+    TEST(rd("_____________0x0.p+0")).with(fp) (j(*strf::hex(0.0)));
     TEST(rd("__________0x0.000p+0")).with(fp) (j(strf::hex(0.0).p(3)));
     TEST(rd("_____________-0x1p-3")).with(fp) (j(strf::hex(-0.125)));
     TEST(rd("_____________0x1p+11")).with(fp) (j(strf::hex(2048.0)));
     TEST(rd("__0x1.fffffffffffffp+1023")).with(fp)
         ( strf::join_right(25, '_') (strf::hex((std::numeric_limits<double>::max)())));
     TEST(rd("___________0x1p-1022")).with(fp) (j(strf::hex(0x1p-1022)));
-    TEST(rd("__________0x1.p-1022")).with(fp) (j(~strf::hex(0x1p-1022)));
-    TEST(rd("_______0x1.000p-1022")).with(fp) (j(~strf::hex(0x1p-1022).p(3)));
+    TEST(rd("__________0x1.p-1022")).with(fp) (j(*strf::hex(0x1p-1022)));
+    TEST(rd("_______0x1.000p-1022")).with(fp) (j(*strf::hex(0x1p-1022).p(3)));
     TEST(rd("______0x0.0009p-1022")).with(fp) (j(strf::hex(0x0.0009p-1022)));
 
     TEST(rd("______________0x1p+0")).with(fp) (j(strf::hex(0x1.12345p+0).p(0)));
     TEST(rd("________0x1.12345p+0")).with(fp) (j(strf::hex(0x1.12345p+0).p(5)));
     TEST(rd("_______0x1.123450p+0")).with(fp) (j(strf::hex(0x1.12345p+0).p(6)));
-    TEST(rd("_____________0x1.p+0")).with(fp) (j(~strf::hex(0x1.12345p+0).p(0)));
+    TEST(rd("_____________0x1.p+0")).with(fp) (j(*strf::hex(0x1.12345p+0).p(0)));
     TEST(rd("_______0x0.000p-1022")).with(fp) (j(strf::hex(0x0.0008p-1022).p(3)));
     TEST(rd("_______0x0.002p-1022")).with(fp) (j(strf::hex(0x0.0018p-1022).p(3)));
     TEST(rd("_______0x0.001p-1022")).with(fp) (j(strf::hex(0x0.0008000000001p-1022).p(3)));
@@ -494,8 +494,8 @@ int main()
         TEST("_____2:048,001953125").with(p) (j(2048.001953125));
         TEST("___________2:048,002").with(p) (j(strf::fixed(2048.001953125).p(3)));
         TEST("___________1:000:000").with(p) (j(strf::fixed(1000000.0)));
-        TEST("_________+1:000:000,").with(p) (j(~+strf::fixed(1000000.0)));
-        TEST("_____+1:000:000,0000").with(p) (j(~+strf::fixed(1000000.0).p(4)));
+        TEST("_________+1:000:000,").with(p) (j(*+strf::fixed(1000000.0)));
+        TEST("_____+1:000:000,0000").with(p) (j(*+strf::fixed(1000000.0).p(4)));
 
         TEST("___________1:024,125").with(p) (j(1024.125f));
         TEST("_______+1,024125e+03").with(p) (j(+strf::sci(1024.125f)));
@@ -518,20 +518,20 @@ int main()
         TEST("_____1234,56789000,00000000,00000000,00000000,00000000"
              ",00000000,00000000,00000000,00000000,00000000.")
             .with(strf::monotonic_grouping<10>{8})
-            (strf::join_right(100, '_')(~strf::fixed(123456789e+75)));
+            (strf::join_right(100, '_')(*strf::fixed(123456789e+75)));
         TEST("____________1234\xC2\xB7" "5678900000000000\xC2\xB7"
              "0000000000000000\xC2\xB7" "0000000000000000\xC2\xB7"
              "0000000000000000\xC2\xB7" "0000000000000000\xC2\xB0")
             .with(strf::monotonic_grouping<10>(16).thousands_sep(0xB7)
                                                   .decimal_point(0xB0) )
-            (strf::join_right(102, '_')(~strf::fixed(123456789e+75)));
+            (strf::join_right(102, '_')(*strf::fixed(123456789e+75)));
 
         // invalid separator
         TEST("_____1234567890000000000000000000000000000000000000000000"
              "00000000000000000000000000000000\xC2\xB0")
             .with(strf::monotonic_grouping<10>(16).thousands_sep(0xFFFFFFF)
                                                   .decimal_point(0xB0) )
-            (strf::join_right(90, '_')(~strf::fixed(123456789e+75)));
+            (strf::join_right(90, '_')(*strf::fixed(123456789e+75)));
 
         //----------------------------------------------------------------
         // when precision is not specified, the general format selects the
@@ -541,11 +541,11 @@ int main()
         TEST("_____________1,2,0,0").with(p1)  (j(1.2e+3));
         TEST("_____________1.2e+04").with(p1)  (j(1.2e+4));
         TEST("_______________1,0,0").with(p1)  (j(strf::fmt(1e+2)));
-        TEST("______________1,0,0.").with(p1) (j(~strf::fmt(1e+2)));
+        TEST("______________1,0,0.").with(p1) (j(*strf::fmt(1e+2)));
         TEST("_______________1e+03").with(p1)  (j(strf::fmt(1e+3)));
-        TEST("______________1.e+03").with(p1) (j(~strf::fmt(1e+3)));
+        TEST("______________1.e+03").with(p1) (j(*strf::fmt(1e+3)));
         TEST("_____________1,2,0,0").with(p1)  (j(strf::fmt(1.2e+3)));
-        TEST("_____________1.2e+03").with(p1) (j(~strf::fmt(1.2e+3)));
+        TEST("_____________1.2e+03").with(p1) (j(*strf::fmt(1.2e+3)));
         TEST("_______________1e-04").with(p1)  (j(1e-4));
         TEST("_______________0.001").with(p1)  (j(1e-3));
         TEST("_______________1e-04").with(p1)  (j(strf::fmt(1e-4)));
@@ -572,11 +572,11 @@ int main()
         // invalid decimal point
         TEST("______________1\xEF\xBF\xBD""e+03")
             .with(strf::monotonic_grouping<10>{1}.decimal_point(0xFFFFFFF))
-            (j(~strf::sci(1000.0)));
+            (j(*strf::sci(1000.0)));
 
         TEST("_________________1\xEF\xBF\xBD""5")
             .with(strf::monotonic_grouping<10>{1}.decimal_point(0xFFFFFFF))
-            (j(~strf::fixed(1.5)));
+            (j(*strf::fixed(1.5)));
     }
     return test_finish();
 }

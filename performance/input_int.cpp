@@ -57,7 +57,7 @@
                                        std::uint64_t, std::uint64_t>("{}{}{}{}{}");
 #define FMT_5ULL_OP       fmt::format_to(dest, fmt_5x_ulonglong, ~0ull, ~0ull>>1, ~0ull>>2, ~0ull>>3, ~0ull>>4);
 #define SPRINTF_5ULL_OP   std::sprintf(dest, "%llud%llud%llud%llud%llud", ~0ull, ~0ull>>1, ~0ull>>2, ~0ull>>3, ~0ull>>4 );
-#define STRF_MIX_OP       strf::to(dest)(strf::dec(21).fill('*')<8, ' ', ~strf::hex(221), ' ', +strf::dec(21)>10);
+#define STRF_MIX_OP       strf::to(dest)(strf::dec(21).fill('*')<8, ' ', *strf::hex(221), ' ', +strf::dec(21)>10);
 #define FMT_MIX_FIXTURE   auto fmt_3_int = fmt::compile<int, int, int>("{:*<8}{:#x}{:>+10}");
 #define FMT_MIX_OP        fmt::format_to(dest, fmt_3_int, 21, 221, 21);
 #define SPRINTF_MIX_OP    std::sprintf(dest, "%-8d%#x%+10d", 21, 221, 21);
