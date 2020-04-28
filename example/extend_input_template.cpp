@@ -13,7 +13,7 @@ struct base {
 };
 
 template <typename CharT, typename FPack, typename Preview, typename T>
-struct base_printer_traits {
+struct base_printable_traits {
     constexpr static auto make_input
         ( const FPack&, Preview& preview, const xxx::base<T>& x ) {
         return strf::make_printer_input<CharT>(strf::pack(), preview, x.value);
@@ -21,7 +21,7 @@ struct base_printer_traits {
 };
 
 template <typename CharT, typename FPack, typename Preview, typename T>
-base_printer_traits<CharT, FPack, Preview, T> get_printer_traits
+base_printable_traits<CharT, FPack, Preview, T> get_printable_traits
 ( Preview&, const xxx::base<T>&);
 
 } // namespace xxx

@@ -22,7 +22,7 @@ using ipv4address_with_format = strf::value_with_format<ipv4address, strf::align
 inline ipv4address_with_format make_fmt(  strf::rank<1>, ipv4address x) { return ipv4address_with_format{x}; }
 
 template <typename CharT, typename FPack, typename Preview>
-struct ipv4_printer_traits
+struct ipv4_printable_traits
 {
     constexpr static auto make_input
         ( const FPack&, Preview& preview, xxx::ipv4address addr )
@@ -37,10 +37,13 @@ struct ipv4_printer_traits
     }
 
     constexpr static auto make_input
-        ( const FPack&, Preview& preview, xxx::ipv4address_with_format x)
+        ( const FPack& fp, Preview& preview, xxx::ipv4address_with_format x)
     {
         return strf::make_printer_input<CharT>
-            ( strf::pack()
+            ( strf::pack
+                ( strf::get_facet<strf::charset_c<CharT>, xxx::ipv4address>(fp)
+                , strf::get_facet<strf::surrogate_policy_c, xxx::ipv4address>(fp)
+                , strf::get_facet<strf::invalid_seq_policy_c, xxx::ipv4address>(fp) )
             , preview
             , strf::join
                 ( x.value().bytes[0], CharT{'.'}
@@ -52,10 +55,10 @@ struct ipv4_printer_traits
 };
 
 template <typename CharT, typename FPack, typename Preview>
-ipv4_printer_traits<CharT, FPack, Preview> get_printer_traits(Preview&, xxx::ipv4address);
+ipv4_printable_traits<CharT, FPack, Preview> get_printable_traits(Preview&, xxx::ipv4address);
 
 template <typename CharT, typename FPack, typename Preview>
-ipv4_printer_traits<CharT, FPack, Preview> get_printer_traits
+ipv4_printable_traits<CharT, FPack, Preview> get_printable_traits
 (Preview&, xxx::ipv4address_with_format);
 
 } // namespace xxx

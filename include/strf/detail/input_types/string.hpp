@@ -541,7 +541,7 @@ struct fmt_string_printer_input
 };
 
 template <typename DestCharT, typename FPack, typename Preview, typename SrcCharT>
-struct string_printer_traits
+struct string_printable_traits
 {
     static_assert( std::is_same<SrcCharT, DestCharT>::value
                  , "Character type mismatch. Use `cv` or `sani` format function." );
@@ -559,66 +559,66 @@ struct string_printer_traits
 
 template <typename DestCharT, typename FPack, typename Preview>
 constexpr STRF_HD
-strf::detail::string_printer_traits
+strf::detail::string_printable_traits
     < DestCharT, FPack, Preview, char >
-get_printer_traits(Preview&, const char*)
+get_printable_traits(Preview&, const char*)
 { return {}; }
 
 #if defined(__cpp_char8_t)
 
 template <typename DestCharT, typename FPack, typename Preview>
-constexpr STRF_HD strf::detail::string_printer_traits
+constexpr STRF_HD strf::detail::string_printable_traits
     < DestCharT, FPack, Preview, char8_t >
-get_printer_traits(Preview&, const char8_t*)
+get_printable_traits(Preview&, const char8_t*)
 { return {}; }
 
 #endif // defined(__cpp_char8_t)
 
 template <typename DestCharT, typename FPack, typename Preview>
-constexpr STRF_HD strf::detail::string_printer_traits
+constexpr STRF_HD strf::detail::string_printable_traits
     < DestCharT, FPack, Preview, char16_t >
-get_printer_traits(Preview&, const char16_t*)
+get_printable_traits(Preview&, const char16_t*)
 { return {}; }
 
 template <typename DestCharT, typename FPack, typename Preview>
-constexpr STRF_HD strf::detail::string_printer_traits
+constexpr STRF_HD strf::detail::string_printable_traits
     < DestCharT, FPack, Preview, char32_t >
-get_printer_traits(Preview&, const char32_t*)
+get_printable_traits(Preview&, const char32_t*)
 { return {}; }
 
 template <typename DestCharT, typename FPack, typename Preview>
-constexpr STRF_HD strf::detail::string_printer_traits
+constexpr STRF_HD strf::detail::string_printable_traits
     < DestCharT, FPack, Preview, wchar_t >
-get_printer_traits(Preview&, const wchar_t*)
+get_printable_traits(Preview&, const wchar_t*)
 { return {}; }
 
 template < typename DestCharT, typename FPack, typename Preview
          , typename SrcCharT, typename Traits, typename Allocator >
-constexpr STRF_HD strf::detail::string_printer_traits
+constexpr STRF_HD strf::detail::string_printable_traits
     < DestCharT, FPack, Preview, SrcCharT >
-get_printer_traits(Preview&, const std::basic_string<SrcCharT, Traits, Allocator>&)
+get_printable_traits(Preview&, const std::basic_string<SrcCharT, Traits, Allocator>&)
 { return {}; }
 
 #if defined(STRF_HAS_STD_STRING_VIEW)
 
 template < typename DestCharT, typename FPack, typename Preview
          , typename SrcCharT, typename Traits >
-constexpr STRF_HD strf::detail::string_printer_traits
+constexpr STRF_HD strf::detail::string_printable_traits
     < DestCharT, FPack, Preview, SrcCharT >
-get_printer_traits(Preview&, const std::basic_string_view<SrcCharT, Traits>&)
+get_printable_traits(Preview&, const std::basic_string_view<SrcCharT, Traits>&)
 { return {}; }
 
 #endif //defined(STRF_HAS_STD_STRING_VIEW)
 
 template < typename DestCharT, typename FPack, typename Preview, typename SrcCharT >
-constexpr STRF_HD strf::detail::string_printer_traits
+constexpr STRF_HD strf::detail::string_printable_traits
     < DestCharT, FPack, Preview, SrcCharT >
-get_printer_traits(Preview&, const strf::detail::simple_string_view<SrcCharT>&)
+get_printable_traits(Preview&, const strf::detail::simple_string_view<SrcCharT>&)
 { return {}; }
 
 template < typename DestCharT, typename FPack, typename Preview, typename SrcCharT
          , bool HasPrecision, bool HasAlignment, typename CvFormat >
-struct printer_traits
+struct printable_traits
     < DestCharT, FPack, Preview
     , strf::value_with_format
           < strf::detail::simple_string_view<SrcCharT>

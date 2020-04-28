@@ -39,7 +39,7 @@ class destination_common
     using printer_ = strf::printer_impl<CharT, FPack, PreviewType, Arg>;
 
     template <typename Arg>
-    using printer_traits_ = printer_traits_alias<CharT, FPack, PreviewType, Arg>;
+    using printable_traits_ = printable_traits_alias<CharT, FPack, PreviewType, Arg>;
 
 public:
 
@@ -138,7 +138,7 @@ public:
             ( preview
             , as_printer_cref_
               ( printer_<Args>
-                ( printer_traits_<Args>::make_input
+                ( printable_traits_<Args>::make_input
                   ( self.fpack_, preview, args ) ) )... );
     }
 
@@ -198,7 +198,7 @@ private:
             , preview_arr
             , { as_printer_cptr_
                 ( printer_<Args>
-                  ( printer_traits_<Args>::make_input
+                  ( printable_traits_<Args>::make_input
                     ( fpack, preview_arr[I], args ) ) )... } );
     }
 

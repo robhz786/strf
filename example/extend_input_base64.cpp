@@ -108,8 +108,8 @@ public:
             , input.preview
             , input.arg )
     {
-    }    
-    
+    }
+
     template <strf::preview_size PreviewSize>
     base64_printer
         ( base64_facet facet
@@ -306,15 +306,15 @@ void base64_printer<CharSize>::write_end_of_line_(strf::underlying_outbuf<CharSi
 namespace strf {
 
 template <typename CharT, typename FPack, typename Preview>
-struct printer_traits<CharT, FPack, Preview, xxx::base64_input>
-    : strf::usual_printer_traits<CharT, FPack, xxx::base64_printer<sizeof(CharT)>>
+struct printable_traits<CharT, FPack, Preview, xxx::base64_input>
+    : strf::usual_printable_traits<CharT, FPack, xxx::base64_printer<sizeof(CharT)>>
 {
     static_assert(!Preview::require_width, "");
 };
 
 template <typename CharT, typename FPack, typename Preview>
-struct printer_traits<CharT, FPack, Preview, xxx::base64_input_with_format>
-    : strf::usual_printer_traits<CharT, FPack, xxx::base64_printer<sizeof(CharT)>>
+struct printable_traits<CharT, FPack, Preview, xxx::base64_input_with_format>
+    : strf::usual_printable_traits<CharT, FPack, xxx::base64_printer<sizeof(CharT)>>
 {
     static_assert(!Preview::width_required, "");
 };

@@ -147,7 +147,7 @@ public:
 
 template< typename CharT, typename FPack, typename Preview
         , bool HasSplitPos, bool HasAlignment, typename ... Args>
-struct printer_traits
+struct printable_traits
     < CharT, FPack, Preview
     , strf::value_with_format
         < strf::detail::simple_tuple<Args...>

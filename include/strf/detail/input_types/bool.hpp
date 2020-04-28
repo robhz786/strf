@@ -24,17 +24,17 @@ inline STRF_HD auto make_fmt(strf::rank<1>, bool b)
 }
 
 template <typename CharT, typename FPack, typename Preview>
-struct printer_traits<CharT, FPack, Preview, bool>
-    : strf::usual_printer_traits
+struct printable_traits<CharT, FPack, Preview, bool>
+    : strf::usual_printable_traits
         < CharT, FPack, strf::detail::bool_printer<sizeof(CharT)> >
 {
 };
 
 template <typename CharT, typename FPack, typename Preview>
-struct printer_traits
+struct printable_traits
     < CharT, FPack, Preview
     , strf::value_with_format<bool, strf::alignment_format> >
-    : strf::usual_printer_traits
+    : strf::usual_printable_traits
         < CharT, FPack, strf::detail::fmt_bool_printer<sizeof(CharT)> >
 {
 };

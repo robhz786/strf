@@ -301,7 +301,7 @@ make_int_printer_input(const FPack& fp, Preview& preview, IntT x)
 }
 
 template < typename CharT, typename FPack, typename Preview, typename IntT >
-struct int_printer_traits
+struct int_printable_traits
 {
     using printer_input_type = std::conditional_t
         < strf::detail::has_intpunct<FPack, IntT, 10>()
@@ -316,7 +316,7 @@ struct int_printer_traits
 };
 
 template < typename CharT, typename FPack>
-struct voidptr_printer_traits
+struct voidptr_printable_traits
 {
     template <typename Preview>
     constexpr static STRF_HD auto
@@ -336,55 +336,55 @@ struct voidptr_printer_traits
 } // namespace detail
 
 template <typename CharT, typename FPack, typename Preview>
-constexpr STRF_HD strf::detail::int_printer_traits<CharT, FPack, Preview, short>
-get_printer_traits(Preview&, short)
+constexpr STRF_HD strf::detail::int_printable_traits<CharT, FPack, Preview, short>
+get_printable_traits(Preview&, short)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
-constexpr STRF_HD strf::detail::int_printer_traits<CharT, FPack, Preview, int>
-get_printer_traits(Preview&, int)
+constexpr STRF_HD strf::detail::int_printable_traits<CharT, FPack, Preview, int>
+get_printable_traits(Preview&, int)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
-constexpr STRF_HD strf::detail::int_printer_traits<CharT, FPack, Preview, long>
-get_printer_traits(Preview&, long)
+constexpr STRF_HD strf::detail::int_printable_traits<CharT, FPack, Preview, long>
+get_printable_traits(Preview&, long)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
-constexpr STRF_HD strf::detail::int_printer_traits<CharT, FPack, Preview, long long>
-get_printer_traits(Preview&, long long)
+constexpr STRF_HD strf::detail::int_printable_traits<CharT, FPack, Preview, long long>
+get_printable_traits(Preview&, long long)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
-constexpr STRF_HD strf::detail::int_printer_traits<CharT, FPack, Preview, unsigned short>
-get_printer_traits(Preview&, unsigned short)
+constexpr STRF_HD strf::detail::int_printable_traits<CharT, FPack, Preview, unsigned short>
+get_printable_traits(Preview&, unsigned short)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
-constexpr STRF_HD strf::detail::int_printer_traits<CharT, FPack, Preview, unsigned int>
-get_printer_traits(Preview&, unsigned int)
+constexpr STRF_HD strf::detail::int_printable_traits<CharT, FPack, Preview, unsigned int>
+get_printable_traits(Preview&, unsigned int)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
-constexpr STRF_HD strf::detail::int_printer_traits<CharT, FPack, Preview, unsigned long>
-get_printer_traits(Preview&, unsigned long)
+constexpr STRF_HD strf::detail::int_printable_traits<CharT, FPack, Preview, unsigned long>
+get_printable_traits(Preview&, unsigned long)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
-constexpr STRF_HD strf::detail::int_printer_traits<CharT, FPack, Preview, unsigned long long>
-get_printer_traits(Preview&, unsigned long long)
+constexpr STRF_HD strf::detail::int_printable_traits<CharT, FPack, Preview, unsigned long long>
+get_printable_traits(Preview&, unsigned long long)
 { return {}; }
 
 template <typename CharT, typename FPack, typename Preview>
-constexpr STRF_HD strf::detail::voidptr_printer_traits<CharT, FPack>
-get_printer_traits(Preview&, const void*)
+constexpr STRF_HD strf::detail::voidptr_printable_traits<CharT, FPack>
+get_printable_traits(Preview&, const void*)
 { return {}; }
 
 template < typename CharT, typename FPack, typename Preview
          , typename IntT, int Base, bool HasAlignment >
-struct printer_traits
+struct printable_traits
     < CharT, FPack, Preview, strf::int_with_format<IntT, Base, HasAlignment> >
-    : strf::usual_printer_traits
+    : strf::usual_printable_traits
         < CharT, FPack
         , std::conditional_t
             < HasAlignment
@@ -394,7 +394,7 @@ struct printer_traits
 };
 
 template < typename CharT, typename FPack, typename Preview >
-struct printer_traits
+struct printable_traits
     < CharT, FPack, Preview
     , strf::value_with_format<const void*, strf::alignment_format> >
 {

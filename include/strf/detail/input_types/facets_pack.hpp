@@ -63,10 +63,10 @@ struct facets_pack_printer_input
 
 template < typename CharT, typename FPack, typename Preview
          , typename ChildFPack, typename... Args >
-struct printer_traits
+struct printable_traits
     < CharT, FPack, Preview
     , strf::inner_pack_with_args<ChildFPack, Args...> >
-    : strf::usual_printer_traits
+    : strf::usual_printable_traits
         < CharT, FPack
         , strf::detail::facets_pack_printer
             < CharT, FPack, Preview, ChildFPack, Args... > >

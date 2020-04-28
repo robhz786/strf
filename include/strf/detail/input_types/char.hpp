@@ -57,8 +57,8 @@ template <std::size_t> class char_printer;
 template <std::size_t> class fmt_char_printer;
 
 template <typename DestCharT, typename FPack, typename SrcCharT>
-struct char_printer_traits
-    : strf::usual_printer_traits
+struct char_printable_traits
+    : strf::usual_printable_traits
         < DestCharT, FPack, strf::detail::char_printer<sizeof(DestCharT)> >
 {
      static_assert( std::is_same<SrcCharT, DestCharT>::value
@@ -68,37 +68,37 @@ struct char_printer_traits
 } // namespace detail
 
 template <typename CharT, typename FPack, typename Preview>
-struct printer_traits<CharT, FPack, Preview, char>
-    : strf::detail::char_printer_traits<CharT, FPack, char>
+struct printable_traits<CharT, FPack, Preview, char>
+    : strf::detail::char_printable_traits<CharT, FPack, char>
 { };
 
 #if defined(__cpp_char8_t)
 
 template <typename CharT, typename FPack, typename Preview>
-struct printer_traits<CharT, FPack, Preview, char8_t>
-    : strf::detail::char_printer_traits<CharT, FPack, char8_t>
+struct printable_traits<CharT, FPack, Preview, char8_t>
+    : strf::detail::char_printable_traits<CharT, FPack, char8_t>
 { };
 
 #endif // defined(__cpp_char8_t)
 
 template <typename CharT, typename FPack, typename Preview>
-struct printer_traits<CharT, FPack, Preview, char16_t>
-    : strf::detail::char_printer_traits<CharT, FPack, char16_t>
+struct printable_traits<CharT, FPack, Preview, char16_t>
+    : strf::detail::char_printable_traits<CharT, FPack, char16_t>
 { };
 
 template <typename CharT, typename FPack, typename Preview>
-struct printer_traits<CharT, FPack, Preview, char32_t>
-    : strf::detail::char_printer_traits<CharT, FPack, char32_t>
+struct printable_traits<CharT, FPack, Preview, char32_t>
+    : strf::detail::char_printable_traits<CharT, FPack, char32_t>
 { };
 
 template <typename CharT, typename FPack, typename Preview>
-struct printer_traits<CharT, FPack, Preview, wchar_t>
-    : strf::detail::char_printer_traits<CharT, FPack, wchar_t>
+struct printable_traits<CharT, FPack, Preview, wchar_t>
+    : strf::detail::char_printable_traits<CharT, FPack, wchar_t>
 { };
 
 template <typename DestCharT, typename FPack, typename Preview, typename SrcCharT>
-struct printer_traits<DestCharT, FPack, Preview, strf::char_with_format<SrcCharT>>
-    : strf::usual_printer_traits
+struct printable_traits<DestCharT, FPack, Preview, strf::char_with_format<SrcCharT>>
+    : strf::usual_printable_traits
         < DestCharT, FPack, strf::detail::fmt_char_printer<sizeof(DestCharT)> >
 {
     static_assert( std::is_same<SrcCharT, DestCharT>::value
