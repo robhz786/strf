@@ -34,6 +34,13 @@ template < template <typename, typename> class DestinationTmpl
 class destination_common
 {
     using destination_type_ = DestinationTmpl<OutbufCreator, FPack>;
+
+    template <typename Arg>
+    using printer_ = strf::printer_impl<CharT, FPack, PreviewType, Arg>;
+
+    template <typename Arg>
+    using printable_traits_ = printable_traits_alias<CharT, FPack, PreviewType, Arg>;
+
 public:
 
     template <typename ... FPE>
@@ -129,10 +136,10 @@ public:
         PreviewType preview;
         return self.write_
             ( preview
-            , as_printer_cref_(make_printer<CharT, FPack>( strf::rank<5>{}
-                                                         , self.fpack_
-                                                         , preview
-                                                         , args ))... );
+            , as_printer_cref_
+              ( printer_<Args>
+                ( printable_traits_<Args>::make_input
+                  ( self.fpack_, preview, args ) ) )... );
     }
 
 #if defined(STRF_HAS_STD_STRING_VIEW)
@@ -184,15 +191,15 @@ private:
                               , const Args& ... args) const &
     {
         PreviewType preview_arr[sizeof...(args)];
-        const auto& self = static_cast<const destination_type_&>(*this);
+        const auto& fpack = static_cast<const destination_type_&>(*this).fpack_;
         return tr_write_3_
             ( str
             , str_end
             , preview_arr
-            , { as_printer_cptr_( make_printer<CharT, FPack>( strf::rank<5>{}
-                                                            , self.fpack_
-                                                            , preview_arr[I]
-                                                            , args ))... } );
+            , { as_printer_cptr_
+                ( printer_<Args>
+                  ( printable_traits_<Args>::make_input
+                    ( fpack, preview_arr[I], args ) ) )... } );
     }
 
     template < typename Preview, typename ... Args >
@@ -591,23 +598,6 @@ private:
     FPack fpack_;
 };
 
-template <typename CharOut, typename FPack, typename Preview, typename Arg>
-inline STRF_HD auto make_printer
-    ( strf::rank<1>
-    , const FPack& fp
-    , Preview& preview
-    , std::reference_wrapper<Arg> arg)
-{
-    return make_printer<CharOut, FPack>
-        ( strf::rank<5>{}, fp, preview, arg.get() );
-}
-
-template <typename CharOut, typename FPack, typename Preview, typename Arg>
-using printer_impl
-= decltype(make_printer<CharOut, FPack>( strf::rank<5>{}
-                                       , std::declval<const FPack&>()
-                                       , std::declval<Preview&>()
-                                       , std::declval<const Arg&>() ) );
 namespace detail {
 
 template <typename CharT>

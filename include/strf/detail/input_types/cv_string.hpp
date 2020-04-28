@@ -6,10 +6,53 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/detail/input_types/string.hpp>
-#include <strf/detail/printer_variant.hpp>
 
 namespace strf {
 namespace detail {
+
+template < typename DestCharT, typename FPack, typename Preview
+         , typename SrcCharT, bool HasP, bool HasA, typename SrcCharset >
+constexpr STRF_HD decltype(auto) get_src_charset
+    ( const strf::detail::fmt_string_printer_input
+        < DestCharT, FPack, Preview, SrcCharT, HasP, HasA
+        , strf::cv_format_with_charset<SrcCharT, SrcCharset> >& input )
+{
+    return input.vwf.get_charset();
+}
+
+template < typename DestCharT, typename FPack, typename Preview
+         , typename SrcCharT, bool HasP, bool HasA, typename SrcCharset >
+constexpr STRF_HD decltype(auto) get_src_charset
+    ( const strf::detail::fmt_string_printer_input
+        < DestCharT, FPack, Preview, SrcCharT, HasP, HasA
+        , strf::sani_format_with_charset<SrcCharT, SrcCharset> >& input )
+{
+    return input.vwf.get_charset();
+}
+
+template < typename DestCharT, typename FPack, typename Preview
+         , typename SrcCharT, bool HasP, bool HasA >
+constexpr STRF_HD decltype(auto) get_src_charset
+    ( const strf::detail::fmt_string_printer_input
+        < DestCharT, FPack, Preview, SrcCharT, HasP, HasA
+        , strf::cv_format<SrcCharT> >& input )
+{
+    return strf::get_facet
+        <strf::charset_c<SrcCharT>, strf::string_input_tag<SrcCharT>>
+        ( input.fp );
+}
+
+template < typename DestCharT, typename FPack, typename Preview
+         , typename SrcCharT, bool HasP, bool HasA >
+constexpr STRF_HD decltype(auto) get_src_charset
+    ( const strf::detail::fmt_string_printer_input
+        < DestCharT, FPack, Preview, SrcCharT, HasP, HasA
+        , strf::sani_format<SrcCharT> >& input )
+{
+    return strf::get_facet
+        <strf::charset_c<SrcCharT>, strf::string_input_tag<SrcCharT>>
+        ( input.fp );
+}
 
 template<std::size_t SrcCharSize, std::size_t DestCharSize>
 class cv_string_printer: public strf::printer<DestCharSize>
@@ -18,64 +61,54 @@ public:
 
     using char_in_type = strf::underlying_char_type<SrcCharSize>;
 
-    template < typename FPack, typename Preview, typename SrcChar
-             , typename DestChar, typename SrcCharset >
+    template < typename DestCharT, typename FPack, typename Preview
+             , typename SrcCharT, typename CvFormat >
     STRF_HD cv_string_printer
-        ( const FPack& fp
-        , Preview& preview
-        , strf::detail::simple_string_view<SrcChar> str
-        , strf::string_precision<false>
-        , const SrcCharset& src_cs
-        , strf::tag<DestChar> ) noexcept
-        : str_(reinterpret_cast<const char_in_type*>(str.begin()))
-        , len_(str.size())
-        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, SrcChar>(fp))
-        , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcChar>(fp))
+        ( const strf::detail::fmt_string_printer_input
+            < DestCharT, FPack, Preview, SrcCharT, false, false, CvFormat >&
+            input )
+        : str_(reinterpret_cast<const char_in_type*>(input.vwf.value().data()))
+        , len_(input.vwf.value().size())
+        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, SrcCharT>(input.fp))
+        , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcCharT>(input.fp))
     {
-        static_assert(sizeof(SrcChar) == SrcCharSize, "Incompatible char type");
-        static_assert(sizeof(DestChar) == DestCharSize, "Incompatible char type");
+        static_assert(sizeof(SrcCharT) == SrcCharSize, "Incompatible char type");
+        static_assert(sizeof(DestCharT) == DestCharSize, "Incompatible char type");
+
+        decltype(auto) src_cs  = strf::detail::get_src_charset(input);
+        decltype(auto) dest_sc = get_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.fp);
         STRF_IF_CONSTEXPR (Preview::width_required) {
-            decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcChar>(fp);
-            auto w = wcalc.str_width(src_cs, preview.remaining_width(), str_, len_, surr_poli_);
-            preview.subtract_width(w);
+            decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcCharT>(input.fp);
+            auto w = wcalc.str_width( src_cs, input.preview.remaining_width()
+                                    , str_, len_, surr_poli_);
+            input.preview.subtract_width(w);
         }
-        init_(preview, src_cs, get_facet_<strf::charset_c<DestChar>, SrcChar>(fp));
+        init_( input.preview, src_cs, dest_sc);
     }
 
-    template < typename FPack, typename Preview, typename SrcChar
-             , typename DestChar, typename SrcCharset >
+   template < typename DestCharT, typename FPack, typename Preview
+             , typename SrcCharT, typename CvFormat >
     STRF_HD cv_string_printer
-        ( const FPack& fp
-        , Preview& preview
-        , strf::detail::simple_string_view<SrcChar> str
-        , strf::string_precision<true> sp
-        , const SrcCharset& src_cs
-        , strf::tag<DestChar> ) noexcept
-        : str_(reinterpret_cast<const char_in_type*>(str.begin()))
-        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, SrcChar>(fp))
-        , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcChar>(fp))
+        ( const strf::detail::fmt_string_printer_input
+            < DestCharT, FPack, Preview, SrcCharT, true, false, CvFormat >&
+            input )
+        : str_(reinterpret_cast<const char_in_type*>(input.vwf.value().data()))
+        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, SrcCharT>(input.fp))
+        , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcCharT>(input.fp))
     {
-        static_assert(sizeof(SrcChar) == SrcCharSize, "Incompatible char type");
-        static_assert(sizeof(DestChar) == DestCharSize, "Incompatible char type");
+        static_assert(sizeof(SrcCharT) == SrcCharSize, "Incompatible char type");
+        static_assert(sizeof(DestCharT) == DestCharSize, "Incompatible char type");
 
-        decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcChar>(fp);
-        auto res = wcalc.str_width_and_pos(src_cs, sp.precision, str_, str.size(), surr_poli_);
+        decltype(auto) src_cs  = strf::detail::get_src_charset(input);
+        decltype(auto) dest_sc = get_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.fp);
+        decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcCharT>(input.fp);
+        auto res = wcalc.str_width_and_pos
+            ( src_cs, input.vwf.precision(), str_
+            , input.vwf.value().size(), surr_poli_ );
         len_ = res.pos;
-        preview.subtract_width(res.width);
-        init_(preview, src_cs, get_facet_<strf::charset_c<DestChar>, SrcChar>(fp));
-    }
-
-    template <typename FPack, typename Preview, typename SrcChar, bool HasP, typename DestChar>
-    STRF_HD cv_string_printer
-        ( const FPack& fp
-        , Preview& preview
-        , strf::detail::simple_string_view<SrcChar> str
-        , strf::string_precision<HasP> sp
-        , strf::tag<DestChar> char_tag ) noexcept
-        : cv_string_printer
-              ( fp, preview, str, sp
-              , get_facet_<strf::charset_c<SrcChar>, SrcChar>(fp), char_tag )
-    {
+        input.preview.subtract_width(res.width);
+        init_( input.preview, src_cs
+             , get_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.fp));
     }
 
     STRF_HD ~cv_string_printer() { }
@@ -118,7 +151,7 @@ private:
     }
 
     const char_in_type* const str_;
-    const std::size_t len_;
+    std::size_t len_;
     union {
         strf::transcode_f<SrcCharSize, DestCharSize>  transcode_;
         strf::transcode_f<SrcCharSize, 4>  src_to_u32_;
@@ -153,70 +186,55 @@ class aligned_cv_string_printer: public printer<DestCharSize>
 public:
     using char_in_type = strf::underlying_char_type<SrcCharSize>;
 
-    template < typename FPack, typename Preview, typename SrcChar
-             , typename DestChar, typename SrcCharset >
-    STRF_HD aligned_cv_string_printer
-        ( const FPack& fp
-        , Preview& preview
-        , strf::detail::simple_string_view<SrcChar> str
-        , strf::string_precision<false>
-        , strf::alignment_format_data text_alignment
-        , const SrcCharset& src_cs
-        , strf::tag<DestChar> ) noexcept
-        : str_(reinterpret_cast<const char_in_type*>(str.begin()))
-        , len_(str.size())
-        , afmt_(text_alignment)
-        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, SrcChar>(fp))
-        , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcChar>(fp))
+    template < typename DestCharT, typename FPack, typename Preview
+             , typename SrcCharT, typename CvFormat >
+    aligned_cv_string_printer
+        ( const strf::detail::fmt_string_printer_input
+            < DestCharT, FPack, Preview, SrcCharT, false, true, CvFormat >&
+            input )
+        : str_(reinterpret_cast<const char_in_type*>(input.vwf.value().data()))
+        , len_(input.vwf.value().size())
+        , afmt_(input.vwf.get_alignment_format_data())
+        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, SrcCharT>(input.fp))
+        , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcCharT>(input.fp))
     {
-        static_assert(sizeof(SrcChar) == SrcCharSize, "Incompatible char type");
-        static_assert(sizeof(DestChar) == DestCharSize, "Incompatible char type");
-        decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcChar>(fp);
+        static_assert(sizeof(SrcCharT) == SrcCharSize, "Incompatible char type");
+        static_assert(sizeof(DestCharT) == DestCharSize, "Incompatible char type");
+
+        decltype(auto) src_cs = strf::detail::get_src_charset(input);
+        decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcCharT>(input.fp);
         strf::width_t limit =
-            ( Preview::width_required && preview.remaining_width() > afmt_.width
-            ? preview.remaining_width()
+            ( Preview::width_required && input.preview.remaining_width() > afmt_.width
+            ? input.preview.remaining_width()
             : afmt_.width );
         auto str_width = wcalc.str_width(src_cs, limit, str_, len_, surr_poli_);
-        init_( preview, str_width, src_cs
-             , get_facet_<strf::charset_c<DestChar>, SrcChar>(fp) );
+        init_( input.preview, str_width, src_cs
+             , get_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.fp) );
     }
 
-    template < typename FPack, typename Preview, typename SrcChar
-             , typename DestChar, typename SrcCharset >
-    STRF_HD aligned_cv_string_printer
-        ( const FPack& fp
-        , Preview& preview
-        , strf::detail::simple_string_view<SrcChar> str
-        , strf::string_precision<true> sp
-        , strf::alignment_format_data text_alignment
-        , const SrcCharset& src_cs
-        , strf::tag<DestChar> ) noexcept
-        : str_(reinterpret_cast<const char_in_type*>(str.begin()))
-        , afmt_(text_alignment)
-        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, SrcChar>(fp))
-        , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcChar>(fp))
+    template < typename DestCharT, typename FPack, typename Preview
+             , typename SrcCharT, typename CvFormat >
+    aligned_cv_string_printer
+        ( const strf::detail::fmt_string_printer_input
+            < DestCharT, FPack, Preview, SrcCharT, true, true, CvFormat >&
+            input )
+        : str_(reinterpret_cast<const char_in_type*>(input.vwf.value().data()))
+        , len_(input.vwf.value().size())
+        , afmt_(input.vwf.get_alignment_format_data())
+        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, SrcCharT>(input.fp))
+        , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcCharT>(input.fp))
     {
-        static_assert(sizeof(SrcChar) == SrcCharSize, "Incompatible char type");
-        static_assert(sizeof(DestChar) == DestCharSize, "Incompatible char type");
-        decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcChar>(fp);
-        auto res = wcalc.str_width_and_pos(src_cs, sp.precision, str_, str.size(), surr_poli_);
+        static_assert(sizeof(SrcCharT) == SrcCharSize, "Incompatible char type");
+        static_assert(sizeof(DestCharT) == DestCharSize, "Incompatible char type");
+
+        decltype(auto) src_cs = strf::detail::get_src_charset(input);
+        decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcCharT>(input.fp);
+        auto res = wcalc.str_width_and_pos
+            ( src_cs, input.vwf.precision(), str_
+            , input.vwf.value().size(), surr_poli_ );
         len_ = res.pos;
-        init_( preview, res.width, src_cs
-             , get_facet_<strf::charset_c<DestChar>, SrcChar>(fp) );
-    }
-
-    template <typename FPack, typename Preview, typename SrcChar, bool HasP, typename DestChar>
-    STRF_HD aligned_cv_string_printer
-        ( const FPack& fp
-        , Preview& preview
-        , strf::detail::simple_string_view<SrcChar> str
-        , strf::string_precision<HasP> sp
-        , strf::alignment_format_data text_alignment
-        , strf::tag<DestChar> ch_tag ) noexcept
-        : aligned_cv_string_printer
-            ( fp, preview, str, sp, text_alignment
-            , get_facet_<strf::charset_c<SrcChar>, SrcChar>(fp), ch_tag )
-    {
+        init_( input.preview, res.width, src_cs
+             , get_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.fp) );
     }
 
     STRF_HD void print_to(strf::underlying_outbuf<DestCharSize>& ob) const override;
@@ -358,380 +376,99 @@ STRF_EXPLICIT_TEMPLATE class aligned_cv_string_printer<4, 4>;
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
-template <typename SrcChar, typename DestChar, bool SameSize>
-class cv_printer_maker_without_charset;
-
-template <typename CharT>
-class cv_printer_maker_without_charset<CharT, CharT, true>
+template<std::size_t CharSize>
+class cv_string_printer_variant
 {
-
 public:
-    template <typename FPack, typename Preview, bool HasP>
-    static inline STRF_HD strf::detail::string_printer<sizeof(CharT)> make_printer
-        ( const FPack& fp
-        , Preview& preview
-        , strf::value_with_format< strf::detail::simple_string_view<CharT>
-                                 , strf::string_precision_format<HasP>
-                                 , strf::alignment_format_q<false>
-                                 , strf::cv_format<CharT> > input )
+
+    template < typename DestCharT, typename FPack, typename Preview
+             , typename SrcCharT, bool HasPrecision, typename CvFormat >
+    cv_string_printer_variant
+        ( const strf::detail::fmt_string_printer_input
+            < DestCharT, FPack, Preview, SrcCharT, HasPrecision, false, CvFormat >&
+            input )
     {
-        return {fp, preview, input.value(), input.get_string_precision(), strf::tag<CharT>()};
+        decltype(auto) charset_in  = strf::detail::get_src_charset(input);
+        using facet_tag = strf::string_input_tag<SrcCharT>;
+        using dest_sc_cat = strf::charset_c<DestCharT>;
+        decltype(auto) charset_out = strf::get_facet<dest_sc_cat, facet_tag>(input.fp);
+        if (charset_in.id() == charset_out.id()) {
+            new ((void*)&pool_) strf::detail::string_printer<CharSize>(input);
+        } else {
+            new ((void*)&pool_) strf::detail::cv_string_printer<CharSize, CharSize>(input);
+        }
     }
 
-    template <typename FPack, typename Preview, bool HasP>
-    static inline STRF_HD strf::detail::aligned_string_printer<sizeof(CharT)> make_printer
-        ( const FPack& fp
-        , Preview& preview
-        , strf::value_with_format< strf::detail::simple_string_view<CharT>
-                                 , strf::string_precision_format<HasP>
-                                 , strf::alignment_format_q<true>
-                                 , strf::cv_format<CharT> > input )
+    ~cv_string_printer_variant()
     {
-        return { fp, preview, input.value(), input.get_string_precision()
-               , input.get_alignment_format_data(), strf::tag<CharT>() };
+        const strf::printer<CharSize>& p = *this;
+        p.~printer();
     }
+
+    operator const strf::printer<CharSize>& () const
+    {
+        return * reinterpret_cast<const strf::printer<CharSize>*>(&pool_);
+    }
+
+private:
+
+    static constexpr std::size_t pool_size_
+        = std::max( sizeof(strf::detail::string_printer<CharSize>)
+                  , sizeof(strf::detail::cv_string_printer<CharSize, CharSize>) );
+    using storage_type_ = typename std::aligned_storage_t
+        < pool_size_, alignof(strf::printer<CharSize>)>;
+
+    storage_type_ pool_;
 };
 
-template <typename SrcChar, typename DestChar>
-class cv_printer_maker_without_charset<SrcChar, DestChar, true>
+template<std::size_t CharSize>
+class aligned_cv_string_printer_variant
 {
 public:
-    static_assert(sizeof(SrcChar) == sizeof(DestChar), "");
-    constexpr static std::size_t char_size = sizeof(SrcChar);
 
-    template <typename FPack, typename Preview, bool HasP>
-    static inline STRF_HD strf::detail::printer_variant
-        < strf::detail::string_printer<char_size>
-        , strf::detail::cv_string_printer<char_size, char_size> >
-    make_printer
-        ( const FPack& fp
-        , Preview& preview
-        , strf::value_with_format< strf::detail::simple_string_view<SrcChar>
-                                 , strf::string_precision_format<HasP>
-                                 , strf::alignment_format_q<false>
-                                 , strf::cv_format<SrcChar> > input )
+    template < typename DestCharT, typename FPack, typename Preview
+             , typename SrcCharT, bool HasPrecision, typename CvFormat >
+    aligned_cv_string_printer_variant
+        ( const strf::detail::fmt_string_printer_input
+            < DestCharT, FPack, Preview, SrcCharT, HasPrecision, true, CvFormat >&
+            input )
     {
-        using enc_cat_in = strf::charset_c<SrcChar>;
-        using input_tag_in = strf::string_input_tag<SrcChar>;
-        const auto& charset_in = strf::get_facet<enc_cat_in, input_tag_in>(fp);
-
-        using enc_cat_out = strf::charset_c<DestChar>;
-        using input_tag_out = strf::string_input_tag<DestChar>;
-        const auto& charset_out = strf::get_facet<enc_cat_out, input_tag_out>(fp);
+        decltype(auto) charset_in  = strf::detail::get_src_charset(input);
+        using facet_tag = strf::string_input_tag<SrcCharT>;
+        using dest_sc_cat = strf::charset_c<DestCharT>;
+        decltype(auto) charset_out = strf::get_facet<dest_sc_cat, facet_tag>(input.fp);
 
         if (charset_in.id() == charset_out.id()) {
-            return { strf::tag<strf::detail::string_printer<char_size>>()
-                   , fp
-                   , preview
-                   , strf::detail::simple_string_view<DestChar>
-                       { reinterpret_cast<const DestChar*>(input.value().begin())
-                       , input.value().size() }
-                   , input.get_string_precision()
-                   , strf::tag<DestChar>() };
+            new ((void*)&pool_) strf::detail::aligned_string_printer<CharSize> (input);
         } else {
-            return { strf::tag<strf::detail::cv_string_printer<char_size, char_size>>()
-                   , fp, preview, input.value(), input.get_string_precision(), charset_in
-                   , strf::tag<DestChar>() };
+            new ((void*)&pool_)
+                strf::detail::aligned_cv_string_printer<CharSize, CharSize>(input);
         }
     }
 
-    template <typename FPack, typename Preview, bool HasP, typename SrcCharset>
-    static inline STRF_HD strf::detail::printer_variant
-        < strf::detail::aligned_string_printer<char_size>
-        , strf::detail::aligned_cv_string_printer<char_size, char_size> >
-    make_printer
-        ( const FPack& fp
-        , Preview& preview
-        , strf::value_with_format
-            < strf::detail::simple_string_view<SrcChar>
-            , strf::string_precision_format<HasP>
-            , strf::alignment_format_q<true>
-            , strf::cv_format_with_charset<SrcChar, SrcCharset > > input )
+    ~aligned_cv_string_printer_variant()
     {
-        using enc_cat_in = strf::charset_c<SrcChar>;
-        using input_tag_in = strf::string_input_tag<SrcChar>;
-        const auto& charset_in = strf::get_facet<enc_cat_in, input_tag_in>(fp);
-
-        using enc_cat_out = strf::charset_c<DestChar>;
-        using input_tag_out = strf::string_input_tag<DestChar>;
-        const auto& charset_out = strf::get_facet<enc_cat_out, input_tag_out>(fp);
-
-        if (charset_in.id() == charset_out.id()) {
-            return { strf::tag<strf::detail::string_printer<char_size>>()
-                   , fp
-                   , preview
-                   , strf::detail::simple_string_view<DestChar>
-                       { reinterpret_cast<const DestChar*>(input.value().begin())
-                       , input.value().size() }
-                   , input.get_string_precision()
-                   , input.get_alignment_format_data() };
-        } else {
-            return { strf::tag<strf::detail::cv_string_printer<char_size, char_size>>()
-                   , fp, preview, input.value(), input.get_string_precision()
-                   , input.get_alignment_format_data()
-                   , charset_in };
-        }
-    }
-};
-
-template <typename SrcChar, typename DestChar>
-class cv_printer_maker_without_charset<SrcChar, DestChar, false>
-{
-public:
-
-    template <typename FPack, typename Preview, bool HasP>
-    static inline STRF_HD
-    strf::detail::cv_string_printer<sizeof(SrcChar), sizeof(DestChar)>
-    make_printer
-        ( const FPack& fp
-        , Preview& preview
-        , strf::value_with_format< strf::detail::simple_string_view<SrcChar>
-                                 , strf::string_precision_format<HasP>
-                                 , strf::alignment_format_q<false>
-                                 , strf::cv_format<SrcChar> > input )
-    {
-        return {fp, preview, input.value(), input.get_string_precision(), strf::tag<DestChar>()};
+        const strf::printer<CharSize>& p = *this;
+        p.~printer();
     }
 
-    template <typename FPack, typename Preview, bool HasP>
-    static inline STRF_HD
-    strf::detail::aligned_cv_string_printer<sizeof(SrcChar), sizeof(DestChar)>
-    make_printer
-        ( const FPack& fp
-        , Preview& preview
-        , strf::value_with_format< strf::detail::simple_string_view<SrcChar>
-                                 , strf::string_precision_format<HasP>
-                                 , strf::alignment_format_q<true>
-                                 , strf::cv_format<SrcChar> > input )
+    operator const strf::printer<CharSize>& () const
     {
-        return { fp, preview, input.value()
-               , input.get_string_precision(), input.get_alignment_format_data()
-               , strf::tag<DestChar>() };
-    }
-};
-
-
-template <typename SrcChar, typename DestChar, bool SameSize>
-class cv_printer_maker_with_charset;
-
-template <typename SrcChar, typename DestChar>
-class cv_printer_maker_with_charset<SrcChar, DestChar, true>
-{
-public:
-    static_assert(sizeof(SrcChar) == sizeof(DestChar), "");
-
-    template <typename FPack, typename Preview, bool HasP, typename SrcCharset>
-    static inline STRF_HD strf::detail::printer_variant
-        < strf::detail::string_printer<sizeof(DestChar)>
-        , strf::detail::cv_string_printer<sizeof(SrcChar), sizeof(DestChar)> >
-    make_printer
-        ( const FPack& fp
-        , Preview& preview
-        , strf::value_with_format
-            < strf::detail::simple_string_view<SrcChar>
-            , strf::string_precision_format<HasP>
-            , strf::alignment_format_q<false>
-            , strf::cv_format_with_charset<SrcChar, SrcCharset> > input )
-    {
-        using enc_cat = strf::charset_c<DestChar>;
-        using input_tag = strf::string_input_tag<DestChar>;
-        const auto& charset_from_facets
-            = strf::get_facet<enc_cat, input_tag>(fp);
-        if (input.get_charset().id() == charset_from_facets.id()) {
-            return { strf::tag<strf::detail::string_printer<sizeof(DestChar)>>()
-                   , fp
-                   , preview
-                   , strf::detail::simple_string_view<DestChar>
-                       { reinterpret_cast<const DestChar*>(input.value().begin())
-                       , input.value().size() }
-                   , input.get_string_precision(), strf::tag<DestChar>() };
-        } else {
-            return { strf::tag<strf::detail::cv_string_printer
-                                  <sizeof(SrcChar), sizeof(DestChar)>>()
-                   , fp, preview, input.value(), input.get_string_precision()
-                   , input.get_charset(), strf::tag<DestChar>() };
-        }
+        return * reinterpret_cast<const strf::printer<CharSize>*>(&pool_);
     }
 
-    template <typename FPack, typename Preview, bool HasP, typename SrcCharset>
-    static inline STRF_HD strf::detail::printer_variant
-        < strf::detail::aligned_string_printer<sizeof(DestChar)>
-        , strf::detail::aligned_cv_string_printer<sizeof(SrcChar), sizeof(DestChar)> >
-    make_printer
-        ( const FPack& fp
-        , Preview& preview
-        , strf::value_with_format
-            < strf::detail::simple_string_view<SrcChar>
-            , strf::string_precision_format<HasP>
-            , strf::alignment_format_q<true>
-            , strf::cv_format_with_charset<SrcChar, SrcCharset> > input )
-    {
-        using enc_cat = strf::charset_c<DestChar>;
-        using input_tag = strf::string_input_tag<DestChar>;
-        const auto& charset_from_facets
-            = strf::get_facet<enc_cat, input_tag>(fp);
-        if (input.get_charset().id() == charset_from_facets.id()) {
-            return { strf::tag<strf::detail::aligned_string_printer<sizeof(DestChar)>>()
-                   , fp
-                   , preview
-                   , strf::detail::simple_string_view<DestChar>
-                       { reinterpret_cast<const DestChar*>(input.value().begin())
-                       , input.value().size() }
-                   , input.get_string_precision()
-                   , input.get_alignment_format_data()
-                   , strf::tag<DestChar>() };
-        } else {
-            return { strf::tag<strf::detail::aligned_cv_string_printer
-                                  <sizeof(SrcChar), sizeof(DestChar)>>()
-                   , fp
-                   , preview
-                   , input.value()
-                   , input.get_string_precision()
-                   , input.get_alignment_format_data()
-                   , input.get_charset()
-                   , strf::tag<DestChar>() };
-        }
-    }
-};
+private:
 
-template <typename SrcChar, typename DestChar>
-class cv_printer_maker_with_charset<SrcChar, DestChar, false>
-{
-public:
-    template <typename FPack, typename Preview, bool HasP, typename SrcCharset>
-    static inline STRF_HD
-    strf::detail::cv_string_printer<sizeof(SrcChar), sizeof(DestChar)>
-    make_printer
-        ( const FPack& fp
-        , Preview& preview
-        , strf::value_with_format
-            < strf::detail::simple_string_view<SrcChar>
-            , strf::string_precision_format<HasP>
-            , strf::alignment_format_q<false>
-            , strf::cv_format_with_charset<SrcChar, SrcCharset> > input )
-    {
-        return { fp, preview, input.value(), input.get_string_precision()
-               , input.get_charset(), strf::tag<DestChar>() };
-    }
+    static constexpr std::size_t pool_size_
+        = std::max( sizeof(strf::detail::aligned_string_printer<CharSize>)
+                  , sizeof(strf::detail::aligned_cv_string_printer<CharSize, CharSize>) );
+    using storage_type_ = typename std::aligned_storage_t
+        < pool_size_, alignof(strf::printer<CharSize>)>;
 
-    template <typename FPack, typename Preview, bool HasP, typename SrcCharset>
-    static inline STRF_HD
-    strf::detail::aligned_cv_string_printer<sizeof(SrcChar), sizeof(DestChar)>
-    make_printer
-        ( const FPack& fp
-        , Preview& preview
-        , strf::value_with_format
-            < strf::detail::simple_string_view<SrcChar>
-            , strf::string_precision_format<HasP>
-            , strf::alignment_format_q<true>
-            , strf::cv_format_with_charset<SrcChar, SrcCharset> > input )
-    {
-        return { fp
-               , preview
-               , input.value()
-               , input.get_string_precision()
-               , input.get_alignment_format_data()
-               , input.get_charset()
-               , strf::tag<DestChar>() };
-    }
+    storage_type_ pool_;
 };
 
 } // namespace detail
-
-template < typename DestChar, typename FPack, typename Preview
-         , bool HasP, typename SrcChar, bool WithAlignment >
-inline STRF_HD auto make_printer
-    ( strf::rank<1>
-    , const FPack& fp
-    , Preview& preview
-    , strf::value_with_format< strf::detail::simple_string_view<SrcChar>
-                             , strf::string_precision_format<HasP>
-                             , strf::alignment_format_q<WithAlignment>
-                             , strf::cv_format<SrcChar> > input )
-{
-    constexpr bool ss = sizeof(SrcChar) == sizeof(DestChar);
-    return strf::detail::cv_printer_maker_without_charset<SrcChar, DestChar, ss>
-        :: make_printer(fp, preview, input);
-}
-
-template < typename DestChar, typename FPack, typename Preview
-         , bool HasP, typename SrcChar, typename SrcCharset, bool WithAlignment >
-inline STRF_HD auto make_printer
-    ( strf::rank<1>
-    , const FPack& fp
-    , Preview& preview
-    , strf::value_with_format
-        < strf::detail::simple_string_view<SrcChar>
-        , strf::string_precision_format<HasP>
-        , strf::alignment_format_q<WithAlignment>
-        , strf::cv_format_with_charset<SrcChar, SrcCharset> > input )
-{
-    constexpr bool ss = sizeof(SrcChar) == sizeof(DestChar);
-    return strf::detail::cv_printer_maker_with_charset<SrcChar, DestChar, ss>
-        :: make_printer(fp, preview, input);
-}
-
-template <typename DestChar, typename FPack, typename Preview, bool HasP, typename SrcChar>
-inline STRF_HD strf::detail::cv_string_printer<sizeof(SrcChar), sizeof(DestChar)>
-make_printer( strf::rank<1>
-            , const FPack& fp
-            , Preview& preview
-            , strf::value_with_format< strf::detail::simple_string_view<SrcChar>
-                                     , strf::string_precision_format<HasP>
-                                     , strf::alignment_format_q<false>
-                                     , strf::sani_format<SrcChar> > input )
-{
-    return { fp, preview, input.value()
-           , input.get_string_precision(), strf::tag<DestChar>()};
-}
-
-template < typename DestChar, typename FPack, typename Preview
-         , bool HasP, typename SrcChar, typename SrcCharset >
-inline STRF_HD strf::detail::cv_string_printer<sizeof(SrcChar), sizeof(DestChar)>
-make_printer( strf::rank<1>
-            , const FPack& fp
-            , Preview& preview
-            , strf::value_with_format
-                < strf::detail::simple_string_view<SrcChar>
-                , strf::string_precision_format<HasP>
-                , strf::alignment_format_q<false>
-                , strf::sani_format_with_charset<SrcChar, SrcCharset> > input )
-{
-    return { fp, preview, input.value(), input.get_string_precision()
-           , input.get_charset(), strf::tag<DestChar>() };
-}
-
-template <typename DestChar, typename FPack, typename Preview, bool HasP, typename SrcChar>
-inline STRF_HD strf::detail::aligned_cv_string_printer<sizeof(SrcChar), sizeof(DestChar)>
-make_printer( strf::rank<1>
-            , const FPack& fp
-            , Preview& preview
-            , strf::value_with_format
-                < strf::detail::simple_string_view<SrcChar>
-                , strf::string_precision_format<HasP>
-                , strf::alignment_format_q<true>
-                , strf::sani_format<SrcChar> > input )
-{
-    return { fp, preview, input.value(), input.get_string_precision()
-           , input.get_alignment_format_data(), strf::tag<DestChar>() };
-}
-
-template < typename DestChar, typename FPack, typename Preview
-         , bool HasP, typename SrcChar, typename SrcCharset >
-inline STRF_HD strf::detail::aligned_cv_string_printer<sizeof(SrcChar), sizeof(DestChar)>
-make_printer( strf::rank<1>
-            , const FPack& fp
-            , Preview& preview
-            , strf::value_with_format
-                < strf::detail::simple_string_view<SrcChar>
-                , strf::string_precision_format<HasP>
-                , strf::alignment_format_q<true>
-                , strf::sani_format_with_charset<SrcChar, SrcCharset> > input )
-{
-    return { fp, preview, input.value(), input.get_string_precision()
-           , input.get_alignment_format_data(), input.get_charset()
-           , strf::tag<DestChar>() };
-}
 
 } // namespace strf
 

@@ -231,6 +231,13 @@ struct tag
     explicit constexpr STRF_HD tag() noexcept { }
 };
 
+template <typename T>
+struct tag<T>
+{
+    explicit constexpr STRF_HD tag() noexcept { }
+    using type = T;
+};
+
 class stringify_error: public std::exception
 {
     using std::exception::exception;

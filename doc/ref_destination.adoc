@@ -5,6 +5,11 @@ See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
 
+:printer_impl: <<printer_impl,printer_impl>>
+:tag: <<tag,tag>>
+:print_preview: <<print_preview,print_preview>>
+
+
 == Destination types
 
 [[destination_no_reserve]]
@@ -254,11 +259,15 @@ decltype(auto) ob = _outbuf_creator.create()
 +
 [source,cpp,subs=normal]
 ----
-auto p = <<make_printer, make_printer>><char_type, FPack>(strf::rank<5>(), _fpack, preview, arg)
+auto p = static_cast< const {printer}<sizeof(CharT)>& >
+    ( {printer_impl}<CharT, FPack, T>{fpack, preview, x, chtag} )
 ----
-, where `preview` is an instance of `preview<false, false>`.
+, where `preview` is an instance of
+  `{print_preview}<preview_size::no, preview_width::no>`
+, and `chtag` is an expression of type `{tag}<CharT>`.
 . For each `p` object does `p.print_to(ob)`
-. Returns `ob.finish()` if such expression is valid, which is optional. Otherwise the return type is `void`.
+. Returns `ob.finish()` if such expression is valid, which is optional.
+  Otherwise the return type is `void`.
 ====
 ====
 [source,cpp,subs=normal]
@@ -288,12 +297,16 @@ decltype(auto) ob = _outbuf_creator.create()
 +
 [source,cpp,subs=normal]
 ----
-auto p = <<make_printer,make_printer>><char_type, FPack>(strf::rank<5>(), _fpack, preview, arg)
+auto p = static_cast< const {printer}<sizeof(CharT)>& >
+    ( {printer_impl}<CharT, FPack, T>{_fpack, preview, arg, chtag} )
 ----
-, where `preview` is an instance of `preview<false, false>`.
+, where `preview` is lvalure reference of
+  `{print_preview}<preview_size::no, preview_width::no>`,
+  and `chtag` is an expression of type `{tag}<CharT>`.
 . Prints into `ob` the content according the <<tr_string,tr-string syntax>>
   and using the `p` objects.
-. Returns `ob.finish()` if such expression is valid, which is optional. Otherwise the return type is `void`.
+. Returns `ob.finish()` if such expression is valid, which is optional.
+  Otherwise the return type is `void`.
 ====
 [[destination_calc_size]]
 === Class template `destination_calc_size`
@@ -524,18 +537,21 @@ template <typename\... Args>
 Compile-time requirements::
 - All types in `Args\...` are <<PrintableWithSizePreview,_PrintableWithSizePreview_>>.
 Effect::
-. Creates a `print_preview<true, false>` object.
+. Creates an object `preview` of type
+  `{print_preview}<preview_size::yes, preview_width::no>`.
 +
 [source,cpp,subs=normal]
 ----
-print_preview<true, false> preview;
+print_preview<preview_size::yes, preview_width::no> preview;
 ----
 . For each `arg` in `args\...`, creates a printer object by doing:
 +
 [source,cpp,subs=normal]
 ----
-auto p = <<make_printer, make_printer>><char_type, FPack>(strf::rank<5>(), _fpack, preview, arg)
+auto p = static_cast< const {printer}<sizeof(CharT)>& >
+    ( {printer_impl}<CharT, FPack, T>{ _fpack, preview, arg, {tag}<CharT>{} } )
 ----
+
 . Creates/get the <<basic_outbuf,outbuf>> object doing
 +
 [source,cpp,subs=normal]
@@ -567,8 +583,9 @@ Effect::
 +
 [source,cpp,subs=normal]
 ----
-print_preview<true, false> preview;
-auto p = <<make_printer,make_printer>><char_type, FPack>(strf::rank<5>(), _fpack, preview, arg);
+print_preview<preview_size::yes, preview_width::no> preview;
+auto p = static_cast< const {printer}<sizeof(CharT)>& >
+    ( {printer_impl}<CharT, FPack, T>{ fpack, preview, x, {tag}<CharT>{} } )
 ----
 . Calculates the size of the content to be printed according to the
   <<tr_string,tr-string syntax>> and using the `preview` objects
@@ -837,9 +854,11 @@ decltype(auto) ob = _outbuf_creator.create(_size)
 +
 [source,cpp,subs=normal]
 ----
-auto p = <<make_printer, make_printer>><char_type, FPack>(strf::rank<5>(), _fpack, preview, arg)
+auto p = static_cast< const {printer}<sizeof(CharT)>& >
+    ( {printer_impl}<CharT, FPack, T>{fpack, preview, x, chtag} )
 ----
-, where `preview` is an instance of `preview<false, false>`.
+, where `preview` is an instance of `preview<false, false>`,
+and `chtag` is an expression of type `{tag}<CharT>`.
 . For each `p` object does `p.print_to(ob)`
 . Returns `ob.finish()` if such expression is valid, which is optional. Otherwise the return type is `void`.
 ====
@@ -871,9 +890,11 @@ decltype(auto) ob = _outbuf_creator.create(_size)
 +
 [source,cpp,subs=normal]
 ----
-auto p = <<make_printer,make_printer>><char_type, FPack>(strf::rank<5>(), _fpack, preview, arg)
+auto p = static_cast< const {printer}<sizeof(CharT)>& >
+    ( {printer_impl}<CharT, FPack, T>{fpack, preview, x, chtag} )
 ----
-, where `preview` is an instance of `preview<false, false>`.
+, where `preview` is an instance of `preview<false, false>`,
+abs `chtag` is an expression of type `{tag}<CharT>`.
 . Prints into `ob` the content according the <<tr_string,tr-string syntax>>
   and using the `p` objects.
 . Returns `ob.finish()` if such expression is valid ( which is optional ).

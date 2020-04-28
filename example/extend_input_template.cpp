@@ -4,37 +4,32 @@
 
 #include <strf.hpp>
 
-namespace xxx
-{
+namespace xxx {
 
 template <typename T>
-struct base
-{
+struct base {
     base(const T& t) : value(t) {}
     T value;
 };
 
+template <typename CharT, typename FPack, typename Preview, typename T>
+struct base_printable_traits {
+    constexpr static auto make_input
+        ( const FPack&, Preview& preview, const xxx::base<T>& x ) {
+        return strf::make_printer_input<CharT>(strf::pack(), preview, x.value);
+    }
+};
 
-template <typename CharOut, typename FPack, typename Preview, typename T>
-inline auto make_printer
-    ( strf::rank<1>
-    , const FPack& fp
-    , Preview& preview
-    , const base<T> b )
-{
-    return make_printer<CharOut, FPack>(strf::rank<5>{}, fp, preview, b.value);
-}
-
+template <typename CharT, typename FPack, typename Preview, typename T>
+base_printable_traits<CharT, FPack, Preview, T> get_printable_traits
+( Preview&, const xxx::base<T>&);
 
 } // namespace xxx
 
-
-namespace yyy
-{
+namespace yyy {
 
 template <typename T>
-struct derived: xxx::base<T>
-{
+struct derived: xxx::base<T> {
     derived(const T& t): xxx::base<T>{t} {}
 };
 

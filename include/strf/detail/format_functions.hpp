@@ -284,6 +284,11 @@ public:
         data_.fill = ch;
         return as_derived_rval_ref();
     }
+    constexpr STRF_HD T&& set(alignment_format_data data) && noexcept
+    {
+        data_ = data;
+        return as_derived_rval_ref();
+    }
     constexpr STRF_HD std::int16_t width() const noexcept
     {
         return data_.width;
@@ -375,7 +380,13 @@ public:
             , strf::tag<alignment_format_q<true>>{}
             , strf::alignment_format_data{ ch } };
     }
-
+    constexpr STRF_HD auto set(strf::alignment_format_data data) const noexcept
+    {
+        return adapted_derived_type
+            { static_cast<const T&>(*this)
+            , strf::tag<strf::alignment_format_q<true>>{}
+            , data };
+    }
     constexpr STRF_HD std::int16_t width() const noexcept
     {
         return 0;
