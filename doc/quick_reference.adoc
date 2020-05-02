@@ -1337,7 +1337,7 @@ str = strf::to_string
 assert(str == "---abc  ....def123---");
 ----
 
-=== Facets
+=== Facets [[global_function_with]]
 It is possible to <<facet_overriding,override facets>>
 to only a subset of the input arguments.
 

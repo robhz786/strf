@@ -12,7 +12,6 @@ int main()
 
     {
         strf::monotonic_grouping<10> grouper(4);
-        TEST_TRUE(grouper.thousands_sep_count(0) == 0);
         TEST_TRUE(grouper.thousands_sep_count(1) == 0);
         TEST_TRUE(grouper.thousands_sep_count(4) == 0);
         TEST_TRUE(grouper.thousands_sep_count(5) == 1);
@@ -67,22 +66,10 @@ int main()
 
     auto big_value = 10000000000000000000ull;
     {
-        strf::str_grouping<10> grouper{std::string("\0", 1)};
-        TEST("1000") .with(grouper) (1000);
-        TEST("0") .with(grouper) (0);
-
-        TEST_TRUE(grouper.thousands_sep_count(0) == 0);
-        TEST_TRUE(grouper.thousands_sep_count(1) == 0);
-        TEST_TRUE(grouper.thousands_sep_count(2) == 0);
-        TEST_TRUE(grouper.thousands_sep_count(3) == 0);
-
-    }
-    {
         strf::str_grouping<10> grouper{std::string("\001\002\003\000", 4)};
         TEST("10000000000000,000,00,0") .with(grouper) (big_value);
         TEST("0") .with(grouper) (0);
 
-        TEST_TRUE(grouper.thousands_sep_count(0) == 0);
         TEST_TRUE(grouper.thousands_sep_count(1) == 0);
         TEST_TRUE(grouper.thousands_sep_count(2) == 1);
         TEST_TRUE(grouper.thousands_sep_count(3) == 1);
@@ -95,13 +82,48 @@ int main()
         TEST_TRUE(grouper.thousands_sep_count(10) == 3);
         TEST_TRUE(grouper.thousands_sep_count(11) == 3);
         TEST_TRUE(grouper.thousands_sep_count(99) == 3);
+
+        std::uint8_t groups[100];
+        {
+            auto num_groups = grouper.groups(20, groups);
+            TEST_TRUE(num_groups == 4);
+            TEST_TRUE(groups[0] == 1);
+            TEST_TRUE(groups[1] == 2);
+            TEST_TRUE(groups[2] == 3);
+            TEST_TRUE(groups[3] == 14);
+        }
+        {
+            auto num_groups = grouper.groups(6, groups);
+            TEST_TRUE(num_groups == 3);
+            TEST_TRUE(groups[0] == 1);
+            TEST_TRUE(groups[1] == 2);
+            TEST_TRUE(groups[2] == 3);
+        }
+        {
+            auto num_groups = grouper.groups(5, groups);
+            TEST_TRUE(num_groups == 3);
+            TEST_TRUE(groups[0] == 1);
+            TEST_TRUE(groups[1] == 2);
+            TEST_TRUE(groups[2] == 2);
+        }
+        {
+            auto num_groups = grouper.groups(3, groups);
+            TEST_TRUE(num_groups == 2);
+            TEST_TRUE(groups[0] == 1);
+            TEST_TRUE(groups[1] == 2);
+        }
+        {
+            auto num_groups = grouper.groups(2, groups);
+            TEST_TRUE(num_groups == 2);
+            TEST_TRUE(groups[0] == 1);
+            TEST_TRUE(groups[1] == 1);
+        }
     }
     {
         strf::str_grouping<10> grouper{std::string("\001\002\003")};
         TEST("10,000,000,000,000,000,00,0") .with(grouper) (big_value);
         TEST("0") .with(grouper) (0);
 
-        TEST_TRUE(grouper.thousands_sep_count(0) == 0);
         TEST_TRUE(grouper.thousands_sep_count(1) == 0);
         TEST_TRUE(grouper.thousands_sep_count(2) == 1);
         TEST_TRUE(grouper.thousands_sep_count(3) == 1);
@@ -114,6 +136,56 @@ int main()
         TEST_TRUE(grouper.thousands_sep_count(10) == 4);
         TEST_TRUE(grouper.thousands_sep_count(11) == 4);
 
+        std::uint8_t groups[100];
+        {
+            auto num_groups = grouper.groups(12, groups);
+            TEST_TRUE(num_groups == 5);
+            TEST_TRUE(groups[0] == 1);
+            TEST_TRUE(groups[1] == 2);
+            TEST_TRUE(groups[2] == 3);
+            TEST_TRUE(groups[3] == 3);
+            TEST_TRUE(groups[4] == 3);
+        }
+        {
+            auto num_groups = grouper.groups(11, groups);
+            TEST_TRUE(num_groups == 5);
+            TEST_TRUE(groups[0] == 1);
+            TEST_TRUE(groups[1] == 2);
+            TEST_TRUE(groups[2] == 3);
+            TEST_TRUE(groups[3] == 3);
+            TEST_TRUE(groups[4] == 2);
+        }
+        {
+            auto num_groups = grouper.groups(6, groups);
+            TEST_TRUE(num_groups == 3);
+            TEST_TRUE(groups[0] == 1);
+            TEST_TRUE(groups[1] == 2);
+            TEST_TRUE(groups[2] == 3);
+        }
+        {
+            auto num_groups = grouper.groups(4, groups);
+            TEST_TRUE(num_groups == 3);
+            TEST_TRUE(groups[0] == 1);
+            TEST_TRUE(groups[1] == 2);
+            TEST_TRUE(groups[2] == 1);
+        }
+        {
+            auto num_groups = grouper.groups(3, groups);
+            TEST_TRUE(num_groups == 2);
+            TEST_TRUE(groups[0] == 1);
+            TEST_TRUE(groups[1] == 2);
+        }
+        {
+            auto num_groups = grouper.groups(2, groups);
+            TEST_TRUE(num_groups == 2);
+            TEST_TRUE(groups[0] == 1);
+            TEST_TRUE(groups[1] == 1);
+        }
+        {
+            auto num_groups = grouper.groups(1, groups);
+            TEST_TRUE(num_groups == 1);
+            TEST_TRUE(groups[0] == 1);
+        }
     }
     {
         strf::str_grouping<10> grouper{std::string("\xff")};
@@ -128,7 +200,6 @@ int main()
         TEST("0") .with(grouper) (0);
 
 
-        TEST_TRUE(grouper.thousands_sep_count(0) == 0);
         TEST_TRUE(grouper.thousands_sep_count(1) == 0);
         TEST_TRUE(grouper.thousands_sep_count(15) == 0);
         TEST_TRUE(grouper.thousands_sep_count(16) == 1);

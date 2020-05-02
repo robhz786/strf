@@ -1,0 +1,536 @@
+////
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
+
+:numpunct: <<numpunct,numpunct>>
+:numpunct_base: <<numpunct_base,numpunct_base>>
+:default_numpunct: <<default_numpunct,default_numpunct>>
+
+== Numeric punctuation
+
+=== Facet category template `numpunct_c` [[numpunct_c]]
+
+[source,cpp,subs=normal]
+----
+template <int Base> struct numpunct_c {
+    constexpr static bool constrainable = true;
+    static const {default_numpunct}<base>& get_default();
+};
+----
+For a type to be a facet of the `numpunct_c<Base>`,
+it has be a concreate type that derives from `numpunct<Base>`
+
+=== Class `numpunct_base` [[numpunct_base]]
+
+This class adopts the same nomenclature used in
+https://en.cppreference.com/w/cpp/locale/numpunct[`std::numpunct`]:
+
+* The __decimal point__ is the character used to separate the integral part
+  from the fractional part in the numerical representation.
+* The __thousands separator__ is the character used in the integral part
+  to facilitate the visualization of how may digits it contains.
+* A `group` refers to the number of digits in a contiguous sequence of
+  digits in the integral part that does not contain a __thousands separator__.
+
+For example, if the number `123456.555` is represented as `12,3456.555` then:
+
+* The __decimal point__ is `'.'`
+* The __thousands separator__ is `','` ( even though it does separate group of thousands )
+* The groups are `4` and `2` ( correspoding to the digit sequences `3456` and `12`,
+respectively )
+
+
+[source,cpp,subs=normal]
+----
+class numpunct_base
+{
+public:
+    <<numpunct_base_ctor,numpunct_base>>(unsigned first_grp) noexcept;
+    virtual ~numpunct_base() {}
+
+    virtual unsigned <<numpunct_base_groups,groups>>(unsigned digcount, std::uint8_t* groups) const = 0;
+    virtual unsigned <<numpunct_base_thousands_sep_count,thousands_sep_count>>(unsigned digcount) const = 0;
+
+    unsigned <<numpunct_base_first_group,first_group>>() const noexcept;
+    bool <<numpunct_base_no_group_separation,no_group_separation>>(unsigned digcount) const;
+
+    char32_t <<numpunct_base_get_decimal_point,decimal_point>>() const noexcept;
+    char32_t <<numpunct_base_get_thousands_sep,thousands_sep>>() const noexcept;
+
+protected:
+
+    numpunct_base(const numpunct_base&) noexcept = default;
+
+    void <<numpunct_base_set_decimal_point,decimal_point>>(char32_t ch) noexcept;
+    void <<numpunct_base_set_thousands_sep,thousands_sep>>(char32_t ch) noexcept;
+};
+----
+
+==== Public members
+
+[[numpunct_base_ctor]]
+====
+[source,cpp,subs=normal]
+----
+numpunct_base(unsigned first_grp) noexcept;
+----
+`first_grp` is the maximum number of integral digits a number
+can have without having a thousands separator.
+[horizontal]
+Precondtion:: `first_grp != 0`
+Postconditions::
+* `decimal_point() == U'.'`
+* `thousands_sep() == U','`
+* `first_group() == first_grp`;
+====
+
+[[numpunct_base_groups]]
+====
+[source,cpp,subs=normal]
+----
+virtual unsigned groups(unsigned digcount, std::uint8_t* groups) const = 0;
+----
+Given an integral number that contains `digcount` digits,
+writes in `groups` the size of each group, starting by least significant one.
+For example, if `digcount` is equal to `7` and the grouping schemme is
+"d,ddd,ddd", then the postconditions is
+`groups[0] == 3 && groups[1] == 3 && groups[2] == 1`
+
+[horizontal]
+Return value:: The number of groups.
+Preconditions::
+* `digcount != 0`
+* The range `[groups, groups + digcount)` must be a valid accessible memory area.
+Postconditions::
+* `std::accumulate(groups, groups + num_groups, 0) == digcount`, where `num_groups`
+  is the returned value.
+
+====
+
+[[numpunct_base_thousands_sep_count]]
+====
+[source,cpp,subs=normal]
+----
+virtual unsigned thousands_sep_count(unsigned digcount) const = 0;
+----
+[horizontal]
+Return value:: Same as `groups(digcount, some_array) - 1`
+Precondition:: `digcount != 0`
+====
+
+[[numpunct_base_no_group_separation]]
+====
+[source,cpp,subs=normal]
+----
+bool no_group_separation(unsigned digcount) const;
+----
+[horizontal]
+Return value:: `digcount \<= first_group()`
+====
+
+[[numpunct_base_first_group]]
+====
+[source,cpp,subs=normal]
+----
+unsigned first_group() const;
+----
+[horizontal]
+Return value:: The number of digits between the decimal point ( when there is one ) and the first thousands separator ( when there are enough digits for that ).
+====
+
+[[numpunct_base_get_decimal_point]]
+====
+[source,cpp,subs=normal]
+----
+char32_t decimal_point() const noexcept;
+----
+Returns the decimal point.
+====
+
+[[numpunct_base_get_thousands_sep]]
+====
+[source,cpp,subs=normal]
+----
+char32_t thousands_sep() const noexcept;
+----
+Returns the thousands separator.
+====
+
+==== Protected members
+
+[[numpunct_base_set_decimal_point]]
+====
+[source,cpp,subs=normal]
+----
+void decimal_point(char32_t ch) noexcept;
+----
+[horizontal]
+Postcondition:: `decimal_point() == ch`
+====
+
+[[numpunct_base_set_thousands_sep]]
+====
+[source,cpp,subs=normal]
+----
+void thousands_sep(char32_t ch) noexcept;
+----
+[horizontal]
+Postcondition:: `thousands_sep() == ch`
+====
+
+=== Class template `numpunct` [[numpunct]]
+
+This is the base class of all facets of the `<<numpunct_c,numpunct_c>><Base>`
+category. Its template parameter defines the numeric base ( `2` for binary,
+`8` for octal, `10` for decimal and `16` for hexadecimal ).
+
+[source,cpp,subs=normal]
+----
+template <int Base>
+class numpunct: public <<numpunct_base,numpunct_base>> {
+public:
+    using category = <<numpunct_c,numpunct_c>><Base>;
+
+    numpunct(unsigned first_group_size) noexcept;
+
+protected:
+
+    numpunct(const numpunct& other) noexcept;
+};
+----
+
+=== Class template `default_numpunct` [[default_numpunct]]
+
+This is the default facet for the `<<numpunct_c,numpunct_c>><Base>` category.
+It was created to enable optimizations.
+
+[source,cpp,subs=normal]
+----
+template <int Base>
+class default_numpunct final: public {numpunct}<Base> {
+public:
+    default_numpunct() noexcept;
+    default_numpunct(const default_numpunct&) noexcept = default;
+
+    unsigned groups(unsigned digcount, std::uint8_t* groups) const override;
+    unsigned thousands_sep_count(unsigned digcount) const override;
+
+    char32_t thousands_sep() const noexcept;
+    char32_t decimal_point() const noexcept;
+
+    void thousands_sep(char32_t) = delete;
+    void decimal_point(char32_t) = delete;
+};
+----
+==== Public members
+====
+[source,cpp,subs=normal]
+----
+default_numpunct() noexcept;
+----
+[horizontal]
+Effect:: Initializes base class `{numpunct}<Base>` with `(unsigned)-1`.
+====
+====
+[source,cpp,subs=normal]
+----
+unsigned groups(unsigned digcount, std::uint8_t* groups) const override;
+----
+[horizontal]
+Effects:: Does `*groups = static_cast<std::uint8_t>(digcount);`
+Return value:: 1
+====
+====
+[source,cpp,subs=normal]
+----
+unsigned thousands_sep_count(unsigned digcount) const override;
+----
+[horizontal]
+Return value:: 0
+====
+====
+[source,cpp,subs=normal]
+----
+char32_t thousands_sep() const noexcept;
+----
+[horizontal]
+Return value:: `U','`
+====
+====
+[source,cpp,subs=normal]
+----
+char32_t decimal_point() const noexcept;
+----
+[horizontal]
+Return value::  `U'.'`
+====
+
+
+=== Class template `no_grouping` [[no_grouping]]
+This facet is optimized for situations where the thousands separator
+is never supposed to be printed.
+The only difference it has from `{default_numpunct}`
+is that it enables you to change the decimal point.
+
+[source,cpp,subs=normal]
+----
+template <int Base>
+class no_grouping final: public {numpunct}<Base> {
+public:
+    no_grouping() noexcept;
+    no_grouping(const no_grouping&) noexcept = default;
+
+    unsigned groups(unsigned digcount, std::uint8_t* groups) const override;
+    unsigned thousands_sep_count(unsigned) const override;
+
+    char32_t decimal_point() const noexcept;
+    char32_t thousand_sep()  const noexcept;
+
+    no_grouping &  decimal_point(char32_t ch) &  noexcept;
+    no_grouping && decimal_point(char32_t ch) && noexcept;
+};
+----
+==== Public members
+====
+[source,cpp,subs=normal]
+----
+no_grouping() noexcept;
+----
+[horizontal]
+Effect:: Initializes base class `{numpunct}<Base>` with `(unsigned)-1`.
+====
+====
+[source,cpp,subs=normal]
+----
+unsigned groups(unsigned digcount, std::uint8_t* groups) const override;
+----
+[horizontal]
+Effects:: Does `*groups = static_cast<std::uint8_t>(digcount);`
+Return value:: 1
+====
+====
+[source,cpp,subs=normal]
+----
+unsigned thousands_sep_count(unsigned digcount) const override;
+----
+[horizontal]
+Return value:: 0
+====
+====
+[source,cpp,subs=normal]
+----
+char32_t thousands_sep() const noexcept;
+----
+[horizontal]
+Return value:: `U','`
+====
+
+====
+[source,cpp,subs=normal]
+----
+char32_t decimal_point() const noexcept;
+----
+[horizontal]
+Return value:: `<<numpunct_base_get_decimal_point,numpunct_base::decimal_point>>()`
+====
+====
+[source,cpp,subs=normal]
+----
+no_grouping &  decimal_point(char32_t ch) &  noexcept;
+no_grouping && decimal_point(char32_t ch) && noexcept;
+----
+[horizontal]
+Effect:: Calls `<<numpunct_base_set_decimal_point,numpunct_base::decimal_point>>(ch)`
+Return value::  `*this`
+Postcondition:: `decimal_point() == ch`
+====
+
+=== Class template `monotonic_grouping` [[monotonic_grouping]]
+
+This class template is optimized for the situations where
+all groups have the same (maximum) value.
+
+[source,cpp,subs=normal]
+----
+template <int Base>
+class monotonic_grouping final: public strf::numpunct<Base> {
+public:
+    monotonic_grouping(std::uint8_t groups_size);
+
+    unsigned groups(unsigned digcount, std::uint8_t* groups) const override;
+    unsigned thousands_sep_count(unsigned digcount) const override;
+
+    char32_t decimal_point() const noexcept;
+    char32_t thousand_sep()  const noexcept;
+
+    monotonic_grouping &  decimal_point(char32_t ch) &  noexcept;
+    monotonic_grouping && decimal_point(char32_t ch) && noexcept;
+
+    monotonic_grouping &  thousands_sep(char32_t ch) &  noexcept;
+    monotonic_grouping && thousands_sep(char32_t ch) && noexcept;
+};
+----
+==== Public members
+====
+[source,cpp,subs=normal]
+----
+monotonic_grouping(std::uint8_t groups_size);
+----
+[horizontal]
+Effect:: Initializes base class `{numpunct}<Base>` with `groups_size`.
+====
+====
+[source,cpp,subs=normal]
+----
+unsigned groups(unsigned digcount, std::uint8_t* groups) const override;
+----
+[horizontal]
+Return value:: `1 + (digcount - 1) / {numpunct_base}::first_group()`
+Postcondition::
+* `groups[i] == {numpunct_base}::first_group()` for all interger values `i`
+  that are less than `num_groups - 1`
+* The value of `groups[num_groups - 1]` is such that
+  `std::accumulate(groups, groups + num_groups, 0) == digcount`
++
+where `num_groups` is the returned value.
+====
+====
+[source,cpp,subs=normal]
+----
+unsigned thousands_sep_count(unsigned digcount) const override;
+----
+[horizontal]
+Return value:: `(digcount - 1) / {numpunct_base}::first_group()`
+====
+====
+[source,cpp,subs=normal]
+----
+char32_t decimal_point() const noexcept;
+----
+[horizontal]
+Return value:: `<<numpunct_base_get_decimal_point,numpunct_base::decimal_point>>()`
+====
+====
+[source,cpp,subs=normal]
+----
+char32_t thousand_sep()  const noexcept;
+----
+[horizontal]
+Return value:: `<<numpunct_base_get_thousand_sep,numpunct_base::thousand_sep>>()`
+====
+====
+[source,cpp,subs=normal]
+----
+monotonic_grouping &  decimal_point(char32_t ch) &  noexcept;
+monotonic_grouping && decimal_point(char32_t ch) && noexcept;
+----
+[horizontal]
+Effect:: Calls `<<numpunct_base_set_decimal_point,numpunct_base::decimal_point>>(ch)`.
+====
+====
+[source,cpp,subs=normal]
+----
+monotonic_grouping &  thousands_sep(char32_t ch) &  noexcept;
+monotonic_grouping && thousands_sep(char32_t ch) && noexcept;
+----
+[horizontal]
+Effect:: Calls `<<numpunct_base_set_thousands_sep,numpunct_base::thousands_sep>>(ch)`.
+====
+
+=== Class template `str_grouping` [[str_grouping]]
+[source,cpp,subs=normal]
+----
+template <int Base>
+class str_grouping final: public strf::numpunct<Base>{
+public:
+
+    str_grouping(std::string grouping);
+    str_grouping(const str_grouping&) = default;
+
+    unsigned groups(unsigned digcount, std::uint8_t* groups) const override;
+    unsigned thousands_sep_count(unsigned digcount) const override;
+
+    char32_t decimal_point() const noexcept;
+    char32_t thousand_sep()  const noexcept;
+
+    str_grouping &  decimal_point(char32_t ch) &  noexcept;
+    str_grouping && decimal_point(char32_t ch) && noexcept;
+
+    str_grouping &  thousands_sep(char32_t ch) &  noexcept;
+    str_grouping && thousands_sep(char32_t ch) && noexcept;
+};
+----
+==== Public members
+
+====
+[source,cpp,subs=normal]
+----
+str_grouping(std::string grouping);
+----
+[horizontal]
+Preconditions::
+* `! grouping.empty()`
+* `grouping[0] != '\0'`
+====
+====
+[source,cpp,subs=normal]
+----
+unsigned groups(unsigned digcount, std::uint8_t* groups) const override;
+----
+
+////
+[horizontal]
+Postconditions::
+* `groups[i] == (std::uint8_t)grouping[i]` for all intergers
+  values `i` that are less than `std::min(num_groups, grouping.size()) - 1`
+* if `grouping.last() != '\0'` then
+  `groups[i] == (std::uint8_t)grouping.last()` for all intergers
+  values `i` that are greater than `std::min(num_groups, grouping.size()) - 2`
+  and less than `num_digits - 1`.
+
+
+`groups[i] == (std::uint8_t)grouping.last()`
+////
+
+====
+====
+[source,cpp,subs=normal]
+----
+unsigned thousands_sep_count(unsigned digcount) const override;
+----
+[horizontal]
+====
+====
+[source,cpp,subs=normal]
+----
+char32_t decimal_point() const noexcept;
+----
+[horizontal]
+====
+====
+[source,cpp,subs=normal]
+----
+char32_t thousand_sep()  const noexcept;
+----
+[horizontal]
+====
+====
+[source,cpp,subs=normal]
+----
+str_grouping &  decimal_point(char32_t ch) &  noexcept;
+str_grouping && decimal_point(char32_t ch) && noexcept;
+----
+[horizontal]
+====
+====
+[source,cpp,subs=normal]
+----
+str_grouping &  thousands_sep(char32_t ch) &  noexcept;
+str_grouping && thousands_sep(char32_t ch) && noexcept;
+----
+[horizontal]
+====
+
