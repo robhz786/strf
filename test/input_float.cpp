@@ -569,6 +569,84 @@ int main()
                 (strf::join_right(89, '_')(strf::fixed(1.234e+69)));
             TEST("_______0x1\xA9""abcdefp+1") .with(fp) (j(strf::hex(0x1.abcdefp+1)));
         }
+        {
+            auto punct = strf::str_grouping<10>("\001\002\003");
+            TEST("__1,000,000,000,00,0") .with(punct) (j(strf::fixed(1e+12)));
+            TEST("____100,000,000,00,0") .with(punct) (j(strf::fixed(1e+11)));
+            TEST("____123,000,000,00,0") .with(punct) (j(strf::fixed(123e+9)));
+            TEST("____123,400,000,00,0") .with(punct) (j(strf::fixed(123400000000.0)));
+            TEST("____123,456,789,00,0") .with(punct) (j(strf::fixed(123456789000.0)));
+            TEST("_____12,345,678,90,0") .with(punct) (j(strf::fixed(12345678900.0)));
+            TEST("________123,456,78,9") .with(punct) (j(strf::fixed(123456789.0)));
+            TEST("________________12,3") .with(punct) (j(strf::fixed(123.0)));
+            TEST("_________________1,2") .with(punct) (j(strf::fixed(12.0)));
+            TEST("___________________1") .with(punct) (j(strf::fixed(1.0)));
+
+            punct.thousands_sep(0xB7);
+            TEST("__1\xC2\xB7" "000\xC2\xB7" "000\xC2\xB7" "000\xC2\xB7" "00\xC2\xB7" "0" )
+                .with(punct) (j(strf::fixed(1e+12)));
+
+            TEST("____100\xC2\xB7" "000\xC2\xB7" "000\xC2\xB7" "00\xC2\xB7" "0")
+                .with(punct) (j(strf::fixed(1e+11)));
+
+            TEST("____123\xC2\xB7"  "000\xC2\xB7" "000\xC2\xB7" "00\xC2\xB7" "0")
+                .with(punct) (j(strf::fixed(123e+9)));
+
+            TEST("____123\xC2\xB7" "400\xC2\xB7" "000\xC2\xB7" "00\xC2\xB7" "0")
+                .with(punct) (j(strf::fixed(123400000000.0)));
+
+            TEST("____123\xC2\xB7" "456\xC2\xB7" "789\xC2\xB7" "00\xC2\xB7" "0")
+                .with(punct) (j(strf::fixed(123456789000.0)));
+
+            TEST("_____12\xC2\xB7" "345\xC2\xB7" "678\xC2\xB7" "90\xC2\xB7" "0")
+                .with(punct) (j(strf::fixed(12345678900.0)));
+
+            TEST("________123\xC2\xB7" "456\xC2\xB7" "78\xC2\xB7" "9")
+                .with(punct) (j(strf::fixed(123456789.0)));
+
+            TEST("________________12\xC2\xB7" "3")
+                .with(punct) (j(strf::fixed(123.0)));
+
+            TEST("_________________1\xC2\xB7" "2")
+                .with(punct) (j(strf::fixed(12.0)));
+
+            TEST("___________________1")
+                .with(punct) (j(strf::fixed(1.0)));
+        }
+        {
+            auto punct = strf::monotonic_grouping<10>(3);
+            TEST("___1,000,000,000,000") .with(punct) (j(strf::fixed(1e+12)));
+            TEST("_____100,000,000,000") .with(punct) (j(strf::fixed(1e+11)));
+            TEST("_________123,400,000") .with(punct) (j(strf::fixed(123400000.0)));
+            TEST("_________123,456,000") .with(punct) (j(strf::fixed(123456000.0)));
+            TEST("_________123,456,700") .with(punct) (j(strf::fixed(123456700.0)));
+            TEST("_________123,456,789") .with(punct) (j(strf::fixed(123456789.0)));
+            TEST("_________________123") .with(punct) (j(strf::fixed(123.0)));
+            TEST("__________________12") .with(punct) (j(strf::fixed(12.0)));
+
+            punct.thousands_sep(0xB7);
+            TEST("___1\xC2\xB7" "000\xC2\xB7" "000\xC2\xB7" "000\xC2\xB7" "000")
+                .with(punct) (j(strf::fixed(1e+12)));
+
+            TEST("_____100\xC2\xB7" "000\xC2\xB7" "000\xC2\xB7" "000")
+                .with(punct) (j(strf::fixed(1e+11)));
+
+            TEST("_________123\xC2\xB7" "400\xC2\xB7" "000")
+                .with(punct) (j(strf::fixed(123400000.0)));
+
+            TEST("_________123\xC2\xB7" "456\xC2\xB7" "000")
+                .with(punct) (j(strf::fixed(123456000.0)));
+
+            TEST("_________123\xC2\xB7" "456\xC2\xB7" "700")
+                .with(punct) (j(strf::fixed(123456700.0)));
+
+            TEST("_________123\xC2\xB7" "456\xC2\xB7" "789")
+                .with(punct) (j(strf::fixed(123456789.0)));
+
+            TEST("_________________123").with(punct) (j(strf::fixed(123.0)));
+            TEST("__________________12").with(punct) (j(strf::fixed(12.0)));
+        }
+
         // invalid decimal point
         TEST("______________1\xEF\xBF\xBD""e+03")
             .with(strf::monotonic_grouping<10>{1}.decimal_point(0xFFFFFFF))

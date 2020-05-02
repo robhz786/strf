@@ -8,6 +8,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :numpunct: <<numpunct,numpunct>>
 :numpunct_base: <<numpunct_base,numpunct_base>>
 :default_numpunct: <<default_numpunct,default_numpunct>>
+:digits_groups: <<digits_groups,digits_groups>>
 
 == Numeric punctuation
 
@@ -15,10 +16,12 @@ http://www.boost.org/LICENSE_1_0.txt
 
 [source,cpp,subs=normal]
 ----
+namespace strf {
 template <int Base> struct numpunct_c {
     constexpr static bool constrainable = true;
     static const {default_numpunct}<base>& get_default();
 };
+} // namespace strf
 ----
 For a type to be a facet of the `numpunct_c<Base>`,
 it has be a concreate type that derives from `numpunct<Base>`
@@ -45,13 +48,14 @@ respectively )
 
 [source,cpp,subs=normal]
 ----
+namespace strf {
 class numpunct_base
 {
 public:
     <<numpunct_base_ctor,numpunct_base>>(unsigned first_grp) noexcept;
     virtual ~numpunct_base() {}
 
-    virtual unsigned <<numpunct_base_groups,groups>>(unsigned digcount, std::uint8_t* groups) const = 0;
+    virtual {digits_groups} <<numpunct_base_groups,groups>>(unsigned digcount) const = 0;
     virtual unsigned <<numpunct_base_thousands_sep_count,thousands_sep_count>>(unsigned digcount) const = 0;
 
     unsigned <<numpunct_base_first_group,first_group>>() const noexcept;
@@ -67,6 +71,7 @@ protected:
     void <<numpunct_base_set_decimal_point,decimal_point>>(char32_t ch) noexcept;
     void <<numpunct_base_set_thousands_sep,thousands_sep>>(char32_t ch) noexcept;
 };
+} // namespace strf
 ----
 
 ==== Public members
@@ -91,23 +96,12 @@ Postconditions::
 ====
 [source,cpp,subs=normal]
 ----
-virtual unsigned groups(unsigned digcount, std::uint8_t* groups) const = 0;
+virtual {digits_groups} groups(unsigned digcount) const = 0;
 ----
-Given an integral number that contains `digcount` digits,
-writes in `groups` the size of each group, starting by least significant one.
-For example, if `digcount` is equal to `7` and the grouping schemme is
-"d,ddd,ddd", then the postconditions is
-`groups[0] == 3 && groups[1] == 3 && groups[2] == 1`
-
+__to-do__
 [horizontal]
 Return value:: The number of groups.
 Preconditions::
-* `digcount != 0`
-* The range `[groups, groups + digcount)` must be a valid accessible memory area.
-Postconditions::
-* `std::accumulate(groups, groups + num_groups, 0) == digcount`, where `num_groups`
-  is the returned value.
-
 ====
 
 [[numpunct_base_thousands_sep_count]]
@@ -117,7 +111,8 @@ Postconditions::
 virtual unsigned thousands_sep_count(unsigned digcount) const = 0;
 ----
 [horizontal]
-Return value:: Same as `groups(digcount, some_array) - 1`
+Return value:: The number of thousands separator that would be present
+               in an integer with `digcount` digits.
 Precondition:: `digcount != 0`
 ====
 
@@ -189,6 +184,7 @@ category. Its template parameter defines the numeric base ( `2` for binary,
 
 [source,cpp,subs=normal]
 ----
+namespace strf {
 template <int Base>
 class numpunct: public <<numpunct_base,numpunct_base>> {
 public:
@@ -200,6 +196,7 @@ protected:
 
     numpunct(const numpunct& other) noexcept;
 };
+} // namespace strf
 ----
 
 === Class template `default_numpunct` [[default_numpunct]]
@@ -209,13 +206,14 @@ It was created to enable optimizations.
 
 [source,cpp,subs=normal]
 ----
+namespace strf {
 template <int Base>
 class default_numpunct final: public {numpunct}<Base> {
 public:
     default_numpunct() noexcept;
     default_numpunct(const default_numpunct&) noexcept = default;
 
-    unsigned groups(unsigned digcount, std::uint8_t* groups) const override;
+    {digits_groups} groups(unsigned digcount) const override;
     unsigned thousands_sep_count(unsigned digcount) const override;
 
     char32_t thousands_sep() const noexcept;
@@ -224,6 +222,7 @@ public:
     void thousands_sep(char32_t) = delete;
     void decimal_point(char32_t) = delete;
 };
+} // namespace strf
 ----
 ==== Public members
 ====
@@ -237,11 +236,10 @@ Effect:: Initializes base class `{numpunct}<Base>` with `(unsigned)-1`.
 ====
 [source,cpp,subs=normal]
 ----
-unsigned groups(unsigned digcount, std::uint8_t* groups) const override;
+{digits_groups} groups(unsigned digcount) const override;
 ----
 [horizontal]
-Effects:: Does `*groups = static_cast<std::uint8_t>(digcount);`
-Return value:: 1
+Return value:: `{digits_groups}{nullptr, 0, 0, 0, digcount}`
 ====
 ====
 [source,cpp,subs=normal]
@@ -277,13 +275,14 @@ is that it enables you to change the decimal point.
 
 [source,cpp,subs=normal]
 ----
+namespace strf {
 template <int Base>
 class no_grouping final: public {numpunct}<Base> {
 public:
     no_grouping() noexcept;
     no_grouping(const no_grouping&) noexcept = default;
 
-    unsigned groups(unsigned digcount, std::uint8_t* groups) const override;
+    {digits_groups} groups(unsigned digcount) const override;
     unsigned thousands_sep_count(unsigned) const override;
 
     char32_t decimal_point() const noexcept;
@@ -292,6 +291,7 @@ public:
     no_grouping &  decimal_point(char32_t ch) &  noexcept;
     no_grouping && decimal_point(char32_t ch) && noexcept;
 };
+} // namespace strf
 ----
 ==== Public members
 ====
@@ -305,11 +305,10 @@ Effect:: Initializes base class `{numpunct}<Base>` with `(unsigned)-1`.
 ====
 [source,cpp,subs=normal]
 ----
-unsigned groups(unsigned digcount, std::uint8_t* groups) const override;
+{digits_groups} groups(unsigned digcount) const override;
 ----
 [horizontal]
-Effects:: Does `*groups = static_cast<std::uint8_t>(digcount);`
-Return value:: 1
+Return value:: `{nullptr, 0, 0, 0, digcount}`
 ====
 ====
 [source,cpp,subs=normal]
@@ -355,12 +354,13 @@ all groups have the same (maximum) value.
 
 [source,cpp,subs=normal]
 ----
+namespace strf {
 template <int Base>
 class monotonic_grouping final: public strf::numpunct<Base> {
 public:
     monotonic_grouping(std::uint8_t groups_size);
 
-    unsigned groups(unsigned digcount, std::uint8_t* groups) const override;
+    {digits_groups} groups(unsigned digcount) const override;
     unsigned thousands_sep_count(unsigned digcount) const override;
 
     char32_t decimal_point() const noexcept;
@@ -372,6 +372,7 @@ public:
     monotonic_grouping &  thousands_sep(char32_t ch) &  noexcept;
     monotonic_grouping && thousands_sep(char32_t ch) && noexcept;
 };
+} // namespace strf
 ----
 ==== Public members
 ====
@@ -385,17 +386,10 @@ Effect:: Initializes base class `{numpunct}<Base>` with `groups_size`.
 ====
 [source,cpp,subs=normal]
 ----
-unsigned groups(unsigned digcount, std::uint8_t* groups) const override;
+{digits_groups} groups(unsigned digcount) const override;
 ----
 [horizontal]
-Return value:: `1 + (digcount - 1) / {numpunct_base}::first_group()`
-Postcondition::
-* `groups[i] == {numpunct_base}::first_group()` for all interger values `i`
-  that are less than `num_groups - 1`
-* The value of `groups[num_groups - 1]` is such that
-  `std::accumulate(groups, groups + num_groups, 0) == digcount`
-+
-where `num_groups` is the returned value.
+Return value:: `{ nullptr, 0, (digcount - 1) / grp, grp, ((digcount - 1) % grp) + 1 }`;
 ====
 ====
 [source,cpp,subs=normal]
@@ -443,6 +437,7 @@ Effect:: Calls `<<numpunct_base_set_thousands_sep,numpunct_base::thousands_sep>>
 === Class template `str_grouping` [[str_grouping]]
 [source,cpp,subs=normal]
 ----
+namespace strf {
 template <int Base>
 class str_grouping final: public strf::numpunct<Base>{
 public:
@@ -450,7 +445,7 @@ public:
     str_grouping(std::string grouping);
     str_grouping(const str_grouping&) = default;
 
-    unsigned groups(unsigned digcount, std::uint8_t* groups) const override;
+    {digits_groups} groups(unsigned digcount) const override;
     unsigned thousands_sep_count(unsigned digcount) const override;
 
     char32_t decimal_point() const noexcept;
@@ -462,6 +457,7 @@ public:
     str_grouping &  thousands_sep(char32_t ch) &  noexcept;
     str_grouping && thousands_sep(char32_t ch) && noexcept;
 };
+} // namespace strf
 ----
 ==== Public members
 
@@ -478,17 +474,17 @@ Preconditions::
 ====
 [source,cpp,subs=normal]
 ----
-unsigned groups(unsigned digcount, std::uint8_t* groups) const override;
+{digits_groups} groups(unsigned digcount) const override;
 ----
 
 ////
 [horizontal]
 Postconditions::
 * `groups[i] == (std::uint8_t)grouping[i]` for all intergers
-  values `i` that are less than `std::min(num_groups, grouping.size()) - 1`
+  values `i` that are less than `std::min(digits_groups, grouping.size()) - 1`
 * if `grouping.last() != '\0'` then
   `groups[i] == (std::uint8_t)grouping.last()` for all intergers
-  values `i` that are greater than `std::min(num_groups, grouping.size()) - 2`
+  values `i` that are greater than `std::min(digits_groups, grouping.size()) - 2`
   and less than `num_digits - 1`.
 
 
@@ -534,3 +530,28 @@ str_grouping && thousands_sep(char32_t ch) && noexcept;
 [horizontal]
 ====
 
+=== Struct `digits_groups` [[digits_groups]]
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+struct digits_groups {
+    const std::uint8_t* low_groups;
+    unsigned low_groups_count;
+    unsigned middle_groups_count;
+    std::uint8_t middle_groups;
+    unsigned highest_group;
+};
+
+} // namespace strf
+----
+
+////
+unsigned digits_count(digits_groups);
+
+constexpr bool valid(digits_groups g) {
+    return (low_groups_count == 0) == (low_groups == nullptr)
+        && (middle_groups_count == 0) == (middle_groups_count == 0)
+        && highest_group != 0;
+}
+////

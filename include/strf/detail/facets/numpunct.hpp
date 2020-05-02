@@ -10,10 +10,16 @@
 
 namespace strf {
 
-namespace detail {
+struct digits_distribution
+{
+    const std::uint8_t* low_groups;
+    unsigned low_groups_count;
+    unsigned middle_groups_count;
+    std::uint8_t middle_groups;
+    unsigned highest_group;
+};
 
-STRF_HD unsigned get_monotonic_groups
-    ( unsigned group_size, unsigned digcount, std::uint8_t* groups ) noexcept;
+namespace detail {
 
 class str_grouping_impl
 {
@@ -22,7 +28,6 @@ public:
     str_grouping_impl(std::string grouping)
         : grouping_(std::move(grouping))
     {
-        STRF_ASSERT(!grouping_.empty());
     }
 
     str_grouping_impl(const str_grouping_impl&) = default;
@@ -31,7 +36,7 @@ public:
 
     unsigned get_thousands_sep_count(unsigned digcount) const;
 
-    unsigned get_groups(unsigned digcount, std::uint8_t* groups) const;
+    strf::digits_distribution get_groups(unsigned digcount) const;
 
 private:
 
@@ -40,72 +45,60 @@ private:
 
 #if defined(STRF_SOURCE) || ! defined(STRF_SEPARATE_COMPILATION)
 
-STRF_INLINE STRF_HD unsigned get_monotonic_groups
-    ( unsigned groups_size, unsigned digcount, std::uint8_t* groups ) noexcept
-{
-    STRF_ASSERT(digcount != 0);
-    STRF_ASSERT(groups_size != 0);
-    std::uint8_t* const groups_begin = groups;
-
-    while(digcount > groups_size) {
-        *groups = static_cast<std::uint8_t>(groups_size);
-        ++ groups;
-        digcount -= groups_size;
-    }
-    *groups = static_cast<std::uint8_t>(digcount);
-    return 1 + static_cast<unsigned>(groups - groups_begin);
-}
-
 STRF_INLINE
 unsigned str_grouping_impl::get_thousands_sep_count(unsigned digcount) const
 {
-    STRF_ASSERT(!grouping_.empty());
+    if (grouping_.empty() || grouping_[0] == '\0') {
+        return 0;
+    }
     unsigned count = 0;
+    unsigned grp = 1;
     for(auto ch : grouping_) {
-        auto grp = static_cast<unsigned>(ch);
-        if(grp == 0 || grp >= digcount) {
+        if (ch == 0) {
+            break;
+        }
+        grp = (unsigned)ch;
+        if (ch & 0x80 || grp >= digcount) {
             return count;
         }
-        if(grp < digcount) {
-            ++ count;
-            digcount -= grp;
-        }
+        ++ count;
+        digcount -= grp;
     }
 
-    return count + (digcount - 1) / grouping_.back();
+    return count + (digcount - 1) / grp;
 }
 
 
-STRF_INLINE unsigned str_grouping_impl::get_groups
-    ( unsigned digcount
-    , std::uint8_t* groups ) const
+STRF_INLINE strf::digits_distribution str_grouping_impl::get_groups(unsigned digcount) const
 {
-    STRF_ASSERT(!grouping_.empty());
+    STRF_ASSERT(digcount != 0); //precodition
 
-    std::uint8_t* const groups_begin = groups;
+    if (grouping_.empty() || grouping_[0] == '\0') {
+        return {nullptr, 0, 0, 0, digcount};
+    }
+    strf::digits_distribution res{0, 0, 0, 0, 0};
+    res.low_groups = reinterpret_cast<const std::uint8_t*>(grouping_.data());
     for(auto ch : grouping_) {
-        auto group_size = static_cast<unsigned>(ch);
-        if (group_size == 0) {
-            *groups = static_cast<std::uint8_t>(digcount);
-            return 1 + (groups - groups_begin);
+        if (ch == 0) {
+            break;
         }
-        if (group_size < digcount) {
-            *groups = static_cast<std::uint8_t>(group_size);
-            digcount -= group_size;
-            ++ groups;
-        } else {
-            *groups = static_cast<std::uint8_t>(digcount);
-            return 1 + (groups - groups_begin);
+        if (ch & 0x80 || (unsigned)ch >= digcount) {
+            STRF_ASSERT(digcount != 0);
+            res.highest_group = digcount;
+            return res;
         }
+        ++ res.low_groups_count;
+        digcount -= ch;
     }
-    const unsigned last_group_size = grouping_.back();
-    while(digcount > last_group_size) {
-        *groups = static_cast<std::uint8_t>(last_group_size);
-        ++ groups;
-        digcount -= last_group_size;
-    }
-    *groups = static_cast<std::uint8_t>(digcount);
-    return 1 + (groups - groups_begin);
+    STRF_ASSERT(digcount != 0);
+    --digcount;
+    auto last_group = grouping_[res.low_groups_count - 1];
+    res.middle_groups = last_group;
+    res.middle_groups_count = digcount / last_group;
+    res.highest_group = digcount % last_group + 1;
+
+    STRF_ASSERT(res.highest_group != 0); // postcondition
+    return res;    
 }
 
 #endif //defined(STRF_SOURCE) || ! defined(STRF_SEPARATE_COMPILATION)
@@ -138,13 +131,7 @@ public:
     {
         return first_group_;
     }
-    /**
-    Caller must ensure that groups has at least digcount elements
-     */
-    virtual STRF_HD unsigned groups
-        ( unsigned digcount
-        , std::uint8_t* groups ) const = 0;
-
+    virtual STRF_HD strf::digits_distribution groups(unsigned digcount) const = 0;
     /**
       return the number of thousands separators for such number of digits
      */
@@ -205,14 +192,9 @@ public:
         : strf::numpunct<Base>((unsigned)-1)
     {
     }
-
-    STRF_HD unsigned groups
-        ( unsigned digcount
-        , std::uint8_t* groups ) const override
+    STRF_HD strf::digits_distribution groups(unsigned digcount) const override
     {
-        STRF_ASSERT(digcount <= 0xFF);
-        *groups = static_cast<std::uint8_t>(digcount);
-        return 1;
+        return {nullptr, 0, 0, 0, digcount};
     }
     STRF_HD unsigned thousands_sep_count(unsigned digcount) const override
     {
@@ -248,12 +230,13 @@ public:
         : strf::numpunct<Base>(groups_size)
     {
     }
-
-    STRF_HD unsigned groups(unsigned digcount, std::uint8_t* groups) const override
+    STRF_HD strf::digits_distribution groups(unsigned digcount) const override
     {
-        return strf::detail::get_monotonic_groups
-            ( this->first_group(), digcount, groups );
-    }
+        STRF_ASSERT(this->first_group() <= 0xFF);
+        auto grp = static_cast<std::uint8_t>(this->first_group());
+        --digcount;
+        return { nullptr, 0, digcount / grp, grp, (digcount % grp) + 1 };
+    }    
     STRF_HD unsigned thousands_sep_count(unsigned digcount) const override
     {
         STRF_ASSERT(digcount != 0);
@@ -309,9 +292,9 @@ public:
 
     str_grouping(str_grouping&&) = default;
 
-    STRF_HD unsigned groups(unsigned digcount, std::uint8_t* groups) const override
+    STRF_HD strf::digits_distribution groups(unsigned digcount) const override
     {
-        return impl_.get_groups(digcount, groups);
+        return impl_.get_groups(digcount);
     }
     STRF_HD unsigned thousands_sep_count(unsigned digcount) const override
     {
@@ -363,14 +346,9 @@ public:
         numpunct_base::thousands_sep(U',');
         numpunct_base::decimal_point(U'.');
     }
-
-    STRF_HD unsigned groups
-        ( unsigned digcount
-        , std::uint8_t* groups ) const override
+    STRF_HD strf::digits_distribution groups(unsigned digcount) const override
     {
-        STRF_ASSERT(digcount <= 0xFF);
-        *groups = static_cast<std::uint8_t>(digcount);
-        return 1;
+        return {nullptr, 0, 0, 0, digcount};
     }
     STRF_HD unsigned thousands_sep_count(unsigned digcount) const override
     {

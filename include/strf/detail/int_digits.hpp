@@ -456,13 +456,14 @@ class intdigits_backwards_writer<10>
 {
 public:
 
-    template <typename IntT, typename CharT>
+    template <typename UIntT, typename CharT>
     static STRF_HD CharT* write_txtdigits_backwards
-        ( IntT value
+        ( UIntT uvalue
         , CharT* it
         , strf::lettercase = strf::lowercase ) noexcept
     {
-        auto uvalue = strf::detail::unsigned_abs(value);
+        static_assert(std::is_unsigned<UIntT>::value, "");
+
         const char* arr = strf::detail::chars_00_to_99();
         while(uvalue > 99) {
             auto index = (uvalue % 100) << 1;
@@ -481,59 +482,105 @@ public:
             return it - 2;
         }
     }
-
-    template <typename IntT, typename CharT>
+    template <typename UIntT, typename CharT>
     static STRF_HD void write_txtdigits_backwards_little_sep
-        ( IntT value
-        , CharT* it
+        ( CharT* it
+        , UIntT uvalue
+        , strf::digits_distribution groups
         , CharT sep
-        , const std::uint8_t* groups
-        , strf::lettercase = strf::lowercase ) noexcept
+        , strf::lettercase ) noexcept
     {
-        auto uvalue = strf::detail::unsigned_abs(value);
+        STRF_ASSERT(uvalue >= 10);
+        STRF_ASSERT(groups.highest_group);
+
+        static_assert(std::is_unsigned<UIntT>::value, "");
         const char* arr = strf::detail::chars_00_to_99();
-        auto n = *groups;
-        while (uvalue > 99) {
-            auto index = (uvalue % 100) << 1;
-            if (n > 1) {
-                it[-2] = arr[index];
-                it[-1] = arr[index + 1];
-                n -= 2;
-                if (n == 0) {
-                    it[-3] = sep;
-                    n = * ++groups;
-                    it -= 3;
+        std::uint8_t dig_index = 0;
+        std::uint8_t group = 0;
+        if (groups.low_groups_count) {
+            unsigned groups_idx = 0;
+            group = groups.low_groups[0];
+            while(1) {
+                STRF_ASSERT(group != 0);
+                STRF_ASSERT(uvalue > 99); // otherwise highest_group would be 0
+                dig_index = static_cast<std::uint8_t>((uvalue % 100) << 1);
+                uvalue /= 100;
+                if (group != 1) {
+                    it[-2] = arr[dig_index];
+                    it[-1] = arr[dig_index + 1];
+                    group -= 2;
+                    if (group == 0) {
+                        it -= 3;
+                        *it = sep;
+                        if (++groups_idx != groups.low_groups_count){
+                            group = groups.low_groups[groups_idx];
+                        } else {
+                            break;
+                        }
+                    } else {
+                        it -= 2;
+                    }
                 } else {
+                    it[-1] = arr[dig_index + 1];
+                    it[-2] = sep;
                     it -= 2;
-                }
-            } else {
-                it[-3] = arr[index];
-                it[-2] = sep;
-                it[-1] = arr[index + 1];
-                n = * ++groups - 1;
-                if (n == 0) {
-                    it[-4] = sep;
-                    it -= 4;
-                    n = * ++groups;
-                } else {
-                    it -= 3;
+                    if (++groups_idx != groups.low_groups_count){
+                        *--it = arr[dig_index];
+                        group = groups.low_groups[groups_idx] - 1;
+                        if (group == 0) {
+                            *--it = sep;
+                            if (++groups_idx != groups.low_groups_count){
+                                group = groups.low_groups[groups_idx];
+                            } else {
+                                break;
+                            }
+                        }
+                    } else if (groups.middle_groups_count) {
+                        group = groups.middle_groups;
+                        goto middle_group_with_dig_pair_incomplete;
+                    } else  {
+                        *--it = arr[dig_index];
+                        goto highest_group;
+                    }
                 }
             }
-            uvalue /= 100;
         }
-        STRF_ASSERT(n != 0);
-        if (uvalue < 10) {
-            it[-1] = static_cast<CharT>('0' + uvalue);
-        } else {
-            auto index = uvalue << 1;
-            if (n == 1) {
-                it[-3] = arr[index];
-                it[-2] = sep;
-                it[-1] = arr[index + 1];
-            } else {
-                it[-2] = arr[index];
-                it[-1] = arr[index + 1];
+        if (groups.middle_groups_count) {
+            group = groups.middle_groups;
+            while(1) {
+                STRF_ASSERT(group != 0);
+                dig_index = static_cast<std::uint8_t>((uvalue % 100) << 1);
+                uvalue /= 100;
+                *--it = arr[dig_index + 1];
+                if (--group == 0) {
+                    *--it = sep;
+                    if (--groups.middle_groups_count == 0){
+                        *--it = arr[dig_index];
+                        break;
+                    }
+                    group = groups.middle_groups;
+                }
+                middle_group_with_dig_pair_incomplete:
+                *--it = arr[dig_index];
+                if (--group == 0) {
+                    *--it = sep;
+                    if (--groups.middle_groups_count == 0){
+                        break;
+                    }
+                    group = groups.middle_groups;
+                }
             }
+        }
+        highest_group:
+        while (uvalue > 9) {
+            dig_index = static_cast<std::uint8_t>((uvalue % 100) << 1);
+            uvalue /= 100;
+            it[-2] = arr[dig_index];
+            it[-1] = arr[dig_index + 1];
+            it -= 2;
+        }
+        if (uvalue) {
+            *--it = static_cast<CharT>('0' + uvalue);
         }
     }
 };
@@ -566,36 +613,53 @@ public:
         return it;
     }
 
-    template <typename IntT, typename CharT>
+    template <typename UIntT, typename CharT>
     static STRF_HD void write_txtdigits_backwards_little_sep
-        ( IntT value
-        , CharT* it
+        ( CharT* it
+        , UIntT uvalue
+        , strf::digits_distribution groups
         , CharT sep
-        , const std::uint8_t* groups
         , strf::lettercase lc ) noexcept
     {
-        auto uvalue = strf::detail::unsigned_abs(value);
-        auto n = *groups;
+        static_assert(std::is_unsigned<UIntT>::value, "");
+        STRF_ASSERT(uvalue > 0xF);
         const char offset_digit_a = ('A' | ((lc == strf::lowercase) << 5)) - 10;
-        while (uvalue > 0xF) {
+
+        for (unsigned i = 0; i < groups.low_groups_count; ++i) {
+            for (unsigned group = groups.low_groups[i]; group; --group) {
+                unsigned d = uvalue & 0xF;
+                uvalue = uvalue >> 4;
+                --it;
+                if (d < 10) {
+                    *it = static_cast<CharT>('0' + d);
+                } else {
+                    *it = static_cast<CharT>(offset_digit_a + d);
+                }
+            }
+            *--it = sep;
+        }
+        for (unsigned i = 0; i < groups.middle_groups_count; ++i) {
+            for (unsigned group = groups.middle_groups; group; --group) {
+                unsigned d = uvalue & 0xF;
+                uvalue = uvalue >> 4;
+                --it;
+                if (d < 10) {
+                    *it = static_cast<CharT>('0' + d);
+                } else {
+                    *it = static_cast<CharT>(offset_digit_a + d);
+                }
+            }
+            *--it = sep;
+        }
+        while (uvalue != 0) {
             unsigned d = uvalue & 0xF;
+            uvalue = uvalue >> 4;
             --it;
             if (d < 10) {
                 *it = static_cast<CharT>('0' + d);
             } else {
                 *it = static_cast<CharT>(offset_digit_a + d);
             }
-            if (--n == 0) {
-                *--it = sep;
-                n = *++groups;
-            }
-            uvalue = uvalue >> 4;
-        }
-        --it;
-        if (uvalue < 10) {
-            *it = static_cast<CharT>('0' + uvalue);
-        } else {
-            *it = static_cast<CharT>(offset_digit_a + uvalue);
         }
     }
 };
@@ -621,25 +685,34 @@ public:
         return it;
     }
 
-    template <typename IntT, typename CharT>
+    template <typename UIntT, typename CharT>
     static STRF_HD void write_txtdigits_backwards_little_sep
-        ( IntT value
-        , CharT* it
+        ( CharT* it
+        , UIntT uvalue
+        , strf::digits_distribution groups
         , CharT sep
-        , const std::uint8_t* groups
-        , strf::lettercase = strf::lowercase ) noexcept
+        , strf::lettercase ) noexcept
     {
-        auto uvalue = strf::detail::unsigned_abs(value);
-        auto n = *groups;
-        while (uvalue > 0x7) {
+        static_assert(std::is_unsigned<UIntT>::value, "");
+        STRF_ASSERT(uvalue > 7);
+        for (unsigned i = 0; i < groups.low_groups_count; ++i) {
+            for (unsigned group = groups.low_groups[i]; group; --group) {
+                * --it = '0' + (uvalue & 0x7);
+                uvalue = uvalue >> 3;
+            }
+            *--it = sep;
+        }
+        for (unsigned i = 0; i < groups.middle_groups_count; ++i) {
+            for (unsigned group = groups.middle_groups; group; --group) {
+                * --it = '0' + (uvalue & 0x7);
+                uvalue = uvalue >> 3;
+            }
+            *--it = sep;
+        }
+        while (uvalue != 0) {
             *--it = '0' + (uvalue & 0x7);
             uvalue = uvalue >> 3;
-            if (--n == 0) {
-                *--it = sep;
-                n = *++groups;
-            }
         }
-        *--it = static_cast<CharT>('0' + uvalue);
     }
 };
 
@@ -670,59 +743,59 @@ inline STRF_HD CharT* write_int_txtdigits_backwards( IntT value
     return writer::write_txtdigits_backwards(value, it, lc);
 }
 
-template <int Base, typename IntT, typename CharT>
-inline STRF_HD void write_int_txtdigits_backwards_little_sep
-    ( IntT value
-    , CharT* it
-    , CharT sep
-    , const std::uint8_t* groups
-    , strf::lettercase lc ) noexcept
-{
-    intdigits_backwards_writer<Base>::write_txtdigits_backwards_little_sep
-        ( value, it, sep, groups, lc );
-}
+// template <int Base, typename IntT, typename CharT>
+// inline STRF_HD void write_int_txtdigits_backwards_little_sep
+//     ( IntT value
+//     , CharT* it
+//     , CharT sep
+//     , const std::uint8_t* groups
+//     , strf::lettercase lc ) noexcept
+// {
+//     intdigits_backwards_writer<Base>::write_txtdigits_backwards_little_sep
+//         ( value, it, sep, groups, lc );
+// }
 
-template <std::size_t CharSize>
-STRF_HD void write_digits_big_sep
-    ( strf::underlying_outbuf<CharSize>& ob
-    , strf::encode_char_f<CharSize> encode_char
-    , const std::uint8_t* last_grp
-    , unsigned char* digits
-    , unsigned num_digits
-    , char32_t sep
-    , std::size_t sep_size )
-{
-    STRF_ASSERT(sep_size != (std::size_t)-1);
-    STRF_ASSERT(sep_size != 1);
+// template <std::size_t CharSize>
+// STRF_HD void write_digits_big_sep
+//     ( strf::underlying_outbuf<CharSize>& ob
+//     , strf::encode_char_f<CharSize> encode_char
+//     , const std::uint8_t* last_grp
+//     , unsigned char* digits
+//     , unsigned num_digits
+//     , char32_t sep
+//     , std::size_t sep_size )
+// {
+//     STRF_ASSERT(sep_size != (std::size_t)-1);
+//     STRF_ASSERT(sep_size != 1);
 
-    ob.ensure(1);
+//     ob.ensure(1);
 
-    auto ptr = ob.pointer();
-    auto end = ob.end();
-    auto grp_it = last_grp;
-    auto n = *grp_it;
+//     auto ptr = ob.pointer();
+//     auto end = ob.end();
+//     auto grp_it = last_grp;
+//     auto n = *grp_it;
 
-    while(true) {
-        *ptr = *digits;
-        ++ptr;
-        ++digits;
-        if (--num_digits == 0) {
-            break;
-        }
-        --n;
-        if (ptr == end || (n == 0 && ptr + sep_size >= end)) {
-            ob.advance_to(ptr);
-            ob.recycle();
-            ptr = ob.pointer();
-            end = ob.end();
-        }
-        if (n == 0) {
-            ptr = encode_char(ptr, sep);
-            n = *--grp_it;
-        }
-    }
-    ob.advance_to(ptr);
-}
+//     while(true) {
+//         *ptr = *digits;
+//         ++ptr;
+//         ++digits;
+//         if (--num_digits == 0) {
+//             break;
+//         }
+//         --n;
+//         if (ptr == end || (n == 0 && ptr + sep_size >= end)) {
+//             ob.advance_to(ptr);
+//             ob.recycle();
+//             ptr = ob.pointer();
+//             end = ob.end();
+//         }
+//         if (n == 0) {
+//             ptr = encode_char(ptr, sep);
+//             n = *--grp_it;
+//         }
+//     }
+//     ob.advance_to(ptr);
+// }
 
 template <int Base>
 class intdigits_writer
@@ -748,19 +821,18 @@ public:
     static STRF_HD void write_little_sep
         ( strf::underlying_outbuf<CharSize>& ob
         , const strf::numpunct_base& punct
-        , UIntT value
+        , UIntT uvalue
         , unsigned digcount
         , strf::underlying_char_type<CharSize> sep
         , strf::lettercase lc )
     {
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
-        uint8_t groups[detail::max_num_digits<UIntT, Base>()];
-        const auto num_groups = punct.groups(digcount, groups);
-        std::size_t size = digcount + num_groups - 1;
+        const auto groups = punct.groups(digcount);
+        auto size = digcount + groups.low_groups_count+ groups.middle_groups_count;
         ob.ensure(size);
         auto next_p = ob.pointer() + size;
         intdigits_backwards_writer<Base>::write_txtdigits_backwards_little_sep
-            (value, next_p, sep, groups, lc);
+            (next_p, uvalue, groups, sep, lc);
         ob.advance_to(next_p);
     }
 
@@ -776,15 +848,47 @@ public:
     {
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
         constexpr auto max_digits = detail::max_num_digits<UIntT, Base>();
-        uint8_t groups[max_digits];
-        const auto num_groups = punct.groups(digcount, groups);
         unsigned char digits_buff[max_digits];
         const auto dig_end = digits_buff + max_digits;
-        auto digits = strf::detail::write_int_txtdigits_backwards<Base>
+        const auto* digits = strf::detail::write_int_txtdigits_backwards<Base>
             ( value, dig_end, lc);
-        strf::detail::write_digits_big_sep
-            ( ob, encode_char, groups + num_groups - 1, digits, digcount
-            , punct.thousands_sep(), sep_size );
+
+        const char32_t sep = punct.thousands_sep();
+
+        auto groups = punct.groups(digcount);
+        ob.ensure(groups.highest_group);
+        auto oit = ob.pointer();
+        auto end = ob.end();
+        strf::detail::copy_n(digits, groups.highest_group, oit);
+        oit += groups.highest_group;
+        digits += groups.highest_group;
+
+        while (groups.middle_groups_count--) {
+            if (oit + sep_size + groups.middle_groups > end) {
+                ob.advance_to(oit);
+                ob.recycle();
+                oit = ob.pointer();
+                end = ob.end();
+            }
+            oit = encode_char(oit, sep);
+            strf::detail::copy_n(digits, groups.middle_groups, oit);
+            oit += groups.middle_groups;
+            digits += groups.middle_groups;
+        }
+        for (auto i = groups.low_groups_count; i ;) {
+            auto grp = groups.low_groups[--i];
+            if (oit + sep_size + grp > end) {
+                ob.advance_to(oit);
+                ob.recycle();
+                oit = ob.pointer();
+                end = ob.end();
+            }
+            oit = encode_char(oit, sep);
+            strf::detail::copy_n(digits, grp, oit);
+            oit += grp;
+            digits += grp;
+        }
+        ob.advance_to(oit);
     }
 
 }; // class template intdigits_writer
@@ -839,36 +943,56 @@ public:
         STRF_ASSERT(value > 1);
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
         using char_type = strf::underlying_char_type<CharSize>;
-        uint8_t groups[detail::max_num_digits<UIntT, 2>()];
-        auto num_groups = punct.groups(digcount, groups);
 
-        auto grp_it = groups + num_groups - 1;
-        auto grp_size = *grp_it;
-        ob.ensure(grp_size);
-        auto it = ob.pointer();
-        auto end = ob.end();
+        auto groups = punct.groups(digcount);
         UIntT mask = (UIntT)1 << (digcount - 1);
-
-        while (true) {
-            for(;grp_size != 0; --grp_size) {
-                *it = (char_type)'0' + (0 != (value & mask));
-                mask = mask >> 1;
-                ++it;
-            }
-            if (mask == 0) {
-                break;
-            }
-            grp_size = * --grp_it;
-            if (it + grp_size + 1 > end) {
-                ob.advance_to(it);
+        ob.ensure(groups.highest_group);
+        auto oit = ob.pointer();
+        auto end = ob.end();
+        while (groups.highest_group--) {
+            *oit++ = (char_type)'0' + (0 != (value & mask));
+            mask = mask >> 1;
+        }
+        while (groups.middle_groups_count) {
+            if (oit == end) {
+                ob.advance_to(oit);
                 ob.recycle();
-                it = ob.pointer();
+                oit = ob.pointer();
                 end = ob.end();
             }
-            *it = sep;
-            ++it;
+            *oit++ = sep;
+            for (auto i = groups.middle_groups; i ; --i) {
+                if (oit == end) {
+                    ob.advance_to(oit);
+                    ob.recycle();
+                    oit = ob.pointer();
+                    end = ob.end();
+                }
+                *oit++ = (char_type)'0' + (0 != (value & mask));
+                mask = mask >> 1;
+            }
+            -- groups.middle_groups_count;
         }
-        ob.advance_to(it);
+        for (auto i = groups.low_groups_count; i ;) {
+            if (oit == end) {
+                ob.advance_to(oit);
+                ob.recycle();
+                oit = ob.pointer();
+                end = ob.end();
+            }
+            *oit++ = sep;
+            for (auto g = groups.low_groups[--i]; g; --g) {
+                if (oit == end) {
+                    ob.advance_to(oit);
+                    ob.recycle();
+                    oit = ob.pointer();
+                    end = ob.end();
+                }
+                *oit++ = (char_type)'0' + (0 != (value & mask));
+                mask = mask >> 1;
+            }
+        }
+        ob.advance_to(oit);
     }
 
 
@@ -885,40 +1009,57 @@ public:
         STRF_ASSERT(value > 1);
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
         using char_type = strf::underlying_char_type<CharSize>;
-        uint8_t groups[detail::max_num_digits<UIntT, 2>()];
-        auto num_groups = punct.groups(digcount, groups);
-
-        char32_t sep = punct.thousands_sep();
-        auto grp_it = groups + num_groups - 1;
-        auto grp_size = *grp_it;
-        auto it = ob.pointer();
-        auto end = ob.end();
+        auto groups = punct.groups(digcount);
+        const char32_t sep = punct.thousands_sep();
         UIntT mask = (UIntT)1 << (digcount - 1);
-        while (true) {
-            if (it + grp_size > end) {
-                ob.advance_to(it);
-                ob.recycle();
-                it = ob.pointer();
-                end = ob.end();
-            }
-            for(;grp_size != 0; --grp_size) {
-                *it = (char_type)'0' + (0 != (value & mask));
-                mask = mask >> 1;
-                ++it;
-            }
-            if (mask == 0) {
-                break;
-            }
-            grp_size = * --grp_it;
-            if (it + grp_size + sep_size > end) {
-                ob.advance_to(it);
-                ob.recycle();
-                it = ob.pointer();
-                end = ob.end();
-            }
-            it = encode_char(it, sep);
+
+        ob.ensure(groups.highest_group);
+        auto oit = ob.pointer();
+        auto end = ob.end();
+        while (groups.highest_group--) {
+            *oit++ = (char_type)'0' + (0 != (value & mask));
+            mask = mask >> 1;
         }
-        ob.advance_to(it);
+        while (groups.middle_groups_count) {
+            if (oit + sep_size > end) {
+                ob.advance_to(oit);
+                ob.recycle();
+                oit = ob.pointer();
+                end = ob.end();
+            }
+            oit = encode_char(oit, sep);
+            for (auto i = groups.middle_groups; i ; --i) {
+                if (oit == end) {
+                    ob.advance_to(oit);
+                    ob.recycle();
+                    oit = ob.pointer();
+                    end = ob.end();
+                }
+                *oit++ = (char_type)'0' + (0 != (value & mask));
+                mask = mask >> 1;
+            }
+            -- groups.middle_groups_count;
+        }
+        for (auto i = groups.low_groups_count; i ;) {
+            if (oit + sep_size > end) {
+                ob.advance_to(oit);
+                ob.recycle();
+                oit = ob.pointer();
+                end = ob.end();
+            }
+            oit = encode_char(oit, sep);
+            for (auto g = groups.low_groups[--i]; g; --g) {
+                if (oit == end) {
+                    ob.advance_to(oit);
+                    ob.recycle();
+                    oit = ob.pointer();
+                    end = ob.end();
+                }
+                *oit++ = (char_type)'0' + (0 != (value & mask));
+                mask = mask >> 1;
+            }
+        }
+        ob.advance_to(oit);
     }
 
 }; // class intdigits_writer<2>
