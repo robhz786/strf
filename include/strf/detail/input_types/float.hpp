@@ -1501,7 +1501,7 @@ STRF_HD void punct_double_printer<CharSize>::print_to
                 strf::detail::write_int<10>(ob, integral_part, idigcount, strf::lowercase);
             } else if (sep_size_ == 1) {
                 strf::detail::write_int_little_sep<10>
-                    ( ob, punct_, integral_part, idigcount, little_sep_);
+                    ( ob, punct_, integral_part, idigcount, sep_count_, little_sep_);
             } else {
                 strf::detail::write_int_big_sep<10>
                     (  ob, punct_, encode_char_, integral_part
@@ -2193,7 +2193,7 @@ STRF_HD void fast_punct_double_printer<CharSize>::print_to
                                                , strf::lowercase );
                 } else if (sep_size_ == 1) {
                     strf::detail::write_int_little_sep<10>
-                        ( ob, punct_, integral_part, idigcount
+                        ( ob, punct_, integral_part, idigcount, sep_count_
                         , little_sep_, strf::lowercase);
                 } else {
                     strf::detail::write_int_big_sep<10>

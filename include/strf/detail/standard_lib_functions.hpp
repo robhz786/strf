@@ -47,6 +47,22 @@ str_length(const CharT* str)
 #endif
 }
 
+template <class CharT>
+STRF_CONSTEXPR_CHAR_TRAITS STRF_HD const CharT*
+str_find(const CharT* p, std::size_t count, const CharT& ch) noexcept
+{
+#if !defined(__CUDA_ARCH__) && STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS
+    return std::char_traits<CharT>::find(p, count, ch);
+#else
+    for (std::size_t i = 0; i != count; ++i, ++p) {
+        if (*p == ch) {
+            return p;
+        }
+    }
+    return nullptr;
+#endif
+}
+
 
 template <class CharT>
 STRF_CONSTEXPR_CHAR_TRAITS STRF_HD bool

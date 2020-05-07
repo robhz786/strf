@@ -486,92 +486,139 @@ public:
     static STRF_HD void write_txtdigits_backwards_little_sep
         ( CharT* it
         , UIntT uvalue
-        , strf::digits_distribution groups
+        , strf::digits_groups_iterator groups
         , CharT sep
         , strf::lettercase ) noexcept
     {
-        STRF_ASSERT(uvalue >= 10);
-        STRF_ASSERT(groups.highest_group);
+        STRF_ASSERT(uvalue != 0);
 
-        static_assert(std::is_unsigned<UIntT>::value, "");
         const char* arr = strf::detail::chars_00_to_99();
         std::uint8_t dig_index = 0;
-        std::uint8_t group = 0;
-        if (groups.low_groups_count) {
-            unsigned groups_idx = 0;
-            group = groups.low_groups[0];
-            while(1) {
-                STRF_ASSERT(group != 0);
-                STRF_ASSERT(uvalue > 99); // otherwise highest_group would be 0
+        auto group = groups.current();
+        auto group_it = group;
+        STRF_ASSERT(group != 0);
+        if (groups.no_more_sep()) {
+            goto no_more_sep;
+        }
+        if ( ! groups.is_final()) {
+            while (1) {
+                STRF_ASSERT( ! groups.is_final());
+                if (uvalue < 10) {
+                    goto last_digit;
+                }
                 dig_index = static_cast<std::uint8_t>((uvalue % 100) << 1);
                 uvalue /= 100;
-                if (group != 1) {
-                    it[-2] = arr[dig_index];
+                if (group_it >= 2) {
                     it[-1] = arr[dig_index + 1];
-                    group -= 2;
-                    if (group == 0) {
-                        it -= 3;
-                        *it = sep;
-                        if (++groups_idx != groups.low_groups_count){
-                            group = groups.low_groups[groups_idx];
-                        } else {
-                            break;
-                        }
+                    it[-2] = arr[dig_index];
+                    it -= 2;
+                    if (group_it != 2) {
+                        group_it -= 2;              
                     } else {
-                        it -= 2;
+                        if (uvalue == 0) {
+                            return;
+                        }
+                        *--it = sep;
+                        group = groups.next();
+                        if (groups.is_final()) {
+                            if (groups.no_more_sep()) {
+                                goto no_more_sep;
+                            }
+                            goto repeated_groups;
+                        }
+                        STRF_ASSERT(!groups.no_more_sep());
+                        group_it = group;
                     }
                 } else {
-                    it[-1] = arr[dig_index + 1];
-                    it[-2] = sep;
-                    it -= 2;
-                    if (++groups_idx != groups.low_groups_count){
-                        *--it = arr[dig_index];
-                        group = groups.low_groups[groups_idx] - 1;
-                        if (group == 0) {
-                            *--it = sep;
-                            if (++groups_idx != groups.low_groups_count){
-                                group = groups.low_groups[groups_idx];
-                            } else {
-                                break;
-                            }
+                    STRF_ASSERT(group_it == 1);
+                    * --it = arr[dig_index + 1];
+                    * --it = sep;
+                    * --it = arr[dig_index];
+                    if (uvalue == 0) {
+                        return;
+                    }                    
+                    group = groups.next();
+                    if (groups.is_final()) {
+                        if (groups.no_more_sep()) {
+                            goto no_more_sep;
                         }
-                    } else if (groups.middle_groups_count) {
-                        group = groups.middle_groups;
-                        goto middle_group_with_dig_pair_incomplete;
-                    } else  {
-                        *--it = arr[dig_index];
-                        goto highest_group;
+                        if (group == 1) {
+                            * --it = sep;
+                            goto repeated_unary_groups;
+                        }
+                        goto repeated_groups_deslocated;
+                    }
+                    STRF_ASSERT(!groups.no_more_sep());
+                    if (group != 1) {
+                        group_it = group - 1;
+                    } else {
+                        * --it = sep;
+                        group = groups.next();
+                        if (groups.is_final()) {
+                            if (groups.no_more_sep()) {
+                                goto no_more_sep;
+                            }
+                            goto repeated_groups;                            
+                        }
+                        group_it = group;
                     }
                 }
             }
         }
-        if (groups.middle_groups_count) {
-            group = groups.middle_groups;
-            while(1) {
-                STRF_ASSERT(group != 0);
+        repeated_groups:
+        group_it = group;        
+        if (group != 1) {            
+            while (1) {
+                STRF_ASSERT(group_it != 0);
+
+                if (uvalue < 10) {
+                    goto last_digit;
+                }
                 dig_index = static_cast<std::uint8_t>((uvalue % 100) << 1);
                 uvalue /= 100;
                 *--it = arr[dig_index + 1];
-                if (--group == 0) {
-                    *--it = sep;
-                    if (--groups.middle_groups_count == 0){
-                        *--it = arr[dig_index];
-                        break;
+                if (--group_it != 0) {
+                    * --it = arr[dig_index];
+                    if (--group_it == 0) {
+                        if (uvalue == 0) {
+                            return;
+                        }
+                        *--it = sep;
+                        group_it = group;
                     }
-                    group = groups.middle_groups;
+                } else {
+                    it[-1] = sep;
+                    it[-2] = arr[dig_index];
+                    it -= 2;
+                    if (uvalue == 0) {
+                        return;
+                    }
+                    repeated_groups_deslocated:
+                    group_it = group - 1;
                 }
-                middle_group_with_dig_pair_incomplete:
-                *--it = arr[dig_index];
-                if (--group == 0) {
-                    *--it = sep;
-                    if (--groups.middle_groups_count == 0){
-                        break;
-                    }
-                    group = groups.middle_groups;
+            }
+        } else {
+            repeated_unary_groups:
+            if (uvalue < 10) {
+                goto last_digit;
+            }
+            while (1) {
+                dig_index = static_cast<std::uint8_t>((uvalue % 100) << 1);
+                uvalue /= 100;
+                * --it = arr[dig_index + 1];
+                * --it = sep;
+                * --it = arr[dig_index];
+                if ( ! uvalue) {
+                    return;
+                }
+                * --it = sep;
+                if (uvalue < 10) {
+                    * --it = static_cast<CharT>('0' + uvalue);
+                    return;                
                 }
             }
         }
-        highest_group:
+        no_more_sep:
         while (uvalue > 9) {
             dig_index = static_cast<std::uint8_t>((uvalue % 100) << 1);
             uvalue /= 100;
@@ -579,6 +626,7 @@ public:
             it[-1] = arr[dig_index + 1];
             it -= 2;
         }
+        last_digit:
         if (uvalue) {
             *--it = static_cast<CharT>('0' + uvalue);
         }
@@ -617,41 +665,63 @@ public:
     static STRF_HD void write_txtdigits_backwards_little_sep
         ( CharT* it
         , UIntT uvalue
-        , strf::digits_distribution groups
+        , strf::digits_groups_iterator groups
         , CharT sep
         , strf::lettercase lc ) noexcept
     {
         static_assert(std::is_unsigned<UIntT>::value, "");
-        STRF_ASSERT(uvalue > 0xF);
+        STRF_ASSERT(uvalue != 0);
         const char offset_digit_a = ('A' | ((lc == strf::lowercase) << 5)) - 10;
-
-        for (unsigned i = 0; i < groups.low_groups_count; ++i) {
-            for (unsigned group = groups.low_groups[i]; group; --group) {
-                unsigned d = uvalue & 0xF;
-                uvalue = uvalue >> 4;
-                --it;
-                if (d < 10) {
-                    *it = static_cast<CharT>('0' + d);
-                } else {
-                    *it = static_cast<CharT>(offset_digit_a + d);
-                }
+        auto group = groups.current();
+        auto group_it = group;
+        while (1) {
+            unsigned d = uvalue & 0xF;
+            --it;
+            if (d < 10) {
+                *it = static_cast<CharT>('0' + d);
+            } else {
+                *it = static_cast<CharT>(offset_digit_a + d);
             }
-            *--it = sep;
-        }
-        for (unsigned i = 0; i < groups.middle_groups_count; ++i) {
-            for (unsigned group = groups.middle_groups; group; --group) {
-                unsigned d = uvalue & 0xF;
-                uvalue = uvalue >> 4;
-                --it;
-                if (d < 10) {
-                    *it = static_cast<CharT>('0' + d);
-                } else {
-                    *it = static_cast<CharT>(offset_digit_a + d);
-                }
+            uvalue = uvalue >> 4;
+            if (uvalue == 0) {
+                return;
             }
-            *--it = sep;
+            if (group_it == 1) {
+                *--it = sep;
+                group_it = groups.next();
+                if (group_it == 0) {
+                    break;
+                }
+                if (groups.no_more_sep()) {
+                    goto no_more_sep;
+                }
+                group = group_it;
+            } else {
+                --group_it;
+            }
         }
-        while (uvalue != 0) {
+        group_it = group;
+        while (1) {
+            unsigned d = uvalue & 0xF;
+            --it;
+            if (d < 10) {
+                *it = static_cast<CharT>('0' + d);
+            } else {
+                *it = static_cast<CharT>(offset_digit_a + d);
+            }
+            uvalue = uvalue >> 4;
+            if (uvalue == 0) {
+                return;
+            }
+            if (group_it == 1) {
+                *--it = sep;
+                group_it = group;
+            } else {
+                --group_it;
+            }
+        }
+        no_more_sep:
+        do {
             unsigned d = uvalue & 0xF;
             uvalue = uvalue >> 4;
             --it;
@@ -660,7 +730,7 @@ public:
             } else {
                 *it = static_cast<CharT>(offset_digit_a + d);
             }
-        }
+        } while (uvalue);
     }
 };
 
@@ -684,35 +754,57 @@ public:
         *--it = static_cast<CharT>('0' + uvalue);
         return it;
     }
-
     template <typename UIntT, typename CharT>
     static STRF_HD void write_txtdigits_backwards_little_sep
         ( CharT* it
         , UIntT uvalue
-        , strf::digits_distribution groups
+        , strf::digits_groups_iterator groups
         , CharT sep
         , strf::lettercase ) noexcept
     {
         static_assert(std::is_unsigned<UIntT>::value, "");
-        STRF_ASSERT(uvalue > 7);
-        for (unsigned i = 0; i < groups.low_groups_count; ++i) {
-            for (unsigned group = groups.low_groups[i]; group; --group) {
-                * --it = '0' + (uvalue & 0x7);
-                uvalue = uvalue >> 3;
-            }
-            *--it = sep;
-        }
-        for (unsigned i = 0; i < groups.middle_groups_count; ++i) {
-            for (unsigned group = groups.middle_groups; group; --group) {
-                * --it = '0' + (uvalue & 0x7);
-                uvalue = uvalue >> 3;
-            }
-            *--it = sep;
-        }
-        while (uvalue != 0) {
+        STRF_ASSERT(uvalue != 0);
+        auto group = groups.current();
+        auto group_it = group;
+        while (1) {
             *--it = '0' + (uvalue & 0x7);
             uvalue = uvalue >> 3;
+            if(uvalue == 0) {
+                return;
+            }
+            if (group_it == 1) {
+                *--it = sep;
+                group_it = groups.next();
+                if (group_it == 0) {
+                    break;
+                }
+                if (groups.no_more_sep()) {
+                    goto no_more_sep;
+                }
+                group = group_it;
+            } else {
+                --group_it;
+            }
         }
+        group_it = group;
+        while (1) {
+            *--it = '0' + (uvalue & 0x7);
+            uvalue = uvalue >> 3;
+            if (uvalue == 0) {
+                return;
+            }
+            if (group_it == 1) {
+                *--it = sep;
+                group_it = group;
+            } else {
+                --group;
+            }
+        }
+        no_more_sep:
+        do {
+            *--it = '0' + (uvalue & 0x7);
+            uvalue = uvalue >> 3;
+        } while (uvalue != 0);
     }
 };
 
@@ -823,12 +915,13 @@ public:
         , const strf::numpunct_base& punct
         , UIntT uvalue
         , unsigned digcount
+        , unsigned seps_count
         , strf::underlying_char_type<CharSize> sep
         , strf::lettercase lc )
     {
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
-        const auto groups = punct.groups(digcount);
-        auto size = digcount + groups.low_groups_count+ groups.middle_groups_count;
+        const auto groups = punct.groups();
+        auto size = digcount + seps_count;
         ob.ensure(size);
         auto next_p = ob.pointer() + size;
         intdigits_backwards_writer<Base>::write_txtdigits_backwards_little_sep
@@ -937,10 +1030,12 @@ public:
         , const strf::numpunct_base& punct
         , UIntT value
         , unsigned digcount
+        , unsigned seps_count
         , strf::underlying_char_type<CharSize> sep
         , strf::lettercase = strf::lowercase )
     {
         STRF_ASSERT(value > 1);
+        (void)seps_count;
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
         using char_type = strf::underlying_char_type<CharSize>;
 
@@ -1080,11 +1175,12 @@ inline STRF_HD void write_int_little_sep
     , const strf::numpunct_base& punct
     , UIntT value
     , unsigned digcount
+    , unsigned seps_count
     , strf::underlying_char_type<CharSize> sep
     , strf::lettercase lc = strf::lowercase )
 {
     intdigits_writer<Base>::write_little_sep
-        ( ob, punct, value, digcount, sep, lc );
+        ( ob, punct, value, digcount, seps_count, sep, lc );
 }
 
 template <int Base, std::size_t CharSize, typename UIntT>

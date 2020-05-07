@@ -327,7 +327,14 @@ int main()
         TEST("   1,000").with(punct) ( strf::join_right(8)(strf::dec(1000)) );
         TEST("    1000").with(punct) ( strf::join_right(8)(strf::hex(0x1000)) );
     }
-
+    {
+        auto punct = strf::monotonic_grouping<10>{1};
+        TEST("0").with(punct) (0);
+        TEST("1,0").with(punct) (10);
+        TEST("1,0,0").with(punct) (100);
+        TEST("1,0,0,0").with(punct) (1000);
+        TEST("1,8,4,4,6,7,4,4,0,7,3,7,0,9,5,5,1,6,1,5").with(punct)(18446744073709551615ull);
+    }    
     {
         auto punct = strf::monotonic_grouping<10>{3}.thousands_sep(0x10FFFF);
         TEST(u8"  +1\U0010FFFF000").with(punct) (+strf::right(1000, 8));

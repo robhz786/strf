@@ -19,8 +19,13 @@ int main()
 
     auto big_value = 10000000000000000000ull;
     {
-        auto punct = strf::str_grouping<10>{"\4\3\2"}.thousands_sep(U'.');
+        auto punct = strf::str_grouping<10>{"\004\003\002"}.thousands_sep(U'.');
         TEST("1.00.00.000.0000").with(punct)(100000000000ll);
+    }
+    {
+        std::string grps{"\003"};
+        auto punct = strf::str_grouping<10>{grps};
+        TEST("100,000,000,000").with(punct)(100000000000ll);
     }
     {
         strf::str_grouping<10> grouper{std::string()};
@@ -53,7 +58,7 @@ int main()
         TEST_TRUE(grouper.thousands_sep_count(99) == 3);
     }
     {
-        strf::str_grouping<10> grouper{std::string("\001\002\003\000\002", 5)};
+        strf::str_grouping<10> grouper{std::string("\001\002\003", 3)};
         TEST("10,000,000,000,000,000,00,0") .with(grouper) (big_value);
         TEST("0") .with(grouper) (0);
 

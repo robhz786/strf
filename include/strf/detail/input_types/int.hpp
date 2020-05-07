@@ -555,11 +555,10 @@ STRF_HD void punct_int_printer<CharSize>::print_to(strf::underlying_outbuf<CharS
         }
         if (sepsize_ == 1) {
             strf::detail::write_int_little_sep<10>
-                (ob, punct_, uvalue_, digcount_, little_sep_, strf::lowercase);
+                ( ob, punct_, uvalue_, digcount_, sepcount_, little_sep_, strf::lowercase );
         } else {
             strf::detail::write_int_big_sep<10>
-                ( ob, punct_, encode_char_, uvalue_, sepsize_
-                , digcount_, strf::lowercase );
+                ( ob, punct_, encode_char_, uvalue_, sepsize_, digcount_, strf::lowercase );
         }
     }
 }
@@ -734,11 +733,10 @@ STRF_HD inline void partial_fmt_int_printer<CharSize, Base>::print_to
         }
         if (sepsize_ == 1) {
             strf::detail::write_int_little_sep<Base>
-                (ob, punct_, uvalue_, digcount_, little_sep_, strf::lowercase);
+                ( ob, punct_, uvalue_, digcount_, sepcount_, little_sep_, strf::lowercase );
         } else {
             strf::detail::write_int_big_sep<Base>
-                ( ob, punct_, encode_char_, uvalue_, sepsize_
-                , digcount_, strf::lowercase );
+                ( ob, punct_, encode_char_, uvalue_, sepsize_, digcount_, strf::lowercase );
         }
     }
 }
@@ -781,11 +779,10 @@ inline STRF_HD void partial_fmt_int_printer<CharSize, Base>::write_digits
         strf::detail::write_int<Base>(ob, uvalue_, digcount_, lettercase_);
     } else if (sepsize_ == 1) {
         strf::detail::write_int_little_sep<Base>
-            (ob, punct_, uvalue_, digcount_, little_sep_, strf::lowercase);
+            ( ob, punct_, uvalue_, digcount_, sepcount_,little_sep_, strf::lowercase );
     } else {
         strf::detail::write_int_big_sep<Base>
-            ( ob, punct_, encode_char_, uvalue_, sepsize_
-            , digcount_, strf::lowercase );
+            ( ob, punct_, encode_char_, uvalue_, sepsize_, digcount_, strf::lowercase );
     }
 }
 
