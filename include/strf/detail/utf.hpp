@@ -639,7 +639,7 @@ public:
     }
     static constexpr STRF_HD std::size_t encoded_char_size(char32_t ch) noexcept
     {
-        return 1 + (0x10000 <= ch && ch < 0x110000);
+        return (std::size_t)1 + (0x10000 <= ch && ch < 0x110000);
     }
 
     static STRF_HD char_type_* encode_char

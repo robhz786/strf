@@ -2,7 +2,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#define  _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <iostream>
 #include <stdio.h>
@@ -22,7 +22,7 @@ static void fill_with_codepoints
         if (x >= 0x80) {
             x = 0;
         }
-        str[i] = x;
+        str[i] = static_cast<char16_t>(x);
     }
 }
 static void fill_with_codepoints
@@ -35,7 +35,7 @@ static void fill_with_codepoints
         if (x >= 0x800) {
             x = 0x80;
         }
-        str[i] = x;
+        str[i] = static_cast<char16_t>(x);
     }
 }
 
@@ -52,7 +52,7 @@ static void fill_with_codepoints
         if (x >= 0x10000) {
             x = 0x800;
         }
-        str[i] = x;
+        str[i] = static_cast<char16_t>(x);
     }
 }
 
@@ -67,8 +67,8 @@ static void fill_with_codepoints
             x = 0x10000;
         }
         x -= 0x10000;
-        str[i]     = 0xD800 | (x >> 10);
-        str[i + 1] = 0xDC00 | (x & 0x3FF);
+        str[i]     = static_cast<char16_t>(0xD800 | (x >> 10));
+        str[i + 1] = static_cast<char16_t>(0xDC00 | (x & 0x3FF));
     }
 }
 

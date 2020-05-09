@@ -62,9 +62,9 @@ public:
                 if (grp == 0) {
                     break;
                 }
-                if (grp == previous_grp) {
-                    continue;
-                }
+                //if (grp == previous_grp) {
+                //    continue;
+                //}
                 STRF_ASSERT((0 < grp && grp <= grp_max) || grp == '\xFF');
                 unsigned g = (grp & grp_bits_mask_) << shift;
                 grps_ = grps_ | g;
@@ -125,22 +125,22 @@ private:
         return 0;
     }
 
-    constexpr static STRF_HD underlying_int_t_ ctor_(signed char last_grp)
+    constexpr static STRF_HD underlying_int_t_ ctor_(int last_grp)
     {
         STRF_ASSERT(last_grp == -1 || (0 < last_grp && last_grp < 32));
         return last_grp & 0x1F;
     }
 
     template <typename ... IntT>
-    constexpr static STRF_HD underlying_int_t_ ctor_(signed char g0, signed char g1, IntT... grps)
+    constexpr static STRF_HD underlying_int_t_ ctor_(int g0, int g1, IntT... grps)
     {
         STRF_ASSERT(0 < g0 && g0 < 32);
         STRF_ASSERT((0 < g1 && g1 < 32) || (g1 == -1 || sizeof...(grps) == 0));
 
-        if (g0 != g1) {
+        //if (g0 != g1) {
             return g0 | (ctor_(g1, grps...) << 5);
-        }
-        return g1 | (ctor_(grps...) << 5);
+        //}
+        //return g1 | (ctor_(grps...) << 5);
     }
 
     underlying_int_t_ grps_ = 0;
@@ -347,10 +347,10 @@ public:
     default_numpunct() noexcept = default;
     default_numpunct(const default_numpunct&) noexcept = default;
 
-    constexpr STRF_HD default_numpunct& operator=(const default_numpunct& other) noexcept
+    constexpr STRF_HD default_numpunct& operator=(const default_numpunct&) noexcept
     {
     }
-    constexpr STRF_HD bool operator==(const default_numpunct& other) const noexcept
+    constexpr STRF_HD bool operator==(const default_numpunct&) const noexcept
     {
         return true;
     }

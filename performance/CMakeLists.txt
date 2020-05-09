@@ -67,4 +67,3 @@ foreach(
     DESTINATION "${STRF_INSTALL_SUBDIR}/$<CONFIG>/benchmarks")
   
 endforeach(x)
-  
