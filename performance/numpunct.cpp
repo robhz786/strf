@@ -23,40 +23,40 @@
     benchmark::RegisterBenchmark(STR(EXPR), ID :: func);
 
 
-#define MP1 const auto mp1 = strf::monotonic_grouping<10>{3};
-#define MP2 const auto mp2 = strf::monotonic_grouping<10>{3}.thousands_sep(0xb7);
-#define SP1 const auto sp1 = strf::str_grouping<10>{"\002\004\003"};
-#define SP2 const auto sp2 = strf::str_grouping<10>{"\002\004\003"}.thousands_sep(0xb7);
+#define MP1 const auto mp1 = strf::monotonic_grouping<10>(3);
+#define MP2 const auto mp2 = strf::monotonic_grouping<10>(3).thousands_sep(0xb7);
+#define SP1 const auto sp1 = strf::numpunct<10>(2, 4, 3);
+#define SP2 const auto sp2 = strf::numpunct<10>(2, 4, 3).thousands_sep(0xb7);
 
 int main(int argc, char** argv)
 {
-    BM(MP1, strf::to(dest).with(mp1) (1000ull));                
-    BM(MP1, strf::to(dest).with(mp1) (1000000000ull));          
-    BM(MP1, strf::to(dest).with(mp1) (1000000000000000000ull)); 
-    BM(MP1, strf::to(dest).with(mp1) (strf::fixed(1e+3)));      
-    BM(MP1, strf::to(dest).with(mp1) (strf::fixed(1e+12)));     
-    BM(MP1, strf::to(dest).with(mp1) (strf::fixed(1e+120)));    
+    BM(MP1, strf::to(dest).with(mp1) (1000ull));
+    BM(MP1, strf::to(dest).with(mp1) (1000000000ull));
+    BM(MP1, strf::to(dest).with(mp1) (1000000000000000000ull));
+    BM(MP1, strf::to(dest).with(mp1) (strf::fixed(1e+3)));
+    BM(MP1, strf::to(dest).with(mp1) (strf::fixed(1e+12)));
+    BM(MP1, strf::to(dest).with(mp1) (strf::fixed(1e+120)));
 
-    BM(MP2, strf::to(dest).with(mp2) (1000ull));               
-    BM(MP2, strf::to(dest).with(mp2) (1000000000ull));         
+    BM(MP2, strf::to(dest).with(mp2) (1000ull));
+    BM(MP2, strf::to(dest).with(mp2) (1000000000ull));
     BM(MP2, strf::to(dest).with(mp2) (1000000000000000000ull));
-    BM(MP2, strf::to(dest).with(mp2) (strf::fixed(1e+3)));     
-    BM(MP2, strf::to(dest).with(mp2) (strf::fixed(1e+18)));    
-    BM(MP2, strf::to(dest).with(mp2) (strf::fixed(1e+180)));   
+    BM(MP2, strf::to(dest).with(mp2) (strf::fixed(1e+3)));
+    BM(MP2, strf::to(dest).with(mp2) (strf::fixed(1e+18)));
+    BM(MP2, strf::to(dest).with(mp2) (strf::fixed(1e+180)));
 
-    BM(SP1, strf::to(dest).with(sp1) (1000ull));               
-    BM(SP1, strf::to(dest).with(sp1) (1000000000ull));         
+    BM(SP1, strf::to(dest).with(sp1) (1000ull));
+    BM(SP1, strf::to(dest).with(sp1) (1000000000ull));
     BM(SP1, strf::to(dest).with(sp1) (1000000000000000000ull));
-    BM(SP1, strf::to(dest).with(sp1) (strf::fixed(1e+3)));     
-    BM(SP1, strf::to(dest).with(sp1) (strf::fixed(1e+12)));    
-    BM(SP1, strf::to(dest).with(sp1) (strf::fixed(1e+120)));   
+    BM(SP1, strf::to(dest).with(sp1) (strf::fixed(1e+3)));
+    BM(SP1, strf::to(dest).with(sp1) (strf::fixed(1e+12)));
+    BM(SP1, strf::to(dest).with(sp1) (strf::fixed(1e+120)));
 
-    BM(SP2, strf::to(dest).with(sp2) (1000ull));               
-    BM(SP2, strf::to(dest).with(sp2) (1000000000ull));         
+    BM(SP2, strf::to(dest).with(sp2) (1000ull));
+    BM(SP2, strf::to(dest).with(sp2) (1000000000ull));
     BM(SP2, strf::to(dest).with(sp2) (1000000000000000000ull));
-    BM(SP2, strf::to(dest).with(sp2) (strf::fixed(1e+3)));     
-    BM(SP2, strf::to(dest).with(sp2) (strf::fixed(1e+18)));    
-    BM(SP2, strf::to(dest).with(sp2) (strf::fixed(1e+180)));   
+    BM(SP2, strf::to(dest).with(sp2) (strf::fixed(1e+3)));
+    BM(SP2, strf::to(dest).with(sp2) (strf::fixed(1e+18)));
+    BM(SP2, strf::to(dest).with(sp2) (strf::fixed(1e+180)));
 
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();

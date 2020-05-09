@@ -124,7 +124,7 @@ void basic_facet_sample()
 
 //[ basic_facet_sample
     constexpr int base = 10;
-    auto punct = strf::str_grouping<base>{"\4\3\2"}.thousands_sep(U'.');
+    auto punct = strf::numpunct<base>{4, 3, 2}.thousands_sep(U'.');
     auto s = strf::to_string
         .with(punct)
         ("one hundred billions = ", 100000000000ll);
@@ -174,7 +174,7 @@ void sample_numpunct_with_alternative_charset()
     // Writting in Windows-1252
     auto s = strf::to_string
         .with(strf::windows_1252<char>())
-        .with(strf::str_grouping<10>{"\4\3\2"}.thousands_sep(0x2022))
+        .with(strf::numpunct<10>{4, 3, 2}.thousands_sep(0x2022))
         ("one hundred billions = ", 100000000000ll);
 
     // The character U+2022 is encoded as '\225' in Windows-1252
@@ -236,12 +236,12 @@ void monotonic_grouping()
     //]
 }
 
-void str_grouping()
+void variable_grouping()
 {
-    //[str_grouping
+    //[variable_grouping
     constexpr int base = 10;
 
-    auto punct = strf::str_grouping<base>{"\4\3\2"};
+    auto punct = strf::numpunct<base>{4, 3, 2};
     auto str = strf::to_string.with(punct)(100000000000ll);
     assert(str == "1,00,00,000,0000");
     //]
@@ -380,7 +380,7 @@ int main()
     input_string_charset();
     sani();
     monotonic_grouping();
-    str_grouping();
+    variable_grouping();
     punct_non_decimal();
     fast_width();
     width_as_u32len();

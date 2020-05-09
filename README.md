@@ -67,7 +67,7 @@ void samples()
 
 
     // numeric punctuation ( using facets )
-    auto punct_facet = strf::monotonic_grouping<base>{3}.thousands_sep(U'.');
+    auto punct_facet = strf::numpunct<base>{3}.thousands_sep(U'.');
     s = strf::to_string .with(punct_facet) (100000000000ll);
     assert(s == "100.000.000.000");
 

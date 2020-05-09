@@ -19,28 +19,21 @@ int main()
 
     auto big_value = 10000000000000000000ull;
     {
-        auto punct = strf::str_grouping<10>{"\004\003\002"}.thousands_sep(U'.');
+        auto punct = strf::numpunct<10>{4, 3, 2}.thousands_sep(U'.');
         TEST("1.00.00.000.0000").with(punct)(100000000000ll);
     }
     {
-        std::string grps{"\003"};
-        auto punct = strf::str_grouping<10>{grps};
+        auto punct = strf::numpunct<10>{3};
         TEST("100,000,000,000").with(punct)(100000000000ll);
     }
     {
-        strf::str_grouping<10> grouper{std::string()};
+        strf::numpunct<10> grouper{};
         TEST("10000000000000000000") .with(grouper) (big_value);
         TEST_TRUE(grouper.thousands_sep_count(1) == 0);
         TEST_TRUE(grouper.thousands_sep_count(99) == 0);
     }
     {
-        strf::str_grouping<10> grouper{std::string("\0", 1)};
-        TEST("10000000000000000000") .with(grouper) (big_value);
-        TEST_TRUE(grouper.thousands_sep_count(1) == 0);
-        TEST_TRUE(grouper.thousands_sep_count(99) == 0);
-    }
-    {
-        strf::str_grouping<10> grouper{std::string("\001\002\003\xFF", 4)};
+        strf::numpunct<10> grouper{1, 2, 3, -1};
         TEST("10000000000000,000,00,0") .with(grouper) (big_value);
         TEST("0") .with(grouper) (0);
 
@@ -58,7 +51,7 @@ int main()
         TEST_TRUE(grouper.thousands_sep_count(99) == 3);
     }
     {
-        strf::str_grouping<10> grouper{std::string("\001\002\003", 3)};
+        strf::numpunct<10> grouper{1, 2, 3};
         TEST("10,000,000,000,000,000,00,0") .with(grouper) (big_value);
         TEST("0") .with(grouper) (0);
 
@@ -75,13 +68,13 @@ int main()
         TEST_TRUE(grouper.thousands_sep_count(11) == 4);
     }
     {
-        strf::str_grouping<10> grouper{std::string("\xff")};
+        strf::numpunct<10> grouper{-1};
         TEST("10000000000000000000") .with(grouper) (big_value);
         TEST("0") .with(grouper) (0);
 
     }
     {
-        auto grouper = strf::str_grouping<10>{std::string("\x0f\002")}.thousands_sep(',');
+        auto grouper = strf::numpunct<10>{15, 2};
         TEST("1,00,00,000000000000000") .with(grouper) (big_value);
         TEST("100000000000000") .with(grouper) (100000000000000);
         TEST("0") .with(grouper) (0);

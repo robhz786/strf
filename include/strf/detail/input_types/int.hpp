@@ -233,7 +233,7 @@ class has_intpunct_impl
 {
 public:
 
-    static STRF_HD std::true_type  test_numpunct(const strf::numpunct_base&);
+    static STRF_HD std::true_type  test_numpunct(const strf::numpunct<Base>&);
     static STRF_HD std::false_type test_numpunct(const strf::default_numpunct<Base>&);
     static STRF_HD std::false_type test_numpunct(const strf::no_grouping<Base>&);
 
@@ -329,7 +329,7 @@ struct voidptr_printable_traits
     make_input(const FPack& fp, Preview& preview, const void* arg)
     {
         auto new_fp = strf::pack
-            ( std::cref(strf::get_facet<strf::numpunct_c<16>, const void*>(fp))
+            ( strf::get_facet<strf::numpunct_c<16>, const void*>(fp)
             , strf::get_facet<strf::lettercase_c, const void*>(fp)
             , strf::get_facet<strf::charset_c<CharT>, const void*>(fp) );
 
@@ -410,7 +410,7 @@ struct printable_traits
         , strf::value_with_format<const void*, strf::alignment_format> arg )
     {
         auto new_fp = strf::pack
-            ( std::cref(strf::get_facet<strf::numpunct_c<16>, const void*>(fp))
+            ( strf::get_facet<strf::numpunct_c<16>, const void*>(fp)
             , strf::get_facet<strf::lettercase_c, const void*>(fp)
             , strf::get_facet<strf::charset_c<CharT>, const void*>(fp) );
 
@@ -497,20 +497,23 @@ public:
     template <typename CharT, typename FPack, typename Preview, typename IntT>
     STRF_HD punct_int_printer
         ( const strf::detail::punct_int_printer_input<CharT, FPack, Preview, IntT>& i )
-        : punct_(get_facet<strf::numpunct_c<10>, IntT>(i.fp))
     {
         decltype(auto) cs = get_facet<strf::charset_c<CharT>, IntT>(i.fp);
 
         uvalue_ = strf::detail::unsigned_abs(i.value);
         digcount_ = strf::detail::count_digits<10>(uvalue_);
-        if (! punct_.no_group_separation(digcount_)) {
-            char32_t sep32 = punct_.thousands_sep();
-            std::size_t sepsize = cs.validate(sep32);
+        auto punct = get_facet<strf::numpunct_c<10>, IntT>(i.fp);
+        if (! punct.no_group_separation(digcount_)) {
+            groups_ = punct.groups();
+            thousands_sep_ = punct.thousands_sep();
+            std::size_t sepsize = cs.validate(thousands_sep_);
             if (sepsize != (std::size_t)-1) {
                 sepsize_ = static_cast<unsigned>(sepsize);
-                sepcount_ = punct_.thousands_sep_count(digcount_);
+                sepcount_ = punct.thousands_sep_count(digcount_);
                 if (sepsize_ == 1) {
-                    cs.encode_char(&little_sep_, sep32);
+                    char_type little_sep[4];
+                    cs.encode_char(little_sep, thousands_sep_);
+                    thousands_sep_ = little_sep[0];
                 } else {
                     encode_char_ = cs.encode_char_func();
                 }
@@ -526,13 +529,13 @@ public:
 
 private:
 
-    const strf::numpunct_base& punct_;
     strf::encode_char_f<CharSize> encode_char_;
+    strf::digits_groups_iterator groups_;
+    char32_t thousands_sep_;
     unsigned long long uvalue_;
     unsigned digcount_;
     unsigned sepcount_ = 0;
     unsigned sepsize_ = 0;
-    char_type little_sep_;
     bool negative_;
 };
 
@@ -555,10 +558,12 @@ STRF_HD void punct_int_printer<CharSize>::print_to(strf::underlying_outbuf<CharS
         }
         if (sepsize_ == 1) {
             strf::detail::write_int_little_sep<10>
-                ( ob, punct_, uvalue_, digcount_, sepcount_, little_sep_, strf::lowercase );
+                ( ob, uvalue_, groups_, digcount_, sepcount_
+                , static_cast<char_type>(thousands_sep_), strf::lowercase );
         } else {
             strf::detail::write_int_big_sep<10>
-                ( ob, punct_, encode_char_, uvalue_, sepsize_, digcount_, strf::lowercase );
+                ( ob, encode_char_, uvalue_, groups_, thousands_sep_, sepsize_
+                , digcount_, strf::lowercase );
         }
     }
 }
@@ -593,12 +598,17 @@ public:
         , IntT value
         , int_format_data fdata
         , strf::tag<CharT> )
-        : punct_(get_facet<strf::numpunct_c<Base>, IntTag>(fp))
-        , lettercase_(get_facet<strf::lettercase_c, IntTag>(fp))
+        : lettercase_(get_facet<strf::lettercase_c, IntTag>(fp))
     {
         init_<IntT>( value, fdata );
         STRF_IF_CONSTEXPR (detail::has_intpunct<FPack, IntTag, Base>()) {
-            init_punct_(get_facet<strf::charset_c<CharT>, IntTag>(fp));
+            auto punct = get_facet<strf::numpunct_c<Base>, IntTag>(fp);
+            if ( ! punct.no_group_separation(digcount_)) {
+                groups_ = punct.groups();
+                thousands_sep_ = punct.thousands_sep();
+                auto charset = get_facet<strf::charset_c<CharT>, IntTag>(fp);
+                init_punct_(charset);
+            }
         }
         preview.subtract_width(width());
         calc_size(preview);
@@ -622,14 +632,14 @@ public:
 
 private:
 
-    const strf::numpunct_base& punct_;
     strf::encode_char_f<CharSize> encode_char_;
     unsigned long long uvalue_ = 0;
+    strf::digits_groups_iterator groups_;
+    char32_t thousands_sep_;
     unsigned precision_ = 0;
     unsigned digcount_ = 0;
     unsigned sepcount_ = 0;
     unsigned sepsize_ = 0;
-    char_type little_sep_;
     strf::lettercase lettercase_;
     bool negative_ = false;
     std::uint8_t prefixsize_ = 0;
@@ -664,20 +674,18 @@ STRF_HD void partial_fmt_int_printer<CharSize, Base>::init_
 
 template <std::size_t CharSize, int Base>
 template <typename Charset>
-STRF_HD void partial_fmt_int_printer<CharSize, Base>::init_punct_
-    (const Charset& cs)
+STRF_HD void partial_fmt_int_printer<CharSize, Base>::init_punct_(const Charset& cs)
 {
-    if (! punct_.no_group_separation(digcount_)) {
-        char32_t sep32 = punct_.thousands_sep();
-        std::size_t sepsize = cs.validate(sep32);
-        if (sepsize != (std::size_t)-1) {
-            sepsize_ = static_cast<unsigned>(sepsize);
-            sepcount_ = punct_.thousands_sep_count(digcount_);
-            if (sepsize_ == 1) {
-                cs.encode_char(&little_sep_, sep32);
-            } else {
-                encode_char_ = cs.encode_char_func();
-            }
+    std::size_t sepsize = cs.validate(thousands_sep_);
+    if (sepsize != (std::size_t)-1) {
+        sepsize_ = static_cast<unsigned>(sepsize);
+        sepcount_ = strf::sep_count(groups_, digcount_);
+        if (sepsize_ == 1) {
+            char_type little_sep[4];
+            cs.encode_char(little_sep, thousands_sep_);
+            thousands_sep_ = little_sep[0];
+        } else {
+            encode_char_ = cs.encode_char_func();
         }
     }
 }
@@ -733,10 +741,12 @@ STRF_HD inline void partial_fmt_int_printer<CharSize, Base>::print_to
         }
         if (sepsize_ == 1) {
             strf::detail::write_int_little_sep<Base>
-                ( ob, punct_, uvalue_, digcount_, sepcount_, little_sep_, strf::lowercase );
+                ( ob, uvalue_, groups_, digcount_, sepcount_
+                , static_cast<char_type>(thousands_sep_), strf::lowercase );
         } else {
             strf::detail::write_int_big_sep<Base>
-                ( ob, punct_, encode_char_, uvalue_, sepsize_, digcount_, strf::lowercase );
+                ( ob, encode_char_, uvalue_, groups_, thousands_sep_
+                , sepsize_, digcount_, strf::lowercase );
         }
     }
 }
@@ -779,10 +789,12 @@ inline STRF_HD void partial_fmt_int_printer<CharSize, Base>::write_digits
         strf::detail::write_int<Base>(ob, uvalue_, digcount_, lettercase_);
     } else if (sepsize_ == 1) {
         strf::detail::write_int_little_sep<Base>
-            ( ob, punct_, uvalue_, digcount_, sepcount_,little_sep_, strf::lowercase );
+            ( ob, uvalue_, groups_, digcount_, sepcount_
+            , static_cast<char_type>(thousands_sep_), strf::lowercase );
     } else {
         strf::detail::write_int_big_sep<Base>
-            ( ob, punct_, encode_char_, uvalue_, sepsize_, digcount_, strf::lowercase );
+            ( ob, encode_char_, uvalue_, groups_, thousands_sep_, sepsize_
+            , digcount_, strf::lowercase );
     }
 }
 

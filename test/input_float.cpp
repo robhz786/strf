@@ -570,7 +570,7 @@ int main()
             TEST("_______0x1\xA9""abcdefp+1") .with(fp) (j(strf::hex(0x1.abcdefp+1)));
         }
         {
-            auto punct = strf::str_grouping<10>("\001\002\003");
+            auto punct = strf::numpunct<10>(1, 2, 3);
             TEST("__1,000,000,000,00,0") .with(punct) (j(strf::fixed(1e+12)));
             TEST("____100,000,000,00,0") .with(punct) (j(strf::fixed(1e+11)));
             TEST("____123,000,000,00,0") .with(punct) (j(strf::fixed(123e+9)));
