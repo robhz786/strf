@@ -513,7 +513,7 @@ public:
                     it[-2] = arr[dig_index];
                     it -= 2;
                     if (group_it != 2) {
-                        group_it -= 2;              
+                        group_it -= 2;
                     } else {
                         if (uvalue == 0) {
                             return;
@@ -536,7 +536,7 @@ public:
                     * --it = arr[dig_index];
                     if (uvalue == 0) {
                         return;
-                    }                    
+                    }
                     group = groups.next();
                     if (groups.is_final()) {
                         if (groups.no_more_sep()) {
@@ -558,7 +558,7 @@ public:
                             if (groups.no_more_sep()) {
                                 goto no_more_sep;
                             }
-                            goto repeated_groups;                            
+                            goto repeated_groups;
                         }
                         group_it = group;
                     }
@@ -566,8 +566,8 @@ public:
             }
         }
         repeated_groups:
-        group_it = group;        
-        if (group != 1) {            
+        group_it = group;
+        if (group != 1) {
             while (1) {
                 STRF_ASSERT(group_it != 0);
 
@@ -614,7 +614,7 @@ public:
                 * --it = sep;
                 if (uvalue < 10) {
                     * --it = static_cast<CharT>('0' + uvalue);
-                    return;                
+                    return;
                 }
             }
         }
@@ -947,29 +947,30 @@ public:
             ( value, dig_end, lc);
 
         const char32_t sep = punct.thousands_sep();
-
-        auto groups = punct.groups(digcount);
-        ob.ensure(groups.highest_group);
+        auto dist = strf::calculate_distribution(punct.groups(), digcount);
+        ob.ensure(dist.highest_group);
         auto oit = ob.pointer();
         auto end = ob.end();
-        strf::detail::copy_n(digits, groups.highest_group, oit);
-        oit += groups.highest_group;
-        digits += groups.highest_group;
+        strf::detail::copy_n(digits,dist.highest_group, oit);
+        oit += dist.highest_group;
+        digits += dist.highest_group;
 
-        while (groups.middle_groups_count--) {
-            if (oit + sep_size + groups.middle_groups > end) {
+        auto middle_groups = dist.low_groups.highest_group();
+        while (dist.middle_groups_count --) {
+            if (oit + sep_size + middle_groups > end) {
                 ob.advance_to(oit);
                 ob.recycle();
                 oit = ob.pointer();
                 end = ob.end();
             }
             oit = encode_char(oit, sep);
-            strf::detail::copy_n(digits, groups.middle_groups, oit);
-            oit += groups.middle_groups;
-            digits += groups.middle_groups;
+            strf::detail::copy_n(digits, middle_groups, oit);
+            oit += middle_groups;
+            digits += middle_groups;
         }
-        for (auto i = groups.low_groups_count; i ;) {
-            auto grp = groups.low_groups[--i];
+        dist.low_groups.pop_high();
+        while ( ! dist.low_groups.empty()) {
+            auto grp = dist.low_groups.highest_group();
             if (oit + sep_size + grp > end) {
                 ob.advance_to(oit);
                 ob.recycle();
@@ -980,6 +981,7 @@ public:
             strf::detail::copy_n(digits, grp, oit);
             oit += grp;
             digits += grp;
+            dist.low_groups.pop_high();
         }
         ob.advance_to(oit);
     }
@@ -1039,16 +1041,16 @@ public:
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
         using char_type = strf::underlying_char_type<CharSize>;
 
-        auto groups = punct.groups(digcount);
         UIntT mask = (UIntT)1 << (digcount - 1);
-        ob.ensure(groups.highest_group);
+        auto dist = strf::calculate_distribution(punct.groups(), digcount);
         auto oit = ob.pointer();
         auto end = ob.end();
-        while (groups.highest_group--) {
+        while (dist.highest_group--) {
             *oit++ = (char_type)'0' + (0 != (value & mask));
             mask = mask >> 1;
         }
-        while (groups.middle_groups_count) {
+        auto middle_groups = dist.low_groups.highest_group();
+        while (dist.middle_groups_count--) {
             if (oit == end) {
                 ob.advance_to(oit);
                 ob.recycle();
@@ -1056,7 +1058,7 @@ public:
                 end = ob.end();
             }
             *oit++ = sep;
-            for (auto i = groups.middle_groups; i ; --i) {
+            for (auto i = middle_groups; i ; --i) {
                 if (oit == end) {
                     ob.advance_to(oit);
                     ob.recycle();
@@ -1066,9 +1068,9 @@ public:
                 *oit++ = (char_type)'0' + (0 != (value & mask));
                 mask = mask >> 1;
             }
-            -- groups.middle_groups_count;
         }
-        for (auto i = groups.low_groups_count; i ;) {
+        dist.low_groups.pop_high();
+        while ( ! dist.low_groups.empty() ) {
             if (oit == end) {
                 ob.advance_to(oit);
                 ob.recycle();
@@ -1076,7 +1078,7 @@ public:
                 end = ob.end();
             }
             *oit++ = sep;
-            for (auto g = groups.low_groups[--i]; g; --g) {
+            for (auto g = dist.low_groups.highest_group(); g; --g) {
                 if (oit == end) {
                     ob.advance_to(oit);
                     ob.recycle();
@@ -1104,18 +1106,19 @@ public:
         STRF_ASSERT(value > 1);
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
         using char_type = strf::underlying_char_type<CharSize>;
-        auto groups = punct.groups(digcount);
+        auto dist = strf::calculate_distribution(punct.groups(), digcount);
         const char32_t sep = punct.thousands_sep();
         UIntT mask = (UIntT)1 << (digcount - 1);
 
-        ob.ensure(groups.highest_group);
+        ob.ensure(dist.highest_group);
         auto oit = ob.pointer();
         auto end = ob.end();
-        while (groups.highest_group--) {
+        while (dist.highest_group--) {
             *oit++ = (char_type)'0' + (0 != (value & mask));
             mask = mask >> 1;
         }
-        while (groups.middle_groups_count) {
+        auto middle_groups = dist.low_groups.highest_group();
+        while (dist.middle_groups_count) {
             if (oit + sep_size > end) {
                 ob.advance_to(oit);
                 ob.recycle();
@@ -1123,7 +1126,7 @@ public:
                 end = ob.end();
             }
             oit = encode_char(oit, sep);
-            for (auto i = groups.middle_groups; i ; --i) {
+            for (auto i = middle_groups; i ; --i) {
                 if (oit == end) {
                     ob.advance_to(oit);
                     ob.recycle();
@@ -1133,9 +1136,10 @@ public:
                 *oit++ = (char_type)'0' + (0 != (value & mask));
                 mask = mask >> 1;
             }
-            -- groups.middle_groups_count;
+            -- dist.middle_groups_count;
         }
-        for (auto i = groups.low_groups_count; i ;) {
+        dist.low_groups.pop_high();
+        while ( ! dist.low_groups.empty() ) {
             if (oit + sep_size > end) {
                 ob.advance_to(oit);
                 ob.recycle();
@@ -1143,7 +1147,7 @@ public:
                 end = ob.end();
             }
             oit = encode_char(oit, sep);
-            for (auto g = groups.low_groups[--i]; g; --g) {
+            for (auto g = dist.low_groups.highest_group(); g; --g) {
                 if (oit == end) {
                     ob.advance_to(oit);
                     ob.recycle();
