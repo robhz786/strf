@@ -658,38 +658,38 @@ STRF_HD void print_amplified_integer_small_separator_1
     ( strf::underlying_outbuf<CharSize>& ob
     , unsigned long long value
     , unsigned num_digits
-    , strf::digits_distribution groups
+    , strf::digits_distribution dist
     , strf::underlying_char_type<CharSize> separator )
 {
-    STRF_ASSERT(num_digits <= groups.highest_group);
+    STRF_ASSERT(num_digits <= dist.highest_group);
     using char_type = strf::underlying_char_type<CharSize>;
 
     ob.ensure(num_digits);
     auto ptr = ob.pointer() + num_digits;
     strf::detail::write_int_dec_txtdigits_backwards(value, ptr);
     ob.advance_to(ptr);
-    groups.highest_group -= num_digits;
-    if (groups.highest_group != 0) {
-        strf::detail::write_fill(ob, groups.highest_group, (char_type)'0');
+    dist.highest_group -= num_digits;
+    if (dist.highest_group != 0) {
+        strf::detail::write_fill(ob, dist.highest_group, (char_type)'0');
     }
 
-    auto middle_groups = groups.low_groups.highest_group();
-    for (auto mgc = groups.middle_groups_count; mgc != 0; --mgc) {
+    auto middle_groups = dist.low_groups.highest_group();
+    for (auto mgc = dist.middle_groups_count; mgc != 0; --mgc) {
         ob.ensure(middle_groups + 1);
         auto oit = ob.pointer();
         *oit = separator;
         strf::detail::str_fill_n(++oit, middle_groups, (char_type)'0');
         ob.advance_to(oit + middle_groups);
     }
-    groups.low_groups.pop_high();
-    while ( ! groups.low_groups.empty()) {
-        auto grp = groups.low_groups.highest_group();
+    dist.low_groups.pop_high();
+    while ( ! dist.low_groups.empty()) {
+        auto grp = dist.low_groups.highest_group();
         ob.ensure(grp + 1);
         auto oit = ob.pointer();
         *oit = separator;
         strf::detail::str_fill_n(++oit, grp, (char_type)'0');
         ob.advance_to(oit + grp);
-        groups.low_groups.pop_high();
+        dist.low_groups.pop_high();
     }
 }
 
@@ -698,10 +698,10 @@ STRF_HD void print_amplified_integer_small_separator_2
     ( strf::underlying_outbuf<CharSize>& ob
     , unsigned long long value
     , unsigned num_digits
-    , strf::digits_distribution groups
+    , strf::digits_distribution dist
     , strf::underlying_char_type<CharSize> separator )
 {
-    STRF_ASSERT(groups.highest_group < num_digits);
+    STRF_ASSERT(dist.highest_group < num_digits);
 
     using char_type = strf::underlying_char_type<CharSize>;
     constexpr std::size_t size_after_recycle = strf::min_size_after_recycle<CharSize>();
@@ -714,14 +714,14 @@ STRF_HD void print_amplified_integer_small_separator_2
 
     unsigned grp_size;
 
-    ob.ensure(groups.highest_group);
-    strf::detail::copy_n(digits, groups.highest_group, ob.pointer());
-    num_digits -= groups.highest_group;
-    digits += groups.highest_group;
-    ob.advance(groups.highest_group);
+    ob.ensure(dist.highest_group);
+    strf::detail::copy_n(digits, dist.highest_group, ob.pointer());
+    num_digits -= dist.highest_group;
+    digits += dist.highest_group;
+    ob.advance(dist.highest_group);
 
-    if (groups.middle_groups_count) {
-        auto middle_groups = groups.low_groups.highest_group();
+    if (dist.middle_groups_count) {
+        auto middle_groups = dist.low_groups.highest_group();
         while (num_digits >= middle_groups) {
             ob.ensure(1 + middle_groups);
             auto oit = ob.pointer();
@@ -730,11 +730,11 @@ STRF_HD void print_amplified_integer_small_separator_2
             ob.advance(1 + middle_groups);
             num_digits -= middle_groups;
             digits += middle_groups;
-            if (--groups.middle_groups_count == 0) {
+            if (--dist.middle_groups_count == 0) {
                 goto lower_groups;
             }
         }
-        STRF_ASSERT(groups.middle_groups_count != 0);
+        STRF_ASSERT(dist.middle_groups_count != 0);
         STRF_ASSERT(num_digits < middle_groups);
         if (num_digits != 0) {
             ob.ensure(1 + num_digits);
@@ -745,24 +745,24 @@ STRF_HD void print_amplified_integer_small_separator_2
             auto remaining = middle_groups - num_digits;
             num_digits = 0;
             strf::detail::write_fill(ob, remaining, '0');
-            --groups.middle_groups_count;
+            -- dist.middle_groups_count;
         }
         STRF_ASSERT(num_digits == 0);
-        while (groups.middle_groups_count) {
+        while (dist.middle_groups_count) {
             strf::put(ob, separator);
             strf::detail::write_fill(ob, middle_groups, (char_type)'0');
-            -- groups.middle_groups_count;
+            -- dist.middle_groups_count;
         }
-        STRF_ASSERT(groups.middle_groups_count == 0);
+        STRF_ASSERT(dist.middle_groups_count == 0);
         goto lower_groups_in_trailing_zeros;
     }
 
     lower_groups:
-    STRF_ASSERT(groups.middle_groups_count == 0);
-    groups.low_groups.pop_high();
-    grp_size = groups.low_groups.highest_group();
+    STRF_ASSERT(dist.middle_groups_count == 0);
+    dist.low_groups.pop_high();
+    grp_size = dist.low_groups.highest_group();
     while (num_digits > grp_size) {
-        STRF_ASSERT(! groups.low_groups.empty());
+        STRF_ASSERT(! dist.low_groups.empty());
         STRF_ASSERT(grp_size + 1 <= size_after_recycle);
         ob.ensure(grp_size + 1);
         auto oit = ob.pointer();
@@ -771,8 +771,8 @@ STRF_HD void print_amplified_integer_small_separator_2
         digits += grp_size;
         ob.advance(grp_size + 1);
         num_digits -= grp_size;
-        groups.low_groups.pop_high();
-        grp_size = groups.low_groups.highest_group();
+        dist.low_groups.pop_high();
+        grp_size = dist.low_groups.highest_group();
     }
     if (num_digits != 0)
     {
@@ -796,16 +796,16 @@ STRF_HD void print_amplified_integer_small_separator_2
     }
 
     lower_groups_in_trailing_zeros:
-    groups.low_groups.pop_high();
-    while (! groups.low_groups.empty()) {
-        grp_size = groups.low_groups.highest_group();
+    dist.low_groups.pop_high();
+    while (! dist.low_groups.empty()) {
+        grp_size = dist.low_groups.highest_group();
         STRF_ASSERT(grp_size + 1 <= size_after_recycle);
         ob.ensure(grp_size + 1);
         auto it = ob.pointer();
         *it = separator;
         strf::detail::str_fill_n(it + 1, grp_size, '0');
         ob.advance(grp_size + 1);
-        groups.low_groups.pop_high();
+        dist.low_groups.pop_high();
     }
 }
 
@@ -814,12 +814,12 @@ template <std::size_t CharSize>
 inline STRF_HD void print_amplified_integer_small_separator
     ( strf::underlying_outbuf<CharSize>& ob
     , unsigned long long value
-    , strf::digits_groups_iterator groups
+    , strf::digits_grouping grouping
     , unsigned num_digits
     , unsigned num_trailing_zeros
     , strf::underlying_char_type<CharSize> separator )
 {
-    auto dist = strf::calculate_distribution(groups, num_digits + num_trailing_zeros);
+    auto dist = strf::calculate_distribution(grouping, num_digits + num_trailing_zeros);
     if (num_digits <= dist.highest_group) {
         print_amplified_integer_small_separator_1
             ( ob, value, num_digits, dist, separator );
@@ -835,36 +835,36 @@ STRF_HD void print_amplified_integer_big_separator_1
     , strf::encode_char_f<CharSize> encode_char
     , unsigned long long value
     , unsigned num_digits
-    , strf::digits_distribution groups
+    , strf::digits_distribution dist
     , char32_t separator
     , unsigned separator_size )
 {
-    STRF_ASSERT(num_digits <= groups.highest_group);
+    STRF_ASSERT(num_digits <= dist.highest_group);
     using char_type = strf::underlying_char_type<CharSize>;
 
     ob.ensure(num_digits);
     auto ptr = ob.pointer() + num_digits;
     strf::detail::write_int_dec_txtdigits_backwards(value, ptr);
     ob.advance_to(ptr);
-    groups.highest_group -= num_digits;
-    if (groups.highest_group != 0) {
-        strf::detail::write_fill(ob, groups.highest_group, (char_type)'0');
+    dist.highest_group -= num_digits;
+    if (dist.highest_group != 0) {
+        strf::detail::write_fill(ob, dist.highest_group, (char_type)'0');
     }
-    auto middle_groups = groups.low_groups.highest_group();
-    for (auto mgc = groups.middle_groups_count; mgc != 0; --mgc) {
+    auto middle_groups = dist.low_groups.highest_group();
+    for (auto mgc = dist.middle_groups_count; mgc != 0; --mgc) {
         ob.ensure(separator_size + middle_groups);
         auto oit = encode_char(ob.pointer(), separator);
         strf::detail::str_fill_n(oit, middle_groups, (char_type)'0');
         ob.advance_to(oit + middle_groups);
     }
-    groups.low_groups.pop_high();
-    while ( ! groups.low_groups.empty()) {
-        auto grp = groups.low_groups.highest_group();
+    dist.low_groups.pop_high();
+    while ( ! dist.low_groups.empty()) {
+        auto grp = dist.low_groups.highest_group();
         ob.ensure(separator_size + grp);
         auto oit = encode_char(ob.pointer(), separator);
         strf::detail::str_fill_n(oit, grp, (char_type)'0');
         ob.advance(separator_size + grp);
-        groups.low_groups.pop_high();
+        dist.low_groups.pop_high();
     }
 }
 
@@ -874,11 +874,11 @@ STRF_HD void print_amplified_integer_big_separator_2
     , strf::encode_char_f<CharSize> encode_char
     , unsigned long long value
     , unsigned num_digits
-    , strf::digits_distribution groups
+    , strf::digits_distribution dist
     , char32_t separator
     , unsigned separator_size )
 {
-    STRF_ASSERT(groups.highest_group < num_digits);
+    STRF_ASSERT(dist.highest_group < num_digits);
 
     using char_type = strf::underlying_char_type<CharSize>;
     constexpr std::size_t size_after_recycle = strf::min_size_after_recycle<CharSize>();
@@ -891,14 +891,14 @@ STRF_HD void print_amplified_integer_big_separator_2
 
     unsigned grp_size;
 
-    ob.ensure(groups.highest_group);
-    strf::detail::copy_n(digits, groups.highest_group, ob.pointer());
-    num_digits -= groups.highest_group;
-    digits += groups.highest_group;
-    ob.advance(groups.highest_group);
+    ob.ensure(dist.highest_group);
+    strf::detail::copy_n(digits, dist.highest_group, ob.pointer());
+    num_digits -= dist.highest_group;
+    digits += dist.highest_group;
+    ob.advance(dist.highest_group);
 
-    if (groups.middle_groups_count) {
-        auto middle_groups = groups.low_groups.highest_group();
+    if (dist.middle_groups_count) {
+        auto middle_groups = dist.low_groups.highest_group();
         while (num_digits >= middle_groups) {
             ob.ensure(separator_size + middle_groups);
             auto *oit = encode_char(ob.pointer(), separator);
@@ -906,11 +906,11 @@ STRF_HD void print_amplified_integer_big_separator_2
             ob.advance_to(oit + middle_groups);
             num_digits -= middle_groups;
             digits += middle_groups;
-            if (--groups.middle_groups_count == 0) {
+            if (--dist.middle_groups_count == 0) {
                 goto lower_groups;
             }
         }
-        STRF_ASSERT(groups.middle_groups_count != 0);
+        STRF_ASSERT(dist.middle_groups_count != 0);
         STRF_ASSERT(num_digits < middle_groups);
         if (num_digits != 0) {
             ob.ensure(separator_size + middle_groups);
@@ -920,26 +920,26 @@ STRF_HD void print_amplified_integer_big_separator_2
             strf::detail::str_fill_n(oit + num_digits, remaining, '0');
             ob.advance_to(oit + middle_groups);
             num_digits = 0;
-            --groups.middle_groups_count;
+            --dist.middle_groups_count;
         }
         STRF_ASSERT(num_digits == 0);
-        while (groups.middle_groups_count) {
+        while (dist.middle_groups_count) {
             ob.ensure(separator_size + middle_groups);
             auto oit = encode_char(ob.pointer(), separator);
             strf::detail::str_fill_n(oit, middle_groups, (char_type)'0');
             ob.advance_to(oit + middle_groups);
-            -- groups.middle_groups_count;
+            -- dist.middle_groups_count;
         }
-        STRF_ASSERT(groups.middle_groups_count == 0);
+        STRF_ASSERT(dist.middle_groups_count == 0);
         goto lower_groups_in_trailing_zeros;
     }
 
     lower_groups:
-    STRF_ASSERT(groups.middle_groups_count == 0);
-    groups.low_groups.pop_high();
-    grp_size = groups.low_groups.highest_group();
+    STRF_ASSERT(dist.middle_groups_count == 0);
+    dist.low_groups.pop_high();
+    grp_size = dist.low_groups.highest_group();
     while (num_digits > grp_size) {
-        STRF_ASSERT(! groups.low_groups.empty());
+        STRF_ASSERT(! dist.low_groups.empty());
            // `-> otherwise (num_digits > grp_size) should be false
         STRF_ASSERT(grp_size + separator_size <= size_after_recycle);
         ob.ensure(separator_size + grp_size);
@@ -948,8 +948,8 @@ STRF_HD void print_amplified_integer_big_separator_2
         ob.advance_to(oit + grp_size);
         digits += grp_size;
         num_digits -= grp_size;
-        groups.low_groups.pop_high();
-        grp_size = groups.low_groups.highest_group();
+        dist.low_groups.pop_high();
+        grp_size = dist.low_groups.highest_group();
     }
     if (num_digits != 0)
     {
@@ -974,15 +974,15 @@ STRF_HD void print_amplified_integer_big_separator_2
         ob.advance_to(oit + grp_size);
     }
     lower_groups_in_trailing_zeros:
-    groups.low_groups.pop_high();
-    while (! groups.low_groups.empty()) {
-        grp_size = groups.low_groups.highest_group();
+    dist.low_groups.pop_high();
+    while (! dist.low_groups.empty()) {
+        grp_size = dist.low_groups.highest_group();
         STRF_ASSERT(separator_size + grp_size <= size_after_recycle);
         ob.ensure(separator_size + grp_size);
         auto oit = encode_char(ob.pointer(), separator);
         strf::detail::str_fill_n(oit, grp_size, '0');
         ob.advance_to(oit + grp_size);
-        groups.low_groups.pop_high();
+        dist.low_groups.pop_high();
     }
 }
 
@@ -991,13 +991,13 @@ STRF_HD void print_amplified_integer_big_separator
     ( strf::underlying_outbuf<CharSize>& ob
     , strf::encode_char_f<CharSize> encode_char
     , unsigned long long value
-    , strf::digits_groups_iterator groups
+    , strf::digits_grouping grouping
     , unsigned num_digits
     , unsigned num_trailing_zeros
     , unsigned separator_size
     , char32_t separator )
 {
-    auto dist = strf::calculate_distribution(groups, num_digits + num_trailing_zeros);
+    auto dist = strf::calculate_distribution(grouping, num_digits + num_trailing_zeros);
     if (num_digits <= dist.highest_group) {
         print_amplified_integer_big_separator_1
             ( ob, encode_char, value, num_digits, dist, separator, separator_size );
@@ -1215,7 +1215,7 @@ public:
         data_ = strf::detail::init_double_printer_data<Notation>(input.vwf.value(), fmt);
         decltype(auto) cs = get_facet<strf::charset_c<CharT>, FloatT>(input.fp);
         auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp);
-        groups_ = punct.groups();
+        grouping_ = punct.grouping();
         decimal_point_ = punct.decimal_point();
         thousands_sep_ = punct.thousands_sep();
         init_(cs, Notation == float_notation::general, fmt.showpoint);
@@ -1243,7 +1243,7 @@ public:
         data_ = strf::detail::init_double_printer_data<Notation>(input.vwf.value(), fmt);
         decltype(auto) cs = get_facet<strf::charset_c<CharT>, FloatT>(input.fp);
         auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp);
-        groups_ = punct.groups();
+        grouping_ = punct.grouping();
         decimal_point_ = punct.decimal_point();
         thousands_sep_ = punct.thousands_sep();
         init_(cs, Notation == float_notation::general, fmt.showpoint);
@@ -1269,7 +1269,7 @@ private:
 
     strf::encode_char_f<CharSize> encode_char_;
     strf::encode_fill_f<CharSize> encode_fill_;
-    strf::digits_groups_iterator groups_;
+    strf::digits_grouping grouping_;
     char32_t fillchar_ = U' ';
     unsigned left_fillcount_ = 0;
     unsigned split_fillcount_ = 0;
@@ -1294,11 +1294,11 @@ STRF_HD void punct_double_printer<CharSize>::init_
     encode_fill_ = cs.encode_fill_func();
     if (!data_.sci_notation) {
         auto int_dig_count = (int)data_.m10_digcount + data_.e10;
-        if ( ! groups_.no_more_sep() && int_dig_count > (int)groups_.current()) {
+        if ( ! grouping_.no_more_sep() && int_dig_count > (int)grouping_.lowest_group()) {
             auto sep_validation = cs.validate(thousands_sep_);
             if (sep_validation != strf::invalid_char_len) {
                 sep_size_ = static_cast<unsigned>(sep_validation);
-                sep_count_ = strf::sep_count(groups_, int_dig_count);
+                sep_count_ = strf::sep_count(grouping_, int_dig_count);
                 if (general_format) {
                     bool e10neg = data_.e10 < 0;
                     int fixed_width = data_.e10 * !e10neg
@@ -1468,11 +1468,11 @@ STRF_HD void punct_double_printer<CharSize>::print_to
             strf::detail::write_fill(ob, data_.e10, (char_type)'0');
         } else if (sep_size_ == 1) {
             strf::detail::print_amplified_integer_small_separator
-                ( ob, data_.m10, groups_, data_.m10_digcount, data_.e10
+                ( ob, data_.m10, grouping_, data_.m10_digcount, data_.e10
                 , static_cast<char_type>(thousands_sep_) );
         } else {
             strf::detail::print_amplified_integer_big_separator
-                ( ob, encode_char_, data_.m10, groups_, data_.m10_digcount
+                ( ob, encode_char_, data_.m10, grouping_, data_.m10_digcount
                 , data_.e10, sep_size_, thousands_sep_ );
         }
         if (decimal_point_size_ == 1) {
@@ -1521,11 +1521,11 @@ STRF_HD void punct_double_printer<CharSize>::print_to
                 strf::detail::write_int<10>(ob, integral_part, idigcount, strf::lowercase);
             } else if (sep_size_ == 1) {
                 strf::detail::write_int_little_sep<10>
-                    ( ob, integral_part, groups_, idigcount, sep_count_
+                    ( ob, integral_part, grouping_, idigcount, sep_count_
                     , static_cast<char_type>(thousands_sep_) );
             } else {
                 strf::detail::write_int_big_sep<10>
-                    ( ob, encode_char_, integral_part, groups_, thousands_sep_
+                    ( ob, encode_char_, integral_part, grouping_, thousands_sep_
                     , sep_size_, idigcount );
             }
 
@@ -2009,7 +2009,7 @@ public:
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
     {
         auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp);
-        groups_ = punct.groups();
+        grouping_ = punct.grouping();
         decimal_point_ = punct.decimal_point();
         thousands_sep_ = punct.thousands_sep();
         init_(strf::get_facet<strf::charset_c<CharT>, FloatT>(input.fp));
@@ -2033,7 +2033,7 @@ private:
     STRF_HD std::size_t size_() const;
 
     strf::encode_char_f<CharSize> encode_char_;
-    strf::digits_groups_iterator groups_;
+    strf::digits_grouping grouping_;
     const detail::double_dec value_;
     const unsigned m10_digcount_;
     unsigned sep_count_ = 0;
@@ -2061,10 +2061,10 @@ STRF_HD void fast_punct_double_printer<CharSize>::init_(const Charset& cs)
             showpoint = m10_digcount_ != 1;
         } else {
             auto int_dig_count = (int)m10_digcount_ + value_.e10;
-            if ( ! groups_.no_more_sep() && int_dig_count > (int)groups_.current()) {
+            if ( ! grouping_.no_more_sep() && int_dig_count > (int)grouping_.lowest_group()) {
                 auto sep_validation = cs.validate(thousands_sep_);
                 if (sep_validation != strf::invalid_char_len) {
-                    sep_count_ = strf::sep_count(groups_, int_dig_count);
+                    sep_count_ = strf::sep_count(grouping_, int_dig_count);
                     if (scientific_width < fixed_width + (int)sep_count_) {
                         sep_count_ = 0;
                         sci_notation_ = true;
@@ -2182,11 +2182,11 @@ STRF_HD void fast_punct_double_printer<CharSize>::print_to
                 strf::detail::write_fill(ob, value_.e10, (char_type)'0');
             } else if (sep_size_ == 1) {
                 strf::detail::print_amplified_integer_small_separator
-                    ( ob, value_.m10, groups_, m10_digcount_, value_.e10
+                    ( ob, value_.m10, grouping_, m10_digcount_, value_.e10
                     , static_cast<char_type>(thousands_sep_) );
             } else {
                 strf::detail::print_amplified_integer_big_separator
-                    ( ob, encode_char_, value_.m10, groups_, m10_digcount_
+                    ( ob, encode_char_, value_.m10, grouping_, m10_digcount_
                     , value_.e10, sep_size_, thousands_sep_ );
             }
         } else {
@@ -2218,11 +2218,11 @@ STRF_HD void fast_punct_double_printer<CharSize>::print_to
                                                , strf::lowercase );
                 } else if (sep_size_ == 1) {
                     strf::detail::write_int_little_sep<10>
-                        ( ob, integral_part, groups_, idigcount, sep_count_
+                        ( ob, integral_part, grouping_, idigcount, sep_count_
                         , static_cast<char_type>(thousands_sep_), strf::lowercase);
                 } else {
                     strf::detail::write_int_big_sep<10>
-                        ( ob, encode_char_, integral_part, groups_, thousands_sep_
+                        ( ob, encode_char_, integral_part, grouping_, thousands_sep_
                         , sep_size_, idigcount, strf::lowercase );
                 }
                 ob.ensure(decimal_point_size_);

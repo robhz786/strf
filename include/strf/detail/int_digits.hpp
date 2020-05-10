@@ -486,7 +486,7 @@ public:
     static STRF_HD void write_txtdigits_backwards_little_sep
         ( CharT* it
         , UIntT uvalue
-        , strf::digits_groups_iterator groups
+        , strf::digits_grouping grouping
         , CharT sep
         , strf::lettercase ) noexcept
     {
@@ -494,15 +494,15 @@ public:
 
         const char* arr = strf::detail::chars_00_to_99();
         std::uint8_t dig_index = 0;
-        auto group = groups.current();
+        auto group = grouping.lowest_group();
         auto group_it = group;
         STRF_ASSERT(group != 0);
-        if (groups.no_more_sep()) {
+        if (grouping.no_more_sep()) {
             goto no_more_sep;
         }
-        if ( ! groups.is_final()) {
+        if ( ! grouping.is_final()) {
             while (1) {
-                STRF_ASSERT( ! groups.is_final());
+                STRF_ASSERT( ! grouping.is_final());
                 if (uvalue < 10) {
                     goto last_digit;
                 }
@@ -519,14 +519,15 @@ public:
                             return;
                         }
                         *--it = sep;
-                        group = groups.next();
-                        if (groups.is_final()) {
-                            if (groups.no_more_sep()) {
+                        grouping.pop_low();
+                        group = grouping.lowest_group();
+                        if (grouping.is_final()) {
+                            if (grouping.no_more_sep()) {
                                 goto no_more_sep;
                             }
                             goto repeated_groups;
                         }
-                        STRF_ASSERT(!groups.no_more_sep());
+                        STRF_ASSERT(!grouping.no_more_sep());
                         group_it = group;
                     }
                 } else {
@@ -537,9 +538,10 @@ public:
                     if (uvalue == 0) {
                         return;
                     }
-                    group = groups.next();
-                    if (groups.is_final()) {
-                        if (groups.no_more_sep()) {
+                    grouping.pop_low();
+                    group = grouping.lowest_group();
+                    if (grouping.is_final()) {
+                        if (grouping.no_more_sep()) {
                             goto no_more_sep;
                         }
                         if (group == 1) {
@@ -548,14 +550,15 @@ public:
                         }
                         goto repeated_groups_deslocated;
                     }
-                    STRF_ASSERT(!groups.no_more_sep());
+                    STRF_ASSERT(!grouping.no_more_sep());
                     if (group != 1) {
                         group_it = group - 1;
                     } else {
                         * --it = sep;
-                        group = groups.next();
-                        if (groups.is_final()) {
-                            if (groups.no_more_sep()) {
+                        grouping.pop_low();
+                        group = grouping.lowest_group();
+                        if (grouping.is_final()) {
+                            if (grouping.no_more_sep()) {
                                 goto no_more_sep;
                             }
                             goto repeated_groups;
@@ -665,14 +668,14 @@ public:
     static STRF_HD void write_txtdigits_backwards_little_sep
         ( CharT* it
         , UIntT uvalue
-        , strf::digits_groups_iterator groups
+        , strf::digits_grouping grouping
         , CharT sep
         , strf::lettercase lc ) noexcept
     {
         static_assert(std::is_unsigned<UIntT>::value, "");
         STRF_ASSERT(uvalue != 0);
         const char offset_digit_a = ('A' | ((lc == strf::lowercase) << 5)) - 10;
-        auto group = groups.current();
+        auto group = grouping.lowest_group();
         auto group_it = group;
         while (1) {
             unsigned d = uvalue & 0xF;
@@ -688,11 +691,12 @@ public:
             }
             if (group_it == 1) {
                 *--it = sep;
-                group_it = groups.next();
+                grouping.pop_low();
+                group_it = grouping.lowest_group();
                 if (group_it == 0) {
                     break;
                 }
-                if (groups.no_more_sep()) {
+                if (grouping.no_more_sep()) {
                     goto no_more_sep;
                 }
                 group = group_it;
@@ -758,13 +762,13 @@ public:
     static STRF_HD void write_txtdigits_backwards_little_sep
         ( CharT* it
         , UIntT uvalue
-        , strf::digits_groups_iterator groups
+        , strf::digits_grouping grouping
         , CharT sep
         , strf::lettercase ) noexcept
     {
         static_assert(std::is_unsigned<UIntT>::value, "");
         STRF_ASSERT(uvalue != 0);
-        auto group = groups.current();
+        auto group = grouping.lowest_group();
         auto group_it = group;
         while (1) {
             *--it = '0' + (uvalue & 0x7);
@@ -774,11 +778,12 @@ public:
             }
             if (group_it == 1) {
                 *--it = sep;
-                group_it = groups.next();
+                grouping.pop_low();
+                group_it = grouping.lowest_group();
                 if (group_it == 0) {
                     break;
                 }
-                if (groups.no_more_sep()) {
+                if (grouping.no_more_sep()) {
                     goto no_more_sep;
                 }
                 group = group_it;
@@ -913,7 +918,7 @@ public:
     static STRF_HD void write_little_sep
         ( strf::underlying_outbuf<CharSize>& ob
         , UIntT uvalue
-        , strf::digits_groups_iterator groups
+        , strf::digits_grouping grouping
         , unsigned digcount
         , unsigned seps_count
         , strf::underlying_char_type<CharSize> sep
@@ -924,7 +929,7 @@ public:
         ob.ensure(size);
         auto next_p = ob.pointer() + size;
         intdigits_backwards_writer<Base>::write_txtdigits_backwards_little_sep
-            (next_p, uvalue, groups, sep, lc);
+            (next_p, uvalue, grouping, sep, lc);
         ob.advance_to(next_p);
     }
 
@@ -933,7 +938,7 @@ public:
         ( strf::underlying_outbuf<CharSize>& ob
         , strf::encode_char_f<CharSize> encode_char
         , UIntT value
-        , strf::digits_groups_iterator groups
+        , strf::digits_grouping grouping
         , char32_t sep
         , unsigned sep_size
         , unsigned digcount
@@ -946,7 +951,7 @@ public:
         const auto* digits = strf::detail::write_int_txtdigits_backwards<Base>
             ( value, dig_end, lc);
 
-        auto dist = strf::calculate_distribution(groups, digcount);
+        auto dist = strf::calculate_distribution(grouping, digcount);
         ob.ensure(dist.highest_group);
         auto oit = ob.pointer();
         auto end = ob.end();
@@ -1029,7 +1034,7 @@ public:
     static STRF_HD void write_little_sep
         ( strf::underlying_outbuf<CharSize>& ob
         , UIntT value
-        , strf::digits_groups_iterator groups
+        , strf::digits_grouping grouping
         , unsigned digcount
         , unsigned seps_count
         , strf::underlying_char_type<CharSize> sep
@@ -1041,7 +1046,7 @@ public:
         using char_type = strf::underlying_char_type<CharSize>;
 
         UIntT mask = (UIntT)1 << (digcount - 1);
-        auto dist = strf::calculate_distribution(groups, digcount);
+        auto dist = strf::calculate_distribution(grouping, digcount);
         auto oit = ob.pointer();
         auto end = ob.end();
         while (dist.highest_group--) {
@@ -1097,7 +1102,7 @@ public:
         ( strf::underlying_outbuf<CharSize>& ob
         , strf::encode_char_f<CharSize> encode_char
         , UIntT value
-        , strf::digits_groups_iterator groups
+        , strf::digits_grouping grouping
         , char32_t sep
         , unsigned sep_size
         , unsigned digcount
@@ -1106,7 +1111,7 @@ public:
         STRF_ASSERT(value > 1);
         static_assert(std::is_unsigned<UIntT>::value, "expected unsigned int");
         using char_type = strf::underlying_char_type<CharSize>;
-        auto dist = strf::calculate_distribution(groups, digcount);
+        auto dist = strf::calculate_distribution(grouping, digcount);
         UIntT mask = (UIntT)1 << (digcount - 1);
 
         ob.ensure(dist.highest_group);
@@ -1176,14 +1181,14 @@ template <int Base, std::size_t CharSize, typename UIntT>
 inline STRF_HD void write_int_little_sep
     ( strf::underlying_outbuf<CharSize>& ob
     , UIntT value
-    , strf::digits_groups_iterator groups
+    , strf::digits_grouping grouping
     , unsigned digcount
     , unsigned seps_count
     , strf::underlying_char_type<CharSize> sep
     , strf::lettercase lc = strf::lowercase )
 {
     intdigits_writer<Base>::write_little_sep
-        ( ob, value, groups, digcount, seps_count, sep, lc );
+        ( ob, value, grouping, digcount, seps_count, sep, lc );
 }
 
 template <int Base, std::size_t CharSize, typename UIntT>
@@ -1191,14 +1196,14 @@ inline STRF_HD void write_int_big_sep
     ( strf::underlying_outbuf<CharSize>& ob
     , strf::encode_char_f<CharSize> encode_char
     , UIntT value
-    , strf::digits_groups_iterator groups
+    , strf::digits_grouping grouping
     , char32_t sep
     , unsigned sep_size
     , unsigned digcount
     , strf::lettercase lc = strf::lowercase )
 {
     intdigits_writer<Base>::write_big_sep
-        ( ob, encode_char, value, groups, sep, sep_size, digcount, lc);
+        ( ob, encode_char, value, grouping, sep, sep_size, digcount, lc);
 }
 
 

@@ -504,7 +504,7 @@ public:
         digcount_ = strf::detail::count_digits<10>(uvalue_);
         auto punct = get_facet<strf::numpunct_c<10>, IntT>(i.fp);
         if (! punct.no_group_separation(digcount_)) {
-            groups_ = punct.groups();
+            grouping_ = punct.grouping();
             thousands_sep_ = punct.thousands_sep();
             std::size_t sepsize = cs.validate(thousands_sep_);
             if (sepsize != (std::size_t)-1) {
@@ -530,7 +530,7 @@ public:
 private:
 
     strf::encode_char_f<CharSize> encode_char_;
-    strf::digits_groups_iterator groups_;
+    strf::digits_grouping grouping_;
     char32_t thousands_sep_;
     unsigned long long uvalue_;
     unsigned digcount_;
@@ -558,11 +558,11 @@ STRF_HD void punct_int_printer<CharSize>::print_to(strf::underlying_outbuf<CharS
         }
         if (sepsize_ == 1) {
             strf::detail::write_int_little_sep<10>
-                ( ob, uvalue_, groups_, digcount_, sepcount_
+                ( ob, uvalue_, grouping_, digcount_, sepcount_
                 , static_cast<char_type>(thousands_sep_), strf::lowercase );
         } else {
             strf::detail::write_int_big_sep<10>
-                ( ob, encode_char_, uvalue_, groups_, thousands_sep_, sepsize_
+                ( ob, encode_char_, uvalue_, grouping_, thousands_sep_, sepsize_
                 , digcount_, strf::lowercase );
         }
     }
@@ -604,7 +604,7 @@ public:
         STRF_IF_CONSTEXPR (detail::has_intpunct<FPack, IntTag, Base>()) {
             auto punct = get_facet<strf::numpunct_c<Base>, IntTag>(fp);
             if ( ! punct.no_group_separation(digcount_)) {
-                groups_ = punct.groups();
+                grouping_ = punct.grouping();
                 thousands_sep_ = punct.thousands_sep();
                 auto charset = get_facet<strf::charset_c<CharT>, IntTag>(fp);
                 init_punct_(charset);
@@ -634,7 +634,7 @@ private:
 
     strf::encode_char_f<CharSize> encode_char_;
     unsigned long long uvalue_ = 0;
-    strf::digits_groups_iterator groups_;
+    strf::digits_grouping grouping_;
     char32_t thousands_sep_;
     unsigned precision_ = 0;
     unsigned digcount_ = 0;
@@ -679,7 +679,7 @@ STRF_HD void partial_fmt_int_printer<CharSize, Base>::init_punct_(const Charset&
     std::size_t sepsize = cs.validate(thousands_sep_);
     if (sepsize != (std::size_t)-1) {
         sepsize_ = static_cast<unsigned>(sepsize);
-        sepcount_ = strf::sep_count(groups_, digcount_);
+        sepcount_ = strf::sep_count(grouping_, digcount_);
         if (sepsize_ == 1) {
             char_type little_sep[4];
             cs.encode_char(little_sep, thousands_sep_);
@@ -741,11 +741,11 @@ STRF_HD inline void partial_fmt_int_printer<CharSize, Base>::print_to
         }
         if (sepsize_ == 1) {
             strf::detail::write_int_little_sep<Base>
-                ( ob, uvalue_, groups_, digcount_, sepcount_
+                ( ob, uvalue_, grouping_, digcount_, sepcount_
                 , static_cast<char_type>(thousands_sep_), strf::lowercase );
         } else {
             strf::detail::write_int_big_sep<Base>
-                ( ob, encode_char_, uvalue_, groups_, thousands_sep_
+                ( ob, encode_char_, uvalue_, grouping_, thousands_sep_
                 , sepsize_, digcount_, strf::lowercase );
         }
     }
@@ -789,11 +789,11 @@ inline STRF_HD void partial_fmt_int_printer<CharSize, Base>::write_digits
         strf::detail::write_int<Base>(ob, uvalue_, digcount_, lettercase_);
     } else if (sepsize_ == 1) {
         strf::detail::write_int_little_sep<Base>
-            ( ob, uvalue_, groups_, digcount_, sepcount_
+            ( ob, uvalue_, grouping_, digcount_, sepcount_
             , static_cast<char_type>(thousands_sep_), strf::lowercase );
     } else {
         strf::detail::write_int_big_sep<Base>
-            ( ob, encode_char_, uvalue_, groups_, thousands_sep_, sepsize_
+            ( ob, encode_char_, uvalue_, grouping_, thousands_sep_, sepsize_
             , digcount_, strf::lowercase );
     }
 }
