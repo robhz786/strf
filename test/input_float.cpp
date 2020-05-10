@@ -438,7 +438,7 @@ int main()
     }
     {
         TEST_SCOPE_DESCRIPTION("with small decimal point");
-        auto punct = strf::monotonic_grouping<10>(1)
+        auto punct = strf::numpunct<10>(1)
             .thousands_sep(0xFFFFFFF) // invalid separator is not printed
             .decimal_point('*');
         basic_tests(strf::pack(punct));
@@ -446,7 +446,7 @@ int main()
 
     {
         TEST_SCOPE_DESCRIPTION("with big decimal point");
-        auto punct = strf::monotonic_grouping<10>(1)
+        auto punct = strf::numpunct<10>(1)
             .thousands_sep(0xFFFFFFF) // invalid separator is not printed
             .decimal_point(0x1F784);
         basic_tests(strf::pack(punct));
@@ -454,7 +454,7 @@ int main()
 
     {
         TEST_SCOPE_DESCRIPTION("with invalid decimal point");
-        auto punct = strf::monotonic_grouping<10>(1)
+        auto punct = strf::numpunct<10>(1)
             .thousands_sep(0xFFFFFFF) // invalid separator is not printed
             .decimal_point(0xFFFFFFF);
         basic_tests(strf::pack(punct));
@@ -483,7 +483,7 @@ int main()
     }
     constexpr auto j = strf::join_right(20, '_');
     {
-        auto p = strf::monotonic_grouping<10>{3}.decimal_point(',').thousands_sep(':');
+        auto p = strf::numpunct<10>{3}.decimal_point(',').thousands_sep(':');
 
         TEST("_________________1,5").with(p) (j(1.5));
         TEST("_________________0,1").with(p) (j(0.1));
@@ -501,7 +501,7 @@ int main()
         TEST("_______+1,024125e+03").with(p) (j(+strf::sci(1024.125f)));
     }
     {
-        auto p1 = strf::monotonic_grouping<10>{1}.thousands_sep(',');
+        auto p1 = strf::numpunct<10>{1}.thousands_sep(',');
 
         // check whether it correctly selects the shortest representation
         TEST("_____________1,0,0,0").with(p1) (j(strf::fixed(1000.0)));
@@ -517,19 +517,19 @@ int main()
             (strf::join_right(180, '_')(strf::fixed(123456789e+80)));
         TEST("_____1234,56789000,00000000,00000000,00000000,00000000"
              ",00000000,00000000,00000000,00000000,00000000.")
-            .with(strf::monotonic_grouping<10>{8})
+            .with(strf::numpunct<10>{8})
             (strf::join_right(100, '_')(*strf::fixed(123456789e+75)));
         TEST("____________1234\xC2\xB7" "5678900000000000\xC2\xB7"
              "0000000000000000\xC2\xB7" "0000000000000000\xC2\xB7"
              "0000000000000000\xC2\xB7" "0000000000000000\xC2\xB0")
-            .with(strf::monotonic_grouping<10>(16).thousands_sep(0xB7)
+            .with(strf::numpunct<10>(16).thousands_sep(0xB7)
                                                   .decimal_point(0xB0) )
             (strf::join_right(102, '_')(*strf::fixed(123456789e+75)));
 
         // invalid separator
         TEST("_____1234567890000000000000000000000000000000000000000000"
              "00000000000000000000000000000000\xC2\xB0")
-            .with(strf::monotonic_grouping<10>(16).thousands_sep(0xFFFFFFF)
+            .with(strf::numpunct<10>(16).thousands_sep(0xFFFFFFF)
                                                   .decimal_point(0xB0) )
             (strf::join_right(90, '_')(*strf::fixed(123456789e+75)));
 
@@ -550,13 +550,13 @@ int main()
         TEST("_______________0.001").with(p1)  (j(1e-3));
         TEST("_______________1e-04").with(p1)  (j(strf::fmt(1e-4)));
         TEST("_______________0.001").with(p1)  (j(strf::fmt(1e-3)));
-        TEST("_______________1e+05").with(strf::monotonic_grouping<10>(8))
+        TEST("_______________1e+05").with(strf::numpunct<10>(8))
             (j(strf::fmt(1e+5)));
 
         {
             // punctuation in single-byte charset
             auto fp = strf::pack( strf::iso_8859_3<char>()
-                                , strf::monotonic_grouping<10>(4)
+                                , strf::numpunct<10>(4)
                                     .decimal_point(0x130)
                                     .thousands_sep(0x2D9) );
             TEST("_________1\xA9""00025e+03") .with(fp) (j(strf::sci(1000.25)));
@@ -614,7 +614,7 @@ int main()
                 .with(punct) (j(strf::fixed(1.0)));
         }
         {
-            auto punct = strf::monotonic_grouping<10>(3);
+            auto punct = strf::numpunct<10>(3);
             TEST("___1,000,000,000,000") .with(punct) (j(strf::fixed(1e+12)));
             TEST("_____100,000,000,000") .with(punct) (j(strf::fixed(1e+11)));
             TEST("_________123,400,000") .with(punct) (j(strf::fixed(123400000.0)));
@@ -649,11 +649,11 @@ int main()
 
         // invalid decimal point
         TEST("______________1\xEF\xBF\xBD""e+03")
-            .with(strf::monotonic_grouping<10>{1}.decimal_point(0xFFFFFFF))
+            .with(strf::numpunct<10>{1}.decimal_point(0xFFFFFFF))
             (j(*strf::sci(1000.0)));
 
         TEST("_________________1\xEF\xBF\xBD""5")
-            .with(strf::monotonic_grouping<10>{1}.decimal_point(0xFFFFFFF))
+            .with(strf::numpunct<10>{1}.decimal_point(0xFFFFFFF))
             (j(*strf::fixed(1.5)));
     }
     return test_finish();

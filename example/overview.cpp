@@ -137,7 +137,7 @@ void basic_facet_sample()
 void constrained_facet()
 {
     //[ constrained_facet_sample
-    auto facet_obj = strf::constrain<std::is_signed>(strf::monotonic_grouping<10>{3});
+    auto facet_obj = strf::constrain<std::is_signed>(strf::numpunct<10>{3});
 
     auto s = strf::to_string.with(facet_obj)(100000u, "  ", 100000);
 
@@ -149,9 +149,9 @@ void constrained_facet()
 void overriding_sample()
 {
     //[ facets_overriding
-    auto punct_dec_1 = strf::monotonic_grouping<10>{1};
-    auto punct_dec_2 = strf::monotonic_grouping<10>{2}.thousands_sep('.');
-    auto punct_dec_3 = strf::monotonic_grouping<10>{3}.thousands_sep('^');;
+    auto punct_dec_1 = strf::numpunct<10>{1};
+    auto punct_dec_2 = strf::numpunct<10>{2}.thousands_sep('.');
+    auto punct_dec_3 = strf::numpunct<10>{3}.thousands_sep('^');;
 
     // Below, punct_dec_3 overrides punct_dec_2, but only for signed types.
     // punct_dec_2 overrides punct_dec_1 for all input types,
@@ -223,13 +223,13 @@ void sani()
     //]
 }
 
-void monotonic_grouping()
+void numpunct()
 {
-    //[monotonic_grouping
+    //[numpunct
     constexpr int base = 10;
 
     auto str = strf::to_string
-        .with(strf::monotonic_grouping<base>{3}.thousands_sep(U'.'))
+        .with(strf::numpunct<base>{3}.thousands_sep(U'.'))
         (100000000000ll);
 
     assert(str == "100.000.000.000");
@@ -251,7 +251,7 @@ void punct_non_decimal()
 {
     //[punct_non_decimal
     auto str = strf::to_string
-        .with(strf::monotonic_grouping<16>{4}.thousands_sep(U'\''))
+        .with(strf::numpunct<16>{4}.thousands_sep(U'\''))
         (strf::hex(0xffffffffffLL));
 
     assert(str == "ff'ffff'ffff");
@@ -325,8 +325,8 @@ void width_func()
 namespace my { // my customizations
 
 const auto my_default_facets = strf::pack
-    ( strf::monotonic_grouping<10>(3)
-    , strf::monotonic_grouping<16>(4).thousands_sep(U'\'')
+    ( strf::numpunct<10>(3)
+    , strf::numpunct<16>(4).thousands_sep(U'\'')
     , strf::surrogate_policy::lax );
 
 const auto to_string = strf::to_string.with(my_default_facets);
@@ -379,7 +379,7 @@ int main()
     input_ouput_different_char_types();
     input_string_charset();
     sani();
-    monotonic_grouping();
+    numpunct();
     variable_grouping();
     punct_non_decimal();
     fast_width();

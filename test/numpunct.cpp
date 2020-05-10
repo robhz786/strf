@@ -8,7 +8,7 @@
 int main()
 {
     {
-        strf::monotonic_grouping<10> grouper(4);
+        strf::numpunct<10> grouper(4);
         TEST_TRUE(grouper.thousands_sep_count(1) == 0);
         TEST_TRUE(grouper.thousands_sep_count(4) == 0);
         TEST_TRUE(grouper.thousands_sep_count(5) == 1);

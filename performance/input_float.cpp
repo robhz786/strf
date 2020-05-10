@@ -61,7 +61,7 @@
 #define SPRINTF_X_PI_OP  std::sprintf(dest, "%a", pi)
 #define SPRINTF_F_BIG_OP std::sprintf(dest, "%f", 1000000.0)
 
-#define STRF_PUNCT_FIXTURE       auto punct_grp   = strf::monotonic_grouping<10>(3);
+#define STRF_PUNCT_FIXTURE       auto punct_grp   = strf::numpunct<10>(3);
 #define STRF_PUNCT_POINT_FIXTURE auto punct_point = strf::no_grouping<10>().decimal_point(':')
 
 #define FMTD_FIXTURE    auto fmtd    = fmt::compile<double>("{}")

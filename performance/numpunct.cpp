@@ -23,8 +23,8 @@
     benchmark::RegisterBenchmark(STR(EXPR), ID :: func);
 
 
-#define MP1 const auto mp1 = strf::monotonic_grouping<10>(3);
-#define MP2 const auto mp2 = strf::monotonic_grouping<10>(3).thousands_sep(0xb7);
+#define MP1 const auto mp1 = strf::numpunct<10>(3);
+#define MP2 const auto mp2 = strf::numpunct<10>(3).thousands_sep(0xb7);
 #define SP1 const auto sp1 = strf::numpunct<10>(2, 4, 3);
 #define SP2 const auto sp2 = strf::numpunct<10>(2, 4, 3).thousands_sep(0xb7);
 

@@ -336,9 +336,6 @@ private:
 };
 
 template <int Base>
-using monotonic_grouping = strf::numpunct<Base>;
-
-template <int Base>
 class default_numpunct final
 {
 public:

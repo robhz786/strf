@@ -8,20 +8,20 @@
 int main()
 {
     TEST("1,0,0,0,0 10000 1000000 10,000 1'0000 1'000000 10.000 1^00^00 1'000000")
-        .with(strf::monotonic_grouping<10>(1))
+        .with(strf::numpunct<10>(1))
         ( strf::fmt(10000), ' '
         , strf::hex(0x10000), ' '
         , strf::oct(01000000), ' '
         , strf::with
-            ( strf::monotonic_grouping<10>(3)
-            , strf::monotonic_grouping<16>(4).thousands_sep('\'')
-            , strf::monotonic_grouping<8>(6).thousands_sep('\'') )
+            ( strf::numpunct<10>(3)
+            , strf::numpunct<16>(4).thousands_sep('\'')
+            , strf::numpunct<8>(6).thousands_sep('\'') )
             ( strf::fmt(10000), ' '
             , strf::hex(0x10000), ' '
             , strf::oct(01000000), ' '
             , strf::with
-                ( strf::monotonic_grouping<10>(3).thousands_sep('.')
-                , strf::monotonic_grouping<16>(2).thousands_sep('^') )
+                ( strf::numpunct<10>(3).thousands_sep('.')
+                , strf::numpunct<16>(2).thousands_sep('^') )
                 ( strf::fmt(10000), ' '
                 , strf::hex(0x10000), ' '
                 , strf::oct(01000000) )
@@ -31,15 +31,15 @@ int main()
     {   // inside joins
 
         TEST("****1,0,0,0,0 10000 1000000 10,000 1'0000 1'000000")
-            .with(strf::monotonic_grouping<10>(1))
+            .with(strf::numpunct<10>(1))
             ( strf::join_right(50, U'*')
                 ( strf::fmt(10000), ' '
                 , strf::hex(0x10000), ' '
                 , strf::oct(01000000), ' '
                 , strf::with
-                    ( strf::monotonic_grouping<10>(3)
-                    , strf::monotonic_grouping<16>(4).thousands_sep('\'')
-                    , strf::monotonic_grouping<8>(6).thousands_sep('\'') )
+                    ( strf::numpunct<10>(3)
+                    , strf::numpunct<16>(4).thousands_sep('\'')
+                    , strf::numpunct<8>(6).thousands_sep('\'') )
                     ( strf::fmt(10000), ' '
                     , strf::hex(0x10000), ' '
                     , strf::oct(01000000) )));

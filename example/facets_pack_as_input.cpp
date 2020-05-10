@@ -8,12 +8,12 @@
 void sample1()
 {
     //[ facets_pack_input
-    auto str = strf::to_string .with(strf::monotonic_grouping<10>(1))
+    auto str = strf::to_string .with(strf::numpunct<10>(1))
         ( 10000
         , "  "
         , strf::hex(0x10000)
-        , strf::with( strf::monotonic_grouping<10>(3)
-                    , strf::monotonic_grouping<16>(4).thousands_sep('\'') )
+        , strf::with( strf::numpunct<10>(3)
+                    , strf::numpunct<16>(4).thousands_sep('\'') )
             ( "  { "
             , 10000
             , "  "
@@ -29,10 +29,10 @@ void sample2()
 {
     //[ facets_pack_input_2
     auto fp = strf::pack
-        ( strf::monotonic_grouping<10>(3)
-        , strf::monotonic_grouping<16>(4).thousands_sep('\'') );
+        ( strf::numpunct<10>(3)
+        , strf::numpunct<16>(4).thousands_sep('\'') );
 
-    auto str = strf::to_string.with(strf::monotonic_grouping<10>(1))
+    auto str = strf::to_string.with(strf::numpunct<10>(1))
         ( 10000
         , "  "
         , strf::hex(0x10000)
@@ -42,7 +42,7 @@ void sample2()
             , "  "
             , strf::hex(0x10000)
             , strf::with
-                (strf::monotonic_grouping<10>(2).thousands_sep('.'))
+                (strf::numpunct<10>(2).thousands_sep('.'))
                   ("  { ", 10000, " }")
             , " }" ) );
 

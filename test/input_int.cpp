@@ -309,7 +309,7 @@ int main()
     TEST("00123")    ( strf::join_right(5, '.')(strf::left(123, 3, U'~').p(5)) );
 
     {
-        auto punct = strf::monotonic_grouping<10>{3};
+        auto punct = strf::numpunct<10>{3};
 
         TEST("0").with(punct) (0);
         TEST("1,000").with(punct) (1000);
@@ -328,7 +328,7 @@ int main()
         TEST("    1000").with(punct) ( strf::join_right(8)(strf::hex(0x1000)) );
     }
     {
-        auto punct = strf::monotonic_grouping<10>{1};
+        auto punct = strf::numpunct<10>{1};
         TEST("0").with(punct) (0);
         TEST("1,0").with(punct) (10);
         TEST("1,0,0").with(punct) (100);
@@ -336,14 +336,14 @@ int main()
         TEST("1,8,4,4,6,7,4,4,0,7,3,7,0,9,5,5,1,6,1,5").with(punct)(18446744073709551615ull);
     }
     {
-        auto punct = strf::monotonic_grouping<10>{3}.thousands_sep(0x10FFFF);
+        auto punct = strf::numpunct<10>{3}.thousands_sep(0x10FFFF);
         TEST(u8"  +1\U0010FFFF000").with(punct) (+strf::right(1000, 8));
         TEST(u8"  +1\U0010FFFF000").with(punct) (strf::join_right(8)(+strf::dec(1000)));
         TEST(u8"----+1\U0010FFFF000").with(punct) (strf::join_right(8)(u8"----", +strf::dec(1000)));
     }
 
     {
-        auto punct = strf::monotonic_grouping<16>{3}.thousands_sep('\'');
+        auto punct = strf::numpunct<16>{3}.thousands_sep('\'');
 
         TEST("     0x0").with(punct) (*strf::hex(0x0) > 8);
         TEST("   0x100").with(punct) (*strf::hex(0x100) > 8);
@@ -359,7 +359,7 @@ int main()
         TEST(" 0x1'000").with(punct) ( strf::join_right(8)(*strf::hex(0x1000)) );
     }
    {
-        auto punct = strf::monotonic_grouping<2>{3}.thousands_sep('\'');
+        auto punct = strf::numpunct<2>{3}.thousands_sep('\'');
 
         TEST("     0b0").with(punct) (*strf::bin(0) > 8);
         TEST("   0b100").with(punct) (*strf::bin(4) > 8);
@@ -376,7 +376,7 @@ int main()
     }
 
     {
-        auto punct = strf::monotonic_grouping<16>{3}.thousands_sep(0x10FFFF);
+        auto punct = strf::numpunct<16>{3}.thousands_sep(0x10FFFF);
         TEST(u8" 0x1\U0010FFFF000").with(punct) (*strf::hex(0x1000) > 8);
         TEST(u8" 0x1\U0010FFFF000").with(punct) (strf::join_right(8)(*strf::hex(0x1000) > 8));
         TEST(u8"---0x1\U0010FFFF000").with(punct)
@@ -385,7 +385,7 @@ int main()
 
     {
         TEST("1'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7'7")
-            .with(strf::monotonic_grouping<8>{1}.thousands_sep('\''))
+            .with(strf::numpunct<8>{1}.thousands_sep('\''))
             ( strf::oct(01777777777777777777777LL) );
     }
     {
@@ -398,53 +398,53 @@ int main()
             u8"7\U0010FFFF" u8"7";
 
         TEST(expected)
-            .with(strf::monotonic_grouping<8>{1}.thousands_sep(0x10FFFF))
+            .with(strf::numpunct<8>{1}.thousands_sep(0x10FFFF))
             ( strf::oct(01777777777777777777777LL) );
     }
     {
-        auto punct = strf::monotonic_grouping<8>{3}.thousands_sep(0x10FFFF);
+        auto punct = strf::numpunct<8>{3}.thousands_sep(0x10FFFF);
         TEST(u8"  01\U0010FFFF000").with(punct) (*strf::oct(01000) > 8);
         TEST(u8"  01\U0010FFFF000").with(punct) (strf::join_right(8)(*strf::oct(01000)));
         TEST(u8"----01\U0010FFFF000").with(punct) (strf::join_right(8)(u8"----", *strf::oct(01000)));
     }
 
     TEST(u8"1\U0010FFFF" u8"1\U0010FFFF" u8"1\U0010FFFF" u8"1")
-        .with(strf::monotonic_grouping<2>{1}.thousands_sep(0x10FFFF))
+        .with(strf::numpunct<2>{1}.thousands_sep(0x10FFFF))
         ( strf::bin(0xF) );
     TEST(u8"1\U0010FFFF" u8"10101010\U0010FFFF" u8"10101010")
-        .with(strf::monotonic_grouping<2>{8}.thousands_sep(0x10FFFF))
+        .with(strf::numpunct<2>{8}.thousands_sep(0x10FFFF))
         ( strf::bin(0x1aaaa) );
     TEST("1'1'1'1")
-        .with(strf::monotonic_grouping<2>{1}.thousands_sep('\''))
+        .with(strf::numpunct<2>{1}.thousands_sep('\''))
         ( strf::bin(0xF) );
     TEST("1'10101010'10101010")
-        .with(strf::monotonic_grouping<2>{8}.thousands_sep('\''))
+        .with(strf::numpunct<2>{8}.thousands_sep('\''))
         ( strf::bin(0x1aaaa) );
     TEST(u8"1010\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
          u8"1010\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
          u8"1010\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
          u8"1010\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF"
          u8"1010\U0010FFFF" u8"1010\U0010FFFF" u8"1010\U0010FFFF" u8"1010")
-        .with(strf::monotonic_grouping<2>{4}.thousands_sep(0x10FFFF))
+        .with(strf::numpunct<2>{4}.thousands_sep(0x10FFFF))
         ( strf::bin(0xaaaaaaaaaaaaaaaaLL) );
 
     {
         // Invalid punctuation char. ( They shall be omitted ).
 
         TEST("9999")
-            .with(strf::monotonic_grouping<10>{1}.thousands_sep(0xFFFFFF))
+            .with(strf::numpunct<10>{1}.thousands_sep(0xFFFFFF))
             ( 9999 );
 
         TEST("ffff")
-            .with(strf::monotonic_grouping<10>{1}.thousands_sep(0xFFFFFF))
+            .with(strf::numpunct<10>{1}.thousands_sep(0xFFFFFF))
             ( strf::hex(0xFFFF) );
 
         TEST("7777")
-        .with(strf::monotonic_grouping<10>{1}.thousands_sep(0xFFFFFF))
+        .with(strf::numpunct<10>{1}.thousands_sep(0xFFFFFF))
             ( strf::oct(07777) );
 
         TEST("1111")
-        .with(strf::monotonic_grouping<2>{1}.thousands_sep(0xFFFFFF))
+        .with(strf::numpunct<2>{1}.thousands_sep(0xFFFFFF))
             ( strf::bin(0xF) );
     }
 
@@ -462,11 +462,11 @@ int main()
         ptr = reinterpret_cast<void*>((std::size_t)0xABCDEF1234);
 
         TEST("0xab'cd'ef'12'34")
-            .with(strf::monotonic_grouping<16>{2}.thousands_sep('\''))
+            .with(strf::numpunct<16>{2}.thousands_sep('\''))
             (ptr);
 
         TEST("0x....ab'cd'ef'12'34")
-            .with(strf::monotonic_grouping<16>{2}.thousands_sep('\''))
+            .with(strf::numpunct<16>{2}.thousands_sep('\''))
             (strf::split(ptr, 20, '.'));
     }
     return test_finish();
