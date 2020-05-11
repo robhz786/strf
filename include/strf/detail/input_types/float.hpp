@@ -819,7 +819,7 @@ inline STRF_HD void print_amplified_integer_small_separator
     , unsigned num_trailing_zeros
     , strf::underlying_char_type<CharSize> separator )
 {
-    auto dist = strf::calculate_distribution(grouping, num_digits + num_trailing_zeros);
+    auto dist = grouping.distribute(num_digits + num_trailing_zeros);
     if (num_digits <= dist.highest_group) {
         print_amplified_integer_small_separator_1
             ( ob, value, num_digits, dist, separator );
@@ -997,7 +997,7 @@ STRF_HD void print_amplified_integer_big_separator
     , unsigned separator_size
     , char32_t separator )
 {
-    auto dist = strf::calculate_distribution(grouping, num_digits + num_trailing_zeros);
+    auto dist = grouping.distribute(num_digits + num_trailing_zeros);
     if (num_digits <= dist.highest_group) {
         print_amplified_integer_big_separator_1
             ( ob, encode_char, value, num_digits, dist, separator, separator_size );
@@ -1294,11 +1294,11 @@ STRF_HD void punct_double_printer<CharSize>::init_
     encode_fill_ = cs.encode_fill_func();
     if (!data_.sci_notation) {
         auto int_dig_count = (int)data_.m10_digcount + data_.e10;
-        if ( ! grouping_.no_more_sep() && int_dig_count > (int)grouping_.lowest_group()) {
+        if (grouping_.any_separator(int_dig_count)) {
             auto sep_validation = cs.validate(thousands_sep_);
             if (sep_validation != strf::invalid_char_len) {
                 sep_size_ = static_cast<unsigned>(sep_validation);
-                sep_count_ = strf::sep_count(grouping_, int_dig_count);
+                sep_count_ = grouping_.separators_count(int_dig_count);
                 if (general_format) {
                     bool e10neg = data_.e10 < 0;
                     int fixed_width = data_.e10 * !e10neg
@@ -2061,10 +2061,10 @@ STRF_HD void fast_punct_double_printer<CharSize>::init_(const Charset& cs)
             showpoint = m10_digcount_ != 1;
         } else {
             auto int_dig_count = (int)m10_digcount_ + value_.e10;
-            if ( ! grouping_.no_more_sep() && int_dig_count > (int)grouping_.lowest_group()) {
+            if (grouping_.any_separator(int_dig_count)){
                 auto sep_validation = cs.validate(thousands_sep_);
                 if (sep_validation != strf::invalid_char_len) {
-                    sep_count_ = strf::sep_count(grouping_, int_dig_count);
+                    sep_count_ = grouping_.separators_count(int_dig_count);
                     if (scientific_width < fixed_width + (int)sep_count_) {
                         sep_count_ = 0;
                         sci_notation_ = true;

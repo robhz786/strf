@@ -679,7 +679,7 @@ STRF_HD void partial_fmt_int_printer<CharSize, Base>::init_punct_(const Charset&
     std::size_t sepsize = cs.validate(thousands_sep_);
     if (sepsize != (std::size_t)-1) {
         sepsize_ = static_cast<unsigned>(sepsize);
-        sepcount_ = strf::sep_count(grouping_, digcount_);
+        sepcount_ = grouping_.separators_count(digcount_);
         if (sepsize_ == 1) {
             char_type little_sep[4];
             cs.encode_char(little_sep, thousands_sep_);
