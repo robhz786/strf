@@ -312,46 +312,50 @@ void basic_tests(const FPack& fp)
         (j(strf::split(-1.25, 7, 0xFFFFFFF)));
     TEST(rd("_____________+\xEF\xBF\xBD\xEF\xBF\xBD""1.25")).with(fp)
         (j(+strf::split(1.25, 7, 0xFFFFFFF)));
+}
 
-    // hexadecimal
 
-    TEST(rd("______________0x0p+0")).with(fp) (j(strf::hex(0.0)));
-    TEST(rd("_____________0x0.p+0")).with(fp) (j(*strf::hex(0.0)));
-    TEST(rd("__________0x0.000p+0")).with(fp) (j(strf::hex(0.0).p(3)));
-    TEST(rd("_____________-0x1p-3")).with(fp) (j(strf::hex(-0.125)));
-    TEST(rd("_____________0x1p+11")).with(fp) (j(strf::hex(2048.0)));
-    TEST(rd("__0x1.fffffffffffffp+1023")).with(fp)
+void test_hexadecimal()
+{
+    constexpr auto j = strf::join_right(20, '_');
+
+    TEST("______________0x0p+0") (j(strf::hex(0.0)));
+    TEST("_____________0x0.p+0") (j(*strf::hex(0.0)));
+    TEST("__________0x0.000p+0") (j(strf::hex(0.0).p(3)));
+    TEST("_____________-0x1p-3") (j(strf::hex(-0.125)));
+    TEST("_____________0x1p+11") (j(strf::hex(2048.0)));
+    TEST("__0x1.fffffffffffffp+1023")
         ( strf::join_right(25, '_') (strf::hex((std::numeric_limits<double>::max)())));
-    TEST(rd("___________0x1p-1022")).with(fp) (j(strf::hex(0x1p-1022)));
-    TEST(rd("__________0x1.p-1022")).with(fp) (j(*strf::hex(0x1p-1022)));
-    TEST(rd("_______0x1.000p-1022")).with(fp) (j(*strf::hex(0x1p-1022).p(3)));
-    TEST(rd("______0x0.0009p-1022")).with(fp) (j(strf::hex(0x0.0009p-1022)));
+    TEST("___________0x1p-1022") (j(strf::hex(0x1p-1022)));
+    TEST("__________0x1.p-1022") (j(*strf::hex(0x1p-1022)));
+    TEST("_______0x1.000p-1022") (j(*strf::hex(0x1p-1022).p(3)));
+    TEST("______0x0.0009p-1022") (j(strf::hex(0x0.0009p-1022)));
 
-    TEST(rd("______________0x1p+0")).with(fp) (j(strf::hex(0x1.12345p+0).p(0)));
-    TEST(rd("________0x1.12345p+0")).with(fp) (j(strf::hex(0x1.12345p+0).p(5)));
-    TEST(rd("_______0x1.123450p+0")).with(fp) (j(strf::hex(0x1.12345p+0).p(6)));
-    TEST(rd("_____________0x1.p+0")).with(fp) (j(*strf::hex(0x1.12345p+0).p(0)));
-    TEST(rd("_______0x0.000p-1022")).with(fp) (j(strf::hex(0x0.0008p-1022).p(3)));
-    TEST(rd("_______0x0.002p-1022")).with(fp) (j(strf::hex(0x0.0018p-1022).p(3)));
-    TEST(rd("_______0x0.001p-1022")).with(fp) (j(strf::hex(0x0.0008000000001p-1022).p(3)));
+    TEST("______________0x1p+0") (j(strf::hex(0x1.12345p+0).p(0)));
+    TEST("________0x1.12345p+0") (j(strf::hex(0x1.12345p+0).p(5)));
+    TEST("_______0x1.123450p+0") (j(strf::hex(0x1.12345p+0).p(6)));
+    TEST("_____________0x1.p+0") (j(*strf::hex(0x1.12345p+0).p(0)));
+    TEST("_______0x0.000p-1022") (j(strf::hex(0x0.0008p-1022).p(3)));
+    TEST("_______0x0.002p-1022") (j(strf::hex(0x0.0018p-1022).p(3)));
+    TEST("_______0x0.001p-1022") (j(strf::hex(0x0.0008000000001p-1022).p(3)));
 
-    TEST(rd("______________0X0P+0")).with(fp, strf::uppercase) (j(strf::hex(0.0)));
-    TEST(rd("____0X0.ABCDEFP-1022")).with(fp, strf::uppercase) (j(strf::hex(0x0.abcdefp-1022)));
-    TEST(rd("______0X1.ABCDEFP+10")).with(fp, strf::uppercase) (j(strf::hex(0x1.abcdefp+10)));
+    TEST("______________0X0P+0").with(strf::uppercase) (j(strf::hex(0.0)));
+    TEST("____0X0.ABCDEFP-1022").with(strf::uppercase) (j(strf::hex(0x0.abcdefp-1022)));
+    TEST("______0X1.ABCDEFP+10").with(strf::uppercase) (j(strf::hex(0x1.abcdefp+10)));
 
-    TEST(rd("______________0x0p+0")).with(fp, strf::mixedcase) (j(strf::hex(0.0)));
-    TEST(rd("____0x0.ABCDEFp-1022")).with(fp, strf::mixedcase) (j(strf::hex(0x0.abcdefp-1022)));
-    TEST(rd("______0x1.ABCDEFp+10")).with(fp, strf::mixedcase) (j(strf::hex(0x1.abcdefp+10)));
+    TEST("______________0x0p+0").with(strf::mixedcase) (j(strf::hex(0.0)));
+    TEST("____0x0.ABCDEFp-1022").with(strf::mixedcase) (j(strf::hex(0x0.abcdefp-1022)));
+    TEST("______0x1.ABCDEFp+10").with(strf::mixedcase) (j(strf::hex(0x1.abcdefp+10)));
 
-    TEST(rd("______________0x0p+0")).with(fp, strf::lowercase) (j(strf::hex(0.0)));
-    TEST(rd("____0x0.abcdefp-1022")).with(fp, strf::lowercase) (j(strf::hex(0x0.abcdefp-1022)));
-    TEST(rd("______0x1.abcdefp+10")).with(fp, strf::lowercase) (j(strf::hex(0x1.abcdefp+10)));
+    TEST("______________0x0p+0").with(strf::lowercase) (j(strf::hex(0.0)));
+    TEST("____0x0.abcdefp-1022").with(strf::lowercase) (j(strf::hex(0x0.abcdefp-1022)));
+    TEST("______0x1.abcdefp+10").with(strf::lowercase) (j(strf::hex(0x1.abcdefp+10)));
 
-    TEST(rd("_________-0x1p+0****")).with(fp) (j(strf::left(-1.0, 11, '*').hex()));
-    TEST(rd("_________****-0x1p+0")).with(fp) (j(strf::right(-1.0, 11, '*').hex()));
-    TEST(rd("_________-****0x1p+0")).with(fp) (j(strf::split(-1.0, 11, '*').hex()));
-    TEST(rd("_________**-0x1p+0**")).with(fp) (j(strf::center(-1.0, 11, '*').hex()));
-    TEST(rd("_____________-0x1p+0")).with(fp) (j(strf::center(-1.0, 7, '*').hex()));
+    TEST("_________-0x1p+0****") (j(strf::left(-1.0, 11, '*').hex()));
+    TEST("_________****-0x1p+0") (j(strf::right(-1.0, 11, '*').hex()));
+    TEST("_________-****0x1p+0") (j(strf::split(-1.0, 11, '*').hex()));
+    TEST("_________**-0x1p+0**") (j(strf::center(-1.0, 11, '*').hex()));
+    TEST("_____________-0x1p+0") (j(strf::center(-1.0, 7, '*').hex()));
 }
 
 double make_double(std::uint64_t ieee_exponent, std::uint64_t ieee_mantissa)
@@ -438,27 +442,11 @@ int main()
     }
     {
         TEST_SCOPE_DESCRIPTION("with small decimal point");
-        auto punct = strf::numpunct<10>(1)
-            .thousands_sep(0xFFFFFFF) // invalid separator is not printed
-            .decimal_point('*');
-        basic_tests(strf::pack(punct));
+        basic_tests(strf::pack( strf::numpunct<10>(-1).decimal_point('*')
+                              , strf::numpunct<16>(-1).decimal_point('*') ));
     }
 
-    {
-        TEST_SCOPE_DESCRIPTION("with big decimal point");
-        auto punct = strf::numpunct<10>(1)
-            .thousands_sep(0xFFFFFFF) // invalid separator is not printed
-            .decimal_point(0x1F784);
-        basic_tests(strf::pack(punct));
-    }
-
-    {
-        TEST_SCOPE_DESCRIPTION("with invalid decimal point");
-        auto punct = strf::numpunct<10>(1)
-            .thousands_sep(0xFFFFFFF) // invalid separator is not printed
-            .decimal_point(0xFFFFFFF);
-        basic_tests(strf::pack(punct));
-    }
+    test_hexadecimal();
 
     {
         auto vec = generate_double_samples();
@@ -481,61 +469,162 @@ int main()
             TEST_EQ(parsed, f);
         }
     }
-    constexpr auto j = strf::join_right(20, '_');
-    {
-        auto p = strf::numpunct<10>{3}.decimal_point(',').thousands_sep(':');
 
-        TEST("_________________1,5").with(p) (j(1.5));
-        TEST("_________________0,1").with(p) (j(0.1));
-        TEST("_____6,103515625e-05").with(p) (j(6.103515625e-05));
-        TEST("__________6,1035e-05").with(p) (j(strf::fmt(6.103515625e-05).p(5)));
-        TEST("_________6,10352e-05").with(p) (j(strf::sci(6.103515625e-05).p(5)));
-        TEST("_______0,00048828125").with(p) (j(0.00048828125));
-        TEST("_____2:048,001953125").with(p) (j(2048.001953125));
-        TEST("___________2:048,002").with(p) (j(strf::fixed(2048.001953125).p(3)));
-        TEST("___________1:000:000").with(p) (j(strf::fixed(1000000.0)));
+    // ================================================================================
+    // With punctuation
+    // ================================================================================
+
+    constexpr auto j = strf::join_right(20, '_');
+
+    {   //alternative punct characters
+        auto p = strf::numpunct<10>{3}.thousands_sep(':').decimal_point(',');
+        TEST("_____________1:000,5").with(p) (j(1000.5));
+        TEST("_____________1,5e+50").with(p) (j(1.5e+50));
+        TEST("____________1:000,50").with(p) (j(strf::fixed(1000.5).p(2)));
+        TEST("____________1,50e+50").with(p) (j(strf::sci(1.5e+50).p(2)));
+        TEST("__________________1,").with(p) (j(*strf::fmt(1.0)));
         TEST("_________+1:000:000,").with(p) (j(*+strf::fixed(1000000.0)));
         TEST("_____+1:000:000,0000").with(p) (j(*+strf::fixed(1000000.0).p(4)));
 
-        TEST("___________1:024,125").with(p) (j(1024.125f));
-        TEST("_______+1,024125e+03").with(p) (j(+strf::sci(1024.125f)));
+        auto px = strf::numpunct<16>{3}.decimal_point(',');
+        TEST("________0x1,12345p+0").with(px) (j(strf::hex(0x1.12345p+0)));
     }
-    {
-        auto p1 = strf::numpunct<10>{1}.thousands_sep(',');
+    {   //encoding big punct characters
+        auto p = strf::numpunct<10>{3}.thousands_sep(0x10AAAA).decimal_point(0x10FFFF);
 
-        // check whether it correctly selects the shortest representation
-        TEST("_____________1,0,0,0").with(p1) (j(strf::fixed(1000.0)));
-        TEST("________1.000005e+05").with(p1) (j(100000.5));
-        TEST("_________1,0,0,0,0.5").with(p1) (j(10000.5));
+        TEST(u8"_____________1\U0010AAAA" u8"000\U0010FFFF" u8"5").with(p) (j(1000.5));
+        TEST(u8"_____________1\U0010FFFF" u8"5e+50")              .with(p) (j(1.5e+50));
+        TEST(u8"____________1\U0010AAAA" u8"000\U0010FFFF" u8"50").with(p)
+            (j(strf::fixed(1000.5).p(2)));
+        TEST(u8"____________1\U0010FFFF" u8"50e+50") .with(p) (j(strf::sci(1.5e+50).p(2)));
+        TEST(u8"__________________1\U0010FFFF")      .with(p) (j(*strf::fmt(1.0)));
+        TEST(u8"_________________0\U0010FFFF" u8"1") .with(p) (j(strf::fixed(0.1)));
+        TEST(u8"_________________0\U0010FFFF" u8"1") .with(p) (j(0.1));
 
-        // print big number in fixed format
+        //in hexadecimal
+        auto px = strf::numpunct<16>{3}.decimal_point(0x10FFFF);
+        TEST(u8"________0x1\U0010FFFF" u8"12345p+0").with(px)
+            (j(strf::hex(0x1.12345p+0)));
+    }
+    {   // encoding punct chars in a single-byte encoding
+        auto fp = strf::pack
+            ( strf::iso_8859_3<char>()
+            , strf::numpunct<10>(3).thousands_sep(0x2D9).decimal_point(0x130) );
 
-        TEST("___1,2,3,4,5,6,7,8,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-             ",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-             ",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0")
-            .with(p1)
-            (strf::join_right(180, '_')(strf::fixed(123456789e+80)));
-        TEST("_____1234,56789000,00000000,00000000,00000000,00000000"
-             ",00000000,00000000,00000000,00000000,00000000.")
-            .with(strf::numpunct<10>{8})
-            (strf::join_right(100, '_')(*strf::fixed(123456789e+75)));
-        TEST("____________1234\xC2\xB7" "5678900000000000\xC2\xB7"
-             "0000000000000000\xC2\xB7" "0000000000000000\xC2\xB7"
-             "0000000000000000\xC2\xB7" "0000000000000000\xC2\xB0")
-            .with(strf::numpunct<10>(16).thousands_sep(0xB7)
-                                                  .decimal_point(0xB0) )
-            (strf::join_right(102, '_')(*strf::fixed(123456789e+75)));
+        TEST("_____________1\xFF""000\xA9""5").with(fp) (j(1000.5));
+        TEST("_____________1\xA9""5e+50")     .with(fp) (j(1.5e+50));
+        TEST("____________1\xFF""000\xA9""50").with(fp) (j(strf::fixed(1000.5).p(2)));
+        TEST("____________1\xA9""50e+50")     .with(fp) (j(strf::sci(1.5e+50).p(2)));
+        TEST("__________________1\xA9")       .with(fp) (j(*strf::fmt(1.0)));
+        TEST("_________________0\xA9" "1")    .with(fp) (j(strf::fixed(0.1)));
+        TEST("_________________0\xA9" "1")    .with(fp) (j(0.1));
 
-        // invalid separator
-        TEST("_____1234567890000000000000000000000000000000000000000000"
-             "00000000000000000000000000000000\xC2\xB0")
-            .with(strf::numpunct<10>(16).thousands_sep(0xFFFFFFF)
-                                                  .decimal_point(0xB0) )
-            (strf::join_right(90, '_')(*strf::fixed(123456789e+75)));
+        auto fpx = strf::pack
+            ( strf::iso_8859_3<char>(), strf::numpunct<16>(4).decimal_point(0x130) );
 
-        //----------------------------------------------------------------
-        // when precision is not specified, the general format selects the
+        TEST("________0x1\xA9""12345p+0").with(fpx) (j(strf::hex(0x1.12345p+0)));
+    }
+    {   // invalid punct characters
+        // ( thousand separators are omitted  )
+
+        auto p = strf::numpunct<10>{3}.thousands_sep(0xFFFFFF).decimal_point(0xEEEEEE);
+        TEST(u8"______________1000\uFFFD5")       .with(p) (j(1000.5));
+        TEST(u8"_____________1\uFFFD" u8"5e+50")  .with(p) (j(1.5e+50));
+        TEST(u8"_____________1000\uFFFD" u8"50")  .with(p) (j(strf::fixed(1000.5).p(2)));
+        TEST(u8"____________1\uFFFD" u8"50e+50")  .with(p) (j(strf::sci(1.5e+50).p(2)));
+        TEST(u8"__________________1\uFFFD")       .with(p) (j(*strf::fmt(1.0)));
+        TEST(u8"_________________0\uFFFD" u8"1")  .with(p) (j(strf::fixed(0.1)));
+        TEST(u8"_________________0\uFFFD" u8"1")  .with(p) (j(0.1));
+
+        auto px = strf::numpunct<16>{3}.decimal_point(0xEEEEEE);
+        TEST(u8"________0x1\uFFFD" u8"12345p+0").with(px) (j(strf::hex(0x1.12345p+0)));
+    }
+    {   // invalid punct characters  in a single-byte encoding
+        // ( thousand separators are omitted  )
+        auto fp = strf::pack
+            ( strf::iso_8859_3<char>()
+            , strf::numpunct<10>(3).thousands_sep(0xFFF).decimal_point(0xEEE) );
+
+        TEST("______________1000?5").with(fp) (j(1000.5));
+        TEST("_____________1?5e+50").with(fp) (j(1.5e+50));
+        TEST("_____________1000?50").with(fp) (j(strf::fixed(1000.5).p(2)));
+        TEST("____________1?50e+50").with(fp) (j(strf::sci(1.5e+50).p(2)));
+        TEST("__________________1?").with(fp) (j(*strf::fmt(1.0)));
+        TEST("_________________0?1").with(fp) (j(strf::fixed(0.1)));
+        TEST("_________________0?1").with(fp) (j(0.1));
+
+        auto fpx = strf::pack
+            ( strf::iso_8859_3<char>(), strf::numpunct<16>(4).decimal_point(0xEEE) );
+
+        TEST("________0x1?12345p+0").with(fpx) (j(strf::hex(0x1.12345p+0)));
+    }
+
+    {   // When the integral part does not have trailing zeros
+
+        TEST("1:048:576") .with(strf::numpunct<10>(3).thousands_sep(':'))
+            (1048576.0);
+
+        TEST("1:048:576") .with(strf::numpunct<10>(3).thousands_sep(':'))
+            (strf::fixed(1048576.0));
+
+        TEST(u8"1\u0ABC" u8"048\u0ABC" u8"576")
+            .with(strf::numpunct<10>(3).thousands_sep(0xABC))
+            (1048576.0);
+
+        TEST(u8"1\u0ABC" u8"048\u0ABC" u8"576")
+            .with(strf::numpunct<10>(3).thousands_sep(0xABC))
+            (strf::fixed(1048576.0));
+    }
+    {   // variable groups
+        auto grp = [](auto... grps) { return strf::numpunct<10>{grps...}; };
+
+        TEST("1,00,00,0,00,0")  .with(grp(1,2,1,2)) (strf::fixed(100000000.0));
+        TEST("10,00,00,0,00,0") .with(grp(1,2,1,2)) (strf::fixed(1000000000.0));
+
+        TEST("32,10,00,0,00,0") .with(grp(1,2,1,2)) (strf::fixed(3210000000.0));
+        TEST("43,21,00,0,00,0") .with(grp(1,2,1,2)) (strf::fixed(4321000000.0));
+        TEST("54,32,10,0,00,0") .with(grp(1,2,1,2)) (strf::fixed(5432100000.0));
+        TEST("7,65,432,10,0")   .with(grp(1,2,3,2)) (strf::fixed(765432100.0));
+        TEST("7,6,543,21,0,0")  .with(grp(1,1,2,3,1)) (strf::fixed(765432100.0));
+        TEST("7,654,321,00,0")  .with(grp(1,2,3)) (strf::fixed(7654321000.0));
+
+        TEST("1000,00,0") .with(grp(1,2,-1)) (strf::fixed(1000000.0));
+        TEST("1234,00,0") .with(grp(1,2,-1)) (strf::fixed(1234000.0));
+        TEST("1234,50,0") .with(grp(1,2,-1)) (strf::fixed(1234500.0));
+    }
+    {   // variable groups and big separator
+        auto grp = [](auto... grps)
+            { return strf::numpunct<10>{grps...}.thousands_sep(0xABCD); };
+
+        TEST(u8"1\uABCD" u8"00\uABCD" u8"00\uABCD" u8"0\uABCD" u8"00\uABCD" u8"0")
+              .with(grp(1,2,1,2)) (strf::fixed(100000000.0));
+        TEST(u8"10\uABCD" u8"00\uABCD" u8"00\uABCD" u8"0\uABCD" u8"00\uABCD" u8"0")
+              .with(grp(1,2,1,2)) (strf::fixed(1000000000.0));
+
+        TEST(u8"32\uABCD" u8"10\uABCD" u8"00\uABCD" u8"0\uABCD" u8"00\uABCD" u8"0")
+              .with(grp(1,2,1,2)) (strf::fixed(3210000000.0));
+        TEST(u8"43\uABCD" u8"21\uABCD" u8"00\uABCD" u8"0\uABCD" u8"00\uABCD" u8"0")
+              .with(grp(1,2,1,2)) (strf::fixed(4321000000.0));
+        TEST(u8"54\uABCD" u8"32\uABCD" u8"10\uABCD" u8"0\uABCD" u8"00\uABCD" u8"0")
+              .with(grp(1,2,1,2)) (strf::fixed(5432100000.0));
+        TEST(u8"7\uABCD" u8"65\uABCD" u8"432\uABCD" u8"10\uABCD" u8"0")
+              .with(grp(1,2,3,2)) (strf::fixed(765432100.0));
+        TEST(u8"7\uABCD" u8"6\uABCD" u8"543\uABCD" u8"21\uABCD" u8"0\uABCD" u8"0")
+              .with(grp(1,1,2,3,1)) (strf::fixed(765432100.0));
+        TEST(u8"7\uABCD" u8"654\uABCD" u8"321\uABCD" u8"00\uABCD" u8"0")
+              .with(grp(1,2,3)) (strf::fixed(7654321000.0));
+
+        TEST(u8"1000\uABCD" u8"00\uABCD" u8"0")
+              .with(grp(1,2,-1)) (strf::fixed(1000000.0));
+        TEST(u8"1234\uABCD" u8"00\uABCD" u8"0")
+              .with(grp(1,2,-1)) (strf::fixed(1234000.0));
+        TEST(u8"1234\uABCD" u8"50\uABCD" u8"0")
+              .with(grp(1,2,-1)) (strf::fixed(1234500.0));
+    }
+    {   // when precision is not specified, the general format selects the
         // scientific notation if it is shorter than the fixed notation:
+        auto p1 = strf::numpunct<10>{1};
+
         TEST("_______________1,0,0").with(p1)  (j(1e+2));
         TEST("_______________1e+03").with(p1)  (j(1e+3));
         TEST("_____________1,2,0,0").with(p1)  (j(1.2e+3));
@@ -550,111 +639,9 @@ int main()
         TEST("_______________0.001").with(p1)  (j(1e-3));
         TEST("_______________1e-04").with(p1)  (j(strf::fmt(1e-4)));
         TEST("_______________0.001").with(p1)  (j(strf::fmt(1e-3)));
-        TEST("_______________1e+05").with(strf::numpunct<10>(8))
-            (j(strf::fmt(1e+5)));
-
-        {
-            // punctuation in single-byte charset
-            auto fp = strf::pack( strf::iso_8859_3<char>()
-                                , strf::numpunct<10>(4)
-                                    .decimal_point(0x130)
-                                    .thousands_sep(0x2D9) );
-            TEST("_________1\xA9""00025e+03") .with(fp) (j(strf::sci(1000.25)));
-            TEST("___________1\xFF""0000\xA9""25") .with(fp) (j(10000.25));
-            TEST("___________1\xFF""0000\xA9""25") .with(fp) (j(strf::fmt(10000.25)));
-            TEST("__12\xFF""3400\xFF""0000\xFF""0000\xFF""0000\xFF""0000\xFF"
-                 "0000\xFF""0000\xFF""0000\xFF""0000\xFF""0000\xFF""0000\xFF"
-                 "0000\xFF""0000\xFF""0000\xFF""0000\xFF""0000\xFF""0000")
-                .with(fp)
-                (strf::join_right(89, '_')(strf::fixed(1.234e+69)));
-            TEST("_______0x1\xA9""abcdefp+1") .with(fp) (j(strf::hex(0x1.abcdefp+1)));
-        }
-        {
-            auto punct = strf::numpunct<10>(1, 2, 3);
-            TEST("__1,000,000,000,00,0") .with(punct) (j(strf::fixed(1e+12)));
-            TEST("____100,000,000,00,0") .with(punct) (j(strf::fixed(1e+11)));
-            TEST("____123,000,000,00,0") .with(punct) (j(strf::fixed(123e+9)));
-            TEST("____123,400,000,00,0") .with(punct) (j(strf::fixed(123400000000.0)));
-            TEST("____123,456,789,00,0") .with(punct) (j(strf::fixed(123456789000.0)));
-            TEST("_____12,345,678,90,0") .with(punct) (j(strf::fixed(12345678900.0)));
-            TEST("________123,456,78,9") .with(punct) (j(strf::fixed(123456789.0)));
-            TEST("________________12,3") .with(punct) (j(strf::fixed(123.0)));
-            TEST("_________________1,2") .with(punct) (j(strf::fixed(12.0)));
-            TEST("___________________1") .with(punct) (j(strf::fixed(1.0)));
-
-            punct.thousands_sep(0xB7);
-            TEST("__1\xC2\xB7" "000\xC2\xB7" "000\xC2\xB7" "000\xC2\xB7" "00\xC2\xB7" "0" )
-                .with(punct) (j(strf::fixed(1e+12)));
-
-            TEST("____100\xC2\xB7" "000\xC2\xB7" "000\xC2\xB7" "00\xC2\xB7" "0")
-                .with(punct) (j(strf::fixed(1e+11)));
-
-            TEST("____123\xC2\xB7"  "000\xC2\xB7" "000\xC2\xB7" "00\xC2\xB7" "0")
-                .with(punct) (j(strf::fixed(123e+9)));
-
-            TEST("____123\xC2\xB7" "400\xC2\xB7" "000\xC2\xB7" "00\xC2\xB7" "0")
-                .with(punct) (j(strf::fixed(123400000000.0)));
-
-            TEST("____123\xC2\xB7" "456\xC2\xB7" "789\xC2\xB7" "00\xC2\xB7" "0")
-                .with(punct) (j(strf::fixed(123456789000.0)));
-
-            TEST("_____12\xC2\xB7" "345\xC2\xB7" "678\xC2\xB7" "90\xC2\xB7" "0")
-                .with(punct) (j(strf::fixed(12345678900.0)));
-
-            TEST("________123\xC2\xB7" "456\xC2\xB7" "78\xC2\xB7" "9")
-                .with(punct) (j(strf::fixed(123456789.0)));
-
-            TEST("________________12\xC2\xB7" "3")
-                .with(punct) (j(strf::fixed(123.0)));
-
-            TEST("_________________1\xC2\xB7" "2")
-                .with(punct) (j(strf::fixed(12.0)));
-
-            TEST("___________________1")
-                .with(punct) (j(strf::fixed(1.0)));
-        }
-        {
-            auto punct = strf::numpunct<10>(3);
-            TEST("___1,000,000,000,000") .with(punct) (j(strf::fixed(1e+12)));
-            TEST("_____100,000,000,000") .with(punct) (j(strf::fixed(1e+11)));
-            TEST("_________123,400,000") .with(punct) (j(strf::fixed(123400000.0)));
-            TEST("_________123,456,000") .with(punct) (j(strf::fixed(123456000.0)));
-            TEST("_________123,456,700") .with(punct) (j(strf::fixed(123456700.0)));
-            TEST("_________123,456,789") .with(punct) (j(strf::fixed(123456789.0)));
-            TEST("_________________123") .with(punct) (j(strf::fixed(123.0)));
-            TEST("__________________12") .with(punct) (j(strf::fixed(12.0)));
-
-            punct.thousands_sep(0xB7);
-            TEST("___1\xC2\xB7" "000\xC2\xB7" "000\xC2\xB7" "000\xC2\xB7" "000")
-                .with(punct) (j(strf::fixed(1e+12)));
-
-            TEST("_____100\xC2\xB7" "000\xC2\xB7" "000\xC2\xB7" "000")
-                .with(punct) (j(strf::fixed(1e+11)));
-
-            TEST("_________123\xC2\xB7" "400\xC2\xB7" "000")
-                .with(punct) (j(strf::fixed(123400000.0)));
-
-            TEST("_________123\xC2\xB7" "456\xC2\xB7" "000")
-                .with(punct) (j(strf::fixed(123456000.0)));
-
-            TEST("_________123\xC2\xB7" "456\xC2\xB7" "700")
-                .with(punct) (j(strf::fixed(123456700.0)));
-
-            TEST("_________123\xC2\xB7" "456\xC2\xB7" "789")
-                .with(punct) (j(strf::fixed(123456789.0)));
-
-            TEST("_________________123").with(punct) (j(strf::fixed(123.0)));
-            TEST("__________________12").with(punct) (j(strf::fixed(12.0)));
-        }
-
-        // invalid decimal point
-        TEST("______________1\xEF\xBF\xBD""e+03")
-            .with(strf::numpunct<10>{1}.decimal_point(0xFFFFFFF))
-            (j(*strf::sci(1000.0)));
-
-        TEST("_________________1\xEF\xBF\xBD""5")
-            .with(strf::numpunct<10>{1}.decimal_point(0xFFFFFFF))
-            (j(*strf::fixed(1.5)));
+        TEST("_______________1e+05").with(strf::numpunct<10>(8))(j(strf::fmt(1e+5)));
+        TEST("________1.000005e+05").with(p1) (j(100000.5));
+        TEST("_________1,0,0,0,0.5").with(p1) (j(10000.5));
     }
     return test_finish();
 }

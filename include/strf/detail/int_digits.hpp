@@ -802,7 +802,7 @@ public:
                 *--it = sep;
                 group_it = group;
             } else {
-                --group;
+                --group_it;
             }
         }
         no_more_sep:
@@ -1092,6 +1092,7 @@ public:
                 *oit++ = (char_type)'0' + (0 != (value & mask));
                 mask = mask >> 1;
             }
+            dist.low_groups.pop_high();
         }
         ob.advance_to(oit);
     }
@@ -1161,6 +1162,7 @@ public:
                 *oit++ = (char_type)'0' + (0 != (value & mask));
                 mask = mask >> 1;
             }
+            dist.low_groups.pop_high();
         }
         ob.advance_to(oit);
     }

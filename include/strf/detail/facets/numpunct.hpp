@@ -5,8 +5,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <string>
 #include <strf/detail/common.hpp>
+#include <limits.h>
 
 namespace strf {
 namespace detail {
@@ -161,7 +161,7 @@ public:
 
     template <typename ... IntArgs>
     constexpr STRF_HD digits_grouping
-        ( unsigned grp0, unsigned grp1, IntArgs... grps ) noexcept
+        ( int grp0, int grp1, IntArgs... grps ) noexcept
         : grps_(ctor_(grp0, grp1, grps...))
     {
         static_assert(2 + sizeof...(grps) <= grps_count_max, "too many groups");
@@ -171,10 +171,11 @@ public:
     constexpr STRF_HD digits_grouping(const char* str, std::size_t len) noexcept
         : grps_(no_more_sep_)
     {
+        constexpr char grp_stop = CHAR_MAX;
         if (len > grps_count_max) {
             len = grps_count_max;
         }
-        if (len != 0 && str[0] != 0 && str[0] != '\xFF') {
+        if (len != 0 && str[0] != 0 && str[0] != grp_stop) {
             grps_ = 0;
             STRF_ASSERT(0 < str[0] && str[0] <= grp_max);
             char previous_grp = str[0];
@@ -185,10 +186,10 @@ public:
                 if (grp == 0) {
                     break;
                 }
-                STRF_ASSERT((0 < grp && grp <= grp_max) || grp == '\xFF');
+                STRF_ASSERT((0 < grp && grp <= grp_max) || grp == grp_stop);
                 unsigned g = (grp & grp_bits_mask_) << shift;
                 grps_ = grps_ | g;
-                if (grp == '\xFF') {
+                if (grp == grp_stop) {
                     break;
                 }
                 shift += grp_bits_count_;
@@ -217,11 +218,6 @@ public:
     {
         STRF_ASSERT(grps_ != 0);
         return grps_ != no_more_sep_ && digcount > int(grps_ & grp_bits_mask_);
-    }
-    constexpr STRF_HD bool no_separator(int digcount) const noexcept
-    {
-        STRF_ASSERT(grps_ != 0);
-        return grps_ == no_more_sep_ || digcount <= int(grps_& grp_bits_mask_);
     }
     constexpr STRF_HD unsigned separators_count(int digcount) const noexcept
     {
@@ -333,9 +329,9 @@ public:
     }
     using strf::digits_grouping::distribute;
 
-    constexpr STRF_HD bool no_group_separation(unsigned digcount) const noexcept
+    constexpr STRF_HD bool any_group_separation(unsigned digcount) const noexcept
     {
-        return digits_grouping::no_separator(digcount);
+        return digits_grouping::any_separator(digcount);
     }
     constexpr STRF_HD unsigned thousands_sep_count(unsigned digcount) const noexcept
     {
@@ -382,8 +378,8 @@ class default_numpunct final
 public:
     using category = strf::numpunct_c<Base>;
 
-    default_numpunct() noexcept = default;
-    default_numpunct(const default_numpunct&) noexcept = default;
+    constexpr default_numpunct() noexcept = default;
+    constexpr default_numpunct(const default_numpunct&) noexcept = default;
 
     constexpr STRF_HD default_numpunct& operator=(const default_numpunct&) noexcept
     {
@@ -400,9 +396,9 @@ public:
     {
         return {{}, 0, digcount};
     }
-    constexpr STRF_HD bool no_group_separation(unsigned) const noexcept
+    constexpr STRF_HD bool any_group_separation(unsigned) const noexcept
     {
-        return true;
+        return false;
     }
     constexpr STRF_HD unsigned thousands_sep_count(unsigned) const noexcept
     {
@@ -430,8 +426,8 @@ class no_grouping final
 public:
     using category = strf::numpunct_c<Base>;
 
-    no_grouping() noexcept = default;
-    no_grouping(const no_grouping&) noexcept = default;
+    constexpr no_grouping() noexcept = default;
+    constexpr no_grouping(const no_grouping&) noexcept = default;
 
     constexpr STRF_HD no_grouping& operator=(const no_grouping& other) noexcept
     {
@@ -449,9 +445,9 @@ public:
     {
         return {{}, 0, digcount};
     }
-    constexpr STRF_HD bool no_group_separation(unsigned) const noexcept
+    constexpr STRF_HD bool any_group_separation(unsigned) const noexcept
     {
-        return true;
+        return false;
     }
     constexpr STRF_HD unsigned thousands_sep_count(unsigned) const noexcept
     {

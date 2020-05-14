@@ -503,7 +503,7 @@ public:
         uvalue_ = strf::detail::unsigned_abs(i.value);
         digcount_ = strf::detail::count_digits<10>(uvalue_);
         auto punct = get_facet<strf::numpunct_c<10>, IntT>(i.fp);
-        if (! punct.no_group_separation(digcount_)) {
+        if (punct.any_group_separation(digcount_)) {
             grouping_ = punct.grouping();
             thousands_sep_ = punct.thousands_sep();
             std::size_t sepsize = cs.validate(thousands_sep_);
@@ -603,7 +603,7 @@ public:
         init_<IntT>( value, fdata );
         STRF_IF_CONSTEXPR (detail::has_intpunct<FPack, IntTag, Base>()) {
             auto punct = get_facet<strf::numpunct_c<Base>, IntTag>(fp);
-            if ( ! punct.no_group_separation(digcount_)) {
+            if (punct.any_group_separation(digcount_)) {
                 grouping_ = punct.grouping();
                 thousands_sep_ = punct.thousands_sep();
                 auto charset = get_facet<strf::charset_c<CharT>, IntTag>(fp);
