@@ -61,7 +61,7 @@
 #define FMT_MIX_FIXTURE   auto fmt_3_int = fmt::compile<int, int, int>("{:*<8}{:#x}{:>+10}");
 #define FMT_MIX_OP        fmt::format_to(dest, fmt_3_int, 21, 221, 21);
 #define SPRINTF_MIX_OP    std::sprintf(dest, "%-8d%#x%+10d", 21, 221, 21);
-#define STRF_PUNCT_FIXTURE    strf::monotonic_grouping<10> punct3(3);
+#define STRF_PUNCT_FIXTURE    strf::numpunct<10> punct3(3);
 #define STRF_PUNCT_I_OP       strf::to(dest).with(punct3)(25);
 #define FMT_PUNCT_I_FIXTURE   std::setlocale(LC_ALL, "en_US.UTF-8"); \
                               auto fmt_loc_int = fmt::compile<int>("{:n}");
@@ -72,7 +72,7 @@
                               auto fmt_loc_ulonglong = fmt::compile<std::uint64_t>("{:n}");
 #define FMT_PUNCT_ULL_OP      fmt::format_to(dest, fmt_loc_ulonglong, ~0ull);
 #define SPRINTF_PUNCT_ULL_OP  std::sprintf(dest, "%'llud", ~0ull);
-#define STRF_BIGPUNCT_FIXTURE auto punct3_bigsep = strf::monotonic_grouping<10>(3).thousands_sep(0x22C4);
+#define STRF_BIGPUNCT_FIXTURE auto punct3_bigsep = strf::numpunct<10>(3).thousands_sep(0x22C4);
 #define STRF_BIGPUNCT_I_OP    strf::to(dest).with(punct3_bigsep)(25);
 #define STRF_BIGPUNCT_ULL_OP  strf::to(dest).with(punct3_bigsep)(~0ull);
 

@@ -2,7 +2,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#define  _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <iostream>
 #include <stdio.h>
@@ -27,7 +27,7 @@ static void fill_with_codepoints
         if (x >= 0x80) {
             x = 0;
         }
-        str[i] = x;
+        str[i] = static_cast<char>(x);
     }
 }
 static void fill_with_codepoints
@@ -40,8 +40,8 @@ static void fill_with_codepoints
         if (x >= 0x800) {
             x = 0x80;
         }
-        str[i]     = 0xC0 | ( x >> 6 );
-        str[i + 1] = 0x80 | ( x & 0x3F );
+        str[i]     = static_cast<char>(0xC0 | ( x >> 6 ));
+        str[i + 1] = static_cast<char>(0x80 | ( x & 0x3F ));
     }
 }
 static void fill_with_codepoints
@@ -57,9 +57,9 @@ static void fill_with_codepoints
         if (x >= 0x10000) {
             x = 0x800;
         }
-        str[i]     = 0xE0 | ( x >> 12 );
-        str[i + 1] = 0x80 | ( (x >> 6) & 0x3F );
-        str[i + 2] = 0x80 | ( x & 0x3F );
+        str[i]     = static_cast<char>(0xE0 | ( x >> 12 ));
+        str[i + 1] = static_cast<char>(0x80 | ( (x >> 6) & 0x3F ));
+        str[i + 2] = static_cast<char>(0x80 | ( x & 0x3F ));
     }
 }
 static void fill_with_codepoints
@@ -72,10 +72,10 @@ static void fill_with_codepoints
         if (x >= 0x10FFFF) {
             x = 0x10000;
         }
-        str[i]     = 0xF0 | ( x >> 18 );
-        str[i + 1] = 0x80 | ( (x >> 12) & 0x3F );
-        str[i + 2] = 0x80 | ( (x >> 6) & 0x3F );
-        str[i + 3] = 0x80 | ( x & 0x3F );
+        str[i]     = static_cast<char>(0xF0 | ( x >> 18 ));
+        str[i + 1] = static_cast<char>(0x80 | ( (x >> 12) & 0x3F ));
+        str[i + 2] = static_cast<char>(0x80 | ( (x >> 6) & 0x3F ));
+        str[i + 3] = static_cast<char>(0x80 | ( x & 0x3F ));
     }
 }
 

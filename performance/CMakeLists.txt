@@ -43,6 +43,7 @@ foreach(
     width_calculation
     utf8_to_utf16
     utf16_to_utf8
+    numpunct
 )
 
   add_executable(performance-${x}-header-only    ${x}.cpp)
@@ -66,4 +67,3 @@ foreach(
     DESTINATION "${STRF_INSTALL_SUBDIR}/$<CONFIG>/benchmarks")
   
 endforeach(x)
-  

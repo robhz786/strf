@@ -36,7 +36,7 @@ int main()
     TEST(U"abc \u0100 def").with(dyn_utf32) (strf::sani(U"abc \u0100 def"));
 
     {
-        auto punct = strf::monotonic_grouping<10>(1)
+        auto punct = strf::numpunct<10>(1)
             .thousands_sep(0xFFFFFFFF)
             .decimal_point(0xFFFFFFFF);
 

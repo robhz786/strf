@@ -124,7 +124,7 @@ void basic_facet_sample()
 
 //[ basic_facet_sample
     constexpr int base = 10;
-    auto punct = strf::str_grouping<base>{"\4\3\2"}.thousands_sep(U'.');
+    auto punct = strf::numpunct<base>{4, 3, 2}.thousands_sep(U'.');
     auto s = strf::to_string
         .with(punct)
         ("one hundred billions = ", 100000000000ll);
@@ -137,7 +137,7 @@ void basic_facet_sample()
 void constrained_facet()
 {
     //[ constrained_facet_sample
-    auto facet_obj = strf::constrain<std::is_signed>(strf::monotonic_grouping<10>{3});
+    auto facet_obj = strf::constrain<std::is_signed>(strf::numpunct<10>{3});
 
     auto s = strf::to_string.with(facet_obj)(100000u, "  ", 100000);
 
@@ -149,9 +149,9 @@ void constrained_facet()
 void overriding_sample()
 {
     //[ facets_overriding
-    auto punct_dec_1 = strf::monotonic_grouping<10>{1};
-    auto punct_dec_2 = strf::monotonic_grouping<10>{2}.thousands_sep('.');
-    auto punct_dec_3 = strf::monotonic_grouping<10>{3}.thousands_sep('^');;
+    auto punct_dec_1 = strf::numpunct<10>{1};
+    auto punct_dec_2 = strf::numpunct<10>{2}.thousands_sep('.');
+    auto punct_dec_3 = strf::numpunct<10>{3}.thousands_sep('^');;
 
     // Below, punct_dec_3 overrides punct_dec_2, but only for signed types.
     // punct_dec_2 overrides punct_dec_1 for all input types,
@@ -174,7 +174,7 @@ void sample_numpunct_with_alternative_charset()
     // Writting in Windows-1252
     auto s = strf::to_string
         .with(strf::windows_1252<char>())
-        .with(strf::str_grouping<10>{"\4\3\2"}.thousands_sep(0x2022))
+        .with(strf::numpunct<10>{4, 3, 2}.thousands_sep(0x2022))
         ("one hundred billions = ", 100000000000ll);
 
     // The character U+2022 is encoded as '\225' in Windows-1252
@@ -223,25 +223,25 @@ void sani()
     //]
 }
 
-void monotonic_grouping()
+void numpunct()
 {
-    //[monotonic_grouping
+    //[numpunct
     constexpr int base = 10;
 
     auto str = strf::to_string
-        .with(strf::monotonic_grouping<base>{3}.thousands_sep(U'.'))
+        .with(strf::numpunct<base>{3}.thousands_sep(U'.'))
         (100000000000ll);
 
     assert(str == "100.000.000.000");
     //]
 }
 
-void str_grouping()
+void variable_grouping()
 {
-    //[str_grouping
+    //[variable_grouping
     constexpr int base = 10;
 
-    auto punct = strf::str_grouping<base>{"\4\3\2"};
+    auto punct = strf::numpunct<base>{4, 3, 2};
     auto str = strf::to_string.with(punct)(100000000000ll);
     assert(str == "1,00,00,000,0000");
     //]
@@ -251,7 +251,7 @@ void punct_non_decimal()
 {
     //[punct_non_decimal
     auto str = strf::to_string
-        .with(strf::monotonic_grouping<16>{4}.thousands_sep(U'\''))
+        .with(strf::numpunct<16>{4}.thousands_sep(U'\''))
         (strf::hex(0xffffffffffLL));
 
     assert(str == "ff'ffff'ffff");
@@ -325,8 +325,8 @@ void width_func()
 namespace my { // my customizations
 
 const auto my_default_facets = strf::pack
-    ( strf::monotonic_grouping<10>(3)
-    , strf::monotonic_grouping<16>(4).thousands_sep(U'\'')
+    ( strf::numpunct<10>(3)
+    , strf::numpunct<16>(4).thousands_sep(U'\'')
     , strf::surrogate_policy::lax );
 
 const auto to_string = strf::to_string.with(my_default_facets);
@@ -379,8 +379,8 @@ int main()
     input_ouput_different_char_types();
     input_string_charset();
     sani();
-    monotonic_grouping();
-    str_grouping();
+    numpunct();
+    variable_grouping();
     punct_non_decimal();
     fast_width();
     width_as_u32len();
