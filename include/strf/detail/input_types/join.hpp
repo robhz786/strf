@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/facets/charset.hpp>
+#include <strf/detail/facets/char_encoding.hpp>
 #include <strf/detail/printers_tuple.hpp>
 #include <strf/detail/format_functions.hpp>
 
@@ -238,8 +238,8 @@ public:
         , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c>(input.fp))
         , surr_poli_(get_facet_<strf::surrogate_policy_c>(input.fp))
     {
-        decltype(auto) cs = get_facet_<strf::charset_c<CharT>>(input.fp);
-        encode_fill_func_ = cs.encode_fill_func();
+        decltype(auto) enc = get_facet_<strf::char_encoding_c<CharT>>(input.fp);
+        encode_fill_func_ = enc.encode_fill_func();
         strf::print_preview<ReqSize, strf::preview_width::yes> p { afmt_.width };
         new (printers_ptr_()) printers_tuple_
             { input.fp, p, input.arg.value(), strf::tag<CharT>{} };
@@ -249,7 +249,7 @@ public:
         STRF_IF_CONSTEXPR (static_cast<bool>(ReqSize)) {
             input.preview.add_size(p.get_size());
             if (fillcount_ > 0) {
-                auto fcharsize = cs.encoded_char_size(afmt_.fill);
+                auto fcharsize = enc.encoded_char_size(afmt_.fill);
                 input.preview.add_size(fillcount_ * fcharsize);
             }
         }
@@ -269,8 +269,8 @@ public:
         , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c>(input.fp))
         , surr_poli_(get_facet_<strf::surrogate_policy_c>(input.fp))
     {
-        decltype(auto) cs = get_facet_<strf::charset_c<CharT>>(input.fp);
-        encode_fill_func_ = cs.encode_fill_func();
+        decltype(auto) enc = get_facet_<strf::char_encoding_c<CharT>>(input.fp);
+        encode_fill_func_ = enc.encode_fill_func();
         if (afmt_.width < 0) {
             afmt_.width = 0;
         }
@@ -292,7 +292,7 @@ public:
         STRF_IF_CONSTEXPR (static_cast<bool>(ReqSize)) {
             input.preview.add_size(p.get_size());
             if (fillcount_ > 0) {
-                auto fcharsize = cs.encoded_char_size(afmt_.fill);
+                auto fcharsize = enc.encoded_char_size(afmt_.fill);
                 input.preview.add_size( fillcount_ * fcharsize);
             }
         }

@@ -1,5 +1,5 @@
-#ifndef STRF_DETAIL_FACETS_CHARSETS_HPP
-#define STRF_DETAIL_FACETS_CHARSETS_HPP
+#ifndef STRF_DETAIL_FACETS_CHAR_ENCODING_HPP
+#define STRF_DETAIL_FACETS_CHAR_ENCODING_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -22,7 +22,7 @@ class invalid_sequence: public strf::stringify_error
 
     const char* what() const noexcept override
     {
-        return "Boost.Stringify: charset conversion error";
+        return "strf: encoding conversion error";
     }
 };
 
@@ -85,7 +85,7 @@ struct facet_traits<strf::surrogate_policy>
     static constexpr bool store_by_value = true;
 };
 
-enum class charset_id : unsigned
+enum class char_encoding_id : unsigned
 {
     utf8,
     mutf8,
@@ -172,12 +172,12 @@ enum class charset_id : unsigned
 };
 
 template <typename CharT>
-struct charset_c;
+struct char_encoding_c;
 
-template <strf::charset_id>
-class static_underlying_charset;
+template <strf::char_encoding_id>
+class static_underlying_char_encoding;
 
-template <strf::charset_id Src, strf::charset_id Dest>
+template <strf::char_encoding_id Src, strf::char_encoding_id Dest>
 class static_underlying_transcoder;
 
 template <std::size_t SrcCharSize, std::size_t DestCharSize>
@@ -244,14 +244,14 @@ using decode_char_f = char32_t (*)
 template <std::size_t SrcCharSize, std::size_t DestCharSize>
 using find_transcoder_f =
     strf::dynamic_underlying_transcoder<SrcCharSize, DestCharSize> (*)
-    ( strf::charset_id );
+    ( strf::char_encoding_id );
 
 template <std::size_t SrcCharSize, std::size_t DestCharSize>
 class dynamic_underlying_transcoder
 {
 public:
 
-    template <strf::charset_id Src, strf::charset_id Dest>
+    template <strf::char_encoding_id Src, strf::char_encoding_id Dest>
     constexpr explicit STRF_HD dynamic_underlying_transcoder
         ( strf::static_underlying_transcoder<Src, Dest> t ) noexcept
         : transcode_func_(t.transcode_func())
@@ -302,10 +302,10 @@ private:
 };
 
 template <std::size_t CharSize>
-struct dynamic_underlying_charset_data
+struct dynamic_underlying_char_encoding_data
 {
     const char* name;
-    strf::charset_id id;
+    strf::char_encoding_id id;
     char32_t replacement_char;
     std::size_t replacement_char_size;
     strf::validate_f validate_func;
@@ -321,15 +321,15 @@ struct dynamic_underlying_charset_data
     strf::dynamic_underlying_transcoder<CharSize, 4> to_u32;
     strf::dynamic_underlying_transcoder<CharSize, CharSize> sanitizer;
 
-    strf::find_transcoder_f<1, CharSize> transcoder_from_1byte_charset;
-    strf::find_transcoder_f<2, CharSize> transcoder_from_2bytes_charset;
+    strf::find_transcoder_f<1, CharSize> transcoder_from_1byte_encoding;
+    strf::find_transcoder_f<2, CharSize> transcoder_from_2bytes_encoding;
 
-    strf::find_transcoder_f<CharSize, 1> transcoder_to_1byte_charset;
-    strf::find_transcoder_f<CharSize, 2> transcoder_to_2bytes_charset;
+    strf::find_transcoder_f<CharSize, 1> transcoder_to_1byte_encoding;
+    strf::find_transcoder_f<CharSize, 2> transcoder_to_2bytes_encoding;
 };
 
 template <std::size_t CharSize>
-class dynamic_underlying_charset
+class dynamic_underlying_char_encoding
 {
     using char_type_ = strf::underlying_char_type<CharSize>;
 
@@ -337,29 +337,29 @@ public:
 
     static constexpr std::size_t char_size = CharSize;
 
-    dynamic_underlying_charset(const dynamic_underlying_charset& ) = default;
+    dynamic_underlying_char_encoding(const dynamic_underlying_char_encoding& ) = default;
 
-    STRF_HD dynamic_underlying_charset
-        ( const strf::dynamic_underlying_charset_data<CharSize>& data )
+    STRF_HD dynamic_underlying_char_encoding
+        ( const strf::dynamic_underlying_char_encoding_data<CharSize>& data )
         : data_(&data)
     {
     }
 
-    STRF_HD dynamic_underlying_charset& operator=(const dynamic_underlying_charset& other) noexcept
+    STRF_HD dynamic_underlying_char_encoding& operator=(const dynamic_underlying_char_encoding& other) noexcept
     {
         data_ = other.data_;
         return *this;
     }
-    STRF_HD bool operator==(const dynamic_underlying_charset& other) const noexcept
+    STRF_HD bool operator==(const dynamic_underlying_char_encoding& other) const noexcept
     {
         return data_->id == other.data_->id;
     }
-    STRF_HD bool operator!=(const dynamic_underlying_charset& other) const noexcept
+    STRF_HD bool operator!=(const dynamic_underlying_char_encoding& other) const noexcept
     {
         return data_->id != other.data_->id;
     }
 
-    STRF_HD void swap(dynamic_underlying_charset& other) noexcept
+    STRF_HD void swap(dynamic_underlying_char_encoding& other) noexcept
     {
         auto tmp = data_;
         data_ = other.data_;
@@ -369,7 +369,7 @@ public:
     {
         return data_->name;
     };
-    constexpr STRF_HD strf::charset_id id() const noexcept
+    constexpr STRF_HD strf::char_encoding_id id() const noexcept
     {
         return data_->id;
     }
@@ -447,54 +447,54 @@ public:
     }
 
     strf::dynamic_underlying_transcoder<CharSize, 1> find_transcoder_to
-        ( std::integral_constant<std::size_t, 1>, strf::charset_id id) const
+        ( std::integral_constant<std::size_t, 1>, strf::char_encoding_id id) const
     {
-        if (data_->transcoder_to_1byte_charset) {
-            return data_->transcoder_to_1byte_charset(id);
+        if (data_->transcoder_to_1byte_encoding) {
+            return data_->transcoder_to_1byte_encoding(id);
         }
         return {};
     }
 
     strf::dynamic_underlying_transcoder<CharSize, 2> find_transcoder_to
-        ( std::integral_constant<std::size_t, 2>, strf::charset_id id) const
+        ( std::integral_constant<std::size_t, 2>, strf::char_encoding_id id) const
     {
-        if (data_->transcoder_to_2bytes_charset) {
-            return data_->transcoder_to_2bytes_charset(id);
+        if (data_->transcoder_to_2bytes_encoding) {
+            return data_->transcoder_to_2bytes_encoding(id);
         }
         return {};
     }
 
     strf::dynamic_underlying_transcoder<1, CharSize> find_transcoder_from
-        ( std::integral_constant<std::size_t, 1>, strf::charset_id id) const
+        ( std::integral_constant<std::size_t, 1>, strf::char_encoding_id id) const
     {
-        if (data_->transcoder_from_1byte_charset) {
-            return data_->transcoder_from_1byte_charset(id);
+        if (data_->transcoder_from_1byte_encoding) {
+            return data_->transcoder_from_1byte_encoding(id);
         }
         return {};
     }
 
     strf::dynamic_underlying_transcoder<2, CharSize> find_transcoder_from
-        ( std::integral_constant<std::size_t, 2>, strf::charset_id id) const
+        ( std::integral_constant<std::size_t, 2>, strf::char_encoding_id id) const
     {
-        if (data_->transcoder_from_2bytes_charset) {
-            return data_->transcoder_from_2bytes_charset(id);
+        if (data_->transcoder_from_2bytes_encoding) {
+            return data_->transcoder_from_2bytes_encoding(id);
         }
         return {};
     }
 
-    const strf::dynamic_underlying_charset_data<CharSize>* data_;
+    const strf::dynamic_underlying_char_encoding_data<CharSize>* data_;
 };
 
 template <typename CharT>
-struct charset_c;
+struct char_encoding_c;
 
-template <typename CharT, strf::charset_id CSID>
-class static_charset: public strf::static_underlying_charset<CSID>
+template <typename CharT, strf::char_encoding_id CSID>
+class static_char_encoding: public strf::static_underlying_char_encoding<CSID>
 {
 public:
-    static_assert( sizeof(CharT) == strf::static_underlying_charset<CSID>::char_size
+    static_assert( sizeof(CharT) == strf::static_underlying_char_encoding<CSID>::char_size
                  , "Incompatible character size" );
-    using category = strf::charset_c<CharT>;
+    using category = strf::char_encoding_c<CharT>;
 };
 
 } // namespace strf
@@ -504,7 +504,7 @@ public:
 namespace strf {
 
 template <typename CharT>
-struct charset_c
+struct char_encoding_c
 {
     static constexpr bool constrainable = false;
     static constexpr STRF_HD strf::utf<CharT> get_default() noexcept
@@ -515,14 +515,14 @@ struct charset_c
 
 namespace detail {
 
-template <typename SrcCharset, typename DestCharset>
+template <typename SrcEncoding, typename DestEncoding>
 class has_static_transcoder_impl
 {
-    template <strf::charset_id SrcId, strf::charset_id DestId>
+    template <strf::char_encoding_id SrcId, strf::char_encoding_id DestId>
     static
     decltype(strf::static_underlying_transcoder<SrcId, DestId>(), std::true_type())
-    test_( strf::static_underlying_charset<SrcId>*
-         , strf::static_underlying_charset<DestId>* )
+    test_( strf::static_underlying_char_encoding<SrcId>*
+         , strf::static_underlying_char_encoding<DestId>* )
     {
         return {};
     }
@@ -532,18 +532,18 @@ class has_static_transcoder_impl
         return {};
     }
 
-    using result_ = decltype(test_((SrcCharset*)0, (DestCharset*)0));
+    using result_ = decltype(test_((SrcEncoding*)0, (DestEncoding*)0));
 
 public:
 
     static constexpr bool value = result_::value;
 };
 
-template <typename SrcCharset, typename DestCharset>
+template <typename SrcEncoding, typename DestEncoding>
 constexpr bool has_static_transcoder =
-    has_static_transcoder_impl<SrcCharset, DestCharset>::value;
+    has_static_transcoder_impl<SrcEncoding, DestEncoding>::value;
 
-template <std::size_t SrcCharSize, typename DestCharset>
+template <std::size_t SrcCharSize, typename DestEncoding>
 class has_find_transcoder_from_impl
 {
     template <std::size_t N>
@@ -551,7 +551,7 @@ class has_find_transcoder_from_impl
 
     template <std::size_t S, typename D>
     static auto test(itag<S>, const D* d)
-    -> decltype( d->find_transcoder_from(itag<S>(), strf::charset_id::utf8)
+    -> decltype( d->find_transcoder_from(itag<S>(), strf::char_encoding_id::utf8)
                , std::true_type() );
 
     template <std::size_t S, typename D>
@@ -560,10 +560,10 @@ class has_find_transcoder_from_impl
 public:
 
     static constexpr bool value
-    = decltype(test<SrcCharSize, DestCharset>(itag<SrcCharSize>(), 0))::value;
+    = decltype(test<SrcCharSize, DestEncoding>(itag<SrcCharSize>(), 0))::value;
 };
 
-template <std::size_t DestCharSize, typename SrcCharset>
+template <std::size_t DestCharSize, typename SrcEncoding>
 class has_find_transcoder_to_impl
 {
     template <std::size_t N>
@@ -571,7 +571,7 @@ class has_find_transcoder_to_impl
 
     template <std::size_t D, typename S>
     static auto test(itag<D>, const S* s)
-    -> decltype( s->find_transcoder_from(itag<D>(), strf::charset_id::utf8)
+    -> decltype( s->find_transcoder_from(itag<D>(), strf::char_encoding_id::utf8)
                , std::true_type() );
 
     template <std::size_t D, typename S>
@@ -579,16 +579,16 @@ class has_find_transcoder_to_impl
 
 public:
     static constexpr bool value
-    = decltype(test<DestCharSize, SrcCharset>(itag<DestCharSize>(), 0))::value;
+    = decltype(test<DestCharSize, SrcEncoding>(itag<DestCharSize>(), 0))::value;
 };
 
-template <std::size_t DestCharSize, typename SrcCharset>
+template <std::size_t DestCharSize, typename SrcEncoding>
 constexpr bool has_find_transcoder_to =
-    has_find_transcoder_to_impl<DestCharSize, SrcCharset>::value;
+    has_find_transcoder_to_impl<DestCharSize, SrcEncoding>::value;
 
-template <std::size_t SrcCharSize, typename DestCharset>
+template <std::size_t SrcCharSize, typename DestEncoding>
 constexpr bool has_find_transcoder_from =
-    has_find_transcoder_from_impl<SrcCharSize, DestCharset>::value;
+    has_find_transcoder_from_impl<SrcCharSize, DestEncoding>::value;
 
 
 template <bool HasFindTo, bool HasFindFrom, typename Transcoder>
@@ -600,14 +600,14 @@ struct transcoder_finder_2<true, true, Transcoder>
     template <std::size_t N>
     using itag = std::integral_constant<std::size_t, N>;
 
-    template <typename SrcCharset, typename DestCharset>
-    constexpr static STRF_HD Transcoder find(SrcCharset src_cs, DestCharset dest_cs)
+    template <typename SrcEncoding, typename DestEncoding>
+    constexpr static STRF_HD Transcoder find(SrcEncoding src_cs, DestEncoding dest_cs)
     {
-        auto t = src_cs.find_transcoder_to(itag<DestCharset::char_size>(), dest_cs.id());
+        auto t = src_cs.find_transcoder_to(itag<DestEncoding::char_size>(), dest_cs.id());
         if (t.transcode_func() != nullptr) {
             return t;
         }
-        return dest_cs.find_transcoder_from(itag<SrcCharset::char_size>(), src_cs.id());
+        return dest_cs.find_transcoder_from(itag<SrcEncoding::char_size>(), src_cs.id());
     }
 };
 
@@ -617,10 +617,10 @@ struct transcoder_finder_2<true, false, Transcoder>
     template <std::size_t N>
     using itag = std::integral_constant<std::size_t, N>;
 
-    template <typename SrcCharset, typename DestCharset>
-    constexpr static STRF_HD Transcoder find(SrcCharset src_cs, DestCharset dest_cs)
+    template <typename SrcEncoding, typename DestEncoding>
+    constexpr static STRF_HD Transcoder find(SrcEncoding src_cs, DestEncoding dest_cs)
     {
-        return src_cs.find_transcoder_to(itag<DestCharset::char_size>(), dest_cs.id());
+        return src_cs.find_transcoder_to(itag<DestEncoding::char_size>(), dest_cs.id());
     }
 };
 
@@ -630,18 +630,18 @@ struct transcoder_finder_2<false, true, Transcoder>
     template <std::size_t N>
     using itag = std::integral_constant<std::size_t, N>;
 
-    template <typename SrcCharset, typename DestCharset>
-    constexpr static STRF_HD Transcoder find(SrcCharset src_cs, DestCharset dest_cs)
+    template <typename SrcEncoding, typename DestEncoding>
+    constexpr static STRF_HD Transcoder find(SrcEncoding src_cs, DestEncoding dest_cs)
     {
-        return dest_cs.find_transcoder_from(itag<SrcCharset::char_size>(), src_cs.id());
+        return dest_cs.find_transcoder_from(itag<SrcEncoding::char_size>(), src_cs.id());
     }
 };
 
 template <typename Transcoder>
 struct transcoder_finder_2<false, false, Transcoder>
 {
-    template <typename SrcCharset, typename DestCharset>
-    constexpr static STRF_HD Transcoder find(SrcCharset, DestCharset)
+    template <typename SrcEncoding, typename DestEncoding>
+    constexpr static STRF_HD Transcoder find(SrcEncoding, DestEncoding)
     {
         return {};
     }
@@ -655,10 +655,10 @@ struct transcoder_finder;
 template <std::size_t SrcCharSize, std::size_t DestCharSize >
 struct transcoder_finder<true, SrcCharSize, DestCharSize>
 {
-    template < strf::charset_id Src, strf::charset_id Dest>
+    template < strf::char_encoding_id Src, strf::char_encoding_id Dest>
     constexpr static STRF_HD strf::static_underlying_transcoder<Src, Dest> find
-        ( strf::static_underlying_charset<Src>
-        , strf::static_underlying_charset<Dest> ) noexcept
+        ( strf::static_underlying_char_encoding<Src>
+        , strf::static_underlying_char_encoding<Dest> ) noexcept
     {
         return {};
     }
@@ -667,9 +667,9 @@ struct transcoder_finder<true, SrcCharSize, DestCharSize>
 template <>
 struct transcoder_finder<false, 4, 4>
 {
-    template <typename SrcCharset, typename DestCharset>
+    template <typename SrcEncoding, typename DestEncoding>
     constexpr static STRF_HD strf::utf32_to_utf32 find
-        (SrcCharset, DestCharset )
+        (SrcEncoding, DestEncoding )
     {
         return {};
     }
@@ -678,9 +678,9 @@ struct transcoder_finder<false, 4, 4>
 template <std::size_t SrcCharSize>
 struct transcoder_finder<false, SrcCharSize, 4>
 {
-    template <typename SrcCharset, typename DestCharset>
+    template <typename SrcEncoding, typename DestEncoding>
     constexpr static STRF_HD auto find
-        (SrcCharset src_cs, DestCharset )
+        (SrcEncoding src_cs, DestEncoding )
     {
         return src_cs.to_u32();
     }
@@ -689,9 +689,9 @@ struct transcoder_finder<false, SrcCharSize, 4>
 template <std::size_t DestCharSize>
 struct transcoder_finder<false, 4, DestCharSize>
 {
-    template <typename SrcCharset, typename DestCharset>
+    template <typename SrcEncoding, typename DestEncoding>
     constexpr static STRF_HD auto find
-        (const SrcCharset&, const DestCharset& dest_cs) noexcept
+        (const SrcEncoding&, const DestEncoding& dest_cs) noexcept
     {
         return dest_cs.from_u32();
     }
@@ -700,18 +700,18 @@ struct transcoder_finder<false, 4, DestCharSize>
 template <std::size_t CharSize>
 struct transcoder_finder<false, CharSize, CharSize>
 {
-    template <typename SrcCharset, typename DestCharset>
+    template <typename SrcEncoding, typename DestEncoding>
     constexpr static STRF_HD
     strf::dynamic_underlying_transcoder<CharSize, CharSize>
-    find(SrcCharset src_cs, DestCharset dest_cs )
+    find(SrcEncoding src_cs, DestEncoding dest_cs )
     {
         if (src_cs.id() == dest_cs.id()) {
             return strf::dynamic_underlying_transcoder<CharSize, CharSize>
                 { src_cs.sanitizer() };
         }
         return strf::detail::transcoder_finder_2
-            < strf::detail::has_find_transcoder_to<CharSize, SrcCharset>
-            , strf::detail::has_find_transcoder_from<CharSize, DestCharset>
+            < strf::detail::has_find_transcoder_to<CharSize, SrcEncoding>
+            , strf::detail::has_find_transcoder_from<CharSize, DestEncoding>
             , strf::dynamic_underlying_transcoder<CharSize, CharSize> >
             ::find(src_cs, dest_cs);
     }
@@ -720,14 +720,14 @@ struct transcoder_finder<false, CharSize, CharSize>
 template <std::size_t SrcCharSize, std::size_t DestCharSize >
 struct transcoder_finder<false, SrcCharSize, DestCharSize>
 {
-    template <typename SrcCharset, typename DestCharset>
+    template <typename SrcEncoding, typename DestEncoding>
     constexpr static STRF_HD
     strf::dynamic_underlying_transcoder<SrcCharSize, DestCharSize>
-    find(SrcCharset src_cs, DestCharset dest_cs )
+    find(SrcEncoding src_cs, DestEncoding dest_cs )
     {
         return strf::detail::transcoder_finder_2
-            < strf::detail::has_find_transcoder_to<DestCharSize, SrcCharset>
-            , strf::detail::has_find_transcoder_from<SrcCharSize, DestCharset>
+            < strf::detail::has_find_transcoder_to<DestCharSize, SrcEncoding>
+            , strf::detail::has_find_transcoder_from<SrcCharSize, DestEncoding>
             , strf::dynamic_underlying_transcoder<SrcCharSize, DestCharSize> >
             ::find(src_cs, dest_cs);
     }
@@ -735,14 +735,14 @@ struct transcoder_finder<false, SrcCharSize, DestCharSize>
 
 } // namespace detail
 
-template <typename SrcCharset, typename DestCharset>
+template <typename SrcEncoding, typename DestEncoding>
 constexpr STRF_HD decltype(auto) find_transcoder
-    ( const SrcCharset& src_cs, const DestCharset& dest_cs )
+    ( const SrcEncoding& src_cs, const DestEncoding& dest_cs )
 {
     return detail::transcoder_finder
-        < strf::detail::has_static_transcoder<SrcCharset, DestCharset>
-        , SrcCharset::char_size
-        , DestCharset::char_size>
+        < strf::detail::has_static_transcoder<SrcEncoding, DestEncoding>
+        , SrcEncoding::char_size
+        , DestEncoding::char_size>
         ::find(src_cs, dest_cs);
 }
 
@@ -876,25 +876,25 @@ STRF_HD std::size_t decode_encode_size
 }
 
 template <typename CharT>
-class dynamic_charset: public strf::dynamic_underlying_charset<sizeof(CharT)>
+class dynamic_char_encoding: public strf::dynamic_underlying_char_encoding<sizeof(CharT)>
 {
 public:
 
-    using category = strf::charset_c<CharT>;
+    using category = strf::char_encoding_c<CharT>;
 
-    explicit dynamic_charset(const strf::dynamic_underlying_charset<sizeof(CharT)>& u)
-        : strf::dynamic_underlying_charset<sizeof(CharT)>(u)
+    explicit dynamic_char_encoding(const strf::dynamic_underlying_char_encoding<sizeof(CharT)>& u)
+        : strf::dynamic_underlying_char_encoding<sizeof(CharT)>(u)
     {
     }
 
-    template <strf::charset_id CharsetID>
-    explicit dynamic_charset(strf::static_charset<CharT, CharsetID> scs)
-        : dynamic_charset(scs.to_dynamic())
+    template <strf::char_encoding_id EncodingID>
+    explicit dynamic_char_encoding(strf::static_char_encoding<CharT, EncodingID> scs)
+        : dynamic_char_encoding(scs.to_dynamic())
     {
     }
 };
 
 } // namespace strf
 
-#endif  // STRF_DETAIL_FACETS_CHARSETS_HPP
+#endif  // STRF_DETAIL_FACETS_CHAR_ENCODING_HPP
 

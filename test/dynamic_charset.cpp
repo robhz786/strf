@@ -6,14 +6,14 @@
 
 int main()
 {
-    strf::dynamic_charset<char> dyn_utf8{strf::utf<char>()};
-    strf::dynamic_charset<char> dyn_ascii{strf::ascii<char>()};
-    strf::dynamic_charset<char16_t> dyn_utf16{strf::utf<char16_t>()};
-    strf::dynamic_charset<char32_t> dyn_utf32{strf::utf<char32_t>()};
+    strf::dynamic_char_encoding<char> dyn_utf8{strf::utf<char>()};
+    strf::dynamic_char_encoding<char> dyn_ascii{strf::ascii<char>()};
+    strf::dynamic_char_encoding<char16_t> dyn_utf16{strf::utf<char16_t>()};
+    strf::dynamic_char_encoding<char32_t> dyn_utf32{strf::utf<char32_t>()};
 
     {
         auto a = dyn_utf8;
-        auto b = strf::dynamic_charset<char>{strf::utf<char>()};
+        auto b = strf::dynamic_char_encoding<char>{strf::utf<char>()};
         TEST_TRUE(a == b);
         a = dyn_ascii;
         TEST_TRUE(a != b);

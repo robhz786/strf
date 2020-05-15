@@ -82,8 +82,8 @@ constexpr auto cv(const T& value)
     return fmt(value).cv();
 }
 
-template <typename T, typename Charset>
-constexpr auto cv(const T& value, const Charset& cs)
+template <typename T, typename CharEncoding>
+constexpr auto cv(const T& value, const CharEncoding& cs)
 {
     return fmt(value).cv(cs);
 }
@@ -94,8 +94,8 @@ constexpr auto sani(const T& value)
     return fmt(value).sani();
 }
 
-template <typename T, typename Charset>
-constexpr auto sani(const T& value, const Charset& cs)
+template <typename T, typename CharEncoding>
+constexpr auto sani(const T& value, const CharEncoding& cs)
 {
     return fmt(value).sani(cs);
 }

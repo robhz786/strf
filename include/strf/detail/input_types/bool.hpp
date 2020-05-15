@@ -8,7 +8,7 @@
 #include <strf/facets_pack.hpp>
 #include <strf/printer.hpp>
 #include <strf/detail/format_functions.hpp>
-#include <strf/detail/facets/charset.hpp>
+#include <strf/detail/facets/char_encoding.hpp>
 #include <strf/detail/facets/lettercase.hpp>
 
 namespace strf {
@@ -107,13 +107,13 @@ public:
         , afmt_(input.arg.get_alignment_format_data())
         , lettercase_(strf::get_facet<strf::lettercase_c, bool>(input.fp))
     {
-        decltype(auto) cs = strf::get_facet<charset_c<CharT>, bool>(input.fp);
+        decltype(auto) enc = strf::get_facet<char_encoding_c<CharT>, bool>(input.fp);
         std::uint16_t w = 5 - (int)input.arg.value();
         if (afmt_.width > w) {
-            encode_fill_ = cs.encode_fill_func();
+            encode_fill_ = enc.encode_fill_func();
             fillcount_ = static_cast<std::uint16_t>(afmt_.width - w);
             input.preview.subtract_width(afmt_.width);
-            input.preview.add_size(w + fillcount_ * cs.encoded_char_size(afmt_.fill));
+            input.preview.add_size(w + fillcount_ * enc.encoded_char_size(afmt_.fill));
         } else {
             fillcount_ = 0;
             input.preview.subtract_width(w);

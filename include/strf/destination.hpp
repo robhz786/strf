@@ -211,7 +211,7 @@ private:
     {
         const auto& self = static_cast<const destination_type_&>(*this);
 
-        using catenc = strf::charset_c<CharT>;
+        using catenc = strf::char_encoding_c<CharT>;
         decltype(auto) cs = strf::get_facet<catenc, void>(self.fpack_);
 
         using caterr = strf::tr_invalid_arg_c;

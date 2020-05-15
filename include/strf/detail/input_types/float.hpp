@@ -1201,12 +1201,12 @@ public:
 
         const auto fmt = input.vwf.get_float_format_data();
         data_ = strf::detail::init_double_printer_data<Notation>(input.vwf.value(), fmt);
-        decltype(auto) cs = get_facet<strf::charset_c<CharT>, FloatT>(input.fp);
+        decltype(auto) enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
         auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp);
         grouping_ = punct.grouping();
         decimal_point_ = punct.decimal_point();
         thousands_sep_ = punct.thousands_sep();
-        init_(cs, Notation == float_notation::general, fmt.showpoint);
+        init_(enc, Notation == float_notation::general, fmt.showpoint);
         STRF_IF_CONSTEXPR (Preview::width_required) {
             input.preview.subtract_width(content_width_());
         }
@@ -1229,13 +1229,13 @@ public:
 
         const auto fmt = input.vwf.get_float_format_data();
         data_ = strf::detail::init_double_printer_data<Notation>(input.vwf.value(), fmt);
-        decltype(auto) cs = get_facet<strf::charset_c<CharT>, FloatT>(input.fp);
+        decltype(auto) enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
         auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp);
         grouping_ = punct.grouping();
         decimal_point_ = punct.decimal_point();
         thousands_sep_ = punct.thousands_sep();
-        init_(cs, Notation == float_notation::general, fmt.showpoint);
-        init_(input.preview, input.vwf.width(), input.vwf.alignment(), cs);
+        init_(enc, Notation == float_notation::general, fmt.showpoint);
+        init_(input.preview, input.vwf.width(), input.vwf.alignment(), enc);
     }
 
 
@@ -1243,14 +1243,14 @@ public:
 
 private:
 
-    template <typename Charset>
+    template <typename Encoding>
     STRF_HD void init_
-        ( const Charset& cs, bool fmt_general_format, bool fmt_showpoint);
+        ( const Encoding& enc, bool fmt_general_format, bool fmt_showpoint);
 
-    template <typename Preview, typename Charset>
+    template <typename Preview, typename Encoding>
     STRF_HD void init_
         ( Preview& preview, std::int16_t w, strf::text_alignment a
-        , const Charset& cs );
+        , const Encoding& enc );
 
     STRF_HD std::int16_t content_width_() const;
     STRF_HD std::size_t content_size_() const;
@@ -1274,16 +1274,16 @@ private:
 };
 
 template <std::size_t CharSize>
-template <typename Charset>
+template <typename Encoding>
 STRF_HD void punct_double_printer<CharSize>::init_
-    ( const Charset& cs, bool general_format, bool fmt_showpoint)
+    ( const Encoding& enc, bool general_format, bool fmt_showpoint)
 {
-    encode_char_ = cs.encode_char_func();
-    encode_fill_ = cs.encode_fill_func();
+    encode_char_ = enc.encode_char_func();
+    encode_fill_ = enc.encode_fill_func();
     if (!data_.sci_notation) {
         auto int_dig_count = (int)data_.m10_digcount + data_.e10;
         if (grouping_.any_separator(int_dig_count)) {
-            auto sep_validation = cs.validate(thousands_sep_);
+            auto sep_validation = enc.validate(thousands_sep_);
             if (sep_validation != strf::invalid_char_len) {
                 sep_size_ = static_cast<unsigned>(sep_validation);
                 sep_count_ = grouping_.separators_count(int_dig_count);
@@ -1302,7 +1302,7 @@ STRF_HD void punct_double_printer<CharSize>::init_
                 }
                 if (sep_size_ == 1) {
                     char_type little_sep[4];
-                    cs.encode_char(little_sep, thousands_sep_);
+                    enc.encode_char(little_sep, thousands_sep_);
                     thousands_sep_ = little_sep[0];
                 }
             }
@@ -1310,28 +1310,28 @@ STRF_HD void punct_double_printer<CharSize>::init_
     }
     init_decimal_point:
     if (data_.showpoint) {
-        auto validation = cs.validate(decimal_point_);
+        auto validation = enc.validate(decimal_point_);
         if (validation == 1) {
             decimal_point_size_ = 1;
             char_type ch;
-            cs.encode_char(&ch, decimal_point_);
+            enc.encode_char(&ch, decimal_point_);
             decimal_point_ = ch;
         } else if (validation != strf::invalid_char_len) {
             decimal_point_size_ = static_cast<unsigned>(validation);
         } else {
-            decimal_point_size_ = static_cast<unsigned>(cs.replacement_char_size());
-            decimal_point_ = cs.replacement_char();
+            decimal_point_size_ = static_cast<unsigned>(enc.replacement_char_size());
+            decimal_point_ = enc.replacement_char();
         }
     }
 }
 
 template <std::size_t CharSize>
-template <typename Preview, typename Charset>
+template <typename Preview, typename Encoding>
 STRF_HD void punct_double_printer<CharSize>::init_
     ( Preview& preview, std::int16_t fmt_width, strf::text_alignment a
-    , const Charset& cs )
+    , const Encoding& enc )
 {
-    (void) cs;
+    (void) enc;
     auto content_width = content_width_();
     if (content_width >= fmt_width) {
         preview.subtract_width(content_width);
@@ -1342,9 +1342,9 @@ STRF_HD void punct_double_printer<CharSize>::init_
         auto fillcount = fmt_width - content_width;
         preview.subtract_width(fmt_width);
         STRF_IF_CONSTEXPR (Preview::size_required) {
-            std::size_t fillsize = cs.validate(fillchar_);
+            std::size_t fillsize = enc.validate(fillchar_);
             if (fillsize == (size_t)-1) {
-                fillsize = cs.replacement_char_size();
+                fillsize = enc.replacement_char_size();
             }
             preview.add_size(content_size_() + fillsize * fillcount);
         }
@@ -1576,17 +1576,17 @@ public:
     {
         static_assert(Notation != strf::float_notation::hex, "");
 
-        decltype(auto) cs = strf::get_facet<strf::charset_c<CharT>, FloatT>(input.fp);
-        init_(input.preview, input.vwf.width(), input.vwf.alignment(), cs);
+        decltype(auto) enc = strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
+        init_(input.preview, input.vwf.width(), input.vwf.alignment(), enc);
     }
 
     STRF_HD void print_to(strf::underlying_outbuf<CharSize>&) const override;
 
 private:
 
-    template <typename Preview, typename Charset>
+    template <typename Preview, typename Encoding>
     STRF_HD void init_( Preview& preview, std::int16_t w, strf::text_alignment a
-                      , const Charset& cs );
+                      , const Encoding& enc );
 
     STRF_HD std::int16_t content_width_() const
     {
@@ -1619,12 +1619,12 @@ private:
 };
 
 template <std::size_t CharSize>
-template <typename Preview, typename Charset>
+template <typename Preview, typename Encoding>
 STRF_HD void double_printer<CharSize>::init_
     ( Preview& preview, std::int16_t w, strf::text_alignment a
-    , const Charset& cs )
+    , const Encoding& enc )
 {
-    encode_fill_ = cs.encode_fill_func();
+    encode_fill_ = enc.encode_fill_func();
     auto content_width = content_width_();
     if (content_width >= w) {
         preview.checked_subtract_width(content_width);
@@ -1633,9 +1633,9 @@ STRF_HD void double_printer<CharSize>::init_
         auto fillcount = (w - static_cast<std::int16_t>(content_width));
         preview.subtract_width(w);
         STRF_IF_CONSTEXPR(Preview::size_required) {
-            std::size_t fillchar_size = cs.validate(fillchar_);
+            std::size_t fillchar_size = enc.validate(fillchar_);
             if (fillchar_size == (size_t)-1) {
-                fillchar_size = cs.replacement_char_size();
+                fillchar_size = enc.replacement_char_size();
             }
             preview.add_size(content_width + fillchar_size * fillcount);
         }
@@ -2000,7 +2000,7 @@ public:
         grouping_ = punct.grouping();
         decimal_point_ = punct.decimal_point();
         thousands_sep_ = punct.thousands_sep();
-        init_(strf::get_facet<strf::charset_c<CharT>, FloatT>(input.fp));
+        init_(strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp));
         STRF_IF_CONSTEXPR (Preview::width_required) {
             input.preview.subtract_width(width_());
         }
@@ -2014,8 +2014,8 @@ public:
 
 private:
 
-    template <typename Charset>
-    STRF_HD void init_(const Charset& cs);
+    template <typename Encoding>
+    STRF_HD void init_(const Encoding& enc);
 
     STRF_HD strf::width_t width_() const;
     STRF_HD std::size_t size_() const;
@@ -2035,10 +2035,10 @@ private:
 };
 
 template <std::size_t CharSize>
-template <typename Charset>
-STRF_HD void fast_punct_double_printer<CharSize>::init_(const Charset& cs)
+template <typename Encoding>
+STRF_HD void fast_punct_double_printer<CharSize>::init_(const Encoding& enc)
 {
-    encode_char_ = cs.encode_char_func();
+    encode_char_ = enc.encode_char_func();
     bool showpoint;
     if (value_.e10 > -(int)m10_digcount_) {
         bool e10neg = value_.e10 < 0;
@@ -2050,7 +2050,7 @@ STRF_HD void fast_punct_double_printer<CharSize>::init_(const Charset& cs)
         } else {
             auto int_dig_count = (int)m10_digcount_ + value_.e10;
             if (grouping_.any_separator(int_dig_count)){
-                auto sep_validation = cs.validate(thousands_sep_);
+                auto sep_validation = enc.validate(thousands_sep_);
                 if (sep_validation != strf::invalid_char_len) {
                     sep_count_ = grouping_.separators_count(int_dig_count);
                     if (scientific_width < fixed_width + (int)sep_count_) {
@@ -2079,17 +2079,17 @@ STRF_HD void fast_punct_double_printer<CharSize>::init_(const Charset& cs)
     }
     init_decimal_point:
     if (showpoint) {
-        auto validation = cs.validate(decimal_point_);
+        auto validation = enc.validate(decimal_point_);
         if (validation == 1) {
             decimal_point_size_ = 1;
             char_type ch;
-            cs.encode_char(&ch, decimal_point_);
+            enc.encode_char(&ch, decimal_point_);
             decimal_point_ = ch;
         } else if (validation != strf::invalid_char_len) {
             decimal_point_size_ = static_cast<unsigned>(validation);
         } else {
-            decimal_point_size_ = static_cast<unsigned>(cs.replacement_char_size());
-            decimal_point_ = cs.replacement_char();
+            decimal_point_size_ = static_cast<unsigned>(enc.replacement_char_size());
+            decimal_point_ = enc.replacement_char();
         }
     }
 }
@@ -2352,7 +2352,7 @@ public:
     {
         if (data_.exponent != 1024) {
             init_( strf::get_facet<strf::numpunct_c<16>, FloatT>(input.fp)
-                 , strf::get_facet<strf::charset_c<CharT>, FloatT>(input.fp) );
+                 , strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp) );
 
             STRF_IF_CONSTEXPR ( ! Preview::nothing_required) {
                 unsigned s = data_.showsign + 5 + data_.mantissa_digcount
@@ -2384,10 +2384,10 @@ public:
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
     {
         int content_width_without_point = 0;
-        decltype(auto) charset = strf::get_facet<strf::charset_c<CharT>, FloatT>(input.fp);
-        encode_fill_ = charset.encode_fill_func();
+        decltype(auto) enc = strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
+        encode_fill_ = enc.encode_fill_func();
         if (data_.exponent != 1024) {
-            init_(strf::get_facet<strf::numpunct_c<16>, FloatT>(input.fp), charset);
+            init_(strf::get_facet<strf::numpunct_c<16>, FloatT>(input.fp), enc);
             content_width_without_point = data_.showsign + 5
                 + data_.mantissa_digcount
                 + data_.extra_zeros + data_.exponent_digcount;
@@ -2400,7 +2400,7 @@ public:
         STRF_IF_CONSTEXPR (Preview::size_required) {
             input.preview.add_size(content_width_without_point);
             input.preview.add_size(pointsize_);
-            input.preview.add_size(fillcount * charset.encoded_char_size(input.vwf.fill()));
+            input.preview.add_size(fillcount * enc.encoded_char_size(input.vwf.fill()));
         }
     }
 
@@ -2408,18 +2408,18 @@ public:
 
 private:
 
-    template <typename NumPunct, typename Charset>
-    STRF_HD void init_(const NumPunct& punct, Charset charset) noexcept
+    template <typename NumPunct, typename Encoding>
+    STRF_HD void init_(const NumPunct& punct, Encoding enc) noexcept
     {
         if (data_.showpoint) {
             decimal_point_ = punct.decimal_point();
             pointsize_ = 1;
             if (decimal_point_ >= 0x80) {
-                encode_char_ = charset.encode_char_func();
-                pointsize_ = static_cast<unsigned>(charset.encoded_char_size(decimal_point_));
+                encode_char_ = enc.encode_char_func();
+                pointsize_ = static_cast<unsigned>(enc.encoded_char_size(decimal_point_));
                 if (pointsize_ == 1) {
                     char_type ch;
-                    charset.encode_char(&ch, decimal_point_);
+                    enc.encode_char(&ch, decimal_point_);
                     decimal_point_ = ch;
                 }
             }

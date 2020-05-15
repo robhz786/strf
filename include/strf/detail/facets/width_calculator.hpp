@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/facets/charset.hpp>
+#include <strf/detail/facets/char_encoding.hpp>
 
 namespace strf {
 
@@ -21,19 +21,19 @@ class fast_width final
 public:
     using category = width_calculator_c;
 
-    template <typename Charset>
+    template <typename CharEncoding>
     STRF_HD strf::width_t char_width
-        ( const Charset&
-        , strf::underlying_char_type<Charset::char_size> ) const noexcept
+        ( const CharEncoding&
+        , strf::underlying_char_type<CharEncoding::char_size> ) const noexcept
     {
         return 1;
     }
 
-    template <typename Charset>
+    template <typename CharEncoding>
     constexpr STRF_HD strf::width_t str_width
-        ( const Charset&
+        ( const CharEncoding&
         , strf::width_t limit
-        , const strf::underlying_char_type<Charset::char_size>*
+        , const strf::underlying_char_type<CharEncoding::char_size>*
         , std::size_t str_len
         , strf::surrogate_policy ) const noexcept
     {
@@ -43,11 +43,11 @@ public:
         return limit;
     }
 
-    template <typename Charset>
+    template <typename CharEncoding>
     constexpr STRF_HD strf::width_and_pos str_width_and_pos
-        ( const Charset&
+        ( const CharEncoding&
         , strf::width_t limit
-        , const strf::underlying_char_type<Charset::char_size>*
+        , const strf::underlying_char_type<CharEncoding::char_size>*
         , std::size_t str_len
         , strf::surrogate_policy ) const noexcept
     {
@@ -67,19 +67,19 @@ class width_as_fast_u32len final
 public:
     using category = width_calculator_c;
 
-    template <typename Charset>
+    template <typename CharEncoding>
     constexpr STRF_HD strf::width_t char_width
-        ( const Charset&
-        , strf::underlying_char_type<Charset::char_size> ) const noexcept
+        ( const CharEncoding&
+        , strf::underlying_char_type<CharEncoding::char_size> ) const noexcept
     {
         return 1;
     }
 
-    template <typename Charset>
+    template <typename CharEncoding>
     constexpr STRF_HD strf::width_t str_width
-        ( const Charset& cs
+        ( const CharEncoding& cs
         , strf::width_t limit
-        , const strf::underlying_char_type<Charset::char_size>* str
+        , const strf::underlying_char_type<CharEncoding::char_size>* str
         , std::size_t str_len
         , strf::surrogate_policy ) const
     {
@@ -92,11 +92,11 @@ public:
         return 0;
     }
 
-    template <typename Charset>
+    template <typename CharEncoding>
     constexpr STRF_HD strf::width_and_pos str_width_and_pos
-        ( const Charset& cs
+        ( const CharEncoding& cs
         , strf::width_t limit
-        , const strf::underlying_char_type<Charset::char_size>* str
+        , const strf::underlying_char_type<CharEncoding::char_size>* str
         , std::size_t str_len
         , strf::surrogate_policy ) const
     {
@@ -116,19 +116,19 @@ class width_as_u32len final
 public:
     using category = width_calculator_c;
 
-    template <typename Charset>
+    template <typename CharEncoding>
     constexpr STRF_HD strf::width_t char_width
-        ( const Charset&
-        , strf::underlying_char_type<Charset::char_size> ) const noexcept
+        ( const CharEncoding&
+        , strf::underlying_char_type<CharEncoding::char_size> ) const noexcept
     {
         return 1;
     }
 
-    template <typename Charset>
+    template <typename CharEncoding>
     constexpr STRF_HD strf::width_t str_width
-        ( const Charset& cs
+        ( const CharEncoding& cs
         , strf::width_t limit
-        , const strf::underlying_char_type<Charset::char_size>* str
+        , const strf::underlying_char_type<CharEncoding::char_size>* str
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
@@ -141,11 +141,11 @@ public:
         return 0;
     }
 
-    template <typename Charset>
+    template <typename CharEncoding>
     constexpr STRF_HD strf::width_and_pos str_width_and_pos
-        ( const Charset& cs
+        ( const CharEncoding& cs
         , strf::width_t limit
-        , const strf::underlying_char_type<Charset::char_size>* str
+        , const strf::underlying_char_type<CharEncoding::char_size>* str
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
@@ -237,19 +237,19 @@ public:
     {
     }
 
-    template <typename Charset>
+    template <typename CharEncoding>
     strf::width_t STRF_HD char_width
-        ( const Charset& cs
-        , strf::underlying_char_type<Charset::char_size> ch ) const
+        ( const CharEncoding& cs
+        , strf::underlying_char_type<CharEncoding::char_size> ch ) const
     {
         return func_(cs.decode_char(ch));
     }
 
-    template <typename Charset>
+    template <typename CharEncoding>
     constexpr STRF_HD strf::width_t str_width
-        ( const Charset& cs
+        ( const CharEncoding& cs
         , strf::width_t limit
-        , const strf::underlying_char_type<Charset::char_size>* str
+        , const strf::underlying_char_type<CharEncoding::char_size>* str
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
@@ -259,11 +259,11 @@ public:
         return acc.get_result().width;
     }
 
-    template <typename Charset>
+    template <typename CharEncoding>
     constexpr STRF_HD strf::width_and_pos str_width_and_pos
-        ( const Charset& cs
+        ( const CharEncoding& cs
         , strf::width_t limit
-        , const strf::underlying_char_type<Charset::char_size>* str
+        , const strf::underlying_char_type<CharEncoding::char_size>* str
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {

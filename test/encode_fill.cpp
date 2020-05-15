@@ -25,20 +25,20 @@ inline std::basic_string<CharT> repeat(std::size_t count, const CharT* str)
     return repeat<CharT>(count, std::basic_string<CharT>{str});
 }
 
-template <typename CharT, typename Charset>
+template <typename CharT, typename Encoding>
 void test_fill
-    ( const Charset& cs
+    ( const Encoding& enc
     , char32_t fill_char
     , std::basic_string<CharT> encoded_char
     , strf::surrogate_policy surr_poli = strf::surrogate_policy::strict )
 {
-    TEST_SCOPE_DESCRIPTION( cs.name(), ", test_fill_char: U+"
+    TEST_SCOPE_DESCRIPTION( enc.name(), ", test_fill_char: U+"
                           , strf::hex((unsigned)fill_char) );
 
     {
         std::int16_t count = 10;
         auto result = strf::to_basic_string<CharT>
-            .with(cs, strf::invalid_seq_policy::replace, surr_poli)
+            .with(enc, strf::invalid_seq_policy::replace, surr_poli)
             (strf::right(CharT('x'), 11, fill_char));
 
         auto expected = repeat(count, encoded_char);
@@ -49,7 +49,7 @@ void test_fill
     {
         std::int16_t count = 200;
         auto result = strf::to_basic_string<CharT>
-            .with(cs, strf::invalid_seq_policy::replace, surr_poli)
+            .with(enc, strf::invalid_seq_policy::replace, surr_poli)
             (strf::right(CharT('x'), count + 1, fill_char));
 
         auto expected = repeat(count, encoded_char);
@@ -59,38 +59,38 @@ void test_fill
     }
 }
 
-template <typename CharT, typename Charset>
+template <typename CharT, typename Encoding>
 inline void test_fill
-    ( const Charset& cs
+    ( const Encoding& enc
     , char32_t fill_char
     , const CharT* encoded_char
     , strf::surrogate_policy surr_poli = strf::surrogate_policy::strict )
 {
     return test_fill
-        ( cs
+        ( enc
         , fill_char
         , std::basic_string<CharT>{encoded_char}
         , surr_poli );
 }
 
 
-template <typename CharT, typename Charset>
+template <typename CharT, typename Encoding>
 void test_invalid_fill_stop
-    ( const Charset& cs
+    ( const Encoding& enc
     , char32_t fill_char
     , strf::surrogate_policy surr_poli = strf::surrogate_policy::strict )
 {
-    (void) cs;
+    (void) enc;
     (void) fill_char;
     (void) surr_poli;
 
 #if defined(__cpp_exceptions)
 
-    TEST_SCOPE_DESCRIPTION( "charset: ", cs.name(), "; test_fill_char: \\u'"
+    TEST_SCOPE_DESCRIPTION( "encoding: ", enc.name(), "; test_fill_char: \\u'"
                           , strf::hex((unsigned)fill_char), '\'' );
 
     {
-        auto facets = strf::pack(cs, strf::invalid_seq_policy::stop, surr_poli);
+        auto facets = strf::pack(enc, strf::invalid_seq_policy::stop, surr_poli);
         TEST_THROWS( (strf::to_string.with(facets)(strf::right(0, 10, fill_char)))
                          , strf::invalid_sequence );
     }
@@ -168,7 +168,7 @@ int main()
     }
 
     {
-        // single byte charsets
+        // single byte encodings
         test_fill(strf::windows_1252<char>(), 0x201A, "\x82");
         test_fill(strf::iso_8859_1<char>(), 0x82, "\x82");
         test_fill(strf::iso_8859_3<char>(), 0x02D8, "\xA2");

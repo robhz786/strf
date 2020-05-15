@@ -41,12 +41,12 @@ satisfy the __{WidthCalculator}__ requirements.
 Given
 
 * `CharSize`, an constexpr integer value equal to `1`, `2` or `4`
-* `Charset`, an __{UnderlyingCharset}__ type for value `CharSize`
-* `charset`, an lvalue reference of type `Charset`
+* `Encoding`, an __{UnderlyingCharEncoding}__ type for value `CharSize`
+* `encoding`, an lvalue reference of type `Encoding`
 * `ch` a value of type `{underlying_char_type}<CharSize>`
 * `limit`, a value of type `{width_t}`
 * `str`, a value of type `const {underlying_char_type}<CharSize>*`
-        pointing to string encoded according to `charset`.
+        pointing to string encoded according to `encoding`.
 * `str_len`, a value of type `std::size_t` equal to the length of string `str`.
 * `surr_poli`, a value of type `{surrogate_policy}`
 
@@ -62,16 +62,16 @@ A type alias to `{width_calculator_c}`.
 ====
 [source,cpp]
 ----
-x.char_width(charset, ch)
+x.char_width(encoding, ch)
 ----
 [horizontal]
 Return type:: `{width_t}`
-Return value:: The width of `ch` when encoded according to `charset`.
+Return value:: The width of `ch` when encoded according to `encoding`.
 ====
 ====
 [source,cpp,subs=normal]
 ----
-x.str_width(charset, limit, str, str_len, surr_poli)
+x.str_width(encoding, limit, str, str_len, surr_poli)
 ----
 [horizontal]
 Return type::: `{width_t}`
@@ -82,7 +82,7 @@ Return value::: The width of the string `str` if it is less than `limit`.
 ====
 [source,cpp]
 ----
-x.str_width_and_pos(charset, limit, str, str_len, surr_poli)
+x.str_width_and_pos(encoding, limit, str, str_len, surr_poli)
 ----
 [horizontal]
 Effect::: Calculates the width of `str`. If such value is less than
@@ -91,7 +91,7 @@ Effect::: Calculates the width of `str`. If such value is less than
 Return type::: `{width_and_pos}`
 Return value::: A value `ret` of type `{width_and_pos}`, such that
 * `ret.pos` is the greatest value that is less than or equal to `str_len`
-  such that `x.width(charset, width_max, str, ret.pos, surr_poli).width`
+  such that `x.width(encoding, width_max, str, ret.pos, surr_poli).width`
   is less than or equal to `limit`.
 * `ret.width` is the width of the substring of `str` with size `ret.pos`
   that starts at the same position of `str`.
@@ -132,24 +132,24 @@ class fast_width final
 public:
     using category = {width_calculator_c};
 
-    template <typename Charset>
+    template <typename CharEncoding>
     {width_t} <<fast_width_char_width,char_width>>
-        ( const Charset&
-        , {underlying_char_type}<Charset::char_size> ) const noexcept;
+        ( const CharEncoding&
+        , {underlying_char_type}<CharEncoding::char_size> ) const noexcept;
 
-    template <typename Charset>
+    template <typename CharEncoding>
     {width_t} <<fast_width_str_width,str_width>>
-        ( const Charset&
+        ( const CharEncoding&
         , {width_t} limit
-        , const {underlying_char_type}<Charset::char_size>*
+        , const {underlying_char_type}<CharEncoding::char_size>*
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 
-    template <typename Charset>
+    template <typename CharEncoding>
     constexpr {width_and_pos} <<fast_width_str_width_and_pos,str_width_and_pos>>
-        ( const Charset&
+        ( const CharEncoding&
         , {width_t} limit
-        , const {underlying_char_type}<Charset::char_size>*
+        , const {underlying_char_type}<CharEncoding::char_size>*
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 };
@@ -158,10 +158,10 @@ public:
 ====
 [source,cpp,subs=normal]
 ----
-template <typename Charset>
+template <typename CharEncoding>
 {width_t} char_width
-    ( const Charset&
-    , {underlying_char_type}<Charset::char_size> ) const noexcept;
+    ( const CharEncoding&
+    , {underlying_char_type}<CharEncoding::char_size> ) const noexcept;
 ----
 [horizontal]
 Return value:: `1`
@@ -170,11 +170,11 @@ Return value:: `1`
 ====
 [source,cpp,subs=normal]
 ----
-template <typename Charset>
+template <typename CharEncoding>
 constexpr {width_t} str_width
-    ( const Charset&
+    ( const CharEncoding&
     , {width_t} limit
-    , const {underlying_char_type}<Charset::char_size>*
+    , const {underlying_char_type}<CharEncoding::char_size>*
     , std::size_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
@@ -187,11 +187,11 @@ Return value:::
 ====
 [source,cpp,subs=normal]
 ----
-template <typename Charset>
+template <typename CharEncoding>
 constexpr {width_and_pos} str_width_and_pos
-    ( const Charset&
+    ( const CharEncoding&
     , {width_t} limit
-    , const {underlying_char_type}<Charset::char_size>*
+    , const {underlying_char_type}<CharEncoding::char_size>*
     , std::size_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
@@ -210,7 +210,7 @@ Return value::: The return value `ret` is such that
 Class `width_as_fast_u32len` is a facet of the category `{width_calculator_c}`.
 It evaluates the width of a string as the number of Unicode code points.
 However, to gain performance and differently from `{width_as_u32len}`,
-it assumes that the measured string is totally conformant to its charset.
+it assumes that the measured string is totally conformant to its encoding.
 
 [source,cpp,subs=normal]
 ----
@@ -219,24 +219,24 @@ class width_as_fast_u32len final
 public:
     using category = {width_calculator_c};
 
-    template <typename Charset>
+    template <typename CharEncoding>
     {width_t} <<width_as_fast_u32len_char_width,char_width>>
-        ( const Charset& charset
-        , {underlying_char_type}<Charset::char_size> ) const noexcept;
+        ( const CharEncoding& encoding
+        , {underlying_char_type}<CharEncoding::char_size> ) const noexcept;
 
-    template <typename Charset>
+    template <typename CharEncoding>
     {width_t} <<width_as_fast_u32len_str_width,str_width>>
-        ( const Charset& charset
+        ( const CharEncoding& encoding
         , {width_t} limit
-        , const {underlying_char_type}<Charset::char_size>* str
+        , const {underlying_char_type}<CharEncoding::char_size>* str
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 
-    template <typename Charset>
+    template <typename CharEncoding>
     constexpr {width_and_pos} <<width_as_fast_u32len_str_width_and_pos,str_width_and_pos>>
-        ( const Charset& charset
+        ( const CharEncoding& encoding
         , {width_t} limit
-        , const {underlying_char_type}<Charset::char_size>* str
+        , const {underlying_char_type}<CharEncoding::char_size>* str
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 };
@@ -245,10 +245,10 @@ public:
 ====
 [source,cpp,subs=normal]
 ----
-template <typename Charset>
+template <typename CharEncoding>
 {width_t} char_width
-    ( const Charset&
-    , {underlying_char_type}<Charset::char_size> ) const noexcept;
+    ( const CharEncoding&
+    , {underlying_char_type}<CharEncoding::char_size> ) const noexcept;
 ----
 [horizontal]
 Return value::: `1`
@@ -257,28 +257,28 @@ Return value::: `1`
 ====
 [source,cpp,subs=normal]
 ----
-template <typename Charset>
+template <typename CharEncoding>
 constexpr {width_t} str_width
-    ( const Charset& charset
+    ( const CharEncoding& encoding
     , {width_t} limit
-    , const {underlying_char_type}<Charset::char_size>* str
+    , const {underlying_char_type}<CharEncoding::char_size>* str
     , std::size_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
 [horizontal]
 Return value:::
 * `0`, if `limit \<= 0` is `true`
-* otherwise, `charset.<<UnderlyingCharset_codepoints_fast_count,codepoints_fast_count>>(str, str_len, limit.floor()).count`.
+* otherwise, `encoding.<<UnderlyingCharEncoding_codepoints_fast_count,codepoints_fast_count>>(str, str_len, limit.floor()).count`.
 ====
 [[width_as_fast_u32len_str_width_and_pos]]
 ====
 [source,cpp,subs=normal]
 ----
-template <typename Charset>
+template <typename CharEncoding>
 constexpr {width_and_pos} str_width_and_pos
-    ( const Charset& charset
+    ( const CharEncoding& encoding
     , {width_t} limit
-    , const {underlying_char_type}<Charset::char_size>* str
+    , const {underlying_char_type}<CharEncoding::char_size>* str
     , std::size_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
@@ -287,14 +287,14 @@ Return value::: The return value `ret` is such that
 
 * If `limit \<= 0` is `true`, then then `ret.width` and `ret.pos` are `0`;
 * otherwise, `ret.width` is equal to `ret2.count` and `ret.pos` is equal
-  to `charset.<<UnderlyingCharset_codepoints_fast_count,codepoints_fast_count>>(str, str_len, lim).pos`
+  to `encoding.<<UnderlyingCharEncoding_codepoints_fast_count,codepoints_fast_count>>(str, str_len, lim).pos`
 ====
 
 === Class `width_as_u32len` [[width_as_u32len]]
 
 Class `width_as_fast_u32len` is a facet of the category `{width_calculator_c}`.
 It evaluates the width of a string as the number of Unicode code points,
-assuming that any non-conformity to the corresponding charset is replaced
+assuming that any non-conformity to the corresponding encoding is replaced
 by one codepoint ( following the semantics of `{invalid_seq_policy}::replace` ).
 
 [source,cpp,subs=normal]
@@ -304,24 +304,24 @@ class width_as_u32len final
 public:
     using category = {width_calculator_c};
 
-    template <typename Charset>
+    template <typename CharEncoding>
     {width_t} <<width_as_u32len_char_width,char_width>>
-        ( const Charset& charset
-        , {underlying_char_type}<Charset::char_size> ) const noexcept;
+        ( const CharEncoding& encoding
+        , {underlying_char_type}<CharEncoding::char_size> ) const noexcept;
 
-    template <typename Charset>
+    template <typename CharEncoding>
     {width_t} <<width_as_u32len_str_width,str_width>>
-        ( const Charset& charset
+        ( const CharEncoding& encoding
         , {width_t} limit
-        , const {underlying_char_type}<Charset::char_size>* str
+        , const {underlying_char_type}<CharEncoding::char_size>* str
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 
-    template <typename Charset>
+    template <typename CharEncoding>
     constexpr {width_and_pos} <<width_as_u32len_str_width_and_pos,str_width_and_pos>>
-        ( const Charset& charset
+        ( const CharEncoding& encoding
         , {width_t} limit
-        , const {underlying_char_type}<Charset::char_size>* str
+        , const {underlying_char_type}<CharEncoding::char_size>* str
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 };
@@ -330,10 +330,10 @@ public:
 ====
 [source,cpp,subs=normal]
 ----
-template <typename Charset>
+template <typename CharEncoding>
 {width_t} char_width
-    ( const Charset&
-    , {underlying_char_type}<Charset::char_size> ) const noexcept;
+    ( const CharEncoding&
+    , {underlying_char_type}<CharEncoding::char_size> ) const noexcept;
 ----
 [horizontal]
 Return value:: `1`
@@ -342,28 +342,28 @@ Return value:: `1`
 ====
 [source,cpp,subs=normal]
 ----
-template <typename Charset>
+template <typename CharEncoding>
 constexpr {width_t} str_width
-    ( const Charset& charset
+    ( const CharEncoding& encoding
     , {width_t} limit
-    , const {underlying_char_type}<Charset::char_size>* str
+    , const {underlying_char_type}<CharEncoding::char_size>* str
     , std::size_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
 [horizontal]
 Return value:::
 * `0`, if `limit \<= 0` is `true`
-* otherwise, `charset.<<UnderlyingCharset_codepoints_robust_count,codepoints_robust_count>>(str, str_len, limit.floor()).count`.
+* otherwise, `encoding.<<UnderlyingCharEncoding_codepoints_robust_count,codepoints_robust_count>>(str, str_len, limit.floor()).count`.
 ====
 [[width_as_u32len_str_width_and_pos]]
 ====
 [source,cpp,subs=normal]
 ----
-template <typename Charset>
+template <typename CharEncoding>
 constexpr {width_and_pos} str_width_and_pos
-    ( const Charset& charset
+    ( const CharEncoding& encoding
     , {width_t} limit
-    , const {underlying_char_type}<Charset::char_size>* str
+    , const {underlying_char_type}<CharEncoding::char_size>* str
     , std::size_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
@@ -372,7 +372,7 @@ Return value::: The return value `ret` is such that
 
 * If `limit \<= 0` is `true`, then then `ret.width` and `ret.pos` are `0`;
 * otherwise, `ret.width` is equal to `ret2.count` and `ret.pos` is equal to
-  `charset.<<UnderlyingCharset_codepoints_robust_count,codepoints_robust_count>>(str, str_len, lim).pos`
+  `encoding.<<UnderlyingCharEncoding_codepoints_robust_count,codepoints_robust_count>>(str, str_len, lim).pos`
 ====
 
 === Class template `width_by_func` [[width_by_func]]
@@ -391,24 +391,24 @@ class width_by_func{
 public:
     using category = {width_calculator_c};
 
-    template <typename Charset>
+    template <typename CharEncoding>
     {width_t} <<width_by_func_char_width,char_width>>
-        ( const Charset& charste
-        , {underlying_char_type}<Charset::char_size> ) const;
+        ( const CharEncoding& charste
+        , {underlying_char_type}<CharEncoding::char_size> ) const;
 
-    template <typename Charset>
+    template <typename CharEncoding>
     {width_t} <<width_by_func_str_width,str_width>>
-        ( const Charset& charset
+        ( const CharEncoding& encoding
         , {width_t} limit
-        , const {underlying_char_type}<Charset::char_size>* str
+        , const {underlying_char_type}<CharEncoding::char_size>* str
         , std::size_t str_len
         , {surrogate_policy} ) const;
 
-    template <typename Charset>
+    template <typename CharEncoding>
     constexpr {width_and_pos} <<width_by_func_str_width_and_pos,str_width_and_pos>>
-        ( const Charset& charset
+        ( const CharEncoding& encoding
         , {width_t} limit
-        , const {underlying_char_type}<Charset::char_size>* str
+        , const {underlying_char_type}<CharEncoding::char_size>* str
         , std::size_t str_len
         , {surrogate_policy} ) const;
 
@@ -434,23 +434,23 @@ must be {width_t}.
 ====
 [source,cpp,subs=normal]
 ----
-template <typename Charset>
+template <typename CharEncoding>
 {width_t} char_width
-    ( const Charset& charset
-    , {underlying_char_type}<Charset::char_size> ch) const;
+    ( const CharEncoding& encoding
+    , {underlying_char_type}<CharEncoding::char_size> ch) const;
 ----
 [horizontal]
-Return value:: `func_(charset.<<Charset_decode_char,decode_char>>(ch))`
+Return value:: `func_(encoding.<<CharEncoding_decode_char,decode_char>>(ch))`
 ====
 [[width_by_func_str_width]]
 ====
 [source,cpp,subs=normal]
 ----
-template <typename Charset>
+template <typename CharEncoding>
 constexpr {width_t} str_width
-    ( const Charset& charset
+    ( const CharEncoding& encoding
     , {width_t} limit
-    , const {underlying_char_type}<Charset::char_size>* str
+    , const {underlying_char_type}<CharEncoding::char_size>* str
     , std::size_t str_len
     , {surrogate_policy}  surr_poli) const;
 ----
@@ -461,7 +461,7 @@ Return value::: The sum of the values of `func_(ch32)`, where `ch32` is
 +
 [source,cpp,subs=normal]
 ----
-charset.<<UnderlyingCharset_to_u32,to_u32>>().<<UnderlyingTranscoder_transcode,transcode>>
+encoding.<<UnderlyingCharEncoding_to_u32,to_u32>>().<<UnderlyingTranscoder_transcode,transcode>>
     ( ob, str, str_len, {invalid_seq_policy}::replace, surr_poli )
 ----
 , if such value is less than or equal to `limit`. Otherwise, the return value
@@ -471,11 +471,11 @@ charset.<<UnderlyingCharset_to_u32,to_u32>>().<<UnderlyingTranscoder_transcode,t
 ====
 [source,cpp,subs=normal]
 ----
-template <typename Charset>
+template <typename CharEncoding>
 constexpr {width_and_pos} str_width_and_pos
-    ( const Charset& charset
+    ( const CharEncoding& encoding
     , {width_t} limit
-    , const {underlying_char_type}<Charset::char_size>* str
+    , const {underlying_char_type}<CharEncoding::char_size>* str
     , std::size_t str_len
     , {surrogate_policy} surr_poli) const;
 ----
@@ -486,12 +486,12 @@ Return value::: The return value `ret` is such that:
 +
 [source,cpp,subs=normal]
 ----
-charset.<<UnderlyingCharset_to_u32,to_u32>>().<<UnderlyingTranscoder_transcode,transcode>>
+encoding.<<UnderlyingCharEncoding_to_u32,to_u32>>().<<UnderlyingTranscoder_transcode,transcode>>
     ( ob, str, ret.pos, {invalid_seq_policy}::replace, surr_poli )
 ----
 , where `ob` is any object whose type derives from `{underlying_outbuf}<4>`.
 * `ret.pos` is the greatest value that is less than or equal to `str_len`
-  such that `str_width_and_pos(charset, limit, str, ret.pos, surr_poli).width`
+  such that `str_width_and_pos(encoding, limit, str, ret.pos, surr_poli).width`
   is less than or equal to `limit`.
 ====
 

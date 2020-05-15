@@ -11,46 +11,46 @@ namespace strf {
 namespace detail {
 
 template < typename DestCharT, typename FPack, typename Preview
-         , typename SrcCharT, bool HasP, bool HasA, typename SrcCharset >
-constexpr STRF_HD decltype(auto) get_src_charset
+         , typename SrcCharT, bool HasP, bool HasA, typename SrcEncoding >
+constexpr STRF_HD decltype(auto) get_src_encoding
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, FPack, Preview, SrcCharT, HasP, HasA
-        , strf::cv_format_with_charset<SrcCharT, SrcCharset> >& input )
+        , strf::cv_format_with_encoding<SrcCharT, SrcEncoding> >& input )
 {
-    return input.vwf.get_charset();
+    return input.vwf.get_encoding();
 }
 
 template < typename DestCharT, typename FPack, typename Preview
-         , typename SrcCharT, bool HasP, bool HasA, typename SrcCharset >
-constexpr STRF_HD decltype(auto) get_src_charset
+         , typename SrcCharT, bool HasP, bool HasA, typename SrcEncoding >
+constexpr STRF_HD decltype(auto) get_src_encoding
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, FPack, Preview, SrcCharT, HasP, HasA
-        , strf::sani_format_with_charset<SrcCharT, SrcCharset> >& input )
+        , strf::sani_format_with_encoding<SrcCharT, SrcEncoding> >& input )
 {
-    return input.vwf.get_charset();
+    return input.vwf.get_encoding();
 }
 
 template < typename DestCharT, typename FPack, typename Preview
          , typename SrcCharT, bool HasP, bool HasA >
-constexpr STRF_HD decltype(auto) get_src_charset
+constexpr STRF_HD decltype(auto) get_src_encoding
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, FPack, Preview, SrcCharT, HasP, HasA
         , strf::cv_format<SrcCharT> >& input )
 {
     return strf::get_facet
-        <strf::charset_c<SrcCharT>, strf::string_input_tag<SrcCharT>>
+        <strf::char_encoding_c<SrcCharT>, strf::string_input_tag<SrcCharT>>
         ( input.fp );
 }
 
 template < typename DestCharT, typename FPack, typename Preview
          , typename SrcCharT, bool HasP, bool HasA >
-constexpr STRF_HD decltype(auto) get_src_charset
+constexpr STRF_HD decltype(auto) get_src_encoding
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, FPack, Preview, SrcCharT, HasP, HasA
         , strf::sani_format<SrcCharT> >& input )
 {
     return strf::get_facet
-        <strf::charset_c<SrcCharT>, strf::string_input_tag<SrcCharT>>
+        <strf::char_encoding_c<SrcCharT>, strf::string_input_tag<SrcCharT>>
         ( input.fp );
 }
 
@@ -75,15 +75,15 @@ public:
         static_assert(sizeof(SrcCharT) == SrcCharSize, "Incompatible char type");
         static_assert(sizeof(DestCharT) == DestCharSize, "Incompatible char type");
 
-        decltype(auto) src_cs  = strf::detail::get_src_charset(input);
-        decltype(auto) dest_sc = get_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.fp);
+        decltype(auto) src_enc  = strf::detail::get_src_encoding(input);
+        decltype(auto) dest_enc = get_facet_<strf::char_encoding_c<DestCharT>, SrcCharT>(input.fp);
         STRF_IF_CONSTEXPR (Preview::width_required) {
             decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcCharT>(input.fp);
-            auto w = wcalc.str_width( src_cs, input.preview.remaining_width()
+            auto w = wcalc.str_width( src_enc, input.preview.remaining_width()
                                     , str_, len_, surr_poli_);
             input.preview.subtract_width(w);
         }
-        init_( input.preview, src_cs, dest_sc);
+        init_( input.preview, src_enc, dest_enc);
     }
 
    template < typename DestCharT, typename FPack, typename Preview
@@ -99,16 +99,16 @@ public:
         static_assert(sizeof(SrcCharT) == SrcCharSize, "Incompatible char type");
         static_assert(sizeof(DestCharT) == DestCharSize, "Incompatible char type");
 
-        decltype(auto) src_cs  = strf::detail::get_src_charset(input);
-        decltype(auto) dest_sc = get_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.fp);
+        decltype(auto) src_enc  = strf::detail::get_src_encoding(input);
+        decltype(auto) dest_enc = get_facet_<strf::char_encoding_c<DestCharT>, SrcCharT>(input.fp);
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcCharT>(input.fp);
         auto res = wcalc.str_width_and_pos
-            ( src_cs, input.vwf.precision(), str_
+            ( src_enc, input.vwf.precision(), str_
             , input.vwf.value().size(), surr_poli_ );
         len_ = res.pos;
         input.preview.subtract_width(res.width);
-        init_( input.preview, src_cs
-             , get_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.fp));
+        init_( input.preview, src_enc
+             , get_facet_<strf::char_encoding_c<DestCharT>, SrcCharT>(input.fp));
     }
 
     STRF_HD ~cv_string_printer() { }
@@ -117,17 +117,17 @@ public:
 
 private:
 
-    template < typename Preview, typename SrcCharset, typename DestCharset >
-    STRF_HD void init_(Preview& preview, const SrcCharset& src_cs, const DestCharset& dest_cs)
+    template < typename Preview, typename SrcEncoding, typename DestEncoding >
+    STRF_HD void init_(Preview& preview, const SrcEncoding& src_enc, const DestEncoding& dest_enc)
     {
-        static_assert(SrcCharset::char_size == SrcCharSize, "Incompatible char type");
-        static_assert(DestCharset::char_size == DestCharSize, "Incompatible char type");
+        static_assert(SrcEncoding::char_size == SrcCharSize, "Incompatible char type");
+        static_assert(DestEncoding::char_size == DestCharSize, "Incompatible char type");
 
-        decltype(auto) transcoder = find_transcoder(src_cs, dest_cs);
+        decltype(auto) transcoder = find_transcoder(src_enc, dest_enc);
         transcode_ = transcoder.transcode_func();
         if (transcode_ == nullptr) {
-            src_to_u32_ = src_cs.to_u32().transcode_func();
-            u32_to_dest_ = dest_cs.from_u32().transcode_func();
+            src_to_u32_ = src_enc.to_u32().transcode_func();
+            u32_to_dest_ = dest_enc.from_u32().transcode_func();
         }
         STRF_IF_CONSTEXPR (Preview::size_required) {
             strf::transcode_size_f<SrcCharSize>  transcode_size
@@ -137,8 +137,8 @@ private:
                 s = transcode_size(str_, len_, surr_poli_);
             } else {
                 s = strf::decode_encode_size<SrcCharSize>
-                    ( src_cs.to_u32().transcode_func()
-                    , dest_cs.from_u32().transcode_size_func()
+                    ( src_enc.to_u32().transcode_func()
+                    , dest_enc.from_u32().transcode_size_func()
                     , str_, len_, inv_seq_poli_, surr_poli_ );
             }
             preview.add_size(s);
@@ -201,15 +201,15 @@ public:
         static_assert(sizeof(SrcCharT) == SrcCharSize, "Incompatible char type");
         static_assert(sizeof(DestCharT) == DestCharSize, "Incompatible char type");
 
-        decltype(auto) src_cs = strf::detail::get_src_charset(input);
+        decltype(auto) src_enc = strf::detail::get_src_encoding(input);
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcCharT>(input.fp);
         strf::width_t limit =
             ( Preview::width_required && input.preview.remaining_width() > afmt_.width
             ? input.preview.remaining_width()
             : afmt_.width );
-        auto str_width = wcalc.str_width(src_cs, limit, str_, len_, surr_poli_);
-        init_( input.preview, str_width, src_cs
-             , get_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.fp) );
+        auto str_width = wcalc.str_width(src_enc, limit, str_, len_, surr_poli_);
+        init_( input.preview, str_width, src_enc
+             , get_facet_<strf::char_encoding_c<DestCharT>, SrcCharT>(input.fp) );
     }
 
     template < typename DestCharT, typename FPack, typename Preview
@@ -227,14 +227,14 @@ public:
         static_assert(sizeof(SrcCharT) == SrcCharSize, "Incompatible char type");
         static_assert(sizeof(DestCharT) == DestCharSize, "Incompatible char type");
 
-        decltype(auto) src_cs = strf::detail::get_src_charset(input);
+        decltype(auto) src_enc = strf::detail::get_src_encoding(input);
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcCharT>(input.fp);
         auto res = wcalc.str_width_and_pos
-            ( src_cs, input.vwf.precision(), str_
+            ( src_enc, input.vwf.precision(), str_
             , input.vwf.value().size(), surr_poli_ );
         len_ = res.pos;
-        init_( input.preview, res.width, src_cs
-             , get_facet_<strf::charset_c<DestCharT>, SrcCharT>(input.fp) );
+        init_( input.preview, res.width, src_enc
+             , get_facet_<strf::char_encoding_c<DestCharT>, SrcCharT>(input.fp) );
     }
 
     STRF_HD void print_to(strf::underlying_outbuf<DestCharSize>& ob) const override;
@@ -267,27 +267,27 @@ private:
         return fp.template get_facet<Category, input_tag>();
     }
 
-    template < typename Preview, typename SrcCharset, typename DestCharset>
+    template < typename Preview, typename SrcEncoding, typename DestEncoding>
     STRF_HD void init_
         ( Preview& preview, strf::width_t str_width
-        , const SrcCharset& src_cs, const DestCharset& dest_cs );
+        , const SrcEncoding& src_enc, const DestEncoding& dest_enc );
 };
 
 template <std::size_t SrcCharSize, std::size_t DestCharSize>
-template <typename Preview, typename SrcCharset, typename DestCharset>
+template <typename Preview, typename SrcEncoding, typename DestEncoding>
 void STRF_HD aligned_cv_string_printer<SrcCharSize, DestCharSize>::init_
     ( Preview& preview, strf::width_t str_width
-    , const SrcCharset& src_cs, const DestCharset& dest_cs )
+    , const SrcEncoding& src_enc, const DestEncoding& dest_enc )
 {
-    static_assert(SrcCharset::char_size == SrcCharSize, "Incompatible char type");
-    static_assert(DestCharset::char_size == DestCharSize, "Incompatible char type");
+    static_assert(SrcEncoding::char_size == SrcCharSize, "Incompatible char type");
+    static_assert(DestEncoding::char_size == DestCharSize, "Incompatible char type");
 
-    encode_fill_ = dest_cs.encode_fill_func();
-    decltype(auto) transcoder = find_transcoder(src_cs, dest_cs);
+    encode_fill_ = dest_enc.encode_fill_func();
+    decltype(auto) transcoder = find_transcoder(src_enc, dest_enc);
     transcode_ = transcoder.transcode_func();
     if (transcode_ == nullptr) {
-        src_to_u32_ = src_cs.to_u32().transcode_func();
-        u32_to_dest_ = dest_cs.from_u32().transcode_func();
+        src_to_u32_ = src_enc.to_u32().transcode_func();
+        u32_to_dest_ = dest_enc.from_u32().transcode_func();
     }
     std::uint16_t fillcount = 0;
     if (afmt_.width > str_width) {
@@ -321,12 +321,12 @@ void STRF_HD aligned_cv_string_printer<SrcCharSize, DestCharSize>::init_
             s = transcode_size(str_, len_, surr_poli_);
         } else {
             s = strf::decode_encode_size<SrcCharSize>
-                ( src_cs.to_u32().transcode
-                , dest_cs.from_u32().transcode_size_func()
+                ( src_enc.to_u32().transcode
+                , dest_enc.from_u32().transcode_size_func()
                 , str_, len_, inv_seq_poli_, surr_poli_ );
         }
         if (fillcount > 0) {
-            s += dest_cs.encoded_char_size(afmt_.fill) * fillcount;
+            s += dest_enc.encoded_char_size(afmt_.fill) * fillcount;
         }
         preview.add_size(s);
     }
@@ -388,11 +388,11 @@ public:
             < DestCharT, FPack, Preview, SrcCharT, HasPrecision, false, CvFormat >&
             input )
     {
-        decltype(auto) charset_in  = strf::detail::get_src_charset(input);
+        decltype(auto) src_encoding  = strf::detail::get_src_encoding(input);
         using facet_tag = strf::string_input_tag<SrcCharT>;
-        using dest_sc_cat = strf::charset_c<DestCharT>;
-        decltype(auto) charset_out = strf::get_facet<dest_sc_cat, facet_tag>(input.fp);
-        if (charset_in.id() == charset_out.id()) {
+        using dest_enc_cat = strf::char_encoding_c<DestCharT>;
+        decltype(auto) dest_encoding = strf::get_facet<dest_enc_cat, facet_tag>(input.fp);
+        if (src_encoding.id() == dest_encoding.id()) {
             new ((void*)&pool_) strf::detail::string_printer<CharSize>(input);
         } else {
             new ((void*)&pool_) strf::detail::cv_string_printer<CharSize, CharSize>(input);
@@ -433,12 +433,12 @@ public:
             < DestCharT, FPack, Preview, SrcCharT, HasPrecision, true, CvFormat >&
             input )
     {
-        decltype(auto) charset_in  = strf::detail::get_src_charset(input);
+        decltype(auto) src_encoding  = strf::detail::get_src_encoding(input);
         using facet_tag = strf::string_input_tag<SrcCharT>;
-        using dest_sc_cat = strf::charset_c<DestCharT>;
-        decltype(auto) charset_out = strf::get_facet<dest_sc_cat, facet_tag>(input.fp);
+        using dest_enc_cat = strf::char_encoding_c<DestCharT>;
+        decltype(auto) dest_encoding = strf::get_facet<dest_enc_cat, facet_tag>(input.fp);
 
-        if (charset_in.id() == charset_out.id()) {
+        if (src_encoding.id() == dest_encoding.id()) {
             new ((void*)&pool_) strf::detail::aligned_string_printer<CharSize> (input);
         } else {
             new ((void*)&pool_)

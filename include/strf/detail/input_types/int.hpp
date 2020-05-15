@@ -8,7 +8,7 @@
 #include <strf/printer.hpp>
 #include <strf/facets_pack.hpp>
 #include <strf/detail/format_functions.hpp>
-#include <strf/detail/facets/charset.hpp>
+#include <strf/detail/facets/char_encoding.hpp>
 #include <strf/detail/facets/numpunct.hpp>
 #include <strf/detail/int_digits.hpp>
 #include <strf/detail/standard_lib_functions.hpp>
@@ -331,7 +331,7 @@ struct voidptr_printable_traits
         auto new_fp = strf::pack
             ( strf::get_facet<strf::numpunct_c<16>, const void*>(fp)
             , strf::get_facet<strf::lettercase_c, const void*>(fp)
-            , strf::get_facet<strf::charset_c<CharT>, const void*>(fp) );
+            , strf::get_facet<strf::char_encoding_c<CharT>, const void*>(fp) );
 
         return strf::make_printer_input<CharT>
             ( new_fp, preview, *strf::hex(reinterpret_cast<std::size_t>(arg)) );
@@ -412,7 +412,7 @@ struct printable_traits
         auto new_fp = strf::pack
             ( strf::get_facet<strf::numpunct_c<16>, const void*>(fp)
             , strf::get_facet<strf::lettercase_c, const void*>(fp)
-            , strf::get_facet<strf::charset_c<CharT>, const void*>(fp) );
+            , strf::get_facet<strf::char_encoding_c<CharT>, const void*>(fp) );
 
         return strf::make_printer_input<CharT>
             ( new_fp, preview
@@ -498,7 +498,7 @@ public:
     STRF_HD punct_int_printer
         ( const strf::detail::punct_int_printer_input<CharT, FPack, Preview, IntT>& i )
     {
-        decltype(auto) cs = get_facet<strf::charset_c<CharT>, IntT>(i.fp);
+        decltype(auto) enc = get_facet<strf::char_encoding_c<CharT>, IntT>(i.fp);
 
         uvalue_ = strf::detail::unsigned_abs(i.value);
         digcount_ = strf::detail::count_digits<10>(uvalue_);
@@ -506,16 +506,16 @@ public:
         if (punct.any_group_separation(digcount_)) {
             grouping_ = punct.grouping();
             thousands_sep_ = punct.thousands_sep();
-            std::size_t sepsize = cs.validate(thousands_sep_);
+            std::size_t sepsize = enc.validate(thousands_sep_);
             if (sepsize != (std::size_t)-1) {
                 sepsize_ = static_cast<unsigned>(sepsize);
                 sepcount_ = punct.thousands_sep_count(digcount_);
                 if (sepsize_ == 1) {
                     char_type little_sep[4];
-                    cs.encode_char(little_sep, thousands_sep_);
+                    enc.encode_char(little_sep, thousands_sep_);
                     thousands_sep_ = little_sep[0];
                 } else {
-                    encode_char_ = cs.encode_char_func();
+                    encode_char_ = enc.encode_char_func();
                 }
             }
         }
@@ -606,8 +606,8 @@ public:
             if (punct.any_group_separation(digcount_)) {
                 grouping_ = punct.grouping();
                 thousands_sep_ = punct.thousands_sep();
-                auto charset = get_facet<strf::charset_c<CharT>, IntTag>(fp);
-                init_punct_(charset);
+                auto encoding = get_facet<strf::char_encoding_c<CharT>, IntTag>(fp);
+                init_punct_(encoding);
             }
         }
         preview.subtract_width(width());
@@ -647,8 +647,8 @@ private:
     template <typename IntT>
     STRF_HD void init_(IntT value, strf::int_format_data fmt);
 
-    template <typename Charset>
-    STRF_HD void init_punct_(const Charset& cs);
+    template <typename Encoding>
+    STRF_HD void init_punct_(const Encoding& enc);
 };
 
 template <std::size_t CharSize, int Base>
@@ -673,19 +673,19 @@ STRF_HD void partial_fmt_int_printer<CharSize, Base>::init_
 }
 
 template <std::size_t CharSize, int Base>
-template <typename Charset>
-STRF_HD void partial_fmt_int_printer<CharSize, Base>::init_punct_(const Charset& cs)
+template <typename Encoding>
+STRF_HD void partial_fmt_int_printer<CharSize, Base>::init_punct_(const Encoding& enc)
 {
-    std::size_t sepsize = cs.validate(thousands_sep_);
+    std::size_t sepsize = enc.validate(thousands_sep_);
     if (sepsize != (std::size_t)-1) {
         sepsize_ = static_cast<unsigned>(sepsize);
         sepcount_ = grouping_.separators_count(digcount_);
         if (sepsize_ == 1) {
             char_type little_sep[4];
-            cs.encode_char(little_sep, thousands_sep_);
+            enc.encode_char(little_sep, thousands_sep_);
             thousands_sep_ = little_sep[0];
         } else {
-            encode_char_ = cs.encode_char_func();
+            encode_char_ = enc.encode_char_func();
         }
     }
 }
@@ -824,20 +824,20 @@ private:
     strf::alignment_format_data afmt_;
     strf::surrogate_policy surr_poli_;
 
-    template <typename Charset>
+    template <typename Encoding>
     STRF_HD  void calc_fill_size_
         ( strf::size_preview<false>&
-        , const Charset& ) const
+        , const Encoding& ) const
     {
     }
 
-    template <typename Charset>
+    template <typename Encoding>
     STRF_HD void calc_fill_size_
         ( strf::size_preview<true>& preview
-        , const Charset& cs ) const
+        , const Encoding& enc ) const
     {
         if (fillcount_ > 0) {
-            preview.add_size(fillcount_* cs.encoded_char_size(afmt_.fill));
+            preview.add_size(fillcount_* enc.encoded_char_size(afmt_.fill));
         }
     }
 
@@ -868,9 +868,9 @@ inline STRF_HD full_fmt_int_printer<CharSize, Base>::full_fmt_int_printer
         fillcount_ = afmt_.width - content_width;
         i.preview.subtract_width(static_cast<std::int16_t>(fillcount_));
     }
-    decltype(auto) cs = get_facet<strf::charset_c<CharT>, IntT>(i.fp);
-    encode_fill_ = cs.encode_fill_func();
-    calc_fill_size_(i.preview, cs);
+    decltype(auto) enc = get_facet<strf::char_encoding_c<CharT>, IntT>(i.fp);
+    encode_fill_ = enc.encode_fill_func();
+    calc_fill_size_(i.preview, enc);
 }
 
 template <std::size_t CharSize, int Base>

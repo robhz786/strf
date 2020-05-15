@@ -70,7 +70,7 @@ int main()
 
 #endif
 
-    {   // by-pass charset sanitization
+    {   // by-pass encoding sanitization
 
         TEST("---\x99---") (strf::cv("---\x99---"));
         TEST("---\xA5---")
@@ -86,7 +86,7 @@ int main()
             .with(strf::iso_8859_3<char8_t>())
             (strf::right("---\xA5---", 10, U'.').cv(strf::iso_8859_3<char>()));
     }
-    {   // charset sanitization
+    {   // encoding sanitization
 
         TEST("---\xEF\xBF\xBD---") (strf::sani("---\xFF---"));
         TEST("   ---\xEF\xBF\xBD---") (strf::sani("---\xFF---") > 10);
@@ -102,7 +102,7 @@ int main()
         TEST("...---\x99---") (strf::cv("---\x99---").fill(U'.') > 10);
         TEST("...---\x99---") (strf::cv("---\x99---", strf::utf8<char>()).fill(U'.') > 10);
     }
-    {   // charset conversion
+    {   // encoding conversion
 
         TEST("--?--\x80--")
             .with(strf::windows_1252<char>())

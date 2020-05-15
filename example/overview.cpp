@@ -168,9 +168,9 @@ void overriding_sample()
 }
 
 
-void sample_numpunct_with_alternative_charset()
+void sample_numpunct_with_alternative_encoding()
 {
-//[ numpuct__with_alternative_charset
+//[ numpuct__with_alternative_encoding
     // Writting in Windows-1252
     auto s = strf::to_string
         .with(strf::windows_1252<char>())
@@ -201,9 +201,9 @@ void input_ouput_different_char_types()
     //]
 }
 
-void input_string_charset()
+void input_string_encoding()
 {
-    //[input_string_charset
+    //[input_string_encoding
     // Three input string. Each one in its own character set
     auto s = strf::to_u8string( strf::cv("\x80\xA4 -- ", strf::iso_8859_1<char>())
                               , strf::cv("\x80\xA4 -- ", strf::iso_8859_15<char>())
@@ -377,7 +377,7 @@ int main()
     overriding_sample();
     output_FILE();
     input_ouput_different_char_types();
-    input_string_charset();
+    input_string_encoding();
     sani();
     numpunct();
     variable_grouping();

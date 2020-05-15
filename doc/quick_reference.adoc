@@ -360,7 +360,7 @@ Both have the same purpose: to customize numeric punctuation.
 
 |`<<lettercase,lettercase_c>>`        |Yes |Letter case in numeric types
 
-|`<<charset,charset_c>><CharT>`   |No  |The character encoding correponding to character type `CharT`
+|`<<character_encoding,char_encoding_c>><CharT>`   |No  |The character encoding correponding to character type `CharT`
 |`<<invalid_seq_policy,invalid_seq_policy_c>>`    |Yes |Encoding error handling
 |`<<surrogate_policy,surrogate_policy_c>>` |Yes |Wheter surrogates are treated as errors
 |`<<tr_string_error,tr_string_error_c>>`   |No  |Tr-string parsing error handling
@@ -513,7 +513,7 @@ auto str_mixed = strf::to_string.with(strf::mixedcase)
 assert(str_upper == "0xAB 1e+50 Inf");
 ----
 
-[[charset]]
+[[character_encoding]]
 == Character encodings
 
 ////
@@ -521,7 +521,7 @@ assert(str_upper == "0xAB 1e+50 Inf");
 ----
 namespace strf {
 
-enum class charset_id {
+enum class char_encoding_id {
     utf8 = /*...*/,
     utf16 = /*...*/,
     utf32 = /*...*/,
@@ -532,16 +532,16 @@ enum class charset_id {
     windows_1252 = /*...*/
 };
 
-template <charset_id>
-class static_charset;
+template <char_encoding_id>
+class static_char_encoding;
 
 }; // namespace strf
 ----
 ////
 
-The class templates below are facets that specify the charset
-correspoing to the character type. Their instances are always
-empty classes. More charsets are expected to be included in
+The class templates below are facets that specify the character encoding
+corresponding to the character type. Their instances are always
+empty classes. More encodings are expected to be included in
 future version of the library.
 
 [source,cpp]
@@ -735,7 +735,7 @@ assert(result == "*15.00 \xE2\x82\xAC \x80"); // width calculated as 11
 * The `<<reference#width_as_fast_u32len,width_as_fast_u32len>>` facet
   evaluates the width of a string as the number of Unicode code points.
   However, differently from `width_as_u32len`, to gain performance,
-  it assumes that the measured string is totally conformant to its charset.
+  it assumes that the measured string is totally conformant to its encoding.
   Nonconformities do not cause undefined behaviour, but lead to incorrect
   values. For example, the width of an UTF-8 string may simply be calculated as
   the number of bytes that are not in the range [`0x80`, `0xBF`], __i.e.__,
@@ -752,7 +752,7 @@ assert(result == "****15.00 \xE2\x82\xAC \x80"); // width calculated as 8
 ----
 * The `<<reference#width_as_u32len,width_as_u32len>>` facet also
   evaluates the width of a string as the number of Unicode code points.
-  But each nonconformity to the charset is counted as an extra
+  But each nonconformity to the encoding is counted as an extra
   code points ( as if it were replaced by
   https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;] ).
 +
@@ -812,7 +812,7 @@ assert(result == u8".....\u2163 + \u2167 = \u216B");
   function object for each UTF-32 character.
   When you implement your own calculator, you can optimize
   it to directly measure strings that are encoded
-  in a specific charset.
+  in a specific encoding.
 ////
   To-do example
 ////
@@ -822,7 +822,7 @@ assert(result == u8".....\u2163 + \u2167 = \u216B");
 ====
 The width calculation algorithm is applied
 on the input, not the output string. Keep that in mind when
-converting from one charset to another using
+converting from one encoding to another using
 `<<encoding_conversion,cv>>` or `<<encoding_conversion,sani`>>.
 For example, when converting from UTF-8 to UTF-16 and using
 the `fast_width` facet, the
@@ -915,7 +915,7 @@ No effect in decimal base.
 Facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<numpunct, numpunct_c>><__Base__>`
-- `<<charset,charset_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
+- `<<character_encoding,char_encoding_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
 - `<<surrogate_policy,surrogate_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
 - `<<invalid_seq_policy,invalid_seq_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
 
@@ -952,7 +952,7 @@ the number of fractional digits. `precision == 0` has the same effect as
 Facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<numpunct, numpunct_c>><10>`
-- `<<charset,charset_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
+- `<<character_encoding,char_encoding_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
 - `<<surrogate_policy,surrogate_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
 - `<<invalid_seq_policy,invalid_seq_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
 
@@ -964,7 +964,7 @@ The <<alignment_format_functions, alignment functions>> only.
 Facet categories::
 - `<<lettercase,lettercase_c>>`
 - `<<numpunct, numpunct_c>><16>`
-- `<<charset,charset_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
+- `<<character_encoding,char_encoding_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
 - `<<surrogate_policy,surrogate_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
 - `<<invalid_seq_policy,invalid_seq_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
 
@@ -986,7 +986,7 @@ Format functions::
 //-
 Facet categories::
 - `<<width_calculator,width_calculator_c>>`
-- `<<charset,charset_c>><__CharType__>`
+- `<<character_encoding,char_encoding_c>><__CharType__>`
 - `<<surrogate_policy,surrogate_policy_c>>`
 - `<<invalid_seq_policy,invalid_seq_policy_c>>`
 
@@ -1018,13 +1018,13 @@ Format functions::
    __To-to__
 ////
 +
-`template <typename Charset> sani(Charset cs)`:::
-   Translates input string from `cs` to the output encoding.
+`template <typename Encoding> sani(Encoding enc)`:::
+   Translates input string from `enc` to the output encoding.
    If the encodings are the same then sanitizes the input string.
 `sani()`::: Translates input string from the encoding associated to `CharT` to
             the output encoding. If these encodings are the same
             then sanitizes the input string.
-`template <typename Charset> cv(Charset cs)`:::
+`template <typename Encoding> cv(Encoding enc)`:::
    Translates input string from `enc` to the
    output encoding, if these encodings are not the same.
    Otherwise, copies input string as it is.
@@ -1044,7 +1044,7 @@ See also the section about <<encoding_conversion,encoding conversion>>.
 //-
 Facet categories::
 - `<<width_calculator,width_calculator_c>>`
-- `<<charset,charset_c>><__CharType__>`
+- `<<character_encoding,char_encoding_c>><__CharType__>`
 - `<<surrogate_policy,surrogate_policy_c>>`
 - `<<invalid_seq_policy,invalid_seq_policy_c>>`
 

@@ -36,10 +36,10 @@ valid_input_sample(const strf::utf<wchar_t>&)
     return {L"a\0b\u0080\u0800\uD7FF\U00010000\U0010FFFF", (sizeof(wchar_t) == 2 ? 10 : 8)};
 }
 
-template <typename SrcCharset, typename DestCharset>
+template <typename SrcEncoding, typename DestEncoding>
 void test_valid_input
-    ( const SrcCharset& ein
-    , const DestCharset& eout )
+    ( const SrcEncoding& ein
+    , const DestEncoding& eout )
 {
     TEST_SCOPE_DESCRIPTION("from ", ein.name(), " to ", eout.name());
 
@@ -72,10 +72,10 @@ sample_with_surrogates(const strf::utf<wchar_t>&)
     return {arr, 8};
 }
 
-template <typename SrcCharset, typename DestCharset>
+template <typename SrcEncoding, typename DestEncoding>
 void test_allowed_surrogates
-    ( const SrcCharset& ein
-    , const DestCharset& eout )
+    ( const SrcEncoding& ein
+    , const DestEncoding& eout )
 {
     TEST_SCOPE_DESCRIPTION("from ", ein.name()," to ", eout.name());
 
@@ -200,7 +200,10 @@ strf::detail::simple_string_view<CharT> concatenate
 template <class>
 struct get_first_template_parameter_impl;
 
-template <class T0, strf::charset_id T1, template <class, strf::charset_id> class Tmpl>
+template
+    < class T0
+    , strf::char_encoding_id T1
+    , template <class, strf::char_encoding_id> class Tmpl >
 struct get_first_template_parameter_impl<Tmpl<T0, T1>>
 {
     using type = T0;
@@ -211,12 +214,12 @@ using get_first_template_parameter
 = typename get_first_template_parameter_impl<T>::type;
 
 
-template <typename SrcCharset, typename DestCharset>
-void test_invalid_input(const SrcCharset& ein, const DestCharset& eout)
+template <typename SrcEncoding, typename DestEncoding>
+void test_invalid_input(const SrcEncoding& ein, const DestEncoding& eout)
 {
     TEST_SCOPE_DESCRIPTION("From invalid ", ein.name(), " to ", eout.name());
-    using src_char_type  = get_first_template_parameter<SrcCharset>;
-    using dest_char_type = get_first_template_parameter<DestCharset>;
+    using src_char_type  = get_first_template_parameter<SrcEncoding>;
+    using dest_char_type = get_first_template_parameter<DestEncoding>;
 
     const src_char_type  suffix_in  [] = { 'd', 'e', 'f' };
     const dest_char_type suffix_out [] = { 'd', 'e', 'f' };
@@ -266,34 +269,34 @@ void test_invalid_input(const SrcCharset& ein, const DestCharset& eout)
 
 
 template < typename Func
-         , typename SrcCharset >
-void combine_3(Func, SrcCharset)
+         , typename SrcEncoding >
+void combine_3(Func, SrcEncoding)
 {
 }
 
 template < typename Func
-         , typename SrcCharset
-         , typename DestCharset0
-         , typename ... DestCharset >
-void combine_3(Func func, SrcCharset ein, DestCharset0 eout0, DestCharset ... eout)
+         , typename SrcEncoding
+         , typename DestEncoding0
+         , typename ... DestEncoding >
+void combine_3(Func func, SrcEncoding ein, DestEncoding0 eout0, DestEncoding ... eout)
 {
     func(ein, eout0);
     combine_3(func, ein, eout...);
 }
 
 template < typename Func
-         , typename Charset0 >
-void combine_2(Func func, Charset0 cs0)
+         , typename Encoding0 >
+void combine_2(Func func, Encoding0 cs0)
 {
     combine_3(func, cs0, cs0);
 }
 
 template < typename Func
-         , typename Charset0
-         , typename ... Cs >
-void combine_2(Func func, Charset0 cs0, Cs... cs)
+         , typename Encoding0
+         , typename ... Enc >
+void combine_2(Func func, Encoding0 cs0, Enc... enc)
 {
-    combine_3(func, cs0, cs0, cs...);
+    combine_3(func, cs0, cs0, enc...);
 }
 
 template < typename Func
@@ -306,102 +309,102 @@ void combine(Func, const EoutTuple&, std::index_sequence<I...> )
 template < typename Func
          , typename EoutTuple
          , std::size_t ... I
-         , typename Charset0
-         , typename ... Cs >
+         , typename Encoding0
+         , typename ... Enc >
 void combine( Func func
-            , const EoutTuple& out_charsets
+            , const EoutTuple& dest_encodings
             , std::index_sequence<I...> iseq
-            , Charset0 cs0
-            , Cs ... cs )
+            , Encoding0 cs0
+            , Enc ... enc )
 
 {
-    combine_2(func, cs0, std::get<I>(out_charsets)...);
-    combine(func, out_charsets, iseq, cs...);
+    combine_2(func, cs0, std::get<I>(dest_encodings)...);
+    combine(func, dest_encodings, iseq, enc...);
 }
 
 template < typename Func, typename Tuple, std::size_t ... I >
-void for_all_combinations(Func func, const Tuple& charsets, std::index_sequence<I...> iseq)
+void for_all_combinations(Func func, const Tuple& encodings, std::index_sequence<I...> iseq)
 {
-    combine(func, charsets, iseq, std::get<I>(charsets)...);
+    combine(func, encodings, iseq, std::get<I>(encodings)...);
 }
 
 template < typename Tuple, typename Func >
-void for_all_combinations(const Tuple& charsets, Func func)
+void for_all_combinations(const Tuple& encodings, Func func)
 {
     constexpr std::size_t tsize = std::tuple_size<Tuple>::value;
-    for_all_combinations(func, charsets, std::make_index_sequence<tsize>());
+    for_all_combinations(func, encodings, std::make_index_sequence<tsize>());
 }
 
 
 int main()
 {
-    const auto charsets = std::make_tuple
+    const auto encodings = std::make_tuple
         ( strf::utf<char>(), strf::utf<char16_t>()
         , strf::utf<char32_t>(), strf::utf<wchar_t>());
 
     for_all_combinations
-        ( charsets
+        ( encodings
         , [](auto ein, auto eout){ test_valid_input(ein, eout); } );
 
     for_all_combinations
-        ( charsets
+        ( encodings
         , [](auto ein, auto eout){ test_allowed_surrogates(ein, eout); } );
 
     for_all_combinations
-        ( charsets
+        ( encodings
         , [](auto ein, auto eout){ test_invalid_input(ein, eout); } );
 
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::charset_id::utf8
-                                                       , strf::charset_id::utf8 >
+                   < strf::static_underlying_transcoder< strf::char_encoding_id::utf8
+                                                       , strf::char_encoding_id::utf8 >
                    , decltype(strf::find_transcoder( strf::utf<char>()
                                                    , strf::utf<char>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::charset_id::utf8
-                                                       , strf::charset_id::utf16 >
+                   < strf::static_underlying_transcoder< strf::char_encoding_id::utf8
+                                                       , strf::char_encoding_id::utf16 >
                    , decltype(strf::find_transcoder( strf::utf<char>()
                                                   , strf::utf<char16_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::charset_id::utf8
-                                                       , strf::charset_id::utf32 >
+                   < strf::static_underlying_transcoder< strf::char_encoding_id::utf8
+                                                       , strf::char_encoding_id::utf32 >
                    , decltype(strf::find_transcoder( strf::utf<char>()
                                                   , strf::utf<char32_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::charset_id::utf16
-                                                       , strf::charset_id::utf8 >
+                   < strf::static_underlying_transcoder< strf::char_encoding_id::utf16
+                                                       , strf::char_encoding_id::utf8 >
                    , decltype(strf::find_transcoder( strf::utf<char16_t>()
                                                   , strf::utf<char>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::charset_id::utf16
-                                                       , strf::charset_id::utf16 >
+                   < strf::static_underlying_transcoder< strf::char_encoding_id::utf16
+                                                       , strf::char_encoding_id::utf16 >
                    , decltype(strf::find_transcoder( strf::utf<char16_t>()
                                                   , strf::utf<char16_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::charset_id::utf16
-                                                       , strf::charset_id::utf32 >
+                   < strf::static_underlying_transcoder< strf::char_encoding_id::utf16
+                                                       , strf::char_encoding_id::utf32 >
                    , decltype(strf::find_transcoder( strf::utf<char16_t>()
                                                   , strf::utf<char32_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::charset_id::utf32
-                                                       , strf::charset_id::utf8 >
+                   < strf::static_underlying_transcoder< strf::char_encoding_id::utf32
+                                                       , strf::char_encoding_id::utf8 >
                    , decltype(strf::find_transcoder( strf::utf<char32_t>()
                                                   , strf::utf<char>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::charset_id::utf32
-                                                       , strf::charset_id::utf16 >
+                   < strf::static_underlying_transcoder< strf::char_encoding_id::utf32
+                                                       , strf::char_encoding_id::utf16 >
                    , decltype(strf::find_transcoder( strf::utf<char32_t>()
                                                   , strf::utf<char16_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::charset_id::utf32
-                                                       , strf::charset_id::utf32 >
+                   < strf::static_underlying_transcoder< strf::char_encoding_id::utf32
+                                                       , strf::char_encoding_id::utf32 >
                    , decltype(strf::find_transcoder( strf::utf<char32_t>()
                                                   , strf::utf<char32_t>())) >
                   :: value));

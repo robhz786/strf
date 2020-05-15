@@ -7,7 +7,7 @@
 
 #include <strf/printer.hpp>
 #include <limits>
-#include <strf/detail/facets/charset.hpp>
+#include <strf/detail/facets/char_encoding.hpp>
 
 namespace strf {
 
@@ -299,18 +299,18 @@ public:
 
     using char_type = strf::underlying_char_type<CharSize>;
 
-    template <strf::preview_size SizeRequested, typename Charset>
+    template <strf::preview_size SizeRequested, typename CharEncoding>
     tr_string_printer
         ( strf::print_preview<SizeRequested, strf::preview_width::no>& preview
         , const strf::print_preview<SizeRequested, strf::preview_width::no>* args_preview
         , std::initializer_list<const strf::printer<CharSize>*> printers
         , const char_type* tr_string
         , const char_type* tr_string_end
-        , const Charset& cs
+        , const CharEncoding& enc
         , strf::tr_invalid_arg policy ) noexcept
         : tr_string_(reinterpret_cast<const char_type*>(tr_string))
         , tr_string_end_(reinterpret_cast<const char_type*>(tr_string_end))
-        , write_replacement_char_func_(cs.write_replacement_char_func())
+        , write_replacement_char_func_(enc.write_replacement_char_func())
         , printers_array_(printers.begin())
         , num_printers_(printers.size())
         , policy_(policy)
@@ -319,7 +319,7 @@ public:
             std::size_t invalid_arg_size;
             switch (policy) {
                 case strf::tr_invalid_arg::replace:
-                    invalid_arg_size = cs.replacement_char_size();
+                    invalid_arg_size = enc.replacement_char_size();
                     break;
                 case strf::tr_invalid_arg::stop:
                     invalid_arg_size = strf::detail::trstr_invalid_arg_size_when_stop;

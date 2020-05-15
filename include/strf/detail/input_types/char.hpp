@@ -122,8 +122,8 @@ public:
         input.preview.add_size(1);
         STRF_IF_CONSTEXPR(Preview::width_required) {
             decltype(auto) wcalc = get_facet<strf::width_calculator_c, CharT>(input.fp);
-            auto w = wcalc.char_width( get_facet<strf::charset_c<CharT>, CharT>(input.fp)
-                                     , static_cast<char_type>(ch_) );
+            auto enc = get_facet<strf::char_encoding_c<CharT>, CharT>(input.fp);
+            auto w = wcalc.char_width(enc, static_cast<char_type>(ch_));
             input.preview.subtract_width(w);
         }
     }
@@ -160,11 +160,10 @@ public:
         , surr_poli_(get_facet_<strf::surrogate_policy_c, CharT>(input.fp))
         , ch_(static_cast<char_type>(input.arg.value().ch))
     {
-        decltype(auto) cs = get_facet_<strf::charset_c<CharT>, CharT>(input.fp);
-        encode_fill_fn_ = cs.encode_fill_func();
-        init_( input.preview
-             , get_facet_<strf::width_calculator_c, CharT>(input.fp)
-             , cs );
+        auto enc = get_facet_<strf::char_encoding_c<CharT>, CharT>(input.fp);
+        decltype(auto) wcalc = get_facet_<strf::width_calculator_c, CharT>(input.fp);
+        encode_fill_fn_ = enc.encode_fill_func();
+        init_(input.preview, wcalc, enc);
     }
 
     STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override;
@@ -186,16 +185,16 @@ private:
         return fp.template get_facet<Category, CharT>();
     }
 
-    template <typename Preview, typename WCalc, typename Charset>
-    STRF_HD void init_(Preview& preview, const WCalc& wc, const Charset& cs);
+    template <typename Preview, typename WCalc, typename Encoding>
+    STRF_HD void init_(Preview& preview, const WCalc& wc, const Encoding& enc);
 };
 
 template <std::size_t CharSize>
-template <typename Preview, typename WCalc, typename Charset>
+template <typename Preview, typename WCalc, typename Encoding>
 STRF_HD void fmt_char_printer<CharSize>::init_
-    ( Preview& preview, const WCalc& wc, const Charset& cs)
+    ( Preview& preview, const WCalc& wc, const Encoding& enc)
 {
-    auto ch_width = wc.char_width(cs, ch_);
+    auto ch_width = wc.char_width(enc, ch_);
     auto content_width = checked_mul(ch_width, count_);
     std::uint16_t fillcount = 0;
     if (content_width < afmt_.width) {
@@ -222,7 +221,7 @@ STRF_HD void fmt_char_printer<CharSize>::init_
     }
     STRF_IF_CONSTEXPR (Preview::size_required) {
         if (fillcount > 0) {
-            preview.add_size(count_ + fillcount * cs.encoded_char_size(afmt_.fill));
+            preview.add_size(count_ + fillcount * enc.encoded_char_size(afmt_.fill));
         } else {
             preview.add_size(count_);
         }

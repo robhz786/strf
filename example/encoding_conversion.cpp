@@ -48,7 +48,7 @@ void input_ouput_different_char_types()
 
 void arg()
 {
-    //[ arg_charset
+    //[ arg_encoding
     auto str_utf8 = strf::to_u8string
         ( strf::cv("--\xA4--", strf::iso_8859_1<char>())
         , strf::cv("--\xA4--", strf::iso_8859_15<char>()));

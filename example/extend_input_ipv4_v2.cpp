@@ -74,7 +74,7 @@ struct ipv4_printable_traits
     {
         return strf::make_printer_input<CharT>
             ( strf::pack
-                ( strf::get_facet<strf::charset_c<CharT>, xxx::ipv4address>(fp)
+                ( strf::get_facet<strf::char_encoding_c<CharT>, xxx::ipv4address>(fp)
                 , strf::get_facet<strf::surrogate_policy_c, xxx::ipv4address>(fp)
                 , strf::get_facet<strf::invalid_seq_policy_c, xxx::ipv4address>(fp) )
             , preview

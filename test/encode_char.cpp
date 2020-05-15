@@ -15,16 +15,16 @@ struct fixture
     CharT* const dest_end = buff + buff_size;
 };
 
-template <typename CharT, typename Charset>
-void test_char( const Charset& cs
+template <typename CharT, typename Encoding>
+void test_char( const Encoding& enc
               , char32_t ch
               , std::basic_string<CharT> encoded_char )
 {
-    TEST_SCOPE_DESCRIPTION( "charset: ", cs.name()
+    TEST_SCOPE_DESCRIPTION( "encoding: ", enc.name()
                           , "; char: \\u'", strf::hex((unsigned)ch), '\'');
 
     strf::underlying_char_type<sizeof(CharT)> buff[100];
-    auto it = cs.encode_char(buff, ch);
+    auto it = enc.encode_char(buff, ch);
 
     TEST_EQ(std::size_t(it - buff), encoded_char.size());
     TEST_TRUE( std::equal( encoded_char.begin(), encoded_char.end()
@@ -59,7 +59,7 @@ int main()
         test_char<char32_t>(strf::utf32<char32_t>(), 0x10FFFF, U"\U0010FFFF");
     }
     {
-        // single byte charsets
+        // single byte encodings
         test_char<char>(strf::windows_1252<char>(), 0x201A, "\x82");
         test_char<char>(strf::iso_8859_1<char>(), 0x82, "\x82");
         test_char<char>(strf::iso_8859_3<char>(), 0x02D8, "\xA2");
