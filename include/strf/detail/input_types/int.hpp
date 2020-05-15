@@ -180,6 +180,22 @@ using int_with_format = strf::value_with_format
 
 namespace detail {
 
+template <typename T>
+constexpr bool negative_impl_(const T& x, std::integral_constant<bool, true>) noexcept
+{
+    return x < 0;
+}
+template <typename T>
+constexpr bool negative_impl_(const T&, std::integral_constant<bool, false>) noexcept
+{
+    return false;
+}
+template <typename T>
+constexpr bool negative(const T& x) noexcept
+{
+    return strf::detail::negative_impl_(x, std::is_signed<T>());
+}
+
 template <typename CharT, typename FPack, typename IntT, unsigned Base>
 class has_intpunct_impl
 {
@@ -210,7 +226,7 @@ public:
     template <typename Preview, typename IntT>
     STRF_HD int_printer(Preview& preview, IntT value)
     {
-        _negative = value < 0;
+        _negative = strf::detail::negative(value);
         _uvalue = strf::detail::unsigned_abs(value);
         _digcount = strf::detail::count_digits<10>(_uvalue);
         auto _size = _digcount + _negative;
@@ -259,7 +275,7 @@ public:
         : _punct(get_facet<strf::numpunct_c<10>, IntT>(fp))
         , _encoding(get_facet<strf::encoding_c<CharT>, IntT>(fp))
     {
-        _negative = value < 0;
+        _negative = strf::detail::negative(value);
         _uvalue = strf::detail::unsigned_abs(value);
         _digcount = strf::detail::count_digits<10>(_uvalue);
         _sepcount = ( _punct.no_group_separation(_digcount)
@@ -406,7 +422,7 @@ STRF_HD void partial_fmt_int_printer<CharT, Base>::_init
 {
     using unsigned_type = typename std::make_unsigned<IntT>::type;
     STRF_IF_CONSTEXPR (Base == 10) {
-        _negative = value < 0;
+        _negative = strf::detail::negative(value);
         _prefixsize = _negative || fmt.showpos;
         _uvalue = strf::detail::unsigned_abs(value);
     } else {
