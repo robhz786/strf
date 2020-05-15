@@ -10,6 +10,26 @@ http://www.boost.org/LICENSE_1_0.txt
 
 == Miscellaneous
 
+=== Type traits
+The table below list class templates that satisfy
+https://en.cppreference.com/w/cpp/named_req/UnaryTypeTrait[UnaryTypeTrait].
+They are created to be used in the `constrain` function template to filter
+printable types.
+
+[cols="1,4"]
+|===
+|`is_int_number`
+| matches `short`, `int`, `long`, `long long` and the corresponding unsigned types
+
+|`is_char`
+| matches `char`, `char8_t`, `wchar_t`, `char16_t`, and `char32_t`
+
+|`is_string`
+| matches strings.
+|===
+
+__to-do__
+
 === Class template `rank` [[rank]]
 
 [source,cpp,subs=normal]

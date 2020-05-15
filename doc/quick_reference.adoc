@@ -418,34 +418,47 @@ assert(s == "100^000  10.00.00");
 
 [[numpunct]]
 == Numeric punctuation
-The facets of the `numpunct_c<Base>` category specify
-the decimal point, the group separator character, and the groups'
-size when printing numbers in the numeric base `Base`.
-The library currently provides two
-facets belonging to this category for you to choose.
-If all groups have the same size, then you should choose the
-`monotonic_grouping<Base>` facet since it is optimized for this situation:
-
+The `numpunct` class template defines punctuation for
+integers, `void*` and floating points. It comprises
+the "thousands" separator, the decimal point and the
+grouping pattern.
+The integer sequence passed to the constructor defines the grouping:
 [source,cpp]
 ----
-constexpr int base = 10;
-
-auto str = strf::to_string
-    .with(strf::monotonic_grouping<base>{3}.thousands_sep(U'.'))
-    (100000000000ll);
-
-assert(str == "100.000.000.000");
+auto str = strf::to_string.with(numpunct<10>(1, 2, 3))(1000000000000ll);
+assert(str == "1,000,000,000,00,0");
 ----
-
-Otherwise, you can use the `str_grouping<Base>`:
-
+When the last value is `-1`, the previous group is not repeated:
 [source,cpp]
 ----
-constexpr int base = 10;
+auto str = strf::to_string.with(numpunct<10>(1, 2, 3, -1))(1000000000000ll);
+assert(str == "1000000,000,00,0");
+----
+This `numpunct` constructor has some preconditions:
 
-auto punct = strf::str_grouping<base>{"\4\3\2"};
-auto str = strf::to_string.with(punct)(100000000000ll);
-assert(str == "1,00,00,000,0000");
+* No more than six arguments can be passed.
+* No argument can be greater than 30.
+* No argument can be less than `1`, unless it is the last argument and it's equal to `-1`.
+
+When default constructed, the `numpunct` has no grouping, __i.e.__
+the thousands separator is never printed.
+
+The default thousands separator and decimal point are `U','` and `U'.'`,
+repectively. To change them, use the `thousands_sep` and `decimal_point`
+member functions:
+[source,cpp]
+----
+auto my_punct = numpunct<10>(3).thousands_sep(U'\'').decimal_point(U':');
+auto str = strf::to_string.with(my_punct)(1000000.5);
+assert(str == "1'000'000:5");
+
+//or as lvalue:
+auto my_punct2 = numpunct<10>(3);
+my_punct2.thousands_sep(U';');
+my_punct2.decimal_point(U'^');
+
+auto str = strf::to_string.with(my_punct2)(1000000.5);
+assert(str == "1;000;000^5");
 ----
 
 [[lettercase]]
