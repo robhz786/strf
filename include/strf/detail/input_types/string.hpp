@@ -747,8 +747,6 @@ public:
         : str_(reinterpret_cast<const char_type*>(input.vwf.value().data()))
         , len_(input.vwf.value().size())
         , afmt_(input.vwf.get_alignment_format_data())
-        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, SrcCharT>(input.fp))
-        , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcCharT>(input.fp))
     {
         static_assert(CharSize == sizeof(SrcCharT), "");
         static_assert(CharSize == sizeof(DestCharT), "");
@@ -759,7 +757,8 @@ public:
             ( Preview::width_required && input.preview.remaining_width() > afmt_.width
             ? input.preview.remaining_width()
             : afmt_.width );
-        auto strw = wcalc.str_width(enc, limit, str_, len_, surr_poli_);
+        auto surr_poli = get_facet_<strf::surrogate_policy_c, SrcCharT>(input.fp);
+        auto strw = wcalc.str_width(enc, limit, str_, len_, surr_poli);
         encode_fill_ = enc.encode_fill_func();
         auto fillcount = init_(input.preview, strw);
         preview_size_(input.preview, enc, fillcount);
@@ -773,16 +772,15 @@ public:
             input )
         : str_(reinterpret_cast<const char_type*>(input.vwf.value().begin()))
         , afmt_(input.vwf.get_alignment_format_data())
-        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, SrcCharT>(input.fp))
-        , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcCharT>(input.fp))
     {
         static_assert(CharSize == sizeof(SrcCharT), "");
         static_assert(CharSize == sizeof(DestCharT), "");
 
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcCharT>(input.fp);
         auto enc = get_facet_<strf::char_encoding_c<SrcCharT>, SrcCharT>(input.fp);
+        auto surr_poli = get_facet_<strf::surrogate_policy_c, SrcCharT>(input.fp);
         auto res = wcalc.str_width_and_pos
-            (enc, input.vwf.precision(), str_, input.vwf.value().size(), surr_poli_);
+            ( enc, input.vwf.precision(), str_, input.vwf.value().size(), surr_poli );
         len_ = res.pos;
         encode_fill_ = enc.encode_fill_func();
         auto fillcount = init_(input.preview, res.width);
@@ -801,8 +799,6 @@ private:
     strf::alignment_format_data afmt_;
     std::int16_t left_fillcount_;
     std::int16_t right_fillcount_;
-    const strf::invalid_seq_policy inv_seq_poli_;
-    const strf::surrogate_policy surr_poli_;
 
     template <typename Category, typename CharT, typename FPack>
     static STRF_HD decltype(auto) get_facet_(const FPack& fp)
@@ -872,11 +868,11 @@ void STRF_HD aligned_string_printer<CharSize>::print_to
     ( strf::underlying_outbuf<CharSize>& ob ) const
 {
     if (left_fillcount_ > 0) {
-        encode_fill_( ob, left_fillcount_, afmt_.fill, inv_seq_poli_, surr_poli_ );
+        encode_fill_(ob, left_fillcount_, afmt_.fill);
     }
     strf::write(ob, str_, len_);
     if (right_fillcount_ > 0) {
-        encode_fill_( ob, right_fillcount_, afmt_.fill, inv_seq_poli_, surr_poli_ );
+        encode_fill_(ob, right_fillcount_, afmt_.fill);
     }
 }
 

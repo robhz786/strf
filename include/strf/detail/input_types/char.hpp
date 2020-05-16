@@ -156,8 +156,6 @@ public:
         ( const usual_printer_input<CharT, T...>& input )
         : count_(input.arg.count())
         , afmt_(input.arg.get_alignment_format_data())
-        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, CharT>(input.fp))
-        , surr_poli_(get_facet_<strf::surrogate_policy_c, CharT>(input.fp))
         , ch_(static_cast<char_type>(input.arg.value().ch))
     {
         auto enc = get_facet_<strf::char_encoding_c<CharT>, CharT>(input.fp);
@@ -173,8 +171,6 @@ private:
     strf::encode_fill_f<CharSize> encode_fill_fn_;
     std::size_t count_;
     const strf::alignment_format_data afmt_;
-    const strf::invalid_seq_policy  inv_seq_poli_;
-    const strf::surrogate_policy  surr_poli_;
     std::uint16_t left_fillcount_;
     std::uint16_t right_fillcount_;
     char_type ch_;
@@ -234,7 +230,7 @@ STRF_HD void fmt_char_printer<CharSize>::print_to
     ( strf::underlying_outbuf<CharSize>& ob ) const
 {
     if (left_fillcount_ != 0) {
-        encode_fill_fn_(ob, left_fillcount_, afmt_.fill, inv_seq_poli_, surr_poli_);
+        encode_fill_fn_(ob, left_fillcount_, afmt_.fill);
     }
     if (count_ == 1) {
         ob.ensure(1);
@@ -256,7 +252,7 @@ STRF_HD void fmt_char_printer<CharSize>::print_to
         }
     }
     if (right_fillcount_ != 0) {
-        encode_fill_fn_(ob, right_fillcount_, afmt_.fill, inv_seq_poli_, surr_poli_);
+        encode_fill_fn_(ob, right_fillcount_, afmt_.fill);
     }
 
 }

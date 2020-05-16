@@ -216,8 +216,7 @@ using encode_char_f = strf::underlying_char_type<CharSize>*(*)
 
 template <std::size_t CharSize>
 using encode_fill_f = void (*)
-    ( strf::underlying_outbuf<CharSize>&, std::size_t count, char32_t ch
-    , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy surr_poli );
+    ( strf::underlying_outbuf<CharSize>&, std::size_t count, char32_t ch );
 
 struct codepoints_count_result {
     std::size_t count;
@@ -394,10 +393,9 @@ public:
         return data_->encode_char_func(dest, ch);
     }
     STRF_HD void encode_fill
-        ( strf::underlying_outbuf<CharSize>& ob, std::size_t count, char32_t ch
-        , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy surr_poli ) const
+        ( strf::underlying_outbuf<CharSize>& ob, std::size_t count, char32_t ch ) const
     {
-        data_->encode_fill_func(ob, count, ch, inv_seq_poli, surr_poli);
+        data_->encode_fill_func(ob, count, ch);
     }
     STRF_HD strf::codepoints_count_result codepoints_fast_count
         ( const char_type_* src, std::size_t src_size, std::size_t max_count ) const

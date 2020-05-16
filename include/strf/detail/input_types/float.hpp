@@ -1193,9 +1193,7 @@ public:
     STRF_HD punct_double_printer
         ( const strf::detail::fmt_double_printer_input
             < CharT, FPack, Preview, FloatT, Notation, false >& input )
-        : inv_seq_poli_(strf::get_facet<strf::invalid_seq_policy_c, FloatT>(input.fp))
-        , surr_poli_(strf::get_facet<strf::surrogate_policy_c, FloatT>(input.fp))
-        , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
+        : lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
     {
         static_assert(Notation != strf::float_notation::hex, "");
 
@@ -1221,8 +1219,6 @@ public:
         ( const strf::detail::fmt_double_printer_input
             < CharT, FPack, Preview, FloatT, Notation, true >& input )
         : fillchar_(input.vwf.fill())
-        , inv_seq_poli_(strf::get_facet<strf::invalid_seq_policy_c, FloatT>(input.fp))
-        , surr_poli_(strf::get_facet<strf::surrogate_policy_c, FloatT>(input.fp))
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
     {
         static_assert(Notation != strf::float_notation::hex, "");
@@ -1266,8 +1262,6 @@ private:
     unsigned decimal_point_size_ = 0;
     char32_t decimal_point_;
     char32_t thousands_sep_;
-    strf::invalid_seq_policy inv_seq_poli_;
-    strf::surrogate_policy surr_poli_ = surrogate_policy::strict;
     strf::lettercase lettercase_;
     strf::detail::double_printer_data data_;
 };
@@ -1430,13 +1424,13 @@ STRF_HD void punct_double_printer<CharSize>::print_to
     (strf::underlying_outbuf<CharSize>& ob) const
 {
     if (left_fillcount_ != 0) {
-        encode_fill_(ob, left_fillcount_, fillchar_, inv_seq_poli_, surr_poli_);
+        encode_fill_(ob, left_fillcount_, fillchar_);
     }
     if (data_.showsign) {
         put(ob, static_cast<char_type>('+' + (data_.negative << 1)));
     }
     if (split_fillcount_ != 0) {
-        encode_fill_(ob, split_fillcount_, fillchar_, inv_seq_poli_, surr_poli_);
+        encode_fill_(ob, split_fillcount_, fillchar_);
     }
     if (data_.nan) {
         strf::detail::print_nan(ob, lettercase_);
@@ -1534,7 +1528,7 @@ STRF_HD void punct_double_printer<CharSize>::print_to
         }
     }
     if (right_fillcount_ != 0) {
-        encode_fill_(ob, right_fillcount_, fillchar_, inv_seq_poli_, surr_poli_);
+        encode_fill_(ob, right_fillcount_, fillchar_);
     }
 }
 
@@ -1569,8 +1563,6 @@ public:
         : data_( strf::detail::init_double_printer_data<Notation>
                     ( input.vwf.value(), input.vwf.get_float_format_data() ) )
         , fillchar_(input.vwf.fill())
-        , inv_seq_poli_(strf::get_facet<strf::invalid_seq_policy_c, FloatT>(input.fp))
-        , surr_poli_(strf::get_facet<strf::surrogate_policy_c, FloatT>(input.fp))
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
     {
         static_assert(Notation != strf::float_notation::hex, "");
@@ -1612,8 +1604,6 @@ private:
     unsigned left_fillcount_ = 0;
     unsigned split_fillcount_ = 0;
     unsigned right_fillcount_ = 0;
-    strf::invalid_seq_policy inv_seq_poli_ = invalid_seq_policy::replace;
-    strf::surrogate_policy surr_poli_ = surrogate_policy::strict;
     strf::lettercase lettercase_;
 };
 
@@ -1661,13 +1651,13 @@ STRF_HD void double_printer<CharSize>::print_to
     ( strf::underlying_outbuf<CharSize>& ob ) const
 {
     if (left_fillcount_ != 0) {
-        encode_fill_(ob, left_fillcount_, fillchar_, inv_seq_poli_, surr_poli_);
+        encode_fill_(ob, left_fillcount_, fillchar_);
     }
     if (data_.showsign) {
         put<CharSize>(ob, '+' + (data_.negative << 1));
     }
     if (split_fillcount_ != 0) {
-        encode_fill_(ob, split_fillcount_, fillchar_, inv_seq_poli_, surr_poli_);
+        encode_fill_(ob, split_fillcount_, fillchar_);
     }
     if (data_.nan) {
         strf::detail::print_nan(ob, lettercase_);
@@ -1788,7 +1778,7 @@ STRF_HD void double_printer<CharSize>::print_to
         }
     }
     if (right_fillcount_ != 0) {
-        encode_fill_(ob, right_fillcount_, fillchar_, inv_seq_poli_, surr_poli_);
+        encode_fill_(ob, right_fillcount_, fillchar_);
     }
 }
 
@@ -2378,8 +2368,6 @@ public:
             input )
         : data_( strf::detail::init_hex_double_printer_data
                    ( input.vwf.get_float_format_data(), input.vwf.value() ) )
-        , inv_seq_poli_(strf::get_facet<strf::invalid_seq_policy_c, FloatT>(input.fp))
-        , surr_poli_(strf::get_facet<strf::surrogate_policy_c, FloatT>(input.fp))
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
     {
         int content_width_without_point = 0;
@@ -2456,8 +2444,6 @@ private:
     std::uint16_t left_fillcount_ = 0;
     std::uint16_t split_fillcount_ = 0;
     std::uint16_t right_fillcount_ = 0;
-    strf::invalid_seq_policy inv_seq_poli_ = strf::invalid_seq_policy::replace;
-    strf::surrogate_policy surr_poli_ = strf::surrogate_policy::strict;
     strf::lettercase lettercase_;
     char32_t fillchar_ = ' ';
     char32_t decimal_point_ = '.';
@@ -2470,13 +2456,13 @@ STRF_HD void hex_double_printer<CharSize>::print_to
     ( strf::underlying_outbuf<CharSize>& ob ) const
 {
     if (left_fillcount_ != 0) {
-        encode_fill_(ob, left_fillcount_, fillchar_, inv_seq_poli_, surr_poli_);
+        encode_fill_(ob, left_fillcount_, fillchar_);
     }
     if (data_.showsign) {
         put(ob, static_cast<char_type>('+' + (data_.negative << 1)));
     }
     if (split_fillcount_ != 0) {
-        encode_fill_(ob, split_fillcount_, fillchar_, inv_seq_poli_, surr_poli_);
+        encode_fill_(ob, split_fillcount_, fillchar_);
     }
     auto data = data_;
     if (data.exponent != 1024) {
@@ -2557,7 +2543,7 @@ STRF_HD void hex_double_printer<CharSize>::print_to
         }
     }
     if (right_fillcount_ != 0) {
-        encode_fill_(ob, right_fillcount_, fillchar_, inv_seq_poli_, surr_poli_);
+        encode_fill_(ob, right_fillcount_, fillchar_);
     }
 }
 

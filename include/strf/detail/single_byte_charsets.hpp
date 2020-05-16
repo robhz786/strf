@@ -738,8 +738,7 @@ public:
     static STRF_HD std::uint8_t* encode_char(std::uint8_t* dest, char32_t ch);
 
     static STRF_HD void encode_fill
-        ( strf::underlying_outbuf<1>& ob, std::size_t count, char32_t ch
-        , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy );
+        ( strf::underlying_outbuf<1>& ob, std::size_t count, char32_t ch );
 
     static STRF_HD strf::codepoints_count_result codepoints_fast_count
         ( const std::uint8_t* src, std::size_t src_size
@@ -829,17 +828,10 @@ STRF_HD std::uint8_t* single_byte_char_encoding<Impl>::encode_char
 
 template <class Impl>
 STRF_HD void single_byte_char_encoding<Impl>::encode_fill
-    ( strf::underlying_outbuf<1>& ob
-    , std::size_t count
-    , char32_t ch
-    , strf::invalid_seq_policy inv_seq_poli
-    , strf::surrogate_policy )
+    ( strf::underlying_outbuf<1>& ob, std::size_t count, char32_t ch )
 {
     unsigned ch2 = Impl::encode(ch);
     if (ch2 >= 0x100) {
-        if (inv_seq_poli == strf::invalid_seq_policy::stop) {
-            strf::detail::handle_invalid_sequence();
-        }
         ch2 = '?';
     }
     while(true) {

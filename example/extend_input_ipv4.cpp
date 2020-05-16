@@ -40,10 +40,7 @@ struct ipv4_printable_traits
         ( const FPack& fp, Preview& preview, xxx::ipv4address_with_format x)
     {
         return strf::make_printer_input<CharT>
-            ( strf::pack
-                ( strf::get_facet<strf::char_encoding_c<CharT>, xxx::ipv4address>(fp)
-                , strf::get_facet<strf::surrogate_policy_c, xxx::ipv4address>(fp)
-                , strf::get_facet<strf::invalid_seq_policy_c, xxx::ipv4address>(fp) )
+            ( strf::pack(strf::get_facet<strf::char_encoding_c<CharT>, xxx::ipv4address>(fp))
             , preview
             , strf::join
                 ( x.value().bytes[0], CharT{'.'}

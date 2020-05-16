@@ -337,7 +337,7 @@ void STRF_HD aligned_cv_string_printer<SrcCharSize, DestCharSize>::print_to
     ( strf::underlying_outbuf<DestCharSize>& ob ) const
 {
     if (left_fillcount_ > 0) {
-        encode_fill_(ob, left_fillcount_, afmt_.fill, inv_seq_poli_, surr_poli_);
+        encode_fill_(ob, left_fillcount_, afmt_.fill);
     }
     if (can_transcode_directly()) {
         transcode_(ob, str_, len_, inv_seq_poli_, surr_poli_);
@@ -347,7 +347,7 @@ void STRF_HD aligned_cv_string_printer<SrcCharSize, DestCharSize>::print_to
             , len_, inv_seq_poli_, surr_poli_ );
     }
     if (right_fillcount_ > 0) {
-        encode_fill_(ob, right_fillcount_, afmt_.fill, inv_seq_poli_, surr_poli_);
+        encode_fill_(ob, right_fillcount_, afmt_.fill);
     }
 }
 

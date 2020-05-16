@@ -102,8 +102,6 @@ public:
     STRF_HD fmt_bool_printer
         ( const strf::usual_printer_input<CharT, T...>& input )
         : value_(input.arg.value())
-        , inv_seq_poli_(strf::get_facet<strf::invalid_seq_policy_c, bool>(input.fp))
-        , surr_poli_(get_facet<strf::surrogate_policy_c, bool>(input.fp))
         , afmt_(input.arg.get_alignment_format_data())
         , lettercase_(strf::get_facet<strf::lettercase_c, bool>(input.fp))
     {
@@ -128,8 +126,6 @@ private:
     strf::encode_fill_f<CharSize> encode_fill_;
     std::uint16_t fillcount_;
     bool value_;
-    strf::invalid_seq_policy inv_seq_poli_;
-    strf::surrogate_policy surr_poli_;
     strf::alignment_format_data afmt_;
     strf::lettercase lettercase_;
 };
@@ -141,7 +137,7 @@ void fmt_bool_printer<CharSize>::print_to
     if (afmt_.alignment != strf::text_alignment::left) {
         std::uint16_t s = afmt_.alignment == strf::text_alignment::center;
         std::uint16_t count = fillcount_ >> s;
-        encode_fill_(ob, count, afmt_.fill, inv_seq_poli_, surr_poli_ );
+        encode_fill_(ob, count, afmt_.fill);
     }
 
     auto size = 5 - (int)value_;
@@ -164,12 +160,12 @@ void fmt_bool_printer<CharSize>::print_to
     ob.advance(size);
 
     if ( afmt_.alignment == strf::text_alignment::left) {
-        encode_fill_(ob, fillcount_, afmt_.fill, inv_seq_poli_, surr_poli_ );
+        encode_fill_(ob, fillcount_, afmt_.fill);
     }
     else if ( afmt_.alignment == strf::text_alignment::center) {
         std::uint16_t half_count = fillcount_ >> 1;
         std::uint16_t count = fillcount_ - half_count;
-        encode_fill_(ob, count, afmt_.fill, inv_seq_poli_, surr_poli_ );
+        encode_fill_(ob, count, afmt_.fill);
     }
 }
 

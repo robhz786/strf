@@ -820,9 +820,7 @@ private:
     strf::detail::partial_fmt_int_printer<CharSize, Base> ichars_;
     strf::encode_fill_f<CharSize> encode_fill_;
     unsigned fillcount_ = 0;
-    strf::invalid_seq_policy inv_seq_poli_;
     strf::alignment_format_data afmt_;
-    strf::surrogate_policy surr_poli_;
 
     template <typename Encoding>
     STRF_HD  void calc_fill_size_
@@ -845,8 +843,7 @@ private:
         ( strf::underlying_outbuf<CharSize>& ob
         , std::size_t count ) const
     {
-        return encode_fill_
-            ( ob, count, afmt_.fill, inv_seq_poli_, surr_poli_ );
+        return encode_fill_(ob, count, afmt_.fill);
     }
 };
 
@@ -859,9 +856,7 @@ inline STRF_HD full_fmt_int_printer<CharSize, Base>::full_fmt_int_printer
         , strf::int_with_format<IntT, Base, true> >& i ) noexcept
     : ichars_( i.fp, i.preview, i.arg.value().value
              , i.arg.get_int_format_data(), strf::tag<CharT>() )
-    , inv_seq_poli_(get_facet<strf::invalid_seq_policy_c, IntT>(i.fp))
     , afmt_(i.arg.get_alignment_format_data())
-    , surr_poli_(get_facet<strf::surrogate_policy_c, IntT>(i.fp))
 {
     auto content_width = ichars_.width();
     if (afmt_.width > content_width) {

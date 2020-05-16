@@ -511,8 +511,7 @@ public:
         ( char_type_* dest, char32_t ch ) noexcept;
 
     static STRF_HD void encode_fill
-        ( strf::underlying_outbuf<char_size>&, std::size_t count, char32_t ch
-        , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy surr_poli );
+        ( strf::underlying_outbuf<char_size>&, std::size_t count, char32_t ch );
 
     static STRF_HD strf::codepoints_count_result codepoints_fast_count
         ( const char_type_* src, std::size_t src_size
@@ -646,8 +645,7 @@ public:
         (char_type_* dest, char32_t ch) noexcept;
 
     static STRF_HD void encode_fill
-        ( strf::underlying_outbuf<char_size>&, std::size_t count, char32_t ch
-        , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy surr_poli );
+        ( strf::underlying_outbuf<char_size>&, std::size_t count, char32_t ch );
 
     static STRF_HD strf::codepoints_count_result codepoints_fast_count
         ( const char_type_* src, std::size_t src_size
@@ -787,8 +785,7 @@ public:
         return dest + 1;
     }
     static STRF_HD void encode_fill
-        ( strf::underlying_outbuf<char_size>&, std::size_t count, char32_t ch
-        , strf::invalid_seq_policy inv_seq_poli, strf::surrogate_policy surr_poli );
+        ( strf::underlying_outbuf<char_size>&, std::size_t count, char32_t ch );
 
     static STRF_HD strf::codepoints_count_result codepoints_fast_count
         ( const char_type_* src, std::size_t src_size
@@ -1200,15 +1197,10 @@ STRF_INLINE STRF_HD strf::codepoints_count_result utf8_impl::codepoints_robust_c
 
 
 STRF_INLINE STRF_HD void utf8_impl::encode_fill
-    ( strf::underlying_outbuf<1>& ob
-    , std::size_t count
-    , char32_t ch
-    , strf::invalid_seq_policy inv_seq_poli
-    , strf::surrogate_policy surr_poli )
+    ( strf::underlying_outbuf<1>& ob, std::size_t count, char32_t ch )
 {
     if (ch < 0x80) {
-        strf::detail::write_fill( ob, count
-                                , static_cast<std::uint8_t>(ch) );
+        strf::detail::write_fill(ob, count, static_cast<std::uint8_t>(ch));
     } else if (ch < 0x800) {
         strf::detail::simple_array<std::uint8_t, 2> seq = {
             static_cast<std::uint8_t>(0xC0 | ((ch & 0x7C0) >> 6)),
@@ -1216,11 +1208,6 @@ STRF_INLINE STRF_HD void utf8_impl::encode_fill
         };
         strf::detail::repeat_sequence(ob, count, seq);
     } else if (ch <  0x10000) {
-        if ( surr_poli == strf::surrogate_policy::strict
-          && detail::is_surrogate(ch) )
-        {
-            goto invalid_char;
-        }
         strf::detail::simple_array<std::uint8_t, 3> seq = {
             static_cast<std::uint8_t>(0xE0 | ((ch & 0xF000) >> 12)),
             static_cast<std::uint8_t>(0x80 | ((ch &  0xFC0) >> 6)),
@@ -1236,19 +1223,8 @@ STRF_INLINE STRF_HD void utf8_impl::encode_fill
         };
         strf::detail::repeat_sequence(ob, count, seq);
     } else {
-        invalid_char:
-        switch(inv_seq_poli) {
-            case strf::invalid_seq_policy::stop:
-                strf::detail::handle_invalid_sequence();
-                return;
-
-            default: {
-                STRF_ASSERT(inv_seq_poli == strf::invalid_seq_policy::replace);
-                strf::detail::simple_array<std::uint8_t, 3> seq
-                    { 0xEF, 0xBF, 0xBD };
-                strf::detail::repeat_sequence(ob, count, seq);
-            }
-        }
+        strf::detail::simple_array<std::uint8_t, 3> seq{ 0xEF, 0xBF, 0xBD };
+        strf::detail::repeat_sequence(ob, count, seq);
     }
 }
 
@@ -1641,18 +1617,9 @@ STRF_INLINE STRF_HD char16_t* utf16_impl::encode_char
 // }
 
 STRF_INLINE STRF_HD void utf16_impl::encode_fill
-    ( strf::underlying_outbuf<2>& ob
-    , std::size_t count
-    , char32_t ch
-    , strf::invalid_seq_policy inv_seq_poli
-    , strf::surrogate_policy surr_poli )
+    ( strf::underlying_outbuf<2>& ob, std::size_t count, char32_t ch )
 {
     if (ch < 0x10000) {
-        if ( surr_poli  == strf::surrogate_policy::strict
-          && strf::detail::is_surrogate(ch) )
-        {
-            goto invalid_char;
-        }
         strf::detail::write_fill(ob, count, static_cast<char16_t>(ch));
     } else if (ch < 0x110000) {
         char32_t sub_codepoint = ch - 0x10000;
@@ -1662,10 +1629,6 @@ STRF_INLINE STRF_HD void utf16_impl::encode_fill
         };
         strf::detail::repeat_sequence(ob, count, seq);
     } else {
-        invalid_char:
-        if (inv_seq_poli == strf::invalid_seq_policy::stop) {
-            strf::detail::handle_invalid_sequence();
-        }
         strf::detail::write_fill(ob, count, u'\uFFFD');
     }
 }
@@ -1778,21 +1741,8 @@ STRF_INLINE STRF_HD void utf32_to_utf32::transcode
 }
 
 STRF_INLINE STRF_HD void utf32_impl::encode_fill
-    ( strf::underlying_outbuf<4>& ob
-    , std::size_t count
-    , char32_t ch
-    , strf::invalid_seq_policy inv_seq_poli
-    , strf::surrogate_policy surr_poli )
+    ( strf::underlying_outbuf<4>& ob, std::size_t count, char32_t ch )
 {
-    if (ch > 0x10FFFF || ( surr_poli == strf::surrogate_policy::strict
-                        && detail::is_surrogate(ch) ))
-    {
-        if (inv_seq_poli == strf::invalid_seq_policy::stop) {
-            strf::detail::handle_invalid_sequence();
-        }
-        STRF_ASSERT(inv_seq_poli == strf::invalid_seq_policy::replace);
-        ch = 0xFFFD;
-    }
     strf::detail::write_fill(ob, count, ch);
 }
 
