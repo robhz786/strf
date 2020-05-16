@@ -27,7 +27,7 @@ inline std::basic_string<CharT> repeat(std::size_t count, const CharT* str)
 
 template <typename CharT, typename Encoding>
 void test_fill
-    ( const Encoding& enc
+    ( Encoding enc
     , char32_t fill_char
     , std::basic_string<CharT> encoded_char
     , strf::surrogate_policy surr_poli = strf::surrogate_policy::strict )
@@ -61,7 +61,7 @@ void test_fill
 
 template <typename CharT, typename Encoding>
 inline void test_fill
-    ( const Encoding& enc
+    ( Encoding enc
     , char32_t fill_char
     , const CharT* encoded_char
     , strf::surrogate_policy surr_poli = strf::surrogate_policy::strict )
@@ -76,7 +76,7 @@ inline void test_fill
 
 template <typename CharT, typename Encoding>
 void test_invalid_fill_stop
-    ( const Encoding& enc
+    ( Encoding enc
     , char32_t fill_char
     , strf::surrogate_policy surr_poli = strf::surrogate_policy::strict )
 {

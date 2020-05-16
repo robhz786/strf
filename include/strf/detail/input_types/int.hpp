@@ -498,7 +498,7 @@ public:
     STRF_HD punct_int_printer
         ( const strf::detail::punct_int_printer_input<CharT, FPack, Preview, IntT>& i )
     {
-        decltype(auto) enc = get_facet<strf::char_encoding_c<CharT>, IntT>(i.fp);
+        auto enc = get_facet<strf::char_encoding_c<CharT>, IntT>(i.fp);
 
         uvalue_ = strf::detail::unsigned_abs(i.value);
         digcount_ = strf::detail::count_digits<10>(uvalue_);
@@ -648,7 +648,7 @@ private:
     STRF_HD void init_(IntT value, strf::int_format_data fmt);
 
     template <typename Encoding>
-    STRF_HD void init_punct_(const Encoding& enc);
+    STRF_HD void init_punct_(Encoding enc);
 };
 
 template <std::size_t CharSize, int Base>
@@ -674,7 +674,7 @@ STRF_HD void partial_fmt_int_printer<CharSize, Base>::init_
 
 template <std::size_t CharSize, int Base>
 template <typename Encoding>
-STRF_HD void partial_fmt_int_printer<CharSize, Base>::init_punct_(const Encoding& enc)
+STRF_HD void partial_fmt_int_printer<CharSize, Base>::init_punct_(Encoding enc)
 {
     std::size_t sepsize = enc.validate(thousands_sep_);
     if (sepsize != (std::size_t)-1) {
@@ -827,14 +827,14 @@ private:
     template <typename Encoding>
     STRF_HD  void calc_fill_size_
         ( strf::size_preview<false>&
-        , const Encoding& ) const
+        , Encoding ) const
     {
     }
 
     template <typename Encoding>
     STRF_HD void calc_fill_size_
         ( strf::size_preview<true>& preview
-        , const Encoding& enc ) const
+        , Encoding enc ) const
     {
         if (fillcount_ > 0) {
             preview.add_size(fillcount_* enc.encoded_char_size(afmt_.fill));
@@ -868,7 +868,7 @@ inline STRF_HD full_fmt_int_printer<CharSize, Base>::full_fmt_int_printer
         fillcount_ = afmt_.width - content_width;
         i.preview.subtract_width(static_cast<std::int16_t>(fillcount_));
     }
-    decltype(auto) enc = get_facet<strf::char_encoding_c<CharT>, IntT>(i.fp);
+    auto enc = get_facet<strf::char_encoding_c<CharT>, IntT>(i.fp);
     encode_fill_ = enc.encode_fill_func();
     calc_fill_size_(i.preview, enc);
 }

@@ -121,7 +121,7 @@ public:
     }
 
     template <typename Encoding>
-    constexpr STRF_HD auto convert_encoding(const Encoding& enc) const
+    constexpr STRF_HD auto convert_encoding(Encoding enc) const
     {
         using return_type = strf::fmt_replace
             < T
@@ -138,7 +138,7 @@ public:
         return convert_encoding();
     }
     template <typename Encoding>
-    constexpr STRF_HD auto cv(const Encoding& enc) const
+    constexpr STRF_HD auto cv(Encoding enc) const
     {
         return convert_encoding(enc);
     }
@@ -151,7 +151,7 @@ public:
         return return_type{ static_cast<const T&>(*this) };
     }
     template <typename Encoding>
-    constexpr STRF_HD auto sanitize_encoding(const Encoding& enc) const
+    constexpr STRF_HD auto sanitize_encoding(Encoding enc) const
     {
         using return_type = strf::fmt_replace
             < T
@@ -168,7 +168,7 @@ public:
         return sanitize_encoding();
     }
     template <typename Encoding>
-    constexpr auto sani(const Encoding& enc) const
+    constexpr auto sani(Encoding enc) const
     {
         return sanitize_encoding(enc);
     }
@@ -199,7 +199,7 @@ class cv_format_with_encoding_fn
 {
 public:
 
-    cv_format_with_encoding_fn(const Encoding& e)
+    cv_format_with_encoding_fn(Encoding e)
         : encoding_(e)
     {
     }
@@ -221,14 +221,14 @@ public:
     {
     }
 
-    const Encoding& get_encoding() const
+    Encoding get_encoding() const
     {
         return encoding_;
     }
 
 private:
 
-    const Encoding& encoding_;
+    Encoding encoding_;
 };
 
 template <typename CharT>
@@ -754,7 +754,7 @@ public:
         static_assert(CharSize == sizeof(DestCharT), "");
 
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcCharT>(input.fp);
-        decltype(auto) enc = get_facet_<strf::char_encoding_c<SrcCharT>, SrcCharT>(input.fp);
+        auto enc = get_facet_<strf::char_encoding_c<SrcCharT>, SrcCharT>(input.fp);
         strf::width_t limit =
             ( Preview::width_required && input.preview.remaining_width() > afmt_.width
             ? input.preview.remaining_width()
@@ -780,7 +780,7 @@ public:
         static_assert(CharSize == sizeof(DestCharT), "");
 
         decltype(auto) wcalc = get_facet_<strf::width_calculator_c, SrcCharT>(input.fp);
-        decltype(auto) enc = get_facet_<strf::char_encoding_c<SrcCharT>, SrcCharT>(input.fp);
+        auto enc = get_facet_<strf::char_encoding_c<SrcCharT>, SrcCharT>(input.fp);
         auto res = wcalc.str_width_and_pos
             (enc, input.vwf.precision(), str_, input.vwf.value().size(), surr_poli_);
         len_ = res.pos;

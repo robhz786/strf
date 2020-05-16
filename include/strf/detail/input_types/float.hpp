@@ -1201,7 +1201,7 @@ public:
 
         const auto fmt = input.vwf.get_float_format_data();
         data_ = strf::detail::init_double_printer_data<Notation>(input.vwf.value(), fmt);
-        decltype(auto) enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
+        auto enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
         auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp);
         grouping_ = punct.grouping();
         decimal_point_ = punct.decimal_point();
@@ -1229,7 +1229,7 @@ public:
 
         const auto fmt = input.vwf.get_float_format_data();
         data_ = strf::detail::init_double_printer_data<Notation>(input.vwf.value(), fmt);
-        decltype(auto) enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
+        auto enc = get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
         auto punct = strf::get_facet<strf::numpunct_c<10>, FloatT>(input.fp);
         grouping_ = punct.grouping();
         decimal_point_ = punct.decimal_point();
@@ -1245,12 +1245,11 @@ private:
 
     template <typename Encoding>
     STRF_HD void init_
-        ( const Encoding& enc, bool fmt_general_format, bool fmt_showpoint);
+        ( Encoding enc, bool fmt_general_format, bool fmt_showpoint);
 
     template <typename Preview, typename Encoding>
     STRF_HD void init_
-        ( Preview& preview, std::int16_t w, strf::text_alignment a
-        , const Encoding& enc );
+        ( Preview& preview, std::int16_t w, strf::text_alignment a, Encoding enc );
 
     STRF_HD std::int16_t content_width_() const;
     STRF_HD std::size_t content_size_() const;
@@ -1276,7 +1275,7 @@ private:
 template <std::size_t CharSize>
 template <typename Encoding>
 STRF_HD void punct_double_printer<CharSize>::init_
-    ( const Encoding& enc, bool general_format, bool fmt_showpoint)
+    ( Encoding enc, bool general_format, bool fmt_showpoint)
 {
     encode_char_ = enc.encode_char_func();
     encode_fill_ = enc.encode_fill_func();
@@ -1329,7 +1328,7 @@ template <std::size_t CharSize>
 template <typename Preview, typename Encoding>
 STRF_HD void punct_double_printer<CharSize>::init_
     ( Preview& preview, std::int16_t fmt_width, strf::text_alignment a
-    , const Encoding& enc )
+    , Encoding enc )
 {
     (void) enc;
     auto content_width = content_width_();
@@ -1576,7 +1575,7 @@ public:
     {
         static_assert(Notation != strf::float_notation::hex, "");
 
-        decltype(auto) enc = strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
+        auto enc = strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
         init_(input.preview, input.vwf.width(), input.vwf.alignment(), enc);
     }
 
@@ -1585,8 +1584,8 @@ public:
 private:
 
     template <typename Preview, typename Encoding>
-    STRF_HD void init_( Preview& preview, std::int16_t w, strf::text_alignment a
-                      , const Encoding& enc );
+    STRF_HD void init_
+        ( Preview& preview, std::int16_t w, strf::text_alignment a, Encoding enc );
 
     STRF_HD std::int16_t content_width_() const
     {
@@ -1622,7 +1621,7 @@ template <std::size_t CharSize>
 template <typename Preview, typename Encoding>
 STRF_HD void double_printer<CharSize>::init_
     ( Preview& preview, std::int16_t w, strf::text_alignment a
-    , const Encoding& enc )
+    , Encoding enc )
 {
     encode_fill_ = enc.encode_fill_func();
     auto content_width = content_width_();
@@ -2015,7 +2014,7 @@ public:
 private:
 
     template <typename Encoding>
-    STRF_HD void init_(const Encoding& enc);
+    STRF_HD void init_(Encoding enc);
 
     STRF_HD strf::width_t width_() const;
     STRF_HD std::size_t size_() const;
@@ -2036,7 +2035,7 @@ private:
 
 template <std::size_t CharSize>
 template <typename Encoding>
-STRF_HD void fast_punct_double_printer<CharSize>::init_(const Encoding& enc)
+STRF_HD void fast_punct_double_printer<CharSize>::init_(Encoding enc)
 {
     encode_char_ = enc.encode_char_func();
     bool showpoint;
@@ -2384,7 +2383,7 @@ public:
         , lettercase_(strf::get_facet<strf::lettercase_c, FloatT>(input.fp))
     {
         int content_width_without_point = 0;
-        decltype(auto) enc = strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
+        auto enc = strf::get_facet<strf::char_encoding_c<CharT>, FloatT>(input.fp);
         encode_fill_ = enc.encode_fill_func();
         if (data_.exponent != 1024) {
             init_(strf::get_facet<strf::numpunct_c<16>, FloatT>(input.fp), enc);

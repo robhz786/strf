@@ -107,7 +107,7 @@ public:
         , afmt_(input.arg.get_alignment_format_data())
         , lettercase_(strf::get_facet<strf::lettercase_c, bool>(input.fp))
     {
-        decltype(auto) enc = strf::get_facet<char_encoding_c<CharT>, bool>(input.fp);
+        auto enc = strf::get_facet<char_encoding_c<CharT>, bool>(input.fp);
         std::uint16_t w = 5 - (int)input.arg.value();
         if (afmt_.width > w) {
             encode_fill_ = enc.encode_fill_func();

@@ -37,15 +37,13 @@ valid_input_sample(const strf::utf<wchar_t>&)
 }
 
 template <typename SrcEncoding, typename DestEncoding>
-void test_valid_input
-    ( const SrcEncoding& ein
-    , const DestEncoding& eout )
+void test_valid_input(SrcEncoding src_enc, DestEncoding dest_enc)
 {
-    TEST_SCOPE_DESCRIPTION("from ", ein.name(), " to ", eout.name());
+    TEST_SCOPE_DESCRIPTION("from ", src_enc.name(), " to ", dest_enc.name());
 
-    auto input = valid_input_sample(ein);
-    auto expected = valid_input_sample(eout);
-    TEST(expected).with(eout) (strf::sani(input, ein));
+    auto input = valid_input_sample(src_enc);
+    auto expected = valid_input_sample(dest_enc);
+    TEST(expected).with(dest_enc) (strf::sani(input, src_enc));
 }
 
 strf::detail::simple_string_view<char>
@@ -73,20 +71,18 @@ sample_with_surrogates(const strf::utf<wchar_t>&)
 }
 
 template <typename SrcEncoding, typename DestEncoding>
-void test_allowed_surrogates
-    ( const SrcEncoding& ein
-    , const DestEncoding& eout )
+void test_allowed_surrogates(SrcEncoding src_enc, DestEncoding dest_enc)
 {
-    TEST_SCOPE_DESCRIPTION("from ", ein.name()," to ", eout.name());
+    TEST_SCOPE_DESCRIPTION("from ", src_enc.name()," to ", dest_enc.name());
 
-    const auto input    = sample_with_surrogates(ein);
-    const auto expected = sample_with_surrogates(eout);
+    const auto input    = sample_with_surrogates(src_enc);
+    const auto expected = sample_with_surrogates(dest_enc);
 
     TEST(expected)
-        .with( eout
+        .with( dest_enc
                , strf::invalid_seq_policy::stop
                , strf::surrogate_policy::lax )
-        (strf::sani(input, ein));
+        (strf::sani(input, src_enc));
 }
 
 const auto& invalid_sequences(const strf::utf<char>&)
@@ -215,9 +211,9 @@ using get_first_template_parameter
 
 
 template <typename SrcEncoding, typename DestEncoding>
-void test_invalid_input(const SrcEncoding& ein, const DestEncoding& eout)
+void test_invalid_input(SrcEncoding src_enc, DestEncoding dest_enc)
 {
-    TEST_SCOPE_DESCRIPTION("From invalid ", ein.name(), " to ", eout.name());
+    TEST_SCOPE_DESCRIPTION("From invalid ", src_enc.name(), " to ", dest_enc.name());
     using src_char_type  = get_first_template_parameter<SrcEncoding>;
     using dest_char_type = get_first_template_parameter<DestEncoding>;
 
@@ -226,7 +222,7 @@ void test_invalid_input(const SrcEncoding& ein, const DestEncoding& eout)
     const src_char_type  prefix_in  [] = { 'a', 'b', 'c' };
     const dest_char_type prefix_out [] = { 'a', 'b', 'c' };
 
-    for(const auto& s : invalid_sequences(ein))
+    for(const auto& s : invalid_sequences(src_enc))
     {
         const int err_count = s.first;
         const auto& seq = s.second;
@@ -245,21 +241,21 @@ void test_invalid_input(const SrcEncoding& ein, const DestEncoding& eout)
         {   // replace
             auto expected = concatenate( buff_out
                                        , prefix_out
-                                       , replacement_char(eout)
+                                       , replacement_char(dest_enc)
                                        , err_count
                                        , suffix_out );
             TEST(expected)
-                .with(eout)
+                .with(dest_enc)
                 .with(strf::invalid_seq_policy::replace)
-                (strf::sani(input, ein));
+                (strf::sani(input, src_enc));
         }
 
 #if defined(__cpp_exceptions)
 
         // stop
         TEST_THROWS( (strf::to(buff_out)
-                          .with(eout, strf::invalid_seq_policy::stop)
-                          (strf::sani(input, ein)))
+                          .with(dest_enc, strf::invalid_seq_policy::stop)
+                          (strf::sani(input, src_enc)))
                    , strf::invalid_sequence );
 
 #endif // defined(__cpp_exceptions)
@@ -278,10 +274,10 @@ template < typename Func
          , typename SrcEncoding
          , typename DestEncoding0
          , typename ... DestEncoding >
-void combine_3(Func func, SrcEncoding ein, DestEncoding0 eout0, DestEncoding ... eout)
+void combine_3(Func func, SrcEncoding src_enc, DestEncoding0 dest_enc0, DestEncoding ... dest_enc)
 {
-    func(ein, eout0);
-    combine_3(func, ein, eout...);
+    func(src_enc, dest_enc0);
+    combine_3(func, src_enc, dest_enc...);
 }
 
 template < typename Func
@@ -300,19 +296,19 @@ void combine_2(Func func, Encoding0 cs0, Enc... enc)
 }
 
 template < typename Func
-         , typename EoutTuple
+         , typename Dest_EncTuple
          , std::size_t ... I >
-void combine(Func, const EoutTuple&, std::index_sequence<I...> )
+void combine(Func, const Dest_EncTuple&, std::index_sequence<I...> )
 {
 }
 
 template < typename Func
-         , typename EoutTuple
+         , typename DestEncTuple
          , std::size_t ... I
          , typename Encoding0
          , typename ... Enc >
 void combine( Func func
-            , const EoutTuple& dest_encodings
+            , const DestEncTuple& dest_encodings
             , std::index_sequence<I...> iseq
             , Encoding0 cs0
             , Enc ... enc )
@@ -344,15 +340,15 @@ int main()
 
     for_all_combinations
         ( encodings
-        , [](auto ein, auto eout){ test_valid_input(ein, eout); } );
+        , [](auto src_enc, auto dest_enc){ test_valid_input(src_enc, dest_enc); } );
 
     for_all_combinations
         ( encodings
-        , [](auto ein, auto eout){ test_allowed_surrogates(ein, eout); } );
+        , [](auto src_enc, auto dest_enc){ test_allowed_surrogates(src_enc, dest_enc); } );
 
     for_all_combinations
         ( encodings
-        , [](auto ein, auto eout){ test_invalid_input(ein, eout); } );
+        , [](auto src_enc, auto dest_enc){ test_invalid_input(src_enc, dest_enc); } );
 
     TEST_TRUE((std::is_same
                    < strf::static_underlying_transcoder< strf::char_encoding_id::utf8

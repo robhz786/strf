@@ -482,6 +482,7 @@ public:
         return {};
     }
 
+private:
     const strf::dynamic_underlying_char_encoding_data<CharSize>* data_;
 };
 
@@ -691,7 +692,7 @@ struct transcoder_finder<false, 4, DestCharSize>
 {
     template <typename SrcEncoding, typename DestEncoding>
     constexpr static STRF_HD auto find
-        (const SrcEncoding&, const DestEncoding& dest_cs) noexcept
+        (SrcEncoding, DestEncoding dest_cs) noexcept
     {
         return dest_cs.from_u32();
     }
@@ -737,7 +738,7 @@ struct transcoder_finder<false, SrcCharSize, DestCharSize>
 
 template <typename SrcEncoding, typename DestEncoding>
 constexpr STRF_HD decltype(auto) find_transcoder
-    ( const SrcEncoding& src_cs, const DestEncoding& dest_cs )
+    ( SrcEncoding src_cs, DestEncoding dest_cs )
 {
     return detail::transcoder_finder
         < strf::detail::has_static_transcoder<SrcEncoding, DestEncoding>

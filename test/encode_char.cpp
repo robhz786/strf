@@ -16,7 +16,7 @@ struct fixture
 };
 
 template <typename CharT, typename Encoding>
-void test_char( const Encoding& enc
+void test_char( Encoding enc
               , char32_t ch
               , std::basic_string<CharT> encoded_char )
 {

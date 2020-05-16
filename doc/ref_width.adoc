@@ -134,12 +134,12 @@ public:
 
     template <typename CharEncoding>
     {width_t} <<fast_width_char_width,char_width>>
-        ( const CharEncoding&
+        ( CharEncoding
         , {underlying_char_type}<CharEncoding::char_size> ) const noexcept;
 
     template <typename CharEncoding>
     {width_t} <<fast_width_str_width,str_width>>
-        ( const CharEncoding&
+        ( CharEncoding
         , {width_t} limit
         , const {underlying_char_type}<CharEncoding::char_size>*
         , std::size_t str_len
@@ -147,7 +147,7 @@ public:
 
     template <typename CharEncoding>
     constexpr {width_and_pos} <<fast_width_str_width_and_pos,str_width_and_pos>>
-        ( const CharEncoding&
+        ( CharEncoding
         , {width_t} limit
         , const {underlying_char_type}<CharEncoding::char_size>*
         , std::size_t str_len
@@ -160,7 +160,7 @@ public:
 ----
 template <typename CharEncoding>
 {width_t} char_width
-    ( const CharEncoding&
+    ( CharEncoding
     , {underlying_char_type}<CharEncoding::char_size> ) const noexcept;
 ----
 [horizontal]
@@ -172,7 +172,7 @@ Return value:: `1`
 ----
 template <typename CharEncoding>
 constexpr {width_t} str_width
-    ( const CharEncoding&
+    ( CharEncoding
     , {width_t} limit
     , const {underlying_char_type}<CharEncoding::char_size>*
     , std::size_t str_len
@@ -189,7 +189,7 @@ Return value:::
 ----
 template <typename CharEncoding>
 constexpr {width_and_pos} str_width_and_pos
-    ( const CharEncoding&
+    ( CharEncoding
     , {width_t} limit
     , const {underlying_char_type}<CharEncoding::char_size>*
     , std::size_t str_len
@@ -221,12 +221,12 @@ public:
 
     template <typename CharEncoding>
     {width_t} <<width_as_fast_u32len_char_width,char_width>>
-        ( const CharEncoding& encoding
+        ( CharEncoding encoding
         , {underlying_char_type}<CharEncoding::char_size> ) const noexcept;
 
     template <typename CharEncoding>
     {width_t} <<width_as_fast_u32len_str_width,str_width>>
-        ( const CharEncoding& encoding
+        ( CharEncoding encoding
         , {width_t} limit
         , const {underlying_char_type}<CharEncoding::char_size>* str
         , std::size_t str_len
@@ -234,7 +234,7 @@ public:
 
     template <typename CharEncoding>
     constexpr {width_and_pos} <<width_as_fast_u32len_str_width_and_pos,str_width_and_pos>>
-        ( const CharEncoding& encoding
+        ( CharEncoding encoding
         , {width_t} limit
         , const {underlying_char_type}<CharEncoding::char_size>* str
         , std::size_t str_len
@@ -247,7 +247,7 @@ public:
 ----
 template <typename CharEncoding>
 {width_t} char_width
-    ( const CharEncoding&
+    ( CharEncoding
     , {underlying_char_type}<CharEncoding::char_size> ) const noexcept;
 ----
 [horizontal]
@@ -259,7 +259,7 @@ Return value::: `1`
 ----
 template <typename CharEncoding>
 constexpr {width_t} str_width
-    ( const CharEncoding& encoding
+    ( CharEncoding encoding
     , {width_t} limit
     , const {underlying_char_type}<CharEncoding::char_size>* str
     , std::size_t str_len
@@ -276,7 +276,7 @@ Return value:::
 ----
 template <typename CharEncoding>
 constexpr {width_and_pos} str_width_and_pos
-    ( const CharEncoding& encoding
+    ( CharEncoding encoding
     , {width_t} limit
     , const {underlying_char_type}<CharEncoding::char_size>* str
     , std::size_t str_len
@@ -306,12 +306,12 @@ public:
 
     template <typename CharEncoding>
     {width_t} <<width_as_u32len_char_width,char_width>>
-        ( const CharEncoding& encoding
+        ( CharEncoding encoding
         , {underlying_char_type}<CharEncoding::char_size> ) const noexcept;
 
     template <typename CharEncoding>
     {width_t} <<width_as_u32len_str_width,str_width>>
-        ( const CharEncoding& encoding
+        ( CharEncoding encoding
         , {width_t} limit
         , const {underlying_char_type}<CharEncoding::char_size>* str
         , std::size_t str_len
@@ -319,7 +319,7 @@ public:
 
     template <typename CharEncoding>
     constexpr {width_and_pos} <<width_as_u32len_str_width_and_pos,str_width_and_pos>>
-        ( const CharEncoding& encoding
+        ( CharEncoding encoding
         , {width_t} limit
         , const {underlying_char_type}<CharEncoding::char_size>* str
         , std::size_t str_len
@@ -332,7 +332,7 @@ public:
 ----
 template <typename CharEncoding>
 {width_t} char_width
-    ( const CharEncoding&
+    ( CharEncoding
     , {underlying_char_type}<CharEncoding::char_size> ) const noexcept;
 ----
 [horizontal]
@@ -344,7 +344,7 @@ Return value:: `1`
 ----
 template <typename CharEncoding>
 constexpr {width_t} str_width
-    ( const CharEncoding& encoding
+    ( CharEncoding encoding
     , {width_t} limit
     , const {underlying_char_type}<CharEncoding::char_size>* str
     , std::size_t str_len
@@ -361,7 +361,7 @@ Return value:::
 ----
 template <typename CharEncoding>
 constexpr {width_and_pos} str_width_and_pos
-    ( const CharEncoding& encoding
+    ( CharEncoding encoding
     , {width_t} limit
     , const {underlying_char_type}<CharEncoding::char_size>* str
     , std::size_t str_len
@@ -393,12 +393,12 @@ public:
 
     template <typename CharEncoding>
     {width_t} <<width_by_func_char_width,char_width>>
-        ( const CharEncoding& charste
+        ( CharEncoding charste
         , {underlying_char_type}<CharEncoding::char_size> ) const;
 
     template <typename CharEncoding>
     {width_t} <<width_by_func_str_width,str_width>>
-        ( const CharEncoding& encoding
+        ( CharEncoding encoding
         , {width_t} limit
         , const {underlying_char_type}<CharEncoding::char_size>* str
         , std::size_t str_len
@@ -406,7 +406,7 @@ public:
 
     template <typename CharEncoding>
     constexpr {width_and_pos} <<width_by_func_str_width_and_pos,str_width_and_pos>>
-        ( const CharEncoding& encoding
+        ( CharEncoding encoding
         , {width_t} limit
         , const {underlying_char_type}<CharEncoding::char_size>* str
         , std::size_t str_len
@@ -436,7 +436,7 @@ must be {width_t}.
 ----
 template <typename CharEncoding>
 {width_t} char_width
-    ( const CharEncoding& encoding
+    ( CharEncoding encoding
     , {underlying_char_type}<CharEncoding::char_size> ch) const;
 ----
 [horizontal]
@@ -448,7 +448,7 @@ Return value:: `func_(encoding.<<CharEncoding_decode_char,decode_char>>(ch))`
 ----
 template <typename CharEncoding>
 constexpr {width_t} str_width
-    ( const CharEncoding& encoding
+    ( CharEncoding encoding
     , {width_t} limit
     , const {underlying_char_type}<CharEncoding::char_size>* str
     , std::size_t str_len
@@ -473,7 +473,7 @@ encoding.<<UnderlyingCharEncoding_to_u32,to_u32>>().<<UnderlyingTranscoder_trans
 ----
 template <typename CharEncoding>
 constexpr {width_and_pos} str_width_and_pos
-    ( const CharEncoding& encoding
+    ( CharEncoding encoding
     , {width_t} limit
     , const {underlying_char_type}<CharEncoding::char_size>* str
     , std::size_t str_len

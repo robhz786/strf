@@ -186,13 +186,13 @@ private:
     }
 
     template <typename Preview, typename WCalc, typename Encoding>
-    STRF_HD void init_(Preview& preview, const WCalc& wc, const Encoding& enc);
+    STRF_HD void init_(Preview& preview, const WCalc& wc, Encoding enc);
 };
 
 template <std::size_t CharSize>
 template <typename Preview, typename WCalc, typename Encoding>
 STRF_HD void fmt_char_printer<CharSize>::init_
-    ( Preview& preview, const WCalc& wc, const Encoding& enc)
+    ( Preview& preview, const WCalc& wc, Encoding enc )
 {
     auto ch_width = wc.char_width(enc, ch_);
     auto content_width = checked_mul(ch_width, count_);

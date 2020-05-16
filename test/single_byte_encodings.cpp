@@ -20,7 +20,7 @@ strf::detail::simple_string_view<char> make_str_0_to_xff()
 auto str_0_to_xff = make_str_0_to_xff();
 
 template <typename Encoding>
-strf::detail::simple_string_view<char> char_0_to_0xff_sanitized(const Encoding& enc)
+strf::detail::simple_string_view<char> char_0_to_0xff_sanitized(Encoding enc)
 {
     static char str[0x100];
     for(unsigned i = 0; i < 0x100; ++i)
@@ -71,7 +71,7 @@ bool operator==( strf::detail::simple_string_view<CharT> str1
 }
 
 template <typename Encoding>
-void test( const Encoding& enc
+void test( Encoding enc
          , strf::detail::simple_string_view<char32_t> decoded_0_to_0xff )
 {
     TEST_SCOPE_DESCRIPTION(enc.name());

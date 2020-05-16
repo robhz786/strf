@@ -238,7 +238,7 @@ public:
         , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c>(input.fp))
         , surr_poli_(get_facet_<strf::surrogate_policy_c>(input.fp))
     {
-        decltype(auto) enc = get_facet_<strf::char_encoding_c<CharT>>(input.fp);
+        auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.fp);
         encode_fill_func_ = enc.encode_fill_func();
         strf::print_preview<ReqSize, strf::preview_width::yes> p { afmt_.width };
         new (printers_ptr_()) printers_tuple_
@@ -269,7 +269,7 @@ public:
         , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c>(input.fp))
         , surr_poli_(get_facet_<strf::surrogate_policy_c>(input.fp))
     {
-        decltype(auto) enc = get_facet_<strf::char_encoding_c<CharT>>(input.fp);
+        auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.fp);
         encode_fill_func_ = enc.encode_fill_func();
         if (afmt_.width < 0) {
             afmt_.width = 0;

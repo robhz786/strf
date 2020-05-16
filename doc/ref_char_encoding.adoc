@@ -646,35 +646,101 @@ NOTE: There are two class templates that satisfy _UnderlyingCharEncoding_: `{sta
 template <{char_encoding_id} Src, {char_encoding_id} Dest>
 class static_underlying_transcoder;
 
-template <> static_underlying_transcoder <{char_encoding_id}::ascii, {char_encoding_id}::ascii>;
-template <> static_underlying_transcoder <{char_encoding_id}::ascii, {char_encoding_id}::utf32>;
-template <> static_underlying_transcoder <{char_encoding_id}::utf32, {char_encoding_id}::ascii>;
+template <> static_underlying_transcoder
+    < {char_encoding_id}::ascii
+    , {char_encoding_id}::ascii >;
 
-template <> static_underlying_transcoder <{char_encoding_id}::iso_8859_1,  {char_encoding_id}::iso_8859_1>;
-template <> static_underlying_transcoder <{char_encoding_id}::iso_8859_1,  {char_encoding_id}::utf32>;
-template <> static_underlying_transcoder <{char_encoding_id}::utf32,       {char_encoding_id}::iso_8859_1>;
+template <> static_underlying_transcoder
+    < {char_encoding_id}::ascii
+    , {char_encoding_id}::utf32 >;
 
-template <> static_underlying_transcoder <{char_encoding_id}::iso_8859_3,  {char_encoding_id}::utf32>;
-template <> static_underlying_transcoder <{char_encoding_id}::utf32,       {char_encoding_id}::iso_8859_3>;
-template <> static_underlying_transcoder <{char_encoding_id}::iso_8859_3,  {char_encoding_id}::iso_8859_3>;
+template <> static_underlying_transcoder
+    < {char_encoding_id}::utf32
+    , {char_encoding_id}::ascii>;
 
-template <> static_underlying_transcoder <{char_encoding_id}::iso_8859_15, {char_encoding_id}::iso_8859_15>;
-template <> static_underlying_transcoder <{char_encoding_id}::iso_8859_15, {char_encoding_id}::utf32>;
-template <> static_underlying_transcoder <{char_encoding_id}::utf32,       {char_encoding_id}::iso_8859_15>;
+template <> static_underlying_transcoder
+    < {char_encoding_id}::iso_8859_1
+    , {char_encoding_id}::iso_8859_1 >;
 
-template <> static_underlying_transcoder <{char_encoding_id}::windows_1252, {char_encoding_id}::windows_1252>;
-template <> static_underlying_transcoder <{char_encoding_id}::windows_1252, {char_encoding_id}::utf32>;
-template <> static_underlying_transcoder <{char_encoding_id}::utf32,        {char_encoding_id}::windows_1252>;
+template <> static_underlying_transcoder
+    < {char_encoding_id}::iso_8859_1
+    , {char_encoding_id}::utf32 >;
 
-template <> static_underlying_transcoder <{char_encoding_id}::utf8,  {char_encoding_id}::utf8>;
-template <> static_underlying_transcoder <{char_encoding_id}::utf8,  {char_encoding_id}::utf16>;
-template <> static_underlying_transcoder <{char_encoding_id}::utf8,  {char_encoding_id}::utf32>;
-template <> static_underlying_transcoder <{char_encoding_id}::utf16, {char_encoding_id}::utf8>;
-template <> static_underlying_transcoder <{char_encoding_id}::utf16, {char_encoding_id}::utf16>;
-template <> static_underlying_transcoder <{char_encoding_id}::utf16, {char_encoding_id}::utf32>;
-template <> static_underlying_transcoder <{char_encoding_id}::utf32, {char_encoding_id}::utf8>;
-template <> static_underlying_transcoder <{char_encoding_id}::utf32, {char_encoding_id}::utf16>;
-template <> static_underlying_transcoder <{char_encoding_id}::utf32, {char_encoding_id}::utf32>;
+template <> static_underlying_transcoder
+    < {char_encoding_id}::utf32
+    , {char_encoding_id}::iso_8859_1 >;
+
+template <> static_underlying_transcoder
+    < {char_encoding_id}::iso_8859_3
+    , {char_encoding_id}::utf32 >;
+
+template <> static_underlying_transcoder
+    < {char_encoding_id}::utf32
+    , {char_encoding_id}::iso_8859_3 >;
+
+template <> static_underlying_transcoder
+    < {char_encoding_id}::iso_8859_3
+    , {char_encoding_id}::iso_8859_3 >;
+
+template <> static_underlying_transcoder
+    < {char_encoding_id}::iso_8859_15
+    , {char_encoding_id}::iso_8859_15 >;
+
+template <> static_underlying_transcoder
+    < {char_encoding_id}::iso_8859_15
+    , {char_encoding_id}::utf32 >;
+
+template <> static_underlying_transcoder
+    < {char_encoding_id}::utf32
+    , {char_encoding_id}::iso_8859_15 >;
+
+template <> static_underlying_transcoder
+    < {char_encoding_id}::windows_1252
+    , {char_encoding_id}::windows_1252 >;
+
+template <> static_underlying_transcoder
+    < {char_encoding_id}::windows_1252
+    , {char_encoding_id}::utf32 >;
+
+template <> static_underlying_transcoder
+    < {char_encoding_id}::utf32
+    , {char_encoding_id}::windows_1252 >;
+
+template <> static_underlying_transcoder
+    < {char_encoding_id}::utf8
+    , {char_encoding_id}::utf8 >;
+
+template <> static_underlying_transcoder
+    < {char_encoding_id}::utf8
+    , {char_encoding_id}::utf16 >;
+
+template <> static_underlying_transcoder
+    < {char_encoding_id}::utf8
+    , {char_encoding_id}::utf32 >;
+
+template <> static_underlying_transcoder
+    < {char_encoding_id}::utf16
+    , {char_encoding_id}::utf8 >;
+
+template <> static_underlying_transcoder
+    < {char_encoding_id}::utf16
+    , {char_encoding_id}::utf16 >;
+
+template <> static_underlying_transcoder
+    < {char_encoding_id}::utf16
+    , {char_encoding_id}::utf32 >;
+
+template <> static_underlying_transcoder
+    < {char_encoding_id}::utf32
+    , {char_encoding_id}::utf8 >;
+
+template <> static_underlying_transcoder
+    < {char_encoding_id}::utf32
+    , {char_encoding_id}::utf16 >;
+
+template <> static_underlying_transcoder
+    < {char_encoding_id}::utf32
+    , {char_encoding_id}::utf32 >;
 ----
 There is no generic implementation of the `static_underlying_transcoder` class template.
 Instead, there are only template specializations for some pairs of encodings.

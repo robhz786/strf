@@ -306,7 +306,7 @@ public:
         , std::initializer_list<const strf::printer<CharSize>*> printers
         , const char_type* tr_string
         , const char_type* tr_string_end
-        , const CharEncoding& enc
+        , CharEncoding enc
         , strf::tr_invalid_arg policy ) noexcept
         : tr_string_(reinterpret_cast<const char_type*>(tr_string))
         , tr_string_end_(reinterpret_cast<const char_type*>(tr_string_end))

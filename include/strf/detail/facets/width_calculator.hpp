@@ -23,7 +23,7 @@ public:
 
     template <typename CharEncoding>
     STRF_HD strf::width_t char_width
-        ( const CharEncoding&
+        ( CharEncoding
         , strf::underlying_char_type<CharEncoding::char_size> ) const noexcept
     {
         return 1;
@@ -31,7 +31,7 @@ public:
 
     template <typename CharEncoding>
     constexpr STRF_HD strf::width_t str_width
-        ( const CharEncoding&
+        ( CharEncoding
         , strf::width_t limit
         , const strf::underlying_char_type<CharEncoding::char_size>*
         , std::size_t str_len
@@ -45,7 +45,7 @@ public:
 
     template <typename CharEncoding>
     constexpr STRF_HD strf::width_and_pos str_width_and_pos
-        ( const CharEncoding&
+        ( CharEncoding
         , strf::width_t limit
         , const strf::underlying_char_type<CharEncoding::char_size>*
         , std::size_t str_len
@@ -69,7 +69,7 @@ public:
 
     template <typename CharEncoding>
     constexpr STRF_HD strf::width_t char_width
-        ( const CharEncoding&
+        ( CharEncoding
         , strf::underlying_char_type<CharEncoding::char_size> ) const noexcept
     {
         return 1;
@@ -77,7 +77,7 @@ public:
 
     template <typename CharEncoding>
     constexpr STRF_HD strf::width_t str_width
-        ( const CharEncoding& cs
+        ( CharEncoding enc
         , strf::width_t limit
         , const strf::underlying_char_type<CharEncoding::char_size>* str
         , std::size_t str_len
@@ -85,7 +85,7 @@ public:
     {
         if (limit > 0) {
             auto lim = limit.floor();
-            auto ret = cs.codepoints_fast_count(str, str_len, lim);
+            auto ret = enc.codepoints_fast_count(str, str_len, lim);
             STRF_ASSERT((std::ptrdiff_t)ret.count <= strf::width_max.floor());
             return static_cast<std::int16_t>(ret.count);
         }
@@ -94,7 +94,7 @@ public:
 
     template <typename CharEncoding>
     constexpr STRF_HD strf::width_and_pos str_width_and_pos
-        ( const CharEncoding& cs
+        ( CharEncoding enc
         , strf::width_t limit
         , const strf::underlying_char_type<CharEncoding::char_size>* str
         , std::size_t str_len
@@ -102,7 +102,7 @@ public:
     {
         if (limit > 0) {
             std::ptrdiff_t lim = limit.floor();
-            auto res = cs.codepoints_fast_count(str, str_len, lim);
+            auto res = enc.codepoints_fast_count(str, str_len, lim);
             STRF_ASSERT((std::ptrdiff_t)res.count <= lim);
             return { static_cast<std::int16_t>(res.count), res.pos };
         }
@@ -118,7 +118,7 @@ public:
 
     template <typename CharEncoding>
     constexpr STRF_HD strf::width_t char_width
-        ( const CharEncoding&
+        ( CharEncoding
         , strf::underlying_char_type<CharEncoding::char_size> ) const noexcept
     {
         return 1;
@@ -126,7 +126,7 @@ public:
 
     template <typename CharEncoding>
     constexpr STRF_HD strf::width_t str_width
-        ( const CharEncoding& cs
+        ( CharEncoding enc
         , strf::width_t limit
         , const strf::underlying_char_type<CharEncoding::char_size>* str
         , std::size_t str_len
@@ -134,7 +134,7 @@ public:
     {
         if (limit > 0) {
             auto lim = limit.floor();
-            auto ret = cs.codepoints_robust_count(str, str_len, lim, surr_poli);
+            auto ret = enc.codepoints_robust_count(str, str_len, lim, surr_poli);
             STRF_ASSERT((std::ptrdiff_t)ret.count <= strf::width_max.floor());
             return static_cast<std::int16_t>(ret.count);
         }
@@ -143,7 +143,7 @@ public:
 
     template <typename CharEncoding>
     constexpr STRF_HD strf::width_and_pos str_width_and_pos
-        ( const CharEncoding& cs
+        ( CharEncoding enc
         , strf::width_t limit
         , const strf::underlying_char_type<CharEncoding::char_size>* str
         , std::size_t str_len
@@ -151,7 +151,7 @@ public:
     {
         if (limit > 0) {
             std::ptrdiff_t lim = limit.floor();
-            auto res = cs.codepoints_robust_count(str, str_len, lim, surr_poli);
+            auto res = enc.codepoints_robust_count(str, str_len, lim, surr_poli);
             STRF_ASSERT((std::ptrdiff_t)res.count <= lim);
             return { static_cast<std::int16_t>(res.count), res.pos };
         }
@@ -239,15 +239,15 @@ public:
 
     template <typename CharEncoding>
     strf::width_t STRF_HD char_width
-        ( const CharEncoding& cs
+        ( CharEncoding enc
         , strf::underlying_char_type<CharEncoding::char_size> ch ) const
     {
-        return func_(cs.decode_char(ch));
+        return func_(enc.decode_char(ch));
     }
 
     template <typename CharEncoding>
     constexpr STRF_HD strf::width_t str_width
-        ( const CharEncoding& cs
+        ( CharEncoding enc
         , strf::width_t limit
         , const strf::underlying_char_type<CharEncoding::char_size>* str
         , std::size_t str_len
@@ -255,13 +255,13 @@ public:
     {
         strf::detail::width_accumulator<CharWidthFunc> acc(limit, func_);
         auto inv_seq_poli = strf::invalid_seq_policy::replace;
-        cs.to_u32().transcode(acc, str, str_len, inv_seq_poli, surr_poli);
+        enc.to_u32().transcode(acc, str, str_len, inv_seq_poli, surr_poli);
         return acc.get_result().width;
     }
 
     template <typename CharEncoding>
     constexpr STRF_HD strf::width_and_pos str_width_and_pos
-        ( const CharEncoding& cs
+        ( CharEncoding enc
         , strf::width_t limit
         , const strf::underlying_char_type<CharEncoding::char_size>* str
         , std::size_t str_len
@@ -269,12 +269,12 @@ public:
     {
         strf::detail::width_accumulator<CharWidthFunc> acc(limit, func_);
         auto inv_seq_poli = strf::invalid_seq_policy::replace;
-        cs.to_u32().transcode(acc, str, str_len, inv_seq_poli, surr_poli);
+        enc.to_u32().transcode(acc, str, str_len, inv_seq_poli, surr_poli);
         auto res = acc.get_result();
         if (res.whole_string_covered) {
             return {res.width, str_len};
         }
-        auto res2 = cs.codepoints_robust_count
+        auto res2 = enc.codepoints_robust_count
             (str, str_len, res.codepoints_count, surr_poli);
         return {res.width, res2.pos};
     }
