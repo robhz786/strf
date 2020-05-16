@@ -69,7 +69,7 @@ public:
             input )
         : str_(reinterpret_cast<const char_in_type*>(input.vwf.value().data()))
         , len_(input.vwf.value().size())
-        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, SrcCharT>(input.fp))
+        , inv_seq_notifier_(get_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.fp))
         , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcCharT>(input.fp))
     {
         static_assert(sizeof(SrcCharT) == SrcCharSize, "Incompatible char type");
@@ -93,7 +93,7 @@ public:
             < DestCharT, FPack, Preview, SrcCharT, true, false, CvFormat >&
             input )
         : str_(reinterpret_cast<const char_in_type*>(input.vwf.value().data()))
-        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, SrcCharT>(input.fp))
+        , inv_seq_notifier_(get_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.fp))
         , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcCharT>(input.fp))
     {
         static_assert(sizeof(SrcCharT) == SrcCharSize, "Incompatible char type");
@@ -139,7 +139,7 @@ private:
                 s = strf::decode_encode_size<SrcCharSize>
                     ( src_enc.to_u32().transcode_func()
                     , dest_enc.from_u32().transcode_size_func()
-                    , str_, len_, inv_seq_poli_, surr_poli_ );
+                    , str_, len_, inv_seq_notifier_, surr_poli_ );
             }
             preview.add_size(s);
         }
@@ -157,7 +157,7 @@ private:
         strf::transcode_f<SrcCharSize, 4>  src_to_u32_;
     };
     strf::transcode_f<4, DestCharSize>  u32_to_dest_ = nullptr;
-    const strf::invalid_seq_policy inv_seq_poli_;
+    const strf::invalid_seq_notifier inv_seq_notifier_;
     const strf::surrogate_policy surr_poli_;
     template <typename Category, typename SrcChar, typename FPack>
     static STRF_HD decltype(auto) get_facet_(const FPack& fp)
@@ -172,11 +172,11 @@ STRF_HD void cv_string_printer<SrcCharSize, DestCharSize>::print_to
     ( strf::underlying_outbuf<DestCharSize>& ob ) const
 {
     if (can_transcode_directly()) {
-        transcode_(ob, str_, len_, inv_seq_poli_, surr_poli_);
+        transcode_(ob, str_, len_, inv_seq_notifier_, surr_poli_);
     } else {
         strf::decode_encode<SrcCharSize, DestCharSize>
             ( ob, src_to_u32_, u32_to_dest_, str_
-            , len_, inv_seq_poli_, surr_poli_ );
+            , len_, inv_seq_notifier_, surr_poli_ );
     }
 }
 
@@ -195,7 +195,7 @@ public:
         : str_(reinterpret_cast<const char_in_type*>(input.vwf.value().data()))
         , len_(input.vwf.value().size())
         , afmt_(input.vwf.get_alignment_format_data())
-        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, SrcCharT>(input.fp))
+        , inv_seq_notifier_(get_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.fp))
         , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcCharT>(input.fp))
     {
         static_assert(sizeof(SrcCharT) == SrcCharSize, "Incompatible char type");
@@ -221,7 +221,7 @@ public:
         : str_(reinterpret_cast<const char_in_type*>(input.vwf.value().data()))
         , len_(input.vwf.value().size())
         , afmt_(input.vwf.get_alignment_format_data())
-        , inv_seq_poli_(get_facet_<strf::invalid_seq_policy_c, SrcCharT>(input.fp))
+        , inv_seq_notifier_(get_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.fp))
         , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcCharT>(input.fp))
     {
         static_assert(sizeof(SrcCharT) == SrcCharSize, "Incompatible char type");
@@ -255,7 +255,7 @@ private:
     };
     strf::transcode_f<4, DestCharSize>  u32_to_dest_ = nullptr;
     strf::encode_fill_f<DestCharSize> encode_fill_ = nullptr;
-    const strf::invalid_seq_policy inv_seq_poli_;
+    const strf::invalid_seq_notifier inv_seq_notifier_;
     const strf::surrogate_policy  surr_poli_;
     std::uint16_t left_fillcount_ = 0;
     std::uint16_t right_fillcount_ = 0;
@@ -323,7 +323,7 @@ void STRF_HD aligned_cv_string_printer<SrcCharSize, DestCharSize>::init_
             s = strf::decode_encode_size<SrcCharSize>
                 ( src_enc.to_u32().transcode
                 , dest_enc.from_u32().transcode_size_func()
-                , str_, len_, inv_seq_poli_, surr_poli_ );
+                , str_, len_, inv_seq_notifier_, surr_poli_ );
         }
         if (fillcount > 0) {
             s += dest_enc.encoded_char_size(afmt_.fill) * fillcount;
@@ -340,11 +340,11 @@ void STRF_HD aligned_cv_string_printer<SrcCharSize, DestCharSize>::print_to
         encode_fill_(ob, left_fillcount_, afmt_.fill);
     }
     if (can_transcode_directly()) {
-        transcode_(ob, str_, len_, inv_seq_poli_, surr_poli_);
+        transcode_(ob, str_, len_, inv_seq_notifier_, surr_poli_);
     } else {
         strf::decode_encode<SrcCharSize, DestCharSize>
             ( ob, src_to_u32_, u32_to_dest_, str_
-            , len_, inv_seq_poli_, surr_poli_ );
+            , len_, inv_seq_notifier_, surr_poli_ );
     }
     if (right_fillcount_ > 0) {
         encode_fill_(ob, right_fillcount_, afmt_.fill);

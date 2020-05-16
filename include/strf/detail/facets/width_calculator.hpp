@@ -254,8 +254,8 @@ public:
         , strf::surrogate_policy surr_poli ) const
     {
         strf::detail::width_accumulator<CharWidthFunc> acc(limit, func_);
-        auto inv_seq_poli = strf::invalid_seq_policy::replace;
-        enc.to_u32().transcode(acc, str, str_len, inv_seq_poli, surr_poli);
+        strf::invalid_seq_notifier inv_seq_notifier{};
+        enc.to_u32().transcode(acc, str, str_len, inv_seq_notifier, surr_poli);
         return acc.get_result().width;
     }
 
@@ -268,8 +268,8 @@ public:
         , strf::surrogate_policy surr_poli ) const
     {
         strf::detail::width_accumulator<CharWidthFunc> acc(limit, func_);
-        auto inv_seq_poli = strf::invalid_seq_policy::replace;
-        enc.to_u32().transcode(acc, str, str_len, inv_seq_poli, surr_poli);
+        strf::invalid_seq_notifier inv_seq_notifier{};
+        enc.to_u32().transcode(acc, str, str_len, inv_seq_notifier, surr_poli);
         auto res = acc.get_result();
         if (res.whole_string_covered) {
             return {res.width, str_len};

@@ -70,6 +70,13 @@ bool operator==( strf::detail::simple_string_view<CharT> str1
     return std::equal(str1.begin(), str1.end(), str2.begin());
 }
 
+static bool encoding_error_handler_called = false;
+
+void encoding_error_handler()
+{
+    encoding_error_handler_called = true;
+}
+
 template <typename Encoding>
 void test( Encoding enc
          , strf::detail::simple_string_view<char32_t> decoded_0_to_0xff )
@@ -113,22 +120,20 @@ void test( Encoding enc
             (strf::sani(u8str, strf::utf8<char>()));
     }
 
-    TEST(sanitized_0_to_0xff)
-        .with(enc) (strf::sani(str_0_to_xff));
-    TEST("---?+++")
-        .with(enc, strf::invalid_seq_policy::replace)
-        (strf::sani(u"---\U0010FFFF+++"));
+    TEST(sanitized_0_to_0xff) .with(enc) (strf::sani(str_0_to_xff));
+    TEST("---?+++").with(enc)(strf::sani(u"---\U0010FFFF+++"));
 
-#if defined(__cpp_exceptions)
 
     {
-        auto facets = strf::pack(enc, strf::invalid_seq_policy::stop);
-        TEST_THROWS(
-            ( (strf::to_string.with(facets)(strf::sani(u"---\U0010FFFF++"))))
-            , strf::invalid_sequence );
+        char buff[10];
+        ::encoding_error_handler_called = false;
+        strf::to(buff)
+            .with(enc, strf::invalid_seq_notifier{encoding_error_handler})
+            (strf::sani(u"---\U0010FFFF++"));
+        TEST_EQ(0, strcmp(buff, "---?++"));
+        TEST_TRUE(::encoding_error_handler_called);
     }
 
-#endif // defined(__cpp_exceptions)
 }
 
 strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_1()

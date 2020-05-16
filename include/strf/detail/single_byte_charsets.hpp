@@ -385,7 +385,7 @@ struct single_byte_char_encoding_to_utf32
         ( strf::underlying_outbuf<4>& ob
         , const std::uint8_t* src
         , std::size_t src_size
-        , strf::invalid_seq_policy inv_seq_poli
+        , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t transcode_size
@@ -413,30 +413,25 @@ STRF_HD void single_byte_char_encoding_to_utf32<Impl>::transcode
     ( strf::underlying_outbuf<4>& ob
     , const std::uint8_t* src
     , std::size_t src_size
-    , strf::invalid_seq_policy inv_seq_poli
+    , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
     auto dest_it = ob.pointer();
     auto dest_end = ob.end();
     auto src_end = src + src_size;
-    for (auto src_it = src; src_it < src_end; ++src_it) {
-        //ob.ensure(1);
+    for (auto src_it = src; src_it < src_end; ++src_it, ++dest_it) {
+        STRF_CHECK_DEST;
         char32_t ch32 = Impl::decode(*src_it);
-        if(ch32 == (char32_t)-1) {
-            switch(inv_seq_poli) {
-                case strf::invalid_seq_policy::replace:
-                    ch32 = 0xFFFD;
-                    break;
-                default:
-                    STRF_ASSERT(inv_seq_poli == strf::invalid_seq_policy::stop);
-                    ob.advance_to(dest_it);
-                    strf::detail::handle_invalid_sequence();
+        if(ch32 != (char32_t)-1) {
+            *dest_it = ch32;
+        } else  {
+            *dest_it = 0xFFFD;
+            if (inv_seq_notifier) {
+                ob.advance_to(dest_it + 1);
+                inv_seq_notifier.notify();
             }
         }
-        STRF_CHECK_DEST;
-        *dest_it = ch32;
-        ++dest_it;
     }
     ob.advance_to(dest_it);
 }
@@ -448,7 +443,7 @@ struct utf32_to_single_byte_char_encoding
         ( strf::underlying_outbuf<1>& ob
         , const char32_t* src
         , std::size_t src_size
-        , strf::invalid_seq_policy inv_seq_poli
+        , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t transcode_size
@@ -475,25 +470,25 @@ STRF_HD void utf32_to_single_byte_char_encoding<Impl>::transcode
     ( strf::underlying_outbuf<1>& ob
     , const char32_t* src
     , std::size_t src_size
-    , strf::invalid_seq_policy inv_seq_poli
+    , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     (void)surr_poli;
     auto dest_it = ob.pointer();
     auto dest_end = ob.end();
     auto src_end = src + src_size;
-    for(; src != src_end; ++src) {
-        auto ch2 = Impl::encode(*src);
-        if(ch2 >= 0x100) {
-            if (inv_seq_poli == strf::invalid_seq_policy::stop) {
-                ob.advance_to(dest_it);
-                strf::detail::handle_invalid_sequence();
-            }
-            ch2 = '?';
-        }
+    for(auto src_it = src; src_it != src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
-        *dest_it = static_cast<std::uint8_t>(ch2);
-        ++dest_it;
+        auto ch2 = Impl::encode(*src_it);
+        if(ch2 < 0x100) {
+            * dest_it = static_cast<std::uint8_t>(ch2);
+        } else {
+            * dest_it = '?';
+            if (inv_seq_notifier) {
+                ob.advance_to(dest_it + 1);
+                inv_seq_notifier.notify();
+            }
+        }
     }
     ob.advance_to(dest_it);
 }
@@ -505,7 +500,7 @@ struct single_byte_char_encoding_sanitizer
         ( strf::underlying_outbuf<1>& ob
         , const std::uint8_t* src
         , std::size_t src_size
-        , strf::invalid_seq_policy inv_seq_poli
+        , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t transcode_size
@@ -533,29 +528,26 @@ STRF_HD void single_byte_char_encoding_sanitizer<Impl>::transcode
     ( strf::underlying_outbuf<1>& ob
     , const std::uint8_t* src
     , std::size_t src_size
-    , strf::invalid_seq_policy inv_seq_poli
+    , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     (void) surr_poli;
     auto dest_it = ob.pointer();
     auto dest_end = ob.end();
     auto src_end = src + src_size;
-    std::uint8_t ch_out = '?';
-    for (auto src_it = src; src_it < src_end; ++src_it) {
+    for (auto src_it = src; src_it < src_end; ++src_it, ++dest_it) {
+        STRF_CHECK_DEST;
         std::uint8_t ch = *src_it;
         if (Impl::is_valid(ch)) {
-            ch_out = ch;
+            *dest_it = ch;
         }
         else {
-            if (inv_seq_poli == strf::invalid_seq_policy::stop) {
+            *dest_it = '?';
+            if (inv_seq_notifier) {
                 ob.advance_to(dest_it);
-                strf::detail::handle_invalid_sequence();
+                inv_seq_notifier.notify();
             }
-            ch_out = '?';
         }
-        STRF_CHECK_DEST;
-        *dest_it = ch_out;
-        ++dest_it;
     }
     ob.advance_to(dest_it);
 }

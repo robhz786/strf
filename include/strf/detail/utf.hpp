@@ -204,7 +204,7 @@ public:
         ( strf::underlying_outbuf<1>& ob
         , const std::uint8_t* src
         , std::size_t src_size
-        , strf::invalid_seq_policy inv_seq_poli
+        , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -232,7 +232,7 @@ public:
         ( strf::underlying_outbuf<2>& ob
         , const std::uint8_t* src
         , std::size_t src_size
-        , strf::invalid_seq_policy inv_seq_poli
+        , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -259,7 +259,7 @@ public:
         ( strf::underlying_outbuf<4>& ob
         , const std::uint8_t* src
         , std::size_t src_size
-        , strf::invalid_seq_policy inv_seq_poli
+        , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -287,7 +287,7 @@ public:
         ( strf::underlying_outbuf<1>& ob
         , const char16_t* src
         , std::size_t src_size
-        , strf::invalid_seq_policy inv_seq_poli
+        , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -315,7 +315,7 @@ public:
         ( strf::underlying_outbuf<2>& ob
         , const char16_t* src
         , std::size_t src_size
-        , strf::invalid_seq_policy inv_seq_poli
+        , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -343,7 +343,7 @@ public:
         ( strf::underlying_outbuf<4>& ob
         , const char16_t* src
         , std::size_t src_size
-        , strf::invalid_seq_policy inv_seq_poli
+        , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -371,7 +371,7 @@ public:
         ( strf::underlying_outbuf<1>& ob
         , const char32_t* src
         , std::size_t src_size
-        , strf::invalid_seq_policy inv_seq_poli
+        , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -399,7 +399,7 @@ public:
         ( strf::underlying_outbuf<2>& ob
         , const char32_t* src
         , std::size_t src_size
-        , strf::invalid_seq_policy inv_seq_poli
+        , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -427,7 +427,7 @@ public:
         ( strf::underlying_outbuf<4>& ob
         , const char32_t* src
         , std::size_t src_size
-        , strf::invalid_seq_policy inv_seq_poli
+        , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static STRF_HD std::size_t transcode_size
@@ -781,7 +781,7 @@ public:
     static STRF_HD char_type_* encode_char
         (char_type_* dest, char32_t ch) noexcept
     {
-        *dest = ch < 0x110000 ? ch : U'\uFFFD';
+        *dest = ch;
         return dest + 1;
     }
     static STRF_HD void encode_fill
@@ -867,7 +867,7 @@ STRF_INLINE STRF_HD void utf8_to_utf32::transcode
     ( strf::underlying_outbuf<4>& ob
     , const std::uint8_t* src
     , std::size_t src_size
-    , strf::invalid_seq_policy inv_seq_poli
+    , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     using strf::detail::utf8_decode;
@@ -923,11 +923,11 @@ STRF_INLINE STRF_HD void utf8_to_utf32::transcode
             } else goto invalid_sequence;
         } else {
             invalid_sequence:
-            if (inv_seq_poli == strf::invalid_seq_policy::stop) {
-                ob.advance_to(dest_it);
-                strf::detail::handle_invalid_sequence();
-            }
             ch32 = 0xFFFD;
+            if (inv_seq_notifier) {
+                ob.advance_to(dest_it);
+                inv_seq_notifier.notify();
+            }
         }
 
         STRF_CHECK_DEST;
@@ -988,7 +988,7 @@ STRF_INLINE STRF_HD void utf8_to_utf8::transcode
     ( strf::underlying_outbuf<1>& ob
     , const std::uint8_t* src
     , std::size_t src_size
-    , strf::invalid_seq_policy inv_seq_poli
+    , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     using strf::detail::utf8_decode;
@@ -1055,16 +1055,14 @@ STRF_INLINE STRF_HD void utf8_to_utf8::transcode
             } else goto invalid_sequence;
         } else {
             invalid_sequence:
-            if (inv_seq_poli == strf::invalid_seq_policy::replace) {
-                STRF_CHECK_DEST_SIZE(3);
-                dest_it[0] = 0xEF;
-                dest_it[1] = 0xBF;
-                dest_it[2] = 0xBD;
-                dest_it += 3;
-            } else {
-                STRF_ASSERT(inv_seq_poli == strf::invalid_seq_policy::stop);
+            STRF_CHECK_DEST_SIZE(3);
+            dest_it[0] = 0xEF;
+            dest_it[1] = 0xBF;
+            dest_it[2] = 0xBD;
+            dest_it += 3;
+            if (inv_seq_notifier) {
                 ob.advance_to(dest_it);
-                strf::detail::handle_invalid_sequence();
+                inv_seq_notifier.notify();
             }
         }
     }
@@ -1305,7 +1303,7 @@ STRF_INLINE STRF_HD void utf32_to_utf8::transcode
     ( strf::underlying_outbuf<1>& ob
     , const char32_t* src
     , std::size_t src_size
-    , strf::invalid_seq_policy inv_seq_poli
+    , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     auto src_it = src;
@@ -1342,19 +1340,14 @@ STRF_INLINE STRF_HD void utf32_to_utf8::transcode
             dest_it += 4;
         } else {
             invalid_sequence:
-            switch (inv_seq_poli) {
-                case strf::invalid_seq_policy::replace:
-                    STRF_CHECK_DEST_SIZE(3);
-                    dest_it[0] = 0xEF;
-                    dest_it[1] = 0xBF;
-                    dest_it[2] = 0xBD;
-                    dest_it += 3;
-                    break;
-
-                default:
-                    STRF_ASSERT(inv_seq_poli == strf::invalid_seq_policy::stop);
-                    ob.advance_to(dest_it);
-                    strf::detail::handle_invalid_sequence();
+            STRF_CHECK_DEST_SIZE(3);
+            dest_it[0] = 0xEF;
+            dest_it[1] = 0xBF;
+            dest_it[2] = 0xBD;
+            dest_it += 3;
+            if (inv_seq_notifier) {
+                ob.advance_to(dest_it);
+                inv_seq_notifier.notify();
             }
         }
     }
@@ -1398,7 +1391,7 @@ STRF_INLINE STRF_HD void utf16_to_utf32::transcode
     ( strf::underlying_outbuf<4>& ob
     , const char16_t* src
     , std::size_t src_size
-    , strf::invalid_seq_policy inv_seq_poli
+    , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     unsigned long ch, ch2;
@@ -1423,9 +1416,9 @@ STRF_INLINE STRF_HD void utf16_to_utf32::transcode
             ch32 = ch;
         } else {
             ch32 = 0xFFFD;
-            if (inv_seq_poli == strf::invalid_seq_policy::stop) {
+            if (inv_seq_notifier) {
                 ob.advance_to(dest_it);
-                strf::detail::handle_invalid_sequence();
+                inv_seq_notifier.notify();
             }
         }
 
@@ -1467,7 +1460,7 @@ STRF_INLINE STRF_HD void utf16_to_utf16::transcode
     ( strf::underlying_outbuf<2>& ob
     , const char16_t* src
     , std::size_t src_size
-    , strf::invalid_seq_policy inv_seq_poli
+    , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     unsigned long ch, ch2;
@@ -1498,13 +1491,13 @@ STRF_INLINE STRF_HD void utf16_to_utf16::transcode
             *dest_it = static_cast<char16_t>(ch);
             ++dest_it;
         } else {
-            if (inv_seq_poli == strf::invalid_seq_policy::stop) {
-                ob.advance_to(dest_it);
-                strf::detail::handle_invalid_sequence();
-            }
             STRF_CHECK_DEST;
             *dest_it = 0xFFFD;
             ++dest_it;
+            if (inv_seq_notifier) {
+                ob.advance_to(dest_it);
+                inv_seq_notifier.notify();
+            }
         }
     }
     ob.advance_to(dest_it);
@@ -1637,7 +1630,7 @@ STRF_INLINE STRF_HD void utf32_to_utf16::transcode
     ( strf::underlying_outbuf<2>& ob
     , const char32_t* src
     , std::size_t src_size
-    , strf::invalid_seq_policy inv_seq_poli
+    , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     auto src_it = src;
@@ -1662,13 +1655,13 @@ STRF_INLINE STRF_HD void utf32_to_utf16::transcode
             dest_it += 2;
         } else {
             invalid_char:
-            if (inv_seq_poli == strf::invalid_seq_policy::stop) {
-                ob.advance_to(dest_it);
-                strf::detail::handle_invalid_sequence();
-            }
             STRF_CHECK_DEST;
             *dest_it = 0xFFFD;
             ++dest_it;
+            if (inv_seq_notifier) {
+                ob.advance_to(dest_it);
+                inv_seq_notifier.notify();
+            }
         }
     }
     ob.advance_to(dest_it);
@@ -1702,7 +1695,7 @@ STRF_INLINE STRF_HD void utf32_to_utf32::transcode
     ( strf::underlying_outbuf<4>& ob
     , const char32_t* src
     , std::size_t src_size
-    , strf::invalid_seq_policy inv_seq_poli
+    , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     const auto src_end = src + src_size;
@@ -1712,11 +1705,11 @@ STRF_INLINE STRF_HD void utf32_to_utf32::transcode
         for (auto src_it = src; src_it < src_end; ++src_it) {
             auto ch = *src_it;
             if (ch >= 0x110000) {
-                if (inv_seq_poli == strf::invalid_seq_policy::stop) {
-                    ob.advance_to(dest_it);
-                    strf::detail::handle_invalid_sequence();
-                }
                 ch = 0xFFFD;
+                if (inv_seq_notifier) {
+                    ob.advance_to(dest_it);
+                    inv_seq_notifier.notify();
+                }
             }
             STRF_CHECK_DEST;
             *dest_it = ch;
@@ -1726,11 +1719,11 @@ STRF_INLINE STRF_HD void utf32_to_utf32::transcode
         for(auto src_it = src; src_it < src_end; ++src_it) {
             char32_t ch = *src_it;
             if (ch >= 0x110000 || strf::detail::is_surrogate(ch)) {
-                if (inv_seq_poli == strf::invalid_seq_policy::stop) {
-                    ob.advance_to(dest_it);
-                    strf::detail::handle_invalid_sequence();
-                }
                 ch = 0xFFFD;
+                if (inv_seq_notifier) {
+                    ob.advance_to(dest_it);
+                    inv_seq_notifier.notify();
+                }
             }
             STRF_CHECK_DEST;
             *dest_it = ch;
@@ -1759,7 +1752,7 @@ STRF_INLINE STRF_HD void utf8_to_utf16::transcode
     ( strf::underlying_outbuf<2>& ob
     , const std::uint8_t* src
     , std::size_t src_size
-    , strf::invalid_seq_policy inv_seq_poli
+    , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     using strf::detail::utf8_decode;
@@ -1824,12 +1817,12 @@ STRF_INLINE STRF_HD void utf8_to_utf16::transcode
             } else goto invalid_sequence;
         } else {
             invalid_sequence:
-            if (inv_seq_poli == strf::invalid_seq_policy::stop) {
-                ob.advance_to(dest_it);
-                strf::detail::handle_invalid_sequence();
-            }
             STRF_CHECK_DEST;
             *dest_it = 0xFFFD;
+            if (inv_seq_notifier) {
+                ob.advance_to(dest_it);
+                inv_seq_notifier.notify();
+            }
         }
     }
     ob.advance_to(dest_it);
@@ -1890,10 +1883,10 @@ STRF_INLINE STRF_HD void utf16_to_utf8::transcode
     ( strf::underlying_outbuf<1>& ob
     , const char16_t* src
     , std::size_t src_size
-    , strf::invalid_seq_policy inv_seq_poli
+    , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
-    (void) inv_seq_poli;
+    (void) inv_seq_notifier;
     auto src_it = src;
     const auto src_end = src + src_size;
     auto dest_it = ob.pointer();
@@ -1932,15 +1925,15 @@ STRF_INLINE STRF_HD void utf16_to_utf8::transcode
         } else if (surr_poli == strf::surrogate_policy::lax) {
             goto three_bytes;
         } else { // invalid sequece
-            if (inv_seq_poli == strf::invalid_seq_policy::stop) {
-                ob.advance_to(dest_it);
-                strf::detail::handle_invalid_sequence();
-            }
             STRF_CHECK_DEST_SIZE(3);
             dest_it[0] = 0xEF;
             dest_it[1] = 0xBF;
             dest_it[2] = 0xBD;
             dest_it += 3;
+            if (inv_seq_notifier) {
+                ob.advance_to(dest_it);
+                inv_seq_notifier.notify();
+            }
         }
     }
     ob.advance_to(dest_it);

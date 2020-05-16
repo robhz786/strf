@@ -361,7 +361,7 @@ Both have the same purpose: to customize numeric punctuation.
 |`<<lettercase,lettercase_c>>`        |Yes |Letter case in numeric types
 
 |`<<character_encoding,char_encoding_c>><CharT>`   |No  |The character encoding correponding to character type `CharT`
-|`<<invalid_seq_policy,invalid_seq_policy_c>>`    |Yes |Encoding error handling
+|`<<invalid_seq_notifier,invalid_seq_notifier_c>>`    |Yes |Encoding error handling
 |`<<surrogate_policy,surrogate_policy_c>>` |Yes |Wheter surrogates are treated as errors
 |`<<tr_string_error,tr_string_error_c>>`   |No  |Tr-string parsing error handling
 |===
@@ -583,7 +583,7 @@ assert(s == "one hundred billions = 1\2250000\225000\2250000");
 Since the library knows the encoding correspondig to each
 character type, and knows how to convert from one to another,
 it is possible to mix input string of difference characters
-types. It is necessary though to use the `cv` function:
+types, though you need to use the function `cv`:
 
 [source,cpp]
 ----
@@ -613,10 +613,9 @@ auto str_utf8 = strf::to_u8string
 assert(str_utf8 == u8"--\u00A4----\u20AC--");
 ----
 
-There is also the `sani` function that was the same
-effect as `cv` except when the input encoding is same as the
-output. In this case `sani` causes the input to be
-sanitized, whereas `cv` does not:
+The `sani` function has the same effect as `cv`,
+except when the input encoding is same as the output.
+In this case `sani` causes the input to be sanitized, whereas `cv` does not:
 
 [source, cpp]
 ----
@@ -631,52 +630,42 @@ auto str = strf::to_string
 assert(str == "--\xff----\xff----?----?----?--");
 ----
 
-[[invalid_seq_policy]]
-=== Encoding error handling
+The library replaces the invalid sequences by the
+https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;],
+if the destination encoding supports it. Otherwise, `'?'` is printed, as in the above code snippet.
 
-The `invalid_seq_policy` enumeration controls how invalid
-sequences are handled during encoding conversion.
-[source,cpp]
-----
-namespace strf {
-enum class invalid_seq_policy{ replace, stop };
-}
-----
-The default value is `invalid_seq_policy::replace`, that
-causes the invalid sequence to be replaced the
-https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;]. When the input is UTF-8,
-the library follows the practice recommended by the Unicode
-Standard ( search for "Best Practices for Using U+FFFD" in
+An "invalid sequence" is any input that is non-conformant to the source encoding,
+or that is impossible to write, in a conformant way, in the destination encoding.
+But there is an optional exception for surrogates characters.
+
+NOTE: When the input is UTF-8, the library follows the practice recommended by the
+Unicode Standard regarding to calculate how many replacement characters to print
+for each non-conformant input sequence. ( see for "Best Practices for Using U+FFFD" in
 https://www.unicode.org/versions/Unicode10.0.0/ch03.pdf[Chapter 3] ).
 
-
-.Replace
-[source,cpp]
-----
-auto str = strf::to_u8string (strf::cv("--\x99--"));
-assert(str == u8"--\uFFFD--");
-----
-
-.Throw exception
-[source,cpp]
-----
-bool transcoding_failed = false;
-try{
-    auto str = strf::to_string
-        .with(strf::invalid_seq_policy::stop)
-        (strf::cv("--\x99--"));
-}
-catch(strf::invalid_sequence&){
-    transcoding_failed = true;
-}
-assert(transcoding_failed);
-----
+NOTE: The library does not sanitizes non-conformities when converting a single character,
+like punctuation characters or the the fill character ( they are in UTF-32 ). In this case
+the replacement character is only used when the destination encoding is not able
+to print the codepoint.
+For example, if the you use `(char32_t)0xFFFFFFF` as the <<numpunct,decimal point>>,
+then it will printed as "\uFFFD" if the destination is UTF-8 or UTF-16, but
+if the destination is UTF-32, then the library just writes `(char32_t)0xFFFFFFF`
+verbatim.
 
 [[surrogate_policy]]
 === Surrogates tolerance
 
-The `surrogate_policy` enumeration is a facet that controls
-whether surrogates are tolerated.
+There is one particular kind of nonconformity that you may sometimes want to
+permit, which is the invalid presence of
+https://en.wikipedia.org/wiki/Universal_Character_Set_characters#Surrogates[surrogate]
+characters.
+That is particular common on Windows, where you may have an old file name, created
+at the time of Windows 95 ( where wide strings were UCS-2 ) and that contains
+some unpaired surrogates. If you then treat it as UTF-16 and convert it to UTF-8
+and back to UTF-16, you get a different name.
+
+So the library provides the `surrogate_policy` enumeration, which is a facet that
+enables you to turn off the surrogate sanitization.
 
 [source,cpp]
 ----
@@ -684,33 +673,52 @@ namespace strf {
 enum class surrogate_policy : bool { strict = false, lax = true };
 }
 ----
-
-The default value is `surrogate_policy::strict`.
+When the value is `surrogate_policy::strict`, which is the default,
+if an UTF-16 input contains a high surrogate not followed by a low surrogate,
+or a low surrogate not following a high surrogate, that is considered
+invalid and is thus sanitized.
+When the value is `surrogate_policy::lax`, those situations are allowed.
 
 [source,cpp]
 ----
-std::u16string input_utf16 {u"-----"};
-input_utf16[1] = 0xD800; // a surrogate character alone
+std::u16string original {u'-', 0xD800 ,u'-', u'-', u'-'};
 
 // convert to UTF-8
-auto str_strict = strf::to_u8string(strf::cv(input_utf16));
-auto str_lax = strf::to_u8string
-    .with(strf::surrogate_policy::lax)
-    ( strf::cv(input_utf16) );
+auto str_strict = strf::to_u8string(strf::cv(original));
+auto str_lax =
+    strf::to_u8string .with(strf::surrogate_policy::lax) (strf::cv(original));
 
-assert(str_strict == u8"-\uFFFD---");  // surrogate sanitized
+assert(str_strict == u8"-\uFFFD---");                  // surrogate sanitized
 assert(str_lax == (const char8_t*)"-\xED\xA0\x80---"); // surrogate allowed
 
-// Then back to UTF-16
+// convert back to UTF-16
 auto utf16_strict = strf::to_u16string(strf::cv(str_lax));
+auto utf16_lax =
+    strf::to_u16string .with(strf::surrogate_policy::lax) (strf::cv(str_lax));
 
-auto utf16_lax = strf::to_u16string
-    .with(strf::surrogate_policy::lax)
-    ( strf::cv(str_lax) );
-
-assert(utf16_strict == u"-\uFFFD\uFFFD\uFFFD---"); // surrogate sanitized
-assert(utf16_lax == input_utf16);                  // surrogate preserved
+assert(utf16_strict == u"-\uFFFD\uFFFD\uFFFD---");     // surrogate sanitized
+assert(utf16_lax == original);                         // surrogate preserved
 ----
+
+[[invalid_seq_notifier]]
+=== Encoding error notifier function
+
+The facet `invalid_seq_notifier` contains a function pointer that is called
+every time an ivalid sequence is sanitized, unless it is null, which is the
+default.
+
+The code below throws an exception if `u16str` contains any invalid sequence:
+[source,cpp]
+----
+std::u16string u16str = /* ... */;
+notifier_func =  [](){
+    throw std::sytem_error(std::make_error_code(std::errc::illegal_byte_sequence));
+};
+strf::invalid_seq_notifier notifier{ notifier_func };
+
+auto str = strf::to_string.width(notifier)(strf::cv(u16str));
+----
+
 
 [[width_calculator]]
 == Width Calculation
@@ -831,9 +839,12 @@ width of the string is its size in UTF-8, not in UTF-16.
 ----
 auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
 
-auto res1 = strf::to_u16string.with(strf::fast_width{})          (strf::cv(str) > 12);
-auto res2 = strf::to_u16string.with(strf::width_as_fast_u32len{})(strf::cv(str) > 12);
-auto res3 = strf::to_u16string.with(strf::width_as_u32len{})     (strf::cv(str) > 12);
+auto res1 = strf::to_u16string.with(strf::fast_width{})
+            (strf::cv(str) > 12);
+auto res2 = strf::to_u16string.with(strf::width_as_fast_u32len{})
+            (strf::cv(str) > 12);
+auto res3 = strf::to_u16string.with(strf::width_as_u32len{})
+            (strf::cv(str) > 12);
 
 assert(res1 == u" 15.00 \u20AC \uFFFD");    // width calculated as 11 ( == strlen(str) )
 assert(res2 == u"    15.00 \u20AC \uFFFD"); // width calculated as 8

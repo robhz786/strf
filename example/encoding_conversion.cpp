@@ -57,36 +57,6 @@ void arg()
     //]
 }
 
-void invalid_seq_policy_replace()
-{
-    //[ invalid_seq_policy_replace
-    auto str = strf::to_u8string (strf::sani("--\x99--"));
-    assert(str == u8"--\uFFFD--");
-    //]
-}
-
-void invalid_seq_policy_stop()
-{
-#if defined(__cpp_exceptions)
-
-    //[invalid_seq_policy_stop
-    bool transcoding_failed = false;
-    try {
-        auto str = strf::to_string
-            .with(strf::invalid_seq_policy::stop)
-            (strf::sani("--\x99--"));
-    }
-    catch(strf::invalid_sequence&) {
-        transcoding_failed = true;
-    }
-
-    assert(transcoding_failed);
-    //]
-    (void) transcoding_failed;
-
-#endif // defined(__cpp_exceptions)
-}
-
 void allow_surrogates ()
 {
     //[ allow_surrogates
@@ -120,8 +90,6 @@ int main()
 {
     input_ouput_different_char_types();
     arg();
-    invalid_seq_policy_replace();
-    invalid_seq_policy_stop();
     allow_surrogates();
 
     return 0;

@@ -79,9 +79,7 @@ void test_allowed_surrogates(SrcEncoding src_enc, DestEncoding dest_enc)
     const auto expected = sample_with_surrogates(dest_enc);
 
     TEST(expected)
-        .with( dest_enc
-               , strf::invalid_seq_policy::stop
-               , strf::surrogate_policy::lax )
+        .with( dest_enc, strf::surrogate_policy::lax )
         (strf::sani(input, src_enc));
 }
 
@@ -209,6 +207,12 @@ template <class T>
 using get_first_template_parameter
 = typename get_first_template_parameter_impl<T>::type;
 
+static bool encoding_error_handler_called = false ;
+
+void encoding_error_handler()
+{
+    encoding_error_handler_called = true;
+}
 
 template <typename SrcEncoding, typename DestEncoding>
 void test_invalid_input(SrcEncoding src_enc, DestEncoding dest_enc)
@@ -246,20 +250,16 @@ void test_invalid_input(SrcEncoding src_enc, DestEncoding dest_enc)
                                        , suffix_out );
             TEST(expected)
                 .with(dest_enc)
-                .with(strf::invalid_seq_policy::replace)
                 (strf::sani(input, src_enc));
         }
 
-#if defined(__cpp_exceptions)
-
-        // stop
-        TEST_THROWS( (strf::to(buff_out)
-                          .with(dest_enc, strf::invalid_seq_policy::stop)
-                          (strf::sani(input, src_enc)))
-                   , strf::invalid_sequence );
-
-#endif // defined(__cpp_exceptions)
-
+        {
+            ::encoding_error_handler_called = false;
+            strf::to(buff_out)
+                .with(dest_enc, strf::invalid_seq_notifier{encoding_error_handler})
+                (strf::sani(input, src_enc));
+            TEST_TRUE(::encoding_error_handler_called);
+        }
     }
 }
 

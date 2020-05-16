@@ -11,58 +11,6 @@ namespace strf {
 
 template <typename> struct facet_traits;
 
-enum class invalid_seq_policy
-{
-    replace, stop
-};
-
-class invalid_sequence: public strf::stringify_error
-{
-    using strf::stringify_error::stringify_error;
-
-    const char* what() const noexcept override
-    {
-        return "strf: encoding conversion error";
-    }
-};
-
-namespace detail {
-
-inline STRF_HD void handle_invalid_sequence()
-{
-
-#if defined(__cpp_exceptions) && !defined(__CUDA_ARCH__)
-    throw strf::invalid_sequence();
-#else // defined(__cpp_exceptions) && !defined(__CUDA_ARCH__)
-
-#  ifndef __CUDA_ARCH__
-    std::abort();
-#  else
-    asm("trap;");
-#  endif
-
-#endif // defined(__cpp_exceptions) && !defined(__CUDA_ARCH__)
-}
-
-} // namespace detail
-
-struct invalid_seq_policy_c
-{
-    static constexpr bool constrainable = false;
-
-    static constexpr STRF_HD strf::invalid_seq_policy get_default() noexcept
-    {
-        return strf::invalid_seq_policy::replace;
-    }
-};
-
-template <>
-struct facet_traits<strf::invalid_seq_policy>
-{
-    using category = strf::invalid_seq_policy_c;
-    static constexpr bool store_by_value = true;
-};
-
 enum class surrogate_policy : bool
 {
     strict = false, lax = true
@@ -83,6 +31,62 @@ struct facet_traits<strf::surrogate_policy>
 {
     using category = strf::surrogate_policy_c;
     static constexpr bool store_by_value = true;
+};
+
+struct invalid_seq_notifier_c;
+
+class invalid_seq_notifier
+{
+public:
+
+    using category = invalid_seq_notifier_c;
+
+    typedef void(*notify_fptr)();
+
+    constexpr invalid_seq_notifier() noexcept = default;
+    constexpr invalid_seq_notifier(const invalid_seq_notifier&) noexcept = default;
+
+    constexpr STRF_HD explicit invalid_seq_notifier(notify_fptr f) noexcept
+        : notify_func_(f)
+    {
+    }
+    constexpr STRF_HD invalid_seq_notifier& operator=(notify_fptr f) noexcept
+    {
+        notify_func_ = f;
+        return *this;
+    }
+    constexpr STRF_HD invalid_seq_notifier& operator=(const invalid_seq_notifier& other) noexcept
+    {
+        notify_func_ = other.notify_func_;
+        return *this;
+    }
+    constexpr STRF_HD bool operator==(const invalid_seq_notifier& other) noexcept
+    {
+        return notify_func_ == other.notify_func_;
+    }
+    constexpr STRF_HD operator bool () const noexcept
+    {
+        return notify_func_ != nullptr;
+    }
+    constexpr STRF_HD void notify() const noexcept
+    {
+        if (notify_func_) {
+            notify_func_();
+        }
+    }
+
+private:
+    notify_fptr notify_func_ = nullptr;
+};
+
+struct invalid_seq_notifier_c
+{
+    static constexpr bool constrainable = false;
+
+    static constexpr STRF_HD strf::invalid_seq_notifier get_default() noexcept
+    {
+        return {};
+    }
 };
 
 enum class char_encoding_id : unsigned
@@ -190,7 +194,7 @@ using transcode_f = void (*)
     ( strf::underlying_outbuf<DestCharSize>& ob
     , const strf::underlying_char_type<SrcCharSize>* src
     , std::size_t src_size
-    , strf::invalid_seq_policy inv_seq_poli
+    , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli );
 
 template <std::size_t SrcCharSize>
@@ -206,10 +210,10 @@ using write_replacement_char_f = void (*)
 // assume surragate_policy::lax
 using validate_f = std::size_t (*)(char32_t ch);
 
-// assume surragates_policy::lax and strf::invalid_seq_policy::replace
+// assume surragates_policy::lax
 using encoded_char_size_f = std::size_t (*)(char32_t ch);
 
-// assume surrogate_policy::lax and strf::invalid_seq_policy::replace
+// assume surrogate_policy::lax
 template <std::size_t CharSize>
 using encode_char_f = strf::underlying_char_type<CharSize>*(*)
     ( strf::underlying_char_type<CharSize>* dest, char32_t ch );
@@ -268,10 +272,10 @@ public:
         ( strf::underlying_outbuf<DestCharSize>& ob
         , const strf::underlying_char_type<SrcCharSize>* src
         , std::size_t src_size
-        , strf::invalid_seq_policy inv_seq_poli
+        , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli ) const
     {
-        transcode_func_(ob, src, src_size, inv_seq_poli, surr_poli);
+        transcode_func_(ob, src, src_size, inv_seq_notifier, surr_poli);
     }
 
     STRF_HD std::size_t transcode_size
@@ -755,12 +759,12 @@ public:
     STRF_HD buffered_encoder
         ( strf::transcode_f<4, DestCharSize> func
         , strf::underlying_outbuf<DestCharSize>& ob
-        , strf::invalid_seq_policy inv_seq_poli
+        , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli )
         : strf::underlying_outbuf<4>( buff_, buff_size_ )
         , transcode_(func)
         , ob_(ob)
-        , inv_seq_poli_(inv_seq_poli)
+        , inv_seq_notifier_(inv_seq_notifier)
         , surr_poli_(surr_poli)
     {
     }
@@ -772,7 +776,7 @@ public:
         auto p = this->pointer();
         if (p != buff_ && ob_.good()) {
             transcode_( ob_, buff_, static_cast<std::size_t>(p - buff_)
-                      , inv_seq_poli_, surr_poli_);
+                      , inv_seq_notifier_, surr_poli_);
         }
         this->set_good(false);
     }
@@ -781,7 +785,7 @@ private:
 
     strf::transcode_f<4, DestCharSize> transcode_;
     strf::underlying_outbuf<DestCharSize>& ob_;
-    strf::invalid_seq_policy inv_seq_poli_;
+    strf::invalid_seq_notifier inv_seq_notifier_;
     strf::surrogate_policy surr_poli_;
     constexpr static const std::size_t buff_size_ = 32;
     char32_t buff_[buff_size_];
@@ -796,7 +800,7 @@ STRF_HD void buffered_encoder<DestCharSize>::recycle()
     if (p != buff_ && ob_.good()) {
         this->set_good(false);
         transcode_( ob_, buff_, static_cast<std::size_t>(p - buff_)
-                  , inv_seq_poli_, surr_poli_);
+                  , inv_seq_notifier_, surr_poli_);
         this->set_good(true);
     }
 }
@@ -852,11 +856,11 @@ STRF_HD void decode_encode
     , strf::transcode_f<4, DestCharSize> from_u32
     , const underlying_char_type<SrcCharSize>* src
     , std::size_t src_size
-    , strf::invalid_seq_policy inv_seq_poli
+    , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
-    strf::detail::buffered_encoder<DestCharSize> tmp{from_u32, ob, inv_seq_poli, surr_poli};
-    to_u32(tmp, src, src_size, inv_seq_poli, surr_poli);
+    strf::detail::buffered_encoder<DestCharSize> tmp{from_u32, ob, inv_seq_notifier, surr_poli};
+    to_u32(tmp, src, src_size, inv_seq_notifier, surr_poli);
     tmp.finish();
 }
 
@@ -866,11 +870,11 @@ STRF_HD std::size_t decode_encode_size
     , strf::transcode_size_f<4> size_calc_func
     , const underlying_char_type<SrcCharSize>* src
     , std::size_t src_size
-    , strf::invalid_seq_policy inv_seq_poli
+    , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
 {
     strf::detail::buffered_size_calculator acc{size_calc_func, surr_poli};
-    to_u32(acc, src, src_size, inv_seq_poli, surr_poli);
+    to_u32(acc, src, src_size, inv_seq_notifier, surr_poli);
     return acc.get_sum();
 }
 
