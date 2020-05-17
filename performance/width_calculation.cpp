@@ -79,25 +79,25 @@ const auto custom_calc = strf::make_width_calculator(wfunc);
 #define U16_32L_J50_OP  strf::to(u16dest).with(slow_u32len) (strf::join_right(50)(u16str50));
 #define U16_C_J50_OP    strf::to(u16dest).with(custom_calc) (strf::join_right(50)(u16str50));
 
-#define  CV_F_5_OP      strf::to(u16dest).with( fast_width) (strf::cv(u8str5) > 5);
-#define  CV_F32L_5_OP   strf::to(u16dest).with(fast_u32len) (strf::cv(u8str5) > 5);
-#define  CV_32L_5_OP    strf::to(u16dest).with(slow_u32len) (strf::cv(u8str5) > 5);
-#define  CV_C_5_OP      strf::to(u16dest).with(custom_calc) (strf::cv(u8str5) > 5);
+#define  CV_F_5_OP      strf::to(u16dest).with( fast_width) (strf::conv(u8str5) > 5);
+#define  CV_F32L_5_OP   strf::to(u16dest).with(fast_u32len) (strf::conv(u8str5) > 5);
+#define  CV_32L_5_OP    strf::to(u16dest).with(slow_u32len) (strf::conv(u8str5) > 5);
+#define  CV_C_5_OP      strf::to(u16dest).with(custom_calc) (strf::conv(u8str5) > 5);
 
-#define  CV_F_J5_OP     strf::to(u16dest).with( fast_width) (strf::join_right(5)(strf::cv(u8str5)));
-#define  CV_F32L_J5_OP  strf::to(u16dest).with(fast_u32len) (strf::join_right(5)(strf::cv(u8str5)));
-#define  CV_32L_J5_OP   strf::to(u16dest).with(slow_u32len) (strf::join_right(5)(strf::cv(u8str5)));
-#define  CV_C_J5_OP     strf::to(u16dest).with(custom_calc) (strf::join_right(5)(strf::cv(u8str5)));
+#define  CV_F_J5_OP     strf::to(u16dest).with( fast_width) (strf::join_right(5)(strf::conv(u8str5)));
+#define  CV_F32L_J5_OP  strf::to(u16dest).with(fast_u32len) (strf::join_right(5)(strf::conv(u8str5)));
+#define  CV_32L_J5_OP   strf::to(u16dest).with(slow_u32len) (strf::join_right(5)(strf::conv(u8str5)));
+#define  CV_C_J5_OP     strf::to(u16dest).with(custom_calc) (strf::join_right(5)(strf::conv(u8str5)));
 
-#define  CV_F_50_OP     strf::to(u16dest).with( fast_width) (strf::cv(u8str50) > 50);
-#define  CV_F32L_50_OP  strf::to(u16dest).with(fast_u32len) (strf::cv(u8str50) > 50);
-#define  CV_32L_50_OP   strf::to(u16dest).with(slow_u32len) (strf::cv(u8str50) > 50);
-#define  CV_C_50_OP     strf::to(u16dest).with(custom_calc) (strf::cv(u8str50) > 50);
+#define  CV_F_50_OP     strf::to(u16dest).with( fast_width) (strf::conv(u8str50) > 50);
+#define  CV_F32L_50_OP  strf::to(u16dest).with(fast_u32len) (strf::conv(u8str50) > 50);
+#define  CV_32L_50_OP   strf::to(u16dest).with(slow_u32len) (strf::conv(u8str50) > 50);
+#define  CV_C_50_OP     strf::to(u16dest).with(custom_calc) (strf::conv(u8str50) > 50);
 
-#define  CV_F_J50_OP    strf::to(u16dest).with( fast_width) (strf::join_right(50)(strf::cv(u8str50)));
-#define  CV_F32L_J50_OP strf::to(u16dest).with(fast_u32len) (strf::join_right(50)(strf::cv(u8str50)));
-#define  CV_32L_J50_OP  strf::to(u16dest).with(slow_u32len) (strf::join_right(50)(strf::cv(u8str50)));
-#define  CV_C_J50_OP    strf::to(u16dest).with(custom_calc) (strf::join_right(50)(strf::cv(u8str50)));
+#define  CV_F_J50_OP    strf::to(u16dest).with( fast_width) (strf::join_right(50)(strf::conv(u8str50)));
+#define  CV_F32L_J50_OP strf::to(u16dest).with(fast_u32len) (strf::join_right(50)(strf::conv(u8str50)));
+#define  CV_32L_J50_OP  strf::to(u16dest).with(slow_u32len) (strf::join_right(50)(strf::conv(u8str50)));
+#define  CV_C_J50_OP    strf::to(u16dest).with(custom_calc) (strf::join_right(50)(strf::conv(u8str50)));
 
 
 CREATE_BENCHMARK( U8_F_5);

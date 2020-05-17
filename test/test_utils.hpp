@@ -423,8 +423,8 @@ void input_tester<CharOut>::finish()
                                                 , result.begin()
                                                 , expected_.size() ))
     {
-        test_failure_( "\n  expected: \"", strf::cv(expected_), '\"'
-                     , "\n  obtained: \"", strf::cv(result), "\"" );
+        test_failure_( "\n  expected: \"", strf::conv(expected_), '\"'
+                     , "\n  obtained: \"", strf::conv(result), "\"" );
 
     }
     if(wrongly_reserved_(result.size())) {

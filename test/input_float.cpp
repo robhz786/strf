@@ -117,7 +117,7 @@ const char* replace_decimal_point
     strf::detail::simple_string_view<char> str1{str, pos};
     strf::detail::simple_string_view<char> str2{str + pos + 1};
     char32_t replacement_str[2] = {replacement, U'\0'};
-    strf::to(buff)(str1, strf::cv(replacement_str), str2);
+    strf::to(buff)(str1, strf::conv(replacement_str), str2);
     return buff;
 }
 

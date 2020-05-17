@@ -194,9 +194,9 @@ void output_FILE()
 void input_ouput_different_char_types()
 {
     //[input_output_different_char_types
-    auto str = strf::to_string( strf::cv(u"aaa-")
-                              , strf::cv(U"bbb-")
-                              , strf::cv(L"ccc") );
+    auto str = strf::to_string( strf::conv(u"aaa-")
+                              , strf::conv(U"bbb-")
+                              , strf::conv(L"ccc") );
     assert(str ==  "aaa-bbb-ccc");
     //]
 }
@@ -205,9 +205,9 @@ void input_string_encoding()
 {
     //[input_string_encoding
     // Three input string. Each one in its own character set
-    auto s = strf::to_u8string( strf::cv("\x80\xA4 -- ", strf::iso_8859_1<char>())
-                              , strf::cv("\x80\xA4 -- ", strf::iso_8859_15<char>())
-                              , strf::cv("\x80\xA4", strf::windows_1252<char>()) );
+    auto s = strf::to_u8string( strf::conv("\x80\xA4 -- ", strf::iso_8859_1<char>())
+                              , strf::conv("\x80\xA4 -- ", strf::iso_8859_15<char>())
+                              , strf::conv("\x80\xA4", strf::windows_1252<char>()) );
 
     // The output by default is in UTF-8
     assert(s == u8"\u0080\u00A4 -- \u0080\u20AC -- \u20AC\u00A4");
@@ -283,13 +283,13 @@ void width_as_u32len()
     assert(result == "***15.00 \xE2\x82\xAC \x80"); // width calculated as 9
 }
 
-void width_in_cv()
+void width_in_conv()
 {
     auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
 
-    auto res1 = strf::to_u16string.with(strf::fast_width{})          (strf::cv(str) > 12);
-    auto res2 = strf::to_u16string.with(strf::width_as_fast_u32len{})(strf::cv(str) > 12);
-    auto res3 = strf::to_u16string.with(strf::width_as_u32len{})     (strf::cv(str) > 12);
+    auto res1 = strf::to_u16string.with(strf::fast_width{})          (strf::conv(str) > 12);
+    auto res2 = strf::to_u16string.with(strf::width_as_fast_u32len{})(strf::conv(str) > 12);
+    auto res3 = strf::to_u16string.with(strf::width_as_u32len{})     (strf::conv(str) > 12);
 
     assert(res1 == u" 15.00 \u20AC \uFFFD");    // width calculated as 11 ( == strlen(str) )
     assert(res2 == u"    15.00 \u20AC \uFFFD"); // width calculated as 8
@@ -386,7 +386,7 @@ int main()
     width_as_u32len();
     width_as_fast_u32len();
     width_func();
-    width_in_cv();
+    width_in_conv();
     using_my_customizations();
     return 0;
 }

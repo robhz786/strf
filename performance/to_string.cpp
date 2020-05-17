@@ -56,12 +56,12 @@ std::u16string u16sample1(500, u'A');
 #define STRF_R_TR_10_20_OP     strf::to_string .reserve(21).tr("ten = {}, twenty = {}", 10, 20)
 #define STRF_NR_TR_10_20_OP    strf::to_string .no_reserve() .tr("ten = {}, twenty = {}", 10, 20)
 #define FMT_10_20_OP           fmt::format("ten = {}, twenty = {}", 10, 20)
-#define U8_TO_U16_NR_OP        strf::to_u16string.no_reserve()(strf::cv(u8sample1))
-#define U8_TO_U16_RC_OP        strf::to_u16string.reserve_calc()(strf::cv(u8sample1))
-#define U8_TO_U16_R_OP         strf::to_u16string.reserve(510)(strf::cv(u8sample1))
-#define U16_TO_U8_NR_OP        strf::to_string(strf::cv(u16sample1))
-#define U16_TO_U8_RC_OP        strf::to_string.reserve_calc()(strf::cv(u16sample1))
-#define U16_TO_U8_R_OP         strf::to_string.reserve(510)(strf::cv(u16sample1))
+#define U8_TO_U16_NR_OP        strf::to_u16string.no_reserve()(strf::conv(u8sample1))
+#define U8_TO_U16_RC_OP        strf::to_u16string.reserve_calc()(strf::conv(u8sample1))
+#define U8_TO_U16_R_OP         strf::to_u16string.reserve(510)(strf::conv(u8sample1))
+#define U16_TO_U8_NR_OP        strf::to_string(strf::conv(u16sample1))
+#define U16_TO_U8_RC_OP        strf::to_string.reserve_calc()(strf::conv(u16sample1))
+#define U16_TO_U8_R_OP         strf::to_string.reserve(510)(strf::conv(u16sample1))
 
 CREATE_BENCHMARK(STRF_RC_HELLO);
 CREATE_BENCHMARK(STRF_R_HELLO);
@@ -116,7 +116,7 @@ static void u8_to_u16_buff(benchmark::State& state)
 {
     char16_t u16buff [1024];
     for(auto _ : state) {
-        (void)strf::to(u16buff)(strf::cv(u8sample1));
+        (void)strf::to(u16buff)(strf::conv(u8sample1));
         auto str = strf::to_u16string.reserve_calc() (u16buff);
         benchmark::DoNotOptimize(str.data());
         benchmark::ClobberMemory();
@@ -127,7 +127,7 @@ static void u16_to_u8_buff(benchmark::State& state)
 {
     char buff[2000];
     for(auto _ : state) {
-        (void)strf::to(buff)(strf::cv(u16sample1));
+        (void)strf::to(buff)(strf::conv(u16sample1));
         auto str = strf::to_string.reserve_calc()(buff);
         benchmark::DoNotOptimize(str.data());
         benchmark::ClobberMemory();
@@ -171,13 +171,13 @@ int main(int argc, char** argv)
     REGISTER_BENCHMARK(U8_TO_U16_RC);
     REGISTER_BENCHMARK(U8_TO_U16_R);
     benchmark::RegisterBenchmark
-        ( "strf::to(buff)(strf::cv(u8sample1)); strf::to_u16string.reserve_calc()(buff)"
+        ( "strf::to(buff)(strf::conv(u8sample1)); strf::to_u16string.reserve_calc()(buff)"
         , u8_to_u16_buff );
     REGISTER_BENCHMARK(U16_TO_U8_NR);
     REGISTER_BENCHMARK(U16_TO_U8_RC);
     REGISTER_BENCHMARK(U16_TO_U8_R);
     benchmark::RegisterBenchmark
-        ( "strf::to(buff)(strf::cv(u16sample1)); strf::to_string.reserve_calc()(buff)"
+        ( "strf::to(buff)(strf::conv(u16sample1)); strf::to_string.reserve_calc()(buff)"
         , u16_to_u8_buff );
 
     benchmark::Initialize(&argc, argv);

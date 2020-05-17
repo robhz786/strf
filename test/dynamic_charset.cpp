@@ -19,17 +19,17 @@ int main()
         TEST_TRUE(a != b);
     }
 
-    TEST("abc ? def").with(dyn_ascii) (strf::cv("abc \xC4\x80 def", dyn_utf8));
-    TEST("abc ? def").with(dyn_ascii) (strf::cv("abc \xC4\x80 def", strf::utf<char>()));
-    TEST("abc ? def").with(strf::ascii<char>()) (strf::cv("abc \xC4\x80 def", dyn_utf8));
-    TEST("abc \xC4\x80 def").with(dyn_utf8) (strf::cv(u"abc \u0100 def"  , dyn_utf16));
-    TEST("abc \xC4\x80 def").with(dyn_utf8) (strf::cv(U"abc \u0100 def"  , dyn_utf32));
-    TEST(u"abcdef").with(dyn_utf16)         (strf::cv( "abcdef", dyn_ascii));
-    TEST( "abcdef").with(dyn_ascii)         (strf::cv(u"abcdef", dyn_utf16));
-    TEST(u"abc \u0100 def").with(dyn_utf16) (strf::cv( "abc \xC4\x80 def", dyn_utf8));
-    TEST(u"abc \u0100 def").with(dyn_utf16) (strf::cv(U"abc \u0100 def"  , dyn_utf32));
-    TEST(U"abc \u0100 def").with(dyn_utf32) (strf::cv( "abc \xC4\x80 def", dyn_utf8));
-    TEST(U"abc \u0100 def").with(dyn_utf32) (strf::cv(u"abc \u0100 def"  , dyn_utf16));
+    TEST("abc ? def").with(dyn_ascii) (strf::conv("abc \xC4\x80 def", dyn_utf8));
+    TEST("abc ? def").with(dyn_ascii) (strf::conv("abc \xC4\x80 def", strf::utf<char>()));
+    TEST("abc ? def").with(strf::ascii<char>()) (strf::conv("abc \xC4\x80 def", dyn_utf8));
+    TEST("abc \xC4\x80 def").with(dyn_utf8) (strf::conv(u"abc \u0100 def"  , dyn_utf16));
+    TEST("abc \xC4\x80 def").with(dyn_utf8) (strf::conv(U"abc \u0100 def"  , dyn_utf32));
+    TEST(u"abcdef").with(dyn_utf16)         (strf::conv( "abcdef", dyn_ascii));
+    TEST( "abcdef").with(dyn_ascii)         (strf::conv(u"abcdef", dyn_utf16));
+    TEST(u"abc \u0100 def").with(dyn_utf16) (strf::conv( "abc \xC4\x80 def", dyn_utf8));
+    TEST(u"abc \u0100 def").with(dyn_utf16) (strf::conv(U"abc \u0100 def"  , dyn_utf32));
+    TEST(U"abc \u0100 def").with(dyn_utf32) (strf::conv( "abc \xC4\x80 def", dyn_utf8));
+    TEST(U"abc \u0100 def").with(dyn_utf32) (strf::conv(u"abc \u0100 def"  , dyn_utf16));
 
     TEST("abc \xC4\x80 def").with(dyn_utf8) (strf::sani("abc \xC4\x80 def"));
     TEST(u"abc \u0100 def").with(dyn_utf16) (strf::sani(u"abc \u0100 def"));

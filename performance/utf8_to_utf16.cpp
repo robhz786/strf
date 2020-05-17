@@ -92,7 +92,7 @@ static void bm_strf(benchmark::State& state) {
     fill_with_codepoints<CodepointsSize>(u8sample, CodepointsCount);
     strf::detail::simple_string_view<char> u8str(u8sample, CodepointsCount * CodepointsSize);
     for(auto _ : state) {
-        strf::to(u16dest)(strf::cv(u8str));
+        strf::to(u16dest)(strf::conv(u8str));
         benchmark::DoNotOptimize(u16dest);
         //benchmark::DoNotOptimize(u8sample);
     }
@@ -130,17 +130,17 @@ static void dummy (benchmark::State&)
 
 int main(int argc, char** argv)
 {
-    benchmark::RegisterBenchmark("strf::to(u16dest)(strf::cv(u8small1))", bm_strf<20, 1>);
-    benchmark::RegisterBenchmark("strf::to(u16dest)(strf::cv(u8small2))", bm_strf<20, 2>);
-    benchmark::RegisterBenchmark("strf::to(u16dest)(strf::cv(u8small3))", bm_strf<20, 3>);
-    benchmark::RegisterBenchmark("strf::to(u16dest)(strf::cv(u8small4))", bm_strf<20, 4>);
+    benchmark::RegisterBenchmark("strf::to(u16dest)(strf::conv(u8small1))", bm_strf<20, 1>);
+    benchmark::RegisterBenchmark("strf::to(u16dest)(strf::conv(u8small2))", bm_strf<20, 2>);
+    benchmark::RegisterBenchmark("strf::to(u16dest)(strf::conv(u8small3))", bm_strf<20, 3>);
+    benchmark::RegisterBenchmark("strf::to(u16dest)(strf::conv(u8small4))", bm_strf<20, 4>);
 
     benchmark::RegisterBenchmark("    -------------", dummy);
 
-    benchmark::RegisterBenchmark("strf::to(u16dest)(strf::cv(u8big1))", bm_strf<200, 1>);
-    benchmark::RegisterBenchmark("strf::to(u16dest)(strf::cv(u8big2))", bm_strf<200, 2>);
-    benchmark::RegisterBenchmark("strf::to(u16dest)(strf::cv(u8big3))", bm_strf<200, 3>);
-    benchmark::RegisterBenchmark("strf::to(u16dest)(strf::cv(u8big4))", bm_strf<200, 4>);
+    benchmark::RegisterBenchmark("strf::to(u16dest)(strf::conv(u8big1))", bm_strf<200, 1>);
+    benchmark::RegisterBenchmark("strf::to(u16dest)(strf::conv(u8big2))", bm_strf<200, 2>);
+    benchmark::RegisterBenchmark("strf::to(u16dest)(strf::conv(u8big3))", bm_strf<200, 3>);
+    benchmark::RegisterBenchmark("strf::to(u16dest)(strf::conv(u8big4))", bm_strf<200, 4>);
 
     benchmark::RegisterBenchmark("    -------------", dummy);
 

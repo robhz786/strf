@@ -77,15 +77,15 @@ constexpr auto right(const T& value, int width, char32_t fill)
 }
 
 template <typename T>
-constexpr auto cv(const T& value)
+constexpr auto conv(const T& value)
 {
-    return fmt(value).cv();
+    return fmt(value).conv();
 }
 
 template <typename T, typename CharEncoding>
-constexpr auto cv(const T& value, const CharEncoding& cs)
+constexpr auto conv(const T& value, const CharEncoding& cs)
 {
-    return fmt(value).cv(cs);
+    return fmt(value).conv(cs);
 }
 
 template <typename T>

@@ -53,9 +53,9 @@ void samples()
     assert(s == "---...255 in hexadecimal is ff...---");
 
     // encoding conversion
-    auto s_utf8 = strf::to_u8string( strf::cv(u"aaa-")
-                                   , strf::cv(U"bbb-")
-                                   , strf::cv( "\x80\xA4"
+    auto s_utf8 = strf::to_u8string( strf::conv(u"aaa-")
+                                   , strf::conv(U"bbb-")
+                                   , strf::conv( "\x80\xA4"
                                              , strf::windows_1252<char>() ) );
     assert(s_utf8 == u8"aaa-bbb-\u20AC\u00A4");
 

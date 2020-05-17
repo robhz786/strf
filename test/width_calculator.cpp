@@ -55,10 +55,10 @@ int main()
         //     (strf::right( L"\u2E3A\u2E3A\u2014", 12));
 
         // TEST(u8"  \u2E3A\u2E3A\u2014") .with(wcalc)
-        //     (strf::cv( u"\u2E3A\u2E3A\u2014") > 12);
+        //     (strf::conv( u"\u2E3A\u2E3A\u2014") > 12);
 
         // TEST( u"  \u2E3A\u2E3A\u2014") .with(wcalc)
-        //     (strf::cv(u8"\u2E3A\u2E3A\u2014") > 12);
+        //     (strf::conv(u8"\u2E3A\u2E3A\u2014") > 12);
 
     }
     // --------------------------------------------------------------------------------
@@ -82,16 +82,16 @@ int main()
         (strf::fmt( U"\u2E3A\u2E3A\u2014") > 12);
 
     TEST_FAST_WIDTH( u"   \u2E3A\u2E3A\u2014")
-        (strf::cv(u8"\u2E3A\u2E3A\u2014") > 12);
+        (strf::conv(u8"\u2E3A\u2E3A\u2014") > 12);
 
     TEST_FAST_WIDTH(u8"         \u2E3A\u2E3A\u2014")
-        (strf::cv( u"\u2E3A\u2E3A\u2014") > 12);
+        (strf::conv( u"\u2E3A\u2E3A\u2014") > 12);
 
     TEST_FAST_WIDTH(u8"         \u2E3A\u2E3A\u2014")
-        (strf::cv( U"\u2E3A\u2E3A\u2014") > 12);
+        (strf::conv( U"\u2E3A\u2E3A\u2014") > 12);
 
     TEST_FAST_WIDTH( u"         \u2E3A\u2E3A\u2014")
-        (strf::cv( U"\u2E3A\u2E3A\u2014") > 12);
+        (strf::conv( U"\u2E3A\u2E3A\u2014") > 12);
 
     // --------------------------------------------------------------------------------
     // strf::width_as_u32len{}
@@ -124,10 +124,10 @@ int main()
         (strf::right( L"\u2E3A\u2E3A\u2014", 12));
 
     TEST_W_AS_FAST_U32LEN(u8"         \u2E3A\u2E3A\u2014")
-        (strf::cv(u8"\u2E3A\u2E3A\u2014") > 12);
+        (strf::conv(u8"\u2E3A\u2E3A\u2014") > 12);
 
     TEST_W_AS_FAST_U32LEN( u"         \u2E3A\u2E3A\u2014")
-        (strf::cv(u"\u2E3A\u2E3A\u2014") > 12);
+        (strf::conv(u"\u2E3A\u2E3A\u2014") > 12);
 
     // --------------------------------------------------------------------------------
     // strf::width_u32len{}

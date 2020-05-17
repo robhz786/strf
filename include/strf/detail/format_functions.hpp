@@ -584,31 +584,31 @@ constexpr STRF_HD auto sci(const T& value, P precision)
 }
 
 template <typename T>
-constexpr STRF_HD auto cv(const T& value)
--> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).cv())>>
+constexpr STRF_HD auto conv(const T& value)
+-> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).conv())>>
 {
-    return fmt(value).convert_encoding(); // defined in no_cv_format_fn
+    return fmt(value).convert_encoding(); // defined in no_conv_format_fn
 }
 
 template <typename T, typename E>
-constexpr STRF_HD auto cv(const T& value, const E& e)
--> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).cv(e))>>
+constexpr STRF_HD auto conv(const T& value, const E& e)
+-> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).conv(e))>>
 {
-    return fmt(value).convert_encoding(e);  // defined in no_cv_format_fn
+    return fmt(value).convert_encoding(e);  // defined in no_conv_format_fn
 }
 
 template <typename T>
 constexpr STRF_HD auto sani(const T& value)
 -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sani())>>
 {
-    return fmt(value).sanitize_encoding();  // defined in no_cv_format_fn
+    return fmt(value).sanitize_encoding();  // defined in no_conv_format_fn
 }
 
 template <typename T, typename E>
 constexpr STRF_HD auto sani(const T& value, const E& e)
 -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sani(e))>>
 {
-    return fmt(value).sanitize_encoding(e);  // defined in no_cv_format_fn
+    return fmt(value).sanitize_encoding(e);  // defined in no_conv_format_fn
 }
 
 } // inline namespace format_functions

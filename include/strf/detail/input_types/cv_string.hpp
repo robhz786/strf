@@ -15,7 +15,7 @@ template < typename DestCharT, typename FPack, typename Preview
 constexpr STRF_HD decltype(auto) get_src_encoding
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, FPack, Preview, SrcCharT, HasP, HasA
-        , strf::cv_format_with_encoding<SrcCharT, SrcEncoding> >& input )
+        , strf::conv_format_with_encoding<SrcCharT, SrcEncoding> >& input )
 {
     return input.vwf.get_encoding();
 }
@@ -35,7 +35,7 @@ template < typename DestCharT, typename FPack, typename Preview
 constexpr STRF_HD decltype(auto) get_src_encoding
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, FPack, Preview, SrcCharT, HasP, HasA
-        , strf::cv_format<SrcCharT> >& input )
+        , strf::conv_format<SrcCharT> >& input )
 {
     return strf::get_facet
         <strf::char_encoding_c<SrcCharT>, strf::string_input_tag<SrcCharT>>
@@ -55,7 +55,7 @@ constexpr STRF_HD decltype(auto) get_src_encoding
 }
 
 template<std::size_t SrcCharSize, std::size_t DestCharSize>
-class cv_string_printer: public strf::printer<DestCharSize>
+class conv_string_printer: public strf::printer<DestCharSize>
 {
 public:
 
@@ -63,7 +63,7 @@ public:
 
     template < typename DestCharT, typename FPack, typename Preview
              , typename SrcCharT, typename CvFormat >
-    STRF_HD cv_string_printer
+    STRF_HD conv_string_printer
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, FPack, Preview, SrcCharT, false, false, CvFormat >&
             input )
@@ -88,7 +88,7 @@ public:
 
    template < typename DestCharT, typename FPack, typename Preview
              , typename SrcCharT, typename CvFormat >
-    STRF_HD cv_string_printer
+    STRF_HD conv_string_printer
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, FPack, Preview, SrcCharT, true, false, CvFormat >&
             input )
@@ -111,7 +111,7 @@ public:
              , get_facet_<strf::char_encoding_c<DestCharT>, SrcCharT>(input.fp));
     }
 
-    STRF_HD ~cv_string_printer() { }
+    STRF_HD ~conv_string_printer() { }
 
     STRF_HD void print_to(strf::underlying_outbuf<DestCharSize>& ob) const override;
 
@@ -168,7 +168,7 @@ private:
 };
 
 template<std::size_t SrcCharSize, std::size_t DestCharSize>
-STRF_HD void cv_string_printer<SrcCharSize, DestCharSize>::print_to
+STRF_HD void conv_string_printer<SrcCharSize, DestCharSize>::print_to
     ( strf::underlying_outbuf<DestCharSize>& ob ) const
 {
     if (can_transcode_directly()) {
@@ -181,14 +181,14 @@ STRF_HD void cv_string_printer<SrcCharSize, DestCharSize>::print_to
 }
 
 template<std::size_t SrcCharSize, std::size_t DestCharSize>
-class aligned_cv_string_printer: public printer<DestCharSize>
+class aligned_conv_string_printer: public printer<DestCharSize>
 {
 public:
     using char_in_type = strf::underlying_char_type<SrcCharSize>;
 
     template < typename DestCharT, typename FPack, typename Preview
              , typename SrcCharT, typename CvFormat >
-    aligned_cv_string_printer
+    aligned_conv_string_printer
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, FPack, Preview, SrcCharT, false, true, CvFormat >&
             input )
@@ -214,7 +214,7 @@ public:
 
     template < typename DestCharT, typename FPack, typename Preview
              , typename SrcCharT, typename CvFormat >
-    aligned_cv_string_printer
+    aligned_conv_string_printer
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, FPack, Preview, SrcCharT, true, true, CvFormat >&
             input )
@@ -275,7 +275,7 @@ private:
 
 template <std::size_t SrcCharSize, std::size_t DestCharSize>
 template <typename Preview, typename SrcEncoding, typename DestEncoding>
-void STRF_HD aligned_cv_string_printer<SrcCharSize, DestCharSize>::init_
+void STRF_HD aligned_conv_string_printer<SrcCharSize, DestCharSize>::init_
     ( Preview& preview, strf::width_t str_width
     , SrcEncoding src_enc, DestEncoding dest_enc )
 {
@@ -333,7 +333,7 @@ void STRF_HD aligned_cv_string_printer<SrcCharSize, DestCharSize>::init_
 }
 
 template<std::size_t SrcCharSize, std::size_t DestCharSize>
-void STRF_HD aligned_cv_string_printer<SrcCharSize, DestCharSize>::print_to
+void STRF_HD aligned_conv_string_printer<SrcCharSize, DestCharSize>::print_to
     ( strf::underlying_outbuf<DestCharSize>& ob ) const
 {
     if (left_fillcount_ > 0) {
@@ -354,36 +354,36 @@ void STRF_HD aligned_cv_string_printer<SrcCharSize, DestCharSize>::print_to
 
 #if defined(STRF_SEPARATE_COMPILATION)
 
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<1, 1>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<1, 2>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<1, 4>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<2, 1>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<2, 2>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<2, 4>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<4, 1>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<4, 2>;
-STRF_EXPLICIT_TEMPLATE class cv_string_printer<4, 4>;
+STRF_EXPLICIT_TEMPLATE class conv_string_printer<1, 1>;
+STRF_EXPLICIT_TEMPLATE class conv_string_printer<1, 2>;
+STRF_EXPLICIT_TEMPLATE class conv_string_printer<1, 4>;
+STRF_EXPLICIT_TEMPLATE class conv_string_printer<2, 1>;
+STRF_EXPLICIT_TEMPLATE class conv_string_printer<2, 2>;
+STRF_EXPLICIT_TEMPLATE class conv_string_printer<2, 4>;
+STRF_EXPLICIT_TEMPLATE class conv_string_printer<4, 1>;
+STRF_EXPLICIT_TEMPLATE class conv_string_printer<4, 2>;
+STRF_EXPLICIT_TEMPLATE class conv_string_printer<4, 4>;
 
-STRF_EXPLICIT_TEMPLATE class aligned_cv_string_printer<1, 1>;
-STRF_EXPLICIT_TEMPLATE class aligned_cv_string_printer<1, 2>;
-STRF_EXPLICIT_TEMPLATE class aligned_cv_string_printer<1, 4>;
-STRF_EXPLICIT_TEMPLATE class aligned_cv_string_printer<2, 1>;
-STRF_EXPLICIT_TEMPLATE class aligned_cv_string_printer<2, 2>;
-STRF_EXPLICIT_TEMPLATE class aligned_cv_string_printer<2, 4>;
-STRF_EXPLICIT_TEMPLATE class aligned_cv_string_printer<4, 1>;
-STRF_EXPLICIT_TEMPLATE class aligned_cv_string_printer<4, 2>;
-STRF_EXPLICIT_TEMPLATE class aligned_cv_string_printer<4, 4>;
+STRF_EXPLICIT_TEMPLATE class aligned_conv_string_printer<1, 1>;
+STRF_EXPLICIT_TEMPLATE class aligned_conv_string_printer<1, 2>;
+STRF_EXPLICIT_TEMPLATE class aligned_conv_string_printer<1, 4>;
+STRF_EXPLICIT_TEMPLATE class aligned_conv_string_printer<2, 1>;
+STRF_EXPLICIT_TEMPLATE class aligned_conv_string_printer<2, 2>;
+STRF_EXPLICIT_TEMPLATE class aligned_conv_string_printer<2, 4>;
+STRF_EXPLICIT_TEMPLATE class aligned_conv_string_printer<4, 1>;
+STRF_EXPLICIT_TEMPLATE class aligned_conv_string_printer<4, 2>;
+STRF_EXPLICIT_TEMPLATE class aligned_conv_string_printer<4, 4>;
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 
 template<std::size_t CharSize>
-class cv_string_printer_variant
+class conv_string_printer_variant
 {
 public:
 
     template < typename DestCharT, typename FPack, typename Preview
              , typename SrcCharT, bool HasPrecision, typename CvFormat >
-    cv_string_printer_variant
+    conv_string_printer_variant
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, FPack, Preview, SrcCharT, HasPrecision, false, CvFormat >&
             input )
@@ -395,11 +395,11 @@ public:
         if (src_encoding.id() == dest_encoding.id()) {
             new ((void*)&pool_) strf::detail::string_printer<CharSize>(input);
         } else {
-            new ((void*)&pool_) strf::detail::cv_string_printer<CharSize, CharSize>(input);
+            new ((void*)&pool_) strf::detail::conv_string_printer<CharSize, CharSize>(input);
         }
     }
 
-    ~cv_string_printer_variant()
+    ~conv_string_printer_variant()
     {
         const strf::printer<CharSize>& p = *this;
         p.~printer();
@@ -414,7 +414,7 @@ private:
 
     static constexpr std::size_t pool_size_
         = std::max( sizeof(strf::detail::string_printer<CharSize>)
-                  , sizeof(strf::detail::cv_string_printer<CharSize, CharSize>) );
+                  , sizeof(strf::detail::conv_string_printer<CharSize, CharSize>) );
     using storage_type_ = typename std::aligned_storage_t
         < pool_size_, alignof(strf::printer<CharSize>)>;
 
@@ -422,13 +422,13 @@ private:
 };
 
 template<std::size_t CharSize>
-class aligned_cv_string_printer_variant
+class aligned_conv_string_printer_variant
 {
 public:
 
     template < typename DestCharT, typename FPack, typename Preview
              , typename SrcCharT, bool HasPrecision, typename CvFormat >
-    aligned_cv_string_printer_variant
+    aligned_conv_string_printer_variant
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, FPack, Preview, SrcCharT, HasPrecision, true, CvFormat >&
             input )
@@ -442,11 +442,11 @@ public:
             new ((void*)&pool_) strf::detail::aligned_string_printer<CharSize> (input);
         } else {
             new ((void*)&pool_)
-                strf::detail::aligned_cv_string_printer<CharSize, CharSize>(input);
+                strf::detail::aligned_conv_string_printer<CharSize, CharSize>(input);
         }
     }
 
-    ~aligned_cv_string_printer_variant()
+    ~aligned_conv_string_printer_variant()
     {
         const strf::printer<CharSize>& p = *this;
         p.~printer();
@@ -461,7 +461,7 @@ private:
 
     static constexpr std::size_t pool_size_
         = std::max( sizeof(strf::detail::aligned_string_printer<CharSize>)
-                  , sizeof(strf::detail::aligned_cv_string_printer<CharSize, CharSize>) );
+                  , sizeof(strf::detail::aligned_conv_string_printer<CharSize, CharSize>) );
     using storage_type_ = typename std::aligned_storage_t
         < pool_size_, alignof(strf::printer<CharSize>)>;
 

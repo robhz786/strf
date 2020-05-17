@@ -85,7 +85,7 @@ static void bm_strf(benchmark::State& state) {
     strf::detail::simple_string_view<char16_t> u16str
         (u16sample, CodepointsCount * (1 + (CodepointsSize==4)));
     for(auto _ : state) {
-        strf::to(u8dest)(strf::cv(u16str));
+        strf::to(u8dest)(strf::conv(u16str));
         benchmark::DoNotOptimize(u8dest);
     }
 }
@@ -118,17 +118,17 @@ static void dummy (benchmark::State&)
 
 int main(int argc, char** argv)
 {
-    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::cv(u16small1))", bm_strf<20, 1>);
-    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::cv(u16small2))", bm_strf<20, 2>);
-    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::cv(u16small3))", bm_strf<20, 3>);
-    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::cv(u16small4))", bm_strf<20, 4>);
+    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::conv(u16small1))", bm_strf<20, 1>);
+    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::conv(u16small2))", bm_strf<20, 2>);
+    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::conv(u16small3))", bm_strf<20, 3>);
+    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::conv(u16small4))", bm_strf<20, 4>);
 
     benchmark::RegisterBenchmark("    -------------", dummy);
 
-    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::cv(u16big1))", bm_strf<200, 1>);
-    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::cv(u16big2))", bm_strf<200, 2>);
-    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::cv(u16big3))", bm_strf<200, 3>);
-    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::cv(u16big4))", bm_strf<200, 4>);
+    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::conv(u16big1))", bm_strf<200, 1>);
+    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::conv(u16big2))", bm_strf<200, 2>);
+    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::conv(u16big3))", bm_strf<200, 3>);
+    benchmark::RegisterBenchmark("strf::to(u8dest)(strf::conv(u16big4))", bm_strf<200, 4>);
 
     benchmark::RegisterBenchmark("    -------------", dummy);
 
