@@ -85,14 +85,19 @@ inline auto base64(const void* bytes, std::size_t num_bytes)
     return base64_input_with_format{data};
 }
 
-// Although `strf::fmt` is not needed to work with `base64_input` since the
-// `base64` function already instantiates `base64_input_with_format`, we still
-//  need to overload `make_fmt` if we want `base64_input` to work in fmt_range
-inline auto make_fmt(strf::rank<1>, const base64_input& d)
-{
-    return base64_input_with_format{d};
-}
+} // namespace xxx
 
+// To enable `base64_input` to work in `fmt_range`:
+namespace strf {
+
+template <> struct fmt_traits<xxx::base64_input>
+{
+    using fmt_type = xxx::base64_input_with_format;
+};
+
+} // namespace strf
+
+namespace xxx {
 
 template <std::size_t CharSize>
 class base64_printer: public strf::printer<CharSize>

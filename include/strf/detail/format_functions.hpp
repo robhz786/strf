@@ -94,6 +94,8 @@ class value_with_format
 {
 public:
 
+    using value_type = ValueType;
+
     template <typename ... OhterFmts>
     using replace_fmts = strf::value_with_format<ValueType, OhterFmts ...>;
 
@@ -457,13 +459,31 @@ struct quantity_format
     using fn = strf::quantity_format_fn<T>;
 };
 
+template <typename>
+inline void get_fmt_traits() {}
+
+template <typename T>
+struct fmt_traits
+    : decltype(get_fmt_traits(strf::tag<>{}, std::declval<T>()))
+{
+};
+
+template <typename FmtType>
+struct make_fmt_traits
+{
+    using fmt_type = FmtType;
+};
+
+template <typename T>
+using fmt_type = typename fmt_traits<T>::fmt_type;
+
 inline namespace format_functions {
 
 template <typename T>
-constexpr STRF_HD auto fmt(const T& value)
--> std::remove_cv_t<std::remove_reference_t<decltype(make_fmt(strf::rank<5>{}, value))>>
+constexpr STRF_HD strf::fmt_type<T> fmt(const T& value)
 {
-    return make_fmt(strf::rank<5>{}, value);
+    using fmt_value_type = typename strf::fmt_type<T>::value_type;
+    return strf::fmt_type<T>{fmt_value_type{value}};
 }
 
 template <typename T>
@@ -602,8 +622,8 @@ constexpr STRF_HD auto sani(const T& value)
 -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sani())>>
 {
     return fmt(value).sanitize_encoding();  // defined in no_conv_format_fn
-}
 
+}
 template <typename T, typename E>
 constexpr STRF_HD auto sani(const T& value, const E& e)
 -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sani(e))>>

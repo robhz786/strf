@@ -184,42 +184,30 @@ using int_with_format = strf::value_with_format
     , strf::int_format<Base>
     , strf::alignment_format_q<HasAlignment> >;
 
-inline STRF_HD auto make_fmt(strf::rank<1>, short x)
-{
-    return strf::int_with_format<short>{{x}};
-}
-inline STRF_HD auto make_fmt(strf::rank<1>, int x)
-{
-    return strf::int_with_format<int>{{x}};
-}
-inline STRF_HD auto make_fmt(strf::rank<1>, long x)
-{
-    return strf::int_with_format<long>{{x}};
-}
-inline STRF_HD auto make_fmt(strf::rank<1>, long long x)
-{
-    return strf::int_with_format<long long>{{x}};
-}
-inline STRF_HD auto make_fmt(strf::rank<1>, unsigned short x)
-{
-    return strf::int_with_format<unsigned short>{{x}};
-}
-inline STRF_HD auto make_fmt(strf::rank<1>, unsigned x)
-{
-    return  strf::int_with_format<unsigned>{{x}};
-}
-inline STRF_HD auto make_fmt(strf::rank<1>, unsigned long x)
-{
-    return strf::int_with_format<unsigned long>{{x}};
-}
-inline STRF_HD auto make_fmt(strf::rank<1>, unsigned long long x)
-{
-    return strf::int_with_format<unsigned long long>{{x}};
-}
-inline STRF_HD auto make_fmt(strf::rank<1>, const void* p)
-{
-    return strf::value_with_format<const void*, strf::alignment_format>(p);
-}
+template <typename IntT>
+using int_fmt_traits = strf::make_fmt_traits<strf::int_with_format<IntT>>;
+
+constexpr STRF_HD strf::int_fmt_traits<short>
+get_fmt_traits(strf::tag<>, short) { return {}; }
+constexpr STRF_HD strf::int_fmt_traits<int>
+get_fmt_traits(strf::tag<>, int) { return {}; }
+constexpr STRF_HD strf::int_fmt_traits<long>
+get_fmt_traits(strf::tag<>, long) { return {}; }
+constexpr STRF_HD strf::int_fmt_traits<long long>
+get_fmt_traits(strf::tag<>, long long) { return {}; }
+
+constexpr STRF_HD strf::int_fmt_traits<unsigned short>
+get_fmt_traits(strf::tag<>, unsigned short) { return {}; }
+constexpr STRF_HD strf::int_fmt_traits<unsigned int>
+get_fmt_traits(strf::tag<>, unsigned int) { return {}; }
+constexpr STRF_HD strf::int_fmt_traits<unsigned long>
+get_fmt_traits(strf::tag<>, unsigned long) { return {}; }
+constexpr STRF_HD strf::int_fmt_traits<unsigned long long>
+get_fmt_traits(strf::tag<>, unsigned long long) { return {}; }
+
+constexpr STRF_HD strf::make_fmt_traits
+    < strf::value_with_format<const void*, strf::alignment_format> >
+get_fmt_traits(strf::tag<>, const void*) { return {}; }
 
 namespace detail {
 

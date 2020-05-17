@@ -78,8 +78,7 @@ using mp_replace_front
 
 template < typename Iterator
          , typename V  = typename std::iterator_traits<Iterator>::value_type
-         , typename VF = decltype( make_fmt( strf::rank<5>{}
-                                           , std::declval<const V&>()) ) >
+         , typename VF = strf::fmt_type<V> >
 using range_with_format
     = strf::detail::mp_replace_front
         < VF, strf::range_p<Iterator> >;
@@ -87,8 +86,7 @@ using range_with_format
 template < typename Iterator
          , typename CharT
          , typename V  = typename std::iterator_traits<Iterator>::value_type
-         , typename VF = decltype( make_fmt( strf::rank<5>{}
-                                           , std::declval<const V&>()) ) >
+         , typename VF = strf::fmt_type<V> >
 using sep_range_with_format
     = strf::detail::mp_replace_front
         < VF, strf::separated_range_p<Iterator, CharT> >;
@@ -350,9 +348,7 @@ template < typename CharT
 class fmt_range_printer: public strf::printer<sizeof(CharT)>
 {
     using value_type_ = typename std::iterator_traits<It>::value_type;
-    using value_fmt_type_
-        = decltype( make_fmt( strf::rank<5>{}
-                            , std::declval<const value_type_&>()) );
+    using value_fmt_type_ = strf::fmt_type<value_type_>;
     using value_fmt_type_adapted_
         = typename value_fmt_type_::template replace_fmts<Fmts...>;
 
@@ -436,9 +432,7 @@ template< typename CharT
 class fmt_separated_range_printer: public strf::printer<sizeof(CharT)>
 {
     using value_type_ = typename std::iterator_traits<It>::value_type;
-    using value_fmt_type_
-        = decltype( make_fmt( strf::rank<5>{}
-                            , std::declval<const value_type_&>()) );
+    using value_fmt_type_ = strf::fmt_type<value_type_>;
     using value_fmt_type_adapted_
         = typename value_fmt_type_::template replace_fmts<Fmts...>;
 
@@ -750,28 +744,29 @@ STRF_HD void sep_transformed_range_printer<CharT, FPack, It, UnaryOp>::print_to
 } // namespace detail
 
 template <typename It>
-inline STRF_HD strf::range_with_format<It>
-make_fmt(strf::rank<1>, strf::range_p<It> r)
+struct fmt_traits<strf::range_p<It>>
+    : public make_fmt_traits<strf::range_with_format<It>>
 {
-    return strf::range_with_format<It>{{r.begin, r.end}};
-}
+};
 
 template <typename It, typename CharT>
-inline STRF_HD strf::sep_range_with_format<It, CharT>
-make_fmt( strf::rank<1>, strf::separated_range_p<It, CharT> r )
+struct fmt_traits<strf::separated_range_p<It, CharT>>
+    : public make_fmt_traits<strf::sep_range_with_format<It, CharT>>
 {
-    return strf::sep_range_with_format<It, CharT>
-        {{r.begin, r.end, r.sep_begin, r.sep_len}};
-}
-
+};
 template <typename It, typename UnaryOp>
-void make_fmt
-    ( strf::rank<1>, strf::transformed_range_p<It, UnaryOp> ) = delete;
+struct fmt_traits<strf::transformed_range_p<It, UnaryOp>>
+{
+    static_assert( sizeof(strf::transformed_range_p<It, UnaryOp>)
+                 , "fmt function not supported when applying a function to the range" );
+};
 
 template <typename It, typename CharT, typename UnaryOp>
-void make_fmt
-    ( strf::rank<1>
-    , strf::separated_transformed_range_p<It, CharT, UnaryOp> ) = delete;
+struct fmt_traits<strf::separated_transformed_range_p<It, CharT, UnaryOp>>
+{
+    static_assert( sizeof(strf::transformed_range_p<It, UnaryOp>)
+                 , "fmt function not supported when applying a function to the range" );
+};
 
 template <typename It>
 inline STRF_HD auto range(It begin, It end)

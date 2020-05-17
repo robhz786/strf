@@ -391,23 +391,31 @@ struct float_format
     using fn = float_format_fn<T, Notation>;
 };
 
-template<typename FloatT, strf::float_notation Notation, bool Align = false>
+template
+    < typename FloatT
+    , strf::float_notation Notation = strf::float_notation::general
+    , bool Align = false >
 using float_with_format = value_with_format
     < FloatT
     , strf::float_format<Notation>
     , strf::alignment_format_q<Align> >;
 
-inline STRF_HD auto make_fmt(strf::rank<1>, float x)
-{
-    return strf::float_with_format<float, strf::float_notation::general, false>{x};
-}
+namespace detail {
 
-inline STRF_HD auto make_fmt(strf::rank<1>, double x)
+template <typename FloatT>
+struct float_fmt_traits
 {
-    return strf::float_with_format<double, strf::float_notation::general, false>{x};
-}
+    using fmt_type = strf::float_with_format<FloatT>;
+};
 
-inline STRF_HD void make_fmt(strf::rank<1>, long double) = delete;
+} // namespace detail
+
+void get_fmt_traits(long double) = delete;
+constexpr strf::detail::float_fmt_traits<double> get_fmt_traits(strf::tag<>, double)
+{ return {}; }
+constexpr strf::detail::float_fmt_traits<float> get_fmt_traits(strf::tag<>, float)
+{ return {}; }
+
 
 namespace detail {
 

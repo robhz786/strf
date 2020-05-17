@@ -27,29 +27,29 @@ using char_with_format = strf::value_with_format
 
 #if defined(__cpp_char8_t)
 
-constexpr STRF_HD auto make_fmt(strf::rank<1>, char8_t ch) noexcept
+template <> struct fmt_traits<char8_t>
 {
-    return strf::char_with_format<char8_t>{{ch}};
-}
+    using fmt_type = strf::char_with_format<char8_t>;
+};
 
-#endif
+#endif // defined(__cpp_char8_t)
 
-constexpr STRF_HD auto make_fmt(strf::rank<1>, char ch) noexcept
+template <> struct fmt_traits<char>
 {
-    return strf::char_with_format<char>{{ch}};
-}
-constexpr STRF_HD auto make_fmt(strf::rank<1>, wchar_t ch) noexcept
+    using fmt_type = strf::char_with_format<char>;
+};
+template <> struct fmt_traits<char16_t>
 {
-    return strf::char_with_format<wchar_t>{{ch}};
-}
-constexpr STRF_HD auto make_fmt(strf::rank<1>, char16_t ch) noexcept
+    using fmt_type = strf::char_with_format<char16_t>;
+};
+template <> struct fmt_traits<char32_t>
 {
-    return strf::char_with_format<char16_t>{{ch}};
-}
-constexpr STRF_HD auto make_fmt(strf::rank<1>, char32_t ch) noexcept
+    using fmt_type = strf::char_with_format<char32_t>;
+};
+template <> struct fmt_traits<wchar_t>
 {
-    return strf::char_with_format<char32_t>{{ch}};
-}
+    using fmt_type = strf::char_with_format<wchar_t>;
+};
 
 namespace detail {
 

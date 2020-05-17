@@ -17,10 +17,6 @@ struct ipv4address
 //  related to alignment.
 using ipv4address_with_format = strf::value_with_format<ipv4address, strf::alignment_format>;
 
-// The `rank<1>` paramenter is not used. Its only purpose is to  ensure that
-// there is no other `make_fmt` function  around there with the same signature.
-inline ipv4address_with_format make_fmt(  strf::rank<1>, ipv4address x) { return ipv4address_with_format{x}; }
-
 template <std::size_t CharSize>
 class ipv4_printer;
 
@@ -92,6 +88,15 @@ ipv4_printable_traits<CharT, FPack, Preview> get_printable_traits
 (Preview&, xxx::ipv4address_with_format);
 
 } // namespace xxx
+
+namespace strf {
+
+template <> struct fmt_traits<xxx::ipv4address>
+{
+    using fmt_type = xxx:: ipv4address_with_format;
+};
+
+} // namespace strf
 
 int main()
 {

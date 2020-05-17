@@ -19,10 +19,11 @@ template <std::size_t CharSize> class fmt_bool_printer;
 
 } // namespace detail
 
-inline STRF_HD auto make_fmt(strf::rank<1>, bool b)
+template <>
+struct fmt_traits<bool>
 {
-    return strf::value_with_format<bool, strf::alignment_format>(b);
-}
+    using fmt_type = strf::value_with_format<bool, strf::alignment_format>;
+};
 
 template <typename CharT, typename FPack, typename Preview>
 struct printable_traits<CharT, FPack, Preview, bool>

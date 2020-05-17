@@ -357,72 +357,89 @@ using string_with_format = strf::value_with_format
     , strf::alignment_format_q<HasAlignment>
     , strf::no_conv_format<CharIn> >;
 
+namespace detail {
+
 template <typename CharIn>
-constexpr STRF_HD auto make_fmt
-    ( strf::rank<1>
-    , const strf::detail::simple_string_view<CharIn>& str) noexcept
+struct string_fmt_traits
 {
-    return strf::string_with_format<CharIn>{str};
-}
+    using fmt_type = strf::string_with_format<CharIn>;
+};
+
+} // namespace detail
+
+
+// template <typename CharIn, typename Traits, typename Allocator>
+// struct fmt_traits<std::basic_string<CharIn, Traits, Allocator>>
+//     : strf::detail::string_fmt_traits<CharIn>
+// {
+// };
 
 template <typename CharIn, typename Traits, typename Allocator>
-STRF_HD auto make_fmt
-    ( strf::rank<1>
-    , const std::basic_string<CharIn, Traits, Allocator>& str) noexcept
-{
-    return strf::string_with_format<CharIn>{{str.data(), str.size()}};
-}
+constexpr STRF_HD strf::detail::string_fmt_traits<CharIn>
+get_fmt_traits(strf::tag<>, std::basic_string<CharIn, Traits, Allocator>)
+{ return {}; }
+
+template <typename CharIn>
+constexpr STRF_HD strf::detail::string_fmt_traits<CharIn>
+get_fmt_traits(strf::tag<>, strf::detail::simple_string_view<CharIn>)
+{ return {}; }
 
 #if defined(STRF_HAS_STD_STRING_VIEW)
 
 template <typename CharIn, typename Traits>
-constexpr STRF_HD auto make_fmt
-    ( strf::rank<1>
-    , const std::basic_string_view<CharIn, Traits>& str) noexcept
-{
-    return strf::string_with_format<CharIn>{{str.data(), str.size()}};
-}
+constexpr STRF_HD strf::detail::string_fmt_traits<CharIn>
+get_fmt_traits(strf::tag<>, std::basic_string_view<CharIn, Traits>)
+{ return {}; }
+
+#if defined(__cpp_char8_t)
+
+constexpr STRF_HD strf::detail::string_fmt_traits<char8_t>
+get_fmt_traits(strf::tag<>, std::basic_string_view<char8_t>)
+{ return {}; }
+
+#endif // defined(__cpp_char8_t)
+
+constexpr STRF_HD strf::detail::string_fmt_traits<char>
+get_fmt_traits(strf::tag<>, std::basic_string_view<char>)
+{ return {}; }
+
+constexpr STRF_HD strf::detail::string_fmt_traits<char16_t>
+get_fmt_traits(strf::tag<>, std::basic_string_view<char16_t>)
+{ return {}; }
+
+constexpr STRF_HD strf::detail::string_fmt_traits<char32_t>
+get_fmt_traits(strf::tag<>, std::basic_string_view<char32_t>)
+{ return {}; }
+
+constexpr STRF_HD strf::detail::string_fmt_traits<wchar_t>
+get_fmt_traits(strf::tag<>, std::basic_string_view<wchar_t>)
+{ return {}; }
 
 #endif // defined(STRF_HAS_STD_STRING_VIEW)
 
 #if defined(__cpp_char8_t)
 
-STRF_CONSTEXPR_CHAR_TRAITS STRF_HD
-auto make_fmt(strf::rank<1>, const char8_t* str)
-{
-    auto len = strf::detail::str_length<char8_t>(str);
-    return strf::string_with_format<char8_t>{{str, len}};
-}
+constexpr STRF_HD strf::detail::string_fmt_traits<char8_t>
+get_fmt_traits(strf::tag<>, const char8_t*)
+{ return {}; }
 
 #endif
 
-STRF_CONSTEXPR_CHAR_TRAITS STRF_HD
-auto  make_fmt(strf::rank<1>, const char* str)
-{
-    auto len = strf::detail::str_length<char>(str);
-    return strf::string_with_format<char>{{str, len}};
-}
+constexpr STRF_HD strf::detail::string_fmt_traits<char>
+get_fmt_traits(strf::tag<>, const char*)
+{ return {}; }
 
-STRF_CONSTEXPR_CHAR_TRAITS STRF_HD
-auto  make_fmt(strf::rank<1>, const wchar_t* str)
-{
-    auto len = strf::detail::str_length<wchar_t>(str);
-    return strf::string_with_format<wchar_t>{{str, len}};
-}
+constexpr STRF_HD strf::detail::string_fmt_traits<char16_t>
+get_fmt_traits(strf::tag<>, const char16_t*)
+{ return {}; }
 
-STRF_CONSTEXPR_CHAR_TRAITS STRF_HD
-auto  make_fmt(strf::rank<1>, const char16_t* str)
-{
-    auto len = strf::detail::str_length<char16_t>(str);
-    return strf::string_with_format<char16_t>{{str, len}};
-}
+constexpr STRF_HD strf::detail::string_fmt_traits<char32_t>
+get_fmt_traits(strf::tag<>, const char32_t*)
+{ return {}; }
 
-STRF_CONSTEXPR_CHAR_TRAITS STRF_HD
-auto  make_fmt(strf::rank<1>, const char32_t* str)
-{
-    auto len = strf::detail::str_length<char32_t>(str);
-    return strf::string_with_format<char32_t>{{str, len}};
-}
+constexpr STRF_HD strf::detail::string_fmt_traits<wchar_t>
+get_fmt_traits(strf::tag<>, const wchar_t*)
+{ return {}; }
 
 namespace detail {
 
