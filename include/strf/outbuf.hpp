@@ -355,13 +355,13 @@ inline STRF_HD void write( strf::basic_outbuf_noexcept<CharT>& ob
 inline STRF_HD void write( strf::basic_outbuf<char>& ob
                  , const char* str )
 {
-    strf::detail::outbuf_write(ob, str, detail::strlen(str));
+    strf::detail::outbuf_write(ob, str, detail::str_length(str));
 }
 
 inline STRF_HD void write( strf::basic_outbuf_noexcept<char>& ob
                  , const char* str ) noexcept
 {
-    strf::detail::outbuf_write(ob, str, detail::strlen(str));
+    strf::detail::outbuf_write(ob, str, detail::str_length(str));
 }
 
 inline STRF_HD void write( strf::basic_outbuf<wchar_t>& ob
@@ -414,18 +414,18 @@ void STRF_HD write_fill_continuation
 
     std::size_t space = ob.size();
     STRF_ASSERT(space < count);
-    strf::detail::char_assign<char_type>(ob.pointer(), space, ch);
+    strf::detail::str_fill_n<char_type>(ob.pointer(), space, ch);
     count -= space;
     ob.advance_to(ob.end());
     ob.recycle();
     while (ob.good()) {
         space = ob.size();
         if (count <= space) {
-            strf::detail::char_assign<char_type>(ob.pointer(), count, ch);
+            strf::detail::str_fill_n<char_type>(ob.pointer(), count, ch);
             ob.advance(count);
             break;
         }
-        strf::detail::char_assign(ob.pointer(), space, ch);
+        strf::detail::str_fill_n(ob.pointer(), space, ch);
         count -= space;
         ob.advance_to(ob.end());
         ob.recycle();
@@ -440,7 +440,7 @@ inline STRF_HD void write_fill
 {
     using char_type = typename strf::underlying_outbuf<CharSize>::char_type;
     if (count <= ob.size()) { // the common case
-        strf::detail::char_assign<char_type>(ob.pointer(), count, ch);
+        strf::detail::str_fill_n<char_type>(ob.pointer(), count, ch);
         ob.advance(count);
     } else {
         write_fill_continuation(ob, count, ch);

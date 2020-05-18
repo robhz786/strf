@@ -8,6 +8,7 @@
 #include <strf/printer.hpp>
 #include <limits>
 #include <strf/detail/facets/char_encoding.hpp>
+#include <strf/detail/standard_lib_functions.hpp>
 
 namespace strf {
 
@@ -90,14 +91,12 @@ std::size_t tr_string_size
     , const CharT* end
     , std::size_t inv_arg_size ) noexcept
 {
-    using traits = std::char_traits<CharT>;
-
     std::size_t count = 0;
     std::size_t arg_idx = 0;
 
     while (it != end) {
         const CharT* prev = it;
-        it = traits::find(it, (end - it), '{');
+        it = strf::detail::str_find<CharT>(it, (end - it), '{');
         if (it == nullptr) {
             count += (end - prev);
             break;
@@ -136,14 +135,14 @@ std::size_t tr_string_size
             } else {
                 count += inv_arg_size;
             }
-            it = traits::find(result.it, end - result.it, '}');
+            it = strf::detail::str_find<CharT>(result.it, end - result.it, '}');
             if (it == nullptr) {
                 break;
             }
             ++it;
         } else if(ch == '{') {
             auto it2 = it + 1;
-            it2 = traits::find(it2, end - it2, '{');
+            it2 = strf::detail::str_find<CharT>(it2, end - it2, '{');
             if (it2 == nullptr) {
                 return count += end - it;
             }
@@ -162,7 +161,7 @@ std::size_t tr_string_size
                 }
             }
             auto it2 = it + 1;
-            it = traits::find(it2, (end - it2), '}');
+            it = strf::detail::str_find<CharT>(it2, (end - it2), '}');
             if (it == nullptr) {
                 break;
             }
@@ -183,12 +182,11 @@ void tr_string_write
     , strf::tr_invalid_arg policy )
 {
     using char_type = strf::underlying_char_type<CharSize>;
-    using traits = std::char_traits<char_type>;
     std::size_t arg_idx = 0;
 
     while (it != end) {
         const char_type* prev = it;
-        it = traits::find(it, (end - it), '{');
+        it = strf::detail::str_find<char_type>(it, (end - it), '{');
         if (it == nullptr) {
             strf::write(ob, prev, end - prev);
             return;
@@ -220,14 +218,14 @@ void tr_string_write
             } else if (policy == strf::tr_invalid_arg::replace) {
                 write_replacement_char(ob);
             }
-            it = traits::find(result.it, end - result.it, '}');
+            it = strf::detail::str_find<char_type>(result.it, end - result.it, '}');
             if (it == nullptr) {
                 break;
             }
             ++it;
         } else if(ch == '{') {
             auto it2 = it + 1;
-            it2 = traits::find(it2, end - it2, '{');
+            it2 = strf::detail::str_find<char_type>(it2, end - it2, '{');
             if (it2 == nullptr) {
                 strf::write(ob, it, end - it);
                 return;
@@ -245,7 +243,7 @@ void tr_string_write
                 }
             }
             auto it2 = it + 1;
-            it = traits::find(it2, (end - it2), '}');
+            it = strf::detail::str_find<char_type>(it2, (end - it2), '}');
             if (it == nullptr) {
                 break;
             }

@@ -10,7 +10,6 @@
 #include <strf/detail/facets/numpunct.hpp>
 #include <strf/detail/ryu/double.hpp>
 #include <strf/detail/ryu/float.hpp>
-#include <algorithm>
 #include <cstring>
 #include <type_traits>
 

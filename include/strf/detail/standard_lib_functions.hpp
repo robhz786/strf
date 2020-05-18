@@ -6,11 +6,20 @@
 #define STRF_DETAIL_STANDARD_LIB_FUNCTIONS_HPP
 
 #include <strf/detail/common.hpp>
+#  include <cstring> // for std::memcpy
+#  include <algorithm> // for std::fill_n
+#  ifdef STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS
+#    if defined(__cpp_lib_string_view)
+#      define STRF_HAS_STD_STRING_VIEW
+#      define STRF_CONSTEXPR_CHAR_TRAITS constexpr
+#      include <string_view>
+#    else
+#      include <string> // char_traits
+#    endif // defined(__cpp_lib_string_view)
+#endif
 
-#ifdef STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS
-#include <algorithm> // for std::fill_n
-#include <cstring> // for std::memcpy
-#include <string> // for std::char_traits
+#ifndef STRF_CONSTEXPR_CHAR_TRAITS
+#  define STRF_CONSTEXPR_CHAR_TRAITS inline
 #endif
 
 namespace strf {
@@ -22,7 +31,7 @@ inline STRF_HD CharT*
 str_fill_n(CharT* str, Size count, const T& value)
 {
 #if !defined(__CUDA_ARCH__) && STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS
-    return std::fill_n(str, count, value);
+    return std::char_traits<CharT>::assign(str, count, value);
 #else
     // TODO: Should we consider CUDA's built-in memset?
     auto p = str;
@@ -117,20 +126,6 @@ OutputIt copy_n(InputIt first, Size count, OutputIt result)
     }
     return result;
 #endif
-}
-
-template <class CharT>
-STRF_CONSTEXPR_CHAR_TRAITS STRF_HD void
-char_assign(CharT& c1, const CharT& c2) noexcept
-{
-    c1 = c2;
-}
-
-template <class CharT>
-STRF_CONSTEXPR_CHAR_TRAITS STRF_HD CharT*
-char_assign(CharT* s, std::size_t n, CharT a)
-{
-    return str_fill_n<CharT, std::size_t, CharT>(s, n, a);
 }
 
 template <class T>

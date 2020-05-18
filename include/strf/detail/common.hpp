@@ -60,28 +60,16 @@
 // #if __cplusplus >= 201703L || ( defined(_MSC_VER) && defined(_HAS_CXX17) && _HAS_CXX17)
 // #define STRF_HAS_CXX17
 
-#if defined(__cpp_lib_to_chars)
-#include <charconv>
-#define STRF_HAS_STD_CHARCONV
-#endif //defined(__cpp_lib_to_chars)
-
-#if defined(__cpp_lib_string_view)
-#define STRF_HAS_STD_STRING_VIEW
-#define STRF_CONSTEXPR_CHAR_TRAITS constexpr
-#include <string_view>
-#else
-#include <string> // char_traits
-#endif // defined(__cpp_lib_string_view)
+// #if defined(__cpp_lib_to_chars)
+// #include <charconv>
+// #define STRF_HAS_STD_CHARCONV
+// #endif //defined(__cpp_lib_to_chars)
 
 #if defined(__has_cpp_attribute)
 #if __has_cpp_attribute(nodiscard)
 #define STRF_HAS_NODISCARD
 #endif //__has_cpp_attribute(nodiscard)
 #endif // defined(__has_cpp_attribute)
-
-#ifndef STRF_CONSTEXPR_CHAR_TRAITS
-#define STRF_CONSTEXPR_CHAR_TRAITS inline
-#endif
 
 #if defined(STRF_HAS_NODISCARD)
 #define STRF_NODISCARD [[nodiscard]]
@@ -94,7 +82,6 @@
 #else
 #define STRF_IF_CONSTEXPR if
 #endif
-
 
 // cxx17 guaranteed copy elision
 #if defined(_MSC_VER)
@@ -192,18 +179,6 @@ template <bool ... C> constexpr bool fold_and = fold_and_impl<C...>::value;
 template <bool ... C> constexpr bool fold_or = fold_or_impl<C...>::value;
 
 #endif // defined(__cpp_fold_expressions)
-
-inline STRF_HD std::size_t
-strlen( const char* str )
-{
-#ifndef __CUDA_ARCH__
-    return std::strlen(str);
-#else
-    const char* p { str };
-    while(*p != '\0') { ++p; }
-    return (p - str);
-#endif
-}
 
 } // namespace detail
 

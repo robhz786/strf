@@ -7,7 +7,6 @@
 
 #include <strf/to_cfile.hpp>
 #include <cctype>
-#include <algorithm> // for std::generate.
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -125,14 +124,14 @@ struct char_generator
     CharT ch = 0x20;
 };
 
-template <typename CharT>
-std::basic_string<CharT> make_string(std::size_t size)
-{
-    std::basic_string<CharT> str(size, CharT('x'));
-    char_generator<CharT> gen;
-    std::generate(str.begin(), str.end(), gen);
-    return str;
-}
+// template <typename CharT>
+// std::basic_string<CharT> make_string(std::size_t size)
+// {
+//     std::basic_string<CharT> str(size, CharT('x'));
+//     char_generator<CharT> gen;
+//     std::generate(str.begin(), str.end(), gen);
+//     return str;
+// }
 
 template <typename CharT>
 constexpr std::size_t full_string_size

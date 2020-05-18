@@ -2,7 +2,6 @@
 #define STRF_DETAIL_INPUT_TYPES_STRING
 
 #include <limits>
-#include <string>
 #include <strf/detail/facets/width_calculator.hpp>
 #include <strf/detail/format_functions.hpp>
 #include <strf/facets_pack.hpp>

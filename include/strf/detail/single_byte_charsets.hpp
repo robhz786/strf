@@ -6,7 +6,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/detail/facets/char_encoding.hpp>
-#include <algorithm>
 
 #if ! defined(STRF_CHECK_DEST)
 
@@ -137,9 +136,6 @@ ForwardIt STRF_HD lower_bound
     , const T& value
     , Compare comp )
 {
-#if ! defined(__CUDA_ARCH__)
-    return std::lower_bound(first, last, value, comp);
-#else
     auto search_range_length { last - first };
         // We don't have the equivalent of std::distance on the device-side
 
@@ -158,7 +154,6 @@ ForwardIt STRF_HD lower_bound
         }
     }
     return first;
-#endif // ! defined(__CUDA_ARCH__)
 }
 
 STRF_INLINE STRF_HD unsigned impl_iso_8859_3::encode(char32_t ch)
