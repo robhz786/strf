@@ -1,10 +1,10 @@
-#include <strf.hpp>
+#include <strf/to_cfile.hpp>
 #include <cstdio>
 #include "args.hpp"
 
 void FUNCTION_NAME (std::FILE* out)
 {
-    strf::to(out) .tr
+    (void)strf::to(out) .tr
            ( "blah blah blah {} {} {} blah {} {} {}\n"
            , strf::right(arg_a0, 10)
            , arg_a1
@@ -13,7 +13,7 @@ void FUNCTION_NAME (std::FILE* out)
            , strf::hex(arg_a4)
            , arg_a5 );
 
-    strf::to(out) .tr
+    (void)strf::to(out) .tr
            ( "blah blah {} {}{} {} {} blah {} {} {}\n"
            , arg_b0
            , strf::right(arg_b1, 9)
@@ -24,7 +24,7 @@ void FUNCTION_NAME (std::FILE* out)
            , strf::hex(arg_b6)
            , arg_b7 );
 
-    strf::to(out) .tr
+    (void)strf::to(out) .tr
            ( "blah blah {} {:>10} {} {} {} {} {} {}\n"
            , arg_c0
            , strf::right(arg_c1, 10)

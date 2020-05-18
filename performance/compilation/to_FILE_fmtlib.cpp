@@ -1,4 +1,9 @@
-#include <fmt/core.h>
+#if defined(FMT_HEADER_ONLY)
+#  include <fmt/format.h>
+#else
+#  include <fmt/core.h>
+#endif
+
 #include "args.hpp"
 
 void FUNCTION_NAME (std::FILE* out)
