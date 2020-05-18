@@ -2,8 +2,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <strf/to_cfile.hpp>
 #include <benchmark/benchmark.h>
-#include <strf.hpp>
 
 #define CREATE_BENCHMARK(PREFIX)                             \
     static void PREFIX ## _func (benchmark::State& state) {  \

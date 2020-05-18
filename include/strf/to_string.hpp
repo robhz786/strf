@@ -6,7 +6,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/outbuf.hpp>
-#include <strf/destination.hpp>
+#include <strf.hpp>
 #include <string>
 
 namespace strf {

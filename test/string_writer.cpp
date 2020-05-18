@@ -3,6 +3,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
+#include <strf/to_string.hpp>
 
 template <typename CharT>
 void test_successfull_append()

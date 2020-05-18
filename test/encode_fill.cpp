@@ -2,6 +2,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <strf/to_string.hpp>
 #include "test_utils.hpp"
 #include <vector>
 

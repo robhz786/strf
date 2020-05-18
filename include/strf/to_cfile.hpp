@@ -7,7 +7,7 @@
 
 #include <cstdio>
 #include <cstring>
-#include <strf/destination.hpp>
+#include <strf.hpp>
 
 namespace strf {
 

@@ -2,11 +2,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf.hpp>
+#include <strf/to_string.hpp>
 #include <array>
 #include <vector>
-
-auto write_out = strf::to(stdout);
 
 namespace xxx {
 

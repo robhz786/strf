@@ -22,7 +22,7 @@ image::syntax.svg[opts=interactive]
 .Example
 [source,cpp]
 ----
-#include <strf.hpp>
+#include <strf/to_string.hpp>
 #include <cassert>
 
 void sample()
@@ -81,6 +81,8 @@ Where `CharT` can be `char`, `char8_t`, `char16_t`, `char32_t` or `wchar_t`.
 
 
 The "destination" is what defines the effect and also the return type of the main usage syntax, as listed below:
+
+==== Header file `<strf/to_string.hpp>`
 
 [source,cpp,subs=normal]
 ----
@@ -154,6 +156,8 @@ Effect::: Assign `str` to the generated content.
 Return type::: `void`
 Support reserve::: Yes.
 
+==== Header file `<strf.hpp>`
+
 [source,cpp,subs=normal]
 ----
 /{asterisk}\...{asterisk}/ to ( char*     dest, std::size_t count );
@@ -206,6 +210,8 @@ Return type::: Same as in `to(dest, N)`
 Return value::: Same as in `to(dest, N)`
 Support reserve::: No
 
+==== Header file `<strf/to_cfile.hpp>`
+
 [source,cpp,subs=normal]
 ----
 template <typename CharT = char>
@@ -236,6 +242,8 @@ Return value:::
 - `count` is sum of the returned values returned by the several calls to `std::fwrite`.
 - `success` is `false` if an error occured.
 Support reserve::: No
+
+==== Header file `<strf/to_streambuf.hpp>`
 
 [source,cpp]
 ----

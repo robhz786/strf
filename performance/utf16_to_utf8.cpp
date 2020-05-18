@@ -4,6 +4,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <strf/to_cfile.hpp>
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
@@ -11,7 +12,6 @@
 #include <codecvt>
 #include <fstream>
 #include <benchmark/benchmark.h>
-#include <strf.hpp>
 
 static void fill_with_codepoints
     ( std::integral_constant<std::size_t, 1>

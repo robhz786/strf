@@ -47,9 +47,6 @@
 // Output types
 //
 #include <strf/detail/output_types/char_ptr.hpp>
-#include <strf/detail/output_types/std_string.hpp>
-#include <strf/detail/output_types/FILE.hpp>
-#include <strf/detail/output_types/std_streambuf.hpp>
 
 #if defined(_MSC_VER)
 #pragma warning ( pop )

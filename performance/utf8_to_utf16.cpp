@@ -4,6 +4,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <strf/to_cfile.hpp>
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
@@ -11,7 +12,6 @@
 #include <fstream>
 #include <codecvt>
 #include <benchmark/benchmark.h>
-#include <strf.hpp>
 
 #if defined(_MSC_VER)
 // disable warning that std::codecvt_utf8_utf16 is deprecated
