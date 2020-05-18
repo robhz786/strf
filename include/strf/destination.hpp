@@ -630,6 +630,152 @@ auto STRF_HD to(strf::basic_outbuf<CharT>& ob)
     return strf::destination_no_reserve<strf::detail::outbuf_reference<CharT>>(ob);
 }
 
+namespace detail {
+
+template <typename CharT>
+class basic_cstr_writer_creator
+{
+public:
+
+    using char_type = CharT;
+    using finish_type = typename basic_cstr_writer<CharT>::result;
+
+    constexpr STRF_HD
+    basic_cstr_writer_creator(CharT* dest, CharT* dest_end) noexcept
+        : dest_(dest)
+        , dest_end_(dest_end)
+    {
+        STRF_ASSERT(dest < dest_end);
+    }
+
+    STRF_HD basic_cstr_writer<CharT> create() const
+    {
+        return basic_cstr_writer<CharT>{dest_, dest_end_};
+    }
+
+private:
+
+    CharT* dest_;
+    CharT* dest_end_;
+};
+
+}
+
+#if defined(__cpp_char8_t)
+
+template<std::size_t N>
+inline STRF_HD auto to(char8_t (&dest)[N])
+{
+    return strf::destination_no_reserve
+        < strf::detail::basic_cstr_writer_creator<char8_t> >
+        (dest, dest + N);
+}
+
+inline STRF_HD auto to(char8_t* dest, char8_t* end)
+{
+    return strf::destination_no_reserve
+        < strf::detail::basic_cstr_writer_creator<char8_t> >
+        (dest, end);
+}
+
+inline STRF_HD auto to(char8_t* dest, std::size_t count)
+{
+    return strf::destination_no_reserve
+        < strf::detail::basic_cstr_writer_creator<char8_t> >
+        (dest, dest + count);
+}
+
+#endif
+
+template<std::size_t N>
+inline STRF_HD auto to(char (&dest)[N])
+{
+    return strf::destination_no_reserve
+        < strf::detail::basic_cstr_writer_creator<char> >
+        (dest, dest + N);
+}
+
+inline STRF_HD auto to(char* dest, char* end)
+{
+    return strf::destination_no_reserve
+        < strf::detail::basic_cstr_writer_creator<char> >
+        (dest, end);
+}
+
+inline STRF_HD auto to(char* dest, std::size_t count)
+{
+    return strf::destination_no_reserve
+        < strf::detail::basic_cstr_writer_creator<char> >
+        (dest, dest + count);
+}
+
+template<std::size_t N>
+inline STRF_HD auto to(char16_t (&dest)[N])
+{
+    return strf::destination_no_reserve
+        < strf::detail::basic_cstr_writer_creator<char16_t> >
+        (dest, dest + N);
+}
+
+inline STRF_HD auto to(char16_t* dest, char16_t* end)
+{
+    return strf::destination_no_reserve
+        < strf::detail::basic_cstr_writer_creator<char16_t> >
+        (dest, end);
+}
+
+inline STRF_HD auto to(char16_t* dest, std::size_t count)
+{
+    return strf::destination_no_reserve
+        < strf::detail::basic_cstr_writer_creator<char16_t> >
+        (dest, dest + count);
+}
+
+template<std::size_t N>
+inline STRF_HD auto to(char32_t (&dest)[N])
+{
+    return strf::destination_no_reserve
+        < strf::detail::basic_cstr_writer_creator<char32_t> >
+        (dest, dest + N);
+}
+
+inline STRF_HD auto to(char32_t* dest, char32_t* end)
+{
+    return strf::destination_no_reserve
+        < strf::detail::basic_cstr_writer_creator<char32_t> >
+        (dest, end);
+}
+
+inline STRF_HD auto to(char32_t* dest, std::size_t count)
+{
+    return strf::destination_no_reserve
+        < strf::detail::basic_cstr_writer_creator<char32_t> >
+        (dest, dest + count);
+}
+
+template<std::size_t N>
+inline STRF_HD auto to(wchar_t (&dest)[N])
+{
+    return strf::destination_no_reserve
+        < strf::detail::basic_cstr_writer_creator<wchar_t> >
+        (dest, dest + N);
+}
+
+inline STRF_HD auto to(wchar_t* dest, wchar_t* end)
+{
+    return strf::destination_no_reserve
+        < strf::detail::basic_cstr_writer_creator<wchar_t> >
+        (dest, end);
+}
+
+inline STRF_HD auto to(wchar_t* dest, std::size_t count)
+{
+    return strf::destination_no_reserve
+        < strf::detail::basic_cstr_writer_creator<wchar_t> >
+        (dest, dest + count);
+}
+
+
 } // namespace strf
 
 #endif  // STRF_DESTINATION_HPP
