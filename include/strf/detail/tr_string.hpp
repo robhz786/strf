@@ -11,39 +11,9 @@
 
 namespace strf {
 
-class tr_string_syntax_error: public strf::stringify_error
-{
-    using strf::stringify_error::stringify_error;
-
-    const char* what() const noexcept override
-    {
-        return "Boost.Stringify: Tr-string syntax error";
-    }
-};
-
-namespace detail {
-
-#if defined(__cpp_exceptions)
-
-inline void throw_string_syntax_error()
-{
-    throw strf::tr_string_syntax_error();
-}
-
-#else // defined(__cpp_exceptions)
-
-inline void throw_string_syntax_error()
-{
-    std::abort();
-}
-
-#endif // defined(__cpp_exceptions)
-
-} // namespace detail
-
 enum class tr_invalid_arg
 {
-    replace, stop, ignore
+    replace, ignore
 };
 
 struct tr_invalid_arg_c
@@ -231,8 +201,6 @@ void tr_string_write
                 args[arg_idx]->print_to(ob);
             } else if (policy == strf::tr_invalid_arg::replace) {
                 write_replacement_char(ob);
-            } else if (policy == strf::tr_invalid_arg::stop) {
-                strf::detail::throw_string_syntax_error();
             }
             break;
         }
@@ -243,8 +211,6 @@ void tr_string_write
                 ++arg_idx;
             } else if (policy == strf::tr_invalid_arg::replace) {
                 write_replacement_char(ob);
-            } else if (policy == strf::tr_invalid_arg::stop) {
-                strf::detail::throw_string_syntax_error();
             }
             ++it;
         } else if (char_type('0') <= ch && ch <= char_type('9')) {
@@ -253,8 +219,6 @@ void tr_string_write
                 args[result.value]->print_to(ob);
             } else if (policy == strf::tr_invalid_arg::replace) {
                 write_replacement_char(ob);
-            } else if (policy == strf::tr_invalid_arg::stop) {
-                strf::detail::throw_string_syntax_error();
             }
             it = traits::find(result.it, end - result.it, '}');
             if (it == nullptr) {
@@ -278,8 +242,6 @@ void tr_string_write
                     ++arg_idx;
                 } else if (policy == strf::tr_invalid_arg::replace) {
                     write_replacement_char(ob);
-                } else if (policy == strf::tr_invalid_arg::stop) {
-                    strf::detail::throw_string_syntax_error();
                 }
             }
             auto it2 = it + 1;
@@ -320,9 +282,6 @@ public:
             switch (policy) {
                 case strf::tr_invalid_arg::replace:
                     invalid_arg_size = enc.replacement_char_size();
-                    break;
-                case strf::tr_invalid_arg::stop:
-                    invalid_arg_size = strf::detail::trstr_invalid_arg_size_when_stop;
                     break;
                 default:
                     STRF_ASSERT(policy == strf::tr_invalid_arg::ignore);

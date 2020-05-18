@@ -12,7 +12,6 @@
 #include <cassert>
 #include <cstddef> // for std::size_t
 #include <cstring> // for std::strlen
-#include <exception>
 
 #define STRF_ASSERT(x) assert(x)
 
@@ -236,11 +235,6 @@ struct tag<T>
 {
     explicit constexpr STRF_HD tag() noexcept { }
     using type = T;
-};
-
-class stringify_error: public std::exception
-{
-    using std::exception::exception;
 };
 
 } // namespace strf
