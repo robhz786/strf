@@ -488,145 +488,126 @@ constexpr STRF_HD strf::fmt_type<T> fmt(const T& value)
 
 template <typename T>
 constexpr STRF_HD auto hex(const T& value)
--> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).hex())>>
 {
     return fmt(value).hex();
 }
 
 template <typename T>
 constexpr STRF_HD auto dec(const T& value)
--> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).dec())>>
 {
     return fmt(value).dec();
 }
 
 template <typename T>
 constexpr STRF_HD auto oct(const T& value)
--> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).oct())>>
 {
     return fmt(value).oct();
 }
 
 template <typename T>
 constexpr STRF_HD auto bin(const T& value)
--> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).bin())>>
 {
     return fmt(value).bin();
 }
 
 template <typename T>
 constexpr STRF_HD auto left(const T& value, std::int16_t width)
-    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value) < width)>>
 {
     return fmt(value) < width;
 }
 
 template <typename T>
 constexpr STRF_HD auto right(const T& value, std::int16_t width)
-    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value) > width)>>
 {
     return fmt(value) > width;
 }
 
 template <typename T>
 constexpr STRF_HD auto split(const T& value, std::int16_t width)
-    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value) % width)>>
 {
     return fmt(value) % width;
 }
 
 template <typename T>
 constexpr STRF_HD auto center(const T& value, std::int16_t width)
-    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value) ^ width)>>
 {
     return fmt(value) ^ width;
 }
 
 template <typename T>
 constexpr STRF_HD auto left(const T& value, std::int16_t width, char32_t fill)
-    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).fill(fill) < width)>>
 {
     return fmt(value).fill(fill) < width;
 }
 
 template <typename T>
 constexpr STRF_HD auto right(const T& value, std::int16_t width, char32_t fill)
-    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).fill(fill) > width)>>
 {
     return fmt(value).fill(fill) > width;
 }
 
 template <typename T>
 constexpr STRF_HD auto split(const T& value, std::int16_t width, char32_t fill)
-    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).fill(fill) % width)>>
 {
     return fmt(value).fill(fill) % width;
 }
 
 template <typename T>
 constexpr STRF_HD auto center(const T& value, std::int16_t width, char32_t fill)
-    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).fill(fill) ^ width)>>
 {
     return fmt(value).fill(fill) ^ width;
 }
 
 template <typename T, typename I>
 constexpr STRF_HD auto multi(const T& value, I count)
-    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).multi(count))>>
 {
     return fmt(value).multi(count);
 }
 
 template <typename T>
-constexpr STRF_HD auto fixed(const T& value) -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).fixed())>>
+constexpr STRF_HD auto fixed(const T& value) 
 {
     return fmt(value).fixed();
 }
 
 template <typename T>
-constexpr STRF_HD auto sci(const T& value) -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sci())>>
+constexpr STRF_HD auto sci(const T& value)
 {
     return fmt(value).sci();
 }
 
 template <typename T, typename P>
 constexpr STRF_HD auto fixed(const T& value, P precision)
-    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).fixed().p(precision))>>
 {
     return fmt(value).fixed().p(precision);
 }
 
 template <typename T, typename P>
 constexpr STRF_HD auto sci(const T& value, P precision)
-    -> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sci().p(precision))>>
 {
     return fmt(value).sci().p(precision);
 }
 
 template <typename T>
 constexpr STRF_HD auto conv(const T& value)
--> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).conv())>>
 {
     return fmt(value).convert_encoding(); // defined in no_conv_format_fn
 }
 
 template <typename T, typename E>
 constexpr STRF_HD auto conv(const T& value, const E& e)
--> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).conv(e))>>
 {
     return fmt(value).convert_encoding(e);  // defined in no_conv_format_fn
 }
 
 template <typename T>
 constexpr STRF_HD auto sani(const T& value)
--> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sani())>>
 {
     return fmt(value).sanitize_encoding();  // defined in no_conv_format_fn
 
 }
 template <typename T, typename E>
 constexpr STRF_HD auto sani(const T& value, const E& e)
--> std::remove_cv_t<std::remove_reference_t<decltype(fmt(value).sani(e))>>
 {
     return fmt(value).sanitize_encoding(e);  // defined in no_conv_format_fn
 }
