@@ -36,10 +36,10 @@ void samples()
 
 
     // more formatting:  operator>(int width) : align to rigth
-    //                   operator~()          : show base
+    //                   operator*()          : show base
     //                   p(int)               : precision
     s = strf::to_string( "---"
-                       , ~strf::hex(255).p(4).fill(U'.') > 10
+                       , *strf::hex(255).p(4).fill(U'.') > 10
                        , "---" );
     assert(s == "---....0x00ff---");
 
@@ -52,7 +52,7 @@ void samples()
 
     // range with formatting
     s = strf::to_string( "--["
-                       , ~strf::hex(strf::separated_range(array, ", ")).p(4)
+                       , *strf::hex(strf::separated_range(array, ", ")).p(4)
                        , "]--");
     assert(s == "--[0x0014, 0x001e, 0x0028]--");
 
@@ -73,10 +73,10 @@ void samples()
 
 
     // encoding conversion
-    auto s_utf8 = strf::to_u8string( strf::cv(u"aaa-")
-                                   , strf::cv(U"bbb-")
-                                   , strf::cv( "\x80\xA4"
-                                             , strf::windows_1252<char>() ) );
+    auto s_utf8 = strf::to_u8string( strf::conv(u"aaa-")
+                                   , strf::conv(U"bbb-")
+                                   , strf::conv( "\x80\xA4"
+                                               , strf::windows_1252<char>() ) );
     assert(s_utf8 == u8"aaa-bbb-\u20AC\u00A4");
 
 
