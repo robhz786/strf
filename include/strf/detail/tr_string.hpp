@@ -6,7 +6,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/printer.hpp>
-#include <limits>
 #include <strf/detail/facets/char_encoding.hpp>
 #include <strf/detail/standard_lib_functions.hpp>
 

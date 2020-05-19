@@ -412,9 +412,9 @@ public:
 
 private:
 
-    static constexpr std::size_t pool_size_
-        = std::max( sizeof(strf::detail::string_printer<CharSize>)
-                  , sizeof(strf::detail::conv_string_printer<CharSize, CharSize>) );
+    static constexpr std::size_t pool_size_ = strf::detail::max
+        ( sizeof(strf::detail::string_printer<CharSize>)
+        , sizeof(strf::detail::conv_string_printer<CharSize, CharSize>) );
     using storage_type_ = typename std::aligned_storage_t
         < pool_size_, alignof(strf::printer<CharSize>)>;
 
@@ -459,9 +459,9 @@ public:
 
 private:
 
-    static constexpr std::size_t pool_size_
-        = std::max( sizeof(strf::detail::aligned_string_printer<CharSize>)
-                  , sizeof(strf::detail::aligned_conv_string_printer<CharSize, CharSize>) );
+    static constexpr std::size_t pool_size_ = strf::detail::max
+        ( sizeof(strf::detail::aligned_string_printer<CharSize>)
+        , sizeof(strf::detail::aligned_conv_string_printer<CharSize, CharSize>) );
     using storage_type_ = typename std::aligned_storage_t
         < pool_size_, alignof(strf::printer<CharSize>)>;
 

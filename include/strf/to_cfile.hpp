@@ -5,9 +5,10 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <strf.hpp>
 #include <cstdio>
 #include <cstring>
-#include <strf.hpp>
+#include <cwchar>
 
 namespace strf {
 
@@ -20,10 +21,6 @@ public:
         : strf::basic_outbuf_noexcept<CharT>(buf_, buf_size_)
         , dest_(d)
     {
-#ifdef __CUDA_ARCH__
-        // files are not accessible on CUDA devices
-        asm("trap;");
-#endif
         STRF_ASSERT(d != nullptr);
     }
 
@@ -46,13 +43,6 @@ public:
 
     STRF_HD void recycle() noexcept
     {
-#ifdef __CUDA_ARCH__
-        // This class cannot be instantiated in device-side code;
-        // this and other methods are marked STRF_HD since they
-        // override potentially-host-and-device-side-capable
-        // methods.
-        asm("trap;");
-#else
         auto p = this->pointer();
         this->set_pointer(buf_);
         if (this->good()) {
@@ -61,7 +51,6 @@ public:
             count_ += count_inc;
             this->set_good(count == count_inc);
         }
-#endif
     }
 
     struct result
@@ -72,14 +61,6 @@ public:
 
     STRF_HD result finish()
     {
-#ifdef __CUDA_ARCH__
-        // This class cannot be instantiated in device-side code;
-        // this and other methods are marked STRF_HD since they
-        // override potentially-host-and-device-side-capable
-        // methods.
-        asm("trap;");
-        return {};
-#else
         bool g = this->good();
         this->set_good(false);
         if (g) {
@@ -89,7 +70,6 @@ public:
             g = (count == count_inc);
         }
         return {count_, g};
-#endif
     }
 
 private:
@@ -131,12 +111,6 @@ public:
 
     STRF_HD void recycle() noexcept override
     {
-#ifdef __CUDA_ARCH__
-        asm("trap;");
-#endif
-        // This will only be compiled as device-side code;
-        // the host-side version simply doesn't have object
-        // code, so using it should fail linking
         auto p = this->pointer();
         this->set_pointer(buf_);
         if (this->good()) {
@@ -229,24 +203,16 @@ private:
 template <typename CharT = char>
 inline auto to(std::FILE* destination)
 {
-#ifndef __CUDA_ARCH__
     return strf::destination_no_reserve
         < strf::detail::narrow_cfile_writer_creator<CharT> >
         (destination);
-#else
-    return 0;
-#endif
 }
 
 inline auto wto(std::FILE* destination)
 {
-#ifndef __CUDA_ARCH__
     return strf::destination_no_reserve
         < strf::detail::wide_cfile_writer_creator >
         (destination);
-#else
-    return 0;
-#endif
 }
 
 

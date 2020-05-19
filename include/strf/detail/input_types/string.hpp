@@ -1,7 +1,6 @@
 #ifndef STRF_DETAIL_INPUT_TYPES_STRING
 #define STRF_DETAIL_INPUT_TYPES_STRING
 
-#include <limits>
 #include <strf/detail/facets/width_calculator.hpp>
 #include <strf/detail/format_functions.hpp>
 #include <strf/facets_pack.hpp>
@@ -17,19 +16,10 @@ public:
     using iterator = const CharIn*;
     using const_iterator = const CharIn*;
 
-#if defined(STRF_HAS_STD_STRING_VIEW)
-
-    template <typename Traits>
-    constexpr STRF_HD simple_string_view(std::basic_string_view<CharIn, Traits> sv)
-        : begin_(sv.data())
-        , len_(sv.size())
-    {
-    }
-
-#endif //defined(STRF_HAS_STD_STRING_VIEW)
-
-    template <typename Traits, typename Allocator>
-    STRF_HD simple_string_view(const std::basic_string<CharIn, Traits, Allocator>& s)
+    template < typename StringType
+             , typename = decltype(std::declval<const StringType&>().data())
+             , typename = decltype(std::declval<const StringType&>().size())  >
+    STRF_HD simple_string_view(const StringType& s)
         : begin_(s.data())
         , len_(s.size())
     {
@@ -373,10 +363,14 @@ struct string_fmt_traits
 // {
 // };
 
+#if defined(STRF_HAS_STD_STRING_DECLARATION)
+
 template <typename CharIn, typename Traits, typename Allocator>
 constexpr STRF_HD strf::detail::string_fmt_traits<CharIn>
 get_fmt_traits(strf::tag<>, std::basic_string<CharIn, Traits, Allocator>)
 { return {}; }
+
+#endif // defined(STRF_HAS_STD_STRING_DECLARATION)
 
 template <typename CharIn>
 constexpr STRF_HD strf::detail::string_fmt_traits<CharIn>
@@ -608,12 +602,16 @@ constexpr STRF_HD strf::detail::string_printable_traits
 get_printable_traits(Preview&, const wchar_t*)
 { return {}; }
 
+#if defined(STRF_HAS_STD_STRING_DECLARATION)
+
 template < typename DestCharT, typename FPack, typename Preview
          , typename SrcCharT, typename Traits, typename Allocator >
 constexpr STRF_HD strf::detail::string_printable_traits
     < DestCharT, FPack, Preview, SrcCharT >
 get_printable_traits(Preview&, const std::basic_string<SrcCharT, Traits, Allocator>&)
 { return {}; }
+
+#endif // defined(STRF_HAS_STD_STRING_DECLARATION)
 
 #if defined(STRF_HAS_STD_STRING_VIEW)
 

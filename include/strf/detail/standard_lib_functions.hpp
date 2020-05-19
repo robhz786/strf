@@ -6,52 +6,109 @@
 #define STRF_DETAIL_STANDARD_LIB_FUNCTIONS_HPP
 
 #include <strf/outbuf.hpp>
-#include <cstring>   // for std::memcpy
-#include <algorithm> // for std::copy_n
-//#include <cwchar>  // for std::wcslen
 
+#if defined(__CUDA_ARCH__) && ! defined(STRF_FREESTANDING)
+#define STRF_FREESTANDING
+#endif
 
-#ifdef STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS
+#include <type_traits>
+#include <utility>    // not freestanding, but almost
+#include <limits>
+
+#if ! defined(STRF_FREESTANDING)
+#    define STRF_WITH_CSTRING
+#    include <cstring>
+#    include <algorithm>   // for std::copy_n
 #    if defined(__cpp_lib_string_view)
 #        define STRF_HAS_STD_STRING_VIEW
+#        define STRF_HAS_STD_STRING_DECLARATION
 #        define STRF_CONSTEXPR_CHAR_TRAITS constexpr
-#        include <string_view>
+#        include <string_view> //for char_traits
 #    else
-#        include <string> // char_traits
+#        define STRF_HAS_STD_STRING_DECLARATION
+#        define STRF_HAS_STD_STRING_DEFINITION
+#        include <string>      //for char_traits
 
 #    endif // defined(__cpp_lib_string_view)
 #endif
 
-#ifndef STRF_CONSTEXPR_CHAR_TRAITS
-#  define STRF_CONSTEXPR_CHAR_TRAITS inline
+#if ! defined(STRF_CONSTEXPR_CHAR_TRAITS)
+#    define STRF_CONSTEXPR_CHAR_TRAITS inline
 #endif
 
-namespace strf {
+#if defined(STRF_WITH_CSTRING)
+#    include <cstring>
+#endif
 
+
+namespace strf {
 namespace detail {
 
-template<class CharT, class Size, class T>
-inline STRF_HD CharT*
-str_fill_n(CharT* str, Size count, const T& value)
-{
-#if !defined(__CUDA_ARCH__) && STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS
-    return std::char_traits<CharT>::assign(str, count, value);
+#if ! defined(STRF_FREESTANDING)
+template <typename It>
+using iterator_value_type = typename std::iterator_traits<It>::value_type;
+
 #else
-    // TODO: Should we consider CUDA's built-in memset?
+
+template <typename It>
+struct iterator_value_type_impl
+{
+    using type = typename It::value_type;
+    //std::remove_cv_t<std::remove_reference_t<decltype(*std::declval<It>())>>;
+};
+
+template <typename T>
+struct iterator_value_type_impl<T*>
+{
+    using type = std::remove_cv_t<T>;
+};
+
+template <typename It>
+using iterator_value_type = typename iterator_value_type_impl<It>::type;
+
+#endif
+
+template <typename IntT>
+constexpr IntT max(IntT a, IntT b)
+{
+    return a > b ? a : b;
+}
+
+template<class CharT>
+STRF_CONSTEXPR_CHAR_TRAITS
+STRF_HD void str_fill_n(CharT* str, std::size_t count, CharT value)
+{
+#if !defined(STRF_FREESTANDING)
+    std::char_traits<CharT>::assign(str, count, value);
+#else
     auto p = str;
-    for (Size i = 0; i != count; ++i, ++p) {
+    for (std::size_t i = 0; i != count; ++i, ++p) {
         *p = value;
     }
-    return p;
 #endif
 }
 
-// std::char_traits<CharT>::length()
+template<>
+inline
+STRF_HD void str_fill_n<char>(char* str, std::size_t count, char value)
+{
+#if !defined(STRF_FREESTANDING)
+    std::char_traits<char>::assign(str, count, value);
+#elif defined(STRF_WITH_CSTRING)
+    memset(str, value, count);
+#else
+    auto p = str;
+    for (std::size_t i = 0; i != count; ++i, ++p) {
+        *p = value;
+    }
+#endif
+}
+
 template <class CharT>
 STRF_CONSTEXPR_CHAR_TRAITS STRF_HD std::size_t
 str_length(const CharT* str)
 {
-#if !defined(__CUDA_ARCH__) && STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS
+#if !defined(STRF_FREESTANDING)
     return std::char_traits<CharT>::length(str);
 #else
     std::size_t length { 0 };
@@ -64,7 +121,7 @@ template <class CharT>
 STRF_CONSTEXPR_CHAR_TRAITS STRF_HD const CharT*
 str_find(const CharT* p, std::size_t count, const CharT& ch) noexcept
 {
-#if !defined(__CUDA_ARCH__) && STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS
+#if !defined(STRF_FREESTANDING)
     return std::char_traits<CharT>::find(p, count, ch);
 #else
     for (std::size_t i = 0; i != count; ++i, ++p) {
@@ -81,10 +138,10 @@ template <class CharT>
 STRF_CONSTEXPR_CHAR_TRAITS STRF_HD bool
 str_equal(const CharT* str1, const CharT* str2, std::size_t count)
 {
-#if !defined(__CUDA_ARCH__) && STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS
+#if !defined(STRF_FREESTANDING)
     return 0 == std::char_traits<CharT>::compare(str1, str2, count);
-#elif defined(__CUDA_ARCH__)
-    for(;count != 0; ++str1, ++str2, --count;) {
+#else
+    for(;count != 0; ++str1, ++str2, --count) {
         if (*str1 != *str2) {
             return false;
         }
@@ -95,51 +152,29 @@ str_equal(const CharT* str1, const CharT* str2, std::size_t count)
 
 
 template <class CharT>
-STRF_CONSTEXPR_CHAR_TRAITS STRF_HD CharT*
+STRF_CONSTEXPR_CHAR_TRAITS STRF_HD void
 str_copy_n(CharT* destination, const CharT* source, std::size_t count)
 {
-#if !defined(__CUDA_ARCH__) && STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS
-    return std::char_traits<CharT>::copy(destination, source, count);
-#elif defined(__CUDA_ARCH__)
-    // CUDA has a built-in device-side memcpy(); see:
-    // https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#dynamic-global-memory-allocation-and-operations
-    // but it is not necessarily that fast, see:
-    // https://stackoverflow.com/q/10456728/1593077
-    auto result = memcpy(destination, source, count);
-    return static_cast<CharT*>(result);
+#if ! defined(STRF_FREESTANDING)
+    std::char_traits<CharT>::copy(destination, source, count);
+#elif defined(STRF_WITH_CSTRING)
+    memcpy(destination, source, count * sizeof(CharT));
 #else
-    CharT* ret  = destination;
-    for(;count != 0; ++destination, ++source, --count;) {
+    for(;count != 0; ++destination, ++source, --count) {
         *destination = *source;
     }
-    return ret;
 #endif
 }
 
 template <class InputIt, class Size, class OutputIt>
-inline STRF_HD constexpr
-OutputIt copy_n(InputIt first, Size count, OutputIt result)
+inline STRF_HD void copy_n(InputIt src_it, Size count, OutputIt dest_it)
 {
-#if !defined(__CUDA_ARCH__) && STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS
-    return std::copy_n(first, count, result);
+#if !defined(STRF_FREESTANDING)
+    std::copy_n(src_it, count, dest_it);
 #else
-    auto src_it { first };
-    auto dest_it { result };
     for(; count != 0; ++src_it, ++dest_it, --count) {
         *dest_it = *src_it;
     }
-    return result;
-#endif
-}
-
-template <class T>
-inline constexpr STRF_HD const T&
-max(const T& lhs, const T& rhs) noexcept
-{
-#if !defined(__CUDA_ARCH__) && STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS
-    return std::max(lhs, rhs);
-#elif __CUDA_ARCH__
-    return (lhs < rhs) ? rhs : lhs;
 #endif
 }
 
@@ -169,7 +204,7 @@ STRF_HD void outbuf_write_continuation(Outbuf& ob, const CharT* str, std::size_t
         ob.recycle();
         space = ob.size();
         if (len <= space) {
-            memcpy(ob.pointer(), str, len * sizeof(CharT));
+            detail::str_copy_n(ob.pointer(), str, len);
             ob.advance(len);
             break;
         }

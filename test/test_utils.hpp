@@ -5,6 +5,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <string>
+#define STRF_HAS_STD_STRING_DECLARATION
 #include <strf/to_cfile.hpp>
 #include <cctype>
 

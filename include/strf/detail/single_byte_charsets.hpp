@@ -824,11 +824,11 @@ STRF_HD void single_byte_char_encoding<Impl>::encode_fill
     while(true) {
         std::size_t available = ob.size();
         if (count <= available) {
-            std::memset(ob.pointer(), ch2, count);
+            strf::detail::str_fill_n<char>((char*)ob.pointer(), count, ch2);
             ob.advance(count);
             return;
         }
-        std::memset(ob.pointer(), ch2, available);
+        strf::detail::str_fill_n<char>((char*)ob.pointer(), available, ch2);
         ob.advance_to(ob.end());
         count -= available;
         ob.recycle();

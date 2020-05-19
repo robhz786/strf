@@ -1,9 +1,6 @@
 #ifndef STRF_DETAIL_COMMMON_HPP
 #define STRF_DETAIL_COMMMON_HPP
 
-// TODO: This seems to rely on some standard library headers which have host-side-only code!
-// double-check and either avoid the reliance or duplicate the headers :-(
-
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -11,15 +8,14 @@
 #include <type_traits>
 #include <cstddef>
 
-#if defined(__STDC_HOSTED__) && __STDC_HOSTED__ == 1
-#  include <cassert>
-#  define STRF_ASSERT(x) assert(x)
-
-#else  //__STDC_HOSTED__ == 1
-#  define STRF_ASSERT(x)
-
-#endif //__STDC_HOSTED__ == 1
-
+#if ! defined(STRF_ASSERT)
+#  if ! defined(STRF_FREESTANDING) && defined(__STDC_HOSTED__) && __STDC_HOSTED__ == 1
+#    include <cassert>
+#    define STRF_ASSERT(x) assert(x)
+#  else
+#    define STRF_ASSERT(x)
+#  endif
+#endif // ! defined(STRF_ASSERT)
 
 #if defined(STRF_SOURCE) && !defined(STRF_SEPARATE_COMPILATION)
 #define STRF_SEPARATE_COMPILATION
@@ -112,9 +108,6 @@
 #define STRF_DEVICE
 
 #endif // __CUDACC__
-
-// TODO: This could be controlled from CMake
-#define STRF_PREFER_STD_LIBRARY_STRING_FUNCTIONS 1
 
 namespace strf {
 

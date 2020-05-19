@@ -14,7 +14,7 @@ template <typename It>
 struct range_p
 {
     using iterator = It;
-    using value_type = typename std::iterator_traits<It>::value_type;
+    using value_type = strf::detail::iterator_value_type<It>;
 
     It begin;
     It end;
@@ -24,7 +24,7 @@ template <typename It, typename CharIn>
 struct separated_range_p
 {
     using iterator = It;
-    using value_type = typename std::iterator_traits<It>::value_type;
+    using value_type = strf::detail::iterator_value_type<It>;
 
     It begin;
     It end;
@@ -36,7 +36,7 @@ template <typename It, typename UnaryOp>
 struct transformed_range_p
 {
     using iterator = It;
-    using value_type = typename std::iterator_traits<It>::value_type;
+    using value_type = strf::detail::iterator_value_type<It>;
 
     It begin;
     It end;
@@ -47,7 +47,7 @@ template <typename It, typename CharIn, typename UnaryOp>
 struct separated_transformed_range_p
 {
     using iterator = It;
-    using value_type = typename std::iterator_traits<It>::value_type;
+    using value_type = strf::detail::iterator_value_type<It>;
 
     It begin;
     It end;
@@ -77,7 +77,7 @@ using mp_replace_front
 } // namespace detail
 
 template < typename Iterator
-         , typename V  = typename std::iterator_traits<Iterator>::value_type
+         , typename V  = strf::detail::iterator_value_type<Iterator>
          , typename VF = strf::fmt_type<V> >
 using range_with_format
     = strf::detail::mp_replace_front
@@ -85,7 +85,7 @@ using range_with_format
 
 template < typename Iterator
          , typename CharT
-         , typename V  = typename std::iterator_traits<Iterator>::value_type
+         , typename V  = strf::detail::iterator_value_type<Iterator>
          , typename VF = strf::fmt_type<V> >
 using sep_range_with_format
     = strf::detail::mp_replace_front
@@ -170,7 +170,7 @@ class range_printer: public strf::printer<sizeof(CharT)>
 public:
 
     using iterator = It;
-    using value_type = typename std::iterator_traits<It>::value_type;
+    using value_type = strf::detail::iterator_value_type<It>;
 
     template <typename... T>
     STRF_HD range_printer
@@ -234,7 +234,7 @@ class separated_range_printer: public strf::printer<sizeof(CharT)>
 public:
 
     using iterator = It;
-    using value_type = typename std::iterator_traits<It>::value_type;
+    using value_type = strf::detail::iterator_value_type<It>;
 
     template <typename... T>
     STRF_HD separated_range_printer
@@ -347,7 +347,7 @@ template < typename CharT
          , typename ... Fmts >
 class fmt_range_printer: public strf::printer<sizeof(CharT)>
 {
-    using value_type_ = typename std::iterator_traits<It>::value_type;
+    using value_type_ = strf::detail::iterator_value_type<It>;
     using value_fmt_type_ = strf::fmt_type<value_type_>;
     using value_fmt_type_adapted_
         = typename value_fmt_type_::template replace_fmts<Fmts...>;
@@ -431,7 +431,7 @@ template< typename CharT
         , typename ... Fmts >
 class fmt_separated_range_printer: public strf::printer<sizeof(CharT)>
 {
-    using value_type_ = typename std::iterator_traits<It>::value_type;
+    using value_type_ = strf::detail::iterator_value_type<It>;
     using value_fmt_type_ = strf::fmt_type<value_type_>;
     using value_fmt_type_adapted_
         = typename value_fmt_type_::template replace_fmts<Fmts...>;
@@ -559,7 +559,7 @@ class transformed_range_printer: public strf::printer<sizeof(CharT)>
 public:
 
     using iterator = It;
-    using value_type = typename std::iterator_traits<It>::value_type;
+    using value_type = strf::detail::iterator_value_type<It>;
 
     template <typename... T>
     transformed_range_printer
@@ -628,7 +628,7 @@ class sep_transformed_range_printer: public strf::printer<sizeof(CharT)>
 {
 public:
     using iterator = It;
-    using value_type = typename std::iterator_traits<It>::value_type;
+    using value_type = strf::detail::iterator_value_type<It>;
 
     template <typename... T>
     STRF_HD sep_transformed_range_printer

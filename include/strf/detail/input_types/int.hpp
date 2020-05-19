@@ -12,7 +12,6 @@
 #include <strf/detail/facets/numpunct.hpp>
 #include <strf/detail/int_digits.hpp>
 #include <strf/detail/standard_lib_functions.hpp>
-#include <cstdint>
 
 // todo: optimize as in:
 // https://pvk.ca/Blog/2017/12/22/appnexus-common-framework-its-out-also-how-to-print-integers-faster/
@@ -604,7 +603,7 @@ public:
 
     STRF_HD std::int16_t width() const
     {
-        return static_cast<std::int16_t>( strf::detail::max(precision_, digcount_)
+        return static_cast<std::int16_t>( (precision_ > digcount_ ? precision_ : digcount_)
                                         + prefixsize_
                                         + static_cast<int>(sepcount_) );
     }
@@ -682,7 +681,7 @@ template <std::size_t CharSize, int Base>
 STRF_HD void partial_fmt_int_printer<CharSize, Base>::calc_size
     ( strf::size_preview<true>& preview ) const
 {
-    std::size_t s = strf::detail::max(precision_, digcount_) + prefixsize_;
+    std::size_t s = prefixsize_ + (precision_ > digcount_ ? precision_ : digcount_);
     if (sepcount_ > 0) {
         s += sepcount_ * sepsize_;
     }

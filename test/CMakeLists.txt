@@ -7,10 +7,8 @@
 cmake_minimum_required (VERSION 3.0)
 project (strf_test)
 
-foreach(
-  t
+set(tests
   tr_string
-  #  dispatcher_with_move_only_arg
   dynamic_charset
   encode_char
   encode_fill
@@ -19,7 +17,6 @@ foreach(
   input_float
   input_int
   input_string
-#  input_char32
   input_facets_pack
   input_range
   numpunct
@@ -31,10 +28,16 @@ foreach(
   width_calculator
   utf_to_utf
   single_byte_encodings
-  cstr_writer
-  cfile_writer
-  streambuf_writer
-  string_writer )
+  cstr_writer )
+
+if (NOT ${STRF_FREESTANDING})
+  list(APPEND tests
+    cfile_writer
+    streambuf_writer
+    string_writer )
+endif()
+
+foreach(t IN LISTS tests)
 
   add_executable(test-${t}-header-only   ${t}.cpp)
   add_executable(test-${t}-static-lib    ${t}.cpp)
@@ -52,19 +55,19 @@ if (${STRF_CUDA_SUPPORT})
     t
     cuda_inclusion
     write_within_kernel )
-  
+
     add_executable(test-${t}-header-only   ${t}.cu)
     add_executable(test-${t}-static-lib    ${t}.cu)
-  
+
     set_target_properties(test-${t}-header-only PROPERTIES CXX_STANDARD 14)
     set_target_properties(test-${t}-static-lib PROPERTIES CXX_STANDARD 14)
 
-    # Note: Users of strf in CUDA device-side code may want to add this 
+    # Note: Users of strf in CUDA device-side code may want to add this
     # assembly option to their build options as well, since by default, ptxas
     # complains on kernels with dynamic memory allocation.
     target_compile_options(test-${t}-header-only PRIVATE --ptxas-options --suppress-stack-size-warning)
     target_compile_options(test-${t}-static-lib PRIVATE --ptxas-options --suppress-stack-size-warning)
- 
+
     target_link_libraries(test-${t}-header-only   strf-header-only)
     target_link_libraries(test-${t}-static-lib    strf-cuda)
 

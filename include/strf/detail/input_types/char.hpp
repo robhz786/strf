@@ -5,7 +5,6 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <type_traits>
 #include <strf/printer.hpp>
 #include <strf/facets_pack.hpp>
 #include <strf/detail/facets/width_calculator.hpp>

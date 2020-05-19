@@ -10,11 +10,44 @@
 #include <strf/detail/facets/numpunct.hpp>
 #include <strf/detail/ryu/double.hpp>
 #include <strf/detail/ryu/float.hpp>
-#include <cstring>
-#include <type_traits>
 
 namespace strf {
 namespace detail {
+
+#if defined(STRF_WITH_CSTRING)
+
+// Here is a debate about memcpy vs union: https://github.com/ulfjack/ryu/pull/116
+
+constexpr STRF_HD std::uint32_t to_bits(float f)
+{
+    std::uint32_t bits = 0;
+    memcpy(&bits, &f, sizeof(float));
+    return bits;
+}
+
+constexpr STRF_HD std::uint64_t to_bits(const double d)
+{
+    std::uint64_t bits = 0;
+    memcpy(&bits, &d, sizeof(double));
+    return bits;
+}
+
+#else
+
+constexpr STRF_HD std::uint32_t to_bits(float f)
+{
+    union { std::uint32_t bits = 0; float x; };
+    x = f;
+    return bits;
+}
+
+constexpr STRF_HD std::uint64_t to_bits(const double d) {
+    union { std::uint64_t bits = 0; double x; };
+    x = d;
+    return bits;
+}
+
+#endif
 
 struct double_dec
 {
@@ -163,14 +196,14 @@ STRF_INLINE STRF_HD double_dec_base trivial_double_dec(
     STRF_ASSERT((m % 10) != 0);
     return {m, e10};
 }
+
 STRF_INLINE STRF_HD detail::double_dec decode(float f)
 {
     constexpr int bias = 127;
     constexpr int e_size = 8;
     constexpr int m_size = 23;
 
-    std::uint32_t bits;
-    std::memcpy(&bits, &f, 4);
+    std::uint32_t bits = strf::detail::to_bits(f);
     const std::uint32_t exponent
         = static_cast<std::uint32_t>((bits << 1) >> (m_size + 1));
     const bool sign = (bits >> (m_size + e_size));
@@ -204,8 +237,7 @@ STRF_INLINE STRF_HD detail::double_dec decode(double d)
     constexpr int e_size = 11; // bits in exponent
     constexpr int m_size = 52; // bits in matissa
 
-    std::uint64_t bits;
-    std::memcpy(&bits, &d, 8);
+    std::uint64_t bits = strf::detail::to_bits(d);
     const std::uint32_t exponent
         = static_cast<std::uint32_t>((bits << 1) >> (m_size + 1));
     const bool sign = (bits >> (m_size + e_size));
@@ -532,8 +564,8 @@ struct double_printer_data
     bool negative;
     bool infinity;
     bool nan;
-    bool showpoint;
     bool showsign;
+    bool showpoint;
     bool sci_notation;
 };
 
@@ -562,7 +594,11 @@ STRF_HD double_printer_data init_double_printer_data
 {
     static_assert(Notation != strf::float_notation::hex, "");
     double_printer_data data;
-    std::memcpy(&data.m10, &dd, sizeof(dd));
+    data.m10      = dd.m10;
+    data.e10      = dd.e10;
+    data.negative = dd.negative;
+    data.infinity = dd.infinity;
+    data.nan      = dd.nan;
     data.showsign = fmt.showpos || data.negative;
 
     if (data.nan || data.infinity) {
@@ -649,13 +685,14 @@ inline STRF_HD void write_int_with_leading_zeros
     , unsigned digcount
     , strf::lettercase lc )
 {
+    using char_type = strf::underlying_char_type<CharSize>;
     ob.ensure(digcount);
     auto p = ob.pointer();
     auto end = p + digcount;
     using writer = detail::intdigits_backwards_writer<Base>;
     auto p2 = writer::write_txtdigits_backwards(value, end, lc);
     if (p != p2) {
-        strf::detail::str_fill_n(p, p2 - p, '0');
+        strf::detail::str_fill_n<char_type>(p, p2 - p, '0');
     }
     ob.advance_to(end);
 }
@@ -685,7 +722,7 @@ STRF_HD void print_amplified_integer_small_separator_1
         ob.ensure(middle_groups + 1);
         auto oit = ob.pointer();
         *oit = separator;
-        strf::detail::str_fill_n(++oit, middle_groups, (char_type)'0');
+        strf::detail::str_fill_n<char_type>(++oit, middle_groups, '0');
         ob.advance_to(oit + middle_groups);
     }
     dist.low_groups.pop_high();
@@ -694,7 +731,7 @@ STRF_HD void print_amplified_integer_small_separator_1
         ob.ensure(grp + 1);
         auto oit = ob.pointer();
         *oit = separator;
-        strf::detail::str_fill_n(++oit, grp, (char_type)'0');
+        strf::detail::str_fill_n<char_type>(++oit, grp, '0');
         ob.advance_to(oit + grp);
         dist.low_groups.pop_high();
     }
@@ -751,7 +788,7 @@ STRF_HD void print_amplified_integer_small_separator_2
             ob.advance(1 + num_digits);
             auto remaining = middle_groups - num_digits;
             num_digits = 0;
-            strf::detail::write_fill(ob, remaining, '0');
+            strf::detail::write_fill(ob, remaining, (char_type)'0');
             -- dist.middle_groups_count;
         }
         STRF_ASSERT(num_digits == 0);
@@ -793,7 +830,7 @@ STRF_HD void print_amplified_integer_small_separator_2
             STRF_ASSERT(grp_size <= size_after_recycle);
             ob.ensure(grp_size + (num_digits == 0));
             oit = ob.pointer();
-            strf::detail::str_fill_n(oit, grp_size, '0');
+            strf::detail::str_fill_n<char_type>(oit, grp_size, '0');
             ob.advance_to(oit + grp_size);
         }
     }
@@ -805,7 +842,7 @@ STRF_HD void print_amplified_integer_small_separator_2
         ob.ensure(grp_size + 1);
         auto it = ob.pointer();
         *it = separator;
-        strf::detail::str_fill_n(it + 1, grp_size, '0');
+        strf::detail::str_fill_n<char_type>(it + 1, grp_size, '0');
         ob.advance(grp_size + 1);
         dist.low_groups.pop_high();
     }
@@ -856,7 +893,7 @@ STRF_HD void print_amplified_integer_big_separator_1
     for (auto mgc = dist.middle_groups_count; mgc != 0; --mgc) {
         ob.ensure(separator_size + middle_groups);
         auto oit = encode_char(ob.pointer(), separator);
-        strf::detail::str_fill_n(oit, middle_groups, (char_type)'0');
+        strf::detail::str_fill_n<char_type>(oit, middle_groups, '0');
         ob.advance_to(oit + middle_groups);
     }
     dist.low_groups.pop_high();
@@ -864,7 +901,7 @@ STRF_HD void print_amplified_integer_big_separator_1
         auto grp = dist.low_groups.highest_group();
         ob.ensure(separator_size + grp);
         auto oit = encode_char(ob.pointer(), separator);
-        strf::detail::str_fill_n(oit, grp, (char_type)'0');
+        strf::detail::str_fill_n<char_type>(oit, grp, '0');
         ob.advance(separator_size + grp);
         dist.low_groups.pop_high();
     }
@@ -919,7 +956,7 @@ STRF_HD void print_amplified_integer_big_separator_2
             const auto remaining = middle_groups - num_digits;
             auto oit = encode_char(ob.pointer(), separator);
             strf::detail::copy_n(digits, num_digits, oit);
-            strf::detail::str_fill_n(oit + num_digits, remaining, '0');
+            strf::detail::str_fill_n<char_type>(oit + num_digits, remaining, '0');
             ob.advance_to(oit + middle_groups);
             num_digits = 0;
             --dist.middle_groups_count;
@@ -928,7 +965,7 @@ STRF_HD void print_amplified_integer_big_separator_2
         while (dist.middle_groups_count) {
             ob.ensure(separator_size + middle_groups);
             auto oit = encode_char(ob.pointer(), separator);
-            strf::detail::str_fill_n(oit, middle_groups, (char_type)'0');
+            strf::detail::str_fill_n<char_type>(oit, middle_groups, '0');
             ob.advance_to(oit + middle_groups);
             -- dist.middle_groups_count;
         }
@@ -964,7 +1001,7 @@ STRF_HD void print_amplified_integer_big_separator_2
             STRF_ASSERT(grp_size <= size_after_recycle);
             ob.ensure(grp_size);
             oit = ob.pointer();
-            strf::detail::str_fill_n(oit, grp_size, '0');
+            strf::detail::str_fill_n<char_type>(oit, grp_size, '0');
             ob.advance_to(oit + grp_size);
         }
     }
@@ -975,7 +1012,7 @@ STRF_HD void print_amplified_integer_big_separator_2
         STRF_ASSERT(separator_size + grp_size <= size_after_recycle);
         ob.ensure(separator_size + grp_size);
         auto oit = encode_char(ob.pointer(), separator);
-        strf::detail::str_fill_n(oit, grp_size, '0');
+        strf::detail::str_fill_n<char_type>(oit, grp_size, '0');
         ob.advance_to(oit + grp_size);
         dist.low_groups.pop_high();
     }
@@ -1684,7 +1721,7 @@ STRF_HD void double_printer<CharSize>::print_to
             }
             if (data_.extra_zeros > 0) {
                 ob.advance_to(it);
-                strf::detail::write_fill<CharSize>(ob, data_.extra_zeros, '0');
+                strf::detail::write_fill<CharSize>(ob, data_.extra_zeros, (char_type)'0');
                 it = ob.pointer();
             }
         } else {
@@ -1695,7 +1732,7 @@ STRF_HD void double_printer<CharSize>::print_to
             it = itz;
             if (data_.extra_zeros > 0) {
                 ob.advance_to(itz);
-                strf::detail::write_fill<CharSize>(ob, data_.extra_zeros, '0');
+                strf::detail::write_fill<CharSize>(ob, data_.extra_zeros, (char_type)'0');
                 it = ob.pointer();
             }
         }
@@ -2276,8 +2313,7 @@ STRF_INLINE STRF_HD strf::detail::hex_double_printer_data init_hex_double_printe
 {
     strf::detail::hex_double_printer_data data;
 
-    std::uint64_t bits;
-    std::memcpy(&bits, &x, 8);
+    std::uint64_t bits = strf::detail::to_bits(x);
 
     data.mantissa = bits & 0xFFFFFFFFFFFFFull;
     data.exponent = static_cast<std::int32_t>((bits << 1) >> 53) - 1023;
