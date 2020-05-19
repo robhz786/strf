@@ -60,11 +60,6 @@
 // #if __cplusplus >= 201703L || ( defined(_MSC_VER) && defined(_HAS_CXX17) && _HAS_CXX17)
 // #define STRF_HAS_CXX17
 
-// #if defined(__cpp_lib_to_chars)
-// #include <charconv>
-// #define STRF_HAS_STD_CHARCONV
-// #endif //defined(__cpp_lib_to_chars)
-
 #if defined(__has_cpp_attribute)
 #if __has_cpp_attribute(nodiscard)
 #define STRF_HAS_NODISCARD

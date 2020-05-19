@@ -53,16 +53,12 @@ facet_type f7 = {7};
 
 
 auto x1 = strf::constrain<filter_le1>(f1);
-auto x2 = strf::constrain<filter_le2>(std::ref(f2));
-auto x3 = strf::constrain<filter_le3>(std::cref(f3));
-auto x4_ = strf::constrain<filter_le4>(f4);
-auto x5_ = strf::constrain<filter_le5>(f5);
-auto x6_ = strf::constrain<filter_le6>(std::ref(f6));
-auto x7_ = strf::constrain<filter_le7>(std::cref(f7));
-auto x4 = std::ref (x4_);
-auto x5 = std::cref(x5_);
-auto x6 = std::ref (x6_);
-auto x7 = std::cref(x7_);
+auto x2 = strf::constrain<filter_le2>(f2);
+auto x3 = strf::constrain<filter_le3>(f3);
+auto x4 = strf::constrain<filter_le4>(f4);
+auto x5 = strf::constrain<filter_le5>(f5);
+auto x6 = strf::constrain<filter_le6>(f6);
+auto x7 = strf::constrain<filter_le7>(f7);
 
 template <typename FPack>
 std::vector<int> digest(const FPack& fp)
