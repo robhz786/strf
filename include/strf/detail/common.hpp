@@ -9,11 +9,17 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <type_traits>
-#include <cassert>
-#include <cstddef> // for std::size_t
-#include <cstring> // for std::strlen
+#include <cstddef>
 
-#define STRF_ASSERT(x) assert(x)
+#if defined(__STDC_HOSTED__) && __STDC_HOSTED__ == 1
+#  include <cassert>
+#  define STRF_ASSERT(x) assert(x)
+
+#else  //__STDC_HOSTED__ == 1
+#  define STRF_ASSERT(x)
+
+#endif //__STDC_HOSTED__ == 1
+
 
 #if defined(STRF_SOURCE) && !defined(STRF_SEPARATE_COMPILATION)
 #define STRF_SEPARATE_COMPILATION
@@ -36,29 +42,6 @@
 #define STRF_INLINE inline
 #define STRF_STATIC_LINKAGE inline
 #endif
-/*
-#if defined(_MSC_VER)
-#if _MSC_VER < 1911
-#define STRF_NO_NODISCARD
-#endif
-
-#elif defined(__GNUC__) && __GNUC__ < 7
-#define STRF_NO_NODISCARD
-
-#elif defined(__clang__)
-#if __has_attribute(nodiscard) == 0
-#define STRF_NO_NODISCARD
-#endif
-
-#elif defined(__INTEL_COMPILER) && __INTEL_COMPILER < 1800
-#define STRF_NO_NODISCARD
-
-#elif __cplusplus < 201703L
-#define STRF_NO_NODISCARD
-#endif
-*/
-// #if __cplusplus >= 201703L || ( defined(_MSC_VER) && defined(_HAS_CXX17) && _HAS_CXX17)
-// #define STRF_HAS_CXX17
 
 #if defined(__has_cpp_attribute)
 #if __has_cpp_attribute(nodiscard)

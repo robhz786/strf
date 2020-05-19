@@ -318,7 +318,7 @@ void test_constrained_fpe()
         TEST_EQ(201, (strf::get_facet<fcategory<1>, double>(fp2).value));
         TEST_EQ(301, (strf::get_facet<fcategory<1>, int>(fp2).value));
     }
-  
+
     {
         TEST_TRUE(!(std::is_copy_constructible<facet<0, enable_only_move>>::value));
         TEST_TRUE(!(std::is_move_constructible<facet<0, disable_copy_and_move>>::value));

@@ -565,7 +565,7 @@ constexpr STRF_HD auto multi(const T& value, I count)
 }
 
 template <typename T>
-constexpr STRF_HD auto fixed(const T& value) 
+constexpr STRF_HD auto fixed(const T& value)
 {
     return fmt(value).fixed();
 }
