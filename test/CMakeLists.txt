@@ -45,8 +45,11 @@ foreach(t IN LISTS tests)
   target_link_libraries(test-${t}-header-only   strf-header-only)
   target_link_libraries(test-${t}-static-lib    strf)
 
-  add_test(run-test-${t}-header-only   test-${t}-header-only)
-  add_test(run-test-${t}-static-lib    test-${t}-static-lib)
+  set_target_properties(test-${t}-header-only  PROPERTIES OUTPUT_NAME ${t}-header-only)
+  set_target_properties(test-${t}-static-lib   PROPERTIES OUTPUT_NAME ${t}-static-lib)
+
+  add_test(NAME run-test-${t}-header-only COMMAND  ${t}-header-only)
+  add_test(NAME run-test-${t}-static-lib  COMMAND  ${t}-static-lib)
 
 endforeach(t)
 
@@ -60,7 +63,10 @@ if (${STRF_CUDA_SUPPORT})
     add_executable(test-${t}-static-lib    ${t}.cu)
 
     set_target_properties(test-${t}-header-only PROPERTIES CXX_STANDARD 14)
-    set_target_properties(test-${t}-static-lib PROPERTIES CXX_STANDARD 14)
+    set_target_properties(test-${t}-static-lib  PROPERTIES CXX_STANDARD 14)
+
+    set_target_properties(test-${t}-header-only PROPERTIES OUTPUT_NAME ${t}-header-only)
+    set_target_properties(test-${t}-static-lib  PROPERTIES OUTPUT_NAME ${t}-static-lib)
 
     # Note: Users of strf in CUDA device-side code may want to add this
     # assembly option to their build options as well, since by default, ptxas
@@ -71,7 +77,7 @@ if (${STRF_CUDA_SUPPORT})
     target_link_libraries(test-${t}-header-only   strf-header-only)
     target_link_libraries(test-${t}-static-lib    strf-cuda)
 
-    add_test(run-test-${t}-header-only   test-${t}-header-only)
-    add_test(run-test-${t}-static-lib    test-${t}-static-lib)
+    add_test(NAME run-test-${t}-header-only COMMAND ${t}-header-only)
+    add_test(NAME run-test-${t}-static-lib  COMMAND ${t}-static-lib)
   endforeach(t)
 endif()
