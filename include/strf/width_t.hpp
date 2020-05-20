@@ -7,7 +7,7 @@
 
 // TODO: Consider whether we need to make the constexpr global variables here STRF_HD.
 
-#include <strf/detail/common.hpp>
+#include <strf/detail/strf_def.hpp>
 #include <type_traits>
 #include <cstdint>
 
