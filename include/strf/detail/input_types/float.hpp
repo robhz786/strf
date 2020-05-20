@@ -18,14 +18,14 @@ namespace detail {
 
 // Here is a debate about memcpy vs union: https://github.com/ulfjack/ryu/pull/116
 
-constexpr STRF_HD std::uint32_t to_bits(float f)
+inline STRF_HD std::uint32_t to_bits(float f)
 {
     std::uint32_t bits = 0;
     memcpy(&bits, &f, sizeof(float));
     return bits;
 }
 
-constexpr STRF_HD std::uint64_t to_bits(const double d)
+inline STRF_HD std::uint64_t to_bits(const double d)
 {
     std::uint64_t bits = 0;
     memcpy(&bits, &d, sizeof(double));
@@ -34,14 +34,14 @@ constexpr STRF_HD std::uint64_t to_bits(const double d)
 
 #else
 
-constexpr STRF_HD std::uint32_t to_bits(float f)
+inline STRF_HD std::uint32_t to_bits(float f)
 {
     union { std::uint32_t bits = 0; float x; };
     x = f;
     return bits;
 }
 
-constexpr STRF_HD std::uint64_t to_bits(const double d) {
+inline STRF_HD std::uint64_t to_bits(const double d) {
     union { std::uint64_t bits = 0; double x; };
     x = d;
     return bits;

@@ -157,9 +157,8 @@ public:
     void recycle() override
     {
         std::size_t original_size = this->pointer() - str_.data();
-        auto append_size = std::max
-            ( original_size
-            , strf::min_size_after_recycle<sizeof(CharT)>() );
+        constexpr std::size_t min_buff_size = strf::min_size_after_recycle<sizeof(CharT)>();
+        auto append_size = strf::detail::max<std::size_t>(original_size, min_buff_size);
         str_.append(append_size, (CharT)0);
         this->set_pointer(&*str_.begin() + original_size);
         this->set_end(&*str_.begin() + original_size + append_size);
