@@ -5,9 +5,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <strf/outbuf_functions.hpp>
 #include <strf/printer.hpp>
 #include <strf/detail/facets/char_encoding.hpp>
-#include <strf/detail/standard_lib_functions.hpp>
 
 namespace strf {
 
