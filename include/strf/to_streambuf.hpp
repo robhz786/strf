@@ -20,19 +20,21 @@ public:
         , dest_(d)
     {
     }
+    explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>* d)
+        : strf::basic_outbuf<CharT>(buf_, buf_size_)
+        , dest_(*d)
+    {
+    }
 
     basic_streambuf_writer() = delete;
 
-#if defined(STRF_NO_CXX17_COPY_ELISION)
-
-    basic_streambuf_writer(basic_streambuf_writer&& other);
-
-#else  // defined(STRF_NO_CXX17_COPY_ELISION)
-
     basic_streambuf_writer(const basic_streambuf_writer&) = delete;
-    basic_streambuf_writer(basic_streambuf_writer&&) = delete;
 
-#endif // defined(STRF_NO_CXX17_COPY_ELISION)
+#if defined(STRF_NO_CXX17_COPY_ELISION)
+    basic_streambuf_writer(basic_streambuf_writer&&);
+#else
+    basic_streambuf_writer(basic_streambuf_writer&&) = delete;
+#endif
 
     ~basic_streambuf_writer()
     {
@@ -96,7 +98,7 @@ public:
 
     using char_type = CharT;
 
-    basic_streambuf_writer_creator
+    explicit basic_streambuf_writer_creator
         ( std::basic_streambuf<CharT, Traits>& dest )
         : dest_(dest)
     {
@@ -118,7 +120,7 @@ private:
 } // namespace detail
 
 
-template <typename CharT, typename Traits = std::char_traits<CharT> >
+template <typename CharT, typename Traits>
 inline auto to( std::basic_streambuf<CharT, Traits>& dest )
 {
     return strf::destination_no_reserve
@@ -127,7 +129,7 @@ inline auto to( std::basic_streambuf<CharT, Traits>& dest )
 }
 
 
-template<typename CharT, typename Traits = std::char_traits<CharT> >
+template<typename CharT, typename Traits>
 inline auto to( std::basic_streambuf<CharT, Traits>* dest )
 {
     return strf::to(*dest);

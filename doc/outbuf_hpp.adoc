@@ -5,7 +5,14 @@ See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
 
-== Outbuf
+[[main]]
+= `<outbuf.hpp>` Header file reference
+:source-highlighter: prettify
+:sectnums:
+:toc: left
+:toc-title: <outbuf.hpp>
+:toclevels: 1
+:icons: font
 
 :min_size_after_recycle: <<min_size_after_recycle,min_size_after_recycle>>
 :basic_outbuf: <<basic_outbuf,basic_outbuf>>
@@ -22,7 +29,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :garbage_buf_end: <<garbage_buf, garbage_buf_end>>
 
 
-=== Function template `min_size_after_recycle` [[min_size_after_recycle]]
+== Function template `min_size_after_recycle` [[min_size_after_recycle]]
 ====
 [source,cpp]
 ----
@@ -33,7 +40,7 @@ constexpr std::size_t min_size_after_recycle();
 Return value:: Implementation-defined value greater than or equal to 64.
 ====
 
-=== Template alias `underlying_char_type` [[underlying_char_type]]
+== Template alias `underlying_char_type` [[underlying_char_type]]
 
 ====
 [source,cpp]
@@ -50,9 +57,9 @@ Same as::
 It is undefined for any other `CharSize` value.
 ====
 
-=== Class template `underlying_outbuf` [[underlying_outbuf]]
+== Class template `underlying_outbuf` [[underlying_outbuf]]
 
-==== Synopsis
+=== Synopsis
 
 [source,cpp,subs=normal]
 ----
@@ -96,23 +103,13 @@ protected:
 // global functions
 
 template <std::size_t CharSize>
-void write( underlying_outbuf<CharSize>& ob
-          , const {underlying_char_type}<CharSize>{asterisk} data
-          , std::size_t data_size );
-
-template <std::size_t CharSize>
-void write( underlying_outbuf<CharSize>& ob
-          , const {underlying_char_type}<CharSize>{asterisk} data
-          , const {underlying_char_type}<CharSize>{asterisk} data_end );
-
-template <std::size_t CharSize>
 void put( underlying_outbuf<CharSize>& ob
         , {underlying_char_type}<CharSize> ch );
 
 } // namespace strf
 ----
 
-==== Member types
+=== Member types
 
 [[underlying_outbuf_char_type]]
 ====
@@ -122,7 +119,7 @@ using char_type = {underlying_char_type}<CharSize>;
 ----
 ====
 
-==== Public member functions
+=== Public member functions
 
 [[underlying_outbuf_pointer]]
 ====
@@ -231,7 +228,7 @@ Note:: The range [ `pointer()`, `end()` ) shall aways be a valid
 accessible memory, even when `good()` returns `false`.
 ====
 
-==== Protected Member functions
+=== Protected Member functions
 
 [[underlying_outbuf_ctor_range]]
 ====
@@ -290,7 +287,7 @@ void set_good(bool g) noexcept
 Postconditions:: `good() == g`
 ====
 
-==== Global functions
+=== Global functions
 
 [[underlying_outbuf_put]]
 ====
@@ -313,35 +310,8 @@ ob.advance();
 ----
 ====
 
-[[underlying_outbuf_write]]
-[[underlying_outbuf_write_range]]
-====
-[source,cpp,subs=normal]
-----
-template <std::size_t CharSize>
-void write( underlying_outbuf<CharSize>& ob
-          , const {underlying_char_type}<CharSize>{asterisk} data
-          , const {underlying_char_type}<CharSize>{asterisk} data_end );
-----
-[horizontal]
-Effect:: Writes the the range [ `data`, `data_end` ) into `ob`, calling `ob.recycle()`
-         how many times are necessary.
-====
-[[underlying_outbuf_write_count]]
-====
-[source,cpp,subs=normal]
-----
-template <std::size_t CharSize>
-void write( underlying_outbuf<CharSize>& ob
-          , const {underlying_char_type}<CharSize>{asterisk} data
-          , std::size_t data_size );
-----
-[horizontal]
-Effect:: Same as `write(ob, data, data + data_size)`
-====
-
 [[basic_outbuf]]
-=== Class template `basic_outbuf`
+== Class template `basic_outbuf`
 
 [source,cpp,subs=normal]
 ----
@@ -395,26 +365,12 @@ using bin_outbuf  = basic_outbuf<std::byte>;
 // global functions
 
 template <typename CharT>
-void write( basic_outbuf<CharT>& ob
-          , const CharT{asterisk} data
-          , std::size_t count );
-
-template <typename CharT>
-void write( basic_outbuf<CharT>& ob
-          , const CharT{asterisk} data
-          , const CharT{asterisk} data_end );
-
-void write(basic_outbuf<char>& ob, const char{asterisk} cstr);
-
-void write(basic_outbuf<wchar_t>& ob, const wchar_t{asterisk} cstr);
-
-template <typename CharT>
 void put(basic_outbuf<CharT>& ob, CharT ch);
 
 } // namespace strf
 ----
 
-==== Public member functions
+=== Public member functions
 
 [[basic_outbuf_as_underlying]]
 ====
@@ -460,7 +416,7 @@ as_underlying().advance_to(({underlying_char_type}<sizeof(CharT)>{asterisk})p)
 Precondition:: `p \<= end()`
 ====
 
-==== Public member functions inherited from private base `underlying_outbuf<sizeof(CharT)>`
+=== Public member functions inherited from private base `underlying_outbuf<sizeof(CharT)>`
 
 [source,cpp,subs=normal]
 ----
@@ -471,7 +427,7 @@ Precondition:: `p \<= end()`
     using {underlying_outbuf}<sizeof(CharT)>::<<underlying_outbuf_recycle,recycle>>
 ----
 
-==== Protected member functions
+=== Protected member functions
 
 [[basic_outbuf_ctor_range]]
 ====
@@ -530,7 +486,7 @@ void set_good(bool g) noexcept;
 Effect:: Same as `as_underlying().set_good(g)`
 ====
 
-==== Global functions
+=== Global functions
 
 [[basic_outbuf_put]]
 ====
@@ -551,55 +507,9 @@ if (ob.size() == 0) {
 ob.advance();
 ----
 ====
-[[basic_outbuf_write]]
-[[basic_outbuf_write_range]]
-====
-[source,cpp]
-----
-template <typename CharT>
-void write( basic_outbuf<CharT>& ob
-          , const CharT* data
-          , const CharT* data_end );
-----
-[horizontal]
-Effect:: Writes the the range [ `data`, `data_end` ) into `ob`, calling `ob.recycle()`
-         how many times are necessary.
-====
-[[basic_outbuf_write_count]]
-====
-[source,cpp]
-----
-template <typename CharT>
-void write( basic_outbuf<CharT>& ob
-          , const CharT* data
-          , std::size_t data_size );
-----
-[horizontal]
-Effect:: Same as `write(ob, data, data + data_size)`
-====
-[[basic_outbuf_write_cstr]]
-====
-[source,cpp]
-----
-void write( basic_outbuf<char>& ob
-          , const char* cstr );
-----
-[horizontal]
-Effect:: Same as `write(ob, cstr, std::strlen(cstr))`
-====
-[[basic_outbuf_write_wcstr]]
-====
-[source,cpp]
-----
-void write( basic_outbuf<wchar_t>& ob
-          , const wchar_t* wcstr );
-----
-[horizontal]
-[horizontal]
-Effect:: Same as `write(ob, wcstr, std::wstrlen(wcstr))`
-====
+
 [[basic_outbuf_noexcept]]
-=== Class template `basic_outbuf_noexcept`
+== Class template `basic_outbuf_noexcept`
 
 [source,cpp]
 ----
@@ -630,7 +540,7 @@ using bin_outbuf_noexcept  = basic_outbuf_noexcept<std::byte>;
 ----
 
 [[basic_cstr_writer]]
-=== Class template `basic_cstr_writer`
+== Class template `basic_cstr_writer`
 
 [source,cpp]
 ----
@@ -658,7 +568,7 @@ public:
 } // namespace strf
 ----
 
-==== Public member function
+=== Public member function
 
 ====
 [source,cpp]
@@ -724,287 +634,8 @@ Postconditions::
 - `end() == {garbage_buf_end}<CharT>()`
 ====
 
-[[basic_string_maker]]
-=== Class template `basic_string_maker`
-==== Synopsis
-[source,cpp]
-----
-namespace strf {
-
-template < typename CharT
-         , typename Traits = std::char_traits<CharT>
-         , typename Allocator = std::allocator<CharT> >
-class basic_string_maker final: public basic_outbuf<CharT>
-{
-public:
-    basic_string_maker();
-    void reserve(std::size_t size);
-    void recycle() override;
-    basic_string<CharT, Traits, Allocator> finish();
-};
-
-// Global type aliases
-
-using string_maker    = basic_string_maker<char>;
-using u16string_maker = basic_string_maker<char16_t>;
-using u32string_maker = basic_string_maker<char32_t>;
-using wstring_maker   = basic_string_maker<wchar_t>;
-using u8string_maker  = basic_string_maker<char8_t>;
-
-} // namespace strf
-----
-==== Public member functions
-
-====
-[source,cpp]
-----
-void reserve(std::size_t size);
-----
-[horizontal]
-Effect:: Calls `str.reserve(size)`, where `str` is the private string object that is returned by `finish()`.
-====
-====
-[source,cpp]
-----
-void recycle() override;
-----
-[horizontal]
-Effects::
-- If `good()` is `true` then calls `str.append(p0, pointer())`, where `str` is the private string object that is returned by `finish()`, and `p0` is the return value of `pointer()` before any call to `advance` and `advance_to` since the last call to `recycle()` ( all in this object ), or since this object's contruction, whatever happened last.
-- Calls `set_pointer` and/or `set_end`.
-Postconditions:: `size() >= min_size_after_recycle<sizeof(CharT)>()`
-====
-====
-[source,cpp]
-----
-basic_string<CharT, Traits, Allocator> finish()
-----
-[horizontal]
-Effects:: Calls `recycle()` and `set_good(false)` and return the internal string.
-Postconditions:: `good() == false`
-====
-
-[[basic_string_appender]]
-=== Class template `basic_string_appender`
-==== Synopsis
-[source,cpp]
-----
-namespace strf {
-
-template < typename CharT
-         , typename Traits = std::char_traits<CharT>
-         , typename Allocator = std::allocator<CharT> >
-class basic_string_appender final: public basic_outbuf<CharT>
-{
-public:
-    explicit basic_string_appender(basic_string<CharT, Traits, Allocator>& dest);
-    void reserve(std::size_t size);
-    void recycle() override;
-    void finish();
-};
-
-// Global type aliases
-
-using string_appender    = basic_string_appender<char>;
-using u16string_appender = basic_string_appender<char16_t>;
-using u32string_appender = basic_string_appender<char32_t>;
-using wstring_appender   = basic_string_appender<wchar_t>;
-
-} // namespace strf
-----
-==== Public member functions
-
-====
-[source,cpp]
-----
-void reserve(std::size_t size);
-----
-[horizontal]
-Effect:: Calls `str.reserve(str.size() + size)`, where `str` is the reference that this object was initialized with.
-====
-====
-[source,cpp]
-----
-void recycle() override;
-----
-[horizontal]
-Effects::
-- If `good()` is `true` then calls `str.append(p0, pointer())`, where `str` is the reference that this object was initialized with, and `p0` is the return value of `pointer()` before any call to `advance` and `advance_to` since the last call to `recycle()` ( all in this object ), or since this object's contruction, whatever happened last.
-- Calls `set_pointer` and/or `set_end`.
-Postconditions:: `size() >= min_size_after_recycle<sizeof(CharT)>()`
-====
-====
-[source,cpp]
-----
-void finish()
-----
-[horizontal]
-Effects:: Calls `recycle()` and `set_good(false)`.
-Postcondition:: `good() == false`
-====
-
-[[basic_streambuf_writer]]
-=== Class template `basic_streambuf_writer`
-==== Synopsis
-[source,cpp]
-----
-namespace strf {
-
-template <typename CharT, typename Traits = std::char_traits<CharT> >
-class basic_streambuf_writer final: public basic_outbuf<CharT>
-{
-public:
-    explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>& dest);
-    void recycle() override;
-    struct result
-    {
-        std::streamsize count;
-        bool success;
-    };
-    result finish();
-};
-
-// Global type aliases
-
-using streambuf_writer
-    = basic_streambuf_writer<char, std::char_traits<char> >;
-
-using wstreambuf_writer
-    = basic_streambuf_writer<wchar_t, std::char_traits<wchar_t> >;
-
-} // namespace strf
-----
-==== Public member functions
-
-====
-[source,cpp]
-----
-void recycle() override;
-----
-[horizontal]
-Effects::
-- If `good()` is `true` then calls `dest.sputn(p0, pointer() - p0)`, where `dest` is the reference this object was initialized with, and `p0` is the return value of `pointer()` before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
-- If the returned value of `dest.sputn` is less then `pointer() - p0`, calls `set_good(false)`.
-- Calls `set_pointer` and/or `set_end`.
-Postconditions:: `size() >= min_size_after_recycle<sizeof(CharT)>()`
-====
-====
-[source,cpp]
-----
-result finish();
-----
-[horizontal]
-Effects::
-- Calls `recycle()` and `set_good(false)`.
-Return value::
-- `result::count` is the sum of the values returned by `dest.sputn`.
-- `result::success` is the value `good()` would return before this call to `finish()`.
-====
-
-[[narrow_cfile_writer]]
-=== Class template `narrow_cfile_writer`
-==== Synopsis
-[source,cpp]
-----
-namespace strf {
-
-template <typename CharT>
-class narrow_cfile_writer final: public basic_outbuf_noexcept<CharT>
-{
-public:
-    explicit narrow_cfile_writer(std::FILE* dest);
-    void recycle() noexcept;
-    struct result
-    {
-        std::size_t count;
-        bool success;
-    };
-    result finish();
-};
-
-} // namespace strf
-----
-==== Public member functions
-====
-[source,cpp]
-----
-void recycle() override;
-----
-[horizontal]
-Effects::
-- If `good() == true`, calls `std::fwrite(p0, pointer() - p0, sizeof(CharT), dest)`,
-    where `dest` is the `FILE*` used to initialize this object, and
-    `p0` is return value of `pointer()` before any call to `advance` and `advance_to`
-    since the last call to `recycle()`, or since this object's contruction,
-    whatever happened last.
--  If the returned value of std::fwrite is less then pointer() - p0, calls set_good(false).
--  Calls set_pointer and/or set_end.
-Postconditions:: `size() >= min_size_after_recycle<sizeof(CharT)>()`
-====
-====
-[source,cpp]
-----
-result finish();
-----
-[horizontal]
-Effects::
-- Calls `recycle()` and `set_good(false)`.
-Return value::
-- `result::count` is the sum of values returned by all calls `std::fwrite` done by this object.
-- `result::success` is the value `good()` would return before this call to `finish()`
-====
-
-
-[[wide_cfile_writer]]
-=== Class template `wide_cfile_writer`
-==== Synopsis
-[source,cpp]
-----
-namespace strf {
-
-template <typename CharT>
-class wide_cfile_writer final: public basic_outbuf_noexcept<CharT>
-{
-public:
-    explicit wide_cfile_writer(std::FILE* dest);
-    void recycle() noexcept;
-    struct result
-    {
-        std::size_t count;
-        bool success;
-    };
-    result finish();
-};
-
-} // namespace strf
-----
-==== Public member functions
-====
-[source,cpp]
-----
-void recycle() override;
-----
-[horizontal]
-Effects::
-- If `good() == true`, for each character `ch` in the range [ `p0`, `pointer()` ) calls `std::fputwc(ch, dest)`, until WEOF is returned or the whole range is read, where `dest` is the `FILE*` used to initialize this object, and `p0` is the return value of `pointer()` before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
-- If `std::fputwc` returns WEOF, calls `set_good(false)`.
-- Calls `set_pointer` and/or `set_end`.
-====
-====
-[source,cpp]
-----
-result finish();
-----
-[horizontal]
-Effects::
-- Calls `recycle()` and `set_good(false)`.
-Return value::
-- `result::count` is the number of calls to `std::fputwc` by this object that did not return WEOF .
-- `result::success` is the value `good()` would return before this call to `finish()`
-====
-
 [[garbage_buf]]
-=== Garbage buffer
+== Garbage buffer
 These function templates return the begin and the end of a memory area that is never supposed to be read. It can be used when implementing a class that derives from `basic_outbuf` to set the buffer when the state is "bad".
 
 [source,cpp]

@@ -7,9 +7,44 @@ http://www.boost.org/LICENSE_1_0.txt
 
 :rank: <<rank,rank>>
 :tag: <<tag,tag>>
+:destination_no_reserve: <<destination,destination_no_reserve>>
+:OutbufCreator: <<OutbufCreator,OutbufCreator>
+
+:basic_cstr_writer: <<outbuf_hpp#basic_cstr_writer,basic_cstr_writer>>
+:destination_no_reserve: <<destination,destination_no_reserve>>
+:OutbufCreator: <<OutbufCreator,OutbufCreator>>
+:SizedOutbufCreator: <<SizedOutbufCreator,SizedOutbufCreator>>
+
 
 == Miscellaneous
 
+=== The `lettercase` facet
+
+[source,cpp]
+----
+namespace strf {
+
+enum class lettercase { lower = /*...*/, mixed = /*...*/, upper = /*...*/ };
+
+constexpr lettercase lowercase = lettercase::lower;
+constexpr lettercase mixedcase = lettercase::mixed;
+constexpr lettercase uppercase = lettercase::upper;
+
+struct lettercase_c {
+    static constexpr bool constrainable = true;
+    constexpr static lettercase get_default() noexcept
+    {
+        return lettercase::lower;
+    }
+};
+
+template <>
+struct {facet_traits}<lettercase> {
+    using category = lettercase_c;
+};
+
+} // namespace strf
+----
 === Type traits
 The table below list class templates that satisfy
 https://en.cppreference.com/w/cpp/named_req/UnaryTypeTrait[UnaryTypeTrait].
@@ -29,27 +64,6 @@ printable types.
 |===
 
 __to-do__
-
-=== Class template `rank` [[rank]]
-
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-template <std::size_t N>
-struct rank: rank<N - 1>
-{
-    explicit rank() = default;
-};
-
-template <>
-struct rank<0>
-{
-    explicit rank() = default;
-};
-
-} // namespace strf
-----
 
 === Class template `tag` [[tag]]
 
@@ -72,3 +86,192 @@ struct tag<T>
 
 } // namespace strf
 ----
+
+////
+=== Class template `rank` [[rank]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <std::size_t N>
+struct rank: rank<N - 1>
+{
+    explicit rank() = default;
+};
+
+template <>
+struct rank<0>
+{
+    explicit rank() = default;
+};
+
+} // namespace strf
+----
+////
+
+=== `Outbuf` writing functions
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <std::size_t CharSize>
+void write( {underlying_outbuf}<CharSize>& ob
+          , const {underlying_char_type}<CharSize>{asterisk} data
+          , std::size_t data_size );
+
+template <std::size_t CharSize>
+void write( {underlying_outbuf}<CharSize>& ob
+          , const {underlying_char_type}<CharSize>{asterisk} data
+          , const {underlying_char_type}<CharSize>{asterisk} data_end );
+
+template <typename CharT>
+void write( {basic_outbuf}<CharT>& ob
+          , const CharT{asterisk} data
+          , std::size_t count );
+
+template <typename CharT>
+void write( {basic_outbuf}<CharT>& ob
+          , const CharT{asterisk} data
+          , const CharT{asterisk} data_end );
+
+void write({basic_outbuf}<char>& ob, const char{asterisk} cstr);
+
+void write({basic_outbuf}<wchar_t>& ob, const wchar_t{asterisk} cstr);
+
+} // namespace strf
+----
+
+[[underlying_outbuf_write]]
+[[underlying_outbuf_write_range]]
+====
+[source,cpp,subs=normal]
+----
+template <std::size_t CharSize>
+void write( {underlying_outbuf}<CharSize>& ob
+          , const {underlying_char_type}<CharSize>{asterisk} data
+          , const {underlying_char_type}<CharSize>{asterisk} data_end );
+----
+[horizontal]
+Effect:: Writes the the range [ `data`, `data_end` ) into `ob`, calling `ob.recycle()`
+         how many times are necessary.
+====
+
+[[underlying_outbuf_write_count]]
+====
+[source,cpp,subs=normal]
+----
+template <std::size_t CharSize>
+void write( {underlying_outbuf}<CharSize>& ob
+          , const {underlying_char_type}<CharSize>{asterisk} data
+          , std::size_t data_size );
+----
+[horizontal]
+Effect:: Same as `write(ob, data, data + data_size)`
+====
+
+[[basic_outbuf_write]]
+[[basic_outbuf_write_range]]
+====
+[source,cpp]
+----
+template <typename CharT>
+void write( {basic_outbuf}<CharT>& ob
+          , const CharT* data
+          , const CharT* data_end );
+----
+[horizontal]
+Effect:: Writes the the range [ `data`, `data_end` ) into `ob`, calling `ob.recycle()`
+         how many times are necessary.
+====
+[[basic_outbuf_write_count]]
+====
+[source,cpp]
+----
+template <typename CharT>
+void write( {basic_outbuf}<CharT>& ob
+          , const CharT* data
+          , std::size_t data_size );
+----
+[horizontal]
+Effect:: Same as `write(ob, data, data + data_size)`
+====
+[[basic_outbuf_write_cstr]]
+====
+[source,cpp]
+----
+void write( {basic_outbuf}<char>& ob
+          , const char* cstr );
+----
+[horizontal]
+Effect:: Same as `write(ob, cstr, std::strlen(cstr))`
+====
+
+[[basic_outbuf_write_wcstr]]
+====
+[source,cpp,subs=normal]
+----
+void write( {basic_outbuf}<wchar_t>& ob
+          , const wchar_t{asterisk} wcstr );
+----
+[horizontal]
+Effect:: Same as `write(ob, wcstr, std::wstrlen(wcstr))`
+====
+
+=== Destination markers
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+__/{asterisk} see below {asterisk}/__ to(char8_t{asterisk}  dest, std::size_t count);
+__/{asterisk} see below {asterisk}/__ to(char{asterisk}     dest, std::size_t count);
+__/{asterisk} see below {asterisk}/__ to(char16_t{asterisk} dest, std::size_t count);
+__/{asterisk} see below {asterisk}/__ to(char32_t{asterisk} dest, std::size_t count);
+__/{asterisk} see below {asterisk}/__ to(wchar_t{asterisk}  dest, std::size_t count);
+
+} // namespace strf
+----
+
+[horizontal]
+Return type:: `{destination_no_reserve}<OBC>`, where `OBC` is an implementation-defined
+              type that satifies __{OutbufCreator}__.
+Return value:: A destination object whose internal __{OutbufCreator}__ object `obc`
+is such that `obc.create()` returns a `{basic_cstr_writer}<CharT>` object initialized
+with `dest` and `count`, where, `CharT` is `std::remove_reference_t<decltype(*dest)>`.
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(char8_t  (&dest)[N]);
+template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(char     (&dest)[N]);
+template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(char16_t (&dest)[N]);
+template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(char32_t (&dest)[N]);
+template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(wchar_t  (&dest)[N]);
+
+} // namespace strf
+----
+[horizontal]
+Return type and value:: Same as `to(dest, N)`;
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+__/{asterisk} see below {asterisk}/__ to(char8_t{asterisk}  dest,  char8_t{asterisk}  end);
+__/{asterisk} see below {asterisk}/__ to(char{asterisk}     dest,  char{asterisk}     end);
+__/{asterisk} see below {asterisk}/__ to(char16_t{asterisk} dest,  char16_t{asterisk} end);
+__/{asterisk} see below {asterisk}/__ to(char32_t{asterisk} dest,  char32_t{asterisk} end);
+__/{asterisk} see below {asterisk}/__ to(wchar_t{asterisk}  dest,  wchar_t{asterisk}  end);
+
+} // namespace strf
+----
+[horizontal]
+Return type and value:: Same as `to(dest, (std::size_t)(end - dest))`;
+
+=== Format function aliases
+
+include::ref_global_format_functions.adoc[]
+

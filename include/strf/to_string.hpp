@@ -135,7 +135,7 @@ class basic_pre_sized_string_maker final
 {
 public:
 
-    basic_pre_sized_string_maker(std::size_t count)
+    explicit basic_pre_sized_string_maker(std::size_t count)
         : strf::basic_outbuf<CharT>(nullptr, nullptr)
         , str_(count, (CharT)0)
     {
@@ -257,7 +257,7 @@ public:
 }
 
 template <typename CharT, typename Traits, typename Allocator>
-auto append(std::basic_string<CharT, Traits, Allocator>& str)
+inline auto append(std::basic_string<CharT, Traits, Allocator>& str)
 {
     return strf::destination_no_reserve
         < strf::detail::basic_string_appender_creator<CharT, Traits, Allocator> >
@@ -265,7 +265,7 @@ auto append(std::basic_string<CharT, Traits, Allocator>& str)
 }
 
 template <typename CharT, typename Traits, typename Allocator>
-auto assign(std::basic_string<CharT, Traits, Allocator>& str)
+inline auto assign(std::basic_string<CharT, Traits, Allocator>& str)
 {
     str.clear();
     return append(str);

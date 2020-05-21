@@ -9,15 +9,33 @@ http://www.boost.org/LICENSE_1_0.txt
 :tag: <<tag,tag>>
 :print_preview: <<print_preview,print_preview>>
 
-
+[[destination]]
 == Destination types
+
+The `destination_no_reserve`, `destination_reserve_calc` and
+`destination_with_given_size` class templates provide the
+basic usage syntax of the library:
+
+image::syntax.svg[]
+
+////
+All of them contain a {facets_pack} member object in addition to
+__{OutbufCreator}__ or __{SizeOutbufCreator}__ member object and
+in the above expression:
+////
+
+* `no_reserve()` always returns a `destination_no_reserve` object
+* `reserve_calc()` always returns a `destination_reserve_calc` object.
+* `reserve(__size__)` always returns a `destination_with_given_size` object.
+* The __destination__ is an object whose type is an instance of one
+those three class templates.
 
 [[destination_no_reserve]]
 === Class template `destination_no_reserve`
 ====
 [source,cpp,subs=normal]
 ----
-template <typename OutbufCreator, typename FPack>
+template <typename OutbufCreator, typename FPack = {facets_pack}<>>
 class destination_no_reserve
 ----
 Compile-time requirements::
@@ -53,7 +71,7 @@ public:
     reserve_calc() const &;
 
     constexpr destination_calc_size<OutbufCreator, FPack>
-    reserve_calc() &&; 
+    reserve_calc() &&;
 
     constexpr destination_with_given_size<OutbufCreator, FPack>
     reserve(std::size_t) const &;
@@ -286,7 +304,10 @@ template <typename ... Args>
 ----
 Compile-time requirements::
 - All types in `Args\...` are <<Printable,_Printable_>>.
-Effect::
+Effect:: __to-do__
+
+
+////
 . Creates/get the <<basic_outbuf,outbuf>> object doing
 +
 [source,cpp,subs=normal]
@@ -307,13 +328,15 @@ auto p = static_cast< const {printer}<sizeof(CharT)>& >
   and using the `p` objects.
 . Returns `ob.finish()` if such expression is valid, which is optional.
   Otherwise the return type is `void`.
+////
+
 ====
 [[destination_calc_size]]
 === Class template `destination_calc_size`
 ====
 [source,cpp,subs=normal]
 ----
-template <typename SizedOutbufCreator, typename FPack>
+template <typename SizedOutbufCreator, typename FPack = {facets_pack}<>>
 class destination_calc_size;
 ----
 Compile-time requirements::
@@ -350,7 +373,7 @@ public:
     no_reserve() const &;
 
     constexpr destination_no_reserve<SizedOutbufCreator, FPack>
-    no_reserve() &&; 
+    no_reserve() &&;
 
     constexpr destination_with_given_size<SizedOutbufCreator, FPack>
     reserve(std::size_t) const &;
@@ -578,7 +601,9 @@ template <typename ... Args>
 ----
 Compile-time requirements::
 - All types in `Args\...` are <<PrintableWithSizePreview,_PrintableWithSizePreview_>>.
-Effect::
+Effect:: __to-do__
+
+////
 . For each `arg` in `args\...`, do
 +
 [source,cpp,subs=normal]
@@ -601,6 +626,7 @@ decltype(auto) ob = _outbuf_creator.create(size)
   and using the `p` objects.
 . Returns `ob.finish()` if such expression is valid, which is optional.
   Otherwise the return type is `void`.
+////
 ====
 
 [[destination_with_given_size]]
@@ -608,7 +634,7 @@ decltype(auto) ob = _outbuf_creator.create(size)
 ====
 [source,cpp,subs=normal]
 ----
-template <typename SizedOutbufCreator, typename FPack>
+template <typename SizedOutbufCreator, typename FPack = {facets_pack}<>>
 class destination_with_given_size
 ----
 Compile-time requirements::
@@ -644,7 +670,7 @@ public:
     reserve_calc() const &;
 
     constexpr destination_calc_size<SizedOutbufCreator, FPack>
-    reserve_calc() &&; 
+    reserve_calc() &&;
 
     constexpr destination_no_reserve<SizedOutbufCreator, FPack>
     no_reserve() const &;
@@ -880,6 +906,8 @@ template <typename ... Args>
 Compile-time requirements::
 - All types in `Args\...` are <<Printable,_Printable_>>.
 Effect::
+__to-do__
+////
 . Creates/get the <<basic_outbuf,outbuf>> object doing
 +
 [source,cpp,subs=normal]
@@ -898,24 +926,65 @@ abs `chtag` is an expression of type `{tag}<CharT>`.
 . Prints into `ob` the content according the <<tr_string,tr-string syntax>>
   and using the `p` objects.
 . Returns `ob.finish()` if such expression is valid ( which is optional ).
+////
 ====
+
 [[OutbufCreator]]
 === Type requirement _OutbufCreator_
-- `T` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[MoveConstructible]
-- `T` has a member type `char_type`.
-- Given `x`, an expression of type `const T`, the expression `x.create()`
-  is valid and the type `std::remove_reference_t<decltype(x.create())>`
-  must be the same as, or derive from, `basic_outbuf<char_type>`.
+Given
+
+- `char_type`, a character type
+- `X`, an  _OutbufCreator_ type for `char_type`
+- `x`, an expression of type `X` or `const X`
+
+The following must hold:
+
+- `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible]
+- `X` has a member type alias `T::char_type` defined as `char_type`
+
+And the following expression must be satisfied:
+
+[[OutbufCreator_create]]
+====
+[source,cpp]
+----
+x.create()
+----
+::
+[horizontal]
+Return value:: A type that derives from `{basic_outbuf}<char_type>`
+====
 
 [[SizedOutbufCreator]]
 === Type requirement _SizedOutbufCreator_
-- `T` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[MoveConstructible]
-- `T` has a member type `char_type`.
-- Given `s` and `x`, expressions of type `std::size_t` and `const T` respectively,
-  the expression `x.create(s)` is valid and the type
-  `std::remove_reference_t<decltype(x.create())>`
-  must be the same as, or derive from, `basic_outbuf<char_type>`
+Given
+
+- `char_type`, a character type
+- `size`, a value of the `std::size_t`
+- `X`, an  _OutbufCreator_ type for `char_type`
+- `x`, an expression of type `X` or `const X`
+
+The following must hold:
+
+- `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible]
+- `X` has a member type alias `T::char_type` defined as `char_type`
+
+And the following expression must be satisfied:
+
+[[SizedOutbufCreator_create]]
+====
+[source,cpp]
+----
+x.create(size)
+----
+::
+[horizontal]
+Return type:: A type that derives from `{basic_outbuf}<char_type>`
+Postcondition:: `ob.size() >= size`, where `ob` is the returned value.
+====
 
 [[tr_string]]
 === Tr-string syntax
+
 To-do
+
