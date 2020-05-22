@@ -12,20 +12,10 @@ namespace kernels {
 
 __global__ void using_cstr_writer(strf::cstr_writer::result* write_result, char* buffer, std::size_t buffer_size)
 {
-//	int global_thread_id = threadIdx.x + blockIdx.x * blockDim.x;
-//	strf::snprintf(buf, "Thread %d says: Hello %s\n", global_thread_id, "world.");
-//	printf("Thread %3d says: Hello %s\n", global_thread_id, "world.");
 	strf::basic_cstr_writer<char> sw(buffer, buffer_size);
 	write(sw, "Hello");
 	write(sw, " world");
 	*write_result = sw.finish();
-
-//	if (not write_result->truncated) {
-//		printf("[%s kernel, thread %03d] Finalized string is: \"%s\"\n", __FUNCTION__, global_thread_id, buffer);
-//	}
-//	else {
-//		printf("[%s kernel, thread %03d] Finalized string is: \"%11s\"\n", __FUNCTION__, global_thread_id, buffer);
-//	}
 }
 
 __global__ void using_cstr_to(char* buffer, std::size_t buffer_size)
@@ -33,6 +23,34 @@ __global__ void using_cstr_to(char* buffer, std::size_t buffer_size)
 	int global_thread_id = threadIdx.x + blockIdx.x * blockDim.x;
 	auto printer = strf::to(buffer, buffer_size);
 	printer ( "Hello", ' ', "world, from thread ", global_thread_id);
+}
+
+__global__ void various_types_with_cstr_writer(char* buffer, std::size_t buffer_size)
+{
+	strf::cstr_writer writer(buffer, buffer_size);
+	auto printer = strf::to(writer);
+
+	printer("Printing a bool: ", bool(true), '\n');
+//	printer("Printing a wchar_t: ", wchar_t('a'), '\n');
+//	printer("Printing a char16_t: ", char16_t('a'), '\n');
+//	printer("Printing a char32_t: ", char32_t('a'), '\n');
+	printer("Printing a char: ", static_cast<char>('a'), '\n');
+	printer("Printing a unsigned char: ", static_cast<unsigned char>('a'), '\n');
+	printer("Printing a short: ", short(-1234), '\n');
+	printer("Printing a unsigned short: ", static_cast<unsigned short>(1234), '\n');
+	printer("Printing a int: ", int(-12345678), '\n');
+	printer("Printing a signed int: ", static_cast<signed int>(12345678), '\n');
+	printer("Printing a unsigned int: ", static_cast<unsigned int>(12345678), '\n');
+	printer("Printing a long int: ", static_cast<long int>(-12345678900), '\n');
+	printer("Printing a signed long int: ", static_cast<signed long int>(-12345678900), '\n');
+	printer("Printing a unsigned long int: ", static_cast<unsigned long int>(12345678900), '\n');
+	printer("Printing a long long int: ", static_cast<long long int>(-12345678900), '\n');
+	printer("Printing a signed long long int: ", static_cast<signed long long int>(-12345678900), '\n');
+	printer("Printing a unsigned long long int: ", static_cast<unsigned long long int>(12345678900), '\n');
+	printer("Printing a float: ", float(1.234567), '\n');
+	printer("Printing a double: ", double(1.2345678901234567), '\n');
+	writer.finish();
+	printf("Buffer contents: \"%s\"", buffer);
 }
 
 __global__ void formatting_functions(char* buffer, std::size_t buffer_size)
@@ -123,6 +141,46 @@ void test_cstr_to()
 	std::cout << "Expected: \"" << expected.str() <<  "\"\n";
 }
 
+void test_various_types_with_cstr_writer()
+{
+	char* device_side_buffer;
+	const std::size_t buffer_size { 5000 }; 
+	ensure_cuda_success( cudaMalloc(&device_side_buffer, buffer_size) );
+	ensure_cuda_success( cudaMemset(device_side_buffer, 0, buffer_size) );
+
+	int threads_per_block { 1 };
+	int blocks_in_grid { 1 };
+		// We could theoretically have multiple threads in multiple blocks run this, but
+		// it shouldn't really matter.
+	kernels::various_types_with_cstr_writer<<<threads_per_block, blocks_in_grid>>>(device_side_buffer, buffer_size);
+	ensure_cuda_success(cudaGetLastError());
+	ensure_cuda_success(cudaDeviceSynchronize());
+	char host_side_buffer[buffer_size];
+	ensure_cuda_success(cudaMemcpy(&host_side_buffer, device_side_buffer, buffer_size , cudaMemcpyDeviceToHost));
+	std::stringstream expected;
+	expected
+		<< "Printing a bool: " << bool(true) << '\n'
+		<< "Printing a char: " << char('a') << '\n'
+		<< "Printing a unsigned char: " << static_cast<unsigned char>('a') << '\n'
+		<< "Printing a short: " << short(-1234) << '\n'
+		<< "Printing a unsigned short: " << static_cast<unsigned short>(1234) << '\n'
+		<< "Printing a int: " << int(-12345678) << '\n'
+		<< "Printing a signed int: " << static_cast<signed int>(12345678) << '\n'
+		<< "Printing a unsigned int: " << static_cast<unsigned int>(12345678) << '\n'
+		<< "Printing a long int: " << static_cast<long int>(-12345678900) << '\n'
+		<< "Printing a signed long int: " << static_cast<signed long int>(-12345678900) << '\n'
+		<< "Printing a unsigned long int: " << static_cast<unsigned long int>(12345678900) << '\n'
+		<< "Printing a long long int: " << static_cast<long long int>(-12345678900) << '\n'
+		<< "Printing a signed long long int: " << static_cast<signed long long int>(-12345678900) << '\n'
+		<< "Printing a unsigned long long int: " << static_cast<unsigned long long int>(12345678900) << '\n'
+		<< "Printing a float: " << float(1.234567) << '\n'
+		<< "Printing a double: " << double(1.2345678901234567), '\n';
+	TEST_EQ(strncmp(host_side_buffer, expected.str().c_str(), buffer_size), 0);
+	std::cout << std::endl;
+	std::cout << "Result: \"" << host_side_buffer << "\"\n";
+	std::cout << "Expected: \"" << expected.str() <<  "\"\n";
+}
+
 void test_formatting_functions()
 {
 	char* device_side_buffer;
@@ -190,6 +248,7 @@ int main(void)
 	cstr_to_sanity_check();
 	test_cstr_to();
 	test_formatting_functions();
+	test_various_types_with_cstr_writer();
 
 	cudaDeviceReset();
 	return test_finish();
