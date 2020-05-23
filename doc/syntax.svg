@@ -1,0 +1,139 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+
+<!--
+see https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
+-->
+<svg
+   width="700px"
+   height="234px"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg">
+
+  <style>
+    /* <![CDATA[ */
+    .code {
+    font-style:normal;
+    font-family:"Courier New";
+    font-size:95%;
+    }
+    .repl {
+    font-style:italic;
+    font-family:Arial;
+    font-size:95%;
+    }
+    rect{
+    fill:#d7e3f4;
+    stroke:black;
+    stroke-width:1.5;
+    }
+    path{
+    stroke:black;
+    stroke-width:1.5;
+    fill:white;
+    }
+    path.arrow{
+    fill:black;
+    stroke-width:0;
+    }
+    a:hover {
+    outline: dotted 1px blue;
+    /*stroke:blue;*/
+    }
+    /* ]]> */
+  </style>
+  <a href="quick_reference.html#facets" target="_parent">
+      <rect width="170" height="28" rx="10" ry="10" x="240" y="5"/>
+
+      <text x="250" y="24" >
+        <tspan class="code">.with(</tspan>
+        <tspan class="repl">facets...</tspan>
+        <tspan class="code">)</tspan>
+      </text>
+  </a>
+
+  <a href="quick_reference.html#reserve" target="_parent">
+    <rect width="170" height="28" rx="10" ry="10" x="240" y="49"/>
+    <text x="250" y="68" >
+      <tspan class="code">.no_reserve()</tspan>
+    </text>
+  </a>
+
+  <a href="quick_reference.html#reserve" target="_parent">
+    <rect width="170" height="28" rx="10" ry="10" x="240" y="93"/>
+    <text x="250" y="112" >
+      <tspan class="code">.reserve(</tspan>
+      <tspan class="repl">size</tspan>
+      <tspan class="code">)</tspan>
+    </text>
+  </a>
+
+  <a href="quick_reference.html#reserve" target="_parent">
+    <rect width="170" height="28" rx="10" ry="10" x="240" y="137"/>
+    <text x="250" y="156" class="code">.reserve_calc()</text>
+  </a>
+
+  <a href="quick_reference.html#destinations" target="_parent">
+    <rect width="168" height="28" rx="10" ry="10" x="2" y="181"/>
+    <text x="47" y="200" class="repl">destination</text>
+  </a>
+
+  <path d="M170 195 H450"/>
+  <path d="M229 30 V184"/>
+  <path d="M421 30 V184"/>
+
+  <path d="M240 19 A11 11 0 0 0 229 30"/>
+  <path d="M410 19 A11 11 0 0 1 421 30"/>
+
+  <path d="M240 63 A11 11 0 0 0 229 74"/>
+  <path d="M410 63 A11 11 0 0 1 421 74"/>
+
+  <path d="M240 107 A11 11 0 0 0 229 118"/>
+  <path d="M410 107 A11 11 0 0 1 421 118"/>
+
+  <path d="M240 151 A11 11 0 0 0 229 162"/>
+  <path d="M410 151 A11 11 0 0 1 421 162"/>
+
+  <path d="M240 195 A11 11 0 0 1 229 184"/>
+  <path d="M410 195 A11 11 0 0 0 421 184"/>
+
+  <path d="M450 195 A11 11 0 0 0 461 184"/>
+  <path d="M461 184 A11 11 0 0 1 472 173"/>
+
+  <path d="M450 195 A11 11 0 0 1 461 206"/>
+  <path d="M461 206 A11 11 0 0 0 472 214"/>
+
+  <a href="quick_reference.html#input_types" target="_parent">
+    <rect width="195" height="28" rx="10" ry="10" x="472" y="159"/>
+    <text x="482" y="178">
+      <tspan class="code">(</tspan>
+      <tspan class="repl">args...</tspan>
+      <tspan class="code">)</tspan>
+    </text>
+  </a>
+  <a href="quick_reference.html#tr_string" target="_parent">
+    <rect width="195" height="28" rx="10" ry="10" x="472" y="203"/>
+    <text x="482" y="222">
+      <tspan class="code">.tr(</tspan>
+      <tspan class="repl">tr-string</tspan>
+      <tspan class="code">,</tspan>
+      <tspan class="repl">args...</tspan>
+      <tspan class="code">)</tspan>
+    </text>
+  </a>
+
+  <!--
+  <path d="M218 151 A11 11 0 0 0 229 140"/>
+  <path d="M218 151 A11 11 0 0 0 218 173"/>
+
+  <path d="M432 151 A11 11 0 0 1 421 140"/>
+  <path d="M432 151 A11 11 0 0 1 432 173"/>
+
+  <path d="M218 173 H432"/>
+  <path class="arrow" d="M332 151 l -17 -4 v 8"/>
+  <path class="arrow" d="M318 173 l  17 -4 v 8"/>
+  -->
+
+  <path class="arrow" d="M210 195 l -17 -4 v 8"/>
+
+</svg>
