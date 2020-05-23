@@ -9,13 +9,13 @@ http://www.boost.org/LICENSE_1_0.txt
 == facets_pack
 
 [[facets_pack]]
-=== Struct template `facets_pack`
+=== Class template `facets_pack`
 
 ====
 [source,cpp]
 ----
 template <typename ... FPE>
-struct facets_pack;
+class facets_pack;
 ----
 ::
 Compile-time requirements::: All types in `FPE\...` satisfy
@@ -94,7 +94,6 @@ constexpr facets_pack<VTypes...>  pack(const Types& ... args)
 Effects::: Creates a `facets_pack` object from `args\...` 
 Return type::: `facets_pack<VTypes\...>`, where for each `Ti` in `Types\...`,
                the corresponding `Vi` in `VTypes\...` is:
-- `const F&` , if `Vi` is `std::reference_wrapper<F>`
 - `const Vi` , if `Vi` <<facet_stored_by_value, `facet_stored_by_value<Vi>`>> is `false`
 - `Ti` , otherwise
 ====
@@ -258,7 +257,6 @@ constexpr constrained_fpe<Filter, U> constrain(const T& arg);
 
 Effect::: Create a <<constrained_fpe, `constrained_fpe`>> object from `args`
 Return type::: `constrained_fpe<Filter, U>`, where `U` is
-- `const F&`, if `T` is `std::reference_wrapper<F>` is `true`
 - `const T&`, if `facet_stored_by_value<T>` is `false`
 - `T`, otherwise
 Compile-time requirements:::

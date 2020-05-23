@@ -5,10 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/common.hpp>
-#include <utility>
-#include <type_traits>
-#include <functional>
+#include <strf/detail/standard_lib_functions.hpp>
 
 namespace strf {
 
@@ -528,41 +525,6 @@ struct pack_arg<T&>
     {
         return arg;
     }
-};
-
-template <typename T>
-struct pack_arg_ref
-{
-    using elem_type = const T&;
-
-    static STRF_HD constexpr const T& forward(const std::reference_wrapper<T>& arg)
-    {
-        return arg.get();
-    }
-};
-
-template <typename T>
-struct pack_arg<std::reference_wrapper<T>>
-    : public strf::detail::pack_arg_ref<T>
-{
-};
-
-template <typename T>
-struct pack_arg<const std::reference_wrapper<T>>
-    : public strf::detail::pack_arg_ref<T>
-{
-};
-
-template <typename T>
-struct pack_arg<std::reference_wrapper<T>&>
-    : public strf::detail::pack_arg_ref<T>
-{
-};
-
-template <typename T>
-struct pack_arg<const std::reference_wrapper<T>&>
-    : public strf::detail::pack_arg_ref<T>
-{
 };
 
 } // namespace detail

@@ -2,7 +2,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf.hpp>
+#include <strf/to_string.hpp>
 #include "test_utils.hpp"
 
 int main()
@@ -80,31 +80,6 @@ int main()
     TEST("0__2--1==2..3::")
         .with(strf::tr_invalid_arg::ignore)
         .tr("{ }__{2}--{}=={}..{}::{", 0, 1, 2, 3);
-
-#if defined(__cpp_exceptions)
-
-    TEST_THROWS( (strf::to_string
-                            .with(strf::tr_invalid_arg::stop)
-                            .reserve_calc()
-                            .tr("{ }__{2}--{}=={}..{}::{}~~", 0, 1, 2, 3))
-                      , strf::tr_string_syntax_error );
-    TEST_THROWS( (strf::to_string
-                      .with(strf::tr_invalid_arg::stop)
-                      .reserve_calc()
-                      .tr("{ }__{2}--{}=={}..{}::{blah}~~", 0, 1, 2, 3))
-                , strf::tr_string_syntax_error );
-    TEST_THROWS( (strf::to_string
-                      .with(strf::tr_invalid_arg::stop)
-                      .reserve_calc()
-                      .tr("{ }__{2}--{}=={}..{}::{", 0, 1, 2, 3))
-                , strf::tr_string_syntax_error );
-    TEST_THROWS( (strf::to_string
-                            .with(strf::tr_invalid_arg::stop)
-                            .reserve_calc()
-                            .tr("{ }__{10}--{}=={}..{}::{}~~", 0, 1, 2, 3))
-                      , strf::tr_string_syntax_error );
-
-#endif // defined(__cpp_exceptions)
 
     TEST(u8"0__\uFFFD--1==2..3::\uFFFD~~")
         .tr(u8"{ }__{10}--{}=={}..{}::{}~~", 0, 1, 2, 3);

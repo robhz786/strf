@@ -1,0 +1,58 @@
+////
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
+[[main]]
+= `<strf.hpp>` Header file reference
+:source-highlighter: prettify
+:sectnums:
+:toc: left
+:toc-title: <strf.hpp>
+:toclevels: 2
+:icons: font
+
+:value_with_format: <<value_with_format,value_with_format>>
+:alignment_format: <<alignment_format,alignment_format>>
+:alignment_format_q: <<alignment_format,alignment_format_q>>
+:int_format: <<int_format,int_format>>
+:float_format: <<float_format,float_format>>
+:float_format_data: <<float_format_data,float_format_data>>
+:alignment_format_data: <<alignment_format_data,alignment_format_data>>
+:pack: <<pack,pack>>
+:facets_pack: <<facets_pack,facets_pack>>
+
+:boost_mp_replace_front: https://www.boost.org/doc/libs/develop/libs/mp11/doc/html/mp11.html#mp_replace_frontl_t[boost::mp_replace_front]
+:boost_mp_replace: https://www.boost.org/doc/libs/develop/libs/mp11/doc/html/mp11.html#mp_replacel_v_w[boost::mp_replace]
+
+:std_conditional_t: https://en.cppreference.com/w/cpp/types/conditional[std::conditional_t]
+
+:min_size_after_recycle: <<outbuf_hpp#min_size_after_recycle,min_size_after_recycle>>
+:underlying_outbuf: <<outbuf_hpp#underlying_outbuf,underlying_outbuf>>
+:underlying_char_type: <<outbuf_hpp#underlying_char_type,underlying_char_type>>
+:basic_outbuf: <<outbuf_hpp#basic_outbuf,basic_outbuf>>
+
+NOTE: This document is still a work in progress.
+
+
+include::ref_facets_pack.adoc[]
+include::ref_destination.adoc[]
+
+== Printable types
+
+__ To-do __
+
+include::ref_char_encoding.adoc[]
+include::ref_width.adoc[]
+
+// include::ref_printer.adoc[]
+// include::ref_input_types.adoc[]
+// include::ref_format_functions.adoc[]
+
+== Numeric punctuation
+
+__ To-do __
+
+// include::ref_numpunct.adoc[]
+include::ref_misc.adoc[]

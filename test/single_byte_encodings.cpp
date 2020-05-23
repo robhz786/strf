@@ -4,9 +4,9 @@
 
 #include "test_utils.hpp"
 
+#include <strf.hpp>
 #include <string>
 #include <algorithm>
-#include <strf.hpp>
 
 strf::detail::simple_string_view<char> make_str_0_to_xff()
 {

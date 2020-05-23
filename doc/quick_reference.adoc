@@ -5,7 +5,6 @@ See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
 
-
 = The Strf formatting library - Quit Reference
 :source-highlighter: prettify
 :sectnums:
@@ -13,6 +12,17 @@ http://www.boost.org/LICENSE_1_0.txt
 :toc: left
 :toclevels: 2
 :icons: font
+
+== Headers
+
+`<<outbuf_hpp#main,<strf/outbuf.hpp>>>` :: This is lighweight header can be used in freestanding evironments and is the cornerstone of library. All other headers include it.
+`<<strf_hpp#main,<strf.hpp>>>` :: Defines most of the library, including the main usage syntax , all printable types and all facets.
+////
+It is influenced by the macros `STRF_SEPARATE_COMPILATION`, `STRF_FREESTANDING`, and `STRF_WITH_CSTRING`.
+////
+`<<to_string_hpp#main,<strf/to_string.hpp>>>` :: Provides utilities to write to `std::basic_string`. Includes `<<strf_hpp#main,<strf.hpp>>>`.
+`<<to_streambuf_hpp#main,<strf/to_streambuf.hpp>>>` :: Provides utilities to write to `std::basic_streambuf`. Includes `<<strf_hpp#main,<strf.hpp>>>`.
+`<<to_cfile_hpp#main,<strf/to_cfile.hpp>>>` :: Provides utilities to write to `FILE*`. Includes `<<strf_hpp#main,<strf.hpp>>>`.
 
 [[usage_syntax]]
 == Main usage syntax
@@ -22,7 +32,7 @@ image::syntax.svg[opts=interactive]
 .Example
 [source,cpp]
 ----
-#include <strf.hpp>
+#include <strf/to_string.hpp>
 #include <cassert>
 
 void sample()
@@ -32,7 +42,7 @@ void sample()
     std::string str =
         strf::to_string // the destination
         .reserve(100)   // The reserved capacity in the created string
-        .with(strf::monotonic_grouping<10>{3}) // numeric punctuation
+        .with(strf::numpunct<10>{3}) // numeric punctuation
         .tr("{0} times {0} is equal to {1}", x, x*x);
 
     assert(str.capacity() >= 100);
@@ -82,49 +92,19 @@ Where `CharT` can be `char`, `char8_t`, `char16_t`, `char32_t` or `wchar_t`.
 
 The "destination" is what defines the effect and also the return type of the main usage syntax, as listed below:
 
+==== Header file `<strf/to_string.hpp>`
 [source,cpp,subs=normal]
 ----
-constexpr /{asterisk}\...{asterisk}/ to_string;
-----
-::
-[horizontal]
-Effect::: Creates a string object
-Return type::: `std::string`
+template < typename CharT
+         , typename Traits = std::char_traits<CharT>
+         , typename Allocator = std::allocator<CharT> >
+constexpr <__/{asterisk} ... {asterisk}/__>  to_basic_string {};
 
-
-[source,cpp,subs=normal]
-----
-constexpr /{asterisk}\...{asterisk}/ to_u16string;
-----
-::
-[horizontal]
-Effect::: Creates a string object
-Return type::: `std::u16string`
-
-[source,cpp,subs=normal]
-----
-constexpr /{asterisk}\...{asterisk}/ to_u32string;
-----
-::
-[horizontal]
-Effect::: Creates a string object
-Return type::: `std::u32string`
-Support reserve::: Yes.
-
-[source,cpp,subs=normal]
-----
-constexpr /{asterisk}\...{asterisk}/ to_wstring;
-----
-::
-[horizontal]
-Effect::: Creates a string object
-Return type::: `std::wstring`
-Support reserve::: Yes.
-
-[source,cpp,subs=normal]
-----
-template <typename CharT, typename Traits, typename Alloc>
-constexpr /{asterisk}\...{asterisk}/ to_basic_string;
+constexpr auto to_u8string  = to_basic_string<char8_t>;
+constexpr auto to_string    = to_basic_string<char_t>;
+constexpr auto to_u16string = to_basic_string<char16_t>;
+constexpr auto to_u32string = to_basic_string<char32_t>;
+constexpr auto to_wstring   = to_basic_string<wchar_t>;
 ----
 ::
 [horizontal]
@@ -139,9 +119,9 @@ template <typename CharT, typename Traits, typename Alloc>
 ----
 ::
 [horizontal]
-Effect::: Appends the generated content to `str`
-Return type::: `void`
-Support reserve::: Yes. The effect is to call `str.reserve(std.size() + size)`, where `size` is the value passed to `reserve` function in the main usage syntax or the calculated content's size when `reserve_calc` is used.
+Effect:: Appends the generated content to `str`
+Return type:: `void`
+Support reserve:: Yes.
 
 [source,cpp,subs=normal]
 ----
@@ -154,17 +134,19 @@ Effect::: Assign `str` to the generated content.
 Return type::: `void`
 Support reserve::: Yes.
 
+==== Header file `<strf.hpp>`
+
 [source,cpp,subs=normal]
 ----
-/{asterisk}\...{asterisk}/ to ( char*     dest, std::size_t count );
-/{asterisk}\...{asterisk}/ to ( char8_t*  dest, std::size_t count );
-/{asterisk}\...{asterisk}/ to ( char16_t* dest, std::size_t count );
-/{asterisk}\...{asterisk}/ to ( char32_t* dest, std::size_t count );
-/{asterisk}\...{asterisk}/ to ( wchar_t*  dest, std::size_t count );
+/{asterisk}\...{asterisk}/ to(char*     dest, std::size_t count);
+/{asterisk}\...{asterisk}/ to(char8_t*  dest, std::size_t count);
+/{asterisk}\...{asterisk}/ to(char16_t* dest, std::size_t count);
+/{asterisk}\...{asterisk}/ to(char32_t* dest, std::size_t count);
+/{asterisk}\...{asterisk}/ to(wchar_t*  dest, std::size_t count);
 ----
 ::
 [horizontal]
-Requirements::: `count > 0`
+Precondition::: `count > 0`
 Effect:::
 - Write the generated content to `dest`.
 - Write no more than `count` characters including the termination character.
@@ -176,35 +158,27 @@ Return value:::
 
 [source,cpp,subs=normal]
 ----
-/{asterisk}\...{asterisk}/ to ( char*     dest, char*     dest_end );
-/{asterisk}\...{asterisk}/ to ( char8_t*  dest, char8_t*  dest_end );
-/{asterisk}\...{asterisk}/ to ( char16_t* dest, char16_t* dest_end );
-/{asterisk}\...{asterisk}/ to ( char32_t* dest, char32_t* dest_end );
-/{asterisk}\...{asterisk}/ to ( wchar_t*  dest, wchar_t*  dest_end );
+/{asterisk}\...{asterisk}/ to(char*     dest, char*     dest_end);
+/{asterisk}\...{asterisk}/ to(char8_t*  dest, char8_t*  dest_end);
+/{asterisk}\...{asterisk}/ to(char16_t* dest, char16_t* dest_end);
+/{asterisk}\...{asterisk}/ to(char32_t* dest, char32_t* dest_end);
+/{asterisk}\...{asterisk}/ to(wchar_t*  dest, wchar_t*  dest_end);
 ----
 ::
-[horizontal]
-Requirements::: `dest_end > dest`
-Effect::: Same as in `to(dest, dest_end - dest)`
-Return type::: Same as in `to(dest, dest_end - dest)`
-Return value::: Same as in `to(dest, dest_end - dest)`
-Support reserve::: No
-
+Equivalent to `to(dest, dest_end - dest)`.
 
 [source,cpp,subs=normal]
 ----
-template<std::size_t N> /{asterisk}\...{asterisk}/ to ( char     (&dest)[N] );
-template<std::size_t N> /{asterisk}\...{asterisk}/ to ( char8_t  (&dest)[N] );
-template<std::size_t N> /{asterisk}\...{asterisk}/ to ( char16_t (&dest)[N] );
-template<std::size_t N> /{asterisk}\...{asterisk}/ to ( char32_t (&dest)[N] );
-template<std::size_t N> /{asterisk}\...{asterisk}/ to ( wchar_t  (&dest)[N] );
+template<std::size_t N> /{asterisk}\...{asterisk}/ to(char     (&dest)[N]);
+template<std::size_t N> /{asterisk}\...{asterisk}/ to(char8_t  (&dest)[N]);
+template<std::size_t N> /{asterisk}\...{asterisk}/ to(char16_t (&dest)[N]);
+template<std::size_t N> /{asterisk}\...{asterisk}/ to(char32_t (&dest)[N]);
+template<std::size_t N> /{asterisk}\...{asterisk}/ to(wchar_t  (&dest)[N]);
 ----
 ::
-[horizontal]
-Effect::: Same as in `to(dest, N)`
-Return type::: Same as in `to(dest, N)`
-Return value::: Same as in `to(dest, N)`
-Support reserve::: No
+Equivalent to `to(dest, N)`.
+
+==== Header file `<strf/to_cfile.hpp>`
 
 [source,cpp,subs=normal]
 ----
@@ -236,6 +210,8 @@ Return value:::
 - `count` is sum of the returned values returned by the several calls to `std::fwrite`.
 - `success` is `false` if an error occured.
 Support reserve::: No
+
+==== Header file `<strf/to_streambuf.hpp>`
 
 [source,cpp]
 ----
@@ -325,10 +301,10 @@ assert(str == "} { } aaa");
 The enumeration `tr_invalid_arg` is a <<facets,facet>> that specifies what happens when the tr-string references a non existing argument.
 [source,cpp]
 ----
-enum class tr_invalid_arg{ replace, stop };
+enum class tr_invalid_arg{ replace, ignore };
 ----
-* `tr_invalid_arg::stop` : Throws an exception.
 * `tr_invalid_arg::replace` :  Replaces the invalid reference by the https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;]. This is the default.
+* `tr_invalid_arg::ingore` : Ignores it. Nothing is printed.
 
 [[facets]]
 === Facets
@@ -343,10 +319,10 @@ __facet objects__ to the `<<usage_syntax,with>>` function.
 Every __facet__ belongs to a __facet category__.
 Each facet category corresponds to a concept, __i.e.__ a set of requirements that a class must satisfy. A class that satisfies such requirements is a facet of such facet category. Moreover, for each facet category there is class whose name, by convention, has a "_c" suffix and is the name of the category.
 
-For example, `<<numpunct,monotonic_grouping>><10>` and
-`<<numpunct,str_grouping>><10>`  are both facets of the category
-`<<numpunct,numpunct_c>><10>`.
-Both have the same purpose: to customize numeric punctuation.
+For example, `<<static_char_encodings,iso_8859_1>><char>` and
+`<<static_char_encodings,utf8>><char>` are both facets of the category
+`char_encoding_c<char>`.
+
 
 [%header,cols="2,1,4"]
 |===
@@ -373,7 +349,7 @@ With the `constrain` function template you can create __constrained facets__, wh
 
 [source,cpp]
 ----
-auto facet_obj = strf::constrain<std::is_signed>(strf::monotonic_grouping<10>{3});
+auto facet_obj = strf::constrain<std::is_signed>(strf::numpunct<10>{3});
 auto s = strf::to_string.with(facet_obj)(100000u, "  ", 100000);
 assert(s == "100000  100,000");
 ----
@@ -399,9 +375,9 @@ If there are two or more facets object passed to the `with` function of the same
 
 [source,cpp]
 ----
-auto punct_dec_1 = strf::monotonic_grouping<10>{1};
-auto punct_dec_2 = strf::monotonic_grouping<10>{2}.thousands_sep('.');
-auto punct_dec_3 = strf::monotonic_grouping<10>{3}.thousands_sep('^');;
+auto punct_dec_1 = strf::numpunct<10>{1};
+auto punct_dec_2 = strf::numpunct<10>{2}.thousands_sep('.');
+auto punct_dec_3 = strf::numpunct<10>{3}.thousands_sep('^');;
 
 // Below, punct_dec_3 overrides punct_dec_2, but only for signed types.
 // punct_dec_2 overrides punct_dec_1 for all printable types,
@@ -428,7 +404,7 @@ The integer sequence passed to the constructor defines the grouping:
 auto str = strf::to_string.with(numpunct<10>(1, 2, 3))(1000000000000ll);
 assert(str == "1,000,000,000,00,0");
 ----
-When the last value is `-1`, the previous group is not repeated:
+The value `-1` implies no further separator:
 [source,cpp]
 ----
 auto str = strf::to_string.with(numpunct<10>(1, 2, 3, -1))(1000000000000ll);
@@ -544,6 +520,7 @@ corresponding to the character type. Their instances are always
 empty classes. More encodings are expected to be included in
 future version of the library.
 
+[[static_char_encodings]]
 [source,cpp]
 ----
 namespace strf {
@@ -570,7 +547,7 @@ using utf = /* utf8<CharT> , utf16<CharT> or utf32<CharT> */
 ----
 auto s = strf::to_string
     .with(strf::windows_1252<char>())
-    .with(strf::str_grouping<10>{"\4\3\2"}.thousands_sep(0x2022))
+    .with(strf::numpunct<10>{4, 3, 2}.thousands_sep(0x2022))
     ("one hundred billions = ", 100000000000ll);
 
 // The character U+2022 is encoded as '\225' in Windows-1252
@@ -723,11 +700,11 @@ auto str = strf::to_string.width(notifier)(strf::conv(u16str));
 [[width_calculator]]
 == Width Calculation
 
-The `<<reference#width_calculator_c,width_calculator_c>>` facet category
+The `<<strf_hpp#width_calculator_c,width_calculator_c>>` facet category
 enables you to choose how the width of a string is calculated when using
 <<alignment_format_functions,alignment formatting>>. You have five options:
 
-* The `<<reference#fast_width,fast_width>>` facet assumes that the width
+* The `<<strf_hpp#fast_width,fast_width>>` facet assumes that the width
   of a string is equal to its size. This is the least accurate method,
   but it's the fastest and also is what others formatting
   libraries usually do. Therefore it's the default facet.
@@ -740,7 +717,7 @@ auto result = strf::to_string.with(strf::fast_width{})
              ( strf::right(str, 12, '*') );
 assert(result == "*15.00 \xE2\x82\xAC \x80"); // width calculated as 11
 ----
-* The `<<reference#width_as_fast_u32len,width_as_fast_u32len>>` facet
+* The `<<strf_hpp#width_as_fast_u32len,width_as_fast_u32len>>` facet
   evaluates the width of a string as the number of Unicode code points.
   However, differently from `width_as_u32len`, to gain performance,
   it assumes that the measured string is totally conformant to its encoding.
@@ -758,7 +735,7 @@ auto result = strf::to_string .with(strf::width_as_fast_u32len{})
              ( strf::right(str, 12, '*'));
 assert(result == "****15.00 \xE2\x82\xAC \x80"); // width calculated as 8
 ----
-* The `<<reference#width_as_u32len,width_as_u32len>>` facet also
+* The `<<strf_hpp#width_as_u32len,width_as_u32len>>` facet also
   evaluates the width of a string as the number of Unicode code points.
   But each nonconformity to the encoding is counted as an extra
   code points ( as if it were replaced by
@@ -773,13 +750,13 @@ auto result = strf::to_string .with(strf::width_as_u32len{})
 
 assert(result == "***15.00 \xE2\x82\xAC \x80"); // width calculated as 9
 ----
-* The `<<reference#make_width_calculator,make_width_calculator>>` function
+* The `<<strf_hpp#make_width_calculator,make_width_calculator>>` function
   template takes a function object `f` as paramenter and
   returns a facet object that calculates the width of the strings
   by converting them to UTF-32 ( following the policy associated to
   `<<invalid_seq_policy,invalid_seq_policy>>::replace` ) and then calling
   `f` to evaluate the width of each UTF-32 character. `f` shall take a
-  `char32_t` parameter and return a `<<reference#width_t,width_t>>`,
+  `char32_t` parameter and return a `<<strf_hpp#width_t,width_t>>`,
   which is a type that implements
   https://en.wikipedia.org/wiki/Fixed-point_arithmetic[Q16.16 fixed-point arithmetics].
   This means that can use non itegral values.
@@ -809,13 +786,13 @@ assert(result == u8".....\u2163 + \u2167 = \u216B");
 ----
 * The fifth option is to implement your own width calculator. This
   implies to create a class that satisfies the
-  <<reference#WidthCalculator,WidthCalculator>> type requirements.
+  <<strf_hpp#WidthCalculator,WidthCalculator>> type requirements.
   There are two reasons why you may want to do that, instead
   of the of the previous options:
 ** Accuracy: The previous methods are not able to take into
   account the presence of ligatures and digraphs.
 ** Peformance: The object returned by
-  `<<reference#make_width_calculator,make_width_calculator>>`
+  `<<strf_hpp#make_width_calculator,make_width_calculator>>`
   converts the string to UTF-32 before calling the provided
   function object for each UTF-32 character.
   When you implement your own calculator, you can optimize
@@ -1009,7 +986,7 @@ where:
 Format functions::
 ( in addition to <<alignment_format_functions, alignment functions>> )
 
-`p(<<reference#width_t,width_t>> limit)`:::   
+`p(<<strf_hpp#width_t,width_t>> limit)`:::
    Does not print the whole string if its width is greater than `limit`,
    but the greatest possible amount of its leading Unicode code points
    such that the width is not greater than `limit`.
@@ -1018,7 +995,7 @@ Format functions::
    but prints the maxixum leading sub-string such that its width
    is not greater than `limit`.
    Prints the maximum amount of Unicode code points such that
-   the width is not greater than `limit`.   
+   the width is not greater than `limit`.
    __To-to__
 ////
 +
@@ -1377,12 +1354,12 @@ inner_pack</*...*/> with(const Facets&... facets);
 .Example 1
 [source,cpp]
 ----
-auto str = strf::to_string.with(strf::monotonic_grouping<10>(1))
+auto str = strf::to_string.with(strf::numpunct<10>(1))
     ( 10000
     , "  "
     , strf::hex(0x10000)
-    , strf::with( strf::monotonic_grouping<10>(3)
-                , strf::monotonic_grouping<16>(4).thousands_sep('\'') )
+    , strf::with( strf::numpunct<10>(3)
+                , strf::numpunct<16>(4).thousands_sep('\'') )
         ( "  { "
         , 10000
         , "  "
@@ -1396,10 +1373,10 @@ assert(str == "1,0,0,0,0  10000  { 10,000  1'0000 }");
 [source,cpp]
 ----
 auto fp = strf::pack
-    ( strf::monotonic_grouping<10>(3)
-    , strf::monotonic_grouping<16>(4).thousands_sep('\'') );
+    ( strf::numpunct<10>(3)
+    , strf::numpunct<16>(4).thousands_sep('\'') );
 
-auto str = strf::to_string.with(strf::monotonic_grouping<10>(1))
+auto str = strf::to_string.with(strf::numpunct<10>(1))
     ( 10000
     , "  "
     , strf::hex(0x10000)
@@ -1409,14 +1386,14 @@ auto str = strf::to_string.with(strf::monotonic_grouping<10>(1))
         , "  "
         , strf::hex(0x10000)
         , strf::with
-            (strf::monotonic_grouping<10>(2).thousands_sep('.'))
-              ("  { ", 10000, " }")
+            (strf::numpunct<10>(2).thousands_sep('.'))
+            ("  { ", 10000, " }")
         , " }" ) );
 
 assert(str == "1,0,0,0,0  10000  { 10,000  1'0000  { 1.00.00 } }");
 ----
 
-== Extending the library
+== Extending the library __(to-do)__
 
 === Adding output types
 to-do

@@ -10,6 +10,14 @@ option(
   "Build the static library for CUDA device-side use"
   ${STRF_CUDA_SUPPORT} )
 option(
+  STRF_FREESTANDING
+  "Avoid as must as possible using hosted standard headers."
+  ${STRF_CUDA_SUPPORT} )
+option(
+  STRF_WITH_CSTRING
+  "Use header <cstring> even when STRF_FREESTANDING is ON."
+  ${STRF_CUDA_SUPPORT} )
+option(
   STRF_BUILD_TESTS
   "Build unit tests"
   ${STRF_BUILD_TESTS} )
@@ -42,6 +50,16 @@ target_compile_definitions(
   strf
   PUBLIC STRF_SEPARATE_COMPILATION )
 
+if (STRF_FREESTANDING)
+  target_compile_definitions(strf PUBLIC STRF_FREESTANDING)
+  target_compile_definitions(strf-header-only INTERFACE STRF_FREESTANDING)
+endif (STRF_FREESTANDING)
+
+if (STRF_WITH_CSTRING)
+  target_compile_definitions(strf PUBLIC STRF_WITH_CSTRING)
+  target_compile_definitions(strf-header-only INTERFACE STRF_WITH_CSTRING)
+endif (STRF_WITH_CSTRING)
+  
 target_include_directories(
   strf-header-only
   INTERFACE
@@ -133,5 +151,5 @@ if (STRF_BUILD_BENCHMARKS)
   option(BENCHMARK_ENABLE_GTEST_TESTS OFF)
   add_subdirectory(externals/google-benchmark google-benchmark)
   add_subdirectory(externals/fmt fmt)
-  add_subdirectory(performance performance)
+  add_subdirectory(benchmarks benchmarks)
 endif (STRF_BUILD_BENCHMARKS)

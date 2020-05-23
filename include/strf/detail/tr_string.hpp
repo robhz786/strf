@@ -5,45 +5,15 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <strf/outbuf_functions.hpp>
 #include <strf/printer.hpp>
-#include <limits>
 #include <strf/detail/facets/char_encoding.hpp>
 
 namespace strf {
 
-class tr_string_syntax_error: public strf::stringify_error
-{
-    using strf::stringify_error::stringify_error;
-
-    const char* what() const noexcept override
-    {
-        return "Boost.Stringify: Tr-string syntax error";
-    }
-};
-
-namespace detail {
-
-#if defined(__cpp_exceptions)
-
-inline void throw_string_syntax_error()
-{
-    throw strf::tr_string_syntax_error();
-}
-
-#else // defined(__cpp_exceptions)
-
-inline void throw_string_syntax_error()
-{
-    std::abort();
-}
-
-#endif // defined(__cpp_exceptions)
-
-} // namespace detail
-
 enum class tr_invalid_arg
 {
-    replace, stop, ignore
+    replace, ignore
 };
 
 struct tr_invalid_arg_c
@@ -120,14 +90,12 @@ std::size_t tr_string_size
     , const CharT* end
     , std::size_t inv_arg_size ) noexcept
 {
-    using traits = std::char_traits<CharT>;
-
     std::size_t count = 0;
     std::size_t arg_idx = 0;
 
     while (it != end) {
         const CharT* prev = it;
-        it = traits::find(it, (end - it), '{');
+        it = strf::detail::str_find<CharT>(it, (end - it), '{');
         if (it == nullptr) {
             count += (end - prev);
             break;
@@ -166,14 +134,14 @@ std::size_t tr_string_size
             } else {
                 count += inv_arg_size;
             }
-            it = traits::find(result.it, end - result.it, '}');
+            it = strf::detail::str_find<CharT>(result.it, end - result.it, '}');
             if (it == nullptr) {
                 break;
             }
             ++it;
         } else if(ch == '{') {
             auto it2 = it + 1;
-            it2 = traits::find(it2, end - it2, '{');
+            it2 = strf::detail::str_find<CharT>(it2, end - it2, '{');
             if (it2 == nullptr) {
                 return count += end - it;
             }
@@ -192,7 +160,7 @@ std::size_t tr_string_size
                 }
             }
             auto it2 = it + 1;
-            it = traits::find(it2, (end - it2), '}');
+            it = strf::detail::str_find<CharT>(it2, (end - it2), '}');
             if (it == nullptr) {
                 break;
             }
@@ -213,12 +181,11 @@ void tr_string_write
     , strf::tr_invalid_arg policy )
 {
     using char_type = strf::underlying_char_type<CharSize>;
-    using traits = std::char_traits<char_type>;
     std::size_t arg_idx = 0;
 
     while (it != end) {
         const char_type* prev = it;
-        it = traits::find(it, (end - it), '{');
+        it = strf::detail::str_find<char_type>(it, (end - it), '{');
         if (it == nullptr) {
             strf::write(ob, prev, end - prev);
             return;
@@ -231,8 +198,6 @@ void tr_string_write
                 args[arg_idx]->print_to(ob);
             } else if (policy == strf::tr_invalid_arg::replace) {
                 write_replacement_char(ob);
-            } else if (policy == strf::tr_invalid_arg::stop) {
-                strf::detail::throw_string_syntax_error();
             }
             break;
         }
@@ -243,8 +208,6 @@ void tr_string_write
                 ++arg_idx;
             } else if (policy == strf::tr_invalid_arg::replace) {
                 write_replacement_char(ob);
-            } else if (policy == strf::tr_invalid_arg::stop) {
-                strf::detail::throw_string_syntax_error();
             }
             ++it;
         } else if (char_type('0') <= ch && ch <= char_type('9')) {
@@ -253,17 +216,15 @@ void tr_string_write
                 args[result.value]->print_to(ob);
             } else if (policy == strf::tr_invalid_arg::replace) {
                 write_replacement_char(ob);
-            } else if (policy == strf::tr_invalid_arg::stop) {
-                strf::detail::throw_string_syntax_error();
             }
-            it = traits::find(result.it, end - result.it, '}');
+            it = strf::detail::str_find<char_type>(result.it, end - result.it, '}');
             if (it == nullptr) {
                 break;
             }
             ++it;
         } else if(ch == '{') {
             auto it2 = it + 1;
-            it2 = traits::find(it2, end - it2, '{');
+            it2 = strf::detail::str_find<char_type>(it2, end - it2, '{');
             if (it2 == nullptr) {
                 strf::write(ob, it, end - it);
                 return;
@@ -278,12 +239,10 @@ void tr_string_write
                     ++arg_idx;
                 } else if (policy == strf::tr_invalid_arg::replace) {
                     write_replacement_char(ob);
-                } else if (policy == strf::tr_invalid_arg::stop) {
-                    strf::detail::throw_string_syntax_error();
                 }
             }
             auto it2 = it + 1;
-            it = traits::find(it2, (end - it2), '}');
+            it = strf::detail::str_find<char_type>(it2, (end - it2), '}');
             if (it == nullptr) {
                 break;
             }
@@ -320,9 +279,6 @@ public:
             switch (policy) {
                 case strf::tr_invalid_arg::replace:
                     invalid_arg_size = enc.replacement_char_size();
-                    break;
-                case strf::tr_invalid_arg::stop:
-                    invalid_arg_size = strf::detail::trstr_invalid_arg_size_when_stop;
                     break;
                 default:
                     STRF_ASSERT(policy == strf::tr_invalid_arg::ignore);

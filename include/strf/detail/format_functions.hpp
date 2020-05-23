@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/common.hpp>
+#include <strf/detail/strf_def.hpp>
 #include <cstring>
 
 
@@ -565,7 +565,7 @@ constexpr STRF_HD auto multi(const T& value, I count)
 }
 
 template <typename T>
-constexpr STRF_HD auto fixed(const T& value) 
+constexpr STRF_HD auto fixed(const T& value)
 {
     return fmt(value).fixed();
 }

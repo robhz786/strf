@@ -1,0 +1,653 @@
+////
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
+
+[[main]]
+= `<outbuf.hpp>` Header file reference
+:source-highlighter: prettify
+:sectnums:
+:toc: left
+:toc-title: <outbuf.hpp>
+:toclevels: 1
+:icons: font
+
+:min_size_after_recycle: <<min_size_after_recycle,min_size_after_recycle>>
+:basic_outbuf: <<basic_outbuf,basic_outbuf>>
+:underlying_outbuf: <<underlying_outbuf,underlying_outbuf>>
+:underlying_char_type: <<underlying_char_type,underlying_char_type>>
+
+:basic_cstr_writer: <<basic_cstr_writer, basic_cstr_writer>>
+:basic_string_maker: <<basic_string_maker, basic_string_maker>>
+:basic_string_appender: <<basic_string_appender, basic_string_appender>>
+:basic_streambuf_writer: <<basic_streambuf_writer, basic_streambuf_writer>>
+:narrow_cfile_writer: <<narrow_cfile_writer, narrow_cfile_writer>>
+:wide_cfile_writer: <<wide_cfile_writer, wide_cfile_writer>>
+:garbage_buf: <<garbage_buf, garbage_buf>>
+:garbage_buf_end: <<garbage_buf, garbage_buf_end>>
+
+
+== Function template `min_size_after_recycle` [[min_size_after_recycle]]
+====
+[source,cpp]
+----
+template <std::size_t CharSize>
+constexpr std::size_t min_size_after_recycle();
+----
+[horizontal]
+Return value:: Implementation-defined value greater than or equal to 64.
+====
+
+== Template alias `underlying_char_type` [[underlying_char_type]]
+
+====
+[source,cpp]
+----
+template <std::size_t CharSize>
+using underlying_char_type = /*see below*/;
+----
+[horizontal]
+Same as::
+- `std::uint8_t` if `CharSize == 1`
+- `char16_t` if `CharSize == 2`
+- `char32_t` if `CharSize == 4`
+
+It is undefined for any other `CharSize` value.
+====
+
+== Class template `underlying_outbuf` [[underlying_outbuf]]
+
+=== Synopsis
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <std::size_t CharSize>
+class underlying_outbuf;
+{
+public:
+
+    using char_type = {underlying_char_type}<CharSize>;
+
+    underlying_outbuf(const underlying_outbuf&) = delete;
+    underlying_outbuf(underlying_outbuf&&) = delete;
+    underlying_outbuf& operator=(const underlying_outbuf&) = delete;
+    underlying_outbuf& operator=(underlying_outbuf&&) = delete;
+
+    virtual ~underlying_outbuf() = default;
+
+    char_type{asterisk} pointer() const noexcept;
+    char_type{asterisk} end() const noexcept;
+    std::size_t size() const noexcept;
+    bool good() const noexcept;
+    void advance_to(char_type{asterisk} p);
+    void advance(std::size_t n);
+    void require(std::size_t s);
+
+    virtual bool recycle() = 0;
+
+protected:
+
+    underlying_outbuf(char_type{asterisk} pointer_, char_type{asterisk} end_);
+
+    underlying_outbuf(char_type{asterisk} pointer_, std::size_t n);
+
+    void set_pointer(char_type{asterisk} p) noexcept;
+    void set_end(char_type{asterisk} e) noexcept;
+    void set_good(bool g) noexcept;
+};
+
+// global functions
+
+template <std::size_t CharSize>
+void put( underlying_outbuf<CharSize>& ob
+        , {underlying_char_type}<CharSize> ch );
+
+} // namespace strf
+----
+
+=== Member types
+
+[[underlying_outbuf_char_type]]
+====
+[source,cpp,subs=normal]
+----
+using char_type = {underlying_char_type}<CharSize>;
+----
+====
+
+=== Public member functions
+
+[[underlying_outbuf_pointer]]
+====
+[source,cpp]
+----
+char_type* pointer() const noxcept;
+----
+[horizontal]
+Return:: The memory position where the content shall be written.
+====
+[[underlying_outbuf_end]]
+====
+[source,cpp]
+----
+char_type* end() const noxcept;
+----
+[horizontal]
+Return:: The end of memory position where the content shall be written.
+         Dereferencing `end()` has undefined behaviour.
+====
+[[underlying_outbuf_size]]
+====
+[source,cpp]
+----
+std::size_t size() const noexcept;
+----
+[horizontal]
+Return:: `end() - pointer()`
+====
+[[underlying_outbuf_recycle]]
+====
+[source,cpp]
+----
+virtual void recycle() = 0;
+----
+[horizontal]
+Posconditions::
+- `size() >= {min_size_after_recycle}<CharSize>()`
+- The range [ `pointer()`, `end()` ) is valid accessible memory area
+- If the return value of `good()` was `false` before this call to `recycle()`, then `good()` remains returning `false`.
+====
+
+// Effect::
+// Depends on the derivate class, but if `good()` returns `true`,
+// then supposedly consumes the content in the range [`p`, `pointer()`),
+// where `p` is the value `pointer()` would have returned if called before
+// any call to `advance` or `advance_to` in this object since the last
+// time `recycle` was called in this object, or, in case `recycle`
+// was not called in this object yet, since this object was constructed.
+
+
+[[underlying_outbuf_require]]
+====
+[source,cpp]
+----
+void require(std::size_t s)
+----
+[horizontal]
+Effect:: Calls `recycle()` if `size() < s`.
+Precondition:: `s \<= {min_size_after_recycle}<CharSize>()`
+Postcondition:: `size() >= s`
+====
+[[underlying_outbuf_advance_to]]
+====
+[source,cpp]
+----
+void advance_to(char_type* p)
+----
+[horizontal]
+Effect:: Advance the buffer's pointer to `p`.
+Precondition:: `pointer() \<= p && p \<= end()`
+Postcondition:: `pointer() == p`
+====
+[[underlying_outbuf_advance_count]]
+====
+[source,cpp]
+----
+void advance(std::size_t n)
+----
+[horizontal]
+Effect:: Same as `advance_to(pointer() + n)`
+Precondition:: `n \<= size()`
+====
+[[underlying_outbuf_advance]]
+====
+[source,cpp]
+----
+void advance()
+----
+[horizontal]
+Effect:: Same as `advance_to(1)`
+Precondition:: `pointer() != end()`
+====
+[[underlying_outbuf_good]]
+====
+[source,cpp]
+----
+bool good() const;
+----
+[horizontal]
+Return:: The state of this object. If the return value is `false`,
+then it means that calling `advance` of `advance_to` has no
+relevant side effect because the content written in the buffer
+will not be read anymore.
+Note:: The range [ `pointer()`, `end()` ) shall aways be a valid
+accessible memory, even when `good()` returns `false`.
+====
+
+=== Protected Member functions
+
+[[underlying_outbuf_ctor_range]]
+====
+[source,cpp]
+----
+underlying_outbuf(CharT* pointer_, CharT* end_)
+----
+[horizontal]
+Preconditions::
+- `pointer_ \<= end_`
+- The range [ `pointer_`, `end_` ) must be an accessible memory area.
+Posconditions::
+- `pointer() == pointer_`
+- `end() == end_`
+- `good() == true`
+====
+[[underlying_outbuf_ctor_count]]
+====
+[source,cpp]
+----
+underlying_outbuf(CharT* pointer_, std::size_t n)
+----
+[horizontal]
+Preconditions::
+- The range [ `pointer_`, `pointer_ + n ` ) must be an accessible memory area.
+Posconditions::
+- `pointer() == pointer_`
+- `end() == pointer_ + n`
+- `good() == true`
+====
+[[underlying_outbuf_set_pointer]]
+====
+[source,cpp]
+----
+void set_pointer(CharT* p) noexcept
+----
+[horizontal]
+Postconditions:: `pointer() == p`
+====
+[[underlying_outbuf_set_end]]
+====
+[source,cpp]
+----
+void set_end(CharT* e) noexcept
+----
+[horizontal]
+Postconditions:: `end() == e`
+====
+[[underlying_outbuf_set_good]]
+====
+[source,cpp]
+----
+void set_good(bool g) noexcept
+----
+[horizontal]
+Postconditions:: `good() == g`
+====
+
+=== Global functions
+
+[[underlying_outbuf_put]]
+====
+[source,cpp,subs=normal]
+----
+template <std::size_t CharSize>
+void put( underlying_outbuf<CharSize>& ob
+        , {underlying_char_type}<CharSize> ch );
+----
+[horizontal]
+Effect:: Same as:
++
+[source,cpp]
+----
+if (ob.size() == 0) {
+    ob.recycle();
+}
+*ob.pointer() = ch;
+ob.advance();
+----
+====
+
+[[basic_outbuf]]
+== Class template `basic_outbuf`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT>
+class basic_outbuf: private {underlying_outbuf}<sizeof(CharT)>
+{
+public:
+    using char_type = CharT;
+    basic_outbuf(const basic_outbuf&) = delete;
+    basic_outbuf(basic_outbuf&&) = delete;
+    basic_outbuf& operator=(const basic_outbuf&) = delete;
+    basic_outbuf& operator=(basic_outbuf&&) = delete;
+
+    virtual ~basic_outbuf() = default;
+
+    {underlying_outbuf}<sizeof(CharT)>& as_underlying() noexcept;
+    const {underlying_outbuf}<sizeof(CharT)>& as_underlying() const noexcept;
+
+    char_type{asterisk} pointer() const noexcept;
+    char_type{asterisk} end() const noexcept;
+    void advance_to(char_type{asterisk} p);
+
+    using {underlying_outbuf}<sizeof(CharT)>::<<underlying_outbuf_size,size>>
+    using {underlying_outbuf}<sizeof(CharT)>::<<underlying_outbuf_advance,advance>>
+    using {underlying_outbuf}<sizeof(CharT)>::<<underlying_outbuf_good,good>>
+    using {underlying_outbuf}<sizeof(CharT)>::<<underlying_outbuf_require,require>>
+    using {underlying_outbuf}<sizeof(CharT)>::<<underlying_outbuf_recycle,recycle>>
+
+protected:
+
+    basic_outbuf(char_type{asterisk} pointer_, char_type{asterisk} end_);
+    basic_outbuf(char_type{asterisk} pointer_, std::size_t n);
+
+    void set_pointer(char_type{asterisk} p) noexcept;
+    void set_end(char_type{asterisk} e) noexcept;
+
+    using {underlying_outbuf}<sizeof(CharT)>::<<underlying_outbuf_set_good,set_good>>;
+};
+
+// global type aliases
+
+using outbuf      = basic_outbuf<char>;
+using u8outbuf    = basic_outbuf<char8_t>;
+using u16outbuf   = basic_outbuf<char16_t>;
+using u32outbuf   = basic_outbuf<char32_t>;
+using woutbuf     = basic_outbuf<wchar_t>;
+using bin_outbuf  = basic_outbuf<std::byte>;
+
+// global functions
+
+template <typename CharT>
+void put(basic_outbuf<CharT>& ob, CharT ch);
+
+} // namespace strf
+----
+
+=== Public member functions
+
+[[basic_outbuf_as_underlying]]
+====
+[source,cpp,subs=normal]
+----
+underlying_outbuf<sizeof(CharT)>& as_underlying() noexcept;
+const underlying_outbuf<sizeof(CharT)>& as_underlying() const noexcept;
+----
+[horizontal]
+Return:: `*this`
+====
+[[basic_outbuf_pointer]]
+====
+[source,cpp]
+----
+char_type* pointer() const noexcept;
+----
+[horizontal]
+Return:: `(CharT*) as_underlying().pointer();`
+====
+[[basic_outbuf_end]]
+====
+[source,cpp]
+----
+char_type* end() const noexcept;
+----
+[horizontal]
+Return:: `(CharT*) as_underlying().end();`
+====
+[[basic_outbuf_advance_to]]
+====
+[source,cpp]
+----
+void advance_to(char_type* p);
+----
+[horizontal]
+Effect:: Same as
++
+[source,cpp,subs=normal]
+----
+as_underlying().advance_to(({underlying_char_type}<sizeof(CharT)>{asterisk})p)
+----
+Precondition:: `p \<= end()`
+====
+
+=== Public member functions inherited from private base `underlying_outbuf<sizeof(CharT)>`
+
+[source,cpp,subs=normal]
+----
+    using {underlying_outbuf}<sizeof(CharT)>::<<underlying_outbuf_size,size>>
+    using {underlying_outbuf}<sizeof(CharT)>::<<underlying_outbuf_advance,advance>>
+    using {underlying_outbuf}<sizeof(CharT)>::<<underlying_outbuf_good,good>>
+    using {underlying_outbuf}<sizeof(CharT)>::<<underlying_outbuf_require,require>>
+    using {underlying_outbuf}<sizeof(CharT)>::<<underlying_outbuf_recycle,recycle>>
+----
+
+=== Protected member functions
+
+[[basic_outbuf_ctor_range]]
+====
+[source,cpp]
+----
+basic_outbuf(char_type* pointer_, char_type* end_);
+----
+[horizontal]
+Effect:: Initializes private base class `underlying_outbuf<sizeof(CharT)>`
+with `pointer_` and `end_` casted as `{underlying_char_type}<sizeof(CharT)>{asterisk}`.
+====
+[[basic_outbuf_ctor_count]]
+====
+[source,cpp]
+----
+basic_outbuf(char_type* pointer_, std::size_t n);
+----
+[horizontal]
+Effect:: Same as `basic_outbuf(pointer_, pointer_ + n)`
+====
+[[basic_outbuf_]]
+====
+[source,cpp]
+----
+void set_pointer(char_type* p) noexcept;
+----
+[horizontal]
+Effect:: Same as
++
+[source,cpp,subs=normal]
+----
+as_underlying().set_pointer(({underlying_char_type}<sizeof(CharT)>*)p)
+----
+====
+[[basic_outbuf_]]
+====
+[source,cpp]
+----
+void set_end(char_type* e) noexcept;
+----
+[horizontal]
+Effect:: Same as
++
+[source,cpp,subs=normal]
+----
+as_underlying().set_end(({underlying_char_type}<sizeof(CharT)>*)e)
+----
+====
+[[basic_outbuf_set_good]]
+====
+[source,cpp]
+----
+void set_good(bool g) noexcept;
+----
+[horizontal]
+Effect:: Same as `as_underlying().set_good(g)`
+====
+
+=== Global functions
+
+[[basic_outbuf_put]]
+====
+[source,cpp]
+----
+template <typename CharT>
+void put(basic_outbuf<CharT>& ob, CharT ch);
+----
+[horizontal]
+Effect:: Same as:
++
+[source,cpp]
+----
+if (ob.size() == 0) {
+    ob.recycle();
+}
+*ob.pointer() = ch;
+ob.advance();
+----
+====
+
+[[basic_outbuf_noexcept]]
+== Class template `basic_outbuf_noexcept`
+
+[source,cpp]
+----
+namespace strf {
+
+template <typename CharT>
+class basic_outbuf_noexcept: public basic_outbuf<CharT>
+{
+public:
+
+    virtual void recycle() noexcept = 0;
+
+protected:
+
+    using basic_outbuf<CharT>::basic_outbuf;
+};
+
+// type aliases
+
+using outbuf_noexcept      = basic_outbuf_noexcept<char>;
+using u8outbuf_noexcept    = basic_outbuf_noexcept<char8_t>;
+using u16outbuf_noexcept   = basic_outbuf_noexcept<char16_t>;
+using u32outbuf_noexcept   = basic_outbuf_noexcept<char32_t>;
+using woutbuf_noexcept     = basic_outbuf_noexcept<wchar_t>;
+using bin_outbuf_noexcept  = basic_outbuf_noexcept<std::byte>;
+
+} // namespace strf
+----
+
+[[basic_cstr_writer]]
+== Class template `basic_cstr_writer`
+
+[source,cpp]
+----
+namespace strf {
+
+template <typename CharT>
+class basic_cstr_writer final: public basic_outbuf_noexcept<CharT>
+{
+public:
+
+    basic_cstr_writer(CharT* dest, CharT* dest_end);
+    basic_cstr_writer(CharT* dest, std::size_t len);
+    template <std::size_t N>
+    basic_cstr_writer(CharT (&dest)[N]);
+
+    void recycle() noexcept override;
+    struct result
+    {
+        CharT* ptr;
+        bool truncated;
+    };
+    result finish();
+};
+
+} // namespace strf
+----
+
+=== Public member function
+
+====
+[source,cpp]
+----
+basic_cstr_writer(CharT* dest, CharT* dest_end);
+----
+[horizontal]
+Precondition:: `dest < dest_end`
+Postconditions::
+- `good() == true`
+- `pointer() == dest`
+- `end() == dest_end - 1`
+====
+====
+[source,cpp]
+----
+basic_cstr_writer(CharT* dest, std::size_t dest_size);
+----
+[horizontal]
+Precondition:: `dest_size != 0`
+Postconditions::
+- `good() == true`
+- `pointer() == dest`
+- `end() == dest + dest_size - 1`
+====
+====
+[source,cpp]
+----
+template <std::size_t N>
+basic_cstr_writer(CharT (&dest)[N]);
+----
+[horizontal]
+Postconditions::
+- `good() == true`
+- `pointer() == dest`
+- `end() == dest + N - 1`
+====
+====
+[source,cpp]
+----
+void recycle() noexcept;
+----
+[horizontal]
+Postconditions::
+- `good() == false`
+- `pointer() == {garbage_buf}<CharT>()`
+- `end() == {garbage_buf_end}<CharT>()`
+====
+====
+[source,cpp]
+----
+result finish();
+----
+[horizontal]
+Effects::
+- Assign to `'\0'` the position after the last written character in memory area used to initialize this object and set this object into "bad" state.
+Return value::
+- `result::truncated` is `true` if `recycle` or `finish` has ever been called in this object.
+- `result::ptr` points to the termination character `'\0'`.
+Postconditions::
+- `good() == false`
+- `pointer() == {garbage_buf}<CharT>()`
+- `end() == {garbage_buf_end}<CharT>()`
+====
+
+[[garbage_buf]]
+== Garbage buffer
+These function templates return the begin and the end of a memory area that is never supposed to be read. It can be used when implementing a class that derives from `basic_outbuf` to set the buffer when the state is "bad".
+
+[source,cpp]
+----
+template <typename CharT>
+CharT* garbage_buf();
+----
+
+[source,cpp]
+----
+template <typename CharT>
+CharT* garbage_buf_end();
+----
+
+

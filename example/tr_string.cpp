@@ -2,7 +2,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf.hpp>
+#include <strf/to_string.hpp>
 
 #if ! defined(__cpp_char8_t)
 
@@ -60,27 +60,6 @@ int main()
        assert(str == "Roses are red. Violets are .");
        //]
    }
-
-#if defined(__cpp_exceptions)
-
-   {
-       //[ trstr_stop
-       bool exception_thrown = false;
-       try {
-           auto str = strf::to_string
-               .with(strf::tr_invalid_arg::stop)
-               .tr("{} are {}. {} are {}.", "Roses", "red", "Violets");
-       }
-       catch(strf::tr_string_syntax_error&) {
-            exception_thrown = true;
-       }
-
-       assert(exception_thrown);
-       //]
-       (void) exception_thrown;
-   }
-
-#endif // defined(__cpp_exceptions)
 
    return 0;
 };

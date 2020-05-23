@@ -23,12 +23,12 @@ foreach(x
     extend_input_ipv4
     extend_input_base64
     extend_input_template
-    ) 
+    )
 
-  Add_executable(${x} ${x}.cpp)
-  target_link_libraries(${x} strf)
-  add_test(NAME run_${x} COMMAND ${x})  
-
+  Add_executable(example-${x} ${x}.cpp)
+  target_link_libraries(example-${x} strf)
+  add_test(NAME run_example-${x} COMMAND ${x})
+  set_target_properties(example-${x} PROPERTIES OUTPUT_NAME ${x})
 endforeach(x)
 
 
@@ -36,14 +36,15 @@ find_package(Qt5Core QUIET)
 
 if (Qt5Core_FOUND)
 
-  add_executable(toQString toQString.cpp)
-  target_link_libraries(toQString Qt5::Core strf)
-  add_test(NAME run_toQString COMMAND toQString)
+  add_executable(example-toQString toQString.cpp)
+  target_link_libraries(example-toQString Qt5::Core strf)
+  add_test(NAME run_example-toQString COMMAND toQString)
 
-  add_executable(appendQString appendQString.cpp)
-  target_link_libraries(appendQString Qt5::Core strf)
-  add_test(NAME run_appendQString COMMAND appendQString)
+  add_executable(example-appendQString appendQString.cpp)
+  target_link_libraries(example-appendQString Qt5::Core strf)
+  add_test(NAME run_example-appendQString COMMAND appendQString)
 
+  set_target_properties(example-toQString     PROPERTIES OUTPUT_NAME toQString)
+  set_target_properties(example-appendQString PROPERTIES OUTPUT_NAME appendQString)
 
-  
 endif(Qt5Core_FOUND)
