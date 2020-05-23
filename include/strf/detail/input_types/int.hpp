@@ -181,17 +181,17 @@ using int_with_format = strf::value_with_format
 namespace detail {
 
 template <typename T>
-constexpr bool negative_impl_(const T& x, std::integral_constant<bool, true>) noexcept
+STRF_FD constexpr bool negative_impl_(const T& x, std::integral_constant<bool, true>) noexcept
 {
     return x < 0;
 }
 template <typename T>
-constexpr bool negative_impl_(const T&, std::integral_constant<bool, false>) noexcept
+STRF_FD constexpr bool negative_impl_(const T&, std::integral_constant<bool, false>) noexcept
 {
     return false;
 }
 template <typename T>
-constexpr bool negative(const T& x) noexcept
+STRF_FD constexpr bool negative(const T& x) noexcept
 {
     return strf::detail::negative_impl_(x, std::is_signed<T>());
 }
