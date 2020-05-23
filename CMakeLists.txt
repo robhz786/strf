@@ -129,6 +129,13 @@ if (STRF_BUILD_EXAMPLES)
 endif (STRF_BUILD_EXAMPLES)
 
 if (STRF_BUILD_BENCHMARKS)
+  if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/externals/fmt/CMakeLists.txt )
+    message(
+      FATAL_ERROR
+      "Building benchmarks requires externals libraries.\n"
+      "Run 'git submodule update --init'" )
+  endif ()
+
   add_subdirectory(performance performance)
   add_subdirectory(externals/fmt fmt)
 endif (STRF_BUILD_BENCHMARKS)
