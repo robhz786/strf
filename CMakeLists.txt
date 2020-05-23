@@ -32,7 +32,7 @@ option(
 
 project (
   strf 
-  VERSION 0.10.4
+  VERSION 0.10.5
   LANGUAGES CXX)
 
 if (STRF_CUDA_SUPPORT)
@@ -147,9 +147,19 @@ if (STRF_BUILD_EXAMPLES)
 endif (STRF_BUILD_EXAMPLES)
 
 if (STRF_BUILD_BENCHMARKS)
+  if ( NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/externals/fmt/CMakeLists.txt OR
+       NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/externals/google-benchmark/CMakeLists.txt )
+
+     message(
+      SEND_ERROR
+      "Building benchmarks requires externals libraries.\n"
+      "Run 'git submodule update --init'" )
+  endif ()
+
   option(BENCHMARK_ENABLE_TESTING OFF)
   option(BENCHMARK_ENABLE_GTEST_TESTS OFF)
   add_subdirectory(externals/google-benchmark google-benchmark)
   add_subdirectory(externals/fmt fmt)
+
   add_subdirectory(benchmarks benchmarks)
 endif (STRF_BUILD_BENCHMARKS)

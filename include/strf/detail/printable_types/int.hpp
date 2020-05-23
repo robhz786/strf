@@ -215,6 +215,22 @@ template <std::size_t> class punct_int_printer;
 template <std::size_t, int> class partial_fmt_int_printer;
 template <std::size_t, int> class full_fmt_int_printer;
 
+template <typename T>
+constexpr STRF_HD bool negative_impl_(const T& x, std::integral_constant<bool, true>) noexcept
+{
+    return x < 0;
+}
+template <typename T>
+constexpr STRF_HD bool negative_impl_(const T&, std::integral_constant<bool, false>) noexcept
+{
+    return false;
+}
+template <typename T>
+constexpr STRF_HD bool negative(const T& x) noexcept
+{
+    return strf::detail::negative_impl_(x, std::is_signed<T>());
+}
+
 template <typename FPack, typename IntT, unsigned Base>
 class has_intpunct_impl
 {
@@ -447,7 +463,7 @@ private:
     template <typename Preview, typename IntT>
     STRF_HD void init2_(Preview& preview, IntT value)
     {
-        negative_ = value < 0;
+        negative_ = strf::detail::negative(value);
         uvalue_ = strf::detail::unsigned_abs(value);
         digcount_ = strf::detail::count_digits<10>(uvalue_);
         auto size_ = digcount_ + negative_;
@@ -506,7 +522,7 @@ public:
                 }
             }
         }
-        negative_ = i.value < 0;
+        negative_ = strf::detail::negative(i.value);
         i.preview.add_size(digcount_ + negative_ + sepsize_ * sepcount_);
         i.preview.subtract_width
             ( static_cast<std::int16_t>(sepcount_ + digcount_ + negative_) );
@@ -646,7 +662,7 @@ STRF_HD void partial_fmt_int_printer<CharSize, Base>::init_
 {
     using unsigned_type = std::make_unsigned_t<IntT>;
     STRF_IF_CONSTEXPR (Base == 10) {
-        negative_ = value < 0;
+        negative_ = strf::detail::negative(value);
         prefixsize_ = negative_ || fmt.showpos;
         uvalue_ = strf::detail::unsigned_abs(value);
     } else {
