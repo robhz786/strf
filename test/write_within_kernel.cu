@@ -4,6 +4,7 @@
 #include <strf.hpp>
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 
 namespace kernels {
 
@@ -161,20 +162,20 @@ void test_various_types_with_cstr_writer()
 	expected
 		<< "Printing a bool: " << bool(true) << '\n'
 		<< "Printing a char: " << char('a') << '\n'
-		<< "Printing a unsigned char: " << static_cast<unsigned char>('a') << '\n'
+		<< "Printing a unsigned char: " << static_cast<unsigned>('a') << '\n'
 		<< "Printing a short: " << short(-1234) << '\n'
 		<< "Printing a unsigned short: " << static_cast<unsigned short>(1234) << '\n'
 		<< "Printing a int: " << int(-12345678) << '\n'
 		<< "Printing a signed int: " << static_cast<signed int>(12345678) << '\n'
 		<< "Printing a unsigned int: " << static_cast<unsigned int>(12345678) << '\n'
-		<< "Printing a long int: " << static_cast<long int>(-12345678900) << '\n'
+    << "Printing a long int: " << static_cast<long int>(-12345678900) << '\n'
 		<< "Printing a signed long int: " << static_cast<signed long int>(-12345678900) << '\n'
 		<< "Printing a unsigned long int: " << static_cast<unsigned long int>(12345678900) << '\n'
 		<< "Printing a long long int: " << static_cast<long long int>(-12345678900) << '\n'
 		<< "Printing a signed long long int: " << static_cast<signed long long int>(-12345678900) << '\n'
 		<< "Printing a unsigned long long int: " << static_cast<unsigned long long int>(12345678900) << '\n'
-		<< "Printing a float: " << float(1.234567) << '\n'
-		<< "Printing a double: " << double(1.2345678901234567), '\n';
+		<< "Printing a float: " << std::setprecision(7) << float(1.234567) << '\n'
+		<< "Printing a double: " << std::setprecision(17) << double(1.2345678901234567) << '\n';
 	TEST_EQ(strncmp(host_side_buffer, expected.str().c_str(), buffer_size), 0);
 	std::cout << std::endl;
 	std::cout << "Result: \"" << host_side_buffer << "\"\n";
