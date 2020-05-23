@@ -12,10 +12,8 @@ master   | [![Build Status](https://travis-ci.org/robhz786/strf.svg?branch=maste
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/cpp-strf/strf)
 
 
-Strf is a header-only C++14 formatting library that
+Strf is a C++ formatting library that
 
-* is highly extensible.
-* is highly customizable
 * is fast
 * is locale independent. ( Not aways an advantange, but usually ).
 * supports encoding conversion.

@@ -24,7 +24,7 @@ option(
 
 project (
   strf 
-  VERSION 0.10.4
+  VERSION 0.10.5
   LANGUAGES CXX)
 
 if (STRF_CUDA_SUPPORT)
