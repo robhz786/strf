@@ -23,7 +23,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :SizedOutbufCreator: <<strf_hpp#SizedOutbufCreator,SizedOutbufCreator>>
 
 :basic_string_maker: <<basic_string_maker,basic_string_maker>>
-:basic_pre_sized_string_maker: <<basic_pre_sized_string_maker,basic_pre_sized_string_maker>>
+:basic_sized_string_maker: <<basic_sized_string_maker,basic_sized_string_maker>>
 :basic_string_appender: <<basic_string_appender,basic_string_appender>>
 
 NOTE: This header files includes `<strf.hpp>`
@@ -81,8 +81,8 @@ Effects:: Calls `recycle()` and `set_good(false)` and return the internal string
 Postconditions:: `good() == false`
 ====
 
-[[basic_pre_sized_string_maker]]
-== Class template `basic_pre_sized_string_maker`
+[[basic_sized_string_maker]]
+== Class template `basic_sized_string_maker`
 === Synopsis
 [source,cpp]
 ----
@@ -91,28 +91,28 @@ namespace strf {
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
          , typename Allocator = std::allocator<CharT> >
-class basic_pre_sized_string_maker final : public {basic_outbuf}<CharT> {
+class basic_sized_string_maker final : public {basic_outbuf}<CharT> {
 public:
-    explicit basic_pre_sized_string_maker(std::size_t capacity);
+    explicit basic_sized_string_maker(std::size_t capacity);
 
-    basic_pre_sized_string_maker(const basic_pre_sized_string_maker&) = delete;
-    basic_pre_sized_string_maker(basic_pre_sized_string_maker&&) = delete;
+    basic_sized_string_maker(const basic_sized_string_maker&) = delete;
+    basic_sized_string_maker(basic_sized_string_maker&&) = delete;
 
     void recycle() override;
     std::basic_string<CharT, Traits, Allocator> finish();
 };
 
-using pre_sized_string_maker    = basic_pre_sized_string_maker<char>;
-using pre_sized_u16string_maker = basic_pre_sized_string_maker<char16_t>;
-using pre_sized_u32string_maker = basic_pre_sized_string_maker<char32_t>;
-using pre_sized_wstring_maker   = basic_pre_sized_string_maker<wchar_t>;
+using pre_sized_string_maker    = basic_sized_string_maker<char>;
+using pre_sized_u16string_maker = basic_sized_string_maker<char16_t>;
+using pre_sized_u32string_maker = basic_sized_string_maker<char32_t>;
+using pre_sized_wstring_maker   = basic_sized_string_maker<wchar_t>;
 
 } // namespace strf
 ----
 ====
 [source,cpp]
 ----
-explicit basic_pre_sized_string_maker(std::size_t capacity);
+explicit basic_sized_string_maker(std::size_t capacity);
 ----
 Effect:: Causes the capacity of the internal string to be equal to or greater than `capacity`.
 ====
@@ -237,4 +237,4 @@ Type:: `{destination_no_reserve}<OBC>`, where `OBC` is a implementation-defined 
        that satisfies  __{OutbufCreator}__ and __{SizedOutbufCreator}__.
 Value:: A destination object whose internal __{OutbufCreator}__ object `obc` is such that:
 - `obc.create()` returns `{basic_string_maker}<CharT, Traits, Allocator>{}`.
-- `obc.create(capacity)` and returns `{basic_pre_sized_string_maker}<CharT, Traits, Allocator>{capacity}`.
+- `obc.create(capacity)` and returns `{basic_sized_string_maker}<CharT, Traits, Allocator>{capacity}`.

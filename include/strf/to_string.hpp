@@ -130,12 +130,12 @@ private:
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
          , typename Allocator = std::allocator<CharT> >
-class basic_pre_sized_string_maker final
+class basic_sized_string_maker final
     : public strf::basic_outbuf<CharT>
 {
 public:
 
-    explicit basic_pre_sized_string_maker(std::size_t count)
+    explicit basic_sized_string_maker(std::size_t count)
         : strf::basic_outbuf<CharT>(nullptr, nullptr)
         , str_(count, (CharT)0)
     {
@@ -145,12 +145,12 @@ public:
 
 #if defined(STRF_NO_CXX17_COPY_ELISION)
 
-    basic_pre_sized_string_maker(basic_pre_sized_string_maker&&);
+    basic_sized_string_maker(basic_sized_string_maker&&);
 
 #else // defined(STRF_NO_CXX17_COPY_ELISION)
 
-    basic_pre_sized_string_maker(const basic_pre_sized_string_maker&) = delete;
-    basic_pre_sized_string_maker(basic_pre_sized_string_maker&&) = delete;
+    basic_sized_string_maker(const basic_sized_string_maker&) = delete;
+    basic_sized_string_maker(basic_sized_string_maker&&) = delete;
 
 #endif // defined(STRF_NO_CXX17_COPY_ELISION)
 
@@ -185,16 +185,16 @@ using u16string_maker = basic_string_maker<char16_t>;
 using u32string_maker = basic_string_maker<char32_t>;
 using wstring_maker = basic_string_maker<wchar_t>;
 
-using pre_sized_string_maker = basic_pre_sized_string_maker<char>;
-using pre_sized_u16string_maker = basic_pre_sized_string_maker<char16_t>;
-using pre_sized_u32string_maker = basic_pre_sized_string_maker<char32_t>;
-using pre_sized_wstring_maker = basic_pre_sized_string_maker<wchar_t>;
+using pre_sized_string_maker = basic_sized_string_maker<char>;
+using pre_sized_u16string_maker = basic_sized_string_maker<char16_t>;
+using pre_sized_u32string_maker = basic_sized_string_maker<char32_t>;
+using pre_sized_wstring_maker = basic_sized_string_maker<wchar_t>;
 
 #if defined(__cpp_char8_t)
 
 using u8string_appender = basic_string_appender<char8_t>;
 using u8string_maker = basic_string_maker<char8_t>;
-using pre_sized_u8string_maker = basic_pre_sized_string_maker<char8_t>;
+using pre_sized_u8string_maker = basic_sized_string_maker<char8_t>;
 
 #endif
 
@@ -247,10 +247,10 @@ public:
     {
         return strf::basic_string_maker<CharT, Traits, Allocator>{};
     }
-    strf::basic_pre_sized_string_maker<CharT, Traits, Allocator>
+    strf::basic_sized_string_maker<CharT, Traits, Allocator>
     create(std::size_t size) const
     {
-        return strf::basic_pre_sized_string_maker<CharT, Traits, Allocator>{size};
+        return strf::basic_sized_string_maker<CharT, Traits, Allocator>{size};
     }
 };
 
