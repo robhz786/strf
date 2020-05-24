@@ -498,6 +498,7 @@ public:
     static_assert( sizeof(CharT) == strf::static_underlying_char_encoding<CSID>::char_size
                  , "Incompatible character size" );
     using category = strf::char_encoding_c<CharT>;
+    using char_type = CharT;
 };
 
 } // namespace strf
@@ -884,6 +885,7 @@ class dynamic_char_encoding: public strf::dynamic_underlying_char_encoding<sizeo
 public:
 
     using category = strf::char_encoding_c<CharT>;
+    using char_type = CharT;
 
     explicit dynamic_char_encoding(const strf::dynamic_underlying_char_encoding<sizeof(CharT)>& u)
         : strf::dynamic_underlying_char_encoding<sizeof(CharT)>(u)

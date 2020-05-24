@@ -1417,14 +1417,18 @@ struct char_encoding_c {
 For a type to be a facet of `char_encoding_c<CharT>` it has to
 to be _CharEncodingFacet_ of `CharT`
 
-==== Type requirement _CharEncodingFacet_ [[CharEncodingFacet]]
+=== Type requirement _CharEncodingFacet_ [[CharEncodingFacet]]
+
+Given:
 
 - `CharT`, a character type
 - `X`, _CharEncodingFacet_ type of `CharT`
 
 The following must hold:
 
+- `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[__CopyConstructible__].
 - `X` is a __{UnderlyingCharEncoding}__ of `sizeof(CharT)`
+- `X::char_type` is a type alias to `CharT`
 - `X::category` is a type alias to `char_encoding_c<CharT>`;
 
 NOTE: There are two class templates that satisfy _CharEncodingFacet_: `{static_char_encoding}` and `{dynamic_char_encoding}`.
@@ -1441,6 +1445,7 @@ class static_char_encoding: public {static_underlying_char_encoding}<CSID> {
 public:
     static_assert(sizeof(CharT) == {static_underlying_char_encoding}<CSID>::<<UnderlyingCharEncoding_char_size,char_size>>);
     using category = {char_encoding_c}<CharT>;
+    using char_type = CharT;
 };
 
 } // namespace strf
@@ -1495,6 +1500,7 @@ template <typename CharT>
 class dynamic_char_encoding: public {dynamic_underlying_char_encoding}<sizeof(CharT)> {
 public:
     using category = {char_encoding_c}<CharT>;
+    using char_type = CharT;
 
     dynamic_char_encoding(const dynamic_char_encoding&) = default;
 
