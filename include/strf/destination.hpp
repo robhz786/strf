@@ -214,16 +214,13 @@ private:
         using catenc = strf::char_encoding_c<CharT>;
         auto enc = strf::get_facet<catenc, void>(self.fpack_);
 
-        using caterr = strf::tr_invalid_arg_c;
-        auto arg_err = strf::get_facet<caterr, void>(self.fpack_);
-
-        using uchar_type = strf::underlying_char_type<sizeof(CharT)>;
-        auto ustr = reinterpret_cast<const uchar_type*>(str);
-        auto ustr_end = reinterpret_cast<const uchar_type*>(str_end);
+        using caterr = strf::tr_error_handler_c;
+        decltype(auto) err_hdl = strf::get_facet<caterr, void>(self.fpack_);
+        using err_hdl_type = std::remove_cv_t<std::remove_reference_t<decltype(err_hdl)>>;
 
         PreviewType preview;
-        strf::detail::tr_string_printer<sizeof(CharT)> tr_printer
-            (preview, preview_arr, args, ustr, ustr_end, enc, arg_err);
+        strf::detail::tr_string_printer<decltype(enc), err_hdl_type>
+            tr_printer(preview, preview_arr, args, str, str_end, enc, err_hdl);
 
         return self.write_(preview, tr_printer);
     }

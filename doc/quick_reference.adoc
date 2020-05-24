@@ -236,6 +236,92 @@ The `reserve` and `reserve_calc` are only supported in some destination types, a
 * `reserve_calc()` : The necessary amount of characters is calculated and reserved in the destination object.
 * `no_reserve()` : No size is reserved in the destination object.
 
+[[facets]]
+=== Facets
+
+These are not the same as the facets handled by `std::locale`,
+but they are analogous.
+Keep in mind that this is a locale-independent library.
+So things are always printed as in the C-locale, unless
+you explicitly specify otherwise, which you do by passing
+__facet objects__ to the `<<usage_syntax,with>>` function.
+
+Every __facet__ belongs to a __facet category__.
+Each facet category corresponds to a concept, __i.e.__ a set of requirements that a class must satisfy. A class that satisfies such requirements is a facet of such facet category. Moreover, for each facet category there is class whose name, by convention, has a "_c" suffix and is the name of the category.
+
+For example, `<<static_char_encodings,iso_8859_1>><char>` and
+`<<static_char_encodings,utf8>><char>` are both facets of the category
+`char_encoding_c<char>`.
+
+
+[%header,cols="2,1,4"]
+|===
+|Category |Constrainable |What it controls
+
+|`<<width_calculator,width_calculator_c>>` |Yes |How the width is calculated
+|`<<numpunct, numpunct_c>><10>`      |Yes |Numeric punctuation for decimal base
+|`<<numpunct, numpunct_c>><16>`      |Yes |Numeric punctuation for hexadecimal base
+|`<<numpunct, numpunct_c>><8>`       |Yes |Numeric punctuation for octal base
+|`<<numpunct, numpunct_c>><2>`       |Yes |Numeric punctuation for binary base
+
+|`<<lettercase,lettercase_c>>`        |Yes |Letter case in numeric types
+
+|`<<character_encoding,char_encoding_c>><CharT>`   |No  |The character encoding correponding to character type `CharT`
+|`<<invalid_seq_notifier,invalid_seq_notifier_c>>`    |Yes |Encoding error handling
+|`<<surrogate_policy,surrogate_policy_c>>` |Yes |Wheter surrogates are treated as errors
+|`<<tr_string_error,tr_error_handling_c>>`   |No  |Tr-string parsing error handling
+|===
+
+[[constrained_facets]]
+==== Constrained facets
+
+With the `constrain` function template you can create __constrained facets__, which are facets that only apply to certain printable types. Its template parameter is a template type that contains a `value` member constexpr convertible to bool that tells whether a given input type is under the influence of the given facet:
+
+[source,cpp]
+----
+auto facet_obj = strf::constrain<std::is_signed>(strf::numpunct<10>{3});
+auto s = strf::to_string.with(facet_obj)(100000u, "  ", 100000);
+assert(s == "100000  100,000");
+----
+
+The library provides some type traits to parameterize `constrain`:
+
+[cols="1,4"]
+|===
+|`is_int_number`
+| matches `short`, `int`, `long`, `long long` and the corresponding unsigned types
+
+|`is_char`
+| matches `char`, `char8_t`, `wchar_t`, `char16_t`, and `char32_t`
+
+|`is_string`
+| matches strings.
+|===
+
+[[facet_overriding]]
+==== Overriding facets
+
+If there are two or more facets object passed to the `with` function of the same category, and that apply to the same input type, then the last one wins:
+
+[source,cpp]
+----
+auto punct_dec_1 = strf::numpunct<10>{1};
+auto punct_dec_2 = strf::numpunct<10>{2}.thousands_sep('.');
+auto punct_dec_3 = strf::numpunct<10>{3}.thousands_sep('^');;
+
+// Below, punct_dec_3 overrides punct_dec_2, but only for signed types.
+// punct_dec_2 overrides punct_dec_1 for all printable types,
+// hence the presence of punt_dec_1 bellow has no effect.
+
+auto s = strf::to_string
+    .with( punct_dec_1
+         , punct_dec_2
+         , strf::constrain<std::is_signed>(punct_dec_3) )
+    ( 100000, "  ", 100000u ) ;
+
+assert(s == "100^000  10.00.00");
+----
+
 
 [[tr_string]]
 === Tr-string
@@ -292,105 +378,17 @@ assert(str == "Paul likes sandwich.");
 There is no way to escape the `'}'` character. There is no need to, since the `'}'` has special meaning only if it corresponds to a previous `'{'
 [source,cpp]
 ----
-auto str = strf::to_string.tr("} {{ } {}", "aaa");
-assert(str == "} { } aaa");
+auto str = strf::to_string.tr("} {{x} {{{} {{{}}", "aaa", "bbb");
+assert(str == "} {x} {aaa {bbb}");
 ----
 
 [[tr_string_error]]
 ==== Tr-string error handling
-The enumeration `tr_invalid_arg` is a <<facets,facet>> that specifies what happens when the tr-string references a non existing argument.
-[source,cpp]
-----
-enum class tr_invalid_arg{ replace, ignore };
-----
-* `tr_invalid_arg::replace` :  Replaces the invalid reference by the https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;]. This is the default.
-* `tr_invalid_arg::ingore` : Ignores it. Nothing is printed.
 
-[[facets]]
-=== Facets
+The tr-string syntax is designed in such a way that there is only one possible kind of syntatic error, which is when the argument associated with a `"{"` does not exists. And when this happens, the library does two things:
 
-These are not the same as the facets handled by `std::locale`,
-but they are analogous.
-Keep in mind that this is a locale-independent library.
-So things are always printed as in the C-locale, unless
-you explicitly specify otherwise, which you do by passing
-__facet objects__ to the `<<usage_syntax,with>>` function.
-
-Every __facet__ belongs to a __facet category__.
-Each facet category corresponds to a concept, __i.e.__ a set of requirements that a class must satisfy. A class that satisfies such requirements is a facet of such facet category. Moreover, for each facet category there is class whose name, by convention, has a "_c" suffix and is the name of the category.
-
-For example, `<<static_char_encodings,iso_8859_1>><char>` and
-`<<static_char_encodings,utf8>><char>` are both facets of the category
-`char_encoding_c<char>`.
-
-
-[%header,cols="2,1,4"]
-|===
-|Category |Constrainable |What it controls
-
-|`<<width_calculator,width_calculator_c>>` |Yes |How the width is calculated
-|`<<numpunct, numpunct_c>><10>`      |Yes |Numeric punctuation for decimal base
-|`<<numpunct, numpunct_c>><16>`      |Yes |Numeric punctuation for hexadecimal base
-|`<<numpunct, numpunct_c>><8>`       |Yes |Numeric punctuation for octal base
-|`<<numpunct, numpunct_c>><2>`       |Yes |Numeric punctuation for binary base
-
-|`<<lettercase,lettercase_c>>`        |Yes |Letter case in numeric types
-
-|`<<character_encoding,char_encoding_c>><CharT>`   |No  |The character encoding correponding to character type `CharT`
-|`<<invalid_seq_notifier,invalid_seq_notifier_c>>`    |Yes |Encoding error handling
-|`<<surrogate_policy,surrogate_policy_c>>` |Yes |Wheter surrogates are treated as errors
-|`<<tr_string_error,tr_string_error_c>>`   |No  |Tr-string parsing error handling
-|===
-
-[[constrained_facets]]
-==== Constrained facets
-
-With the `constrain` function template you can create __constrained facets__, which are facets that only apply to certain printable types. Its template parameter is a template type that contains a `value` member constexpr convertible to bool that tells whether a given input type is under the influence of the given facet:
-
-[source,cpp]
-----
-auto facet_obj = strf::constrain<std::is_signed>(strf::numpunct<10>{3});
-auto s = strf::to_string.with(facet_obj)(100000u, "  ", 100000);
-assert(s == "100000  100,000");
-----
-
-The library provides some type traits to parameterize `constrain`:
-
-[cols="1,4"]
-|===
-|`is_int_number`
-| matches `short`, `int`, `long`, `long long` and the corresponding unsigned types
-
-|`is_char`
-| matches `char`, `char8_t`, `wchar_t`, `char16_t`, and `char32_t`
-
-|`is_string`
-| matches strings.
-|===
-
-[[facet_overriding]]
-==== Overriding facets
-
-If there are two or more facets object passed to the `with` function of the same category, and that apply to the same input type, then the last one wins:
-
-[source,cpp]
-----
-auto punct_dec_1 = strf::numpunct<10>{1};
-auto punct_dec_2 = strf::numpunct<10>{2}.thousands_sep('.');
-auto punct_dec_3 = strf::numpunct<10>{3}.thousands_sep('^');;
-
-// Below, punct_dec_3 overrides punct_dec_2, but only for signed types.
-// punct_dec_2 overrides punct_dec_1 for all printable types,
-// hence the presence of punt_dec_1 bellow has no effect.
-
-auto s = strf::to_string
-    .with( punct_dec_1
-         , punct_dec_2
-         , strf::constrain<std::is_signed>(punct_dec_3) )
-    ( 100000, "  ", 100000u ) ;
-
-assert(s == "100^000  10.00.00");
-----
+- It prints a https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character `"\uFFFD"` (&#65533;) ] ( or `"?"` when the encoding can't represent it ) where the missing argument would be printed.
+- It calls the `handle` function on the facet object correspoding to the `<<strf_hpp#tr_error_handling_c,tr_error_handling_c>>` category, which, by default, does nothing. But this is a customization point. You can implement your own facet that instead throws an exception, or log the occurrence, or does something else, as you wish.
 
 [[numpunct]]
 == Numeric punctuation
@@ -892,9 +890,9 @@ Format functions::
 `bin()`::: Use binary base.
 `p(unsigned precision)`::: Ensures that at least `precision` digits
 are printed by adding extra zero leading digits if necessary.
-`operator+()`::: When in decimal base, print the positive sign
+`operator+()`::: When in decimal base, prints the positive sign
 `"+"` when value is non negative. No effect for other bases.
-`operator*()`::: Print the base indication
+`operator*()`::: Prints the base indication
 ( `"0x"` for hexadecimal, `"0"` for octal and `"0b"` for binary ).
 No effect in decimal base.
 `operator~()`::: Equivalent to `operator*()`. Deprecated.
@@ -912,13 +910,13 @@ Types::
 Format functions::
 ( In addition to the <<alignment_format_functions, alignment functions>> )
 [horizontal]
-`operator+()`::: When in decimal base, print the positive sign
-`"+"` when value is non negative. No effect for other bases.
+`operator+()`::: When in decimal base, prints the positive sign
+`"+"` if the value is non negative. No effect for other bases.
 `operator*()`:::  Prints the decimal point even when there
 are no fractional digits.
 `operator~()`::: Equivalent to `operator*()`. Deprecated.
-`sci()`::: Print in scientific notation, like this: `"1.2345e+02"`.
-`fixed()`::: Print in decimal notation, like this: `"123.45"`.
+`sci()`::: Prints in scientific notation, like this: `"1.2345e+02"`.
+`fixed()`::: Prints in decimal notation, like this: `"123.45"`.
 `gen()`::: This is the default notation.
 When precision is unspecified ( or equal to `(unsigned)-1` )
 prints in the scientfic notation if, and only if, it is shorter
@@ -926,11 +924,11 @@ than the fixed notation. Otherwise ( when precision is specified ),
 does like in `std::printf`:
 uses the scientfic notation if the exponent is less than -4 or greater
 than or equal to the precision. Trailing fractional zeros are not printed.
-`hex()`::: Print in hexadecimal notation, like this `"-0x1.abcd123e+5"`
+`hex()`::: Prints in hexadecimal notation, like this `"-0x1.abcd123e+5"`
 `p(unsigned precision)`::: If `precision == (unsigned)-1`, which is
 the default, then prints the minimal amount of digits so that value
-can fully recovered by a parser. Otherwise, if notation is __general__,
-`precision` is the number of significant digits. Otherwise it is
+can be fully recovered by a parser. Otherwise, if notation is __general__,
+`precision` is the number of significant digits. Otherwise, it is
 the number of fractional digits. `precision == 0` has the same effect as
 `precision == 1`.
 

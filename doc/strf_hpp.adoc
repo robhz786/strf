@@ -38,6 +38,7 @@ NOTE: This document is still a work in progress.
 
 include::ref_facets_pack.adoc[]
 include::ref_destination.adoc[]
+include::ref_tr-string.adoc[]
 
 == Printable types
 

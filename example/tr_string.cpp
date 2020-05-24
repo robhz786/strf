@@ -16,8 +16,8 @@ int main()
 {
     {
         //[ trstr_escape_sample
-        auto str = strf::to_string.tr("} {{ } {}", "aaa");
-        assert(str == "} { } aaa");
+        auto str = strf::to_string.tr("} {{x} {{{} {{{}}", "aaa", "bbb");
+        assert(str == "} {x} {aaa {bbb}");
         //]
     }
 
@@ -29,7 +29,6 @@ int main()
         assert(str == "You can learn more about python at www.python.org");
         //]
     }
-
 
     {
         //[ trstr_positional_arg
@@ -51,14 +50,6 @@ int main()
             .tr(u8"{} are {}. {} are {}.", u8"Roses", u8"red", u8"Violets");
         assert(str == u8"Roses are red. Violets are \uFFFD.");
         //]
-   }
-   {
-       //[ trstr_omit
-       auto str = strf::to_string
-           .with(strf::tr_invalid_arg::ignore)
-           .tr("{} are {}. {} are {}.", "Roses", "red", "Violets");
-       assert(str == "Roses are red. Violets are .");
-       //]
    }
 
    return 0;

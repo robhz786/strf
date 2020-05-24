@@ -1427,12 +1427,11 @@ Given:
 The following must hold:
 
 - `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[__CopyConstructible__].
-- `X` is a __{UnderlyingCharEncoding}__ of `sizeof(CharT)`
+- `X` is a __{UnderlyingCharEncoding}__ type for `sizeof(CharT)`
 - `X::char_type` is a type alias to `CharT`
 - `X::category` is a type alias to `char_encoding_c<CharT>`;
 
 NOTE: There are two class templates that satisfy _CharEncodingFacet_: `{static_char_encoding}` and `{dynamic_char_encoding}`.
-
 
 === Class template `static_char_encoding` [[static_char_encoding]]
 
