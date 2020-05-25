@@ -351,56 +351,56 @@ int main()
         , [](auto src_enc, auto dest_enc){ test_invalid_input(src_enc, dest_enc); } );
 
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::char_encoding_id::utf8
-                                                       , strf::char_encoding_id::utf8 >
+                   < strf::static_underlying_transcoder< strf::eid_utf8
+                                                       , strf::eid_utf8 >
                    , decltype(strf::find_transcoder( strf::utf<char>()
                                                    , strf::utf<char>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::char_encoding_id::utf8
-                                                       , strf::char_encoding_id::utf16 >
+                   < strf::static_underlying_transcoder< strf::eid_utf8
+                                                       , strf::eid_utf16 >
                    , decltype(strf::find_transcoder( strf::utf<char>()
                                                   , strf::utf<char16_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::char_encoding_id::utf8
-                                                       , strf::char_encoding_id::utf32 >
+                   < strf::static_underlying_transcoder< strf::eid_utf8
+                                                       , strf::eid_utf32 >
                    , decltype(strf::find_transcoder( strf::utf<char>()
                                                   , strf::utf<char32_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::char_encoding_id::utf16
-                                                       , strf::char_encoding_id::utf8 >
+                   < strf::static_underlying_transcoder< strf::eid_utf16
+                                                       , strf::eid_utf8 >
                    , decltype(strf::find_transcoder( strf::utf<char16_t>()
                                                   , strf::utf<char>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::char_encoding_id::utf16
-                                                       , strf::char_encoding_id::utf16 >
+                   < strf::static_underlying_transcoder< strf::eid_utf16
+                                                       , strf::eid_utf16 >
                    , decltype(strf::find_transcoder( strf::utf<char16_t>()
                                                   , strf::utf<char16_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::char_encoding_id::utf16
-                                                       , strf::char_encoding_id::utf32 >
+                   < strf::static_underlying_transcoder< strf::eid_utf16
+                                                       , strf::eid_utf32 >
                    , decltype(strf::find_transcoder( strf::utf<char16_t>()
                                                   , strf::utf<char32_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::char_encoding_id::utf32
-                                                       , strf::char_encoding_id::utf8 >
+                   < strf::static_underlying_transcoder< strf::eid_utf32
+                                                       , strf::eid_utf8 >
                    , decltype(strf::find_transcoder( strf::utf<char32_t>()
                                                   , strf::utf<char>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::char_encoding_id::utf32
-                                                       , strf::char_encoding_id::utf16 >
+                   < strf::static_underlying_transcoder< strf::eid_utf32
+                                                       , strf::eid_utf16 >
                    , decltype(strf::find_transcoder( strf::utf<char32_t>()
                                                   , strf::utf<char16_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::char_encoding_id::utf32
-                                                       , strf::char_encoding_id::utf32 >
+                   < strf::static_underlying_transcoder< strf::eid_utf32
+                                                       , strf::eid_utf32 >
                    , decltype(strf::find_transcoder( strf::utf<char32_t>()
                                                   , strf::utf<char32_t>())) >
                   :: value));

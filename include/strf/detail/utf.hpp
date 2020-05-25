@@ -195,7 +195,7 @@ inline STRF_HD bool first_2_of_4_are_valid(std::uint8_t ch0, std::uint8_t ch1)
 } // namespace detail
 
 template <>
-class static_underlying_transcoder<strf::char_encoding_id::utf8, strf::char_encoding_id::utf8>
+class static_underlying_transcoder<strf::eid_utf8, strf::eid_utf8>
 {
 public:
     static STRF_HD void transcode
@@ -222,8 +222,7 @@ public:
 
 //struct utf8_to_utf16
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::utf8, strf::char_encoding_id::utf16 >
+class static_underlying_transcoder<strf::eid_utf8, strf::eid_utf16>
 {
 public:
     static STRF_HD void transcode
@@ -249,8 +248,7 @@ public:
 };
 
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::utf8, strf::char_encoding_id::utf32 >
+class static_underlying_transcoder<strf::eid_utf8, strf::eid_utf32>
 {
 public:
     static STRF_HD void transcode
@@ -277,8 +275,7 @@ public:
 
 //struct utf16_to_utf8
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::utf16, strf::char_encoding_id::utf8 >
+class static_underlying_transcoder<strf::eid_utf16, strf::eid_utf8>
 {
 public:
     static STRF_HD void transcode
@@ -305,8 +302,7 @@ public:
 
 //struct utf16_to_utf16
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::utf16, strf::char_encoding_id::utf16 >
+class static_underlying_transcoder<strf::eid_utf16, strf::eid_utf16>
 {
 public:
     static STRF_HD void transcode
@@ -333,8 +329,7 @@ public:
 
 //struct utf16_to_utf32
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::utf16, strf::char_encoding_id::utf32 >
+class static_underlying_transcoder<strf::eid_utf16, strf::eid_utf32>
 {
 public:
     static STRF_HD void transcode
@@ -361,8 +356,7 @@ public:
 
 //struct utf32_to_utf8
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::utf32, strf::char_encoding_id::utf8 >
+class static_underlying_transcoder<strf::eid_utf32, strf::eid_utf8>
 {
 public:
     static STRF_HD void transcode
@@ -389,8 +383,7 @@ public:
 
 //struct utf32_to_utf16
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::utf32, strf::char_encoding_id::utf16 >
+class static_underlying_transcoder<strf::eid_utf32, strf::eid_utf16>
 {
 public:
     static STRF_HD void transcode
@@ -417,8 +410,7 @@ public:
 
 //struct utf32_to_utf32
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::utf32, strf::char_encoding_id::utf32 >
+class static_underlying_transcoder<strf::eid_utf32, strf::eid_utf32>
 {
 public:
     static STRF_HD void transcode
@@ -447,29 +439,29 @@ public:
 };
 
 using utf8_to_utf8 = strf::static_underlying_transcoder
-    < strf::char_encoding_id::utf8, strf::char_encoding_id::utf8 >;
+    < strf::eid_utf8, strf::eid_utf8 >;
 using utf8_to_utf16 = strf::static_underlying_transcoder
-    < strf::char_encoding_id::utf8, strf::char_encoding_id::utf16 >;
+    < strf::eid_utf8, strf::eid_utf16 >;
 using utf8_to_utf32 = strf::static_underlying_transcoder
-    < strf::char_encoding_id::utf8, strf::char_encoding_id::utf32 >;
+    < strf::eid_utf8, strf::eid_utf32 >;
 
 using utf16_to_utf8 = strf::static_underlying_transcoder
-    < strf::char_encoding_id::utf16, strf::char_encoding_id::utf8 >;
+    < strf::eid_utf16, strf::eid_utf8 >;
 using utf16_to_utf16 = strf::static_underlying_transcoder
-    < strf::char_encoding_id::utf16, strf::char_encoding_id::utf16 >;
+    < strf::eid_utf16, strf::eid_utf16 >;
 using utf16_to_utf32 = strf::static_underlying_transcoder
-    < strf::char_encoding_id::utf16, strf::char_encoding_id::utf32 >;
+    < strf::eid_utf16, strf::eid_utf32 >;
 
 using utf32_to_utf8 = strf::static_underlying_transcoder
-    < strf::char_encoding_id::utf32, strf::char_encoding_id::utf8 >;
+    < strf::eid_utf32, strf::eid_utf8 >;
 using utf32_to_utf16 = strf::static_underlying_transcoder
-    < strf::char_encoding_id::utf32, strf::char_encoding_id::utf16 >;
+    < strf::eid_utf32, strf::eid_utf16 >;
 using utf32_to_utf32 = strf::static_underlying_transcoder
-    < strf::char_encoding_id::utf32, strf::char_encoding_id::utf32 >;
+    < strf::eid_utf32, strf::eid_utf32 >;
 
 
 template <>
-class static_underlying_char_encoding<strf::char_encoding_id::utf8>
+class static_underlying_char_encoding<strf::eid_utf8>
 {
     using char_type_ = std::uint8_t;
 public:
@@ -481,7 +473,7 @@ public:
     };
     static constexpr STRF_HD strf::char_encoding_id id() noexcept
     {
-        return strf::char_encoding_id::utf8;
+        return strf::eid_utf8;
     }
     static constexpr STRF_HD char32_t replacement_char() noexcept
     {
@@ -563,7 +555,7 @@ public:
     static STRF_HD strf::dynamic_underlying_transcoder<2, 1>
     find_transcoder_from_2bytes_encoding(strf::char_encoding_id id) noexcept
     {
-        if (id == strf::char_encoding_id::utf16) {
+        if (id == strf::eid_utf16) {
             strf::dynamic_underlying_transcoder<2, 1>{strf::utf16_to_utf8{}};
         }
         return {};
@@ -578,7 +570,7 @@ public:
     static STRF_HD strf::dynamic_underlying_transcoder<1, 2>
     find_transcoder_to_2bytes_encoding(strf::char_encoding_id id) noexcept
     {
-        if (id == strf::char_encoding_id::utf16) {
+        if (id == strf::eid_utf16) {
             strf::dynamic_underlying_transcoder<1, 2>{strf::utf8_to_utf16{}};
         }
         return {};
@@ -606,7 +598,7 @@ public:
 };
 
 template <>
-class static_underlying_char_encoding<strf::char_encoding_id::utf16>
+class static_underlying_char_encoding<strf::eid_utf16>
 {
     using char_type_ = char16_t;
 
@@ -620,7 +612,7 @@ public:
     };
     static constexpr STRF_HD strf::char_encoding_id id() noexcept
     {
-        return strf::char_encoding_id::utf16;
+        return strf::eid_utf16;
     }
     static constexpr STRF_HD char32_t replacement_char() noexcept
     {
@@ -702,7 +694,7 @@ public:
     static STRF_HD strf::dynamic_underlying_transcoder<1, 2>
     find_transcoder_from_1byte_encoding(strf::char_encoding_id id) noexcept
     {
-        if (id == strf::char_encoding_id::utf8) {
+        if (id == strf::eid_utf8) {
             return strf::dynamic_underlying_transcoder<1, 2>{strf::utf8_to_utf16{}};
         }
         return {};
@@ -710,7 +702,7 @@ public:
     static STRF_HD strf::dynamic_underlying_transcoder<2, 1>
     find_transcoder_to_1byte_encoding(strf::char_encoding_id id) noexcept
     {
-        if (id == strf::char_encoding_id::utf8) {
+        if (id == strf::eid_utf8) {
             return strf::dynamic_underlying_transcoder<2, 1>{strf::utf16_to_utf8{}};
         }
         return {};
@@ -738,7 +730,7 @@ public:
 };
 
 template <>
-class static_underlying_char_encoding<strf::char_encoding_id::utf32>
+class static_underlying_char_encoding<strf::eid_utf32>
 {
     using char_type_ = char32_t;
 public:
@@ -750,7 +742,7 @@ public:
     };
     static constexpr STRF_HD strf::char_encoding_id id() noexcept
     {
-        return strf::char_encoding_id::utf32;
+        return strf::eid_utf32;
     }
     static constexpr STRF_HD char32_t replacement_char() noexcept
     {
@@ -855,9 +847,9 @@ public:
     }
 };
 
-using utf8_impl = static_underlying_char_encoding<strf::char_encoding_id::utf8>;
-using utf16_impl = static_underlying_char_encoding<strf::char_encoding_id::utf16>;
-using utf32_impl = static_underlying_char_encoding<strf::char_encoding_id::utf32>;
+using utf8_impl = static_underlying_char_encoding<strf::eid_utf8>;
+using utf16_impl = static_underlying_char_encoding<strf::eid_utf16>;
+using utf32_impl = static_underlying_char_encoding<strf::eid_utf32>;
 
 #if ! defined(STRF_OMIT_IMPL)
 
@@ -1967,13 +1959,13 @@ STRF_INLINE STRF_HD std::size_t utf16_to_utf8::transcode_size
 #endif // ! defined(STRF_OMIT_IMPL)
 
 template <typename CharT>
-using utf8 = strf::static_char_encoding<CharT, strf::char_encoding_id::utf8>;
+using utf8 = strf::static_char_encoding<CharT, strf::eid_utf8>;
 
 template <typename CharT>
-using utf16 = strf::static_char_encoding<CharT, strf::char_encoding_id::utf16>;
+using utf16 = strf::static_char_encoding<CharT, strf::eid_utf16>;
 
 template <typename CharT>
-using utf32 = strf::static_char_encoding<CharT, strf::char_encoding_id::utf32>;
+using utf32 = strf::static_char_encoding<CharT, strf::eid_utf32>;
 
 namespace detail {
 

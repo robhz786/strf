@@ -12,6 +12,14 @@ http://www.boost.org/LICENSE_1_0.txt
 :surrogate_policy: <<surrogate_policy,surrogate_policy>>
 :surrogate_policy_c: <<surrogate_policy,surrogate_policy_c>>
 :char_encoding_id: <<char_encoding_id,char_encoding_id>>
+:eid_utf8:         <<char_encoding_id,eid_utf8>>
+:eid_utf16:        <<char_encoding_id,eid_utf16>>
+:eid_utf32:        <<char_encoding_id,eid_utf32>>
+:eid_ascii:        <<char_encoding_id,eid_ascii>>
+:eid_iso_8859_1:   <<char_encoding_id,eid_iso_8859_1>>
+:eid_iso_8859_3:   <<char_encoding_id,eid_iso_8859_3>>
+:eid_iso_8859_15:  <<char_encoding_id,eid_iso_8859_15>>
+:eid_windows_1252: <<char_encoding_id,eid_windows_1252>>
 
 :invalid_char_len: <<char_encoding_function_pointers,invalid_char_len>>
 :transcode_f: <<char_encoding_function_pointers,transcode_f>>
@@ -54,41 +62,19 @@ http://www.boost.org/LICENSE_1_0.txt
 
 [source,cpp]
 ----
-enum class char_encoding_id : unsigned {
-    utf8 = /*...*/,
-    utf16 = /*...*/,
-    utf32 = /*...*/,
+namespace strf {
+enum class char_encoding_id : unsigned { };
 
-    ascii = /*...*/,
+constexpr char_encoding_id  eid_ascii        = /* ... */;
+constexpr char_encoding_id  eid_utf8         = /* ... */;
+constexpr char_encoding_id  eid_utf16        = /* ... */;
+constexpr char_encoding_id  eid_utf32        = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_1   = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_3   = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_15  = /* ... */;
+constexpr char_encoding_id  eid_windows_1252 = /* ... */;
 
-    iso_8859_1 = /*...*/,
-    iso_8859_2 = /*...*/,
-    iso_8859_3 = /*...*/,
-    iso_8859_4 = /*...*/,
-    iso_8859_5 = /*...*/,
-    iso_8859_6 = /*...*/,
-    iso_8859_7 = /*...*/,
-    iso_8859_8 = /*...*/,
-    iso_8859_9 = /*...*/,
-    iso_8859_10 = /*...*/,
-    iso_8859_11 = /*...*/,
-    iso_8859_12 = /*...*/,
-    iso_8859_13 = /*...*/,
-    iso_8859_14 = /*...*/,
-    iso_8859_15 = /*...*/,
-    iso_8859_16 = /*...*/,
-
-    windows_1250 = /*...*/,
-    windows_1251 = /*...*/,
-    windows_1252 = /*...*/,
-    windows_1253 = /*...*/,
-    windows_1254 = /*...*/,
-    windows_1255 = /*...*/,
-    windows_1256 = /*...*/,
-    windows_1257 = /*...*/,
-    windows_1258 = /*...*/,
-    /*...*/
-};
+} // namespace strf
 ----
 
 === Facet category `invalid_seq_notifier_c` [[invalid_seq_notifier_c]]
@@ -729,101 +715,30 @@ NOTE: There are two class templates that satisfy _UnderlyingCharEncoding_: `{sta
 template <{char_encoding_id} Src, {char_encoding_id} Dest>
 class static_underlying_transcoder;
 
-template <> static_underlying_transcoder
-    < {char_encoding_id}::ascii
-    , {char_encoding_id}::ascii >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::ascii
-    , {char_encoding_id}::utf32 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::utf32
-    , {char_encoding_id}::ascii>;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::iso_8859_1
-    , {char_encoding_id}::iso_8859_1 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::iso_8859_1
-    , {char_encoding_id}::utf32 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::utf32
-    , {char_encoding_id}::iso_8859_1 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::iso_8859_3
-    , {char_encoding_id}::utf32 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::utf32
-    , {char_encoding_id}::iso_8859_3 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::iso_8859_3
-    , {char_encoding_id}::iso_8859_3 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::iso_8859_15
-    , {char_encoding_id}::iso_8859_15 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::iso_8859_15
-    , {char_encoding_id}::utf32 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::utf32
-    , {char_encoding_id}::iso_8859_15 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::windows_1252
-    , {char_encoding_id}::windows_1252 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::windows_1252
-    , {char_encoding_id}::utf32 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::utf32
-    , {char_encoding_id}::windows_1252 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::utf8
-    , {char_encoding_id}::utf8 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::utf8
-    , {char_encoding_id}::utf16 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::utf8
-    , {char_encoding_id}::utf32 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::utf16
-    , {char_encoding_id}::utf8 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::utf16
-    , {char_encoding_id}::utf16 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::utf16
-    , {char_encoding_id}::utf32 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::utf32
-    , {char_encoding_id}::utf8 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::utf32
-    , {char_encoding_id}::utf16 >;
-
-template <> static_underlying_transcoder
-    < {char_encoding_id}::utf32
-    , {char_encoding_id}::utf32 >;
+template <> static_underlying_transcoder<{eid_ascii}, {eid_ascii}>;
+template <> static_underlying_transcoder<{eid_ascii}, {eid_utf32}>;
+template <> static_underlying_transcoder<{eid_utf32}, {eid_ascii}>;
+template <> static_underlying_transcoder<{eid_iso_8859_1}, {eid_iso_8859_1}>;
+template <> static_underlying_transcoder<{eid_iso_8859_1}, {eid_utf32}>;
+template <> static_underlying_transcoder<{eid_utf32}, {eid_iso_8859_1}>;
+template <> static_underlying_transcoder<{eid_iso_8859_3}, {eid_utf32}>;
+template <> static_underlying_transcoder<{eid_utf32}, {eid_iso_8859_3}>;
+template <> static_underlying_transcoder<{eid_iso_8859_3}, {eid_iso_8859_3}>;
+template <> static_underlying_transcoder<{eid_iso_8859_15}, {eid_iso_8859_15}>;
+template <> static_underlying_transcoder<{eid_iso_8859_15}, {eid_utf32}>;
+template <> static_underlying_transcoder<{eid_utf32}, {eid_iso_8859_15}>;
+template <> static_underlying_transcoder<{eid_windows_1252}, {eid_windows_1252}>;
+template <> static_underlying_transcoder<{eid_windows_1252}, {eid_utf32}>;
+template <> static_underlying_transcoder<{eid_utf32}, {eid_windows_1252}>;
+template <> static_underlying_transcoder<{eid_utf8}, {eid_utf8}>;
+template <> static_underlying_transcoder<{eid_utf8}, {eid_utf16}>;
+template <> static_underlying_transcoder<{eid_utf8}, {eid_utf32}>;
+template <> static_underlying_transcoder<{eid_utf16}, {eid_utf8}>;
+template <> static_underlying_transcoder<{eid_utf16}, {eid_utf16}>;
+template <> static_underlying_transcoder<{eid_utf16}, {eid_utf32}>;
+template <> static_underlying_transcoder<{eid_utf32}, {eid_utf8}>;
+template <> static_underlying_transcoder<{eid_utf32}, {eid_utf16}>;
+template <> static_underlying_transcoder<{eid_utf32}, {eid_utf32}>;
 ----
 There is no generic implementation of the `static_underlying_transcoder` class template.
 Instead, there are only template specializations for some pairs of encodings.
@@ -839,14 +754,14 @@ never return `nullptr`
 template <{char_encoding_id}>
 class static_underlying_char_encoding;
 
-template <> class static_underlying_char_encoding<{char_encoding_id}::utf8>;
-template <> class static_underlying_char_encoding<{char_encoding_id}::utf16>;
-template <> class static_underlying_char_encoding<{char_encoding_id}::utf32>;
-template <> class static_underlying_char_encoding<{char_encoding_id}::ascii>;
-template <> class static_underlying_char_encoding<{char_encoding_id}::iso_8859_1>;
-template <> class static_underlying_char_encoding<{char_encoding_id}::iso_8859_3>;
-template <> class static_underlying_char_encoding<{char_encoding_id}::iso_8859_15>;
-template <> class static_underlying_char_encoding<{char_encoding_id}::windows_1252>;
+template <> class static_underlying_char_encoding<{eid_utf8}>;
+template <> class static_underlying_char_encoding<{eid_utf16}>;
+template <> class static_underlying_char_encoding<{eid_utf32}>;
+template <> class static_underlying_char_encoding<{eid_ascii}>;
+template <> class static_underlying_char_encoding<{eid_iso_8859_1}>;
+template <> class static_underlying_char_encoding<{eid_iso_8859_3}>;
+template <> class static_underlying_char_encoding<{eid_iso_8859_15}>;
+template <> class static_underlying_char_encoding<{eid_windows_1252}>;
 ----
 
 There is no generic implementation of the `static_underlying_char_encoding` class template.
@@ -1457,19 +1372,28 @@ public:
 namespace strf {
 
 template <typename CharT>
-using ascii = {static_char_encoding}<CharT, {char_encoding_id}::ascii>;
+using ascii = {static_char_encoding}<CharT, {eid_ascii}>;
 
 template <typename CharT>
-using iso_8859_1 = {static_char_encoding}<CharT, {char_encoding_id}::iso_8859_1>;
+using iso_8859_1 = {static_char_encoding}<CharT, {eid_iso_8859_1}>;
 
 template <typename CharT>
-using iso_8859_3 = {static_char_encoding}<CharT, {char_encoding_id}::iso_8859_3>;
+using iso_8859_3 = {static_char_encoding}<CharT, {eid_iso_8859_3}>;
 
 template <typename CharT>
-using iso_8859_15 = {static_char_encoding}<CharT, {char_encoding_id}::iso_8859_15>;
+using iso_8859_15 = {static_char_encoding}<CharT, {eid_iso_8859_15}>;
 
 template <typename CharT>
-using windows_1252 = {static_char_encoding}<CharT, {char_encoding_id}::windows_1252>;
+using windows_1252 = {static_char_encoding}<CharT, {eid_windows_1252}>;
+
+template <typename CharT>
+using utf8 = {static_char_encoding}<CharT, {eid_utf8}>;
+
+template <typename CharT>
+using utf16 = {static_char_encoding}<CharT, {eid_utf16}>;
+
+template <typename CharT>
+using utf32 = {static_char_encoding}<CharT, {eid_utf32}>;
 
 template <typename CharT>
 using utf = /* see below */;
@@ -1484,9 +1408,8 @@ using utf = /* see below */;
 template <typename CharT>
 using utf = /* ... */;
 ----
-`utf<CharT>` is an alias to `{static_char_encoding}<CharT, enc_id>`,
-where `enc_id` is `char_encoding_id::utf8`, `char_encoding_id::utf16`
-or `char_encoding_id::utf32`, depending on the value of `sizeof(CharT)`.
+`utf<CharT>` is an alias to `utf8<CharT>`, `utf16<CharT>` or `utf32<CharT>`,
+depending on the value of `sizeof(CharT)`.
 ====
 
 === Class template `dynamic_char_encoding` [[dynamic_char_encoding]]

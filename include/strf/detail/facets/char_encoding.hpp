@@ -88,91 +88,17 @@ struct invalid_seq_notifier_c
     }
 };
 
-enum class char_encoding_id : unsigned
-{
-    utf8,
-    mutf8,
+enum class char_encoding_id : std::uint32_t{};
 
-    utf16_little_endian,
-    utf16_big_endian,
-    utf16,
-
-    utf32_little_endian,
-    utf32_big_endian,
-    utf32,
-
-    ascii,
-
-    iso_8859_1,
-    iso_8859_2,
-    iso_8859_3,
-    iso_8859_4,
-    iso_8859_5,
-    iso_8859_6,
-    iso_8859_7,
-    iso_8859_8,
-    iso_8859_9,
-    iso_8859_10,
-    iso_8859_11,
-    iso_8859_12,
-    iso_8859_13,
-    iso_8859_14,
-    iso_8859_15,
-    iso_8859_16,
-
-    windows_1250,
-    windows_1251,
-    windows_1252,
-    windows_1253,
-    windows_1254,
-    windows_1255,
-    windows_1256,
-    windows_1257,
-    windows_1258,
-
-    ebcdic_cp37,
-    ebcdic_cp930,
-    ebcdic_cp1047,
-
-    cp437,
-    cp720,
-    cp737,
-    cp850,
-    cp852,
-    cp855,
-    cp857,
-    cp858,
-    cp860,
-    cp861,
-    cp862,
-    cp863,
-    cp865,
-    cp866,
-    cp869,
-    cp872,
-
-    mac_os_roman,
-
-    koi8_r,
-    koi8_u,
-    koi7,
-    mik,
-    iscii,
-    tscii,
-    viscii,
-
-    iso_2022_jp,
-    iso_2022_jp_1,
-    iso_2022_jp_2,
-    iso_2022_jp_2004,
-    iso_2022_kr,
-    iso_2022_cn,
-    iso_2022_cn_ext,
-
-    // etc ... TODO
-    // https://en.wikipedia.org/wiki/Character_encoding#Common_character_encodings
-    // https://docs.python.org/2.4/lib/standard-encodings.html
-};
+// generated at https://www.random.org/bytes/
+constexpr strf::char_encoding_id eid_ascii        = (strf::char_encoding_id)0x9dea526b;
+constexpr strf::char_encoding_id eid_utf8         = (strf::char_encoding_id)0x04650346;
+constexpr strf::char_encoding_id eid_utf16        = (strf::char_encoding_id)0x0439cb08;
+constexpr strf::char_encoding_id eid_utf32        = (strf::char_encoding_id)0x67be80a2;
+constexpr strf::char_encoding_id eid_iso_8859_1   = (strf::char_encoding_id)0xcf00a4bb;
+constexpr strf::char_encoding_id eid_iso_8859_3   = (strf::char_encoding_id)0xf62df986;
+constexpr strf::char_encoding_id eid_iso_8859_15  = (strf::char_encoding_id)0x2b496c2d;
+constexpr strf::char_encoding_id eid_windows_1252 = (strf::char_encoding_id)0x5cff728c;
 
 template <typename CharT>
 struct char_encoding_c;
@@ -554,7 +480,7 @@ class has_find_transcoder_from_impl
 
     template <std::size_t S, typename D>
     static auto test(itag<S>, const D* d)
-    -> decltype( d->find_transcoder_from(itag<S>(), strf::char_encoding_id::utf8)
+    -> decltype( d->find_transcoder_from(itag<S>(), strf::eid_utf8)
                , std::true_type() );
 
     template <std::size_t S, typename D>
@@ -574,7 +500,7 @@ class has_find_transcoder_to_impl
 
     template <std::size_t D, typename S>
     static auto test(itag<D>, const S* s)
-    -> decltype( s->find_transcoder_from(itag<D>(), strf::char_encoding_id::utf8)
+    -> decltype( s->find_transcoder_from(itag<D>(), strf::eid_utf8)
                , std::true_type() );
 
     template <std::size_t D, typename S>

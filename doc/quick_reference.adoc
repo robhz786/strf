@@ -494,17 +494,16 @@ assert(str_upper == "0xAB 1e+50 Inf");
 [source,cpp]
 ----
 namespace strf {
+enum class char_encoding_id : unsigned { };
 
-enum class char_encoding_id {
-    utf8 = /*...*/,
-    utf16 = /*...*/,
-    utf32 = /*...*/,
-    ascii = /*...*/,
-    iso_8859_1 = /*...*/,
-    iso_8859_3 = /*...*/,
-    iso_8859_15 = /*...*/,
-    windows_1252 = /*...*/
-};
+constexpr char_encoding_id  eid_ascii        = /* ... */;
+constexpr char_encoding_id  eid_utf8         = /* ... */;
+constexpr char_encoding_id  eid_utf16        = /* ... */;
+constexpr char_encoding_id  eid_utf32        = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_1   = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_3   = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_15  = /* ... */;
+constexpr char_encoding_id  eid_windows_1252 = /* ... */;
 
 template <char_encoding_id>
 class static_char_encoding;

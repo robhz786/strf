@@ -63,7 +63,7 @@ struct impl_strict_ascii
     {
         return "ASCII";
     };
-    static constexpr strf::char_encoding_id id = strf::char_encoding_id::ascii;
+    static constexpr strf::char_encoding_id id = strf::eid_ascii;
 
     static STRF_HD bool is_valid(std::uint8_t ch)
     {
@@ -87,7 +87,7 @@ struct impl_iso_8859_1
     {
         return "ISO-8859-1";
     };
-    static constexpr strf::char_encoding_id id = strf::char_encoding_id::iso_8859_1;
+    static constexpr strf::char_encoding_id id = strf::eid_iso_8859_1;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -109,7 +109,7 @@ struct impl_iso_8859_3
     {
         return "ISO-8859-3";
     };
-    static constexpr strf::char_encoding_id id = strf::char_encoding_id::iso_8859_3;
+    static constexpr strf::char_encoding_id id = strf::eid_iso_8859_3;
 
     static STRF_HD bool is_valid(std::uint8_t ch)
     {
@@ -226,7 +226,7 @@ public:
     {
         return "ISO-8859-15";
     };
-    static constexpr strf::char_encoding_id id = strf::char_encoding_id::iso_8859_15;
+    static constexpr strf::char_encoding_id id = strf::eid_iso_8859_15;
 
     static STRF_HD bool is_valid(std::uint8_t)
     {
@@ -294,7 +294,7 @@ public:
     {
         return "windows-1252";
     };
-    static constexpr strf::char_encoding_id id = strf::char_encoding_id::windows_1252;
+    static constexpr strf::char_encoding_id id = strf::eid_windows_1252;
 
     constexpr static unsigned short decode_fail = 0xFFFF;
 
@@ -551,135 +551,105 @@ STRF_HD void single_byte_char_encoding_sanitizer<Impl>::transcode
 
 
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::ascii
-    , strf::char_encoding_id::ascii >
+class static_underlying_transcoder<strf::eid_ascii, strf::eid_ascii>
     : public strf::detail::single_byte_char_encoding_sanitizer
         <strf::detail::impl_strict_ascii>
 {
 };
 
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::utf32
-    , strf::char_encoding_id::ascii >
+class static_underlying_transcoder<strf::eid_utf32, strf::eid_ascii>
     : public strf::detail::utf32_to_single_byte_char_encoding
         <strf::detail::impl_strict_ascii>
 {
 };
 
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::ascii
-    , strf::char_encoding_id::utf32 >
+class static_underlying_transcoder<strf::eid_ascii, strf::eid_utf32>
     : public strf::detail::single_byte_char_encoding_to_utf32
         <strf::detail::impl_strict_ascii>
 {
 };
 
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::iso_8859_1
-    , strf::char_encoding_id::iso_8859_1 >
+class static_underlying_transcoder<strf::eid_iso_8859_1, strf::eid_iso_8859_1>
     : public strf::detail::single_byte_char_encoding_sanitizer
         <strf::detail::impl_iso_8859_1>
 {
 };
 
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::utf32
-    , strf::char_encoding_id::iso_8859_1 >
+class static_underlying_transcoder<strf::eid_utf32, strf::eid_iso_8859_1>
     : public strf::detail::utf32_to_single_byte_char_encoding
         <strf::detail::impl_iso_8859_1>
 {
 };
 
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::iso_8859_1
-    , strf::char_encoding_id::utf32 >
+class static_underlying_transcoder<strf::eid_iso_8859_1, strf::eid_utf32>
     : public strf::detail::single_byte_char_encoding_to_utf32
         <strf::detail::impl_iso_8859_1>
 {
 };
 
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::iso_8859_3
-    , strf::char_encoding_id::iso_8859_3 >
+class static_underlying_transcoder<strf::eid_iso_8859_3, strf::eid_iso_8859_3>
     : public strf::detail::single_byte_char_encoding_sanitizer
         <strf::detail::impl_iso_8859_3>
 {
 };
 
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::utf32
-    , strf::char_encoding_id::iso_8859_3 >
+class static_underlying_transcoder<strf::eid_utf32, strf::eid_iso_8859_3>
     : public strf::detail::utf32_to_single_byte_char_encoding
         <strf::detail::impl_iso_8859_3>
 {
 };
 
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::iso_8859_3
-    , strf::char_encoding_id::utf32 >
+class static_underlying_transcoder<strf::eid_iso_8859_3, strf::eid_utf32>
     : public strf::detail::single_byte_char_encoding_to_utf32
         <strf::detail::impl_iso_8859_3>
 {
 };
 
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::iso_8859_15
-    , strf::char_encoding_id::iso_8859_15 >
+class static_underlying_transcoder<strf::eid_iso_8859_15, strf::eid_iso_8859_15>
     : public strf::detail::single_byte_char_encoding_sanitizer
         <strf::detail::impl_iso_8859_15>
 {
 };
 
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::utf32
-    , strf::char_encoding_id::iso_8859_15 >
+class static_underlying_transcoder<strf::eid_utf32, strf::eid_iso_8859_15>
     : public strf::detail::utf32_to_single_byte_char_encoding
         <strf::detail::impl_iso_8859_15>
 {
 };
 
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::iso_8859_15
-    , strf::char_encoding_id::utf32 >
+class static_underlying_transcoder<strf::eid_iso_8859_15, strf::eid_utf32>
     : public strf::detail::single_byte_char_encoding_to_utf32
         <strf::detail::impl_iso_8859_15>
 {
 };
 
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::windows_1252
-    , strf::char_encoding_id::windows_1252 >
+class static_underlying_transcoder<strf::eid_windows_1252, strf::eid_windows_1252>
     : public strf::detail::single_byte_char_encoding_sanitizer
         <strf::detail::impl_windows_1252>
 {
 };
 
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::utf32
-    , strf::char_encoding_id::windows_1252 >
+class static_underlying_transcoder<strf::eid_utf32, strf::eid_windows_1252>
     : public strf::detail::utf32_to_single_byte_char_encoding
         <strf::detail::impl_windows_1252>
 {
 };
 
 template <>
-class static_underlying_transcoder
-    < strf::char_encoding_id::windows_1252
-    , strf::char_encoding_id::utf32 >
+class static_underlying_transcoder<strf::eid_windows_1252, strf::eid_utf32>
     : public strf::detail::single_byte_char_encoding_to_utf32
         <strf::detail::impl_windows_1252>
 {
@@ -766,13 +736,13 @@ public:
         return write_replacement_char;
     }
     static constexpr STRF_HD
-    strf::static_underlying_transcoder<strf::char_encoding_id::utf32, Impl::id>
+    strf::static_underlying_transcoder<strf::eid_utf32, Impl::id>
     from_u32() noexcept
     {
         return {};
     }
     static constexpr STRF_HD
-    strf::static_underlying_transcoder<Impl::id, strf::char_encoding_id::utf32>
+    strf::static_underlying_transcoder<Impl::id, strf::eid_utf32>
     to_u32() noexcept
     {
         return {};
@@ -839,49 +809,49 @@ STRF_HD void single_byte_char_encoding<Impl>::encode_fill
 
 
 template <>
-class static_underlying_char_encoding<strf::char_encoding_id::ascii>
+class static_underlying_char_encoding<strf::eid_ascii>
     : public strf::detail::single_byte_char_encoding<strf::detail::impl_strict_ascii>
 {
 };
 
 template <>
-class static_underlying_char_encoding<strf::char_encoding_id::iso_8859_1>
+class static_underlying_char_encoding<strf::eid_iso_8859_1>
     : public strf::detail::single_byte_char_encoding<strf::detail::impl_iso_8859_1>
 {
 };
 
 template <>
-class static_underlying_char_encoding<strf::char_encoding_id::iso_8859_3>
+class static_underlying_char_encoding<strf::eid_iso_8859_3>
     : public strf::detail::single_byte_char_encoding<strf::detail::impl_iso_8859_3>
 {
 };
 
 template <>
-class static_underlying_char_encoding<strf::char_encoding_id::iso_8859_15>
+class static_underlying_char_encoding<strf::eid_iso_8859_15>
     : public strf::detail::single_byte_char_encoding<strf::detail::impl_iso_8859_15>
 {
 };
 
 template <>
-class static_underlying_char_encoding<strf::char_encoding_id::windows_1252>
+class static_underlying_char_encoding<strf::eid_windows_1252>
     : public strf::detail::single_byte_char_encoding<strf::detail::impl_windows_1252>
 {
 };
 
 template <typename CharT>
-using ascii = strf::static_char_encoding<CharT, strf::char_encoding_id::ascii>;
+using ascii = strf::static_char_encoding<CharT, strf::eid_ascii>;
 
 template <typename CharT>
-using iso_8859_1 = strf::static_char_encoding<CharT, strf::char_encoding_id::iso_8859_1>;
+using iso_8859_1 = strf::static_char_encoding<CharT, strf::eid_iso_8859_1>;
 
 template <typename CharT>
-using iso_8859_3 = strf::static_char_encoding<CharT, strf::char_encoding_id::iso_8859_3>;
+using iso_8859_3 = strf::static_char_encoding<CharT, strf::eid_iso_8859_3>;
 
 template <typename CharT>
-using iso_8859_15 = strf::static_char_encoding<CharT, strf::char_encoding_id::iso_8859_15>;
+using iso_8859_15 = strf::static_char_encoding<CharT, strf::eid_iso_8859_15>;
 
 template <typename CharT>
-using windows_1252 = strf::static_char_encoding<CharT, strf::char_encoding_id::windows_1252>;
+using windows_1252 = strf::static_char_encoding<CharT, strf::eid_windows_1252>;
 
 } // namespace strf
 
