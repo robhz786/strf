@@ -176,22 +176,26 @@ private:
     }
 
     template < typename ... Args >
-    decltype(auto) STRF_HD tr_write_( const CharT* str
-                                    , std::size_t str_len
-                                    , const Args& ... args) const &
+    decltype(auto) STRF_HD tr_write_
+        ( const CharT* str
+        , std::size_t str_len
+        , const Args& ... args) const &
     {
         return tr_write_2_
             (str, str + str_len, std::make_index_sequence<sizeof...(args)>(), args...);
     }
 
     template < std::size_t ... I, typename ... Args >
-    decltype(auto) STRF_HD tr_write_2_( const CharT* str
-                              , const CharT* str_end
-                              , std::index_sequence<I...>
-                              , const Args& ... args) const &
+    decltype(auto) STRF_HD tr_write_2_
+        ( const CharT* str
+        , const CharT* str_end
+        , std::index_sequence<I...>
+        , const Args& ... args) const &
     {
-        PreviewType preview_arr[sizeof...(args)];
+        constexpr std::size_t args_count = sizeof...(args);
+        PreviewType preview_arr[args_count ? args_count : 1];
         const auto& fpack = static_cast<const destination_type_&>(*this).fpack_;
+        (void)fpack;
         return tr_write_3_
             ( str
             , str_end
