@@ -86,7 +86,7 @@ struct sani_format;
 template <typename CharT, typename Encoding>
 struct sani_format_with_encoding;
 
-template <typename CharT, typename T>
+template <typename T, typename CharT>
 class no_conv_format_fn
 {
 public:
@@ -97,7 +97,7 @@ public:
 
     template <typename U>
     constexpr STRF_HD explicit no_conv_format_fn
-        ( const no_conv_format_fn<CharT, U>& ) noexcept
+        ( const no_conv_format_fn<U, CharT>& ) noexcept
     {
     }
 
@@ -163,7 +163,7 @@ public:
     }
 };
 
-template <typename CharT, typename T>
+template <typename T, typename CharT>
 struct conv_format_fn
 {
     constexpr STRF_HD conv_format_fn() noexcept
@@ -172,18 +172,18 @@ struct conv_format_fn
 
     template <typename U>
     constexpr STRF_HD explicit conv_format_fn
-        ( const conv_format_fn<CharT, U>& ) noexcept
+        ( const conv_format_fn<U, CharT>& ) noexcept
     {
     }
 
     template <typename U>
     constexpr STRF_HD explicit conv_format_fn
-        ( const strf::no_conv_format_fn<CharT, U>& ) noexcept
+        ( const strf::no_conv_format_fn<U, CharT>& ) noexcept
     {
     }
 };
 
-template <typename CharT, typename Encoding, typename T>
+template <typename T, typename CharT, typename Encoding>
 class conv_format_with_encoding_fn
 {
 public:
@@ -198,14 +198,14 @@ public:
 
     template <typename U>
     explicit conv_format_with_encoding_fn
-        ( const strf::conv_format_with_encoding_fn<CharT, Encoding, U>& other ) noexcept
+        ( const strf::conv_format_with_encoding_fn<U, CharT, Encoding>& other ) noexcept
         : encoding_(other.get_encoding())
     {
     }
 
     template <typename U>
     explicit conv_format_with_encoding_fn
-        ( const strf::no_conv_format_fn<CharT, U>& other ) noexcept
+        ( const strf::no_conv_format_fn<U, CharT>& other ) noexcept
         : encoding_(other.get_encoding())
     {
     }
@@ -224,35 +224,35 @@ template <typename CharT>
 struct no_conv_format
 {
     template <typename T>
-    using fn = strf::no_conv_format_fn<CharT, T>;
+    using fn = strf::no_conv_format_fn<T, CharT>;
 };
 
 template <typename CharT>
 struct conv_format
 {
     template <typename T>
-    using fn = strf::conv_format_fn<CharT, T>;
+    using fn = strf::conv_format_fn<T, CharT>;
 };
 
 template <typename CharT, typename Encoding>
 struct conv_format_with_encoding
 {
     template <typename T>
-    using fn = strf::conv_format_with_encoding_fn<CharT, Encoding, T>;
+    using fn = strf::conv_format_with_encoding_fn<T, CharT, Encoding>;
 };
 
 template <typename CharT>
 struct sani_format
 {
     template <typename T>
-    using fn = strf::conv_format_fn<CharT, T>;
+    using fn = strf::conv_format_fn<T, CharT>;
 };
 
 template <typename CharT, typename Encoding>
 struct sani_format_with_encoding
 {
     template <typename T>
-    using fn = strf::conv_format_with_encoding_fn<CharT, Encoding, T>;
+    using fn = strf::conv_format_with_encoding_fn<T, CharT, Encoding>;
 };
 
 template <typename T, bool Active>

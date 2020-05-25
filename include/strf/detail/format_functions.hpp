@@ -197,7 +197,7 @@ private:
     ValueType value_;
 };
 
-template <bool Active>
+template <bool HasAlignment>
 struct alignment_format_q;
 
 enum class text_alignment {left, right, split, center};
@@ -223,7 +223,7 @@ constexpr STRF_HD bool operator!=( strf::alignment_format_data lhs
     return ! (lhs == rhs);
 }
 
-template <bool Active, class T>
+template <class T, bool HasAlignment>
 class alignment_format_fn
 {
     STRF_HD T& as_derived_ref()
@@ -250,9 +250,9 @@ public:
     {
     }
 
-    template <bool B, typename U>
+    template <typename U, bool B>
     constexpr STRF_HD explicit alignment_format_fn
-        ( const strf::alignment_format_fn<B, U>& u ) noexcept
+        ( const strf::alignment_format_fn<U, B>& u ) noexcept
         : data_(u.get_alignment_format_data())
     {
     }
@@ -315,7 +315,7 @@ private:
 };
 
 template <class T>
-class alignment_format_fn<false, T>
+class alignment_format_fn<T, false>
 {
     using derived_type = T;
     using adapted_derived_type = strf::fmt_replace
@@ -335,7 +335,7 @@ public:
     }
 
     template <typename U>
-    constexpr STRF_HD explicit alignment_format_fn(const alignment_format_fn<false, U>&) noexcept
+    constexpr STRF_HD explicit alignment_format_fn(const alignment_format_fn<U, false>&) noexcept
     {
     }
 
@@ -407,11 +407,11 @@ public:
     }
 };
 
-template <bool Active>
+template <bool HasAlignment>
 struct alignment_format_q
 {
     template <class T>
-    using fn = strf::alignment_format_fn<Active, T>;
+    using fn = strf::alignment_format_fn<T, HasAlignment>;
 };
 
 using alignment_format = strf::alignment_format_q<true>;

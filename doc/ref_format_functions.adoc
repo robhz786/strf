@@ -126,11 +126,11 @@ with one template type parameter such that, given any types `T` and `U`:
 ----
 namespace strf {
 
-template <bool Active>
+template <bool HasAlignment>
 struct alignment_format_q
 {
     template <class T>
-    using fn = <<alignment_format_fn,alignment_format_fn>><Active, T>;
+    using fn = <<alignment_format_fn,alignment_format_fn>><T, HasAlignment>;
 };
 
 using alignment_format       = alignment_format_q<true>;
@@ -146,15 +146,15 @@ using empty_alignment_format = alignment_format_q<false>;
 ----
 namespace strf {
 
-template <bool Active, class T>
+template <class T, bool HasAlignment>
 class alignment_format_fn;
 {
 public:
     // <<alignment_format_fn_constructors,constructors>>
     constexpr alignment_format_fn() noexcept;
 
-    template <bool B, typename U>
-    constexpr explitic alignment_format_fn(const alignment_format_fn<B, U>& u) noexcept;
+    template <typename U, bool B>
+    constexpr explitic alignment_format_fn(const alignment_format_fn<U, B>& u) noexcept;
 
     // <<alignment_format_fn_format_functions,format functions>>
     constexpr T&& operator<(int width) && noexcept; // left
@@ -170,9 +170,9 @@ public:
     constexpr {alignment_format_data} get_alignmet_format_data() const noexcept;
 };
 
-// alignment_format_fn<false, T> is an empty class
+// alignment_format_fn<T, false> is an empty class
 template <class T>
-class alignment_format_fn<false, T>
+class alignment_format_fn<T, false>
 {
     using converted_fmt = {boost_mp_replace}< T , alignment_format_q<false>
                                                , alignment_format_q<true> >;
@@ -181,7 +181,7 @@ public:
     constexpr alignment_format_fn() noexcept;
 
     template <typename U>
-    constexpr explicit alignment_format_fn(const alignment_format_fn<false, U>&) noexcept;
+    constexpr explicit alignment_format_fn(const alignment_format_fn<U, false>&) noexcept;
 
     // <<alignment_format_fn_observers,observers>>
     constexpr int width() const noexcept;
@@ -212,12 +212,12 @@ Postconditions::: `get_alignmet_format_data() == {alignment_format_data}{}`
 ====
 [source,cpp,subs=normal]
 ----
-template <bool B, typename U>
-constexpr explitic alignment_format_fn(const alignment_format_fn<B, U>& u) noexcept;
+template <typename U, bool B>
+constexpr explitic alignment_format_fn(const alignment_format_fn<U, B>& u) noexcept;
 ----
 ::
 Postconditions::: `get_alignmet_format_data() == u.get_alignmet_format_data()`
-Note::: This function only participates in overload resolution if 'Active' is `true`
+Note::: This function only participates in overload resolution if 'HasAlignment' is `true`
         or `B` is `false`
 ====
 [[alignment_format_fn_observers]]
@@ -229,8 +229,8 @@ constexpr {alignment_format_data} get_alignmet_format_data() const noexcept;
 ----
 ::
 Return value:::
-- `alignment_format_data{}`, when `Active` is `false`.
-- The value corresponding to the state of this object, when `Active` is `true`.
+- `alignment_format_data{}`, when `HasAlignment` is `false`.
+- The value corresponding to the state of this object, when `HasAlignment` is `true`.
 ====
 ====
 [source,cpp]
@@ -260,10 +260,10 @@ Return value::: `get_alignmet_format_data().fill`
 [[alignment_format_fn_format_functions]]
 ===== Format functions
 
-// `alignment_format_fn<false, T>` is an empty class. Its format functions
+// `alignment_format_fn<T, false>` is an empty class. Its format functions
 // return `converted_fmt{*this}.`
 //
-// In `alignment_format_fn<true, T>` the format functions modify
+// In `alignment_format_fn<T, true>` the format functions modify
 // the object and return `static_cast<T&&>(this)`.
 ====
 [source,cpp]
@@ -275,8 +275,8 @@ Posconditions::: The return value `r` satisfies:
 - `r.width() == width`
 - `r.alignment == text_alignment::left`
 Return value:::
-- when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)} < width`.
-- when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
+- when `HasAlignment` is `false`: `converted_fmt{static_cast<const T&>(*this)} < width`.
+- when `HasAlignment` is `true`: `std::move(static_cast<T&>(*this))`.
 
 ====
 ====
@@ -289,8 +289,8 @@ Posconditions::: The return value `r` satisfies:
 - `r.width() == width`
 - `r.alignment() == text_alignment::right`
 Return value:::
-- when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)} > width`.
-- when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
+- when `HasAlignment` is `false`: `converted_fmt{static_cast<const T&>(*this)} > width`.
+- when `HasAlignment` is `true`: `std::move(static_cast<T&>(*this))`.
 ====
 ====
 [source,cpp]
@@ -302,8 +302,8 @@ Posconditions::: The return value `r` satisfies:
 - `r.width() == width`
 - `r.alignment() == text_alignment::center`
 Return value:::
-- when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)} ^ width`.
-- when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
+- when `HasAlignment` is `false`: `converted_fmt{static_cast<const T&>(*this)} ^ width`.
+- when `HasAlignment` is `true`: `std::move(static_cast<T&>(*this))`.
 ====
 ====
 [source,cpp]
@@ -315,8 +315,8 @@ Posconditions::: The return value `r` satisfies:
 - `r.width() == width`
 - `r.alignment() == text_alignment::split`
 Return value:::
-- when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)} % width`.
-- when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
+- when `HasAlignment` is `false`: `converted_fmt{static_cast<const T&>(*this)} % width`.
+- when `HasAlignment` is `true`: `std::move(static_cast<T&>(*this))`.
 ====
 ====
 [source,cpp]
@@ -327,8 +327,8 @@ constexpr /*return type */ fill(char32_t ch) /* qualifier */ noexcept;
 Posconditions::: The return value `r` satisfies:
 - `r.fill() == ch`
 Return value:::
-- when `Active` is `false`: `converted_fmt{static_cast<const T&>(*this)}.fill(ch)`.
-- when `Active` is `true`: `std::move(static_cast<T&>(*this))`.
+- when `HasAlignment` is `false`: `converted_fmt{static_cast<const T&>(*this)}.fill(ch)`.
+- when `HasAlignment` is `true`: `std::move(static_cast<T&>(*this))`.
 ====
 
 [[alignment_format_data]]

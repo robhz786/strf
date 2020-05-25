@@ -15,14 +15,14 @@
 
 namespace strf {
 
-template<bool Active>
+template<bool HasSplitPos>
 struct split_pos_format;
 
-template<bool Active, typename T>
+template<typename T, bool HasSplitPos>
 class split_pos_format_fn;
 
 template<typename T>
-class split_pos_format_fn<true, T> {
+class split_pos_format_fn<T, true> {
 public:
 
     constexpr STRF_HD split_pos_format_fn() noexcept
@@ -34,9 +34,9 @@ public:
     {
     }
 
-    template <bool B, typename U>
+    template <typename U, bool B>
     constexpr STRF_HD explicit split_pos_format_fn
-        ( const split_pos_format_fn<B,U>& r ) noexcept
+        ( const split_pos_format_fn<U, B>& r ) noexcept
         : pos_(r.split_pos())
     {
     }
@@ -58,7 +58,7 @@ private:
 };
 
 template<typename T>
-class split_pos_format_fn<false, T>
+class split_pos_format_fn<T, false>
 {
     using adapted_derived_type_ = strf::fmt_replace
         < T
@@ -71,7 +71,7 @@ public:
     }
 
     template<typename U>
-    constexpr STRF_HD explicit split_pos_format_fn(const strf::split_pos_format_fn<false, U>&) noexcept
+    constexpr STRF_HD explicit split_pos_format_fn(const strf::split_pos_format_fn<U, false>&) noexcept
     {
     }
 
@@ -88,11 +88,11 @@ public:
     }
 };
 
-template<bool Active>
+template<bool HasSplitPos>
 struct split_pos_format
 {
     template<typename T>
-    using fn = strf::split_pos_format_fn<Active, T>;
+    using fn = strf::split_pos_format_fn<T, HasSplitPos>;
 };
 
 struct aligned_join_t
