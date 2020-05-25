@@ -15,8 +15,6 @@ struct ctor_log
 
 enum facet_conf
 {
-    store_value = 0,
-    store_ref = 1,
     enable_copy_and_move  = 0,
     enable_copy           = 1 << 1,
     enable_only_move      = 2 << 1,
@@ -95,9 +93,7 @@ private:
     ctor_log* log_;
 };
 
-template < int N
-         , facet_conf Conf
-           = static_cast<facet_conf>(store_value | enable_copy_and_move) >
+template < int N, facet_conf Conf = facet_conf::enable_copy_and_move >
 class facet: public facet_base
 {
 public:
@@ -111,7 +107,6 @@ public:
     constexpr facet(facet&& f) = default;
 
     using category = fcategory<N>;
-    static constexpr bool store_by_value = ((Conf & 1) == 0);
 
 private:
 
@@ -284,23 +279,6 @@ void test_constrained_fpe()
         TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::int32_t>(fp3).value));
         TEST_EQ(-1, (strf::get_facet<fcategory<0>, double>(fp3).value));
         TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::uint64_t>(fp3).value));
-    }
-
-
-    {   // constrain a facet F when facet_stored_by_value<F> is false
-        ctor_log log;
-        facet<0, store_ref> f{10, &log};
-        auto c = strf::constrain<is_64>(f);
-        auto c2 = strf::constrain<std::is_integral>(c);
-        auto c3 = strf::constrain<std::is_signed>(c2);
-        auto fp = pack(c3);
-
-        TEST_EQ(log.cp_count, 0);
-        TEST_EQ(log.mv_count, 0);
-        TEST_TRUE(&f == (&strf::get_facet<fcategory<0>, std::int64_t>(fp)));
-        TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::int32_t>(fp).value));
-        TEST_EQ(-1, (strf::get_facet<fcategory<0>, std::uint64_t>(fp).value));
-        TEST_EQ(-1, (strf::get_facet<fcategory<0>, double>(fp).value));
     }
     {   // constrain a facets_pack
 

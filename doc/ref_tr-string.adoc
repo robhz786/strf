@@ -7,6 +7,7 @@ http://www.boost.org/LICENSE_1_0.txt
 
 :default_tr_error_handler: <<default_tr_error_handler,default_tr_error_handler>>
 
+[[tr_string]]
 == Tr-String
 
 === Syntax

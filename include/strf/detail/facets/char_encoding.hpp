@@ -30,7 +30,6 @@ template <>
 struct facet_traits<strf::surrogate_policy>
 {
     using category = strf::surrogate_policy_c;
-    static constexpr bool store_by_value = true;
 };
 
 struct invalid_seq_notifier_c;

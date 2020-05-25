@@ -31,7 +31,6 @@ template <>
 struct facet_traits<strf::lettercase>
 {
     using category = strf::lettercase_c;
-    static constexpr bool store_by_value = true;
 };
 
 } // namespace strf

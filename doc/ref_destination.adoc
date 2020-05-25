@@ -983,8 +983,3 @@ Return type:: A type that derives from `{basic_outbuf}<char_type>`
 Postcondition:: `ob.size() >= size`, where `ob` is the returned value.
 ====
 
-[[tr_string]]
-=== Tr-string syntax
-
-To-do
-

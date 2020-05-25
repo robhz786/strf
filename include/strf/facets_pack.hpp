@@ -56,17 +56,6 @@ using category_member_type_or_void
 = strf::detail::category_member_type_or_void_2
     < F, strf::detail::has_category_member_type((F*)0) >;
 
-template <typename T, bool v = T::store_by_value>
-static constexpr bool by_value_getter(T*)
-{
-    return v;
-}
-
-static constexpr bool by_value_getter(...)
-{
-    return true;
-}
-
 template <typename T, bool v = T::constrainable>
 static constexpr bool get_constrainable(T*)
 {
@@ -89,19 +78,12 @@ struct facet_traits
     using helper_ = strf::detail::category_member_type_or_void<F>;
 
     using category = typename helper_::type;
-    constexpr static bool store_by_value
-    = strf::detail::by_value_getter((F*)0);
 };
-
-template <typename F>
-constexpr bool facet_stored_by_value
-= strf::detail::by_value_getter((strf::facet_traits<F>*)0);
 
 template <typename F>
 struct facet_traits<const F>
 {
     using category = typename strf::facet_traits<F>::category;
-    const static bool store_by_value = strf::facet_traits<F>::store_by_value;
 };
 
 template <typename F>
@@ -250,8 +232,6 @@ public:
     }
 
 private:
-    static_assert( facet_stored_by_value<Facet>
-                 , "This facet must not be stored by value" );
     const Facet facet_;
 };
 
@@ -502,9 +482,6 @@ using facets_pack_base_t = strf::detail::facets_pack_base<0, FPE...>;
 template <typename T>
 struct pack_arg // rvalue reference
 {
-    static_assert( strf::facet_stored_by_value<T>
-                 , "can't bind lvalue reference to rvalue reference" );
-
     using elem_type = std::remove_cv_t<T>;
 
     static STRF_HD constexpr T&& forward(T& arg)
@@ -516,10 +493,7 @@ struct pack_arg // rvalue reference
 template <typename T>
 struct pack_arg<T&>
 {
-    using elem_type = std::conditional_t
-        < strf::facet_stored_by_value<T>
-        , std::remove_cv_t<T>
-        , const T& >;
+    using elem_type = std::remove_cv_t<T>;
 
     static STRF_HD constexpr const T& forward(const T& arg)
     {
@@ -570,12 +544,8 @@ public:
     }
 
 private:
-    static_assert
-        ( std::is_lvalue_reference<FPE>::value
-       || strf::facet_stored_by_value<std::remove_reference_t<FPE>>
-        , "This facet must not be stored by value" );
 
-    FPE fpe_; // todo check of facet_stored_by_value
+    FPE fpe_;
 };
 
 
@@ -639,19 +609,22 @@ public:
 };
 
 template <typename ... T>
-constexpr STRF_HD auto pack(T&& ... args)
+constexpr STRF_HD strf::facets_pack<std::remove_cv_t<std::remove_reference_t<T>>...>
+    pack(T&& ... args)
 {
     return strf::facets_pack
-        < typename detail::pack_arg<T>::elem_type ... >
-        { detail::pack_arg<T>::forward(args)... };
+        < std::remove_cv_t<std::remove_reference_t<T>>... >
+        { std::forward<T>(args)... };
 }
 
 template <template <class> class Filter, typename T>
-constexpr STRF_HD auto constrain(T&& x)
+constexpr STRF_HD
+strf::constrained_fpe<Filter, std::remove_cv_t<std::remove_reference_t<T>>>
+    constrain(T&& x)
 {
     return strf::constrained_fpe
-        < Filter, typename detail::pack_arg<T>::elem_type >
-        ( detail::pack_arg<T>::forward(x) );
+        < Filter, std::remove_cv_t<std::remove_reference_t<T>> >
+        { std::forward<T>(x) };
 }
 
 template
