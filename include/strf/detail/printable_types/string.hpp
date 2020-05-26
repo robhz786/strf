@@ -77,13 +77,13 @@ struct no_conv_format;
 template <typename CharT>
 struct conv_format;
 
-template <typename CharT, typename Encoding>
+template <typename Encoding>
 struct conv_format_with_encoding;
 
 template <typename CharT>
 struct sani_format;
 
-template <typename CharT, typename Encoding>
+template <typename Encoding>
 struct sani_format_with_encoding;
 
 template <typename T, typename CharT>
@@ -112,14 +112,16 @@ public:
     template <typename Encoding>
     constexpr STRF_HD auto convert_encoding(Encoding enc) const
     {
+        static_assert( std::is_same<typename Encoding::char_type, CharT>::value
+                     , "This encoding is associated with another character type." );
         using return_type = strf::fmt_replace
             < T
             , strf::no_conv_format<CharT>
-            , strf::conv_format_with_encoding<CharT, Encoding> >;
+            , strf::conv_format_with_encoding<Encoding> >;
 
         return return_type
             { static_cast<const T&>(*this)
-            , strf::tag<strf::conv_format_with_encoding<CharT, Encoding>>{}
+            , strf::tag<strf::conv_format_with_encoding<Encoding>>{}
             , enc };
     }
     constexpr STRF_HD auto conv() const
@@ -142,14 +144,16 @@ public:
     template <typename Encoding>
     constexpr STRF_HD auto sanitize_encoding(Encoding enc) const
     {
+        static_assert( std::is_same<typename Encoding::char_type, CharT>::value
+                     , "This encoding is associated with another character type." );
         using return_type = strf::fmt_replace
             < T
             , strf::no_conv_format<CharT>
-            , strf::sani_format_with_encoding<CharT, Encoding> >;
+            , strf::sani_format_with_encoding<Encoding> >;
 
         return return_type
             { static_cast<const T&>(*this)
-            , strf::tag<strf::sani_format_with_encoding<CharT, Encoding>>{}
+            , strf::tag<strf::sani_format_with_encoding<Encoding>>{}
             , enc };
     }
     constexpr auto sani() const
@@ -183,7 +187,7 @@ struct conv_format_fn
     }
 };
 
-template <typename T, typename CharT, typename Encoding>
+template <typename T, typename Encoding>
 class conv_format_with_encoding_fn
 {
 public:
@@ -198,14 +202,7 @@ public:
 
     template <typename U>
     explicit conv_format_with_encoding_fn
-        ( const strf::conv_format_with_encoding_fn<U, CharT, Encoding>& other ) noexcept
-        : encoding_(other.get_encoding())
-    {
-    }
-
-    template <typename U>
-    explicit conv_format_with_encoding_fn
-        ( const strf::no_conv_format_fn<U, CharT>& other ) noexcept
+        ( const strf::conv_format_with_encoding_fn<U, Encoding>& other ) noexcept
         : encoding_(other.get_encoding())
     {
     }
@@ -234,11 +231,11 @@ struct conv_format
     using fn = strf::conv_format_fn<T, CharT>;
 };
 
-template <typename CharT, typename Encoding>
+template <typename Encoding>
 struct conv_format_with_encoding
 {
     template <typename T>
-    using fn = strf::conv_format_with_encoding_fn<T, CharT, Encoding>;
+    using fn = strf::conv_format_with_encoding_fn<T, Encoding>;
 };
 
 template <typename CharT>
@@ -248,11 +245,11 @@ struct sani_format
     using fn = strf::conv_format_fn<T, CharT>;
 };
 
-template <typename CharT, typename Encoding>
+template <typename Encoding>
 struct sani_format_with_encoding
 {
     template <typename T>
-    using fn = strf::conv_format_with_encoding_fn<T, CharT, Encoding>;
+    using fn = strf::conv_format_with_encoding_fn<T, Encoding>;
 };
 
 template <typename T, bool Active>
@@ -355,13 +352,6 @@ struct string_fmt_traits
 };
 
 } // namespace detail
-
-
-// template <typename CharIn, typename Traits, typename Allocator>
-// struct fmt_traits<std::basic_string<CharIn, Traits, Allocator>>
-//     : strf::detail::string_fmt_traits<CharIn>
-// {
-// };
 
 #if defined(STRF_HAS_STD_STRING_DECLARATION)
 
@@ -514,8 +504,11 @@ template < typename DestCharT, typename SrcCharT, bool HasPrecision
          , bool HasAlignment, typename Encoding >
 struct mp_string_printer
     < DestCharT, SrcCharT, HasPrecision, HasAlignment
-    , strf::conv_format_with_encoding<SrcCharT, Encoding> >
+    , strf::conv_format_with_encoding<Encoding> >
 {
+    static_assert( std::is_same<typename Encoding::char_type, SrcCharT>::value
+                 , "This encoding is associated with another character type." );
+
     using type = std::conditional_t
         < sizeof(SrcCharT) == sizeof(DestCharT)
         , std::conditional_t
@@ -890,15 +883,15 @@ void STRF_HD aligned_string_printer<CharSize>::print_to
     }
 }
 
-
-
 template < typename DestCharT, typename FPack, typename Preview
          , typename SrcCharT, bool HasP, bool HasA, typename SrcEncoding >
 constexpr STRF_HD decltype(auto) get_src_encoding
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, FPack, Preview, SrcCharT, HasP, HasA
-        , strf::conv_format_with_encoding<SrcCharT, SrcEncoding> >& input )
+        , strf::conv_format_with_encoding<SrcEncoding> >& input )
 {
+    static_assert( std::is_same<typename SrcEncoding::char_type, SrcCharT>::value
+                 , "This encoding is associated with another character type." );
     return input.vwf.get_encoding();
 }
 
@@ -907,8 +900,10 @@ template < typename DestCharT, typename FPack, typename Preview
 constexpr STRF_HD decltype(auto) get_src_encoding
     ( const strf::detail::fmt_string_printer_input
         < DestCharT, FPack, Preview, SrcCharT, HasP, HasA
-        , strf::sani_format_with_encoding<SrcCharT, SrcEncoding> >& input )
+        , strf::sani_format_with_encoding<SrcEncoding> >& input )
 {
+    static_assert( std::is_same<typename SrcEncoding::char_type, SrcCharT>::value
+                 , "This encoding is associated with another character type." );
     return input.vwf.get_encoding();
 }
 
