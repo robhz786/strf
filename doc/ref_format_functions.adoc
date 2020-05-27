@@ -409,12 +409,11 @@ public:
     constexpr T&& operator+() && noexcept;           // show positive sign
     constexpr T&& operator*() && noexcept;           // show base
     [[deprecated]] constexpr T&& operator~() && noexcept;           // show base
-    
 
     constexpr /* see below {asterisk}/ hex() && noexcept; // hexadecimal base
     constexpr /* see below {asterisk}/ dec() && noexcept; // decimal base
     constexpr /* see below {asterisk}/ oct() && noexcept; // octal base
-    constexpr /* see below {asterisk}/ bin() && noexcept; // binary base 
+    constexpr /* see below {asterisk}/ bin() && noexcept; // binary base
 };
 } // namespace strf
 ----

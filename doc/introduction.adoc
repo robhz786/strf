@@ -1,0 +1,400 @@
+////
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
+
+= Introduction to the strf library
+:source-highlighter: prettify
+:sectnums:
+:sectnumlevels: 2
+:icons: font
+
+== Syntax
+
+image::syntax.svg[]
+
+The "destination" is the part of the expression that defines where the
+content goes and also the return type.
+Many destinations are supported and you can create your own one.
+However, for convenience, most code samples in this tutorial use `to_string`:
+[source,cpp]
+----
+#include <strf/to_string.hpp>
+
+void sample() {
+    int x = 200;
+    std::string str = strf::to_string(x, " in hexadecimal is ", strf::hex(x));
+    assert(str == "200 in hexadecimal is c8");
+}
+----
+
+////
+You can see that there is not format string, as in `printf`.
+Instead, __format functions_ ( as the `hex` above ) specify formatting.
+So in order to use translation tool like
+https://en.wikipedia.org/wiki/Gettext[gettext] you need to use an alternative
+syntax, which employs what is called here as the "Tr-string":
+////
+
+You can see that there is no format string here, as there is in `printf`.
+Instead, __format functions__ ( like `hex` above ) specify formatting.
+The expression `strf::hex(x)` is equivalent to `strf::fmt(x).hex()`.
+The return of `strf::fmt(x)` is an object containing the value of `x` in addition to
+format information which can edited with member ( format ) functions
+following the
+https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Named_Parameter[named paramenter idiom],
+like this: `strf::fmt(255).hex().p(4).fill(U'.') > 10`.
+
+To use a translation tools like
+https://en.wikipedia.org/wiki/Gettext[gettext],
+instead of `operator()`, you need to use the `tr` function,
+which employs what is called here as the __tr-string__:
+
+////
+Strf does not have a format string, as `printf` has. But that doesn't mean you
+can't use i18n tools like https://en.wikipedia.org/wiki/Gettext[gettext].
+You just need to use an alternative syntax, which employs what is called here as
+the <<quick_reference#tr_string,tr-string>>:
+////
+
+[source,cpp,subs=normal]
+----
+auto s = strf::to_string.tr("{} in hexadecimal is {}", x, strf::hex(x));
+----
+
+The `reserve`, `no_reseve` and `reserve_calc` functions are only available for some
+destinations -- those that allocate memory, which is the case of `to_string`.
+`reserve(size)` causes the destination to reserve enough space
+to store `size` characters. `reserve_calc()` has the same effect,
+except that it calculates the number of characters for you.
+
+=== Facets
+
+Finally, there is the `with` function, where you inject __facet objects__.
+Facets somehow complement format functions. Both aim to change
+how the data is printed. A facet example is the `lettercase` enumeration,
+which affects numeric and boolean values.
+
+[source,cpp]
+----
+namespace strf {
+  enum class lettercase { /* ... */ };
+  constexpr lettercase lowercase = /* ... */;
+  constexpr lettercase mixedcase = /* ... */;
+  constexpr lettercase uppercase = /* ... */;
+}
+----
+.Example
+[source,cpp]
+----
+auto str_uppercase = strf::to_string.with(strf::uppercase)
+    ( true, ' '*strf::hex(0xab), ' ', 1.0e+50 );
+
+auto str_mixedcase = strf::to_string.with(strf::mixedcase)
+    ( true, ' '*strf::hex(0xab), ' ', 1.0e+50 );
+
+assert(str_uppercase == "TRUE 0XAB 1E+50");
+assert(str_mixedcase == "True 0xAB 1e+50");
+----
+
+=== Constrained facets
+
+You can constrain facets to a set of input types:
+[source,cpp]
+----
+auto str = strf::to_string
+    .with(std::constrain<std::is_floating_point>(strf::uppercase))
+    ( true, ' '*strf::hex(0xab), ' ', 1.0e+50 );
+
+assert(str == "true 0xab 1E+50");
+----
+, or to a set of arguments:
+[source,cpp]
+----
+auto str = strf::to_string
+    ( true, ' ', 1.0e+50, " / "
+    , strf::with(strf::uppercase) ( true, ' ' 1.0e+50, " / ")
+    , true, ' ', 1.0e+50 );
+
+assert(str == "true 1e+50 / TRUE 1E+50 / true 1e+50 );
+----
+When there are multiple facets objects of the same _category_,
+the order matters. The later ones win:
+[source,cpp]
+----
+
+auto fa = strf::mixedcase;
+auto fb = std::constrain<std::is_floating_point>(strf::uppercase);
+
+using namespace strf;
+auto str_ab = to_string .with(fa, fb) (true, ' ', *hex(0xab), ' ', 1e+9);
+auto str_ba = to_string .with(fb, fa) (true, ' ', *hex(0xab), ' ', 1e+9);
+
+// In str_ab, fa overrides fb, but only for floating points
+// In str_ba, fb has no effect since it is completely overriden by fa:
+
+assert(str_ab == "True 0xAB 1E+9");
+assert(str_ba == "True 0xAB 1e+9");
+----
+
+=== Facets categories
+
+But what does it mean for two facet objects to belong to same __facet category__?
+In this library, the term _facet_ always refer to types. So `strf::lettercase`
+is a type and is a facet, while `strf::uppercase` is a facet value.
+In addition, a facet is always associated to one, and only one, facet category.
+However, several facets can "belong" to the same category.
+
+For each facet category there is class or struct
+with a public static member function `get_default()` which
+returns the default facet value of such facet category.
+By convention, the name of the category is the name of
+such class or a struct, and it has the "`_c`" suffix.
+For example, the category of `strf::lettercase` is `strf::lettercase_c`,
+and `strf::lettercase_c::get_default()` returns  `strf::lowercase`.
+
+Informaly ( perhaps in future it will be formal thanks to C++20 Concepts )
+for each facet category there is a list of requirements a type
+must satisfy to be a facet of the category. In the case of
+`strf::lettercase_c`, the requirement is, well, to be the
+`strf::lettercase` type, since this is only facet of this category
+by design. However other categories require the facet to
+contain member functions with specified signatures, effects,
+preconditions, posconditions and so on.
+
+////
+If you ever need to create your own facet category ( in
+case you need to a new printable type ),
+
+One precondition for all facets, regardless of the category,
+is to be move-constructible.
+
+The design of the facets currently provided by the library
+////
+
+The design of the facets
+varies a lot according to the category each one belongs to.
+But all facets currently available in the library have something in common:
+they all are small types ( in terms of `sizeof()` ) and CopyConstructible.
+In addition, most of them can be instantiated as `constexpr` values.
+
+In case you are wondering, the library uses the <<strf_hpp#facet_traits,`facet_traits`>>
+struct template to determinate the category of a given facet.
+
+=== Facets packs
+
+To avoid retyping all the facets object that you commonly use,
+you can store them into a <<strf_hpp#facets_pack,`facets_pack`>>,
+which you create with the <<strf_hpp#pack,`pack`>> function template:
+
+[source,cpp,subs=normal]
+----
+constexpr auto my_facets = strf::pack
+    ( strf::mixedcase
+    , std::constrain<strf::is_bool>(strf::uppercase)
+    , strf::numpunct<10>{3}.thousands_sep(U'.').decimal_point(U',')
+    , strf::numpunct<16>{4}.thousands_sep(U'\'')
+    , strf::windows_1252<char>() );
+
+
+auto str1 = strf::to_string.with(my_facets) (/{asterisk} \... {asterisk}/);
+// \...
+auto str2 = strf::to_string.with(my_facets) (/{asterisk} \... {asterisk}/);
+// \...
+----
+
+Any value that be passed to the `with` function, can also be passed to `pack`,
+and vice-versa. This means a `facets_pack` can contain another `facets_pack`.
+
+So the expression:
+[source,cpp,subs=normal]
+----
+__destination__ .with(strf::pack(f1, strf::pack(f2, f3), f4), f5) (/{asterisk} args\... {asterisk}/);
+----
+is equivalent to
+[source,cpp,subs=normal]
+----
+__destination__ .with(f1, f2, f3, f4, f5) (/{asterisk} args\... {asterisk}/);
+----
+which is equivalent to:
+[source,cpp,subs=normal]
+----
+__destination__ .with(f1).with(f2).with(f3).with(f4).with(f5) (/{asterisk} args\... {asterisk}/);
+----
+
+== Other destinations
+
+Up to here, we only covered things that define the content to be printed,
+not _where_ it is printed. Strf provides other expression besides `to_string` to
+setup the destinations. Many of them are overloads of the `to` function template.
+You can just replace the `to_string` expression by `to(_dest_)`, where `_dest_`
+can be, for example, an array of `char`:
+
+[source,cpp,subs=normal]
+----
+#include <strf.hpp> // another header !
+
+void sample() {
+    int x = 200;
+    char buff[200];
+    auto res = strf::to(buff) (x, " in hexadecimal is ", strf::hex(x));
+    assert(0 == strcmp(buff, "200 in hexadecimal is c8");
+    assert(strlen(buff) == (res.ptr - buff));
+    assert( ! res.truncated);
+
+    //now with a buffer that is too small
+    char small_buff[16];
+    auto res = strf::to(small_buff) (x, " in hexadecimal is ", strf::hex(x));
+    assert(res.truncated);
+    assert(res.ptr == small_buff + 15);
+    assert(*res.ptr == '\0');
+    assert(0 == strcmp(small_buff, "200 in hexadeci");
+}
+----
+
+However, I find another one even more interesting. It is the `to` function
+that writes to `basic_outbuf`:
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT>
+class basic_outbuf;
+
+using     outbuf = basic_outbuf<char>;
+using   u8outbuf = basic_outbuf<char8_t>;
+using  u16outbuf = basic_outbuf<char16_t>;
+using  u32outbuf = basic_outbuf<char32_t>;
+using    woutbuf = basic_outbuf<wchar_t>;
+using bin_outbuf = basic_outbuf<std::byte>;
+
+template <typename CharT>
+/{asterisk} \... {asterisk}/ to(strf::basic_outbuf<CharT>&);
+
+}
+----
+What so interesting about the the `basic_outbuf` abstract class template is
+that every destination there is a concrete class that derives from it.
+For example, when you use `to_string`, the library internally instantiates a
+`<<to_string_hpp#basic_string_maker, string_maker>>`. In the case of writting
+to a raw string, it is a `<<outbuf_hpp#basic_cstr_writer,cstr_writer`>>.
+
+So the statement:
+
+[source,cpp,subs=normal]
+----
+auto str = strf::to_string(arg1, arg2, arg3, arg4);
+----
+is equivalent to:
+[source,cpp,subs=normal]
+----
+strf::string_maker str_maker;
+strf::to(str_maker) (arg1, arg2, arg3, arg4);
+str = str_maker.finish()
+----
+
+The second form is more verbose, but it's more flexible.
+Because you don't have to pass all the input arguments in the
+same statement:
+
+[source,cpp,subs=normal]
+----
+strf::string_maker str_maker;
+auto print = str_maker.with(f1, f2, f3);
+
+if (condition1) {
+    print(arg1, arg2);
+}
+while (condition2) {
+    print(arg3, arg4, arg5);
+    //\...
+}
+print.with(f4) (arg6, arg7);
+// \...
+str = str_maker.finish()
+----
+
+Another reason to use `basic_outbuf` is when you don't want
+to commit yourself to a destination type. Suppose you need to
+create a function that to provides a textual message whose
+content and size are known only at run time.
+Instead of returning a string object or writting to caller-supplied
+`char*` ( both approachs have their downsides ), you can design
+your function like this:
+----
+void get_message(strf::outbuf& dest);
+----
+This way you let the caller decide which `outbuf` implementation
+to use. It could be the `string_maker` or `cstr_writer` or
+another one. There is no significant performance difference
+between writing into a `cstr_writer` and directly into a
+`char*`.
+
+However, when writing to a string -- either a raw string
+or a `std::string` -- that string need to be further sent
+to some other destination -- a file, a log system, or whatever
+-- otherwise it is useless, right?
+So what the caller can also do is to implement a new `outbuf`
+that writes directly into such final destination, and
+thus avoiding both heap allocation and content trucation.
+
+
+////
+
+ You certainly are
+familiar the following situation: Suppose you need to create
+a function aimed to provide a textual message whose content
+and size are known only at run time. How do you design it ?
+The usual solution is to return a string object, but
+it incurs a heap allocation which is higly undesirable
+in some environments:
+[source,cpp,subs=normal]
+----
+std::string get_message();
+----
+Another common approach is when the caller passes
+a `char*`. But then the caller never knows what
+size is adequate:
+[source,cpp,subs=normal]
+----
+void get_message(char* dest, std::size_t count);
+----
+You can also return a pointer to static buffer.
+But the fact that buffer is rewritten at every call
+can also be problematic:
+[source,cpp,subs=normal]
+----
+const char* get_message()
+{
+    static char buff[__big_enough_for_all_cases__];
+    //\... write into buff
+    return buff;
+}
+But now you have another solution, you write into an `outbuf&`.
+[source,cpp,subs=normal]
+----
+void get_message(strf::outbuf& dest);
+----
+And you leave the decision to the caller. The caller
+can use pass `string_maker` or a `cstr_writer`
+
+////
+
+
+== What's next ?
+
+The <<quick_reference#,quick reference>>  should explain most of things
+you need know about the library. This is the document you will probably
+use most of the time.
+
+For more specifice things, there are the header references:
+
+[horizontal]
+`<<outbuf_hpp#,<strf/outbuf.hpp>>>` :: This is lighweight header can be used in freestanding evironments and is the cornerstone of library. All other headers include it.
+`<<strf_hpp#,<strf.hpp>>>` :: Defines most of the library, including the main usage syntax , all printable types and all facets.
+`<<to_string_hpp#,<strf/to_string.hpp>>>` :: Provides utilities to write to `std::basic_string`. Includes `<<strf_hpp#main,<strf.hpp>>>`.
+`<<to_streambuf_hpp#,<strf/to_streambuf.hpp>>>` :: Provides utilities to write to `std::basic_streambuf`. Includes `<<strf_hpp#main,<strf.hpp>>>`.
+`<<to_cfile_hpp#,<strf/to_cfile.hpp>>>` :: Provides utilities to write to `FILE*`. Includes `<<strf_hpp#main,<strf.hpp>>>`.

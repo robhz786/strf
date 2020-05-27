@@ -1,5 +1,7 @@
 mkdir -p out
 
+asciidoctor -v introduction.adoc -o  out/introduction.html
+
 asciidoctor -v quick_reference.adoc -o  out/quick_reference.html
 
 asciidoctor -v strf_hpp.adoc -o - \

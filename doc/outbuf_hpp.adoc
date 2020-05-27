@@ -6,11 +6,11 @@ http://www.boost.org/LICENSE_1_0.txt
 ////
 
 [[main]]
-= `<outbuf.hpp>` Header file reference
+= `<strf/outbuf.hpp>` Header file reference
 :source-highlighter: prettify
 :sectnums:
 :toc: left
-:toc-title: <outbuf.hpp>
+:toc-title: <strf/outbuf.hpp>
 :toclevels: 1
 :icons: font
 
@@ -28,6 +28,67 @@ http://www.boost.org/LICENSE_1_0.txt
 :garbage_buf: <<garbage_buf, garbage_buf>>
 :garbage_buf_end: <<garbage_buf, garbage_buf_end>>
 
+////
+`<strf/outbuf.hpp>` is a lighweight header can be used in freestanding evironments. All other headers of the strf library include it. It's not affected by the `STRF_SEPARATE_COMPILATION` macro.
+////
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <std::size_t CharSize>
+constexpr std::size_t min_size_after_recycle();
+
+template <std::size_t CharSize>
+using underlying_char_type = /{asterisk} \... {asterisk}/;
+
+template <std::size_t CharSize>
+class underlying_outbuf
+{ /{asterisk} \... {asterisk}/ };
+
+template <typename CharT>
+class basic_outbuf: public underlying_outbuf<sizeof(CharT)>
+{ /{asterisk} \... {asterisk}/ };
+
+template <typename CharT>
+class basic_outbuf_noexcept: public basic_outbuf<CharT>
+{ /{asterisk} \... {asterisk}/ };
+
+template <std::size_t CharSize>
+void put(underlying_outbuf<CharSize>& ob, underlying_char_type<CharSize> c);
+
+template <typename CharT>
+void put(basic_outbuf<CharT>& ob, CharT c);
+
+template <typename CharT>
+class basic_cstr_writer final: public basic_outbuf_noexcept<CharT>
+{ /{asterisk} \... {asterisk}/};
+
+template <typename CharT>
+class discarded_outbuf final: public basic_outbuf_noexcept<CharT>
+{ /{asterisk} \... {asterisk}/};
+
+template <typename CharT>
+CharT* outbuf_garbage_buf();
+
+template <typename CharT>
+CharT* outbuf_garbage_buf_end();
+
+using bin_outbuf     = basic_outbuf<std::byte>;
+using u8outbuf       = basic_outbuf<char8_t>;
+using outbuf         = basic_outbuf<char>;
+using u16outbuf      = basic_outbuf<char16_t>;
+using u32outbuf      = basic_outbuf<char32_t>;
+using woutbuf        = basic_outbuf<wchar_t>;
+
+using u8cstr_writer  = basic_cstr_writer<char8_t>;
+using cstr_writer    = basic_cstr_writer<char>;
+using u16cstr_writer = basic_cstr_writer<char16_t>;
+using u32cstr_writer = basic_cstr_writer<char32_t>;
+using wcstr_writer   = basic_cstr_writer<wchar_t>;
+
+} // namespace strf
+----
 
 == Function template `min_size_after_recycle` [[min_size_after_recycle]]
 ====
@@ -551,10 +612,10 @@ class basic_cstr_writer final: public basic_outbuf_noexcept<CharT>
 {
 public:
 
-    basic_cstr_writer(CharT* dest, CharT* dest_end);
-    basic_cstr_writer(CharT* dest, std::size_t len);
+    basic_cstr_writer(CharT* dest, CharT* dest_end) noexcept;
+    basic_cstr_writer(CharT* dest, std::size_t len) noexcept;
     template <std::size_t N>
-    basic_cstr_writer(CharT (&dest)[N]);
+    basic_cstr_writer(CharT (&dest)[N]) noexcept;
 
     void recycle() noexcept override;
     struct result
@@ -562,7 +623,7 @@ public:
         CharT* ptr;
         bool truncated;
     };
-    result finish();
+    result finish() noexcept;
 };
 
 } // namespace strf
@@ -573,7 +634,7 @@ public:
 ====
 [source,cpp]
 ----
-basic_cstr_writer(CharT* dest, CharT* dest_end);
+basic_cstr_writer(CharT* dest, CharT* dest_end) noexcept;
 ----
 [horizontal]
 Precondition:: `dest < dest_end`
@@ -585,7 +646,7 @@ Postconditions::
 ====
 [source,cpp]
 ----
-basic_cstr_writer(CharT* dest, std::size_t dest_size);
+basic_cstr_writer(CharT* dest, std::size_t dest_size) noexcept;
 ----
 [horizontal]
 Precondition:: `dest_size != 0`
@@ -598,7 +659,7 @@ Postconditions::
 [source,cpp]
 ----
 template <std::size_t N>
-basic_cstr_writer(CharT (&dest)[N]);
+basic_cstr_writer(CharT (&dest)[N]) noexcept;
 ----
 [horizontal]
 Postconditions::
@@ -620,7 +681,7 @@ Postconditions::
 ====
 [source,cpp]
 ----
-result finish();
+result finish() noexcept;
 ----
 [horizontal]
 Effects::
@@ -634,6 +695,49 @@ Postconditions::
 - `end() == {garbage_buf_end}<CharT>()`
 ====
 
+[[discarded_outbuf]]
+== Class template `discarded_outbuf`
+
+`discarded_outbuf` it's the library's analogous to `/dev/null`.
+A `discarded_outbuf` object ignores anything written to it.
+
+[source,cpp]
+----
+namespace strf {
+
+template <typename CharT>
+class discarded_outbuf final: public basic_outbuf_noexcept<CharT>
+{
+public:
+    discarded_outbuf() noexcept;
+    void recycle() noexcept override;
+};
+
+} // namespace strf
+----
+====
+[source,cpp]
+----
+discarded_outbuf() noexcept;
+----
+[horizontal]
+Postconditions::
+- `good() == false`
+- `pointer() == {garbage_buf}<CharT>()`
+- `end() == {garbage_buf_end}<CharT>()`
+====
+====
+[source,cpp]
+----
+void recycle() noexcept;
+----
+[horizontal]
+Postconditions::
+- `good() == false`
+- `pointer() == {garbage_buf}<CharT>()`
+- `end() == {garbage_buf_end}<CharT>()`
+====
+
 [[garbage_buf]]
 == Garbage buffer
 These function templates return the begin and the end of a memory area that is never supposed to be read. It can be used when implementing a class that derives from `basic_outbuf` to set the buffer when the state is "bad".
@@ -641,13 +745,13 @@ These function templates return the begin and the end of a memory area that is n
 [source,cpp]
 ----
 template <typename CharT>
-CharT* garbage_buf();
+CharT* garbage_buf() noexcept;
 ----
 
 [source,cpp]
 ----
 template <typename CharT>
-CharT* garbage_buf_end();
+CharT* garbage_buf_end() noexcept;
 ----
 
 

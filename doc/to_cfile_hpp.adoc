@@ -5,11 +5,11 @@ See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
 [[main]]
-= `<to_cfile.hpp>` Header file reference
+= `<strf/to_cfile.hpp>` Header file reference
 :source-highlighter: prettify
 :sectnums:
 :toc: left
-:toc-title: <to_cfile.hpp>
+:toc-title: <strf/to_cfile.hpp>
 :toclevels: 1
 :icons: font
 
@@ -28,6 +28,27 @@ http://www.boost.org/LICENSE_1_0.txt
 NOTE: This document is still a work in progress.
 
 NOTE: This header files includes `<strf.hpp>`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT>
+class narrow_cfile_writer final: public basic_outbuf_noexcept<CharT>
+{ /{asterisk}\...{asterisk}/ };
+
+class wide_cfile_writer final: public basic_outbuf_noexcept<wchar_t>
+{ /{asterisk}\...{asterisk}/ };
+
+// Destination makers:
+
+template <typename CharT = char>
+/{asterisk} \... {asterisk}/  to(std::FILE{asterisk});
+
+/{asterisk} \... {asterisk}/ wto(std::FILE{asterisk});
+
+} // namespace strf
+----
 
 [[narrow_cfile_writer]]
 == Class template `narrow_cfile_writer`
@@ -92,8 +113,7 @@ Return value::
 ----
 namespace strf {
 
-template <typename CharT>
-class wide_cfile_writer final: public {basic_outbuf_noexcept}<CharT> {
+class wide_cfile_writer final: public {basic_outbuf_noexcept}<wchar_t> {
 public:
     explicit wide_cfile_writer(std::FILE{asterisk} dest);
 
@@ -135,6 +155,7 @@ Return value::
 - `result::success` is the value `good()` would return before this call to `finish()`
 ====
 
+[[to]]
 == Function template `to`
 
 [source,cpp,subs=normal]
@@ -153,6 +174,7 @@ Return value:: A destination object whose internal __{OutbufCreator}__ object `o
 is such that `obc.create()` returns a `{narrow_cfile_writer}<CharT>` object initialized
 with `dest`.
 
+[[wto]]
 == Function `wto`
 
 [source,cpp,subs=normal]

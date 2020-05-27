@@ -45,23 +45,23 @@ see https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
   <a href="quick_reference.html#facets" target="_parent">
       <rect width="170" height="28" rx="10" ry="10" x="240" y="5"/>
 
-      <text x="250" y="24" >
+      <text x="245" y="24" >
         <tspan class="code">.with(</tspan>
-        <tspan class="repl">facets...</tspan>
+        <tspan class="repl">facet_args...</tspan>
         <tspan class="code">)</tspan>
       </text>
   </a>
 
   <a href="quick_reference.html#reserve" target="_parent">
     <rect width="170" height="28" rx="10" ry="10" x="240" y="49"/>
-    <text x="250" y="68" >
+    <text x="245" y="68" >
       <tspan class="code">.no_reserve()</tspan>
     </text>
   </a>
 
   <a href="quick_reference.html#reserve" target="_parent">
     <rect width="170" height="28" rx="10" ry="10" x="240" y="93"/>
-    <text x="250" y="112" >
+    <text x="245" y="112" >
       <tspan class="code">.reserve(</tspan>
       <tspan class="repl">size</tspan>
       <tspan class="code">)</tspan>
@@ -70,7 +70,7 @@ see https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
 
   <a href="quick_reference.html#reserve" target="_parent">
     <rect width="170" height="28" rx="10" ry="10" x="240" y="137"/>
-    <text x="250" y="156" class="code">.reserve_calc()</text>
+    <text x="245" y="156" class="code">.reserve_calc()</text>
   </a>
 
   <a href="quick_reference.html#destinations" target="_parent">
@@ -105,7 +105,7 @@ see https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
 
   <a href="quick_reference.html#input_types" target="_parent">
     <rect width="195" height="28" rx="10" ry="10" x="472" y="159"/>
-    <text x="482" y="178">
+    <text x="480" y="178">
       <tspan class="code">(</tspan>
       <tspan class="repl">args...</tspan>
       <tspan class="code">)</tspan>
@@ -113,7 +113,7 @@ see https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
   </a>
   <a href="quick_reference.html#tr_string" target="_parent">
     <rect width="195" height="28" rx="10" ry="10" x="472" y="203"/>
-    <text x="482" y="222">
+    <text x="477" y="222">
       <tspan class="code">.tr(</tspan>
       <tspan class="repl">tr-string</tspan>
       <tspan class="code">,</tspan>

@@ -185,10 +185,10 @@ using u16string_maker = basic_string_maker<char16_t>;
 using u32string_maker = basic_string_maker<char32_t>;
 using wstring_maker = basic_string_maker<wchar_t>;
 
-using pre_sized_string_maker = basic_sized_string_maker<char>;
-using pre_sized_u16string_maker = basic_sized_string_maker<char16_t>;
-using pre_sized_u32string_maker = basic_sized_string_maker<char32_t>;
-using pre_sized_wstring_maker = basic_sized_string_maker<wchar_t>;
+using sized_string_maker = basic_sized_string_maker<char>;
+using sized_u16string_maker = basic_sized_string_maker<char16_t>;
+using sized_u32string_maker = basic_sized_string_maker<char32_t>;
+using sized_wstring_maker = basic_sized_string_maker<wchar_t>;
 
 #if defined(__cpp_char8_t)
 

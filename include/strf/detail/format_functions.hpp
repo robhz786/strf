@@ -597,7 +597,7 @@ constexpr STRF_HD auto conv(const T& value)
 template <typename T, typename E>
 constexpr STRF_HD auto conv(const T& value, const E& e)
 {
-    return fmt(value).convert_encoding(e);  // defined in no_conv_format_fn
+    return fmt(value).convert_from_encoding(e);  // defined in no_conv_format_fn
 }
 
 template <typename T>
@@ -609,7 +609,7 @@ constexpr STRF_HD auto sani(const T& value)
 template <typename T, typename E>
 constexpr STRF_HD auto sani(const T& value, const E& e)
 {
-    return fmt(value).sanitize_encoding(e);  // defined in no_conv_format_fn
+    return fmt(value).sanitize_from_encoding(e);  // defined in no_conv_format_fn
 }
 
 } // inline namespace format_functions

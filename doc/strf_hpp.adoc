@@ -35,15 +35,27 @@ http://www.boost.org/LICENSE_1_0.txt
 
 NOTE: This document is still a work in progress.
 
+////
+
+`<<strf_hpp#main,<strf.hpp> >>` defines most of the library, including the main usage syntax , all printable types and all facets.
+
+If you are using strf as a static library ( instead of header-only ) you must have the macro `STRF_SEPARATE_COMPILATION` defined when including `<strf.hpp>`.
+
+When macro `STRF_FREESTANDING` is defined, `<strf.hpp>` depends only
+on https://en.cppreference.com/w/cpp/freestanding[freestanding] standard headers
+and `<utility>`.
+
+When macro `STRF_WITH_CSTRING` is defined `<strf.hpp>` uses `<cstring>`
+even when `STRF_FREESTANDING` is defined.
+
+`<<strf_hpp#main,<strf.hpp> >>` includes `<strf/outbuf.hpp>`.
+
+////
 
 include::ref_facets_pack.adoc[]
 include::ref_destination.adoc[]
 include::ref_tr-string.adoc[]
-
-== Printable types
-
-__ To-do __
-
+include::ref_printable_types.adoc[]
 include::ref_char_encoding.adoc[]
 include::ref_width.adoc[]
 

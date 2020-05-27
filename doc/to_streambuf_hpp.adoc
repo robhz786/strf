@@ -5,11 +5,11 @@ See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
 [[main]]
-= `<to_streambuf.hpp>` Header file reference
+= `<strf/to_streambuf.hpp>` Header file reference
 :source-highlighter: prettify
 :sectnums:
 :toc: left
-:toc-title: <to_cfile.hpp>
+:toc-title: <strf/to_streambuf.hpp>
 :toclevels: 1
 :icons: font
 
@@ -26,6 +26,28 @@ http://www.boost.org/LICENSE_1_0.txt
 NOTE: This document is still a work in progress.
 
 NOTE: This header files includes `<strf.hpp>`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT, typename Traits = std::char_traits<CharT> >
+class basic_streambuf_writer final: public basic_outbuf<CharT>
+{ /{asterisk}\...{asterisk}/ };
+
+using streambuf_writer  = basic_streambuf_writer<char>;
+using wstreambuf_writer = basic_streambuf_writer<wchar_t>;
+
+// Destination makers:
+
+template <typename CharT, typename Traits>
+/{asterisk} \... {asterisk}/ to(std::basic_streambuf<CharT, Traits>& dest);
+
+template <typename CharT, typename Traits>
+/{asterisk} \... {asterisk}/ to(std::basic_streambuf<CharT, Traits>* dest);
+
+} // namespace strf
+----
 
 [[basic_streambuf_writer]]
 == Class template `basic_streambuf_writer`
@@ -88,6 +110,7 @@ Return value::
 - `result::success` is the value `good()` would return before this call to `finish()`.
 ====
 
+[[to]]
 == Function templates `to`
 
 [source,cpp,subs=normal]

@@ -11,12 +11,6 @@ namespace strf {
 inline namespace format_functions {
 
 template <typename T>
-constexpr auto fmt(const T& value)
-{
-    return make_fmt(strf::rank<5>{}, value);
-}
-
-template <typename T>
 constexpr auto hex(const T& value)
 {
     return fmt(value).hex();

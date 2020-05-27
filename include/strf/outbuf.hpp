@@ -123,9 +123,6 @@ private:
 };
 
 template <typename CharT>
-class basic_outbuf;
-
-template <typename CharT>
 class basic_outbuf: private strf::underlying_outbuf<sizeof(CharT)>
 {
     using underlying_impl_ = strf::underlying_outbuf<sizeof(CharT)>;
@@ -320,13 +317,13 @@ inline STRF_HD char32_t* outbuf_garbage_buf_()
 } // namespace detail
 
 template <typename CharT>
-inline STRF_HD CharT* outbuf_garbage_buf()
+inline STRF_HD CharT* outbuf_garbage_buf() noexcept
 {
     return reinterpret_cast<CharT*>(strf::detail::outbuf_garbage_buf_());
 }
 
 template <typename CharT>
-inline STRF_HD CharT* outbuf_garbage_buf_end()
+inline STRF_HD CharT* outbuf_garbage_buf_end() noexcept
 {
     return strf::outbuf_garbage_buf<CharT>()
         + strf::min_size_after_recycle<sizeof(CharT)>();
@@ -337,25 +334,25 @@ class basic_cstr_writer final: public strf::basic_outbuf_noexcept<CharT>
 {
 public:
 
-    STRF_HD basic_cstr_writer(CharT* dest, CharT* dest_end)
+    STRF_HD basic_cstr_writer(CharT* dest, CharT* dest_end) noexcept
         : basic_outbuf_noexcept<CharT>(dest, dest_end - 1)
     {
         STRF_ASSERT(dest < dest_end);
     }
 
-    STRF_HD basic_cstr_writer(CharT* dest, std::size_t len)
+    STRF_HD basic_cstr_writer(CharT* dest, std::size_t len) noexcept
         : basic_outbuf_noexcept<CharT>(dest, dest + len - 1)
     {
         STRF_ASSERT(len != 0);
     }
 
     template <std::size_t N>
-    STRF_HD basic_cstr_writer(CharT (&dest)[N])
+    STRF_HD basic_cstr_writer(CharT (&dest)[N]) noexcept
         : basic_outbuf_noexcept<CharT>(dest, dest + N - 1)
     {
     }
 
-    STRF_HD basic_cstr_writer(basic_cstr_writer&& r)
+    STRF_HD basic_cstr_writer(basic_cstr_writer&& r) noexcept
         : basic_cstr_writer(r.pointer(), r.end())
     {}
 
@@ -375,7 +372,7 @@ public:
         bool truncated;
     };
 
-    STRF_HD result finish()
+    STRF_HD result finish() noexcept
     {
         bool g = this->good();
         if (g) {
@@ -410,7 +407,7 @@ class discarded_outbuf final
 {
 public:
 
-    STRF_HD discarded_outbuf()
+    STRF_HD discarded_outbuf() noexcept
         : basic_outbuf_noexcept<CharT>
             { strf::outbuf_garbage_buf<CharT>()
             , strf::outbuf_garbage_buf_end<CharT>() }

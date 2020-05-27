@@ -34,8 +34,7 @@ Compile-time requirements::: All types in `FPE\...` satisfy
 constexpr facets_pack(const facets_pack& other);
 ----
 ::
-Effects::: Initializes each element with the const reference
-          of the corresponding element in `other`
+Effects::: Initializes each element in this object with the corresponding element in `other`
 Compile-time requirements::: `std::is_copy_constructible_v<FPE> && \...`,
       otherwise this constructor does not participate in overload resolution.
 ====

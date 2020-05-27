@@ -80,11 +80,8 @@ private:
     CharT buf_[buf_size_];
 };
 
-using streambuf_writer
-    = strf::basic_streambuf_writer< char, std::char_traits<char> >;
-
-using wstreambuf_writer
-    = strf::basic_streambuf_writer< wchar_t, std::char_traits<wchar_t> >;
+using streambuf_writer  = strf::basic_streambuf_writer<char>;
+using wstreambuf_writer = strf::basic_streambuf_writer<wchar_t>;
 
 namespace detail {
 

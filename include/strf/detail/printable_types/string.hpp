@@ -110,7 +110,7 @@ public:
     }
 
     template <typename Encoding>
-    constexpr STRF_HD auto convert_encoding(Encoding enc) const
+    constexpr STRF_HD auto convert_from_encoding(Encoding enc) const
     {
         static_assert( std::is_same<typename Encoding::char_type, CharT>::value
                      , "This encoding is associated with another character type." );
@@ -131,7 +131,7 @@ public:
     template <typename Encoding>
     constexpr STRF_HD auto conv(Encoding enc) const
     {
-        return convert_encoding(enc);
+        return convert_from_encoding(enc);
     }
 
     constexpr STRF_HD auto sanitize_encoding() const
@@ -142,7 +142,7 @@ public:
         return return_type{ static_cast<const T&>(*this) };
     }
     template <typename Encoding>
-    constexpr STRF_HD auto sanitize_encoding(Encoding enc) const
+    constexpr STRF_HD auto sanitize_from_encoding(Encoding enc) const
     {
         static_assert( std::is_same<typename Encoding::char_type, CharT>::value
                      , "This encoding is associated with another character type." );
@@ -163,7 +163,7 @@ public:
     template <typename Encoding>
     constexpr auto sani(Encoding enc) const
     {
-        return sanitize_encoding(enc);
+        return sanitize_from_encoding(enc);
     }
 };
 

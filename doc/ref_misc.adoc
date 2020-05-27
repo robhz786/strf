@@ -221,6 +221,8 @@ Effect:: Same as `write(ob, wcstr, std::wstrlen(wcstr))`
 
 === Destination markers
 
+[[to_char_ptr_count]]
+====
 [source,cpp,subs=normal]
 ----
 namespace strf {
@@ -240,7 +242,9 @@ Return type:: `{destination_no_reserve}<OBC>`, where `OBC` is an implementation-
 Return value:: A destination object whose internal __{OutbufCreator}__ object `obc`
 is such that `obc.create()` returns a `{basic_cstr_writer}<CharT>` object initialized
 with `dest` and `count`, where, `CharT` is `std::remove_reference_t<decltype(*dest)>`.
-
+====
+====
+[[to_char_array]]
 [source,cpp,subs=normal]
 ----
 namespace strf {
@@ -255,7 +259,9 @@ template<std::size_t N> __/{asterisk} see below {asterisk}/__ to(wchar_t  (&dest
 ----
 [horizontal]
 Return type and value:: Same as `to(dest, N)`;
-
+====
+====
+[[to_char_range]]
 [source,cpp,subs=normal]
 ----
 namespace strf {
@@ -270,6 +276,17 @@ __/{asterisk} see below {asterisk}/__ to(wchar_t{asterisk}  dest,  wchar_t{aster
 ----
 [horizontal]
 Return type and value:: Same as `to(dest, (std::size_t)(end - dest))`;
+====
+[[alignment_format_functions]]
+=== Alignment format functions
+
+[horizontal]
+.Text aligment format function
+`operator>(std::int16_t width)`::: Align to the right ( Or to the left right-to-left (RTL) script )
+`operator<(std::int16_t width)`::: Align to the left ( Or to the right right-to-left (RTL) script )
+`operator^(std::int16_t width)`::: Center alignment
+`operator%(std::int16_t width)`::: Split the content, as in `std::internal`.
+`fill(char32_t ch)`::: Set the fill character.
 
 === Format function aliases
 
