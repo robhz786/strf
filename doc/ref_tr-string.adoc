@@ -5,7 +5,7 @@ See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
 
-:default_tr_error_handler: <<default_tr_error_handler,default_tr_error_handler>>
+:default_tr_error_notifier: <<default_tr_error_notifier,default_tr_error_notifier>>
 
 [[tr_string]]
 == Tr-String
@@ -58,38 +58,38 @@ assert(str == "} {x} {aaa {bbb}");
 When the argument associated with a `"{"` does not exists, the library does two things:
 
 - It prints a https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character `"\uFFFD"` (&#65533;) ] ( or `"?"` when the encoding can't represent it ) where the missing argument would be printed.
-- It calls the `handle` function on the facet object correspoding to the `tr_error_handling_c` category.
+- It calls the `handle` function on the facet object correspoding to the `tr_error_notifier_c` category.
 
-=== Facet category `tr_error_handling_c` [[tr_error_handling_c]]
+=== Facet category `tr_error_notifier_c` [[tr_error_notifier_c]]
 
-For a type to be a facet of the `tr_error_handling_c`, it must satisfy the
+For a type to be a facet of the `tr_error_notifier_c`, it must satisfy the
 requirements of __<<TrErrorHandling,TrErrorHandling>>__
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
-struct tr_error_handler_c {
-    static constexpr {default_tr_error_handler} get_default() noexcept
+struct tr_error_notifier_c {
+    static constexpr {default_tr_error_notifier} get_default() noexcept
     {
-        return {default_tr_error_handler}{};
+        return {default_tr_error_notifier}{};
     }
 };
 
 } // namespace strf
 ----
 
-==== Struct `default_tr_error_handler` [[default_tr_error_handler]]
+==== Struct `default_tr_error_notifier` [[default_tr_error_notifier]]
 
-`default_tr_error_handler` is the default facet of the `tr_error_handler_c` category.
+`default_tr_error_notifier` is the default facet of the `tr_error_notifier_c` category.
 It's a dummy error handler.
 
 [source,cpp]
 ----
 namespace strf {
 
-struct default_tr_error_handler {
-    using category = tr_error_handler_c;
+struct default_tr_error_notifier {
+    using category = tr_error_notifier_c;
 
     template <typename CharEncoding>
     void handle
@@ -119,7 +119,7 @@ Given:
 The following must host:
 
 - `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[__CopyConstructible__].
-- `X::category` is a type alias to `tr_error_handling_c`
+- `X::category` is a type alias to `tr_error_notifier_c`
 - The following expression is supported:
 
 ====

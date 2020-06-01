@@ -8,7 +8,7 @@
 class err_handler {
 
 public:
-    using category = strf::tr_error_handler_c;
+    using category = strf::tr_error_notifier_c;
 
     err_handler(const err_handler&) = default;
 

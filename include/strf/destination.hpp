@@ -218,7 +218,7 @@ private:
         using catenc = strf::char_encoding_c<CharT>;
         auto enc = strf::get_facet<catenc, void>(self.fpack_);
 
-        using caterr = strf::tr_error_handler_c;
+        using caterr = strf::tr_error_notifier_c;
         decltype(auto) err_hdl = strf::get_facet<caterr, void>(self.fpack_);
         using err_hdl_type = std::remove_cv_t<std::remove_reference_t<decltype(err_hdl)>>;
 

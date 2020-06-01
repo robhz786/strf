@@ -11,11 +11,11 @@
 
 namespace strf {
 
-struct tr_error_handler_c;
+struct tr_error_notifier_c;
 
-struct default_tr_error_handler
+struct default_tr_error_notifier
 {
-    using category = strf::tr_error_handler_c;
+    using category = strf::tr_error_notifier_c;
 
     template <typename CharEncoding>
     inline STRF_HD void handle
@@ -31,10 +31,10 @@ struct default_tr_error_handler
     }
 };
 
-struct tr_error_handler_c {
-    static constexpr strf::default_tr_error_handler get_default() noexcept
+struct tr_error_notifier_c {
+    static constexpr strf::default_tr_error_notifier get_default() noexcept
     {
-        return strf::default_tr_error_handler{};
+        return strf::default_tr_error_notifier{};
     }
 };
 
