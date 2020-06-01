@@ -205,6 +205,9 @@ class fpe_wrapper
 
 public:
 
+    constexpr fpe_wrapper(const fpe_wrapper&) = default;
+    constexpr fpe_wrapper(fpe_wrapper&&) = default;
+
     template
         < typename F = Facet
         , typename = std::enable_if_t<std::is_copy_constructible<F>::value> >
@@ -248,6 +251,9 @@ class fpe_wrapper<Rank, strf::constrained_fpe<Filter, FPE>>
 
 public:
 
+    constexpr fpe_wrapper(const fpe_wrapper&) = default;
+    constexpr fpe_wrapper(fpe_wrapper&&) = default;
+
     template
         < typename F = FPE
         , typename = std::enable_if_t<std::is_copy_constructible<F>::value > >
@@ -285,6 +291,9 @@ class fpe_wrapper<Rank, const FPE&>
 {
 public:
 
+    constexpr fpe_wrapper(const fpe_wrapper&) = default;
+    constexpr fpe_wrapper(fpe_wrapper&&) = default;
+
     constexpr STRF_HD fpe_wrapper(const FPE& fpe)
         : fpe_(fpe)
     {
@@ -319,6 +328,9 @@ class fpe_wrapper<Rank, strf::facets_pack<FPE...>>
         <strf::detail::has_facet_v<Category, Tag, FPE>...>;
 
 public:
+
+    constexpr fpe_wrapper(const fpe_wrapper&) = default;
+    constexpr fpe_wrapper(fpe_wrapper&&) = default;
 
     template
         < typename FP = fp_type_
@@ -369,6 +381,9 @@ class facets_pack_base< strf::detail::tmp_list<FPEWrappers ...>
     }
 
 public:
+
+    constexpr facets_pack_base(const facets_pack_base&) = default;
+    constexpr facets_pack_base(facets_pack_base&&) = default;
 
     template
         < typename WL = detail::tmp_list<FPE...>
@@ -446,6 +461,9 @@ class facets_pack_base<RankN, TipFPE, OthersFPE...>
 
 public:
 
+    constexpr facets_pack_base(const facets_pack_base&) = default;
+    constexpr facets_pack_base(facets_pack_base&&) = default;
+
     template< typename T = TipFPE
             , typename B = base_others_fpe_
             , typename = std::enable_if_t
@@ -507,6 +525,9 @@ template <template <class> class Filter, typename FPE>
 class constrained_fpe
 {
 public:
+
+    constexpr constrained_fpe(const constrained_fpe&) = default;
+    constexpr constrained_fpe(constrained_fpe&&) = default;
 
     static_assert(strf::is_constrainable_v<FPE>, "FPE not constrainable");
 
@@ -577,6 +598,9 @@ class facets_pack: private strf::detail::facets_pack_base_t<FPE...>
     }
 
 public:
+
+    constexpr facets_pack(const facets_pack&) = default;
+    constexpr facets_pack(facets_pack&&) = default;
 
     template
         < bool Dummy = true
