@@ -439,7 +439,7 @@ public:
         init_(i.preview, i.value);
     }
 
-    STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override;
+    STRF_HD void print_to(strf::underlying_outbuff<CharSize>& ob) const override;
 
 private:
 
@@ -479,7 +479,7 @@ private:
 
 template <std::size_t CharSize>
 STRF_HD void int_printer<CharSize>::print_to
-    ( strf::underlying_outbuf<CharSize>& ob ) const
+    ( strf::underlying_outbuff<CharSize>& ob ) const
 {
     unsigned size = digcount_ + negative_;
     ob.ensure(size);
@@ -528,7 +528,7 @@ public:
             ( static_cast<std::int16_t>(sepcount_ + digcount_ + negative_) );
     }
 
-    STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override;
+    STRF_HD void print_to(strf::underlying_outbuff<CharSize>& ob) const override;
 
 private:
 
@@ -543,7 +543,7 @@ private:
 };
 
 template <std::size_t CharSize>
-STRF_HD void punct_int_printer<CharSize>::print_to(strf::underlying_outbuf<CharSize>& ob) const
+STRF_HD void punct_int_printer<CharSize>::print_to(strf::underlying_outbuff<CharSize>& ob) const
 {
     if (sepcount_ == 0) {
         ob.ensure(negative_ + digcount_);
@@ -624,14 +624,14 @@ public:
                                         + static_cast<int>(sepcount_) );
     }
 
-    STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override;
+    STRF_HD void print_to(strf::underlying_outbuff<CharSize>& ob) const override;
     STRF_HD void calc_size(strf::size_preview<false>& ) const
     {
     }
     STRF_HD void calc_size(strf::size_preview<true>& ) const;
 
-    STRF_HD void write_complement(strf::underlying_outbuf<CharSize>& ob) const;
-    STRF_HD void write_digits(strf::underlying_outbuf<CharSize>& ob) const;
+    STRF_HD void write_complement(strf::underlying_outbuff<CharSize>& ob) const;
+    STRF_HD void write_digits(strf::underlying_outbuff<CharSize>& ob) const;
 
 private:
 
@@ -706,7 +706,7 @@ STRF_HD void partial_fmt_int_printer<CharSize, Base>::calc_size
 
 template <std::size_t CharSize, int Base>
 STRF_HD inline void partial_fmt_int_printer<CharSize, Base>::print_to
-    ( strf::underlying_outbuf<CharSize>& ob ) const
+    ( strf::underlying_outbuff<CharSize>& ob ) const
 {
     if (sepcount_ == 0) {
         ob.ensure(prefixsize_ + digcount_);
@@ -756,7 +756,7 @@ STRF_HD inline void partial_fmt_int_printer<CharSize, Base>::print_to
 
 template <std::size_t CharSize, int Base>
 inline STRF_HD void partial_fmt_int_printer<CharSize, Base>::write_complement
-    ( strf::underlying_outbuf<CharSize>& ob ) const
+    ( strf::underlying_outbuff<CharSize>& ob ) const
 {
     if (prefixsize_ != 0) {
         ob.ensure(prefixsize_);
@@ -782,7 +782,7 @@ inline STRF_HD void partial_fmt_int_printer<CharSize, Base>::write_complement
 
 template <std::size_t CharSize, int Base>
 inline STRF_HD void partial_fmt_int_printer<CharSize, Base>::write_digits
-    ( strf::underlying_outbuf<CharSize>& ob ) const
+    ( strf::underlying_outbuff<CharSize>& ob ) const
 {
     if (precision_ > digcount_) {
         unsigned zeros = precision_ - digcount_;
@@ -816,7 +816,7 @@ public:
 
     STRF_HD ~full_fmt_int_printer();
 
-    STRF_HD void print_to( strf::underlying_outbuf<CharSize>& ob ) const override;
+    STRF_HD void print_to( strf::underlying_outbuff<CharSize>& ob ) const override;
 
 private:
 
@@ -843,7 +843,7 @@ private:
     }
 
     STRF_HD  void write_fill_
-        ( strf::underlying_outbuf<CharSize>& ob
+        ( strf::underlying_outbuff<CharSize>& ob
         , std::size_t count ) const
     {
         return encode_fill_(ob, count, afmt_.fill);
@@ -878,7 +878,7 @@ STRF_HD full_fmt_int_printer<CharSize, Base>::~full_fmt_int_printer()
 
 template <std::size_t CharSize, int Base>
 STRF_HD void full_fmt_int_printer<CharSize, Base>::print_to
-        ( strf::underlying_outbuf<CharSize>& ob ) const
+        ( strf::underlying_outbuff<CharSize>& ob ) const
 {
     if (fillcount_ == 0) {
         ichars_.print_to(ob);

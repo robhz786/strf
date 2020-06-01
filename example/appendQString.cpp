@@ -8,7 +8,7 @@
 #include <strf.hpp>
 #include <climits>
 
-class QStringAppender: public strf::basic_outbuf<char16_t>
+class QStringAppender: public strf::basic_outbuff<char16_t>
 {
 public:
 
@@ -41,13 +41,13 @@ private:
 
 //[QStringAppender_ctor
 QStringAppender::QStringAppender(QString& str)
-    : strf::basic_outbuf<char16_t>(buffer_, buffer_size_)
+    : strf::basic_outbuff<char16_t>(buffer_, buffer_size_)
     , str_(str)
 {
 }
 
 QStringAppender::QStringAppender(QString& str, std::size_t size)
-    : strf::basic_outbuf<char16_t>(buffer_, buffer_size_)
+    : strf::basic_outbuff<char16_t>(buffer_, buffer_size_)
     , str_(str)
 {
     Q_ASSERT(str_.size() + size < static_cast<std::size_t>(INT_MAX));

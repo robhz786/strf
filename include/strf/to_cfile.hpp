@@ -13,12 +13,12 @@
 namespace strf {
 
 template <typename CharT>
-class narrow_cfile_writer final: public strf::basic_outbuf_noexcept<CharT>
+class narrow_cfile_writer final: public strf::basic_outbuff_noexcept<CharT>
 {
 public:
 
     explicit STRF_HD narrow_cfile_writer(std::FILE* d)
-        : strf::basic_outbuf_noexcept<CharT>(buf_, buf_size_)
+        : strf::basic_outbuff_noexcept<CharT>(buf_, buf_size_)
         , dest_(d)
     {
         STRF_ASSERT(d != nullptr);
@@ -78,12 +78,12 @@ private:
     CharT buf_[buf_size_];
 };
 
-class wide_cfile_writer final: public strf::basic_outbuf_noexcept<wchar_t>
+class wide_cfile_writer final: public strf::basic_outbuff_noexcept<wchar_t>
 {
 public:
 
     explicit wide_cfile_writer(std::FILE* d)
-        : strf::basic_outbuf_noexcept<wchar_t>(buf_, buf_size_)
+        : strf::basic_outbuff_noexcept<wchar_t>(buf_, buf_size_)
         , dest_(d)
     {
         STRF_ASSERT(d != nullptr);
@@ -151,8 +151,8 @@ class narrow_cfile_writer_creator
 public:
 
     using char_type = CharT;
-    using outbuf_type = strf::narrow_cfile_writer<CharT>;
-    using finish_type = typename outbuf_type::result;
+    using outbuff_type = strf::narrow_cfile_writer<CharT>;
+    using finish_type = typename outbuff_type::result;
 
     constexpr narrow_cfile_writer_creator(FILE* file) noexcept
         : file_(file)
@@ -161,9 +161,9 @@ public:
     constexpr narrow_cfile_writer_creator
         (const narrow_cfile_writer_creator&) = default;
 
-    outbuf_type create() const
+    outbuff_type create() const
     {
-        return outbuf_type{file_};
+        return outbuff_type{file_};
     }
 
 private:
@@ -175,8 +175,8 @@ class wide_cfile_writer_creator
 public:
 
     using char_type = wchar_t;
-    using outbuf_type = strf::wide_cfile_writer;
-    using finish_type = typename outbuf_type::result;
+    using outbuff_type = strf::wide_cfile_writer;
+    using finish_type = typename outbuff_type::result;
 
     constexpr wide_cfile_writer_creator(FILE* file) noexcept
         : file_(file)
@@ -184,9 +184,9 @@ public:
 
     constexpr wide_cfile_writer_creator(const wide_cfile_writer_creator&) = default;
 
-    outbuf_type create() const
+    outbuff_type create() const
     {
-        return outbuf_type{file_};
+        return outbuff_type{file_};
     }
 
 private:

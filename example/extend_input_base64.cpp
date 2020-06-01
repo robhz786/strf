@@ -118,7 +118,7 @@ public:
         , strf::print_preview<PreviewSize, strf::preview_width::no>& preview
         , const base64_input_with_format& fmt );
 
-    void print_to(strf::underlying_outbuf<CharSize>& ob) const override;
+    void print_to(strf::underlying_outbuff<CharSize>& ob) const override;
 
 private:
 
@@ -128,15 +128,15 @@ private:
 
     void calc_size_(strf::size_preview<true>&) const;
 
-    void write_single_line_(strf::underlying_outbuf<CharSize>& ob) const;
+    void write_single_line_(strf::underlying_outbuff<CharSize>& ob) const;
 
-    void encode_all_data_in_this_line_(strf::underlying_outbuf<CharSize>& ob) const;
+    void encode_all_data_in_this_line_(strf::underlying_outbuff<CharSize>& ob) const;
 
-    void write_multiline_(strf::underlying_outbuf<CharSize>& ob) const;
+    void write_multiline_(strf::underlying_outbuff<CharSize>& ob) const;
 
-    void write_identation_(strf::underlying_outbuf<CharSize>& ob) const;
+    void write_identation_(strf::underlying_outbuff<CharSize>& ob) const;
 
-    void write_end_of_line_(strf::underlying_outbuf<CharSize>& ob) const;
+    void write_end_of_line_(strf::underlying_outbuff<CharSize>& ob) const;
 
     void encode_3bytes_
         ( char_type* dest
@@ -178,7 +178,7 @@ void base64_printer<CharSize>::calc_size_(strf::size_preview<true>& preview) con
 //[ base64_printer__write
 
 template <std::size_t CharSize>
-void base64_printer<CharSize>::print_to(strf::underlying_outbuf<CharSize>& ob) const
+void base64_printer<CharSize>::print_to(strf::underlying_outbuff<CharSize>& ob) const
 {
     if (facet_.single_line()) {
         write_single_line_(ob);
@@ -188,14 +188,14 @@ void base64_printer<CharSize>::print_to(strf::underlying_outbuf<CharSize>& ob) c
 }
 
 template <std::size_t CharSize>
-void base64_printer<CharSize>::write_single_line_(strf::underlying_outbuf<CharSize>& ob) const
+void base64_printer<CharSize>::write_single_line_(strf::underlying_outbuff<CharSize>& ob) const
 {
     write_identation_(ob);
     encode_all_data_in_this_line_(ob);
 }
 
 template <std::size_t CharSize>
-void base64_printer<CharSize>::write_identation_(strf::underlying_outbuf<CharSize>& ob) const
+void base64_printer<CharSize>::write_identation_(strf::underlying_outbuff<CharSize>& ob) const
 {
     using traits = std::char_traits<char_type>;
     std::size_t count = fmt_.indentation();
@@ -214,7 +214,7 @@ void base64_printer<CharSize>::write_identation_(strf::underlying_outbuf<CharSiz
 }
 
 template <std::size_t CharSize>
-void base64_printer<CharSize>::encode_all_data_in_this_line_(strf::underlying_outbuf<CharSize>& ob) const
+void base64_printer<CharSize>::encode_all_data_in_this_line_(strf::underlying_outbuff<CharSize>& ob) const
 {
     auto data_it = static_cast<const std::uint8_t*>(fmt_.value().bytes);
     for (std::ptrdiff_t count = fmt_.value().num_bytes; count > 0; count -= 3) {
@@ -257,7 +257,7 @@ auto base64_printer<CharSize>::encode_(std::uint8_t hextet) const -> char_type
 //]
 
 template <std::size_t CharSize>
-void base64_printer<CharSize>::write_multiline_(strf::underlying_outbuf<CharSize>& ob) const
+void base64_printer<CharSize>::write_multiline_(strf::underlying_outbuff<CharSize>& ob) const
 {
     write_identation_(ob);
 
@@ -295,7 +295,7 @@ void base64_printer<CharSize>::write_multiline_(strf::underlying_outbuf<CharSize
 }
 
 template <std::size_t CharSize>
-void base64_printer<CharSize>::write_end_of_line_(strf::underlying_outbuf<CharSize>& ob) const
+void base64_printer<CharSize>::write_end_of_line_(strf::underlying_outbuff<CharSize>& ob) const
 {
     ob.ensure(2);
     ob.pointer()[0] = facet_.eol[0];

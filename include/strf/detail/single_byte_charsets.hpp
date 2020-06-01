@@ -377,7 +377,7 @@ template <class Impl>
 struct single_byte_char_encoding_to_utf32
 {
     static STRF_HD void transcode
-        ( strf::underlying_outbuf<4>& ob
+        ( strf::underlying_outbuff<4>& ob
         , const std::uint8_t* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -405,7 +405,7 @@ struct single_byte_char_encoding_to_utf32
 
 template <class Impl>
 STRF_HD void single_byte_char_encoding_to_utf32<Impl>::transcode
-    ( strf::underlying_outbuf<4>& ob
+    ( strf::underlying_outbuff<4>& ob
     , const std::uint8_t* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -435,7 +435,7 @@ template <class Impl>
 struct utf32_to_single_byte_char_encoding
 {
     static STRF_HD void transcode
-        ( strf::underlying_outbuf<1>& ob
+        ( strf::underlying_outbuff<1>& ob
         , const char32_t* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -462,7 +462,7 @@ struct utf32_to_single_byte_char_encoding
 
 template <class Impl>
 STRF_HD void utf32_to_single_byte_char_encoding<Impl>::transcode
-    ( strf::underlying_outbuf<1>& ob
+    ( strf::underlying_outbuff<1>& ob
     , const char32_t* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -492,7 +492,7 @@ template <class Impl>
 struct single_byte_char_encoding_sanitizer
 {
     static STRF_HD void transcode
-        ( strf::underlying_outbuf<1>& ob
+        ( strf::underlying_outbuff<1>& ob
         , const std::uint8_t* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -520,7 +520,7 @@ struct single_byte_char_encoding_sanitizer
 
 template <class Impl>
 STRF_HD void single_byte_char_encoding_sanitizer<Impl>::transcode
-    ( strf::underlying_outbuf<1>& ob
+    ( strf::underlying_outbuff<1>& ob
     , const std::uint8_t* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -680,7 +680,7 @@ public:
     {
         return 1;
     }
-    static STRF_HD void write_replacement_char(strf::underlying_outbuf<1>& ob)
+    static STRF_HD void write_replacement_char(strf::underlying_outbuff<1>& ob)
     {
         strf::put(ob, static_cast<char_type_>('?'));
     }
@@ -695,7 +695,7 @@ public:
     static STRF_HD std::uint8_t* encode_char(std::uint8_t* dest, char32_t ch);
 
     static STRF_HD void encode_fill
-        ( strf::underlying_outbuf<1>& ob, std::size_t count, char32_t ch );
+        ( strf::underlying_outbuff<1>& ob, std::size_t count, char32_t ch );
 
     static STRF_HD strf::codepoints_count_result codepoints_fast_count
         ( const std::uint8_t* src, std::size_t src_size
@@ -785,7 +785,7 @@ STRF_HD std::uint8_t* single_byte_char_encoding<Impl>::encode_char
 
 template <class Impl>
 STRF_HD void single_byte_char_encoding<Impl>::encode_fill
-    ( strf::underlying_outbuf<1>& ob, std::size_t count, char32_t ch )
+    ( strf::underlying_outbuff<1>& ob, std::size_t count, char32_t ch )
 {
     unsigned ch2 = Impl::encode(ch);
     if (ch2 >= 0x100) {

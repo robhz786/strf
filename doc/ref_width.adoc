@@ -457,7 +457,7 @@ constexpr {width_t} str_width
 [horizontal]
 Return value::: The sum of the values of `func_(ch32)`, where `ch32` is
    each of the `char32_t` values that are written into `ob` --
-   an object whose type derives from `{underlying_outbuf}<4>` -- by the call
+   an object whose type derives from `{underlying_outbuff}<4>` -- by the call
 +
 [source,cpp,subs=normal]
 ----
@@ -489,7 +489,7 @@ Return value::: The return value `ret` is such that:
 encoding.<<UnderlyingCharEncoding_to_u32,to_u32>>().<<UnderlyingTranscoder_transcode,transcode>>
     ( ob, str, ret.pos, {invalid_seq_policy}::replace, surr_poli )
 ----
-, where `ob` is any object whose type derives from `{underlying_outbuf}<4>`.
+, where `ob` is any object whose type derives from `{underlying_outbuff}<4>`.
 * `ret.pos` is the greatest value that is less than or equal to `str_len`
   such that `str_width_and_pos(encoding, limit, str, ret.pos, surr_poli).width`
   is less than or equal to `limit`.

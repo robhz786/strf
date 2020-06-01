@@ -5,7 +5,7 @@
 #ifndef STRF_DETAIL_STANDARD_LIB_FUNCTIONS_HPP
 #define STRF_DETAIL_STANDARD_LIB_FUNCTIONS_HPP
 
-#include <strf/outbuf.hpp>
+#include <strf/outbuff.hpp>
 
 #if defined(__CUDA_ARCH__) && ! defined(STRF_FREESTANDING)
 #define STRF_FREESTANDING

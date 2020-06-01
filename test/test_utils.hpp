@@ -26,13 +26,13 @@ std::string unique_tmp_file_name()
     char dirname[MAX_PATH];
     GetTempPathA(MAX_PATH, dirname);
     char fullname[MAX_PATH];
-    sprintf_s(fullname, MAX_PATH, "%s\\test_boost_outbuf_%x.txt", dirname, std::rand());
+    sprintf_s(fullname, MAX_PATH, "%s\\test_boost_outbuff_%x.txt", dirname, std::rand());
     return fullname;
 
 #else // defined(_WIN32)
 
    char fullname[200];
-   sprintf(fullname, "/tmp/test_boost_outbuf_%x.txt", std::rand());
+   sprintf(fullname, "/tmp/test_boost_outbuff_%x.txt", std::rand());
    return fullname;
 
 #endif  // defined(_WIN32)
@@ -191,9 +191,9 @@ inline strf::detail::simple_string_view<CharT> make_tiny_string()
 }
 
 template <typename CharT>
-inline void turn_into_bad(strf::basic_outbuf<CharT>& ob)
+inline void turn_into_bad(strf::basic_outbuff<CharT>& ob)
 {
-    strf::detail::outbuf_test_tool::turn_into_bad(ob.as_underlying());
+    strf::detail::outbuff_test_tool::turn_into_bad(ob.as_underlying());
 }
 
 int& test_err_count()
@@ -202,7 +202,7 @@ int& test_err_count()
     return count;
 }
 
-strf::narrow_cfile_writer<char>& test_outbuf()
+strf::narrow_cfile_writer<char>& test_outbuff()
 {
     static strf::narrow_cfile_writer<char> ob(stdout);
     return ob;
@@ -238,7 +238,7 @@ public:
         return strf::to(description_);
     }
 
-    static void print_stack(strf::outbuf& out)
+    static void print_stack(strf::outbuff& out)
     {
         test_scope* first = root().child_;
         if (first != nullptr) {
@@ -286,9 +286,9 @@ auto test_message
     , const char* funcname
     , const Args& ... args )
 {
-    to(test_outbuf()) (filename, ':', line, ": ", args...);
-    test_scope::print_stack(test_outbuf());
-    to(test_outbuf()) ("\n    In function '", funcname, "'\n");
+    to(test_outbuff()) (filename, ':', line, ": ", args...);
+    test_scope::print_stack(test_outbuff());
+    to(test_outbuff()) ("\n    In function '", funcname, "'\n");
 }
 
 
@@ -305,7 +305,7 @@ inline auto test_failure
 
 template <typename CharOut>
 class input_tester
-    : public strf::basic_outbuf<CharOut>
+    : public strf::basic_outbuff<CharOut>
 {
 
 public:
@@ -374,7 +374,7 @@ input_tester<CharOut>::input_tester
     , const char* function
     , double reserve_factor
     , std::size_t size )
-    : strf::basic_outbuf<CharOut>{buffer_, size}
+    : strf::basic_outbuff<CharOut>{buffer_, size}
     , expected_(expected)
     , reserved_size_(size)
     , src_filename_(std::move(src_filename))
@@ -399,15 +399,15 @@ input_tester<CharOut>::~input_tester()
 template <typename CharOut>
 void input_tester<CharOut>::recycle()
 {
-    test_failure_(" basic_outbuf::recycle() called "
+    test_failure_(" basic_outbuff::recycle() called "
                   "( calculated size too small ).\n");
 
     if ( this->pointer() + strf::min_size_after_recycle<sizeof(CharOut)>()
        > buffer_ + buffer_size_ )
     {
         pointer_before_overflow_ = this->pointer();
-        this->set_pointer(strf::outbuf_garbage_buf<CharOut>());
-        this->set_end(strf::outbuf_garbage_buf_end<CharOut>());
+        this->set_pointer(strf::outbuff_garbage_buf<CharOut>());
+        this->set_end(strf::outbuff_garbage_buf_end<CharOut>());
     } else {
         this->set_end(buffer_ + buffer_size_);
     }
@@ -593,11 +593,11 @@ int test_finish()
 {
     int err_count = test_utils::test_err_count();
     if (err_count == 0) {
-        strf::write(test_utils::test_outbuf(), "All test passed!\n");
+        strf::write(test_utils::test_outbuff(), "All test passed!\n");
     } else {
-        strf::to(test_utils::test_outbuf()) (err_count, " tests failed!\n");
+        strf::to(test_utils::test_outbuff()) (err_count, " tests failed!\n");
     }
-    test_utils::test_outbuf().finish();
+    test_utils::test_outbuff().finish();
     return err_count;
 }
 

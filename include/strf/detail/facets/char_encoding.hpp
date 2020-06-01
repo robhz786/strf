@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/outbuf.hpp>
+#include <strf/outbuff.hpp>
 
 namespace strf {
 
@@ -116,7 +116,7 @@ constexpr std::size_t invalid_char_len = (std::size_t)-1;
 
 template <std::size_t SrcCharSize, std::size_t DestCharSize>
 using transcode_f = void (*)
-    ( strf::underlying_outbuf<DestCharSize>& ob
+    ( strf::underlying_outbuff<DestCharSize>& ob
     , const strf::underlying_char_type<SrcCharSize>* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -130,7 +130,7 @@ using transcode_size_f = std::size_t (*)
 
 template <std::size_t CharSize>
 using write_replacement_char_f = void (*)
-    ( strf::underlying_outbuf<CharSize>& );
+    ( strf::underlying_outbuff<CharSize>& );
 
 // assume surragate_policy::lax
 using validate_f = std::size_t (*)(char32_t ch);
@@ -145,7 +145,7 @@ using encode_char_f = strf::underlying_char_type<CharSize>*(*)
 
 template <std::size_t CharSize>
 using encode_fill_f = void (*)
-    ( strf::underlying_outbuf<CharSize>&, std::size_t count, char32_t ch );
+    ( strf::underlying_outbuff<CharSize>&, std::size_t count, char32_t ch );
 
 struct codepoints_count_result {
     std::size_t count;
@@ -194,7 +194,7 @@ public:
     }
 
     STRF_HD void transcode
-        ( strf::underlying_outbuf<DestCharSize>& ob
+        ( strf::underlying_outbuff<DestCharSize>& ob
         , const strf::underlying_char_type<SrcCharSize>* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -322,7 +322,7 @@ public:
         return data_->encode_char_func(dest, ch);
     }
     STRF_HD void encode_fill
-        ( strf::underlying_outbuf<CharSize>& ob, std::size_t count, char32_t ch ) const
+        ( strf::underlying_outbuff<CharSize>& ob, std::size_t count, char32_t ch ) const
     {
         data_->encode_fill_func(ob, count, ch);
     }
@@ -337,7 +337,7 @@ public:
     {
         return data_->codepoints_robust_count_func(src, src_size, max_count);
     }
-    STRF_HD void write_replacement_char(strf::underlying_outbuf<CharSize>& ob) const
+    STRF_HD void write_replacement_char(strf::underlying_outbuff<CharSize>& ob) const
     {
         data_->write_replacement_char_func(ob);
     }
@@ -678,16 +678,16 @@ constexpr STRF_HD decltype(auto) find_transcoder
 namespace detail {
 
 template <std::size_t DestCharSize>
-class buffered_encoder: public strf::underlying_outbuf<4>
+class buffered_encoder: public strf::underlying_outbuff<4>
 {
 public:
 
     STRF_HD buffered_encoder
         ( strf::transcode_f<4, DestCharSize> func
-        , strf::underlying_outbuf<DestCharSize>& ob
+        , strf::underlying_outbuff<DestCharSize>& ob
         , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli )
-        : strf::underlying_outbuf<4>( buff_, buff_size_ )
+        : strf::underlying_outbuff<4>( buff_, buff_size_ )
         , transcode_(func)
         , ob_(ob)
         , inv_seq_notifier_(inv_seq_notifier)
@@ -710,7 +710,7 @@ public:
 private:
 
     strf::transcode_f<4, DestCharSize> transcode_;
-    strf::underlying_outbuf<DestCharSize>& ob_;
+    strf::underlying_outbuff<DestCharSize>& ob_;
     strf::invalid_seq_notifier inv_seq_notifier_;
     strf::surrogate_policy surr_poli_;
     constexpr static const std::size_t buff_size_ = 32;
@@ -731,13 +731,13 @@ STRF_HD void buffered_encoder<DestCharSize>::recycle()
     }
 }
 
-class buffered_size_calculator: public strf::underlying_outbuf<4>
+class buffered_size_calculator: public strf::underlying_outbuff<4>
 {
 public:
 
     STRF_HD buffered_size_calculator
         ( strf::transcode_size_f<4> func, strf::surrogate_policy surr_poli )
-        : strf::underlying_outbuf<4>(buff_, buff_size_)
+        : strf::underlying_outbuff<4>(buff_, buff_size_)
         , size_func_(func)
         , surr_poli_(surr_poli)
     {
@@ -777,7 +777,7 @@ STRF_INLINE STRF_HD void buffered_size_calculator::recycle()
 
 template<std::size_t SrcCharSize, std::size_t DestCharSize>
 STRF_HD void decode_encode
-    ( strf::underlying_outbuf<DestCharSize>& ob
+    ( strf::underlying_outbuff<DestCharSize>& ob
     , strf::transcode_f<SrcCharSize, 4> to_u32
     , strf::transcode_f<4, DestCharSize> from_u32
     , const underlying_char_type<SrcCharSize>* src

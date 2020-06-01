@@ -127,7 +127,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override;
+    STRF_HD void print_to(strf::underlying_outbuff<CharSize>& ob) const override;
 
 private:
 
@@ -136,7 +136,7 @@ private:
 
 template <std::size_t CharSize>
 STRF_HD void char_printer<CharSize>::print_to
-    ( strf::underlying_outbuf<CharSize>& ob ) const
+    ( strf::underlying_outbuff<CharSize>& ob ) const
 {
     ob.ensure(1);
     *ob.pointer() = ch_;
@@ -163,7 +163,7 @@ public:
         init_(input.preview, wcalc, enc);
     }
 
-    STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override;
+    STRF_HD void print_to(strf::underlying_outbuff<CharSize>& ob) const override;
 
 private:
 
@@ -226,7 +226,7 @@ STRF_HD void fmt_char_printer<CharSize>::init_
 
 template <std::size_t CharSize>
 STRF_HD void fmt_char_printer<CharSize>::print_to
-    ( strf::underlying_outbuf<CharSize>& ob ) const
+    ( strf::underlying_outbuff<CharSize>& ob ) const
 {
     if (left_fillcount_ != 0) {
         encode_fill_fn_(ob, left_fillcount_, afmt_.fill);

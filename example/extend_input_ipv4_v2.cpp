@@ -37,7 +37,7 @@ public:
 
     ipv4_printer(const ipv4_printer_input& input);
 
-    void print_to(strf::underlying_outbuf<CharSize>& dest) const override
+    void print_to(strf::underlying_outbuff<CharSize>& dest) const override
     {
         constexpr char_type_ dot = '.';
         strf::to(dest) ( arg.bytes[0], dot, arg.bytes[1], dot

@@ -11,17 +11,17 @@
 namespace strf {
 
 template <typename CharT, typename Traits = std::char_traits<CharT> >
-class basic_streambuf_writer final: public strf::basic_outbuf<CharT>
+class basic_streambuf_writer final: public strf::basic_outbuff<CharT>
 {
 public:
 
     explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>& d)
-        : strf::basic_outbuf<CharT>(buf_, buf_size_)
+        : strf::basic_outbuff<CharT>(buf_, buf_size_)
         , dest_(d)
     {
     }
     explicit basic_streambuf_writer(std::basic_streambuf<CharT, Traits>* d)
-        : strf::basic_outbuf<CharT>(buf_, buf_size_)
+        : strf::basic_outbuff<CharT>(buf_, buf_size_)
         , dest_(*d)
     {
     }
@@ -88,8 +88,8 @@ namespace detail {
 template <typename CharT, typename Traits>
 class basic_streambuf_writer_creator
 {
-    using outbuf_type_ = strf::basic_streambuf_writer<CharT, Traits>;
-    using finish_type_ = typename outbuf_type_::result;
+    using outbuff_type_ = strf::basic_streambuf_writer<CharT, Traits>;
+    using finish_type_ = typename outbuff_type_::result;
 
 public:
 
@@ -103,9 +103,9 @@ public:
 
     basic_streambuf_writer_creator(const basic_streambuf_writer_creator&) = default;
 
-    outbuf_type_ create() const
+    outbuff_type_ create() const
     {
-        return outbuf_type_{dest_};
+        return outbuff_type_{dest_};
     }
 
 private:

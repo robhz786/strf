@@ -5,9 +5,9 @@
 int main()
 {
     {
-        // write into an outbuf reference
+        // write into an outbuff reference
         strf::basic_string_maker<char> str_maker;
-        strf::outbuf& ob = str_maker;
+        strf::outbuff& ob = str_maker;
 
         strf::to(ob)
             .with(strf::numpunct<10>(3))

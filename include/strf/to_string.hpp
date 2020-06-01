@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/outbuf.hpp>
+#include <strf/outbuff.hpp>
 #include <strf.hpp>
 #include <string>
 
@@ -14,20 +14,20 @@ namespace strf {
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
          , typename Allocator = std::allocator<CharT> >
-class basic_string_appender final: public strf::basic_outbuf<CharT>
+class basic_string_appender final: public strf::basic_outbuff<CharT>
 {
     using string_type_ = std::basic_string<CharT, Traits, Allocator>;
 
 public:
 
     basic_string_appender(string_type_& str)
-        : strf::basic_outbuf<CharT>(buf_, buf_size_)
+        : strf::basic_outbuff<CharT>(buf_, buf_size_)
         , str_(str)
     {
     }
     basic_string_appender( string_type_& str
                          , std::size_t size )
-        : strf::basic_outbuf<CharT>(buf_, buf_size_)
+        : strf::basic_outbuff<CharT>(buf_, buf_size_)
         , str_(str)
     {
         str_.reserve(size);
@@ -75,13 +75,13 @@ private:
 template < typename CharT
          , typename Traits = std::char_traits<CharT>
          , typename Allocator = std::allocator<CharT> >
-class basic_string_maker final: public strf::basic_outbuf<CharT>
+class basic_string_maker final: public strf::basic_outbuff<CharT>
 {
     using string_type_ = std::basic_string<CharT, Traits, Allocator>;
 
 public:
 
-    basic_string_maker() : strf::basic_outbuf<CharT>(buf_, buf_size_)
+    basic_string_maker() : strf::basic_outbuff<CharT>(buf_, buf_size_)
     {
     }
 
@@ -131,12 +131,12 @@ template < typename CharT
          , typename Traits = std::char_traits<CharT>
          , typename Allocator = std::allocator<CharT> >
 class basic_sized_string_maker final
-    : public strf::basic_outbuf<CharT>
+    : public strf::basic_outbuff<CharT>
 {
 public:
 
     explicit basic_sized_string_maker(std::size_t count)
-        : strf::basic_outbuf<CharT>(nullptr, nullptr)
+        : strf::basic_outbuff<CharT>(nullptr, nullptr)
         , str_(count, (CharT)0)
     {
         this->set_pointer(&*str_.begin());
@@ -206,7 +206,7 @@ class basic_string_appender_creator
 public:
 
     using char_type = CharT;
-    using outbuf_type = strf::basic_string_appender<CharT, Traits, Allocator>;
+    using outbuff_type = strf::basic_string_appender<CharT, Traits, Allocator>;
     using finish_type = void;
 
     basic_string_appender_creator
@@ -217,15 +217,15 @@ public:
 
     basic_string_appender_creator(const basic_string_appender_creator&) = default;
 
-    outbuf_type create() const
+    outbuff_type create() const
     {
-        return outbuf_type{str_};
+        return outbuff_type{str_};
     }
 
-    outbuf_type create(std::size_t size) const
+    outbuff_type create(std::size_t size) const
     {
         str_.reserve(str_.size() + size);
-        return outbuf_type{str_};
+        return outbuff_type{str_};
     }
 
 private:

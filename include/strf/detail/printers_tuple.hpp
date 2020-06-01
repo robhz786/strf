@@ -140,7 +140,7 @@ public:
 
 template< std::size_t CharSize, std::size_t ... I, typename ... Printers >
 STRF_HD void write
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , const strf::detail::printers_tuple_impl
         < CharSize, std::index_sequence<I...>, Printers... >& printers )
 {

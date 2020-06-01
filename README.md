@@ -24,7 +24,7 @@ It is the document that people are supposed to visit more often.
 
 At last, there are the header references, which aim to be a more accurate and complete.
 * [`<strf.hpp>`](http://robhz786.github.io/strf/v0.11/strf_hpp.html) is the main header.
-* [`<strf/outbuf.hpp>`](http://robhz786.github.io/strf/v0.11/outbuf_hpp.html) is a lightweight and freestanding header that defines the `basic_outbuf` class template.
+* [`<strf/outbuff.hpp>`](http://robhz786.github.io/strf/v0.11/outbuff_hpp.html) is a lightweight and freestanding header that defines the `basic_outbuff` class template.
                        All other headers includes this one.
 * [`<strf/to_string.hpp>`](http://robhz786.github.io/strf/v0.11/to_string_hpp.html) adds support for writting to `std::basic_string`. It includes `<strf.hpp>.
 * [`<strf/to_cfile.hpp>`](http://robhz786.github.io/strf/v0.11/to_cfile_hpp.html)  adds support for writting to `FILE*`. It includes `<strf.hpp>.

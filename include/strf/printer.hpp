@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/outbuf.hpp>
+#include <strf/outbuff.hpp>
 #include <strf/width_t.hpp>
 #include <strf/facets_pack.hpp>
 
@@ -22,7 +22,7 @@ public:
     {
     }
 
-    STRF_HD virtual void print_to(strf::underlying_outbuf<CharSize>& ob) const = 0;
+    STRF_HD virtual void print_to(strf::underlying_outbuff<CharSize>& ob) const = 0;
 };
 
 struct string_input_tag_base
@@ -233,7 +233,7 @@ namespace detail {
 #if defined(__cpp_fold_expressions)
 
 template <std::size_t CharSize, typename ... Printers>
-inline STRF_HD void write_args( strf::underlying_outbuf<CharSize>& ob
+inline STRF_HD void write_args( strf::underlying_outbuff<CharSize>& ob
                               , const Printers& ... printers )
 {
     (... , printers.print_to(ob));
@@ -242,13 +242,13 @@ inline STRF_HD void write_args( strf::underlying_outbuf<CharSize>& ob
 #else // defined(__cpp_fold_expressions)
 
 template <std::size_t CharSize>
-inline STRF_HD void write_args(strf::underlying_outbuf<CharSize>&)
+inline STRF_HD void write_args(strf::underlying_outbuff<CharSize>&)
 {
 }
 
 template <std::size_t CharSize, typename Printer, typename ... Printers>
 inline STRF_HD void write_args
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , const Printer& printer
     , const Printers& ... printers )
 {

@@ -58,7 +58,7 @@ inline STRF_HD void do_repeat_sequence
 
 template <typename CharT, std::size_t N>
 STRF_HD void repeat_sequence_continuation
-    ( strf::underlying_outbuf<sizeof(CharT)>& ob
+    ( strf::underlying_outbuff<sizeof(CharT)>& ob
     , std::size_t count
     , simple_array<CharT, N> seq )
 {
@@ -85,7 +85,7 @@ STRF_HD void repeat_sequence_continuation
 
 template <typename CharT, std::size_t N>
 inline STRF_HD void repeat_sequence
-    ( strf::underlying_outbuf<sizeof(CharT)>& ob
+    ( strf::underlying_outbuff<sizeof(CharT)>& ob
     , std::size_t count
     , simple_array<CharT, N> seq )
 {
@@ -199,7 +199,7 @@ class static_underlying_transcoder<strf::eid_utf8, strf::eid_utf8>
 {
 public:
     static STRF_HD void transcode
-        ( strf::underlying_outbuf<1>& ob
+        ( strf::underlying_outbuff<1>& ob
         , const std::uint8_t* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -226,7 +226,7 @@ class static_underlying_transcoder<strf::eid_utf8, strf::eid_utf16>
 {
 public:
     static STRF_HD void transcode
-        ( strf::underlying_outbuf<2>& ob
+        ( strf::underlying_outbuff<2>& ob
         , const std::uint8_t* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -252,7 +252,7 @@ class static_underlying_transcoder<strf::eid_utf8, strf::eid_utf32>
 {
 public:
     static STRF_HD void transcode
-        ( strf::underlying_outbuf<4>& ob
+        ( strf::underlying_outbuff<4>& ob
         , const std::uint8_t* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -279,7 +279,7 @@ class static_underlying_transcoder<strf::eid_utf16, strf::eid_utf8>
 {
 public:
     static STRF_HD void transcode
-        ( strf::underlying_outbuf<1>& ob
+        ( strf::underlying_outbuff<1>& ob
         , const char16_t* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -306,7 +306,7 @@ class static_underlying_transcoder<strf::eid_utf16, strf::eid_utf16>
 {
 public:
     static STRF_HD void transcode
-        ( strf::underlying_outbuf<2>& ob
+        ( strf::underlying_outbuff<2>& ob
         , const char16_t* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -333,7 +333,7 @@ class static_underlying_transcoder<strf::eid_utf16, strf::eid_utf32>
 {
 public:
     static STRF_HD void transcode
-        ( strf::underlying_outbuf<4>& ob
+        ( strf::underlying_outbuff<4>& ob
         , const char16_t* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -360,7 +360,7 @@ class static_underlying_transcoder<strf::eid_utf32, strf::eid_utf8>
 {
 public:
     static STRF_HD void transcode
-        ( strf::underlying_outbuf<1>& ob
+        ( strf::underlying_outbuff<1>& ob
         , const char32_t* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -387,7 +387,7 @@ class static_underlying_transcoder<strf::eid_utf32, strf::eid_utf16>
 {
 public:
     static STRF_HD void transcode
-        ( strf::underlying_outbuf<2>& ob
+        ( strf::underlying_outbuff<2>& ob
         , const char32_t* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -414,7 +414,7 @@ class static_underlying_transcoder<strf::eid_utf32, strf::eid_utf32>
 {
 public:
     static STRF_HD void transcode
-        ( strf::underlying_outbuf<4>& ob
+        ( strf::underlying_outbuff<4>& ob
         , const char32_t* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
@@ -501,7 +501,7 @@ public:
         ( char_type_* dest, char32_t ch ) noexcept;
 
     static STRF_HD void encode_fill
-        ( strf::underlying_outbuf<char_size>&, std::size_t count, char32_t ch );
+        ( strf::underlying_outbuff<char_size>&, std::size_t count, char32_t ch );
 
     static STRF_HD strf::codepoints_count_result codepoints_fast_count
         ( const char_type_* src, std::size_t src_size
@@ -512,7 +512,7 @@ public:
         , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept;
 
     static STRF_HD void write_replacement_char
-        ( strf::underlying_outbuf<char_size>& );
+        ( strf::underlying_outbuff<char_size>& );
 
     static STRF_HD char32_t decode_char(char_type_ ch) noexcept
     {
@@ -635,7 +635,7 @@ public:
         (char_type_* dest, char32_t ch) noexcept;
 
     static STRF_HD void encode_fill
-        ( strf::underlying_outbuf<char_size>&, std::size_t count, char32_t ch );
+        ( strf::underlying_outbuff<char_size>&, std::size_t count, char32_t ch );
 
     static STRF_HD strf::codepoints_count_result codepoints_fast_count
         ( const char_type_* src, std::size_t src_size
@@ -646,7 +646,7 @@ public:
         , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept;
 
     static STRF_HD void write_replacement_char
-        ( strf::underlying_outbuf<char_size>& );
+        ( strf::underlying_outbuff<char_size>& );
 
     static STRF_HD char32_t decode_char(char_type_ ch) noexcept
     {
@@ -775,7 +775,7 @@ public:
         return dest + 1;
     }
     static STRF_HD void encode_fill
-        ( strf::underlying_outbuf<char_size>&, std::size_t count, char32_t ch );
+        ( strf::underlying_outbuff<char_size>&, std::size_t count, char32_t ch );
 
     static STRF_HD strf::codepoints_count_result codepoints_fast_count
         ( const char_type_* src, std::size_t src_size
@@ -797,7 +797,7 @@ public:
     }
 
     static STRF_HD void write_replacement_char
-        ( strf::underlying_outbuf<char_size>& );
+        ( strf::underlying_outbuff<char_size>& );
 
     static STRF_HD char32_t decode_char(char_type_ ch) noexcept
     {
@@ -854,7 +854,7 @@ using utf32_impl = static_underlying_char_encoding<strf::eid_utf32>;
 #if ! defined(STRF_OMIT_IMPL)
 
 STRF_INLINE STRF_HD void utf8_to_utf32::transcode
-    ( strf::underlying_outbuf<4>& ob
+    ( strf::underlying_outbuff<4>& ob
     , const std::uint8_t* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -975,7 +975,7 @@ STRF_INLINE STRF_HD std::size_t utf8_to_utf32::transcode_size
 }
 
 STRF_INLINE STRF_HD void utf8_to_utf8::transcode
-    ( strf::underlying_outbuf<1>& ob
+    ( strf::underlying_outbuff<1>& ob
     , const std::uint8_t* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1185,7 +1185,7 @@ STRF_INLINE STRF_HD strf::codepoints_count_result utf8_impl::codepoints_robust_c
 
 
 STRF_INLINE STRF_HD void utf8_impl::encode_fill
-    ( strf::underlying_outbuf<1>& ob, std::size_t count, char32_t ch )
+    ( strf::underlying_outbuff<1>& ob, std::size_t count, char32_t ch )
 {
     if (ch < 0x80) {
         strf::detail::write_fill(ob, count, static_cast<std::uint8_t>(ch));
@@ -1250,7 +1250,7 @@ STRF_INLINE STRF_HD std::uint8_t* utf8_impl::encode_char
 
 
 // STRF_INLINE STRF_HD void utf8_impl::encode_char
-//     ( strf::underlying_outbuf<char_size>& ob
+//     ( strf::underlying_outbuff<char_size>& ob
 //     , char32_t ch )
 // {
 //     if (ch < 0x80) {
@@ -1290,7 +1290,7 @@ STRF_INLINE STRF_HD std::uint8_t* utf8_impl::encode_char
 // }
 
 STRF_INLINE STRF_HD void utf32_to_utf8::transcode
-    ( strf::underlying_outbuf<1>& ob
+    ( strf::underlying_outbuff<1>& ob
     , const char32_t* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1365,7 +1365,7 @@ STRF_INLINE STRF_HD std::size_t utf32_to_utf8::transcode_size
 }
 
 STRF_INLINE STRF_HD void utf8_impl::write_replacement_char
-    ( strf::underlying_outbuf<1>& ob )
+    ( strf::underlying_outbuff<1>& ob )
 {
     auto dest_it = ob.pointer();
     auto dest_end = ob.end();
@@ -1378,7 +1378,7 @@ STRF_INLINE STRF_HD void utf8_impl::write_replacement_char
 }
 
 STRF_INLINE STRF_HD void utf16_to_utf32::transcode
-    ( strf::underlying_outbuf<4>& ob
+    ( strf::underlying_outbuff<4>& ob
     , const char16_t* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1447,7 +1447,7 @@ STRF_INLINE STRF_HD std::size_t utf16_to_utf32::transcode_size
 }
 
 STRF_INLINE STRF_HD void utf16_to_utf16::transcode
-    ( strf::underlying_outbuf<2>& ob
+    ( strf::underlying_outbuff<2>& ob
     , const char16_t* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1580,7 +1580,7 @@ STRF_INLINE STRF_HD char16_t* utf16_impl::encode_char
 
 
 // STRF_INLINE STRF_HD void utf16_impl::encode_char
-//     ( strf::underlying_outbuf<char_size>& ob
+//     ( strf::underlying_outbuff<char_size>& ob
 //     , char32_t ch )
 // {
 //     if (ch < 0x10000) {
@@ -1600,7 +1600,7 @@ STRF_INLINE STRF_HD char16_t* utf16_impl::encode_char
 // }
 
 STRF_INLINE STRF_HD void utf16_impl::encode_fill
-    ( strf::underlying_outbuf<2>& ob, std::size_t count, char32_t ch )
+    ( strf::underlying_outbuff<2>& ob, std::size_t count, char32_t ch )
 {
     if (ch < 0x10000) {
         strf::detail::write_fill(ob, count, static_cast<char16_t>(ch));
@@ -1617,7 +1617,7 @@ STRF_INLINE STRF_HD void utf16_impl::encode_fill
 }
 
 STRF_INLINE STRF_HD void utf32_to_utf16::transcode
-    ( strf::underlying_outbuf<2>& ob
+    ( strf::underlying_outbuff<2>& ob
     , const char32_t* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1674,7 +1674,7 @@ STRF_INLINE STRF_HD std::size_t utf32_to_utf16::transcode_size
 }
 
 STRF_INLINE STRF_HD void utf16_impl::write_replacement_char
-    ( strf::underlying_outbuf<2>& ob )
+    ( strf::underlying_outbuff<2>& ob )
 {
     ob.ensure(1);
     *ob.pointer() = 0xFFFD;
@@ -1682,7 +1682,7 @@ STRF_INLINE STRF_HD void utf16_impl::write_replacement_char
 }
 
 STRF_INLINE STRF_HD void utf32_to_utf32::transcode
-    ( strf::underlying_outbuf<4>& ob
+    ( strf::underlying_outbuff<4>& ob
     , const char32_t* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1724,13 +1724,13 @@ STRF_INLINE STRF_HD void utf32_to_utf32::transcode
 }
 
 STRF_INLINE STRF_HD void utf32_impl::encode_fill
-    ( strf::underlying_outbuf<4>& ob, std::size_t count, char32_t ch )
+    ( strf::underlying_outbuff<4>& ob, std::size_t count, char32_t ch )
 {
     strf::detail::write_fill(ob, count, ch);
 }
 
 STRF_INLINE STRF_HD void utf32_impl::write_replacement_char
-    ( strf::underlying_outbuf<4>& ob )
+    ( strf::underlying_outbuff<4>& ob )
 {
     ob.ensure(1);
     *ob.pointer() = 0xFFFD;
@@ -1739,7 +1739,7 @@ STRF_INLINE STRF_HD void utf32_impl::write_replacement_char
 
 
 STRF_INLINE STRF_HD void utf8_to_utf16::transcode
-    ( strf::underlying_outbuf<2>& ob
+    ( strf::underlying_outbuff<2>& ob
     , const std::uint8_t* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
@@ -1870,7 +1870,7 @@ STRF_INLINE STRF_HD std::size_t utf8_to_utf16::transcode_size
 }
 
 STRF_INLINE STRF_HD void utf16_to_utf8::transcode
-    ( strf::underlying_outbuf<1>& ob
+    ( strf::underlying_outbuff<1>& ob
     , const char16_t* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier

@@ -12,7 +12,7 @@ public:
 
     err_handler(const err_handler&) = default;
 
-    err_handler(strf::outbuf& log)
+    err_handler(strf::outbuff& log)
         : log_(log)
     {
     }
@@ -29,7 +29,7 @@ public:
     }
 
 private:
-    strf::outbuf& log_;
+    strf::outbuff& log_;
 };
 
 int main()

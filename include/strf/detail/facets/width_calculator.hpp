@@ -162,12 +162,12 @@ public:
 
 namespace detail {
 template <typename WFunc>
-class width_accumulator: public strf::underlying_outbuf<4>
+class width_accumulator: public strf::underlying_outbuff<4>
 {
 public:
 
     STRF_HD width_accumulator(strf::width_t limit, WFunc func)
-        : strf::underlying_outbuf<4>(buff_, buff_ + buff_size_)
+        : strf::underlying_outbuff<4>(buff_, buff_ + buff_size_)
         , limit_(limit)
         , func_(func)
     {

@@ -28,10 +28,10 @@ http://www.boost.org/LICENSE_1_0.txt
 
 :std_conditional_t: https://en.cppreference.com/w/cpp/types/conditional[std::conditional_t]
 
-:min_size_after_recycle: <<outbuf_hpp#min_size_after_recycle,min_size_after_recycle>>
-:underlying_outbuf: <<outbuf_hpp#underlying_outbuf,underlying_outbuf>>
-:underlying_char_type: <<outbuf_hpp#underlying_char_type,underlying_char_type>>
-:basic_outbuf: <<outbuf_hpp#basic_outbuf,basic_outbuf>>
+:min_size_after_recycle: <<outbuff_hpp#min_size_after_recycle,min_size_after_recycle>>
+:underlying_outbuff: <<outbuff_hpp#underlying_outbuff,underlying_outbuff>>
+:underlying_char_type: <<outbuff_hpp#underlying_char_type,underlying_char_type>>
+:basic_outbuff: <<outbuff_hpp#basic_outbuff,basic_outbuff>>
 
 NOTE: This document is still a work in progress.
 
@@ -48,7 +48,7 @@ and `<utility>`.
 When macro `STRF_WITH_CSTRING` is defined `<strf.hpp>` uses `<cstring>`
 even when `STRF_FREESTANDING` is defined.
 
-`<<strf_hpp#main,<strf.hpp> >>` includes `<strf/outbuf.hpp>`.
+`<<strf_hpp#main,<strf.hpp> >>` includes `<strf/outbuff.hpp>`.
 
 ////
 

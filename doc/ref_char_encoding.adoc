@@ -219,7 +219,7 @@ constexpr std::size_t invalid_char_len = (std::size_t)-1;
 
 template <std::size_t SrcCharSize, std::size_t DestCharSize>
 using transcode_f = void ({asterisk})
-    ( {underlying_outbuf}<DestCharSize>& ob
+    ( {underlying_outbuff}<DestCharSize>& ob
     , const {underlying_char_type}<SrcCharSize>{asterisk} src
     , std::size_t src_size
     , {invalid_seq_notifier} inv_seq_notifier
@@ -232,7 +232,7 @@ using transcode_size_f = std::size_t ({asterisk})
     , {surrogate_policy} surr_poli );
 
 template <std::size_t CharSize>
-using write_replacement_char_f = void ({asterisk}) ( {underlying_outbuf}<CharSize>& );
+using write_replacement_char_f = void ({asterisk}) ( {underlying_outbuff}<CharSize>& );
 
 using validate_f = std::size_t ({asterisk})(char32_t ch);
 
@@ -244,7 +244,7 @@ using encode_char_f = {underlying_char_type}<CharSize>{asterisk}({asterisk})
 
 template <std::size_t CharSize>
 using encode_fill_f = void ({asterisk})
-    ( {underlying_outbuf}<CharSize>&, std::size_t count, char32_t ch );
+    ( {underlying_outbuff}<CharSize>&, std::size_t count, char32_t ch );
 
 struct codepoints_count_result {
     std::size_t count;
@@ -284,7 +284,7 @@ Given
 * `SrcCharType`, the type of `{underlying_char_type}<SrcCharSize>`
 * `X`, a _UnderlyingTranscoder_ type from `SrcCharSize` to `DestCharSize`
 * `x`, an expression of type `X` or `const X`
-* `dest`, an lvalue reference of type `{underlying_outbuf}<DestCharSize>`
+* `dest`, an lvalue reference of type `{underlying_outbuff}<DestCharSize>`
 * `src`, a value of type `const SrcCharType*`
 * `src_size`, a value of type `std::size_t` equal to the size of
               the array pointed by `src`
@@ -380,7 +380,7 @@ Given
 * `max_count`, a value of type `std::size_t`
 * `ch32`, a value of type `char32_t`
 * `ch`, a value of type `char_type`
-* `ob`, an lvalue reference of type `{underlying_outbuf}<CharSize>`
+* `ob`, an lvalue reference of type `{underlying_outbuff}<CharSize>`
 * `enc_id`, value of type `{char_encoding_id}`
 * `X`, a _UnderlyingCharEncoding_ type for value `CharSize`
 * `x`, an expression of type `X` or `const X`
@@ -787,7 +787,7 @@ public:
         ( {static_underlying_transcoder}<Src, Dest> st );
 
     void transcode
-        ( {underlying_outbuf}<DestCharSize>& ob
+        ( {underlying_outbuff}<DestCharSize>& ob
         , const {underlying_char_type}<SrcCharSize>* src
         , std::size_t src_size
         , {invalid_seq_notifier} inv_seq_notifier
@@ -847,7 +847,7 @@ Postconditions::
 [source,cpp,subs=normal]
 ----
 void transcode
-    ( {underlying_outbuf}<DestCharSize>& ob
+    ( {underlying_outbuff}<DestCharSize>& ob
     , const {underlying_char_type}<SrcCharSize>* src
     , std::size_t src_size
     , {invalid_seq_notifier} inv_seq_notifier
@@ -934,7 +934,7 @@ public:
     char_type_* encode_char(char_type_* dest, char32_t ch) const; // noexcept
 
     void encode_fill
-        ( {underlying_outbuf}<CharSize>& ob, std::size_t count, char32_t ch ) const;
+        ( {underlying_outbuff}<CharSize>& ob, std::size_t count, char32_t ch ) const;
 
     std::size_t codepoints_fast_count
         ( const char_type_* src, std::size_t src_size
@@ -944,7 +944,7 @@ public:
         ( const char_type_* src, std::size_t src_size
         , std::size_t max_count, {surrogate_policy} surr_poli ) const;
 
-    void write_replacement_char({underlying_outbuf}<CharSize>& ob) const;
+    void write_replacement_char({underlying_outbuff}<CharSize>& ob) const;
 
     char32_t decode_char(char_type_ ch) const;
 
@@ -1088,7 +1088,7 @@ Effect:: Calls and returns `this\->data\->encoded_char_func(ch)`.
 [source,cpp,subs=normal]
 ----
 void encode_fill
-    ( {underlying_outbuf}<CharSize>& ob, std::size_t count, char32_t ch ) const;
+    ( {underlying_outbuff}<CharSize>& ob, std::size_t count, char32_t ch ) const;
 ----
 [horizontal]
 Effect:: Calls and returns
@@ -1118,7 +1118,7 @@ Effect:: Calls and returns
 ====
 [source,cpp,subs=normal]
 ----
-void write_replacement_char({underlying_outbuf}<CharSize>& ob) const;
+void write_replacement_char({underlying_outbuff}<CharSize>& ob) const;
 ----
 [horizontal]
 Effect:: Calls `this\->data\->write_replacement_char_func(ob)`.
@@ -1268,7 +1268,7 @@ namespace strf {
 
 template<std::size_t SrcCharSize, std::size_t DestCharSize>
 void decode_encode
-    ( {underlying_outbuf}<DestCharSize>& ob
+    ( {underlying_outbuff}<DestCharSize>& ob
     , {transcode_f}<SrcCharSize, 4> to_u32
     , {transcode_f}<4, DestCharSize> from_u32
     , const {underlying_char_type}<SrcCharSize>* src
@@ -1283,8 +1283,8 @@ Converts the content in `src` to UTF-32 using `to_u32`,
 then writes it into `ob` using `from_u32`.
 
 [horizontal]
-Postcondition:: `ob.<<underlying_outbuf_recycle,recycle>>()` is not called if
-`ob.<<underlying_outbuf_size,size>>()` is not less then the value returned by
+Postcondition:: `ob.<<underlying_outbuff_recycle,recycle>>()` is not called if
+`ob.<<underlying_outbuff_size,size>>()` is not less then the value returned by
 `{decode_encode_size}(to_u32, size_calc_func, src, src_size, inv_seq_notifier, surr_poli)`,
 where `size_calc_func` is the return value of
 `dest_enc.<<UnderlyingCharEncoding_from_u32,from_u32>>().<<UnderlyingTranscoder_transcode_size_func, transcode_size_func>>()`,

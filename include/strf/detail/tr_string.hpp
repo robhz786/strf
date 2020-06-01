@@ -5,7 +5,7 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/outbuf_functions.hpp>
+#include <strf/outbuff_functions.hpp>
 #include <strf/printer.hpp>
 #include <strf/detail/facets/char_encoding.hpp>
 
@@ -167,7 +167,7 @@ void tr_string_write
     , const typename Encoding::char_type* str_end
     , const strf::printer<sizeof(typename Encoding::char_type)>* const * args
     , std::size_t num_args
-    , strf::underlying_outbuf<sizeof(typename Encoding::char_type)>& ob
+    , strf::underlying_outbuff<sizeof(typename Encoding::char_type)>& ob
     , Encoding enc
     , ErrHandler err_handler )
 {
@@ -283,7 +283,7 @@ public:
         }
     }
 
-    void print_to(strf::underlying_outbuf<char_size>& ob) const
+    void print_to(strf::underlying_outbuff<char_size>& ob) const
     {
         strf::detail::tr_string_write
             ( tr_string_, tr_string_end_, printers_array_, num_printers_

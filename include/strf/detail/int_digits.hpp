@@ -854,7 +854,7 @@ inline STRF_HD CharT* write_int_txtdigits_backwards( IntT value
 
 // template <std::size_t CharSize>
 // STRF_HD void write_digits_big_sep
-//     ( strf::underlying_outbuf<CharSize>& ob
+//     ( strf::underlying_outbuff<CharSize>& ob
 //     , strf::encode_char_f<CharSize> encode_char
 //     , const std::uint8_t* last_grp
 //     , unsigned char* digits
@@ -901,7 +901,7 @@ public:
 
     template <typename IntT, std::size_t CharSize>
     static inline STRF_HD void write
-        ( strf::underlying_outbuf<CharSize>& ob
+        ( strf::underlying_outbuff<CharSize>& ob
         , IntT value
         , unsigned digcount
         , strf::lettercase lc )
@@ -916,7 +916,7 @@ public:
 
     template <typename UIntT, std::size_t CharSize>
     static STRF_HD void write_little_sep
-        ( strf::underlying_outbuf<CharSize>& ob
+        ( strf::underlying_outbuff<CharSize>& ob
         , UIntT uvalue
         , strf::digits_grouping grouping
         , unsigned digcount
@@ -935,7 +935,7 @@ public:
 
     template <typename UIntT, std::size_t CharSize>
     static STRF_HD void write_big_sep
-        ( strf::underlying_outbuf<CharSize>& ob
+        ( strf::underlying_outbuff<CharSize>& ob
         , strf::encode_char_f<CharSize> encode_char
         , UIntT value
         , strf::digits_grouping grouping
@@ -999,7 +999,7 @@ public:
 
     template <std::size_t CharSize, typename UIntT>
     static STRF_HD void write
-        ( strf::underlying_outbuf<CharSize>& ob
+        ( strf::underlying_outbuff<CharSize>& ob
         , UIntT value
         , unsigned digcount
         , strf::lettercase = strf::lowercase )
@@ -1032,7 +1032,7 @@ public:
 
     template <typename UIntT, std::size_t CharSize>
     static STRF_HD void write_little_sep
-        ( strf::underlying_outbuf<CharSize>& ob
+        ( strf::underlying_outbuff<CharSize>& ob
         , UIntT value
         , strf::digits_grouping grouping
         , unsigned digcount
@@ -1100,7 +1100,7 @@ public:
 
     template <typename UIntT, std::size_t CharSize>
     static STRF_HD void write_big_sep
-        ( strf::underlying_outbuf<CharSize>& ob
+        ( strf::underlying_outbuff<CharSize>& ob
         , strf::encode_char_f<CharSize> encode_char
         , UIntT value
         , strf::digits_grouping grouping
@@ -1171,7 +1171,7 @@ public:
 
 template <int Base, std::size_t CharSize, typename UIntT>
 inline STRF_HD void write_int
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , UIntT value
     , unsigned digcount
     , strf::lettercase lc )
@@ -1181,7 +1181,7 @@ inline STRF_HD void write_int
 
 template <int Base, std::size_t CharSize, typename UIntT>
 inline STRF_HD void write_int_little_sep
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , UIntT value
     , strf::digits_grouping grouping
     , unsigned digcount
@@ -1195,7 +1195,7 @@ inline STRF_HD void write_int_little_sep
 
 template <int Base, std::size_t CharSize, typename UIntT>
 inline STRF_HD void write_int_big_sep
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , strf::encode_char_f<CharSize> encode_char
     , UIntT value
     , strf::digits_grouping grouping

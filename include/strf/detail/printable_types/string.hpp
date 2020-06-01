@@ -718,7 +718,7 @@ public:
         input.preview.add_size(res.pos);
     }
 
-    STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override;
+    STRF_HD void print_to(strf::underlying_outbuff<CharSize>& ob) const override;
 
 private:
 
@@ -734,7 +734,7 @@ private:
 };
 
 template<std::size_t CharSize>
-STRF_HD void string_printer<CharSize>::print_to(strf::underlying_outbuf<CharSize>& ob) const
+STRF_HD void string_printer<CharSize>::print_to(strf::underlying_outbuff<CharSize>& ob) const
 {
     strf::write(ob, str_, len_);
 }
@@ -796,7 +796,7 @@ public:
 
     STRF_HD ~aligned_string_printer();
 
-    STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override;
+    STRF_HD void print_to(strf::underlying_outbuff<CharSize>& ob) const override;
 
 private:
 
@@ -872,7 +872,7 @@ inline STRF_HD std::uint16_t aligned_string_printer<CharSize>::init_
 
 template<std::size_t CharSize>
 void STRF_HD aligned_string_printer<CharSize>::print_to
-    ( strf::underlying_outbuf<CharSize>& ob ) const
+    ( strf::underlying_outbuff<CharSize>& ob ) const
 {
     if (left_fillcount_ > 0) {
         encode_fill_(ob, left_fillcount_, afmt_.fill);
@@ -990,7 +990,7 @@ public:
 
     STRF_HD ~conv_string_printer() { }
 
-    STRF_HD void print_to(strf::underlying_outbuf<DestCharSize>& ob) const override;
+    STRF_HD void print_to(strf::underlying_outbuff<DestCharSize>& ob) const override;
 
 private:
 
@@ -1046,7 +1046,7 @@ private:
 
 template<std::size_t SrcCharSize, std::size_t DestCharSize>
 STRF_HD void conv_string_printer<SrcCharSize, DestCharSize>::print_to
-    ( strf::underlying_outbuf<DestCharSize>& ob ) const
+    ( strf::underlying_outbuff<DestCharSize>& ob ) const
 {
     if (can_transcode_directly()) {
         transcode_(ob, str_, len_, inv_seq_notifier_, surr_poli_);
@@ -1114,7 +1114,7 @@ public:
              , get_facet_<strf::char_encoding_c<DestCharT>, SrcCharT>(input.fp) );
     }
 
-    STRF_HD void print_to(strf::underlying_outbuf<DestCharSize>& ob) const override;
+    STRF_HD void print_to(strf::underlying_outbuff<DestCharSize>& ob) const override;
 
 private:
 
@@ -1211,7 +1211,7 @@ void STRF_HD aligned_conv_string_printer<SrcCharSize, DestCharSize>::init_
 
 template<std::size_t SrcCharSize, std::size_t DestCharSize>
 void STRF_HD aligned_conv_string_printer<SrcCharSize, DestCharSize>::print_to
-    ( strf::underlying_outbuf<DestCharSize>& ob ) const
+    ( strf::underlying_outbuff<DestCharSize>& ob ) const
 {
     if (left_fillcount_ > 0) {
         encode_fill_(ob, left_fillcount_, afmt_.fill);

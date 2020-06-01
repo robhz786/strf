@@ -59,7 +59,7 @@ public:
         input.preview.add_size(5 - (int)input.arg);
     }
 
-    void STRF_HD print_to(strf::underlying_outbuf<CharSize>& ob) const override;
+    void STRF_HD print_to(strf::underlying_outbuff<CharSize>& ob) const override;
 
 private:
 
@@ -68,7 +68,7 @@ private:
 };
 
 template <std::size_t CharSize>
-void STRF_HD bool_printer<CharSize>::print_to(strf::underlying_outbuf<CharSize>& ob) const
+void STRF_HD bool_printer<CharSize>::print_to(strf::underlying_outbuff<CharSize>& ob) const
 {
     auto size = 5 - (int)value_;
     ob.ensure(size);
@@ -120,7 +120,7 @@ public:
         }
     }
 
-    void STRF_HD print_to(strf::underlying_outbuf<CharSize>& ob) const override;
+    void STRF_HD print_to(strf::underlying_outbuff<CharSize>& ob) const override;
 
 private:
 
@@ -133,7 +133,7 @@ private:
 
 template <std::size_t CharSize>
 void fmt_bool_printer<CharSize>::print_to
-    ( strf::underlying_outbuf<CharSize>& ob ) const
+    ( strf::underlying_outbuff<CharSize>& ob ) const
 {
     if (afmt_.alignment != strf::text_alignment::left) {
         std::uint16_t s = afmt_.alignment == strf::text_alignment::center;

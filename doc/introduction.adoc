@@ -255,32 +255,32 @@ void sample() {
 ----
 
 However, I find another one even more interesting. It is the `to` function
-that writes to `basic_outbuf`:
+that writes to `basic_outbuff`:
 
 [source,cpp,subs=normal]
 ----
 namespace strf {
 
 template <typename CharT>
-class basic_outbuf;
+class basic_outbuff;
 
-using     outbuf = basic_outbuf<char>;
-using   u8outbuf = basic_outbuf<char8_t>;
-using  u16outbuf = basic_outbuf<char16_t>;
-using  u32outbuf = basic_outbuf<char32_t>;
-using    woutbuf = basic_outbuf<wchar_t>;
-using bin_outbuf = basic_outbuf<std::byte>;
+using     outbuff = basic_outbuff<char>;
+using   u8outbuff = basic_outbuff<char8_t>;
+using  u16outbuff = basic_outbuff<char16_t>;
+using  u32outbuff = basic_outbuff<char32_t>;
+using    woutbuff = basic_outbuff<wchar_t>;
+using bin_outbuff = basic_outbuff<std::byte>;
 
 template <typename CharT>
-/{asterisk} \... {asterisk}/ to(strf::basic_outbuf<CharT>&);
+/{asterisk} \... {asterisk}/ to(strf::basic_outbuff<CharT>&);
 
 }
 ----
-What so interesting about the the `basic_outbuf` abstract class template is
+What so interesting about the the `basic_outbuff` abstract class template is
 that every destination there is a concrete class that derives from it.
 For example, when you use `to_string`, the library internally instantiates a
 `<<to_string_hpp#basic_string_maker, string_maker>>`. In the case of writting
-to a raw string, it is a `<<outbuf_hpp#basic_cstr_writer,cstr_writer`>>.
+to a raw string, it is a `<<outbuff_hpp#basic_cstr_writer,cstr_writer`>>.
 
 So the statement:
 
@@ -317,7 +317,7 @@ print.with(f4) (arg6, arg7);
 str = str_maker.finish()
 ----
 
-Another reason to use `basic_outbuf` is when you don't want
+Another reason to use `basic_outbuff` is when you don't want
 to commit yourself to a destination type. Suppose you need to
 create a function that to provides a textual message whose
 content and size are known only at run time.
@@ -325,9 +325,9 @@ Instead of returning a string object or writting to caller-supplied
 `char*` ( both approachs have their downsides ), you can design
 your function like this:
 ----
-void get_message(strf::outbuf& dest);
+void get_message(strf::outbuff& dest);
 ----
-This way you let the caller decide which `outbuf` implementation
+This way you let the caller decide which `outbuff` implementation
 to use. It could be the `string_maker` or `cstr_writer` or
 another one. There is no significant performance difference
 between writing into a `cstr_writer` and directly into a
@@ -337,7 +337,7 @@ However, when writing to a string -- either a raw string
 or a `std::string` -- that string need to be further sent
 to some other destination -- a file, a log system, or whatever
 -- otherwise it is useless, right?
-So what the caller can also do is to implement a new `outbuf`
+So what the caller can also do is to implement a new `outbuff`
 that writes directly into such final destination, and
 thus avoiding both heap allocation and content trucation.
 
@@ -373,10 +373,10 @@ const char* get_message()
     //\... write into buff
     return buff;
 }
-But now you have another solution, you write into an `outbuf&`.
+But now you have another solution, you write into an `outbuff&`.
 [source,cpp,subs=normal]
 ----
-void get_message(strf::outbuf& dest);
+void get_message(strf::outbuff& dest);
 ----
 And you leave the decision to the caller. The caller
 can use pass `string_maker` or a `cstr_writer`
@@ -393,7 +393,7 @@ use most of the time.
 For more specifice things, there are the header references:
 
 [horizontal]
-`<<outbuf_hpp#,<strf/outbuf.hpp>>>` :: This is lighweight header can be used in freestanding evironments and is the cornerstone of library. All other headers include it.
+`<<outbuff_hpp#,<strf/outbuff.hpp>>>` :: This is lighweight header can be used in freestanding evironments and is the cornerstone of library. All other headers include it.
 `<<strf_hpp#,<strf.hpp>>>` :: Defines most of the library, including the main usage syntax , all printable types and all facets.
 `<<to_string_hpp#,<strf/to_string.hpp>>>` :: Provides utilities to write to `std::basic_string`. Includes `<<strf_hpp#main,<strf.hpp>>>`.
 `<<to_streambuf_hpp#,<strf/to_streambuf.hpp>>>` :: Provides utilities to write to `std::basic_streambuf`. Includes `<<strf_hpp#main,<strf.hpp>>>`.

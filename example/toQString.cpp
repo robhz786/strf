@@ -6,12 +6,12 @@
 #include <strf.hpp>
 #include <climits>
 
-class QStringCreator: public strf::basic_outbuf<char16_t>
+class QStringCreator: public strf::basic_outbuff<char16_t>
 {
 public:
 
     QStringCreator()
-        : strf::basic_outbuf<char16_t>(buffer_, buffer_size_)
+        : strf::basic_outbuff<char16_t>(buffer_, buffer_size_)
     {
     }
 
@@ -23,7 +23,7 @@ public:
 #endif
 
     explicit QStringCreator(std::size_t size)
-        : strf::basic_outbuf<char16_t>(buffer_, buffer_size_)
+        : strf::basic_outbuff<char16_t>(buffer_, buffer_size_)
     {
         Q_ASSERT(size < static_cast<std::size_t>(INT_MAX));
         str_.reserve(static_cast<int>(size));

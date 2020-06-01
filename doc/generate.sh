@@ -9,10 +9,10 @@ asciidoctor -v strf_hpp.adoc -o - \
     | sed 's/td.hdlist1{/td.hdlist1{min-width:9em;/g' \
     > out/strf_hpp.html
 
-asciidoctor -v outbuf_hpp.adoc -o - \
+asciidoctor -v outbuff_hpp.adoc -o - \
     | sed 's/20em/25em/g' \
     | sed 's/td.hdlist1{/td.hdlist1{min-width:9em;/g' \
-    > out/outbuf_hpp.html
+    > out/outbuff_hpp.html
 
 asciidoctor -v to_cfile_hpp.adoc -o - \
     | sed 's/20em/25em/g' \

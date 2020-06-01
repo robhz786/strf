@@ -167,7 +167,7 @@ namespace detail {
 
 template<std::size_t CharSize>
 STRF_HD void print_split
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , strf::encode_fill_f<CharSize> encode_fill
     , unsigned fillcount
     , char32_t fillchar
@@ -179,7 +179,7 @@ STRF_HD void print_split
 
 template<std::size_t CharSize, typename Printer, typename ... Printers>
 STRF_HD void print_split
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , strf::encode_fill_f<CharSize> encode_fill
     , unsigned fillcount
     , char32_t fillchar
@@ -201,7 +201,7 @@ template<std::size_t CharSize, std::size_t ... I, typename ... Printers>
 STRF_HD void print_split
     ( const strf::detail::printers_tuple_impl
         < CharSize, std::index_sequence<I...>, Printers... >& printers
-    , strf::underlying_outbuf<CharSize>& ob
+    , strf::underlying_outbuff<CharSize>& ob
     , strf::encode_fill_f<CharSize> encode_fill
     , unsigned fillcount
     , char32_t fillchar
@@ -294,7 +294,7 @@ public:
         printers_ptr_()->~printers_tuple_();
     }
 
-    STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override
+    STRF_HD void print_to(strf::underlying_outbuff<CharSize>& ob) const override
     {
         switch (afmt_.alignment) {
             case strf::text_alignment::left: {
@@ -352,17 +352,17 @@ private:
         return fp.template get_facet<Category, strf::aligned_join_t>();
     }
 
-    STRF_HD void write_fill_(strf::underlying_outbuf<CharSize>& ob, int count) const
+    STRF_HD void write_fill_(strf::underlying_outbuff<CharSize>& ob, int count) const
     {
         encode_fill_func_(ob, count, afmt_.fill);
     }
 
-    STRF_HD void print_split_(strf::underlying_outbuf<CharSize>& ob) const;
+    STRF_HD void print_split_(strf::underlying_outbuff<CharSize>& ob) const;
 };
 
 template<std::size_t CharSize, typename ... Printers>
 STRF_HD void aligned_join_printer_impl<CharSize, Printers...>::print_split_
-    ( strf::underlying_outbuf<CharSize>& ob ) const
+    ( strf::underlying_outbuff<CharSize>& ob ) const
 {
     strf::detail::print_split
         ( printers_(), ob, encode_fill_func_, fillcount_, afmt_.fill, split_pos_ );
@@ -418,7 +418,7 @@ public:
     {
     }
 
-    STRF_HD void print_to(strf::underlying_outbuf<CharSize>& ob) const override
+    STRF_HD void print_to(strf::underlying_outbuff<CharSize>& ob) const override
     {
         strf::detail::write(ob, printers_);
     }

@@ -28,7 +28,7 @@ class printer
 public:
     using char_type = CharOut;
     virtual ~printer() {}
-    virtual void print_to(<<basic_outbuf,basic_outbuf>><CharT>&) const = 0;
+    virtual void print_to(<<basic_outbuff,basic_outbuff>><CharT>&) const = 0;
 };
 
 } // namespace strf
@@ -107,7 +107,7 @@ static_cast< const {printer}<sizeof(CharT)>& >
 
 And
 
-- The poscondition `(s_pos - s_pre == s)` is satisfied, where `s_pos` and `s_pre` are the value of `prev.get_size()` before and after the expression above is evaluated respectively, and `s` -- the estimated number of characters that the returned printer writes in `<<printer,print_to>>` -- does not need to be exact but must be such that for any value `ob` of type `<<basic_outbuf,basic_outbuf>><CharT>&`, if `ob.<<underlying_outbuf_size,size>>()` is less than or equal to `s`, then `p.print_to(ob)` is guaranted to not call `ob.<<underlying_outbuf_recycle,recycle>>()`, where value of the above expression.
+- The poscondition `(s_pos - s_pre == s)` is satisfied, where `s_pos` and `s_pre` are the value of `prev.get_size()` before and after the expression above is evaluated respectively, and `s` -- the estimated number of characters that the returned printer writes in `<<printer,print_to>>` -- does not need to be exact but must be such that for any value `ob` of type `<<basic_outbuff,basic_outbuff>><CharT>&`, if `ob.<<underlying_outbuff_size,size>>()` is less than or equal to `s`, then `p.print_to(ob)` is guaranted to not call `ob.<<underlying_outbuff_recycle,recycle>>()`, where value of the above expression.
 
 [NOTE]
 ====

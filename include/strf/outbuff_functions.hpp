@@ -1,5 +1,5 @@
-#ifndef STRF_OUTBUF_FUNCTIONS_HPP
-#define STRF_OUTBUF_FUNCTIONS_HPP
+#ifndef STRF_OUTBUFF_FUNCTIONS_HPP
+#define STRF_OUTBUFF_FUNCTIONS_HPP
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
@@ -18,8 +18,8 @@ namespace detail {
 #  endif
 #endif
 
-template <typename Outbuf, typename CharT>
-STRF_HD void outbuf_write_continuation(Outbuf& ob, const CharT* str, std::size_t len)
+template <typename Outbuff, typename CharT>
+STRF_HD void outbuff_write_continuation(Outbuff& ob, const CharT* str, std::size_t len)
 {
     auto space = ob.size();
     STRF_ASSERT(space < len);
@@ -47,15 +47,15 @@ STRF_HD void outbuf_write_continuation(Outbuf& ob, const CharT* str, std::size_t
 #  pragma GCC diagnostic pop
 #endif
 
-template <typename Outbuf, typename CharT = typename Outbuf::char_type>
-STRF_HD void outbuf_write(Outbuf& ob, const CharT* str, std::size_t len)
+template <typename Outbuff, typename CharT = typename Outbuff::char_type>
+STRF_HD void outbuff_write(Outbuff& ob, const CharT* str, std::size_t len)
 {
     auto p = ob.pointer();
     if (p + len <= ob.end()) { // the common case
         strf::detail::str_copy_n(p, str, len);
         ob.advance(len);
     } else {
-        detail::outbuf_write_continuation<Outbuf, CharT>(ob, str, len);
+        detail::outbuff_write_continuation<Outbuff, CharT>(ob, str, len);
     }
 }
 
@@ -63,84 +63,84 @@ STRF_HD void outbuf_write(Outbuf& ob, const CharT* str, std::size_t len)
 
 template <std::size_t CharSize>
 inline STRF_HD void write
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , const strf::underlying_char_type<CharSize>* str
     , std::size_t len )
 {
-    strf::detail::outbuf_write(ob, str, len);
+    strf::detail::outbuff_write(ob, str, len);
 }
 
 template <typename CharT>
 inline STRF_HD void write
-    ( strf::basic_outbuf<CharT>& ob
+    ( strf::basic_outbuff<CharT>& ob
     , const CharT* str
     , std::size_t len )
 {
-    strf::detail::outbuf_write(ob, str, len);
+    strf::detail::outbuff_write(ob, str, len);
 }
 
 template <typename CharT>
 inline STRF_HD void write
-    ( strf::basic_outbuf_noexcept<CharT>& ob
+    ( strf::basic_outbuff_noexcept<CharT>& ob
     , const CharT* str
     , std::size_t len )
 {
-    strf::detail::outbuf_write(ob, str, len);
+    strf::detail::outbuff_write(ob, str, len);
 }
 
 template <std::size_t CharSize>
 inline STRF_HD void write
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , const strf::underlying_char_type<CharSize>* str
     , const strf::underlying_char_type<CharSize>* str_end )
 {
     STRF_ASSERT(str_end >= str);
-    strf::detail::outbuf_write(ob, str, str_end - str);
+    strf::detail::outbuff_write(ob, str, str_end - str);
 }
 
 template <typename CharT>
 inline STRF_HD void write
-    ( strf::basic_outbuf<CharT>& ob
+    ( strf::basic_outbuff<CharT>& ob
     , const CharT* str
     , const CharT* str_end )
 {
     STRF_ASSERT(str_end >= str);
-    strf::detail::outbuf_write(ob, str, str_end - str);
+    strf::detail::outbuff_write(ob, str, str_end - str);
 }
 
 template <typename CharT>
 inline STRF_HD void write
-    ( strf::basic_outbuf_noexcept<CharT>& ob
+    ( strf::basic_outbuff_noexcept<CharT>& ob
     , const CharT* str
     , const CharT* str_end ) noexcept
 {
     STRF_ASSERT(str_end >= str);
-    strf::detail::outbuf_write(ob, str, str_end - str);
+    strf::detail::outbuff_write(ob, str, str_end - str);
 }
 
 inline STRF_HD void write
-    ( strf::basic_outbuf<char>& ob
+    ( strf::basic_outbuff<char>& ob
     , const char* str )
 {
-    strf::detail::outbuf_write(ob, str, detail::str_length(str));
+    strf::detail::outbuff_write(ob, str, detail::str_length(str));
 }
 
 inline STRF_HD void write
-    ( strf::basic_outbuf_noexcept<char>& ob
+    ( strf::basic_outbuff_noexcept<char>& ob
     , const char* str ) noexcept
 {
-    strf::detail::outbuf_write(ob, str, detail::str_length(str));
+    strf::detail::outbuff_write(ob, str, detail::str_length(str));
 }
 
 namespace detail {
 
 template<std::size_t CharSize>
 void STRF_HD write_fill_continuation
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , std::size_t count
-    , typename strf::underlying_outbuf<CharSize>::char_type ch )
+    , typename strf::underlying_outbuff<CharSize>::char_type ch )
 {
-    using char_type = typename strf::underlying_outbuf<CharSize>::char_type;
+    using char_type = typename strf::underlying_outbuff<CharSize>::char_type;
 
     std::size_t space = ob.size();
     STRF_ASSERT(space < count);
@@ -164,11 +164,11 @@ void STRF_HD write_fill_continuation
 
 template <std::size_t CharSize>
 inline STRF_HD void write_fill
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , std::size_t count
-    , typename strf::underlying_outbuf<CharSize>::char_type ch )
+    , typename strf::underlying_outbuff<CharSize>::char_type ch )
 {
-    using char_type = typename strf::underlying_outbuf<CharSize>::char_type;
+    using char_type = typename strf::underlying_outbuff<CharSize>::char_type;
     if (count <= ob.size()) { // the common case
         strf::detail::str_fill_n<char_type>(ob.pointer(), count, ch);
         ob.advance(count);
@@ -179,16 +179,16 @@ inline STRF_HD void write_fill
 
 template<typename CharT>
 inline STRF_HD void write_fill
-    ( strf::basic_outbuf<CharT>& ob
+    ( strf::basic_outbuff<CharT>& ob
     , std::size_t count
     , CharT ch )
 {
-    using u_char_type = typename strf::underlying_outbuf<sizeof(CharT)>::char_type;
+    using u_char_type = typename strf::underlying_outbuff<sizeof(CharT)>::char_type;
     write_fill(ob.as_underlying(), count, static_cast<u_char_type>(ch));
 }
 
 } // namespace detail
 } // namespace strf
 
-#endif  // STRF_OUTBUF_FUNCTIONS_HPP
+#endif  // STRF_OUTBUFF_FUNCTIONS_HPP
 

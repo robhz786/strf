@@ -27,12 +27,12 @@ struct foo // note: foo is not copiable
     char* dest_end;
 };
 
-class foo_writer: public strf::basic_outbuf<char>
+class foo_writer: public strf::basic_outbuff<char>
 {
 public:
 
     foo_writer(foo&& f)
-        : strf::basic_outbuf<char>{f.dest, f.dest_end - 1}
+        : strf::basic_outbuff<char>{f.dest, f.dest_end - 1}
         , foo_(std::move(f))
     {
     }

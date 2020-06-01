@@ -680,7 +680,7 @@ STRF_HD double_printer_data init_double_printer_data
 
 template <int Base, std::size_t CharSize, typename IntT>
 inline STRF_HD void write_int_with_leading_zeros
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , IntT value
     , unsigned digcount
     , strf::lettercase lc )
@@ -699,7 +699,7 @@ inline STRF_HD void write_int_with_leading_zeros
 
 template <std::size_t CharSize>
 STRF_HD void print_amplified_integer_small_separator_1
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , unsigned long long value
     , unsigned num_digits
     , strf::digits_distribution dist
@@ -739,7 +739,7 @@ STRF_HD void print_amplified_integer_small_separator_1
 
 template <std::size_t CharSize>
 STRF_HD void print_amplified_integer_small_separator_2
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , unsigned long long value
     , unsigned num_digits
     , strf::digits_distribution dist
@@ -851,7 +851,7 @@ STRF_HD void print_amplified_integer_small_separator_2
 
 template <std::size_t CharSize>
 inline STRF_HD void print_amplified_integer_small_separator
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , unsigned long long value
     , strf::digits_grouping grouping
     , unsigned num_digits
@@ -870,7 +870,7 @@ inline STRF_HD void print_amplified_integer_small_separator
 
 template <std::size_t CharSize>
 STRF_HD void print_amplified_integer_big_separator_1
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , strf::encode_char_f<CharSize> encode_char
     , unsigned long long value
     , unsigned num_digits
@@ -909,7 +909,7 @@ STRF_HD void print_amplified_integer_big_separator_1
 
 template <std::size_t CharSize>
 STRF_HD void print_amplified_integer_big_separator_2
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , strf::encode_char_f<CharSize> encode_char
     , unsigned long long value
     , unsigned num_digits
@@ -1020,7 +1020,7 @@ STRF_HD void print_amplified_integer_big_separator_2
 
 template <std::size_t CharSize>
 STRF_HD void print_amplified_integer_big_separator
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , strf::encode_char_f<CharSize> encode_char
     , unsigned long long value
     , strf::digits_grouping grouping
@@ -1042,7 +1042,7 @@ STRF_HD void print_amplified_integer_big_separator
 
 template <std::size_t CharSize>
 STRF_HD void print_scientific_notation
-    ( strf::underlying_outbuf<CharSize>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , strf::encode_char_f<CharSize> encode_char
     , unsigned long long digits
     , unsigned num_digits
@@ -1121,7 +1121,7 @@ STRF_HD void print_scientific_notation
 }
 
 template <std::size_t CharSize>
-STRF_HD void print_nan(strf::underlying_outbuf<CharSize>& ob, strf::lettercase lc)
+STRF_HD void print_nan(strf::underlying_outbuff<CharSize>& ob, strf::lettercase lc)
 {
     ob.ensure(3);
     auto p = ob.pointer();
@@ -1145,7 +1145,7 @@ STRF_HD void print_nan(strf::underlying_outbuf<CharSize>& ob, strf::lettercase l
 
 }
 template <std::size_t CharSize>
-STRF_HD void print_nan(strf::underlying_outbuf<CharSize>& ob, strf::lettercase lc
+STRF_HD void print_nan(strf::underlying_outbuff<CharSize>& ob, strf::lettercase lc
                       , bool negative )
 {
     ob.ensure(3 + negative);
@@ -1173,7 +1173,7 @@ STRF_HD void print_nan(strf::underlying_outbuf<CharSize>& ob, strf::lettercase l
 }
 
 template <std::size_t CharSize>
-STRF_HD void print_inf(strf::underlying_outbuf<CharSize>& ob, strf::lettercase lc)
+STRF_HD void print_inf(strf::underlying_outbuff<CharSize>& ob, strf::lettercase lc)
 {
     ob.ensure(3);
     auto p = ob.pointer();
@@ -1197,7 +1197,7 @@ STRF_HD void print_inf(strf::underlying_outbuf<CharSize>& ob, strf::lettercase l
 }
 
 template <std::size_t CharSize>
-STRF_HD void print_inf( strf::underlying_outbuf<CharSize>& ob
+STRF_HD void print_inf( strf::underlying_outbuff<CharSize>& ob
                       , strf::lettercase lc
                       , bool negative )
 {
@@ -1279,7 +1279,7 @@ public:
     }
 
 
-    STRF_HD void print_to(strf::underlying_outbuf<CharSize>&) const override;
+    STRF_HD void print_to(strf::underlying_outbuff<CharSize>&) const override;
 
 private:
 
@@ -1465,7 +1465,7 @@ STRF_HD std::size_t punct_double_printer<CharSize>::content_size_() const
 
 template <std::size_t CharSize>
 STRF_HD void punct_double_printer<CharSize>::print_to
-    (strf::underlying_outbuf<CharSize>& ob) const
+    (strf::underlying_outbuff<CharSize>& ob) const
 {
     if (left_fillcount_ != 0) {
         encode_fill_(ob, left_fillcount_, fillchar_);
@@ -1615,7 +1615,7 @@ public:
         init_(input.preview, input.vwf.width(), input.vwf.alignment(), enc);
     }
 
-    STRF_HD void print_to(strf::underlying_outbuf<CharSize>&) const override;
+    STRF_HD void print_to(strf::underlying_outbuff<CharSize>&) const override;
 
 private:
 
@@ -1692,7 +1692,7 @@ STRF_HD void double_printer<CharSize>::init_
 
 template <std::size_t CharSize>
 STRF_HD void double_printer<CharSize>::print_to
-    ( strf::underlying_outbuf<CharSize>& ob ) const
+    ( strf::underlying_outbuff<CharSize>& ob ) const
 {
     if (left_fillcount_ != 0) {
         encode_fill_(ob, left_fillcount_, fillchar_);
@@ -1868,7 +1868,7 @@ public:
             || (value_.e10 < -(int)m10_digcount_ - 2 - (m10_digcount_ != 1));
     }
 
-    STRF_HD void print_to(strf::underlying_outbuf<CharSize>&) const override;
+    STRF_HD void print_to(strf::underlying_outbuff<CharSize>&) const override;
 
     STRF_HD std::size_t size() const;
 
@@ -1901,7 +1901,7 @@ STRF_HD std::size_t fast_double_printer<CharSize>::size() const
 
 template <std::size_t CharSize>
 STRF_HD void fast_double_printer<CharSize>::print_to
-    ( strf::underlying_outbuf<CharSize>& ob ) const
+    ( strf::underlying_outbuff<CharSize>& ob ) const
 {
     if (value_.nan) {
         strf::detail::print_nan(ob, lettercase_, value_.negative);
@@ -2043,7 +2043,7 @@ public:
     }
 
 
-    STRF_HD void print_to(strf::underlying_outbuf<CharSize>&) const override;
+    STRF_HD void print_to(strf::underlying_outbuff<CharSize>&) const override;
 
 private:
 
@@ -2180,7 +2180,7 @@ STRF_HD strf::width_t fast_punct_double_printer<CharSize>::width_() const
 
 template <std::size_t CharSize>
 STRF_HD void fast_punct_double_printer<CharSize>::print_to
-    ( strf::underlying_outbuf<CharSize>& ob ) const
+    ( strf::underlying_outbuff<CharSize>& ob ) const
 {
     if (value_.negative) {
         put(ob, static_cast<char_type>('-'));
@@ -2434,7 +2434,7 @@ public:
         }
     }
 
-    STRF_HD void print_to(strf::underlying_outbuf<CharSize>&) const override;
+    STRF_HD void print_to(strf::underlying_outbuff<CharSize>&) const override;
 
 private:
 
@@ -2496,7 +2496,7 @@ private:
 
 template <std::size_t CharSize>
 STRF_HD void hex_double_printer<CharSize>::print_to
-    ( strf::underlying_outbuf<CharSize>& ob ) const
+    ( strf::underlying_outbuff<CharSize>& ob ) const
 {
     if (left_fillcount_ != 0) {
         encode_fill_(ob, left_fillcount_, fillchar_);

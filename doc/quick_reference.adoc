@@ -161,7 +161,7 @@ assert(str == "~~~~+1.e+01~~~~")
 |===
 | Expression |Header
 
-|`<<dest_outbuf,to>> (__outbuf_ref__) (__args\...__)`
+|`<<dest_outbuff,to>> (__outbuff_ref__) (__args\...__)`
 | `<<strf_hpp#,<strf.hpp> >>`
 
 |`<<dest_raw_string,to>> (__char_ptr__, __count__) (__args\...__)`
@@ -214,20 +214,20 @@ where:
 * `__streambuf_ptr__` is a `std::streambuf<__CharT__, _Traits_>*`
 * `__streambuf_ref__` is a `std::streambuf<__CharT__, _Traits_>&`
 * `__cfile__` is a `FILE*`
-* `__outbuf_ref__` is a `basic_outbuf<__CharT__>&`,  where `__CharT__` is a character type.
+* `__outbuff_ref__` is a `basic_outbuff<__CharT__>&`,  where `__CharT__` is a character type.
 * `__args\...__` is an argument list of printable values.
 
-[[dest_outbuf]]
+[[dest_outbuff]]
 ====
 [subs=normal]
 ----
-strf::to(__outbuf_ref__) (__args\...__)
+strf::to(__outbuff_ref__) (__args\...__)
 ----
 [horizontal]
-Return type:: `basic_outbuf<__CharT__>&`
-Return value:: `__outbuf_ref__`
+Return type:: `basic_outbuff<__CharT__>&`
+Return value:: `__outbuff_ref__`
 Supports reserve:: No
-See the <<outbuf_types,list of types>> that derive from `basic_outbuf<__CharT__>&`.
+See the <<outbuff_types,list of types>> that derive from `basic_outbuff<__CharT__>&`.
 ====
 
 [[dest_raw_string]]
@@ -244,7 +244,7 @@ Preconditions::
 * `__count__ > 0`
 * `__end__ > __char_ptr__`
 //-
-Return type:: `<<outbuf_hpp#basic_cstr_writer,basic_cstr_writer<__CharT__>::result`>>
+Return type:: `<<outbuff_hpp#basic_cstr_writer,basic_cstr_writer<__CharT__>::result`>>
 Return value:: a value `r`, such that:
 * `r.ptr` points to last written character which is always `'\0'`.
 * `r.truncated` is `true` when the destination string is too small.
@@ -387,19 +387,19 @@ Header file:: `<<to_cfile_hpp#,<strf/to_cfile.hpp> >>`
 Return type:: `<<to_cfile_hpp#wide_cfile_writer,wide_cfile_writer<__CharT__>::result>>`
 ====
 
-[[outbuf_types]]
-== Derivates of `basic_outbuf`
+[[outbuff_types]]
+== Derivates of `basic_outbuff`
 
-The table below lists the concrete types that derivate from the `basic_outbuf<__CharT__>` abstract class.
+The table below lists the concrete types that derivate from the `basic_outbuff<__CharT__>` abstract class.
 
 [%header,cols="47,53"]
 |===
 | Type | Description
 
-| `<<outbuf_hpp#basic_cstr_writer, basic_cstr_writer>><__CharT__>`
+| `<<outbuff_hpp#basic_cstr_writer, basic_cstr_writer>><__CharT__>`
 | Writes C strings
 
-| `<<outbuf_hpp#discarded_outbuf,discarded_outbuf>><__CharT__>`
+| `<<outbuff_hpp#discarded_outbuff,discarded_outbuff>><__CharT__>`
 | Discard content
 
 | `<<to_string_hpp#basic_string_appender,basic_string_appender>><__CharT__, _Traits_~_opt_~, _A_~_opt_~>`
@@ -451,7 +451,7 @@ using wcstr_writer   = basic_cstr_writer<wchar_t>;
 ----
 namespace strf {
 
-template <typename CharT> class discarded_outbuf;
+template <typename CharT> class discarded_outbuff;
 
 } // namespace strf
 ----
