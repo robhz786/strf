@@ -11,5 +11,5 @@ cmake -DSTRF_BUILD_TESTS=ON \
       -DCMAKE_BUILD_TYPE=$CONFIG \
       -G "Unix Makefiles" .. \
 && cmake --build . \
-&& ctest
+&& ctest -V
 

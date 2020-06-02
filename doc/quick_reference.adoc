@@ -5,277 +5,573 @@ See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
 
-
 = The Strf formatting library - Quit Reference
 :source-highlighter: prettify
 :sectnums:
-:sectnumlevels: 2
+:sectnumlevels: 1
 :toc: left
-:toclevels: 2
+:toclevels: 1
 :icons: font
 
-[[usage_syntax]]
-== Main usage syntax
+[[format_functions]]
+== Format Functions
 
-image::syntax.svg[opts=interactive]
+The expression `fmt(_arg_)` returns a printable object that contains a copy or reference of
+`arg` as well as format information that can be edited with the
+member functions below, following the
+https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Named_Parameter[named paramenter idiom],
 
 .Example
 [source,cpp]
 ----
-#include <strf.hpp>
-#include <cassert>
+auto str = strf::to_string( +*strf::fmt(1.0).sci().fill(U'~') ^ 15 );
+assert(str == "~~~~+1.e+01~~~~")
+----
 
-std::string sample()
-{
-    int x = 100;
+.Alignment format functions -- for all printable types
+[%header,cols="40,60"]
+|===
+| Member function | Effect
 
-    std::string str =
-        strf::to_string // the destination
-        .reserve(100)   // The reserved capacity in the created string
-        .with(strf::monotonic_grouping<10>{3}) // numeric punctuation
-        .tr("{0} times {0} is equal to {1}", x, x*x);
+|`operator<(std::int16_t width)`
+| Aligns to the left ( Or to the right right-to-left (RTL) script )
 
-    assert(str.capacity() >= 100);
-    assert(str == "100 times 100 is equal to 10,000");
+|`operator>(std::int16_t width)`
+| Aligns to the right ( Or to the left right-to-left (RTL) script )
+
+|`operator^(std::int16_t width)`
+| Center alignment
+
+|`operator%(std::int16_t width)`
+| Splits the content, as in `std::internal`.
+
+|`fill(char32_t ch)`
+| Sets the fill character.
+|===
+
+.When `_arg_` is a numeric value
+[%header,cols="40,60"]
+|===
+| Member function | Effect
+|`p(unsigned precision)`
+| Sets the precision. For integers and floating points.
+
+|`bin()`
+|  Uses the binary base. For integers only
+
+|`oct()`
+|  Uses the octal base. For integers only
+
+|`dec()`
+| Uses the decimal base. For integers only
+
+|`hex()`
+| Uses the hexadecimal base. For integers and floating points.
+
+|`operator*()`
+| Prints base indication on integers. Print decimal point on floating points.
+
+|`operator+()`
+| Prints `'+'` for non negative values. For integers and floating points.
+
+|`fixed()`
+| Uses fixed notation. For floating points only.
+
+|`sci()`
+| Uses scientific notation. For floating points only.
+
+|`gen()`
+| Uses "general" notation. For floating points only.
+|===
+
+.When `_arg_` is a character
+[%header,cols="40,60"]
+|===
+| Member function | Effect
+|`multi(std::size_t count)`
+| Prints the argument `count` times.
+|===
+
+.When `_arg_` is a string
+[%header,cols="40,60"]
+|===
+| Member function | Effect
+|`p(<<strf_hpp#width_t,width_t>> precision)`
+| Sets string precision
+
+| `template <typename Enc>` `sanitize_from_encoding(Enc enc)`
+| Transcodes the input string from the character encoding represented by `enc`,
+  or just sanitizes it if `enc` is also the destination encoding.
+
+| `template <typename Enc>` `convert_from_encoding(Enc enc)`
+| Transocdes the input string from the character encoding represented by `enc`,
+  if it is not already destination encoding.
+
+| `template <typename Enc>` `sani(Enc enc)`
+| Equivalent to `sanitize_from_encoding(enc)`
+
+| `template <typename Enc>` `conv(Enc enc)`
+| Equivalent to `convert_from_encoding(enc)`
+
+| `template <typename Enc>` `sanitize_encoding()`
+| Transcodes the input string from the character encoding that corresponds
+  to its character type, or just sanitizes it if it same
+  as the destination encoding.
+
+| `template <typename Enc>` `convert_encoding()`
+| Transsodes the input string from the character encoding that correspods
+  to its character type, if it is not already the same
+  as the destination encoding.
+|===
+
+The library also provides some global function templates
+that work as alias to format functions:
+
+[%header,cols="22,25"]
+|===
+| Expression | Equivalent Expression
+|`left(_arg_, _width_)`        |`fmt(_arg_) < _width_`
+|`right(_arg_, _width_)`       |`fmt(_arg_) > _width_`
+|`center(_arg_, _width_)`      |`fmt(_arg_) ^ _width_`
+|`split(_arg_, _width_)`       |`fmt(_arg_) % _width_`
+|`left(_arg_, _width_, _ch_)`  |`fmt(_arg_).fill(_ch_) < _width_`
+|`right(_arg_, _width_, _ch_)` |`fmt(_arg_).fill(_ch_) > _width_`
+|`center(_arg_, _width_, _ch_)`|`fmt(_arg_).fill(_ch_) ^ _width_`
+|`split(_arg_, _width_, _ch_)` |`fmt(_arg_).fill(_ch_) % _width_`
+|`bin(_arg_)`                  |`fmt(_arg_).bin()`
+|`dec(_arg_)`                  |`fmt(_arg_).oct()`
+|`oct(_arg_)`                  |`fmt(_arg_).dec()`
+|`hex(_arg_)`                  |`fmt(_arg_).hex()`
+|`multi(_arg_, _count_)        |`fmt(_arg_).multi(_count_)`
+|`sani(_arg_, _enc_)`          |`fmt(_arg_).sani(_enc_)`
+|`conv(_arg_, _enc_)`          |`fmt(_arg_).conv(_enc_)`
+|`sani(_arg_)`                 |`fmt(_arg_).sani()`
+|`conv(_arg_)`                 |`fmt(_arg_).cont()`
+|===
+
+.Example
+[source,cpp]
+----
+auto str = strf::to_string( +*strf::center(1.0, 15, U'~').sci() );
+assert(str == "~~~~+1.e+01~~~~")
+----
+== Destinations
+
+[%header,cols="10,4"]
+|===
+| Expression |Header
+
+|`<<dest_outbuff,to>> (__outbuff_ref__) (__args\...__)`
+| `<<strf_hpp#,<strf.hpp> >>`
+
+|`<<dest_raw_string,to>> (__char_ptr__, __count__) (__args\...__)`
+| `<<strf_hpp#,<strf.hpp> >>`
+
+|`<<dest_raw_string,to>> (__char_ptr__, __end__) (__args\...__)`
+| `<<strf_hpp#,<strf.hpp> >>`
+
+|`<<dest_raw_string,to>> (__char_array__) (__args\...__)`
+| `<<strf_hpp#,<strf.hpp> >>`
+
+|`<<dest_to_basic_string,to_basic_string>> <__CharT__, _Traits_~_opt_~, _A_~_opt_~> (__args\...__)`
+| `<<to_string_hpp#,<strf/to_string.hpp> >>`
+
+|`<<dest_to_string,to_string>>               (__args\...__)`
+| `<<to_string_hpp#,<strf/to_string.hpp> >>`
+
+|`<<dest_to_u8string,to_u8string>>             (__args\...__)`
+| `<<to_string_hpp#,<strf/to_string.hpp> >>`
+
+|`<<dest_to_u16string,to_u16string>>            (__args\...__)`
+| `<<to_string_hpp#,<strf/to_string.hpp> >>`
+
+|`<<dest_to_u32string,to_u16string>>            (__args\...__)`
+| `<<to_string_hpp#,<strf/to_string.hpp> >>`
+
+|`<<dest_to_wstring,to_wstring>>               (__args\...__)`
+| `<<to_string_hpp#,<strf/to_string.hpp> >>`
+
+|`<<dest_streambuf,to>> (__streambuf_ptr__)  (__args\...__)`
+| `<<to_streambuf_hpp#,<strf/to_streambuf.hpp> >>`
+
+|`<<dest_streambuf,to>> (__streambuf_ref__)  (__args\...__)`
+| `<<to_streambuf_hpp#,<strf/to_streambuf.hpp> >>`
+
+|`<<dest_cfile,to>> <__CharT__~_opt_~> (__cfile__)     (__args\...__)`
+| `<<to_cfile_hpp#,<strf/to_cfile.hpp> >>`
+
+|`<<dest_wcfile,wto>> (__cfile__)              (__args\...__)`
+| `<<to_cfile_hpp#,<strf/to_cfile.hpp> >>`
+|===
+where:
+
+* `__CharT__` is a charater type.
+* `_Traits_` is a https://en.cppreference.com/w/cpp/named_req/CharTraits[_CharTraits_] type.
+* `_A_` is an https://en.cppreference.com/w/cpp/named_req/Allocator[_Allocator_] type
+* `__char_ptr__` is a `__CharT__*` value, where `__CharT__` is a character type.
+* `__end__` is a `__CharT__*` value, where `__CharT__` is a character type.
+* `__count__` is a `std::size_t` value
+* `__streambuf_ptr__` is a `std::streambuf<__CharT__, _Traits_>*`
+* `__streambuf_ref__` is a `std::streambuf<__CharT__, _Traits_>&`
+* `__cfile__` is a `FILE*`
+* `__outbuff_ref__` is a `basic_outbuff<__CharT__>&`,  where `__CharT__` is a character type.
+* `__args\...__` is an argument list of printable values.
+
+[[dest_outbuff]]
+====
+[subs=normal]
+----
+strf::to(__outbuff_ref__) (__args\...__)
+----
+[horizontal]
+Return type:: `basic_outbuff<__CharT__>&`
+Return value:: `__outbuff_ref__`
+Supports reserve:: No
+See the <<outbuff_types,list of types>> that derive from `basic_outbuff<__CharT__>&`.
+====
+
+[[dest_raw_string]]
+====
+[subs=normal]
+----
+strf::<<strf_hpp#to_char_ptr_count,to>>(__char_ptr__, __count__) (__args\...__);
+strf::<<strf_hpp#to_char_range,to>>(__char_ptr__, __end__)   (__args\...__);
+strf::<<strf_hpp#to_char_array,to>>(__char_array__)      (__args\...__);
+----
+[horizontal]
+Header file:: `<<strf_hpp#,<strf.hpp> >>`
+Preconditions::
+* `__count__ > 0`
+* `__end__ > __char_ptr__`
+//-
+Return type:: `<<outbuff_hpp#basic_cstr_writer,basic_cstr_writer<__CharT__>::result`>>
+Return value:: a value `r`, such that:
+* `r.ptr` points to last written character which is always `'\0'`.
+* `r.truncated` is `true` when the destination string is too small.
+Note:: The termination character `'\0'` is always written.
+Supports reserve:: No
+
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+/{asterisk}\...{asterisk}/ to(char*     dest, std::size_t count);
+/{asterisk}\...{asterisk}/ to(char8_t*  dest, std::size_t count);
+/{asterisk}\...{asterisk}/ to(char16_t* dest, std::size_t count);
+/{asterisk}\...{asterisk}/ to(char32_t* dest, std::size_t count);
+/{asterisk}\...{asterisk}/ to(wchar_t*  dest, std::size_t count);
+
+/{asterisk}\...{asterisk}/ to(char*     dest, char*     dest_end);
+/{asterisk}\...{asterisk}/ to(char8_t*  dest, char8_t*  dest_end);
+/{asterisk}\...{asterisk}/ to(char16_t* dest, char16_t* dest_end);
+/{asterisk}\...{asterisk}/ to(char32_t* dest, char32_t* dest_end);
+/{asterisk}\...{asterisk}/ to(wchar_t*  dest, wchar_t*  dest_end);
+
+template<std::size_t N> /{asterisk}\...{asterisk}/ to(char     (&dest)[N]);
+template<std::size_t N> /{asterisk}\...{asterisk}/ to(char8_t  (&dest)[N]);
+template<std::size_t N> /{asterisk}\...{asterisk}/ to(char16_t (&dest)[N]);
+template<std::size_t N> /{asterisk}\...{asterisk}/ to(char32_t (&dest)[N]);
+template<std::size_t N> /{asterisk}\...{asterisk}/ to(wchar_t  (&dest)[N]);
 }
 ----
 
-[[destinations]]
-=== Destinations
 
-////
-[%header,cols=2*]
-|===
-| Destination       | Return type
-| `to_string`      | `std::string`
-| `to_u16string`   | `std::u16string`
-| `to_u326string`  | `std::u32string`
-| `to_wstring`     | `std::wstring`
-| `to_basic_string<CharT, Traits, Alloc>`  | `std::basic_string<CharT, Traits, Alloc>`
-| `append(std::basic_string<CharT, Traits, Alloc>&)`  | `void`
-| `assign(std::basic_string<CharT, Traits, Alloc>&)`  | `void`
+====
 
-| `to(CharT* str, std::size)`
-| `struct /{asterisk}{asterisk}/ { CharT* ptr; bool truncated; }`
-
-| `to(CharT* begin, CharT* end)`
-| `struct /{asterisk}{asterisk}/ { CharT* ptr; bool truncated; }`
-
-| `to(CharT (&)[N])`
-| `struct /{asterisk}{asterisk}/ { CharT* ptr; bool truncated; }`
-
-| `to(FILE*)`
-| `struct /{asterisk}{asterisk}/ { std::size_t count; bool truncated; }`
-
-| `wto(FILE*)`
-| `struct /{asterisk}{asterisk}/ { std::size_t count; bool truncated; }`
-
-| `to(std::basic_streambuf<CharT, Traits, Alloc>&)`
-| `struct /{asterisk}{asterisk}/ { std::streamsize count; bool truncated; }`
-
-|
-|===
-Where `CharT` can be `char`, `char8_t`, `char16_t`, `char32_t` or `wchar_t`.
-////
-
-
-
-The "destination" is what defines the effect and also the return type of the main usage syntax, as listed below:
-
-[source,cpp,subs=normal]
+[[dest_to_basic_string]]
+====
+[subs=normal]
 ----
-constexpr /{asterisk}\...{asterisk}/ to_string;
+strf::<<to_string_hpp#to_basic_string,to_basic_string>> <__CharT__, _Traits_~_opt_~, _A_~_opt_~> ( __args\...__ )
 ----
-::
 [horizontal]
-Effect::: Creates a string object
-Return type::: `std::string`
+Return type:: `std::basic_string<__CharT__, _Traits_, _A_>`
+Supports reserve:: Yes
+====
 
-
-[source,cpp,subs=normal]
+[[dest_to_string]]
+====
+[subs=normal]
 ----
-constexpr /{asterisk}\...{asterisk}/ to_u16string;
+strf::<<to_string_hpp#to_basic_string,to_string>> ( __args\...__ )
 ----
-::
 [horizontal]
-Effect::: Creates a string object
-Return type::: `std::u16string`
+Return type:: `std::string`
+Supports reserve:: Yes
+====
 
-[source,cpp,subs=normal]
+[[dest_to_u8string]]
+====
+[subs=normal]
 ----
-constexpr /{asterisk}\...{asterisk}/ to_u32string;
+strf::<<to_string_hpp#to_basic_string,to_u8string>> ( __args\...__ )
 ----
-::
 [horizontal]
-Effect::: Creates a string object
-Return type::: `std::u32string`
-Support reserve::: Yes.
+Return type:: `std::u8string`
+Supports reserve:: Yes
+====
 
-[source,cpp,subs=normal]
+[[dest_to_u16string]]
+====
+[subs=normal]
 ----
-constexpr /{asterisk}\...{asterisk}/ to_wstring;
+strf::<<to_string_hpp#to_basic_string,to_u16string>> ( __args\...__ )
 ----
-::
 [horizontal]
-Effect::: Creates a string object
-Return type::: `std::wstring`
-Support reserve::: Yes.
+Return type:: `std::u16string`
+Supports reserve:: Yes
+====
 
-[source,cpp,subs=normal]
+[[dest_to_u32string]]
+====
+[subs=normal]
 ----
-template <typename CharT, typename Traits, typename Alloc>
-constexpr /{asterisk}\...{asterisk}/ to_basic_string;
+strf::<<to_string_hpp#to_basic_string,to_u32string>> ( __args\...__ )
 ----
-::
 [horizontal]
-Effect::: Creates a string object
-Return type::: `std::basic_string<CharT, Traits, Alloc>`
-Support reserve::: Yes.
+Return type:: `std::u32string`
+Supports reserve:: Yes
+====
 
-[source,cpp,subs=normal]
+[[dest_to_wstring]]
+====
+[subs=normal]
 ----
-template <typename CharT, typename Traits, typename Alloc>
-/{asterisk}\...{asterisk}/ append (std::basic_string<CharT, Traits, Alloc>& str);
+strf::<<to_string_hpp#to_basic_string,to_wstring>> ( __args\...__ )
 ----
-::
 [horizontal]
-Effect::: Appends the generated content to `str`
-Return type::: `void`
-Support reserve::: Yes. The effect is to call `str.reserve(std.size() + size)`, where `size` is the value passed to `reserve` function in the main usage syntax or the calculated content's size when `reserve_calc` is used.
+Return type:: `std::wstring`
+Supports reserve:: Yes
+====
 
-[source,cpp,subs=normal]
+[[dest_streambuf]]
+====
+[subs=normal]
 ----
-template <typename CharT, typename Traits, typename Alloc>
-/{asterisk}\...{asterisk}/ assign (std::basic_string<CharT, Traits, Alloc>& str);
+<<to_streambuf_hpp#to,to>>(__streambuf_ptr__)  (__args\...__);
+<<to_streambuf_hpp#to,to>>(__streambuf_ref__)  (__args\...__);
 ----
-::
 [horizontal]
-Effect::: Assign `str` to the generated content.
-Return type::: `void`
-Support reserve::: Yes.
+Return type:: `<<to_streambuf_hpp#basic_streambuf_writer,basic_streambuf_writer<__CharT__, _Traits_>::result>>`
+Return value:: A value `r`, such that:
+* `r.count` is equal to the number of successfully written characters.
+* `r.success` is `false` if an error occurred
+Supports reserve:: No
 
-[source,cpp,subs=normal]
+====
+
+[[dest_cfile]]
+====
+[subs=normal]
 ----
-/{asterisk}\...{asterisk}/ to ( char*     dest, std::size_t count );
-/{asterisk}\...{asterisk}/ to ( char8_t*  dest, std::size_t count );
-/{asterisk}\...{asterisk}/ to ( char16_t* dest, std::size_t count );
-/{asterisk}\...{asterisk}/ to ( char32_t* dest, std::size_t count );
-/{asterisk}\...{asterisk}/ to ( wchar_t*  dest, std::size_t count );
+<<to_cfile_hpp#to,to>><__CharT__~_opt_~>(__cfile__) (__args\...__)
 ----
-::
+Effect:: Successively call `std::fwrite(buffer, sizeof(__CharT__),/{asterisk}\...{asterisk}/, __cfile__)` until the whole content is written or until an error happens, where `buffer` is an internal array of `__CharT__`.
 [horizontal]
-Requirements::: `count > 0`
-Effect:::
-- Write the generated content to `dest`.
-- Write no more than `count` characters including the termination character.
-- The terminations character is always written.
-Return type::: `struct /{asterisk}\...{asterisk}/ { std::decltype(dest) ptr; bool truncated; };`
-Return value:::
-- `ptr` points to the last written position. Hence `*ptr` is always equal to `'\0'`
-- `truncated` is equal to `true` when `count` is smaller than the content's size.
-
-[source,cpp,subs=normal]
-----
-/{asterisk}\...{asterisk}/ to ( char*     dest, char*     dest_end );
-/{asterisk}\...{asterisk}/ to ( char8_t*  dest, char8_t*  dest_end );
-/{asterisk}\...{asterisk}/ to ( char16_t* dest, char16_t* dest_end );
-/{asterisk}\...{asterisk}/ to ( char32_t* dest, char32_t* dest_end );
-/{asterisk}\...{asterisk}/ to ( wchar_t*  dest, wchar_t*  dest_end );
-----
-::
-[horizontal]
-Requirements::: `dest_end > dest`
-Effect::: Same as in `to(dest, dest_end - dest)`
-Return type::: Same as in `to(dest, dest_end - dest)`
-Return value::: Same as in `to(dest, dest_end - dest)`
-Support reserve::: No
-
-
-[source,cpp,subs=normal]
-----
-template<std::size_t N> /{asterisk}\...{asterisk}/ to ( char     (&dest)[N] );
-template<std::size_t N> /{asterisk}\...{asterisk}/ to ( char8_t  (&dest)[N] );
-template<std::size_t N> /{asterisk}\...{asterisk}/ to ( char16_t (&dest)[N] );
-template<std::size_t N> /{asterisk}\...{asterisk}/ to ( char32_t (&dest)[N] );
-template<std::size_t N> /{asterisk}\...{asterisk}/ to ( wchar_t  (&dest)[N] );
-----
-::
-[horizontal]
-Effect::: Same as in `to(dest, N)`
-Return type::: Same as in `to(dest, N)`
-Return value::: Same as in `to(dest, N)`
-Support reserve::: No
-
-[source,cpp,subs=normal]
-----
-template <typename CharT = char>
-/{asterisk}\...{asterisk}/ to(std::FILE* dest);
-----
-::
-[horizontal]
-Effect::: Successively call
-`std::fwrite(buffer, sizeof(CharT),/{asterisk}\...{asterisk} , dest)`
-until the whole content is written or until an error happens, where `buffer` is
-an internal array of `CharT`.
-Return type::: `struct /{asterisk}\...{asterisk}/ { std::size_t count; bool success; };`
-Return value:::
+Return type:: `<<to_cfile_hpp#narrow_cfile_writer,narrow_cfile_writer<__CharT__>::result>>`
+Return value::
 - `count` is sum of the returned values returned by the several calls to `std::fwrite`.
 - `success` is `false` if an error occured.
-Support reserve::: No
+Supports reserve:: No
+====
 
+[[dest_wcfile]]
+====
+[subs=normal]
+----
+<<to_cfile_hpp#wto,wto>>(__cfile__) (__args\...__)
+----
+[horizontal]
+Header file:: `<<to_cfile_hpp#,<strf/to_cfile.hpp> >>`
+Return type:: `<<to_cfile_hpp#wide_cfile_writer,wide_cfile_writer<__CharT__>::result>>`
+====
+
+[[outbuff_types]]
+== Derivates of `basic_outbuff`
+
+The table below lists the concrete types that derivate from the `basic_outbuff<__CharT__>` abstract class.
+
+[%header,cols="47,53"]
+|===
+| Type | Description
+
+| `<<outbuff_hpp#basic_cstr_writer, basic_cstr_writer>><__CharT__>`
+| Writes C strings
+
+| `<<outbuff_hpp#discarded_outbuff,discarded_outbuff>><__CharT__>`
+| Discard content
+
+| `<<to_string_hpp#basic_string_appender,basic_string_appender>><__CharT__, _Traits_~_opt_~, _A_~_opt_~>`
+| Appends to `std::basic_string` objects.
+
+| `<<to_string_hpp#basic_string_maker,basic_string_maker>><__CharT__, _Traits_~_opt_~, _A_~_opt_~>`
+| Creates `std::basic_string` objects.
+
+| `<<to_string_hpp#basic_sized_string_maker, basic_sized_string_maker>><__CharT__, _Traits_~_opt_~, _A_~_opt_~>`
+| Creates `std::basic_string` objects with pre-reserved capacity
+
+| `<<to_streambuf_hpp#basic_streambuf_writer,basic_streambuf_writer>><__CharT__, _Traits_~_opt_~>`
+| Writes to `std::basic_streambuf` object
+
+| `<<to_cfile_hpp#narrow_cfile_writer,narrow_cfile_writer>><__CharT__~_opt_~>`
+| Writes to `FILE*` using narrow-oriented functions.
+
+| `<<to_cfile_hpp#wide_cfile_writer,narrow_wide_writer>>`
+| Writes to `FILE*` using wide-oriented functions.
+|===
+
+where:
+
+* `CharT` is a charater type.
+* `Traits` is a https://en.cppreference.com/w/cpp/named_req/CharTraits[_CharTraits_] type.
+* `A` is an https://en.cppreference.com/w/cpp/named_req/Allocator[_Allocator_] type
+
+////
+
+====
 [source,cpp,subs=normal]
 ----
-/{asterisk}\...{asterisk}/ wto(std::FILE* dest);
-----
-::
-[horizontal]
-Effect::: Successively call `std::fputwc(/{asterisk}\...{asterisk}/, dest)`
-until the whole content is written or until it returns `WEOF`.
-Return type::: `struct /{asterisk}\...{asterisk}/ { std::size_t count; bool success; };`
-Return value:::
-- `count` is sum of the returned values returned by the several calls to `std::fwrite`.
-- `success` is `false` if an error occured.
-Support reserve::: No
+namespace strf {
 
-[source,cpp]
+template <typename CharT> class basic_cstr_writer;
+
+using u8cstr_writer  = basic_cstr_writer<char8_t>;
+using cstr_writer    = basic_cstr_writer<char>;
+using u16cstr_writer = basic_cstr_writer<char16_t>;
+using u32cstr_writer = basic_cstr_writer<char32_t>;
+using wcstr_writer   = basic_cstr_writer<wchar_t>;
+
+} // namespace strf
 ----
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT> class discarded_outbuff;
+
+} // namespace strf
+----
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename CharT
+         , typename Traits = std::char_traits<CharT>
+         , typename Allocator = std::allocator<CharT> >
+class basic_string_appender;
+
+using string_appender    = basic_string_appender<char>;
+using u8string_appender  = basic_string_appender<char8_t>;
+using u16string_appender = basic_string_appender<char16_t>;
+using u32string_appender = basic_string_appender<char32_t>;
+using wstring_appender   = basic_string_appender<wchar_t>;
+
+} // namespace strf
+----
+====
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename CharT
+         , typename Traits = std::char_traits<CharT>
+         , typename Allocator = std::allocator<CharT> >
+class basic_string_maker;
+
+using string_maker    = basic_string_maker<char>;
+using u8string_maker  = basic_string_maker<char8_t>;
+using u16string_maker = basic_string_maker<char16_t>;
+using u32string_maker = basic_string_maker<char32_t>;
+using wstring_maker   = basic_string_maker<wchar_t>;
+
+} // namespace strf
+----
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename CharT
+         , typename Traits = std::char_traits<CharT>
+         , typename Allocator = std::allocator<CharT> >
+class basic_sized_string_maker
+
+using sized_string_maker    = basic_sized_string_maker<char>;
+using sized_u8string_maker  = basic_sized_string_maker<char8_t>;
+using sized_u16string_maker = basic_sized_string_maker<char16_t>;
+using sized_u32string_maker = basic_sized_string_maker<char32_t>;
+using sized_wstring_maker   = basic_sized_string_maker<wchar_t>;
+
+} // namespace strf
+----
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
 template <typename CharT, typename Traits = std::char_traits<CharT> >
-/*...*/ to(std::basic_streambuf<CharT, Traits>& dest);
+class basic_streambuf_writer
+
+} // namespace strf
 ----
-::
-[horizontal]
-Effect::: Successively call `dest.sputn(/{asterisk}\...{asterisk}/)`
-until the whole content is written or until an error occur.
-Return type::: `struct /{asterisk}\...{asterisk}/ { std::streambuf count; bool success; };`
-Return value:::
-- `count` is sum of the returned values returned by the several calls to `dest.sputn(/{asterisk}\...{asterisk}/)`
-- `success` is `false` if an error occured.
-Support reserve::: No
+====
 
-[[reserve]]
-=== Reserving
-The `reserve` and `reserve_calc` are only supported in some destination types, as indicated above.
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
 
-* `reserve(std::size_t count)` : The size of `count` characters is reserve in the destination object.
-* `reserve_calc()` : The necessary amount of characters is calculated and reserved in the destination object.
-* `no_reserve()` : No size is reserved in the destination object.
+template <typename CharT>
+class narrow_cfile_writer;
 
+} // namespace strf
+----
+====
+
+====
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+class wide_cfile_writer;
+
+} // namespace strf
+----
+====
+
+////
 
 [[tr_string]]
-=== Tr-string
-
-The __tr-string__ is what in other formatting
-libraries would be called as the __format string__,
-with the difference that it does not specify any formatting.
-Its purpose is to enable the use of translation tools like
-https://en.wikipedia.org/wiki/Gettext[gettext].
+== Tr-string
 
 [source,cpp]
 ----
 auto s = strf::to_string.tr("{} in hexadecimal is {}", x, strf::hex(x));
 ----
 
-==== Syntax
+The __tr-string__ is like what in other formatting
+libraries would be called as the __format string__,
+except that it does not specify any formatting.
+Its purpose is to enable your program to provide multilingual support
+by using translation tools like https://en.wikipedia.org/wiki/Gettext[gettext].
+
+Since it is common for the person who writes the string to be translated
+not being the same who translates it, the tr-string syntax allows
+the insertion of comments.
+
+.Syntax
 [%header,cols=3*]
 |===
 |A `'{'` followed by  |until                           |means
@@ -285,9 +581,8 @@ auto s = strf::to_string.tr("{} in hexadecimal is {}", x, strf::hex(x));
 |any other character  |the next `'}'` or end of string |a non positional argument reference
 |===
 
-===== Comments
-
-When the tr-string has to be translated to other languages, the translation may be in charge of someone else than you. So you can add comments intended to help such person.
+Comments::
++
 [source,cpp]
 ----
 auto str = strf::to_string.tr
@@ -296,157 +591,105 @@ auto str = strf::to_string.tr
 assert(str == "You can learn more about python at www.python.org");
 ----
 
-===== Positional arguments
+Positional arguments::
 Position zero refers to the first input argument. The characters the after the digits are ignored. So they can also be used as comments.
++
 [source,cpp]
 ----
 auto str = strf::to_string.tr("{1 a person} likes {0 a food type}.", "sandwich", "Paul");
 assert(str == "Paul likes sandwich.");
 ----
 
-===== Non positional arguments
+Non positional arguments::
 The characters the after the `'{'` are ignored as well
++
 [source,cpp]
 ----
 auto str = strf::to_string.tr("{a person} likes {a food type}.", "Paul", "sandwich");
 assert(str == "Paul likes sandwich.");
 ----
 
-===== Escapes
-There is no way to escape the `'}'` character. There is no need to, since the `'}'` has special meaning only if it corresponds to a previous `'{'
+Escapes::
+Note there is no way and no need to escape the `'}'` character, since it has special meaning only when corresponding to a previous `'{'
++
 [source,cpp]
 ----
-auto str = strf::to_string.tr("} {{ } {}", "aaa");
-assert(str == "} { } aaa");
+auto str = strf::to_string.tr("} {{x} {{{} {{{}}", "aaa", "bbb");
+assert(str == "} {x} {aaa {bbb}");
 ----
 
 [[tr_string_error]]
-==== Tr-string error handling
-The enumeration `tr_invalid_arg` is a <<facets,facet>> that specifies what happens when the tr-string references a non existing argument.
-[source,cpp]
-----
-enum class tr_invalid_arg{ replace, stop, ignore };
-----
-* `tr_invalid_arg::stop` : Throws an exception.
-* `tr_invalid_arg::ignore` : Ignores the invalid reference.
-* `tr_invalid_arg::replace` :  Replaces the invalid reference by the https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;]. This is the default.
+=== Tr-string error handling
+
+When the argument associated with a `"{"` does not exists, the library does two things:
+
+- It prints a https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character `"\uFFFD"` (&#65533;) ] ( or `"?"` when the encoding can't represent it ) where the missing argument would be printed.
+- It calls the `handle` function on the facet object correspoding to the `<<strf_hpp#tr_error_notifier_c,tr_error_notifier_c>>` category, which, by default, does nothing.
 
 [[facets]]
-=== Facets
-
-These are not the same as the facets handled by `std::locale`,
-but they are analogous.
-Keep in mind that this is a locale-independent library.
-So things are always printed as in the C-locale, unless
-you explicitly specify otherwise, which you do by passing
-__facet objects__ to the `<<usage_syntax,with>>` function.
-
-Every __facet__ belongs to a __facet category__.
-Each facet category corresponds to a concept, __i.e.__ a set of requirements that a class must satisfy. A class that satisfies such requirements is a facet of such facet category. Moreover, for each facet category there is class whose name, by convention, has a "_c" suffix and is the name of the category.
-
-For example, `<<numpunct,monotonic_grouping>><10>` and
-`<<numpunct,str_grouping>><10>`  are both facets of the category
-`<<numpunct,numpunct_c>><10>`.
-Both have the same purpose: to customize numeric punctuation.
+== Facet Categories
 
 [%header,cols="2,1,4"]
 |===
-|Category |Constrainable |What it controls
+|Category |Constrainable | Description
 
-|`<<width_calculation,width_calculation_c>>` |Yes |How the width is calculated
+|`<<width_calculator,width_calculator_c>>` |Yes |Defines how the width is calculated
 |`<<numpunct, numpunct_c>><10>`      |Yes |Numeric punctuation for decimal base
 |`<<numpunct, numpunct_c>><16>`      |Yes |Numeric punctuation for hexadecimal base
 |`<<numpunct, numpunct_c>><8>`       |Yes |Numeric punctuation for octal base
 |`<<numpunct, numpunct_c>><2>`       |Yes |Numeric punctuation for binary base
 
-|`<<lettercase,lettercase_c>>`        |Yes |Letter case in numeric types
+|`<<lettercase,lettercase_c>>`        |Yes |Letter case for printing numeric and booleans values
 
-|`<<encoding,encoding_c>><CharT>`   |No  |The encoding correponding to character type `CharT`
-|`<<encoding_error,encoding_error_c>>`    |Yes |Encoding error handling
+|`<<character_encoding,char_encoding_c>><CharT>`   |No  |The character encoding correponding to character type `CharT`
+|`<<invalid_seq_notifier,invalid_seq_notifier_c>>`  |Yes | Callback to notify character encoding nonconformities.
 |`<<surrogate_policy,surrogate_policy_c>>` |Yes |Wheter surrogates are treated as errors
-|`<<tr_string_error,tr_string_error_c>>`   |No  |Tr-string parsing error handling
+|`<<tr_string_error,tr_error_notifier_c>>`   |No  |  Callback to notify errors on the tr-string
 |===
-
-[[constrained_facets]]
-==== Constrained facets
-
-With the `constrain` function template you can create __constrained facets__, which are facets that only apply to certain input types. Its template parameter is a template type that contains a `value` member constexpr convertible to bool that tells whether a given input type is under the influence of the given facet:
-
-[source,cpp]
-----
-auto facet_obj = strf::constrain<std::is_signed>(strf::monotonic_grouping<10>{3});
-auto s = strf::to_string.with(facet_obj)(100000u, "  ", 100000);
-assert(s == "100000  100,000");
-----
-
-The library provides some type traits to parameterize `constrain`:
-
-[cols="1,4"]
-|===
-|`is_int_number`
-| matches `short`, `int`, `long`, `long long` and the corresponding unsigned types
-
-|`is_char`
-| matches `char`, `char8_t`, `wchar_t`, `char16_t`, and `char32_t`
-
-|`is_string`
-| matches strings.
-|===
-
-[[facet_overriding]]
-==== Overriding facets
-
-If there are two or more facets object passed to the `with` function of the same category, and that apply to the same input type, then the last one wins:
-
-[source,cpp]
-----
-auto punct_dec_1 = strf::monotonic_grouping<10>{1};
-auto punct_dec_2 = strf::monotonic_grouping<10>{2}.thousands_sep('.');
-auto punct_dec_3 = strf::monotonic_grouping<10>{3}.thousands_sep('^');;
-
-// Below, punct_dec_3 overrides punct_dec_2, but only for signed types.
-// punct_dec_2 overrides punct_dec_1 for all input types,
-// hence the presence of punt_dec_1 bellow has no effect.
-
-auto s = strf::to_string
-    .with( punct_dec_1
-         , punct_dec_2
-         , strf::constrain<std::is_signed>(punct_dec_3) )
-    ( 100000, "  ", 100000u ) ;
-
-assert(s == "100^000  10.00.00");
-----
 
 [[numpunct]]
 == Numeric punctuation
-The facets of the `numpunct_c<Base>` category specify
-the decimal point, the group separator character, and the groups'
-size when printing numbers in the numeric base `Base`.
-The library currently provides two
-facets belonging to this category for you to choose.
-If all groups have the same size, then you should choose the
-`monotonic_grouping<Base>` facet since it is optimized for this situation:
-
+The `numpunct` class template defines punctuation for
+integers, `void*` and floating points. It comprises
+the "thousands" separator, the decimal point and the
+grouping pattern.
+The integer sequence passed to the constructor defines the grouping:
 [source,cpp]
 ----
-constexpr int base = 10;
-
-auto str = strf::to_string
-    .with(strf::monotonic_grouping<base>{3}.thousands_sep(U'.'))
-    (100000000000ll);
-
-assert(str == "100.000.000.000");
+auto str = strf::to_string.with(numpunct<10>(1, 2, 3))(1000000000000ll);
+assert(str == "1,000,000,000,00,0");
 ----
-
-Otherwise, you can use the `str_grouping<Base>`:
-
+The value `-1` implies no further separator:
 [source,cpp]
 ----
-constexpr int base = 10;
+auto str = strf::to_string.with(numpunct<10>(1, 2, 3, -1))(1000000000000ll);
+assert(str == "1000000,000,00,0");
+----
+This `numpunct` constructor has some preconditions:
 
-auto punct = strf::str_grouping<base>{"\4\3\2"};
-auto str = strf::to_string.with(punct)(100000000000ll);
-assert(str == "1,00,00,000,0000");
+* No more than six arguments can be passed.
+* No argument can be greater than 30.
+* No argument can be less than `1`, unless it is the last argument and it's equal to `-1`.
+
+When default constructed, the `numpunct` has no grouping, __i.e.__
+the thousands separator is never printed.
+
+The default thousands separator and decimal point are `U','` and `U'.'`,
+repectively. To change them, use the `thousands_sep` and `decimal_point`
+member functions:
+[source,cpp]
+----
+auto my_punct = numpunct<10>(3).thousands_sep(U'\'').decimal_point(U':');
+auto str = strf::to_string.with(my_punct)(1000000.5);
+assert(str == "1'000'000:5");
+
+//or as lvalue:
+auto my_punct2 = numpunct<10>(3);
+my_punct2.thousands_sep(U';');
+my_punct2.decimal_point(U'^');
+
+auto str = strf::to_string.with(my_punct2)(1000000.5);
+assert(str == "1;000;000^5");
 ----
 
 [[lettercase]]
@@ -474,160 +717,96 @@ constexpr lettercase uppercase = lettercase::upper;
 |Value | Result examples
 
 |`strf::lowercase`
-|`0xab` `1e+50` `inf` `nan`
+|`0xab` `1e+50` `inf` `nan` `true` `false`
 
 |`strf::mixedcase`
-|`0xAB` `1e+50` `Inf` `NaN`
+|`0xAB` `1e+50` `Inf` `NaN` `True` `False`
 
 |`strf::uppercase`
-|`0XAB` `1E+50` `INF` `NAN`
+|`0XAB` `1E+50` `INF` `NAN` `TRUE` `FALSE`
 |===
 
 .Usage example
 [source,cpp]
 ----
 auto str_upper = strf::to_string.with(strf::uppercase)
-    ( ~strf::hex(0xabc), ' '
+    ( *strf::hex(0xabc), ' '
     , 1.0e+50, ' '
     , std::numeric_limits<FloatT>::infinity() );
 
 assert(str_upper == "0XAB 1E+50 INF");
 
 auto str_mixed = strf::to_string.with(strf::mixedcase)
-    ( ~strf::hex(0xabc), ' '
+    ( *strf::hex(0xabc), ' '
     , 1.e+50, ' '
     , std::numeric_limits<FloatT>::infinity() );
 
-assert(str_upper == "0xAB 1e+50 Inf");
+assert(str_mixed == "0xAB 1e+50 Inf");
 ----
 
-[[encoding]]
+[[character_encoding]]
 == Character encodings
 
-=== Class template `encoding`
+////
+[source,cpp]
+----
+namespace strf {
+enum class char_encoding_id : unsigned { };
 
-The `encoding` class template stores a reference to an const object
-with static storage duration of an implementation-defined type that
-contains information and algorithms related to a character encoding.
-It has the size of a pointer, and it is cheap to copy.
+constexpr char_encoding_id  eid_ascii        = /* ... */;
+constexpr char_encoding_id  eid_utf8         = /* ... */;
+constexpr char_encoding_id  eid_utf16        = /* ... */;
+constexpr char_encoding_id  eid_utf32        = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_1   = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_3   = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_15  = /* ... */;
+constexpr char_encoding_id  eid_windows_1252 = /* ... */;
 
+template <char_encoding_id>
+class static_char_encoding;
+
+}; // namespace strf
+----
+////
+
+The class templates below are facets that specify the character encoding
+corresponding to the character type. Their instances are always
+empty classes. More encodings are expected to be included in
+future version of the library.
+
+[[static_char_encodings]]
 [source,cpp]
 ----
 namespace strf {
 
-template <typename CharT>
-class encoding
-{
-public:
-    encoding (const encoding&) noexcept;
-    encoding& operator=(const encoding&);
-    bool operator==(const encoding&);
-    const char* name() const; // example: "UTF-8"
+template <typename CharT> struct ascii;
+template <typename CharT> struct iso_8859_1;
+template <typename CharT> struct iso_8859_3;
+template <typename CharT> struct iso_8858_15;
+template <typename CharT> struct windows_1252;
 
-    // other functions ( to-do ) ...
-};
+template <typename CharT> struct utf8;
+template <typename CharT> struct utf16;
+template <typename CharT> struct utf32;
+
+template <typename CharT>
+using utf = /* utf8<CharT> , utf16<CharT> or utf32<CharT> */
+            /* , depending on sizeof(CharT) */;
 
 } // namespace strf
 ----
-
-So an `encoding` object is used to represent an econding.
-When used as a facet, `encoding<CharT>` specifies what is the character
-encoding corresponding to `CharT`. For example, you may have noticed that
-<<numpunct,punctuation characters>> and fill characters are specified
-as `char32_t`. They are aways assumed to be in UTF-32.
-How they are converted is specified that the `encoding` facet.
 
 .Example: write in Windows-1252
 [source,cpp]
 ----
 auto s = strf::to_string
     .with(strf::windows_1252<char>())
-    .with(strf::str_grouping<10>{"\4\3\2"}.thousands_sep(0x2022))
+    .with(strf::numpunct<10>{4, 3, 2}.thousands_sep(0x2022))
     ("one hundred billions = ", 100000000000ll);
 
 // The character U+2022 is encoded as '\225' in Windows-1252
 assert(s == "one hundred billions = 1\2250000\225000\2250000");
 ----
-
-=== Supported encodings
-
-Currently the library only provide few encodings. But list is expected
-to grow:
-
-[source,cpp]
-----
-template<typename CharT> encoding<CharT> utf8();
-----
-::
-[horizontal]
-Requirements::: `sizeof(CharT) == 1`
-Return::: The UTF-8 encoding
-Note::: This is the default facet for `char` and `char8_t`
-
-[source,cpp]
-----
-template<typename CharT> encoding<CharT> iso_8859_1();
-----
-::
-[horizontal]
-Requirements::: `sizeof(CharT) == 1`
-Return::: The https://en.wikipedia.org/wiki/ISO/IEC_8859-1[ISO/IEC 8859-1] encoding
-
-[source,cpp]
-----
-template<typename CharT> encoding<CharT> iso_8859_1();
-----
-::
-[horizontal]
-Requirements::: `sizeof(CharT) == 1`
-Return::: The https://en.wikipedia.org/wiki/ISO/IEC_8859-1[ISO/IEC 8859-1] encoding
-
-[source,cpp]
-----
-template<typename CharT> encoding<CharT> iso_8859_15();
-----
-::
-[horizontal]
-Requirements::: `sizeof(CharT) == 1`
-Return::: The https://en.wikipedia.org/wiki/ISO/IEC_8859-15[ISO/IEC 8859-15] encoding
-
-[source,cpp]
-----
-template<typename CharT> encoding<CharT> windows_1252();
-----
-::
-[horizontal]
-Requirements::: `sizeof(CharT) == 1`
-Return::: The https://en.wikipedia.org/wiki/Windows-1252[Windows-1252] encoding
-
-[source,cpp]
-----
-template<typename CharT> encoding<CharT> utf16()`;
-----
-::
-[horizontal]
-Requirements::: `sizeof(CharT) == 2`
-Return::: The UTF-16 encoding.
-Note::: This is the default for `char16_t`.
-
-[source,cpp]
-----
-template<typename CharT> encoding<CharT> utf32();
-----
-::
-[horizontal]
-Requirements::: `sizeof(CharT) == 4`
-Return::: UTF-32 encoding.
-Note::: This is the default for `char32_t`.
-
-[source,cpp]
-----
-encoding<wchar_t> utfw();
-----
-::
-[horizontal]
-Returns::: UTF-16 if `sizeof(wchar_t) == 2` and UTF-32 if `sizeof(wchar_t) == 4`
-Note::: This is the default for `wchar_t`.
 
 [[encoding_conversion]]
 === Encoding conversion
@@ -635,100 +814,89 @@ Note::: This is the default for `wchar_t`.
 Since the library knows the encoding correspondig to each
 character type, and knows how to convert from one to another,
 it is possible to mix input string of difference characters
-types. It is necessary though to use the `cv` function:
+types, though you need to use the function `conv`:
 
 [source,cpp]
 ----
 auto str   = strf::to_string( "aaa-"
-                            , strf::cv(u"bbb-")
-                            , strf::cv(U"ccc-")
-                            , strf::cv(L"ddd") );
+                            , strf::conv(u"bbb-")
+                            , strf::conv(U"ccc-")
+                            , strf::conv(L"ddd") );
 
-auto str16 = strf::to_u16string( strf::cv("aaa-")
+auto str16 = strf::to_u16string( strf::conv("aaa-")
                                , u"bbb-"
-                               , strf::cv(U"ccc-")
-                               , strf::cv(L"ddd") );
+                               , strf::conv(U"ccc-")
+                               , strf::conv(L"ddd") );
 
 assert(str   ==  "aaa-bbb-ccc-ddd");
 assert(str16 == u"aaa-bbb-ccc-ddd");
 ----
 
-The `cv` function can also specify an alternative encoding
+The `conv` function can also specify an alternative encoding
 for a specific input string argument:
 
 [source,cpp]
 ----
 auto str_utf8 = strf::to_u8string
-    ( strf::cv("--\xA4--", strf::iso_8859_1<char>())
-    , strf::cv("--\xA4--", strf::iso_8859_15<char>()));
+    ( strf::conv("--\xA4--", strf::iso_8859_1<char>())
+    , strf::conv("--\xA4--", strf::iso_8859_15<char>()));
 
 assert(str_utf8 == u8"--\u00A4----\u20AC--");
 ----
 
-There is also the `sani` function that was the same
-effect as `cv` except when the input encoding is same as the
-output. In this case `sani` causes the input to be
-sanitized, whereas `cv` does not:
+The `sani` function has the same effect as `conv`,
+except when the input encoding is same as the output.
+In this case `sani` causes the input to be sanitized, whereas `conv` does not:
 
 [source, cpp]
 ----
 auto str = strf::to_string
     .with(strf::iso_8859_3<char>()) // the output encoding
-    ( strf::cv("--\xff--")                           // does't sanitize
-    , strf::cv("--\xff--", strf::iso_8859_3<char>()) // does't sanitize ( same encoding )
-    , strf::cv("--\xff--", strf::utf8<char>())       // sanitizes ( different encoding )
-    , strf::sani("--\xff--")                             // sanitizes
-    , strf::sani("--\xff--", strf::iso_8859_3<char>()) ) // sanitizes  
+    ( strf::conv("--\xff--")                             // not sanitized
+    , strf::conv("--\xff--", strf::iso_8859_3<char>())   // not sanitized ( same encoding )
+    , strf::conv("--\xff--", strf::utf8<char>())         // sanitized ( different encoding )
+    , strf::sani("--\xff--")                             // sanitized
+    , strf::sani("--\xff--", strf::iso_8859_3<char>()) ) // sanitized
 
 assert(str == "--\xff----\xff----?----?----?--");
 ----
 
-[[encoding_error]]
-=== Encoding error handling
+The library replaces the invalid sequences by the
+https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;],
+if the destination encoding supports it. Otherwise, `'?'` is printed, as in the above code snippet.
 
-The `encoding_error` enumeration controls how invalid
-sequences are handled during encoding conversion.
-[source,cpp]
-----
-namespace strf {
-enum class encoding_error{ replace, stop };
-}
-----
-The default value is `encoding_error::replace`, that
-causes the invalid sequence to be replaced the
-https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;]. When the input is UTF-8,
-the library follows the practice recommended by the Unicode
-Standard ( search for "Best Practices for Using U+FFFD" in
+An "invalid sequence" is any input that is non-conformant to the source encoding,
+or that is impossible to write, in a conformant way, in the destination encoding.
+But there is an optional exception for surrogates characters.
+
+NOTE: When the input is UTF-8, the library follows the practice recommended by the
+Unicode Standard regarding to calculate how many replacement characters to print
+for each non-conformant input sequence. ( see for "Best Practices for Using U+FFFD" in
 https://www.unicode.org/versions/Unicode10.0.0/ch03.pdf[Chapter 3] ).
 
-
-.Replace
-[source,cpp]
-----
-auto str = strf::to_u8string (strf::cv("--\x99--"));
-assert(str == u8"--\uFFFD--");
-----
-
-.Throw exception
-[source,cpp]
-----
-bool transcoding_failed = false;
-try{
-    auto str = strf::to_string
-        .with(strf::encoding_error::stop)
-        (strf::cv("--\x99--"));
-}
-catch(strf::encoding_failure&){
-    transcoding_failed = true;
-}
-assert(transcoding_failed);
-----
+NOTE: The library does not sanitizes non-conformities when converting a single character,
+like punctuation characters or the the fill character ( they are in UTF-32 ). In this case
+the replacement character is only used when the destination encoding is not able
+to print the codepoint.
+For example, if the you use `(char32_t)0xFFFFFFF` as the <<numpunct,decimal point>>,
+then it will printed as "\uFFFD" if the destination is UTF-8 or UTF-16, but
+if the destination is UTF-32, then the library just writes `(char32_t)0xFFFFFFF`
+verbatim.
 
 [[surrogate_policy]]
 === Surrogates tolerance
 
-The `surrogate_policy` enumeration is a facet that controls
-whether surrogates are tolerated.
+There is one particular kind of nonconformity that you may sometimes want to
+permit, which is the invalid presence of
+https://en.wikipedia.org/wiki/Universal_Character_Set_characters#Surrogates[surrogate]
+characters.
+That is particular common on Windows, where you may have an old file name, created
+at the time of Windows 95 ( where wide strings were UCS-2 ) and that contains
+some unpaired surrogates. If you then treat it as UTF-16 and convert it to UTF-8
+and back to UTF-16, you get a different name.
+
+So the library provides the `surrogate_policy` enumeration, which is a facet that
+enables you to turn off the surrogate sanitization.
 
 [source,cpp]
 ----
@@ -736,276 +904,204 @@ namespace strf {
 enum class surrogate_policy : bool { strict = false, lax = true };
 }
 ----
-
-The default value is `surrogate_policy::strict`.
+When the value is `surrogate_policy::strict`, which is the default,
+if an UTF-16 input contains a high surrogate not followed by a low surrogate,
+or a low surrogate not following a high surrogate, that is considered
+invalid and is thus sanitized.
+When the value is `surrogate_policy::lax`, those situations are allowed.
 
 [source,cpp]
 ----
-std::u16string input_utf16 {u"-----"};
-input_utf16[1] = 0xD800; // a surrogate character alone
+std::u16string original {u'-', 0xD800 ,u'-', u'-', u'-'};
 
 // convert to UTF-8
-auto str_strict = strf::to_u8string(strf::cv(input_utf16));
-auto str_lax = strf::to_u8string
-    .with(strf::surrogate_policy::lax)
-    ( strf::cv(input_utf16) );
+auto str_strict = strf::to_u8string(strf::conv(original));
+auto str_lax =
+    strf::to_u8string .with(strf::surrogate_policy::lax) (strf::conv(original));
 
-assert(str_strict == u8"-\uFFFD---");  // surrogate sanitized
+assert(str_strict == u8"-\uFFFD---");                  // surrogate sanitized
 assert(str_lax == (const char8_t*)"-\xED\xA0\x80---"); // surrogate allowed
 
-// Then back to UTF-16
-auto utf16_strict = strf::to_u16string(strf::cv(str_lax));
+// convert back to UTF-16
+auto utf16_strict = strf::to_u16string(strf::conv(str_lax));
+auto utf16_lax =
+    strf::to_u16string .with(strf::surrogate_policy::lax) (strf::conv(str_lax));
 
-auto utf16_lax = strf::to_u16string
-    .with(strf::surrogate_policy::lax)
-    ( strf::cv(str_lax) );
-
-assert(utf16_strict == u"-\uFFFD\uFFFD\uFFFD---"); // surrogate sanitized
-assert(utf16_lax == input_utf16);                  // surrogate preserved
+assert(utf16_strict == u"-\uFFFD\uFFFD\uFFFD---");     // surrogate sanitized
+assert(utf16_lax == original);                         // surrogate preserved
 ----
 
-[[width_calculation]]
-== Width Calculation
+[[invalid_seq_notifier]]
+=== Encoding error notifier function
 
-to-do
+The facet `invalid_seq_notifier` contains a function pointer that is called
+every time an ivalid sequence is sanitized, unless it is null, which is the
+default.
 
-[[format_functions]]
-== Format functions
-
+The code below throws an exception if `u16str` contains any invalid sequence:
 [source,cpp]
 ----
-namespace strf {
+std::u16string u16str = /* ... */;
+notifier_func =  [](){
+    throw std::sytem_error(std::make_error_code(std::errc::illegal_byte_sequence));
+};
+strf::invalid_seq_notifier notifier{ notifier_func };
 
-template <typename T>
-constexpr /*...*/ fmt(const T& value);
-
-}
+auto str = strf::to_string.width(notifier)(strf::conv(u16str));
 ----
 
-`fmt(value)` returns an object that contains a copy or reference of
-`value` as well as format information and what is called here as
-__format functions__. These are member functions whose return type
--- which is usually but not always the same as of `fmt(value)` --
-also contains the same format functions. This way, you can call
-several of them in a row like
-`fmt(value).func1(/{asterisk}\...{asterisk}/).func2(/{asterisk}\...{asterisk}/).func3(/{asterisk}\...{asterisk}/)`. What format functions are available depends on the
-type of `value`, so you need to check them in the further section
-<<input_types, "Input types">>. But there is a set of format functions
-that is common is most input types, which are related to alignment
-(__a.k.a__ justification):
 
-[[alignment_format_functions]]
-[horizontal]
-.Text aligment format function
-`operator>(std::int16_t width)`::: Align to the right ( Or to the left right-to-left (RTL) script )
-`operator<(std::int16_t width)`::: Align to the left ( Or to the right right-to-left (RTL) script )
-`operator^(std::int16_t width)`::: Center alignment
-`operator%(std::int16_t width)`::: Split the content, like in `std::internal`.
-`fill(char32_t ch)`::: Set the fill character.
+[[width_calculator]]
+== Width Calculation
 
-There are also some global functions that act as syntatic sugar
-for format functions:
+The `<<strf_hpp#width_calculator_c,width_calculator_c>>` facet category
+enables you to choose how the width of a string is calculated when using
+<<alignment_format_functions,alignment formatting>>. You have five options:
 
-include::ref_global_format_functions.adoc[]
-
-[[input_types]]
-== Input types
-
-=== Integers
-
-Types::
-`short`,
-`int`,
-`long int`,
-`long long int`,
-`unsigned short`,
-`unsigned int`,
-`unsigned long int` and
-`unsigned long long int`
-
-[[int_fmt]]
-Format functions::
-( in addition to <<alignment_format_functions, alignment functions>> )
-`dec()`::: Use decimal base ( This is already the default, though )
-`hex()`::: Use hexadecimal base.
-`oct()`::: Use octal base.
-`bin()`::: Use binary base.
-`p(unsigned precision)`::: Ensures that at least `precision` digits
-are printed by adding extra zero leading digits if necessary.
-`operator+()`::: When in decimal base, print the positive sign
-`"+"` when value is non negative. No effect for other bases.
-`operator~()`::: Print the base indication
-( `"0x"` for hexadecimal, `"0"` for octal and `"0b"` for binary ).
-No effect in decimal base.
-
-Facet categories::
-- `<<lettercase,lettercase_c>>`
-- `<<numpunct, numpunct_c>><__Base__>`
-- `<<encoding,encoding_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
-- `<<surrogate_policy,surrogate_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
-- `<<encoding_error,encoding_error_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
-
-=== Floating Points
-Types::
-`float`, `double`
-
-Format functions::
-( In addition to the <<alignment_format_functions, alignment functions>> )
-`operator+()`::: When in decimal base, print the positive sign
-`"+"` when value is non negative. No effect for other bases.
-`operator~()`:::  Prints the decimal point even when there
-are no fractional digits.
-`sci()`::: Use scientific notation, like this: `"1.2345e+02"`.
-`fixed()`::: Use decimanl notation, like this: `"123.45"`.
-`gen()`::: This is the default notation.
- When precision is unspecified ( or equal to `(unsigned)-1` )
- prints in the scientfic notation if, and only if, it is shorter
- than the fixed notation. Otherwise, does like in `std::printf`:
- uses the scientfic notation if the exponent is less than -4 or greater
- than or equal to the precision. Trailing fractional zeros are not printed.
-`p(unsigned precision)`::: If `precision == (unsigned)-1`, which is
-the default, then prints the minimal amount of digits so that value
-can fully recovered by a parser. Otherwise, if notation is __general__,
-`precision` is the number of significant digits. Otherwise it is
-the number of fractional digits. `precision == 0` has the same effect as
-`precision == 1`.
-
-Facet categories::
-- `<<lettercase,lettercase_c>>`
-- `<<numpunct, numpunct_c>><10>`
-- `<<encoding,encoding_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
-- `<<surrogate_policy,surrogate_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
-- `<<encoding_error,encoding_error_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
-
-=== `const void*`
-Types:: `const void*`
-Format functions::
-The <<alignment_format_functions, alignment functions>> only.
-
-Facet categories::
-- `<<lettercase,lettercase_c>>`
-- `<<numpunct, numpunct_c>><16>`
-- `<<encoding,encoding_c>><__CharType__>`: Affects the printing of the <<alignment_format_functions,fill character>> and of the <<numpunct,punctuation characters>>.
-- `<<surrogate_policy,surrogate_policy_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
-- `<<encoding_error,encoding_error_c>>`: Affects the printing of the <<alignment_format_functions,fill character>>.
-
-=== Single characters
-Type:: `CharT`, that is the output character type defined by the <<destinations,destination>>.
-
-Format functions::
-( in addition to <<alignment_format_functions, alignment functions>> )
-`multi(std::size_t count)`::: Prints the character `count` times. Default value is `1`.
-
-Facet categories::
-- `<<width_calculation,width_calculation_c>>`
-- `<<encoding,encoding_c>><__CharType__>`
-- `<<surrogate_policy,surrogate_policy_c>>`
-- `<<encoding_error,encoding_error_c>>`
-
-
-=== Strings
-Types::
-`const CharT*`, `std::string_view<CharT, Traits>`
-and `std::basic_string<CharT, Traits, Alloc>`
-::
-where:
-::
-- `CharT` is the character type. If it is not the same as the output character type ( defined by the <<destinations,destination>> ), then it is necessare to use the `cv` or `sani` format function.
-- `Traits` can be any type that satisfies https://en.cppreference.com/w/cpp/named_req/CharTraits[CharTraits]
-- `Alloc` can be any type that satisfies https://en.cppreference.com/w/cpp/named_req/Allocator[Allocator]
-
-Format functions::
-( in addition to <<alignment_format_functions, alignment functions>> )
-`sani(encoding<CharT> enc)`::: Translates input string from `enc` to the
-                               output encoding. If the encodings are the same
-                               then sanitizes the input string.
-`sani()`::: Translates input string from the encoding associated to `CharT` to
-            the output encoding. If these encodings are the same
-            then sanitizes the input string.
-`cv(encoding<CharT> enc)`::: Translates input string from `enc` to the
-                             output encoding, if these encodings are not the same.
-                             Otherwise, copies input string as it is.
-`cv()`::: Translates input string from the encoding associated to `CharT` to
-          the output encoding, if these encodings are not the same.
-          Otherwise, copies the input string as it is.
+* The `<<strf_hpp#fast_width,fast_width>>` facet assumes that the width
+  of a string is equal to its size. This is the least accurate method,
+  but it's the fastest and also is what others formatting
+  libraries usually do. Therefore it's the default facet.
 +
 .Example
 [source,cpp]
 ----
-auto str = strf::to_string(strf::center(u" Hello! ", 16, '*').cv());
-assert(str == "**** Hello! ****");
+auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+auto result = strf::to_string.with(strf::fast_width{})
+             ( strf::right(str, 12, '*') );
+assert(result == "*15.00 \xE2\x82\xAC \x80"); // width calculated as 11
 ----
+* The `<<strf_hpp#width_as_fast_u32len,width_as_fast_u32len>>` facet
+  evaluates the width of a string as the number of Unicode code points.
+  However, differently from `width_as_u32len`, to gain performance,
+  it assumes that the measured string is totally conformant to its encoding.
+  Nonconformities do not cause undefined behaviour, but lead to incorrect
+  values. For example, the width of an UTF-8 string may simply be calculated as
+  the number of bytes that are not in the range [`0x80`, `0xBF`], __i.e.__,
+  are not continuation bytes. So that an extra continuation byte -- that
+  would replaced by a `"\uFFFD"` during sanitization -- is not counted.
 +
-See also the section about <<encoding_conversion,encoding conversion>>.
-
-Facet categories::
-- `<<width_calculation,width_calculation_c>>`
-- `<<encoding,encoding_c>><__CharType__>`
-- `<<surrogate_policy,surrogate_policy_c>>`
-- `<<encoding_error,encoding_error_c>>`
-
-=== Ranges
-
-==== Without formatting
-
+.Example
 [source,cpp]
 ----
-namespace strf {
-
-template <typename Range>
-/*...*/ range(const Range& r);
-
-template <typename T, std::size_t N>
-/*...*/ range(T (&array)[N]);
-
-template <typename Iterator>
-/*...*/ range(const Iterator& begin, const Iterator& end);
-
-// With operation
-
-template <typename Range, typename UnaryOperation>
-/*...*/ range(const Range& r, UnaryOperation unary_op);
-
-template <typename T, std::size_t N, typename UnaryOperation>
-/*...*/ range(T (&array)[N], UnaryOperation unary_op);
-
-template <typename Iterator, typename UnaryOperation>
-/*...*/ range( const Iterator& begin
-             , const Iterator& end
-             , UnaryOperation unary_op );
-
-// With separator:
-
-template <typename Range, typename CharT>
-/*...*/ separated_range(const Range& r, const CharT* separator);
-
-template <typename T, std::size_t N, typename CharT>
-/*...*/ separated_range(T (&array)[N], const CharT* separator);
-
-template <typename Iterator, typename CharT>
-/*...*/ separated_range( const Iterator& begin
-                       , const Iterator& end
-                       , const CharT* separator );
-
-// With separator and operation
-
-template <typename Range, typename CharT, typename UnaryOperation>
-/*...*/ separated_range( const Range& r
-                       , const CharT* separator
-                       , UnaryOperation unary_op );
-
-template <typename T, std::size_t N, typename CharT, typename UnaryOperation>
-/*...*/ separated_range( T (&array)[N]
-                       , const CharT* separator
-                       , UnaryOperation unary_op );
-
-template <typename Iterator, typename CharT, typename UnaryOperation>
-/*...*/ separated_range( const Iterator& begin
-                       , const Iterator& end
-                       , const CharT* separator
-                       , UnaryOperation unary_op );
-} // namespace strf
+auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+auto result = strf::to_string .with(strf::width_as_fast_u32len{})
+             ( strf::right(str, 12, '*'));
+assert(result == "****15.00 \xE2\x82\xAC \x80"); // width calculated as 8
 ----
+* The `<<strf_hpp#width_as_u32len,width_as_u32len>>` facet also
+  evaluates the width of a string as the number of Unicode code points.
+  But each nonconformity to the encoding is counted as an extra
+  code points ( as if it were replaced by
+  https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;] ).
++
+.Example
+[source,cpp]
+----
+auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+auto result = strf::to_string .with(strf::width_as_u32len{})
+             ( strf::right(str, 12, '*'));
+
+assert(result == "***15.00 \xE2\x82\xAC \x80"); // width calculated as 9
+----
+* The `<<strf_hpp#make_width_calculator,make_width_calculator>>` function
+  template takes a function object `f` as paramenter and
+  returns a facet object that calculates the width of the strings
+  by converting them to UTF-32 ( following the policy associated to
+  `<<invalid_seq_policy,invalid_seq_policy>>::replace` ) and then calling
+  `f` to evaluate the width of each UTF-32 character. `f` shall take a
+  `char32_t` parameter and return a `<<strf_hpp#width_t,width_t>>`,
+  which is a type that implements
+  https://en.wikipedia.org/wiki/Fixed-point_arithmetic[Q16.16 fixed-point arithmetics].
+  This means that can use non itegral values.
++
+.Example
+[source,cpp,subs=normal]
+----
+auto wfunc = [](char32_t ch) -> strf::width_t {
+    using namespace strf::width_literal;
+    static const strf::width_t roman_numerals_width [] = {
+        0.5642_w, 1.1193_w, 1.6789_w, 1.8807_w, 1.2982_w, 1.8853_w,
+        2.4954_w, 3.0046_w, 1.8945_w, 1.3624_w, 1.9035_w, 2.4771_w,
+        1.1789_w, 1.4495_w, 1.4128_w, 1.7294_w
+    };
+
+    if (ch < 0x2160 || ch > 0x216F) {
+        return 1;
+    }
+    return roman_numerals_width[ch - 0x2160];
+};
+auto my_wcalc = strf::make_width_calculator(wfunc);
+auto str = u8"\u2163 + \u2167 = \u216B"; // "Ⅳ + Ⅷ = Ⅻ"
+auto result = strf::to_u8string.with(my_wcalc) (strf::right(str, 18, '.'));
+
+// width calculated as 13.3624, rounded to 13:
+assert(result == u8"\.....\u2163 + \u2167 = \u216B");
+----
+* The fifth option is to implement your own width calculator. This
+  implies to create a class that satisfies the
+  <<strf_hpp#WidthCalculator,WidthCalculator>> type requirements.
+  There are two reasons why you may want to do that, instead
+  of the of the previous options:
+** Accuracy: The previous methods are not able to take into
+  account the presence of ligatures and digraphs.
+** Peformance: The object returned by
+  `<<strf_hpp#make_width_calculator,make_width_calculator>>`
+  converts the string to UTF-32 before calling the provided
+  function object for each UTF-32 character.
+  When you implement your own calculator, you can optimize
+  it to directly measure strings that are encoded
+  in a specific encoding.
+////
+  To-do example
+////
+//-
+'''
+[NOTE]
+====
+The width calculation algorithm is applied
+on the input, not the output string. Keep that in mind when
+converting from one encoding to another using
+`<<encoding_conversion,conv>>` or `<<encoding_conversion,sani`>>.
+For example, when converting from UTF-8 to UTF-16 and using
+the `fast_width` facet, the
+width of the string is its size in UTF-8, not in UTF-16.
+[source,cpp]
+----
+auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+
+auto res1 = strf::to_u16string.with(strf::fast_width{})
+            (strf::conv(str) > 12);
+auto res2 = strf::to_u16string.with(strf::width_as_fast_u32len{})
+            (strf::conv(str) > 12);
+auto res3 = strf::to_u16string.with(strf::width_as_u32len{})
+            (strf::conv(str) > 12);
+
+assert(res1 == u" 15.00 \u20AC \uFFFD");  // width calculated as strlen(str)
+assert(res2 == u"    15.00 \u20AC \uFFFD"); // width calculated as 8
+assert(res3 == u"   15.00 \u20AC \uFFFD"); // width calculated as 9
+----
+====
+
+== Ranges
+
+=== Without formatting
+
+|===
+|`range(__range_obj__, _func_~_opt_~)`
+|`range(_array_, _func_~_opt_~)`
+|`range(_begin_, _end_, _func_~_opt_~)`
+|`separated_range(__range_obj__, _separator_, _func_~_opt_~)`
+|`separated_range(_array_, _separator_, _func_~_opt_~)`
+|`separated_range(_begin_, _end_, _separator_, _func_~_opt_~)`
+|===
+where
+
+* `__range_obj__` is an object whose type is a https://en.cppreference.com/w/cpp/named_req/Container[_Container_] type
+* `_begin_` and `_end_` are iterators
+* `_separator_` is a raw string of `_CharT_`, where `_CharT_` is the destination character type.
+* `_func_` is  unary a function object such that the type of expression `_func_(_x_)` is printable where `_x_` is an element of the range.
+  
 
 .Examples
 [source,cpp,subs=normal]
@@ -1024,116 +1120,106 @@ str = strf::to_string(strf::separated_range(arr, ", ", op));
 assert(str == "(+110), (+220), (+330)");
 ----
 
-==== With formatting
+=== With formatting
 
-[source,cpp]
-----
-namespace strf {
+|===
+|`fmt_range(__range_obj__)`
+|`fmt_range(_array_)`
+|`fmt_range(_begin_, _end_)`
+|`fmt_separated_range(__range_obj__, _separator_)`
+|`fmt_separated_range(_array_, _separator_)`
+|`fmt_separated_range(_begin_, _end_, _separator_)`
+|===
 
-template <typename Range>
-/*...*/ fmt_range(const Range& r);
-
-template <typename T, std::size_t N>
-/*...*/ fmt_range(T (&array)[N], const Range& r);
-
-template <typename Iterator>
-/*...*/ fmt_range(const Iterator& begin, const Iterator& end);
-
-// With separator
-
-template <typename Range, typename CharT>
-/*...*/ fmt_separated_range(const Range& r, const CharT* separator);
-
-template <typename T, std::size_t N, typename CharT>
-/*...*/ fmt_separated_range(T (&array)[N], const CharT* separator);
-
-template <typename Iterator, typename CharT>
-/*...*/ fmt_separated_range( const Iterator& begin
-                           , const Iterator& end
-                           , const CharT* separator );
-} // namespace strf
-----
 Any format function applicable to the element type of the
 range can also be applied to the
 expression `strf::fmt_range(/{asterisk}\...{asterisk}/)` or
 `strf::fmt_separated_range(/{asterisk}\...{asterisk}/)`.
-This way the format functions is applied to all elements:
+It causes the formatting to be applied to each element.
 
 .Example 1
 [source,cpp]
 ----
 std::vector<int> vec = { 11, 22, 33 };
-auto str1 = strf::to_string("[", +strf::fmt_separated_range(vec, " ;") > 4, "]");
-assert(str1 == "[ +11 ; +22 ; +33]");
+auto str1 = strf::to_string("[", +strf::fmt_separated_range(vec, " ;") > 6, "]");
+assert(str1 == "[   +11 ;   +22 ;   +33]");
 ----
 
 .Example 2
 [source,cpp]
 ----
-std::vector<int> vec = { 11, 22, 33 };
+int array[] = { 11, 22, 33 };
 auto str2 = strf::to_string
     ( "["
-    , ~strf::fmt_separated_range(vec, " / ").fill('.').hex() > 6,
+    , *strf::fmt_separated_range(array, " / ").fill('.').hex() > 6,
     " ]");
 
 assert(str2 == "[..0xfa / ..0xfb / ..0xfc]");
 ----
 
-Actually, you don't need to use `fmt_range` or `fmt_separated_range`.
-You can apply format function directly into `range(/{asterisk}\...{asterisk}/)`
-or `separarated_range(/{asterisk}\...{asterisk}/)`, as long as you don't pass
-an operation function object:
-
-[source,cpp]
-----
-std::vector<int> vec = { 11, 22, 33 };
-auto str = strf::to_string("[", ~strf::hex(strf::separated_range(vec, " ; ")), "]");
-assert(str == "[0xb ; 0x16 ; 0x21]");
-----
-
 [[joins]]
-=== Joins
+== Joins
 
-==== Without alignment
-
-[source,cpp]
-----
-namespace strf {
-
-template <typename ... Args>
-/*...*/ join(const Args& ... args);
-
-}
-----
+=== Simple joins
+|===
+|`join(__args__\...)`
+|===
 _Joins_ enables you to group a set of input arguments as one:
-
 [source,cpp]
 ----
-std::string month = "May";
-int day = 5;
-
-auto str = strf::to_string.tr("Today is {}.", strf::join(month, ' ', day))
-assert(str == "Today is May 5")
+auto str = strf::to_string.tr("Blah blah blah {}.", strf::join("abc", '/', 123))
+assert(str == "Blah blah blah abc/123")
 ----
 
-It can be handy to create aliases:
+They can be handy to create aliases:
 
 [source,cpp,subs=normal]
 ----
 struct date{ int day, month, year; };
 
-auto as_yyyymmdd = [](date d)
-{
-    return strf::join( strf::<<int_fmt,dec>>(d.year).<<int_fmt,p>>(4), '/'
-                     , strf::<<int_fmt,dec>>(d.month).<<int_fmt,p>>(2), '/'
-                     , strf::<<int_fmt,dec>>(d.day).<<int_fmt,p>>(2) );
+auto as_yymmdd = [](date d) {
+    return strf::join( strf::dec(d.year % 100).p(2), '/'
+                     , strf::dec(d.month).p(2), '/'
+                     , strf::dec(d.day).p(2) );
 };
-
-date today {1, 1, 1935};
-auto str = strf::to_string("Today is ", as_yyyymmdd(today), '.');
-assert(str == "Today is 1935/01/01.");
+date d {1, 1, 1999};
+auto str = strf::to_string("The day was ", as_yymmdd(d), '.');
+assert(str == "The day was is 99/01/01.");
 ----
 
+=== Aligned joins
+You can apply any of the <<format_function,alignment format function>> on the
+expression `join(__args__\...)`
+[source,cpp]
+----
+auto str = strf::to_string(strf::join("abc", "def", 123) > 15);
+assert(str == "      abcdef123);
+----
+Or use any of the expressions below:
+|===
+|`join_align(_width_, _alignment_, _ch_~_opt_~, __split_pos__~_opt_~) (__args__\...)`
+|`join_left(_width_, _ch_~_opt_~) (__args__\...)`
+|`join_right(_width_, _ch_~_opt_~) (__args__\...)`
+|`join_center(_width_, _ch_~_opt_~) (__args__\...)`
+|`join_split(_width_, __split_pos__) (__args__\...)`
+|`join_split(_width_, _ch_, __split_pos__)  (__args__\...)`
+|`join(__args__\...).split_pos(__split_pos__) % _width_`
+|===
+where:
+
+* `__args__\...` are the values to be printed
+* `_width_` is a value of type `std::int16_t`
+* `_alignment_` is a value of type `<<strf_hpp#text_alignment, text_alignment>>`
+* `_ch_` is a value of type `char32_t`
+* `__split_pos__` is a value of type `std::size_t`
+
+[source,cpp]
+----
+auto str = strf::to_string(strf::join_split(15, U'.', 2)("abc", "def", 123));
+assert(abcdef......123);
+----
+
+////
 [WARNING]
 ====
 Watch out for dangling references when using joins.
@@ -1164,160 +1250,21 @@ For exemple, if `str` is a `std::string`, then
 `strf::<<format_function_aliases,right>>(str, 10)` doesn't store a copy of
 `str`, but a reference to its array of characters.
 ====
+////
 
-[TIP]
-====
-If you don't want to ( or can not ) store an argument by copy in a
-join, you can use `std::reference_wrapper`:
-[source]
-----
-std::string name = /*...*/;
-strf::to(stdout) (strf::join("Hello ", std::ref(name), '!') ^ 50);
-----
-====
 
-==== With alignment
 
-You can apply the <<alignment_format_functions,alignment format functions>>
-one the return type of `join(args\...)`
 
-[source,cpp]
-----
-auto str = strf::to_string
-    ("---", strf::join("abc", "def", 123) > 15, "---");
-
-assert(str == "---      abcdef123---");
-----
-
-The `split_pos` function specifies how many arguments
-go before the fill when the `operator%` is used.
-[source,cpp]
-----
-str = strf::to_string
-    ( strf::join('a', 'b', 'c', 'd', 'e', 'f').split_pos(2) % 10 );
-assert(str == "ab    cdef");
-----
-
-The functions below provide an alternartive syntax to create aligned
-join. Their return type has the `operator()(const Args& \... args)` member function
-that receives the elements of the join.
-
-[source,cpp]
-----
-namespace strf {
-
-enum class text_alignment {left, right, split, center};
-
-/* ... */ join_align( std::int16_t width
-                    , text_alignment align
-                    , char32_t fillchar = U' '
-                    , std::ptrdiff_t split_pos = 0 );
-/* ... */ join_center(int width, char32_t fillchar = U' ');
-/* ... */ join_left(int width, char32_t fillchar = U' ');
-/* ... */ join_right(int width, char32_t fillchar = U' ');
-/* ... */ join_split(int width, int split_pos);
-/* ... */ join_split( std::int16_t width
-                    , char32_t fillchar
-                    , std::ptrdiff_t split_pos );
-}
-----
-
-.Example
-[source,cpp]
-----
-auto str = strf::to_string
-    ("---", strf::join_right(15) ("abc", "def", 123), "---");
-assert(str == "---      abcdef123---");
-
-str = strf::to_string
-    ("---", strf::join_center(15) ("abc", "def", 123), "---");
-assert(str == "---   abcdef123   ---");
-
-str = strf::to_string
-    ( "---"
-    , strf::join_left(15, U'.') ("abc", strf::right("def", 5), 123)
-    , "---" );
-assert(str == "---abc  def123....---");
-
-str = strf::to_string
-    ( "---"
-    , strf::join_split(15, '.', 1) (strf::left("abc", 5), "def", 123)
-    , "---" );
-assert(str == "---abc  ....def123---");
-----
-
-=== Facets
-It is possible to <<facet_overriding,override facets>>
-to only a subset of the input arguments.
-
-[source,cpp]
-----
-namespace strf {
-
-template < typename FPack >
-class inner_pack
-{
-public:
-    template <typename... Args>
-    /*...*/  operator()(const Args&... args) const;
-    //...
-};
-
-template <typename ... Facets>
-inner_pack</*...*/> with(const Facets&... facets);
-----
-.Example 1
-[source,cpp]
-----
-auto str = strf::to_string.with(strf::monotonic_grouping<10>(1))
-    ( 10000
-    , "  "
-    , strf::hex(0x10000)
-    , strf::with( strf::monotonic_grouping<10>(3)
-                , strf::monotonic_grouping<16>(4).thousands_sep('\'') )
-        ( "  { "
-        , 10000
-        , "  "
-        , strf::hex(0x10000)
-        , " }" ) );
-
-assert(str == "1,0,0,0,0  10000  { 10,000  1'0000 }");
-----
-
-.Example 2
-[source,cpp]
-----
-auto fp = strf::pack
-    ( strf::monotonic_grouping<10>(3)
-    , strf::monotonic_grouping<16>(4).thousands_sep('\'') );
-
-auto str = strf::to_string.with(strf::monotonic_grouping<10>(1))
-    ( 10000
-    , "  "
-    , strf::hex(0x10000)
-    , strf::with(fp)
-        ( "  { "
-        , 10000
-        , "  "
-        , strf::hex(0x10000)
-        , strf::with
-            (strf::monotonic_grouping<10>(2).thousands_sep('.'))
-              ("  { ", 10000, " }")
-        , " }" ) );
-
-assert(str == "1,0,0,0,0  10000  { 10,000  1'0000  { 1.00.00 } }");
-----
-
-== Extending the library
+== Extending the library __(to-do)__
 
 === Adding output types
 to-do
 
-=== Adding input typess
+=== Adding printable types
 to-do
 
 === Adding Facets
 to-do
 
-=== Adding encodings
+=== Adding character encodings
 to-do

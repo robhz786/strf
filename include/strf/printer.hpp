@@ -5,116 +5,25 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/outbuf.hpp>
+#include <strf/outbuff.hpp>
 #include <strf/width_t.hpp>
-#include <strf/detail/standard_lib_functions.hpp>
+#include <strf/facets_pack.hpp>
 
 namespace strf {
 
-class stringify_error: public std::exception
-{
-    using std::exception::exception;
-};
-
-class encoding_failure: public strf::stringify_error
-{
-    using strf::stringify_error::stringify_error;
-
-    const char* what() const noexcept override
-    {
-        return "Boost.Stringify: encoding conversion error";
-    }
-};
-
-namespace detail {
-
-inline STRF_HD void handle_encoding_failure()
-{
-#if defined(__cpp_exceptions) && !defined(__CUDA_ARCH__)
-    throw strf::encoding_failure();
-#else // defined(__cpp_exceptions)
-#ifndef __CUDA_ARCH__
-    std::abort();
-#else
-    asm("trap;");
-#endif
-#endif // defined(__cpp_exceptions) && !defined(__CUDA_ARCH__)
-}
-
-
-} // namespace detail
-
-
-template <typename CharOut>
+template <std::size_t CharSize>
 class printer
 {
 public:
 
-    using char_type = CharOut;
+    constexpr static std::size_t char_size = CharSize;
 
     STRF_HD virtual ~printer()
     {
     }
 
-    STRF_HD virtual void print_to(strf::basic_outbuf<CharOut>& ob) const = 0;
+    STRF_HD virtual void print_to(strf::underlying_outbuff<CharSize>& ob) const = 0;
 };
-
-namespace detail {
-
-template<std::size_t CharSize>
-void STRF_HD write_fill_continuation
-    ( strf::underlying_outbuf<CharSize>& ob
-    , std::size_t count
-    , typename strf::underlying_outbuf<CharSize>::char_type ch )
-{
-    using char_type = typename strf::underlying_outbuf<CharSize>::char_type;
-
-    std::size_t space = ob.size();
-    STRF_ASSERT(space < count);
-    strf::detail::char_assign<char_type>(ob.pos(), space, ch);
-    count -= space;
-    ob.advance_to(ob.end());
-    ob.recycle();
-    while (ob.good()) {
-        space = ob.size();
-        if (count <= space) {
-            strf::detail::char_assign<char_type>(ob.pos(), count, ch);
-            ob.advance(count);
-            break;
-        }
-        strf::detail::char_assign(ob.pos(), space, ch);
-        count -= space;
-        ob.advance_to(ob.end());
-        ob.recycle();
-    }
-}
-
-template <std::size_t CharSize>
-inline STRF_HD void write_fill
-    ( strf::underlying_outbuf<CharSize>& ob
-    , std::size_t count
-    , typename strf::underlying_outbuf<CharSize>::char_type ch )
-{
-    using char_type = typename strf::underlying_outbuf<CharSize>::char_type;
-    if (count <= ob.size()) { // the common case
-        strf::detail::char_assign<char_type>(ob.pos(), count, ch);
-        ob.advance(count);
-    } else {
-        write_fill_continuation(ob, count, ch);
-    }
-}
-
-template<typename CharT>
-inline STRF_HD void write_fill
-    ( strf::basic_outbuf<CharT>& ob
-    , std::size_t count
-    , CharT ch )
-{
-    using u_char_type = typename strf::underlying_outbuf<sizeof(CharT)>::char_type;
-    write_fill(ob.as_underlying(), count, static_cast<u_char_type>(ch));
-}
-
-} // namespace detail
 
 struct string_input_tag_base
 {
@@ -171,47 +80,47 @@ class width_preview<true>
 public:
 
     explicit constexpr STRF_HD width_preview(strf::width_t initial_width) noexcept
-        : _width(initial_width)
+        : width_(initial_width)
     {}
 
     STRF_HD width_preview(const width_preview&) = delete;
 
     constexpr STRF_HD void subtract_width(strf::width_t w) noexcept
     {
-        _width -= w;
+        width_ -= w;
     }
 
     constexpr STRF_HD void checked_subtract_width(strf::width_t w) noexcept
     {
-        if (w < _width) {
-            _width -= w;
+        if (w < width_) {
+            width_ -= w;
         } else {
-            _width = 0;
+            width_ = 0;
         }
     }
 
     constexpr STRF_HD void checked_subtract_width(std::ptrdiff_t w) noexcept
     {
-        if (w < _width.ceil()) {
-            _width -= static_cast<std::int16_t>(w);
+        if (w < width_.ceil()) {
+            width_ -= static_cast<std::int16_t>(w);
         } else {
-            _width = 0;
+            width_ = 0;
         }
     }
 
     constexpr STRF_HD void clear_remaining_width() noexcept
     {
-        _width = 0;
+        width_ = 0;
     }
 
     constexpr STRF_HD strf::width_t remaining_width() const noexcept
     {
-        return _width;
+        return width_;
     }
 
 private:
 
-    strf::width_t _width;
+    strf::width_t width_;
 };
 
 template <>
@@ -253,7 +162,7 @@ class size_preview<true>
 {
 public:
     explicit constexpr STRF_HD size_preview(std::size_t initial_size = 0) noexcept
-        : _size(initial_size)
+        : size_(initial_size)
     {
     }
 
@@ -261,17 +170,17 @@ public:
 
     constexpr STRF_HD void add_size(std::size_t s) noexcept
     {
-        _size += s;
+        size_ += s;
     }
 
     constexpr STRF_HD std::size_t get_size() const noexcept
     {
-        return _size;
+        return size_;
     }
 
 private:
 
-    std::size_t _size;
+    std::size_t size_;
 };
 
 template <>
@@ -293,21 +202,24 @@ public:
     }
 };
 
-template <bool SizeRequired, bool WidthRequired>
+enum class preview_width: bool { no = false, yes = true };
+enum class preview_size : bool { no = false, yes = true };
+
+template <strf::preview_size SizeRequired, strf::preview_width WidthRequired>
 class print_preview
-    : public strf::size_preview<SizeRequired>
-    , public strf::width_preview<WidthRequired>
+    : public strf::size_preview<static_cast<bool>(SizeRequired)>
+    , public strf::width_preview<static_cast<bool>(WidthRequired)>
 {
 public:
 
-    static constexpr bool size_required = SizeRequired;
-    static constexpr bool width_required = WidthRequired;
-    static constexpr bool nothing_required = ! SizeRequired && ! WidthRequired;
+    static constexpr bool size_required = static_cast<bool>(SizeRequired);
+    static constexpr bool width_required = static_cast<bool>(WidthRequired);
+    static constexpr bool nothing_required = ! size_required && ! width_required;
 
-    template <bool W = WidthRequired>
+    template <strf::preview_width W = WidthRequired>
     STRF_HD constexpr explicit print_preview
-        ( std::enable_if_t<W, strf::width_t> initial_width ) noexcept
-        : strf::width_preview<WidthRequired>{initial_width}
+        ( std::enable_if_t<static_cast<bool>(W), strf::width_t> initial_width ) noexcept
+        : strf::width_preview<true>{initial_width}
     {
     }
 
@@ -320,23 +232,23 @@ namespace detail {
 
 #if defined(__cpp_fold_expressions)
 
-template <typename CharT, typename ... Printers>
-inline STRF_HD void write_args( strf::basic_outbuf<CharT>& ob
-                      , const Printers& ... printers )
+template <std::size_t CharSize, typename ... Printers>
+inline STRF_HD void write_args( strf::underlying_outbuff<CharSize>& ob
+                              , const Printers& ... printers )
 {
     (... , printers.print_to(ob));
 }
 
 #else // defined(__cpp_fold_expressions)
 
-template <typename CharT>
-inline STRF_HD void write_args(strf::basic_outbuf<CharT>&)
+template <std::size_t CharSize>
+inline STRF_HD void write_args(strf::underlying_outbuff<CharSize>&)
 {
 }
 
-template <typename CharT, typename Printer, typename ... Printers>
+template <std::size_t CharSize, typename Printer, typename ... Printers>
 inline STRF_HD void write_args
-    ( strf::basic_outbuf<CharT>& ob
+    ( strf::underlying_outbuff<CharSize>& ob
     , const Printer& printer
     , const Printers& ... printers )
 {
@@ -349,6 +261,110 @@ inline STRF_HD void write_args
 #endif // defined(__cpp_fold_expressions)
 
 } // namespace detail
+
+template <typename CharT>
+inline STRF_HD void get_printable_traits() {};
+
+template <typename CharT, typename FPack, typename Preview, typename Arg>
+struct printable_traits
+    : decltype( get_printable_traits<CharT, FPack>
+                  ( std::declval<Preview&>()
+                  , std::declval<Arg>() ) )
+{
+};
+
+template < typename CharT, typename FPack, typename Preview
+         , typename Printer, typename Arg >
+struct usual_printer_input
+{
+    using fpack_type = FPack;
+    using preview_type = Preview;
+    using printer_type = Printer;
+
+    FPack fp;
+    Preview& preview;
+    Arg arg;
+};
+
+template <typename CharT, typename FPack, typename Printer>
+struct usual_printable_traits
+{
+    template <typename Preview, typename Arg>
+    constexpr static STRF_HD
+    strf::usual_printer_input<CharT, FPack, Preview, Printer, Arg>
+    make_input (const FPack& fp, Preview& preview, const Arg& arg)
+    {
+        return {fp, preview, arg};
+    }
+};
+
+template <typename CharT, typename FPack, typename Printer>
+struct usual_printable_traits_by_cref
+{
+    template <typename Preview, typename Arg>
+    constexpr static STRF_HD
+    strf::usual_printer_input<CharT, FPack, Preview, Printer, const Arg&>
+    make_input (const FPack& fp, Preview& preview, const Arg& arg)
+    {
+        return {fp, preview, arg};
+    }
+};
+
+class printable_traits_finder_c;
+
+class printable_traits_finder
+{
+public:
+    using category = strf::printable_traits_finder_c;
+
+    template < typename CharT, typename FPack
+             , typename Preview, typename Arg >
+    using type = strf::printable_traits<CharT, FPack, Preview, Arg>;
+};
+
+class printable_traits_finder_c
+{
+public:
+    constexpr static STRF_HD strf::printable_traits_finder get_default()
+    {
+        return {};
+    }
+};
+
+template <typename CharT, typename FPack, typename Preview, typename Arg>
+using printable_traits_alias = typename
+    decltype(strf::get_facet<printable_traits_finder_c, Arg>(std::declval<const FPack&>()))
+    :: template type<CharT, FPack, Preview, Arg>;
+
+template <typename CharT, typename FPack, typename Preview, typename Arg>
+constexpr STRF_HD auto make_printer_input
+    ( const FPack& fp, Preview& preview, const Arg& arg )
+{
+    using pt = strf::printable_traits_alias<CharT, FPack, Preview, Arg>;
+    return pt::make_input(fp, preview, arg);
+}
+
+namespace detail {
+
+template <typename CharT, typename FPack, typename Preview, typename Arg>
+struct printer_impl_helper
+{
+    static const FPack& fp();
+    static Preview& preview();
+    static const Arg& arg();
+
+    using printer_input = decltype
+        ( strf::make_printer_input<CharT>(fp(), preview(), arg()) );
+
+    using printer = typename printer_input::printer_type;
+};
+
+} // namespace detail
+
+template <typename CharT, typename FPack, typename Preview, typename Arg>
+using printer_impl = typename strf::detail::printer_impl_helper
+    < CharT, FPack, Preview, Arg >
+    ::printer;
 
 } // namespace strf
 

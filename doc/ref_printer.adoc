@@ -4,7 +4,14 @@ Distributed under the Boost Software License, Version 1.0.
 See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
+:printer: <<printer,printer>>
+:printer_impl: <<printer_impl,printer_impl>>
+:printer_traits: <<printer_traits,printer_traits>>
+:printer_type_getter_c: <<printer_type_getter_c,printer_type_getter_c>>
 
+:get_facet: <<get_facet,get_facet>>
+:tag: <<tag,tag>>
+:rank: <<rank,rank>>
 
 == Printable
 
@@ -21,63 +28,60 @@ class printer
 public:
     using char_type = CharOut;
     virtual ~printer() {}
-    virtual void print_to(<<basic_outbuf,basic_outbuf>><CharT>&) const = 0;
+    virtual void print_to(<<basic_outbuff,basic_outbuff>><CharT>&) const = 0;
 };
 
 } // namespace strf
 ----
 
-[[make_printer]]
 [[Printable]]
-=== Type requiment _Printable_
+=== Type requirement _Printable_
 
 The type `T` satisfies _Printable_ if
 Given,
 
 - `CharT`, a character type.
 - `FPack`, a type that is an instance of `<<facets_pack,facets_pack>>`
-- `fp`, an expression of type `const FPack`.
-- `prev`, an expression of type `<<print_preview,print_preview>><false, false>&`
+- `fp`, an lvalue reference of type `const FPack`.
+- `preview`, an lvalue reference of type `<<print_preview,print_preview>><preview_width::no, preview_size::no>&`
 - `x`, an expression of type `const T`.
+- `chtag`, an expression of type `{tag}<CharT>`
 
 The expression below is valid
+[source,cpp,subs=normal]
 ----
-make_printer<CharT, FPack>(strf::rank<5>(), fpack, prev, x)
+static_cast< const {printer}<sizeof(CharT)>& >
+    ( {printer_impl}<CharT, FPack, T>{fpack, preview, x, chtag} )
 ----
-and
-
-- its return type is a class that derives from `<<printer,printer>><CharT>`
 
 ////
 What are customization point objects and how to use them?
 https://stackoverflow.com/questions/53495848/what-are-customization-point-objects-and-how-to-use-them
 
-`make_printer` is a customization point to define input types.
-To print a value `x`, the library uses the printer object returned by
-the expresion:
 ////
 [[PrintableWithWidthPreview]]
 === Type requirement _PrintableWithWidthPreview_
 
-The type `T` satisfies _PrintableSizePreview_ if it satisfies
+The type `T` satisfies _PrintableWitdhPreview_ if it satisfies
 <<Printable,_Printable_>> and
 Given,
 
 - `CharT`, a character type.
 - `FPack`, a type that is an instance of `<<facets_pack,facets_pack>>`
-- `fp`, an expression of type `const FPack`.
-- `prev`, an expression of type `<<print_preview,print_preview>><false, true>&`,
-   or `<<print_preview,print_preview>><true, true>&`,
+- `fp`, an lvalue reference of type `const FPack`.
+- `preview`, an lvalue reference of type `<<print_preview,print_preview>><preview_size::no, preview_with::yes>&`.
 - `x`, an expression of type `const T`.
 
 The expression below is valid
+[source,cpp,subs=normal]
 ----
-make_printer<CharT, FPack>(strf::rank<5>(), fpack, prev, x)
+static_cast< const {printer}<sizeof(CharT)>& >
+    ( {printer_impl}<CharT, FPack, T>{fpack, preview, x, chtag} )
 ----
+
 And
 
-- its return type is a class that derives from `<<printer,printer>><CharT>`
-- The pos-condition `(rw_pre - rw_pos == w || rw_pos <= 0)` is satisfied, where `rw_pre` and `rw_pos` are the value of `prev.remaining_width()` before and after the `make_printer` call respectively, and `w` is the predicted width of the content that the returned printer writes ( in `print_to` ).
+- The poscondition `(rw_pre - rw_pos == w || rw_pos \<= 0)` is satisfied, where `rw_pre` and `rw_pos` are the value of `prev.remaining_width()` before and after the expression above is evaluated, respectively, and `w` is the predicted width of the content that the returned printer writes ( in `print_to` ).
 
 NOTE: The pratical effect of a type being _PrintableWithWidthPreview_ is that it can be
 used in <<aligned_join, aligned joins>>.
@@ -85,24 +89,25 @@ used in <<aligned_join, aligned joins>>.
 === Type requirement _PrintableWithSizePreview_ if it satisfies
 <<Printable,_Printable_>> and
 
-The type `T` satisfies _PrintableSizePreview_ if
+The type `T` satisfies _PrintableWithSizePreview_ if
 Given,
 
 - `CharT`, a character type.
 - `FPack`, a type that is an instance of `<<facets_pack,facets_pack>>`
-- `fp`, an expression of type `const FPack`.
-- `prev`, an expression of type `<<print_preview,print_preview>><true, false>&`,
-   or `<<print_preview,print_preview>><true, true>&`,
+- `fp`, an lvalue reference of type `const FPack`.
+- `preview`, an lvalue reference of type `<<print_preview,print_preview>><preview_size::yes, preview_width::no>&`
 - `x`, an expression of type `const T`.
 
 The expression below is valid
+[source,cpp,subs=normal]
 ----
-make_printer<CharT, FPack>(strf::rank<5>(), fpack, prev, x)
+static_cast< const {printer}<sizeof(CharT)>& >
+    ( {printer_impl}<CharT, FPack, T>{fpack, preview, x, chtag} )
 ----
+
 And
 
-- its return type is a class that derives from `<<printer,printer>><CharT>`
-- The pos-condition `(s_pos - s_pre == s)` is satisfied, where `s_pos` and `s_pre` are the value of `prev.get_size()` before and after the `make_printer` call respectively, and `s` -- the estimated number of characters that the returned printer writes in `<<printer,print_to>>` -- does not need to be exact but must be such that for any value `ob` of type `<<basic_outbuf,basic_outbuf>><CharT>&`, if `ob.<<underlying_outbuf_size,size>>()` is less than or equal to `s`, then `p.print_to(ob)` is guaranted to not call `ob.<<underlying_outbuf_recycle,recycle>>()`, where `p` is the value `make_printer` returns.
+- The poscondition `(s_pos - s_pre == s)` is satisfied, where `s_pos` and `s_pre` are the value of `prev.get_size()` before and after the expression above is evaluated respectively, and `s` -- the estimated number of characters that the returned printer writes in `<<printer,print_to>>` -- does not need to be exact but must be such that for any value `ob` of type `<<basic_outbuff,basic_outbuff>><CharT>&`, if `ob.<<underlying_outbuff_size,size>>()` is less than or equal to `s`, then `p.print_to(ob)` is guaranted to not call `ob.<<underlying_outbuff_recycle,recycle>>()`, where value of the above expression.
 
 [NOTE]
 ====
@@ -112,12 +117,11 @@ when `reserve_calc` is used.
 For example, in the expression below, the type of `arg0`, `arg1`, `arg2`, `etc` must all be _PrintableWithSizePreview_:
 [source,cpp]
 ----
-auto str = strf::make_string.reserve_calc()(arg0, arg1, arg2, etc);
+auto str = make_string.reserve_calc()(arg0, arg1, arg2, etc);
 ----
 ====
 
 [[make_fmt]]
-[[fmtprintable]]
 === Type requirement _FmtPrintable_
 
 The type `T` satisfies _FmtPrintable_ if
@@ -127,18 +131,18 @@ The type `T` satisfies _FmtPrintable_ if
 The expression below is valid
 [source,cpp,subs=normal]
 ----
-make_fmt(strf::rank<5>(), x)
+make_fmt({rank}<5>(), x)
 ----
 and
 
 - The return type is <<Printable,_Printable_>>, and it is an instance
 of the `<<value_with_format,value_with_format>>` class template.
 ////
-- `make_fmt(strf::rank<5>(), x).value() == x`
+- `make_fmt({rank}<5>(), x).value() == x`
 ////
 
 ////
-NOTE: `make_fmt` is a customization point to associate format functions to 
+NOTE: `make_fmt` is a customization point to associate format functions to
 input types.
 All the <<format_function_aliases,format function aliases>> require the
 argument's type to be _FmtPrintable_.
@@ -158,15 +162,19 @@ over it. Also, to print <<formatted_range, formatted ranges>>
 ----
 namespace strf {
 
-template <bool PreviewSize, bool PreviewWidth>
+enum class preview_width: bool { no = false, yes = true };
+enum class preview_size : bool { no = false, yes = true };
+
+template <preview_size SizeRequired, preview_width WidthRequired>
 class print_preview
-    : public <<size_preview, size_preview>><PreviewSize>
-    , public <<width_preview, width_preview>><PreviewWidth>
+    : public size_preview<static_cast<bool>(SizeRequired)>
+    , public width_preview<static_cast<bool>(WidthRequired)>
 {
 public:
-    static constexpr bool size_required = PreviewSize;
-    static constexpr bool width_required = PreviewWidth;
-    static constexpr bool nothing_required = ! PreviewSize && ! PreviewWidth;
+
+    static constexpr bool size_required = static_cast<bool>(SizeRequired);
+    static constexpr bool width_required = static_cast<bool>(WidthRequired);
+    static constexpr bool nothing_required = ! size_required && ! width_required;
 
     constexpr print_preview() noexcept = default;
     constexpr explicit print_preview(<<width_t,width_t>> initial_width) noexcept;
@@ -190,9 +198,9 @@ Effect:: Default-construct each of the base classes.
 constexpr explicit print_preview(<<width_t,width_t>> initial_width) noexcept;
 ----
 ::
-Compile-time requirement:: `PreviewWidth` is `true`, otherwise this constructor
+Compile-time requirement:: `WidthRequired` is `preview_width::yes`, otherwise this constructor
 does not participate in overload resolution.
-Effect:: Initializes <<width_preview, width_preview>><PreviewWidth> base
+Effect:: Initializes `<<width_preview, width_preview>>` base
 with `initial_width`.
 ====
 [[size_preview]]
@@ -340,150 +348,65 @@ remaining_width() == (w < previous_w.ceil() ? previous_w - (std::int16_t)w : 0)
 where `previous_w` is the return value of `remaining_width()` before this call.
 ====
 
-
-[[width_t]]
-=== Class `width_t`
-
-The `width_t` class implements signed
-https://en.wikipedia.org/wiki/Q_(number_format)[Q16.16] arithmetics and
-is used to represent width of textual content, _i.e._ when
-<<alignment_format,text alignment formatting>> is used.
-
+=== Type alias template `printer_impl` [[printer_impl]]
 [source,cpp,subs=normal]
 ----
-namespace strf {
-class width_t
+template <typename CharOut, typename FPack, typename Arg>
+usign printer_impl = typename
+    decltype({get_facet}<printer_type_getter_c, Arg>(std::declval<FPack>()))
+    :: template printer;
+----
+
+=== Facet category `printer_type_getter_c` [[printer_type_getter_c]]
+[source,cpp,subs=normal]
+----
+struct printer_type_getter_c;
+
+struct printer_type_getter
+{
+    using category = printer_type_getter_c;
+
+    template <typename CharT, typename FPack, typename PrintableType>
+    using type = typename {printer_traits}<CharT, PrintableType>
+        ::template printer_type<FPack>;
+};
+
+struct printer_type_getter_c
+{
+    constexpr static printer_type_getter get_default() noexcept;
+};
+----
+=== Class template `printer_traits` [[printer_traits]]
+[source,cpp,subs=normal]
+----
+template <typename CharT, typename T>
+class printer_traits
 {
 public:
 
-    struct from_underlying_tag{};
-    constexpr width_t() noexcept;
-    constexpr width_t(std::int16_t) noexcept;
-    constexpr width_t(const width_t&) noexcept;
-    constexpr width_t(from_underlying_tag, std::int32_t) noexcept;
-
-    constexpr width_t& operator=(const width_t& other) noexcept;
-    constexpr width_t& operator=(std::int16_t& x) noexcept;
-
-    constexpr bool operator==(const width_t& other) const noexcept;
-    constexpr bool operator!=(const width_t& other) const noexcept;
-    constexpr bool operator<(const width_t& other) const noexcept;
-    constexpr bool operator>(const width_t& other) const noexcept;
-    constexpr bool operator\<=(const width_t& other) const noexcept;
-    constexpr bool operator>=(const width_t& other) const noexcept;
-
-    constexpr bool is_integral() const noexcept;
-    constexpr std::int16_t floor() const noexcept;
-    constexpr std::int16_t ceil() const noexcept;
-    constexpr std::int16_t round() const noexcept;
-
-    constexpr width_t operator-() const noexcept;
-    constexpr width_t operator+() const noexcept;
-    constexpr width_t& operator+=(width_t other) noexcept;
-    constexpr width_t& operator-=(width_t other) noexcept;
-    constexpr width_t& operator{asterisk}=(std::int16_t m) noexcept;
-    constexpr width_t& operator/=(std::int16_t d) noexcept;
-    constexpr width_t& operator{asterisk}=(width_t other) noexcept;
-    constexpr width_t& operator/=(width_t other) noexcept;
-
-    constexpr std::int32_t underlying_value() const noexcept;
-    constexpr static width_t from_underlying(std::int32_t) noexcept;
-
-private:
-    std::int32_t _underlying_value; // exposition only
+    template <typename FPack>
+    using printer_type = typename
+        decltype(get_printer_traits( {tag}<CharT>()
+                                   , std::declval<const T&>() ))
+        :: template printer_type<FPack>;
 };
-
-namespace width_literal {
-
-template <char ... C>
-constexpr strf::width_t operator "" _w()
-
-} // namespace width_literal
-
-constexpr strf::width_t width_max = strf::width_t::from_underlying(INT32_MAX);
-constexpr strf::width_t width_min = strf::width_t::from_underlying(INT32_MIN);
-
-constexpr bool operator==(strf::width_t lhs, std::int16_t rhs) noexcept;
-constexpr bool operator==(std::int16_t lhs, strf::width_t rhs) noexcept;
-constexpr bool operator!=(strf::width_t lhs, std::int16_t rhs) noexcept;
-constexpr bool operator!=(std::int16_t lhs, strf::width_t rhs) noexcept;
-constexpr bool operator< (strf::width_t lhs, std::int16_t rhs) noexcept;
-constexpr bool operator< (std::int16_t lhs, strf::width_t rhs) noexcept;
-constexpr bool operator\<=(strf::width_t lhs, std::int16_t rhs) noexcept;
-constexpr bool operator\<=(std::int16_t lhs, strf::width_t rhs) noexcept;
-constexpr bool operator> (strf::width_t lhs, std::int16_t rhs) noexcept;
-constexpr bool operator> (std::int16_t lhs, strf::width_t rhs) noexcept;
-constexpr bool operator>=(strf::width_t lhs, std::int16_t rhs) noexcept;
-constexpr bool operator>=(std::int16_t lhs, strf::width_t rhs) noexcept;
-
-constexpr strf::width_t operator+(strf::width_t lhs, strf::width_t rhs) noexcept;
-constexpr strf::width_t operator+(std::int16_t lhs, strf::width_t rhs) noexcept;
-constexpr strf::width_t operator+(strf::width_t lhs, std::int16_t rhs) noexcept;
-constexpr strf::width_t operator-(strf::width_t lhs, strf::width_t rhs) noexcept;
-constexpr strf::width_t operator-(std::int16_t lhs, strf::width_t rhs) noexcept;
-constexpr strf::width_t operator-(strf::width_t lhs, std::int16_t rhs) noexcept;
-constexpr strf::width_t operator*(strf::width_t lhs, strf::width_t rhs) noexcept;
-constexpr strf::width_t operator*(std::int16_t lhs, strf::width_t rhs) noexcept;
-constexpr strf::width_t operator*(strf::width_t lhs, std::int16_t rhs) noexcept;
-constexpr strf::width_t operator/(strf::width_t lhs, strf::width_t rhs) noexcept;
-constexpr strf::width_t operator/(std::int16_t lhs, strf::width_t rhs) noexcept;
-constexpr strf::width_t operator/(strf::width_t lhs, std::int16_t rhs) noexcept;
-
-constexpr strf::width_t checked_add
-    ( strf::width_t lhs
-    , strf::width_t rhs ) noexcept;
-
-constexpr strf::width_t checked_subtract
-    ( strf::width_t lhs
-    , std::int64_t rhs ) noexcept;
-
-constexpr strf::width_t checked_subtract
-    ( strf::width_t lhs
-    , strf::width_t rhs ) noexcept;
-
-constexpr strf::width_t checked_mul
-    ( strf::width_t w
-    , std::uint32_t x ) noexcept;
-
-} // namespace strf
 ----
 
-to-do
+The `printer_traits` class template is a customization point.
+The user can add printable types by specializing this template,
+or by overloading `get_printer_traits`.
 
-[[rank]]
-=== Class template `rank`
-
-[source,cpp,subs=normal]
+The `FPack` template paramenter of `printer_type`
+is expected to laways be an instance of `<<facets_pack,facets_pack>>`.
+And the type `printer_type<FPack>` shall be such that the
+expression below is valid:
 ----
-namespace strf {
-
-template <std::size_t N>
-struct rank: rank<N - 1>
-{
-    explicit rank() = default;
-};
-
-template <>
-struct rank<0>
-{
-    explicit rank() = default;
-};
-
-} // namespace strf
+static_cast< const {printer}<sizeof(CharT)>& >
+    ( printer_type<FPack>{fpack, preview, x, chtag} )
 ----
+, where:
 
-[[tag]]
-=== Class template `tag`
-
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-template <typename\... >
-struct tag
-{
-    explicit tag() = default;
-};
-
-} // namespace strf
-----
+- `fp`, an lvalue reference of type `const FPack`.
+- `preview`, an lvalue reference of type `<<print_preview,print_preview>><preview_size::no, preview_width::no>&`
+- `x`, an expression of type `const T`.
+- `chtag`, an expression of type `{tag}<CharT>`

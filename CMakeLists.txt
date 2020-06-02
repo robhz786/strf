@@ -4,10 +4,18 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.11)
 option(
   STRF_CUDA_SUPPORT
   "Build the static library for CUDA device-side use"
+  ${STRF_CUDA_SUPPORT} )
+option(
+  STRF_FREESTANDING
+  "Avoid as must as possible using hosted standard headers."
+  ${STRF_CUDA_SUPPORT} )
+option(
+  STRF_WITH_CSTRING
+  "Use header <cstring> even when STRF_FREESTANDING is ON."
   ${STRF_CUDA_SUPPORT} )
 option(
   STRF_BUILD_TESTS
@@ -24,7 +32,7 @@ option(
 
 project (
   strf 
-  VERSION 0.10.5
+  VERSION 0.11.0
   LANGUAGES CXX)
 
 if (STRF_CUDA_SUPPORT)
@@ -42,6 +50,16 @@ target_compile_definitions(
   strf
   PUBLIC STRF_SEPARATE_COMPILATION )
 
+if (STRF_FREESTANDING)
+  target_compile_definitions(strf PUBLIC STRF_FREESTANDING)
+  target_compile_definitions(strf-header-only INTERFACE STRF_FREESTANDING)
+endif (STRF_FREESTANDING)
+
+if (STRF_WITH_CSTRING)
+  target_compile_definitions(strf PUBLIC STRF_WITH_CSTRING)
+  target_compile_definitions(strf-header-only INTERFACE STRF_WITH_CSTRING)
+endif (STRF_WITH_CSTRING)
+  
 target_include_directories(
   strf-header-only
   INTERFACE
@@ -129,13 +147,19 @@ if (STRF_BUILD_EXAMPLES)
 endif (STRF_BUILD_EXAMPLES)
 
 if (STRF_BUILD_BENCHMARKS)
-  if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/externals/fmt/CMakeLists.txt )
-    message(
-      FATAL_ERROR
+  if ( NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/externals/fmt/CMakeLists.txt OR
+       NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/externals/google-benchmark/CMakeLists.txt )
+
+     message(
+      SEND_ERROR
       "Building benchmarks requires externals libraries.\n"
       "Run 'git submodule update --init'" )
   endif ()
 
-  add_subdirectory(performance performance)
+  option(BENCHMARK_ENABLE_TESTING OFF)
+  option(BENCHMARK_ENABLE_GTEST_TESTS OFF)
+  add_subdirectory(externals/google-benchmark google-benchmark)
   add_subdirectory(externals/fmt fmt)
+
+  add_subdirectory(benchmarks benchmarks)
 endif (STRF_BUILD_BENCHMARKS)

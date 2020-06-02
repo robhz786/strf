@@ -5,11 +5,11 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/detail/common.hpp>
+#include <strf/detail/strf_def.hpp>
 
 namespace strf {
 
-enum class lettercase { lower = 0, mixed = 1, upper = 3 };
+enum class lettercase : std::uint16_t { lower = 0x2020, mixed = 0x20, upper = 0 };
 
 constexpr lettercase lowercase = lettercase::lower;
 constexpr lettercase mixedcase = lettercase::mixed;
@@ -25,14 +25,12 @@ struct lettercase_c
 };
 
 template <typename Facet>
-class facet_trait;
+struct facet_traits;
 
 template <>
-class facet_trait<strf::lettercase>
+struct facet_traits<strf::lettercase>
 {
-public:
     using category = strf::lettercase_c;
-    static constexpr bool store_by_value = true;
 };
 
 } // namespace strf

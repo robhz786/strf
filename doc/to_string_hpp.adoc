@@ -1,0 +1,306 @@
+////
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
+[[main]]
+= `<strf/to_string.hpp>` Header file reference
+:source-highlighter: prettify
+:sectnums:
+:toc: left
+:toc-title: <strf/to_string.hpp>
+:toclevels: 1
+:icons: font
+
+:min_size_after_recycle: <<outbuff_hpp#min_size_after_recycle,min_size_after_recycle>>
+:underlying_outbuff: <<outbuff_hpp#underlying_outbuff,underlying_outbuff>>
+:underlying_char_type: <<outbuff_hpp#underlying_char_type,underlying_char_type>>
+:basic_outbuff: <<outbuff_hpp#basic_outbuff,basic_outbuff>>
+
+:destination_no_reserve: <<strf_hpp#destination,destination_no_reserve>>
+:OutbuffCreator: <<strf_hpp#OutbuffCreator,OutbuffCreator>>
+:SizedOutbuffCreator: <<strf_hpp#SizedOutbuffCreator,SizedOutbuffCreator>>
+
+:basic_string_maker: <<basic_string_maker,basic_string_maker>>
+:basic_sized_string_maker: <<basic_sized_string_maker,basic_sized_string_maker>>
+:basic_string_appender: <<basic_string_appender,basic_string_appender>>
+
+NOTE: This header files includes `<strf.hpp>`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename CharT
+         , typename Traits = std::char_traits<CharT>
+         , typename Allocator = std::allocator<CharT> >
+class basic_string_appender final: public basic_outbuff<CharT>
+{ /{asterisk}\...{asterisk}/ };
+
+template < typename CharT
+         , typename Traits = std::char_traits<CharT>
+         , typename Allocator = std::allocator<CharT> >
+class basic_string_maker final: public basic_outbuff<CharT>
+{ /{asterisk}\...{asterisk}/ };
+
+template < typename CharT
+         , typename Traits = std::char_traits<CharT>
+         , typename Allocator = std::allocator<CharT> >
+class basic_sized_string_maker final: public basic_outbuff<CharT>
+{ /{asterisk}\...{asterisk}/ };
+
+using string_appender           = basic_string_appender<char>;
+using u8string_appender         = basic_string_appender<char8_t>;
+using u16string_appender        = basic_string_appender<char16_t>;
+using u32string_appender        = basic_string_appender<char32_t>;
+using wstring_appender          = basic_string_appender<wchar_t>;
+
+using string_maker              = basic_string_maker<char>;
+using u8string_maker            = basic_string_maker<char8_t>;
+using u16string_maker           = basic_string_maker<char16_t>;
+using u32string_maker           = basic_string_maker<char32_t>;
+using wstring_maker             = basic_string_maker<wchar_t>;
+
+using pre_sized_string_maker    = basic_sized_string_maker<char>;
+using pre_sized_u8string_maker  = basic_sized_string_maker<char8_t>;
+using pre_sized_u16string_maker = basic_sized_string_maker<char16_t>;
+using pre_sized_u32string_maker = basic_sized_string_maker<char32_t>;
+using pre_sized_wstring_maker   = basic_sized_string_maker<wchar_t>;
+
+// Destination makers:
+
+template <typename CharT, typename Traits, typename Allocator>
+/{asterisk}\...{asterisk}/ append(std::basic_string<CharT, Traits, Allocator>& str);
+
+template <typename CharT, typename Traits, typename Allocator>
+/{asterisk}\...{asterisk}/ assign(std::basic_string<CharT, Traits, Allocator>& str);
+
+template < typename CharT
+         , typename Traits = std::char_traits<CharT>
+         , typename Allocator = std::allocator<CharT> >
+constexpr /{asterisk} \... {asterisk}/ to_basic_string {};
+
+constexpr auto to_u8string      = to_basic_string<char8_t>;
+constexpr auto to_string        = to_basic_string<char_t>;
+constexpr auto to_u16string     = to_basic_string<char16_t>;
+constexpr auto to_u32string     = to_basic_string<char32_t>;
+constexpr auto to_wstring       = to_basic_string<wchar_t>;
+
+} // namespace strf
+----
+
+
+
+
+[[basic_string_maker]]
+== Class template `basic_string_maker`
+=== Synopsis
+[source,cpp]
+----
+namespace strf {
+
+template < typename CharT
+         , typename Traits = std::char_traits<CharT>
+         , typename Allocator = std::allocator<CharT> >
+class basic_string_maker final: public {basic_outbuff}<CharT>
+{
+public:
+    basic_string_maker();
+    basic_string_maker(const basic_string_maker&) = delete;
+    basic_string_maker(basic_string_maker&&) = delete;
+    void recycle() override;
+    basic_string<CharT, Traits, Allocator> finish();
+};
+
+// Global type aliases
+
+using string_maker    = basic_string_maker<char>;
+using u16string_maker = basic_string_maker<char16_t>;
+using u32string_maker = basic_string_maker<char32_t>;
+using wstring_maker   = basic_string_maker<wchar_t>;
+using u8string_maker  = basic_string_maker<char8_t>;
+
+} // namespace strf
+----
+=== Public member functions
+
+====
+[source,cpp]
+----
+void recycle() override;
+----
+[horizontal]
+Effects::
+- If `good()` is `true` then calls `str.append(p0, pointer())`, where `str` is the private string object that is later returned by `finish()`, and `p0` is the value that `pointer()` would return before any call to `advance` and `advance_to` since the last call to `recycle()`, or since this object's contruction, whatever happened last.
+- Calls `set_pointer` and/or `set_end`.
+Postconditions:: `size() >= min_size_after_recycle<sizeof(CharT)>()`
+====
+====
+[source,cpp]
+----
+basic_string<CharT, Traits, Allocator> finish()
+----
+[horizontal]
+Effects:: Calls `recycle()` and `set_good(false)` and return the internal string.
+Postconditions:: `good() == false`
+====
+
+[[basic_sized_string_maker]]
+== Class template `basic_sized_string_maker`
+=== Synopsis
+[source,cpp]
+----
+namespace strf {
+
+template < typename CharT
+         , typename Traits = std::char_traits<CharT>
+         , typename Allocator = std::allocator<CharT> >
+class basic_sized_string_maker final : public {basic_outbuff}<CharT> {
+public:
+    explicit basic_sized_string_maker(std::size_t capacity);
+
+    basic_sized_string_maker(const basic_sized_string_maker&) = delete;
+    basic_sized_string_maker(basic_sized_string_maker&&) = delete;
+
+    void recycle() override;
+    std::basic_string<CharT, Traits, Allocator> finish();
+};
+
+using pre_sized_string_maker    = basic_sized_string_maker<char>;
+using pre_sized_u16string_maker = basic_sized_string_maker<char16_t>;
+using pre_sized_u32string_maker = basic_sized_string_maker<char32_t>;
+using pre_sized_wstring_maker   = basic_sized_string_maker<wchar_t>;
+
+} // namespace strf
+----
+====
+[source,cpp]
+----
+explicit basic_sized_string_maker(std::size_t capacity);
+----
+Effect:: Causes the capacity of the internal string to be equal to or greater than `capacity`.
+====
+====
+[source,cpp]
+----
+basic_string<CharT, Traits, Allocator> finish()
+----
+[horizontal]
+Return value:: A string containing what has been written into this outbuff object
+               ( assuming it's the the first call ).
+Postconditions:: `good() == false`
+Note:: This function should be called only once. Further calls may return empty strings.
+====
+
+[[basic_string_appender]]
+== Class template `basic_string_appender`
+=== Synopsis
+[source,cpp]
+----
+namespace strf {
+
+template < typename CharT
+         , typename Traits = std::char_traits<CharT>
+         , typename Allocator = std::allocator<CharT> >
+class basic_string_appender final: public {basic_outbuff}<CharT>
+{
+public:
+    explicit basic_string_appender(basic_string<CharT, Traits, Allocator>& dest);
+    basic_string_appender(const basic_string_appender&) = delete;
+    basic_string_appender(basic_string_appender&&) = delete;
+    void recycle() override;
+    void finish();
+};
+
+// Global type aliases
+
+using string_appender    = basic_string_appender<char>;
+using u16string_appender = basic_string_appender<char16_t>;
+using u32string_appender = basic_string_appender<char32_t>;
+using wstring_appender   = basic_string_appender<wchar_t>;
+
+} // namespace strf
+----
+=== Public member functions
+
+====
+[source,cpp]
+----
+void recycle() override;
+----
+[horizontal]
+Effects::
+- If `good()` is `true` then calls `str.append(p0, pointer())`, where `str` is the reference that this object was initialized with, and `p0` is the return value of `pointer()` before any call to `advance` and `advance_to` since the last call to `recycle()` ( all in this object ), or since this object's contruction, whatever happened last.
+- Calls `set_pointer` and/or `set_end`.
+Postconditions:: `size() >= min_size_after_recycle<sizeof(CharT)>()`
+====
+====
+[source,cpp]
+----
+void finish()
+----
+[horizontal]
+Effects:: Calls `recycle()` and `set_good(false)`.
+Postcondition:: `good() == false`
+====
+
+== Function template `append`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT, typename Traits, typename Allocator>
+__/{asterisk} see below {asterisk}/__ append(std::basic_string<CharT, Traits, Allocator>& str);
+
+} // namespace strf
+----
+
+Return type:: `{destination_no_reserve}<OBC>`, where `OBC` is a implementation-defined type
+              that satisfies  __{OutbuffCreator}__ and __{SizedOutbuffCreator}__.
+Return value:: A an object `obc` such that:
+- `obc.create()` returns `{basic_string_appender}<CharT, Traits, Allocator>{str}`
+- `obc.create(capacity)` calls `str.reserve(str.size() + capacity)` and returns
+  `{basic_string_appender}<CharT, Traits, Allocator>{str}`
+
+== Function template `assign`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT, typename Traits, typename Allocator>
+__/{asterisk} see below {asterisk}/__ assign(std::basic_string<CharT, Traits, Allocator>& str)
+
+} // namespace strf
+----
+[horizontal]
+Return type:: Same as `assign(str)`
+Effects:: Calls `str.clear()` and returns `assign(str)`.
+
+[[to_basic_string]]
+== Variable template `to_basic_string`
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template < typename CharT
+         , typename Traits = std::char_traits<CharT>
+         , typename Allocator = std::allocator<CharT> >
+constexpr <__/{asterisk} see below {asterisk}/__>  to_basic_string {};
+
+constexpr auto to_u8string  = to_basic_string<char8_t>;
+constexpr auto to_string    = to_basic_string<char_t>;
+constexpr auto to_u16string = to_basic_string<char16_t>;
+constexpr auto to_u32string = to_basic_string<char32_t>;
+constexpr auto to_wstring   = to_basic_string<wchar_t>;
+
+} // namespace strf
+----
+
+Type:: `{destination_no_reserve}<OBC>`, where `OBC` is a implementation-defined type
+       that satisfies  __{OutbuffCreator}__ and __{SizedOutbuffCreator}__.
+Value:: A destination object whose internal __{OutbuffCreator}__ object `obc` is such that:
+- `obc.create()` returns `{basic_string_maker}<CharT, Traits, Allocator>{}`.
+- `obc.create(capacity)` and returns `{basic_sized_string_maker}<CharT, Traits, Allocator>{capacity}`.

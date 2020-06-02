@@ -7,23 +7,23 @@
 #include "test_utils.hpp"
 #include <strf.hpp>
 
-class reservation_tester : public strf::basic_outbuf<char>
+class reservation_tester : public strf::basic_outbuff<char>
 {
-    constexpr static std::size_t _buff_size = strf::min_size_after_recycle<char>();
-    char _buff[_buff_size];
+    constexpr static std::size_t buff_size_ = strf::min_size_after_recycle<1>();
+    char buff_[buff_size_];
 
 public:
 
     reservation_tester()
-        : strf::basic_outbuf<char>{ _buff, _buff + _buff_size }
-        , _buff{0}
+        : strf::basic_outbuff<char>{ buff_, buff_ + buff_size_ }
+        , buff_{0}
     {
     }
 
     reservation_tester(std::size_t size)
-        : strf::basic_outbuf<char>{ _buff, _buff + _buff_size }
-        , _buff{0}
-        , _reserved_size{size}
+        : strf::basic_outbuff<char>{ buff_, buff_ + buff_size_ }
+        , buff_{0}
+        , reserved_size_{size}
     {
     }
 
@@ -40,17 +40,17 @@ public:
 
     void recycle() override
     {
-        this->set_pos(_buff);
+        this->set_pointer(buff_);
     }
 
     std::size_t finish()
     {
-        return _reserved_size;
+        return reserved_size_;
     }
 
 private:
 
-    std::size_t _reserved_size = 0;
+    std::size_t reserved_size_ = 0;
 };
 
 

@@ -27,35 +27,35 @@ struct foo // note: foo is not copiable
     char* dest_end;
 };
 
-class foo_writer: public strf::basic_outbuf<char>
+class foo_writer: public strf::basic_outbuff<char>
 {
 public:
 
-    foo_writer(foo&& foo_)
-        : strf::basic_outbuf<char>{foo_.dest, foo_.dest_end - 1}
-        , _foo(std::move(foo_))
+    foo_writer(foo&& f)
+        : strf::basic_outbuff<char>{f.dest, f.dest_end - 1}
+        , foo_(std::move(f))
     {
     }
 
     void recycle() override
     {
-        this->set_pos(_foo.dest);
+        this->set_pointer(foo_.dest);
     }
 
     void finish()
     {
-        *this->pos() = '\0';
+        *this->pointer() = '\0';
     }
 
 private:
 
-    foo _foo;
+    foo foo_;
 };
 
 
-auto write(foo&& foo_)
+auto write(foo&& f)
 {
-    return strf::destination<strf::facets_pack<>, foo_writer, foo>(std::move(foo_));
+    return strf::destination<strf::facets_pack<>, foo_writer, foo>(std::move(f));
 }
 
 

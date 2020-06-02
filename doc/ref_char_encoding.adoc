@@ -1,0 +1,1463 @@
+////
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
+
+== Character encodings
+
+:invalid_seq_notifier: <<invalid_seq_notifier,invalid_seq_notifier>>
+:invalid_seq_notifier_c: <<invalid_seq_notifier,invalid_seq_notifier_c>>
+:surrogate_policy: <<surrogate_policy,surrogate_policy>>
+:surrogate_policy_c: <<surrogate_policy,surrogate_policy_c>>
+:char_encoding_id: <<char_encoding_id,char_encoding_id>>
+:eid_utf8:         <<char_encoding_id,eid_utf8>>
+:eid_utf16:        <<char_encoding_id,eid_utf16>>
+:eid_utf32:        <<char_encoding_id,eid_utf32>>
+:eid_ascii:        <<char_encoding_id,eid_ascii>>
+:eid_iso_8859_1:   <<char_encoding_id,eid_iso_8859_1>>
+:eid_iso_8859_3:   <<char_encoding_id,eid_iso_8859_3>>
+:eid_iso_8859_15:  <<char_encoding_id,eid_iso_8859_15>>
+:eid_windows_1252: <<char_encoding_id,eid_windows_1252>>
+
+:invalid_char_len: <<char_encoding_function_pointers,invalid_char_len>>
+:transcode_f: <<char_encoding_function_pointers,transcode_f>>
+:transcode_size_f: <<char_encoding_function_pointers,transcode_size_f>>
+:write_replacement_char_f: <<char_encoding_function_pointers,write_replacement_char_f>>
+:validate_f: <<char_encoding_function_pointers,validate_f>>
+:encoded_char_size_f: <<char_encoding_function_pointers,encoded_char_size_f>>
+:encode_fill_f: <<char_encoding_function_pointers,encode_fill_f>>
+:decode_char_f: <<char_encoding_function_pointers,decode_char_f>>
+:encode_char_f: <<char_encoding_function_pointers,encode_char_f>>
+:encode_fill_f: <<char_encoding_function_pointers,encode_fill_f>>
+:codepoints_count_result: <<char_encoding_function_pointers,codepoints_count_result>>
+:codepoints_fast_count_f: <<char_encoding_function_pointers,codepoints_fast_count_f>>
+:codepoints_robust_count_f: <<char_encoding_function_pointers,codepoints_robust_count_f>>
+:decode_char_f: <<char_encoding_function_pointers,decode_char_f>>
+:find_transcoder_f: <<char_encoding_function_pointers,find_transcoder_f>>
+
+
+:static_underlying_transcoder: <<static_underlying_transcoder,static_underlying_transcoder>>
+:static_underlying_char_encoding: <<static_underlying_char_encoding,static_underlying_char_encoding>>
+:static_char_encoding: <<static_char_encoding,static_char_encoding>>
+
+:dynamic_underlying_transcoder: <<dynamic_underlying_transcoder,dynamic_underlying_transcoder>>
+:dynamic_underlying_char_encoding_data: <<dynamic_underlying_char_encoding_data,dynamic_underlying_char_encoding_data>>
+:dynamic_underlying_char_encoding: <<dynamic_underlying_char_encoding,dynamic_underlying_char_encoding>>
+:dynamic_char_encoding: <<dynamic_char_encoding,dynamic_char_encoding>>
+
+:find_transcoder: <<find_transcoder,find_transcoder>>
+:decode_encode: <<decode_encode,decode_encode>>
+:decode_encode_size: <<decode_encode_size,decode_encode_size>>
+
+:UnderlyingTranscoder: <<UnderlyingTranscoder,UnderlyingTranscoder>>
+:UnderlyingCharEncoding: <<UnderlyingCharEncoding,UnderlyingCharEncoding>>
+
+:char_encoding_c: <<char_encoding_c,char_encoding_c>>
+
+:utf: <<utf,utf>>
+
+=== Enumeration `char_encoding_id` [[char_encoding_id]]
+
+[source,cpp]
+----
+namespace strf {
+enum class char_encoding_id : unsigned { };
+
+constexpr char_encoding_id  eid_ascii        = /* ... */;
+constexpr char_encoding_id  eid_utf8         = /* ... */;
+constexpr char_encoding_id  eid_utf16        = /* ... */;
+constexpr char_encoding_id  eid_utf32        = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_1   = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_3   = /* ... */;
+constexpr char_encoding_id  eid_iso_8859_15  = /* ... */;
+constexpr char_encoding_id  eid_windows_1252 = /* ... */;
+
+} // namespace strf
+----
+
+=== Facet category `invalid_seq_notifier_c` [[invalid_seq_notifier_c]]
+[source,cpp,subs=normal]
+----
+namespace strf {
+struct invalid_seq_notifier_c {
+    static constexpr bool constrainable = false;
+    static constexpr {invalid_seq_notifier} get_default() noexcept {
+        return {}
+    }
+};
+} // namespace strf
+----
+
+==== Class invalid_seq_notifier [[invalid_seq_notifier]]
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+class invalid_seq_notifier {
+public:
+
+    using category = invalid_seq_notifier_c;
+
+    typedef void(*notify_fptr)();
+
+    constexpr invalid_seq_notifier() noexcept = default;
+    constexpr invalid_seq_notifier(const invalid_seq_notifier&) noexcept = default;
+
+    constexpr explicit invalid_seq_notifier(notify_fptr) noexcept;
+    constexpr invalid_seq_notifier& operator=(notify_fptr) noexcept;
+    constexpr invalid_seq_notifier& operator=(const invalid_seq_notifier& other) noexcept;
+    constexpr bool operator==(const invalid_seq_notifier& other) noexcept;
+    constexpr operator bool() const noexcept;
+    constexpr void notify() const noexcept;
+
+private:
+    notify_fptr notify_func_ = nullptr; // exposition only
+};
+
+} // namespace strf
+
+----
+
+
+====
+[source,cpp]
+----
+constexpr invalid_seq_notifier() noexcept;
+----
+Trivial default constructor
+[horizontal]
+Poscondition:: `notify_func_ == nullptr`
+====
+
+====
+[source,cpp]
+----
+constexpr invalid_seq_notifier(const invalid_seq_notifier& other) noexcept;
+----
+Trivial copy constructor
+[horizontal]
+Poscondition:: `notify_func_ == other.notify_func_`
+====
+
+====
+[source,cpp]
+----
+constexpr explicit invalid_seq_notifier(notify_fptr fptr) noexcept;
+----
+[horizontal]
+Poscondition:: `notify_func_ == fptr`
+====
+
+====
+[source,cpp]
+----
+constexpr invalid_seq_notifier& operator=(const invalid_seq_notifier& other) noexcept;
+----
+[horizontal]
+Poscondition:: `notify_func_ == other.notify_func_`
+====
+
+====
+[source,cpp]
+----
+constexpr bool operator==(const invalid_seq_notifier& other) noexcept;
+----
+[horizontal]
+Return value:: `notify_func_ == other.notify_func_`
+====
+
+====
+[source,cpp]
+----
+constexpr operator bool() const noexcept;
+----
+[horizontal]
+Return value:: `notify_func_ != nullptr`
+====
+
+====
+[source,cpp]
+----
+constexpr void notify() const noexcept;
+----
+[horizontal]
+Effect:: Calls `notify_func_` if it is not null.
+====
+
+=== Facet category `surrogate_policy_c` [[surrogate_policy]]
+
+[source,cpp,subs=normal]
+----
+enum class surrogate_policy : bool { strict = false, lax = true };
+
+struct surrogate_policy_c {
+    static constexpr bool constrainable = false;
+    static constexpr surrogate_policy get_default() noexcept {
+        return surrogate_policy::strict;
+    }
+};
+
+template <>
+class facet_traits<surrogate_policy> {
+public:
+    using category = surrogate_policy_c;
+    static constexpr bool store_by_value = true;
+};
+----
+==== Semantics
+
+This facet enables you to choose whether a nonconformant presence of a
+surrogate character shall be treated as invalid.
+
+=== Aliases for pointers to functions [[char_encoding_function_pointers]]
+
+[source,cpp,subs=normal]
+----
+constexpr std::size_t invalid_char_len = (std::size_t)-1;
+
+template <std::size_t SrcCharSize, std::size_t DestCharSize>
+using transcode_f = void ({asterisk})
+    ( {underlying_outbuff}<DestCharSize>& ob
+    , const {underlying_char_type}<SrcCharSize>{asterisk} src
+    , std::size_t src_size
+    , {invalid_seq_notifier} inv_seq_notifier
+    , {surrogate_policy} surr_poli );
+
+template <std::size_t SrcCharSize>
+using transcode_size_f = std::size_t ({asterisk})
+    ( const {underlying_char_type}<SrcCharSize>{asterisk} src
+    , std::size_t src_size
+    , {surrogate_policy} surr_poli );
+
+template <std::size_t CharSize>
+using write_replacement_char_f = void ({asterisk}) ( {underlying_outbuff}<CharSize>& );
+
+using validate_f = std::size_t ({asterisk})(char32_t ch);
+
+using encoded_char_size_f = std::size_t ({asterisk}) (char32_t ch);
+
+template <std::size_t CharSize>
+using encode_char_f = {underlying_char_type}<CharSize>{asterisk}({asterisk})
+    ( {underlying_char_type}<CharSize>{asterisk} dest, char32_t ch );
+
+template <std::size_t CharSize>
+using encode_fill_f = void ({asterisk})
+    ( {underlying_outbuff}<CharSize>&, std::size_t count, char32_t ch );
+
+struct codepoints_count_result {
+    std::size_t count;
+    std::size_t pos;
+};
+
+template <std::size_t CharSize>
+using codepoints_fast_count_f =
+    codepoints_count_result ({asterisk})
+    ( const {underlying_char_type}<CharSize>{asterisk} src
+    , std::size_t src_size
+    , std::size_t max_count );
+
+template <std::size_t CharSize>
+using codepoints_robust_count_f =
+    codepoints_count_result ({asterisk})
+    ( const {underlying_char_type}<CharSize>{asterisk} src
+    , std::size_t src_size
+    , std::size_t max_count
+    , {surrogate_policy} surr_poli );
+
+template <std::size_t CharSize>
+using decode_char_f = char32_t ({asterisk}) ( {underlying_char_type}<CharSize> );
+
+template <std::size_t SrcCharSize, std::size_t DestCharSize>
+using find_transcoder_f =
+    {dynamic_underlying_transcoder}<SrcCharSize, DestCharSize> ({asterisk}) ( {char_encoding_id} );
+
+----
+
+=== Type requirement _UnderlyingTranscoder_ [[UnderlyingTranscoder]]
+
+Given
+
+* `SrcCharSize`, a `constexpr std::size_t` value equal to `1`, `2` or `4`
+* `DestCharSize`, a `constexpr std::size_t` value equal to `1`, `2` or `4`
+* `SrcCharType`, the type of `{underlying_char_type}<SrcCharSize>`
+* `X`, a _UnderlyingTranscoder_ type from `SrcCharSize` to `DestCharSize`
+* `x`, an expression of type `X` or `const X`
+* `dest`, an lvalue reference of type `{underlying_outbuff}<DestCharSize>`
+* `src`, a value of type `const SrcCharType*`
+* `src_size`, a value of type `std::size_t` equal to the size of
+              the array pointed by `src`
+* `inv_seq_notifier`, a value of type `{invalid_seq_notifier}`
+* `surr_poli`, a value of type `{surrogate_policy}`
+
+The following must hold:
+
+* `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible].
+* `X` supports the following syntax and semantics:
+
+====
+[source,cpp]
+----
+x.transcode_size(src, src_size, surr_poli)
+----
+[horizontal]
+Return type:: `std::size_t`
+Return value:: The number of character that
+  `x.transcode(dest, src, src_size, {invalid_seq_notifier}{}, surr_poli)`
+  would write into `dest`, or a value a greater than that if such exact calculation is
+  difficult ( but ideally not much greater ).
+Precondition:: `x.transcode_func() != nullptr` is `true`
+====
+[[UnderlyingTranscoder_transcode]]
+====
+[source,cpp]
+----
+x.transcode(dest, src, src_size, inv_seq_notifier, surr_poli)
+----
+[horizontal]
+Effect:: Converts the content of `src` from one encoding to another writing
+    the result to `dest`. Each sequence in `src` that is invalid is
+    translated instead by the replacement character ( that is returned by
+    `<<UnderlyingCharEncoding_replacement_char, x.replacement_char()>>`.
+    And each time that happens, `inv_seq_notifier.notify()` shall be called
+    if the value of `(bool)inv_seq_notifier` is `true`.
+    A sequence in `src` is considered invalid if is non-conformant
+    to its corresponding encoding or would cause content written in `dest`
+    to be non-conformant to the destination encoding, unless such
+    non-conformity is due to a surrogate character and the value
+    of `surr_poli` is `surrogate_policy::lax`.
+Precondition:: `x.transcode_func() != nullptr` is `true`
+Postconditions:: `dest.recycle()` is not called() if
+        `dest.size() >= x.transcode_size(src, src_size, surr_poli)` is `true`.
+====
+[[UnderlyingTranscoder_transcode_size_func]]
+====
+[source,cpp]
+----
+x.transcode_size_func()
+----
+[horizontal]
+Return type:: `{transcode_size_f}<SrcCharSize>`
+Return value:: A function pointer such that
+               `x.transcode_size_func() (src, src_size, surr_poli)` has the same
+               effect as `x.transcode_size(src, src_size, surr_poli)`.
+====
+[[UnderlyingTranscoder_transcode_func]]
+====
+[source,cpp]
+----
+x.transcode_func()
+----
+[horizontal]
+Return type:: `{transcode_f}<SrcCharSize, DestCharSize>`
+Return value:: A function pointer such that
+   `x.transcode_func() (dest, src, src_size, inv_seq_notifier, surr_poli)`
+   has the same effect as
+   `x.transcode(dest, src, src_size, inv_seq_notifier, surr_poli)`.
+====
+'''
+[[UnderlyingTranscoder_null]]
+====
+.Definition
+A *null transcoder* is an object of an __UnderlyingTranscoder__
+type where the `transcode_func` function returns `nullptr`.
+====
+
+NOTE: There are two class templates that satisfy _UnderlyingTranscoder_: `{static_underlying_transcoder}` and `{dynamic_underlying_transcoder}`.
+
+=== Type requirement _UnderlyingCharEncoding_ [[UnderlyingCharEncoding]]
+
+Given
+
+* `CharSize`, a `constexpr std::size_t` value equal to `1`, `2`, or ( UTF-32 only ) `4`
+* `char_type`, the type of `{underlying_char_type}<CharSize>&`
+* `ptr`, a value of type `char_type{asterisk}`
+* `src`, a value of type `const char_type{asterisk}`
+* `src_size`, a value of type `std::size_t` equal to the size of
+              the array pointed by `src`
+* `count`, a value of type `std::size_t`
+* `max_count`, a value of type `std::size_t`
+* `ch32`, a value of type `char32_t`
+* `ch`, a value of type `char_type`
+* `ob`, an lvalue reference of type `{underlying_outbuff}<CharSize>`
+* `enc_id`, value of type `{char_encoding_id}`
+* `X`, a _UnderlyingCharEncoding_ type for value `CharSize`
+* `x`, an expression of type `X` or `const X`
+
+`X` must be https://en.cppreference.com/w/cpp/named_req/CopyConstructible[CopyConstructible]
+and satisfy the expressions below:
+
+[[UnderlyingCharEncoding_char_size]]
+====
+[source,cpp]
+----
+X::char_size
+----
+::
+[horizontal]
+Type:: `std::size_t`
+Value:: `CharSize`
+Note:: It is `constexpr`.
+====
+[[UnderlyingCharEncoding_id]]
+====
+[source,cpp]
+----
+x.id()
+----
+::
+[horizontal]
+Return type:: `{char_encoding_id}`
+Return value:: The `{char_encoding_id}` that corresponds to this encoding.
+====
+
+====
+[source,cpp]
+----
+x.name()
+----
+::
+[horizontal]
+Return type:: `const char*`
+Return value:: The name of this encoding. Examples: `"UTF-8"`, `"ASCII"`, `"ISO-8859-1"`, `"windows-1252"`.
+====
+
+[[UnderlyingCharEncoding_replacement_char]]
+====
+[source,cpp]
+----
+x.replacement_char()
+----
+::
+[horizontal]
+Return type:: `char32_t`
+Return value:: The character used to signalize an error. Usually it is the https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character[replacement character &#xFFFD;] if it is supported by this encoding, or the question mark `'?'` otherwise.
+====
+====
+[source,cpp]
+----
+x.write_replacement_char(ob)
+----
+::
+[horizontal]
+Return type:: Writes into `ob` the codepoint returned by `x.replacement_char()` encoded in this encoding.
+====
+====
+[source,cpp]
+----
+x.replacement_char_size()
+----
+::
+[horizontal]
+Return type:: `std::size_t`
+Return value:: The number of characters that `x.write_replacement_char(ob)` writes into `ob`.
+====
+====
+[source,cpp]
+----
+x.encoded_char_size(ch32)
+----
+::
+[horizontal]
+Return type:: `std::size_t`
+Return value:: The size of the string containing the UTF-32 character `ch32`,
+               if `ch32` is supported in this encoding. Otherwise, same as
+               `x.replacement_char_size()` otherwise.
+Note:: This function does not check whether `ch32` is a legal code point, only if
+       it is possible to write it in this encoding. For example, if this is encoding
+       is UTF-32, this function considers as valid any value for `ch32` ( even if
+       is is greater than `0x10FFFF` ). Surrogates characters are also not sanitized.
+====
+====
+[source,cpp]
+----
+x.validate(ch32)
+----
+::
+[horizontal]
+Return type:: `std::size_t`
+Return value:: The size of the string containing the UTF-32 character `ch32`,
+               if `ch32` is supported in this encoding. Otherwise, `(std::size_t)-1`.
+====
+====
+[source,cpp]
+----
+x.encode_char(ptr, ch32)
+----
+::
+[horizontal]
+Effect:: Writes into `ptr` the UTF-32 character `ch32` encoded into this encoding,
+         adopting the policy of `{surrogate_policy}::lax`,
+         __i.e.__ if `ch32` is a surrogate, treat it as if it were a valid codepoint.
+         If this encoding is not able to encode `ch32`,
+         then encode instead the return of `x.replacement_char()`.
+Return type:: `char_type*`
+Return value:: The position just after the last writen character.
+Note:: This function does not check whether `ch32` is a legal code point, only if
+       it is possible to write it in this encoding. For example, if this is encoding
+       is UTF-32, this function considers as valid any value for `ch32` ( even if
+       is is greater than `0x10FFFF` ). Surrogates characters are also not sanitized.
+====
+====
+[source,cpp]
+----
+x.encode_fill(ob, count, ch32)
+----
+::
+[horizontal]
+Effect:: Writes `count` times into `ob` the UTF-32 character `ch32` encoded into
+         this encoding, if it is supported. Otherwise writes `x.replacement_char()`
+         instead.
+Return type:: `void`
+Note:: `encode_fill` does not check whether `ch32` is a legal code point, only if
+       it is possible to write it in this encoding. For example, if this is encoding
+       is UTF-32, `encode_fill` considers as valid any value for `ch32` ( even if
+       is is greater than `0x10FFFF` ). Surrogates characters are also not sanitized.
+====
+[[UnderlyingCharEncoding_codepoints_fast_count]]
+====
+[source,cpp]
+----
+x.codepoints_fast_count(src, src_size, max_count)
+----
+::
+[horizontal]
+Return type:: `{codepoints_count_result}`
+Return value:: `{c, pos}`, where:
+
+* `c` is the number of Unicode code points in `src`,
+  if such value is less than `max_count`.
+  Otherwise, `c` is equal to `max_count`.
+* `pos` is such that the number of codepoints in
+  `src` is equal to `c`.
+
+Posconditions::
+
+* `c \<= max_count` is `true`
+* `pos \<= src_size` is `true`
+
+Note::
+If the input is non-conformant to the corresponding character encoding,
+this function may return an incorrect value. For instance, for UTF-8
+this function may simply count the bytes that are not continuation bytes.
+====
+[[UnderlyingCharEncoding_codepoints_robust_count]]
+====
+[source,cpp]
+----
+x.codepoints_robust_count(src, src_size, max_count, surr_poli)
+----
+::
+[horizontal]
+Effect:: Counts the codepoints until is equal to `max_count`.
+
+Return type:: `{codepoints_count_result}`
+Return value:: `{c, pos}`, where:
+* `c` is equal to `std::min(max_count, u32len)`, where `u32len` is the
+   length of the UTF-32 string that would be generated by converting
+   `src` from this encoding to UTF-32,
+   <<surrogate_policy, according to `surr_poli`>>.
+* `pos` is such that the value of
+  `x.codepoints_robust_count(src, pos, (std::size_t)-1, surr_poli).count`
+   is equal to `c`.
+Posconditions::
+* `c \<= max_count` is `true`
+* `pos \<= src_size` is `true`
+
+====
+[[CharEncoding_decode_char]]
+====
+[source,cpp]
+----
+x.decode_char(ch)
+----
+::
+[horizontal]
+Effect:: Decodes `ch` from this encoding to UTF-32
+         assuming the policy of `<<surrogate_policy, surrogate_policy::lax>>`.
+         If `ch` is an invalid character, return `x.replacement_char()`.
+Return type:: `char32_t`
+====
+
+====
+[source,cpp]
+----
+x.encode_char_func()
+----
+::
+[horizontal]
+Return type:: `{encode_char_f}<CharSize>`
+Return value:: A function pointer such that `x.encode_char_func() (ch32)` has
+               the same effect as `x.encode_char(ch32)`.
+====
+====
+[source,cpp]
+----
+x.encode_fill_func()
+----
+::
+[horizontal]
+Return type:: `{encode_fill_f}<CharSize>`
+Return value:: A function pointer such that `x.encode_fill_func() (ob, count, ch32)`
+               has the same effect as `x.encode_fill(ob, count, ch32)`.
+====
+====
+[source,cpp]
+----
+x.write_replacement_char_func()
+----
+::
+[horizontal]
+Return type:: `{write_replacement_char_f}<CharSize>`
+Return value:: A function pointer such that `x.write_replacement_char_func() (ob)`
+               has the same effect as `x.write_replacement_char(ob)`
+====
+[[UnderlyingCharEncoding_from_u32]]
+====
+[source,cpp]
+----
+x.from_u32()
+----
+::
+[horizontal]
+Return type:: A __{UnderlyingTranscoder}__ from `4` to `CharSize`
+Return value:: A transcoder that converts UTF-32 to this encoding.
+====
+[[UnderlyingCharEncoding_to_u32]]
+====
+[source,cpp]
+----
+x.to_u32()
+----
+::
+[horizontal]
+Return type:: A __{UnderlyingTranscoder}__ from `CharSize` to `4`
+Return value:: A transcoder that converts this encoding to UTF-32.
+====
+[[UnderlyingCharEncoding_sanitizer]]
+====
+[source,cpp]
+----
+x.sanitizer()
+----
+::
+[horizontal]
+Return type:: A __{UnderlyingTranscoder}__ from `CharSize` to `CharSize`
+Return value:: A transcoder that "converts" this encoding to this encoding,
+               __i.e.__ a sanitizer of this encoding.
+====
+[[UnderlyingCharEncoding_find_transcoder_to]]
+====
+.( Optional )
+[source,cpp]
+----
+x.find_transcoder_to(std::integral_constant<std::size_t, 1>, enc_id)
+----
+::
+[horizontal]
+Return type:: `{dynamic_underlying_transcoder}<CharSize, 1>`
+Return value:: A transcoder that converts this encoding to the encoding
+               corresponding to `enc_id`, or an
+               <<UnderlyingTranscoder_null,null transcoder>>.
+====
+====
+.( Optional )
+[source,cpp]
+----
+x.find_transcoder_to(std::integral_constant<std::size_t, 2>, enc_id)
+----
+::
+[horizontal]
+Return type:: `{dynamic_underlying_transcoder}<CharSize, 2>`
+Return value:: A transcoder that converts this encoding to the encoding
+               corresponding to `enc_id`, or an
+               <<UnderlyingTranscoder_null,null transcoder>>.
+====
+[[UnderlyingCharEncoding_find_transcoder_from]]
+====
+.( Optional )
+[source,cpp]
+----
+x.find_transcoder_from<ScrCharSize>(std::integral_constant<std::size_t, 1>, enc_id)
+----
+::
+[horizontal]
+Return type:: `{dynamic_underlying_transcoder}<1, CharSize>`
+Return value:: A transcoder that converts the encoding  corresponding to
+               `enc_id` to this encoding, or an
+               <<UnderlyingTranscoder_null,null transcoder>>.
+====
+====
+.( Optional )
+[source,cpp]
+----
+x.find_transcoder_from<ScrCharSize>(std::integral_constant<std::size_t, 1>, enc_id)
+----
+::
+[horizontal]
+Return type:: `{dynamic_underlying_transcoder}<2, CharSize>`
+Return value:: A transcoder that converts the encoding  corresponding to
+               `enc_id` to this encoding, or an
+               <<UnderlyingTranscoder_null,null transcoder>>.
+====
+IMPORTANT: You shall not create an _UnderlyingCharEncoding_ type with `CharSize`
+           equal to `4`, since this is reserved for UTF-32.
+           The library internaly assumes in many occasions that the encoding
+           is UTF-32 when `CharSize` is equal to `4`.
+
+NOTE: There are two class templates that satisfy _UnderlyingCharEncoding_: `{static_underlying_transcoder}` and `{dynamic_underlying_char_encoding}`.
+
+=== Class template `static_underlying_transcoder` [[static_underlying_transcoder]]
+
+[source,cpp,subs=normal]
+----
+template <{char_encoding_id} Src, {char_encoding_id} Dest>
+class static_underlying_transcoder;
+
+template <> static_underlying_transcoder<{eid_ascii}, {eid_ascii}>;
+template <> static_underlying_transcoder<{eid_ascii}, {eid_utf32}>;
+template <> static_underlying_transcoder<{eid_utf32}, {eid_ascii}>;
+template <> static_underlying_transcoder<{eid_iso_8859_1}, {eid_iso_8859_1}>;
+template <> static_underlying_transcoder<{eid_iso_8859_1}, {eid_utf32}>;
+template <> static_underlying_transcoder<{eid_utf32}, {eid_iso_8859_1}>;
+template <> static_underlying_transcoder<{eid_iso_8859_3}, {eid_utf32}>;
+template <> static_underlying_transcoder<{eid_utf32}, {eid_iso_8859_3}>;
+template <> static_underlying_transcoder<{eid_iso_8859_3}, {eid_iso_8859_3}>;
+template <> static_underlying_transcoder<{eid_iso_8859_15}, {eid_iso_8859_15}>;
+template <> static_underlying_transcoder<{eid_iso_8859_15}, {eid_utf32}>;
+template <> static_underlying_transcoder<{eid_utf32}, {eid_iso_8859_15}>;
+template <> static_underlying_transcoder<{eid_windows_1252}, {eid_windows_1252}>;
+template <> static_underlying_transcoder<{eid_windows_1252}, {eid_utf32}>;
+template <> static_underlying_transcoder<{eid_utf32}, {eid_windows_1252}>;
+template <> static_underlying_transcoder<{eid_utf8}, {eid_utf8}>;
+template <> static_underlying_transcoder<{eid_utf8}, {eid_utf16}>;
+template <> static_underlying_transcoder<{eid_utf8}, {eid_utf32}>;
+template <> static_underlying_transcoder<{eid_utf16}, {eid_utf8}>;
+template <> static_underlying_transcoder<{eid_utf16}, {eid_utf16}>;
+template <> static_underlying_transcoder<{eid_utf16}, {eid_utf32}>;
+template <> static_underlying_transcoder<{eid_utf32}, {eid_utf8}>;
+template <> static_underlying_transcoder<{eid_utf32}, {eid_utf16}>;
+template <> static_underlying_transcoder<{eid_utf32}, {eid_utf32}>;
+----
+There is no generic implementation of the `static_underlying_transcoder` class template.
+Instead, there are only template specializations for some pairs of encodings.
+All of them are empty classes, and are __{UnderlyingTranscoder}__, and their
+member functions `<<UnderlyingTranscoder_transcode_func, transcode_func>>`
+and `<<UnderlyingTranscoder_transcode_size_func,transcode_size_func>>`
+never return `nullptr`
+
+=== Class template `static_underlying_char_encoding` [[static_underlying_char_encoding]]
+
+[source,cpp,subs=normal]
+----
+template <{char_encoding_id}>
+class static_underlying_char_encoding;
+
+template <> class static_underlying_char_encoding<{eid_utf8}>;
+template <> class static_underlying_char_encoding<{eid_utf16}>;
+template <> class static_underlying_char_encoding<{eid_utf32}>;
+template <> class static_underlying_char_encoding<{eid_ascii}>;
+template <> class static_underlying_char_encoding<{eid_iso_8859_1}>;
+template <> class static_underlying_char_encoding<{eid_iso_8859_3}>;
+template <> class static_underlying_char_encoding<{eid_iso_8859_15}>;
+template <> class static_underlying_char_encoding<{eid_windows_1252}>;
+----
+
+There is no generic implementation of the `static_underlying_char_encoding` class template.
+Instead, the library provides template specializations for some encodings.
+All of them are empty classes, and are __{UnderlyingCharEncoding}__.
+
+=== Class template `dynamic_underlying_transcoder` [[dynamic_underlying_transcoder]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <std::size_t SrcCharSize, std::size_t DestCharSize>
+class dynamic_underlying_transcoder {
+public:
+    constexpr dynamic_underlying_transcoder() noexcept;
+
+    constexpr dynamic_underlying_transcoder
+        ( const dynamic_underlying_transcoder& other) noexcept = default;
+
+    template <{char_encoding_id} Src, {char_encoding_id} Dest>
+    constexpr explicit dynamic_underlying_transcoder
+        ( {static_underlying_transcoder}<Src, Dest> st );
+
+    void transcode
+        ( {underlying_outbuff}<DestCharSize>& ob
+        , const {underlying_char_type}<SrcCharSize>* src
+        , std::size_t src_size
+        , {invalid_seq_notifier} inv_seq_notifier
+        , {surrogate_policy} surr_poli ) const;
+
+    std::size_t transcode_size
+        ( const {underlying_char_type}<SrcCharSize>* src
+        , std::size_t src_size
+        , {surrogate_policy} surr_poli ) const;
+
+    constexpr {transcode_f}<SrcCharSize, DestCharSize> transcode_func() const noexcept;
+    constexpr {transcode_size_f}<SrcCharSize> transcode_size_func() const noexcept;
+};
+
+} // namespace strf
+----
+
+====
+[source,cpp,subs=normal]
+----
+constexpr dynamic_underlying_transcoder() noexcept;
+----
+Default constructor
+[horizontal]
+Postconditions::
+* `transcode_func() == nullptr`
+* `transcode_size_func() == nullptr`
+====
+
+====
+[source,cpp,subs=normal]
+----
+constexpr dynamic_underlying_transcoder
+    ( const dynamic_underlying_transcoder& other) noexcept;
+----
+Trivial copy constructor
+[horizontal]
+Postconditions::
+* `transcode_func() == other.transcode_func()`
+* `transcode_size_func() == other.transcode_size_func()`
+====
+
+====
+[source,cpp,subs=normal]
+----
+template <{char_encoding_id} Src, {char_encoding_id} Dest>
+constexpr explicit dynamic_underlying_transcoder
+    ( {static_underlying_transcoder}<Src, Dest> other );
+----
+[horizontal]
+Postconditions::
+* `transcode_func() == other.transcode_func()`
+* `transcode_size_func() == other.transcode_size_func()`
+====
+
+====
+[source,cpp,subs=normal]
+----
+void transcode
+    ( {underlying_outbuff}<DestCharSize>& ob
+    , const {underlying_char_type}<SrcCharSize>* src
+    , std::size_t src_size
+    , {invalid_seq_notifier} inv_seq_notifier
+    , {surrogate_policy} surr_poli ) const;
+----
+Effect: Calls `transcode_func()(ob, src, src_size, inv_seq_notifier, surr_poli)`
+====
+====
+[source,cpp,subs=normal]
+----
+std::size_t transcode_size
+    ( const {underlying_char_type}<SrcCharSize>* src
+    , std::size_t src_size
+    , {surrogate_policy} surr_poli ) const;
+----
+Effect: Calls `transcode_size_func()(src, src_size, surr_poli)`
+====
+
+=== Struct template `dynamic_underlying_char_encoding_data` [[dynamic_underlying_char_encoding_data]]
+
+[source,cpp,subs=normal]
+----
+template <std::size_t CharSize>
+struct dynamic_underlying_char_encoding_data {
+    const char* name;
+    {char_encoding_id} id;
+    char32_t replacement_char;
+    std::size_t replacement_char_size;
+    {validate_f} validate_func;
+    {encoded_char_size_f} encoded_char_size_func;
+    {encode_char_f}<CharSize> encode_char_func;
+    {encode_fill_f}<CharSize> encode_fill_func;
+    {codepoints_fast_count_f}<CharSize> codepoints_fast_count_func;
+    {codepoints_robust_count_f}<CharSize> codepoints_robust_count_func;
+
+    {write_replacement_char_f}<CharSize> write_replacement_char_func;
+    {decode_char_f}<CharSize> decode_char_func;
+
+    {dynamic_underlying_transcoder}<4, CharSize> from_u32;
+    {dynamic_underlying_transcoder}<CharSize, 4> to_u32;
+    {dynamic_underlying_transcoder}<CharSize, CharSize> sanitizer;
+
+    {find_transcoder_f}<1, CharSize> transcoder_from_1byte_encoding;
+    {find_transcoder_f}<2, CharSize> transcoder_from_2bytes_encoding;
+
+    {find_transcoder_f}<CharSize, 1> transcoder_to_1byte_encoding;
+    {find_transcoder_f}<CharSize, 2> transcoder_to_2bytes_encoding;
+};
+----
+=== Class template `dynamic_underlying_char_encoding` [[dynamic_underlying_char_encoding]]
+[source,cpp,subs=normal]
+----
+template <std::size_t CharSize>
+class dynamic_underlying_char_encoding {
+public:
+
+    static constexpr std::size_t char_size = CharSize;
+
+    dynamic_underlying_char_encoding(const dynamic_underlying_char_encoding& other) = default;
+
+    dynamic_underlying_char_encoding
+        ( const {dynamic_underlying_char_encoding_data}<CharSize>& d );
+
+    dynamic_underlying_char_encoding& operator=(const dynamic_underlying_char_encoding& other) noexcept;
+
+    bool operator==(const dynamic_underlying_char_encoding& other) const noexcept;
+
+    bool operator!=(const dynamic_underlying_char_encoding& other) const noexcept;
+
+    void swap(dynamic_underlying_char_encoding& other) noexcept;
+
+    const char* name() const noexcept;
+
+    constexpr {char_encoding_id} id() const noexcept;
+
+    constexpr char32_t replacement_char() const noexcept;
+
+    constexpr std::size_t replacement_char_size() const noexcept;
+
+    constexpr std::size_t validate(char32_t ch) const; // noexcept
+
+    constexpr std::size_t encoded_char_size(char32_t ch) const; // noexcept
+
+    char_type_* encode_char(char_type_* dest, char32_t ch) const; // noexcept
+
+    void encode_fill
+        ( {underlying_outbuff}<CharSize>& ob, std::size_t count, char32_t ch ) const;
+
+    std::size_t codepoints_fast_count
+        ( const char_type_* src, std::size_t src_size
+        , std::size_t max_count ) const;
+
+    std::size_t codepoints_robust_count
+        ( const char_type_* src, std::size_t src_size
+        , std::size_t max_count, {surrogate_policy} surr_poli ) const;
+
+    void write_replacement_char({underlying_outbuff}<CharSize>& ob) const;
+
+    char32_t decode_char(char_type_ ch) const;
+
+    {encode_char_f}<char_size> encode_char_func() const noexcept;
+
+    {encode_fill_f}<char_size> encode_fill_func() const noexcept;
+
+    {write_replacement_char_f}<char_size> write_replacement_char_func() const noexcept;
+
+    {dynamic_underlying_transcoder}<4, CharSize> from_u32() const;
+
+    {dynamic_underlying_transcoder}<CharSize, 4> to_u32() const;
+
+    {dynamic_underlying_transcoder}<CharSize, CharSize> sanitizer() const;
+
+    {dynamic_underlying_transcoder}<CharSize, 1> find_transcoder_to
+        ( std::integral_constant<std::size_t, 1>, {char_encoding_id} id) const;
+
+    {dynamic_underlying_transcoder}<CharSize, 2> find_transcoder_to
+        ( std::integral_constant<std::size_t, 2>, {char_encoding_id} id) const;
+
+    {dynamic_underlying_transcoder}<1, CharSize> find_transcoder_from
+        ( std::integral_constant<std::size_t, 1>, {char_encoding_id} id) const;
+
+    {dynamic_underlying_transcoder}<2, CharSize> find_transcoder_from
+        ( std::integral_constant<std::size_t, 2>, {char_encoding_id} id) const;
+
+private:
+
+    const {dynamic_underlying_char_encoding_data}* data; // exposition only
+};
+----
+
+====
+[source,cpp,subs=normal]
+----
+dynamic_underlying_char_encoding(const dynamic_underlying_char_encoding& other);
+----
+Trivial copy constructor.
+[horizontal]
+Effect:: `this\->data = other.data`
+====
+====
+[source,cpp,subs=normal]
+----
+dynamic_underlying_char_encoding
+        ( const {dynamic_underlying_char_encoding_data}<CharSize>& d );
+----
+[horizontal]
+Effect:: `this\->data = d`
+====
+====
+[source,cpp,subs=normal]
+----
+dynamic_underlying_char_encoding& operator=(const dynamic_underlying_char_encoding& other) noexcept
+----
+[horizontal]
+Effect:: `this\->data = other.data`
+====
+====
+[source,cpp,subs=normal]
+----
+bool operator==(const dynamic_underlying_char_encoding& other) const noexcept;
+----
+[horizontal]
+Return value:: `this\->data == other.data`
+====
+====
+[source,cpp,subs=normal]
+----
+bool operator!=(const dynamic_underlying_char_encoding& other) const noexcept;
+----
+[horizontal]
+Return value:: `this\->data != other.data`
+====
+====
+[source,cpp,subs=normal]
+----
+void swap(dynamic_underlying_char_encoding& other) noexcept;
+----
+[horizontal]
+Effect:: Same as `std::swap(this\->data, other.data)`
+====
+====
+[source,cpp,subs=normal]
+----
+const char* name() const noexcept;
+----
+[horizontal]
+Return value:: `this\->data\->name`
+====
+====
+[source,cpp,subs=normal]
+----
+constexpr {char_encoding_id} id() const noexcept;
+----
+[horizontal]
+Return value:: `this\->data\->id`
+====
+====
+[source,cpp,subs=normal]
+----
+constexpr char32_t replacement_char() const noexcept;
+----
+[horizontal]
+Return value:: `this\->data\->replacement_char`
+====
+====
+[source,cpp,subs=normal]
+----
+constexpr std::size_t replacement_char_size() const noexcept;
+----
+[horizontal]
+Return value:: `this\->data\->replacement_char_size`
+====
+====
+[source,cpp,subs=normal]
+----
+constexpr std::size_t validate(char32_t ch) const; // noexcept
+----
+[horizontal]
+Effect:: Calls and returns `this\->data\->validate_func(ch)`.
+====
+====
+[source,cpp,subs=normal]
+----
+constexpr std::size_t encoded_char_size(char32_t ch) const; // noexcept
+----
+[horizontal]
+Effect:: Calls and returns `this\->data\->encoded_char_size_func(ch)`.
+====
+====
+[source,cpp,subs=normal]
+----
+char_type_* encode_char(char_type_* dest, char32_t ch) const; // noexcept
+----
+[horizontal]
+Effect:: Calls and returns `this\->data\->encoded_char_func(ch)`.
+====
+====
+[source,cpp,subs=normal]
+----
+void encode_fill
+    ( {underlying_outbuff}<CharSize>& ob, std::size_t count, char32_t ch ) const;
+----
+[horizontal]
+Effect:: Calls and returns
+       `this\->data\->encode_fill_func(ob, count, ch)`.
+====
+====
+[source,cpp,subs=normal]
+----
+std::size_t codepoints_fast_count
+    ( const char_type_* src, std::size_t src_size
+    , std::size_t max_count ) const;
+----
+[horizontal]
+Effect:: Calls and returns `this\->data\->codepoints_fast_count_func(src, src_size, max_count)`.
+====
+====
+[source,cpp,subs=normal]
+----
+std::size_t codepoints_robust_count
+    ( const char_type_* src, std::size_t src_size
+    , std::size_t max_count, {surrogate_policy} surr_poli ) const;
+----
+[horizontal]
+Effect:: Calls and returns
+        `this\->data\->codepoints_robust_count_func(src, src_size, max_count, surr_poli)`.
+====
+====
+[source,cpp,subs=normal]
+----
+void write_replacement_char({underlying_outbuff}<CharSize>& ob) const;
+----
+[horizontal]
+Effect:: Calls `this\->data\->write_replacement_char_func(ob)`.
+====
+====
+[source,cpp,subs=normal]
+----
+char32_t decode_char(char_type_ ch) const;
+----
+[horizontal]
+Effect:: Calls and returns `this\->data\->decode_char_func(ch)`.
+====
+====
+[source,cpp,subs=normal]
+----
+{encode_char_f}<char_size> encode_char_func() const noexcept;
+----
+====
+====
+[source,cpp,subs=normal]
+----
+{encode_fill_f}<char_size> encode_fill_func() const noexcept;
+----
+[horizontal]
+Return value:: `this\->data\->encode_fill_func`.
+====
+====
+[source,cpp,subs=normal]
+----
+{write_replacement_char_f}<char_size> write_replacement_char_func() const noexcept;
+----
+[horizontal]
+Return value:: `this\->data\->write_replacement_char_func`.
+====
+====
+[source,cpp,subs=normal]
+----
+{dynamic_underlying_transcoder}<4, CharSize> from_u32() const;
+----
+[horizontal]
+Return value:: `this\->data\->from_u32`.
+====
+====
+[source,cpp,subs=normal]
+----
+{dynamic_underlying_transcoder}<CharSize, 4> to_u32() const;
+----
+[horizontal]
+Return value:: `this\->data\->to_u32`.
+====
+====
+[source,cpp,subs=normal]
+----
+{dynamic_underlying_transcoder}<CharSize, CharSize> sanitizer() const;
+----
+[horizontal]
+Return value:: `this\->data\->sanitizer`.
+====
+====
+[source,cpp,subs=normal]
+----
+{dynamic_underlying_transcoder}<CharSize, 1> find_transcoder_to
+    ( std::integral_constant<std::size_t, 1>, {char_encoding_id} id) const;
+----
+[horizontal]
+Return value:: `this\->data\->transcoder_to_1byte_char_encoding(id)` if such pointer
+to function is not null. Otherwise returns an
+<<UnderlyingTranscoder_null,null transcoder>>.
+====
+====
+[source,cpp,subs=normal]
+----
+{dynamic_underlying_transcoder}<CharSize, 2> find_transcoder_to
+    ( std::integral_constant<std::size_t, 2>, {char_encoding_id} id) const;
+----
+[horizontal]
+Return value:: `this\->data\->transcoder_to_2bytes_char_encoding(id)` if such pointer
+to function is not null. Otherwise returns an
+<<UnderlyingTranscoder_null,null transcoder>>.
+====
+====
+[source,cpp,subs=normal]
+----
+{dynamic_underlying_transcoder}<1, CharSize> find_transcoder_from
+    ( std::integral_constant<std::size_t, 1>, {char_encoding_id} id) const;
+----
+[horizontal]
+Return value:: `this\->data\->transcoder_from_1byte_char_encoding(id)` if such pointer
+to function is not null. Otherwise returns an
+<<UnderlyingTranscoder_null,null transcoder>>.
+====
+====
+[source,cpp,subs=normal]
+----
+{dynamic_underlying_transcoder}<2, CharSize> find_transcoder_from
+    ( std::integral_constant<std::size_t, 2>, {char_encoding_id} id) const;
+----
+[horizontal]
+Return value:: `this\->data\->transcoder_from_2bytes_char_encoding(id)` if such pointer
+to function is not null. Otherwise returns an
+<<UnderlyingTranscoder_null,null transcoder>>.
+====
+
+=== Function template `find_transcoder` [[find_transcoder]]
+
+[source,cpp,subs=normal]
+----
+template <typename SrcEncoding, typename DestEncoding>
+auto find_transcoder(SrcEncoding src, DestEncoding dest);
+----
+Requirements:: `SrcEncoding` and `DestEncoding` are __{UnderlyingCharEncoding}__ types.
+Return type:: A type that is __{UnderlyingTranscoder}__
+//-
+Return value::
+* Returns the default value of `{static_underlying_transcoder}<SrcID, DestID>`
+  if such template instantiation is defined and
+  `SrcEncoding` is ( or derives from ) `{static_underlying_char_encoding}<SrcID>` and
+  `DestEncoding` is ( or derives from ) `{static_underlying_char_encoding}<DestID>`;
+* otherwise, returns `src.<<UnderlyingCharEncoding_sanitizer,sanitizer>>()` if
+  `src.<<UnderlyingCharEncoding_id,id>>()` is equal to `dest.<<UnderlyingCharEncoding_id,id>>()`
+  and `SrcEncoding::char_size` is equal to `DestEncoding::char_size`;
+* otherwise, returns `src.<<UnderlyingCharEncoding_to_u32,to_u32>>()`
+  if `DestEncoding::char_size` is equal to `4`;
+* otherwise, returns `dest.<<UnderlyingCharEncoding_from_u32,from_u32>>()`
+  if `SrcEncoding::char_size` is equal to `4`;
+* otherwise, returns
+  `src.<<UnderlyingCharEncoding_find_transcoder_to,find_transcoder_to>>(x, dest.id())`
+  if such expression
+  is well formed and returns a <<UnderlyingTranscoder_null,non null transcoder>>
+  , where `x` is the value of
+  `std::integral_constant<std::size_t, DestEncoding::char_size>()`;
+* otherwise, returns
+  `dest.<<UnderlyingCharEncoding_find_transcoder_from,find_transcoder_from>>(x, src.id())`
+   if such expression is well formed, where `x` is the value of
+   `std::integral_constant<std::size_t, SrcEncoding::char_size>()`;
+* otherwise returns a default constructed ( thus null )
+  `{dynamic_underlying_transcoder}<SrcEncoding::char_size, DestEncoding::char_size>`.
+
+NOTE: When `find_transcoder` returns an <<UnderlyingTranscoder_null,null transcoder>>
+, you still can use `{decode_encode}` and `decode_encode_size`.
+
+=== Function template `decode_encode`  [[decode_encode]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template<std::size_t SrcCharSize, std::size_t DestCharSize>
+void decode_encode
+    ( {underlying_outbuff}<DestCharSize>& ob
+    , {transcode_f}<SrcCharSize, 4> to_u32
+    , {transcode_f}<4, DestCharSize> from_u32
+    , const {underlying_char_type}<SrcCharSize>* src
+    , std::size_t src_size
+    , {invalid_seq_notifier} inv_seq_notifier
+    , {surrogate_policy} surr_poli );
+
+} // namespace strf
+----
+
+Converts the content in `src` to UTF-32 using `to_u32`,
+then writes it into `ob` using `from_u32`.
+
+[horizontal]
+Postcondition:: `ob.<<underlying_outbuff_recycle,recycle>>()` is not called if
+`ob.<<underlying_outbuff_size,size>>()` is not less then the value returned by
+`{decode_encode_size}(to_u32, size_calc_func, src, src_size, inv_seq_notifier, surr_poli)`,
+where `size_calc_func` is the return value of
+`dest_enc.<<UnderlyingCharEncoding_from_u32,from_u32>>().<<UnderlyingTranscoder_transcode_size_func, transcode_size_func>>()`,
+where `dest_enc` is the __UnderlyingCharEncoding__ object such that the return value of
+`dest_enc.<<UnderlyingCharEncoding_to_u32,to_u32>>().<<UnderlyingTranscoder_transcode_func,transcode_func>>()`
+is equal to `to_u32`.
+
+=== Function template `decode_encode_size` [[decode_encode_size]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template<std::size_t SrcCharSize>
+std::size_t decode_encode_size
+    ( {transcode_f}<SrcCharSize, 4> to_u32
+    , {transcode_size_f}<4> size_calc_func
+    , const {underlying_char_type}<SrcCharSize>* src
+    , std::size_t src_size
+    , {invalid_seq_notifier} inv_seq_notifier
+    , {surrogate_policy} surr_poli );
+
+} // namespace strf
+----
+[horizontal]
+Return value::
+The return of `size_calc_func` called over the UTF-32 content obtained
+by passing `src` to `to_u32`.
+
+=== Facet category template `char_encoding_c` [[char_encoding_c]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT>
+struct char_encoding_c {
+    static constexpr bool constrainable = false;
+    static constexpr {utf}<CharT> get_default() noexcept;
+};
+
+} // namespace strf
+----
+
+For a type to be a facet of `char_encoding_c<CharT>` it has to
+to be _CharEncodingFacet_ of `CharT`
+
+=== Type requirement _CharEncodingFacet_ [[CharEncodingFacet]]
+
+Given:
+
+- `CharT`, a character type
+- `X`, _CharEncodingFacet_ type of `CharT`
+
+The following must hold:
+
+- `X` is https://en.cppreference.com/w/cpp/named_req/CopyConstructible[__CopyConstructible__].
+- `X` is a __{UnderlyingCharEncoding}__ type for `sizeof(CharT)`
+- `X::char_type` is a type alias to `CharT`
+- `X::category` is a type alias to `char_encoding_c<CharT>`;
+
+NOTE: There are two class templates that satisfy _CharEncodingFacet_: `{static_char_encoding}` and `{dynamic_char_encoding}`.
+
+=== Class template `static_char_encoding` [[static_char_encoding]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT, {char_encoding_id} CSID>
+class static_char_encoding: public {static_underlying_char_encoding}<CSID> {
+public:
+    static_assert(sizeof(CharT) == {static_underlying_char_encoding}<CSID>::<<UnderlyingCharEncoding_char_size,char_size>>);
+    using category = {char_encoding_c}<CharT>;
+    using char_type = CharT;
+};
+
+} // namespace strf
+----
+
+=== Type aliases for encodings [[static_char_encoding_aliases]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT>
+using ascii = {static_char_encoding}<CharT, {eid_ascii}>;
+
+template <typename CharT>
+using iso_8859_1 = {static_char_encoding}<CharT, {eid_iso_8859_1}>;
+
+template <typename CharT>
+using iso_8859_3 = {static_char_encoding}<CharT, {eid_iso_8859_3}>;
+
+template <typename CharT>
+using iso_8859_15 = {static_char_encoding}<CharT, {eid_iso_8859_15}>;
+
+template <typename CharT>
+using windows_1252 = {static_char_encoding}<CharT, {eid_windows_1252}>;
+
+template <typename CharT>
+using utf8 = {static_char_encoding}<CharT, {eid_utf8}>;
+
+template <typename CharT>
+using utf16 = {static_char_encoding}<CharT, {eid_utf16}>;
+
+template <typename CharT>
+using utf32 = {static_char_encoding}<CharT, {eid_utf32}>;
+
+template <typename CharT>
+using utf = /* see below */;
+
+} // namespace strf
+----
+
+[[utf]]
+====
+[source,cpp]
+----
+template <typename CharT>
+using utf = /* ... */;
+----
+`utf<CharT>` is an alias to `utf8<CharT>`, `utf16<CharT>` or `utf32<CharT>`,
+depending on the value of `sizeof(CharT)`.
+====
+
+=== Class template `dynamic_char_encoding` [[dynamic_char_encoding]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+template <typename CharT>
+class dynamic_char_encoding: public {dynamic_underlying_char_encoding}<sizeof(CharT)> {
+public:
+    using category = {char_encoding_c}<CharT>;
+    using char_type = CharT;
+
+    dynamic_char_encoding(const dynamic_char_encoding&) = default;
+
+    explicit dynamic_char_encoding(const {dynamic_underlying_char_encoding}<sizeof(CharT)>&);
+
+    template <{char_encoding_id} EncodingID>
+    explicit dynamic_char_encoding({static_char_encoding}<CharT, EncodingID> scs);
+};
+
+} // namespace strf
+----
+
+====
+[source,cpp,subs=normal]
+----
+dynamic_char_encoding(const dynamic_char_encoding&);
+----
+Trivial copy constructor
+====
+====
+[source,cpp,subs=normal]
+----
+explicit dynamic_char_encoding(const {dynamic_underlying_char_encoding}<sizeof(CharT)>& x);
+----
+[horizontal]
+Effect:: Initializes base `{dynamic_underlying_char_encoding}<sizeof(CharT)>` from `x`.
+====
+====
+[source,cpp,subs=normal]
+----
+template <{char_encoding_id} EncodingID>
+explicit dynamic_char_encoding({static_char_encoding}<CharT, EncodingID> enc);
+----
+[horizontal]
+Effect:: Initializes base `{dynamic_underlying_char_encoding}<sizeof(CharT)>`
+         with `enc.to_dynamic()`.
+====
+

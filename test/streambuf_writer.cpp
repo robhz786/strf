@@ -4,6 +4,7 @@
 
 #include "test_utils.hpp"
 #include <sstream>
+#include <strf/to_streambuf.hpp>
 
 template <typename CharT>
 void test_successfull_writing()

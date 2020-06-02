@@ -1,7 +1,9 @@
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
-#include <strf.hpp>
+
+#include <strf/to_cfile.hpp>
+#include <strf/to_string.hpp>
 
 #if ! defined(__cpp_char8_t)
 
@@ -27,10 +29,10 @@ void second_example()
     //[second_example
 
     // more formatting:  operator>(int width) : align to rigth
-    //                   operator~()          : show base
+    //                   operator*()          : show base
     //                   p(int)               : set precision
     auto s = strf::to_string( "---"
-                            , ~strf::hex(255).p(4).fill(U'.') > 10
+                            , *strf::hex(255).p(4).fill(U'.') > 10
                             , "---" );
     assert(s == "---....0x00ff---");
 
@@ -46,14 +48,14 @@ void second_example()
     // range with formatting
     //
     s = strf::to_string( "--["
-                       , ~strf::hex(strf::separated_range(array, separator)).p(4)
+                       , *strf::hex(strf::separated_range(array, separator)).p(4)
                        , "]--");
     assert(s == "--[0x0014 / 0x001e / 0x0028]--");
 
     // or
 
     s = strf::to_string( "--["
-                       , ~strf::fmt_separated_range(array, separator).hex().p(4)
+                       , *strf::fmt_separated_range(array, separator).hex().p(4)
                        , "]--");
     assert(s == "--[0x0014 / 0x001e / 0x0028]--");
 
@@ -88,7 +90,7 @@ void format_functions()
     //[ format_functions_example
     auto s = strf::to_string
         ( "---"
-        , ~strf::hex(255).p(4).fill(U'.') > 10
+        , *strf::hex(255).p(4).fill(U'.') > 10
         , "---" );
 
     assert(s == "---....0x00ff---");
@@ -101,7 +103,7 @@ void format_functions_2()
     auto str = strf::to_string
         ( strf::hex(255) > 5
         , '/', strf::center(255, 7, '.').hex()
-        , '/', ~strf::hex(255) % 7
+        , '/', *strf::hex(255) % 7
         , '/', strf::multi('a', 3) ^ 7
         , '/', +strf::fmt(255) );
 
@@ -124,7 +126,7 @@ void basic_facet_sample()
 
 //[ basic_facet_sample
     constexpr int base = 10;
-    auto punct = strf::str_grouping<base>{"\4\3\2"}.thousands_sep(U'.');
+    auto punct = strf::numpunct<base>{4, 3, 2}.thousands_sep(U'.');
     auto s = strf::to_string
         .with(punct)
         ("one hundred billions = ", 100000000000ll);
@@ -137,7 +139,7 @@ void basic_facet_sample()
 void constrained_facet()
 {
     //[ constrained_facet_sample
-    auto facet_obj = strf::constrain<std::is_signed>(strf::monotonic_grouping<10>{3});
+    auto facet_obj = strf::constrain<std::is_signed>(strf::numpunct<10>{3});
 
     auto s = strf::to_string.with(facet_obj)(100000u, "  ", 100000);
 
@@ -149,9 +151,9 @@ void constrained_facet()
 void overriding_sample()
 {
     //[ facets_overriding
-    auto punct_dec_1 = strf::monotonic_grouping<10>{1};
-    auto punct_dec_2 = strf::monotonic_grouping<10>{2}.thousands_sep('.');
-    auto punct_dec_3 = strf::monotonic_grouping<10>{3}.thousands_sep('^');;
+    auto punct_dec_1 = strf::numpunct<10>{1};
+    auto punct_dec_2 = strf::numpunct<10>{2}.thousands_sep('.');
+    auto punct_dec_3 = strf::numpunct<10>{3}.thousands_sep('^');;
 
     // Below, punct_dec_3 overrides punct_dec_2, but only for signed types.
     // punct_dec_2 overrides punct_dec_1 for all input types,
@@ -168,38 +170,13 @@ void overriding_sample()
 }
 
 
-void get_facet_sample()
-{
-    //[ get_facet_sample
-    auto punct_hex  = strf::monotonic_grouping<16>{4}.thousands_sep('\'');
-    auto punct_dec  = strf::monotonic_grouping<10>{3}.thousands_sep('.');
-
-    auto fp = strf::pack
-        ( std::ref(punct_hex) // note the use of std::ref here
-        , strf::constrain<strf::is_int_number>(std::ref(punct_dec)) );//and here
-
-    decltype(auto) f1 = strf::get_facet<strf::numpunct_c<16>, int>(fp);
-    assert(&f1 == &punct_hex);
-
-    decltype(auto) f2 = strf::get_facet<strf::numpunct_c<10>, int>(fp);
-    assert(&f2 == &punct_dec);
-
-    decltype(auto) f3 = strf::get_facet<strf::numpunct_c<10>, double>(fp);
-    assert(&f3 == &strf::numpunct_c<10>::get_default());
-    //]
-    (void)f1;
-    (void)f2;
-    (void)f3;
-}
-
-
-void sample_numpunct_with_alternative_charset()
+void sample_numpunct_with_alternative_encoding()
 {
 //[ numpuct__with_alternative_encoding
     // Writting in Windows-1252
     auto s = strf::to_string
         .with(strf::windows_1252<char>())
-        .with(strf::str_grouping<10>{"\4\3\2"}.thousands_sep(0x2022))
+        .with(strf::numpunct<10>{4, 3, 2}.thousands_sep(0x2022))
         ("one hundred billions = ", 100000000000ll);
 
     // The character U+2022 is encoded as '\225' in Windows-1252
@@ -219,9 +196,9 @@ void output_FILE()
 void input_ouput_different_char_types()
 {
     //[input_output_different_char_types
-    auto str = strf::to_string( strf::cv(u"aaa-")
-                              , strf::cv(U"bbb-")
-                              , strf::cv(L"ccc") );
+    auto str = strf::to_string( strf::conv(u"aaa-")
+                              , strf::conv(U"bbb-")
+                              , strf::conv(L"ccc") );
     assert(str ==  "aaa-bbb-ccc");
     //]
 }
@@ -230,9 +207,9 @@ void input_string_encoding()
 {
     //[input_string_encoding
     // Three input string. Each one in its own character set
-    auto s = strf::to_u8string( strf::cv("\x80\xA4 -- ", strf::iso_8859_1<char>())
-                              , strf::cv("\x80\xA4 -- ", strf::iso_8859_15<char>())
-                              , strf::cv("\x80\xA4", strf::windows_1252<char>()) );
+    auto s = strf::to_u8string( strf::conv("\x80\xA4 -- ", strf::iso_8859_1<char>())
+                              , strf::conv("\x80\xA4 -- ", strf::iso_8859_15<char>())
+                              , strf::conv("\x80\xA4", strf::windows_1252<char>()) );
 
     // The output by default is in UTF-8
     assert(s == u8"\u0080\u00A4 -- \u0080\u20AC -- \u20AC\u00A4");
@@ -248,25 +225,25 @@ void sani()
     //]
 }
 
-void monotonic_grouping()
+void numpunct()
 {
-    //[monotonic_grouping
+    //[numpunct
     constexpr int base = 10;
 
     auto str = strf::to_string
-        .with(strf::monotonic_grouping<base>{3}.thousands_sep(U'.'))
+        .with(strf::numpunct<base>{3}.thousands_sep(U'.'))
         (100000000000ll);
 
     assert(str == "100.000.000.000");
     //]
 }
 
-void str_grouping()
+void variable_grouping()
 {
-    //[str_grouping
+    //[variable_grouping
     constexpr int base = 10;
 
-    auto punct = strf::str_grouping<base>{"\4\3\2"};
+    auto punct = strf::numpunct<base>{4, 3, 2};
     auto str = strf::to_string.with(punct)(100000000000ll);
     assert(str == "1,00,00,000,0000");
     //]
@@ -276,53 +253,82 @@ void punct_non_decimal()
 {
     //[punct_non_decimal
     auto str = strf::to_string
-        .with(strf::monotonic_grouping<16>{4}.thousands_sep(U'\''))
+        .with(strf::numpunct<16>{4}.thousands_sep(U'\''))
         (strf::hex(0xffffffffffLL));
 
     assert(str == "ff'ffff'ffff");
     //]
 }
 
-// void width_as_u32len()
-// {
-//     //[width_as_u32len
-//     //     auto str = strf::to_u8string
-//         .with(strf::width_as_u32len<char8_t>{})
-//         (strf::right(u8"áéíóú", 12, U'.'));
+void fast_width()
+{
+    auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+    auto result = strf::to_string.with(strf::fast_width{})
+        ( strf::right(str, 12, '*') );
 
-//     assert(str == u8".......áéíóú");
-//     //]
-// }
+    assert(result == "*15.00 \xE2\x82\xAC \x80"); // width calculated as 11
+}
 
-// void width_func()
-// {
-//     //[width_func
-//     auto my_width_calculator =
-//         [] (int limit, const char32_t* it, const char32_t* end)
-//     {
-//         int sum = 0;
-//         for (; sum < limit && it != end; ++it)
-//         {
-//             auto ch = *it;
-//             sum += ((0x2E80 <= ch && ch <= 0x9FFF) ? 2 : 1);
-//         }
-//         return sum;
-//     };
+void width_as_fast_u32len()
+{
+    auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+    auto result = strf::to_string .with(strf::width_as_fast_u32len{})
+        ( strf::right(str, 12, '*'));
+    assert(result == "****15.00 \xE2\x82\xAC \x80"); // width calculated as 8
+}
 
-//     auto str = strf::to_u8string
-//         .with(strf::width_as(my_width_calculator))
-//         (strf::right(u8"今晩は", 10, U'.'));
+void width_as_u32len()
+{
+    auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+    auto result = strf::to_string .with(strf::width_as_u32len{}) ( strf::right(str, 12, '*'));
 
-//     assert(str == u8"....今晩は");
-//     //]
-// }
+    assert(result == "***15.00 \xE2\x82\xAC \x80"); // width calculated as 9
+}
+
+void width_in_conv()
+{
+    auto str = "15.00 \xE2\x82\xAC \x80"; // "15.00 € \x80"
+
+    auto res1 = strf::to_u16string.with(strf::fast_width{})          (strf::conv(str) > 12);
+    auto res2 = strf::to_u16string.with(strf::width_as_fast_u32len{})(strf::conv(str) > 12);
+    auto res3 = strf::to_u16string.with(strf::width_as_u32len{})     (strf::conv(str) > 12);
+
+    assert(res1 == u" 15.00 \u20AC \uFFFD");    // width calculated as 11 ( == strlen(str) )
+    assert(res2 == u"    15.00 \u20AC \uFFFD"); // width calculated as 8
+    assert(res3 == u"   15.00 \u20AC \uFFFD");  // width calculated as 9
+}
+
+
+void width_func()
+{
+    auto wfunc = [](char32_t ch) -> strf::width_t {
+        using namespace strf::width_literal;
+
+        static const strf::width_t roman_numerals_width [] = {
+            0.5642_w, 1.1193_w, 1.6789_w, 1.8807_w, 1.2982_w, 1.8853_w,
+            2.4954_w, 3.0046_w, 1.8945_w, 1.3624_w, 1.9035_w, 2.4771_w,
+            1.1789_w, 1.4495_w, 1.4128_w, 1.7294_w
+        };
+
+        if (ch < 0x2160 || ch > 0x216F) {
+            return 1;
+        }
+        return roman_numerals_width[ch - 0x2160];
+    };
+    auto my_wcalc = strf::make_width_calculator(wfunc);
+    auto str = u8"\u2163 + \u2167 = \u216B"; // "Ⅳ + Ⅷ = Ⅻ"
+    auto result = strf::to_u8string.with(my_wcalc) (strf::right(str, 18, '.'));
+
+    // width calculated as 13.3624, rounded to 13:
+    assert(result == u8".....\u2163 + \u2167 = \u216B");
+}
 
 //[avoid_repetitions
 namespace my { // my customizations
 
 const auto my_default_facets = strf::pack
-    ( strf::monotonic_grouping<10>(3)
-    , strf::monotonic_grouping<16>(4).thousands_sep(U'\'')
+    ( strf::numpunct<10>(3)
+    , strf::numpunct<16>(4).thousands_sep(U'\'')
     , strf::surrogate_policy::lax );
 
 const auto to_string = strf::to_string.with(my_default_facets);
@@ -347,17 +353,17 @@ void using_my_customizations()
     auto str = my::to_string(x);
     assert(str == "100,000,000");
 
-    my::append(str) (" in hexadecimal is ", ~strf::hex(x));
+    my::append(str) (" in hexadecimal is ", *strf::hex(x));
     assert(str == "100,000,000 in hexadecimal is 0x5f5'e100");
 
     char buff[500];
-    my::to(buff)(x, " in hexadecimal is ", ~strf::hex(x));
+    my::to(buff)(x, " in hexadecimal is ", *strf::hex(x));
     assert(str == buff);
 
     // Overriding numpunct_c<16> back to default:
     str = my::to_string
         .with(strf::default_numpunct<16>())
-        (x, " in hexadecimal is ", ~strf::hex(x));
+        (x, " in hexadecimal is ", *strf::hex(x));
     assert(str == "100,000,000 in hexadecimal is 0x5f5e100");
 }
 //]
@@ -371,16 +377,18 @@ int main()
     basic_facet_sample();
     constrained_facet();
     overriding_sample();
-    get_facet_sample();
     output_FILE();
     input_ouput_different_char_types();
     input_string_encoding();
     sani();
-    monotonic_grouping();
-    str_grouping();
+    numpunct();
+    variable_grouping();
     punct_non_decimal();
-    // width_as_u32len();
-    // width_func();
+    fast_width();
+    width_as_u32len();
+    width_as_fast_u32len();
+    width_func();
+    width_in_conv();
     using_my_customizations();
     return 0;
 }

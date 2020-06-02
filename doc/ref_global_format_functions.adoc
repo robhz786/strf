@@ -8,12 +8,7 @@ http://www.boost.org/LICENSE_1_0.txt
 [source,cpp,subs=normal]
 ----
 namespace strf {
-
-template <typename T>
-constexpr auto fmt(const T& value)
-{
-    return make_fmt(strf::rank<5>{}, value);
-}
+inline namespace format_functions {
 
 template <typename T>
 constexpr auto hex(const T& value)
@@ -76,15 +71,15 @@ constexpr auto right(const T& value, int width, char32_t fill)
 }
 
 template <typename T>
-constexpr auto cv(const T& value)
+constexpr auto conv(const T& value)
 {
-    return fmt(value).cv();
+    return fmt(value).conv();
 }
 
-template <typename T, typename E>
-constexpr auto cv(const T& value, const E& encoding)
+template <typename T, typename CharEncoding>
+constexpr auto conv(const T& value, const CharEncoding& cs)
 {
-    return fmt(value).cv(encoding);
+    return fmt(value).conv(cs);
 }
 
 template <typename T>
@@ -93,11 +88,12 @@ constexpr auto sani(const T& value)
     return fmt(value).sani();
 }
 
-template <typename T, typename E>
-constexpr auto sani(const T& value, const E& encoding)
+template <typename T, typename CharEncoding>
+constexpr auto sani(const T& value, const CharEncoding& cs)
 {
-    return fmt(value).sani(encoding);
+    return fmt(value).sani(cs);
 }
 
+} // inline namespace format_functions
 } // namespace strf
 ----

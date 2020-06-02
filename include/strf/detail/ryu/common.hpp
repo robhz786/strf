@@ -77,21 +77,7 @@ inline STRF_HD uint32_t log10Pow5(const int32_t e) {
   return (((uint32_t) e) * 732923) >> 20;
 }
 
-inline STRF_HD int copy_special_str(char * const result, const bool sign, const bool exponent, const bool mantissa) {
-  if (mantissa) {
-    memcpy(result, "NaN", 3);
-    return 3;
-  }
-  if (sign) {
-    result[0] = '-';
-  }
-  if (exponent) {
-    memcpy(result + sign, "Infinity", 8);
-    return sign + 8;
-  }
-  memcpy(result + sign, "0E0", 3);
-  return sign + 3;
-}
+#if defined(STRF_WITH_CSTRING)
 
 inline STRF_HD uint32_t float_to_bits(const float f) {
   uint32_t bits = 0;
@@ -104,6 +90,22 @@ inline STRF_HD uint64_t double_to_bits(const double d) {
   memcpy(&bits, &d, sizeof(double));
   return bits;
 }
+
+#else
+
+inline STRF_HD uint32_t float_to_bits(const float f) {
+  union { uint32_t bits; float x; };
+  x = f;
+  return bits;
+}
+
+inline STRF_HD uint64_t double_to_bits(const double d) {
+  union { uint64_t bits; double x; };
+  x = d;
+  return bits;
+}
+
+#endif
 
 STRF_DETAIL_RYU_NAMESPACE_END;
 

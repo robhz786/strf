@@ -5,6 +5,11 @@ See accompanying file LICENSE_1_0.txt or copy at
 http://www.boost.org/LICENSE_1_0.txt
 ////
 
+:facets_pack: <<facets_pack,facets_pack>>
+:get_facet: <<get_facet,get_facet>>
+:facet_category: <<facet_category,facet_category>>
+:FacetCategory: <<FacetCategory, FacetCategory>>
+:FacetsPackElement: <<FacetsPackElement, FacetsPackElement>>
 == facets_pack
 
 [[facets_pack]]
@@ -29,8 +34,7 @@ Compile-time requirements::: All types in `FPE\...` satisfy
 constexpr facets_pack(const facets_pack& other);
 ----
 ::
-Effects::: Initializes each element with the const reference
-          of the corresponding element in `other`
+Effects::: Initializes each element in this object with the corresponding element in `other`
 Compile-time requirements::: `std::is_copy_constructible_v<FPE> && \...`,
       otherwise this constructor does not participate in overload resolution.
 ====
@@ -86,20 +90,15 @@ implementation in the case there is any reference type in `FPE\...`.
 ====
 [source,cpp]
 ----
-template <typename ... Types>
-constexpr facets_pack<VTypes...>  pack(const Types& ... args)
+template <typename ... T>
+constexpr /* see below */ pack(const T& ... args)
 ----
 ::
-Effects::: Creates a `facets_pack` object from `args\...` 
-Return type::: `facets_pack<VTypes\...>`, where for each `Ti` in `Types\...`,
-               the corresponding `Vi` in `VTypes\...` is:
-- `const F&` , if `Vi` is `std::reference_wrapper<F>`
-- `const Vi` , if `Vi` <<facet_stored_by_value, `facet_stored_by_value<Vi>`>> is `false`
-- `Ti` , otherwise
+Return type::: `{facets_pack}<std::remove_cv_t<std::remove_reference_t<T>>\...>`
+Return value::: A `{facets_pack}` object initialized with `std::forward<T>(args)\...`
 ====
 
-[[get_facet]]
-=== Function template `get_facet`
+=== Function template `get_facet` [[get_facet]]
 ====
 [source,cpp]
 ----
@@ -110,7 +109,7 @@ constexpr decltype(auto) get_facet(const facets_pack<T...>& fp);
 Effects::: If <<has_facet, `has_facet<FCat, Tag>(fp)`>> returns `true` then
           returns <<do_get_facet,`do_get_facet<FCat, Tag>(fp)`, otherwise
           return `FCat::get_default()`.
-Compile-time requirements:::  `FCat` satisfies <<FacetCategory,_FacetCategory_>>.
+Compile-time requirements:::  `FCat` is a _{FacetCategory}_ type.
 ====
 
 [[has_facet]]
@@ -126,15 +125,15 @@ constexpr bool has_facet(const FPE& fpe)
 ----
 ::
 Effects:::
-- If `FPE` is a <<facets_pack, `facets_pack`>>, then return wheter there
+- If `FPE` is an instance of <<facets_pack, `facets_pack`>>, then returns wheter there
   is any elemente `elm` in `fpe` such that `has_facet<FCat, Tag>(elm)`
   is `true`.
-- If `FPE` is <<constrained_fpe, `constrained_fpe<FPE, Filter>`>>,
-  then return `Filter<Tag>::value && has_facet<FCat, Tag>(fpe.get())`.
-- If `FPE` satisfies <<facet, _Facet_>>, return `std::is_same_v<FCat, FacetCategory<FPE>>`
+- If `FPE` is an instance of <<constrained_fpe, `constrained_fpe<FPE, Filter>`>>,
+  then returns `Filter<Tag>::value && has_facet<FCat, Tag>(fpe.get())`.
+- If `FPE` is a  <<facet, _Facet_>> type, returns `std::is_same_v<FCat, {facet_category}<FPE>>`
 
 Compile-time requirements:::
-- `FCat` satisfies <<FacetCategory, _FacetCategory_>>.
+- `FCat` is a _{FacetCategory}_ type.
 - `FPE` satisfies <<FacetsPackElement, _FacetsPackElement_>>.
 ====
 
@@ -152,7 +151,7 @@ constexpr decltype(auto) do_get_facet(const FPE& fpe);
 ----
 ::
 Compile-time requirements:::
-- `FCat` satisfies <<FacetCategory,_FacetCategory_>>.
+- `FCat` satisfies _{FacetCategory}_.
 - `FPE` satisfies <<FacetsPackElement,_FacetsPackElement_>>.
 - `has_facet<FCat, Tag>(fpe)` is `true`.
 ====
@@ -254,52 +253,54 @@ template <template <class> class Filter, typename T>
 constexpr constrained_fpe<Filter, U> constrain(const T& arg);
 ----
 ::
-`constrain` is just a syntatic sugar to instantiate <<constrained_fpe, `constrained_fpe`>>
+`constrain` is just a syntatic sugar to create a <<constrained_fpe, `constrained_fpe`>> object.
 
-Effect::: Create a <<constrained_fpe, `constrained_fpe`>> object from `args`
 Return type::: `constrained_fpe<Filter, U>`, where `U` is
-- `const F&`, if `T` is `std::reference_wrapper<F>` is `true`
-- `const T&`, if `facet_stored_by_value<T>` is `false`
-- `T`, otherwise
+                `std::remove_cv_t<std::remove_reference_t<T>>`.
+Return value::: `constrained_fpe<Filter, U>{ std::forward<T>(arg) }`
 Compile-time requirements:::
-`T` is a type such that `U` satisfies <<FacetsPackElement, _FacetsPackElement_>>.
+`T` is such that `U` satisfies <<FacetsPackElement, _FacetsPackElement_>>.
 ====
 
 [[FacetsPackElement]]
 === Type requirement _FacetsPackElement_
-A given type `F` satisfies _FacetsPackElement_ if, and only if, the following conditions is true:
+A given type `F` satisfies _FacetsPackElement_ if, and only if, one of the following conditions is true:
 
-- `F` satisfies <<Facet,_Facet_>>
-  and <<facet_stored_by_value,`facet_stored_by_value<F>`>> is `true`
-- `F` is an instance of <<facets_pack,`facets_pack`>.
+- `F` is a <<Facet,_Facet_>> type.
+- `F` is an instance of <<facets_pack,`facets_pack`>>.
 - `F` is an instance of <<constrained_fpe,`constrained_fpe`>>.
+
+////
 - `F` is `const `F2&`, where `F2` satisfies one of the previous requirements.
 - `F` is `const `F2&`, where `F2` satisfies <<Facet, _Facet_>>,
   and `facet_stored_by_value<F2>` is `false`.
+////
 
 [[ConstrainableFacetsPackElement]]
 === Type requirement _ConstrainableFacetsPackElement_
-A given a type `F` is a _ConstrainableFacetsPackElement_, if it satisfies
-<<FacetsPackElement,_FacetsPackElement_>> and the following rules:
+A given a type `F` is a _ConstrainableFacetsPackElement_ if, and only if,
+one of the following conditions is true:
 
+- `F` is a  <<Facet,_Facet_>> type and  `{facet_category}<F>::constrainable` is `true`.
+- `F` is `facets_pack<F2\...>` and all types in `F2\...` are _ConstrainableFacetsPackElement_.
+- `F` is an instance of <<constrained_fpe,`constrained_fpe`>>.
+
+////
 - If `F` is `const F2&`, then `F2` satifies the _ConstrainableFacetsPackElement_
   requirements.
-- If `F` is `facets_pack<F2\...>`, then all types in `F2\...` satisfy the
-  _ConstrainableFacetsPackElement_ requirements.
-- If `F` is not an instance of <<constrained_fpe,`constrained_fpe`>>,
-  then it satifies <<Facet,`Facet`>> and
-  `facet_category<FPE>::constrainable` is `true`.
+////
 
 [[Facet]]
 === Type requirement _Facet_
 A given a type `F` satisfies `Facet` if all of the following conditions are met:
 
+////
 - If `F` is abstract or not _CopyConstructible_, then
   <<facet_stored_by_value `facet_stored_by_value<F>`>>
   must be `false`.
-- <<facet_category,`facet_category<F>`>>
-  satisfies the <<FacetCategory,_FacetCategory_>>
-  requirements.
+////
+- `F` is https://en.cppreference.com/w/cpp/named_req/MoveConstructible[__MoveConstructible__]
+- `{facet_category}<F>` satisfies the _{FacetCategory}_ requirements.
 
 [[FacetCategory]]
 === Type requirement _FacetCagory_
@@ -323,22 +324,14 @@ members of the facet, or specialize `facet_traits`.
 [source]
 ----
 template <typename F>
-class facet_trait
+class facet_traits
 {
 public:
     using category = /* Facet::category or void */;
-    constexpr static bool store_by_value = /* Facet::store_by_value or true */;
 };
 ----
 ==== Public members
-====
-[source]
-----
-constexpr static bool store_by_value;
-----
-Value:: Equal to `F::store_by_value` is such expression is well formed
-and implicitly convetible to `bool`, otherwise it is `false`.
-====
+
 ====
 [source]
 ----
@@ -352,11 +345,10 @@ otherwise it is an alias to `void`.
 [source]
 ----
 template <typename F>
-class facet_trait<const F>
+class facet_traits<const F>
 {
 public:
-    using category = typename facet_trait<F>::category;
-    constexpr static bool store_by_value = facet_stored_by_value<F>::store_by_value;
+    using category = typename facet_traits<F>::category;
 };
 ----
 ====
@@ -370,17 +362,4 @@ public:
 template <typename Facet>
 using facet_category = facet_traits<Facet>::typename category;
 ----
-====
-[[facet_stored_by_value]]
-=== Variable template `facet_stored_by_value`
-====
-[source]
-----
-template <typename T>
-constexpr bool facet_stored_by_value;
-----
-::
-Value::: ``facet_traits<T>::store_by_value`` if such expression
-       is well formed and implicitly convertible to `bool`,
-       otherwise the value is `true`.
 ====

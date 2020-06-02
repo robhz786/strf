@@ -4,9 +4,9 @@
 
 #include "test_utils.hpp"
 
+#include <strf.hpp>
 #include <string>
 #include <algorithm>
-#include <strf.hpp>
 
 strf::detail::simple_string_view<char> make_str_0_to_xff()
 {
@@ -19,12 +19,13 @@ strf::detail::simple_string_view<char> make_str_0_to_xff()
 
 auto str_0_to_xff = make_str_0_to_xff();
 
-strf::detail::simple_string_view<char> char_0_to_0xff_sanitized(strf::encoding<char> enc)
+template <typename Encoding>
+strf::detail::simple_string_view<char> char_0_to_0xff_sanitized(Encoding enc)
 {
     static char str[0x100];
     for(unsigned i = 0; i < 0x100; ++i)
     {
-        char32_t ch32 = enc.decode_single_char(static_cast<std::uint8_t>(i));
+        char32_t ch32 = enc.decode_char(static_cast<std::uint8_t>(i));
         unsigned char ch = ( ch32 == (char32_t)-1
                            ? static_cast<unsigned char>('?')
                            : static_cast<unsigned char>(i) );
@@ -69,7 +70,15 @@ bool operator==( strf::detail::simple_string_view<CharT> str1
     return std::equal(str1.begin(), str1.end(), str2.begin());
 }
 
-void test( const strf::encoding<char>& enc
+static bool encoding_error_handler_called = false;
+
+void encoding_error_handler()
+{
+    encoding_error_handler_called = true;
+}
+
+template <typename Encoding>
+void test( Encoding enc
          , strf::detail::simple_string_view<char32_t> decoded_0_to_0xff )
 {
     TEST_SCOPE_DESCRIPTION(enc.name());
@@ -111,22 +120,20 @@ void test( const strf::encoding<char>& enc
             (strf::sani(u8str, strf::utf8<char>()));
     }
 
-    TEST(sanitized_0_to_0xff)
-        .with(enc) (strf::sani(str_0_to_xff));
-    TEST("---?+++")
-        .with(enc, strf::encoding_error::replace)
-        (strf::sani(u"---\U0010FFFF+++"));
+    TEST(sanitized_0_to_0xff) .with(enc) (strf::sani(str_0_to_xff));
+    TEST("---?+++").with(enc)(strf::sani(u"---\U0010FFFF+++"));
 
-#if defined(__cpp_exceptions)
 
     {
-        auto facets = strf::pack(enc, strf::encoding_error::stop);
-        TEST_THROWS(
-            ( (strf::to_string.with(facets)(strf::sani(u"---\U0010FFFF++"))))
-            , strf::encoding_failure );
+        char buff[10];
+        ::encoding_error_handler_called = false;
+        strf::to(buff)
+            .with(enc, strf::invalid_seq_notifier{encoding_error_handler})
+            (strf::sani(u"---\U0010FFFF++"));
+        TEST_EQ(0, strcmp(buff, "---?++"));
+        TEST_TRUE(::encoding_error_handler_called);
     }
 
-#endif // defined(__cpp_exceptions)
 }
 
 strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_1()

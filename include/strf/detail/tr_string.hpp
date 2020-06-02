@@ -5,68 +5,38 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <strf/outbuff_functions.hpp>
 #include <strf/printer.hpp>
-#include <limits>
-#include <strf/detail/facets/encoding.hpp>
+#include <strf/detail/facets/char_encoding.hpp>
 
 namespace strf {
 
-class tr_string_syntax_error: public strf::stringify_error
-{
-    using strf::stringify_error::stringify_error;
+struct tr_error_notifier_c;
 
-    const char* what() const noexcept override
+struct default_tr_error_notifier
+{
+    using category = strf::tr_error_notifier_c;
+
+    template <typename CharEncoding>
+    inline STRF_HD void handle
+        ( const typename CharEncoding::char_type* str
+        , std::size_t str_len
+        , std::size_t err_pos
+        , CharEncoding enc ) noexcept
     {
-        return "Boost.Stringify: Tr-string syntax error";
+        (void) str;
+        (void) str_len;
+        (void) err_pos;
+        (void) enc;
     }
 };
 
-namespace detail {
-
-#if defined(__cpp_exceptions)
-
-inline void throw_string_syntax_error()
-{
-    throw strf::tr_string_syntax_error();
-}
-
-#else // defined(__cpp_exceptions)
-
-inline void throw_string_syntax_error()
-{
-    std::abort();
-}
-
-#endif // defined(__cpp_exceptions)
-
-} // namespace detail
-
-enum class tr_invalid_arg
-{
-    replace, stop, ignore
-};
-
-struct tr_invalid_arg_c
-{
-    static constexpr bool constrainable = false;
-
-    static constexpr tr_invalid_arg get_default() noexcept
+struct tr_error_notifier_c {
+    static constexpr strf::default_tr_error_notifier get_default() noexcept
     {
-        return tr_invalid_arg::replace;
+        return strf::default_tr_error_notifier{};
     }
 };
-
-template <typename Facet>
-class facet_trait;
-
-template <>
-class facet_trait<strf::tr_invalid_arg>
-{
-public:
-    using category = strf::tr_invalid_arg_c;
-    static constexpr bool store_by_value = true;
-};
-
 
 namespace detail {
 
@@ -77,49 +47,30 @@ struct read_uint_result
     const CharT* it;
 };
 
-
 template <typename CharT>
-read_uint_result<CharT> read_uint(const CharT* it, const CharT* end) noexcept
+read_uint_result<CharT> read_uint(const CharT* it, const CharT* end, std::size_t limit) noexcept
 {
     std::size_t value = *it -  static_cast<CharT>('0');
-    constexpr long limit = std::numeric_limits<long>::max() / 10 - 9;
     ++it;
     while (it != end) {
         CharT ch = *it;
         if (ch < static_cast<CharT>('0') || static_cast<CharT>('9') < ch) {
             break;
         }
-        if(value > limit) {
-            value = std::numeric_limits<std::size_t>::max();
-            break;
-        }
         value *= 10;
         value += ch - static_cast<CharT>('0');
+        if(value >= limit) {
+            value = limit + 1;
+            break;
+        }
         ++it;
     }
     return {value, it};
 }
 
-constexpr std::size_t trstr_invalid_arg_size_when_stop = (std::size_t)-1;
-
-template <typename CharT>
-std::size_t invalid_arg_size
-    ( strf::encoding<CharT> enc
-    , tr_invalid_arg policy ) noexcept
-{
-    switch(policy) {
-        case tr_invalid_arg::replace:
-            return enc.replacement_char_size();
-        case tr_invalid_arg::stop:
-            return strf::detail::trstr_invalid_arg_size_when_stop;
-        default:
-            return 0;
-    }
-}
-
 template <typename CharT>
 inline std::size_t tr_string_size
-    ( const strf::print_preview<false, false>*
+    ( const strf::print_preview<strf::preview_size::no, strf::preview_width::no>*
     , std::size_t
     , const CharT*
     , const CharT*
@@ -130,20 +81,18 @@ inline std::size_t tr_string_size
 
 template <typename CharT>
 std::size_t tr_string_size
-    ( const strf::print_preview<true, false>* args_preview
+    ( const strf::print_preview<strf::preview_size::yes, strf::preview_width::no>* args_preview
     , std::size_t num_args
     , const CharT* it
     , const CharT* end
     , std::size_t inv_arg_size ) noexcept
 {
-    using traits = std::char_traits<CharT>;
-
     std::size_t count = 0;
     std::size_t arg_idx = 0;
 
     while (it != end) {
         const CharT* prev = it;
-        it = traits::find(it, (end - it), '{');
+        it = strf::detail::str_find<CharT>(it, (end - it), '{');
         if (it == nullptr) {
             count += (end - prev);
             break;
@@ -155,7 +104,7 @@ std::size_t tr_string_size
         if (it == end) {
             if (arg_idx < num_args) {
                 count += args_preview[arg_idx].get_size();
-            } else if (inv_arg_size != trstr_invalid_arg_size_when_stop) {
+            } else {
                 count += inv_arg_size;
             }
             break;
@@ -166,30 +115,26 @@ std::size_t tr_string_size
             if (arg_idx < num_args) {
                 count += args_preview[arg_idx].get_size();
                 ++arg_idx;
-            } else if(inv_arg_size == trstr_invalid_arg_size_when_stop) {
-                break;
             } else {
                 count += inv_arg_size;
             }
             ++it;
         } else if (CharT('0') <= ch && ch <= CharT('9')) {
-            auto result = strf::detail::read_uint(it, end);
+            auto result = strf::detail::read_uint(it, end, num_args);
 
             if (result.value < num_args) {
                 count += args_preview[result.value].get_size();
-            } else if(inv_arg_size == trstr_invalid_arg_size_when_stop) {
-                break;
             } else {
                 count += inv_arg_size;
             }
-            it = traits::find(result.it, end - result.it, '}');
+            it = strf::detail::str_find<CharT>(result.it, end - result.it, '}');
             if (it == nullptr) {
                 break;
             }
             ++it;
         } else if(ch == '{') {
             auto it2 = it + 1;
-            it2 = traits::find(it2, end - it2, '{');
+            it2 = strf::detail::str_find<CharT>(it2, end - it2, '{');
             if (it2 == nullptr) {
                 return count += end - it;
             }
@@ -201,14 +146,12 @@ std::size_t tr_string_size
                 if (arg_idx < num_args) {
                     count += args_preview[arg_idx].get_size();
                     ++arg_idx;
-                } else if(inv_arg_size == trstr_invalid_arg_size_when_stop) {
-                    break;
                 } else {
                     count += inv_arg_size;
                 }
             }
             auto it2 = it + 1;
-            it = traits::find(it2, (end - it2), '}');
+            it = strf::detail::str_find<CharT>(it2, (end - it2), '}');
             if (it == nullptr) {
                 break;
             }
@@ -218,36 +161,38 @@ std::size_t tr_string_size
     return count;
 }
 
-template <typename CharT>
+template <typename Encoding, typename ErrHandler>
 void tr_string_write
-    ( const CharT* it
-    , const CharT* end
-    , const strf::printer<CharT>* const * args
+    ( const typename Encoding::char_type* str
+    , const typename Encoding::char_type* str_end
+    , const strf::printer<sizeof(typename Encoding::char_type)>* const * args
     , std::size_t num_args
-    , strf::basic_outbuf<CharT>& ob
-    , strf::encoding<CharT> enc
-    , strf::tr_invalid_arg policy )
+    , strf::underlying_outbuff<sizeof(typename Encoding::char_type)>& ob
+    , Encoding enc
+    , ErrHandler err_handler )
 {
-    using traits = std::char_traits<CharT>;
     std::size_t arg_idx = 0;
+    using char_type = typename Encoding::char_type;
+    using uchar_type = strf::underlying_char_type<sizeof(char_type)>;
 
-    while (it != end) {
-        const CharT* prev = it;
-        it = traits::find(it, (end - it), '{');
+    auto it = str;
+    std::size_t str_len = str_end - str;
+    while (it != str_end) {
+        const char_type* prev = it;
+        it = strf::detail::str_find<char_type>(it, (str_end - it), '{');
         if (it == nullptr) {
-            strf::write(ob, prev, end - prev);
+            strf::write(ob, (const uchar_type*)prev, str_end - prev);
             return;
         }
-        strf::write(ob, prev, it - prev);
+        strf::write(ob, (const uchar_type*)prev, it - prev);
         ++it;
         after_the_brace:
-        if (it == end) {
+        if (it == str_end) {
             if (arg_idx < num_args) {
                 args[arg_idx]->print_to(ob);
-            } else if (policy == strf::tr_invalid_arg::replace) {
+            } else {
                 enc.write_replacement_char(ob);
-            } else if (policy == strf::tr_invalid_arg::stop) {
-                strf::detail::throw_string_syntax_error();
+                err_handler.handle(str, str_len, (it - str) - 1, enc);
             }
             break;
         }
@@ -256,34 +201,32 @@ void tr_string_write
             if (arg_idx < num_args) {
                 args[arg_idx]->print_to(ob);
                 ++arg_idx;
-            } else if (policy == strf::tr_invalid_arg::replace) {
+            } else {
                 enc.write_replacement_char(ob);
-            } else if (policy == strf::tr_invalid_arg::stop) {
-                strf::detail::throw_string_syntax_error();
+                err_handler.handle(str, str_len, (it - str) - 1, enc);
             }
             ++it;
-        } else if (CharT('0') <= ch && ch <= CharT('9')) {
-            auto result = strf::detail::read_uint(it, end);
+        } else if (char_type('0') <= ch && ch <= char_type('9')) {
+            auto result = strf::detail::read_uint(it, str_end, num_args);
             if (result.value < num_args) {
                 args[result.value]->print_to(ob);
-            } else if (policy == strf::tr_invalid_arg::replace) {
+            } else {
                 enc.write_replacement_char(ob);
-            } else if (policy == strf::tr_invalid_arg::stop) {
-                strf::detail::throw_string_syntax_error();
+                err_handler.handle(str, str_len, (it - str) - 1, enc);
             }
-            it = traits::find(result.it, end - result.it, '}');
+            it = strf::detail::str_find<char_type>(result.it, str_end - result.it, '}');
             if (it == nullptr) {
                 break;
             }
             ++it;
         } else if(ch == '{') {
             auto it2 = it + 1;
-            it2 = traits::find(it2, end - it2, '{');
+            it2 = strf::detail::str_find<char_type>(it2, str_end - it2, '{');
             if (it2 == nullptr) {
-                strf::write(ob, it, end - it);
+                strf::write(ob, (const uchar_type*)it, str_end - it);
                 return;
             }
-            strf::write(ob, it, (it2 - it));
+            strf::write(ob, (const uchar_type*)it, (it2 - it));
             it = it2 + 1;
             goto after_the_brace;
         } else {
@@ -291,14 +234,13 @@ void tr_string_write
                 if (arg_idx < num_args) {
                     args[arg_idx]->print_to(ob);
                     ++arg_idx;
-                } else if (policy == strf::tr_invalid_arg::replace) {
+                } else {
                     enc.write_replacement_char(ob);
-                } else if (policy == strf::tr_invalid_arg::stop) {
-                    strf::detail::throw_string_syntax_error();
+                    err_handler.handle(str, str_len, (it - str) - 1, enc);
                 }
             }
             auto it2 = it + 1;
-            it = traits::find(it2, (end - it2), '}');
+            it = strf::detail::str_find<char_type>(it2, (str_end - it2), '}');
             if (it == nullptr) {
                 break;
             }
@@ -307,49 +249,56 @@ void tr_string_write
     }
 }
 
-template <typename CharT>
+template <typename CharEncoding, typename ErrHandler>
 class tr_string_printer
 {
+    using char_type = typename CharEncoding::char_type;
+    static constexpr std::size_t char_size = sizeof(char_type);
 public:
-    using char_type = CharT;
 
-    template <bool SizeRequested>
+    template <strf::preview_size SizeRequested>
     tr_string_printer
-        ( strf::print_preview<SizeRequested, false>& preview
-        , const strf::print_preview<SizeRequested, false>* args_preview
-        , std::initializer_list<const strf::printer<CharT>*> printers
-        , const CharT* tr_string
-        , const CharT* tr_string_end
-        , strf::encoding<CharT> enc
-        , strf::tr_invalid_arg policy ) noexcept
-        : _tr_string(tr_string)
-        , _tr_string_end(tr_string_end)
-        , _enc(enc)
-        , _policy(policy)
-        , _printers_array(printers.begin())
-        , _num_printers(printers.size())
+        ( strf::print_preview<SizeRequested, strf::preview_width::no>& preview
+        , const strf::print_preview<SizeRequested, strf::preview_width::no>* args_preview
+        , std::initializer_list<const strf::printer<char_size>*> printers
+        , const char_type* tr_string
+        , const char_type* tr_string_end
+        , CharEncoding enc
+        , ErrHandler err_handler ) noexcept
+        : tr_string_(tr_string)
+        , tr_string_end_(tr_string_end)
+        , printers_array_(printers.begin())
+        , num_printers_(printers.size())
+        , enc_(enc)
+        , err_handler_(err_handler)
     {
-        preview.add_size
-            ( strf::detail::tr_string_size
-                ( args_preview, _num_printers, _tr_string, _tr_string_end
-                , strf::detail::invalid_arg_size(_enc, _policy) ) );
+        STRF_IF_CONSTEXPR (static_cast<bool>(SizeRequested)) {
+            auto invalid_arg_size = enc.replacement_char_size();
+            std::size_t s = strf::detail::tr_string_size
+                ( args_preview, printers.size(), tr_string, tr_string_end
+                , invalid_arg_size );
+            preview.add_size(s);
+        } else {
+            (void) args_preview;
+        }
     }
 
-    void print_to(strf::basic_outbuf<CharT>& ob) const
+    void print_to(strf::underlying_outbuff<char_size>& ob) const
     {
         strf::detail::tr_string_write
-            ( _tr_string, _tr_string_end, _printers_array, _num_printers
-            , ob, _enc, _policy );
+            ( tr_string_, tr_string_end_, printers_array_, num_printers_
+            , ob, enc_, err_handler_ );
     }
 
-    const CharT* _tr_string;
-    const CharT* _tr_string_end;
-    strf::encoding<CharT> _enc;
-    strf::tr_invalid_arg _policy;
-    const strf::printer<CharT>* const * _printers_array;
-    std::size_t _num_printers;
-};
+private:
 
+    const char_type* tr_string_;
+    const char_type* tr_string_end_;
+    const strf::printer<char_size>* const * printers_array_;
+    std::size_t num_printers_;
+    CharEncoding enc_;
+    ErrHandler err_handler_;
+};
 
 
 } // namespace detail

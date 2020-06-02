@@ -6,6 +6,7 @@
 
 #include <ctime>
 #include <cstdlib>
+#include <strf/to_cfile.hpp>
 #include "test_utils.hpp"
 
 template <typename CharT>

@@ -1,0 +1,346 @@
+////
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
+
+:numpunct_c: <<numpunct_c,numpunct_c>>
+:numpunct: <<numpunct,numpunct>>
+:default_numpunct: <<default_numpunct,default_numpunct>>
+:no_grouping: <<no_grouping,no_grouping>>
+:digits_grouping_iterator: <<digits_grouping_iterator,digits_grouping_iterator>>
+:digits_grouping: <<digits_grouping,digits_grouping>>
+:reverse_digits_groups: <<reverse_digits_groups,reverse_digits_groups>>
+:digits_distribution: <<digits_distribution,digits_distribution>>
+
+== Numeric punctuation
+
+=== Facet category template `numpunct_c` [[numpunct_c]]
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+template <int Base> struct numpunct_c {
+    constexpr static bool constrainable = true;
+    static constexpr {default_numpunct}<base> get_default() noexcept;
+};
+} // namespace strf
+----
+For a type to be a facet of the `numpunct_c<Base>`,
+it has be a concreate type that derives from `numpunct<Base>`
+
+=== Class template `numpunct` [[numpunct]]
+
+This class adopts the same nomenclature used in
+https://en.cppreference.com/w/cpp/locale/numpunct[`std::numpunct`]:
+
+* The __decimal point__ is the character used to separate the integral part
+  from the fractional part.
+* The __thousands separator__ is the character used in the integral part
+  to facilitate the visualization of how may digits it contains.
+* A `group` refers to the number of digits in a contiguous sequence of
+  digits in the integral part that does not contain a __thousands separator__.
+
+For example, if the number `123456.555` is represented as `12,3456.555` then:
+
+* The __decimal point__ is `'.'`
+* The __thousands separator__ is `','` ( even though it does separate group of thousands )
+* The groups are `4` and `2` ( correspoding to the digit sequences `3456` and `12`,
+respectively )
+
+
+==== Public members
+
+[source,cpp,subs=normal]
+----
+template <int Base>
+class numpunct
+    : private {digits_grouping} // exposition only
+{
+public:
+    using category = {numpunct_c}<Base>;
+
+    using digits_grouping::digits_grouping;
+    constexpr numpunct() = default;
+    constexpr numpunct(const numpunct& ) = default;
+    constexpr numpunct& operator=(const numpunct&) noexcept;
+    constexpr bool operator==(const numpunct& other) const noexcept;
+
+    constexpr {digits_grouping} grouping() const
+    constexpr {digits_distribution} distribute(unsiged digcount) const
+
+    constexpr bool any_group_separation(unsigned digcount) const noexcept;
+    constexpr STRF_HD unsigned thousands_sep_count(unsigned digcount) const noexcept;
+
+    constexpr char32_t   decimal_point() const noexcept;
+    constexpr numpunct&  decimal_point(char32_t ch) & noexcept;
+    constexpr numpunct&& decimal_point(char32_t ch) && noexcept;
+
+    constexpr char32_t   thousands_sep() const noexcept;
+    constexpr numpunct&  thousands_sep(char32_t ch) & noexcept;
+    constexpr numpunct&& thousands_sep(char32_t ch) && noexcept;
+
+private:
+    char32_t decimal_point_ = U'.';  // exposition only
+    char32_t thousands_sep_ = U',';  // exposition only
+};
+----
+
+[[numpunct_ctor]]
+====
+[horizontal]
+Precondtion:: `first_grp != 0`
+Postconditions::
+* `decimal_point() == U'.'`
+* `thousands_sep() == U','`
+* `grouping() == // __to-do__`;
+====
+
+[[numpunct_groups]]
+====
+[source,cpp,subs=normal]
+----
+virtual {digits_grouping} grouping() const = 0;
+----
+__to-do__
+[horizontal]
+Return value::
+Preconditions::
+====
+
+[[numpunct_thousands_sep_count]]
+====
+[source,cpp,subs=normal]
+----
+virtual unsigned thousands_sep_count(unsigned digcount) const = 0;
+----
+[horizontal]
+Return value:: The number of thousands separator that would be present
+               in an integer with `digcount` digits.
+Precondition:: `digcount != 0`
+====
+
+[[numpunct_any_group_separation]]
+====
+[source,cpp,subs=normal]
+----
+bool any_group_separation(unsigned digcount) const;
+----
+[horizontal]
+Return value::
+====
+
+[[numpunct_first_group]]
+====
+[source,cpp,subs=normal]
+----
+unsigned first_group() const;
+----
+[horizontal]
+Return value:: The number of digits between the decimal point ( when there is one ) and the first thousands separator ( when there are enough digits for that ).
+====
+
+[[numpunct_get_decimal_point]]
+====
+[source,cpp,subs=normal]
+----
+char32_t decimal_point() const noexcept;
+----
+Returns the decimal point.
+====
+
+[[numpunct_get_thousands_sep]]
+====
+[source,cpp,subs=normal]
+----
+char32_t thousands_sep() const noexcept;
+----
+Returns the thousands separator.
+====
+
+[[numpunct_set_decimal_point]]
+====
+[source,cpp,subs=normal]
+----
+no_grouping &  decimal_point(char32_t ch) &  noexcept;
+no_grouping && decimal_point(char32_t ch) && noexcept;
+----
+[horizontal]
+Postcondition:: `decimal_point() == ch`
+====
+
+[[numpunct_set_thousands_sep]]
+====
+[source,cpp,subs=normal]
+----
+no_grouping &  thousands_sep(char32_t ch) &  noexcept;
+no_grouping && thousands_sep(char32_t ch) && noexcept;
+----
+[horizontal]
+Postcondition:: `thousands_sep() == ch`
+====
+
+=== Class template `default_numpunct` [[default_numpunct]]
+
+This is the default facet for the `<<numpunct_c,numpunct_c>><Base>` category.
+It was created to enable optimizations.
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+template <int Base>
+class default_numpunct final: {
+public:
+    using category = {numpunct_c}<Base>;
+
+    using digits_grouping::digits_grouping;
+    constexpr numpunct() = default;
+    constexpr numpunct(const numpunct& ) = default;
+    constexpr numpunct& operator=(const numpunct&) noexcept;
+    constexpr bool operator==(const numpunct& other) const noexcept;
+
+    constexpr {digits_grouping} grouping() const
+    constexpr {digits_distribution} distribute(unsiged digcount) const
+
+    constexpr bool any_group_separation(unsigned digcount) const noexcept;
+    constexpr STRF_HD unsigned thousands_sep_count(unsigned digcount) const noexcept;
+
+    constexpr char32_t decimal_point() const noexcept;
+
+    constexpr char32_t thousands_sep() const noexcept;
+};
+} // namespace strf
+----
+==== Public members
+====
+[source,cpp,subs=normal]
+----
+default_numpunct() noexcept;
+----
+[horizontal]
+Effect:: Initializes base class `{numpunct}<Base>` with `(unsigned)-1`.
+====
+
+====
+[source,cpp,subs=normal]
+----
+unsigned thousands_sep_count(unsigned digcount) const override;
+----
+[horizontal]
+Return value:: 0
+====
+====
+[source,cpp,subs=normal]
+----
+char32_t thousands_sep() const noexcept;
+----
+[horizontal]
+Return value:: `U','`
+====
+====
+[source,cpp,subs=normal]
+----
+char32_t decimal_point() const noexcept;
+----
+[horizontal]
+Return value::  `U'.'`
+====
+
+
+=== Class template `no_grouping` [[no_grouping]]
+This facet is optimized for situations where the thousands separator
+is never supposed to be printed.
+The only difference it has from `{default_numpunct}`
+is that it enables you to change the decimal point.
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+template <int Base>
+class no_grouping final: public {numpunct}<Base> {
+public:
+    using category = {numpunct_c}<Base>;
+
+    using digits_grouping::digits_grouping;
+    constexpr numpunct() = default;
+    constexpr numpunct(const numpunct& ) = default;
+    constexpr numpunct& operator=(const numpunct&) noexcept;
+    constexpr bool operator==(const numpunct& other) const noexcept;
+
+    constexpr {digits_grouping} grouping() const
+    constexpr {digits_distribution} distribute(unsiged digcount) const
+
+    constexpr bool any_group_separation(unsigned digcount) const noexcept;
+    constexpr STRF_HD unsigned thousands_sep_count(unsigned digcount) const noexcept;
+
+    constexpr char32_t   decimal_point() const noexcept;
+    constexpr numpunct&  decimal_point(char32_t ch) & noexcept;
+    constexpr numpunct&& decimal_point(char32_t ch) && noexcept;
+
+    constexpr char32_t   thousands_sep() const noexcept;
+
+private:
+    char32_t decimal_point_ = U'.';  // exposition only
+};
+
+} // namespace strf
+----
+==== Public members
+====
+[source,cpp,subs=normal]
+----
+no_grouping() noexcept;
+----
+[horizontal]
+Effect:: Initializes base class `{numpunct}<Base>` with `(unsigned)-1`.
+====
+====
+[source,cpp,subs=normal]
+----
+unsigned thousands_sep_count(unsigned digcount) const override;
+----
+[horizontal]
+Return value:: 0
+====
+====
+[source,cpp,subs=normal]
+----
+char32_t thousands_sep() const noexcept;
+----
+[horizontal]
+Return value:: `U','`
+====
+
+====
+[source,cpp,subs=normal]
+----
+char32_t decimal_point() const noexcept;
+----
+[horizontal]
+Return value::
+====
+====
+[source,cpp,subs=normal]
+----
+no_grouping &  decimal_point(char32_t ch) &  noexcept;
+no_grouping && decimal_point(char32_t ch) && noexcept;
+----
+[horizontal]
+Return value::  `*this`
+Postcondition:: `decimal_point() == ch`
+====
+
+=== Class digits_grouping [[digits_grouping]]
+__to-do__
+
+=== Class digits_grouping_iterator [[digits_grouping_iterator]]
+__to-do__
+
+=== Class digits_distribution [[digits_distribution]]
+__to-do__
+
+=== Class reverse_digits_groups [[reverse_digits_groups]]
+__to-do__
+
+

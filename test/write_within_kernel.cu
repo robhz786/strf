@@ -160,7 +160,7 @@ void test_various_types_with_cstr_writer()
 	ensure_cuda_success(cudaMemcpy(&host_side_buffer, device_side_buffer, buffer_size , cudaMemcpyDeviceToHost));
 	std::stringstream expected;
 	expected
-		<< "Printing a bool: " << bool(true) << '\n'
+		<< "Printing a bool: " << std::boolalpha << bool(true) << '\n'
 		<< "Printing a char: " << char('a') << '\n'
 		<< "Printing a unsigned char: " << static_cast<unsigned>('a') << '\n'
 		<< "Printing a short: " << short(-1234) << '\n'
