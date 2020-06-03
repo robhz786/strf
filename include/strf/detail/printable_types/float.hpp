@@ -66,7 +66,7 @@ struct double_dec_base
 
 #if ! defined(STRF_OMIT_IMPL)
 
-STRF_INLINE STRF_HD double_dec_base trivial_float_dec(
+STRF_FUNC_IMPL STRF_HD double_dec_base trivial_float_dec(
     std::uint32_t ieee_mantissa,
     std::int32_t biased_exponent,
     std::uint32_t k )
@@ -128,7 +128,7 @@ STRF_INLINE STRF_HD double_dec_base trivial_float_dec(
     return {m, e10};
 }
 
-STRF_INLINE STRF_HD double_dec_base trivial_double_dec(
+STRF_FUNC_IMPL STRF_HD double_dec_base trivial_double_dec(
     std::uint64_t ieee_mantissa,
     std::int32_t biased_exponent,
     std::uint32_t k )
@@ -197,7 +197,7 @@ STRF_INLINE STRF_HD double_dec_base trivial_double_dec(
     return {m, e10};
 }
 
-STRF_INLINE STRF_HD detail::double_dec decode(float f)
+STRF_FUNC_IMPL STRF_HD detail::double_dec decode(float f)
 {
     constexpr int bias = 127;
     constexpr int e_size = 8;
@@ -231,7 +231,7 @@ STRF_INLINE STRF_HD detail::double_dec decode(float f)
 }
 
 
-STRF_INLINE STRF_HD detail::double_dec decode(double d)
+STRF_FUNC_IMPL STRF_HD detail::double_dec decode(double d)
 {
     constexpr int bias = 1023;
     constexpr int e_size = 11; // bits in exponent
@@ -2308,7 +2308,7 @@ struct hex_double_printer_data
 
 #if ! defined(STRF_OMIT_IMPL)
 
-STRF_INLINE STRF_HD strf::detail::hex_double_printer_data init_hex_double_printer_data
+STRF_FUNC_IMPL STRF_HD strf::detail::hex_double_printer_data init_hex_double_printer_data
     ( float_format_data fmt, double x ) noexcept
 {
     strf::detail::hex_double_printer_data data;

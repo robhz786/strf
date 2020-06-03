@@ -762,7 +762,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
-STRF_INLINE STRF_HD void buffered_size_calculator::recycle()
+STRF_FUNC_IMPL STRF_HD void buffered_size_calculator::recycle()
 {
     auto p = this->pointer();
     if (p != buff_) {

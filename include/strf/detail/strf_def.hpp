@@ -32,11 +32,9 @@
 #endif
 
 #if defined(STRF_SOURCE)
-#define STRF_STATIC_LINKAGE static
-#define STRF_INLINE
+#define STRF_FUNC_IMPL
 #elif !defined(STRF_SEPARATE_COMPILATION)
-#define STRF_INLINE inline
-#define STRF_STATIC_LINKAGE inline
+#define STRF_FUNC_IMPL inline
 #endif
 
 #if defined(__has_cpp_attribute)

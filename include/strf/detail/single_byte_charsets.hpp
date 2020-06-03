@@ -156,7 +156,7 @@ ForwardIt STRF_HD lower_bound
     return first;
 }
 
-STRF_INLINE STRF_HD unsigned impl_iso_8859_3::encode(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_3::encode(char32_t ch)
 {
     if (ch < 0xA1) {
         return ch;
@@ -191,7 +191,7 @@ STRF_INLINE STRF_HD unsigned impl_iso_8859_3::encode(char32_t ch)
     return it != enc_map_end && it->key == ch ? it->value : 0x100;
 }
 
-STRF_INLINE STRF_HD char32_t impl_iso_8859_3::decode(std::uint8_t ch)
+STRF_FUNC_IMPL STRF_HD char32_t impl_iso_8859_3::decode(std::uint8_t ch)
 {
     if (ch < 0xA1) {
         return ch;
@@ -259,7 +259,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
-STRF_INLINE STRF_HD unsigned impl_iso_8859_15::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_iso_8859_15::encode_ext(char32_t ch)
 {
     switch(ch) {
         case 0x20AC: return 0xA4;
@@ -331,7 +331,7 @@ private:
 
 #if ! defined(STRF_OMIT_IMPL)
 
-STRF_INLINE STRF_HD unsigned impl_windows_1252::encode_ext(char32_t ch)
+STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1252::encode_ext(char32_t ch)
 {
     switch(ch) {
         case 0x81: return 0x81;

@@ -853,7 +853,7 @@ using utf32_impl = static_underlying_char_encoding<strf::eid_utf32>;
 
 #if ! defined(STRF_OMIT_IMPL)
 
-STRF_INLINE STRF_HD void utf8_to_utf32::transcode
+STRF_FUNC_IMPL STRF_HD void utf8_to_utf32::transcode
     ( strf::underlying_outbuff<4>& ob
     , const std::uint8_t* src
     , std::size_t src_size
@@ -927,7 +927,7 @@ STRF_INLINE STRF_HD void utf8_to_utf32::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf8_to_utf32::transcode_size
+STRF_FUNC_IMPL STRF_HD std::size_t utf8_to_utf32::transcode_size
     ( const std::uint8_t* src
     , std::size_t src_size
     , strf::surrogate_policy surr_poli )
@@ -974,7 +974,7 @@ STRF_INLINE STRF_HD std::size_t utf8_to_utf32::transcode_size
     return size;
 }
 
-STRF_INLINE STRF_HD void utf8_to_utf8::transcode
+STRF_FUNC_IMPL STRF_HD void utf8_to_utf8::transcode
     ( strf::underlying_outbuff<1>& ob
     , const std::uint8_t* src
     , std::size_t src_size
@@ -1059,7 +1059,7 @@ STRF_INLINE STRF_HD void utf8_to_utf8::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf8_to_utf8::transcode_size
+STRF_FUNC_IMPL STRF_HD std::size_t utf8_to_utf8::transcode_size
     ( const std::uint8_t* src
     , std::size_t src_size
     , strf::surrogate_policy surr_poli )
@@ -1117,7 +1117,7 @@ STRF_INLINE STRF_HD std::size_t utf8_to_utf8::transcode_size
     return size;
 }
 
-STRF_INLINE STRF_HD strf::codepoints_count_result utf8_impl::codepoints_fast_count
+STRF_FUNC_IMPL STRF_HD strf::codepoints_count_result utf8_impl::codepoints_fast_count
     ( const std::uint8_t* src
     , std::size_t src_size
     , std::size_t max_count ) noexcept
@@ -1134,7 +1134,7 @@ STRF_INLINE STRF_HD strf::codepoints_count_result utf8_impl::codepoints_fast_cou
     return {count, static_cast<std::size_t>(it - src)};
 }
 
-STRF_INLINE STRF_HD strf::codepoints_count_result utf8_impl::codepoints_robust_count
+STRF_FUNC_IMPL STRF_HD strf::codepoints_count_result utf8_impl::codepoints_robust_count
     ( const std::uint8_t* src
     , std::size_t src_size
     , std::size_t max_count
@@ -1184,7 +1184,7 @@ STRF_INLINE STRF_HD strf::codepoints_count_result utf8_impl::codepoints_robust_c
 }
 
 
-STRF_INLINE STRF_HD void utf8_impl::encode_fill
+STRF_FUNC_IMPL STRF_HD void utf8_impl::encode_fill
     ( strf::underlying_outbuff<1>& ob, std::size_t count, char32_t ch )
 {
     if (ch < 0x80) {
@@ -1216,7 +1216,7 @@ STRF_INLINE STRF_HD void utf8_impl::encode_fill
     }
 }
 
-STRF_INLINE STRF_HD std::uint8_t* utf8_impl::encode_char
+STRF_FUNC_IMPL STRF_HD std::uint8_t* utf8_impl::encode_char
     ( std::uint8_t* dest
     , char32_t ch ) noexcept
 {
@@ -1249,7 +1249,7 @@ STRF_INLINE STRF_HD std::uint8_t* utf8_impl::encode_char
 }
 
 
-// STRF_INLINE STRF_HD void utf8_impl::encode_char
+// STRF_FUNC_IMPL STRF_HD void utf8_impl::encode_char
 //     ( strf::underlying_outbuff<char_size>& ob
 //     , char32_t ch )
 // {
@@ -1289,7 +1289,7 @@ STRF_INLINE STRF_HD std::uint8_t* utf8_impl::encode_char
 //     }
 // }
 
-STRF_INLINE STRF_HD void utf32_to_utf8::transcode
+STRF_FUNC_IMPL STRF_HD void utf32_to_utf8::transcode
     ( strf::underlying_outbuff<1>& ob
     , const char32_t* src
     , std::size_t src_size
@@ -1344,7 +1344,7 @@ STRF_INLINE STRF_HD void utf32_to_utf8::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf32_to_utf8::transcode_size
+STRF_FUNC_IMPL STRF_HD std::size_t utf32_to_utf8::transcode_size
     ( const char32_t* src
     , std::size_t src_size
     , strf::surrogate_policy surr_poli )
@@ -1364,7 +1364,7 @@ STRF_INLINE STRF_HD std::size_t utf32_to_utf8::transcode_size
     return count;
 }
 
-STRF_INLINE STRF_HD void utf8_impl::write_replacement_char
+STRF_FUNC_IMPL STRF_HD void utf8_impl::write_replacement_char
     ( strf::underlying_outbuff<1>& ob )
 {
     auto dest_it = ob.pointer();
@@ -1377,7 +1377,7 @@ STRF_INLINE STRF_HD void utf8_impl::write_replacement_char
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD void utf16_to_utf32::transcode
+STRF_FUNC_IMPL STRF_HD void utf16_to_utf32::transcode
     ( strf::underlying_outbuff<4>& ob
     , const char16_t* src
     , std::size_t src_size
@@ -1419,7 +1419,7 @@ STRF_INLINE STRF_HD void utf16_to_utf32::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf16_to_utf32::transcode_size
+STRF_FUNC_IMPL STRF_HD std::size_t utf16_to_utf32::transcode_size
     ( const char16_t* src
     , std::size_t src_size
     , strf::surrogate_policy surr_poli )
@@ -1446,7 +1446,7 @@ STRF_INLINE STRF_HD std::size_t utf16_to_utf32::transcode_size
     return count;
 }
 
-STRF_INLINE STRF_HD void utf16_to_utf16::transcode
+STRF_FUNC_IMPL STRF_HD void utf16_to_utf16::transcode
     ( strf::underlying_outbuff<2>& ob
     , const char16_t* src
     , std::size_t src_size
@@ -1493,7 +1493,7 @@ STRF_INLINE STRF_HD void utf16_to_utf16::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf16_to_utf16::transcode_size
+STRF_FUNC_IMPL STRF_HD std::size_t utf16_to_utf16::transcode_size
     ( const char16_t* src
     , std::size_t src_size
     , strf::surrogate_policy surr_poli )
@@ -1518,7 +1518,7 @@ STRF_INLINE STRF_HD std::size_t utf16_to_utf16::transcode_size
     return count;
 }
 
-STRF_INLINE STRF_HD strf::codepoints_count_result utf16_impl::codepoints_fast_count
+STRF_FUNC_IMPL STRF_HD strf::codepoints_count_result utf16_impl::codepoints_fast_count
     ( const char16_t* src
     , std::size_t src_size
     , std::size_t max_count ) noexcept
@@ -1536,7 +1536,7 @@ STRF_INLINE STRF_HD strf::codepoints_count_result utf16_impl::codepoints_fast_co
     return {count, static_cast<std::size_t>(it - src)};
 }
 
-STRF_INLINE STRF_HD strf::codepoints_count_result utf16_impl::codepoints_robust_count
+STRF_FUNC_IMPL STRF_HD strf::codepoints_count_result utf16_impl::codepoints_robust_count
     ( const char16_t* src
     , std::size_t src_size
     , std::size_t max_count
@@ -1560,7 +1560,7 @@ STRF_INLINE STRF_HD strf::codepoints_count_result utf16_impl::codepoints_robust_
     return {count, static_cast<std::size_t>(it - src)};
 }
 
-STRF_INLINE STRF_HD char16_t* utf16_impl::encode_char
+STRF_FUNC_IMPL STRF_HD char16_t* utf16_impl::encode_char
     ( char16_t* dest
     , char32_t ch ) noexcept
 {
@@ -1579,7 +1579,7 @@ STRF_INLINE STRF_HD char16_t* utf16_impl::encode_char
 }
 
 
-// STRF_INLINE STRF_HD void utf16_impl::encode_char
+// STRF_FUNC_IMPL STRF_HD void utf16_impl::encode_char
 //     ( strf::underlying_outbuff<char_size>& ob
 //     , char32_t ch )
 // {
@@ -1599,7 +1599,7 @@ STRF_INLINE STRF_HD char16_t* utf16_impl::encode_char
 //     }
 // }
 
-STRF_INLINE STRF_HD void utf16_impl::encode_fill
+STRF_FUNC_IMPL STRF_HD void utf16_impl::encode_fill
     ( strf::underlying_outbuff<2>& ob, std::size_t count, char32_t ch )
 {
     if (ch < 0x10000) {
@@ -1616,7 +1616,7 @@ STRF_INLINE STRF_HD void utf16_impl::encode_fill
     }
 }
 
-STRF_INLINE STRF_HD void utf32_to_utf16::transcode
+STRF_FUNC_IMPL STRF_HD void utf32_to_utf16::transcode
     ( strf::underlying_outbuff<2>& ob
     , const char32_t* src
     , std::size_t src_size
@@ -1657,7 +1657,7 @@ STRF_INLINE STRF_HD void utf32_to_utf16::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf32_to_utf16::transcode_size
+STRF_FUNC_IMPL STRF_HD std::size_t utf32_to_utf16::transcode_size
     ( const char32_t* src
     , std::size_t src_size
     , strf::surrogate_policy surr_poli )
@@ -1673,7 +1673,7 @@ STRF_INLINE STRF_HD std::size_t utf32_to_utf16::transcode_size
     return count;
 }
 
-STRF_INLINE STRF_HD void utf16_impl::write_replacement_char
+STRF_FUNC_IMPL STRF_HD void utf16_impl::write_replacement_char
     ( strf::underlying_outbuff<2>& ob )
 {
     ob.ensure(1);
@@ -1681,7 +1681,7 @@ STRF_INLINE STRF_HD void utf16_impl::write_replacement_char
     ob.advance();
 }
 
-STRF_INLINE STRF_HD void utf32_to_utf32::transcode
+STRF_FUNC_IMPL STRF_HD void utf32_to_utf32::transcode
     ( strf::underlying_outbuff<4>& ob
     , const char32_t* src
     , std::size_t src_size
@@ -1723,13 +1723,13 @@ STRF_INLINE STRF_HD void utf32_to_utf32::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD void utf32_impl::encode_fill
+STRF_FUNC_IMPL STRF_HD void utf32_impl::encode_fill
     ( strf::underlying_outbuff<4>& ob, std::size_t count, char32_t ch )
 {
     strf::detail::write_fill(ob, count, ch);
 }
 
-STRF_INLINE STRF_HD void utf32_impl::write_replacement_char
+STRF_FUNC_IMPL STRF_HD void utf32_impl::write_replacement_char
     ( strf::underlying_outbuff<4>& ob )
 {
     ob.ensure(1);
@@ -1738,7 +1738,7 @@ STRF_INLINE STRF_HD void utf32_impl::write_replacement_char
 }
 
 
-STRF_INLINE STRF_HD void utf8_to_utf16::transcode
+STRF_FUNC_IMPL STRF_HD void utf8_to_utf16::transcode
     ( strf::underlying_outbuff<2>& ob
     , const std::uint8_t* src
     , std::size_t src_size
@@ -1818,7 +1818,7 @@ STRF_INLINE STRF_HD void utf8_to_utf16::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf8_to_utf16::transcode_size
+STRF_FUNC_IMPL STRF_HD std::size_t utf8_to_utf16::transcode_size
     ( const std::uint8_t* src
     , std::size_t src_size
     , strf::surrogate_policy surr_poli )
@@ -1869,7 +1869,7 @@ STRF_INLINE STRF_HD std::size_t utf8_to_utf16::transcode_size
     return size;
 }
 
-STRF_INLINE STRF_HD void utf16_to_utf8::transcode
+STRF_FUNC_IMPL STRF_HD void utf16_to_utf8::transcode
     ( strf::underlying_outbuff<1>& ob
     , const char16_t* src
     , std::size_t src_size
@@ -1929,7 +1929,7 @@ STRF_INLINE STRF_HD void utf16_to_utf8::transcode
     ob.advance_to(dest_it);
 }
 
-STRF_INLINE STRF_HD std::size_t utf16_to_utf8::transcode_size
+STRF_FUNC_IMPL STRF_HD std::size_t utf16_to_utf8::transcode_size
     ( const char16_t* src
     , std::size_t src_size
     , strf::surrogate_policy surr_poli )
