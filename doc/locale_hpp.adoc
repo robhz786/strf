@@ -1,0 +1,29 @@
+////
+Distributed under the Boost Software License, Version 1.0.
+
+See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt
+////
+
+= `<strf/locale.hpp>` Header file reference
+:source-highlighter: prettify
+:icons: font
+
+NOTE: This header files includes `<strf.hpp>`
+
+[source,cpp,subs=normal]
+----
+namespace strf {
+
+strf::numpunct<10> locale_numpunct() noexcept;
+
+}
+----
+
+====
+[source,cpp,subs=normal]
+----
+strf::numpunct<10> locale_numpunct() noexcept;
+----
+Return value::: A numpunct object that reflects the current locale.
+====

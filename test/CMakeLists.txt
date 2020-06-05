@@ -32,6 +32,7 @@ set(tests
 
 if (NOT ${STRF_FREESTANDING})
   list(APPEND tests
+    locale
     cfile_writer
     streambuf_writer
     string_writer )

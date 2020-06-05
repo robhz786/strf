@@ -29,4 +29,7 @@ asciidoctor -v to_string_hpp.adoc -o - \
     | sed 's/td.hdlist1{/td.hdlist1{min-width:9em;/g' \
     > out/to_string_hpp.html
 
+asciidoctor -v locale_hpp.adoc -o out/locale_hpp.html
+
+
 cp syntax.svg out/syntax.svg

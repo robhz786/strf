@@ -86,5 +86,123 @@ int main()
         TEST_TRUE(grouper.thousands_sep_count(18) == 2);
     }
 
+    //
+    //     digits_grouping from string
+    //
+    {
+        strf::digits_grouping result("");
+        strf::digits_grouping expected{};
+        TEST_TRUE(result == expected);
+    }
+    {
+        strf::digits_grouping result("\x03\x02");
+        strf::digits_grouping expected{3, 2};
+        TEST_TRUE(result == expected);
+    }
+    {
+        strf::digits_grouping result("\x03\xFF");
+        strf::digits_grouping expected{3, -1};
+        TEST_TRUE(result == expected);
+    }
+
+    //
+    //     digits_grouping_creator
+    //
+    {
+        strf::digits_grouping_creator creator;
+        strf::digits_grouping expected;
+        TEST_TRUE(creator.finish() == expected);
+        TEST_FALSE(creator.failed());
+    }
+    {
+        strf::digits_grouping_creator creator;
+        strf::digits_grouping expected;
+        TEST_TRUE(creator.finish_no_more_sep() == expected);
+        TEST_FALSE(creator.failed());
+    }
+    {
+        strf::digits_grouping_creator creator;
+        strf::digits_grouping expected{strf::digits_grouping::grp_max};
+        creator.push_high(strf::digits_grouping::grp_max);
+        TEST_TRUE(creator.finish() == expected);
+        TEST_FALSE(creator.failed());
+    }
+    {
+        strf::digits_grouping_creator creator;
+        strf::digits_grouping expected{strf::digits_grouping::grp_max, -1};
+        creator.push_high(strf::digits_grouping::grp_max);
+        TEST_TRUE(creator.finish_no_more_sep() == expected);
+        TEST_FALSE(creator.failed());
+    }
+    {
+        strf::digits_grouping_creator creator;
+        strf::digits_grouping expected{1, 2};
+        creator.push_high(1);
+        creator.push_high(2);
+        TEST_TRUE(creator.finish() == expected);
+        TEST_FALSE(creator.failed());
+    }
+    {
+        strf::digits_grouping_creator creator;
+        strf::digits_grouping expected{1, 2};
+        creator.push_high(1);
+        creator.push_high(2);
+        creator.push_high(2);
+        creator.push_high(2);
+        TEST_TRUE(creator.finish() == expected);
+        TEST_FALSE(creator.failed());
+    }
+    {
+        strf::digits_grouping_creator creator;
+        strf::digits_grouping expected{1, 2, 2, 2, -1};
+        creator.push_high(1);
+        creator.push_high(2);
+        creator.push_high(2);
+        creator.push_high(2);
+        TEST_TRUE(creator.finish_no_more_sep() == expected);
+        TEST_FALSE(creator.failed());
+    }
+
+    {
+        // too many groups
+        strf::digits_grouping_creator creator;
+        strf::digits_grouping expected{};
+        for (unsigned i = 0; i <= strf::digits_grouping::grps_count_max; ++i) {
+            creator.push_high(i);
+        }
+        TEST_TRUE(creator.finish() == expected);
+        TEST_TRUE(creator.failed())
+    }
+    {
+        // too many groups
+        strf::digits_grouping_creator creator;
+        strf::digits_grouping expected{};
+        for (unsigned i = 0; i < strf::digits_grouping::grps_count_max; ++i) {
+            creator.push_high(i);
+        }
+        TEST_TRUE(creator.finish_no_more_sep() == expected);
+        TEST_TRUE(creator.failed())
+    }
+    {
+        // negative group
+        strf::digits_grouping_creator creator;
+        strf::digits_grouping expected{};
+        creator.push_high(2);
+        creator.push_high(-1);
+        creator.push_high(3);
+        TEST_TRUE(creator.finish() == expected);
+        TEST_TRUE(creator.failed());
+    }
+    {
+        // group too big
+        strf::digits_grouping_creator creator;
+        strf::digits_grouping expected{};
+        creator.push_high(2);
+        creator.push_high(strf::digits_grouping::grp_max + 1);
+        creator.push_high(3);
+        TEST_TRUE(creator.finish() == expected);
+        TEST_TRUE(creator.failed())
+    }
+
     return test_finish();;
 }

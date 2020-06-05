@@ -566,6 +566,12 @@ constexpr bool equal(const T&a, const U&b)
             ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION                \
             , "test (" #expr ") failed. " );                            \
 
+#define TEST_FALSE(expr)                                                \
+    if ((expr))                                                         \
+        test_utils::test_failure                                        \
+            ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION                \
+            , "test (" #expr ") failed. " );                            \
+
 #define TEST_EQ(a, b)                                                   \
     if (!test_utils::equal((a), (b)))                                   \
         test_utils::test_failure                                        \
