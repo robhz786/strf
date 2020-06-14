@@ -5,6 +5,11 @@ using output_type = std::string&;
 
 #include "tmp/functions_declations.hpp"
 
+const char* format_string()
+{
+    return "";
+}
+
 int main()
 {
     std::string destination;

@@ -40,7 +40,7 @@ fmt_dir = os.path.normpath(pwd + "/../../externals/fmt")
 fmt_incl = "-I" + fmt_dir + "/include"
 strf_cpp = os.path.normpath(pwd + "/../../src/strf.cpp")
 
-files_per_program = [1, 21, 41]
+files_per_program = [1, 21, 31, 41]
 
 #def clean_abort(msg):
 #    print(msg)
@@ -48,38 +48,42 @@ files_per_program = [1, 21, 41]
 #    return(1)
 
 def empty_row() :
-    part1 = '[[{:^21}][{:^24}][{:^9}]'.format(' ', ' ', ' ', ' ')
-    part2 = '[{:9}]'.format('') * (1 + len(files_per_program))
-    return part1 + part2 + ']'
+    part1 = '|{:^21}|{:^24} |{:^9} '.format(' ', ' ', ' ', ' ')
+    part2 = '|{:9} '.format('') * (1 + len(files_per_program))
+    return part1 + part2
 
 def table_header() :
-    hdr = '[[{:^21}][{:^18}][{:^9}]'.format(
+    hdr = '|{:^21}|{:^18} '.format(
         'source file',
-        'comp. times(w,u,s)',
-        'obj. file')
+        'comp. times(w,u,s)' )
 
     for n in files_per_program:
-        hdr = hdr + '[{:>3} files]'.format(n)
-    return hdr + '[diff per file]]'
+        hdr = hdr + '|{:>3} files '.format(n)
+    return hdr + '| diff'
+
+def print_table_header(title):
+    print('\n[caption=]')
+    print(title)
+#    print('[cols=\"<22m,^18m,>10m,>10m,>10m,>15m\"]\n|===')
+    print('|===')
+#    print(table_header())
 
 def benchmark(build_type, flags, basename, main_src, libs):
     num_sourcefiles = max(files_per_program)
     compile_stats = create_obj_files(build_type, flags, basename, num_sourcefiles)
     programs_size = build_programs(build_type, main_src, basename,
                                    libs, files_per_program)
-    result = '[[{:<21}][{:>4.2f} , {:>4.2f} , {:>4.2f}][{:>9.1f}]'.format(
-        basename,
+    result = '|{:<21}|{:>4.2f} , {:>4.2f} , {:>4.2f} '.format(
+        '{' + basename + '}',
         compile_stats['wall time'],
         compile_stats['user time'],
         compile_stats['system time'],
-        float(compile_stats['output size']) / 1000.0,
+        #float(compile_stats['output size']) / 1000.0,
     )
     for s in programs_size:
-        result = result + '[{:>9.1f}]'.format(float(s) / 1000.0)
-    avr_increment =  float(programs_size[-1] - programs_size[0]) \
-        / float(files_per_program[-1] - files_per_program[-0]) \
-        / 1000.0
-    print(result + '[{:>9.3f}]]'.format(avr_increment))
+        result = result + '|{:>9.1f} '.format(float(s) / 1000.0)
+    diff =  float(programs_size[-1] - programs_size[-2]) / 1000.0
+    print(result + '|{:>9.1f}'.format(diff))
 
 def create_obj_files(build_type, flags, basename, num_objs) :
     wtime = 0.0
@@ -282,7 +286,6 @@ samples_O3 = \
 , ('to_ostream',        [ ([lib_strf_O3], strf_static_lib, '_strf'   )
                         , ([lib_strf_O3], strf_static_lib, '_strf_tr')
                         , ([libfmt_O3],   fmt_static_lib,  '_fmtlib' )
-                        , ([],            [],              '_itself' )
 ] )
 ]
 
@@ -304,7 +307,6 @@ samples_Os = \
 , ('to_ostream',        [ ([lib_strf_Os], strf_static_lib, '_strf'   )
                         , ([lib_strf_Os], strf_static_lib, '_strf_tr')
                         , ([libfmt_Os],   fmt_static_lib,  '_fmtlib' )
-                        , ([],            [],              '_itself' )
 ] )
 ]
 
@@ -326,7 +328,6 @@ samples_debug = \
 , ('to_ostream',        [ ([lib_strf_db], strf_static_lib, '_strf'   )
                         , ([lib_strf_db], strf_static_lib, '_strf_tr')
                         , ([libfmt_db],   fmt_static_lib,  '_fmtlib' )
-                        , ([],            [],              '_itself' )
 ] ) ]
 
 samples_O3_header_only = \
@@ -384,34 +385,30 @@ samples_debug_header_only = \
 ] )
 ]
 
-print('\n[table Release mode with -Os flag / linked libraries \n')
 print(table_header())
+
+print_table_header('.Release mode with -Os flag / linked libraries')
 benchmark_list(build_type_Os(), samples_Os)
-print(']\n')
+print('|===\n')
 
-print('\n[table Release mode with -Os flag / header only libraries \n')
-print(table_header())
+print_table_header('.Release mode with -Os flag / header only libraries')
 benchmark_list(build_type_Os(), samples_Os_header_only)
-print(']\n')
+print('|===\n')
 
-print('\n[table Release mode with -O3 flag / linked libraries \n')
-print(table_header())
+print_table_header('.Release mode with -O3 flag / linked libraries')
 benchmark_list(build_type_O3(), samples_O3)
-print(']\n')
+print('|===\n')
 
-print('\n[table Release mode with -O3 flag / header only libraries \n')
-print(table_header())
+print_table_header('.Release mode with -O3 flag / header only libraries')
 benchmark_list(build_type_O3(), samples_O3_header_only)
-print(']\n')
+print('|===\n')
 
-print('\n[table Debug mode / linked libraries \n')
-print(table_header())
+print_table_header('.Debug mode / linked libraries')
 benchmark_list(build_type_debug(), samples_debug)
-print(']\n')
+print('|===\n')
 
-print('\n[table Debug mode / header only libraries \n')
-print(table_header())
+print_table_header('.Debug mode / header only libraries')
 benchmark_list(build_type_debug(), samples_debug_header_only)
-print(']\n')
+print('|===\n')
 
 shutil.rmtree(tmp_dir, ignore_errors=True)

@@ -576,6 +576,12 @@ constexpr STRF_HD auto sci(const T& value)
     return fmt(value).sci();
 }
 
+template <typename T>
+constexpr STRF_HD auto gen(const T& value)
+{
+    return fmt(value).gen();
+}
+
 template <typename T, typename P>
 constexpr STRF_HD auto fixed(const T& value, P precision)
 {
@@ -586,6 +592,12 @@ template <typename T, typename P>
 constexpr STRF_HD auto sci(const T& value, P precision)
 {
     return fmt(value).sci().p(precision);
+}
+
+template <typename T, typename P>
+constexpr STRF_HD auto gen(const T& value, P precision)
+{
+    return fmt(value).gen().p(precision);
 }
 
 template <typename T>

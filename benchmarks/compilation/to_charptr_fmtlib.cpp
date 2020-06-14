@@ -1,6 +1,6 @@
 #include "fmt/format.h"
 #include <cstdio>
-#include "args.hpp"
+#include "args_shuffle.hpp"
 
 void FUNCTION_NAME (int)
 {
@@ -8,15 +8,12 @@ void FUNCTION_NAME (int)
     char buff[buff_len];
     char* dest = buff;
 
-    fmt::format_to
-        ( dest, "blah blah blah {:>10} {} {:>+5} blah {:>#6o} {:x} {}\n"
-        , arg_a0, arg_a1, arg_a2, arg_a3, arg_a4, arg_a5 );
-    dest = fmt::format_to
-        ( dest, "blah blah {} {:>9}{} {} {:>+5} blah {:>#6o} {:x} {}\n"
-        , arg_b0, arg_b1, arg_b2, arg_b3, arg_b4, arg_b5, arg_b6, arg_b7 );
-    dest = fmt::format_to
-        ( dest, "blah blah {} {:>10} {} {:>+5} {} {:>#6o} {:x} {}\n"
-        , arg_c0, arg_c1, arg_c2, arg_c3, arg_c4, arg_c5, arg_c6, arg_c7 );
+    dest = fmt::format_to(dest, "{}", ARG(0));
+    dest = fmt::format_to(dest, "{}{}", ARG(1), ARG(2));
+    dest = fmt::format_to(dest, "{}{}{}", ARG(3), ARG(4), ARG(5));
+    dest = fmt::format_to(dest, "{}{}{}{}", ARG(6), ARG(7), ARG(8), ARG(9));
+    dest = fmt::format_to(dest, "{}{}{}{}{}", ARG(10), ARG(11), ARG(12), ARG(13), ARG(14));
+    dest = fmt::format_to(dest, "{}{}{}{}{}{}", ARG(15), ARG(16), ARG(17), ARG(18), ARG(19), ARG(20));
 
     std::puts(buff);
 }
