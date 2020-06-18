@@ -135,6 +135,8 @@ struct digits_distribution
     unsigned highest_group;
 };
 
+class digits_grouping_creator;
+
 class digits_grouping
 {
     using common = strf::detail::digits_group_common;
@@ -168,45 +170,17 @@ public:
         STRF_ASSERT(grps_ != 0);
     }
 
-    constexpr STRF_HD digits_grouping(const char* str, std::size_t len) noexcept
-        : grps_(no_more_sep_)
-    {
-        constexpr char grp_stop = CHAR_MAX;
-        if (len > grps_count_max) {
-            len = grps_count_max;
-        }
-        if (len != 0 && str[0] != 0 && str[0] != grp_stop) {
-            grps_ = 0;
-            STRF_ASSERT(0 < str[0] && str[0] <= grp_max);
-            char previous_grp = str[0];
-            grps_ = previous_grp;
-            int shift = 5;
-            for(unsigned i = 1; i < len; ++i) {
-                char grp = str[i];
-                if (grp == 0) {
-                    break;
-                }
-                STRF_ASSERT((0 < grp && grp <= grp_max) || grp == grp_stop);
-                unsigned g = (grp & grp_bits_mask_) << shift;
-                grps_ = grps_ | g;
-                if (grp == grp_stop) {
-                    break;
-                }
-                shift += grp_bits_count_;
-                previous_grp = grp;
-            }
-        }
-        STRF_ASSERT(grps_ != 0);
-    }
-    constexpr STRF_HD digits_grouping(const char* str) noexcept
-        : digits_grouping(str, grps_count_max)
-    {
-    }
+    STRF_HD digits_grouping(const char* str) noexcept;
+
     constexpr digits_grouping(const digits_grouping&) noexcept = default;
 
     constexpr STRF_HD bool operator==(const digits_grouping& other) const noexcept
     {
         return grps_ == other.grps_;
+    }
+    constexpr STRF_HD bool operator!=(const digits_grouping& other) const noexcept
+    {
+        return grps_ != other.grps_;
     }
     constexpr STRF_HD digits_grouping& operator=
         ( const digits_grouping& other ) noexcept
@@ -269,7 +243,19 @@ public:
         return dist;
     }
 
+    constexpr STRF_HD bool empty() const noexcept
+    {
+        return grps_ == no_more_sep_;
+    }
+
 private:
+    friend class digits_grouping_creator;
+    struct underlying_tag {};
+
+    constexpr STRF_HD digits_grouping(underlying_tag, underlying_int_t_ grps)
+        : grps_(grps)
+    {
+    }
 
     constexpr static STRF_HD underlying_int_t_ ctor_()
     {
@@ -298,6 +284,98 @@ constexpr STRF_HD digits_grouping_iterator::digits_grouping_iterator(digits_grou
     STRF_ASSERT(lowest_group() != 0);
 }
 
+class digits_grouping_creator
+{
+    using common = strf::detail::digits_group_common;
+    using underlying_int_t_ = common::underlying_int_t_;
+    constexpr static unsigned grp_bits_count_ = common::grp_bits_count_;
+    constexpr static unsigned grp_bits_mask_ = common::grp_bits_mask_;
+    constexpr static unsigned no_more_sep_ = common::no_more_sep_;
+    constexpr static int grp_max_ = common::grp_max;
+    constexpr static unsigned grps_count_max_ = common::grps_count_max;
+
+public:
+
+    constexpr digits_grouping_creator() noexcept = default;
+    constexpr digits_grouping_creator(const digits_grouping_creator&) noexcept = delete;
+
+    constexpr STRF_HD void push_high(int grp) noexcept
+    {
+        if (failed_ || grp < 1 || grp > grp_max_ || ! enough_space_to_push()) {
+            failed_ = true;
+        } else {
+            reverse_grps_ = ( reverse_grps_ << grp_bits_count_ ) | grp;
+        }
+    }
+
+    constexpr STRF_HD bool failed() const noexcept
+    {
+        return failed_;
+    }
+
+    constexpr STRF_HD strf::digits_grouping finish_no_more_sep() noexcept
+    {
+        if (failed_ || ! enough_space_to_push()) {
+            failed_ = true;
+            return {};
+        }
+        underlying_int_t_ grps = no_more_sep_;
+        while (reverse_grps_) {
+            grps = (grps << grp_bits_count_) | (reverse_grps_ & grp_bits_mask_);
+            reverse_grps_ >>= grp_bits_count_;
+        }
+        return {strf::digits_grouping::underlying_tag{}, grps};
+    }
+
+    constexpr STRF_HD strf::digits_grouping finish() noexcept
+    {
+        if (failed_ || reverse_grps_ == 0) {
+            return {};
+        }
+        underlying_int_t_ grps = 0;
+        do {
+            auto grp = reverse_grps_ & grp_bits_mask_;
+            reverse_grps_ >>= grp_bits_count_;
+            if (grp != grps) {
+                grps = (grps << grp_bits_count_) | grp;
+            }
+        } while (reverse_grps_);
+        return {strf::digits_grouping::underlying_tag{}, grps};
+    }
+
+private:
+
+    constexpr STRF_HD bool enough_space_to_push() const noexcept
+    {
+        return 0 == (reverse_grps_ & (grp_bits_mask_ << ((grps_count_max_ - 1) * grp_bits_count_)));
+    }
+
+    underlying_int_t_ reverse_grps_ = 0;
+    bool failed_ = false;
+};
+
+#if ! defined(STRF_OMIT_IMPL)
+
+STRF_FUNC_IMPL STRF_HD digits_grouping::digits_grouping(const char* str) noexcept
+{
+    strf::digits_grouping_creator creator;
+    while(true) {
+        char ch = *str;
+        if (ch == '\0') {
+            *this = creator.finish();
+            break;
+        }
+        if (0 != (ch & 0x80)) {
+            *this = creator.finish_no_more_sep();
+            break;
+        }
+        ++str;
+        creator.push_high(ch);
+    }
+}
+
+#endif // ! defined(STRF_OMIT_IMPL)
+
 template <int Base> struct numpunct_c;
 
 template <int Base>
@@ -310,6 +388,11 @@ public:
     constexpr numpunct(const numpunct& ) = default;
 
     using strf::digits_grouping::digits_grouping;
+
+    constexpr STRF_HD explicit numpunct(const digits_grouping& grp) noexcept
+        : strf::digits_grouping(grp)
+    {
+    }
 
     constexpr STRF_HD numpunct& operator=(const numpunct& other) noexcept
     {
@@ -326,6 +409,16 @@ public:
     constexpr STRF_HD strf::digits_grouping grouping() const
     {
         return *this;
+    }
+    constexpr STRF_HD numpunct& grouping(strf::digits_grouping grp) & noexcept
+    {
+        strf::digits_grouping::operator=(grp);
+        return *this;
+    }
+    constexpr STRF_HD numpunct&& grouping(strf::digits_grouping grp) && noexcept
+    {
+        strf::digits_grouping::operator=(grp);
+        return static_cast<numpunct&&>(*this);
     }
     using strf::digits_grouping::distribute;
 
@@ -461,7 +554,7 @@ public:
     {
         return U'.';
     }
-    constexpr operator strf::numpunct<Base> () const noexcept
+    constexpr STRF_HD operator strf::numpunct<Base> () const noexcept
     {
         return {};
     }
@@ -526,6 +619,326 @@ template <typename CharT, typename FPack, typename InputT, unsigned Base>
 constexpr bool has_punct = has_punct_impl<CharT, FPack, InputT, Base>::has_punct;
 
 } // namespace detail
+
+
+constexpr auto numpunct_aa_DJ         = strf::numpunct<10>{ }.decimal_point(U'.');
+constexpr auto numpunct_aa_ER         = strf::numpunct<10>{ }.decimal_point(U'.');
+constexpr auto numpunct_aa_ET         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_af_ZA         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_agr_PE        = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_ak_GH         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_am_ET         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_an_ES         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_anp_IN        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ar_AE         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ar_BH         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ar_DZ         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ar_EG         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ar_IN         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ar_IQ         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ar_JO         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ar_KW         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ar_LB         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ar_LY         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ar_MA         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ar_OM         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ar_QA         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ar_SA         = strf::numpunct<10>{ }.decimal_point(U'.');
+constexpr auto numpunct_ar_SD         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ar_SS         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ar_SY         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ar_TN         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ar_YE         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_as_IN         = strf::numpunct<10>{3, 2}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ast_ES        = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_ayc_PE        = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_az_AZ         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_az_IR         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_be_BY         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_bem_ZM        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ber_DZ        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ber_MA        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_bg_BG         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_bhb_IN        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_bho_IN        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_bho_NP        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_bi_VU         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_bn_BD         = strf::numpunct<10>{3, 2}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_bn_IN         = strf::numpunct<10>{3, 2}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_bo_CN         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_bo_IN         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_br_FR         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_brx_IN        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_bs_BA         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_byn_ER        = strf::numpunct<10>{ }.decimal_point(U'.');
+constexpr auto numpunct_C             = strf::numpunct<10>{ }.decimal_point(U'.');
+constexpr auto numpunct_ca_AD         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_ca_ES         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_ca_FR         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_ca_IT         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_ce_RU         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_chr_US        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ckb_IQ        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_cmn_TW        = strf::numpunct<10>{4}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_crh_UA        = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_csb_PL        = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_cs_CZ         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_cv_RU         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_cy_GB         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_da_DK         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_de_AT         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_de_BE         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_de_CH         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U'\'');
+constexpr auto numpunct_de_DE         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_de_IT         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_de_LI         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U'\'');
+constexpr auto numpunct_de_LU         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_doi_IN        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_dv_MV         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_dz_BT         = strf::numpunct<10>{3, 2}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_el_CY         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_el_GR         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_en_AG         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_en_AU         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_en_BW         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_en_CA         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_en_DK         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_en_GB         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_en_HK         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_en_IE         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_en_IL         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_en_IN         = strf::numpunct<10>{3, 2}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_en_NG         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_en_NZ         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_en_PH         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_en_SC         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_en_SG         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_en_US         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_en_ZA         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_en_ZM         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_en_ZW         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_eo            = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_eo_US         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_es_AR         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_es_BO         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_es_CL         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_es_CO         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_es_CR         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_es_CU         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_es_DO         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_es_EC         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_es_ES         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_es_GT         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_es_HN         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_es_MX         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(0x202f);
+constexpr auto numpunct_es_NI         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_es_PA         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_es_PE         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_es_PR         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_es_PY         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_es_SV         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_es_US         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_es_UY         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_es_VE         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_et_EE         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_eu_ES         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_eu_FR         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_fa_IR         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ff_SN         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_fi_FI         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_fil_PH        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_fo_FO         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_fr_BE         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_fr_CA         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_fr_CH         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U'\'');
+constexpr auto numpunct_fr_FR         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_fr_LU         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_fur_IT        = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_fy_DE         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_fy_NL         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_ga_IE         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_gd_GB         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_gez_ER        = strf::numpunct<10>{ }.decimal_point(U'.');
+constexpr auto numpunct_gez_ET        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_gl_ES         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_gu_IN         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_gv_GB         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_hak_TW        = strf::numpunct<10>{4}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ha_NG         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_he_IL         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_hif_FJ        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_hi_IN         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_hne_IN        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_hr_HR         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_hsb_DE        = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_ht_HT         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_hu_HU         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_hy_AM         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ia_FR         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_id_ID         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_ig_NG         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ik_CA         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_is_IS         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_it_CH         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U'\'');
+constexpr auto numpunct_it_IT         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_iu_CA         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ja_JP         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_kab_DZ        = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_ka_GE         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_kk_KZ         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_kl_GL         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_km_KH         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_kn_IN         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_kok_IN        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ko_KR         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ks_IN         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ku_TR         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_kw_GB         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ky_KG         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_lb_LU         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_lg_UG         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_li_BE         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_lij_IT        = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_li_NL         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_ln_CD         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_lo_LA         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_lt_LT         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_lv_LV         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_lzh_TW        = strf::numpunct<10>{4}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_mag_IN        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_mai_IN        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_mai_NP        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_mfe_MU        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(0x202f);
+constexpr auto numpunct_mg_MG         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_mhr_RU        = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_mi_NZ         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_miq_NI        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_mjw_IN        = strf::numpunct<10>{3, 2}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_mk_MK         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_ml_IN         = strf::numpunct<10>{3, 2}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_mni_IN        = strf::numpunct<10>{3, 2}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_mn_MN         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_mr_IN         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ms_MY         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_mt_MT         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_my_MM         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_nan_TW        = strf::numpunct<10>{4}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_nb_NO         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_nds_DE        = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_nds_NL        = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_ne_NP         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_nhn_MX        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(0x202f);
+constexpr auto numpunct_niu_NU        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_niu_NZ        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_nl_AW         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_nl_BE         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_nl_NL         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_nn_NO         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_nr_ZA         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_nso_ZA        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_oc_FR         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_om_ET         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_om_KE         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_or_IN         = strf::numpunct<10>{3, 2}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_os_RU         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_pa_IN         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_pap_AW        = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_pap_CW        = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_pa_PK         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_pl_PL         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_POSIX         = strf::numpunct<10>{ }.decimal_point(U'.');
+constexpr auto numpunct_ps_AF         = strf::numpunct<10>{3}.decimal_point(0x66b).thousands_sep(0x66c);
+constexpr auto numpunct_pt_BR         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_pt_PT         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_quz_PE        = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_raj_IN        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ro_RO         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_ru_RU         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_ru_UA         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_rw_RW         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_sa_IN         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_sat_IN        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_sc_IT         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_sd_IN         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_sd_PK         = strf::numpunct<10>{3, 2}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_se_NO         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_sgs_LT        = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_shn_MM        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_shs_CA        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_sid_ET        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_si_LK         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_sk_SK         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_sl_SI         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_sm_WS         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_so_DJ         = strf::numpunct<10>{ }.decimal_point(U'.');
+constexpr auto numpunct_so_ET         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_so_KE         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_so_SO         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_sq_AL         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_sq_MK         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_sr_ME         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_sr_RS         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_ss_ZA         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_st_ZA         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_sv_FI         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_sv_SE         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_sw_KE         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_sw_TZ         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_szl_PL        = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_ta_IN         = strf::numpunct<10>{3, 2}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ta_LK         = strf::numpunct<10>{3, 2}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_tcy_IN        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_te_IN         = strf::numpunct<10>{3, 2}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_tg_TJ         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_the_NP        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_th_TH         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ti_ER         = strf::numpunct<10>{ }.decimal_point(U'.');
+constexpr auto numpunct_ti_ET         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_tig_ER        = strf::numpunct<10>{ }.decimal_point(U'.');
+constexpr auto numpunct_tk_TM         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_tl_PH         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_tn_ZA         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_to_TO         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_tpi_PG        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_tr_CY         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_tr_TR         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_ts_ZA         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_tt_RU         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_tt_RU_iqtelif = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_ug_CN         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_uk_UA         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(0x202f);
+constexpr auto numpunct_unm_US        = strf::numpunct<10>{2, 2, 2, 3}.decimal_point(U'.').thousands_sep(0x202f);
+constexpr auto numpunct_ur_IN         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ur_PK         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_uz_UZ         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_ve_ZA         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_vi_VN         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_wa_BE         = strf::numpunct<10>{3}.decimal_point(U',').thousands_sep(U'.');
+constexpr auto numpunct_wae_CH        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U'\'');
+constexpr auto numpunct_wal_ET        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_wo_SN         = strf::numpunct<10>{ }.decimal_point(U',');
+constexpr auto numpunct_xh_ZA         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_yi_US         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_yo_NG         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_yue_HK        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_yuw_PG        = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_zh_CN         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_zh_HK         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_zh_SG         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_zh_TW         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+constexpr auto numpunct_zu_ZA         = strf::numpunct<10>{3}.decimal_point(U'.').thousands_sep(U',');
+
+// Could not correctly implement locales below:
+// bg_BG  : The thousands separator should only appear in numbers larger than 9999.
+//          See  https://forum.opencart.com/viewtopic.php?t=144907
+// kab_DZ : I could not find out what is the thousands separator.
+// ln_CD  : I could not find out what is the thousands separator.
+
+// https://lh.2xlibre.net/locale/bg_BG
+// https://lh.2xlibre.net/locale/kab_DZ
+// https://lh.2xlibre.net/locale/ln_CD/
+
+
 } // namespace strf
 
 #endif  // STRF_DETAIL_FACETS_NUMPUNCT_HPP

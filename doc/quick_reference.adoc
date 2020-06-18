@@ -18,8 +18,7 @@ http://www.boost.org/LICENSE_1_0.txt
 
 The expression `fmt(_arg_)` returns a printable object that contains a copy or reference of
 `arg` as well as format information that can be edited with the
-member functions below, following the
-https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Named_Parameter[named paramenter idiom],
+member functions listed in the tables below.
 
 .Example
 [source,cpp]
@@ -142,7 +141,13 @@ that work as alias to format functions:
 |`dec(_arg_)`                  |`fmt(_arg_).oct()`
 |`oct(_arg_)`                  |`fmt(_arg_).dec()`
 |`hex(_arg_)`                  |`fmt(_arg_).hex()`
-|`multi(_arg_, _count_)        |`fmt(_arg_).multi(_count_)`
+|`sci(_arg_)`                  |`fmt(_arg_).sic()`
+|`fixed(_arg_)`                |`fmt(_arg_).fixed()`
+|`gen(_arg_)`                  |`fmt(_arg_).gen()`
+|`sci(_arg_, _precision_)`     |`fmt(_arg_).sic().p(_precision_)`
+|`fixed(_arg_, _precision_)`   |`fmt(_arg_).fixed().p(_precision_)`
+|`gen(_arg_, _precision_)`     |`fmt(_arg_).gen().p(_precision_)`
+|`multi(_arg_, _count_)`       |`fmt(_arg_).multi(_count_)`
 |`sani(_arg_, _enc_)`          |`fmt(_arg_).sani(_enc_)`
 |`conv(_arg_, _enc_)`          |`fmt(_arg_).conv(_enc_)`
 |`sani(_arg_)`                 |`fmt(_arg_).sani()`
@@ -152,8 +157,8 @@ that work as alias to format functions:
 .Example
 [source,cpp]
 ----
-auto str = strf::to_string( +*strf::center(1.0, 15, U'~').sci() );
-assert(str == "~~~~+1.e+01~~~~")
+auto str = strf::to_string( +*strf::center(1.0, 9, U'~') );
+assert(str == "~~~+1.~~~")
 ----
 == Destinations
 
@@ -251,7 +256,7 @@ Return value:: a value `r`, such that:
 Note:: The termination character `'\0'` is always written.
 Supports reserve:: No
 
-
+////
 [source,cpp,subs=normal]
 ----
 namespace strf {
@@ -275,7 +280,7 @@ template<std::size_t N> /{asterisk}\...{asterisk}/ to(char32_t (&dest)[N]);
 template<std::size_t N> /{asterisk}\...{asterisk}/ to(wchar_t  (&dest)[N]);
 }
 ----
-
+////
 
 ====
 
@@ -423,9 +428,9 @@ The table below lists the concrete types that derivate from the `basic_outbuff<_
 
 where:
 
-* `CharT` is a charater type.
-* `Traits` is a https://en.cppreference.com/w/cpp/named_req/CharTraits[_CharTraits_] type.
-* `A` is an https://en.cppreference.com/w/cpp/named_req/Allocator[_Allocator_] type
+* `__CharT__` is a charater type.
+* `__Traits__` is a https://en.cppreference.com/w/cpp/named_req/CharTraits[_CharTraits_] type.
+* `__A__` is an https://en.cppreference.com/w/cpp/named_req/Allocator[_Allocator_] type
 
 ////
 
@@ -586,7 +591,7 @@ Comments::
 [source,cpp]
 ----
 auto str = strf::to_string.tr
-    ( "You can learn more about python{-the programming language, not the reptile} at {}"
+    ( "You can learn more about python{-the programming language, not the animal species} at {}"
     , "www.python.org" );
 assert(str == "You can learn more about python at www.python.org");
 ----
@@ -653,17 +658,15 @@ The `numpunct` class template defines punctuation for
 integers, `void*` and floating points. It comprises
 the "thousands" separator, the decimal point and the
 grouping pattern.
-The integer sequence passed to the constructor defines the grouping:
+The integer sequence passed to the constructor defines the grouping.
+The last group is repeated, unless you add the `-1` argument:
 [source,cpp]
 ----
-auto str = strf::to_string.with(numpunct<10>(1, 2, 3))(1000000000000ll);
-assert(str == "1,000,000,000,00,0");
-----
-The value `-1` implies no further separator:
-[source,cpp]
-----
-auto str = strf::to_string.with(numpunct<10>(1, 2, 3, -1))(1000000000000ll);
-assert(str == "1000000,000,00,0");
+auto str1 = strf::to_string.with(numpunct<10>(1, 2, 3))(1000000000000ll);
+assert(str1 == "1,000,000,000,00,0");
+
+auto str2 = strf::to_string.with(numpunct<10>(1, 2, 3, -1))(1000000000000ll);
+assert(str2 == "1000000,000,00,0");
 ----
 This `numpunct` constructor has some preconditions:
 
@@ -691,6 +694,26 @@ my_punct2.decimal_point(U'^');
 auto str = strf::to_string.with(my_punct2)(1000000.5);
 assert(str == "1;000;000^5");
 ----
+
+=== Numeric punctuation from locale
+
+The header file `<strf/locale.hpp>` declares the `locale_numpunct` function,
+which returns a `numpunct<10>` object that reflects the current locale:
+
+[source,cpp,subs=normal]
+----
+#include <strf/locale.hpp>
+#include <strf/to_string.hpp>
+
+void sample() {
+    if (setlocale(LC_NUMERIC, "de_DE")) {
+        const auto punct_de = strf::locale_numpunct();
+        auto str = strf::to_string.with(punct_de) (*strf::fixed(10000.5))
+        assert(str == "10.000,5");
+    }
+}
+----
+
 
 [[lettercase]]
 == Letter case

@@ -85,7 +85,7 @@ jobs:
     - os: linux
       before_install:
         - sudo apt-get update
-        - sudo apt-get -y install libperlio-gzip-perl libjson-perl
+        - sudo apt-get -y install libperlio-gzip-perl libjson-perl locales-all
       env: [ "COMMENT=codecov.io", "CC=gcc-7", "CXX=g++-7", "CXX_STANDARD=14", "GCOV=gcov-7" ]
       addons: *gcc-7
       script:

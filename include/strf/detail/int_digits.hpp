@@ -14,6 +14,18 @@ namespace strf {
 
 namespace detail {
 
+template <typename CharT>
+constexpr bool is_digit(CharT ch)
+{
+    return static_cast<CharT>('0') <= ch && ch <= static_cast<CharT>('9');
+}
+
+template <typename CharT>
+constexpr bool not_digit(CharT ch)
+{
+    return ch < static_cast<CharT>('0') || static_cast<CharT>('9') < ch;
+}
+
 inline STRF_HD unsigned long long pow10(unsigned n) noexcept
 {
     static const unsigned long long p10[] =

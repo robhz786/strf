@@ -1,20 +1,18 @@
 #include <cstdio>
-#include "args.hpp"
+#include "args_shuffle.hpp"
 
 void FUNCTION_NAME (int)
 {
     constexpr std::size_t buff_len = 1000;
     char buff[buff_len];
     char* out = buff;
-    int len = 0;
-    len = std::sprintf(out, "blah blah blah %10s %u %+5d blah %#6o %x %d\n",
-                       arg_a0, arg_a1, arg_a2, arg_a3, arg_a4, arg_a5);
-    out += len;
-    len = std::sprintf(out, "blah blah %s %9s%c %lu %+5d blah %#6llo %x %c\n",
-                       arg_b0, arg_b1, arg_b2, arg_b3, arg_b4, arg_b5, arg_b6, arg_b7);
-    out += len;
-    len = std::sprintf(out, "blah blah %s %10s %d %+5d %s %#6lo %lx %llu\n",
-                       arg_c0, arg_c1, arg_c2, arg_c3, arg_c4, arg_c5, arg_c6, arg_c7);
+
+    out += std::sprintf(out, format_string(), ARG(0));
+    out += std::sprintf(out, format_string(), ARG(1), ARG(2));
+    out += std::sprintf(out, format_string(), ARG(3), ARG(4), ARG(5));
+    out += std::sprintf(out, format_string(), ARG(6), ARG(7), ARG(8), ARG(9));
+    out += std::sprintf(out, format_string(), ARG(10), ARG(11), ARG(12), ARG(13), ARG(14));
+    std::sprintf(out, format_string(), ARG(15), ARG(16), ARG(17), ARG(18), ARG(19), ARG(20));
 
     std::puts(buff);
 }
