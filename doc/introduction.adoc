@@ -69,6 +69,8 @@ destinations -- those that allocate memory, which is the case of `to_string`.
 Using `reserve(size)` causes the destination to reserve enough space
 to store `size` characters. `reserve_calc()` has the same effect,
 except that it calculates the number of characters for you.
+Actually, `reserve_calc()` is currently the default, but this
+may change in future.
 
 === Facets
 
