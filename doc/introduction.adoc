@@ -72,6 +72,7 @@ except that it calculates the number of characters for you.
 Actually, `reserve_calc()` is currently the default, but this
 may change in future.
 
+[[facets]]
 === Facets
 
 Finally, there is the `with` function, where you inject __facet objects__.
@@ -101,6 +102,7 @@ assert(str_uppercase == "TRUE 0XAB 1E+50");
 assert(str_mixedcase == "True 0xAB 1e+50");
 ----
 
+[[constrained_facets]]
 === Constrained facets
 
 You can constrain facets to a set of input types:
@@ -141,6 +143,7 @@ assert(str_ab == "True 0xAB 1E+9");
 assert(str_ba == "True 0xAB 1e+9");
 ----
 
+[[facets_categories]]
 === Facets categories
 
 But what does it mean for two facet objects to belong to same __facet category__?
@@ -185,6 +188,7 @@ In addition, most of them can be instantiated as `constexpr` values.
 In case you are wondering, the library uses the <<strf_hpp#facet_traits,`facet_traits`>>
 struct template to get the category the facets.
 
+[[facets_pack]]
 === Facets packs
 
 To avoid retyping all the facets object that you commonly use,
@@ -226,17 +230,18 @@ It is also equivalent to:
 __destination__ .with(_f1_).with(_f2_).with(_f3_).with(_f4_).with(_f5_) (/{asterisk} args\... {asterisk}/);
 ----
 
+[[locales]]
 === Locales
 
 Strf is a locale-independent library. When you don't specify any facet
 object, everything is printed as in "C" locale.
 However, the header `<strf/locale.hpp>` provides the function `locale_numpuct`
-that returns a `numpunct<10>` object according that reflects the numeric punctution
-( decimal point, thousands separator and digits grouping ) of current locale.
+that returns a `numpunct<10>` object that reflects the numeric punctuation of
+the current locale ( decimal point, thousands separator and digits grouping ).
 `locale_numpunct()` is not thread safe. Actually using locales
 in general is not thread safe. However, once you store its returned
-value into a facet object, that object is not affected anymore if
-the current locale changes.
+value into a facet object, that object is not affected anymore when
+the locale changes.
 
 [source,cpp,subs=normal]
 ----
@@ -258,8 +263,7 @@ void sample() {
 }
 ----
 
-
-
+[[destinations]]
 == Other destinations
 
 Up to here, we only covered things that define the content to be printed,
@@ -427,6 +431,7 @@ can use pass `string_maker` or a `cstr_writer`
 
 ////
 
+[[error_handling]]
 == Error handling policy
 
 Strf does not throw exceptions. When there is something wrong,
