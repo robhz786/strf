@@ -16,8 +16,6 @@ http://www.boost.org/LICENSE_1_0.txt
 
 :min_size_after_recycle: <<min_size_after_recycle,min_size_after_recycle>>
 :basic_outbuff: <<basic_outbuff,basic_outbuff>>
-:underlying_outbuff: <<underlying_outbuff,underlying_outbuff>>
-:underlying_char_type: <<underlying_char_type,underlying_char_type>>
 
 :basic_cstr_writer: <<basic_cstr_writer, basic_cstr_writer>>
 :basic_string_maker: <<basic_string_maker, basic_string_maker>>
@@ -36,26 +34,16 @@ http://www.boost.org/LICENSE_1_0.txt
 ----
 namespace strf {
 
-template <std::size_t CharSize>
+template <typename CharT>
 constexpr std::size_t min_size_after_recycle();
 
-template <std::size_t CharSize>
-using underlying_char_type = /{asterisk} \... {asterisk}/;
-
-template <std::size_t CharSize>
-class underlying_outbuff
-{ /{asterisk} \... {asterisk}/ };
-
 template <typename CharT>
-class basic_outbuff: public underlying_outbuff<sizeof(CharT)>
+class basic_outbuff
 { /{asterisk} \... {asterisk}/ };
 
 template <typename CharT>
 class basic_outbuff_noexcept: public basic_outbuff<CharT>
 { /{asterisk} \... {asterisk}/ };
-
-template <std::size_t CharSize>
-void put(underlying_outbuff<CharSize>& ob, underlying_char_type<CharSize> c);
 
 template <typename CharT>
 void put(basic_outbuff<CharT>& ob, CharT c);
@@ -94,31 +82,14 @@ using wcstr_writer   = basic_cstr_writer<wchar_t>;
 ====
 [source,cpp]
 ----
-template <std::size_t CharSize>
+template <typename CharT>
 constexpr std::size_t min_size_after_recycle();
 ----
 [horizontal]
 Return value:: Implementation-defined value greater than or equal to 64.
 ====
 
-== Template alias `underlying_char_type` [[underlying_char_type]]
-
-====
-[source,cpp]
-----
-template <std::size_t CharSize>
-using underlying_char_type = /*see below*/;
-----
-[horizontal]
-Same as::
-- `std::uint8_t` if `CharSize == 1`
-- `char16_t` if `CharSize == 2`
-- `char32_t` if `CharSize == 4`
-
-It is undefined for any other `CharSize` value.
-====
-
-== Class template `underlying_outbuff` [[underlying_outbuff]]
+== Class template `basic_outbuff` [[basic_outbuff]]
 
 === Synopsis
 
@@ -126,25 +97,25 @@ It is undefined for any other `CharSize` value.
 ----
 namespace strf {
 
-template <std::size_t CharSize>
-class underlying_outbuff;
+template <typename CharT>
+class basic_outbuff;
 {
 public:
 
-    using char_type = {underlying_char_type}<CharSize>;
+    using char_type = CharT;
 
-    underlying_outbuff(const underlying_outbuff&) = delete;
-    underlying_outbuff(underlying_outbuff&&) = delete;
-    underlying_outbuff& operator=(const underlying_outbuff&) = delete;
-    underlying_outbuff& operator=(underlying_outbuff&&) = delete;
+    basic_outbuff(const basic_outbuff&) = delete;
+    basic_outbuff(basic_outbuff&&) = delete;
+    basic_outbuff& operator=(const basic_outbuff&) = delete;
+    basic_outbuff& operator=(basic_outbuff&&) = delete;
 
-    virtual ~underlying_outbuff() = default;
+    virtual ~basic_outbuff() = default;
 
-    char_type{asterisk} pointer() const noexcept;
-    char_type{asterisk} end() const noexcept;
+    CharT{asterisk} pointer() const noexcept;
+    CharT{asterisk} end() const noexcept;
     std::size_t size() const noexcept;
     bool good() const noexcept;
-    void advance_to(char_type{asterisk} p);
+    void advance_to(CharT{asterisk} p);
     void advance(std::size_t n);
     void require(std::size_t s);
 
@@ -152,56 +123,55 @@ public:
 
 protected:
 
-    underlying_outbuff(char_type{asterisk} pointer_, char_type{asterisk} end_);
+    basic_outbuff(CharT{asterisk} pointer_, CharT{asterisk} end_);
 
-    underlying_outbuff(char_type{asterisk} pointer_, std::size_t n);
+    basic_outbuff(CharT{asterisk} pointer_, std::size_t n);
 
-    void set_pointer(char_type{asterisk} p) noexcept;
-    void set_end(char_type{asterisk} e) noexcept;
+    void set_pointer(CharT{asterisk} p) noexcept;
+    void set_end(CharT{asterisk} e) noexcept;
     void set_good(bool g) noexcept;
 };
 
 // global functions
 
-template <std::size_t CharSize>
-void put( underlying_outbuff<CharSize>& ob
-        , {underlying_char_type}<CharSize> ch );
+template <typename CharT>
+void put( basic_outbuff<CharT>& ob, CharT ch );
 
 } // namespace strf
 ----
 
 === Member types
 
-[[underlying_outbuff_char_type]]
+[[basic_outbuff_char_type]]
 ====
 [source,cpp,subs=normal]
 ----
-using char_type = {underlying_char_type}<CharSize>;
+using char_type = CharT;
 ----
 ====
 
 === Public member functions
 
-[[underlying_outbuff_pointer]]
+[[basic_outbuff_pointer]]
 ====
 [source,cpp]
 ----
-char_type* pointer() const noxcept;
+CharT* pointer() const noxcept;
 ----
 [horizontal]
 Return:: The memory position where the content shall be written.
 ====
-[[underlying_outbuff_end]]
+[[basic_outbuff_end]]
 ====
 [source,cpp]
 ----
-char_type* end() const noxcept;
+CharT* end() const noxcept;
 ----
 [horizontal]
 Return:: The end of memory position where the content shall be written.
          Dereferencing `end()` has undefined behaviour.
 ====
-[[underlying_outbuff_size]]
+[[basic_outbuff_size]]
 ====
 [source,cpp]
 ----
@@ -210,7 +180,7 @@ std::size_t size() const noexcept;
 [horizontal]
 Return:: `end() - pointer()`
 ====
-[[underlying_outbuff_recycle]]
+[[basic_outbuff_recycle]]
 ====
 [source,cpp]
 ----
@@ -218,7 +188,7 @@ virtual void recycle() = 0;
 ----
 [horizontal]
 Posconditions::
-- `size() >= {min_size_after_recycle}<CharSize>()`
+- `size() >= {min_size_after_recycle}<CharT>()`
 - The range [ `pointer()`, `end()` ) is valid accessible memory area
 - If the return value of `good()` was `false` before this call to `recycle()`, then `good()` remains returning `false`.
 ====
@@ -232,7 +202,7 @@ Posconditions::
 // was not called in this object yet, since this object was constructed.
 
 
-[[underlying_outbuff_require]]
+[[basic_outbuff_require]]
 ====
 [source,cpp]
 ----
@@ -240,21 +210,21 @@ void require(std::size_t s)
 ----
 [horizontal]
 Effect:: Calls `recycle()` if `size() < s`.
-Precondition:: `s \<= {min_size_after_recycle}<CharSize>()`
+Precondition:: `s \<= {min_size_after_recycle}<CharT>()`
 Postcondition:: `size() >= s`
 ====
-[[underlying_outbuff_advance_to]]
+[[basic_outbuff_advance_to]]
 ====
 [source,cpp]
 ----
-void advance_to(char_type* p)
+void advance_to(CharT* p)
 ----
 [horizontal]
 Effect:: Advance the buffer's pointer to `p`.
 Precondition:: `pointer() \<= p && p \<= end()`
 Postcondition:: `pointer() == p`
 ====
-[[underlying_outbuff_advance_count]]
+[[basic_outbuff_advance_count]]
 ====
 [source,cpp]
 ----
@@ -264,7 +234,7 @@ void advance(std::size_t n)
 Effect:: Same as `advance_to(pointer() + n)`
 Precondition:: `n \<= size()`
 ====
-[[underlying_outbuff_advance]]
+[[basic_outbuff_advance]]
 ====
 [source,cpp]
 ----
@@ -274,28 +244,28 @@ void advance()
 Effect:: Same as `advance_to(1)`
 Precondition:: `pointer() != end()`
 ====
-[[underlying_outbuff_good]]
+[[basic_outbuff_good]]
 ====
 [source,cpp]
 ----
 bool good() const;
 ----
 [horizontal]
-Return:: The state of this object. If the return value is `false`,
-then it means that calling `advance` of `advance_to` has no
-relevant side effect because the content written in the buffer
-will not be read anymore.
+Return:: The state of this object.
+Semantincs:: `good() == false` means that writting anything on
+   `pointer()`, and calling `advance_to` and `recycle()` has no
+   relevant side effect besides their postconditions.
 Note:: The range [ `pointer()`, `end()` ) shall aways be a valid
 accessible memory, even when `good()` returns `false`.
 ====
 
 === Protected Member functions
 
-[[underlying_outbuff_ctor_range]]
+[[basic_outbuff_ctor_range]]
 ====
 [source,cpp]
 ----
-underlying_outbuff(CharT* pointer_, CharT* end_)
+basic_outbuff(CharT* pointer_, CharT* end_)
 ----
 [horizontal]
 Preconditions::
@@ -306,11 +276,11 @@ Posconditions::
 - `end() == end_`
 - `good() == true`
 ====
-[[underlying_outbuff_ctor_count]]
+[[basic_outbuff_ctor_count]]
 ====
 [source,cpp]
 ----
-underlying_outbuff(CharT* pointer_, std::size_t n)
+basic_outbuff(CharT* pointer_, std::size_t n)
 ----
 [horizontal]
 Preconditions::
@@ -320,7 +290,7 @@ Posconditions::
 - `end() == pointer_ + n`
 - `good() == true`
 ====
-[[underlying_outbuff_set_pointer]]
+[[basic_outbuff_set_pointer]]
 ====
 [source,cpp]
 ----
@@ -329,7 +299,7 @@ void set_pointer(CharT* p) noexcept
 [horizontal]
 Postconditions:: `pointer() == p`
 ====
-[[underlying_outbuff_set_end]]
+[[basic_outbuff_set_end]]
 ====
 [source,cpp]
 ----
@@ -338,7 +308,7 @@ void set_end(CharT* e) noexcept
 [horizontal]
 Postconditions:: `end() == e`
 ====
-[[underlying_outbuff_set_good]]
+[[basic_outbuff_set_good]]
 ====
 [source,cpp]
 ----
@@ -350,208 +320,9 @@ Postconditions:: `good() == g`
 
 === Global functions
 
-[[underlying_outbuff_put]]
-====
-[source,cpp,subs=normal]
-----
-template <std::size_t CharSize>
-void put( underlying_outbuff<CharSize>& ob
-        , {underlying_char_type}<CharSize> ch );
-----
-[horizontal]
-Effect:: Same as:
-+
-[source,cpp]
-----
-if (ob.size() == 0) {
-    ob.recycle();
-}
-*ob.pointer() = ch;
-ob.advance();
-----
-====
-
-[[basic_outbuff]]
-== Class template `basic_outbuff`
-
-[source,cpp,subs=normal]
-----
-namespace strf {
-
-template <typename CharT>
-class basic_outbuff: private {underlying_outbuff}<sizeof(CharT)>
-{
-public:
-    using char_type = CharT;
-    basic_outbuff(const basic_outbuff&) = delete;
-    basic_outbuff(basic_outbuff&&) = delete;
-    basic_outbuff& operator=(const basic_outbuff&) = delete;
-    basic_outbuff& operator=(basic_outbuff&&) = delete;
-
-    virtual ~basic_outbuff() = default;
-
-    {underlying_outbuff}<sizeof(CharT)>& as_underlying() noexcept;
-    const {underlying_outbuff}<sizeof(CharT)>& as_underlying() const noexcept;
-
-    char_type{asterisk} pointer() const noexcept;
-    char_type{asterisk} end() const noexcept;
-    void advance_to(char_type{asterisk} p);
-
-    using {underlying_outbuff}<sizeof(CharT)>::<<underlying_outbuff_size,size>>
-    using {underlying_outbuff}<sizeof(CharT)>::<<underlying_outbuff_advance,advance>>
-    using {underlying_outbuff}<sizeof(CharT)>::<<underlying_outbuff_good,good>>
-    using {underlying_outbuff}<sizeof(CharT)>::<<underlying_outbuff_require,require>>
-    using {underlying_outbuff}<sizeof(CharT)>::<<underlying_outbuff_recycle,recycle>>
-
-protected:
-
-    basic_outbuff(char_type{asterisk} pointer_, char_type{asterisk} end_);
-    basic_outbuff(char_type{asterisk} pointer_, std::size_t n);
-
-    void set_pointer(char_type{asterisk} p) noexcept;
-    void set_end(char_type{asterisk} e) noexcept;
-
-    using {underlying_outbuff}<sizeof(CharT)>::<<underlying_outbuff_set_good,set_good>>;
-};
-
-// global type aliases
-
-using outbuff      = basic_outbuff<char>;
-using u8outbuff    = basic_outbuff<char8_t>;
-using u16outbuff   = basic_outbuff<char16_t>;
-using u32outbuff   = basic_outbuff<char32_t>;
-using woutbuff     = basic_outbuff<wchar_t>;
-using bin_outbuff  = basic_outbuff<std::byte>;
-
-// global functions
-
-template <typename CharT>
-void put(basic_outbuff<CharT>& ob, CharT ch);
-
-} // namespace strf
-----
-
-=== Public member functions
-
-[[basic_outbuff_as_underlying]]
-====
-[source,cpp,subs=normal]
-----
-underlying_outbuff<sizeof(CharT)>& as_underlying() noexcept;
-const underlying_outbuff<sizeof(CharT)>& as_underlying() const noexcept;
-----
-[horizontal]
-Return:: `*this`
-====
-[[basic_outbuff_pointer]]
-====
-[source,cpp]
-----
-char_type* pointer() const noexcept;
-----
-[horizontal]
-Return:: `(CharT*) as_underlying().pointer();`
-====
-[[basic_outbuff_end]]
-====
-[source,cpp]
-----
-char_type* end() const noexcept;
-----
-[horizontal]
-Return:: `(CharT*) as_underlying().end();`
-====
-[[basic_outbuff_advance_to]]
-====
-[source,cpp]
-----
-void advance_to(char_type* p);
-----
-[horizontal]
-Effect:: Same as
-+
-[source,cpp,subs=normal]
-----
-as_underlying().advance_to(({underlying_char_type}<sizeof(CharT)>{asterisk})p)
-----
-Precondition:: `p \<= end()`
-====
-
-=== Public member functions inherited from private base `underlying_outbuff<sizeof(CharT)>`
-
-[source,cpp,subs=normal]
-----
-    using {underlying_outbuff}<sizeof(CharT)>::<<underlying_outbuff_size,size>>
-    using {underlying_outbuff}<sizeof(CharT)>::<<underlying_outbuff_advance,advance>>
-    using {underlying_outbuff}<sizeof(CharT)>::<<underlying_outbuff_good,good>>
-    using {underlying_outbuff}<sizeof(CharT)>::<<underlying_outbuff_require,require>>
-    using {underlying_outbuff}<sizeof(CharT)>::<<underlying_outbuff_recycle,recycle>>
-----
-
-=== Protected member functions
-
-[[basic_outbuff_ctor_range]]
-====
-[source,cpp]
-----
-basic_outbuff(char_type* pointer_, char_type* end_);
-----
-[horizontal]
-Effect:: Initializes private base class `underlying_outbuff<sizeof(CharT)>`
-with `pointer_` and `end_` casted as `{underlying_char_type}<sizeof(CharT)>{asterisk}`.
-====
-[[basic_outbuff_ctor_count]]
-====
-[source,cpp]
-----
-basic_outbuff(char_type* pointer_, std::size_t n);
-----
-[horizontal]
-Effect:: Same as `basic_outbuff(pointer_, pointer_ + n)`
-====
-[[basic_outbuff_]]
-====
-[source,cpp]
-----
-void set_pointer(char_type* p) noexcept;
-----
-[horizontal]
-Effect:: Same as
-+
-[source,cpp,subs=normal]
-----
-as_underlying().set_pointer(({underlying_char_type}<sizeof(CharT)>*)p)
-----
-====
-[[basic_outbuff_]]
-====
-[source,cpp]
-----
-void set_end(char_type* e) noexcept;
-----
-[horizontal]
-Effect:: Same as
-+
-[source,cpp,subs=normal]
-----
-as_underlying().set_end(({underlying_char_type}<sizeof(CharT)>*)e)
-----
-====
-[[basic_outbuff_set_good]]
-====
-[source,cpp]
-----
-void set_good(bool g) noexcept;
-----
-[horizontal]
-Effect:: Same as `as_underlying().set_good(g)`
-====
-
-=== Global functions
-
 [[basic_outbuff_put]]
 ====
-[source,cpp]
+[source,cpp,subs=normal]
 ----
 template <typename CharT>
 void put(basic_outbuff<CharT>& ob, CharT ch);

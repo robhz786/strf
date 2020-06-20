@@ -33,7 +33,7 @@ private:
     std::size_t count_ = 0;
     std::exception_ptr eptr_ = nullptr;
 
-    constexpr static std::size_t buffer_size_ = strf::min_size_after_recycle<2>();
+    constexpr static std::size_t buffer_size_ = strf::min_size_after_recycle<char16_t>();
     char16_t buffer_[buffer_size_];
 };
 
@@ -62,8 +62,7 @@ void QStringAppender::recycle()
 {
     if (this->good()) {
         // Flush the content:
-        std::size_t count = /*<<ouput_buffer::pointer() returns the immediate position
-                              after the last character the library wrote in the buffer>>*/this->pointer() - buffer_;
+        std::size_t count = this->pointer() - buffer_;
         const QChar * qchar_buffer = reinterpret_cast<QChar*>(buffer_);
 
 #if defined(__cpp_exceptions)

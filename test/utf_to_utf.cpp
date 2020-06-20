@@ -181,7 +181,7 @@ strf::detail::simple_string_view<CharT> concatenate
     buff[2] = prefix[2];
     auto it = buff + 3;
     for (std::size_t i = 0; i < count; ++i) {
-        strf::detail::str_copy_n(it, str.begin(), str.size());
+        strf::detail::copy_n(str.begin(), str.size(), it);
         it += str.size();
     }
     it[0] = suffix[0];
@@ -234,9 +234,19 @@ void test_invalid_input(SrcEncoding src_enc, DestEncoding dest_enc)
         auto f = [](auto ch){
             return *strf::hex((unsigned)(std::make_unsigned_t<src_char_type>)ch);
         };
+
+#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
+
         TEST_SCOPE_DESCRIPTION
             .with(strf::mixedcase)
             ( "Sequence = ", strf::separated_range(seq, " ", f) );
+
+#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#  pragma GCC diagnostic pop
+#endif
 
         src_char_type buff_in[20];
         dest_char_type buff_out[80];
@@ -351,58 +361,58 @@ int main()
         , [](auto src_enc, auto dest_enc){ test_invalid_input(src_enc, dest_enc); } );
 
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::eid_utf8
-                                                       , strf::eid_utf8 >
+                   < strf::static_transcoder
+                       < char, char, strf::eid_utf8, strf::eid_utf8 >
                    , decltype(strf::find_transcoder( strf::utf<char>()
                                                    , strf::utf<char>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::eid_utf8
-                                                       , strf::eid_utf16 >
+                   < strf::static_transcoder
+                       < char, char16_t, strf::eid_utf8, strf::eid_utf16 >
                    , decltype(strf::find_transcoder( strf::utf<char>()
-                                                  , strf::utf<char16_t>())) >
+                                                   , strf::utf<char16_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::eid_utf8
-                                                       , strf::eid_utf32 >
+                   < strf::static_transcoder
+                       < char, char32_t, strf::eid_utf8, strf::eid_utf32 >
                    , decltype(strf::find_transcoder( strf::utf<char>()
-                                                  , strf::utf<char32_t>())) >
+                                                   , strf::utf<char32_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::eid_utf16
-                                                       , strf::eid_utf8 >
+                   < strf::static_transcoder
+                       < char16_t, char, strf::eid_utf16, strf::eid_utf8 >
                    , decltype(strf::find_transcoder( strf::utf<char16_t>()
-                                                  , strf::utf<char>())) >
+                                                   , strf::utf<char>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::eid_utf16
-                                                       , strf::eid_utf16 >
+                   < strf::static_transcoder
+                       < char16_t, char16_t, strf::eid_utf16, strf::eid_utf16 >
                    , decltype(strf::find_transcoder( strf::utf<char16_t>()
-                                                  , strf::utf<char16_t>())) >
+                                                   , strf::utf<char16_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::eid_utf16
-                                                       , strf::eid_utf32 >
+                   < strf::static_transcoder
+                       < char16_t, char32_t, strf::eid_utf16, strf::eid_utf32 >
                    , decltype(strf::find_transcoder( strf::utf<char16_t>()
-                                                  , strf::utf<char32_t>())) >
+                                                   , strf::utf<char32_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::eid_utf32
-                                                       , strf::eid_utf8 >
+                   < strf::static_transcoder
+                       < char32_t, char, strf::eid_utf32, strf::eid_utf8 >
                    , decltype(strf::find_transcoder( strf::utf<char32_t>()
-                                                  , strf::utf<char>())) >
+                                                   , strf::utf<char>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::eid_utf32
-                                                       , strf::eid_utf16 >
+                   < strf::static_transcoder
+                       < char32_t, char16_t,  strf::eid_utf32, strf::eid_utf16 >
                    , decltype(strf::find_transcoder( strf::utf<char32_t>()
-                                                  , strf::utf<char16_t>())) >
+                                                   , strf::utf<char16_t>())) >
                   :: value));
     TEST_TRUE((std::is_same
-                   < strf::static_underlying_transcoder< strf::eid_utf32
-                                                       , strf::eid_utf32 >
+                   < strf::static_transcoder
+                       < char32_t, char32_t, strf::eid_utf32, strf::eid_utf32 >
                    , decltype(strf::find_transcoder( strf::utf<char32_t>()
-                                                  , strf::utf<char32_t>())) >
+                                                   , strf::utf<char32_t>())) >
                   :: value));
 
     return test_finish();

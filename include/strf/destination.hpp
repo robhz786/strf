@@ -164,13 +164,13 @@ public:
 
 private:
 
-    static inline const strf::printer<sizeof(CharT)>&
-    STRF_HD as_printer_cref_(const strf::printer<sizeof(CharT)>& p)
+    static inline const strf::printer<CharT>&
+    STRF_HD as_printer_cref_(const strf::printer<CharT>& p)
     {
         return p;
     }
-    static inline const strf::printer<sizeof(CharT)>*
-    STRF_HD as_printer_cptr_(const strf::printer<sizeof(CharT)>& p)
+    static inline const strf::printer<CharT>*
+    STRF_HD as_printer_cptr_(const strf::printer<CharT>& p)
     {
          return &p;
     }
@@ -211,7 +211,7 @@ private:
         ( const CharT* str
         , const CharT* str_end
         , Preview* preview_arr
-        , std::initializer_list<const strf::printer<sizeof(CharT)>*> args ) const &
+        , std::initializer_list<const strf::printer<CharT>*> args ) const &
     {
         const auto& self = static_cast<const destination_type_&>(*this);
 
@@ -354,7 +354,7 @@ private:
         , const Printers& ... printers) const
     {
         decltype(auto) ob = outbuff_creator_.create();
-        strf::detail::write_args(ob.as_underlying(), printers...);
+        strf::detail::write_args(ob, printers...);
         return strf::detail::finish(strf::rank<2>(), ob);
     }
 
@@ -472,7 +472,7 @@ private:
         , const Printers& ... printers) const
     {
         decltype(auto) ob = outbuff_creator_.create(size_);
-        strf::detail::write_args(ob.as_underlying(), printers...);
+        strf::detail::write_args(ob, printers...);
         return strf::detail::finish(strf::rank<2>(), ob);
     }
 
@@ -591,7 +591,7 @@ private:
         , const Printers& ... printers ) const
     {
         decltype(auto) ob = outbuff_creator_.create(preview.get_size());
-        strf::detail::write_args(ob.as_underlying(), printers...);
+        strf::detail::write_args(ob, printers...);
         return strf::detail::finish(strf::rank<2>(), ob);
     }
 

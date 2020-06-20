@@ -24,7 +24,7 @@ public:
     template <typename CharEncoding>
     STRF_HD strf::width_t char_width
         ( CharEncoding
-        , strf::underlying_char_type<CharEncoding::char_size> ) const noexcept
+        , typename CharEncoding::char_type ) const noexcept
     {
         return 1;
     }
@@ -33,7 +33,7 @@ public:
     constexpr STRF_HD strf::width_t str_width
         ( CharEncoding
         , strf::width_t limit
-        , const strf::underlying_char_type<CharEncoding::char_size>*
+        , const typename CharEncoding::char_type*
         , std::size_t str_len
         , strf::surrogate_policy ) const noexcept
     {
@@ -47,7 +47,7 @@ public:
     constexpr STRF_HD strf::width_and_pos str_width_and_pos
         ( CharEncoding
         , strf::width_t limit
-        , const strf::underlying_char_type<CharEncoding::char_size>*
+        , const typename CharEncoding::char_type*
         , std::size_t str_len
         , strf::surrogate_policy ) const noexcept
     {
@@ -70,7 +70,7 @@ public:
     template <typename CharEncoding>
     constexpr STRF_HD strf::width_t char_width
         ( CharEncoding
-        , strf::underlying_char_type<CharEncoding::char_size> ) const noexcept
+        , typename CharEncoding::char_type ) const noexcept
     {
         return 1;
     }
@@ -79,7 +79,7 @@ public:
     constexpr STRF_HD strf::width_t str_width
         ( CharEncoding enc
         , strf::width_t limit
-        , const strf::underlying_char_type<CharEncoding::char_size>* str
+        , const typename CharEncoding::char_type* str
         , std::size_t str_len
         , strf::surrogate_policy ) const
     {
@@ -96,7 +96,7 @@ public:
     constexpr STRF_HD strf::width_and_pos str_width_and_pos
         ( CharEncoding enc
         , strf::width_t limit
-        , const strf::underlying_char_type<CharEncoding::char_size>* str
+        , const typename CharEncoding::char_type* str
         , std::size_t str_len
         , strf::surrogate_policy ) const
     {
@@ -119,7 +119,7 @@ public:
     template <typename CharEncoding>
     constexpr STRF_HD strf::width_t char_width
         ( CharEncoding
-        , strf::underlying_char_type<CharEncoding::char_size> ) const noexcept
+        , typename CharEncoding::char_type ) const noexcept
     {
         return 1;
     }
@@ -128,7 +128,7 @@ public:
     constexpr STRF_HD strf::width_t str_width
         ( CharEncoding enc
         , strf::width_t limit
-        , const strf::underlying_char_type<CharEncoding::char_size>* str
+        , const typename CharEncoding::char_type* str
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
@@ -145,7 +145,7 @@ public:
     constexpr STRF_HD strf::width_and_pos str_width_and_pos
         ( CharEncoding enc
         , strf::width_t limit
-        , const strf::underlying_char_type<CharEncoding::char_size>* str
+        , const typename CharEncoding::char_type* str
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
@@ -162,12 +162,12 @@ public:
 
 namespace detail {
 template <typename WFunc>
-class width_accumulator: public strf::underlying_outbuff<4>
+class width_accumulator: public strf::basic_outbuff<char32_t>
 {
 public:
 
     STRF_HD width_accumulator(strf::width_t limit, WFunc func)
-        : strf::underlying_outbuff<4>(buff_, buff_ + buff_size_)
+        : strf::basic_outbuff<char32_t>(buff_, buff_ + buff_size_)
         , limit_(limit)
         , func_(func)
     {
@@ -240,7 +240,7 @@ public:
     template <typename CharEncoding>
     strf::width_t STRF_HD char_width
         ( CharEncoding enc
-        , strf::underlying_char_type<CharEncoding::char_size> ch ) const
+        , typename CharEncoding::char_type ch ) const
     {
         return func_(enc.decode_char(ch));
     }
@@ -249,7 +249,7 @@ public:
     constexpr STRF_HD strf::width_t str_width
         ( CharEncoding enc
         , strf::width_t limit
-        , const strf::underlying_char_type<CharEncoding::char_size>* str
+        , const typename CharEncoding::char_type* str
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {
@@ -263,7 +263,7 @@ public:
     constexpr STRF_HD strf::width_and_pos str_width_and_pos
         ( CharEncoding enc
         , strf::width_t limit
-        , const strf::underlying_char_type<CharEncoding::char_size>* str
+        , const typename CharEncoding::char_type* str
         , std::size_t str_len
         , strf::surrogate_policy surr_poli ) const
     {

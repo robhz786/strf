@@ -52,13 +52,13 @@ template <> struct fmt_traits<wchar_t>
 
 namespace detail {
 
-template <std::size_t> class char_printer;
-template <std::size_t> class fmt_char_printer;
+template <typename> class char_printer;
+template <typename> class fmt_char_printer;
 
 template <typename DestCharT, typename FPack, typename SrcCharT>
 struct char_printable_traits
     : strf::usual_printable_traits
-        < DestCharT, FPack, strf::detail::char_printer<sizeof(DestCharT)> >
+        < DestCharT, FPack, strf::detail::char_printer<DestCharT> >
 {
      static_assert( std::is_same<SrcCharT, DestCharT>::value
                   , "Character type mismatch.");
@@ -98,7 +98,7 @@ struct printable_traits<CharT, FPack, Preview, wchar_t>
 template <typename DestCharT, typename FPack, typename Preview, typename SrcCharT>
 struct printable_traits<DestCharT, FPack, Preview, strf::char_with_format<SrcCharT>>
     : strf::usual_printable_traits
-        < DestCharT, FPack, strf::detail::fmt_char_printer<sizeof(DestCharT)> >
+        < DestCharT, FPack, strf::detail::fmt_char_printer<DestCharT> >
 {
     static_assert( std::is_same<SrcCharT, DestCharT>::value
                  , "Character type mismatch.");
@@ -106,37 +106,34 @@ struct printable_traits<DestCharT, FPack, Preview, strf::char_with_format<SrcCha
 
 namespace detail {
 
-template <std::size_t CharSize>
-class char_printer: public strf::printer<CharSize>
+template <typename CharT>
+class char_printer: public strf::printer<CharT>
 {
 public:
-    using char_type = strf::underlying_char_type<CharSize>;
-
-    template <typename CharT, typename FPack, typename Preview, typename... T>
+    template <typename FPack, typename Preview, typename... T>
     STRF_HD char_printer
         ( const strf::usual_printer_input<CharT, FPack, Preview, T...>& input )
-        : ch_(static_cast<char_type>(input.arg))
+        : ch_(static_cast<CharT>(input.arg))
     {
-        static_assert(sizeof(CharT) == CharSize, "");
         input.preview.add_size(1);
         STRF_IF_CONSTEXPR(Preview::width_required) {
             decltype(auto) wcalc = get_facet<strf::width_calculator_c, CharT>(input.fp);
             auto enc = get_facet<strf::char_encoding_c<CharT>, CharT>(input.fp);
-            auto w = wcalc.char_width(enc, static_cast<char_type>(ch_));
+            auto w = wcalc.char_width(enc, static_cast<CharT>(ch_));
             input.preview.subtract_width(w);
         }
     }
 
-    STRF_HD void print_to(strf::underlying_outbuff<CharSize>& ob) const override;
+    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override;
 
 private:
 
-    char_type ch_;
+    CharT ch_;
 };
 
-template <std::size_t CharSize>
-STRF_HD void char_printer<CharSize>::print_to
-    ( strf::underlying_outbuff<CharSize>& ob ) const
+template <typename CharT>
+STRF_HD void char_printer<CharT>::print_to
+    ( strf::basic_outbuff<CharT>& ob ) const
 {
     ob.ensure(1);
     *ob.pointer() = ch_;
@@ -144,37 +141,35 @@ STRF_HD void char_printer<CharSize>::print_to
 }
 
 
-template <std::size_t CharSize>
-class fmt_char_printer: public strf::printer<CharSize>
+template <typename CharT>
+class fmt_char_printer: public strf::printer<CharT>
 {
 public:
-    using char_type = strf::underlying_char_type<CharSize>;
-
-    template <typename CharT, typename... T>
+    template <typename... T>
     STRF_HD fmt_char_printer
         ( const usual_printer_input<CharT, T...>& input )
         : count_(input.arg.count())
         , afmt_(input.arg.get_alignment_format_data())
-        , ch_(static_cast<char_type>(input.arg.value().ch))
+        , ch_(static_cast<CharT>(input.arg.value().ch))
     {
-        auto enc = get_facet_<strf::char_encoding_c<CharT>, CharT>(input.fp);
-        decltype(auto) wcalc = get_facet_<strf::width_calculator_c, CharT>(input.fp);
+        auto enc = get_facet_<strf::char_encoding_c<CharT>>(input.fp);
+        decltype(auto) wcalc = get_facet_<strf::width_calculator_c>(input.fp);
         encode_fill_fn_ = enc.encode_fill_func();
         init_(input.preview, wcalc, enc);
     }
 
-    STRF_HD void print_to(strf::underlying_outbuff<CharSize>& ob) const override;
+    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override;
 
 private:
 
-    strf::encode_fill_f<CharSize> encode_fill_fn_;
+    strf::encode_fill_f<CharT> encode_fill_fn_;
     std::size_t count_;
     const strf::alignment_format_data afmt_;
     std::uint16_t left_fillcount_;
     std::uint16_t right_fillcount_;
-    char_type ch_;
+    CharT ch_;
 
-    template <typename Category, typename CharT, typename FPack>
+    template <typename Category, typename FPack>
     static STRF_HD decltype(auto) get_facet_(const FPack& fp)
     {
         return fp.template get_facet<Category, CharT>();
@@ -184,9 +179,9 @@ private:
     STRF_HD void init_(Preview& preview, const WCalc& wc, Encoding enc);
 };
 
-template <std::size_t CharSize>
+template <typename CharT>
 template <typename Preview, typename WCalc, typename Encoding>
-STRF_HD void fmt_char_printer<CharSize>::init_
+STRF_HD void fmt_char_printer<CharT>::init_
     ( Preview& preview, const WCalc& wc, Encoding enc )
 {
     auto ch_width = wc.char_width(enc, ch_);
@@ -224,9 +219,9 @@ STRF_HD void fmt_char_printer<CharSize>::init_
 }
 
 
-template <std::size_t CharSize>
-STRF_HD void fmt_char_printer<CharSize>::print_to
-    ( strf::underlying_outbuff<CharSize>& ob ) const
+template <typename CharT>
+STRF_HD void fmt_char_printer<CharT>::print_to
+    ( strf::basic_outbuff<CharT>& ob ) const
 {
     if (left_fillcount_ != 0) {
         encode_fill_fn_(ob, left_fillcount_, afmt_.fill);
@@ -258,12 +253,20 @@ STRF_HD void fmt_char_printer<CharSize>::print_to
 
 #if defined(STRF_SEPARATE_COMPILATION)
 
-STRF_EXPLICIT_TEMPLATE class char_printer<1>;
-STRF_EXPLICIT_TEMPLATE class char_printer<2>;
-STRF_EXPLICIT_TEMPLATE class char_printer<4>;
-STRF_EXPLICIT_TEMPLATE class fmt_char_printer<1>;
-STRF_EXPLICIT_TEMPLATE class fmt_char_printer<2>;
-STRF_EXPLICIT_TEMPLATE class fmt_char_printer<4>;
+#if defined(__cpp_char8_t)
+STRF_EXPLICIT_TEMPLATE class fmt_char_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE class char_printer<char8_t>;
+#endif
+
+STRF_EXPLICIT_TEMPLATE class char_printer<char>;
+STRF_EXPLICIT_TEMPLATE class char_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE class char_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE class char_printer<wchar_t>;
+
+STRF_EXPLICIT_TEMPLATE class fmt_char_printer<char>;
+STRF_EXPLICIT_TEMPLATE class fmt_char_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_char_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE class fmt_char_printer<wchar_t>;
 
 #endif // defined(STRF_SEPARATE_COMPILATION)
 

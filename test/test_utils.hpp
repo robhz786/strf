@@ -137,7 +137,7 @@ struct char_generator
 
 template <typename CharT>
 constexpr std::size_t full_string_size
-= strf::min_size_after_recycle<sizeof(CharT)>();
+= strf::min_size_after_recycle<CharT>();
 
 template <typename CharT>
 constexpr std::size_t half_string_size = full_string_size<CharT> / 2;
@@ -193,7 +193,7 @@ inline strf::detail::simple_string_view<CharT> make_tiny_string()
 template <typename CharT>
 inline void turn_into_bad(strf::basic_outbuff<CharT>& ob)
 {
-    strf::detail::outbuff_test_tool::turn_into_bad(ob.as_underlying());
+    strf::detail::outbuff_test_tool::turn_into_bad(ob);
 }
 
 int& test_err_count()
@@ -402,7 +402,7 @@ void input_tester<CharOut>::recycle()
     test_failure_(" basic_outbuff::recycle() called "
                   "( calculated size too small ).\n");
 
-    if ( this->pointer() + strf::min_size_after_recycle<sizeof(CharOut)>()
+    if ( this->pointer() + strf::min_size_after_recycle<CharOut>()
        > buffer_ + buffer_size_ )
     {
         pointer_before_overflow_ = this->pointer();

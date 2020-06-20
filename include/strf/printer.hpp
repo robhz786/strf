@@ -11,18 +11,18 @@
 
 namespace strf {
 
-template <std::size_t CharSize>
+template <typename CharT>
 class printer
 {
 public:
 
-    constexpr static std::size_t char_size = CharSize;
+    using char_type = CharT;
 
     STRF_HD virtual ~printer()
     {
     }
 
-    STRF_HD virtual void print_to(strf::underlying_outbuff<CharSize>& ob) const = 0;
+    STRF_HD virtual void print_to(strf::basic_outbuff<CharT>& ob) const = 0;
 };
 
 struct string_input_tag_base
@@ -232,8 +232,10 @@ namespace detail {
 
 #if defined(__cpp_fold_expressions)
 
-template <std::size_t CharSize, typename ... Printers>
-inline STRF_HD void write_args( strf::underlying_outbuff<CharSize>& ob
+
+
+template <typename CharT, typename ... Printers>
+inline STRF_HD void write_args( strf::basic_outbuff<CharT>& ob
                               , const Printers& ... printers )
 {
     (... , printers.print_to(ob));
@@ -241,20 +243,20 @@ inline STRF_HD void write_args( strf::underlying_outbuff<CharSize>& ob
 
 #else // defined(__cpp_fold_expressions)
 
-template <std::size_t CharSize>
-inline STRF_HD void write_args(strf::underlying_outbuff<CharSize>&)
+template <typename CharT>
+inline STRF_HD void write_args(strf::basic_outbuff<CharT>&)
 {
 }
 
-template <std::size_t CharSize, typename Printer, typename ... Printers>
+template <typename CharT, typename Printer, typename ... Printers>
 inline STRF_HD void write_args
-    ( strf::underlying_outbuff<CharSize>& ob
+    ( strf::basic_outbuff<CharT>& ob
     , const Printer& printer
     , const Printers& ... printers )
 {
     printer.print_to(ob);
     if (ob.good()) {
-        write_args(ob, printers ...);
+        write_args<CharT>(ob, printers ...);
     }
 }
 

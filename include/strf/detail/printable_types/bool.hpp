@@ -14,8 +14,8 @@
 namespace strf {
 namespace detail {
 
-template <std::size_t CharSize> class bool_printer;
-template <std::size_t CharSize> class fmt_bool_printer;
+template <typename CharT> class bool_printer;
+template <typename CharT> class fmt_bool_printer;
 
 } // namespace detail
 
@@ -28,7 +28,7 @@ struct fmt_traits<bool>
 template <typename CharT, typename FPack, typename Preview>
 struct printable_traits<CharT, FPack, Preview, bool>
     : strf::usual_printable_traits
-        < CharT, FPack, strf::detail::bool_printer<sizeof(CharT)> >
+        < CharT, FPack, strf::detail::bool_printer<CharT> >
 {
 };
 
@@ -37,17 +37,16 @@ struct printable_traits
     < CharT, FPack, Preview
     , strf::value_with_format<bool, strf::alignment_format> >
     : strf::usual_printable_traits
-        < CharT, FPack, strf::detail::fmt_bool_printer<sizeof(CharT)> >
+        < CharT, FPack, strf::detail::fmt_bool_printer<CharT> >
 {
 };
 
 namespace detail {
 
-template <std::size_t CharSize>
-class bool_printer: public printer<CharSize>
+template <typename CharT>
+class bool_printer: public printer<CharT>
 {
 public:
-    using char_type = strf::underlying_char_type<CharSize>;
 
     template <typename... T>
     constexpr STRF_HD bool_printer
@@ -59,7 +58,7 @@ public:
         input.preview.add_size(5 - (int)input.arg);
     }
 
-    void STRF_HD print_to(strf::underlying_outbuff<CharSize>& ob) const override;
+    void STRF_HD print_to(strf::basic_outbuff<CharT>& ob) const override;
 
 private:
 
@@ -67,8 +66,8 @@ private:
     strf::lettercase lettercase_;
 };
 
-template <std::size_t CharSize>
-void STRF_HD bool_printer<CharSize>::print_to(strf::underlying_outbuff<CharSize>& ob) const
+template <typename CharT>
+void STRF_HD bool_printer<CharT>::print_to(strf::basic_outbuff<CharT>& ob) const
 {
     auto size = 5 - (int)value_;
     ob.ensure(size);
@@ -76,30 +75,29 @@ void STRF_HD bool_printer<CharSize>::print_to(strf::underlying_outbuff<CharSize>
     const unsigned mask_first_char = static_cast<unsigned>(lettercase_) >> 8;
     const unsigned mask_others_chars = static_cast<unsigned>(lettercase_) & 0x20;
     if (value_) {
-        p[0] = static_cast<char_type>('T' | mask_first_char);
-        p[1] = static_cast<char_type>('R' | mask_others_chars);
-        p[2] = static_cast<char_type>('U' | mask_others_chars);
-        p[3] = static_cast<char_type>('E' | mask_others_chars);
+        p[0] = static_cast<CharT>('T' | mask_first_char);
+        p[1] = static_cast<CharT>('R' | mask_others_chars);
+        p[2] = static_cast<CharT>('U' | mask_others_chars);
+        p[3] = static_cast<CharT>('E' | mask_others_chars);
     } else {
-        p[0] = static_cast<char_type>('F' | mask_first_char);
-        p[1] = static_cast<char_type>('A' | mask_others_chars);
-        p[2] = static_cast<char_type>('L' | mask_others_chars);
-        p[3] = static_cast<char_type>('S' | mask_others_chars);
-        p[4] = static_cast<char_type>('E' | mask_others_chars);
+        p[0] = static_cast<CharT>('F' | mask_first_char);
+        p[1] = static_cast<CharT>('A' | mask_others_chars);
+        p[2] = static_cast<CharT>('L' | mask_others_chars);
+        p[3] = static_cast<CharT>('S' | mask_others_chars);
+        p[4] = static_cast<CharT>('E' | mask_others_chars);
     }
     ob.advance(size);
 }
 
-template <std::size_t CharSize>
-class fmt_bool_printer: public printer<CharSize>
+template <typename CharT>
+class fmt_bool_printer: public printer<CharT>
 {
     using arg_type_ = strf::value_with_format<bool, strf::alignment_format>;
-    using this_type_ = fmt_bool_printer<CharSize>;
+    using this_type_ = fmt_bool_printer<CharT>;
 
 public:
-    using char_type = strf::underlying_char_type<CharSize>;
 
-    template <typename CharT, typename... T>
+    template <typename... T>
     STRF_HD fmt_bool_printer
         ( const strf::usual_printer_input<CharT, T...>& input )
         : value_(input.arg.value())
@@ -120,20 +118,20 @@ public:
         }
     }
 
-    void STRF_HD print_to(strf::underlying_outbuff<CharSize>& ob) const override;
+    void STRF_HD print_to(strf::basic_outbuff<CharT>& ob) const override;
 
 private:
 
-    strf::encode_fill_f<CharSize> encode_fill_;
+    strf::encode_fill_f<CharT> encode_fill_;
     std::uint16_t fillcount_;
     bool value_;
     strf::alignment_format_data afmt_;
     strf::lettercase lettercase_;
 };
 
-template <std::size_t CharSize>
-void fmt_bool_printer<CharSize>::print_to
-    ( strf::underlying_outbuff<CharSize>& ob ) const
+template <typename CharT>
+void fmt_bool_printer<CharT>::print_to
+    ( strf::basic_outbuff<CharT>& ob ) const
 {
     if (afmt_.alignment != strf::text_alignment::left) {
         std::uint16_t s = afmt_.alignment == strf::text_alignment::center;
@@ -147,16 +145,16 @@ void fmt_bool_printer<CharSize>::print_to
     const unsigned mask_first_char = static_cast<unsigned>(lettercase_) >> 8;
     const unsigned mask_others_chars = static_cast<unsigned>(lettercase_) & 0x20;
     if (value_) {
-        p[0] = static_cast<char_type>('T' | mask_first_char);
-        p[1] = static_cast<char_type>('R' | mask_others_chars);
-        p[2] = static_cast<char_type>('U' | mask_others_chars);
-        p[3] = static_cast<char_type>('E' | mask_others_chars);
+        p[0] = static_cast<CharT>('T' | mask_first_char);
+        p[1] = static_cast<CharT>('R' | mask_others_chars);
+        p[2] = static_cast<CharT>('U' | mask_others_chars);
+        p[3] = static_cast<CharT>('E' | mask_others_chars);
     } else {
-        p[0] = static_cast<char_type>('F' | mask_first_char);
-        p[1] = static_cast<char_type>('A' | mask_others_chars);
-        p[2] = static_cast<char_type>('L' | mask_others_chars);
-        p[3] = static_cast<char_type>('S' | mask_others_chars);
-        p[4] = static_cast<char_type>('E' | mask_others_chars);
+        p[0] = static_cast<CharT>('F' | mask_first_char);
+        p[1] = static_cast<CharT>('A' | mask_others_chars);
+        p[2] = static_cast<CharT>('L' | mask_others_chars);
+        p[3] = static_cast<CharT>('S' | mask_others_chars);
+        p[4] = static_cast<CharT>('E' | mask_others_chars);
     }
     ob.advance(size);
 
@@ -169,6 +167,20 @@ void fmt_bool_printer<CharSize>::print_to
         encode_fill_(ob, count, afmt_.fill);
     }
 }
+
+#if defined(STRF_SEPARATE_COMPILATION)
+
+#if defined(__cpp_char8_t)
+STRF_EXPLICIT_TEMPLATE class bool_printer<char8_t>;
+STRF_EXPLICIT_TEMPLATE class  fmt_bool_printer<char8_t>;
+#endif
+
+STRF_EXPLICIT_TEMPLATE class bool_printer<char>;
+STRF_EXPLICIT_TEMPLATE class bool_printer<char16_t>;
+STRF_EXPLICIT_TEMPLATE class bool_printer<char32_t>;
+STRF_EXPLICIT_TEMPLATE class bool_printer<wchar_t>;
+
+#endif // defined(STRF_SEPARATE_COMPILATION)
 
 } // namespace detail
 } // namespace strf

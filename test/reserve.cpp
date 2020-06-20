@@ -9,7 +9,7 @@
 
 class reservation_tester : public strf::basic_outbuff<char>
 {
-    constexpr static std::size_t buff_size_ = strf::min_size_after_recycle<1>();
+    constexpr static std::size_t buff_size_ = strf::min_size_after_recycle<char>();
     char buff_[buff_size_];
 
 public:

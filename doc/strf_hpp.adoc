@@ -22,6 +22,7 @@ http://www.boost.org/LICENSE_1_0.txt
 :alignment_format_data: <<alignment_format_data,alignment_format_data>>
 :pack: <<pack,pack>>
 :facets_pack: <<facets_pack,facets_pack>>
+:tag: <<tag,tag>>
 
 :boost_mp_replace_front: https://www.boost.org/doc/libs/develop/libs/mp11/doc/html/mp11.html#mp_replace_frontl_t[boost::mp_replace_front]
 :boost_mp_replace: https://www.boost.org/doc/libs/develop/libs/mp11/doc/html/mp11.html#mp_replacel_v_w[boost::mp_replace]
