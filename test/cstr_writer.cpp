@@ -4,6 +4,11 @@
 
 #include "test_utils.hpp"
 
+#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
+
 void test_cstr_writer_destination_too_small()
 {
     char buff[8];
@@ -18,6 +23,10 @@ void test_cstr_writer_destination_too_small()
     TEST_EQ(r.ptr, &buff[7]);
     TEST_CSTR_EQ(buff, "Hello W");
 }
+
+#if defined(__GNUC__) && (__GNUC__ == 7 || __GNUC__ == 8)
+#  pragma GCC diagnostic pop
+#endif
 
 void test_write_into_cstr_writer_after_finish()
 {

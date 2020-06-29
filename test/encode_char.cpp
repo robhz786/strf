@@ -27,8 +27,7 @@ void test_char( Encoding enc
     auto it = enc.encode_char(buff, ch);
 
     TEST_EQ(std::size_t(it - buff), encoded_char.size());
-    TEST_TRUE( std::equal( encoded_char.begin(), encoded_char.end()
-                         , reinterpret_cast<const CharT*>(buff) ));
+    TEST_TRUE(std::equal(encoded_char.begin(), encoded_char.end(), &buff[0]));
 }
 
 int main()

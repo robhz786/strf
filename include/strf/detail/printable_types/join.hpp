@@ -337,6 +337,11 @@ private:
     strf::width_t width_;
     std::int16_t fillcount_ = 0;
 
+#if defined(__GNUC__) && (__GNUC__ == 6)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
+
     STRF_HD printers_tuple_ * printers_ptr_()
     {
         return reinterpret_cast<printers_tuple_*>(&pool_);
@@ -345,6 +350,10 @@ private:
     {
         return *reinterpret_cast<const printers_tuple_*>(&pool_);
     }
+
+#if defined(__GNUC__) && (__GNUC__ == 6)
+#  pragma GCC diagnostic pop
+#endif
 
     template <typename Category, typename FPack>
     static decltype(auto) STRF_HD get_facet_(const FPack& fp)

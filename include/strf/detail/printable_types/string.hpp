@@ -920,7 +920,7 @@ public:
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, FPack, Preview, SrcCharT, false, false, CvFormat >&
             input )
-        : str_(reinterpret_cast<const SrcCharT*>(input.vwf.value().data()))
+        : str_(input.vwf.value().data())
         , len_(input.vwf.value().size())
         , inv_seq_notifier_(get_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.fp))
         , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcCharT>(input.fp))
@@ -941,7 +941,7 @@ public:
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, FPack, Preview, SrcCharT, true, false, CvFormat >&
             input )
-        : str_(reinterpret_cast<const SrcCharT*>(input.vwf.value().data()))
+        : str_(input.vwf.value().data())
         , inv_seq_notifier_(get_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.fp))
         , surr_poli_(get_facet_<strf::surrogate_policy_c, SrcCharT>(input.fp))
     {
@@ -1033,7 +1033,7 @@ public:
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, FPack, Preview, SrcCharT, false, true, CvFormat >&
             input )
-        : str_(reinterpret_cast<const SrcCharT*>(input.vwf.value().data()))
+        : str_(input.vwf.value().data())
         , len_(input.vwf.value().size())
         , afmt_(input.vwf.get_alignment_format_data())
         , inv_seq_notifier_(get_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.fp))
@@ -1055,7 +1055,7 @@ public:
         ( const strf::detail::fmt_string_printer_input
             < DestCharT, FPack, Preview, SrcCharT, true, true, CvFormat >&
             input )
-        : str_(reinterpret_cast<const SrcCharT*>(input.vwf.value().data()))
+        : str_(input.vwf.value().data())
         , len_(input.vwf.value().size())
         , afmt_(input.vwf.get_alignment_format_data())
         , inv_seq_notifier_(get_facet_<strf::invalid_seq_notifier_c, SrcCharT>(input.fp))
@@ -1300,10 +1300,19 @@ public:
         p.~printer();
     }
 
+#if defined(__GNUC__) && (__GNUC__ == 6)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
+
     operator const strf::printer<DestCharT>& () const
     {
         return * reinterpret_cast<const strf::printer<DestCharT>*>(&pool_);
     }
+
+#if defined(__GNUC__) && (__GNUC__ == 6)
+#  pragma GCC diagnostic pop
+#endif
 
 private:
 
@@ -1346,10 +1355,19 @@ public:
         p.~printer();
     }
 
+#if defined(__GNUC__) && (__GNUC__ == 6)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
+
     operator const strf::printer<DestCharT>& () const
     {
         return * reinterpret_cast<const strf::printer<DestCharT>*>(&pool_);
     }
+
+#if defined(__GNUC__) && (__GNUC__ == 6)
+#  pragma GCC diagnostic pop
+#endif
 
 private:
 

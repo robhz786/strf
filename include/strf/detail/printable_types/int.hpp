@@ -337,7 +337,7 @@ struct voidptr_printable_traits
             , strf::get_facet<strf::char_encoding_c<CharT>, const void*>(fp) );
 
         return strf::make_printer_input<CharT>
-            ( new_fp, preview, *strf::hex(reinterpret_cast<std::size_t>(arg)) );
+            ( new_fp, preview, *strf::hex(strf::detail::bit_cast<std::size_t>(arg)) );
     }
 };
 
@@ -419,7 +419,7 @@ struct printable_traits
 
         return strf::make_printer_input<CharT>
             ( new_fp, preview
-            , *strf::hex(reinterpret_cast<std::size_t>(arg.value()))
+            , *strf::hex(strf::detail::bit_cast<std::size_t>(arg.value()))
                 .set(arg.get_alignment_format_data()) );
     }
 };

@@ -14,40 +14,15 @@
 namespace strf {
 namespace detail {
 
-#if defined(STRF_WITH_CSTRING)
-
-// Here is a debate about memcpy vs union: https://github.com/ulfjack/ryu/pull/116
-
 inline STRF_HD std::uint32_t to_bits(float f)
 {
-    std::uint32_t bits = 0;
-    memcpy(&bits, &f, sizeof(float));
-    return bits;
+    return strf::detail::bit_cast<std::uint32_t>(f);
 }
 
 inline STRF_HD std::uint64_t to_bits(const double d)
 {
-    std::uint64_t bits = 0;
-    memcpy(&bits, &d, sizeof(double));
-    return bits;
+    return strf::detail::bit_cast<std::uint64_t>(d);
 }
-
-#else
-
-inline STRF_HD std::uint32_t to_bits(float f)
-{
-    union { std::uint32_t bits = 0; float x; };
-    x = f;
-    return bits;
-}
-
-inline STRF_HD std::uint64_t to_bits(const double d) {
-    union { std::uint64_t bits = 0; double x; };
-    x = d;
-    return bits;
-}
-
-#endif
 
 struct double_dec
 {

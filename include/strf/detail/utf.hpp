@@ -38,62 +38,105 @@ namespace strf {
 
 namespace detail {
 
-template <typename T, std::size_t N>
-struct simple_array;
-
-template <typename T> struct simple_array<T,1> { T obj0; };
-template <typename T> struct simple_array<T,2> { T obj0;  T obj1; };
-template <typename T> struct simple_array<T,3> { T obj0;  T obj1; T obj2; };
-template <typename T> struct simple_array<T,4> { T obj0;  T obj1; T obj2; T obj3; };
-
-template <typename CharT, std::size_t N>
-inline STRF_HD void do_repeat_sequence
-    ( CharT* dest
-    , std::size_t count
-    , simple_array<CharT, N> seq )
-{
-    auto* reinterpreted_dest = reinterpret_cast<simple_array<CharT, N>*>(dest);
-    strf::detail::str_fill_n(reinterpreted_dest, count, seq);
-}
-
-template <typename CharT, std::size_t N>
-STRF_HD void repeat_sequence_continuation
-    ( strf::basic_outbuff<CharT>& ob
-    , std::size_t count
-    , simple_array<CharT, N> seq )
-{
-    std::size_t space = ob.size() / N;
-    STRF_ASSERT(space < count);
-
-    strf::detail::do_repeat_sequence(ob.pointer(), space, seq);
-    count -= space;
-    ob.advance(space * N);
-    ob.recycle();
-    while (true) { //ob.good())
-        space = ob.size() / N;
-        if (count <= space) {
-            strf::detail::do_repeat_sequence(ob.pointer(), count, seq);
-            ob.advance(count * N);
-            return;
-        }
-        strf::detail::do_repeat_sequence(ob.pointer(), space, seq);
-        count -= space;
-        ob.advance(space * N);
-        ob.recycle();
-    }
-}
-
-template <typename CharT, std::size_t N>
+template <typename CharT>
 inline STRF_HD void repeat_sequence
     ( strf::basic_outbuff<CharT>& ob
     , std::size_t count
-    , simple_array<CharT, N> seq )
+    , CharT ch0
+    , CharT ch1 ) noexcept
 {
-    if (count * N <= ob.size()) {
-        strf::detail::do_repeat_sequence(ob.pointer(), count, seq);
-        ob.advance(count * N);
-    } else {
-        strf::detail::repeat_sequence_continuation(ob, count, seq);
+    auto p = ob.pointer();
+    constexpr std::size_t seq_size = 2;
+    std::size_t space;
+    std::size_t inner_count;
+    while (1) {
+        space = (ob.end() - p) / seq_size;
+        inner_count = (space < count ? space : count);
+        for (; inner_count; --inner_count) {
+            p[0] = ch0;
+            p[1] = ch1;
+            p += seq_size;
+        }
+        ob.advance_to(p);
+        if (count <= space) {
+            return;
+        }
+        ob.recycle();
+        if (!ob.good()) {
+            return;
+        }
+        p = ob.pointer();
+        count -= space;
+    }
+}
+
+template <typename CharT>
+inline STRF_HD void repeat_sequence
+    ( strf::basic_outbuff<CharT>& ob
+    , std::size_t count
+    , CharT ch0
+    , CharT ch1
+    , CharT ch2 ) noexcept
+{
+    auto p = ob.pointer();
+    constexpr std::size_t seq_size = 3;
+    std::size_t space;
+    std::size_t inner_count;
+    while (1) {
+        space = (ob.end() - p) / seq_size;
+        inner_count = (space < count ? space : count);
+        for (; inner_count; --inner_count) {
+            p[0] = ch0;
+            p[1] = ch1;
+            p[2] = ch2;
+            p += seq_size;
+        }
+        ob.advance_to(p);
+        if (count <= space) {
+            return;
+        }
+        ob.recycle();
+        if (!ob.good()) {
+            return;
+        }
+        p = ob.pointer();
+        count -= space;
+    }
+}
+
+template <typename CharT>
+inline STRF_HD void repeat_sequence
+    ( strf::basic_outbuff<CharT>& ob
+    , std::size_t count
+    , CharT ch0
+    , CharT ch1
+    , CharT ch2
+    , CharT ch3 ) noexcept
+{
+    auto p = ob.pointer();
+    constexpr std::size_t seq_size = 4;
+    std::size_t space;
+    std::size_t inner_count;
+    while (1) {
+        space = (ob.end() - p) / seq_size;
+        inner_count = (space < count ? space : count);
+        for (; inner_count; --inner_count) {
+            p[0] = ch0;
+            p[1] = ch1;
+            p[2] = ch2;
+            p[3] = ch3;
+            p += seq_size;
+        }
+        ob.advance_to(p);
+        if (count <= space) {
+            return;
+        }
+        ob.recycle();
+        if (!ob.good()) {
+            return;
+        }
+        p = ob.pointer();
+        count -= space;
     }
 }
 
@@ -1304,33 +1347,25 @@ static_char_encoding<CharT, strf::eid_utf8>::encode_fill
     if (ch < 0x80) {
         strf::detail::write_fill(ob, count, static_cast<CharT>(ch));
     } else if (ch < 0x800) {
-        strf::detail::simple_array<CharT, 2> seq = {
-            static_cast<CharT>(0xC0 | ((ch & 0x7C0) >> 6)),
-            static_cast<CharT>(0x80 |  (ch &  0x3F))
-        };
-        strf::detail::repeat_sequence(ob, count, seq);
+        CharT ch0 = static_cast<CharT>(0xC0 | ((ch & 0x7C0) >> 6));
+        CharT ch1 = static_cast<CharT>(0x80 |  (ch &  0x3F));
+        strf::detail::repeat_sequence<CharT>(ob, count, ch0, ch1);
     } else if (ch <  0x10000) {
-        strf::detail::simple_array<CharT, 3> seq = {
-            static_cast<CharT>(0xE0 | ((ch & 0xF000) >> 12)),
-            static_cast<CharT>(0x80 | ((ch &  0xFC0) >> 6)),
-            static_cast<CharT>(0x80 |  (ch &   0x3F)),
-        };
-        strf::detail::repeat_sequence(ob, count, seq);
+        CharT ch0 = static_cast<CharT>(0xE0 | ((ch & 0xF000) >> 12));
+        CharT ch1 = static_cast<CharT>(0x80 | ((ch &  0xFC0) >> 6));
+        CharT ch2 = static_cast<CharT>(0x80 |  (ch &   0x3F));
+        strf::detail::repeat_sequence<CharT>(ob, count, ch0, ch1, ch2);
     } else if (ch < 0x110000) {
-        strf::detail::simple_array<CharT, 4> seq = {
-            static_cast<CharT>(0xF0 | ((ch & 0x1C0000) >> 18)),
-            static_cast<CharT>(0x80 | ((ch &  0x3F000) >> 12)),
-            static_cast<CharT>(0x80 | ((ch &    0xFC0) >> 6)),
-            static_cast<CharT>(0x80 |  (ch &     0x3F))
-        };
-        strf::detail::repeat_sequence(ob, count, seq);
+        CharT ch0 = static_cast<CharT>(0xF0 | ((ch & 0x1C0000) >> 18));
+        CharT ch1 = static_cast<CharT>(0x80 | ((ch &  0x3F000) >> 12));
+        CharT ch2 = static_cast<CharT>(0x80 | ((ch &    0xFC0) >> 6));
+        CharT ch3 = static_cast<CharT>(0x80 |  (ch &     0x3F));
+        strf::detail::repeat_sequence<CharT>(ob, count, ch0, ch1, ch2, ch3);
     } else {
-        strf::detail::simple_array<CharT, 3> seq{
-            static_cast<CharT>('\xEF'),
-            static_cast<CharT>('\xBF'),
-            static_cast<CharT>('\xBD')
-        };
-        strf::detail::repeat_sequence(ob, count, seq);
+        CharT ch0 = static_cast<CharT>('\xEF');
+        CharT ch1 = static_cast<CharT>('\xBF');
+        CharT ch2 = static_cast<CharT>('\xBD');
+        strf::detail::repeat_sequence<CharT>(ob, count, ch0, ch1, ch2);
     }
 }
 
@@ -1686,11 +1721,9 @@ static_char_encoding<CharT, strf::eid_utf16>::encode_fill
         strf::detail::write_fill<CharT>(ob, count, static_cast<CharT>(ch));
     } else if (ch < 0x110000) {
         char32_t sub_codepoint = ch - 0x10000;
-        strf::detail::simple_array<CharT, 2> seq = {
-            static_cast<CharT>(0xD800 + (sub_codepoint >> 10)),
-            static_cast<CharT>(0xDC00 + (sub_codepoint &  0x3FF))
-        };
-        strf::detail::repeat_sequence(ob, count, seq);
+        CharT ch0 = static_cast<CharT>(0xD800 + (sub_codepoint >> 10));
+        CharT ch1 = static_cast<CharT>(0xDC00 + (sub_codepoint &  0x3FF));
+        strf::detail::repeat_sequence<CharT>(ob, count, ch0, ch1);
     } else {
         strf::detail::write_fill<CharT>(ob, count, 0xFFFD);
     }

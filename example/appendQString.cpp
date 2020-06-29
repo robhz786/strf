@@ -62,8 +62,9 @@ void QStringAppender::recycle()
 {
     if (this->good()) {
         // Flush the content:
+        QChar qchar_buffer[buffer_size_];
         std::size_t count = this->pointer() - buffer_;
-        const QChar * qchar_buffer = reinterpret_cast<QChar*>(buffer_);
+        std::copy_n(buffer_, count, qchar_buffer);
 
 #if defined(__cpp_exceptions)
 

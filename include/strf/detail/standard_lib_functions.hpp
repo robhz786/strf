@@ -40,9 +40,39 @@
 #    include <cstring>
 #endif
 
+#ifdef __cpp_lib_bitops
+#include <bit>
+#endif
 
 namespace strf {
 namespace detail {
+
+#ifdef __cpp_lib_bitops
+
+template< class To, class From >
+constexpr To bit_cast(const From& from) noexcept
+{
+    static_assert(sizeof(To) == sizeof(From), "");
+    return std::bit_cast<To, From>(from);
+}
+
+#else // __cpp_lib_bitops
+
+template< class To, class From >
+To bit_cast(const From& from) noexcept
+{
+    static_assert(sizeof(To) == sizeof(From), "");
+
+#if defined(STRF_WITH_CSTRING)
+    To to;
+    memcpy(&to, &from, sizeof(to));
+    return to;
+#else
+    return reinterpret_cast<const To*>(&from);
+#endif
+}
+
+#endif //__cpp_lib_bitops
 
 #if ! defined(STRF_FREESTANDING)
 template <typename It>

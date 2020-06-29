@@ -635,7 +635,7 @@ int main()
     }
 
     {   // print void*
-        void* ptr = reinterpret_cast<void*>((std::size_t)0xABC);
+        void* ptr = strf::detail::bit_cast<void*, std::size_t>(0xABC);
 
         TEST("0xabc") (ptr);
         TEST("...0xabc") (strf::right(ptr, 8, '.'));
@@ -645,7 +645,7 @@ int main()
             .with(strf::constrain<std::is_pointer>(strf::uppercase))
             (strf::right(ptr, 8, '.'));
 
-        ptr = reinterpret_cast<void*>((std::size_t)0xABCDEF1234);
+        ptr = strf::detail::bit_cast<void*, std::size_t>(0xABCDEF1234);
 
         TEST("0xab'cd'ef'12'34")
             .with(strf::numpunct<16>{2}.thousands_sep('\''))

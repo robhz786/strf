@@ -203,26 +203,19 @@ public:
     }
 };
 
-
-inline STRF_HD char32_t* outbuff_garbage_buf_()
-{
-    static char32_t arr[strf::min_size_after_recycle<char>()];
-    return arr;
-}
-
 } // namespace detail
 
 template <typename CharT>
 inline STRF_HD CharT* outbuff_garbage_buf() noexcept
 {
-    return reinterpret_cast<CharT*>(strf::detail::outbuff_garbage_buf_());
+    static CharT arr[strf::min_size_after_recycle<CharT>()];
+    return arr;
 }
 
 template <typename CharT>
 inline STRF_HD CharT* outbuff_garbage_buf_end() noexcept
 {
-    return strf::outbuff_garbage_buf<CharT>()
-        + strf::min_size_after_recycle<CharT>();
+    return strf::outbuff_garbage_buf<CharT>() + strf::min_size_after_recycle<CharT>();
 }
 
 template <typename CharT>
