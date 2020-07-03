@@ -76,15 +76,21 @@ int main()
         TEST("---\xA5---")
             .with(strf::iso_8859_3<char>())
             (strf::conv("---\xA5---", strf::iso_8859_3<char>()));
-        TEST(reinterpret_cast<const char8_t*>("---\xA5---"))
-            .with(strf::iso_8859_3<char8_t>())
-            (strf::conv("---\xA5---", strf::iso_8859_3<char>()));
+        {
+            const char8_t expected[] = { '-', '-', '-', (char8_t)'\xA5', '-', '-', '-', '\0' };
+            TEST(expected)
+                .with(strf::iso_8859_3<char8_t>())
+                (strf::conv("---\xA5---", strf::iso_8859_3<char>()));
+        }
         TEST("...---\xA5---")
             .with(strf::iso_8859_3<char>())
             (strf::right("---\xA5---", 10, U'.').conv(strf::iso_8859_3<char>()));
-        TEST(reinterpret_cast<const char8_t*>("...---\xA5---"))
-            .with(strf::iso_8859_3<char8_t>())
-            (strf::right("---\xA5---", 10, U'.').conv(strf::iso_8859_3<char>()));
+        {
+            const char8_t expected[] = { '.', '.', '.', '-', '-', '-', (char8_t)'\xA5', '-', '-', '-', '\0' };
+            TEST(expected)
+                .with(strf::iso_8859_3<char8_t>())
+                (strf::right("---\xA5---", 10, U'.').conv(strf::iso_8859_3<char>()));
+        }
     }
     {   // encoding sanitization
 

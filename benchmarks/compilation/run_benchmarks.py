@@ -12,17 +12,19 @@ if cxx is None or not os.path.isfile(cxx) :
     print("set CXX environment variable to a valid compiler")
     quit(1)
 
-cxx_standard='17'
 
-cxxflags = ['-std=c++' + cxx_standard]
 cxxflags_str = os.environ.get('CXXFLAGS')
+cxx_standard='20'
+cxxflags = ['-std=c++2a']
 if cxxflags_str is not None:
     cxxflags = cxxflags_str.split()
     idx = string.find(cxxflags_str, '-std=')
     if idx == -1:
-        cxxflags.append('-std=c++' + cxx_standard)
+        cxxflags.append('-std=c++2a')
     else:
         cxx_standard = cxxflags_str[idx + 8: idx + 10]
+        if cxx_standard == '2a':
+            cxx_standard == '20'
 del cxxflags_str
 
 
@@ -55,25 +57,23 @@ def empty_row() :
 def table_header() :
     hdr = '|{:^21}|{:^18} '.format(
         'source file',
-        'comp. times(w,u,s)' )
+        'comp. times(w|u|s)' )
 
     for n in files_per_program:
         hdr = hdr + '|{:>3} files '.format(n)
     return hdr + '| diff'
 
 def print_table_header(title):
-    print('\n[caption=]')
     print(title)
-#    print('[cols=\"<22m,^18m,>10m,>10m,>10m,>15m\"]\n|===')
     print('|===')
-#    print(table_header())
+    print(table_header())
 
 def benchmark(build_type, flags, basename, main_src, libs):
     num_sourcefiles = max(files_per_program)
     compile_stats = create_obj_files(build_type, flags, basename, num_sourcefiles)
     programs_size = build_programs(build_type, main_src, basename,
                                    libs, files_per_program)
-    result = '|{:<21}|{:>4.2f} , {:>4.2f} , {:>4.2f} '.format(
+    result = '|{:<21}|{:>4.2f} | {:>4.2f} | {:>4.2f} '.format(
         '{' + basename + '}',
         compile_stats['wall time'],
         compile_stats['user time'],
@@ -385,29 +385,27 @@ samples_debug_header_only = \
 ] )
 ]
 
-print(table_header())
-
-print_table_header('.Release mode with -Os flag / linked libraries')
+print_table_header('==== Static libs, with `-Os`')
 benchmark_list(build_type_Os(), samples_Os)
 print('|===\n')
 
-print_table_header('.Release mode with -Os flag / header only libraries')
+print_table_header('==== Header-only libs, with `-Os`')
 benchmark_list(build_type_Os(), samples_Os_header_only)
 print('|===\n')
 
-print_table_header('.Release mode with -O3 flag / linked libraries')
+print_table_header('==== Static libs, with `-O3`')
 benchmark_list(build_type_O3(), samples_O3)
 print('|===\n')
 
-print_table_header('.Release mode with -O3 flag / header only libraries')
+print_table_header('==== Header-only libs, with `-O3`')
 benchmark_list(build_type_O3(), samples_O3_header_only)
 print('|===\n')
 
-print_table_header('.Debug mode / linked libraries')
+print_table_header('==== Static libs, with `-g`')
 benchmark_list(build_type_debug(), samples_debug)
 print('|===\n')
 
-print_table_header('.Debug mode / header only libraries')
+print_table_header('==== Header-only libs, with `-g`')
 benchmark_list(build_type_debug(), samples_debug_header_only)
 print('|===\n')
 

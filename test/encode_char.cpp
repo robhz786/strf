@@ -23,12 +23,11 @@ void test_char( Encoding enc
     TEST_SCOPE_DESCRIPTION( "encoding: ", enc.name()
                           , "; char: \\u'", strf::hex((unsigned)ch), '\'');
 
-    strf::underlying_char_type<sizeof(CharT)> buff[100];
+    CharT buff[100];
     auto it = enc.encode_char(buff, ch);
 
     TEST_EQ(std::size_t(it - buff), encoded_char.size());
-    TEST_TRUE( std::equal( encoded_char.begin(), encoded_char.end()
-                         , reinterpret_cast<const CharT*>(buff) ));
+    TEST_TRUE(std::equal(encoded_char.begin(), encoded_char.end(), &buff[0]));
 }
 
 int main()

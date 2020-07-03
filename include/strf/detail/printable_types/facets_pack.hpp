@@ -80,7 +80,7 @@ template < typename CharT
          , typename Preview
          , typename ChildFPack
          , typename ... Args >
-class facets_pack_printer: public strf::printer<sizeof(CharT)>
+class facets_pack_printer: public strf::printer<CharT>
 {
 public:
 
@@ -88,14 +88,14 @@ public:
     STRF_HD facets_pack_printer
         ( const strf::usual_printer_input<T...>& input )
         : fp_{input.fp, input.arg.fp}
-        , printers_{fp_, input.preview, input.arg.args, strf::tag<CharT>()}
+        , printers_{fp_, input.preview, input.arg.args}
     {
     }
 
     facets_pack_printer(const facets_pack_printer&) = delete;
     facets_pack_printer(facets_pack_printer&&) = delete;
 
-    STRF_HD void print_to(strf::underlying_outbuff<sizeof(CharT)>& ob) const override
+    STRF_HD void print_to(strf::basic_outbuff<CharT>& ob) const override
     {
         strf::detail::write(ob, printers_);
     }

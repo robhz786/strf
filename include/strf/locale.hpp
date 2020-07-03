@@ -10,6 +10,8 @@
 #endif
 
 #include <strf.hpp>
+#include <strf/detail/facets/numpunct.hpp>
+#include <strf/detail/int_digits.hpp>
 #include <cwchar>
 
 #include <clocale>
@@ -29,8 +31,8 @@ strf::numpunct<10> locale_numpunct();
 namespace detail {
 
 char32_t decode_first_char_from_utf16(const wchar_t* src);
-char32_t decode_first_char(strf::transcode_f<1, 4> decode, const char* str);
-strf::transcode_f<1, 4> get_decoder(const char* enc_name);
+char32_t decode_first_char(strf::transcode_f<char, char32_t> decode, const char* str);
+strf::transcode_f<char, char32_t> get_decoder(const char* enc_name);
 strf::digits_grouping parse_win_grouping(const wchar_t* str);
 strf::numpunct<10> make_numpunct
     ( const char* encoding_name
@@ -97,27 +99,30 @@ STRF_FUNC_IMPL char32_t decode_first_char_from_utf16(const wchar_t* src)
 
 #if ! defined (_WIN32)
 
-STRF_FUNC_IMPL char32_t decode_first_char(strf::transcode_f<1, 4>& decode, const char* str)
+STRF_FUNC_IMPL char32_t decode_first_char(strf::transcode_f<char, char32_t>& decode, const char* str)
 {
     char32_t buff32[2] = { 0xFFFD, 0 };
     strf::u32cstr_writer ob(buff32);
-    auto ustr = reinterpret_cast<const strf::underlying_char_type<1>*>(str);
-    decode(ob.as_underlying(), ustr, strlen(str), {}, strf::surrogate_policy::strict);
+    decode(ob, str, strlen(str), {}, strf::surrogate_policy::strict);
     return buff32[0];
 }
 
-STRF_FUNC_IMPL strf::transcode_f<1, 4> get_decoder(const char* enc_name)
+STRF_FUNC_IMPL strf::transcode_f<char, char32_t> get_decoder(const char* enc_name)
 {
     if (0 == strcmp(enc_name, "UTF-8")) {
-        return strf::utf8_to_utf32::transcode;
-    } else if (0 == strcmp(enc_name, "ISO-8859-1")) {
-        return strf::static_underlying_transcoder<strf::eid_iso_8859_1, strf::eid_utf32>
+        return strf::utf8_to_utf32<char, char32_t>::transcode;
+    }
+    else if (0 == strcmp(enc_name, "ISO-8859-1")) {
+        return strf::static_transcoder
+            < char, char32_t, strf::eid_iso_8859_1, strf::eid_utf32 >
             ::transcode_func();
     } else if (0 == strcmp(enc_name, "ISO-8859-3")) {
-        return strf::static_underlying_transcoder<strf::eid_iso_8859_3, strf::eid_utf32>
+        return strf::static_transcoder
+            < char, char32_t, strf::eid_iso_8859_3, strf::eid_utf32 >
             ::transcode_func();
     } else if (0 == strcmp(enc_name, "ISO-8859-15")) {
-        return strf::static_underlying_transcoder<strf::eid_iso_8859_15, strf::eid_utf32>
+        return strf::static_transcoder
+            < char, char32_t, strf::eid_iso_8859_15, strf::eid_utf32 >
             ::transcode_func();
     }
     return nullptr;
@@ -129,7 +134,7 @@ STRF_FUNC_IMPL strf::numpunct<10> make_numpunct
     , const char* thousands_sep_str
     , strf::digits_grouping grouping ) noexcept
 {
-    strf::transcode_f<1, 4> decoder_func = nullptr;
+    strf::transcode_f<char, char32_t> decoder_func = nullptr;
     bool decoder_func_searched = false;
     strf::numpunct<10> punct(grouping);
 

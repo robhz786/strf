@@ -165,15 +165,14 @@ template <typename Encoding, typename ErrHandler>
 void tr_string_write
     ( const typename Encoding::char_type* str
     , const typename Encoding::char_type* str_end
-    , const strf::printer<sizeof(typename Encoding::char_type)>* const * args
+    , const strf::printer<typename Encoding::char_type>* const * args
     , std::size_t num_args
-    , strf::underlying_outbuff<sizeof(typename Encoding::char_type)>& ob
+    , strf::basic_outbuff<typename Encoding::char_type>& ob
     , Encoding enc
     , ErrHandler err_handler )
 {
     std::size_t arg_idx = 0;
     using char_type = typename Encoding::char_type;
-    using uchar_type = strf::underlying_char_type<sizeof(char_type)>;
 
     auto it = str;
     std::size_t str_len = str_end - str;
@@ -181,10 +180,10 @@ void tr_string_write
         const char_type* prev = it;
         it = strf::detail::str_find<char_type>(it, (str_end - it), '{');
         if (it == nullptr) {
-            strf::write(ob, (const uchar_type*)prev, str_end - prev);
+            strf::write(ob, prev, str_end - prev);
             return;
         }
-        strf::write(ob, (const uchar_type*)prev, it - prev);
+        strf::write(ob, prev, it - prev);
         ++it;
         after_the_brace:
         if (it == str_end) {
@@ -223,10 +222,10 @@ void tr_string_write
             auto it2 = it + 1;
             it2 = strf::detail::str_find<char_type>(it2, str_end - it2, '{');
             if (it2 == nullptr) {
-                strf::write(ob, (const uchar_type*)it, str_end - it);
+                strf::write(ob, it, str_end - it);
                 return;
             }
-            strf::write(ob, (const uchar_type*)it, (it2 - it));
+            strf::write(ob, it, (it2 - it));
             it = it2 + 1;
             goto after_the_brace;
         } else {
@@ -253,14 +252,13 @@ template <typename CharEncoding, typename ErrHandler>
 class tr_string_printer
 {
     using char_type = typename CharEncoding::char_type;
-    static constexpr std::size_t char_size = sizeof(char_type);
 public:
 
     template <strf::preview_size SizeRequested>
     tr_string_printer
         ( strf::print_preview<SizeRequested, strf::preview_width::no>& preview
         , const strf::print_preview<SizeRequested, strf::preview_width::no>* args_preview
-        , std::initializer_list<const strf::printer<char_size>*> printers
+        , std::initializer_list<const strf::printer<char_type>*> printers
         , const char_type* tr_string
         , const char_type* tr_string_end
         , CharEncoding enc
@@ -283,7 +281,7 @@ public:
         }
     }
 
-    void print_to(strf::underlying_outbuff<char_size>& ob) const
+    void print_to(strf::basic_outbuff<char_type>& ob) const
     {
         strf::detail::tr_string_write
             ( tr_string_, tr_string_end_, printers_array_, num_printers_
@@ -294,7 +292,7 @@ private:
 
     const char_type* tr_string_;
     const char_type* tr_string_end_;
-    const strf::printer<char_size>* const * printers_array_;
+    const strf::printer<char_type>* const * printers_array_;
     std::size_t num_printers_;
     CharEncoding enc_;
     ErrHandler err_handler_;

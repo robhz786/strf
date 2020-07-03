@@ -95,16 +95,15 @@ struct indexed_printer
     Printer printer;
 };
 
-
-template < std::size_t CharSize
+template < typename CharT
          , typename ISeq
          , typename ... Printers >
 class printers_tuple_impl;
 
-template < std::size_t CharSize
+template < typename CharT
          , std::size_t ... I
          , typename ... Printers >
-class printers_tuple_impl<CharSize, std::index_sequence<I...>, Printers...>
+class printers_tuple_impl<CharT, std::index_sequence<I...>, Printers...>
     : private detail::indexed_printer<I, Printers> ...
 {
     template <std::size_t J, typename T>
@@ -117,17 +116,15 @@ public:
 
     static constexpr std::size_t size = sizeof...(Printers);
 
-    template < typename FPack, typename Preview, typename CharT, typename ... Args >
+    template < typename FPack, typename Preview, typename ... Args >
     STRF_HD printers_tuple_impl
         ( const FPack& fp
         , Preview& preview
-        , const strf::detail::simple_tuple<Args...>& args
-        , strf::tag<CharT> tag)
+        , const strf::detail::simple_tuple<Args...>& args )
         : indexed_printer<I, Printers>
           ( strf::printable_traits_alias<CharT, const FPack&, Preview, Args>::make_input
             ( fp, preview, args.template get<I>() ) ) ...
     {
-        (void)tag;
     }
 
     template <std::size_t J>
@@ -138,18 +135,18 @@ public:
 };
 
 
-template< std::size_t CharSize, std::size_t ... I, typename ... Printers >
+template<typename CharT, std::size_t ... I, typename ... Printers>
 STRF_HD void write
-    ( strf::underlying_outbuff<CharSize>& ob
+    ( strf::basic_outbuff<CharT>& ob
     , const strf::detail::printers_tuple_impl
-        < CharSize, std::index_sequence<I...>, Printers... >& printers )
+        < CharT, std::index_sequence<I...>, Printers... >& printers )
 {
-    strf::detail::write_args<CharSize>(ob, printers.template get<I>()...);
+    strf::detail::write_args<CharT>(ob, printers.template get<I>()...);
 }
 
-template < std::size_t CharSize, typename ... Printers >
+template <typename CharT, typename ... Printers>
 using printers_tuple = printers_tuple_impl
-        < CharSize
+        < CharT
         , std::make_index_sequence<sizeof...(Printers)>
         , Printers... >;
 
@@ -159,7 +156,7 @@ class printers_tuple_alias
 {
 public:
     using type = printers_tuple_impl
-        <sizeof(CharT), ISeq, strf::printer_impl<CharT, FPack, Preview, Args> ...>;
+        <CharT, ISeq, strf::printer_impl<CharT, FPack, Preview, Args> ...>;
 };
 
 template < typename CharT, typename FPack, typename Preview, typename ... Args >

@@ -67,11 +67,11 @@ struct impl_strict_ascii
 
     static STRF_HD bool is_valid(std::uint8_t ch)
     {
-        return ch < 0x80;
+        return (ch & 0x80) == 0;
     }
     static STRF_HD char32_t decode(std::uint8_t ch)
     {
-        if (ch < 0x80)
+        if ((ch & 0x80) == 0)
             return ch;
         return (char32_t)-1;
     }
@@ -373,18 +373,18 @@ STRF_FUNC_IMPL STRF_HD unsigned impl_windows_1252::encode_ext(char32_t ch)
 #endif // ! defined(STRF_OMIT_IMPL)
 
 
-template <class Impl>
+template <typename SrcCharT, typename DestCharT, class Impl>
 struct single_byte_char_encoding_to_utf32
 {
     static STRF_HD void transcode
-        ( strf::underlying_outbuff<4>& ob
-        , const std::uint8_t* src
+        ( strf::basic_outbuff<DestCharT>& ob
+        , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t transcode_size
-        ( const std::uint8_t* src
+        ( const SrcCharT* src
         , std::size_t src_size
         , strf::surrogate_policy surr_poli ) noexcept
     {
@@ -393,20 +393,20 @@ struct single_byte_char_encoding_to_utf32
         return src_size;
     }
 
-    static STRF_HD strf::transcode_f<1, 4> transcode_func() noexcept
+    static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
     {
         return transcode;
     }
-    static STRF_HD strf::transcode_size_f<1> transcode_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<SrcCharT> transcode_size_func() noexcept
     {
         return transcode_size;
     }
 };
 
-template <class Impl>
-STRF_HD void single_byte_char_encoding_to_utf32<Impl>::transcode
-    ( strf::underlying_outbuff<4>& ob
-    , const std::uint8_t* src
+template <typename SrcCharT, typename DestCharT, class Impl>
+STRF_HD void single_byte_char_encoding_to_utf32<SrcCharT, DestCharT, Impl>::transcode
+    ( strf::basic_outbuff<DestCharT>& ob
+    , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
@@ -417,9 +417,9 @@ STRF_HD void single_byte_char_encoding_to_utf32<Impl>::transcode
     auto src_end = src + src_size;
     for (auto src_it = src; src_it < src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
-        char32_t ch32 = Impl::decode(*src_it);
+        char32_t ch32 = Impl::decode(static_cast<std::uint8_t>(*src_it));
         if(ch32 != (char32_t)-1) {
-            *dest_it = ch32;
+            *dest_it = static_cast<DestCharT>(ch32);
         } else  {
             *dest_it = 0xFFFD;
             if (inv_seq_notifier) {
@@ -431,18 +431,18 @@ STRF_HD void single_byte_char_encoding_to_utf32<Impl>::transcode
     ob.advance_to(dest_it);
 }
 
-template <class Impl>
+template <typename SrcCharT, typename DestCharT, class Impl>
 struct utf32_to_single_byte_char_encoding
 {
     static STRF_HD void transcode
-        ( strf::underlying_outbuff<1>& ob
-        , const char32_t* src
+        ( strf::basic_outbuff<DestCharT>& ob
+        , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t transcode_size
-        ( const char32_t* src
+        ( const SrcCharT* src
         , std::size_t src_size
         , strf::surrogate_policy surr_poli ) noexcept
     {
@@ -450,20 +450,20 @@ struct utf32_to_single_byte_char_encoding
         (void) surr_poli;
         return src_size;
     }
-    static STRF_HD strf::transcode_f<4, 1> transcode_func() noexcept
+    static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
     {
         return transcode;
     }
-    static STRF_HD strf::transcode_size_f<4> transcode_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<SrcCharT> transcode_size_func() noexcept
     {
         return transcode_size;
     }
 };
 
-template <class Impl>
-STRF_HD void utf32_to_single_byte_char_encoding<Impl>::transcode
-    ( strf::underlying_outbuff<1>& ob
-    , const char32_t* src
+template <typename SrcCharT, typename DestCharT, class Impl>
+STRF_HD void utf32_to_single_byte_char_encoding<SrcCharT, DestCharT, Impl>::transcode
+    ( strf::basic_outbuff<DestCharT>& ob
+    , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
@@ -476,7 +476,7 @@ STRF_HD void utf32_to_single_byte_char_encoding<Impl>::transcode
         STRF_CHECK_DEST;
         auto ch2 = Impl::encode(*src_it);
         if(ch2 < 0x100) {
-            * dest_it = static_cast<std::uint8_t>(ch2);
+            * dest_it = static_cast<DestCharT>(ch2);
         } else {
             * dest_it = '?';
             if (inv_seq_notifier) {
@@ -488,18 +488,18 @@ STRF_HD void utf32_to_single_byte_char_encoding<Impl>::transcode
     ob.advance_to(dest_it);
 }
 
-template <class Impl>
+template <typename SrcCharT, typename DestCharT, class Impl>
 struct single_byte_char_encoding_sanitizer
 {
     static STRF_HD void transcode
-        ( strf::underlying_outbuff<1>& ob
-        , const std::uint8_t* src
+        ( strf::basic_outbuff<DestCharT>& ob
+        , const SrcCharT* src
         , std::size_t src_size
         , strf::invalid_seq_notifier inv_seq_notifier
         , strf::surrogate_policy surr_poli );
 
     static constexpr STRF_HD std::size_t transcode_size
-        ( const std::uint8_t* src
+        ( const SrcCharT* src
         , std::size_t src_size
         , strf::surrogate_policy surr_poli ) noexcept
     {
@@ -508,20 +508,20 @@ struct single_byte_char_encoding_sanitizer
         return src_size;
     }
 
-    static STRF_HD strf::transcode_f<1, 1> transcode_func() noexcept
+    static STRF_HD strf::transcode_f<SrcCharT, DestCharT> transcode_func() noexcept
     {
         return transcode;
     }
-    static STRF_HD strf::transcode_size_f<1> transcode_size_func() noexcept
+    static STRF_HD strf::transcode_size_f<SrcCharT> transcode_size_func() noexcept
     {
         return transcode_size;
     }
 };
 
-template <class Impl>
-STRF_HD void single_byte_char_encoding_sanitizer<Impl>::transcode
-    ( strf::underlying_outbuff<1>& ob
-    , const std::uint8_t* src
+template <typename SrcCharT, typename DestCharT, class Impl>
+STRF_HD void single_byte_char_encoding_sanitizer<SrcCharT, DestCharT, Impl>::transcode
+    ( strf::basic_outbuff<DestCharT>& ob
+    , const SrcCharT* src
     , std::size_t src_size
     , strf::invalid_seq_notifier inv_seq_notifier
     , strf::surrogate_policy surr_poli )
@@ -532,9 +532,9 @@ STRF_HD void single_byte_char_encoding_sanitizer<Impl>::transcode
     auto src_end = src + src_size;
     for (auto src_it = src; src_it < src_end; ++src_it, ++dest_it) {
         STRF_CHECK_DEST;
-        std::uint8_t ch = *src_it;
+        auto ch = static_cast<std::uint8_t>(*src_it);
         if (Impl::is_valid(ch)) {
-            *dest_it = ch;
+            *dest_it = static_cast<SrcCharT>(ch);
         }
         else {
             *dest_it = '?';
@@ -550,119 +550,203 @@ STRF_HD void single_byte_char_encoding_sanitizer<Impl>::transcode
 } // namespace detail
 
 
-template <>
-class static_underlying_transcoder<strf::eid_ascii, strf::eid_ascii>
+template <typename SrcCharT, typename DestCharT>
+class static_transcoder
+    < SrcCharT, DestCharT, strf::eid_ascii, strf::eid_ascii >
     : public strf::detail::single_byte_char_encoding_sanitizer
-        <strf::detail::impl_strict_ascii>
+        < SrcCharT, DestCharT, strf::detail::impl_strict_ascii >
 {
 };
 
-template <>
-class static_underlying_transcoder<strf::eid_utf32, strf::eid_ascii>
+template <typename SrcCharT, typename DestCharT>
+class static_transcoder
+    < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_ascii >
     : public strf::detail::utf32_to_single_byte_char_encoding
-        <strf::detail::impl_strict_ascii>
+        < SrcCharT, DestCharT, strf::detail::impl_strict_ascii >
 {
 };
 
-template <>
-class static_underlying_transcoder<strf::eid_ascii, strf::eid_utf32>
+template <typename SrcCharT, typename DestCharT>
+class static_transcoder
+    < SrcCharT, DestCharT, strf::eid_ascii, strf::eid_utf32 >
     : public strf::detail::single_byte_char_encoding_to_utf32
-        <strf::detail::impl_strict_ascii>
+        < SrcCharT, DestCharT, strf::detail::impl_strict_ascii >
 {
 };
 
-template <>
-class static_underlying_transcoder<strf::eid_iso_8859_1, strf::eid_iso_8859_1>
+template <typename SrcCharT, typename DestCharT>
+class static_transcoder
+    < SrcCharT, DestCharT, strf::eid_iso_8859_1, strf::eid_iso_8859_1 >
     : public strf::detail::single_byte_char_encoding_sanitizer
-        <strf::detail::impl_iso_8859_1>
+        < SrcCharT, DestCharT, strf::detail::impl_iso_8859_1 >
 {
 };
 
-template <>
-class static_underlying_transcoder<strf::eid_utf32, strf::eid_iso_8859_1>
+template <typename SrcCharT, typename DestCharT>
+class static_transcoder
+    < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_iso_8859_1 >
     : public strf::detail::utf32_to_single_byte_char_encoding
-        <strf::detail::impl_iso_8859_1>
+        < SrcCharT, DestCharT, strf::detail::impl_iso_8859_1 >
 {
 };
 
-template <>
-class static_underlying_transcoder<strf::eid_iso_8859_1, strf::eid_utf32>
+template <typename SrcCharT, typename DestCharT>
+class static_transcoder
+    < SrcCharT, DestCharT, strf::eid_iso_8859_1, strf::eid_utf32 >
     : public strf::detail::single_byte_char_encoding_to_utf32
-        <strf::detail::impl_iso_8859_1>
+        < SrcCharT, DestCharT, strf::detail::impl_iso_8859_1 >
 {
 };
 
-template <>
-class static_underlying_transcoder<strf::eid_iso_8859_3, strf::eid_iso_8859_3>
+template <typename SrcCharT, typename DestCharT>
+class static_transcoder
+    < SrcCharT, DestCharT, strf::eid_iso_8859_3, strf::eid_iso_8859_3 >
     : public strf::detail::single_byte_char_encoding_sanitizer
-        <strf::detail::impl_iso_8859_3>
+        < SrcCharT, DestCharT, strf::detail::impl_iso_8859_3 >
 {
 };
 
-template <>
-class static_underlying_transcoder<strf::eid_utf32, strf::eid_iso_8859_3>
+template <typename SrcCharT, typename DestCharT>
+class static_transcoder
+    < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_iso_8859_3 >
     : public strf::detail::utf32_to_single_byte_char_encoding
-        <strf::detail::impl_iso_8859_3>
+        < SrcCharT, DestCharT, strf::detail::impl_iso_8859_3 >
 {
 };
 
-template <>
-class static_underlying_transcoder<strf::eid_iso_8859_3, strf::eid_utf32>
+template <typename SrcCharT, typename DestCharT>
+class static_transcoder
+    < SrcCharT, DestCharT, strf::eid_iso_8859_3, strf::eid_utf32 >
     : public strf::detail::single_byte_char_encoding_to_utf32
-        <strf::detail::impl_iso_8859_3>
+        < SrcCharT, DestCharT, strf::detail::impl_iso_8859_3 >
 {
 };
 
-template <>
-class static_underlying_transcoder<strf::eid_iso_8859_15, strf::eid_iso_8859_15>
+template <typename SrcCharT, typename DestCharT>
+class static_transcoder
+    < SrcCharT, DestCharT, strf::eid_iso_8859_15, strf::eid_iso_8859_15 >
     : public strf::detail::single_byte_char_encoding_sanitizer
-        <strf::detail::impl_iso_8859_15>
+        < SrcCharT, DestCharT, strf::detail::impl_iso_8859_15 >
 {
 };
 
-template <>
-class static_underlying_transcoder<strf::eid_utf32, strf::eid_iso_8859_15>
+template <typename SrcCharT, typename DestCharT>
+class static_transcoder
+    < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_iso_8859_15 >
     : public strf::detail::utf32_to_single_byte_char_encoding
-        <strf::detail::impl_iso_8859_15>
+        < SrcCharT, DestCharT, strf::detail::impl_iso_8859_15 >
 {
 };
 
-template <>
-class static_underlying_transcoder<strf::eid_iso_8859_15, strf::eid_utf32>
+template <typename SrcCharT, typename DestCharT>
+class static_transcoder
+    < SrcCharT, DestCharT, strf::eid_iso_8859_15, strf::eid_utf32 >
     : public strf::detail::single_byte_char_encoding_to_utf32
-        <strf::detail::impl_iso_8859_15>
+        < SrcCharT, DestCharT, strf::detail::impl_iso_8859_15 >
 {
 };
 
-template <>
-class static_underlying_transcoder<strf::eid_windows_1252, strf::eid_windows_1252>
+template <typename SrcCharT, typename DestCharT>
+class static_transcoder
+    < SrcCharT, DestCharT, strf::eid_windows_1252, strf::eid_windows_1252 >
     : public strf::detail::single_byte_char_encoding_sanitizer
-        <strf::detail::impl_windows_1252>
+        < SrcCharT, DestCharT, strf::detail::impl_windows_1252 >
 {
 };
 
-template <>
-class static_underlying_transcoder<strf::eid_utf32, strf::eid_windows_1252>
+template <typename SrcCharT, typename DestCharT>
+class static_transcoder
+    < SrcCharT, DestCharT, strf::eid_utf32, strf::eid_windows_1252 >
     : public strf::detail::utf32_to_single_byte_char_encoding
-        <strf::detail::impl_windows_1252>
+        < SrcCharT, DestCharT, strf::detail::impl_windows_1252 >
 {
 };
 
-template <>
-class static_underlying_transcoder<strf::eid_windows_1252, strf::eid_utf32>
+template <typename SrcCharT, typename DestCharT>
+class static_transcoder
+    < SrcCharT, DestCharT, strf::eid_windows_1252, strf::eid_utf32 >
     : public strf::detail::single_byte_char_encoding_to_utf32
-        <strf::detail::impl_windows_1252>
+        < SrcCharT, DestCharT, strf::detail::impl_windows_1252 >
 {
 };
 
 namespace detail {
 
-template <class Impl>
-class single_byte_char_encoding
+template <std::size_t wchar_size, typename CharT, strf::char_encoding_id>
+class single_byte_char_encoding_tofrom_wchar
 {
-    using char_type_ = std::uint8_t;
 public:
-    static constexpr std::size_t char_size = 1;
+
+    static STRF_HD strf::dynamic_transcoder<wchar_t, CharT>
+    find_transcoder_from(strf::tag<wchar_t>, strf::char_encoding_id) noexcept
+    {
+        return {};
+    }
+    static STRF_HD strf::dynamic_transcoder<CharT, wchar_t>
+    find_transcoder_to(strf::tag<wchar_t>, strf::char_encoding_id) noexcept
+    {
+        return {};
+    }
+
+protected:
+
+    constexpr static std::nullptr_t find_transcoder_to_wchar = nullptr;
+    constexpr static std::nullptr_t  find_transcoder_from_wchar = nullptr;
+};
+
+template <typename CharT, strf::char_encoding_id Id>
+class single_byte_char_encoding_tofrom_wchar<4, CharT, Id>
+{
+public:
+
+    static STRF_HD strf::dynamic_transcoder<wchar_t, CharT>
+    find_transcoder_from(strf::tag<wchar_t>, strf::char_encoding_id id) noexcept
+    {
+        return find_transcoder_from_wchar(id);
+    }
+    static STRF_HD strf::dynamic_transcoder<CharT, wchar_t>
+    find_transcoder_to(strf::tag<wchar_t>, strf::char_encoding_id id) noexcept
+    {
+        return find_transcoder_to_wchar(id);
+    }
+
+protected:
+
+    static STRF_HD strf::dynamic_transcoder<wchar_t, CharT>
+    find_transcoder_from_wchar(strf::char_encoding_id id) noexcept
+    {
+        using return_type = strf::dynamic_transcoder<wchar_t, CharT>;
+        if (id == strf::eid_utf32) {
+            strf::static_transcoder<wchar_t, CharT, strf::eid_utf32, Id> t;
+            return return_type{t};
+        }
+        return {};
+    }
+    static STRF_HD strf::dynamic_transcoder<CharT, wchar_t>
+    find_transcoder_to_wchar(strf::char_encoding_id id) noexcept
+    {
+        using return_type = strf::dynamic_transcoder<CharT, wchar_t>;
+        if (id == strf::eid_utf32) {
+            strf::static_transcoder<CharT, wchar_t, Id, strf::eid_utf32> t;
+            return return_type{t};
+        }
+        return {};
+    }
+};
+
+
+template <typename CharT, class Impl>
+class single_byte_char_encoding
+    : public strf::detail::single_byte_char_encoding_tofrom_wchar
+        < sizeof(wchar_t), CharT, Impl::id >
+{
+    static_assert(sizeof(CharT) == 1, "Character type with this encoding");
+
+    using wchar_stuff_ =
+        strf::detail::single_byte_char_encoding_tofrom_wchar<sizeof(wchar_t), CharT, Impl::id>;
+public:
+
+    using char_type = CharT;
 
     static STRF_HD const char* name() noexcept
     {
@@ -680,9 +764,9 @@ public:
     {
         return 1;
     }
-    static STRF_HD void write_replacement_char(strf::underlying_outbuff<1>& ob)
+    static STRF_HD void write_replacement_char(strf::basic_outbuff<CharT>& ob)
     {
-        strf::put(ob, static_cast<char_type_>('?'));
+        strf::put(ob, static_cast<CharT>('?'));
     }
     static STRF_HD std::size_t validate(char32_t ch) noexcept
     {
@@ -692,13 +776,13 @@ public:
     {
         return 1;
     }
-    static STRF_HD std::uint8_t* encode_char(std::uint8_t* dest, char32_t ch);
+    static STRF_HD CharT* encode_char(CharT* dest, char32_t ch);
 
     static STRF_HD void encode_fill
-        ( strf::underlying_outbuff<1>& ob, std::size_t count, char32_t ch );
+        ( strf::basic_outbuff<CharT>& ob, std::size_t count, char32_t ch );
 
     static STRF_HD strf::codepoints_count_result codepoints_fast_count
-        ( const std::uint8_t* src, std::size_t src_size
+        ( const CharT* src, std::size_t src_size
         , std::size_t max_count ) noexcept
     {
         (void) src;
@@ -708,7 +792,7 @@ public:
         return {src_size, src_size};
     }
     static STRF_HD strf::codepoints_count_result codepoints_robust_count
-        ( const std::uint8_t* src, std::size_t src_size
+        ( const CharT* src, std::size_t src_size
         , std::size_t max_count, strf::surrogate_policy surr_poli ) noexcept
     {
         (void) src;
@@ -718,87 +802,166 @@ public:
         }
         return {src_size, src_size};
     }
-    static STRF_HD char32_t decode_char(std::uint8_t ch)
+    static STRF_HD char32_t decode_char(CharT ch)
     {
-        return Impl::decode(ch);
+        return Impl::decode(static_cast<std::uint8_t>(ch));
     }
-    static STRF_HD strf::encode_char_f<1> encode_char_func() noexcept
+    static STRF_HD strf::encode_char_f<CharT> encode_char_func() noexcept
     {
         return encode_char;
     }
-    static STRF_HD strf::encode_fill_f<1> encode_fill_func() noexcept
+    static STRF_HD strf::encode_fill_f<CharT> encode_fill_func() noexcept
     {
         return encode_fill;
     }
     static STRF_HD
-    strf::write_replacement_char_f<1> write_replacement_char_func() noexcept
+    strf::write_replacement_char_f<CharT> write_replacement_char_func() noexcept
     {
         return write_replacement_char;
     }
+    static constexpr
+    STRF_HD strf::static_transcoder<CharT, CharT, Impl::id, Impl::id>
+    sanitizer() noexcept
+    {
+        return {};
+    }
     static constexpr STRF_HD
-    strf::static_underlying_transcoder<strf::eid_utf32, Impl::id>
+    strf::static_transcoder<char32_t, CharT, strf::eid_utf32, Impl::id>
     from_u32() noexcept
     {
         return {};
     }
     static constexpr STRF_HD
-    strf::static_underlying_transcoder<Impl::id, strf::eid_utf32>
+    strf::static_transcoder<CharT, char32_t, Impl::id, strf::eid_utf32>
     to_u32() noexcept
     {
         return {};
     }
-    static constexpr STRF_HD strf::static_underlying_transcoder<Impl::id, Impl::id>
-    sanitizer() noexcept
+
+    using wchar_stuff_::find_transcoder_from;
+    using wchar_stuff_::find_transcoder_to;
+
+    static STRF_HD strf::dynamic_transcoder<char16_t, CharT>
+    find_transcoder_from(strf::tag<char16_t>, strf::char_encoding_id) noexcept
     {
         return {};
     }
-    static strf::dynamic_underlying_char_encoding<1> to_dynamic() noexcept
+    static STRF_HD strf::dynamic_transcoder<CharT, char16_t>
+    find_transcoder_to(strf::tag<char16_t>, strf::char_encoding_id) noexcept
     {
-        static const strf::dynamic_underlying_char_encoding_data<1> data = {
+        return {};
+    }
+    static STRF_HD strf::dynamic_transcoder<char, CharT>
+    find_transcoder_from(strf::tag<char>, strf::char_encoding_id id) noexcept
+    {
+        return find_transcoder_from_narrow<char>(id);;
+    }
+    static STRF_HD strf::dynamic_transcoder<CharT, char>
+    find_transcoder_to(strf::tag<char>, strf::char_encoding_id id) noexcept
+    {
+        return find_transcoder_to_narrow<char>(id);
+    }
+
+#if defined (__cpp_char8_t)
+
+    static STRF_HD strf::dynamic_transcoder<char8_t, CharT>
+    find_transcoder_from(strf::tag<char8_t>, strf::char_encoding_id id) noexcept
+    {
+        return find_transcoder_from_narrow<char8_t>(id);
+    }
+    static STRF_HD strf::dynamic_transcoder<CharT, char8_t>
+    find_transcoder_to(strf::tag<char8_t>, strf::char_encoding_id id) noexcept
+    {
+        return find_transcoder_to_narrow<char8_t>(id);
+    }
+
+#endif
+
+    static strf::dynamic_char_encoding<CharT> to_dynamic() noexcept
+    {
+        static const strf::dynamic_char_encoding_data<CharT> data = {
             name(), id(), replacement_char(), 1, validate, encoded_char_size,
             encode_char, encode_fill, codepoints_fast_count,
             codepoints_robust_count, write_replacement_char, decode_char,
-            strf::dynamic_underlying_transcoder<4, 1>{from_u32()},
-            strf::dynamic_underlying_transcoder<1, 4>{to_u32()},
-            strf::dynamic_underlying_transcoder<1, 1>{sanitizer()},
-            nullptr, nullptr, nullptr, nullptr
+            strf::dynamic_transcoder<CharT, CharT>{sanitizer()},
+            strf::dynamic_transcoder<char32_t, CharT>{from_u32()},
+            strf::dynamic_transcoder<CharT, char32_t>{to_u32()},
+            wchar_stuff_::find_transcoder_from_wchar,
+            wchar_stuff_::find_transcoder_to_wchar,
+            nullptr,
+            nullptr,
+            find_transcoder_from_narrow<char>,
+            find_transcoder_to_narrow<char>,
+#if defined (__cpp_char8_t)
+            find_transcoder_from_narrow<char8_t>,
+            find_transcoder_to_narrow<char8_t>,
+#else
+            nullptr,
+            nullptr,
+#endif // defined (__cpp_char8_t)
         };
-        return strf::dynamic_underlying_char_encoding<1>{data};
+        return strf::dynamic_char_encoding<CharT>{data};
     }
-    explicit operator strf::dynamic_underlying_char_encoding<1> () const
+    explicit operator strf::dynamic_char_encoding<CharT> () const
     {
         return to_dynamic();
     }
+
+private:
+
+    template <typename SrcCharT>
+    static STRF_HD strf::dynamic_transcoder<SrcCharT, CharT>
+    find_transcoder_from_narrow(strf::char_encoding_id id) noexcept
+    {
+        using transcoder_type = strf::dynamic_transcoder<SrcCharT, CharT>;
+        if (id == Impl::id) {
+            static_transcoder<SrcCharT, CharT, Impl::id, Impl::id> t;
+            return transcoder_type{ t };
+        }
+        return {};
+    }
+    template <typename DestCharT>
+    static STRF_HD strf::dynamic_transcoder<CharT, DestCharT>
+    find_transcoder_to_narrow(strf::char_encoding_id id) noexcept
+    {
+        using transcoder_type = strf::dynamic_transcoder<CharT, DestCharT>;
+        if (id == Impl::id) {
+            static_transcoder<CharT, DestCharT, Impl::id, Impl::id> t;
+            return transcoder_type{ t };
+        }
+        return {};
+    }
+
 };
 
-
-template <class Impl>
-STRF_HD std::uint8_t* single_byte_char_encoding<Impl>::encode_char
-    ( std::uint8_t* dest
+template <typename CharT, class Impl>
+STRF_HD CharT* single_byte_char_encoding<CharT, Impl>::encode_char
+    ( CharT* dest
     , char32_t ch )
 {
     auto ch2 = Impl::encode(ch);
     bool valid = (ch2 < 0x100);
-    *dest = static_cast<std::uint8_t>(valid * ch2 + (!valid) * '?');
+    *dest = static_cast<CharT>(valid * ch2 + (!valid) * '?');
     return dest + 1;
 }
 
-template <class Impl>
-STRF_HD void single_byte_char_encoding<Impl>::encode_fill
-    ( strf::underlying_outbuff<1>& ob, std::size_t count, char32_t ch )
+template <typename CharT, class Impl>
+STRF_HD void single_byte_char_encoding<CharT, Impl>::encode_fill
+    ( strf::basic_outbuff<CharT>& ob, std::size_t count, char32_t ch )
 {
     unsigned ch2 = Impl::encode(ch);
     if (ch2 >= 0x100) {
         ch2 = '?';
     }
+    auto ch3 = static_cast<CharT>(ch2);
     while(true) {
         std::size_t available = ob.size();
         if (count <= available) {
-            strf::detail::str_fill_n<char>((char*)ob.pointer(), count, (char)ch2);
+            strf::detail::str_fill_n<CharT>(ob.pointer(), count, ch3);
             ob.advance(count);
             return;
         }
-        strf::detail::str_fill_n<char>((char*)ob.pointer(), available, (char)ch2);
+        strf::detail::str_fill_n<CharT>(ob.pointer(), available, ch3);
         ob.advance_to(ob.end());
         count -= available;
         ob.recycle();
@@ -808,33 +971,33 @@ STRF_HD void single_byte_char_encoding<Impl>::encode_fill
 } // namespace detail
 
 
-template <>
-class static_underlying_char_encoding<strf::eid_ascii>
-    : public strf::detail::single_byte_char_encoding<strf::detail::impl_strict_ascii>
+template <typename CharT>
+class static_char_encoding<CharT, strf::eid_ascii>
+    : public strf::detail::single_byte_char_encoding<CharT, strf::detail::impl_strict_ascii>
 {
 };
 
-template <>
-class static_underlying_char_encoding<strf::eid_iso_8859_1>
-    : public strf::detail::single_byte_char_encoding<strf::detail::impl_iso_8859_1>
+template <typename CharT>
+class static_char_encoding<CharT, strf::eid_iso_8859_1>
+    : public strf::detail::single_byte_char_encoding<CharT, strf::detail::impl_iso_8859_1>
 {
 };
 
-template <>
-class static_underlying_char_encoding<strf::eid_iso_8859_3>
-    : public strf::detail::single_byte_char_encoding<strf::detail::impl_iso_8859_3>
+template <typename CharT>
+class static_char_encoding<CharT, strf::eid_iso_8859_3>
+    : public strf::detail::single_byte_char_encoding<CharT, strf::detail::impl_iso_8859_3>
 {
 };
 
-template <>
-class static_underlying_char_encoding<strf::eid_iso_8859_15>
-    : public strf::detail::single_byte_char_encoding<strf::detail::impl_iso_8859_15>
+template <typename CharT>
+class static_char_encoding<CharT, strf::eid_iso_8859_15>
+    : public strf::detail::single_byte_char_encoding<CharT, strf::detail::impl_iso_8859_15>
 {
 };
 
-template <>
-class static_underlying_char_encoding<strf::eid_windows_1252>
-    : public strf::detail::single_byte_char_encoding<strf::detail::impl_windows_1252>
+template <typename CharT>
+class static_char_encoding<CharT, strf::eid_windows_1252>
+    : public strf::detail::single_byte_char_encoding<CharT, strf::detail::impl_windows_1252>
 {
 };
 

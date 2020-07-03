@@ -5,6 +5,7 @@
 #include <QString>
 #include <strf.hpp>
 #include <climits>
+#include <algorithm>
 
 class QStringCreator: public strf::basic_outbuff<char16_t>
 {
@@ -37,15 +38,16 @@ private:
 
     QString str_;
     std::exception_ptr eptr_ = nullptr;
-    constexpr static std::size_t buffer_size_ = strf::min_size_after_recycle<2>();
+    constexpr static std::size_t buffer_size_ = strf::min_size_after_recycle<char16_t>();
     char16_t buffer_[buffer_size_];
 };
 
 void QStringCreator::recycle()
 {
     if (this->good()) {
-        const QChar * qchar_buffer = reinterpret_cast<QChar*>(buffer_);
+        QChar qchar_buffer[buffer_size_];
         std::size_t count = this->pointer() - buffer_;
+        std::copy_n(buffer_, count, qchar_buffer);
 
 #if defined(__cpp_exceptions)
 

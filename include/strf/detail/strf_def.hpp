@@ -149,6 +149,14 @@ template <bool ... C> constexpr bool fold_or = fold_or_impl<C...>::value;
 
 #endif // defined(__cpp_fold_expressions)
 
+template <std::size_t CharSize>
+struct wchar_equiv_impl;
+
+template <> struct wchar_equiv_impl<2> { using type = char16_t; };
+template <> struct wchar_equiv_impl<4> { using type = char32_t; };
+
+using wchar_equiv = typename wchar_equiv_impl<sizeof(wchar_t)>::type;
+
 } // namespace detail
 
 struct absolute_lowest_rank

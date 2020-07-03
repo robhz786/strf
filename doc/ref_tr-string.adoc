@@ -110,7 +110,7 @@ Given:
 
 - `X`, a _TrErrorHandling_ type
 - `x`, a value of type `X`
-- `Enc`, a _<<CharEncodingFacet,CharEncodingFacet>>_ type.
+- `Enc`, a _<<CharEncoding,CharEncoding>>_ type.
 - `enc`, a value of type `Enc`
 - `str`, a value of type `const Enc::char_type*` pointing to string encoded according to `enc`
 - `str_len`, a `std::size_t` value equal to the length of the string `str`

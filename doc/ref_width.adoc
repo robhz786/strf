@@ -40,13 +40,13 @@ satisfy the __{WidthCalculator}__ requirements.
 
 Given
 
-* `CharSize`, an constexpr integer value equal to `1`, `2` or `4`
-* `Encoding`, an __{UnderlyingCharEncoding}__ type for value `CharSize`
+* `CharT`, one of the types: `char`, `char8_t`, `char16_t`, `char32_t` or `wchar_t`
+* `Encoding`, an __{CharEncoding}__ type for value `CharSize`
 * `encoding`, an lvalue reference of type `Encoding`
-* `ch` a value of type `{underlying_char_type}<CharSize>`
+* `ch` a value of type `CharT`
 * `limit`, a value of type `{width_t}`
-* `str`, a value of type `const {underlying_char_type}<CharSize>*`
-        pointing to string encoded according to `encoding`.
+* `str`, a value of type `const CharT*`
+        pointing to a string encoded according to `encoding`.
 * `str_len`, a value of type `std::size_t` equal to the length of string `str`.
 * `surr_poli`, a value of type `{surrogate_policy}`
 
@@ -135,13 +135,13 @@ public:
     template <typename CharEncoding>
     {width_t} <<fast_width_char_width,char_width>>
         ( CharEncoding
-        , {underlying_char_type}<CharEncoding::char_size> ) const noexcept;
+        , typename CharEncoding::char_type ) const noexcept;
 
     template <typename CharEncoding>
     {width_t} <<fast_width_str_width,str_width>>
         ( CharEncoding
         , {width_t} limit
-        , const {underlying_char_type}<CharEncoding::char_size>*
+        , const typename CharEncoding::char_type*
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 
@@ -149,7 +149,7 @@ public:
     constexpr {width_and_pos} <<fast_width_str_width_and_pos,str_width_and_pos>>
         ( CharEncoding
         , {width_t} limit
-        , const {underlying_char_type}<CharEncoding::char_size>*
+        , const typename CharEncoding::char_type*
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 };
@@ -161,7 +161,7 @@ public:
 template <typename CharEncoding>
 {width_t} char_width
     ( CharEncoding
-    , {underlying_char_type}<CharEncoding::char_size> ) const noexcept;
+    , typename CharEncoding::char_type ) const noexcept;
 ----
 [horizontal]
 Return value:: `1`
@@ -174,7 +174,7 @@ template <typename CharEncoding>
 constexpr {width_t} str_width
     ( CharEncoding
     , {width_t} limit
-    , const {underlying_char_type}<CharEncoding::char_size>*
+    , const typename CharEncoding::char_type*
     , std::size_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
@@ -191,7 +191,7 @@ template <typename CharEncoding>
 constexpr {width_and_pos} str_width_and_pos
     ( CharEncoding
     , {width_t} limit
-    , const {underlying_char_type}<CharEncoding::char_size>*
+    , const typename CharEncoding::char_type*
     , std::size_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
@@ -222,13 +222,13 @@ public:
     template <typename CharEncoding>
     {width_t} <<width_as_fast_u32len_char_width,char_width>>
         ( CharEncoding encoding
-        , {underlying_char_type}<CharEncoding::char_size> ) const noexcept;
+        , typename CharEncoding::char_type ) const noexcept;
 
     template <typename CharEncoding>
     {width_t} <<width_as_fast_u32len_str_width,str_width>>
         ( CharEncoding encoding
         , {width_t} limit
-        , const {underlying_char_type}<CharEncoding::char_size>* str
+        , const typename CharEncoding::char_type* str
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 
@@ -236,7 +236,7 @@ public:
     constexpr {width_and_pos} <<width_as_fast_u32len_str_width_and_pos,str_width_and_pos>>
         ( CharEncoding encoding
         , {width_t} limit
-        , const {underlying_char_type}<CharEncoding::char_size>* str
+        , const typename CharEncoding::char_type* str
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 };
@@ -248,7 +248,7 @@ public:
 template <typename CharEncoding>
 {width_t} char_width
     ( CharEncoding
-    , {underlying_char_type}<CharEncoding::char_size> ) const noexcept;
+    , typename CharEncoding::char_type ) const noexcept;
 ----
 [horizontal]
 Return value::: `1`
@@ -261,14 +261,14 @@ template <typename CharEncoding>
 constexpr {width_t} str_width
     ( CharEncoding encoding
     , {width_t} limit
-    , const {underlying_char_type}<CharEncoding::char_size>* str
+    , const typename CharEncoding::char_type* str
     , std::size_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
 [horizontal]
 Return value:::
 * `0`, if `limit \<= 0` is `true`
-* otherwise, `encoding.<<UnderlyingCharEncoding_codepoints_fast_count,codepoints_fast_count>>(str, str_len, limit.floor()).count`.
+* otherwise, `encoding.<<CharEncoding_codepoints_fast_count,codepoints_fast_count>>(str, str_len, limit.floor()).count`.
 ====
 [[width_as_fast_u32len_str_width_and_pos]]
 ====
@@ -278,7 +278,7 @@ template <typename CharEncoding>
 constexpr {width_and_pos} str_width_and_pos
     ( CharEncoding encoding
     , {width_t} limit
-    , const {underlying_char_type}<CharEncoding::char_size>* str
+    , const typename CharEncoding::char_type* str
     , std::size_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
@@ -287,7 +287,7 @@ Return value::: The return value `ret` is such that
 
 * If `limit \<= 0` is `true`, then then `ret.width` and `ret.pos` are `0`;
 * otherwise, `ret.width` is equal to `ret2.count` and `ret.pos` is equal
-  to `encoding.<<UnderlyingCharEncoding_codepoints_fast_count,codepoints_fast_count>>(str, str_len, lim).pos`
+  to `encoding.<<CharEncoding_codepoints_fast_count,codepoints_fast_count>>(str, str_len, lim).pos`
 ====
 
 === Class `width_as_u32len` [[width_as_u32len]]
@@ -307,13 +307,13 @@ public:
     template <typename CharEncoding>
     {width_t} <<width_as_u32len_char_width,char_width>>
         ( CharEncoding encoding
-        , {underlying_char_type}<CharEncoding::char_size> ) const noexcept;
+        , typename CharEncoding::char_type ) const noexcept;
 
     template <typename CharEncoding>
     {width_t} <<width_as_u32len_str_width,str_width>>
         ( CharEncoding encoding
         , {width_t} limit
-        , const {underlying_char_type}<CharEncoding::char_size>* str
+        , const typename CharEncoding::char_type* str
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 
@@ -321,7 +321,7 @@ public:
     constexpr {width_and_pos} <<width_as_u32len_str_width_and_pos,str_width_and_pos>>
         ( CharEncoding encoding
         , {width_t} limit
-        , const {underlying_char_type}<CharEncoding::char_size>* str
+        , const typename CharEncoding::char_type* str
         , std::size_t str_len
         , {surrogate_policy} ) const noexcept;
 };
@@ -333,7 +333,7 @@ public:
 template <typename CharEncoding>
 {width_t} char_width
     ( CharEncoding
-    , {underlying_char_type}<CharEncoding::char_size> ) const noexcept;
+    , typename CharEncoding::char_type ) const noexcept;
 ----
 [horizontal]
 Return value:: `1`
@@ -346,14 +346,14 @@ template <typename CharEncoding>
 constexpr {width_t} str_width
     ( CharEncoding encoding
     , {width_t} limit
-    , const {underlying_char_type}<CharEncoding::char_size>* str
+    , const typename CharEncoding::char_type* str
     , std::size_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
 [horizontal]
 Return value:::
 * `0`, if `limit \<= 0` is `true`
-* otherwise, `encoding.<<UnderlyingCharEncoding_codepoints_robust_count,codepoints_robust_count>>(str, str_len, limit.floor()).count`.
+* otherwise, `encoding.<<CharEncoding_codepoints_robust_count,codepoints_robust_count>>(str, str_len, limit.floor()).count`.
 ====
 [[width_as_u32len_str_width_and_pos]]
 ====
@@ -363,7 +363,7 @@ template <typename CharEncoding>
 constexpr {width_and_pos} str_width_and_pos
     ( CharEncoding encoding
     , {width_t} limit
-    , const {underlying_char_type}<CharEncoding::char_size>* str
+    , const typename CharEncoding::char_type* str
     , std::size_t str_len
     , {surrogate_policy} ) const noexcept;
 ----
@@ -372,7 +372,7 @@ Return value::: The return value `ret` is such that
 
 * If `limit \<= 0` is `true`, then then `ret.width` and `ret.pos` are `0`;
 * otherwise, `ret.width` is equal to `ret2.count` and `ret.pos` is equal to
-  `encoding.<<UnderlyingCharEncoding_codepoints_robust_count,codepoints_robust_count>>(str, str_len, lim).pos`
+  `encoding.<<CharEncoding_codepoints_robust_count,codepoints_robust_count>>(str, str_len, lim).pos`
 ====
 
 === Class template `width_by_func` [[width_by_func]]
@@ -394,13 +394,13 @@ public:
     template <typename CharEncoding>
     {width_t} <<width_by_func_char_width,char_width>>
         ( CharEncoding charste
-        , {underlying_char_type}<CharEncoding::char_size> ) const;
+        , typename CharEncoding::char_type ) const;
 
     template <typename CharEncoding>
     {width_t} <<width_by_func_str_width,str_width>>
         ( CharEncoding encoding
         , {width_t} limit
-        , const {underlying_char_type}<CharEncoding::char_size>* str
+        , const typename CharEncoding::char_type* str
         , std::size_t str_len
         , {surrogate_policy} ) const;
 
@@ -408,7 +408,7 @@ public:
     constexpr {width_and_pos} <<width_by_func_str_width_and_pos,str_width_and_pos>>
         ( CharEncoding encoding
         , {width_t} limit
-        , const {underlying_char_type}<CharEncoding::char_size>* str
+        , const typename CharEncoding::char_type* str
         , std::size_t str_len
         , {surrogate_policy} ) const;
 
@@ -437,7 +437,7 @@ must be {width_t}.
 template <typename CharEncoding>
 {width_t} char_width
     ( CharEncoding encoding
-    , {underlying_char_type}<CharEncoding::char_size> ch) const;
+    , typename CharEncoding::char_type ch) const;
 ----
 [horizontal]
 Return value:: `func_(encoding.<<CharEncoding_decode_char,decode_char>>(ch))`
@@ -450,18 +450,18 @@ template <typename CharEncoding>
 constexpr {width_t} str_width
     ( CharEncoding encoding
     , {width_t} limit
-    , const {underlying_char_type}<CharEncoding::char_size>* str
+    , const typename CharEncoding::char_type* str
     , std::size_t str_len
     , {surrogate_policy}  surr_poli) const;
 ----
 [horizontal]
 Return value::: The sum of the values of `func_(ch32)`, where `ch32` is
    each of the `char32_t` values that are written into `ob` --
-   an object whose type derives from `{underlying_outbuff}<4>` -- by the call
+   an object whose type derives from `{basic_outbuff}<char32_t>` -- by the call
 +
 [source,cpp,subs=normal]
 ----
-encoding.<<UnderlyingCharEncoding_to_u32,to_u32>>().<<UnderlyingTranscoder_transcode,transcode>>
+encoding.<<CharEncoding_to_u32,to_u32>>().<<Transcoder_transcode,transcode>>
     ( ob, str, str_len, {invalid_seq_policy}::replace, surr_poli )
 ----
 , if such value is less than or equal to `limit`. Otherwise, the return value
@@ -475,7 +475,7 @@ template <typename CharEncoding>
 constexpr {width_and_pos} str_width_and_pos
     ( CharEncoding encoding
     , {width_t} limit
-    , const {underlying_char_type}<CharEncoding::char_size>* str
+    , const typename CharEncoding::char_type* str
     , std::size_t str_len
     , {surrogate_policy} surr_poli) const;
 ----
@@ -486,10 +486,10 @@ Return value::: The return value `ret` is such that:
 +
 [source,cpp,subs=normal]
 ----
-encoding.<<UnderlyingCharEncoding_to_u32,to_u32>>().<<UnderlyingTranscoder_transcode,transcode>>
+encoding.<<CharEncoding_to_u32,to_u32>>().<<Transcoder_transcode,transcode>>
     ( ob, str, ret.pos, {invalid_seq_policy}::replace, surr_poli )
 ----
-, where `ob` is any object whose type derives from `{underlying_outbuff}<4>`.
+, where `ob` is any object whose type derives from `{basic_outbuff}<char32_t>`.
 * `ret.pos` is the greatest value that is less than or equal to `str_len`
   such that `str_width_and_pos(encoding, limit, str, ret.pos, surr_poli).width`
   is less than or equal to `limit`.

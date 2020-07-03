@@ -6,8 +6,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include <strf/detail/strf_def.hpp>
-#include <cstring>
-
 
 namespace strf {
 
