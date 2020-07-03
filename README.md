@@ -1,5 +1,5 @@
 # Strf
-Version: 0.11.1
+Version: 0.12.0
 
 Branch   | Travis | Appveyor | codecov.io
 ---------|--------|----------|-----------
@@ -10,26 +10,26 @@ master   | [![Build Status](https://travis-ci.org/robhz786/strf.svg?branch=maste
 
 Strf is a C++ formatting library that
 
-* is fast ( see the [`benchmarks`](http://robhz786.github.io/strf/v0.11.1/benchmarks.html) )
+* is fast ( see the [`benchmarks`](http://robhz786.github.io/strf/v0.12.0/benchmarks.html) )
 * supports all character types (`char`, `char8_t`, `char16_t`, `char32_t` and `wchar_t`)
 * supports encoding conversion.
 * can be used as header-only as well as static library.
 
 ## Documentation
 
-The [**introduction**](http://robhz786.github.io/strf/v0.11.1/introduction.html) is what you should
+The [**introduction**](http://robhz786.github.io/strf/v0.12.0/introduction.html) is what you should
 read first.
 
-After that, the [**quick reference**](http://robhz786.github.io/strf/v0.11.1/quick_reference.html) provides a nice overview of the library's capabilities.
+After that, the [**quick reference**](http://robhz786.github.io/strf/v0.12.0/quick_reference.html) provides a nice overview of the library's capabilities.
 It is the document that people are supposed to visit more often.
 
 At last, there are the header references, which aim to be a more accurate and complete.
-* [`<strf.hpp>`](http://robhz786.github.io/strf/v0.11.1/strf_hpp.html) is the main header.
-* [`<strf/outbuff.hpp>`](http://robhz786.github.io/strf/v0.11.1/outbuff_hpp.html) is a lightweight and freestanding header that defines the `basic_outbuff` class template.
+* [`<strf.hpp>`](http://robhz786.github.io/strf/v0.12.0/strf_hpp.html) is the main header.
+* [`<strf/outbuff.hpp>`](http://robhz786.github.io/strf/v0.12.0/outbuff_hpp.html) is a lightweight and freestanding header that defines the `basic_outbuff` class template.
                        All other headers includes this one.
-* [`<strf/to_string.hpp>`](http://robhz786.github.io/strf/v0.11.1/to_string_hpp.html) adds support for writting to `std::basic_string`. It includes `<strf.hpp>.
-* [`<strf/to_cfile.hpp>`](http://robhz786.github.io/strf/v0.11.1/to_cfile_hpp.html)  adds support for writting to `FILE*`. It includes `<strf.hpp>.
-* [`<strf/to_streambuf.hpp>`](http://robhz786.github.io/strf/v0.11.1/to_streambuf_hpp.html) adds support for writting to `std::basic_streambuf`. It includes `<strf.hpp>.
+* [`<strf/to_string.hpp>`](http://robhz786.github.io/strf/v0.12.0/to_string_hpp.html) adds support for writting to `std::basic_string`. It includes `<strf.hpp>.
+* [`<strf/to_cfile.hpp>`](http://robhz786.github.io/strf/v0.12.0/to_cfile_hpp.html)  adds support for writting to `FILE*`. It includes `<strf.hpp>.
+* [`<strf/to_streambuf.hpp>`](http://robhz786.github.io/strf/v0.12.0/to_streambuf_hpp.html) adds support for writting to `std::basic_streambuf`. It includes `<strf.hpp>.
 
 ## Acknowledgments
 
