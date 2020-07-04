@@ -17,8 +17,9 @@
 #define STR(X) STR2(X)
 #define CAT2(X, Y) X##Y
 #define CAT(X,Y) CAT2(X,Y)
-#define BM(FIXTURE, EXPR)  BM2(CAT(bm_, __LINE__) , FIXTURE, EXPR)
-#define BM2(ID, FIXTURE, EXPR)                                          \
+#define BM(FIXTURE, EXPR)  BM2(FIXTURE, EXPR, STR(EXPR))
+#define BM2(FIXTURE, EXPR, LABEL)  DO_BM(CAT(bm_, __LINE__), FIXTURE, EXPR, LABEL)
+#define DO_BM(ID, FIXTURE, EXPR, LABEL)                                   \
     struct ID {                                                         \
         static void func(benchmark::State& state) {                     \
             FIXTURE;                                                    \
@@ -29,18 +30,11 @@
             }                                                           \
         }                                                               \
     };                                                                  \
-    benchmark::RegisterBenchmark(STR(EXPR), ID :: func);
+    benchmark::RegisterBenchmark(LABEL, ID :: func);
 
 
 
 #define FIXTURE_STR std::string str = "blah blah blah blah blah blah blah";
-#define FMT_FIXTURE_STR auto compiled_fmt_str = fmt::compile<std::string>("Blah {}!\n");
-
-#define FMT_FIXTURE_INT  auto compiled_fmt_int = fmt::compile<int>("{}");
-#define FMT_FIXTURE_DBL  auto compiled_fmt_double = fmt::compile<double>("{}");
-#define FMT_FIXTURE1  auto compiled_fmt1 = (fmt::compile<int, int>("blah {} blah {} blah"));
-#define FMT_FIXTURE2  auto compiled_fmt2 = (fmt::compile<int, int>("blah {:+} blah {:#x} blah"));
-#define FMT_FIXTURE3  auto compiled_fmt3 = (fmt::compile<int, int>("blah {:_>+20} blah {:<#20x} blah"));
 
 #define FIXTURE_U8SAMPLE  auto u8sample = std::string(500, 'A');
 #define FIXTURE_U16SAMPLE auto u16sample = std::string(500, 'A');
@@ -104,12 +98,18 @@ int main(int argc, char** argv)
     BM(, to_string_nr.tr("blah {} blah {} blah", +strf::dec(123456), *strf::hex(0x123456)));
     BM(, to_string_nr.tr("blah {} blah {} blah", +strf::right(123456, 20, '_'), *strf::hex(0x123456)<20));
 
-    BM(FMT_FIXTURE_INT, fmt::format(compiled_fmt_int, 123456));
-    BM(FMT_FIXTURE_DBL, fmt::format(compiled_fmt_double, 0.123456));
-    BM(FIXTURE_STR; FMT_FIXTURE_STR, fmt::format(compiled_fmt_str, str));
-    BM(FMT_FIXTURE1, fmt::format(compiled_fmt1, 123456, 0x123456));
-    BM(FMT_FIXTURE2, fmt::format(compiled_fmt2, 123456, 0x123456));
-    BM(FMT_FIXTURE3, fmt::format(compiled_fmt3, 123456, 0x123456));
+    BM2(,  fmt::format(FMT_COMPILE("{}"), 123456)
+        , "fmt::format(FMT_COMPILE(\"{}\"), 123456)");
+    BM2(,  fmt::format(FMT_COMPILE("{}"), 0.123456)
+        , "fmt::format(FMT_COMPILE(\"{}\"), 0.123456");
+    BM2(FIXTURE_STR, fmt::format(FMT_COMPILE("Blah {}!\n"), str)
+        , "fmt::format(FMT_COMPILE(\"Blah {}!\\n\"), str)");
+    BM2(,  fmt::format(FMT_COMPILE("blah {} blah {} blah"), 123456, 0x123456)
+        , "fmt::format(FMT_COMPILE(\"blah {} blah {} blah\"), 123456, 0x123456)");
+    BM2(,  fmt::format(FMT_COMPILE("blah {:+} blah {:#x} blah"), 123456, 0x123456)
+        , "fmt::format(FMT_COMPILE(\"blah {:+} blah {:#x} blah\"), 123456, 0x123456)");
+    BM2(,  fmt::format(FMT_COMPILE("blah {:_>+20} blah {:<#20x} blah"), 123456, 0x123456)
+        , "fmt::format(FMT_COMPILE(\"blah {:_>+20} blah {:<#20x} blah\"), 123456, 0x123456)");
 
     BM(, fmt::format("{}", 123456));
     BM(, fmt::format("{}", 0.123456));
@@ -140,10 +140,6 @@ int main(int argc, char** argv)
           "\n    constexpr auto to_string_rc = strf::to_string.reserve_calc();"
           "\n    constexpr auto to_string_nr = strf::to_string.no_reserve();"
           "\n    " STR(FIXTURE_STR)
-          "\n    " STR(FMT_FIXTURE_STR)
-          "\n    " STR(FMT_FIXTURE1)
-          "\n    " STR(FMT_FIXTURE2)
-          "\n    " STR(FMT_FIXTURE3)
           "\n    " STR(FIXTURE_U8SAMPLE)
           "\n    " STR(FIXTURE_U16SAMPLE)
           "\n" );

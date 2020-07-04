@@ -1,4 +1,8 @@
-#include "fmt/format.h"
+#if defined(FMT_HEADER_ONLY)
+#  include <fmt/format.h>
+#else
+#  include <fmt/core.h>
+#endif
 #include "args_shuffle.hpp"
 
 void FUNCTION_NAME (std::string& out)

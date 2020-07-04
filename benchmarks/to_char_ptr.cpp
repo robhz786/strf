@@ -15,8 +15,9 @@
 #define STR(X) STR2(X)
 #define CAT2(X, Y) X##Y
 #define CAT(X,Y) CAT2(X,Y)
-#define BM(FIXTURE, EXPR)  BM2(CAT(bm_, __LINE__) , FIXTURE, EXPR)
-#define BM2(ID, FIXTURE, EXPR)                                          \
+#define BM(FIXTURE, EXPR)  BM2(FIXTURE, EXPR, STR(EXPR))
+#define BM2(FIXTURE, EXPR, LABEL)  DO_BM(CAT(bm_, __LINE__), FIXTURE, EXPR, LABEL)
+#define DO_BM(ID, FIXTURE, EXPR, LABEL)                                   \
     struct ID {                                                         \
         static void func(benchmark::State& state) {                     \
             FIXTURE;                                                    \
@@ -28,13 +29,9 @@
             }                                                           \
         }                                                               \
     };                                                                  \
-    benchmark::RegisterBenchmark(STR(EXPR), ID :: func);
+    benchmark::RegisterBenchmark(LABEL, ID :: func);
 
 #define FIXTURE_STR std::string str = "blah blah blah blah blah blah blah";
-#define FMT_FIXTURE_STR auto compiled_fmt_str = fmt::compile<std::string>("Blah {}!\n");
-#define FMT_FIXTURE1  auto compiled_fmt1 = (fmt::compile<int, int>("blah {} blah {} blah"));
-#define FMT_FIXTURE2  auto compiled_fmt2 = (fmt::compile<int, int>("blah {:+} blah {:#x} blah"));
-#define FMT_FIXTURE3  auto compiled_fmt3 = (fmt::compile<int, int>("blah {:_>+20} blah {:<#20x} blah"));
 
 int main(int argc, char** argv)
 {
@@ -48,10 +45,14 @@ int main(int argc, char** argv)
     BM(, strf::to(dest).tr("blah {} blah {} blah", +strf::dec(123456), *strf::hex(0x123456)));
     BM(, strf::to(dest).tr("blah {} blah {} blah", +strf::right(123456, 20, '_'), *strf::hex(0x123456)<20));
 
-    BM(FIXTURE_STR; FMT_FIXTURE_STR, fmt::format_to(dest, compiled_fmt_str, str));
-    BM(FMT_FIXTURE1, fmt::format_to(dest, compiled_fmt1, 123456, 0x123456));
-    BM(FMT_FIXTURE2, fmt::format_to(dest, compiled_fmt2, 123456, 0x123456));
-    BM(FMT_FIXTURE3, fmt::format_to(dest, compiled_fmt3, 123456, 0x123456));
+    BM2(FIXTURE_STR, fmt::format_to(dest, FMT_COMPILE( "Blah {}!\n" ), str)
+        , "fmt::format_to(dest, FMT_COMPILE(\"Blah {}!\\n\"), str)");
+    BM2(,  fmt::format_to(dest, FMT_COMPILE( "blah {} blah {} blah" ), 123456, 0x123456)
+        , "fmt::format_to(dest, FMT_COMPILE(\"blah {} blah {} blah\"), 123456, 0x123456)");
+    BM2(,  fmt::format_to(dest, FMT_COMPILE( "blah {:+} blah {:#x} blah" ), 123456, 0x123456)
+        , "fmt::format_to(dest, FMT_COMPILE(\"blah {:+} blah {:#x} blah\"), 123456, 0x123456)");
+    BM2(,  fmt::format_to(dest, FMT_COMPILE( "blah {:_>+20} blah {:<#20x} blah" ), 123456, 0x123456)
+        , "fmt::format_to(dest, FMT_COMPILE(\"blah {:_>+20} blah {:<#20x} blah\"), 123456, 0x123456)");
 
     BM(FIXTURE_STR, fmt::format_to(dest, "Blah {}!\n", str));
     BM(, fmt::format_to(dest, "blah {} blah {} blah", 123456, 0x123456));
