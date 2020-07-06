@@ -5,7 +5,6 @@
 #define  _CRT_SECURE_NO_WARNINGS
 
 #include "test_utils.hpp"
-#include <strf.hpp>
 
 class reservation_tester : public strf::basic_outbuff<char>
 {
@@ -76,7 +75,7 @@ constexpr auto reservation_test()
 }
 
 
-int main()
+void test_reserve()
 {
     // on non-const rval ref
     constexpr std::size_t not_reserved = 0;
@@ -147,6 +146,4 @@ int main()
         auto size = std::move(tester).reserve_calc() ("abcd");
         TEST_EQ(size, 4);
     }
-
-    return test_finish();
 }

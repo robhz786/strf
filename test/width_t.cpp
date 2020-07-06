@@ -2,11 +2,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf.hpp>
-#include <limits>
 #include "test_utils.hpp"
 
-int main()
+void test_width_t()
 {
     using namespace strf::width_literal;
 
@@ -15,7 +13,7 @@ int main()
     TEST_TRUE(1.125_w  - 10.625_w ==  -9.5_w);
 
     TEST_TRUE(1_w   / 1._w == 1);
-    TEST_TRUE(10.5_w / 2     == 5.25_w);
+    TEST_TRUE(10.5_w / 2   == 5.25_w);
     TEST_TRUE(10_w   / 2.5_w == 4);
     TEST_TRUE(25     / 2.5_w == 10);
     TEST_TRUE(10.5_w / 2.5_w == 4.2_w);
@@ -52,8 +50,5 @@ int main()
         TEST_TRUE(x.round() == 2);
         TEST_TRUE(x.round() != 3);
     }
-
-
-    return test_finish();
 }
 

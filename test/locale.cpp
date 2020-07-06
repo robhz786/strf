@@ -13,7 +13,7 @@
 #define LOCALE_NAME(lang, region) #lang "_" #region
 #endif
 
-int main()
+void test_locale()
 {
     if (setlocale(LC_NUMERIC, LOCALE_NAME(en, US))) {
         auto punct = strf::locale_numpunct();
@@ -146,6 +146,4 @@ int main()
         TEST_TRUE(parse_win_grouping(L"9;31")      == digits_grouping());
         TEST_TRUE(parse_win_grouping(L"9;31;2;0")  == digits_grouping());
     }
-
-    return test_finish();
 }

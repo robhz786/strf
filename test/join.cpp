@@ -3,9 +3,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <strf.hpp>
 
-int main()
+void test_join()
 {
     TEST("   abcdef123   ") (strf::join("abc", "de", "f", 123) ^ 15);
     TEST("   abcdef123") (strf::join("abc", "de", "f", 123).split_pos(-5) % 12);
@@ -102,6 +101,4 @@ int main()
     TEST("--{abc}--") (strf::join( "--{"
                                  , strf::join('a', 'b', 'c')
                                  , "}--" ) > 8);
-
-    return test_finish();
 }

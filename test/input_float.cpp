@@ -2,9 +2,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include "test_utils.hpp"
 #include <limits>
 #include <vector>
-#include "test_utils.hpp"
 #include <cstdlib>
 
 template <typename FloatT, typename FPack>
@@ -411,7 +411,7 @@ std::vector<float> generate_float_samples()
     return samples;
 }
 
-int main()
+void test_input_float()
 {
     {
         TEST_SCOPE_DESCRIPTION("subnormal float 32");
@@ -643,6 +643,5 @@ int main()
         TEST("________1.000005e+05").with(p1) (j(100000.5));
         TEST("_________1,0,0,0,0.5").with(p1) (j(10000.5));
     }
-    return test_finish();
 }
 

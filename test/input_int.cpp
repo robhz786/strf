@@ -2,11 +2,10 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf.hpp>
-#include <limits>
 #include "test_utils.hpp"
+#include <limits>
 
-int main()
+void test_input_int()
 {
     TEST ( "0") ( 0 );
     TEST (u"0") ( 0 );
@@ -655,6 +654,5 @@ int main()
             .with(strf::numpunct<16>{2}.thousands_sep('\''))
             (strf::split(ptr, 20, '.'));
     }
-    return test_finish();
 }
 

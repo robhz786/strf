@@ -124,7 +124,7 @@ void test_destinations()
 }
 
 
-int main()
+void test_cstr_writer()
 {
     test_cstr_writer_destination_too_small();
     test_write_into_cstr_writer_after_finish();
@@ -133,6 +133,4 @@ int main()
     test_destinations<char16_t>();
     test_destinations<char32_t>();
     test_destinations<wchar_t>();
-
-    return test_finish();
 }

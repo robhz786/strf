@@ -13,10 +13,12 @@ namespace detail {
 class outbuff_test_tool;
 } // namespace detail
 
+#define STRF_MIN_SIZE_AFTER_RECYCLE 64
+
 template <typename CharT>
 constexpr STRF_HD std::size_t min_size_after_recycle()
 {
-    return 64;
+    return STRF_MIN_SIZE_AFTER_RECYCLE;
 }
 
 template <typename CharT>
@@ -208,7 +210,7 @@ public:
 template <typename CharT>
 inline STRF_HD CharT* outbuff_garbage_buf() noexcept
 {
-    static CharT arr[strf::min_size_after_recycle<CharT>()];
+    static CharT arr[ STRF_MIN_SIZE_AFTER_RECYCLE ];
     return arr;
 }
 

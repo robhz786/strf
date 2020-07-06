@@ -6,54 +6,54 @@
 
 cmake_minimum_required (VERSION 3.0)
 project (strf_test)
+set(sources_freestanding
+  tr_string.cpp
+  dynamic_charset.cpp
+  encode_char.cpp
+  encode_fill.cpp
+  input_bool.cpp
+  input_char.cpp
+  input_float.cpp
+  input_int.cpp
+  input_string.cpp
+  input_facets_pack.cpp
+  input_range.cpp
+  numpunct.cpp
+  join.cpp
+  facets_pack_merge.cpp
+  facets_pack.cpp
+  reserve.cpp
+  width_t.cpp
+  width_calculator.cpp
+  utf_to_utf.cpp
+  single_byte_encodings.cpp
+  cstr_writer.cpp  )
 
-set(tests
-  tr_string
-  dynamic_charset
-  encode_char
-  encode_fill
-  input_bool
-  input_char
-  input_float
-  input_int
-  input_string
-  input_facets_pack
-  input_range
-  override_printable
-  numpunct
-  join
-  facets_pack_merge
-  facets_pack
-  reserve
-  width_t
-  width_calculator
-  utf_to_utf
-  single_byte_encodings
-  cstr_writer )
+set(sources_hosted
+  locale.cpp
+  cfile_writer.cpp
+  streambuf_writer.cpp
+  string_writer.cpp )
 
-if (NOT ${STRF_FREESTANDING})
-  list(APPEND tests
-    locale
-    cfile_writer
-    streambuf_writer
-    string_writer )
-endif()
+set(sources
+  ${sources_freestanding}
+  ${sources_hosted} )
 
-foreach(t IN LISTS tests)
+add_executable(test-header-only main.cpp test_utils.cpp ${sources})
+add_executable(test-static-lib  main.cpp test_utils.cpp ${sources})
 
-  add_executable(test-${t}-header-only   ${t}.cpp)
-  add_executable(test-${t}-static-lib    ${t}.cpp)
+target_link_libraries(test-header-only   strf-header-only)
+target_link_libraries(test-static-lib    strf)
 
-  target_link_libraries(test-${t}-header-only   strf-header-only)
-  target_link_libraries(test-${t}-static-lib    strf)
+set_target_properties(test-header-only  PROPERTIES OUTPUT_NAME header-only)
+set_target_properties(test-static-lib   PROPERTIES OUTPUT_NAME static-lib)
 
-  set_target_properties(test-${t}-header-only  PROPERTIES OUTPUT_NAME ${t}-header-only)
-  set_target_properties(test-${t}-static-lib   PROPERTIES OUTPUT_NAME ${t}-static-lib)
+target_link_libraries(test-header-only  strf-header-only)
+target_link_libraries(test-static-lib   strf)
 
-  add_test(NAME run-test-${t}-header-only COMMAND  ${t}-header-only)
-  add_test(NAME run-test-${t}-static-lib  COMMAND  ${t}-static-lib)
+add_test(NAME run-tests-header-only COMMAND  header-only)
+add_test(NAME run-tests-static-lib  COMMAND  static-lib)
 
-endforeach(t)
 
 if (${STRF_CUDA_SUPPORT})
   foreach(

@@ -3,12 +3,9 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-
-#include <strf.hpp>
-#include <string>
 #include <algorithm>
 
-strf::detail::simple_string_view<char> make_str_0_to_xff()
+static strf::detail::simple_string_view<char> make_str_0_to_xff()
 {
     static char str[0x101];
     for(unsigned i = 0; i < 0x100; ++i)
@@ -34,7 +31,7 @@ strf::detail::simple_string_view<char> char_0_to_0xff_sanitized(Encoding enc)
     return {str, 0x100};
 }
 
-strf::detail::simple_string_view<char32_t> remove_fffd
+static strf::detail::simple_string_view<char32_t> remove_fffd
     ( strf::detail::simple_string_view<char32_t> input )
 {
     assert(input.size() <= 0x100);
@@ -72,7 +69,7 @@ bool operator==( strf::detail::simple_string_view<CharT> str1
 
 static bool encoding_error_handler_called = false;
 
-void encoding_error_handler()
+static void encoding_error_handler()
 {
     encoding_error_handler_called = true;
 }
@@ -136,7 +133,7 @@ void test( Encoding enc
 
 }
 
-strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_1()
+static strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_1()
 {
     static const char32_t table[0x100] =
         { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07
@@ -175,7 +172,7 @@ strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_1()
     return {table, 0x100};
 }
 
-strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_3()
+static strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_3()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -214,7 +211,7 @@ strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_3()
     return {table, 0x100};
 }
 
-strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_15()
+static strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_15()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -253,7 +250,7 @@ strf::detail::simple_string_view<char32_t> decoded_0_to_xff_iso_8859_15()
     return {table, 0x100};
 }
 
-strf::detail::simple_string_view<char32_t> decoded_0_to_xff_windows_1252()
+static strf::detail::simple_string_view<char32_t> decoded_0_to_xff_windows_1252()
 {
     static const char32_t table[0x100] =
         { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007
@@ -292,11 +289,10 @@ strf::detail::simple_string_view<char32_t> decoded_0_to_xff_windows_1252()
     return {table, 0x100};
 }
 
-int main()
+void test_single_byte_encodings()
 {
     test(strf::iso_8859_1<char>(), decoded_0_to_xff_iso_8859_1());
     test(strf::iso_8859_3<char>(), decoded_0_to_xff_iso_8859_3());
     test(strf::iso_8859_15<char>(), decoded_0_to_xff_iso_8859_15());
     test(strf::windows_1252<char>(), decoded_0_to_xff_windows_1252() );
-    return test_finish();
 }

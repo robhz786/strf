@@ -4,6 +4,7 @@
 
 #include "test_utils.hpp"
 #include <vector>
+#include <string>
 
 template <typename CharT>
 struct fixture
@@ -30,7 +31,7 @@ void test_char( Encoding enc
     TEST_TRUE(std::equal(encoded_char.begin(), encoded_char.end(), &buff[0]));
 }
 
-int main()
+void test_encode_char()
 {
     {   // UTF-8
 
@@ -76,7 +77,4 @@ int main()
         test_char<char>(strf::iso_8859_3<char>()  , 0x800 , "?");
         test_char<char>(strf::iso_8859_15<char>() , 0x800 , "?");
     }
-
-
-    return test_finish();
 }

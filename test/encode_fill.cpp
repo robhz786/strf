@@ -2,9 +2,8 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf/to_string.hpp>
 #include "test_utils.hpp"
-#include <vector>
+#include <strf/to_string.hpp>
 
 template <typename CharT>
 std::basic_string<CharT> repeat(std::size_t count, std::basic_string<CharT> str)
@@ -59,7 +58,7 @@ inline void test_fill(Encoding enc, char32_t fill_char, const CharT* encoded_cha
     return test_fill(enc, fill_char, std::basic_string<CharT>{encoded_char});
 }
 
-int main()
+void test_encode_fill()
 {
     {
         // UTF-8
@@ -111,5 +110,4 @@ int main()
         test_fill(strf::iso_8859_15<char>() , 0x800, "?");
     }
 
-    return test_finish();
 }

@@ -2,7 +2,6 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf.hpp>
 #include "test_utils.hpp"
 
 template <typename T>
@@ -10,7 +9,7 @@ struct is_char: public std::is_same<T, char>
 {
 };
 
-int main()
+void STRF_HD test_input_char()
 {
     TEST("a")    ( 'a' );
     TEST("a")    ( strf::fmt('a') );
@@ -50,21 +49,5 @@ int main()
     TEST("aaaa")   ( strf::join_left(2, '.')(strf::multi('a', 4) > 4) );
     TEST("aaaa")   ( strf::join_left(4, '.')(strf::multi('a', 4) > 4) );
     TEST("aaaa..") ( strf::join_left(6, '.')(strf::multi('a', 4) > 4) );
-
-    // todo: test with alternative width calculators
-
-    return test_finish();
 }
-
-
-
-
-
-
-
-
-
-
-
-
 

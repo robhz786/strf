@@ -3,7 +3,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <strf.hpp>
 
 template <int N> struct fcategory;
 
@@ -138,7 +137,7 @@ using derives_from_x = std::is_base_of<class_x, T>;
 template <typename T>
 using is_64 = std::integral_constant<bool, sizeof(T) == 8>;
 
-void test_facets_pack()
+static void  basic_tests()
 {
     auto f1_10 = facet<1>{10};
     auto f2_20 = facet<2>{20};
@@ -198,7 +197,7 @@ void test_facets_pack()
 }
 
 
-void test_constrained_fpe()
+static void test_constrained_fpe()
 {
     { // check constexpr
 
@@ -308,7 +307,7 @@ void test_constrained_fpe()
     }
 }
 
-void compilation_tests()
+inline void compilation_tests()
 {
     bool test1 = ! std::is_copy_constructible
         <strf::constrained_fpe<is_64, facet<0, enable_only_move>>>
@@ -355,11 +354,9 @@ void compilation_tests()
     TEST_TRUE(test8);
 }
 
-int main()
+void test_facets_pack()
 {
-    test_facets_pack();
+    basic_tests();
     test_constrained_fpe();
     compilation_tests();
-
-    return test_finish();
 }

@@ -5,10 +5,14 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <string>
-#define STRF_HAS_STD_STRING_DECLARATION
-#include <strf/to_cfile.hpp>
-#include <cctype>
+#if ! defined(STRF_FREESTANDING)
+#  include <cstdio>
+#  include <string>
+#  define STRF_HAS_STD_STRING_DECLARATION
+#endif
+
+#include <strf.hpp>
+//#include <cctype>
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -18,59 +22,13 @@
 
 namespace test_utils {
 
-std::string unique_tmp_file_name()
-{
+#if ! defined(STRF_FREESTANDING)
 
-#if defined(_WIN32)
+std::string unique_tmp_file_name();
 
-    char dirname[MAX_PATH];
-    GetTempPathA(MAX_PATH, dirname);
-    char fullname[MAX_PATH];
-    sprintf_s(fullname, MAX_PATH, "%s\\test_boost_outbuff_%x.txt", dirname, std::rand());
-    return fullname;
+std::wstring read_wfile(std::FILE* file);
 
-#else // defined(_WIN32)
-
-   char fullname[200];
-   sprintf(fullname, "/tmp/test_boost_outbuff_%x.txt", std::rand());
-   return fullname;
-
-#endif  // defined(_WIN32)
-}
-
-std::wstring read_wfile(std::FILE* file)
-{
-    std::wstring result;
-    wint_t ch = fgetwc(file);
-    while(ch != WEOF) {
-        result += static_cast<wchar_t>(ch);
-        ch = fgetwc(file);
-    };
-
-    return result;
-}
-
-std::wstring read_wfile(const char* filename)
-{
-    std::wstring result;
-
-#if defined(_WIN32)
-
-    std::FILE* file = NULL;
-    (void) fopen_s(&file, filename, "r");
-
-#else // defined(_WIN32)
-
-    std::FILE* file = std::fopen(filename, "r");
-
-#endif  // defined(_WIN32)
-
-    if(file != nullptr) {
-        result = read_wfile(file);
-        fclose(file);
-    }
-    return result;
-}
+std::wstring read_wfile(const char* filename);
 
 template <typename CharT>
 std::basic_string<CharT> read_file(std::FILE* file)
@@ -115,25 +73,7 @@ std::basic_string<CharT> read_file(const char* filename)
     return result;
 }
 
-template <typename CharT>
-struct char_generator
-{
-    CharT operator()()
-    {
-        ch = ch == 0x79 ? 0x20 : (ch + 1);
-        return ch;
-    }
-    CharT ch = 0x20;
-};
-
-// template <typename CharT>
-// std::basic_string<CharT> make_string(std::size_t size)
-// {
-//     std::basic_string<CharT> str(size, CharT('x'));
-//     char_generator<CharT> gen;
-//     std::generate(str.begin(), str.end(), gen);
-//     return str;
-// }
+#endif // ! defined(STRF_FREESTANDING)
 
 template <typename CharT>
 constexpr std::size_t full_string_size
@@ -146,7 +86,7 @@ template <typename CharT>
 constexpr std::size_t double_string_size = full_string_size<CharT> * 2;
 
 template <typename CharT>
-inline strf::detail::simple_string_view<CharT> make_double_string()
+inline strf::detail::simple_string_view<CharT> STRF_HD make_double_string()
 {
     enum {arr_size = double_string_size<CharT>};
     static const CharT arr[arr_size]
@@ -172,49 +112,41 @@ inline strf::detail::simple_string_view<CharT> make_double_string()
 }
 
 template <typename CharT>
-inline strf::detail::simple_string_view<CharT> make_full_string()
+inline strf::detail::simple_string_view<CharT> STRF_HD make_full_string()
 {
     return { make_double_string<CharT>().begin(), full_string_size<CharT> };
 }
 
 template <typename CharT>
-inline strf::detail::simple_string_view<CharT> make_half_string()
+inline strf::detail::simple_string_view<CharT> STRF_HD make_half_string()
 {
     return { make_double_string<CharT>().begin(), half_string_size<CharT> };
 }
 
 template <typename CharT>
-inline strf::detail::simple_string_view<CharT> make_tiny_string()
+inline strf::detail::simple_string_view<CharT> STRF_HD make_tiny_string()
 {
     static const CharT arr[5] = {'H', 'e', 'l', 'l', 'o'};
     return {arr, 5};
 }
 
 template <typename CharT>
-inline void turn_into_bad(strf::basic_outbuff<CharT>& ob)
+inline void STRF_HD turn_into_bad(strf::basic_outbuff<CharT>& ob)
 {
     strf::detail::outbuff_test_tool::turn_into_bad(ob);
 }
 
-int& test_err_count()
-{
-    static int count = 0;
-    return count;
-}
+int& STRF_HD test_err_count();
 
-strf::narrow_cfile_writer<char>& test_outbuff()
-{
-    static strf::narrow_cfile_writer<char> ob(stdout);
-    return ob;
-}
+strf::outbuff& STRF_HD test_outbuff();
 
 class test_scope
 {
 public:
 
-    test_scope(const test_scope&) = delete;
+    STRF_HD test_scope(const test_scope&) = delete;
 
-    test_scope()
+    STRF_HD  test_scope()
         : parent_(curr_test_scope())
     {
         parent_->child_ = this;
@@ -222,7 +154,7 @@ public:
         description_[0] = '\0';
     }
 
-    ~test_scope()
+    STRF_HD ~test_scope()
     {
         if (parent_) {
             parent_->child_ = child_;
@@ -233,12 +165,12 @@ public:
         }
     }
 
-    auto description_writer()
+    auto STRF_HD description_writer()
     {
         return strf::to(description_);
     }
 
-    static void print_stack(strf::outbuff& out)
+    static void STRF_HD print_stack(strf::outbuff& out)
     {
         test_scope* first = root().child_;
         if (first != nullptr) {
@@ -256,18 +188,18 @@ private:
 
     struct root_tag {};
 
-    test_scope(root_tag)
+    STRF_HD test_scope(root_tag)
     {
         description_[0] = '\0';
     }
 
-    static test_scope& root()
+    static test_scope& STRF_HD root()
     {
         static test_scope r{test_scope::root_tag{}};
         return r;
     }
 
-    static test_scope*& curr_test_scope()
+    static test_scope*& STRF_HD curr_test_scope()
     {
         static test_scope* curr = &root();
         return curr;
@@ -280,7 +212,7 @@ private:
 };
 
 template <typename ... Args>
-auto test_message
+void STRF_HD test_message
     ( const char* filename
     , int line
     , const char* funcname
@@ -293,7 +225,7 @@ auto test_message
 
 
 template <typename ... Args>
-inline auto test_failure
+void STRF_HD test_failure
     ( const char* filename
     , int line
     , const char* funcname
@@ -304,13 +236,13 @@ inline auto test_failure
 }
 
 template <typename CharOut>
-class input_tester
+class STRF_HD input_tester
     : public strf::basic_outbuff<CharOut>
 {
 
 public:
 
-    input_tester
+    STRF_HD input_tester
         ( strf::detail::simple_string_view<CharOut> expected
         , const char* src_filename
         , int src_line
@@ -320,33 +252,33 @@ public:
 
 #ifdef STRF_NO_CXX17_COPY_ELISION
 
-    input_tester(input_tester&& r);
+    STRF_HD input_tester(input_tester&& r);
 
 #else
 
-    input_tester(input_tester&& r) = delete;
-    input_tester(const input_tester& r) = delete;
+    STRF_HD input_tester(input_tester&& r) = delete;
+    STRF_HD input_tester(const input_tester& r) = delete;
 
 #endif
 
-    ~input_tester();
+    STRF_HD ~input_tester();
 
     using char_type = CharOut;
 
-    void recycle() override;
+    void STRF_HD recycle() override;
 
-    void finish();
+    void STRF_HD finish();
 
 private:
 
     template <typename ... MsgArgs>
-    void test_failure_(const MsgArgs&... msg_args)
+    void STRF_HD test_failure_(const MsgArgs&... msg_args)
     {
         test_utils::test_failure( src_filename_, src_line_
                                 , function_, msg_args... );
     }
 
-    bool wrongly_reserved_(std::size_t result_size) const;
+    bool STRF_HD wrongly_reserved_(std::size_t result_size) const;
 
     strf::detail::simple_string_view<CharOut> expected_;
     std::size_t reserved_size_;
@@ -367,7 +299,7 @@ private:
 
 
 template <typename CharOut>
-input_tester<CharOut>::input_tester
+STRF_HD input_tester<CharOut>::input_tester
     ( strf::detail::simple_string_view<CharOut> expected
     , const char* src_filename
     , int src_line
@@ -377,7 +309,7 @@ input_tester<CharOut>::input_tester
     : strf::basic_outbuff<CharOut>{buffer_, size}
     , expected_(expected)
     , reserved_size_(size)
-    , src_filename_(std::move(src_filename))
+    , src_filename_(src_filename)
     , function_(function)
     , src_line_(src_line)
     , reserve_factor_(reserve_factor)
@@ -392,12 +324,12 @@ input_tester<CharOut>::input_tester
 }
 
 template <typename CharOut>
-input_tester<CharOut>::~input_tester()
+STRF_HD input_tester<CharOut>::~input_tester()
 {
 }
 
 template <typename CharOut>
-void input_tester<CharOut>::recycle()
+void STRF_HD input_tester<CharOut>::recycle()
 {
     test_failure_(" basic_outbuff::recycle() called "
                   "( calculated size too small ).\n");
@@ -414,15 +346,15 @@ void input_tester<CharOut>::recycle()
 }
 
 template <typename CharOut>
-void input_tester<CharOut>::finish()
+void STRF_HD input_tester<CharOut>::finish()
 {
     auto pointer = pointer_before_overflow_ ? pointer_before_overflow_ : this->pointer();
     strf::detail::simple_string_view<CharOut> result{buffer_, pointer};
 
     if ( result.size() != expected_.size()
-      || 0 != std::char_traits<CharOut>::compare( expected_.begin()
-                                                , result.begin()
-                                                , expected_.size() ))
+      || ! strf::detail::str_equal<CharOut>( expected_.begin()
+                                           , result.begin()
+                                           , expected_.size() ))
     {
         test_failure_( "\n  expected: \"", strf::conv(expected_), '\"'
                      , "\n  obtained: \"", strf::conv(result), "\"" );
@@ -435,7 +367,7 @@ void input_tester<CharOut>::finish()
 }
 
 template <typename CharOut>
-bool input_tester<CharOut>::wrongly_reserved_(std::size_t result_size) const
+bool STRF_HD input_tester<CharOut>::wrongly_reserved_(std::size_t result_size) const
 {
     return ( reserved_size_ < result_size
           || ( ( static_cast<double>(reserved_size_)
@@ -450,11 +382,12 @@ public:
 
     using char_type = CharT;
 
-    input_tester_creator( strf::detail::simple_string_view<CharT> expected
-                        , const char* filename
-                        , int line
-                        , const char* function
-                        , double reserve_factor )
+    STRF_HD input_tester_creator
+        ( strf::detail::simple_string_view<CharT> expected
+        , const char* filename
+        , int line
+        , const char* function
+        , double reserve_factor )
         : expected_(expected)
         , filename_(filename)
         , function_(function)
@@ -466,7 +399,7 @@ public:
     input_tester_creator(const input_tester_creator& ) = default;
     input_tester_creator(input_tester_creator&& ) = default;
 
-    test_utils::input_tester<CharT> create(std::size_t size) const
+    test_utils::input_tester<CharT> STRF_HD create(std::size_t size) const
     {
         return test_utils::input_tester<CharT>
             { expected_, filename_, line_, function_, reserve_factor_, size };
@@ -482,7 +415,7 @@ private:
 };
 
 template<typename CharT>
-auto make_tester
+auto STRF_HD make_tester
    ( const CharT* expected
    , const char* filename
    , int line
@@ -495,7 +428,7 @@ auto make_tester
 }
 
 template<typename CharT>
-auto make_tester
+auto STRF_HD make_tester
    ( strf::detail::simple_string_view<CharT> expected
    , const char* filename
    , int line
@@ -522,7 +455,7 @@ auto make_tester
 
 
 template <typename T, typename U>
-constexpr bool equal(const T&a, const U&b)
+constexpr bool STRF_HD equal(const T&a, const U&b)
 {
     return a == b;
 }
@@ -578,12 +511,16 @@ constexpr bool equal(const T&a, const U&b)
             ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION                \
             , " test (", (a), " == ", (b), ") failed. " );
 
-#define TEST_CSTR_EQ(a, b)                                              \
-    if (0 != std::strcmp(a, b))                                         \
-        test_utils::test_failure                                        \
-            ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION                \
-            , "test (s1 == s2) failed. Where:\n    s1 is \"", (a)       \
-            , "\"\n    s2 is \"", (b), '\"' );
+#define TEST_CSTR_EQ(s1, s2)                                            \
+    for ( std::size_t len1 = strf::detail::str_length(s1)               \
+        ; len1 == strf::detail::str_length(s2); ) {                     \
+        if (! strf::detail::str_equal(s1, s2, len1))                    \
+            test_utils::test_failure                                    \
+                ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION            \
+                , "test (s1 == s2) failed. Where:\n    s1 is \"", (s1)  \
+                , "\"\n    s2 is \"", (s2), '\"' );                     \
+        break;                                                          \
+    }                                                                   \
 
 #define TEST_THROWS( EXPR, EXCEP )                                      \
   { bool caught = false;                                                \
@@ -594,17 +531,5 @@ constexpr bool equal(const T&a, const U&b)
               ( __FILE__, __LINE__, BOOST_CURRENT_FUNCTION              \
               , "exception " #EXCEP " not thrown as expected" );        \
   }
-
-int test_finish()
-{
-    int err_count = test_utils::test_err_count();
-    if (err_count == 0) {
-        strf::write(test_utils::test_outbuff(), "All test passed!\n");
-    } else {
-        strf::to(test_utils::test_outbuff()) (err_count, " tests failed!\n");
-    }
-    test_utils::test_outbuff().finish();
-    return err_count;
-}
 
 #endif // defined(STRF_TEST_TEST_UTILS_HPP_INCLUDED)

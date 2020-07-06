@@ -2,11 +2,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf.hpp>
-#include <limits>
 #include "test_utils.hpp"
 
-int main()
+void test_input_bool()
 {
     TEST ( "true") ( true );
     TEST (u"true") ( true );
@@ -72,6 +70,4 @@ int main()
     TEST ("__________  false   ") ( j(strf::center(false, 10)) );
     TEST ("__________     false") ( j(strf::right(false, 10)) );
     TEST ("__________     false") ( j(strf::split(false, 10)) );
-
-    return test_finish();
 }

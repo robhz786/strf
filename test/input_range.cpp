@@ -2,12 +2,10 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf.hpp>
 #include "test_utils.hpp"
 #include <array>
 
-
-int main()
+void test_input_range()
 {
     {
         int arr[] = {11, 22, 33, 44};
@@ -174,5 +172,4 @@ int main()
         TEST("<-11>, <-22>, <-33>") ( strf::separated_range(stl_arr, ", ", func) );
         TEST("<-11>, <-22>, <-33>") ( strf::separated_range(arr, arr + 3, ", ", func) );
     }
-    return test_finish();
 }

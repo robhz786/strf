@@ -3,13 +3,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <strf.hpp>
 
 #if ! defined(__cpp_char8_t)
 using char8_t = char;
 #endif
 
-int main()
+void test_input_string()
 {
     {
         TEST("   abc")   ( strf::right("abc", 6) );
@@ -44,7 +43,8 @@ int main()
         TEST(L"abcdefghi")    ( strf::right(L"", 0), strf::right(abc, 0), strf::left(def, 0), strf::center(ghi, 0) );
     }
 
-
+#if ! defined(STRF_FREESTANDING)
+    
     {
         std::string abc{ "abc" };
 
@@ -59,6 +59,8 @@ int main()
         TEST(L"   abc")  ( strf::right(abc, 6) );
     }
 
+#endif // ! defined(STRF_FREESTANDING)
+
 #if defined(STRF_HAS_STD_STRING_VIEW)
 
     {
@@ -68,7 +70,7 @@ int main()
         TEST("   abc") ( strf::right(abc, 6) );
     }
 
-#endif
+#endif // defined(STRF_HAS_STD_STRING_VIEW)
 
     {   // by-pass encoding sanitization
 
@@ -152,11 +154,5 @@ int main()
                              , strf::conv(def) < 0, strf::conv(ghi) ^ 0 );
 
     }
-
-    return test_finish();
 }
-
-
-
-
 

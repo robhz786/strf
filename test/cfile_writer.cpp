@@ -231,7 +231,7 @@ void test_wdestination()
                                            , full_str.size() ));
 }
 
-int main()
+void test_cfile_writer()
 {
     std::srand(static_cast<unsigned>(std::time(nullptr)));
 
@@ -260,6 +260,4 @@ int main()
     test_wide_successfull_writing();
     test_wide_failing_to_recycle();
     test_wide_failing_to_finish();
-
-    return test_finish();
 }

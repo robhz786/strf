@@ -3,7 +3,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 #include "test_utils.hpp"
-#include <strf.hpp>
 #include <vector>
 
 struct fcategory;
@@ -78,7 +77,7 @@ std::vector<int> digest(const FPack& fp)
 std::vector<int> expected = {1, 2, 3, 4, 5, 6, 7};
 
 
-int main()
+void test_facets_pack_merge()
 {
 
     {
@@ -165,9 +164,6 @@ int main()
 
         TEST_TRUE(digest(fp) == expected);
     }
-
-
-    return test_finish();
 }
 
 

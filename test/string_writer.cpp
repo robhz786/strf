@@ -6,7 +6,7 @@
 #include <strf/to_string.hpp>
 
 template <typename CharT>
-void test_successfull_append()
+static void test_successfull_append()
 {
     auto tiny_str = test_utils::make_tiny_string<CharT>();
     auto double_str = test_utils::make_double_string<CharT>();
@@ -28,7 +28,7 @@ void test_successfull_append()
 }
 
 template <typename CharT>
-void test_successfull_make()
+static void test_successfull_make()
 {
     auto tiny_str = test_utils::make_tiny_string<CharT>();
     auto double_str = test_utils::make_double_string<CharT>();
@@ -49,7 +49,7 @@ void test_successfull_make()
 }
 
 template <typename CharT>
-void test_destinations()
+static void test_destinations()
 {
     auto double_str = test_utils::make_double_string<CharT>();
     auto half_str = test_utils::make_half_string<CharT>();
@@ -110,7 +110,7 @@ void test_destinations()
 }
 
 
-int main()
+void test_string_writer()
 {
     test_destinations<char>();
     test_destinations<char16_t>();
@@ -124,6 +124,4 @@ int main()
     test_successfull_make<char16_t>();
     test_successfull_make<char>();
     test_successfull_make<char16_t>();
-
-    return test_finish();
 }

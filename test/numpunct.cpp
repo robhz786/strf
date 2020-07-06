@@ -2,10 +2,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf.hpp>
 #include "test_utils.hpp"
 
-int main()
+void test_numpunct()
 {
     {
         strf::numpunct<10> grouper(4);
@@ -203,6 +202,4 @@ int main()
         TEST_TRUE(creator.finish() == expected);
         TEST_TRUE(creator.failed())
     }
-
-    return test_finish();;
 }

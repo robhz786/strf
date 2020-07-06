@@ -2,10 +2,9 @@
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
-#include <strf.hpp>
 #include "test_utils.hpp"
 
-int main()
+void test_input_facets_pack()
 {
     TEST("1,0,0,0,0 10000 1000000 10,000 1'0000 1'000000 10.000 1^00^00 1'000000")
         .with(strf::numpunct<10>(1))
@@ -63,8 +62,5 @@ int main()
           , strf::numpunct<10> >
           :: value
         , "char_encoding is not constrainable");
-
-    int rc = test_finish();
-    return rc;
 }
 
